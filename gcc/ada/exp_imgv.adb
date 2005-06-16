@@ -32,7 +32,6 @@ with Exp_Util; use Exp_Util;
 with Namet;    use Namet;
 with Nmake;    use Nmake;
 with Nlists;   use Nlists;
-with Opt;      use Opt;
 with Rtsfind;  use Rtsfind;
 with Sem_Res;  use Sem_Res;
 with Sinfo;    use Sinfo;
@@ -192,12 +191,10 @@ package body Exp_Imgv is
    --    For types whose root type is Wide_Character
    --      xx = Wide_Character
    --      tv = Wide_Character (Expr)
-   --      pm = Wide_Character_Encoding_Method
 
    --    For types whose root type is Wide_Wide_Character
    --      xx = Wide_Wide_haracter
    --      tv = Wide_Wide_Character (Expr)
-   --      pm = Wide_Character_Encoding_Method
 
    --    For floating-point types
    --      xx = Floating_Point
@@ -391,15 +388,6 @@ package body Exp_Imgv is
              Prefix         => New_Reference_To (Ptyp, Loc),
              Attribute_Name => Name_Aft));
 
-      --  For wide [wide] character, append encoding method
-
-      elsif Rtyp = Standard_Wide_Character
-        or else Rtyp = Standard_Wide_Wide_Character
-      then
-         Append_To (Arglist,
-           Make_Integer_Literal (Loc,
-             Intval => Int (Wide_Character_Encoding_Method)));
-
       --  For decimal, append Scale and also set to do literal conversion
 
       elsif Is_Decimal_Fixed_Point_Type (Rtyp) then
@@ -434,6 +422,12 @@ package body Exp_Imgv is
    --    For types whose root type is Character
    --      xx = Character
 
+   --    For types whose root type is Wide_Character
+   --      xx = Wide_Character
+
+   --    For types whose root type is Wide_Wide_Character
+   --      xx = Wide_Wide_Character
+
    --    For types whose root type is Boolean
    --      xx = Boolean
 
@@ -451,14 +445,6 @@ package body Exp_Imgv is
 
    --    For floating-point types and ordinary fixed-point types
    --      xx = Real
-
-   --  For types derived from Wide_Character, typ'Value (X) expands into
-
-   --    Value_Wide_Character (X, Wide_Character_Encoding_Method)
-
-   --  For types derived from Wide_Wide_Character, typ'Value (X) expands into
-
-   --    Value_Wide_Wide_Character (X, Wide_Character_Encoding_Method)
 
    --  For decimal types with size <= Integer'Size, typ'Value (X)
    --  expands into
@@ -504,15 +490,9 @@ package body Exp_Imgv is
 
       elsif Rtyp = Standard_Wide_Character then
          Vid := RE_Value_Wide_Character;
-         Append_To (Args,
-           Make_Integer_Literal (Loc,
-             Intval => Int (Wide_Character_Encoding_Method)));
 
       elsif Rtyp = Standard_Wide_Wide_Character then
          Vid := RE_Value_Wide_Wide_Character;
-         Append_To (Args,
-           Make_Integer_Literal (Loc,
-             Intval => Int (Wide_Character_Encoding_Method)));
 
       elsif     Rtyp = Base_Type (Standard_Short_Short_Integer)
         or else Rtyp = Base_Type (Standard_Short_Integer)
@@ -686,42 +666,36 @@ package body Exp_Imgv is
    --    Result_Type (Width_Wide_Character (
    --      Wide_Character (typ'First),
    --      Wide_Character (typ'Last),
-   --      Wide_Character_Encoding_Method);
 
    --  and typ'Wide_Width expands into:
 
    --    Result_Type (Wide_Width_Wide_Character (
    --      Wide_Character (typ'First),
    --      Wide_Character (typ'Last));
-   --      Wide_Character_Encoding_Method);
 
    --  and typ'Wide_Wide_Width expands into
 
    --    Result_Type (Wide_Wide_Width_Wide_Character (
    --      Wide_Character (typ'First),
    --      Wide_Character (typ'Last));
-   --      Wide_Character_Encoding_Method);
 
    --  For types derived from Wide_Wide_Character, typ'Width expands into
 
    --    Result_Type (Width_Wide_Wide_Character (
    --      Wide_Wide_Character (typ'First),
    --      Wide_Wide_Character (typ'Last),
-   --      Wide_Character_Encoding_Method);
 
    --  and typ'Wide_Width expands into:
 
    --    Result_Type (Wide_Width_Wide_Wide_Character (
    --      Wide_Wide_Character (typ'First),
    --      Wide_Wide_Character (typ'Last));
-   --      Wide_Character_Encoding_Method);
 
    --  and typ'Wide_Wide_Width expands into
 
    --    Result_Type (Wide_Wide_Width_Wide_Wide_Char (
    --      Wide_Wide_Character (typ'First),
    --      Wide_Wide_Character (typ'Last));
-   --      Wide_Character_Encoding_Method);
 
    --  For real types, typ'Width and typ'Wide_[Wide_]Width expand into
 
@@ -914,14 +888,6 @@ package body Exp_Imgv is
                    Prefix => New_Reference_To (Ptyp, Loc),
                    Attribute_Name => Name_Last))));
 
-         --  For enumeration'Wide_[Wide_]Width, add encoding method parameter
-
-         if Attr /= Normal then
-            Append_To (Arglist,
-              Make_Integer_Literal (Loc,
-                Intval => Int (Wide_Character_Encoding_Method)));
-         end if;
-
          Rewrite (N,
            Convert_To (Typ,
              Make_Function_Call (Loc,
@@ -944,17 +910,6 @@ package body Exp_Imgv is
           Make_Attribute_Reference (Loc,
             Prefix => New_Reference_To (Ptyp, Loc),
             Attribute_Name => Name_Last)));
-
-      --  For Wide_[Wide_]Character'Width, add encoding method parameter
-
-      if (Rtyp = Standard_Wide_Character
-           or else
-          Rtyp = Standard_Wide_Wide_Character)
-        and then Attr /= Normal then
-         Append_To (Arglist,
-           Make_Integer_Literal (Loc,
-             Intval => Int (Wide_Character_Encoding_Method)));
-      end if;
 
       Rewrite (N,
         Convert_To (Typ,

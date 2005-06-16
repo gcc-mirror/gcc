@@ -592,12 +592,12 @@ package body Exp_Strm is
 
       --  Call the function, and do an unchecked conversion of the result
       --  to the actual type of the prefix. If the target is a discriminant,
-      --  set target type to force a constraint check (13.13.2 (35)).
+      --  and we are in the body of the default implementation of a 'Read
+      --  attribute, set target type to force a constraint check (13.13.2(35)).
 
-      if Nkind (Targ) = N_Selected_Component
-        and then Present (Entity (Selector_Name (Targ)))
-        and then Ekind (Entity (Selector_Name (Targ)))
-          = E_Discriminant
+      if Nkind (Targ) = N_Identifier
+        and then Is_Internal_Name (Chars (Targ))
+        and then Is_TSS (Scope (Entity (Targ)), TSS_Stream_Read)
       then
          Res :=
            Unchecked_Convert_To (Base_Type (P_Type),
@@ -786,23 +786,41 @@ package body Exp_Strm is
       Decl : out Node_Id;
       Pnam : out Entity_Id)
    is
-      Stms : List_Id;
+      Out_Formal : Node_Id;
+      --  Expression denoting the out formal parameter
+
+      Dcls : constant List_Id := New_List;
+      --  Declarations for the 'Read body
+
+      Stms : List_Id := New_List;
       --  Statements for the 'Read body
 
+      Disc : Entity_Id;
+      --  Entity of the discriminant being processed
+
+      Tmp_For_Disc : Entity_Id;
+      --  Temporary object used to read the value of Disc
+
+      Tmps_For_Discs : constant List_Id := New_List;
+      --  List of object declarations for temporaries holding the read values
+      --  for the discriminants.
+
+      Cstr : constant List_Id := New_List;
+      --  List of constraints to be applied on temporary record
+
+      Discriminant_Checks : constant List_Id := New_List;
+      --  List of discriminant checks to be performed if the actual object
+      --  is constrained.
+
       Tmp : constant Entity_Id := Make_Defining_Identifier (Loc, Name_V);
-      --  Temporary, must hide formal (assignments to components of the
+      --  Temporary record must hide formal (assignments to components of the
       --  record are always generated with V as the identifier for the record).
 
-      Cstr : List_Id;
-      --  List of constraints to be applied on temporary
-
-      Disc     : Entity_Id;
-      Disc_Ref : Node_Id;
-      Block    : Node_Id;
+      Constrained_Stms : List_Id := New_List;
+      --  Statements within the block where we have the constrained temporary
 
    begin
-      Stms := New_List;
-      Cstr := New_List;
+
       Disc := First_Discriminant (Typ);
 
       --  A mutable type cannot be a tagged type, so we generate a new name
@@ -812,33 +830,50 @@ package body Exp_Strm is
         Make_Defining_Identifier (Loc,
           Chars => Make_TSS_Name_Local (Typ, TSS_Stream_Read));
 
+      Out_Formal :=
+        Make_Selected_Component (Loc,
+          Prefix => New_Occurrence_Of (Pnam, Loc),
+          Selector_Name => Make_Identifier (Loc, Name_V));
+
       --  Generate Reads for the discriminants of the type. The discriminants
       --  need to be read before the rest of the components, so that
-      --  variants are initialized correctly.
+      --  variants are initialized correctly. The discriminants must be read
+      --  into temporary variables so an incomplete Read (interrupted by an
+      --  exception, for example) does not alter the passed object.
 
       while Present (Disc) loop
-         Disc_Ref :=
-           Make_Selected_Component (Loc,
-             Prefix        => Make_Selected_Component (Loc,
-                                Prefix => New_Occurrence_Of (Pnam, Loc),
-                                Selector_Name =>
-                                  Make_Identifier (Loc, Name_V)),
-             Selector_Name => New_Occurrence_Of (Disc, Loc));
+         Tmp_For_Disc := Make_Defining_Identifier (Loc,
+                           New_External_Name (Chars (Disc), "D"));
 
-         Set_Assignment_OK (Disc_Ref);
+         Append_To (Tmps_For_Discs,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Tmp_For_Disc,
+             Object_Definition   => New_Occurrence_Of (Etype (Disc), Loc)));
+         Set_No_Initialization (Last (Tmps_For_Discs));
 
          Append_To (Stms,
            Make_Attribute_Reference (Loc,
              Prefix => New_Occurrence_Of (Etype (Disc), Loc),
-               Attribute_Name => Name_Read,
-               Expressions => New_List (
-                 Make_Identifier (Loc, Name_S),
-                 Disc_Ref)));
+             Attribute_Name => Name_Read,
+             Expressions => New_List (
+               Make_Identifier (Loc, Name_S),
+               New_Occurrence_Of (Tmp_For_Disc, Loc))));
 
          Append_To (Cstr,
            Make_Discriminant_Association (Loc,
              Selector_Names => New_List (New_Occurrence_Of (Disc, Loc)),
-             Expression     => New_Copy_Tree (Disc_Ref)));
+             Expression     => New_Occurrence_Of (Tmp_For_Disc, Loc)));
+
+         Append_To (Discriminant_Checks,
+           Make_Raise_Constraint_Error (Loc,
+             Condition =>
+               Make_Op_Ne (Loc,
+                 Left_Opnd  => New_Occurrence_Of (Tmp_For_Disc, Loc),
+                 Right_Opnd =>
+                   Make_Selected_Component (Loc,
+                     Prefix => New_Copy_Tree (Out_Formal),
+                     Selector_Name => New_Occurrence_Of (Disc, Loc))),
+             Reason => CE_Discriminant_Check_Failed));
          Next_Discriminant (Disc);
       end loop;
 
@@ -854,27 +889,33 @@ package body Exp_Strm is
       --  prior to being initialized. To this effect, we wrap the component
       --  assignments in a block where V is a constrained temporary.
 
-      Block :=
+      Append_To (Dcls,
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Tmp,
+          Object_Definition   =>
+            Make_Subtype_Indication (Loc,
+              Subtype_Mark => New_Occurrence_Of (Typ, Loc),
+              Constraint =>
+                Make_Index_Or_Discriminant_Constraint (Loc,
+                  Constraints => Cstr))));
+
+      Constrained_Stms := Statements (Handled_Statement_Sequence (Decl));
+      Append_To (Stms,
         Make_Block_Statement (Loc,
-          Declarations => New_List (
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Tmp,
-             Object_Definition   =>
-               Make_Subtype_Indication (Loc,
-                 Subtype_Mark => New_Occurrence_Of (Typ, Loc),
-                 Constraint =>
-                   Make_Index_Or_Discriminant_Constraint (Loc,
-                     Constraints => Cstr)))),
-          Handled_Statement_Sequence =>
-            Handled_Statement_Sequence (Decl));
+          Declarations => Dcls,
+          Handled_Statement_Sequence => Parent (Constrained_Stms)));
 
-      Append_To (Stms, Block);
+      Append_To (Constrained_Stms,
+        Make_Implicit_If_Statement (Pnam,
+          Condition =>
+            Make_Attribute_Reference (Loc,
+              Prefix => New_Copy_Tree (Out_Formal),
+              Attribute_Name => Name_Constrained),
+          Then_Statements => Discriminant_Checks));
 
-      Append_To (Statements (Handled_Statement_Sequence (Block)),
+      Append_To (Constrained_Stms,
         Make_Assignment_Statement (Loc,
-          Name => Make_Selected_Component (Loc,
-                    Prefix => New_Occurrence_Of (Pnam, Loc),
-                    Selector_Name => Make_Identifier (Loc, Name_V)),
+          Name => Out_Formal,
           Expression => Make_Identifier (Loc, Name_V)));
 
       if Is_Unchecked_Union (Typ) then
@@ -890,6 +931,7 @@ package body Exp_Strm is
                Reason => PE_Unchecked_Union_Restriction));
       end if;
 
+      Set_Declarations (Decl, Tmps_For_Discs);
       Set_Handled_Statement_Sequence (Decl,
         Make_Handled_Sequence_Of_Statements (Loc,
           Statements => Stms));

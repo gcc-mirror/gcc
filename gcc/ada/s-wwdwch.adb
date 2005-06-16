@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --                     S Y S T E M . W W D _ W C H A R                      --
 --                                                                          --
@@ -59,7 +59,6 @@ package body System.Wwd_WChar is
    function Wide_Wide_Width_Wide_Wide_Char
      (Lo, Hi : Wide_Wide_Character) return Natural
    is
-      W  : Natural := 0;
       LV : constant Unsigned_32 := Wide_Wide_Character'Pos (Lo);
       HV : constant Unsigned_32 := Wide_Wide_Character'Pos (Hi);
 
@@ -68,36 +67,22 @@ package body System.Wwd_WChar is
 
       if LV > HV then
          return 0;
-      end if;
+
+      --  Return max value (12) for wide character (Hex_hhhhhhhh)
+
+      elsif HV > 255 then
+         return 12;
 
       --  If any characters in normal character range, then use normal
       --  Wide_Wide_Width attribute on this range to find out a starting point.
       --  Otherwise start with zero.
 
-      if LV <= 255 then
-         W :=
+      else
+         return
            System.WWd_Char.Wide_Wide_Width_Character
              (Lo => Character'Val (LV),
               Hi => Character'Val (Unsigned_32'Min (255, HV)));
-      else
-         W := 0;
       end if;
-
-      --  Increase to at least 4 if FFFE or FFFF present. These correspond
-      --  to the special language defined names FFFE/FFFF for these values.
-
-      if 16#FFFF# in LV .. HV or else 16#FFFE# in LV .. HV then
-         W := Natural'Max (W, 4);
-      end if;
-
-      --  Increase to at least 3 if any wide characters, corresponding to
-      --  the normal ' character ' sequence. We know that the character fits.
-
-      if HV > 255 then
-         W := Natural'Max (W, 3);
-      end if;
-
-      return W;
    end Wide_Wide_Width_Wide_Wide_Char;
 
    -------------------------------
@@ -107,7 +92,6 @@ package body System.Wwd_WChar is
    function Wide_Width_Wide_Character
      (Lo, Hi : Wide_Character) return Natural
    is
-      W  : Natural := 0;
       LV : constant Unsigned_32 := Wide_Character'Pos (Lo);
       HV : constant Unsigned_32 := Wide_Character'Pos (Hi);
 
@@ -116,62 +100,33 @@ package body System.Wwd_WChar is
 
       if LV > HV then
          return 0;
-      end if;
+
+      --  Return max value (12) for wide character (Hex_hhhhhhhh)
+
+      elsif HV > 255 then
+         return 12;
 
       --  If any characters in normal character range, then use normal
       --  Wide_Wide_Width attribute on this range to find out a starting point.
       --  Otherwise start with zero.
 
-      if LV <= 255 then
-         W :=
+      else
+         return
            System.WWd_Char.Wide_Width_Character
              (Lo => Character'Val (LV),
               Hi => Character'Val (Unsigned_32'Min (255, HV)));
-      else
-         W := 0;
       end if;
-
-      --  Increase to at least 4 if FFFE or FFFF present. These correspond
-      --  to the special language defined names FFFE/FFFF for these values.
-
-      if 16#FFFF# in LV .. HV or else 16#FFFE# in LV .. HV then
-         W := Natural'Max (W, 4);
-      end if;
-
-      --  Increase to at least 3 if any wide characters, corresponding to
-      --  the normal 'character' sequence. We know that the character fits.
-
-      if HV > 255 then
-         W := Natural'Max (W, 3);
-      end if;
-
-      return W;
    end Wide_Width_Wide_Character;
 
    ------------------------------------
    -- Wide_Width_Wide_Wide_Character --
    ------------------------------------
 
-   --  This is a nasty case, because we get into the business of representing
-   --  out of range wide wide characters as wide strings. Let's let image do
-   --  the work here. Too bad if this takes lots of time. It's silly anyway!
-
    function Wide_Width_Wide_Wide_Character
      (Lo, Hi : Wide_Wide_Character) return Natural
    is
-      W : Natural;
-
    begin
-      W := 0;
-      for J in Lo .. Hi loop
-         declare
-            S : constant Wide_String := Wide_Wide_Character'Wide_Image (J);
-         begin
-            W := Natural'Max (W, S'Length);
-         end;
-      end loop;
-
-      return W;
+      return Wide_Wide_Width_Wide_Wide_Char (Lo, Hi);
    end Wide_Width_Wide_Wide_Character;
 
 end System.Wwd_WChar;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1380,17 +1380,17 @@ package body Freeze is
       Atype  : Entity_Id;
 
       procedure Check_Current_Instance (Comp_Decl : Node_Id);
-      --  Check that an Access or Unchecked_Access attribute with
-      --  a prefix which is the current instance type can only be
-      --  applied when the type is limited.
+      --  Check that an Access or Unchecked_Access attribute with a prefix
+      --  which is the current instance type can only be applied when the type
+      --  is limited.
 
       function After_Last_Declaration return Boolean;
       --  If Loc is a freeze_entity that appears after the last declaration
       --  in the scope, inhibit error messages on late completion.
 
       procedure Freeze_Record_Type (Rec : Entity_Id);
-      --  Freeze each component, handle some representation clauses, and
-      --  freeze primitive operations if this is a tagged type.
+      --  Freeze each component, handle some representation clauses, and freeze
+      --  primitive operations if this is a tagged type.
 
       ----------------------------
       -- After_Last_Declaration --
@@ -3010,26 +3010,40 @@ package body Freeze is
          elsif Is_Integer_Type (E) then
             Adjust_Esize_For_Alignment (E);
 
-         elsif Is_Access_Type (E)
-           and then No (Associated_Storage_Pool (E))
-         then
-            Check_Restriction (No_Standard_Storage_Pools, E);
+         elsif Is_Access_Type (E) then
+
+            --  Check restriction for standard storage pool
+
+            if No (Associated_Storage_Pool (E)) then
+               Check_Restriction (No_Standard_Storage_Pools, E);
+            end if;
+
+            --  Deal with error message for pure access type. This is not an
+            --  error in Ada 2005 if there is no pool (see AI-366).
+
+            if Is_Pure_Unit_Access_Type (E)
+              and then (Ada_Version < Ada_05
+                        or else not No_Pool_Assigned (E))
+            then
+               Error_Msg_N ("named access type not allowed in pure unit", E);
+            end if;
          end if;
+
+         --  Case of composite types
 
          if Is_Composite_Type (E) then
 
-            --  AI-117 requires that all new primitives of a tagged type
-            --  must inherit the convention of the full view of the type.
-            --  Inherited and overriding operations are defined to inherit
-            --  the convention of their parent or overridden subprogram
-            --  (also specified in AI-117), and that will have occurred
-            --  earlier (in Derive_Subprogram and New_Overloaded_Entity).
-            --  Here we set the convention of primitives that are still
-            --  convention Ada, which will ensure that any new primitives
-            --  inherit the type's convention. Class-wide types can have
-            --  a foreign convention inherited from their specific type,
-            --  but are excluded from this since they don't have any
-            --  associated primitives.
+            --  AI-117 requires that all new primitives of a tagged type must
+            --  inherit the convention of the full view of the type. Inherited
+            --  and overriding operations are defined to inherit the convention
+            --  of their parent or overridden subprogram (also specified in
+            --  AI-117), and that will have occurred earlier (in
+            --  Derive_Subprogram and New_Overloaded_Entity). Here we set the
+            --  convention of primitives that are still convention Ada, which
+            --  will ensure that any new primitives inherit the type's
+            --  convention. Class-wide types can have a foreign convention
+            --  inherited from their specific type, but are excluded from this
+            --  since they don't have any associated primitives.
 
             if Is_Tagged_Type (E)
               and then not Is_Class_Wide_Type (E)
@@ -3057,19 +3071,41 @@ package body Freeze is
            and then not Is_Class_Wide_Type (E)
          then
             declare
-               Prim_List : constant Elist_Id := Primitive_Operations (E);
+               Prim_List : Elist_Id;
                Prim      : Elmt_Id;
                Ent       : Entity_Id;
 
             begin
+               --  Ada 2005 (AI-345): In case of concurrent type generate
+               --  reference to the wrapper that allow us to dispatch calls
+               --  through their implemented abstract interface types.
+
+               --  The check for Present here is to protect against previously
+               --  reported critical errors.
+
+               if Is_Concurrent_Type (E)
+                 and then Present (Corresponding_Record_Type (E))
+               then
+                  pragma Assert (not Is_Empty_Elmt_List
+                                       (Abstract_Interfaces
+                                        (Corresponding_Record_Type (E))));
+
+                  Prim_List := Primitive_Operations
+                                (Corresponding_Record_Type (E));
+               else
+                  Prim_List := Primitive_Operations (E);
+               end if;
+
+               --  Loop to generate references for primitive operations
+
                Prim := First_Elmt (Prim_List);
                while Present (Prim) loop
                   Ent := Node (Prim);
 
-                  --  If the operation is derived, get the original for
-                  --  cross-reference purposes (it is the original for
-                  --  which we want the xref, and for which the comes
-                  --  from source test needs to be performed).
+                  --  If the operation is derived, get the original for cross-
+                  --  reference purposes (it is the original for which we want
+                  --  the xref, and for which the comes from source test needs
+                  --  to be performed).
 
                   while Present (Alias (Ent)) loop
                      Ent := Alias (Ent);
@@ -3337,10 +3373,10 @@ package body Freeze is
    --  Start of processing for Freeze_Expression
 
    begin
-      --  Immediate return if freezing is inhibited. This flag is set by
-      --  the analyzer to stop freezing on generated expressions that would
-      --  cause freezing if they were in the source program, but which are
-      --  not supposed to freeze, since they are created.
+      --  Immediate return if freezing is inhibited. This flag is set by the
+      --  analyzer to stop freezing on generated expressions that would cause
+      --  freezing if they were in the source program, but which are not
+      --  supposed to freeze, since they are created.
 
       if Must_Not_Freeze (N) then
          return;
@@ -3468,12 +3504,12 @@ package body Freeze is
 
          case Nkind (Parent_P) is
 
-            --  A special test for the exception of (RM 13.14(8)) for the
-            --  case of per-object expressions (RM 3.8(18)) occurring in a
-            --  component definition or a discrete subtype definition. Note
-            --  that we test for a component declaration which includes both
-            --  cases we are interested in, and furthermore the tree does not
-            --  have explicit nodes for either of these two constructs.
+            --  A special test for the exception of (RM 13.14(8)) for the case
+            --  of per-object expressions (RM 3.8(18)) occurring in component
+            --  definition or a discrete subtype definition. Note that we test
+            --  for a component declaration which includes both cases we are
+            --  interested in, and furthermore the tree does not have explicit
+            --  nodes for either of these two constructs.
 
             when N_Component_Declaration =>
 
@@ -3504,9 +3540,9 @@ package body Freeze is
                   end if;
                end if;
 
-            --  If we have an enumeration literal that appears as the
-            --  choice in the aggregate of an enumeration representation
-            --  clause, then freezing does not occur (RM 13.14(10)).
+            --  If we have an enumeration literal that appears as the choice in
+            --  the aggregate of an enumeration representation clause, then
+            --  freezing does not occur (RM 13.14(10)).
 
             when N_Enumeration_Representation_Clause =>
 
@@ -3545,11 +3581,11 @@ package body Freeze is
 
             when N_Handled_Sequence_Of_Statements =>
 
-               --  An exception occurs when the sequence of statements is
-               --  for an expander generated body that did not do the usual
-               --  freeze all operation. In this case we usually want to
-               --  freeze outside this body, not inside it, and we skip
-               --  past the subprogram body that we are inside.
+               --  An exception occurs when the sequence of statements is for
+               --  an expander generated body that did not do the usual freeze
+               --  all operation. In this case we usually want to freeze
+               --  outside this body, not inside it, and we skip past the
+               --  subprogram body that we are inside.
 
                if In_Exp_Body (Parent_P) then
 
@@ -3631,11 +3667,11 @@ package body Freeze is
 
             --  Note: The N_Loop_Statement is a special case. A type that
             --  appears in the source can never be frozen in a loop (this
-            --  occurs only because of a loop expanded by the expander),
-            --  so we keep on going. Otherwise we terminate the search.
-            --  Same is true of any entity which comes from source. (if they
-            --  have a predefined type, that type does not appear to come
-            --  from source, but the entity should not be frozen here).
+            --  occurs only because of a loop expanded by the expander), so we
+            --  keep on going. Otherwise we terminate the search. Same is true
+            --  of any entity which comes from source. (if they have a
+            --  predefined type, that type does not appear to come from source,
+            --  but the entity should not be frozen here).
 
             when N_Loop_Statement =>
                exit when not Comes_From_Source (Etype (N))
@@ -3653,17 +3689,17 @@ package body Freeze is
          P := Parent_P;
       end loop;
 
-      --  If the expression appears in a record or an initialization
-      --  procedure, the freeze nodes are collected and attached to
-      --  the current scope, to be inserted and analyzed on exit from
-      --  the scope, to insure that generated entities appear in the
-      --  correct scope. If the expression is a default for a discriminant
-      --  specification, the scope is still void. The expression can also
-      --  appear in the discriminant part of a private or concurrent type.
+      --  If the expression appears in a record or an initialization procedure,
+      --  the freeze nodes are collected and attached to the current scope, to
+      --  be inserted and analyzed on exit from the scope, to insure that
+      --  generated entities appear in the correct scope. If the expression is
+      --  a default for a discriminant specification, the scope is still void.
+      --  The expression can also appear in the discriminant part of a private
+      --  or concurrent type.
 
       --  If the expression appears in a constrained subcomponent of an
-      --  enclosing record declaration, the freeze nodes must be attached
-      --  to the outer record type so they can eventually be placed in the
+      --  enclosing record declaration, the freeze nodes must be attached to
+      --  the outer record type so they can eventually be placed in the
       --  enclosing declaration list.
 
       --  The other case requiring this special handling is if we are in
@@ -3760,15 +3796,15 @@ package body Freeze is
    -- Freeze_Fixed_Point_Type --
    -----------------------------
 
-   --  Certain fixed-point types and subtypes, including implicit base
-   --  types and declared first subtypes, have not yet set up a range.
-   --  This is because the range cannot be set until the Small and Size
-   --  values are known, and these are not known till the type is frozen.
+   --  Certain fixed-point types and subtypes, including implicit base types
+   --  and declared first subtypes, have not yet set up a range. This is
+   --  because the range cannot be set until the Small and Size values are
+   --  known, and these are not known till the type is frozen.
 
-   --  To signal this case, Scalar_Range contains an unanalyzed syntactic
-   --  range whose bounds are unanalyzed real literals. This routine will
-   --  recognize this case, and transform this range node into a properly
-   --  typed range with properly analyzed and resolved values.
+   --  To signal this case, Scalar_Range contains an unanalyzed syntactic range
+   --  whose bounds are unanalyzed real literals. This routine will recognize
+   --  this case, and transform this range node into a properly typed range
+   --  with properly analyzed and resolved values.
 
    procedure Freeze_Fixed_Point_Type (Typ : Entity_Id) is
       Rng   : constant Node_Id    := Scalar_Range (Typ);
@@ -3892,10 +3928,10 @@ package body Freeze is
             end if;
 
             --  Compute the fudged bounds. If the number is a model number,
-            --  then we do nothing to include it, but we are allowed to
-            --  backoff to the next adjacent model number when we exclude
-            --  it. If it is not a model number then we straddle the two
-            --  values with the model numbers on either side.
+            --  then we do nothing to include it, but we are allowed to backoff
+            --  to the next adjacent model number when we exclude it. If it is
+            --  not a model number then we straddle the two values with the
+            --  model numbers on either side.
 
             Model_Num := UR_Trunc (Loval / Small) * Small;
 
@@ -4028,28 +4064,26 @@ package body Freeze is
                   Actual_Hi   := Hival_Incl_EP;
                end if;
 
-               --  One pathological case: normally we never fudge a low
-               --  bound down, since it would seem to increase the size
-               --  (if it has any effect), but for ranges containing a
-               --  single value, or no values, the high bound can be
-               --  small too large. Consider:
+               --  One pathological case: normally we never fudge a low bound
+               --  down, since it would seem to increase the size (if it has
+               --  any effect), but for ranges containing single value, or no
+               --  values, the high bound can be small too large. Consider:
 
                --    type t is delta 2.0**(-14)
                --      range 131072.0 .. 0;
 
-               --  That lower bound is *just* outside the range of 32
-               --  bits, and does need fudging down in this case. Note
-               --  that the bounds will always have crossed here, since
-               --  the high bound will be fudged down if necessary, as
-               --  in the case of:
+               --  That lower bound is *just* outside the range of 32 bits, and
+               --  does need fudging down in this case. Note that the bounds
+               --  will always have crossed here, since the high bound will be
+               --  fudged down if necessary, as in the case of:
 
                --    type t is delta 2.0**(-14)
                --      range 131072.0 .. 131072.0;
 
-               --  So we can detect the situation by looking for crossed
-               --  bounds, and if the bounds are crossed, and the low
-               --  bound is greater than zero, we will always back it
-               --  off by small, since this is completely harmless.
+               --  So we detect the situation by looking for crossed bounds,
+               --  and if the bounds are crossed, and the low bound is greater
+               --  than zero, we will always back it off by small, since this
+               --  is completely harmless.
 
                if Actual_Lo > Actual_Hi then
                   if UR_Is_Positive (Actual_Lo) then
@@ -4119,9 +4153,9 @@ package body Freeze is
          Adjust_Esize_For_Alignment (Typ);
       end if;
 
-      --  If we have a base type, then expand the bounds so that they
-      --  extend to the full width of the allocated size in bits, to
-      --  avoid junk range checks on intermediate computations.
+      --  If we have a base type, then expand the bounds so that they extend to
+      --  the full width of the allocated size in bits, to avoid junk range
+      --  checks on intermediate computations.
 
       if Base_Type (Typ) = Typ then
          Set_Realval (Lo, -(Small * (Uint_2 ** (Actual_Size - 1))));
@@ -4135,9 +4169,9 @@ package body Freeze is
       Set_Analyzed (Lo, False);
       Analyze (Lo);
 
-      --  Resolve with universal fixed if the base type, and the base
-      --  type if it is a subtype. Note we can't resolve the base type
-      --  with itself, that would be a reference before definition.
+      --  Resolve with universal fixed if the base type, and the base type if
+      --  it is a subtype. Note we can't resolve the base type with itself,
+      --  that would be a reference before definition.
 
       if Typ = Btyp then
          Resolve (Lo, Universal_Fixed);
@@ -4360,10 +4394,10 @@ package body Freeze is
    begin
       Ensure_Type_Is_SA (Etype (E));
 
-      --  Reset True_Constant flag, since something strange is going on
-      --  with the scoping here, and our simple value tracing may not
-      --  be sufficient for this indication to be reliable. We kill the
-      --  Constant_Value indication for the same reason.
+      --  Reset True_Constant flag, since something strange is going on with
+      --  the scoping here, and our simple value tracing may not be sufficient
+      --  for this indication to be reliable. We kill the Constant_Value
+      --  indication for the same reason.
 
       Set_Is_True_Constant (E, False);
       Set_Current_Value    (E, Empty);
@@ -4411,9 +4445,9 @@ package body Freeze is
       --  Reset the Pure indication on an imported subprogram unless an
       --  explicit Pure_Function pragma was present. We do this because
       --  otherwise it is an insidious error to call a non-pure function
-      --  from a pure unit and have calls mysteriously optimized away.
-      --  What happens here is that the Import can bypass the normal
-      --  check to ensure that pure units call only pure subprograms.
+      --  from pure unit and have calls mysteriously optimized away. What
+      --  happens here is that the Import can bypass the normal check to
+      --  ensure that pure units call only pure subprograms.
 
       if Is_Imported (E)
         and then Is_Pure (E)
@@ -4464,8 +4498,8 @@ package body Freeze is
                null;
 
             --  If the return type is generic, we have emitted a warning
-            --  earlier on, and there is nothing else to check here.
-            --  Specific instantiations may lead to erroneous behavior.
+            --  earlier on, and there is nothing else to check here. Specific
+            --  instantiations may lead to erroneous behavior.
 
             elsif Is_Generic_Type (Etype (E)) then
                null;
@@ -4483,8 +4517,8 @@ package body Freeze is
          end if;
 
          --  If any of the formals for an exported foreign convention
-         --  subprogram have defaults, then emit an appropriate warning
-         --  since this is odd (default cannot be used from non-Ada code)
+         --  subprogram have defaults, then emit an appropriate warning since
+         --  this is odd (default cannot be used from non-Ada code)
 
          if Is_Exported (E) then
             F := First_Formal (E);
@@ -4519,6 +4553,17 @@ package body Freeze is
                Next_Formal (F);
             end loop;
          end if;
+      end if;
+
+      --  Pragma Inline_Always is disallowed for dispatching subprograms
+      --  because the address of such subprograms is saved in the dispatch
+      --  table to support dispatching calls, and dispatching calls cannot
+      --  be inlined. This is consistent with the restriction against using
+      --  'Access or 'Address on an Inline_Always subprogram.
+
+      if Is_Dispatching_Operation (E) and then Is_Always_Inlined (E) then
+         Error_Msg_N
+           ("pragma Inline_Always not allowed for dispatching subprograms", E);
       end if;
    end Freeze_Subprogram;
 
@@ -4861,9 +4906,9 @@ package body Freeze is
          return;
       end if;
 
-      --  We only give the warning for non-imported entities of a type
-      --  for which a non-null base init proc is defined (or for access
-      --  types which have implicit null initialization).
+      --  We only give the warning for non-imported entities of a type for
+      --  which a non-null base init proc is defined (or for access types which
+      --  have implicit null initialization).
 
       if Present (Expr)
         and then (Has_Non_Null_Base_Init_Proc (Typ)

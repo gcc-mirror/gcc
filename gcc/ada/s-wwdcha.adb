@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --                      S Y S T E M . W W D _ C H A R                       --
 --                                                                          --
@@ -43,11 +43,20 @@ package body System.WWd_Char is
    begin
       W := 0;
       for C in Lo .. Hi loop
-         declare
-            S : constant Wide_String := Character'Wide_Image (C);
-         begin
-            W := Natural'Max (W, S'Length);
-         end;
+         --  For Character range, use length of image
+
+         if Character'Pos (C) < 256 then
+            declare
+               S : constant Wide_String := Character'Wide_Image (C);
+            begin
+               W := Natural'Max (W, S'Length);
+            end;
+
+            --  For wide character, always max out at 12 (Hex_hhhhhhhh)
+
+         else
+            return 12;
+         end if;
       end loop;
 
       return W;
@@ -63,11 +72,21 @@ package body System.WWd_Char is
    begin
       W := 0;
       for C in Lo .. Hi loop
-         declare
-            S : constant Wide_Wide_String := Character'Wide_Wide_Image (C);
-         begin
-            W := Natural'Max (W, S'Length);
-         end;
+
+         --  For Character range, use length of image
+
+         if Character'Pos (C) < 256 then
+            declare
+               S : constant String := Character'Image (C);
+            begin
+               W := Natural'Max (W, S'Length);
+            end;
+
+            --  For wide character, always max out at 12 (Hex_hhhhhhhh)
+
+         else
+            return 12;
+         end if;
       end loop;
 
       return W;

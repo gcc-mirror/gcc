@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --                     S Y S T E M . W I D _ W C H A R                      --
 --                                                                          --
@@ -33,21 +33,16 @@
 
 --  This package contains the routines used for Wide_[Wide_]Character'Width
 
-with System.WCh_Con;
-
 package System.Wid_WChar is
 pragma Pure (Wid_WChar);
 
    function Width_Wide_Character
-     (Lo, Hi : Wide_Character;
-      EM     : System.WCh_Con.WC_Encoding_Method) return Natural;
+     (Lo, Hi : Wide_Character) return Natural;
    --  Compute Width attribute for non-static type derived from Wide_Character.
-   --  The arguments are the low and high bounds for the type. EM is the
-   --  wide-character encoding method.
+   --  The arguments are the low and high bounds for the type.
 
    function Width_Wide_Wide_Character
-     (Lo, Hi : Wide_Wide_Character;
-      EM     : System.WCh_Con.WC_Encoding_Method) return Natural;
+     (Lo, Hi : Wide_Wide_Character) return Natural;
    --  Same function for type derived from Wide_Wide_Character
 
 end System.Wid_WChar;

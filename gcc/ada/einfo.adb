@@ -211,7 +211,7 @@ package body Einfo is
 
    --    Obsolescent_Warning             Node24
    --    Task_Body_Procedure             Node24
-   --    Abstract_Interfaces             Node24
+   --    Abstract_Interfaces             Elist24
 
    --    Abstract_Interface_Alias        Node25
 
@@ -433,15 +433,16 @@ package body Einfo is
    --    Has_Stream_Size_Clause         Flag184
    --    Is_Ada_2005                    Flag185
    --    Is_Interface                   Flag186
+   --    Has_Constrained_Partial_View   Flag187
+   --    Has_Persistent_BSS             Flag188
+   --    Is_Pure_Unit_Access_Type       Flag189
+   --    Has_Specified_Stream_Input     Flag190
 
-   --    (unused)                       Flag187
-   --    (unused)                       Flag188
-   --    (unused)                       Flag189
-   --    (unused)                       Flag190
-   --    (unused)                       Flag191
-   --    (unused)                       Flag192
-   --    (unused)                       Flag193
-   --    (unused)                       Flag194
+   --    Has_Specified_Stream_Output    Flag191
+   --    Has_Specified_Stream_Read      Flag192
+   --    Has_Specified_Stream_Write     Flag193
+   --    Is_Local_Anonymous_Access      Flag194
+
    --    (unused)                       Flag195
    --    (unused)                       Flag196
    --    (unused)                       Flag197
@@ -500,10 +501,12 @@ package body Einfo is
 
    function Abstract_Interfaces (Id : E) return L is
    begin
-      pragma Assert (Ekind (Id) = E_Record_Type
-                       or else Ekind (Id) = E_Record_Subtype
-                       or else Ekind (Id) = E_Record_Type_With_Private
-                       or else Ekind (Id) = E_Record_Subtype_With_Private);
+      pragma Assert
+        (Ekind (Id) = E_Record_Type
+          or else Ekind (Id) = E_Record_Subtype
+          or else Ekind (Id) = E_Record_Type_With_Private
+          or else Ekind (Id) = E_Record_Subtype_With_Private
+          or else Ekind (Id) = E_Class_Wide_Type);
       return Elist24 (Id);
    end Abstract_Interfaces;
 
@@ -817,7 +820,7 @@ package body Einfo is
 
    function DT_Entry_Count (Id : E) return U is
    begin
-      pragma Assert (Ekind (Id) = E_Component  and then Is_Tag (Id));
+      pragma Assert (Ekind (Id) = E_Component and then Is_Tag (Id));
       return Uint15 (Id);
    end DT_Entry_Count;
 
@@ -1104,6 +1107,12 @@ package body Einfo is
       return Flag68 (Implementation_Base_Type (Id));
    end Has_Component_Size_Clause;
 
+   function Has_Constrained_Partial_View (Id : E) return B is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Flag187 (Id);
+   end Has_Constrained_Partial_View;
+
    function Has_Controlled_Component (Id : E) return B is
    begin
       return Flag43 (Base_Type (Id));
@@ -1212,6 +1221,11 @@ package body Einfo is
       return Flag154 (Id);
    end Has_Per_Object_Constraint;
 
+   function Has_Persistent_BSS (Id : E) return B is
+   begin
+      return Flag188 (Id);
+   end Has_Persistent_BSS;
+
    function Has_Pragma_Controlled (Id : E) return B is
    begin
       pragma Assert (Is_Access_Type (Id));
@@ -1288,6 +1302,30 @@ package body Einfo is
       pragma Assert (Is_Type (Id));
       return Flag100 (Implementation_Base_Type (Id));
    end Has_Specified_Layout;
+
+   function Has_Specified_Stream_Input (Id : E) return B is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Flag190 (Id);
+   end Has_Specified_Stream_Input;
+
+   function Has_Specified_Stream_Output (Id : E) return B is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Flag191 (Id);
+   end Has_Specified_Stream_Output;
+
+   function Has_Specified_Stream_Read (Id : E) return B is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Flag192 (Id);
+   end Has_Specified_Stream_Read;
+
+   function Has_Specified_Stream_Write (Id : E) return B is
+   begin
+      pragma Assert (Is_Type (Id));
+      return Flag193 (Id);
+   end Has_Specified_Stream_Write;
 
    function Has_Storage_Size_Clause (Id : E) return B is
    begin
@@ -1373,6 +1411,12 @@ package body Einfo is
    begin
       return Flag19 (Id);
    end Is_Abstract;
+
+   function Is_Local_Anonymous_Access (Id : E) return B is
+   begin
+      pragma Assert (Is_Access_Type (Id));
+      return Flag194 (Id);
+   end Is_Local_Anonymous_Access;
 
    function Is_Access_Constant (Id : E) return B is
    begin
@@ -1579,11 +1623,6 @@ package body Einfo is
 
    function Is_Interface (Id : E) return B is
    begin
-      pragma Assert (Ekind (Id) = E_Record_Type
-                       or else Ekind (Id) = E_Record_Subtype
-                       or else Ekind (Id) = E_Record_Type_With_Private
-                       or else Ekind (Id) = E_Record_Subtype_With_Private
-                       or else Ekind (Id) = E_Class_Wide_Type);
       return Flag186 (Id);
    end Is_Interface;
 
@@ -1654,7 +1693,6 @@ package body Einfo is
 
    function Is_Obsolescent (Id : E) return B is
    begin
-      pragma Assert (Is_Subprogram (Id));
       return Flag153 (Id);
    end Is_Obsolescent;
 
@@ -1717,6 +1755,12 @@ package body Einfo is
    begin
       return Flag44 (Id);
    end Is_Pure;
+
+   function Is_Pure_Unit_Access_Type (Id : E) return B is
+   begin
+      pragma Assert (Is_Access_Type (Id));
+      return Flag189 (Id);
+   end Is_Pure_Unit_Access_Type;
 
    function Is_Remote_Call_Interface (Id : E) return B is
    begin
@@ -2479,10 +2523,12 @@ package body Einfo is
 
    procedure Set_Abstract_Interfaces (Id : E; V : L) is
    begin
-      pragma Assert (Ekind (Id) = E_Record_Type
-                       or else Ekind (Id) = E_Record_Subtype
-                       or else Ekind (Id) = E_Record_Type_With_Private
-                       or else Ekind (Id) = E_Record_Subtype_With_Private);
+      pragma Assert
+        (Ekind (Id) = E_Record_Type
+          or else Ekind (Id) = E_Record_Subtype
+          or else Ekind (Id) = E_Record_Type_With_Private
+          or else Ekind (Id) = E_Record_Subtype_With_Private
+          or else Ekind (Id) = E_Class_Wide_Type);
       Set_Elist24 (Id, V);
    end Set_Abstract_Interfaces;
 
@@ -3094,6 +3140,12 @@ package body Einfo is
       Set_Flag68 (Id, V);
    end Set_Has_Component_Size_Clause;
 
+   procedure Set_Has_Constrained_Partial_View (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag187 (Id, V);
+   end Set_Has_Constrained_Partial_View;
+
    procedure Set_Has_Contiguous_Rep (Id : E; V : B := True) is
    begin
       Set_Flag181 (Id, V);
@@ -3204,6 +3256,11 @@ package body Einfo is
       Set_Flag154 (Id, V);
    end Set_Has_Per_Object_Constraint;
 
+   procedure Set_Has_Persistent_BSS (Id : E; V : B := True) is
+   begin
+      Set_Flag188 (Id, V);
+   end Set_Has_Persistent_BSS;
+
    procedure Set_Has_Pragma_Controlled (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Access_Type (Id));
@@ -3281,6 +3338,30 @@ package body Einfo is
       pragma Assert (Id = Base_Type (Id));
       Set_Flag100 (Id, V);
    end Set_Has_Specified_Layout;
+
+   procedure Set_Has_Specified_Stream_Input (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag190 (Id, V);
+   end Set_Has_Specified_Stream_Input;
+
+   procedure Set_Has_Specified_Stream_Output (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag191 (Id, V);
+   end Set_Has_Specified_Stream_Output;
+
+   procedure Set_Has_Specified_Stream_Read (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag192 (Id, V);
+   end Set_Has_Specified_Stream_Read;
+
+   procedure Set_Has_Specified_Stream_Write (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Type (Id));
+      Set_Flag193 (Id, V);
+   end Set_Has_Specified_Stream_Write;
 
    procedure Set_Has_Storage_Size_Clause (Id : E; V : B := True) is
    begin
@@ -3371,6 +3452,12 @@ package body Einfo is
    begin
       Set_Flag19 (Id, V);
    end Set_Is_Abstract;
+
+   procedure Set_Is_Local_Anonymous_Access (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Access_Type (Id));
+      Set_Flag194 (Id, V);
+   end Set_Is_Local_Anonymous_Access;
 
    procedure Set_Is_Access_Constant (Id : E; V : B := True) is
    begin
@@ -3593,10 +3680,12 @@ package body Einfo is
 
    procedure Set_Is_Interface (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind (Id) = E_Record_Type
-                       or else Ekind (Id) = E_Record_Subtype
-                       or else Ekind (Id) = E_Record_Type_With_Private
-                       or else Ekind (Id) = E_Record_Subtype_With_Private);
+      pragma Assert
+        (Ekind (Id) = E_Record_Type
+          or else Ekind (Id) = E_Record_Subtype
+          or else Ekind (Id) = E_Record_Type_With_Private
+          or else Ekind (Id) = E_Record_Subtype_With_Private
+          or else Ekind (Id) = E_Class_Wide_Type);
       Set_Flag186 (Id, V);
    end Set_Is_Interface;
 
@@ -3668,7 +3757,6 @@ package body Einfo is
 
    procedure Set_Is_Obsolescent (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Subprogram (Id));
       Set_Flag153 (Id, V);
    end Set_Is_Obsolescent;
 
@@ -3732,6 +3820,12 @@ package body Einfo is
    begin
       Set_Flag44 (Id, V);
    end Set_Is_Pure;
+
+   procedure Set_Is_Pure_Unit_Access_Type (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Access_Type (Id));
+      Set_Flag189 (Id, V);
+   end Set_Is_Pure_Unit_Access_Type;
 
    procedure Set_Is_Remote_Call_Interface (Id : E; V : B := True) is
    begin
@@ -6353,6 +6447,7 @@ package body Einfo is
       W ("Has_Non_Standard_Rep",          Flag75  (Id));
       W ("Has_Object_Size_Clause",        Flag172 (Id));
       W ("Has_Per_Object_Constraint",     Flag154 (Id));
+      W ("Has_Persistent_BSS",            Flag188 (Id));
       W ("Has_Pragma_Controlled",         Flag27  (Id));
       W ("Has_Pragma_Elaborate_Body",     Flag150 (Id));
       W ("Has_Pragma_Inline",             Flag157 (Id));
@@ -6367,6 +6462,10 @@ package body Einfo is
       W ("Has_Size_Clause",               Flag29  (Id));
       W ("Has_Small_Clause",              Flag67  (Id));
       W ("Has_Specified_Layout",          Flag100 (Id));
+      W ("Has_Specified_Stream_Input",    Flag190 (Id));
+      W ("Has_Specified_Stream_Output",   Flag191 (Id));
+      W ("Has_Specified_Stream_Read",     Flag192 (Id));
+      W ("Has_Specified_Stream_Write",    Flag193 (Id));
       W ("Has_Storage_Size_Clause",       Flag23  (Id));
       W ("Has_Stream_Size_Clause",        Flag184 (Id));
       W ("Has_Subprogram_Descriptor",     Flag93  (Id));
@@ -6380,6 +6479,7 @@ package body Einfo is
       W ("In_Use",                        Flag8   (Id));
       W ("Is_AST_Entry",                  Flag132 (Id));
       W ("Is_Abstract",                   Flag19  (Id));
+      W ("Is_Local_Anonymous_Access",     Flag194 (Id));
       W ("Is_Access_Constant",            Flag69  (Id));
       W ("Is_Ada_2005",                   Flag185 (Id));
       W ("Is_Aliased",                    Flag15  (Id));
@@ -6442,6 +6542,7 @@ package body Einfo is
       W ("Is_Private_Descendant",         Flag53  (Id));
       W ("Is_Public",                     Flag10  (Id));
       W ("Is_Pure",                       Flag44  (Id));
+      W ("Is_Pure_Unit_Access_Type",      Flag189 (Id));
       W ("Is_Remote_Call_Interface",      Flag62  (Id));
       W ("Is_Remote_Types",               Flag61  (Id));
       W ("Is_Renaming_Of_Object",         Flag112 (Id));
