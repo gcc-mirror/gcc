@@ -593,7 +593,7 @@ package ALI is
       --  ALI File containing tne entry
 
       No_Dep_Unit : Name_Id;
-      --  Id for names table entry including entire name, including periods.
+      --  Id for names table entry including entire name, including periods
    end record;
 
    package No_Deps is new Table.Table (
@@ -731,6 +731,16 @@ package ALI is
       Entity : Name_Id;
       --  Name of entity
 
+      Iref_File_Num : Sdep_Id;
+      --  This field is set to the dependency reference for the file containing
+      --  the generic entity that this one instantiates, or to No_Sdep_Id if
+      --  the current entity is not an instantiation
+
+      Iref_Line : Nat;
+      --  This field is set to the line number in Iref_File_Num of the generic
+      --  entity that this one instantiates, or to zero if the current entity
+      --  is not an instantiation.
+
       Rref_Line : Nat;
       --  This field is set to the line number of a renaming reference if
       --  one is present, or to zero if no renaming reference is present
@@ -815,6 +825,11 @@ package ALI is
 
       --  Note: for instantiation references, Rtype is set to ' ', and Col is
       --  set to zero. One or more such entries can follow any other reference.
+      --  When there is more than one such entry, this is to be read as:
+      --     e.g. ref1  ref2  ref3
+      --     ref1 is a reference to an entity that was instantied at ref2.
+      --     ref2 itself is also the result of an instantiation, that took
+      --     place at ref3
    end record;
 
    package Xref is new Table.Table (
@@ -848,7 +863,8 @@ package ALI is
    --
    --    Ignore_ED is normally False. If set to True, it indicates that
    --    all ED (elaboration desirable) indications in the ALI file are
-   --    to be ignored.
+   --    to be ignored. This parameter is obsolete now that the -f switch
+   --    is removed from gnatbind, and should be removed ???
    --
    --    Err determines the action taken on an incorrectly formatted file.
    --    If Err is False, then an error message is output, and the program

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -755,6 +755,10 @@ package body Xref_Lib is
       --  to parse the ali file again because the parent entity is not in
       --  the declaration table if it did not match the search pattern.
 
+      procedure Skip_To_Matching_Closing_Bracket;
+      --  When Ptr points to an opening square bracket, moves it to the
+      --  character following the matching closing bracket
+
       ---------------------
       -- Get_Symbol_Name --
       ---------------------
@@ -805,6 +809,27 @@ package body Xref_Lib is
 
          return "???";
       end Get_Symbol_Name;
+
+      --------------------------------------
+      -- Skip_To_Matching_Closing_Bracket --
+      --------------------------------------
+
+      procedure Skip_To_Matching_Closing_Bracket is
+         Num_Brackets : Natural;
+
+      begin
+         Num_Brackets := 1;
+         while Num_Brackets /= 0 loop
+            Ptr := Ptr + 1;
+            if Ali (Ptr) = '[' then
+               Num_Brackets := Num_Brackets + 1;
+            elsif Ali (Ptr) = ']' then
+               Num_Brackets := Num_Brackets - 1;
+            end if;
+         end loop;
+
+         Ptr := Ptr + 1;
+      end Skip_To_Matching_Closing_Bracket;
 
    --  Start of processing for Parse_Identifier_Info
 
@@ -862,7 +887,10 @@ package body Xref_Lib is
       Decl_Ref := Add_Declaration
         (File.X_File, Ali (E_Name .. Ptr - 1), E_Line, E_Col, E_Type);
 
-      if Ali (Ptr) = '<'
+      if Ali (Ptr) = '[' then
+         Skip_To_Matching_Closing_Bracket;
+
+      elsif Ali (Ptr) = '<'
         or else Ali (Ptr) = '('
         or else Ali (Ptr) = '{'
       then
@@ -918,20 +946,7 @@ package body Xref_Lib is
                --  Skip the information for generics instantiations
 
                if Ali (Ptr) = '[' then
-                  declare
-                     Num_Brackets : Natural := 1;
-                  begin
-                     while Num_Brackets /= 0 loop
-                        Ptr := Ptr + 1;
-                        if Ali (Ptr) = '[' then
-                           Num_Brackets := Num_Brackets + 1;
-                        elsif Ali (Ptr) = ']' then
-                           Num_Brackets := Num_Brackets - 1;
-                        end if;
-                     end loop;
-
-                     Ptr := Ptr + 1;
-                  end;
+                  Skip_To_Matching_Closing_Bracket;
                end if;
 
                --  Skip '>', or ')' or '>'
@@ -1169,6 +1184,7 @@ package body Xref_Lib is
                      or else Source (Ptr) = ASCII.HT
                      or else Source (Ptr) = '<'
                      or else Source (Ptr) = '{'
+                     or else Source (Ptr) = '['
                      or else Source (Ptr) = '='
                      or else Source (Ptr) = '('))
         and then Source (Ptr) >= ' '
