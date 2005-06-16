@@ -539,7 +539,7 @@ begin
             Id := Scan_ALI
                     (F             => Main_Lib_File,
                      T             => Text,
-                     Ignore_ED     => Force_RM_Elaboration_Order,
+                     Ignore_ED     => False,
                      Err           => False,
                      Ignore_Errors => Debug_Flag_I);
          end;
@@ -584,7 +584,7 @@ begin
               Scan_ALI
                 (F             => Std_Lib_File,
                  T             => Text,
-                 Ignore_ED     => Force_RM_Elaboration_Order,
+                 Ignore_ED     => False,
                  Err           => False,
                  Ignore_Errors => Debug_Flag_I);
          end;
@@ -597,17 +597,6 @@ begin
       for Index in ALIs.First .. ALIs.Last loop
          Read_ALI (Index);
       end loop;
-
-      --  Warn if -f switch used
-
-      if Force_RM_Elaboration_Order then
-         Error_Msg
-           ("?-f is obsolescent and should not be used");
-         Error_Msg
-           ("?may result in missing run-time elaboration checks");
-         Error_Msg
-           ("?use -gnatE, pragma Suppress (Elaboration_Check) instead");
-      end if;
 
       --  Quit if some file needs compiling
 
