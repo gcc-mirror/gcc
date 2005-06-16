@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 -- A D A . W I D E _ W I D E _ T E X T _ I O . E N U M E R A T I O N _ A U X--
 --                                                                          --
@@ -32,6 +32,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Wide_Wide_Text_IO.Generic_Aux; use Ada.Wide_Wide_Text_IO.Generic_Aux;
+with Ada.Characters.Conversions;        use Ada.Characters.Conversions;
 with Ada.Characters.Handling;           use Ada.Characters.Handling;
 with Interfaces.C_Streams;              use Interfaces.C_Streams;
 with System.WCh_Con;                    use System.WCh_Con;

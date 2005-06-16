@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1992-2004 Free Software Foundation, Inc.         --
+--           Copyright (C) 1992-2005 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+pragma Warnings (Off);
+--  Allow withing of non-Preelaborated units in Ada 2005 mode where this
+--  package will be categorized as Preelaborate. See AI-362 for details.
+--  It is safe in the context of the run-time to violate the rules!
+
 with System.Address_Image;
 --  used for the function itself
 
@@ -48,6 +53,8 @@ with System.Task_Primitives.Operations;
 --  used for Self
 
 with Unchecked_Conversion;
+
+pragma Warnings (Off);
 
 package body Ada.Task_Identification is
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1218,7 +1218,7 @@ package body Sem is
       S_New_Nodes_OK     : constant Int              := New_Nodes_OK;
       S_Outer_Gen_Scope  : constant Entity_Id        := Outer_Generic_Scope;
       S_Sem_Unit         : constant Unit_Number_Type := Current_Sem_Unit;
-
+      S_GNAT_Mode        : constant Boolean          := GNAT_Mode;
       Generic_Main       : constant Boolean :=
                              Nkind (Unit (Cunit (Main_Unit)))
                                in N_Generic_Declaration;
@@ -1270,6 +1270,21 @@ package body Sem is
       Compiler_State   := Analyzing;
       Current_Sem_Unit := Get_Cunit_Unit_Number (Comp_Unit);
 
+      --  Compile predefined units with GNAT_Mode set to True, to properly
+      --  process the categorization stuff. However, do not set set GNAT_Mode
+      --  to True for the renamings units (Text_IO, IO_Exceptions, Direct_IO,
+      --  Sequential_IO) as this would prevent pragma System_Extend to be
+      --  taken into account, for example when Text_IO is renaming DEC.Text_IO.
+
+      --  Cleaner might be to do the kludge at the point of excluding the
+      --  pragma (do not exclude for renamings ???)
+
+      GNAT_Mode :=
+        GNAT_Mode
+          or else Is_Predefined_File_Name
+                    (Unit_File_Name (Current_Sem_Unit),
+                     Renamings_Included => False);
+
       if Generic_Main then
          Expander_Mode_Save_And_Set (False);
       else
@@ -1315,6 +1330,7 @@ package body Sem is
       Inside_A_Generic       := S_Inside_A_Generic;
       New_Nodes_OK           := S_New_Nodes_OK;
       Outer_Generic_Scope    := S_Outer_Gen_Scope;
+      GNAT_Mode              := S_GNAT_Mode;
 
       Restore_Opt_Config_Switches (Save_Config_Switches);
       Expander_Mode_Restore;

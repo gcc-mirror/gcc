@@ -79,6 +79,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-cgaaso$(objext) \
   a-cgarso$(objext) \
   a-cgcaso$(objext) \
+  a-chacon$(objext) \
   a-chahan$(objext) \
   a-charac$(objext) \
   a-chlat1$(objext) \
@@ -205,11 +206,11 @@ GNATRTL_NONTASKING_OBJS= \
   a-suteio$(objext) \
   a-swmwco$(objext) \
   a-swunau$(objext) \
-  a-swunha$(objext) \
+  a-swuwha$(objext) \
   a-swuwti$(objext) \
   a-szmzco$(objext) \
   a-szunau$(objext) \
-  a-szunha$(objext) \
+  a-szuzha$(objext) \
   a-szuzti$(objext) \
   a-tags$(objext) \
   a-tgdico$(objext) \
@@ -234,6 +235,8 @@ GNATRTL_NONTASKING_OBJS= \
   a-tiunio$(objext) \
   a-unccon$(objext) \
   a-uncdea$(objext) \
+  a-wichun$(objext) \
+  a-widcha$(objext) \
   a-witeio$(objext) \
   a-wtcoau$(objext) \
   a-wtcoio$(objext) \
@@ -253,6 +256,8 @@ GNATRTL_NONTASKING_OBJS= \
   a-wtmoio$(objext) \
   a-wttest$(objext) \
   a-wwunio$(objext) \
+  a-zchara$(objext) \
+  a-zchuni$(objext) \
   a-ztcoau$(objext) \
   a-ztcoio$(objext) \
   a-ztcstr$(objext) \

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+pragma Warnings (Off);
+--  Allow withing of non-Preelaborated units in Ada 2005 mode where this
+--  package will be categorized as Preelaborate. See AI-362 for details.
+--  It is safe in the context of the run-time to violate the rules!
+
 with System.Traceback;
+
+pragma Warnings (On);
 
 separate (Ada.Exceptions)
 procedure Call_Chain (Excep : EOA) is
@@ -42,7 +49,6 @@ procedure Call_Chain (Excep : EOA) is
    --  occurrences.
 
 begin
-
    if Exception_Tracebacks /= 0 and Excep.Num_Tracebacks = 0 then
 
       --  If Exception_Tracebacks = 0 then the program was not

@@ -288,6 +288,7 @@ begin
 
       when Pragma_Ada_83 =>
          Ada_Version := Ada_83;
+         Ada_Version_Explicit := Ada_Version;
 
       ------------
       -- Ada_95 --
@@ -299,6 +300,7 @@ begin
 
       when Pragma_Ada_95 =>
          Ada_Version := Ada_95;
+         Ada_Version_Explicit := Ada_Version;
 
       ------------
       -- Ada_05 --
@@ -312,6 +314,7 @@ begin
       when Pragma_Ada_05 =>
          if Arg_Count = 0 then
             Ada_Version := Ada_05;
+            Ada_Version_Explicit := Ada_Version;
          end if;
 
       -----------
@@ -369,6 +372,8 @@ begin
             Extensions_Allowed := False;
             Ada_Version := Ada_Version_Type'Min (Ada_Version, Ada_95);
          end if;
+
+         Ada_Version_Explicit := Ada_Version;
 
       ----------------
       -- List (2.8) --
@@ -984,6 +989,7 @@ begin
       --  entirely in Sem_Prag, and no further checking is done by Par.
 
       when Pragma_Abort_Defer                  |
+           Pragma_Assertion_Policy             |
            Pragma_AST_Entry                    |
            Pragma_All_Calls_Remote             |
            Pragma_Annotate                     |
@@ -1066,15 +1072,16 @@ begin
            Pragma_Pack                         |
            Pragma_Passive                      |
            Pragma_Polling                      |
-           Pragma_Persistent_Data              |
-           Pragma_Persistent_Object            |
+           Pragma_Persistent_BSS               |
            Pragma_Preelaborate                 |
+           Pragma_Preelaborate_05              |
            Pragma_Priority                     |
            Pragma_Profile                      |
            Pragma_Profile_Warnings             |
            Pragma_Propagate_Exceptions         |
            Pragma_Psect_Object                 |
            Pragma_Pure                         |
+           Pragma_Pure_05                      |
            Pragma_Pure_Function                |
            Pragma_Queuing_Policy               |
            Pragma_Remote_Call_Interface        |
