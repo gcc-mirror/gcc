@@ -1,10 +1,11 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---               GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS                --
+--                GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                  --
 --                                                                          --
---              SYSTEM.TASKING.PROTECTED_OBJECTS.SINGLE_ENTRY               --
+--     S Y S T E M . T A S K I N G . P R O T E C T E D _ O B J E C T S .    --
+--                          S I N G L E _ E N T R Y                         --
 --                                                                          --
---                                  B o d y                                 --
+--                                B o d y                                   --
 --                                                                          --
 --         Copyright (C) 1998-2005, Free Software Foundation, Inc.          --
 --                                                                          --
@@ -37,16 +38,16 @@ pragma Style_Checks (All_Checks);
 
 --  This package provides an optimized version of Protected_Objects.Operations
 --  and Protected_Objects.Entries making the following assumptions:
---
---  PO have only one entry
---  There is only one caller at a time (No_Entry_Queue)
---  There is no dynamic priority support (No_Dynamic_Priorities)
---  No Abort Statements
---    (No_Abort_Statements, Max_Asynchronous_Select_Nesting => 0)
---  PO are at library level
---  No Requeue
---  None of the tasks will terminate (no need for finalization)
---
+
+--    PO has only one entry
+--    There is only one caller at a time (No_Entry_Queue)
+--    There is no dynamic priority support (No_Dynamic_Priorities)
+--    No Abort Statements
+--     (No_Abort_Statements, Max_Asynchronous_Select_Nesting => 0)
+--    PO are at library level
+--    No Requeue
+--    None of the tasks will terminate (no need for finalization)
+
 --  This interface is intended to be used in the ravenscar and restricted
 --  profiles, the compiler is responsible for ensuring that the conditions
 --  mentioned above are respected, except for the No_Entry_Queue restriction
@@ -492,7 +493,17 @@ package body System.Tasking.Protected_Objects.Single_Entry is
          end if;
 
       elsif Entry_Call.Mode /= Conditional_Call then
-         Object.Entry_Queue := Entry_Call;
+         if Object.Entry_Queue /= null then
+
+            --  This violates the No_Entry_Queue restriction, send
+            --  Program_Error to the caller.
+
+            Send_Program_Error (Self_Id, Entry_Call);
+            return;
+         else
+            Object.Entry_Queue := Entry_Call;
+         end if;
+
       else
          --  Conditional_Call
 
@@ -754,7 +765,6 @@ package body System.Tasking.Protected_Objects.Single_Entry is
             --  Remove ownership of the protected object
 
             Object.Owner := Null_Task;
-
 
             Self_Id.Common.Protected_Action_Nesting :=
               Self_Id.Common.Protected_Action_Nesting - 1;
