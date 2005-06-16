@@ -1,5 +1,10 @@
 2005-06-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	PR libfortran/19155
+	* io/read.c (read_f): Take care of spaces after initial sign.
+
+2005-06-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	* io/transfer.c (formatted_transfer): Fix typo in error message.
 
 2005-06-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>

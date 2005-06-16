@@ -504,23 +504,7 @@ read_f (fnode * f, char *dest, int length)
 
   p = eat_leading_spaces (&w, p);
   if (w == 0)
-    {
-      switch (length)
-	{
-	case 4:
-	  *((float *) dest) = 0.0f;
-	  break;
-
-	case 8:
-	  *((double *) dest) = 0.0;
-	  break;
-
-	default:
-	  internal_error ("Unsupported real kind during IO");
-	}
-
-      return;
-    }
+    goto zero;
 
   /* Optional sign */
 
@@ -529,12 +513,13 @@ read_f (fnode * f, char *dest, int length)
       if (*p == '-')
         val_sign = -1;
       p++;
-
-      if (--w == 0)
-	goto bad_float;
+      w--;
     }
 
   exponent_sign = 1;
+  p = eat_leading_spaces (&w, p);
+  if (w == 0)
+    goto zero;
 
   /* A digit, a '.' or a exponent character ('e', 'E', 'd' or 'D')
      is required at this point */
@@ -602,6 +587,23 @@ read_f (fnode * f, char *dest, int length)
 
  bad_float:
   generate_error (ERROR_READ_VALUE, "Bad value during floating point read");
+  return;
+
+  /* The value read is zero */
+ zero:
+  switch (length)
+    {
+      case 4:
+	*((float *) dest) = 0.0f;
+	break;
+
+      case 8:
+	*((double *) dest) = 0.0;
+	break;
+
+      default:
+	internal_error ("Unsupported real kind during IO");
+    }
   return;
 
   /* At this point the start of an exponent has been found */
