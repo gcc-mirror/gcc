@@ -62,6 +62,13 @@ pragma Elaborate_Body;
    type Object_Pointer is access all Object;
    for Object_Pointer'Size use Standard'Address_Size;
 
+   pragma No_Strict_Aliasing (Object_Pointer);
+   --  Strictly speaking, this routine should not be used to generate pointers
+   --  to other than proper values of the proper type, but in practice, this
+   --  is done all the time. This pragma stops the compiler from doing some
+   --  optimizations that may cause unexpected results based on the assumption
+   --  of no strict aliasing.
+
    function To_Pointer (Value : Address)        return Object_Pointer;
    function To_Address (Value : Object_Pointer) return Address;
 
