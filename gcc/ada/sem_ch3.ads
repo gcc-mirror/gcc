@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -111,16 +111,21 @@ package Sem_Ch3  is
    --  subprogram of the parent type.
 
    procedure Derive_Subprograms
-     (Parent_Type    : Entity_Id;
-      Derived_Type   : Entity_Id;
-      Generic_Actual : Entity_Id := Empty);
-   --  To complete type derivation, collect or retrieve the primitive
-   --  operations of the parent type, and replace the subsidiary subtypes
-   --  with the derived type, to build the specs of the inherited ops.
-   --  For generic actuals, the mapping of the primitive operations to those
-   --  of the parent type is also done by rederiving the operations within
-   --  the instance. For tagged types, the derived subprograms are aliased to
-   --  those of the actual, not those of the ancestor.
+     (Parent_Type             : Entity_Id;
+      Derived_Type            : Entity_Id;
+      Generic_Actual          : Entity_Id := Empty;
+      Is_Interface_Derivation : Boolean   := False);
+   --  To complete type derivation, collect/retrieve the primitive operations
+   --  of the parent type, and replace the subsidiary subtypes with the derived
+   --  type, to build the specs of the inherited ops. For generic actuals, the
+   --  mapping of the primitive operations to those of the parent type is also
+   --  done by rederiving the operations within the instance. For tagged types,
+   --  the derived subprograms are aliased to those of the actual, not those of
+   --  the ancestor.
+
+   function Find_Type_Of_Subtype_Indic (S : Node_Id) return Entity_Id;
+   --  Given a subtype indication S (which is really an N_Subtype_Indication
+   --  node or a plain N_Identifier), find the type of the subtype mark.
 
    function Find_Type_Name (N : Node_Id) return Entity_Id;
    --  Enter the identifier in a type definition, or find the entity already
@@ -209,12 +214,12 @@ package Sem_Ch3  is
    function Replace_Anonymous_Access_To_Protected_Subprogram
      (N      : Node_Id;
       Prev_E : Entity_Id) return Entity_Id;
-   --  Ada 2005 (AI-254): Create and decorate an internal full type
-   --  declaration in the enclosing scope corresponding to an anonymous
-   --  access to protected subprogram. In addition, replace the anonymous
-   --  access by an occurrence of this internal type. Prev_Etype is used
-   --  to link the new internal entity with the anonymous entity. Return
-   --  the entity of this type declaration.
+   --  Ada 2005 (AI-254): Create and decorate an internal full type declaration
+   --  in the enclosing scope corresponding to an anonymous access to protected
+   --  subprogram. In addition, replace the anonymous access by an occurrence
+   --  of this internal type. Prev_Etype is used to link the new internal
+   --  entity with the anonymous entity. Return the entity of this type
+   --  declaration.
 
    procedure Set_Completion_Referenced (E : Entity_Id);
    --  If E is the completion of a private or incomplete  type declaration,
