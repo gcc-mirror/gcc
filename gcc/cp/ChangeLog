@@ -1,3 +1,9 @@
+2005-06-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* rtti.c (get_tinfo_decl): Avoid caching tinfo_descs when it might
+	change.
+	(create_pseudo_type_info): First parameter is an int.
+
 2005-06-15  Aldy Hernandez  <aldyh@redhat.com>
 
 	* typeck.c (build_binary_op): Same.
