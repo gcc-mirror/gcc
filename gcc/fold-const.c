@@ -6493,300 +6493,6 @@ fold_to_nonsharp_ineq_using_bound (tree ineq, tree bound)
   return fold_build2 (GE_EXPR, type, a, y);
 }
 
-/* Fold complex addition when both components are accessible by parts.
-   Return non-null if successful.  CODE should be PLUS_EXPR for addition,
-   or MINUS_EXPR for subtraction.  */
-
-static tree
-fold_complex_add (tree type, tree ac, tree bc, enum tree_code code)
-{
-  tree ar, ai, br, bi, rr, ri, inner_type;
-
-  if (TREE_CODE (ac) == COMPLEX_EXPR)
-    ar = TREE_OPERAND (ac, 0), ai = TREE_OPERAND (ac, 1);
-  else if (TREE_CODE (ac) == COMPLEX_CST)
-    ar = TREE_REALPART (ac), ai = TREE_IMAGPART (ac);
-  else
-    return NULL;
-
-  if (TREE_CODE (bc) == COMPLEX_EXPR)
-    br = TREE_OPERAND (bc, 0), bi = TREE_OPERAND (bc, 1);
-  else if (TREE_CODE (bc) == COMPLEX_CST)
-    br = TREE_REALPART (bc), bi = TREE_IMAGPART (bc);
-  else
-    return NULL;
-
-  inner_type = TREE_TYPE (type);
-
-  rr = fold_build2 (code, inner_type, ar, br); 
-  ri = fold_build2 (code, inner_type, ai, bi); 
-
-  return fold_build2 (COMPLEX_EXPR, type, rr, ri);
-}
-
-/* Perform some simplifications of complex multiplication when one or more
-   of the components are constants or zeros.  Return non-null if successful.  */
-
-tree
-fold_complex_mult_parts (tree type, tree ar, tree ai, tree br, tree bi)
-{
-  tree rr, ri, inner_type, zero;
-  bool ar0, ai0, br0, bi0, bi1;
-
-  inner_type = TREE_TYPE (type);
-  zero = NULL;
-
-  if (SCALAR_FLOAT_TYPE_P (inner_type))
-    {
-      ar0 = ai0 = br0 = bi0 = bi1 = false;
-
-      /* We're only interested in +0.0 here, thus we don't use real_zerop.  */
-
-      if (TREE_CODE (ar) == REAL_CST
-	  && REAL_VALUES_IDENTICAL (TREE_REAL_CST (ar), dconst0))
-	ar0 = true, zero = ar;
-
-      if (TREE_CODE (ai) == REAL_CST
-	  && REAL_VALUES_IDENTICAL (TREE_REAL_CST (ai), dconst0))
-	ai0 = true, zero = ai;
-
-      if (TREE_CODE (br) == REAL_CST
-	  && REAL_VALUES_IDENTICAL (TREE_REAL_CST (br), dconst0))
-	br0 = true, zero = br;
-
-      if (TREE_CODE (bi) == REAL_CST)
-	{
-	  if (REAL_VALUES_IDENTICAL (TREE_REAL_CST (bi), dconst0))
-	    bi0 = true, zero = bi;
-	  else if (REAL_VALUES_IDENTICAL (TREE_REAL_CST (bi), dconst1))
-	    bi1 = true;
-	}
-    }
-  else
-    {
-      ar0 = integer_zerop (ar);
-      if (ar0)
-	zero = ar;
-      ai0 = integer_zerop (ai);
-      if (ai0)
-	zero = ai;
-      br0 = integer_zerop (br);
-      if (br0)
-	zero = br;
-      bi0 = integer_zerop (bi);
-      if (bi0)
-	{
-	  zero = bi;
-	  bi1 = false;
-	}
-      else
-	bi1 = integer_onep (bi);
-    }
-
-  /* We won't optimize anything below unless something is zero.  */
-  if (zero == NULL)
-    return NULL;
-
-  if (ai0 && br0 && bi1)
-    {
-      rr = zero;
-      ri = ar;
-    }
-  else if (ai0 && bi0)
-    {
-      rr = fold_build2 (MULT_EXPR, inner_type, ar, br);
-      ri = zero;
-    }
-  else if (ai0 && br0)
-    {
-      rr = zero;
-      ri = fold_build2 (MULT_EXPR, inner_type, ar, bi);
-    }
-  else if (ar0 && bi0)
-    {
-      rr = zero;
-      ri = fold_build2 (MULT_EXPR, inner_type, ai, br);
-    }
-  else if (ar0 && br0)
-    {
-      rr = fold_build2 (MULT_EXPR, inner_type, ai, bi);
-      rr = fold_build1 (NEGATE_EXPR, inner_type, rr);
-      ri = zero;
-    }
-  else if (bi0)
-    {
-      rr = fold_build2 (MULT_EXPR, inner_type, ar, br);
-      ri = fold_build2 (MULT_EXPR, inner_type, ai, br);
-    }
-  else if (ai0)
-    {
-      rr = fold_build2 (MULT_EXPR, inner_type, ar, br);
-      ri = fold_build2 (MULT_EXPR, inner_type, ar, bi);
-    }
-  else if (br0)
-    {
-      rr = fold_build2 (MULT_EXPR, inner_type, ai, bi);
-      rr = fold_build1 (NEGATE_EXPR, inner_type, rr);
-      ri = fold_build2 (MULT_EXPR, inner_type, ar, bi);
-    }
-  else if (ar0)
-    {
-      rr = fold_build2 (MULT_EXPR, inner_type, ai, bi);
-      rr = fold_build1 (NEGATE_EXPR, inner_type, rr);
-      ri = fold_build2 (MULT_EXPR, inner_type, ai, br);
-    }
-  else
-    return NULL;
-
-  return fold_build2 (COMPLEX_EXPR, type, rr, ri);
-}
-
-static tree
-fold_complex_mult (tree type, tree ac, tree bc)
-{
-  tree ar, ai, br, bi;
-
-  if (TREE_CODE (ac) == COMPLEX_EXPR)
-    ar = TREE_OPERAND (ac, 0), ai = TREE_OPERAND (ac, 1);
-  else if (TREE_CODE (ac) == COMPLEX_CST)
-    ar = TREE_REALPART (ac), ai = TREE_IMAGPART (ac);
-  else
-    return NULL;
-
-  if (TREE_CODE (bc) == COMPLEX_EXPR)
-    br = TREE_OPERAND (bc, 0), bi = TREE_OPERAND (bc, 1);
-  else if (TREE_CODE (bc) == COMPLEX_CST)
-    br = TREE_REALPART (bc), bi = TREE_IMAGPART (bc);
-  else
-    return NULL;
-
-  return fold_complex_mult_parts (type, ar, ai, br, bi);
-}
-
-/* Perform some simplifications of complex division when one or more of
-   the components are constants or zeros.  Return non-null if successful.  */
-
-tree
-fold_complex_div_parts (tree type, tree ar, tree ai, tree br, tree bi,
-			enum tree_code code)
-{
-  tree rr, ri, inner_type, zero;
-  bool ar0, ai0, br0, bi0, bi1;
-
-  inner_type = TREE_TYPE (type);
-  zero = NULL;
-
-  if (SCALAR_FLOAT_TYPE_P (inner_type))
-    {
-      ar0 = ai0 = br0 = bi0 = bi1 = false;
-
-      /* We're only interested in +0.0 here, thus we don't use real_zerop.  */
-
-      if (TREE_CODE (ar) == REAL_CST
-	  && REAL_VALUES_IDENTICAL (TREE_REAL_CST (ar), dconst0))
-	ar0 = true, zero = ar;
-
-      if (TREE_CODE (ai) == REAL_CST
-	  && REAL_VALUES_IDENTICAL (TREE_REAL_CST (ai), dconst0))
-	ai0 = true, zero = ai;
-
-      if (TREE_CODE (br) == REAL_CST
-	  && REAL_VALUES_IDENTICAL (TREE_REAL_CST (br), dconst0))
-	br0 = true, zero = br;
-
-      if (TREE_CODE (bi) == REAL_CST)
-	{
-	  if (REAL_VALUES_IDENTICAL (TREE_REAL_CST (bi), dconst0))
-	    bi0 = true, zero = bi;
-	  else if (REAL_VALUES_IDENTICAL (TREE_REAL_CST (bi), dconst1))
-	    bi1 = true;
-	}
-    }
-  else
-    {
-      ar0 = integer_zerop (ar);
-      if (ar0)
-	zero = ar;
-      ai0 = integer_zerop (ai);
-      if (ai0)
-	zero = ai;
-      br0 = integer_zerop (br);
-      if (br0)
-	zero = br;
-      bi0 = integer_zerop (bi);
-      if (bi0)
-	{
-	  zero = bi;
-	  bi1 = false;
-	}
-      else
-	bi1 = integer_onep (bi);
-    }
-
-  /* We won't optimize anything below unless something is zero.  */
-  if (zero == NULL)
-    return NULL;
-
-  if (ai0 && bi0)
-    {
-      rr = fold_build2 (code, inner_type, ar, br);
-      ri = zero;
-    }
-  else if (ai0 && br0)
-    {
-      rr = zero;
-      ri = fold_build2 (code, inner_type, ar, bi);
-      ri = fold_build1 (NEGATE_EXPR, inner_type, ri);
-    }
-  else if (ar0 && bi0)
-    {
-      rr = zero;
-      ri = fold_build2 (code, inner_type, ai, br);
-    }
-  else if (ar0 && br0)
-    {
-      rr = fold_build2 (code, inner_type, ai, bi);
-      ri = zero;
-    }
-  else if (bi0)
-    {
-      rr = fold_build2 (code, inner_type, ar, br);
-      ri = fold_build2 (code, inner_type, ai, br);
-    }
-  else if (br0)
-    {
-      rr = fold_build2 (code, inner_type, ai, bi);
-      ri = fold_build2 (code, inner_type, ar, bi);
-      ri = fold_build1 (NEGATE_EXPR, inner_type, ri);
-    }
-  else
-    return NULL;
-
-  return fold_build2 (COMPLEX_EXPR, type, rr, ri);
-}
-
-static tree
-fold_complex_div (tree type, tree ac, tree bc, enum tree_code code)
-{
-  tree ar, ai, br, bi;
-
-  if (TREE_CODE (ac) == COMPLEX_EXPR)
-    ar = TREE_OPERAND (ac, 0), ai = TREE_OPERAND (ac, 1);
-  else if (TREE_CODE (ac) == COMPLEX_CST)
-    ar = TREE_REALPART (ac), ai = TREE_IMAGPART (ac);
-  else
-    return NULL;
-
-  if (TREE_CODE (bc) == COMPLEX_EXPR)
-    br = TREE_OPERAND (bc, 0), bi = TREE_OPERAND (bc, 1);
-  else if (TREE_CODE (bc) == COMPLEX_CST)
-    br = TREE_REALPART (bc), bi = TREE_IMAGPART (bc);
-  else
-    return NULL;
-
-  return fold_complex_div_parts (type, ar, ai, br, bi, code);
-}
-
 /* Fold a unary expression of code CODE and type TYPE with operand
    OP0.  Return the folded expression if folding is successful.
    Otherwise, return NULL_TREE.  */
@@ -7418,13 +7124,6 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  && integer_onep (arg1))
 	return fold_build1 (NEGATE_EXPR, type, TREE_OPERAND (arg0, 0));
 
-      if (TREE_CODE (type) == COMPLEX_TYPE)
-	{
-	  tem = fold_complex_add (type, arg0, arg1, PLUS_EXPR);
-	  if (tem)
-	    return tem;
-	}
-
       if (! FLOAT_TYPE_P (type))
 	{
 	  if (integer_zerop (arg1))
@@ -7870,13 +7569,6 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  && integer_all_onesp (arg0))
 	return fold_build1 (BIT_NOT_EXPR, type, arg1);
 
-      if (TREE_CODE (type) == COMPLEX_TYPE)
-	{
-	  tem = fold_complex_add (type, arg0, arg1, MINUS_EXPR);
-	  if (tem)
-	    return tem;
-	}
-
       if (! FLOAT_TYPE_P (type))
 	{
 	  if (! wins && integer_zerop (arg0))
@@ -8032,13 +7724,6 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	return fold_build2 (MULT_EXPR, type,
 			    negate_expr (arg0),
 			    TREE_OPERAND (arg1, 0));
-
-      if (TREE_CODE (type) == COMPLEX_TYPE)
-	{
-	  tem = fold_complex_mult (type, arg0, arg1);
-	  if (tem)
-	    return tem;
-	}
 
       if (! FLOAT_TYPE_P (type))
 	{
@@ -8501,13 +8186,6 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 				TREE_OPERAND (arg1, 0));
 	}
 
-      if (TREE_CODE (type) == COMPLEX_TYPE)
-	{
-	  tem = fold_complex_div (type, arg0, arg1, code);
-	  if (tem)
-	    return tem;
-	}
-
       if (flag_unsafe_math_optimizations)
 	{
 	  enum built_in_function fcode = builtin_mathfn_code (arg1);
@@ -8631,12 +8309,6 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  && 0 != (tem = extract_muldiv (op0, arg1, code, NULL_TREE)))
 	return fold_convert (type, tem);
 
-      if (TREE_CODE (type) == COMPLEX_TYPE)
-	{
-	  tem = fold_complex_div (type, arg0, arg1, code);
-	  if (tem)
-	    return tem;
-	}
       goto binary;
 
     case CEIL_MOD_EXPR:
@@ -9924,34 +9596,6 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 			          build_fold_addr_expr (op0),
 				  build_fold_addr_expr (op1));
 	    }
-	}
-
-      /* If this is a comparison of complex values and either or both sides
-	 are a COMPLEX_EXPR or COMPLEX_CST, it is best to split up the
-	 comparisons and join them with a TRUTH_ANDIF_EXPR or TRUTH_ORIF_EXPR.
-	 This may prevent needless evaluations.  */
-      if ((code == EQ_EXPR || code == NE_EXPR)
-	  && TREE_CODE (TREE_TYPE (arg0)) == COMPLEX_TYPE
-	  && (TREE_CODE (arg0) == COMPLEX_EXPR
-	      || TREE_CODE (arg1) == COMPLEX_EXPR
-	      || TREE_CODE (arg0) == COMPLEX_CST
-	      || TREE_CODE (arg1) == COMPLEX_CST))
-	{
-	  tree subtype = TREE_TYPE (TREE_TYPE (arg0));
-	  tree real0, imag0, real1, imag1;
-
-	  arg0 = save_expr (arg0);
-	  arg1 = save_expr (arg1);
-	  real0 = fold_build1 (REALPART_EXPR, subtype, arg0);
-	  imag0 = fold_build1 (IMAGPART_EXPR, subtype, arg0);
-	  real1 = fold_build1 (REALPART_EXPR, subtype, arg1);
-	  imag1 = fold_build1 (IMAGPART_EXPR, subtype, arg1);
-
-	  return fold_build2 ((code == EQ_EXPR ? TRUTH_ANDIF_EXPR
-			       : TRUTH_ORIF_EXPR),
-			      type,
-			      fold_build2 (code, type, real0, real1),
-			      fold_build2 (code, type, imag0, imag1));
 	}
 
       /* Optimize comparisons of strlen vs zero to a compare of the
