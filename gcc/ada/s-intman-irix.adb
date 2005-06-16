@@ -1,13 +1,13 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
 --           S Y S T E M . I N T E R R U P T _ M A N A G E M E N T          --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2003, Ada Core Technologies               --
+---                     Copyright (C) 1995-2005, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,17 +58,6 @@ package body System.Interrupt_Management is
      (SIGTSTP, SIGILL, SIGTRAP, SIGEMT, SIGFPE, SIGBUS, SIGSTOP, SIGKILL,
       SIGSEGV, SIGSYS, SIGXCPU, SIGXFSZ, SIGPROF, SIGPTINTR, SIGPTRESCHED,
       SIGABRT, SIGPIPE);
-
-   ---------------------------
-   -- Initialize_Interrupts --
-   ---------------------------
-
-   --  Nothing needs to be done on this platform
-
-   procedure Initialize_Interrupts is
-   begin
-      null;
-   end Initialize_Interrupts;
 
    Unreserve_All_Interrupts : Interfaces.C.int;
    pragma Import

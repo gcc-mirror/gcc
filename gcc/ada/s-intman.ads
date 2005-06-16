@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
 --            S Y S T E M . I N T E R R U P T _ M A N A G E M E N T         --
 --                                                                          --
@@ -102,12 +102,6 @@ package System.Interrupt_Management is
    --  to be attached to a user handler. The possible reasons are many. For
    --  example, it may be mapped to an exception used to implement task abort,
    --  or used to implement time delays.
-
-   procedure Initialize_Interrupts;
-   --  On systems where there is no signal inheritance between tasks (e.g
-   --  VxWorks, GNU/LinuxThreads), this procedure is used to initialize
-   --  interrupts handling in each task. Otherwise this function should only
-   --  be called by initialize in this package body.
 
 private
    type Interrupt_Mask is new System.OS_Interface.sigset_t;

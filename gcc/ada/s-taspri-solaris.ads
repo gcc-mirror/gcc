@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                  GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                --
 --                                                                          --
 --                 S Y S T E M . T A S K _ P R I M I T I V E S              --
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,7 @@
 
 --  This is a Solaris version of this package
 
---  This package provides low-level support for most tasking features.
+--  This package provides low-level support for most tasking features
 
 pragma Polling (Off);
 --  Turn off polling, we do not want ATC polling to take place during
@@ -55,26 +55,28 @@ package System.Task_Primitives is
 
    type RTS_Lock is limited private;
    type RTS_Lock_Ptr is access all RTS_Lock;
-   --  Should be used inside the runtime system.
-   --  The difference between Lock and the RTS_Lock is that the later
-   --  one serves only as a semaphore so that do not check for
-   --  ceiling violations.
+   --  Should be used inside the runtime system. The difference between Lock
+   --  and the RTS_Lock is that the later one serves only as a semaphore so
+   --  that do not check for ceiling violations.
 
    function To_Lock_Ptr is new Unchecked_Conversion (RTS_Lock_Ptr, Lock_Ptr);
+
+   type Suspension_Object is limited private;
+   --  Should be used for the implementation of Ada.Synchronous_Task_Control
 
    type Task_Body_Access is access procedure;
    --  Pointer to the task body's entry point (or possibly a wrapper
    --  declared local to the GNARL).
 
    type Private_Data is limited private;
-   --  Any information that the GNULLI needs maintained on a per-task
-   --  basis.  A component of this type is guaranteed to be included
-   --  in the Ada_Task_Control_Block.
+   --  Any information that the GNULLI needs maintained on a per-task basis.
+   --  A component of this type is guaranteed to be included in the
+   --  Ada_Task_Control_Block.
 
 private
 
    type Private_Task_Serial_Number is mod 2 ** 64;
-   --  Used to give each task a unique serial number.
+   --  Used to give each task a unique serial number
 
    type Base_Lock is new System.OS_Interface.mutex_t;
 
@@ -99,28 +101,44 @@ private
 
    type RTS_Lock is new Lock;
 
-   --  Note that task support on gdb relies on the fact that the first
-   --  2 fields of Private_Data are Thread and LWP.
+   type Suspension_Object is record
+      State : Boolean;
+      pragma Atomic (State);
+      --  Boolean that indicates whether the object is open. This field is
+      --  marked Atomic to ensure that we can read its value without locking
+      --  the access to the Suspension_Object.
+
+      Waiting : Boolean;
+      --  Flag showing if there is a task already suspended on this object
+
+      L : aliased System.OS_Interface.mutex_t;
+      --  Protection for ensuring mutual exclusion on the Suspension_Object
+
+      CV : aliased System.OS_Interface.cond_t;
+      --  Condition variable used to queue threads until condition is signaled
+   end record;
+
+   --  Note that task support on gdb relies on the fact that the first two
+   --  fields of Private_Data are Thread and LWP.
 
    type Private_Data is record
-      Thread      : aliased System.OS_Interface.thread_t;
+      Thread : aliased System.OS_Interface.thread_t;
       pragma Atomic (Thread);
       --  Thread field may be updated by two different threads of control.
-      --  (See, Enter_Task and Create_Task in s-taprop.adb).
-      --  They put the same value (thr_self value). We do not want to
-      --  use lock on those operations and the only thing we have to
-      --  make sure is that they are updated in atomic fashion.
+      --  (See, Enter_Task and Create_Task in s-taprop.adb). They put the same
+      --  value (thr_self value). We do not want to use lock on those
+      --  operations and the only thing we have to make sure is that they are
+      --  updated in atomic fashion.
 
       LWP : System.OS_Interface.lwpid_t;
-      --  The LWP id of the thread. Set by self in Enter_Task.
+      --  The LWP id of the thread. Set by self in Enter_Task
 
       CV : aliased System.OS_Interface.cond_t;
       L  : aliased RTS_Lock;
       --  Protection for all components is lock L
 
       Active_Priority : System.Any_Priority := System.Any_Priority'First;
-      --  Simulated active priority,
-      --  used only if Priority_Ceiling_Support is True.
+      --  Simulated active priority, used iff Priority_Ceiling_Support is True
 
       Locking : Lock_Ptr;
       Locks   : Lock_Ptr;

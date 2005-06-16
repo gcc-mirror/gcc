@@ -1,13 +1,13 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                 GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS              --
+--                  GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                --
 --                                                                          --
 --           S Y S T E M . I N T E R R U P T _ M A N A G E M E N T          --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2003, Ada Core Technologies               --
+--                     Copyright (C) 1995-2005, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -81,28 +81,6 @@ package body System.Interrupt_Management is
    Unreserve_All_Interrupts : Interfaces.C.int;
    pragma Import
      (C, Unreserve_All_Interrupts, "__gl_unreserve_all_interrupts");
-
-   ----------------------
-   -- Notify_Exception --
-   ----------------------
-
-   --  This function identifies the Ada exception to be raised using the
-   --  information when the system received a synchronous signal.
-   --  Since this function is machine and OS dependent, different code has to
-   --  be provided for different target.
-   --  On SGI, the signal handling is done is a-init.c, even when tasking is
-   --  involved.
-
-   ---------------------------
-   -- Initialize_Interrupts --
-   ---------------------------
-
-   --  Nothing needs to be done on this platform.
-
-   procedure Initialize_Interrupts is
-   begin
-      null;
-   end Initialize_Interrupts;
 
 begin
    declare

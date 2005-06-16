@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
 --           S Y S T E M . I N T E R R U P T _ M A N A G E M E N T          --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1997-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,16 +34,5 @@
 --  This is a NO tasking version of this package.
 
 package body System.Interrupt_Management is
-
-   ---------------------------
-   -- Initialize_Interrupts --
-   ---------------------------
-
-   --  Nothing needs to be done on this platform.
-
-   procedure Initialize_Interrupts is
-   begin
-      null;
-   end Initialize_Interrupts;
 
 end System.Interrupt_Management;

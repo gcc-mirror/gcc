@@ -1,13 +1,13 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
 --            S Y S T E M . I N T E R R U P T _ M A N A G E M E N T .       --
 --                             O P E R A T I O N S                          --
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -102,6 +102,11 @@ package System.Interrupt_Management.Operations is
    procedure Interrupt_Self_Process (Interrupt : Interrupt_ID);
    pragma Inline (Interrupt_Self_Process);
    --  Raise an Interrupt process-level
+
+   procedure Setup_Interrupt_Mask;
+   --  Mask Environment task for all signals
+   --  This function should be called by the elaboration of System.Interrupt
+   --  to set up proper signal masking in all tasks.
 
    --  The following objects serve as constants, but are initialized
    --  in the body to aid portability.  These actually belong to the
