@@ -1,3 +1,12 @@
+2005-06-16  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.am (libgcj_la_SOURCES): Define without conditional sources.
+	(if USING_BOEHMGC): Directly append libgcj_la_SOURCES.
+	(if USING_NOGC, SUPPLY_BACKTRACE, USING_POSIX_PLATFORM,
+	USING_WIN32_PLATFORM, USING_DARWIN_CRT, USING_POSIX_THREADS,
+	USING_WIN32_THREADS, USING_NO_THREADS): Likewise.
+	* Makefile.in: Regenerate.
+
 2005-06-15  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure.ac (USING_ECOS_PLATFORM): Remove and merge into...

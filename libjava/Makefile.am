@@ -7,70 +7,11 @@ ACLOCAL_AMFLAGS = -I . -I ../config
 # May be used by various substitution variables.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 
-## Garbage collector conditionals.
-if USING_BOEHMGC
-BOEHMGC_SRC = boehm.cc
-else
-BOEHMGC_SRC =
-endif
-
-if USING_NOGC
-NOGC_SRC = nogc.cc
-else
-NOGC_SRC =
-endif
-
-## Broken backtrace conditional.
-if SUPPLY_BACKTRACE
-BACKTRACE_SRC = sysdep/dwarf2-backtrace.cc
-else
-BACKTRACE_SRC =
-endif
-
-## Conditionals for platform-specific helper functions.
-if USING_POSIX_PLATFORM
-POSIX_PLATFORM_SRC = posix.cc
-else
-POSIX_PLATFORM_SRC =
-endif
-
-if USING_WIN32_PLATFORM
-WIN32_PLATFORM_SRC = win32.cc
-else
-WIN32_PLATFORM_SRC =
-endif
-
-## Conditionals for platform-specific thread support.
-if USING_POSIX_THREADS
-POSIX_THREAD_SRC = posix-threads.cc
-else
-POSIX_THREAD_SRC =
-endif
-
-if USING_WIN32_THREADS
-WIN32_THREAD_SRC = win32-threads.cc
-else
-WIN32_THREAD_SRC =
-endif
-
-if USING_NO_THREADS
-NO_THREAD_SRC = no-threads.cc
-else
-NO_THREAD_SRC =
-endif
-
 ## Testsuite conditional.
 if TESTSUBDIR
 SUBDIRS = $(DIRLTDL) testsuite gcj include external
 else
 SUBDIRS = $(DIRLTDL) gcj include external
-endif
-
-## Darwin uses the jcr section, but doesn't use crtstuff.
-if USING_DARWIN_CRT
-DARWIN_CRT_SRC = darwin.cc
-else
-DARWIN_CRT_SRC = 
 endif
 
 # write_entries_to_file - writes each entry in a list
@@ -302,12 +243,43 @@ libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
 
 libgcj_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc \
 	link.cc defineclass.cc interpret.cc verify.cc \
-	$(nat_source_files) $(math_c_source_files) \
-	$(BOEHMGC_SRC) $(NOGC_SRC) \
-	$(BACKTRACE_SRC) \
-	$(POSIX_PLATFORM_SRC) $(WIN32_PLATFORM_SRC) \
-	$(DARWIN_CRT_SRC) \
-	$(POSIX_THREAD_SRC) $(WIN32_THREAD_SRC) $(NO_THREAD_SRC)
+	$(nat_source_files) $(math_c_source_files)
+
+if USING_BOEHMGC
+libgcj_la_SOURCES += boehm.cc
+endif
+
+if USING_NOGC
+libgcj_la_SOURCES += nogc.cc
+endif
+
+if SUPPLY_BACKTRACE
+libgcj_la_SOURCES += sysdep/dwarf2-backtrace.cc
+endif
+
+if USING_POSIX_PLATFORM
+libgcj_la_SOURCES += posix.cc
+endif
+
+if USING_WIN32_PLATFORM
+libgcj_la_SOURCES += win32.cc
+endif
+
+if USING_DARWIN_CRT
+libgcj_la_SOURCES += darwin.cc
+endif
+
+if USING_POSIX_THREADS
+libgcj_la_SOURCES += posix-threads.cc
+endif
+
+if USING_WIN32_THREADS
+libgcj_la_SOURCES += win32-threads.cc
+endif
+
+if USING_NO_THREADS
+libgcj_la_SOURCES += no-threads.cc
+endif
 
 ## Objects from C++ sources in subdirs.
 nat_files = $(nat_source_files:.cc=.lo)
