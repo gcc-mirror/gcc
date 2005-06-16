@@ -1,3 +1,8 @@
+2005-06-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR tree-optimization/22018
+	* tree-vrp.c (vrp_int_const_binop): Overhaul handling of overflow.
+
 2005-06-16  Richard Henderson  <rth@redhat.com>
 
 	PR tree-opt/22035

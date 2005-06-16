@@ -986,30 +986,41 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2)
   res = int_const_binop (code, val1, val2, 0);
 
   /* If the operation overflowed but neither VAL1 nor VAL2 are
-     overflown, return -INF or +INF depending on whether VAL1 CODE
-     VAL2 is a growing function or not.  */
+     overflown, return -INF or +INF depending on the operation
+     and the combination of signs of the operands.  */
   if (TREE_OVERFLOW (res)
       && !TREE_OVERFLOW (val1)
       && !TREE_OVERFLOW (val2))
     {
-      bool grows = false;
       int sgn1 = tree_int_cst_sgn (val1);
       int sgn2 = tree_int_cst_sgn (val2);
 
-      /* Determine whether VAL1 CODE VAL2 yields a growing value.
-	 Notice that we only need to handle the restricted set of
-	 operations handled by extract_range_from_binary_expr:
+      /* Notice that we only need to handle the restricted set of
+	 operations handled by extract_range_from_binary_expr.
+	 Among them, only multiplication, addition and subtraction
+	 can yield overflow without overflown operands because we
+	 are working with integral types only... except in the
+	 case VAL1 = -INF and VAL2 = -1 which overflows to +INF
+	 for division too.  */
 
-	 VAL1 + VAL2 grows if VAL2 is >= 0.
-	 VAL1 * VAL2 grows if both VAL1 and VAL2 have the same sign.
-	 VAL1 - VAL2 grows if VAL2 is < 0 (because it becomes an addition).
-      */
-      if ((code == PLUS_EXPR && sgn2 >= 0)
-	  || (code == MULT_EXPR && sgn1 == sgn2)
-	  || (code == MINUS_EXPR && sgn2 < 0))
-	grows = true;
-
-      if (grows)
+      /* For multiplication, the sign of the overflow is given
+	 by the comparison of the signs of the operands.  */
+      if ((code == MULT_EXPR && sgn1 == sgn2)
+          /* For addition, the operands must be of the same sign
+	     to yield an overflow.  Its sign is therefore that
+	     of one of the operands, for example the first.  */
+	  || (code == PLUS_EXPR && sgn1 > 0)
+	  /* For subtraction, the operands must be of different
+	     signs to yield an overflow.  Its sign is therefore
+	     that of the first operand or the opposite of that
+	     of the second operand.  */
+	  || (code == MINUS_EXPR && sgn1 > 0)
+	  /* For division, the only case is -INF / -1 = +INF.  */
+	  || code == TRUNC_DIV_EXPR
+	  || code == FLOOR_DIV_EXPR
+	  || code == CEIL_DIV_EXPR
+	  || code == EXACT_DIV_EXPR
+	  || code == ROUND_DIV_EXPR)
 	return TYPE_MAX_VALUE (TREE_TYPE (res));
       else
 	return TYPE_MIN_VALUE (TREE_TYPE (res));
