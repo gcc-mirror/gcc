@@ -3077,9 +3077,9 @@ reg_to_stack (FILE *file)
       /* Copy live_at_end and live_at_start into temporaries.  */
       for (reg = FIRST_STACK_REG; reg <= LAST_STACK_REG; reg++)
 	{
-	  if (REGNO_REG_SET_P (bb->global_live_at_end, reg))
+	  if (REGNO_REG_SET_P (bb->il.rtl->global_live_at_end, reg))
 	    SET_HARD_REG_BIT (bi->out_reg_set, reg);
-	  if (REGNO_REG_SET_P (bb->global_live_at_start, reg))
+	  if (REGNO_REG_SET_P (bb->il.rtl->global_live_at_start, reg))
 	    SET_HARD_REG_BIT (bi->stack_in.reg_set, reg);
 	}
     }

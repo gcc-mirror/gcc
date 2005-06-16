@@ -965,7 +965,7 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
      TARGET.  Otherwise, we must assume everything is live.  */
   if (b != -1)
     {
-      regset regs_live = BASIC_BLOCK (b)->global_live_at_start;
+      regset regs_live = BASIC_BLOCK (b)->il.rtl->global_live_at_start;
       unsigned int j;
       unsigned int regno;
       rtx start_insn, stop_insn;

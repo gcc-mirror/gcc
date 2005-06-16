@@ -183,6 +183,7 @@ struct loops;
 
 /* Declared in tree-flow.h.  */
 struct edge_prediction;
+struct rtl_bb_info;
 
 /* A basic block is a sequence of instructions with only entry and
    only one exit.  If any one of the instructions are executed, they
@@ -212,22 +213,12 @@ struct edge_prediction;
 /* Basic block information indexed by block number.  */
 struct basic_block_def GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb")))
 {
-  /* The first and last insns of the block.  */
-  rtx head_;
-  rtx end_;
-
   /* Pointers to the first and last trees of the block.  */
   tree stmt_list;
 
   /* The edges into and out of the block.  */
   VEC(edge,gc) *preds;
   VEC(edge,gc) *succs;
-
-  /* The registers that are live on entry to this block.  */
-  bitmap GTY ((skip (""))) global_live_at_start;
-
-  /* The registers that are live on exit from this block.  */
-  bitmap GTY ((skip (""))) global_live_at_end;
 
   /* Auxiliary info specific to a pass.  */
   PTR GTY ((skip (""))) aux;
@@ -244,6 +235,10 @@ struct basic_block_def GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb")
 
   /* The data used by basic block copying and reordering functions.  */
   struct reorder_block_def * rbi;
+
+  union basic_block_il_dependent {
+      struct rtl_bb_info * GTY ((tag ("1"))) rtl;
+    } GTY ((desc ("((%1.flags & BB_RTL) != 0)"))) il;
 
   /* Chain of PHI nodes for this block.  */
   tree phi_nodes;
@@ -265,6 +260,19 @@ struct basic_block_def GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb")
 
   /* Various flags.  See BB_* below.  */
   int flags;
+};
+
+struct rtl_bb_info GTY(())
+{
+  /* The first and last insns of the block.  */
+  rtx head_;
+  rtx end_;
+
+  /* The registers that are live on entry to this block.  */
+  bitmap GTY ((skip (""))) global_live_at_start;
+
+  /* The registers that are live on exit from this block.  */
+  bitmap GTY ((skip (""))) global_live_at_end;
 };
 
 typedef struct basic_block_def *basic_block;
@@ -325,7 +333,10 @@ enum
   BB_COLD_PARTITION = 128,
 
   /* Set on block that was duplicated.  */
-  BB_DUPLICATED = 256
+  BB_DUPLICATED = 256,
+
+  /* Set on blocks that are in RTL format.  */
+  BB_RTL = 1024
 };
 
 /* Dummy flag for convenience in the hot/cold partitioning code.  */
@@ -455,8 +466,8 @@ extern bitmap_obstack reg_obstack;
 
 /* Stuff for recording basic block info.  */
 
-#define BB_HEAD(B)      (B)->head_
-#define BB_END(B)       (B)->end_
+#define BB_HEAD(B)      (B)->il.rtl->head_
+#define BB_END(B)       (B)->il.rtl->end_
 
 /* Special block numbers [markers] for entry and exit.  */
 #define ENTRY_BLOCK (-1)
@@ -976,6 +987,7 @@ extern edge try_redirect_by_replacing_jump (edge, basic_block, bool);
 extern void break_superblocks (void);
 extern void check_bb_profile (basic_block, FILE *);
 extern void update_bb_profile_for_threading (basic_block, int, gcov_type, edge);
+extern void init_rtl_bb_info (basic_block);
 
 extern void initialize_original_copy_tables (void);
 extern void free_original_copy_tables (void);

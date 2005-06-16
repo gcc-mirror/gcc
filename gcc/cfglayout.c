@@ -1074,12 +1074,14 @@ cfg_layout_duplicate_bb (basic_block bb)
 	new_bb->rbi->footer = unlink_insn_chain (insn, get_last_insn ());
     }
 
-  if (bb->global_live_at_start)
+  if (bb->il.rtl->global_live_at_start)
     {
-      new_bb->global_live_at_start = ALLOC_REG_SET (&reg_obstack);
-      new_bb->global_live_at_end = ALLOC_REG_SET (&reg_obstack);
-      COPY_REG_SET (new_bb->global_live_at_start, bb->global_live_at_start);
-      COPY_REG_SET (new_bb->global_live_at_end, bb->global_live_at_end);
+      new_bb->il.rtl->global_live_at_start = ALLOC_REG_SET (&reg_obstack);
+      new_bb->il.rtl->global_live_at_end = ALLOC_REG_SET (&reg_obstack);
+      COPY_REG_SET (new_bb->il.rtl->global_live_at_start,
+		    bb->il.rtl->global_live_at_start);
+      COPY_REG_SET (new_bb->il.rtl->global_live_at_end,
+		    bb->il.rtl->global_live_at_end);
     }
 
   return new_bb;

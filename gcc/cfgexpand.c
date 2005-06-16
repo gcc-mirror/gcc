@@ -1056,6 +1056,9 @@ expand_gimple_basic_block (basic_block bb, FILE * dump_file)
 	       bb->index);
     }
 
+  init_rtl_bb_info (bb);
+  bb->flags |= BB_RTL;
+
   if (!bsi_end_p (bsi))
     stmt = bsi_stmt (bsi);
 
@@ -1162,6 +1165,10 @@ construct_init_block (void)
 
   /* Multiple entry points not supported yet.  */
   gcc_assert (EDGE_COUNT (ENTRY_BLOCK_PTR->succs) == 1);
+  init_rtl_bb_info (ENTRY_BLOCK_PTR);
+  init_rtl_bb_info (EXIT_BLOCK_PTR);
+  ENTRY_BLOCK_PTR->flags |= BB_RTL;
+  EXIT_BLOCK_PTR->flags |= BB_RTL;
 
   e = EDGE_SUCC (ENTRY_BLOCK_PTR, 0);
 

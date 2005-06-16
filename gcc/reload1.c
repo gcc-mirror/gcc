@@ -1079,7 +1079,7 @@ reload (rtx first, int global)
 
   if (! frame_pointer_needed)
     FOR_EACH_BB (bb)
-      CLEAR_REGNO_REG_SET (bb->global_live_at_start,
+      CLEAR_REGNO_REG_SET (bb->il.rtl->global_live_at_start,
 			   HARD_FRAME_POINTER_REGNUM);
 
   /* Come here (with failure set nonzero) if we can't get enough spill

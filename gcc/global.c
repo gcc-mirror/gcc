@@ -694,7 +694,7 @@ global_conflicts (void)
 	 be explicitly marked in basic_block_live_at_start.  */
 
       {
-	regset old = b->global_live_at_start;
+	regset old = b->il.rtl->global_live_at_start;
 	int ax = 0;
 	reg_set_iterator rsi;
 
@@ -1726,7 +1726,7 @@ mark_elimination (int from, int to)
 
   FOR_EACH_BB (bb)
     {
-      regset r = bb->global_live_at_start;
+      regset r = bb->il.rtl->global_live_at_start;
       if (REGNO_REG_SET_P (r, from))
 	{
 	  CLEAR_REGNO_REG_SET (r, from);
@@ -1816,7 +1816,7 @@ build_insn_chain (rtx first)
 
 	  CLEAR_REG_SET (live_relevant_regs);
 
-	  EXECUTE_IF_SET_IN_BITMAP (b->global_live_at_start, 0, i, bi)
+	  EXECUTE_IF_SET_IN_BITMAP (b->il.rtl->global_live_at_start, 0, i, bi)
 	    {
 	      if (i < FIRST_PSEUDO_REGISTER
 		  ? ! TEST_HARD_REG_BIT (eliminable_regset, i)
@@ -2345,10 +2345,10 @@ calculate_reg_pav (void)
 	      if (pred->index != ENTRY_BLOCK)
 		bitmap_ior_into (bb_live_pavin, BB_INFO (pred)->live_pavout);
 	    }
-	  bitmap_and_into (bb_live_pavin, bb->global_live_at_start);
+	  bitmap_and_into (bb_live_pavin, bb->il.rtl->global_live_at_start);
 	  bitmap_ior_and_compl (temp_bitmap, bb_info->avloc,
 				bb_live_pavin, bb_info->killed);
-	  bitmap_and_into (temp_bitmap, bb->global_live_at_end);
+	  bitmap_and_into (temp_bitmap, bb->il.rtl->global_live_at_end);
 	  if (! bitmap_equal_p (temp_bitmap, bb_live_pavout))
 	    {
 	      bitmap_copy (bb_live_pavout, temp_bitmap);
@@ -2469,8 +2469,8 @@ make_accurate_live_analysis (void)
     {
       bb_info = BB_INFO (bb);
       
-      bitmap_and_into (bb->global_live_at_start, bb_info->live_pavin);
-      bitmap_and_into (bb->global_live_at_end, bb_info->live_pavout);
+      bitmap_and_into (bb->il.rtl->global_live_at_start, bb_info->live_pavin);
+      bitmap_and_into (bb->il.rtl->global_live_at_end, bb_info->live_pavout);
     }
   free_bb_info ();
 }

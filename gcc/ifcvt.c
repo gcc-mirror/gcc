@@ -2364,9 +2364,9 @@ merge_if_block (struct ce_if_block * ce_info)
 
   if (then_bb)
     {
-      if (combo_bb->global_live_at_end)
-	COPY_REG_SET (combo_bb->global_live_at_end,
-		      then_bb->global_live_at_end);
+      if (combo_bb->il.rtl->global_live_at_end)
+	COPY_REG_SET (combo_bb->il.rtl->global_live_at_end,
+		      then_bb->il.rtl->global_live_at_end);
       merge_blocks (combo_bb, then_bb);
       num_true_changes++;
     }
@@ -2417,9 +2417,9 @@ merge_if_block (struct ce_if_block * ce_info)
 	   && join_bb != EXIT_BLOCK_PTR)
     {
       /* We can merge the JOIN.  */
-      if (combo_bb->global_live_at_end)
-	COPY_REG_SET (combo_bb->global_live_at_end,
-		      join_bb->global_live_at_end);
+      if (combo_bb->il.rtl->global_live_at_end)
+	COPY_REG_SET (combo_bb->il.rtl->global_live_at_end,
+		      join_bb->il.rtl->global_live_at_end);
 
       merge_blocks (combo_bb, join_bb);
       num_true_changes++;
@@ -3060,9 +3060,9 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
   /* Conversion went ok, including moving the insns and fixing up the
      jump.  Adjust the CFG to match.  */
 
-  bitmap_ior (test_bb->global_live_at_end,
-	      else_bb->global_live_at_start,
-	      then_bb->global_live_at_end);
+  bitmap_ior (test_bb->il.rtl->global_live_at_end,
+	      else_bb->il.rtl->global_live_at_start,
+	      then_bb->il.rtl->global_live_at_end);
 
 
   /* We can avoid creating a new basic block if then_bb is immediately
@@ -3178,9 +3178,9 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
   /* Conversion went ok, including moving the insns and fixing up the
      jump.  Adjust the CFG to match.  */
 
-  bitmap_ior (test_bb->global_live_at_end,
-	      then_bb->global_live_at_start,
-	      else_bb->global_live_at_end);
+  bitmap_ior (test_bb->il.rtl->global_live_at_end,
+	      then_bb->il.rtl->global_live_at_start,
+	      else_bb->il.rtl->global_live_at_end);
 
   delete_basic_block (else_bb);
 
@@ -3357,7 +3357,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
       /* For TEST, we're interested in a range of insns, not a whole block.
 	 Moreover, we're interested in the insns live from OTHER_BB.  */
 
-      COPY_REG_SET (test_live, other_bb->global_live_at_start);
+      COPY_REG_SET (test_live, other_bb->il.rtl->global_live_at_start);
       pbi = init_propagate_block_info (test_bb, test_live, test_set, test_set,
 				       0);
 
@@ -3373,12 +3373,13 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
       /* We can perform the transformation if
 	   MERGE_SET & (TEST_SET | TEST_LIVE)
 	 and
-	   TEST_SET & merge_bb->global_live_at_start
+	   TEST_SET & merge_bb->il.rtl->global_live_at_start
 	 are empty.  */
 
       if (bitmap_intersect_p (test_set, merge_set)
 	  || bitmap_intersect_p (test_live, merge_set)
-	  || bitmap_intersect_p (test_set, merge_bb->global_live_at_start))
+	  || bitmap_intersect_p (test_set,
+	    			 merge_bb->il.rtl->global_live_at_start))
 	fail = 1;
 
       FREE_REG_SET (tmp);

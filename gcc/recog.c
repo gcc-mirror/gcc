@@ -3066,7 +3066,7 @@ peephole2_optimize (FILE *dump_file ATTRIBUTE_UNUSED)
       peep2_current = MAX_INSNS_PER_PEEP2;
 
       /* Start up propagation.  */
-      COPY_REG_SET (live, bb->global_live_at_end);
+      COPY_REG_SET (live, bb->il.rtl->global_live_at_end);
       COPY_REG_SET (peep2_insn_data[MAX_INSNS_PER_PEEP2].live_before, live);
 
 #ifdef HAVE_conditional_execution
@@ -3278,7 +3278,7 @@ peephole2_optimize (FILE *dump_file ATTRIBUTE_UNUSED)
 
       /* Some peepholes can decide the don't need one or more of their
 	 inputs.  If this happens, local life update is not enough.  */
-      EXECUTE_IF_AND_COMPL_IN_BITMAP (bb->global_live_at_start, live,
+      EXECUTE_IF_AND_COMPL_IN_BITMAP (bb->il.rtl->global_live_at_start, live,
 				      0, j, rsi)
 	{
 	  do_global_life_update = true;

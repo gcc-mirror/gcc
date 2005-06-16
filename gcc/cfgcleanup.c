@@ -395,7 +395,7 @@ thread_jump (int mode, edge e, basic_block b)
   /* In case liveness information is available, we need to prove equivalence
      only of the live values.  */
   if (mode & CLEANUP_UPDATE_LIFE)
-    AND_REG_SET (nonequal, b->global_live_at_end);
+    AND_REG_SET (nonequal, b->il.rtl->global_live_at_end);
 
   EXECUTE_IF_SET_IN_REG_SET (nonequal, 0, i, rsi)
     goto failed_exit;

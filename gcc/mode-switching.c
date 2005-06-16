@@ -219,7 +219,7 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
     if (eg->flags & EDGE_FALLTHRU)
       {
 	basic_block src_bb = eg->src;
-	regset live_at_end = src_bb->global_live_at_end;
+	regset live_at_end = src_bb->il.rtl->global_live_at_end;
 	rtx last_insn, ret_reg;
 
 	gcc_assert (!pre_exit);
@@ -368,8 +368,8 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 	else
 	  {
 	    pre_exit = split_edge (eg);
-	    COPY_REG_SET (pre_exit->global_live_at_start, live_at_end);
-	    COPY_REG_SET (pre_exit->global_live_at_end, live_at_end);
+	    COPY_REG_SET (pre_exit->il.rtl->global_live_at_start, live_at_end);
+	    COPY_REG_SET (pre_exit->il.rtl->global_live_at_end, live_at_end);
 	  }
       }
 
@@ -453,7 +453,7 @@ optimize_mode_switching (FILE *file)
 	  HARD_REG_SET live_now;
 
 	  REG_SET_TO_HARD_REG_SET (live_now,
-				   bb->global_live_at_start);
+				   bb->il.rtl->global_live_at_start);
 	  for (insn = BB_HEAD (bb);
 	       insn != NULL && insn != NEXT_INSN (BB_END (bb));
 	       insn = NEXT_INSN (insn))
@@ -583,7 +583,7 @@ optimize_mode_switching (FILE *file)
 	      src_bb = eg->src;
 
 	      REG_SET_TO_HARD_REG_SET (live_at_edge,
-				       src_bb->global_live_at_end);
+				       src_bb->il.rtl->global_live_at_end);
 
 	      start_sequence ();
 	      EMIT_MODE_SET (entity_map[j], mode, live_at_edge);

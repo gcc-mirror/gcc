@@ -1,5 +1,21 @@
 2005-06-16  Jan Hubicka  <jh@suse.cz>
 
+	* basic-block.h (rtl_bb_info): Break out head_, end_,
+	global_live_at_start, global_live_at_end from ...
+	(basic_block_def): ... here; update all references
+	(BB_RTL): New flag.
+	(init_rtl_bb_info): Declare.
+	* cfgexpand.c (expand_gimple_basic_block): Init bb info, set BB_RTL
+	flag.
+	* cfgrtl.c: Include ggc.h
+	(create_basic_block_structure): Init bb info.
+	(rtl_verify_flow_info_1): Check BB_RTL flag and rtl_bb_info pointer.
+	(init_rtl_bb_info): New function.
+	(rtl_merge_block, cfglayout_merge_block): Copy global_live_at_end here.
+	* cfghooks.c (merge_block): Do not copy global_live_at_end here.
+	* cfg.c (clear_bb_flags): Skip BB_RTL flag.
+	(dump_flow_info): Gueard global_live_* dumping.
+
 	* Makefile.in (cfg.o): Add new dependencies.
 	* basic-block.h (reorder_block_def): Kill
 	original/copy/duplicated/copy_number fields.
