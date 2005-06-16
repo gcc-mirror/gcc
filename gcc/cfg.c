@@ -421,7 +421,8 @@ clear_bb_flags (void)
   basic_block bb;
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
-    bb->flags = BB_PARTITION (bb)  | (bb->flags & BB_DISABLE_SCHEDULE);
+    bb->flags = (BB_PARTITION (bb)  | (bb->flags & BB_DISABLE_SCHEDULE)
+		 | (bb->flags & BB_RTL));
 }
 
 /* Check the consistency of profile information.  We can't do that
@@ -553,16 +554,19 @@ dump_flow_info (FILE *file)
       FOR_EACH_EDGE (e, ei, bb->succs)
 	dump_edge_info (file, e, 1);
 
-      if (bb->global_live_at_start)
+      if (bb->flags & BB_RTL)
 	{
-	  fprintf (file, "\nRegisters live at start:");
-	  dump_regset (bb->global_live_at_start, file);
-	}
+	  if (bb->il.rtl->global_live_at_start)
+	    {
+	      fprintf (file, "\nRegisters live at start:");
+	      dump_regset (bb->il.rtl->global_live_at_start, file);
+	    }
 
-      if (bb->global_live_at_end)
-	{
-	  fprintf (file, "\nRegisters live at end:");
-	  dump_regset (bb->global_live_at_end, file);
+	  if (bb->il.rtl->global_live_at_end)
+	    {
+	      fprintf (file, "\nRegisters live at end:");
+	      dump_regset (bb->il.rtl->global_live_at_end, file);
+	    }
 	}
 
       putc ('\n', file);

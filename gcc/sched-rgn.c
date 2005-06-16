@@ -1184,7 +1184,8 @@ check_live_1 (int src, rtx x)
 		{
 		  basic_block b = candidate_table[src].split_bbs.first_member[i];
 
-		  if (REGNO_REG_SET_P (b->global_live_at_start, regno + j))
+		  if (REGNO_REG_SET_P (b->il.rtl->global_live_at_start,
+				       regno + j))
 		    {
 		      return 0;
 		    }
@@ -1198,7 +1199,7 @@ check_live_1 (int src, rtx x)
 	    {
 	      basic_block b = candidate_table[src].split_bbs.first_member[i];
 
-	      if (REGNO_REG_SET_P (b->global_live_at_start, regno))
+	      if (REGNO_REG_SET_P (b->il.rtl->global_live_at_start, regno))
 		{
 		  return 0;
 		}
@@ -1257,7 +1258,8 @@ update_live_1 (int src, rtx x)
 		{
 		  basic_block b = candidate_table[src].update_bbs.first_member[i];
 
-		  SET_REGNO_REG_SET (b->global_live_at_start, regno + j);
+		  SET_REGNO_REG_SET (b->il.rtl->global_live_at_start,
+				     regno + j);
 		}
 	    }
 	}
@@ -1267,7 +1269,7 @@ update_live_1 (int src, rtx x)
 	    {
 	      basic_block b = candidate_table[src].update_bbs.first_member[i];
 
-	      SET_REGNO_REG_SET (b->global_live_at_start, regno);
+	      SET_REGNO_REG_SET (b->il.rtl->global_live_at_start, regno);
 	    }
 	}
     }

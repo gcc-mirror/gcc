@@ -4702,8 +4702,8 @@ keep_stack_depressed (rtx insns)
 		if (HARD_REGNO_MODE_OK (regno, Pmode)
 		    && !fixed_regs[regno]
 		    && TEST_HARD_REG_BIT (regs_invalidated_by_call, regno)
-		    && !REGNO_REG_SET_P (EXIT_BLOCK_PTR->global_live_at_start,
-					 regno)
+		    && !REGNO_REG_SET_P
+		         (EXIT_BLOCK_PTR->il.rtl->global_live_at_start, regno)
 		    && !refers_to_regno_p (regno,
 					   regno + hard_regno_nregs[regno]
 								   [Pmode],

@@ -416,7 +416,7 @@ life_analysis (FILE *file, int flags)
   allocate_bb_life_data ();
 
   /* Find the set of registers live on function exit.  */
-  mark_regs_live_at_end (EXIT_BLOCK_PTR->global_live_at_start);
+  mark_regs_live_at_end (EXIT_BLOCK_PTR->il.rtl->global_live_at_start);
 
   /* "Update" life info from zero.  It'd be nice to begin the
      relaxation with just the exit and noreturn blocks, but that set
@@ -504,7 +504,8 @@ verify_local_live_at_start (regset new_live_at_start, basic_block bb)
     {
       /* After reload, there are no pseudos, nor subregs of multi-word
 	 registers.  The regsets should exactly match.  */
-      if (! REG_SET_EQUAL_P (new_live_at_start, bb->global_live_at_start))
+      if (! REG_SET_EQUAL_P (new_live_at_start,
+	    		     bb->il.rtl->global_live_at_start))
 	{
 	  if (dump_file)
 	    {
@@ -524,12 +525,12 @@ verify_local_live_at_start (regset new_live_at_start, basic_block bb)
       reg_set_iterator rsi;
 
       /* Find the set of changed registers.  */
-      XOR_REG_SET (new_live_at_start, bb->global_live_at_start);
+      XOR_REG_SET (new_live_at_start, bb->il.rtl->global_live_at_start);
 
       EXECUTE_IF_SET_IN_REG_SET (new_live_at_start, 0, i, rsi)
 	{
 	  /* No registers should die.  */
-	  if (REGNO_REG_SET_P (bb->global_live_at_start, i))
+	  if (REGNO_REG_SET_P (bb->il.rtl->global_live_at_start, i))
 	    {
 	      if (dump_file)
 		{
@@ -608,7 +609,7 @@ update_life_info (sbitmap blocks, enum update_life_extent extent,
 	     in turn may allow for further dead code detection / removal.  */
 	  FOR_EACH_BB_REVERSE (bb)
 	    {
-	      COPY_REG_SET (tmp, bb->global_live_at_end);
+	      COPY_REG_SET (tmp, bb->il.rtl->global_live_at_end);
 	      changed |= propagate_block (bb, tmp, NULL, NULL,
 				prop_flags & (PROP_SCAN_DEAD_CODE
 					      | PROP_SCAN_DEAD_STORES
@@ -637,8 +638,8 @@ update_life_info (sbitmap blocks, enum update_life_extent extent,
 	     in the code being marked live at entry.  */
 	  FOR_EACH_BB (bb)
 	    {
-	      CLEAR_REG_SET (bb->global_live_at_start);
-	      CLEAR_REG_SET (bb->global_live_at_end);
+	      CLEAR_REG_SET (bb->il.rtl->global_live_at_start);
+	      CLEAR_REG_SET (bb->il.rtl->global_live_at_end);
 	    }
 	}
 
@@ -659,7 +660,7 @@ update_life_info (sbitmap blocks, enum update_life_extent extent,
 	{
 	  bb = BASIC_BLOCK (i);
 
-	  COPY_REG_SET (tmp, bb->global_live_at_end);
+	  COPY_REG_SET (tmp, bb->il.rtl->global_live_at_end);
 	  propagate_block (bb, tmp, NULL, NULL, stabilized_prop_flags);
 
 	  if (extent == UPDATE_LIFE_LOCAL)
@@ -670,7 +671,7 @@ update_life_info (sbitmap blocks, enum update_life_extent extent,
     {
       FOR_EACH_BB_REVERSE (bb)
 	{
-	  COPY_REG_SET (tmp, bb->global_live_at_end);
+	  COPY_REG_SET (tmp, bb->il.rtl->global_live_at_end);
 
 	  propagate_block (bb, tmp, NULL, NULL, stabilized_prop_flags);
 
@@ -689,7 +690,7 @@ update_life_info (sbitmap blocks, enum update_life_extent extent,
 	 are those that were not set anywhere in the function.  local-alloc
 	 doesn't know how to handle these correctly, so mark them as not
 	 local to any one basic block.  */
-      EXECUTE_IF_SET_IN_REG_SET (ENTRY_BLOCK_PTR->global_live_at_end,
+      EXECUTE_IF_SET_IN_REG_SET (ENTRY_BLOCK_PTR->il.rtl->global_live_at_end,
 				 FIRST_PSEUDO_REGISTER, i, rsi)
 	REG_BASIC_BLOCK (i) = REG_BLOCK_GLOBAL;
 
@@ -767,9 +768,9 @@ free_basic_block_vars (void)
   label_to_block_map = NULL;
 
   ENTRY_BLOCK_PTR->aux = NULL;
-  ENTRY_BLOCK_PTR->global_live_at_end = NULL;
+  ENTRY_BLOCK_PTR->il.rtl->global_live_at_end = NULL;
   EXIT_BLOCK_PTR->aux = NULL;
-  EXIT_BLOCK_PTR->global_live_at_start = NULL;
+  EXIT_BLOCK_PTR->il.rtl->global_live_at_start = NULL;
 }
 
 /* Delete any insns that copy a register to itself.  */
@@ -1186,10 +1187,10 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 	       confused by sibling call edges, which crashes reg-stack.  */
 	    if (e->flags & EDGE_EH)
 	      bitmap_ior_and_compl_into (new_live_at_end,
-					 sb->global_live_at_start,
+					 sb->il.rtl->global_live_at_start,
 					 invalidated_by_call);
 	    else
-	      IOR_REG_SET (new_live_at_end, sb->global_live_at_start);
+	      IOR_REG_SET (new_live_at_end, sb->il.rtl->global_live_at_start);
 
 	    /* If a target saves one register in another (instead of on
 	       the stack) the save register will need to be live for EH.  */
@@ -1236,7 +1237,7 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 
       if (bb == ENTRY_BLOCK_PTR)
 	{
-	  COPY_REG_SET (bb->global_live_at_end, new_live_at_end);
+	  COPY_REG_SET (bb->il.rtl->global_live_at_end, new_live_at_end);
 	  continue;
 	}
 
@@ -1259,7 +1260,7 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 	     rescan the block.  This wouldn't be necessary if we had
 	     precalculated local_live, however with PROP_SCAN_DEAD_CODE
 	     local_live is really dependent on live_at_end.  */
-	  rescan = bitmap_intersect_compl_p (bb->global_live_at_end,
+	  rescan = bitmap_intersect_compl_p (bb->il.rtl->global_live_at_end,
 					     new_live_at_end);
 
 	  if (!rescan)
@@ -1284,7 +1285,7 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 
 	      /* Find the set of changed bits.  Take this opportunity
 		 to notice that this set is empty and early out.  */
-	      bitmap_xor (tmp, bb->global_live_at_end, new_live_at_end);
+	      bitmap_xor (tmp, bb->il.rtl->global_live_at_end, new_live_at_end);
 	      if (bitmap_empty_p (tmp))
 		continue;
   
@@ -1305,16 +1306,16 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 	  /* Add to live_at_start the set of all registers in
 	     new_live_at_end that aren't in the old live_at_end.  */
 	  
-	  changed = bitmap_ior_and_compl_into (bb->global_live_at_start,
+	  changed = bitmap_ior_and_compl_into (bb->il.rtl->global_live_at_start,
 					       new_live_at_end,
-					       bb->global_live_at_end);
-	  COPY_REG_SET (bb->global_live_at_end, new_live_at_end);
+					       bb->il.rtl->global_live_at_end);
+	  COPY_REG_SET (bb->il.rtl->global_live_at_end, new_live_at_end);
 	  if (! changed)
 	    continue;
 	}
       else
 	{
-	  COPY_REG_SET (bb->global_live_at_end, new_live_at_end);
+	  COPY_REG_SET (bb->il.rtl->global_live_at_end, new_live_at_end);
 
 	  /* Rescan the block insn by insn to turn (a copy of) live_at_end
 	     into live_at_start.  */
@@ -1324,14 +1325,15 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 			   flags);
 
 	  /* If live_at start didn't change, no need to go farther.  */
-	  if (REG_SET_EQUAL_P (bb->global_live_at_start, new_live_at_end))
+	  if (REG_SET_EQUAL_P (bb->il.rtl->global_live_at_start,
+			       new_live_at_end))
 	    continue;
 
 	  if (failure_strategy_required)
 	    {
 	      /* Get the list of registers that were removed from the
 	         bb->global_live_at_start set.  */
-	      bitmap_and_compl (tmp, bb->global_live_at_start,
+	      bitmap_and_compl (tmp, bb->il.rtl->global_live_at_start,
 				new_live_at_end);
 	      if (!bitmap_empty_p (tmp))
 		{
@@ -1350,11 +1352,13 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 		      pbb_changed = false;
 
 		      pbb_changed
-			|= bitmap_and_compl_into (pbb->global_live_at_start,
-						  registers_made_dead);
+			|= bitmap_and_compl_into
+			    (pbb->il.rtl->global_live_at_start,
+			     registers_made_dead);
 		      pbb_changed
-			|= bitmap_and_compl_into (pbb->global_live_at_end,
-						  registers_made_dead);
+			|= bitmap_and_compl_into
+			    (pbb->il.rtl->global_live_at_end,
+			     registers_made_dead);
 		      if (!pbb_changed)
 			continue;
 
@@ -1383,7 +1387,7 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 		}
 	    } /* end of failure_strategy_required */
 
-	  COPY_REG_SET (bb->global_live_at_start, new_live_at_end);
+	  COPY_REG_SET (bb->il.rtl->global_live_at_start, new_live_at_end);
 	}
 
       /* Queue all predecessors of BB so that we may re-examine
@@ -1504,7 +1508,7 @@ initialize_uninitialized_subregs (void)
   FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
     {
       basic_block bb = e->dest;
-      regset map = bb->global_live_at_start;
+      regset map = bb->il.rtl->global_live_at_start;
       reg_set_iterator rsi;
 
       EXECUTE_IF_SET_IN_REG_SET (map, FIRST_PSEUDO_REGISTER, reg, rsi)
@@ -1556,8 +1560,8 @@ allocate_bb_life_data (void)
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
     {
-      bb->global_live_at_start = ALLOC_REG_SET (&reg_obstack);
-      bb->global_live_at_end = ALLOC_REG_SET (&reg_obstack);
+      bb->il.rtl->global_live_at_start = ALLOC_REG_SET (&reg_obstack);
+      bb->il.rtl->global_live_at_end = ALLOC_REG_SET (&reg_obstack);
     }
 
   regs_live_at_setjmp = ALLOC_REG_SET (&reg_obstack);
@@ -1856,7 +1860,7 @@ propagate_one_insn (struct propagate_block_info *pbi, rtx insn)
 	     except for return values.  */
 
 	  sibcall_p = SIBLING_CALL_P (insn);
-	  live_at_end = EXIT_BLOCK_PTR->global_live_at_start;
+	  live_at_end = EXIT_BLOCK_PTR->il.rtl->global_live_at_start;
 	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	    if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i)
 		&& ! (sibcall_p
@@ -1991,8 +1995,8 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
 	}
 
       /* Compute which register lead different lives in the successors.  */
-      bitmap_xor (diff, bb_true->global_live_at_start,
-		  bb_false->global_live_at_start);
+      bitmap_xor (diff, bb_true->il.rtl->global_live_at_start,
+		  bb_false->il.rtl->global_live_at_start);
       
       if (!bitmap_empty_p (diff))
 	  {
@@ -2037,7 +2041,8 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
 
 		  rcli = xmalloc (sizeof (*rcli));
 
-		  if (REGNO_REG_SET_P (bb_true->global_live_at_start, i))
+		  if (REGNO_REG_SET_P (bb_true->il.rtl->global_live_at_start,
+				       i))
 		    cond = cond_false;
 		  else
 		    cond = cond_true;
@@ -2468,7 +2473,8 @@ regno_clobbered_at_setjmp (int regno)
     return 0;
 
   return ((REG_N_SETS (regno) > 1
-	   || REGNO_REG_SET_P (ENTRY_BLOCK_PTR->global_live_at_end, regno))
+	   || REGNO_REG_SET_P (ENTRY_BLOCK_PTR->il.rtl->global_live_at_end,
+	     		       regno))
 	  && REGNO_REG_SET_P (regs_live_at_setjmp, regno));
 }
 

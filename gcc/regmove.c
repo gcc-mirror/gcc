@@ -266,7 +266,7 @@ mark_flags_life_zones (rtx flags)
       {
 	int i;
 	for (i = 0; i < flags_nregs; ++i)
-	  live |= REGNO_REG_SET_P (block->global_live_at_start,
+	  live |= REGNO_REG_SET_P (block->il.rtl->global_live_at_start,
 				   flags_regno + i);
       }
 #endif

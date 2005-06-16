@@ -739,9 +739,9 @@ reload_combine (void)
 	  HARD_REG_SET live;
 
 	  REG_SET_TO_HARD_REG_SET (live,
-				   bb->global_live_at_start);
+				   bb->il.rtl->global_live_at_start);
 	  compute_use_by_pseudos (&live,
-				  bb->global_live_at_start);
+				  bb->il.rtl->global_live_at_start);
 	  COPY_HARD_REG_SET (LABEL_LIVE (insn), live);
 	  IOR_HARD_REG_SET (ever_live_at_start, live);
 	}

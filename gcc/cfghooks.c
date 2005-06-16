@@ -545,7 +545,6 @@ merge_blocks (basic_block a, basic_block b)
 
   /* B hasn't quite yet ceased to exist.  Attempt to prevent mishap.  */
   b->preds = b->succs = NULL;
-  a->global_live_at_end = b->global_live_at_end;
 
   if (dom_computed[CDI_DOMINATORS])
     redirect_immediate_dominators (CDI_DOMINATORS, b, a);

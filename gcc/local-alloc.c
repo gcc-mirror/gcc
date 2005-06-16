@@ -1193,8 +1193,10 @@ update_equiv_regs (void)
 	{
 	  FOR_EACH_BB (bb)
 	    {
-	      AND_COMPL_REG_SET (bb->global_live_at_start, &cleared_regs);
-	      AND_COMPL_REG_SET (bb->global_live_at_end, &cleared_regs);
+	      AND_COMPL_REG_SET (bb->il.rtl->global_live_at_start,
+			         &cleared_regs);
+	      AND_COMPL_REG_SET (bb->il.rtl->global_live_at_end,
+			         &cleared_regs);
 	    }
 	}
       else
@@ -1204,8 +1206,8 @@ update_equiv_regs (void)
 	    {
 	      FOR_EACH_BB (bb)
 		{
-		  CLEAR_REGNO_REG_SET (bb->global_live_at_start, j);
-		  CLEAR_REGNO_REG_SET (bb->global_live_at_end, j);
+		  CLEAR_REGNO_REG_SET (bb->il.rtl->global_live_at_start, j);
+		  CLEAR_REGNO_REG_SET (bb->il.rtl->global_live_at_end, j);
 		}
 	    }
 	}
@@ -1287,7 +1289,8 @@ block_alloc (int b)
 
   /* Initialize table of hardware registers currently live.  */
 
-  REG_SET_TO_HARD_REG_SET (regs_live, BASIC_BLOCK (b)->global_live_at_start);
+  REG_SET_TO_HARD_REG_SET (regs_live,
+		  	   BASIC_BLOCK (b)->il.rtl->global_live_at_start);
 
   /* This loop scans the instructions of the basic block
      and assigns quantities to registers.
