@@ -92,6 +92,9 @@ package Styleg is
    procedure Check_Dot_Dot;
    --  Called after scanning out dot dot to check spacing
 
+   procedure Check_EOF;
+   --  Called after scanning out EOF mark
+
    procedure Check_HT;
    --  Called with Scan_Ptr pointing to a horizontal tab character
 

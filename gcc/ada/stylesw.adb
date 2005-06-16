@@ -37,6 +37,7 @@ package body Stylesw is
       Style_Check_Indentation         := 0;
       Style_Check_Attribute_Casing    := False;
       Style_Check_Blanks_At_End       := False;
+      Style_Check_Blank_Lines         := False;
       Style_Check_Comments            := False;
       Style_Check_DOS_Line_Terminator := False;
       Style_Check_End_Labels          := False;
@@ -121,6 +122,7 @@ package body Stylesw is
       Add ('r', Style_Check_References);
       Add ('s', Style_Check_Specs);
       Add ('t', Style_Check_Tokens);
+      Add ('u', Style_Check_Blank_Lines);
       Add ('x', Style_Check_Xtra_Parens);
 
       if Style_Check_Max_Line_Length then
@@ -299,6 +301,9 @@ package body Stylesw is
 
             when 't' =>
                Style_Check_Tokens              := True;
+
+            when 'u' =>
+               Style_Check_Blank_Lines         := True;
 
             when 'x' =>
                Style_Check_Xtra_Parens         := True;

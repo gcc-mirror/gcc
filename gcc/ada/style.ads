@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -110,6 +110,10 @@ package Style is
    procedure Check_Dot_Dot
      renames Style_Inst.Check_Dot_Dot;
    --  Called after scanning out dot dot to check spacing
+
+   procedure Check_EOF
+     renames Style_Inst.Check_EOF;
+   --  Called after scanning out end of file mark
 
    procedure Check_HT
      renames Style_Inst.Check_HT;

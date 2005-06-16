@@ -97,7 +97,8 @@ package body Scng is
    procedure Accumulate_Checksum (C : Char_Code) is
    begin
       if C > 16#FFFF# then
-         Accumulate_Checksum (Character'Val (C / 2 ** 16));
+         Accumulate_Checksum (Character'Val (C / 2 ** 24));
+         Accumulate_Checksum (Character'Val ((C / 2 ** 16) mod 256));
          Accumulate_Checksum (Character'Val ((C / 256) mod 256));
       else
          Accumulate_Checksum (Character'Val (C / 256));
@@ -1110,6 +1111,10 @@ package body Scng is
 
                   Accumulate_Checksum (Code);
 
+                  --  In Ada 95 mode we allow any wide characters in a string
+                  --  but in Ada 2005, the set of characters allowed has been
+                  --  restricted to graphic characters.
+
                   if Ada_Version >= Ada_05
                     and then Is_UTF_32_Non_Graphic (UTF_32 (Code))
                   then
@@ -1236,6 +1241,7 @@ package body Scng is
          when EOF =>
             if Scan_Ptr = Source_Last (Current_Source_File) then
                Check_End_Of_Line;
+               if Style_Check then Style.Check_EOF; end if;
                Token := Tok_EOF;
                return;
             else
@@ -1644,7 +1650,11 @@ package body Scng is
 
                   if Err then
                      Error_Illegal_Wide_Character;
-                     Code := Character'Pos (' ');
+                        Code := Character'Pos (' ');
+
+                  --  In Ada 95 mode we allow any wide character in a character
+                  --  literal, but in Ada 2005, the set of characters allowed
+                  --  is restricted to graphic characters.
 
                   elsif Ada_Version >= Ada_05
                     and then Is_UTF_32_Non_Graphic (UTF_32 (Code))
@@ -2256,6 +2266,10 @@ package body Scng is
                      --  is accepted in an identifier, but is ignored and not
                      --  stored. It seems reasonable to exclude it from the
                      --  checksum.
+
+                     --  Note that it is correct (see AI-395) to simply strip
+                     --  other format characters, before testing for double
+                     --  underlines, or for reserved words).
 
                      elsif Is_UTF_32_Other (Cat) then
                         null;
