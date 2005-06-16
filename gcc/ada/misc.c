@@ -353,7 +353,7 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
     flag_no_inline = 1;
   if (flag_inline_functions)
     flag_inline_trees = 2;
-  
+
   flag_tree_salias = 0;
 
   return false;
