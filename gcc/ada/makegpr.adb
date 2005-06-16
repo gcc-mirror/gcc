@@ -280,6 +280,8 @@ package body Makegpr is
    Dash_c            : constant String_Access := Dash_c_String'Access;
    Dash_cargs_String : aliased  String := "-cargs";
    Dash_cargs        : constant String_Access := Dash_cargs_String'Access;
+   Dash_d_String     : aliased  String := "-d";
+   Dash_d            : constant String_Access := Dash_d_String'Access;
    Dash_f_String     : aliased  String := "-f";
    Dash_f            : constant String_Access := Dash_f_String'Access;
    Dash_k_String     : aliased  String := "-k";
@@ -2494,6 +2496,12 @@ package body Makegpr is
          Add_Argument (Dash_c, True);
       end if;
 
+      --  -d
+
+      if Display_Compilation_Progress then
+         Add_Argument (Dash_d, True);
+      end if;
+
       --  -k
 
       if Keep_Going then
@@ -2604,7 +2612,28 @@ package body Makegpr is
       Need_To_Rebuild_Archive : Boolean := Force_Compilations;
       --  True when the archive needs to be built/rebuilt unconditionally
 
+      Total_Number_Of_Sources : Int := 0;
+
+      Current_Source_Number : Int := 0;
+
    begin
+      --  First, get the number of sources
+
+      for Project in Project_Table.First ..
+                     Project_Table.Last (Project_Tree.Projects)
+      loop
+         Data := Project_Tree.Projects.Table (Project);
+
+         if (not Data.Virtual) and then Data.Other_Sources_Present then
+            Source_Id := Data.First_Other_Source;
+            while Source_Id /= No_Other_Source loop
+               Source := Project_Tree.Other_Sources.Table (Source_Id);
+               Total_Number_Of_Sources := Total_Number_Of_Sources + 1;
+               Source_Id := Source.Next;
+            end loop;
+         end if;
+      end loop;
+
       --  Loop through project files
 
       for Project in Project_Table.First ..
@@ -2636,7 +2665,9 @@ package body Makegpr is
             --  Process each source one by one
 
             while Source_Id /= No_Other_Source loop
+
                Source := Project_Tree.Other_Sources.Table (Source_Id);
+               Current_Source_Number := Current_Source_Number + 1;
                Need_To_Compile := Force_Compilations;
 
                --  Check if compilation is needed
@@ -2654,6 +2685,18 @@ package body Makegpr is
 
                   Need_To_Rebuild_Archive := True;
                   Compile (Source_Id, Data, Local_Errors);
+               end if;
+
+               if Display_Compilation_Progress then
+                  Write_Str ("completed ");
+                  Write_Int (Current_Source_Number);
+                  Write_Str (" out of ");
+                  Write_Int (Total_Number_Of_Sources);
+                  Write_Str (" (");
+                  Write_Int
+                    ((Current_Source_Number * 100) / Total_Number_Of_Sources);
+                  Write_Str ("%)...");
+                  Write_Eol;
                end if;
 
                --  Next source, if any
@@ -4031,6 +4074,16 @@ package body Makegpr is
          if Arg = "-c" then
             Compile_Only := True;
 
+            --  Make sure that when a main is specified and switch -c is used,
+            --  only the main(s) is/are compiled.
+
+            if Mains.Number_Of_Mains > 0 then
+               Unique_Compile := True;
+            end if;
+
+         elsif Arg = "-d" then
+            Display_Compilation_Progress := True;
+
          elsif Arg = "-f" then
             Force_Compilations := True;
 
@@ -4103,6 +4156,13 @@ package body Makegpr is
          --  Not a switch: must be a main
 
          Mains.Add_Main (Arg);
+
+         --  Make sure that when a main is specified and switch -c is used,
+         --  only the main(s) is/are compiled.
+
+         if Compile_Only then
+            Unique_Compile := True;
+         end if;
       end if;
    end Scan_Arg;
 
