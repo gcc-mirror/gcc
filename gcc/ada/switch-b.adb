@@ -149,12 +149,6 @@ package body Switch.B is
             Ptr := Ptr + 1;
             Exception_Tracebacks := True;
 
-         --  Processing for f switch
-
-         when 'f' =>
-            Ptr := Ptr + 1;
-            Force_RM_Elaboration_Order := True;
-
          --  Processing for F switch
 
          when 'F' =>
