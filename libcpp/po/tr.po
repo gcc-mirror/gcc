@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.0-b20050226\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2005-04-20 21:43-0700\n"
+"POT-Creation-Date: 2005-06-06 21:32+0200\n"
 "PO-Revision-Date: 2005-03-03 12:28+0300\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@superonline.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -671,14 +671,14 @@ msgstr "çok satırlı açıklama"
 msgid "unspellable token %s"
 msgstr "dizgecik %s okunabilir değil"
 
-#: line-map.c:309
+#: line-map.c:313
 #, c-format
 msgid "In file included from %s:%u"
 msgstr ""
 "Sırayla bir altındaki dosyada içerilerek:\n"
 "\t\t%s:%u"
 
-#: line-map.c:327
+#: line-map.c:331
 #, c-format
 msgid ""
 ",\n"

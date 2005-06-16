@@ -2,13 +2,13 @@
 # Copyright © 2000, 2005 Free Software Foundation, Inc.
 # Dennis Björklund <db@zigo.dhs.org>, 2000, 2001, 2002.
 # Göran Uddeborg <goeran@uddeborg.se>, 2005.
-# $Revision: 1.2 $
+# $Revision: 1.6 $
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.0.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2005-04-20 21:43-0700\n"
+"POT-Creation-Date: 2005-06-06 21:32+0200\n"
 "PO-Revision-Date: 2005-06-08 19:51+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <sv@li.org>\n"
@@ -672,12 +672,12 @@ msgstr "flerradskommentar"
 msgid "unspellable token %s"
 msgstr "ostavbar symbol %s"
 
-#: line-map.c:309
+#: line-map.c:313
 #, c-format
 msgid "In file included from %s:%u"
 msgstr "I fil inkluderad från %s:%u"
 
-#: line-map.c:327
+#: line-map.c:331
 #, c-format
 msgid ""
 ",\n"

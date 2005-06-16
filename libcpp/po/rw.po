@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 3.3\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2005-04-20 21:43-0700\n"
+"POT-Creation-Date: 2005-06-06 21:32+0200\n"
 "PO-Revision-Date: 2005-04-04 10:55-0700\n"
 "Last-Translator: Steven Michael Murphy <murf@e-tools.com>\n"
 "Language-Team: Kinyarwanda <translation-team-rw@lists.sourceforge.net>\n"
@@ -786,12 +786,12 @@ msgstr "Umurongo Icyo wongeraho"
 msgid "unspellable token %s"
 msgstr ""
 
-#: line-map.c:309
+#: line-map.c:313
 #, fuzzy, c-format
 msgid "In file included from %s:%u"
 msgstr "IDOSIYE Bivuye"
 
-#: line-map.c:327
+#: line-map.c:331
 #, fuzzy, c-format
 msgid ""
 ",\n"

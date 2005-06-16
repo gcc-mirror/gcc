@@ -128,7 +128,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.3\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2005-04-20 21:43-0700\n"
+"POT-Creation-Date: 2005-06-06 21:32+0200\n"
 "PO-Revision-Date: 2003-05-25 18:00+0200\n"
 "Last-Translator: Ole Laursen <olau@hardworking.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
@@ -799,12 +799,12 @@ msgstr "flerlinjers kommentar"
 msgid "unspellable token %s"
 msgstr "symbol %s kan ikke staves"
 
-#: line-map.c:309
+#: line-map.c:313
 #, c-format
 msgid "In file included from %s:%u"
 msgstr "I filen inkluderet af %s:%u"
 
-#: line-map.c:327
+#: line-map.c:331
 #, c-format
 msgid ""
 ",\n"
