@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,7 +63,7 @@ package body Styleg.C is
             end;
          end if;
 
-         Error_Msg_N ("(style): subprogram body has no previous spec", N);
+         Error_Msg_N ("(style) subprogram body has no previous spec", N);
       end if;
    end Body_With_No_Spec;
 
@@ -189,7 +189,7 @@ package body Styleg.C is
                   Cas := Mixed_Case;
                end if;
 
-               Nlen  := Length_Of_Name (Chars (Ref));
+               Nlen := Length_Of_Name (Chars (Ref));
 
                --  Now check if we have the right casing
 
