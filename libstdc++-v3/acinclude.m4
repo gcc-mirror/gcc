@@ -1759,8 +1759,8 @@ fi
 
 # For GNU ld, we need at least this version.  The format is described in
 # GLIBCXX_CHECK_LINKER_FEATURES above.
-glibcxx_min_gnu_ld_version=21400
-# XXXXXXXXXXX glibcxx_gnu_ld_version=21390
+# Need 21590 because of compatibility.cc's asm .symver strings for GLIBCXX_3.4.
+glibcxx_min_gnu_ld_version=21590
 
 # Check to see if unspecified "yes" value can win, given results above.
 # Change "yes" into either "no" or a style name.
@@ -1778,8 +1778,6 @@ if test $enable_symvers = yes; then
       AC_MSG_WARN(=== $glibcxx_min_gnu_ld_version or later and rebuild GCC.)
       if test $glibcxx_gnu_ld_version -ge 21200 ; then
         # Globbing fix is present, proper block support is not.
-        dnl AC_MSG_WARN([=== Dude, you are soooo close.  Maybe we can fake it.])
-        dnl enable_symvers=???
         AC_MSG_WARN([=== Symbol versioning will be disabled.])
         enable_symvers=no
       else
@@ -1808,6 +1806,31 @@ case $enable_symvers in
     AC_DEFINE(_GLIBCXX_SYMVER)
     ;;
 esac
+
+# In addition, need this to deal with std::size_t mangling in
+# src/compatibility.cc.  In a perfect world, could use
+# typeid(std::size_t).name()[0] to do direct substitution.
+AC_MSG_CHECKING([for size_t as unsigned int])
+ac_save_CFLAGS="$CFLAGS"
+CFLAGS="-Werror"
+AC_TRY_COMPILE(, [__SIZE_TYPE__* stp; unsigned int* uip; stp = uip;], 
+	         [glibcxx_size_t_is_i=yes], [glibcxx_size_t_is_i=no])
+CFLAGS=$ac_save_CFLAGS
+if test "$glibcxx_size_t_is_i" = yes; then
+  AC_DEFINE(_GLIBCXX_SIZE_T_IS_UINT, 1, [Define if size_t is unsigned int.])
+fi
+AC_MSG_RESULT([$glibcxx_size_t_is_i])
+
+AC_MSG_CHECKING([for ptrdiff_t as int])
+ac_save_CFLAGS="$CFLAGS"
+CFLAGS="-Werror"
+AC_TRY_COMPILE(, [__PTRDIFF_TYPE__* ptp; int* ip; ptp = ip;], 
+	         [glibcxx_ptrdiff_t_is_i=yes], [glibcxx_ptrdiff_t_is_i=no])
+CFLAGS=$ac_save_CFLAGS
+if test "$glibcxx_ptrdiff_t_is_i" = yes; then
+  AC_DEFINE(_GLIBCXX_PTRDIFF_T_IS_INT, 1, [Define if ptrdiff_t is int.])
+fi
+AC_MSG_RESULT([$glibcxx_ptrdiff_t_is_i])
 
 AC_SUBST(SYMVER_MAP)
 AC_SUBST(port_specific_symbol_files)

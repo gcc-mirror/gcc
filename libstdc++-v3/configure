@@ -1376,7 +1376,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 ### am handles this now?  ORIGINAL_LD_FOR_MULTILIBS=$LD
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:4:0
+libtool_VERSION=6:5:0
 
 
 # Find the rest of the source tree framework.
@@ -98270,8 +98270,8 @@ fi
 
 # For GNU ld, we need at least this version.  The format is described in
 # GLIBCXX_CHECK_LINKER_FEATURES above.
-glibcxx_min_gnu_ld_version=21400
-# XXXXXXXXXXX glibcxx_gnu_ld_version=21390
+# Need 21590 because of compatibility.cc's asm .symver strings for GLIBCXX_3.4.
+glibcxx_min_gnu_ld_version=21590
 
 # Check to see if unspecified "yes" value can win, given results above.
 # Change "yes" into either "no" or a style name.
@@ -98293,7 +98293,7 @@ echo "$as_me: WARNING: === You would need to upgrade your binutils to version" >
 echo "$as_me: WARNING: === $glibcxx_min_gnu_ld_version or later and rebuild GCC." >&2;}
       if test $glibcxx_gnu_ld_version -ge 21200 ; then
         # Globbing fix is present, proper block support is not.
-                        { echo "$as_me:$LINENO: WARNING: === Symbol versioning will be disabled." >&5
+        { echo "$as_me:$LINENO: WARNING: === Symbol versioning will be disabled." >&5
 echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
         enable_symvers=no
       else
@@ -98330,6 +98330,129 @@ _ACEOF
 
     ;;
 esac
+
+# In addition, need this to deal with std::size_t mangling in
+# src/compatibility.cc.  In a perfect world, could use
+# typeid(std::size_t).name()[0] to do direct substitution.
+echo "$as_me:$LINENO: checking for size_t as unsigned int" >&5
+echo $ECHO_N "checking for size_t as unsigned int... $ECHO_C" >&6
+ac_save_CFLAGS="$CFLAGS"
+CFLAGS="-Werror"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+int
+main ()
+{
+__SIZE_TYPE__* stp; unsigned int* uip; stp = uip;
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  glibcxx_size_t_is_i=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+glibcxx_size_t_is_i=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+CFLAGS=$ac_save_CFLAGS
+if test "$glibcxx_size_t_is_i" = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define _GLIBCXX_SIZE_T_IS_UINT 1
+_ACEOF
+
+fi
+echo "$as_me:$LINENO: result: $glibcxx_size_t_is_i" >&5
+echo "${ECHO_T}$glibcxx_size_t_is_i" >&6
+
+echo "$as_me:$LINENO: checking for ptrdiff_t as int" >&5
+echo $ECHO_N "checking for ptrdiff_t as int... $ECHO_C" >&6
+ac_save_CFLAGS="$CFLAGS"
+CFLAGS="-Werror"
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+int
+main ()
+{
+__PTRDIFF_TYPE__* ptp; int* ip; ptp = ip;
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  glibcxx_ptrdiff_t_is_i=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+glibcxx_ptrdiff_t_is_i=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+CFLAGS=$ac_save_CFLAGS
+if test "$glibcxx_ptrdiff_t_is_i" = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define _GLIBCXX_PTRDIFF_T_IS_INT 1
+_ACEOF
+
+fi
+echo "$as_me:$LINENO: result: $glibcxx_ptrdiff_t_is_i" >&5
+echo "${ECHO_T}$glibcxx_ptrdiff_t_is_i" >&6
 
 
 

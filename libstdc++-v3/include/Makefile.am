@@ -367,8 +367,10 @@ host_headers = \
 	${glibcxx_srcdir}/$(ABI_TWEAKS_SRCDIR)/cxxabi_tweaks.h
 
 # Non-installed host_header files.
+COMPATIBILITY_H = config/abi/compatibility.h
 host_headers_noinst = \
-	${glibcxx_srcdir}/$(CLOCALE_INTERNAL_H)
+	${glibcxx_srcdir}/$(CLOCALE_INTERNAL_H) \
+	${glibcxx_srcdir}/$(COMPATIBILITY_H)
 
 # These host_headers_extra files are all built with ad hoc naming rules.
 host_headers_extra = \
@@ -518,6 +520,7 @@ stamp-host: ${host_headers} ${host_headers_noinst} stamp-${host_alias}
 	  $(LN_S) ${glibcxx_srcdir}/$(CSTDIO_H) c++io.h || true ;\
 	  $(LN_S) ${glibcxx_srcdir}/$(CLOCALE_H) c++locale.h || true ;\
 	  $(LN_S) ${glibcxx_srcdir}/$(CLOCALE_INTERNAL_H) . || true ;\
+	  $(LN_S) ${glibcxx_srcdir}/$(COMPATIBILITY_H) . || true ;\
 	  $(LN_S) ${glibcxx_srcdir}/$(CMESSAGES_H) messages_members.h || true ;\
 	  $(LN_S) ${glibcxx_srcdir}/$(CTIME_H) time_members.h || true ;\
 	  $(LN_S) ${glibcxx_srcdir}/$(CCODECVT_H) codecvt_specializations.h || true);\

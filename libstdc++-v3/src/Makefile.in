@@ -65,16 +65,17 @@ am__objects_1 = atomicity.lo codecvt_members.lo collate_members.lo \
 	numeric_members.lo time_members.lo
 am__objects_2 = basic_file.lo c++locale.lo
 am__objects_3 = bitmap_allocator.lo pool_allocator.lo mt_allocator.lo \
-	codecvt.lo complex_io.lo ctype.lo debug.lo debug_list.lo \
-	functexcept.lo globals_locale.lo globals_io.lo ios.lo \
-	ios_failure.lo ios_init.lo ios_locale.lo limits.lo list.lo \
-	locale.lo locale_init.lo locale_facets.lo localename.lo \
-	stdexcept.lo strstream.lo tree.lo allocator-inst.lo \
-	concept-inst.lo fstream-inst.lo ext-inst.lo io-inst.lo \
-	istream-inst.lo istream.lo locale-inst.lo locale-misc-inst.lo \
-	misc-inst.lo ostream-inst.lo sstream-inst.lo streambuf-inst.lo \
-	streambuf.lo string-inst.lo valarray-inst.lo wlocale-inst.lo \
-	wstring-inst.lo $(am__objects_1) $(am__objects_2)
+	codecvt.lo compatibility.lo complex_io.lo ctype.lo debug.lo \
+	debug_list.lo functexcept.lo globals_locale.lo globals_io.lo \
+	ios.lo ios_failure.lo ios_init.lo ios_locale.lo limits.lo \
+	list.lo locale.lo locale_init.lo locale_facets.lo \
+	localename.lo stdexcept.lo strstream.lo tree.lo \
+	allocator-inst.lo concept-inst.lo fstream-inst.lo ext-inst.lo \
+	io-inst.lo istream-inst.lo istream.lo locale-inst.lo \
+	locale-misc-inst.lo misc-inst.lo ostream-inst.lo \
+	sstream-inst.lo streambuf-inst.lo streambuf.lo string-inst.lo \
+	valarray-inst.lo wlocale-inst.lo wstring-inst.lo \
+	$(am__objects_1) $(am__objects_2)
 am_libstdc___la_OBJECTS = $(am__objects_3)
 libstdc___la_OBJECTS = $(am_libstdc___la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
@@ -309,6 +310,7 @@ sources = \
 	pool_allocator.cc \
 	mt_allocator.cc \
 	codecvt.cc \
+	compatibility.cc \
 	complex_io.cc \
 	ctype.cc \
 	debug.cc \

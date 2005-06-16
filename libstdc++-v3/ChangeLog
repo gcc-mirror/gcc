@@ -1,3 +1,63 @@
+2005-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/ia64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/s390x-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/s390-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/x86_64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/x86_64-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/powerpc-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/i486-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/i386-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/powerpc64-linux-gnu/baseline_symbols.txt: New file.
+	* config/abi/powerpc64-linux-gnu/32/baseline_symbols.txt: New file.
+
+2005-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* src/compatibility.cc: Include bits/c++config.h first.
+	(_GLIBCXX_SYMVER_COMPATIBILITY): Define if _GLIBCXX_SYMVER
+	and PIC are both defined.
+	* include/bits/char_traits.h (char_traits::eq): Rename
+	only if _GLIBCXX_SYMVER_COMPATIBILITY is defined.
+
+2005-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+        * acinclude.m4 ((GLIBCXX_ENABLE_SYMVERS): Rename _GLIBCXX_SIZE_T_IS_INT
+        to _GLIBCXX_SIZE_T_IS_UINT.  Define _GLIBCXX_PTRDIFF_T_IS_INT.
+        * configure: Regenerate.
+        * config.h.in: Regenerate.
+        * src/compatibility.cc (istream:ignore(streamsize)): Use
+        _GLIBCXX_PTRDIFF_T_IS_INT instead of _GLIBCXX_SIZE_T_IS_INT.
+        * config/abi/compatibility.h: Rename _GLIBCXX_SIZE_T_IS_INT
+        to _GLIBCXX_SIZE_T_IS_UINT.  Use _GLIBCXX_PTRDIFF_T_IS_INT
+        instead for symbols with streamsize arguments.
+
+2005-06-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/linker-map.gnu: Also export
+	_ZNSt13basic_istreamIwSt11char_traitsIwEE6ignoreE[il][il].
+
+2005-06-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.ac (libtool_VERSION): To 6:5:0.
+	* configure: Regenerate.
+	* config/linker-map.gnu: Edit.
+	* src/istream.cc: Move istream::ignore(streamsize) specializations...
+	* src/compatibility.cc: ...here. New.
+	* include/bits/char_traits.h (char_traits::eq): Rename when
+	appropriate.
+	* acinclude.m4 (GLIBCXX_ENABLE_SYMVERS): Define _GLIBCXX_SIZE_T_IS_INT.
+	Bump glibcxx_min_gnu_ld_version to 21590.
+	* configure: Regenerate.
+	* acconfig.h: Remove _GLIBCXX_ASM_SYMVER.
+	* config.h.in: Regenerate.
+	* src/Makefile.am (sources): Add compatibility.cc.
+	* src/Makefile.in: Regenerate.
+	* include/Makefile.am (host_headers_noinst): Add compatibility.h.
+	* include/Makefile.in: Regenerate.
+	* testsuite/testsuite_abi.h (symbol): Add data members.
+	* testsuite/testsuite_abi.cc (check_version): Add GLIBCXX_3.4.5.
+	Remove deprecated versions. Do a better job version checking.
+	
 2005-06-06  Peter Doerfler  <doerfler@techinfo.rwth-aachen.de>
 
 	* include/bits/stl_function.h: ... and another one.

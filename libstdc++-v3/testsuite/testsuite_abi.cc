@@ -49,8 +49,7 @@ symbol::init(string& data)
     type = symbol::function;
   else if (data.find("OBJECT") == 0)
     type = symbol::object;
-  else
-    type = symbol::error;
+
   n = data.find_first_of(delim);
   if (n != npos)
     data.erase(data.begin(), data.begin() + n + 1);
@@ -71,7 +70,8 @@ symbol::init(string& data)
 	}
     }
 
-  // Set the name.
+  // Set the name and raw_name.
+  raw_name = string(data.begin(), data.end());
   n = data.find_first_of(version_delim);
   if (n != npos)
     {
@@ -87,7 +87,7 @@ symbol::init(string& data)
     {
       // No versioning info.
       name = string(data.begin(), data.end());
-      data.erase(data.begin(), data.end());
+      version_status = symbol::none;
     }
 
   // Set the demangled name.
@@ -98,101 +98,141 @@ void
 symbol::print() const
 {
   const char tab = '\t';
-  cout << tab << name << endl;
-  cout << tab << demangled_name << endl;
-  cout << tab << version_name << endl;
+  cout << name << endl;
+
+  if (demangled_name != name)
+    cout << demangled_name << endl;
+
+  string vers;
+  switch (version_status)
+    {
+    case none:
+      vers = "none";
+      break;
+    case compatible:
+      vers = "compatible";
+      break;
+    case incompatible:
+      vers = "incompatible";
+      break;
+     case unversioned:
+      vers = "unversioned";
+      break;
+   default:
+      vers = "<default>";
+    }
+  cout << "version status: " << vers << endl;
+
+  if (version_name.size() 
+      && (version_status == compatible || version_status == incompatible))
+    cout << version_name << endl;  
 
   string type_string;
   switch (type)
     {
-    case none:
-      type_string = "none";
-      break;
     case function:
       type_string = "function";
       break;
     case object:
       type_string = "object";
       break;
-    case error:
-      type_string = "error";
+    case uncategorized:
+      type_string = "uncategorized";
       break;
     default:
       type_string = "<default>";
     }
-  cout << tab << type_string << endl;
+  cout << "type: " << type_string << endl;
   
   if (type == object)
-    cout << tab << size << endl;
+    cout << "type size: " << size << endl;
 
   string status_string;
   switch (status)
     {
-    case unknown:
-      status_string = "unknown";
-      break;
     case added:
       status_string = "added";
       break;
     case subtracted:
       status_string = "subtracted";
       break;
-    case compatible:
-      status_string = "compatible";
-      break;
-    case incompatible:
-      status_string = "incompatible";
+    case undesignated:
+      status_string = "undesignated";
       break;
     default:
       status_string = "<default>";
     }
-  cout << tab << status_string << endl;
+  cout << "status: " << status_string << endl;
+
+  cout << endl;
 }
 
 
 bool
-check_version(const symbol& test, bool added)
+check_version(symbol& test, bool added)
 {
+  // Construct list of compatible versions.
   typedef std::vector<std::string> compat_list;
   static compat_list known_versions;
   if (known_versions.empty())
     {
-      known_versions.push_back("GLIBCPP_3.2"); // base version
-      known_versions.push_back("GLIBCPP_3.2.1");
-      known_versions.push_back("GLIBCPP_3.2.2");
-      known_versions.push_back("GLIBCPP_3.2.3"); // gcc-3.3.0
+      // NB: First version here must be the default version for this
+      // version of DT_SONAME.
       known_versions.push_back("GLIBCXX_3.4");
       known_versions.push_back("GLIBCXX_3.4.1");
       known_versions.push_back("GLIBCXX_3.4.2");
       known_versions.push_back("GLIBCXX_3.4.3");
-      known_versions.push_back("GLIBCXX_3.4.4");
-      known_versions.push_back("CXXABI_1.2");
-      known_versions.push_back("CXXABI_1.2.1");
+      known_versions.push_back("GLIBCXX_3.4.4"); 
+      known_versions.push_back("GLIBCXX_3.4.5"); 
       known_versions.push_back("CXXABI_1.3");
       known_versions.push_back("CXXABI_1.3.1");
     }
   compat_list::iterator begin = known_versions.begin();
   compat_list::iterator end = known_versions.end();
 
-  // Check version names for compatibility...
-  compat_list::iterator it1 = find(begin, end, test.version_name);
-  
-  // Check for weak label.
-  compat_list::iterator it2 = find(begin, end, test.name);
-
-  // Check that added symbols aren't added in the base version.
-  bool compat = true;
-  if (added && test.version_name == known_versions[0])
-    compat = false;
-
-  if (it1 == end && it2 == end)
-    compat = false;
-
-  return compat;
+  // Check for compatible version.
+  if (test.version_name.size())
+    {
+      compat_list::iterator it1 = find(begin, end, test.version_name);
+      compat_list::iterator it2 = find(begin, end, test.name);
+      if (it1 != end)
+	test.version_status = symbol::compatible;
+      else
+	test.version_status = symbol::incompatible;
+      
+      // Check that added symbols aren't added in the base version.
+      if (added && test.version_name == known_versions[0])
+	test.version_status = symbol::incompatible;
+      
+      // Check for weak label.
+      if (it1 == end && it2 == end)
+	test.version_status = symbol::incompatible;
+      
+      // Check that 
+      // GLIBCXX_3.4
+      // GLIBCXX_3.4.5
+      // version as compatible
+      // XXX
+    }
+  else
+    {
+      if (added)
+	{
+	  // New version labels are ok. The rest are not.
+	  compat_list::iterator it2 = find(begin, end, test.name);
+	  if (it2 != end)
+	    {
+	      test.version_status = symbol::compatible;
+	    }
+	  else
+	    test.version_status = symbol::incompatible;
+	}
+    }
+  return test.version_status == symbol::compatible;
 }
 
 bool 
-check_compatible(const symbol& lhs, const symbol& rhs, bool verbose)
+check_compatible(symbol& lhs, symbol& rhs, bool verbose)
 {
   bool ret = true;
   const char tab = '\t';
@@ -309,7 +349,7 @@ compare_symbols(const char* baseline_file, const char* test_file,
   // test_names 
   // -> symbols that have been deleted.
   //
-  // The names added to added_names are test_names are names not in
+  // The names added to added_names are test_names not in
   // baseline_names
   // -> symbols that have been added.
   symbol_names shared_names;
@@ -335,15 +375,17 @@ compare_symbols(const char* baseline_file, const char* test_file,
   vector<symbol_pair> incompatible;
   for (size_t j = 0; j < missing_names.size(); ++j)
     {
-      symbol base = baseline_objects[missing_names[j]];
+      symbol& base = baseline_objects[missing_names[j]];
+      base.status = symbol::subtracted;
       incompatible.push_back(symbol_pair(base, base));
     }
 
   // Check shared names for compatibility.
   for (size_t k = 0; k < shared_names.size(); ++k)
     {
-      symbol base = baseline_objects[shared_names[k]];
-      symbol test = test_objects[shared_names[k]];
+      symbol& base = baseline_objects[shared_names[k]];
+      symbol& test = test_objects[shared_names[k]];
+      test.status = symbol::existing;
       if (!check_compatible(base, test))
 	incompatible.push_back(symbol_pair(base, test));
     }
@@ -351,7 +393,8 @@ compare_symbols(const char* baseline_file, const char* test_file,
   // Check added names for compatibility.
   for (size_t l = 0; l < added_names.size(); ++l)
     {
-      symbol test = test_objects[added_names[l]];
+      symbol& test = test_objects[added_names[l]];
+      test.status = symbol::added;
       if (!check_version(test, true))
 	incompatible.push_back(symbol_pair(test, test));
     }
@@ -359,26 +402,35 @@ compare_symbols(const char* baseline_file, const char* test_file,
   // Report results.
   if (verbose && added_names.size())
     {
-      cout << added_names.size() << " added symbols " << endl;
+      cout << endl << added_names.size() << " added symbols " << endl;
       for (size_t j = 0; j < added_names.size() ; ++j)
-	test_objects[added_names[j]].print();
+	{
+	  cout << j << endl;
+	  test_objects[added_names[j]].print();
+	}
     }
   
   if (verbose && missing_names.size())
     {
-      cout << missing_names.size() << " missing symbols " << endl;
+      cout << endl << missing_names.size() << " missing symbols " << endl;
       for (size_t j = 0; j < missing_names.size() ; ++j)
-	baseline_objects[missing_names[j]].print();
+	{
+	  cout << j << endl;
+	  baseline_objects[missing_names[j]].print();
+	}
     }
   
   if (verbose && incompatible.size())
     {
-      cout << incompatible.size() << " incompatible symbols " << endl;
+      cout << endl << incompatible.size() << " incompatible symbols " << endl;
       for (size_t j = 0; j < incompatible.size() ; ++j)
 	{
-	  // First, report name.
-	  const symbol& base = incompatible[j].first;
-	  const symbol& test = incompatible[j].second;
+	  // First, print index.
+	  cout << j << endl;
+
+	  // Second, report name.
+	  symbol& base = incompatible[j].first;
+	  symbol& test = incompatible[j].second;
 	  test.print();
 	  
 	  // Second, report reason or reasons incompatible.
@@ -414,8 +466,8 @@ create_symbols(const char* file)
 	{
 	  symbol tmp;
 	  tmp.init(line);
-	  objects[tmp.name] = tmp;
-	  names.push_back(tmp.name);
+	  objects[tmp.raw_name] = tmp;
+	  names.push_back(tmp.raw_name);
 	  line = empty;
 	}
     }
