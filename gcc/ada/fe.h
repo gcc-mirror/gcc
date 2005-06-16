@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2004 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2005 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -150,13 +150,15 @@ extern Boolean In_Same_Source_Unit              (Node_Id, Node_Id);
 
 /* opt: */
 
-#define Global_Discard_Names   opt__global_discard_names
-#define Exception_Mechanism    opt__exception_mechanism
-#define Back_Annotate_Rep_Info opt__back_annotate_rep_info
+#define Global_Discard_Names           opt__global_discard_names
+#define Exception_Locations_Suppressed opt__exception_locations_suppressed
+#define Exception_Mechanism            opt__exception_mechanism
+#define Back_Annotate_Rep_Info         opt__back_annotate_rep_info
 
 typedef enum {Setjmp_Longjmp, Front_End_ZCX, GCC_ZCX} Exception_Mechanism_Type;
 
 extern Boolean Global_Discard_Names;
+extern Boolean Exception_Locations_Suppressed;
 extern Exception_Mechanism_Type Exception_Mechanism;
 extern Boolean Back_Annotate_Rep_Info;
 

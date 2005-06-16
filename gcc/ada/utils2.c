@@ -1430,7 +1430,8 @@ tree
 build_call_raise (int msg)
 {
   tree fndecl = gnat_raise_decls[msg];
-  const char *str = Debug_Flag_NN ? "" : ref_filename;
+  const char *str
+    = (Debug_Flag_NN || Exception_Locations_Suppressed) ? "" : ref_filename;
   int len = strlen (str) + 1;
   tree filename = build_string (len, str);
 
@@ -1751,11 +1752,15 @@ build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, unsigned align,
    initial value is INIT, if INIT is nonzero.  Convert the expression to
    RESULT_TYPE, which must be some type of pointer.  Return the tree.
    GNAT_PROC and GNAT_POOL optionally give the procedure to call and
-   the storage pool to use.  */
+   the storage pool to use.  GNAT_NODE is used to provide an error
+   location for restriction violations messages.  If IGNORE_INIT_TYPE is
+   true, ignore the type of INIT for the purpose of determining the size;
+   this will cause the maximum size to be allocated if TYPE is of
+   self-referential size.  */
 
 tree
 build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
-                 Entity_Id gnat_pool, Node_Id gnat_node)
+                 Entity_Id gnat_pool, Node_Id gnat_node, bool ignore_init_type)
 {
   tree size = TYPE_SIZE_UNIT (type);
   tree result;
@@ -1839,7 +1844,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 
   /* If we have an initializing expression, see if its size is simpler
      than the size from the type.  */
-  if (init && TYPE_SIZE_UNIT (TREE_TYPE (init))
+  if (!ignore_init_type && init && TYPE_SIZE_UNIT (TREE_TYPE (init))
       && (TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (init))) == INTEGER_CST
 	  || CONTAINS_PLACEHOLDER_P (size)))
     size = TYPE_SIZE_UNIT (TREE_TYPE (init));
@@ -1850,7 +1855,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
      the maximum size.  */
   if (CONTAINS_PLACEHOLDER_P (size))
     {
-      if (init)
+      if (!ignore_init_type && init)
 	size = substitute_placeholder_in_expr (size, init);
       else
 	size = max_size (size, true);
