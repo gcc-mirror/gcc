@@ -1051,8 +1051,17 @@ package body Sem_Elab is
               and then In_Preelaborated_Unit
               and then not In_Inlined_Body
             then
-               Error_Msg_N
-                 ("non-static call not allowed in preelaborated unit", N);
+               --  This is a warning in -gnatg mode allowing such calls to
+               --  be used in the predefined library with appropriate care.
+
+               if GNAT_Mode then
+                  Error_Msg_N
+                    ("?non-static call not allowed in preelaborated unit", N);
+               else
+                  Error_Msg_N
+                    ("non-static call not allowed in preelaborated unit", N);
+               end if;
+
                return;
             end if;
 

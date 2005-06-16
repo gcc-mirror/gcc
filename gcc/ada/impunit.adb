@@ -157,6 +157,13 @@ package body Impunit is
      "a-tiocst",    -- Ada.Text_IO.C_Streams
      "a-wtcstr",    -- Ada.Wide_Text_IO.C_Streams
 
+      --  Note: strictly the next two should be Ada 2005 units, but it seems
+      --  harmless (and useful) to make then available in Ada 95 mode, since
+      --  they only deal with Wide_Character, not Wide_Wide_Character.
+
+     "a-wichun",    -- Ada.Wide_Characters.Unicode
+     "a-widcha",    -- Ada.Wide_Characters
+
    ---------------------------
    -- GNAT Special IO Units --
    ---------------------------
@@ -326,6 +333,7 @@ package body Impunit is
      "a-cgaaso",    -- Ada.Containers.Generic_Anonymous_Array_Sort
      "a-cgarso",    -- Ada.Containers.Generic_Array_Sort
      "a-cgcaso",    -- Ada.Containers.Generic_Constrained_Array_Sort
+     "a-chacon",    -- Ada.Characters.Conversions
      "a-chtgke",    -- Ada.Containers.Hash_Tables.Generic_Keys
      "a-chtgop",    -- Ada.Containers.Hash_Tables.Generic_Operations
      "a-cidlli",    -- Ada.Containers.Indefinite_Doubly_Linked_Lists
@@ -360,12 +368,14 @@ package body Impunit is
      "a-stzhas",    -- Ada.Strings.Wide_Wide_Hash
      "a-stzmap",    -- Ada.Strings.Wide_Wide_Maps
      "a-stzunb",    -- Ada.Strings.Wide_Wide_Unbounded
-     "a-swunha",    -- Ada.Strings.Wide_Unbounded.Hash
+     "a-swuwha",    -- Ada.Strings.Wide_Unbounded.Wide_Hash
      "a-szmzco",    -- Ada.Strings.Wide_Wide_Maps.Wide_Wide_Constants;
-     "a-szunha",    -- Ada.Strings.Wide_Wide_Unbounded.Hash
+     "a-szuzha",    -- Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Hash
      "a-tgdico",    -- Ada.Tags.Generic_Dispatching_Constructor;
      "a-tiunio",    -- Ada.Text_IO.Unbounded_IO;
+     "a-wichun",    -- Ada.Wide_Characters.Unicode
      "a-wwunio",    -- Ada.Wide_Text_IO.Wide_Unbounded_IO;
+     "a-zchara",    -- Ada.Wide_Wide_Characters
      "a-zttest",    -- Ada.Wide_Wide_Text_IO.Text_Streams
      "a-ztexio",    -- Ada.Wide_Wide_Text_IO
      "a-zzunio",    -- Ada.Wide_Wide_Text_IO.Wide_Wide_Unbounded_IO
@@ -390,6 +400,7 @@ package body Impunit is
      "a-chzla1",    -- Ada.Characters.Wide_Wide_Latin_1
      "a-chzla9",    -- Ada.Characters.Wide_Wide_Latin_9
      "a-szuzti",    -- Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO
+     "a-zchuni",    -- Ada.Wide_Wide_Characters.Unicode
 
    ---------------------------
    -- GNAT Special IO Units --

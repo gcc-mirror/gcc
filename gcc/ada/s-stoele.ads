@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 2002-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -42,7 +42,8 @@
 package System.Storage_Elements is
 pragma Pure (Storage_Elements);
 --  Note that we take advantage of the implementation permission to make
---  this unit Pure instead of Preelaborable; see RM 13.7.1(15).
+--  this unit Pure instead of Preelaborable; see RM 13.7.1(15). In Ada 2005,
+--  this is Pure in any case (AI-362).
 
 --  We also add the pragma Pure_Function to the operations in this package,
 --  because otherwise functions with parameters derived from Address are

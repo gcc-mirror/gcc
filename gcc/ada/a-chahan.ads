@@ -35,9 +35,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-
 package Ada.Characters.Handling is
 pragma Preelaborate (Handling);
+pragma Pure_05 (Handling);
+--  In accordance with Ada 2005 AI-362
 
    ----------------------------------------
    -- Character Classification Functions --
@@ -90,54 +91,49 @@ pragma Preelaborate (Handling);
    -- Classifications of Wide_Character and Characters --
    ------------------------------------------------------
 
-   function Is_Character (Item : Wide_Character)           return Boolean;
-   function Is_Character (Item : Wide_Wide_Character)      return Boolean;
-   function Is_String    (Item : Wide_String)              return Boolean;
-   function Is_String    (Item : Wide_Wide_String)         return Boolean;
-   function Is_Wide_Character (Item : Wide_Wide_Character) return Boolean;
-   function Is_Wide_String (Item : Wide_Wide_String)       return Boolean;
+   --  Ada 2005 AI 395: these functions are moved to Ada.Characters.Conversions
+   --  and are considered obsolete in Ada.Characters.Handling. We deal with
+   --  this by using the special Ada_05 form of pragma Obsolescent which is
+   --  only active in Ada_05 mode.
 
-   ---------------------------------------------------------------------------
-   -- Conversions between Wide_Wide_Character, Wide_Character and Character --
-   ---------------------------------------------------------------------------
+   function Is_Character (Item : Wide_Character) return Boolean;
+   pragma Obsolescent
+     ("(Ada 2005) use Ada.Characters.Conversions.Is_Character", Ada_05);
+
+   function Is_String (Item : Wide_String) return Boolean;
+   pragma Obsolescent
+     ("(Ada 2005) use Ada.Characters.Conversions.Is_String", Ada_05);
+
+   ------------------------------------------------------
+   -- Conversions between Wide_Character and Character --
+   ------------------------------------------------------
+
+   --  Ada 2005 AI 395: these functions are moved to Ada.Characters.Conversions
+   --  and are considered obsolete in Ada.Characters.Handling. We deal with
+   --  this by using the special Ada_05 form of pragma Obsolescent which is
+   --  only active in Ada_05 mode.
 
    function To_Character
      (Item       : Wide_Character;
-      Substitute : Character := ' ')      return Character;
-
-   function To_Character
-     (Item       : Wide_Wide_Character;
-      Substitute : Character := ' ')      return Character;
+      Substitute : Character := ' ') return Character;
+   pragma Obsolescent
+     ("(Ada 2005) use Ada.Characters.Conversions.To_Character", Ada_05);
 
    function To_String
      (Item       : Wide_String;
-      Substitute : Character := ' ')      return String;
-
-   function To_String
-     (Item       : Wide_Wide_String;
-      Substitute : Character := ' ')      return String;
+      Substitute : Character := ' ') return String;
+   pragma Obsolescent
+     ("(Ada 2005) use Ada.Characters.Conversions.To_String", Ada_05);
 
    function To_Wide_Character
-     (Item : Character)                   return Wide_Character;
-   function To_Wide_Character
-     (Item       : Wide_Wide_Character;
-      Substitute : Wide_Character := ' ') return Wide_Character;
+     (Item : Character) return Wide_Character;
+   pragma Obsolescent
+     ("(Ada 2005) use Ada.Characters.Conversions.To_Wide_Character", Ada_05);
 
    function To_Wide_String
-     (Item : String)                      return Wide_String;
-   function To_Wide_String
-     (Item       : Wide_Wide_String;
-      Substitute : Wide_Character := ' ') return Wide_String;
-
-   function To_Wide_Wide_Character
-     (Item : Character)                   return Wide_Wide_Character;
-   function To_Wide_Wide_Character
-     (Item : Wide_Character)              return Wide_Wide_Character;
-
-   function To_Wide_Wide_String
-     (Item : String)                      return Wide_Wide_String;
-   function To_Wide_Wide_String
-     (Item : Wide_String)                 return Wide_Wide_String;
+     (Item : String)return Wide_String;
+   pragma Obsolescent
+     ("(Ada 2005) use Ada.Characters.Conversions.To_Wide_String", Ada_05);
 
 private
    pragma Inline (Is_Control);
@@ -157,6 +153,5 @@ private
    pragma Inline (Is_Character);
    pragma Inline (To_Character);
    pragma Inline (To_Wide_Character);
-   pragma Inline (To_Wide_Wide_Character);
 
 end Ada.Characters.Handling;

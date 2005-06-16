@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---              A D A . T A S K _ I D E N T I F I C A T I O N               --
+--              A D A . C H A R A C T E R S . H A N D L I N G               --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
+--             Copyright (C) 2005 Free Software Foundation, Inc.            --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -35,53 +35,54 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Warnings (Off);
---  Allow withing of non-Preelaborated units in Ada 2005 mode where this
---  package will be categorized as Preelaborate. See AI-362 for details.
---  It is safe in the context of the run-time to violate the rules!
+package Ada.Characters.Conversions is
+pragma Pure (Conversions);
 
-with System;
-with System.Tasking;
+   function Is_Character (Item : Wide_Character)      return Boolean;
+   function Is_String    (Item : Wide_String)         return Boolean;
+   function Is_Character (Item : Wide_Wide_Character) return Boolean;
+   function Is_String    (Item : Wide_Wide_String)    return Boolean;
 
-pragma Warnings (On);
+   function Is_Wide_Character (Item : Wide_Wide_Character) return Boolean;
+   function Is_Wide_String    (Item : Wide_Wide_String)    return Boolean;
 
-package Ada.Task_Identification is
-pragma Preelaborate_05 (Task_Identification);
---  In accordance with Ada 2005 AI-362
+   function To_Wide_Character (Item : Character) return Wide_Character;
+   function To_Wide_String    (Item : String)    return Wide_String;
 
-   type Task_Id is private;
+   function To_Wide_Wide_Character
+     (Item : Character) return Wide_Wide_Character;
 
-   Null_Task_Id : constant Task_Id;
+   function To_Wide_Wide_String
+     (Item : String) return Wide_Wide_String;
 
-   function  "=" (Left, Right : Task_Id) return Boolean;
-   pragma Inline ("=");
+   function To_Wide_Wide_Character
+     (Item : Wide_Character) return Wide_Wide_Character;
 
-   function Image (T : Task_Id) return String;
+   function To_Wide_Wide_String
+     (Item : Wide_String) return Wide_Wide_String;
 
-   function Current_Task return Task_Id;
-   pragma Inline (Current_Task);
+   function To_Character
+     (Item       : Wide_Character;
+      Substitute : Character := ' ') return Character;
 
-   procedure Abort_Task (T : Task_Id);
-   pragma Inline (Abort_Task);
-   --  Note: parameter is mode IN, not IN OUT, per AI-00101.
+   function To_String
+     (Item       : Wide_String;
+      Substitute : Character := ' ') return String;
 
-   function Is_Terminated (T : Task_Id) return Boolean;
-   pragma Inline (Is_Terminated);
+   function To_Character
+     (Item       : Wide_Wide_Character;
+      Substitute : Character := ' ') return Character;
 
-   function Is_Callable (T : Task_Id) return Boolean;
-   pragma Inline (Is_Callable);
+   function To_String
+     (Item       : Wide_Wide_String;
+      Substitute : Character := ' ') return String;
 
-private
+   function To_Wide_Character
+     (Item       : Wide_Wide_Character;
+      Substitute : Wide_Character := ' ') return Wide_Character;
 
-   type Task_Id is new System.Tasking.Task_Id;
+   function To_Wide_String
+     (Item       : Wide_Wide_String;
+      Substitute : Wide_Character := ' ') return Wide_String;
 
-   pragma Warnings (Off);
-   --  Allow non-static constant in Ada 2005 mode where this package will be
-   --  categorized as Preelaborate. See AI-362 for details. It is safe in the
-   --  context of the run-time to violate the rules!
-
-   Null_Task_Id : constant Task_Id := Task_Id (System.Tasking.Null_Task);
-
-   pragma Warnings (On);
-
-end Ada.Task_Identification;
+end Ada.Characters.Conversions;
