@@ -150,7 +150,7 @@ init_dont_simulate_again (void)
   basic_block bb;
   block_stmt_iterator bsi;
   tree phi;
-  bool saw_a_complex_value = false;
+  bool saw_a_complex_op = false;
 
   FOR_EACH_BB (bb)
     {
@@ -159,21 +159,62 @@ init_dont_simulate_again (void)
 
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 	{
-	  tree stmt = bsi_stmt (bsi);
+	  tree orig_stmt, stmt, rhs = NULL;
 	  bool dsa = true;
 
-	  if (TREE_CODE (stmt) == MODIFY_EXPR
-	      && is_complex_reg (TREE_OPERAND (stmt, 0)))
+	  orig_stmt = stmt = bsi_stmt (bsi);
+	  switch (TREE_CODE (stmt))
 	    {
-	      dsa = false;
-	      saw_a_complex_value = true;
+	    case RETURN_EXPR:
+	      stmt = TREE_OPERAND (stmt, 0);
+	      if (!stmt || TREE_CODE (stmt) != MODIFY_EXPR)
+		break;
+	      /* FALLTHRU */
+
+	    case MODIFY_EXPR:
+	      dsa = !is_complex_reg (TREE_OPERAND (stmt, 0));
+	      rhs = TREE_OPERAND (stmt, 1);
+	      break;
+
+	    case COND_EXPR:
+	      rhs = TREE_OPERAND (stmt, 0);
+	      break;
+
+	    default:
+	      break;
 	    }
 
-	  DONT_SIMULATE_AGAIN (stmt) = dsa;
+	  if (rhs)
+	    switch (TREE_CODE (rhs))
+	      {
+	      case EQ_EXPR:
+	      case NE_EXPR:
+		rhs = TREE_OPERAND (rhs, 0);
+		/* FALLTHRU */
+
+	      case PLUS_EXPR:
+	      case MINUS_EXPR:
+	      case MULT_EXPR:
+	      case TRUNC_DIV_EXPR:
+	      case CEIL_DIV_EXPR:
+	      case FLOOR_DIV_EXPR:
+	      case ROUND_DIV_EXPR:
+	      case RDIV_EXPR:
+	      case NEGATE_EXPR:
+	      case CONJ_EXPR:
+		if (TREE_CODE (TREE_TYPE (rhs)) == COMPLEX_TYPE)
+		  saw_a_complex_op = true;
+		break;
+
+	      default:
+		break;
+	      }
+
+	  DONT_SIMULATE_AGAIN (orig_stmt) = dsa;
 	}
     }
 
-  return saw_a_complex_value;
+  return saw_a_complex_op;
 }
 
 
@@ -189,6 +230,8 @@ complex_visit_stmt (tree stmt, edge *taken_edge_p ATTRIBUTE_UNUSED,
 
   /* These conditions should be satisfied due to the initial filter
      set up in init_dont_simulate_again.  */
+  if (TREE_CODE (stmt) == RETURN_EXPR)
+    stmt = TREE_OPERAND (stmt, 0);
   gcc_assert (TREE_CODE (stmt) == MODIFY_EXPR);
 
   lhs = TREE_OPERAND (stmt, 0);
@@ -308,6 +351,9 @@ create_components (void)
   size_t k, n;
 
   n = num_referenced_vars;
+  if (n == 0)
+    return;
+
   complex_variable_components = VEC_alloc (tree, heap, 2*n);
   VEC_safe_grow (tree, heap, complex_variable_components, 2*n);
 
