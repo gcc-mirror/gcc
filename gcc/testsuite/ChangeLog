@@ -1,3 +1,11 @@
+2005-06-15  Giovanni Bajo  <giovannibajo@libero.it>
+
+	* gcc.dg/vect/vect-dv-2.c, gcc.dg/vect/vect-ifcvt-2.c,
+	gcc.dg/vect/vect-ifcvt-3.c, gcc.dg/vect/vect-ifcvt-4.c,
+	gcc.dg/vect/vect-ifcvt-5.c, gcc.dg/vect/vect-ifcvt-6.c,
+	gcc.dg/vect/vect-ifcvt-7.c, gcc.dg/vect/vect-ifcvt-9.c: Call
+	check_vect to verify the presence of hardware vector support.
+
 2005-06-16  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR testsuite/22056
