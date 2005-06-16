@@ -685,7 +685,7 @@ formatted_transfer (bt type, void *p, int len)
 
            if (pos < 0 || pos >= current_unit->recl )
              {
-               generate_error (ERROR_EOR, "T Or TL edit position error");
+               generate_error (ERROR_EOR, "T or TL edit position error");
                break ;
              }
             m = pos - (current_unit->recl - current_unit->bytes_left);
