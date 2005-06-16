@@ -1164,11 +1164,6 @@ package body Exp_Dist is
             --  simple sequence of string comparisons.
 
             RPC_Receiver_Elsif_Parts := New_List;
-            Append_To (RPC_Receiver_Statements,
-              Make_Implicit_If_Statement (Designated_Type,
-                Condition       => New_Occurrence_Of (Standard_False, Loc),
-                Then_Statements => New_List,
-                Elsif_Parts     => RPC_Receiver_Elsif_Parts));
          end if;
       end if;
 
@@ -1308,6 +1303,16 @@ package body Exp_Dist is
       --  Build the case statement and the heart of the subprogram
 
       if not Is_RAS then
+         if Get_PCS_Name = Name_PolyORB_DSA
+           and then Present (First (RPC_Receiver_Elsif_Parts))
+         then
+            Append_To (RPC_Receiver_Statements,
+              Make_Implicit_If_Statement (Designated_Type,
+                Condition       => New_Occurrence_Of (Standard_False, Loc),
+                Then_Statements => New_List,
+                Elsif_Parts     => RPC_Receiver_Elsif_Parts));
+         end if;
+
          Append_To (RPC_Receiver_Case_Alternatives,
            Make_Case_Statement_Alternative (Loc,
              Discrete_Choices => New_List (Make_Others_Choice (Loc)),
