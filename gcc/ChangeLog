@@ -1,3 +1,8 @@
+2005-06-16  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* Makefile.in (cc1-checksum.c): Use
+	build/genchecksum$(build_exeext), not build/genchecksum$(exeext).
+
 2005-06-16  Geoffrey Keating  <geoffk@apple.com>
 
 	* gengtype.c (adjust_field_rtx_def): Don't add a skip to
