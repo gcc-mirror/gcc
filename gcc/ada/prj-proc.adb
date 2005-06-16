@@ -2185,7 +2185,6 @@ package body Prj.Proc is
                                  Location_Of
                                    (From_Project_Node, From_Project_Node_Tree);
 
-
          begin
             Project := Processed_Projects.Get (Name);
 

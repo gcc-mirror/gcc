@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---   Copyright (C) 1992,1993,1994,1995,1996 Free Software Foundation, Inc.  --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,8 +44,7 @@ package body System.Val_Int is
    function Scan_Integer
      (Str  : String;
       Ptr  : access Integer;
-      Max  : Integer)
-      return Integer
+      Max  : Integer) return Integer
    is
       Uval : Unsigned;
       --  Unsigned result
@@ -79,7 +78,6 @@ package body System.Val_Int is
       else
          return Integer (Uval);
       end if;
-
    end Scan_Integer;
 
    -------------------
@@ -89,7 +87,6 @@ package body System.Val_Int is
    function Value_Integer (Str : String) return Integer is
       V : Integer;
       P : aliased Integer := Str'First;
-
    begin
       V := Scan_Integer (Str, P'Access, Str'Last);
       Scan_Trailing_Blanks (Str, P);

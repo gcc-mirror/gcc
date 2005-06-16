@@ -63,7 +63,6 @@ package Makeutl is
    --  of project Project, in project tree In_Tree, and in the projects that
    --  it imports directly or indirectly, and returns the result.
 
-
    --  Package Mains is used to store the mains specified on the command line
    --  and to retrieve them when a project file is used, to verify that the
    --  files exist and that they belong to a project file.

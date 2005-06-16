@@ -294,7 +294,6 @@ package body Comperr is
                   End_Line;
                end if;
 
-
                Write_Str
                  ("| Use a subject line meaningful to you" &
                   " and us to track the bug.");

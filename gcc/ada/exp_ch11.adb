@@ -730,7 +730,6 @@ package body Exp_Ch11 is
             end;
          end if;
 
-
          --  If an exception occurrence is present, then we must declare it
          --  and initialize it from the value stored in the TSD
 
@@ -1174,7 +1173,6 @@ package body Exp_Ch11 is
 
                Name_Buffer (Name_Len) := ASCII.NUL;
             end if;
-
 
             if Opt.Exception_Locations_Suppressed then
                Name_Len := 0;

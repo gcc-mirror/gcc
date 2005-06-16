@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -181,7 +181,6 @@ private
    Character_Set            : constant Wide_Character_Set :=
      (AF.Controlled with
       Character_Ranges'Unrestricted_Access);
-
 
    Lower_Case_Mapping : aliased constant Wide_Character_Mapping_Values :=
      (Length => 56,

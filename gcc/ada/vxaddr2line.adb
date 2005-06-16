@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2002-2004 Ada Core Technologies, Inc.           --
+--            Copyright (C) 2002-2005 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -83,6 +83,7 @@ procedure VxAddr2Line is
    type Architecture is
      (SOLARIS_I586,
       WINDOWS_POWERPC,
+      WINDOWS_I586,
       WINDOWS_M68K,
       SOLARIS_POWERPC,
       DEC_ALPHA);
@@ -121,6 +122,11 @@ procedure VxAddr2Line is
          Nm_Binary           => null,
          Addr_Digits_To_Skip => 0,
          Bt_Offset_From_Call => -4),
+      WINDOWS_I586 =>
+        (Addr2line_Binary    => null,
+         Nm_Binary           => null,
+         Addr_Digits_To_Skip => 0,
+         Bt_Offset_From_Call => -2),
       SOLARIS_POWERPC =>
         (Addr2line_Binary    => null,
          Nm_Binary           => null,

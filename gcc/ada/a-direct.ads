@@ -178,8 +178,9 @@ package Ada.Directories is
    --  and form given by Form, or copying of the file with the name given by
    --  Source_Name (in the absence of Name_Error).
 
-
-   --  File and directory name operations:
+   ----------------------------------------
+   -- File and directory name operations --
+   ----------------------------------------
 
    function Full_Name (Name : String) return String;
    --  Returns the full name corresponding to the file name specified by Name.
@@ -231,15 +232,16 @@ package Ada.Directories is
    --  Name is not a possible simple name (if Extension is null) or base name
    --  (if Extension is non-null).
 
-
-   --  File and directory queries:
+   --------------------------------
+   -- File and directory queries --
+   --------------------------------
 
    type File_Kind is (Directory, Ordinary_File, Special_File);
    --  The type File_Kind represents the kind of file represented by an
    --  external file or directory.
 
    type File_Size is range 0 .. Long_Long_Integer'Last;
-   --  The type File_Size represents the size of an external file.
+   --  The type File_Size represents the size of an external file
 
    function Exists (Name : String) return Boolean;
    --  Returns True if external file represented by Name exists, and False
@@ -403,19 +405,16 @@ private
 
    --  Search_Type need to be a controlled type, because it includes component
    --  of type Dir_Type (in GNAT.Directory_Operations) that need to be closed
-   --  (if opened) during finalization.
-   --  The component need to be an access value, because Search_Data is not
-   --  fully defined in the spec.
+   --  (if opened) during finalization. The component need to be an access
+   --  value, because Search_Data is not fully defined in the spec.
 
    type Search_Type is new Ada.Finalization.Controlled with record
       Value : Search_Ptr;
    end record;
 
    procedure Finalize (Search : in out Search_Type);
-   --  Close the directory, if opened, and deallocate Value.
+   --  Close the directory, if opened, and deallocate Value
 
    procedure End_Search (Search : in out Search_Type) renames Finalize;
 
 end Ada.Directories;
-
-

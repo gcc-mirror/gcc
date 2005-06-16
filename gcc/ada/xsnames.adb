@@ -24,10 +24,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This utility is used to make a new version of the Snames package when
---  new names are added to the spec, the existing versions of snames.ads and
---  snames.adb are read, and updated to match the set of names in snames.ads.
---  The updated versions are written to snames.ns and snames.nb (new spec/body)
+--  This utility is used to make a new version of the Snames package when new
+--  names are added to the spec, the existing versions of snames.ads and
+--  snames.adb and snames.h are read, and updated to match the set of names in
+--  snames.ads. The updated versions are written to snames.ns, snames.nb (new
+--  spec/body), and snames.nh (new header file).
 
 with Ada.Strings.Unbounded;         use Ada.Strings.Unbounded;
 with Ada.Strings.Unbounded.Text_IO; use Ada.Strings.Unbounded.Text_IO;
@@ -44,6 +45,8 @@ procedure XSnames is
    InS  : File_Type;
    OutS : File_Type;
    OutB : File_Type;
+   InH  : File_Type;
+   OutH : File_Type;
 
    A, B    : VString := Nul;
    Line    : VString := Nul;
@@ -74,12 +77,90 @@ procedure XSnames is
 
    M : Match_Result;
 
+   type Header_Symbol is (None, Attr, Conv, Prag);
+   --  A symbol in the header file
+
+   --  Prefixes used in the header file
+
+   Header_Attr : aliased String := "Attr";
+   Header_Conv : aliased String := "Convention";
+   Header_Prag : aliased String := "Pragma";
+
+   type String_Ptr is access all String;
+   Header_Prefix : constant array (Header_Symbol) of String_Ptr :=
+                     (null,
+                      Header_Attr'Access,
+                      Header_Conv'Access,
+                      Header_Prag'Access);
+
+   --  Patterns used in the spec file
+
+   Get_Attr : Pattern := Span (' ') & "Attribute_" & Break (",)") * Name1;
+   Get_Conv : Pattern := Span (' ') & "Convention_" & Break (",)") * Name1;
+   Get_Prag : Pattern := Span (' ') & "Pragma_" & Break (",)") * Name1;
+
+   type Header_Symbol_Counter is array (Header_Symbol) of Natural;
+   Header_Counter : Header_Symbol_Counter := (0, 0, 0, 0);
+
+   Header_Current_Symbol : Header_Symbol := None;
+   Header_Pending_Line : VString := Nul;
+
+   ------------------------
+   -- Output_Header_Line --
+   ------------------------
+
+   procedure Output_Header_Line (S : Header_Symbol) is
+   begin
+      --  Skip all the #define for S-prefixed symbols in the header.
+      --  Of course we are making implicit assumptions:
+      --   (1) No newline between symbols with the same prefix.
+      --   (2) Prefix order is the same as in snames.ads.
+
+      if Header_Current_Symbol /= S then
+         declare
+            Pat : String := "#define  " & Header_Prefix (S).all;
+            In_Pat : Boolean := False;
+
+         begin
+            if Header_Current_Symbol /= None then
+               Put_Line (OutH, Header_Pending_Line);
+            end if;
+
+            loop
+               Line := Get_Line (InH);
+
+               if Match (Line, Pat) then
+                  In_Pat := true;
+               elsif In_Pat then
+                  Header_Pending_Line := Line;
+                  exit;
+               else
+                  Put_Line (OutH, Line);
+               end if;
+            end loop;
+
+            Header_Current_Symbol := S;
+         end;
+      end if;
+
+      --  Now output the line
+
+      Put_Line (OutH, "#define  " & Header_Prefix (S).all
+                  & "_" & Name1 & (30 - Length (Name1)) * ' '
+                  & Header_Counter (S));
+      Header_Counter (S) := Header_Counter (S) + 1;
+   end Output_Header_Line;
+
+--  Start of processing for XSnames
+
 begin
    Open (InB, In_File, "snames.adb");
    Open (InS, In_File, "snames.ads");
+   Open (InH, In_File, "snames.h");
 
    Create (OutS, Out_File, "snames.ns");
    Create (OutB, Out_File, "snames.nb");
+   Create (OutH, Out_File, "snames.nh");
 
    Anchored_Mode := True;
    Oname := Nul;
@@ -99,6 +180,13 @@ begin
       if not Match (Line, Name_Ref) then
          Put_Line (OutS, Line);
 
+         if Match (Line, Get_Attr) then
+            Output_Header_Line (Attr);
+         elsif Match (Line, Get_Conv) then
+            Output_Header_Line (Conv);
+         elsif Match (Line, Get_Prag) then
+            Output_Header_Line (Prag);
+         end if;
       else
          Oval := Lpad (V (Val), 3, '0');
 
@@ -144,6 +232,13 @@ begin
    Put_Line (OutB, Line);
 
    while not End_Of_File (InB) loop
-      Put_Line (OutB, Get_Line (InB));
+      Line := Get_Line (InB);
+      Put_Line (OutB, Line);
+   end loop;
+
+   Put_Line (OutH, Header_Pending_Line);
+   while not End_Of_File (InH) loop
+      Line := Get_Line (InH);
+      Put_Line (OutH, Line);
    end loop;
 end XSnames;

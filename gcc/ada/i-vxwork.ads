@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                 GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS              --
+--                  GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                --
 --                                                                          --
 --                      I N T E R F A C E S . V X W O R K S                 --
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---             Copyright (C) 1999-2003 Ada Core Technologies, Inc.          --
+--                     Copyright (C) 1999-2005, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -138,6 +138,10 @@ package Interfaces.VxWorks is
    --  user handler. The routine generates a wrapper around the user
    --  handler to save and restore context
 
+   function intContext return int;
+   --  Binding to the C routine intContext. This function returns 1 only
+   --  if the current execution state is in interrupt context.
+
    function intVecGet
      (Vector : Interrupt_Vector) return VOIDFUNCPTR;
    --  Binding to the C routine intVecGet. Use this to get the
@@ -192,6 +196,7 @@ private
    --  Target-dependent floating point context type
 
    pragma Import (C, intConnect, "intConnect");
+   pragma Import (C, intContext, "intContext");
    pragma Import (C, intVecGet, "intVecGet");
    pragma Import (C, intVecSet, "intVecSet");
    pragma Import (C, INUM_TO_IVEC, "__gnat_inum_to_ivec");

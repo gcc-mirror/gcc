@@ -811,7 +811,7 @@ package body MLib.Prj is
               (B_Start & Get_Name_String (Data.Library_Name) & ".adb");
             Add_Argument ("-L" & Get_Name_String (Data.Library_Name));
 
-            --  Check if Binder'Default_Switches ("Ada) is defined. If it is,
+            --  Check if Binder'Default_Switches ("Ada") is defined. If it is,
             --  add these switches to call gnatbind.
 
             declare

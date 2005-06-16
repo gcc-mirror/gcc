@@ -4,7 +4,7 @@
 **                                                                          **
 **                           G E N - S O C C O N                            **
 **                                                                          **
-**              Copyright (C) 2004 Free Software Foundation, Inc.           **
+**            Copyright (C) 2004-2005 Free Software Foundation, Inc.        **
 **                                                                          **
 ** GNAT is free software;  you can  redistribute it  and/or modify it under **
 ** terms of the  GNU General Public License as published  by the Free Soft- **
@@ -27,11 +27,16 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "socket.h"
+#include "gsocket.h"
+
+#ifdef __MINGW32__
+#include <winsock2.h>
+#else
 #include <netinet/in.h>
 #include <netinet/tcp.h>
-#include <sys/filio.h>
+#include <sys/ioctl.h>
 #include <netdb.h>
+#endif
 
 struct line {
   char *text;
@@ -48,8 +53,8 @@ struct line *first = NULL, *last = NULL;
 #define _NL TXT("")
 /* Empty line */
 
-#define itoad(n) itoa ("%d", n)
-#define itoax(n) itoa ("16#%08x#", n)
+#define itoad(n) f_itoa ("%d", n)
+#define itoax(n) f_itoa ("16#%08x#", n)
 
 #define CND(name,comment) add_line(#name, itoad (name), comment);
 /* Constant (decimal) */
@@ -63,12 +68,13 @@ struct line *first = NULL, *last = NULL;
 void output (void);
 /* Generate output spec */
 
-char *itoa (char *, int);
+char *f_itoa (char *, int);
 /* int to string */
 
 void add_line (char *, char*, char*);
 
-void main (void) {
+int
+main (void) {
 
 TXT("------------------------------------------------------------------------------")
 TXT("--                                                                          --")
@@ -78,7 +84,7 @@ TXT("--               G N A T . S O C K E T S . C O N S T A N T S               
 TXT("--                                                                          --")
 TXT("--                                 S p e c                                  --")
 TXT("--                                                                          --")
-TXT("--          Copyright (C) 2000-2004 Free Software Foundation, Inc.          --")
+TXT("--          Copyright (C) 2000-2005 Free Software Foundation, Inc.          --")
 TXT("--                                                                          --")
 TXT("-- GNAT is free software;  you can  redistribute it  and/or modify it under --")
 TXT("-- terms of the  GNU General Public License as published  by the Free Soft- --")
@@ -507,15 +513,10 @@ CND(SO_ERROR, "Get/clear error status")
 #endif
 CND(SO_BROADCAST, "Can send broadcast msgs")
 
-#ifndef IP_ADD_MEMBERSHIP
-#define IP_ADD_MEMBERSHIP -1
+#ifndef IP_MULTICAST_IF
+#define IP_MULTICAST_IF -1
 #endif
-CND(IP_ADD_MEMBERSHIP, "Join a multicast group")
-
-#ifndef IP_DROP_MEMBERSHIP
-#define IP_DROP_MEMBERSHIP -1
-#endif
-CND(IP_DROP_MEMBERSHIP, "Leave a multicast group")
+CND(IP_MULTICAST_IF, "Set/get mcast interface")
 
 #ifndef IP_MULTICAST_TTL
 #define IP_MULTICAST_TTL -1
@@ -526,10 +527,22 @@ CND(IP_MULTICAST_TTL, "Set/get multicast TTL")
 #define IP_MULTICAST_LOOP -1
 #endif
 CND(IP_MULTICAST_LOOP, "Set/get mcast loopback")
+
+#ifndef IP_ADD_MEMBERSHIP
+#define IP_ADD_MEMBERSHIP -1
+#endif
+CND(IP_ADD_MEMBERSHIP, "Join a multicast group")
+
+#ifndef IP_DROP_MEMBERSHIP
+#define IP_DROP_MEMBERSHIP -1
+#endif
+CND(IP_DROP_MEMBERSHIP, "Leave a multicast group")
+
 _NL
 TXT("end GNAT.Sockets.Constants;")
 
-output ();
+  output ();
+  return 0;
 }
 
 void
@@ -563,13 +576,14 @@ output (void) {
 }
 
 char *
-itoa (char *fmt, int n) {
+f_itoa (char *fmt, int n) {
   char buf[32];
   sprintf (buf, fmt, n);
   return strdup (buf);
 }
 
-void add_line (char *_text, char *_value, char *_comment) {
+void
+add_line (char *_text, char *_value, char *_comment) {
   struct line *l = (struct line *) malloc (sizeof (struct line));
   l->text = _text;
   l->value = _value;

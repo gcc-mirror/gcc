@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,7 +25,7 @@
 ------------------------------------------------------------------------------
 
 --  Program to construct C header file a-einfo.h (C version of einfo.ads spec)
---  for use by Gigi. This header file contaInF all definitions and access
+--  for use by Gigi. This header file contains all definitions and access
 --  functions, but does not contain set procedures, since Gigi is not allowed
 --  to modify the GNAT tree)
 

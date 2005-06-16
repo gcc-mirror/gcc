@@ -425,7 +425,6 @@ package body Sem_Dist is
                            (Loc, New_External_Name (
                                    Chars (User_Type), 'R'));
 
-
       Full_Obj_Type  : constant Entity_Id :=
                          Make_Defining_Identifier
                            (Loc, Chars (Obj_Type));

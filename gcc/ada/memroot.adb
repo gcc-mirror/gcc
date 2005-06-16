@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1997-2003 Ada Core Technologies, Inc.           --
+--                     Copyright (C) 1997-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -425,6 +425,7 @@ package body Memroot is
       pragma Warnings (Off, Line);
 
       procedure Find_File;
+      pragma Inline (Find_File);
       --  Position Curs1 and Curs2 so that Line (Curs1 .. Curs2) contains
       --  the file name. The file name may not be on the current line since
       --  a frame may be printed on more than one line when there is a lot
@@ -432,20 +433,20 @@ package body Memroot is
       --  lines of input.
 
       procedure Find_Line;
+      pragma Inline (Find_Line);
       --  Position Curs1 and Curs2 so that Line (Curs1 .. Curs2) contains
       --  the line number.
 
       procedure Find_Name;
+      pragma Inline (Find_Name);
       --  Position Curs1 and Curs2 so that Line (Curs1 .. Curs2) contains
       --  the subprogram name.
 
       function Skip_To_Space (Pos : Integer) return Integer;
+      pragma Inline (Skip_To_Space);
       --  Scans Line starting with position Pos, returning the position
       --  immediately before the first space, or the value of Last if no
       --  spaces were found
-
-
-      pragma Inline (Find_File, Find_Line, Find_Name, Skip_To_Space);
 
       ---------------
       -- Find_File --

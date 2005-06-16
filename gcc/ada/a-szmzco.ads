@@ -182,7 +182,6 @@ private
      (AF.Controlled with
       Character_Ranges'Unrestricted_Access);
 
-
    Lower_Case_Mapping : aliased constant Wide_Wide_Character_Mapping_Values :=
      (Length => 56,
 

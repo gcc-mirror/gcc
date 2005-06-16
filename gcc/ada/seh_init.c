@@ -36,7 +36,6 @@
 #ifdef IN_RTS
 #include "tconfig.h"
 #include "tsystem.h"
-#include <sys/stat.h>
 
 /* We don't have libiberty, so us malloc.  */
 #define xmalloc(S) malloc (S)

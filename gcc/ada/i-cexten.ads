@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---     Copyright (C) 1992,1993,1994,1995 Free Software Foundation, Inc.     --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -246,6 +246,5 @@ package Interfaces.C.Extensions is
 
    type Signed_32 is range -2 ** 31 .. 2 ** 31 - 1;
    for Signed_32'Size use 32;
-
 
 end Interfaces.C.Extensions;

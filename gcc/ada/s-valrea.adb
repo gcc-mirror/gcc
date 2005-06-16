@@ -4,9 +4,9 @@
 --                                                                          --
 --                      S Y S T E M . V A L _ R E A L                       --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,8 +43,7 @@ package body System.Val_Real is
    function Scan_Real
      (Str  : String;
       Ptr  : access Integer;
-      Max  : Integer)
-      return Long_Long_Float
+      Max  : Integer) return Long_Long_Float
    is
       procedure Reset;
       pragma Import (C, Reset, "__gnat_init_float");
@@ -369,7 +368,6 @@ package body System.Val_Real is
             return Uval;
          end if;
       end if;
-
    end Scan_Real;
 
    ----------------
@@ -384,7 +382,6 @@ package body System.Val_Real is
       V := Scan_Real (Str, P'Access, Str'Last);
       Scan_Trailing_Blanks (Str, P);
       return V;
-
    end Value_Real;
 
 end System.Val_Real;

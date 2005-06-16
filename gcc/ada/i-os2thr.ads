@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1993-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1993-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,7 +90,6 @@ pragma Preelaborate (Threads);
 
    function DosKillThread (Id : TID) return APIRET;
    pragma Import (C, DosKillThread, "DosKillThread");
-
 
    DCWW_WAIT   : constant := 0;
    DCWW_NOWAIT : constant := 1;

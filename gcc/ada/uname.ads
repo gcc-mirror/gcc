@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1998, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -140,8 +140,7 @@ package Uname is
 
    function New_Child
      (Old  : Unit_Name_Type;
-      Newp : Unit_Name_Type)
-      return Unit_Name_Type;
+      Newp : Unit_Name_Type) return Unit_Name_Type;
    --   Old is a child unit name (for either a body or spec). Newp is the
    --   unit name of the actual parent (this may be different from the
    --   parent in old). The returned unit name is formed by taking the

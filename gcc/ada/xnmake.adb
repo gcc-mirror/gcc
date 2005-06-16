@@ -283,7 +283,11 @@ begin
          end loop;
       end if;
 
+      --  Loop keeps going until "package" keyword written
+
       exit when Match (Line, "package");
+
+      --  Deal with WITH lines, writing to body or spec as appropriate
 
       if Match (Line, Body_Only, M) then
          Replace (M, X);
@@ -293,12 +297,16 @@ begin
          Replace (M, X);
          WriteS (Line);
 
+      --  Change header from Template to Spec and write to spec file
+
       else
          if Match (Line, Templ, M) then
             Replace (M, A &  "    S p e c    ");
          end if;
 
          WriteS (Line);
+
+         --  Write header line to body file
 
          if Match (Line, Spec, M) then
             Replace (M, A &  "B o d y");

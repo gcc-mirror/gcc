@@ -492,5 +492,4 @@ package body Exp_Smem is
       end if;
    end On_Lhs_Of_Assignment;
 
-
 end Exp_Smem;

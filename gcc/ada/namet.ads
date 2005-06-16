@@ -61,7 +61,6 @@ package Namet is
 --                       followed by an upper case letter (other than the WW
 --                       sequence), or an underscore.
 
-
 --    Operator symbols   Stored with an initial letter O, and the remainder
 --                       of the name is the lower case characters XXX where
 --                       the name is Name_Op_XXX, see Snames spec for a full

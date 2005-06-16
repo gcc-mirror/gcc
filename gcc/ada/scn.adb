@@ -45,8 +45,8 @@ package body Scn is
    --  keyword as an identifier once for a given keyword).
 
    procedure Check_End_Of_Line;
-   --  Called when end of line encountered. Checks that line is not
-   --  too long, and that other style checks for the end of line are met.
+   --  Called when end of line encountered. Checks that line is not too long,
+   --  and that other style checks for the end of line are met.
 
    function Determine_License return License_Type;
    --  Scan header of file and check that it has an appropriate GNAT-style

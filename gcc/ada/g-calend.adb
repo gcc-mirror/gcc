@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1999-2001 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1999-2005 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -252,7 +252,6 @@ package body GNAT.Calendar is
       Micro : constant := 10**6;
       sec   : aliased C.long;
       usec  : aliased C.long;
-
 
    begin
       timeval_to_duration (T, sec'Access, usec'Access);

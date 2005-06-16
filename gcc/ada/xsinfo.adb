@@ -88,9 +88,12 @@ procedure XSinfo is
 
    M : Match_Result;
 
-
    procedure Getline;
-   --  Get non-comment, non-blank line. Also skips "for " rep clauses.
+   --  Get non-comment, non-blank line. Also skips "for " rep clauses
+
+   -------------
+   -- Getline --
+   -------------
 
    procedure Getline is
    begin
