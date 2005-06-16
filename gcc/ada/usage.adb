@@ -390,7 +390,9 @@ begin
    Write_Line ("        v*   turn on warnings for unassigned variable");
    Write_Line ("        V    turn off warnings for unassigned variable");
    Write_Line ("        x*   turn on warnings for export/import");
-   Write_Line ("        X*   turn off warnings for export/import");
+   Write_Line ("        X    turn off warnings for export/import");
+   Write_Line ("        y*   turn on warnings for Ada 2005 incompatibility");
+   Write_Line ("        Y    turn off warnings for Ada 2005 incompatibility");
    Write_Line ("        z*   turn on size/align warnings for " &
                                                   "unchecked conversion");
    Write_Line ("        Z    turn off size/align warnings for " &
@@ -450,6 +452,7 @@ begin
    Write_Line ("        r    check casing for identifier references");
    Write_Line ("        s    check separate subprogram specs present");
    Write_Line ("        t    check token separation rules");
+   Write_Line ("        u    check no unnecessary blank lines");
    Write_Line ("        x    check extra parens around conditionals");
 
    --  Lines for -gnatyN switch
