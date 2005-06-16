@@ -1,5 +1,9 @@
 2005-06-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	* io/transfer.c (formatted_transfer): Fix typo in error message.
+
+2005-06-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	PR libfortran/16436
 	* io/transfer.c (read_sf): Correct updating of bytes_left field.
 	(formatted_transfer): Correct updating of bytes_left field and
