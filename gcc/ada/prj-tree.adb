@@ -1006,6 +1006,21 @@ package body Prj.Tree is
       return In_Tree.Project_Nodes.Table (Node).Flag2;
    end Is_Extending_All;
 
+   -------------------------
+   -- Is_Not_Last_In_List --
+   -------------------------
+
+   function Is_Not_Last_In_List
+     (Node    : Project_Node_Id;
+      In_Tree : Project_Node_Tree_Ref) return Boolean is
+   begin
+      pragma Assert
+        (Node /= Empty_Node
+          and then
+            In_Tree.Project_Nodes.Table (Node).Kind = N_With_Clause);
+      return In_Tree.Project_Nodes.Table (Node).Flag1;
+   end Is_Not_Last_In_List;
+
    -------------------------------------
    -- Imported_Or_Extended_Project_Of --
    -------------------------------------
@@ -2103,6 +2118,22 @@ package body Prj.Tree is
              In_Tree.Project_Nodes.Table (Node).Kind = N_With_Clause));
       In_Tree.Project_Nodes.Table (Node).Flag2 := True;
    end Set_Is_Extending_All;
+
+   -----------------------------
+   -- Set_Is_Not_Last_In_List --
+   -----------------------------
+
+   procedure Set_Is_Not_Last_In_List
+     (Node    : Project_Node_Id;
+      In_Tree : Project_Node_Tree_Ref)
+   is
+   begin
+      pragma Assert
+        (Node /= Empty_Node
+          and then
+             In_Tree.Project_Nodes.Table (Node).Kind = N_With_Clause);
+      In_Tree.Project_Nodes.Table (Node).Flag1 := True;
+   end Set_Is_Not_Last_In_List;
 
    -----------------
    -- Set_Kind_Of --
