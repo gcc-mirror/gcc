@@ -713,7 +713,7 @@ package body Exp_Ch2 is
    begin
       --  Simple reference case
 
-      if Nkind (N) = N_Identifier then
+      if Nkind (N) = N_Identifier or else Nkind (N) = N_Expanded_Name then
          if Is_Formal (Entity (N)) then
             return Entity (N);
 
