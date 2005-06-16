@@ -1,6 +1,6 @@
 # Top level -*- makefile -*- fragment for GNU Ada (GNAT).
 #   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-#   2003, 2004 Free Software Foundation, Inc.
+#   2003, 2004, 2005 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -105,7 +105,8 @@ ADA_TOOLS_FLAGS_TO_PASS=\
 # Object files for gnat1 from C sources.
 GNAT1_C_OBJS = ada/b_gnat1.o ada/adadecode.o ada/adaint.o ada/cstreams.o \
  ada/cio.o ada/targtyps.o ada/decl.o ada/misc.o ada/utils.o ada/utils2.o \
- ada/trans.o ada/cuintp.o ada/argv.o ada/raise.o ada/init.o ada/tracebak.o
+ ada/trans.o ada/cuintp.o ada/argv.o ada/raise.o ada/init.o ada/tracebak.o \
+ ada/initialize.o
 
 # Object files from Ada sources that are used by gnat1
 
@@ -162,6 +163,7 @@ GNATBIND_OBJS = \
  ada/cstreams.o   \
  ada/final.o      \
  ada/init.o       \
+ ada/initialize.o \
  ada/seh_init.o   \
  ada/link.o       \
  ada/raise.o      \
@@ -942,7 +944,7 @@ ada/stamp-sdefault : $(srcdir)/version.c Makefile
 
 ada/sdefault.o : ada/sdefault.ads ada/sdefault.adb ada/types.ads \
    ada/unchdeal.ads ada/system.ads ada/s-exctab.ads ada/s-stalib.ads \
-   ada/unchconv.ads ada/osint.ads
+   ada/unchconv.ads ada/osint.ads ada/g-os_lib.ads ada/g-string.ads
 
 ADA_TREE_H = ada/ada-tree.h ada/ada-tree.def
 
@@ -1009,15 +1011,19 @@ ada/final.o    : ada/final.c $(CONFIG_H) $(SYSTEM_H) ada/raise.h
 ada/link.o     : ada/link.c
 
 ada/cio.o     : ada/cio.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_ADA_CFLAGS) $(RT_FLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ALL_ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 ada/init.o    : ada/init.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h ada/raise.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_ADA_CFLAGS) $(RT_FLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ALL_ADA_CFLAGS) \
+	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
+
+ada/initialize.o : ada/initialize.c
+	$(CC) -c $(ALL_CFLAGS) $(ALL_ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 ada/raise.o   : ada/raise.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h ada/raise.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_ADA_CFLAGS) $(RT_FLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ALL_ADA_CFLAGS) \
 		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 # Need to keep the frame pointer in this file to pop the stack properly on
