@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.2\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2005-04-20 21:43-0700\n"
+"POT-Creation-Date: 2005-06-06 21:32+0200\n"
 "PO-Revision-Date: 2002-08-18 15:46+0100\n"
 "Last-Translator: Simos Xenitellis <simos@hellug.gr>\n"
 "Language-Team: Greek <nls@tux.hellug.gr>\n"
@@ -705,12 +705,12 @@ msgstr ""
 msgid "unspellable token %s"
 msgstr "%s: αδύνατο το άνοιγμα του %s: %m\n"
 
-#: line-map.c:309
+#: line-map.c:313
 #, c-format
 msgid "In file included from %s:%u"
 msgstr ""
 
-#: line-map.c:327
+#: line-map.c:331
 #, c-format
 msgid ""
 ",\n"
