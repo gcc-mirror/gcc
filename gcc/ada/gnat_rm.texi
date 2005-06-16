@@ -157,6 +157,7 @@ Implementation Defined Pragmas
 * Pragma Normalize_Scalars::
 * Pragma Obsolescent::
 * Pragma Passive::
+* Pragma Persistent_BSS::
 * Pragma Polling::
 * Pragma Profile (Ravenscar)::
 * Pragma Profile (Restricted)::
@@ -685,6 +686,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Normalize_Scalars::
 * Pragma Obsolescent::
 * Pragma Passive::
+* Pragma Persistent_BSS::
 * Pragma Polling::
 * Pragma Profile (Ravenscar)::
 * Pragma Profile (Restricted)::
@@ -978,7 +980,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Common_Object (
-     [Internal =>] LOCAL_NAME,
+     [Internal =>] local_NAME,
   [, [External =>] EXTERNAL_SYMBOL]
   [, [Size     =>] EXTERNAL_SYMBOL] );
 
@@ -991,7 +993,7 @@ EXTERNAL_SYMBOL ::=
 This pragma enables the shared use of variables stored in overlaid
 linker areas corresponding to the use of @code{COMMON}
 in Fortran.  The single
-object @var{local_name} is assigned to the area designated by
+object @var{local_NAME} is assigned to the area designated by
 the @var{External} argument.
 You may define a record to correspond to a series
 of fields.  The @var{size} argument
@@ -1036,7 +1038,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Complex_Representation
-        ([Entity =>] LOCAL_NAME);
+        ([Entity =>] local_NAME);
 @end smallexample
 
 @noindent
@@ -1060,7 +1062,7 @@ Syntax:
 @smallexample @c ada
 pragma Component_Alignment (
      [Form =>] ALIGNMENT_CHOICE
-  [, [Name =>] type_LOCAL_NAME]);
+  [, [Name =>] type_local_NAME]);
 
 ALIGNMENT_CHOICE ::=
   Component_Size
@@ -1107,7 +1109,7 @@ alignment).
 @end table
 
 @noindent
-If the @code{Name} parameter is present, @var{type_local_name} must
+If the @code{Name} parameter is present, @var{type_local_NAME} must
 refer to a local record or array type, and the specified alignment
 choice applies to the specified type.  The use of
 @code{Component_Alignment} together with a pragma @code{Pack} causes the
@@ -1171,7 +1173,7 @@ would be used system-wide.
 Syntax:
 
 @smallexample @c ada
-pragma CPP_Class ([Entity =>] LOCAL_NAME);
+pragma CPP_Class ([Entity =>] local_NAME);
 @end smallexample
 
 @noindent
@@ -1202,7 +1204,7 @@ See @ref{Interfacing to C++} for related information.
 Syntax:
 
 @smallexample @c ada
-pragma CPP_Constructor ([Entity =>] LOCAL_NAME);
+pragma CPP_Constructor ([Entity =>] local_NAME);
 @end smallexample
 
 @noindent
@@ -1533,7 +1535,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Export_Exception (
-     [Internal =>] LOCAL_NAME,
+     [Internal =>] local_NAME,
   [, [External =>] EXTERNAL_SYMBOL,]
   [, [Form     =>] Ada | VMS]
   [, [Code     =>] static_integer_EXPRESSION]);
@@ -1562,7 +1564,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Export_Function (
-     [Internal         =>] LOCAL_NAME,
+     [Internal         =>] local_NAME,
   [, [External         =>] EXTERNAL_SYMBOL]
   [, [Parameter_Types  =>] PARAMETER_TYPES]
   [, [Result_Type      =>] result_SUBTYPE_MARK]
@@ -1638,7 +1640,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Export_Object
-      [Internal =>] LOCAL_NAME,
+      [Internal =>] local_NAME,
    [, [External =>] EXTERNAL_SYMBOL]
    [, [Size     =>] EXTERNAL_SYMBOL]
 
@@ -1663,7 +1665,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Export_Procedure (
-     [Internal        =>] LOCAL_NAME
+     [Internal        =>] local_NAME
   [, [External        =>] EXTERNAL_SYMBOL]
   [, [Parameter_Types =>] PARAMETER_TYPES]
   [, [Mechanism       =>] MECHANISM]);
@@ -1743,7 +1745,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Export_Valued_Procedure (
-     [Internal        =>] LOCAL_NAME
+     [Internal        =>] local_NAME
   [, [External        =>] EXTERNAL_SYMBOL]
   [, [Parameter_Types =>] PARAMETER_TYPES]
   [, [Mechanism       =>] MECHANISM]);
@@ -1775,7 +1777,7 @@ MECHANISM_NAME ::=
 
 @noindent
 This pragma is identical to @code{Export_Procedure} except that the
-first parameter of @var{local_name}, which must be present, must be of
+first parameter of @var{local_NAME}, which must be present, must be of
 mode @code{OUT}, and externally the subprogram is treated as a function
 with this parameter as the result of the function.  GNAT provides for
 this capability to allow the use of @code{OUT} and @code{IN OUT}
@@ -1957,7 +1959,7 @@ to enforce the upper casing of all external symbols.
 Syntax:
 
 @smallexample @c ada
-pragma Finalize_Storage_Only (first_subtype_LOCAL_NAME);
+pragma Finalize_Storage_Only (first_subtype_local_NAME);
 @end smallexample
 
 @noindent
@@ -2024,7 +2026,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Import_Exception (
-     [Internal =>] LOCAL_NAME,
+     [Internal =>] local_NAME,
   [, [External =>] EXTERNAL_SYMBOL,]
   [, [Form     =>] Ada | VMS]
   [, [Code     =>] static_integer_EXPRESSION]);
@@ -2051,7 +2053,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Import_Function (
-     [Internal                 =>] LOCAL_NAME,
+     [Internal                 =>] local_NAME,
   [, [External                 =>] EXTERNAL_SYMBOL]
   [, [Parameter_Types          =>] PARAMETER_TYPES]
   [, [Result_Type              =>] SUBTYPE_MARK]
@@ -2133,7 +2135,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Import_Object
-     [Internal =>] LOCAL_NAME,
+     [Internal =>] local_NAME,
   [, [External =>] EXTERNAL_SYMBOL],
   [, [Size     =>] EXTERNAL_SYMBOL]);
 
@@ -2159,7 +2161,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Import_Procedure (
-     [Internal                 =>] LOCAL_NAME,
+     [Internal                 =>] local_NAME,
   [, [External                 =>] EXTERNAL_SYMBOL]
   [, [Parameter_Types          =>] PARAMETER_TYPES]
   [, [Mechanism                =>] MECHANISM]
@@ -2205,7 +2207,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Import_Valued_Procedure (
-     [Internal                 =>] LOCAL_NAME,
+     [Internal                 =>] local_NAME,
   [, [External                 =>] EXTERNAL_SYMBOL]
   [, [Parameter_Types          =>] PARAMETER_TYPES]
   [, [Mechanism                =>] MECHANISM]
@@ -2240,7 +2242,7 @@ CLASS_NAME ::= ubs | ubsb | uba | s | sb | a | nca
 
 @noindent
 This pragma is identical to @code{Import_Procedure} except that the
-first parameter of @var{local_name}, which must be present, must be of
+first parameter of @var{local_NAME}, which must be present, must be of
 mode @code{OUT}, and externally the subprogram is treated as a function
 with this parameter as the result of the function.  The purpose of this
 capability is to allow the use of @code{OUT} and @code{IN OUT}
@@ -2356,7 +2358,7 @@ Syntax:
 @smallexample @c ada
 pragma Interface (
      [Convention    =>] convention_identifier,
-     [Entity =>] local_name
+     [Entity =>] local_NAME
   [, [External_Name =>] static_string_expression],
   [, [Link_Name     =>] static_string_expression]);
 @end smallexample
@@ -2377,7 +2379,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Interface_Name (
-     [Entity        =>] LOCAL_NAME
+     [Entity        =>] local_NAME
   [, [External_Name =>] static_string_EXPRESSION]
   [, [Link_Name     =>] static_string_EXPRESSION]);
 @end smallexample
@@ -2395,7 +2397,7 @@ least one of @var{External_Name} or @var{Link_Name}.
 Syntax:
 
 @smallexample @c ada
-pragma Interrupt_Handler (procedure_LOCAL_NAME);
+pragma Interrupt_Handler (procedure_local_NAME);
 @end smallexample
 
 @noindent
@@ -2491,11 +2493,11 @@ and in the case of the signal used to implement the @code{abort} statement.
 Syntax:
 
 @smallexample @c ada
-pragma Keep_Names ([On =>] enumeration_first_subtype_LOCAL_NAME);
+pragma Keep_Names ([On =>] enumeration_first_subtype_local_NAME);
 @end smallexample
 
 @noindent
-The @var{LOCAL_NAME} argument
+The @var{local_NAME} argument
 must refer to an enumeration first subtype
 in the current declarative part. The effect is to retain the enumeration
 literal names for use by @code{Image} and @code{Value} even if a global
@@ -2634,7 +2636,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Linker_Alias (
-  [Entity =>] LOCAL_NAME
+  [Entity =>] local_NAME
   [Alias  =>] static_string_EXPRESSION);
 @end smallexample
 
@@ -2650,7 +2652,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Linker_Section (
-  [Entity  =>] LOCAL_NAME
+  [Entity  =>] local_NAME
   [Section =>] static_string_EXPRESSION);
 @end smallexample
 
@@ -2691,19 +2693,18 @@ Syntax:
 @smallexample @c ada
 pragma Machine_Attribute (
   [Attribute_Name =>] string_EXPRESSION,
-  [Entity         =>] LOCAL_NAME);
+  [Entity         =>] local_NAME);
 @end smallexample
 
 @noindent
-Machine dependent attributes can be specified for types and/or
-declarations.  Currently only subprogram entities are supported.  This
-pragma is semantically equivalent to
+Machine-dependent attributes can be specified for types and/or
+declarations.  This pragma is semantically equivalent to
 @code{__attribute__((@var{string_expression}))} in GNU C,
 where @code{@var{string_expression}} is
-recognized by the GNU C macros @code{VALID_MACHINE_TYPE_ATTRIBUTE} and
-@code{VALID_MACHINE_DECL_ATTRIBUTE} which are defined in the
-configuration header file @file{tm.h} for each machine.  See the GCC
-manual for further information.
+recognized by the target macro @code{TARGET_ATTRIBUTE_TABLE} which is
+defined for each machine.  See the GCC manual for further information.
+It is not possible to specify attributes defined by other languages,
+only attributes defined by the machine the code is intended to run on.
 
 @node Pragma Main_Storage
 @unnumberedsec Pragma Main_Storage
@@ -2734,7 +2735,7 @@ also has no effect in DEC Ada 83 for OpenVMS Alpha Systems.
 Syntax:
 
 @smallexample @c ada
-pragma No_Return (procedure_LOCAL_NAME);
+pragma No_Return (procedure_local_NAME);
 @end smallexample
 
 @noindent
@@ -2833,7 +2834,7 @@ will always generate an invalid value if one exists.
 Syntax:
 
 @smallexample @c ada
-pragma Obsolescent [(static_string_EXPRESSION)];
+pragma Obsolescent [(static_string_EXPRESSION [,Ada_05])];
 @end smallexample
 
 @noindent
@@ -2848,6 +2849,17 @@ The effect of this pragma is to output a warning message that the
 subprogram is obsolescent if the appropriate warning option in the
 compiler is activated. If a parameter is present, then a second
 warning message is given containing this text.
+
+In addition, a call to such a program is considered a violation of
+pragma Restrictions (No_Obsolescent_Features).
+
+If the optional second parameter is present (which must be exactly
+the identifier Ada_05, no other argument is allowed), then the
+indication of obsolescence applies only when compiling in Ada 2005
+mode. This is primarily intended for dealing with the situations
+in the predefined library where subprograms have become defined
+as obsolescent in Ada 2005 (e.g. in Ada.Characters.Handling), but
+may be used anywhere.
 
 @node Pragma Passive
 @unnumberedsec Pragma Passive
@@ -2869,6 +2881,37 @@ and that optimization of context switch with this task is permitted and
 desired.  If the argument @code{No} is present, the task must not be
 optimized.  GNAT does not attempt to optimize any tasks in this manner
 (since protected objects are available in place of passive tasks).
+
+@node Pragma Persistent_BSS
+@unnumberedsec Pragma Persistent_BSS
+@findex Persistent_BSS
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Persistent_BSS [local_NAME]
+@end smallexample
+
+@noindent
+This pragma allows selected objects to be placed in the @code{.persistent_bss}
+section. On some targets the linker and loader provide for special
+treatment of this section, allowing a program to be reloaded without
+affecting the contents of this data (hence the name persistent).
+
+There are two forms of usage. If an argument is given, it must be the
+local name of a library level object, with no explicit initialization
+and whose type is potentially persistent. If no argument is given, then
+the pragma is a configuration pragma, and applies to all library level
+objects with no explicit initialization of potentially persistent types.
+
+A potentially persistent type is a scalar type, or a non-tagged,
+non-discriminated record, all of whose components have no explicit
+initialization and are themselves of a potentially persistent type,
+or an array, all of whose constraints are static, and whose component
+type is potentially persistent.
+
+If this pragma is used on a target where this feature is not supported,
+then the pragma will be ignored. See also @code{pragma Linker_Section}.
 
 @node Pragma Polling
 @unnumberedsec Pragma Polling
@@ -3098,7 +3141,7 @@ limited set of tasking functionality permitted by this set of restrictions.
 Syntax:
 
 @smallexample @c ada
-pragma Propagate_Exceptions (subprogram_LOCAL_NAME);
+pragma Propagate_Exceptions (subprogram_local_NAME);
 @end smallexample
 
 @noindent
@@ -3138,7 +3181,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Psect_Object (
-     [Internal =>] LOCAL_NAME,
+     [Internal =>] local_NAME,
   [, [External =>] EXTERNAL_SYMBOL]
   [, [Size     =>] EXTERNAL_SYMBOL]);
 
@@ -3157,7 +3200,7 @@ This pragma is identical in effect to pragma @code{Common_Object}.
 Syntax:
 
 @smallexample @c ada
-pragma Pure_Function ([Entity =>] function_LOCAL_NAME);
+pragma Pure_Function ([Entity =>] function_local_NAME);
 @end smallexample
 
 @noindent
@@ -3331,7 +3374,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Stream_Convert (
-  [Entity =>] type_LOCAL_NAME,
+  [Entity =>] type_local_NAME,
   [Read   =>] function_NAME,
   [Write  =>] function_NAME);
 @end smallexample
@@ -3405,7 +3448,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Style_Checks (string_LITERAL | ALL_CHECKS |
-                     On | Off [, LOCAL_NAME]);
+                     On | Off [, local_NAME]);
 @end smallexample
 
 @noindent
@@ -3626,7 +3669,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Task_Storage (
-  [Task_Type =>] LOCAL_NAME,
+  [Task_Type =>] local_NAME,
   [Top_Guard =>] static_integer_EXPRESSION);
 @end smallexample
 
@@ -3645,7 +3688,7 @@ Syntax:
 
 @smallexample @c ada
 pragma Thread_Body (
-  [Entity =>] LOCAL_NAME,
+  [Entity =>] local_NAME,
  [[Secondary_Stack_Size =>] static_integer_EXPRESSION)];
 @end smallexample
 
@@ -3730,7 +3773,7 @@ following the normal rules for procedure calls in Ada.
 Syntax:
 
 @smallexample @c ada
-pragma Unchecked_Union (first_subtype_LOCAL_NAME);
+pragma Unchecked_Union (first_subtype_local_NAME);
 @end smallexample
 
 @noindent
@@ -3845,7 +3888,7 @@ compilations of units where universal addressing of the data is desired.
 Syntax:
 
 @smallexample @c ada
-pragma Unreferenced (local_Name @{, local_Name@});
+pragma Unreferenced (local_NAME @{, local_NAME@});
 @end smallexample
 
 @noindent
@@ -3863,7 +3906,7 @@ and that this is deliberate. It can also be useful in the case of
 objects declared only for their initialization or finalization side
 effects.
 
-If @code{local_Name} identifies more than one matching homonym in the
+If @code{local_NAME} identifies more than one matching homonym in the
 current scope, then the entity most recently declared is the one to which
 the pragma applies.
 
@@ -4033,7 +4076,7 @@ Dec Ada 83.
 Syntax:
 
 @smallexample @c ada
-pragma Warnings (On | Off [, LOCAL_NAME]);
+pragma Warnings (On | Off [, local_NAME]);
 @end smallexample
 
 @noindent
@@ -4046,7 +4089,7 @@ setting of the command line switches.
 
 The form with a single argument is a configuration pragma.
 
-If the @var{local_name} parameter is present, warnings are suppressed for
+If the @var{local_NAME} parameter is present, warnings are suppressed for
 the specified entity.  This suppression is effective from the point where
 it occurs till the end of the extended scope of the variable (similar to
 the scope of @code{Suppress}).
@@ -4058,7 +4101,7 @@ the scope of @code{Suppress}).
 Syntax:
 
 @smallexample @c ada
-pragma Weak_External ([Entity =>] LOCAL_NAME);
+pragma Weak_External ([Entity =>] local_NAME);
 @end smallexample
 
 @noindent
@@ -13103,13 +13146,13 @@ inter-operability between Ada tagged types and C class definitions.
 See @ref{Implementation Defined Pragmas}, for more details.
 
 @table @code
-@item pragma CPP_Class ([Entity =>] @var{local_name})
+@item pragma CPP_Class ([Entity =>] @var{local_NAME})
 The argument denotes an entity in the current declarative region that is
 declared as a tagged or untagged record type.  It indicates that the type
 corresponds to an externally declared C++ class type, and is to be laid
 out the same way that C++ would lay out the type.
 
-@item pragma CPP_Constructor ([Entity =>] @var{local_name})
+@item pragma CPP_Constructor ([Entity =>] @var{local_NAME})
 This pragma identifies an imported function (imported in the usual way
 with pragma @code{Import}) as corresponding to a C++ constructor.
 
@@ -14603,7 +14646,7 @@ of the @command{gnatls} utility to be used to retrieve information about the
 predefined path; e.g., @code{"gnatls"}, @code{"powerpc-wrs-vxworks-gnatls"}.
 
 @item VCS_Kind
-This is a simple attribute. Is value is a string used to specify the
+This is a simple attribute. Its value is a string used to specify the
 Version Control System (VCS) to be used for this project, e.g CVS, RCS
 ClearCase or Perforce.
 
