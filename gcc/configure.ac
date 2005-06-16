@@ -30,6 +30,8 @@ AC_INIT
 AC_CONFIG_SRCDIR(tree.c)
 AC_CONFIG_HEADER(auto-host.h:config.in)
 
+gcc_version=`cat $srcdir/BASE-VER`
+
 # Determine the host, build, and target systems
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -1739,7 +1741,6 @@ esac
 # If build != host, and we aren't building gas in-tree, we identify a
 # build->target assembler and hope that it will have the same features
 # as the host->target assembler we'll be using.
-AC_MSG_CHECKING(what assembler to use)
 in_tree_gas=no
 gcc_cv_as=
 gcc_cv_gas_major_version=
@@ -1747,9 +1748,6 @@ gcc_cv_gas_minor_version=
 gcc_cv_as_gas_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/gas
 if test -x "$DEFAULT_ASSEMBLER"; then
 	gcc_cv_as="$DEFAULT_ASSEMBLER"
-elif test -x as$build_exeext; then
-	# Build using assembler in the current directory.
-	gcc_cv_as=./as$build_exeext
 elif test -f $gcc_cv_as_gas_srcdir/configure.in \
      && test -f ../gas/Makefile \
      && test x$build = x$host; then
@@ -1758,8 +1756,7 @@ elif test -f $gcc_cv_as_gas_srcdir/configure.in \
   # we'll use what we're building after installation anyway.
   in_tree_gas=yes
   _gcc_COMPUTE_GAS_VERSION
-  rm -f as$build_exeext
-  $LN_S ../gas/as-new$build_exeext as$build_exeext 2>/dev/null
+  gcc_cv_as=../gas/as-new$build_exeext
   in_tree_gas_is_elf=no
   if grep 'obj_format = elf' ../gas/Makefile > /dev/null \
      || (grep 'obj_format = multi' ../gas/Makefile \
@@ -1768,79 +1765,17 @@ elif test -f $gcc_cv_as_gas_srcdir/configure.in \
     in_tree_gas_is_elf=yes
   fi
 m4_pattern_allow([AS_FOR_TARGET])dnl
+elif test -x as$build_exeext; then
+	# Build using assembler in the current directory.
+	gcc_cv_as=./as$build_exeext
 elif test -x "$AS_FOR_TARGET"; then
         gcc_cv_as="$AS_FOR_TARGET"
 elif test -x "$AS" && test x$host = x$target; then
 	gcc_cv_as="$AS"
 fi
 
-gcc_version=`cat $srcdir/BASE-VER`
-
-if test "x$gcc_cv_as" = x; then
-	# Search the same directories that the installed compiler will
-	# search.  Else we may find the wrong assembler and lose.  If we
-	# do not find a suitable assembler binary, then try the user's
-	# path.
-	#
-	# Also note we have to check MD_EXEC_PREFIX before checking the
-	# user's path.  Unfortunately, there is no good way to get at the
-	# value of MD_EXEC_PREFIX here.  So we do a brute force search
-	# through all the known MD_EXEC_PREFIX values.  Ugh.  This needs
-	# to be fixed as part of the make/configure rewrite too.
-
-	if test "x$exec_prefix" = xNONE; then
-		if test "x$prefix" = xNONE; then
-			test_prefix=/usr/local
-		else
-			test_prefix=$prefix
-		fi
-	else
-		test_prefix=$exec_prefix
-	fi
-
-	# If the loop below does not find an assembler, then use whatever
-	# one we can find in the users's path.  We are looking for a
-	# ${build} -> ${target} assembler.
-	if test "x$program_prefix" != xNONE; then
-		gcc_cv_as=${program_prefix}as$build_exeext
-	elif test x$build != x$host && test x$build != x$target; then
-		gcc_cv_as=${target_noncanonical}-as$build_exeext
-	else
-		gcc_cv_as=`echo as | sed "${program_transform_name}"`$build_exeext
-	fi
-
-	if test x$host = x$build; then
-	    test_dirs="$test_prefix/libexec/gcc/$target_noncanonical/$gcc_version \
-		       $test_prefix/libexec/gcc/$target_noncanonical \
-		       /usr/lib/gcc/$target_noncanonical/$gcc_version \
-		       /usr/lib/gcc/$target_noncanonical \
-		       $test_prefix/$target_noncanonical/bin/$target_noncanonical/$gcc_version \
-		       $test_prefix/$target_noncanonical/bin"
-	else
-	    test_dirs=
-	fi
-
-	if test x$build = x$target; then
-	    test_dirs="$test_dirs \
-		   /usr/libexec \
-		   /usr/ccs/gcc \
-		   /usr/ccs/bin \
-		   /udk/usr/ccs/bin \
-		   /bsd43/usr/lib/cmplrs/cc \
-		   /usr/cross64/usr/bin \
-		   /usr/lib/cmplrs/cc \
-		   /sysv/usr/lib/cmplrs/cc \
-		   /svr4/usr/lib/cmplrs/cc \
-		   /usr/bin"
-	fi
-
-	for dir in $test_dirs; do
-		if test -x $dir/as$build_exeext; then
-			gcc_cv_as=$dir/as$build_exeext
-			break;
-		fi
-	done
-fi
+gcc_AC_CHECK_TOOL(gcc_cv_as, as, ORIGINAL_AS_FOR_TARGET)
+AC_MSG_CHECKING(what assembler to use)
 case $in_tree_gas in
   yes)
     AC_MSG_RESULT("newly built gas")
@@ -1857,7 +1792,6 @@ esac
 # If build != host, and we aren't building gas in-tree, we identify a
 # build->target linker and hope that it will have the same features
 # as the host->target linker we'll be using.
-AC_MSG_CHECKING(what linker to use)
 in_tree_ld=no
 gcc_cv_ld=
 gcc_cv_gld_major_version=
@@ -1866,9 +1800,6 @@ gcc_cv_ld_gld_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/ld
 gcc_cv_ld_bfd_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/bfd
 if test -x "$DEFAULT_LINKER"; then
 	gcc_cv_ld="$DEFAULT_LINKER"
-elif test -x collect-ld$build_exeext; then
-	# Build using linker in the current directory.
-	gcc_cv_ld=./collect-ld$build_exeext
 elif test -f $gcc_cv_ld_gld_srcdir/configure.in \
      && test -f ../ld/Makefile \
      && test x$build = x$host; then
@@ -1895,79 +1826,18 @@ changequote(,)dnl
 	gcc_cv_gld_major_version=`expr "$gcc_cv_gld_version" : "VERSION=\([0-9]*\)"`
 	gcc_cv_gld_minor_version=`expr "$gcc_cv_gld_version" : "VERSION=[0-9]*\.\([0-9]*\)"`
 changequote([,])dnl
-	rm -f collect-ld$build_exeext
-	$LN_S ../ld/ld-new$build_exeext collect-ld$build_exeext 2>/dev/null
+	gcc_cv_ld=../ld/ld-new$build_exeext
+elif test -x collect-ld$build_exeext; then
+	# Build using linker in the current directory.
+	gcc_cv_ld=./collect-ld$build_exeext
 elif test -x "$LD_FOR_TARGET"; then
         gcc_cv_ld="$LD_FOR_TARGET"
 elif test -x "$LD" && test x$host = x$target; then
 	gcc_cv_ld="$LD"
 fi
 
-if test "x$gcc_cv_ld" = x; then
-	# Search the same directories that the installed compiler will
-	# search.  Else we may find the wrong linker and lose.  If we
-	# do not find a suitable linker binary, then try the user's
-	# path.
-	#
-	# Also note we have to check MD_EXEC_PREFIX before checking the
-	# user's path.  Unfortunately, there is no good way to get at the
-	# value of MD_EXEC_PREFIX here.  So we do a brute force search
-	# through all the known MD_EXEC_PREFIX values.  Ugh.  This needs
-	# to be fixed as part of the make/configure rewrite too.
-
-	if test "x$exec_prefix" = xNONE; then
-		if test "x$prefix" = xNONE; then
-			test_prefix=/usr/local
-		else
-			test_prefix=$prefix
-		fi
-	else
-		test_prefix=$exec_prefix
-	fi
-
-	# If the loop below does not find a linker, then use whatever
-	# one we can find in the users's path.  We are looking for a
-	# ${build} -> ${target} linker.
-	if test "x$program_prefix" != xNONE; then
-		gcc_cv_ld=${program_prefix}ld$build_exeext
-	elif test x$build != x$host && test x$build != x$target; then
-		gcc_cv_ld=${target_noncanonical}-ld$build_exeext
-	else
-		gcc_cv_ld=`echo ld | sed "${program_transform_name}"`$build_exeext
-	fi
-
-	if test x$host = x$build; then
-	    test_dirs="$test_prefix/libexec/gcc/$target_noncanonical/$gcc_version \
-		       $test_prefix/libexec/gcc/$target_noncanonical \
-		       /usr/lib/gcc/$target_noncanonical/$gcc_version \
-		       /usr/lib/gcc/$target_noncanonical \
-		       $test_prefix/$target_noncanonical/bin/$target_noncanonical/$gcc_version \
-		       $test_prefix/$target_noncanonical/bin"
-	else
-	    test_dirs=
-	fi
-
-	if test x$build = x$target; then
-	    test_dirs="$test_dirs \
-		   /usr/libexec \
-		   /usr/ccs/gcc \
-		   /usr/ccs/bin \
-		   /udk/usr/ccs/bin \
-		   /bsd43/usr/lib/cmplrs/cc \
-		   /usr/cross64/usr/bin \
-		   /usr/lib/cmplrs/cc \
-		   /sysv/usr/lib/cmplrs/cc \
-		   /svr4/usr/lib/cmplrs/cc \
-		   /usr/bin"
-	fi
-
-	for dir in $test_dirs; do
-		if test -x $dir/ld$build_exeext; then
-			gcc_cv_ld=$dir/ld$build_exeext
-			break;
-		fi
-	done
-fi
+gcc_AC_CHECK_TOOL(gcc_cv_ld, ld, ORIGINAL_LD_FOR_TARGET)
+AC_MSG_CHECKING(what linker to use)
 case $in_tree_ld in
   yes)
     AC_MSG_RESULT("newly built ld")
@@ -1979,24 +1849,19 @@ esac
 
 # Figure out what nm we will be using.
 gcc_cv_binutils_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/binutils
-AC_MSG_CHECKING(what nm to use)
 in_tree_nm=no
-if test -x nm$build_exeext; then
-	gcc_cv_nm=./nm$build_exeext
-elif test -f $gcc_cv_binutils_srcdir/configure.in \
+gcc_cv_nm=
+if test -f $gcc_cv_binutils_srcdir/configure.in \
      && test -f ../binutils/Makefile; then
 	# Single tree build which includes binutils.
 	in_tree_nm=yes
+	gcc_cv_nm=../binutils/nm-new$build_exeext
+elif test -x nm$build_exeext; then
 	gcc_cv_nm=./nm$build_exeext
-	rm -f nm$build_exeext
-	$LN_S ../binutils/nm-new$build_exeext nm$build_exeext 2>/dev/null
-elif test "x$program_prefix" != xNONE; then
-	gcc_cv_nm=${program_prefix}nm$build_exeext
-elif test x$build != x$host && test x$build != x$target; then
-	gcc_cv_nm=${target_noncanonical}-nm$build_exeext
-else
-	gcc_cv_nm=`echo nm | sed "${program_transform_name}"`$build_exeext
 fi
+
+gcc_AC_CHECK_TOOL(gcc_cv_nm, nm, ORIGINAL_NM_FOR_TARGET)
+AC_MSG_CHECKING(what nm to use)
 case $in_tree_nm in
   yes) AC_MSG_RESULT("newly built nm") ;;
   no)  AC_MSG_RESULT($gcc_cv_nm) ;;
@@ -2011,9 +1876,7 @@ elif test -f $gcc_cv_binutils_srcdir/configure.in \
      && test -f ../binutils/Makefile; then
 	# Single tree build which includes binutils.
 	in_tree_objdump=yes
-	gcc_cv_objdump=./objdump$build_exeext
-	rm -f objdump$build_exeext
-	$LN_S ../binutils/objdump$build_exeext objdump$build_exeext 2>/dev/null
+	gcc_cv_objdump=../binutils/objdump$build_exeext
 elif test "x$program_prefix" != xNONE; then
 	gcc_cv_objdump=${program_prefix}objdump$build_exeext
 elif test x$build != x$host && test x$build != x$target; then

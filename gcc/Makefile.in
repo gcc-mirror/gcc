@@ -343,6 +343,7 @@ AR_FOR_TARGET := $(shell \
 AR_FLAGS_FOR_TARGET =
 AR_CREATE_FOR_TARGET = $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) rc
 AR_EXTRACT_FOR_TARGET = $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) x
+ORIGINAL_AS_FOR_TARGET = @ORIGINAL_AS_FOR_TARGET@
 RANLIB_FOR_TARGET := $(shell \
   if [ -f $(objdir)/../binutils/ranlib ] ; then \
     echo $(objdir)/../binutils/ranlib ; \
@@ -353,18 +354,9 @@ RANLIB_FOR_TARGET := $(shell \
        t='$(program_transform_name)'; echo ranlib | sed -e $$t ; \
     fi; \
   fi)
-NM_FOR_TARGET := $(shell \
-  if [ -f ./nm ] ; then \
-    echo ./nm ; \
-  elif [ -f $(objdir)/../binutils/nm-new ] ; then \
-    echo $(objdir)/../binutils/nm-new ; \
-  else \
-    if [ "$(host)" = "$(target)" ] ; then \
-      echo $(NM); \
-    else \
-       t='$(program_transform_name)'; echo nm | sed -e $$t ; \
-    fi; \
-  fi)
+ORIGINAL_LD_FOR_TARGET = @ORIGINAL_LD_FOR_TARGET@
+ORIGINAL_NM_FOR_TARGET = @ORIGINAL_NM_FOR_TARGET@
+NM_FOR_TARGET = ./nm
 
 # --------
 # UNSORTED
@@ -1207,6 +1199,49 @@ cpp$(exeext): gcc.o cppspec.o version.o intl.o prefix.o \
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o cppspec.o intl.o \
 	  prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
 
+# Create links to binutils, especially for in-tree builds, to make -B.
+# use them.  We need hard links so that directories can be shuffled
+# during toplevel bootstrap.
+# Go through an additional indirection, because the file we create
+# can be either `sometool' (if it is a script) or `sometool$(exeext)'
+# (if it is a hard link).
+stamp-as: $(ORIGINAL_AS_FOR_TARGET)
+	@echo creating as; rm -f as; \
+	case "$<" in \
+	  ./*) ;; \
+	  ../*) \
+	     echo $(LN) $< as$(exeext); \
+	     $(LN) $< as$(exeext) || cp $< as$(exeext) ;; \
+	  *) echo '#!$(SHELL)' > as; echo 'exec $< "$$@"' >> as ; \
+	     chmod +x as ;; \
+	esac
+	echo timestamp > $@
+	
+
+stamp-collect-ld: $(ORIGINAL_LD_FOR_TARGET)
+	@echo creating collect-ld; rm -f collect-ld; \
+	case "$<" in \
+	  ./*) ;; \
+	  ../*) \
+	     echo $(LN) $< collect-ld$(exeext); \
+	     $(LN) $< collect-ld$(exeext) || cp $< collect-ld$(exeext) ;; \
+	  *) echo '#!$(SHELL)' > collect-ld; echo 'exec $< "$$@"' >> collect-ld ; \
+	     chmod +x collect-ld ;; \
+	esac
+	echo timestamp > $@
+
+stamp-nm: $(ORIGINAL_NM_FOR_TARGET)
+	@echo creating nm; rm -f nm; \
+	case "$<" in \
+	  ./*) ;; \
+	  ../*) \
+	     echo $(LN) $< nm$(exeext); \
+	     $(LN) $< nm$(exeext) || cp $< nm$(exeext) ;; \
+	  *) echo '#!$(SHELL)' > nm; echo 'exec $< "$$@"' >> nm ; \
+	     chmod +x nm ;; \
+	esac
+	echo timestamp > $@
+
 # Dump a specs file to make -B./ read these specs over installed ones.
 $(SPECS): xgcc$(exeext)
 	$(GCC_FOR_TARGET) -dumpspecs > tmp-specs
@@ -1245,7 +1280,8 @@ xlimits.h: glimits.h limitx.h limity.h
 LIB2ADD = $(LIB2FUNCS_EXTRA)
 LIB2ADD_ST = $(LIB2FUNCS_STATIC_EXTRA)
 
-libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) $(LIB2ADD_ST) xgcc$(exeext) specs
+libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) $(LIB2ADD_ST) specs \
+		xgcc$(exeext) stamp-as stamp-collect-ld stamp-nm
 	objext='$(objext)' \
 	LIB1ASMFUNCS='$(LIB1ASMFUNCS)' \
 	LIB2FUNCS_ST='$(LIB2FUNCS_ST)' \
@@ -4031,7 +4067,7 @@ bootstrap4 bootstrap4-lean: stage4_build
 unstage1 unstage2 unstage3 unstage4 unstageprofile unstagefeedback:
 	-set -vx; stage=`echo $@ | sed -e 's/un//'`; \
 	rm -f $$stage/as$(exeext); \
-	rm -f $$stage/ld$(exeext); \
+	rm -f $$stage/nm$(exeext); \
 	rm -f $$stage/collect-ld$(exeext); \
 	if test -d $$stage; then \
 	  mv $$stage/specs $(SPECS) 2>/dev/null || :; \
