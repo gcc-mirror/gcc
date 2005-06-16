@@ -400,6 +400,17 @@ package body Sem_Ch5 is
          Propagate_Tag (Lhs, Rhs);
       end if;
 
+      --  Ada 2005 (AI-230 and AI-385): When the lhs type is an anonymous
+      --  access type, apply an implicit conversion of the rhs to that type
+      --  to force appropriate static and run-time accessibility checks.
+
+      if Ada_Version >= Ada_05
+        and then Ekind (T1) = E_Anonymous_Access_Type
+      then
+         Rewrite (Rhs, Convert_To (T1, Relocate_Node (Rhs)));
+         Analyze_And_Resolve (Rhs, T1);
+      end if;
+
       --  Ada 2005 (AI-231)
 
       if Ada_Version >= Ada_05
@@ -1151,10 +1162,9 @@ package body Sem_Ch5 is
            (Original_Bound : Node_Id;
             Analyzed_Bound : Node_Id) return Node_Id
          is
-            Assign   : Node_Id;
-            Id       : Entity_Id;
-            Decl     : Node_Id;
-            Decl_Typ : Entity_Id;
+            Assign : Node_Id;
+            Id     : Entity_Id;
+            Decl   : Node_Id;
 
          begin
             --  If the bound is a constant or an object, no need for a
@@ -1181,20 +1191,10 @@ package body Sem_Ch5 is
               Make_Defining_Identifier (Loc,
                 Chars => New_Internal_Name ('S'));
 
-            --  If the type of the discrete range is Universal_Integer, then
-            --  the bound's type must be resolved to Integer, so the object
-            --  used to hold the bound must also have type Integer.
-
-            if Typ = Universal_Integer then
-               Decl_Typ := Standard_Integer;
-            else
-               Decl_Typ := Typ;
-            end if;
-
             Decl :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Id,
-                Object_Definition   => New_Occurrence_Of (Decl_Typ, Loc));
+                Object_Definition   => New_Occurrence_Of (Typ, Loc));
 
             Insert_Before (Parent (N), Decl);
             Analyze (Decl);
@@ -1224,6 +1224,15 @@ package body Sem_Ch5 is
          Set_Parent (R_Copy, Parent (R));
          Pre_Analyze_And_Resolve (R_Copy);
          Typ := Etype (R_Copy);
+
+         --  If the type of the discrete range is Universal_Integer, then
+         --  the bound's type must be resolved to Integer, and any object
+         --  used to hold the bound must also have type Integer.
+
+         if Typ = Universal_Integer then
+            Typ := Standard_Integer;
+         end if;
+
          Set_Etype (R, Typ);
 
          New_Lo_Bound := One_Bound (Lo, Low_Bound  (R_Copy));
