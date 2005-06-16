@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,6 @@ with Exp_Aggr; use Exp_Aggr;
 with Exp_Ch3;  use Exp_Ch3;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch9;  use Exp_Ch9;
-with Exp_Disp; use Exp_Disp;
 with Exp_Fixd; use Exp_Fixd;
 with Exp_Pakd; use Exp_Pakd;
 with Exp_Tss;  use Exp_Tss;
@@ -443,6 +442,41 @@ package body Exp_Ch4 is
                 Constant_Present    => True,
                 Object_Definition   => New_Reference_To (PtrT, Loc),
                 Expression          => Node));
+         end if;
+
+         --  Ada 2005 (AI-344):
+         --  For an allocator with a class-wide designated type, generate an
+         --  accessibility check to verify that the level of the type of the
+         --  created object is not deeper than the level of the access type.
+         --  If the type of the qualified expression is class-wide, then
+         --  always generate the check. Otherwise, only generate the check
+         --  if the level of the qualified expression type is statically deeper
+         --  than the access type. Although the static accessibility will
+         --  generally have been performed as a legality check, it won't have
+         --  been done in cases where the allocator appears in a generic body,
+         --  so the run-time check is needed in general. (Not yet doing the
+         --  optimization to suppress the check for the static level case.???)
+
+         if Ada_Version >= Ada_05
+           and then Is_Class_Wide_Type (Designated_Type (PtrT))
+         then
+            Insert_Action (N,
+               Make_Raise_Program_Error (Loc,
+                 Condition =>
+                   Make_Op_Gt (Loc,
+                     Left_Opnd  =>
+                       Make_Function_Call (Loc,
+                         Name =>
+                           New_Reference_To (RTE (RE_Get_Access_Level), Loc),
+                         Parameter_Associations =>
+                           New_List (Make_Attribute_Reference (Loc,
+                                       Prefix         =>
+                                          New_Reference_To (Temp, Loc),
+                                       Attribute_Name =>
+                                          Name_Tag))),
+                     Right_Opnd =>
+                       Make_Integer_Literal (Loc, Type_Access_Level (PtrT))),
+                 Reason => PE_Accessibility_Check_Failed));
          end if;
 
          --  Suppress the tag assignment when Java_VM because JVM tags
@@ -8015,22 +8049,43 @@ package body Exp_Ch4 is
             New_Reference_To (First_Tag_Component (Left_Type), Loc));
 
       if Is_Class_Wide_Type (Right_Type) then
-         return
-           Make_DT_Access_Action (Left_Type,
-             Action => CW_Membership,
-             Args   => New_List (
-               Obj_Tag,
-               New_Reference_To
-                 (Node (First_Elmt
-                          (Access_Disp_Table (Root_Type (Right_Type)))),
-                  Loc)));
+
+         --  Ada 2005 (AI-251): Class-wide applied to interfaces
+
+         if Is_Interface (Etype (Class_Wide_Type (Right_Type))) then
+            return
+              Make_Function_Call (Loc,
+                 Name => New_Occurrence_Of (RTE (RE_IW_Membership), Loc),
+                 Parameter_Associations => New_List (
+                   Make_Attribute_Reference (Loc,
+                     Prefix => Obj_Tag,
+                     Attribute_Name => Name_Address),
+                   New_Reference_To (
+                     Node (First_Elmt
+                            (Access_Disp_Table (Root_Type (Right_Type)))),
+                     Loc)));
+
+         --  Ada 95: Normal case
+
+         else
+            return
+              Make_Function_Call (Loc,
+                 Name => New_Occurrence_Of (RTE (RE_CW_Membership), Loc),
+                 Parameter_Associations => New_List (
+                   Obj_Tag,
+                   New_Reference_To (
+                     Node (First_Elmt
+                            (Access_Disp_Table (Root_Type (Right_Type)))),
+                     Loc)));
+         end if;
+
       else
          return
            Make_Op_Eq (Loc,
-           Left_Opnd  => Obj_Tag,
-           Right_Opnd =>
-             New_Reference_To
-               (Node (First_Elmt (Access_Disp_Table (Right_Type))), Loc));
+             Left_Opnd  => Obj_Tag,
+             Right_Opnd =>
+               New_Reference_To
+                 (Node (First_Elmt (Access_Disp_Table (Right_Type))), Loc));
       end if;
 
    end Tagged_Membership;

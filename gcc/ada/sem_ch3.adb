@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,6 +75,12 @@ package body Sem_Ch3 is
    -----------------------
    -- Local Subprograms --
    -----------------------
+
+   procedure Add_Interface_Tag_Components
+     (N : Node_Id; Typ : Entity_Id);
+   --  Ada 2005 (AI-251): Add the tag components corresponding to all the
+   --  abstract interface types implemented by a record type or a derived
+   --  record type.
 
    procedure Build_Derived_Type
      (N             : Node_Id;
@@ -163,6 +169,23 @@ package body Sem_Ch3 is
    --  be derived from the parent type. The only case where Derive_Subps is
    --  False is for an implicit derived full type for a type derived from a
    --  private type (see Build_Derived_Type).
+
+   procedure Collect_Interfaces
+     (N            : Node_Id;
+      Derived_Type : Entity_Id);
+   --  Ada 2005 (AI-251): Subsidiary procedure to Build_Derived_Record_Type.
+   --  Collect the list of interfaces that are not already implemented by the
+   --  ancestors. This is the list of interfaces for which we must provide
+   --  additional tag components.
+
+   procedure Complete_Subprograms_Derivation
+     (Partial_View : Entity_Id;
+      Derived_Type : Entity_Id);
+   --  Ada 2005 (AI-251): Used to complete type derivation of private tagged
+   --  types implementing interfaces. In this case some interface primitives
+   --  may have been overriden with the partial-view and, instead of
+   --  re-calculating them, they are included in the list of primitive
+   --  operations of the full-view.
 
    function Inherit_Components
      (N             : Node_Id;
@@ -485,6 +508,12 @@ package body Sem_Ch3 is
    --  the appropriate semantic fields. If the full view of the parent is
    --  a record type, build constrained components of subtype.
 
+   procedure Derive_Interface_Subprograms
+     (Derived_Type : Entity_Id);
+   --  Ada 2005 (AI-251): Subsidiary procedure to Build_Derived_Record_Type.
+   --  Traverse the list of implemented interfaces and derive all their
+   --  subprograms.
+
    procedure Derived_Standard_Character
      (N             : Node_Id;
       Parent_Type   : Entity_Id;
@@ -502,10 +531,6 @@ package body Sem_Ch3 is
    --  Build_Derived_Type. T is the N_Defining_Identifier for the entity
    --  defined in the N_Full_Type_Declaration node N, that is T is the
    --  derived type.
-
-   function Find_Type_Of_Subtype_Indic (S : Node_Id) return Entity_Id;
-   --  Given a subtype indication S (which is really an N_Subtype_Indication
-   --  node or a plain N_Identifier), find the type of the subtype mark.
 
    procedure Enumeration_Type_Declaration (T : Entity_Id; Def : Node_Id);
    --  Insert each literal in symbol table, as an overloadable identifier
@@ -677,6 +702,21 @@ package body Sem_Ch3 is
          Error_Msg_N ("task entries cannot have access parameters", N);
       end if;
 
+      --  Ada 2005: for an object declaration, the corresponding anonymous
+      --  type is declared in the current scope. For access formals, access
+      --  components, and access discriminants, the scope is that of the
+      --  enclosing declaration, as set above.
+
+      if Nkind (Related_Nod) = N_Object_Declaration then
+         Set_Scope (Anon_Type, Current_Scope);
+      end if;
+
+      if All_Present (N)
+        and then Ada_Version >= Ada_05
+      then
+         Error_Msg_N ("ALL is not permitted for anonymous access types", N);
+      end if;
+
       --  Ada 2005 (AI-254): In case of anonymous access to subprograms
       --  call the corresponding semantic routine
 
@@ -731,13 +771,13 @@ package body Sem_Ch3 is
 
       Set_Is_Access_Constant (Anon_Type, Constant_Present (N));
 
-      --  The context is either a subprogram declaration or an access
-      --  discriminant, in a private or a full type declaration. In the case
-      --  of a subprogram, If the designated type is incomplete, the operation
-      --  will be a primitive operation of the full type, to be updated
-      --  subsequently. If the type is imported through a limited with clause,
-      --  it is not a primitive operation of the type (which is declared
-      --  elsewhere in some other scope).
+      --  The context is either a subprogram declaration, object declaration,
+      --  or an access discriminant, in a private or a full type declaration.
+      --  In the case of a subprogram, if the designated type is incomplete,
+      --  the operation will be a primitive operation of the full type, to be
+      --  updated subsequently. If the type is imported through a limited_with
+      --  clause, the subprogram is not a primitive operation of the type
+      --  (which is declared elsewhere in some other scope).
 
       if Ekind (Desig_Type) = E_Incomplete_Type
         and then not From_With_Type (Desig_Type)
@@ -763,8 +803,42 @@ package body Sem_Ch3 is
 
       Desig_Type : constant Entity_Id :=
                      Create_Itype (E_Subprogram_Type, Parent (T_Def));
+      D_Ityp     : Node_Id := Associated_Node_For_Itype (Desig_Type);
 
    begin
+      --  Associate the Itype node with the inner full-type declaration
+      --  or subprogram spec. This is required to handle nested anonymous
+      --  declarations. For example:
+
+      --      procedure P
+      --       (X : access procedure
+      --                     (Y : access procedure
+      --                                   (Z : access T)))
+
+      while Nkind (D_Ityp) /= N_Full_Type_Declaration
+         and then Nkind (D_Ityp) /= N_Procedure_Specification
+         and then Nkind (D_Ityp) /= N_Function_Specification
+         and then Nkind (D_Ityp) /= N_Object_Renaming_Declaration
+         and then Nkind (D_Ityp) /= N_Formal_Type_Declaration
+      loop
+         D_Ityp := Parent (D_Ityp);
+         pragma Assert (D_Ityp /= Empty);
+      end loop;
+
+      Set_Associated_Node_For_Itype (Desig_Type, D_Ityp);
+
+      if Nkind (D_Ityp) = N_Procedure_Specification
+        or else Nkind (D_Ityp) = N_Function_Specification
+      then
+         Set_Scope (Desig_Type, Scope (Defining_Unit_Name (D_Ityp)));
+
+      elsif Nkind (D_Ityp) = N_Full_Type_Declaration
+        or else Nkind (D_Ityp) = N_Object_Renaming_Declaration
+        or else Nkind (D_Ityp) = N_Formal_Type_Declaration
+      then
+         Set_Scope (Desig_Type, Scope (Defining_Identifier (D_Ityp)));
+      end if;
+
       if Nkind (T_Def) = N_Access_Function_Definition then
          Analyze (Subtype_Mark (T_Def));
          Set_Etype (Desig_Type, Entity (Subtype_Mark (T_Def)));
@@ -940,6 +1014,143 @@ package body Sem_Ch3 is
       Set_Is_Access_Constant (T, Constant_Present (Def));
    end Access_Type_Declaration;
 
+   ----------------------------------
+   -- Add_Interface_Tag_Components --
+   ----------------------------------
+
+   procedure Add_Interface_Tag_Components
+     (N        : Node_Id;
+      Typ      : Entity_Id)
+   is
+      Loc      : constant Source_Ptr := Sloc (N);
+      Elmt     : Elmt_Id;
+      Ext      : Node_Id;
+      L        : List_Id;
+      Last_Tag : Node_Id;
+      Comp     : Node_Id;
+
+      procedure Add_Tag (Iface : Entity_Id);
+      --  Comment required ???
+
+      -------------
+      -- Add_Tag --
+      -------------
+
+      procedure Add_Tag (Iface : Entity_Id) is
+         Def      : Node_Id;
+         Tag      : Entity_Id;
+         Decl     : Node_Id;
+
+      begin
+         pragma Assert (Is_Tagged_Type (Iface)
+           and then Is_Interface (Iface));
+
+         Def :=
+           Make_Component_Definition (Loc,
+             Aliased_Present    => True,
+             Subtype_Indication =>
+               New_Occurrence_Of (RTE (RE_Interface_Tag), Loc));
+
+         Tag := Make_Defining_Identifier (Loc, New_Internal_Name ('V'));
+
+         Decl :=
+           Make_Component_Declaration (Loc,
+             Defining_Identifier  => Tag,
+             Component_Definition => Def);
+
+         Analyze_Component_Declaration (Decl);
+
+         Set_Analyzed (Decl);
+         Set_Ekind               (Tag, E_Component);
+         Set_Is_Limited_Record   (Tag);
+         Set_Is_Tag              (Tag);
+         Init_Component_Location (Tag);
+
+         pragma Assert (Is_Frozen (Iface));
+
+         Set_DT_Entry_Count    (Tag,
+           DT_Entry_Count (First_Entity (Iface)));
+
+         if not Present (Last_Tag) then
+            Prepend (Decl, L);
+         else
+            Insert_After (Last_Tag, Decl);
+         end if;
+
+         Last_Tag := Decl;
+      end Add_Tag;
+
+   --  Start of procesing for Add_Interface_Tag_Components
+
+   begin
+      if Ekind (Typ) /= E_Record_Type
+        or else not Present (Abstract_Interfaces (Typ))
+        or else Is_Empty_Elmt_List (Abstract_Interfaces (Typ))
+      then
+         return;
+      end if;
+
+      if Present (Abstract_Interfaces (Typ)) then
+
+         --  Find the current last tag
+
+         if Nkind (Type_Definition (N)) = N_Derived_Type_Definition then
+            Ext := Record_Extension_Part (Type_Definition (N));
+         else
+            pragma Assert (Nkind (Type_Definition (N)) = N_Record_Definition);
+            Ext := Type_Definition (N);
+         end if;
+
+         Last_Tag := Empty;
+
+         if not (Present (Component_List (Ext))) then
+            Set_Null_Present (Ext, False);
+            L := New_List;
+            Set_Component_List (Ext,
+              Make_Component_List (Loc,
+                Component_Items => L,
+                Null_Present => False));
+         else
+            if Nkind (Type_Definition (N)) = N_Derived_Type_Definition then
+               L := Component_Items
+                      (Component_List
+                        (Record_Extension_Part
+                          (Type_Definition (N))));
+            else
+               L := Component_Items
+                      (Component_List
+                        (Type_Definition (N)));
+            end if;
+
+            --  Find the last tag component
+
+            Comp := First (L);
+
+            while Present (Comp) loop
+               if Is_Tag (Defining_Identifier (Comp)) then
+                  Last_Tag := Comp;
+               end if;
+
+               Next (Comp);
+            end loop;
+         end if;
+
+         --  At this point L references the list of components and Last_Tag
+         --  references the current last tag (if any). Now we add the tag
+         --  corresponding with all the interfaces that are not implemented
+         --  by the parent.
+
+         pragma Assert (Present
+                        (First_Elmt (Abstract_Interfaces (Typ))));
+
+         Elmt := First_Elmt (Abstract_Interfaces (Typ));
+         while Present (Elmt) loop
+            Add_Tag (Node (Elmt));
+            Next_Elmt (Elmt);
+         end loop;
+      end if;
+   end Add_Interface_Tag_Components;
+
    -----------------------------------
    -- Analyze_Component_Declaration --
    -----------------------------------
@@ -1023,12 +1234,7 @@ package body Sem_Ch3 is
          T := Access_Definition
                 (Related_Nod => N,
                  N => Access_Definition (Component_Definition (N)));
-
-         --  Ada 2005 (AI-230): In case of components that are anonymous
-         --  access types the level of accessibility depends on the enclosing
-         --  type declaration
-
-         Set_Scope (T, Current_Scope); -- Ada 2005 (AI-230)
+         Set_Is_Local_Anonymous_Access (T);
 
          --  Ada 2005 (AI-254)
 
@@ -1044,10 +1250,10 @@ package body Sem_Ch3 is
 
       --  If the subtype is a constrained subtype of the enclosing record,
       --  (which must have a partial view) the back-end does not handle
-      --  properly the recursion. Rewrite the component declaration with
-      --  an explicit subtype indication, which is acceptable to Gigi. We
-      --  can copy the tree directly because side effects have already been
-      --  removed from discriminant constraints.
+      --  properly the recursion. Rewrite the component declaration with an
+      --  explicit subtype indication, which is acceptable to Gigi. We can copy
+      --  the tree directly because side effects have already been removed from
+      --  discriminant constraints.
 
       if Ekind (T) = E_Access_Subtype
         and then Is_Entity_Name (Subtype_Indication (Component_Definition (N)))
@@ -1127,9 +1333,8 @@ package body Sem_Ch3 is
          Null_Exclusion_Static_Checks (N);
       end if;
 
-      --  If this component is private (or depends on a private type),
-      --  flag the record type to indicate that some operations are not
-      --  available.
+      --  If this component is private (or depends on a private type), flag the
+      --  record type to indicate that some operations are not available.
 
       P := Private_Component (T);
 
@@ -1742,7 +1947,13 @@ package body Sem_Ch3 is
 
          --  Protected objects with interrupt handlers must be at library level
 
-         if Has_Interrupt_Handler (T) then
+         --  Ada 2005: this test is not needed (and the corresponding clause
+         --  in the RM is removed) because accessibility checks are sufficient
+         --  to make handlers not at the library level illegal.
+
+         if Has_Interrupt_Handler (T)
+           and then Ada_Version < Ada_05
+         then
             Error_Msg_N
               ("interrupt object can only be declared at library level", Id);
          end if;
@@ -2265,6 +2476,26 @@ package body Sem_Ch3 is
       Parent_Base : Entity_Id;
 
    begin
+      --  Ada 2005 (AI-251): Decorate all the names in the list of ancestor
+      --  interfaces
+
+      if Is_Non_Empty_List (Interface_List (N)) then
+         declare
+            I : Node_Id := First (Interface_List (N));
+            T : Entity_Id;
+         begin
+            while Present (I) loop
+               T := Find_Type_Of_Subtype_Indic (I);
+
+               if not Is_Interface (T) then
+                  Error_Msg_NE ("(Ada 2005) & must be an interface", I, T);
+               end if;
+
+               Next (I);
+            end loop;
+         end;
+      end if;
+
       Generate_Definition (T);
       Enter_Name (T);
 
@@ -3065,6 +3296,7 @@ package body Sem_Ch3 is
          Element_Type := Access_Definition
                            (Related_Nod => Related_Id,
                             N           => Access_Definition (Component_Def));
+         Set_Is_Local_Anonymous_Access (Element_Type);
 
          --  Ada 2005 (AI-230): In case of components that are anonymous
          --  access types the level of accessibility depends on the enclosing
@@ -3218,7 +3450,7 @@ package body Sem_Ch3 is
 
       elsif Is_Abstract (Element_Type) then
          Error_Msg_N
-           ("The type of a component cannot be abstract",
+           ("the type of a component cannot be abstract",
             Subtype_Indication (Component_Def));
       end if;
 
@@ -4931,15 +5163,15 @@ package body Sem_Ch3 is
       Last_Discrim : Entity_Id;
       Constrs      : Elist_Id;
 
-      Discs : Elist_Id := New_Elmt_List;
+      Discs        : Elist_Id := New_Elmt_List;
       --  An empty Discs list means that there were no constraints in the
       --  subtype indication or that there was an error processing it.
 
-      Assoc_List : Elist_Id;
-      New_Discrs : Elist_Id;
-      New_Base   : Entity_Id;
-      New_Decl   : Node_Id;
-      New_Indic  : Node_Id;
+      Assoc_List         : Elist_Id;
+      New_Discrs         : Elist_Id;
+      New_Base           : Entity_Id;
+      New_Decl           : Node_Id;
+      New_Indic          : Node_Id;
 
       Is_Tagged          : constant Boolean := Is_Tagged_Type (Parent_Type);
       Discriminant_Specs : constant Boolean :=
@@ -4947,12 +5179,14 @@ package body Sem_Ch3 is
       Private_Extension  : constant Boolean :=
                              (Nkind (N) = N_Private_Extension_Declaration);
 
-      Constraint_Present : Boolean;
-      Inherit_Discrims   : Boolean := False;
-
-      Save_Etype        : Entity_Id;
-      Save_Discr_Constr : Elist_Id;
-      Save_Next_Entity  : Entity_Id;
+      Constraint_Present     : Boolean;
+      Has_Interfaces         : Boolean := False;
+      Inherit_Discrims       : Boolean := False;
+      Last_Inherited_Prim_Op : Elmt_Id;
+      Tagged_Partial_View    : Entity_Id;
+      Save_Etype             : Entity_Id;
+      Save_Discr_Constr      : Elist_Id;
+      Save_Next_Entity       : Entity_Id;
 
    begin
       if Ekind (Parent_Type) = E_Record_Type_With_Private
@@ -5193,7 +5427,54 @@ package body Sem_Ch3 is
             Freeze_Before (N, Parent_Type);
          end if;
 
-         if Type_Access_Level (Derived_Type) /= Type_Access_Level (Parent_Type)
+         --  In Ada 2005 (AI-344), the restriction that a derived tagged type
+         --  cannot be declared at a deeper level than its parent type is
+         --  removed. The check on derivation within a generic body is also
+         --  relaxed, but there's a restriction that a derived tagged type
+         --  cannot be declared in a generic body if it's derived directly
+         --  or indirectly from a formal type of that generic.
+
+         if Ada_Version >= Ada_05 then
+            if Present (Enclosing_Generic_Body (Derived_Type)) then
+               declare
+                  Ancestor_Type : Entity_Id := Parent_Type;
+
+               begin
+                  --  Check to see if any ancestor of the derived type is a
+                  --  formal type.
+
+                  while not Is_Generic_Type (Ancestor_Type)
+                    and then Etype (Ancestor_Type) /= Ancestor_Type
+                  loop
+                     Ancestor_Type := Etype (Ancestor_Type);
+                  end loop;
+
+                  --  If the derived type does have a formal type as an
+                  --  ancestor, then it's an error if the derived type is
+                  --  declared within the body of the generic unit that
+                  --  declares the formal type in its generic formal part. It's
+                  --  sufficient to check whether the ancestor type is declared
+                  --  inside the same generic body as the derived type (such as
+                  --  within a nested generic spec), in which case the
+                  --  derivation is legal. If the formal type is declared
+                  --  outside of that generic body, then it's guaranteed that
+                  --  the derived type is declared within the generic body of
+                  --  the generic unit declaring the formal type.
+
+                  if Is_Generic_Type (Ancestor_Type)
+                    and then Enclosing_Generic_Body (Ancestor_Type) /=
+                               Enclosing_Generic_Body (Derived_Type)
+                  then
+                     Error_Msg_NE
+                       ("parent type of& must not be descendant of formal type"
+                          & " of an enclosing generic body",
+                            Indic, Derived_Type);
+                  end if;
+               end;
+            end if;
+
+         elsif Type_Access_Level (Derived_Type) /=
+                 Type_Access_Level (Parent_Type)
            and then not Is_Generic_Type (Derived_Type)
          then
             if Is_Controlled (Parent_Type) then
@@ -5221,6 +5502,29 @@ package body Sem_Ch3 is
                end if;
             end;
          end if;
+      end if;
+
+      --  Ada 2005 (AI-251)
+
+      if Ada_Version = Ada_05
+        and then Is_Tagged
+      then
+
+         --  "The declaration of a specific descendant of an interface type
+         --  freezes the interface type" (RM 13.14).
+
+         declare
+            Iface : Node_Id;
+         begin
+            if Is_Non_Empty_List (Interface_List (Type_Def)) then
+               Iface := First (Interface_List (Type_Def));
+
+               while Present (Iface) loop
+                  Freeze_Before (N, Etype (Iface));
+                  Next (Iface);
+               end loop;
+            end if;
+         end;
       end if;
 
       --  STEP 1b : preliminary cleanup of the full view of private types
@@ -5424,6 +5728,17 @@ package body Sem_Ch3 is
       Set_Is_Tagged_Type    (Derived_Type, Is_Tagged);
       Set_Stored_Constraint (Derived_Type, No_Elist);
 
+      --  Ada 2005 (AI-251): Private type-declarations can implement interfaces
+      --  but cannot be interfaces
+
+      if not Private_Extension
+         and then Ekind (Derived_Type) /= E_Private_Type
+         and then Ekind (Derived_Type) /= E_Limited_Private_Type
+      then
+         Set_Is_Interface (Derived_Type, Interface_Present (Type_Def));
+         Set_Abstract_Interfaces (Derived_Type, No_Elist);
+      end if;
+
       --  Fields inherited from the Parent_Type
 
       Set_Discard_Names
@@ -5505,6 +5820,143 @@ package body Sem_Ch3 is
          then
             Set_Stored_Constraint
               (Derived_Type, Expand_To_Stored_Constraint (Parent_Base, Discs));
+         end if;
+
+         --  Ada 2005 (AI-251): Look for the partial view of tagged types
+         --  declared in the private part. This will be used 1) to check that
+         --  the set of interfaces in both views is equal, and 2) to complete
+         --  the derivation of subprograms covering interfaces.
+
+         Tagged_Partial_View := Empty;
+
+         if Has_Private_Declaration (Derived_Type) then
+            Tagged_Partial_View := Next_Entity (Derived_Type);
+            loop
+               exit when Has_Private_Declaration (Tagged_Partial_View)
+                 and then Full_View (Tagged_Partial_View) = Derived_Type;
+
+               Next_Entity (Tagged_Partial_View);
+            end loop;
+         end if;
+
+         --  Ada 2005 (AI-251): Collect the whole list of implemented
+         --  interfaces.
+
+         if Ada_Version >= Ada_05 then
+            Set_Abstract_Interfaces (Derived_Type, New_Elmt_List);
+
+            if Nkind (N) = N_Private_Extension_Declaration then
+               Collect_Interfaces (N, Derived_Type);
+            else
+               Collect_Interfaces (Type_Definition (N), Derived_Type);
+            end if;
+
+            --  Check that the full view and the partial view agree
+            --  in the set of implemented interfaces
+
+            if Has_Private_Declaration (Derived_Type)
+              and then Present (Abstract_Interfaces (Derived_Type))
+              and then not Is_Empty_Elmt_List
+                             (Abstract_Interfaces (Derived_Type))
+            then
+               declare
+                  N_Partial : constant Node_Id := Parent (Tagged_Partial_View);
+                  N_Full    : constant Node_Id := Parent (Derived_Type);
+
+                  Iface_Partial      : Entity_Id;
+                  Iface_Full         : Entity_Id;
+                  Num_Ifaces_Partial : Natural := 0;
+                  Num_Ifaces_Full    : Natural := 0;
+                  Same_Interfaces    : Boolean := True;
+
+               begin
+                  --  Count the interfaces implemented by the partial view
+
+                  if not Is_Empty_List (Interface_List (N_Partial)) then
+                     Iface_Partial := First (Interface_List (N_Partial));
+
+                     while Present (Iface_Partial) loop
+                        Num_Ifaces_Partial := Num_Ifaces_Partial + 1;
+                        Next (Iface_Partial);
+                     end loop;
+                  end if;
+
+                  --  Take into account the case in which the partial
+                  --  view is a directly derived from an interface
+
+                  if Is_Interface (Etype
+                                   (Defining_Identifier (N_Partial)))
+                  then
+                     Num_Ifaces_Partial := Num_Ifaces_Partial + 1;
+                  end if;
+
+                  --  Count the interfaces implemented by the full view
+
+                  if not Is_Empty_List (Interface_List
+                                        (Type_Definition (N_Full)))
+                  then
+                     Iface_Full := First (Interface_List
+                                          (Type_Definition (N_Full)));
+
+                     while Present (Iface_Full) loop
+                        Num_Ifaces_Full := Num_Ifaces_Full + 1;
+                        Next (Iface_Full);
+                     end loop;
+                  end if;
+
+                  --  Take into account the case in which the full
+                  --  view is a directly derived from an interface
+
+                  if Is_Interface (Etype
+                                   (Defining_Identifier (N_Full)))
+                  then
+                     Num_Ifaces_Full := Num_Ifaces_Full + 1;
+                  end if;
+
+                  if Num_Ifaces_Full > 0
+                    and then Num_Ifaces_Full = Num_Ifaces_Partial
+                  then
+
+                     --  Check that the full-view and the private-view have
+                     --  the same list of interfaces
+
+                     Iface_Full := First (Interface_List
+                                           (Type_Definition (N_Full)));
+
+                     while Present (Iface_Full) loop
+                        Iface_Partial := First (Interface_List (N_Partial));
+
+                        while Present (Iface_Partial)
+                          and then Etype (Iface_Partial) /= Etype (Iface_Full)
+                        loop
+                           Next (Iface_Partial);
+                        end loop;
+
+                        --  If not found we check if the partial view is a
+                        --  direct derivation of the interface.
+
+                        if not Present (Iface_Partial)
+                             and then
+                           Etype (Tagged_Partial_View) /= Etype (Iface_Full)
+                        then
+                           Same_Interfaces := False;
+                           exit;
+                        end if;
+
+                        Next (Iface_Full);
+                     end loop;
+                  end if;
+
+                  if Num_Ifaces_Partial /= Num_Ifaces_Full
+                    or else not Same_Interfaces
+                  then
+                     Error_Msg_N
+                       ("(Ada 2005) full declaration and private declaration"
+                        & " must have the same list of interfaces",
+                        Derived_Type);
+                  end if;
+               end;
+            end if;
          end if;
 
       else
@@ -5596,6 +6048,13 @@ package body Sem_Ch3 is
 
          Expand_Record_Extension (Derived_Type, Type_Def);
 
+         --  Ada 2005 (AI-251): Addition of the Tag corresponding to all the
+         --  implemented interfaces if we are in expansion mode
+
+         if Expander_Active then
+            Add_Interface_Tag_Components (N, Derived_Type);
+         end if;
+
          --  Analyze the record extension
 
          Record_Type_Definition
@@ -5613,8 +6072,140 @@ package body Sem_Ch3 is
       --  derived freeze if necessary.
 
       Set_Has_Delayed_Freeze (Derived_Type);
+
       if Derive_Subps then
          Derive_Subprograms (Parent_Type, Derived_Type);
+
+         --  Ada 2005 (AI-251): Check if this tagged type implements abstract
+         --  interfaces
+
+         Has_Interfaces := False;
+
+         if Is_Tagged_Type (Derived_Type) then
+            declare
+               E : Entity_Id;
+
+            begin
+               E := Derived_Type;
+               loop
+                  if Is_Interface (E)
+                    or else (Present (Abstract_Interfaces (E))
+                               and then
+                             not Is_Empty_Elmt_List (Abstract_Interfaces (E)))
+                  then
+                     Has_Interfaces := True;
+                     exit;
+                  end if;
+
+                  exit when Etype (E) = E
+
+                     --  Protect the frontend against wrong source
+
+                    or else Etype (E) = Derived_Type;
+
+                  E := Etype (E);
+               end loop;
+            end;
+         end if;
+
+         --  Ada 2005 (AI-251): Keep separate the management of tagged types
+         --  implementing interfaces
+
+         if Is_Tagged_Type (Derived_Type)
+           and then Has_Interfaces
+         then
+            --  Complete the decoration of private tagged types
+
+            if Present (Tagged_Partial_View) then
+               Complete_Subprograms_Derivation
+                 (Partial_View => Tagged_Partial_View,
+                  Derived_Type => Derived_Type);
+            end if;
+
+            --  Ada 2005 (AI-251): Derive the interface subprograms of all the
+            --  implemented interfaces and check if some of the subprograms
+            --  inherited from the ancestor cover some interface subprogram.
+
+            if not Present (Tagged_Partial_View) then
+               declare
+                  Subp_Elmt         : Elmt_Id := First_Elmt
+                                                   (Primitive_Operations
+                                                     (Derived_Type));
+                  Iface_Subp_Elmt   : Elmt_Id;
+                  Subp              : Entity_Id;
+                  Iface_Subp        : Entity_Id;
+                  Is_Interface_Subp : Boolean;
+
+               begin
+                  --  Ada 2005 (AI-251): Remember the entity corresponding to
+                  --  the last inherited primitive operation. This is required
+                  --  to check if some of the inherited subprograms covers some
+                  --  of the new interfaces.
+
+                  Last_Inherited_Prim_Op := No_Elmt;
+
+                  while Present (Subp_Elmt) loop
+                     Last_Inherited_Prim_Op := Subp_Elmt;
+                     Next_Elmt (Subp_Elmt);
+                  end loop;
+
+                  --  Ada 2005 (AI-251): Derive subprograms in abstract
+                  --  interfaces
+
+                  Derive_Interface_Subprograms (Derived_Type);
+
+                  --  Ada 2005 (AI-251): Check if some of the inherited
+                  --  subprograms cover some of the new interfaces.
+
+                  if Present (Last_Inherited_Prim_Op) then
+                     Iface_Subp_Elmt := Next_Elmt (Last_Inherited_Prim_Op);
+                     while Present (Iface_Subp_Elmt) loop
+                        Subp_Elmt := First_Elmt (Primitive_Operations
+                                                  (Derived_Type));
+                        while Subp_Elmt /= Last_Inherited_Prim_Op loop
+                           Subp       := Node (Subp_Elmt);
+                           Iface_Subp := Node (Iface_Subp_Elmt);
+
+                           Is_Interface_Subp :=
+                             Present (Alias (Subp))
+                               and then Present (DTC_Entity (Alias (Subp)))
+                               and then Is_Interface (Scope
+                                                      (DTC_Entity
+                                                       (Alias (Subp))));
+
+                           if Chars (Subp) = Chars (Iface_Subp)
+                             and then not Is_Interface_Subp
+                             and then not Is_Abstract (Subp)
+                             and then Type_Conformant (Iface_Subp, Subp)
+                           then
+                              Check_Dispatching_Operation
+                                (Subp     => Subp,
+                                 Old_Subp => Iface_Subp);
+
+                              --  Traverse the list of aliased subprograms
+
+                              declare
+                                 E : Entity_Id := Alias (Subp);
+                              begin
+                                 while Present (Alias (E)) loop
+                                    E := Alias (E);
+                                 end loop;
+                                 Set_Alias (Subp, E);
+                              end;
+
+                              Set_Has_Delayed_Freeze (Subp);
+                              exit;
+                           end if;
+
+                           Next_Elmt (Subp_Elmt);
+                        end loop;
+
+                        Next_Elmt (Iface_Subp_Elmt);
+                     end loop;
+                  end if;
+               end;
+            end if;
+         end if;
       end if;
 
       --  If we have a private extension which defines a constrained derived
@@ -6424,6 +7015,16 @@ package body Sem_Ch3 is
                   Error_Msg_NE
                     ("type must be declared abstract or & overridden",
                      T, Subp);
+
+               --  Ada 2005 (AI-345): Protected or task type implementing
+               --  abstract interfaces
+
+               elsif Is_Concurrent_Record_Type (T)
+                   and then Present (Abstract_Interfaces (T))
+               then
+                  Error_Msg_NE
+                    ("interface subprogram & must be overridden",
+                     T, Subp);
                end if;
             else
                Error_Msg_NE
@@ -6475,6 +7076,11 @@ package body Sem_Ch3 is
       --  ??? Also need to check components of record extensions, but not
       --  components of protected types (which are always limited).
 
+      --  Ada 2005: AI-363 relaxes this rule, to allow heap objects
+      --  of such types to be unconstrained. This is safe because it is
+      --  illegal to create access subtypes to such types with explicit
+      --  discriminant constraints.
+
       if not Is_Limited_Type (T) then
          if Ekind (T) = E_Record_Type then
             C := First_Component (T);
@@ -6483,6 +7089,7 @@ package body Sem_Ch3 is
                  and then Has_Discriminants (Etype (C))
                  and then not Is_Constrained (Etype (C))
                  and then not In_Instance
+                 and then Ada_Version < Ada_05
                then
                   Error_Msg_N
                     ("aliased component must be constrained ('R'M 3.6(11))",
@@ -6880,6 +7487,67 @@ package body Sem_Ch3 is
       Resolve (Bound, Standard_Float);
    end Check_Real_Bound;
 
+   ------------------------
+   -- Collect_Interfaces --
+   ------------------------
+
+   procedure Collect_Interfaces (N : Node_Id; Derived_Type : Entity_Id) is
+      I          : Node_Id;
+
+      procedure Add_Interface (Iface : Entity_Id);
+
+      procedure Add_Interface (Iface : Entity_Id) is
+         Elmt : Elmt_Id := First_Elmt (Abstract_Interfaces (Derived_Type));
+
+      begin
+         while Present (Elmt) and then Node (Elmt) /= Iface loop
+            Next_Elmt (Elmt);
+         end loop;
+
+         if not Present (Elmt) then
+            Append_Elmt (Node => Iface,
+                         To   => Abstract_Interfaces (Derived_Type));
+         end if;
+      end Add_Interface;
+
+   begin
+      pragma Assert (False
+         or else Nkind (N) = N_Derived_Type_Definition
+         or else Nkind (N) = N_Record_Definition
+         or else Nkind (N) = N_Private_Extension_Declaration);
+
+      --  Traverse the graph of ancestor interfaces
+
+      if Is_Non_Empty_List (Interface_List (N)) then
+         I := First (Interface_List (N));
+
+         while Present (I) loop
+
+            --  Protect against wrong usages. Example:
+            --    type I is interface;
+            --    type O is tagged null record;
+            --    type Wrong is new I and O with null record;
+
+            if Is_Interface (Etype (I)) then
+
+               --  Do not add the interface when the derived type already
+               --  implements this interface
+
+               if not Interface_Present_In_Ancestor (Derived_Type,
+                                                     Etype (I))
+               then
+                  Collect_Interfaces
+                     (Type_Definition (Parent (Etype (I))),
+                      Derived_Type);
+                  Add_Interface (Etype (I));
+               end if;
+            end if;
+
+            Next (I);
+         end loop;
+      end if;
+   end Collect_Interfaces;
+
    ------------------------------
    -- Complete_Private_Subtype --
    ------------------------------
@@ -7091,6 +7759,77 @@ package body Sem_Ch3 is
       end if;
    end Complete_Private_Subtype;
 
+   -------------------------------------
+   -- Complete_Subprograms_Derivation --
+   -------------------------------------
+
+   procedure Complete_Subprograms_Derivation
+     (Partial_View : Entity_Id;
+      Derived_Type : Entity_Id)
+   is
+      Result  : constant Elist_Id := New_Elmt_List;
+      Elmt_P  : Elmt_Id := No_Elmt;
+      Elmt_D  : Elmt_Id;
+      Found   : Boolean;
+      Prim_Op : Entity_Id;
+      E       : Entity_Id;
+
+   begin
+      if Is_Tagged_Type (Partial_View) then
+         Elmt_P := First_Elmt (Primitive_Operations (Partial_View));
+      end if;
+
+      --  Inherit primitives declared with the partial-view
+
+      while Present (Elmt_P) loop
+         Prim_Op := Node (Elmt_P);
+         Found   := False;
+         Elmt_D  := First_Elmt (Primitive_Operations (Derived_Type));
+         while Present (Elmt_D) loop
+            if Node (Elmt_D) = Prim_Op then
+               Found := True;
+               exit;
+            end if;
+
+            Next_Elmt (Elmt_D);
+         end loop;
+
+         if not Found then
+            Append_Elmt (Prim_Op, Result);
+
+            --  Search for entries associated with abstract interfaces that
+            --  have been covered by this primitive
+
+            Elmt_D  := First_Elmt (Primitive_Operations (Derived_Type));
+            while Present (Elmt_D) loop
+               E := Node (Elmt_D);
+
+               if Chars (E) = Chars (Prim_Op)
+                 and then Is_Abstract (E)
+                 and then Present (Alias (E))
+                 and then Present (DTC_Entity (Alias (E)))
+                 and then Is_Interface (Scope (DTC_Entity (Alias (E))))
+               then
+                  Remove_Elmt (Primitive_Operations (Derived_Type), Elmt_D);
+               end if;
+
+               Next_Elmt (Elmt_D);
+            end loop;
+         end if;
+
+         Next_Elmt (Elmt_P);
+      end loop;
+
+      --  Append the entities of the full-view to the list of primitives
+      --  of derived_type
+
+      Elmt_D  := First_Elmt (Result);
+      while Present (Elmt_D) loop
+         Append_Elmt (Node (Elmt_D), Primitive_Operations (Derived_Type));
+         Next_Elmt (Elmt_D);
+      end loop;
+   end Complete_Subprograms_Derivation;
+
    ----------------------------
    -- Constant_Redeclaration --
    ----------------------------
@@ -7190,9 +7929,18 @@ package body Sem_Ch3 is
       then
          Enter_Name (Id);
 
-      --  Verify that types of both declarations match
+      --  Verify that types of both declarations match, or else that both types
+      --  are anonymous access types whose designated subtypes statically match
+      --  (as allowed in Ada 2005 by AI-385).
 
-      elsif Base_Type (Etype (Prev)) /= Base_Type (New_T) then
+      elsif Base_Type (Etype (Prev)) /= Base_Type (New_T)
+        and then
+          (Ekind (Etype (Prev)) /= E_Anonymous_Access_Type
+             or else Ekind (Etype (New_T)) /= E_Anonymous_Access_Type
+             or else not Subtypes_Statically_Match
+                           (Designated_Type (Etype (Prev)),
+                            Designated_Type (Etype (New_T))))
+      then
          Error_Msg_Sloc := Sloc (Prev);
          Error_Msg_N ("type does not match declaration#", N);
          Set_Full_View (Prev, Id);
@@ -7257,6 +8005,24 @@ package body Sem_Ch3 is
       Desig_Subtype : Entity_Id := Create_Itype (E_Void, Related_Nod);
       Constraint_OK : Boolean := True;
 
+      function Has_Defaulted_Discriminants (Typ : Entity_Id) return Boolean;
+      --  Simple predicate to test for defaulted discriminants
+      --  Shouldn't this be in sem_util???
+
+      ---------------------------------
+      -- Has_Defaulted_Discriminants --
+      ---------------------------------
+
+      function Has_Defaulted_Discriminants (Typ : Entity_Id) return Boolean is
+      begin
+         return Has_Discriminants (Typ)
+          and then Present (First_Discriminant (Typ))
+          and then Present
+            (Discriminant_Default_Value (First_Discriminant (Typ)));
+      end Has_Defaulted_Discriminants;
+
+   --  Start of processing for Constrain_Access
+
    begin
       if Is_Array_Type (Desig_Type) then
          Constrain_Array (Desig_Subtype, S, Related_Nod, Def_Id, 'P');
@@ -7296,6 +8062,9 @@ package body Sem_Ch3 is
             --  a derivation from a private type) has no discriminants.
             --  (Defect Report 8652/0008, Technical Corrigendum 1, checked
             --  by ACATS B371001).
+            --  Rule updated for Ada 2005: the private type is said to have
+            --  a constrained partial view, given that objects of the type
+            --  can be declared.
 
             declare
                Pack  : constant Node_Id :=
@@ -7324,8 +8093,9 @@ package body Sem_Ch3 is
                      then
                         if No (Discriminant_Specifications (Decl)) then
                            Error_Msg_N
-                            ("cannot constrain general access type " &
-                               "if designated type has unconstrained view", S);
+                            ("cannot constrain general access type if " &
+                               "designated type has constrained partial view",
+                                S);
                         end if;
 
                         exit;
@@ -7376,6 +8146,31 @@ package body Sem_Ch3 is
       Set_Is_Access_Constant       (Def_Id, Is_Access_Constant (T));
 
       Conditional_Delay (Def_Id, T);
+
+      --  AI-363 : Subtypes of general access types whose designated
+      --  types have default discriminants are disallowed. In instances,
+      --  the rule has to be checked against the actual, of which T is
+      --  the subtype. In a generic body, the rule is checked assuming
+      --  that the actual type has defaulted discriminants.
+
+      if Ada_Version >=  Ada_05 then
+         if Ekind (Base_Type (T)) = E_General_Access_Type
+           and then Has_Defaulted_Discriminants (Desig_Type)
+         then
+            Error_Msg_N
+              ("access subype of general access type not allowed", S);
+            Error_Msg_N ("\ when discriminants have defaults", S);
+
+         elsif Is_Access_Type (T)
+           and then Is_Generic_Type (Desig_Type)
+           and then Has_Discriminants (Desig_Type)
+           and then In_Package_Body (Current_Scope)
+         then
+            Error_Msg_N ("access subtype not allowed in generic body", S);
+            Error_Msg_N
+              ("\ wben designated type is a discriminated formal", S);
+         end if;
+      end if;
    end Constrain_Access;
 
    ---------------------
@@ -7461,6 +8256,8 @@ package body Sem_Ch3 is
 
       if Constraint_OK then
          Set_First_Index (Def_Id, First (Constraints (C)));
+      else
+         Set_First_Index (Def_Id, First_Index (T));
       end if;
 
       Set_Is_Constrained     (Def_Id, True);
@@ -9047,6 +9844,58 @@ package body Sem_Ch3 is
       Set_Is_Constrained (T);
    end Decimal_Fixed_Point_Type_Declaration;
 
+   ---------------------------------
+   -- Derive_Interface_Subprogram --
+   ---------------------------------
+
+   procedure Derive_Interface_Subprograms (Derived_Type : Entity_Id) is
+
+      procedure Do_Derivation (T : Entity_Id);
+      --  This inner subprograms is used to climb to the ancestors.
+      --  It is needed to add the derivations to the Derived_Type.
+
+      procedure Do_Derivation (T : Entity_Id) is
+         Etyp : constant Entity_Id := Etype (T);
+         AI   : Elmt_Id;
+
+      begin
+         if Etyp /= T
+           and then Is_Interface (Etyp)
+         then
+            Do_Derivation (Etyp);
+         end if;
+
+         if Present (Abstract_Interfaces (T))
+           and then not Is_Empty_Elmt_List (Abstract_Interfaces (T))
+         then
+            AI := First_Elmt (Abstract_Interfaces (T));
+
+            while Present (AI) loop
+               Derive_Subprograms
+                 (Parent_Type             => Node (AI),
+                  Derived_Type            => Derived_Type,
+                  Is_Interface_Derivation => True);
+
+               Next_Elmt (AI);
+            end loop;
+         end if;
+      end Do_Derivation;
+
+   begin
+      Do_Derivation (Derived_Type);
+
+      --  At this point the list of primitive operations of Derived_Type
+      --  contains the entities corresponding to all the subprograms of all the
+      --  implemented interfaces. If N interfaces have subprograms with the
+      --  same profile we have N entities in this list because each one must be
+      --  allocated in its corresponding virtual table.
+
+      --  Its alias attribute references its original interface subprogram.
+      --  When overriden, the alias attribute is later saved in the
+      --  Abstract_Interface_Alias attribute.
+
+   end Derive_Interface_Subprograms;
+
    -----------------------
    -- Derive_Subprogram --
    -----------------------
@@ -9430,9 +10279,10 @@ package body Sem_Ch3 is
    ------------------------
 
    procedure Derive_Subprograms
-     (Parent_Type    : Entity_Id;
-      Derived_Type   : Entity_Id;
-      Generic_Actual : Entity_Id := Empty)
+     (Parent_Type             : Entity_Id;
+      Derived_Type            : Entity_Id;
+      Generic_Actual          : Entity_Id := Empty;
+      Is_Interface_Derivation : Boolean   := False)
    is
       Op_List     : constant Elist_Id :=
                       Collect_Primitive_Operations (Parent_Type);
@@ -9468,7 +10318,13 @@ package body Sem_Ch3 is
          Subp := Node (Elmt);
 
          if Ekind (Subp) /= E_Enumeration_Literal then
-            if No (Generic_Actual) then
+            if Is_Interface_Derivation then
+               if not Is_Predefined_Dispatching_Operation (Subp) then
+                  Derive_Subprogram
+                    (New_Subp, Subp, Derived_Type, Parent_Base);
+               end if;
+
+            elsif No (Generic_Actual) then
                Derive_Subprogram
                  (New_Subp, Subp, Derived_Type, Parent_Base);
 
@@ -9567,6 +10423,7 @@ package body Sem_Ch3 is
       Is_Completion : Boolean)
    is
       Def          : constant Node_Id := Type_Definition (N);
+      Iface_Def    : Node_Id;
       Indic        : constant Node_Id := Subtype_Indication (Def);
       Extension    : constant Node_Id := Record_Extension_Part (Def);
       Parent_Type  : Entity_Id;
@@ -9607,6 +10464,92 @@ package body Sem_Ch3 is
 
    begin
       Parent_Type := Find_Type_Of_Subtype_Indic (Indic);
+
+      --  Ada 2005 (AI-251): In case of interface derivation check that the
+      --  parent is also an interface.
+
+      if Interface_Present (Def) then
+         if not Is_Interface (Parent_Type) then
+            Error_Msg_NE ("(Ada 2005) & must be an interface",
+                          Indic, Parent_Type);
+
+         else
+            Iface_Def := Type_Definition (Parent (Parent_Type));
+
+            --  Ada 2005 (AI-251): Limited interfaces can only inherit from
+            --  other limited interfaces.
+
+            if Limited_Present (Def) then
+               if Limited_Present (Iface_Def) then
+                  null;
+
+               elsif Protected_Present (Iface_Def) then
+                  Error_Msg_N ("(Ada 2005) limited interface cannot" &
+                    " inherit from protected interface", Indic);
+
+               elsif Synchronized_Present (Iface_Def) then
+                  Error_Msg_N ("(Ada 2005) limited interface cannot" &
+                    " inherit from synchronized interface", Indic);
+
+               elsif Task_Present (Iface_Def) then
+                  Error_Msg_N ("(Ada 2005) limited interface cannot" &
+                    " inherit from task interface", Indic);
+
+               else
+                  Error_Msg_N ("(Ada 2005) limited interface cannot" &
+                    " inherit from non-limited interface", Indic);
+               end if;
+
+            --  Ada 2005 (AI-345): Non-limited interfaces can only inherit
+            --  from non-limited or limited interfaces.
+
+            elsif not Protected_Present (Def)
+              and then not Synchronized_Present (Def)
+              and then not Task_Present (Def)
+            then
+               if Limited_Present (Iface_Def) then
+                  null;
+
+               elsif Protected_Present (Iface_Def) then
+                  Error_Msg_N ("(Ada 2005) non-limited interface cannot" &
+                    " inherit from protected interface", Indic);
+
+               elsif Synchronized_Present (Iface_Def) then
+                  Error_Msg_N ("(Ada 2005) non-limited interface cannot" &
+                    " inherit from synchronized interface", Indic);
+
+               elsif Task_Present (Iface_Def) then
+                  Error_Msg_N ("(Ada 2005) non-limited interface cannot" &
+                    " inherit from task interface", Indic);
+
+               else
+                  null;
+               end if;
+            end if;
+         end if;
+      end if;
+
+      --  Ada 2005 (AI-251): Decorate all the names in the list of ancestor
+      --  interfaces
+
+      if Is_Tagged_Type (Parent_Type)
+        and then Is_Non_Empty_List (Interface_List (Def))
+      then
+         declare
+            I : Node_Id := First (Interface_List (Def));
+            T : Entity_Id;
+         begin
+            while Present (I) loop
+               T := Find_Type_Of_Subtype_Indic (I);
+
+               if not Is_Interface (T) then
+                  Error_Msg_NE ("(Ada 2005) & must be an interface", I, T);
+               end if;
+
+               Next (I);
+            end loop;
+         end;
+      end if;
 
       if Parent_Type = Any_Type
         or else Etype (Parent_Type) = Any_Type
@@ -10009,6 +10952,14 @@ package body Sem_Ch3 is
                    ("completion of nonlimited type cannot be limited", N);
                end if;
 
+            --  Ada 2005 (AI-251): Private extension declaration of a
+            --  task type. This case arises with tasks implementing interfaces
+
+            elsif Nkind (N) = N_Task_Type_Declaration
+              or else Nkind (N) = N_Protected_Type_Declaration
+            then
+               null;
+
             elsif Nkind (N) /= N_Full_Type_Declaration
               or else Nkind (Type_Definition (N)) /= N_Derived_Type_Definition
             then
@@ -10078,6 +11029,8 @@ package body Sem_Ch3 is
          if Is_Type (Prev)
            and then (Is_Tagged_Type (Prev)
                       or else Present (Class_Wide_Type (Prev)))
+           and then (Nkind (N) /= N_Task_Type_Declaration
+                      and then Nkind (N) /= N_Protected_Type_Declaration)
          then
             --  The full declaration is either a tagged record or an
             --  extension otherwise this is an error
@@ -10183,10 +11136,18 @@ package body Sem_Ch3 is
            and then No (Expression (P))
          then
             null;
-
          else
             Insert_Actions (Obj_Def, Freeze_Entity (T, Sloc (P)));
          end if;
+
+      --  Ada 2005 AI-406: the object definition in an object declaration
+      --  can be an access definition.
+
+      elsif Def_Kind = N_Access_Definition then
+         T := Access_Definition (Related_Nod, Obj_Def);
+         Set_Is_Local_Anonymous_Access (T);
+
+      --  comment here, what cases ???
 
       else
          T := Process_Subtype (Obj_Def, Related_Nod);
@@ -10850,7 +11811,17 @@ package body Sem_Ch3 is
 
       Component := First_Entity (Parent_Base);
       while Present (Component) loop
-         if Ekind (Component) /= E_Component
+
+         --  Ada 2005 (AI-251): Do not inherit tags corresponding with the
+         --  interfaces of the parent
+
+         if Ekind (Component) = E_Component
+           and then Is_Tag (Component)
+           and then Etype  (Component) = RTE (RE_Interface_Tag)
+         then
+            null;
+
+         elsif Ekind (Component) /= E_Component
            or else Chars (Component) = Name_uParent
          then
             null;
@@ -11812,6 +12783,18 @@ package body Sem_Ch3 is
          if Nkind (Discriminant_Type (Discr)) = N_Access_Definition then
             Discr_Type := Access_Definition (N, Discriminant_Type (Discr));
 
+            --  Ada 2005 (AI-230): Access discriminants are now allowed for
+            --  nonlimited types, and are treated like other components of
+            --  anonymous access types in terms of accessibility.
+
+            if not Is_Concurrent_Type (Current_Scope)
+              and then not Is_Concurrent_Record_Type (Current_Scope)
+              and then not Is_Limited_Record (Current_Scope)
+              and then Ekind (Current_Scope) /= E_Limited_Private_Type
+            then
+               Set_Is_Local_Anonymous_Access (Discr_Type);
+            end if;
+
             --  Ada 2005 (AI-254)
 
             if Present (Access_To_Subprogram_Definition
@@ -11981,6 +12964,34 @@ package body Sem_Ch3 is
       Full_Parent : Entity_Id;
       Full_Indic  : Node_Id;
 
+      function Find_Interface_In_Descendant
+        (Typ : Entity_Id) return Entity_Id;
+      --  Find an implemented interface in the derivation chain of Typ
+
+      ----------------------------------
+      -- Find_Interface_In_Descendant --
+      ----------------------------------
+
+      function Find_Interface_In_Descendant
+        (Typ : Entity_Id) return Entity_Id
+      is
+         T : Entity_Id;
+
+      begin
+         T := Typ;
+         while T /= Etype (T) loop
+            if Is_Interface (Etype (T)) then
+               return Etype (T);
+            end if;
+
+            T := Etype (T);
+         end loop;
+
+         return Empty;
+      end Find_Interface_In_Descendant;
+
+   --  Start of processing for Process_Full_View
+
    begin
       --  First some sanity checks that must be done after semantic
       --  decoration of the full view and thus cannot be placed with other
@@ -12017,6 +13028,54 @@ package body Sem_Ch3 is
          Error_Msg_N ("generic type cannot have a completion", Full_T);
       end if;
 
+      --  Ada 2005 (AI-396): A full view shall be a descendant of an
+      --  interface type if and only if the corresponding partial view
+      --  (if any) is also a descendant of the interface type, or if
+      --  the partial view is untagged.
+
+      if Ada_Version >= Ada_05
+        and then Is_Tagged_Type (Full_T)
+      then
+         declare
+            Iface     : Entity_Id;
+            Iface_Def : Node_Id;
+
+         begin
+            Iface := Find_Interface_In_Descendant (Full_T);
+
+            if Present (Iface) then
+               Iface_Def := Type_Definition (Parent (Iface));
+            end if;
+
+            --  The full view derives from an interface descendant, but the
+            --  partial view does not share the same tagged type.
+
+            if Present (Iface)
+              and then Is_Tagged_Type (Priv_T)
+              and then Etype (Full_T) /= Etype (Priv_T)
+            then
+               Error_Msg_N ("(Ada 2005) tagged partial view cannot be " &
+                            "completed by a type that implements an " &
+                            "interface", Priv_T);
+            end if;
+
+            --  The full view derives from a limited, protected,
+            --  synchronized or task interface descendant, but the
+            --  partial view is not labeled as limited.
+
+            if Present (Iface)
+              and then (Limited_Present      (Iface_Def)
+                     or Protected_Present    (Iface_Def)
+                     or Synchronized_Present (Iface_Def)
+                     or Task_Present         (Iface_Def))
+              and then not Limited_Present (Parent (Priv_T))
+            then
+               Error_Msg_N ("(Ada 2005) non-limited private type cannot be " &
+                            "completed by a limited type", Priv_T);
+            end if;
+         end;
+      end if;
+
       if Is_Tagged_Type (Priv_T)
         and then Nkind (Parent (Priv_T)) = N_Private_Extension_Declaration
         and then Is_Derived_Type (Full_T)
@@ -12044,9 +13103,24 @@ package body Sem_Ch3 is
             return;
 
          elsif not Is_Ancestor (Base_Type (Priv_Parent), Full_Parent) then
-            Error_Msg_N
-              ("parent of full type must descend from parent"
-                  & " of private extension", Full_Indic);
+
+            --  Ada 2005 (AI-251): No error needed if the immediate
+            --  ancestor of the partial view is an interface
+            --
+            --  Example:
+            --
+            --       type PT1 is new I1 with private;
+            --    private
+            --       type PT1 is new T and I1 with null record;
+
+            if Is_Interface (Base_Type (Priv_Parent)) then
+               null;
+
+            else
+               Error_Msg_N
+                 ("parent of full type must descend from parent"
+                     & " of private extension", Full_Indic);
+            end if;
 
          --  Check the rules of 7.3(10): if the private extension inherits
          --  known discriminants, then the full type must also inherit those
@@ -12124,7 +13198,7 @@ package body Sem_Ch3 is
          then
             Error_Msg_N
               ("full view must define a constrained type if partial view"
-               & " has no discriminants", Full_T);
+                & " has no discriminants", Full_T);
          end if;
 
          --  ??????? Do we implement the following properly ?????
@@ -12142,6 +13216,22 @@ package body Sem_Ch3 is
          then
             Error_Msg_N ("full view of type must be definite subtype", Full_T);
          end if;
+      end if;
+
+      --  Ada 2005 AI-363: if the full view has discriminants with
+      --  defaults, it is illegal to declare constrained access subtypes
+      --  whose designated type is the current type. This allows objects
+      --  of the type that are declared in the heap to be unconstrained.
+
+      if not Has_Unknown_Discriminants (Priv_T)
+        and then not Has_Discriminants (Priv_T)
+        and then Has_Discriminants (Full_T)
+        and then
+          Present
+            (Discriminant_Default_Value (First_Discriminant (Full_T)))
+      then
+         Set_Has_Constrained_Partial_View (Full_T);
+         Set_Has_Constrained_Partial_View (Priv_T);
       end if;
 
       --  Create a full declaration for all its subtypes recorded in
@@ -12748,7 +13838,7 @@ package body Sem_Ch3 is
 
             Rewrite (S, New_Copy_Tree (Subtype_Mark (S)));
 
-            --  Set Ekind of orphan itype, to prevent cascaded errors.
+            --  Set Ekind of orphan itype, to prevent cascaded errors
 
             if Present (Def_Id) then
                Set_Ekind (Def_Id, Ekind (Any_Type));
@@ -12848,19 +13938,380 @@ package body Sem_Ch3 is
       N    : Node_Id;
       Prev : Entity_Id)
    is
-      Def : constant Node_Id := Type_Definition (N);
+      Loc   : constant Source_Ptr := Sloc (N);
+      Def   : constant Node_Id    := Type_Definition (N);
+      Inc_T : Entity_Id := Empty;
 
       Is_Tagged : Boolean;
       Tag_Comp  : Entity_Id;
 
-   begin
-      --  The flag Is_Tagged_Type might have already been set by Find_Type_Name
-      --  if it detected an error for declaration T. This arises in the case of
-      --  private tagged types where the full view omits the word tagged.
+      procedure Check_Anonymous_Access_Types (Comp_List : Node_Id);
+      --  Ada 2005 AI-382: an access component in a record declaration can
+      --  refer to the enclosing record, in which case it denotes the type
+      --  itself, and not the current instance of the type. We create an
+      --  anonymous access type for the component, and flag it as an access
+      --  to a component, so that accessibility checks are properly performed
+      --  on it. The declaration of the access type is placed ahead of that
+      --  of the record, to prevent circular order-of-elaboration issues in
+      --  gigi. We create an incomplete type for the record declaration, which
+      --  is the designated type of the anonymous access.
 
-      Is_Tagged :=
-        Tagged_Present (Def)
-          or else (Serious_Errors_Detected > 0 and then Is_Tagged_Type (T));
+      procedure Make_Incomplete_Type_Declaration;
+      --  If the record type contains components that include an access to the
+      --  current record, create an incomplete type declaration for the record,
+      --  to be used as the designated type of the anonymous access. This is
+      --  done only once, and only if there is no previous partial view of the
+      --  type.
+
+      ----------------------------------
+      -- Check_Anonymous_Access_Types --
+      ----------------------------------
+
+      procedure Check_Anonymous_Access_Types (Comp_List : Node_Id) is
+         Anon_Access : Entity_Id;
+         Acc_Def     : Node_Id;
+         Comp        : Node_Id;
+         Decl        : Node_Id;
+         Type_Def    : Node_Id;
+
+         function Mentions_T (Acc_Def : Node_Id) return Boolean;
+         --  Check whether an access definition includes a reference to
+         --  the enclosing record type. The reference can be a subtype
+         --  mark in the access definition itself, or a 'Class attribute
+         --  reference, or recursively a reference appearing in a parameter
+         --  type in an access_to_subprogram definition.
+
+         ----------------
+         -- Mentions_T --
+         ----------------
+
+         function Mentions_T (Acc_Def : Node_Id) return Boolean is
+            Subt : Node_Id;
+
+         begin
+            if No (Access_To_Subprogram_Definition (Acc_Def)) then
+               Subt := Subtype_Mark (Acc_Def);
+
+               if Nkind (Subt) = N_Identifier then
+                  return Chars (Subt) = Chars (T);
+               elsif Nkind (Subt) = N_Attribute_Reference
+                  and then Attribute_Name (Subt) = Name_Class
+               then
+                  return (Chars (Prefix (Subt))) = Chars (T);
+               else
+                  return False;
+               end if;
+
+            else
+               --  Component is an access_to_subprogram: examine its formals
+
+               declare
+                  Param_Spec : Node_Id;
+
+               begin
+                  Param_Spec :=
+                    First
+                      (Parameter_Specifications
+                        (Access_To_Subprogram_Definition (Acc_Def)));
+                  while Present (Param_Spec) loop
+                     if Nkind (Parameter_Type (Param_Spec))
+                          = N_Access_Definition
+                       and then Mentions_T (Parameter_Type (Param_Spec))
+                     then
+                        return True;
+                     end if;
+
+                     Next (Param_Spec);
+                  end loop;
+
+                  return False;
+               end;
+            end if;
+         end Mentions_T;
+
+      --  Start of processing for Check_Anonymous_Access_Types
+
+      begin
+         if No (Comp_List) then
+            return;
+         end if;
+
+         Comp := First (Component_Items (Comp_List));
+         while Present (Comp) loop
+            if Nkind (Comp) = N_Component_Declaration
+              and then
+                Present (Access_Definition (Component_Definition (Comp)))
+              and then
+                Mentions_T (Access_Definition (Component_Definition (Comp)))
+            then
+               Acc_Def :=
+                 Access_To_Subprogram_Definition
+                   (Access_Definition (Component_Definition (Comp)));
+
+               Make_Incomplete_Type_Declaration;
+               Anon_Access :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => New_Internal_Name ('S'));
+
+               --  Create a declaration for the anonymous access type: either
+               --  an access_to_object or an access_to_subprogram.
+
+               if Present (Acc_Def) then
+                  if Nkind  (Acc_Def) = N_Access_Function_Definition then
+                     Type_Def :=
+                       Make_Access_Function_Definition (Loc,
+                         Parameter_Specifications =>
+                           Parameter_Specifications (Acc_Def),
+                         Subtype_Mark => Subtype_Mark (Acc_Def));
+                  else
+                     Type_Def :=
+                       Make_Access_Procedure_Definition (Loc,
+                         Parameter_Specifications =>
+                           Parameter_Specifications (Acc_Def));
+                  end if;
+
+               else
+                  Type_Def :=
+                    Make_Access_To_Object_Definition (Loc,
+                      Subtype_Indication =>
+                         Relocate_Node
+                           (Subtype_Mark
+                             (Access_Definition
+                               (Component_Definition (Comp)))));
+               end if;
+
+               Decl := Make_Full_Type_Declaration (Loc,
+                  Defining_Identifier => Anon_Access,
+                  Type_Definition => Type_Def);
+
+               Insert_Before (N, Decl);
+               Analyze (Decl);
+
+               Set_Access_Definition (Component_Definition (Comp), Empty);
+               Set_Subtype_Indication (Component_Definition (Comp),
+                  New_Occurrence_Of (Anon_Access, Loc));
+               Set_Ekind (Anon_Access, E_Anonymous_Access_Type);
+               Set_Is_Local_Anonymous_Access (Anon_Access);
+            end if;
+
+            Next (Comp);
+         end loop;
+
+         if Present (Variant_Part (Comp_List)) then
+            declare
+               V : Node_Id;
+            begin
+               V := First_Non_Pragma (Variants (Variant_Part (Comp_List)));
+               while Present (V) loop
+                  Check_Anonymous_Access_Types (Component_List (V));
+                  Next_Non_Pragma (V);
+               end loop;
+            end;
+         end if;
+      end Check_Anonymous_Access_Types;
+
+      --------------------------------------
+      -- Make_Incomplete_Type_Declaration --
+      --------------------------------------
+
+      procedure Make_Incomplete_Type_Declaration is
+         Decl : Node_Id;
+         H    : Entity_Id;
+
+      begin
+         --  If there is a previous partial view, no need to create a new one.
+
+         if Prev /= T then
+            return;
+
+         elsif No (Inc_T) then
+            Inc_T  := Make_Defining_Identifier (Loc, Chars (T));
+            Decl   := Make_Incomplete_Type_Declaration (Loc, Inc_T);
+
+            --  Type has already been inserted into the current scope.
+            --  Remove it, and add incomplete declaration for type, so
+            --  that subsequent anonymous access types can use it.
+
+            H := Current_Entity (T);
+
+            if H = T then
+               Set_Name_Entity_Id (Chars (T), Empty);
+            else
+               while Present (H)
+                 and then Homonym (H) /= T
+               loop
+                  H := Homonym (T);
+               end loop;
+
+               Set_Homonym (H, Homonym (T));
+            end if;
+
+            Insert_Before (N, Decl);
+            Analyze (Decl);
+            Set_Full_View (Inc_T, T);
+
+            if Tagged_Present (Def) then
+               Make_Class_Wide_Type (Inc_T);
+               Set_Class_Wide_Type (T, Class_Wide_Type (Inc_T));
+            end if;
+         end if;
+      end Make_Incomplete_Type_Declaration;
+
+   --  Start of processing for Record_Type_Declaration
+
+   begin
+      --  These flags must be initialized before calling Process_Discriminants
+      --  because this routine makes use of them.
+
+      Set_Ekind               (T, E_Record_Type);
+      Set_Etype               (T, T);
+      Init_Size_Align         (T);
+      Set_Abstract_Interfaces (T, No_Elist);
+      Set_Stored_Constraint   (T, No_Elist);
+
+      --  Normal case
+
+      if Ada_Version < Ada_05
+        or else not Interface_Present (Def)
+      then
+         --  The flag Is_Tagged_Type might have already been set by
+         --  Find_Type_Name if it detected an error for declaration T. This
+         --  arises in the case of private tagged types where the full view
+         --  omits the word tagged.
+
+         Is_Tagged :=
+           Tagged_Present (Def)
+             or else (Serious_Errors_Detected > 0 and then Is_Tagged_Type (T));
+
+         Set_Is_Tagged_Type      (T, Is_Tagged);
+         Set_Is_Limited_Record   (T, Limited_Present (Def));
+
+         --  Type is abstract if full declaration carries keyword, or if
+         --  previous partial view did.
+
+         Set_Is_Abstract         (T, Is_Abstract (T)
+                                      or else Abstract_Present (Def));
+
+      else
+         Is_Tagged := True;
+         Set_Is_Tagged_Type      (T);
+
+         Set_Is_Limited_Record   (T, Limited_Present (Def)
+                                      or else Task_Present (Def)
+                                      or else Protected_Present (Def));
+
+         --  Type is abstract if full declaration carries keyword, or if
+         --  previous partial view did.
+
+         Set_Is_Abstract  (T);
+         Set_Is_Interface (T);
+      end if;
+
+      --  First pass: if there are self-referential access components,
+      --  create the required anonymous access type declarations, and if
+      --  need be an incomplete type declaration for T itself.
+
+      Check_Anonymous_Access_Types (Component_List (Def));
+
+      --  Ada 2005 (AI-251): Complete the initialization of attributes
+      --  associated with abstract interfaces and decorate the names in the
+      --  list of ancestor interfaces (if any).
+
+      if Ada_Version >= Ada_05
+        and then Present (Interface_List (Def))
+      then
+         declare
+            Iface     : Node_Id;
+            Iface_Def : Node_Id;
+            Iface_Typ : Entity_Id;
+         begin
+            Iface := First (Interface_List (Def));
+
+            while Present (Iface) loop
+               Iface_Typ := Find_Type_Of_Subtype_Indic (Iface);
+               Iface_Def := Type_Definition (Parent (Iface_Typ));
+
+               if not Is_Interface (Iface_Typ) then
+                  Error_Msg_NE ("(Ada 2005) & must be an interface",
+                                Iface, Iface_Typ);
+
+               else
+                  --  "The declaration of a specific descendant of an
+                  --  interface type freezes the interface type" RM 13.14
+
+                  Freeze_Before (N, Iface_Typ);
+
+                  --  Ada 2005 (AI-345): Protected interfaces can only
+                  --  inherit from limited, synchronized or protected
+                  --  interfaces.
+
+                  if Protected_Present (Def) then
+                     if Limited_Present (Iface_Def)
+                       or else Synchronized_Present (Iface_Def)
+                       or else Protected_Present (Iface_Def)
+                     then
+                        null;
+
+                     elsif Task_Present (Iface_Def) then
+                        Error_Msg_N ("(Ada 2005) protected interface cannot"
+                          & " inherit from task interface", Iface);
+
+                     else
+                        Error_Msg_N ("(Ada 2005) protected interface cannot"
+                          & " inherit from non-limited interface", Iface);
+                     end if;
+
+                  --  Ada 2005 (AI-345): Synchronized interfaces can only
+                  --  inherit from limited and synchronized.
+
+                  elsif Synchronized_Present (Def) then
+                     if Limited_Present (Iface_Def)
+                       or else Synchronized_Present (Iface_Def)
+                     then
+                        null;
+
+                     elsif Protected_Present (Iface_Def) then
+                        Error_Msg_N ("(Ada 2005) synchronized interface " &
+                          "cannot inherit from protected interface", Iface);
+
+                     elsif Task_Present (Iface_Def) then
+                        Error_Msg_N ("(Ada 2005) synchronized interface " &
+                          "cannot inherit from task interface", Iface);
+
+                     else
+                        Error_Msg_N ("(Ada 2005) synchronized interface " &
+                          "cannot inherit from non-limited interface",
+                          Iface);
+                     end if;
+
+                  --  Ada 2005 (AI-345): Task interfaces can only inherit
+                  --  from limited, synchronized or task interfaces.
+
+                  elsif Task_Present (Def) then
+                     if Limited_Present (Iface_Def)
+                       or else Synchronized_Present (Iface_Def)
+                       or else Task_Present (Iface_Def)
+                     then
+                        null;
+
+                     elsif Protected_Present (Iface_Def) then
+                        Error_Msg_N ("(Ada 2005) task interface cannot" &
+                          " inherit from protected interface", Iface);
+
+                     else
+                        Error_Msg_N ("(Ada 2005) task interface cannot" &
+                          " inherit from non-limited interface", Iface);
+                     end if;
+                  end if;
+               end if;
+
+               Next (Iface);
+            end loop;
+
+            Set_Abstract_Interfaces (T, New_Elmt_List);
+            Collect_Interfaces (Type_Definition (N), T);
+         end;
+      end if;
 
       --  Records constitute a scope for the component declarations within.
       --  The scope is created prior to the processing of these declarations.
@@ -12871,23 +14322,6 @@ package body Sem_Ch3 is
       --  Enter record scope
 
       New_Scope (T);
-
-      --  These flags must be initialized before calling Process_Discriminants
-      --  because this routine makes use of them.
-
-      Set_Is_Tagged_Type     (T, Is_Tagged);
-      Set_Is_Limited_Record  (T, Limited_Present (Def));
-
-      --  Type is abstract if full declaration carries keyword, or if
-      --  previous partial view did.
-
-      Set_Is_Abstract (T, Is_Abstract (T) or else Abstract_Present (Def));
-
-      Set_Ekind       (T, E_Record_Type);
-      Set_Etype       (T, T);
-      Init_Size_Align (T);
-
-      Set_Stored_Constraint (T, No_Elist);
 
       --  If an incomplete or private type declaration was already given for
       --  the type, then this scope already exists, and the discriminants have
@@ -12912,11 +14346,17 @@ package body Sem_Ch3 is
             Enter_Name (Tag_Comp);
 
             Set_Is_Tag                    (Tag_Comp);
+            Set_Is_Aliased                (Tag_Comp);
             Set_Ekind                     (Tag_Comp, E_Component);
             Set_Etype                     (Tag_Comp, RTE (RE_Tag));
             Set_DT_Entry_Count            (Tag_Comp, No_Uint);
             Set_Original_Record_Component (Tag_Comp, Tag_Comp);
             Init_Component_Location       (Tag_Comp);
+
+            --  Ada 2005 (AI-251): Addition of the Tag corresponding to all the
+            --  implemented interfaces
+
+            Add_Interface_Tag_Components (N, T);
          end if;
 
          Make_Class_Wide_Type (T);
@@ -12940,6 +14380,17 @@ package body Sem_Ch3 is
       --  Exit from record scope
 
       End_Scope;
+
+      if Expander_Active
+        and then Is_Tagged
+        and then not Is_Empty_List (Interface_List (Def))
+      then
+         --  Ada 2005 (AI-251): Derive the interface subprograms of all the
+         --  implemented interfaces and check if some of the subprograms
+         --  inherited from the ancestor cover some interface subprogram.
+
+         Derive_Interface_Subprograms (T);
+      end if;
    end Record_Type_Declaration;
 
    ----------------------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,7 @@ with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Exp_Ch9;
 with Elists;   use Elists;
+with Freeze;   use Freeze;
 with Itypes;   use Itypes;
 with Lib.Xref; use Lib.Xref;
 with Nlists;   use Nlists;
@@ -66,6 +67,11 @@ package body Sem_Ch9 is
    --  the corresponding restriction parameter identifier R, and if it is set,
    --  count the entries (checking the static requirement), and compare with
    --  the given maximum.
+
+   procedure Check_Overriding_Indicator (Def : Node_Id);
+   --  Ada 2005 (AI-397): Check the overriding indicator of entries and
+   --  subprograms of protected or task types. Def is the definition of
+   --  the protected or task type.
 
    function Find_Concurrent_Spec (Body_Id : Entity_Id) return Entity_Id;
    --  Find entity in corresponding task or protected declaration. Use full
@@ -1024,6 +1030,7 @@ package body Sem_Ch9 is
 
       Check_Max_Entries (N, Max_Protected_Entries);
       Process_End_Label (N, 'e', Current_Scope);
+      Check_Overriding_Indicator (N);
    end Analyze_Protected_Definition;
 
    ----------------------------
@@ -1031,9 +1038,12 @@ package body Sem_Ch9 is
    ----------------------------
 
    procedure Analyze_Protected_Type (N : Node_Id) is
-      E      : Entity_Id;
-      T      : Entity_Id;
-      Def_Id : constant Entity_Id := Defining_Identifier (N);
+      E         : Entity_Id;
+      T         : Entity_Id;
+      Def_Id    : constant Entity_Id := Defining_Identifier (N);
+      Iface     : Node_Id;
+      Iface_Def : Node_Id;
+      Iface_Typ : Entity_Id;
 
    begin
       if No_Run_Time_Mode then
@@ -1052,12 +1062,55 @@ package body Sem_Ch9 is
       end if;
 
       Set_Ekind              (T, E_Protected_Type);
+      Set_Is_First_Subtype   (T, True);
       Init_Size_Align        (T);
       Set_Etype              (T, T);
-      Set_Is_First_Subtype   (T, True);
       Set_Has_Delayed_Freeze (T, True);
       Set_Stored_Constraint  (T, No_Elist);
       New_Scope (T);
+
+      --  Ada 2005 (AI-345)
+
+      if Present (Interface_List (N)) then
+         Iface := First (Interface_List (N));
+
+         while Present (Iface) loop
+            Iface_Typ := Find_Type_Of_Subtype_Indic (Iface);
+            Iface_Def := Type_Definition (Parent (Iface_Typ));
+
+            if not Is_Interface (Iface_Typ) then
+               Error_Msg_NE ("(Ada 2005) & must be an interface",
+                             Iface, Iface_Typ);
+
+            else
+               --  Ada 2005 (AI-251): "The declaration of a specific
+               --  descendant of an interface type freezes the interface
+               --  type" RM 13.14
+
+               Freeze_Before (N, Etype (Iface));
+
+               --  Ada 2005 (AI-345): Protected types can only implement
+               --  limited, synchronized or protected interfaces.
+
+               if Limited_Present (Iface_Def)
+                 or else Synchronized_Present (Iface_Def)
+                 or else Protected_Present (Iface_Def)
+               then
+                  null;
+
+               elsif Task_Present (Iface_Def) then
+                  Error_Msg_N ("(Ada 2005) protected type cannot implement a "
+                    & "task interface", Iface);
+
+               else
+                  Error_Msg_N ("(Ada 2005) protected type cannot implement a "
+                    & "non-limited interface", Iface);
+               end if;
+            end if;
+
+            Next (Iface);
+         end loop;
+      end if;
 
       if Present (Discriminant_Specifications (N)) then
          if Has_Discriminants (T) then
@@ -1070,6 +1123,8 @@ package body Sem_Ch9 is
             Process_Discriminants (N);
          end if;
       end if;
+
+      Set_Is_Constrained (T, not Has_Discriminants (T));
 
       Analyze (Protected_Definition (N));
 
@@ -1119,9 +1174,9 @@ package body Sem_Ch9 is
    ---------------------
 
    procedure Analyze_Requeue (N : Node_Id) is
+      Count      : Natural := 0;
       Entry_Name : Node_Id := Name (N);
       Entry_Id   : Entity_Id;
-      Found      : Boolean;
       I          : Interp_Index;
       It         : Interp;
       Enclosing  : Entity_Id;
@@ -1200,29 +1255,37 @@ package body Sem_Ch9 is
 
       if Is_Overloaded (Entry_Name) then
          Get_First_Interp (Entry_Name, I, It);
-         Found := False;
          Entry_Id := Empty;
 
          while Present (It.Nam) loop
             if No (First_Formal (It.Nam))
               or else Subtype_Conformant (Enclosing, It.Nam)
             then
-               if not Found then
-                  Found := True;
+
+               --  Ada 2005 (AI-345): Since protected and task types have
+               --  primitive entry wrappers, we only consider source entries.
+
+               if Comes_From_Source (It.Nam) then
+                  Count := Count + 1;
                   Entry_Id := It.Nam;
                else
-                  Error_Msg_N ("ambiguous entry name in requeue", N);
-                  return;
+                  Remove_Interp (I);
                end if;
             end if;
 
             Get_Next_Interp (I, It);
          end loop;
 
-         if not Found then
-            Error_Msg_N ("no entry matches context",  N);
+         if Count = 0 then
+            Error_Msg_N ("no entry matches context", N);
             return;
+
+         elsif Count > 1 then
+            Error_Msg_N ("ambiguous entry name in requeue", N);
+            return;
+
          else
+            Set_Is_Overloaded (Entry_Name, False);
             Set_Entity (Entry_Name, Entry_Id);
          end if;
 
@@ -1361,7 +1424,7 @@ package body Sem_Ch9 is
 
          elsif Nkind (Alt) = N_Terminate_Alternative then
             if Terminate_Present then
-               Error_Msg_N ("Only one terminate alternative allowed", N);
+               Error_Msg_N ("only one terminate alternative allowed", N);
             else
                Terminate_Present := True;
                Check_Restriction (No_Terminate_Alternatives, N);
@@ -1462,11 +1525,16 @@ package body Sem_Ch9 is
       T_Decl :=
         Make_Protected_Type_Declaration (Loc,
          Defining_Identifier => T,
-         Protected_Definition => Relocate_Node (Protected_Definition (N)));
+         Protected_Definition => Relocate_Node (Protected_Definition (N)),
+         Interface_List       => Interface_List (N));
+
+      --  Ada 2005 (AI-399): Mark the object as aliased. Required to use
+      --  the attribute 'access
 
       O_Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => O_Name,
+          Aliased_Present     => Ada_Version >= Ada_05,
           Object_Definition   => Make_Identifier (Loc,  Chars (T)));
 
       Rewrite (N, T_Decl);
@@ -1489,7 +1557,6 @@ package body Sem_Ch9 is
       --  expanded twice, with disastrous result.
 
       Analyze_Protected_Type (N);
-
    end Analyze_Single_Protected;
 
    -------------------------
@@ -1518,11 +1585,16 @@ package body Sem_Ch9 is
       T_Decl :=
         Make_Task_Type_Declaration (Loc,
           Defining_Identifier => T,
-          Task_Definition     => Relocate_Node (Task_Definition (N)));
+          Task_Definition     => Relocate_Node (Task_Definition (N)),
+          Interface_List      => Interface_List (N));
+
+      --  Ada 2005 (AI-399): Mark the object as aliased. Required to use
+      --  the attribute 'access
 
       O_Decl :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => O_Name,
+          Aliased_Present     => Ada_Version >= Ada_05,
           Object_Definition   => Make_Identifier (Loc, Chars (T)));
 
       Rewrite (N, T_Decl);
@@ -1690,6 +1762,7 @@ package body Sem_Ch9 is
 
       Check_Max_Entries (N, Max_Task_Entries);
       Process_End_Label (N, 'e', Current_Scope);
+      Check_Overriding_Indicator (N);
    end Analyze_Task_Definition;
 
    -----------------------
@@ -1697,8 +1770,11 @@ package body Sem_Ch9 is
    -----------------------
 
    procedure Analyze_Task_Type (N : Node_Id) is
-      T      : Entity_Id;
-      Def_Id : constant Entity_Id := Defining_Identifier (N);
+      T         : Entity_Id;
+      Def_Id    : constant Entity_Id := Defining_Identifier (N);
+      Iface     : Node_Id;
+      Iface_Def : Node_Id;
+      Iface_Typ : Entity_Id;
 
    begin
       Check_Restriction (No_Tasking, N);
@@ -1720,6 +1796,47 @@ package body Sem_Ch9 is
       Set_Stored_Constraint  (T, No_Elist);
       New_Scope (T);
 
+      --  Ada 2005 (AI-345)
+
+      if Present (Interface_List (N)) then
+         Iface := First (Interface_List (N));
+         while Present (Iface) loop
+            Iface_Typ := Find_Type_Of_Subtype_Indic (Iface);
+            Iface_Def := Type_Definition (Parent (Iface_Typ));
+
+            if not Is_Interface (Iface_Typ) then
+               Error_Msg_NE ("(Ada 2005) & must be an interface",
+                             Iface, Iface_Typ);
+
+            else
+               --  Ada 2005 (AI-251): The declaration of a specific descendant
+               --  of an interface type freezes the interface type (RM 13.14).
+
+               Freeze_Before (N, Etype (Iface));
+
+               --  Ada 2005 (AI-345): Task types can only implement limited,
+               --  synchronized or task interfaces.
+
+               if Limited_Present (Iface_Def)
+                 or else Synchronized_Present (Iface_Def)
+                 or else Task_Present (Iface_Def)
+               then
+                  null;
+
+               elsif Protected_Present (Iface_Def) then
+                  Error_Msg_N ("(Ada 2005) task type cannot implement a " &
+                    "protected interface", Iface);
+
+               else
+                  Error_Msg_N ("(Ada 2005) task type cannot implement a " &
+                    "non-limited interface", Iface);
+               end if;
+            end if;
+
+            Next (Iface);
+         end loop;
+      end if;
+
       if Present (Discriminant_Specifications (N)) then
          if Ada_Version = Ada_83 and then Comes_From_Source (N) then
             Error_Msg_N ("(Ada 83) task discriminant not allowed!", N);
@@ -1735,6 +1852,8 @@ package body Sem_Ch9 is
             Process_Discriminants (N);
          end if;
       end if;
+
+      Set_Is_Constrained (T, not Has_Discriminants (T));
 
       if Present (Task_Definition (N)) then
          Analyze_Task_Definition (Task_Definition (N));
@@ -1900,6 +2019,263 @@ package body Sem_Ch9 is
          Check_Restriction (R, D, Ecount);
       end if;
    end Check_Max_Entries;
+
+   --------------------------------
+   -- Check_Overriding_Indicator --
+   --------------------------------
+
+   procedure Check_Overriding_Indicator (Def : Node_Id) is
+      Aliased_Hom : Entity_Id;
+      Decl        : Node_Id;
+      Def_Id      : Entity_Id;
+      Hom         : Entity_Id;
+      Ifaces      : constant List_Id := Interface_List (Parent (Def));
+      Overrides   : Boolean;
+      Spec        : Node_Id;
+      Vis_Decls   : constant List_Id := Visible_Declarations (Def);
+
+      function Matches_Prefixed_View_Profile
+        (Ifaces       : List_Id;
+         Entry_Params : List_Id;
+         Proc_Params  : List_Id) return Boolean;
+      --  Ada 2005 (AI-397): Determine if an entry parameter profile matches
+      --  the prefixed view profile of an abstract procedure. Also determine
+      --  whether the abstract procedure belongs to an implemented interface.
+
+      -----------------------------------
+      -- Matches_Prefixed_View_Profile --
+      -----------------------------------
+
+      function Matches_Prefixed_View_Profile
+        (Ifaces       : List_Id;
+         Entry_Params : List_Id;
+         Proc_Params  : List_Id) return Boolean
+      is
+         Entry_Param    : Node_Id;
+         Proc_Param     : Node_Id;
+         Proc_Param_Typ : Entity_Id;
+
+         function Includes_Interface
+           (Iface  : Entity_Id;
+            Ifaces : List_Id) return Boolean;
+         --  Determine if an interface is contained in a list of interfaces
+
+         ------------------------
+         -- Includes_Interface --
+         ------------------------
+
+         function Includes_Interface
+           (Iface  : Entity_Id;
+            Ifaces : List_Id) return Boolean
+         is
+            Ent : Entity_Id;
+
+         begin
+            Ent := First (Ifaces);
+
+            while Present (Ent) loop
+               if Etype (Ent) = Iface then
+                  return True;
+               end if;
+
+               Next (Ent);
+            end loop;
+
+            return False;
+         end Includes_Interface;
+
+      --  Start of processing for Matches_Prefixed_View_Profile
+
+      begin
+         Proc_Param := First (Proc_Params);
+         Proc_Param_Typ := Etype (Parameter_Type (Proc_Param));
+
+         --  The first parameter of the abstract procedure must be of an
+         --  interface type. The task or protected type must also implement
+         --  that interface.
+
+         if not Is_Interface (Proc_Param_Typ)
+           or else not Includes_Interface (Proc_Param_Typ, Ifaces)
+         then
+            return False;
+         end if;
+
+         Entry_Param := First (Entry_Params);
+         Proc_Param  := Next (Proc_Param);
+         while Present (Entry_Param)
+           and then Present (Proc_Param)
+         loop
+            --  The two parameters must be mode conformant and have the exact
+            --  same types.
+
+            if In_Present (Entry_Param) /= In_Present (Proc_Param)
+              or else Out_Present (Entry_Param) /= Out_Present (Proc_Param)
+              or else Etype (Parameter_Type (Entry_Param)) /=
+                      Etype (Parameter_Type (Proc_Param))
+            then
+               return False;
+            end if;
+
+            Next (Entry_Param);
+            Next (Proc_Param);
+         end loop;
+
+         --  One of the lists is longer than the other
+
+         if Present (Entry_Param) or else Present (Proc_Param) then
+            return False;
+         end if;
+
+         return True;
+      end Matches_Prefixed_View_Profile;
+
+   --  Start of processing for Check_Overriding_Indicator
+
+   begin
+      if Present (Ifaces) then
+         Decl := First (Vis_Decls);
+         while Present (Decl) loop
+
+            --  Consider entries with either "overriding" or "not overriding"
+            --  indicator present.
+
+            if Nkind (Decl) = N_Entry_Declaration
+              and then (Must_Override (Decl)
+                          or else
+                        Must_Not_Override (Decl))
+            then
+               Def_Id := Defining_Identifier (Decl);
+
+               Overrides := False;
+
+               Hom := Homonym (Def_Id);
+               while Present (Hom) loop
+
+                  --  The current entry may override a procedure from an
+                  --  implemented interface.
+
+                  if Ekind (Hom) = E_Procedure
+                    and then (Is_Abstract (Hom)
+                                or else
+                              Null_Present (Parent (Hom)))
+                  then
+                     Aliased_Hom := Hom;
+
+                     while Present (Alias (Aliased_Hom)) loop
+                        Aliased_Hom := Alias (Aliased_Hom);
+                     end loop;
+
+                     if Matches_Prefixed_View_Profile (Ifaces,
+                          Parameter_Specifications (Decl),
+                          Parameter_Specifications (Parent (Aliased_Hom)))
+                     then
+                        Overrides := True;
+                        exit;
+                     end if;
+                  end if;
+
+                  Hom := Homonym (Hom);
+               end loop;
+
+               if Overrides then
+                  if Must_Not_Override (Decl) then
+                     Error_Msg_NE ("entry& is overriding", Def_Id, Def_Id);
+                  end if;
+               else
+                  if Must_Override (Decl) then
+                     Error_Msg_NE ("entry& is not overriding", Def_Id, Def_Id);
+                  end if;
+               end if;
+
+            --  Consider subprograms with either "overriding" or "not
+            --  overriding" indicator present.
+
+            elsif Nkind (Decl) = N_Subprogram_Declaration
+              and then (Must_Override (Specification (Decl))
+                          or else
+                        Must_Not_Override (Specification (Decl)))
+            then
+               Spec := Specification (Decl);
+               Def_Id := Defining_Unit_Name (Spec);
+
+               Overrides := False;
+
+               Hom := Homonym (Def_Id);
+               while Present (Hom) loop
+
+                  --  Function
+
+                  if Ekind (Def_Id) = E_Function
+                    and then Ekind (Hom) = E_Function
+                    and then Is_Abstract (Hom)
+                    and then Matches_Prefixed_View_Profile (Ifaces,
+                               Parameter_Specifications (Spec),
+                               Parameter_Specifications (Parent (Hom)))
+                    and then Etype (Subtype_Mark (Spec)) =
+                             Etype (Subtype_Mark (Parent (Hom)))
+                  then
+                     Overrides := True;
+                     exit;
+
+                  --  Procedure
+
+                  elsif Ekind (Def_Id) = E_Procedure
+                    and then Ekind (Hom) = E_Procedure
+                    and then (Is_Abstract (Hom)
+                                or else
+                              Null_Present (Parent (Hom)))
+                    and then Matches_Prefixed_View_Profile (Ifaces,
+                               Parameter_Specifications (Spec),
+                               Parameter_Specifications (Parent (Hom)))
+                  then
+                     Overrides := True;
+                     exit;
+                  end if;
+
+                  Hom := Homonym (Hom);
+               end loop;
+
+               if Overrides then
+                  if Must_Not_Override (Spec) then
+                     Error_Msg_NE
+                       ("subprogram& is overriding", Def_Id, Def_Id);
+                  end if;
+               else
+                  if Must_Override (Spec) then
+                     Error_Msg_NE
+                       ("subprogram& is not overriding", Def_Id, Def_Id);
+                  end if;
+               end if;
+            end if;
+
+            Next (Decl);
+         end loop;
+
+      --  The protected or task type is not implementing an interface,
+      --  we need to check for the presence of "overriding" entries or
+      --  subprograms and flag them as erroneous.
+
+      else
+         Decl := First (Vis_Decls);
+
+         while Present (Decl) loop
+            if Nkind (Decl) = N_Entry_Declaration
+              and then Must_Override (Decl)
+            then
+               Def_Id := Defining_Identifier (Decl);
+               Error_Msg_NE ("entry& is not overriding", Def_Id, Def_Id);
+
+            elsif Nkind (Decl) = N_Subprogram_Declaration
+              and then Must_Override (Specification (Decl))
+            then
+               Def_Id := Defining_Identifier (Specification (Decl));
+               Error_Msg_NE ("subprogram& is not overriding", Def_Id, Def_Id);
+            end if;
+
+            Next (Decl);
+         end loop;
+      end if;
+   end Check_Overriding_Indicator;
 
    --------------------------
    -- Find_Concurrent_Spec --

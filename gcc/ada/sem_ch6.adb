@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -122,13 +122,14 @@ package body Sem_Ch6 is
    --  against a formal access-to-subprogram type so Get_Instance_Of must
    --  be called.
 
-   procedure Check_Overriding_Operation
-     (N    : Node_Id;
-      Subp : Entity_Id);
-   --  Check that a subprogram with a pragma Overriding or Optional_Overriding
-   --  is legal. This check is performed here rather than in Sem_Prag because
-   --  the pragma must follow immediately the declaration, and can be treated
-   --  as part of the declaration itself, as described in AI-218.
+   procedure Check_Overriding_Indicator
+     (Subp          : Entity_Id;
+      Does_Override : Boolean);
+   --  Verify the consistency of an overriding_indicator given for subprogram
+   --  declaration, body, renaming, or instantiation. The flag Does_Override
+   --  is set if the scope into which we are introducing the subprogram
+   --  contains a type-conformant subprogram that becomes hidden by the new
+   --  subprogram.
 
    procedure Check_Subprogram_Order (N : Node_Id);
    --  N is the N_Subprogram_Body node for a subprogram. This routine applies
@@ -514,6 +515,14 @@ package body Sem_Ch6 is
 
       Analyze (P);
 
+      --  If this is a call of the form Obj.Op, the call may have been
+      --  analyzed and possibly rewritten into a block, in which case
+      --  we are done.
+
+      if Analyzed (N) then
+         return;
+      end if;
+
       --  If error analyzing prefix, then set Any_Type as result and return
 
       if Etype (P) = Any_Type then
@@ -678,7 +687,7 @@ package body Sem_Ch6 is
       --  Anything else is an error
 
       else
-         Error_Msg_N ("Invalid procedure or entry call", N);
+         Error_Msg_N ("invalid procedure or entry call", N);
       end if;
    end Analyze_Procedure_Call;
 
@@ -836,6 +845,16 @@ package body Sem_Ch6 is
       --  If front-end inlining is enabled, look ahead to recognize a pragma
       --  that may appear after the body.
 
+      procedure Verify_Overriding_Indicator;
+      --  If there was a previous spec, the entity has been entered in the
+      --  current scope previously. If the body itself carries an overriding
+      --  indicator, check that it is consistent with the known status of the
+      --  entity.
+
+      ----------------------------
+      -- Check_Following_Pragma --
+      ----------------------------
+
       procedure Check_Following_Pragma is
          Prag : Node_Id;
 
@@ -859,6 +878,27 @@ package body Sem_Ch6 is
             end if;
          end if;
       end Check_Following_Pragma;
+
+      ---------------------------------
+      -- Verify_Overriding_Indicator --
+      ---------------------------------
+
+      procedure Verify_Overriding_Indicator is
+      begin
+         if Must_Override (Body_Spec)
+           and then not Is_Overriding_Operation (Spec_Id)
+         then
+            Error_Msg_NE
+              ("subprogram& is not overriding", Body_Spec, Spec_Id);
+
+         elsif Must_Not_Override (Body_Spec)
+              and then Is_Overriding_Operation (Spec_Id)
+         then
+            Error_Msg_NE
+              ("subprogram& overrides inherited operation",
+                 Body_Spec, Spec_Id);
+         end if;
+      end Verify_Overriding_Indicator;
 
    --  Start of processing for Analyze_Subprogram_Body
 
@@ -1065,6 +1105,7 @@ package body Sem_Ch6 is
 
       elsif Present (Spec_Id) then
          Spec_Decl := Unit_Declaration_Node (Spec_Id);
+         Verify_Overriding_Indicator;
       end if;
 
       --  Place subprogram on scope stack, and make formals visible. If there
@@ -1072,6 +1113,11 @@ package body Sem_Ch6 is
 
       if Present (Spec_Id) then
          Generate_Reference (Spec_Id, Body_Id, 'b', Set_Ref => False);
+
+         if Is_Child_Unit (Spec_Id) then
+            Generate_Reference (Spec_Id, Scope (Spec_Id), 'k', False);
+         end if;
+
          if Style_Check then
             Style.Check_Identifier (Body_Id, Spec_Id);
          end if;
@@ -1136,6 +1182,27 @@ package body Sem_Ch6 is
 
          if Nkind (N) /= N_Subprogram_Body_Stub then
             Set_Corresponding_Spec (N, Spec_Id);
+
+            --  Ada 2005 (AI-345): Restore the correct Etype: here we undo the
+            --  work done by Analyze_Subprogram_Specification to allow the
+            --  overriding of task, protected and interface primitives.
+
+            if Comes_From_Source (Spec_Id)
+              and then Present (First_Entity (Spec_Id))
+              and then Ekind (Etype (First_Entity (Spec_Id))) = E_Record_Type
+              and then Is_Tagged_Type (Etype (First_Entity (Spec_Id)))
+              and then Present (Abstract_Interfaces
+                                (Etype (First_Entity (Spec_Id))))
+              and then Present (Corresponding_Concurrent_Type
+                                (Etype (First_Entity (Spec_Id))))
+            then
+               Set_Etype (First_Entity (Spec_Id),
+                 Corresponding_Concurrent_Type
+                   (Etype (First_Entity (Spec_Id))));
+            end if;
+
+            --  Comment needed here, since this is not Ada 2005 stuff! ???
+
             Install_Formals (Spec_Id);
             Last_Formal := Last_Entity (Spec_Id);
             New_Scope (Spec_Id);
@@ -1500,15 +1567,27 @@ package body Sem_Ch6 is
 
       if Nkind (Parent (N)) = N_Compilation_Unit then
          Set_Body_Required (Parent (N), True);
+
+         if Ada_Version >= Ada_05
+           and then Nkind (Specification (N)) = N_Procedure_Specification
+           and then Null_Present (Specification (N))
+         then
+            Error_Msg_N
+              ("null procedure cannot be declared at library level", N);
+         end if;
       end if;
 
       Generate_Reference_To_Formals (Designator);
       Check_Eliminated (Designator);
 
-      if Comes_From_Source (N)
-        and then Is_List_Member (N)
+      --  Ada 2005: if procedure is declared with "is null" qualifier,
+      --  it requires no body.
+
+      if Nkind (Specification (N)) = N_Procedure_Specification
+        and then Null_Present (Specification (N))
       then
-         Check_Overriding_Operation (N, Designator);
+         Set_Has_Completion (Designator);
+         Set_Is_Inlined (Designator);
       end if;
    end Analyze_Subprogram_Declaration;
 
@@ -1523,6 +1602,39 @@ package body Sem_Ch6 is
    function Analyze_Subprogram_Specification (N : Node_Id) return Entity_Id is
       Designator : constant Entity_Id := Defining_Entity (N);
       Formals    : constant List_Id   := Parameter_Specifications (N);
+
+      function Has_Interface_Formals (T : List_Id) return Boolean;
+      --  Ada 2005 (AI-251): Returns true if some non class-wide interface
+      --  formal is found.
+
+      ---------------------------
+      -- Has_Interface_Formals --
+      ---------------------------
+
+      function Has_Interface_Formals (T : List_Id) return Boolean is
+         Param_Spec : Node_Id;
+         Formal     : Entity_Id;
+
+      begin
+         Param_Spec := First (T);
+
+         while Present (Param_Spec) loop
+            Formal := Defining_Identifier (Param_Spec);
+
+            if Is_Class_Wide_Type (Etype (Formal)) then
+               null;
+
+            elsif Is_Interface (Etype (Formal)) then
+               return True;
+            end if;
+
+            Next (Param_Spec);
+         end loop;
+
+         return False;
+      end Has_Interface_Formals;
+
+   --  Start of processing for Analyze_Subprogram_Specification
 
    begin
       Generate_Definition (Designator);
@@ -1544,6 +1656,30 @@ package body Sem_Ch6 is
       if Present (Formals) then
          New_Scope (Designator);
          Process_Formals (Formals, N);
+
+         --  Ada 2005 (AI-345): Allow overriding primitives of protected
+         --  interfaces by means of normal subprograms. For this purpose
+         --  temporarily use the corresponding record type as the etype
+         --  of the first formal.
+
+         if Ada_Version >= Ada_05
+           and then Comes_From_Source (Designator)
+           and then Present (First_Entity (Designator))
+           and then (Ekind (Etype (First_Entity (Designator)))
+                             = E_Protected_Type
+                       or else
+                     Ekind (Etype (First_Entity (Designator)))
+                             = E_Task_Type)
+           and then Present (Corresponding_Record_Type
+                             (Etype (First_Entity (Designator))))
+           and then Present (Abstract_Interfaces
+                             (Corresponding_Record_Type
+                             (Etype (First_Entity (Designator)))))
+         then
+            Set_Etype (First_Entity (Designator),
+              Corresponding_Record_Type (Etype (First_Entity (Designator))));
+         end if;
+
          End_Scope;
 
       elsif Nkind (N) = N_Function_Specification then
@@ -1569,6 +1705,20 @@ package body Sem_Ch6 is
             Error_Msg_N
               ("function that returns abstract type must be abstract", N);
          end if;
+      end if;
+
+      if Ada_Version >= Ada_05
+        and then Comes_From_Source (N)
+        and then Nkind (Parent (N)) /= N_Abstract_Subprogram_Declaration
+        and then (Nkind (N) /= N_Procedure_Specification
+                    or else
+                  not Null_Present (N))
+        and then Has_Interface_Formals (Formals)
+      then
+         Error_Msg_Name_1 := Chars (Defining_Unit_Name
+                                    (Specification (Parent (N))));
+         Error_Msg_N
+           ("(Ada 2005) interface subprogram % must be abstract or null", N);
       end if;
 
       return Designator;
@@ -1638,7 +1788,8 @@ package body Sem_Ch6 is
             then
                Conv := Current_Entity (Id);
 
-            elsif Nkind (Id) = N_Selected_Component
+            elsif (Nkind (Id) = N_Selected_Component
+                    or else Nkind (Id) = N_Expanded_Name)
               and then Chars (Selector_Name (Id)) = Name_Unchecked_Conversion
             then
                Conv := Current_Entity (Selector_Name (Id));
@@ -1647,9 +1798,9 @@ package body Sem_Ch6 is
                return False;
             end if;
 
-            return
-              Present (Conv)
-              and then Scope (Conv) = Standard_Standard
+            return Present (Conv)
+              and then Is_Predefined_File_Name
+                         (Unit_File_Name (Get_Source_Unit (Conv)))
               and then Is_Intrinsic_Subprogram (Conv);
          end Is_Unchecked_Conversion;
 
@@ -2572,100 +2723,49 @@ package body Sem_Ch6 is
    end Check_Mode_Conformant;
 
    --------------------------------
-   -- Check_Overriding_Operation --
+   -- Check_Overriding_Indicator --
    --------------------------------
 
-   procedure Check_Overriding_Operation
-     (N    : Node_Id;
-      Subp : Entity_Id)
+   procedure Check_Overriding_Indicator
+     (Subp          : Entity_Id;
+      Does_Override : Boolean)
    is
-      Arg1       : Node_Id;
-      Decl       : Node_Id;
-      Has_Pragma : Boolean := False;
+      Decl : Node_Id;
+      Spec : Node_Id;
 
    begin
-      --  See whether there is an overriding pragma immediately following
-      --  the declaration. Intervening pragmas, such as Inline, are allowed.
+      if Ekind (Subp) = E_Enumeration_Literal then
 
-      Decl := Next (N);
-      while Present (Decl)
-        and then Nkind (Decl) = N_Pragma
-      loop
-         if Chars (Decl) = Name_Overriding
-           or else Chars (Decl) = Name_Optional_Overriding
-         then
-            --  For now disable the use of these pragmas, until the ARG
-            --  finalizes the design of this feature.
+         --  No overriding indicator for literals
 
-            Error_Msg_N ("?unrecognized pragma", Decl);
+         return;
 
-            if not Is_Overriding_Operation (Subp) then
+      else
+         Decl := Unit_Declaration_Node (Subp);
+      end if;
 
-               --  Before emitting an error message, check whether this
-               --  may override an operation that is not yet visible, as
-               --  in the case of a derivation of a private operation in
-               --  a child unit. Such an operation is introduced with a
-               --  different name, but its alias is the parent operation.
+      if Nkind (Decl) = N_Subprogram_Declaration
+        or else Nkind (Decl) = N_Subprogram_Body
+        or else Nkind (Decl) = N_Subprogram_Renaming_Declaration
+        or else Nkind (Decl) = N_Subprogram_Body_Stub
+      then
+         Spec := Specification (Decl);
+      else
+         return;
+      end if;
 
-               declare
-                  E : Entity_Id;
-
-               begin
-                  E := First_Entity (Current_Scope);
-
-                  while Present (E) loop
-                     if Ekind (E) = Ekind (Subp)
-                       and then not Comes_From_Source (E)
-                       and then Present (Alias (E))
-                       and then Chars (Alias (E)) = Chars (Subp)
-                       and then In_Open_Scopes (Scope (Alias (E)))
-                     then
-                        exit;
-                     else
-                        Next_Entity (E);
-                     end if;
-                  end loop;
-
-                  if No (E) then
-                     Error_Msg_NE
-                       ("& must override an inherited operation",
-                         Decl, Subp);
-                  end if;
-               end;
-            end if;
-
-            --  Verify syntax of pragma
-
-            Arg1 := First (Pragma_Argument_Associations (Decl));
-
-            if Present (Arg1) then
-               if not Is_Entity_Name (Expression (Arg1)) then
-                  Error_Msg_N ("pragma applies to local subprogram", Decl);
-
-               elsif Chars (Expression (Arg1)) /= Chars (Subp) then
-                  Error_Msg_N
-                    ("pragma must apply to preceding subprogram", Decl);
-
-               elsif Present (Next (Arg1)) then
-                  Error_Msg_N ("illegal pragma format", Decl);
-               end if;
-            end if;
-
-            Set_Analyzed (Decl);
-            Has_Pragma := True;
-            exit;
+      if not Does_Override then
+         if Must_Override (Spec) then
+            Error_Msg_NE ("subprogram& is not overriding", Spec, Subp);
          end if;
 
-         Next (Decl);
-      end loop;
-
-      if not Has_Pragma
-        and then Explicit_Overriding
-        and then Is_Overriding_Operation (Subp)
-      then
-         Error_Msg_NE ("Missing overriding pragma for&", Subp, Subp);
+      else
+         if Must_Not_Override (Spec) then
+            Error_Msg_NE
+              ("subprogram& overrides inherited operation", Spec, Subp);
+         end if;
       end if;
-   end Check_Overriding_Operation;
+   end Check_Overriding_Indicator;
 
    -------------------
    -- Check_Returns --
@@ -3142,6 +3242,8 @@ package body Sem_Ch6 is
          end if;
       end Base_Types_Match;
 
+      --  Start of processing for Conforming_Types
+
    begin
       --  The context is an instance association for a formal
       --  access-to-subprogram type; the formal parameter types require
@@ -3182,7 +3284,8 @@ package body Sem_Ch6 is
            or else Subtypes_Statically_Match (Type_1, Full_View (Type_2));
       end if;
 
-      --  Ada 2005 (AI-254): Detect anonymous access to subprogram types
+      --  Ada 2005 (AI-254): Anonymous access to subprogram types must be
+      --  treated recursively because they carry a signature.
 
       Are_Anonymous_Access_To_Subprogram_Types :=
 
@@ -3264,9 +3367,22 @@ package body Sem_Ch6 is
                     Etype (Base_Type (Desig_2)), Ctype);
 
             elsif Are_Anonymous_Access_To_Subprogram_Types then
-               return Ctype = Type_Conformant
-                        or else
+               if Ada_Version < Ada_05 then
+                  return Ctype = Type_Conformant
+                    or else
                       Subtypes_Statically_Match (Desig_1, Desig_2);
+
+               --  We must check the conformance of the signatures themselves
+
+               else
+                  declare
+                     Conformant : Boolean;
+                  begin
+                     Check_Conformance
+                       (Desig_1, Desig_2, Ctype, False, Conformant);
+                     return Conformant;
+                  end;
+               end if;
 
             else
                return Base_Type (Desig_1) = Base_Type (Desig_2)
@@ -4438,11 +4554,17 @@ package body Sem_Ch6 is
      (S            : Entity_Id;
       Derived_Type : Entity_Id := Empty)
    is
+      Does_Override : Boolean := False;
+      --  Set if the current scope has an operation that is type-conformant
+      --  with S, and becomes hidden by S.
+
       E : Entity_Id;
       --  Entity that S overrides
 
       Prev_Vis : Entity_Id := Empty;
       --  Needs comment ???
+
+      Is_Alias_Interface : Boolean := False;
 
       function Is_Private_Declaration (E : Entity_Id) return Boolean;
       --  Check that E is declared in the private part of the current package,
@@ -4522,8 +4644,17 @@ package body Sem_Ch6 is
                  and then Is_Abstract (S)
                  and then (not Is_Overriding or else not Is_Abstract (E))
                then
-                  Error_Msg_N ("abstract subprograms must be visible "
-                                & "('R'M 3.9.3(10))!", S);
+                  if not Is_Interface (T) then
+                     Error_Msg_N ("abstract subprograms must be visible "
+                                   & "('R'M 3.9.3(10))!", S);
+
+                  --  Ada 2005 (AI-251)
+
+                  else
+                     Error_Msg_N ("primitive subprograms of interface types "
+                       & "declared in a visible part, must be declared in "
+                       & "the visible part ('R'M 3.9.4)!", S);
+                  end if;
 
                elsif Ekind (S) = E_Function
                  and then Is_Tagged_Type (T)
@@ -4650,6 +4781,15 @@ package body Sem_Ch6 is
          Check_Dispatching_Operation (S, Empty);
          Maybe_Primitive_Operation;
 
+         --  Ada 2005 (AI-397): Subprograms in the context of protected
+         --  types have their overriding indicators checked in Sem_Ch9.
+
+         if Ekind (S) not in Subprogram_Kind
+           or else Ekind (Scope (S)) /= E_Protected_Type
+         then
+            Check_Overriding_Indicator (S, False);
+         end if;
+
       --  If there is a homonym that is not overloadable, then we have an
       --  error, except for the special cases checked explicitly below.
 
@@ -4673,6 +4813,7 @@ package body Sem_Ch6 is
             Enter_Overloaded_Entity (S);
             Set_Homonym (S, Homonym (E));
             Check_Dispatching_Operation (S, Empty);
+            Check_Overriding_Indicator (S, False);
 
          --  If the subprogram is implicit it is hidden by the previous
          --  declaration. However if it is dispatching, it must appear in the
@@ -4706,6 +4847,12 @@ package body Sem_Ch6 is
       --  E exists and is overloadable
 
       else
+         Is_Alias_Interface :=
+            Present (Alias (S))
+            and then Is_Dispatching_Operation (Alias (S))
+            and then Present (DTC_Entity (Alias (S)))
+            and then Is_Interface (Scope (DTC_Entity (Alias (S))));
+
          --  Loop through E and its homonyms to determine if any of them is
          --  the candidate for overriding by S.
 
@@ -4718,8 +4865,13 @@ package body Sem_Ch6 is
 
             --  Check if we have type conformance
 
-            elsif Type_Conformant (E, S) then
+            --  Ada 2005 (AI-251): In case of overriding an interface
+            --  subprogram it is not an error that the old and new entities
+            --  have the same profile, and hence we skip this code.
 
+            elsif not Is_Alias_Interface
+              and then Type_Conformant (E, S)
+            then
                --  If the old and new entities have the same profile and one
                --  is not the body of the other, then this is an error, unless
                --  one of them is implicitly declared.
@@ -4762,6 +4914,11 @@ package body Sem_Ch6 is
                   --  the existing declaration, which is overriding.
 
                   Set_Is_Overriding_Operation (E);
+
+                  if Comes_From_Source (E) then
+                     Check_Overriding_Indicator (E, True);
+                  end if;
+
                   return;
 
                   --  Within an instance, the renaming declarations for
@@ -4804,6 +4961,8 @@ package body Sem_Ch6 is
                   --  Furthermore, if E is a dispatching operation, it must be
                   --  replaced in the list of primitive operations of its type
                   --  (see Override_Dispatching_Operation).
+
+                  Does_Override := True;
 
                   declare
                      Prev : Entity_Id;
@@ -4912,6 +5071,7 @@ package body Sem_Ch6 is
 
                      Enter_Overloaded_Entity (S);
                      Set_Is_Overriding_Operation (S);
+                     Check_Overriding_Indicator (S, True);
 
                      if Is_Dispatching_Operation (E) then
 
@@ -4921,7 +5081,41 @@ package body Sem_Ch6 is
 
                         Set_Convention (S, Convention (E));
 
-                        Check_Dispatching_Operation (S, E);
+                        --  AI-251: If the subprogram implements an interface,
+                        --  check if this subprogram covers other interface
+                        --  subprograms available in the same scope.
+
+                        if Present (Alias (E))
+                          and then Ekind (Alias (E)) /= E_Operator
+                          and then Present (DTC_Entity (Alias (E)))
+                          and then Is_Interface (Scope (DTC_Entity
+                                                        (Alias (E))))
+                        then
+                           Check_Dispatching_Operation (S, E);
+
+                           declare
+                              E1 : Entity_Id;
+
+                           begin
+                              E1 := Homonym (E);
+                              while Present (E1) loop
+                                 if Present (Alias (E1))
+                                   and then Ekind (Alias (E1)) /= E_Operator
+                                   and then Present (DTC_Entity (Alias (E1)))
+                                   and then Is_Interface
+                                              (Scope (DTC_Entity (Alias (E1))))
+                                   and then Type_Conformant (E1, S)
+                                 then
+                                    Check_Dispatching_Operation (S, E1);
+                                 end if;
+
+                                 E1 := Homonym (E1);
+                              end loop;
+                           end;
+                        else
+                           Check_Dispatching_Operation (S, E);
+                        end if;
+
                      else
                         Check_Dispatching_Operation (S, Empty);
                      end if;
@@ -4978,6 +5172,7 @@ package body Sem_Ch6 is
 
          Enter_Overloaded_Entity (S);
          Maybe_Primitive_Operation;
+         Check_Overriding_Indicator (S, Does_Override);
 
          --  If S is a derived operation for an untagged type then by
          --  definition it's not a dispatching operation (even if the parent

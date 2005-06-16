@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,6 +60,7 @@ with Sem_Ch12; use Sem_Ch12;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
+with Sem_Mech; use Sem_Mech;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
@@ -515,6 +516,14 @@ package body Exp_Ch6 is
       --  representation as True. We assume that .FALSE. = False = 0.
       --  What about functions that return a logical type ???
 
+      function Is_Legal_Copy return Boolean;
+      --  Check that an actual can be copied before generating the temporary
+      --  to be used in the call. If the actual is of a by_reference type then
+      --  the program is illegal (this can only happen in the presence of
+      --  rep. clauses that force an incorrect alignment). If the formal is
+      --  a by_reference parameter imposed by a DEC pragma, emit a warning to
+      --  the effect that this might lead to unaligned arguments.
+
       function Make_Var (Actual : Node_Id) return Entity_Id;
       --  Returns an entity that refers to the given actual parameter,
       --  Actual (not including any type conversion). If Actual is an
@@ -541,11 +550,15 @@ package body Exp_Ch6 is
          Crep  : Boolean;
 
       begin
+         if not Is_Legal_Copy then
+            return;
+         end if;
+
          Temp := Make_Defining_Identifier (Loc, New_Internal_Name ('T'));
 
          --  Use formal type for temp, unless formal type is an unconstrained
          --  array, in which case we don't have to worry about bounds checks,
-         --  and we use the actual type, since that has appropriate bonds.
+         --  and we use the actual type, since that has appropriate bounds.
 
          if Is_Array_Type (F_Typ) and then not Is_Constrained (F_Typ) then
             Indic := New_Occurrence_Of (Etype (Actual), Loc);
@@ -715,6 +728,7 @@ package body Exp_Ch6 is
 
       procedure Add_Simple_Call_By_Copy_Code is
          Temp   : Entity_Id;
+         Decl   : Node_Id;
          Incod  : Node_Id;
          Outcod : Node_Id;
          Lhs    : Node_Id;
@@ -723,9 +737,13 @@ package body Exp_Ch6 is
          F_Typ  : constant Entity_Id := Etype (Formal);
 
       begin
+         if not Is_Legal_Copy then
+            return;
+         end if;
+
          --  Use formal type for temp, unless formal type is an unconstrained
          --  array, in which case we don't have to worry about bounds checks,
-         --  and we use the actual type, since that has appropriate bonds.
+         --  and we use the actual type, since that has appropriate bounds.
 
          if Is_Array_Type (F_Typ) and then not Is_Constrained (F_Typ) then
             Indic := New_Occurrence_Of (Etype (Actual), Loc);
@@ -742,17 +760,53 @@ package body Exp_Ch6 is
          Outcod := New_Copy_Tree (Incod);
 
          --  Generate declaration of temporary variable, initializing it
-         --  with the input parameter unless we have an OUT variable.
+         --  with the input parameter unless we have an OUT variable or
+         --  this is an initialization call.
 
          if Ekind (Formal) = E_Out_Parameter then
             Incod := Empty;
+
+         elsif Inside_Init_Proc then
+            if Nkind (Actual) /= N_Selected_Component
+              or else
+                not Has_Discriminant_Dependent_Constraint
+                  (Entity (Selector_Name (Actual)))
+            then
+               Incod := Empty;
+
+            else
+               --  We need the component in order to generate the proper
+               --  actual subtype, that depends on enclosing discriminants.
+               --  What is the comment for, given code below is null ???
+
+               null;
+            end if;
          end if;
 
-         Insert_Action (N,
+         Decl :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Temp,
              Object_Definition   => Indic,
-             Expression          => Incod));
+             Expression          => Incod);
+
+         if Inside_Init_Proc
+           and then No (Incod)
+         then
+            --  If the call is to initialize a component of a composite type,
+            --  and the component does not depend on discriminants, use the
+            --  actual type of the component. This is required in case the
+            --  component is constrained, because in general the formal of the
+            --  initialization procedure will be unconstrained. Note that if
+            --  the component being initialized is constrained by an enclosing
+            --  discriminant, the presence of the initialization in the
+            --  declaration will generate an expression for the actual subtype.
+
+            Set_No_Initialization (Decl);
+            Set_Object_Definition (Decl,
+              New_Occurrence_Of (Etype (Actual), Loc));
+         end if;
+
+         Insert_Action (N, Decl);
 
          --  The actual is simply a reference to the temporary
 
@@ -810,6 +864,38 @@ package body Exp_Ch6 is
                           New_Occurrence_Of (Standard_False, Loc))))));
          end if;
       end Check_Fortran_Logical;
+
+      -------------------
+      -- Is_Legal_Copy --
+      -------------------
+
+      function Is_Legal_Copy return Boolean is
+      begin
+         --  An attempt to copy a value of such a type can only occur if
+         --  representation clauses give the actual a misaligned address.
+
+         if Is_By_Reference_Type (Etype (Formal)) then
+            Error_Msg_N
+              ("misaligned actual cannot be passed by reference", Actual);
+            return False;
+
+         --  For users of Starlet, we assume that the specification of by-
+         --  reference mechanism is mandatory. This may lead to unligned
+         --  objects but at least for DEC legacy code it is known to work.
+         --  The warning will alert users of this code that a problem may
+         --  be lurking.
+
+         elsif Mechanism (Formal) = By_Reference
+           and then Is_Valued_Procedure (Scope (Formal))
+         then
+            Error_Msg_N
+              ("by_reference actual may be misaligned?", Actual);
+            return False;
+
+         else
+            return True;
+         end if;
+      end Is_Legal_Copy;
 
       --------------
       -- Make_Var --
@@ -1127,6 +1213,8 @@ package body Exp_Ch6 is
       Extra_Actuals : List_Id := No_List;
       Cond          : Node_Id;
 
+      CW_Interface_Formals_Present : Boolean := False;
+
       procedure Add_Actual_Parameter (Insert_Param : Node_Id);
       --  Adds one entry to the end of the actual parameter list. Used for
       --  default parameters and for extra actuals (for Extra_Formals).
@@ -1391,16 +1479,28 @@ package body Exp_Ch6 is
          Prev := Actual;
          Prev_Orig := Original_Node (Prev);
 
-         --  Create possible extra actual for constrained case. Usually,
-         --  the extra actual is of the form actual'constrained, but since
-         --  this attribute is only available for unconstrained records,
-         --  TRUE is expanded if the type of the formal happens to be
-         --  constrained (for instance when this procedure is inherited
-         --  from an unconstrained record to a constrained one) or if the
-         --  actual has no discriminant (its type is constrained). An
-         --  exception to this is the case of a private type without
-         --  discriminants. In this case we pass FALSE because the
-         --  object has underlying discriminants with defaults.
+         --  Ada 2005 (AI-251): Check if any formal is a class-wide interface
+         --  to expand it in a further round
+
+         CW_Interface_Formals_Present :=
+           CW_Interface_Formals_Present
+             or else
+               (Ekind (Etype (Formal)) = E_Class_Wide_Type
+                  and then Is_Interface (Etype (Etype (Formal))))
+             or else
+               (Ekind (Etype (Formal)) = E_Anonymous_Access_Type
+                 and then Is_Interface (Directly_Designated_Type
+                                         (Etype (Etype (Formal)))));
+
+         --  Create possible extra actual for constrained case. Usually, the
+         --  extra actual is of the form actual'constrained, but since this
+         --  attribute is only available for unconstrained records, TRUE is
+         --  expanded if the type of the formal happens to be constrained (for
+         --  instance when this procedure is inherited from an unconstrained
+         --  record to a constrained one) or if the actual has no discriminant
+         --  (its type is constrained). An exception to this is the case of a
+         --  private type without discriminants. In this case we pass FALSE
+         --  because the object has underlying discriminants with defaults.
 
          if Present (Extra_Constrained (Formal)) then
             if Ekind (Etype (Prev)) in Private_Kind
@@ -1754,6 +1854,16 @@ package body Exp_Ch6 is
                return;
             end if;
          end;
+      end if;
+
+      --  Ada 2005 (AI-251): If some formal is a class-wide interface, expand
+      --  it to point to the correct secondary virtual table
+
+      if (Nkind (N) = N_Function_Call
+           or else Nkind (N) = N_Procedure_Call_Statement)
+        and then CW_Interface_Formals_Present
+      then
+         Expand_Interface_Actuals (N);
       end if;
 
       --  Deals with Dispatch_Call if we still have a call, before expanding
@@ -2858,6 +2968,7 @@ package body Exp_Ch6 is
 
             Temp :=
               Make_Defining_Identifier (Loc, New_Internal_Name ('C'));
+            Set_Is_Internal (Temp);
 
             Decl :=
               Make_Object_Declaration (Loc,
@@ -3685,6 +3796,8 @@ package body Exp_Ch6 is
    --  protected subprogram an associated formals. For a normal protected
    --  operation, this is done when expanding the protected type declaration.
 
+   --  If the declaration is for a null procedure, emit null body
+
    procedure Expand_N_Subprogram_Declaration (N : Node_Id) is
       Loc       : constant Source_Ptr := Sloc (N);
       Subp      : constant Entity_Id  := Defining_Entity (N);
@@ -3732,6 +3845,24 @@ package body Exp_Ch6 is
             Set_Protected_Body_Subprogram (Subp, Prot_Id);
             Pop_Scope;
          end if;
+
+      elsif Nkind (Specification (N)) = N_Procedure_Specification
+        and then Null_Present (Specification (N))
+      then
+         declare
+            Bod : constant Node_Id :=
+                    Make_Subprogram_Body (Loc,
+                      Specification =>
+                        New_Copy_Tree (Specification (N)),
+                      Declarations => New_List,
+                     Handled_Statement_Sequence =>
+                        Make_Handled_Sequence_Of_Statements (Loc,
+                          Statements => New_List (Make_Null_Statement (Loc))));
+         begin
+            Set_Body_To_Inline (N, New_Copy_Tree (Bod));
+            Insert_After (N, Bod);
+            Analyze (Bod);
+         end;
       end if;
    end Expand_N_Subprogram_Declaration;
 
@@ -3907,7 +4038,11 @@ package body Exp_Ch6 is
    -----------------------
 
    procedure Freeze_Subprogram (N : Node_Id) is
-      E : constant Entity_Id := Entity (N);
+      Loc       : constant Source_Ptr := Sloc (N);
+      E         : constant Entity_Id  := Entity (N);
+      Thunk_Id  : Entity_Id;
+      Iface_Tag : Entity_Id;
+      New_Thunk : Node_Id;
 
    begin
       --  When a primitive is frozen, enter its name in the corresponding
@@ -3923,7 +4058,41 @@ package body Exp_Ch6 is
         and then not Java_VM
       then
          Check_Overriding_Operation (E);
-         Insert_After (N, Fill_DT_Entry (Sloc (N), E));
+
+         --  Common case: Primitive subprogram
+
+         if not Present (Abstract_Interface_Alias (E)) then
+            Insert_After (N, Fill_DT_Entry (Sloc (N), E));
+
+         --  Ada 2005 (AI-251): Primitive subprogram that covers an interface
+
+         else
+            Iface_Tag :=
+              Find_Interface_Tag
+                (T     => Scope (DTC_Entity (Alias (E))),    -- Formal Type
+                 Iface => Scope (DTC_Entity (Abstract_Interface_Alias (E))));
+
+            --  Generate the thunk only if the associated tag is an interface
+            --  tag. The case in which the associated tag is the primary tag
+            --  occurs when a tagged type is a direct derivation of an
+            --  interface. For example:
+
+            --    type I is interface;
+            --    ...
+            --    type T is new I with ...
+
+            if Etype (Iface_Tag) = RTE (RE_Interface_Tag) then
+               Thunk_Id  := Make_Defining_Identifier (Loc,
+                              New_Internal_Name ('T'));
+
+               New_Thunk := Expand_Interface_Thunk (N, Thunk_Id, Iface_Tag);
+
+               Insert_After (New_Thunk,
+                  Fill_DT_Entry (Sloc (N),
+                     Prim     => E,
+                     Thunk_Id => Thunk_Id));
+            end if;
+         end if;
       end if;
 
       --  Mark functions that return by reference. Note that it cannot be
