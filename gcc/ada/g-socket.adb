@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2001-2004 Ada Core Technologies, Inc.            --
+--           Copyright (C) 2001-2005 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,7 +37,6 @@ with Ada.Unchecked_Conversion;
 
 with Interfaces.C.Strings;
 
-with GNAT.OS_Lib;                use GNAT.OS_Lib;
 with GNAT.Sockets.Constants;
 with GNAT.Sockets.Thin;          use GNAT.Sockets.Thin;
 with GNAT.Task_Lock;
@@ -651,11 +650,10 @@ package body GNAT.Sockets is
       Err : Integer;
 
    begin
-      --  We open two signalling sockets. One of them is used to
-      --  send data to the other, which is included in a C_Select
-      --  socket set. The communication is used to force the call
-      --  to C_Select to complete, and the waiting task to resume
-      --  its execution.
+      --  We open two signalling sockets. One of them is used to send data to
+      --  send data to the other, which is included in a C_Select socket set.
+      --  The communication is used to force the call to C_Select to complete,
+      --  and the waiting task to resume its execution.
 
       --  Create a listening socket
 
@@ -664,8 +662,13 @@ package body GNAT.Sockets is
          Raise_Socket_Error (Socket_Errno);
       end if;
 
-      --  Sin is already correctly initialized. Bind the socket to any
-      --  unused port.
+      --  Bind the socket to any unused port on localhost
+
+      Sin.Sin_Addr.S_B1 := 127;
+      Sin.Sin_Addr.S_B2 := 0;
+      Sin.Sin_Addr.S_B3 := 0;
+      Sin.Sin_Addr.S_B4 := 1;
+      Sin.Sin_Port := 0;
 
       Res := C_Bind (S0, Sin'Address, Len);
       if Res = Failure then
@@ -684,7 +687,10 @@ package body GNAT.Sockets is
          Raise_Socket_Error (Err);
       end if;
 
-      Res := C_Listen (S0, 2);
+      --  Set backlog to 1 to guarantee that exactly one call to connect(2)
+      --  can succeed.
+
+      Res := C_Listen (S0, 1);
 
       if Res = Failure then
          Err := Socket_Errno;
@@ -700,13 +706,6 @@ package body GNAT.Sockets is
          Raise_Socket_Error (Err);
       end if;
 
-      --  Use INADDR_LOOPBACK
-
-      Sin.Sin_Addr.S_B1 := 127;
-      Sin.Sin_Addr.S_B2 := 0;
-      Sin.Sin_Addr.S_B3 := 0;
-      Sin.Sin_Addr.S_B4 := 1;
-
       --  Do a connect and accept the connection
 
       Res := C_Connect (S1, Sin'Address, Len);
@@ -717,6 +716,10 @@ package body GNAT.Sockets is
          Res := C_Close (S1);
          Raise_Socket_Error (Err);
       end if;
+
+      --  Since the call to connect(2) has suceeded and the backlog limit on
+      --  the listening socket is 1, we know that there is now exactly one
+      --  pending connection on S0, which is the one from S1.
 
       S2 := C_Accept (S0, Sin'Address, Len'Access);
 
@@ -1232,17 +1235,24 @@ package body GNAT.Sockets is
    function Inet_Addr (Image : String) return Inet_Addr_Type is
       use Interfaces.C.Strings;
 
-      Img : chars_ptr := New_String (Image);
+      Img : chars_ptr;
       Res : C.int;
-      Err : Integer;
 
    begin
+      --  Special case for the all-ones broadcast address: this address
+      --  has the same in_addr_t value as Failure, and thus cannot be
+      --  properly returned by inet_addr(3).
+
+      if Image (Image'Range) = "255.255.255.255" then
+         return Broadcast_Inet_Addr;
+      end if;
+
+      Img := New_String (Image);
       Res := C_Inet_Addr (Img);
-      Err := Errno;
       Free (Img);
 
       if Res = Failure then
-         Raise_Socket_Error (Err);
+         Raise_Socket_Error (Constants.EINVAL);
       end if;
 
       return To_Inet_Addr (To_In_Addr (Res));

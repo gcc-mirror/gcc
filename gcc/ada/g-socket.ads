@@ -433,8 +433,9 @@ package GNAT.Sockets is
    --  treated like a wildcard enabling all addresses. No_Inet_Addr provides a
    --  special value to denote uninitialized inet addresses.
 
-   Any_Inet_Addr : constant Inet_Addr_Type;
-   No_Inet_Addr  : constant Inet_Addr_Type;
+   Any_Inet_Addr       : constant Inet_Addr_Type;
+   No_Inet_Addr        : constant Inet_Addr_Type;
+   Broadcast_Inet_Addr : constant Inet_Addr_Type;
 
    type Sock_Addr_Type (Family : Family_Type := Family_Inet) is record
       Addr : Inet_Addr_Type (Family);
@@ -912,15 +913,16 @@ package GNAT.Sockets is
    procedure Set (Item : in out Socket_Set_Type; Socket : Socket_Type);
    --  Insert Socket into Item
 
-   --  C select() waits for a number of file descriptors to change status.
-   --  Usually, three independent sets of descriptors are watched (read, write
-   --  and exception). A timeout gives an upper bound on the amount of time
-   --  elapsed before select returns. This function blocks until an event
-   --  occurs. On some platforms, C select can block the full process.
+   --  The select(2) system call waits for events to occur on any of a set of
+   --  file descriptors. Usually, three independent sets of descriptors are
+   --  watched (read, write  and exception). A timeout gives an upper bound
+   --  on the amount of time elapsed before select returns. This function
+   --  blocks until an event occurs. On some platforms, the select(2) system
+   --  can block the full process (not just the calling thread).
    --
    --  Check_Selector provides the very same behaviour. The only difference is
    --  that it does not watch for exception events. Note that on some
-   --  platforms it is kept process blocking in purpose. The timeout parameter
+   --  platforms it is kept process blocking on purpose. The timeout parameter
    --  allows the user to have the behaviour he wants. Abort_Selector allows
    --  to abort safely a Check_Selector that is blocked forever. A special
    --  file descriptor is opened by Create_Selector and included in each call
@@ -958,16 +960,19 @@ package GNAT.Sockets is
       Status       : out Selector_Status;
       Timeout      : Selector_Duration := Forever);
    --  Return when one Socket in R_Socket_Set has some data to be read or if
-   --  one Socket in W_Socket_Set is ready to receive some data. In these
+   --  one Socket in W_Socket_Set is ready to transmit some data. In these
    --  cases Status is set to Completed and sockets that are ready are set in
    --  R_Socket_Set or W_Socket_Set. Status is set to Expired if no socket was
    --  ready after a Timeout expiration. Status is set to Aborted if an abort
    --  signal has been received while checking socket status. As this
    --  procedure returns when Timeout occurs, it is a design choice to keep
    --  this procedure process blocking. Note that a Timeout of 0.0 returns
-   --  immediately. Also note that two different objects must be passed as
-   --  R_Socket_Set and W_Socket_Set (even if they contain the same set of
-   --  Sockets), or some event will be lost.
+   --  immediately. Also note that two different Socket_Set_Type objects must
+   --  be passed as R_Socket_Set and W_Socket_Set (even if they denote the
+   --  same set of Sockets), or some event will be lost.
+   --  Socket_Error is raised when the select(2) system call returns an
+   --  error condition, or when a read error occurs on the signalling socket
+   --  used for the implementation of Abort_Selector.
 
    procedure Check_Selector
      (Selector     : in out Selector_Type;
@@ -1027,10 +1032,14 @@ private
    Any_Port : constant Port_Type := 0;
    No_Port  : constant Port_Type := 0;
 
-   Any_Inet_Addr : constant Inet_Addr_Type := (Family_Inet, (others => 0));
-   No_Inet_Addr  : constant Inet_Addr_Type := (Family_Inet, (others => 0));
+   Any_Inet_Addr       : constant Inet_Addr_Type :=
+                           (Family_Inet, (others => 0));
+   No_Inet_Addr        : constant Inet_Addr_Type :=
+                           (Family_Inet, (others => 0));
+   Broadcast_Inet_Addr : constant Inet_Addr_Type :=
+                           (Family_Inet, (others => 255));
 
-   No_Sock_Addr  : constant Sock_Addr_Type := (Family_Inet, No_Inet_Addr, 0);
+   No_Sock_Addr : constant Sock_Addr_Type := (Family_Inet, No_Inet_Addr, 0);
 
    Max_Name_Length : constant := 64;
    --  The constant MAXHOSTNAMELEN is usually set to 64
