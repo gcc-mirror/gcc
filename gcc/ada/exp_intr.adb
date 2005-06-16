@@ -735,7 +735,7 @@ package body Exp_Intr is
                  and then Is_Entity_Name (Nam2)
                  and then Entity (Prefix (Nam1)) = Entity (Nam2)
                then
-                  Error_Msg_N ("Abort may take time to complete?", N);
+                  Error_Msg_N ("abort may take time to complete?", N);
                   Error_Msg_N ("\deallocation might have no effect?", N);
                   Error_Msg_N ("\safer to wait for termination.?", N);
                end if;
