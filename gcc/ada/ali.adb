@@ -439,6 +439,7 @@ package body ALI is
                  or else Nextc = '(' or else Nextc = ')'
                  or else Nextc = '{' or else Nextc = '}'
                  or else Nextc = '<' or else Nextc = '>'
+                 or else Nextc = '[' or else Nextc = ']'
                  or else Nextc = '=';
             end if;
          end loop;
@@ -1885,6 +1886,31 @@ package body ALI is
                   XE.Col    := Get_Nat;
                   XE.Lib    := (Getc = '*');
                   XE.Entity := Get_Name;
+
+                  --  Handle the information about generic instantiations
+
+                  if Nextc = '[' then
+                     Skipc; --  Opening '['
+                     N := Get_Nat;
+
+                     if Nextc /= '|' then
+                        XE.Iref_File_Num := Current_File_Num;
+                        XE.Iref_Line     := N;
+                     else
+                        XE.Iref_File_Num :=
+                          Sdep_Id (N + Nat (First_Sdep_Entry) - 1);
+                        Skipc;
+                        XE.Iref_Line := Get_Nat;
+                     end if;
+
+                     if Getc /= ']' then
+                        Fatal_Error;
+                     end if;
+
+                  else
+                     XE.Iref_File_Num := No_Sdep_Id;
+                     XE.Iref_Line     := 0;
+                  end if;
 
                   Current_File_Num := XS.File_Num;
 
