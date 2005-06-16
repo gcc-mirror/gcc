@@ -329,7 +329,8 @@ dnl Locate a program and check that its version is acceptable.
 dnl AC_PROG_CHECK_VER(var, name, version-switch,
 dnl                  version-extract-regexp, version-glob)
 AC_DEFUN([gcc_AC_CHECK_PROG_VER],
-[AC_CHECK_PROG([$1], [$2], [$2])
+[AC_REQUIRE([gcc_AC_BUILD_EXEEXT])
+AC_CHECK_PROG([$1], [$2], [$2])
 if test -n "[$]$1"; then
   # Found it, now check the version.
   AC_CACHE_CHECK(for modern $2, gcc_cv_prog_$2_modern,
@@ -653,3 +654,78 @@ m4_ifdef([GCC_TARGET_TEMPLATE($1)],[],[#ifndef USED_FOR_TARGET
 ])[#undef $1]m4_ifdef([GCC_TARGET_TEMPLATE($1)],[],[
 #endif
 ]))])
+
+AC_DEFUN([gcc_AC_TOOL_DIRS], [
+# When searching for the assembler or linker, search the same directories
+# that the installed compiler will search.  Else we may find the wrong
+# assembler or linker and lose.  If we do not find a suitable binary,
+# then try the user's path.
+#
+# Also note we have to check MD_EXEC_PREFIX before checking the user's path.
+if test "x$exec_prefix" = xNONE; then
+	if test "x$prefix" = xNONE; then
+		gcc_cv_tool_prefix=/usr/local
+	else
+		gcc_cv_tool_prefix=$prefix
+	fi
+else
+	gcc_cv_tool_prefix=$exec_prefix
+fi
+
+if test x$host = x$build; then
+    gcc_cv_tool_dirs="$gcc_cv_tool_prefix/libexec/gcc/$target_noncanonical/$gcc_version"
+    gcc_cv_tool_dirs="$gcc_cv_tool_dirs$PATH_SEPARATOR$gcc_cv_tool_prefix/libexec/gcc/$target_noncanonical"
+    gcc_cv_tool_dirs="$gcc_cv_tool_dirs$PATH_SEPARATOR/usr/lib/gcc/$target_noncanonical/$gcc_version"
+    gcc_cv_tool_dirs="$gcc_cv_tool_dirs$PATH_SEPARATOR/usr/lib/gcc/$target_noncanonical"
+    gcc_cv_tool_dirs="$gcc_cv_tool_dirs$PATH_SEPARATOR$gcc_cv_tool_prefix/$target_noncanonical/bin/$target_noncanonical/$gcc_version"
+    gcc_cv_tool_dirs="$gcc_cv_tool_dirs$PATH_SEPARATOR$gcc_cv_tool_prefix/$target_noncanonical/bin"
+else
+    gcc_cv_tool_dirs=
+fi
+
+if test x$build = x$target; then
+    # Rummage through tm_files looking for MD_EXEC_PREFIX
+    md_dirs=
+    for f in ${tm_file_list}; do
+	if test -f $f; then
+	    if grep '^#[ 	]*undef[ 	]*MD_EXEC_PREFIX' $f > /dev/null; then
+		md_dirs=
+	    fi
+	    md_dirs="$md_dirs "`sed -n -e 's@^#[ 	]*define[ 	]*MD_EXEC_PREFIX[ 	]*"\(.*\)/"@\1@p' < $f`
+	fi
+    done
+    for f in ${md_dirs}; do
+        gcc_cv_tool_dirs="$gcc_cv_tool_dirs$PATH_SEPARATOR$f"
+    done
+fi])
+
+dnl Make sure that build_exeext is looked for
+AC_DEFUN([gcc_AC_BUILD_EXEEXT], [
+ac_executable_extensions="$build_exeext"])
+
+AC_DEFUN([gcc_AC_CHECK_TOOL], [
+AC_REQUIRE([gcc_AC_TOOL_DIRS])
+AC_REQUIRE([gcc_AC_BUILD_EXEEXT])
+
+dnl shut up useless "checking for..." messages
+dnl we can still read them in config.log
+exec AS_MESSAGE_FD([])>/dev/null
+AC_PATH_PROGS($1, $2, , $gcc_cv_tool_dirs)
+if test "x[$]$1" = x; then
+	# If the loop above did not find a tool, then use whatever
+	# one we can find in the users's path.  We are looking for a
+	# ${build} -> ${target} tool.
+	if test "x$program_prefix" != xNONE; then
+		default_tool_name=${program_prefix}$2
+	elif test x$build != x$host && test x$build != x$target; then
+		default_tool_name=${target_noncanonical}-$2
+	else
+		default_tool_name=`echo $2 | sed "${program_transform_name}"`
+	fi
+	AC_PATH_PROGS($1, $default_tool_name,
+		$gcc_cv_tool_prefix/$default_tool_name$build_exeext)
+fi
+test "$silent" != yes && exec AS_MESSAGE_FD([])>&1
+
+$3="[$]$1"
+AC_SUBST($3)])
