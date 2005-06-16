@@ -236,11 +236,6 @@ eat_separator (void)
 
     case '/':
       input_complete = 1;
-      if (!namelist_mode)
-	{
-	  next_record (0);
-	  at_eol = 1;
-	}
       break;
 
     case '\n':
