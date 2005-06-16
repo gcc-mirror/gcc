@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003 Free Software Foundation, Inc.               --
+--          Copyright (C) 2003-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,18 +54,26 @@ package body Symbols is
       Success := False;
    end Initialize;
 
-   -------------
-   -- Process --
-   -------------
+   ----------------
+   -- Processing --
+   ----------------
 
-   procedure Process
-     (Object_File : String;
-      Success     : out Boolean)
-   is
-      pragma Unreferenced (Object_File);
-   begin
-      Success := False;
-   end Process;
+   package body Processing is
+
+      -------------
+      -- Process --
+      -------------
+
+      procedure Process
+        (Object_File : String;
+         Success     : out Boolean)
+      is
+         pragma Unreferenced (Object_File);
+      begin
+         Success := False;
+      end Process;
+
+   end Processing;
 
    --------------
    -- Finalize --

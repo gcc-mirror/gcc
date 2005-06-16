@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 2003-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,7 @@ package Symbols is
       --  all symbols are already found in the reference file or with an
       --  incremented minor ID, if not.
 
-       Controlled,
+      Controlled,
       --  Fail if symbols are not the same as those in the reference file
 
       Restricted);
@@ -86,11 +86,20 @@ package Symbols is
    --  Processing any object file. Depending on the platforms and the
    --  circumstances, additional messages may be issued if Quiet is False.
 
-   procedure Process
-     (Object_File : String;
-      Success     : out Boolean);
-   --  Get the symbols from an object file. Success is set to True if the
-   --  object file exists and has the expected format.
+   package Processing is
+
+   --  This package, containing a single visible procedure Process, exists so
+   --  that it can be a subunits, for some platforms (such as VMS Alpha and
+   --  IA64), the body of package Symbols is common, while the subunit
+   --  Processing is not.
+
+      procedure Process
+        (Object_File : String;
+         Success     : out Boolean);
+      --  Get the symbols from an object file. Success is set to True if the
+      --  object file exists and has the expected format.
+
+   end Processing;
 
    procedure Finalize
      (Quiet   : Boolean;
