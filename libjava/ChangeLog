@@ -1,3 +1,12 @@
+2005-06-15  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* configure.ac (USING_ECOS_PLATFORM): Remove and merge into...
+	(USING_POSIX_PLATFORM): ... here.
+	* Makefile.am: Delete USING_ECOS_PLATFORM.
+	* configure, Makefile.in, include/Makefile.in, testsuite/Makefile.in,
+	external/Makefile.in, external/sax/Makefile.in,
+	external/w3c_dom/Makefile.in, gcj/Makefile.in: Regenerate.
+
 2005-06-15  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/17536:
