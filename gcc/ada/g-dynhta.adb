@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --                 G N A T . D Y N A M I C _ H T A B L E S                  --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2002-2004 Ada Core Technologies, Inc.            --
+--                     Copyright (C) 2002-2005 AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Deallocation;
+
 package body GNAT.Dynamic_HTables is
 
    -------------------
@@ -179,6 +180,9 @@ package body GNAT.Dynamic_HTables is
       -----------
 
       procedure Reset (T : in out Instance) is
+         procedure Free is
+           new Ada.Unchecked_Deallocation (Instance_Data, Instance);
+
       begin
          if T = null then
             return;
@@ -187,6 +191,8 @@ package body GNAT.Dynamic_HTables is
          for J in T.Table'Range loop
             T.Table (J) := Null_Ptr;
          end loop;
+
+         Free (T);
       end Reset;
 
       ---------
@@ -205,6 +211,7 @@ package body GNAT.Dynamic_HTables is
          Set_Next (E, T.Table (Index));
          T.Table (Index) := E;
       end Set;
+
    end Static_HTable;
 
    -------------------
@@ -264,7 +271,6 @@ package body GNAT.Dynamic_HTables is
 
       function Get_Next (T : Instance) return Element is
          Tmp : constant Elmt_Ptr := Tab.Get_Next (Tab.Instance (T));
-
       begin
          if Tmp = null then
             return No_Element;
@@ -322,7 +328,6 @@ package body GNAT.Dynamic_HTables is
 
       procedure Set (T : in out Instance; K : Key; E : Element) is
          Tmp : constant Elmt_Ptr := Tab.Get (Tab.Instance (T), K);
-
       begin
          if Tmp = null then
             Tab.Set (Tab.Instance (T), new Element_Wrapper'(K, E, null));
@@ -339,6 +344,7 @@ package body GNAT.Dynamic_HTables is
       begin
          E.Next := Next;
       end Set_Next;
+
    end Simple_HTable;
 
 end GNAT.Dynamic_HTables;

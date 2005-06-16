@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --                 G N A T . D Y N A M I C _ H T A B L E S                  --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1995-2003 Ada Core Technologies, Inc.            --
+--                     Copyright (C) 1995-2005 AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -103,13 +103,13 @@ package GNAT.Dynamic_HTables is
       Nil : constant Instance;
 
       procedure Reset (T : in out Instance);
-      --  Resets the hash table by setting all its elements to Null_Ptr. The
-      --  effect is to clear the hash table so that it can be reused. For the
+      --  Resets the hash table by releasing all memory associated with
+      --  it. The hash table can safely be reused after this call. For the
       --  most common case where Elmt_Ptr is an access type, and Null_Ptr is
       --  null, this is only needed if the same table is reused in a new
       --  context. If Elmt_Ptr is other than an access type, or Null_Ptr is
-      --  other than null, then Reset must be called before the first use
-      --  of the hash table.
+      --  other than null, then Reset must be called before the first use of
+      --  the hash table.
 
       procedure Set (T : in out Instance; E : Elmt_Ptr);
       --  Insert the element pointer in the HTable
@@ -177,7 +177,9 @@ package GNAT.Dynamic_HTables is
       --  associated element.
 
       procedure Reset (T : in out Instance);
-      --  Removes and frees all elements in the table
+      --  Releases all memory associated with the table. The table can be
+      --  reused after this call (it is automatically allocated on the first
+      --  access to the table).
 
       function Get (T : Instance; K : Key) return Element;
       --  Returns the Element associated with a key or No_Element if the
