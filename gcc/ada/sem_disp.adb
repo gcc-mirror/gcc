@@ -31,6 +31,7 @@ with Einfo;    use Einfo;
 with Exp_Disp; use Exp_Disp;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Tss;  use Exp_Tss;
+with Exp_Util; use Exp_Util;
 with Errout;   use Errout;
 with Hostparm; use Hostparm;
 with Nlists;   use Nlists;
@@ -219,12 +220,25 @@ package body Sem_Disp is
 
       elsif Ekind (T) = E_Anonymous_Access_Type
         and then Is_Tagged_Type (Designated_Type (T))
-        and then Ekind (Designated_Type (T)) /= E_Incomplete_Type
       then
-         if Is_First_Subtype (Designated_Type (T)) then
-            Tagged_Type := Designated_Type (T);
-         else
-            Tagged_Type := Base_Type (Designated_Type (T));
+         if Ekind (Designated_Type (T)) /= E_Incomplete_Type then
+            if Is_First_Subtype (Designated_Type (T)) then
+               Tagged_Type := Designated_Type (T);
+            else
+               Tagged_Type := Base_Type (Designated_Type (T));
+            end if;
+
+         --  Ada 2005 (AI-50217)
+
+         elsif From_With_Type (Designated_Type (T))
+           and then Present (Non_Limited_View (Designated_Type (T)))
+         then
+            if Is_First_Subtype (Non_Limited_View (Designated_Type (T))) then
+               Tagged_Type := Non_Limited_View (Designated_Type (T));
+            else
+               Tagged_Type := Base_Type (Non_Limited_View
+                                         (Designated_Type (T)));
+            end if;
          end if;
       end if;
 
@@ -522,6 +536,18 @@ package body Sem_Disp is
       Set_Is_Dispatching_Operation (Subp, False);
       Tagged_Type := Find_Dispatching_Type (Subp);
 
+      --  Ada 2005 (AI-345)
+
+      if Ada_Version = Ada_05
+        and then Present (Tagged_Type)
+        and then Is_Concurrent_Type (Tagged_Type)
+        and then not Is_Empty_Elmt_List
+                       (Abstract_Interfaces
+                        (Corresponding_Record_Type (Tagged_Type)))
+      then
+         Tagged_Type := Corresponding_Record_Type (Tagged_Type);
+      end if;
+
       --  If Subp is derived from a dispatching operation then it should
       --  always be treated as dispatching. In this case various checks
       --  below will be bypassed. Makes sure that late declarations for
@@ -574,8 +600,10 @@ package body Sem_Disp is
          elsif Present (Old_Subp)
            and then Is_Dispatching_Operation (Old_Subp)
          then
-            if Nkind (Unit_Declaration_Node (Subp)) = N_Subprogram_Body
-              and then Comes_From_Source (Subp)
+            if Comes_From_Source (Subp)
+              and then
+                (Nkind (Unit_Declaration_Node (Subp)) = N_Subprogram_Body
+                  or else Nkind (Unit_Declaration_Node (Subp)) in N_Body_Stub)
             then
                declare
                   Subp_Body : constant Node_Id := Unit_Declaration_Node (Subp);
@@ -947,7 +975,6 @@ package body Sem_Disp is
                Set_Alias (Old_Subp, Alias (Subp));
 
                --  The derived subprogram should inherit the abstractness
-
                --  of the parent subprogram (except in the case of a function
                --  returning the type). This sets the abstractness properly
                --  for cases where a private extension may have inherited
@@ -1140,6 +1167,34 @@ package body Sem_Disp is
       New_Op      : Entity_Id)
    is
       Op_Elmt : Elmt_Id := First_Elmt (Primitive_Operations (Tagged_Type));
+      Elmt    : Elmt_Id;
+      Found   : Boolean;
+
+      function Is_Interface_Subprogram (Op : Entity_Id) return Boolean;
+      --  Comment requjired ???
+
+      -----------------------------
+      -- Is_Interface_Subprogram --
+      -----------------------------
+
+      function Is_Interface_Subprogram (Op : Entity_Id) return Boolean is
+         Aux : Entity_Id;
+
+      begin
+         Aux := Op;
+         while Present (Alias (Aux))
+            and then Present (DTC_Entity (Alias (Aux)))
+         loop
+            if Is_Interface (Scope (DTC_Entity (Alias (Aux)))) then
+               return True;
+            end if;
+            Aux := Alias (Aux);
+         end loop;
+
+         return False;
+      end Is_Interface_Subprogram;
+
+   --  Start of processing for Override_Dispatching_Operation
 
    begin
       --  Patch the primitive operation list
@@ -1157,7 +1212,49 @@ package body Sem_Disp is
          return;
       end if;
 
-      Replace_Elmt (Op_Elmt, New_Op);
+      --  Ada 2005 (AI-251): Do not replace subprograms corresponding to
+      --  abstract interfaces. They will be used later to generate the
+      --  corresponding thunks to initialize the Vtable (see subprogram
+      --  Freeze_Subprogram)
+
+      if Is_Interface_Subprogram (Prev_Op) then
+         Set_DT_Position              (Prev_Op, DT_Position (Alias (Prev_Op)));
+         Set_Is_Abstract              (Prev_Op, Is_Abstract (New_Op));
+         Set_Is_Overriding_Operation  (Prev_Op);
+         Set_Abstract_Interface_Alias (Prev_Op, Alias (Prev_Op));
+         Set_Alias                    (Prev_Op, New_Op);
+         Set_Is_Internal              (Prev_Op);
+
+         --  Override predefined primitive operations
+
+         if Is_Predefined_Dispatching_Operation (Prev_Op) then
+            Replace_Elmt (Op_Elmt, New_Op);
+            return;
+         end if;
+
+         --  Check if this primitive operation was previously added for another
+         --  interface.
+
+         Elmt  := First_Elmt (Primitive_Operations (Tagged_Type));
+         Found := False;
+         while Present (Elmt) loop
+            if Node (Elmt) = New_Op then
+               Found := True;
+               exit;
+            end if;
+
+            Next_Elmt (Elmt);
+         end loop;
+
+         if not Found then
+            Append_Elmt (New_Op, Primitive_Operations (Tagged_Type));
+            --  Replace_Elmt (Op_Elmt, New_Op); -- why is this commented out???
+         end if;
+         return;
+
+      else
+         Replace_Elmt (Op_Elmt, New_Op);
+      end if;
 
       if (not Is_Package (Current_Scope))
         or else not In_Private_Part (Current_Scope)

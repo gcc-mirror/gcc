@@ -2829,6 +2829,33 @@ package body Exp_Ch5 is
             Rewrite (Exp, Result_Exp);
             Analyze_And_Resolve (Exp, Return_Type);
          end if;
+
+      --  Ada 2005 (AI-344): If the result type is class-wide, then insert
+      --  a check that the level of the return expression's underlying type
+      --  is not deeper than the level of the master enclosing the function.
+
+      elsif Ada_Version >= Ada_05
+        and then Is_Class_Wide_Type (Return_Type)
+      then
+         Insert_Action (Exp,
+           Make_Raise_Program_Error (Loc,
+             Condition =>
+               Make_Op_Gt (Loc,
+                 Left_Opnd =>
+                   Make_Function_Call (Loc,
+                     Name =>
+                       New_Reference_To
+                         (RTE (RE_Get_Access_Level), Loc),
+                     Parameter_Associations =>
+                       New_List (Make_Attribute_Reference (Loc,
+                                   Prefix         =>
+                                      Duplicate_Subexpr (Exp),
+                                   Attribute_Name =>
+                                      Name_Tag))),
+                 Right_Opnd =>
+                   Make_Integer_Literal (Loc,
+                     Scope_Depth (Enclosing_Dynamic_Scope (Scope_Id)))),
+             Reason => PE_Accessibility_Check_Failed));
       end if;
 
       --  Deal with returning variable length objects and controlled types

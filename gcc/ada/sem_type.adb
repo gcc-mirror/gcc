@@ -28,6 +28,7 @@ with Atree;    use Atree;
 with Alloc;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
+with Elists;   use Elists;
 with Errout;   use Errout;
 with Lib;      use Lib;
 with Opt;      use Opt;
@@ -529,7 +530,7 @@ package body Sem_Type is
                   end if;
                end loop;
 
-               --  On exit, we know that current homograph is not hidden.
+               --  On exit, we know that current homograph is not hidden
 
                Add_One_Interp (N, H, Etype (H));
 
@@ -685,6 +686,58 @@ package body Sem_Type is
         and then Base_Type (Etype (T1)) = Base_Type (Etype (T2))
       then
          return True;
+
+      --  Ada 2005 (AI-345): A class-wide abstract interface type T1 covers a
+      --  task_type or protected_type implementing T1
+
+      elsif Ada_Version >= Ada_05
+        and then Is_Class_Wide_Type (T1)
+        and then Is_Interface (Etype (T1))
+        and then Is_Concurrent_Type (T2)
+        and then Interface_Present_In_Ancestor (
+                   Typ   => Corresponding_Record_Type (Base_Type (T2)),
+                   Iface => Etype (T1))
+      then
+         return True;
+
+      --  Ada 2005 (AI-251): A class-wide abstract interface type T1 covers an
+      --  object T2 implementing T1
+
+      elsif Ada_Version >= Ada_05
+        and then Is_Class_Wide_Type (T1)
+        and then Is_Interface (Etype (T1))
+        and then Is_Tagged_Type (T2)
+      then
+         if Interface_Present_In_Ancestor (Typ => T2,
+                                           Iface => Etype (T1))
+         then
+            return True;
+
+         elsif Present (Abstract_Interfaces (T2)) then
+
+            --  Ada 2005 (AI-251): A class-wide abstract interface type T1
+            --  covers an object T2 that implements a direct derivation of T1.
+
+            declare
+               E : Elmt_Id := First_Elmt (Abstract_Interfaces (T2));
+            begin
+               while Present (E) loop
+                  if Is_Ancestor (Etype (T1), Node (E)) then
+                     return True;
+                  end if;
+
+                  Next_Elmt (E);
+               end loop;
+            end;
+
+            --  We should also check the case in which T1 is an ancestor of
+            --  some implemented interface???
+
+            return False;
+
+         else
+            return False;
+         end if;
 
       --  In a dispatching call the actual may be class-wide
 
@@ -1629,6 +1682,13 @@ package body Sem_Type is
       then
          return
            Covers (Typ, Etype (N))
+
+            --  Ada 2005 (AI-345)
+
+           or else
+             (Is_Concurrent_Type (Etype (N))
+                and then Covers (Typ, Corresponding_Record_Type (Etype (N))))
+
            or else
              (not Is_Tagged_Type (Typ)
                 and then Ekind (Typ) /= E_Anonymous_Access_Type
@@ -1641,6 +1701,14 @@ package body Sem_Type is
                   and then
                     (Scope (It.Nam) /= Standard_Standard
                        or else not Is_Invisible_Operator (N, Base_Type (Typ))))
+
+               --  Ada 2005 (AI-345)
+
+              or else
+                (Is_Concurrent_Type (It.Typ)
+                  and then Covers (Typ, Corresponding_Record_Type
+                                                             (Etype (It.Typ))))
+
               or else (not Is_Tagged_Type (Typ)
                          and then Ekind (Typ) /= E_Anonymous_Access_Type
                          and then Covers (It.Typ, Typ))
@@ -1693,6 +1761,72 @@ package body Sem_Type is
       Interp_Map.Init;
       Headers := (others => No_Entry);
    end Init_Interp_Tables;
+
+   -----------------------------------
+   -- Interface_Present_In_Ancestor --
+   -----------------------------------
+
+   function Interface_Present_In_Ancestor
+     (Typ   : Entity_Id;
+      Iface : Entity_Id) return Boolean
+   is
+      AI    : Entity_Id;
+      E     : Entity_Id;
+      Elmt  : Elmt_Id;
+
+   begin
+      if Is_Access_Type (Typ) then
+         E := Etype (Directly_Designated_Type (Typ));
+      else
+         E := Typ;
+      end if;
+
+      if Is_Concurrent_Type (E) then
+         E := Corresponding_Record_Type (E);
+      end if;
+
+      if Is_Class_Wide_Type (E) then
+         E := Etype (E);
+      end if;
+
+      if E = Iface then
+         return True;
+      end if;
+
+      loop
+         if Present (Abstract_Interfaces (E))
+           and then Abstract_Interfaces (E) /= Empty_List_Or_Node --  ????
+           and then not Is_Empty_Elmt_List (Abstract_Interfaces (E))
+         then
+            Elmt := First_Elmt (Abstract_Interfaces (E));
+
+            while Present (Elmt) loop
+               AI := Node (Elmt);
+
+               if AI = Iface or else Is_Ancestor (Iface, AI) then
+                  return True;
+               end if;
+
+               Next_Elmt (Elmt);
+            end loop;
+         end if;
+
+         exit when Etype (E) = E;
+
+         --  Check if the current type is a direct derivation of the
+         --  interface
+
+         if Etype (E) = Iface then
+            return True;
+         end if;
+
+         --  Climb to the immediate ancestor
+
+         E := Etype (E);
+      end loop;
+
+      return False;
+   end Interface_Present_In_Ancestor;
 
    ---------------------
    -- Intersect_Types --
@@ -1765,6 +1899,16 @@ package body Sem_Type is
 
          elsif Nkind (Parent (L)) = N_Range then
             Error_Msg_N ("incompatible types given in constraint", Parent (L));
+
+         --  Ada 2005 (AI-251): Complete the error notification
+
+         elsif Is_Class_Wide_Type (Etype (R))
+             and then Is_Interface (Etype (Class_Wide_Type (Etype (R))))
+         then
+            Error_Msg_Name_1 := Chars (L);
+            Error_Msg_Name_2 := Chars (Etype (Class_Wide_Type (Etype (R))));
+            Error_Msg_NE ("(Ada 2005) % does not implement interface %",
+                          L, Etype (Class_Wide_Type (Etype (R))));
 
          else
             Error_Msg_N ("incompatible types", Parent (L));
@@ -1930,7 +2074,7 @@ package body Sem_Type is
          Headers (Hash (N)) := Interp_Map.Last;
 
       else
-         --   Place node at end of chain, or locate its previous entry.
+         --   Place node at end of chain, or locate its previous entry
 
          loop
             if Interp_Map.Table (Map_Ptr).Node = N then
@@ -1949,7 +2093,7 @@ package body Sem_Type is
             end if;
          end loop;
 
-         --  Chain the new node.
+         --  Chain the new node
 
          Interp_Map.Increment_Last;
          Interp_Map.Table (Map_Ptr).Next := Interp_Map.Last;
@@ -2259,8 +2403,29 @@ package body Sem_Type is
       elsif T2 = Any_Modular and then Is_Modular_Integer_Type (T1) then
          return T1;
 
+      --  ----------------------------------------------------------
       --  Special cases for equality operators (all other predefined
       --  operators can never apply to tagged types)
+      --  ----------------------------------------------------------
+
+      --  Ada 2005 (AI-251): T1 and T2 are class-wide types, and T2 is an
+      --  interface
+
+      elsif Is_Class_Wide_Type (T1)
+        and then Is_Class_Wide_Type (T2)
+        and then Is_Interface (Etype (T2))
+      then
+         return T1;
+
+      --  Ada 2005 (AI-251): T1 is a concrete type that implements the
+      --  class-wide interface T2
+
+      elsif Is_Class_Wide_Type (T2)
+        and then Is_Interface (Etype (T2))
+        and then Interface_Present_In_Ancestor (Typ => T1,
+                                                Iface => Etype (T2))
+      then
+         return T1;
 
       elsif Is_Class_Wide_Type (T1)
         and then Is_Ancestor (Root_Type (T1), T2)
@@ -2302,7 +2467,7 @@ package body Sem_Type is
       then
          return T1;
 
-      --  If none of the above cases applies, types are not compatible.
+      --  If none of the above cases applies, types are not compatible
 
       else
          return Any_Type;
@@ -2314,11 +2479,11 @@ package body Sem_Type is
    -----------------------
 
    --  In addition to booleans and arrays of booleans, we must include
-   --  aggregates as valid boolean arguments, because in the first pass
-   --  of resolution their components are not examined. If it turns out not
-   --  to be an aggregate of booleans, this will be diagnosed in Resolve.
-   --  Any_Composite must be checked for prior to the array type checks
-   --  because Any_Composite does not have any associated indexes.
+   --  aggregates as valid boolean arguments, because in the first pass of
+   --  resolution their components are not examined. If it turns out not to be
+   --  an aggregate of booleans, this will be diagnosed in Resolve.
+   --  Any_Composite must be checked for prior to the array type checks because
+   --  Any_Composite does not have any associated indexes.
 
    function Valid_Boolean_Arg (T : Entity_Id) return Boolean is
    begin

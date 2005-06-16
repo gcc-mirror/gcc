@@ -91,7 +91,7 @@ package body Debug is
    --  dW   Disable warnings on calls for IN OUT parameters
    --  dX   Enable Frontend ZCX even when it is not supported
    --  dY   Enable configurable run-time mode
-   --  dZ
+   --  dZ   Generate listing showing the contents of the dispatch tables
 
    --  d.a
    --  d.b

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -690,12 +690,13 @@ package body Sem_Ch12 is
    --  parent at the end of the instantiation (see Remove_Parent).
 
    type Instance_Env is record
-      Ada_Version         : Ada_Version_Type;
-      Instantiated_Parent : Assoc;
-      Exchanged_Views     : Elist_Id;
-      Hidden_Entities     : Elist_Id;
-      Current_Sem_Unit    : Unit_Number_Type;
-      Parent_Unit_Visible : Boolean := False;
+      Ada_Version          : Ada_Version_Type;
+      Ada_Version_Explicit : Ada_Version_Type;
+      Instantiated_Parent  : Assoc;
+      Exchanged_Views      : Elist_Id;
+      Hidden_Entities      : Elist_Id;
+      Current_Sem_Unit     : Unit_Number_Type;
+      Parent_Unit_Visible  : Boolean := False;
    end record;
 
    package Instance_Envs is new Table.Table (
@@ -1696,6 +1697,8 @@ package body Sem_Ch12 is
          end if;
 
          Formal := New_Copy (Pack_Id);
+         Create_Instantiation_Source (N, Gen_Unit, False, S_Adjustment);
+
          New_N :=
            Copy_Generic_Node
              (Original_Node (Gen_Decl), Empty, Instantiating => True);
@@ -2620,17 +2623,30 @@ package body Sem_Ch12 is
             --  generic is not a child unit of another generic, to avoid scope
             --  problems and the reinstallation of parent instances.
 
-            if Front_End_Inlining
-              and then Expander_Active
+            if Expander_Active
               and then (not Is_Child_Unit (Gen_Unit)
                          or else not Is_Generic_Unit (Scope (Gen_Unit)))
-              and then (Is_In_Main_Unit (N)
-                          or else In_Main_Context (Current_Scope))
-              and then Nkind (Parent (N)) /= N_Compilation_Unit
               and then Might_Inline_Subp
               and then not Is_Actual_Pack
             then
-               Inline_Now := True;
+               if Front_End_Inlining
+                 and then (Is_In_Main_Unit (N)
+                            or else In_Main_Context (Current_Scope))
+                 and then Nkind (Parent (N)) /= N_Compilation_Unit
+               then
+                  Inline_Now := True;
+
+               --  In configurable_run_time mode we force the inlining of
+               --  predefined subprogram marked Inline_Always, to minimize
+               --  the use of the run-time library.
+
+               elsif Is_Predefined_File_Name
+                       (Unit_File_Name (Get_Source_Unit (Gen_Decl)))
+                 and then Configurable_Run_Time_Mode
+                 and then Nkind (Parent (N)) /= N_Compilation_Unit
+               then
+                  Inline_Now := True;
+               end if;
             end if;
 
             Needs_Body :=
@@ -2641,7 +2657,6 @@ package body Sem_Ch12 is
                            or else Might_Inline_Subp)
                 and then not Is_Actual_Pack
                 and then not Inline_Now
-
                 and then (Operating_Mode = Generate_Code
                             or else (Operating_Mode = Check_Semantics
                                       and then ASIS_Mode));
@@ -2657,12 +2672,11 @@ package body Sem_Ch12 is
             end if;
 
             --  If the current context is generic, and the package being
-            --  instantiated is declared within a formal package, there
-            --  is no body to instantiate until the enclosing generic is
-            --  instantiated, and there is an actual for the formal
-            --  package. If the formal package has parameters, we build a
-            --  regular package instance for it, that preceeds the original
-            --  formal package declaration.
+            --  instantiated is declared within a formal package, there is no
+            --  body to instantiate until the enclosing generic is instantiated
+            --  and there is an actual for the formal package. If the formal
+            --  package has parameters, we build regular package instance for
+            --  it, that preceeds the original formal package declaration.
 
             if In_Open_Scopes (Scope (Scope (Gen_Unit))) then
                declare
@@ -2683,9 +2697,9 @@ package body Sem_Ch12 is
             end if;
          end;
 
-         --  If we are generating the calling stubs from the instantiation
-         --  of a generic RCI package, we will not use the body of the
-         --  generic package.
+         --  If we are generating the calling stubs from the instantiation of
+         --  a generic RCI package, we will not use the body of the generic
+         --  package.
 
          if Distribution_Stub_Mode = Generate_Caller_Stub_Body
            and then Is_Compilation_Unit (Defining_Entity (N))
@@ -2829,7 +2843,8 @@ package body Sem_Ch12 is
                end if;
             end if;
 
-            --  There is a problem with inlining here.
+            --  There is a problem with inlining here
+            --  More comments needed??? what problem
 
             Set_Unit (Parent (N), Act_Decl);
             Set_Parent_Spec (Act_Decl, Parent_Spec (N));
@@ -3500,6 +3515,30 @@ package body Sem_Ch12 is
             Check_Elab_Instantiation (N);
          end if;
 
+         if Is_Dispatching_Operation (Act_Decl_Id)
+           and then Ada_Version >= Ada_05
+         then
+            declare
+               Formal : Entity_Id;
+
+            begin
+               Formal := First_Formal (Act_Decl_Id);
+               while Present (Formal) loop
+                  if Ekind (Etype (Formal)) = E_Anonymous_Access_Type
+                    and then Is_Controlling_Formal (Formal)
+                    and then not Can_Never_Be_Null (Formal)
+                  then
+                     Error_Msg_NE ("access parameter& is controlling,",
+                       N, Formal);
+                     Error_Msg_NE ("\corresponding parameter of & must be"
+                       & " explicitly null-excluding", N, Gen_Id);
+                  end if;
+
+                  Next_Formal (Formal);
+               end loop;
+            end;
+         end if;
+
          Check_Hidden_Child_Unit (N, Gen_Unit, Act_Decl_Id);
 
          --  Subject to change, pending on if other pragmas are inherited ???
@@ -3507,7 +3546,6 @@ package body Sem_Ch12 is
          Validate_Categorization_Dependency (N, Act_Decl_Id);
 
          if not Is_Intrinsic_Subprogram (Act_Decl_Id) then
-
             if not Generic_Separately_Compiled (Gen_Unit) then
                Inherit_Context (Gen_Decl, N);
             end if;
@@ -3521,7 +3559,7 @@ package body Sem_Ch12 is
                   or else Is_Inlined (Act_Decl_Id))
               and then (Operating_Mode = Generate_Code
                           or else (Operating_Mode = Check_Semantics
-                                    and then ASIS_Mode))
+                                     and then ASIS_Mode))
               and then (Expander_Active or else ASIS_Mode)
               and then not ABE_Is_Certain (N)
               and then not Is_Eliminated (Act_Decl_Id)
@@ -3764,6 +3802,7 @@ package body Sem_Ch12 is
         (E1, E2 : Entity_Id) return Boolean
       is
          Ent : Entity_Id;
+
       begin
          Ent := E2;
          while Present (Ent) loop
@@ -5814,12 +5853,13 @@ package body Sem_Ch12 is
       Saved : Instance_Env;
 
    begin
-      Saved.Ada_Version         := Ada_Version;
-      Saved.Instantiated_Parent := Current_Instantiated_Parent;
-      Saved.Exchanged_Views     := Exchanged_Views;
-      Saved.Hidden_Entities     := Hidden_Entities;
-      Saved.Current_Sem_Unit    := Current_Sem_Unit;
-      Saved.Parent_Unit_Visible := Parent_Unit_Visible;
+      Saved.Ada_Version          := Ada_Version;
+      Saved.Ada_Version_Explicit := Ada_Version_Explicit;
+      Saved.Instantiated_Parent  := Current_Instantiated_Parent;
+      Saved.Exchanged_Views      := Exchanged_Views;
+      Saved.Hidden_Entities      := Hidden_Entities;
+      Saved.Current_Sem_Unit     := Current_Sem_Unit;
+      Saved.Parent_Unit_Visible  := Parent_Unit_Visible;
       Instance_Envs.Increment_Last;
       Instance_Envs.Table (Instance_Envs.Last) := Saved;
 
@@ -6975,6 +7015,22 @@ package body Sem_Ch12 is
          else
             Nam := Make_Identifier (Loc, Chars (Formal_Sub));
          end if;
+
+      elsif Nkind (Specification (Formal)) = N_Procedure_Specification
+        and then Null_Present (Specification (Formal))
+      then
+         --  Generate null body for procedure, for use in the instance
+
+         Decl_Node :=
+           Make_Subprogram_Body (Loc,
+             Specification              => New_Spec,
+             Declarations               => New_List,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (Make_Null_Statement (Loc))));
+
+         Set_Is_Intrinsic_Subprogram (Defining_Unit_Name (New_Spec));
+         return Decl_Node;
 
       else
          Error_Msg_Sloc := Sloc (Scope (Analyzed_S));
@@ -8172,7 +8228,18 @@ package body Sem_Ch12 is
             Ancestor := Get_Instance_Of (Etype (Base_Type (A_Gen_T)));
          end if;
 
-         if not Is_Ancestor (Base_Type (Ancestor), Act_T) then
+         --  Ada 2005 (AI-251)
+
+         if Ada_Version >= Ada_05
+           and then Is_Interface (Ancestor)
+         then
+            if not Interface_Present_In_Ancestor (Act_T, Ancestor) then
+               Error_Msg_NE
+                 ("(Ada 2005) expected type implementing & in instantiation",
+                  Actual, Ancestor);
+            end if;
+
+         elsif not Is_Ancestor (Base_Type (Ancestor), Act_T) then
             Error_Msg_NE
               ("expect type derived from & in instantiation",
                Actual, First_Subtype (Ancestor));
@@ -9061,6 +9128,7 @@ package body Sem_Ch12 is
 
    begin
       Ada_Version := Saved.Ada_Version;
+      Ada_Version_Explicit := Saved.Ada_Version_Explicit;
 
       if No (Current_Instantiated_Parent.Act_Id) then
 
@@ -10060,16 +10128,18 @@ package body Sem_Ch12 is
      (Gen_Unit : Entity_Id;
       Act_Unit : Entity_Id)
    is
-
    begin
       --  Regardless of the current mode, predefined units are analyzed in
       --  the most current Ada mode, and earlier version Ada checks do not
       --  apply to predefined units.
 
+      --  Why is this not using the routine Opt.Set_Opt_Config_Switches ???
+
       if Is_Internal_File_Name
           (Fname => Unit_File_Name (Get_Source_Unit (Gen_Unit)),
            Renamings_Included => True) then
          Ada_Version := Ada_Version_Type'Last;
+         Ada_Version_Explicit := Ada_Version_Explicit_Config;
       end if;
 
       Current_Instantiated_Parent := (Gen_Unit, Act_Unit, Assoc_Null);

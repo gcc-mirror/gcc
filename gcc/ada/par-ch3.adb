@@ -175,11 +175,12 @@ package body Ch3 is
 
       if Token = Tok_Identifier then
 
-         --  Ada 2005 (AI-284): Compiling in Ada95 mode we notify
-         --  that interface, overriding, and synchronized are
-         --  new reserved words
+         --  Ada 2005 (AI-284): Compiling in Ada95 mode we warn that INTERFACE,
+         --  OVERRIDING, and SYNCHRONIZED are new reserved words.
 
-         if Ada_Version = Ada_95 then
+         if Ada_Version = Ada_95
+           and then Warn_On_Ada_2005_Compatibility
+         then
             if Token_Name = Name_Overriding
               or else Token_Name = Name_Synchronized
               or else (Token_Name = Name_Interface
@@ -235,7 +236,8 @@ package body Ch3 is
 
    --  PRIVATE_EXTENSION_DECLARATION ::=
    --    type DEFINING_IDENTIFIER [DISCRIMINANT_PART] is
-   --      [abstract] new ancestor_SUBTYPE_INDICATION with private;
+   --      [abstract] new ancestor_SUBTYPE_INDICATION
+   --      [and INTERFACE_LIST] with private;
 
    --  TYPE_DEFINITION ::=
    --    ENUMERATION_TYPE_DEFINITION  | INTEGER_TYPE_DEFINITION
@@ -702,6 +704,7 @@ package body Ch3 is
 
                   Typedef_Node := P_Interface_Type_Definition
                                    (Is_Synchronized => True);
+                  Abstract_Present := True;
 
                   case Saved_Token is
                      when Tok_Task =>
@@ -1120,6 +1123,8 @@ package body Ch3 is
    --    DEFINING_IDENTIFIER_LIST : [aliased] [constant]
    --      [NULL_EXCLUSION] SUBTYPE_INDICATION [:= EXPRESSION];
    --  | DEFINING_IDENTIFIER_LIST : [aliased] [constant]
+   --      ACCESS_DEFINITION [:= EXPRESSION];
+   --  | DEFINING_IDENTIFIER_LIST : [aliased] [constant]
    --      ARRAY_TYPE_DEFINITION [:= EXPRESSION];
 
    --  NUMBER_DECLARATION ::=
@@ -1414,8 +1419,21 @@ package body Ch3 is
                   Not_Null_Present := P_Null_Exclusion; --  Ada 2005 (AI-231)
                   Set_Null_Exclusion_Present (Decl_Node, Not_Null_Present);
 
-                  Set_Object_Definition (Decl_Node,
-                     P_Subtype_Indication (Not_Null_Present));
+                  if Token = Tok_Access then
+                     if Ada_Version < Ada_05 then
+                        Error_Msg_SP
+                          ("generalized use of anonymous access types " &
+                           "is an Ada 2005 extension");
+                        Error_Msg_SP
+                          ("\unit must be compiled with -gnat05 switch");
+                     end if;
+
+                     Set_Object_Definition
+                       (Decl_Node, P_Access_Definition (Not_Null_Present));
+                  else
+                     Set_Object_Definition
+                       (Decl_Node, P_Subtype_Indication (Not_Null_Present));
+                  end if;
                end if;
 
                if Token = Tok_Renames then
@@ -1461,8 +1479,24 @@ package body Ch3 is
             else
                Not_Null_Present := P_Null_Exclusion; --  Ada 2005 (AI-231)
                Set_Null_Exclusion_Present (Decl_Node, Not_Null_Present);
-               Set_Object_Definition (Decl_Node,
-                  P_Subtype_Indication (Not_Null_Present));
+
+               --  Access definition (AI-406) or subtype indication.
+
+               if Token = Tok_Access then
+                  if Ada_Version < Ada_05 then
+                     Error_Msg_SP
+                       ("generalized use of anonymous access types " &
+                        "is an Ada 2005 extension");
+                     Error_Msg_SP
+                       ("\unit must be compiled with -gnat05 switch");
+                  end if;
+
+                  Set_Object_Definition
+                    (Decl_Node, P_Access_Definition (Not_Null_Present));
+               else
+                  Set_Object_Definition
+                    (Decl_Node, P_Subtype_Indication (Not_Null_Present));
+               end if;
             end if;
 
          --  Array case
@@ -1471,13 +1505,15 @@ package body Ch3 is
             Decl_Node := New_Node (N_Object_Declaration, Ident_Sloc);
             Set_Object_Definition (Decl_Node, P_Array_Type_Definition);
 
-         --  Ada 2005 (AI-254)
+         --  Ada 2005 (AI-254, AI-406)
 
          elsif Token = Tok_Not then
 
             --  OBJECT_DECLARATION ::=
             --    DEFINING_IDENTIFIER_LIST : [aliased] [constant]
             --      [NULL_EXCLUSION] SUBTYPE_INDICATION [:= EXPRESSION];
+            --  | DEFINING_IDENTIFIER_LIST : [aliased] [constant]
+            --          ACCESS_DEFINITION [:= EXPRESSION];
 
             --  OBJECT_RENAMING_DECLARATION ::=
             --    ...
@@ -1496,16 +1532,18 @@ package body Ch3 is
                Acc_Node := P_Access_Definition (Not_Null_Present);
 
                if Token /= Tok_Renames then
-                  Error_Msg_SC ("RENAMES expected");
-                  raise Error_Resync;
-               end if;
+                  Decl_Node := New_Node (N_Object_Declaration, Ident_Sloc);
+                  Set_Object_Definition (Decl_Node, Acc_Node);
+                  goto init;
 
-               Scan; --  past renames
-               No_List;
-               Decl_Node :=
-                 New_Node (N_Object_Renaming_Declaration, Ident_Sloc);
-               Set_Access_Definition (Decl_Node, Acc_Node);
-               Set_Name (Decl_Node, P_Name);
+               else
+                  Scan; --  past renames
+                  No_List;
+                  Decl_Node :=
+                    New_Node (N_Object_Renaming_Declaration, Ident_Sloc);
+                  Set_Access_Definition (Decl_Node, Acc_Node);
+                  Set_Name (Decl_Node, P_Name);
+               end if;
 
             else
                Type_Node := P_Subtype_Mark;
@@ -1551,17 +1589,21 @@ package body Ch3 is
 
             Acc_Node := P_Access_Definition (Null_Exclusion_Present => False);
 
-            if Token /= Tok_Renames then
-               Error_Msg_SC ("RENAMES expected");
-               raise Error_Resync;
-            end if;
+            --  Object declaration with access definition, or renaming.
 
-            Scan; --  past renames
-            No_List;
-            Decl_Node :=
-              New_Node (N_Object_Renaming_Declaration, Ident_Sloc);
-            Set_Access_Definition (Decl_Node, Acc_Node);
-            Set_Name (Decl_Node, P_Name);
+            if Token /= Tok_Renames then
+               Decl_Node := New_Node (N_Object_Declaration, Ident_Sloc);
+               Set_Object_Definition (Decl_Node, Acc_Node);
+               goto init; -- ??? is this really needed goes here anyway
+
+            else
+               Scan; --  past renames
+               No_List;
+               Decl_Node :=
+                 New_Node (N_Object_Renaming_Declaration, Ident_Sloc);
+               Set_Access_Definition (Decl_Node, Acc_Node);
+               Set_Name (Decl_Node, P_Name);
+            end if;
 
          --  Subtype indication case
 
@@ -1600,6 +1642,7 @@ package body Ch3 is
 
          --  Scan out initialization, allowed only for object declaration
 
+         <<init>> -- is this really needed ???
          Init_Loc := Token_Ptr;
          Init_Expr := Init_Expr_Opt;
 
@@ -1765,7 +1808,8 @@ package body Ch3 is
               Make_Private_Extension_Declaration (No_Location,
                 Defining_Identifier => Empty,
                 Subtype_Indication  => Subtype_Indication (Typedef_Node),
-                Abstract_Present    => Abstract_Present (Typedef_Node));
+                Abstract_Present    => Abstract_Present (Typedef_Node),
+                Interface_List      => Interface_List (Typedef_Node));
 
             Delete_Node (Typedef_Node);
             return Typedecl_Node;
@@ -3822,6 +3866,20 @@ package body Ch3 is
          when Tok_Identifier =>
             Check_Bad_Layout;
             P_Identifier_Declarations (Decls, Done, In_Spec);
+
+         --  Ada2005: A subprogram declaration can start with "not" or
+         --  "overriding". In older versions, "overriding" is handled
+         --  like an identifier, with the appropriate warning.
+
+         when Tok_Not =>
+            Check_Bad_Layout;
+            Append (P_Subprogram (Pf_Decl_Gins_Pbod_Rnam_Stub), Decls);
+            Done := False;
+
+         when Tok_Overriding =>
+            Check_Bad_Layout;
+            Append (P_Subprogram (Pf_Decl_Gins_Pbod_Rnam_Stub), Decls);
+            Done := False;
 
          when Tok_Package =>
             Check_Bad_Layout;

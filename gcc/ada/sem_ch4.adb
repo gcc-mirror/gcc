@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -390,7 +390,8 @@ package body Sem_Ch4 is
 
       else
          declare
-            Def_Id : Entity_Id;
+            Def_Id   : Entity_Id;
+            Base_Typ : Entity_Id;
 
          begin
             --  If the allocator includes a N_Subtype_Indication then a
@@ -410,10 +411,11 @@ package body Sem_Ch4 is
                --  access-to-composite type, but the constraint is ignored.
 
                Find_Type (Subtype_Mark (E));
+               Base_Typ := Entity (Subtype_Mark (E));
 
-               if Is_Elementary_Type (Entity (Subtype_Mark (E))) then
+               if Is_Elementary_Type (Base_Typ) then
                   if not (Ada_Version = Ada_83
-                           and then Is_Access_Type (Entity (Subtype_Mark (E))))
+                           and then Is_Access_Type (Base_Typ))
                   then
                      Error_Msg_N ("constraint not allowed here", E);
 
@@ -431,6 +433,17 @@ package body Sem_Ch4 is
                   Rewrite (E, New_Copy_Tree (Subtype_Mark (E)));
                   Analyze_Allocator (N);
                   return;
+
+               --  Ada 2005, AI-363: if the designated type has a constrained
+               --  partial view, it cannot receive a discriminant constraint,
+               --  and the allocated object is unconstrained.
+
+               elsif Ada_Version >= Ada_05
+                 and then Has_Constrained_Partial_View (Base_Typ)
+               then
+                  Error_Msg_N
+                    ("constraint no allowed when type " &
+                      "has a constrained partial view", Constraint (E));
                end if;
 
                if Expander_Active then
@@ -670,9 +683,18 @@ package body Sem_Ch4 is
          if Ekind (Etype (Nam)) = E_Subprogram_Type then
             Nam_Ent := Etype (Nam);
 
+         --  If the prefix is an access_to_subprogram, this may be an indirect
+         --  call. This is the case if the name in the call is not an entity
+         --  name, or if it is a function name in the context of a procedure
+         --  call. In this latter case, we have a call to a parameterless
+         --  function that returns a pointer_to_procedure which is the entity
+         --  being called.
+
          elsif Is_Access_Type (Etype (Nam))
            and then Ekind (Designated_Type (Etype (Nam))) = E_Subprogram_Type
-           and then not Name_Denotes_Function
+           and then
+             (not Name_Denotes_Function
+                or else Nkind (N) = N_Procedure_Call_Statement)
          then
             Nam_Ent := Designated_Type (Etype (Nam));
             Insert_Explicit_Dereference (Nam);
@@ -1969,6 +1991,9 @@ package body Sem_Ch4 is
             Is_Indexed :=
               Try_Indexed_Call (N, Nam, Designated_Type (Subp_Type));
 
+         --  The prefix can also be a parameterless function that returns an
+         --  access to subprogram. in which case this is an indirect call.
+
          elsif Is_Access_Type (Subp_Type)
            and then Ekind (Designated_Type (Subp_Type))  = E_Subprogram_Type
          then
@@ -2099,6 +2124,23 @@ package body Sem_Ch4 is
                   end if;
 
                   if Report and not Is_Indexed then
+
+                     --  Ada 2005 (AI-251): Complete the error notification
+                     --  to help new Ada 2005 users
+
+                     if Is_Class_Wide_Type (Etype (Formal))
+                       and then Is_Interface (Etype (Etype (Formal)))
+                       and then not Interface_Present_In_Ancestor
+                                      (Typ   => Etype (Actual),
+                                       Iface => Etype (Etype (Formal)))
+                     then
+                        Error_Msg_Name_1 := Chars (Actual);
+                        Error_Msg_Name_2 := Chars (Etype (Etype (Formal)));
+                        Error_Msg_NE
+                          ("(Ada 2005) % does not implement interface %",
+                           Actual, Etype (Etype (Formal)));
+                     end if;
+
                      Wrong_Type (Actual, Etype (Formal));
 
                      if Nkind (Actual) = N_Op_Eq
@@ -4892,6 +4934,30 @@ package body Sem_Ch4 is
 
             end if;
 
+         --  Before analysis, the function call appears as an
+         --  indexed component.
+
+         elsif Nkind (Parent_Node) =  N_Indexed_Component then
+            Node_To_Replace := Parent_Node;
+
+            declare
+               Actual : Node_Id;
+               New_Act : Node_Id;
+            begin
+               Actual := First (Expressions (Parent_Node));
+               while Present (Actual) loop
+                  New_Act := New_Copy_Tree (Actual);
+                  Analyze (New_Act);
+                  Append (New_Act, Actuals);
+                  Next (Actual);
+               end loop;
+            end;
+
+            Call_Node :=
+               Make_Function_Call (Loc,
+                 Name => New_Copy_Tree (Subprog),
+                 Parameter_Associations => Actuals);
+
          --  Parameterless call
 
          else
@@ -4901,7 +4967,6 @@ package body Sem_Ch4 is
                Make_Function_Call (Loc,
                  Name => New_Copy_Tree (Subprog),
                  Parameter_Associations => Actuals);
-
          end if;
       end Transform_Object_Operation;
 

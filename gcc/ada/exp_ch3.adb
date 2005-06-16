@@ -49,6 +49,7 @@ with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
+with Sem_Attr; use Sem_Attr;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Eval; use Sem_Eval;
@@ -124,8 +125,9 @@ package body Exp_Ch3 is
 
    procedure Check_Stream_Attributes (Typ : Entity_Id);
    --  Check that if a limited extension has a parent with user-defined
-   --  stream attributes, any limited component of the extension also has
-   --  the corresponding user-defined stream attributes.
+   --  stream attributes, and does not itself have user-definer
+   --  stream-attributes, then any limited component of the extension also
+   --  has the corresponding user-defined stream attributes.
 
    procedure Expand_Tagged_Root (T : Entity_Id);
    --  Add a field _Tag at the beginning of the record. This field carries
@@ -1359,6 +1361,10 @@ package body Exp_Ch3 is
       Rec_Type    : Entity_Id;
       Set_Tag     : Entity_Id := Empty;
 
+      ADT      : Elmt_Id;
+      Aux_N    : Node_Id;
+      Aux_Comp : Node_Id;
+
       function Build_Assignment (Id : Entity_Id; N : Node_Id) return List_Id;
       --  Build a assignment statement node which assigns to record
       --  component its default expression if defined. The left hand side
@@ -1405,12 +1411,12 @@ package body Exp_Ch3 is
 
       function Component_Needs_Simple_Initialization
         (T : Entity_Id) return Boolean;
-      --  Determines if a component needs simple initialization, given its
-      --  type T. This is the same as Needs_Simple_Initialization except
-      --  for the following difference: the types Tag and Vtable_Ptr, which
-      --  are access types which would normally require simple initialization
-      --  to null, do not require initialization as components, since they
-      --  are explicitly initialized by other means.
+      --  Determines if a component needs simple initialization, given its type
+      --  T. This is the same as Needs_Simple_Initialization except for the
+      --  following difference: the types Tag, Interface_Tag, and Vtable_Ptr
+      --  which are access types which would normally require simple
+      --  initialization to null, do not require initialization as components,
+      --  since they are explicitly initialized by other means.
 
       procedure Constrain_Array
         (SI         : Node_Id;
@@ -1855,6 +1861,60 @@ package body Exp_Ch3 is
             if not Is_CPP_Class (Etype (Rec_Type)) then
                Prepend_To (Body_Stmts, Init_Tag);
 
+               --  Ada 2005 (AI-251): Initialization of all the tags
+               --  corresponding with abstract interfaces
+
+               if Present (First_Tag_Component (Rec_Type)) then
+
+                  --  Skip the first _Tag, which is the main tag of the
+                  --  tagged type. Following tags correspond with abstract
+                  --  interfaces.
+
+                  Aux_Comp :=
+                    Next_Tag_Component (First_Tag_Component (Rec_Type));
+
+                  ADT := Next_Elmt (First_Elmt (Access_Disp_Table (Rec_Type)));
+                  while Present (ADT) loop
+                     Aux_N := Node (ADT);
+
+                     --  Initialize the pointer to the secondary DT associated
+                     --  with the interface
+
+                     Append_To (Body_Stmts,
+                       Make_Assignment_Statement (Loc,
+                         Name =>
+                           Make_Selected_Component (Loc,
+                             Prefix => Make_Identifier (Loc, Name_uInit),
+                             Selector_Name =>
+                               New_Reference_To (Aux_Comp, Loc)),
+                         Expression =>
+                           New_Reference_To (Aux_N, Loc)));
+
+                     --  Generate:
+                     --    Set_Offset_To_Top (DT_Ptr, n);
+
+                     Append_To (Body_Stmts,
+                       Make_Procedure_Call_Statement (Loc,
+                         Name => New_Reference_To (RTE (RE_Set_Offset_To_Top),
+                                                   Loc),
+                         Parameter_Associations => New_List (
+                           Unchecked_Convert_To (RTE (RE_Tag),
+                             New_Reference_To (Aux_N, Loc)),
+                           Unchecked_Convert_To (RTE (RE_Storage_Offset),
+                             Make_Attribute_Reference (Loc,
+                               Prefix         =>
+                                Make_Selected_Component (Loc,
+                                  Prefix         => Make_Identifier (Loc,
+                                                      Name_uInit),
+                                  Selector_Name  => New_Reference_To
+                                                      (Aux_Comp, Loc)),
+                              Attribute_Name => Name_Position)))));
+
+                     Aux_Comp := Next_Tag_Component (Aux_Comp);
+                     Next_Elmt (ADT);
+                  end loop;
+               end if;
+
             else
                declare
                   Nod : Node_Id := First (Body_Stmts);
@@ -2236,7 +2296,8 @@ package body Exp_Ch3 is
          return
            Needs_Simple_Initialization (T)
              and then not Is_RTE (T, RE_Tag)
-             and then not Is_RTE (T, RE_Vtable_Ptr);
+             and then not Is_RTE (T, RE_Vtable_Ptr)
+             and then not Is_RTE (T, RE_Interface_Tag); --  Ada 2005 (AI-251)
       end Component_Needs_Simple_Initialization;
 
       ---------------------
@@ -2388,7 +2449,7 @@ package body Exp_Ch3 is
 
          --  6. One or more components is a type that requires simple
          --     initialization (see Needs_Simple_Initialization), except
-         --     that types Tag and Vtable_Ptr are excluded, since fields
+         --     that types Tag and Interface_Tag are excluded, since fields
          --     of these types are initialized by other means.
 
          --  7. The type is the record type built for a task type (since at
@@ -3012,21 +3073,30 @@ package body Exp_Ch3 is
 
    procedure Check_Stream_Attributes (Typ : Entity_Id) is
       Comp      : Entity_Id;
-      Par       : constant Entity_Id := Root_Type (Base_Type (Typ));
-      Par_Read  : constant Boolean   := Present (TSS (Par, TSS_Stream_Read));
-      Par_Write : constant Boolean   := Present (TSS (Par, TSS_Stream_Write));
+      Par_Read  : constant Boolean :=
+                    Stream_Attribute_Available (Typ, TSS_Stream_Read)
+                      and then not Has_Specified_Stream_Read (Typ);
+      Par_Write : constant Boolean :=
+                    Stream_Attribute_Available (Typ, TSS_Stream_Write)
+                      and then not Has_Specified_Stream_Write (Typ);
 
       procedure Check_Attr (Nam : Name_Id; TSS_Nam : TSS_Name_Type);
       --  Check that Comp has a user-specified Nam stream attribute
 
+      ----------------
+      -- Check_Attr --
+      ----------------
+
       procedure Check_Attr (Nam : Name_Id; TSS_Nam : TSS_Name_Type) is
       begin
-         if No (TSS (Base_Type (Etype (Comp)), TSS_Nam)) then
+         if not Stream_Attribute_Available (Etype (Comp), TSS_Nam) then
             Error_Msg_Name_1 := Nam;
             Error_Msg_N
               ("|component& in limited extension must have% attribute", Comp);
          end if;
       end Check_Attr;
+
+   --  Start of processing for Check_Stream_Attributes
 
    begin
       if Par_Read or else Par_Write then
@@ -3422,11 +3492,35 @@ package body Exp_Ch3 is
          --  simple initialization expression in place. This special
          --  initialization is required even though No_Init_Flag is present.
 
-         elsif Needs_Simple_Initialization (Typ) then
+         --  An internally generated temporary needs no initialization because
+         --  it will be assigned subsequently. In particular, there is no
+         --  point in applying Initialize_Scalars to such a temporary.
+
+         elsif Needs_Simple_Initialization (Typ)
+            and then not Is_Internal (Def_Id)
+         then
             Set_No_Initialization (N, False);
             Set_Expression (N, Get_Simple_Init_Val (Typ, Loc, Esize (Def_Id)));
             Analyze_And_Resolve (Expression (N), Typ);
          end if;
+
+         --  Generate attribute for Persistent_BSS if needed
+
+         declare
+            Prag : Node_Id;
+         begin
+            if Persistent_BSS_Mode
+              and then Comes_From_Source (N)
+              and then Is_Potentially_Persistent_Type (Typ)
+              and then Is_Library_Level_Entity (Def_Id)
+            then
+               Prag :=
+                 Make_Linker_Section_Pragma
+                   (Def_Id, Sloc (N), ".persistent.bss");
+               Insert_After (N, Prag);
+               Analyze (Prag);
+            end if;
+         end;
 
       --  Explicit initialization present
 
@@ -4340,6 +4434,7 @@ package body Exp_Ch3 is
       --  created in the C++ side and we just use it.
 
       if Is_Tagged_Type (Def_Id) then
+
          if Is_CPP_Class (Def_Id) then
             Set_All_DT_Position (Def_Id);
             Set_Default_Constructor (Def_Id);
@@ -4383,6 +4478,36 @@ package body Exp_Ch3 is
 
             if Underlying_Type (Etype (Def_Id)) = Def_Id then
                Expand_Tagged_Root (Def_Id);
+            end if;
+
+            --  Build the secondary tables
+
+            if not Java_VM
+              and then Present (Abstract_Interfaces (Def_Id))
+              and then not Is_Empty_Elmt_List (Abstract_Interfaces (Def_Id))
+            then
+               declare
+                  E      : Entity_Id;
+                  Result : List_Id;
+                  ADT    : Elist_Id := Access_Disp_Table (Def_Id);
+
+               begin
+                  E := First_Entity (Def_Id);
+                  while Present (E) loop
+                     if Is_Tag (E) and then Chars (E) /= Name_uTag then
+                        Make_Abstract_Interface_DT
+                          (AI_Tag          => E,
+                           Acc_Disp_Tables => ADT,
+                           Result          => Result);
+
+                        Append_Freeze_Actions (Def_Id, Result);
+                     end if;
+
+                     Next_Entity (E);
+                  end loop;
+
+                  Set_Access_Disp_Table (Def_Id, ADT);
+               end;
             end if;
 
             --  Unfreeze momentarily the type to add the predefined primitives
@@ -4556,7 +4681,7 @@ package body Exp_Ch3 is
    --  Full type declarations are expanded at the point at which the type is
    --  frozen. The formal N is the Freeze_Node for the type. Any statements or
    --  declarations generated by the freezing (e.g. the procedure generated
-   --  for initialization) are chained in the Acions field list of the freeze
+   --  for initialization) are chained in the Actions field list of the freeze
    --  node using Append_Freeze_Actions.
 
    function Freeze_Type (N : Node_Id) return Boolean is
