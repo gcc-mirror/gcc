@@ -1,3 +1,7 @@
+2005-06-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/rtti/crash2.C: New.
+
 2005-06-15  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/noncompile/20040203-3.c: Update expected message.

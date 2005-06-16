@@ -117,7 +117,7 @@ static tree generic_initializer (tinfo_s *, tree);
 static tree ptr_initializer (tinfo_s *, tree);
 static tree ptm_initializer (tinfo_s *, tree);
 static tree class_initializer (tinfo_s *, tree, tree);
-static void create_pseudo_type_info (tinfo_kind, const char *, ...);
+static void create_pseudo_type_info (int, const char *, ...);
 static tree get_pseudo_ti_init (tree, unsigned);
 static unsigned get_pseudo_ti_index (tree);
 static void create_tinfo_types (void);
@@ -369,8 +369,8 @@ get_tinfo_decl (tree type)
   d = IDENTIFIER_GLOBAL_VALUE (name);
   if (!d)
     {
-      tinfo_s *ti = VEC_index (tinfo_s, tinfo_descs,
-			       get_pseudo_ti_index (type));
+      int ix = get_pseudo_ti_index (type);
+      tinfo_s *ti = VEC_index (tinfo_s, tinfo_descs, ix);
 
       d = build_lang_decl (VAR_DECL, name, ti->type);
       SET_DECL_ASSEMBLER_NAME (d, name);
@@ -1100,7 +1100,7 @@ get_pseudo_ti_init (tree type, unsigned tk_index)
    NULL.  */
 
 static void
-create_pseudo_type_info (tinfo_kind tk, const char *real_name, ...)
+create_pseudo_type_info (int tk, const char *real_name, ...)
 {
   tinfo_s *ti;
   tree pseudo_type;
