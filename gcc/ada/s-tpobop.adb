@@ -1,8 +1,9 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
---                SYSTEM.TASKING.PROTECTED_OBJECTS.OPERATIONS               --
+--     S Y S T E M . T A S K I N G . P R O T E C T E D _ O B J E C T S .    --
+--                             O P E R A T I O N S                          --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
@@ -93,6 +94,9 @@ with System.Parameters;
 with System.Traces.Tasking;
 --  used for Send_Trace_Info
 
+with System.Restrictions;
+--  used for Run_Time_Restrictions
+
 package body System.Tasking.Protected_Objects.Operations is
 
    package STPO renames System.Task_Primitives.Operations;
@@ -102,6 +106,8 @@ package body System.Tasking.Protected_Objects.Operations is
    use Ada.Exceptions;
    use Entries;
 
+   use System.Restrictions;
+   use System.Restrictions.Rident;
    use System.Traces;
    use System.Traces.Tasking;
 
@@ -265,6 +271,11 @@ package body System.Tasking.Protected_Objects.Operations is
      (Object : Protection_Entries_Access;
       Ex     : Ada.Exceptions.Exception_Id)
    is
+      procedure Transfer_Occurrence
+        (Target : Ada.Exceptions.Exception_Occurrence_Access;
+         Source : Ada.Exceptions.Exception_Occurrence);
+      pragma Import (C, Transfer_Occurrence, "__gnat_transfer_occurrence");
+
       Entry_Call : constant Entry_Call_Link := Object.Call_In_Progress;
    begin
       pragma Debug
@@ -277,6 +288,12 @@ package body System.Tasking.Protected_Objects.Operations is
          --  The call was not requeued.
 
          Entry_Call.Exception_To_Raise := Ex;
+
+         if Ex /= Ada.Exceptions.Null_Id then
+            Transfer_Occurrence
+              (Entry_Call.Self.Common.Compiler_Data.Current_Excep'Access,
+               STPO.Self.Common.Compiler_Data.Current_Excep);
+         end if;
 
          --  Wakeup_Entry_Caller will be called from PO_Do_Or_Queue or
          --  PO_Service_Entries on return.
@@ -352,9 +369,32 @@ package body System.Tasking.Protected_Objects.Operations is
       elsif Entry_Call.Mode /= Conditional_Call
         or else not With_Abort
       then
-         Queuing.Enqueue (Object.Entry_Queues (E), Entry_Call);
-         Update_For_Queue_To_PO (Entry_Call, With_Abort);
 
+         if Run_Time_Restrictions.Set (Max_Entry_Queue_Length)
+              and then
+            Run_Time_Restrictions.Value (Max_Entry_Queue_Length) <=
+              Queuing.Count_Waiting (Object.Entry_Queues (E))
+         then
+            --  This violates the Max_Entry_Queue_Length restriction,
+            --  raise Program_Error.
+
+            Entry_Call.Exception_To_Raise := Program_Error'Identity;
+
+            if Single_Lock then
+               STPO.Lock_RTS;
+            end if;
+
+            STPO.Write_Lock (Entry_Call.Self);
+            Initialization.Wakeup_Entry_Caller (Self_ID, Entry_Call, Done);
+            STPO.Unlock (Entry_Call.Self);
+
+            if Single_Lock then
+               STPO.Unlock_RTS;
+            end if;
+         else
+            Queuing.Enqueue (Object.Entry_Queues (E), Entry_Call);
+            Update_For_Queue_To_PO (Entry_Call, With_Abort);
+         end if;
       else
          --  Conditional_Call and With_Abort
 
@@ -734,9 +774,34 @@ package body System.Tasking.Protected_Objects.Operations is
               or else Entry_Call.Mode /= Conditional_Call
             then
                E := Protected_Entry_Index (Entry_Call.E);
-               Queuing.Enqueue
-                 (New_Object.Entry_Queues (E), Entry_Call);
-               Update_For_Queue_To_PO (Entry_Call, With_Abort);
+
+               if Run_Time_Restrictions.Set (Max_Entry_Queue_Length)
+                    and then
+                  Run_Time_Restrictions.Value (Max_Entry_Queue_Length) <=
+                    Queuing.Count_Waiting (Object.Entry_Queues (E))
+               then
+                  --  This violates the Max_Entry_Queue_Length restriction,
+                  --  raise Program_Error.
+
+                  Entry_Call.Exception_To_Raise := Program_Error'Identity;
+
+                  if Single_Lock then
+                     STPO.Lock_RTS;
+                  end if;
+
+                  STPO.Write_Lock (Entry_Call.Self);
+                  Initialization.Wakeup_Entry_Caller
+                    (Self_Id, Entry_Call, Done);
+                  STPO.Unlock (Entry_Call.Self);
+
+                  if Single_Lock then
+                     STPO.Unlock_RTS;
+                  end if;
+               else
+                  Queuing.Enqueue
+                    (New_Object.Entry_Queues (E), Entry_Call);
+                  Update_For_Queue_To_PO (Entry_Call, With_Abort);
+               end if;
 
             else
                PO_Do_Or_Queue (Self_Id, New_Object, Entry_Call, With_Abort);
