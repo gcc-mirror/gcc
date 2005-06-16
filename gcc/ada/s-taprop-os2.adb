@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                 GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS              --
+--                  GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                --
 --                                                                          --
 --    S Y S T E M . T A S K _ P R I M I T I V E S . O P E R A T I O N S     --
 --                                                                          --
@@ -1011,6 +1011,148 @@ package body System.Task_Primitives.Operations is
       --  Should perform other action ???
 
    end Abort_Task;
+
+   ----------------
+   -- Initialize --
+   ----------------
+
+   procedure Initialize (S : in out Suspension_Object) is
+      Result : Interfaces.C.int;
+   begin
+      --  Initialize internal state. It is always initialized to False (ARM
+      --  D.10 par. 6).
+
+      S.State := False;
+      S.Waiting := False;
+
+      --  Initialize internal mutex
+      if DosCreateMutexSem
+        (ICS.Null_Ptr, S.L'Unchecked_Access, 0, False32) /= NO_ERROR
+      then
+         raise Storage_Error;
+      end if;
+
+      pragma Assert (S.L /= 0, "Error creating Mutex");
+
+      --  Initialize internal condition variable
+
+      if DosCreateEventSem
+        (ICS.Null_Ptr, S.CV'Unchecked_Access, 0, True32) /= NO_ERROR
+      then
+         Must_Not_Fail (DosCloseMutexSem (S.L));
+
+         raise Storage_Error;
+      end if;
+
+      pragma Assert (S.CV /= 0, "Error creating Condition Variable");
+   end Initialize;
+
+   --------------
+   -- Finalize --
+   --------------
+
+   procedure Finalize (S : in out Suspension_Object) is
+   begin
+      --  Destroy internal mutex
+
+      Must_Not_Fail (DosCloseMutexSem (S.L'Access));
+
+      --  Destroy internal condition variable
+
+      Must_Not_Fail (DosCloseEventSem (S.CV'Access));
+   end Finalize;
+
+   -------------------
+   -- Current_State --
+   -------------------
+
+   function Current_State (S : Suspension_Object) return Boolean is
+   begin
+      --  We do not want to use lock on this read operation. State is marked
+      --  as Atomic so that we ensure that the value retrieved is correct.
+
+      return S.State;
+   end Current_State;
+
+   ---------------
+   -- Set_False --
+   ---------------
+
+   procedure Set_False (S : in out Suspension_Object) is
+   begin
+      Must_Not_Fail (DosRequestMutexSem (S.L, SEM_INDEFINITE_WAIT));
+
+      S.State := False;
+
+      Must_Not_Fail (DosReleaseMutexSem (S.L));
+   end Set_False;
+
+   --------------
+   -- Set_True --
+   --------------
+
+   procedure Set_True (S : in out Suspension_Object) is
+   begin
+      Must_Not_Fail (DosRequestMutexSem (S.L, SEM_INDEFINITE_WAIT));
+
+      --  If there is already a task waiting on this suspension object then
+      --  we resume it, leaving the state of the suspension object to False,
+      --  as it is specified in ARM D.10 par. 9. Otherwise, it just leaves
+      --  the state to True.
+
+      if S.Waiting then
+         S.Waiting := False;
+         S.State := False;
+
+         Sem_Must_Not_Fail (DosPostEventSem (S.CV));
+      else
+         S.State := True;
+      end if;
+
+      Must_Not_Fail (DosReleaseMutexSem (S.L));
+   end Set_True;
+
+   ------------------------
+   -- Suspend_Until_True --
+   ------------------------
+
+   procedure Suspend_Until_True (S : in out Suspension_Object) is
+      Count : aliased ULONG; -- Used to store dummy result
+   begin
+      Must_Not_Fail (DosRequestMutexSem (S.L, SEM_INDEFINITE_WAIT));
+
+      if S.Waiting then
+         --  Program_Error must be raised upon calling Suspend_Until_True
+         --  if another task is already waiting on that suspension object
+         --  (ARM D.10 par. 10).
+
+         Must_Not_Fail (DosReleaseMutexSem (S.L));
+
+         raise Program_Error;
+      else
+         --  Suspend the task if the state is False. Otherwise, the task
+         --  continues its execution, and the state of the suspension object
+         --  is set to False (ARM D.10 par. 9).
+
+         if S.State then
+            S.State := False;
+
+            Must_Not_Fail (DosReleaseMutexSem (S.L));
+         else
+            S.Waiting := True;
+
+            --  Must reset Cond BEFORE L is unlocked
+
+            Sem_Must_Not_Fail
+              (DosResetEventSem (S.CV, Count'Unchecked_Access));
+
+            Must_Not_Fail (DosReleaseMutexSem (S.L));
+
+            Sem_Must_Not_Fail
+              (DosWaitEventSem (S.CV, SEM_INDEFINITE_WAIT));
+         end if;
+      end if;
+   end Suspend_Until_True;
 
    ----------------
    -- Check_Exit --

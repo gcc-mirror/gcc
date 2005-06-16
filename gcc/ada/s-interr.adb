@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
 --                     S Y S T E M . I N T E R R U P T S                    --
 --                                                                          --
@@ -1438,8 +1438,13 @@ package body System.Interrupts is
 
          System.Tasking.Initialization.Undefer_Abort (Self_ID);
 
-         --  Undefer abort here to allow a window for this task
-         --  to be aborted  at the time of system shutdown.
+         if Self_ID.Pending_Action then
+            Initialization.Do_Pending_Action (Self_ID);
+         end if;
+
+         --  Undefer abort here to allow a window for this task to be aborted
+         --  at the time of system shutdown. We also explicitely test for
+         --  Pending_Action in case System.Parameters.No_Abort is True.
 
       end loop;
    end Server_Task;
@@ -1454,16 +1459,15 @@ begin
    --  During the elaboration of this package body we want the RTS
    --  to inherit the interrupt mask from the Environment Task.
 
-   --  The environment task should have gotten its mask from
-   --  the enclosing process during the RTS start up. (See
-   --  processing in s-inmaop.adb). Pass the Interrupt_Mask
-   --  of the environment task to the Interrupt_Manager.
+   IMOP.Setup_Interrupt_Mask;
 
-   --  Note : At this point we know that all tasks (including
-   --  RTS internal servers) are masked for non-reserved signals
-   --  (see s-taprop.adb). Only the Interrupt_Manager will have
-   --  masks set up differently inheriting the original environment
-   --  task's mask.
+   --  The environment task should have gotten its mask from the enclosing
+   --  process during the RTS start up. (See processing in s-inmaop.adb). Pass
+   --  the Interrupt_Mask of the environment task to the Interrupt_Manager.
+
+   --  Note : At this point we know that all tasks are masked for non-reserved
+   --  signals. Only the Interrupt_Manager will have masks set up differently
+   --  inheriting the original environment task's mask.
 
    Interrupt_Manager.Initialize (IMOP.Environment_Mask);
 end System.Interrupts;

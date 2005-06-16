@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
 --     S Y S T E M . T A S K _ P R I M I T I V E S . O P E R A T I O N S    --
 --                                                                          --
@@ -1039,6 +1039,140 @@ package body System.Task_Primitives.Operations is
    begin
       return 0.000_001; --  1 micro-second
    end RT_Resolution;
+
+   ----------------
+   -- Initialize --
+   ----------------
+
+   procedure Initialize (S : in out Suspension_Object) is
+   begin
+      --  Initialize internal state. It is always initialized to False (ARM
+      --  D.10 par. 6).
+
+      S.State := False;
+      S.Waiting := False;
+
+      --  Initialize internal mutex
+
+      InitializeCriticalSection (S.L'Access);
+
+      --  Initialize internal condition variable
+
+      S.CV := CreateEvent (null, True, False, Null_Ptr);
+      pragma Assert (S.CV /= 0);
+   end Initialize;
+
+   --------------
+   -- Finalize --
+   --------------
+
+   procedure Finalize (S : in out Suspension_Object) is
+      Result : BOOL;
+   begin
+      --  Destroy internal mutex
+
+      DeleteCriticalSection (S.L'Access);
+
+      --  Destroy internal condition variable
+
+      Result := CloseHandle (S.CV);
+      pragma Assert (Result = True);
+   end Finalize;
+
+   -------------------
+   -- Current_State --
+   -------------------
+
+   function Current_State (S : Suspension_Object) return Boolean is
+   begin
+      --  We do not want to use lock on this read operation. State is marked
+      --  as Atomic so that we ensure that the value retrieved is correct.
+
+      return S.State;
+   end Current_State;
+
+   ---------------
+   -- Set_False --
+   ---------------
+
+   procedure Set_False (S : in out Suspension_Object) is
+   begin
+      EnterCriticalSection (S.L'Access);
+
+      S.State := False;
+
+      LeaveCriticalSection (S.L'Access);
+   end Set_False;
+
+   --------------
+   -- Set_True --
+   --------------
+
+   procedure Set_True (S : in out Suspension_Object) is
+      Result : BOOL;
+   begin
+      EnterCriticalSection (S.L'Access);
+
+      --  If there is already a task waiting on this suspension object then
+      --  we resume it, leaving the state of the suspension object to False,
+      --  as it is specified in ARM D.10 par. 9. Otherwise, it just leaves
+      --  the state to True.
+
+      if S.Waiting then
+         S.Waiting := False;
+         S.State := False;
+
+         Result := SetEvent (S.CV);
+         pragma Assert (Result = True);
+      else
+         S.State := True;
+      end if;
+
+      LeaveCriticalSection (S.L'Access);
+   end Set_True;
+
+   ------------------------
+   -- Suspend_Until_True --
+   ------------------------
+
+   procedure Suspend_Until_True (S : in out Suspension_Object) is
+      Result      : DWORD;
+      Result_Bool : BOOL;
+   begin
+      EnterCriticalSection (S.L'Access);
+
+      if S.Waiting then
+         --  Program_Error must be raised upon calling Suspend_Until_True
+         --  if another task is already waiting on that suspension object
+         --  (ARM D.10 par. 10).
+
+         LeaveCriticalSection (S.L'Access);
+
+         raise Program_Error;
+      else
+         --  Suspend the task if the state is False. Otherwise, the task
+         --  continues its execution, and the state of the suspension object
+         --  is set to False (ARM D.10 par. 9).
+
+         if S.State then
+            S.State := False;
+
+            LeaveCriticalSection (S.L'Access);
+         else
+            S.Waiting := True;
+
+            --  Must reset CV BEFORE L is unlocked.
+
+            Result_Bool := ResetEvent (S.CV);
+            pragma Assert (Result_Bool = True);
+
+            LeaveCriticalSection (S.L'Access);
+
+            Result := WaitForSingleObject (S.CV, Wait_Infinite);
+            pragma Assert (Result = 0);
+         end if;
+      end if;
+   end Suspend_Until_True;
 
    ----------------
    -- Check_Exit --

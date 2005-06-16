@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
 --           S Y S T E M . I N T E R R U P T _ M A N A G E M E N T          --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2002, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2005, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,12 +33,6 @@
 
 --  This is a OpenVMS/Alpha version of this package.
 
---  PLEASE DO NOT add any dependences on other packages.
---  This package is designed to work with or without tasking support.
-
---  See the other warnings in the package specification before making
---  any modifications to this file.
-
 with System.OS_Interface;
 --  used for various Constants, Signal and types
 
@@ -47,13 +41,16 @@ package body System.Interrupt_Management is
    use System.OS_Interface;
    use type unsigned_long;
 
-   ---------------------------
-   -- Initialize_Interrupts --
-   ---------------------------
+begin
+   Abort_Task_Interrupt := Interrupt_ID_0;
+   --  Unused
 
-   procedure Initialize_Interrupts is
+   Reserve := Reserve or Keep_Unmasked or Keep_Masked;
+
+   Reserve (Interrupt_ID_0) := True;
+
+   declare
       Status : Cond_Value_Type;
-
    begin
       Sys_Crembx
         (Status => Status,
@@ -73,16 +70,5 @@ package body System.Interrupt_Management is
          Flags  => AGN_M_WRITEONLY);
 
       pragma Assert ((Status and 1) = 1);
-   end Initialize_Interrupts;
-
-begin
-   --  Unused
-
-   Abort_Task_Interrupt := Interrupt_ID_0;
-
-   Reserve := Reserve or Keep_Unmasked or Keep_Masked;
-
-   Reserve (Interrupt_ID_0) := True;
-
-   Initialize_Interrupts;
+   end;
 end System.Interrupt_Management;

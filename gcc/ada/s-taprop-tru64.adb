@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
 --     S Y S T E M . T A S K _ P R I M I T I V E S . O P E R A T I O N S    --
 --                                                                          --
@@ -57,11 +57,6 @@ with System.Interrupt_Management;
 --  used for Keep_Unmasked
 --           Abort_Task_Interrupt
 --           Interrupt_ID
-
-with System.Interrupt_Management.Operations;
---  used for Set_Interrupt_Mask
---           All_Tasks_Mask
-pragma Elaborate_All (System.Interrupt_Management.Operations);
 
 with System.Parameters;
 --  used for Size_Type
@@ -972,12 +967,175 @@ package body System.Task_Primitives.Operations is
    procedure Abort_Task (T : Task_Id) is
       Result : Interfaces.C.int;
    begin
-      Result :=
-        pthread_kill
-          (T.Common.LL.Thread,
-           Signal (System.Interrupt_Management.Abort_Task_Interrupt));
+      Result := pthread_kill (T.Common.LL.Thread,
+        Signal (System.Interrupt_Management.Abort_Task_Interrupt));
       pragma Assert (Result = 0);
    end Abort_Task;
+
+   ----------------
+   -- Initialize --
+   ----------------
+
+   procedure Initialize (S : in out Suspension_Object) is
+      Mutex_Attr : aliased pthread_mutexattr_t;
+      Cond_Attr  : aliased pthread_condattr_t;
+      Result     : Interfaces.C.int;
+   begin
+      --  Initialize internal state. It is always initialized to False (ARM
+      --  D.10 par. 6).
+
+      S.State := False;
+      S.Waiting := False;
+
+      --  Initialize internal mutex
+
+      Result := pthread_mutexattr_init (Mutex_Attr'Access);
+      pragma Assert (Result = 0 or else Result = ENOMEM);
+
+      if Result = ENOMEM then
+         raise Storage_Error;
+      end if;
+
+      Result := pthread_mutex_init (S.L'Access, Mutex_Attr'Access);
+      pragma Assert (Result = 0 or else Result = ENOMEM);
+
+      if Result = ENOMEM then
+         Result := pthread_mutexattr_destroy (Mutex_Attr'Access);
+         raise Storage_Error;
+      end if;
+
+      Result := pthread_mutexattr_destroy (Mutex_Attr'Access);
+      pragma Assert (Result = 0);
+
+      --  Initialize internal condition variable
+
+      Result := pthread_condattr_init (Cond_Attr'Access);
+      pragma Assert (Result = 0 or else Result = ENOMEM);
+
+      Result := pthread_cond_init (S.CV'Access, Cond_Attr'Access);
+
+      pragma Assert (Result = 0 or else Result = ENOMEM);
+
+      if Result /= 0 then
+         Result := pthread_mutex_destroy (S.L'Access);
+         pragma Assert (Result = 0);
+
+         if Result = ENOMEM then
+            raise Storage_Error;
+         end if;
+      end if;
+   end Initialize;
+
+   --------------
+   -- Finalize --
+   --------------
+
+   procedure Finalize (S : in out Suspension_Object) is
+      Result  : Interfaces.C.int;
+   begin
+      --  Destroy internal mutex
+
+      Result := pthread_mutex_destroy (S.L'Access);
+      pragma Assert (Result = 0);
+
+      --  Destroy internal condition variable
+
+      Result := pthread_cond_destroy (S.CV'Access);
+      pragma Assert (Result = 0);
+   end Finalize;
+
+   -------------------
+   -- Current_State --
+   -------------------
+
+   function Current_State (S : Suspension_Object) return Boolean is
+   begin
+      --  We do not want to use lock on this read operation. State is marked
+      --  as Atomic so that we ensure that the value retrieved is correct.
+
+      return S.State;
+   end Current_State;
+
+   ---------------
+   -- Set_False --
+   ---------------
+
+   procedure Set_False (S : in out Suspension_Object) is
+      Result  : Interfaces.C.int;
+   begin
+      Result := pthread_mutex_lock (S.L'Access);
+      pragma Assert (Result = 0);
+
+      S.State := False;
+
+      Result := pthread_mutex_unlock (S.L'Access);
+      pragma Assert (Result = 0);
+   end Set_False;
+
+   --------------
+   -- Set_True --
+   --------------
+
+   procedure Set_True (S : in out Suspension_Object) is
+      Result : Interfaces.C.int;
+   begin
+      Result := pthread_mutex_lock (S.L'Access);
+      pragma Assert (Result = 0);
+
+      --  If there is already a task waiting on this suspension object then
+      --  we resume it, leaving the state of the suspension object to False,
+      --  as it is specified in ARM D.10 par. 9. Otherwise, it just leaves
+      --  the state to True.
+
+      if S.Waiting then
+         S.Waiting := False;
+         S.State := False;
+
+         Result := pthread_cond_signal (S.CV'Access);
+         pragma Assert (Result = 0);
+      else
+         S.State := True;
+      end if;
+
+      Result := pthread_mutex_unlock (S.L'Access);
+      pragma Assert (Result = 0);
+   end Set_True;
+
+   ------------------------
+   -- Suspend_Until_True --
+   ------------------------
+
+   procedure Suspend_Until_True (S : in out Suspension_Object) is
+      Result : Interfaces.C.int;
+   begin
+      Result := pthread_mutex_lock (S.L'Access);
+      pragma Assert (Result = 0);
+
+      if S.Waiting then
+         --  Program_Error must be raised upon calling Suspend_Until_True
+         --  if another task is already waiting on that suspension object
+         --  (ARM D.10 par. 10).
+
+         Result := pthread_mutex_unlock (S.L'Access);
+         pragma Assert (Result = 0);
+
+         raise Program_Error;
+      else
+         --  Suspend the task if the state is False. Otherwise, the task
+         --  continues its execution, and the state of the suspension object
+         --  is set to False (ARM D.10 par. 9).
+
+         if S.State then
+            S.State := False;
+         else
+            S.Waiting := True;
+            Result := pthread_cond_wait (S.CV'Access, S.L'Access);
+         end if;
+      end if;
+
+      Result := pthread_mutex_unlock (S.L'Access);
+      pragma Assert (Result = 0);
+   end Suspend_Until_True;
 
    ----------------
    -- Check_Exit --
@@ -1114,15 +1272,7 @@ package body System.Task_Primitives.Operations is
 begin
    declare
       Result : Interfaces.C.int;
-
    begin
-      --  Mask Environment task for all signals. The original mask of the
-      --  Environment task will be recovered by Interrupt_Server task
-      --  during the elaboration of s-interr.adb.
-
-      System.Interrupt_Management.Operations.Set_Interrupt_Mask
-        (System.Interrupt_Management.Operations.All_Tasks_Mask'Access);
-
       --  Prepare the set of signals that should unblocked in all tasks
 
       Result := sigemptyset (Unblocked_Signal_Mask'Access);

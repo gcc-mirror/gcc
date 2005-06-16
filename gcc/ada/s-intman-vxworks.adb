@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
 --           S Y S T E M . I N T E R R U P T _ M A N A G E M E N T          --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,10 +62,8 @@ package body System.Interrupt_Management is
    Exception_Signals : constant Signal_List (1 .. 4) :=
                          (SIGFPE, SIGILL, SIGSEGV, SIGBUS);
 
-   --  Keep these variables global so that they are initialized only once
-   --  What are "these variables" ???, I see only one
-
    Exception_Action : aliased struct_sigaction;
+   --  Keep this variable global so that it is initialized only once
 
    procedure Map_And_Raise_Exception (signo : Signal);
    pragma Import (C, Map_And_Raise_Exception, "__gnat_map_signal");
@@ -108,7 +106,6 @@ package body System.Interrupt_Management is
    procedure Initialize_Interrupts is
       Result  : int;
       old_act : aliased struct_sigaction;
-
    begin
       for J in Exception_Signals'Range loop
          Result :=

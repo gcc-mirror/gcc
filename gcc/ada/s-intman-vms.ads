@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
 --            S Y S T E M . I N T E R R U P T _ M A N A G E M E N T         --
 --                                                                          --
@@ -109,12 +109,6 @@ package System.Interrupt_Management is
    --  be any interrupts in this class, depending on the environment. For
    --  example, if interrupts are OS signals and signal masking is per-task,
    --  use of the sigwait operation requires the signal be masked in all tasks.
-
-   procedure Initialize_Interrupts;
-   --  On systems where there is no signal inheritance between tasks (e.g
-   --  VxWorks, GNU/LinuxThreads), this procedure is used to initialize
-   --  interrupts handling in each task. Otherwise this function should
-   --  only be called by initialize in this package body.
 
 private
    use type System.OS_Interface.unsigned_long;

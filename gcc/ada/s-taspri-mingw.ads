@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
 --                 S Y S T E M . T A S K _ P R I M I T I V E S              --
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1991-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1991-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a NT (native) version of this package.
+--  This is a NT (native) version of this package
 
 pragma Polling (Off);
 --  Turn off polling, we do not want ATC polling to take place during
@@ -45,22 +45,24 @@ with System.OS_Interface;
 package System.Task_Primitives is
 
    type Lock is limited private;
-   --  Should be used for implementation of protected objects.
+   --  Should be used for implementation of protected objects
 
    type RTS_Lock is limited private;
-   --  Should be used inside the runtime system.
-   --  The difference between Lock and the RTS_Lock is that the later
-   --  one serves only as a semaphore so that do not check for
-   --  ceiling violations.
+   --  Should be used inside the runtime system. The difference between Lock
+   --  and the RTS_Lock is that the later one serves only as a semaphore so
+   --  that do not check for ceiling violations.
+
+   type Suspension_Object is limited private;
+   --  Should be used for the implementation of Ada.Synchronous_Task_Control
 
    type Task_Body_Access is access procedure;
    --  Pointer to the task body's entry point (or possibly a wrapper
    --  declared local to the GNARL).
 
    type Private_Data is limited private;
-   --  Any information that the GNULLI needs maintained on a per-task
-   --  basis.  A component of this type is guaranteed to be included
-   --  in the Ada_Task_Control_Block.
+   --  Any information that the GNULLI needs maintained on a per-task basis.
+   --  A component of this type is guaranteed to be included in the
+   --  Ada_Task_Control_Block.
 
 private
 
@@ -74,6 +76,23 @@ private
 
    type RTS_Lock is new System.OS_Interface.CRITICAL_SECTION;
 
+   type Suspension_Object is record
+      State : Boolean;
+      pragma Atomic (State);
+      --  Boolean that indicates whether the object is open. This field is
+      --  marked Atomic to ensure that we can read its value without locking
+      --  the access to the Suspension_Object.
+
+      Waiting : Boolean;
+      --  Flag showing if there is a task already suspended on this object
+
+      L : aliased System.OS_Interface.CRITICAL_SECTION;
+      --  Protection for ensuring mutual exclusion on the Suspension_Object
+
+      CV : aliased System.OS_Interface.HANDLE;
+      --  Condition variable used to queue threads until condition is signaled
+   end record;
+
    type Private_Data is record
       Thread : aliased System.OS_Interface.HANDLE;
       pragma Atomic (Thread);
@@ -84,8 +103,7 @@ private
       --  make sure is that they are updated in atomic fashion.
 
       Thread_Id : aliased System.OS_Interface.DWORD;
-      --  The purpose of this field is to provide a better tasking support
-      --  in gdb.
+      --  Used to provide a better tasking support in gdb
 
       CV : aliased Condition_Variable;
       --  Condition Variable used to implement Sleep/Wakeup

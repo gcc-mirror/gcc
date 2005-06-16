@@ -1,13 +1,13 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
 --           S Y S T E M . I N T E R R U P T _ M A N A G E M E N T .        --
 --                           O P E R A T I O N S                            --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -268,9 +268,9 @@ package body System.Interrupt_Management.Operations is
       X := Y;
    end Copy_Interrupt_Mask;
 
-   -------------------------
+   ----------------------------
    -- Interrupt_Self_Process --
-   -------------------------
+   ----------------------------
 
    procedure Interrupt_Self_Process (Interrupt : Interrupt_ID) is
       Status : Cond_Value_Type;
@@ -284,6 +284,15 @@ package body System.Interrupt_Management.Operations is
 
       pragma Assert ((Status and 1) = 1);
    end Interrupt_Self_Process;
+
+   --------------------------
+   -- Setup_Interrupt_Mask --
+   --------------------------
+
+   procedure Setup_Interrupt_Mask is
+   begin
+      null;
+   end Setup_Interrupt_Mask;
 
 begin
    Environment_Mask := (others => False);

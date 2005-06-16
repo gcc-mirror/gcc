@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
 --                 S Y S T E M . T A S K _ P R I M I T I V E S              --
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1991-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1991-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,12 +44,14 @@ package System.Task_Primitives is
 
    type RTS_Lock is new Integer;
 
+   type Suspension_Object is new Integer;
+
    type Task_Body_Access is access procedure;
 
    type Private_Data is record
-      Thread      : aliased Integer;
-      CV          : aliased Integer;
-      L           : aliased RTS_Lock;
+      Thread : aliased Integer;
+      CV     : aliased Integer;
+      L      : aliased RTS_Lock;
    end record;
 
 end System.Task_Primitives;

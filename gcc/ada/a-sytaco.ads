@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1998 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -35,9 +35,22 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System;
+pragma Warnings (Off);
+--  Allow withing of non-Preelaborated units in Ada 2005 mode where this
+--  package will be implicitly categorized as Preelaborate. See AI-362 for
+--  details. It is safe in the context of the run-time to violate the rules!
+
+with System.Task_Primitives;
+--  Used for Suspension_Object
+
+with Ada.Finalization;
+--  Used for Limited_Controlled
+
+pragma Warnings (On);
 
 package Ada.Synchronous_Task_Control is
+pragma Preelaborate_05 (Synchronous_Task_Control);
+--  In accordance with Ada 2005 AI-362
 
    type Suspension_Object is limited private;
 
@@ -51,19 +64,25 @@ package Ada.Synchronous_Task_Control is
 
 private
 
-   --  ??? Using a protected object is overkill; suspension could be
-   --      implemented more efficiently.
+   procedure Initialize (S : in out Suspension_Object);
+   --  Initialization for Suspension_Object
 
-   protected type Suspension_Object is
-      entry Wait;
-      procedure Set_False;
-      procedure Set_True;
-      function Get_Open return Boolean;
-      entry Wait_Exception;
+   procedure Finalize (S : in out Suspension_Object);
+   --  Finalization for Suspension_Object
 
-      pragma Priority (System.Any_Priority'Last);
-   private
-      Open : Boolean := False;
-   end Suspension_Object;
+   type Suspension_Object is
+     new Ada.Finalization.Limited_Controlled with record
+      SO : System.Task_Primitives.Suspension_Object;
+      --  Use low-level suspension objects so that the synchronization
+      --  functionality provided by this object can be achieved using
+      --  efficient operating system primitives.
+     end record;
+
+   pragma Inline (Set_True);
+   pragma Inline (Set_False);
+   pragma Inline (Current_State);
+   pragma Inline (Suspend_Until_True);
+   pragma Inline (Initialize);
+   pragma Inline (Finalize);
 
 end Ada.Synchronous_Task_Control;

@@ -444,6 +444,38 @@ package System.Task_Primitives.Operations is
    --  The call to Stack_Guard has no effect if guard pages are not used on
    --  the target, or if guard pages are automatically provided by the system.
 
+   ------------------------
+   -- Suspension objects --
+   ------------------------
+
+   --  These subprograms provide the functionality required for synchronizing
+   --  on a suspension object. Tasks can suspend execution and relinquish the
+   --  processors until the condition is signaled.
+
+   function Current_State (S : Suspension_Object) return Boolean;
+   --  Return the state of the suspension object
+
+   procedure Set_False (S : in out Suspension_Object);
+   --  Set the state of the suspension object to False
+
+   procedure Set_True (S : in out Suspension_Object);
+   --  Set the state of the suspension object to True. If a task were
+   --  suspended on the protected object then this task is released (and
+   --  the state of the suspension object remains set to False).
+
+   procedure Suspend_Until_True (S : in out Suspension_Object);
+   --  If the state of the suspension object is True then the calling task
+   --  continues its execution, and the state is set to False. If the state
+   --  of the object is False then the task is suspended on the suspension
+   --  object until a Set_True operation is executed. Program_Error is raised
+   --  if another task is already waiting on that suspension object.
+
+   procedure Initialize (S : in out Suspension_Object);
+   --  Initialize the suspension object
+
+   procedure Finalize (S : in out Suspension_Object);
+   --  Finalize the suspension object
+
    -----------------------------------------
    -- Runtime System Debugging Interfaces --
    -----------------------------------------

@@ -1,13 +1,13 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
 --                   S Y S T E M . O S _ I N T E R F A C E                  --
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2004, Free Software Foundation, Inc.      --
+--             Copyright (C) 1995-2005, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -198,19 +198,22 @@ pragma Preelaborate;
    -----------------------
 
    type CRITICAL_SECTION is private;
-   type PCRITICAL_SECTION is access all CRITICAL_SECTION;
 
-   procedure InitializeCriticalSection (pCriticalSection : PCRITICAL_SECTION);
+   procedure InitializeCriticalSection
+     (pCriticalSection : access CRITICAL_SECTION);
    pragma Import
      (Stdcall, InitializeCriticalSection, "InitializeCriticalSection");
 
-   procedure EnterCriticalSection (pCriticalSection : PCRITICAL_SECTION);
+   procedure EnterCriticalSection
+     (pCriticalSection : access CRITICAL_SECTION);
    pragma Import (Stdcall, EnterCriticalSection, "EnterCriticalSection");
 
-   procedure LeaveCriticalSection (pCriticalSection : PCRITICAL_SECTION);
+   procedure LeaveCriticalSection
+     (pCriticalSection : access CRITICAL_SECTION);
    pragma Import (Stdcall, LeaveCriticalSection, "LeaveCriticalSection");
 
-   procedure DeleteCriticalSection (pCriticalSection : PCRITICAL_SECTION);
+   procedure DeleteCriticalSection
+     (pCriticalSection : access CRITICAL_SECTION);
    pragma Import (Stdcall, DeleteCriticalSection, "DeleteCriticalSection");
 
    -------------------------------------------------------------
