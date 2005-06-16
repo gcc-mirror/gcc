@@ -1065,32 +1065,41 @@ package body Make is
    --------------------------------
 
    procedure Change_To_Object_Directory (Project : Project_Id) is
+      Actual_Project : Project_Id;
+
    begin
-      --  Nothing to do if the current working directory is alresdy the one
-      --  we want.
+      --  For sources outside of any project, compilation occurs in the object
+      --  directory of the main project, otherwise we use the project given.
 
-      if Project_Object_Directory /= Project then
-         Project_Object_Directory := Project;
-
-         --  If in a real project, set the working directory to the object
-         --  directory of the project.
-
-         if Project /= No_Project then
-            Change_Dir
-              (Get_Name_String
-                 (Project_Tree.Projects.Table
-                    (Project).Object_Directory));
-
-         --  Otherwise, for sources outside of any project, set the working
-         --  directory to the object directory of the main project.
-
-         elsif Main_Project /= No_Project then
-            Change_Dir
-              (Get_Name_String
-                 (Project_Tree.Projects.Table
-                    (Main_Project).Object_Directory));
-         end if;
+      if Project = No_Project then
+         Actual_Project := Main_Project;
+      else
+         Actual_Project := Project;
       end if;
+
+      --  Nothing to do if the current working directory is already the correct
+      --  object directory.
+
+      if Project_Object_Directory /= Actual_Project then
+         Project_Object_Directory := Actual_Project;
+
+         --  Set the working directory to the object directory of the actual
+         --  project.
+
+         Change_Dir
+           (Get_Name_String
+              (Project_Tree.Projects.Table
+                 (Actual_Project).Object_Directory));
+
+      end if;
+
+   exception
+      --  Fail if unable to change to the object directory
+
+      when Directory_Error =>
+         Make_Failed ("unable to change to object directory of project " &
+                      Get_Name_String (Project_Tree.Projects.Table
+                                         (Actual_Project).Display_Name));
    end Change_To_Object_Directory;
 
    -----------
@@ -1823,6 +1832,7 @@ package body Make is
 
                         declare
                            New_Args : Argument_List (1 .. Number);
+                           Last_New : Natural := 0;
 
                         begin
                            Current := Switches.Values;
@@ -1831,17 +1841,24 @@ package body Make is
                               Element := Project_Tree.String_Elements.
                                            Table (Current);
                               Get_Name_String (Element.Value);
-                              New_Args (Index) :=
-                                new String'(Name_Buffer (1 .. Name_Len));
-                              Test_If_Relative_Path
-                                (New_Args (Index), Parent => Data.Dir_Path);
+
+                              if Name_Len > 0 then
+                                 Last_New := Last_New + 1;
+                                 New_Args (Last_New) :=
+                                   new String'(Name_Buffer (1 .. Name_Len));
+                                 Test_If_Relative_Path
+                                   (New_Args (Last_New),
+                                    Parent => Data.Dir_Path);
+                              end if;
+
                               Current := Element.Next;
                            end loop;
 
                            Add_Arguments
                              (Configuration_Pragmas_Switch
                                 (Arguments_Project) &
-                              New_Args & The_Saved_Gcc_Switches.all);
+                              New_Args (1 .. Last_New) &
+                              The_Saved_Gcc_Switches.all);
                         end;
                      end;
 
@@ -2312,6 +2329,7 @@ package body Make is
          Comp_Args : Argument_List (Args'First .. Args'Last + 9);
          Comp_Next : Integer := Args'First;
          Comp_Last : Integer;
+         Arg_Index : Integer;
 
          function Ada_File_Name (Name : Name_Id) return Boolean;
          --  Returns True if Name is the name of an ada source file
@@ -2376,13 +2394,20 @@ package body Make is
            and then S = Strip_Directory (S)
          then
             Comp_Last := Comp_Next + Args'Length - 3;
-            Comp_Args (Comp_Next .. Comp_Last) :=
-              Args (Args'First + 1 .. Args'Last - 1);
+            Arg_Index := Args'First + 1;
 
          else
             Comp_Last := Comp_Next + Args'Length - 1;
-            Comp_Args (Comp_Next .. Comp_Last) := Args;
+            Arg_Index := Args'First;
          end if;
+
+         --  Make a deep copy of the arguments, because Normalize_Arguments
+         --  may deallocate some arguments.
+
+         for J in Comp_Next .. Comp_Last loop
+            Comp_Args (J) := new String'(Args (Arg_Index).all);
+            Arg_Index := Arg_Index + 1;
+         end loop;
 
          --  Set -gnatpg for predefined files (for this purpose the renamings
          --  such as Text_IO do not count as predefined). Note that we strip
@@ -4156,60 +4181,8 @@ package body Make is
          then
             --  Change current directory to object directory of main project
 
-            begin
-               Project_Object_Directory := No_Project;
-               Change_To_Object_Directory (Main_Project);
-
-            exception
-               when Directory_Error =>
-
-                  --  This should never happen. But, if it does, display the
-                  --  content of the parent directory of the obj dir.
-
-                  declare
-                     Parent : constant Dir_Name_Str :=
-                                Dir_Name
-                                  (Get_Name_String
-                                     (Project_Tree.Projects.Table
-                                        (Main_Project).Object_Directory));
-
-                     Dir  : Dir_Type;
-                     Str  : String (1 .. 200);
-                     Last : Natural;
-
-                  begin
-                     Write_Str ("Contents of directory """);
-                     Write_Str (Parent);
-                     Write_Line (""":");
-
-                     Open (Dir, Parent);
-
-                     loop
-                        Read (Dir, Str, Last);
-                        exit when Last = 0;
-                        Write_Str ("   ");
-                        Write_Line (Str (1 .. Last));
-                     end loop;
-
-                     Close (Dir);
-
-                  exception
-                     when X : others =>
-                        Write_Line ("(unexpected exception)");
-                        Write_Line (Exception_Information (X));
-
-                        if Is_Open (Dir) then
-                           Close (Dir);
-                        end if;
-                  end;
-
-                  Make_Failed
-                    ("unable to change working directory to """,
-                     Get_Name_String
-                       (Project_Tree.Projects.Table
-                          (Main_Project).Object_Directory),
-                     """");
-            end;
+            Project_Object_Directory := No_Project;
+            Change_To_Object_Directory (Main_Project);
          end if;
 
          --  Source file lookups should be cached for efficiency.
@@ -4498,15 +4471,6 @@ package body Make is
 
                begin
                   if not Is_Absolute_Path (Exec_File_Name) then
-                     for Index in Exec_File_Name'Range loop
-                        if Exec_File_Name (Index) = Directory_Separator then
-                           Make_Failed ("relative executable (""",
-                                        Exec_File_Name,
-                                        """) with directory part not " &
-                                        "allowed when using project files");
-                        end if;
-                     end loop;
-
                      Get_Name_String
                        (Project_Tree.Projects.Table
                           (Main_Project).Exec_Directory);
@@ -4743,17 +4707,9 @@ package body Make is
 
             begin
                if not Is_Absolute_Path (Exec_File_Name) then
-                  for Index in Exec_File_Name'Range loop
-                     if Exec_File_Name (Index) = Directory_Separator then
-                        Make_Failed ("relative executable (""",
-                                           Exec_File_Name,
-                                           """) with directory part not " &
-                                           "allowed when using project files");
-                     end if;
-                  end loop;
 
                   Get_Name_String (Project_Tree.Projects.Table
-                                           (Main_Project).Exec_Directory);
+                                     (Main_Project).Exec_Directory);
 
                   if
                     Name_Buffer (Name_Len) /= Directory_Separator
@@ -4768,8 +4724,9 @@ package body Make is
 
                   Name_Len := Name_Len + Exec_File_Name'Length;
                   Executable := Name_Find;
-                  Non_Std_Executable := True;
                end if;
+
+               Non_Std_Executable := True;
             end;
          end if;
 
