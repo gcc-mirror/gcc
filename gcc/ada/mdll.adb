@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,10 @@ package body MDLL is
    use Ada;
    use GNAT;
 
+   function Get_Dll_Name (Lib_Filename : String) return String;
+   --  Returns <Lib_Filename> if it contains a file extension otherwise it
+   --  returns <Lib_Filename>.dll.
+
    ---------------------------
    -- Build_Dynamic_Library --
    ---------------------------
@@ -63,7 +67,7 @@ package body MDLL is
       Def_File : aliased constant String := Def_Filename;
       Jnk_File : aliased          String := Base_Filename & ".jnk";
       Bas_File : aliased constant String := Base_Filename & ".base";
-      Dll_File : aliased          String := Base_Filename & ".dll";
+      Dll_File : aliased          String := Get_Dll_Name (Lib_Filename);
       Exp_File : aliased          String := Base_Filename & ".exp";
       Lib_File : aliased constant String := "lib" & Base_Filename & ".a";
 
@@ -75,34 +79,36 @@ package body MDLL is
 
       L_Afiles : Argument_List := Afiles;
       --  Local afiles list. This list can be reordered to ensure that the
-      --  binder ali file is not the first entry in this list.
+      --  binder ALI file is not the first entry in this list.
 
       All_Options : constant Argument_List := Options & Largs_Options;
 
       procedure Build_Reloc_DLL;
-      --  Build a relocatable DLL with only objects file specified.
-      --  this use the well known 5 steps build. (see GNAT User's Guide).
+      --  Build a relocatable DLL with only objects file specified. This uses
+      --  the well known five step build (see GNAT User's Guide).
 
       procedure Ada_Build_Reloc_DLL;
-      --  Build a relocatable DLL with Ada code.
-      --  this use the well known 5 steps build. (see GNAT User's Guide).
+      --  Build a relocatable DLL with Ada code. This uses the well known five
+      --  step build (see GNAT User's Guide).
 
       procedure Build_Non_Reloc_DLL;
-      --  Build a non relocatable DLL containing no Ada code.
+      --  Build a non relocatable DLL containing no Ada code
 
       procedure Ada_Build_Non_Reloc_DLL;
-      --  Build a non relocatable DLL with Ada code.
+      --  Build a non relocatable DLL with Ada code
 
       ---------------------
       -- Build_Reloc_DLL --
       ---------------------
 
       procedure Build_Reloc_DLL is
+
+         Objects_Exp_File : constant OS_Lib.Argument_List :=
+                              Exp_File'Unchecked_Access & Ofiles;
          --  Objects plus the export table (.exp) file
-         Objects_Exp_File : constant OS_Lib.Argument_List
-           := Exp_File'Unchecked_Access & Ofiles;
 
          Success : Boolean;
+
       begin
          if not Quiet then
             Text_IO.Put_Line ("building relocatable DLL...");
@@ -115,7 +121,7 @@ package body MDLL is
             end if;
          end if;
 
-         --  1) Build base file with objects files.
+         --  1) Build base file with objects files
 
          Utl.Gcc (Output_File => Jnk_File,
                   Files       => Ofiles,
@@ -123,14 +129,14 @@ package body MDLL is
                   Base_File   => Bas_File,
                   Build_Lib   => True);
 
-         --  2) Build exp from base file.
+         --  2) Build exp from base file
 
          Utl.Dlltool (Def_File, Dll_File, Lib_File,
                       Base_File    => Bas_File,
                       Exp_Table    => Exp_File,
                       Build_Import => False);
 
-         --  3) Build base file with exp file and objects files.
+         --  3) Build base file with exp file and objects files
 
          Utl.Gcc (Output_File => Jnk_File,
                   Files       => Objects_Exp_File,
@@ -150,6 +156,7 @@ package body MDLL is
          declare
             Params : OS_Lib.Argument_List :=
                        Adr_Opt'Unchecked_Access & All_Options;
+
          begin
             if Map_File then
                Params := Map_Opt'Unchecked_Access & Params;
@@ -180,6 +187,7 @@ package body MDLL is
 
       procedure Ada_Build_Reloc_DLL is
          Success : Boolean;
+
       begin
          if not Quiet then
             Text_IO.Put_Line ("Building relocatable DLL...");
@@ -192,7 +200,7 @@ package body MDLL is
             end if;
          end if;
 
-         --  1) Build base file with objects files.
+         --  1) Build base file with objects files
 
          Utl.Gnatbind (L_Afiles, Options & Bargs_Options);
 
@@ -208,14 +216,14 @@ package body MDLL is
             Utl.Gnatlink (L_Afiles (L_Afiles'Last).all, Params);
          end;
 
-         --  2) Build exp from base file.
+         --  2) Build exp from base file
 
          Utl.Dlltool (Def_File, Dll_File, Lib_File,
                       Base_File    => Bas_File,
                       Exp_Table    => Exp_File,
                       Build_Import => False);
 
-         --  3) Build base file with exp file and objects files.
+         --  3) Build base file with exp file and objects files
 
          Utl.Gnatbind (L_Afiles, Options & Bargs_Options);
 
@@ -278,6 +286,7 @@ package body MDLL is
 
       procedure Build_Non_Reloc_DLL is
          Success : Boolean;
+
       begin
          if not Quiet then
             Text_IO.Put_Line ("building non relocatable DLL...");
@@ -291,7 +300,7 @@ package body MDLL is
             end if;
          end if;
 
-         --  Build exp table and the lib .a file.
+         --  Build exp table and the lib .a file
 
          Utl.Dlltool (Def_File, Dll_File, Lib_File,
                       Exp_Table    => Exp_File,
@@ -325,10 +334,11 @@ package body MDLL is
       -- Ada_Build_Non_Reloc_DLL --
       -----------------------------
 
-      --  Build a non relocatable DLL with Ada code.
+      --  Build a non relocatable DLL with Ada code
 
       procedure Ada_Build_Non_Reloc_DLL is
          Success : Boolean;
+
       begin
          if not Quiet then
             Text_IO.Put_Line ("building non relocatable DLL...");
@@ -342,7 +352,7 @@ package body MDLL is
             end if;
          end if;
 
-         --  Build exp table and the lib .a file.
+         --  Build exp table and the lib .a file
 
          Utl.Dlltool (Def_File, Dll_File, Lib_File,
                       Exp_Table    => Exp_File,
@@ -378,9 +388,9 @@ package body MDLL is
       end Ada_Build_Non_Reloc_DLL;
 
    begin
-      --  On Windows the binder file must not be in the first position
-      --  in the list. This is due to the way DLL's are built on Windows.
-      --  We swap the first ali with the last one if it is the case.
+      --  On Windows the binder file must not be in the first position in the
+      --  list. This is due to the way DLL's are built on Windows. We swap the
+      --  first ali with the last one if it is the case.
 
       if L_Afiles'Length > 1 then
          declare
@@ -422,43 +432,57 @@ package body MDLL is
       Def_Filename : String)
    is
 
-      procedure Build_Import_Library (Def_Base_Filename : String);
-      --  Build an import library.
-      --  this is to build only a .a library to link against a DLL.
-
-      Base_Filename : constant String := MDLL.Fil.Ext_To (Lib_Filename);
+      procedure Build_Import_Library (Lib_Filename : String);
+      --  Build an import library. This is to build only a .a library to link
+      --  against a DLL.
 
       --------------------------
       -- Build_Import_Library --
       --------------------------
 
-      procedure Build_Import_Library (Def_Base_Filename : String) is
-         Def_File : String renames Def_Filename;
-         Dll_File : constant String := Def_Base_Filename & ".dll";
-         Lib_File : constant String := "lib" & Base_Filename & ".a";
+      procedure Build_Import_Library (Lib_Filename : String) is
+         Def_File      : String renames Def_Filename;
+         Dll_File      : constant String := Get_Dll_Name (Lib_Filename);
+         Base_Filename : constant String := MDLL.Fil.Ext_To (Lib_Filename);
+         Lib_File      : constant String := "lib" & Base_Filename & ".a";
 
       begin
          if not Quiet then
             Text_IO.Put_Line ("Building import library...");
-            Text_IO.Put_Line ("make " & Lib_File &
-                              " to use dynamic library " & Dll_File);
+            Text_IO.Put_Line
+              ("make " & Lib_File & " to use dynamic library " & Dll_File);
          end if;
 
-         Utl.Dlltool (Def_File, Dll_File, Lib_File,
-                      Build_Import => True);
+         Utl.Dlltool
+           (Def_File, Dll_File, Lib_File, Build_Import => True);
       end Build_Import_Library;
 
+   --  Start of processing for Build_Import_Library
+
    begin
-      --  If the library has the form lib<name>.a then the def file should
-      --  be <name>.def and the DLL to link against <name>.dll
-      --  this is a Windows convention and we try as much as possible to
-      --  follow the platform convention.
+      --  If the library has the form lib<name>.a then the def file should be
+      --  <name>.def and the DLL to link against <name>.dll. This is a Windows
+      --  convention and we try as much as possible to follow the platform
+      --  convention.
 
       if Lib_Filename'Length > 3 and then Lib_Filename (1 .. 3) = "lib" then
-         Build_Import_Library (Base_Filename (4 .. Base_Filename'Last));
+         Build_Import_Library (Lib_Filename (4 .. Lib_Filename'Last));
       else
-         Build_Import_Library (Base_Filename);
+         Build_Import_Library (Lib_Filename);
       end if;
    end Build_Import_Library;
+
+   ------------------
+   -- Get_Dll_Name --
+   ------------------
+
+   function Get_Dll_Name (Lib_Filename : in String) return String is
+   begin
+      if MDLL.Fil.Get_Ext (Lib_Filename) = "" then
+         return Lib_Filename & ".dll";
+      else
+         return Lib_Filename;
+      end if;
+   end Get_Dll_Name;
 
 end MDLL;
