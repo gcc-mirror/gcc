@@ -274,17 +274,6 @@ package body VMS_Conv is
             Params   => new Parameter_Array'(1 => File),
             Defext   => "   "),
 
-         Library =>
-           (Cname    => new S'("LIBRARY"),
-            Usage    => new S'("GNAT LIBRARY /[CREATE | SET | DELETE]"
-                               & "=directory [/CONFIG=file]"),
-            VMS_Only => True,
-            Unixcmd  => new S'("gnatlbr"),
-            Unixsws  => null,
-            Switches => Lbr_Switches'Access,
-            Params   => new Parameter_Array'(1 .. 0 => File),
-            Defext   => "   "),
-
          Link =>
            (Cname    => new S'("LINK"),
             Usage    => new S'("GNAT LINK file[.ali]"
