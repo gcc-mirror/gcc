@@ -29,6 +29,7 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Exp_Ch2;  use Exp_Ch2;
+with Exp_Pakd; use Exp_Pakd;
 with Exp_Util; use Exp_Util;
 with Elists;   use Elists;
 with Eval_Fat; use Eval_Fat;
@@ -989,7 +990,7 @@ package body Checks is
 
       elsif Is_Array_Type (Typ) then
 
-         --  A useful optimization: an aggregate with only an Others clause
+         --  A useful optimization: an aggregate with only an others clause
          --  always has the right bounds.
 
          if Nkind (N) = N_Aggregate
@@ -1117,10 +1118,10 @@ package body Checks is
          return;
       end if;
 
-      --  No discriminant checks necessary for access when expression
+      --  No discriminant checks necessary for an access when expression
       --  is statically Null. This is not only an optimization, this is
       --  fundamental because otherwise discriminant checks may be generated
-      --  in init procs for types containing an access to a non-frozen yet
+      --  in init procs for types containing an access to a not-yet-frozen
       --  record, causing a deadly forward reference.
 
       --  Also, if the expression is of an access type whose designated
@@ -1156,6 +1157,14 @@ package body Checks is
       --  and no check is required).
 
       if not Is_Constrained (T_Typ) then
+         return;
+
+      --  Ada 2005: nothing to do if the type is one for which there is a
+      --  partial view that is constrained.
+
+      elsif Ada_Version >= Ada_05
+        and then Has_Constrained_Partial_View (Base_Type (T_Typ))
+      then
          return;
       end if;
 
@@ -1582,7 +1591,7 @@ package body Checks is
 
       Insert_Action (Ck_Node,
         Make_Raise_Constraint_Error (Loc,
-          Condition => Make_Op_Not (Loc, Make_Op_And (Loc, Lo_Chk, Hi_Chk)),
+          Condition => Make_Op_Not (Loc, Make_And_Then (Loc, Lo_Chk, Hi_Chk)),
           Reason    => Reason));
    end Apply_Float_Conversion_Check;
 
@@ -4701,6 +4710,28 @@ package body Checks is
                    Attribute_Name => Name_Valid)),
            Reason => CE_Invalid_Data),
          Suppress => All_Checks);
+
+      --  If the expression is a a reference to an element of a bit-packed
+      --  array, it is rewritten as a renaming declaration. If the expression
+      --  is an actual in a call, it has not been expanded, waiting for the
+      --  proper point at which to do it. The same happens with renamings, so
+      --  that we have to force the expansion now. This non-local complication
+      --  is due to code in exp_ch2,adb, exp_ch4.adb and exp_ch6.adb.
+
+      if Is_Entity_Name (Exp)
+        and then Nkind (Parent (Entity (Exp))) = N_Object_Renaming_Declaration
+      then
+         declare
+            Old_Exp : constant Node_Id := Name (Parent (Entity (Exp)));
+         begin
+            if Nkind (Old_Exp) = N_Indexed_Component
+              and then Is_Bit_Packed_Array (Etype (Prefix (Old_Exp)))
+            then
+               Expand_Packed_Element_Reference (Old_Exp);
+            end if;
+         end;
+      end if;
+
       Validity_Checks_On := True;
    end Insert_Valid_Check;
 
@@ -4715,14 +4746,25 @@ package body Checks is
    begin
       pragma Assert (Is_Access_Type (Etyp));
 
-      --  Don't need access check if: 1) we are analyzing a generic, 2) it is
-      --  known to be non-null, or 3) the check was suppressed on the type
+      --  Don't need access check if:
+      --   1) we are analyzing a generic
+      --   2) it is known to be non-null
+      --   3) the check was suppressed on the type
+      --   4) This is an attribute reference that returns an access type.
 
       if Inside_A_Generic
         or else Access_Checks_Suppressed (Etyp)
       then
          return;
-
+      elsif Nkind (N) = N_Attribute_Reference
+        and then
+         (Attribute_Name (N) = Name_Access
+            or else
+          Attribute_Name (N) = Name_Unchecked_Access
+            or else
+          Attribute_Name (N) = Name_Unrestricted_Access)
+      then
+         return;
          --  Otherwise install access check
 
       else
