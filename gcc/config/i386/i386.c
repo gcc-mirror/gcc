@@ -890,8 +890,7 @@ static int ix86_comp_type_attributes (tree, tree);
 static int ix86_function_regparm (tree, tree);
 const struct attribute_spec ix86_attribute_table[];
 static bool ix86_function_ok_for_sibcall (tree, tree);
-static tree ix86_handle_cdecl_attribute (tree *, tree, tree, int, bool *);
-static tree ix86_handle_regparm_attribute (tree *, tree, tree, int, bool *);
+static tree ix86_handle_cconv_attribute (tree *, tree, tree, int, bool *);
 static int ix86_value_regno (enum machine_mode, tree);
 static bool contains_128bit_aligned_vector_p (tree);
 static rtx ix86_struct_value_rtx (tree, int);
@@ -1660,15 +1659,18 @@ const struct attribute_spec ix86_attribute_table[] =
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
   /* Stdcall attribute says callee is responsible for popping arguments
      if they are not variable.  */
-  { "stdcall",   0, 0, false, true,  true,  ix86_handle_cdecl_attribute },
+  { "stdcall",   0, 0, false, true,  true,  ix86_handle_cconv_attribute },
   /* Fastcall attribute says callee is responsible for popping arguments
      if they are not variable.  */
-  { "fastcall",  0, 0, false, true,  true,  ix86_handle_cdecl_attribute },
+  { "fastcall",  0, 0, false, true,  true,  ix86_handle_cconv_attribute },
   /* Cdecl attribute says the callee is a normal C declaration */
-  { "cdecl",     0, 0, false, true,  true,  ix86_handle_cdecl_attribute },
+  { "cdecl",     0, 0, false, true,  true,  ix86_handle_cconv_attribute },
   /* Regparm attribute specifies how many integer arguments are to be
      passed in registers.  */
-  { "regparm",   1, 1, false, true,  true,  ix86_handle_regparm_attribute },
+  { "regparm",   1, 1, false, true,  true,  ix86_handle_cconv_attribute },
+  /* Sseregparm attribute says we are using x86_64 calling conventions
+     for FP arguments.  */
+  { "sseregparm", 0, 0, false, true, true, ix86_handle_cconv_attribute },
 #if TARGET_DLLIMPORT_DECL_ATTRIBUTES
   { "dllimport", 0, 0, false, false, false, handle_dll_attribute },
   { "dllexport", 0, 0, false, false, false, handle_dll_attribute },
@@ -1743,12 +1745,15 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
   return true;
 }
 
-/* Handle a "cdecl", "stdcall", or "fastcall" attribute;
+/* Handle "cdecl", "stdcall", "fastcall", "regparm" and "sseregparm"
+   calling convention attributes;
    arguments as in struct attribute_spec.handler.  */
+
 static tree
-ix86_handle_cdecl_attribute (tree *node, tree name,
-			     tree args ATTRIBUTE_UNUSED,
-			     int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
+ix86_handle_cconv_attribute (tree *node, tree name,
+				   tree args,
+				   int flags ATTRIBUTE_UNUSED,
+				   bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != FUNCTION_TYPE
       && TREE_CODE (*node) != METHOD_TYPE
@@ -1758,57 +1763,18 @@ ix86_handle_cdecl_attribute (tree *node, tree name,
       warning (OPT_Wattributes, "%qs attribute only applies to functions",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
-    }
-  else
-    {
-      if (is_attribute_p ("fastcall", name))
-        {
-          if (lookup_attribute ("stdcall", TYPE_ATTRIBUTES (*node)))
-            {
-              error ("fastcall and stdcall attributes are not compatible");
-            }
-           else if (lookup_attribute ("regparm", TYPE_ATTRIBUTES (*node)))
-            {
-              error ("fastcall and regparm attributes are not compatible");
-            }
-        }
-      else if (is_attribute_p ("stdcall", name))
-        {
-          if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (*node)))
-            {
-              error ("fastcall and stdcall attributes are not compatible");
-            }
-        }
+      return NULL_TREE;
     }
 
-  if (TARGET_64BIT)
-    {
-      warning (OPT_Wattributes, "%qs attribute ignored",
-	       IDENTIFIER_POINTER (name));
-      *no_add_attrs = true;
-    }
-
-  return NULL_TREE;
-}
-
-/* Handle a "regparm" attribute;
-   arguments as in struct attribute_spec.handler.  */
-static tree
-ix86_handle_regparm_attribute (tree *node, tree name, tree args,
-			       int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
-{
-  if (TREE_CODE (*node) != FUNCTION_TYPE
-      && TREE_CODE (*node) != METHOD_TYPE
-      && TREE_CODE (*node) != FIELD_DECL
-      && TREE_CODE (*node) != TYPE_DECL)
-    {
-      warning (OPT_Wattributes, "%qs attribute only applies to functions",
-	       IDENTIFIER_POINTER (name));
-      *no_add_attrs = true;
-    }
-  else
+  /* Can combine regparm with all attributes but fastcall.  */
+  if (is_attribute_p ("regparm", name))
     {
       tree cst;
+
+      if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (*node)))
+        {
+	  error ("fastcall and regparm attributes are not compatible");
+	}
 
       cst = TREE_VALUE (args);
       if (TREE_CODE (cst) != INTEGER_CST)
@@ -1825,11 +1791,62 @@ ix86_handle_regparm_attribute (tree *node, tree name, tree args,
 	  *no_add_attrs = true;
 	}
 
-      if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (*node)))
-	{
+      return NULL_TREE;
+    }
+
+  if (TARGET_64BIT)
+    {
+      warning (OPT_Wattributes, "%qs attribute ignored",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  /* Can combine fastcall with stdcall (redundant) and sseregparm.  */
+  if (is_attribute_p ("fastcall", name))
+    {
+      if (lookup_attribute ("cdecl", TYPE_ATTRIBUTES (*node)))
+        {
+	  error ("fastcall and cdecl attributes are not compatible");
+	}
+      if (lookup_attribute ("stdcall", TYPE_ATTRIBUTES (*node)))
+        {
+	  error ("fastcall and stdcall attributes are not compatible");
+	}
+      if (lookup_attribute ("regparm", TYPE_ATTRIBUTES (*node)))
+        {
 	  error ("fastcall and regparm attributes are not compatible");
 	}
     }
+
+  /* Can combine stdcall with fastcall (redundant), regparm and
+     sseregparm.  */
+  else if (is_attribute_p ("stdcall", name))
+    {
+      if (lookup_attribute ("cdecl", TYPE_ATTRIBUTES (*node)))
+        {
+	  error ("stdcall and cdecl attributes are not compatible");
+	}
+      if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (*node)))
+        {
+	  error ("stdcall and fastcall attributes are not compatible");
+	}
+    }
+
+  /* Can combine cdecl with regparm and sseregparm.  */
+  else if (is_attribute_p ("cdecl", name))
+    {
+      if (lookup_attribute ("stdcall", TYPE_ATTRIBUTES (*node)))
+        {
+	  error ("stdcall and cdecl attributes are not compatible");
+	}
+      if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (*node)))
+        {
+	  error ("fastcall and cdecl attributes are not compatible");
+	}
+    }
+
+  /* Can combine sseregparm with all attributes.  */
 
   return NULL_TREE;
 }
@@ -1847,18 +1864,23 @@ ix86_comp_type_attributes (tree type1, tree type2)
   if (TREE_CODE (type1) != FUNCTION_TYPE)
     return 1;
 
-  /*  Check for mismatched fastcall types */
-  if (!lookup_attribute ("fastcall", TYPE_ATTRIBUTES (type1))
-      != !lookup_attribute ("fastcall", TYPE_ATTRIBUTES (type2)))
+  /* Check for mismatched fastcall/regparm types.  */
+  if ((!lookup_attribute ("fastcall", TYPE_ATTRIBUTES (type1))
+       != !lookup_attribute ("fastcall", TYPE_ATTRIBUTES (type2)))
+      || (ix86_function_regparm (type1, NULL)
+	  != ix86_function_regparm (type2, NULL)))
+    return 0;
+
+  /* Check for mismatched sseregparm types.  */
+  if (!lookup_attribute ("sseregparm", TYPE_ATTRIBUTES (type1))
+      != !lookup_attribute ("sseregparm", TYPE_ATTRIBUTES (type2)))
     return 0;
 
   /* Check for mismatched return types (cdecl vs stdcall).  */
   if (!lookup_attribute (rtdstr, TYPE_ATTRIBUTES (type1))
       != !lookup_attribute (rtdstr, TYPE_ATTRIBUTES (type2)))
     return 0;
-  if (ix86_function_regparm (type1, NULL)
-      != ix86_function_regparm (type2, NULL))
-    return 0;
+
   return 1;
 }
 
@@ -1905,6 +1927,47 @@ ix86_function_regparm (tree type, tree decl)
 	}
     }
   return regparm;
+}
+
+/* Return 1 or 2, if we can pass up to 8 SFmode (1) and DFmode (2) arguments
+   in SSE registers for a function with the indicated TYPE and DECL.
+   DECL may be NULL when calling function indirectly
+   or considering a libcall.  Otherwise return 0.  */
+
+static int
+ix86_function_sseregparm (tree type, tree decl)
+{
+  /* Use SSE registers to pass SFmode and DFmode arguments if requested
+     by the sseregparm attribute.  */
+  if (type
+      && lookup_attribute ("sseregparm", TYPE_ATTRIBUTES (type)))
+    {
+      if (!TARGET_SSE)
+	{
+	  if (decl)
+	    error ("Calling %qD with attribute sseregparm without "
+		   "SSE/SSE2 enabled", decl);
+	  else
+	    error ("Calling %qT with attribute sseregparm without "
+		   "SSE/SSE2 enabled", type);
+	  return 0;
+	}
+
+      return 2;
+    }
+
+  /* For local functions, pass SFmode (and DFmode for SSE2) arguments
+     in SSE registers even for 32-bit mode and not just 3, but up to
+     8 SSE arguments in registers.  */
+  if (!TARGET_64BIT && decl
+      && TARGET_SSE_MATH && flag_unit_at_a_time && !profile_flag)
+    {
+      struct cgraph_local_info *i = cgraph_local_info (decl);
+      if (i && i->local)
+	return TARGET_SSE2 ? 2 : 1;
+    }
+
+  return 0;
 }
 
 /* Return true if EAX is live at the start of the function.  Used by
@@ -2041,10 +2104,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
   *cum = zero_cum;
 
   /* Set up the number of registers to use for passing arguments.  */
-  if (fntype)
-    cum->nregs = ix86_function_regparm (fntype, fndecl);
-  else
-    cum->nregs = ix86_regparm;
+  cum->nregs = ix86_regparm;
   if (TARGET_SSE)
     cum->sse_nregs = SSE_REGPARM_MAX;
   if (TARGET_MMX)
@@ -2053,7 +2113,8 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
   cum->warn_mmx = true;
   cum->maybe_vaarg = false;
 
-  /* Use ecx and edx registers if function has fastcall attribute */
+  /* Use ecx and edx registers if function has fastcall attribute,
+     else look for regparm information.  */
   if (fntype && !TARGET_64BIT)
     {
       if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (fntype)))
@@ -2061,7 +2122,13 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 	  cum->nregs = 2;
 	  cum->fastcall = 1;
 	}
+      else
+	cum->nregs = ix86_function_regparm (fntype, fndecl);
     }
+
+  /* Set up the number of SSE registers used for passing SFmode
+     and DFmode arguments.  Warn for mismatching ABI.  */
+  cum->float_in_sse = ix86_function_sseregparm (fntype, fndecl);
 
   /* Determine if this function has variable arguments.  This is
      indicated by the last argument being 'void_type_mode' if there
@@ -2084,6 +2151,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 		  cum->warn_sse = 0;
 		  cum->warn_mmx = 0;
 		  cum->fastcall = 0;
+		  cum->float_in_sse = 0;
 		}
 	      cum->maybe_vaarg = true;
 	    }
@@ -2092,21 +2160,6 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
   if ((!fntype && !libname)
       || (fntype && !TYPE_ARG_TYPES (fntype)))
     cum->maybe_vaarg = true;
-
-  /* For local functions, pass SFmode (and DFmode for SSE2) arguments
-     in SSE registers even for 32-bit mode and not just 3, but up to
-     8 SSE arguments in registers.  */
-  if (!TARGET_64BIT && !cum->maybe_vaarg && !cum->fastcall
-      && cum->sse_nregs == SSE_REGPARM_MAX && fndecl
-      && TARGET_SSE_MATH && flag_unit_at_a_time && !profile_flag)
-    {
-      struct cgraph_local_info *i = cgraph_local_info (fndecl);
-      if (i && i->local)
-	{
-	  cum->sse_nregs = 8;
-	  cum->float_in_sse = true;
-	}
-    }
 
   if (TARGET_DEBUG_ARG)
     fprintf (stderr, ", nregs=%d )\n", cum->nregs);
@@ -2785,10 +2838,10 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	  break;
 
 	case DFmode:
-	  if (!TARGET_SSE2)
+	  if (cum->float_in_sse < 2)
 	    break;
 	case SFmode:
-	  if (!cum->float_in_sse)
+	  if (cum->float_in_sse < 1)
 	    break;
 	  /* FALLTHRU */
 
@@ -2914,10 +2967,10 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode orig_mode,
 	  }
 	break;
       case DFmode:
-	if (!TARGET_SSE2)
+	if (cum->float_in_sse < 2)
 	  break;
       case SFmode:
-	if (!cum->float_in_sse)
+	if (cum->float_in_sse < 1)
 	  break;
 	/* FALLTHRU */
       case TImode:
@@ -3274,13 +3327,13 @@ ix86_value_regno (enum machine_mode mode, tree func)
     return 0;
 
   /* Floating point return values in %st(0), except for local functions when
-     SSE math is enabled.  */
-  if (func && SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH
-      && flag_unit_at_a_time)
+     SSE math is enabled or for functions with sseregparm attribute.  */
+  if (func && (mode == SFmode || mode == DFmode))
     {
-      struct cgraph_local_info *i = cgraph_local_info (func);
-      if (i && i->local)
-	return FIRST_SSE_REG;
+      int sse_level = ix86_function_sseregparm (TREE_TYPE (func), func);
+      if ((sse_level >= 1 && mode == SFmode)
+	  || (sse_level == 2 && mode == DFmode))
+        return FIRST_SSE_REG;
     }
 
   return FIRST_FLOAT_REG;

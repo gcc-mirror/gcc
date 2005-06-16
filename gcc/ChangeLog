@@ -1,3 +1,22 @@
+2005-06-16  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* doc/extend.texi: Document sseregparm target attribute.
+	Clarify fastcall and regparm documentation.
+	* config/i386/i386.h: Adjust float_in_sse documentation.
+	* config/i386/i386.c: Add new target attribute sseregparm.
+	(ix86_handle_cdecl_attribute, ix86_handle_regparm_attribute):
+	Merge into ...
+	(ix86_handle_cconv_attribute): ... here.  Also handle
+	sseregparm attribute.
+	(ix86_comp_type_attributes): Compare sseregparm attributes.
+	(ix86_function_sseregparm): New function, split out from ...
+	(init_cumulative_args): ... here.  Use to decide use
+	of SSE registers and error in case of missing support.
+	(ix86_value_regno): Likewise.
+	(function_arg_advance): Do not bail out for DFmode if we need
+	to pass doubles in registers.
+	(function_arg): Likewise.
+
 2005-06-16  Paolo Bonzini  <bonzini@gnu.org>
             Daniel Jacobowitz  <dan@codesourcery.com>
 	    Alan Modra <amodra.bigpond.net.au>

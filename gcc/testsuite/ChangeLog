@@ -1,3 +1,11 @@
+2005-06-16  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	* gcc.target/i386/attributes-error.c: New testcase.
+	* gcc.target/i386/fastcall-sseregparm.c: Likewise.
+	* gcc.target/i386/regparm-stdcall.c: Likewise.
+	* gcc.target/i386/sseregparm-1.c: Likewise.
+	* gcc.target/i386/sseregparm-2.c: Likewise.
+
 2005-06-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/rtti/crash2.C: New.
