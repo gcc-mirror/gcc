@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --                     G N A T . H E A P _ S O R T _ G                      --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1995-2002 Ada Core Technologies, Inc.            --
+--                     Copyright (C) 1995-2005 AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,7 @@
 
 --  There is also GNAT.Heap_Sort_A, which is now considered obsolete, but
 --  was an older version working with subprogram parameters. This version
---  is retained for bacwards compatibility with old versions of GNAT.
+--  is retained for backwards compatibility with old versions of GNAT.
 
 --  This heapsort algorithm uses approximately N*log(N) compares in the
 --  worst case and is in place with no additional storage required. See

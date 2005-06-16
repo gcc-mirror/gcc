@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --                  S Y S T E M . A S T _ H A N D L I N G                   --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1996 Free Software Foundation, Inc.             --
+--          Copyright (C) 1996-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,6 @@
 ------------------------------------------------------------------------------
 
 --  Runtime support for Handling of AST's (Used on VMS implementations only)
-
 
 with Ada.Task_Identification;
 with System;

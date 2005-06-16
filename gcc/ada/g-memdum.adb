@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --                     G N A T . M E M O R Y _ D U M P                      --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2003 Ada Core Technologies, Inc.              --
+--                     Copyright (C) 2003-2005 AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --

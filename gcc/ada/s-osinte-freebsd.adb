@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                 GNU ADA RUNTIME LIBRARY (GNARL) COMPONENTS               --
+--                  GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                --
 --                                                                          --
 --                   S Y S T E M . O S _ I N T E R F A C E                  --
 --                                                                          --
 --                                   B o d y                                --
 --                                                                          --
---          Copyright (C) 1991-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1991-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -84,7 +84,6 @@ package body System.OS_Interface is
       return timespec'(ts_sec => S,
         ts_nsec => long (Long_Long_Integer (F * 10#1#E9)));
    end To_Timespec;
-
 
    function To_Duration (TV : struct_timeval) return Duration is
    begin

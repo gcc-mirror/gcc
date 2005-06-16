@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --                      S Y S T E M . M A N T I S S A                       --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1996 Free Software Foundation, Inc.             --
+--         Copyright (C) 1996-2005 Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --

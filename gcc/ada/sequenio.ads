@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --                        S E Q U E N T I A L  _ I O                        --
 --                                                                          --

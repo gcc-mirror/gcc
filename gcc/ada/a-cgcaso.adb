@@ -2,11 +2,12 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---              ADA.CONTAINERS.GENERIC_CONSTRAINED_ARRAY_SORT               --
+--                      A D A . C O N T A I N E R S .                       --
+--       G E N E R I C _ C O N S T R A I N E D _ A R R A Y _ S O R T        --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2004 Free Software Foundation, Inc.            --
+--          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --

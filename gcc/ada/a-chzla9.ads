@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --     A D A . C H A R A C T E R S . W I D E _ W I D E _ L A T I N _ 9      --
 --                                                                          --

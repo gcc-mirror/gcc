@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --                  ADA.STRINGS.WIDE_UNBOUNDED.WIDE_TEXT_IO                 --
 --                                                                          --
@@ -73,7 +73,6 @@ package body Ada.Strings.Wide_Unbounded.Wide_Text_IO is
    begin
       Get_Line (File, Buffer, Last);
       Str1 := new Wide_String'(Buffer (1 .. Last));
-
       while Last = Buffer'Last loop
          Get_Line (File, Buffer, Last);
          Str2 := new Wide_String'(Str1.all & Buffer (1 .. Last));

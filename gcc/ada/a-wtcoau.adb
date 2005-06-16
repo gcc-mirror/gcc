@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --         A D A . W I D E _ T E X T _ I O . C O M P L E X _ A U X          --
 --                                                                          --
@@ -193,7 +193,6 @@ package body Ada.Wide_Text_IO.Complex_Aux is
       To (To'First + Rptr + 1) := ',';
 
       To (To'Last) := ')';
-
 
       To (To'Last - Iptr .. To'Last - 1) := I_String (1 .. Iptr);
 

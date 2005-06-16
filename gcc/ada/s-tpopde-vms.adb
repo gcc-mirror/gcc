@@ -1,8 +1,9 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
---                   SYSTEM.TASK_PRIMITIVES.OPERATIONS.DEC                  --
+--    S Y S T E M . T A S K _ P R I M I T I V E S . O P E R A T I O N S .   --
+--                                   D E C                                  --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --

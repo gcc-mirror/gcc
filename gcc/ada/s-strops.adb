@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUNTIME LIBRARY (GNARL) COMPONENTS                --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
 --                    S Y S T E M . S T R I N G _ O P S                     --
 --                                                                          --

@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --                         A D A . N U M E R I C S                          --
 --                                                                          --
@@ -12,7 +12,6 @@
 -- modified version,  any changes that you have made are clearly indicated. --
 --                                                                          --
 ------------------------------------------------------------------------------
-
 
 package Ada.Numerics is
 pragma Pure (Numerics);

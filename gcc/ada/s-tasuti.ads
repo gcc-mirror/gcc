@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                 GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS              --
+--                  GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                --
 --                                                                          --
 --              S Y S T E M . T A S K I N G . U T I L I T I E S             --
 --                                                                          --

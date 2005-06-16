@@ -1,13 +1,13 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
 --                   A D A . E X C E P T I O N S . P O L L                  --
 --                (version supporting asynchronous abort test)              --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2000, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,8 +39,15 @@
 
 --  NT, OS/2, HPUX/DCE and SCO currently use this file
 
+pragma Warnings (Off);
+--  Allow withing of non-Preelaborated units in Ada 2005 mode where this
+--  package will be categorized as Preelaborate. See AI-362 for details.
+--  It is safe in the context of the run-time to violate the rules!
+
 with System.Soft_Links;
 --  used for Check_Abort_Status
+
+pragma Warnings (On);
 
 separate (Ada.Exceptions)
 

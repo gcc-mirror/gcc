@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                    ADA.STRINGS.EQUAL_CASE_INSENSITIVE                    --
+--   A D A . S T R I N G S . E Q U A L _ C A S E _ I N S E N S I T I V E    --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2004 Free Software Foundation, Inc.            --
+--          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -63,8 +63,3 @@ begin
       RI := RI + 1;
    end loop;
 end Ada.Strings.Equal_Case_Insensitive;
-
-
-
-
-

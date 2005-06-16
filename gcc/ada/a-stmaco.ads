@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --           A D A . S T R I N G S . M A P S . C O N S T A N T S            --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          ACopyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -39,6 +39,8 @@ with Ada.Characters.Latin_1;
 
 package Ada.Strings.Maps.Constants is
 pragma Preelaborate (Constants);
+pragma Pure_05 (Constants);
+--  In accordance with Ada 2005 AI-362
 
    Control_Set           : constant Character_Set;
    Graphic_Set           : constant Character_Set;

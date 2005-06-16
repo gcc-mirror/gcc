@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --                         G N A T . S I G N A L S                          --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2003 Free Software Foundation, Inc.            --
+--          Copyright (C) 2003-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,14 +31,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Interrupts;
-
 --  This package provides operations for querying and setting the blocked
 --  status of signals.
 
 --  This package is supported only on targets where Ada.Interrupts.Interrupt_ID
 --  corresponds to software signals on the target, and where System.Interrupts
 --  provides the ability to block and unblock signals.
+
+with Ada.Interrupts;
 
 package GNAT.Signals is
 
@@ -48,8 +48,7 @@ package GNAT.Signals is
    procedure Unblock_Signal (Signal : Ada.Interrupts.Interrupt_ID);
    --  Unblock "Signal" at the process level
 
-   function Is_Blocked (Signal : Ada.Interrupts.Interrupt_ID)
-                       return Boolean;
+   function Is_Blocked (Signal : Ada.Interrupts.Interrupt_ID) return Boolean;
    --  "Signal" blocked at the process level?
 
 end GNAT.Signals;

@@ -1,13 +1,13 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
 --         S Y S T E M . T A S K I N G . T A S K _ A T T R I B U T E S      --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2004, Ada Core Technologies               --
+--                     Copyright (C) 1995-2005, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,13 +91,13 @@ package body System.Tasking.Task_Attributes is
 
          In_Use := In_Use and not (2**Natural (X.Index));
 
-         --  There is no need for finalization in this case,
-         --  since controlled types are too big to fit in the TCB.
+         --  There is no need for finalization in this case, since controlled
+         --  types are too big to fit in the TCB.
 
       else
-         --  Remove nodes for this attribute from the lists of
-         --  all tasks, and deallocate the nodes.
-         --  Deallocation does finalization, if necessary.
+         --  Remove nodes for this attribute from the lists of all tasks,
+         --  and deallocate the nodes. Deallocation does finalization, if
+         --  necessary.
 
          declare
             C : System.Tasking.Task_Id := All_Tasks_List;
@@ -122,7 +122,7 @@ package body System.Tasking.Task_Attributes is
                      P.Next := Q.Next;
                   end if;
 
-                  --  Can't Deallocate now since we are holding RTS_Lock.
+                  --  Can't Deallocate now since we are holding RTS_Lock
 
                   Q.Next := To_Be_Freed;
                   To_Be_Freed := Q;
@@ -163,7 +163,7 @@ package body System.Tasking.Task_Attributes is
       Q : Access_Node := To_Access_Node (T.Indirect_Attributes);
 
    begin
-      --  Deallocate all the indirect attributes of this task.
+      --  Deallocate all the indirect attributes of this task
 
       while Q /= null loop
          P := Q;
@@ -183,15 +183,16 @@ package body System.Tasking.Task_Attributes is
    -- Initialize Attributes --
    ---------------------------
 
-   --  This is to be called by System.Tasking.Stages.Create_Task.
+   --  This is to be called by System.Tasking.Stages.Create_Task
 
    procedure Initialize_Attributes (T : Task_Id) is
       P : Access_Instance;
+
    begin
       Defer_Abortion;
       Lock_RTS;
 
-      --  Initialize all the direct-access attributes of this task.
+      --  Initialize all the direct-access attributes of this task
 
       P := All_Attributes;
 

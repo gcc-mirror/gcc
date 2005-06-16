@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --      A D A . N U M E R I C S . S H O R T _ C O M P L E X _ T Y P E S     --
 --                                                                          --

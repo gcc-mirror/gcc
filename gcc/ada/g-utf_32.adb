@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --                          G N A T . U T F _ 3 2                           --
 --                                                                          --
@@ -53,6 +53,8 @@ package body GNAT.UTF_32 is
    --  The following array includes ranges for all codes with defined unicode
    --  categories (a group of characters is in the same range if and only if
    --  they share the same category, indicated in the comment).
+
+   --  Note that we do not try to take care of FFFE/FFFF cases in this table
 
    Unicode_Ranges : constant UTF_32_Ranges := (
      (16#00000#, 16#0001F#),  -- (Cc)  <control> .. <control>
@@ -1850,7 +1852,7 @@ package body GNAT.UTF_32 is
 
    --  The following array is parallel to the Unicode_Ranges table above. For
    --  each entry in the Unicode_Ranges table, there is a corresponding entry
-   --  in the following table indidacting the corresponding unicode category.
+   --  in the following table indicating the corresponding unicode category.
 
    Unicode_Categories : constant array (Unicode_Ranges'Range) of Category := (
      Cc,  -- (16#00000#, 16#0001F#)  <control> .. <control>
@@ -4201,40 +4203,32 @@ package body GNAT.UTF_32 is
    --    Other, Control (Cc)
    --    Other, Private Use (Co)
    --    Other, Surrogate (Cs)
-   --    Other, Format (Cf)
    --    Separator, Line (Zl)
    --    Separator, Paragraph (Zp)
 
-   --  In addition, the characters FFFE and FFFF are excluded. Note that the
-   --  defined Ada category of format effector is subsumed by the above set
-   --  of Unicode categories.
+   --  Note that characters with relative positions FFFE and FFFF in their
+   --  planes are not included in this table (we really don't want to add
+   --  32K entries for this purpose). Instead we handle these positions in
+   --  a completely different manner.
 
    --  Note: unassigned characters (category Cn) are deliberately NOT included
    --  in the set of non-graphics, since the idea is that if any of these are
    --  defined in the future, we don't want to have to modify the standard.
 
+   --  Note that Other, Format (Cf) is also quite deliberately not included
+   --  in the list of categories above. This means that these characters can
+   --  be included in character and string literals.
+
    UTF_32_Non_Graphic : constant UTF_32_Ranges := (
      (16#00000#, 16#0001F#),  -- <control> .. <control>
      (16#0007F#, 16#0009F#),  -- <control> .. <control>
-     (16#000AD#, 16#000AD#),  -- SOFT HYPHEN .. SOFT HYPHEN
-     (16#00600#, 16#00603#),  -- ARABIC NUMBER SIGN .. ARABIC SIGN SAFHA
-     (16#006DD#, 16#006DD#),  -- ARABIC END OF AYAH .. ARABIC END OF AYAH
-     (16#0070F#, 16#0070F#),  -- SYRIAC ABBREVIATION MARK .. SYRIAC ABBREVIATION MARK
-     (16#017B4#, 16#017B5#),  -- KHMER VOWEL INHERENT AQ .. KHMER VOWEL INHERENT AA
-     (16#0200C#, 16#0200F#),  -- ZERO WIDTH NON-JOINER .. RIGHT-TO-LEFT MARK
-     (16#02028#, 16#0202E#),  -- LINE SEPARATOR .. RIGHT-TO-LEFT OVERRIDE
-     (16#02060#, 16#02063#),  -- WORD JOINER .. INVISIBLE SEPARATOR
-     (16#0206A#, 16#0206F#),  -- INHIBIT SYMMETRIC SWAPPING .. NOMINAL DIGIT SHAPES
-     (16#0D800#, 16#0F8FF#),  -- <Non Private Use High Surrogate, First> .. <Private Use, Last>
-     (16#0FEFF#, 16#0FEFF#),  -- ZERO WIDTH NO-BREAK SPACE .. ZERO WIDTH NO-BREAK SPACE
-     (16#0FFF9#, 16#0FFFB#),  -- INTERLINEAR ANNOTATION ANCHOR .. INTERLINEAR ANNOTATION TERMINATOR
-     (16#0FFFE#, 16#0FFFF#),  -- excluded code positions
-     (16#1D173#, 16#1D17A#),  -- MUSICAL SYMBOL BEGIN BEAM .. MUSICAL SYMBOL END PHRASE
-     (16#E0001#, 16#E0001#),  -- LANGUAGE TAG .. LANGUAGE TAG
-     (16#E0020#, 16#E007F#),  -- TAG SPACE .. CANCEL TAG
+     (16#02028#, 16#02029#),  -- LINE SEPARATOR .. PARAGRAPH SEPARATOR
+     (16#0D800#, 16#0DB7F#),  -- <Non Private Use High Surrogate, First> .. <Non Private Use High Surrogate, Last>
+     (16#0DB80#, 16#0DBFF#),  -- <Private Use High Surrogate, First> .. <Private Use High Surrogate, Last>
+     (16#0DC00#, 16#0DFFF#),  -- <Low_Surrogate, First> .. <Low Surrogate, Last>
+     (16#0E000#, 16#0F8FF#),  -- <Private Use, First> .. <Private Use, Last>
      (16#F0000#, 16#FFFFD#),  -- <Plane 15 Private Use, First> .. <Plane 15 Private Use, Last>
      (16#100000#, 16#10FFFD#)); -- <Plane 16 Private Use, First> .. <Plane 16 Private Use, Last>
-
 
    --  The following two tables define the mapping to upper case. The first
    --  table gives the ranges of lower case letters. The corresponding entry
@@ -5102,12 +5096,24 @@ package body GNAT.UTF_32 is
    ------------------
 
    function Get_Category (U : UTF_32) return Category is
-      Index : constant Integer := Range_Search (U, Unicode_Ranges);
    begin
-      if Index = 0 then
-         return Cn;
+      --  Deal with FFFE/FFFF cases
+
+      if U mod 2#1_0000# >= 16#FFFE# then
+         return Fe;
+
+      --  Otherwise search table
+
       else
-         return Unicode_Categories (Index);
+         declare
+            Index : constant Integer := Range_Search (U, Unicode_Ranges);
+         begin
+            if Index = 0 then
+               return Cn;
+            else
+               return Unicode_Categories (Index);
+            end if;
+         end;
       end if;
    end Get_Category;
 
@@ -5179,16 +5185,25 @@ package body GNAT.UTF_32 is
 
    function Is_UTF_32_Non_Graphic (U : UTF_32) return Boolean is
    begin
-      return Range_Search (U, UTF_32_Non_Graphic) /= 0;
+      --  We have to deal with FFFE/FFFF specially
+
+      if U mod 16#1_0000# >= 16#FFFE# then
+         return True;
+
+      --  Otherwise we can use the table
+
+      else
+         return Range_Search (U, UTF_32_Non_Graphic) /= 0;
+      end if;
    end Is_UTF_32_Non_Graphic;
 
    Non_Graphic : constant array (Category) of Boolean :=
                    (Cc => True,
                     Co => True,
                     Cs => True,
-                    Cf => True,
                     Zl => True,
                     Zp => True,
+                    Fe => True,
                     others => False);
 
    function Is_UTF_32_Non_Graphic (C : Category) return Boolean is

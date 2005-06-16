@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                 GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS              --
+--                  GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                --
 --                                                                          --
 --                 A D A . D Y N A M I C _ P R I O R I T I E S              --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,11 @@
 -- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
+
+pragma Warnings (Off);
+--  Allow withing of non-Preelaborated units in Ada 2005 mode where this
+--  package will be categorized as Preelaborate. See AI-362 for details.
+--  It is safe in the context of the run-time to violate the rules!
 
 with Ada.Task_Identification;
 --  used for Task_Id
@@ -57,6 +62,8 @@ with System.Parameters;
 --  used for Single_Lock
 
 with Unchecked_Conversion;
+
+pragma Warnings (On);
 
 package body Ada.Dynamic_Priorities is
 
