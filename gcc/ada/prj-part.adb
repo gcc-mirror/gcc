@@ -667,7 +667,10 @@ package body Prj.Part is
                Scan (In_Tree); -- scan past the semicolon.
                exit Comma_Loop;
 
-            elsif Token /= Tok_Comma then
+            elsif Token = Tok_Comma then
+               Set_Is_Not_Last_In_List (Current_With_Node, In_Tree);
+
+            else
                Error_Msg ("expected comma or semi colon", Token_Ptr);
                exit Comma_Loop;
             end if;
@@ -678,7 +681,6 @@ package body Prj.Part is
          end loop Comma_Loop;
       end loop With_Loop;
    end Pre_Parse_Context_Clause;
-
 
    -------------------------------
    -- Post_Parse_Context_Clause --
@@ -1472,7 +1474,7 @@ package body Prj.Part is
          then
             --  Invalid name: report an error
 
-            Error_Msg ("Expected """ &
+            Error_Msg ("expected """ &
                        Get_Name_String (Name_Of (Project, In_Tree)) & """",
                        Token_Ptr);
          end if;
@@ -1489,7 +1491,7 @@ package body Prj.Part is
 
          if Token /= Tok_EOF then
             Error_Msg
-              ("Unexpected text following end of project", Token_Ptr);
+              ("unexpected text following end of project", Token_Ptr);
          end if;
       end if;
 

@@ -281,6 +281,12 @@ package Prj.Tree is
    pragma Inline (Is_Extending_All);
    --  Only valid for N_Project and N_With_Clause
 
+   function Is_Not_Last_In_List
+     (Node    : Project_Node_Id;
+      In_Tree : Project_Node_Tree_Ref) return Boolean;
+   pragma Inline (Is_Not_Last_In_List);
+   --  Only valid for N_With_Clause
+
    function First_Variable_Of
      (Node    : Project_Node_Id;
       In_Tree : Project_Node_Tree_Ref) return Variable_Node_Id;
@@ -632,6 +638,11 @@ package Prj.Tree is
       In_Tree : Project_Node_Tree_Ref);
    pragma Inline (Set_Is_Extending_All);
 
+   procedure Set_Is_Not_Last_In_List
+     (Node    : Project_Node_Id;
+      In_Tree : Project_Node_Tree_Ref);
+   pragma Inline (Set_Is_Not_Last_In_List);
+
    procedure Set_First_Variable_Of
      (Node    : Project_Node_Id;
       In_Tree : Project_Node_Tree_Ref;
@@ -949,6 +960,12 @@ package Prj.Tree is
          --    N_Project_Declaration
          --              - it indicates that there are unkept comments in the
          --                project.
+         --    N_With_Clause
+         --              - it indicates that this is not the last with in a
+         --                with clause. It is set for "A", but not for "B" in
+         --                    with "B";
+         --                  and
+         --                    with "A", "B";
 
          Flag2 : Boolean := False;
          --  This flag is significant only for:
