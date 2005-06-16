@@ -118,6 +118,13 @@ package Tbuild is
    pragma Inline (Make_Integer_Literal);
    --  A convenient form of Make_Integer_Literal taking Int instead of Uint
 
+   function Make_Linker_Section_Pragma
+     (Ent : Entity_Id;
+      Loc : Source_Ptr;
+      Sec : String) return Node_Id;
+   --  Construct a Linker_Section pragma for entity Ent, using string Sec as
+   --  the section name. Loc is the Sloc value to use in building the pragma.
+
    function Make_Raise_Constraint_Error
      (Sloc      : Source_Ptr;
       Condition : Node_Id := Empty;
