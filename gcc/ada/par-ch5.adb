@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1215,7 +1215,7 @@ package body Ch5 is
                --  Here we have an else that really is an else
 
                if Present (Else_Statements (If_Node)) then
-                  Error_Msg_SP ("Only one ELSE part allowed");
+                  Error_Msg_SP ("only one ELSE part allowed");
                   Append_List
                     (P_Sequence_Of_Statements (SS_Eftm_Eltm_Sreq),
                      Else_Statements (If_Node));
