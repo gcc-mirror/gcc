@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                         (Version for IRIX/MIPS)                          --
 --                                                                          --
---          Copyright (C) 1999-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -295,21 +295,7 @@ package body System.Machine_State_Operations is
       procedure Exc_Unwind (Scp : Sigcontext_Ptr; Fde : Long_Integer := 0);
       pragma Import (C, Exc_Unwind, "exc_unwind");
 
-      --  ??? Calling exc_unwind in the current setup does not work and
-      --  triggers the emission of system warning messages. Why it does
-      --  not work remains to be investigated. Part of the problem is
-      --  probably a section naming issue (e.g. .eh_frame/.debug_frame).
-
-      --  Instead of letting the call take place for nothing and emit
-      --  messages we don't expect, we just arrange things to pretend it
-      --  occurred and failed.
-
-      --  ??? Until this is fixed, we shall document that the backtrace
-      --  computation facility does not work, and we inhibit the pragma below
-      --  because we arrange for the call not to be emitted and the linker
-      --  complains when a library is linked in but resolves nothing.
-
-      --  pragma Linker_Options ("-lexc");
+      pragma Linker_Options ("-lexc");
 
    begin
       --  exc_unwind is apparently not thread-safe under IRIX, so protect it
@@ -319,11 +305,7 @@ package body System.Machine_State_Operations is
 
       Lock_Task.all;
 
-      if False then
-         Exc_Unwind (Scp);
-      else
-         Scp.SC_PC := 0;
-      end if;
+      Exc_Unwind (Scp);
 
       Unlock_Task.all;
 
