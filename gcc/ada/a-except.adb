@@ -664,15 +664,18 @@ package body Ada.Exceptions is
    ------------------------
 
    function Exception_Identity
-     (X    : Exception_Occurrence)
-      return Exception_Id
+     (X : Exception_Occurrence) return Exception_Id
    is
    begin
-      if X.Id = Null_Id then
-         raise Constraint_Error;
-      else
-         return X.Id;
-      end if;
+      --  Note that the following test used to be here for the original
+      --  Ada 95 semantics, but these were modified by AI-241 to require
+      --  returning Null_Id instead of raising Constraint_Error.
+
+      --  if X.Id = Null_Id then
+      --     raise Constraint_Error;
+      --  end if;
+
+      return X.Id;
    end Exception_Identity;
 
    ---------------------------
@@ -1259,12 +1262,8 @@ package body Ada.Exceptions is
       Save_Occurrence_No_Private (Target, Source);
    end Save_Occurrence;
 
-   function Save_Occurrence
-     (Source : Exception_Occurrence)
-      return   EOA
-   is
+   function Save_Occurrence (Source : Exception_Occurrence) return EOA is
       Target : EOA := new Exception_Occurrence;
-
    begin
       Save_Occurrence (Target.all, Source);
       return Target;
@@ -1394,6 +1393,11 @@ package body Ada.Exceptions is
    end ZZZ;
 
 begin
+   pragma Warnings (Off);
+   --  Allow calls to non-static subprograms in Ada 2005 mode where this
+   --  package will be implicitly categorized as Preelaborate. See AI-362 for
+   --  details. It is safe in the context of the run-time to violate the rules!
+
    --  Allocate the Non-Tasking Machine_State
 
    Set_Machine_State_Addr_NT (System.Address (Allocate_Machine_State));
@@ -1403,4 +1407,6 @@ begin
 
    AAA;
    ZZZ;
+
+   pragma Warnings (On);
 end Ada.Exceptions;
