@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -314,7 +314,7 @@ package body Osint is
          --  For the call to Close
 
       begin
-         --  Construct a C compatible character string buffer.
+         --  Construct a C compatible character string buffer
 
          Buffer (1 .. Buffer'Last - 1) := Path_File_Name.all;
          Buffer (Buffer'Last) := ASCII.NUL;
@@ -409,6 +409,20 @@ package body Osint is
       --  environment variable. Get this value, extract the directory names
       --  and store in the tables.
 
+      --  Check for eventual project path file env vars
+
+      Path_File_Name := Getenv (Project_Include_Path_File);
+
+      if Path_File_Name'Length > 0 then
+         Get_Dirs_From_File (Additional_Source_Dir => True);
+      end if;
+
+      Path_File_Name := Getenv (Project_Objects_Path_File);
+
+      if Path_File_Name'Length > 0 then
+         Get_Dirs_From_File (Additional_Source_Dir => False);
+      end if;
+
       --  On VMS, don't expand the logical name (e.g. environment variable),
       --  just put it into Unix (e.g. canonical) format. System services
       --  will handle the expansion as part of the file processing.
@@ -443,21 +457,7 @@ package body Osint is
          end loop;
       end loop;
 
-      --  Check for eventual project path file env vars
-
-      Path_File_Name := Getenv (Project_Include_Path_File);
-
-      if Path_File_Name'Length > 0 then
-         Get_Dirs_From_File (Additional_Source_Dir => True);
-      end if;
-
-      Path_File_Name := Getenv (Project_Objects_Path_File);
-
-      if Path_File_Name'Length > 0 then
-         Get_Dirs_From_File (Additional_Source_Dir => False);
-      end if;
-
-      --  For the compiler, if --RTS= was apecified, add the runtime
+      --  For the compiler, if --RTS= was specified, add the runtime
       --  directories.
 
       if RTS_Src_Path_Name /= null and then
