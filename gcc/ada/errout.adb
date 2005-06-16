@@ -582,7 +582,6 @@ package body Errout is
       S : String (1 .. Feature'Length + 1 + CCRT'Length);
       L : Natural;
 
-
    begin
       S (1) := '|';
       S (2 .. Feature'Length + 1) := Feature;
@@ -1034,7 +1033,10 @@ package body Errout is
       N     : Node_Or_Entity_Id)
    is
    begin
-      if Eflag and then In_Extended_Main_Source_Unit (N) then
+      if Eflag
+        and then In_Extended_Main_Source_Unit (N)
+        and then Comes_From_Source (N)
+      then
          Error_Msg_NEL (Msg, N, N, Sloc (N));
       end if;
    end Error_Msg_NW;
@@ -1751,7 +1753,6 @@ package body Errout is
       --  Casing required for result. Default value of Mixed_Case is used if
       --  for some reason we cannot find the right file name in the table.
 
-
    begin
       --  Get length of file name
 
@@ -2238,7 +2239,6 @@ package body Errout is
 
             when '>' =>
                Set_Msg_Insertion_Run_Time_Name;
-
 
             when '^' =>
                Set_Msg_Insertion_Uint;
