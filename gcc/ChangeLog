@@ -1,5 +1,8 @@
 2005-06-16  Geoffrey Keating  <geoffk@apple.com>
 
+	* gengtype.c (adjust_field_rtx_def): Don't add a skip to
+	basic_block types.
+
 	* config/t-slibgcc-darwin (SHLIB_SOVERSION): Rename from
 	SHLIB_MINOR.
 	(SHLIB_REVISION): Delete.
