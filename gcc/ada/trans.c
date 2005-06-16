@@ -592,7 +592,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 
       /* If we are taking 'Address of an unconstrained object, this is the
 	 pointer to the underlying array.  */
-      gnu_prefix = maybe_unconstrained_array (gnu_prefix);
+      if (attribute == Attr_Address)
+	gnu_prefix = maybe_unconstrained_array (gnu_prefix);
 
       /* ... fall through ... */
 
@@ -1632,6 +1633,27 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	    {
 	      tree gnu_copy = gnu_name;
 	      tree gnu_temp;
+
+	      /* For users of Starlet we issue a warning because the
+		 interface apparently assumes that by-ref parameters
+		 outlive the procedure invocation.  The code still
+		 will not work as intended, but we cannot do much
+		 better since other low-level parts of the back-end
+		 would allocate temporaries at will because of the
+		 misalignment if we did not do so here.  */
+
+	      if (Is_Valued_Procedure (Entity (Name (gnat_node))))
+		{
+		  post_error
+		    ("?possible violation of implicit assumption",
+		     gnat_actual);
+		  post_error_ne
+		    ("?made by pragma Import_Valued_Procedure on &",
+		     gnat_actual, Entity (Name (gnat_node)));
+		  post_error_ne
+		    ("?because of misalignment of &",
+		     gnat_actual, gnat_formal);
+		}
 
 	      /* Remove any unpadding on the actual and make a copy.  But if
 		 the actual is a justified modular type, first convert
@@ -3319,6 +3341,7 @@ gnat_to_gnu (Node_Id gnat_node)
       {
 	tree gnu_init = 0;
 	tree gnu_type;
+	bool ignore_init_type = false;
 
 	gnat_temp = Expression (gnat_node);
 
@@ -3334,6 +3357,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	    Entity_Id gnat_desig_type
 	      = Designated_Type (Underlying_Type (Etype (gnat_node)));
 
+	    ignore_init_type = Has_Constrained_Partial_View (gnat_desig_type);
 	    gnu_init = gnat_to_gnu (Expression (gnat_temp));
 
 	    gnu_init = maybe_unconstrained_array (gnu_init);
@@ -3361,7 +3385,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
 	return build_allocator (gnu_type, gnu_init, gnu_result_type,
 				Procedure_To_Call (gnat_node),
-				Storage_Pool (gnat_node), gnat_node);
+				Storage_Pool (gnat_node), gnat_node,
+				ignore_init_type);
       }
       break;
 
@@ -3576,7 +3601,7 @@ gnat_to_gnu (Node_Id gnat_node)
 			= build_allocator (TREE_TYPE (gnu_ret_val),
 					   gnu_ret_val,
 					   TREE_TYPE (gnu_subprog_type),
-					   0, -1, gnat_node);
+					   0, -1, gnat_node, false);
 		    else
 		      gnu_ret_val
 			= build_allocator (TREE_TYPE (gnu_ret_val),
@@ -3584,7 +3609,7 @@ gnat_to_gnu (Node_Id gnat_node)
 					   TREE_TYPE (gnu_subprog_type),
 					   Procedure_To_Call (gnat_node),
 					   Storage_Pool (gnat_node),
-					   gnat_node);
+					   gnat_node, false);
 		  }
 	      }
 	  }
@@ -4754,11 +4779,15 @@ process_freeze_entity (Node_Id gnat_node)
 
   /* Don't do anything for subprograms that may have been elaborated before
      their freeze nodes.  This can happen, for example because of an inner call
-     in an instance body.  */
-  if (gnu_old
-       && TREE_CODE (gnu_old) == FUNCTION_DECL
-       && (Ekind (gnat_entity) == E_Function
+     in an instance body, or a previous compilation of a spec for inlining
+     purposes.  */
+  if  ((gnu_old
+        && TREE_CODE (gnu_old) == FUNCTION_DECL
+        && (Ekind (gnat_entity) == E_Function
           || Ekind (gnat_entity) == E_Procedure))
+    || (gnu_old
+        && (TREE_CODE (TREE_TYPE (gnu_old)) == FUNCTION_TYPE
+        && Ekind (gnat_entity) == E_Subprogram_Type)))
     return;
 
   /* If we have a non-dummy type old tree, we have nothing to do.   Unless
@@ -4797,6 +4826,16 @@ process_freeze_entity (Node_Id gnat_node)
       && Present (Full_View (gnat_entity)))
     {
       gnu_new = gnat_to_gnu_entity (Full_View (gnat_entity), NULL_TREE, 1);
+
+      /* Propagate back-annotations from full view to partial view.  */
+      if (Unknown_Alignment (gnat_entity))
+	Set_Alignment (gnat_entity, Alignment (Full_View (gnat_entity)));
+
+      if (Unknown_Esize (gnat_entity))
+	Set_Esize (gnat_entity, Esize (Full_View (gnat_entity)));
+
+      if (Unknown_RM_Size (gnat_entity))
+	Set_RM_Size (gnat_entity, RM_Size (Full_View (gnat_entity)));
 
       /* The above call may have defined this entity (the simplest example
   	 of this is when we have a private enumeral type since the bounds

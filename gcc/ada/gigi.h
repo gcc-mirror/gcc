@@ -709,10 +709,13 @@ extern tree build_call_alloc_dealloc (tree gnu_obj, tree gnu_size,
    RESULT_TYPE, which must be some type of pointer.  Return the tree.
    GNAT_PROC and GNAT_POOL optionally give the procedure to call and
    the storage pool to use.  GNAT_NODE is used to provide an error
-   location for restriction violations messages.  */
+   location for restriction violations messages.  If IGNORE_INIT_TYPE is
+   true, ignore the type of INIT for the purpose of determining the size;
+   this will cause the maximum size to be allocated if TYPE is of
+   self-referential size.  */
 extern tree build_allocator (tree type, tree init, tree result_type,
                              Entity_Id gnat_proc, Entity_Id gnat_pool,
-                             Node_Id gnat_node);
+                             Node_Id gnat_node, bool);
 
 /* Fill in a VMS descriptor for EXPR and return a constructor for it.
    GNAT_FORMAL is how we find the descriptor record.  */
