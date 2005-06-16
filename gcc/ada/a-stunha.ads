@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                        ADA.STRINGS.UNBOUNDED.HASH                        --
+--           A D A . S T R I N G S . U N B O U N D E D . H A S H            --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2004 Free Software Foundation, Inc.            --
+--          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is adapted from the Ada Reference Manual for use with --
 -- GNAT.  In accordance with the copyright of that document, you can freely --
