@@ -524,7 +524,8 @@ package body Sem_Case is
         and then Comes_From_Source (Others_Choice)
         and then Is_Empty_List (Choice_List)
       then
-         Error_Msg_N ("?others choice is empty", Others_Choice);
+         Error_Msg_N ("?OTHERS choice is redundant", Others_Choice);
+         Error_Msg_N ("\previous choices cover all values", Others_Choice);
       end if;
    end Expand_Others_Choice;
 
