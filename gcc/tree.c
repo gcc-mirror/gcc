@@ -4733,9 +4733,16 @@ get_unwidened (tree op, tree for_type)
   while (TREE_CODE (op) == NOP_EXPR
 	 || TREE_CODE (op) == CONVERT_EXPR)
     {
-      int bitschange
-	= TYPE_PRECISION (TREE_TYPE (op))
-	  - TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (op, 0)));
+      int bitschange;
+
+      /* TYPE_PRECISION on vector types has different meaning
+	 (TYPE_VECTOR_SUBPARTS) and casts from vectors are view conversions,
+	 so avoid them here.  */
+      if (TREE_CODE (TREE_TYPE (TREE_OPERAND (op, 0))) == VECTOR_TYPE)
+	break;
+
+      bitschange = TYPE_PRECISION (TREE_TYPE (op))
+		   - TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (op, 0)));
 
       /* Truncations are many-one so cannot be removed.
 	 Unless we are later going to truncate down even farther.  */

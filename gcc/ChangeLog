@@ -1,3 +1,9 @@
+2005-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/21850
+	* tree.c (get_unwidened): Stop at NOP_EXPR/CONVERT_EXPR that convert
+	from vector types.
+
 2005-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/22043
