@@ -1939,13 +1939,30 @@ char *
 __gnat_locate_regular_file (char *file_name, char *path_val)
 {
   char *ptr;
-  int absolute = __gnat_is_absolute_path (file_name, strlen (file_name));
+  char *file_path = alloca (strlen (file_name) + 1);
+  int absolute;
+
+  /* Remove quotes around file_name if present */
+
+  ptr = file_name;
+  if (*ptr == '"')
+    ptr++;
+
+  strcpy (file_path, ptr);
+
+  ptr = file_path + strlen (file_path) - 1;
+
+  if (*ptr == '"')
+    *ptr = '\0';
 
   /* Handle absolute pathnames.  */
+
+  absolute = __gnat_is_absolute_path (file_path, strlen (file_name));
+
   if (absolute)
     {
-     if (__gnat_is_regular_file (file_name))
-       return xstrdup (file_name);
+     if (__gnat_is_regular_file (file_path))
+       return xstrdup (file_path);
 
       return 0;
     }
@@ -1976,10 +1993,21 @@ __gnat_locate_regular_file (char *file_name, char *path_val)
       if (*path_val == 0)
         return 0;
 
+      /* Skip the starting quote */
+
+      if (*path_val == '"')
+	path_val++;
+
       for (ptr = file_path; *path_val && *path_val != PATH_SEPARATOR; )
-        *ptr++ = *path_val++;
+	*ptr++ = *path_val++;
 
       ptr--;
+
+      /* Skip the ending quote */
+
+      if (*ptr == '"')
+	ptr--;
+
       if (*ptr != '/' && *ptr != DIR_SEPARATOR)
         *++ptr = DIR_SEPARATOR;
 
@@ -2026,20 +2054,24 @@ __gnat_locate_exec_on_path (char *exec_name)
 #endif
 #ifdef _WIN32
   /* In Win32 systems we expand the PATH as for XP environment
-     variables are not automatically expanded.  */
-  int len = strlen (path_val) * 3;
-  char *expanded_path_val = alloca (len + 1);
+     variables are not automatically expanded. We also prepend the
+     ".;" to the path to match normal NT path search semantics */
 
-  DWORD res = ExpandEnvironmentStrings (path_val, expanded_path_val, len);
+  #define EXPAND_BUFFER_SIZE 32767
 
-  if (res != 0)
-    {
-      path_val = expanded_path_val;
-    }
-#endif
+  apath_val = alloca (EXPAND_BUFFER_SIZE);
 
+  apath_val [0] = '.';
+  apath_val [1] = ';';
+
+  DWORD res = ExpandEnvironmentStrings
+    (path_val, apath_val + 2, EXPAND_BUFFER_SIZE - 2);
+
+  if (!res) apath_val [0] = '\0';
+#else
   apath_val = alloca (strlen (path_val) + 1);
   strcpy (apath_val, path_val);
+#endif
 
   return __gnat_locate_exec (exec_name, apath_val);
 }
@@ -2218,15 +2250,19 @@ __gnat_to_canonical_file_spec (char *filespec)
 
   if (strchr (filespec, ']') || strchr (filespec, ':'))
     {
-      strncpy (new_canonical_filespec,
-	       (char *) decc$translate_vms (filespec), MAXPATH);
+      char *tspec = (char *) decc$translate_vms (filespec);
+
+      if (tspec != (char *) -1)
+	strncpy (new_canonical_filespec, tspec, MAXPATH);
     }
   else if ((strlen (filespec) == strspn (filespec,
 	    "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"))
 	&& (filespec1 = getenv (filespec)))
     {
-      strncpy (new_canonical_filespec,
-	       (char *) decc$translate_vms (filespec1), MAXPATH);
+      char *tspec = (char *) decc$translate_vms (filespec1);
+
+      if (tspec != (char *) -1)
+	strncpy (new_canonical_filespec, tspec, MAXPATH);
     }
   else
     {
@@ -2484,7 +2520,7 @@ _flush_cache()
 
 #if defined (CROSS_COMPILE)  \
   || (! (defined (sparc) && defined (sun) && defined (__SVR4)) \
-      && ! (defined (linux) && defined (i386)) \
+      && ! (defined (linux) && (defined (i386) || defined (__x86_64__))) \
       && ! defined (__FreeBSD__) \
       && ! defined (__hpux__) \
       && ! defined (__APPLE__) \
@@ -2494,7 +2530,7 @@ _flush_cache()
       && ! (defined (__mips) && defined (__sgi)))
 
 /* Dummy function to satisfy g-trasym.o.  Currently Solaris sparc, HP/UX,
-   GNU/Linux x86, Tru64 & Windows provide a non-dummy version of this
+   GNU/Linux x86{_64}, Tru64 & Windows provide a non-dummy version of this
    procedure in libaddr2line.a.  */
 
 void
