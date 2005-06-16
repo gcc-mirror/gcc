@@ -35,19 +35,31 @@ with System.Case_Util;
 with System.CRTL;
 with System.Soft_Links;
 with Unchecked_Conversion;
+with Unchecked_Deallocation;
 with System; use System;
 
 package body GNAT.OS_Lib is
+
+   --  Imported procedures Dup and Dup2 are used in procedures Spawn and
+   --  Non_Blocking_Spawn.
+
+   function Dup (Fd : File_Descriptor) return File_Descriptor;
+   pragma Import (C, Dup, "__gnat_dup");
+
+   procedure Dup2 (Old_Fd, New_Fd : File_Descriptor);
+   pragma Import (C, Dup2, "__gnat_dup2");
 
    OpenVMS : Boolean;
    --  Note: OpenVMS should be a constant, but it cannot be, because it
    --        prevents bootstrapping on some platforms.
 
-   On_Windows : constant Boolean := Directory_Separator = '\';
-
    pragma Import (Ada, OpenVMS, "system__openvms");
    --  Needed to avoid doing useless checks when non on a VMS platform (see
    --  Normalize_Pathname).
+
+   On_Windows : constant Boolean := Directory_Separator = '\';
+   --  An indication that we are on Windows. Used in Normalize_Pathname, to
+   --  deal with drive letters in the beginning of absolute paths.
 
    package SSL renames System.Soft_Links;
 
@@ -354,18 +366,27 @@ package body GNAT.OS_Lib is
 
       procedure Copy (From, To : File_Descriptor) is
          Buf_Size : constant := 200_000;
-         Buffer   : array (1 .. Buf_Size) of Character;
-         R        : Integer;
-         W        : Integer;
+         type Buf is array (1 .. Buf_Size) of Character;
+         type Buf_Ptr is access Buf;
+
+         Buffer : Buf_Ptr;
+         R      : Integer;
+         W      : Integer;
 
          Status_From : Boolean;
          Status_To   : Boolean;
          --  Statuses for the calls to Close
 
+         procedure Free is new Unchecked_Deallocation (Buf, Buf_Ptr);
+
       begin
          if From = Invalid_FD or else To = Invalid_FD then
             raise Copy_Error;
          end if;
+
+         --  Allocate the buffer on the heap
+
+         Buffer := new Buf;
 
          loop
             R := Read (From, Buffer (1)'Address, Buf_Size);
@@ -386,12 +407,16 @@ package body GNAT.OS_Lib is
                Close (From, Status_From);
                Close (To, Status_To);
 
+               Free (Buffer);
+
                raise Copy_Error;
             end if;
          end loop;
 
          Close (From, Status_From);
          Close (To, Status_To);
+
+         Free (Buffer);
 
          if not (Status_From and Status_To) then
             raise Copy_Error;
@@ -1334,6 +1359,89 @@ package body GNAT.OS_Lib is
       return Pid;
    end Non_Blocking_Spawn;
 
+   function Non_Blocking_Spawn
+     (Program_Name           : String;
+      Args                   : Argument_List;
+      Output_File_Descriptor : File_Descriptor;
+      Err_To_Out             : Boolean := True)
+      return                   Process_Id
+   is
+      Saved_Output : File_Descriptor;
+      Saved_Error  : File_Descriptor := Invalid_FD;
+      --  We need to initialize Saved_Error to Invalid_FD to avoid
+      --  a compiler warning that this variable may be used before
+      --  it is initialized (which can not happen, but the compiler
+      --  is not smart enough to figure this out).
+      Pid           : Process_Id;
+   begin
+      if Output_File_Descriptor = Invalid_FD then
+         return Invalid_Pid;
+      end if;
+
+      --  Set standard output and, if specified, error to the temporary file
+      Saved_Output := Dup (Standout);
+      Dup2 (Output_File_Descriptor, Standout);
+
+      if Err_To_Out then
+         Saved_Error  := Dup (Standerr);
+         Dup2 (Output_File_Descriptor, Standerr);
+      end if;
+
+      --  Spawn the program
+
+      Pid := Non_Blocking_Spawn (Program_Name, Args);
+
+      --  Restore the standard output and error
+
+      Dup2 (Saved_Output, Standout);
+
+      if Err_To_Out then
+         Dup2 (Saved_Error, Standerr);
+      end if;
+
+      --  And close the saved standard output and error file descriptors
+
+      Close (Saved_Output);
+
+      if Err_To_Out then
+         Close (Saved_Error);
+      end if;
+
+      return Pid;
+   end Non_Blocking_Spawn;
+
+   function Non_Blocking_Spawn
+     (Program_Name : String;
+      Args         : Argument_List;
+      Output_File  : String;
+      Err_To_Out   : Boolean := True)
+      return         Process_Id
+   is
+      Output_File_Descriptor : constant File_Descriptor :=
+        Create_Output_Text_File (Output_File);
+      Result : Process_Id;
+
+   begin
+      --  Do not attempt to spawn if the output file could not be created
+
+      if Output_File_Descriptor = Invalid_FD then
+         return Invalid_Pid;
+
+      else
+         Result := Non_Blocking_Spawn
+                     (Program_Name, Args, Output_File_Descriptor, Err_To_Out);
+
+         --  Close the file just created for the output, as the file descriptor
+         --  cannot be used anywhere, being a local value. It is safe to do
+         --  that, as the file descriptor has been duplicated to form
+         --  standard output and error of the spawned process.
+
+         Close (Output_File_Descriptor);
+
+         return Result;
+      end if;
+   end Non_Blocking_Spawn;
+
    -------------------------
    -- Normalize_Arguments --
    -------------------------
@@ -2167,12 +2275,6 @@ package body GNAT.OS_Lib is
       Return_Code            : out Integer;
       Err_To_Out             : Boolean := True)
    is
-      function Dup (Fd : File_Descriptor) return File_Descriptor;
-      pragma Import (C, Dup, "__gnat_dup");
-
-      procedure Dup2 (Old_Fd, New_Fd : File_Descriptor);
-      pragma Import (C, Dup2, "__gnat_dup2");
-
       Saved_Output : File_Descriptor;
       Saved_Error  : File_Descriptor := Invalid_FD;
       --  We need to initialize Saved_Error to Invalid_FD to avoid
