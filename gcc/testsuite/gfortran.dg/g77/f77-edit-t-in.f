@@ -3,7 +3,7 @@ C      (ANSI X3.9-1978 Section 13.5.3.2)
 C
 C Origin: David Billinghurst <David.Billinghurst@riotinto.com>
 C
-C { dg-do run {xfail *-*-*} } gfortran PR 16436
+C { dg-do run }
       integer i,j
       real a,b,c,d,e
       character*32 in
