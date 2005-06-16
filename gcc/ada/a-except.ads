@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -39,11 +39,24 @@ pragma Polling (Off);
 --  We must turn polling off for this unit, because otherwise we get
 --  elaboration circularities with ourself.
 
+pragma Warnings (Off);
+--  Allow withing of non-Preelaborated units in Ada 2005 mode where this
+--  package will be categorized as Preelaborate. See AI-362 for details.
+--  It is safe in the context of the run-time to violate the rules!
+
 with System;
+with System.Parameters;
 with System.Standard_Library;
 with System.Traceback_Entries;
+pragma Warnings (On);
 
 package Ada.Exceptions is
+pragma Warnings (Off);
+pragma Preelaborate_05 (Exceptions);
+pragma Warnings (On);
+--  In accordance with Ada 2005 AI-362. The warnings pragmas are so that we can
+--  compile this using older compiler versions, which will ignore the pragma,
+--  which is fine for the bootstrap.
 
    type Exception_Id is private;
    Null_Id : constant Exception_Id;
@@ -103,10 +116,11 @@ package Ada.Exceptions is
 
 private
    package SSL renames System.Standard_Library;
+   package SP renames System.Parameters;
 
    subtype EOA is Exception_Occurrence_Access;
 
-   Exception_Msg_Max_Length : constant := 200;
+   Exception_Msg_Max_Length : constant := SP.Default_Exception_Msg_Max_Length;
 
    ------------------
    -- Exception_Id --
@@ -288,6 +302,11 @@ private
    pragma Stream_Convert (Exception_Occurrence, String_To_EO, EO_To_String);
    --  Functions for implementing Exception_Occurrence stream attributes
 
+   pragma Warnings (Off);
+   --  Allow non-static constants in Ada 2005 mode where this package will be
+   --  implicitly categorized as Preelaborate. See AI-362 for details. It is
+   --  safe in the context of the run-time to violate the rules!
+
    Null_Occurrence : constant Exception_Occurrence := (
      Id               => Null_Id,
      Msg_Length       => 0,
@@ -298,5 +317,7 @@ private
      Num_Tracebacks   => 0,
      Tracebacks       => (others => TBE.Null_TB_Entry),
      Private_Data     => System.Null_Address);
+
+   pragma Warnings (On);
 
 end Ada.Exceptions;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,6 @@
 ------------------------------------------------------------------------------
 
 --  This is the HP version of this package
---  Blank line intentional so that it lines up exactly with default.
 
 --  This package defines some system dependent parameters for GNAT. These
 --  are values that are referenced by the runtime library and are therefore
@@ -198,5 +197,13 @@ pragma Pure (Parameters);
    --  This constant indicates whether the runtime outputs traces to a
    --  predefined output or not (True means that traces are output).
    --  See System.Traces for more details.
+
+   ------------------------------
+   -- Exception Message Length --
+   ------------------------------
+
+   Default_Exception_Msg_Max_Length : constant := 200;
+   --  This constant specifies the default number of characters to allow
+   --  in an exception message (200 is minimum required by RM 11.4.1(18)).
 
 end System.Parameters;
