@@ -958,8 +958,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  post_error ("Storage_Error will be raised at run-time?",
 			      gnat_entity);
 
-		gnu_expr = build_allocator (gnu_alloc_type, gnu_expr,
-					    gnu_type, 0, 0, gnat_entity);
+		gnu_expr = build_allocator (gnu_alloc_type, gnu_expr, gnu_type,
+					    0, 0, gnat_entity, false);
 	      }
 	    else
 	      {
@@ -3630,7 +3630,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	if (list_length (gnu_return_list) == 1)
 	  gnu_return_type = TREE_TYPE (TREE_PURPOSE (gnu_return_list));
 
-#ifdef _WIN32
+#ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
 	if (Convention (gnat_entity) == Convention_Stdcall)
 	  {
 	    struct attrib *attr
@@ -5111,7 +5111,6 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 {
   tree gnu_field_id = get_entity_name (gnat_field);
   tree gnu_field_type = gnat_to_gnu_type (Etype (gnat_field));
-  tree gnu_orig_field_type = gnu_field_type;
   tree gnu_pos = 0;
   tree gnu_size = 0;
   tree gnu_field;
@@ -5138,24 +5137,47 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 			      gnat_field, FIELD_DECL, false, true);
 
   /* If we are packing this record, have a specified size that's smaller than
-     that of the field type, or a position is specified, and the field type
-     is also a record that's BLKmode and with a small constant size, see if
-     we can get a better form of the type that allows more packing.  If we
-     can, show a size was specified for it if there wasn't one so we know to
-     make this a bitfield and avoid making things wider.  */
+     that of the field type, or a position is specified, and the field type is
+     also a record that's BLKmode and with a small constant size, see if we
+     can get a better form of the type that allows more packing.  If we can,
+     show a size was specified for it if there wasn't one so we know to make
+     this a bitfield and avoid making things wider.  */
   if (TREE_CODE (gnu_field_type) == RECORD_TYPE
       && TYPE_MODE (gnu_field_type) == BLKmode
       && host_integerp (TYPE_SIZE (gnu_field_type), 1)
       && compare_tree_int (TYPE_SIZE (gnu_field_type), BIGGEST_ALIGNMENT) <= 0
       && (packed == 1
-	  || (gnu_size && tree_int_cst_lt (gnu_size,
-					   TYPE_SIZE (gnu_field_type)))
+	  || (gnu_size
+	      && tree_int_cst_lt (gnu_size, TYPE_SIZE (gnu_field_type)))
 	  || Present (Component_Clause (gnat_field))))
     {
-      gnu_field_type = make_packable_type (gnu_field_type);
+      /* See what the alternate type and size would be.  */
+      tree gnu_packable_type = make_packable_type (gnu_field_type);
 
-      if (gnu_field_type != gnu_orig_field_type && !gnu_size)
-	gnu_size = rm_size (gnu_field_type);
+      /* Compute whether we should avoid the substitution.  */
+      int reject =
+        /* There is no point subtituting if there is no change.  */
+        (gnu_packable_type == gnu_field_type
+         ||
+         /* The size of an aliased field must be an exact multiple of the
+            type's alignment, which the substitution might increase.  Reject
+            substitutions that would so invalidate a component clause when the
+            specified position is byte aligned, as the change would have no
+            real benefit from the packing standpoint anyway.  */
+         (Is_Aliased (gnat_field)
+          && Present (Component_Clause (gnat_field))
+          && UI_To_Int (Component_Bit_Offset (gnat_field)) % BITS_PER_UNIT == 0
+          && tree_low_cst (gnu_size, 1) % TYPE_ALIGN (gnu_packable_type) != 0)
+         );
+
+      /* Substitute unless told otherwise.  */
+      if (!reject)
+        {
+          gnu_field_type = gnu_packable_type;
+
+          if (gnu_size == 0)
+            gnu_size = rm_size (gnu_field_type);
+        }
     }
 
   /* If we are packing the record and the field is BLKmode, round the
@@ -5677,10 +5699,6 @@ annotate_value (tree gnu_size)
   Node_Ref_Or_Val ops[3], ret;
   int i;
   int size;
-
-  /* If back annotation is suppressed by the front end, return No_Uint */
-  if (!Back_Annotate_Rep_Info)
-    return No_Uint;
 
   /* See if we've already saved the value for this node.  */
   if (EXPR_P (gnu_size) && TREE_COMPLEXITY (gnu_size))
@@ -6606,7 +6624,7 @@ create_concat_name (Entity_Id gnat_entity, const char *suffix)
 
   Get_External_Name_With_Suffix (gnat_entity, fp);
 
-#ifdef _WIN32
+#ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
   /* A variable using the Stdcall convention (meaning we are running
      on a Windows box) live in a DLL. Here we adjust its name to use
      the jump-table, the _imp__NAME contains the address for the NAME
