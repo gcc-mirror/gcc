@@ -2,26 +2,43 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                 ADA.CONTAINERS.HASH_TABLES.GENERIC_KEYS                  --
+--                      A D A . C O N T A I N E R S .                       --
+--             H A S H _ T A B L E S . G E N E R I C _ K E Y S              --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
--- This specification is adapted from the Ada Reference Manual for use with --
--- GNAT.  In accordance with the copyright of that document, you can freely --
--- copy and modify this specification,  provided that if you redistribute a --
--- modified version,  any changes that you have made are clearly indicated. --
+--          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
 --                                                                          --
+-- This specification is derived from the Ada Reference Manual for use with --
+-- GNAT. The copyright notice above, and the license provisions that follow --
+-- apply solely to the  contents of the part following the private keyword. --
+--                                                                          --
+-- GNAT is free software;  you can  redistribute it  and/or modify it under --
+-- terms of the  GNU General Public License as published  by the Free Soft- --
+-- ware  Foundation;  either version 2,  or (at your option) any later ver- --
+-- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
+-- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
+-- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
+-- for  more details.  You should have  received  a copy of the GNU General --
+-- Public License  distributed with GNAT;  see file COPYING.  If not, write --
+-- to  the Free Software Foundation,  59 Temple Place - Suite 330,  Boston, --
+-- MA 02111-1307, USA.                                                      --
+--                                                                          --
+-- As a special exception,  if other files  instantiate  generics from this --
+-- unit, or you link  this unit with other files  to produce an executable, --
+-- this  unit  does not  by itself cause  the resulting  executable  to  be --
+-- covered  by the  GNU  General  Public  License.  This exception does not --
+-- however invalidate  any other reasons why  the executable file  might be --
+-- covered by the  GNU Public License.                                      --
+--                                                                          --
+-- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
 generic
    with package HT_Types is
      new Generic_Hash_Table_Types (<>);
 
-   type HT_Type is new HT_Types.Hash_Table_Type with private;
-
    use HT_Types;
-
-   Null_Node : Node_Access;
 
    with function Next (Node : Node_Access) return Node_Access;
 
@@ -41,24 +58,24 @@ package Ada.Containers.Hash_Tables.Generic_Keys is
    pragma Preelaborate;
 
    function Index
-     (HT  : HT_Type;
+     (HT  : Hash_Table_Type;
       Key : Key_Type) return Hash_Type;
    pragma Inline (Index);
 
    procedure Delete_Key_Sans_Free
-     (HT   : in out HT_Type;
+     (HT   : in out Hash_Table_Type;
       Key  : Key_Type;
       X    : out Node_Access);
 
-   function Find (HT  : HT_Type; Key : Key_Type) return Node_Access;
+   function Find (HT  : Hash_Table_Type; Key : Key_Type) return Node_Access;
 
    generic
       with function New_Node
         (Next : Node_Access) return Node_Access;
    procedure Generic_Conditional_Insert
-     (HT      : in out HT_Type;
-      Key     : Key_Type;
-      Node    : out Node_Access;
-      Success : out Boolean);
+     (HT       : in out Hash_Table_Type;
+      Key      : Key_Type;
+      Node     : out Node_Access;
+      Inserted : out Boolean);
 
 end Ada.Containers.Hash_Tables.Generic_Keys;

@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                        ADA.STRINGS.UNBOUNDED.HASH                        --
+--           A D A . S T R I N G S . U N B O U N D E D . H A S H            --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2004 Free Software Foundation, Inc.            --
+--          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -50,7 +50,7 @@ is
 begin
    Tmp := 0;
    for J in 1 .. Key.Last loop
-      Tmp := Rotate_Left (Tmp, 1) + Character'Pos (Key.Reference (J));
+      Tmp := Rotate_Left (Tmp, 3) + Character'Pos (Key.Reference (J));
    end loop;
 
    return Tmp;

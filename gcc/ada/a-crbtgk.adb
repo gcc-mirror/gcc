@@ -2,11 +2,12 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---               ADA.CONTAINERS.RED_BLACK_TREES.GENERIC_KEYS                --
+--        A D A . C O N T A I N E R S . R E D _ B L A C K _ T R E E S .     --
+--                          G E N E R I C _ K E Y S                         --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2004 Free Software Foundation, Inc.            --
+--          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -48,7 +49,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       X : Node_Access := Tree.Root;
 
    begin
-      while X /= Ops.Null_Node loop
+      while X /= null loop
          if Is_Greater_Key_Node (Key, X) then
             X := Ops.Right (X);
          else
@@ -69,7 +70,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       X : Node_Access := Tree.Root;
 
    begin
-      while X /= Ops.Null_Node loop
+      while X /= null loop
          if Is_Greater_Key_Node (Key, X) then
             X := Ops.Right (X);
          else
@@ -78,12 +79,12 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
          end if;
       end loop;
 
-      if Y = Ops.Null_Node then
-         return Ops.Null_Node;
+      if Y = null then
+         return null;
       end if;
 
       if Is_Less_Key_Node (Key, Y) then
-         return Ops.Null_Node;
+         return null;
       end if;
 
       return Y;
@@ -98,7 +99,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       X : Node_Access := Tree.Root;
 
    begin
-      while X /= Ops.Null_Node loop
+      while X /= null loop
          if Is_Less_Key_Node (Key, X) then
             X := Ops.Left (X);
          else
@@ -120,12 +121,12 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       Node    : out Node_Access;
       Success : out Boolean)
    is
-      Y : Node_Access := Ops.Null_Node;
+      Y : Node_Access := null;
       X : Node_Access := Tree.Root;
 
    begin
       Success := True;
-      while X /= Ops.Null_Node loop
+      while X /= null loop
          Y := X;
          Success := Is_Less_Key_Node (Key, X);
 
@@ -168,11 +169,11 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       Success  : out Boolean)
    is
    begin
-      if Position = Ops.Null_Node then  -- largest
+      if Position = null then  -- largest
          if Tree.Length > 0
            and then Is_Greater_Key_Node (Key, Tree.Last)
          then
-            Insert_Post (Tree, Ops.Null_Node, Tree.Last, Key, Node);
+            Insert_Post (Tree, null, Tree.Last, Key, Node);
             Success := True;
          else
             Conditional_Insert_Sans_Hint (Tree, Key, Node, Success);
@@ -195,8 +196,8 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
 
          begin
             if Is_Greater_Key_Node (Key, Before) then
-               if Ops.Right (Before) = Ops.Null_Node then
-                  Insert_Post (Tree, Ops.Null_Node, Before, Key, Node);
+               if Ops.Right (Before) = null then
+                  Insert_Post (Tree, null, Before, Key, Node);
                else
                   Insert_Post (Tree, Position, Position, Key, Node);
                end if;
@@ -213,7 +214,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
 
       if Is_Greater_Key_Node (Key, Position) then
          if Position = Tree.Last then
-            Insert_Post (Tree, Ops.Null_Node, Tree.Last, Key, Node);
+            Insert_Post (Tree, null, Tree.Last, Key, Node);
             Success := True;
             return;
          end if;
@@ -223,8 +224,8 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
 
          begin
             if Is_Less_Key_Node (Key, After) then
-               if Ops.Right (Position) = Ops.Null_Node then
-                  Insert_Post (Tree, Ops.Null_Node, Position, Key, Node);
+               if Ops.Right (Position) = null then
+                  Insert_Post (Tree, null, Position, Key, Node);
                else
                   Insert_Post (Tree, After, After, Key, Node);
                end if;
@@ -258,26 +259,30 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       New_Length : constant Count_Type := Length_Subtype'(Tree.Length) + 1;
 
    begin
-      if Y = Ops.Null_Node
-        or else X /= Ops.Null_Node
+      if Tree.Busy > 0 then
+         raise Program_Error;
+      end if;
+
+      if Y = null
+        or else X /= null
         or else Is_Less_Key_Node (Key, Y)
       then
-         pragma Assert (Y = Ops.Null_Node
-                          or else Ops.Left (Y) = Ops.Null_Node);
+         pragma Assert (Y = null
+                          or else Ops.Left (Y) = null);
 
          --  Delay allocation as long as we can, in order to defend
          --  against exceptions propagated by relational operators.
 
          Z := New_Node;
 
-         pragma Assert (Z /= Ops.Null_Node);
+         pragma Assert (Z /= null);
          pragma Assert (Ops.Color (Z) = Red);
 
-         if Y = Ops.Null_Node then
+         if Y = null then
             pragma Assert (Tree.Length = 0);
-            pragma Assert (Tree.Root = Ops.Null_Node);
-            pragma Assert (Tree.First = Ops.Null_Node);
-            pragma Assert (Tree.Last = Ops.Null_Node);
+            pragma Assert (Tree.Root = null);
+            pragma Assert (Tree.First = null);
+            pragma Assert (Tree.Last = null);
 
             Tree.Root := Z;
             Tree.First := Z;
@@ -292,14 +297,14 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
          end if;
 
       else
-         pragma Assert (Ops.Right (Y) = Ops.Null_Node);
+         pragma Assert (Ops.Right (Y) = null);
 
          --  Delay allocation as long as we can, in order to defend
          --  against exceptions propagated by relational operators.
 
          Z := New_Node;
 
-         pragma Assert (Z /= Ops.Null_Node);
+         pragma Assert (Z /= null);
          pragma Assert (Ops.Color (Z) = Red);
 
          Ops.Set_Right (Y, Z);
@@ -331,7 +336,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       procedure Iterate (Node : Node_Access) is
          N : Node_Access := Node;
       begin
-         while N /= Ops.Null_Node loop
+         while N /= null loop
             if Is_Less_Key_Node (Key, N) then
                N := Ops.Left (N);
             elsif Is_Greater_Key_Node (Key, N) then
@@ -367,7 +372,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       procedure Iterate (Node : Node_Access) is
          N : Node_Access := Node;
       begin
-         while N /= Ops.Null_Node loop
+         while N /= null loop
             if Is_Less_Key_Node (Key, N) then
                N := Ops.Left (N);
             elsif Is_Greater_Key_Node (Key, N) then
@@ -395,11 +400,11 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       Key  : Key_Type;
       Node : out Node_Access)
    is
-      Y : Node_Access := Ops.Null_Node;
+      Y : Node_Access := null;
       X : Node_Access := Tree.Root;
 
    begin
-      while X /= Ops.Null_Node loop
+      while X /= null loop
          Y := X;
 
          if Is_Less_Key_Node (Key, X) then
@@ -431,11 +436,11 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       --  inserted last in the sequence of equivalent items.) ???
 
    begin
-      if Hint = Ops.Null_Node then  -- largest
+      if Hint = null then  -- largest
          if Tree.Length > 0
            and then Is_Greater_Key_Node (Key, Tree.Last)
          then
-            Insert_Post (Tree, Ops.Null_Node, Tree.Last, Key, Node);
+            Insert_Post (Tree, null, Tree.Last, Key, Node);
          else
             Unconditional_Insert_Sans_Hint (Tree, Key, Node);
          end if;
@@ -455,8 +460,8 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
             Before : constant Node_Access := Ops.Previous (Hint);
          begin
             if Is_Greater_Key_Node (Key, Before) then
-               if Ops.Right (Before) = Ops.Null_Node then
-                  Insert_Post (Tree, Ops.Null_Node, Before, Key, Node);
+               if Ops.Right (Before) = null then
+                  Insert_Post (Tree, null, Before, Key, Node);
                else
                   Insert_Post (Tree, Hint, Hint, Key, Node);
                end if;
@@ -470,7 +475,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
 
       if Is_Greater_Key_Node (Key, Hint) then
          if Hint = Tree.Last then
-            Insert_Post (Tree, Ops.Null_Node, Tree.Last, Key, Node);
+            Insert_Post (Tree, null, Tree.Last, Key, Node);
             return;
          end if;
 
@@ -478,8 +483,8 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
             After : constant Node_Access := Ops.Next (Hint);
          begin
             if Is_Less_Key_Node (Key, After) then
-               if Ops.Right (Hint) = Ops.Null_Node then
-                  Insert_Post (Tree, Ops.Null_Node, Hint, Key, Node);
+               if Ops.Right (Hint) = null then
+                  Insert_Post (Tree, null, Hint, Key, Node);
                else
                   Insert_Post (Tree, After, After, Key, Node);
                end if;
@@ -506,7 +511,7 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
       X : Node_Access := Tree.Root;
 
    begin
-      while X /= Ops.Null_Node loop
+      while X /= null loop
          if Is_Less_Key_Node (Key, X) then
             Y := X;
             X := Ops.Left (X);
@@ -519,5 +524,3 @@ package body Ada.Containers.Red_Black_Trees.Generic_Keys is
    end Upper_Bound;
 
 end Ada.Containers.Red_Black_Trees.Generic_Keys;
-
-

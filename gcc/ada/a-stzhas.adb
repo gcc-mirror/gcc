@@ -50,10 +50,8 @@ is
 begin
    Tmp := 0;
    for J in Key'Range loop
-      Tmp := Rotate_Left (Tmp, 1) + Wide_Wide_Character'Pos (Key (J));
+      Tmp := Rotate_Left (Tmp, 3) + Wide_Wide_Character'Pos (Key (J));
    end loop;
 
    return Tmp;
 end Ada.Strings.Wide_Wide_Hash;
-
-

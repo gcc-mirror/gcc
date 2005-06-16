@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                          ADA.STRINGS.WIDE_HASH                           --
+--                A D A . S T R I N G S . W I D E _ H A S H                 --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -19,6 +19,3 @@ function Ada.Strings.Wide_Hash
   (Key : Wide_String) return Containers.Hash_Type;
 
 pragma Pure (Ada.Strings.Wide_Hash);
-
-
-

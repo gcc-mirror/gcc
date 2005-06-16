@@ -2,11 +2,12 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                  ADA.CONTAINERS.INDEFINITE_ORDERED_SETS                  --
+--                      A D A . C O N T A I N E R S .                       --
+--              I N D E F I N I T E _ O R D E R E D _ S E T S               --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2004 Free Software Foundation, Inc.            --
+--          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -56,6 +57,8 @@ pragma Preelaborate (Indefinite_Ordered_Sets);
 
    function "=" (Left, Right : Set) return Boolean;
 
+   function Equivalent_Sets (Left, Right : Set) return Boolean;
+
    function Length (Container : Set) return Count_Type;
 
    function Is_Empty (Container : Set) return Boolean;
@@ -68,11 +71,10 @@ pragma Preelaborate (Indefinite_Ordered_Sets);
      (Position : Cursor;
       Process  : not null access procedure (Element : Element_Type));
 
-   --  TODO: resolve in Atlanta???
-   --   procedure Replace_Element
-   --     (Container : in out Set;
-   --      Position  : Cursor;
-   --      By        : Element_Type);
+   procedure Replace_Element
+     (Container : Set;   --  TODO: need ruling from ARG
+      Position  : Cursor;
+      By        : Element_Type);
 
    procedure Move (Target : in out Set; Source : in out Set);
 
@@ -98,10 +100,6 @@ pragma Preelaborate (Indefinite_Ordered_Sets);
      (Container : in out Set;
       Item      : Element_Type);
 
-   procedure Exclude
-     (Container : in out Set;
-      Item      : Element_Type);
-
    procedure Delete
      (Container : in out Set;
       Position  : in out Cursor);
@@ -109,6 +107,10 @@ pragma Preelaborate (Indefinite_Ordered_Sets);
    procedure Delete_First (Container : in out Set);
 
    procedure Delete_Last (Container : in out Set);
+
+   procedure Exclude
+     (Container : in out Set;
+      Item      : Element_Type);
 
    procedure Union (Target : in out Set; Source : Set);
 
@@ -157,9 +159,9 @@ pragma Preelaborate (Indefinite_Ordered_Sets);
 
    function Next (Position : Cursor) return Cursor;
 
-   function Previous (Position : Cursor) return Cursor;
-
    procedure Next (Position : in out Cursor);
+
+   function Previous (Position : Cursor) return Cursor;
 
    procedure Previous (Position : in out Cursor);
 
@@ -220,11 +222,10 @@ pragma Preelaborate (Indefinite_Ordered_Sets);
         (Container : Set;
          Key       : Key_Type) return Element_Type;
 
-      --  TODO: resolve in Atlanta???
-      --      procedure Replace
-      --        (Container : in out Set;
-      --         Key       : Key_Type;
-      --         New_Item  : Element_Type);
+      procedure Replace
+        (Container : in out Set;  --  TODO: need ruling from ARG
+         Key       : Key_Type;
+         New_Item  : Element_Type);
 
       procedure Delete (Container : in out Set; Key : Key_Type);
 
@@ -238,8 +239,7 @@ pragma Preelaborate (Indefinite_Ordered_Sets);
 
       function ">" (Left : Key_Type; Right : Cursor) return Boolean;
 
-      --  TODO: resolve name in Atlanta???
-      procedure Checked_Update_Element
+      procedure Update_Element_Preserving_Key
         (Container : in out Set;
          Position  : Cursor;
          Process   : not null access
@@ -252,21 +252,33 @@ private
    type Node_Type;
    type Node_Access is access Node_Type;
 
-   package Tree_Types is
-     new Red_Black_Trees.Generic_Tree_Types (Node_Access);
+   type Element_Access is access Element_Type;
 
-   use Tree_Types;
-   use Ada.Finalization;
+   type Node_Type is limited record
+      Parent  : Node_Access;
+      Left    : Node_Access;
+      Right   : Node_Access;
+      Color   : Red_Black_Trees.Color_Type := Red_Black_Trees.Red;
+      Element : Element_Access;
+   end record;
 
-   type Set is new Controlled with record
-      Tree : Tree_Type := (Length => 0, others => null);
+   package Tree_Types is new Red_Black_Trees.Generic_Tree_Types
+     (Node_Type,
+      Node_Access);
+
+   type Set is new Ada.Finalization.Controlled with record
+      Tree : Tree_Types.Tree_Type;
    end record;
 
    procedure Adjust (Container : in out Set);
 
    procedure Finalize (Container : in out Set) renames Clear;
 
-   type Set_Access is access constant Set;
+   use Red_Black_Trees;
+   use Tree_Types;
+   use Ada.Finalization;
+
+   type Set_Access is access all Set;
    for Set_Access'Storage_Size use 0;
 
    type Cursor is record
@@ -291,6 +303,11 @@ private
    for Set'Read use Read;
 
    Empty_Set : constant Set :=
-                 (Controlled with Tree => (Length => 0, others => null));
+                 (Controlled with Tree => (First  => null,
+                                           Last   => null,
+                                           Root   => null,
+                                           Length => 0,
+                                           Busy   => 0,
+                                           Lock   => 0));
 
 end Ada.Containers.Indefinite_Ordered_Sets;

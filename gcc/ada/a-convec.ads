@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                          ADA.CONTAINERS.VECTORS                          --
+--                A D A . C O N T A I N E R S . V E C T O R S               --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2004 Free Software Foundation, Inc.            --
+--          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -200,7 +200,7 @@ pragma Preelaborate (Vectors);
 
    procedure Delete
      (Container : in out Vector;
-      Index     : Extended_Index;  --  TODO: verify
+      Index     : Extended_Index;
       Count     : Count_Type := 1);
 
    procedure Delete
@@ -234,7 +234,15 @@ pragma Preelaborate (Vectors);
 
    generic
       with function "<" (Left, Right : Element_Type) return Boolean is <>;
-   procedure Generic_Sort (Container : Vector);
+   package Generic_Sorting is
+
+      function Is_Sorted (Container : Vector) return Boolean;
+
+      procedure Sort (Container : in out Vector);
+
+      procedure Merge (Target, Source : in out Vector);
+
+   end Generic_Sorting;
 
    function Find_Index
      (Container : Vector;
@@ -301,6 +309,8 @@ private
    type Vector is new Controlled with record
       Elements : Elements_Access;
       Last     : Extended_Index := No_Index;
+      Busy     : Natural := 0;
+      Lock     : Natural := 0;
    end record;
 
    procedure Adjust (Container : in out Vector);
@@ -321,7 +331,7 @@ private
 
    for Vector'Read use Read;
 
-   Empty_Vector : constant Vector := (Controlled with null, No_Index);
+   Empty_Vector : constant Vector := (Controlled with null, No_Index, 0, 0);
 
    type Vector_Access is access constant Vector;
    for Vector_Access'Storage_Size use 0;

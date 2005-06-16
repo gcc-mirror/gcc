@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                    ADA.STRINGS.HASH_CASE_INSENSITIVE                     --
+--    A D A . S T R I N G S . H A S H _ C A S E _ I N S E N S I T I V E     --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --

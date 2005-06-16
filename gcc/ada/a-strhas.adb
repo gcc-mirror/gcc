@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                             ADA.STRINGS.HASH                             --
+--                     A D A . S T R I N G S . H A S H                      --
 --                                                                          --
---                                 B o d y                                  --
+--                                B o d y                                   --
 --                                                                          --
---             Copyright (C) 2004 Free Software Foundation, Inc.            --
+--           Copyright (C) 2004-2005 Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -48,16 +48,8 @@ function Ada.Strings.Hash (Key : String) return Containers.Hash_Type is
 begin
    Tmp := 0;
    for J in Key'Range loop
-      Tmp := Rotate_Left (Tmp, 1) + Character'Pos (Key (J));
+      Tmp := Rotate_Left (Tmp, 3) + Character'Pos (Key (J));
    end loop;
 
    return Tmp;
 end Ada.Strings.Hash;
-
-
-
-
-
-
-
-

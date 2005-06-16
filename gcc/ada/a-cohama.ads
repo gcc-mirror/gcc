@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                        ADA.CONTAINERS.HASHED_MAPS                        --
+--            A D A . C O N T A I N E R S . H A S H E D _ M A P S           --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2004 Free Software Foundation, Inc.            --
+--          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -35,6 +35,7 @@
 
 with Ada.Containers.Hash_Tables;
 with Ada.Streams;
+with Ada.Finalization;
 
 generic
    type Key_Type is private;
@@ -66,8 +67,9 @@ pragma Preelaborate (Hashed_Maps);
 
    procedure Clear (Container : in out Map);
 
-   function Element (Position : Cursor)
-      return Element_Type;
+   function Key (Position : Cursor) return Key_Type;
+
+   function Element (Position : Cursor) return Element_Type;
 
    procedure Query_Element
      (Position : Cursor;
@@ -93,6 +95,12 @@ pragma Preelaborate (Hashed_Maps);
    procedure Insert
      (Container : in out Map;
       Key       : Key_Type;
+      Position  : out Cursor;
+      Inserted  : out Boolean);
+
+   procedure Insert
+     (Container : in out Map;
+      Key       : Key_Type;
       New_Item  : Element_Type);
 
    procedure Include
@@ -105,28 +113,17 @@ pragma Preelaborate (Hashed_Maps);
       Key       : Key_Type;
       New_Item  : Element_Type);
 
-   procedure Insert
-     (Container : in out Map;
-      Key       : Key_Type;
-      Position  : out Cursor;
-      Inserted  : out Boolean);
-
    procedure Delete (Container : in out Map; Key : Key_Type);
 
-   procedure Exclude (Container : in out Map; Key : Key_Type);
-
    procedure Delete (Container : in out Map; Position : in out Cursor);
+
+   procedure Exclude (Container : in out Map; Key : Key_Type);
 
    function Contains (Container : Map; Key : Key_Type) return Boolean;
 
    function Find (Container : Map; Key : Key_Type) return Cursor;
 
    function Element (Container : Map; Key : Key_Type) return Element_Type;
-
-   function Capacity (Container : Map) return Count_Type;
-
-   procedure Reserve_Capacity (Container : in out Map;
-                               Capacity  : Count_Type);
 
    function First (Container : Map) return Cursor;
 
@@ -135,8 +132,6 @@ pragma Preelaborate (Hashed_Maps);
    procedure Next (Position : in out Cursor);
 
    function Has_Element (Position : Cursor) return Boolean;
-
-   function Key (Position : Cursor) return Key_Type;
 
    function Equivalent_Keys (Left, Right : Cursor) return Boolean;
 
@@ -148,16 +143,44 @@ pragma Preelaborate (Hashed_Maps);
      (Container : Map;
       Process   : not null access procedure (Position : Cursor));
 
+   function Capacity (Container : Map) return Count_Type;
+
+   procedure Reserve_Capacity (Container : in out Map;
+                               Capacity  : Count_Type);
+
 private
+   pragma Inline ("=");
+   pragma Inline (Length);
+   pragma Inline (Is_Empty);
+   pragma Inline (Clear);
+   pragma Inline (Key);
+   pragma Inline (Element);
+   pragma Inline (Move);
+   pragma Inline (Contains);
+   pragma Inline (Capacity);
+   pragma Inline (Reserve_Capacity);
+   pragma Inline (Has_Element);
+   pragma Inline (Equivalent_Keys);
 
    type Node_Type;
    type Node_Access is access Node_Type;
 
-   package HT_Types is new Hash_Tables.Generic_Hash_Table_Types (Node_Access);
+   type Node_Type is limited record
+      Key     : Key_Type;
+      Element : Element_Type;
+      Next    : Node_Access;
+   end record;
+
+   package HT_Types is new Hash_Tables.Generic_Hash_Table_Types
+     (Node_Type,
+      Node_Access);
+
+   type Map is new Ada.Finalization.Controlled with record
+      HT : HT_Types.Hash_Table_Type;
+   end record;
 
    use HT_Types;
-
-   type Map is new Hash_Table_Type with null record;
+   use Ada.Finalization;
 
    procedure Adjust (Container : in out Map);
 
@@ -177,7 +200,7 @@ private
 
    for Map'Read use Read;
 
-   Empty_Map : constant Map := (Hash_Table_Type with null record);
+   Empty_Map : constant Map := (Controlled with HT => (null, 0, 0, 0));
 
    type Map_Access is access constant Map;
    for Map_Access'Storage_Size use 0;
