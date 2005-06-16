@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1627,14 +1627,32 @@ package body Sem_Warn is
          end loop;
 
          --  Here we issue the warning unless some sub-operand has warnings
-         --  set off, in which case we suppress the warning for the node.
+         --  set off, in which case we suppress the warning for the node. If
+         --  the original expression is an inequality, it has been expanded
+         --  into a negation, and the value of the original expression is the
+         --  negation of the equality. If the expression is an entity that
+         --  appears within a negation, it is clearer to flag the negation
+         --  itself, and report on its constant value.
 
          if not Operand_Has_Warnings_Suppressed (C) then
-            if Entity (C) = Standard_True then
-               Error_Msg_N ("condition is always True?", C);
-            else
-               Error_Msg_N ("condition is always False?", C);
-            end if;
+            declare
+               True_Branch : Boolean := Entity (C) = Standard_True;
+               Cond        : Node_Id := C;
+
+            begin
+               if Present (Parent (C))
+                 and then Nkind (Parent (C)) = N_Op_Not
+               then
+                  True_Branch := not True_Branch;
+                  Cond        := Parent (C);
+               end if;
+
+               if True_Branch then
+                  Error_Msg_N ("condition is always True?", Cond);
+               else
+                  Error_Msg_N ("condition is always False?", Cond);
+               end if;
+            end;
          end if;
       end if;
    end Warn_On_Known_Condition;
