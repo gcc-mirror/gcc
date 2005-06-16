@@ -433,7 +433,7 @@ Cleaning Up Using gnatclean
 
 * Running gnatclean::
 * Switches for gnatclean::
-* Examples of gnatclean Usage::
+@c * Examples of gnatclean Usage::
 
 @ifclear vms
 
@@ -1094,13 +1094,8 @@ $ gnatmake hello.adb
 The result is an executable program called @file{hello}, which can be
 run by entering:
 
-@c The following should be removed (BMB 2001-01-23)
-@c @smallexample
-@c $ ^./hello^$ RUN HELLO^
-@c @end smallexample
-
 @smallexample
-$ hello
+$ ^hello^RUN HELLO^
 @end smallexample
 
 @noindent
@@ -3054,7 +3049,9 @@ implemented as a single machine instruction.
 @item Stdcall
 This is relevant only to NT/Win95 implementations of GNAT,
 and specifies that the Stdcall calling sequence will be used, as defined
-by the NT API.
+by the NT API. Nevertheless, to ease building cross-platform bindings this
+convention will be handled as a C calling convention on non Windows
+platforms.
 
 @findex DLL
 @cindex Convention DLL
@@ -3202,8 +3199,11 @@ $ gnatlink -v -v ada_unit file1.o file2.o --LINK=./my_script
 @item
 Using a non-GNU C++ compiler: The commands previously described can be
 used to insure that the C++ linker is used. Nonetheless, you need to add
-the path to libgcc explicitly, since some libraries needed by GNAT are
-located in this directory:
+a few more parameters to the link command line, depending on the exception
+mechanism used.
+
+If the @code{setjmp/longjmp} exception mechanism is used, only the paths
+to the libgcc libraries are required:
 
 @smallexample
 $ cat ./my_script
@@ -3213,6 +3213,24 @@ $ gnatlink ada_unit file1.o file2.o --LINK=./my_script
 @end smallexample
 
 Where CC is the name of the non-GNU C++ compiler.
+
+If the @code{zero cost} exception mechanism is used, and the platform
+supports automatic registration of exception tables (e.g. Solaris or IRIX),
+paths to more objects are required:
+
+@smallexample
+$ cat ./my_script
+#!/bin/sh
+CC `gcc -print-file-name=crtbegin.o` $* \
+`gcc -print-file-name=libgcc.a` `gcc -print-file-name=libgcc_eh.a` \
+`gcc -print-file-name=crtend.o`
+$ gnatlink ada_unit file1.o file2.o --LINK=./my_script
+@end smallexample
+
+If the @code{zero cost} exception mechanism is used, and the platform
+doesn't support automatic registration of exception tables (e.g. HP-UX,
+Tru64 or AIX), the simple approach described above will not work and
+a pre-linking phase using GNAT will be necessary.
 
 @end enumerate
 
@@ -3698,6 +3716,19 @@ of objects of different types. See
 @cindex @option{-fstack-check} (@command{gcc})
 Activates stack checking.
 See @ref{Stack Overflow Checking} for details of the use of this option.
+
+@item -fstack-usage
+@cindex @option{-fstack-usage} (@command{gcc})
+Makes the compiler output stack usage information for the program, on a
+per-function basis.  The description of the format is to be found in
+the GCC documentation.
+
+@item -fcallgraph-info
+@cindex @option{-fcallgraph-info} (@command{gcc})
+Makes the compiler output callgraph information for the program, on a
+per-file basis.  The information is generated in the VCG format.  It can
+be decorated with additional, per-node information if other debugging
+options are enabled (only works with -fstack-usage as of this writing).
 
 @item ^-g^/DEBUG^
 @cindex @option{^-g^/DEBUG^} (@command{gcc})
@@ -4911,6 +4942,25 @@ such warnings are generated.
 This switch suppresses warnings for access to variables which
 may not be properly initialized.
 
+@item -gnatwy
+@emph{Activate warnings for Ada 2005 compatibility issues.}
+@cindex @option{-gnatwy} (@command{gcc})
+@cindex Ada 2005 compatibility issues warnings
+For the most part Ada 2005 is upwards compatible with Ada 95,
+but there are some exceptions (for example the fact that
+@code{interface} is now a reserved word in Ada 2005. This
+switch activates several warnings to help in identifying
+and correcting such incompatibilities. The default is that
+these warnings are generated. Note that at one point Ada 2005
+was called Ada 0Y, hence the choice of character.
+
+@item -gnatwY
+@emph{Disab le warnings for Ada 2005 compatibility issues.}
+@cindex @option{-gnatwY} (@command{gcc})
+@cindex Ada 2005 compatibility issues warnings
+This switch suppresses several warnings intended to help in identifying
+incompatibilities between Ada 95 and Ada 2005.
+
 @item -gnatwx
 @emph{Activate warnings on Export/Import pragmas.}
 @cindex @option{-gnatwx} (@command{gcc})
@@ -5363,9 +5413,10 @@ example:
 
 @item ^d^DOS_LINE_ENDINGS^
 @emph{Check no DOS line terminators present.}
-If the ^letter d^word NOCRLF^ appears in the string after @option{-gnaty}
-then all lines must be terminated by a single ASCII.LF character (in
-particular the DOS line terminator sequence CR/LF is not allowed).
+If the ^letter d^word DOS_LINE_ENDINGS^ appears in the string after
+@option{-gnaty} then all lines must be terminated by a single ASCII.LF
+character (in particular the DOS line terminator sequence CR/LF is not
+allowed).
 
 @item ^e^END^
 @emph{Check end/exit labels.}
@@ -5588,6 +5639,12 @@ A unary plus or minus may not be followed by a space.
 A vertical bar must be surrounded by spaces.
 @end itemize
 
+@item ^u^UNNECESSARY_BLANK_LINES^
+@emph{Check unnecessary blank lines.}
+Check for unnecessary blank lines. A blank line is considered
+unnecessary if it appears at the end of the file, or if more than
+one blank line occurs in sequence.
+
 @item ^x^XTRA_PARENS^
 @emph{Check extra parentheses.}
 Check for the use of an unnecessary extra level of parentheses (C-style)
@@ -5617,14 +5674,16 @@ The switch
 @ifclear vms
 @option{-gnaty} on its own (that is not
 followed by any letters or digits),
-is equivalent to @code{gnaty3abcefhiklmprst}, that is all checking
-options enabled with the exception of -gnatyo,
+is equivalent to @code{gnaty3abcefhiklmnprst}, that is all checking
+options enabled with the exception of @option{-gnatyo},
+@option{-gnatyd}, @option{-gnatyu}, and @option{-gnatyx}.
 @end ifclear
 @ifset vms
 /STYLE_CHECKS=ALL_BUILTIN enables all checking options with
-the exception of ORDERED_SUBPROGRAMS,
+the exception of ORDERED_SUBPROGRAMS, UNNECESSARY_BLANK_LINES,
+XTRA_PARENS, and DOS_LINE_ENDINGS. In addition
 @end ifset
-with an indentation level of 3. This is the standard
+an indentation level of 3 is set. This is similar to the standard
 checking option that is used for the GNAT sources.
 
 The switch
@@ -6716,6 +6775,16 @@ Each directory named by an @option{^-I^/SOURCE_SEARCH^} switch given on the
 @command{gcc} command line, in the order given.
 
 @item
+@findex ADA_PRJ_INCLUDE_FILE
+Each of the directories listed in the text file whose name is given
+by the @code{ADA_PRJ_INCLUDE_FILE} ^environment variable^logical name^.
+
+@noindent
+@code{ADA_PRJ_INCLUDE_FILE} is normally set by gnatmake or by the ^gnat^GNAT^
+driver when project files are used. It should not normally be set
+by other means.
+
+@item
 @findex ADA_INCLUDE_PATH
 Each of the directories listed in the value of the
 @code{ADA_INCLUDE_PATH} ^environment variable^logical name^.
@@ -6745,16 +6814,6 @@ If this is not redefined, the user will obtain the DEC Ada 83 IO packages
 instead of the Ada95 packages. Thus, in order to get the Ada 95
 packages by default, ADA_INCLUDE_PATH must be redefined.
 @end ifset
-
-@item
-@findex ADA_PRJ_INCLUDE_FILE
-Each of the directories listed in the text file whose name is given
-by the @code{ADA_PRJ_INCLUDE_FILE} ^environment variable^logical name^.
-
-@noindent
-@code{ADA_PRJ_INCLUDE_FILE} is normally set by gnatmake or by the ^gnat^GNAT^
-driver when project files are used. It should not normally be set
-by other means.
 
 @item
 The content of the @file{ada_source_path} file which is part of the GNAT
@@ -7169,7 +7228,6 @@ The @var{xxx} ^string specified with the switch^option^ may be either
 @itemize @bullet
 @item ``@option{^in^INVALID^}'' requesting an invalid value where possible
 @item ``@option{^lo^LOW^}'' for the lowest possible value
-possible, and the low
 @item ``@option{^hi^HIGH^}'' for the highest possible value
 @item ``@option{xx}'' for a value consisting of repeated bytes with the
 value 16#xx# (i.e. xx is a string of two hexadecimal digits).
@@ -7632,6 +7690,16 @@ switches on the @code{gnatbind}
 command line, in the order given.
 
 @item
+@findex ADA_PRJ_OBJECTS_FILE
+Each of the directories listed in the text file whose name is given
+by the @code{ADA_PRJ_OBJECTS_FILE} ^environment variable^logical name^.
+
+@noindent
+@code{ADA_PRJ_OBJECTS_FILE} is normally set by gnatmake or by the ^gnat^GNAT^
+driver when project files are used. It should not normally be set
+by other means.
+
+@item
 @findex ADA_OBJECTS_PATH
 Each of the directories listed in the value of the
 @code{ADA_OBJECTS_PATH} ^environment variable^logical name^.
@@ -7662,16 +7730,6 @@ If this is not redefined, the user will obtain the DEC Ada 83 IO packages
 instead of the Ada95 packages. Thus, in order to get the Ada 95
 packages by default, ADA_OBJECTS_PATH must be redefined.
 @end ifset
-
-@item
-@findex ADA_PRJ_OBJECTS_FILE
-Each of the directories listed in the text file whose name is given
-by the @code{ADA_PRJ_OBJECTS_FILE} ^environment variable^logical name^.
-
-@noindent
-@code{ADA_PRJ_OBJECTS_FILE} is normally set by gnatmake or by the ^gnat^GNAT^
-driver when project files are used. It should not normally be set
-by other means.
 
 @item
 The content of the @file{ada_object_path} file which is part of the GNAT
@@ -10060,7 +10118,6 @@ recognized by @code{GNAT}:
    Elaboration_Checks
    Eliminate
    Extend_System
-   Extensions_Allowed
    External_Name_Casing
    Float_Representation
    Initialize_Scalars
@@ -10959,6 +11016,7 @@ is equivalent to the @command{gnatmake} invocation using the project file
 
 @node Importing Other Projects
 @subsection Importing Other Projects
+@cindex @code{ADA_PROJECT_PATH}
 
 @noindent
 A compilation unit in a source file in one project may depend on compilation
@@ -11993,6 +12051,7 @@ define a package @code{Naming} (@pxref{Naming Schemes}).
 
 @node  Importing Projects
 @section Importing Projects
+@cindex @code{ADA_PROJECT_PATH}
 
 @noindent
 An immediate source of a project P may depend on source files that
@@ -12016,19 +12075,24 @@ use literal strings instead of names, and the @code{with} clause identifies
 project files rather than packages.
 
 Each literal string is the file name or path name (absolute or relative) of a
-project file. If a string is simply a file name, with no path, then its
-location is determined by the @emph{project path}:
+project file. If a string corresponds to a file name, with no path or a
+relative path, then its location is determined by the @emph{project path}. The
+latter can be queried using @code{gnatls -v}. It contains:
 
 @itemize @bullet
 @item
-If the ^environment variable^logical name^ @env{ADA_PROJECT_PATH} exists,
-then the project path includes all the directories in this
-^environment variable^logical name^, plus the directory of the project file.
+In first position, the directory containing the current project file.
+@item
+In last position, the default project directory. This default project directory
+is part of the GNAT installation and is the standard place to install project
+files giving access to standard support libraries.
+@ifclear vms
+@ref{Installing a library}
+@end ifclear
 
 @item
-If the ^environment variable^logical name^ @env{ADA_PROJECT_PATH} does not
-exist, then the project path contains only one directory, namely the one where
-the project file is located.
+In between, all the directories referenced in the
+^environment variable^logical name^ @env{ADA_PROJECT_PATH} if it exists.
 @end itemize
 
 @noindent
@@ -12039,9 +12103,10 @@ If a relative pathname is used, as in
 @end smallexample
 
 @noindent
-then the path is relative to the directory where the importing project file is
-located. Any symbolic link will be fully resolved in the directory
-of the importing project file before the imported project file is examined.
+then the full path for the project is constructed by concatenating this
+relative path to those in the project path, in order, until a matching file is
+found. Any symbolic link will be fully resolved in the directory of the
+importing project file before the imported project file is examined.
 
 If the @code{with}'ed project file name does not have an extension,
 the default is @file{^.gpr^.GPR^}. If a file with this extension is not found,
@@ -13378,6 +13443,17 @@ specified on the command line, it invokes @command{^gnatmetric^gnatmetric^}
 with all the immediate sources of the specified project file and with
 @option{^-d^/DIRECTORY^} with the parameter pointing to the object directory
 of the project.
+
+@noindent
+In addition, when GNAT PP, GNAT PRETTY or GNAT METRIC is used with
+a project file, no source is specified on the command line and
+switch ^-U^/ALL_PROJECTS^ is specified on the command line, then
+the underlying tool (^gnatpp^gnatpp^ or
+^gnatmetric^gnatmetric^) is invoked for all sources of all projects,
+not only for the immediate sources of the main project.
+@ifclear vms
+(-U stands for Universal or Union of the project files of the project tree)
+@end ifclear
 
 @noindent
 For each of the following commands, there is optionally a corresponding
@@ -14810,7 +14886,8 @@ Compact layout
 @item ^-l3^/CONSTRUCT_LAYOUT=UNCOMPACT^
 Uncompact layout
 
-@item ^-notab^/NOTABS^
+@cindex @option{^-N^/NOTABS^} (@command{gnatpp})
+@item ^-N^/NOTABS^
 All the VT characters are removed from the comment text. All the HT characters
 are expanded with the sequences of space characters to get to the next tab
 stops.
@@ -15553,8 +15630,8 @@ upon units in files located outside the current directory, you have to provide
 the source search path when invoking @command{gnatmetric}.
 If it depends semantically upon units that are contained
 in files with names that do not follow the GNAT file naming rules, you have to
-provide the configuration file describing the corresponding naming scheme; see
-the description of the @command{gnatmetric} switches below.
+provide the configuration file describing the corresponding naming scheme (see
+the description of the @command{gnatmetric} switches below.)
 Alternatively, you may use a project file and invoke @command{gnatmetric}
 through the @command{gnat} driver.
 
@@ -16856,7 +16933,7 @@ generated files and executable files.
 @menu
 * Running gnatclean::
 * Switches for gnatclean::
-* Examples of gnatclean Usage::
+@c * Examples of gnatclean Usage::
 @end menu
 
 @node Running gnatclean
@@ -16970,8 +17047,8 @@ where @code{gnatclean} was invoked.
 
 @end table
 
-@node Examples of gnatclean Usage
-@section Examples of @code{gnatclean} Usage
+@c @node Examples of gnatclean Usage
+@c @section Examples of @code{gnatclean} Usage
 
 @ifclear vms
 @node GNAT and Libraries
@@ -17160,6 +17237,7 @@ the directive @option{-lxxx} at link time.
 
 @node Installing a library
 @subsection Installing a library
+@cindex @code{ADA_PROJECT_PATH}
 
 @noindent
 If you use project files, library installation is part of the library build
@@ -17199,7 +17277,7 @@ responsibility of the library provider to install the necessary sources, ALI
 files and libraries in the directories mentioned in the project file. For
 convenience, the user's library project file should be installed in a location
 that will be searched automatically by the GNAT
-builder. These are the directories referenced in the @code{ADA_LIBRARY_PATH}
+builder. These are the directories referenced in the @code{ADA_PROJECT_PATH}
 environment variable (@pxref{Importing Projects}), and also the default GNAT
 library location that can be queried with @command{gnatls -v} and is usually of
 the form $gnat_install_root/lib/gnat.
