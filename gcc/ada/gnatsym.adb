@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 2003-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -253,7 +253,7 @@ begin
             Write_Line ("""");
          end if;
 
-         Process (Object_Files.Table (Object_File).all, Success);
+         Processing.Process (Object_Files.Table (Object_File).all, Success);
       end loop;
 
       --  Finalize the object file

@@ -1,0 +1,235 @@
+------------------------------------------------------------------------------
+--                                                                          --
+--                         GNAT COMPILER COMPONENTS                         --
+--                                                                          --
+--                    S Y M B O L S . P R O C E S S I N G                   --
+--                                                                          --
+--                                 B o d y                                  --
+--                                                                          --
+--          Copyright (C) 2003-2005 Free Software Foundation, Inc.          --
+--                                                                          --
+-- GNAT is free software;  you can  redistribute it  and/or modify it under --
+-- terms of the  GNU General Public License as published  by the Free Soft- --
+-- ware  Foundation;  either version 2,  or (at your option) any later ver- --
+-- sion.  GNAT is distributed in the hope that it will be useful, but WITH- --
+-- OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY --
+-- or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License --
+-- for  more details.  You should have  received  a copy of the GNU General --
+-- Public License  distributed with GNAT;  see file COPYING.  If not, write --
+-- to  the Free Software Foundation,  59 Temple Place - Suite 330,  Boston, --
+-- MA 02111-1307, USA.                                                      --
+--                                                                          --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
+--                                                                          --
+------------------------------------------------------------------------------
+
+--  This is the VMS Alpha version of this package
+
+separate (Symbols)
+package body Processing is
+
+   type Number is mod 2**16;
+   --  16 bits unsigned number for number of characters
+
+   GSD : constant Number := 10;
+   --  Code for the Global Symbol Definition section
+
+   C_SYM : constant Number := 1;
+   --  Code for a Symbol subsection
+
+   V_DEF_Mask  : constant Number := 2**1;
+   V_NORM_Mask : constant Number := 2**6;
+
+   B : Byte;
+
+   Number_Of_Characters : Natural := 0;
+   --  The number of characters of each section
+
+   --  The following variables are used by procedure Process when reading an
+   --  object file.
+
+   Code   : Number := 0;
+   Length : Natural := 0;
+
+   Dummy : Number;
+
+   Nchars : Natural := 0;
+   Flags  : Number  := 0;
+
+   Symbol : String (1 .. 255);
+   LSymb  : Natural;
+
+   procedure Get (N : out Number);
+   --  Read two bytes from the object file LSB first as unsigned 16 bit number
+
+   procedure Get (N : out Natural);
+   --  Read two bytes from the object file, LSByte first, as a Natural
+
+   ---------
+   -- Get --
+   ---------
+
+   procedure Get (N : out Number) is
+      C : Byte;
+      LSByte : Number;
+   begin
+      Read (File, C);
+      LSByte := Byte'Pos (C);
+      Read (File, C);
+      N := LSByte + (256 * Byte'Pos (C));
+   end Get;
+
+   procedure Get (N : out Natural) is
+      Result : Number;
+   begin
+      Get (Result);
+      N := Natural (Result);
+   end Get;
+
+   -------------
+   -- Process --
+   -------------
+
+   procedure Process
+     (Object_File : String;
+      Success     : out Boolean)
+   is
+   begin
+      --  Open the object file with Byte_IO. Return with Success = False if
+      --  this fails.
+
+      begin
+         Open (File, In_File, Object_File);
+      exception
+         when others =>
+            Put_Line
+              ("*** Unable to open object file """ & Object_File & """");
+            Success := False;
+            return;
+      end;
+
+      --  Assume that the object file has a correct format
+
+      Success := True;
+
+      --  Get the different sections one by one from the object file
+
+      while not End_Of_File (File) loop
+
+         Get (Code);
+         Get (Number_Of_Characters);
+         Number_Of_Characters := Number_Of_Characters - 4;
+
+         --  If this is not a Global Symbol Definition section, skip to the
+         --  next section.
+
+         if Code /= GSD then
+
+            for J in 1 .. Number_Of_Characters loop
+               Read (File, B);
+            end loop;
+
+         else
+
+            --  Skip over the next 4 bytes
+
+            Get (Dummy);
+            Get (Dummy);
+            Number_Of_Characters := Number_Of_Characters - 4;
+
+            --  Get each subsection in turn
+
+            loop
+               Get (Code);
+               Get (Nchars);
+               Get (Dummy);
+               Get (Flags);
+               Number_Of_Characters := Number_Of_Characters - 8;
+               Nchars := Nchars - 8;
+
+               --  If this is a symbol and the V_DEF flag is set, get the
+               --  symbol.
+
+               if Code = C_SYM and then ((Flags and V_DEF_Mask) /= 0) then
+                  --  First, reach the symbol length
+
+                  for J in 1 .. 25 loop
+                     Read (File, B);
+                     Nchars := Nchars - 1;
+                     Number_Of_Characters := Number_Of_Characters - 1;
+                  end loop;
+
+                  Length := Byte'Pos (B);
+                  LSymb := 0;
+
+                  --  Get the symbol characters
+
+                  for J in 1 .. Nchars loop
+                     Read (File, B);
+                     Number_Of_Characters := Number_Of_Characters - 1;
+                     if Length > 0 then
+                        LSymb := LSymb + 1;
+                        Symbol (LSymb) := B;
+                        Length := Length - 1;
+                     end if;
+                  end loop;
+
+                  --  Create the new Symbol
+
+                  declare
+                     S_Data : Symbol_Data;
+                  begin
+                     S_Data.Name := new String'(Symbol (1 .. LSymb));
+
+                     --  The symbol kind (Data or Procedure) depends on the
+                     --  V_NORM flag.
+
+                     if (Flags and V_NORM_Mask) = 0 then
+                        S_Data.Kind := Data;
+
+                     else
+                        S_Data.Kind := Proc;
+                     end if;
+
+                     --  Put the new symbol in the table
+
+                     Symbol_Table.Increment_Last (Complete_Symbols);
+                     Complete_Symbols.Table
+                       (Symbol_Table.Last (Complete_Symbols)) := S_Data;
+                  end;
+
+               else
+                  --  As it is not a symbol subsection, skip to the next
+                  --  subsection.
+
+                  for J in 1 .. Nchars loop
+                     Read (File, B);
+                     Number_Of_Characters := Number_Of_Characters - 1;
+                  end loop;
+               end if;
+
+               --  Exit the GSD section when number of characters reaches 0
+
+               exit when Number_Of_Characters = 0;
+            end loop;
+         end if;
+      end loop;
+
+      --  The object file has been processed, close it
+
+      Close (File);
+
+   exception
+      --  For any exception, output an error message, close the object file
+      --  and return with Success = False.
+
+      when X : others =>
+         Put_Line ("unexpected exception raised while processing """
+                   & Object_File & """");
+         Put_Line (Exception_Information (X));
+         Close (File);
+         Success := False;
+   end Process;
+
+end Processing;
