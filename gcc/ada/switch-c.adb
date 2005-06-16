@@ -503,7 +503,7 @@ package body Switch.C is
                Warn_On_Unchecked_Conversion := True;
                Warn_On_Unrecognized_Pragma  := True;
 
-               Set_Style_Check_Options ("3abcdefhiklmnprst");
+               Set_Style_Check_Options ("3abcdefhiklmnprstu");
 
             --  Processing for G switch
 
@@ -763,6 +763,7 @@ package body Switch.C is
                         Constant_Condition_Warnings     := True;
                         Implementation_Unit_Warnings    := True;
                         Ineffective_Inline_Warnings     := True;
+                        Warn_On_Ada_2005_Compatibility  := True;
                         Warn_On_Bad_Fixed_Value         := True;
                         Warn_On_Constant                := True;
                         Warn_On_Export_Import           := True;
@@ -781,6 +782,7 @@ package body Switch.C is
                         Elab_Warnings                   := False;
                         Implementation_Unit_Warnings    := False;
                         Ineffective_Inline_Warnings     := False;
+                        Warn_On_Ada_2005_Compatibility  := False;
                         Warn_On_Bad_Fixed_Value         := False;
                         Warn_On_Constant                := False;
                         Warn_On_Dereference             := False;
@@ -908,6 +910,12 @@ package body Switch.C is
                      when 'X' =>
                         Warn_On_Export_Import           := False;
 
+                     when 'y' =>
+                        Warn_On_Ada_2005_Compatibility  := True;
+
+                     when 'Y' =>
+                        Warn_On_Ada_2005_Compatibility  := False;
+
                      when 'z' =>
                         Warn_On_Unchecked_Conversion    := True;
 
@@ -972,6 +980,7 @@ package body Switch.C is
                Ptr := Ptr + 1;
                Extensions_Allowed := True;
                Ada_Version := Ada_Version_Type'Last;
+               Ada_Version_Explicit := Ada_Version;
 
             --  Processing for y switch
 
@@ -1067,6 +1076,7 @@ package body Switch.C is
                else
                   Ptr := Ptr + 1;
                   Ada_Version := Ada_83;
+                  Ada_Version_Explicit := Ada_Version;
                end if;
 
             --  Processing for 95 switch
@@ -1083,6 +1093,7 @@ package body Switch.C is
                else
                   Ptr := Ptr + 1;
                   Ada_Version := Ada_95;
+                  Ada_Version_Explicit := Ada_Version;
                end if;
 
             --  Processing for 05 switch
@@ -1099,6 +1110,7 @@ package body Switch.C is
                else
                   Ptr := Ptr + 1;
                   Ada_Version := Ada_05;
+                  Ada_Version_Explicit := Ada_Version;
                end if;
 
             --  Ignore extra switch character

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,11 +50,14 @@ package body Opt is
    procedure Register_Opt_Config_Switches is
    begin
       Ada_Version_Config                    := Ada_Version;
+      Ada_Version_Explicit_Config           := Ada_Version_Explicit;
+      Assertions_Enabled_Config             := Assertions_Enabled;
       Dynamic_Elaboration_Checks_Config     := Dynamic_Elaboration_Checks;
       Exception_Locations_Suppressed_Config := Exception_Locations_Suppressed;
       Extensions_Allowed_Config             := Extensions_Allowed;
       External_Name_Exp_Casing_Config       := External_Name_Exp_Casing;
       External_Name_Imp_Casing_Config       := External_Name_Imp_Casing;
+      Persistent_BSS_Mode_Config            := Persistent_BSS_Mode;
       Polling_Required_Config               := Polling_Required;
       Use_VADS_Size_Config                  := Use_VADS_Size;
    end Register_Opt_Config_Switches;
@@ -66,11 +69,14 @@ package body Opt is
    procedure Restore_Opt_Config_Switches (Save : Config_Switches_Type) is
    begin
       Ada_Version                    := Save.Ada_Version;
+      Ada_Version_Explicit           := Save.Ada_Version_Explicit;
+      Assertions_Enabled             := Save.Assertions_Enabled;
       Dynamic_Elaboration_Checks     := Save.Dynamic_Elaboration_Checks;
       Exception_Locations_Suppressed := Save.Exception_Locations_Suppressed;
       Extensions_Allowed             := Save.Extensions_Allowed;
       External_Name_Exp_Casing       := Save.External_Name_Exp_Casing;
       External_Name_Imp_Casing       := Save.External_Name_Imp_Casing;
+      Persistent_BSS_Mode            := Save.Persistent_BSS_Mode;
       Polling_Required               := Save.Polling_Required;
       Use_VADS_Size                  := Save.Use_VADS_Size;
    end Restore_Opt_Config_Switches;
@@ -82,11 +88,14 @@ package body Opt is
    procedure Save_Opt_Config_Switches (Save : out Config_Switches_Type) is
    begin
       Save.Ada_Version                    := Ada_Version;
+      Save.Ada_Version_Explicit           := Ada_Version_Explicit;
+      Save.Assertions_Enabled             := Assertions_Enabled;
       Save.Dynamic_Elaboration_Checks     := Dynamic_Elaboration_Checks;
       Save.Exception_Locations_Suppressed := Exception_Locations_Suppressed;
       Save.Extensions_Allowed             := Extensions_Allowed;
       Save.External_Name_Exp_Casing       := External_Name_Exp_Casing;
       Save.External_Name_Imp_Casing       := External_Name_Imp_Casing;
+      Save.Persistent_BSS_Mode            := Persistent_BSS_Mode;
       Save.Polling_Required               := Polling_Required;
       Save.Use_VADS_Size                  := Use_VADS_Size;
    end Save_Opt_Config_Switches;
@@ -99,23 +108,28 @@ package body Opt is
    begin
       if Internal_Unit then
          Ada_Version                := Ada_Version_Runtime;
+         Assertions_Enabled         := False;
          Dynamic_Elaboration_Checks := False;
          Extensions_Allowed         := True;
          External_Name_Exp_Casing   := As_Is;
          External_Name_Imp_Casing   := Lowercase;
+         Persistent_BSS_Mode        := False;
          Use_VADS_Size              := False;
 
       else
          Ada_Version                := Ada_Version_Config;
+         Assertions_Enabled         := Assertions_Enabled_Config;
          Dynamic_Elaboration_Checks := Dynamic_Elaboration_Checks_Config;
          Extensions_Allowed         := Extensions_Allowed_Config;
          External_Name_Exp_Casing   := External_Name_Exp_Casing_Config;
          External_Name_Imp_Casing   := External_Name_Imp_Casing_Config;
+         Persistent_BSS_Mode        := Persistent_BSS_Mode_Config;
          Use_VADS_Size              := Use_VADS_Size_Config;
       end if;
 
       Exception_Locations_Suppressed := Exception_Locations_Suppressed_Config;
       Polling_Required               := Polling_Required_Config;
+      Ada_Version_Explicit           := Ada_Version_Explicit_Config;
    end Set_Opt_Config_Switches;
 
    ---------------
@@ -123,8 +137,10 @@ package body Opt is
    ---------------
 
    procedure Tree_Read is
-      Tree_Version_String_Len : Nat;
-      Ada_Version_Config_Val  : Nat;
+      Tree_Version_String_Len         : Nat;
+      Ada_Version_Config_Val          : Nat;
+      Ada_Version_Explicit_Config_Val : Nat;
+      Assertions_Enabled_Config_Val   : Nat;
 
    begin
       Tree_Read_Int  (Tree_ASIS_Version_Number);
@@ -138,12 +154,19 @@ package body Opt is
       Tree_Read_Data (Warning_Mode'Address,
                       Warning_Mode_Type'Object_Size / Storage_Unit);
       Tree_Read_Int  (Ada_Version_Config_Val);
+      Tree_Read_Int  (Ada_Version_Explicit_Config_Val);
+      Tree_Read_Int  (Assertions_Enabled_Config_Val);
       Tree_Read_Bool (All_Errors_Mode);
       Tree_Read_Bool (Assertions_Enabled);
       Tree_Read_Bool (Enable_Overflow_Checks);
       Tree_Read_Bool (Full_List);
 
-      Ada_Version_Config := Ada_Version_Type'Val (Ada_Version_Config_Val);
+      Ada_Version_Config :=
+        Ada_Version_Type'Val (Ada_Version_Config_Val);
+      Ada_Version_Explicit_Config :=
+        Ada_Version_Type'Val (Ada_Version_Explicit_Config_Val);
+      Assertions_Enabled_Config :=
+        Boolean'Val (Assertions_Enabled_Config_Val);
 
       --  Read version string: we have to check the length first
 
@@ -199,6 +222,8 @@ package body Opt is
       Tree_Write_Data (Warning_Mode'Address,
                        Warning_Mode_Type'Object_Size / Storage_Unit);
       Tree_Write_Int  (Ada_Version_Type'Pos (Ada_Version_Config));
+      Tree_Write_Int  (Ada_Version_Type'Pos (Ada_Version_Explicit_Config));
+      Tree_Write_Int  (Boolean'Pos (Assertions_Enabled_Config));
       Tree_Write_Bool (All_Errors_Mode);
       Tree_Write_Bool (Assertions_Enabled);
       Tree_Write_Bool (Enable_Overflow_Checks);
