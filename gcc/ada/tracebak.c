@@ -242,7 +242,7 @@ struct layout
 
 #define BASE_SKIP 1
 
-/*-------------------------- Sparc Solaris -----------------------------*/
+/*-------------------------- SPARC Solaris -----------------------------*/
 
 #elif defined (sun) && defined (sparc)
 
@@ -257,8 +257,14 @@ struct layout
   void *return_address;
 };
 
+#ifdef __arch64__
+#define STACK_BIAS 2047 /* V9 ABI */
+#else
+#define STACK_BIAS 0    /* V8 ABI */
+#endif
+
 #define FRAME_LEVEL 0
-#define FRAME_OFFSET (14 * (sizeof (void*)))
+#define FRAME_OFFSET (14 * sizeof (void*) + STACK_BIAS)
 #define PC_ADJUST 0
 #define STOP_FRAME(CURRENT, TOP_STACK) \
   ((CURRENT)->return_address == 0|| (CURRENT)->next == 0 \
@@ -324,12 +330,22 @@ struct layout
         || ((*((ptr) - 1) & 0xff) == 0xff) \
         || (((*(ptr) & 0xd0ff) == 0xd0ff))))
 
-/*------------------------------- mips-irix -------------------------------*/
+/*----------------------------- x86_64 ---------------------------------*/
 
-#elif defined (__mips) && defined (__sgi)
+#elif defined (__x86_64__)
 
 #define USE_GCC_UNWINDER
-#define PC_ADJUST -8
+/* The generic unwinder is not used for this target because it is based
+   on frame layout assumptions that are not reliable on this target (the
+   rbp register is very likely used for something else than storing the
+   frame pointer in optimized code). Hence, we use the GCC unwinder
+   based on DWARF 2 call frame information, although it has the drawback
+   of not being able to unwind through frames compiled without DWARF 2
+   information.
+*/
+
+#define PC_ADJUST -2
+/* The minimum size of call instructions on this architecture is 2 bytes */
 
 #endif
 
