@@ -45,6 +45,15 @@ target_triplet = @target@
 @NATIVE_TRUE@bin_PROGRAMS = jv-convert$(EXEEXT) gij$(EXEEXT) \
 @NATIVE_TRUE@	grmic$(EXEEXT) grmiregistry$(EXEEXT) \
 @NATIVE_TRUE@	gcj-dbtool$(EXEEXT)
+@USING_BOEHMGC_TRUE@am__append_1 = boehm.cc
+@USING_NOGC_TRUE@am__append_2 = nogc.cc
+@SUPPLY_BACKTRACE_TRUE@am__append_3 = sysdep/dwarf2-backtrace.cc
+@USING_POSIX_PLATFORM_TRUE@am__append_4 = posix.cc
+@USING_WIN32_PLATFORM_TRUE@am__append_5 = win32.cc
+@USING_DARWIN_CRT_TRUE@am__append_6 = darwin.cc
+@USING_POSIX_THREADS_TRUE@am__append_7 = posix-threads.cc
+@USING_WIN32_THREADS_TRUE@am__append_8 = win32-threads.cc
+@USING_NO_THREADS_TRUE@am__append_9 = no-threads.cc
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@noinst_PROGRAMS =  \
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@	gen-from-JIS$(EXEEXT)
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
@@ -654,26 +663,8 @@ ACLOCAL_AMFLAGS = -I . -I ../config
 
 # May be used by various substitution variables.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
-@USING_BOEHMGC_FALSE@BOEHMGC_SRC = 
-@USING_BOEHMGC_TRUE@BOEHMGC_SRC = boehm.cc
-@USING_NOGC_FALSE@NOGC_SRC = 
-@USING_NOGC_TRUE@NOGC_SRC = nogc.cc
-@SUPPLY_BACKTRACE_FALSE@BACKTRACE_SRC = 
-@SUPPLY_BACKTRACE_TRUE@BACKTRACE_SRC = sysdep/dwarf2-backtrace.cc
-@USING_POSIX_PLATFORM_FALSE@POSIX_PLATFORM_SRC = 
-@USING_POSIX_PLATFORM_TRUE@POSIX_PLATFORM_SRC = posix.cc
-@USING_WIN32_PLATFORM_FALSE@WIN32_PLATFORM_SRC = 
-@USING_WIN32_PLATFORM_TRUE@WIN32_PLATFORM_SRC = win32.cc
-@USING_POSIX_THREADS_FALSE@POSIX_THREAD_SRC = 
-@USING_POSIX_THREADS_TRUE@POSIX_THREAD_SRC = posix-threads.cc
-@USING_WIN32_THREADS_FALSE@WIN32_THREAD_SRC = 
-@USING_WIN32_THREADS_TRUE@WIN32_THREAD_SRC = win32-threads.cc
-@USING_NO_THREADS_FALSE@NO_THREAD_SRC = 
-@USING_NO_THREADS_TRUE@NO_THREAD_SRC = no-threads.cc
 @TESTSUBDIR_FALSE@SUBDIRS = $(DIRLTDL) gcj include external
 @TESTSUBDIR_TRUE@SUBDIRS = $(DIRLTDL) testsuite gcj include external
-@USING_DARWIN_CRT_FALSE@DARWIN_CRT_SRC = 
-@USING_DARWIN_CRT_TRUE@DARWIN_CRT_SRC = darwin.cc
 
 # write_entries_to_file - writes each entry in a list
 # to the specified file. Each entry is written individually
@@ -791,15 +782,12 @@ libgij_la_LIBADD = -L$(here)/.libs libgcj.la
 libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 
-libgcj_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc \
-	link.cc defineclass.cc interpret.cc verify.cc \
-	$(nat_source_files) $(math_c_source_files) \
-	$(BOEHMGC_SRC) $(NOGC_SRC) \
-	$(BACKTRACE_SRC) \
-	$(POSIX_PLATFORM_SRC) $(WIN32_PLATFORM_SRC) \
-	$(DARWIN_CRT_SRC) \
-	$(POSIX_THREAD_SRC) $(WIN32_THREAD_SRC) $(NO_THREAD_SRC)
-
+libgcj_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc link.cc \
+	defineclass.cc interpret.cc verify.cc $(nat_source_files) \
+	$(math_c_source_files) $(am__append_1) $(am__append_2) \
+	$(am__append_3) $(am__append_4) $(am__append_5) \
+	$(am__append_6) $(am__append_7) $(am__append_8) \
+	$(am__append_9)
 nat_files = $(nat_source_files:.cc=.lo)
 xlib_nat_files = $(xlib_nat_source_files:.cc=.lo)
 
