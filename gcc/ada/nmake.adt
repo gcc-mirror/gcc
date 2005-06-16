@@ -6,7 +6,7 @@
 --                                                                          --
 --                             T e m p l a t e                              --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,15 +23,14 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
-
-pragma Style_Checks (All_Checks);
---  Turn off subprogram order checking, since the routines here are
---  generated automatically in order.
-
 --  This file is a template used as input to the utility program XNmake,
 --  which reads this template, and the spec of Sinfo (sinfo.ads) and
 --  generates the body and/or the spec for the Nmake package (files
 --  nmake.ads and nmake.adb)
+
+pragma Style_Checks (All_Checks);
+--  Turn off subprogram order checking, since the routines here are
+--  generated automatically in order.
 
 with Atree;  use Atree;       --  body only
 with Nlists; use Nlists;      --  spec only
