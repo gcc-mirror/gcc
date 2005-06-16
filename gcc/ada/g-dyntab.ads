@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2000-2003 Ada Core Technologies, Inc.           --
+--            Copyright (C) 2000-2005 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -203,9 +203,7 @@ package GNAT.Dynamic_Tables is
    --  to return False). The sort is not stable (the order of equal items
    --  in the table is not preserved).
 
-
 private
-
    type Table_Private is record
       Max : Integer;
       --  Subscript of the maximum entry in the currently allocated table
@@ -215,7 +213,7 @@ private
       --  ensures that we initially allocate the table.
 
       Last_Val : Integer;
-      --  Current value of Last.
+      --  Current value of Last
    end record;
 
 end GNAT.Dynamic_Tables;
