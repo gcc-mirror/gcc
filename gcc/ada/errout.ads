@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -574,7 +574,7 @@ package Errout is
    --  This routine is used for posting a message conditionally. The message
    --  is posted (with the same effect as Error_Msg_N (Msg, N) if and only
    --  if Eflag is True and if the node N is within the main extended source
-   --  unit. Typically this is a warning mode flag.
+   --  unit and comes from source. Typically this is a warning mode flag.
 
    procedure Change_Error_Text (Error_Id : Error_Msg_Id; New_Msg : String);
    --  The error message text of the message identified by Id is replaced by
