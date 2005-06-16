@@ -2,6 +2,7 @@
 
 #include <stdarg.h>
 #include <signal.h>
+#include "tree-vect.h"
 
 #define N 64
 #define MAX 42
@@ -16,6 +17,8 @@ int main ()
   int D[N];
 
   int i, j;
+
+  check_vect ();
 
   for (i = 0; i < N; i++)
     {
