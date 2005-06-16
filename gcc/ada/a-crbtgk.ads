@@ -2,7 +2,8 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---               ADA.CONTAINERS.RED_BLACK_TREES.GENERIC_KEYS                --
+--        A D A . C O N T A I N E R S . R E D _ B L A C K _ T R E E S .     --
+--                          G E N E R I C _ K E Y S                         --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -133,6 +134,3 @@ pragma Pure (Generic_Keys);
       Key  : Key_Type);
 
 end Ada.Containers.Red_Black_Trees.Generic_Keys;
-
-
-

@@ -2,11 +2,10 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---              ADA.CONTAINERS.HASH_TABLES.GENERIC_OPERATIONS               --
+--                       A D A . C O N T A I N E R S .                      --
+--       H A S H _ T A B L E S . G E N E R I C _ O P E R A T I O N S        --
 --                                                                          --
 --                                 S p e c                                  --
---                                                                          --
---             Copyright (C) 2004 Free Software Foundation, Inc.            --
 --                                                                          --
 -- This specification is adapted from the Ada Reference Manual for use with --
 -- GNAT.  In accordance with the copyright of that document, you can freely --
@@ -22,11 +21,7 @@ generic
    with package HT_Types is
      new Generic_Hash_Table_Types (<>);
 
-   type Hash_Table_Type is new HT_Types.Hash_Table_Type with private;
-
    use HT_Types;
-
-   Null_Node : in Node_Access;
 
    with function Hash_Node (Node : Node_Access) return Hash_Type;
 
@@ -72,7 +67,7 @@ package Ada.Containers.Hash_Tables.Generic_Operations is
 
    function Capacity (HT : Hash_Table_Type) return Count_Type;
 
-   procedure Ensure_Capacity
+   procedure Reserve_Capacity
      (HT : in out Hash_Table_Type;
       N  : Count_Type);
 
@@ -108,4 +103,3 @@ package Ada.Containers.Hash_Tables.Generic_Operations is
       HT     : out Hash_Table_Type);
 
 end Ada.Containers.Hash_Tables.Generic_Operations;
-

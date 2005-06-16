@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                    ADA.STRINGS.HASH_CASE_INSENSITIVE                     --
+--    A D A . S T R I N G S . H A S H _ C A S E _ I N S E N S I T I V E     --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2004 Free Software Foundation, Inc.            --
+--          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -52,17 +52,8 @@ is
 begin
    Tmp := 0;
    for J in Key'Range loop
-      Tmp := Rotate_Left (Tmp, 1) + Character'Pos (To_Lower (Key (J)));
+      Tmp := Rotate_Left (Tmp, 3) + Character'Pos (To_Lower (Key (J)));
    end loop;
 
    return Tmp;
 end Ada.Strings.Hash_Case_Insensitive;
-
-
-
-
-
-
-
-
-

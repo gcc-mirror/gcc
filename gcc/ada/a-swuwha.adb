@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                     ADA.STRINGS.WIDE_UNBOUNDED.HASH                      --
+--  A D A . S T R I N G S . W I D E _ U N B O U N D E D . W I D E _ H A S H --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2004 Free Software Foundation, Inc.            --
+--          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -35,7 +35,7 @@
 
 --  Note: source of this algorithm: GNAT.HTable.Hash (g-htable.adb)
 
-function Ada.Strings.Wide_Unbounded.Hash
+function Ada.Strings.Wide_Unbounded.Wide_Hash
   (Key : Unbounded_Wide_String) return Containers.Hash_Type
 is
    use Ada.Containers;
@@ -50,8 +50,8 @@ is
 begin
    Tmp := 0;
    for J in 1 .. Key.Last loop
-      Tmp := Rotate_Left (Tmp, 1) + Wide_Character'Pos (Key.Reference (J));
+      Tmp := Rotate_Left (Tmp, 3) + Wide_Character'Pos (Key.Reference (J));
    end loop;
 
    return Tmp;
-end Ada.Strings.Wide_Unbounded.Hash;
+end Ada.Strings.Wide_Unbounded.Wide_Hash;

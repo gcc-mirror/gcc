@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---       A D A . S T R I N G S . W I D E _ U N B O U N D E D . H A S H      --
+--  A D A . S T R I N G S . W I D E _ U N B O U N D E D . W I D E _ H A S H --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -35,7 +35,7 @@
 
 --  Note: source of this algorithm: GNAT.HTable.Hash (g-htable.adb)
 
-function Ada.Strings.Wide_Wide_Unbounded.Hash
+function Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Hash
   (Key : Unbounded_Wide_Wide_String) return Containers.Hash_Type
 is
    use Ada.Containers;
@@ -50,9 +50,9 @@ is
 begin
    Tmp := 0;
    for J in 1 .. Key.Last loop
-      Tmp := Rotate_Left (Tmp, 1) +
+      Tmp := Rotate_Left (Tmp, 3) +
         Wide_Wide_Character'Pos (Key.Reference (J));
    end loop;
 
    return Tmp;
-end Ada.Strings.Wide_Wide_Unbounded.Hash;
+end Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Hash;

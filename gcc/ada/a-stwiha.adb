@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                          ADA.STRINGS.WIDE_HASH                           --
+--                A D A . S T R I N G S . W I D E _ H A S H                 --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2004 Free Software Foundation, Inc.            --
+--          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -50,10 +50,8 @@ is
 begin
    Tmp := 0;
    for J in Key'Range loop
-      Tmp := Rotate_Left (Tmp, 1) + Wide_Character'Pos (Key (J));
+      Tmp := Rotate_Left (Tmp, 3) + Wide_Character'Pos (Key (J));
    end loop;
 
    return Tmp;
 end Ada.Strings.Wide_Hash;
-
-
