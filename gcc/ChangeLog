@@ -1,3 +1,11 @@
+2005-06-16  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/t-slibgcc-darwin (SHLIB_SOVERSION): Rename from
+	SHLIB_MINOR.
+	(SHLIB_REVISION): Delete.
+	(SHLIB_VERSTRING): Update to compensate.
+	(SHLIB_SONAME): Just use one '.' in the name.
+
 2005-06-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR tree-optimization/22018

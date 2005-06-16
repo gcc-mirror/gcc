@@ -1,11 +1,10 @@
 # Build a shared libgcc library with the darwin linker.
-SHLIB_MINOR = 1
-SHLIB_REVISION = 0
-SHLIB_VERSTRING = -compatibility_version $(SHLIB_MINOR) -current_version $(SHLIB_MINOR).$(SHLIB_REVISION)
+SHLIB_SOVERSION = 1
+SHLIB_VERSTRING = -compatibility_version $(SHLIB_SOVERSION) -current_version $(SHLIB_SOVERSION).0
 SHLIB_EXT = .dylib
 SHLIB_SUFFIX = `if test @multilib_dir@ != . ; then echo _@multilib_dir@ ; fi`
 SHLIB_SOLINK = @shlib_base_name@$(SHLIB_SUFFIX)$(SHLIB_EXT)
-SHLIB_SONAME = @shlib_base_name@$(SHLIB_SUFFIX).$(SHLIB_MINOR).$(SHLIB_REVISION)$(SHLIB_EXT)
+SHLIB_SONAME = @shlib_base_name@$(SHLIB_SUFFIX).$(SHLIB_SOVERSION)$(SHLIB_EXT)
 SHLIB_MAP = @shlib_map_file@
 SHLIB_OBJS = @shlib_objs@
 SHLIB_DIR = @multilib_dir@
