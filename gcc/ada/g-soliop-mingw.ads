@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2001-2003 Ada Core Technologies, Inc.           --
+--            Copyright (C) 2001-2005 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,6 @@
 --  support of scokets as required by the package GNAT.Sockets.
 
 --  This is the Windows/NT version of this package
-
 
 package GNAT.Sockets.Linker_Options is
 private

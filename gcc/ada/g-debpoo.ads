@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -84,7 +84,6 @@
 --  it does that by aligning all objects using Standard'Maximum_Alignment.
 --  This allows faster checks, and limits the performance impact of using
 --  this pool.
-
 
 with System;                  use System;
 with System.Storage_Elements; use System.Storage_Elements;

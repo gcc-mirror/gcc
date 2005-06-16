@@ -628,7 +628,6 @@ package body Targparm is
          end loop;
       end if;
 
-
       if Fatal then
          raise Unrecoverable_Error;
       end if;

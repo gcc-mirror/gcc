@@ -119,8 +119,6 @@ package body Prj.Makr is
    is
       Tree : constant Project_Node_Tree_Ref := new Project_Node_Tree_Data;
 
-
-
       Path_Name : String (1 .. File_Path'Length +
                             Project_File_Extension'Length);
       Path_Last : Natural := File_Path'Length;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -151,7 +151,6 @@ package body Exception_Data is
      (X    : Exception_Occurrence;
       Info : in out String;
       Ptr  : in out Natural);
-
 
    --  The "functional" interface to the exception information not involving
    --  a traceback decorator uses preallocated intermediate buffers to avoid

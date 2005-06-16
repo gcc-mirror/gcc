@@ -4,9 +4,9 @@
 --                                                                          --
 --                       S Y S T E M . V A L _ L L I                        --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
---   Copyright (C) 1992,1993,1994,1995,1996 Free Software Foundation, Inc.  --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,8 +44,7 @@ package body System.Val_LLI is
    function Scan_Long_Long_Integer
      (Str  : String;
       Ptr  : access Integer;
-      Max  : Integer)
-      return Long_Long_Integer
+      Max  : Integer) return Long_Long_Integer
    is
       Uval : Long_Long_Unsigned;
       --  Unsigned result
@@ -80,7 +79,6 @@ package body System.Val_LLI is
       else
          return Long_Long_Integer (Uval);
       end if;
-
    end Scan_Long_Long_Integer;
 
    -----------------------------
@@ -95,7 +93,6 @@ package body System.Val_LLI is
       V := Scan_Long_Long_Integer (Str, P'Access, Str'Last);
       Scan_Trailing_Blanks (Str, P);
       return V;
-
    end Value_Long_Long_Integer;
 
 end System.Val_LLI;

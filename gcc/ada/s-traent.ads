@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2003 Free Software Foundation, Inc.            --
+--          Copyright (C) 2003-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -58,5 +58,3 @@ package System.Traceback_Entries is
    --  Returns an entry representing a frame for a call instruction at PC.
 
 end System.Traceback_Entries;
-
-

@@ -85,9 +85,6 @@ package body System.Finalization_Implementation is
      return SSE.Storage_Count;
    pragma Import (Ada, Parent_Size, "ada__tags__parent_size");
 
-   function Parent_Tag (T : Ada.Tags.Tag) return Ada.Tags.Tag;
-   pragma Import (Ada, Parent_Tag, "ada__tags__parent_tag");
-
    function Get_Deep_Controller (Obj : System.Address) return RC_Ptr;
    --  Given the address (obj) of a tagged object, return a
    --  pointer to the record controller of this object.
@@ -473,7 +470,7 @@ package body System.Finalization_Implementation is
       --  when there are no controller at this level
 
       while Offset = -2 loop
-         The_Tag := Parent_Tag (The_Tag);
+         The_Tag := Ada.Tags.Parent_Tag (The_Tag);
          Offset  := RC_Offset (The_Tag);
       end loop;
 

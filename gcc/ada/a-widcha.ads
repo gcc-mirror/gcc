@@ -1,8 +1,8 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT LIBRARY COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---            A D A . S T R I N G S . W I D E _ W I D E _ H A S H           --
+--                  A D A . W I D E _ C H A R A C T E R S                   --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -13,9 +13,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Containers;
+--  Note: strictly this is an Ada 2005 package, but we make it freely
+--  available in Ada 95 mode, since it deals only with wide characters.
 
-function Ada.Strings.Wide_Wide_Hash
-  (Key : Wide_Wide_String) return Containers.Hash_Type;
-
-pragma Pure (Ada.Strings.Wide_Wide_Hash);
+package Ada.Wide_Characters is
+pragma Pure (Wide_Characters);
+end Ada.Wide_Characters;

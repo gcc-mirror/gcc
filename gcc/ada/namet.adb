@@ -120,7 +120,6 @@ package body Namet is
       end loop;
    end Add_Str_To_Name_Buffer;
 
-
    --------------
    -- Finalize --
    --------------
@@ -313,7 +312,6 @@ package body Namet is
                else
                   Insert_Character (Character'Val (Hex (2)));
                end if;
-
 
             --  WW (wide wide character insertion)
 

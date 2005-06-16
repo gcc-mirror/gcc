@@ -457,8 +457,6 @@ endif
 
 ifeq ($(strip $(filter-out alpha% dec vx%,$(targ))),)
   LIBGNAT_TARGET_PAIRS = \
-  a-sytaco.ads<a-sytaco-vxworks.ads \
-  a-sytaco.adb<a-sytaco-vxworks.adb \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -485,8 +483,6 @@ endif
 
 ifeq ($(strip $(filter-out m68k% wrs vx%,$(targ))),)
   LIBGNAT_TARGET_PAIRS = \
-  a-sytaco.ads<a-sytaco-vxworks.ads \
-  a-sytaco.adb<a-sytaco-vxworks.adb \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -524,8 +520,6 @@ endif
 
 ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
   LIBGNAT_TARGET_PAIRS = \
-  a-sytaco.ads<a-sytaco-vxworks.ads \
-  a-sytaco.adb<a-sytaco-vxworks.adb \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -563,8 +557,6 @@ endif
 
 ifeq ($(strip $(filter-out sparc% wrs vx%,$(targ))),)
   LIBGNAT_TARGET_PAIRS = \
-  a-sytaco.ads<a-sytaco-vxworks.ads \
-  a-sytaco.adb<a-sytaco-vxworks.adb \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -593,8 +585,6 @@ endif
 
 ifeq ($(strip $(filter-out %86 wrs vxworks,$(targ))),)
   LIBGNAT_TARGET_PAIRS = \
-  a-sytaco.ads<a-sytaco-vxworks.ads \
-  a-sytaco.adb<a-sytaco-vxworks.adb \
   a-intnam.ads<a-intnam-vxworks.ads \
   i-vxwork.ads<i-vxwork-x86.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -634,8 +624,6 @@ endif
 
 ifeq ($(strip $(filter-out xscale% coff wrs vx%,$(targ))),)
   LIBGNAT_TARGET_PAIRS = \
-  a-sytaco.ads<a-sytaco-vxworks.ads \
-  a-sytaco.adb<a-sytaco-vxworks.adb \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -664,8 +652,6 @@ endif
 
 ifeq ($(strip $(filter-out mips% wrs vx%,$(targ))),)
   LIBGNAT_TARGET_PAIRS = \
-  a-sytaco.ads<a-sytaco-vxworks.ads \
-  a-sytaco.adb<a-sytaco-vxworks.adb \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -1251,11 +1237,13 @@ endif
 ifeq ($(strip $(filter-out ia64 hp vms% openvms%,$(targ))),)
   TOOLS_TARGET_PAIRS= \
   mlib-tgt.adb<mlib-tgt-vms-ia64.adb \
-  symbols.adb<symbols-vms-ia64.adb
+  symbols.adb<symbols-vms.adb \
+  symbols-processing.adb<symbols-processing-vms-ia64.adb
 else
   TOOLS_TARGET_PAIRS= \
   mlib-tgt.adb<mlib-tgt-vms-alpha.adb \
-  symbols.adb<symbols-vms-alpha.adb
+  symbols.adb<symbols-vms.adb \
+  symbols-processing.adb<symbols-processing-vms-alpha.adb
 endif
 
   GNATLIB_SHARED=gnatlib-shared-vms
@@ -1507,12 +1495,12 @@ endif
 # subdirectory and copied.
 LIBGNAT_SRCS = ada.h adaint.c adaint.h argv.c cio.c cstreams.c \
   errno.c exit.c cal.c ctrl_c.c \
-  raise.h raise.c sysdep.c aux-io.c init.c seh_init.c \
+  raise.h raise.c sysdep.c aux-io.c init.c initialize.c seh_init.c \
   final.c tracebak.c tb-alvms.c tb-alvxw.c expect.c mkdir.c socket.c gsocket.h \
   $(EXTRA_LIBGNAT_SRCS)
 
 LIBGNAT_OBJS = adaint.o argv.o cio.o cstreams.o ctrl_c.o errno.o exit.o \
-  raise.o sysdep.o aux-io.o init.o seh_init.o cal.o final.o \
+  raise.o sysdep.o aux-io.o init.o initialize.o seh_init.o cal.o final.o \
   tracebak.o expect.o mkdir.o socket.o $(EXTRA_LIBGNAT_OBJS)
 
 # NOTE ??? - when the -I option for compiling Ada code is made to work,
@@ -2029,26 +2017,30 @@ socket.o  : socket.c gsocket.h
 sysdep.o  : sysdep.c
 
 gen-soccon: gen-soccon.c gsocket.h
-	$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(RT_FLAGS) \
-		$(ALL_CPPFLAGS) $(INCLUDES) -DTARGET=\"$(target_alias)\" \
+	$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		-UIN_GCC -DTARGET=\"$(target_alias)\" \
 		$< $(OUTPUT_OPTION)
 
 cio.o     : cio.c
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) $(RT_FLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 init.o    : init.c ada.h types.h raise.h
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) $(RT_FLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
+	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
+
+initialize.o : initialize.c
+	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 # No optimization to compile this file as optimizations (-O1 or above) breaks
 # the SEH handling on Windows. The reasons are not clear.
 seh_init.o : seh_init.c raise.h
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) $(RT_FLAGS) -O0 \
+	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) -O0 \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 raise.o   : raise.c raise.h
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) $(RT_FLAGS) \
+	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
 		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 # Need to keep the frame pointer in this file to pop the stack properly on

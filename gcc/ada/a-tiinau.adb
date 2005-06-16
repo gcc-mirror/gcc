@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,7 +52,7 @@ package body Ada.Text_IO.Integer_Aux is
      (File : in File_Type;
       Buf  : out String;
       Ptr  : in out Natural);
-   --  This is an auxiliary routine that is used to load an possibly signed
+   --  This is an auxiliary routine that is used to load a possibly signed
    --  integer literal value from the input file into Buf, starting at Ptr + 1.
    --  On return, Ptr is set to the last character stored.
 

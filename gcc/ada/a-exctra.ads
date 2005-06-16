@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -35,7 +35,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package is part of the support for tracebacks on exceptions.
+--  This package is part of the support for tracebacks on exceptions
 
 with System.Traceback_Entries;
 
@@ -47,7 +47,7 @@ package Ada.Exceptions.Traceback is
    --  Code location in executing program
 
    type Tracebacks_Array is array (Positive range <>) of TBE.Traceback_Entry;
-   --  A traceback array is an array of traceback entries.
+   --  A traceback array is an array of traceback entries
 
    function Tracebacks (E : Exception_Occurrence) return Tracebacks_Array;
    --  This function extracts the traceback information from an exception

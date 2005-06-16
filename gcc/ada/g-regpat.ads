@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---           Copyright (C) 1996-2004 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1996-2005 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -523,7 +523,6 @@ pragma Preelaborate (Regpat);
    --
    --    Expression_Error is raised if the given expression is not a legal
    --    regular expression.
-
 
    procedure Match
      (Expression : String;

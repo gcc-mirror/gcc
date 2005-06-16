@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,7 +55,7 @@ package Repinfo is
    --  For composite types, there are three cases:
 
    --    1. In some cases the front end knows the values statically,
-   --       for example in the ase where representation clauses or
+   --       for example in the case where representation clauses or
    --       pragmas specify the values.
 
    --    2. If Backend_Layout is True, then the backend is responsible
