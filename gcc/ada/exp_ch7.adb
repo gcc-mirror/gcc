@@ -291,7 +291,7 @@ package body Exp_Ch7 is
    --      controller but this would not tackle view conversions properly.
    --    - A classwide type can always potentially have controlled components
    --      but the record controller of the corresponding actual type may not
-   --      be nown at compile time so the dispatch table contains a special
+   --      be known at compile time so the dispatch table contains a special
    --      field that allows to compute the offset of the record controller
    --      dynamically. See s-finimp.Deep_Tag_Attach and a-tags.RC_Offset
 
@@ -1758,7 +1758,11 @@ package body Exp_Ch7 is
                  N_Procedure_Call_Statement =>
                if Nkind (Parent (The_Parent)) = N_Entry_Call_Alternative
                  and then
-                   Nkind (Parent (Parent (The_Parent))) = N_Timed_Entry_Call
+                   (Nkind (Parent (Parent (The_Parent)))
+                     = N_Timed_Entry_Call
+                   or else
+                     Nkind (Parent (Parent (The_Parent)))
+                       = N_Conditional_Entry_Call)
                then
                   return Parent (Parent (The_Parent));
                else
