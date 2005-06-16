@@ -2460,10 +2460,33 @@ package body Prj.Nmsc is
                   Get_Name_String (Lib_Ref_Symbol_File.Value))
                then
                   Error_Msg_Name_1 := Lib_Ref_Symbol_File.Value;
-                  Error_Msg
-                    (Project, In_Tree,
-                     "library reference symbol file { does not exist",
-                     Lib_Ref_Symbol_File.Location);
+
+                  --  For controlled symbol policy, it is an error
+                  --  if the reference symbol file does not exist.
+
+                  if Data.Symbol_Data.Symbol_Policy = Controlled then
+                     Error_Msg
+                       (Project, In_Tree,
+                        "library reference symbol file { does not exist",
+                        Lib_Ref_Symbol_File.Location);
+
+                  else
+                     --  For other symbol policies, this is just a warning
+
+                     Error_Msg
+                       (Project, In_Tree,
+                        "?library reference symbol file { does not exist",
+                        Lib_Ref_Symbol_File.Location);
+
+                     --  In addition, if symbol policy is Compliant, it is
+                     --  changed to Autonomous, because there is no reference
+                     --  to check against, and we don't want to fail in this
+                     --  case.
+
+                     if Data.Symbol_Data.Symbol_Policy = Compliant then
+                        Data.Symbol_Data.Symbol_Policy := Autonomous;
+                     end if;
+                  end if;
                end if;
 
             end if;
@@ -5069,7 +5092,7 @@ package body Prj.Nmsc is
                Add_Str_To_Name_Buffer (".c");
 
             when C_Plus_Plus_Language_Index =>
-               Add_Str_To_Name_Buffer (".cc");
+               Add_Str_To_Name_Buffer (".cpp");
 
             when others =>
                return No_Name;
