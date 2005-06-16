@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1123,6 +1123,8 @@ package body GNAT.Debug_Pools is
                       Code_Address_For_Deallocate_End);
             Put ("   Memory already deallocated at ");
             Put_Line (0, To_Traceback (Header.Dealloc_Traceback).Traceback);
+            Put ("   Memory was allocated at ");
+            Put_Line (0, Header.Alloc_Traceback.Traceback);
          end if;
 
       else
@@ -1257,6 +1259,8 @@ package body GNAT.Debug_Pools is
                   Code_Address_For_Dereference_End);
                Put ("  First deallocation at ");
                Put_Line (0, To_Traceback (Header.Dealloc_Traceback).Traceback);
+               Put ("  Initial allocation at ");
+               Put_Line (0, Header.Alloc_Traceback.Traceback);
             end if;
          end if;
       end if;
