@@ -1,5 +1,10 @@
 2005-06-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	PR libfortran/19216
+	* gfortran.dg/pr19216.f: Add test.
+
+2005-06-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	PR libfortran/19155
 	* gfortran.dg/pr19155.f: Add test.
 

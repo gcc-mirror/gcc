@@ -1,5 +1,11 @@
 2005-06-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	PR libfortran/19216
+	* io/list_read.c (eat_separator): No need to call next_record,
+	even in non-namelist_mode.
+
+2005-06-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	PR libfortran/19155
 	* io/read.c (read_f): Take care of spaces after initial sign.
 
