@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1999-2003 Free Software Foundation, Inc.         --
+--             Copyright (C) 2005 Free Software Foundation, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Run-time symbolic traceback support for VMS
+--  Run-time symbolic traceback support for IA64/VMS
 
 with Ada.Exceptions.Traceback; use Ada.Exceptions.Traceback;
 with Interfaces.C;
@@ -70,32 +70,27 @@ package body GNAT.Traceback.Symbolic is
    procedure Symbolize
      (Status         : out Cond_Value_Type;
       Current_PC     : in Address;
-      Adjusted_PC    : in Address;
-      Current_FP     : in Address;
-      Current_R26    : in Address;
+      Filename_Name  : out Address;
+      Library_Name   : out Address;
+      Record_Number  : out Integer;
       Image_Name     : out Address;
       Module_Name    : out Address;
       Routine_Name   : out Address;
       Line_Number    : out Integer;
-      Relative_PC    : out Address;
-      Absolute_PC    : out Address;
-      PC_Is_Valid    : out Long_Integer;
-      User_Act_Proc  : Address           := Address'Null_Parameter;
-      User_Arg_Value : User_Arg_Type     := User_Arg_Type'Null_Parameter);
+      Relative_PC    : out Address);
 
    pragma Interface (External, Symbolize);
 
    pragma Import_Valued_Procedure
-     (Symbolize, "TBK$SYMBOLIZE",
-      (Cond_Value_Type, Address, Address, Address, Address,
+     (Symbolize, "TBK$I64_SYMBOLIZE",
+      (Cond_Value_Type, Address,
+       Address, Address, Integer,
        Address, Address, Address, Integer,
-       Address, Address, Long_Integer,
-       Address, User_Arg_Type),
-      (Value, Value, Value, Value, Value,
-       Reference, Reference, Reference, Reference,
+       Address),
+      (Value, Value,
        Reference, Reference, Reference,
-       Value, Value),
-       User_Act_Proc);
+       Reference, Reference, Reference, Reference,
+       Reference));
 
    function Decode_Ada_Name (Encoded_Name : String) return String;
    --  Decodes an Ada identifier name. Removes leading "_ada_" and trailing
@@ -170,20 +165,20 @@ package body GNAT.Traceback.Symbolic is
    ------------------------
 
    function Symbolic_Traceback (Traceback : Tracebacks_Array) return String is
-      Status            : Cond_Value_Type;
-      Image_Name        : ASCIC;
-      Image_Name_Addr   : Address;
-      Module_Name       : ASCIC;
-      Module_Name_Addr  : Address;
-      Routine_Name      : ASCIC;
-      Routine_Name_Addr : Address;
-      Line_Number       : Integer;
-      Relative_PC       : Address;
-      Absolute_PC       : Address;
-      PC_Is_Valid       : Long_Integer;
-      Return_Address    : Address;
-      Res               : String (1 .. 256 * Traceback'Length);
-      Len               : Integer;
+      Status             : Cond_Value_Type;
+      Filename_Name_Addr : Address;
+      Library_Name_Addr  : Address;
+      Record_Number      : Integer;
+      Image_Name         : ASCIC;
+      Image_Name_Addr    : Address;
+      Module_Name        : ASCIC;
+      Module_Name_Addr   : Address;
+      Routine_Name       : ASCIC;
+      Routine_Name_Addr  : Address;
+      Line_Number        : Integer;
+      Relative_PC        : Address;
+      Res                : String (1 .. 256 * Traceback'Length);
+      Len                : Integer;
 
    begin
       if Traceback'Length > 0 then
@@ -194,25 +189,18 @@ package body GNAT.Traceback.Symbolic is
          System.Soft_Links.Lock_Task.all;
 
          for J in Traceback'Range loop
-            if J = Traceback'Last then
-               Return_Address := Address_Zero;
-            else
-               Return_Address := PC_For (Traceback (J + 1));
-            end if;
 
             Symbolize
               (Status,
                PC_For (Traceback (J)),
-               PC_For (Traceback (J)),
-               PV_For (Traceback (J)),
-               Return_Address,
+               Filename_Name_Addr,
+               Library_Name_Addr,
+               Record_Number,
                Image_Name_Addr,
                Module_Name_Addr,
                Routine_Name_Addr,
                Line_Number,
-               Relative_PC,
-               Absolute_PC,
-               PC_Is_Valid);
+               Relative_PC);
 
             Image_Name   := Fetch_ASCIC (Image_Name_Addr);
             Module_Name  := Fetch_ASCIC (Module_Name_Addr);
