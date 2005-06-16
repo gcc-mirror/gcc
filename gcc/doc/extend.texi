@@ -1752,9 +1752,10 @@ the @code{rtc}.
 @item fastcall
 @cindex functions that pop the argument stack on the 386
 On the Intel 386, the @code{fastcall} attribute causes the compiler to
-pass the first two arguments in the registers ECX and EDX@.  Subsequent
-arguments are passed on the stack.  The called function will pop the
-arguments off the stack.  If the number of arguments is variable all
+pass the first argument (if of integral type) in the register ECX and
+the second argument (if of integral type) in the register EDX@.  Subsequent
+and other typed arguments are passed on the stack.  The called function will
+pop the arguments off the stack.  If the number of arguments is variable all
 arguments are pushed on the stack.
 
 @item format (@var{archetype}, @var{string-index}, @var{first-to-check})
@@ -2126,9 +2127,9 @@ than 2.96.
 @cindex @code{regparm} attribute
 @cindex functions that are passed arguments in registers on the 386
 On the Intel 386, the @code{regparm} attribute causes the compiler to
-pass up to @var{number} integer arguments in registers EAX,
-EDX, and ECX instead of on the stack.  Functions that take a
-variable number of arguments will continue to be passed all of their
+pass arguments number one to @var{number} if they are of integral type
+in registers EAX, EDX, and ECX instead of on the stack.  Functions that
+take a variable number of arguments will continue to be passed all of their
 arguments on the stack.
 
 Beware that on some ELF systems this attribute is unsuitable for
@@ -2140,6 +2141,14 @@ GNU systems with GLIBC 2.1 or higher, and FreeBSD, are believed to be
 safe since the loaders there save all registers.  (Lazy binding can be
 disabled with the linker or the loader if desired, to avoid the
 problem.)
+
+@item sseregparm
+@cindex @code{sseregparm} attribute
+On the Intel 386 with SSE support, the @code{sseregparm} attribute
+causes the compiler to pass up to 8 floating point arguments in
+SSE registers instead of on the stack.  Functions that take a
+variable number of arguments will continue to pass all of their
+floating point arguments on the stack.
 
 @item returns_twice
 @cindex @code{returns_twice} attribute
