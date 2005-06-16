@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---               GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS                --
+--                GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                  --
 --                                                                          --
 --            S Y S T E M . T A S K I N G . R E N D E Z V O U S             --
 --                                                                          --
@@ -555,10 +555,11 @@ package body System.Tasking.Rendezvous is
    procedure Exceptional_Complete_Rendezvous
      (Ex : Ada.Exceptions.Exception_Id)
    is
-      Self_Id    : constant Task_Id := STPO.Self;
-      Entry_Call : Entry_Call_Link := Self_Id.Common.Call;
-      Caller     : Task_Id;
-      Called_PO  : STPE.Protection_Entries_Access;
+      Self_Id                : constant Task_Id := STPO.Self;
+      Entry_Call             : Entry_Call_Link := Self_Id.Common.Call;
+      Caller                 : Task_Id;
+      Called_PO              : STPE.Protection_Entries_Access;
+      Acceptor_Prev_Priority : Integer;
 
       Exception_To_Raise : Ada.Exceptions.Exception_Id := Ex;
       Ceiling_Violation  : Boolean;
@@ -720,15 +721,16 @@ package body System.Tasking.Rendezvous is
                   Self_Id.Common.Compiler_Data.Current_Excep);
             end if;
 
+            Acceptor_Prev_Priority := Entry_Call.Acceptor_Prev_Priority;
             Initialization.Wakeup_Entry_Caller (Self_Id, Entry_Call, Done);
+
             STPO.Unlock (Caller);
 
             if Single_Lock then
                Unlock_RTS;
             end if;
 
-            Entry_Calls.Reset_Priority
-              (Self_Id, Entry_Call.Acceptor_Prev_Priority);
+            Entry_Calls.Reset_Priority (Self_Id, Acceptor_Prev_Priority);
          end if;
       end if;
 
