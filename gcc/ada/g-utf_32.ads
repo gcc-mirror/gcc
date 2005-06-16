@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --                          G N A T . U T F _ 3 2                           --
 --                                                                          --
@@ -38,14 +38,18 @@
 --  itself, and we want to be able to compile the compiler with old versions
 --  of GNAT that did not implement Wide_Wide_Character.
 
---  This package is not available directly for use in application programs,
---  but it serves as the basis for GNAT.Wide_Case_Utilities and
---  GNAT.Wide_Wide_Case_Utilities, which can be used directly.
+--  This package is available directly for use in application programs,
+--  and also serves as the basis for Ada.Wide_Wide_Characters.Unicode and
+--  Ada.Wide_Characters.Unicode, which can also be used directly.
 
 package GNAT.UTF_32 is
 
    type UTF_32 is range 0 .. 16#7FFF_FFFF#;
    --  So far, the only defined character codes are in 0 .. 16#01_FFFF#
+
+   --  The following type defines the categories from the unicode definitions.
+   --  The one addition we make is Fe, which represents the characters FFFE
+   --  and FFFF in any of the planes.
 
    type Category is (
      Cc,   --  Other, Control
@@ -77,7 +81,8 @@ package GNAT.UTF_32 is
      So,   --  Symbol, Other
      Zl,   --  Separator, Line
      Zp,   --  Separator, Paragraph
-     Zs);  --  Separator, Space
+     Zs,   --  Separator, Space
+     Fe);  --  relative position FFFE/FFFF in any plane
 
    function Get_Category (U : UTF_32) return Category;
    --  Given a UTF32 code, returns corresponding Category, or Cn if
@@ -85,8 +90,8 @@ package GNAT.UTF_32 is
 
    --  The following functions perform category tests corresponding to lexical
    --  classes defined in the Ada standard. There are two interfaces for each
-   --  function. The first takes a Category (e.g. returned by Get_Category).
-   --  The second takes a UTF_32 code. The form taking the UTF_32 code is
+   --  function. The second takes a Category (e.g. returned by Get_Category).
+   --  The first takes a UTF_32 code. The form taking the UTF_32 code is
    --  typically more efficient than calling Get_Category, but if several
    --  different tests are to be performed on the same code, it is more
    --  efficient to use Get_Category to get the category, then test the
@@ -160,9 +165,9 @@ package GNAT.UTF_32 is
    --    Other, Control (Cc)
    --    Other, Private Use (Co)
    --    Other, Surrogate (Cs)
-   --    Other, Format (Cf)
    --    Separator, Line (Zl)
    --    Separator, Paragraph (Zp)
+   --    FFFE or FFFF positions in any plane (Fe)
    --
    --  Note that the Ada category format effector is subsumed by the above
    --  list of Unicode categories.
@@ -171,6 +176,10 @@ package GNAT.UTF_32 is
    --  in the list of categories above. This means that should any of these
    --  code positions be defined in future with graphic characters they will
    --  be allowed without a need to change implementations or the standard.
+   --
+   --  Note that Other, Format (Cf) is also quite deliberately not included
+   --  in the list of categories above. This means that these characters can
+   --  be included in character and string literals.
 
    --  The following function is used to fold to upper case, as required by
    --  the Ada 2005 standard rules for identifier case folding. Two

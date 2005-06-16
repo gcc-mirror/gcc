@@ -40,6 +40,16 @@ package body Styleg is
 
    use ASCII;
 
+   Blank_Lines : Nat := 0;
+   --  Counts number of empty lines seen. Reset to zero if a non-empty line
+   --  is encountered. Used to check for trailing blank lines in Check_EOF,
+   --  and for multiple blank lines.
+
+   Blank_Line_Location : Source_Ptr;
+   --  Remembers location of first blank line in a series. Used to issue an
+   --  appropriate diagnostic if subsequent blank lines or the end of file
+   --  is encountered.
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -129,7 +139,6 @@ package body Styleg is
 
    procedure Check_Attribute_Name (Reserved : Boolean) is
       pragma Warnings (Off, Reserved);
-
    begin
       if Style_Check_Attribute_Casing then
          if Determine_Token_Casing /= Mixed_Case then
@@ -399,6 +408,31 @@ package body Styleg is
       end if;
    end Check_Dot_Dot;
 
+   ---------------
+   -- Check_EOF --
+   ---------------
+
+   --  In check blanks at end mode, check no blank lines precede the EOF
+
+   procedure Check_EOF is
+   begin
+      if Style_Check_Blank_Lines then
+
+         --  We expect one blank line, from the EOF, but no more than one
+
+         if Blank_Lines = 2 then
+            Error_Msg
+              ("(style) blank line not allowed at end of file",
+               Blank_Line_Location);
+
+         elsif Blank_Lines >= 3 then
+            Error_Msg
+              ("(style) blank lines not allowed at end of file",
+               Blank_Line_Location);
+         end if;
+      end if;
+   end Check_EOF;
+
    -----------------------------------
    -- Check_Exponentiation_Operator --
    -----------------------------------
@@ -497,7 +531,16 @@ package body Styleg is
    procedure Check_Line_Terminator (Len : Int) is
       S : Source_Ptr;
 
+      L : Int := Len;
+      --  Length of line (adjusted down for blanks at end of line)
+
    begin
+      --  Reset count of blank lines if first line
+
+      if Get_Logical_Line_Number (Scan_Ptr) = 1 then
+         Blank_Lines := 0;
+      end if;
+
       --  Check FF/VT terminators
 
       if Style_Check_Form_Feeds then
@@ -522,30 +565,46 @@ package body Styleg is
          end if;
       end if;
 
-      --  We are now possibly going to check for trailing spaces. There is no
-      --  point in doing this if the current line is empty. It is actually
-      --  wrong to do so, because we scan backwards for this purpose, so we
-      --  would end up looking at different line, or even at invalid buffer
-      --  locations if we have the first source line at hand.
+      --  Remove trailing spaces
 
-      if Len = 0 then
-         return;
+      S := Scan_Ptr;
+      while L > 0 and then Is_White_Space (Source (S - 1)) loop
+         S := S - 1;
+         L := L - 1;
+      end loop;
+
+      --  Issue message for blanks at end of line if option enabled
+
+      if Style_Check_Blanks_At_End and then L < Len then
+         Error_Msg
+           ("(style) trailing spaces not permitted", S);
       end if;
 
-      --  Check trailing space
+      --  Deal with empty (blank) line
 
-      if Style_Check_Blanks_At_End then
-         if Scan_Ptr >= First_Non_Blank_Location then
-            if Is_White_Space (Source (Scan_Ptr - 1)) then
-               S := Scan_Ptr - 1;
+      if L = 0 then
 
-               while Is_White_Space (Source (S - 1)) loop
-                  S := S - 1;
-               end loop;
+         --  Increment blank line count
 
-               Error_Msg ("(style) trailing spaces not permitted", S);
-            end if;
+         Blank_Lines := Blank_Lines + 1;
+
+         --  If first blank line, record location for later error message
+
+         if Blank_Lines = 1 then
+            Blank_Line_Location := Scan_Ptr;
          end if;
+
+      --  Non-blank line, check for previous multiple blank lines
+
+      else
+         if Style_Check_Blank_Lines and then Blank_Lines > 1 then
+            Error_Msg
+              ("(style) multiple blank lines", Blank_Line_Location);
+         end if;
+
+         --  And reset blank line count
+
+         Blank_Lines := 0;
       end if;
    end Check_Line_Terminator;
 

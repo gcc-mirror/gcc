@@ -56,6 +56,11 @@ package Stylesw is
    --  This can be set True by using the -gnatg or -gnatyb switches. If
    --  it is True, then spaces at the end of lines are not permitted.
 
+   Style_Check_Blank_Lines : Boolean := False;
+   --  This can be set True by using the -gnatg or -gnatyu switches. If
+   --  it is True, then multiple blank lines are not permitted, and there
+   --  may not be a blank line at the end of the file.
+
    Style_Check_Comments : Boolean := False;
    --  This can be set True by using the -gnatg or -gnatyc switches. If
    --  it is True, then comments are style checked as follows:
