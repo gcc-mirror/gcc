@@ -1,10 +1,11 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
---         SYSTEM.TASK_PRIMITIVES.OPERATIONS.REGISTER_FOREIGN_THREAD        --
+--    S Y S T E M . T A S K _ P R I M I T I V E S . O P E R A T I O N S .   --
+--               R E G I S T E R _ F O R E I G N _ T H R E A D              --
 --                                                                          --
---                                  B o d y                                 --
+--                                B o d y                                   --
 --                                                                          --
 --          Copyright (C) 2002-2005, Free Software Foundation, Inc.         --
 --                                                                          --

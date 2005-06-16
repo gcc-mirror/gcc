@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --                   G N A T . B U B B L E _ S O R T _ G                    --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1995-2002 Ada Core Technologies, Inc.            --
+--                     Copyright (C) 1995-2005 AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,7 @@
 
 --  There is also GNAT.Bubble_Sort_A, which is now considered obsolete, but
 --  was an older version working with subprogram parameters. This version
---  is retained for bacwards compatibility with old versions of GNAT.
+--  is retained for baccwards compatibility with old versions of GNAT.
 
 generic
    --  The data to be sorted is assumed to be indexed by integer values from

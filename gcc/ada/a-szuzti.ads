@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --             ADA.STRINGS.WIDE_WIDE_UNBOUNDED.WIDE_WIDE_TEXT_IO            --
 --                                                                          --

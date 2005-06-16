@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --                       S Y S T E M . I M G _ I N T                        --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---        Copyright (C) 1992,1993,1994 Free Software Foundation, Inc.       --
+--           Copyright (C) 1992-2005 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -58,9 +58,9 @@ package body System.Img_Int is
    -----------------------
 
    procedure Set_Image_Integer
-     (V  : Integer;
-      S  : out String;
-      P  : in out Natural)
+     (V : Integer;
+      S : out String;
+      P : in out Natural)
    is
       procedure Set_Digits (T : Integer);
       --  Set digits of absolute value of T, which is zero or negative. We work

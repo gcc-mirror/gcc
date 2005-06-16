@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --                      S Y S T E M . I M G _ C H A R                       --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1992-2000 Free Software Foundation, Inc.         --
+--           Copyright (C) 1992-2005 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,5 @@ pragma Pure (Img_Char);
 
    function Image_Character (V : Character) return String;
    --  Computes Character'Image (V) and returns the result
-
 
 end System.Img_Char;

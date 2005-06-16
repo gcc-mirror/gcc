@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --                   A D A . S T R I N G S . S E A R C H                    --
 --                                                                          --
@@ -36,7 +36,6 @@
 --  from Ada.Strings.Fixed). A significant change is that we optimize the
 --  case of identity mappings for Count and Index, and also Index_Non_Blank
 --  is specialized (rather than using the general Index routine).
-
 
 with Ada.Strings.Maps; use Ada.Strings.Maps;
 
@@ -216,7 +215,6 @@ package body Ada.Strings.Search is
    is
       Cur_Index     : Natural;
       Mapped_Source : String (Source'Range);
-
 
    begin
       if Pattern = "" then

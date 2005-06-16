@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---                       ADA.CONTAINERS.PRIME_NUMBERS                       --
+--         A D A . C O N T A I N E R S . P R I M E _ N U M B E R S          --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --

@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
 --                 A D A . I N T E R R U P T S . S I G N A L                --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---           Copyright (C) 2000-2004 Free Software Foundation, Inc.         --
+--           Copyright (C) 2000-2005 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --

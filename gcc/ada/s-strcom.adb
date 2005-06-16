@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                   GNU ADA RUNTIME LIBRARY COMPONENTS                     --
+--                    GNAT RUN-TIME LIBRARY COMPONENTS                      --
 --                                                                          --
 --                S Y S T E M . S T R I N G _ C O M P A R E                 --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2002 Free Software Foundation, Inc.            --
+--          Copyright (C) 2002-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --

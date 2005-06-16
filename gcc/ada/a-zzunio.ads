@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --               ADA.WIDE_WIDE_TEXT_IO.WIDE_WIDE_UNBOUNDED_IO               --
 --                                                                          --
@@ -18,7 +18,6 @@
 --  package by renaming the subprograms in that child. This is a more
 --  straightforward implementation anyway, since we need access to the
 --  internal representation of Unbounded_Wide_Wide_String.
-
 
 with Ada.Strings.Wide_Wide_Unbounded;
 with Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO;

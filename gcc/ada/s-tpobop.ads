@@ -1,8 +1,9 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
---                SYSTEM.TASKING.PROTECTED_OBJECTS.OPERATIONS               --
+--     S Y S T E M . T A S K I N G . P R O T E C T E D _ O B J E C T S .    --
+--                             O P E R A T I O N S                          --
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --

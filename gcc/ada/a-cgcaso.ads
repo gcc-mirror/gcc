@@ -2,7 +2,8 @@
 --                                                                          --
 --                         GNAT LIBRARY COMPONENTS                          --
 --                                                                          --
---              ADA.CONTAINERS.GENERIC_CONSTRAINED_ARRAY_SORT               --
+--                      A D A . C O N T A I N E R S .                       --
+--       G E N E R I C _ C O N S T R A I N E D _ A R R A Y _ S O R T        --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --

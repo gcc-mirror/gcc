@@ -1,8 +1,8 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                          GNAT RUNTIME COMPONENTS                         --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                A D A . S T R I N G S . U N B O U N D E D                 --
+--                 A D A . S T R I N G S . U N B O U N D E D                --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --

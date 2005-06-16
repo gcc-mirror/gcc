@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --        A D A . L O N G _ I N T E G E R _ W I D E _ T E X T _ I O         --
 --                                                                          --

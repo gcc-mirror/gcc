@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --        A D A . A S Y N C H R O N O U S _ T A S K _ C O N T R O L         --
 --                                                                          --
@@ -13,20 +13,22 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-   --  This unit is not implemented in typical GNAT implementations that
-   --  lie on top of operating systems, because it is infeasible to implement
-   --  in such environments. The RM anticipates this situation (RM D.11(10)),
-   --  and permits an implementation to leave this unimplemented even if the
-   --  Real-Time Systems annex is fully supported.
+--  This unit is not implemented in typical GNAT implementations that lie on
+--  top of operating systems, because it is infeasible to implement in such
+--  environments. The RM anticipates this situation (RM D.11(10)), and permits
+--  an implementation to leave this unimplemented even if the Real-Time Systems
+--  annex is fully supported.
 
-   --  If a target environment provides appropriate support for this package,
-   --  then the Unimplemented_Unit pragma should be removed from this spec,
-   --  and an appropriate body provided. The framework for such a body is
-   --  included in the distributed sources.
+--  If a target environment provides appropriate support for this package, then
+--  the Unimplemented_Unit pragma should be removed from this spec, and an
+--  appropriate body provided. The framework for such a body is included in the
+--  distributed sources.
 
 with Ada.Task_Identification;
 
 package Ada.Asynchronous_Task_Control is
+pragma Preelaborate_05 (Asynchronous_Task_Control);
+--  In accordance with Ada 2005 AI-362
 
    pragma Unimplemented_Unit;
 

@@ -1,12 +1,13 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
---                SYSTEM.TASK_PRIMITIVES.INTERRUPT_OPERATIONS               --
+--               S Y S T E M . T A S K _ P R I M I T I V E S .              --
+--                  I N T E R R U P T _ O P E R A T I O N S                 --
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---           Copyright (C) 1998-2004 Free Software Foundation, Inc.         --
+--           Copyright (C) 1998-2005 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,6 +34,7 @@
 
 with System.Interrupt_Management;
 with System.Tasking;
+
 package System.Task_Primitives.Interrupt_Operations is
 
    package IM renames System.Interrupt_Management;

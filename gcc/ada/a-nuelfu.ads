@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --     A D A . N U M E R I C S . E L E M E N T A R Y _ F U N C T I O N S    --
 --                                                                          --
