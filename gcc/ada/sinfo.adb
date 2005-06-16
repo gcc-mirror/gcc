@@ -1415,6 +1415,8 @@ package body Sinfo is
         or else NT (N).Nkind = N_Private_Extension_Declaration
         or else NT (N).Nkind = N_Protected_Type_Declaration
         or else NT (N).Nkind = N_Record_Definition
+        or else NT (N).Nkind = N_Single_Protected_Declaration
+        or else NT (N).Nkind = N_Single_Task_Declaration
         or else NT (N).Nkind = N_Task_Type_Declaration);
       return List2 (N);
    end Interface_List;
@@ -1745,6 +1747,30 @@ package body Sinfo is
       return Flag8 (N);
    end Must_Not_Freeze;
 
+   function Must_Not_Override
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Entry_Declaration
+        or else NT (N).Nkind = N_Function_Instantiation
+        or else NT (N).Nkind = N_Function_Specification
+        or else NT (N).Nkind = N_Procedure_Instantiation
+        or else NT (N).Nkind = N_Procedure_Specification);
+      return Flag15 (N);
+   end Must_Not_Override;
+
+   function Must_Override
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Entry_Declaration
+        or else NT (N).Nkind = N_Function_Instantiation
+        or else NT (N).Nkind = N_Function_Specification
+        or else NT (N).Nkind = N_Procedure_Instantiation
+        or else NT (N).Nkind = N_Procedure_Specification);
+      return Flag14 (N);
+   end Must_Override;
+
    function Name
       (N : Node_Id) return Node_Id is
    begin
@@ -1872,6 +1898,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Component_List
+        or else NT (N).Nkind = N_Procedure_Specification
         or else NT (N).Nkind = N_Record_Definition);
       return Flag13 (N);
    end Null_Present;
@@ -3939,6 +3966,8 @@ package body Sinfo is
         or else NT (N).Nkind = N_Private_Extension_Declaration
         or else NT (N).Nkind = N_Protected_Type_Declaration
         or else NT (N).Nkind = N_Record_Definition
+        or else NT (N).Nkind = N_Single_Protected_Declaration
+        or else NT (N).Nkind = N_Single_Task_Declaration
         or else NT (N).Nkind = N_Task_Type_Declaration);
       Set_List2_With_Parent (N, Val);
    end Set_Interface_List;
@@ -4269,6 +4298,30 @@ package body Sinfo is
       Set_Flag8 (N, Val);
    end Set_Must_Not_Freeze;
 
+   procedure Set_Must_Not_Override
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Entry_Declaration
+        or else NT (N).Nkind = N_Function_Instantiation
+        or else NT (N).Nkind = N_Function_Specification
+        or else NT (N).Nkind = N_Procedure_Instantiation
+        or else NT (N).Nkind = N_Procedure_Specification);
+      Set_Flag15 (N, Val);
+   end Set_Must_Not_Override;
+
+   procedure Set_Must_Override
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Entry_Declaration
+        or else NT (N).Nkind = N_Function_Instantiation
+        or else NT (N).Nkind = N_Function_Specification
+        or else NT (N).Nkind = N_Procedure_Instantiation
+        or else NT (N).Nkind = N_Procedure_Specification);
+      Set_Flag14 (N, Val);
+   end Set_Must_Override;
+
    procedure Set_Name
       (N : Node_Id; Val : Node_Id) is
    begin
@@ -4396,6 +4449,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Component_List
+        or else NT (N).Nkind = N_Procedure_Specification
         or else NT (N).Nkind = N_Record_Definition);
       Set_Flag13 (N, Val);
    end Set_Null_Present;

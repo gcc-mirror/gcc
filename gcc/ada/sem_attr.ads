@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,8 +31,9 @@
 
 --  This spec also documents all GNAT implementation defined pragmas
 
-with Snames; use Snames;
-with Types;  use Types;
+with Exp_Tss; use Exp_Tss;
+with Snames;  use Snames;
+with Types;   use Types;
 
 package Sem_Attr is
 
@@ -54,20 +55,18 @@ package Sem_Attr is
       ------------------
 
       Attribute_Abort_Signal => True,
-      --
-      --  Standard'Abort_Signal (Standard is the only allowed prefix)
-      --  provides the entity for the special exception used to signal
-      --  task abort or asynchronous transfer of control. Normally this
-      --  attribute should only be used in the tasking runtime (it is
-      --  highly peculiar, and completely outside the normal semantics
-      --  of Ada, for a user program to intercept the abort exception).
+      --  Standard'Abort_Signal (Standard is the only allowed prefix) provides
+      --  the entity for the special exception used to signal task abort or
+      --  asynchronous transfer of control. Normally this attribute should only
+      --  be used in the tasking runtime (it is highly peculiar, and completely
+      --  outside the normal semantics of Ada, for a user program to intercept
+      --  the abort exception).
 
       ------------------
       -- Address_Size --
       ------------------
 
       Attribute_Address_Size => True,
-      --
       --  Standard'Address_Size (Standard is the only allowed prefix) is
       --  a static constant giving the number of bits in an Address. It
       --  is used primarily for constructing the definition of Memory_Size
@@ -79,7 +78,6 @@ package Sem_Attr is
       ---------------
 
       Attribute_Asm_Input => True,
-      --
       --  Used only in conjunction with the Asm and Asm_Volatile subprograms
       --  in package Machine_Code to construct machine instructions. See
       --  documentation in package Machine_Code in file s-maccod.ads.
@@ -89,7 +87,6 @@ package Sem_Attr is
       ----------------
 
       Attribute_Asm_Output => True,
-      --
       --  Used only in conjunction with the Asm and Asm_Volatile subprograms
       --  in package Machine_Code to construct machine instructions. See
       --  documentation in package Machine_Code in file s-maccod.ads.
@@ -99,7 +96,6 @@ package Sem_Attr is
       ---------------
 
       Attribute_AST_Entry => True,
-      --
       --  E'Ast_Entry, where E is a task entry, yields a value of the
       --  predefined type System.DEC.AST_Handler, that enables the given
       --  entry to be called when an AST occurs. If the name to which the
@@ -117,20 +113,19 @@ package Sem_Attr is
       ---------
 
       Attribute_Bit => True,
-      --
-      --  Obj'Bit, where Obj is any object, yields the bit offset within
-      --  the storage unit (byte) that contains the first bit of storage
-      --  allocated for the object. The value of this attribute is of the
-      --  type Universal_Integer, and is always a non-negative number not
-      --  exceeding the value of System.Storage_Unit.
+      --  Obj'Bit, where Obj is any object, yields the bit offset within the
+      --  storage unit (byte) that contains the first bit of storage allocated
+      --  for the object. The attribute value is of type Universal_Integer,
+      --  and is always a non-negative number not exceeding the value of
+      --  System.Storage_Unit.
       --
       --  For an object that is a variable or a constant allocated in a
       --  register, the value is zero. (The use of this attribute does not
       --  force the allocation of a variable to memory).
       --
-      --  For an object that is a formal parameter, this attribute applies
-      --  to either the matching actual parameter or to a copy of the
-      --  matching actual parameter.
+      --  For an object that is a formal parameter, this attribute applies to
+      --  either the matching actual parameter or to a copy of the matching
+      --  actual parameter.
       --
       --  For an access object the value is zero. Note that Obj.all'Bit is
       --  subject to an Access_Check for the designated object. Similarly
@@ -145,22 +140,20 @@ package Sem_Attr is
       ------------------
 
       Attribute_Code_Address => True,
-      --
-      --  subp'Code_Address, where subp is a subprogram entity, gives the
-      --  address of the first generated instruction for a subprogram. This
-      --  is often, but not always the same as the 'Address value, which is
-      --  the address to be used in a call. The differences occur in the case
-      --  of a nested procedure (where Address yields the address of the
-      --  trampoline code used to load the static link), and on some systems
-      --  which use procedure descriptors (in which case Address yields the
-      --  address of the descriptor).
+      --  The reference subp'Code_Address, where subp is a subprogram entity,
+      --  gives the address of the first generated instruction for the sub-
+      --  program. This is often, but not always the same as the 'Address
+      --  value, which is the address to be used in a call. The differences
+      --  occur in the case of a nested procedure (where Address yields the
+      --  address of the trampoline code used to load the static link), and on
+      --  some systems which use procedure descriptors (in which case Address
+      --  yields the address of the descriptor).
 
       -----------------------
       -- Default_Bit_Order --
       -----------------------
 
       Attribute_Default_Bit_Order => True,
-      --
       --  Standard'Default_Bit_Order (Standard is the only permissible prefix),
       --  provides the value System.Default_Bit_Order as a Pos value (0 for
       --  High_Order_First, 1 for Low_Order_First). This is used to construct
@@ -172,22 +165,20 @@ package Sem_Attr is
       ---------------
 
       Attribute_Elab_Body => True,
-      --
-      --  This attribute can only be applied to a program unit name. It
-      --  returns the entity for the corresponding elaboration procedure
-      --  for elaborating the body of the referenced unit. This is used
-      --  in the main generated elaboration procedure by the binder, and
-      --  is not normally used in any other context, but there may be
-      --  specialized situations in which it is useful to be able to
-      --  call this elaboration procedure from Ada code, e.g. if it
-      --  is necessary to do selective reelaboration to fix some error.
+      --  This attribute can only be applied to a program unit name. It returns
+      --  the entity for the corresponding elaboration procedure for elabor-
+      --  ating the body of the referenced unit. This is used in the main
+      --  generated elaboration procedure by the binder, and is not normally
+      --  used in any other context, but there may be specialized situations in
+      --  which it is useful to be able to call this elaboration procedure from
+      --  Ada code, e.g. if it is necessary to do selective reelaboration to
+      --  fix some error.
 
       ---------------
       -- Elab_Spec --
       ---------------
 
       Attribute_Elab_Spec => True,
-      --
       --  This attribute can only be applied to a program unit name. It
       --  returns the entity for the corresponding elaboration procedure
       --  for elaborating the spec of the referenced unit. This is used
@@ -202,7 +193,6 @@ package Sem_Attr is
       ----------------
 
       Attribute_Elaborated => True,
-      --
       --  Lunit'Elaborated, where Lunit is a library unit, yields a boolean
       --  value indicating whether or not the body of the designated library
       --  unit has been elaborated yet.
@@ -212,7 +202,6 @@ package Sem_Attr is
       --------------
 
       Attribute_Enum_Rep => True,
-      --
       --  For every enumeration subtype S, S'Enum_Rep denotes a function
       --  with the following specification:
       --
@@ -228,7 +217,6 @@ package Sem_Attr is
       -----------------
 
       Attribute_Fixed_Value => True,
-      --
       --  For every fixed-point type S, S'Fixed_Value denotes a function
       --  with the following specification:
       --
@@ -238,18 +226,17 @@ package Sem_Attr is
       --
       --    V = Arg * S'Small
       --
-      --  The effect is thus equivalent to first converting the argument
-      --  to the integer type used to represent S, and then doing an
-      --  unchecked conversion to the fixed-point type. This attribute is
-      --  primarily intended for use in implementation of the input-output
-      --  functions for fixed-point values.
+      --  The effect is thus equivalent to first converting the argument to
+      --  the integer type used to represent S, and then doing an unchecked
+      --  conversion to the fixed-point type. This attribute is primarily
+      --  intended for use in implementation of the input-output functions for
+      --  fixed-point values.
 
       -----------------------
       -- Has_Discriminants --
       -----------------------
 
       Attribute_Has_Discriminants => True,
-      --
       --  Gtyp'Has_Discriminants, where Gtyp is a generic formal type, yields
       --  a Boolean value indicating whether or not the actual instantiation
       --  type has discriminants.
@@ -259,7 +246,6 @@ package Sem_Attr is
       ---------
 
       Attribute_Img => True,
-      --
       --  The 'Img function is defined for any prefix, P, that denotes an
       --  object of scalar type T. P'Img is equivalent to T'Image (P). This
       --  is convenient for debugging. For example:
@@ -277,7 +263,6 @@ package Sem_Attr is
       -------------------
 
       Attribute_Integer_Value => True,
-      --
       --  For every integer type S, S'Integer_Value denotes a function
       --  with the following specification:
       --
@@ -298,7 +283,6 @@ package Sem_Attr is
       ------------------
 
       Attribute_Machine_Size => True,
-      --
       --  This attribute is identical to the Object_Size attribute. It is
       --  provided for compatibility with the DEC attribute of this name.
 
@@ -307,7 +291,6 @@ package Sem_Attr is
       -----------------------
 
       Attribute_Maximum_Alignment => True,
-      --
       --  Standard'Maximum_Alignment (Standard is the only permissible prefix)
       --  provides the maximum useful alignment value for the target. This
       --  is a static value that can be used to specify the alignment for an
@@ -320,7 +303,6 @@ package Sem_Attr is
       --------------------
 
       Attribute_Mechanism_Code => True,
-      --
       --  function'Mechanism_Code yeilds an integer code for the mechanism
       --  used for the result of function, and subprogram'Mechanism_Code (n)
       --  yields the mechanism used for formal parameter number n (a static
@@ -342,64 +324,59 @@ package Sem_Attr is
       --------------------
 
       Attribute_Null_Parameter => True,
+      --  A reference T'Null_Parameter denotes an (imaginary) object of type or
+      --  subtype T allocated at (machine) address zero. The attribute is
+      --  allowed only as the default expression of a formal parameter, or as
+      --  an actual expression of a subporgram call. In either case, the
+      --  subprogram must be imported.
       --
-      --  A reference T'Null_Parameter denotes an (imaginary) object of
-      --  type or subtype T allocated at (machine) address zero. The
-      --  attribute is allowed only as the default expression of a formal
-      --  parameter, or as an actual expression of a subporgram call. In
-      --  either case, the subprogram must be imported.
+      --  The identity of the object is represented by the address zero in the
+      --  argument list, independent of the passing mechanism (explicit or
+      --  default).
       --
-      --  The identity of the object is represented by the address zero
-      --  in the argument list, independent of the passing mechanism
-      --  (explicit or default).
-      --
-      --  The reason that this capability is needed is that for a record
-      --  or other composite object passed by reference, there is no other
-      --  way of specifying that a zero address should be passed.
+      --  The reason that this capability is needed is that for a record or
+      --  other composite object passed by reference, there is no other way of
+      --  specifying that a zero address should be passed.
 
       -----------------
       -- Object_Size --
       -----------------
 
       Attribute_Object_Size => True,
-      --
       --  Type'Object_Size is the same as Type'Size for all types except
       --  fixed-point types and discrete types. For fixed-point types and
       --  discrete types, this attribute gives the size used for default
-      --  allocation of objects and components of the size. See section
-      --  in Einfo ("Handling of type'Size values") for further details.
+      --  allocation of objects and components of the size. See section in
+      --  Einfo ("Handling of type'Size values") for further details.
 
       -------------------------
       -- Passed_By_Reference --
       -------------------------
 
       Attribute_Passed_By_Reference => True,
-      --
-      --  T'Passed_By_Reference for any subtype T returns a boolean value
-      --  that is true if the type is normally passed by reference and
-      --  false if the type is normally passed by copy in calls. For scalar
-      --  types, the result is always False and is static. For non-scalar
-      --  types, the result is non-static (since it is computed by Gigi).
+      --  T'Passed_By_Reference for any subtype T returns a boolean value that
+      --  is true if the type is normally passed by reference and false if the
+      --  type is normally passed by copy in calls. For scalar types, the
+      --  result is always False and is static. For non-scalar types, the
+      --  result is non-static (since it is computed by Gigi).
 
       ------------------
       -- Range_Length --
       ------------------
 
       Attribute_Range_Length => True,
-      --
-      --  T'Range_Length for any discrete type T yields the number of
-      --  values represented by the subtype (zero for a null range). The
-      --  result is static for static subtypes. Note that Range_Length
-      --  applied to the index subtype of a one dimensional array always
-      --  gives the same result as Range applied to the array itself.
-      --  The result is of type universal integer.
+      --  T'Range_Length for any discrete type T yields the number of values
+      --  represented by the subtype (zero for a null range). The result is
+      --  static for static subtypes. Note that Range_Length applied to the
+      --  index subtype of a one dimensional array always gives the same result
+      --  as Range applied to the array itself. The result is of type universal
+      --  integer.
 
       ------------------
       -- Storage_Unit --
       ------------------
 
       Attribute_Storage_Unit => True,
-      --
       --  Standard'Storage_Unit (Standard is the only permissible prefix)
       --  provides the value System.Storage_Unit, and is intended primarily
       --  for constructing this definition in package System (see note above
@@ -410,36 +387,33 @@ package Sem_Attr is
       -----------------
 
       Attribute_Target_Name => True,
-      --
-      --  Standard'Target_Name yields the string identifying the target
-      --  for the compilation, taken from Sdefault.Target_Name.
+      --  Standard'Target_Name yields the string identifying the target for the
+      --  compilation, taken from Sdefault.Target_Name.
 
       ----------------
       -- To_Address --
       ----------------
 
       Attribute_To_Address => True,
-      --
-      --  System'To_Address (Address is the only permissible prefix)
-      --  is a function that takes any integer value, and converts it into
-      --  an address value. The semantics is to first convert the integer
-      --  value to type Integer_Address according to normal conversion
-      --  rules, and then to convert this to an address using the same
-      --  semantics as the System.Storage_Elements.To_Address function.
-      --  The important difference is that this is a static attribute
-      --  so it can be used in initializations in preealborate packages.
+      --  System'To_Address (Address is the only permissible prefix) is a
+      --  function that takes any integer value, and converts it into an
+      --  address value. The semantics is to first convert the integer value to
+      --  type Integer_Address according to normal conversion rules, and then
+      --  to convert this to an address using the same semantics as the
+      --  System.Storage_Elements.To_Address function. The important difference
+      --  is that this is a static attribute so it can be used in
+      --  initializations in preealborate packages.
 
       ----------------
       -- Type_Class --
       ----------------
 
       Attribute_Type_Class => True,
-      --
-      --  T'Type_Class for any type or subtype T yields the value of the
-      --  type class for the full type of T. If T is a generic formal type,
-      --  then the value is the value for the corresponding actual subtype.
-      --  The value of this attribute is of type System.Aux_DEC.Type_Class,
-      --  which has the following definition:
+      --  T'Type_Class for any type or subtype T yields the value of the type
+      --  class for the full type of T. If T is a generic formal type, then the
+      --  value is the value for the corresponding actual subtype. The value of
+      --  this attribute is of type System.Aux_DEC.Type_Class, which has the
+      --  following definition:
       --
       --    type Type_Class is
       --      (Type_Class_Enumeration,
@@ -452,9 +426,9 @@ package Sem_Attr is
       --       Type_Class_Task,
       --       Type_Class_Address);
       --
-      --  Protected types yield the value Type_Class_Task, which thus
-      --  applies to all concurrent types. This attribute is designed to
-      --  be compatible with the DEC Ada attribute of the same name.
+      --  Protected types yield the value Type_Class_Task, which thus applies
+      --  to all concurrent types. This attribute is designed to be compatible
+      --  with the DEC Ada attribute of the same name.
       --
       --  Note: if pragma Extend_System is used to merge the definitions of
       --  Aux_DEC into System, then the type Type_Class can be referenced
@@ -465,7 +439,6 @@ package Sem_Attr is
       -----------------
 
       Attribute_UET_Address => True,
-      --
       --  Unit'UET_Address, where Unit is a program unit, yields the address
       --  of the unit exception table for the specified unit. This is only
       --  used in the internal implementation of exception handling. See the
@@ -476,23 +449,21 @@ package Sem_Attr is
       ------------------------------
 
       Attribute_Universal_Literal_String => True,
-      --
-      --  The prefix of 'Universal_Literal_String must be a named number.
-      --  The static result is the string consisting of the characters of
-      --  the number as defined in the original source. This allows the
-      --  user program to access the actual text of named numbers without
-      --  intermediate conversions and without the need to enclose the
-      --  strings in quotes (which would preclude their use as numbers).
-      --  This is used internally for the construction of values of the
-      --  floating-point attributes from the file ttypef.ads, but may
-      --  also be used by user programs.
+      --  The prefix of 'Universal_Literal_String must be a named number. The
+      --  static result is the string consisting of the characters of the
+      --  number as defined in the original source. This allows the user
+      --  program to access the actual text of named numbers without
+      --  intermediate conversions and without the need to enclose the strings
+      --  in quotes (which would preclude their use as numbers). This is used
+      --  internally for the construction of values of the floating-point
+      --  attributes from the file ttypef.ads, but may also be used by user
+      --  programs.
 
       -------------------------
       -- Unrestricted_Access --
       -------------------------
 
       Attribute_Unrestricted_Access => True,
-      --
       --  The Unrestricted_Access attribute is similar to Access except that
       --  all accessibility and aliased view checks are omitted. This is very
       --  much a user-beware attribute. Basically its status is very similar
@@ -510,32 +481,28 @@ package Sem_Attr is
       ---------------
 
       Attribute_VADS_Size => True,
-      --
-      --  Typ'VADS_Size yields the Size value typically yielded by some
-      --  Ada 83 compilers. The differences between VADS_Size and Size
-      --  is that for scalar types for which no Size has been specified,
-      --  VADS_Size yields the Object_Size rather than the Value_Size.
-      --  For example, while Natural'Size is typically 31, the value of
-      --  Natural'VADS_Size is 32. For all other types, Size and VADS_Size
-      --  yield the same value.
+      --  Typ'VADS_Size yields the Size value typically yielded by some Ada 83
+      --  compilers. The differences between VADS_Size and Size is that for
+      --  scalar types for which no Size has been specified, VADS_Size yields
+      --  the Object_Size rather than the Value_Size. For example, while
+      --  Natural'Size is typically 31, the value of Natural'VADS_Size is 32.
+      --  For all other types, Size and VADS_Size yield the same value.
 
       ----------------
       -- Value_Size --
       ----------------
 
       Attribute_Value_Size => True,
-      --
-      --  Type'Value_Size is the number of bits required to represent a
-      --  value of the given subtype. It is the same as Type'Size, but,
-      --  unlike Size, may be set for non-first subtypes. See section
-      --  in Einfo ("Handling of type'Size values") for further details.
+      --  Type'Value_Size is the number of bits required to represent value of
+      --  the given subtype. It is the same as Type'Size, but, unlike Size, may
+      --  be set for non-first subtypes. See section in Einfo ("Handling of
+      --  type'Size values") for further details.
 
       ---------------
       -- Word_Size --
       ---------------
 
       Attribute_Word_Size => True,
-      --
       --  Standard'Word_Size (Standard is the only permissible prefix)
       --  provides the value System.Word_Size, and is intended primarily
       --  for constructing this definition in package System (see note above
@@ -554,14 +521,26 @@ package Sem_Attr is
    --  other attributes).
 
    procedure Resolve_Attribute (N : Node_Id; Typ : Entity_Id);
-   --  Performs type resolution of attribute. If the attribute yields
-   --  a universal value, mark its type as that of the context. On
-   --  the other hand, if the context itself is universal (as in
-   --  T'Val (T'Pos (X)), mark the type as being the largest type of
-   --  that class that can be used at run-time. This is correct since
-   --  either the value gets folded (in which case it doesn't matter
-   --  what type of the class we give if, since the folding uses universal
-   --  arithmetic anyway) or it doesn't get folded (in which case it is
-   --  going to be dealt with at runtime, and the largest type is right).
+   --  Performs type resolution of attribute. If the attribute yields a
+   --  universal value, mark its type as that of the context. On the other
+   --  hand, if the context itself is universal (as in T'Val (T'Pos (X)), mark
+   --  the type as being the largest type of that class that can be used at
+   --  run-time. This is correct since either the value gets folded (in which
+   --  case it doesn't matter what type of the class we give if, since the
+   --  folding uses universal arithmetic anyway) or it doesn't get folded (in
+   --  which case it is going to be dealt with at runtime, and the largest type
+   --  is right).
+
+   function Stream_Attribute_Available
+     (Typ          : Entity_Id;
+      Nam          : TSS_Name_Type;
+      Partial_View : Entity_Id := Empty) return Boolean;
+   --  For a limited type Typ, return True iff the given attribute is
+   --  available. For Ada 05, availability is defined by 13.13.2(36/1). For Ada
+   --  95, an attribute is considered to be available if it has been specified
+   --  using an attribute definition clause for the type, or for its full view,
+   --  or for an ancestor of either. Parameter Partial_View is used only
+   --  internally, when checking for an attribute definition clause that is not
+   --  visible (Ada 95 only).
 
 end Sem_Attr;

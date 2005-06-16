@@ -2773,6 +2773,53 @@ package body Sem_Util is
         or else K = N_Package_Specification;
    end Has_Declarations;
 
+   -------------------------------------------
+   -- Has_Discriminant_Dependent_Constraint --
+   -------------------------------------------
+
+   function Has_Discriminant_Dependent_Constraint
+     (Comp : Entity_Id) return Boolean
+   is
+      Comp_Decl  : constant Node_Id := Parent (Comp);
+      Subt_Indic : constant Node_Id :=
+                     Subtype_Indication (Component_Definition (Comp_Decl));
+      Constr     : Node_Id;
+      Assn       : Node_Id;
+
+   begin
+      if Nkind (Subt_Indic) = N_Subtype_Indication then
+         Constr := Constraint (Subt_Indic);
+
+         if Nkind (Constr) = N_Index_Or_Discriminant_Constraint then
+            Assn := First (Constraints (Constr));
+            while Present (Assn) loop
+               case Nkind (Assn) is
+                  when N_Subtype_Indication |
+                       N_Range              |
+                       N_Identifier
+                  =>
+                     if Depends_On_Discriminant (Assn) then
+                        return True;
+                     end if;
+
+                  when N_Discriminant_Association =>
+                     if Depends_On_Discriminant (Expression (Assn)) then
+                        return True;
+                     end if;
+
+                  when others =>
+                     null;
+
+               end case;
+
+               Next (Assn);
+            end loop;
+         end if;
+      end if;
+
+      return False;
+   end Has_Discriminant_Dependent_Constraint;
+
    --------------------
    -- Has_Infinities --
    --------------------
@@ -3403,57 +3450,8 @@ package body Sem_Util is
       P_Aliased   : Boolean := False;
       Comp        : Entity_Id;
 
-      function Has_Dependent_Constraint (Comp : Entity_Id) return Boolean;
-      --  Returns True if and only if Comp has a constrained subtype
-      --  that depends on a discriminant.
-
       function Is_Declared_Within_Variant (Comp : Entity_Id) return Boolean;
       --  Returns True if and only if Comp is declared within a variant part
-
-      ------------------------------
-      -- Has_Dependent_Constraint --
-      ------------------------------
-
-      function Has_Dependent_Constraint (Comp : Entity_Id) return Boolean is
-         Comp_Decl  : constant Node_Id := Parent (Comp);
-         Subt_Indic : constant Node_Id :=
-                        Subtype_Indication (Component_Definition (Comp_Decl));
-         Constr     : Node_Id;
-         Assn       : Node_Id;
-
-      begin
-         if Nkind (Subt_Indic) = N_Subtype_Indication then
-            Constr := Constraint (Subt_Indic);
-
-            if Nkind (Constr) = N_Index_Or_Discriminant_Constraint then
-               Assn := First (Constraints (Constr));
-               while Present (Assn) loop
-                  case Nkind (Assn) is
-                     when N_Subtype_Indication |
-                          N_Range              |
-                          N_Identifier
-                     =>
-                        if Depends_On_Discriminant (Assn) then
-                           return True;
-                        end if;
-
-                     when N_Discriminant_Association =>
-                        if Depends_On_Discriminant (Expression (Assn)) then
-                           return True;
-                        end if;
-
-                     when others =>
-                        null;
-
-                  end case;
-
-                  Next (Assn);
-               end loop;
-            end if;
-         end if;
-
-         return False;
-      end Has_Dependent_Constraint;
 
       --------------------------------
       -- Is_Declared_Within_Variant --
@@ -3503,8 +3501,21 @@ package body Sem_Util is
 
             end if;
 
+            --  A heap object is constrained by its initial value
+
+            --  Ada 2005 AI-363:if the designated type is a type with a
+            --  constrained partial view, the resulting heap object is not
+            --  constrained, and a renaming of the component is now unsafe.
+
             if Is_Access_Type (Prefix_Type)
-              or else Nkind (P) = N_Explicit_Dereference
+              and then
+                 not Has_Constrained_Partial_View
+                   (Designated_Type (Prefix_Type))
+            then
+               return False;
+
+            elsif Nkind (P) = N_Explicit_Dereference
+              and then not Has_Constrained_Partial_View (Prefix_Type)
             then
                return False;
             end if;
@@ -3523,7 +3534,7 @@ package body Sem_Util is
                             and then In_Package_Body (Current_Scope)))
 
               and then (Is_Declared_Within_Variant (Comp)
-                          or else Has_Dependent_Constraint (Comp))
+                          or else Has_Discriminant_Dependent_Constraint (Comp))
               and then not P_Aliased
             then
                return True;
@@ -4305,6 +4316,70 @@ package body Sem_Util is
          return True;
       end if;
    end Is_Partially_Initialized_Type;
+
+   ------------------------------------
+   -- Is_Potentially_Persistent_Type --
+   ------------------------------------
+
+   function Is_Potentially_Persistent_Type (T : Entity_Id) return Boolean is
+      Comp : Entity_Id;
+      Indx : Node_Id;
+
+   begin
+      --  For private type, test corrresponding full type
+
+      if Is_Private_Type (T) then
+         return Is_Potentially_Persistent_Type (Full_View (T));
+
+      --  Scalar types are potentially persistent
+
+      elsif Is_Scalar_Type (T) then
+         return True;
+
+      --  Record type is potentially persistent if not tagged and the types of
+      --  all it components are potentially persistent, and no component has
+      --  an initialization expression.
+
+      elsif Is_Record_Type (T)
+        and then not Is_Tagged_Type (T)
+        and then not Is_Partially_Initialized_Type (T)
+      then
+         Comp := First_Component (T);
+         while Present (Comp) loop
+            if not Is_Potentially_Persistent_Type (Etype (Comp)) then
+               return False;
+            else
+               Next_Entity (Comp);
+            end if;
+         end loop;
+
+         return True;
+
+      --  Array type is potentially persistent if its component type is
+      --  potentially persistent and if all its constraints are static.
+
+      elsif Is_Array_Type (T) then
+         if not Is_Potentially_Persistent_Type (Component_Type (T)) then
+            return False;
+         end if;
+
+         Indx := First_Index (T);
+         while Present (Indx) loop
+            if not Is_OK_Static_Subtype (Etype (Indx)) then
+               return False;
+            else
+               Next_Index (Indx);
+            end if;
+         end loop;
+
+         return True;
+
+      --  All other types are not potentially persistent
+
+      else
+         return False;
+      end if;
+   end Is_Potentially_Persistent_Type;
 
    -----------------------------
    -- Is_RCI_Pkg_Spec_Or_Body --
@@ -6476,10 +6551,10 @@ package body Sem_Util is
       --  the level is the same as that of the enclosing component type.
 
       Btyp := Base_Type (Typ);
+
       if Ekind (Btyp) in Access_Kind then
          if Ekind (Btyp) = E_Anonymous_Access_Type
-           and then not Is_Array_Type (Scope (Btyp))      -- Ada 2005 (AI-230)
-           and then Ekind (Scope (Btyp)) /= E_Record_Type -- Ada 2005 (AI-230)
+           and then not Is_Local_Anonymous_Access (Typ) -- Ada 2005 (AI-230)
          then
             return Scope_Depth (Standard_Standard);
          end if;

@@ -64,9 +64,13 @@ package Exp_Tss is
    -- TSS Naming --
    ----------------
 
-   --  A TSS is identified by its Chars name. The name has the form typXY,
-   --  where typ is the type name, and XY are two characters that identify
-   --  the particular TSS routine, using the following codes:
+   --  A TSS is identified by its Chars name. The name has the form typXY or
+   --  typ_<serial>XY, where typ is the type name, and XY are two characters
+   --  that identify the particular TSS routine. A unique serial number is
+   --  included for the case where several local instances of the same TSS
+   --  must be generated (see discussion under Make_TSS_Name_Local).
+
+   --  The following codes are used to denote TSSs:
 
    --  Note: When making additions to this list, update the list in snames.adb
 
@@ -126,10 +130,11 @@ package Exp_Tss is
    function Make_TSS_Name_Local
      (Typ : Entity_Id;
       Nam : TSS_Name_Type) return Name_Id;
-   --  Similar to the above call, but a string of the form _nnn is appended
-   --  to the name, where nnn is a unique serial number. This is used when
-   --  multiple instances of the same TSS routine may be generated in the
-   --  same scope (see also discussion above of current limitations).
+   --  Similar to the above call, but a string of the form _nnn is inserted
+   --  before the TSS code suffix, where nnn is a unique serial number. This
+   --  is used when multiple instances of the same TSS routine may be
+   --  generated in the same scope (see also discussion above of current
+   --  limitations).
 
    function Make_Init_Proc_Name (Typ : Entity_Id) return Name_Id;
    --  Version for init procs, same as Make_TSS_Name (Typ, TSS_Init_Proc)

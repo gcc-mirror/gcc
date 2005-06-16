@@ -33,8 +33,6 @@
 
 with Interfaces;      use Interfaces;
 with System.Val_Util; use System.Val_Util;
-with System.WCh_Con;  use System.WCh_Con;
-with System.WCh_StW;  use System.WCh_StW;
 
 package body System.Val_WChar is
 
@@ -43,15 +41,14 @@ package body System.Val_WChar is
    --------------------------
 
    function Value_Wide_Character
-      (Str : String;
-       EM  : WC_Encoding_Method) return Wide_Character
+      (Str : String) return Wide_Character
    is
-      WWC : constant Wide_Wide_Character :=
-              Value_Wide_Wide_Character (Str, EM);
-      WWV : constant Unsigned_32 := Wide_Wide_Character'Pos (WWC);
+      WWC : constant Wide_Wide_Character := Value_Wide_Wide_Character (Str);
+      WWV : constant Unsigned_32         := Wide_Wide_Character'Pos (WWC);
    begin
       if WWV > 16#FFFF# then
-         raise Constraint_Error;
+         raise Constraint_Error
+           with "out of range character for Value attribute";
       else
          return Wide_Character'Val (WWV);
       end if;
@@ -62,8 +59,7 @@ package body System.Val_WChar is
    -------------------------------
 
    function Value_Wide_Wide_Character
-      (Str : String;
-       EM  : System.WCh_Con.WC_Encoding_Method) return Wide_Wide_Character
+      (Str : String) return Wide_Wide_Character
    is
       F : Natural;
       L : Natural;
@@ -81,48 +77,47 @@ package body System.Val_WChar is
          if L - F = 2 then
             return Wide_Wide_Character'Val (Character'Pos (S (F + 1)));
 
-         --  Otherwise must be a wide character in quotes. The easiest
-         --  thing is to convert the string to a wide wide string and then
-         --  pick up the single character that it should contain.
+            --  Otherwise something is very wrong
 
          else
-            declare
-               WS : constant Wide_Wide_String :=
-                      String_To_Wide_Wide_String (S (F + 1 .. L - 1), EM);
-
-            begin
-               if WS'Length /= 1 then
-                  raise Constraint_Error;
-               else
-                  return WS (WS'First);
-               end if;
-            end;
+            raise Constraint_Error with "invalid string for Value attribute";
          end if;
 
-      --  the last two values of the type have language-defined names:
+      --  Deal with Hex_hhhhhhhh cases for wide_[wide_]character cases
 
-      elsif S = "FFFE" then
-         return Wide_Wide_Character'Val (16#FFFE#);
+      elsif Str'Length = 12 and then Str (1 .. 4) = "Hex_" then
+         declare
+            W : Unsigned_32 := 0;
 
-      elsif S = "FFFF" then
-         return Wide_Wide_Character'Val (16#FFFF#);
+         begin
+            for J in 5 .. 12 loop
+               W := W * 16 + Character'Pos (Str (J));
 
-      --  Otherwise must be a control character
+               if Str (J) in '0' .. '9' then
+                  W := W - Character'Pos ('0');
+               elsif Str (J) in 'A' .. 'F' then
+                  W := W - Character'Pos ('A') + 10;
+               elsif Str (J) in 'a' .. 'f' then
+                  W := W - Character'Pos ('a') + 10;
+               else
+                  raise Constraint_Error
+                    with "illegal hex character for Value attribute";
+               end if;
+            end loop;
+
+            if W > 16#7FFF_FFFF# then
+               raise Constraint_Error
+                 with "out of range value for Value attribute";
+            else
+               return Wide_Wide_Character'Val (W);
+            end if;
+         end;
+
+      --  Otherwise must be one of the special names for Character
 
       else
-         for C in Character'Val (16#00#) .. Character'Val (16#1F#) loop
-            if S (F .. L) = Character'Image (C) then
-               return Wide_Wide_Character'Val (Character'Pos (C));
-            end if;
-         end loop;
-
-         for C in Character'Val (16#7F#) .. Character'Val (16#9F#) loop
-            if S (F .. L) = Character'Image (C) then
-               return Wide_Wide_Character'Val (Character'Pos (C));
-            end if;
-         end loop;
-
-         raise Constraint_Error;
+         return
+           Wide_Wide_Character'Val (Character'Pos (Character'Value (Str)));
       end if;
    end Value_Wide_Wide_Character;
 

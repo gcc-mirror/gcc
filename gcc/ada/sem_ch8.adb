@@ -1101,6 +1101,7 @@ package body Sem_Ch8 is
    procedure Analyze_Subprogram_Renaming (N : Node_Id) is
       Spec        : constant Node_Id          := Specification (N);
       Save_AV     : constant Ada_Version_Type := Ada_Version;
+      Save_AV_Exp : constant Ada_Version_Type := Ada_Version_Explicit;
       Nam         : constant Node_Id          := Name (N);
       New_S       : Entity_Id;
       Old_S       : Entity_Id                 := Empty;
@@ -1357,9 +1358,24 @@ package body Sem_Ch8 is
          New_S := Rename_Spec;
          Set_Has_Completion (Rename_Spec, False);
 
+         --  Ada 2005: check overriding indicator.
+
+         if Must_Override (Specification (N))
+           and then not Is_Overriding_Operation (Rename_Spec)
+         then
+            Error_Msg_NE ("subprogram& is not overriding", N, Rename_Spec);
+
+         elsif Must_Not_Override (Specification (N))
+           and then Is_Overriding_Operation (Rename_Spec)
+         then
+            Error_Msg_NE
+              ("subprogram& overrides inherited operation", N, Rename_Spec);
+         end if;
+
       else
          Generate_Definition (New_S);
          New_Overloaded_Entity (New_S);
+
          if Is_Entity_Name (Nam)
            and then Is_Intrinsic_Subprogram (Entity (Nam))
          then
@@ -1422,12 +1438,15 @@ package body Sem_Ch8 is
          Set_Has_Completion (New_S);
       end if;
 
-      --  Find the renamed entity that matches the given specification.
-      --  Disable Ada_83 because there is no requirement of full conformance
-      --  between renamed entity and new entity, even though the same circuit
-      --  is used.
+      --  Find the renamed entity that matches the given specification. Disable
+      --  Ada_83 because there is no requirement of full conformance between
+      --  renamed entity and new entity, even though the same circuit is used.
+      --  This is a bit of a kludge, which introduces a really irregular use of
+      --  Ada_Version[_Explicit]. Would be nice to find cleaner way to do this
+      --  ???
 
       Ada_Version := Ada_Version_Type'Max (Ada_Version, Ada_95);
+      Ada_Version_Explicit := Ada_Version;
 
       if No (Old_S) then
          Old_S := Find_Renamed_Entity (N, Name (N), New_S, Is_Actual);
@@ -1444,11 +1463,10 @@ package body Sem_Ch8 is
             Generate_Reference (Old_S, Nam);
          end if;
 
-         --  For a renaming-as-body, require subtype conformance,
-         --  but if the declaration being completed has not been
-         --  frozen, then inherit the convention of the renamed
-         --  subprogram prior to checking conformance (unless the
-         --  renaming has an explicit convention established; the
+         --  For a renaming-as-body, require subtype conformance, but if the
+         --  declaration being completed has not been frozen, then inherit the
+         --  convention of the renamed subprogram prior to checking conformance
+         --  (unless the renaming has an explicit convention established; the
          --  rule stated in the RM doesn't seem to address this ???).
 
          if Present (Rename_Spec) then
@@ -1516,15 +1534,15 @@ package body Sem_Ch8 is
                Set_Alias (New_S, Old_S);
             end if;
 
-            --  Note that we do not set Is_Intrinsic_Subprogram if we have
-            --  a renaming as body, since the entity in this case is not an
-            --  intrinsic (it calls an intrinsic, but we have a real body
-            --  for this call, and it is in this body that the required
-            --  intrinsic processing will take place).
+            --  Note that we do not set Is_Intrinsic_Subprogram if we have a
+            --  renaming as body, since the entity in this case is not an
+            --  intrinsic (it calls an intrinsic, but we have a real body for
+            --  this call, and it is in this body that the required intrinsic
+            --  processing will take place).
 
-            --  Also, if this is a renaming of inequality, the renamed
-            --  operator is intrinsic, but what matters is the corresponding
-            --  equality operator, which may be user-defined.
+            --  Also, if this is a renaming of inequality, the renamed operator
+            --  is intrinsic, but what matters is the corresponding equality
+            --  operator, which may be user-defined.
 
             Set_Is_Intrinsic_Subprogram
               (New_S,
@@ -1594,9 +1612,9 @@ package body Sem_Ch8 is
          Set_Is_Abstract (New_S, Is_Abstract (Old_S));
          Check_Library_Unit_Renaming (N, Old_S);
 
-         --  Pathological case: procedure renames entry in the scope of
-         --  its task. Entry is given by simple name, but body must be built
-         --  for procedure. Of course if called it will deadlock.
+         --  Pathological case: procedure renames entry in the scope of its
+         --  task. Entry is given by simple name, but body must be built for
+         --  procedure. Of course if called it will deadlock.
 
          if Ekind (Old_S) = E_Entry then
             Set_Has_Completion (New_S, False);
@@ -1621,11 +1639,11 @@ package body Sem_Ch8 is
          end if;
 
       else
-         --  A common error is to assume that implicit operators for types
-         --  are defined in Standard, or in the scope of a subtype. In those
-         --  cases where the renamed entity is given with an expanded name,
-         --  it is worth mentioning that operators for the type are not
-         --  declared in the scope given by the prefix.
+         --  A common error is to assume that implicit operators for types are
+         --  defined in Standard, or in the scope of a subtype. In those cases
+         --  where the renamed entity is given with an expanded name, it is
+         --  worth mentioning that operators for the type are not declared in
+         --  the scope given by the prefix.
 
          if Nkind (Nam) = N_Expanded_Name
            and then Nkind (Selector_Name (Nam)) = N_Operator_Symbol
@@ -1675,7 +1693,40 @@ package body Sem_Ch8 is
          end if;
       end if;
 
+      --  Ada 2005 AI 404: if the new subprogram is dispatching, verify that
+      --  controlling access parameters are known non-null for the renamed
+      --  subprogram. Test also applies to a subprogram instantiation that
+      --  is dispatching.
+
+      if Ada_Version >= Ada_05
+        and then not Is_Dispatching_Operation (Old_S)
+        and then Is_Dispatching_Operation (New_S)
+      then
+         declare
+            Old_F : Entity_Id;
+            New_F : Entity_Id;
+
+         begin
+            Old_F := First_Formal (Old_S);
+            New_F := First_Formal (New_S);
+            while Present (Old_F) loop
+               if Ekind (Etype (Old_F)) = E_Anonymous_Access_Type
+                 and then Is_Controlling_Formal (New_F)
+                 and then not Can_Never_Be_Null (Old_F)
+               then
+                  Error_Msg_N ("access parameter is controlling,", New_F);
+                  Error_Msg_NE ("\corresponding parameter of& " &
+                    " must be explicitly null excluding", New_F, Old_S);
+               end if;
+
+               Next_Formal (Old_F);
+               Next_Formal (New_F);
+            end loop;
+         end;
+      end if;
+
       Ada_Version := Save_AV;
+      Ada_Version_Explicit := Save_AV_Exp;
    end Analyze_Subprogram_Renaming;
 
    -------------------------
@@ -1699,9 +1750,9 @@ package body Sem_Ch8 is
       Set_Hidden_By_Use_Clause (N, No_Elist);
 
       --  Use clause is not allowed in a spec of a predefined package
-      --  declaration except that packages whose file name starts a-n
-      --  are OK (these are children of Ada.Numerics, and such packages
-      --  are never loaded by Rtsfind).
+      --  declaration except that packages whose file name starts a-n are OK
+      --  (these are children of Ada.Numerics, and such packages are never
+      --  loaded by Rtsfind).
 
       if Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
         and then Name_Buffer (1 .. 3) /= "a-n"
@@ -1809,7 +1860,7 @@ package body Sem_Ch8 is
 
             if Nkind (Parent (N)) = N_Compilation_Unit then
                if  Nkind (Id) = N_Identifier then
-                  Error_Msg_N ("Type is not directly visible", Id);
+                  Error_Msg_N ("type is not directly visible", Id);
 
                elsif Is_Child_Unit (Scope (Entity (Id)))
                  and then Scope (Entity (Id)) /= System_Aux_Id
@@ -2130,6 +2181,11 @@ package body Sem_Ch8 is
         and then Item /= N
       loop
          if Nkind (Item) = N_With_Clause
+
+            --  Protect the frontend against previously reported
+            --  critical errors
+
+           and then Nkind (Name (Item)) /= N_Selected_Component
            and then Entity (Name (Item)) = Pack
          then
             Par := Nam;
@@ -3570,8 +3626,23 @@ package body Sem_Ch8 is
             if Present (Candidate) then
 
                if Is_Child_Unit (Candidate) then
-                  Error_Msg_N
-                    ("missing with_clause for child unit &", Selector);
+
+                  --  If the candidate is a private child unit and we are
+                  --  in the visible part of a public unit, specialize the
+                  --  error message. There might be a private with_clause for
+                  --  it, but it is not currently active.
+
+                  if Is_Private_Descendant (Candidate)
+                    and then Ekind (Current_Scope) = E_Package
+                    and then not In_Private_Part (Current_Scope)
+                    and then not Is_Private_Descendant (Current_Scope)
+                  then
+                     Error_Msg_N ("private child unit& is not visible here",
+                       Selector);
+                  else
+                     Error_Msg_N
+                       ("missing with_clause for child unit &", Selector);
+                  end if;
                else
                   Error_Msg_NE ("& is not a visible entity of&", N, Selector);
                end if;

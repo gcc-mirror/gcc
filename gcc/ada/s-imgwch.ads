@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
 --                     S Y S T E M . I M G _ W C H A R                      --
 --                                                                          --
@@ -33,27 +33,13 @@
 
 --  Wide_[Wide_]Character'Image
 
-with System.WCh_Con;
-
 package System.Img_WChar is
 pragma Pure (Img_WChar);
 
-   function Image_Wide_Character
-     (V  : Wide_Character;
-      EM : System.WCh_Con.WC_Encoding_Method) return String;
-   --  Computes Wide_Character'Image (V) and returns the computed result,
-   --  The argument EM is a constant representing the encoding method in use.
-   --  The encoding method used is guaranteed to be consistent across a
-   --  given program execution and to correspond to the method used in the
-   --  source programs.
+   function Image_Wide_Character (V : Wide_Character) return String;
+   --  Computes Wide_Character'Image (V) and returns the computed result
 
-   function Image_Wide_Wide_Character
-     (V  : Wide_Wide_Character;
-      EM : System.WCh_Con.WC_Encoding_Method) return String;
-   --  Computes Wide_Wide_Character'Image (V) and returns the computed result,
-   --  The argument EM is a constant representing the encoding method in use.
-   --  The encoding method used is guaranteed to be consistent across a
-   --  given program execution and to correspond to the method used in the
-   --  source programs.
+   function Image_Wide_Wide_Character (V : Wide_Wide_Character) return String;
+   --  Computes Wide_Wide_Character'Image (V) and returns the computed result
 
 end System.Img_WChar;

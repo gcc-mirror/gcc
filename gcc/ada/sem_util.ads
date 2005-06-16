@@ -370,6 +370,11 @@ package Sem_Util is
    function Has_Declarations (N : Node_Id) return Boolean;
    --  Determines if the node can have declarations
 
+   function Has_Discriminant_Dependent_Constraint
+     (Comp : Entity_Id) return Boolean;
+   --  Returns True if and only if Comp has a constrained subtype
+   --  that depends on a discriminant.
+
    function Has_Infinities (E : Entity_Id) return Boolean;
    --  Determines if the range of the floating-point type E includes
    --  infinities. Returns False if E is not a floating-point type.
@@ -533,6 +538,14 @@ package Sem_Util is
    --  partly initialized (in particular in the record case, that at least
    --  one field has an initialization expression). Note that initialization
    --  resulting from the use of pragma Normalized_Scalars does not count.
+
+   function Is_Potentially_Persistent_Type (T : Entity_Id) return Boolean;
+   --  Determines if type T is a potentially persistent type. A potentially
+   --  persistent type is defined (recursively) as a scalar type, a non-tagged
+   --  record whose components are all of a potentially persistent type, or an
+   --  array with all static constraints whose component type is potentially
+   --  persistent. A private type is potentially persistent if the full type
+   --  is potentially persistent.
 
    function Is_RCI_Pkg_Spec_Or_Body (Cunit : Node_Id) return Boolean;
    --  Return True if a compilation unit is the specification or the

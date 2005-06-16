@@ -33,19 +33,15 @@
 
 --  Processing for Wide_[Wide_]Value attribute
 
-with System.WCh_Con;
-
 package System.Val_WChar is
 pragma Pure (Val_WChar);
 
    function Value_Wide_Character
-      (Str : String;
-       EM  : System.WCh_Con.WC_Encoding_Method) return Wide_Character;
-   --  Computes Wide_Character'Value (Str).
+      (Str : String) return Wide_Character;
+   --  Computes Wide_Character'Value (Str)
 
    function Value_Wide_Wide_Character
-      (Str : String;
-       EM  : System.WCh_Con.WC_Encoding_Method) return Wide_Wide_Character;
-   --  Computes Wide_Character'Value (Str).
+      (Str : String) return Wide_Wide_Character;
+   --  Computes Wide_Character'Value (Str)
 
 end System.Val_WChar;

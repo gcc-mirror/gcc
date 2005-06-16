@@ -1958,6 +1958,8 @@ package Sinfo is
       --    DEFINING_IDENTIFIER_LIST : [aliased] [constant]
       --      [NULL_EXCLUSION] SUBTYPE_INDICATION [:= EXPRESSION];
       --  | DEFINING_IDENTIFIER_LIST : [aliased] [constant]
+      --      ACCESS_DEFINITION [:= EXPRESSION];
+      --  | DEFINING_IDENTIFIER_LIST : [aliased] [constant]
       --      ARRAY_TYPE_DEFINITION [:= EXPRESSION];
       --  | SINGLE_TASK_DECLARATION
       --  | SINGLE_PROTECTED_DECLARATION
@@ -1994,13 +1996,17 @@ package Sinfo is
       --  extra temporary (with Is_True_Constant set False), and initialize
       --  this temporary as required (the temporary itself is not atomic).
 
+      --  Note: there is not node kind for object definition. Instead, the
+      --  corresponding field holds a subtype indication, an array type
+      --  definition, or (Ada 2005, AI-406) an access definition.
+
       --  N_Object_Declaration
       --  Sloc points to first identifier
       --  Defining_Identifier (Node1)
       --  Aliased_Present (Flag4) set if ALIASED appears
       --  Constant_Present (Flag17) set if CONSTANT appears
       --  Null_Exclusion_Present (Flag11)
-      --  Object_Definition (Node4) subtype indication/array type definition
+      --  Object_Definition (Node4) subtype indic./array type def./ access def.
       --  Expression (Node3) (set to Empty if not present)
       --  Handler_List_Entry (Node2-Sem)
       --  Corresponding_Generic_Association (Node5-Sem)
@@ -3893,8 +3899,10 @@ package Sinfo is
       -----------------------------------
 
       --  SUBPROGRAM_SPECIFICATION ::=
+      --    [[not] overriding]
       --    procedure DEFINING_PROGRAM_UNIT_NAME PARAMETER_PROFILE
-      --  | function DEFINING_DESIGNATOR PARAMETER_AND_RESULT_PROFILE
+      --  | [[not] overriding]
+      --    function DEFINING_DESIGNATOR PARAMETER_AND_RESULT_PROFILE
 
       --  Note: there are no separate nodes for the profiles, instead the
       --  information appears directly in the following nodes.
@@ -3906,6 +3914,8 @@ package Sinfo is
       --  Parameter_Specifications (List3) (set to No_List if no formal part)
       --  Subtype_Mark (Node4) for return type
       --  Generic_Parent (Node5-Sem)
+      --  Must_Override (Flag14) set if overriding indicator present
+      --  Must_Not_Override (Flag15) set if not_overriding indicator present
 
       --  N_Procedure_Specification
       --  Sloc points to PROCEDURE
@@ -3913,6 +3923,11 @@ package Sinfo is
       --  Elaboration_Boolean (Node2-Sem)
       --  Parameter_Specifications (List3) (set to No_List if no formal part)
       --  Generic_Parent (Node5-Sem)
+      --  Null_Present (Flag13) set for null procedure case (Ada 2005 feature)
+      --  Must_Override (Flag14) set if overriding indicator present
+      --  Must_Not_Override (Flag15) set if not_overriding indicator present
+
+      --  Note: overriding indicator is an Ada 2005 feature
 
       ---------------------
       -- 6.1  Designator --
@@ -4470,11 +4485,13 @@ package Sinfo is
       ----------------------------------
 
       --  SINGLE_TASK_DECLARATION ::=
-      --    task DEFINING_IDENTIFIER [is TASK_DEFINITION];
+      --    task DEFINING_IDENTIFIER
+      --      [is [new INTERFACE_LIST with] TASK_DEFINITITION];
 
       --  N_Single_Task_Declaration
       --  Sloc points to TASK
       --  Defining_Identifier (Node1)
+      --  Interface_List (List2) (set to No_List if none)
       --  Task_Definition (Node3) (set to Empty if not present)
 
       --------------------------
@@ -4553,13 +4570,15 @@ package Sinfo is
       ---------------------------------------
 
       --  SINGLE_PROTECTED_DECLARATION ::=
-      --    protected DEFINING_IDENTIFIER is PROTECTED_DEFINITION;
+      --    protected DEFINING_IDENTIFIER
+      --      is [new INTERFACE_LIST with] PROTECTED_DEFINITION;
 
       --  Note: single protected declarations are not allowed in Ada 83 mode
 
       --  N_Single_Protected_Declaration
       --  Sloc points to PROTECTED
       --  Defining_Identifier (Node1)
+      --  Interface_List (List2) (set to No_List if none)
       --  Protected_Definition (Node3)
 
       -------------------------------
@@ -4631,6 +4650,7 @@ package Sinfo is
       ------------------------------
 
       --  ENTRY_DECLARATION ::=
+      --    [[not] overriding]
       --    entry DEFINING_IDENTIFIER
       --      [(DISCRETE_SUBTYPE_DEFINITION)] PARAMETER_PROFILE;
 
@@ -4640,6 +4660,10 @@ package Sinfo is
       --  Discrete_Subtype_Definition (Node4) (set to Empty if not present)
       --  Parameter_Specifications (List3) (set to No_List if no formal part)
       --  Corresponding_Body (Node5-Sem)
+      --  Must_Override (Flag14) set if overriding indicator present
+      --  Must_Not_Override (Flag15) set if not_overriding indicator present
+
+      --  Note: overriding indicator is an Ada 2005 feature
 
       -----------------------------
       -- 9.5.2  Accept statement --
@@ -5489,9 +5513,11 @@ package Sinfo is
       --  GENERIC_INSTANTIATION ::=
       --    package DEFINING_PROGRAM_UNIT_NAME is
       --      new generic_package_NAME [GENERIC_ACTUAL_PART];
-      --  | procedure DEFINING_PROGRAM_UNIT_NAME is
+      --  | [[not] overriding]
+      --    procedure DEFINING_PROGRAM_UNIT_NAME is
       --      new generic_procedure_NAME [GENERIC_ACTUAL_PART];
-      --  | function DEFINING_DESIGNATOR is
+      --  | [[not] overriding]
+      --    function DEFINING_DESIGNATOR is
       --      new generic_function_NAME [GENERIC_ACTUAL_PART];
 
       --  N_Package_Instantiation
@@ -5512,6 +5538,8 @@ package Sinfo is
       --  Generic_Associations (List3) (set to No_List if no
       --   generic actual part)
       --  Instance_Spec (Node5-Sem)
+      --  Must_Override (Flag14) set if overriding indicator present
+      --  Must_Not_Override (Flag15) set if not_overriding indicator present
       --  ABE_Is_Certain (Flag18-Sem)
 
       --  N_Function_Instantiation
@@ -5522,7 +5550,11 @@ package Sinfo is
       --   generic actual part)
       --  Parent_Spec (Node4-Sem)
       --  Instance_Spec (Node5-Sem)
+      --  Must_Override (Flag14) set if overriding indicator present
+      --  Must_Not_Override (Flag15) set if not_overriding indicator present
       --  ABE_Is_Certain (Flag18-Sem)
+
+      --  Note: overriding indicator is an Ada 2005 feature
 
       ------------------------------
       -- 12.3 Generic Actual Part --
@@ -7565,6 +7597,12 @@ package Sinfo is
    function Must_Not_Freeze
      (N : Node_Id) return Boolean;    -- Flag8
 
+   function Must_Not_Override
+     (N : Node_Id) return Boolean;    -- Flag15
+
+   function Must_Override
+     (N : Node_Id) return Boolean;    -- Flag14
+
    function Name
      (N : Node_Id) return Node_Id;    -- Node2
 
@@ -8366,6 +8404,12 @@ package Sinfo is
    procedure Set_Must_Not_Freeze
      (N : Node_Id; Val : Boolean := True);    -- Flag8
 
+   procedure Set_Must_Not_Override
+     (N : Node_Id; Val : Boolean := True);    -- Flag15
+
+   procedure Set_Must_Override
+     (N : Node_Id; Val : Boolean := True);    -- Flag14
+
    procedure Set_Name
      (N : Node_Id; Val : Node_Id);            -- Node2
 
@@ -8828,6 +8872,8 @@ package Sinfo is
    pragma Inline (More_Ids);
    pragma Inline (Must_Be_Byte_Aligned);
    pragma Inline (Must_Not_Freeze);
+   pragma Inline (Must_Not_Override);
+   pragma Inline (Must_Override);
    pragma Inline (Name);
    pragma Inline (Names);
    pragma Inline (Next_Entity);
@@ -9092,6 +9138,8 @@ package Sinfo is
    pragma Inline (Set_More_Ids);
    pragma Inline (Set_Must_Be_Byte_Aligned);
    pragma Inline (Set_Must_Not_Freeze);
+   pragma Inline (Set_Must_Not_Override);
+   pragma Inline (Set_Must_Override);
    pragma Inline (Set_Name);
    pragma Inline (Set_Names);
    pragma Inline (Set_Next_Entity);

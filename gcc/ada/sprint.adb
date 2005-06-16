@@ -165,6 +165,9 @@ package body Sprint is
    --  that is currently being written. Note that Debug_Node is always empty
    --  if a debug source file is not being written.
 
+   procedure Sprint_And_List (List : List_Id);
+   --  Print the given list with items separated by vertical "and"
+
    procedure Sprint_Bar_List (List : List_Id);
    --  Print the given list with items separated by vertical bars
 
@@ -480,16 +483,32 @@ package body Sprint is
    end Source_Dump;
 
    ---------------------
+   -- Sprint_And_List --
+   ---------------------
+
+   procedure Sprint_And_List (List : List_Id) is
+      Node : Node_Id;
+   begin
+      if Is_Non_Empty_List (List) then
+         Node := First (List);
+         loop
+            Sprint_Node (Node);
+            Next (Node);
+            exit when Node = Empty;
+            Write_Str (" and ");
+         end loop;
+      end if;
+   end Sprint_And_List;
+
+   ---------------------
    -- Sprint_Bar_List --
    ---------------------
 
    procedure Sprint_Bar_List (List : List_Id) is
       Node : Node_Id;
-
    begin
       if Is_Non_Empty_List (List) then
          Node := First (List);
-
          loop
             Sprint_Node (Node);
             Next (Node);
@@ -509,7 +528,6 @@ package body Sprint is
    begin
       if Is_Non_Empty_List (List) then
          Node := First (List);
-
          loop
             Sprint_Node (Node);
             Next (Node);
@@ -520,7 +538,6 @@ package body Sprint is
             then
                Write_Str (", ");
             end if;
-
          end loop;
       end if;
    end Sprint_Comma_List;
@@ -1146,8 +1163,16 @@ package body Sprint is
 
             Sprint_Node (Subtype_Indication (Node));
 
-            if Present (Record_Extension_Part (Node)) then
+            if Present (Interface_List (Node)) then
+               Sprint_And_List (Interface_List (Node));
                Write_Str_With_Col_Check (" with ");
+            end if;
+
+            if Present (Record_Extension_Part (Node)) then
+               if No (Interface_List (Node)) then
+                  Write_Str_With_Col_Check (" with ");
+               end if;
+
                Sprint_Node (Record_Extension_Part (Node));
             end if;
 
@@ -2149,7 +2174,15 @@ package body Sprint is
             Write_Indent_Str_Sloc ("protected type ");
             Write_Id (Defining_Identifier (Node));
             Write_Discr_Specs (Node);
-            Write_Str (" is");
+
+            if Present (Interface_List (Node)) then
+               Write_Str (" is new ");
+               Sprint_And_List (Interface_List (Node));
+               Write_Str (" with ");
+            else
+               Write_Str (" is");
+            end if;
+
             Sprint_Node (Protected_Definition (Node));
             Write_Id (Defining_Identifier (Node));
             Write_Char (';');
@@ -2400,6 +2433,13 @@ package body Sprint is
          when N_Subprogram_Declaration =>
             Write_Indent;
             Sprint_Node_Sloc (Specification (Node));
+
+            if Nkind (Specification (Node)) = N_Procedure_Specification
+              and then Null_Present (Specification (Node))
+            then
+               Write_Str_With_Col_Check (" is null");
+            end if;
+
             Write_Char (';');
 
          when N_Subprogram_Info =>
@@ -2471,8 +2511,18 @@ package body Sprint is
             Write_Id (Defining_Identifier (Node));
             Write_Discr_Specs (Node);
 
+            if Present (Interface_List (Node)) then
+               Write_Str (" is new ");
+               Sprint_And_List (Interface_List (Node));
+            end if;
+
             if Present (Task_Definition (Node)) then
-               Write_Str (" is");
+               if No (Interface_List (Node)) then
+                  Write_Str (" is");
+               else
+                  Write_Str (" with ");
+               end if;
+
                Sprint_Node (Task_Definition (Node));
                Write_Id (Defining_Identifier (Node));
             end if;

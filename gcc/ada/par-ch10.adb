@@ -354,8 +354,10 @@ package body Ch10 is
       elsif Token = Tok_Separate then
          Set_Unit (Comp_Unit_Node, P_Subunit);
 
-      elsif Token = Tok_Procedure
-        or else Token = Tok_Function
+      elsif Token = Tok_Function
+        or else Token = Tok_Not
+        or else Token = Tok_Overriding
+        or else Token = Tok_Procedure
       then
          Set_Unit (Comp_Unit_Node, P_Subprogram (Pf_Decl_Gins_Pbod_Rnam));
 
