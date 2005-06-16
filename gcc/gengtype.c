@@ -628,14 +628,6 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	      subfields->opt->name = "desc";
 	      subfields->opt->info = "NOTE_LINE_NUMBER (&%0)";
 	    }
-	  else if (t == basic_block_tp)
-	    {
-	      /* We don't presently GC basic block structures...  */
-	      subfields->opt = XNEW (struct options);
-	      subfields->opt->next = nodot;
-	      subfields->opt->name = "skip";
-	      subfields->opt->info = NULL;
-	    }
 	  else
 	    subfields->opt = nodot;
 	}
