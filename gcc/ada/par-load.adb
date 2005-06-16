@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -360,11 +360,14 @@ begin
 
          Unum :=
            Load_Unit
-             (Load_Name  => Spec_Name,
-              Required   => False,
-              Subunit    => False,
-              Error_Node => With_Node,
-              Renamings  => True);
+             (Load_Name         => Spec_Name,
+              Required          => False,
+              Subunit           => False,
+              Error_Node        => With_Node,
+              Renamings         => True,
+              From_Limited_With => From_Limited_With
+                                     or else
+                                   Limited_Present (Context_Node));
 
          --  If we find the unit, then set spec pointer in the N_With_Clause
          --  to point to the compilation unit for the spec. Remember that

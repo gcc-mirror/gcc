@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -104,12 +104,13 @@ package Lib.Load is
    --  and then closed on return.
 
    function Load_Unit
-     (Load_Name  : Unit_Name_Type;
-      Required   : Boolean;
-      Error_Node : Node_Id;
-      Subunit    : Boolean;
-      Corr_Body  : Unit_Number_Type := No_Unit;
-      Renamings  : Boolean          := False) return Unit_Number_Type;
+     (Load_Name         : Unit_Name_Type;
+      Required          : Boolean;
+      Error_Node        : Node_Id;
+      Subunit           : Boolean;
+      Corr_Body         : Unit_Number_Type := No_Unit;
+      Renamings         : Boolean          := False;
+      From_Limited_With : Boolean          := False) return Unit_Number_Type;
    --  This function loads and parses the unit specified by Load_Name (or
    --  returns the unit number for the previously constructed units table
    --  entry if this is not the first call for this unit). Required indicates
@@ -147,6 +148,10 @@ package Lib.Load is
    --  described in the documentation of this unit. If this parameter is
    --  set to True, then Load_Name may not be the real unit name and it
    --  is necessary to load parents to find the real name.
+   --
+   --  From_Limited_With is True if we are loading a unit X found in a
+   --  limited-with clause, or some unit in the context of X. It is used to
+   --  avoid the check on circular dependency (Ada 2005, AI-50217)
 
    function Create_Dummy_Package_Unit
      (With_Node : Node_Id;
