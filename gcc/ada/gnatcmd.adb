@@ -149,12 +149,22 @@ procedure GNATCmd is
    ----------------------------------
 
    The_Command : Command_Type;
+   --  The command specified in the invocation of the GNAT driver
 
    Command_Arg : Positive := 1;
+   --  The index of the command in the arguments of the GNAT driver
 
    My_Exit_Status : Exit_Status := Success;
+   --  The exit status of the spawned tool. Used to set the correct VMS
+   --  exit status.
 
    Current_Work_Dir : constant String := Get_Current_Dir;
+   --  The path of the working directory
+
+   All_Projects : Boolean := False;
+   --  Flag used for GNAT PRETTY and GNAT METRIC to indicate that
+   --  the underlying tool (gnatpp or gnatmetric) should be invoked for all
+   --  sources of all projects.
 
    -----------------------
    -- Local Subprograms --
@@ -336,7 +346,7 @@ procedure GNATCmd is
 
                else
                   --  For gnatpp and gnatmetric, put all sources
-                  --  of the project.
+                  --  of the project, or of all projects if -U was specified.
 
                   for Kind in Spec_Or_Body loop
 
@@ -425,7 +435,10 @@ procedure GNATCmd is
       Root_Project : Project_Id) return Boolean
    is
    begin
-      if Project = Root_Project then
+      if Project = No_Project then
+         return False;
+
+      elsif All_Projects or Project = Root_Project then
          return True;
 
       elsif The_Command = Metric then
@@ -1526,6 +1539,13 @@ begin
 
                      Remove_Switch (Arg_Num);
 
+                  elsif (The_Command = Pretty or else The_Command = Metric)
+                    and then Argv'Length = 2
+                    and then Argv (2) = 'U'
+                  then
+                     All_Projects := True;
+                     Remove_Switch (Arg_Num);
+
                   else
                      Arg_Num := Arg_Num + 1;
                   end if;
@@ -1710,6 +1730,7 @@ begin
                      First_Switches.Increment_Last;
                      First_Switches.Table (First_Switches.Last)  :=
                        new String'("-C" & Get_Name_String (CP_File));
+
                   else
                      Add_To_Carg_Switches
                        (new String'("-gnatec=" & Get_Name_String (CP_File)));
