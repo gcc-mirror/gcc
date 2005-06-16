@@ -468,12 +468,16 @@ package body Sem_Aggr is
             Check_Unset_Reference (Exp);
          end if;
 
+      --  Ada 2005 (AI-230): Generate a conversion to an anonymous access
+      --  component's type to force the appropriate accessibility checks.
+
       --  Ada 2005 (AI-231): Generate conversion to the null-excluding
       --  type to force the corresponding run-time check
 
       elsif Is_Access_Type (Check_Typ)
-        and then Can_Never_Be_Null (Check_Typ)
-        and then not Can_Never_Be_Null (Exp_Typ)
+        and then ((Is_Local_Anonymous_Access (Check_Typ))
+                    or else (Can_Never_Be_Null (Check_Typ)
+                              and then not Can_Never_Be_Null (Exp_Typ)))
       then
          Rewrite (Exp, Convert_To (Check_Typ, Relocate_Node (Exp)));
          Analyze_And_Resolve (Exp, Check_Typ);
@@ -543,7 +547,7 @@ package body Sem_Aggr is
 
                elsif Expr_Value (This_Low) /= Expr_Value (Aggr_Low (Dim)) then
                   Set_Raises_Constraint_Error (N);
-                  Error_Msg_N ("Sub-aggregate low bound mismatch?", N);
+                  Error_Msg_N ("sub-aggregate low bound mismatch?", N);
                   Error_Msg_N ("Constraint_Error will be raised at run-time?",
                                N);
                end if;
@@ -557,7 +561,7 @@ package body Sem_Aggr is
                  Expr_Value (This_High) /= Expr_Value (Aggr_High (Dim))
                then
                   Set_Raises_Constraint_Error (N);
-                  Error_Msg_N ("Sub-aggregate high bound mismatch?", N);
+                  Error_Msg_N ("sub-aggregate high bound mismatch?", N);
                   Error_Msg_N ("Constraint_Error will be raised at run-time?",
                                N);
                end if;
@@ -1301,7 +1305,7 @@ package body Sem_Aggr is
 
          if Range_Len < Len then
             Set_Raises_Constraint_Error (N);
-            Error_Msg_N ("Too many elements?", N);
+            Error_Msg_N ("too many elements?", N);
             Error_Msg_N ("Constraint_Error will be raised at run-time?", N);
          end if;
       end Check_Length;
@@ -1392,7 +1396,7 @@ package body Sem_Aggr is
                   --  aggregate must not be enclosed in parentheses.
 
                   if Paren_Count (Expr) /= 0 then
-                     Error_Msg_N ("No parenthesis allowed here", Expr);
+                     Error_Msg_N ("no parenthesis allowed here", Expr);
                   end if;
 
                   Make_String_Into_Aggregate (Expr);
