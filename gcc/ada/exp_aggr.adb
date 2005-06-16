@@ -158,6 +158,13 @@ package body Exp_Aggr is
    -- Local Subprograms for Array Aggregate Expansion --
    -----------------------------------------------------
 
+   function Aggr_Size_OK (Typ : Entity_Id) return Boolean;
+   --  Very large static aggregates present problems to the back-end, and
+   --  are transformed into assignments and loops. This function verifies
+   --  that the total number of components of an aggregate is acceptable
+   --  for transformation into a purely positional static form. It is called
+   --  prior to calling Flatten.
+
    procedure Convert_Array_Aggr_In_Allocator
      (Decl   : Node_Id;
       Aggr   : Node_Id;
@@ -268,6 +275,152 @@ package body Exp_Aggr is
    --  If a slice assignment has an aggregate with a single others_choice,
    --  the assignment can be done in place even if bounds are not static,
    --  by converting it into a loop over the discrete range of the slice.
+
+   ------------------
+   -- Aggr_Size_OK --
+   ------------------
+
+   function Aggr_Size_OK (Typ : Entity_Id) return Boolean is
+      Lo   : Node_Id;
+      Hi   : Node_Id;
+      Indx : Node_Id;
+      Siz  : Int;
+      Lov  : Uint;
+      Hiv  : Uint;
+
+      --  The following constant determines the maximum size of an
+      --  aggregate produced by converting named to positional
+      --  notation (e.g. from others clauses). This avoids running
+      --  away with attempts to convert huge aggregates, which hit
+      --  memory limits in the backend.
+
+      --  The normal limit is 5000, but we increase this limit to
+      --  2**24 (about 16 million) if Restrictions (No_Elaboration_Code)
+      --  or Restrictions (No_Implicit_Loops) is specified, since in
+      --  either case, we are at risk of declaring the program illegal
+      --  because of this limit.
+
+      Max_Aggr_Size : constant Nat :=
+                        5000 + (2 ** 24 - 5000) *
+                          Boolean'Pos
+                            (Restriction_Active (No_Elaboration_Code)
+                               or else
+                             Restriction_Active (No_Implicit_Loops));
+
+      function Component_Count (T : Entity_Id) return Int;
+      --  The limit is applied to the total number of components that the
+      --  aggregate will have, which is the number of static expressions
+      --  that will appear in the flattened array. This requires a recursive
+      --  computation of the the number of scalar components of the structure.
+
+      ---------------------
+      -- Component_Count --
+      ---------------------
+
+      function Component_Count (T : Entity_Id) return Int is
+         Res  : Int := 0;
+         Comp : Entity_Id;
+
+      begin
+         if Is_Scalar_Type (T) then
+            return 1;
+
+         elsif Is_Record_Type (T) then
+            Comp := First_Component (T);
+            while Present (Comp) loop
+               Res := Res + Component_Count (Etype (Comp));
+               Next_Component (Comp);
+            end loop;
+
+            return Res;
+
+         elsif Is_Array_Type (T) then
+            declare
+               Lo : constant Node_Id :=
+                      Type_Low_Bound (Etype (First_Index (T)));
+               Hi : constant Node_Id :=
+                      Type_High_Bound (Etype (First_Index (T)));
+
+               Siz  : constant Int := Component_Count (Component_Type (T));
+
+            begin
+               if not Compile_Time_Known_Value (Lo)
+                 or else not Compile_Time_Known_Value (Hi)
+               then
+                  return 0;
+               else
+                  return
+                    Siz * UI_To_Int (Expr_Value (Hi) - Expr_Value (Lo) + 1);
+               end if;
+            end;
+
+         else
+            --  Can only be a null for an access type
+
+            return 1;
+         end if;
+      end Component_Count;
+
+   --  Start of processing for Aggr_Size_OK
+
+   begin
+      Siz  := Component_Count (Component_Type (Typ));
+      Indx := First_Index (Typ);
+
+      while Present (Indx) loop
+         Lo  := Type_Low_Bound (Etype (Indx));
+         Hi  := Type_High_Bound (Etype (Indx));
+
+         --  Bounds need to be known at compile time
+
+         if not Compile_Time_Known_Value (Lo)
+           or else not Compile_Time_Known_Value (Hi)
+         then
+            return False;
+         end if;
+
+         Lov := Expr_Value (Lo);
+         Hiv := Expr_Value (Hi);
+
+         --  A flat array is always safe
+
+         if Hiv < Lov then
+            return True;
+         end if;
+
+         declare
+            Rng : constant Uint := Hiv - Lov + 1;
+
+         begin
+            --  Check if size is too large
+
+            if not UI_Is_In_Int_Range (Rng) then
+               return False;
+            end if;
+
+            Siz := Siz * UI_To_Int (Rng);
+         end;
+
+         if Siz <= 0
+           or else Siz > Max_Aggr_Size
+         then
+            return False;
+         end if;
+
+         --  Bounds must be in integer range, for later array construction
+
+         if not UI_Is_In_Int_Range (Lov)
+             or else
+            not UI_Is_In_Int_Range (Hiv)
+         then
+            return False;
+         end if;
+
+         Next_Index (Indx);
+      end loop;
+
+      return True;
+   end Aggr_Size_OK;
 
    ---------------------------------
    -- Backend_Processing_Possible --
@@ -2680,7 +2833,9 @@ package body Exp_Aggr is
         (N   : Node_Id;
          Ix  : Node_Id;
          Ixb : Node_Id) return Boolean;
-      --  Convert the aggregate into a purely positional form if possible
+      --  Convert the aggregate into a purely positional form if possible.
+      --  On entry the bounds of all dimensions are known to be static,
+      --  and the total number of components is safe enough to expand.
 
       function Is_Flat (N : Node_Id; Dims : Int) return Boolean;
       --  Return True iff the array N is flat (which is not rivial
@@ -2702,39 +2857,12 @@ package body Exp_Aggr is
          Lov : Uint;
          Hiv : Uint;
 
-         --  The following constant determines the maximum size of an
-         --  aggregate produced by converting named to positional
-         --  notation (e.g. from others clauses). This avoids running
-         --  away with attempts to convert huge aggregates.
-
-         --  The normal limit is 5000, but we increase this limit to
-         --  2**24 (about 16 million) if Restrictions (No_Elaboration_Code)
-         --  or Restrictions (No_Implicit_Loops) is specified, since in
-         --  either case, we are at risk of declaring the program illegal
-         --  because of this limit.
-
-         Max_Aggr_Size : constant Nat :=
-                           5000 + (2 ** 24 - 5000) *
-                             Boolean'Pos
-                               (Restriction_Active (No_Elaboration_Code)
-                                  or else
-                                Restriction_Active (No_Implicit_Loops));
-
       begin
          if Nkind (Original_Node (N)) = N_String_Literal then
             return True;
          end if;
 
-         --  Bounds need to be known at compile time
-
-         if not Compile_Time_Known_Value (Lo)
-           or else not Compile_Time_Known_Value (Hi)
-         then
-            return False;
-         end if;
-
-         --  Get bounds and check reasonable size (positive, not too large)
-         --  Also only handle bounds starting at the base type low bound
+         --  Only handle bounds starting at the base type low bound
          --  for now since the compiler isn't able to handle different low
          --  bounds yet. Case such as new String'(3..5 => ' ') will get
          --  the wrong bounds, though it seems that the aggregate should
@@ -2744,18 +2872,8 @@ package body Exp_Aggr is
          Hiv := Expr_Value (Hi);
 
          if Hiv < Lov
-           or else (Hiv - Lov > Max_Aggr_Size)
            or else not Compile_Time_Known_Value (Blo)
            or else (Lov /= Expr_Value (Blo))
-         then
-            return False;
-         end if;
-
-         --  Bounds must be in integer range (for array Vals below)
-
-         if not UI_Is_In_Int_Range (Lov)
-             or else
-            not UI_Is_In_Int_Range (Hiv)
          then
             return False;
          end if;
@@ -2987,7 +3105,10 @@ package body Exp_Aggr is
          return;
       end if;
 
-      if Flatten (N, First_Index (Typ), First_Index (Base_Type (Typ))) then
+      if Aggr_Size_OK (Typ)
+        and then
+          Flatten (N, First_Index (Typ), First_Index (Base_Type (Typ)))
+      then
          Analyze_And_Resolve (N, Typ);
       end if;
    end Convert_To_Positional;
