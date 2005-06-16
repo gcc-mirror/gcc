@@ -1,3 +1,12 @@
+2005-06-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/16436
+	* io/transfer.c (read_sf): Correct updating of bytes_left field.
+	(formatted_transfer): Correct updating of bytes_left field and
+	reformatting code (comments and whitespace).
+	* io/unix.c (move_pos_offset): "active" field should not be
+	changed here. Whitespace corrections.
+
 2005-06-15  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/21950

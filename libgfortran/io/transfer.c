@@ -160,7 +160,6 @@ read_sf (int *length)
       return base;
     }
 
-  current_unit->bytes_left = options.default_recl;
   readlen = 1;
   n = 0;
 
@@ -214,6 +213,7 @@ read_sf (int *length)
       sf_seen_eor = 0;
     }
   while (n < *length);
+  current_unit->bytes_left -= *length;
 
   if (ioparm.size != NULL)
     *ioparm.size += *length;
@@ -675,22 +675,19 @@ formatted_transfer (bt type, void *p, int len)
 
         case FMT_TL:
         case FMT_T:
-           if (f->format==FMT_TL)
+           if (f->format == FMT_TL)
+	     pos = current_unit->recl - current_unit->bytes_left - f->u.n;
+           else /* FMT_T */
              {
-                pos = f->u.n ;
-                pos= current_unit->recl - current_unit->bytes_left - pos;
-             }
-           else // FMT==T
-             {
-                consume_data_flag = 0 ;
-                pos = f->u.n - 1; 
+               consume_data_flag = 0 ;
+               pos = f->u.n - 1; 
              }
 
            if (pos < 0 || pos >= current_unit->recl )
-           {
-             generate_error (ERROR_EOR, "T Or TL edit position error");
-             break ;
-            }
+             {
+               generate_error (ERROR_EOR, "T Or TL edit position error");
+               break ;
+             }
             m = pos - (current_unit->recl - current_unit->bytes_left);
 
             if (m == 0)
@@ -707,6 +704,7 @@ formatted_transfer (bt type, void *p, int len)
             if (m < 0)
              {
                move_pos_offset (current_unit->s,m);
+	       current_unit->bytes_left -= m;
              }
 
 	  break;

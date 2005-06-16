@@ -153,26 +153,22 @@ move_pos_offset (stream* st, int pos_off)
   unix_stream * str = (unix_stream*)st;
   if (pos_off < 0)
     {
-      str->active  += pos_off;
-      if (str->active < 0)
-         str->active = 0;
+      str->logical_offset += pos_off;
 
-      str->logical_offset  += pos_off;
-
-      if (str->dirty_offset+str->ndirty > str->logical_offset)
+      if (str->dirty_offset + str->ndirty > str->logical_offset)
         {
-          if (str->ndirty +  pos_off > 0)
-            str->ndirty += pos_off ;
+          if (str->ndirty + pos_off > 0)
+            str->ndirty += pos_off;
           else
             {
               str->dirty_offset +=  pos_off + pos_off;
-              str->ndirty = 0 ;
+              str->ndirty = 0;
             }
         }
 
-    return pos_off ;
+    return pos_off;
   }
-  return 0 ;
+  return 0;
 }
 
 

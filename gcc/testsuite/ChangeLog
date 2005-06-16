@@ -1,3 +1,8 @@
+2005-06-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/16436
+	* gfortran.dg/g77/f77-edit-t-in.f: Not XFAIL-ed any more.
+
 2005-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/22043
