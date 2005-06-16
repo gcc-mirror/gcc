@@ -1257,8 +1257,8 @@ cc1-dummy$(exeext): $(C_OBJS) dummy-checksum.o $(BACKEND) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) dummy-checksum.o \
 	  $(BACKEND) $(LIBS)
 
-cc1-checksum.c : cc1-dummy$(exeext) build/genchecksum$(exeext)
-	build/genchecksum$(exeext) cc1-dummy$(exeext) > $@
+cc1-checksum.c : cc1-dummy$(exeext) build/genchecksum$(build_exeext)
+	build/genchecksum$(build_exeext) cc1-dummy$(exeext) > $@
 
 cc1-checksum.o : cc1-checksum.c
 
