@@ -256,6 +256,37 @@ package body Tbuild is
       return Make_Integer_Literal (Loc, UI_From_Int (Intval));
    end Make_Integer_Literal;
 
+   --------------------------------
+   -- Make_Linker_Section_Pragma --
+   --------------------------------
+
+   function Make_Linker_Section_Pragma
+     (Ent : Entity_Id;
+      Loc : Source_Ptr;
+      Sec : String) return Node_Id
+   is
+      LS : Node_Id;
+
+   begin
+      LS :=
+        Make_Pragma
+          (Loc,
+           Name_Linker_Section,
+           New_List
+             (Make_Pragma_Argument_Association
+                (Sloc => Loc,
+                 Expression => New_Occurrence_Of (Ent, Loc)),
+              Make_Pragma_Argument_Association
+                (Sloc => Loc,
+                 Expression =>
+                   Make_String_Literal
+                     (Sloc => Loc,
+                      Strval => Sec))));
+
+      Set_Has_Gigi_Rep_Item (Ent);
+      return LS;
+   end Make_Linker_Section_Pragma;
+
    ---------------------------------
    -- Make_Raise_Constraint_Error --
    ---------------------------------

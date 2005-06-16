@@ -169,6 +169,7 @@ package body Snames is
      "ada_83#" &
      "ada_95#" &
      "ada_05#" &
+     "assertion_policy#" &
      "c_pass_by_copy#" &
      "compile_time_warning#" &
      "component_alignment#" &
@@ -191,8 +192,7 @@ package body Snames is
      "no_strict_aliasing#" &
      "normalize_scalars#" &
      "polling#" &
-     "persistent_data#" &
-     "persistent_object#" &
+     "persistent_bss#" &
      "profile#" &
      "profile_warnings#" &
      "propagate_exceptions#" &
@@ -277,9 +277,11 @@ package body Snames is
      "page#" &
      "passive#" &
      "preelaborate#" &
+     "preelaborate_05#" &
      "priority#" &
      "psect_object#" &
      "pure#" &
+     "pure_05#" &
      "pure_function#" &
      "remote_call_interface#" &
      "remote_types#" &
@@ -320,9 +322,12 @@ package body Snames is
      "default#" &
      "dll#" &
      "win32#" &
+     "alias#" &
      "as_is#" &
+     "attribute_name#" &
      "body_file_name#" &
      "boolean_entry_barriers#" &
+     "check#" &
      "casing#" &
      "code#" &
      "component#" &
@@ -333,6 +338,7 @@ package body Snames is
      "dot_replacement#" &
      "dynamic#" &
      "entity#" &
+     "entry_count#" &
      "external_name#" &
      "first_optional_parameter#" &
      "form#" &
@@ -341,6 +347,8 @@ package body Snames is
      "gnat#" &
      "gpl#" &
      "ieee_float#" &
+     "ignore#" &
+     "info#" &
      "internal#" &
      "link_name#" &
      "lowercase#" &
@@ -348,6 +356,7 @@ package body Snames is
      "max_entry_queue_length#" &
      "max_size#" &
      "mechanism#" &
+     "message#" &
      "mixedcase#" &
      "modified_gpl#" &
      "name#" &
@@ -373,6 +382,7 @@ package body Snames is
      "semaphore#" &
      "simple_barriers#" &
      "spec_file_name#" &
+     "state#" &
      "static#" &
      "stack_size#" &
      "subunit_file_name#" &
@@ -390,6 +400,7 @@ package body Snames is
      "user#" &
      "vax_float#" &
      "vms#" &
+     "vtable_ptr#" &
      "working_storage#" &
      "abort_signal#" &
      "access#" &
