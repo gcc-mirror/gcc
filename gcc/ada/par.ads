@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---     Copyright (C) 1992,1993,1994,1995 Free Software Foundation, Inc.     --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,14 +29,18 @@
 
 with Types; use Types;
 
-function Par (Configuration_Pragmas : Boolean) return List_Id;
+function Par
+  (Configuration_Pragmas : Boolean;
+   From_Limited_With     : Boolean := False) return List_Id;
 --  Top level parsing routine. There are two cases:
 --
 --  If Configuration_Pragmas is False, Par parses a compilation unit in the
 --  current source file and sets the Cunit, Cunit_Entity and Unit_Name fields
 --  of the units table entry for Current_Source_Unit. On return the parse tree
 --  is complete, and decorated with any required implicit label declarations.
---  The value returned in this case is always No_List.
+--  The value returned in this case is always No_List. If From_Limited_With is
+--  True, we are parsing a compilation unit found in a limited-with clause (Ada
+--  2005, AI-50217)
 --
 --  If Configuration_Pragmas is True, Par parses a list of configuration
 --  pragmas from the current source file, and returns the list of pragmas.

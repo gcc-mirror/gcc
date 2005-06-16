@@ -803,6 +803,7 @@ package body Sem_Ch10 is
    ---------------------
 
    procedure Analyze_Context (N : Node_Id) is
+      Ukind : constant Node_Kind := Nkind (Unit (N));
       Item  : Node_Id;
 
    begin
@@ -872,10 +873,22 @@ package body Sem_Ch10 is
          if Nkind (Item) = N_With_Clause
            and then Limited_Present (Item)
          then
+            --  Check the compilation unit containing the limited-with
+            --  clause
 
-            if Nkind (Unit (N)) /= N_Package_Declaration then
-               Error_Msg_N ("limited with_clause only allowed in"
-                            & " package specification", Item);
+            if Ukind /= N_Package_Declaration
+              and then Ukind /= N_Subprogram_Declaration
+              and then Ukind /= N_Subprogram_Renaming_Declaration
+              and then Ukind /= N_Generic_Package_Declaration
+              and then Ukind /= N_Generic_Package_Renaming_Declaration
+              and then Ukind /= N_Generic_Subprogram_Declaration
+              and then Ukind /= N_Generic_Procedure_Renaming_Declaration
+              and then Ukind /= N_Package_Instantiation
+              and then Ukind /= N_Package_Renaming_Declaration
+              and then Ukind /= N_Procedure_Instantiation
+            then
+               Error_Msg_N
+                 ("limited with_clause not allowed here", Item);
             end if;
 
             --  Skip analyzing with clause if no unit, see above
@@ -1337,16 +1350,21 @@ package body Sem_Ch10 is
          while Present (Item) loop
 
             if Nkind (Item) = N_With_Clause then
-               Unit_Name := Entity (Name (Item));
+               --  Protect the frontend against previous errors
+               --  in context clauses
 
-               while Is_Child_Unit (Unit_Name) loop
-                  Set_Is_Visible_Child_Unit (Unit_Name);
-                  Unit_Name := Scope (Unit_Name);
-               end loop;
+               if Nkind (Name (Item)) /= N_Selected_Component then
+                  Unit_Name := Entity (Name (Item));
 
-               if not Is_Immediately_Visible (Unit_Name) then
-                  Set_Is_Immediately_Visible (Unit_Name);
-                  Set_Context_Installed (Item);
+                  while Is_Child_Unit (Unit_Name) loop
+                     Set_Is_Visible_Child_Unit (Unit_Name);
+                     Unit_Name := Scope (Unit_Name);
+                  end loop;
+
+                  if not Is_Immediately_Visible (Unit_Name) then
+                     Set_Is_Immediately_Visible (Unit_Name);
+                     Set_Context_Installed (Item);
+                  end if;
                end if;
 
             elsif Nkind (Item) = N_Use_Package_Clause then
@@ -1376,7 +1394,13 @@ package body Sem_Ch10 is
 
          while Present (Item) loop
 
-            if Nkind (Item) = N_With_Clause then
+            if Nkind (Item) = N_With_Clause
+
+               --  Protect the frontend against previous errors in context
+               --  clauses
+
+              and then Nkind (Name (Item)) /= N_Selected_Component
+            then
                Unit_Name := Entity (Name (Item));
 
                while Is_Child_Unit (Unit_Name) loop
@@ -1424,8 +1448,16 @@ package body Sem_Ch10 is
 
          E := First_Entity (Current_Scope);
 
+         --  Make entities in scope visible again. For child units, restore
+         --  visibility only if they are actually in context.
+
          while Present (E) loop
-            Set_Is_Immediately_Visible (E);
+            if not Is_Child_Unit (E)
+              or else Is_Visible_Child_Unit (E)
+            then
+               Set_Is_Immediately_Visible (E);
+            end if;
+
             Next_Entity (E);
          end loop;
 
@@ -1708,7 +1740,10 @@ package body Sem_Ch10 is
                      "and version-dependent?",
                      Name (N));
 
-               elsif U_Kind = Ada_05_Unit and then Ada_Version = Ada_95 then
+               elsif U_Kind = Ada_05_Unit
+                 and then Ada_Version < Ada_05
+                 and then Warn_On_Ada_2005_Compatibility
+               then
                   Error_Msg_N ("& is an Ada 2005 unit?", Name (N));
                end if;
             end;
@@ -2180,7 +2215,7 @@ package body Sem_Ch10 is
                 From_With_Type (Scope (Entity (Selector_Name (Name (Item)))))
             then
                Error_Msg_Sloc := Sloc (Item);
-               Error_Msg_N ("Missing With_Clause for With_Type_Clause#", N);
+               Error_Msg_N ("missing With_Clause for With_Type_Clause#", N);
             end if;
 
             Next (Item);
@@ -2934,6 +2969,19 @@ package body Sem_Ch10 is
       begin
          pragma Assert (Nkind (W) = N_With_Clause);
 
+         --  Protect the frontend against previous critical errors
+
+         case Nkind (Unit (Library_Unit (W))) is
+            when N_Subprogram_Declaration         |
+                 N_Package_Declaration            |
+                 N_Generic_Subprogram_Declaration |
+                 N_Generic_Package_Declaration    =>
+               null;
+
+            when others =>
+               return;
+         end case;
+
          --  Step 1: Check if the unlimited view is installed in the parent
 
          Item := First (Context_Items (P));
@@ -3275,10 +3323,18 @@ package body Sem_Ch10 is
       --  scope of each entity is an ancestor of the current unit.
 
       Item := First (Context_Items (N));
+
+      --  Do not install private_with_clauses if the unit is a package
+      --  declaration, unless it is itself a private child unit.
+
       while Present (Item) loop
          if Nkind (Item) = N_With_Clause
            and then not Implicit_With (Item)
            and then not Limited_Present (Item)
+           and then
+              (not Private_Present (Item)
+                or else Nkind (Unit (N)) /= N_Package_Declaration
+                or else Private_Present (N))
          then
             Id := Entity (Name (Item));
 
@@ -3373,28 +3429,12 @@ package body Sem_Ch10 is
 
    begin
       --  In case of limited with_clause on subprograms, generics, instances,
-      --  or generic renamings, the corresponding error was previously posted
-      --  and we have nothing to do here.
+      --  or renamings, the corresponding error was previously posted and we
+      --  have nothing to do here.
 
-      case Nkind (P_Unit) is
-
-         when N_Package_Declaration =>
-            null;
-
-         when N_Subprogram_Declaration                 |
-              N_Generic_Package_Declaration            |
-              N_Generic_Subprogram_Declaration         |
-              N_Package_Instantiation                  |
-              N_Function_Instantiation                 |
-              N_Procedure_Instantiation                |
-              N_Generic_Package_Renaming_Declaration   |
-              N_Generic_Procedure_Renaming_Declaration |
-              N_Generic_Function_Renaming_Declaration =>
-            return;
-
-         when others =>
-            raise Program_Error;
-      end case;
+      if Nkind (P_Unit) /= N_Package_Declaration then
+         return;
+      end if;
 
       P := Defining_Unit_Name (Specification (P_Unit));
 
@@ -3578,7 +3618,7 @@ package body Sem_Ch10 is
       --  analyzing the private part of the package).
 
       if Private_Present (With_Clause)
-        and then Nkind (Cunit (Current_Sem_Unit)) = N_Package_Declaration
+        and then Nkind (Unit (Parent (With_Clause))) = N_Package_Declaration
         and then not (Private_With_OK)
       then
          return;
@@ -3622,6 +3662,13 @@ package body Sem_Ch10 is
 
          elsif not Is_Visible_Child_Unit (Uname) then
             Set_Is_Visible_Child_Unit (Uname);
+
+            --  If the child unit appears in the context of its parent, it
+            --  is immediately visible.
+
+            if In_Open_Scopes (Scope (Uname)) then
+               Set_Is_Immediately_Visible (Uname);
+            end if;
 
             if Is_Generic_Instance (Uname)
               and then Ekind (Uname) in Subprogram_Kind
@@ -4109,6 +4156,16 @@ package body Sem_Ch10 is
               N_Generic_Procedure_Renaming_Declaration |
               N_Generic_Function_Renaming_Declaration =>
             Error_Msg_N ("generic renamings not allowed in "
+                         & "limited with_clauses", N);
+            return;
+
+         when N_Subprogram_Renaming_Declaration =>
+            Error_Msg_N ("renamed subprograms not allowed in "
+                         & "limited with_clauses", N);
+            return;
+
+         when N_Package_Renaming_Declaration =>
+            Error_Msg_N ("renamed packages not allowed in "
                          & "limited with_clauses", N);
             return;
 

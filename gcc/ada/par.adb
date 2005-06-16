@@ -50,8 +50,10 @@ with Tbuild;   use Tbuild;
 -- Par --
 ---------
 
-function Par (Configuration_Pragmas : Boolean) return List_Id is
-
+function Par
+  (Configuration_Pragmas : Boolean;
+   From_Limited_With     : Boolean := False) return List_Id
+is
    Num_Library_Units : Natural := 0;
    --  Count number of units parsed (relevant only in syntax check only mode,
    --  since in semantics check mode only a single unit is permitted anyway)

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,7 @@ with Osint;    use Osint;
 with Osint.C;  use Osint.C;
 with Output;   use Output;
 with Par;
+with Restrict; use Restrict;
 with Scn;      use Scn;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
@@ -236,12 +237,13 @@ package body Lib.Load is
    ---------------
 
    function Load_Unit
-     (Load_Name  : Unit_Name_Type;
-      Required   : Boolean;
-      Error_Node : Node_Id;
-      Subunit    : Boolean;
-      Corr_Body  : Unit_Number_Type := No_Unit;
-      Renamings  : Boolean          := False) return Unit_Number_Type
+     (Load_Name         : Unit_Name_Type;
+      Required          : Boolean;
+      Error_Node        : Node_Id;
+      Subunit           : Boolean;
+      Corr_Body         : Unit_Number_Type := No_Unit;
+      Renamings         : Boolean          := False;
+      From_Limited_With : Boolean          := False) return Unit_Number_Type
    is
       Calling_Unit : Unit_Number_Type;
       Uname_Actual : Unit_Name_Type;
@@ -487,7 +489,7 @@ package body Lib.Load is
                        or else Acts_As_Spec (Units.Table (Unum).Cunit))
            and then (Nkind (Error_Node) /= N_With_Clause
                        or else not Limited_Present (Error_Node))
-
+           and then not From_Limited_With
          then
             if Debug_Flag_L then
                Write_Str ("  circular dependency encountered");
@@ -561,7 +563,8 @@ package body Lib.Load is
                Multiple_Unit_Index := Get_Unit_Index (Uname_Actual);
                Units.Table (Unum).Munit_Index := Multiple_Unit_Index;
                Initialize_Scanner (Unum, Source_Index (Unum));
-               Discard_List (Par (Configuration_Pragmas => False));
+               Discard_List (Par (Configuration_Pragmas => False,
+                                  From_Limited_With     => From_Limited_With));
                Multiple_Unit_Index := Save_Index;
                Set_Loading (Unum, False);
             end;
@@ -606,8 +609,22 @@ package body Lib.Load is
             --  Generate message if unit required
 
             if Required and then Present (Error_Node) then
-
                if Is_Predefined_File_Name (Fname) then
+
+                  --  This is a predefined library unit which is not present
+                  --  in the run time. If a predefined unit is not available
+                  --  it may very likely be the case that there is also pragma
+                  --  Restriction forbidding its usage. This is typically the
+                  --  case when building a configurable run time, where the
+                  --  usage of certain run-time units units is restricted by
+                  --  means of both the corresponding pragma Restriction (such
+                  --  as No_Calendar), and by not including the unit. Hence,
+                  --  we check whether this predefined unit is forbidden, so
+                  --  that the message about the restriction violation is
+                  --  generated, if needed.
+
+                  Check_Restricted_Unit (Load_Name, Error_Node);
+
                   Error_Msg_Name_1 := Uname_Actual;
                   Error_Msg
                     ("% is not a predefined library unit", Load_Msg_Sloc);
