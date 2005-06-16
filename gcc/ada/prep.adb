@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1081,7 +1081,9 @@ package body Prep is
          --  If the token is EOF, the scan ponter will not move, and the token
          --  will still be EOF.
 
+         Set_Ignore_Errors (To => True);
          Scan.all;
+         Set_Ignore_Errors (To => False);
       end loop Input_Line_Loop;
 
       --  Report an error for any missing some "#end if;"
