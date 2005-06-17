@@ -1,3 +1,7 @@
+2005-06-17  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/sync-2.c (do_qi): Cast negative results to char.
+
 2005-06-07  David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	PR testsuite/21945

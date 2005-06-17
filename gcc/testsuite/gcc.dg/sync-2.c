@@ -23,7 +23,7 @@ do_qi (void)
     abort ();
   if (__sync_fetch_and_sub(AI+7, 12) != 0)
     abort ();
-  if (__sync_fetch_and_and(AI+8, 7) != -1)
+  if (__sync_fetch_and_and(AI+8, 7) != (char)-1)
     abort ();
   if (__sync_fetch_and_or(AI+9, 8) != 0)
     abort ();
@@ -34,7 +34,7 @@ do_qi (void)
 
   if (__sync_add_and_fetch(AI+12, 1) != 1)
     abort ();
-  if (__sync_sub_and_fetch(AI+13, 12) != -12)
+  if (__sync_sub_and_fetch(AI+13, 12) != (char)-12)
     abort ();
   if (__sync_and_and_fetch(AI+14, 7) != 7)
     abort ();
