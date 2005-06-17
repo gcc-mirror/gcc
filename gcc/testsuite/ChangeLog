@@ -1,3 +1,8 @@
+2005-06-07  David Billinghurst  <David.Billinghurst@riotinto.com>
+
+	PR testsuite/21945
+	* lib/gcc-dg.exp (gcc-dg-test-1): Catch error if file can't be deleted.
+
 2005-06-15  Giovanni Bajo  <giovannibajo@libero.it>
 
 	* gcc.dg/vect/vect-dv-2.c, gcc.dg/vect/vect-ifcvt-2.c,
