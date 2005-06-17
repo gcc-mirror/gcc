@@ -1,3 +1,16 @@
+2005-06-17  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/19889
+	* config/ia64/hpux.h (FUNCTION_PROFILER): New (dummy).
+	(PROFILE_HOOK): New.
+	(PROFILE_BEFORE_PROLOGUE): Undef.
+	(NO_PROFILE_COUNTERS): New.
+	* config/ia64/ia64-protos.h (ia64_profile_hook): New.
+	* config/ia64/ia64.c (ia64_compute_frame_size): Add ifdef.
+	(gen_mcount_func_rtx): New.
+	(ia64_profile_hook): New.
+	* config/ia64/ia64.md (ip_value): New.
+
 2005-06-17  Devang Patel  <dpatel@apple.com>
 
 	* config/rs6000/predicates.md (s5bit_cint_operand,

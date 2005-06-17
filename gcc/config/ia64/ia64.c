@@ -2087,12 +2087,14 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
       break;
   i = regno - OUT_REG (0) + 1;
 
+#ifndef PROFILE_HOOK
   /* When -p profiling, we need one output register for the mcount argument.
      Likewise for -a profiling for the bb_init_func argument.  For -ax
      profiling, we need two output registers for the two bb_init_trace_func
      arguments.  */
   if (current_function_profile)
     i = MAX (i, 1);
+#endif
   current_frame_info.n_output_regs = i;
 
   /* ??? No rotating register support yet.  */
@@ -8577,6 +8579,40 @@ ia64_output_function_profiler (FILE *file, int labelno)
   fputs ("\t.body\n", file);
   fputs ("\tmov out1 = r1\n", file);
   fputs ("\tbr.call.sptk.many b0 = _mcount\n\t;;\n", file);
+}
+
+static GTY(()) rtx mcount_func_rtx;
+static rtx
+gen_mcount_func_rtx (void)
+{
+  if (!mcount_func_rtx)
+    mcount_func_rtx = init_one_libfunc ("_mcount");
+  return mcount_func_rtx;
+}
+
+void
+ia64_profile_hook (int labelno)
+{
+  rtx label, ip;
+
+  if (NO_PROFILE_COUNTERS)
+    label = const0_rtx;
+  else
+    {
+      char buf[30];
+      const char *label_name;
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
+      label_name = (*targetm.strip_name_encoding) (ggc_strdup (buf));
+      label = gen_rtx_SYMBOL_REF (Pmode, label_name);
+      SYMBOL_REF_FLAGS (label) = SYMBOL_FLAG_LOCAL;
+    }
+  ip = gen_reg_rtx (Pmode);
+  emit_insn (gen_ip_value (ip));
+  emit_library_call (gen_mcount_func_rtx (), LCT_NORMAL,
+                     VOIDmode, 3,
+		     gen_rtx_REG (Pmode, BR_REG (0)), Pmode,
+		     ip, Pmode,
+		     label, Pmode);
 }
 
 #include "gt-ia64.h"
