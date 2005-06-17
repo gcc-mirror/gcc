@@ -504,7 +504,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 		continue;
 
 	      prob = e->probability;
-	      freq = EDGE_FREQUENCY (e);
+	      freq = e->dest->frequency;
 
 	      /* The only sensible preference for a call instruction is the
 		 fallthru edge.  Don't bother selecting anything else.  */
@@ -522,7 +522,8 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 	      /* Edge that cannot be fallthru or improbable or infrequent
 		 successor (i.e. it is unsuitable successor).  */
 	      if (!(e->flags & EDGE_CAN_FALLTHRU) || (e->flags & EDGE_COMPLEX)
-		  || prob < branch_th || freq < exec_th || e->count < count_th)
+		  || prob < branch_th || EDGE_FREQUENCY (e) < exec_th
+		  || e->count < count_th)
 		continue;
 
 	      /* If partitioning hot/cold basic blocks, don't consider edges
