@@ -1167,7 +1167,7 @@
         (vec_duplicate:V16QI
 	 (vec_select:QI (match_operand:V16QI 1 "register_operand" "v")
 			(parallel
-			 [(match_operand:QI 2 "immediate_operand" "i")]))))]
+			 [(match_operand:QI 2 "u5bit_cint_operand" "")]))))]
   "TARGET_ALTIVEC"
   "vspltb %0,%1,%2"
   [(set_attr "type" "vecperm")])
@@ -1177,7 +1177,7 @@
 	(vec_duplicate:V8HI
 	 (vec_select:HI (match_operand:V8HI 1 "register_operand" "v")
 			(parallel
-			 [(match_operand:QI 2 "immediate_operand" "i")]))))]
+			 [(match_operand:QI 2 "u5bit_cint_operand" "")]))))]
   "TARGET_ALTIVEC"
   "vsplth %0,%1,%2"
   [(set_attr "type" "vecperm")])
@@ -1187,7 +1187,7 @@
 	(vec_duplicate:V4SI
 	 (vec_select:SI (match_operand:V4SI 1 "register_operand" "v")
 			(parallel
-			 [(match_operand:QI 2 "immediate_operand" "i")]))))]
+			 [(match_operand:QI 2 "u5bit_cint_operand" "i")]))))]
   "TARGET_ALTIVEC"
   "vspltw %0,%1,%2"
   [(set_attr "type" "vecperm")])
@@ -1195,7 +1195,7 @@
 (define_insn "altivec_vspltis<VI_char>"
   [(set (match_operand:VI 0 "register_operand" "=v")
 	(vec_duplicate:VI
-	 (match_operand:QI 1 "const_int_operand" "i")))]
+	 (match_operand:QI 1 "s5bit_cint_operand" "i")))]
   "TARGET_ALTIVEC"
   "vspltis<VI_char> %0,%1"
   [(set_attr "type" "vecperm")])
@@ -1203,7 +1203,7 @@
 (define_insn "altivec_vspltisw_v4sf"
   [(set (match_operand:V4SF 0 "register_operand" "=v")
 	(vec_duplicate:V4SF
-	 (float:SF (match_operand:QI 1 "const_int_operand" "i"))))]
+	 (float:SF (match_operand:QI 1 "s5bit_cint_operand" "i"))))]
   "TARGET_ALTIVEC"
   "vspltisw %0,%1"
   [(set_attr "type" "vecperm")])
