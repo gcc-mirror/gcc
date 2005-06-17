@@ -1,4 +1,26 @@
 2005-06-17  Jakub Jelinek  <jakub@redhat.com>
+            Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/abi/alpha-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/hppa-linux-gnu/baseline_symbols.txt: Same.
+	* config/abi/mips-linux-gnu/baseline_symbols.txt: Same.
+	* config/abi/sparc-linux-gnu/baseline_symbols.txt: Same.
+
+	* config/abi/alpha-freebsd5/baseline_symbols.txt: Remove.
+	* config/abi/i386-freebsd4/baseline_symbols.txt: Same.
+	* config/abi/i386-freebsd5/baseline_symbols.txt: Same.
+	* config/abi/sparc-freebsd5/baseline_symbols.txt: Same.
+
+	* config/abi/arm-linux-gnu/baseline_symbols.txt: Remove.
+	* config/abi/m68k-linux-gnu/baseline_symbols.txt: Same.
+	
+2005-06-17  Paolo Carlini  <pcarlini@suse.de>
+	
+	PR libstdc++/21726
+	* configure.host (abi_baseline_pair switch): Add an entry
+	for powerpc64-linux.
+	
+2005-06-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/ia64-linux-gnu/baseline_symbols.txt: Update.
 	* config/abi/s390x-linux-gnu/baseline_symbols.txt: Update.
