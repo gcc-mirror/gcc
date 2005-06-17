@@ -1,3 +1,9 @@
+2005-06-18  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/19155
+	* io/read.c (convert_real): strtod can set errno to EINVAL on an
+	empty string, but we shouldn't have an error in that case.
+
 2005-06-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/19216
