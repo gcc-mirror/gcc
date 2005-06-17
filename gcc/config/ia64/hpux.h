@@ -208,3 +208,18 @@ do {								\
 
 /* HP-UX headers are C++-compatible.  */
 #define NO_IMPLICIT_EXTERN_C
+
+/* HP-UX uses PROFILE_HOOK instead of FUNCTION_PROFILER but we need a
+   FUNCTION_PROFILER defined because its use is not ifdefed.  When using
+   PROFILE_HOOK, the profile call comes after the prologue.  */
+
+#undef FUNCTION_PROFILER
+#define FUNCTION_PROFILER(FILE, LABELNO) do { } while (0)
+
+#undef PROFILE_HOOK
+#define PROFILE_HOOK(LABEL) ia64_profile_hook (LABEL)
+
+#undef  PROFILE_BEFORE_PROLOGUE
+
+#undef NO_PROFILE_COUNTERS
+#define NO_PROFILE_COUNTERS 0
