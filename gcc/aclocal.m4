@@ -710,7 +710,9 @@ AC_REQUIRE([gcc_AC_BUILD_EXEEXT])
 dnl shut up useless "checking for..." messages
 dnl we can still read them in config.log
 exec AS_MESSAGE_FD([])>/dev/null
-AC_PATH_PROGS($1, $2, , $gcc_cv_tool_dirs)
+if test "x[$]$1" = x; then
+	AC_PATH_PROGS($1, $2, , $gcc_cv_tool_dirs)
+fi
 if test "x[$]$1" = x; then
 	# If the loop above did not find a tool, then use whatever
 	# one we can find in the users's path.  We are looking for a
