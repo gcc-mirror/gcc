@@ -119,9 +119,13 @@ the easiest way:
       while( n-- > 0 && tolower(*s) != tolower(a) ) {
           ++s;
       }
-      return s;
+      return n >= 0 ? s : 0;
     }
   };
+
+[N.B. A bug in the original code has been fixed for the
+GCC documentation, the corrected code was taken from
+Herb Sutter's book, Exceptional C++]
 
 And finally, the key that brings it all together:
 
