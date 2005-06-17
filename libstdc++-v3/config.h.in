@@ -655,8 +655,14 @@
 /* Define to 1 if a full hosted library is built, or 0 if freestanding. */
 #undef _GLIBCXX_HOSTED
 
+/* Define if ptrdiff_t is int. */
+#undef _GLIBCXX_PTRDIFF_T_IS_INT
+
 /* Define if using setrlimit to set resource limits during "make check" */
 #undef _GLIBCXX_RES_LIMITS
+
+/* Define if size_t is unsigned int. */
+#undef _GLIBCXX_SIZE_T_IS_UINT
 
 /* Define if the compiler is configured for setjmp/longjmp exceptions. */
 #undef _GLIBCXX_SJLJ_EXCEPTIONS

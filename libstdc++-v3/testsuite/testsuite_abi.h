@@ -38,8 +38,9 @@
 // Encapsulates symbol characteristics.
 struct symbol
 {
-  enum category { none, function, object, error };
-  enum designation { unknown, added, subtracted, compatible, incompatible };
+  enum category { function, object, uncategorized };
+  enum designation { existing, added, subtracted, undesignated };
+  enum version { none, compatible, incompatible, unversioned };
   enum compatibility 
     { 
       compat_type = 1, 
@@ -50,17 +51,21 @@ struct symbol
 
   category 	type;
   std::string 	name;
+  std::string 	raw_name; // Name with versioning info still attached.
   std::string 	demangled_name;
   int 		size;
   std::string 	version_name;
+  version	version_status;
   designation	status;
 
-  symbol() : type(none), size(0), status(unknown) { }
+  symbol() 
+  : type(uncategorized), size(0), version_status(unversioned), 
+    status(undesignated) { }
 
   symbol(const symbol& other) 
   : type(other.type), name(other.name), demangled_name(other.demangled_name), 
-   size(other.size), version_name(other.version_name),
-   status(other.status) { }
+    size(other.size), version_name(other.version_name), 
+    version_status(other.version_status), status(other.status) { }
 
   void
   print() const;
@@ -78,10 +83,10 @@ typedef std::pair<symbol_names, symbol_objects>		symbols;
 
 // Check.
 bool
-check_version(const symbol& test, bool added = false);
+check_version(symbol& test, bool added = false);
 
 bool 
-check_compatible(const symbol& lhs, const symbol& rhs, bool verbose = false);
+check_compatible(symbol& lhs, symbol& rhs, bool verbose = false);
 
 
 // Examine.
