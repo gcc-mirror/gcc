@@ -1,3 +1,10 @@
+2005-06-17  Geoffrey Keating  <geoffk@apple.com>
+
+	PR c++/17413
+	* pt.c (type_unification_real): Apply template type deduction even
+	to procedure parameters that are not dependent on a template
+	parameter.
+
 2005-06-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* rtti.c (get_tinfo_decl): Avoid caching tinfo_descs when it might
