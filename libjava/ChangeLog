@@ -1,3 +1,20 @@
+2005-06-17  Keith Seitz  <keiths@redhat.com>
+
+	* gnu/classpath/jdwp/exception/VmDeadException.java: New file.
+	* gnu/classpath/jdwp/exception/NotImplementedException.java: New file.
+	* gnu/classpath/jdwp/exception/JdwpInternalErrorException.java: New
+	file.
+	* gnu/classpath/jdwp/exception/JdwpException.java: New file.
+	* gnu/classpath/jdwp/exception/InvalidThreadGroupException.java: New
+	file.
+	* gnu/classpath/jdwp/exception/InvalidThreadException.java: New file.
+	* gnu/classpath/jdwp/exception/InvalidStringException.java: New file
+	* gnu/classpath/jdwp/exception/InvalidObjectException.java: New file.
+	* gnu/classpath/jdwp/exception/InvalidEventTypeException.java: New
+	file.
+	* gnu/classpath/jdwp/exception/InvalidCountException.java: New file.
+	* gnu/classpath/jdwp/exception/InvalidClassException.java: New file.
+
 2005-06-16  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.am (libgcj_la_SOURCES): Define without conditional sources.
