@@ -122,7 +122,7 @@ convert_real (void *dest, const char *buffer, int length)
       internal_error ("Unsupported real kind during IO");
     }
 
-  if (errno != 0)
+  if (errno != 0 && errno != EINVAL)
     {
       generate_error (ERROR_READ_VALUE,
 		      "Range error during floating point read");
