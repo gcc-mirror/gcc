@@ -1,3 +1,16 @@
+2005-06-17  Paolo Carlini  <pcarlini@suse.de>
+
+        Port from libstdcxx_so_7-branch:
+	2005-01-12  Christopher Jefferson <chris@bubblescope.net>
+
+	* include/bits/stl_function.h (mem_fun_t, const_mem_fun_t,
+	mem_fun_ref_t, const_mem_fun_ref_t, mem_fun1_t, const_mem_fun1_t,
+	mem_fun1_ref_t, const_mem_fun1_ref_t): Remove overloads for void
+	return type, just an old HP/SGI workaround.
+	* testsuite/20_util/functional/binders.cc: Move to...
+	* testsuite/20_util/functional/binders/3113.cc: ...here.
+	* testsuite/20_util/functional/binders/1.cc: New.
+
 2005-06-17  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* docs/html/21_strings/gotw29a.txt: Update code to corrected version.
