@@ -1,3 +1,9 @@
+2005-06-17  Richard Henderson  <rth@redhat.com>
+
+        * tree-vect-transform.c (vect_do_peeling_for_loop_bound): Use
+        initialize_original_copy_tables and free_original_copy_tables.
+        (vect_do_peeling_for_alignment): Likewise.
+
 2005-06-17  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* bb-reorder.c (find_traces_1_round): Use succ block frequency
