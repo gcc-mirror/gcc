@@ -1,3 +1,9 @@
+2005-06-17  Paolo Bonzini  <bonzini@gnu.org>
+
+	* aclocal.m4 (gcc_AC_CHECK_TOOL): Do not overwrite the
+	passed variable.
+	* configure.ac: Regenerate.
+
 2005-06-17  Jan Hubicka  <jh@suse.cz>
 
 	* tree-optimize.c (execute_ipa_pass_list): New.

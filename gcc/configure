@@ -12895,7 +12895,8 @@ fi
 
 
 exec 6>/dev/null
-for ac_prog in as
+if test "x$gcc_cv_as" = x; then
+	for ac_prog in as
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -12939,6 +12940,7 @@ fi
   test -n "$gcc_cv_as" && break
 done
 
+fi
 if test "x$gcc_cv_as" = x; then
 	# If the loop above did not find a tool, then use whatever
 	# one we can find in the users's path.  We are looking for a
@@ -13065,7 +13067,8 @@ fi
 
 
 exec 6>/dev/null
-for ac_prog in ld
+if test "x$gcc_cv_ld" = x; then
+	for ac_prog in ld
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -13109,6 +13112,7 @@ fi
   test -n "$gcc_cv_ld" && break
 done
 
+fi
 if test "x$gcc_cv_ld" = x; then
 	# If the loop above did not find a tool, then use whatever
 	# one we can find in the users's path.  We are looking for a
@@ -13201,7 +13205,8 @@ fi
 
 
 exec 6>/dev/null
-for ac_prog in nm
+if test "x$gcc_cv_nm" = x; then
+	for ac_prog in nm
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -13245,6 +13250,7 @@ fi
   test -n "$gcc_cv_nm" && break
 done
 
+fi
 if test "x$gcc_cv_nm" = x; then
 	# If the loop above did not find a tool, then use whatever
 	# one we can find in the users's path.  We are looking for a
