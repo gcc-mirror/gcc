@@ -1765,7 +1765,6 @@ static void
 vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
 				struct loops *loops)
 {
-
   tree ni_name, ratio_mult_vf_name;
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   struct loop *new_loop;
@@ -1777,6 +1776,8 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
 
   if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
     fprintf (vect_dump, "=== vect_do_peeling_for_loop_bound ===");
+
+  initialize_original_copy_tables ();
 
   /* Generate the following variables on the preheader of original loop:
 	 
@@ -1816,7 +1817,7 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
   /* After peeling we have to reset scalar evolution analyzer.  */
   scev_reset ();
 
-  return;
+  free_original_copy_tables ();
 }
 
 
@@ -2000,6 +2001,8 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, struct loops *loops)
   if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
     fprintf (vect_dump, "=== vect_do_peeling_for_alignment ===");
 
+  initialize_original_copy_tables ();
+
   ni_name = vect_build_loop_niters (loop_vinfo);
   niters_of_prolog_loop = vect_gen_niters_for_prolog_loop (loop_vinfo, ni_name);
   
@@ -2023,7 +2026,7 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, struct loops *loops)
   /* After peeling we have to reset scalar evolution analyzer.  */
   scev_reset ();
 
-  return;
+  free_original_copy_tables ();
 }
 
 
