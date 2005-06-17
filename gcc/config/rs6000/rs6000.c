@@ -6241,8 +6241,8 @@ rs6000_expand_unop_builtin (enum insn_code icode, tree arglist, rtx target)
     {
       /* Only allow 5-bit *signed* literals.  */
       if (GET_CODE (op0) != CONST_INT
-	  || INTVAL (op0) > 0x1f
-	  || INTVAL (op0) < -0x1f)
+	  || INTVAL (op0) > 15
+	  || INTVAL (op0) < -16)
 	{
 	  error ("argument 1 must be a 5-bit signed literal");
 	  return const0_rtx;
