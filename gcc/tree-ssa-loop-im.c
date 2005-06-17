@@ -202,6 +202,7 @@ for_each_index (tree *addr_p, bool (*cbck) (tree, tree *, void *), void *data)
 	case STRING_CST:
 	case RESULT_DECL:
 	case VECTOR_CST:
+	case COMPLEX_CST:
 	  return true;
 
 	case TARGET_MEM_REF:
