@@ -1,6 +1,6 @@
 // Character Traits for use by standard string and iostream -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -242,7 +242,10 @@ namespace std
 
       static bool
       eq(const char_type& __c1, const char_type& __c2)
-      { return __c1 == __c2; }
+#ifdef _GLIBCXX_SYMVER_COMPATIBILITY
+      asm ("_W_ZNSt11char_traitsIcE2eqERKcS2_");
+#endif
+      ;
 
       static bool
       lt(const char_type& __c1, const char_type& __c2)
@@ -294,6 +297,9 @@ namespace std
       { return (__c == eof()) ? 0 : __c; }
   };
 
+  inline bool
+  char_traits<char>::eq(const char_type& __c1, const char_type& __c2)
+  { return __c1 == __c2; } 
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   /// @brief  21.1.3.2  char_traits specializations
@@ -311,8 +317,11 @@ namespace std
       { __c1 = __c2; }
 
       static bool
-      eq(const char_type& __c1, const char_type& __c2)
-      { return __c1 == __c2; }
+      eq(const char_type& __c1, const char_type& __c2) 
+#ifdef _GLIBCXX_SYMVER_COMPATIBILITY
+      asm ("_W_ZNSt11char_traitsIwE2eqERKwS2_")
+#endif
+      ;
 
       static bool
       lt(const char_type& __c1, const char_type& __c2)
@@ -359,6 +368,10 @@ namespace std
       not_eof(const int_type& __c)
       { return eq_int_type(__c, eof()) ? 0 : __c; }
   };
+
+  inline bool
+  char_traits<wchar_t>::eq(const char_type& __c1, const char_type& __c2)
+  { return __c1 == __c2; } 
 #endif //_GLIBCXX_USE_WCHAR_T
 
 } // namespace std
