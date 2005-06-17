@@ -1177,7 +1177,8 @@ update_equiv_regs (void)
 			 info.  */
 		      SET_REGNO_REG_SET (&cleared_regs, regno);
 		      clear_regnos++;
-		      reg_equiv_init[regno] = NULL_RTX;
+		      reg_equiv_init[regno]
+			= gen_rtx_INSN_LIST (VOIDmode, new_insn, NULL_RTX);
 		    }
 		}
 	    }
