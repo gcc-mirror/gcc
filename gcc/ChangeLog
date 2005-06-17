@@ -1,3 +1,8 @@
+2005-06-17  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* bb-reorder.c (find_traces_1_round): Use succ block frequency
+	instead of edge frequency for calls to better_edge_p.
+
 2005-06-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/22105
