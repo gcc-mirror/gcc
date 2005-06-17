@@ -1,3 +1,7 @@
+2005-06-17  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* docs/html/21_strings/gotw29a.txt: Update code to corrected version.
+
 2005-06-17  Jakub Jelinek  <jakub@redhat.com>
             Benjamin Kosnik  <bkoz@redhat.com>
 
