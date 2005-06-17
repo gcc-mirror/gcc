@@ -577,6 +577,12 @@ update_phi_components (basic_block bb)
 	    tree arg = PHI_ARG_DEF (phi, i);
 	    tree r, i;
 
+	    /* Avoid no-op assignments.  This also prevents insertting stmts
+	       onto abnormal edges, assuming the PHI isn't already broken.  */
+	    if (TREE_CODE (arg) == SSA_NAME
+		&& SSA_NAME_VAR (arg) == SSA_NAME_VAR (lhs))
+	      continue;
+
 	    r = extract_component (NULL, arg, 0, false);
 	    i = extract_component (NULL, arg, 1, false);
 	    update_complex_components_on_edge (e, NULL, lhs, r, i);
