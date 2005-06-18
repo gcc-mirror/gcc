@@ -1298,10 +1298,10 @@ stream_at_bof (stream * s)
 {
   unix_stream *us;
 
-  us = (unix_stream *) s;
+  if (!is_seekable (s))
+    return 0;
 
-  if (!us->mmaped)
-    return 0;			/* File is not seekable */
+  us = (unix_stream *) s;
 
   return us->logical_offset == 0;
 }
@@ -1315,10 +1315,10 @@ stream_at_eof (stream * s)
 {
   unix_stream *us;
 
-  us = (unix_stream *) s;
+  if (!is_seekable (s))
+    return 0;
 
-  if (!us->mmaped)
-    return 0;			/* File is not seekable */
+  us = (unix_stream *) s;
 
   return us->logical_offset == us->dirty_offset;
 }
