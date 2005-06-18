@@ -1526,7 +1526,22 @@ generate_copy_inout (struct sra_elt *elt, bool copy_out, tree expr,
   struct sra_elt *c;
   tree t;
 
-  if (elt->replacement)
+  if (!copy_out && TREE_CODE (expr) == SSA_NAME
+      && TREE_CODE (TREE_TYPE (expr)) == COMPLEX_TYPE)
+    {
+      tree r, i;
+
+      c = lookup_element (elt, integer_zero_node, NULL, NO_INSERT);
+      r = c->replacement;
+      c = lookup_element (elt, integer_one_node, NULL, NO_INSERT);
+      i = c->replacement;
+
+      t = build (COMPLEX_EXPR, elt->type, r, i);
+      t = build (MODIFY_EXPR, void_type_node, expr, t);
+      SSA_NAME_DEF_STMT (expr) = t;
+      append_to_statement_list (t, list_p);
+    }
+  else if (elt->replacement)
     {
       if (copy_out)
 	t = build (MODIFY_EXPR, void_type_node, elt->replacement, expr);
