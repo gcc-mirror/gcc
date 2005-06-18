@@ -7,7 +7,6 @@
 #define DIFF 242
 
 /* Test vectorization of reduction of unsigned-int.  */
-/* Not supported yet.  */
 
 int main1 (unsigned int x, unsigned int max_result)
 {
@@ -52,5 +51,4 @@ int main (void)
   return main1 (0, 15);
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "not vectorized: unsupported use in stmt." 3 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" { xfail {! vect_reduction} } } } */

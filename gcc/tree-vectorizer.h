@@ -39,7 +39,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Used for naming of new temporaries.  */
 enum vect_var_kind {
   vect_simple_var,
-  vect_pointer_var
+  vect_pointer_var,
+  vect_scalar_var
 };
 
 /* Defines type of operation: unary or binary.  */
@@ -155,7 +156,8 @@ enum stmt_vec_info_type {
   store_vec_info_type,
   op_vec_info_type,
   assignment_vec_info_type,
-  condition_vec_info_type
+  condition_vec_info_type,
+  reduc_vec_info_type
 };
 
 typedef struct data_reference *dr_p;
@@ -345,6 +347,8 @@ extern tree vect_is_simple_reduction (struct loop *, tree);
 extern bool vect_can_force_dr_alignment_p (tree, unsigned int);
 extern enum dr_alignment_support vect_supportable_dr_alignment
   (struct data_reference *);
+extern bool reduction_code_for_scalar_code (enum tree_code, enum tree_code *);
+
 /* Creation and deletion of loop and stmt info structs.  */
 extern loop_vec_info new_loop_vec_info (struct loop *loop);
 extern void destroy_loop_vec_info (loop_vec_info);
@@ -363,6 +367,7 @@ extern bool vectorizable_operation (tree, block_stmt_iterator *, tree *);
 extern bool vectorizable_assignment (tree, block_stmt_iterator *, tree *);
 extern bool vectorizable_condition (tree, block_stmt_iterator *, tree *);
 extern bool vectorizable_live_operation (tree, block_stmt_iterator *, tree *);
+extern bool vectorizable_reduction (tree, block_stmt_iterator *, tree *);
 /* Driver for transformation stage.  */
 extern void vect_transform_loop (loop_vec_info, struct loops *);
 

@@ -1,3 +1,11 @@
+2005-06-19  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_reduction): New.
+	* gcc.dg/vect/vect-reduc-1.c: Now vectorizable for vect_reduction
+	targets.
+	* gcc.dg/vect/vect-reduc-2.c: Likewise.
+	* gcc.dg/vect/vect-reduc-3.c: Likewise.
+
 2005-06-18  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.target/ia64/float80-varargs-1.c: New test.

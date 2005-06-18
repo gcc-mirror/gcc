@@ -8,7 +8,6 @@
 
 /* Test vectorization of reduction of unsigned-int in the presence
    of unknown-loop-bound.  */
-/* Not supported yet.  */
 
 int main1 (int n)
 {
@@ -37,5 +36,4 @@ int main (void)
   return main1 (N-1);
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "not vectorized: unsupported use in stmt." 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail {! vect_reduction} } } } */

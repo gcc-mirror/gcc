@@ -1,3 +1,53 @@
+2005-06-19  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* tree.def (REDUC_MAX_EXPR, REDUC_MIN_EXPR, REDUC_PLUS_EXPR): New
+	tree-codes.
+	* optabs.h (OTI_reduc_smax, OTI_reduc_umax, OTI_reduc_smin,
+	OTI_reduc_umin, OTI_reduc_plus): New optabs for reduction. 
+	(reduc_smax_optab, reduc_umax_optab, reduc_smin_optab, reduc_umin_optab,
+	reduc_plus_optab): New optabs for reduction.
+	* expr.c (expand_expr_real_1): Handle new tree-codes.
+	* tree-inline.c (estimate_num_insns_1): Handle new tree-codes.
+	* tree-pretty-print.c (dump_generic_node, op_prio, op_symbol): Handle
+	new tree-codes.
+	* optabs.c (optab_for_tree_code): Handle new tree-codes.
+	(init_optabs): Initialize new optabs.
+	* genopinit.c (optabs): Define handlers for new optabs. 
+
+	* tree-vect-analyze.c (vect_analyze_operations): Fail vectorization in
+	case of a phi that is marked as relevant. Call vectorizable_reduction.
+	(vect_mark_relevant): Phis may be marked as relevant.
+	(vect_mark_stmts_to_be_vectorized): The use corresponding to the 
+	reduction variable in a reduction stmt does not mark its defining phi
+	as relevant. Update documentation accordingly.
+	(vect_can_advance_ivs_p): Skip reduction phis.
+	* tree-vect-transform.c (vect_get_vec_def_for_operand): Takes
+	additional argument. Handle reduction.
+	(vect_create_destination_var): Update call to vect_get_new_vect_var.
+	Handle non-vector argument.
+	(get_initial_def_for_reduction): New function.
+	(vect_create_epilog_for_reduction): New function. 
+	(vectorizable_reduction): New function.
+	(vect_get_new_vect_var): Handle new vect_var_kind.       
+	(vectorizable_assignment, vectorizable_operation, vectorizable_store,
+	vectorizable_condition): Update call to vect_get_new_vect_var.
+	(vect_transform_stmt): Call vectorizable_reduction.
+	(vect_update_ivs_after_vectorizer): Skip reduction phis.
+	(vect_transform_loop): Skip if stmt is both not relevant and not live.
+	* tree-vectorizer.c (reduction_code_for_scalar_code): New function.
+	(vect_is_simple_reduction): Was empty - added implementation.
+	* tree-vectorizer.h (vect_scalar_var): New enum vect_var_kind value.
+	(reduc_vec_info_type): New enum vect_def_type value.
+	* config/rs6000/altivec.md (reduc_smax_v4si, reduc_smax_v4sf,
+	reduc_umax_v4si, reduc_smin_v4si, reduc_umin_v4sf, reduc_smin_v4sf,
+	reduc_plus_v4si, reduc_plus_v4sf): New define_expands.
+
+	* tree-vect-analyze.c (vect_determine_vectorization_factor): Remove
+	ENABLE_CHECKING around gcc_assert.
+	* tree-vect-transform.c (vect_do_peeling_for_loop_bound,
+	(vect_do_peeling_for_alignment, vect_transform_loop, 
+	vect_get_vec_def_for_operand): Likewise.
+
 2005-06-18  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* config/ia64/ia64.c (ia64_function_arg): Set up a PARALLEL for a
