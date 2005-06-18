@@ -1,3 +1,11 @@
+2005-06-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* call.c (convert_like_real): Add format attribute.
+	* typeck.c (check_for_casting_away_constness,
+	build_static_cast_1): Likewise.
+	* typeck2.c (readonly_error, cxx_incomplete_type_diagnostic):
+	Likewise.
+
 2005-06-17  Geoffrey Keating  <geoffk@apple.com>
 
 	PR c++/17413

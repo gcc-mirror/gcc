@@ -1,5 +1,8 @@
 2005-06-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* c-decl.c (locate_old_decl): Add format attribute.
+	(implicit_decl_warning): Likewise.
+
 	* diagnostic.h (verbatim): Move ...
 	* toplev.h (verbatim): ... here.  Add ATTRIBUTE_GCC_DIAG.
 	* pretty-print.h (pp_verbatim): Add ATTRIBUTE_GCC_PPDIAG.
