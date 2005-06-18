@@ -1,3 +1,9 @@
+2005-06-18  Janne Blomqvist  <jblomqvi@cc.hut.fi>
+
+	* unix.c (stream_at_bof): Don't assume that all non-mmapped files
+	are non-seekable.
+	(stream_at_eof): Likewise.
+
 2005-06-18  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/19155
