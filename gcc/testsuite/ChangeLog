@@ -1,3 +1,8 @@
+2005-06-18  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.dg/pr17229.f: Take care of the new obsolescence
+	warning for arithmetic IF statements.
+
 2005-06-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/21850

@@ -922,6 +922,10 @@ match_arithmetic_if (void)
       return MATCH_ERROR;
     }
 
+  if (gfc_notify_std (GFC_STD_F95_DEL,
+		      "Obsolete: arithmetic IF statement at %C") == FAILURE)
+    return MATCH_ERROR;
+
   new_st.op = EXEC_ARITHMETIC_IF;
   new_st.expr = expr;
   new_st.label = l1;
@@ -993,6 +997,11 @@ gfc_match_if (gfc_statement * if_type)
 	  gfc_free_expr (expr);
 	  return MATCH_ERROR;
 	}
+      
+      if (gfc_notify_std (GFC_STD_F95_DEL,
+  		          "Obsolete: arithmetic IF statement at %C")
+	  == FAILURE)
+        return MATCH_ERROR;
 
       new_st.op = EXEC_ARITHMETIC_IF;
       new_st.expr = expr;
