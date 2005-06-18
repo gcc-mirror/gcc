@@ -4467,7 +4467,7 @@ build_compound_expr (tree lhs, tree rhs)
 
 static void
 check_for_casting_away_constness (tree src_type, tree dest_type,
-				  void (*diag_fn)(const char *, ...),
+				  void (*diag_fn)(const char *, ...) ATTRIBUTE_GCC_CXXDIAG(1,2),
 				  const char *description)
 {
   if (diag_fn && casts_away_constness (src_type, dest_type))
@@ -4521,7 +4521,7 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
   tree intype;
   tree result;
   tree orig;
-  void (*diag_fn)(const char*, ...);
+  void (*diag_fn)(const char*, ...) ATTRIBUTE_GCC_CXXDIAG(1,2);
   const char *desc;
 
   /* Assume the cast is valid.  */

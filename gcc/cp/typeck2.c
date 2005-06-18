@@ -74,7 +74,7 @@ void
 readonly_error (tree arg, const char* string, int soft)
 {
   const char *fmt;
-  void (*fn) (const char *, ...);
+  void (*fn) (const char *, ...) ATTRIBUTE_GCC_CXXDIAG(1,2);
 
   if (soft)
     fn = pedwarn;
@@ -347,8 +347,8 @@ void
 cxx_incomplete_type_diagnostic (tree value, tree type, int diag_type)
 {
   int decl = 0;
-  void (*p_msg) (const char *, ...);
-  void (*p_msg_at) (const char *, ...);
+  void (*p_msg) (const char *, ...) ATTRIBUTE_GCC_CXXDIAG(1,2);
+  void (*p_msg_at) (const char *, ...) ATTRIBUTE_GCC_CXXDIAG(1,2);
 
   if (diag_type == 1)
     {

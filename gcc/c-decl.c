@@ -1126,7 +1126,7 @@ validate_proto_after_old_defn (tree newdecl, tree newtype, tree oldtype)
    first in a pair of mismatched declarations, using the diagnostic
    function DIAG.  */
 static void
-locate_old_decl (tree decl, void (*diag)(const char *, ...))
+locate_old_decl (tree decl, void (*diag)(const char *, ...) ATTRIBUTE_GCC_CDIAG(1,2))
 {
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl))
     ;
@@ -2283,7 +2283,7 @@ pushdecl_top_level (tree x)
 static void
 implicit_decl_warning (tree id, tree olddecl)
 {
-  void (*diag) (const char *, ...);
+  void (*diag) (const char *, ...) ATTRIBUTE_GCC_CDIAG(1,2);
   switch (mesg_implicit_function_declaration)
     {
     case 0: return;

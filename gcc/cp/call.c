@@ -4122,7 +4122,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 		   bool c_cast_p)
 {
   tree totype = convs->type;
-  void (*diagnostic_fn)(const char *, ...);
+  void (*diagnostic_fn)(const char *, ...) ATTRIBUTE_GCC_CXXDIAG(1,2);
 
   if (convs->bad_p
       && convs->kind != ck_user
