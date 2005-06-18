@@ -1,3 +1,7 @@
+2005-06-18  Steven Bosscher  <stevenb@suse.de>
+
+	* Makefile.in: Fix tree-cfgcleanup.c dependencies.
+
 2005-06-18  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (store_constructor): Use store of 0 to indicate value
