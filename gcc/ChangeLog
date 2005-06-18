@@ -1,3 +1,8 @@
+2005-06-18  James A. Morrison  <phython@gcc.gnu.org>
+
+	* fold_const (fold_binary): Fold X % (2**N) to X & (2**N - 1) for
+	nonnegative values of X.
+
 2005-06-18  Uros Bizjak  <uros@kss-loka.si>
 
 	* doc/md.texi (Standard Names): Change insn pattern name
