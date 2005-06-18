@@ -1,3 +1,8 @@
+2005-06-18  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR tree-opt/22035
+	* gfortran.dg/f2c_6.f90: New test.
+
 2005-06-17  Geoffrey Keating  <geoffk@apple.com>
 
 	PR c++/17413
