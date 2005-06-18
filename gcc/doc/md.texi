@@ -3100,8 +3100,8 @@ corresponds to the C data type @code{double} and the @code{floorf}
 built-in function uses the mode which corresponds to the C data
 type @code{float}.
 
-@cindex @code{trunc@var{m}2} instruction pattern
-@item @samp{trunc@var{m}2}
+@cindex @code{btrunc@var{m}2} instruction pattern
+@item @samp{btrunc@var{m}2}
 Store the argument rounded to integer towards zero.
 
 The @code{trunc} built-in function of C always uses the mode which
@@ -3133,6 +3133,17 @@ Store the argument rounded according to the default rounding mode
 
 The @code{nearbyint} built-in function of C always uses the mode which
 corresponds to the C data type @code{double} and the @code{nearbyintf}
+built-in function uses the mode which corresponds to the C data
+type @code{float}.
+
+@cindex @code{rint@var{m}2} instruction pattern
+@item @samp{rint@var{m}2}
+Store the argument rounded according to the default rounding mode and
+raise the inexact exception when the result differs in value from
+the argument
+
+The @code{rint} built-in function of C always uses the mode which
+corresponds to the C data type @code{double} and the @code{rintf}
 built-in function uses the mode which corresponds to the C data
 type @code{float}.
 
