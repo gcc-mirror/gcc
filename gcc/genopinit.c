@@ -198,7 +198,12 @@ static const char * const optabs[] =
   "vec_init_optab->handlers[$A].insn_code = CODE_FOR_$(vec_init$a$)",
   "vec_realign_load_optab->handlers[$A].insn_code = CODE_FOR_$(vec_realign_load_$a$)",
   "vcond_gen_code[$A] = CODE_FOR_$(vcond$a$)",
-  "vcondu_gen_code[$A] = CODE_FOR_$(vcondu$a$)"
+  "vcondu_gen_code[$A] = CODE_FOR_$(vcondu$a$)",
+  "reduc_smax_optab->handlers[$A].insn_code = CODE_FOR_$(reduc_smax_$a$)",
+  "reduc_umax_optab->handlers[$A].insn_code = CODE_FOR_$(reduc_umax_$a$)",
+  "reduc_smin_optab->handlers[$A].insn_code = CODE_FOR_$(reduc_smin_$a$)",
+  "reduc_umin_optab->handlers[$A].insn_code = CODE_FOR_$(reduc_umin_$a$)",
+  "reduc_plus_optab->handlers[$A].insn_code = CODE_FOR_$(reduc_plus_$a$)" 
 };
 
 static void gen_insn (rtx);

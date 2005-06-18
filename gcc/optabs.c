@@ -294,6 +294,15 @@ optab_for_tree_code (enum tree_code code, tree type)
     case REALIGN_LOAD_EXPR:
       return vec_realign_load_optab;
 
+    case REDUC_MAX_EXPR:
+      return TYPE_UNSIGNED (type) ? reduc_umax_optab : reduc_smax_optab;
+
+    case REDUC_MIN_EXPR:
+      return TYPE_UNSIGNED (type) ? reduc_umin_optab : reduc_smin_optab;
+
+    case REDUC_PLUS_EXPR:
+      return reduc_plus_optab;
+
     default:
       break;
     }
@@ -5060,6 +5069,12 @@ init_optabs (void)
   cmov_optab = init_optab (UNKNOWN);
   cstore_optab = init_optab (UNKNOWN);
   push_optab = init_optab (UNKNOWN);
+
+  reduc_smax_optab = init_optab (UNKNOWN);
+  reduc_umax_optab = init_optab (UNKNOWN);
+  reduc_smin_optab = init_optab (UNKNOWN);
+  reduc_umin_optab = init_optab (UNKNOWN);
+  reduc_plus_optab = init_optab (UNKNOWN);
 
   vec_extract_optab = init_optab (UNKNOWN);
   vec_set_optab = init_optab (UNKNOWN);

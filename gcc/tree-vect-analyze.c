@@ -413,10 +413,8 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
           else
             vectorization_factor = nunits;
 
-#ifdef ENABLE_CHECKING
           gcc_assert (GET_MODE_SIZE (TYPE_MODE (scalar_type))
                         * vectorization_factor == UNITS_PER_SIMD_WORD);
-#endif
         }
     }
 
@@ -483,8 +481,16 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 	    return false;
 	  }
 
-          gcc_assert (!STMT_VINFO_RELEVANT_P (stmt_info));
-        }
+	  if (STMT_VINFO_RELEVANT_P (stmt_info))
+	    {
+	      /* Most likely a reduction-like computation that is used
+	         in the loop.  */
+	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
+	                                LOOP_LOC (loop_vinfo)))
+	        fprintf (vect_dump, "not vectorized: unsupported pattern.");
+ 	     return false;
+	    }
+	}
 
       for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
 	{
@@ -541,7 +547,12 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
 
 	  if (STMT_VINFO_LIVE_P (stmt_info))
 	    {
-	      ok = vectorizable_live_operation (stmt, NULL, NULL);
+	      ok = vectorizable_reduction (stmt, NULL, NULL);
+
+	      if (ok)
+                need_to_vectorize = true;
+              else
+	        ok = vectorizable_live_operation (stmt, NULL, NULL);
 
 	      if (!ok)
 		{
@@ -2148,12 +2159,12 @@ vect_mark_relevant (VEC(tree,heap) **worklist, tree stmt,
     fprintf (vect_dump, "mark relevant %d, live %d.",relevant_p, live_p);
 
   STMT_VINFO_LIVE_P (stmt_info) |= live_p;
+  STMT_VINFO_RELEVANT_P (stmt_info) |= relevant_p;
 
   if (TREE_CODE (stmt) == PHI_NODE)
-    /* Don't mark as relevant because it's not going to vectorized.  */
+    /* Don't put phi-nodes in the worklist. Phis that are marked relevant
+       or live will fail vectorization later on.  */
     return;
-
-  STMT_VINFO_RELEVANT_P (stmt_info) |= relevant_p;
 
   if (STMT_VINFO_RELEVANT_P (stmt_info) == save_relevant_p
       && STMT_VINFO_LIVE_P (stmt_info) == save_live_p)
@@ -2337,19 +2348,33 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 
          Exceptions:
 
-         - if USE is used only for address computations (e.g. array indexing),
+	 (case 1)
+           If USE is used only for address computations (e.g. array indexing),
            which does not need to be directly vectorized, then the
            liveness/relevance of the respective DEF_STMT is left unchanged.
 
-         - if STMT has been identified as defining a reduction variable, then:
-             STMT_VINFO_LIVE_P (DEF_STMT_info) <-- false
-             STMT_VINFO_RELEVANT_P (DEF_STMT_info) <-- true
-           because even though STMT is classified as live (since it defines a
-           value that is used across loop iterations) and irrelevant (since it
-           is not used inside the loop), it will be vectorized, and therefore
-           the corresponding DEF_STMTs need to marked as relevant.
+	 (case 2)
+           If STMT has been identified as defining a reduction variable, then
+	   we have two cases:
+	   (case 2.1)
+	     The last use of STMT is the reduction-variable, which is defined
+	     by a loop-header-phi. We don't want to mark the phi as live or
+	     relevant (because it does not need to be vectorized, it is handled
+             as part of the vectorization of the reduction), so in this case we
+	     skip the call to vect_mark_relevant.
+	   (case 2.2)
+	     The rest of the uses of STMT are defined in the loop body. For
+             the def_stmt of these uses we want to set liveness/relevance
+             as follows:
+               STMT_VINFO_LIVE_P (DEF_STMT_info) <-- false
+               STMT_VINFO_RELEVANT_P (DEF_STMT_info) <-- true
+             because even though STMT is classified as live (since it defines a
+             value that is used across loop iterations) and irrelevant (since it
+             is not used inside the loop), it will be vectorized, and therefore
+             the corresponding DEF_STMTs need to marked as relevant.
        */
 
+      /* case 2.2:  */
       if (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def)
         {
           gcc_assert (!relevant_p && live_p);
@@ -2359,42 +2384,42 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 
       FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
 	{
-	  /* We are only interested in uses that need to be vectorized. Uses 
-	     that are used for address computation are not considered relevant.
+	  /* case 1: we are only interested in uses that need to be vectorized. 
+	     Uses that are used for address computation are not considered 
+	     relevant.
 	   */
-	  if (exist_non_indexing_operands_for_use_p (use, stmt))
-	    {
-	      if (!vect_is_simple_use (use, loop_vinfo, &def_stmt, &def, &dt))
-                {
-                  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
-					    LOOP_LOC (loop_vinfo)))
-                    fprintf (vect_dump, 
-			     "not vectorized: unsupported use in stmt.");
-		  VEC_free (tree, heap, worklist);
-                  return false;
-                }
+	  if (!exist_non_indexing_operands_for_use_p (use, stmt))
+	    continue;
 
-	      if (!def_stmt || IS_EMPTY_STMT (def_stmt))
-		continue;
+	  if (!vect_is_simple_use (use, loop_vinfo, &def_stmt, &def, &dt))
+            {
+              if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
+			    		LOOP_LOC (loop_vinfo)))
+                fprintf (vect_dump, "not vectorized: unsupported use in stmt.");
+	      VEC_free (tree, heap, worklist);
+              return false;
+            }
 
-              if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
-                {
-                  fprintf (vect_dump, "worklist: examine use %d: ", i);
-                  print_generic_expr (vect_dump, use, TDF_SLIM);
-                }
+	  if (!def_stmt || IS_EMPTY_STMT (def_stmt))
+	    continue;
 
-	      bb = bb_for_stmt (def_stmt);
-              if (!flow_bb_inside_loop_p (loop, bb))
-                continue;
+          if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+            {
+              fprintf (vect_dump, "worklist: examine use %d: ", i);
+              print_generic_expr (vect_dump, use, TDF_SLIM);
+            }
 
-              if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
-                {
-                  fprintf (vect_dump, "def_stmt: ");
-                  print_generic_expr (vect_dump, def_stmt, TDF_SLIM);
-                }
+	  bb = bb_for_stmt (def_stmt);
+          if (!flow_bb_inside_loop_p (loop, bb))
+            continue;
 
-              vect_mark_relevant (&worklist, def_stmt, relevant_p, live_p);
-	    }
+	  /* case 2.1: the reduction-use does not mark the defining-phi
+	     as relevant.  */
+	  if (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_reduction_def
+	      && TREE_CODE (def_stmt) == PHI_NODE)
+	    continue;
+
+	  vect_mark_relevant (&worklist, def_stmt, relevant_p, live_p);
 	}
     }				/* while worklist */
 
@@ -2444,6 +2469,15 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
 	    fprintf (vect_dump, "virtual phi. skip.");
 	  continue;
 	}
+
+      /* Skip reduction phis.  */
+
+      if (STMT_VINFO_DEF_TYPE (vinfo_for_stmt (phi)) == vect_reduction_def)
+        {
+          if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+            fprintf (vect_dump, "reduc phi. skip.");
+          continue;
+        }
 
       /* Analyze the evolution function.  */
 

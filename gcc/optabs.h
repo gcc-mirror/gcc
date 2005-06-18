@@ -231,6 +231,13 @@ enum optab_index
   /* Conditional add instruction.  */
   OTI_addcc,
 
+  /* Reduction operations on a vector operand.  */
+  OTI_reduc_smax,
+  OTI_reduc_umax,
+  OTI_reduc_smin,
+  OTI_reduc_umin,
+  OTI_reduc_plus,
+
   /* Set specified field of vector operand.  */
   OTI_vec_set,
   /* Extract specified field of vector operand.  */
@@ -346,6 +353,12 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define cstore_optab (optab_table[OTI_cstore])
 #define push_optab (optab_table[OTI_push])
 #define addcc_optab (optab_table[OTI_addcc])
+
+#define reduc_smax_optab (optab_table[OTI_reduc_smax])
+#define reduc_umax_optab (optab_table[OTI_reduc_umax])
+#define reduc_smin_optab (optab_table[OTI_reduc_smin])
+#define reduc_umin_optab (optab_table[OTI_reduc_umin])
+#define reduc_plus_optab (optab_table[OTI_reduc_plus])
 
 #define vec_set_optab (optab_table[OTI_vec_set])
 #define vec_extract_optab (optab_table[OTI_vec_extract])

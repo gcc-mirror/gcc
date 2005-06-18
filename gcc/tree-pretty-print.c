@@ -1535,6 +1535,24 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_string (buffer, " > ");
       break;
 
+    case REDUC_MAX_EXPR:
+      pp_string (buffer, " REDUC_MAX_EXPR < ");
+      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_string (buffer, " > ");
+      break;
+
+    case REDUC_MIN_EXPR:
+      pp_string (buffer, " REDUC_MIN_EXPR < ");
+      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_string (buffer, " > ");
+      break;
+
+    case REDUC_PLUS_EXPR:
+      pp_string (buffer, " REDUC_PLUS_EXPR < ");
+      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_string (buffer, " > ");
+      break;
+
     default:
       NIY;
     }
@@ -1817,6 +1835,9 @@ op_prio (tree op)
     case ABS_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
+    case REDUC_MAX_EXPR:
+    case REDUC_MIN_EXPR:
+    case REDUC_PLUS_EXPR:
       return 16;
 
     case SAVE_EXPR:
@@ -1906,6 +1927,9 @@ op_symbol (tree op)
 
     case PLUS_EXPR:
       return "+";
+
+    case REDUC_PLUS_EXPR:
+      return "r+";
 
     case NEGATE_EXPR:
     case MINUS_EXPR:
