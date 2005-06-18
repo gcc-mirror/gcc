@@ -8337,11 +8337,11 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  && TREE_INT_CST_HIGH (arg1) == -1)
 	return omit_one_operand (type, integer_zero_node, arg0);
 
-      /* Optimize unsigned TRUNC_MOD_EXPR by a power of two into a
-	 BIT_AND_EXPR, i.e. "X % C" into "X & C2".  */
-      if (code == TRUNC_MOD_EXPR
-	  && TYPE_UNSIGNED (type)
-	  && integer_pow2p (arg1))
+      /* Optimize TRUNC_MOD_EXPR by a power of two into a BIT_AND_EXPR,
+         i.e. "X % C" into "X & C2", if X and C are positive.  */
+      if ((code == TRUNC_MOD_EXPR || code == FLOOR_MOD_EXPR)
+	  && (TYPE_UNSIGNED (type) || tree_expr_nonnegative_p (arg0))
+	  && integer_pow2p (arg1) && tree_int_cst_sgn (arg1) >= 0)
 	{
 	  unsigned HOST_WIDE_INT high, low;
 	  tree mask;
