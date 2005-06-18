@@ -1,3 +1,7 @@
+2005-06-18  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.target/ia64/float80-varargs-1.c: New test.
+
 2005-06-18  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR tree-opt/22035

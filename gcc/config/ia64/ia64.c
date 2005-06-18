@@ -3822,6 +3822,19 @@ ia64_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
                    gen_rtx_EXPR_LIST (VOIDmode,
 		     gen_rtx_REG (DImode, basereg + cum->words + offset),
 				      const0_rtx)));
+      /* Similarly, an anonymous XFmode value must be split into two
+	 registers and padded appropriately.  */
+      else if (BYTES_BIG_ENDIAN && mode == XFmode)
+	{
+	  rtx loc[2];
+	  loc[0] = gen_rtx_EXPR_LIST (VOIDmode,
+		     gen_rtx_REG (DImode, basereg + cum->words + offset),
+				      const0_rtx);
+	  loc[1] = gen_rtx_EXPR_LIST (VOIDmode,
+		     gen_rtx_REG (DImode, basereg + cum->words + offset + 1),
+				      GEN_INT (UNITS_PER_WORD));
+	  return gen_rtx_PARALLEL (mode, gen_rtvec_v (2, loc));
+	}
       else
 	return gen_rtx_REG (mode, basereg + cum->words + offset);
     }
