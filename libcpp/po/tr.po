@@ -1,19 +1,21 @@
+# translation of cpplib-4.0.1-b20050607.po to
 # Turkish translations for gcc messages.
 # Copyright (C) 2005 Free Software Foundation, Inc.
 # Nilgün Belma Bugüner <nilgun@superonline.com>, 2001, ..., 2005.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.0-b20050226\n"
+"Project-Id-Version: cpplib-4.0.1-b20050607\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2005-06-06 21:32+0200\n"
-"PO-Revision-Date: 2005-03-03 12:28+0300\n"
+"PO-Revision-Date: 2005-06-18 19:08+0300\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@superonline.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.0\n"
+"X-Generator: KBabel 1.9.1\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: charset.c:655
 #, c-format
@@ -765,14 +767,12 @@ msgid "missing ')' in macro parameter list"
 msgstr "makro parametre listesinde ')' eksik"
 
 #: macro.c:1439
-#, fuzzy
 msgid "ISO C99 requires whitespace after the macro name"
-msgstr "ISO C makro isminden sonra boşluk gerektirir"
+msgstr "ISO C99 makro isminden sonra boşluk gerektirir"
 
 #: macro.c:1463
-#, fuzzy
 msgid "missing whitespace after the macro name"
-msgstr "ISO C makro isminden sonra boşluk gerektirir"
+msgstr "makro isminden sonra boşluk gerekir"
 
 #: macro.c:1493
 msgid "'#' is not followed by a macro parameter"
