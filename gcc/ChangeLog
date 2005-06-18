@@ -1,3 +1,9 @@
+2005-06-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* diagnostic.h (verbatim): Move ...
+	* toplev.h (verbatim): ... here.  Add ATTRIBUTE_GCC_DIAG.
+	* pretty-print.h (pp_verbatim): Add ATTRIBUTE_GCC_PPDIAG.
+
 2005-06-18  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/22083

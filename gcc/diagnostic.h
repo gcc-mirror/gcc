@@ -186,7 +186,6 @@ extern void diagnostic_set_info (diagnostic_info *, const char *, va_list *,
 extern char *diagnostic_build_prefix (diagnostic_info *);
 
 /* Pure text formatting support functions.  */
-extern void verbatim (const char *, ...);
 extern char *file_name_as_prefix (const char *);
 
 /* In tree-pretty-print.c  */
