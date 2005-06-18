@@ -261,7 +261,8 @@ extern void pp_base_append_text (pretty_printer *, const char *, const char *);
 extern void pp_printf (pretty_printer *, const char *, ...)
      ATTRIBUTE_GCC_PPDIAG(2,3);
 
-extern void pp_verbatim (pretty_printer *, const char *, ...);
+extern void pp_verbatim (pretty_printer *, const char *, ...)
+     ATTRIBUTE_GCC_PPDIAG(2,3);
 extern void pp_base_flush (pretty_printer *);
 extern void pp_base_prepare_to_format (pretty_printer *, text_info *,
 				       location_t *);

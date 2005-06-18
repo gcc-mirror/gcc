@@ -73,6 +73,7 @@ extern void fatal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
 extern void pedwarn (const char *, ...) ATTRIBUTE_GCC_FE_DIAG(1,2);
 extern void sorry (const char *, ...) ATTRIBUTE_GCC_FE_DIAG(1,2);
 extern void inform (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
+extern void verbatim (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 
 extern void rest_of_decl_compilation (tree, int, int);
 extern void rest_of_type_compilation (tree, int);
