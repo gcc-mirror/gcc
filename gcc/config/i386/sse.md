@@ -653,6 +653,40 @@
   [(set_attr "type" "sseadd")
    (set_attr "mode" "V4SF")])
 
+(define_expand "reduc_plus_v4sf"
+  [(match_operand:V4SF 0 "register_operand" "")
+   (match_operand:V4SF 1 "register_operand" "")]
+  "TARGET_SSE"
+{
+  if (TARGET_SSE3)
+    {
+      rtx tmp = gen_reg_rtx (V4SFmode);
+      emit_insn (gen_sse3_haddv4sf3 (tmp, operands[1], operands[1]));
+      emit_insn (gen_sse3_haddv4sf3 (operands[0], tmp, tmp));
+    }
+  else
+    ix86_expand_reduc_v4sf (gen_addv4sf3, operands[0], operands[1]);
+  DONE;
+})
+
+(define_expand "reduc_smax_v4sf"
+  [(match_operand:V4SF 0 "register_operand" "")
+   (match_operand:V4SF 1 "register_operand" "")]
+  "TARGET_SSE"
+{
+  ix86_expand_reduc_v4sf (gen_smaxv4sf3, operands[0], operands[1]);
+  DONE;
+})
+
+(define_expand "reduc_smin_v4sf"
+  [(match_operand:V4SF 0 "register_operand" "")
+   (match_operand:V4SF 1 "register_operand" "")]
+  "TARGET_SSE"
+{
+  ix86_expand_reduc_v4sf (gen_sminv4sf3, operands[0], operands[1]);
+  DONE;
+})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel single-precision floating point comparisons

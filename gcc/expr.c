@@ -5151,9 +5151,9 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	    cleared = 1;
 	  }
 	
+	/* Inform later passes that the old value is dead.  */
 	if (!cleared && REG_P (target))
-	  /* Inform later passes that the old value is dead.  */
-	  emit_insn (gen_rtx_CLOBBER (VOIDmode, target));
+	  emit_move_insn (target, CONST0_RTX (GET_MODE (target)));
 
         /* Store each element of the constructor into the corresponding
 	   element of TARGET, determined by counting the elements.  */

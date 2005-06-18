@@ -1,3 +1,13 @@
+2005-06-18  Richard Henderson  <rth@redhat.com>
+
+	* expr.c (store_constructor): Use store of 0 to indicate value
+	death instead of a clobber.
+
+	* config/i386/i386.c (ix86_expand_reduc_v4sf): New.
+	* config/i386/i386-protos.h (ix86_expand_reduc_v4sf): Declare.
+	* config/i386/sse.md (reduc_plus_v4sf): New.
+	(reduc_smax_v4sf, reduc_smin_v4sf): New.
+
 2005-06-18  James A. Morrison  <phython@gcc.gnu.org>
 
 	* fold_const (fold_binary): Fold X % (2**N) to X & (2**N - 1) for

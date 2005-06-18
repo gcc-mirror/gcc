@@ -230,6 +230,7 @@ extern rtx ix86_tls_get_addr (void);
 extern void ix86_expand_vector_init (bool, rtx, rtx);
 extern void ix86_expand_vector_set (bool, rtx, rtx, int);
 extern void ix86_expand_vector_extract (bool, rtx, rtx, int);
+extern void ix86_expand_reduc_v4sf (rtx (*)(rtx, rtx, rtx), rtx, rtx);
 
 /* In winnt.c  */
 extern int i386_pe_dllexport_name_p (const char *);

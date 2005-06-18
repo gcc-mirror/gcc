@@ -17366,6 +17366,27 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
       emit_move_insn (target, tmp);
     }
 }
+
+/* Expand a vector reduction on V4SFmode for SSE1.  FN is the binar
+   pattern to reduce; DEST is the destination; IN is the input vector.  */
+
+void
+ix86_expand_reduc_v4sf (rtx (*fn) (rtx, rtx, rtx), rtx dest, rtx in)
+{
+  rtx tmp1, tmp2, tmp3;
+
+  tmp1 = gen_reg_rtx (V4SFmode);
+  tmp2 = gen_reg_rtx (V4SFmode);
+  tmp3 = gen_reg_rtx (V4SFmode);
+
+  emit_insn (gen_sse_movhlps (tmp1, in, in));
+  emit_insn (fn (tmp2, tmp1, in));
+
+  emit_insn (gen_sse_shufps_1 (tmp3, tmp2, tmp2,
+			       GEN_INT (1), GEN_INT (1),
+			       GEN_INT (1+4), GEN_INT (1+4)));
+  emit_insn (fn (dest, tmp2, tmp3));
+}
 
 /* Implements target hook vector_mode_supported_p.  */
 static bool
