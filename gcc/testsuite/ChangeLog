@@ -1,3 +1,7 @@
+2005-06-19  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* g++.dg/abi/mangle24.C, g++.dg/abi/mangle25.C: New tests.
+
 2005-06-19  Aldy Hernandez  <aldyh@redhat.com>
 
         PR c++/22115
