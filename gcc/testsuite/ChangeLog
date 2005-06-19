@@ -1,3 +1,8 @@
+2005-06-19  Aldy Hernandez  <aldyh@redhat.com>
+
+        PR c++/22115
+        * g++.dg/conversion/simd2.C: Change expected error message.
+
 2005-06-18  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* gcc.dg/vect/vect-reduc-1.c: Add cleanup-tree-dump.
