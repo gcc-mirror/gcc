@@ -1,3 +1,7 @@
+2005-06-19  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* testsuite/libmudflap.c/externs-1.c (main): Add return statement.
+
 2005-06-15  Frank Ch. Eigler  <fche@redhat.com>
 
 	Fix for uncaching bug reported by Herman ten Brugge.

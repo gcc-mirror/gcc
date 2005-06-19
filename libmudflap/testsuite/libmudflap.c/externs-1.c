@@ -11,4 +11,6 @@ main (void)
       printf ("%s\n", pd->name);
       pd++;
     }
+
+  return 0;
 }
