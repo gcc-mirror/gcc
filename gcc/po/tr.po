@@ -1,19 +1,20 @@
-# Turkish translations for gcc messages.
+# translation of gcc-4.0.1-b20050607.po to Turkish
 # Copyright (C) 2005 Free Software Foundation, Inc.
 # Nilgün Belma Bugüner <nilgun@superonline.com>, 2001, ...,2005.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.0-b20050226\n"
+"Project-Id-Version: gcc 4.0.1-b20050607\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2005-06-06 21:32+0200\n"
-"PO-Revision-Date: 2005-03-03 21:43+0300\n"
+"PO-Revision-Date: 2005-06-19 03:05+0300\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@superonline.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.0\n"
+"X-Generator: KBabel 1.9.1\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: c-decl.c:3701
 msgid "<anonymous>"
@@ -1343,17 +1344,17 @@ msgstr "multilib spec '%s' geçersiz"
 #: gcc.c:7128
 #, c-format
 msgid "multilib exclusions '%s' is invalid"
-msgstr ""
+msgstr "multilib dışlaması olarak '%s' geçersiz"
 
 #: gcc.c:7186 gcc.c:7327
 #, c-format
 msgid "multilib select '%s' is invalid"
-msgstr ""
+msgstr "multilib seçimi '%s' geçersiz"
 
 #: gcc.c:7365
 #, c-format
 msgid "multilib exclusion '%s' is invalid"
-msgstr ""
+msgstr "multilib dışlaması olarak '%s' geçersiz"
 
 #: gcov.c:388
 #, c-format
@@ -2203,11 +2204,11 @@ msgstr "hata ayıklama:"
 
 #: params.def:44
 msgid "The maximum structure size (in bytes) at which GCC will do block copies"
-msgstr ""
+msgstr "GCC'nin blok kopyalarını yapacağı azami yapı boyutu (bayt cinsinden)"
 
 #: params.def:54
 msgid "The threshold ratio between instantiated fields and the total structure size"
-msgstr ""
+msgstr "Yapının toplam boyutu ile alanları arasındaki eşik oran"
 
 #: params.def:71
 msgid "The maximum number of instructions in a single function eligible for inlining"
@@ -2223,11 +2224,11 @@ msgstr ""
 
 #: params.def:88
 msgid "The maximum number of instructions inline function can grow to via recursive inlining"
-msgstr ""
+msgstr "Satıriçi işlevlerin iç içe satıriçine alma sırasında büyüyebileceği azami komut sayısı"
 
 #: params.def:93
 msgid "The maximum number of instructions non-inline function can grow to via recursive inlining"
-msgstr ""
+msgstr "Satıriçi olmayan işlevlerin iç içe satıriçine alma sırasında büyüyebileceği azami komut sayısı"
 
 #: params.def:98
 msgid "The maximum depth of recursive inlining for inline functions"
@@ -2239,7 +2240,7 @@ msgstr "Satıriçi olmayan işlevlerde azami satıriçi iç içelik derinliği"
 
 #: params.def:110
 msgid "If -fvariable-expansion-in-unroller is used, the maximum number of            times that an individual variable will be expanded            during loop unrolling"
-msgstr ""
+msgstr "Döngünün gerisarılması sırasında genişletilecek tek bir değişkenin -fvariable-expansion-in-unroller seçeneği kullanıldığında azami yineleme sayısı"
 
 #: params.def:123
 msgid "The maximum number of instructions to consider to fill a delay slot"
@@ -2274,7 +2275,7 @@ msgstr "satıriçine almadan dolayı belirtilen hesaplama biriminin büyüme ora
 
 #: params.def:161
 msgid "expense of call operation relative to ordinary aritmetic operations"
-msgstr ""
+msgstr "çağrı işleminin sıradan aritmetik işlemlere göre maliyeti"
 
 #: params.def:168
 msgid "The maximum amount of memory to be allocated by GCSE"
@@ -2290,11 +2291,11 @@ msgstr ""
 
 #: params.def:183
 msgid "The threshold ratio for performing partial redundancy elimination after reload."
-msgstr ""
+msgstr "Yeniden yükleme sonrası fazlalıkların kısmi elemesi için eşik oran/hız."
 
 #: params.def:190
 msgid "The threshold ratio of critical edges execution count that permit performing redundancy elimination after reload."
-msgstr ""
+msgstr "Yeniden yükleme sonrası fazlalık elemesi yapılırken izin verilen kritik kenar çalıştırma sayısının eşik oranı/hızı."
 
 #: params.def:201
 msgid "The maximum number of instructions to consider to unroll in a loop"
@@ -2423,7 +2424,7 @@ msgstr ""
 
 #: params.def:320
 msgid "The minimum number of matching instructions to consider for crossjumping"
-msgstr ""
+msgstr "Çapraz atlama için düşünülen eşleşme komutlarının asgari sayısı"
 
 #: params.def:326
 msgid "The maximum number of insns to duplicate when unfactoring computed gotos"
@@ -2500,7 +2501,7 @@ msgstr "Paylaşımlı tamsayı sabitler için üst sınır"
 
 #: config/darwin.h:155
 msgid "Set sizeof(bool) to 1"
-msgstr ""
+msgstr "sizeof(bool) 1'e ayarlanır"
 
 #: config/darwin.h:157
 msgid "Generate code suitable for fast turn around debugging"
@@ -2520,7 +2521,7 @@ msgstr "Çok evrelilik desteklenir"
 
 #: config/lynx.h:139
 msgid "Support legacy multi-threading"
-msgstr ""
+msgstr "Geleneksel çok evrelilik desteği"
 
 #: config/alpha/alpha.c:4748
 #, c-format
@@ -2700,7 +2701,7 @@ msgstr "Küçük veri alanlarına 32 bitlik yer değiştirmeler üretilir"
 
 #: config/alpha/alpha.h:328
 msgid "Emit direct branches to local functions"
-msgstr ""
+msgstr "Yerel işlevlere doğrudan dallanmalar yapılır"
 
 #: config/alpha/alpha.h:331
 msgid "Emit rdval instead of rduniq for thread pointer"
@@ -2894,7 +2895,7 @@ msgstr ""
 
 #: config/arm/arm.h:391
 msgid "Specify if floating point hardware should be used"
-msgstr ""
+msgstr "Eğer kayan nokta donanımı kulanılmalıysa belirtilir"
 
 #: config/arm/arm.h:393
 msgid "Specify the minimum bit alignment of structures"
@@ -2910,11 +2911,11 @@ msgstr "Bir ABI belirtilir"
 
 #: config/arm/arm.h:398
 msgid "Alias for -mfloat-abi=soft"
-msgstr ""
+msgstr "-mfloat-abi=soft için takma isim"
 
 #: config/arm/arm.h:400
 msgid "Alias for -mfloat-abi=hard"
-msgstr ""
+msgstr "-mfloat-abi=hard için takma isim"
 
 #: config/arm/pe.h:59
 msgid "Ignore dllimport attribute for functions"
@@ -2925,9 +2926,8 @@ msgid "bad address, not (reg+disp):"
 msgstr "hatalı adres, (reg+disp) değil:"
 
 #: config/avr/avr.c:1124
-#, fuzzy
 msgid "bad address, not post_inc or pre_dec:"
-msgstr "hatalı adres, (reg+disp) değil:"
+msgstr "hatalı adres, post_inc veya pre_dec değil:"
 
 #: config/avr/avr.c:1135
 msgid "internal compiler error.  Bad address:"
@@ -2999,14 +2999,14 @@ msgid "Specify the MCU name"
 msgstr "MCU ismi belirtilir"
 
 #: config/bfin/bfin.c:993
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%j value"
-msgstr "%%Z değeri geçersiz"
+msgstr "%%j değeri geçersiz"
 
 #: config/bfin/bfin.c:1113
-#, fuzzy, c-format
+#, c-format
 msgid "invalid const_double operand"
-msgstr "kısıtlar terim için geçersiz"
+msgstr "const_double terim geçersiz"
 
 #: config/c4x/c4x.c:1598
 msgid "using CONST_DOUBLE for address"
@@ -4130,7 +4130,7 @@ msgstr "Satıriçi kayan noktalı bölme üretir, iş geçişi için eniyilenir"
 
 #: config/ia64/ia64.h:211
 msgid "Do not inline floating point division"
-msgstr ""
+msgstr "Gerçek sayı bölme işlemi satıriçine alınmaz"
 
 #: config/ia64/ia64.h:213
 msgid "Generate inline integer division, optimize for latency"
@@ -4142,7 +4142,7 @@ msgstr "Satıriçi tamsayı bölme üretir, iş geçişi için eniyilenir"
 
 #: config/ia64/ia64.h:217
 msgid "Do not inline integer division"
-msgstr ""
+msgstr "Tamsayı bölme işlemi satıriçine alınmaz"
 
 #: config/ia64/ia64.h:219
 msgid "Generate inline square root, optimize for latency"
@@ -4777,7 +4777,7 @@ msgstr "Sadece tek (32 bit) FP kullanmaz"
 
 #: config/mips/mips.h:609 config/mips/mips.h:611
 msgid "Use paired-single floating point instructions"
-msgstr ""
+msgstr "Eşleştirilmiş tekil kayan nokta komutları kullanılır"
 
 #: config/mips/mips.h:613 config/mips/mips.h:615
 msgid "Use MIPS-3D instructions"
@@ -4857,11 +4857,11 @@ msgstr "Sıfırla tamsayı bölme taşması yakalanmaz"
 
 #: config/mips/mips.h:653
 msgid "Use trap to check for integer divide by zero"
-msgstr ""
+msgstr "Tamsayıların sıfırla bölünmesinde sınama için trap kullanılır"
 
 #: config/mips/mips.h:655
 msgid "Use break to check for integer divide by zero"
-msgstr ""
+msgstr "Tamsayıların sıfırla bölünmesinde sınama için break kullanılır"
 
 #: config/mips/mips.h:657
 msgid "Use Branch Likely instructions, overriding default for arch"
@@ -4897,21 +4897,19 @@ msgstr ""
 
 #: config/mips/mips.h:673
 msgid "FP exceptions are enabled"
-msgstr ""
+msgstr "FP kuraldışı durumları etkinleştirilir"
 
 #: config/mips/mips.h:675
 msgid "FP exceptions are not enabled"
-msgstr ""
+msgstr "FP kuraldışı durumları etkinleştirilmez"
 
 #: config/mips/mips.h:677
-#, fuzzy
 msgid "Assume all symbols have 32-bit values"
-msgstr "Tüm double'lar hizalı kabul edilir"
+msgstr "Tüm sembollerin 32 bit değerli oldukları kabul edilir"
 
 #: config/mips/mips.h:679
-#, fuzzy
 msgid "Don't assume all symbols have 32-bit values"
-msgstr "Sembolik yazmaç isimleri kullanılmaz"
+msgstr "Tüm sembollerin 32 bit değerli oldukları varsayılmaz"
 
 #: config/mips/mips.h:794
 msgid "Specify a Standard MIPS ISA"
@@ -5136,18 +5134,24 @@ msgid ""
 "Specify UNIX standard for predefines and linking.\n"
 "Supported value is 93."
 msgstr ""
+"Önceden tanımlamalar ve ilintileme için UNIX standardı belirtilir.\n"
+"Desteklenen değer 93'tür."
 
 #: config/pa/pa-hpux1010.h:28 config/pa/pa-hpux11.h:102
 msgid ""
 "Specify UNIX standard for predefines and linking.\n"
 "Supported values are 93 and 95."
 msgstr ""
+"Önceden tanımlamalar ve ilintileme için UNIX standardı belirtilir.\n"
+"Desteklenen değerler 93 ve 95'tir."
 
 #: config/pa/pa-hpux1111.h:28
 msgid ""
 "Specify UNIX standard for predefines and linking.\n"
 "Supported values are 93, 95 and 98."
 msgstr ""
+"Önceden tanımlamalar ve ilintileme için UNIX standardı belirtilir.\n"
+"Desteklenen değerler 93, 95 ve 98'dir."
 
 #. Macro to define tables used to set the flags.  This is a
 #. list in braces of target switches with each switch being
@@ -5424,11 +5428,11 @@ msgstr "%%v değeri geçersiz"
 
 #: config/rs6000/aix.h:204
 msgid "Conform more closely to IBM XLC semantics"
-msgstr ""
+msgstr "IBM XLC anlambilimine uyumluluk arttırılır"
 
 #: config/rs6000/aix.h:206
 msgid "Default GCC semantics that differ from IBM XLC"
-msgstr ""
+msgstr "IBM XLC'ninkinden farklı olan öntanımlı GCC anlambilimi"
 
 #: config/rs6000/aix41.h:28 config/rs6000/aix43.h:32 config/rs6000/aix51.h:31
 #: config/rs6000/aix52.h:31
@@ -5841,11 +5845,11 @@ msgstr ""
 
 #: config/s390/s390.h:162
 msgid "Warn if a single function's framesize exceeds the given framesize"
-msgstr ""
+msgstr "Tek bir işlevin çalışma çerçevesi belirtileni aşarsa uyarır"
 
 #: config/s390/s390.h:165
 msgid "Warn if a function uses alloca or creates an array with dynamic size"
-msgstr ""
+msgstr "Bir işlev alloca kullanırsa ya da değişken boyutlu dizi oluşturursa uyarır"
 
 #: config/s390/s390.h:168
 msgid "Emit extra code in the function prologue in order to trap if the stacksize exceeds the given limit"
@@ -6223,19 +6227,19 @@ msgid "candidate 2:"
 msgstr "2. aday:"
 
 #: cp/g++spec.c:238 java/jvspec.c:417
-#, fuzzy, c-format
+#, c-format
 msgid "argument to '%s' missing\n"
-msgstr "%qs için argüman eksik\n"
+msgstr "'%s' için argüman eksik\n"
 
 #: fortran/gfortranspec.c:231
-#, fuzzy, c-format
+#, c-format
 msgid "overflowed output arg list for '%s'"
 msgstr "`%s' için çıktı argüman listesi taştı"
 
 #: fortran/gfortranspec.c:375
-#, fuzzy, c-format
+#, c-format
 msgid "argument to '%s' missing"
-msgstr "`%s' için argüman eksik"
+msgstr "'%s' için argüman eksik"
 
 #: fortran/gfortranspec.c:379
 #, c-format
@@ -6245,145 +6249,147 @@ msgstr "girdi dosyası yok; çıktı dosyaları istemeyerek yazılıyor"
 #. FIXME: i18n bug here.  Order of prints should not be
 #. fixed.
 #: java/gjavah.c:910
-#, fuzzy, c-format
+#, c-format
 msgid "ignored method '"
-msgstr "`%T::%D' diye bir yöntem yok"
+msgstr "böyle bir yöntem yok: '"
 
 #: java/gjavah.c:912
 #, c-format
 msgid "' marked virtual\n"
-msgstr ""
+msgstr "' virtual olarak imli\n"
 
 #: java/gjavah.c:2350
 #, c-format
 msgid "Try '"
-msgstr ""
+msgstr "Dene: '"
 
 #: java/gjavah.c:2350
-#, fuzzy, c-format
+#, c-format
 msgid " --help' for more information.\n"
-msgstr "daha fazla bilgi için -Winvalid-pch kullanın"
+msgstr "daha fazla bilgi için --help kullanın.\n"
 
 #: java/gjavah.c:2357
 #, c-format
 msgid "Usage: "
-msgstr ""
+msgstr "Kullanımı: "
 
 #: java/gjavah.c:2357
-#, fuzzy, c-format
+#, c-format
 msgid ""
 " [OPTION]... CLASS...\n"
 "\n"
 msgstr ""
-"Kullanımı: gcov [SEÇENEK]... KAYNAKDOSYASI\n"
+" [SEÇENEK]... SINIF...\n"
 "\n"
 
 #: java/gjavah.c:2358
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Generate C or C++ header files from .class files\n"
 "\n"
-msgstr "Platforma özel niteliklerin C başlıklarını üretir"
+msgstr ""
+"Sınıf dosyalarından C veya C++ başlık dosyalarını üretir\n"
+"\n"
 
 #: java/gjavah.c:2359
-#, fuzzy, c-format
+#, c-format
 msgid "  -stubs                  Generate an implementation stub file\n"
-msgstr "  -pipe                    Aracı dosyalardan ziyade veri yolları kullanılır\n"
+msgstr "  -stubs                  bir stub dosyası gerçeklenimi üretir\n"
 
 #: java/gjavah.c:2360
-#, fuzzy, c-format
+#, c-format
 msgid "  -jni                    Generate a JNI header or stub\n"
-msgstr "  -W                      Fazladan uyarılar da verilir\n"
+msgstr "  -jni                    Bir JNI başlığı ya da stub üretir\n"
 
 #: java/gjavah.c:2361
-#, fuzzy, c-format
+#, c-format
 msgid "  -force                  Always overwrite output files\n"
-msgstr "  -o DOSYA                 Çıktıyı DOSYAya yazar\n"
+msgstr "  -force                  Daima çıktı dosyalarının üzerine yazılır\n"
 
 #: java/gjavah.c:2362
-#, fuzzy, c-format
+#, c-format
 msgid "  -old                    Unused compatibility option\n"
-msgstr "  --help                   Bu yardım iletisini gösterir\n"
+msgstr "  -old                    Kullanılmamış uyumluluk seçeneği\n"
 
 #: java/gjavah.c:2363
-#, fuzzy, c-format
+#, c-format
 msgid "  -trace                  Unused compatibility option\n"
-msgstr "  --help                   Bu yardım iletisini gösterir\n"
+msgstr "  -trace                  Kullanılmamış uyumluluk seçeneği\n"
 
 #: java/gjavah.c:2364
 #, c-format
 msgid "  -J OPTION               Unused compatibility option\n"
-msgstr ""
+msgstr "  -J OPTION               Kullanılmamış uyumluluk seçeneği\n"
 
 #: java/gjavah.c:2366
 #, c-format
 msgid "  -add TEXT               Insert TEXT into class body\n"
-msgstr ""
+msgstr "  -add METİN              METİN sınıf gövdesine yerleştirilir\n"
 
 #: java/gjavah.c:2367
 #, c-format
 msgid "  -append TEXT            Insert TEXT after class declaration\n"
-msgstr ""
+msgstr "  -append METİN           METİN sınıf bildiriminin ardına eklenir\n"
 
 #: java/gjavah.c:2368
 #, c-format
 msgid "  -friend TEXT            Insert TEXT as 'friend' declaration\n"
-msgstr ""
+msgstr "  -friend METİN           METİN, 'friend' bildirimi olarak eklenir\n"
 
 #: java/gjavah.c:2369
 #, c-format
 msgid "  -prepend TEXT           Insert TEXT before start of class\n"
-msgstr ""
+msgstr "  -prepend METİN          METİN sınıf başlangıcının öncesine konur\n"
 
 #: java/gjavah.c:2371 java/jcf-dump.c:897
 #, c-format
 msgid "  --classpath PATH        Set path to find .class files\n"
-msgstr ""
+msgstr "  --classpath YOL         .class dosyalarının aranacağı yol\n"
 
 #: java/gjavah.c:2372 java/jcf-dump.c:898
-#, fuzzy, c-format
+#, c-format
 msgid "  -IDIR                   Append directory to class path\n"
-msgstr "  -B <dizin>               Derleyicilerin arama dosya yoluna <dizin>i ekler\n"
+msgstr "  -IDİZİN                 DİZİN .class arama yoluna eklenir\n"
 
 #: java/gjavah.c:2373 java/jcf-dump.c:899
 #, c-format
 msgid "  --bootclasspath PATH    Override built-in class path\n"
-msgstr ""
+msgstr "  --bootclasspath YOL     Yerleşik .class arama yolunu değiştirir\n"
 
 #: java/gjavah.c:2374 java/jcf-dump.c:900
 #, c-format
 msgid "  --extdirs PATH          Set extensions directory path\n"
-msgstr ""
+msgstr "  --extdirs YOL           Eklenti dizini arama yolu\n"
 
 #: java/gjavah.c:2375
 #, c-format
 msgid "  -d DIRECTORY            Set output directory name\n"
-msgstr ""
+msgstr "  -d DİZİN                Çıktı dizini\n"
 
 #: java/gjavah.c:2376 java/jcf-dump.c:901 java/jv-scan.c:114
-#, fuzzy, c-format
+#, c-format
 msgid "  -o FILE                 Set output file name\n"
-msgstr "  -o DOSYA                 Çıktıyı DOSYAya yazar\n"
+msgstr "  -o DOSYA                Çıktı DOSYAsı ismi\n"
 
 #: java/gjavah.c:2377
 #, c-format
 msgid "  -td DIRECTORY           Set temporary directory name\n"
-msgstr ""
+msgstr "  -td DİZİN               Geçici dosyalar dizinin ismi\n"
 
 #: java/gjavah.c:2379 java/jcf-dump.c:903 java/jv-scan.c:116
-#, fuzzy, c-format
+#, c-format
 msgid "  --help                  Print this help, then exit\n"
-msgstr "  -h, --help                      Bu yardım iletisini gösterir ve çıkar\n"
+msgstr "  --help                  Bu yardım iletisini gösterir ve çıkar\n"
 
 #: java/gjavah.c:2380 java/jcf-dump.c:904 java/jv-scan.c:117
-#, fuzzy, c-format
+#, c-format
 msgid "  --version               Print version number, then exit\n"
-msgstr "  -v, --version                   Sürüm bilgilerini gösterir ve çıkar\n"
+msgstr "  --version               Sürüm bilgilerini gösterir ve çıkar\n"
 
 #: java/gjavah.c:2381 java/jcf-dump.c:905
-#, fuzzy, c-format
+#, c-format
 msgid "  -v, --verbose           Print extra information while running\n"
-msgstr "  -v, --version                   Sürüm bilgilerini gösterir ve çıkar\n"
+msgstr "  -v, --verbose           İşlem sırasında daha ayrıntılı bilgi verilir\n"
 
 #: java/gjavah.c:2383
 #, c-format
@@ -6391,6 +6397,8 @@ msgid ""
 "  -M                      Print all dependencies to stdout;\n"
 "                             suppress ordinary output\n"
 msgstr ""
+"  -M                      Tüm bağımlılıkları stdout'a basar;\n"
+"                             sıradan çıktılama engellenir\n"
 
 #: java/gjavah.c:2385
 #, c-format
@@ -6398,46 +6406,47 @@ msgid ""
 "  -MM                     Print non-system dependencies to stdout;\n"
 "                             suppress ordinary output\n"
 msgstr ""
+"  -MM                     Sistemdışı bağımlılıkları stdout'a basar;\n"
+"                             sıradan çıktılama engellenir\n"
 
 #: java/gjavah.c:2387
-#, fuzzy, c-format
+#, c-format
 msgid "  -MD                     Print all dependencies to stdout\n"
-msgstr "  -h, --help                      Bu yardım iletisini gösterir ve çıkar\n"
+msgstr "  -MD                     Tüm bağımlılıkları stdout'a basar\n"
 
 #: java/gjavah.c:2388
-#, fuzzy, c-format
+#, c-format
 msgid "  -MMD                    Print non-system dependencies to stdout\n"
-msgstr "  -h, --help                      Bu yardım iletisini gösterir ve çıkar\n"
+msgstr "  -MMD                    Sistemdışı bağımlılıkları stdout'a basar\n"
 
 #: java/gjavah.c:2391 java/jcf-dump.c:907 java/jv-scan.c:119
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "For bug reporting instructions, please see:\n"
 "%s.\n"
 msgstr ""
-"\n"
 "Hata raporlama işlemleri için:\n"
 "%s.\n"
 
 #: java/gjavah.c:2568
-#, fuzzy, c-format
+#, c-format
 msgid "Processing %s\n"
-msgstr "%s oluşturuluyor.\n"
+msgstr "%s işleniyor\n"
 
 #: java/gjavah.c:2578
 #, c-format
 msgid "Found in %s\n"
-msgstr ""
+msgstr "%s içinde bulundu\n"
 
 #: java/jcf-dump.c:814
-#, fuzzy, c-format
+#, c-format
 msgid "Not a valid Java .class file.\n"
-msgstr "geçerli bir Java .class dosyası değil"
+msgstr "Geçerli bir Java .class dosyası değil.\n"
 
 #: java/jcf-dump.c:820
-#, fuzzy, c-format
+#, c-format
 msgid "error while parsing constant pool\n"
-msgstr "sabit havuzu çözümlenirken hata"
+msgstr "sabit havuzu çözümlenirken hata\n"
 
 #: java/jcf-dump.c:826 java/jcf-parse.c:749
 #, gcc-internal-format
@@ -6445,32 +6454,32 @@ msgid "error in constant pool entry #%d\n"
 msgstr "sabit havuzu girdisi #%d de hata\n"
 
 #: java/jcf-dump.c:836
-#, fuzzy, c-format
+#, c-format
 msgid "error while parsing fields\n"
-msgstr "alanlar çözümlenirken hata"
+msgstr "alanlar çözümlenirken hata\n"
 
 #: java/jcf-dump.c:842
-#, fuzzy, c-format
+#, c-format
 msgid "error while parsing methods\n"
-msgstr "yöntemler çözümlenirken hata"
+msgstr "yöntemler çözümlenirken hata\n"
 
 #: java/jcf-dump.c:848
-#, fuzzy, c-format
+#, c-format
 msgid "error while parsing final attributes\n"
-msgstr "bitiş öznitelikleri çözümlenirken hata"
+msgstr "bitiş öznitelikleri çözümlenirken hata\n"
 
 #: java/jcf-dump.c:885
-#, fuzzy, c-format
+#, c-format
 msgid "Try 'jcf-dump --help' for more information.\n"
-msgstr "daha fazla bilgi için -Winvalid-pch kullanın"
+msgstr "Daha fazla bilgi için 'jcf-dump --help' yazın.\n"
 
 #: java/jcf-dump.c:892
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Usage: jcf-dump [OPTION]... CLASS...\n"
 "\n"
 msgstr ""
-"Kullanımı: gcov [SEÇENEK]... KAYNAKDOSYASI\n"
+"Kullanımı: jcf-dump [SEÇENEK]... SINIF\n"
 "\n"
 
 #: java/jcf-dump.c:893
@@ -6479,41 +6488,43 @@ msgid ""
 "Display contents of a class file in readable form.\n"
 "\n"
 msgstr ""
+"Bir.class dosyasının içeriğini okunabilir biçimde gösterir.\n"
+"\n"
 
 #: java/jcf-dump.c:894
-#, fuzzy, c-format
+#, c-format
 msgid "  -c                      Disassemble method bodies\n"
-msgstr "  -W                      Fazladan uyarılar da verilir\n"
+msgstr "  -c                      Yöntem gövdelerini okunabilir biçime getirir\n"
 
 #: java/jcf-dump.c:895
-#, fuzzy, c-format
+#, c-format
 msgid "  --javap                 Generate output in 'javap' format\n"
-msgstr "  --help                   Bu yardım iletisini gösterir\n"
+msgstr "  --javap                 Çıktıyı 'javap' biçiminde üretir\n"
 
 #: java/jcf-dump.c:935 java/jcf-dump.c:1003
 #, c-format
 msgid "jcf-dump: no classes specified\n"
-msgstr ""
+msgstr "jcf-dump:hiç sınıf belirtilmedi\n"
 
 #: java/jcf-dump.c:1023
-#, fuzzy, c-format
+#, c-format
 msgid "Cannot open '%s' for output.\n"
-msgstr "%s açılamıyor"
+msgstr "'%s' çıktılama için açılamıyor.\n"
 
 #: java/jcf-dump.c:1069
 #, c-format
 msgid "bad format of .zip/.jar archive\n"
-msgstr ""
+msgstr "zip/.jar arşivinin biçimi hatalı\n"
 
 #: java/jcf-dump.c:1187
-#, fuzzy, c-format
+#, c-format
 msgid "Bad byte codes.\n"
-msgstr "hatalı yerleşik fcode"
+msgstr "Bayt kodlar hatalı.\n"
 
 #: java/jv-scan.c:99
-#, fuzzy, c-format
+#, c-format
 msgid "Try 'jv-scan --help' for more information.\n"
-msgstr "daha fazla bilgi için -Winvalid-pch kullanın"
+msgstr "Daha fazla bilgi için 'jv-scan --help' yazın.\n"
 
 #: java/jv-scan.c:106
 #, fuzzy, c-format
@@ -6530,11 +6541,13 @@ msgid ""
 "Print useful information read from Java source files.\n"
 "\n"
 msgstr ""
+"Java kaynak dosyalarından okunan yararlı bilgileri basar.\n"
+"\n"
 
 #: java/jv-scan.c:108
 #, c-format
 msgid "  --no-assert             Don't recognize the assert keyword\n"
-msgstr ""
+msgstr "  --no-assert            assert anahtar sözcüğü tanınmaz\n"
 
 #: java/jv-scan.c:109
 #, c-format
@@ -6544,59 +6557,59 @@ msgstr ""
 #: java/jv-scan.c:110
 #, c-format
 msgid "  --encoding NAME         Specify encoding of input file\n"
-msgstr ""
+msgstr "  --encoding İSİM         girdi dosyasının karakter kodlaması\n"
 
 #: java/jv-scan.c:111
 #, c-format
 msgid "  --print-main            Print name of class containing 'main'\n"
-msgstr ""
+msgstr "  --print-main            'main' içeren  sınıfın ismini basar\n"
 
 #: java/jv-scan.c:112
 #, c-format
 msgid "  --list-class            List all classes defined in file\n"
-msgstr ""
+msgstr "  --list-class            Dosyada tanımlı tüm sınıfları listeler\n"
 
 #: java/jv-scan.c:113
 #, c-format
 msgid "  --list-filename         Print input filename when listing class names\n"
-msgstr ""
+msgstr "  --list-filename         Sınıf isimlerini listelerken girdi dosyaismini basar\n"
 
 #: java/jv-scan.c:256
-#, fuzzy, c-format
+#, c-format
 msgid "%s: error: "
-msgstr "hata: "
+msgstr "%s: hata: "
 
 #: java/jv-scan.c:268
-#, fuzzy, c-format
+#, c-format
 msgid "%s: warning: "
-msgstr "%s:%d: uyarı: "
+msgstr "%s: uyarı: "
 
 #: java/jvgenmain.c:48
-#, fuzzy, c-format
+#, c-format
 msgid "Usage: %s [OPTIONS]... CLASSNAMEmain [OUTFILE]\n"
 msgstr ""
-"Kullanımı: gcov [SEÇENEK]... KAYNAKDOSYASI\n"
+"Kullanımı: %s [SEÇENEK]... SINIFADImain [ÇIKTIDOSYASI]\n"
 "\n"
 
 #: java/jvgenmain.c:101
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Cannot open output file: %s\n"
-msgstr "%s: %s çıktı dosyası açılamadı.\n"
+msgstr "%s: Çıktı dosyası açılamıyor: %s\n"
 
 #: java/jvgenmain.c:138
-#, fuzzy, c-format
+#, c-format
 msgid "%s: Failed to close output file %s\n"
-msgstr "%s: %s çıktı dosyası açılamadı.\n"
+msgstr "%s: Çıktı dosyası %s kapatılamıyor\n"
 
 #: java/jvspec.c:420
-#, fuzzy, c-format
+#, c-format
 msgid "can't specify '-D' without '--main'\n"
-msgstr "`--main' olmaksızın `-D' belirtilemez\n"
+msgstr "'--main' olmaksızın '-D' belirtilemez\n"
 
 #: java/jvspec.c:423
-#, fuzzy, c-format
+#, c-format
 msgid "'%s' is not a valid class name"
-msgstr "\"%s\" geçerli bir sınıf ismi değil"
+msgstr "'%s' geçerli bir sınıf ismi değil"
 
 #: java/jvspec.c:429
 #, c-format
@@ -6619,9 +6632,9 @@ msgid "using both @FILE with multiple files not implemented"
 msgstr "çoklu dosyalarla her iki @FILE kullanımı gerçeklenmedi"
 
 #: java/jvspec.c:534
-#, fuzzy, c-format
+#, c-format
 msgid "cannot specify 'main' class when not linking"
-msgstr "ilintileme yapılmayacaksa `main' sınıfı belirtilemez"
+msgstr "ilintileme yapılmayacaksa 'main' sınıfı belirtilemez"
 
 #: java/parse-scan.y:878 java/parse.y:974 java/parse.y:1315 java/parse.y:1376
 #: java/parse.y:1587 java/parse.y:1810 java/parse.y:1819 java/parse.y:1830
@@ -6839,9 +6852,8 @@ msgid "-D<macro>[=<val>]\tDefine a <macro> with <val> as its value.  If just <ma
 msgstr "-D<makro>[=<değer>]\t<makro>, <değer> değeriyle tanımlanır. Değer verilmezse 1 kabul edilir"
 
 #: options.c:973
-#, fuzzy
 msgid "-F <dir>\tAdd <dir> to the end of the main framework include path"
-msgstr "-iwithprefixbefore DİZİN\tDİZİN ana başlık dosyaları arama yolunun sonuna eklenir"
+msgstr "-F DİZİN\tDİZİN ana başlık dosyaları arama yolunun sonuna eklenir"
 
 #: options.c:976
 msgid "-G<number>\tPut global and static data smaller than <number> bytes into a special section (on some targets)"
@@ -6853,7 +6865,7 @@ msgstr "Başlık dosyalarının isimleri kullanılmış olarak basılır"
 
 #: options.c:985
 msgid "-J<directory>\tPut MODULE files in 'directory'"
-msgstr ""
+msgstr "-J<dizin>\tMODÜL dosyaları 'dizin'e konur"
 
 #: options.c:991
 msgid "Generate make dependencies and compile"
@@ -6893,7 +6905,7 @@ msgstr "Eski kullanım: yerine -Wextra kullanın"
 
 #: options.c:1036
 msgid "Warn about things that will change when compiling with an ABI-compliant compiler"
-msgstr ""
+msgstr "Bir ABI uyumlu derleyici ile derleme sırasında değişecek herşey için uyarır"
 
 #: options.c:1039
 msgid "Warn about returning structures, unions or arrays"
@@ -7023,7 +7035,7 @@ msgstr "Bir bildirimde tür belirtilmemişse uyarır"
 
 #: options.c:1141
 msgid "Warn about calls with implicit interface"
-msgstr ""
+msgstr "Örtük arayüzlü çağrılarda uyarır"
 
 #: options.c:1144
 msgid "Deprecated.  This switch has no effect."
@@ -7051,7 +7063,7 @@ msgstr "-Wlarger-than-SAYI\tBir nesne SAYI bayttan büyükse uyarır"
 
 #: options.c:1162
 msgid "Warn about truncated source lines"
-msgstr ""
+msgstr "Kırpılmış kaynak dosyaları hakkında uyarır"
 
 #: options.c:1165
 msgid "Do not warn about using \"long long\" when -pedantic"
@@ -7071,7 +7083,7 @@ msgstr "Önceden bildirilmemiş genel işlevler hakkında uyarır"
 
 #: options.c:1177
 msgid "Warn about missing fields in struct initializers"
-msgstr ""
+msgstr "Yapı ilklendiricilerinde eksik alanlar hakkında uyarır"
 
 #: options.c:1180
 msgid "Warn about functions which might be candidates for format attributes"
@@ -7081,7 +7093,7 @@ msgstr ""
 
 #: options.c:1183
 msgid "Warn about user-specified include directories that do not exist"
-msgstr ""
+msgstr "Kullanıcı tarafından belirtilen başlık dizinleri bulunamazsa uyarır"
 
 #: options.c:1186
 msgid "Warn about functions which might be candidates for __attribute__((noreturn))"
@@ -7153,7 +7165,7 @@ msgstr "İşlev gösterici aritmetiği hakkında uyarır"
 
 #: options.c:1237
 msgid "Warn when a pointer differs in signedness in an assignment."
-msgstr ""
+msgstr "Bir atamada bir göstericinin türü farklı sign'lı ise uyarır."
 
 #: options.c:1240
 msgid "Warn if inherited methods are unimplemented"
@@ -7213,7 +7225,7 @@ msgstr "Prototipsiz işlev bildirimlerinde uyarır"
 
 #: options.c:1282
 msgid "Warn about \"suspicious\" constructs"
-msgstr ""
+msgstr "\"Şüpheli\" oluşumlarda uyarır"
 
 #: options.c:1285
 msgid "Warn about enumerated switches, with no default, missing a case"
@@ -7247,7 +7259,7 @@ msgstr "Yazılımın anlamını etkileyebilecek üçlü harfler saptanırsa uyar
 
 #: options.c:1306
 msgid "Warn about @selector()s without previously declared methods"
-msgstr ""
+msgstr "Evvelce bildirilmiş yöntemler olmaksızın @selector()'ler vrsa uyarır"
 
 #: options.c:1309
 msgid "Warn if an undefined macro is used in an #if directive"
@@ -7255,7 +7267,7 @@ msgstr "#if yönergesinde tanımsız yapılmış makro kullanılmışsa uyarır"
 
 #: options.c:1312
 msgid "Warn about underflow of numerical constant expressions"
-msgstr ""
+msgstr "Sayısal sabit ifadelerinde alttan taşma durumunda uyarır"
 
 #: options.c:1315
 msgid "Warn about uninitialized automatic variables"
@@ -7299,7 +7311,7 @@ msgstr "Bir değişken kullanılmamışsa uyarır"
 
 #: options.c:1348
 msgid "Do not warn about using variadic macros when -pedantic"
-msgstr ""
+msgstr "-pedantic varken değişkin makroların kullanımı durumunda uyarır"
 
 #: options.c:1351
 msgid "Give strings the type \"array of char\""
@@ -7307,7 +7319,7 @@ msgstr "Dizgeler \"char dizileri\" türünde verilir"
 
 #: options.c:1354
 msgid "A synonym for -std=c89 (for C) or -std=c++98 (for C++)."
-msgstr ""
+msgstr "-std=c89 (C için) veya -std=c++98 (C++ için) ile aynı."
 
 #: options.c:1357
 msgid "-aux-info <file>\tEmit declaration information into <file>"
@@ -7379,7 +7391,7 @@ msgstr "\"asm\" anahtar sözcüğü tanınır"
 
 #: options.c:1432
 msgid "Permit the use of the assert keyword"
-msgstr ""
+msgstr "assert anahtar sözcüğünün kullanımına izin verir"
 
 #: options.c:1441
 msgid "Generate unwind tables that are exact at each instruction boundary"
@@ -7439,7 +7451,7 @@ msgstr "new işlemiminin dönen değeri denetlenir"
 
 #: options.c:1483
 msgid "Generate checks for references to NULL"
-msgstr ""
+msgstr "NULL değerli başvurular için sınamalar üretir"
 
 #: options.c:1486
 msgid "--classpath=<path>\tSet class path"
@@ -7529,7 +7541,7 @@ msgstr "-fdiagnostics-show-location=[once|every-line]\tSatır sarmalaması başl
 
 #: options.c:1555
 msgid "Allow dollar signs in entity names"
-msgstr ""
+msgstr "Öğe isimlerinde dolar simgesine izin verir"
 
 #: options.c:1558
 msgid "Permit '$' as an identifier character"
@@ -7541,7 +7553,7 @@ msgstr "-fdump-TÜR\tBelirtilen derleyici iç oluşumları bir dosyaya dökümle
 
 #: options.c:1564
 msgid "Display the code tree after parsing."
-msgstr ""
+msgstr "Ayrıştırdıktan sonra kod ağacını gösterir."
 
 #: options.c:1567
 msgid "Suppress output of instruction numbers and line number notes in debugging dumps"
@@ -7559,11 +7571,11 @@ msgstr "Hata ayıklama bilgilerinde kullanılmamış tür elemesi uygulanır"
 
 #: options.c:1582
 msgid "Output a class file"
-msgstr ""
+msgstr "Bir sınıf dosyası çıktılar"
 
 #: options.c:1585
 msgid "Alias for -femit-class-file"
-msgstr ""
+msgstr "-femit-class-file ile aynı"
 
 #: options.c:1594
 msgid "--encoding=<encoding>\tChoose input encoding (defaults from your locale)"
@@ -7587,16 +7599,15 @@ msgstr "Masraflı eniyilemelerden birkaçını uygular"
 
 #: options.c:1612
 msgid "--extdirs=<path>\tSet the extension directory path"
-msgstr ""
+msgstr "--extdirs=<yol>\tEklenti arama yolu"
 
 #: options.c:1618
-#, fuzzy
 msgid "Use f2c calling convention."
-msgstr "Normal çağrı uzlaşımı kullanılır"
+msgstr "f2c çağrı uzlaşımı kullanılır"
 
 #: options.c:1624
 msgid "Input file is a file with a list of filenames to compile"
-msgstr ""
+msgstr "Girdi dosyası derlenecek dosyaların listesini içeren bir dosyadır"
 
 #: options.c:1627
 msgid "Assume no NaNs or infinities are generated"
@@ -7608,15 +7619,15 @@ msgstr "-ffixed-YAZMAÇ\tDerleyiciye YAZMAÇ yok denir"
 
 #: options.c:1633
 msgid "Assume that the source file is fixed form"
-msgstr ""
+msgstr "Kaynak dosyası biçiminin sabit olduğu varsayılır"
 
 #: options.c:1636
 msgid "-ffixed-line-length-<n>\t\tUse n as character line width in fixed mode"
-msgstr ""
+msgstr "-ffixed-line-length-<n>\t\tSabit kipte karakter cinsinden satır genişliği"
 
 #: options.c:1639
 msgid "Allow arbitrary character line width in fixed mode"
-msgstr ""
+msgstr "Sabit kipte karakter cinsinden satır genişliğinin keyfi olmasına izin verilir"
 
 #: options.c:1642
 msgid "Don't allocate floats and doubles in extended-precision registers"
@@ -7642,7 +7653,7 @@ msgstr "Kullanmadan önce bellek terimlerini yazmaçlara kopyalar"
 
 #: options.c:1657
 msgid "Assume that the source file is free form"
-msgstr ""
+msgstr "Kaynak dosyasının özgür biçimli olduğu varsayılır"
 
 #: options.c:1660
 msgid "Do not assume that standard C libraries and \"main\" exist"
@@ -7690,7 +7701,7 @@ msgstr "Dallanma olasılıklarının tahmini etkinleştirilir"
 
 #: options.c:1699
 msgid "Assume the runtime uses a hash table to map an object to its synchronization structure"
-msgstr ""
+msgstr "Çalışma anında bir nesneyi kendi eşzamanlama yapısıyla eşlemede bir çırpı tablosu kullanıldığı varsayılır"
 
 #: options.c:1705
 msgid "Assume normal C execution environment"
@@ -7726,7 +7737,7 @@ msgstr "Satıriçi şablonların doğrudan gerçeklenmesi sağlanır"
 
 #: options.c:1726
 msgid "Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements"
-msgstr ""
+msgstr "Açıkça IMPLICIT deyimi kullanılmadıkça örtük yazıma izin verilmediğini belirtir"
 
 #: options.c:1729
 msgid "Emit implicit instantiations of templates"
@@ -7751,9 +7762,8 @@ msgid "-finline-limit=<number>\tLimit the size of inlined functions to <number>"
 msgstr "-finline-limit=SAYI\tSatıriçi kod içeren işlevlerin uzunluğu SAYI ile sınırlanır"
 
 #: options.c:1750
-#, fuzzy
 msgid "-finput-charset=<cset>\tSpecify the default character set for source files."
-msgstr "-finput-charset=KRK-KÜME     Kaynak dosyaları için öntanımlı karakter kümesi."
+msgstr "-finput-charset=KRK-KÜME\tKaynak dosyaları için öntanımlı karakter kümesi."
 
 #: options.c:1753
 msgid "Instrument function entry and exit with profiling calls"
@@ -7797,11 +7807,11 @@ msgstr ""
 
 #: options.c:1783
 msgid "-fmax-identifier-length=<n>\tMaximum identifier length."
-msgstr ""
+msgstr "-fmax-identifier-length=<n>\tAzami belirteç uzunluğu."
 
 #: options.c:1786
 msgid "-fmax-stack-var-size=<n>\tSize in bytes of the largest array that will be put on the stack"
-msgstr ""
+msgstr "-fmax-stack-var-size=<n>\tYığıta konulabilecek en geniş dizinin bayt cinsinden boyutu"
 
 #: options.c:1789
 msgid "Report on permanent memory allocation"
@@ -7825,7 +7835,7 @@ msgstr "-fmessage-length=SAYI\tTanı iletilerinin uzunluğu her satırda SAYI ka
 
 #: options.c:1801
 msgid "Set default accessibility of module entities to PRIVATE"
-msgstr ""
+msgstr "Modül öğelerinin öntanımlı erişilebilirliğini PRIVATE yapar"
 
 #: options.c:1804
 msgid "Perform SMS based modulo scheduling before the first scheduling pass"
@@ -7861,7 +7871,7 @@ msgstr "Objective-C iletileri alıcılarının nil olabileceği varsayılır"
 
 #: options.c:1834
 msgid "Don't generate code, just do syntax and semantics checking"
-msgstr ""
+msgstr "Sözdizimsel ve anlambilimsel sınamalardaki gibi kod üretilmez"
 
 #: options.c:1837
 msgid "Support synchronous non-call exceptions"
@@ -7917,7 +7927,7 @@ msgstr "Yazmaçlardaki değil bellekteki küçük kümeler döndürülür"
 
 #: options.c:1888
 msgid "Look for and use PCH files even when preprocessing"
-msgstr ""
+msgstr "Önişlem yaparken bile PCH dosyalarına bakılır ve kullanılır"
 
 #: options.c:1891
 msgid "Perform loop peeling"
@@ -8093,7 +8103,7 @@ msgstr "Yazmaç tahsisinden sonra komutları yeniden zamanlar"
 
 #: options.c:2017
 msgid "Append a second underscore if the name already contains an underscore"
-msgstr ""
+msgstr "İsim zaten bir altçizgi içeriyorsa bir ikinci altçizgi ekler"
 
 #: options.c:2020
 msgid "Mark data as shared rather than private"
@@ -8189,7 +8199,7 @@ msgstr "Atlama evresi oluşturma eniyilemesi uygulanır"
 
 #: options.c:2101
 msgid "-fno-threadsafe-statics\tDo not generate thread-safe code for initializing local statics."
-msgstr ""
+msgstr "-fno-threadsafe-statics\tYerel istatistiklerin ilklendirilmesi için evresel kod üretilmez"
 
 #: options.c:2104
 msgid "Report the time taken by each compiler pass"
@@ -8284,13 +8294,12 @@ msgid "Enable loop vectorization on trees"
 msgstr ""
 
 #: options.c:2173
-#, fuzzy
 msgid "-ftree-vectorizer-verbose=<number>\tSet the verbosity level of the vectorizer"
-msgstr "-fsched-verbose=SAYI\tZamanlama için ayrıntı düzeyi belirtilir"
+msgstr "-ftree-vectorizer-verbose=<sayı>\tVektörcünün ayrıntı seviyesi"
 
 #: options.c:2176
 msgid "Append underscores to externally visible names"
-msgstr ""
+msgstr "Görünür isimlerin dışına altçizgiler ekler"
 
 #: options.c:2179
 msgid "Compile whole compilation unit at a time"
@@ -8336,11 +8345,11 @@ msgstr "Yazmaç yıkıcılara __cxa_atexit kullanılır"
 
 #: options.c:2209
 msgid "Call a library routine to do integer divisions"
-msgstr ""
+msgstr "Tamsayı bölme yapacak bir kütüphane işlevi çağrılır"
 
 #: options.c:2212
 msgid "Perform variable tracking"
-msgstr ""
+msgstr "Değişken izleme uygulanır"
 
 #: options.c:2215
 msgid "Apply variable expansion when loops are unrolled."
@@ -8356,7 +8365,7 @@ msgstr ""
 
 #: options.c:2224
 msgid "-fvisibility=[default|internal|hidden|protected]\tSet the default symbol visibility"
-msgstr ""
+msgstr "-fvisibility=[default|internal|hidden|protected]\tÖntanımlı sembol görünürlüğü"
 
 #: options.c:2227
 msgid "Use expression value profiles in optimizations"
@@ -8536,15 +8545,15 @@ msgstr "-std=c99 eskidi"
 
 #: options.c:2368
 msgid "Conform to the ISO Fortran 2003 standard."
-msgstr ""
+msgstr "ISO Fortran 2003 standardına uyumlu olunur"
 
 #: options.c:2371
 msgid "Conform to the ISO Fortran 95 standard."
-msgstr ""
+msgstr "ISO Fortran 95 standardına uyumlu olunur"
 
 #: options.c:2374
 msgid "Conform nothing in particular."
-msgstr ""
+msgstr "Kısmen de olsa hiçbir uyumluluk sağlanmaz."
 
 #: options.c:2377
 msgid "Conform to the ISO 1998 C++ standard with GNU extensions"
@@ -8567,9 +8576,8 @@ msgid "Conform to the ISO 1990 C standard as amended in 1994"
 msgstr "ISO 1990 C standardı 1994 düzeltmesiyle uygulanır"
 
 #: options.c:2398
-#, fuzzy
 msgid "Deprecated in favor of -std=iso9899:1999"
-msgstr "-std=c89 eskidi"
+msgstr "-std=iso9899:1999 lehine kullanımı önerilmiyor"
 
 #: options.c:2401
 msgid "Enable traditional preprocessing"
@@ -8691,9 +8699,8 @@ msgid "GCC does not support -C or -CC without -E"
 msgstr "GCC -E kullanılmaksızın -C veya -CC desteklemez"
 
 #: gcc.c:957
-#, fuzzy
 msgid "-E or -x required when input is from standard input"
-msgstr "Standart girdiden girdi alınırken -E gereklidir"
+msgstr "Girdi standart girdiden alınırken -E veya -x gerekir"
 
 #: config/darwin.h:251
 msgid "-current_version only allowed with -dynamiclib"
@@ -8912,9 +8919,9 @@ msgid "%qD is not defined outside of function scope"
 msgstr "%qD işlev etki alanı dışında tanımlı değil"
 
 #: c-common.c:853
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "string length %qd is greater than the length %qd ISO C%d compilers are required to support"
-msgstr "dizge uzunluğu `%1$qd ISO C%3$d derleyicilerin desteklediği uzunluk %2$qd den büyük"
+msgstr "dizge uzunluğu %qd desteklenen uzunluk %qd den büyük (ISO C%d derleyiciler için)"
 
 #: c-common.c:894
 #, gcc-internal-format
@@ -9526,9 +9533,9 @@ msgid "%Jdeclaration of %qD shadows a built-in function"
 msgstr "%J %qD bildirimi bir yerlişk işlevi gölgeliyor"
 
 #: c-decl.c:1175
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Jredeclaration of enumerator %qD"
-msgstr "enumerator %qD yeniden bildirilmiş"
+msgstr "%Jenumerator %qD yeniden bildirilmiş"
 
 #. If types don't match for a built-in, throw away the
 #. built-in.  No point in calling locate_old_decl here, it
@@ -9711,9 +9718,9 @@ msgid "%Hduplicate label %qD"
 msgstr "%H yinelenmiş etiket %qD"
 
 #: c-decl.c:2538
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Jjump into statement expression"
-msgstr "İfadeden sonrakiler anlaşılamadı."
+msgstr "%Jdeyim ifadesine jump"
 
 #: c-decl.c:2540
 #, fuzzy, gcc-internal-format
@@ -10426,9 +10433,9 @@ msgid "%Jmultiple parameters named %qD"
 msgstr "%J %qD isimli çok sayıda parametre"
 
 #: c-decl.c:6144
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Jparameter %qD declared with void type"
-msgstr "parametre %qD void olarak bildirilmiş"
+msgstr "%Jparametre %qD void olarak bildirilmiş"
 
 #: c-decl.c:6159 c-decl.c:6161
 #, gcc-internal-format
@@ -10446,9 +10453,9 @@ msgid "%Jdeclaration for parameter %qD but no such parameter"
 msgstr "%J parametre %qD için bildirim var ama böyle bir parametre yok"
 
 #: c-decl.c:6237
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "number of arguments doesn%'t match built-in prototype"
-msgstr "argüman sayısı prototiple uyumsuz"
+msgstr "argüman sayısı yerleşik prototiple uyumsuz"
 
 #: c-decl.c:6241
 #, gcc-internal-format
@@ -10461,9 +10468,9 @@ msgid "%Hprototype declaration"
 msgstr "%Hprototip bildirimi"
 
 #: c-decl.c:6276
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "promoted argument %qD doesn%'t match built-in prototype"
-msgstr "yükseltgenmiş argüman %qD prototiple uyumsuz"
+msgstr "yükseltgenmiş argüman %qD yerleşik prototiple uyumsuz"
 
 #: c-decl.c:6280
 #, gcc-internal-format
@@ -10471,9 +10478,9 @@ msgid "promoted argument %qD doesn%'t match prototype"
 msgstr "yükseltgenmiş argüman %qD prototiple uyumsuz"
 
 #: c-decl.c:6290
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument %qD doesn%'t match built-in prototype"
-msgstr "%qD argümanı prototiple uyumsuz"
+msgstr "%qD argümanı yerleşik prototiple eşleşmiyor"
 
 #: c-decl.c:6294
 #, gcc-internal-format
@@ -10950,9 +10957,9 @@ msgid "no closing %<]%> for %<%%[%> format"
 msgstr "%<]%> kapaması %<%%[%> biçiminde yok"
 
 #: c-format.c:1890
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "use of %qs length modifier with %qc type character"
-msgstr "%2$qc tür karakterli %1$qs uzunluk değiştirici kullanımı"
+msgstr "%qs uzunluk değiştiricinin %qc tür karakterli kullanımı"
 
 #: c-format.c:1911
 #, gcc-internal-format
@@ -11012,27 +11019,27 @@ msgstr "%q.*s biçiminin %<%T%s%> türünde olması umuluyor, ama %d. argüman %
 #: c-format.c:2294 c-format.c:2300 c-format.c:2401
 #, gcc-internal-format
 msgid "%<__gcc_host_wide_int__%> is not defined as a type"
-msgstr ""
+msgstr "%<__gcc_host_wide_int__%> bir tür olarak tanımlı değil"
 
 #: c-format.c:2307 c-format.c:2411
 #, gcc-internal-format
 msgid "%<__gcc_host_wide_int__%> is not defined as %<long%> or %<long long%>"
-msgstr ""
+msgstr "%<__gcc_host_wide_int__%>, %<long%> veya %<long long%> olarak tanımlı"
 
 #: c-format.c:2360
 #, gcc-internal-format
 msgid "%<location_t%> is not defined as a type"
-msgstr ""
+msgstr "%<location_t%> bir tür olarak tanımlı değil"
 
 #: c-format.c:2377
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<tree%> is not defined as a type"
-msgstr "`%T::%D' bir tür değil"
+msgstr "%<tree%> bir tür olarak tanımlı değil"
 
 #: c-format.c:2382
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<tree%> is not defined as a pointer type"
-msgstr "`%T' bir nesne gösterici türü değil"
+msgstr "%<tree%> bir gösterici türü olarak tanımlı değil"
 
 #: c-format.c:2568
 #, gcc-internal-format
@@ -11491,9 +11498,9 @@ msgid "#pragma pack (pop) encountered without matching #pragma pack (push)"
 msgstr "#pragma pack (push) ile eşleşme olmaksızın #pragma pack (pop) saptandı"
 
 #: c-pragma.c:112
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "#pragma pack(pop, %s) encountered without matching #pragma pack(push, %s)"
-msgstr "#pragma pack(push, %2$s) ile eşleşme olmaksızın #pragma pack(pop, %1$s) saptandı"
+msgstr "bir #pragma pack(pop, %s)'in bir #pragma pack(push, %s) ile eşleşmediği saptandı"
 
 #: c-pragma.c:126
 #, gcc-internal-format
@@ -11775,54 +11782,54 @@ msgid "type of formal parameter %d is incomplete"
 msgstr "%d biçimsel parametre türü tamamlanmayan türde"
 
 #: c-typeck.c:2178
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "passing argument %d of %qE as integer rather than floating due to prototype"
-msgstr "%2$qE işlevinin %1$d. argümanına prototipten dolayı gerçek sayı değil tamsayı aktarılması"
+msgstr "İşlevin %d. argümanına (%qE işlevi) prototipten dolayı gerçek sayı değil tamsayı aktarılması"
 
 #: c-typeck.c:2183
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "passing argument %d of %qE as integer rather than complex due to prototype"
-msgstr "%2$qE işlevinin %1$d. argümanına prototipten dolayı karmaşık sayı değil tamsayı aktarılması"
+msgstr "İşlevin %d. argümanına (%qE işlevi) prototipten dolayı karmaşık sayı değil tamsayı aktarılması"
 
 #: c-typeck.c:2188
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "passing argument %d of %qE as complex rather than floating due to prototype"
-msgstr "%2$qE işlevinin %1$d. argümanına prototipten dolayı gerçek sayı değil karmaşık sayı aktarılması"
+msgstr "İşlevin %d. argümanına (%qE işlevi) prototipten dolayı gerçek sayı değil karmaşık sayı aktarılması"
 
 #: c-typeck.c:2193
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "passing argument %d of %qE as floating rather than integer due to prototype"
-msgstr "%2$qE işlevinin %1$d. argümanına prototipten dolayı tamsayı değil gerçek sayı aktarılması"
+msgstr "İşlevin %d. argümanına (%qE işlevi) prototipten dolayı tamsayı değil gerçek sayı aktarılması"
 
 #: c-typeck.c:2198
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "passing argument %d of %qE as complex rather than integer due to prototype"
-msgstr "%2$qE işlevinin %1$d. argümanına prototipten dolayı tamsayı değil karmaşık sayı aktarılması"
+msgstr "İşlevin %d. argümanına (%qE işlevi) prototipten dolayı tamsayı değil karmaşık sayı aktarılması"
 
 #: c-typeck.c:2203
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "passing argument %d of %qE as floating rather than complex due to prototype"
-msgstr "%2$qE işlevinin %1$d. argümanına prototipten dolayı karmaşık sayı değil gerçek sayı aktarılması"
+msgstr "İşlevin %d. argümanına (%qE işlevi) prototipten dolayı karmaşık sayı değil gerçek sayı aktarılması"
 
 #: c-typeck.c:2215
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "passing argument %d of %qE as %<float%> rather than %<double%> due to prototype"
-msgstr "%2$qE işlevinin %1$d. argümanına prototipten dolayı %<double%> değil %<float%> aktarılması"
+msgstr "İşlevinin %d. argümanına (%qE işlevi) prototipten dolayı %<double%> değil %<float%> aktarılması"
 
 #: c-typeck.c:2235
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "passing argument %d of %qE with different width due to prototype"
-msgstr "%2$qE işlevinin %1$d. argümanına prototipten dolayı farklı genişlikte değer aktarılması"
+msgstr "İşlevin %d. argümanına (%qE işlevi) prototipten dolayı farklı genişlikte değer aktarılması"
 
 #: c-typeck.c:2262
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "passing argument %d of %qE as unsigned due to prototype"
-msgstr "%2$qE işlevinin %1$d. argümanına prototipten dolayı işaretsiz tamsayı aktarılması"
+msgstr "İşlevin %d. argümanına (%qE işlevi) prototipten dolayı işaretsiz tamsayı aktarılması"
 
 #: c-typeck.c:2265
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "passing argument %d of %qE as signed due to prototype"
-msgstr "%2$qE işlevinin %1$d. argümanına prototipten dolayı işaretli tamsayı aktarılması"
+msgstr "İşlevin %d. argümanına (%qE işlevi) prototipten dolayı işaretli tamsayı aktarılması"
 
 #: c-typeck.c:2296
 #, gcc-internal-format
@@ -12142,9 +12149,9 @@ msgid "cannot pass rvalue to reference parameter"
 msgstr "sağdeğer, başvuru parametresine aktarılamaz"
 
 #: c-typeck.c:3665 c-typeck.c:3780
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "passing argument %d of %qE makes qualified function pointer from unqualified"
-msgstr "%2$qE işlevinin %1$d. argümanındaki aktarma niteliksiz göstericiden nitelikli gösterici yapıyor"
+msgstr "İşlevin %d. argümanında (%qE işlevi) aktarma niteliksiz göstericiden nitelikli gösterici yapıyor"
 
 #: c-typeck.c:3668 c-typeck.c:3783
 #, gcc-internal-format
@@ -12162,9 +12169,9 @@ msgid "return makes qualified function pointer from unqualified"
 msgstr "dönüş değeri niteliksiz işlev göstericisini nitelikli yapıyor"
 
 #: c-typeck.c:3678 c-typeck.c:3748
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "passing argument %d of %qE discards qualifiers from pointer target type"
-msgstr "%2$qE işlevinin %1$d. argümanının aktarımı gösterici hedef türündeki niteleyicileri iptal ediyor"
+msgstr "İşlevin %d. argümanının aktarımı (%qE işlevi) gösterici hedef türündeki niteleyicileri iptal ediyor"
 
 #: c-typeck.c:3680 c-typeck.c:3750
 #, gcc-internal-format
@@ -12207,9 +12214,9 @@ msgid "ISO C forbids return between function pointer and %<void *%>"
 msgstr "ISO C de işlev göstericisi ile %<void *%> arasında dönüş değeri yasaktır"
 
 #: c-typeck.c:3763
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "pointer targets in passing argument %d of %qE differ in signedness"
-msgstr "%2$qE işlevinin %1$d. argümanında aktarımda gösterici hedefleri farklı signed'lıkta"
+msgstr "İşlevin %d. argümanında aktarımda (%qE işlevi) gösterici hedefleri farklı sign'lıkta"
 
 #: c-typeck.c:3765
 #, gcc-internal-format
@@ -12227,9 +12234,9 @@ msgid "pointer targets in return differ in signedness"
 msgstr "dönüş değerinde gösterici hedefleri farklı signed'lıkta"
 
 #: c-typeck.c:3792
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "passing argument %d of %qE from incompatible pointer type"
-msgstr "%2$qE işlevinin %1$d. argümanında uyumsuz gösterici türünde aktarım"
+msgstr "İşlevin %d. argümanında (%qE işlevi) uyumsuz gösterici türünde aktarım"
 
 #: c-typeck.c:3794
 #, gcc-internal-format
@@ -12247,9 +12254,9 @@ msgid "return from incompatible pointer type"
 msgstr "uyumsuz gösterici türünde dönüş değeri"
 
 #: c-typeck.c:3818
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "passing argument %d of %qE makes pointer from integer without a cast"
-msgstr "%2$qE işlevinin %1$d. argümanının aktarımı sırasında bir tür dönüşümü olmaksızın tamsayıdan gösterici yapılıyor"
+msgstr "İşlevin %d. (%qE işlevi) argümanının aktarımı sırasında bir tür dönüşümü olmaksızın tamsayıdan gösterici yapılıyor"
 
 #: c-typeck.c:3820
 #, gcc-internal-format
@@ -12267,9 +12274,9 @@ msgid "return makes pointer from integer without a cast"
 msgstr "dönüş değeri bir tür dönüşümü olmaksızın tamsayıdan gösterici yapıyor"
 
 #: c-typeck.c:3831
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "passing argument %d of %qE makes integer from pointer without a cast"
-msgstr "%2$qE işlevinin %1$d. argümanının aktarımı sırasında bir tür dönüşümü olmaksızın göstericiden tamsayı yapılıyor"
+msgstr "İşlevin %d. (%qE işlevi) argümanının aktarımı sırasında bir tür dönüşümü olmaksızın göstericiden tamsayı yapılıyor"
 
 #: c-typeck.c:3833
 #, gcc-internal-format
@@ -12289,9 +12296,9 @@ msgstr "dönüş değerinde bir tür dönüşümü olmaksızın göstericiden ta
 #. ??? This should not be an error when inlining calls to
 #. unprototyped functions.
 #: c-typeck.c:3850
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "incompatible type for argument %d of %qE"
-msgstr "%2$qE işlevinin %1$d. argümanı için tür uyumsuz"
+msgstr "İşlevin %d. argümanı (%qE işlevi) için tür uyumsuz"
 
 #: c-typeck.c:3853
 #, gcc-internal-format
@@ -12334,14 +12341,14 @@ msgid "traditional C rejects initialization of unions"
 msgstr "geleneksel C union ilklendirmesini reddeder"
 
 #: c-typeck.c:6511
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "jump into statement expression"
-msgstr "sabit ifadesinde taşma"
+msgstr "deyim ifadesine jump"
 
 #: c-typeck.c:6517
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "jump into scope of identifier with variably modified type"
-msgstr "`%T' değişkene göre değişen türde"
+msgstr ""
 
 #: c-typeck.c:6554
 #, gcc-internal-format
@@ -12379,12 +12386,12 @@ msgid "%<long%> switch expression not converted to %<int%> in ISO C"
 msgstr "ISO C'de %<long%> switch ifadesi %<int%> türüne dönüştürülmez"
 
 #: c-typeck.c:6762
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "case label in statement expression not containing enclosing switch statement"
 msgstr "case etiketi bir switch deyimi içinde değil"
 
 #: c-typeck.c:6765
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<default%> label in statement expression not containing enclosing switch statement"
 msgstr "%<default%> etiketi bir switch deyimi içinde değil"
 
@@ -12749,9 +12756,9 @@ msgid "Loop %d should not have single exit (%d -> %d)."
 msgstr ""
 
 #: cfgrtl.c:1948
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "end insn %d for block %d not found in the insn stream"
-msgstr "%2$d. bloğunun son komutu %1$d komut akışı içinde yok."
+msgstr "Bloğun son komutu %d komut akışı içinde yok (%d. blok)."
 
 #: cfgrtl.c:1962
 #, gcc-internal-format
@@ -12759,9 +12766,9 @@ msgid "insn %d is in multiple basic blocks (%d and %d)"
 msgstr "komut %d birden fazla temel bloğun içinde (%d ve %d)"
 
 #: cfgrtl.c:1974
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "head insn %d for block %d not found in the insn stream"
-msgstr "%2$d. bloğun ilk komutu %1$d komut akışı içinde yok."
+msgstr "Bloğun ilk komutu %d komut akışı içinde yok (%d. blok)."
 
 #: cfgrtl.c:1998
 #, gcc-internal-format
@@ -13009,14 +13016,14 @@ msgid "coverage mismatch for function %u while reading execution counters."
 msgstr "çalıştırma sayaçları okunurken %u. işlev için sarmalama çelişkisi."
 
 #: coverage.c:261 coverage.c:344
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "checksum is %x instead of %x"
-msgstr "sağlama toplamı %2$x değil %1$x"
+msgstr "sağlama toplamı %x; %x değil"
 
 #: coverage.c:269 coverage.c:352
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "number of counters is %d instead of %d"
-msgstr "sayaç sayısı %2$d değil %1$d"
+msgstr "sayaç sayısı %d; %d değil"
 
 #: coverage.c:275
 #, gcc-internal-format
@@ -13039,9 +13046,9 @@ msgid "no coverage for function %qs found."
 msgstr "%qs işlevi için sarmalayıcı yok."
 
 #: coverage.c:341 coverage.c:349
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "coverage mismatch for function %qs while reading counter %qs."
-msgstr "%2$qs sayacı okunurken %1$qs işlevi için sarmalama çelişkisi."
+msgstr "%qs işlevi için kapsanma çelişkisi (%qs sayacı okunurken)."
 
 #: coverage.c:532
 #, gcc-internal-format
@@ -13054,9 +13061,9 @@ msgid "error writing %qs"
 msgstr "%qs e yazarken hata"
 
 #: diagnostic.c:556
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "in %s, at %s:%d"
-msgstr "%2$s dosyasının %3$d. satırındaki %1$s işlevinde"
+msgstr "%s işlevinde (%s dosyasının %d. satırı)"
 
 #: dominance.c:834
 #, gcc-internal-format
@@ -13099,9 +13106,9 @@ msgid "ICE: emit_insn used where emit_jump_insn needed:\n"
 msgstr "ICE: emit_jump_insn gereken yerde emit_insn kullanılmış:\n"
 
 #: errors.c:133 java/jv-scan.c:277
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "abort in %s, at %s:%d"
-msgstr "%2$s dosyasının %3$d. satırındaki %1$s işlevinde programdan çıkış"
+msgstr "%s işlevinde programdan çıkış (%s dosyasının %d. satırı)"
 
 #: except.c:340
 #, gcc-internal-format
@@ -13614,34 +13621,34 @@ msgid "output operand is constant in %<asm%>"
 msgstr "%<asm%> içindeki çıktı terimi bir sabit"
 
 #: rtl.c:471
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "RTL check: access of elt %d of '%s' with last elt %d in %s, at %s:%d"
-msgstr "RTL denetimi: %5$s:%6$d: %4$s işlevindeki son %3$d öğe ile `%2$s' nin %1$d. öğesinin erişimi"
+msgstr ""
 
 #: rtl.c:481
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "RTL check: expected elt %d type '%c', have '%c' (rtx %s) in %s, at %s:%d"
-msgstr "RTL denetimi: %6$s:%7$d: %5$s içinde öğe %1$d türü olarak '%2$c' umulurken '%3$c' var (rtx %4$s)"
+msgstr ""
 
 #: rtl.c:491
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "RTL check: expected elt %d type '%c' or '%c', have '%c' (rtx %s) in %s, at %s:%d"
-msgstr "RTL denetimi: %7$s:%8$d: %6$s içinde öğe %1$d türü olarak'%2$c' ya da '%3$c' umulurken '%4$c' var (rtx %5$s)"
+msgstr ""
 
 #: rtl.c:500
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "RTL check: expected code '%s', have '%s' in %s, at %s:%d"
-msgstr "RTL denetimi: %4$s:%5$d: %3$s içindeki kod için `%1$s' umulurken `%2$s' var"
+msgstr ""
 
 #: rtl.c:510
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "RTL check: expected code '%s' or '%s', have '%s' in %s, at %s:%d"
-msgstr "RTL denetimi: %5$s:%6$d: %4$s içindeki kod için `%1$s' ya da `%2$s' umulurken `%3$s' var"
+msgstr ""
 
 #: rtl.c:521
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "RTL check: access of elt %d of vector with last elt %d in %s, at %s:%d"
-msgstr "RTL denetimi: %4$s:%5$d: %3$s işlevindeki son %2$d öğe ile vektörün %1$d. öğesinin erişimi"
+msgstr ""
 
 #: rtl.c:532
 #, fuzzy, gcc-internal-format
@@ -13654,9 +13661,9 @@ msgid "output operand constraint lacks %<=%>"
 msgstr "çıktı terim kısıtı eksiği %<=%>"
 
 #: stmt.c:332
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "output constraint %qc for operand %d is not at the beginning"
-msgstr "%2$d terimi için çıktı şartı `%1$qc' başlangıçta değil"
+msgstr "çıktı şartı `%qc' %d. terimin başlangıcında değil"
 
 #: stmt.c:355
 #, gcc-internal-format
@@ -14098,12 +14105,12 @@ msgstr ""
 #: tree-cfg.c:3682
 #, gcc-internal-format
 msgid "Label %s to block does not match in bb %d\n"
-msgstr ""
+msgstr "Blok etiketi %s bb %d içindekiyle eşleşmiyor\n"
 
 #: tree-cfg.c:3691
 #, gcc-internal-format
 msgid "Label %s has incorrect context in bb %d\n"
-msgstr ""
+msgstr "Etiket %s bb %d içinde yanlış bağlama sahip\n"
 
 #: tree-cfg.c:3705
 #, gcc-internal-format
@@ -14111,9 +14118,9 @@ msgid "Control flow in the middle of basic block %d\n"
 msgstr "%d. temel bloğunun ortasında denetim akışı\n"
 
 #: tree-cfg.c:3715
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Label %s in the middle of basic block %d\n"
-msgstr "%2$d temel bloğunun ortasında %1$s etiketi\n"
+msgstr "%s etiketi %d. temel bloğun ortasında\n"
 
 #: tree-cfg.c:3732
 #, gcc-internal-format
@@ -14133,17 +14140,17 @@ msgstr ""
 #: tree-cfg.c:3768
 #, gcc-internal-format
 msgid "%<then%> label does not match edge at end of bb %d\n"
-msgstr ""
+msgstr "%<then%> etiketi bb %d sonundaki kenarla eşleşmiyor\n"
 
 #: tree-cfg.c:3776
 #, gcc-internal-format
 msgid "%<else%> label does not match edge at end of bb %d\n"
-msgstr ""
+msgstr "%<else%> etiketi bb %d sonundaki kenarla eşleşmiyor\n"
 
 #: tree-cfg.c:3786
 #, gcc-internal-format
 msgid "Explicit goto at end of bb %d\n"
-msgstr ""
+msgstr "bb %d sonunda açıkça goto\n"
 
 #: tree-cfg.c:3815
 #, gcc-internal-format
@@ -14153,7 +14160,7 @@ msgstr ""
 #: tree-cfg.c:3848
 #, gcc-internal-format
 msgid "Found default case not at end of case vector"
-msgstr ""
+msgstr "default case, case vektörünün sonunda değil"
 
 #: tree-cfg.c:3854
 #, gcc-internal-format
@@ -14167,7 +14174,7 @@ msgstr ""
 #: tree-cfg.c:3865
 #, gcc-internal-format
 msgid "No default case found at end of case vector"
-msgstr ""
+msgstr "case vektörünün sonunda default case yok"
 
 #: tree-cfg.c:3873
 #, gcc-internal-format
@@ -14180,9 +14187,9 @@ msgid "Missing edge %i->%i"
 msgstr ""
 
 #: tree-cfg.c:5698
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Jfunction might be possible candidate for attribute %<noreturn%>"
-msgstr "işlev %<noreturn%> özniteliği için olası aday olmalı"
+msgstr "%Jişlev %<noreturn%> özniteliği için olası aday olmalı"
 
 #: tree-cfg.c:5725 tree-cfg.c:5729
 #, gcc-internal-format
