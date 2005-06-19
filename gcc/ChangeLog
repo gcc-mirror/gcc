@@ -1,3 +1,18 @@
+2005-06-19  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64-modes.def (V4SF): Add.
+	* config/ia64/ia64.c (ia64_legitimate_constant_p): Handle CONST_VECTOR.
+	* config/ia64/ia64.h (CANNOT_CHANGE_MODE_CLASS): Allow vector to 
+	integer mode changes in fp regs.
+	* config/ia64/ia64.md (UNSPEC_VECT_EXTR): New.
+	* config/ia64/vect.md (smaxv2sf3, sminv2sf3): Fix typos in names.
+	(reduc_plus_v2sf, reduc_smax_v2sf, reduc_smin_v2sf): New.
+	(vcondv2sf): Use gen_fpack
+	(fpack): Remove * from name.
+	(fswap, fmix_l, fmix_r, fmix_lr): New.
+	(vec_setv2sf, vec_extractv2sf_0_le, vec_extractv2sf_0_be): New.
+	(vec_extractv2sf_1, vec_extractv2sf): New.
+
 2005-06-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* combine.c (make_compound_operation): Use simplify_subreg.  Delete
