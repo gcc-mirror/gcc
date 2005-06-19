@@ -1,3 +1,7 @@
+2005-06-19  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/tree-ssa/pr21985.c: Use size_t.
+
 2005-06-19  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* g++.dg/abi/mangle24.C, g++.dg/abi/mangle25.C: New tests.

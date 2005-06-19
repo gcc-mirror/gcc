@@ -10,20 +10,21 @@ struct
     } a[100];
 } a;
 
-void foo(unsigned);
-unsigned *bar (void);
+typedef __SIZE_TYPE__ size_t;
+void foo(size_t);
+size_t *bar (void);
 
 int
 main (void)
 {
-  unsigned *b = bar ();
+  size_t *b = bar ();
 
   /* This should be folded.  */
   foo (&a.a[50].a - &a.a[33].b);
-  foo ((unsigned) &a.a[50].b - (unsigned) &a);
+  foo ((size_t) &a.a[50].b - (size_t) &a);
 
   /* And this should not.  */
-  foo ((unsigned) &b - (unsigned) b);
+  foo ((size_t) &b - (size_t) b);
   return 0;
 }
 
