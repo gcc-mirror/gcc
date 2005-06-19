@@ -1135,6 +1135,7 @@ scan_loop (struct loop *loop, int flags)
 	  if (! in_libcall
 	      && (set = single_set (p))
 	      && REG_P (SET_DEST (set))
+	      && SET_DEST (set) != frame_pointer_rtx
 #ifdef PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
 	      && SET_DEST (set) != pic_offset_table_rtx
 #endif

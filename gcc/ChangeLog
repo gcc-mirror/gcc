@@ -1,3 +1,8 @@
+2005-06-19  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* loop.c (scan_loop): Do not consider insns setting the frame
+	pointer to be candidates for hoisting.
+
 2005-06-19  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/i386/i386.md (*cmpfp_0_sf, *cmpfp_0_df, cmpfp_0_xf):
