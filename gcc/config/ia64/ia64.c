@@ -738,6 +738,17 @@ ia64_legitimate_constant_p (rtx x)
     case SYMBOL_REF:
       return tls_symbolic_operand_type (x) == 0;
 
+    case CONST_VECTOR:
+      {
+	enum machine_mode mode = GET_MODE (x);
+
+	if (mode == V2SFmode)
+	  return ia64_extra_constraint (x, 'Y');
+
+	return (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+		&& GET_MODE_SIZE (mode) <= 8);
+      }
+
     default:
       return false;
     }
