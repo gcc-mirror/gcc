@@ -1,3 +1,13 @@
+2005-06-20  Jan Hubicka  <jh@suse.cz>
+
+	* cfgloop.h (DLTHE_RECORD_COPY_NUMBER): New flag.
+	* cfgloopmanip.c (duplicate_loop_to_header_edge): Set aux flags only
+	when asked for.
+	* loop-unroll.c (peel_loop_completely, unroll_loop_constant_iterations,
+	unroll_loop_runtime_iterations, peel_loop_simple, unroll_loop_stupid):
+	Update call of duplicate_loop_to_header_edge.
+	(apply_opt_in_copies): Clear out aux pointers.
+
 2005-06-19  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* config/i386/i386.c (TARGET_MANGLE_FUNDAMENTAL_TYPE): Define.
