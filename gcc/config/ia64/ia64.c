@@ -262,6 +262,7 @@ static tree ia64_gimplify_va_arg (tree, tree, tree *, tree *);
 static bool ia64_scalar_mode_supported_p (enum machine_mode mode);
 static bool ia64_vector_mode_supported_p (enum machine_mode mode);
 static bool ia64_cannot_force_const_mem (rtx);
+static const char *ia64_mangle_fundamental_type (tree);
 
 /* Table of valid machine attributes.  */
 static const struct attribute_spec ia64_attribute_table[] =
@@ -428,6 +429,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM ia64_cannot_force_const_mem
+
+#undef TARGET_MANGLE_FUNDAMENTAL_TYPE
+#define TARGET_MANGLE_FUNDAMENTAL_TYPE ia64_mangle_fundamental_type
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -8637,6 +8641,23 @@ ia64_profile_hook (int labelno)
 		     gen_rtx_REG (Pmode, BR_REG (0)), Pmode,
 		     ip, Pmode,
 		     label, Pmode);
+}
+
+/* Return the mangling of TYPE if it is an extended fundamental type.  */
+
+static const char *
+ia64_mangle_fundamental_type (tree type)
+{
+  /* On HP-UX, "long double" is mangled as "e" so __float128 is
+     mangled as "e".  */
+  if (!TARGET_HPUX && TYPE_MODE (type) == TFmode)
+    return "g";
+  /* On HP-UX, "e" is not available as a mangling of __float80 so use
+     an extended mangling.  Elsewhere, "e" is available since long
+     double is 80 bits.  */
+  if (TYPE_MODE (type) == XFmode)
+    return TARGET_HPUX ? "u9__float80" : "e";
+  return NULL;
 }
 
 #include "gt-ia64.h"

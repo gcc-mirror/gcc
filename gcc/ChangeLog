@@ -1,3 +1,10 @@
+2005-06-19  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config/i386/i386.c (TARGET_MANGLE_FUNDAMENTAL_TYPE): Define.
+	(ix86_mangle_fundamental_type): New.
+	* config/ia64/ia64.c (TARGET_MANGLE_FUNDAMENTAL_TYPE): Define.
+	(ia64_mangle_fundamental_type): New.
+
 2005-06-19  Roger Sayle  <roger@eyesopen.com>
 
 	* c-decl.c (grokdeclarator): Only check TREE_OVERFLOW on

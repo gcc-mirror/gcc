@@ -905,6 +905,7 @@ static bool ix86_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				    tree, bool);
 static void ix86_init_builtins (void);
 static rtx ix86_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
+static const char *ix86_mangle_fundamental_type (tree);
 
 /* This function is only used on Solaris.  */
 static void i386_solaris_elf_named_section (const char *, unsigned int, tree)
@@ -1076,6 +1077,9 @@ static void init_ext_80387_constants (void);
 #undef TARGET_INSERT_ATTRIBUTES
 #define TARGET_INSERT_ATTRIBUTES SUBTARGET_INSERT_ATTRIBUTES
 #endif
+
+#undef TARGET_MANGLE_FUNDAMENTAL_TYPE
+#define TARGET_MANGLE_FUNDAMENTAL_TYPE ix86_mangle_fundamental_type
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -17537,6 +17541,24 @@ i386_solaris_elf_named_section (const char *name, unsigned int flags,
       return;
     }
   default_elf_asm_named_section (name, flags, decl);
+}
+
+/* Return the mangling of TYPE if it is an extended fundamental type.  */
+
+static const char *
+ix86_mangle_fundamental_type (tree type)
+{
+  switch (TYPE_MODE (type))
+    {
+    case TFmode:
+      /* __float128 is "g".  */
+      return "g";
+    case XFmode:
+      /* "long double" or __float80 is "e".  */
+      return "e";
+    default:
+      return NULL;
+    }
 }
 
 #include "gt-i386.h"
