@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.0.0\n"
+"Project-Id-Version: gcc 4.0.1-b20050607\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2005-06-06 21:32+0200\n"
-"PO-Revision-Date: 2005-05-19 17:56+0200\n"
+"PO-Revision-Date: 2005-06-18 18:04+0200\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -2418,7 +2418,7 @@ msgstr "Wenn die Anzahl der Kandidaten in der Menge kleiner ist, wird immer vers
 
 #: params.def:369
 msgid "Bound on size of expressions used in the scalar evolutions analyzer"
-msgstr ""
+msgstr "Schranke für Größe von Ausdrücken im skalaren Evolutions-Analysierer verwendet"
 
 #: params.def:376
 msgid "Given N calls and V call-clobbered vars in a function.  Use .GLOBAL_VAR if NxV is larger than this limit"
@@ -2958,14 +2958,14 @@ msgid "Specify the MCU name"
 msgstr "MCU-Namen angeben"
 
 #: config/bfin/bfin.c:993
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%j value"
-msgstr "ungültiger %%x-Wert"
+msgstr "ungültiger %%j-Wert"
 
 #: config/bfin/bfin.c:1113
-#, fuzzy, c-format
+#, c-format
 msgid "invalid const_double operand"
-msgstr "ungültige Bedingungen für Operand"
+msgstr "ungültiger const_double-Operand"
 
 #: config/c4x/c4x.c:1598
 msgid "using CONST_DOUBLE for address"
@@ -6190,34 +6190,34 @@ msgstr "' als virtuell markiert\n"
 #: java/gjavah.c:2350
 #, c-format
 msgid "Try '"
-msgstr ""
+msgstr "»"
 
 #: java/gjavah.c:2350
-#, fuzzy, c-format
+#, c-format
 msgid " --help' for more information.\n"
-msgstr "»gcjh --help« für mehr Informationen versuchen.\n"
+msgstr " --help« für mehr Informationen versuchen.\n"
 
 #: java/gjavah.c:2357
 #, c-format
 msgid "Usage: "
-msgstr ""
+msgstr "Aufruf: "
 
 #: java/gjavah.c:2357
-#, fuzzy, c-format
+#, c-format
 msgid ""
 " [OPTION]... CLASS...\n"
 "\n"
 msgstr ""
-"Aufruf: gcjh [OPTION]... KLASSE...\n"
+" [OPTION]... KLASSE...\n"
 "\n"
 
 #: java/gjavah.c:2358
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Generate C or C++ header files from .class files\n"
 "\n"
 msgstr ""
-"C++-Headerdateien von .class-Dateien erzeugen\n"
+"C- oder C++-Headerdateien aus .class-Dateien erzeugen\n"
 "\n"
 
 #: java/gjavah.c:2359
@@ -6231,24 +6231,24 @@ msgid "  -jni                    Generate a JNI header or stub\n"
 msgstr "  -jni                    Einen JNI-Header oder Stumpf erzeugen\n"
 
 #: java/gjavah.c:2361
-#, fuzzy, c-format
+#, c-format
 msgid "  -force                  Always overwrite output files\n"
-msgstr "  -o DATEI                Ausgabedateinamen setzen\n"
+msgstr "  -force                  Ausgabedateien immer überschreiben\n"
 
 #: java/gjavah.c:2362
-#, fuzzy, c-format
+#, c-format
 msgid "  -old                    Unused compatibility option\n"
-msgstr "  --help                   Diese Informationen anzeigen\n"
+msgstr "  -old                    Unbenutzte Kompatibilitätsoption\n"
 
 #: java/gjavah.c:2363
-#, fuzzy, c-format
+#, c-format
 msgid "  -trace                  Unused compatibility option\n"
-msgstr "  --help                   Diese Informationen anzeigen\n"
+msgstr "  -trace                  Unbenutzte Kompatibilitätsoption\n"
 
 #: java/gjavah.c:2364
 #, c-format
 msgid "  -J OPTION               Unused compatibility option\n"
-msgstr ""
+msgstr "  -J OPTION               Unbenutzte Kompatibilitätsoption\n"
 
 #: java/gjavah.c:2366
 #, c-format
@@ -6793,7 +6793,7 @@ msgstr "Namen der Header-Dateien ausgeben, wie sie verwendet werden"
 
 #: options.c:985
 msgid "-J<directory>\tPut MODULE files in 'directory'"
-msgstr ""
+msgstr "-J<Verzeichnis>\tMODULE-Dateien in »Verzeichnis« ablegen"
 
 #: options.c:991
 msgid "Generate make dependencies and compile"
@@ -6840,9 +6840,8 @@ msgid "Warn about returning structures, unions or arrays"
 msgstr "Bei zurückgegebenen Strukturen, Unions oder Feldern warnen"
 
 #: options.c:1042
-#, fuzzy
 msgid "Warn about possible aliasing of dummy arguments"
-msgstr "Bei möglicherweise fehlenden Klammern warnen"
+msgstr "Bei möglichem Aliasing von Dummy-Argumenten warnen"
 
 #: options.c:1048
 msgid "Warn about casting functions to incompatible types"
@@ -6869,9 +6868,8 @@ msgid "Synonym for -Wcomment"
 msgstr "Synonym für -Wcomment"
 
 #: options.c:1066
-#, fuzzy
 msgid "Warn about implicit conversion"
-msgstr "Bei impliziten Funktionsdeklarationen warnen"
+msgstr "Bei impliziten Umwandlungen warnen"
 
 #: options.c:1069
 msgid "Warn when all constructors and destructors are private"
@@ -6962,9 +6960,8 @@ msgid "Warn when a declaration does not specify a type"
 msgstr "Warnen, wenn eine Deklaration keinen Typ angibt"
 
 #: options.c:1141
-#, fuzzy
 msgid "Warn about calls with implicit interface"
-msgstr "Bei impliziten Funktionsdeklarationen warnen"
+msgstr "Bei Aufrufen mit impliziter Schnittstelle warnen"
 
 #: options.c:1144
 msgid "Deprecated.  This switch has no effect."
@@ -6991,9 +6988,8 @@ msgid "-Wlarger-than-<number>\tWarn if an object is larger than <number> bytes"
 msgstr "-Wlarger-than-<Anzahl>\tWarnen, wenn ein Objekt größer als <Anzahl> Bytes ist"
 
 #: options.c:1162
-#, fuzzy
 msgid "Warn about truncated source lines"
-msgstr "Vor Funktionsdeklarationen ohne Prototyp warnen"
+msgstr "Bei abgeschnittenen Quelltextzeilen warnen"
 
 #: options.c:1165
 msgid "Do not warn about using \"long long\" when -pedantic"
@@ -7053,7 +7049,7 @@ msgstr "Warnen, wenn NULL an Argumentstellen, die als nicht-NULL erfordernd mark
 
 #: options.c:1207
 msgid "Warn about usage of non-standard intrinsics"
-msgstr ""
+msgstr "Bei Verwendung von Nicht-Standard-Intrinsics warnen"
 
 #: options.c:1210
 msgid "Warn if a C-style cast is used in a program"
@@ -7140,18 +7136,16 @@ msgid "Warn about code which might break strict aliasing rules"
 msgstr "Bei Code warnen, der strict-aliasing-Regeln verletzen könnte"
 
 #: options.c:1276
-#, fuzzy
 msgid "Warn about uncasted NULL used as sentinel"
-msgstr "Vor Funktionsdeklarationen ohne Prototyp warnen"
+msgstr "Bei als Wächter verwendetem, nicht umgewandeltem NULL warnen"
 
 #: options.c:1279
 msgid "Warn about unprototyped function declarations"
 msgstr "Bei Funktionsdeklarationen ohne Prototyp warnen"
 
 #: options.c:1282
-#, fuzzy
 msgid "Warn about \"suspicious\" constructs"
-msgstr "Vor verdächtigen Deklarationen von \"main\" warnen"
+msgstr "Bei \"verdächtigen\" Konstrukten warnen"
 
 #: options.c:1285
 msgid "Warn about enumerated switches, with no default, missing a case"
@@ -7190,9 +7184,8 @@ msgid "Warn if an undefined macro is used in an #if directive"
 msgstr "Warnen, wenn ein undefiniertes Makro in einer #if-Anweisung verwendet wird"
 
 #: options.c:1312
-#, fuzzy
 msgid "Warn about underflow of numerical constant expressions"
-msgstr "Überlauf in Konstanten-Ausdruck"
+msgstr "Bei Unterlauf numerischer Konstantenausdrücke warnen"
 
 #: options.c:1315
 msgid "Warn about uninitialized automatic variables"
@@ -7420,7 +7413,7 @@ msgstr "Datenstücke in ihren eigenen Abschnitt legen"
 
 #: options.c:1525
 msgid "Set the default double precision kind to an 8 byte wide type"
-msgstr ""
+msgstr "Standard-Doppelpräzisionsart auf einen 8 Bytes breiten Typen setzen"
 
 #: options.c:1528
 msgid "Inline member functions by default"
@@ -7428,11 +7421,11 @@ msgstr "Standardmäßig »inline«-Elementfunktionen"
 
 #: options.c:1531
 msgid "Set the default integer kind to an 8 byte wide type"
-msgstr ""
+msgstr "Standard-Ganzahlart auf einen 8 Bytes breiten Typen setzen"
 
 #: options.c:1534
 msgid "Set the default real kind to an 8 byte wide type"
-msgstr ""
+msgstr "Standard-Realzahlart auf einen 8 Bytes breiten Typen setzen"
 
 #: options.c:1537
 msgid "Defer popping functions args from stack until later"
@@ -7452,7 +7445,7 @@ msgstr "-fdiagnostics-show-location=[once|every-line]\tWie oft soll Stelle im Qu
 
 #: options.c:1555
 msgid "Allow dollar signs in entity names"
-msgstr ""
+msgstr "Dollarzeichen in Entity-Namen erlauben"
 
 #: options.c:1558
 msgid "Permit '$' as an identifier character"
@@ -7463,9 +7456,8 @@ msgid "-fdump-<type>\tDump various compiler internals to a file"
 msgstr "-fdump-<Typ>\tVerschiedene compilerinterne Informationen in eine Datei abziehen"
 
 #: options.c:1564
-#, fuzzy
 msgid "Display the code tree after parsing."
-msgstr "Compiler-Version anzeigen"
+msgstr "Code-Baum nach Analyse anzeigen."
 
 #: options.c:1567
 msgid "Suppress output of instruction numbers and line number notes in debugging dumps"
@@ -7512,9 +7504,8 @@ msgid "--extdirs=<path>\tSet the extension directory path"
 msgstr "--extdirs=<Pfad>\tDen Pfad für das Erweiterungsverzeichnis setzen"
 
 #: options.c:1618
-#, fuzzy
 msgid "Use f2c calling convention."
-msgstr "Normale Aufrufkonvention verwenden"
+msgstr "f2c-Aufrufkonvention verwenden"
 
 #: options.c:1624
 msgid "Input file is a file with a list of filenames to compile"
@@ -7529,17 +7520,16 @@ msgid "-ffixed-<register>\tMark <register> as being unavailable to the compiler"
 msgstr "-ffixed-<Register>\t<Register> als für den Compiler nicht verfügbar markieren"
 
 #: options.c:1633
-#, fuzzy
 msgid "Assume that the source file is fixed form"
-msgstr "Annehmen, dass Zeiger nicht mit anderem Namen verwendet werden können"
+msgstr "Annehmen, dass Quelldatei in fester Form vorliegt"
 
 #: options.c:1636
 msgid "-ffixed-line-length-<n>\t\tUse n as character line width in fixed mode"
-msgstr ""
+msgstr "-ffixed-line-length-<n>\t\tIm festen Modus n als Zeilenlänge verwenden"
 
 #: options.c:1639
 msgid "Allow arbitrary character line width in fixed mode"
-msgstr ""
+msgstr "Im festen Modus beliebig lange Zeilen erlauben"
 
 #: options.c:1642
 msgid "Don't allocate floats and doubles in extended-precision registers"
@@ -7562,9 +7552,8 @@ msgid "Copy memory operands into registers before use"
 msgstr "Speicheroperanden vor der Verwendung in Register kopieren"
 
 #: options.c:1657
-#, fuzzy
 msgid "Assume that the source file is free form"
-msgstr "Annehmen, dass Zeiger nicht mit anderem Namen verwendet werden können"
+msgstr "Annehmen, dass Quelldatei in freier Form vorliegt"
 
 #: options.c:1660
 msgid "Do not assume that standard C libraries and \"main\" exist"
@@ -7644,7 +7633,7 @@ msgstr "Implizite Instantiierungen von »inline«-Templates ausgeben"
 
 #: options.c:1726
 msgid "Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements"
-msgstr ""
+msgstr "Angeben, dass keine implizite Typisierung erlaubt ist, außer es wird durch explizite IMPLICIT-Anweisungen überschrieben"
 
 #: options.c:1729
 msgid "Emit implicit instantiations of templates"
@@ -7708,11 +7697,11 @@ msgstr "Nach eingebauten Mathematikfunktionen errno setzen"
 
 #: options.c:1783
 msgid "-fmax-identifier-length=<n>\tMaximum identifier length."
-msgstr ""
+msgstr "-fmax-identifier-length=<n>\tMaximale Bezeichnerlänge."
 
 #: options.c:1786
 msgid "-fmax-stack-var-size=<n>\tSize in bytes of the largest array that will be put on the stack"
-msgstr ""
+msgstr "-fmax-stack-var-size=<n>\tGröße des größten Feldes, das auf dem Stack abgelegt wird, in Bytes"
 
 #: options.c:1789
 msgid "Report on permanent memory allocation"
@@ -7732,7 +7721,7 @@ msgstr "-fmessage-length=<Anzahl>\tDiagnosemeldungen auf <Anzahl> Zeichen pro Ze
 
 #: options.c:1801
 msgid "Set default accessibility of module entities to PRIVATE"
-msgstr ""
+msgstr "Standardzugriff von Modulentitäten auf PRIVATE setzen"
 
 #: options.c:1804
 msgid "Perform SMS based modulo scheduling before the first scheduling pass"
@@ -7767,9 +7756,8 @@ msgid "Assume that receivers of Objective-C messages may be nil"
 msgstr "Annehmen, dass Empfänger von Objective-C-Nachrichten Null sein können"
 
 #: options.c:1834
-#, fuzzy
 msgid "Don't generate code, just do syntax and semantics checking"
-msgstr "Keinen für schnelles Debugging geeigneten Code erzeugen"
+msgstr "Keinen Code erzeugen, nur Syntax- und Semantikprüfung vornehmen"
 
 #: options.c:1837
 msgid "Support synchronous non-call exceptions"
@@ -7809,7 +7797,7 @@ msgstr "Optionale Diagnosemeldungen einschalten"
 
 #: options.c:1873
 msgid "Try to layout derived types as compact as possible"
-msgstr ""
+msgstr "Abgeleitete Typen so kompakt wie möglich anordnen"
 
 #: options.c:1876
 msgid "Pack structure members together without holes"
@@ -7909,7 +7897,7 @@ msgstr "Funktionen umsortieren, um Codeplatzierung zu verbessern"
 
 #: options.c:1954
 msgid "Copy array sections into a contiguous block on procedure entry"
-msgstr ""
+msgstr "Feldabschnitte bei Prozedureintritt in einen zusammenhängenden Block kopieren"
 
 #: options.c:1957
 msgid "Used in Fix-and-Continue mode to indicate that object files may be swapped in at runtime"
@@ -7993,7 +7981,7 @@ msgstr "Befehle nach Registerbelegung neu planen"
 
 #: options.c:2017
 msgid "Append a second underscore if the name already contains an underscore"
-msgstr ""
+msgstr "Einen zweiten Unterstrich anhängen, wenn der Name bereits einen Unterstrich enthält"
 
 #: options.c:2020
 msgid "Mark data as shared rather than private"
@@ -8185,7 +8173,7 @@ msgstr "-ftree-vectorizer-verbose=<Zahl>\tStufe der Wortfülle des Vektorisierer
 
 #: options.c:2176
 msgid "Append underscores to externally visible names"
-msgstr ""
+msgstr "Unterstriche an extern sichtbare Namen anhängen"
 
 #: options.c:2179
 msgid "Compile whole compilation unit at a time"
@@ -8401,7 +8389,7 @@ msgstr "C-Header mit Plattform-spezifischen Merkmalen erzeugen"
 
 #: options.c:2347
 msgid "-qkind=<n>\tSet the kind for a real with the 'q' exponent to 'n'"
-msgstr ""
+msgstr "-qkind=<n>\tDie Art für eine Realzahl mit Exponent q auf n setzen"
 
 #: options.c:2350
 msgid "Do not display functions compiled or elapsed time"
@@ -8428,18 +8416,16 @@ msgid "Deprecated in favor of -std=c99"
 msgstr "Veraltet zugunsten von -std=c99"
 
 #: options.c:2368
-#, fuzzy
 msgid "Conform to the ISO Fortran 2003 standard."
-msgstr "Mit dem Standard ISO 1999 C übereinstimmen"
+msgstr "Mit dem Standard ISO Fortran 2003 übereinstimmen"
 
 #: options.c:2371
-#, fuzzy
 msgid "Conform to the ISO Fortran 95 standard."
-msgstr "Mit dem Standard ISO 1999 C übereinstimmen"
+msgstr "Mit dem Standard ISO Fortran 95 übereinstimmen"
 
 #: options.c:2374
 msgid "Conform nothing in particular."
-msgstr ""
+msgstr "Mit nichts besonderem übereinstimmen."
 
 #: options.c:2377
 msgid "Conform to the ISO 1998 C++ standard with GNU extensions"
@@ -9609,9 +9595,9 @@ msgid "%Jjump into statement expression"
 msgstr "%JSprung in Anweisungs-Ausdruck"
 
 #: c-decl.c:2540
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Jjump into scope of identifier with variably modified type"
-msgstr "%qT ist ein variabel modifizierter Typ"
+msgstr "%Jin Gültigkeitsbereich von Bezeichner mit variabel modifiziertem Typ springen"
 
 #: c-decl.c:2555
 #, gcc-internal-format
@@ -10339,9 +10325,9 @@ msgid "%Jdeclaration for parameter %qD but no such parameter"
 msgstr "%JDeklaration für nicht vorhandenen Parameter %qD"
 
 #: c-decl.c:6237
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "number of arguments doesn%'t match built-in prototype"
-msgstr "Anzahl der Argumente passt nicht zum Prototypen"
+msgstr "Anzahl der Argumente passt nicht zum eingebauten Prototypen"
 
 #: c-decl.c:6241
 #, gcc-internal-format
@@ -10354,9 +10340,9 @@ msgid "%Hprototype declaration"
 msgstr "%HPrototyp-Deklaration"
 
 #: c-decl.c:6276
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "promoted argument %qD doesn%'t match built-in prototype"
-msgstr "weitergegebenes Argument %qD passt nicht zum Prototypen"
+msgstr "weitergegebenes Argument %qD passt nicht zu eingebautem Prototypen"
 
 #: c-decl.c:6280
 #, gcc-internal-format
@@ -10364,9 +10350,9 @@ msgid "promoted argument %qD doesn%'t match prototype"
 msgstr "weitergegebenes Argument %qD passt nicht zum Prototypen"
 
 #: c-decl.c:6290
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument %qD doesn%'t match built-in prototype"
-msgstr "Argument %qD passt nicht zum Prototypen"
+msgstr "Argument %qD passt nicht zu eingebautem Prototypen"
 
 #: c-decl.c:6294
 #, gcc-internal-format
@@ -10905,27 +10891,27 @@ msgstr "format %q.*s erwartet Typ %<%T%s%>, aber Argument %d hat Typ %qT"
 #: c-format.c:2294 c-format.c:2300 c-format.c:2401
 #, gcc-internal-format
 msgid "%<__gcc_host_wide_int__%> is not defined as a type"
-msgstr ""
+msgstr "%<__gcc_host_wide_int__%> ist nicht als Typ definiert"
 
 #: c-format.c:2307 c-format.c:2411
 #, gcc-internal-format
 msgid "%<__gcc_host_wide_int__%> is not defined as %<long%> or %<long long%>"
-msgstr ""
+msgstr "%<__gcc_host_wide_int__%> ist nicht als %<long%> oder %<long long%> definiert"
 
 #: c-format.c:2360
 #, gcc-internal-format
 msgid "%<location_t%> is not defined as a type"
-msgstr ""
+msgstr "%<location_t%> ist nicht als ein Typ definiert"
 
 #: c-format.c:2377
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<tree%> is not defined as a type"
-msgstr "%<%T::%D%> ist kein Typ"
+msgstr "%<tree%> ist nicht als ein Typ definiert"
 
 #: c-format.c:2382
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<tree%> is not defined as a pointer type"
-msgstr "%qT ist kein Zeiger auf Objekt"
+msgstr "%<tree%> ist nicht als ein Zeigertyp definiert"
 
 #: c-format.c:2568
 #, gcc-internal-format
@@ -12232,9 +12218,9 @@ msgid "jump into statement expression"
 msgstr "Sprung in Anweisungs-Ausdruck"
 
 #: c-typeck.c:6517
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "jump into scope of identifier with variably modified type"
-msgstr "%qT ist ein variabel modifizierter Typ"
+msgstr "in Gültigkeitsbereich des Bezeichners mit variabel modifiziertem Typen springen"
 
 #: c-typeck.c:6554
 #, gcc-internal-format
@@ -12282,14 +12268,14 @@ msgid "%<default%> label in statement expression not containing enclosing switch
 msgstr "%<default%>-Marke in Anweisungs-Ausdruck enthält keine einschließende switch-Anweisung"
 
 #: c-typeck.c:6771
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "case label in scope of identifier with variably modified type not containing enclosing switch statement"
-msgstr "case-Marke in Anweisungs-Ausdruck enthält keine einschließende switch-Anweisung"
+msgstr "case-Marke in Gültigkeitsbereich eines Bezeichners mit variabel modifiziertem Typen, der keine einschließende switch-Anweisung enthält"
 
 #: c-typeck.c:6774
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<default%> label in scope of identifier with variably modified type not containing enclosing switch statement"
-msgstr "%<default%>-Marke in Anweisungs-Ausdruck enthält keine einschließende switch-Anweisung"
+msgstr "%<default%>-Marke in Gültigkeitsbereich eines Bezeichners mit variabel modifiziertem Typen, der keine einschließende switch-Anweisung enthält"
 
 #: c-typeck.c:6778 cp/parser.c:6100
 #, gcc-internal-format
@@ -14365,9 +14351,9 @@ msgid "verify_ssa failed."
 msgstr "verify_ssa gescheitert."
 
 #: tree-ssa.c:1379
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%H%qD is used uninitialized in this function"
-msgstr "%J%qD wird in dieser Funktion uninitialisiert verwendet"
+msgstr "%H%qD wird in dieser Funktion uninitialisiert verwendet"
 
 #: tree-ssa.c:1404
 #, gcc-internal-format
@@ -15016,9 +15002,9 @@ msgid "-mshared-library-id=%d is not between 0 and %d"
 msgstr "-mshared-library-id=%d ist nicht zwischen 0 und %d"
 
 #: config/bfin/bfin.c:2552
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "multiple function type attributes specified"
-msgstr "%Jinline-Funktion %qD wurde das Attribut »noinline« gegeben"
+msgstr "mehrere Funktionstypattribute angegeben"
 
 #: config/c4x/c4x-c.c:71
 #, gcc-internal-format
@@ -16727,9 +16713,9 @@ msgid "comparison between %q#T and %q#T"
 msgstr "Vergleich zwischen %q#T und %q#T"
 
 #: cp/call.c:4038
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no suitable %<operator %s%> for %qT"
-msgstr "kein geeignetes %<operator %s> für %qT"
+msgstr "kein geeignetes %<operator %s%> für %qT"
 
 #: cp/call.c:4055
 #, gcc-internal-format
@@ -18314,9 +18300,9 @@ msgid "multiple storage classes in declaration of %qs"
 msgstr "mehrere Speicherklassen in Deklaration von %qs"
 
 #: cp/decl.c:6970
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "storage class specified for %qs"
-msgstr "als Speicherklasse für %s wurde %qs angegeben"
+msgstr "Speicherklasse %qs angegeben"
 
 #: cp/decl.c:7004
 #, gcc-internal-format
@@ -19575,7 +19561,7 @@ msgstr "nicht-statisches Referenzelement %q#D, Standard-Zuweisungsoperator kann 
 #: cp/method.c:780
 #, gcc-internal-format
 msgid "%Hsynthesized method %qD first required here "
-msgstr ""
+msgstr "%Hkünstlich erzeugte Methode %qD zuerst hier erfordert "
 
 #: cp/method.c:1107
 #, gcc-internal-format
@@ -19963,9 +19949,9 @@ msgid "%qE in namespace %qE does not name a type"
 msgstr "%qE in Namensbereich %qE bezeichnet keinen Typ"
 
 #: cp/parser.c:2050
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qE in class %qT does not name a type"
-msgstr "$qE in Klasse %qT bezeichnet keinen Typ"
+msgstr "%qE in Klasse %qT bezeichnet keinen Typen"
 
 #: cp/parser.c:2759
 #, gcc-internal-format
@@ -20408,9 +20394,9 @@ msgid "too few template parameter lists in declaration of %qD"
 msgstr "zu wenige Templateparameterlisten in Deklaration von %qD"
 
 #: cp/pt.c:1814
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "explicit specialization of %qD must be introduced by %<template <>%>"
-msgstr "einer expliziten Spezialisierung muss %<template <>%> vorausgehen"
+msgstr "der expliziten Spezialisierung von %D muss %<template <>%> vorausgehen"
 
 #: cp/pt.c:1833
 #, gcc-internal-format
@@ -20559,9 +20545,9 @@ msgid "previous declaration %qD"
 msgstr "vorherige Deklaration %qD"
 
 #: cp/pt.c:3229
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "used %d template parameter(s) instead of %d"
-msgstr "%d Template-Parameter%.0s statt %d verwendet"
+msgstr "%d Template-Parameter statt %d verwendet"
 
 #: cp/pt.c:3248
 #, gcc-internal-format
@@ -21166,14 +21152,14 @@ msgid "request for member %qD is ambiguous in multiple inheritance lattice"
 msgstr "Abfrage des Elementes %qD ist im Gitter der Mehrfachvererbung mehrdeutig"
 
 #: cp/semantics.c:2753
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "use of %<auto%> variable from containing function"
-msgstr "Verwendung von %s von enthaltener Funktion aus"
+msgstr "Verwendung einer %<auto%>-Variable aus enthaltender Funktion"
 
 #: cp/semantics.c:2754
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "use of parameter from containing function"
-msgstr "Verwendung von %s von enthaltener Funktion aus"
+msgstr "Verwendung eines Parameters aus enthaltender Funktion"
 
 #: cp/semantics.c:2755
 #, gcc-internal-format
@@ -22813,10 +22799,12 @@ msgstr "Klasse %qs in %<throws%>-Klausel muss eine abgeleitete Klasse von %<java
 msgid "Class %qs must override %qs with a public method in order to implement interface %qs"
 msgstr "Klasse %qs muss %qs mit einer öffentlichen Methode überschreiben, um die Schnittstelle %qs zu implementieren"
 
+# GCC bug: reordering not yet supported.
+# Should be: "Methode %1$qs wurde in Klasse %3$qs mit Rückgabetyp %2$qs definiert"
 #: java/parse.y:6568 java/parse.y:6795
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Method %qs was defined with return type %qs in class %qs"
-msgstr "Methode %1$qs wurde in Klasse %3$qs mit Rückgabetyp %2$qs definiert"
+msgstr ""
 
 #: java/parse.y:6585
 #, gcc-internal-format
@@ -22908,10 +22896,12 @@ msgstr "Variable %qs ist nicht definiert"
 msgid "Can't make a static reference to nonstatic variable %qs in class %qs"
 msgstr "Es kann keine statische Referenz auf nichtstatische Variable %qs in Klasse %qs gemacht werden"
 
+# GCC bug: reordering not yet supported.
+# Should be: "Im Gültigkeitsbereich %2$s ist keine umgebende Instanz für innere Klasse %1$qs"
 #: java/parse.y:9804 java/parse.y:10659
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "No enclosing instance for inner class %qs is in scope%s"
-msgstr "Im Gültigkeitsbereich %2$s ist keine umgebende Instanz für innere Klasse %1$qs"
+msgstr ""
 
 #: java/parse.y:9923 java/parse.y:12372
 #, gcc-internal-format
@@ -22978,15 +22968,19 @@ msgstr "%s %qs in Klasse %qs ist veraltet"
 msgid "Can't invoke a method on primitive type %qs"
 msgstr "Für einfachen Typen %qs kann keine Methode aufgerufen werden"
 
+# GCC bug: reordering not yet supported.
+# Should be: "In Schnittstelle %2$qs kann keine statische Referenz auf Methode %1$qs gemacht werden"
 #: java/parse.y:10516
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Can't make static reference to method %qs in interface %qs"
-msgstr "In Schnittstelle %2$qs kann keine statische Referenz auf Methode %1$qs gemacht werden"
+msgstr ""
 
+# GCC bug: reordering not yet supported.
+# Should be: "In Klasse %5$qs kann keine statische Referenz auf Methode %1$<%2$qs %3$qs%4$> gemacht werden"
 #: java/parse.y:10526 java/parse.y:10860
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Can't make static reference to method %<%s %s%> in class %qs"
-msgstr "In Klasse %5$qs kann keine statische Referenz auf Methode %1$<%2$qs %3$qs%4$> gemacht werden"
+msgstr ""
 
 #: java/parse.y:10566
 #, gcc-internal-format
