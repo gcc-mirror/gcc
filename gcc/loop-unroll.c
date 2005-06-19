@@ -519,7 +519,9 @@ peel_loop_completely (struct loops *loops, struct loop *loop)
 					  loops, npeel,
 					  wont_exit, desc->out_edge,
 					  remove_edges, &n_remove_edges,
-					  DLTHE_FLAG_UPDATE_FREQ);
+					  DLTHE_FLAG_UPDATE_FREQ
+					  | (opt_info
+					     ? DLTHE_RECORD_COPY_NUMBER : 0));
       gcc_assert (ok);
 
       free (wont_exit);
@@ -717,7 +719,10 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
 					      loops, exit_mod,
 					      wont_exit, desc->out_edge,
 					      remove_edges, &n_remove_edges,
-					      DLTHE_FLAG_UPDATE_FREQ);
+					      DLTHE_FLAG_UPDATE_FREQ
+					      | (opt_info && exit_mod > 1
+						 ? DLTHE_RECORD_COPY_NUMBER
+						   : 0));
 	  gcc_assert (ok);
 
           if (opt_info && exit_mod > 1)
@@ -753,7 +758,10 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
 					      loops, exit_mod + 1,
 					      wont_exit, desc->out_edge,
 					      remove_edges, &n_remove_edges,
-					      DLTHE_FLAG_UPDATE_FREQ);
+					      DLTHE_FLAG_UPDATE_FREQ
+					      | (opt_info && exit_mod > 0
+						 ? DLTHE_RECORD_COPY_NUMBER
+						   : 0));
 	  gcc_assert (ok);
  
           if (opt_info && exit_mod > 0)
@@ -777,7 +785,10 @@ unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
 				      loops, max_unroll,
 				      wont_exit, desc->out_edge,
 				      remove_edges, &n_remove_edges,
-				      DLTHE_FLAG_UPDATE_FREQ);
+				      DLTHE_FLAG_UPDATE_FREQ
+				      | (opt_info
+					 ? DLTHE_RECORD_COPY_NUMBER
+					   : 0));
   gcc_assert (ok);
 
   if (opt_info)
@@ -1097,7 +1108,10 @@ unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
 				      loops, max_unroll,
 				      wont_exit, desc->out_edge,
 				      remove_edges, &n_remove_edges,
-				      DLTHE_FLAG_UPDATE_FREQ);
+				      DLTHE_FLAG_UPDATE_FREQ
+				      | (opt_info
+					 ? DLTHE_RECORD_COPY_NUMBER
+					   : 0));
   gcc_assert (ok);
   
   if (opt_info)
@@ -1274,7 +1288,10 @@ peel_loop_simple (struct loops *loops, struct loop *loop)
   ok = duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
 				      loops, npeel, wont_exit,
 				      NULL, NULL,
-				      NULL, DLTHE_FLAG_UPDATE_FREQ);
+				      NULL, DLTHE_FLAG_UPDATE_FREQ
+				      | (opt_info
+					 ? DLTHE_RECORD_COPY_NUMBER
+					   : 0));
   gcc_assert (ok);
 
   free (wont_exit);
@@ -1422,7 +1439,10 @@ unroll_loop_stupid (struct loops *loops, struct loop *loop)
   ok = duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
 				      loops, nunroll, wont_exit,
 				      NULL, NULL, NULL,
-				      DLTHE_FLAG_UPDATE_FREQ);
+				      DLTHE_FLAG_UPDATE_FREQ
+				      | (opt_info
+					 ? DLTHE_RECORD_COPY_NUMBER
+					   : 0));
   gcc_assert (ok);
   
   if (opt_info)
@@ -2064,6 +2084,7 @@ apply_opt_in_copies (struct opt_info *opt_info,
 	 duplicate_loop_to_header_edge.  */
       delta = determine_split_iv_delta ((size_t)bb->aux, n_copies,
 					unrolling);
+      bb->aux = 0;
       orig_insn = BB_HEAD (orig_bb);
       for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb)); insn = next)
         {

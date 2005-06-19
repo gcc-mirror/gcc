@@ -982,11 +982,12 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
       /* Copy bbs.  */
       copy_bbs (bbs, n, new_bbs, spec_edges, 2, new_spec_edges, loop);
 
-      for (i = 0; i < n; i++)
-	{
-	  gcc_assert (!new_bbs[i]->aux);
-	  new_bbs[i]->aux = (void *)(size_t)(j + 1);
-	}
+      if (flags & DLTHE_RECORD_COPY_NUMBER)
+	for (i = 0; i < n; i++)
+	  {
+	    gcc_assert (!new_bbs[i]->aux);
+	    new_bbs[i]->aux = (void *)(size_t)(j + 1);
+	  }
 
       /* Note whether the blocks and edges belong to an irreducible loop.  */
       if (add_irreducible_flag)
