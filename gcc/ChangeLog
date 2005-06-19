@@ -1,3 +1,11 @@
+2005-06-19  Uros Bizjak  <uros@kss-loka.si>
+
+	* config/i386/i386.c (ix86_function_arg_regno_p): Add MMX_REGNO_P
+	for TARGET_MMX.  Use MMX_REGPARM_MAX and SSE_REGPARM_MAX for MMX
+	and SSE registers to determine if regno is valid.
+	(ix86_function_value_regno_p): Depend FIRST_FLOAT_REG on
+	TARGET_FLOAT_RETURNS_IN_80387 also for TARGET_64BIT. Clean up.
+
 2005-06-18  Richard Henderson  <rth@redhat.com>
 
 	* tree-complex.c (init_dont_simulate_again): Clear DONT_SIMULATE_AGAIN
@@ -114,9 +122,9 @@
 
 2005-06-17  Richard Henderson  <rth@redhat.com>
 
-        * tree-vect-transform.c (vect_do_peeling_for_loop_bound): Use
-        initialize_original_copy_tables and free_original_copy_tables.
-        (vect_do_peeling_for_alignment): Likewise.
+	* tree-vect-transform.c (vect_do_peeling_for_loop_bound): Use
+	initialize_original_copy_tables and free_original_copy_tables.
+	(vect_do_peeling_for_alignment): Likewise.
 
 2005-06-17  Pat Haugen  <pthaugen@us.ibm.com>
 
@@ -229,22 +237,22 @@
 	(function_arg): Likewise.
 
 2005-06-16  Paolo Bonzini  <bonzini@gnu.org>
-            Daniel Jacobowitz  <dan@codesourcery.com>
+	    Daniel Jacobowitz  <dan@codesourcery.com>
 	    Alan Modra <amodra.bigpond.net.au>
 
-        * configure.ac (gcc_version): Set near the beginning.
-        (as, ld, nm): Do not link in-tree tools.  Set gcc_cv_* if tools are
-        found in the tree.  Use gcc_AC_PROG to find the tools in the system.
-        (objdump): Do not look for it.
-        * Makefile.in (NM_FOR_TARGET): Point to ./nm
-        (ORIGINAL_AS_FOR_TARGET, ORIGINAL_LD_FOR_TARGET,
-        ORIGINAL_NM_FOR_TARGET): Substitute from autoconf.
-        (as, ld, nm): New rules.
-        (libgcc.mk): Depend on them.
-        * aclocal.m4 (gcc_AC_TOOL_DIRS, gcc_AC_CHECK_TOOL,
-        gcc_AC_BUILD_EXEEXT): New.
-        (gcc_AC_CHECK_PROG_VER): Use gcc_AC_BUILD_EXEEXT.
-        * configure: Regenerate.
+	* configure.ac (gcc_version): Set near the beginning.
+	(as, ld, nm): Do not link in-tree tools.  Set gcc_cv_* if tools are
+	found in the tree.  Use gcc_AC_PROG to find the tools in the system.
+	(objdump): Do not look for it.
+	* Makefile.in (NM_FOR_TARGET): Point to ./nm
+	(ORIGINAL_AS_FOR_TARGET, ORIGINAL_LD_FOR_TARGET,
+	ORIGINAL_NM_FOR_TARGET): Substitute from autoconf.
+	(as, ld, nm): New rules.
+	(libgcc.mk): Depend on them.
+	* aclocal.m4 (gcc_AC_TOOL_DIRS, gcc_AC_CHECK_TOOL,
+	gcc_AC_BUILD_EXEEXT): New.
+	(gcc_AC_CHECK_PROG_VER): Use gcc_AC_BUILD_EXEEXT.
+	* configure: Regenerate.
 
 2005-06-16  Jan Hubicka  <jh@suse.cz>
 
@@ -380,7 +388,7 @@
 	
 2005-06-15  Richard Sandiford  <richard@codesourcery.com>
 
-        * doc/invoke.texi (-mips16): Fix typo.
+	* doc/invoke.texi (-mips16): Fix typo.
 
 2005-06-15  David Ung  <davidu@mips.com>
 
@@ -394,7 +402,7 @@
 	mips16e seb/seh. 
 	(*extend<SHORT:mode><GPR:mode>2): Disable this pattern for
 	GENERATE_MIPS16E. 
-        * doc/invoke.texi (MIPS Options): Add comment to -mips16
+	* doc/invoke.texi (MIPS Options): Add comment to -mips16
 	indicating MIPS16e ASE is used if targetting for MIPS32 or MIPS64.
 	
 2005-06-15  Diego Novillo  <dnovillo@redhat.com>
@@ -896,18 +904,18 @@
 
 2005-06-08  Dale Johannesen  <dalej@apple.com>
 
-        * config/darwin.c (darwin_binds_local_p):  New.
-        * config/darwin-protos.h (darwin_binds_local_p):  Declare it.
-        * config/i386/i386.c (TARGET_BINDS_LOCAL_P):  Use it for TARGET_MACHO.
-        * config/rs6000/rs6000.c (rs6000_binds_local_p):  Remove.
-        (TARGET_BINDS_LOCAL_P):  Change it to darwin_binds_local_p.
+	* config/darwin.c (darwin_binds_local_p):  New.
+	* config/darwin-protos.h (darwin_binds_local_p):  Declare it.
+	* config/i386/i386.c (TARGET_BINDS_LOCAL_P):  Use it for TARGET_MACHO.
+	* config/rs6000/rs6000.c (rs6000_binds_local_p):  Remove.
+	(TARGET_BINDS_LOCAL_P):  Change it to darwin_binds_local_p.
 
 2005-06-08  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.h: Remove rs6000_long_double_size_string,
-        rs6000_isel, rs6000_spe, rs6000_alignment_string,
-        rs6000_sched_restricted_insns_priority_str,
-        rs6000_sched_restricted_insns_priority, rs6000_abi_string.
+	* config/rs6000/rs6000.h: Remove rs6000_long_double_size_string,
+	rs6000_isel, rs6000_spe, rs6000_alignment_string,
+	rs6000_sched_restricted_insns_priority_str,
+	rs6000_sched_restricted_insns_priority, rs6000_abi_string.
 
 2005-06-08  Zdenek Dvorak  <dvorakz@suse.cz>
 
@@ -999,7 +1007,7 @@
 2005-06-08  Richard Henderson  <rth@redhat.com>
 
 	PR target/21721
-        * config/ia64/ia64.c (emit_predicate_relation_info): Skip p0.
+	* config/ia64/ia64.c (emit_predicate_relation_info): Skip p0.
 
 2005-06-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
