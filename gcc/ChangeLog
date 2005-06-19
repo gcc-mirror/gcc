@@ -1,3 +1,8 @@
+2005-06-19  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* combine.c (make_compound_operation): Use simplify_subreg.  Delete
+	a optimization already done by simplify_subreg.
+
 2005-06-19  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* loop.c (scan_loop): Do not consider insns setting the frame
