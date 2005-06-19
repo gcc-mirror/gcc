@@ -1070,7 +1070,7 @@
 })
 
 (define_insn_and_split "*vec_extractv2sf_1"
-  [(set (match_operand:SF 0 "register_operand" "=rf")
+  [(set (match_operand:SF 0 "register_operand" "=r")
 	(unspec:SF [(match_operand:V2SF 1 "register_operand" "r")
 		    (const_int 1)]
 		   UNSPEC_VECT_EXTR))]
@@ -1079,17 +1079,9 @@
   "reload_completed"
   [(const_int 0)]
 {
-  if (FR_REGNO_P (REGNO (operands[0])))
-    {
-      operands[1] = gen_rtx_REG (SFmode, REGNO (operands[1]));
-      emit_move_insn (operands[0], operands[1]);
-    }
-  else
-    {
-      operands[0] = gen_rtx_REG (DImode, REGNO (operands[0]));
-      operands[1] = gen_rtx_REG (DImode, REGNO (operands[1]));
-      emit_insn (gen_lshrdi3 (operands[0], operands[1], GEN_INT (32)));
-    }
+  operands[0] = gen_rtx_REG (DImode, REGNO (operands[0]));
+  operands[1] = gen_rtx_REG (DImode, REGNO (operands[1]));
+  emit_insn (gen_lshrdi3 (operands[0], operands[1], GEN_INT (32)));
   DONE;
 })
 

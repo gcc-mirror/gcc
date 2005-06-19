@@ -1,5 +1,10 @@
 2005-06-19  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/vect.md (vec_extractv2sf_1): Fix cut-and-paste error;
+	the shift is always required.
+
+2005-06-19  Richard Henderson  <rth@redhat.com>
+
 	* config/ia64/ia64-modes.def (V4SF): Add.
 	* config/ia64/ia64.c (ia64_legitimate_constant_p): Handle CONST_VECTOR.
 	* config/ia64/ia64.h (CANNOT_CHANGE_MODE_CLASS): Allow vector to 
