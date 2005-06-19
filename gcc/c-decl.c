@@ -4192,7 +4192,8 @@ grokdeclarator (const struct c_declarator *declarator,
 		       index_type, before the subtraction.  Handling
 		       this case seems like an unnecessary
 		       complication.  */
-		    if (TREE_OVERFLOW (itype))
+		    if (TREE_CODE (itype) == INTEGER_CST
+			&& TREE_OVERFLOW (itype))
 		      {
 			error ("size of array %qs is too large", name);
 			type = error_mark_node;
@@ -4357,6 +4358,7 @@ grokdeclarator (const struct c_declarator *declarator,
 
   if (TREE_CODE (type) == ARRAY_TYPE
       && COMPLETE_TYPE_P (type)
+      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
       && TREE_OVERFLOW (TYPE_SIZE (type)))
     {
       error ("size of array %qs is too large", name);
