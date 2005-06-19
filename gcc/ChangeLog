@@ -1,5 +1,12 @@
 2005-06-18  Richard Henderson  <rth@redhat.com>
 
+	* tree-complex.c (init_dont_simulate_again): Clear DONT_SIMULATE_AGAIN
+	for control-altering statements; set it again for returns.
+	(complex_visit_stmt): Return SSA_PROP_VARYING for stmts that are
+	not MODIFY_EXPR.
+
+2005-06-18  Richard Henderson  <rth@redhat.com>
+
 	PR tree-opt/22116
 	* tree-ssa-pre.c (create_expression_by_pieces): Set
 	DECL_COMPLEX_GIMPLE_REG_P.
