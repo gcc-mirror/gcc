@@ -1,3 +1,10 @@
+2005-06-18  Richard Henderson  <rth@redhat.com>
+
+	PR tree-opt/22116
+	* tree-ssa-pre.c (create_expression_by_pieces): Set
+	DECL_COMPLEX_GIMPLE_REG_P.
+	(insert_into_preds_of_block): Likewise.
+
 2005-06-18  Steven Bosscher  <stevenb@suse.de>
 
 	* Makefile.in: Fix tree-cfgcleanup.c dependencies.

@@ -1593,6 +1593,8 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
      that we will return.  */
   temp = create_tmp_var (TREE_TYPE (expr), "pretmp");
   add_referenced_tmp_var (temp);
+  if (TREE_CODE (TREE_TYPE (expr)) == COMPLEX_TYPE)
+    DECL_COMPLEX_GIMPLE_REG_P (temp) = 1;
   newexpr = build (MODIFY_EXPR, TREE_TYPE (expr), temp, newexpr);
   name = make_ssa_name (temp, newexpr);
   TREE_OPERAND (newexpr, 0) = name;
@@ -1699,6 +1701,8 @@ insert_into_preds_of_block (basic_block block, value_set_node_t node,
   /* Now build a phi for the new variable.  */
   temp = create_tmp_var (type, tmpname);
   add_referenced_tmp_var (temp);
+  if (TREE_CODE (type) == COMPLEX_TYPE)
+    DECL_COMPLEX_GIMPLE_REG_P (temp) = 1;
   temp = create_phi_node (temp, block);
   NECESSARY (temp) = 0; 
   VEC_safe_push (tree, heap, inserted_exprs, temp);
