@@ -1,3 +1,10 @@
+2005-06-19  Roger Sayle  <roger@eyesopen.com>
+
+	* c-decl.c (grokdeclarator): Only check TREE_OVERFLOW on
+	INTEGER_CST nodes.
+	* c-typeck.c (build_c_cast): Only preserve TREE_OVERFLOW on
+	CONSTANT_CLASS_P nodes.
+
 2005-06-19  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/vect.md (vec_extractv2sf_1): Fix cut-and-paste error;
