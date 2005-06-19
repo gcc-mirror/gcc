@@ -160,12 +160,20 @@ init_dont_simulate_again (void)
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 	{
 	  tree orig_stmt, stmt, rhs = NULL;
-	  bool dsa = true;
+	  bool dsa;
 
 	  orig_stmt = stmt = bsi_stmt (bsi);
+
+	  /* Most control-altering statements must be initially 
+	     simulated, else we won't cover the entire cfg.  */
+	  dsa = !stmt_ends_bb_p (stmt);
+
 	  switch (TREE_CODE (stmt))
 	    {
 	    case RETURN_EXPR:
+	      /* We don't care what the lattice value of <retval> is,
+		 since it's never used as an input to another computation.  */
+	      dsa = true;
 	      stmt = TREE_OPERAND (stmt, 0);
 	      if (!stmt || TREE_CODE (stmt) != MODIFY_EXPR)
 		break;
@@ -228,15 +236,14 @@ complex_visit_stmt (tree stmt, edge *taken_edge_p ATTRIBUTE_UNUSED,
   unsigned int ver;
   tree lhs, rhs;
 
-  /* These conditions should be satisfied due to the initial filter
-     set up in init_dont_simulate_again.  */
-  if (TREE_CODE (stmt) == RETURN_EXPR)
-    stmt = TREE_OPERAND (stmt, 0);
-  gcc_assert (TREE_CODE (stmt) == MODIFY_EXPR);
+  if (TREE_CODE (stmt) != MODIFY_EXPR)
+    return SSA_PROP_VARYING;
 
   lhs = TREE_OPERAND (stmt, 0);
   rhs = TREE_OPERAND (stmt, 1);
 
+  /* These conditions should be satisfied due to the initial filter
+     set up in init_dont_simulate_again.  */
   gcc_assert (TREE_CODE (lhs) == SSA_NAME);
   gcc_assert (TREE_CODE (TREE_TYPE (lhs)) == COMPLEX_TYPE);
 
