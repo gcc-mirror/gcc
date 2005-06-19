@@ -2047,8 +2047,13 @@ ix86_function_arg_regno_p (int regno)
   int i;
   if (!TARGET_64BIT)
     return (regno < REGPARM_MAX
-	    || (TARGET_SSE && SSE_REGNO_P (regno) && !fixed_regs[regno]));
-  if (SSE_REGNO_P (regno) && TARGET_SSE)
+	    || (TARGET_MMX && MMX_REGNO_P (regno)
+		&& (regno < FIRST_MMX_REG + MMX_REGPARM_MAX))
+	    || (TARGET_SSE && SSE_REGNO_P (regno)
+		&& (regno < FIRST_SSE_REG + SSE_REGPARM_MAX)));
+
+  if (TARGET_SSE && SSE_REGNO_P (regno)
+      && (regno < FIRST_SSE_REG + SSE_REGPARM_MAX))
     return true;
   /* RAX is used as hidden argument to va_arg functions.  */
   if (!regno)
@@ -3153,16 +3158,16 @@ ix86_function_arg_boundary (enum machine_mode mode, tree type)
 bool
 ix86_function_value_regno_p (int regno)
 {
-  if (!TARGET_64BIT)
-    {
-      return ((regno) == 0
-	      || ((regno) == FIRST_FLOAT_REG && TARGET_FLOAT_RETURNS_IN_80387)
-	      || ((regno) == FIRST_MMX_REG && TARGET_MMX)
-	      || ((regno) == FIRST_SSE_REG && TARGET_SSE));
-    }
-  return ((regno) == 0 || (regno) == FIRST_FLOAT_REG
-	  || ((regno) == FIRST_SSE_REG && TARGET_SSE)
-	  || ((regno) == FIRST_FLOAT_REG && TARGET_FLOAT_RETURNS_IN_80387));
+  if (regno == 0
+      || (regno == FIRST_FLOAT_REG && TARGET_FLOAT_RETURNS_IN_80387)
+      || (regno == FIRST_SSE_REG && TARGET_SSE))
+    return true;
+
+  if (!TARGET_64BIT
+      && (regno == FIRST_MMX_REG && TARGET_MMX))
+	return true;
+
+  return false;
 }
 
 /* Define how to find the value returned by a function.
