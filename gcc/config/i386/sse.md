@@ -891,6 +891,7 @@
   "TARGET_SSE"
   "cvtps2pi\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
+   (set_attr "unit" "mmx")
    (set_attr "mode" "DI")])
 
 (define_insn "sse_cvttps2pi"
@@ -901,6 +902,7 @@
   "TARGET_SSE"
   "cvttps2pi\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
+   (set_attr "unit" "mmx")
    (set_attr "mode" "SF")])
 
 (define_insn "sse_cvtsi2ss"
@@ -1825,11 +1827,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_insn "sse2_cvtpi2pd"
-  [(set (match_operand:V2DF 0 "register_operand" "=x")
-	(float:V2DF (match_operand:V2SI 1 "nonimmediate_operand" "ym")))]
+  [(set (match_operand:V2DF 0 "register_operand" "=x,x")
+	(float:V2DF (match_operand:V2SI 1 "nonimmediate_operand" "y,m")))]
   "TARGET_SSE2"
   "cvtpi2pd\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
+   (set_attr "unit" "mmx,*")
    (set_attr "mode" "V2DF")])
 
 (define_insn "sse2_cvtpd2pi"
@@ -1839,6 +1842,7 @@
   "TARGET_SSE2"
   "cvtpd2pi\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
+   (set_attr "unit" "mmx")
    (set_attr "mode" "DI")])
 
 (define_insn "sse2_cvttpd2pi"
@@ -1847,6 +1851,7 @@
   "TARGET_SSE2"
   "cvttpd2pi\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt")
+   (set_attr "unit" "mmx")
    (set_attr "mode" "TI")])
 
 (define_insn "sse2_cvtsi2sd"

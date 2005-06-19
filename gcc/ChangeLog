@@ -1,5 +1,32 @@
 2005-06-19  Uros Bizjak  <uros@kss-loka.si>
 
+	* config/i386/i386.md (*cmpfp_0_sf, *cmpfp_0_df, cmpfp_0_xf):
+	Remove instruction patterns.
+	(*cmpfp_0): New instruction pattern. Set "unit" attribute to "i387".
+	(*cmpfp_sf, *cmpfp_df, *cmpfp_xf, *cmpfp_u, *_cmpfp_<mode>):
+	Set "unit" attribute to "i387".
+	(*pushsf, *pushsf_rex64, *pushdf_nointeger, *pushdf_integer)
+	(*pushxf_nointeger, *pushxf_integer): Set "unit" attribute to "i387"
+	for alternative 0.
+	(*truncdfsf_mixed, *truncdfsf_i387, *truncxfsf2_mixed)
+	(*truncxfsf2_i387, *truncxfdf2_mixed, *truncxfdf2_i387): Set "unit"
+	attribute to "i387" when "type" attribute equals "multi".
+	(*floathisf2_i387, *floatsisf2_mixed, *floatsisf2_i387)
+	(*floatdisf2_mixed, *floatdisf2_i387, *floathidf2_i387)
+	(*floatsidf2_mixed, *floatsidf2_i387, *floatdidf2_mixed)
+	(*floatdidf2_i387, floathixf2, floatsixf2, floatdixf2): Set "unit"
+	attribute to "i387" when "type" attribute equals "multi".
+	* config/i386/mmx.md (*mov<mode>_internal_rex64)
+	(*mov<mode>_internal, *movv2sf_internal_rex64, *movv2sf_internal):
+	Set "unit" attribute to "mmx" when "type" attribute equals "ssecvt".
+	(mmx_pmovmskb): Correct wrong "type" and "mode" attributes.
+	* config/i386/sse.md (sse_cvtps2pi, sse_cvttps2pi, sse_cvtpd2di)
+	(sse_cvttpd2pi): Set "unit" attribute to "mmx".
+	(sse2_cvtpi2pd): Split register constraints. Set "unit" attribute
+	to "mmx" for "y" operand 1.
+
+2005-06-19  Uros Bizjak  <uros@kss-loka.si>
+
 	* config/i386/i386.c (ix86_function_arg_regno_p): Add MMX_REGNO_P
 	for TARGET_MMX.  Use MMX_REGPARM_MAX and SSE_REGPARM_MAX for MMX
 	and SSE registers to determine if regno is valid.
