@@ -2169,6 +2169,10 @@ swap_tree_comparison (enum tree_code code)
     {
     case EQ_EXPR:
     case NE_EXPR:
+    case ORDERED_EXPR:
+    case UNORDERED_EXPR:
+    case LTGT_EXPR:
+    case UNEQ_EXPR:
       return code;
     case GT_EXPR:
       return LT_EXPR;
@@ -2178,6 +2182,14 @@ swap_tree_comparison (enum tree_code code)
       return GT_EXPR;
     case LE_EXPR:
       return GE_EXPR;
+    case UNGT_EXPR:
+      return UNLT_EXPR;
+    case UNGE_EXPR:
+      return UNLE_EXPR;
+    case UNLT_EXPR:
+      return UNGT_EXPR;
+    case UNLE_EXPR:
+      return UNGE_EXPR;
     default:
       gcc_unreachable ();
     }

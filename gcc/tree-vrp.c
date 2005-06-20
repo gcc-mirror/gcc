@@ -94,46 +94,6 @@ static sbitmap blocks_visited;
    of values that SSA name N_I may take.  */
 static value_range_t **vr_value;
 
-/* Given a comparison code, return its opposite.  Note that this is *not*
-   the same as inverting its truth value (invert_tree_comparison).  Here we
-   just want to literally flip the comparison around.
-   
-   So, '<' gets '>', '<=' gets '>='.  Both '==' and '!=' are returned
-   unchanged.  */
-
-static enum tree_code
-opposite_comparison (enum tree_code code)
-{
-  switch (code)
-    {
-    case EQ_EXPR:
-    case NE_EXPR:
-    case ORDERED_EXPR:
-    case UNORDERED_EXPR:
-    case LTGT_EXPR:
-    case UNEQ_EXPR:
-      return code;
-    case GT_EXPR:
-      return LT_EXPR;
-    case GE_EXPR:
-      return LE_EXPR;
-    case LT_EXPR:
-      return GT_EXPR;
-    case LE_EXPR:
-      return GE_EXPR;
-    case UNGT_EXPR:
-      return UNLT_EXPR;
-    case UNGE_EXPR:
-      return UNLE_EXPR;
-    case UNLT_EXPR:
-      return UNGT_EXPR;
-    case UNLE_EXPR:
-      return UNGE_EXPR;
-    default:
-      gcc_unreachable ();
-    }
-}
-
 
 /* Return true if EXPR computes a non-zero value.  */
 
@@ -711,7 +671,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	 to flip around the comparison code to create the proper range
 	 for VAR.  */
       limit = TREE_OPERAND (cond, 0);
-      cond_code = opposite_comparison (TREE_CODE (cond));
+      cond_code = swap_tree_comparison (TREE_CODE (cond));
     }
 
   type = TREE_TYPE (limit);
@@ -2231,7 +2191,7 @@ register_edge_assert_for (tree name, edge e, block_stmt_iterator si)
 	      /* If the predicate is of the form VAL COMP NAME, flip
 		 COMP around because we need to register NAME as the
 		 first operand in the predicate.  */
-	      comp_code = opposite_comparison (TREE_CODE (cond));
+	      comp_code = swap_tree_comparison (TREE_CODE (cond));
 	      val = TREE_OPERAND (cond, 0);
 	    }
 	  else
@@ -3023,7 +2983,7 @@ vrp_evaluate_conditional (tree cond, bool use_equiv_p)
 	    return compare_name_with_value (TREE_CODE (cond), op0, op1);
 	  else if (TREE_CODE (op1) == SSA_NAME)
 	    return compare_name_with_value (
-		    opposite_comparison (TREE_CODE (cond)), op1, op0);
+		    swap_tree_comparison (TREE_CODE (cond)), op1, op0);
 	}
       else
 	{
@@ -3038,7 +2998,7 @@ vrp_evaluate_conditional (tree cond, bool use_equiv_p)
 	    return compare_range_with_value (TREE_CODE (cond), vr0, op1);
 	  else if (vr0 == NULL && vr1)
 	    return compare_range_with_value (
-		    opposite_comparison (TREE_CODE (cond)), vr1, op0);
+		    swap_tree_comparison (TREE_CODE (cond)), vr1, op0);
 	}
     }
 

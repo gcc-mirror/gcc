@@ -1,3 +1,13 @@
+2005-06-19  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (swap_tree_comparison): Add support for unordered
+	floating point comparisons.
+	* tree-vrp.c (opposite_comparison): Delete.
+	(extract_range_from_assert): Replace calls to opposite_comparison
+	with calls to swap_tree_comparison.
+	(register_edge_assert_for): Likewise.
+	(vrp_evaluate_conditional): Likewise.
+
 2005-06-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* integrate.c (allocate_initial_values): Update the references
