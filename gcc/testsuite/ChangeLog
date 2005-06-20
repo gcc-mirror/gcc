@@ -1,3 +1,8 @@
+2005-06-19  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.dg/backslash_1.f90: New test.
+	* gfortran.dg/backslash_2.f90: New test.
+
 2005-06-20  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.dg/duplicate_labels.f90: New test.
@@ -25,8 +30,8 @@
 
 2005-06-19  Aldy Hernandez  <aldyh@redhat.com>
 
-        PR c++/22115
-        * g++.dg/conversion/simd2.C: Change expected error message.
+	PR c++/22115
+	* g++.dg/conversion/simd2.C: Change expected error message.
 
 2005-06-18  Dorit Nuzman  <dorit@il.ibm.com>
 
