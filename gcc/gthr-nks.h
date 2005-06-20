@@ -178,7 +178,7 @@ __gthread_objc_mutex_allocate (objc_mutex_t mutex)
 {
   static const NX_LOCK_INFO_ALLOC (info, "GNU ObjC", 0);
 
-  if ((mutex->backend = NXMutexAlloc (NX_MUTEX_RECURSIVE/*???*/, 0, &info)) == NULL)
+  if ((mutex->backend = NXMutexAlloc (0, 0, &info)) == NULL)
     return 0;
   return -1;
 }
