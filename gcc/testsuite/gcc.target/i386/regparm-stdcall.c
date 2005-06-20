@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options -mpreferred-stack-boundary=4 } */
+/* { dg-require-effective-target ilp32 } */
 
 extern void abort(void);
 

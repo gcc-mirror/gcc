@@ -1,5 +1,6 @@
-/*  { dg-do compile } */
-/*  { dg-options "-mno-sse" } */
+/* { dg-do compile } */
+/* { dg-options "-mno-sse" } */
+/* { dg-require-effective-target ilp32 } */
 
 float essef(float) __attribute__((sseregparm));
 double essed(double) __attribute__((sseregparm));
