@@ -1,4 +1,11 @@
-2005-06-20 Erik Edelmann <erik.edelmann@iki.fi>
+2005-06-20  Steven G. Kargl  <kargls@comcast.net.
+	(port from g95)
+
+	PR fortran/21257
+	* match.c (gfc_match_label): Detect duplicate labels.
+
+
+2005-06-20  Erik Edelmann  <erik.edelmann@iki.fi>
 
 	* intrinsic.c (check_intrinsic_standard): Fix spelling error
 	in a warning message.
