@@ -5274,6 +5274,11 @@ simplify_set (rtx x)
 	  SUBST (SET_SRC (x), gen_rtx_COMPARE (compare_mode, op0, op1));
 	  src = SET_SRC (x);
 	}
+      else if (GET_MODE (op0) == compare_mode && op1 == const0_rtx)
+	{
+	  SUBST(SET_SRC (x), op0);
+	  src = SET_SRC (x);
+        }
       else
 	{
 	  /* Otherwise, update the COMPARE if needed.  */
