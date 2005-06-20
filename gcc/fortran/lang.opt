@@ -85,6 +85,10 @@ fdollar-ok
 F95
 Allow dollar signs in entity names
 
+fbackslash
+F95
+Specify that backslash in string introduces an escape character
+
 fdump-parse-tree
 F95
 Display the code tree after parsing.

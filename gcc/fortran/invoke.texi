@@ -221,6 +221,15 @@ Do nothing if this is already the default.
 @cindex character set
 Allow @samp{$} as a valid character in a symbol name.
 
+@cindex -fno-backslash option
+@cindex options, -fno-backslash
+@item -fno-backslash
+@cindex backslash
+@cindex escape characters
+@item
+Compile switch to change the interpretation of a backslash from
+``C''-style escape characters to a single backslash character.
+
 @cindex -ffixed-line-length-@var{n} option
 @cindex options, -ffixed-line-length-@var{n}
 @item -ffixed-line-length-@var{n}

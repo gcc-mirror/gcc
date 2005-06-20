@@ -637,7 +637,7 @@ next_string_char (char delimiter)
   if (c == '\n')
     return -2;
 
-  if (c == '\\')
+  if (gfc_option.flag_backslash && c == '\\')
     {
       old_locus = gfc_current_locus;
 

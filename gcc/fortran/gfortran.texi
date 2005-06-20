@@ -513,10 +513,6 @@ Flag to cause the compiler to distinguish between upper and lower case
 names.  The Fortran 95 standard does not distinguish them.
 
 @item
-Compile switch for changing the interpretation of a backslash from a
-character to ``C''-style escape characters.
-
-@item
 Compile flag to generate code for array conformance checking (suggest -CC).
 
 @item

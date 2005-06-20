@@ -1,3 +1,13 @@
+2005-06-19  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.h: Add flag_backslash compile-time option.
+	* lang.opt: Add support for -fbackslash option.
+	* options.c: Likewise.
+	* primary.c: Implement behavior for -fno-backslash.
+	* invoke.texi: Add doc for -fbackslash option.
+	* gfortran.texi: Remove mention of -fno-backslash as a
+	possible extension.
+
 2005-06-20 Erik Edelmann <erik.edelmann@iki.fi>
 
 	* intrinsic.c (check_intrinsic_standard): Fix spelling error
