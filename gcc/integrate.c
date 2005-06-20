@@ -406,10 +406,12 @@ allocate_initial_values (rtx *reg_equiv_memory_loc ATTRIBUTE_UNUSED)
 	      /* Update global register liveness information.  */
 	      FOR_EACH_BB (bb)
 		{
-		  if (REGNO_REG_SET_P(bb->global_live_at_start, regno))
-		    SET_REGNO_REG_SET (bb->global_live_at_start, new_regno);
-		  if (REGNO_REG_SET_P(bb->global_live_at_end, regno))
-		    SET_REGNO_REG_SET (bb->global_live_at_end, new_regno);
+		  struct rtl_bb_info *info = bb->il.rtl;
+
+		  if (REGNO_REG_SET_P(info->global_live_at_start, regno))
+		    SET_REGNO_REG_SET (info->global_live_at_start, new_regno);
+		  if (REGNO_REG_SET_P(info->global_live_at_end, regno))
+		    SET_REGNO_REG_SET (info->global_live_at_end, new_regno);
 		}
 	    }
 	}
