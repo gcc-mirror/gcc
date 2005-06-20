@@ -1,3 +1,8 @@
+2005-06-20 Erik Edelmann <erik.edelmann@iki.fi>
+
+	* intrinsic.c (check_intrinsic_standard): Fix spelling error
+	in a warning message.
+
 2005-06-18  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* match.c (match_arithmetic_if): Arithmetic IF is obsolete in

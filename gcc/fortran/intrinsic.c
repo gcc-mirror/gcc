@@ -2903,7 +2903,7 @@ check_intrinsic_standard (const char *name, int standard, locus * where)
   if (!gfc_option.warn_nonstd_intrinsics)
     return;
 
-  gfc_notify_std (standard, "Intrinsic '%s' at %L is not included"
+  gfc_notify_std (standard, "Intrinsic '%s' at %L is not included "
 		  "in the selected standard", name, where);
 }
 
