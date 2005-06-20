@@ -1,3 +1,7 @@
+2005-06-20  Steven G. Kargl  <kargls@comcast.net>
+
+	* gfortran.dg/duplicate_labels.f90: New test.
+
 2005-06-20  Jan Beulich  <jbeulich@novell.com>
 
 	* g++.old-deja/g++.jason/thunk2.C: On NetWare, also account for
