@@ -1,3 +1,9 @@
+2005-06-20  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.target/i386/sseregparm-1.c, gcc.target/i386/sseregparm-2.c,
+	gcc.target/i386/fastcall-sseregparm.c,
+	gcc.target/i386/regparm-stdcall.c: Run only on 32-bit x86.
+
 2005-06-19  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/tree-ssa/pr21985.c: Use size_t.
@@ -123,7 +129,7 @@
 2005-06-14  Devang Patel  <dpatel@apple.com>
 
 	* gcc.dg/vect/vect-ifcvt-1.c: Remove.
-	
+
 2005-06-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/21929
@@ -201,7 +207,7 @@
 	* gcc.dg/vect/vect-dv-2.c: Remove "vect_no_align" from xfail.
 	Test that accesses with same alignment were detected.
 	* gcc.dg/vect/vect-ifcvt-1.c: Likewise.
-	* gcc.dg/vect/vect-91.c: New test. Test that accesses with same 
+	* gcc.dg/vect/vect-91.c: New test. Test that accesses with same
 	alignment were detected.
 
 2005-06-09  Gabriel Dos Reis  <gdr@integrable-solutions.net>
@@ -316,7 +322,7 @@
 
 2005-06-05  David Billinghurst  <David.Billinghurst@riotinto.com>
 
-	* lib/gfortran.exp (gfortran_target_compile): Call 
+	* lib/gfortran.exp (gfortran_target_compile): Call
 	dg-additional-files-options
 	* gfortran.dg/f2c_4.f90: New file
 	* gfortran.dg/f2c_4.c: New file
@@ -326,7 +332,7 @@
 2005-06-05  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.dg/forall_1.f90: Set previously uninitialized variable.
-	
+
 	PR fortran/21912
 	* gfortran.dg/array_constructor_4.f90: New test.
 
@@ -357,7 +363,7 @@
 
 	PR fortran/19195
 	* gfortran.dg/debug_1.f90: New test.
-	
+
 	* gfortran.dg/forall_1.f90: New test.
 
 2005-06-04  Erik Edelmann  <erik.edelmann@iki.fi>
@@ -509,7 +515,7 @@
 
 2005-05-31  Geoffrey Keating  <geoffk@geoffk.org>
 
-	* lib/target-supports.exp 
+	* lib/target-supports.exp
 	(check_effective_target_sync_char_short): New.
 	* gcc.dg/sync-2.c: New.
 
