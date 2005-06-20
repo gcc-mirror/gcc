@@ -1,3 +1,19 @@
+2005-06-20  Jan Beulich  <jbeulich@novell.com>
+
+	* config/i386/netware-libgcc.def: Update copyright.
+	* config/i386/netware-libgcc.exp (__divdc3, __divsc3, __divxc3,
+	__muldc3, __mulsc3, __mulxc3, __powidf2, __powisf2, __powixf2): Add.
+	* config/i386/netware.c (gen_stdcall_decoration,
+	gen_fastcall_decoration): Merge into ...
+	(gen_stdcall_or_fastcall_decoration): ... this. Adjust to match
+	WinNT's changes.
+	(gen_regparm_prefix): Adjust to match i386_nlm_encode_section_info.
+	(i386_nlm_encode_section_info): Adjust to match WinNT's changes.
+	* config/i386/t-nwld (SHLIB_LINK): Also create libgcc.imp alias of
+	libgcc_s.imp. Use 'expr' rather than $(()) shell expressions.
+	* gthr-nks.h (__gthread_objc_mutex_allocate): Kill another dubious
+	use of NX_MUTEX_RECURSIVE.
+
 2005-06-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/21850

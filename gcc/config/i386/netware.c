@@ -38,86 +38,55 @@ Boston, MA 02111-1307, USA.  */
    underscore prefix and a suffix consisting of an atsign (@) followed
    by the number of bytes of arguments */
 
-static const char *
-gen_stdcall_decoration (tree decl)
+static tree
+gen_stdcall_or_fastcall_decoration (tree decl, char prefix)
 {
   unsigned total = 0;
   /* ??? This probably should use XSTR (XEXP (DECL_RTL (decl), 0), 0) instead
      of DECL_ASSEMBLER_NAME.  */
   const char *asmname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   char *newsym;
+  tree formal_type = TYPE_ARG_TYPES (TREE_TYPE (decl));
 
-  if (TYPE_ARG_TYPES (TREE_TYPE (decl)))
-    if (TREE_VALUE (tree_last (TYPE_ARG_TYPES (TREE_TYPE (decl))))
-        == void_type_node)
-      {
-	tree formal_type = TYPE_ARG_TYPES (TREE_TYPE (decl));
+  if (formal_type != NULL_TREE)
+    {
+      /* These attributes are ignored for variadic functions in
+	 i386.c:ix86_return_pops_args. For compatibility with MS
+	 compiler do not add @0 suffix here.  */ 
+      if (TREE_VALUE (tree_last (formal_type)) != void_type_node)
+	return NULL_TREE;
 
-	/* Quit if we hit an incomplete type.  Error is reported
-	   by convert_arguments in c-typeck.c or cp/typeck.c.  */
-	while (TREE_VALUE (formal_type) != void_type_node
-	       && COMPLETE_TYPE_P (TREE_VALUE (formal_type)))	
-	  {
-	    unsigned parm_size
-	      = TREE_INT_CST_LOW (TYPE_SIZE (TREE_VALUE (formal_type)));
-	    /* Must round up to include padding.  This is done the same
-	       way as in store_one_arg.  */
-	    parm_size = ((parm_size + PARM_BOUNDARY - 1)
-			 / PARM_BOUNDARY * PARM_BOUNDARY);
-	    total += parm_size;
-	    formal_type = TREE_CHAIN (formal_type);
-	  }
-      }
+      /* Quit if we hit an incomplete type.  Error is reported
+	 by convert_arguments in c-typeck.c or cp/typeck.c.  */
+      while (TREE_VALUE (formal_type) != void_type_node
+	     && COMPLETE_TYPE_P (TREE_VALUE (formal_type)))	
+	{
+	  unsigned parm_size
+	    = TREE_INT_CST_LOW (TYPE_SIZE (TREE_VALUE (formal_type)));
 
-  newsym = alloca (1 + strlen (asmname) + 1 + 10 + 1);
-  return IDENTIFIER_POINTER (get_identifier_with_length (newsym,
-	sprintf (newsym, "_%s@%u", asmname, total / BITS_PER_UNIT)));
-}
-
-/* Return string which is the former assembler name modified with a
-   prefix consisting of FASTCALL_PREFIX and a suffix consisting of an
-   atsign (@) followed by the number of bytes of arguments.  */
-
-static const char *
-gen_fastcall_decoration (tree decl)
-{
-  unsigned total = 0;
-  const char *asmname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  char *newsym;
-
-  if (TYPE_ARG_TYPES (TREE_TYPE (decl)))
-    if (TREE_VALUE (tree_last (TYPE_ARG_TYPES (TREE_TYPE (decl))))
-        == void_type_node)
-      {
-	tree formal_type = TYPE_ARG_TYPES (TREE_TYPE (decl));
-
-	/* Quit if we hit an incomplete type.  Error is reported
-	   by convert_arguments in c-typeck.c or cp/typeck.c.  */
-	while (TREE_VALUE (formal_type) != void_type_node
-	       && COMPLETE_TYPE_P (TREE_VALUE (formal_type)))	
-	  {
-	    int parm_size
-	      = TREE_INT_CST_LOW (TYPE_SIZE (TREE_VALUE (formal_type)));
-	    /* Must round up to include padding.  This is done the same
-	       way as in store_one_arg.  */
-	    parm_size = ((parm_size + PARM_BOUNDARY - 1)
-			 / PARM_BOUNDARY * PARM_BOUNDARY);
-	    total += parm_size;
-	    formal_type = TREE_CHAIN (formal_type);
-	  }
-      }
+	  /* Must round up to include padding.  This is done the same
+	     way as in store_one_arg.  */
+	  parm_size = ((parm_size + PARM_BOUNDARY - 1)
+		       / PARM_BOUNDARY * PARM_BOUNDARY);
+	  total += parm_size;
+	  formal_type = TREE_CHAIN (formal_type);
+	}
+    }
 
   newsym = alloca (1 + strlen (asmname) + 1 + 10 + 1);
-  return IDENTIFIER_POINTER (get_identifier_with_length (newsym,
-	sprintf (newsym, "%c%s@%d", FASTCALL_PREFIX, asmname,
-		 total / BITS_PER_UNIT)));
+  return get_identifier_with_length (newsym,
+				     sprintf (newsym,
+					      "%c%s@%u",
+					      prefix,
+					      asmname,
+					      total / BITS_PER_UNIT));
 }
 
 /* Return string which is the former assembler name modified with an 
    _n@ prefix where n represents the number of arguments passed in
    registers */
 
-static const char *
+static tree
 gen_regparm_prefix (tree decl, unsigned nregs)
 {
   unsigned total = 0;
@@ -125,35 +94,40 @@ gen_regparm_prefix (tree decl, unsigned nregs)
      of DECL_ASSEMBLER_NAME.  */
   const char *asmname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   char *newsym;
+  tree formal_type = TYPE_ARG_TYPES (TREE_TYPE (decl));
 
-  if (TYPE_ARG_TYPES (TREE_TYPE (decl)))
-    if (TREE_VALUE (tree_last (TYPE_ARG_TYPES (TREE_TYPE (decl))))
-        == void_type_node)
-      {
-	tree formal_type = TYPE_ARG_TYPES (TREE_TYPE (decl));
+  if (formal_type != NULL_TREE)
+    {
+      /* This attribute is ignored for variadic functions.  */ 
+      if (TREE_VALUE (tree_last (formal_type)) != void_type_node)
+	return NULL_TREE;
 
-	/* Quit if we hit an incomplete type.  Error is reported
-	   by convert_arguments in c-typeck.c or cp/typeck.c.  */
-	while (TREE_VALUE (formal_type) != void_type_node
-	       && COMPLETE_TYPE_P (TREE_VALUE (formal_type)))	
-	  {
-	    unsigned parm_size
-	      = TREE_INT_CST_LOW (TYPE_SIZE (TREE_VALUE (formal_type)));
-	    /* Must round up to include padding.  This is done the same
-	       way as in store_one_arg.  */
-	    parm_size = ((parm_size + PARM_BOUNDARY - 1)
-			 / PARM_BOUNDARY * PARM_BOUNDARY);
-	    total += parm_size;
-	    formal_type = TREE_CHAIN (formal_type);
-	  }
-      }
+      /* Quit if we hit an incomplete type.  Error is reported
+	 by convert_arguments in c-typeck.c or cp/typeck.c.  */
+      while (TREE_VALUE (formal_type) != void_type_node
+	     && COMPLETE_TYPE_P (TREE_VALUE (formal_type)))	
+	{
+	  unsigned parm_size
+	    = TREE_INT_CST_LOW (TYPE_SIZE (TREE_VALUE (formal_type)));
+
+	  /* Must round up to include padding.  This is done the same
+	     way as in store_one_arg.  */
+	  parm_size = ((parm_size + PARM_BOUNDARY - 1)
+		       / PARM_BOUNDARY * PARM_BOUNDARY);
+	  total += parm_size;
+	  formal_type = TREE_CHAIN (formal_type);
+	}
+    }
 
   if (nregs > total / BITS_PER_WORD)
     nregs = total / BITS_PER_WORD;
   if (nregs > 9) abort();
-  newsym = alloca (2 + strlen (asmname) + 1 + 1);
-  return IDENTIFIER_POINTER (get_identifier_with_length (newsym,
-	sprintf (newsym, "_%u@%s", nregs, asmname)));
+  newsym = alloca (3 + strlen (asmname) + 1);
+  return get_identifier_with_length (newsym,
+				     sprintf (newsym,
+					      "_%u@%s",
+					      nregs,
+					      asmname));
 }
 
 void
@@ -163,24 +137,31 @@ i386_nlm_encode_section_info (tree decl, rtx rtl, int first)
 
   if (first
       && TREE_CODE (decl) == FUNCTION_DECL
-      && *IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)) != '*')
+      && *IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)) != '*'
+      && !strchr (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)), '@'))
     {
       tree type_attributes = TYPE_ATTRIBUTES (TREE_TYPE (decl));
-      rtx rtlname = XEXP (rtl, 0);
-      if (GET_CODE (rtlname) == MEM)
-	rtlname = XEXP (rtlname, 0);
-      if (lookup_attribute ("stdcall", type_attributes))
-	XSTR (rtlname, 0) = gen_stdcall_decoration (decl);
-      else if (lookup_attribute ("fastcall", type_attributes))
-	XSTR (rtlname, 0) = gen_fastcall_decoration (decl);
-      else
-	{
-	  tree attr = lookup_attribute ("regparm", type_attributes);
+      tree newid;
 
-	  if (attr)
-	    XSTR (rtlname, 0) =
-	      gen_regparm_prefix (decl,
-		      TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr))));
+      if (lookup_attribute ("stdcall", type_attributes))
+	newid = gen_stdcall_or_fastcall_decoration (decl, '_');
+      else if (lookup_attribute ("fastcall", type_attributes))
+	newid = gen_stdcall_or_fastcall_decoration (decl, FASTCALL_PREFIX);
+      else if ((newid = lookup_attribute ("regparm", type_attributes)) != NULL_TREE)
+	newid = gen_regparm_prefix (decl,
+		      TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (newid))));
+      if (newid != NULL_TREE) 	
+	{
+	  rtx rtlname = XEXP (rtl, 0);
+
+	  if (GET_CODE (rtlname) == MEM)
+	    rtlname = XEXP (rtlname, 0);
+	  XSTR (rtlname, 0) = IDENTIFIER_POINTER (newid);
+	  /* These attributes must be present on first declaration,
+	     change_decl_assembler_name will warn if they are added
+	     later and the decl has been referenced, but duplicate_decls
+	     should catch the mismatch before this is called.  */ 
+	  change_decl_assembler_name (decl, newid);
 	}
     }
 }

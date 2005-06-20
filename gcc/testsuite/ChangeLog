@@ -1,3 +1,10 @@
+2005-06-20  Jan Beulich  <jbeulich@novell.com>
+
+	* g++.old-deja/g++.jason/thunk2.C: On NetWare, also account for
+	unsupportable relocations.
+	* g++.old-deja/g++.other/store-expr1.C: Likewise.
+	* gcc.dg/20050321-2.c: xfail for NetWare.
+
 2005-06-18  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* gfortran.dg/pr17229.f: Take care of the new obsolescence
