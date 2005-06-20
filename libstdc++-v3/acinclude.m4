@@ -531,14 +531,15 @@ dnl
 dnl GLIBCXX_ENABLE_SYMVERS and GLIBCXX_IS_NATIVE must be done before this.
 dnl
 dnl Sets:
-dnl  enable_abi_check / GLIBCXX_TEST_ABI
+dnl  enable_abi_check 
 dnl  GLIBCXX_TEST_WCHAR_T
 dnl  GLIBCXX_TEST_THREAD
 dnl Substs:
 dnl  baseline_dir
 dnl
 AC_DEFUN([GLIBCXX_CONFIGURE_TESTSUITE], [
-  if $GLIBCXX_IS_NATIVE && test $is_hosted = yes; then
+  if $GLIBCXX_IS_NATIVE && test $is_hosted = yes && 
+			test $enable_symvers != no; then
     # Do checks for resource limit functions.
     GLIBCXX_CHECK_SETRLIMIT
 
@@ -560,12 +561,10 @@ AC_DEFUN([GLIBCXX_CONFIGURE_TESTSUITE], [
     # CXX_FOR_BUILD.
     enable_abi_check=no
   fi
-
+  
   # Export file names for ABI checking.
   baseline_dir="$glibcxx_srcdir/config/abi/${abi_baseline_pair}\$(MULTISUBDIR)"
   AC_SUBST(baseline_dir)
-
-  GLIBCXX_CONDITIONAL(GLIBCXX_TEST_ABI, test $enable_abi_check = yes)
 ])
 
 
@@ -1759,20 +1758,6 @@ case $enable_symvers in
               [Define to use symbol versioning in the shared library.])
     ;;
 esac
-
-AH_VERBATIM([_GLIBCXX_SYMVERextra],
-[/* Define symbol versioning in assember directives. If symbol
-   versioning is being used, and the assembler supports this kind of
-   thing, then use it.
-   
-   NB: _GLIBCXX_AT_AT is a hack to work around quoting issues in m4. */
-
-#if _GLIBCXX_SYMVER
-  #define _GLIBCXX_ASM_SYMVER(cur, old, version) \
-   asm (".symver " #cur "," #old _GLIBCXX_AT_AT #version);
-#else
-  #define _GLIBCXX_ASM_SYMVER(cur, old, version)
-#endif])
 
 # In addition, need this to deal with std::size_t mangling in
 # src/compatibility.cc.  In a perfect world, could use

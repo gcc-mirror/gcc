@@ -670,19 +670,6 @@
 /* Define to use symbol versioning in the shared library. */
 #undef _GLIBCXX_SYMVER
 
-/* Define symbol versioning in assember directives. If symbol
-   versioning is being used, and the assembler supports this kind of
-   thing, then use it.
-   
-   NB: _GLIBCXX_AT_AT is a hack to work around quoting issues in m4. */
-
-#if _GLIBCXX_SYMVER
-  #define _GLIBCXX_ASM_SYMVER(cur, old, version) \
-   asm (".symver " #cur "," #old _GLIBCXX_AT_AT #version);
-#else
-  #define _GLIBCXX_ASM_SYMVER(cur, old, version)
-#endif
-
 /* Define if C99 functions or macros from <wchar.h>, <math.h>, <complex.h>,
    <stdio.h>, and <stdlib.h> can be used or exposed. */
 #undef _GLIBCXX_USE_C99
