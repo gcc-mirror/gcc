@@ -40,7 +40,7 @@ SHLIB_LINK = set -e; \
 	echo "name $(SHLIB_NAME)" >>@shlib_base_name@.def; \
 	echo "version $(version)" | sed "s!\.!,!g" >>@shlib_base_name@.def; \
 	touch libgcc/build; \
-	echo "build $$$$(($$$$(<libgcc/build)+0))" >>@shlib_base_name@.def; \
+	echo "build $$$$(expr $$$$(<libgcc/build)+0)" >>@shlib_base_name@.def; \
 	echo "export @$(SHLIB_MAP)" >>@shlib_base_name@.def; \
 	if mpkxdc -n -p @shlib_base_name@.xdc; \
 		then echo "xdcdata @shlib_base_name@.xdc" >>@shlib_base_name@.def; \
@@ -50,7 +50,8 @@ SHLIB_LINK = set -e; \
 		$(SHLIB_SRC) -posix -static-libgcc -lnetware \
 		-Wl,--Map,--map-info,full,--strip-all,--def-file,@shlib_base_name@.def; \
 	rm -f @shlib_base_name@.imp; $(LN_S) $(SHLIB_MAP) @shlib_base_name@.imp; \
-	echo $$$$(($$$$(<libgcc/build)+1)) >libgcc/build
+	rm -f libgcc.imp; $(LN_S) @shlib_base_name@.imp libgcc.imp; \
+	expr $$$$(<libgcc/build)+1 >libgcc/build
 
 # $(slibdir) double quoted to protect it from expansion while building
 # libgcc.mk.  We want this delayed until actual install time.

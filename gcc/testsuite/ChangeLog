@@ -1,3 +1,10 @@
+2005-06-20  Jan Beulich  <jbeulich@novell.com>
+
+	* g++.old-deja/g++.jason/thunk2.C: On NetWare, also account for
+	unsupportable relocations.
+	* g++.old-deja/g++.other/store-expr1.C: Likewise.
+	* gcc.dg/20050321-2.c: xfail for NetWare.
+
 2005-06-20  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.target/i386/sseregparm-1.c, gcc.target/i386/sseregparm-2.c,

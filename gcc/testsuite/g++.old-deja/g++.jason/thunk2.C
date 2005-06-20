@@ -1,6 +1,6 @@
 // { dg-do run }
 // { dg-options "-fPIC" }
-// { dg-bogus "\[Uu\]nresolved symbol .(_GLOBAL_OFFSET_TABLE_|\[_.A-Za-z\]\[_.0-9A-Za-z\]*@(PLT|GOT|GOTOFF))" "PIC unsupported" { xfail *-*-netware* } 0 }
+// { dg-bogus "\[Uu\]nresolved symbol .(_GLOBAL_OFFSET_TABLE_|\[_.A-Za-z\]\[_.0-9A-Za-z\]*@(PLT|GOT|GOTOFF))|\[Bb\]ad fixup at .DATA.:" "PIC unsupported" { xfail *-*-netware* } 0 }
 // Test that non-variadic function calls using thunks and PIC work right.
 
 struct A {
