@@ -1,3 +1,8 @@
+2005-06-20  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* integrate.c (allocate_initial_values): Update the references
+	to global_live_at_start	and global_live_at_end.
+
 2005-06-20  Jan Hubicka  <jh@suse.cz>
 
 	* cfgloop.h (DLTHE_RECORD_COPY_NUMBER): New flag.
