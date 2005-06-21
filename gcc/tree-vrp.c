@@ -1286,6 +1286,35 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
       tree inner_type = TREE_TYPE (op0);
       tree outer_type = TREE_TYPE (expr);
 
+      /* If VR0 represents a simple range, then try to convert
+	 the min and max values for the range to the same type
+	 as OUTER_TYPE.  If the results compare equal to VR0's
+	 min and max values and the new min is still less than
+	 or equal to the new max, then we can safely use the newly
+	 computed range for EXPR.  This allows us to compute
+	 accurate ranges through many casts.  */
+      if (vr0.type == VR_RANGE)
+	{
+	  tree new_min, new_max;
+
+	  /* Convert VR0's min/max to OUTER_TYPE.  */
+	  new_min = fold_convert (outer_type, vr0.min);
+	  new_max = fold_convert (outer_type, vr0.max);
+
+	  /* Verify the new min/max values are gimple values and
+	     that they compare equal to VR0's min/max values.  */
+	  if (is_gimple_val (new_min)
+	      && is_gimple_val (new_max)
+	      && tree_int_cst_equal (new_min, vr0.min)
+	      && tree_int_cst_equal (new_max, vr0.max)
+	      && compare_values (new_min, new_max) <= 0
+	      && compare_values (new_min, new_max) >= -2)
+	    {
+	      set_value_range (vr, VR_RANGE, new_min, new_max, vr->equiv);
+	      return;
+	    }
+	}
+
       /* When converting types of different sizes, set the result to
 	 VARYING.  Things like sign extensions and precision loss may
 	 change the range.  For instance, if x_3 is of type 'long long
