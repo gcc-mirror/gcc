@@ -1,3 +1,7 @@
+2005-06-20  Ziemowit Laski  <zlaski@apple.com>
+
+	* config-lang.in (gtfiles): Add cp/rtti.c.
+
 2005-05-24  Ziemowit Laski  <zlaski@apple.com>
 
 	* objcp-decl.c (objcp_start_struct, objcp_xref_tag): Adjust
