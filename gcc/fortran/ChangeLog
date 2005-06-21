@@ -1,3 +1,13 @@
+2005-06-21  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/22010
+	Port from g95.
+	* module.c (mio_namelist): New function. Correct to set
+	namelist_tail and to give error on renaming namelist by use
+	association.
+	(mio_symbol): Call mio_namelist.
+
 2005-06-19  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* gfortran.h: Add flag_backslash compile-time option.
