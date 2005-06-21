@@ -75,7 +75,7 @@ Boston, MA 02111-1307, USA.  */
 	fprintf (STREAM, "\tst.l\tr15,0,r18\n");			\
 	if (flag_pic)							\
 	  {								\
-	    char *gofs = "(datalabel _GLOBAL_OFFSET_TABLE_-(0f-.))";	\
+	    const char *gofs = "(datalabel _GLOBAL_OFFSET_TABLE_-(0f-.))"; \
 	    fprintf (STREAM, "\tmovi\t((%s>>16)&0xffff),r21\n", gofs);	\
 	    fprintf (STREAM, "\tshori\t(%s & 0xffff),r21\n", gofs);	\
 	    fprintf (STREAM, "0:\tptrel/u\tr21,tr0\n");			\
