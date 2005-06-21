@@ -1,3 +1,7 @@
+2005-06-21  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp15.c: New test.
+
 2005-06-21  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_reduction): 
