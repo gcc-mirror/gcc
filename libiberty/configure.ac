@@ -254,6 +254,7 @@ funcs="$funcs strstr"
 funcs="$funcs strtod"
 funcs="$funcs strtol"
 funcs="$funcs strtoul"
+funcs="$funcs strverscmp"
 funcs="$funcs tmpnam"
 funcs="$funcs vasprintf"
 funcs="$funcs vfprintf"
@@ -277,7 +278,7 @@ if test "x" = "y"; then
   getcwd getpagesize gettimeofday index insque mkstemps memchr memcmp memcpy \
   memmove mempcpy memset putenv random rename rindex sigsetmask \
   strcasecmp setenv stpcpy stpncpy strchr strdup strncasecmp strndup strrchr strstr \
-  strtod strtol strtoul tmpnam vasprintf vfprintf vprintf \
+  strtod strtol strtoul strverscmp tmpnam vasprintf vfprintf vprintf \
   vsprintf waitpid getrusage on_exit psignal strerror strsignal \
   sysconf times sbrk gettimeofday ffs snprintf vsnprintf \
   pstat_getstatic pstat_getdynamic sysmp getsysinfo table sysctl wait3 wait4 \
@@ -520,6 +521,7 @@ if test -z "${setobjs}"; then
   AC_CHECK_FUNCS($checkfuncs)
   AC_CHECK_DECLS([basename, ffs, asprintf, vasprintf, snprintf, vsnprintf])
   AC_CHECK_DECLS([calloc, getenv, malloc, realloc, sbrk])
+  AC_CHECK_DECLS([strverscmp])
   libiberty_NEED_DECLARATION(canonicalize_file_name)
 fi
 
