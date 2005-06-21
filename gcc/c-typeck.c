@@ -1990,6 +1990,7 @@ build_function_call (tree function, tree params)
 	return tem;
 
       name = DECL_NAME (function);
+      fundecl = function;
     }
   function = default_function_array_conversion (function);
 
