@@ -1,3 +1,8 @@
+2005-06-21  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* g++.dg/abi/mangle24.C, g++.dg/abi/mangle25.C: Pass -mmmx for
+	32-bit i?86 and x86_64.
+
 2005-06-21  Ziemowit Laski  <zlaski@apple.com>
 
 	* obj-c++.dg/const-str-[1-9].mm: New tests.
