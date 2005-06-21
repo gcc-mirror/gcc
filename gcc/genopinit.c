@@ -196,6 +196,8 @@ static const char * const optabs[] =
   "vec_set_optab->handlers[$A].insn_code = CODE_FOR_$(vec_set$a$)",
   "vec_extract_optab->handlers[$A].insn_code = CODE_FOR_$(vec_extract$a$)",
   "vec_init_optab->handlers[$A].insn_code = CODE_FOR_$(vec_init$a$)",
+  "vec_shl_optab->handlers[$A].insn_code = CODE_FOR_$(vec_shl_$a$)",
+  "vec_shr_optab->handlers[$A].insn_code = CODE_FOR_$(vec_shr_$a$)",
   "vec_realign_load_optab->handlers[$A].insn_code = CODE_FOR_$(vec_realign_load_$a$)",
   "vcond_gen_code[$A] = CODE_FOR_$(vcond$a$)",
   "vcondu_gen_code[$A] = CODE_FOR_$(vcondu$a$)",
@@ -203,7 +205,8 @@ static const char * const optabs[] =
   "reduc_umax_optab->handlers[$A].insn_code = CODE_FOR_$(reduc_umax_$a$)",
   "reduc_smin_optab->handlers[$A].insn_code = CODE_FOR_$(reduc_smin_$a$)",
   "reduc_umin_optab->handlers[$A].insn_code = CODE_FOR_$(reduc_umin_$a$)",
-  "reduc_plus_optab->handlers[$A].insn_code = CODE_FOR_$(reduc_plus_$a$)" 
+  "reduc_splus_optab->handlers[$A].insn_code = CODE_FOR_$(reduc_splus_$a$)" ,
+  "reduc_uplus_optab->handlers[$A].insn_code = CODE_FOR_$(reduc_uplus_$a$)" 
 };
 
 static void gen_insn (rtx);

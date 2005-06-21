@@ -1,3 +1,21 @@
+2005-06-21  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_reduction): 
+	Remove.
+	* gcc.dg/vect/vect.exp: Run tests with additional flags separately.
+	* gcc.dg/vect/vect-reduc-1.c: Vectorizable on all relevant platforms -
+	remove vect_reduction target keyword. Also avoid two returns in main.
+	* gcc.dg/vect/vect-reduc-3.c: Likewise.
+	* gcc.dg/vect/vect-reduc-2.c: Likewise. Also initialize diff to 0.
+	* gcc.dg/vect/vect-reduc-1short.c: New test.
+	* gcc.dg/vect/vect-reduc-1char.c: New test.
+	* gcc.dg/vect/vect-reduc-2short.c: New test.
+	* gcc.dg/vect/vect-reduc-2char.c: New test.
+	* gcc.dg/vect/vect-reduc-6.c: New test.
+	* gcc.dg/vect/trapv-vect-reduc-4.c: New test.
+	* gcc.dg/vect/fast-math-vect-reduc-5.c: New test.
+	* gcc.dg/vect/fast-math-vect-reduc-7.c: New test
+
 2005-06-21  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 	Paul Thomas  <pault@gcc.gnu.org>
 

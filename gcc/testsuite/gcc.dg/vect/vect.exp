@@ -76,7 +76,25 @@ if [istarget "powerpc*-*-*"] {
 dg-init
 
 # Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]]  \
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/pr*.\[cS\]]]  \
+	"" $DEFAULT_VECTCFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vect-*.\[cS\]]]  \
+	"" $DEFAULT_VECTCFLAGS
+
+#### Tests with special options
+global SAVED_DEFAULT_VECTCFLAGS
+set SAVED_DEFAULT_VECTCFLAGS $DEFAULT_VECTCFLAGS
+
+# -ffast-math tests
+set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
+lappend DEFAULT_VECTCFLAGS "-ffast-math"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/fast-math-vect*.\[cS\]]]  \
+	"" $DEFAULT_VECTCFLAGS
+
+# -ftrapv tests
+set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
+lappend DEFAULT_VECTCFLAGS "-ftrapv"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/trapv-vect*.\[cS\]]]  \
 	"" $DEFAULT_VECTCFLAGS
 
 # Clean up.

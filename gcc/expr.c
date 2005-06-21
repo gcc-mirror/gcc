@@ -8367,6 +8367,13 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
         return temp;
       }
 
+    case VEC_LSHIFT_EXPR:
+    case VEC_RSHIFT_EXPR:
+      {
+	target = expand_vec_shift_expr (exp, target);
+	return target;
+      }
+
     default:
       return lang_hooks.expand_expr (exp, original_target, tmode,
 				     modifier, alt_rtl);
