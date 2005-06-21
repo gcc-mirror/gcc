@@ -834,6 +834,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  enum machine_mode mode = TYPE_MODE (vectype);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block exit_bb;
@@ -843,15 +844,18 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
   block_stmt_iterator exit_bsi;
   tree vec_dest;
   tree new_temp;
+  tree new_name;
   tree epilog_stmt;
   tree new_scalar_dest, exit_phi;
-  tree bitsize, bitpos; 
+  tree bitsize, bitpos, bytesize; 
   enum tree_code code = TREE_CODE (TREE_OPERAND (stmt, 1));
   tree scalar_initial_def;
   tree vec_initial_def;
   tree orig_name;
   imm_use_iterator imm_iter;
   use_operand_p use_p;
+  bool extract_scalar_result;
+  bool adjust_in_epilog;
   
   /*** 1. Create the reduction def-use cycle  ***/
   
@@ -888,63 +892,214 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
   exit_bsi = bsi_start (exit_bb);
 
 
-  /* 2.2 Create:
-        v_out2 = reduc_expr <v_out1>
-        s_out3 = extract_field <v_out2, 0>  */
-
-  vec_dest = vect_create_destination_var (scalar_dest, vectype);
-  epilog_stmt = build2 (MODIFY_EXPR, vectype, vec_dest,
-                         build1 (reduc_code, vectype, PHI_RESULT (new_phi)));
-  new_temp = make_ssa_name (vec_dest, epilog_stmt);
-  TREE_OPERAND (epilog_stmt, 0) = new_temp;
-  bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
-
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
-    {
-      fprintf (vect_dump, "transform reduction: created epilog code:");
-      print_generic_expr (vect_dump, epilog_stmt, TDF_SLIM);
-    }
-
   new_scalar_dest = vect_create_destination_var (scalar_dest, NULL);
   bitsize = TYPE_SIZE (scalar_type);
+  bytesize = TYPE_SIZE_UNIT (scalar_type);
 
-  /* The result is in the low order bits.  */
-  if (BITS_BIG_ENDIAN)
-    bitpos = size_binop (MULT_EXPR,
-                       bitsize_int (TYPE_VECTOR_SUBPARTS (vectype) - 1),
-                       TYPE_SIZE (scalar_type));
+  /* 2.2 Create the reduction code.  */
+
+  if (reduc_code < NUM_TREE_CODES)
+    {
+      /*** Case 1:  Create:
+	   v_out2 = reduc_expr <v_out1>  */
+
+      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	fprintf (vect_dump, "Reduce using direct vector reduction.");
+
+      vec_dest = vect_create_destination_var (scalar_dest, vectype);
+      epilog_stmt = build2 (MODIFY_EXPR, vectype, vec_dest,
+			build1 (reduc_code, vectype,  PHI_RESULT (new_phi)));
+      new_temp = make_ssa_name (vec_dest, epilog_stmt);
+      TREE_OPERAND (epilog_stmt, 0) = new_temp;
+      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
+
+      extract_scalar_result = true;
+      adjust_in_epilog = true;
+    }
   else
-    bitpos = bitsize_zero_node;
+    {
+      enum tree_code shift_code;
+      bool have_whole_vector_shift = true;
+      enum tree_code code = TREE_CODE (TREE_OPERAND (stmt, 1)); /* CHECKME */
+      int bit_offset;
+      int element_bitsize = tree_low_cst (bitsize, 1);
+      int vec_size_in_bits = tree_low_cst (TYPE_SIZE (vectype), 1);
+      tree vec_temp;
 
-  epilog_stmt = build2 (MODIFY_EXPR, scalar_type, new_scalar_dest,
-                 build3 (BIT_FIELD_REF, scalar_type,
-                         new_temp, bitsize, bitpos));
-  new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
-  TREE_OPERAND (epilog_stmt, 0) = new_temp;
-  bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
+      /* The result of the reduction is expected to be at the LSB bits
+	 of the vector. For big-endian targets this means at the right
+	 end of the vector. For little-edian targets this means at the
+	 left end of the vector.  */
 
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC)) 
-    print_generic_expr (vect_dump, epilog_stmt, TDF_SLIM);
+      if (BITS_BIG_ENDIAN
+	  && vec_shr_optab->handlers[mode].insn_code != CODE_FOR_nothing)
+	shift_code = VEC_RSHIFT_EXPR;
+      else if (!BITS_BIG_ENDIAN
+	       && vec_shl_optab->handlers[mode].insn_code != CODE_FOR_nothing)
+	shift_code = VEC_LSHIFT_EXPR;
+      else
+	have_whole_vector_shift = false;
 
+      if (have_whole_vector_shift)
+        {
+	  /*** Case 2:
+	     for (offset = VS/2; offset >= element_size; offset/=2)
+	        {
+	          Create:  va' = vec_shift <va, offset>
+	          Create:  va = vop <va, va'>
+	        }  */
+
+	  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	    fprintf (vect_dump, "Reduce using vector shifts");
+
+	  vec_dest = vect_create_destination_var (scalar_dest, vectype);
+	  new_temp = PHI_RESULT (new_phi);
+
+	  for (bit_offset = vec_size_in_bits/2;
+	       bit_offset >= element_bitsize;
+	       bit_offset /= 2)
+	    {
+	      tree bitpos = size_int (bit_offset);
+
+	      epilog_stmt = build2 (MODIFY_EXPR, vectype, vec_dest,
+	      build2 (shift_code, vectype, new_temp, bitpos));
+	      new_name = make_ssa_name (vec_dest, epilog_stmt);
+	      TREE_OPERAND (epilog_stmt, 0) = new_name;
+	      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
+	      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+		print_generic_expr (vect_dump, epilog_stmt, TDF_SLIM);
+
+
+	      epilog_stmt = build2 (MODIFY_EXPR, vectype, vec_dest,
+	      build2 (code, vectype, new_name, new_temp));
+	      new_temp = make_ssa_name (vec_dest, epilog_stmt);
+	      TREE_OPERAND (epilog_stmt, 0) = new_temp;
+	      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
+	      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+		print_generic_expr (vect_dump, epilog_stmt, TDF_SLIM);
+	    }
+
+	  extract_scalar_result = true;
+	  adjust_in_epilog = true;
+	}
+      else
+        {
+	  /*** Case 3:
+	     Create:  s = init; 
+	     for (offset=0; offset<vector_size; offset+=element_size;)
+	       {
+	         Create:  s' = extract_field <v_out2, offset>
+	         Create:  s = op <s, s'>
+	       }  */
+
+	  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	    fprintf (vect_dump, "Reduce using scalar code. ");
+
+	  vec_temp = PHI_RESULT (new_phi);
+	  vec_size_in_bits = tree_low_cst (TYPE_SIZE (vectype), 1);
+
+	  /* first iteration is peeled out when possible to minimize
+	     the number of operations we generate:  */
+	  if (code == PLUS_EXPR 
+	     && (integer_zerop (scalar_initial_def) 
+		 || real_zerop (scalar_initial_def)))
+	    {
+	      epilog_stmt = build2 (MODIFY_EXPR, scalar_type, new_scalar_dest,
+                                build3 (BIT_FIELD_REF, scalar_type,
+                                	vec_temp, bitsize, bitsize_zero_node));
+              new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
+              TREE_OPERAND (epilog_stmt, 0) = new_temp;
+              bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
+              if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+                print_generic_expr (vect_dump, epilog_stmt, TDF_SLIM);
+	      
+	      bit_offset = element_bitsize;
+	    }
+	  else
+	    {
+	      new_temp = scalar_initial_def;
+	      bit_offset = 0;
+	    }
+
+	  for (;
+	       bit_offset < vec_size_in_bits;
+	       bit_offset += element_bitsize)
+	    { 
+	      tree bitpos = bitsize_int (bit_offset);
+
+	      epilog_stmt = build2 (MODIFY_EXPR, scalar_type, new_scalar_dest,
+				build3 (BIT_FIELD_REF, scalar_type,
+					vec_temp, bitsize, bitpos));
+	      new_name = make_ssa_name (new_scalar_dest, epilog_stmt);
+	      TREE_OPERAND (epilog_stmt, 0) = new_name;
+	      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
+	      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+		print_generic_expr (vect_dump, epilog_stmt, TDF_SLIM);
+
+
+	      epilog_stmt = build2 (MODIFY_EXPR, scalar_type, new_scalar_dest,
+				build2 (code, scalar_type, new_name, new_temp));
+	      new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
+	      TREE_OPERAND (epilog_stmt, 0) = new_temp;
+	      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
+	      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+		print_generic_expr (vect_dump, epilog_stmt, TDF_SLIM);
+	    }
+
+	  extract_scalar_result = false;
+	  adjust_in_epilog = false;
+	}
+    }
+
+
+  /* 2.3  Extract the final scalar result.  Create:
+         s_out3 = extract_field <v_out2, bitpos>  */
   
-  /* 2.3 Adjust the final result by the initial value of the reduction
-         variable. (when such adjustment is not needed, then
-         'scalar_initial_def' is zero).
+  if (extract_scalar_result)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	fprintf (vect_dump, "extract scalar result");
 
-         Create:
-         s_out = scalar_expr <s_out, scalar_initial_def>  */
+      /* The result is in the low order bits.  */
+      if (BITS_BIG_ENDIAN)
+	bitpos = size_binop (MULT_EXPR,
+		       bitsize_int (TYPE_VECTOR_SUBPARTS (vectype) - 1),
+		       TYPE_SIZE (scalar_type));
+      else
+	bitpos = bitsize_zero_node;
 
-  epilog_stmt = build2 (MODIFY_EXPR, scalar_type, new_scalar_dest,
-                  build2 (code, scalar_type, new_temp, scalar_initial_def));
-  new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
-  TREE_OPERAND (epilog_stmt, 0) = new_temp;
-  bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
+      epilog_stmt = build2 (MODIFY_EXPR, scalar_type, new_scalar_dest,
+		     build3 (BIT_FIELD_REF, scalar_type,
+			     new_temp, bitsize, bitpos));
+      new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
+      TREE_OPERAND (epilog_stmt, 0) = new_temp; 
+      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
+      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	print_generic_expr (vect_dump, epilog_stmt, TDF_SLIM);
+    }
 
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
-    print_generic_expr (vect_dump, epilog_stmt, TDF_SLIM);
 
-    
-  /* 2.4 Replace uses of s_out0 with uses of s_out3  */ 
+  /* 2.4 Adjust the final result by the initial value of the reduction
+	 variable. (when such adjustment is not needed, then
+	 'scalar_initial_def' is zero).
+
+	 Create: 
+	 s_out = scalar_expr <s_out, scalar_initial_def>  */
+  
+  if (adjust_in_epilog)
+    {
+      epilog_stmt = build2 (MODIFY_EXPR, scalar_type, new_scalar_dest,
+                      build2 (code, scalar_type, new_temp, scalar_initial_def));
+      new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
+      TREE_OPERAND (epilog_stmt, 0) = new_temp;
+      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
+
+      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+        print_generic_expr (vect_dump, epilog_stmt, TDF_SLIM);
+    }
+
+
+  /* 2.5 Replace uses of s_out0 with uses of s_out3  */
 
   /* Find the loop-closed-use at the loop exit of the original
      scalar result.  (The reduction result is expected to have
@@ -954,10 +1109,10 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, scalar_dest)
     {
       if (!flow_bb_inside_loop_p (loop, bb_for_stmt (USE_STMT (use_p))))
-        {
-          exit_phi = USE_STMT (use_p);
-          break;
-        }
+	{
+	  exit_phi = USE_STMT (use_p);
+	  break;
+	}
     }
 
   orig_name = PHI_RESULT (exit_phi);
@@ -1067,13 +1222,13 @@ vectorizable_reduction (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
     {
       if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
         fprintf (vect_dump, "no optab for reduction.");
-      return false;
+      reduc_code = NUM_TREE_CODES;
     }
   if (reduc_optab->handlers[(int) vec_mode].insn_code == CODE_FOR_nothing)
     {
       if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
-        fprintf (vect_dump, "op not supported by target.");
-      return false;
+        fprintf (vect_dump, "reduc op not supported by target.");
+      reduc_code = NUM_TREE_CODES;
     }
  
   if (!vec_stmt) /* transformation not required.  */

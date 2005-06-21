@@ -4,12 +4,11 @@
 #include "tree-vect.h"
 
 #define N 16
-#define DIFF 240
 
 /* Test vectorization of reduction of unsigned-int in the presence
    of unknown-loop-bound.  */
 
-int main1 (int n)
+int main1 (int n, int res)
 {
   int i;
   unsigned int ub[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
@@ -22,7 +21,7 @@ int main1 (int n)
   }
 
   /* check results:  */
-  if (udiff != DIFF)
+  if (udiff != res)
     abort ();
 
   return 0;
@@ -32,9 +31,10 @@ int main (void)
 { 
   check_vect ();
   
-  return main1 (N);
-  return main1 (N-1);
+  main1 (N, 240);
+  main1 (N-1, 210);
+  return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail {! vect_reduction} } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

@@ -1,3 +1,40 @@
+2005-06-21  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* genopinit.c (vec_shl_optab, vec_shr_optab): Initialize new optabs.
+	(reduc_plus_optab): Removed.  Replcaed with...
+	(reduc_splus_optab, reduc_uplus_optab): Initialize new optabs.
+	* optabs.c (optab_for_tree_code): Return reduc_splus_optab or
+	reduc_uplus_optab instead of reduc_plus_optab.
+	(expand_vec_shift_expr): New function.
+	(init_optabs): Initialize new optabs. Remove initialization of
+	reduc_plus_optab.
+	(optab_for_tree_code): Return vec_shl_optab/vec_shr_optab
+	for VEC_LSHIFT_EXPR/VEC_RSHIFT_EXPR.
+	* optabs.h (OTI_reduc_plus): Removed. Replaced with...
+	(OTI_reduc_splus, OTI_reduc_uplus): New.
+	(reduc_plus_optab): Removed.  Replcaed with...
+	(reduc_splus_optab, reduc_uplus_optab): New optabs.
+	(vec_shl_optab, vec_shr_optab): New optabs.
+	(expand_vec_shift_expr): New function declaration.
+
+	* tree.def (VEC_LSHIFT_EXPR, VEC_RSHIFT_EXPR): New tree-codes.
+	* tree-inline.c (estimate_num_insns_1): Handle new tree-codes.
+	* expr.c (expand_expr_real_1): Handle new tree-codes.
+	* tree-pretty-print.c (dump_generic_node, op_symbol, op_prio): Likewise.
+	* tree-vect-generic.c (expand_vector_operations_1): Add assert.
+
+	* tree-vect-transform.c (vect_create_epilog_for_reduction): Add two
+	alternatives for generating reduction epilog code.
+	(vectorizable_reduction): Don't fail of direct reduction support is
+	not available.
+	(vectorizable_target_reduction_pattern): Likewise.
+
+	* config/rs6000/altivec.md (reduc_smax_v4si, reduc_smax_v4sf,
+	reduc_umax_v4si, reduc_smin_v4si, reduc_smin_v4sf, reduc_umin_v4si,
+	reduc_plus_v4si, reduc_plus_v4sf): Removed.
+	(vec_shl_<mode>, vec_shr_<mode>, altivec_vsumsws_nomode,
+	reduc_splus_<mode>, reduc_uplus_v16qi): New.
+
 2005-06-20  Daniel Berlin  <dberlin@dberlin.org>
 
 	* c-typeck.c (build_function_call): Set fundecl = function again.

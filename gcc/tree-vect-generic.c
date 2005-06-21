@@ -448,6 +448,7 @@ expand_vector_operations_1 (block_stmt_iterator *bsi)
 	compute_type = TREE_TYPE (type);
     }
 
+  gcc_assert (code != VEC_LSHIFT_EXPR && code != VEC_RSHIFT_EXPR);
   rhs = expand_vector_operation (bsi, type, compute_type, rhs, code);
   if (lang_hooks.types_compatible_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
     *p_rhs = rhs;
