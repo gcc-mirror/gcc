@@ -631,17 +631,17 @@ Sets the first @var{count} bytes of @var{s} to the constant byte
 @end deftypefn
 
 @c mkstemps.c:54
-@deftypefn Replacement int mkstemps (char *@var{template}, int @var{suffix_len})
+@deftypefn Replacement int mkstemps (char *@var{pattern}, int @var{suffix_len})
 
-Generate a unique temporary file name from @var{template}.
-@var{template} has the form:
+Generate a unique temporary file name from @var{pattern}.
+@var{pattern} has the form:
 
 @example
    @var{path}/ccXXXXXX@var{suffix}
 @end example
 
 @var{suffix_len} tells us how long @var{suffix} is (it can be zero
-length).  The last six characters of @var{template} before @var{suffix}
+length).  The last six characters of @var{pattern} before @var{suffix}
 must be @samp{XXXXXX}; they are replaced with a string that makes the
 filename unique.  Returns a file descriptor open on the file for
 reading and writing.
@@ -891,7 +891,7 @@ control over the state of the random number generator.
 
 @end deftypefn
 
-@c concat.c:167
+@c concat.c:173
 @deftypefn Extension char* reconcat (char *@var{optr}, const char *@var{s1}, @dots{}, @code{NULL})
 
 Same as @code{concat}, except that if @var{optr} is not @code{NULL} it
@@ -1193,6 +1193,53 @@ Given the symbolic name of a signal, map it to a signal number.  If no
 translation is found, returns 0.
 
 @end deftypefn
+
+@c strverscmp.c:24
+@deftypefun int strverscmp (const char *@var{s1}, const char *@var{s2})
+The @code{strverscmp} function compares the string @var{s1} against
+@var{s2}, considering them as holding indices/version numbers.  Return
+value follows the same conventions as found in the @code{strverscmp}
+function.  In fact, if @var{s1} and @var{s2} contain no digits,
+@code{strverscmp} behaves like @code{strcmp}.
+
+Basically, we compare strings normally (character by character), until
+we find a digit in each string - then we enter a special comparison
+mode, where each sequence of digits is taken as a whole.  If we reach the
+end of these two parts without noticing a difference, we return to the
+standard comparison mode.  There are two types of numeric parts:
+"integral" and "fractional" (those  begin with a '0'). The types
+of the numeric parts affect the way we sort them:
+
+@itemize @bullet
+@item
+integral/integral: we compare values as you would expect.
+
+@item
+fractional/integral: the fractional part is less than the integral one.
+Again, no surprise.
+
+@item
+fractional/fractional: the things become a bit more complex.
+If the common prefix contains only leading zeroes, the longest part is less
+than the other one; else the comparison behaves normally.
+@end itemize
+
+@smallexample
+strverscmp ("no digit", "no digit")
+    @result{} 0    // @r{same behavior as strcmp.}
+strverscmp ("item#99", "item#100")
+    @result{} <0   // @r{same prefix, but 99 < 100.}
+strverscmp ("alpha1", "alpha001")
+    @result{} >0   // @r{fractional part inferior to integral one.}
+strverscmp ("part1_f012", "part1_f01")
+    @result{} >0   // @r{two fractional parts.}
+strverscmp ("foo.009", "foo.0")
+    @result{} <0   // @r{idem, but with leading zeroes only.}
+@end smallexample
+
+This function is especially useful when dealing with filename sorting,
+because filenames frequently hold indices/version numbers.
+@end deftypefun
 
 @c tmpnam.c:3
 @deftypefn Supplemental char* tmpnam (char *@var{s})

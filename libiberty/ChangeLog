@@ -1,3 +1,15 @@
+2005-06-20  Geoffrey Keating  <geoffk@apple.com>
+
+	* strverscmp.c: New.
+	* Makefile.in (CFILES): Add strverscmp.c.
+	(CONFIGURED_OFILES): Add strverscmp.o.
+	(strverscmp.o): New rule.
+	(stamp-functions): Add $(srcdir) to files in source directory.
+	* configure.ac (funcs): Add strverscmp.
+	(AC_CHECK_FUNCS): Add strverscmp.
+	* configure: Regenerate.
+	* functions.texi: Regenerate.
+
 2005-05-28  Eli Zaretskii  <eliz@gnu.org>
 
 	* configure.ac: Add snprintf and vsnprintf to AC_CHEK_DECLS.
