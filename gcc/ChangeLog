@@ -1,3 +1,7 @@
+2005-06-20  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	config/sh/linux.h (FUNCTION_PROFILER): Constify a char*.
+
 2005-06-20  Roger Sayle  <roger@eyesopen.com>
 2005-06-20  Fariborz Jahanian <fjahanian@apple.com>
 
