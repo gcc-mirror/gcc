@@ -2564,6 +2564,55 @@ mio_expr (gfc_expr ** ep)
 }
 
 
+/* Read and write namelists */
+
+static void
+mio_namelist (gfc_symbol * sym)
+{
+  gfc_namelist *n, *m;
+  const char *check_name;
+
+  mio_lparen ();
+
+  if (iomode == IO_OUTPUT)
+    {
+      for (n = sym->namelist; n; n = n->next)
+	mio_symbol_ref (&n->sym);
+    }
+  else
+    {
+      /* This departure from the standard is flagged as an error.
+	 It does, in fact, work correctly. TODO: Allow it
+	 conditionally?  */
+      if (sym->attr.flavor == FL_NAMELIST)
+	{
+	  check_name = find_use_name (sym->name);
+	  if (check_name && strcmp (check_name, sym->name) != 0)
+	    gfc_error("Namelist %s cannot be renamed by USE"
+		      " association to %s.",
+		      sym->name, check_name);
+	}
+
+      m = NULL;
+      while (peek_atom () != ATOM_RPAREN)
+	{
+	  n = gfc_get_namelist ();
+	  mio_symbol_ref (&n->sym);
+
+	  if (sym->namelist == NULL)
+	    sym->namelist = n;
+	  else
+	    m->next = n;
+
+	  m = n;
+	}
+      sym->namelist_tail = m;
+    }
+
+  mio_rparen ();
+}
+
+
 /* Save/restore lists of gfc_interface stuctures.  When loading an
    interface, we are really appending to the existing list of
    interfaces.  Checking for duplicate and ambiguous interfaces has to
@@ -2724,6 +2773,7 @@ mio_symbol (gfc_symbol * sym)
     sym->component_access =
       MIO_NAME(gfc_access) (sym->component_access, access_types);
 
+  mio_namelist (sym);
   mio_rparen ();
 }
 
