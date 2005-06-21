@@ -1,3 +1,17 @@
+2005-06-20  Daniel Berlin  <dberlin@dberlin.org>
+
+	* c-typeck.c (build_function_call): Set fundecl = function again.
+	* tree-ssa-alias.c (find_used_portions): Address taking causes the
+	entire variable to be used.
+	* tree-ssa-structalias.c (do_structure_copy): Fix handling of
+	unknown size variables, and structure copies from addressof
+	operations.  Simplify how we do *a = *b type structure copies.
+	(init_base_vars): Add ANYTHING = &ANYTHING constraint the right
+	way.  READONLY's address is not taken by default.
+	INTEGER dereference should point to anything.
+	(create_variable_info_for): It's okay for the first field to not start
+	at 0.
+
 2005-06-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	config/sh/linux.h (FUNCTION_PROFILER): Constify a char*.

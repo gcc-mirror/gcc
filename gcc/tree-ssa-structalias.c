@@ -2210,8 +2210,7 @@ do_simple_structure_copy (const struct constraint_expr lhs,
 			  const unsigned HOST_WIDE_INT size)
 {
   varinfo_t p = get_varinfo (lhs.var);
-  unsigned HOST_WIDE_INT pstart,last;
-
+  unsigned HOST_WIDE_INT pstart, last;
   pstart = p->offset;
   last = p->offset + size;
   for (; p && p->offset < last; p = p->next)
@@ -2321,8 +2320,6 @@ do_structure_copy (tree lhsop, tree rhsop)
   unsigned HOST_WIDE_INT lhssize;
   unsigned HOST_WIDE_INT rhssize;
 
-  lhssize = TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (lhsop)));
-  rhssize = TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (rhsop)));
   lhs = get_constraint_for (lhsop);  
   rhs = get_constraint_for (rhsop);
   
@@ -2334,8 +2331,18 @@ do_structure_copy (tree lhsop, tree rhsop)
       rhs = tmp;
     }
   
-  /* If the RHS is a special var, set all the LHS fields to that
-     special var.  */
+  /*  This is fairly conservative for the RHS == ADDRESSOF case, in that it's
+      possible it's something we could handle.  However, most cases falling
+      into this are dealing with transparent unions, which are slightly
+      weird. */
+  if (rhs.type == ADDRESSOF && rhs.var > integer_id)
+    {
+      rhs.type = ADDRESSOF;
+      rhs.var = anything_id;
+    }
+
+  /* If the RHS is a special var, or an addressof, set all the LHS fields to
+     that special var.  */
   if (rhs.var <= integer_id)
     {
       for (p = get_varinfo (lhs.var); p; p = p->next)
@@ -2351,6 +2358,20 @@ do_structure_copy (tree lhsop, tree rhsop)
     }
   else
     {
+      /* The size only really matters insofar as we don't set more or less of
+	 the variable.  If we hit an unknown size var, the size should be the
+	 whole darn thing.  */
+      if (get_varinfo (rhs.var)->is_unknown_size_var)
+	rhssize = ~0;
+      else
+	rhssize = TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (rhsop)));
+
+      if (get_varinfo (lhs.var)->is_unknown_size_var)
+	lhssize = ~0;
+      else
+	lhssize = TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (lhsop)));
+
+  
       if (rhs.type == SCALAR && lhs.type == SCALAR)  
 	do_simple_structure_copy (lhs, rhs, MIN (lhssize, rhssize));
       else if (lhs.type != DEREF && rhs.type == DEREF)
@@ -2362,14 +2383,12 @@ do_structure_copy (tree lhsop, tree rhsop)
 	  tree rhsdecl = get_varinfo (rhs.var)->decl;
 	  tree pointertype = TREE_TYPE (rhsdecl);
 	  tree pointedtotype = TREE_TYPE (pointertype);
-	  tree tmpvar;
+	  tree tmpvar;  
+
 	  gcc_assert (rhs.type == DEREF && lhs.type == DEREF);
 	  tmpvar = create_tmp_var_raw (pointedtotype, "structcopydereftmp");
-	  lhs = get_constraint_for (tmpvar);
-	  do_rhs_deref_structure_copy (lhs, rhs, MIN (lhssize, rhssize));
-	  rhs = lhs;
-	  lhs = get_constraint_for (lhsop);
-	  do_lhs_deref_structure_copy (lhs, rhs, MIN (lhssize, rhssize));
+	  do_structure_copy (tmpvar, rhsop);
+	  do_structure_copy (lhsop, tmpvar);
 	}
     }
 }
@@ -2723,7 +2742,7 @@ create_variable_info_for (tree decl, const char *name)
   vi->offset = 0;
   vi->has_union = hasunion;
   if (!TYPE_SIZE (decltype) 
-      || TREE_CODE (TYPE_SIZE  (decltype)) != INTEGER_CST
+      || TREE_CODE (TYPE_SIZE (decltype)) != INTEGER_CST
       || TREE_CODE (decltype) == ARRAY_TYPE
       || TREE_CODE (decltype) == UNION_TYPE
       || TREE_CODE (decltype) == QUAL_UNION_TYPE)
@@ -2786,7 +2805,6 @@ create_variable_info_for (tree decl, const char *name)
 	}
       
       field = fo->field;
-      gcc_assert (bitpos_of_field (field) == 0);
       vi->size = TREE_INT_CST_LOW (DECL_SIZE (field));
       for (i = 1; VEC_iterate (fieldoff_s, fieldstack, i, fo); i++)
 	{
@@ -3049,8 +3067,10 @@ init_base_vars (void)
   rhs.var = anything_id;
   rhs.offset = 0;
   var_anything->address_taken = true;
-  process_constraint (new_constraint (lhs, rhs));
-
+  /* This specifically does not use process_constraint because
+     process_constraint ignores all anything = anything constraints, since all
+     but this one are redundant.  */
+  VEC_safe_push (constraint_t, gc, constraints, new_constraint (lhs, rhs));
   
   /* Create the READONLY variable, used to represent that a variable
      points to readonly memory.  */
@@ -3075,7 +3095,6 @@ init_base_vars (void)
   rhs.type = ADDRESSOF;
   rhs.var = anything_id;
   rhs.offset = 0;
-  var_readonly->address_taken = true;
   
   process_constraint (new_constraint (lhs, rhs));
   
@@ -3091,6 +3110,16 @@ init_base_vars (void)
   var_integer->next = NULL;
   integer_id = 3;
   VEC_safe_push (varinfo_t, gc, varmap, var_integer);
+
+  /* *INTEGER = ANYTHING, because we don't know where a dereference of a random
+     integer will point to.  */
+  lhs.type = SCALAR;
+  lhs.var = integer_id;
+  lhs.offset = 0;
+  rhs.type = ADDRESSOF;
+  rhs.var = anything_id;
+  rhs.offset = 0;
+  process_constraint (new_constraint (lhs, rhs));
 }  
 
 
@@ -3101,7 +3130,6 @@ static void
 create_alias_vars (void)
 {
   basic_block bb;
-
   
   init_alias_vars ();
 

@@ -3119,6 +3119,35 @@ find_used_portions (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	  }
       }
       break;
+      /* This is here to make sure we mark the entire base variable as used
+	 when you take its address.  Because our used portion analysis is
+	 simple, we aren't looking at casts or pointer arithmetic to see what
+	 happens when you take the address.  */
+    case ADDR_EXPR:
+      {
+	tree var = get_base_address (TREE_OPERAND (*tp, 0));
+
+	if (var 
+	    && DECL_P (var)
+	    && DECL_SIZE (var)
+	    && var_can_have_subvars (var)
+	    && TREE_CODE (DECL_SIZE (var)) == INTEGER_CST)
+	  {
+	    used_part_t up;
+	    size_t uid = var_ann (var)->uid;	    
+	    
+	    up = get_or_create_used_part_for (uid);
+ 
+	    up->minused = 0;
+	    up->maxused = TREE_INT_CST_LOW (DECL_SIZE (var));
+	    up->implicit_uses = true;
+
+	    used_portions[uid] = up;
+	    *walk_subtrees = 0;
+	    return NULL_TREE;
+	  }
+      }
+      break;
     case VAR_DECL:
     case PARM_DECL:
       {
