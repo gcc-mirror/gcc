@@ -1,3 +1,7 @@
+2005-06-21  Ziemowit Laski  <zlaski@apple.com>
+
+	* obj-c++.dg/const-str-[1-9].mm: New tests.
+
 2005-06-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/22010
