@@ -70,6 +70,11 @@ progname=$0
 # if PWD already has a value, it is probably wrong.
 if test -n "$PWD" ; then PWD=`${PWDCMD-pwd}`; fi
 
+# If we're building in the source directory, error.
+if test "${srcdir}" = "." ; then
+  AC_MSG_ERROR([Building in the source directory is not supported in this release. See http://gcc.gnu.org/install/configure.html for more details.])
+fi
+
 # Export original configure arguments for use by sub-configures.  These
 # will be expanded by make, so quote '$'.
 tmp="$progname $@"

@@ -1,3 +1,9 @@
+2005-06-22  Eric Christopher  <echristo@redhat.com>
+
+	PR bootstrap/17383
+	* configure.in: Reject building in the source directory.
+	* configure: Regenerate.
+
 2005-06-06  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* configure.in: Don't add another '/mpfr' to the directory given
