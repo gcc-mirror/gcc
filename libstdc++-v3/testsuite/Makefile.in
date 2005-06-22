@@ -138,8 +138,6 @@ GLIBCXX_C_HEADERS_C_TRUE = @GLIBCXX_C_HEADERS_C_TRUE@
 GLIBCXX_HOSTED_FALSE = @GLIBCXX_HOSTED_FALSE@
 GLIBCXX_HOSTED_TRUE = @GLIBCXX_HOSTED_TRUE@
 GLIBCXX_INCLUDES = $(shell ${testsuite_flags_script} --build-includes)
-GLIBCXX_TEST_ABI_FALSE = @GLIBCXX_TEST_ABI_FALSE@
-GLIBCXX_TEST_ABI_TRUE = @GLIBCXX_TEST_ABI_TRUE@
 GLIBCXX_TEST_THREAD_FALSE = @GLIBCXX_TEST_THREAD_FALSE@
 GLIBCXX_TEST_THREAD_TRUE = @GLIBCXX_TEST_THREAD_TRUE@
 GLIBCXX_TEST_WCHAR_T_FALSE = @GLIBCXX_TEST_WCHAR_T_FALSE@
@@ -622,9 +620,8 @@ new-abi-baseline:
 
 # Use 'new-abi-baseline' to create an initial symbol file.  Then run
 # 'check-abi' to test for changes against that file.
-@GLIBCXX_TEST_ABI_TRUE@check-abi: baseline_symbols current_symbols.txt site.exp
-@GLIBCXX_TEST_ABI_TRUE@	-@runtest --tool libstdc++ abi.exp
-@GLIBCXX_TEST_ABI_FALSE@check-abi:
+check-abi: baseline_symbols current_symbols.txt site.exp
+	-@runtest --tool libstdc++ abi.exp
 check-compile: testsuite_files ${compile_script}
 	-@(chmod + ${compile_script}; \
 	  ${compile_script} ${glibcxx_srcdir} ${glibcxx_builddir})

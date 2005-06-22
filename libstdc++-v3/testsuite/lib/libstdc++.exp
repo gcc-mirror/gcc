@@ -277,6 +277,9 @@ set v3-wchar_t 0
 # True if the library supports threads.
 set v3-threads 0
 
+# True if the library supports symbol versioning.
+set v3-symver 0
+
 # A string naming object files to be linked into all tests.
 set v3-test_objs ""
 
@@ -316,17 +319,19 @@ proc v3_target_compile { source dest type options } {
 # This is a complete hack: why do we build libv3test.a and then not use it?
 # This duplicates all the make logic. Boo: pick one way to do it, not two.
 # Build the support objects linked in with the libstdc++ tests.  In
-# addition, set v3-wchar_t, v3-threads, and v3-test_objs
+# addition, set v3-wchar_t, v3-threads, v3-test_objs, and v3-symver
 # appropriately.
 proc v3-build_support {} {
     global srcdir
     global v3-wchar_t
     global v3-threads
     global v3-test_objs
+    global v3-symver
 
     # Figure out whether or not the library supports certain features.
     set v3-wchar_t 0
     set v3-threads 0
+    set v3-symver 0
     set v3-test_objs ""
 
     set config_src "config.cc"
@@ -339,6 +344,10 @@ proc v3-build_support {} {
     if { [string first "_GLIBCXX_USE_WCHAR_T" $preprocessed] != -1 } {
 	verbose -log "wchar_t support detected"
 	set v3-wchar_t 1
+    }
+    if { [string first "_GLIBCXX_SYMVER" $preprocessed] != -1 } {
+	verbose -log "symbol versioning support detected"
+	set v3-symver 1
     }
     if { [string first "__GTHREADS" $preprocessed] != -1 } {
 	verbose -log "thread support detected"

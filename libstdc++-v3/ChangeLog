@@ -1,3 +1,17 @@
+2005-06-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/22111
+	* acinclude.m4 (GLIBCXX_CONFIGURE_TESTSUITE): Remove
+	GLIBCXX_TEST_ABI. Remove duplicate _GLIBCXX_ASM_SYMVER define.
+	Don't enable abi testing unless versioned.
+	* configure: Regenerate.
+	* testsuite/Makefile.am (check-abi): Remove conditional.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/libstdc++-abi/abi.exp: Call build_support, then check
+	v3-symver before proceeding.
+	* testsuite/lib/libstdc++.exp (libstdc++-dg-test): Set v3-symvers
+	if _GLIBCXX_SYMVER.
+	
 2005-06-17  Jakub Jelinek  <jakub@redhat.com>
             Benjamin Kosnik  <bkoz@redhat.com>
 

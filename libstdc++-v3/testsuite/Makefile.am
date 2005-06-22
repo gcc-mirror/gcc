@@ -128,14 +128,10 @@ new-abi-baseline:
 	  fi; \
 	  ${extract_symvers} ../src/.libs/libstdc++.so $${output})
 
-if GLIBCXX_TEST_ABI
 # Use 'new-abi-baseline' to create an initial symbol file.  Then run
 # 'check-abi' to test for changes against that file.
 check-abi: baseline_symbols current_symbols.txt site.exp
 	-@runtest --tool libstdc++ abi.exp
-else
-check-abi:
-endif
 
 # Runs the testsuite, but in compile only mode.
 # Can be used to test sources with non-GNU FE's at various warning
