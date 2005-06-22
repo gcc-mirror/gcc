@@ -7,11 +7,9 @@ ACLOCAL_AMFLAGS = -I . -I ../config
 # May be used by various substitution variables.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 
-## Testsuite conditional.
-if TESTSUBDIR
-SUBDIRS = $(DIRLTDL) testsuite gcj include external
-else
 SUBDIRS = $(DIRLTDL) gcj include external
+if TESTSUBDIR
+SUBDIRS += testsuite
 endif
 
 # write_entries_to_file - writes each entry in a list
@@ -32,23 +30,16 @@ target_noncanonical = @target_noncanonical@
 ## What gets installed, and where.
 ##
 
+toolexeclib_LTLIBRARIES = libgcj.la libgij.la
+toolexecmainlib_DATA = libgcj.spec
+
 if XLIB_AWT
-cond_xlib_ltlibrary = lib-gnu-awt-xlib.la
-else
-cond_xlib_ltlibrary =
+toolexeclib_LTLIBRARIES += lib-gnu-awt-xlib.la
 endif
 
 if GTK_AWT
-cond_gtk_ltlibrary = lib-gnu-java-awt-peer-gtk.la
-cond_gtk_gcjawt_ltlibrary = libgcjawt.la
-else
-cond_gtk_ltlibrary =
-cond_gtk_gcjawt_ltlibrary =
+toolexeclib_LTLIBRARIES += lib-gnu-java-awt-peer-gtk.la libgcjawt.la
 endif
-
-toolexeclib_LTLIBRARIES = libgcj.la libgij.la \
-    $(cond_gtk_ltlibrary) $(cond_gtk_gcjawt_ltlibrary) $(cond_xlib_ltlibrary)
-toolexecmainlib_DATA = libgcj.spec
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libgcj.pc
@@ -141,10 +132,9 @@ AM_GCJFLAGS = \
 	--encoding=UTF-8 \
 	-Wno-deprecated -fbootstrap-classes
 
-if USING_GCC
-AM_CFLAGS = @LIBGCJ_CFLAGS@ $(WARNINGS)
-else
 AM_CFLAGS = @LIBGCJ_CFLAGS@
+if USING_GCC
+AM_CFLAGS += $(WARNINGS)
 endif
 
 ## Extra CFLAGS used for JNI C sources shared with GNU Classpath.
@@ -314,17 +304,8 @@ $(db_name): gcj-dbtool$(EXEEXT)
 ## not available.
 	./gcj-dbtool -n $(db_name) || touch $(db_name)
 
-# Gtk/Cairo JNI sources.
-if GTK_CAIRO
-gtk_cairo_c_source_files = \
-jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c
-else
-gtk_cairo_c_source_files = 
-endif
-
 ## Gtk JNI sources.
-gtk_c_source_files = \
-$(gtk_cairo_c_source_files) \
+lib_gnu_java_awt_peer_gtk_la_SOURCES = \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GdkTextLayout.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.c \
@@ -363,7 +344,15 @@ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GThreadNativeMethodRunner.c \
 jni/gtk-peer/gthread-jni.c \
 jni/gtk-peer/gtk_jawt.c \
-jni/classpath/native_state.c
+jni/classpath/native_state.c \
+jni/gtk-peer/gthread-jni.h \
+jni/gtk-peer/gtkpeer.h \
+jni/classpath/native_state.h
+
+# Gtk/Cairo JNI sources.
+if GTK_CAIRO
+lib_gnu_java_awt_peer_gtk_la_SOURCES += jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c
+endif
 
 ## Java sources for Gtk peers.
 gtk_awt_peer_source_files = \
@@ -504,12 +493,6 @@ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.lo: $(top_builddir)/jniinclude/
 ## For the peer library, DEPENDENCIES need to come before OBJECTS so
 ## that JNI headers are built before JNI C files.
 $(lib_gnu_java_awt_peer_gtk_la_OBJECTS): $(lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES)
-
-lib_gnu_java_awt_peer_gtk_la_SOURCES = \
-$(gtk_c_source_files) \
-jni/gtk-peer/gthread-jni.h \
-jni/gtk-peer/gtkpeer.h \
-jni/classpath/native_state.h
 
 lib_gnu_java_awt_peer_gtk_la_CFLAGS = \
 	-Ijniinclude -I$(srcdir)/jni/classpath \
