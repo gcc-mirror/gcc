@@ -1,3 +1,27 @@
+2005-06-22  Michael Matz  <matz@suse.de>
+
+	* gcc.target/x86-64/abi: New directory.
+	* gcc.target/x86-64/abi/abi-x86_64.exp: New testsuite.
+	* gcc.target/x86-64/abi/README.gcc: New file.
+	* gcc.target/x86-64/abi/{args.h,defines.h,macros.h}: New headers.
+	* gcc.target/x86-64/abi/asm-support.s: New file.
+	* gcc.target/x86_64/abi/test_3_element_struct_and_unions.c: New test.
+	* gcc.target/x86_64/abi/test_basic_alignment.c: New test.
+	* gcc.target/x86_64/abi/test_basic_array_size_and_align.c: New test.
+	* gcc.target/x86_64/abi/test_basic_returning.c: New test.
+	* gcc.target/x86_64/abi/test_basic_sizes.c: New test.
+	* gcc.target/x86_64/abi/test_basic_struct_size_and_align.c: New test.
+	* gcc.target/x86_64/abi/test_basic_union_size_and_align.c: New test.
+	* gcc.target/x86_64/abi/test_bitfields.c: New test.
+	* gcc.target/x86_64/abi/test_complex_returning.c: New test.
+	* gcc.target/x86_64/abi/test_passing_floats.c: New test.
+	* gcc.target/x86_64/abi/test_passing_integers.c: New test.
+	* gcc.target/x86_64/abi/test_passing_structs_and_unions.c: New test.
+	* gcc.target/x86_64/abi/test_passing_structs.c: New test.
+	* gcc.target/x86_64/abi/test_passing_unions.c: New test.
+	* gcc.target/x86_64/abi/test_struct_returning.c: New test.
+	* gcc.target/x86_64/abi/test_varargs.c: New test.
+
 2005-06-21  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* g++.dg/abi/mangle24.C, g++.dg/abi/mangle25.C: Pass -mmmx for
