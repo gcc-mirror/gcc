@@ -1139,11 +1139,6 @@ register_specialization (tree spec, tree tmpl, tree args)
        instantiation unless and until it is actually needed.  */
     return spec;
 
-  /* There should be as many levels of arguments as there are
-     levels of parameters.  */
-  gcc_assert (TMPL_ARGS_DEPTH (args)
-	      == TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (tmpl)));
-
   fn = retrieve_specialization (tmpl, args,
 				/*class_specializations_p=*/false);
   /* We can sometimes try to re-register a specialization that we've
