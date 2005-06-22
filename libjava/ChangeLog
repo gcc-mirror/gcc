@@ -1,3 +1,11 @@
+2005-06-22  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.am (SUBDIRS): Use append for conditional.
+	(toolexeclib_LTLIBRARIES): Likewise.
+	(lib_gnu_java_awt_peer_gtk_la_SOURCES): Directly define with
+	a conditional append.
+	* Makefile.in: Regenerate.
+
 2005-06-17  Keith Seitz  <keiths@redhat.com>
 
 	* gnu/classpath/jdwp/exception/VmDeadException.java: New file.
