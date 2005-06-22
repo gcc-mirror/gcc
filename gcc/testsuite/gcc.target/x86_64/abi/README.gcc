@@ -1,0 +1,18 @@
+This contains a testsuite for the AMD64 psABI.
+The ABI document is at http://www.x86-64.org/documentation/abi.pdf .
+The content of this directory in the GCC tree is just a (partial) copy of the
+ABI testsuite at cvs.x86-64.org.
+
+See http://www.x86-64.org/cvsaccess for accessing the anonymous CVS server.
+The module 'abitest' contains the master copy of this directory.
+
+The whole testsuite is licensed under GPL v2.
+
+Be aware that some of the test_*.c files here are generated, with the
+generators only being in the master copy of the testsuite.
+
+To change anything, please contact discuss@x86-64.org or the current
+maintainer of the testuite directly.
+
+The current maintainer is:
+  matz@suse.de
