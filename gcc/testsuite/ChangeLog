@@ -1,3 +1,8 @@
+2005-06-22 Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/21034
+	* gfortran.dg/auto_save_1.f90: New test.
+
 2005-06-22  Michael Matz  <matz@suse.de>
 
 	* gcc.target/x86-64/abi: New directory.
