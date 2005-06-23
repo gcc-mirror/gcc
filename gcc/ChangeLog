@@ -1,3 +1,12 @@
+2005-06-23  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/21760
+	* config/rs6000/rs6000.h (PPC405_ERRATUM77): New.
+	* config/rs6000/rs6000.md: Move atomic instructions to ...
+	* config/rs6000/sync.md: Here.
+	Change sync_compare_and_swap<mode> to define_expand.  All stwcx
+	patterns test PPC405_ERRATUM77.
+
 2005-06-23  Jan Hubicka  <jh@suse.cz>
 	
 	* tree-inline.c (copy_body_r): Remap labels correctly.
