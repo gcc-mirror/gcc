@@ -1,3 +1,7 @@
+2005-06-22  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/sysv4.h (TARGET_ASM_EXCEPTION_SECTION): Delete.
+
 2005-06-22  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	PR middle-end/20593
