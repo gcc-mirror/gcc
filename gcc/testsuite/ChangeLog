@@ -1,3 +1,7 @@
+2005-06-23  David Edelsohn  <edelsohn@gnu.org>
+
+	* gcc.dg/rs6000-fpint-2.c: Only compile on Darwin and Linux.
+
 2005-06-23  David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* gfortran.dg/f2c_4.f90:  Add tests for complex functions

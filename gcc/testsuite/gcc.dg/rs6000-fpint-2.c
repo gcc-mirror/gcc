@@ -1,4 +1,4 @@
-/* { dg-do compile { target powerpc*-*-* rs6000-*-* } } */
+/* { dg-do compile { target powerpc*-*-darwin* powerpc*-*-linux* } } */
 /* { dg-options "-mno-powerpc-gfxopt -mpowerpc64" } */
 extern void bar (void *);
 extern double x;
