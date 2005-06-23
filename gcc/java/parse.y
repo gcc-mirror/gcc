@@ -11416,13 +11416,9 @@ find_most_specific_methods_list (tree list)
 	  if (argument_types_convertible (method_v, current_v))
 	    {
 	      if (valid_method_invocation_conversion_p
-		  (DECL_CONTEXT (method_v), DECL_CONTEXT (current_v))
-		  || (INNER_CLASS_TYPE_P (DECL_CONTEXT (current_v))
-		      && enclosing_context_p (DECL_CONTEXT (method_v),
-					      DECL_CONTEXT (current_v))))
+		  (DECL_CONTEXT (method_v), DECL_CONTEXT (current_v)))
 		{
-		  int v = (DECL_SPECIFIC_COUNT (current_v) +=
-		    (INNER_CLASS_TYPE_P (DECL_CONTEXT (current_v)) ? 2 : 1));
+		  int v = (DECL_SPECIFIC_COUNT (current_v) += 1);
 		  max = (v > max ? v : max);
 		}
 	    }

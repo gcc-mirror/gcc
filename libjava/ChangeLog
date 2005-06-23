@@ -1,3 +1,7 @@
+2005-06-23  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* testsuite/libjava.compile/PR20697.java: New test-case.
+
 2005-06-22  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.am (SUBDIRS): Use append for conditional.
