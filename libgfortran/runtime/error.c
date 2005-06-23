@@ -69,11 +69,11 @@ static char buffer[32];		/* buffer for integer/ascii conversions */
 /* Returns a pointer to a static buffer. */
 
 char *
-gfc_itoa (int64_t n)
+gfc_itoa (GFC_INTEGER_LARGEST n)
 {
   int negative;
   char *p;
-  uint64_t t;
+  GFC_UINTEGER_LARGEST t;
 
   if (n == 0)
     {
@@ -109,7 +109,7 @@ gfc_itoa (int64_t n)
  * static buffer. */
 
 char *
-xtoa (uint64_t n)
+xtoa (GFC_UINTEGER_LARGEST n)
 {
   int digit;
   char *p;

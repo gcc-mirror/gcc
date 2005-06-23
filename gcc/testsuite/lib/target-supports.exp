@@ -410,6 +410,82 @@ proc check_named_sections_available { } {
     return $answer
 }
 
+# Return 1 if the target supports Fortran real kinds larger than real(8),
+# 0 otherwise.  Cache the result.
+
+proc check_effective_target_fortran_large_real { } {
+    global et_fortran_large_real_saved
+    global tool
+
+    if [info exists et_fortran_large_real_saved] {
+	verbose "check_effective_target_fortran_large_real returning saved $et_fortran_large_real_saved" 2
+    } else {
+	set et_fortran_large_real_saved 0
+
+	# Set up, compile, and execute a test program using large real
+	# kinds.  Include the current process ID in the file names to
+	# prevent conflicts with invocations for multiple testsuites.
+	set src real[pid].f90
+        set exe real[pid].x
+
+	set f [open $src "w"]
+	puts $f "integer,parameter :: k = &"
+        puts $f "  selected_real_kind (precision (0.0_8) + 1)"
+        puts $f "real(kind=k) :: x"
+	puts $f "end"
+	close $f
+
+	verbose "check_effective_target_fortran_large_real compiling testfile $src" 2
+	set lines [${tool}_target_compile $src $exe executable ""]
+	file delete $src
+
+	if [string match "" $lines] then {
+	    # No error message, compilation succeeded.
+  	    set et_fortran_large_real_saved 1
+	}
+    }
+
+    return $et_fortran_large_real_saved
+}
+
+# Return 1 if the target supports Fortran integer kinds larger than
+# integer(8), 0 otherwise.  Cache the result.
+
+proc check_effective_target_fortran_large_int { } {
+    global et_fortran_large_int_saved
+    global tool
+
+    if [info exists et_fortran_large_int_saved] {
+	verbose "check_effective_target_fortran_large_int returning saved $et_fortran_large_int_saved" 2
+    } else {
+	set et_fortran_large_int_saved 0
+
+	# Set up, compile, and execute a test program using large integer
+	# kinds.  Include the current process ID in the file names to
+	# prevent conflicts with invocations for multiple testsuites.
+	set src int[pid].f90
+        set exe int[pid].x
+
+	set f [open $src "w"]
+	puts $f "integer,parameter :: k = &"
+        puts $f "  selected_int_kind (range (0_8) + 1)"
+        puts $f "integer(kind=k) :: i"
+	puts $f "end"
+	close $f
+
+	verbose "check_effective_target_fortran_large_int compiling testfile $src" 2
+	set lines [${tool}_target_compile $src $exe executable ""]
+	file delete $src
+
+	if [string match "" $lines] then {
+	    # No error message, compilation succeeded.
+	    set et_fortran_large_int_saved 1
+	}
+    }
+
+    return $et_fortran_large_int_saved
+}
+
 # Return 1 if the target supports executing AltiVec instructions, 0
 # otherwise.  Cache the result.
 

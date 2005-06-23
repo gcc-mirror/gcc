@@ -339,7 +339,7 @@ convert_integer (int length, int negative)
 {
   char c, *buffer, message[100];
   int m;
-  int64_t v, max, max10;
+  GFC_INTEGER_LARGEST v, max, max10;
 
   buffer = saved_string;
   v = 0;

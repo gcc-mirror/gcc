@@ -371,3 +371,41 @@ roundf(float x)
     }
 }
 #endif
+
+#ifndef HAVE_LOG10L
+/* log10 function for long double variables. The version provided here
+   reduces the argument until it fits into a double, then use log10.  */
+long double
+log10l(long double x)
+{
+#if LDBL_MAX_EXP > DBL_MAX_EXP
+  if (x > DBL_MAX)
+    {
+      double val;
+      int p2_result = 0;
+      if (x > 0x1p16383L) { p2_result += 16383; x /= 0x1p16383L; }
+      if (x > 0x1p8191L) { p2_result += 8191; x /= 0x1p8191L; }
+      if (x > 0x1p4095L) { p2_result += 4095; x /= 0x1p4095L; }
+      if (x > 0x1p2047L) { p2_result += 2047; x /= 0x1p2047L; }
+      if (x > 0x1p1023L) { p2_result += 1023; x /= 0x1p1023L; }
+      val = log10 ((double) x);
+      return (val + p2_result * .30102999566398119521373889472449302L);
+    }
+#endif
+#if LDBL_MIN_EXP < DBL_MIN_EXP
+  if (x < DBL_MIN)
+    {
+      double val;
+      int p2_result = 0;
+      if (x < 0x1p-16380L) { p2_result += 16380; x /= 0x1p-16380L; }
+      if (x < 0x1p-8189L) { p2_result += 8189; x /= 0x1p-8189L; }
+      if (x < 0x1p-4093L) { p2_result += 4093; x /= 0x1p-4093L; }
+      if (x < 0x1p-2045L) { p2_result += 2045; x /= 0x1p-2045L; }
+      if (x < 0x1p-1021L) { p2_result += 1021; x /= 0x1p-1021L; }
+      val = fabs(log10 ((double) x));
+      return (- val - p2_result * .30102999566398119521373889472449302L);
+    }
+#endif
+    return log10 (x);
+}
+#endif
