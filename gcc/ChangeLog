@@ -1,3 +1,9 @@
+2005-06-23  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR tree-optimization/22117
+	* tree-vrp.c (extract_range_from_binary_expr): Compute a
+	correct range when adding two pointers.
+
 2005-06-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/19317
