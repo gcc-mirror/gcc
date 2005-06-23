@@ -1,3 +1,7 @@
+2005-06-23  Jan Hubicka  <jh@suse.cz>
+	
+	* tree-inline.c (copy_body_r): Remap labels correctly.
+
 2005-06-22  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/sysv4.h (TARGET_ASM_EXCEPTION_SECTION): Delete.
