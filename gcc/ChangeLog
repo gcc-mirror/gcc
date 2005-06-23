@@ -1,3 +1,10 @@
+2005-06-23  Jeff Law  <law@redhat.com>
+
+	* tree-optimize.c (init_tree_optimization_passes): Move
+	copy prop pass to run just before VRP.
+	* tree-vrp.c (remove_range_assertions): Remove copies created
+	by ASSERT_EXPR removal.
+
 2005-06-23  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR tree-optimization/22117

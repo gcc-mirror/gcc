@@ -1,3 +1,7 @@
+2005-06-23  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp16.c: New test.
+
 2005-06-23  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* lib/target-supports.exp: Add

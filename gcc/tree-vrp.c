@@ -2641,7 +2641,10 @@ insert_range_assertions (void)
 }
 
 
-/* Convert range assertion expressions into the implied copies.
+/* Convert range assertion expressions into the implied copies and
+   copy propagate away the copies.  Doing the trivial copy propagation
+   here avoids the need to run the full copy propagation pass after
+   VRP. 
    
    FIXME, this will eventually lead to copy propagation removing the
    names that had useful range information attached to them.  For
@@ -2655,7 +2658,12 @@ insert_range_assertions (void)
    things like jump threading.
    
    The problem with keeping ASSERT_EXPRs around is that passes after
-   VRP need to handle them appropriately.  */
+   VRP need to handle them appropriately. 
+
+   Another approach would be to make the range information a first
+   class property of the SSA_NAME so that it can be queried from
+   any pass.  This is made somewhat more complex by the need for
+   multiple ranges to be associated with one SSA_NAME.  */
 
 static void
 remove_range_assertions (void)
@@ -2663,8 +2671,11 @@ remove_range_assertions (void)
   basic_block bb;
   block_stmt_iterator si;
 
+  /* Note that the BSI iterator bump happens at the bottom of the
+     loop and no bump is necessary if we're removing the statement
+     referenced by the current BSI.  */
   FOR_EACH_BB (bb)
-    for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
+    for (si = bsi_start (bb); !bsi_end_p (si);)
       {
 	tree stmt = bsi_stmt (si);
 
@@ -2673,10 +2684,26 @@ remove_range_assertions (void)
 	  {
 	    tree rhs = TREE_OPERAND (stmt, 1);
 	    tree cond = fold (ASSERT_EXPR_COND (rhs));
+	    use_operand_p use_p;
+	    imm_use_iterator iter;
+
 	    gcc_assert (cond != boolean_false_node);
 	    TREE_OPERAND (stmt, 1) = ASSERT_EXPR_VAR (rhs);
 	    update_stmt (stmt);
+
+	    /* The statement is now a copy.  Propagate the RHS into
+	       every use of the LHS.  */
+	    FOR_EACH_IMM_USE_SAFE (use_p, iter, TREE_OPERAND (stmt, 0))
+	      {
+		SET_USE (use_p, ASSERT_EXPR_VAR (rhs));
+		update_stmt (USE_STMT (use_p));
+	      }
+
+	    /* And finally, remove the copy, it is not needed.  */
+	    bsi_remove (&si);
 	  }
+	else
+	  bsi_next (&si);
       }
 }
 
