@@ -1445,32 +1445,18 @@ distclean-stage[+id+]::
 
 [+ ENDFOR bootstrap-stage +]
 
+stageprofile-end::
+	$(MAKE) distclean-stagefeedback
+
 stagefeedback-start::
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	cd stageprofile-gcc && \
-	  { find . -type d | sort | sed 's,.*,$(SHELL) '"$$s"'/mkinstalldirs "../gcc/&",' | $(SHELL); } && \
-	  { find . -name '*.*da' | sed 's,.*,$(LN) -f "&" "../gcc/&",' | $(SHELL); }
-
-# FIXME: Will not need to be conditional when toplevel bootstrap is the
-# only possibility, but now it conflicts with no-bootstrap rules
-@if gcc-bootstrap
-profiledbootstrap:
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	echo "Bootstrapping the compiler"; \
-	$(MAKE) stageprofile-bubble distclean-stagefeedback
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
-	echo "Building runtime libraries and training compiler"; \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	echo "Building feedback based compiler"; \
-	$(MAKE) stagefeedback-bubble stagefeedback-end
-@endif gcc-bootstrap
+	for i in prev-*; do \
+	  j=`echo $$i | sed s/^prev-//` ; \
+	  cd $$r/$$i && \
+	  { find . -type d | sort | sed 's,.*,$(SHELL) '"$$s"'/mkinstalldirs "../'$$j'/&",' | $(SHELL) ; } && \
+	  { find . -name '*.*da' | sed 's,.*,$(LN) -f "&" "../'$$j'/&",' | $(SHELL) ; } ; \
+	done
 
 @if gcc-bootstrap
 NOTPARALLEL = .NOTPARALLEL

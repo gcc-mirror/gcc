@@ -1,3 +1,12 @@
+2005-06-22  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.def (stagefeedback): Come after profile.
+	Define profiledbootstrap target.
+	* Makefile.tpl (profiledbootstrap): Remove.
+	(stageprofile-end): Zap stagefeedback.
+	(stagefeedback-start): Copy all .gcda files, not only GCC's.
+	* Makefile.in: Regenerate.
+
 2005-06-13  Richard Sandiford  <richard@codesourcery.com>
 
 	* MAINTAINERS: Update my email address.
