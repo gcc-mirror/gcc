@@ -1073,7 +1073,14 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
 	 ivopts is generating expressions with pointer multiplication
 	 in them.  */
       if (code == PLUS_EXPR)
-	set_value_range_to_nonnull (vr, TREE_TYPE (expr));
+	{
+	  if (range_is_nonnull (&vr0) || range_is_nonnull (&vr1))
+	    set_value_range_to_nonnull (vr, TREE_TYPE (expr));
+	  else if (range_is_null (&vr0) && range_is_null (&vr1))
+	    set_value_range_to_null (vr, TREE_TYPE (expr));
+	  else
+	    set_value_range_to_varying (vr);
+	}
       else
 	{
 	  /* Subtracting from a pointer, may yield 0, so just drop the
