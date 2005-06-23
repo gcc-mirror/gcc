@@ -554,9 +554,11 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
     copy_statement_list (tp);
   else if (TREE_CODE (*tp) == SAVE_EXPR)
     remap_save_expr (tp, id->decl_map, walk_subtrees);
-  else if (TREE_CODE (*tp) == LABEL_DECL)
+  else if (TREE_CODE (*tp) == LABEL_DECL
+	   && (! DECL_CONTEXT (*tp)
+	       || decl_function_context (*tp) == id->callee))
     /* These may need to be remapped for EH handling.  */
-    remap_decl (*tp, id);
+    *tp = remap_decl (*tp, id);
   else if (TREE_CODE (*tp) == BIND_EXPR)
     copy_bind_expr (tp, walk_subtrees, id);
   /* Types may need remapping as well.  */
