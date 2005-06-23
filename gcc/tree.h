@@ -337,7 +337,7 @@ struct tree_common GTY(())
 
        TREE_PRIVATE in
            ..._DECL
-       CALL_EXPR_HAS_RETURN_SLOT_ADDR in
+       CALL_EXPR_RETURN_SLOT_OPT in
            CALL_EXPR
        DECL_BY_REFERENCE in
            PARM_DECL, RESULT_DECL
@@ -980,9 +980,9 @@ extern void tree_operand_check_failed (int, enum tree_code,
    an exception.  In a CALL_EXPR, nonzero means the call cannot throw.  */
 #define TREE_NOTHROW(NODE) ((NODE)->common.nothrow_flag)
 
-/* In a CALL_EXPR, means that the address of the return slot is part of the
-   argument list.  */
-#define CALL_EXPR_HAS_RETURN_SLOT_ADDR(NODE) ((NODE)->common.private_flag)
+/* In a CALL_EXPR, means that it's safe to use the target of the call
+   expansion as the return slot for a call that returns in memory.  */
+#define CALL_EXPR_RETURN_SLOT_OPT(NODE) ((NODE)->common.private_flag)
 
 /* In a RESULT_DECL or PARM_DECL, means that it is passed by invisible
    reference (and the TREE_TYPE is a pointer to the true type).  */

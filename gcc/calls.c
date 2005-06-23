@@ -1964,17 +1964,7 @@ expand_call (tree exp, rtx target, int ignore)
       {
 	struct_value_size = int_size_in_bytes (TREE_TYPE (exp));
 
-	if (CALL_EXPR_HAS_RETURN_SLOT_ADDR (exp))
-	  {
-	    /* The structure value address arg is already in actparms.
-	       Pull it out.  It might be nice to just leave it there, but
-	       we need to set structure_value_addr.  */
-	    tree return_arg = TREE_VALUE (actparms);
-	    actparms = TREE_CHAIN (actparms);
-	    structure_value_addr = expand_expr (return_arg, NULL_RTX,
-						VOIDmode, EXPAND_NORMAL);
-	  }
-	else if (target && MEM_P (target))
+	if (target && MEM_P (target) && CALL_EXPR_RETURN_SLOT_OPT (exp))
 	  structure_value_addr = XEXP (target, 0);
 	else
 	  {

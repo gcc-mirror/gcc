@@ -1,3 +1,22 @@
+2005-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/19317
+	Leave the return slot target in the MODIFY_EXPR rather than making
+	it an argument, but only use it if the CALL_EXPR has a flag set.
+	* tree.h (CALL_EXPR_HAS_RETURN_SLOT_ADDR): Rename to
+	CALL_EXPR_RETURN_SLOT_OPT.
+	* calls.c (expand_call): Adjust.
+	* tree-inline.c (expand_call_inline): Adjust.
+	* tree-pretty-print.c (dump_generic_node): Adjust.
+
+	And set the flag as appropriate.
+	* gimplify.c (gimplify_modify_expr_rhs): Set
+	CALL_EXPR_HAS_RETURN_SLOT_ADDR where the LHS is obviously safe.
+	* tree-nrv.c (execute_return_slot_opt): Set
+	CALL_EXPR_HAS_RETURN_SLOT_ADDR based on escape analysis.
+	* tree-pass.h: Declare pass_return_slot.
+	* tree-optimize.c (init_tree_optimization_passes): Add it.
+	
 2005-06-23  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/21760

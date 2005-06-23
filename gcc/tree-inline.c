@@ -2026,13 +2026,6 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
 
   /* Initialize the parameters.  */
   args = TREE_OPERAND (t, 1);
-  if (CALL_EXPR_HAS_RETURN_SLOT_ADDR (t))
-    {
-      return_slot_addr = TREE_VALUE (args);
-      args = TREE_CHAIN (args);
-    }
-  else
-    return_slot_addr = NULL_TREE;
 
   initialize_inlined_parameters (id, args, TREE_OPERAND (t, 2), fn, bb);
 
@@ -2046,10 +2039,10 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
   gcc_assert (TREE_CODE (DECL_INITIAL (fn)) == BLOCK);
 
   /* Find the lhs to which the result of this call is assigned.  */
-  modify_dest = stmt;
-  if (TREE_CODE (modify_dest) == MODIFY_EXPR)
+  return_slot_addr = NULL;
+  if (TREE_CODE (stmt) == MODIFY_EXPR)
     {
-      modify_dest = TREE_OPERAND (modify_dest, 0);
+      modify_dest = TREE_OPERAND (stmt, 0);
 
       /* The function which we are inlining might not return a value,
 	 in which case we should issue a warning that the function
@@ -2059,6 +2052,11 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
 	 uninitialized variable.  */
       if (DECL_P (modify_dest))
 	TREE_NO_WARNING (modify_dest) = 1;
+      if (CALL_EXPR_RETURN_SLOT_OPT (t))
+	{
+	  return_slot_addr = build_fold_addr_expr (modify_dest);
+	  modify_dest = NULL;
+	}
     }
   else
     modify_dest = NULL;

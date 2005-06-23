@@ -1,3 +1,9 @@
+2005-06-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/19317
+	* semantics.c (simplify_aggr_init_expr): Use
+	CALL_EXPR_RETURN_SLOT_OPT, not CALL_EXPR_HAS_RETURN_SLOT_ADDR.
+
 2005-06-23  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* pt.c (register_specialization): Remove superfluous assertion.
