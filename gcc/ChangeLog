@@ -1,3 +1,9 @@
+2005-06-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR 22000
+	* tree-ssa-operands.c (get_expr_operands): Check the volatility of
+	the FIELD_DECL and set s_ann->has_volatile_ops accordingly.
+
 2005-06-20  Jan Beulich  <jbeulich@novell.com>
 
 	* config/i386/netware-libgcc.def: Update copyright.

@@ -1133,8 +1133,12 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
       else
 	get_expr_operands (stmt, &TREE_OPERAND (expr, 0), flags);
 
-      if (code == COMPONENT_REF)
-	get_expr_operands (stmt, &TREE_OPERAND (expr, 2), opf_none);
+      if (code == COMPONENT_REF) 
+	{
+	  if (TREE_THIS_VOLATILE (TREE_OPERAND (expr, 1)))
+	    s_ann->has_volatile_ops = true; 
+	  get_expr_operands (stmt, &TREE_OPERAND (expr, 2), opf_none);
+	}
       return;
 
     case WITH_SIZE_EXPR:
