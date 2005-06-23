@@ -31,7 +31,18 @@
 #include <bits/c++config.h>
 
 #if defined(_GLIBCXX_SYMVER) && defined(PIC)
-# define _GLIBCXX_SYMVER_COMPATIBILITY 1
+#define istreambuf_iterator istreambuf_iteratorXX
+#define basic_fstream basic_fstreamXX
+#define basic_ifstream basic_ifstreamXX
+#define basic_ofstream basic_ofstreamXX
+#define _M_copy(a, b, c) _M_copyXX(a, b, c)
+#define _M_move(a, b, c) _M_moveXX(a, b, c)
+#define _M_assign(a, b, c) _M_assignXX(a, b, c)
+#define _M_disjunct(a) _M_disjunctXX(a)
+#define _M_check_length(a, b, c) _M_check_lengthXX(a, b, c)
+#define _M_set_length_and_sharable(a) _M_set_length_and_sharableXX(a)
+#define ignore ignoreXX
+#define eq eqXX
 #endif
 
 #include <string>
@@ -42,27 +53,6 @@
 namespace std
 {
   // std::istream ignore explicit specializations.
-#if defined(_GLIBCXX_SYMVER) && defined(PIC)
-  template<>
-    basic_istream<char>&
-    basic_istream<char>::ignore(streamsize __n) 
-#ifdef _GLIBCXX_PTRDIFF_T_IS_INT
-    asm ("_W_ZNSi6ignoreEi");
-#else
-    asm ("_W_ZNSi6ignoreEl");
-#endif
-
-#ifdef _GLIBCXX_USE_WCHAR_T
-  template<>
-    basic_istream<wchar_t>&
-    basic_istream<wchar_t>::ignore(streamsize __n)
-#ifdef _GLIBCXX_PTRDIFF_T_IS_INT
-     asm ("_W_ZNSt13basic_istreamIwSt11char_traitsIwEE6ignoreEi");
-#else
-     asm ("_W_ZNSt13basic_istreamIwSt11char_traitsIwEE6ignoreEl");
-#endif
-#endif
-#endif // _GLIBCXX_SYMVER && PIC
 
   template<>
     basic_istream<char>&
@@ -347,43 +337,27 @@ namespace std
 // In the future, GLIBCXX_ABI > 6 should remove all uses of
 // _GLIBCXX_*_SYMVER macros in this file.
 
-#define _GLIBCXX_3_4_SYMVER(name) \
+#define _GLIBCXX_3_4_SYMVER(XXname, name) \
    extern "C" void \
    _X##name() \
-   __attribute__ ((alias(#name))); \
+   __attribute__ ((alias(#XXname))); \
    asm (".symver " "_X" #name "," #name "@GLIBCXX_3.4");
 
-#define _GLIBCXX_3_4_5_SYMVER(name) \
+#define _GLIBCXX_3_4_5_SYMVER(XXname, name) \
    extern "C" void \
    _Y##name() \
-   __attribute__ ((alias(#name))); \
-   asm (".symver " "_Y" #name  "," #name "@@GLIBCXX_3.4.5");
-
-#define _GLIBCXX_3_4_SYMVER_SPECIAL(name) \
-   extern "C" void \
-   _X##name() \
-   __attribute__ ((alias("_W" #name))); \
-   asm (".symver " "_X" #name "," #name "@GLIBCXX_3.4");
-
-#define _GLIBCXX_3_4_5_SYMVER_SPECIAL(name) \
-   extern "C" void \
-   _Y##name() \
-   __attribute__ ((alias("_W" #name))); \
+   __attribute__ ((alias(#XXname))); \
    asm (".symver " "_Y" #name  "," #name "@@GLIBCXX_3.4.5");
 
 #define _GLIBCXX_ASM_SYMVER(cur, old, version) \
    asm (".symver " #cur "," #old "@@" #version);
 
 #define _GLIBCXX_APPLY_SYMVER _GLIBCXX_3_4_SYMVER
-#define _GLIBCXX_APPLY_SYMVER_SPECIAL _GLIBCXX_3_4_SYMVER_SPECIAL
 #include <bits/compatibility.h>
 #undef _GLIBCXX_APPLY_SYMVER
-#undef _GLIBCXX_APPLY_SYMVER_SPECIAL
 
 #define _GLIBCXX_APPLY_SYMVER _GLIBCXX_3_4_5_SYMVER
-#define _GLIBCXX_APPLY_SYMVER_SPECIAL _GLIBCXX_3_4_5_SYMVER_SPECIAL
 #include <bits/compatibility.h>
 #undef _GLIBCXX_APPLY_SYMVER
-#undef _GLIBCXX_APPLY_SYMVER_SPECIAL
 
 #endif
