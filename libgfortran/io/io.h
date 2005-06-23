@@ -562,10 +562,10 @@ internal_proto(next_record);
 
 /* read.c */
 
-extern void set_integer (void *, int64_t, int);
+extern void set_integer (void *, GFC_INTEGER_LARGEST, int);
 internal_proto(set_integer);
 
-extern uint64_t max_value (int, int);
+extern GFC_UINTEGER_LARGEST max_value (int, int);
 internal_proto(max_value);
 
 extern int convert_real (void *, const char *, int);

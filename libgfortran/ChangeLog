@@ -1,3 +1,48 @@
+2005-06-23  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* intrinsics/c99_functions.c (log10l): New log10l function for
+	systems where this is not available.
+	* c99_protos.h: Prototype for log10l function.
+	* libgfortran.h: Use generated kinds.h to define GFC_INTEGER_*,
+	GFC_UINTEGER_*, GFC_LOGICAL_*, GFC_REAL_*, GFC_COMPLEX_*. Update
+	prototypes for gfc_itoa and xtoa.
+	* io/io.h: Update prototypes for set_integer and max_value.
+	* io/list_read.c (convert_integer): Use new
+	GFC_(INTEGER|REAL)_LARGEST type.
+	* io/read.c (set_integer): Likewise.
+	(max_value): Likewise.
+	(convert_real): Likewise.
+	(real_l): Likewise.
+	(next_char): Likewise.
+	(read_decimal): Likewise.
+	(read_radix): Likewise.
+	(read_f): Likewise.
+	* io/write.c (extract_int): Use new GFC_INTEGER_LARGEST type.
+	(extract_real): Use new GFC_REAL_LARGEST type.
+	(calculate_exp): Likewise.
+	(calculate_G_format): Likewise.
+	(output_float): Likewise. Use log10l for long double values.
+	Add comment for sprintf format. Use GFC_REAL_LARGEST_FORMAT.
+	(write_l): Use new GFC_INTEGER_LARGEST type.
+	(write_float): Use new GFC_REAL_LARGEST type.
+	(write_int): Remove useless special case for (len < 8).
+	(write_decimal): Use GFC_INTEGER_LARGEST.
+	(otoa): Use GFC_UINTEGER_LARGEST as argument.
+	(btoa): Use GFC_UINTEGER_LARGEST as argument.
+	* runtime/error.c (gfc_itoa): Use GFC_INTEGER_LARGEST as
+	argument.
+	(xtoa): Use GFC_UINTEGER_LARGEST as argument.
+	* Makefile.am: Use mk-kinds-h.sh to generate header kinds.h
+	with all Fortran kinds available.
+	* configure.ac: Check for strtold and log10l.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* mk-kinds-h.sh: Configuration script for available integer
+	and real kinds.
+
+
 2005-06-18  Janne Blomqvist  <jblomqvi@cc.hut.fi>
 
 	* unix.c (stream_at_bof): Don't assume that all non-mmapped files

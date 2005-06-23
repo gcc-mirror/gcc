@@ -43,21 +43,26 @@ Boston, MA 02111-1307, USA.  */
  * actually place the value into memory.  */
 
 void
-set_integer (void *dest, int64_t value, int length)
+set_integer (void *dest, GFC_INTEGER_LARGEST value, int length)
 {
   switch (length)
     {
+#ifdef HAVE_GFC_INTEGER_16
+    case 16:
+      *((GFC_INTEGER_16 *) dest) = value;
+      break;
+#endif
     case 8:
-      *((int64_t *) dest) = value;
+      *((GFC_INTEGER_8 *) dest) = value;
       break;
     case 4:
-      *((int32_t *) dest) = value;
+      *((GFC_INTEGER_4 *) dest) = value;
       break;
     case 2:
-      *((int16_t *) dest) = value;
+      *((GFC_INTEGER_2 *) dest) = value;
       break;
     case 1:
-      *((int8_t *) dest) = value;
+      *((GFC_INTEGER_1 *) dest) = value;
       break;
     default:
       internal_error ("Bad integer kind");
@@ -68,13 +73,24 @@ set_integer (void *dest, int64_t value, int length)
 /* max_value()-- Given a length (kind), return the maximum signed or
  * unsigned value */
 
-uint64_t
+GFC_UINTEGER_LARGEST
 max_value (int length, int signed_flag)
 {
-  uint64_t value;
+  GFC_UINTEGER_LARGEST value;
+  int n;
 
   switch (length)
     {
+#if defined HAVE_GFC_REAL_16 || defined HAVE_GFC_REAL_10
+    case 16:
+    case 10:
+      value = 1;
+      for (n = 1; n < 4 * length; n++)
+        value = (value << 2) + 3;
+      if (! signed_flag)
+        value = 2*value+1;
+      break;
+#endif
     case 8:
       value = signed_flag ? 0x7fffffffffffffff : 0xffffffffffffffff;
       break;
@@ -108,16 +124,26 @@ convert_real (void *dest, const char *buffer, int length)
   switch (length)
     {
     case 4:
-      *((float *) dest) =
+      *((GFC_REAL_4 *) dest) =
 #if defined(HAVE_STRTOF)
 	strtof (buffer, NULL);
 #else
-	(float) strtod (buffer, NULL);
+	(GFC_REAL_4) strtod (buffer, NULL);
 #endif
       break;
     case 8:
-      *((double *) dest) = strtod (buffer, NULL);
+      *((GFC_REAL_8 *) dest) = strtod (buffer, NULL);
       break;
+#if defined(HAVE_GFC_REAL_10) && defined (HAVE_STRTOLD)
+    case 10:
+      *((GFC_REAL_10 *) dest) = strtold (buffer, NULL);
+      break;
+#endif
+#if defined(HAVE_GFC_REAL_16) && defined (HAVE_STRTOLD)
+    case 16:
+      *((GFC_REAL_16 *) dest) = strtold (buffer, NULL);
+      break;
+#endif
     default:
       internal_error ("Unsupported real kind during IO");
     }
@@ -164,11 +190,11 @@ read_l (fnode * f, char *dest, int length)
     {
     case 't':
     case 'T':
-      set_integer (dest, 1, length);
+      set_integer (dest, (GFC_INTEGER_LARGEST) 1, length);
       break;
     case 'f':
     case 'F':
-      set_integer (dest, 0, length);
+      set_integer (dest, (GFC_INTEGER_LARGEST) 0, length);
       break;
     default:
     bad:
@@ -263,8 +289,9 @@ next_char (char **p, int *w)
 void
 read_decimal (fnode * f, char *dest, int length)
 {
-  unsigned value, maxv, maxv_10;
-  int v, w, negative;
+  GFC_UINTEGER_LARGEST value, maxv, maxv_10;
+  GFC_INTEGER_LARGEST v;
+  int w, negative;
   char c, *p;
 
   w = f->u.w;
@@ -275,7 +302,7 @@ read_decimal (fnode * f, char *dest, int length)
   p = eat_leading_spaces (&w, p);
   if (w == 0)
     {
-      set_integer (dest, 0, length);
+      set_integer (dest, (GFC_INTEGER_LARGEST) 0, length);
       return;
     }
 
@@ -324,7 +351,7 @@ read_decimal (fnode * f, char *dest, int length)
       value += c;
     }
 
-  v = (signed int) value;
+  v = value;
   if (negative)
     v = -v;
 
@@ -350,8 +377,9 @@ read_decimal (fnode * f, char *dest, int length)
 void
 read_radix (fnode * f, char *dest, int length, int radix)
 {
-  unsigned value, maxv, maxv_r;
-  int v, w, negative;
+  GFC_UINTEGER_LARGEST value, maxv, maxv_r;
+  GFC_INTEGER_LARGEST v;
+  int w, negative;
   char c, *p;
 
   w = f->u.w;
@@ -362,7 +390,7 @@ read_radix (fnode * f, char *dest, int length, int radix)
   p = eat_leading_spaces (&w, p);
   if (w == 0)
     {
-      set_integer (dest, 0, length);
+      set_integer (dest, (GFC_INTEGER_LARGEST) 0, length);
       return;
     }
 
@@ -460,7 +488,7 @@ read_radix (fnode * f, char *dest, int length, int radix)
       value += c;
     }
 
-  v = (signed int) value;
+  v = value;
   if (negative)
     v = -v;
 
@@ -594,12 +622,24 @@ read_f (fnode * f, char *dest, int length)
   switch (length)
     {
       case 4:
-	*((float *) dest) = 0.0f;
+	*((GFC_REAL_4 *) dest) = 0;
 	break;
 
       case 8:
-	*((double *) dest) = 0.0;
+	*((GFC_REAL_8 *) dest) = 0;
 	break;
+
+#ifdef HAVE_GFC_REAL_10
+      case 10:
+	*((GFC_REAL_10 *) dest) = 0;
+	break;
+#endif
+
+#ifdef HAVE_GFC_REAL_16
+      case 16:
+	*((GFC_REAL_16 *) dest) = 0;
+	break;
+#endif
 
       default:
 	internal_error ("Unsupported real kind during IO");

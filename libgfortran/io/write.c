@@ -37,7 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #include "libgfortran.h"
 #include "io.h"
 
-
 #define star_fill(p, n) memset(p, '*', n)
 
 
@@ -69,10 +68,10 @@ write_a (fnode * f, const char *source, int len)
     }
 }
 
-static int64_t
+static GFC_INTEGER_LARGEST
 extract_int (const void *p, int len)
 {
-  int64_t i = 0;
+  GFC_INTEGER_LARGEST i = 0;
 
   if (p == NULL)
     return i;
@@ -80,17 +79,22 @@ extract_int (const void *p, int len)
   switch (len)
     {
     case 1:
-      i = *((const int8_t *) p);
+      i = *((const GFC_INTEGER_1 *) p);
       break;
     case 2:
-      i = *((const int16_t *) p);
+      i = *((const GFC_INTEGER_2 *) p);
       break;
     case 4:
-      i = *((const int32_t *) p);
+      i = *((const GFC_INTEGER_4 *) p);
       break;
     case 8:
-      i = *((const int64_t *) p);
+      i = *((const GFC_INTEGER_8 *) p);
       break;
+#ifdef HAVE_GFC_INTEGER_16
+    case 16:
+      i = *((const GFC_INTEGER_16 *) p);
+      break;
+#endif
     default:
       internal_error ("bad integer kind");
     }
@@ -98,23 +102,32 @@ extract_int (const void *p, int len)
   return i;
 }
 
-static double
+static GFC_REAL_LARGEST
 extract_real (const void *p, int len)
 {
-  double i = 0.0;
+  GFC_REAL_LARGEST i = 0;
   switch (len)
     {
     case 4:
-      i = *((const float *) p);
+      i = *((const GFC_REAL_4 *) p);
       break;
     case 8:
-      i = *((const double *) p);
+      i = *((const GFC_REAL_8 *) p);
       break;
+#ifdef HAVE_GFC_REAL_10
+    case 10:
+      i = *((const GFC_REAL_10 *) p);
+      break;
+#endif
+#ifdef HAVE_GFC_REAL_16
+    case 16:
+      i = *((const GFC_REAL_16 *) p);
+      break;
+#endif
     default:
       internal_error ("bad real kind");
     }
   return i;
-
 }
 
 
@@ -148,11 +161,11 @@ calculate_sign (int negative_flag)
 
 /* Returns the value of 10**d.  */
 
-static double
+static GFC_REAL_LARGEST
 calculate_exp (int d)
 {
   int i;
-  double r = 1.0;
+  GFC_REAL_LARGEST r = 1.0;
 
   for (i = 0; i< (d >= 0 ? d : -d); i++)
     r *= 10;
@@ -181,13 +194,13 @@ calculate_exp (int d)
           for Gw.dEe, n' ' means e+2 blanks  */
 
 static fnode *
-calculate_G_format (fnode *f, double value, int *num_blank)
+calculate_G_format (fnode *f, GFC_REAL_LARGEST value, int *num_blank)
 {
   int e = f->u.real.e;
   int d = f->u.real.d;
   int w = f->u.real.w;
   fnode *newf;
-  double m, exp_d;
+  GFC_REAL_LARGEST m, exp_d;
   int low, high, mid;
   int ubound, lbound;
 
@@ -199,8 +212,7 @@ calculate_G_format (fnode *f, double value, int *num_blank)
   /* In case of the two data magnitude ranges,
      generate E editing, Ew.d[Ee].  */
   exp_d = calculate_exp (d);
-  if ((m > 0.0 && m < 0.1 - 0.05 / (double) exp_d)
-      || (m >= (double) exp_d - 0.5 ))
+  if ((m > 0.0 && m < 0.1 - 0.05 / exp_d) || (m >= exp_d - 0.5 ))
     {
       newf->format = FMT_E;
       newf->u.real.w = w;
@@ -219,7 +231,7 @@ calculate_G_format (fnode *f, double value, int *num_blank)
 
   while (low <= high)
     {
-      double temp;
+      GFC_REAL_LARGEST temp;
       mid = (low + high) / 2;
 
       /* 0.1 * 10**mid - 0.5 * 10**(mid-d-1)  */
@@ -271,7 +283,7 @@ calculate_G_format (fnode *f, double value, int *num_blank)
 /* Output a real number according to its format which is FMT_G free.  */
 
 static void
-output_float (fnode *f, double value)
+output_float (fnode *f, GFC_REAL_LARGEST value)
 {
   /* This must be large enough to accurately hold any value.  */
   char buffer[32];
@@ -321,11 +333,15 @@ output_float (fnode *f, double value)
     edigits = 2;
   else
     {
-      abslog = fabs(log10 (value));
+#if defined(HAVE_GFC_REAL_10) || defined(HAVE_GFC_REAL_16)
+      abslog = fabs((double) log10l(value));
+#else
+      abslog = fabs(log10(value));
+#endif
       if (abslog < 100)
 	edigits = 2;
       else
-        edigits = 1 + (int) log10 (abslog);
+        edigits = 1 + (int) log10(abslog);
     }
 
   if (ft == FMT_F || ft == FMT_EN
@@ -346,7 +362,24 @@ output_float (fnode *f, double value)
 	ndigits = 27 - edigits;
     }
 
-  sprintf (buffer, "%+-#31.*e", ndigits - 1, value);
+  /* #   The result will always contain a decimal point, even if no
+   *     digits follow it
+   *
+   * -   The converted value is to be left adjusted on the field boundary
+   *
+   * +   A sign (+ or -) always be placed before a number
+   *
+   * 31  minimum field width
+   *
+   * *   (ndigits-1) is used as the precision
+   *
+   *   e format: [-]d.ddde±dd where there is one digit before the
+   *   decimal-point character and the number of digits after it is
+   *   equal to the precision. The exponent always contains at least two
+   *   digits; if the value is zero, the exponent is 00.
+   */
+  sprintf (buffer, "%+-#31.*" GFC_REAL_LARGEST_FORMAT "e",
+           ndigits - 1, value);
 
   /* Check the resulting string has punctuation in the correct places.  */
   if (buffer[2] != '.' || buffer[ndigits + 2] != 'e')
@@ -673,7 +706,7 @@ void
 write_l (fnode * f, char *source, int len)
 {
   char *p;
-  int64_t n;
+  GFC_INTEGER_LARGEST n;
 
   p = write_block (f->u.w);
   if (p == NULL)
@@ -689,7 +722,7 @@ write_l (fnode * f, char *source, int len)
 static void
 write_float (fnode *f, const char *source, int len)
 {
-  double n;
+  GFC_REAL_LARGEST n;
   int nb =0, res, save_scale_factor;
   char * p, fin;
   fnode *f2 = NULL;
@@ -698,7 +731,10 @@ write_float (fnode *f, const char *source, int len)
 
   if (f->format != FMT_B && f->format != FMT_O && f->format != FMT_Z)
     {
-      res = isfinite (n);
+      /* TODO: there are some systems where isfinite is not able to work
+               with long double variables. We should detect this case and
+	       provide our own version for isfinite.  */
+      res = isfinite (n); 
       if (res == 0)
 	{
 	  nb =  f->u.real.w;
@@ -756,10 +792,10 @@ write_float (fnode *f, const char *source, int len)
 
 
 static void
-write_int (fnode *f, const char *source, int len, char *(*conv) (uint64_t))
+write_int (fnode *f, const char *source, int len,
+           char *(*conv) (GFC_UINTEGER_LARGEST))
 {
-  uint32_t ns =0;
-  uint64_t n = 0;
+  GFC_UINTEGER_LARGEST n = 0;
   int w, m, digits, nzero, nblank;
   char *p, *q;
 
@@ -783,15 +819,7 @@ write_int (fnode *f, const char *source, int len, char *(*conv) (uint64_t))
       goto done;
     }
 
-
-  if (len < 8)
-     {
-       ns = n;
-       q = conv (ns);
-     }
-  else
-      q = conv (n);
-
+  q = conv (n);
   digits = strlen (q);
 
   /* Select a width if none was specified.  The idea here is to always
@@ -842,9 +870,10 @@ write_int (fnode *f, const char *source, int len, char *(*conv) (uint64_t))
 }
 
 static void
-write_decimal (fnode *f, const char *source, int len, char *(*conv) (int64_t))
+write_decimal (fnode *f, const char *source, int len,
+               char *(*conv) (GFC_INTEGER_LARGEST))
 {
-  int64_t n = 0;
+  GFC_INTEGER_LARGEST n = 0;
   int w, m, digits, nsign, nzero, nblank;
   char *p, *q;
   sign_t sign;
@@ -930,7 +959,7 @@ write_decimal (fnode *f, const char *source, int len, char *(*conv) (int64_t))
 /* Convert unsigned octal to ascii.  */
 
 static char *
-otoa (uint64_t n)
+otoa (GFC_UINTEGER_LARGEST n)
 {
   char *p;
 
@@ -958,7 +987,7 @@ otoa (uint64_t n)
 /* Convert unsigned binary to ascii.  */
 
 static char *
-btoa (uint64_t n)
+btoa (GFC_UINTEGER_LARGEST n)
 {
   char *p;
 

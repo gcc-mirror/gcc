@@ -141,5 +141,9 @@ extern double round(double);
 extern float roundf(float);
 #endif
 
+#ifndef HAVE_LOG10L
+extern long double log10l(long double);
+#endif
+
 #endif  /* C99_PROTOS_H  */
 

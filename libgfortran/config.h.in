@@ -135,6 +135,9 @@
 /* libm includes log10f */
 #undef HAVE_LOG10F
 
+/* libm includes log10l */
+#undef HAVE_LOG10L
+
 /* libm includes logf */
 #undef HAVE_LOGF
 
@@ -215,6 +218,9 @@
 
 /* Define to 1 if you have the `strtof' function. */
 #undef HAVE_STRTOF
+
+/* Define to 1 if you have the `strtold' function. */
+#undef HAVE_STRTOLD
 
 /* Define to 1 if `st_blksize' is member of `struct stat'. */
 #undef HAVE_STRUCT_STAT_ST_BLKSIZE

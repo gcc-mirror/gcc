@@ -169,7 +169,7 @@ AC_CHECK_MEMBERS([struct stat.st_rdev])
 AC_CHECK_LIB([m],[csin],[need_math="no"],[need_math="yes"])
 
 # Check for library functions.
-AC_CHECK_FUNCS(getrusage times mkstemp strtof snprintf ftruncate chsize)
+AC_CHECK_FUNCS(getrusage times mkstemp strtof strtold snprintf ftruncate chsize)
 AC_CHECK_FUNCS(chdir strerror getlogin gethostname kill link symlink perror)
 AC_CHECK_FUNCS(sleep time)
 
@@ -195,6 +195,7 @@ AC_CHECK_LIB([m],[frexpf],[AC_DEFINE([HAVE_FREXPF],[1],[libm includes frexpf])])
 AC_CHECK_LIB([m],[hypotf],[AC_DEFINE([HAVE_HYPOTF],[1],[libm includes hypotf])])
 AC_CHECK_LIB([m],[logf],[AC_DEFINE([HAVE_LOGF],[1],[libm includes logf])])
 AC_CHECK_LIB([m],[log10f],[AC_DEFINE([HAVE_LOG10F],[1],[libm includes log10f])])
+AC_CHECK_LIB([m],[log10l],[AC_DEFINE([HAVE_LOG10L],[1],[libm includes log10l])])
 AC_CHECK_LIB([m],[nextafter],[AC_DEFINE([HAVE_NEXTAFTER],[1],[libm includes nextafter])])
 AC_CHECK_LIB([m],[nextafterf],[AC_DEFINE([HAVE_NEXTAFTERF],[1],[libm includes nextafterf])])
 AC_CHECK_LIB([m],[powf],[AC_DEFINE([HAVE_POWF],[1],[libm includes powf])])
