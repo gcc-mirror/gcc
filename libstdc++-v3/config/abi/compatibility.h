@@ -39,10 +39,12 @@ _ZNSt19istreambuf_iteratorIwSt11char_traitsIwEEppEv
  */
 namespace __gnu_internal
 {
-_GLIBCXX_APPLY_SYMVER(_ZNSt19istreambuf_iteratorIcSt11char_traitsIcEEppEv)
+_GLIBCXX_APPLY_SYMVER(_ZNSt21istreambuf_iteratorXXIcSt11char_traitsIcEEppEv,
+		      _ZNSt19istreambuf_iteratorIcSt11char_traitsIcEEppEv)
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-_GLIBCXX_APPLY_SYMVER(_ZNSt19istreambuf_iteratorIwSt11char_traitsIwEEppEv)
+_GLIBCXX_APPLY_SYMVER(_ZNSt21istreambuf_iteratorXXIwSt11char_traitsIwEEppEv,
+		      _ZNSt19istreambuf_iteratorIwSt11char_traitsIwEEppEv)
 #endif
 } // namespace std
 
@@ -77,103 +79,136 @@ _ZNSt11char_traitsIwE2eqERKwS2_
  */
 namespace __gnu_internal
 {
-_GLIBCXX_APPLY_SYMVER_SPECIAL(_ZNSt11char_traitsIcE2eqERKcS2_)
+_GLIBCXX_APPLY_SYMVER(_ZNSt11char_traitsIcE4eqXXERKcS2_,
+		      _ZNSt11char_traitsIcE2eqERKcS2_)
 
 #ifdef _GLIBCXX_SIZE_T_IS_UINT
-_GLIBCXX_APPLY_SYMVER(_ZNSs7_M_copyEPcPKcj)
+_GLIBCXX_APPLY_SYMVER(_ZNSs9_M_copyXXEPcPKcj,
+		      _ZNSs7_M_copyEPcPKcj)
 #else
-_GLIBCXX_APPLY_SYMVER(_ZNSs7_M_copyEPcPKcm)
+_GLIBCXX_APPLY_SYMVER(_ZNSs9_M_copyXXEPcPKcm,
+		      _ZNSs7_M_copyEPcPKcm)
 #endif
 
 #ifdef _GLIBCXX_SIZE_T_IS_UINT
-_GLIBCXX_APPLY_SYMVER(_ZNSs7_M_moveEPcPKcj)
+_GLIBCXX_APPLY_SYMVER(_ZNSs9_M_moveXXEPcPKcj,
+		      _ZNSs7_M_moveEPcPKcj)
 #else
-_GLIBCXX_APPLY_SYMVER(_ZNSs7_M_moveEPcPKcm)
+_GLIBCXX_APPLY_SYMVER(_ZNSs9_M_moveXXEPcPKcm,
+		      _ZNSs7_M_moveEPcPKcm)
 #endif
 
 #ifdef _GLIBCXX_SIZE_T_IS_UINT
-_GLIBCXX_APPLY_SYMVER(_ZNSs9_M_assignEPcjc)
+_GLIBCXX_APPLY_SYMVER(_ZNSs11_M_assignXXEPcjc,
+		      _ZNSs9_M_assignEPcjc)
 #else
-_GLIBCXX_APPLY_SYMVER(_ZNSs9_M_assignEPcmc)
+_GLIBCXX_APPLY_SYMVER(_ZNSs11_M_assignXXEPcmc,
+		      _ZNSs9_M_assignEPcmc)
 #endif
 
-_GLIBCXX_APPLY_SYMVER(_ZNKSs11_M_disjunctEPKc)
+_GLIBCXX_APPLY_SYMVER(_ZNKSs13_M_disjunctXXEPKc,
+		      _ZNKSs11_M_disjunctEPKc)
 
 #ifdef _GLIBCXX_SIZE_T_IS_UINT
-_GLIBCXX_APPLY_SYMVER(_ZNKSs15_M_check_lengthEjjPKc)
+_GLIBCXX_APPLY_SYMVER(_ZNKSs17_M_check_lengthXXEjjPKc,
+		      _ZNKSs15_M_check_lengthEjjPKc)
 #else
-_GLIBCXX_APPLY_SYMVER(_ZNKSs15_M_check_lengthEmmPKc)
+_GLIBCXX_APPLY_SYMVER(_ZNKSs17_M_check_lengthXXEmmPKc,
+		      _ZNKSs15_M_check_lengthEmmPKc)
 #endif
 
 #ifdef _GLIBCXX_SIZE_T_IS_UINT
-  _GLIBCXX_APPLY_SYMVER(_ZNSs4_Rep26_M_set_length_and_sharableEj)
+  _GLIBCXX_APPLY_SYMVER(_ZNSs4_Rep28_M_set_length_and_sharableXXEj,
+			_ZNSs4_Rep26_M_set_length_and_sharableEj)
 #else
-  _GLIBCXX_APPLY_SYMVER(_ZNSs4_Rep26_M_set_length_and_sharableEm)
+  _GLIBCXX_APPLY_SYMVER(_ZNSs4_Rep28_M_set_length_and_sharableXXEm,
+			_ZNSs4_Rep26_M_set_length_and_sharableEm)
 #endif
 
-_GLIBCXX_APPLY_SYMVER(_ZNSi6ignoreEv)
+_GLIBCXX_APPLY_SYMVER(_ZNSi8ignoreXXEv, _ZNSi6ignoreEv)
 
 #ifdef _GLIBCXX_PTRDIFF_T_IS_INT
-_GLIBCXX_APPLY_SYMVER_SPECIAL(_ZNSi6ignoreEi)
+_GLIBCXX_APPLY_SYMVER(_ZNSi8ignoreXXEi, _ZNSi6ignoreEi)
 #else
-_GLIBCXX_APPLY_SYMVER_SPECIAL(_ZNSi6ignoreEl)
+_GLIBCXX_APPLY_SYMVER(_ZNSi8ignoreXXEl, _ZNSi6ignoreEl)
 #endif
 
-_GLIBCXX_APPLY_SYMVER(_ZNKSt13basic_fstreamIcSt11char_traitsIcEE7is_openEv)
+_GLIBCXX_APPLY_SYMVER(_ZNKSt15basic_fstreamXXIcSt11char_traitsIcEE7is_openEv,
+		      _ZNKSt13basic_fstreamIcSt11char_traitsIcEE7is_openEv)
 
-_GLIBCXX_APPLY_SYMVER(_ZNKSt14basic_ifstreamIcSt11char_traitsIcEE7is_openEv)
+_GLIBCXX_APPLY_SYMVER(_ZNKSt16basic_ifstreamXXIcSt11char_traitsIcEE7is_openEv,
+		      _ZNKSt14basic_ifstreamIcSt11char_traitsIcEE7is_openEv)
 
-_GLIBCXX_APPLY_SYMVER(_ZNKSt14basic_ofstreamIcSt11char_traitsIcEE7is_openEv)
+_GLIBCXX_APPLY_SYMVER(_ZNKSt16basic_ofstreamXXIcSt11char_traitsIcEE7is_openEv,
+		      _ZNKSt14basic_ofstreamIcSt11char_traitsIcEE7is_openEv)
 
   // Support for wchar_t.
 #ifdef _GLIBCXX_USE_WCHAR_T
-_GLIBCXX_APPLY_SYMVER_SPECIAL(_ZNSt11char_traitsIwE2eqERKwS2_)
+_GLIBCXX_APPLY_SYMVER(_ZNSt11char_traitsIwE4eqXXERKwS2_,
+		      _ZNSt11char_traitsIwE2eqERKwS2_)
 
 #ifdef _GLIBCXX_SIZE_T_IS_UINT
-_GLIBCXX_APPLY_SYMVER(_ZNSbIwSt11char_traitsIwESaIwEE7_M_copyEPwPKwj)
+_GLIBCXX_APPLY_SYMVER(_ZNSbIwSt11char_traitsIwESaIwEE9_M_copyXXEPwPKwj,
+		      _ZNSbIwSt11char_traitsIwESaIwEE7_M_copyEPwPKwj)
 #else
-  _GLIBCXX_APPLY_SYMVER(_ZNSbIwSt11char_traitsIwESaIwEE7_M_copyEPwPKwm)
+  _GLIBCXX_APPLY_SYMVER(_ZNSbIwSt11char_traitsIwESaIwEE9_M_copyXXEPwPKwm,
+			_ZNSbIwSt11char_traitsIwESaIwEE7_M_copyEPwPKwm)
 #endif
 
 #ifdef _GLIBCXX_SIZE_T_IS_UINT
-_GLIBCXX_APPLY_SYMVER(_ZNSbIwSt11char_traitsIwESaIwEE7_M_moveEPwPKwj)
+_GLIBCXX_APPLY_SYMVER(_ZNSbIwSt11char_traitsIwESaIwEE9_M_moveXXEPwPKwj,
+		      _ZNSbIwSt11char_traitsIwESaIwEE7_M_moveEPwPKwj)
 #else
-_GLIBCXX_APPLY_SYMVER(_ZNSbIwSt11char_traitsIwESaIwEE7_M_moveEPwPKwm)
+_GLIBCXX_APPLY_SYMVER(_ZNSbIwSt11char_traitsIwESaIwEE9_M_moveXXEPwPKwm,
+		      _ZNSbIwSt11char_traitsIwESaIwEE7_M_moveEPwPKwm)
 #endif
 
 #ifdef _GLIBCXX_SIZE_T_IS_UINT
-_GLIBCXX_APPLY_SYMVER(_ZNSbIwSt11char_traitsIwESaIwEE9_M_assignEPwjw)
+_GLIBCXX_APPLY_SYMVER(_ZNSbIwSt11char_traitsIwESaIwEE11_M_assignXXEPwjw,
+		      _ZNSbIwSt11char_traitsIwESaIwEE9_M_assignEPwjw)
 #else
-_GLIBCXX_APPLY_SYMVER(_ZNSbIwSt11char_traitsIwESaIwEE9_M_assignEPwmw)
+_GLIBCXX_APPLY_SYMVER(_ZNSbIwSt11char_traitsIwESaIwEE11_M_assignXXEPwmw,
+		      _ZNSbIwSt11char_traitsIwESaIwEE9_M_assignEPwmw)
 #endif
 
-_GLIBCXX_APPLY_SYMVER(_ZNKSbIwSt11char_traitsIwESaIwEE11_M_disjunctEPKw)
+_GLIBCXX_APPLY_SYMVER(_ZNKSbIwSt11char_traitsIwESaIwEE13_M_disjunctXXEPKw,
+		      _ZNKSbIwSt11char_traitsIwESaIwEE11_M_disjunctEPKw)
 
 #ifdef _GLIBCXX_SIZE_T_IS_UINT
-_GLIBCXX_APPLY_SYMVER(_ZNKSbIwSt11char_traitsIwESaIwEE15_M_check_lengthEjjPKc)
+_GLIBCXX_APPLY_SYMVER(_ZNKSbIwSt11char_traitsIwESaIwEE17_M_check_lengthXXEjjPKc,
+		      _ZNKSbIwSt11char_traitsIwESaIwEE15_M_check_lengthEjjPKc)
 #else
-_GLIBCXX_APPLY_SYMVER(_ZNKSbIwSt11char_traitsIwESaIwEE15_M_check_lengthEmmPKc)
+_GLIBCXX_APPLY_SYMVER(_ZNKSbIwSt11char_traitsIwESaIwEE17_M_check_lengthXXEmmPKc,
+		      _ZNKSbIwSt11char_traitsIwESaIwEE15_M_check_lengthEmmPKc)
 #endif
 
 #ifdef _GLIBCXX_SIZE_T_IS_UINT
-_GLIBCXX_APPLY_SYMVER(_ZNSbIwSt11char_traitsIwESaIwEE4_Rep26_M_set_length_and_sharableEj)
+_GLIBCXX_APPLY_SYMVER(_ZNSbIwSt11char_traitsIwESaIwEE4_Rep28_M_set_length_and_sharableXXEj,
+		      _ZNSbIwSt11char_traitsIwESaIwEE4_Rep26_M_set_length_and_sharableEj)
 #else
-_GLIBCXX_APPLY_SYMVER(_ZNSbIwSt11char_traitsIwESaIwEE4_Rep26_M_set_length_and_sharableEm)
+_GLIBCXX_APPLY_SYMVER(_ZNSbIwSt11char_traitsIwESaIwEE4_Rep28_M_set_length_and_sharableXXEm,
+		      _ZNSbIwSt11char_traitsIwESaIwEE4_Rep26_M_set_length_and_sharableEm)
 #endif
 
-_GLIBCXX_APPLY_SYMVER(_ZNSt13basic_istreamIwSt11char_traitsIwEE6ignoreEv)
+_GLIBCXX_APPLY_SYMVER(_ZNSt13basic_istreamIwSt11char_traitsIwEE8ignoreXXEv,
+		      _ZNSt13basic_istreamIwSt11char_traitsIwEE6ignoreEv)
 
 #ifdef _GLIBCXX_PTRDIFF_T_IS_INT
-_GLIBCXX_APPLY_SYMVER_SPECIAL(_ZNSt13basic_istreamIwSt11char_traitsIwEE6ignoreEi)
+_GLIBCXX_APPLY_SYMVER(_ZNSt13basic_istreamIwSt11char_traitsIwEE8ignoreXXEi,
+		      _ZNSt13basic_istreamIwSt11char_traitsIwEE6ignoreEi)
 #else
-_GLIBCXX_APPLY_SYMVER_SPECIAL(_ZNSt13basic_istreamIwSt11char_traitsIwEE6ignoreEl)
+_GLIBCXX_APPLY_SYMVER(_ZNSt13basic_istreamIwSt11char_traitsIwEE8ignoreXXEl,
+		      _ZNSt13basic_istreamIwSt11char_traitsIwEE6ignoreEl)
 #endif
 
-_GLIBCXX_APPLY_SYMVER(_ZNKSt13basic_fstreamIwSt11char_traitsIwEE7is_openEv)
+_GLIBCXX_APPLY_SYMVER(_ZNKSt15basic_fstreamXXIwSt11char_traitsIwEE7is_openEv,
+		      _ZNKSt13basic_fstreamIwSt11char_traitsIwEE7is_openEv)
 
-_GLIBCXX_APPLY_SYMVER(_ZNKSt14basic_ifstreamIwSt11char_traitsIwEE7is_openEv)
+_GLIBCXX_APPLY_SYMVER(_ZNKSt16basic_ifstreamXXIwSt11char_traitsIwEE7is_openEv,
+		      _ZNKSt14basic_ifstreamIwSt11char_traitsIwEE7is_openEv)
 
-_GLIBCXX_APPLY_SYMVER(_ZNKSt14basic_ofstreamIwSt11char_traitsIwEE7is_openEv)
+_GLIBCXX_APPLY_SYMVER(_ZNKSt16basic_ofstreamXXIwSt11char_traitsIwEE7is_openEv,
+		      _ZNKSt14basic_ofstreamIwSt11char_traitsIwEE7is_openEv)
 #endif
 }
 
