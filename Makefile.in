@@ -34363,7 +34363,7 @@ stagefeedback-start::
 	  mkdir stagefeedback-bfd; \
 	set stagefeedback-bfd bfd ; \
 	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-bfd prev-bfd ; \
+	set stageprofile-bfd prev-bfd ; \
 	@CREATE_LINK_TO_DIR@ 
 @endif bfd
 @if opcodes
@@ -34371,7 +34371,7 @@ stagefeedback-start::
 	  mkdir stagefeedback-opcodes; \
 	set stagefeedback-opcodes opcodes ; \
 	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-opcodes prev-opcodes ; \
+	set stageprofile-opcodes prev-opcodes ; \
 	@CREATE_LINK_TO_DIR@ 
 @endif opcodes
 @if binutils
@@ -34379,7 +34379,7 @@ stagefeedback-start::
 	  mkdir stagefeedback-binutils; \
 	set stagefeedback-binutils binutils ; \
 	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-binutils prev-binutils ; \
+	set stageprofile-binutils prev-binutils ; \
 	@CREATE_LINK_TO_DIR@ 
 @endif binutils
 @if gas
@@ -34387,7 +34387,7 @@ stagefeedback-start::
 	  mkdir stagefeedback-gas; \
 	set stagefeedback-gas gas ; \
 	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-gas prev-gas ; \
+	set stageprofile-gas prev-gas ; \
 	@CREATE_LINK_TO_DIR@ 
 @endif gas
 @if gcc
@@ -34395,7 +34395,7 @@ stagefeedback-start::
 	  mkdir stagefeedback-gcc; \
 	set stagefeedback-gcc gcc ; \
 	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-gcc prev-gcc ; \
+	set stageprofile-gcc prev-gcc ; \
 	@CREATE_LINK_TO_DIR@ 
 @endif gcc
 @if intl
@@ -34403,7 +34403,7 @@ stagefeedback-start::
 	  mkdir stagefeedback-intl; \
 	set stagefeedback-intl intl ; \
 	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-intl prev-intl ; \
+	set stageprofile-intl prev-intl ; \
 	@CREATE_LINK_TO_DIR@ 
 @endif intl
 @if ld
@@ -34411,7 +34411,7 @@ stagefeedback-start::
 	  mkdir stagefeedback-ld; \
 	set stagefeedback-ld ld ; \
 	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-ld prev-ld ; \
+	set stageprofile-ld prev-ld ; \
 	@CREATE_LINK_TO_DIR@ 
 @endif ld
 @if libcpp
@@ -34419,7 +34419,7 @@ stagefeedback-start::
 	  mkdir stagefeedback-libcpp; \
 	set stagefeedback-libcpp libcpp ; \
 	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-libcpp prev-libcpp ; \
+	set stageprofile-libcpp prev-libcpp ; \
 	@CREATE_LINK_TO_DIR@ 
 @endif libcpp
 @if libiberty
@@ -34427,7 +34427,7 @@ stagefeedback-start::
 	  mkdir stagefeedback-libiberty; \
 	set stagefeedback-libiberty libiberty ; \
 	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-libiberty prev-libiberty ; \
+	set stageprofile-libiberty prev-libiberty ; \
 	@CREATE_LINK_TO_DIR@ 
 @endif libiberty
 @if zlib
@@ -34435,7 +34435,7 @@ stagefeedback-start::
 	  mkdir stagefeedback-zlib; \
 	set stagefeedback-zlib zlib ; \
 	@CREATE_LINK_TO_DIR@  ; \
-	set stage1-zlib prev-zlib ; \
+	set stageprofile-zlib prev-zlib ; \
 	@CREATE_LINK_TO_DIR@ 
 @endif zlib
 
@@ -34444,61 +34444,61 @@ stagefeedback-end::
 @if bfd
 	@cd $(HOST_SUBDIR); set bfd stagefeedback-bfd ; \
 	@UNDO_LINK_TO_DIR@  ; \
-	set prev-bfd stage1-bfd ; \
+	set prev-bfd stageprofile-bfd ; \
 	@UNDO_LINK_TO_DIR@ 
 @endif bfd
 @if opcodes
 	@cd $(HOST_SUBDIR); set opcodes stagefeedback-opcodes ; \
 	@UNDO_LINK_TO_DIR@  ; \
-	set prev-opcodes stage1-opcodes ; \
+	set prev-opcodes stageprofile-opcodes ; \
 	@UNDO_LINK_TO_DIR@ 
 @endif opcodes
 @if binutils
 	@cd $(HOST_SUBDIR); set binutils stagefeedback-binutils ; \
 	@UNDO_LINK_TO_DIR@  ; \
-	set prev-binutils stage1-binutils ; \
+	set prev-binutils stageprofile-binutils ; \
 	@UNDO_LINK_TO_DIR@ 
 @endif binutils
 @if gas
 	@cd $(HOST_SUBDIR); set gas stagefeedback-gas ; \
 	@UNDO_LINK_TO_DIR@  ; \
-	set prev-gas stage1-gas ; \
+	set prev-gas stageprofile-gas ; \
 	@UNDO_LINK_TO_DIR@ 
 @endif gas
 @if gcc
 	@cd $(HOST_SUBDIR); set gcc stagefeedback-gcc ; \
 	@UNDO_LINK_TO_DIR@  ; \
-	set prev-gcc stage1-gcc ; \
+	set prev-gcc stageprofile-gcc ; \
 	@UNDO_LINK_TO_DIR@ 
 @endif gcc
 @if intl
 	@cd $(HOST_SUBDIR); set intl stagefeedback-intl ; \
 	@UNDO_LINK_TO_DIR@  ; \
-	set prev-intl stage1-intl ; \
+	set prev-intl stageprofile-intl ; \
 	@UNDO_LINK_TO_DIR@ 
 @endif intl
 @if ld
 	@cd $(HOST_SUBDIR); set ld stagefeedback-ld ; \
 	@UNDO_LINK_TO_DIR@  ; \
-	set prev-ld stage1-ld ; \
+	set prev-ld stageprofile-ld ; \
 	@UNDO_LINK_TO_DIR@ 
 @endif ld
 @if libcpp
 	@cd $(HOST_SUBDIR); set libcpp stagefeedback-libcpp ; \
 	@UNDO_LINK_TO_DIR@  ; \
-	set prev-libcpp stage1-libcpp ; \
+	set prev-libcpp stageprofile-libcpp ; \
 	@UNDO_LINK_TO_DIR@ 
 @endif libcpp
 @if libiberty
 	@cd $(HOST_SUBDIR); set libiberty stagefeedback-libiberty ; \
 	@UNDO_LINK_TO_DIR@  ; \
-	set prev-libiberty stage1-libiberty ; \
+	set prev-libiberty stageprofile-libiberty ; \
 	@UNDO_LINK_TO_DIR@ 
 @endif libiberty
 @if zlib
 	@cd $(HOST_SUBDIR); set zlib stagefeedback-zlib ; \
 	@UNDO_LINK_TO_DIR@  ; \
-	set prev-zlib stage1-zlib ; \
+	set prev-zlib stageprofile-zlib ; \
 	@UNDO_LINK_TO_DIR@ 
 @endif zlib
 
@@ -34506,8 +34506,8 @@ stagefeedback-end::
 # are remade, but not reconfigured.  The next stage (if any) will not
 # be reconfigured as well.
 .PHONY: stagefeedback-bubble
-stagefeedback-bubble:: stage1-bubble
-	@if test -f stagefeedback-lean || test -f stage1-lean  ; then \
+stagefeedback-bubble:: stageprofile-bubble
+	@if test -f stagefeedback-lean || test -f stageprofile-lean  ; then \
 	  echo Skipping rebuild of stagefeedback ; \
 	else \
 	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) NOTPARALLEL= all-stagefeedback; \
@@ -34522,9 +34522,12 @@ do-clean: clean-stagefeedback
 
 
 
+.PHONY: profiledbootstrap
+profiledbootstrap: stagefeedback-bubble  all
+
 
 # Rules to wipe a stage and all the following ones, also used for cleanstrap
-distclean-stage1:: distclean-stagefeedback 
+distclean-stageprofile:: distclean-stagefeedback 
 .PHONY: distclean-stagefeedback
 distclean-stagefeedback::
 	[ -f stage_current ] && $(MAKE) `cat stage_current`-end || :
@@ -34535,32 +34538,18 @@ distclean-stagefeedback::
 
 
 
+stageprofile-end::
+	$(MAKE) distclean-stagefeedback
+
 stagefeedback-start::
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	cd stageprofile-gcc && \
-	  { find . -type d | sort | sed 's,.*,$(SHELL) '"$$s"'/mkinstalldirs "../gcc/&",' | $(SHELL); } && \
-	  { find . -name '*.*da' | sed 's,.*,$(LN) -f "&" "../gcc/&",' | $(SHELL); }
-
-# FIXME: Will not need to be conditional when toplevel bootstrap is the
-# only possibility, but now it conflicts with no-bootstrap rules
-@if gcc-bootstrap
-profiledbootstrap:
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	echo "Bootstrapping the compiler"; \
-	$(MAKE) stageprofile-bubble distclean-stagefeedback
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
-	echo "Building runtime libraries and training compiler"; \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	echo "Building feedback based compiler"; \
-	$(MAKE) stagefeedback-bubble stagefeedback-end
-@endif gcc-bootstrap
+	for i in prev-*; do \
+	  j=`echo $$i | sed s/^prev-//` ; \
+	  cd $$r/$$i && \
+	  { find . -type d | sort | sed 's,.*,$(SHELL) '"$$s"'/mkinstalldirs "../'$$j'/&",' | $(SHELL) ; } && \
+	  { find . -name '*.*da' | sed 's,.*,$(LN) -f "&" "../'$$j'/&",' | $(SHELL) ; } ; \
+	done
 
 @if gcc-bootstrap
 NOTPARALLEL = .NOTPARALLEL

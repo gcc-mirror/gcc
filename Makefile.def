@@ -473,6 +473,7 @@ bootstrap_stage = {
 	stage_configure_flags="@stage2_werror_flag@" ;
 	stage_make_flags='CFLAGS="$(BOOT_CFLAGS) -fprofile-generate"' ; };
 bootstrap_stage = {
-	id=feedback ; prev=1 ;
+	id=feedback ; prev=profile ;
+	bootstrap_target=profiledbootstrap ;
 	stage_configure_flags="@stage2_werror_flag@" ;
 	stage_make_flags='CFLAGS="$(BOOT_CFLAGS) -fprofile-use"' ; };
