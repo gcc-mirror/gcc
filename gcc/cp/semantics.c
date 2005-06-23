@@ -2904,27 +2904,15 @@ simplify_aggr_init_expr (tree *tp)
       style = arg;
     }
 
-  if (style == ctor || style == arg)
+  if (style == ctor)
     {
-      /* Pass the address of the slot.  If this is a constructor, we
-	 replace the first argument; otherwise, we tack on a new one.  */
+      /* Replace the first argument to the ctor with the address of the
+	 slot.  */
       tree addr;
 
-      if (style == ctor)
-	args = TREE_CHAIN (args);
-
+      args = TREE_CHAIN (args);
       cxx_mark_addressable (slot);
       addr = build1 (ADDR_EXPR, build_pointer_type (type), slot);
-      if (style == arg)
-	{
-	  /* The return type might have different cv-quals from the slot.  */
-	  tree fntype = TREE_TYPE (TREE_TYPE (fn));
-
-	  gcc_assert (TREE_CODE (fntype) == FUNCTION_TYPE
-		      || TREE_CODE (fntype) == METHOD_TYPE);
-	  addr = convert (build_pointer_type (TREE_TYPE (fntype)), addr);
-	}
-
       args = tree_cons (NULL_TREE, addr, args);
     }
 
@@ -2933,9 +2921,13 @@ simplify_aggr_init_expr (tree *tp)
 		      fn, args, NULL_TREE);
 
   if (style == arg)
-    /* Tell the backend that we've added our return slot to the argument
-       list.  */
-    CALL_EXPR_HAS_RETURN_SLOT_ADDR (call_expr) = 1;
+    {
+      /* Just mark it addressable here, and leave the rest to
+	 expand_call{,_inline}.  */
+      cxx_mark_addressable (slot);
+      CALL_EXPR_RETURN_SLOT_OPT (call_expr) = true;
+      call_expr = build2 (MODIFY_EXPR, TREE_TYPE (call_expr), slot, call_expr);
+    }
   else if (style == pcc)
     {
       /* If we're using the non-reentrant PCC calling convention, then we
@@ -2945,6 +2937,7 @@ simplify_aggr_init_expr (tree *tp)
       call_expr = build_aggr_init (slot, call_expr,
 				   DIRECT_BIND | LOOKUP_ONLYCONVERTING);
       pop_deferring_access_checks ();
+      call_expr = build (COMPOUND_EXPR, TREE_TYPE (slot), call_expr, slot);
     }
 
   *tp = call_expr;

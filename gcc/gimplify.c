@@ -3015,6 +3015,46 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
 	  ret = GS_UNHANDLED;
 	break;
 
+      case CALL_EXPR:
+	/* For calls that return in memory, give *to_p as the CALL_EXPR's
+	   return slot so that we don't generate a temporary.  */
+	if (!CALL_EXPR_RETURN_SLOT_OPT (*from_p)
+	    && aggregate_value_p (*from_p, *from_p))
+	  {
+	    bool use_target;
+
+	    if (TREE_CODE (*to_p) == RESULT_DECL
+		&& needs_to_live_in_memory (*to_p))
+	      /* It's always OK to use the return slot directly.  */
+	      use_target = true;
+	    else if (!is_gimple_non_addressable (*to_p))
+	      /* Don't use the original target if it's already addressable;
+		 if its address escapes, and the called function uses the
+		 NRV optimization, a conforming program could see *to_p
+		 change before the called function returns; see c++/19317.
+		 When optimizing, the return_slot pass marks more functions
+		 as safe after we have escape info.  */
+	      use_target = false;
+	    else if (DECL_GIMPLE_FORMAL_TEMP_P (*to_p))
+	      /* Don't use the original target if it's a formal temp; we
+		 don't want to take their addresses.  */
+	      use_target = false;
+	    else if (is_gimple_reg_type (TREE_TYPE (*to_p)))
+	      /* Also don't force regs into memory.  */
+	      use_target = false;
+	    else
+	      use_target = true;
+
+	    if (use_target)
+	      {
+		CALL_EXPR_RETURN_SLOT_OPT (*from_p) = 1;
+		lang_hooks.mark_addressable (*to_p);
+	      }
+	  }
+
+	ret = GS_UNHANDLED;
+	break;
+
       default:
 	ret = GS_UNHANDLED;
 	break;

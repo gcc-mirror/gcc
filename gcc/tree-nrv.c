@@ -218,3 +218,79 @@ struct tree_opt_pass pass_nrv =
   TODO_dump_func | TODO_ggc_collect,			/* todo_flags_finish */
   0					/* letter */
 };
+
+/* Walk through the function looking for MODIFY_EXPRs with calls that
+   return in memory on the RHS.  For each of these, determine whether it is
+   safe to pass the address of the LHS as the return slot, and mark the
+   call appropriately if so.
+
+   The NRV shares the return slot with a local variable in the callee; this
+   optimization shares the return slot with the target of the call within
+   the caller.  If the NRV is performed (which we can't know in general),
+   this optimization is safe if the address of the target has not
+   escaped prior to the call.  If it has, modifications to the local
+   variable will produce visible changes elsewhere, as in PR c++/19317.  */
+
+static void
+execute_return_slot_opt (void)
+{
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    {
+      block_stmt_iterator i;
+      for (i = bsi_start (bb); !bsi_end_p (i); bsi_next (&i))
+	{
+	  tree stmt = bsi_stmt (i);
+	  tree call;
+
+	  if (TREE_CODE (stmt) == MODIFY_EXPR
+	      && (call = TREE_OPERAND (stmt, 1),
+		  TREE_CODE (call) == CALL_EXPR)
+	      && !CALL_EXPR_RETURN_SLOT_OPT (call)
+	      && aggregate_value_p (call, call))
+	    {
+	      def_operand_p def_p;
+	      ssa_op_iter op_iter;
+
+	      /* We determine whether or not the LHS address escapes by
+		 asking whether it is call clobbered.  When the LHS isn't a
+		 simple decl, we need to check the VDEFs, so it's simplest
+		 to just loop through all the DEFs.  */
+	      FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, op_iter, SSA_OP_ALL_DEFS)
+		{
+		  tree def = DEF_FROM_PTR (def_p);
+		  if (TREE_CODE (def) == SSA_NAME)
+		    def = SSA_NAME_VAR (def);
+		  if (is_call_clobbered (def))
+		    goto unsafe;
+		}
+
+	      /* No defs are call clobbered, so the optimization is safe.  */
+	      CALL_EXPR_RETURN_SLOT_OPT (call) = 1;
+	      /* This is too late to mark the target addressable like we do
+		 in gimplify_modify_expr_rhs, but that's OK; anything that
+		 wasn't already addressable was handled there.  */
+
+	      unsafe:;
+	    }
+	}
+    }
+}
+
+struct tree_opt_pass pass_return_slot = 
+{
+  "retslot",				/* name */
+  NULL,					/* gate */
+  execute_return_slot_opt,		/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  0,					/* tv_id */
+  PROP_ssa | PROP_alias,		/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0,					/* todo_flags_finish */
+  0					/* letter */
+};
