@@ -98270,8 +98270,7 @@ fi
 
 # For GNU ld, we need at least this version.  The format is described in
 # GLIBCXX_CHECK_LINKER_FEATURES above.
-# Need 21590 because of compatibility.cc's asm .symver strings for GLIBCXX_3.4.
-glibcxx_min_gnu_ld_version=21590
+glibcxx_min_gnu_ld_version=21400
 
 # Check to see if unspecified "yes" value can win, given results above.
 # Change "yes" into either "no" or a style name.

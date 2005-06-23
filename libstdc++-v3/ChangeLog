@@ -1,3 +1,24 @@
+2005-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/22109
+	* src/compatibility.cc (_GLIBCXX_SYMVER_COMPATIBILITY): Remove.
+	(istreambuf_iterator, basic_fstream, basic_ifstream, basic_ofstream,
+	_M_copy, _M_move, _M_assign, _M_disjunct, _M_check_length,
+	_M_set_length_and_sharable, ignore, eq): Define to XX suffixed
+	variants.
+	(ignore (streamsize)): Remove _W prefixed aliases.
+	(_GLIBCXX_3_4_SYMVER_SPECIAL, _GLIBCXX_3_4_5_SYMVER_SPECIAL,
+	_GLIBCXX_APPLY_SYMVER_SPECIAL): Remove.
+	(_GLIBCXX_3_4_SYMVER, _GLIBCXX_3_4_5_SYMVER): Add XXname argument.
+	Use #XXname instead of #name as the alias argument.
+	* config/abi/compatibility.h: Replace uses of
+	_GLIBCXX_APPLY_SYMVER_SPECIAL with _GLIBCXX_APPLY_SYMVER.  Always
+	pass 2 arguments to the _GLIBCXX_APPLY_SYMVER macro.
+	* include/bits/char_traits.h (char_traits::eq): Revert 2005-06-15
+	change.
+	* acinclude.m4: Decrease glibcxx_min_gnu_ld_version back to 21400.
+	* configure: Rebuilt.
+
 2005-06-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/22111
