@@ -20,6 +20,6 @@ unsigned int k (unsigned int d) {
 	return d % 8;
 }
 
-/* { dg-final { scan-tree-dump "a % 4294967288" "gimple" } } */
+/* { dg-final { scan-tree-dump "a % (4294967288|0fffffff8)" "gimple" } } */
 /* { dg-final { scan-tree-dump-times " & 7" 3 "gimple" } } */
 /* { dg-final { cleanup-tree-dump "gimple" } } */

@@ -1,3 +1,8 @@
+2005-06-23  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR testsuite/22123
+	* gcc.dg/fold-mod-1.c: Accept fffffff8 as well.
+
 2005-06-23  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.dg/rs6000-fpint-2.c: Only compile on Darwin and Linux.
