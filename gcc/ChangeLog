@@ -1,3 +1,7 @@
+2005-06-24  Jan Hubicka  <jh@suse.cz>
+
+	* opts.c (decode_options): Enable unit-at-a-time by default at -O1.
+
 2005-06-23  Jeff Law  <law@redhat.com>
 
 	* tree-optimize.c (init_tree_optimization_passes): Move
