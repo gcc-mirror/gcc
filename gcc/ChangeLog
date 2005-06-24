@@ -1,3 +1,23 @@
+2005-06-24  Jan Hubicka  <jh@suse.cz>
+
+	* tree-optimize.c (init_tree_optimization_passes): Fix flags of
+	all_passes and all_ipa_passes.
+
+	* c-common.c: Include cgraph.h
+	(handle_externally_visible_attribute): New function.
+	(c_common_att): Add "externally_visible" attribute.
+	* cgraph.c (decide_is_variable_needed): Obey externally
+	visible flag.
+	(cgraph_varpool_finalize_decl): Avoid redundant checking.
+	* cgraph.h (struct cgraph_node): New flag externally_visible.
+	(decide_is_function_needed): Obey externally visible flag.
+	(cgraph_finalize_function): Avoid redundant checks.
+	(cgraph_function_and_variable_visibility): Bring symbols local
+	when asked for.
+	* common.opt (fwhole-program): New flag.
+
+	* doc/invoke.texi (-fwhole-program): Document.
+
 2005-06-24  Mark Mitchell  <mark@codesourcery.com>
 
 	PR 22171

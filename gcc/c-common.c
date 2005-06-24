@@ -47,6 +47,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-mudflap.h"
 #include "opts.h"
 #include "real.h"
+#include "cgraph.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -514,6 +515,8 @@ static tree handle_always_inline_attribute (tree *, tree, tree, int,
 					    bool *);
 static tree handle_used_attribute (tree *, tree, tree, int, bool *);
 static tree handle_unused_attribute (tree *, tree, tree, int, bool *);
+static tree handle_externally_visible_attribute (tree *, tree, tree, int,
+						 bool *);
 static tree handle_const_attribute (tree *, tree, tree, int, bool *);
 static tree handle_transparent_union_attribute (tree *, tree, tree,
 						int, bool *);
@@ -580,6 +583,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_used_attribute },
   { "unused",                 0, 0, false, false, false,
 			      handle_unused_attribute },
+  { "externally_visible",     0, 0, true,  false, false,
+			      handle_externally_visible_attribute },
   /* The same comments as for noreturn attributes apply to const ones.  */
   { "const",                  0, 0, true,  false, false,
 			      handle_const_attribute },
@@ -4124,6 +4129,47 @@ handle_unused_attribute (tree *node, tree name, tree ARG_UNUSED (args),
       if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
 	*node = build_variant_type_copy (*node);
       TREE_USED (*node) = 1;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "externally_visible" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_externally_visible_attribute (tree *pnode, tree name,
+				     tree ARG_UNUSED (args),
+				     int ARG_UNUSED (flags),
+				     bool *no_add_attrs)
+{
+  tree node = *pnode;
+
+  if ((!TREE_STATIC (node) && TREE_CODE (node) != FUNCTION_DECL)
+      || !TREE_PUBLIC (node))
+    {
+      warning (OPT_Wattributes,
+	       "%qE attribute have effect only on public objects", name);
+      *no_add_attrs = true;
+    }
+  else if (TREE_CODE (node) == FUNCTION_DECL)
+    {
+      struct cgraph_node *n = cgraph_node (node);
+      n->local.externally_visible = true;
+      if (n->local.finalized)
+	cgraph_mark_needed_node (n);
+    }
+  else if (TREE_CODE (node) == VAR_DECL)
+    {
+      struct cgraph_varpool_node *n = cgraph_varpool_node (node);
+      n->externally_visible = true;
+      if (n->finalized)
+	cgraph_varpool_mark_needed_node (n);
+    }
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
     }
 
   return NULL_TREE;

@@ -159,6 +159,8 @@ struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
   bool analyzed;
   /* Set when function is scheduled to be assembled.  */
   bool output;
+  /* Set when function is visible by other units.  */
+  bool externally_visible;
   /* Set for aliases once they got through assemble_alias.  */
   bool alias;
 };

@@ -1525,7 +1525,8 @@ attributes are currently defined for functions on all targets:
 @code{format}, @code{format_arg}, @code{no_instrument_function},
 @code{section}, @code{constructor}, @code{destructor}, @code{used},
 @code{unused}, @code{deprecated}, @code{weak}, @code{malloc},
-@code{alias}, @code{warn_unused_result} and @code{nonnull}.  Several other
+@code{alias}, @code{warn_unused_result}, @code{nonnull}
+and @code{externally_visible}.  Several other
 attributes are defined for functions on particular target systems.  Other
 attributes, including @code{section} are supported for variables declarations
 (@pxref{Variable Attributes}) and for types (@pxref{Type Attributes}).
@@ -2344,6 +2345,12 @@ library functions which can be overridden in user code, though it can
 also be used with non-function declarations.  Weak symbols are supported
 for ELF targets, and also for a.out targets when using the GNU assembler
 and linker.
+
+@item externally_visible
+@cindex @code{externally_visible} attribute.
+This attribute, attached to a global variable or function nullify
+effect of @option{-fwhole-program} command line option, so the object
+remain visible outside the current compilation unit
 
 @end table
 

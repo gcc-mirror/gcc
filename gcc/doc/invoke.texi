@@ -335,7 +335,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-dominator-opts -ftree-dse -ftree-copyrename -ftree-sink @gol
 -ftree-ch -ftree-sra -ftree-ter -ftree-lrs -ftree-fre -ftree-vectorize @gol
 -ftree-salias -fweb @gol
--ftree-copy-prop -ftree-store-ccp -ftree-store-copy-prop @gol
+-ftree-copy-prop -ftree-store-ccp -ftree-store-copy-prop -fwhole-program @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os}
 
@@ -5255,6 +5255,19 @@ however, make debugging impossible, since variables will no longer stay in a
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os},
 on targets where the default format for debugging information supports
 variable tracking.
+
+@item -fwhole-program
+@opindex fwhole-program
+Assume that the current compilation unit represents whole program being
+compiled.  All public functions and variables with the exception of @code{main}
+and those marged by attribute @code{externally_visible} become static functions
+and in a affect gets more aggresively optimized by interprocedural optimizers.
+While this option is equivalent to proper use of @code{static} keyword for
+programs consitsting of single file, in combination with option
+@option{--combine} this flag can be used to compile most of smaller scale C
+programs since the functions and variables become local for the whole combined
+compilation unit, not for the single source file itself.
+
 
 @item -fno-cprop-registers
 @opindex fno-cprop-registers
