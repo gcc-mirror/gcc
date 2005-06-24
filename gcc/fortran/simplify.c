@@ -263,6 +263,27 @@ gfc_simplify_acos (gfc_expr * x)
   return range_check (result, "ACOS");
 }
 
+gfc_expr *
+gfc_simplify_acosh (gfc_expr * x)
+{
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  if (mpfr_cmp_si (x->value.real, 1) < 0)
+    {
+      gfc_error ("Argument of ACOSH at %L must not be less than 1",
+		 &x->where);
+      return &gfc_bad_expr;
+    }
+
+  result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+
+  mpfr_acosh (result->value.real, x->value.real, GFC_RND_MODE);
+
+  return range_check (result, "ACOSH");
+}
 
 gfc_expr *
 gfc_simplify_adjustl (gfc_expr * e)
@@ -467,7 +488,7 @@ gfc_simplify_asin (gfc_expr * x)
 
 
 gfc_expr *
-gfc_simplify_atan (gfc_expr * x)
+gfc_simplify_asinh (gfc_expr * x)
 {
   gfc_expr *result;
 
@@ -476,10 +497,49 @@ gfc_simplify_atan (gfc_expr * x)
 
   result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
 
+  mpfr_asinh(result->value.real, x->value.real, GFC_RND_MODE);
+
+  return range_check (result, "ASINH");
+}
+
+
+gfc_expr *
+gfc_simplify_atan (gfc_expr * x)
+{
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+    
+  result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+
   mpfr_atan(result->value.real, x->value.real, GFC_RND_MODE);
 
   return range_check (result, "ATAN");
+}
 
+
+gfc_expr *
+gfc_simplify_atanh (gfc_expr * x)
+{
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  if (mpfr_cmp_si (x->value.real, 1) >= 0 ||
+      mpfr_cmp_si (x->value.real, -1) <= 0)
+    {
+      gfc_error ("Argument of ATANH at %L must be inside the range -1 to 1",
+		 &x->where);
+      return &gfc_bad_expr;
+    }
+
+  result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+
+  mpfr_atanh(result->value.real, x->value.real, GFC_RND_MODE);
+
+  return range_check (result, "ATANH");
 }
 
 
@@ -505,7 +565,6 @@ gfc_simplify_atan2 (gfc_expr * y, gfc_expr * x)
   arctangent2 (y->value.real, x->value.real, result->value.real);
 
   return range_check (result, "ATAN2");
-
 }
 
 

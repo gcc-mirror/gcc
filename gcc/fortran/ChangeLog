@@ -1,3 +1,17 @@
+2005-06-24  Jerry DeLisle <jvdelisle@verizon.net>
+
+	PR fortran/21915
+	* gfortran.h: Add symbols for new intrinsics
+	* intrinsic.c: Add acosh, asinh, and atanh
+	* intrinsic.h: Add prototypes
+	* iresolve.c (gfc_resolve_acosh): New function
+	(gfc_resolve_asinh): New
+	(gfc_resolve_atanh): New
+	* mathbuiltins.def: Add defines
+	* simplify.c (gfc_simplify_acosh): New function
+	(gfc_simplify_asinh): New
+	(gfc_simplify_atanh): New
+
 2005-06-24  Feng Wang  <fengwang@nudt.edu.cn>
 
 	* simplify.c (gfc_simplify_modulo): Don't clear before get result.

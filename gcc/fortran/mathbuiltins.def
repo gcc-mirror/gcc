@@ -6,8 +6,11 @@
    Use DEFINE_MATH_BUILTIN_C if the complex versions of the builtin are
    also available.  */
 DEFINE_MATH_BUILTIN_C (ACOS,  "acos",   0)
+DEFINE_MATH_BUILTIN   (ACOSH, "acosh",  0)
 DEFINE_MATH_BUILTIN_C (ASIN,  "asin",   0)
+DEFINE_MATH_BUILTIN   (ASINH, "asinh",  0)
 DEFINE_MATH_BUILTIN_C (ATAN,  "atan",   0)
+DEFINE_MATH_BUILTIN   (ATANH, "atanh",  0)
 DEFINE_MATH_BUILTIN   (ATAN2, "atan2",  1)
 DEFINE_MATH_BUILTIN_C (COS,   "cos",    0)
 DEFINE_MATH_BUILTIN_C (COSH,  "cosh",   0)

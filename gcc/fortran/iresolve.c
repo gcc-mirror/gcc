@@ -84,6 +84,15 @@ gfc_resolve_acos (gfc_expr * f, gfc_expr * x)
 
 
 void
+gfc_resolve_acosh (gfc_expr * f, gfc_expr * x)
+{
+  f->ts = x->ts;
+  f->value.function.name =
+    gfc_get_string ("__acosh_%c%d", gfc_type_letter (x->ts.type), x->ts.kind);
+}
+
+
+void
 gfc_resolve_aimag (gfc_expr * f, gfc_expr * x)
 {
   f->ts.type = BT_REAL;
@@ -177,6 +186,13 @@ gfc_resolve_asin (gfc_expr * f, gfc_expr * x)
     gfc_get_string ("__asin_%c%d", gfc_type_letter (x->ts.type), x->ts.kind);
 }
 
+void
+gfc_resolve_asinh (gfc_expr * f, gfc_expr * x)
+{
+  f->ts = x->ts;
+  f->value.function.name =
+    gfc_get_string ("__asinh_%c%d", gfc_type_letter (x->ts.type), x->ts.kind);
+}
 
 void
 gfc_resolve_atan (gfc_expr * f, gfc_expr * x)
@@ -186,6 +202,13 @@ gfc_resolve_atan (gfc_expr * f, gfc_expr * x)
     gfc_get_string ("__atan_%c%d", gfc_type_letter (x->ts.type), x->ts.kind);
 }
 
+void
+gfc_resolve_atanh (gfc_expr * f, gfc_expr * x)
+{
+  f->ts = x->ts;
+  f->value.function.name =
+    gfc_get_string ("__atanh_%c%d", gfc_type_letter (x->ts.type), x->ts.kind);
+}
 
 void
 gfc_resolve_atan2 (gfc_expr * f, gfc_expr * x,
