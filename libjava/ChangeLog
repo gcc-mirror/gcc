@@ -1,5 +1,21 @@
 2005-06-24  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/natClassLoader.cc (_Jv_UnregisterClass): Handle case
+	where class' name is NULL.
+	(_Jv_FindClass): Don't wait for class state.
+	* java/lang/natVMClassLoader.cc (defineClass): Only unregister if
+	name found.
+	* include/java-interp.h (_Jv_DefineClass): Updated.
+	* defineclass.cc (_Jv_DefineClass): Added 'name_result' argument.
+	(struct _Jv_ClassReader): Likewise.
+	(found_name): New field.
+	(handleClassBegin): Set *found_name.
+	(_Jv_VerifyMethodSignature): Handle case where ptr==NULL.
+	(handleClassBegin): Throw error if super class not set.
+	(read_methods): Correctly call check_tag and prepare_pool_entry.
+
+2005-06-24  Tom Tromey  <tromey@redhat.com>
+
 	* boehm.cc (_Jv_MarkObj): Handle case where field's type is NULL.
 
 2005-06-24  Tom Tromey  <tromey@redhat.com>

@@ -107,6 +107,10 @@ _Jv_FindClassInCache (_Jv_Utf8Const *name)
 void
 _Jv_UnregisterClass (jclass the_class)
 {
+  // This can happen if the class could not be defined properly.
+  if (! the_class->name)
+    return;
+
   JvSynchronize sync (&java::lang::Class::class$);
   jint hash = HASH_UTF(the_class->name);
 
@@ -327,12 +331,6 @@ _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
 		}
 	    }
 	}
-    }
-  else
-    {
-      // We need classes to be in the hash while we're loading, so
-      // that they can refer to themselves.
-      _Jv_Linker::wait_for_state (klass, JV_STATE_LOADED);
     }
 
   return klass;

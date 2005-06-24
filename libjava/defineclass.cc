@@ -70,7 +70,8 @@ static void throw_class_circularity_error (jstring msg)
  * public or private members here.
  */
 
-struct _Jv_ClassReader {
+struct _Jv_ClassReader
+{
 
   // do verification?  Currently, there is no option to disable this.
   // This flag just controls the verificaiton done by the class loader;
@@ -103,6 +104,9 @@ struct _Jv_ClassReader {
   
   // the classes associated interpreter data.
   _Jv_InterpClass  *def_interp;
+
+  // The name we found.
+  _Jv_Utf8Const **found_name;
 
   /* check that the given number of input bytes are available */
   inline void check (int num)
@@ -219,7 +223,8 @@ struct _Jv_ClassReader {
   }
 
   _Jv_ClassReader (jclass klass, jbyteArray data, jint offset, jint length,
-		   java::security::ProtectionDomain *pd)
+		   java::security::ProtectionDomain *pd,
+		   _Jv_Utf8Const **name_result)
   {
     if (klass == 0 || length < 0 || offset+length > data->length)
       throw_internal_error ("arguments to _Jv_DefineClass");
@@ -229,6 +234,7 @@ struct _Jv_ClassReader {
     len    = length;
     pos    = 0;
     def    = klass;
+    found_name = name_result;
 
     def->size_in_bytes = -1;
     def->vtable_method_count = -1;
@@ -279,11 +285,15 @@ struct _Jv_ClassReader {
    */
 };
 
+// Note that *NAME_RESULT will only be set if the class is registered
+// with the class loader.  This is how the caller can know whether
+// unregistration is require.
 void
 _Jv_DefineClass (jclass klass, jbyteArray data, jint offset, jint length,
-		 java::security::ProtectionDomain *pd)
+		 java::security::ProtectionDomain *pd,
+		 _Jv_Utf8Const **name_result)
 {
-  _Jv_ClassReader reader (klass, data, offset, length, pd);
+  _Jv_ClassReader reader (klass, data, offset, length, pd, name_result);
   reader.parse();
 
   /* that's it! */
@@ -499,9 +509,9 @@ void _Jv_ClassReader::read_methods ()
       int attributes_count = read2u ();
       
       check_tag (name_index, JV_CONSTANT_Utf8);
-      prepare_pool_entry (descriptor_index, JV_CONSTANT_Utf8);
+      prepare_pool_entry (name_index, JV_CONSTANT_Utf8);
 
-      check_tag (name_index, JV_CONSTANT_Utf8);
+      check_tag (descriptor_index, JV_CONSTANT_Utf8);
       prepare_pool_entry (descriptor_index, JV_CONSTANT_Utf8);
 
       handleMethod (i, access_flags, name_index,
@@ -930,11 +940,11 @@ _Jv_ClassReader::handleClassBegin (int access_flags, int this_class, int super_c
   pool_data[this_class].clazz = def;
   pool_tags[this_class] = JV_CONSTANT_ResolvedClass;
 
-  if (super_class == 0 && ! (access_flags & Modifier::INTERFACE))
+  if (super_class == 0)
     {
-      // FIXME: Consider this carefully!  
-      if (! _Jv_equalUtf8Consts (def->name, java::lang::Object::class$.name))
-	throw_no_class_def_found_error ("loading java.lang.Object");
+      // Note that this is ok if we are defining java.lang.Object.
+      // But there is no way to have this class be interpreted.
+      throw_class_format_error ("no superclass reference");
     }
 
   def->state = JV_STATE_PRELOADING;
@@ -946,6 +956,11 @@ _Jv_ClassReader::handleClassBegin (int access_flags, int this_class, int super_c
   // lock here, as our caller has acquired it.
   _Jv_RegisterInitiatingLoader (def, def->loader);
 
+  // Note that we found a name so that unregistration can happen if
+  // needed.
+  *found_name = def->name;
+
+  jclass the_super = NULL;
   if (super_class != 0)
     {
       // Load the superclass.
@@ -953,8 +968,7 @@ _Jv_ClassReader::handleClassBegin (int access_flags, int this_class, int super_c
       _Jv_Utf8Const* super_name = pool_data[super_class].utf8; 
 
       // Load the superclass using our defining loader.
-      jclass the_super = _Jv_FindClass (super_name,
-					def->loader);
+      jclass the_super = _Jv_FindClass (super_name, def->loader);
 
       // This will establish that we are allowed to be a subclass,
       // and check for class circularity error.
@@ -1547,7 +1561,7 @@ _Jv_VerifyMethodSignature (_Jv_Utf8Const*sig)
   while (ptr && UTF8_PEEK (ptr, limit) != ')')
     ptr = _Jv_VerifyOne (ptr, limit, false);
 
-  if (UTF8_GET (ptr, limit) != ')')
+  if (! ptr || UTF8_GET (ptr, limit) != ')')
     return false;
 
   // get the return type

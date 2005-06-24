@@ -36,7 +36,8 @@ struct _Jv_ResolvedMethod;
 
 void _Jv_InitInterpreter ();
 void _Jv_DefineClass (jclass, jbyteArray, jint, jint,
-		      java::security::ProtectionDomain *);
+		      java::security::ProtectionDomain *,
+		      _Jv_Utf8Const **);
 
 void _Jv_InitField (jobject, jclass, int);
 void * _Jv_AllocMethodInvocation (jsize size);
