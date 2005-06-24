@@ -181,9 +181,12 @@ AC_CHECK_LIB([c],[getuid],[AC_DEFINE([HAVE_GETUID],[1],[libc includes getuid])])
 # Check for C99 (and other IEEE) math functions
 # ??? This list seems awful long. Is there a better way to test for these?
 AC_CHECK_LIB([m],[acosf],[AC_DEFINE([HAVE_ACOSF],[1],[libm includes acosf])])
+AC_CHECK_LIB([m],[acoshf],[AC_DEFINE([HAVE_ACOSHF],[1],[libm includes acoshf])])
 AC_CHECK_LIB([m],[asinf],[AC_DEFINE([HAVE_ASINF],[1],[libm includes asinf])])
+AC_CHECK_LIB([m],[asinhf],[AC_DEFINE([HAVE_ASINHF],[1],[libm includes asinhf])])
 AC_CHECK_LIB([m],[atan2f],[AC_DEFINE([HAVE_ATAN2F],[1],[libm includes atan2f])])
 AC_CHECK_LIB([m],[atanf],[AC_DEFINE([HAVE_ATANF],[1],[libm includes atanf])])
+AC_CHECK_LIB([m],[atanhf],[AC_DEFINE([HAVE_ATANHF],[1],[libm includes atanhf])])
 AC_CHECK_LIB([m],[ceilf],[AC_DEFINE([HAVE_CEILF],[1],[libm includes ceilf])])
 AC_CHECK_LIB([m],[copysignf],[AC_DEFINE([HAVE_COPYSIGNF],[1],[libm includes copysignf])])
 AC_CHECK_LIB([m],[cosf],[AC_DEFINE([HAVE_COSF],[1],[libm includes cosf])])

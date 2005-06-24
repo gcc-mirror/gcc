@@ -6,14 +6,23 @@
 /* libm includes acosf */
 #undef HAVE_ACOSF
 
+/* libm includes acoshf */
+#undef HAVE_ACOSHF
+
 /* libm includes asinf */
 #undef HAVE_ASINF
+
+/* libm includes asinhf */
+#undef HAVE_ASINHF
 
 /* libm includes atan2f */
 #undef HAVE_ATAN2F
 
 /* libm includes atanf */
 #undef HAVE_ATANF
+
+/* libm includes atanhf */
+#undef HAVE_ATANHF
 
 /* Define to 1 if the target supports __attribute__((alias(...))). */
 #undef HAVE_ATTRIBUTE_ALIAS
