@@ -1,5 +1,11 @@
 2005-06-23  Mark Mitchell  <mark@codesourcery.com>
 
+	Backport:
+	2005-06-13  Zdenek Dvorak  <dvorakz@suse.cz>
+	PR middle-end/21985
+	* fold-const.c (split_address_to_core_and_offset): Always return
+	the address of the base object.
+
 	PR 22000
 	* tree-ssa-operands.c (get_expr_operands): Check the volatility of
 	the FIELD_DECL and set s_ann->has_volatile_ops accordingly.

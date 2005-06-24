@@ -1,3 +1,12 @@
+2005-06-23  Mark Mitchell  <mark@codesourcery.com>
+
+	Backport:
+	2005-06-19  Richard Henderson  <rth@redhat.com>
+	* gcc.dg/tree-ssa/pr21985.c: Use size_t.
+	2005-06-13  Zdenek Dvorak  <dvorakz@suse.cz>
+	PR middle-end/21985
+	* gcc.dg/tree-ssa/pr21985.c: New test.
+
 2005-06-19  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* gfortran.dg/backslash_1.f90: New test.
