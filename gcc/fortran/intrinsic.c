@@ -911,6 +911,16 @@ add_functions (void)
 
   make_generic ("acos", GFC_ISYM_ACOS, GFC_STD_F77);
 
+  add_sym_1 ("acosh", 1, 1, BT_REAL, dr, GFC_STD_GNU,
+	     gfc_check_fn_r, gfc_simplify_acosh, gfc_resolve_acosh,
+	     x, BT_REAL, dr, REQUIRED);
+
+  add_sym_1 ("dacosh", 1, 1, BT_REAL, dd, GFC_STD_GNU,
+	     NULL, gfc_simplify_acosh, gfc_resolve_acosh,
+	     x, BT_REAL, dd, REQUIRED);
+
+  make_generic ("acosh", GFC_ISYM_ACOSH, GFC_STD_GNU);
+
   add_sym_1 ("adjustl", 1, 1, BT_CHARACTER, dc, GFC_STD_F95,
 	     NULL, gfc_simplify_adjustl, NULL,
 	     stg, BT_CHARACTER, dc, REQUIRED);
@@ -980,6 +990,16 @@ add_functions (void)
 	     x, BT_REAL, dd, REQUIRED);
 
   make_generic ("asin", GFC_ISYM_ASIN, GFC_STD_F77);
+  
+  add_sym_1 ("asinh", 1, 1, BT_REAL, dr, GFC_STD_GNU,
+	     gfc_check_fn_r, gfc_simplify_asinh, gfc_resolve_asinh,
+	     x, BT_REAL, dr, REQUIRED);
+
+  add_sym_1 ("dasinh", 1, 1, BT_REAL, dd, GFC_STD_GNU,
+	     NULL, gfc_simplify_asinh, gfc_resolve_asinh,
+	     x, BT_REAL, dd, REQUIRED);
+
+  make_generic ("asinh", GFC_ISYM_ASINH, GFC_STD_GNU);
 
   add_sym_2 ("associated", 0, 1, BT_LOGICAL, dl, GFC_STD_F95,
 	     gfc_check_associated, NULL, NULL,
@@ -996,6 +1016,16 @@ add_functions (void)
 	     x, BT_REAL, dd, REQUIRED);
 
   make_generic ("atan", GFC_ISYM_ATAN, GFC_STD_F77);
+  
+  add_sym_1 ("atanh", 1, 1, BT_REAL, dr, GFC_STD_GNU,
+	     gfc_check_fn_r, gfc_simplify_atanh, gfc_resolve_atanh,
+	     x, BT_REAL, dr, REQUIRED);
+
+  add_sym_1 ("datanh", 1, 1, BT_REAL, dd, GFC_STD_GNU,
+	     NULL, gfc_simplify_atanh, gfc_resolve_atanh,
+	     x, BT_REAL, dd, REQUIRED);
+
+  make_generic ("atanh", GFC_ISYM_ATANH, GFC_STD_GNU);
 
   add_sym_2 ("atan2", 1, 1, BT_REAL, dr, GFC_STD_F77,
 	     gfc_check_atan2, gfc_simplify_atan2, gfc_resolve_atan2,
@@ -1006,7 +1036,7 @@ add_functions (void)
 	     y, BT_REAL, dd, REQUIRED, x, BT_REAL, dd, REQUIRED);
 
   make_generic ("atan2", GFC_ISYM_ATAN2, GFC_STD_F77);
-
+  
   /* Bessel and Neumann functions for G77 compatibility.  */
   add_sym_1 ("besj0", 1, 0, BT_REAL, dr, GFC_STD_GNU,
 	     gfc_check_g77_math1, NULL, gfc_resolve_g77_math1,
