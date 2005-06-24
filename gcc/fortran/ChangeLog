@@ -1,4 +1,8 @@
-2005-06-22 Paul Brook  <paul@codesourcery.com>
+2005-06-24  Feng Wang  <fengwang@nudt.edu.cn>
+
+	* simplify.c (gfc_simplify_modulo): Don't clear before get result.
+
+2005-06-22  Paul Brook  <paul@codesourcery.com>
 
 	PR fortran/21034
 	* symbol.c (gfc_is_var_automatic): New function.
