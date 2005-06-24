@@ -1,5 +1,10 @@
 2005-06-24  Tom Tromey  <tromey@redhat.com>
 
+	* verify.cc (verify_instructions_0): Correctly handle situation
+	where PC falls off end.
+
+2005-06-24  Tom Tromey  <tromey@redhat.com>
+
 	* interpret.cc (compile): Handle case where table entry is
 	outside of PC range.
 

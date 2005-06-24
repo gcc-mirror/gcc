@@ -2251,10 +2251,12 @@ verify_instructions_0 (void)
       else
 	{
 	  /* We only have to do this checking in the situation where
-	     control flow falls through from the previous
-	     instruction.  Otherwise merging is done at the time we
-	     push the branch.  */
-	  if (vfr->states[vfr->PC] != NULL)
+	     control flow falls through from the previous instruction.
+	     Otherwise merging is done at the time we push the branch.
+	     Note that we'll catch the off-the-end problem just
+	     below.  */
+	  if (vfr->PC < vfr->current_method->code_length
+	      && vfr->states[vfr->PC] != NULL)
 	    {
 	      /* We've already visited this instruction.  So merge
 	         the states together.  It is simplest, but not most
