@@ -1,3 +1,9 @@
+2005-06-24  Geoffrey Keating  <geoffk@geoffk.org>
+
+	* inclhack.def (AAB_darwin7_9_long_double_funcs): New.
+	(AAB_darwin7_9_long_double_funcs_2): New.
+	* fixincl.x: Regenerate.
+
 2005-06-15  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR libfortran/15266
