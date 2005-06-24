@@ -986,6 +986,10 @@ fweb
 Common Report Var(flag_web) Init(0)
 Construct webs and split unrelated uses of single variable
 
+fwhole-program
+Common Report Var(flag_whole_program) Init(0)
+Perform whole program optimizations
+
 fwrapv
 Common Report Var(flag_wrapv)
 Assume signed arithmetic overflow wraps around

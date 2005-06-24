@@ -189,9 +189,16 @@ static bool
 decide_is_function_needed (struct cgraph_node *node, tree decl)
 {
   tree origin;
+  if (MAIN_NAME_P (DECL_NAME (decl))
+      && TREE_PUBLIC (decl))
+    {
+      node->local.externally_visible = true;
+      return true;
+    }
 
   /* If the user told us it is used, then it must be so.  */
-  if (lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
+  if (node->local.externally_visible
+      || lookup_attribute ("used", DECL_ATTRIBUTES (decl)))
     return true;
 
   /* ??? If the assembler name is set by hand, it is possible to assemble
@@ -209,7 +216,8 @@ decide_is_function_needed (struct cgraph_node *node, tree decl)
 
   /* Externally visible functions must be output.  The exception is
      COMDAT functions that must be output only when they are needed.  */
-  if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
+  if ((TREE_PUBLIC (decl) && !flag_whole_program)
+      && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
     return true;
 
   /* Constructors and destructors are reachable from the runtime by
@@ -428,7 +436,7 @@ cgraph_finalize_function (tree decl, bool nested)
   /* Since we reclaim unreachable nodes at the end of every language
      level unit, we need to be conservative about possible entry points
      there.  */
-  if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
+  if ((TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl)))
     cgraph_mark_reachable_node (node);
 
   /* If not unit at a time, go ahead and emit everything we've found
@@ -1059,7 +1067,13 @@ cgraph_function_and_variable_visibility (void)
       if (node->reachable
 	  && (DECL_COMDAT (node->decl)
 	      || (TREE_PUBLIC (node->decl) && !DECL_EXTERNAL (node->decl))))
-	node->local.externally_visible = 1;
+	node->local.externally_visible = true;
+      if (!node->local.externally_visible && node->analyzed
+	  && !DECL_EXTERNAL (node->decl))
+	{
+	  gcc_assert (flag_whole_program || !TREE_PUBLIC (node->decl));
+	  TREE_PUBLIC (node->decl) = 0;
+	}
       node->local.local = (!node->needed
 			   && node->analyzed
 			   && !DECL_EXTERNAL (node->decl)
@@ -1070,6 +1084,11 @@ cgraph_function_and_variable_visibility (void)
       if (vnode->needed
 	  && (DECL_COMDAT (vnode->decl) || TREE_PUBLIC (vnode->decl)))
 	vnode->externally_visible = 1;
+      if (!vnode->externally_visible)
+	{
+	  gcc_assert (flag_whole_program || !TREE_PUBLIC (vnode->decl));
+	  TREE_PUBLIC (vnode->decl) = 0;
+	}
      gcc_assert (TREE_STATIC (vnode->decl));
     }
 

@@ -1,3 +1,8 @@
+2005-06-22  Jan Hubicka  <jh@suse.cz>
+
+	* wholeprogram-1.c: New testcase.
+	* wholeprogram-2.c: New testcase.
+
 2005-06-24  Mark Mitchell  <mark@codesourcery.com>
 
 	PR 22171
