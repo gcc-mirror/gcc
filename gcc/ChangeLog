@@ -1,3 +1,12 @@
+2005-06-24  Kazu Hirata  <kazu@codesourcery.com>
+
+	* cfglayout.c (block_locators_locs, line_locators_locs,
+	line_locators_lines, file_locators_locs): Change the type to
+	VEC(int,heap)*.
+	(insn_locators_initialize, change_scope, insn_scope,
+	locator_line, insn_line, locator_file): Use VEC instead of
+	VARRAY.
+
 2005-06-24  Jason Merrill  <jason@redhat.com>
 
 	* tree-nrv.c (tree_nrv): Fix to check assignments to the

@@ -222,6 +222,9 @@ record_effective_endpoints (void)
     cfg_layout_function_footer = unlink_insn_chain (cfg_layout_function_footer, get_last_insn ());
 }
 
+DEF_VEC_I(int);
+DEF_VEC_ALLOC_I(int,heap);
+
 /* Data structures representing mapping of INSN_LOCATOR into scope blocks, line
    numbers and files.  In order to be GGC friendly we need to use separate
    varrays.  This also slightly improve the memory locality in binary search.
@@ -229,11 +232,11 @@ record_effective_endpoints (void)
    block_locators_blocks contains the scope block that is used for all insn
    locator greater than corresponding block_locators_locs value and smaller
    than the following one.  Similarly for the other properties.  */
-static GTY(()) varray_type block_locators_locs;
+static VEC(int,heap) *block_locators_locs;
 static GTY(()) VEC(tree,gc) *block_locators_blocks;
-static GTY(()) varray_type line_locators_locs;
-static GTY(()) varray_type line_locators_lines;
-static GTY(()) varray_type file_locators_locs;
+static VEC(int,heap) *line_locators_locs;
+static VEC(int,heap) *line_locators_lines;
+static VEC(int,heap) *file_locators_locs;
 static GTY(()) varray_type file_locators_files;
 int prologue_locator;
 int epilogue_locator;
@@ -254,11 +257,11 @@ insn_locators_initialize (void)
 
   prologue_locator = epilogue_locator = 0;
 
-  VARRAY_INT_INIT (block_locators_locs, 32, "block_locators_locs");
+  block_locators_locs = VEC_alloc (int, heap, 32);
   block_locators_blocks = VEC_alloc (tree, gc, 32);
-  VARRAY_INT_INIT (line_locators_locs, 32, "line_locators_locs");
-  VARRAY_INT_INIT (line_locators_lines, 32, "line_locators_lines");
-  VARRAY_INT_INIT (file_locators_locs, 32, "file_locators_locs");
+  line_locators_locs = VEC_alloc (int, heap, 32);
+  line_locators_lines = VEC_alloc (int, heap, 32);
+  file_locators_locs = VEC_alloc (int, heap, 32);
   VARRAY_CHAR_PTR_INIT (file_locators_files, 32, "file_locators_files");
 
   for (insn = get_insns (); insn; insn = next)
@@ -293,21 +296,21 @@ insn_locators_initialize (void)
 	  if (last_block != block)
 	    {
 	      loc++;
-	      VARRAY_PUSH_INT (block_locators_locs, loc);
+	      VEC_safe_push (int, heap, block_locators_locs, loc);
 	      VEC_safe_push (tree, gc, block_locators_blocks, block);
 	      last_block = block;
 	    }
 	  if (last_line_number != line_number)
 	    {
 	      loc++;
-	      VARRAY_PUSH_INT (line_locators_locs, loc);
-	      VARRAY_PUSH_INT (line_locators_lines, line_number);
+	      VEC_safe_push (int, heap, line_locators_locs, loc);
+	      VEC_safe_push (int, heap, line_locators_lines, line_number);
 	      last_line_number = line_number;
 	    }
 	  if (last_file_name != file_name)
 	    {
 	      loc++;
-	      VARRAY_PUSH_INT (file_locators_locs, loc);
+	      VEC_safe_push (int, heap, file_locators_locs, loc);
 	      VARRAY_PUSH_CHAR_PTR (file_locators_files, (char *) file_name);
 	      last_file_name = file_name;
 	    }
@@ -402,7 +405,7 @@ change_scope (rtx orig_insn, tree s1, tree s2)
 static tree
 insn_scope (rtx insn)
 {
-  int max = VARRAY_ACTIVE_SIZE (block_locators_locs);
+  int max = VEC_length (int, block_locators_locs);
   int min = 0;
   int loc = INSN_LOCATOR (insn);
 
@@ -423,7 +426,7 @@ insn_scope (rtx insn)
   while (1)
     {
       int pos = (min + max) / 2;
-      int tmp = VARRAY_INT (block_locators_locs, pos);
+      int tmp = VEC_index (int, block_locators_locs, pos);
 
       if (tmp <= loc && min != pos)
 	min = pos;
@@ -442,7 +445,7 @@ insn_scope (rtx insn)
 int
 locator_line (int loc)
 {
-  int max = VARRAY_ACTIVE_SIZE (line_locators_locs);
+  int max = VEC_length (int, line_locators_locs);
   int min = 0;
 
   if (!max || !loc)
@@ -450,7 +453,7 @@ locator_line (int loc)
   while (1)
     {
       int pos = (min + max) / 2;
-      int tmp = VARRAY_INT (line_locators_locs, pos);
+      int tmp = VEC_index (int, line_locators_locs, pos);
 
       if (tmp <= loc && min != pos)
 	min = pos;
@@ -462,7 +465,7 @@ locator_line (int loc)
 	  break;
 	}
     }
-   return VARRAY_INT (line_locators_lines, min);
+  return VEC_index (int, line_locators_lines, min);
 }
 
 /* Return line number of the statement that produced this insn.  */
@@ -476,7 +479,7 @@ insn_line (rtx insn)
 const char *
 locator_file (int loc)
 {
-  int max = VARRAY_ACTIVE_SIZE (file_locators_locs);
+  int max = VEC_length (int, file_locators_locs);
   int min = 0;
 
   if (!max || !loc)
@@ -484,7 +487,7 @@ locator_file (int loc)
   while (1)
     {
       int pos = (min + max) / 2;
-      int tmp = VARRAY_INT (file_locators_locs, pos);
+      int tmp = VEC_index (int, file_locators_locs, pos);
 
       if (tmp <= loc && min != pos)
 	min = pos;
