@@ -1,3 +1,16 @@
+2005-06-24  Jerry DeLisle <jvdelisle@verizon.net>
+
+	PR libfortran/21915
+	* Makefile.am: include intrinsics/hyper.c
+	* c99_protos.h: add prototypes for single precision versions of
+	acosh, asinh, and atanh for platforms that do not have these
+	* config.h.in: add #undef for wrappers
+	* configure.ac: add checks for single precision versions
+	* aclocal.m4: generated
+	* Makefile.in: generated
+	* configure: generated
+	* intrinsics/hyper.c: New file, adds wrapper functions 
+
 2005-06-23  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* intrinsics/c99_functions.c (log10l): New log10l function for

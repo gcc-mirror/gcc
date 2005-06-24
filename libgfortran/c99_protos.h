@@ -33,8 +33,16 @@ Boston, MA 02111-1307, USA.  */
 extern float acosf(float);
 #endif
 
+#ifndef HAVE_ACOSHF
+extern float acoshf(float);
+#endif
+
 #ifndef HAVE_ASINF
 extern float asinf(float);
+#endif
+
+#ifndef HAVE_ASINHF
+extern float asinhf(float);
 #endif
 
 #ifndef HAVE_ATAN2F
@@ -43,6 +51,10 @@ extern float atan2f(float, float);
 
 #ifndef HAVE_ATANF
 extern float atanf(float);
+#endif
+
+#ifndef HAVE_ATANHF
+extern float atanhf(float);
 #endif
 
 #ifndef HAVE_CEILF
