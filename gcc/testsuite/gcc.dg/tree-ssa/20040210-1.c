@@ -7,7 +7,7 @@ void exit(int);
 
 int x, y;
 
-static void
+static void __attribute__ ((noinline))
 init_xy(void)
 {
   x = 3;
