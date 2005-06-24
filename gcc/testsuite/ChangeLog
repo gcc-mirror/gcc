@@ -1,3 +1,7 @@
+2005-06-24  Feng Wang  <fengwang@nudt.edu.cn>
+
+	* gfortran.dg/simplify_modulo.f90: New.
+
 2005-06-24  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/20040210-1.c: Fix for unit-at-a-time
