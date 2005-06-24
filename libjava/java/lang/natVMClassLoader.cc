@@ -71,16 +71,18 @@ java::lang::VMClassLoader::defineClass (java::lang::ClassLoader *loader,
 	  klass->name = name2;
 	}
 
+      _Jv_Utf8Const *found_name = NULL;
       try
 	{
-	  _Jv_DefineClass (klass, data, offset, length, pd);
+	  _Jv_DefineClass (klass, data, offset, length, pd, &found_name);
 	}
       catch (java::lang::Throwable *ex)
 	{
 	  klass->state = JV_STATE_ERROR;
 	  klass->notifyAll ();
 
-	  _Jv_UnregisterInitiatingLoader (klass, klass->loader);
+	  if (found_name != NULL)
+	    _Jv_UnregisterInitiatingLoader (klass, klass->loader);
 
 	  // If EX is not a ClassNotFoundException, that's ok, because we
 	  // account for the possibility in defineClass().
