@@ -1,5 +1,9 @@
 2005-06-24  Tom Tromey  <tromey@redhat.com>
 
+	* boehm.cc (_Jv_MarkObj): Handle case where field's type is NULL.
+
+2005-06-24  Tom Tromey  <tromey@redhat.com>
+
 	* verify.cc (verify_instructions_0): Correctly handle situation
 	where PC falls off end.
 

@@ -1,6 +1,6 @@
 // boehm.cc - interface between libjava and Boehm GC.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation
 
    This file is part of libgcj.
@@ -191,7 +191,11 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void *env)
 	      // static members.
 	      // Note that field->u.addr may be null if the class c is
 	      // JV_STATE_LOADED but not JV_STATE_PREPARED (initialized).
-	      if (JvFieldIsRef (field) && p && field->isResolved()) 
+	      // Note also that field->type could be NULL in some
+	      // situations, for instance if the class has state
+	      // JV_STATE_ERROR.
+	      if (field->type && JvFieldIsRef (field)
+		  && p && field->isResolved()) 
 		{
 		  jobject val = *(jobject*) p;
 		  p = (GC_PTR) val;
