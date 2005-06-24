@@ -1,3 +1,9 @@
+2005-06-24  Jason Merrill  <jason@redhat.com>
+
+	* tree-nrv.c (tree_nrv): Fix to check assignments to the
+	RESULT_DECL rather than just RETURN_EXPRs.
+	(finalize_nrv_r): Adjust.
+
 2005-06-24  Jan Hubicka  <jh@suse.cz>
 
 	* tree-optimize.c (init_tree_optimization_passes): Fix flags of
