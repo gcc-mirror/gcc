@@ -1,3 +1,9 @@
+2005-06-24  Mark Mitchell  <mark@codesourcery.com>
+
+	PR 22171
+	* tree-ssa-operands (get_expr_operands): Check s_ann for NULL
+	before use.
+
 2005-06-23  Mark Mitchell  <mark@codesourcery.com>
 
 	Backport:
