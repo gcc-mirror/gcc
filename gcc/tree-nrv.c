@@ -81,10 +81,6 @@ finalize_nrv_r (tree *tp, int *walk_subtrees, void *data)
   if (TYPE_P (*tp))
     *walk_subtrees = 0;
 
-  /* If this is a RETURN_EXPR, set the expression being returned to RESULT.  */
-  else if (TREE_CODE (*tp) == RETURN_EXPR)
-    TREE_OPERAND (*tp, 0) = dp->result;
-
   /* Otherwise replace all occurrences of VAR with RESULT.  */
   else if (*tp == dp->var)
     *tp = dp->result;
@@ -112,6 +108,7 @@ tree_nrv (void)
   tree result_type = TREE_TYPE (result);
   tree found = NULL;
   basic_block bb;
+  block_stmt_iterator bsi;
   struct nrv_data data;
 
   /* If this function does not return an aggregate type in memory, then
@@ -119,49 +116,53 @@ tree_nrv (void)
   if (!aggregate_value_p (result, current_function_decl))
     return;
 
-  /* Look through each block for suitable return expressions.   RETURN_EXPRs
-     end basic blocks, so we only have to look at the last statement in
-     each block.  That makes this very fast.  */
+  /* Look through each block for assignments to the RESULT_DECL.  */
   FOR_EACH_BB (bb)
     {
-      tree stmt = last_stmt (bb);
-
-      if (stmt && TREE_CODE (stmt) == RETURN_EXPR)
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 	{
-	  tree ret_expr = TREE_OPERAND (stmt, 0);
+	  tree stmt = bsi_stmt (bsi);
+	  tree ret_expr;
 
-	  /* This probably should not happen, but just to be safe do
-	     not perform NRV optimizations if only some of the return
-	     statement return a value.  */
-	  if (!ret_expr
-	      || TREE_CODE (ret_expr) != MODIFY_EXPR
-	      || TREE_CODE (TREE_OPERAND (ret_expr, 0)) != RESULT_DECL)
-	    return;
-
-	  /* Now verify that this return statement uses the same value
-	     as any previously encountered return statement.  */
-	  if (found != NULL)
+	  if (TREE_CODE (stmt) == RETURN_EXPR)
 	    {
-	      /* If we found a return statement using a different variable
-		 than previous return statements, then we can not perform
-		 NRV optimizations.  */
-	      if (found != TREE_OPERAND (ret_expr, 1))
+	      /* In a function with an aggregate return value, the
+		 gimplifier has changed all non-empty RETURN_EXPRs to
+		 return the RESULT_DECL.  */
+	      ret_expr = TREE_OPERAND (stmt, 0);
+	      if (ret_expr)
+		gcc_assert (ret_expr == result);
+	    }
+	  else if (TREE_CODE (stmt) == MODIFY_EXPR
+		   && TREE_OPERAND (stmt, 0) == result)
+	    {
+	      ret_expr = TREE_OPERAND (stmt, 1);
+
+	      /* Now verify that this return statement uses the same value
+		 as any previously encountered return statement.  */
+	      if (found != NULL)
+		{
+		  /* If we found a return statement using a different variable
+		     than previous return statements, then we can not perform
+		     NRV optimizations.  */
+		  if (found != ret_expr)
+		    return;
+		}
+	      else
+		found = ret_expr;
+
+	      /* The returned value must be a local automatic variable of the
+		 same type and alignment as the function's result.  */
+	      if (TREE_CODE (found) != VAR_DECL
+		  || TREE_THIS_VOLATILE (found)
+		  || DECL_CONTEXT (found) != current_function_decl
+		  || TREE_STATIC (found)
+		  || TREE_ADDRESSABLE (found)
+		  || DECL_ALIGN (found) > DECL_ALIGN (result)
+		  || !lang_hooks.types_compatible_p (TREE_TYPE (found), 
+						     result_type))
 		return;
 	    }
-	  else
-	    found = TREE_OPERAND (ret_expr, 1);
-
-	  /* The returned value must be a local automatic variable of the
-	     same type and alignment as the function's result.  */
-	  if (TREE_CODE (found) != VAR_DECL
-	      || TREE_THIS_VOLATILE (found)
-	      || DECL_CONTEXT (found) != current_function_decl
-	      || TREE_STATIC (found)
-	      || TREE_ADDRESSABLE (found)
-	      || DECL_ALIGN (found) > DECL_ALIGN (result)
-              || !lang_hooks.types_compatible_p (TREE_TYPE (found), 
- 		 result_type))
-	    return;
 	}
     }
 
@@ -192,10 +193,20 @@ tree_nrv (void)
   data.result = result;
   FOR_EACH_BB (bb)
     {
-      block_stmt_iterator bsi;
-
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-	walk_tree (bsi_stmt_ptr (bsi), finalize_nrv_r, &data, 0);
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); )
+	{
+	  tree *tp = bsi_stmt_ptr (bsi);
+	  /* If this is a copy from VAR to RESULT, remove it.  */
+	  if (TREE_CODE (*tp) == MODIFY_EXPR
+	      && TREE_OPERAND (*tp, 0) == result
+	      && TREE_OPERAND (*tp, 1) == found)
+	    bsi_remove (&bsi);
+	  else
+	    {
+	      walk_tree (tp, finalize_nrv_r, &data, 0);
+	      bsi_next (&bsi);
+	    }
+	}
     }
 
   /* FOUND is no longer used.  Ensure it gets removed.  */
