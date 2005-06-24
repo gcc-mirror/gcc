@@ -1,3 +1,8 @@
+2005-06-24  Tom Tromey  <tromey@redhat.com>
+
+	* verify-impl.c (verify_instructions_0): Correctly handle
+	situation where PC falls off end.
+
 2005-06-23  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR java/20697
