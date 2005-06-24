@@ -1,3 +1,8 @@
+2005-06-24  Tom Tromey  <tromey@redhat.com>
+
+	* interpret.cc (compile): Handle case where table entry is
+	outside of PC range.
+
 2005-06-23  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* testsuite/libjava.compile/PR20697.java: New test-case.

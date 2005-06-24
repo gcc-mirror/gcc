@@ -1,6 +1,6 @@
 // interpret.cc - Code for the interpreter
 
-/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -763,6 +763,10 @@ _Jv_InterpMethod::compile (const void * const *insn_targets)
   for (int i = 0; i < line_table_len; i++)
     {
       int byte_pc = line_table[i].bytecode_pc;
+      // It isn't worth throwing an exception if this table is
+      // corrupted, but at the same time we don't want a crash.
+      if (byte_pc < 0 || byte_pc >= code_length)
+	byte_pc = 0;
       line_table[i].pc = &insns[pc_mapping[byte_pc]];
     }  
 
