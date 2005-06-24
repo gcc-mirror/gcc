@@ -1,6 +1,6 @@
 // PR c++/19317
-// If we do both NRV and caller-side return slot opt for ma = ma.f,
-// constructing fa incorrectly sets ma.i to 0.
+// If we do both NRV and caller-side return slot opt for ga = f()
+// constructing la sets ga.i to 0 too soon.
 
 extern "C" void abort();
 
