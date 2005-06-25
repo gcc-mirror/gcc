@@ -1,3 +1,11 @@
+2005-06-25  Jan Hubicka  <jh@suse.cz>
+
+	* passes.c (rest_of_handle_branch_prob): Do not rebuild profiling info
+	when not neecesary
+	(rest_of_compilation): Fix conditional on branch prob pass.
+	* predict.c (tree_estimate_probability): Enable strip_builtin_expect
+	when not loop optimizing.
+
 2005-06-25  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.md (ror_one, rol_one, ashrdi3, ashldi3, lshrdi3):
