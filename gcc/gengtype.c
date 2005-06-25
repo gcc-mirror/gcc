@@ -15,8 +15,8 @@ for more details.
 
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING.  If not, write to the Free
-Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-02111-1307, USA.  */
+Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA.  */
 
 #include "bconfig.h"
 #include "system.h"
@@ -1010,8 +1010,8 @@ create_file (const char *name, const char *oname)
     "\n",
     "You should have received a copy of the GNU General Public License\n",
     "along with GCC; see the file COPYING.  If not, write to the Free\n",
-    "Software Foundation, 59 Temple Place - Suite 330, Boston, MA\n",
-    "02111-1307, USA.  */\n",
+    "Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA\n",
+    "02110-1301, USA.  */\n",
     "\n",
     "/* This file is machine generated.  Do not edit.  */\n"
   };
