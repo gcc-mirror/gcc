@@ -1,3 +1,8 @@
+2005-06-25  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* gengtype.c: Update FSF address in copyright header.
+	(create_file): Update FSF in outputed copyright header.
+
 2005-06-24  Kazu Hirata  <kazu@codesourcery.com>
 
 	* cfglayout.c (block_locators_locs, line_locators_locs,
