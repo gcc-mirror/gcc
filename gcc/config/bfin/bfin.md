@@ -342,8 +342,8 @@
 })
 
 (define_insn "movbi"
-  [(set (match_operand:BI 0 "nonimmediate_operand" "=x,x,d,mr,C,d")
-        (match_operand:BI 1 "general_operand" "x,xKs3,mr,d,d,C"))]
+  [(set (match_operand:BI 0 "nonimmediate_operand" "=x,x,d,mr,C,d,C")
+        (match_operand:BI 1 "general_operand" "x,xKs3,mr,d,d,C,P0"))]
 
   ""
   "@
@@ -352,9 +352,10 @@
    %0 = %1;
    %0 = %1;
    CC = %1;
-   %0 = CC;"
-  [(set_attr "type" "move,mvi,mcld,mcst,compare,compare")
-   (set_attr "length" "2,2,*,*,2,2")])
+   %0 = CC;
+   R0 = R0 | R0; CC = AC0;"
+  [(set_attr "type" "move,mvi,mcld,mcst,compare,compare,alu0")
+   (set_attr "length" "2,2,*,*,2,2,4")])
 
 (define_insn "movpdi"
   [(set (match_operand:PDI 0 "nonimmediate_operand" "=e,<,e")
@@ -1138,6 +1139,92 @@
   "%0 >>>= %2;"
   [(set_attr "type" "shft")])
 
+(define_insn "ror_one"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(ior:SI (lshiftrt:SI (match_operand:SI 1 "register_operand" "d") (const_int 1))
+		(ashift:SI (zero_extend:SI (reg:BI REG_CC)) (const_int 31))))
+   (set (reg:BI REG_CC)
+	(zero_extract:BI (match_dup 1) (const_int 1) (const_int 0)))]
+  ""
+  "%0 = ROT %1 BY -1;"
+  [(set_attr "type" "shft")
+   (set_attr "length" "4")])
+
+(define_insn "rol_one"
+  [(set (match_operand:SI 0 "register_operand" "+d")
+	(ior:SI (ashift:SI (match_operand:SI 1 "register_operand" "d") (const_int 1))
+		(zero_extend:SI (reg:BI REG_CC))))
+   (set (reg:BI REG_CC)
+	(zero_extract:BI (match_dup 1) (const_int 31) (const_int 0)))]
+  ""
+  "%0 = ROT %1 BY 1;"
+  [(set_attr "type" "shft")
+   (set_attr "length" "4")])
+
+(define_expand "lshrdi3"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(lshiftrt:DI (match_operand:DI 1 "register_operand" "")
+		     (match_operand:DI 2 "general_operand" "")))]
+  ""
+{
+  rtx lo_half[2], hi_half[2];
+      
+  if (operands[2] != const1_rtx)
+    FAIL;
+  if (! rtx_equal_p (operands[0], operands[1]))
+    emit_move_insn (operands[0], operands[1]);
+
+  split_di (operands, 2, lo_half, hi_half);
+
+  emit_move_insn (bfin_cc_rtx, const0_rtx);
+  emit_insn (gen_ror_one (hi_half[0], hi_half[0]));
+  emit_insn (gen_ror_one (lo_half[0], lo_half[0]));
+  DONE;
+})
+
+(define_expand "ashrdi3"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(ashiftrt:DI (match_operand:DI 1 "register_operand" "")
+		     (match_operand:DI 2 "general_operand" "")))]
+  ""
+{
+  rtx lo_half[2], hi_half[2];
+      
+  if (operands[2] != const1_rtx)
+    FAIL;
+  if (! rtx_equal_p (operands[0], operands[1]))
+    emit_move_insn (operands[0], operands[1]);
+
+  split_di (operands, 2, lo_half, hi_half);
+
+  emit_insn (gen_compare_lt (gen_rtx_REG (BImode, REG_CC),
+			     hi_half[1], const0_rtx));
+  emit_insn (gen_ror_one (hi_half[0], hi_half[0]));
+  emit_insn (gen_ror_one (lo_half[0], lo_half[0]));
+  DONE;
+})
+
+(define_expand "ashldi3"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(ashift:DI (match_operand:DI 1 "register_operand" "")
+		   (match_operand:DI 2 "general_operand" "")))]
+  ""
+{
+  rtx lo_half[2], hi_half[2];
+      
+  if (operands[2] != const1_rtx)
+    FAIL;
+  if (! rtx_equal_p (operands[0], operands[1]))
+    emit_move_insn (operands[0], operands[1]);
+
+  split_di (operands, 2, lo_half, hi_half);
+
+  emit_move_insn (bfin_cc_rtx, const0_rtx);
+  emit_insn (gen_rol_one (lo_half[0], lo_half[0]));
+  emit_insn (gen_rol_one (hi_half[0], hi_half[0]));
+  DONE;
+})
+
 (define_insn "lshrsi3"
   [(set (match_operand:SI 0 "register_operand" "=d,a")
 	(lshiftrt:SI (match_operand:SI 1 "register_operand" " 0,a")
@@ -1372,7 +1459,7 @@
   DONE;
 })
 
-(define_insn ""
+(define_insn "compare_eq"
   [(set (match_operand:BI 0 "cc_operand" "=C,C")
         (eq:BI (match_operand:SI 1 "register_operand" "d,a")
                (match_operand:SI 2 "nonmemory_operand" "dKs3,aKs3")))]
@@ -1380,7 +1467,7 @@
   "cc =%1==%2;"
   [(set_attr "type" "compare")])
 
-(define_insn ""
+(define_insn "compare_ne"
   [(set (match_operand:BI 0 "cc_operand" "=C,C")
         (ne:BI (match_operand:SI 1 "register_operand" "d,a")
                (match_operand:SI 2 "nonmemory_operand" "dKs3,aKs3")))]
@@ -1388,7 +1475,7 @@
   "cc =%1!=%2;"
   [(set_attr "type" "compare")])
 
-(define_insn ""
+(define_insn "compare_lt"
   [(set (match_operand:BI 0 "cc_operand" "=C,C")
         (lt:BI (match_operand:SI 1 "register_operand" "d,a")
                (match_operand:SI 2 "nonmemory_operand" "dKs3,aKs3")))]
@@ -1396,7 +1483,7 @@
   "cc =%1<%2;"
   [(set_attr "type" "compare")])
 
-(define_insn ""
+(define_insn "compare_le"
   [(set (match_operand:BI 0 "cc_operand" "=C,C")
         (le:BI (match_operand:SI 1 "register_operand" "d,a")
                (match_operand:SI 2 "nonmemory_operand" "dKs3,aKs3")))]
@@ -1404,7 +1491,7 @@
   "cc =%1<=%2;"
   [(set_attr "type" "compare")])
 
-(define_insn ""
+(define_insn "compare_leu"
   [(set (match_operand:BI 0 "cc_operand" "=C,C")
         (leu:BI (match_operand:SI 1 "register_operand" "d,a")
                 (match_operand:SI 2 "nonmemory_operand" "dKu3,aKu3")))]
@@ -1412,7 +1499,7 @@
   "cc =%1<=%2 (iu);"
   [(set_attr "type" "compare")])
 
-(define_insn ""
+(define_insn "compare_ltu"
   [(set (match_operand:BI 0 "cc_operand" "=C,C")
         (ltu:BI (match_operand:SI 1 "register_operand" "d,a")
                 (match_operand:SI 2 "nonmemory_operand" "dKu3,aKu3")))]
