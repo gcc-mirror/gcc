@@ -1,3 +1,7 @@
+2005-06-25  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* exgettext: Update FSF address in copyright headers.
+
 2005-06-21  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* nl.po: Update.
