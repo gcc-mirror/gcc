@@ -1,5 +1,8 @@
 2005-06-25  Jan Hubicka  <jh@suse.cz>
 
+	* tree-ssa-phiopt.c (replace_phi_edge_with_variable): Update profile.
+	* cfg.c (update_bb_profile_for_threading): Fix rescaling.
+
 	* passes.c (rest_of_handle_branch_prob): Do not rebuild profiling info
 	when not neecesary
 	(rest_of_compilation): Fix conditional on branch prob pass.
