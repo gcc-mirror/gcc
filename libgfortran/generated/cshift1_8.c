@@ -34,13 +34,13 @@ Boston, MA 02111-1307, USA.  */
 #include <string.h>
 #include "libgfortran.h"
 
-void cshift1_8 (const gfc_array_char * ret,
+void cshift1_8 (gfc_array_char * ret,
 			   const gfc_array_char * array,
 			   const gfc_array_i8 * h, const GFC_INTEGER_8 * pwhich);
 export_proto(cshift1_8);
 
 void
-cshift1_8 (const gfc_array_char * ret,
+cshift1_8 (gfc_array_char * ret,
 		      const gfc_array_char * array,
 		      const gfc_array_i8 * h, const GFC_INTEGER_8 * pwhich)
 {
@@ -79,6 +79,25 @@ cshift1_8 (const gfc_array_char * ret,
     runtime_error ("Argument 'DIM' is out of range in call to 'CSHIFT'");
 
   size = GFC_DESCRIPTOR_SIZE (ret);
+
+  if (ret->data == NULL)
+    {
+      int i;
+
+      ret->data = internal_malloc_size (size * size0 ((array_t *)array));
+      ret->base = 0;
+      ret->dtype = array->dtype;
+      for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
+        {
+          ret->dim[i].lbound = 0;
+          ret->dim[i].ubound = array->dim[i].ubound - array->dim[i].lbound;
+
+          if (i == 0)
+            ret->dim[i].stride = 1;
+          else
+            ret->dim[i].stride = (ret->dim[i-1].ubound + 1) * ret->dim[i-1].stride;
+        }
+    }
 
   extent[0] = 1;
   count[0] = 0;

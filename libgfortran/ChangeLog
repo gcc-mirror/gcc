@@ -1,3 +1,17 @@
+2005-06-25  Thomas Koenig  <Thomas.Koenig@online.de>
+
+        PR libfortran/22144
+        * m4/cshift1.m4: Remove const from argument ret.
+        Populate return array descriptor if ret->data is NULL.
+        * m4/eoshift1.m4: Likewise.
+        * m4/eoshift3.m4: Likewise.
+        * generated/cshift1_4.c:  Regenerated.
+        * generated/cshift1_8.c:  Regenerated.
+        * generated/eoshift1_4.c:  Regenerated.
+        * generated/eoshift1_8.c:  Regenerated.
+        * generated/eoshift3_4.c:  Regenerated.
+        * generated/eoshift3_8.c:  Regenerated.
+
 2005-06-24  Jerry DeLisle <jvdelisle@verizon.net>
 
 	PR libfortran/21915
