@@ -16,8 +16,8 @@
 
 ;; You should have received a copy of the GNU General Public License
 ;; along with GCC; see the file COPYING.  If not, write to the
-;; Free Software Foundation, 59 Temple Place - Suite 330, Boston,
-;; MA 02111-1307, USA.
+;; Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston,
+;; MA 02110-1301, USA.
 
 (define_automaton "ppc6xx,ppc6xxfp,ppc6xxfp2")
 (define_cpu_unit "iu1_6xx,iu2_6xx,mciu_6xx" "ppc6xx")
