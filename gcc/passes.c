@@ -790,7 +790,8 @@ rest_of_handle_branch_prob (void)
   timevar_push (TV_BRANCH_PROB);
   open_dump_file (DFI_bp, current_function_decl);
 
-  if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
+  if ((profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
+      && !flag_tree_based_profiling)
     branch_prob ();
 
   /* Discover and record the loop depth at the head of each basic
@@ -801,7 +802,7 @@ rest_of_handle_branch_prob (void)
     flow_loops_dump (&loops, dump_file, NULL, 0);
 
   /* Estimate using heuristics if no profiling info is available.  */
-  if (flag_guess_branch_prob)
+  if (flag_guess_branch_prob && profile_status == PROFILE_ABSENT)
     estimate_probability (&loops);
 
   flow_loops_free (&loops);
@@ -1579,9 +1580,9 @@ rest_of_compilation (void)
   timevar_push (TV_FLOW);
   rest_of_handle_cfg ();
 
-  if (!flag_tree_based_profiling
-      && (optimize > 0 || profile_arc_flag
-	  || flag_test_coverage || flag_branch_probabilities))
+  if (optimize > 0
+      || ((profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
+	  && !flag_tree_based_profiling))
     {
       rtl_register_profile_hooks ();
       rtl_register_value_prof_hooks ();
@@ -1589,6 +1590,7 @@ rest_of_compilation (void)
 
       if (flag_branch_probabilities
 	  && flag_profile_values
+          && !flag_tree_based_profiling
 	  && (flag_value_profile_transformations
 	      || flag_speculative_prefetching))
 	rest_of_handle_value_profile_transformations ();

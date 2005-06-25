@@ -1383,7 +1383,7 @@ tree_estimate_probability (void)
   FOR_EACH_BB (bb)
     combine_predictions_for_bb (dump_file, bb);
 
-  if (0)  /* FIXME: Enable once we are pass down the profile to RTL level.  */
+  if (!flag_loop_optimize)
     strip_builtin_expect ();
   estimate_bb_frequencies (&loops_info);
   free_dominance_info (CDI_POST_DOMINATORS);
