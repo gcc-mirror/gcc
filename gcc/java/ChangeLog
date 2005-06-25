@@ -1,3 +1,8 @@
+2005-06-25  Jan Hubicka  <jh@suse.cz>
+
+	* builtins.c (define_builtin): Accept new flags parameter.
+	(initialize_builtins): Mark the builtins const and nothrow accordingly.
+
 2005-06-25  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* all files: Update FSF address in copyright headers.

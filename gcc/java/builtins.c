@@ -41,8 +41,6 @@ static tree min_builtin (tree, tree);
 static tree abs_builtin (tree, tree);
 
 static tree java_build_function_call_expr (tree, tree);
-static void define_builtin (enum built_in_function, const char *,
-			    tree, const char *);
 
 
 
@@ -131,12 +129,15 @@ java_build_function_call_expr (tree fn, tree arglist)
 
 
 
+#define BUILTIN_NOTHROW 1
+#define BUILTIN_CONST 2
 /* Define a single builtin.  */
 static void
 define_builtin (enum built_in_function val,
 		const char *name,
 		tree type,
-		const char *libname)
+		const char *libname,
+		int flags)
 {
   tree decl;
 
@@ -147,6 +148,10 @@ define_builtin (enum built_in_function val,
   pushdecl (decl);
   DECL_BUILT_IN_CLASS (decl) = BUILT_IN_NORMAL;
   DECL_FUNCTION_CODE (decl) = val;
+  if (flags & BUILTIN_NOTHROW)
+    TREE_NOTHROW (decl) = 1;
+  if (flags & BUILTIN_CONST)
+    TREE_READONLY (decl) = 1;
 
   implicit_built_in_decls[val] = decl;
   built_in_decls[val] = decl;
@@ -186,43 +191,57 @@ initialize_builtins (void)
   double_ftype_double_double = build_function_type (double_type_node, t);
 
   define_builtin (BUILT_IN_FMOD, "__builtin_fmod",
-		  double_ftype_double_double, "fmod");
+		  double_ftype_double_double, "fmod", BUILTIN_CONST);
   define_builtin (BUILT_IN_FMODF, "__builtin_fmodf",
-		  float_ftype_float_float, "fmodf");
+		  float_ftype_float_float, "fmodf", BUILTIN_CONST);
 
   define_builtin (BUILT_IN_ACOS, "__builtin_acos",
-		  double_ftype_double, "_ZN4java4lang4Math4acosEd");
+		  double_ftype_double, "_ZN4java4lang4Math4acosEd",
+		  BUILTIN_CONST);
   define_builtin (BUILT_IN_ASIN, "__builtin_asin",
-		  double_ftype_double, "_ZN4java4lang4Math4asinEd");
+		  double_ftype_double, "_ZN4java4lang4Math4asinEd",
+		  BUILTIN_CONST);
   define_builtin (BUILT_IN_ATAN, "__builtin_atan",
-		  double_ftype_double, "_ZN4java4lang4Math4atanEd");
+		  double_ftype_double, "_ZN4java4lang4Math4atanEd",
+		  BUILTIN_CONST);
   define_builtin (BUILT_IN_ATAN2, "__builtin_atan2",
-		  double_ftype_double_double, "_ZN4java4lang4Math5atan2Edd");
+		  double_ftype_double_double, "_ZN4java4lang4Math5atan2Edd",
+		  BUILTIN_CONST);
   define_builtin (BUILT_IN_CEIL, "__builtin_ceil",
-		  double_ftype_double, "_ZN4java4lang4Math4ceilEd");
+		  double_ftype_double, "_ZN4java4lang4Math4ceilEd",
+		  BUILTIN_CONST);
   define_builtin (BUILT_IN_COS, "__builtin_cos",
-		  double_ftype_double, "_ZN4java4lang4Math3cosEd");
+		  double_ftype_double, "_ZN4java4lang4Math3cosEd",
+		  BUILTIN_CONST);
   define_builtin (BUILT_IN_EXP, "__builtin_exp",
-		  double_ftype_double, "_ZN4java4lang4Math3expEd");
+		  double_ftype_double, "_ZN4java4lang4Math3expEd",
+		  BUILTIN_CONST);
   define_builtin (BUILT_IN_FLOOR, "__builtin_floor",
-		  double_ftype_double, "_ZN4java4lang4Math5floorEd");
+		  double_ftype_double, "_ZN4java4lang4Math5floorEd",
+		  BUILTIN_CONST);
   define_builtin (BUILT_IN_LOG, "__builtin_log",
-		  double_ftype_double, "_ZN4java4lang4Math3logEd");
+		  double_ftype_double, "_ZN4java4lang4Math3logEd",
+		  BUILTIN_CONST);
   define_builtin (BUILT_IN_POW, "__builtin_pow",
-		  double_ftype_double_double, "_ZN4java4lang4Math3powEdd");
+		  double_ftype_double_double, "_ZN4java4lang4Math3powEdd",
+		  BUILTIN_CONST);
   define_builtin (BUILT_IN_SIN, "__builtin_sin",
-		  double_ftype_double, "_ZN4java4lang4Math3sinEd");
+		  double_ftype_double, "_ZN4java4lang4Math3sinEd",
+		  BUILTIN_CONST);
   define_builtin (BUILT_IN_SQRT, "__builtin_sqrt",
-		  double_ftype_double, "_ZN4java4lang4Math4sqrtEd");
+		  double_ftype_double, "_ZN4java4lang4Math4sqrtEd",
+		  BUILTIN_CONST);
   define_builtin (BUILT_IN_TAN, "__builtin_tan",
-		  double_ftype_double, "_ZN4java4lang4Math3tanEd");
+		  double_ftype_double, "_ZN4java4lang4Math3tanEd",
+		  BUILTIN_CONST);
   
   t = tree_cons (NULL_TREE, boolean_type_node, end_params_node);
   t = tree_cons (NULL_TREE, boolean_type_node, t);
   boolean_ftype_boolean_boolean = build_function_type (boolean_type_node, t);
   define_builtin (BUILT_IN_EXPECT, "__builtin_expect", 
 		  boolean_ftype_boolean_boolean,
-		  "__builtin_expect");
+		  "__builtin_expect",
+		  BUILTIN_CONST | BUILTIN_NOTHROW);
 		  
   build_common_builtin_nodes ();
 }
