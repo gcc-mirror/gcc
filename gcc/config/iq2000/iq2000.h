@@ -301,7 +301,7 @@ enum reg_class
 
 #define STACK_GROWS_DOWNWARD
 
-/* #define FRAME_GROWS_DOWNWARD */
+#define FRAME_GROWS_DOWNWARD 0
 
 #define STARTING_FRAME_OFFSET						\
   (current_function_outgoing_args_size)

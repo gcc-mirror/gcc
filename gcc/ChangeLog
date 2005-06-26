@@ -1,3 +1,45 @@
+2005-06-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* defaults.h (FRAME_GROWS_DOWNWARD): Define to 0 if not defined.
+	* function.c (get_func_frame_size): Use if (FRAME_GROWS_DOWNWARD)
+	instead of preprocessor conditionals.
+	(assign_stack_local_1, assign_stack_temp_for_type): Likewise.
+	* cfgexpand.c (FRAME_GROWS_DOWNWARD): Don't redefine to 1 or 0
+	depending on if it was or was not defined previously.
+	* doc/rtl.texi (VIRTUAL_STACK_VARS_REGNUM): Mention that only non-zero
+	definition of FRAME_GROWS_DOWNWARD means frame grows downward.
+	* doc/tm.texi (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/m68hc11/m68hc11.h (FRAME_GROWS_DOWNWARD): Define to 0.  Update
+	comment.
+	* config/pa/pa.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/rs6000/rs6000.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/stormy16/stormy16.h (FRAME_GROWS_DOWNWARD): Define to 0.
+	* config/c4x/c4x.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/sh/sh.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/ia64/ia64.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/iq2000/iq2000.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/pdp11/pdp11.h (FRAME_GROWS_DOWNWARD): Define to 1.  Update
+	comment.
+	* config/i860/i860.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/h8300/h8300.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/arc/arc.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/vax/vax.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/sparc/sparc.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/i386/i386.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/fr30/fr30.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/frv/frv.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/mn10300/mn10300.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/bfin/bfin.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/ns32k/ns32k.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/v850/v850.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/alpha/alpha.h (FRAME_GROWS_DOWNWARD): Update comment.
+	* config/s390/s390.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/arm/arm.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/alpha/unicosmk.h (FRAME_GROWS_DOWNWARD): Define to 1.
+	* config/cris/cris.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/m68k/m68k.h (FRAME_GROWS_DOWNWARD): Likewise.
+	* config/mmix/mmix.h (FRAME_GROWS_DOWNWARD): Likewise.
+
 2005-06-26  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR tree-optimization/22026
@@ -147,8 +189,8 @@
 
 2005-06-21  Jeff Law  <law@redhat.com>
 
-        * tree-vrp.c (extract_range_from_unary_expr): Handle type
-        conversions better.
+	* tree-vrp.c (extract_range_from_unary_expr): Handle type
+	conversions better.
 
 2005-06-21  Dorit Nuzman  <dorit@il.ibm.com>
 

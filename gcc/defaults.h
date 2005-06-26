@@ -842,4 +842,8 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
 #define MAX_OFILE_ALIGNMENT BIGGEST_ALIGNMENT
 #endif
 
+#ifndef FRAME_GROWS_DOWNWARD
+#define FRAME_GROWS_DOWNWARD 0
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */

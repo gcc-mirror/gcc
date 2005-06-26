@@ -863,12 +863,12 @@ enum reg_class
 /* #define STACK_GROWS_DOWNWARD.  */
 /* Like the dsp16xx, i370, i960, and we32k ports.  */
 
-/* Define this if the nominal address of the stack frame
+/* Define this to non-zero if the nominal address of the stack frame
    is at the high-address end of the local variables;
    that is, each additional local variable allocated
    goes at a more negative offset in the frame.  */
 
-/* #define FRAME_GROWS_DOWNWARD.  */
+#define FRAME_GROWS_DOWNWARD 0
 
 
 /* Registers That Address the Stack Frame.  */

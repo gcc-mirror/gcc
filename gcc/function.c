@@ -347,11 +347,10 @@ free_after_compilation (struct function *f)
 static HOST_WIDE_INT
 get_func_frame_size (struct function *f)
 {
-#ifdef FRAME_GROWS_DOWNWARD
-  return -f->x_frame_offset;
-#else
-  return f->x_frame_offset;
-#endif
+  if (FRAME_GROWS_DOWNWARD)
+    return -f->x_frame_offset;
+  else
+    return f->x_frame_offset;
 }
 
 /* Return size needed for stack frame based on slots so far allocated.
@@ -412,9 +411,8 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size, int align,
   else
     alignment = align / BITS_PER_UNIT;
 
-#ifdef FRAME_GROWS_DOWNWARD
-  function->x_frame_offset -= size;
-#endif
+  if (FRAME_GROWS_DOWNWARD)
+    function->x_frame_offset -= size;
 
   /* Ignore alignment we can't do with expected alignment of the boundary.  */
   if (alignment * BITS_PER_UNIT > PREFERRED_STACK_BOUNDARY)
@@ -440,17 +438,16 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size, int align,
 	  division with a negative dividend isn't as well defined as we might
 	  like.  So we instead assume that ALIGNMENT is a power of two and
 	  use logical operations which are unambiguous.  */
-#ifdef FRAME_GROWS_DOWNWARD
-      function->x_frame_offset
-	= (FLOOR_ROUND (function->x_frame_offset - frame_phase,
-			(unsigned HOST_WIDE_INT) alignment)
-	   + frame_phase);
-#else
-      function->x_frame_offset
-	= (CEIL_ROUND (function->x_frame_offset - frame_phase,
-		       (unsigned HOST_WIDE_INT) alignment)
-	   + frame_phase);
-#endif
+      if (FRAME_GROWS_DOWNWARD)
+	function->x_frame_offset
+	  = (FLOOR_ROUND (function->x_frame_offset - frame_phase,
+			  (unsigned HOST_WIDE_INT) alignment)
+	     + frame_phase);
+      else
+	function->x_frame_offset
+	  = (CEIL_ROUND (function->x_frame_offset - frame_phase,
+			 (unsigned HOST_WIDE_INT) alignment)
+	     + frame_phase);
     }
 
   /* On a big-endian machine, if we are allocating more space than we will use,
@@ -471,9 +468,8 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size, int align,
 			  (function->x_frame_offset + bigend_correction,
 			   Pmode));
 
-#ifndef FRAME_GROWS_DOWNWARD
-  function->x_frame_offset += size;
-#endif
+  if (!FRAME_GROWS_DOWNWARD)
+    function->x_frame_offset += size;
 
   x = gen_rtx_MEM (mode, addr);
 
@@ -698,20 +694,22 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
 	 can be either above or below this stack slot depending on which
 	 way the frame grows.  We include the extra space if and only if it
 	 is above this slot.  */
-#ifdef FRAME_GROWS_DOWNWARD
-      p->size = frame_offset_old - frame_offset;
-#else
-      p->size = size;
-#endif
+      if (FRAME_GROWS_DOWNWARD)
+	p->size = frame_offset_old - frame_offset;
+      else
+	p->size = size;
 
       /* Now define the fields used by combine_temp_slots.  */
-#ifdef FRAME_GROWS_DOWNWARD
-      p->base_offset = frame_offset;
-      p->full_size = frame_offset_old - frame_offset;
-#else
-      p->base_offset = frame_offset_old;
-      p->full_size = frame_offset - frame_offset_old;
-#endif
+      if (FRAME_GROWS_DOWNWARD)
+	{
+	  p->base_offset = frame_offset;
+	  p->full_size = frame_offset_old - frame_offset;
+	}
+      else
+	{
+	  p->base_offset = frame_offset_old;
+	  p->full_size = frame_offset - frame_offset_old;
+	}
       p->address = 0;
 
       selected = p;

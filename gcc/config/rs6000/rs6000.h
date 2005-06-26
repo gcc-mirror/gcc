@@ -1218,14 +1218,14 @@ extern enum rs6000_abi rs6000_current_abi;	/* available for use by subtarget */
 /* Offsets recorded in opcodes are a multiple of this alignment factor.  */
 #define DWARF_CIE_DATA_ALIGNMENT (-((int) (TARGET_32BIT ? 4 : 8)))
 
-/* Define this if the nominal address of the stack frame
+/* Define this to non-zero if the nominal address of the stack frame
    is at the high-address end of the local variables;
    that is, each additional local variable allocated
    goes at a more negative offset in the frame.
 
    On the RS/6000, we grow upwards, from the area after the outgoing
    arguments.  */
-/* #define FRAME_GROWS_DOWNWARD */
+#define FRAME_GROWS_DOWNWARD 0
 
 /* Size of the outgoing register save area */
 #define RS6000_REG_SAVE ((DEFAULT_ABI == ABI_AIX			\

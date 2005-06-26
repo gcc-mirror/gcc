@@ -800,14 +800,14 @@ extern enum reg_class m68hc11_tmp_regs_class;
    makes the stack pointer a smaller address.  */
 #define STACK_GROWS_DOWNWARD
 
-/* Define this if the nominal address of the stack frame
+/* Define this to non-zero if the nominal address of the stack frame
    is at the high-address end of the local variables;
    that is, each additional local variable allocated
    goes at a more negative offset in the frame.
 
-   Don't define for 68HC11, the frame pointer is the bottom
+   Define to 0 for 68HC11, the frame pointer is the bottom
    of local variables.  */
-/* #define FRAME_GROWS_DOWNWARD */
+#define FRAME_GROWS_DOWNWARD		0
 
 /* Define this if successive arguments to a function occupy decreasing 
    addresses in the stack.  */

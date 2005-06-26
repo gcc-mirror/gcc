@@ -534,7 +534,7 @@ enum reg_class
 /* Node: Frame Layout */
 
 #define STACK_GROWS_DOWNWARD
-#define FRAME_GROWS_DOWNWARD
+#define FRAME_GROWS_DOWNWARD 1
 
 #define STARTING_FRAME_OFFSET \
   mmix_starting_frame_offset ()

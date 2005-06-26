@@ -337,7 +337,7 @@ enum reg_class
    because we don't have any pre-increment ones.  */
 #define STACK_PUSH_CODE POST_INC
 
-/* #define FRAME_GROWS_DOWNWARD */
+#define FRAME_GROWS_DOWNWARD 0
 
 #define ARGS_GROW_DOWNWARD 1
 

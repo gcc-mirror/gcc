@@ -506,7 +506,7 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
    are accessed by positive offsets, and function arguments are stored at
    increasing addresses.  */
 #define STACK_GROWS_DOWNWARD
-/* #undef FRAME_GROWS_DOWNWARD */
+/* #define FRAME_GROWS_DOWNWARD 0 */
 /* #undef ARGS_GROW_DOWNWARD */
 
 /* The basic stack layout looks like this: the stack pointer points
