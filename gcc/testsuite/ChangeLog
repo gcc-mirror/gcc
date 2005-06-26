@@ -1,3 +1,8 @@
+2005-06-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR c/21911
+	* gcc.dg/format/sentinel-1.c: Update.  Fix execl* calls.
+
 2005-06-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/17965
