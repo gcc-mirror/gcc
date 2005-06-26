@@ -3053,7 +3053,7 @@ get_computation_aff (struct loop *loop,
 
   /* We may need to shift the value if we are after the increment.  */
   if (stmt_after_increment (loop, cand, at))
-    cbase = fold (build2 (PLUS_EXPR, uutype, cbase, cstep));
+    cbase = fold_build2 (PLUS_EXPR, uutype, cbase, cstep);
 
   /* use = ubase - ratio * cbase + ratio * var.
 
@@ -3913,9 +3913,9 @@ iv_value (struct iv *iv, tree niter)
   tree type = TREE_TYPE (iv->base);
 
   niter = fold_convert (type, niter);
-  val = fold (build2 (MULT_EXPR, type, iv->step, niter));
+  val = fold_build2 (MULT_EXPR, type, iv->step, niter);
 
-  return fold (build2 (PLUS_EXPR, type, iv->base, val));
+  return fold_build2 (PLUS_EXPR, type, iv->base, val);
 }
 
 /* Computes value of candidate CAND at position AT in iteration NITER.  */
@@ -3927,7 +3927,7 @@ cand_value_at (struct loop *loop, struct iv_cand *cand, tree at, tree niter)
   tree type = TREE_TYPE (cand->iv->base);
 
   if (stmt_after_increment (loop, cand, at))
-    val = fold (build2 (PLUS_EXPR, type, val, cand->iv->step));
+    val = fold_build2 (PLUS_EXPR, type, val, cand->iv->step);
 
   return val;
 }
@@ -4026,9 +4026,9 @@ may_eliminate_iv (struct ivopts_data *data,
   else
     wider_type = nit_type;
 
-  if (!integer_nonzerop (fold (build2 (GE_EXPR, boolean_type_node,
-				       fold_convert (wider_type, period),
-				       fold_convert (wider_type, nit)))))
+  if (!integer_nonzerop (fold_build2 (GE_EXPR, boolean_type_node,
+				      fold_convert (wider_type, period),
+				      fold_convert (wider_type, nit))))
     return false;
 
   *bound = cand_value_at (loop, cand, use->stmt, nit);

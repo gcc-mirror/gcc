@@ -75,7 +75,7 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
     {
       if (TYPE_UNSIGNED (TREE_TYPE (step)))
 	{
-	  step1 = fold (build1 (NEGATE_EXPR, TREE_TYPE (step), step));
+	  step1 = fold_build1 (NEGATE_EXPR, TREE_TYPE (step), step);
 	  if (tree_int_cst_lt (step1, step))
 	    {
 	      incr_op = MINUS_EXPR;
@@ -88,7 +88,7 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
 	      && may_negate_without_overflow_p (step))
 	    {
 	      incr_op = MINUS_EXPR;
-	      step = fold (build1 (NEGATE_EXPR, TREE_TYPE (step), step));
+	      step = fold_build1 (NEGATE_EXPR, TREE_TYPE (step), step);
 	    }
 	}
     }

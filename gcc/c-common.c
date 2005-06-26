@@ -1812,7 +1812,7 @@ min_precision (tree value, int unsignedp)
      a bit-wise negation, so use that operation instead.  */
 
   if (tree_int_cst_sgn (value) < 0)
-    value = fold (build1 (BIT_NOT_EXPR, TREE_TYPE (value), value));
+    value = fold_build1 (BIT_NOT_EXPR, TREE_TYPE (value), value);
 
   /* Return the number of bits needed, taking into account the fact
      that we need one more bit for a signed than unsigned type.  */
@@ -2309,7 +2309,7 @@ pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
 				    convert (TREE_TYPE (intop), size_exp), 1));
 
   /* Create the sum or difference.  */
-  return fold (build2 (resultcode, result_type, ptrop, intop));
+  return fold_build2 (resultcode, result_type, ptrop, intop);
 }
 
 /* Prepare expr to be an argument of a TRUTH_NOT_EXPR,
@@ -2425,10 +2425,10 @@ c_common_truthvalue_conversion (tree expr)
 
     case COND_EXPR:
       /* Distribute the conversion into the arms of a COND_EXPR.  */
-      return fold (build3 (COND_EXPR, truthvalue_type_node,
+      return fold_build3 (COND_EXPR, truthvalue_type_node,
 		TREE_OPERAND (expr, 0),
 		c_common_truthvalue_conversion (TREE_OPERAND (expr, 1)),
-		c_common_truthvalue_conversion (TREE_OPERAND (expr, 2))));
+		c_common_truthvalue_conversion (TREE_OPERAND (expr, 2)));
 
     case CONVERT_EXPR:
       /* Don't cancel the effect of a CONVERT_EXPR from a REFERENCE_TYPE,
@@ -2837,7 +2837,7 @@ c_sizeof_or_alignof_type (tree type, bool is_sizeof, int complain)
      TYPE_IS_SIZETYPE means that certain things (like overflow) will
      never happen.  However, this node should really have type
      `size_t', which is just a typedef for an ordinary integer type.  */
-  value = fold (build1 (NOP_EXPR, size_type_node, value));
+  value = fold_build1 (NOP_EXPR, size_type_node, value);
   gcc_assert (!TYPE_IS_SIZETYPE (TREE_TYPE (value)));
 
   return value;
@@ -2887,7 +2887,7 @@ c_alignof_expr (tree expr)
   else
     return c_alignof (TREE_TYPE (expr));
 
-  return fold (build1 (NOP_EXPR, size_type_node, t));
+  return fold_build1 (NOP_EXPR, size_type_node, t);
 }
 
 /* Handle C and C++ default attributes.  */
@@ -5759,7 +5759,7 @@ fold_offsetof_1 (tree expr)
       if (TREE_CODE (t) == INTEGER_CST && tree_int_cst_sgn (t) < 0)
 	{
 	  code = MINUS_EXPR;
-	  t = fold (build1 (NEGATE_EXPR, TREE_TYPE (t), t));
+	  t = fold_build1 (NEGATE_EXPR, TREE_TYPE (t), t);
 	}
       t = convert (sizetype, t);
       off = size_binop (MULT_EXPR, TYPE_SIZE_UNIT (TREE_TYPE (expr)), t);

@@ -582,8 +582,8 @@ add_to_predicate_list (basic_block bb, tree new_cond)
   tree cond = bb->aux;
 
   if (cond)
-    cond = fold (build (TRUTH_OR_EXPR, boolean_type_node,
-			unshare_expr (cond), new_cond));
+    cond = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
+			unshare_expr (cond), new_cond);
   else
     cond = new_cond;
 

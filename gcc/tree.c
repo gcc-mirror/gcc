@@ -1632,7 +1632,7 @@ array_type_nelts (tree type)
 
   return (integer_zerop (min)
 	  ? max
-	  : fold (build2 (MINUS_EXPR, TREE_TYPE (max), max, min)));
+	  : fold_build2 (MINUS_EXPR, TREE_TYPE (max), max, min));
 }
 
 /* If arg is static -- a reference to an object in static storage -- then
@@ -2053,8 +2053,8 @@ substitute_in_expr (tree exp, tree f, tree r)
      if (op0 == TREE_OPERAND (exp, 0))
        return exp;
 
-     new = fold (build3 (COMPONENT_REF, TREE_TYPE (exp),
-			 op0, TREE_OPERAND (exp, 1), NULL_TREE));
+     new = fold_build3 (COMPONENT_REF, TREE_TYPE (exp),
+			op0, TREE_OPERAND (exp, 1), NULL_TREE);
    }
   else
     switch (TREE_CODE_CLASS (code))
@@ -2079,7 +2079,7 @@ substitute_in_expr (tree exp, tree f, tree r)
 	    if (op0 == TREE_OPERAND (exp, 0))
 	      return exp;
 
-	    new = fold (build1 (code, TREE_TYPE (exp), op0));
+	    new = fold_build1 (code, TREE_TYPE (exp), op0);
 	    break;
 
 	  case 2:
@@ -2089,7 +2089,7 @@ substitute_in_expr (tree exp, tree f, tree r)
 	    if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1))
 	      return exp;
 
-	    new = fold (build2 (code, TREE_TYPE (exp), op0, op1));
+	    new = fold_build2 (code, TREE_TYPE (exp), op0, op1);
 	    break;
 
 	  case 3:
@@ -2101,7 +2101,7 @@ substitute_in_expr (tree exp, tree f, tree r)
 		&& op2 == TREE_OPERAND (exp, 2))
 	      return exp;
 
-	    new = fold (build3 (code, TREE_TYPE (exp), op0, op1, op2));
+	    new = fold_build3 (code, TREE_TYPE (exp), op0, op1, op2);
 	    break;
 
 	  default:
@@ -2157,7 +2157,7 @@ substitute_placeholder_in_expr (tree exp, tree obj)
 	if (POINTER_TYPE_P (TREE_TYPE (elt))
 	    && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (elt)))
 		== need_type))
-	  return fold (build1 (INDIRECT_REF, need_type, elt));
+	  return fold_build1 (INDIRECT_REF, need_type, elt);
 
       /* If we didn't find it, return the original PLACEHOLDER_EXPR.  If it
 	 survives until RTL generation, there will be an error.  */
@@ -2199,7 +2199,7 @@ substitute_placeholder_in_expr (tree exp, tree obj)
 	    if (op0 == TREE_OPERAND (exp, 0))
 	      return exp;
 	    else
-	      return fold (build1 (code, TREE_TYPE (exp), op0));
+	      return fold_build1 (code, TREE_TYPE (exp), op0);
 
 	  case 2:
 	    op0 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TREE_OPERAND (exp, 0), obj);
@@ -2208,7 +2208,7 @@ substitute_placeholder_in_expr (tree exp, tree obj)
 	    if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1))
 	      return exp;
 	    else
-	      return fold (build2 (code, TREE_TYPE (exp), op0, op1));
+	      return fold_build2 (code, TREE_TYPE (exp), op0, op1);
 
 	  case 3:
 	    op0 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TREE_OPERAND (exp, 0), obj);
@@ -2219,7 +2219,7 @@ substitute_placeholder_in_expr (tree exp, tree obj)
 		&& op2 == TREE_OPERAND (exp, 2))
 	      return exp;
 	    else
-	      return fold (build3 (code, TREE_TYPE (exp), op0, op1, op2));
+	      return fold_build3 (code, TREE_TYPE (exp), op0, op1, op2);
 
 	  case 4:
 	    op0 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TREE_OPERAND (exp, 0), obj);
@@ -6371,16 +6371,16 @@ tree_fold_gcd (tree a, tree b)
     return a;
 
   if (tree_int_cst_sgn (a) == -1)
-    a = fold (build2 (MULT_EXPR, type, a,
-		      convert (type, integer_minus_one_node)));
+    a = fold_build2 (MULT_EXPR, type, a,
+		     convert (type, integer_minus_one_node));
 
   if (tree_int_cst_sgn (b) == -1)
-    b = fold (build2 (MULT_EXPR, type, b,
-		      convert (type, integer_minus_one_node)));
+    b = fold_build2 (MULT_EXPR, type, b,
+		     convert (type, integer_minus_one_node));
 
   while (1)
     {
-      a_mod_b = fold (build2 (FLOOR_MOD_EXPR, type, a, b));
+      a_mod_b = fold_build2 (FLOOR_MOD_EXPR, type, a, b);
 
       if (!TREE_INT_CST_LOW (a_mod_b)
 	  && !TREE_INT_CST_HIGH (a_mod_b))

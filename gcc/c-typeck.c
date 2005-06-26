@@ -2050,7 +2050,7 @@ build_function_call (tree function, tree params)
 					  build_constructor (return_type,
 							     NULL_TREE));
 	  else
-	    rhs = fold (build1 (NOP_EXPR, return_type, integer_zero_node));
+	    rhs = fold_build1 (NOP_EXPR, return_type, integer_zero_node);
 
 	  return build2 (COMPOUND_EXPR, return_type, trap, rhs);
 	}
@@ -2477,7 +2477,7 @@ pointer_diff (tree op0, tree op1)
   op1 = c_size_in_bytes (target_type);
 
   /* Divide by the size, in easiest possible way.  */
-  return fold (build2 (EXACT_DIV_EXPR, restype, op0, convert (restype, op1)));
+  return fold_build2 (EXACT_DIV_EXPR, restype, op0, convert (restype, op1));
 }
 
 /* Construct and perhaps optimize a tree representation
@@ -2595,7 +2595,7 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
       if (TREE_CODE (arg) == COMPLEX_CST)
 	return TREE_REALPART (arg);
       else if (TREE_CODE (TREE_TYPE (arg)) == COMPLEX_TYPE)
-	return fold (build1 (REALPART_EXPR, TREE_TYPE (TREE_TYPE (arg)), arg));
+	return fold_build1 (REALPART_EXPR, TREE_TYPE (TREE_TYPE (arg)), arg);
       else
 	return arg;
 
@@ -2603,7 +2603,7 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
       if (TREE_CODE (arg) == COMPLEX_CST)
 	return TREE_IMAGPART (arg);
       else if (TREE_CODE (TREE_TYPE (arg)) == COMPLEX_TYPE)
-	return fold (build1 (IMAGPART_EXPR, TREE_TYPE (TREE_TYPE (arg)), arg));
+	return fold_build1 (IMAGPART_EXPR, TREE_TYPE (TREE_TYPE (arg)), arg);
       else
 	return convert (TREE_TYPE (arg), integer_zero_node);
 

@@ -1592,7 +1592,7 @@ lbv_to_gcc_expression (lambda_body_vector lbv,
 	  /* newname = coefficient * induction_variable */
 	  coeffmult = build_int_cst (type, LBV_COEFFICIENTS (lbv)[i]);
 	  stmt = build (MODIFY_EXPR, void_type_node, resvar,
-			fold (build (MULT_EXPR, type, iv, coeffmult)));
+			fold_build2 (MULT_EXPR, type, iv, coeffmult));
 
 	  newname = make_ssa_name (resvar, stmt);
 	  TREE_OPERAND (stmt, 0) = newname;
@@ -1694,7 +1694,7 @@ lle_to_gcc_expression (lambda_linear_expression lle,
 		{
 		  coeff = build_int_cst (type,
 					 LLE_COEFFICIENTS (lle)[i]);
-		  mult = fold (build (MULT_EXPR, type, iv, coeff));
+		  mult = fold_build2 (MULT_EXPR, type, iv, coeff);
 		}
 
 	      /* newname = mult */
@@ -1735,7 +1735,7 @@ lle_to_gcc_expression (lambda_linear_expression lle,
 	      else
 		{
 		  coeff = build_int_cst (type, invcoeff);
-		  mult = fold (build (MULT_EXPR, type, invar, coeff));
+		  mult = fold_build2 (MULT_EXPR, type, invar, coeff);
 		}
 
 	      /* newname = mult */

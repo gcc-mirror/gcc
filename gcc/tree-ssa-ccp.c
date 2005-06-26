@@ -1145,9 +1145,9 @@ visit_assignment (tree stmt, tree *output_p)
     if (TREE_CODE (orig_lhs) == VIEW_CONVERT_EXPR
 	&& val.lattice_val == CONSTANT)
       {
-	tree w = fold (build1 (VIEW_CONVERT_EXPR,
-			       TREE_TYPE (TREE_OPERAND (orig_lhs, 0)),
-			       val.value));
+	tree w = fold_build1 (VIEW_CONVERT_EXPR,
+			      TREE_TYPE (TREE_OPERAND (orig_lhs, 0)),
+			      val.value);
 
 	orig_lhs = TREE_OPERAND (orig_lhs, 0);
 	if (w && is_gimple_min_invariant (w))
@@ -1855,7 +1855,7 @@ maybe_fold_stmt_addition (tree expr)
     {
       if (TYPE_UNSIGNED (TREE_TYPE (op1)))
 	return NULL;
-      op1 = fold (build1 (NEGATE_EXPR, TREE_TYPE (op1), op1));
+      op1 = fold_build1 (NEGATE_EXPR, TREE_TYPE (op1), op1);
       /* ??? In theory fold should always produce another integer.  */
       if (TREE_CODE (op1) != INTEGER_CST)
 	return NULL;

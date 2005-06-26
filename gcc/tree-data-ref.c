@@ -190,7 +190,7 @@ tree_fold_divides_p (tree type,
 {
   /* Determines whether (A == gcd (A, B)).  */
   return integer_zerop 
-    (fold (build (MINUS_EXPR, type, a, tree_fold_gcd (a, b))));
+    (fold_build2 (MINUS_EXPR, type, a, tree_fold_gcd (a, b)));
 }
 
 /* Compute the greatest common denominator of two numbers using
@@ -487,17 +487,17 @@ estimate_niter_from_size_of_data (struct loop *loop,
       || TREE_CODE (element_size) != INTEGER_CST)
     return;
 
-  data_size = fold (build2 (EXACT_DIV_EXPR, integer_type_node, 
-			    array_size, element_size));
+  data_size = fold_build2 (EXACT_DIV_EXPR, integer_type_node,
+			   array_size, element_size);
 
   if (init != NULL_TREE
       && step != NULL_TREE
       && TREE_CODE (init) == INTEGER_CST
       && TREE_CODE (step) == INTEGER_CST)
     {
-      estimation = fold (build2 (CEIL_DIV_EXPR, integer_type_node, 
-				 fold (build2 (MINUS_EXPR, integer_type_node, 
-					       data_size, init)), step));
+      estimation = fold_build2 (CEIL_DIV_EXPR, integer_type_node,
+				fold_build2 (MINUS_EXPR, integer_type_node,
+					     data_size, init), step);
 
       record_estimate (loop, estimation, boolean_true_node, stmt);
     }
@@ -920,10 +920,11 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 		      (integer_type_node, CHREC_RIGHT (chrec_b), difference))
 		    {
 		      *overlaps_a = integer_zero_node;
-		      *overlaps_b = fold 
-			(build (EXACT_DIV_EXPR, integer_type_node, 
-				fold (build1 (ABS_EXPR, integer_type_node, difference)), 
-				CHREC_RIGHT (chrec_b)));
+		      *overlaps_b = fold_build2 (EXACT_DIV_EXPR, integer_type_node,
+						 fold_build1 (ABS_EXPR,
+							      integer_type_node,
+							      difference),
+						 CHREC_RIGHT (chrec_b));
 		      *last_conflicts = integer_one_node;
 		      return;
 		    }

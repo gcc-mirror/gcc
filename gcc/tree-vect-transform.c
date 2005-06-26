@@ -210,17 +210,17 @@ vect_create_addr_base_for_vector_ref (tree stmt,
     {
       tree tmp = create_tmp_var (TREE_TYPE (base_offset), "offset");
       add_referenced_tmp_var (tmp);
-      offset = fold (build2 (MULT_EXPR, TREE_TYPE (offset), offset, 
-			     STMT_VINFO_VECT_STEP (stmt_info)));
-      base_offset = fold (build2 (PLUS_EXPR, TREE_TYPE (base_offset), 
-				  base_offset, offset));
+      offset = fold_build2 (MULT_EXPR, TREE_TYPE (offset), offset,
+			    STMT_VINFO_VECT_STEP (stmt_info));
+      base_offset = fold_build2 (PLUS_EXPR, TREE_TYPE (base_offset),
+				 base_offset, offset);
       base_offset = force_gimple_operand (base_offset, &new_stmt, false, tmp);  
       append_to_statement_list_force (new_stmt, new_stmt_list);
     }
   
   /* base + base_offset */
-  addr_base = fold (build2 (PLUS_EXPR, TREE_TYPE (data_ref_base), data_ref_base, 
-			    base_offset));
+  addr_base = fold_build2 (PLUS_EXPR, TREE_TYPE (data_ref_base), data_ref_base,
+			   base_offset);
 
   /* addr_expr = addr_base */
   addr_expr = vect_get_new_vect_var (scalar_ptr_type, vect_pointer_var,
@@ -2601,9 +2601,9 @@ vect_update_init_of_dr (struct data_reference *dr, tree niters)
   stmt_vec_info stmt_info = vinfo_for_stmt (DR_STMT (dr));
   tree offset = STMT_VINFO_VECT_INIT_OFFSET (stmt_info);
       
-  niters = fold (build2 (MULT_EXPR, TREE_TYPE (niters), niters, 
-			 STMT_VINFO_VECT_STEP (stmt_info)));
-  offset = fold (build2 (PLUS_EXPR, TREE_TYPE (offset), offset, niters));
+  niters = fold_build2 (MULT_EXPR, TREE_TYPE (niters), niters,
+			STMT_VINFO_VECT_STEP (stmt_info));
+  offset = fold_build2 (PLUS_EXPR, TREE_TYPE (offset), offset, niters);
   STMT_VINFO_VECT_INIT_OFFSET (stmt_info) = offset;
 }
 
@@ -2675,8 +2675,8 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, struct loops *loops)
 
   /* Update number of times loop executes.  */
   n_iters = LOOP_VINFO_NITERS (loop_vinfo);
-  LOOP_VINFO_NITERS (loop_vinfo) = fold (build2 (MINUS_EXPR,
-		TREE_TYPE (n_iters), n_iters, niters_of_prolog_loop));
+  LOOP_VINFO_NITERS (loop_vinfo) = fold_build2 (MINUS_EXPR,
+		TREE_TYPE (n_iters), n_iters, niters_of_prolog_loop);
 
   /* Update the init conditions of the access functions of all data refs.  */
   vect_update_inits_of_drs (loop_vinfo, niters_of_prolog_loop);

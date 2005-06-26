@@ -279,9 +279,9 @@ vect_analyze_offset_expr (tree expr,
 
   /* Compute offset.  */
   *initial_offset = fold_convert (ssizetype, 
-				  fold (build2 (code, TREE_TYPE (left_offset), 
-						left_offset, 
-						right_offset)));
+				  fold_build2 (code, TREE_TYPE (left_offset),
+					       left_offset,
+					       right_offset));
   return true;
 }
 

@@ -994,7 +994,7 @@ expr_expected_value (tree expr, bitmap visited)
       op1 = expr_expected_value (TREE_OPERAND (expr, 1), visited);
       if (!op1)
 	return NULL;
-      res = fold (build (TREE_CODE (expr), TREE_TYPE (expr), op0, op1));
+      res = fold_build2 (TREE_CODE (expr), TREE_TYPE (expr), op0, op1);
       if (TREE_CONSTANT (res))
 	return res;
       return NULL;
@@ -1005,7 +1005,7 @@ expr_expected_value (tree expr, bitmap visited)
       op0 = expr_expected_value (TREE_OPERAND (expr, 0), visited);
       if (!op0)
 	return NULL;
-      res = fold (build1 (TREE_CODE (expr), TREE_TYPE (expr), op0));
+      res = fold_build1 (TREE_CODE (expr), TREE_TYPE (expr), op0);
       if (TREE_CONSTANT (res))
 	return res;
       return NULL;

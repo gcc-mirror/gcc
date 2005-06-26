@@ -95,9 +95,9 @@ create_canonical_iv (struct loop *loop, edge exit, tree niter)
      with a modulo arithmetics.  */
 
   type = TREE_TYPE (niter);
-  niter = fold (build2 (PLUS_EXPR, type,
-			niter,
-			build_int_cst (type, 1)));
+  niter = fold_build2 (PLUS_EXPR, type,
+		       niter,
+		       build_int_cst (type, 1));
   incr_at = bsi_last (in->src);
   create_iv (niter,
 	     fold_convert (type, integer_minus_one_node),
@@ -275,8 +275,8 @@ canonicalize_loop_induction_variables (struct loops *loops, struct loop *loop,
       /* The result of number_of_iterations_in_loop is by one higher than
 	 we expect (i.e. it returns number of executions of the exit
 	 condition, not of the loop latch edge).  */
-      niter = fold (build2 (MINUS_EXPR, TREE_TYPE (niter), niter,
-			    build_int_cst (TREE_TYPE (niter), 1)));
+      niter = fold_build2 (MINUS_EXPR, TREE_TYPE (niter), niter,
+			   build_int_cst (TREE_TYPE (niter), 1));
     }
   else
     {
