@@ -1,3 +1,8 @@
+2005-06-26  Kazu Hirata  <kazu@codesourcery.com>
+
+	* cfg.c, tree-vect-transform.c, tree.def: Fix comment typos.
+	* doc/invoke.texi: Fix typos.
+
 2005-06-26  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific): Do not specify the concrete

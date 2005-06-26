@@ -928,7 +928,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
 
       /* The result of the reduction is expected to be at the LSB bits
 	 of the vector. For big-endian targets this means at the right
-	 end of the vector. For little-edian targets this means at the
+	 end of the vector. For little-endian targets this means at the
 	 left end of the vector.  */
 
       if (BITS_BIG_ENDIAN

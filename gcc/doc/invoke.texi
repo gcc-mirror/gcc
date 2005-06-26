@@ -5260,10 +5260,10 @@ variable tracking.
 @opindex fwhole-program
 Assume that the current compilation unit represents whole program being
 compiled.  All public functions and variables with the exception of @code{main}
-and those marged by attribute @code{externally_visible} become static functions
-and in a affect gets more aggresively optimized by interprocedural optimizers.
+and those merged by attribute @code{externally_visible} become static functions
+and in a affect gets more aggressively optimized by interprocedural optimizers.
 While this option is equivalent to proper use of @code{static} keyword for
-programs consitsting of single file, in combination with option
+programs consisting of single file, in combination with option
 @option{--combine} this flag can be used to compile most of smaller scale C
 programs since the functions and variables become local for the whole combined
 compilation unit, not for the single source file itself.
