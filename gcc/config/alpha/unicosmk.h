@@ -96,7 +96,7 @@ Boston, MA 02110-1301, USA.  */
 
 /* The stack frame grows downward.  */
 
-#define FRAME_GROWS_DOWNWARD
+#define FRAME_GROWS_DOWNWARD 1
 
 /* Define the offset between two registers, one to be eliminated, and the
    other its replacement, at the start of a routine. This is somewhat

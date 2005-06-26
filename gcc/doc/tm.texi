@@ -2752,8 +2752,8 @@ which is often wrong.
 @end defmac
 
 @defmac FRAME_GROWS_DOWNWARD
-Define this macro if the addresses of local variable slots are at negative
-offsets from the frame pointer.
+Define this macro to non-zero value if the addresses of local variable slots
+are at negative offsets from the frame pointer.
 @end defmac
 
 @defmac ARGS_GROW_DOWNWARD

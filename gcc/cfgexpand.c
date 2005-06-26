@@ -88,13 +88,6 @@ failed:
 #define STACK_ALIGNMENT_NEEDED 1
 #endif
 
-#ifdef FRAME_GROWS_DOWNWARD
-# undef FRAME_GROWS_DOWNWARD
-# define FRAME_GROWS_DOWNWARD 1
-#else
-# define FRAME_GROWS_DOWNWARD 0
-#endif
-
 
 /* This structure holds data relevant to one variable that will be
    placed in a stack slot.  */

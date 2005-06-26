@@ -1694,11 +1694,11 @@ extern enum reg_class reg_class_from_letter[];
    makes the stack pointer a smaller address.  */
 #define STACK_GROWS_DOWNWARD
 
-/*  Define this macro if the addresses of local variable slots are at
-    negative offsets from the frame pointer.
+/*  Define this macro to non-zero if the addresses of local variable slots
+    are at negative offsets from the frame pointer.
 
     The SH only has positive indexes, so grow the frame up.  */
-/* #define FRAME_GROWS_DOWNWARD */
+#define FRAME_GROWS_DOWNWARD 0
 
 /* Offset from the frame pointer to the first local variable slot to
    be allocated.  */
