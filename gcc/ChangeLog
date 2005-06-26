@@ -1,3 +1,12 @@
+2005-06-26  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/arc/arc-protos.c: Remove the prototype for
+	arc_finalize_pic.
+	* config/arc/arc.c (arc_finalize_pic): Remove.
+	* config/arc/arc.h (FINALIZE_PIC): Likewise.
+	* config/bfin/bfin.h (FINALIZE_PIC): Likewise.
+	* config/rs6000/rs6000.h (FINALIZE_PIC): Likewise.
+
 2005-06-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/17965
