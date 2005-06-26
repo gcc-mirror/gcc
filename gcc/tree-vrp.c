@@ -1107,6 +1107,19 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
 	   || code == MIN_EXPR
 	   || code == MAX_EXPR)
     {
+      /* If we have a PLUS_EXPR with two VR_ANTI_RANGEs, drop to
+	 VR_VARYING.  It would take more effort to compute a precise
+	 range for such a case.  For example, if we have op0 == 1 and
+	 op1 == -1 with their ranges both being ~[0,0], we would have
+	 op0 + op1 == 0, so we cannot claim that the sum is in ~[0,0].
+	 Note that we are guaranteed to have vr0.type == vr1.type at
+	 this point.  */
+      if (code == PLUS_EXPR && vr0.type == VR_ANTI_RANGE)
+	{
+	  set_value_range_to_varying (vr);
+	  return;
+	}
+
       /* For operations that make the resulting range directly
 	 proportional to the original ranges, apply the operation to
 	 the same end of each range.  */
@@ -1122,6 +1135,22 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
     {
       tree val[4];
       size_t i;
+
+      /* If we have an unsigned MULT_EXPR with two VR_ANTI_RANGEs,
+	 drop to VR_VARYING.  It would take more effort to compute a
+	 precise range for such a case.  For example, if we have
+	 op0 == 65536 and op1 == 65536 with their ranges both being
+	 ~[0,0] on a 32-bit machine, we would have op0 * op1 == 0, so
+	 we cannot claim that the product is in ~[0,0].  Note that we
+	 are guaranteed to have vr0.type == vr1.type at this
+	 point.  */
+      if (code == MULT_EXPR
+	  && vr0.type == VR_ANTI_RANGE
+	  && (flag_wrapv || TYPE_UNSIGNED (TREE_TYPE (op0))))
+	{
+	  set_value_range_to_varying (vr);
+	  return;
+	}
 
       /* Multiplications and divisions are a bit tricky to handle,
 	 depending on the mix of signs we have in the two ranges, we
@@ -1188,6 +1217,19 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
     }
   else if (code == MINUS_EXPR)
     {
+      /* If we have a MINUS_EXPR with two VR_ANTI_RANGEs, drop to
+	 VR_VARYING.  It would take more effort to compute a precise
+	 range for such a case.  For example, if we have op0 == 1 and
+	 op1 == 1 with their ranges both being ~[0,0], we would have
+	 op0 - op1 == 0, so we cannot claim that the difference is in
+	 ~[0,0].  Note that we are guaranteed to have
+	 vr0.type == vr1.type at this point.  */
+      if (vr0.type == VR_ANTI_RANGE)
+	{
+	  set_value_range_to_varying (vr);
+	  return;
+	}
+
       /* For MINUS_EXPR, apply the operation to the opposite ends of
 	 each range.  */
       min = vrp_int_const_binop (code, vr0.min, vr1.max);

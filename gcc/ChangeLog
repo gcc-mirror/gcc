@@ -1,4 +1,11 @@
-2005-06-25  Kazu Hirata  <kazu@codesourcery.com>
+2005-06-26  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR tree-optimization/22026
+	* tree-vrp.c (extract_range_from_binary_expr): Drop to
+	VR_VARYING if a binary expression involving VR_ANTI_RANGE is
+	PLUS_EXPR, MINUS_EXPR, or unsigned MULT_EXPR.
+
+2005-06-26  Kazu Hirata  <kazu@codesourcery.com>
 
 	* Makefile.in (OBJS-common): Remove duplicate object file
 	names.
