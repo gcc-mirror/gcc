@@ -1225,6 +1225,10 @@ copy_value (rtx dest, rtx src, struct value_data *vd)
   if (frame_pointer_needed && dr == HARD_FRAME_POINTER_REGNUM)
     return;
 
+  /* Likewise for fixed or global registers.  */
+  if (fixed_regs[dr] || global_regs[dr])
+    return;
+
   /* If SRC and DEST overlap, don't record anything.  */
   dn = hard_regno_nregs[dr][GET_MODE (dest)];
   sn = hard_regno_nregs[sr][GET_MODE (dest)];
