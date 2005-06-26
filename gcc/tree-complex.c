@@ -938,7 +938,7 @@ expand_complex_div_wide (block_stmt_iterator *bsi, tree inner_type,
   /* Examine |br| < |bi|, and branch.  */
   t1 = gimplify_build1 (bsi, ABS_EXPR, inner_type, br);
   t2 = gimplify_build1 (bsi, ABS_EXPR, inner_type, bi);
-  cond = fold (build (LT_EXPR, boolean_type_node, t1, t2));
+  cond = fold_build2 (LT_EXPR, boolean_type_node, t1, t2);
   STRIP_NOPS (cond);
 
   bb_cond = bb_true = bb_false = bb_join = NULL;

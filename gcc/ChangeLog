@@ -3,6 +3,15 @@
 	* cfg.c, tree-vect-transform.c, tree.def: Fix comment typos.
 	* doc/invoke.texi: Fix typos.
 
+	* builtins.c, c-common.c, c-convert.c, c-decl.c, c-typeck.c,
+	convert.c, lambda-code.c, predict.c, tree-cfg.c,
+	tree-complex.c, tree-data-ref.c, tree-if-conv.c,
+	tree-mudflap.c, tree-scalar-evolution.c, tree-ssa-ccp.c,
+	tree-ssa-loop-ivcanon.c, tree-ssa-loop-ivopts.c,
+	tree-ssa-loop-manip.c, tree-ssa-phiopt.c, tree-ssa-pre.c,
+	tree-vect-analyze.c, tree-vect-transform.c, tree-vectorizer.c,
+	tree.c: Use fold_buildN instead of fold (buildN (...)).
+
 2005-06-26  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific): Do not specify the concrete

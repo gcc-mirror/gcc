@@ -4965,7 +4965,7 @@ gimplify_build3 (block_stmt_iterator *bsi, enum tree_code code,
 {
   tree ret;
 
-  ret = fold (build3 (code, type, a, b, c));
+  ret = fold_build3 (code, type, a, b, c);
   STRIP_NOPS (ret);
 
   return gimplify_val (bsi, type, ret);
@@ -4980,7 +4980,7 @@ gimplify_build2 (block_stmt_iterator *bsi, enum tree_code code,
 {
   tree ret;
 
-  ret = fold (build2 (code, type, a, b));
+  ret = fold_build2 (code, type, a, b);
   STRIP_NOPS (ret);
 
   return gimplify_val (bsi, type, ret);
@@ -4995,7 +4995,7 @@ gimplify_build1 (block_stmt_iterator *bsi, enum tree_code code, tree type,
 {
   tree ret;
 
-  ret = fold (build1 (code, type, a));
+  ret = fold_build1 (code, type, a);
   STRIP_NOPS (ret);
 
   return gimplify_val (bsi, type, ret);

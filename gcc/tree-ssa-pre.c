@@ -1528,8 +1528,8 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
 
 	if (op2)	  
 	  genop2 = find_or_generate_expression (block, op2, stmts);
-	folded = fold (build (TREE_CODE (expr), TREE_TYPE (expr),
-			      genop0, genarglist, genop2));
+	folded = fold_build3 (TREE_CODE (expr), TREE_TYPE (expr),
+			      genop0, genarglist, genop2);
 	break;
 	
 	
@@ -1543,8 +1543,8 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
 	tree op2 = TREE_OPERAND (expr, 1);
 	tree genop1 = find_or_generate_expression (block, op1, stmts);
 	tree genop2 = find_or_generate_expression (block, op2, stmts);
-	folded = fold (build (TREE_CODE (expr), TREE_TYPE (expr), 
-			      genop1, genop2));
+	folded = fold_build2 (TREE_CODE (expr), TREE_TYPE (expr), 
+			      genop1, genop2);
 	break;
       }
 
@@ -1552,8 +1552,8 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
       {
 	tree op1 = TREE_OPERAND (expr, 0);
 	tree genop1 = find_or_generate_expression (block, op1, stmts);
-	folded = fold (build (TREE_CODE (expr), TREE_TYPE (expr), 
-			      genop1));
+	folded = fold_build1 (TREE_CODE (expr), TREE_TYPE (expr), 
+			      genop1);
 	break;
       }
 

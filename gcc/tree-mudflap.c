@@ -659,9 +659,9 @@ mf_build_check_statement_for (tree base, tree limit,
   u = tree_cons (NULL_TREE, dirflag, u);
   /* NB: we pass the overall [base..limit] range to mf_check.  */
   u = tree_cons (NULL_TREE, 
-                 fold (build (PLUS_EXPR, integer_type_node,
-                              fold (build (MINUS_EXPR, mf_uintptr_type, mf_limit, mf_base)),
-                              integer_one_node)),
+                 fold_build2 (PLUS_EXPR, integer_type_node,
+			      fold_build2 (MINUS_EXPR, mf_uintptr_type, mf_limit, mf_base),
+			      integer_one_node),
                  u);
   u = tree_cons (NULL_TREE, mf_base, u);
   t = build_function_call_expr (mf_check_fndecl, u);
@@ -812,27 +812,27 @@ mf_xform_derefs_1 (block_stmt_iterator *iter, tree *tp,
 	    if (elt)
 	      elt = build1 (ADDR_EXPR, build_pointer_type TREE_TYPE (elt), elt);
             addr = fold_convert (ptr_type_node, elt ? elt : base);
-            addr = fold (build (PLUS_EXPR, ptr_type_node,
-                                addr, fold_convert (ptr_type_node,
-                                                    byte_position (field))));           
+            addr = fold_build2 (PLUS_EXPR, ptr_type_node,
+				addr, fold_convert (ptr_type_node,
+						    byte_position (field)));
           }
         else
           addr = build1 (ADDR_EXPR, build_pointer_type (type), t);
 
-        limit = fold (build (MINUS_EXPR, mf_uintptr_type,
-                             fold (build2 (PLUS_EXPR, mf_uintptr_type, 
-                                           convert (mf_uintptr_type, addr), 
-                                           size)),
-                             integer_one_node));
+        limit = fold_build2 (MINUS_EXPR, mf_uintptr_type,
+                             fold_build2 (PLUS_EXPR, mf_uintptr_type,
+					  convert (mf_uintptr_type, addr),
+					  size),
+                             integer_one_node);
       }
       break;
 
     case INDIRECT_REF:
       addr = TREE_OPERAND (t, 0);
       base = addr;
-      limit = fold (build (MINUS_EXPR, ptr_type_node,
-                           fold (build (PLUS_EXPR, ptr_type_node, base, size)),
-                           integer_one_node));
+      limit = fold_build2 (MINUS_EXPR, ptr_type_node,
+                           fold_build2 (PLUS_EXPR, ptr_type_node, base, size),
+                           integer_one_node);
       break;
 
     case TARGET_MEM_REF:
@@ -869,12 +869,12 @@ mf_xform_derefs_1 (block_stmt_iterator *iter, tree *tp,
 
         addr = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
         addr = convert (ptr_type_node, addr);
-        addr = fold (build (PLUS_EXPR, ptr_type_node, addr, ofs));
+        addr = fold_build2 (PLUS_EXPR, ptr_type_node, addr, ofs);
 
         base = addr;
-        limit = fold (build (MINUS_EXPR, ptr_type_node,
-                             fold (build (PLUS_EXPR, ptr_type_node, base, size)),
-                             integer_one_node));
+        limit = fold_build2 (MINUS_EXPR, ptr_type_node,
+                             fold_build2 (PLUS_EXPR, ptr_type_node, base, size),
+                             integer_one_node);
       }
       break;
 

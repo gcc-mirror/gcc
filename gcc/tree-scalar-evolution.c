@@ -2109,8 +2109,8 @@ instantiate_parameters_1 (struct loop *loop, tree chrec,
 	  && op2 == TREE_OPERAND (chrec, 2))
 	return chrec;
 
-      return fold (build (TREE_CODE (chrec),
-			  TREE_TYPE (chrec), op0, op1, op2));
+      return fold_build3 (TREE_CODE (chrec),
+			  TREE_TYPE (chrec), op0, op1, op2);
 
     case 2:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
@@ -2126,7 +2126,7 @@ instantiate_parameters_1 (struct loop *loop, tree chrec,
       if (op0 == TREE_OPERAND (chrec, 0)
 	  && op1 == TREE_OPERAND (chrec, 1))
 	return chrec;
-      return fold (build (TREE_CODE (chrec), TREE_TYPE (chrec), op0, op1));
+      return fold_build2 (TREE_CODE (chrec), TREE_TYPE (chrec), op0, op1);
 	    
     case 1:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
@@ -2135,7 +2135,7 @@ instantiate_parameters_1 (struct loop *loop, tree chrec,
         return chrec_dont_know;
       if (op0 == TREE_OPERAND (chrec, 0))
 	return chrec;
-      return fold (build1 (TREE_CODE (chrec), TREE_TYPE (chrec), op0));
+      return fold_build1 (TREE_CODE (chrec), TREE_TYPE (chrec), op0);
 
     case 0:
       return chrec;
