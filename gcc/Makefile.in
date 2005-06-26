@@ -944,7 +944,7 @@ OBJS-common = \
  integrate.o intl.o jump.o  langhooks.o lcm.o lists.o local-alloc.o  	   \
  loop.o mode-switching.o modulo-sched.o optabs.o options.o opts.o	   \
  params.o postreload.o postreload-gcse.o predict.o			   \
- insn-preds.o pointer-set.o postreload.o				   \
+ insn-preds.o pointer-set.o						   \
  print-rtl.o print-tree.o profile.o value-prof.o var-tracking.o		   \
  real.o recog.o reg-stack.o regclass.o regmove.o regrename.o		   \
  reload.o reload1.o reorg.o resource.o rtl.o rtlanal.o rtl-error.o	   \
@@ -955,7 +955,6 @@ OBJS-common = \
  et-forest.o cfghooks.o bt-load.o pretty-print.o $(GGC) web.o passes.o	   \
  rtl-profile.o tree-profile.o rtlhooks.o cfgexpand.o lambda-mat.o          \
  lambda-trans.o	lambda-code.o tree-loop-linear.o tree-ssa-sink.o 	   \
- lambda-trans.o lambda-code.o tree-loop-linear.o tree-ssa-sink.o           \
  tree-vrp.o tree-stdarg.o tree-cfgcleanup.o tree-ssa-reassoc.o		   \
  tree-ssa-structalias.o
 
