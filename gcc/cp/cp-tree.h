@@ -4175,7 +4175,7 @@ extern void note_decl_for_pch			(tree);
 
 /* in tree.c */
 extern void lang_check_failed			(const char *, int,
-						 const char *);
+						 const char *) ATTRIBUTE_NORETURN;
 extern tree stabilize_expr			(tree, tree *);
 extern void stabilize_call			(tree, tree *);
 extern bool stabilize_init			(tree, tree *);
