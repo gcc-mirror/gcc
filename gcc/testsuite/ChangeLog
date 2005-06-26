@@ -13,7 +13,7 @@
 
 2005-06-25  Thomas Koenig <Thomas.Koenig@online.de>
 
-	PR libfortran/21144
+	PR libfortran/22144
 	* gfortran.dg/shift-alloc.f90:  New testcase.
 
 2005-06-25  Kelley Cook  <kcook@gcc.gnu.org>
