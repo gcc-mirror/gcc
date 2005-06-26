@@ -1357,7 +1357,8 @@ struct state_ainsn_table
 
 static const char *decl_name (enum decl_mode);
 static void decl_mode_check_failed (enum decl_mode, const char *,
-				    const char *, int, const char *);
+				    const char *, int, const char *)
+     ATTRIBUTE_NORETURN;
 
 /* Return string representation of declaration mode MODE.  */
 static const char *
@@ -1445,7 +1446,7 @@ decl_mode_check_failed (enum decl_mode mode, const char *expected_mode_str,
 static const char *regexp_name (enum regexp_mode);
 static void regexp_mode_check_failed (enum regexp_mode, const char *,
 				      const char *, int,
-				      const char *);
+				      const char *) ATTRIBUTE_NORETURN;
 
 
 /* Return string representation of regexp mode MODE.  */

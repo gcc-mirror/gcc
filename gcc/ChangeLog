@@ -1,3 +1,8 @@
+2005-06-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* genautomata.c (decl_mode_check_failed,
+	regexp_mode_check_failed): Add noreturn attribute.
+
 2005-06-26  Kazu Hirata  <kazu@codesourcery.com>
 
 	* cfg.c, tree-vect-transform.c, tree.def: Fix comment typos.
