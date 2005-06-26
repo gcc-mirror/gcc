@@ -1443,16 +1443,6 @@ arc_eligible_for_epilogue_delay (rtx trial, int slot)
   return 0;
 }
 
-/* PIC */
-
-/* Emit special PIC prologues and epilogues.  */
-
-void
-arc_finalize_pic (void)
-{
-  /* nothing to do */
-}
-
 /* Return true if OP is a shift operator.  */
 
 int

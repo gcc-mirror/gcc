@@ -989,23 +989,6 @@ do {                                              \
 #define EXTRA_CONSTRAINT(VALUE, D) \
     ((D) == 'Q' ? GET_CODE (VALUE) == SYMBOL_REF : 0)
 
-/* `FINALIZE_PIC'
-     By generating position-independent code, when two different
-     programs (A and B) share a common library (libC.a), the text of
-     the library can be shared whether or not the library is linked at
-     the same address for both programs.  In some of these
-     environments, position-independent code requires not only the use
-     of different addressing modes, but also special code to enable the
-     use of these addressing modes.
-
-     The `FINALIZE_PIC' macro serves as a hook to emit these special
-     codes once the function is being compiled into assembly code, but
-     not before.  (It is not done before, because in the case of
-     compiling an inline function, it would lead to multiple PIC
-     prologues being included in functions which used inline functions
-     and were compiled to assembly language.) */
-#define FINALIZE_PIC  do {} while (0)
-
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section
 
