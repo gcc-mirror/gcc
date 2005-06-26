@@ -1,5 +1,8 @@
 2005-06-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/17965
+	* gcc.c-torture/compile/20050622-1.c: New test.
+
 	PR middle-end/22028
 	* gcc.dg/20050620-1.c: New test.
 
