@@ -1,5 +1,11 @@
 2005-06-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* call.c (build_over_call): Pass in named argument list to
+	`check_function_arguments'.
+	* typeck.c (build_function_call): Likewise.
+
+2005-06-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* cp-tree.h (lang_check_failed): Add noreturn attribute.
 
 2005-06-25  Kelley Cook  <kcook@gcc.gnu.org>
