@@ -947,7 +947,8 @@ scale_bbs_frequencies_gcov_type (basic_block *bbs, int nbbs, gcov_type num,
     }
 }
 
-/* Datastructures used to maintain mapping between basic blocks and copies.  */
+/* Data structures used to maintain mapping between basic blocks and
+   copies.  */
 static htab_t bb_original;
 static htab_t bb_copy;
 static alloc_pool original_copy_bb_pool;
@@ -979,7 +980,8 @@ bb_copy_original_eq (const void *p, const void *q)
   return data->index1 == data2->index1;
 }
 
-/* Initialize the datstructures to maintain mapping between blocks and it's copies.  */
+/* Initialize the data structures to maintain mapping between blocks
+   and its copies.  */
 void
 initialize_original_copy_tables (void)
 {
@@ -992,7 +994,8 @@ initialize_original_copy_tables (void)
   bb_copy = htab_create (10, bb_copy_original_hash, bb_copy_original_eq, NULL);
 }
 
-/* Free the datstructures to maintain mapping between blocks and it's copies.  */
+/* Free the data structures to maintain mapping between blocks and
+   its copies.  */
 void
 free_original_copy_tables (void)
 {
@@ -1005,8 +1008,8 @@ free_original_copy_tables (void)
   original_copy_bb_pool = NULL;
 }
 
-/* Set original for basic block.  Do nothing when datstructures are not
-   intialized so passes not needing this don't need to care.  */
+/* Set original for basic block.  Do nothing when data structures are not
+   initialized so passes not needing this don't need to care.  */
 void
 set_bb_original (basic_block bb, basic_block original)
 {
@@ -1047,8 +1050,8 @@ get_bb_original (basic_block bb)
     return NULL;
 }
 
-/* Set copy for basic block.  Do nothing when datstructures are not
-   intialized so passes not needing this don't need to care.  */
+/* Set copy for basic block.  Do nothing when data structures are not
+   initialized so passes not needing this don't need to care.  */
 void
 set_bb_copy (basic_block bb, basic_block copy)
 {
