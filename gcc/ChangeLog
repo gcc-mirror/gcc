@@ -1,5 +1,9 @@
 2005-06-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/17965
+	* calls.c (expand_call, emit_library_call_value_1): Use xmalloc/free
+	instead of alloca for really big argument sizes.
+
 	PR middle-end/22028
 	* gimplify.c (gimplify_type_sizes): Check for type == error_mark_node
 	earlier in the function.
