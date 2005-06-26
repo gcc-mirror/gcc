@@ -1,3 +1,8 @@
+2005-06-26  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/libjava.mauve/xfails: Updated to reflect current state
+	of mauve and libjava. 
+
 2005-06-24  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natClassLoader.cc (_Jv_UnregisterClass): Handle case
