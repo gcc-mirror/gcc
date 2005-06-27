@@ -1,5 +1,18 @@
 2005-06-28  Jan Hubicka  <jh@suse.cz>
 
+	* tree-optimize.c (exercute_free_datastructures):
+	Do not disband implicit edges; do not attempt to build insn list;
+	do not free cfg annotations.
+	(execute_free_cfg_annotations); Disband implicit edges here;
+	free cfg annotations here too.
+	(pass_free_cfg_annotations); New pass.
+	(init_tree_optimization_passes); Add pass_free_cfg_annotations.
+	* tree-ssa-operands.c (free_ssa_operands); Recover; export.
+	* tree-ssa-operands.h (free_ssa_operands); declare.
+	* tree-ssa.c (delete_tree_ssa); Free SSA operand; mark stmt modified;
+	kill PHI nodes.
+	* tree-ssanames.c (release_defs): Kill addresses_taken.
+
 	* basic-block.h (basic_block_def): Kill rbi.
 	(reorder_block_def): Kill; Remove next field (replaced by aux);
 	move other fields to ...

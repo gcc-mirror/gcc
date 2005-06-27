@@ -153,6 +153,7 @@ typedef struct stmt_operands_d *stmt_operands_p;
 
 extern void init_ssa_operands (void);
 extern void fini_ssa_operands (void);
+extern void free_ssa_operands (stmt_operands_p);
 extern void update_stmt_operands (tree);
 extern bool verify_imm_links (FILE *f, tree var);
 

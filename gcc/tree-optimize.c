@@ -120,25 +120,14 @@ static struct tree_opt_pass pass_cleanup_cfg_post_optimizing =
 static void
 execute_free_datastructures (void)
 {
-  tree *chain;
-
   /* ??? This isn't the right place for this.  Worse, it got computed
      more or less at random in various passes.  */
   free_dominance_info (CDI_DOMINATORS);
-
-  /* Emit gotos for implicit jumps.  */
-  disband_implicit_edges ();
+  free_dominance_info (CDI_POST_DOMINATORS);
 
   /* Remove the ssa structures.  Do it here since this includes statement
      annotations that need to be intact during disband_implicit_edges.  */
   delete_tree_ssa ();
-
-  /* Re-chain the statements from the blocks.  */
-  chain = &DECL_SAVED_TREE (current_function_decl);
-  *chain = alloc_stmt_list ();
-
-  /* And get rid of annotations we no longer need.  */
-  delete_tree_cfg_annotations ();
 }
 
 static struct tree_opt_pass pass_free_datastructures =
@@ -157,7 +146,46 @@ static struct tree_opt_pass pass_free_datastructures =
   0,					/* todo_flags_finish */
   0					/* letter */
 };
+/* Pass: free cfg annotations.  */
 
+static void
+execute_free_cfg_annotations (void)
+{
+  basic_block bb;
+  block_stmt_iterator bsi;
+
+  /* Emit gotos for implicit jumps.  */
+  disband_implicit_edges ();
+
+  /* Remove annotations from every tree in the function.  */
+  FOR_EACH_BB (bb)
+    for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+      {
+	tree stmt = bsi_stmt (bsi);
+	ggc_free (stmt->common.ann);
+	stmt->common.ann = NULL;
+      }
+
+  /* And get rid of annotations we no longer need.  */
+  delete_tree_cfg_annotations ();
+}
+
+static struct tree_opt_pass pass_free_cfg_annotations =
+{
+  NULL,					/* name */
+  NULL,					/* gate */
+  execute_free_cfg_annotations,		/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  0,					/* tv_id */
+  PROP_cfg,				/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0,					/* todo_flags_finish */
+  0					/* letter */
+};
 /* Pass: fixup_cfg - IPA passes or compilation of earlier functions might've
    changed some properties - such as marked functions nothrow.  Remove now
    redundant edges and basic blocks.  */
@@ -387,6 +415,7 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_warn_function_noreturn);
   NEXT_PASS (pass_mudflap_2);
   NEXT_PASS (pass_free_datastructures);
+  NEXT_PASS (pass_free_cfg_annotations);
   NEXT_PASS (pass_expand);
   NEXT_PASS (pass_rest_of_compilation);
   *p = NULL;

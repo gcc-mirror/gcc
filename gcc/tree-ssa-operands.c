@@ -998,8 +998,7 @@ build_ssa_operands (tree stmt)
 
 
 /* Free any operands vectors in OPS.  */
-#if 0
-static void 
+void 
 free_ssa_operands (stmt_operands_p ops)
 {
   ops->def_ops = NULL;
@@ -1007,14 +1006,7 @@ free_ssa_operands (stmt_operands_p ops)
   ops->maydef_ops = NULL;
   ops->mustdef_ops = NULL;
   ops->vuse_ops = NULL;
-  while (ops->memory.next != NULL)
-    {
-      operand_memory_p tmp = ops->memory.next;
-      ops->memory.next = tmp->next;
-      ggc_free (tmp);
-    }
 }
-#endif
 
 
 /* Get the operands of statement STMT.  Note that repeated calls to
