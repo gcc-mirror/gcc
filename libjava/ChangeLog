@@ -1,3 +1,10 @@
+2005-06-27  Tom Tromey  <tromey@redhat.com>
+
+	PR java/21540, PR java/13788:
+	* testsuite/libjava.compile/pr21540.java: New file.
+	* testsuite/libjava.compile/pr13788.java: New file.
+	* testsuite/libjava.jacks/jacks.xfail: Updated.
+
 2005-06-26  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* testsuite/libjava.mauve/xfails: Updated to reflect current state
