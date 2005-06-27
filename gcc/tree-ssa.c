@@ -819,12 +819,18 @@ delete_tree_ssa (void)
 
   /* Remove annotations from every tree in the function.  */
   FOR_EACH_BB (bb)
-    for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-      {
-	tree stmt = bsi_stmt (bsi);
-	ggc_free (stmt->common.ann);
-	stmt->common.ann = NULL;
-      }
+    {
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	{
+	  tree stmt = bsi_stmt (bsi);
+	  stmt_ann_t ann = get_stmt_ann (stmt);
+
+	  free_ssa_operands (&ann->operands);
+	  ann->addresses_taken = 0;
+	  mark_stmt_modified (stmt);
+	}
+      set_phi_nodes (bb, NULL);
+    }
 
   /* Remove annotations from every referenced variable.  */
   for (i = 0; i < num_referenced_vars; i++)
