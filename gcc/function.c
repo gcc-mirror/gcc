@@ -5233,7 +5233,7 @@ thread_prologue_and_epilogue_insns (rtx f ATTRIBUTE_UNUSED)
       cfg_layout_initialize (0);
       FOR_EACH_BB (cur_bb)
 	if (cur_bb->index >= 0 && cur_bb->next_bb->index >= 0)
-	  cur_bb->rbi->next = cur_bb->next_bb;
+	  cur_bb->aux = cur_bb->next_bb;
       cfg_layout_finalize ();
     }
 epilogue_done:

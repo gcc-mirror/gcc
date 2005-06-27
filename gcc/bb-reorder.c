@@ -272,7 +272,7 @@ find_traces (int *n_traces, struct trace *traces)
 	  basic_block bb;
 	  fprintf (dump_file, "Trace %d (round %d):  ", i + 1,
 		   traces[i].round + 1);
-	  for (bb = traces[i].first; bb != traces[i].last; bb = bb->rbi->next)
+	  for (bb = traces[i].first; bb != traces[i].last; bb = bb->aux)
 	    fprintf (dump_file, "%d [%d] ", bb->index, bb->frequency);
 	  fprintf (dump_file, "%d [%d]\n", bb->index, bb->frequency);
 	}
@@ -306,14 +306,14 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	if (e->dest != EXIT_BLOCK_PTR
-	    && e->dest->rbi->visited != trace_n
+	    && e->dest->il.rtl->visited != trace_n
 	    && (e->flags & EDGE_CAN_FALLTHRU)
 	    && !(e->flags & EDGE_COMPLEX))
 	{
 	  if (is_preferred)
 	    {
 	      /* The best edge is preferred.  */
-	      if (!e->dest->rbi->visited
+	      if (!e->dest->il.rtl->visited
 		  || bbd[e->dest->index].start_of_trace >= 0)
 		{
 		  /* The current edge E is also preferred.  */
@@ -329,7 +329,7 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
 	    }
 	  else
 	    {
-	      if (!e->dest->rbi->visited
+	      if (!e->dest->il.rtl->visited
 		  || bbd[e->dest->index].start_of_trace >= 0)
 		{
 		  /* The current edge E is preferred.  */
@@ -352,7 +352,7 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
 		}
 	    }
 	}
-      bb = bb->rbi->next;
+      bb = bb->aux;
     }
   while (bb != back_edge->dest);
 
@@ -362,17 +362,17 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
 	 the trace.  */
       if (back_edge->dest == trace->first)
 	{
-	  trace->first = best_bb->rbi->next;
+	  trace->first = best_bb->aux;
 	}
       else
 	{
 	  basic_block prev_bb;
 
 	  for (prev_bb = trace->first;
-	       prev_bb->rbi->next != back_edge->dest;
-	       prev_bb = prev_bb->rbi->next)
+	       prev_bb->aux != back_edge->dest;
+	       prev_bb = prev_bb->aux)
 	    ;
-	  prev_bb->rbi->next = best_bb->rbi->next;
+	  prev_bb->aux = best_bb->aux;
 
 	  /* Try to get rid of uncond jump to cond jump.  */
 	  if (single_succ_p (prev_bb))
@@ -393,7 +393,7 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
       /* We have not found suitable loop tail so do no rotation.  */
       best_bb = back_edge->src;
     }
-  best_bb->rbi->next = NULL;
+  best_bb->aux = NULL;
   return best_bb;
 }
 
@@ -402,7 +402,7 @@ rotate_loop (edge back_edge, struct trace *trace, int trace_n)
 static void
 mark_bb_visited (basic_block bb, int trace)
 {
-  bb->rbi->visited = trace;
+  bb->il.rtl->visited = trace;
   if (bbd[bb->index].heap)
     {
       fibheap_delete_node (bbd[bb->index].heap, bbd[bb->index].node);
@@ -496,8 +496,8 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 	      if (e->dest == EXIT_BLOCK_PTR)
 		continue;
 
-	      if (e->dest->rbi->visited
-		  && e->dest->rbi->visited != *n_traces)
+	      if (e->dest->il.rtl->visited
+		  && e->dest->il.rtl->visited != *n_traces)
 		continue;
 
 	      if (BB_PARTITION (e->dest) != BB_PARTITION (bb))
@@ -550,7 +550,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 	    {
 	      if (e == best_edge
 		  || e->dest == EXIT_BLOCK_PTR
-		  || e->dest->rbi->visited)
+		  || e->dest->il.rtl->visited)
 		continue;
 
 	      key = bb_to_key (e->dest);
@@ -611,7 +611,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 
 	  if (best_edge) /* Suitable successor was found.  */
 	    {
-	      if (best_edge->dest->rbi->visited == *n_traces)
+	      if (best_edge->dest->il.rtl->visited == *n_traces)
 		{
 		  /* We do nothing with one basic block loops.  */
 		  if (best_edge->dest != bb)
@@ -631,7 +631,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 					   "Rotating loop %d - %d\n",
 					   best_edge->dest->index, bb->index);
 				}
-			      bb->rbi->next = best_edge->dest;
+			      bb->aux = best_edge->dest;
 			      bbd[best_edge->dest->index].in_trace = 
 				                             (*n_traces) - 1;
 			      bb = rotate_loop (best_edge, trace, *n_traces);
@@ -681,7 +681,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 		    if (e != best_edge
 			&& (e->flags & EDGE_CAN_FALLTHRU)
 			&& !(e->flags & EDGE_COMPLEX)
-			&& !e->dest->rbi->visited
+			&& !e->dest->il.rtl->visited
 			&& single_pred_p (e->dest)
 			&& !(e->flags & EDGE_CROSSING)
 			&& single_succ_p (e->dest)
@@ -698,7 +698,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 			break;
 		      }
 
-		  bb->rbi->next = best_edge->dest;
+		  bb->aux = best_edge->dest;
 		  bbd[best_edge->dest->index].in_trace = (*n_traces) - 1;
 		  bb = best_edge->dest;
 		}
@@ -715,7 +715,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
 	  if (e->dest == EXIT_BLOCK_PTR
-	      || e->dest->rbi->visited)
+	      || e->dest->il.rtl->visited)
 	    continue;
 
 	  if (bbd[e->dest->index].heap)
@@ -757,15 +757,15 @@ copy_bb (basic_block old_bb, edge e, basic_block bb, int trace)
   BB_COPY_PARTITION (new_bb, old_bb);
 
   gcc_assert (e->dest == new_bb);
-  gcc_assert (!e->dest->rbi->visited);
+  gcc_assert (!e->dest->il.rtl->visited);
 
   if (dump_file)
     fprintf (dump_file,
 	     "Duplicated bb %d (created bb %d)\n",
 	     old_bb->index, new_bb->index);
-  new_bb->rbi->visited = trace;
-  new_bb->rbi->next = bb->rbi->next;
-  bb->rbi->next = new_bb;
+  new_bb->il.rtl->visited = trace;
+  new_bb->aux = bb->aux;
+  bb->aux = new_bb;
 
   if (new_bb->index >= array_size || last_basic_block > array_size)
     {
@@ -973,7 +973,7 @@ connect_traces (int n_traces, struct trace *traces)
 	    }
 	  if (best)
 	    {
-	      best->src->rbi->next = best->dest;
+	      best->src->aux = best->dest;
 	      t2 = bbd[best->src->index].end_of_trace;
 	      connected[t2] = true;
 
@@ -988,7 +988,7 @@ connect_traces (int n_traces, struct trace *traces)
 	}
 
       if (last_trace >= 0)
-	traces[last_trace].last->rbi->next = traces[t2].first;
+	traces[last_trace].last->aux = traces[t2].first;
       last_trace = t;
 
       /* Find the successor traces.  */
@@ -1026,7 +1026,7 @@ connect_traces (int n_traces, struct trace *traces)
 			   best->src->index, best->dest->index);
 		}
 	      t = bbd[best->dest->index].start_of_trace;
-	      traces[last_trace].last->rbi->next = traces[t].first;
+	      traces[last_trace].last->aux = traces[t].first;
 	      connected[t] = true;
 	      last_trace = t;
 	    }
@@ -1119,7 +1119,7 @@ connect_traces (int n_traces, struct trace *traces)
 		  if (next_bb && next_bb != EXIT_BLOCK_PTR)
 		    {
 		      t = bbd[next_bb->index].start_of_trace;
-		      traces[last_trace].last->rbi->next = traces[t].first;
+		      traces[last_trace].last->aux = traces[t].first;
 		      connected[t] = true;
 		      last_trace = t;
 		    }
@@ -1137,7 +1137,7 @@ connect_traces (int n_traces, struct trace *traces)
       basic_block bb;
 
       fprintf (dump_file, "Final order:\n");
-      for (bb = traces[0].first; bb; bb = bb->rbi->next)
+      for (bb = traces[0].first; bb; bb = bb->aux)
 	fprintf (dump_file, "%d ", bb->index);
       fprintf (dump_file, "\n");
       fflush (dump_file);
@@ -1305,7 +1305,7 @@ add_labels_and_missing_jumps (edge *crossing_edges, int n_crossing_edges)
 		      barrier = emit_barrier_after (new_jump);
 		      JUMP_LABEL (new_jump) = label;
 		      LABEL_NUSES (label) += 1;
-		      src->rbi->footer = unlink_insn_chain (barrier, barrier);
+		      src->il.rtl->footer = unlink_insn_chain (barrier, barrier);
 		      /* Mark edge as non-fallthru.  */
 		      crossing_edges[i]->flags &= ~EDGE_FALLTHRU;
  		    } /* end: 'if (GET_CODE ... '  */
@@ -1395,7 +1395,7 @@ fix_up_fall_thru_edges (void)
  		     the cond jump does).  */
  		  
 		  if (!cond_jump_crosses
-		      && cur_bb->rbi->next == cond_jump->dest)
+		      && cur_bb->aux == cond_jump->dest)
  		    {
  		      /* Find label in fall_thru block. We've already added
  		         any missing labels, so there must be one.  */
@@ -1430,8 +1430,8 @@ fix_up_fall_thru_edges (void)
 		  
  		  if (new_bb)
  		    {
- 		      new_bb->rbi->next = cur_bb->rbi->next;
- 		      cur_bb->rbi->next = new_bb;
+ 		      new_bb->aux = cur_bb->aux;
+ 		      cur_bb->aux = new_bb;
 		      
  		      /* Make sure new fall-through bb is in same 
 			 partition as bb it's falling through from.  */
@@ -1445,13 +1445,13 @@ fix_up_fall_thru_edges (void)
  		  if (new_bb)
  		    {
  		      barrier = emit_barrier_after (BB_END (new_bb));
- 		      new_bb->rbi->footer = unlink_insn_chain (barrier, 
+ 		      new_bb->il.rtl->footer = unlink_insn_chain (barrier, 
  							       barrier);
  		    }
  		  else
  		    {
  		      barrier = emit_barrier_after (BB_END (cur_bb));
- 		      cur_bb->rbi->footer = unlink_insn_chain (barrier,
+ 		      cur_bb->il.rtl->footer = unlink_insn_chain (barrier,
  							       barrier);
  		    }
  		}
@@ -1597,8 +1597,8 @@ fix_crossing_conditional_branches (void)
 		     conditional jump.  */
 		  
 		  new_bb = create_basic_block (NULL, NULL, last_bb);
-		  new_bb->rbi->next = last_bb->rbi->next;
-		  last_bb->rbi->next = new_bb;
+		  new_bb->aux = last_bb->aux;
+		  last_bb->aux = new_bb;
 		  prev_bb = last_bb;
 		  last_bb = new_bb;
 		  
@@ -1634,7 +1634,7 @@ fix_crossing_conditional_branches (void)
 		  
 		  barrier = emit_barrier_after (new_jump);
 		  JUMP_LABEL (new_jump) = old_label;
-		  new_bb->rbi->footer = unlink_insn_chain (barrier, 
+		  new_bb->il.rtl->footer = unlink_insn_chain (barrier, 
 							   barrier);
 		  
 		  /* Make sure new bb is in same partition as source
@@ -2008,7 +2008,7 @@ duplicate_computed_gotos (void)
 
       /* Build the reorder chain for the original order of blocks.  */
       if (bb->next_bb != EXIT_BLOCK_PTR)
-	bb->rbi->next = bb->next_bb;
+	bb->aux = bb->next_bb;
 
       /* Obviously the block has to end in a computed jump.  */
       if (!computed_jump_p (BB_END (bb)))
@@ -2048,10 +2048,10 @@ duplicate_computed_gotos (void)
   /* Duplicate computed gotos.  */
   FOR_EACH_BB (bb)
     {
-      if (bb->rbi->visited)
+      if (bb->il.rtl->visited)
 	continue;
 
-      bb->rbi->visited = 1;
+      bb->il.rtl->visited = 1;
 
       /* BB must have one outgoing edge.  That edge must not lead to
          the exit block or the next block.
@@ -2067,9 +2067,9 @@ duplicate_computed_gotos (void)
 	continue;
 
       new_bb = duplicate_block (single_succ (bb), single_succ_edge (bb));
-      new_bb->rbi->next = bb->rbi->next;
-      bb->rbi->next = new_bb;
-      new_bb->rbi->visited = 1;
+      new_bb->aux = bb->aux;
+      bb->aux = new_bb;
+      new_bb->il.rtl->visited = 1;
     }
 
 done:
@@ -2156,7 +2156,7 @@ partition_hot_cold_basic_blocks (void)
   FOR_EACH_BB (cur_bb)
     if (cur_bb->index >= 0
  	&& cur_bb->next_bb->index >= 0)
-      cur_bb->rbi->next = cur_bb->next_bb;
+      cur_bb->aux = cur_bb->next_bb;
   
   find_rarely_executed_basic_blocks_and_crossing_edges (crossing_edges, 
 							&n_crossing_edges, 

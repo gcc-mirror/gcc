@@ -65,7 +65,7 @@ static int branch_ratio_cutoff;
 /* Return true if BB has been seen - it is connected to some trace
    already.  */
 
-#define seen(bb) (bb->rbi->visited || bb->rbi->next)
+#define seen(bb) (bb->il.rtl->visited || bb->aux)
 
 /* Return true if we should ignore the basic block for purposes of tracing.  */
 static bool
@@ -292,8 +292,8 @@ tail_duplicate (void)
 		fprintf (dump_file, "Duplicated %i as %i [%i]\n",
 			 old->index, bb2->index, bb2->frequency);
 	    }
-	  bb->rbi->next = bb2;
-	  bb2->rbi->visited = 1;
+	  bb->aux = bb2;
+	  bb2->il.rtl->visited = 1;
 	  bb = bb2;
 	  /* In case the trace became infrequent, stop duplicating.  */
 	  if (ignore_bb_p (bb))
@@ -328,28 +328,28 @@ layout_superblocks (void)
     {
       edge_iterator ei;
       edge e, best = NULL;
-      while (end->rbi->next)
-	end = end->rbi->next;
+      while (end->aux)
+	end = end->aux;
 
       FOR_EACH_EDGE (e, ei, end->succs)
 	if (e->dest != EXIT_BLOCK_PTR
 	    && e->dest != single_succ (ENTRY_BLOCK_PTR)
-	    && !e->dest->rbi->visited
+	    && !e->dest->il.rtl->visited
 	    && (!best || EDGE_FREQUENCY (e) > EDGE_FREQUENCY (best)))
 	  best = e;
 
       if (best)
 	{
-	  end->rbi->next = best->dest;
-	  best->dest->rbi->visited = 1;
+	  end->aux = best->dest;
+	  best->dest->il.rtl->visited = 1;
 	}
       else
 	for (; bb != EXIT_BLOCK_PTR; bb = bb->next_bb)
 	  {
-	    if (!bb->rbi->visited)
+	    if (!bb->il.rtl->visited)
 	      {
-		end->rbi->next = bb;
-		bb->rbi->visited = 1;
+		end->aux = bb;
+		bb->il.rtl->visited = 1;
 		break;
 	      }
 	  }

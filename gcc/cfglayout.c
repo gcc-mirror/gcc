@@ -209,11 +209,11 @@ record_effective_endpoints (void)
       rtx end;
 
       if (PREV_INSN (BB_HEAD (bb)) && next_insn != BB_HEAD (bb))
-	bb->rbi->header = unlink_insn_chain (next_insn,
+	bb->il.rtl->header = unlink_insn_chain (next_insn,
 					      PREV_INSN (BB_HEAD (bb)));
       end = skip_insns_after_block (bb);
       if (NEXT_INSN (BB_END (bb)) && BB_END (bb) != end)
-	bb->rbi->footer = unlink_insn_chain (NEXT_INSN (BB_END (bb)), end);
+	bb->il.rtl->footer = unlink_insn_chain (NEXT_INSN (BB_END (bb)), end);
       next_insn = NEXT_INSN (BB_END (bb));
     }
 
@@ -584,16 +584,16 @@ fixup_reorder_chain (void)
 
   for (bb = ENTRY_BLOCK_PTR->next_bb, index = 0;
        bb != 0;
-       bb = bb->rbi->next, index++)
+       bb = bb->aux, index++)
     {
-      if (bb->rbi->header)
+      if (bb->il.rtl->header)
 	{
 	  if (insn)
-	    NEXT_INSN (insn) = bb->rbi->header;
+	    NEXT_INSN (insn) = bb->il.rtl->header;
 	  else
-	    set_first_insn (bb->rbi->header);
-	  PREV_INSN (bb->rbi->header) = insn;
-	  insn = bb->rbi->header;
+	    set_first_insn (bb->il.rtl->header);
+	  PREV_INSN (bb->il.rtl->header) = insn;
+	  insn = bb->il.rtl->header;
 	  while (NEXT_INSN (insn))
 	    insn = NEXT_INSN (insn);
 	}
@@ -603,10 +603,10 @@ fixup_reorder_chain (void)
 	set_first_insn (BB_HEAD (bb));
       PREV_INSN (BB_HEAD (bb)) = insn;
       insn = BB_END (bb);
-      if (bb->rbi->footer)
+      if (bb->il.rtl->footer)
 	{
-	  NEXT_INSN (insn) = bb->rbi->footer;
-	  PREV_INSN (bb->rbi->footer) = insn;
+	  NEXT_INSN (insn) = bb->il.rtl->footer;
+	  PREV_INSN (bb->il.rtl->footer) = insn;
 	  while (NEXT_INSN (insn))
 	    insn = NEXT_INSN (insn);
 	}
@@ -630,7 +630,7 @@ fixup_reorder_chain (void)
   /* Now add jumps and labels as needed to match the blocks new
      outgoing edges.  */
 
-  for (bb = ENTRY_BLOCK_PTR->next_bb; bb ; bb = bb->rbi->next)
+  for (bb = ENTRY_BLOCK_PTR->next_bb; bb ; bb = bb->aux)
     {
       edge e_fall, e_taken, e;
       rtx bb_end_insn;
@@ -656,7 +656,7 @@ fixup_reorder_chain (void)
 	  if (any_condjump_p (bb_end_insn))
 	    {
 	      /* If the old fallthru is still next, nothing to do.  */
-	      if (bb->rbi->next == e_fall->dest
+	      if (bb->aux == e_fall->dest
 	          || e_fall->dest == EXIT_BLOCK_PTR)
 		continue;
 
@@ -699,7 +699,7 @@ fixup_reorder_chain (void)
 		 such as happens at the very end of a function, then we'll
 		 need to add a new unconditional jump.  Choose the taken
 		 edge based on known or assumed probability.  */
-	      else if (bb->rbi->next != e_taken->dest)
+	      else if (bb->aux != e_taken->dest)
 		{
 		  rtx note = find_reg_note (bb_end_insn, REG_BR_PROB, 0);
 
@@ -762,7 +762,7 @@ fixup_reorder_chain (void)
 	    continue;
 
 	  /* If the fallthru block is still next, nothing to do.  */
-	  if (bb->rbi->next == e_fall->dest)
+	  if (bb->aux == e_fall->dest)
 	    continue;
 
 	  /* A fallthru to exit block.  */
@@ -774,10 +774,9 @@ fixup_reorder_chain (void)
       nb = force_nonfallthru (e_fall);
       if (nb)
 	{
-	  initialize_bb_rbi (nb);
-	  nb->rbi->visited = 1;
-	  nb->rbi->next = bb->rbi->next;
-	  bb->rbi->next = nb;
+	  nb->il.rtl->visited = 1;
+	  nb->aux = bb->aux;
+	  bb->aux = nb;
 	  /* Don't process this new block.  */
 	  bb = nb;
 	  
@@ -802,7 +801,7 @@ fixup_reorder_chain (void)
       fprintf (dump_file, "Reordered sequence:\n");
       for (bb = ENTRY_BLOCK_PTR->next_bb, index = 0;
 	   bb;
-	   bb = bb->rbi->next, index++)
+	   bb = bb->aux, index++)
 	{
 	  fprintf (dump_file, " %i ", index);
 	  if (get_bb_original (bb))
@@ -821,7 +820,7 @@ fixup_reorder_chain (void)
   bb = ENTRY_BLOCK_PTR->next_bb;
   index = 0;
 
-  for (; bb; prev_bb = bb, bb = bb->rbi->next, index ++)
+  for (; bb; prev_bb = bb, bb = bb->aux, index ++)
     {
       bb->index = index;
       BASIC_BLOCK (index) = bb;
@@ -893,7 +892,7 @@ fixup_fallthru_exit_predecessor (void)
     if (e->flags & EDGE_FALLTHRU)
       bb = e->src;
 
-  if (bb && bb->rbi->next)
+  if (bb && bb->aux)
     {
       basic_block c = ENTRY_BLOCK_PTR->next_bb;
 
@@ -902,22 +901,21 @@ fixup_fallthru_exit_predecessor (void)
       if (c == bb)
 	{
 	  bb = split_block (bb, NULL)->dest;
-	  initialize_bb_rbi (bb);
-	  bb->rbi->next = c->rbi->next;
-	  c->rbi->next = bb;
-	  bb->rbi->footer = c->rbi->footer;
-	  c->rbi->footer = NULL;
+	  bb->aux = c->aux;
+	  c->aux = bb;
+	  bb->il.rtl->footer = c->il.rtl->footer;
+	  c->il.rtl->footer = NULL;
 	}
 
-      while (c->rbi->next != bb)
-	c = c->rbi->next;
+      while (c->aux != bb)
+	c = c->aux;
 
-      c->rbi->next = bb->rbi->next;
-      while (c->rbi->next)
-	c = c->rbi->next;
+      c->aux = bb->aux;
+      while (c->aux)
+	c = c->aux;
 
-      c->rbi->next = bb;
-      bb->rbi->next = NULL;
+      c->aux = bb;
+      bb->aux = NULL;
     }
 }
 
@@ -1057,24 +1055,24 @@ cfg_layout_duplicate_bb (basic_block bb)
 			       EXIT_BLOCK_PTR->prev_bb);
 
   BB_COPY_PARTITION (new_bb, bb);
-  if (bb->rbi->header)
+  if (bb->il.rtl->header)
     {
-      insn = bb->rbi->header;
+      insn = bb->il.rtl->header;
       while (NEXT_INSN (insn))
 	insn = NEXT_INSN (insn);
-      insn = duplicate_insn_chain (bb->rbi->header, insn);
+      insn = duplicate_insn_chain (bb->il.rtl->header, insn);
       if (insn)
-	new_bb->rbi->header = unlink_insn_chain (insn, get_last_insn ());
+	new_bb->il.rtl->header = unlink_insn_chain (insn, get_last_insn ());
     }
 
-  if (bb->rbi->footer)
+  if (bb->il.rtl->footer)
     {
-      insn = bb->rbi->footer;
+      insn = bb->il.rtl->footer;
       while (NEXT_INSN (insn))
 	insn = NEXT_INSN (insn);
-      insn = duplicate_insn_chain (bb->rbi->footer, insn);
+      insn = duplicate_insn_chain (bb->il.rtl->footer, insn);
       if (insn)
-	new_bb->rbi->footer = unlink_insn_chain (insn, get_last_insn ());
+	new_bb->il.rtl->footer = unlink_insn_chain (insn, get_last_insn ());
     }
 
   if (bb->il.rtl->global_live_at_start)
@@ -1100,11 +1098,6 @@ cfg_layout_duplicate_bb (basic_block bb)
 void
 cfg_layout_initialize (unsigned int flags)
 {
-  basic_block bb;
-
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
-    initialize_bb_rbi (bb);
-
   initialize_original_copy_tables ();
 
   cfg_layout_rtl_register_cfg_hooks ();
@@ -1142,8 +1135,8 @@ break_superblocks (void)
   free (superblocks);
 }
 
-/* Finalize the changes: reorder insn list according to the sequence, enter
-   compensation code, rebuild scope forest.  */
+/* Finalize the changes: reorder insn list according to the sequence specified
+   by aux pointers, enter compensation code, rebuild scope forest.  */
 
 void
 cfg_layout_finalize (void)
@@ -1166,7 +1159,11 @@ cfg_layout_finalize (void)
   verify_insn_chain ();
 #endif
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
-    bb->rbi = NULL;
+  {
+    bb->il.rtl->header = bb->il.rtl->footer = NULL;
+    bb->aux = NULL;
+    bb->il.rtl->visited = 0;
+  }
 
   break_superblocks ();
 

@@ -600,7 +600,7 @@ rest_of_handle_sms (void)
   /* Finalize layout changes.  */
   FOR_EACH_BB (bb)
     if (bb->next_bb != EXIT_BLOCK_PTR)
-      bb->rbi->next = bb->next_bb;
+      bb->aux = bb->next_bb;
   cfg_layout_finalize ();
   free_dominance_info (CDI_DOMINATORS);
   ggc_collect ();
@@ -1187,7 +1187,7 @@ rest_of_handle_loop2 (void)
   /* Finalize layout changes.  */
   FOR_EACH_BB (bb)
     if (bb->next_bb != EXIT_BLOCK_PTR)
-      bb->rbi->next = bb->next_bb;
+      bb->aux = bb->next_bb;
   cfg_layout_finalize ();
 
   cleanup_cfg (CLEANUP_EXPENSIVE);
