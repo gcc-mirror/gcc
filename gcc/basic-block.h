@@ -233,9 +233,6 @@ struct basic_block_def GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb")
   struct basic_block_def *prev_bb;
   struct basic_block_def *next_bb;
 
-  /* The data used by basic block copying and reordering functions.  */
-  struct reorder_block_def * rbi;
-
   union basic_block_il_dependent {
       struct rtl_bb_info * GTY ((tag ("1"))) rtl;
     } GTY ((desc ("((%1.flags & BB_RTL) != 0)"))) il;
@@ -273,25 +270,17 @@ struct rtl_bb_info GTY(())
 
   /* The registers that are live on exit from this block.  */
   bitmap GTY ((skip (""))) global_live_at_end;
-};
 
-typedef struct basic_block_def *basic_block;
-
-/* Structure to hold information about the blocks during reordering and
-   copying.  Needs to be put on a diet.  */
-
-struct reorder_block_def GTY(())
-{
+  /* In CFGlayout mode points to insn notes/jumptables to be placed just before
+     and after the block.   */
   rtx header;
   rtx footer;
-
-  basic_block next;
 
   /* This field is used by the bb-reorder and tracer passes.  */
   int visited;
 };
 
-typedef struct reorder_block_def *reorder_block_def;
+typedef struct basic_block_def *basic_block;
 
 #define BB_FREQ_MAX 10000
 
@@ -939,9 +928,6 @@ extern bool control_flow_insn_p (rtx);
 extern void reorder_basic_blocks (unsigned int);
 extern void duplicate_computed_gotos (void);
 extern void partition_hot_cold_basic_blocks (void);
-
-/* In cfg.c */
-extern void initialize_bb_rbi (basic_block bb);
 
 /* In dominance.c */
 

@@ -345,7 +345,6 @@ cfg_layout_create_basic_block (void *head, void *end, basic_block after)
 {
   basic_block newbb = rtl_create_basic_block (head, end, after);
 
-  initialize_bb_rbi (newbb);
   return newbb;
 }
 
@@ -713,7 +712,7 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
       /* Selectively unlink whole insn chain.  */
       if (in_cfglayout)
 	{
-	  rtx insn = src->rbi->footer;
+	  rtx insn = src->il.rtl->footer;
 
           delete_insn_chain (kill_from, BB_END (src));
 
@@ -725,7 +724,7 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
 		  if (PREV_INSN (insn))
 		    NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
 		  else
-		    src->rbi->footer = NEXT_INSN (insn);
+		    src->il.rtl->footer = NEXT_INSN (insn);
 		  if (NEXT_INSN (insn))
 		    PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
 		}
@@ -2490,8 +2489,8 @@ cfg_layout_split_block (basic_block bb, void *insnp)
   rtx insn = insnp;
   basic_block new_bb = rtl_split_block (bb, insn);
 
-  new_bb->rbi->footer = bb->rbi->footer;
-  bb->rbi->footer = NULL;
+  new_bb->il.rtl->footer = bb->il.rtl->footer;
+  bb->il.rtl->footer = NULL;
 
   return new_bb;
 }
@@ -2597,24 +2596,24 @@ cfg_layout_delete_block (basic_block bb)
 {
   rtx insn, next, prev = PREV_INSN (BB_HEAD (bb)), *to, remaints;
 
-  if (bb->rbi->header)
+  if (bb->il.rtl->header)
     {
       next = BB_HEAD (bb);
       if (prev)
-	NEXT_INSN (prev) = bb->rbi->header;
+	NEXT_INSN (prev) = bb->il.rtl->header;
       else
-	set_first_insn (bb->rbi->header);
-      PREV_INSN (bb->rbi->header) = prev;
-      insn = bb->rbi->header;
+	set_first_insn (bb->il.rtl->header);
+      PREV_INSN (bb->il.rtl->header) = prev;
+      insn = bb->il.rtl->header;
       while (NEXT_INSN (insn))
 	insn = NEXT_INSN (insn);
       NEXT_INSN (insn) = next;
       PREV_INSN (next) = insn;
     }
   next = NEXT_INSN (BB_END (bb));
-  if (bb->rbi->footer)
+  if (bb->il.rtl->footer)
     {
-      insn = bb->rbi->footer;
+      insn = bb->il.rtl->footer;
       while (insn)
 	{
 	  if (BARRIER_P (insn))
@@ -2622,7 +2621,7 @@ cfg_layout_delete_block (basic_block bb)
 	      if (PREV_INSN (insn))
 		NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
 	      else
-		bb->rbi->footer = NEXT_INSN (insn);
+		bb->il.rtl->footer = NEXT_INSN (insn);
 	      if (NEXT_INSN (insn))
 		PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
 	    }
@@ -2630,11 +2629,11 @@ cfg_layout_delete_block (basic_block bb)
 	    break;
 	  insn = NEXT_INSN (insn);
 	}
-      if (bb->rbi->footer)
+      if (bb->il.rtl->footer)
 	{
 	  insn = BB_END (bb);
-	  NEXT_INSN (insn) = bb->rbi->footer;
-	  PREV_INSN (bb->rbi->footer) = insn;
+	  NEXT_INSN (insn) = bb->il.rtl->footer;
+	  PREV_INSN (bb->il.rtl->footer) = insn;
 	  while (NEXT_INSN (insn))
 	    insn = NEXT_INSN (insn);
 	  NEXT_INSN (insn) = next;
@@ -2645,11 +2644,9 @@ cfg_layout_delete_block (basic_block bb)
 	}
     }
   if (bb->next_bb != EXIT_BLOCK_PTR)
-    to = &bb->next_bb->rbi->header;
+    to = &bb->next_bb->il.rtl->header;
   else
     to = &cfg_layout_function_footer;
-
-  bb->rbi = NULL;
 
   rtl_delete_block (bb);
 
@@ -2727,13 +2724,13 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
   gcc_assert (!JUMP_P (BB_END (a)));
 
   /* Possible line number notes should appear in between.  */
-  if (b->rbi->header)
+  if (b->il.rtl->header)
     {
       rtx first = BB_END (a), last;
 
-      last = emit_insn_after_noloc (b->rbi->header, BB_END (a));
+      last = emit_insn_after_noloc (b->il.rtl->header, BB_END (a));
       delete_insn_chain (NEXT_INSN (first), last);
-      b->rbi->header = NULL;
+      b->il.rtl->header = NULL;
     }
 
   /* In the case basic blocks are not adjacent, move them around.  */
@@ -2769,20 +2766,20 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
     }
 
   /* Possible tablejumps and barriers should appear after the block.  */
-  if (b->rbi->footer)
+  if (b->il.rtl->footer)
     {
-      if (!a->rbi->footer)
-	a->rbi->footer = b->rbi->footer;
+      if (!a->il.rtl->footer)
+	a->il.rtl->footer = b->il.rtl->footer;
       else
 	{
-	  rtx last = a->rbi->footer;
+	  rtx last = a->il.rtl->footer;
 
 	  while (NEXT_INSN (last))
 	    last = NEXT_INSN (last);
-	  NEXT_INSN (last) = b->rbi->footer;
-	  PREV_INSN (b->rbi->footer) = last;
+	  NEXT_INSN (last) = b->il.rtl->footer;
+	  PREV_INSN (b->il.rtl->footer) = last;
 	}
-      b->rbi->footer = NULL;
+      b->il.rtl->footer = NULL;
     }
   a->il.rtl->global_live_at_end = b->il.rtl->global_live_at_end;
 

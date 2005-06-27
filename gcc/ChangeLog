@@ -1,3 +1,26 @@
+2005-06-28  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (basic_block_def): Kill rbi.
+	(reorder_block_def): Kill; Remove next field (replaced by aux);
+	move other fields to ...
+	(rtl_bb_info): ... here.
+	* bb-reorder.c (find_traces, rotate_loop, find_traces_1_round,
+	copy_bb, connect_traces, add_labels_and_missing_jumps
+	fix_up_fall_thru_edges, fix_crossing_conditional_branches,
+	duplicate_computed_gotos, partition_hot_cold_basic-blocks):
+	Update to new fields.
+	* cfg.c (initialize_bb_rbi): Kill.
+	* cfglayout.c (record_effective_endpoints, fixup_reorder_chain,
+	fixup_fallthru_exit_predecessor, cfg_layout_duplicate_bb): Update.
+	* cfgrtl.c (cfg_layout_create_basic_block): Do not initialize rbi.
+	(try_redirect_by_replacing_jump): Update rbi references.
+	(cfg_layout_split_block): Likewise.
+	(cfg_layout_delete_block): Likewise.
+	(cfg_layout_merge_blocks): Likewise.
+	* function.c (thread_prologue_and_epilogue_insns): Likewise.
+	* passes.c (rest_of_handle_sms): Likewise.
+	* tracer.c (seen, tail_duplicate, layout_superblocks): Likewise.
+
 2005-06-27  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_file_start): Note PPC405 erratum

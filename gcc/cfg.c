@@ -136,16 +136,6 @@ alloc_block (void)
   return bb;
 }
 
-/* Initialize rbi (the structure containing data used by basic block
-   duplication and reordering) for the given basic block.  */
-
-void
-initialize_bb_rbi (basic_block bb)
-{
-  gcc_assert (!bb->rbi);
-  bb->rbi = ggc_alloc_cleared (sizeof (struct reorder_block_def));
-}
-
 /* Link block B to chain after AFTER.  */
 void
 link_block (basic_block b, basic_block after)
