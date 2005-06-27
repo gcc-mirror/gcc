@@ -1225,7 +1225,9 @@ copy_value (rtx dest, rtx src, struct value_data *vd)
   if (frame_pointer_needed && dr == HARD_FRAME_POINTER_REGNUM)
     return;
 
-  /* Likewise for fixed or global registers.  */
+  /* Do not propagate copies to fixed or global registers, patterns
+     can be relying to see particular fixed register or users can
+     expect the chosen global register in asm.  */
   if (fixed_regs[dr] || global_regs[dr])
     return;
 
