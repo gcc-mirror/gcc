@@ -380,9 +380,15 @@ default_external_stack_protect_fail (void)
 tree
 default_hidden_stack_protect_fail (void)
 {
+#ifndef HAVE_GAS_HIDDEN
+  return default_external_stack_protect_fail ();
+#else
   tree t = stack_chk_fail_decl;
 
-  if (stack_chk_fail_decl == NULL_TREE)
+  if (!flag_pic)
+    return default_external_stack_protect_fail ();
+
+  if (t == NULL_TREE)
     {
       t = build_function_type_list (void_type_node, NULL_TREE);
       t = build_decl (FUNCTION_DECL,
@@ -402,6 +408,7 @@ default_hidden_stack_protect_fail (void)
     }
 
   return build_function_call_expr (t, NULL_TREE);
+#endif
 }
 
 #include "gt-targhooks.h"

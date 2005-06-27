@@ -906,6 +906,7 @@ static bool ix86_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 static void ix86_init_builtins (void);
 static rtx ix86_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static const char *ix86_mangle_fundamental_type (tree);
+static tree ix86_stack_protect_fail (void);
 
 /* This function is only used on Solaris.  */
 static void i386_solaris_elf_named_section (const char *, unsigned int, tree)
@@ -1082,7 +1083,7 @@ static void init_ext_80387_constants (void);
 #define TARGET_MANGLE_FUNDAMENTAL_TYPE ix86_mangle_fundamental_type
 
 #undef TARGET_STACK_PROTECT_FAIL
-#define TARGET_STACK_PROTECT_FAIL default_hidden_stack_protect_fail
+#define TARGET_STACK_PROTECT_FAIL ix86_stack_protect_fail
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -17562,6 +17563,19 @@ ix86_mangle_fundamental_type (tree type)
     default:
       return NULL;
     }
+}
+
+/* For 32-bit code we can save PIC register setup by using
+   __stack_chk_fail_local hidden function instead of calling
+   __stack_chk_fail directly.  64-bit code doesn't need to setup any PIC
+   register, so it is better to call __stack_chk_fail directly.  */
+
+static tree
+ix86_stack_protect_fail (void)
+{
+  return TARGET_64BIT
+	 ? default_external_stack_protect_fail ()
+	 : default_hidden_stack_protect_fail ();
 }
 
 #include "gt-i386.h"

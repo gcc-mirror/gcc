@@ -1,3 +1,15 @@
+2005-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* targhooks.c (default_hidden_stack_protect_fail): Fall back to
+	default_external_stack_protect_fail if visibility is not supported
+	or not flag_pic.
+	* config/i386/i386.c (ix86_stack_protect_fail): New function.
+	(TARGET_STACK_PROTECT_FAIL): Define.
+	* config/i386/i386.md (stack_protect_si): Change CLOBBER into
+	SET to zero.
+	(stack_protect_di): Likewise.  Use %k2 instead of %2 to avoid
+	invalid instruction xorl %rax, %rax.
+
 2005-06-27  Richard Henderson  <rth@redhat.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Add __SSP_ALL__ and __SSP__.
