@@ -1,3 +1,8 @@
+2005-06-27  Michael Matz  <matz@suse.de>
+
+	* gcc.target/x86_64/abi/test_struct_returning.c: Adjust as return
+	slot is not merged if address escapes.
+
 2005-06-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR c/21911
