@@ -1,5 +1,8 @@
 2005-06-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* toplev.c (process_options): Use if (FRAME_GROWS_DOWNWARD)
+	instead of preprocessor conditionals.
+
 	* targhooks.c (default_hidden_stack_protect_fail): Fall back to
 	default_external_stack_protect_fail if visibility is not supported
 	or not flag_pic.
