@@ -137,7 +137,7 @@ void check_400 (void)
 /* Structures which should be returned in MEM.  */
 void *struct_addr;
 #define D(I,MEMBERS) struct S_ ## I { MEMBERS ; }; Type class_ ## I = MEM; \
-struct S_ ## I f_ ## I (void) { struct S_ ## I s; memset (&s, 0, sizeof(s)); s.m1[0] = 42; return s; }
+struct S_ ## I f_ ## I (void) { union {unsigned char c; struct S_ ## I s;} u; memset (&u.s, 0, sizeof(u.s)); u.c = 42; return u.s; }
 
 /* Too large.  */
 D(500,char m1[17])
@@ -184,7 +184,16 @@ void check_all (Type class, unsigned long size)
     case X87: assert (x87_regs[0]._ldouble == 42); break;
     case INT_SSE: check_300(); break;
     case SSE_INT: check_400(); break;
-    case MEM: assert (rax == (unsigned long)struct_addr && rdi == rax); break;
+    /* Ideally we would like to check that rax == struct_addr.
+       Unfortunately the address of the target struct escapes (for setting
+       struct_addr), so the return struct is a temporary one whose address
+       is given to the f_* functions, otherwise a conforming program
+       could notice the struct changing already before the function returns.
+       This temporary struct could be anywhere.  For GCC it will be on
+       stack, but noone is forbidding that it could be a static variable
+       if there's no threading or proper locking.  Nobody in his right mind
+       will not use the stack for that.  */
+    case MEM: assert (*(unsigned char*)struct_addr == 42 && rdi == rax); break;
   }
 }
 
