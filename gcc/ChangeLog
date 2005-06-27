@@ -1,3 +1,12 @@
+2005-06-27  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_file_start): Note PPC405 erratum
+	in verbose_asm output.
+	* config/rs6000/rs6000.h (PPC405_ERRATUM77): Bracket with
+	CONFIG_PPC405CR.
+	* config.gcc (powerpc with_which): Define CONFIG_PPC405CR for
+	405cr.
+
 2005-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtin-attrs.def (DEF_ATTR_FOR_INT): Add for 5 and 6.

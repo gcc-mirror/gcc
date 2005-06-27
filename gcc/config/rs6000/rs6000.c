@@ -1850,6 +1850,14 @@ rs6000_file_start (void)
 	    }
 	}
 
+#ifdef CONFIG_PPC405CR
+      if (rs6000_cpu == PROCESSOR_PPC405)
+	{
+	  fprint (file, "%s PPC405CR_ERRATUM77", start);
+	  start = "";
+	}
+#endif
+
 #ifdef USING_ELFOS_H
       switch (rs6000_sdata)
 	{

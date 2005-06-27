@@ -50,8 +50,7 @@
 #endif
 
 /* If configured for PPC405, support PPC405CR Erratum77.  */
-#define PPC405_CPU_DEFAULT ("405")
-#if #TARGET_CPU_DEFAULT == #PPC405_CPU_DEFAULT
+#ifdef CONFIG_PPC405CR
 #define PPC405_ERRATUM77 (rs6000_cpu == PROCESSOR_PPC405)
 #else
 #define PPC405_ERRATUM77 0
