@@ -1,0 +1,246 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+	<head>
+		<title>Tree-Based Containers</title>
+		<meta name="GENERATOR" content="Microsoft Visual Studio .NET 7.1">
+		<meta name="vs_targetSchema" content="http://schemas.microsoft.com/intellisense/ie5">
+	</head>
+<body bgcolor = "white">
+<h1>Tree-Based Containers</h1>
+
+<p>
+	This section describes tree-based containers. It is organized as follows.
+</p>
+
+<ol>
+	<li> <a href = "#overview">Overview</a> describes an overview.</li>
+	<li> <a href = "#invariants">Node Invariants</a> describes node invariants.</li>
+	<li> <a href = "#add_methods">Additional Types and Methods</a> describes additional methods
+that tree-based containers support.</li>
+</ol>
+
+<h2><a name = "overview">Overview</a></h2>
+
+<p>
+	Figure
+<a href = "#tree_cd">Tree-based containers</a>
+	shows the container-hierarchy; the tree-based container is circled.
+</p>
+
+<h6 align = "center">
+<a name = "tree_cd">
+<img src = "tree_cd.jpg" width = "70%" alt = "no image">
+</h6>
+<h6 align = "center">
+</a>
+Tree-based containers.
+</h6>
+
+
+<p>
+	The tree-based container has the following declaration:
+</p>
+<pre>
+<b>template</b>&lt;
+	<b>typename</b> Key,
+	<b>typename</b> Data,
+	<b>class</b> Cmp_Fn = std::less&lt;Key&gt;,
+	<b>class</b> DS_Tag = <a href = "rb_tree_ds_tag.html">rb_tree_ds_tag</a>,
+	<b>class</b> Node_Updator = <a href = "null_node_updator.html">null_node_updator</a>,
+	<b>class</b> Allocator =
+		std::allocator&lt;<b>char</b>&gt; &gt;
+<b>class</b> <a href = "tree_assoc_cntnr.html">tree_assoc_cntnr</a>;
+</pre>
+
+
+<p>
+	The parameters have the following meaning:
+</p>
+<ol>
+	<li> <tt>Key</tt> is the key type.
+	</li>
+	<li> <tt>Data</tt> is the data-policy, and is explained in
+<a href = "ms_gen.html#ds_policy">Mapping-Semantics Genericity::Data Types as a Policy</a>.
+	</li>
+	<li> <tt>Cmp_Fn</tt> is a key comparison functor</li>
+	<li> <tt>DS_Tag</tt> specifies which underlying data-structure to use, and is described shortly.
+	<li> <tt>Node_Updator</tt> is a policy for updating node invariants.
+This is described in <a href = "#invariants">Node Invariants</a>.
+	</li>
+	<li> <tt>Allocator</tt> is (surprisingly) an allocator type.
+	</li>
+</ol>
+
+<p>
+	The <tt>DS_Tag</tt> specifies which underlying data-structure to use.
+Instantiating it by
+<a href = "rb_tree_ds_tag.html">rb_tree_ds_tag</a>,
+<a href = "splay_tree_ds_tag.html">splay_tree_ds_tag</a>,
+or
+<a href = "ov_tree_ds_tag.html">ov_tree_ds_tag</a>,
+specifies an undelying
+red-black tree,
+splay tree,
+or
+ordered-vector tree.
+	any other tag is illegal. Note that containers based on the former two contain more types and methods than the latter (<i>e.g.</i>, <tt>reverse_iterator</tt> and <tt>rbegin</tt>), and different exception and invalidation guarantees.
+</p>
+
+
+
+
+<h2><a name = "invariants">Node Invariants</a></h2>
+
+<p>
+	Figure
+<a href = "#node_invariants">Some node invariants</a>
+shows some node invariants. A shows
+a tree whose each node contains, asides from an <tt>double</tt> key, the number
+of nodes at the subtree rooted at the node; B shows a tree whose each node
+contains, asides from a line-interval key, the maximal endpoint of the interval
+of any node in the subtree rooted at the node.
+	The first tree allows querying efficiently what is the order statistic
+of any element; the second tree allows querying efficiently if any, or which,
+intervals overlap a given interval.
+</p>
+
+<h6 align = "center">
+<a name = "node_invariants">
+<img src = "node_invariants.jpg" width = "50%" alt = "no image">
+</a>
+</h6>
+<h6 align = "center">
+Some node invariants.
+</h6>
+
+
+<p>
+	Maintaining such trees is difficult, for two reasons:
+</p>
+<ol>
+	<li> Various operations can invalidate node invariants.
+<i>E.g.</i>, Figure
+<a href = "#node_invariant_invalidations">Invalidation of node invariants</a>
+shows how a right rotation, performed on A, results in B, with nodes <i>x</i>
+and <i>y</i> having corrupted invariants (the greyed nodes in C);
+Figure
+<a href = "#node_invariant_invalidations">Invalidation of node invariants</a>
+shows how an insert, performed on D, results in E, with nodes <i>x</i>
+and <i>y</i> having corrupted invariants (the greyed nodes in F).
+	It is not feasible to know outside the tree the effect of an operation on the
+nodes of the tree.
+	</li>
+	<li>
+		Even if node invariants are maintained, it is not possible to know
+in advance which search paths are required (<i>e.g.</i>, searching for all
+line intervals overlapping some interval might require several search paths).
+	</li>
+</ol>
+
+
+<h6 align = "center">
+<a name = "node_invariant_invalidations">
+<img src = "node_invariant_invalidations.jpg" width = "80%" alt = "no image">
+</a>
+</h6>
+<h6 align = "center">
+Invalidation of node invariants.
+</h6>
+
+<p>
+	These problems are solved by a combination of two means:
+</p>
+
+<ol>
+	<li>
+		The tree-based containers are parameterized by a <tt>Node_Updator</tt>
+parameter. When a tree operation might invalidate some node invariant,
+a <tt>Node_Updator</tt> object is invoked to restore the invariant. This object is
+always invoked with three nodes: some node, say <i>x</i> in
+Figure
+<a href = "#restoring_node_invariants">Invalidation of node invariants</a>-A
+has an invalid invariant, but its children, <i>y</i> and <i>z</i> hav valid invariants.
+After the invocation, all three nodes have valid invariants, as
+in
+Figure
+<a href = "#restoring_node_invariants">Invalidation of node invariants</a>-B.
+It is well known that any <tt>insert</tt>, <tt>erase</tt>,
+<tt>split</tt> or <tt>join</tt>, can restore
+all node invariants by a small number of node invariant updates
+[<a href = "references.html#clrs2001">clrs2001</a>].
+For example, Figure
+<a href = "#update_seq_diagram">
+Insert update sequence diagram
+</a>
+shows an <tt>insert</tt> operation (point A); the tree performs some operations, and
+calls the update functor three times (points B, C, and D).
+	</li>
+	<li>
+		The tree based containers all define internally <tt>node_iterator</tt>
+	and <tt>const_node_iterator</tt>, iterators which can be used to traverse
+	from a node to any of its children or parent.
+	</li>
+</ol>
+
+<h6 align = "center">
+<a name = "restoring_node_invariants">
+<img src = "restoring_node_invariants.jpg" width = "80%" alt = "no image">
+</a>
+</h6>
+<h6 align = "center">
+Invalidation of node invariants.
+</h6>
+
+<h6 align = "center">
+<a name = "update_seq_diagram">
+<img src = "update_seq_diagram.jpg" width = "50%" alt = "no image">
+</a>
+</h6>
+<h6 align = "center">
+Insert update sequence diagram.
+</h6>
+
+
+<p>
+	In
+<a href = "concepts.html#concepts_null_policies">Null Policy Classes</a>
+a distinction was made between <i>redundant policies</i>
+and <i>null policies</i>.
+</p>
+
+<p>
+	Seemingly, in this case a redundant policy - a policy which doesn't
+affect nodes' contents would suffice in this case. This, however, would
+lead to performance loss.
+Figure
+<a href = "#rationale_null_node_updator">
+Rationale for null node-invariant functors
+</a>
+shows a typical case where invariants are restored (in this case, to the
+shaded node). In most cases, tree operations such as rotations affect only
+the lower levels of the tree. A null policy allows to know that there
+is no need to traverse the tree to the root.
+</p>
+
+<h6 align = "center">
+<a name = "rationale_null_node_updator">
+<img src = "rationale_null_node_updator.jpg" width = "50%" alt = "no image">
+</a>
+</h6>
+<h6 align = "center">
+Rationale for null node-invariant functors.
+</h6>
+
+
+
+<h2><a name = "add_methods">Addtional Methods</a></h2>
+
+
+
+
+
+
+
+</body>
+
+</html>

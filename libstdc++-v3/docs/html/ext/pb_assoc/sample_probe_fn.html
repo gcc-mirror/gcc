@@ -1,0 +1,177 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+
+<html>
+<head>
+<title>sample_probe_fn Interface
+</title>
+
+</head>
+
+<body>
+<h1>
+<tt>sample_probe_fn
+</tt>
+
+ Interface
+
+
+</h1>
+
+<p>A sample probe policy.
+</p>
+
+<p>This class serves to show the interface a probe functor needs to support.
+</p>
+
+<ol>
+<li>
+<a href = "../doc/sample_probe_fn.hpp"><tt>sample_probe_fn.hpp</tt>
+</a>
+
+</li>
+
+<li>
+Public Methods:
+
+
+<ol>
+<li>
+<a href = "#link1">Constructors, destructor, and related.
+</a>
+
+</li>
+
+</ol>
+
+</li>
+
+<li>
+Protected Methods:
+
+
+<ol>
+<li>
+<a href = "#link2">Offset methods.
+</a>
+
+</li>
+
+</ol>
+
+</li>
+
+</ol>
+
+
+<h2>
+<a name = "link1">Constructors, destructor, and related.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre>  sample_probe_fn
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Default constructor.</p>
+
+
+<p>Must be default constructible.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre>  sample_probe_fn
+  (<b>const</b> sample_probe_fn &amp;r_other)</pre>
+
+
+</td>
+
+<td>
+<p>Copy constructor.</p>
+
+
+<p>Must be copy constructible.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  swap
+  (sample_probe_fn &amp;r_other)</pre>
+
+
+</td>
+
+<td>
+<p>Swaps content.</p>
+
+
+<p>Must be swappable (if there is such a word).</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link2">Offset methods.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><b>inline</b> size_type
+  <b>operator</b>()
+  (const_key_reference r_key,
+    size_type i) <b>const</b></pre>
+
+
+</td>
+
+<td>
+<p>Returns the <font color = "#666666"><tt>i</tt></font>-th offset from the hash value of some key <font color = "#666666"><tt>r_key</tt></font>.</p>
+
+
+<p><p><tt>size_type</tt> is the size type on which the functor operates.</p></p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+
+
+</body>
+
+</html>
+
+

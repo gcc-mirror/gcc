@@ -1,0 +1,368 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+    <head>
+        <title>Data-Structure Genericity</title>
+        <meta name="GENERATOR" content="Microsoft Visual Studio .NET 7.1">
+        <meta name="vs_targetSchema" content="http://schemas.microsoft.com/intellisense/ie5">
+    </head>
+<body bgcolor = "white">
+<h1>Data-Structure Genericity</h1>
+
+<p>
+	This section describes genericity over different underlying data-structures. It is organized as follows.
+</p>
+<ol>
+	<li><a href = "#problem">The Basic Problem</a></li>
+	<li><a href = "#ds_hierarchy">Container Hierarchy</a></li>
+	<li><a href = "#ds_traits">Data-Structure Tags and Traits</a></li>
+	<li><a href = "#find_range">Find-Type and Range-Type Methods and Iterators</a></li>
+</ol>
+
+<h2><a name = "problem">The Basic Problem</a></h2>
+
+<p>
+	The design attempts to address the following problem. When writing a function manipulating a generic container object, what is the behaviour of the object? <i>E.g.</i>, suppose one writes
+</p>
+<pre>
+<b>template</b>&lt;
+    <b>class</b> Cntnr&gt;
+<b>void</b> some_op_sequence
+    (Cntnr &r_cntnr)
+{
+    ...
+}
+</pre>
+then one needs to address the following questions in the body
+of <tt>some_op_sequence</tt>:
+<ol>
+	<li> Which types and methods does <tt>Cntnr</tt> support? Containers based on hash tables can be queries for the hash-functor type and object; this is meaningless for tree-based containers. Containers based on trees can be split, joined, or can erase iterators and return the following iterator; this cannot be done by hash-based containers. </li>
+	<li>
+		What are the guarantees of <tt>Cntnr</tt>? A container based on a probing hash-table invalidates all iterators when it is modified; this is not the case for containers based on node-based trees. Containers based on a node-based tree can be split or joined without exceptions; this is not the case for containers based on vector-based trees.
+	</li>
+	<li> How does the container maintain its elements? containers based on splay trees or lists with update policies "cache" "frequently accessed" elements; containers based on most other underlying data-structures do not.</li>
+</ol>
+
+<h2><a name = "ds_hierarchy">Container Hierarchy</a></h2>
+
+<p>
+	Figure
+<a href = "#cd">Class hierarchy</a>
+	shows the container hierarchy.
+</p>
+<ol>
+	<li>
+<a href = "basic_assoc_cntnr.html"><tt>basic_assoc_cntnr</tt></a>
+contains types and methods shared by all associative containers, <i>e.g.</i>, the type <tt>allocator</tt> and the method <tt>find</tt>.
+	</li>
+	<li><a href = "basic_assoc_cntnr.html"><tt>basic_hash_assoc_cntnr</tt></a> subclasses
+<a href = "basic_assoc_cntnr.html"><tt>basic_assoc_cntnr</tt></a>, and contains
+types and methods shared by all hash-based containers, <i>e.g.</i>, the type <tt>hash_fn</tt>.
+	</li>
+	<ol>
+		<li>
+<a href = "cc_hash_assoc_cntnr.html"><tt>cc_hash_assoc_cntnr</tt></a>
+and
+<a href = "gp_hash_assoc_cntnr.html"><tt>gp_hash_assoc_cntnr</tt></a>
+each subclass
+<a href = "basic_hash_assoc_cntnr.html"><tt>basic_hash_assoc_cntnr</tt></a>, and encapsulate collision-chaining and (general) probing hash tables, respectively. These two types of hash tables have somewhat different policies and methods (<i>i.e.</i>, constructors and policy-access methods).
+		</li>
+	</ol>
+	<li>
+<a href = "tree_assoc_cntnr.html"><tt>tree_assoc_cntnr</tt></a>
+subclasses one of
+<a href = "basic_tree_assoc_cntnr.html"><tt>basic_tree_assoc_cntnr</tt></a> which
+subclasses
+<a href = "basic_assoc_cntnr.html"><tt>basic_assoc_cntnr</tt></a>.
+<a href = "tree_assoc_cntnr.html"><tt>tree_assoc_cntnr</tt></a>
+ encapsulates a tree-based container, and is parameterized by which underlying data-structure to use (<i>e.g.</i>, a red-black tree);
+<a href = "basic_assoc_cntnr.html"><tt>basic_assoc_cntnr</tt></a>.
+is specialized to the capabilities of the underlying structure.
+<a href = "tree_assoc_cntnr.html"><tt>tree_assoc_cntnr</tt></a> contains some additional methods over
+<a href = "basic_assoc_cntnr.html"><tt>basic_assoc_cntnr</tt></a>,
+<i>e.g.</i>, split and join methods.
+	</li>
+		<li>
+<a href = "lu_assoc_cntnr.html"><tt>lu_assoc_cntnr</tt></a>
+subclasses
+<a href = "basic_assoc_cntnr.html"><tt>basic_assoc_cntnr</tt></a>,
+and encapsulates a list with update policies.
+	</li>
+</ol>
+
+<p>
+	The hierarchy is composed naturally, such that each container inherits
+all types and methods from its base. <a href = "#ds_traits">Data-Structure Tags and Traits</a> discusses how to query which types and methods each container supports.
+</p>
+
+
+
+<h2><a name = "ds_traits">Data-Structure Tags and Traits</a></h2>
+
+<p>
+	<tt>pb_assoc</tt> contains a tag and traits mechanism similar to that of the STL's iterators.
+</p>
+
+<p>
+	<tt>pb_assoc</tt> contains a tag hierarchy corresponding to the hierarchy
+in Figure
+<a href = "#cd">Class hierarchy</a>.
+The tag hierarchy is shown in Figure
+<a href = "#ds_tag_cd">Data-structure tag class hierarchy</a>.
+</p>
+
+<h6 align = "center">
+<a name = "cd">
+<img src = "ds_tag_cd.jpg" width = "70%" alt = "no image">
+</h6>
+</a>
+<h6 align = "center">
+Data-structure tag class hierarchy.
+</h6>
+
+<p>
+	<a href = "basic_assoc_cntnr.html"><tt>basic_assoc_cntnr</tt></a> publicly defines
+<tt>ds_category</tt> as one of the classes in Figure
+.
+Given any container <tt>Cntnr</tt>, the tag of the underlying data-structure can be found via <tt><b>typename</b> Cntnr::ds_category</tt>.
+</p>
+
+<p>
+	Additionally, a traits mechanism can be used to query a container type for its attributes. Given any container <tt>Cntnr</tt>, then
+<tt><a href = "ds_traits.html">ds_traits</a>&lt;Cntnr&gt;</tt>
+is a traits class identifying the properties of the container.
+</p>
+
+<p>
+	To find if a container can throw when a key is erased (which is true for vector-based trees, for example), one can use
+</p>
+<a href = "ds_traits.html"><tt>ds_traits</tt></a><tt>&lt;Cntnr&gt;::erase_can_throw</tt>,
+for example.
+
+<p>
+	Some of the definitions in
+<a href = "ds_traits.html"><tt>ds_traits</tt></a>
+are dependent on other definitions. <i>E.g.</i>, if
+<a href = "ds_traits.html"><tt>ds_traits</tt></a><tt>&lt;Cntnr&gt;::split_join</tt>
+is <tt><b>true</b></tt> (which is the case for containers based on trees),
+then
+<a href = "ds_traits.html"><tt>ds_traits</tt></a><tt>&lt;Cntnr&gt;::split_join_can_throw</tt>
+indicates whether splits or joins can throw exceptions (which is true for vector-based trees); otherwise
+<a href = "ds_traits.html"><tt>ds_traits</tt></a><tt>&lt;Cntnr&gt;::split_join_can_throw</tt>
+will yield a compilation error. (This is somewhat similar to a compile-time
+version of the COM model
+[<a href = "references.html#mscom">mscom</a>]).
+
+
+<h2><a name = "find_range">Find-Type and Range-Type Methods and Iterators</a></h2>
+
+<p>
+	<tt>pb_assoc</tt> differentiates between two types of methods: find-type methods, and range-type methods. For example, <tt>find</tt> is a find-type method, since a container object searches for an element with a given key; <tt>insert</tt> is a find-type method, since, by STL convention, a container object returns an iterator corresponding to an element with a given key; <tt>begin</tt> and <tt>end</tt> are range-type methods, since they are not used to find a specific element, but rather to go over all elements in a container object.
+</p>
+
+<p>
+	Correspondingly, containers in <tt>pb_assoc</tt> define two families of iterators. <tt>const_find_iterator</tt> and <tt>find_iterator</tt> are the iterator types returned by find-type methods; <tt>const_iterator</tt> and <tt>iterator</tt> are the iterator types returned by range-type methods.
+</p>
+
+<p>
+	The relationship between these iterator types varies between container types. In a tree-based container, for example, <tt>const_find_iterator</tt> and <tt>const_iterator</tt> are synonymous, and <tt>find_iterator</tt> and <tt>iterator</tt> are synonymous; in a hash-based container, for example, this is not the case. Futhermore, find-type iterators in a hash-based container lack movement operators, such as
+	<tt><b>operator++</b></tt>.
+	All containers, however, maintain the invariants shown in Figure
+
+.
+</p>
+
+
+<p>
+	This distinction between find-type and range-type iterators and methods, while complicating the interface, has several advantages:
+</p>
+
+<h3>Iterators in unordered container types</h3>
+
+<p>
+ Given an unordered container type, <i>e.g.</i>, a hash-based container, it makes no sense to move an iterator returned by a find-type method.
+Let <tt>cntnr</tt> be an associative-container object, and
+consider:
+</p>
+
+<pre>
+std::for_each(m.find(1), m.find(5), foo);
+</pre>
+
+<p>
+which applies <tt>foo</tt> to all elements in <tt>m</tt>
+between <tt>1</tt> and <tt>5</tt>.
+</p>
+
+<p>If <tt>cntnr</tt> is a
+tree-based container object, then an in-order walk will apply <tt>foo</tt>
+to the relevant elements, <i>e.g.</i>, as in Figure
+<a href = "#range_it_in_hts">Range iteration in different data-structures</a>
+-A. If <tt>m</tt> is a
+hash-based container, then the order of elements between any two
+elements is undefined (and probably time-varying); there is no
+guarantee that the elements traversed will coincide with the
+<i>logical</i> elements between 1 and 5, <i>e.g.</i>, as in
+Figure <a href = "#range_it_in_hts">Range iteration in different data-structures</a>-B.
+</p>
+
+<p>
+The application of a
+range function <i>e.g.</i>, <tt>for_each</tt>, to a
+pair of hash-based container's iterators is possibly sensical only
+if the iterators are those returned by <tt>begin</tt> and <tt>end</tt>,
+respectively. Therefore, the iterator returned by
+<tt>m</tt>'s <tt>find</tt> method should be immovable.
+</p>
+
+<p>
+    Another point also indicates that hash-based containers'
+find-type iterators and range-type iterators should be distinct.
+Consider Figure
+<a href = "#find_its_in_hash_tables">
+Find-type iterators in hash tables</a>-A.
+An
+(immovable) find-type iterator, designed only to access an
+element, requires at most a single pointer to the element's link.
+Conversely, an iterator designed for range operations
+requires some more information <i>e.g.</i>, the bucket number),
+since a cross-list traversal might be necessary. Alternatively,
+the lists might be linked, forming a monolithic total-element
+list, as in Figure
+<a href = "#find_its_in_hash_tables">
+Find-type iterators in hash tables</a>-B (this seems
+similar to the Dinkumware design
+[<a href = "references.html#dinkumware_stl">dinkumware_stl</a>]). This,
+however, complicates the hash-table's operations.
+
+<h6 align = "center">
+<a name = "range_it_in_hts">
+<img src = "find_iterators_range_ops_1.jpg" width = "70%" alt = "no image">
+</a>
+</h6>
+<h6 align = "center">
+Range iteration in different data-structures.
+</h6>
+
+
+<h6 align = "center">
+<a name = "find_its_in_hash_tables">
+<img src = "find_iterators_range_ops_2.jpg" width = "70%" alt = "no image">
+</a>
+</h6>
+<h6 align = "center">
+Find-type iterators in hash tables.
+</h6>
+
+<p>
+	As a consequence of this design,
+</p>
+
+<pre>
+std::for_each(m.find(1), m.find(5), foo);
+</pre>
+
+<p>
+	will compile for tree-based containers, but will not compile
+for hash-tables or other types. The returned type of <tt>find</tt>
+is a find-type iterator. For tree-based containers, this is synonymous
+with a range-type iterator, and therefore supports <tt><b>operator</b>++</tt>;
+for other types of containers, a find-type iterator lacks <tt><b>operator</b>++</tt>.
+</p>
+
+<h3>Invalidation Guarantees</h3>
+
+<p>
+	Consider the following snippet:
+</p>
+
+<pre>
+it = c.find(3);
+
+c.erase(5);
+</pre>
+
+<p>
+	Following the call to <tt>erase</tt>, what is the validity
+of <tt>it</tt>: can it be dereferenced? can it be incremented?
+</p>
+
+<p>
+	The answer depends on the underlying data-structure of the container.
+Figure
+<a href = "#invalidation_guarantee_erase">Effect of erase in different underlying data-structures</a>
+shows three cases: A1 and A2 show a red-black tree;
+B1 and B2 show an ordered-vector tree; C1 and C2
+show a collision-chaining hash table.
+</p>
+
+<h6 align = "center">
+<a name = "invalidation_guarantee_erase">
+<img src = "invalidation_guarantee_erase.jpg" width = "70%" alt = "no image">
+</h6>
+</a>
+<h6 align = "center">
+Effect of erase in different underlying data-structures.
+</h6>
+
+
+<ol>
+	<li>
+		`Erasing 5 from A1 yields A2. Clearly, an iterator to 3
+	can be dereferenced and incremented.
+	</li>
+	<li>
+		Erasing 5 from B1 yields B2. Clearly, an iterator to 3 is
+	not valid at all.
+	</li>
+	<li>
+		Erasing 5 from C1 yields C2. Here the situation is more complicated.
+On the one hand, incrementing <tt>it</tt> can be undefined. On the other
+hand, there is no problem in dereferencing <tt>it</tt>. In
+classic STL, it is not possible to express whether <tt>it</tt>
+is valid or not.
+	</li>
+</ol>
+
+<p>
+	Thus again, the iterator concept seems overloaded. Distinguishing
+between find and range types allows fine-grained invalidation guarantees.
+<a href = #invalidation_guarantee_cd">Invalidation guarantees class hierarchy</a>
+shows tags corresponding to different types of invalidation guarantees.
+</p>
+
+<h6 align = "center">
+<a name = "invalidation_guarantee_cd">
+<img src = "invalidation_guarantee_cd.jpg" width = "70%" alt = "no image">
+</h6>
+</a>
+<h6 align = "center">
+Invalidation guarantees class hierarchy.
+</h6>
+
+<ol>
+	<li> <a href = "basic_invalidation_guarantee.html"><tt>basic_invalidation_guarantee</tt></a> corresponds to a basic guarantee that a find-type iterator, a found pointer, or a found reference, remains valid as long as the container object is not modified.
+	</li>
+	<li> <a href = "find_invalidation_guarantee.html"><tt>find_invalidation_guarantee</tt></a> corresponds to a guarantee that a find-type iterator, a found pointer, or a found reference, remains valid even if the containter object is modified.
+	</li>
+	<li> <a href = "range_invalidation_guarantee.html"><tt>range_invalidation_guarantee</tt></a> corresponds to a guarantee that a range-type iterator remains valid even if the containter object is modified.
+	</li>
+</ol>
+
+
+<p>
+	To find the invalidation guarantee of a container, one can use
+</p>
+<pre>
+<b>typename</b> <a href = "ds_traits.html">ds_traits</a>&lt;Cntnr&gt;::invalidation_guarantee
+</pre>
+
+<p>
+	which is one of the classes in Figure
+<a href = #invalidation_guarantee_cd">Invalidation guarantees class hierarchy</a>.
+</p>
+
+
+
+</body>
+
+</html>

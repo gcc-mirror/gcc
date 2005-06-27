@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+    <head>
+        <title>List Updates</title>
+        <meta name="GENERATOR" content="Microsoft Visual Studio .NET 7.1">
+        <meta name="vs_targetSchema" content="http://schemas.microsoft.com/intellisense/ie5">
+    </head>
+
+<body bgcolor = "white">
+
+<h1>List-Update Containers</h1>
+
+<p>
+    This section describes policies for list updates. It is organized as follows:
+</p>
+
+<ol>
+    <li> The <a href = "#general">General Terms</a> Subsection describes general
+        terms.
+    </li>
+    <li> The <a href = "#imp_pb_assoc">Implementation in <tt>pb_assoc</tt></a>
+        Subsection describes the implementation of these concepts in <tt>pb_assoc</tt>.
+    </li>
+</ol>
+
+
+<h2><a name = "general">General Terms</a></h2>
+
+<p>
+    Associative containers use some attributes of the keys of which they store: tree-based
+containers use the ability to compare keys; hash-based containers use the ability to map
+keys into numbers.
+</p>
+
+<p>
+        In the (rare) case where keys can only be checked for equivalence, these
+types of containers cannot be used. In such a case, storing the entries in a list is a reasonable solution.
+Clearly, the order of the elements within the list affects performance; ideally, frequently accessed elements
+should be at the front of the list.
+</p>
+
+<p>
+    Many remarkable (online competitive
+[<a href = "references.html#motwani95random">motwani95random</a>])
+algorithms exist for reordering lists to reflect access prediction
+[<a href = "references.html#andrew04mtf">andrew04mtf</a>]. Some of these algorithms require storing
+metadata with each key, while others do not. Some of these algorithms require only the ability to
+move an element to the front of the list, while others require the ability to interchange an element and
+its predecessor.
+</p>
+
+<p>
+    For example, Figure
+<a href = "#lu">-A
+The counter algorithm
+</a>
+shows the counter algorithm. Each node contains both a key and a count metadata (shown in bold).
+When an element is accessed (<i>e.g.</i> 6)
+its count is incremented, as shown in
+Figure
+<a href = "#lu">
+The counter algorithm
+</a>-B.
+If the count reaches some predetermined value, say 10, as shown in
+Figure
+<a href = "#lu">
+The counter algorithm
+</a>-C,
+the count is set to 0
+and the node is moved to the front of the list,  as in
+Figure
+<a href = "#lu">
+The counter algorithm
+</a>-D.
+
+
+</p>
+
+<h6 align = "center">
+<a name = "lu">
+<img src = "lu.jpg" width = "65%">
+</a>
+</h6>
+<h6 align = "center">
+The counter algorithm.
+</h6>
+
+
+
+<h2><a name = "imp_pb_assoc">Implementation in <tt>pb_assoc</tt></a></h2>
+
+<p>
+    The <tt>pb_assoc</tt> library allows instantiating lists with policies
+implementing any algorithm moving nodes to the front of the list (policies implementing
+algorithms interchanging nodes are currently unsupported).
+</p>
+
+<p>
+    Associative containers based on lists are parameterized by a <tt>Update_Policy</tt> parameter.
+This parameter defines the type of metadata each node contains, how to create the metadata, and how to
+decide, using this metadata, whether to move a node to the front of the list.
+    A list-based associative container object derives (publicly) from its update policy.
+</p>
+
+<p>
+    An instantiation of <tt>Update_Policy</tt> must define internally <tt>update_metadata</tt> as the metadata
+it requires. Internally, each node of the list contains, besides the usual key and data, an instance
+of <tt><b>typename</b> Update_Policy::update_metadata</tt>.
+</p>
+
+<p>
+    An instantiation of <tt>Update_Policy</tt> must define internally two operators:
+</p>
+<pre>
+update_metadata
+  <b>operator</b>()
+  ();
+
+<b>bool</b>
+  <b>operator</b>()
+  (update_metadata &);
+</pre>
+
+<p>
+    The first is called by the container object, when creating a new node, to create the node's metadata. The
+second is called by the container object, when a node is accessed (<i>e.g.</i>, when a find operation's key
+is equivalent to the key of the node), to determine whether to move the node to the front of the list.
+</p>
+
+<p>
+    Additionally, the library contains implementations of the move-to-front and counter policies. These
+are described in
+<a href="interface.html#policy_classes">Policy Classes</a>.
+</p>
+
+</body>
+
+</html>

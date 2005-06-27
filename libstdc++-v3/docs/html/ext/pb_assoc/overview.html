@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+    <head>
+        <title>Overview</title>
+        <meta name="GENERATOR" content="Microsoft Visual Studio .NET 7.1">
+        <meta name="vs_targetSchema" content="http://schemas.microsoft.com/intellisense/ie5">
+    </head>
+<body bgcolor = "white">
+
+
+<h1>Overview</h1>
+
+<p>
+	The <a href = "introduction.html">Introduction</a> Section described some challenges
+in designing associative containers. This section describes the <tt>pb_assoc</tt>'s solution.
+</p>
+
+
+<p>
+Figure
+<a href = "#cd">Class hierarchy</a>
+shows a class diagram of <tt>pb_assoc's associative containers.</tt>
+Associative container classes subclass other associative container classes such that
+base classes capture common types and methods
+[<a href = "references.html#stroustrup97cpp">stroustrup97cpp</a>]. The type <tt>hash_fn</tt> is defined in <a href = "basic_hash_assoc_cntnr.html"><tt>basic_hash_assoc_cntnr</tt></a>, for example, since all hash-based containers employ a hash function;
+<a href = "cc_hash_assoc_cntnr.html"><tt>cc_hash_assoc_cntnr</tt></a>
+and
+<a href = "gp_hash_assoc_cntnr.html"><tt>gp_hash_assoc_cntnr</tt></a>,
+subclasses encapsulating a collision-chaining and (general) probing hash table, respectively, each define other types specific for their underlying data-structure.
+This is described further in
+<a href = "ds_gen.html">Data-Structure Genericity</a>.
+</p>
+
+<h6 align = "center">
+<a name = "cd">
+<img src = "cd.jpg" width = "70%" alt = "no image">
+</h6>
+</a>
+<h6 align = "center">
+Class hierarchy.
+</h6>
+
+<p>
+	It is sometimes useful to know the underlying data-structure.
+Associative containers internally define <tt>ds_category</tt> as a class describing this. Two classes might be different instantiations
+of
+<a href = "tree_assoc_cntnr.html"><tt>tree_assoc_cntnr</tt></a>, but one might be based on a red-black tree while another might be based on a splay tree. (This might affect the way tree objects should be manipulated.) <tt><b>typename</b> Cntnr::ds_category</tt>
+yields a &quot;tag&quot; class for the underlying data-structure of some type
+<tt>Cntnr</tt>.
+This is described further in
+<a href = "ds_gen.html">Data-Structure Genericity</a>.
+</p>
+
+<p>
+	When manipulating generic containers, it is useful to know which types, methods, and guarantees they support. For example, tree-based containers can support split and join operations, while containers based on most other underlying data-structures cannot.
+These questions can be answered in compile time through a traits mechanism.
+<a href = "ds_traits.html"><tt>ds_traits</tt>&lt;Cntnr&gt;::split_join</a>, for example, answers the above question.
+This is described further in
+<a href = "ds_gen.html">Data-Structure Genericity</a>;
+<a href = "../example/ds_traits_example.cpp"><tt>ds_traits_example.cpp</tt></a>-
+shows an example.
+</p>
+
+<p>
+	<tt>pb_assoc</tt>	does not contain separate containers for different mapping semantics,
+as the STL does (<i>e.g.</i>, <tt>std::map</tt> and <tt>std::multimap</tt>). Rather, containers are parameterized by a <tt>Data</tt> parameter, and this parameter is a policy for the mapping semantics.
+</p>
+<ol>
+	<li>
+	Instantiating a container's <tt>Data</tt> parameter by all but two distingished types, will make a &quot;map&quot;. Thus
+<pre>
+<a href = "cc_hash_assoc_cntnr.html">cc_hash_assoc_cntnr</a>&lt;
+	<b>int</b>,
+	<b>char</b>&gt;
+</pre> is a type mapping each <tt><b>int</b></tt> value to a <tt><b>char</b></tt>
+	value.
+	<a href = "../example/basic_map_example.cpp"><tt>basic_map_example.cpp</tt></a>
+	shows an example.
+	</li>
+	<li>
+	Instantiating a container's <tt>Data</tt> parameter by <a href = "null_data_type.html"><tt>null_data_type</tt></a> will make a &quot;set&quot;. Thus
+<pre>
+<a href = "cc_hash_assoc_cntnr.html">cc_hash_assoc_cntnr</a>&lt;
+	<b>int</b>,
+	<a href = "null_data_type.html">null_data_type</a>&gt;
+</pre>
+is a type storing unique <tt><b>int</b></tt> values.
+<a href = "../example/basic_set_example.cpp"><tt>basic_set_example.cpp</tt></a> shows an example.
+	</li>
+	<li>
+	Instantiating a container's <tt>Data</tt> parameter by <a href = "compound_data_type.html"><tt>compound_data_type</tt></a><tt>&lt;Cntnr&gt;</tt>, where <tt>Cntnr</tt> is a different associative container, will make a &quot;(multi)+map&quot;. Thus
+<pre>
+<a href = "cc_hash_assoc_cntnr.html">cc_hash_assoc_cntnr</a>&lt;
+	<b>int</b>,
+	<a href = "compound_data_type.html">compound_data_type</a>&lt;
+		<a href = "cc_hash_assoc_cntnr.html">cc_hash_assoc_cntnr</a>&lt;
+			<b>char</b>,
+			<a href = "null_data_type.html">null_data_type</a>&gt; &gt; &gt;
+</pre>
+ is a type
+mapping each <tt><b>int</b></tt> value to a &quot;set&quot; of <tt><b>char</b></tt>
+values.
+<a href = "../example/basic_multimap_example.cpp"><tt>basic_multimap_example.cpp</tt></a> shows an example.
+This composition is recursive, however, and more complex relationships can be built.
+<a href = "../example/mapping_level_example.cpp"><tt>mapping_level_example.cpp</tt></a> shows an example.
+	</li>
+</ol>
+
+<p>
+	The associative-container classes derive each from one of the three
+<a href = "basic_assoc_cntnr.html"><tt>basic_assoc_cntnr</tt></a> classes, depending
+on the data policy. These three base classes define different types and methods. For example, the &quot;map&quot; specialization of
+<a href = "basic_assoc_cntnr.html"><tt>basic_assoc_cntnr</tt></a>
+defines <tt><b>operator</b>[]</tt>, wherase the &quot;set&quot; specialization does not.
+This is described further in
+<a href = "ms_gen.html">Mapping-Semantic Genericity</a>.
+</p>
+
+<p>
+	<tt>pb_assoc</tt>'s design contains the concept of a <i>mapping level</i>. &quot;Map&quot; and &quot;set&quot; types have a single mapping level; A container
+mapping integers to &quot;maps&quot; mapping characters to floats has two mapping levels, since it can be viewed as a type mapping each integer to a &quot;map&quot;, or as a type mapping each pair of integer and character to a float. <tt>pb_assoc</tt> contains traits and rebind mechanisms for querying and altering the mapping levels.
+This is described further in
+<a href = "ms_gen.html">Mapping-Semantic Genericity</a>.
+</p>
+
+<p>
+	The leaf classes in Figure
+<a href = "#cd">Class hierarchy</a>
+are each parameterized by policies, easing configuring containers for different settings.
+<a href = "hash_based_containers.html">Hash-Based Containers</a> describes the design and policies of hash-based containers,
+	<a href = "tree_based_containers.html">Tree-Based Containers</a> describes the design and policies of tree-based containers, and
+	<a href = "lu_based_containers.html">List-Based Containers</a> describes the design and policies of list-based containers with update policies.
+
+</p>
+
+
+</body>
+
+</html>

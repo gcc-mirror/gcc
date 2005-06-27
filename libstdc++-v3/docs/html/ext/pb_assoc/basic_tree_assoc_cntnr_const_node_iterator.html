@@ -1,0 +1,488 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+
+<html>
+<head>
+<title>basic_tree_assoc_cntnr::const_node_iterator Interface
+</title>
+
+</head>
+
+<body>
+<h1>
+<tt><font color = "olive">basic_tree_assoc_cntnr</font>::const_node_iterator
+</tt>
+
+ Interface
+
+
+</h1>
+
+<p>Const node iterator.
+</p>
+
+<p>This is an
+</p>
+
+<ol>
+<li>
+Public Types and Constants:
+
+
+<ol>
+<li>
+<a href = "#link1">Iterator definitions.
+</a>
+
+</li>
+
+<li>
+<a href = "#link2">Value-type definitions.
+</a>
+
+</li>
+
+</ol>
+
+</li>
+
+<li>
+Public Methods:
+
+
+<ol>
+<li>
+<a href = "#link3">Constructors, destructor, and related.
+</a>
+
+</li>
+
+<li>
+<a href = "#link4">Access methods.
+</a>
+
+</li>
+
+<li>
+<a href = "#link5">Movement methods.
+</a>
+
+</li>
+
+<li>
+<a href = "#link6">Comparison methods.
+</a>
+
+</li>
+
+</ol>
+
+</li>
+
+</ol>
+
+
+<h2>
+<a name = "link1">Iterator definitions.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "30%" ALIGN = "left"><b>Type</b></TD><TD Width = "55%" ALIGN = "left"><b>Definition</b></TD><TD Width = "15%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a name = "iterator_category3735929377">iterator_category</a></pre>
+
+
+</td>
+
+<td>
+<pre>trivial_iterator_tag</pre>
+
+
+</td>
+
+<td>
+<p>Category. comment = </p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "difference_type3735930139">difference_type</a></pre>
+
+
+</td>
+
+<td>
+<pre><b>void</b></pre>
+
+
+</td>
+
+<td>
+<p>Difference type.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link2">Value-type definitions.
+</a>
+
+</h2>
+
+<p>Note that a node iterator's value type is actually a tree iterator.</p>
+
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "30%" ALIGN = "left"><b>Type</b></TD><TD Width = "55%" ALIGN = "left"><b>Definition</b></TD><TD Width = "15%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a name = "value_type3735929645">value_type</a></pre>
+
+
+</td>
+
+<td>
+<pre><a href = "../../pb_assoc/doc/basic_tree_assoc_cntnr.html#const_iterator3735930079">const_iterator</a></pre>
+
+
+</td>
+
+<td>
+<p>Iterator's value type.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "pointer3735929328">pointer</a></pre>
+
+
+</td>
+
+<td>
+<pre><a href = "../../pb_assoc/doc/basic_tree_assoc_cntnr.html#const_iterator3735930079">const_iterator</a> *</pre>
+
+
+</td>
+
+<td>
+<p>Iterator's pointer type.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "const_pointer3735929974">const_pointer</a></pre>
+
+
+</td>
+
+<td>
+<pre><a href = "../../pb_assoc/doc/basic_tree_assoc_cntnr.html#const_iterator3735930079">const_iterator</a> *</pre>
+
+
+</td>
+
+<td>
+<p>Iterator's const pointer type.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "reference3735929502">reference</a></pre>
+
+
+</td>
+
+<td>
+<pre><a href = "../../pb_assoc/doc/basic_tree_assoc_cntnr.html#const_iterator3735930079">const_iterator</a> &amp;</pre>
+
+
+</td>
+
+<td>
+<p>Iterator's reference type.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "const_reference3735930148">const_reference</a></pre>
+
+
+</td>
+
+<td>
+<pre><b>const</b> <a href = "../../pb_assoc/doc/basic_tree_assoc_cntnr.html#iterator3735929433">iterator</a> &amp;</pre>
+
+
+</td>
+
+<td>
+<p>Iterator's const reference type.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link3">Constructors, destructor, and related.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "40%" ALIGN = "left"><b>Description</b></TD><TD Width = "10%" ALIGN = "left"><b>Complexity Guarantee</b></TD><TD Width = "5%" ALIGN = "left"><b>Exception Guarantee</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><b>inline</b>
+  const_node_iterator
+  (<b>const</b> node_pointer p_nd = NULL)</pre>
+
+
+</td>
+
+<td>
+<p>Default constructor.</p>
+
+
+</td>
+
+<td>
+<p> <i>O(1)</i> worst.</p>
+
+
+</td>
+
+<td>
+<a href = "exception_guarantees_specifics.html#cannot_throw_guarantee">3</a>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link4">Access methods.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "40%" ALIGN = "left"><b>Description</b></TD><TD Width = "10%" ALIGN = "left"><b>Complexity Guarantee</b></TD><TD Width = "5%" ALIGN = "left"><b>Exception Guarantee</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><b>inline</b> <a href = "../../pb_assoc/doc/basic_tree_assoc_cntnr.html#const_iterator3735930079">const_iterator</a>
+  <b>operator</b>*
+  () <b>const</b></pre>
+
+
+</td>
+
+<td>
+<p>Access.</p>
+
+
+</td>
+
+<td>
+<p> <i>O(1)</i> worst.</p>
+
+
+</td>
+
+<td>
+<a href = "exception_guarantees_specifics.html#cannot_throw_guarantee">3</a>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link5">Movement methods.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "40%" ALIGN = "left"><b>Description</b></TD><TD Width = "10%" ALIGN = "left"><b>Complexity Guarantee</b></TD><TD Width = "5%" ALIGN = "left"><b>Exception Guarantee</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><b>inline</b> const_node_iterator
+  l_child
+  () <b>const</b></pre>
+
+
+</td>
+
+<td>
+<p>Returns the <tt><b>const</b></tt> node <a href = "../../pb_assoc/doc/basic_tree_assoc_cntnr.html#iterator3735929433">iterator</a> associated with the left node.</p>
+
+
+</td>
+
+<td>
+<p> <i>O(1)</i> worst.</p>
+
+
+</td>
+
+<td>
+<a href = "exception_guarantees_specifics.html#cannot_throw_guarantee">3</a>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> const_node_iterator
+  r_child
+  () <b>const</b></pre>
+
+
+</td>
+
+<td>
+<p>Returns the <tt><b>const</b></tt> node <a href = "../../pb_assoc/doc/basic_tree_assoc_cntnr.html#iterator3735929433">iterator</a> associated with the right node.</p>
+
+
+</td>
+
+<td>
+<p> <i>O(1)</i> worst.</p>
+
+
+</td>
+
+<td>
+<a href = "exception_guarantees_specifics.html#cannot_throw_guarantee">3</a>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link6">Comparison methods.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "40%" ALIGN = "left"><b>Description</b></TD><TD Width = "10%" ALIGN = "left"><b>Complexity Guarantee</b></TD><TD Width = "5%" ALIGN = "left"><b>Exception Guarantee</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><b>inline</b> <b>bool</b>
+  <b>operator</b>==
+  (<b>const</b> const_node_iterator &amp;r_other) <b>const</b></pre>
+
+
+</td>
+
+<td>
+<p>Compares content to a different <a href = "../../pb_assoc/doc/basic_tree_assoc_cntnr.html#iterator3735929433">iterator</a> object.</p>
+
+
+</td>
+
+<td>
+<p> <i>O(1)</i> worst.</p>
+
+
+</td>
+
+<td>
+<a href = "exception_guarantees_specifics.html#cannot_throw_guarantee">3</a>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> <b>bool</b>
+  <b>operator</b>!=
+  (<b>const</b> const_node_iterator &amp;r_other) <b>const</b></pre>
+
+
+</td>
+
+<td>
+<p>Compares content (negatively) to a different <a href = "../../pb_assoc/doc/basic_tree_assoc_cntnr.html#iterator3735929433">iterator</a> object.</p>
+
+
+</td>
+
+<td>
+<p> <i>O(1)</i> worst.</p>
+
+
+</td>
+
+<td>
+<a href = "exception_guarantees_specifics.html#cannot_throw_guarantee">3</a>
+
+
+</td>
+
+</tr>
+
+</table>
+
+
+
+</body>
+
+</html>
+
+

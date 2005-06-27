@@ -119,4 +119,5 @@ check-performance: testsuite_files_performance ${performance_script}
 
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \
-	     testsuite_* site.exp abi_check baseline_symbols *TEST*
+	     testsuite_* site.exp abi_check baseline_symbols *TEST* *.dat \
+	     *.o *.cc

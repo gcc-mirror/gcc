@@ -1,0 +1,816 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+
+<html>
+<head>
+<title>gp_hash_assoc_cntnr Interface
+</title>
+
+</head>
+
+<body>
+<h1>
+<tt>gp_hash_assoc_cntnr
+</tt>
+
+ Interface
+
+
+</h1>
+
+<p>A general-probing hash-based associative container.
+</p>
+
+<ol>
+<li>
+<a href = "../../../../include/ext/pb_assoc/assoc_cntnr.hpp"><tt>assoc_cntnr.hpp</tt>
+</a>
+
+</li>
+
+<li>
+<a href = "#link1">Template parameters.
+</a>
+
+</li>
+
+<li>
+<a href = "#link2">Base classes.
+</a>
+
+</li>
+
+<li>
+Public Types and Constants:
+
+
+<ol>
+<li>
+<a href = "#link3">Policy definitions.
+</a>
+
+</li>
+
+</ol>
+
+</li>
+
+<li>
+Public Methods:
+
+
+<ol>
+<li>
+<a href = "#link4">Constructors, destructor, and related.
+</a>
+
+</li>
+
+<li>
+<a href = "#link5">Policy access methods.
+</a>
+
+</li>
+
+</ol>
+
+</li>
+
+</ol>
+
+
+<h2>
+<a name = "link1">Template parameters.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "20%" ALIGN = "left"><b>Parameter</b></TD><TD Width = "50%" ALIGN = "left"><b>Description</b></TD><TD Width = "30%" ALIGN = "left"><b>Default Value</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a name = "Key3735928856">Key</a></pre>
+
+
+</td>
+
+<td>
+<p>Key type.</p>
+
+
+</td>
+
+<td>
+-
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "Data3735928937">Data</a></pre>
+
+
+</td>
+
+<td>
+<p>Data type.</p>
+
+
+</td>
+
+<td>
+-
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "Hash_Fn3735929222">Hash_Fn</a></pre>
+
+
+</td>
+
+<td>
+<p>Hash functor.</p>
+
+
+</td>
+
+<td>
+<pre>__gnu_cxx::hash&lt;<a href = "#Key3735928856">Key</a>&gt;</pre>if using gcc;<pre>stdext::hash_value&lt;<a href = "#Key3735928856">Key</a>&gt;</pre>if using Visual C++ .net
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "Eq_Fn3735929016">Eq_Fn</a></pre>
+
+
+</td>
+
+<td>
+<p>Equivalence functor.</p>
+
+
+</td>
+
+<td>
+<pre>std::equal_to&lt;<a href = "#Key3735928856">Key</a>&gt;</pre>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "Comb_Probe_Fn3735929818">Comb_Probe_Fn</a></pre>
+
+
+</td>
+
+<td>
+<p>Combining probe functor.</p>
+
+
+<p>If <a href = "#Hash_Fn3735929222">Hash_Fn</a> is <a href = "null_hash_fn.html"><tt>null_hash_fn</tt></a>, and <a href = "#Probe_Fn3735929338">Probe_Fn</a> is <a href = "comb_probe_fn.html"><tt>comb_probe_fn</tt></a>, then this is the <a href = "concepts.html#concepts_hash_fns">ranged_hash function</a> functor; otherwise, this is the <a href = "concepts.html#concepts_hash_fns">range_hashing function</a> functor;</p>
+
+
+</td>
+
+<td>
+<pre><a href = "direct_mask_range_hashing.html">direct_mask_range_hashing</a>&lt;
+  <a href = "#Allocator3735929488">Allocator</a>&gt;</pre>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "Probe_Fn3735929338">Probe_Fn</a></pre>
+
+
+</td>
+
+<td>
+<p>Probe functor.</p>
+
+
+</td>
+
+<td>
+If <tt><a href = "#comb_hash_fn3735929798">comb_hash_fn</a></tt> is <tt><a href = "direct_mask_range_hashing.html">direct_mask_range_hashing&lt;&gt;</a></tt>, then <pre><a href = "linear_probe_fn.html">linear_probe_fn</a>&lt;
+  <b>typename</b> <a href = "#comb_hash_fn3735929798">comb_hash_fn</a>::size_type&gt;</pre>otherwise, <pre><a href = "quadratic_probe_fn.html">quadratic_probe_fn</a>&lt;
+  <b>typename</b> <a href = "#comb_hash_fn3735929798">comb_hash_fn</a>::size_type&gt;</pre>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "Resize_Policy3735929904">Resize_Policy</a></pre>
+
+
+</td>
+
+<td>
+<p>Resize policy.</p>
+
+
+</td>
+
+<td>
+If <tt><a href = "#comb_hash_fn3735929798">comb_hash_fn</a></tt> is <tt><a href = "direct_mask_range_hashing.html">direct_mask_range_hashing&lt;&gt;</a></tt>, then <pre><a href = "hash_standard_resize_policy.html">hash_standard_resize_policy</a>&lt;
+  <a href = "hash_exponential_size_policy.html">hash_exponential_size_policy</a>&lt;
+    <b>typename</b> <a href = "#comb_hash_fn3735929798">comb_hash_fn</a>::size_type&gt;,
+  <a href = "hash_load_check_resize_trigger.html">hash_load_check_resize_trigger</a>&lt;
+    <b>typename</b> <a href = "#comb_hash_fn3735929798">comb_hash_fn</a>::size_type&gt;,
+  <b>false</b>,
+  <b>typename</b> <a href = "#comb_hash_fn3735929798">comb_hash_fn</a>::size_type&gt;</pre>otherwise, <pre><a href = "hash_standard_resize_policy.html">hash_standard_resize_policy</a>&lt;
+  <a href = "hash_exponential_size_policy.html"><tt>hash_prime_size_policy</tt></a>&lt;
+    <b>typename</b> <a href = "#comb_hash_fn3735929798">comb_hash_fn</a>::size_type&gt;,
+  <a href = "hash_load_check_resize_trigger.html"><tt>hash_load_check_resize_trigger</tt></a>&lt;
+    <b>typename</b> <a href = "#comb_hash_fn3735929798">comb_hash_fn</a>::size_type&gt;,
+  <b>false</b>,
+  <b>typename</b> <a href = "#comb_hash_fn3735929798">comb_hash_fn</a>::size_type&gt;</pre>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "Store_Hash3735929567">Store_Hash</a></pre>
+
+
+</td>
+
+<td>
+<p>Indicates whether the hash value will be stored along with each key.</p>
+
+
+<p>If <tt><a href = "#hash_fn3735929286">hash_fn</a></tt> is <tt><a href = "null_hash_fn.html">null_hash_fn</a></tt>, then the container will not compile if this value is <tt><b>true</b></tt></p>
+
+
+</td>
+
+<td>
+<pre><tt><b>false</b></tt></pre>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "Allocator3735929488">Allocator</a></pre>
+
+
+</td>
+
+<td>
+<p>Allocator type.</p>
+
+
+</td>
+
+<td>
+<pre>std::allocator&lt;<b>char</b>&gt;</pre>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link2">Base classes.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "80%" ALIGN = "left"><b>Class</b></TD><TD Width = "20%" ALIGN = "left"><b>Derivation Type</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a href = "#Comb_Probe_Fn3735929818">Comb_Probe_Fn</a></pre>
+
+
+</td>
+
+<td>
+<p>public</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a href = "#Probe_Fn3735929338">Probe_Fn</a></pre>
+
+
+</td>
+
+<td>
+<p>public</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a href = "basic_hash_assoc_cntnr.html"<tt>basic_hash_assoc_cntnr</tt></a></pre>
+
+
+</td>
+
+<td>
+<p>public</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link3">Policy definitions.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "30%" ALIGN = "left"><b>Type</b></TD><TD Width = "55%" ALIGN = "left"><b>Definition</b></TD><TD Width = "15%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a name = "comb_probe_fn3735929914">comb_probe_fn</a></pre>
+
+
+</td>
+
+<td>
+<pre><a href = "#Comb_Probe_Fn3735929818">Comb_Probe_Fn</a></pre>
+
+
+</td>
+
+<td>
+<p>Combining probe functor type.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "probe_fn3735929402">probe_fn</a></pre>
+
+
+</td>
+
+<td>
+<pre><a href = "#Probe_Fn3735929338">Probe_Fn</a></pre>
+
+
+</td>
+
+<td>
+<p>Probe functor type.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link4">Constructors, destructor, and related.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre>  gp_hash_assoc_cntnr
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Default constructor.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre>  gp_hash_assoc_cntnr
+  (<b>const</b> <a href = "#Hash_Fn3735929222">Hash_Fn</a> &amp;r_hash_fn)</pre>
+
+
+</td>
+
+<td>
+<p>Constructor taking some policy objects. <font color = "#666666"><tt>r_hash_fn</tt></font> will be copied by the <a href = "#Hash_Fn3735929222"><tt>Hash_Fn</tt></a> object of the container object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre>  gp_hash_assoc_cntnr
+  (<b>const</b> <a href = "#Hash_Fn3735929222">Hash_Fn</a> &amp;r_hash_fn,
+    <b>const</b> <a href = "#Eq_Fn3735929016">Eq_Fn</a> &amp;r_eq_fn)</pre>
+
+
+</td>
+
+<td>
+<p>Constructor taking some policy objects. <font color = "#666666"><tt>r_hash_fn</tt></font> will be copied by the <a href = "#Hash_Fn3735929222"><tt>Hash_Fn</tt></a> object of the container object, and <font color = "#666666"><tt>r_eq_fn</tt></font> will be copied by the <a href = "#Eq_Fn3735929016"><tt>Eq_Fn</tt></a> object of the container object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre>  gp_hash_assoc_cntnr
+  (<b>const</b> <a href = "#Hash_Fn3735929222">Hash_Fn</a> &amp;r_hash_fn,
+    <b>const</b> <a href = "#Eq_Fn3735929016">Eq_Fn</a> &amp;r_eq_fn,
+    <b>const</b> <a href = "#Comb_Probe_Fn3735929818">Comb_Probe_Fn</a> &amp;r_comb_probe_fn)</pre>
+
+
+</td>
+
+<td>
+<p>Constructor taking some policy objects. <font color = "#666666"><tt>r_hash_fn</tt></font> will be copied by the <a href = "#Hash_Fn3735929222"><tt>Hash_Fn</tt></a> object of the container object, <font color = "#666666"><tt>r_eq_fn</tt></font> will be copied by the <a href = "#Eq_Fn3735929016"><tt>Eq_Fn</tt></a> object of the container object, and <font color = "#666666"><tt>r_comb_probe_fn</tt></font> will be copied by the <a href = "#Comb_Probe_Fn3735929818"><tt>Comb_Probe_Fn</tt></a> object of the container object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre>  gp_hash_assoc_cntnr
+  (<b>const</b> <a href = "#Hash_Fn3735929222">Hash_Fn</a> &amp;r_hash_fn,
+    <b>const</b> <a href = "#Eq_Fn3735929016">Eq_Fn</a> &amp;r_eq_fn,
+    <b>const</b> <a href = "#Comb_Probe_Fn3735929818">Comb_Probe_Fn</a> &amp;r_comb_probe_fn,
+    <b>const</b> <a href = "#Probe_Fn3735929338">Probe_Fn</a> &amp;r_probe_fn)</pre>
+
+
+</td>
+
+<td>
+<p>Constructor taking some policy objects. <font color = "#666666"><tt>r_hash_fn</tt></font> will be copied by the <a href = "#Hash_Fn3735929222"><tt>Hash_Fn</tt></a> object of the container object, <font color = "#666666"><tt>r_eq_fn</tt></font> will be copied by the <a href = "#Eq_Fn3735929016"><tt>Eq_Fn</tt></a> object of the container object, <font color = "#666666"><tt>r_comb_probe_fn</tt></font> will be copied by the <a href = "#Comb_Probe_Fn3735929818"><tt>Comb_Probe_Fn</tt></a> object of the container object, and <font color = "#666666"><tt>r_probe_fn</tt></font> will be copied by the <a href = "#Probe_Fn3735929338"><tt>Probe_Fn</tt></a> object of the container object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre>  gp_hash_assoc_cntnr
+  (<b>const</b> <a href = "#Hash_Fn3735929222">Hash_Fn</a> &amp;r_hash_fn,
+    <b>const</b> <a href = "#Eq_Fn3735929016">Eq_Fn</a> &amp;r_eq_fn,
+    <b>const</b> <a href = "#Comb_Probe_Fn3735929818">Comb_Probe_Fn</a> &amp;r_comb_probe_fn,
+    <b>const</b> <a href = "#Probe_Fn3735929338">Probe_Fn</a> &amp;r_probe_fn,
+    <b>const</b> <a href = "#Resize_Policy3735929904">Resize_Policy</a> &amp;r_resize_policy)</pre>
+
+
+</td>
+
+<td>
+<p>Constructor taking some policy objects. <font color = "#666666"><tt>r_hash_fn</tt></font> will be copied by the <a href = "#Hash_Fn3735929222"><tt>Hash_Fn</tt></a> object of the container object, <font color = "#666666"><tt>r_eq_fn</tt></font> will be copied by the <a href = "#Eq_Fn3735929016"><tt>Eq_Fn</tt></a> object of the container object, <font color = "#666666"><tt>r_comb_probe_fn</tt></font> will be copied by the <a href = "#Comb_Probe_Fn3735929818"><tt>Comb_Probe_Fn</tt></a> object of the container object, <font color = "#666666"><tt>r_probe_fn</tt></font> will be copied by the <a href = "#Probe_Fn3735929338"><tt>Probe_Fn</tt></a> object of the container object, and <font color = "#666666"><tt>r_resize_policy</tt></font> will be copied by the <a href = "#Resize_Policy3735929904"><tt>Resize_Policy</tt></a> object of the container object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>template</b>&lt;
+    <b>class</b> It&gt;
+  gp_hash_assoc_cntnr
+  (It first_it,
+    It last_it)</pre>
+
+
+</td>
+
+<td>
+<p>Constructor taking iterators to a range of value_types. The value_types between <font color = "#666666"><tt>first_it</tt></font> and <font color = "#666666"><tt>last_it</tt></font> will be inserted into the container object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>template</b>&lt;
+    <b>class</b> It&gt;
+  gp_hash_assoc_cntnr
+  (It first_it,
+    It last_it,
+    <b>const</b> <a href = "#Hash_Fn3735929222">Hash_Fn</a> &amp;r_hash_fn)</pre>
+
+
+</td>
+
+<td>
+<p>Constructor taking iterators to a range of value_types and some policy objects. The value_types between <font color = "#666666"><tt>first_it</tt></font> and <font color = "#666666"><tt>last_it</tt></font> will be inserted into the container object. <font color = "#666666"><tt>r_hash_fn</tt></font> will be copied by the <a href = "#Hash_Fn3735929222"><tt>Hash_Fn</tt></a> object of the container object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>template</b>&lt;
+    <b>class</b> It&gt;
+  gp_hash_assoc_cntnr
+  (It first_it,
+    It last_it,
+    <b>const</b> <a href = "#Hash_Fn3735929222">Hash_Fn</a> &amp;r_hash_fn,
+    <b>const</b> <a href = "#Eq_Fn3735929016">Eq_Fn</a> &amp;r_eq_fn)</pre>
+
+
+</td>
+
+<td>
+<p>Constructor taking iterators to a range of value_types and some policy objects. The value_types between <font color = "#666666"><tt>first_it</tt></font> and <font color = "#666666"><tt>last_it</tt></font> will be inserted into the container object. <font color = "#666666"><tt>r_hash_fn</tt></font> will be copied by the <a href = "#Hash_Fn3735929222"><tt>Hash_Fn</tt></a> object of the container object, and <font color = "#666666"><tt>r_eq_fn</tt></font> will be copied by the <a href = "#Eq_Fn3735929016"><tt>Eq_Fn</tt></a> object of the container object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>template</b>&lt;
+    <b>class</b> It&gt;
+  gp_hash_assoc_cntnr
+  (It first_it,
+    It last_it,
+    <b>const</b> <a href = "#Hash_Fn3735929222">Hash_Fn</a> &amp;r_hash_fn,
+    <b>const</b> <a href = "#Eq_Fn3735929016">Eq_Fn</a> &amp;r_eq_fn,
+    <b>const</b> <a href = "#Comb_Probe_Fn3735929818">Comb_Probe_Fn</a> &amp;r_comb_probe_fn)</pre>
+
+
+</td>
+
+<td>
+<p>Constructor taking iterators to a range of value_types and some policy objects. The value_types between <font color = "#666666"><tt>first_it</tt></font> and <font color = "#666666"><tt>last_it</tt></font> will be inserted into the container object. <font color = "#666666"><tt>r_hash_fn</tt></font> will be copied by the <a href = "#Hash_Fn3735929222"><tt>Hash_Fn</tt></a> object of the container object, <font color = "#666666"><tt>r_eq_fn</tt></font> will be copied by the <a href = "#Eq_Fn3735929016"><tt>Eq_Fn</tt></a> object of the container object, and <font color = "#666666"><tt>r_comb_probe_fn</tt></font> will be copied by the <a href = "#Comb_Probe_Fn3735929818"><tt>Comb_Probe_Fn</tt></a> object of the container object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>template</b>&lt;
+    <b>class</b> It&gt;
+  gp_hash_assoc_cntnr
+  (It first_it,
+    It last_it,
+    <b>const</b> <a href = "#Hash_Fn3735929222">Hash_Fn</a> &amp;r_hash_fn,
+    <b>const</b> <a href = "#Eq_Fn3735929016">Eq_Fn</a> &amp;r_eq_fn,
+    <b>const</b> <a href = "#Comb_Probe_Fn3735929818">Comb_Probe_Fn</a> &amp;r_comb_probe_fn,
+    <b>const</b> <a href = "#Probe_Fn3735929338">Probe_Fn</a> &amp;r_probe_fn)</pre>
+
+
+</td>
+
+<td>
+<p>Constructor taking iterators to a range of value_types and some policy objects. The value_types between <font color = "#666666"><tt>first_it</tt></font> and <font color = "#666666"><tt>last_it</tt></font> will be inserted into the container object. <font color = "#666666"><tt>r_hash_fn</tt></font> will be copied by the <a href = "#Hash_Fn3735929222"><tt>Hash_Fn</tt></a> object of the container object, <font color = "#666666"><tt>r_eq_fn</tt></font> will be copied by the <a href = "#Eq_Fn3735929016"><tt>Eq_Fn</tt></a> object of the container object, <font color = "#666666"><tt>r_comb_probe_fn</tt></font> will be copied by the <a href = "#Comb_Probe_Fn3735929818"><tt>Comb_Probe_Fn</tt></a> object of the container object, and <font color = "#666666"><tt>r_probe_fn</tt></font> will be copied by the <a href = "#Probe_Fn3735929338"><tt>Probe_Fn</tt></a> object of the container object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>template</b>&lt;
+    <b>class</b> It&gt;
+  gp_hash_assoc_cntnr
+  (It first_it,
+    It last_it,
+    <b>const</b> <a href = "#Hash_Fn3735929222">Hash_Fn</a> &amp;r_hash_fn,
+    <b>const</b> <a href = "#Eq_Fn3735929016">Eq_Fn</a> &amp;r_eq_fn,
+    <b>const</b> <a href = "#Comb_Probe_Fn3735929818">Comb_Probe_Fn</a> &amp;r_comb_probe_fn,
+    <b>const</b> <a href = "#Probe_Fn3735929338">Probe_Fn</a> &amp;r_probe_fn,
+    <b>const</b> <a href = "#Resize_Policy3735929904">Resize_Policy</a> &amp;r_resize_policy)</pre>
+
+
+</td>
+
+<td>
+<p>Constructor taking iterators to a range of value_types and some policy objects. The value_types between <font color = "#666666"><tt>first_it</tt></font> and <font color = "#666666"><tt>last_it</tt></font> will be inserted into the container object. <font color = "#666666"><tt>r_hash_fn</tt></font> will be copied by the <a href = "#Hash_Fn3735929222"><tt>Hash_Fn</tt></a> object of the container object, <font color = "#666666"><tt>r_eq_fn</tt></font> will be copied by the <a href = "#Eq_Fn3735929016"><tt>Eq_Fn</tt></a> object of the container object, <font color = "#666666"><tt>r_comb_probe_fn</tt></font> will be copied by the <a href = "#Comb_Probe_Fn3735929818"><tt>Comb_Probe_Fn</tt></a> object of the container object, <font color = "#666666"><tt>r_probe_fn</tt></font> will be copied by the <a href = "#Probe_Fn3735929338"><tt>Probe_Fn</tt></a> object of the container object, and <font color = "#666666"><tt>r_resize_policy</tt></font> will be copied by the <a href = "#Resize_Policy3735929904"><tt>Resize_Policy</tt></a> object of the container object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre>  gp_hash_assoc_cntnr
+  (<b>const</b> <font color = "olive">gp_hash_assoc_cntnr</font> &amp;r_other)</pre>
+
+
+</td>
+
+<td>
+<p>Copy constructor.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>virtual</b>
+  ~gp_hash_assoc_cntnr
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Destructor.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><font color = "olive">gp_hash_assoc_cntnr</font> &amp;
+  <b>operator</b>=
+  (<b>const</b> <font color = "olive">gp_hash_assoc_cntnr</font> &amp;r_other)</pre>
+
+
+</td>
+
+<td>
+<p>Assignment operator.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>void</b>
+  swap
+  (<font color = "olive">gp_hash_assoc_cntnr</font> &amp;r_other)</pre>
+
+
+</td>
+
+<td>
+<p>Swaps content.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link5">Policy access methods.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a href = "#comb_probe_fn3735929914">comb_probe_fn</a> &amp;
+  get_comb_probe_fn
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Access to the <a href = "#comb_probe_fn3735929914"><tt>comb_probe_fn</tt></a> object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>const</b> <a href = "#comb_probe_fn3735929914">comb_probe_fn</a> &amp;
+  get_comb_probe_fn
+  () <b>const</b></pre>
+
+
+</td>
+
+<td>
+<p>Const access to the <a href = "#comb_probe_fn3735929914"><tt>comb_probe_fn</tt></a> object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a href = "#probe_fn3735929402">probe_fn</a> &amp;
+  get_probe_fn
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Access to the <a href = "#probe_fn3735929402"><tt>probe_fn</tt></a> object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>const</b> <a href = "#probe_fn3735929402">probe_fn</a> &amp;
+  get_probe_fn
+  () <b>const</b></pre>
+
+
+</td>
+
+<td>
+<p>Const access to the <a href = "#probe_fn3735929402"><tt>probe_fn</tt></a> object.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+
+
+</body>
+
+</html>
+
+

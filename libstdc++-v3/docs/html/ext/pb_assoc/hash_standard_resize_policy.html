@@ -1,0 +1,986 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+
+<html>
+<head>
+<title>hash_standard_resize_policy Interface
+</title>
+
+</head>
+
+<body>
+<h1>
+<tt>hash_standard_resize_policy
+</tt>
+
+ Interface
+
+
+</h1>
+
+<p>A resize policy which delegates operations to size and trigger policies.
+</p>
+
+<ol>
+<li>
+<a href = "../../../../include/ext/pb_assoc/hash_policy.hpp"><tt>hash_policy.hpp</tt>
+</a>
+
+</li>
+
+<li>
+<a href = "#link1">Template parameters.
+</a>
+
+</li>
+
+<li>
+<a href = "#link2">Base classes.
+</a>
+
+</li>
+
+<li>
+Public Types and Constants:
+
+
+<ol>
+<li>
+<a href = "#link3">General definitions.
+</a>
+
+</li>
+
+<li>
+<a href = "#link4">Policy definitions.
+</a>
+
+</li>
+
+</ol>
+
+</li>
+
+<li>
+Public Methods:
+
+
+<ol>
+<li>
+<a href = "#link5">Constructors, destructor, and related.
+</a>
+
+</li>
+
+<li>
+<a href = "#link6">Policy access methods.
+</a>
+
+</li>
+
+<li>
+<a href = "#link7">Size access methods.
+</a>
+
+</li>
+
+</ol>
+
+</li>
+
+<li>
+Protected Methods:
+
+
+<ol>
+<li>
+<a href = "#link8">Insert search notifications.
+</a>
+
+</li>
+
+<li>
+<a href = "#link9">Find search notifications.
+</a>
+
+</li>
+
+<li>
+<a href = "#link10">Erase search notifications.
+</a>
+
+</li>
+
+<li>
+<a href = "#link11">Content change notifications.
+</a>
+
+</li>
+
+<li>
+<a href = "#link12">Size change notifications.
+</a>
+
+</li>
+
+<li>
+<a href = "#link13">Queries.
+</a>
+
+</li>
+
+</ol>
+
+</li>
+
+</ol>
+
+
+<h2>
+<a name = "link1">Template parameters.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "20%" ALIGN = "left"><b>Parameter</b></TD><TD Width = "50%" ALIGN = "left"><b>Description</b></TD><TD Width = "30%" ALIGN = "left"><b>Default Value</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a name = "Size_Policy3735929689">Size_Policy</a></pre>
+
+
+</td>
+
+<td>
+<p>Size policy type.</p>
+
+
+</td>
+
+<td>
+<a href = "hash_exponential_size_policy.html"><tt>hash_exponential_size_policy&lt;&gt;</tt></a>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "Trigger_Policy3735930002">Trigger_Policy</a></pre>
+
+
+</td>
+
+<td>
+<p>Trigger policy type.</p>
+
+
+</td>
+
+<td>
+<a href = "ht_load_check_trigger.html"><tt>ht_load_check_trigger&lt;&gt;</tt></a>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "External_Size_Access3735929535">External_Size_Access</a></pre>
+
+
+</td>
+
+<td>
+<p>Indicates whether physical sizes can be accessed externally.</p>
+
+
+</td>
+
+<td>
+<tt><b>false</b></tt>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "Size_Type3735929483">Size_Type</a></pre>
+
+
+</td>
+
+<td>
+<p>Size type.</p>
+
+
+</td>
+
+<td>
+size_t
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link2">Base classes.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "80%" ALIGN = "left"><b>Class</b></TD><TD Width = "20%" ALIGN = "left"><b>Derivation Type</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a href = "#Size_Policy3735929689">Size_Policy</a></pre>
+
+
+</td>
+
+<td>
+<p>public</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a href = "#Trigger_Policy3735930002">Trigger_Policy</a></pre>
+
+
+</td>
+
+<td>
+<p>public</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link3">General definitions.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "30%" ALIGN = "left"><b>Type</b></TD><TD Width = "55%" ALIGN = "left"><b>Definition</b></TD><TD Width = "15%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a name = "size_type3735929547">size_type</a></pre>
+
+
+</td>
+
+<td>
+<pre><a href = "#Size_Type3735929483">Size_Type</a></pre>
+
+
+</td>
+
+<td>
+<p>Size type.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link4">Policy definitions.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "30%" ALIGN = "left"><b>Type</b></TD><TD Width = "55%" ALIGN = "left"><b>Definition</b></TD><TD Width = "15%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a name = "trigger_policy3735930066">trigger_policy</a></pre>
+
+
+</td>
+
+<td>
+<pre><a href = "#Trigger_Policy3735930002">Trigger_Policy</a></pre>
+
+
+</td>
+
+<td>
+<p>Trigger policy type.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "size_policy3735929753">size_policy</a></pre>
+
+
+</td>
+
+<td>
+<pre><a href = "#Size_Policy3735929689">Size_Policy</a></pre>
+
+
+</td>
+
+<td>
+<p>Size policy type.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "external_size_access3735929599">external_size_access</a></pre>
+
+
+</td>
+
+<td>
+<pre><a href = "#External_Size_Access3735929535">External_Size_Access</a></pre>
+
+
+</td>
+
+<td>
+<p>Indicates whether sizes can be accessed externally.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link5">Constructors, destructor, and related.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre>  hash_standard_resize_policy
+  (<a href = "#size_type3735929547">size_type</a> suggested_size = 8)</pre>
+
+
+</td>
+
+<td>
+<p>Default constructor, or constructor taking <font color = "#666666"><tt>suggested_size</tt></font>, a suggested size (the actual size will be determined by the <a href = "#Size_Policy3735929689"><tt>Size_Policy</tt></a> object).</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre>  hash_standard_resize_policy
+  (<b>const</b> <a href = "#Size_Policy3735929689">Size_Policy</a> &amp;r_size_policy,
+    <a href = "#size_type3735929547">size_type</a> suggested_size = 8)</pre>
+
+
+</td>
+
+<td>
+<p>constructor taking some policies and <font color = "#666666"><tt>suggested_size</tt></font>, a suggested size (the actual size will be determined by the <a href = "#Size_Policy3735929689"><tt>Size_Policy</tt></a> object). <font color = "#666666"><tt>r_size_policy</tt></font> will be copied by the <a href = "#Size_Policy3735929689"><tt>Size_Policy</tt></a> object of this object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre>  hash_standard_resize_policy
+  (<b>const</b> <a href = "#Size_Policy3735929689">Size_Policy</a> &amp;r_size_policy,
+    <b>const</b> <a href = "#Trigger_Policy3735930002">Trigger_Policy</a> &amp;r_trigger_policy,
+    <a href = "#size_type3735929547">size_type</a> suggested_size = 8)</pre>
+
+
+</td>
+
+<td>
+<p>constructor taking some policies and <font color = "#666666"><tt>suggested_size</tt></font>, a suggested size (the actual size will be determined by the <a href = "#Size_Policy3735929689"><tt>Size_Policy</tt></a> object). <font color = "#666666"><tt>r_size_policy</tt></font> will be copied by the <a href = "#Size_Policy3735929689"><tt>Size_Policy</tt></a> object of this object. <font color = "#666666"><tt>r_trigger_policy</tt></font> will be copied by the <a href = "#Trigger_Policy3735930002"><tt>Trigger_Policy</tt></a> object of this object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>virtual</b>
+  ~hash_standard_resize_policy
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Destructor.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  swap
+  (<font color = "olive">hash_standard_resize_policy</font> &amp;r_other)</pre>
+
+
+</td>
+
+<td>
+<p>Swaps content.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link6">Policy access methods.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a href = "#Size_Policy3735929689">Size_Policy</a> &amp;
+  get_size_policy
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Access to the <a href = "#Size_Policy3735929689"><tt>Size_Policy</tt></a> object used.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>const</b> <a href = "#Size_Policy3735929689">Size_Policy</a> &amp;
+  get_size_policy
+  () <b>const</b></pre>
+
+
+</td>
+
+<td>
+<p>Const access to the <a href = "#Size_Policy3735929689"><tt>Size_Policy</tt></a> object used.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a href = "#Trigger_Policy3735930002">Trigger_Policy</a> &amp;
+  get_trigger_policy
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Access to the <a href = "#Trigger_Policy3735930002"><tt>Trigger_Policy</tt></a> object used.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>const</b> <a href = "#Trigger_Policy3735930002">Trigger_Policy</a> &amp;
+  get_trigger_policy
+  () <b>const</b></pre>
+
+
+</td>
+
+<td>
+<p>Access to the <a href = "#Trigger_Policy3735930002"><tt>Trigger_Policy</tt></a> object used.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link7">Size access methods.
+</a>
+
+</h2>
+
+<p>These methods are available only if the external size parameter indicates that external size access is allowed.</p>
+
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><b>inline</b> <a href = "#size_type3735929547">size_type</a>
+  get_actual_size
+  () <b>const</b></pre>
+
+
+</td>
+
+<td>
+<p>Returns the actual size of the container.</p>
+
+
+<p>This method returns the number of entries (used and unused) in the container. It is different from the container's size method, which returns the number of used entries. Calling this method will not compile when <a href = "#External_Size_Access3735929535"><tt>External_Size_Access</tt></a> == <tt><b>false</b></tt>.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>void</b>
+  resize
+  (<a href = "#size_type3735929547">size_type</a> suggested_new_size)</pre>
+
+
+</td>
+
+<td>
+<p>Resizes the container to <font color = "#666666"><tt>suggested_new_size</tt></font>, a suggested size (the actual size will be determined by the <a href = "#Size_Policy3735929689"><tt>Size_Policy</tt></a> object).</p>
+
+
+<p>Calling this method will not compile when <a href = "#External_Size_Access3735929535"><tt>External_Size_Access</tt></a> == <tt><b>false</b></tt>.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link8">Insert search notifications.
+</a>
+
+</h2>
+
+<p>Notifications called during an insert operation.</p>
+
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_insert_search_start
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Notifies a search started.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_insert_search_collision
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Notifies a search encountered a collision.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_insert_search_end
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Notifies a search ended.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link9">Find search notifications.
+</a>
+
+</h2>
+
+<p>Notifications called during a find operation.</p>
+
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_find_search_start
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Notifies a search started.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_find_search_collision
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Notifies a search encountered a collision.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_find_search_end
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Notifies a search ended.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link10">Erase search notifications.
+</a>
+
+</h2>
+
+<p>Notifications called during an insert operation.</p>
+
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_erase_search_start
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Notifies a search started.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_erase_search_collision
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Notifies a search encountered a collision.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_erase_search_end
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Notifies a search ended.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link11">Content change notifications.
+</a>
+
+</h2>
+
+<p>Notifications called when the content of the table changes in a way that can affect the resize policy.</p>
+
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_inserted
+  (<a href = "#size_type3735929547">size_type</a> num_e)</pre>
+
+
+</td>
+
+<td>
+<p>Notifies an element was inserted.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_erased
+  (<a href = "#size_type3735929547">size_type</a> num_e)</pre>
+
+
+</td>
+
+<td>
+<p>Notifies an element was erased.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>void</b>
+  notify_cleared
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Notifies the table was cleared.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link12">Size change notifications.
+</a>
+
+</h2>
+
+<p>Notifications called when the table changes size.</p>
+
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><b>void</b>
+  notify_resized
+  (<a href = "#size_type3735929547">size_type</a> new_size)</pre>
+
+
+</td>
+
+<td>
+<p>Notifies the table was resized to <font color = "#666666"><tt>new_size</tt></font>.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link13">Queries.
+</a>
+
+</h2>
+
+<p>Called to query whether/how to resize.</p>
+
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a href = "#size_type3735929547">size_type</a>
+  get_init_size
+  () <b>const</b></pre>
+
+
+</td>
+
+<td>
+<p>Queries initial size.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> <b>bool</b>
+  is_resize_needed
+  () <b>const</b></pre>
+
+
+</td>
+
+<td>
+<p>Queries whether a resize is needed.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a href = "#size_type3735929547">size_type</a>
+  get_new_size
+  (<a href = "#size_type3735929547">size_type</a> size, <a href = "#size_type3735929547">size_type</a> num_used_e) <b>const</b></pre>
+
+
+</td>
+
+<td>
+<p>Queries what the new <font color = "#666666"><tt>size</tt></font> should be.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+
+
+</body>
+
+</html>
+
+
