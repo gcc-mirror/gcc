@@ -1,5 +1,7 @@
 2005-06-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* regrename.c (copy_value): Fix comment.
+
 	* toplev.c (process_options): Use if (FRAME_GROWS_DOWNWARD)
 	instead of preprocessor conditionals.
 
