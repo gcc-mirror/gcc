@@ -1,3 +1,61 @@
+2005-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/builtins/lib/main.c (abort): Add prototype.
+	* gcc.c-torture/execute/builtins/lib/strncat.c (strncat): Avoid
+	testing uninitialized var.
+
+	* gcc.c-torture/execute/builtins/chk.h: New.
+	* gcc.c-torture/execute/builtins/lib/chk.c: New.
+	* gcc.c-torture/execute/builtins/memcpy-chk.c: New test.
+	* gcc.c-torture/execute/builtins/memcpy-chk-lib.c: New.
+	* gcc.c-torture/execute/builtins/memmove-chk.c: New test.
+	* gcc.c-torture/execute/builtins/memmove-chk-lib.c: New.
+	* gcc.c-torture/execute/builtins/mempcpy-chk.c: New test.
+	* gcc.c-torture/execute/builtins/mempcpy-chk-lib.c: New.
+	* gcc.c-torture/execute/builtins/memset-chk.c: New test.
+	* gcc.c-torture/execute/builtins/memset-chk-lib.c: New.
+	* gcc.c-torture/execute/builtins/snprintf-chk.c: New test.
+	* gcc.c-torture/execute/builtins/snprintf-chk-lib.c: New.
+	* gcc.c-torture/execute/builtins/sprintf-chk.c: New test.
+	* gcc.c-torture/execute/builtins/sprintf-chk-lib.c: New.
+	* gcc.c-torture/execute/builtins/stpcpy-chk.c: New test.
+	* gcc.c-torture/execute/builtins/stpcpy-chk-lib.c: New.
+	* gcc.c-torture/execute/builtins/strcat-chk.c: New test.
+	* gcc.c-torture/execute/builtins/strcat-chk-lib.c: New.
+	* gcc.c-torture/execute/builtins/strcpy-chk.c: New test.
+	* gcc.c-torture/execute/builtins/strcpy-chk-lib.c: New.
+	* gcc.c-torture/execute/builtins/strncat-chk.c: New test.
+	* gcc.c-torture/execute/builtins/strncat-chk-lib.c: New.
+	* gcc.c-torture/execute/builtins/strncpy-chk.c: New test.
+	* gcc.c-torture/execute/builtins/strncpy-chk-lib.c: New.
+	* gcc.c-torture/execute/builtins/vsnprintf-chk.c: New test.
+	* gcc.c-torture/execute/builtins/vsnprintf-chk-lib.c: New.
+	* gcc.c-torture/execute/builtins/vsprintf-chk.c: New test.
+	* gcc.c-torture/execute/builtins/vsprintf-chk-lib.c: New.
+	* gcc.dg/builtin-object-size-1.c: New test.
+	* gcc.dg/builtin-object-size-2.c: New test.
+	* gcc.dg/builtin-object-size-3.c: New test.
+	* gcc.dg/builtin-object-size-4.c: New test.
+	* gcc.dg/builtin-object-size-5.c: New test.
+	* gcc.dg/builtin-stringop-chk-1.c: New test.
+	* gcc.dg/builtin-stringop-chk-2.c: New test.
+	* gcc.dg/tree-ssa/builtin-fprintf-1.c: New test.
+	* gcc.dg/tree-ssa/builtin-fprintf-chk-1.c: New test.
+	* gcc.dg/tree-ssa/builtin-printf-1.c: New test.
+	* gcc.dg/tree-ssa/builtin-printf-chk-1.c: New test.
+	* gcc.dg/tree-ssa/builtin-vfprintf-1.c: New test.
+	* gcc.dg/tree-ssa/builtin-vfprintf-chk-1.c: New test.
+	* gcc.dg/tree-ssa/builtin-vprintf-1.c: New test.
+	* gcc.dg/tree-ssa/builtin-vprintf-chk-1.c: New test.
+	* gcc.c-torture/execute/printf-1.c: New test.
+	* gcc.c-torture/execute/fprintf-1.c: New test.
+	* gcc.c-torture/execute/vprintf-1.c: New test.
+	* gcc.c-torture/execute/vfprintf-1.c: New test.
+	* gcc.c-torture/execute/printf-chk-1.c: New test.
+	* gcc.c-torture/execute/fprintf-chk-1.c: New test.
+	* gcc.c-torture/execute/vprintf-chk-1.c: New test.
+	* gcc.c-torture/execute/vfprintf-chk-1.c: New test.
+
 2005-06-27  Michael Matz  <matz@suse.de>
 
 	* gcc.target/x86_64/abi/test_struct_returning.c: Adjust as return

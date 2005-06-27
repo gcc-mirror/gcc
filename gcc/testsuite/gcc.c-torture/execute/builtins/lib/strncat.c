@@ -13,11 +13,12 @@ strncat (char *s1, const char *s2, size_t n)
     abort();
 #endif
   while (*s1) s1++;
+  c = '\0';
   while (n > 0)
     {
       c = *s2++;
       *s1++ = c;
-      if (c == 0)
+      if (c == '\0')
 	return dest;
       n--;
     }

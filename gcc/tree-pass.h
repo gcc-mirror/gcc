@@ -196,6 +196,7 @@ extern struct tree_opt_pass pass_lower_complex_O0;
 extern struct tree_opt_pass pass_lower_complex;
 extern struct tree_opt_pass pass_lower_vector;
 extern struct tree_opt_pass pass_lower_vector_ssa;
+extern struct tree_opt_pass pass_object_sizes;
 extern struct tree_opt_pass pass_fold_builtins;
 extern struct tree_opt_pass pass_stdarg;
 extern struct tree_opt_pass pass_early_warn_uninitialized;

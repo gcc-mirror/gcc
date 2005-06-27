@@ -71,6 +71,8 @@ extensions, accepted by GCC in C89 mode and in C++.
 * Vector Extensions::   Using vector instructions through built-in functions.
 * Offsetof::            Special syntax for implementing @code{offsetof}.
 * Atomic Builtins::	Built-in functions for atomic memory access.
+* Object Size Checking:: Built-in functions for limited buffer overflow
+                        checking.
 * Other Builtins::      Other built-in functions.
 * Target Builtins::     Built-in functions specific to particular targets.
 * Target Format Checks:: Format checks specific to particular targets.
@@ -4723,6 +4725,139 @@ This means that all previous memory stores are globally visible, and all
 previous memory loads have been satisfied, but following memory reads
 are not prevented from being speculated to before the barrier.
 @end table
+
+@node Object Size Checking
+@section Object Size Checking Builtins
+@findex __builtin_object_size
+@findex __builtin___memcpy_chk
+@findex __builtin___mempcpy_chk
+@findex __builtin___memmove_chk
+@findex __builtin___memset_chk
+@findex __builtin___strcpy_chk
+@findex __builtin___stpcpy_chk
+@findex __builtin___strncpy_chk
+@findex __builtin___strcat_chk
+@findex __builtin___strncat_chk
+@findex __builtin___sprintf_chk
+@findex __builtin___snprintf_chk
+@findex __builtin___vsprintf_chk
+@findex __builtin___vsnprintf_chk
+@findex __builtin___printf_chk
+@findex __builtin___vprintf_chk
+@findex __builtin___fprintf_chk
+@findex __builtin___vfprintf_chk
+
+GCC implements a limited buffer overflow protection mechanism
+that can prevent some buffer overflow attacks.
+
+@deftypefn {Built-in Function} {size_t} __builtin_object_size (void * @var{ptr}, int @var{type})
+is a built-in construct that returns a constant number of bytes from
+@var{ptr} to the end of the object @var{ptr} pointer points to
+(if known at compile time).  @code{__builtin_object_size} never evaluates
+its arguments for side-effects.  If there are any side-effects in them, it
+returns @code{(size_t) -1} for @var{type} 0 or 1 and @code{(size_t) 0}
+for @var{type} 2 or 3.  If there are multiple objects @var{ptr} can
+point to and all of them are known at compile time, the returned number
+is the maximum of remaining byte counts in those objects if @var{type} & 2 is
+0 and minimum if non-zero.  If it is not possible to determine which objects
+@var{ptr} points to at compile time, @code{__builtin_object_size} should
+return @code{(size_t) -1} for @var{type} 0 or 1 and @code{(size_t) 0}
+for @var{type} 2 or 3.
+
+@var{type} is an integer constant from 0 to 3.  If the least significant
+bit is clear, objects are whole variables, if it is set, a closest
+surrounding subobject is considered the object a pointer points to.
+The second bit determines if maximum or minimum of remaining bytes
+is computed.
+
+@smallexample
+struct V @{ char buf1[10]; int b; char buf2[10]; @} var;
+char *p = &var.buf1[1], *q = &var.b;
+
+/* Here the object p points to is var.  */
+assert (__builtin_object_size (p, 0) == sizeof (var) - 1);
+/* The subobject p points to is var.buf1.  */
+assert (__builtin_object_size (p, 1) == sizeof (var.buf1) - 1);
+/* The object q points to is var.  */
+assert (__builtin_object_size (q, 0)
+	== (char *) (&var + 1) - (char *) &var.b);
+/* The subobject q points to is var.b.  */
+assert (__builtin_object_size (q, 1) == sizeof (var.b));
+@end smallexample
+@end deftypefn
+
+There are built-in functions added for many common string operation
+functions, e.g. for @code{memcpy} @code{__builtin___memcpy_chk}
+built-in is provided.  This built-in has an additional last argument,
+which is the number of bytes remaining in object the @var{dest}
+argument points to or @code{(size_t) -1} if the size is not known.
+
+The built-in functions are optimized into the normal string functions
+like @code{memcpy} if the last argument is @code{(size_t) -1} or if
+it is known at compile time that the destination object will not
+be overflown.  If the compiler can determine at compile time the
+object will be always overflown, it issues a warning.
+
+The intended use can be e.g.
+
+@smallexample
+#undef memcpy
+#define bos0(dest) __builtin_object_size (dest, 0)
+#define memcpy(dest, src, n) \
+  __builtin___memcpy_chk (dest, src, n, bos0 (dest))
+
+char *volatile p;
+char buf[10];
+/* It is unknown what object p points to, so this is optimized
+   into plain memcpy - no checking is possible.  */
+memcpy (p, "abcde", n);
+/* Destination is known and length too.  It is known at compile
+   time there will be no overflow.  */
+memcpy (&buf[5], "abcde", 5);
+/* Destination is known, but the length is not known at compile time.
+   This will result in __memcpy_chk call that can check for overflow
+   at runtime.  */
+memcpy (&buf[5], "abcde", n);
+/* Destination is known and it is known at compile time there will
+   be overflow.  There will be a warning and __memcpy_chk call that
+   will abort the program at runtime.  */
+memcpy (&buf[6], "abcde", 5);
+@end smallexample
+
+Such built-in functions are provided for @code{memcpy}, @code{mempcpy},
+@code{memmove}, @code{memset}, @code{strcpy}, @code{stpcpy}, @code{strncpy},
+@code{strcat} and @code{strncat}.
+
+There are also checking built-in functions for formatted output functions.
+@smallexample
+int __builtin___sprintf_chk (char *s, int flag, size_t os, const char *fmt, ...);
+int __builtin___snprintf_chk (char *s, size_t maxlen, int flag, size_t os,
+			      const char *fmt, ...);
+int __builtin___vsprintf_chk (char *s, int flag, size_t os, const char *fmt,
+			      va_list ap);
+int __builtin___vsnprintf_chk (char *s, size_t maxlen, int flag, size_t os,
+			       const char *fmt, va_list ap);
+@end smallexample
+
+The added @var{flag} argument is passed unchanged to @code{__sprintf_chk}
+etc. functions and can contain implementation specific flags on what
+additional security measures the checking function might take, such as
+handling @code{%n} differently.
+
+The @var{os} argument is the object size @var{s} points to, like in the
+other built-in functions.  There is a small difference in the behaviour
+though, if @var{os} is @code{(size_t) -1}, the built-in functions are
+optimized into the non-checking functions only if @var{flag} is 0, otherwise
+the checking function is called with @var{os} argument set to
+@code{(size_t) -1}.
+
+In addition to this, there are checking built-in functions
+@code{__builtin___printf_chk}, @code{__builtin___vprintf_chk},
+@code{__builtin___fprintf_chk} and @code{__builtin___vfprintf_chk}.
+These have just one additional argument, @var{flag}, right before
+format string @var{fmt}.  If the compiler is able to optimize them to
+@code{fputc} etc. functions, it will, otherwise the checking function
+should be called and the @var{flag} argument passed to it.
 
 @node Other Builtins
 @section Other built-in functions provided by GCC

@@ -435,6 +435,7 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_may_alias);
   NEXT_PASS (pass_forwprop);
   NEXT_PASS (pass_phiopt);
+  NEXT_PASS (pass_object_sizes);
   NEXT_PASS (pass_store_ccp);
   NEXT_PASS (pass_store_copy_prop);
   NEXT_PASS (pass_fold_builtins);

@@ -1,5 +1,64 @@
 2005-06-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* builtin-attrs.def (DEF_ATTR_FOR_INT): Add for 5 and 6.
+	(DEF_LIST_INT_INT): Add for 4,0, 4,5, 5,0, 5,6.
+	(ATTR_NOTHROW_NONNULL_4, ATTR_NOTHROW_NONNULL_5): Define.
+	(ATTR_FORMAT_PRINTF_4_0, ATTR_FORMAT_PRINTF_4_5,
+	ATTR_FORMAT_PRINTF_5_0, ATTR_FORMAT_PRINTF_5_6): Define.
+	* builtins.c: Include tree-flow.h.
+	(expand_builtin_mempcpy, expand_builtin_memmove): Comment fixes.
+	(expand_builtin_object_size, expand_builtin_memory_chk,
+	maybe_emit_chk_warning, maybe_emit_sprintf_chk_warning,
+	compute_object_offset, compute_builtin_object_size,
+	fold_builtin_object_size): New functions.
+	(expand_builtin): Handle BUILT_IN_OBJECT_SIZE and BUILT_IN_*_CHK.
+	(fold_builtin_1): Likewise.  Handle BUILT_IN_{,V}{,F}PRINTF
+	and BUILT_IN_{,F}PRINTF_UNLOCKED.
+	(fold_builtin_memory_chk, fold_builtin_stxcpy_chk,
+	fold_builtin_strncpy_chk, fold_builtin_strcat_chk,
+	fold_builtin_strncat_chk, fold_builtin_sprintf_chk,
+	fold_builtin_snprintf_chk, fold_builtin_printf, fold_builtin_fprintf):
+	New functions.
+	* builtins.def (BUILT_IN_OBJECT_SIZE, BUILT_IN_MEMCPY_CHK,
+	BUILT_IN_MEMMOVE_CHK, BUILT_IN_MEMPCPY_CHK, BUILT_IN_MEMSET_CHK,
+	BUILT_IN_STPCPY_CHK, BUILT_IN_STRCAT_CHK, BUILT_IN_STRCPY_CHK,
+	BUILT_IN_STRNCAT_CHK, BUILT_IN_STRNCPY_CHK, BUILT_IN_SNPRINTF_CHK,
+	BUILT_IN_SPRINTF_CHK, BUILT_IN_VSNPRINTF_CHK, BUILT_IN_VSPRINTF_CHK,
+	BUILT_IN_FPRINTF_CHK, BUILT_IN_PRINTF_CHK, BUILT_IN_VFPRINTF_CHK,
+	BUILT_IN_VPRINTF_CHK): New builtins.
+	* builtin-types.def (DEF_FUNCTION_TYPE_5, DEF_FUNCTION_TYPE_VAR_4):
+	Document.
+	(BT_FN_SIZE_CONST_PTR_INT, BT_FN_INT_INT_CONST_STRING_VALIST_ARG,
+	BT_FN_PTR_PTR_CONST_PTR_SIZE_SIZE, BT_FN_PTR_PTR_INT_SIZE_SIZE,
+	BT_FN_STRING_STRING_CONST_STRING_SIZE_SIZE,
+	BT_FN_INT_FILEPTR_INT_CONST_STRING_VALIST_ARG,
+	BT_FN_INT_STRING_INT_SIZE_CONST_STRING_VALIST_ARG,
+	BT_FN_INT_STRING_SIZE_INT_SIZE_CONST_STRING_VALIST_ARG,
+	BT_FN_INT_INT_CONST_STRING_VAR, BT_FN_INT_FILEPTR_INT_CONST_STRING_VAR,
+	BT_FN_INT_STRING_INT_SIZE_CONST_STRING_VAR,
+	BT_FN_INT_STRING_SIZE_INT_SIZE_CONST_STRING_VAR): New types.
+	* c-common.c (DEF_FUNCTION_TYPE_5, DEF_FUNCTION_TYPE_6,
+	DEF_FUNCTION_TYPE_VAR_4, DEF_FUNCTION_TYPE_VAR_5): Define.
+	* Makefile.in (OBJS-common): Add tree-object-size.o.
+	(tree-object-size.o): Add dependencies.
+	* tree-pass.h (pass_object_sizes): Add.
+	* tree-optimize.c (init_tree_optimization_passes): Add
+	pass_object_sizes.
+	* tree-object-size.c: New file.
+	* tree.h (fold_builtin_memory_chk, fold_builtin_stxcpy_chk,
+	fold_builtin_strncpy_chk, fold_builtin_snprintf_chk,
+	compute_builtin_object_size, init_object_sizes, fini_object_sizes):
+	New prototypes.
+	* tree-ssa-ccp.c (get_strlen): Rename to ...
+	(get_maxval_strlen): ...this function.  Handle also computing of maximum
+	string length and maximum integral value.
+	(ccp_fold_builtin): Handle BUILT_IN_*_CHK.  Use get_maxval_strlen
+	instead of get_strlen.  Pass CALLEE and ARGLIST variables to the
+	folding functions instead of computing them again.
+	(execute_fold_all_builtins): Retry ccp_fold_builtin if a builtin changed
+	into some other builtin.
+	* doc/extend.texi (Object Size Checking): Document.
+
 	* regrename.c (copy_value): Fix comment.
 
 	* toplev.c (process_options): Use if (FRAME_GROWS_DOWNWARD)
