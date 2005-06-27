@@ -398,6 +398,9 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 #define TARGET_STDARG_OPTIMIZE_HOOK 0
 
+#define TARGET_STACK_PROTECT_GUARD  default_stack_protect_guard
+#define TARGET_STACK_PROTECT_FAIL   default_external_stack_protect_fail
+
 #define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_false
 #define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_false
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_false
@@ -564,6 +567,8 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   TARGET_DWARF_CALLING_CONVENTION,              \
   TARGET_DWARF_HANDLE_FRAME_UNSPEC,		\
   TARGET_STDARG_OPTIMIZE_HOOK,			\
+  TARGET_STACK_PROTECT_GUARD,			\
+  TARGET_STACK_PROTECT_FAIL,			\
   TARGET_INVALID_WITHIN_DOLOOP,			\
   TARGET_CALLS,					\
   TARGET_CXX,					\

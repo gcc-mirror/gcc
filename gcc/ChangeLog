@@ -1,3 +1,59 @@
+2005-06-27  Richard Henderson  <rth@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Add __SSP_ALL__ and __SSP__.
+	* cfgexpand.c: Include params.h.
+	(has_protected_decls, has_short_buffer): New.
+	(expand_stack_vars): Take a predicate to determine what to expand.
+	(defer_stack_allocation): True when flag_stack_protect on.
+	(SPCT_HAS_LARGE_CHAR_ARRAY, SPCT_HAS_SMALL_CHAR_ARRAY): New.
+	(SPCT_HAS_ARRAY, SPCT_HAS_AGGREGATE): New.
+	(stack_protect_classify_type, stack_protect_decl_phase): New.
+	(stack_protect_decl_phase_1, stack_protect_decl_phase_2): New.
+	(add_stack_protection_conflicts, create_stack_guard): New.
+	(expand_used_vars): Add stack protection logic.
+	(tree_expand_cfg): Likewise.
+	* common.opt (Wstack-protector): New.
+	(fstack-protector, fstack-protector-all): New.
+	* function.c: Include predict.h.
+	(assign_parm_adjust_stack_rtl): Zap stack_parm when stack protect
+	wants to copy the parameter into the stack frame.
+	(stack_protect_prologue, stack_protect_epilogue): New.
+	(expand_function_end): Call stack_protect_epilogue.  Do 
+	sjlj_emit_function_exit_after after naked_return_label.
+	* function.h (struct function): Add stack_protect_guard.
+	* params.def (PARAM_SSP_BUFFER_SIZE): New.
+	* toplev.c (process_options): Disable flag_stack_protect and/or
+	warn_stack_protect based on FRAME_GROWS_DOWNWARD.
+	* tree.h (stack_protect_prologue): Declare.
+
+	* target-def.h (TARGET_STACK_PROTECT_GUARD): New.
+	(TARGET_STACK_PROTECT_FAIL): New.
+	(TARGET_INITIALIZER): Add them.
+	* target.h (struct gcc_target): Add stack_protect_guard and
+	stack_protect_fail.
+	* targhooks.c: Include ggc.h, gty header.
+	(stack_chk_guard_decl, default_stack_protect_guard): New.
+	(stack_chk_fail_decl, default_external_stack_protect_fail): New.
+	(default_hidden_stack_protect_fail): New.
+	* targhooks.h (default_stack_protect_guard): Declare.
+	(default_external_stack_protect_fail): Declare.
+	(default_hidden_stack_protect_fail): Declare.
+	* config/i386/i386.c (TARGET_STACK_PROTECT_FAIL): New.
+	* config/i386/i386.md (UNSPEC_SP_SET, UNSPEC_SP_TEST): New.
+	(trap): Use ud2.
+	(conditional_trap, conditional_trap_1): Remove.
+	(stack_protect_set, stack_protect_set_si, stack_protect_set_di): New.
+	(stack_protect_test, stack_protect_test_si, stack_protect_test_di): New.
+	* doc/md.texi (stack_protect_set, stack_protect_test): New.
+	* doc/tm.texi (TARGET_STACK_PROTECT_GUARD): New.
+	(TARGET_STACK_PROTECT_FAIL): New.
+
+	* libgcc-std.ver (GCC_4.1.0): New.
+	* libgcc.h (__stack_chk_guard): Declare.
+	(__stack_chk_fail, __stack_chk_fail_local): Declare.
+	* libgcc2.c (L_stack_chk, L_stack_chk_local): New.
+	* mklibgcc.in (lib2funcs): Add them.
+
 2005-06-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR c/21911

@@ -467,6 +467,11 @@ DEFPARAM (PARAM_VIRTUAL_MAPPINGS_TO_SYMS_RATIO,
 	  "Ratio between virtual mappings and virtual symbols to do full virtual renames",
 	  3, 0, 0)
 
+DEFPARAM (PARAM_SSP_BUFFER_SIZE,
+	  "ssp-buffer-size",
+	  "The lower bound for a buffer to be considered for stack smashing protection",
+	  8, 1, 0)
+
 /*
 Local variables:
 mode:c

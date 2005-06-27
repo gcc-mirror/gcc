@@ -61,6 +61,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "target.h"
 #include "cfglayout.h"
 #include "tree-gimple.h"
+#include "predict.h"
+
 
 #ifndef LOCAL_ALIGNMENT
 #define LOCAL_ALIGNMENT(TYPE, ALIGNMENT) ALIGNMENT
@@ -2334,6 +2336,14 @@ assign_parm_adjust_stack_rtl (struct assign_parm_data_one *data)
 	   && data->nominal_mode != data->passed_mode)
     stack_parm = NULL;
 
+  /* If stack protection is in effect for this function, don't leave any
+     pointers in their passed stack slots.  */
+  else if (cfun->stack_protect_guard
+	   && (flag_stack_protect == 2
+	       || data->passed_pointer
+	       || POINTER_TYPE_P (data->nominal_type)))
+    stack_parm = NULL;
+
   data->stack_parm = stack_parm;
 }
 
@@ -3921,6 +3931,97 @@ expand_main_function (void)
 #endif
 }
 
+/* Expand code to initialize the stack_protect_guard.  This is invoked at
+   the beginning of a function to be protected.  */
+
+#ifndef HAVE_stack_protect_set
+# define HAVE_stack_protect_set		0
+# define gen_stack_protect_set(x,y)	(gcc_unreachable (), NULL_RTX)
+#endif
+
+void
+stack_protect_prologue (void)
+{
+  tree guard_decl = targetm.stack_protect_guard ();
+  rtx x, y;
+
+  /* Avoid expand_expr here, because we don't want guard_decl pulled
+     into registers unless absolutely necessary.  And we know that
+     cfun->stack_protect_guard is a local stack slot, so this skips
+     all the fluff.  */
+  x = validize_mem (DECL_RTL (cfun->stack_protect_guard));
+  y = validize_mem (DECL_RTL (guard_decl));
+
+  /* Allow the target to copy from Y to X without leaking Y into a
+     register.  */
+  if (HAVE_stack_protect_set)
+    {
+      rtx insn = gen_stack_protect_set (x, y);
+      if (insn)
+	{
+	  emit_insn (insn);
+	  return;
+	}
+    }
+
+  /* Otherwise do a straight move.  */
+  emit_move_insn (x, y);
+}
+
+/* Expand code to verify the stack_protect_guard.  This is invoked at
+   the end of a function to be protected.  */
+
+#ifndef HAVE_stack_protect_test
+# define HAVE_stack_protect_test	0
+# define gen_stack_protect_test(x, y)	(gcc_unreachable (), NULL_RTX)
+#endif
+
+static void
+stack_protect_epilogue (void)
+{
+  tree guard_decl = targetm.stack_protect_guard ();
+  rtx label = gen_label_rtx ();
+  rtx x, y, tmp;
+
+  /* Avoid expand_expr here, because we don't want guard_decl pulled
+     into registers unless absolutely necessary.  And we know that
+     cfun->stack_protect_guard is a local stack slot, so this skips
+     all the fluff.  */
+  x = validize_mem (DECL_RTL (cfun->stack_protect_guard));
+  y = validize_mem (DECL_RTL (guard_decl));
+
+  /* Allow the target to compare Y with X without leaking either into
+     a register.  */
+  switch (HAVE_stack_protect_test != 0)
+    {
+    case 1:
+      tmp = gen_stack_protect_test (x, y);
+      if (tmp)
+	{
+	  emit_insn (tmp);
+	  emit_jump_insn (bcc_gen_fctn[EQ] (label));
+	  break;
+	}
+      /* FALLTHRU */
+
+    default:
+      emit_cmp_and_jump_insns (x, y, EQ, NULL_RTX, ptr_mode, 1, label);
+      break;
+    }
+
+  /* The noreturn predictor has been moved to the tree level.  The rtl-level
+     predictors estimate this branch about 20%, which isn't enough to get
+     things moved out of line.  Since this is the only extant case of adding
+     a noreturn function at the rtl level, it doesn't seem worth doing ought
+     except adding the prediction by hand.  */
+  tmp = get_last_insn ();
+  if (JUMP_P (tmp))
+    predict_insn_def (tmp, PRED_NORETURN, TAKEN);
+
+  expand_expr_stmt (targetm.stack_protect_fail ());
+  emit_label (label);
+}
+
 /* Start the RTL for a new function, and set variables used for
    emitting RTL.
    SUBR is the FUNCTION_DECL node.
@@ -4267,11 +4368,6 @@ expand_function_end (void)
   /* Output the label for the actual return from the function.  */
   emit_label (return_label);
 
-  /* Let except.c know where it should emit the call to unregister
-     the function context for sjlj exceptions.  */
-  if (flag_exceptions && USING_SJLJ_EXCEPTIONS)
-    sjlj_emit_function_exit_after (get_last_insn ());
-
   /* If scalar return value was computed in a pseudo-reg, or was a named
      return value that got dumped to the stack, copy that to the hard
      return register.  */
@@ -4398,6 +4494,15 @@ expand_function_end (void)
 
   /* Output the label for the naked return from the function.  */
   emit_label (naked_return_label);
+
+  /* Let except.c know where it should emit the call to unregister
+     the function context for sjlj exceptions.  */
+  if (flag_exceptions && USING_SJLJ_EXCEPTIONS)
+    sjlj_emit_function_exit_after (get_last_insn ());
+
+  /* If stack protection is enabled for this function, check the guard.  */
+  if (cfun->stack_protect_guard)
+    stack_protect_epilogue ();
 
   /* If we had calls to alloca, and this machine needs
      an accurate stack pointer to exit the function,

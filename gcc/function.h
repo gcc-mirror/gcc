@@ -368,6 +368,10 @@ struct function GTY(())
 
   const char *unlikely_text_section_name;
 
+  /* A variable living at the top of the frame that holds a known value.
+     Used for detecting stack clobbers.  */
+  tree stack_protect_guard;
+
   /* Collected bit flags.  */
 
   /* Nonzero if function being compiled needs to be given an address

@@ -37,6 +37,8 @@ Boston, MA 02110-1301, USA.  */
 #include "flags.h"
 #include "diagnostic.h"
 #include "toplev.h"
+#include "params.h"
+
 
 /* Verify that there is exactly single jump instruction since last and attach
    REG_BR_PROB note specifying probability.
@@ -137,6 +139,13 @@ static size_t stack_vars_conflict_alloc;
    (frame_offset+frame_phase) % PREFERRED_STACK_BOUNDARY == 0.  */
 static int frame_phase;
 
+/* Used during expand_used_vars to remember if we saw any decls for
+   which we'd like to enable stack smashing protection.  */
+static bool has_protected_decls;
+
+/* Used during expand_used_vars.  Remember if we say a character buffer
+   smaller than our cutoff threshold.  Used for -Wstack-protector.  */
+static bool has_short_buffer;
 
 /* Discover the byte alignment to use for DECL.  Ignore alignment
    we can't do with expected alignment of the stack boundary.  */
@@ -487,7 +496,7 @@ expand_one_stack_var_at (tree decl, HOST_WIDE_INT offset)
    with that location.  */
 
 static void
-expand_stack_vars (void)
+expand_stack_vars (bool (*pred) (tree))
 {
   size_t si, i, j, n = stack_vars_num;
 
@@ -499,6 +508,16 @@ expand_stack_vars (void)
 
       /* Skip variables that aren't partition representatives, for now.  */
       if (stack_vars[i].representative != i)
+	continue;
+
+      /* Skip variables that have already had rtl assigned.  See also
+	 add_stack_var where we perpetrate this pc_rtx hack.  */
+      if (DECL_RTL (stack_vars[i].decl) != pc_rtx)
+	continue;
+
+      /* Check the predicate to see whether this variable should be 
+	 allocated in this pass.  */
+      if (pred && !pred (stack_vars[i].decl))
 	continue;
 
       offset = alloc_stack_frame_space (stack_vars[i].size,
@@ -620,6 +639,11 @@ expand_one_error_var (tree var)
 static bool
 defer_stack_allocation (tree var, bool toplevel)
 {
+  /* If stack protection is enabled, *all* stack variables must be deferred,
+     so that we can re-order the strings to the top of the frame.  */
+  if (flag_stack_protect)
+    return true;
+
   /* Variables in the outermost scope automatically conflict with
      every other variable.  The only reason to want to defer them
      at all is that, after sorting, we can more efficiently pack
@@ -725,6 +749,144 @@ clear_tree_used (tree block)
     clear_tree_used (t);
 }
 
+/* Examine TYPE and determine a bit mask of the following features.  */
+
+#define SPCT_HAS_LARGE_CHAR_ARRAY	1
+#define SPCT_HAS_SMALL_CHAR_ARRAY	2
+#define SPCT_HAS_ARRAY			4
+#define SPCT_HAS_AGGREGATE		8
+
+static unsigned int
+stack_protect_classify_type (tree type)
+{
+  unsigned int ret = 0;
+  tree t;
+
+  switch (TREE_CODE (type))
+    {
+    case ARRAY_TYPE:
+      t = TYPE_MAIN_VARIANT (TREE_TYPE (type));
+      if (t == char_type_node
+	  || t == signed_char_type_node
+	  || t == unsigned_char_type_node)
+	{
+	  HOST_WIDE_INT max = PARAM_VALUE (PARAM_SSP_BUFFER_SIZE);
+	  HOST_WIDE_INT len;
+
+	  if (!TYPE_DOMAIN (type)
+	      || !TYPE_MAX_VALUE (TYPE_DOMAIN (type))
+	      || !host_integerp (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), 1))
+	    len = max + 1;
+	  else
+	    len = tree_low_cst (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), 1);
+
+	  if (len < max)
+	    ret = SPCT_HAS_SMALL_CHAR_ARRAY | SPCT_HAS_ARRAY;
+	  else
+	    ret = SPCT_HAS_LARGE_CHAR_ARRAY | SPCT_HAS_ARRAY;
+	}
+      else
+	ret = SPCT_HAS_ARRAY;
+      break;
+
+    case UNION_TYPE:
+    case QUAL_UNION_TYPE:
+    case RECORD_TYPE:
+      ret = SPCT_HAS_AGGREGATE;
+      for (t = TYPE_FIELDS (type); t ; t = TREE_CHAIN (t))
+	if (TREE_CODE (t) == FIELD_DECL)
+	  ret |= stack_protect_classify_type (TREE_TYPE (t));
+      break;
+
+    default:
+      break;
+    }
+
+  return ret;
+}
+
+/* Return non-zero if DECL should be segregated into the "vulnerable" upper
+   part of the local stack frame.  Remember if we ever return non-zero for
+   any variable in this function.  The return value is the phase number in
+   which the variable should be allocated.  */
+
+static int
+stack_protect_decl_phase (tree decl)
+{
+  unsigned int bits = stack_protect_classify_type (TREE_TYPE (decl));
+  int ret = 0;
+
+  if (bits & SPCT_HAS_SMALL_CHAR_ARRAY)
+    has_short_buffer = true;
+
+  if (flag_stack_protect == 2)
+    {
+      if ((bits & (SPCT_HAS_SMALL_CHAR_ARRAY | SPCT_HAS_LARGE_CHAR_ARRAY))
+	  && !(bits & SPCT_HAS_AGGREGATE))
+	ret = 1;
+      else if (bits & SPCT_HAS_ARRAY)
+	ret = 2;
+    }
+  else
+    ret = (bits & SPCT_HAS_LARGE_CHAR_ARRAY) != 0;
+
+  if (ret)
+    has_protected_decls = true;
+
+  return ret;
+}
+
+/* Two helper routines that check for phase 1 and phase 2.  These are used
+   as callbacks for expand_stack_vars.  */
+
+static bool
+stack_protect_decl_phase_1 (tree decl)
+{
+  return stack_protect_decl_phase (decl) == 1;
+}
+
+static bool
+stack_protect_decl_phase_2 (tree decl)
+{
+  return stack_protect_decl_phase (decl) == 2;
+}
+
+/* Ensure that variables in different stack protection phases conflict
+   so that they are not merged and share the same stack slot.  */
+
+static void
+add_stack_protection_conflicts (void)
+{
+  size_t i, j, n = stack_vars_num;
+  unsigned char *phase;
+
+  phase = XNEWVEC (unsigned char, n);
+  for (i = 0; i < n; ++i)
+    phase[i] = stack_protect_decl_phase (stack_vars[i].decl);
+
+  for (i = 0; i < n; ++i)
+    {
+      unsigned char ph_i = phase[i];
+      for (j = 0; j < i; ++j)
+	if (ph_i != phase[j])
+	  add_stack_var_conflict (i, j);
+    }
+
+  XDELETEVEC (phase);
+}
+
+/* Create a decl for the guard at the top of the stack frame.  */
+
+static void
+create_stack_guard (void)
+{
+  tree guard = build_decl (VAR_DECL, NULL, ptr_type_node);
+  TREE_THIS_VOLATILE (guard) = 1;
+  TREE_USED (guard) = 1;
+  expand_one_stack_var (guard);
+  cfun->stack_protect_guard = guard;
+}
+
 /* Expand all variables used in the function.  */
 
 static void
@@ -745,6 +907,10 @@ expand_used_vars (void)
 
   /* Clear TREE_USED on all variables associated with a block scope.  */
   clear_tree_used (outer_block);
+
+  /* Initialize local stack smashing state.  */
+  has_protected_decls = false;
+  has_short_buffer = false;
 
   /* At this point all variables on the unexpanded_var_list with TREE_USED
      set are not associated with any block scope.  Lay them out.  */
@@ -794,14 +960,44 @@ expand_used_vars (void)
 	 reflect this.  */
       add_alias_set_conflicts ();
 
+      /* If stack protection is enabled, we don't share space between 
+	 vulnerable data and non-vulnerable data.  */
+      if (flag_stack_protect)
+	add_stack_protection_conflicts ();
+
       /* Now that we have collected all stack variables, and have computed a 
 	 minimal interference graph, attempt to save some stack space.  */
       partition_stack_vars ();
       if (dump_file)
 	dump_stack_var_partition ();
+    }
 
-      /* Assign rtl to each variable based on these partitions.  */
-      expand_stack_vars ();
+  /* There are several conditions under which we should create a
+     stack guard: protect-all, alloca used, protected decls present.  */
+  if (flag_stack_protect == 2
+      || (flag_stack_protect
+	  && (current_function_calls_alloca || has_protected_decls)))
+    create_stack_guard ();
+
+  /* Assign rtl to each variable based on these partitions.  */
+  if (stack_vars_num > 0)
+    {
+      /* Reorder decls to be protected by iterating over the variables
+	 array multiple times, and allocating out of each phase in turn.  */
+      /* ??? We could probably integrate this into the qsort we did 
+	 earlier, such that we naturally see these variables first,
+	 and thus naturally allocate things in the right order.  */
+      if (has_protected_decls)
+	{
+	  /* Phase 1 contains only character arrays.  */
+	  expand_stack_vars (stack_protect_decl_phase_1);
+
+	  /* Phase 2 contains other kinds of arrays.  */
+	  if (flag_stack_protect == 2)
+	    expand_stack_vars (stack_protect_decl_phase_2);
+	}
+
+      expand_stack_vars (NULL);
 
       /* Free up stack variable graph data.  */
       XDELETEVEC (stack_vars);
@@ -1288,6 +1484,16 @@ tree_expand_cfg (void)
   /* Expand the variables recorded during gimple lowering.  */
   expand_used_vars ();
 
+  /* Honor stack protection warnings.  */
+  if (warn_stack_protect)
+    {
+      if (current_function_calls_alloca)
+	warning (0, "not protecting local variables: variable length buffer");
+      if (has_short_buffer && !cfun->stack_protect_guard)
+	warning (0, "not protecting function: no buffer at least %d bytes long",
+		 (int) PARAM_VALUE (PARAM_SSP_BUFFER_SIZE));
+    }
+
   /* Set up parameters and prepare for return, for the function.  */
   expand_function_start (current_function_decl);
 
@@ -1297,6 +1503,11 @@ tree_expand_cfg (void)
       && MAIN_NAME_P (DECL_NAME (current_function_decl))
       && DECL_FILE_SCOPE_P (current_function_decl))
     expand_main_function ();
+
+  /* Initialize the stack_protect_guard field.  This must happen after the
+     call to __main (if any) so that the external decl is initialized.  */
+  if (cfun->stack_protect_guard)
+    stack_protect_prologue ();
 
   /* Register rtl specific functions for cfg.  */
   rtl_register_cfg_hooks ();
