@@ -526,7 +526,16 @@ struct gcc_target
      from VA_ARG_EXPR.  LHS is left hand side of MODIFY_EXPR, RHS
      is right hand side.  Returns true if the statements doesn't need
      to be checked for va_list references.  */
-  bool (*stdarg_optimize_hook) (struct stdarg_info *ai, tree lhs, tree rhs);
+  bool (* stdarg_optimize_hook) (struct stdarg_info *ai, tree lhs, tree rhs);
+
+  /* This target hook allows the operating system to override the DECL
+     that represents the external variable that contains the stack
+     protection guard variable.  The type of this DECL is ptr_type_node.  */
+  tree (* stack_protect_guard) (void);
+
+  /* This target hook allows the operating system to override the CALL_EXPR
+     that is invoked when a check vs the guard variable fails.  */
+  tree (* stack_protect_fail) (void);
 
   /* Returns NULL if target supports the insn within a doloop block,
      otherwise it returns an error message.  */

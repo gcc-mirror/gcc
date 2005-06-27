@@ -2716,6 +2716,7 @@ This describes the stack layout and calling conventions.
 * Function Entry::
 * Profiling::
 * Tail Calls::
+* Stack Smashing Protection::
 @end menu
 
 @node Frame Layout
@@ -4377,6 +4378,31 @@ during PIC compilation.  The hook is used to enforce these restrictions,
 as the @code{sibcall} md pattern can not fail, or fall over to a
 ``normal'' call.  The criteria for successful sibling call optimization
 may vary greatly between different architectures.
+@end deftypefn
+
+@node Stack Smashing Protection
+@subsection Stack smashing protection
+@cindex stack smashing protection
+
+@deftypefn {Target Hook} tree TARGET_STACK_PROTECT_GUARD (void)
+This hook returns a @code{DECL} node for the external variable to use
+for the stack protection guard.  This variable is initialized by the 
+runtime to some random value and is used to initialize the guard value
+that is placed at the top of the local stack frame.  The type of this
+variable must be @code{ptr_type_node}.
+
+The default version of this hook creates a variable called
+@samp{__stack_chk_guard}, which is normally defined in @file{libgcc2.c}.
+@end deftypefn
+
+@deftypefn {Target Hook} tree TARGET_STACK_PROTECT_FAIL (void)
+This hook returns a tree expression that alerts the runtime that the
+stack protect guard variable has been modified.  This expression should
+involve a call to a @code{noreturn} function.
+
+The default version of this hook invokes a function called
+@samp{__stack_chk_fail}, taking no arguments.  This function is 
+normally defined in @file{libgcc2.c}.
 @end deftypefn
 
 @node Varargs

@@ -109,6 +109,10 @@ Wshadow
 Common Var(warn_shadow)
 Warn when one local variable shadows another
 
+Wstack-protector
+Common Var(warn_stack_protect)
+Warn when not issuing stack smashing protection for some reason
+
 Wstrict-aliasing
 Common
 Warn about code which might break strict aliasing rules
@@ -783,6 +787,14 @@ Common RejectNegative Joined
 fstack-limit-symbol=
 Common RejectNegative Joined
 -fstack-limit-symbol=<name>	Trap if the stack goes past symbol <name>
+
+fstack-protector
+Common Report Var(flag_stack_protect, 1)
+Use propolice as a stack protection method
+
+fstack-protector-all
+Common Report RejectNegative Var(flag_stack_protect, 2) VarExists
+Use a stack protection method for every function
 
 fstrength-reduce
 Common Report Var(flag_strength_reduce)

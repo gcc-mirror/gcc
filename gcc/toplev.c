@@ -1747,6 +1747,18 @@ process_options (void)
   /* With -fcx-limited-range, we do cheap and quick complex arithmetic.  */
   if (flag_cx_limited_range)
     flag_complex_method = 0;
+
+#ifndef FRAME_GROWS_DOWNWARD
+  /* Targets must be able to place spill slots at lower addresses.  If the
+     target already uses a soft frame pointer, the transition is trivial.  */
+  if (flag_stack_protect)
+    {
+      warning (0, "-fstack-protector not supported for this target");
+      flag_stack_protect = 0;
+    }
+#endif
+  if (!flag_stack_protect)
+    warn_stack_protect = 0;
 }
 
 /* Initialize the compiler back end.  */

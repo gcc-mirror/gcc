@@ -61,6 +61,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "target.h"
 #include "tm_p.h"
 #include "target-def.h"
+#include "ggc.h"
 
 
 void
@@ -321,3 +322,86 @@ hook_invalid_arg_for_unprototyped_fn (
 {
   return NULL;
 }
+
+/* Initialize the stack protection decls.  */
+
+/* Stack protection related decls living in libgcc.  */
+static GTY(()) tree stack_chk_guard_decl;
+
+tree
+default_stack_protect_guard (void)
+{
+  tree t = stack_chk_guard_decl;
+
+  if (t == NULL)
+    {
+      t = build_decl (VAR_DECL, get_identifier ("__stack_chk_guard"),
+		      ptr_type_node);
+      TREE_STATIC (t) = 1;
+      TREE_PUBLIC (t) = 1;
+      DECL_EXTERNAL (t) = 1;
+      TREE_USED (t) = 1;
+      TREE_THIS_VOLATILE (t) = 1;
+      DECL_ARTIFICIAL (t) = 1;
+      DECL_IGNORED_P (t) = 1;
+
+      stack_chk_guard_decl = t;
+    }
+
+  return t;
+}
+
+static GTY(()) tree stack_chk_fail_decl;
+
+tree 
+default_external_stack_protect_fail (void)
+{
+  tree t = stack_chk_fail_decl;
+
+  if (t == NULL_TREE)
+    {
+      t = build_function_type_list (void_type_node, NULL_TREE);
+      t = build_decl (FUNCTION_DECL, get_identifier ("__stack_chk_fail"), t);
+      TREE_STATIC (t) = 1;
+      TREE_PUBLIC (t) = 1;
+      DECL_EXTERNAL (t) = 1;
+      TREE_USED (t) = 1;
+      TREE_THIS_VOLATILE (t) = 1;
+      TREE_NOTHROW (t) = 1;
+      DECL_ARTIFICIAL (t) = 1;
+      DECL_IGNORED_P (t) = 1;
+
+      stack_chk_fail_decl = t;
+    }
+
+  return build_function_call_expr (t, NULL_TREE);
+}
+
+tree
+default_hidden_stack_protect_fail (void)
+{
+  tree t = stack_chk_fail_decl;
+
+  if (stack_chk_fail_decl == NULL_TREE)
+    {
+      t = build_function_type_list (void_type_node, NULL_TREE);
+      t = build_decl (FUNCTION_DECL,
+		      get_identifier ("__stack_chk_fail_local"), t);
+      TREE_STATIC (t) = 1;
+      TREE_PUBLIC (t) = 1;
+      DECL_EXTERNAL (t) = 1;
+      TREE_USED (t) = 1;
+      TREE_THIS_VOLATILE (t) = 1;
+      TREE_NOTHROW (t) = 1;
+      DECL_ARTIFICIAL (t) = 1;
+      DECL_IGNORED_P (t) = 1;
+      DECL_VISIBILITY_SPECIFIED (t) = 1;
+      DECL_VISIBILITY (t) = VISIBILITY_HIDDEN;
+
+      stack_chk_fail_decl = t;
+    }
+
+  return build_function_call_expr (t, NULL_TREE);
+}
+
+#include "gt-targhooks.h"

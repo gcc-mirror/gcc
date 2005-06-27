@@ -440,6 +440,12 @@ c_cpp_builtins (cpp_reader *pfile)
   if (targetm.handle_pragma_extern_prefix)
     cpp_define (pfile, "__PRAGMA_EXTERN_PREFIX");
 
+  /* Make the choice of the stack protector runtime visible to source code.  */
+  if (flag_stack_protect == 2)
+    cpp_define (pfile, "__SSP_ALL__=2");
+  else if (flag_stack_protect == 1)
+    cpp_define (pfile, "__SSP__=1");
+
   /* A straightforward target hook doesn't work, because of problems
      linking that hook's body when part of non-C front ends.  */
 # define preprocessing_asm_p() (cpp_get_options (pfile)->lang == CLK_ASM)

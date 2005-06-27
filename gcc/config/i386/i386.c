@@ -1081,6 +1081,9 @@ static void init_ext_80387_constants (void);
 #undef TARGET_MANGLE_FUNDAMENTAL_TYPE
 #define TARGET_MANGLE_FUNDAMENTAL_TYPE ix86_mangle_fundamental_type
 
+#undef TARGET_STACK_PROTECT_FAIL
+#define TARGET_STACK_PROTECT_FAIL default_hidden_stack_protect_fail
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 
