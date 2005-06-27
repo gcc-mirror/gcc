@@ -1,3 +1,11 @@
+2005-06-27  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/22102
+	* include/bits/stl_tree.h (insert_unique(iterator, const _Val&),
+	insert_equal((iterator, const _Val&)): Reimplement to check both
+	before and after, as per the algorithm "ignore hint if wrong" of
+	ISO paper N1780.
+
 2005-06-27  Benjamin Kosnik  <bkoz@redhat.com>
 	    Ami Tavory  <pbassoc@gmail.com>
 	
