@@ -956,7 +956,7 @@ OBJS-common = \
  rtl-profile.o tree-profile.o rtlhooks.o cfgexpand.o lambda-mat.o          \
  lambda-trans.o	lambda-code.o tree-loop-linear.o tree-ssa-sink.o 	   \
  tree-vrp.o tree-stdarg.o tree-cfgcleanup.o tree-ssa-reassoc.o		   \
- tree-ssa-structalias.o
+ tree-ssa-structalias.o tree-object-size.o
 
 
 OBJS-md = $(out_object_file)
@@ -1945,6 +1945,9 @@ tree-loop-linear.o: tree-loop-linear.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 tree-stdarg.o: tree-stdarg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) function.h $(DIAGNOSTIC_H) $(TREE_FLOW_H) tree-pass.h \
    tree-stdarg.h $(TARGET_H) langhooks.h
+tree-object-size.o: tree-object-size.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+   $(TM_H) $(TREE_H) $(DIAGNOSTIC_H) $(TREE_FLOW_H) tree-pass.h \
+   tree-ssa-propagate.h
 tree-gimple.o : tree-gimple.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(EXPR_H) \
    $(RTL_H) $(TREE_GIMPLE_H) $(TM_H) coretypes.h bitmap.h $(GGC_H) \
    output.h $(TREE_FLOW_H)
