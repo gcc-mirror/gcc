@@ -196,8 +196,241 @@ backward_headers = \
 	${backward_srcdir}/strstream \
 	${backward_srcdir}/backward_warning.h
 
+
+assoc_srcdir = ${glibcxx_srcdir}/include/ext/pb_assoc
+assoc_builddir = ./ext/pb_assoc
+
+assoc_subdirs = \
+	${assoc_builddir}/detail \
+	${assoc_builddir}/detail/tree_assoc_cntnr \
+	${assoc_builddir}/detail/basic_assoc_cntnr \
+	${assoc_builddir}/detail/splay_tree_ \
+	${assoc_builddir}/detail/typelist \
+	${assoc_builddir}/detail/basic_hash_assoc_cntnr \
+	${assoc_builddir}/detail/cc_ht_map_ \
+	${assoc_builddir}/detail/gp_ht_map_ \
+	${assoc_builddir}/detail/tree_policy \
+	${assoc_builddir}/detail/resize_policy \
+	${assoc_builddir}/detail/bin_search_tree_ \
+	${assoc_builddir}/detail/basic_tree_assoc_cntnr \
+	${assoc_builddir}/detail/cc_hash_assoc_cntnr \
+	${assoc_builddir}/detail/value_type_adapter \
+	${assoc_builddir}/detail/lu_policy \
+	${assoc_builddir}/detail/gp_hash_assoc_cntnr \
+	${assoc_builddir}/detail/unordered_iterator \
+	${assoc_builddir}/detail/ov_tree_map_ \
+	${assoc_builddir}/detail/lu_assoc_cntnr \
+	${assoc_builddir}/detail/hash_fn \
+	${assoc_builddir}/detail/eq_fn \
+	${assoc_builddir}/detail/rb_tree_map_ \
+	${assoc_builddir}/detail/lu_map_
+
+assoc_headers = \
+	${assoc_srcdir}/detail/tree_assoc_cntnr/constructor_destructor_fn_imps.hpp \
+	${assoc_srcdir}/detail/type_utils.hpp \
+	${assoc_srcdir}/detail/order_statistics_imp.hpp \
+	${assoc_srcdir}/detail/basic_assoc_cntnr/d_find_fn_imps.hpp \
+	${assoc_srcdir}/detail/basic_assoc_cntnr/d_insert_fn_imps.hpp \
+	${assoc_srcdir}/detail/basic_assoc_cntnr/extract_key.hpp \
+	${assoc_srcdir}/detail/basic_assoc_cntnr/erase_fn_imps.hpp \
+	${assoc_srcdir}/detail/basic_assoc_cntnr/insert_fn_imps.hpp \
+	${assoc_srcdir}/detail/basic_assoc_cntnr/constructor_destructor_fn_imps.hpp \
+	${assoc_srcdir}/detail/basic_assoc_cntnr/info_fn_imps.hpp \
+	${assoc_srcdir}/detail/basic_assoc_cntnr/iterators_fn_imps.hpp \
+	${assoc_srcdir}/detail/basic_assoc_cntnr/d_extract_key.hpp \
+	${assoc_srcdir}/detail/basic_assoc_cntnr/constructors_destructor_fn_imps.hpp \
+	${assoc_srcdir}/detail/splay_tree_/erase_fn_imps.hpp \
+	${assoc_srcdir}/detail/splay_tree_/splay_tree_.hpp \
+	${assoc_srcdir}/detail/splay_tree_/node.hpp \
+	${assoc_srcdir}/detail/splay_tree_/insert_fn_imps.hpp \
+	${assoc_srcdir}/detail/splay_tree_/find_fn_imps.hpp \
+	${assoc_srcdir}/detail/splay_tree_/splay_fn_imps.hpp \
+	${assoc_srcdir}/detail/splay_tree_/split_join_fn_imps.hpp \
+	${assoc_srcdir}/detail/splay_tree_/info_fn_imps.hpp \
+	${assoc_srcdir}/detail/splay_tree_/debug_fn_imps.hpp \
+	${assoc_srcdir}/detail/splay_tree_/constructors_destructor_fn_imps.hpp \
+	${assoc_srcdir}/detail/typelist/typelist_transform.hpp \
+	${assoc_srcdir}/detail/typelist/typelist_apply.hpp \
+	${assoc_srcdir}/detail/typelist/typelist_filter.hpp \
+	${assoc_srcdir}/detail/typelist/typelist_at_index.hpp \
+	${assoc_srcdir}/detail/typelist/typelist_contains.hpp \
+	${assoc_srcdir}/detail/typelist/typelist_append.hpp \
+	${assoc_srcdir}/detail/typelist/typelist_typelist_append.hpp \
+	${assoc_srcdir}/detail/ds_trait_imp.hpp \
+	${assoc_srcdir}/detail/basic_hash_assoc_cntnr/resize_fn_imps.hpp \
+	${assoc_srcdir}/detail/basic_hash_assoc_cntnr/constructor_destructor_fn_imps.hpp \
+	${assoc_srcdir}/detail/basic_hash_assoc_cntnr/constructors_destructor_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/resize_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/find_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/erase_no_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/resize_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/debug_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/erase_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/policy_access_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/cmp_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/insert_no_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/insert_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/find_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/find_no_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/cond_key_dtor_entry_dealtor.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/constructor_destructor_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/entry_list_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/constructor_destructor_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/erase_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/cc_ht_map_.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/constructor_destructor_no_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/standard_policies.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/info_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/iterators_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/insert_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/debug_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/size_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/debug_no_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_ht_map_/resize_no_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/resize_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/find_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/erase_no_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/resize_fn_imps.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/debug_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/erase_fn_imps.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/policy_access_fn_imps.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/insert_no_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/insert_fn_imps.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/find_fn_imps.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/find_no_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/constructor_destructor_fn_imps.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/constructor_destructor_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/erase_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/constructor_destructor_no_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/info_fn_imps.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/insert_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/debug_fn_imps.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/gp_ht_map_.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/iterator_fn_imps.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/debug_no_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/gp_ht_map_/resize_no_store_hash_fn_imps.hpp \
+	${assoc_srcdir}/detail/tree_policy/order_statistics_imp.hpp \
+	${assoc_srcdir}/detail/tree_policy/null_node_updator_imp.hpp \
+	${assoc_srcdir}/detail/types_traits.hpp \
+	${assoc_srcdir}/detail/mapping_level_imp.hpp \
+	${assoc_srcdir}/detail/map_debug_base.hpp \
+	${assoc_srcdir}/detail/resize_policy/ht_prime_size_policy_imp.hpp \
+	${assoc_srcdir}/detail/resize_policy/hash_load_check_resize_trigger_imp.hpp \
+	${assoc_srcdir}/detail/resize_policy/hash_prime_size_policy_imp.hpp \
+	${assoc_srcdir}/detail/resize_policy/size_base.hpp \
+	${assoc_srcdir}/detail/resize_policy/cc_hash_max_collision_resize_trigger_imp.hpp \
+	${assoc_srcdir}/detail/resize_policy/hash_exponential_size_policy_imp.hpp \
+	${assoc_srcdir}/detail/resize_policy/hash_standard_resize_policy_imp.hpp \
+	${assoc_srcdir}/detail/bin_search_tree_/cond_dtor_entry_dealtor.hpp \
+	${assoc_srcdir}/detail/bin_search_tree_/find_iterators.hpp \
+	${assoc_srcdir}/detail/bin_search_tree_/erase_fn_imps.hpp \
+	${assoc_srcdir}/detail/bin_search_tree_/insert_fn_imps.hpp \
+	${assoc_srcdir}/detail/bin_search_tree_/find_fn_imps.hpp \
+	${assoc_srcdir}/detail/bin_search_tree_/cond_key_dtor_entry_dealtor.hpp \
+	${assoc_srcdir}/detail/bin_search_tree_/node_iterators.hpp \
+	${assoc_srcdir}/detail/bin_search_tree_/bin_search_tree_.hpp \
+	${assoc_srcdir}/detail/bin_search_tree_/split_join_fn_imps.hpp \
+	${assoc_srcdir}/detail/bin_search_tree_/rotate_fn_imps.hpp \
+	${assoc_srcdir}/detail/bin_search_tree_/info_fn_imps.hpp \
+	${assoc_srcdir}/detail/bin_search_tree_/iterators_fn_imps.hpp \
+	${assoc_srcdir}/detail/bin_search_tree_/r_erase_fn_imps.hpp \
+	${assoc_srcdir}/detail/bin_search_tree_/debug_fn_imps.hpp \
+	${assoc_srcdir}/detail/bin_search_tree_/constructors_destructor_fn_imps.hpp \
+	${assoc_srcdir}/detail/basic_tree_assoc_cntnr/r_range_iteration_fn_imps.hpp \
+	${assoc_srcdir}/detail/basic_tree_assoc_cntnr/erase_fn_imps.hpp \
+	${assoc_srcdir}/detail/basic_tree_assoc_cntnr/policy_access_fn_imps.hpp \
+	${assoc_srcdir}/detail/basic_tree_assoc_cntnr/constructor_destructor_fn_imps.hpp \
+	${assoc_srcdir}/detail/basic_tree_assoc_cntnr/split_join_fn_imps.hpp \
+	${assoc_srcdir}/detail/basic_tree_assoc_cntnr/r_erase_fn_imps.hpp \
+	${assoc_srcdir}/detail/basic_tree_assoc_cntnr/range_iteration_fn_imps.hpp \
+	${assoc_srcdir}/detail/basic_tree_assoc_cntnr/constructors_destructor_fn_imps.hpp \
+	${assoc_srcdir}/detail/basic_tree_assoc_cntnr/node_iteration_fn_imps.hpp \
+	${assoc_srcdir}/detail/cc_hash_assoc_cntnr/constructor_destructor_fn_imps.hpp \
+	${assoc_srcdir}/detail/assoc_cntnr_base.hpp \
+	${assoc_srcdir}/detail/ms_category_imp.hpp \
+	${assoc_srcdir}/detail/hash_types_traits.hpp \
+	${assoc_srcdir}/detail/typelist.hpp \
+	${assoc_srcdir}/detail/value_type_adapter/invalidation_guarantee_selector.hpp \
+	${assoc_srcdir}/detail/value_type_adapter/erase_fn_imps.hpp \
+	${assoc_srcdir}/detail/value_type_adapter/iterator.hpp \
+	${assoc_srcdir}/detail/value_type_adapter/constructor_destructor_and_related.hpp \
+	${assoc_srcdir}/detail/value_type_adapter/value_type_traits.hpp \
+	${assoc_srcdir}/detail/value_type_adapter/insert_fn_imps.hpp \
+	${assoc_srcdir}/detail/value_type_adapter/find_fn_imps.hpp \
+	${assoc_srcdir}/detail/value_type_adapter/ref_pair.hpp \
+	${assoc_srcdir}/detail/value_type_adapter/it_value_type_traits.hpp \
+	${assoc_srcdir}/detail/value_type_adapter/info_fn_imps.hpp \
+	${assoc_srcdir}/detail/value_type_adapter/erase_if_pred.hpp \
+	${assoc_srcdir}/detail/value_type_adapter/value_type_adapter.hpp \
+	${assoc_srcdir}/detail/value_type_adapter/iterator_fn_imps.hpp \
+	${assoc_srcdir}/detail/lu_policy/mtf_lu_policy_imp.hpp \
+	${assoc_srcdir}/detail/lu_policy/counter_lu_policy_imp.hpp \
+	${assoc_srcdir}/detail/lu_policy/counter_lu_metadata_imp.hpp \
+	${assoc_srcdir}/detail/gp_hash_assoc_cntnr/constructor_destructor_fn_imps.hpp \
+	${assoc_srcdir}/detail/unordered_iterator/find_iterator.hpp \
+	${assoc_srcdir}/detail/unordered_iterator/iterator.hpp \
+	${assoc_srcdir}/detail/unordered_iterator/const_iterator.hpp \
+	${assoc_srcdir}/detail/unordered_iterator/const_find_iterator.hpp \
+	${assoc_srcdir}/detail/standard_policies.hpp \
+	${assoc_srcdir}/detail/standard_sizes.hpp \
+	${assoc_srcdir}/detail/ov_tree_map_/erase_fn_imps.hpp \
+	${assoc_srcdir}/detail/ov_tree_map_/insert_fn_imps.hpp \
+	${assoc_srcdir}/detail/ov_tree_map_/find_fn_imps.hpp \
+	${assoc_srcdir}/detail/ov_tree_map_/ov_tree_map_.hpp \
+	${assoc_srcdir}/detail/ov_tree_map_/node_iterators.hpp \
+	${assoc_srcdir}/detail/ov_tree_map_/split_join_fn_imps.hpp \
+	${assoc_srcdir}/detail/ov_tree_map_/cond_dtor.hpp \
+	${assoc_srcdir}/detail/ov_tree_map_/info_fn_imps.hpp \
+	${assoc_srcdir}/detail/ov_tree_map_/iterators_fn_imps.hpp \
+	${assoc_srcdir}/detail/ov_tree_map_/debug_fn_imps.hpp \
+	${assoc_srcdir}/detail/ov_tree_map_/constructors_destructor_fn_imps.hpp \
+	${assoc_srcdir}/detail/lu_assoc_cntnr/policy_access_fn_imps.hpp \
+	${assoc_srcdir}/detail/lu_assoc_cntnr/constructor_destructor_fn_imps.hpp \
+	${assoc_srcdir}/detail/hash_fn/linear_probe_fn_imp.hpp \
+	${assoc_srcdir}/detail/hash_fn/mod_based_range_hashing.hpp \
+	${assoc_srcdir}/detail/hash_fn/direct_mod_range_hashing_imp.hpp \
+	${assoc_srcdir}/detail/hash_fn/probe_fn_base.hpp \
+	${assoc_srcdir}/detail/hash_fn/ranged_probe_fn.hpp \
+	${assoc_srcdir}/detail/hash_fn/quadratic_probe_fn_imp.hpp \
+	${assoc_srcdir}/detail/hash_fn/direct_mask_range_hashing_imp.hpp \
+	${assoc_srcdir}/detail/hash_fn/ranged_hash_fn.hpp \
+	${assoc_srcdir}/detail/hash_fn/mask_based_range_hashing.hpp \
+	${assoc_srcdir}/detail/eq_fn/eq_by_less.hpp \
+	${assoc_srcdir}/detail/eq_fn/hash_eq_fn.hpp \
+	${assoc_srcdir}/detail/rb_tree_map_/erase_fn_imps.hpp \
+	${assoc_srcdir}/detail/rb_tree_map_/node.hpp \
+	${assoc_srcdir}/detail/rb_tree_map_/insert_fn_imps.hpp \
+	${assoc_srcdir}/detail/rb_tree_map_/find_fn_imps.hpp \
+	${assoc_srcdir}/detail/rb_tree_map_/split_join_fn_imps.hpp \
+	${assoc_srcdir}/detail/rb_tree_map_/rb_tree_.hpp \
+	${assoc_srcdir}/detail/rb_tree_map_/info_fn_imps.hpp \
+	${assoc_srcdir}/detail/rb_tree_map_/debug_fn_imps.hpp \
+	${assoc_srcdir}/detail/rb_tree_map_/constructors_destructor_fn_imps.hpp \
+	${assoc_srcdir}/detail/lu_map_/lu_map_.hpp \
+	${assoc_srcdir}/detail/lu_map_/erase_fn_imps.hpp \
+	${assoc_srcdir}/detail/lu_map_/policy_access_fn_imps.hpp \
+	${assoc_srcdir}/detail/lu_map_/insert_fn_imps.hpp \
+	${assoc_srcdir}/detail/lu_map_/find_fn_imps.hpp \
+	${assoc_srcdir}/detail/lu_map_/constructor_destructor_fn_imps.hpp \
+	${assoc_srcdir}/detail/lu_map_/info_fn_imps.hpp \
+	${assoc_srcdir}/detail/lu_map_/iterators_fn_imps.hpp \
+	${assoc_srcdir}/detail/lu_map_/debug_fn_imps.hpp \
+	${assoc_srcdir}/detail/constructors_destructor_fn_imps.hpp \
+	${assoc_srcdir}/detail/ms_trait_imp.hpp \
+	${assoc_srcdir}/detail/cond_dealtor.hpp \
+	${assoc_srcdir}/hash_policy.hpp \
+	${assoc_srcdir}/trivial_iterator_def.hpp \
+	${assoc_srcdir}/ds_trait.hpp \
+	${assoc_srcdir}/exception.hpp \
+	${assoc_srcdir}/tree_policy.hpp \
+	${assoc_srcdir}/lu_policy.hpp \
+	${assoc_srcdir}/ms_trait.hpp \
+	${assoc_srcdir}/assoc_cntnr.hpp \
+	${assoc_srcdir}/data_type.hpp 
+
+
 ext_srcdir = ${glibcxx_srcdir}/include/ext
-ext_builddir = ./ext
+ext_builddir = ./ext 
 ext_headers = \
 	${ext_srcdir}/algorithm \
 	${ext_srcdir}/array_allocator.h \
@@ -209,6 +442,8 @@ ext_headers = \
 	${ext_srcdir}/functional \
 	${ext_srcdir}/hash_map \
 	${ext_srcdir}/hash_set \
+	${ext_srcdir}/hash_fun.h \
+	${ext_srcdir}/hashtable.h \
 	${ext_srcdir}/iterator \
 	${ext_srcdir}/malloc_allocator.h \
 	${ext_srcdir}/memory \
@@ -221,8 +456,8 @@ ext_headers = \
 	${ext_srcdir}/rope \
 	${ext_srcdir}/ropeimpl.h \
 	${ext_srcdir}/slist \
-	${ext_srcdir}/hash_fun.h \
-	${ext_srcdir}/hashtable.h
+	${ext_srcdir}/typelist.h 
+
 
 tr1_srcdir = ${glibcxx_srcdir}/include/tr1
 tr1_builddir = ./tr1
@@ -407,7 +642,7 @@ endif
 # CLEANFILES and all-local are kept up-to-date.
 allstamped = \
 	stamp-std stamp-bits stamp-c_base stamp-c_compatibility \
-	stamp-backward stamp-ext stamp-tr1 stamp-debug stamp-host
+	stamp-backward stamp-ext stamp-assoc stamp-tr1 stamp-debug stamp-host
 
 # List of all files that are created by explicit building, editing, or
 # catenation.
@@ -427,8 +662,8 @@ stamp-std: ${std_headers}
 	fi ;\
 	if [ ! -f stamp-std ]; then \
 	  (cd ${std_builddir} && for h in $?; do \
-	    official_name=`echo $$h | sed -e 's,.*/std_,,' -e 's,\.h$$,,'` ;\
-	    $(LN_S) $$h ./$${official_name} || true ;\
+	    build_name=`echo $$h | sed -e 's,.*/std_,,' -e 's,\.h$$,,'` ;\
+	    $(LN_S) $$h ./$${build_name} || true ;\
 	  done) ;\
 	fi ;\
 	$(STAMP) stamp-std
@@ -448,8 +683,8 @@ stamp-c_base: stamp-bits ${c_base_headers} ${c_base_headers_extra}
 	fi ;\
 	if [ ! -f stamp-c_base ]; then \
 	  (cd ${c_base_builddir} && for h in ${c_base_headers}; do \
-	    official_name=`echo $$h | sed -e 's,.*/std_,,' -e 's,\.h$$,,'` ;\
-	    $(LN_S) $$h ./$${official_name} || true ;\
+	    build_name=`echo $$h | sed -e 's,.*/std_,,' -e 's,\.h$$,,'` ;\
+	    $(LN_S) $$h ./$${build_name} || true ;\
 	  done) ;\
 	  if [ ! -z "${c_base_headers_extra}" ]; then \
 	  (cd ${bits_builddir} && $(LN_S) ${c_base_headers_extra}  . || true) ;\
@@ -486,6 +721,19 @@ stamp-ext: ${ext_headers}
 	fi ;\
 	$(STAMP) stamp-ext
 
+# Have to deal with nested include directories, gah! Strip off source
+# directory before making the link.
+stamp-assoc: ${assoc_headers}
+	@if [ ! -d "${assoc_builddir}" ]; then \
+	    mkdir -p ${assoc_subdirs} ;\
+	fi ;\
+	if [ ! -f stamp-assoc ]; then \
+	  (cd ${assoc_builddir} && for h in $?; do \
+	    build_name=`echo $$h | sed -e "s|${assoc_srcdir}|.|g"` ;\
+	    $(LN_S) $$h $${build_name} || true ;\
+	  done) ;\
+	fi ;\
+	$(STAMP) stamp-assoc
 
 stamp-tr1: ${tr1_headers}
 	@if [ ! -d "${tr1_builddir}" ]; then \
@@ -637,6 +885,13 @@ install-headers:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${ext_builddir}
 	for file in ${ext_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${ext_builddir}; done
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${assoc_builddir}
+	for dir in ${assoc_subdirs}; do \
+	  $(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/$${dir} ; done
+	for file in ${assoc_headers}; do \
+	  install_base=$(DESTDIR)${gxx_include_dir}/${assoc_builddir} ; \
+	  relative_name=`echo $$file | sed -e "s|${assoc_srcdir}|.|g"` ;\
+	  $(INSTALL_DATA) $${file} $${install_base}/$${relative_name} ; done
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${tr1_builddir}
 	for file in ${tr1_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${tr1_builddir}; done

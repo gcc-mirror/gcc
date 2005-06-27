@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Insert-type Methods</title>
+<meta name="GENERATOR" content="Microsoft Visual Studio .NET 7.1">
+<meta name="vs_targetSchema" content="http://schemas.microsoft.com/intellisense/ie5">
+</head>
+<body bgcolor = "white">
+<h2>Insert-Type Methods</h2>
+<TABLE WIDTH="100%" BORDER="1" ID="Table1">
+	<TR>
+		<TD Width = "30%" ALIGN="left"><b>Method</b></TD>
+		<TD Width = "50%" ALIGN="left"><b>Description</b></TD>
+		<TD Width = "10%" ALIGN="left"><b>Complexity Guarantee</b></TD>
+		<TD Width = "10%" ALIGN="left"><b>Exception Guarantee</b></TD>
+	</TR>
+	<TR>
+		<TD ALIGN="left">
+<pre><b>inline</b> std::pair&lt;<a href = "find_iterator.html">find_iterator</a>, <b>bool</b>&gt;
+  insert
+  (<a href = "mapped_value_type_defs.html">const_mapped_reference</a> r_value)
+</pre>
+		</TD>
+		<TD ALIGN="left">Inserts <tt>r_value</tt> into the table. Writes only if an entry with an equivalent key does not exist. If the entry was written, returns
+<pre>std::make_pair(it, <b>true</b>)
+</pre> where <tt>it</tt> corresponds to the new entry;
+			Otherwise, returns
+<pre>std::make_pair(<a href = "find_type_methods.html">find_end()</a>, <b>false</b>)
+</pre>.</TD>
+		<TD ALIGN="left"><i>O(1)</i> average <p><i>O(m)</i> worst</p> <p>(<i>m</i> = #entries)</p> <p><sub><a href = "#mmap_complex">[1]</a></sub></p></TD>
+		<TD ALIGN="left"><a href = "exception_guarantees_specifics.html#basic_guarantee">1</a>,<a href = "exception_guarantees_specifics.html#strong_guarantee">2</a></TD>
+	</TR>
+</TABLE>
+
+<p>
+<a name = "mmap_complex">[1]</a> Note that for multimap types, the mapped data part is a collection, and so the average and worst case complexities
+need to be multiplied by the corresponding complexities of copying collections.
+</p>
+
+
+</body>
+</html>

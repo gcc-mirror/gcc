@@ -1,0 +1,570 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+
+<html>
+<head>
+<title>lu_assoc_cntnr Interface
+</title>
+
+</head>
+
+<body>
+<h1>
+<tt>lu_assoc_cntnr
+</tt>
+
+ Interface
+
+
+</h1>
+
+<p>A list-update based associative container.
+</p>
+
+<ol>
+<li>
+<a href = "../../../../include/ext/pb_assoc/assoc_cntnr.hpp"><tt>assoc_cntnr.hpp</tt>
+</a>
+
+</li>
+
+<li>
+<a href = "#link1">Template parameters.
+</a>
+
+</li>
+
+<li>
+<a href = "#link2">Base classes.
+</a>
+
+</li>
+
+<li>
+Public Types and Constants:
+
+
+<ol>
+<li>
+<a href = "#link3">Policy definitions.
+</a>
+
+</li>
+
+</ol>
+
+</li>
+
+<li>
+Public Methods:
+
+
+<ol>
+<li>
+<a href = "#link4">Constructors, destructor, and related.
+</a>
+
+</li>
+
+<li>
+<a href = "#link5">Policy access methods.
+</a>
+
+</li>
+
+</ol>
+
+</li>
+
+</ol>
+
+
+<h2>
+<a name = "link1">Template parameters.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "20%" ALIGN = "left"><b>Parameter</b></TD><TD Width = "50%" ALIGN = "left"><b>Description</b></TD><TD Width = "30%" ALIGN = "left"><b>Default Value</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a name = "Key3735928856">Key</a></pre>
+
+
+</td>
+
+<td>
+<p>Key type.</p>
+
+
+</td>
+
+<td>
+-
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "Data3735928937">Data</a></pre>
+
+
+</td>
+
+<td>
+<p>Data type.</p>
+
+
+</td>
+
+<td>
+-
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "Eq_Fn3735929016">Eq_Fn</a></pre>
+
+
+</td>
+
+<td>
+<p>Equivalence functor.</p>
+
+
+</td>
+
+<td>
+<pre>std::equal_to&lt;<a href = "#Key3735928856">Key</a>&gt;</pre>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "Update_Policy3735929889">Update_Policy</a></pre>
+
+
+</td>
+
+<td>
+<p>Update policy (determines when an element will be moved to the front of the list.</p>
+
+
+</td>
+
+<td>
+<a href = "move_to_front_update_policy.html"><tt>move_to_front_update_policy</tt></a>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "Allocator3735929488">Allocator</a></pre>
+
+
+</td>
+
+<td>
+<p>Allocator type.</p>
+
+
+</td>
+
+<td>
+<pre>std::allocator&lt;<b>char</b>&gt;</pre>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link2">Base classes.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "80%" ALIGN = "left"><b>Class</b></TD><TD Width = "20%" ALIGN = "left"><b>Derivation Type</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a href = "#Update_Policy3735929889">Update_Policy</a></pre>
+
+
+</td>
+
+<td>
+<p>public</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link3">Policy definitions.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "30%" ALIGN = "left"><b>Type</b></TD><TD Width = "55%" ALIGN = "left"><b>Definition</b></TD><TD Width = "15%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a name = "eq_fn3735929080">eq_fn</a></pre>
+
+
+</td>
+
+<td>
+<pre><a href = "#Eq_Fn3735929016">Eq_Fn</a></pre>
+
+
+</td>
+
+<td>
+<p>Equivalence functor type.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "allocator3735929520">allocator</a></pre>
+
+
+</td>
+
+<td>
+<pre><a href = "#Allocator3735929488">Allocator</a></pre>
+
+
+</td>
+
+<td>
+<p>Allocator type.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "update_policy3735929953">update_policy</a></pre>
+
+
+</td>
+
+<td>
+<pre><a href = "#Update_Policy3735929889">Update_Policy</a></pre>
+
+
+</td>
+
+<td>
+<p>List update policy type.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link4">Constructors, destructor, and related.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre>  lu_assoc_cntnr
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Default constructor.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre>  lu_assoc_cntnr
+  (<b>const</b> <a href = "#Eq_Fn3735929016">Eq_Fn</a> &amp;r_eq_fn)</pre>
+
+
+</td>
+
+<td>
+<p>Constructor taking some policy objects. <font color = "#666666"><tt>r_eq_fn</tt></font> will be copied by the <a href = "#Eq_Fn3735929016"><tt>Eq_Fn</tt></a> object of the container object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre>  lu_assoc_cntnr
+  (<b>const</b> <a href = "#Eq_Fn3735929016">Eq_Fn</a> &amp;r_eq_fn,
+    <b>const</b> <a href = "#Update_Policy3735929889">Update_Policy</a> &amp;r_update_policy)</pre>
+
+
+</td>
+
+<td>
+<p>Constructor taking some policy objects. <font color = "#666666"><tt>r_eq_fn</tt></font> will be copied by the <a href = "#Eq_Fn3735929016"><tt>Eq_Fn</tt></a> object of the container object, and <font color = "#666666"><tt>r_update_policy</tt></font> will be copied by the <a href = "#Update_Policy3735929889"><tt>Update_Policy</tt></a> object of the container object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>template</b>&lt;<b>class</b> It&gt;
+  lu_assoc_cntnr
+  (It first_it, It last_it)</pre>
+
+
+</td>
+
+<td>
+<p>Constructor taking iterators to a range of value_types. The value_types between <font color = "#666666"><tt>first_it</tt></font> and <font color = "#666666"><tt>last_it</tt></font> will be inserted into the container object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>template</b>&lt;<b>class</b> It&gt;
+  lu_assoc_cntnr
+  (It first_it, It last_it,
+    <b>const</b> <a href = "#Eq_Fn3735929016">Eq_Fn</a> &amp;r_eq_fn)</pre>
+
+
+</td>
+
+<td>
+<p>Constructor taking iterators to a range of value_types and some policy objects. The value_types between <font color = "#666666"><tt>first_it</tt></font> and <font color = "#666666"><tt>last_it</tt></font> will be inserted into the container object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>template</b>&lt;<b>class</b> It&gt;
+  lu_assoc_cntnr
+  (It first_it, It last_it,
+    <b>const</b> <a href = "#Eq_Fn3735929016">Eq_Fn</a> &amp;r_eq_fn,
+    <b>const</b> <a href = "#Update_Policy3735929889">Update_Policy</a> &amp;r_update_policy)</pre>
+
+
+</td>
+
+<td>
+<p>Constructor taking iterators to a range of value_types and some policy objects. The value_types between <font color = "#666666"><tt>first_it</tt></font> and <font color = "#666666"><tt>last_it</tt></font> will be inserted into the container object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre>  lu_assoc_cntnr
+  (<b>const</b> <font color = "olive">lu_assoc_cntnr</font> &amp;r_other)</pre>
+
+
+</td>
+
+<td>
+<p>Copy constructor.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>virtual</b>
+  ~lu_assoc_cntnr
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Destructor.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><font color = "olive">lu_assoc_cntnr</font> &amp;
+  <b>operator</b>=
+  (<b>const</b> <font color = "olive">lu_assoc_cntnr</font> &amp;r_other)</pre>
+
+
+</td>
+
+<td>
+<p>Assignment operator.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>void</b>
+  swap
+  (<font color = "olive">lu_assoc_cntnr</font> &amp;r_other)</pre>
+
+
+</td>
+
+<td>
+<p>Swaps content.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link5">Policy access methods.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a href = "#eq_fn3735929080">eq_fn</a> &amp;
+  get_eq_fn
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Access to the <a href = "#eq_fn3735929080"><tt>eq_fn</tt></a> object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>const</b> <a href = "#eq_fn3735929080">eq_fn</a> &amp;
+  get_eq_fn
+  () <b>const</b></pre>
+
+
+</td>
+
+<td>
+<p>Const access to the <a href = "#eq_fn3735929080"><tt>eq_fn</tt></a> object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a href = "#update_policy3735929953">update_policy</a> &amp;
+  get_update_policy
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Access to the <a href = "#update_policy3735929953"><tt>update_policy</tt></a> object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>const</b> <a href = "#update_policy3735929953">update_policy</a> &amp;
+  get_update_policy
+  () <b>const</b></pre>
+
+
+</td>
+
+<td>
+<p>Const access to the <a href = "#update_policy3735929953"><tt>update_policy</tt></a> object.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+
+
+</body>
+
+</html>
+
+

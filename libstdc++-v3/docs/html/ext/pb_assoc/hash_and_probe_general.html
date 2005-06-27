@@ -1,0 +1,45 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Hash and Probe Policies</title>
+<meta name="GENERATOR" content="Microsoft Visual Studio .NET 7.1">
+<meta name="vs_targetSchema" content="http://schemas.microsoft.com/intellisense/ie5">
+</head>
+<body bgcolor = "white">
+<h1>Hash and Probe Policies</h1>
+
+
+<p>
+	As mentioned in
+<a href = "hash_policies.html">Hash Policies</a>,
+some of the containers require a ranged-hash function policy for
+mapping key types into a non-negative integral type in a range.
+<i>E.g.</i>, collision-based containers
+(<a href = "cc_ht_map_interface.html"><tt>cc_ht_map</tt></a>,
+<a href = "cc_ht_set_interface.html"><tt>cc_ht_set</tt></a>,
+<a href = "cc_ht_multimap_interface.html"><tt>cc_ht_multimap</tt></a>,
+and
+<a href = "cc_ht_multiset_interface.html"><tt>cc_ht_multiset</tt></a>),
+require a ranged-hash function.
+</p>
+
+<p>
+	Similarly, some hash tables
+need a ranged-probe function policy for mapping
+key types into a sequence of non-negative integral types in a range.
+<i>E.g.</i>, probing-based containers
+(<a href = "gp_ht_map_interface.html"><tt>gp_ht_map</tt></a>,
+<a href = "gp_ht_set_interface.html"><tt>gp_ht_set</tt></a>,
+<a href = "gp_ht_multimap_interface.html"><tt>gp_ht_multimap</tt></a>,
+and
+<a href = "gp_ht_multiset_interface.html"><tt>gp_ht_multiset</tt></a>),
+require a ranged-hash function.
+</p>
+
+<p>
+	<a href = "interface.html#policy_classes">Policy Classes</a>
+contains classes for creating ranged-hash and ranged-probe function policies.
+</p>
+
+</body>
+</html>

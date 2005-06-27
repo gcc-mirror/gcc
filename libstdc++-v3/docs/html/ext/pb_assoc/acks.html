@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+	<head>
+		<title>Acknowledgements</title>
+		<meta name="GENERATOR" content="Microsoft Visual Studio .NET 7.1">
+		<meta name="vs_targetSchema" content="http://schemas.microsoft.com/intellisense/ie5">
+	</head>
+<body>
+<h1>Acknowledgements</h1>
+
+
+<ol>
+	<li>This library was written at the <a href = "http://www.haifa.il.ibm.com/dept/storage/network.html">Network Storage Technologies</a> Group of
+<a href = "http://www.haifa.il.ibm.com/">IBM's Haifa Research Labs</a>.</li>
+	<li>The library is based heavily on policy-based design and uses many useful
+techniques from [<a href="references.html#knuth98sorting">alexandrescu01modern</a>].
+	</li>
+	<li> Two ideas are borrowed from the SGI-STL implementation [<a href = "references.html#sgi_stl">sgi_stl</a>]:
+	<ol>
+		<li>
+			The prime-based resize policies use a list of primes taken from the SGI-STL implementation.
+		</li>
+		<li> The red-black trees contain both a root node and a header
+	node (containing metadata), connected in a way
+	that forward and reverse iteration can be performed efficiently.
+		</li>
+	</ol>
+	</li>
+	<li> Some test utilities borrow ideas from [<a href = "references.html#boost_timer">boost_timer</a>].
+	</li>
+	<li> We would like to thank Scott Meyers for useful comments (without attributing to him
+	any flaws in the design or implementation of the library).
+	</li>
+	<li> Much of the documentation is
+<a href = "http://www.python.org/">
+<img src="PythonPoweredSmall.gif" align=top width=55
+     height=22 alt="[Python Powered]" border=0>
+</a>.
+	</li>
+</ol>
+
+
+
+</body>
+
+</html>

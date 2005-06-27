@@ -1,0 +1,536 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+
+<html>
+<head>
+<title>sample_resize_policy Interface
+</title>
+
+</head>
+
+<body>
+<h1>
+<tt>sample_resize_policy
+</tt>
+
+ Interface
+
+
+</h1>
+
+<p>A sample resize policy.
+</p>
+
+<p>This class serves to show the interface a resize policy needs to support.
+</p>
+
+<ol>
+<li>
+<a href = "../doc/sample_resize_policy.hpp"><tt>sample_resize_policy.hpp</tt>
+</a>
+
+</li>
+
+<li>
+Public Methods:
+
+
+<ol>
+<li>
+<a href = "#link1">Constructors, destructor, and related.
+</a>
+
+</li>
+
+</ol>
+
+</li>
+
+<li>
+Protected Methods:
+
+
+<ol>
+<li>
+<a href = "#link2">Insert search notifications.
+</a>
+
+</li>
+
+<li>
+<a href = "#link3">Find search notifications.
+</a>
+
+</li>
+
+<li>
+<a href = "#link4">Erase search notifications.
+</a>
+
+</li>
+
+<li>
+<a href = "#link5">Content change notifications.
+</a>
+
+</li>
+
+<li>
+<a href = "#link6">Size change notifications.
+</a>
+
+</li>
+
+<li>
+<a href = "#link7">Queries.
+</a>
+
+</li>
+
+</ol>
+
+</li>
+
+</ol>
+
+
+<h2>
+<a name = "link1">Constructors, destructor, and related.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre>  sample_resize_policy
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Default constructor.</p>
+
+
+<p>Must be default constructible.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre>  sample_range_hashing
+  (<b>const</b> sample_resize_policy &amp;r_other)</pre>
+
+
+</td>
+
+<td>
+<p>Copy constructor.</p>
+
+
+<p>Must be copy constructible.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  swap
+  (sample_resize_policy &amp;r_other)</pre>
+
+
+</td>
+
+<td>
+<p>Swaps content.</p>
+
+
+<p>Must be swappable (if there is such a word).</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link2">Insert search notifications.
+</a>
+
+</h2>
+
+<p>Notifications called during an insert operation.</p>
+
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_insert_search_start
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Notifies a search started.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_insert_search_collision
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Notifies a search encountered a collision.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_insert_search_end
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Notifies a search ended.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link3">Find search notifications.
+</a>
+
+</h2>
+
+<p>Notifications called during a find operation.</p>
+
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_find_search_start
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Notifies a search started.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_find_search_collision
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Notifies a search encountered a collision.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_find_search_end
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Notifies a search ended.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link4">Erase search notifications.
+</a>
+
+</h2>
+
+<p>Notifications called during an insert operation.</p>
+
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_erase_search_start
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Notifies a search started.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_erase_search_collision
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Notifies a search encountered a collision.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_erase_search_end
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Notifies a search ended.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link5">Content change notifications.
+</a>
+
+</h2>
+
+<p>Notifications called when the content of the table changes in a way that can affect the resize policy.</p>
+
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_inserted
+  (size_type num_e)</pre>
+
+
+</td>
+
+<td>
+<p>Notifies an element was inserted.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  notify_erased
+  (size_type num_e)</pre>
+
+
+</td>
+
+<td>
+<p>Notifies an element was erased.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>void</b>
+  notify_cleared
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Notifies the table was cleared.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link6">Size change notifications.
+</a>
+
+</h2>
+
+<p>Notifications called when the table changes size.</p>
+
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><b>void</b>
+  notify_resized
+  (size_type new_size)</pre>
+
+
+</td>
+
+<td>
+<p>Notifies the table was resized to <font color = "#666666"><tt>new_size</tt></font>.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link7">Queries.
+</a>
+
+</h2>
+
+<p>Called to query whether/how to resize.</p>
+
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre>size_type
+  get_init_size
+  () <b>const</b></pre>
+
+
+</td>
+
+<td>
+<p>Queries initial size.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> <b>bool</b>
+  is_resize_needed
+  () <b>const</b></pre>
+
+
+</td>
+
+<td>
+<p>Queries whether a resize is needed.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre>size_type
+  get_new_size
+  (size_type size, size_type num_used_e) <b>const</b></pre>
+
+
+</td>
+
+<td>
+<p>Queries what the new <font color = "#666666"><tt>size</tt></font> should be.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+
+
+</body>
+
+</html>
+
+

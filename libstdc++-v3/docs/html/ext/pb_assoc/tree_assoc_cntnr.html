@@ -1,0 +1,493 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+
+<html>
+<head>
+<title>tree_assoc_cntnr Interface
+</title>
+
+</head>
+
+<body>
+<h1>
+<tt>tree_assoc_cntnr
+</tt>
+
+ Interface
+
+
+</h1>
+
+<p>A tree-based associative container.
+</p>
+
+<ol>
+<li>
+<a href = "../../../../include/ext/pb_assoc/assoc_cntnr.hpp"><tt>assoc_cntnr.hpp</tt>
+</a>
+
+</li>
+
+<li>
+<a href = "#link1">Template parameters.
+</a>
+
+</li>
+
+<li>
+<a href = "#link2">Base classes.
+</a>
+
+</li>
+
+<li>
+Public Types and Constants:
+
+
+<ol>
+<li>
+<a href = "#link3">Policy definitions.
+</a>
+
+</li>
+
+</ol>
+
+</li>
+
+<li>
+Public Methods:
+
+
+<ol>
+<li>
+<a href = "#link4">Constructors, destructor, and related.
+</a>
+
+</li>
+
+</ol>
+
+</li>
+
+</ol>
+
+
+<h2>
+<a name = "link1">Template parameters.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "20%" ALIGN = "left"><b>Parameter</b></TD><TD Width = "50%" ALIGN = "left"><b>Description</b></TD><TD Width = "30%" ALIGN = "left"><b>Default Value</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a name = "Key3735928856">Key</a></pre>
+
+
+</td>
+
+<td>
+<p>Key type.</p>
+
+
+</td>
+
+<td>
+-
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "Data3735928937">Data</a></pre>
+
+
+</td>
+
+<td>
+<p>Data type.</p>
+
+
+</td>
+
+<td>
+-
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "Cmp_Fn3735929122">Cmp_Fn</a></pre>
+
+
+</td>
+
+<td>
+<p>Comparison functor.</p>
+
+
+</td>
+
+<td>
+<pre>std::less&lt;<a href = "#Key3735928856">Key</a>&gt;</pre>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "DS_Tag3735929089">DS_Tag</a></pre>
+
+
+</td>
+
+<td>
+<p>Data-structure tag.</p>
+
+
+</td>
+
+<td>
+-
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "Node_Updator3735929779">Node_Updator</a></pre>
+
+
+</td>
+
+<td>
+<p>Node updator type.</p>
+
+
+<p><a href = "concepts.html#concepts_node_invariants">Node Invariants</a> explains this concept.</p>
+
+
+</td>
+
+<td>
+<a href = "null_node_updator.html"><tt>null_node_updator</tt></a>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "Allocator3735929488">Allocator</a></pre>
+
+
+</td>
+
+<td>
+<p>Allocator type.</p>
+
+
+</td>
+
+<td>
+<pre>std::allocator&lt;<b>char</b>&gt;</pre>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link2">Base classes.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "80%" ALIGN = "left"><b>Class</b></TD><TD Width = "20%" ALIGN = "left"><b>Derivation Type</b></TD></TR>
+
+
+<tr>
+<td>
+<pre>Depending on whether <a href = "#DS_Tag3735929089">DS_Tag</a> is a type supporting reverse iteration,<ol>	<li> <a href = "basic_tree_assoc_cntnr.html"><tt>basic_tree_assoc_cntnr</tt></a> no reverse-iteration specialization </li>	<li> <a href = "basic_tree_assoc_cntnr_rev_it.html"><tt>basic_tree_assoc_cntnr</tt></a> reverse-iteration specialization </li></ol></pre>
+
+
+</td>
+
+<td>
+<p>public</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link3">Policy definitions.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "30%" ALIGN = "left"><b>Type</b></TD><TD Width = "55%" ALIGN = "left"><b>Definition</b></TD><TD Width = "15%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a name = "cmp_fn3735929186">cmp_fn</a></pre>
+
+
+</td>
+
+<td>
+<pre><a href = "#Cmp_Fn3735929122">Cmp_Fn</a></pre>
+
+
+</td>
+
+<td>
+<p>Comparison functor type.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "node_updator3735929843">node_updator</a></pre>
+
+
+</td>
+
+<td>
+<pre><a href = "#Node_Updator3735929779">Node_Updator</a></pre>
+
+
+</td>
+
+<td>
+<p>Node updator type.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link4">Constructors, destructor, and related.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre>  tree_assoc_cntnr
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Default constructor.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre>  tree_assoc_cntnr
+  (<b>const</b> <a href = "#cmp_fn3735929186">cmp_fn</a> &amp;r_cmp_fn)</pre>
+
+
+</td>
+
+<td>
+<p>Constructor taking some policy objects. <font color = "#666666"><tt>r_cmp_fn</tt></font> will be copied by the <a href = "#Cmp_Fn3735929122"><tt>Cmp_Fn</tt></a> object of the container object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre>  tree_assoc_cntnr
+  (<b>const</b> <a href = "#cmp_fn3735929186">cmp_fn</a> &amp;r_cmp_fn,
+    <b>const</b> <a href = "#Node_Updator3735929779">Node_Updator</a> &amp;r_node_updator)</pre>
+
+
+</td>
+
+<td>
+<p>Constructor taking some policy objects. <font color = "#666666"><tt>r_cmp_fn</tt></font> will be copied by the <a href = "#Cmp_Fn3735929122"><tt>Cmp_Fn</tt></a> object of the container object, and <font color = "#666666"><tt>r_node_updator</tt></font> will be copied by the <a href = "#Node_Updator3735929779"><tt>Node_Updator</tt></a> object of the container object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>template</b>&lt;
+    <b>class</b> It&gt;
+  tree_assoc_cntnr
+  (It first_it,
+    It last_it)</pre>
+
+
+</td>
+
+<td>
+<p>Constructor taking iterators to a range of value_types. The value_types between <font color = "#666666"><tt>first_it</tt></font> and <font color = "#666666"><tt>last_it</tt></font> will be inserted into the container object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>template</b>&lt;
+    <b>class</b> It&gt;
+  tree_assoc_cntnr
+  (It first_it,
+    It last_it,
+    <b>const</b> <a href = "#cmp_fn3735929186">cmp_fn</a> &amp;r_cmp_fn)</pre>
+
+
+</td>
+
+<td>
+<p>Constructor taking iterators to a range of value_types and some policy objects The value_types between <font color = "#666666"><tt>first_it</tt></font> and <font color = "#666666"><tt>last_it</tt></font> will be inserted into the container object. <font color = "#666666"><tt>r_cmp_fn</tt></font> will be copied by the <a href = "#Cmp_Fn3735929122"><tt>Cmp_Fn</tt></a> object of the container object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>template</b>&lt;
+    <b>class</b> It&gt;
+  tree_assoc_cntnr
+  (It first_it,
+    It last_it,
+    <b>const</b> <a href = "#cmp_fn3735929186">cmp_fn</a> &amp;r_cmp_fn,
+    <b>const</b> <a href = "#Node_Updator3735929779">Node_Updator</a> &amp;r_node_updator)</pre>
+
+
+</td>
+
+<td>
+<p>Constructor taking iterators to a range of value_types and some policy objects The value_types between <font color = "#666666"><tt>first_it</tt></font> and <font color = "#666666"><tt>last_it</tt></font> will be inserted into the container object. <font color = "#666666"><tt>r_cmp_fn</tt></font> will be copied by the <a href = "#Cmp_Fn3735929122"><tt>Cmp_Fn</tt></a> object of the container object, and <font color = "#666666"><tt>r_node_updator</tt></font> will be copied by the <a href = "#Node_Updator3735929779"><tt>Node_Updator</tt></a> object of the container object.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre>  tree_assoc_cntnr
+  (<b>const</b> <font color = "olive">tree_assoc_cntnr</font> &amp;r_other)</pre>
+
+
+</td>
+
+<td>
+<p>Copy constructor.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>virtual</b>
+  ~tree_assoc_cntnr
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Destructor.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><font color = "olive">tree_assoc_cntnr</font> &amp;
+  <b>operator</b>=
+  (<b>const</b> <font color = "olive">tree_assoc_cntnr</font> &amp;r_other)</pre>
+
+
+</td>
+
+<td>
+<p>Assignment operator.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>void</b>
+  swap
+  (<font color = "olive">tree_assoc_cntnr</font> &amp;r_other)</pre>
+
+
+</td>
+
+<td>
+<p>Swaps content.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+
+
+</body>
+
+</html>
+
+

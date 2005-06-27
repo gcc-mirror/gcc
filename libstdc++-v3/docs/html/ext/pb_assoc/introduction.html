@@ -1,0 +1,31 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<TITLE>Introduction</TITLE>
+<META NAME="Generator" content="Microsoft Visual Studio .NET 7.1">
+<base target = "content">
+</HEAD>
+<BODY>
+<H1>Introduction</H1>
+
+<p>
+	There are (at least) three orthogonal challenges to designing generic associative containers:
+</p>
+
+<ol>
+	<li> The choice of underlying data-structure affects not only the performance of containers, but their semantics as well. <i>E.g.</i>, containers based on trees store elements by a given order, while containers based on hash tables store elements in a meaningless (and probably time-varying) order; containers based on node-based trees can guarantee exception-free element erasing, while containers based on vector-based trees cannot. This complicates generic manipulation of associative containers based on different underlying data-structures.
+	</li>
+	<li>
+		Underlying data-structures can act very differently given different policies. <i>E.g.</i>, the policy by which a hash table translates a hash value into a position within a table affects performance dramatically; certain policies can make containers based on trees support order statistics (<i>i.e.</i>, queries on the order of stored elements) or other useful queries. This complicates the policy design of an associative container based on a given data-structure.
+	</li>
+	<li>
+	Various mapping semantics are appropriate in different settings. <i>E.g.</i>, in some cases a unique mapping between each key and a datum is appropriate (such as the STL's <tt>std::map</tt> guarantees); in other cases, unique storage of keys is required (such as the STL's <tt>std::set</tt> guarantees); in other cases, more complex mapping semantics are required. This complicates generic manipulation of associative containers with different mapping semantics.
+	</li>
+</ol>
+
+<p>
+	<tt>pb_assoc</tt> attempts to address these problems safely and efficiently.
+</p>
+
+</BODY>
+</HTML>

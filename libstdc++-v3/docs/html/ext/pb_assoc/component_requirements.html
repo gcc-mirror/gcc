@@ -1,0 +1,51 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+	<head>
+		<title>Component Requirements</title>
+	</head>
+	<body bgcolor = "white">
+		<h1>Component Requirements</h1>
+		<h2>Functional Requirements</h2>
+		<ol>
+			<li>
+		Keys:
+		<ol>
+			<li>
+			Key objects must be copy-constructible (they need not support assignment).
+			<li>
+				Key objects must be destructible.</li>
+		</ol>
+		<li>
+			Data:
+			<ol>
+		<li>
+		Data objects must be copy-constructible (they need not support assignment).
+		<LI>
+		Data objects must be default constructible.
+		<li>
+			Data objects must be destructible.</li>
+		</ol></li> </ol> <a name="exception_requirements">
+			<h2>Exception Requirements</h2>
+		</a>
+		<ol>
+			<li>
+		Keys:
+		<ol>
+			<li>
+			Key objects must not throw exceptions when destructed.
+			<li>
+				Key objects may throw exceptions when copy constructed.</li>
+		</ol>
+		<li>
+			Data:
+			<ol>
+		<li>
+		Data objects must must not throw exceptions when destructed.
+		<li>
+			Data objects may throw exceptions when copy constructed.</li>
+		</ol></li> </ol>
+		<HR>
+
+	</body>
+
+</html>

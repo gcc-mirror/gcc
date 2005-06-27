@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Timing Tests</title>
+<meta name="GENERATOR" content="Microsoft Visual Studio .NET 7.1">
+<meta name="vs_targetSchema" content="http://schemas.microsoft.com/intellisense/ie5">
+</head>
+<body bgcolor = "white">
+<h1>Timing Tests</h1>
+
+<p>
+	This section describes timing tests and their results. The tests were
+performed on two systems:
+</p>
+<ol>
+	<li> </li>
+	<li> Intel </li>
+</ol>
+
+<p>
+	The tests are organized as follows:
+</p>
+<ol>
+	<li><a href = "#hash_based">Hash-Based Container Tests</a>
+	shows tests pertaining to hash-based containers.
+	</li>
+	<li><a href = "#hash_based">Tree-Based Container Tests</a>
+	shows tests pertaining to tree-based containers.
+	</li>
+</ol>
+
+<h2><a name = "hash_based">Hash-Based Container Tests</a></h2>
+
+<h3>Random-Integer Find Test</h3>
+
+<p>
+	This test measurs the average time to find an entry
+in a &quot;set&quot; as a function of the &quot;set&quot;'s
+size.</p>
+_
+<p>
+	The test's purpose is to find the effect of
+different range-hashing functions. See
+<a href = "hash_based_containers.html#hash_policies">Hash-Based Containers::Resize Policies</a>
+</p>
+
+<p>
+Source code:
+<a href = "../testsuite/timing/hash_random_int_find_timing_test.cpp"><tt>hash_random_int_find_timing_test.cpp</tt></a>.
+</p>
+
+<p>
+Execution: <tt>hash_random_int_find_timing_test </tt>
+</p>
+
+
+<h2><a name = "tree_based">Tree-Based Container Tests</a></h2>
+
+</body>
+</html>

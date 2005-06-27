@@ -1,0 +1,278 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+
+<html>
+<head>
+<title>order_statistics_node_updator Interface
+</title>
+
+</head>
+
+<body>
+<h1>
+<tt>order_statistics_node_updator
+</tt>
+
+ Interface
+
+
+</h1>
+
+<p>Functor updating ranks of entries.
+</p>
+
+<ol>
+<li>
+<a href = "../../../../include/ext/pb_assoc/order_statistics_key.hpp"><tt>order_statistics_key.hpp</tt>
+</a>
+
+</li>
+
+<li>
+<a href = "#link1">Template parameters.
+</a>
+
+</li>
+
+<li>
+Public Types and Constants:
+
+
+<ol>
+<li>
+<a href = "#link2">Policy definitions.
+</a>
+
+</li>
+
+<li>
+<a href = "#link3">Key-type definitions.
+</a>
+
+</li>
+
+</ol>
+
+</li>
+
+<li>
+Public Methods:
+
+
+<ol>
+<li>
+<a href = "#link4">Constructors, destructor, and related.
+</a>
+
+</li>
+
+</ol>
+
+</li>
+
+</ol>
+
+
+<h2>
+<a name = "link1">Template parameters.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "20%" ALIGN = "left"><b>Parameter</b></TD><TD Width = "50%" ALIGN = "left"><b>Description</b></TD><TD Width = "30%" ALIGN = "left"><b>Default Value</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a name = "Key3735928856">Key</a></pre>
+
+
+</td>
+
+<td>
+<p>Key type.</p>
+
+
+</td>
+
+<td>
+-
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "Allocator3735929488">Allocator</a></pre>
+
+
+</td>
+
+<td>
+<p>Allocator type.</p>
+
+
+<p>The allocator is only used for definitions, e.g., size_type, pointer, and reference.</p>
+
+
+</td>
+
+<td>
+<pre>std::allocator&lt;<b>char</b>&gt;</pre>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link2">Policy definitions.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "30%" ALIGN = "left"><b>Type</b></TD><TD Width = "55%" ALIGN = "left"><b>Definition</b></TD><TD Width = "15%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a name = "allocator3735929520">allocator</a></pre>
+
+
+</td>
+
+<td>
+<pre><a href = "#Allocator3735929488">Allocator</a></pre>
+
+
+</td>
+
+<td>
+<p>Allocator type.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link3">Key-type definitions.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "30%" ALIGN = "left"><b>Type</b></TD><TD Width = "55%" ALIGN = "left"><b>Definition</b></TD><TD Width = "15%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a name = "key_type3735929433">key_type</a></pre>
+
+
+</td>
+
+<td>
+<pre>order_statistics_key&lt;
+    <a href = "#Key3735928856">Key</a>,
+    <a href = "#Allocator3735929488">Allocator</a>&gt;</pre>
+
+
+</td>
+
+<td>
+<p>Key-type on which this functor operates.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "const_key_pointer3735929445">const_key_pointer</a></pre>
+
+
+</td>
+
+<td>
+<pre><b>typename</b> <a href = "#Allocator3735929488">Allocator</a>::<b>template</b> rebind&lt;
+    <a href = "#key_type3735929433">key_type</a>&gt;::other::const_pointer</pre>
+
+
+</td>
+
+<td>
+<p>Key pointer-type on which this functor operates.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link4">Constructors, destructor, and related.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  swap
+  (<font color = "olive">order_statistics_node_updator</font> &amp;r_other)</pre>
+
+
+</td>
+
+<td>
+<p>Swaps content.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><b>inline</b> <b>void</b>
+  <b>operator</b>()
+  (<a href = "#const_key_pointer3735929445">const_key_pointer</a> p_key,
+    <a href = "#const_key_pointer3735929445">const_key_pointer</a> p_l_child_key,
+    <a href = "#const_key_pointer3735929445">const_key_pointer</a> p_r_child_key)</pre>
+
+
+</td>
+
+<td>
+<p>Updates the rank of a key given its child keys.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+
+
+</body>
+
+</html>
+
+

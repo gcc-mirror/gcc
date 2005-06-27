@@ -1,0 +1,373 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+
+<html>
+<head>
+<title>order_statistics_key Interface
+</title>
+
+</head>
+
+<body>
+<h1>
+<tt>order_statistics_key
+</tt>
+
+ Interface
+
+
+</h1>
+
+<p>A &quot;key&quot; type using rank metadata for order statistics.
+</p>
+
+<p>The class is composed of the logical key and the rank of the element (the number of elements in its subtree).
+</p>
+
+<ol>
+<li>
+<a href = "../../../../include/ext/pb_assoc/order_statistics_key.hpp"><tt>order_statistics_key.hpp</tt>
+</a>
+
+</li>
+
+<li>
+<a href = "#link1">Template parameters.
+</a>
+
+</li>
+
+<li>
+Public Types and Constants:
+
+
+<ol>
+<li>
+<a href = "#link2">Policy definitions.
+</a>
+
+</li>
+
+<li>
+<a href = "#link3">Key-type definitions.
+</a>
+
+</li>
+
+<li>
+<a href = "#link4">Misc.
+</a>
+
+</li>
+
+</ol>
+
+</li>
+
+<li>
+Public Methods:
+
+
+<ol>
+<li>
+<a href = "#link5">Constructors, destructor, and related.
+</a>
+
+</li>
+
+<li>
+<a href = "#link6">Conversions.
+</a>
+
+</li>
+
+</ol>
+
+</li>
+
+</ol>
+
+
+<h2>
+<a name = "link1">Template parameters.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "20%" ALIGN = "left"><b>Parameter</b></TD><TD Width = "50%" ALIGN = "left"><b>Description</b></TD><TD Width = "30%" ALIGN = "left"><b>Default Value</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a name = "Key3735928856">Key</a></pre>
+
+
+</td>
+
+<td>
+<p>Key type.</p>
+
+
+</td>
+
+<td>
+-
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "Allocator3735929488">Allocator</a></pre>
+
+
+</td>
+
+<td>
+<p>Allocator type.</p>
+
+
+<p>The allocator is only used for definitions, e.g., size_type, pointer, and reference.</p>
+
+
+</td>
+
+<td>
+<pre>std::allocator&lt;<b>char</b>&gt;</pre>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link2">Policy definitions.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "30%" ALIGN = "left"><b>Type</b></TD><TD Width = "55%" ALIGN = "left"><b>Definition</b></TD><TD Width = "15%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a name = "allocator3735929520">allocator</a></pre>
+
+
+</td>
+
+<td>
+<pre><a href = "#Allocator3735929488">Allocator</a></pre>
+
+
+</td>
+
+<td>
+<p>Allocator type.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link3">Key-type definitions.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "30%" ALIGN = "left"><b>Type</b></TD><TD Width = "55%" ALIGN = "left"><b>Definition</b></TD><TD Width = "15%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a name = "key_type3735929433">key_type</a></pre>
+
+
+</td>
+
+<td>
+<pre><a href = "#Key3735928856">Key</a></pre>
+
+
+</td>
+
+<td>
+<p>Key type.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "const_key_reference3735929552">const_key_reference</a></pre>
+
+
+</td>
+
+<td>
+<pre><b>typename</b> <a href = "#Allocator3735929488">Allocator</a>::<b>template</b> rebind&lt;
+  <a href = "#Key3735928856">Key</a> &gt;::other::const_reference</pre>
+
+
+</td>
+
+<td>
+<p>Const key reference type.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre><a name = "key_reference3735929926">key_reference</a></pre>
+
+
+</td>
+
+<td>
+<pre><b>typename</b> <a href = "#Allocator3735929488">Allocator</a>::<b>template</b> rebind&lt;
+  <a href = "#Key3735928856">Key</a> &gt;::other::reference</pre>
+
+
+</td>
+
+<td>
+<p>Key reference type.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link4">Misc.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "30%" ALIGN = "left"><b>Type</b></TD><TD Width = "55%" ALIGN = "left"><b>Definition</b></TD><TD Width = "15%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><a name = "size_type3735929547">size_type</a></pre>
+
+
+</td>
+
+<td>
+<pre><b>typename</b> <a href = "#allocator3735929520">allocator</a>::size_type</pre>
+
+
+</td>
+
+<td>
+<p>Size type.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link5">Constructors, destructor, and related.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><b>inline</b> <b>explicit</b>
+  order_statistics_key
+  (<a href = "#const_key_reference3735929552">const_key_reference</a> r_key = <a href = "#Key3735928856">Key</a>())</pre>
+
+
+</td>
+
+<td>
+<p>Constructor which takes a logical key.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+<h2>
+<a name = "link6">Conversions.
+</a>
+
+</h2>
+
+<table WIDTH = "100%" BORDER = "1">
+<TR><TD Width = "45%" ALIGN = "left"><b>Method</b></TD><TD Width = "55%" ALIGN = "left"><b>Description</b></TD></TR>
+
+
+<tr>
+<td>
+<pre><b>inline</b>
+  <b>operator</b> <a href = "#key_reference3735929926">key_reference</a>
+  ()</pre>
+
+
+</td>
+
+<td>
+<p>Conversion to logical key.</p>
+
+
+</td>
+
+</tr>
+
+<tr>
+<td>
+<pre>   <b>inline</b>
+  <b>operator</b> <a href = "#key_type3735929433">key_type</a>
+  () <b>const</b></pre>
+
+
+</td>
+
+<td>
+<p>Conversion to logical key.</p>
+
+
+</td>
+
+</tr>
+
+</table>
+
+
+
+</body>
+
+</html>
+
+
