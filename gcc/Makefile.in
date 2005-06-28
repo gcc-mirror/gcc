@@ -313,8 +313,9 @@ USER_H = $(srcdir)/ginclude/float.h \
 	 $(srcdir)/ginclude/stdbool.h \
 	 $(srcdir)/ginclude/stddef.h \
 	 $(srcdir)/ginclude/varargs.h \
-	 $(srcdir)/unwind.h \
 	 $(EXTRA_HEADERS)
+
+UNWIND_H = $(srcdir)/unwind-generic.h
 
 # The GCC to use for compiling libgcc.a and crt*.o.
 # Usually the one we just built.
@@ -534,7 +535,7 @@ LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde.c \
    $(srcdir)/unwind-sjlj.c $(srcdir)/gthr-gnat.c $(srcdir)/unwind-c.c
 LIB2ADDEHSTATIC = $(LIB2ADDEH)
 LIB2ADDEHSHARED = $(LIB2ADDEH)
-LIB2ADDEHDEP = unwind.h unwind-pe.h unwind.inc unwind-dw2-fde.h unwind-dw2.h
+LIB2ADDEHDEP = $(UNWIND_H) unwind-pe.h unwind.inc unwind-dw2-fde.h unwind-dw2.h
 
 # Don't build libunwind by default.
 LIBUNWIND =
@@ -3034,7 +3035,7 @@ gcov-dump$(exeext): $(GCOV_DUMP_OBJS) $(LIBDEPS)
 # be rebuilt.
 
 # Build the include directory
-stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) xlimits.h
+stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) xlimits.h $(UNWIND_H)
 # Copy in the headers provided with gcc.
 # The sed command gets just the last file name component;
 # this is necessary because VPATH could add a dirname.
@@ -3052,6 +3053,7 @@ stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) xlimits.h
 	done
 	rm -f include/limits.h
 	cp xlimits.h include/limits.h
+	cp $(UNWIND_H) include/unwind.h
 	chmod a+r include/limits.h
 # Install the README
 	rm -f include/README
@@ -3684,6 +3686,7 @@ install-mkheaders: stmp-int-hdrs $(STMP_FIXPROTO) install-itoolsdirs \
 	    $(DESTDIR)$(itoolsdatadir)/include/$$realfile ; \
 	done
 	$(INSTALL_DATA) xlimits.h $(DESTDIR)$(itoolsdatadir)/include/limits.h
+	$(INSTALL_DATA) $(UNWIND_H) $(DESTDIR)$(itoolsdatadir)/include/unwind.h
 	$(INSTALL_DATA) $(srcdir)/gsyslimits.h \
 	  $(DESTDIR)$(itoolsdatadir)/gsyslimits.h
 	$(INSTALL_DATA) macro_list $(DESTDIR)$(itoolsdatadir)/macro_list

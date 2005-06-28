@@ -3407,6 +3407,7 @@ objc_init_exceptions (void)
 	= init_one_libfunc (USING_SJLJ_EXCEPTIONS
 			    ? "__gnu_objc_personality_sj0"
 			    : "__gnu_objc_personality_v0");
+      default_init_unwind_resume_libfunc ();
       using_eh_for_cleanups ();
       lang_eh_runtime_type = objc_eh_runtime_type;
     }

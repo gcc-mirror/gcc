@@ -26,6 +26,9 @@
 /* Assume that AAPCS ABIs should adhere to the full BPABI.  */ 
 #define TARGET_BPABI (TARGET_AAPCS_BASED)
 
+/* BPABI targets use EABI frame unwinding tables.  */
+#define TARGET_UNWIND_INFO 1
+
 /* Section 4.1 of the AAPCS requires the use of VFP format.  */
 #define FPUTYPE_DEFAULT FPUTYPE_VFP
 

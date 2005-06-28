@@ -85,6 +85,7 @@ typedef tree (*duplicate_eh_regions_map) (tree, void *);
 extern int duplicate_eh_regions (struct function *, duplicate_eh_regions_map, void *, int);
 
 extern void sjlj_emit_function_exit_after (rtx);
+extern void default_init_unwind_resume_libfunc (void);
 
 extern struct eh_region *gen_eh_region_cleanup (struct eh_region *,
 						struct eh_region *);

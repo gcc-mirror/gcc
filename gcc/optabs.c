@@ -5288,9 +5288,6 @@ init_optabs (void)
   memset_libfunc = init_one_libfunc ("memset");
   setbits_libfunc = init_one_libfunc ("__setbits");
 
-  unwind_resume_libfunc = init_one_libfunc (USING_SJLJ_EXCEPTIONS
-					    ? "_Unwind_SjLj_Resume"
-					    : "_Unwind_Resume");
 #ifndef DONT_USE_BUILTIN_SETJMP
   setjmp_libfunc = init_one_libfunc ("__builtin_setjmp");
   longjmp_libfunc = init_one_libfunc ("__builtin_longjmp");

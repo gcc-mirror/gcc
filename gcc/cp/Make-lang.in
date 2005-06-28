@@ -272,7 +272,7 @@ cp/ptree.o: cp/ptree.c $(CXX_TREE_H) $(TM_H)
 cp/rtti.o: cp/rtti.c $(CXX_TREE_H) $(TM_H) flags.h toplev.h convert.h \
   gt-cp-rtti.h
 cp/except.o: cp/except.c $(CXX_TREE_H) $(TM_H) flags.h $(RTL_H) except.h \
-  toplev.h cp/cfns.h $(EXPR_H) libfuncs.h tree-inline.h
+  toplev.h cp/cfns.h $(EXPR_H) libfuncs.h tree-inline.h $(TARGET_H)
 cp/expr.o: cp/expr.c $(CXX_TREE_H) $(TM_H) $(RTL_H) flags.h $(EXPR_H) \
   toplev.h except.h $(TM_P_H)
 cp/pt.o: cp/pt.c $(CXX_TREE_H) $(TM_H) cp/decl.h cp/cp-objcp-common.h \

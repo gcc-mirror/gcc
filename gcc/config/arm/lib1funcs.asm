@@ -1309,4 +1309,5 @@ LSYM(Lchange_\register):
 #include "ieee754-df.S"
 #include "ieee754-sf.S"
 #include "bpabi.S"
+#include "libunwind.S"
 #endif /* __symbian__ */

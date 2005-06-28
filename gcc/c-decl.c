@@ -3537,6 +3537,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 		= init_one_libfunc (USING_SJLJ_EXCEPTIONS
 				    ? "__gcc_personality_sj0"
 				    : "__gcc_personality_v0");
+	      default_init_unwind_resume_libfunc ();
 	      using_eh_for_cleanups ();
 	    }
 

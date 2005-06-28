@@ -1,3 +1,47 @@
+2005-06-28  Paul Brook  <paul@codesourcery.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_SJLJ_EXCEPTIONS): Check for
+	__cxa_end_cleanup.
+	* libsupc++/Makefile.am (sources): Add eh_call.c and eh_arm.c.
+	* libsupc++/eh_arm.cc: New file.
+	* libsupc++/eh_call.cc: New file.
+	* libsupc++/eh_catch.cc (__cxa_get_exception_ptr): Use
+	__gxx_caught_object.
+	(__cxa_begin_catch): Ditto. Use __is_gxx_exception_class. Call
+	_Unwind_Complete when using the ARM EABI.
+	(__cxa_end_catch): Use __is_gxx_exception_class.
+	* libsupc++/eh_personality.cc: Define NO_SIZE_OF_ENCODED_VALUE when
+	using the ARM EABI.
+	(save_caught_exception, restore_caught_exception): New functions.
+	(_throw_typet): New typedef.
+	(get_ttype_entry, get_adjusted_ptr, check_exception_spec): Add ARM
+	EABI implementations.
+	(PERSONALITY_FUNCTION): Use new functions.  Addd support for ARM EABI
+	unwinding libary.
+	(__cxa_unexpected): Disable when using the ARM EABI.
+	* libsupc++/eh_throw.cc (__cxa_throw): Use __GXX_INIT_EXCEPTION_CLASS.
+	(__cxa_rethrow): Use __is_gxx_exception_class.  Call
+	_Unwind_RaiseException when using the ARM EABI.
+	* libsupc++/unwind-cxx.h (struct __cxa_exception): Add fields for ARM
+	EABI semantics.
+	(struct __cxa_eh_globals): Ditto.
+	(__cxa_call_terminate): Add prototype.
+	(__cxa_type_match, __cxa_begin_cleanup, __cxa_end_cleanup): Add
+	prototypes.
+	(__get_exception_header_from_obj, __get_exception_header_from_ue):
+	Move earlier in file.
+	(__is_gxx_exception_class, __GXX_INIT_EXCEPTION_CLASS,
+	__gxx_caught_object): New functions.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libmath/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* src/Makefie.in: Regenerate.
+	* testsuite/makefile.in: Regenerate.
+
 2005-06-27  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/22102
