@@ -1,3 +1,8 @@
+2005-06-28  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* except.c (current_function_has_exception_handlers): Function 
+	description added and if statements merged.
+
 2005-06-28  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/sse.md (smaxv16qi3): Fix buffer overflow.
