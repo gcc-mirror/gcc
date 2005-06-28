@@ -1,3 +1,7 @@
+2005-06-28  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* doc/include/texinfo.tex: Import from upstream CVS.
+
 2005-06-28  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_remove_node): Do not release function bodies until
