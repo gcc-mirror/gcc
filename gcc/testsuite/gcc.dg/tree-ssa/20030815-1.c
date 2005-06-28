@@ -21,7 +21,8 @@ typedef struct reg_info_def
 extern varray_type reg_n_info;
 static rtx *reg_base_value;
 static rtx *new_reg_base_value;
-static rtx
+
+rtx
 blah (unsigned int regno)
 {
   if (new_reg_base_value[regno] && ((*(

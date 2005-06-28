@@ -23,7 +23,7 @@ struct rtx_def
 static int *uid_cuid;
 static int max_uid_cuid;
 
-static rtx
+rtx
 bar (rtx r)
 {
   rtx place = r;

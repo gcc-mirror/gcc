@@ -2,7 +2,8 @@
 /* { dg-options "-O1 -fdump-tree-optimized" } */
                                                                                 
 static int copying_arguments;
-static int
+
+int
 foo ()
 {
   unsigned int regno;
