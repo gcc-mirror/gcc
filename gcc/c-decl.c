@@ -801,14 +801,13 @@ pop_scope (void)
 
 	case VAR_DECL:
 	  /* Warnings for unused variables.  */
-	  if (warn_unused_variable
-	      && !TREE_USED (p)
+	  if (!TREE_USED (p)
 	      && !DECL_IN_SYSTEM_HEADER (p)
 	      && DECL_NAME (p)
 	      && !DECL_ARTIFICIAL (p)
 	      && scope != file_scope
 	      && scope != external_scope) 
-	    warning (0, "%Junused variable %qD", p, p);
+	    warning (OPT_Wunused_variable, "%Junused variable %qD", p, p);
 
 	  if (b->inner_comp)
 	    {
@@ -1392,8 +1391,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	    }
 	  else if (warn_traditional)
 	    {
-	      warning (0, "%Jnon-static declaration of %qD follows "
-		       "static declaration", newdecl, newdecl);
+	      warning (OPT_Wtraditional, "%Jnon-static declaration of %qD "
+		       "follows static declaration", newdecl, newdecl);
 	      warned = true;
 	    }
 	}
@@ -1445,8 +1444,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 		}
 	      else if (warn_traditional)
 		{
-		  warning (0, "%Jnon-static declaration of %qD follows "
-			   "static declaration", newdecl, newdecl);
+		  warning (OPT_Wtraditional, "%Jnon-static declaration of %qD "
+			   "follows static declaration", newdecl, newdecl);
 		  warned = true;
 		}
 	    }
@@ -1577,7 +1576,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
       && !(TREE_CODE (newdecl) == PARM_DECL
 	   && TREE_ASM_WRITTEN (olddecl) && !TREE_ASM_WRITTEN (newdecl)))
     {
-      warning (0, "%Jredundant redeclaration of %qD", newdecl, newdecl);
+      warning (OPT_Wredundant_decls, "%Jredundant redeclaration of %qD",
+	       newdecl, newdecl);
       warned = true;
     }
 
@@ -2121,10 +2121,9 @@ pushdecl (tree x)
 	  visdecl = b->decl;
 	  vistype = TREE_TYPE (visdecl);
 	}
-      if (warn_nested_externs
-	  && scope != file_scope
+      if (scope != file_scope
 	  && !DECL_IN_SYSTEM_HEADER (x))
-	warning (0, "nested extern declaration of %qD", x);
+	warning (OPT_Wnested_externs, "nested extern declaration of %qD", x);
 
       while (b && !B_IN_EXTERNAL_SCOPE (b))
 	{
@@ -3102,7 +3101,7 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
 
   if (warn_main > 0 && TREE_CODE (decl) != FUNCTION_DECL
       && MAIN_NAME_P (DECL_NAME (decl)))
-    warning (0, "%J%qD is usually a function", decl, decl);
+    warning (OPT_Wmain, "%J%qD is usually a function", decl, decl);
 
   if (initialized)
     /* Is it valid for this decl to have an initializer at all?
@@ -4742,9 +4741,9 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
 {
   tree arg_types = arg_info->types;
 
-  if (warn_strict_prototypes && arg_types == 0 && !funcdef_flag
-      && !in_system_header)
-    warning (0, "function declaration isn%'t a prototype");
+  if (arg_types == 0 && !funcdef_flag && !in_system_header)
+    warning (OPT_Wstrict_prototypes,
+	     "function declaration isn%'t a prototype");
 
   if (arg_types == error_mark_node)
     return 0;  /* don't set TYPE_ARG_TYPES in this case */
@@ -5893,14 +5892,16 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
       && old_decl != error_mark_node
       && TYPE_ARG_TYPES (TREE_TYPE (decl1)) == 0
       && C_DECL_ISNT_PROTOTYPE (old_decl))
-    warning (0, "function declaration isn%'t a prototype");
+    warning (OPT_Wstrict_prototypes,
+	     "function declaration isn%'t a prototype");
   /* Optionally warn of any global def with no previous prototype.  */
   else if (warn_missing_prototypes
 	   && old_decl != error_mark_node
 	   && TREE_PUBLIC (decl1)
 	   && !MAIN_NAME_P (DECL_NAME (decl1))
 	   && C_DECL_ISNT_PROTOTYPE (old_decl))
-    warning (0, "%Jno previous prototype for %qD", decl1, decl1);
+    warning (OPT_Wmissing_prototypes, "%Jno previous prototype for %qD",
+	     decl1, decl1);
   /* Optionally warn of any def with no previous prototype
      if the function has already been used.  */
   else if (warn_missing_prototypes
@@ -5908,14 +5909,16 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 	   && old_decl != error_mark_node
 	   && TREE_USED (old_decl)
 	   && TYPE_ARG_TYPES (TREE_TYPE (old_decl)) == 0)
-    warning (0, "%J%qD was used with no prototype before its definition",
+    warning (OPT_Wmissing_prototypes,
+	     "%J%qD was used with no prototype before its definition",
 	     decl1, decl1);
   /* Optionally warn of any global def with no previous declaration.  */
   else if (warn_missing_declarations
 	   && TREE_PUBLIC (decl1)
 	   && old_decl == 0
 	   && !MAIN_NAME_P (DECL_NAME (decl1)))
-    warning (0, "%Jno previous declaration for %qD", decl1, decl1);
+    warning (OPT_Wmissing_declarations, "%Jno previous declaration for %qD",
+	     decl1, decl1);
   /* Optionally warn of any def with no previous declaration
      if the function has already been used.  */
   else if (warn_missing_declarations
@@ -5923,7 +5926,8 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 	   && old_decl != error_mark_node
 	   && TREE_USED (old_decl)
 	   && C_DECL_IMPLICIT (old_decl))
-    warning (0, "%J%qD was used with no declaration before its definition",
+    warning (OPT_Wmissing_declarations,
+	     "%J%qD was used with no declaration before its definition",
 	     decl1, decl1);
 
   /* This is a definition, not a reference.
@@ -6059,9 +6063,10 @@ store_parm_decls_newstyle (tree fndecl, const struct c_arg_info *arg_info)
      warning if we got here because ARG_INFO_TYPES was error_mark_node
      (this happens when a function definition has just an ellipsis in
      its parameter list).  */
-  else if (warn_traditional && !in_system_header && !current_function_scope
+  else if (!in_system_header && !current_function_scope
 	   && arg_info->types != error_mark_node)
-    warning (0, "%Jtraditional C rejects ISO C style function definitions",
+    warning (OPT_Wtraditional,
+	     "%Jtraditional C rejects ISO C style function definitions",
 	     fndecl);
 
   /* Now make all the parameter declarations visible in the function body.
@@ -6163,7 +6168,8 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 	  if (flag_isoc99)
 	    pedwarn ("%Jtype of %qD defaults to %<int%>", decl, decl);
 	  else if (extra_warnings)
-	    warning (0, "%Jtype of %qD defaults to %<int%>", decl, decl);
+	    warning (OPT_Wextra, "%Jtype of %qD defaults to %<int%>",
+		     decl, decl);
 	}
 
       TREE_PURPOSE (parm) = decl;
@@ -6518,7 +6524,8 @@ finish_function (void)
 	 inline function, as we might never be compiled separately.  */
       && DECL_INLINE (fndecl))
     {
-      warning (0, "no return statement in function returning non-void");
+      warning (OPT_Wreturn_type,
+	       "no return statement in function returning non-void");
       TREE_NO_WARNING (fndecl) = 1;
     }
 
@@ -6527,7 +6534,7 @@ finish_function (void)
   if (extra_warnings
       && current_function_returns_value
       && current_function_returns_null)
-    warning (0, "this function may return with or without a value");
+    warning (OPT_Wextra, "this function may return with or without a value");
 
   /* Store the end of the function, so that we get good line number
      info for the epilogue.  */
@@ -7265,7 +7272,7 @@ declspecs_add_scspec (struct c_declspecs *specs, tree scspec)
 	      && C_IS_RESERVED_WORD (scspec));
   i = C_RID_CODE (scspec);
   if (extra_warnings && specs->non_sc_seen_p)
-    warning (0, "%qE is not at beginning of declaration", scspec);
+    warning (OPT_Wextra, "%qE is not at beginning of declaration", scspec);
   switch (i)
     {
     case RID_INLINE:

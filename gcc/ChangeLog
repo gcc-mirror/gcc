@@ -1,3 +1,34 @@
+2005-06-28  DJ Delorie  <dj@redhat.com>
+
+	* c-decl.c (pop_scope): Move warning control into warning call.
+	(diagnose_mismatched_decls): Likewise.
+	(pushdecl): Likewise.
+	(start_decl): Likewise.
+	(grokparms): Likewise.
+	(start_function): Likewise.
+	(store_parm_decls_newstyle): Likewise.
+	(store_parm_decls_oldstyle): Likewise.
+	(finish_function): Likewise.
+	(declspecs_add_scspec): Likewise.
+	* c-format.c (decode_format_attr): Likewise.
+	(maybe_read_dollar_number): Likewise.
+	(avoid_dollar_number): Likewise.
+	(finish_dollar_format_checking): Likewise.
+	(check_format_info): Likewise.
+	(check_format_info_main): Likewise.
+	(check_format_types): Likewise.
+	(format_type_warning): Likewise.
+	* c-typeck.c (function_types_compatible_p): Likewise.
+	(build_array_ref): Likewise.
+	(convert_arguments): Likewise.
+	(build_c_cast): Likewise.
+	(store_init_value): Likewise.
+	(process_init_element): Likewise.
+	(c_start_case): Likewise.
+	* stor-layout.c (finalize_record_size): Likewise.
+	* tree-cfg.c (execute_warn_function_noreturn): Likewise.
+	* tree-inline.c (expand_call_inline): Likewise.
+
 2005-06-28  Uros Bizjak  <uros@kss-loka.si>
 
 	PR target/22134
