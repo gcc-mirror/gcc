@@ -2747,11 +2747,16 @@
 		    (match_operand:V16QI 2 "register_operand" "")))]
   "TARGET_SSE2"
 {
+  rtx xops[6];
   bool ok;
-  operands[3] = gen_rtx_GT (VOIDmode, operands[1], operands[2]);
-  operands[4] = operands[1];
-  operands[5] = operands[2];
-  ok = ix86_expand_int_vcond (operands, false);
+
+  xops[0] = operands[0];
+  xops[1] = operands[1];
+  xops[2] = operands[2];
+  xops[3] = gen_rtx_GT (VOIDmode, operands[1], operands[2]);
+  xops[4] = operands[1];
+  xops[5] = operands[2];
+  ok = ix86_expand_int_vcond (xops, false);
   gcc_assert (ok);
   DONE;
 })
@@ -2794,17 +2799,20 @@
 		   (match_operand:V8HI 2 "register_operand" "")))]
   "TARGET_SSE2"
 {
-  rtx t1, t2;
+  rtx xops[6], t1, t2;
   bool ok;
 
   t1 = gen_reg_rtx (V8HImode);
   emit_insn (gen_sse2_ussubv8hi3 (t1, operands[2], operands[1]));
   t2 = force_reg (V8HImode, CONST0_RTX (V8HImode));
 
-  operands[3] = gen_rtx_EQ (VOIDmode, t1, t2);
-  operands[4] = t1;
-  operands[5] = t2;
-  ok = ix86_expand_int_vcond (operands, false);
+  xops[0] = operands[0];
+  xops[1] = operands[1];
+  xops[2] = operands[2];
+  xops[3] = gen_rtx_EQ (VOIDmode, t1, t2);
+  xops[4] = t1;
+  xops[5] = t2;
+  ok = ix86_expand_int_vcond (xops, false);
   gcc_assert (ok);
   DONE;
 })
@@ -2815,11 +2823,16 @@
 		    (match_operand:V16QI 2 "register_operand" "")))]
   "TARGET_SSE2"
 {
+  rtx xops[6];
   bool ok;
-  operands[3] = gen_rtx_GT (VOIDmode, operands[1], operands[2]);
-  operands[4] = operands[2];
-  operands[5] = operands[1];
-  ok = ix86_expand_int_vcond (operands, false);
+
+  xops[0] = operands[0];
+  xops[1] = operands[1];
+  xops[2] = operands[2];
+  xops[3] = gen_rtx_GT (VOIDmode, operands[1], operands[2]);
+  xops[4] = operands[2];
+  xops[5] = operands[1];
+  ok = ix86_expand_int_vcond (xops, false);
   gcc_assert (ok);
   DONE;
 })
@@ -2862,17 +2875,20 @@
 		   (match_operand:V8HI 2 "register_operand" "")))]
   "TARGET_SSE2"
 {
-  rtx t1, t2;
+  rtx xops[6], t1, t2;
   bool ok;
 
   t1 = gen_reg_rtx (V8HImode);
   emit_insn (gen_sse2_ussubv8hi3 (t1, operands[1], operands[2]));
   t2 = force_reg (V8HImode, CONST0_RTX (V8HImode));
 
-  operands[3] = gen_rtx_EQ (VOIDmode, t1, t2);
-  operands[4] = t1;
-  operands[5] = t2;
-  ok = ix86_expand_int_vcond (operands, false);
+  xops[0] = operands[0];
+  xops[1] = operands[1];
+  xops[2] = operands[2];
+  xops[3] = gen_rtx_EQ (VOIDmode, t1, t2);
+  xops[4] = t1;
+  xops[5] = t2;
+  ok = ix86_expand_int_vcond (xops, false);
   gcc_assert (ok);
   DONE;
 })
