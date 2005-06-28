@@ -300,7 +300,7 @@ Objective-C and Objective-C++ Dialects}.
 -fbranch-target-load-optimize2 -fbtr-bb-exclusive @gol
 -fcaller-saves  -fcprop-registers  -fcse-follow-jumps @gol
 -fcse-skip-blocks  -fcx-limited-range  -fdata-sections @gol
--fdelayed-branch  -fdelete-null-pointer-checks @gol
+-fdelayed-branch  -fdelete-null-pointer-checks -fearly-inlining @gol
 -fexpensive-optimizations  -ffast-math  -ffloat-store @gol
 -fforce-addr  -fforce-mem  -ffunction-sections @gol
 -fgcse  -fgcse-lm  -fgcse-sm  -fgcse-las  -fgcse-after-reload @gol
@@ -4449,6 +4449,16 @@ declared @code{static}, then the function is normally not output as
 assembler code in its own right.
 
 Enabled at level @option{-O3}.
+
+@item -fearly-inlining
+@opindex fearly-inlining
+Inline functions marked by @code{always_inline} and functions whose body seems
+smaller than the function call overhead early before doing
+@option{-fprofile-generate} instrumentation and real inlining pass.  Doing so
+makes profiling significantly cheaper and usually inlining faster on programs
+having large chains of nested wrapper functions.
+
+Enabled by default.
 
 @item -finline-limit=@var{n}
 @opindex finline-limit

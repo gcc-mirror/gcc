@@ -79,6 +79,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "intl.h"
 #include "tree-pass.h"
 #include "coverage.h"
+#include "ggc.h"
 
 /* Statistics we collect about inlining algorithm.  */
 static int ncalls_inlined;
@@ -120,7 +121,7 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate)
   if (!e->callee->callers->next_caller
       && (!e->callee->needed || DECL_EXTERNAL (e->callee->decl))
       && duplicate
-      && flag_unit_at_a_time)
+      && (flag_unit_at_a_time && cgraph_global_info_ready))
     {
       gcc_assert (!e->callee->global.inlined_to);
       if (!DECL_EXTERNAL (e->callee->decl))
@@ -870,10 +871,11 @@ cgraph_decide_inlining (void)
 /* Decide on the inlining.  We do so in the topological order to avoid
    expenses on updating data structures.  */
 
-void
-cgraph_decide_inlining_incrementally (struct cgraph_node *node)
+bool
+cgraph_decide_inlining_incrementally (struct cgraph_node *node, bool early)
 {
   struct cgraph_edge *e;
+  bool inlined = false;
 
   /* First of all look for always inline functions.  */
   for (e = node->callees; e; e = e->next_callee)
@@ -883,7 +885,13 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node)
 	/* ??? It is possible that renaming variable removed the function body
 	   in duplicate_decls. See gcc.c-torture/compile/20011119-2.c  */
 	&& DECL_SAVED_TREE (e->callee->decl))
-      cgraph_mark_inline (e);
+      {
+        if (dump_file && early)
+          fprintf (dump_file, "  Early inlining %s into %s\n",
+		   cgraph_node_name (e->callee), cgraph_node_name (node));
+	cgraph_mark_inline (e);
+	inlined = true;
+      }
 
   /* Now do the automatic inlining.  */
   if (!flag_really_no_inline)
@@ -892,15 +900,36 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node)
 	  && e->inline_failed
 	  && !e->callee->local.disregard_inline_limits
 	  && !cgraph_recursive_inlining_p (node, e->callee, &e->inline_failed)
+	  && (!early
+	      || (cgraph_estimate_size_after_inlining (1, e->caller, node)
+	          <= e->caller->global.insns))
 	  && cgraph_check_inline_limits (node, e->callee, &e->inline_failed)
 	  && DECL_SAVED_TREE (e->callee->decl))
 	{
 	  if (cgraph_default_inline_p (e->callee))
-	    cgraph_mark_inline (e);
-	  else
+	    {
+	      if (dump_file && early)
+                fprintf (dump_file, "  Early inlining %s into %s\n",
+			 cgraph_node_name (e->callee), cgraph_node_name (node));
+	      cgraph_mark_inline (e);
+	      inlined = true;
+	    }
+	  else if (!early)
 	    e->inline_failed
 	      = N_("--param max-inline-insns-single limit reached");
 	}
+  if (early && inlined)
+    {
+      push_cfun (DECL_STRUCT_FUNCTION (node->decl));
+      tree_register_cfg_hooks ();
+      current_function_decl = node->decl;
+      optimize_inline_calls (current_function_decl);
+      node->local.self_insns = node->global.insns;
+      current_function_decl = NULL;
+      pop_cfun ();
+      ggc_collect ();
+    }
+  return inlined;
 }
 
 /* When inlining shall be performed.  */
@@ -920,7 +949,67 @@ struct tree_opt_pass pass_ipa_inline =
   0,					/* static_pass_number */
   TV_INTEGRATION,			/* tv_id */
   0,	                                /* properties_required */
-  PROP_trees,				/* properties_provided */
+  PROP_cfg,				/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_cgraph | TODO_dump_func,	/* todo_flags_finish */
+  0					/* letter */
+};
+
+/* Do inlining of small functions.  Doing so early helps profiling and other
+   passes to be somewhat more effective and avoids some code duplication in
+   later real inlining pass for testcases with very many function calls.  */
+static void
+cgraph_early_inlining (void)
+{
+  struct cgraph_node *node;
+  int nnodes;
+  struct cgraph_node **order =
+    xcalloc (cgraph_n_nodes, sizeof (struct cgraph_node *));
+  int i;
+
+  if (sorrycount || errorcount)
+    return;
+#ifdef ENABLE_CHECKING
+  for (node = cgraph_nodes; node; node = node->next)
+    gcc_assert (!node->aux);
+#endif
+
+  nnodes = cgraph_postorder (order);
+  for (i = nnodes - 1; i >= 0; i--)
+    {
+      node = order[i];
+      if (node->analyzed && node->local.inlinable
+	  && (node->needed || node->reachable)
+	  && node->callers)
+	cgraph_decide_inlining_incrementally (node, true);
+    }
+  cgraph_remove_unreachable_nodes (true, dump_file);
+#ifdef ENABLE_CHECKING
+  for (node = cgraph_nodes; node; node = node->next)
+    gcc_assert (!node->global.inlined_to);
+#endif
+  free (order);
+}
+
+/* When inlining shall be performed.  */
+static bool
+cgraph_gate_early_inlining (void)
+{
+  return flag_inline_trees && flag_early_inlining;
+}
+
+struct tree_opt_pass pass_early_ipa_inline = 
+{
+  "einline",	 			/* name */
+  cgraph_gate_early_inlining,		/* gate */
+  cgraph_early_inlining,		/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_INTEGRATION,			/* tv_id */
+  0,	                                /* properties_required */
+  PROP_cfg,				/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_cgraph | TODO_dump_func,	/* todo_flags_finish */

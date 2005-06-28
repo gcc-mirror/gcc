@@ -55,7 +55,7 @@ int dump_flags;
 bool in_gimple_form;
 
 /* The root of the compilation pass tree, once constructed.  */
-static struct tree_opt_pass *all_passes, *all_ipa_passes, * all_lowering_passes;
+static struct tree_opt_pass *all_passes, *all_ipa_passes, *all_lowering_passes;
 
 /* Gate: execute, or not, all of the non-trivial optimizations.  */
 
@@ -83,6 +83,52 @@ static struct tree_opt_pass pass_all_optimizations =
   0,					/* todo_flags_finish */
   0					/* letter */
 };
+
+static struct tree_opt_pass pass_early_local_passes =
+{
+  NULL,					/* name */
+  gate_all_optimizations,		/* gate */
+  NULL,					/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  0,					/* tv_id */
+  0,					/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0,					/* todo_flags_finish */
+  0					/* letter */
+};
+
+/* Pass: cleanup the CFG just before expanding trees to RTL.
+   This is just a round of label cleanups and case node grouping
+   because after the tree optimizers have run such cleanups may
+   be necessary.  */
+
+static void 
+execute_cleanup_cfg_pre_ipa (void)
+{
+  cleanup_tree_cfg ();
+}
+
+static struct tree_opt_pass pass_cleanup_cfg =
+{
+  "cleanup_cfg",			/* name */
+  NULL,					/* gate */
+  execute_cleanup_cfg_pre_ipa,		/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  0,					/* tv_id */
+  PROP_cfg,				/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func,					/* todo_flags_finish */
+  0					/* letter */
+};
+
 
 /* Pass: cleanup the CFG just before expanding trees to RTL.
    This is just a round of label cleanups and case node grouping
@@ -322,7 +368,7 @@ register_dump_files (struct tree_opt_pass *pass, bool ipa, int properties)
         n++;
 
       if (pass->sub)
-        new_properties = register_dump_files (pass->sub, ipa, new_properties);
+        new_properties = register_dump_files (pass->sub, false, new_properties);
 
       /* If we have a gate, combine the properties that we could have with
          and without the pass being examined.  */
@@ -390,6 +436,8 @@ init_tree_optimization_passes (void)
 #define NEXT_PASS(PASS)  (p = next_pass_1 (p, &PASS))
   /* Intraprocedural optimization passes.  */
   p = &all_ipa_passes;
+  NEXT_PASS (pass_early_ipa_inline);
+  NEXT_PASS (pass_early_local_passes);
   NEXT_PASS (pass_ipa_inline);
   *p = NULL;
 
@@ -405,7 +453,13 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_lower_complex_O0);
   NEXT_PASS (pass_lower_vector);
   NEXT_PASS (pass_warn_function_return);
+  NEXT_PASS (pass_early_tree_profile);
+  *p = NULL;
+
+  p = &pass_early_local_passes.sub;
   NEXT_PASS (pass_tree_profile);
+  NEXT_PASS (pass_cleanup_cfg);
+  NEXT_PASS (pass_rebuild_cgraph_edges);
   *p = NULL;
 
   p = &all_passes;
@@ -716,7 +770,7 @@ execute_ipa_pass_list (struct tree_opt_pass *pass)
 	      {
 		push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 		current_function_decl = node->decl;
-		execute_pass_list (pass);
+		execute_pass_list (pass->sub);
 		free_dominance_info (CDI_DOMINATORS);
 		free_dominance_info (CDI_POST_DOMINATORS);
 		current_function_decl = NULL;
