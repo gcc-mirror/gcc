@@ -1,3 +1,8 @@
+2005-06-28  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/sse.md (smaxv16qi3): Fix buffer overflow.
+	(sminv16qi3, umaxv8hi3, uminv8hi3): Likewise.
+
 2005-06-27  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.c (ia64_expand_vcondu_v2si): Generate proper
