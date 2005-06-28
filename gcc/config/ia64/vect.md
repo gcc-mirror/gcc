@@ -214,7 +214,7 @@
 
 (define_expand "umax<mode>3"
   [(set (match_operand:VECINT 0 "gr_register_operand" "")
-	(smax:VECINT (match_operand:VECINT 1 "gr_register_operand" "")
+	(umax:VECINT (match_operand:VECINT 1 "gr_register_operand" "")
 		     (match_operand:VECINT 2 "gr_register_operand" "")))]
   ""
 {
@@ -310,6 +310,26 @@
   ""
   "pshr<vecsize>.u %0 = %1, %2"
   [(set_attr "itanium_class" "mmshf")])
+
+(define_expand "vec_shl_<mode>"
+  [(set (match_operand:VECINT 0 "gr_register_operand" "")
+	(ashift:DI (match_operand:VECINT 1 "gr_register_operand" "")
+		   (match_operand:DI 2 "gr_reg_or_6bit_operand" "")))]
+  ""
+{
+  operands[0] = gen_lowpart (DImode, operands[0]);
+  operands[1] = gen_lowpart (DImode, operands[1]);
+})
+
+(define_expand "vec_shr_<mode>"
+  [(set (match_operand:VECINT 0 "gr_register_operand" "")
+        (lshiftrt:DI (match_operand:VECINT 1 "gr_register_operand" "")
+                     (match_operand:DI 2 "gr_reg_or_6bit_operand" "")))]
+  ""
+{
+  operands[0] = gen_lowpart (DImode, operands[0]);
+  operands[1] = gen_lowpart (DImode, operands[1]);
+})
 
 (define_expand "vcond<mode>"
   [(set (match_operand:VECINT 0 "gr_register_operand" "")
