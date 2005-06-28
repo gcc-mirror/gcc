@@ -134,7 +134,6 @@ static void clear_by_pieces (rtx, unsigned HOST_WIDE_INT, unsigned int);
 static void store_by_pieces_1 (struct store_by_pieces *, unsigned int);
 static void store_by_pieces_2 (rtx (*) (rtx, ...), enum machine_mode,
 			       struct store_by_pieces *);
-static bool clear_storage_via_clrmem (rtx, rtx, unsigned);
 static rtx clear_storage_via_libcall (rtx, rtx, bool);
 static tree clear_storage_libcall_fn (int);
 static rtx compress_float_constant (rtx, rtx);
@@ -200,8 +199,8 @@ static bool float_extend_from_mem[NUM_MACHINE_MODES][NUM_MACHINE_MODES];
 /* This array records the insn_code of insns to perform block moves.  */
 enum insn_code movmem_optab[NUM_MACHINE_MODES];
 
-/* This array records the insn_code of insns to perform block clears.  */
-enum insn_code clrmem_optab[NUM_MACHINE_MODES];
+/* This array records the insn_code of insns to perform block sets.  */
+enum insn_code setmem_optab[NUM_MACHINE_MODES];
 
 /* These arrays record the insn_code of two different kinds of insns
    to perform block compares.  */
@@ -2478,69 +2477,13 @@ clear_storage (rtx object, rtx size, enum block_op_methods method)
   if (GET_CODE (size) == CONST_INT
       && CLEAR_BY_PIECES_P (INTVAL (size), align))
     clear_by_pieces (object, INTVAL (size), align);
-  else if (clear_storage_via_clrmem (object, size, align))
+  else if (set_storage_via_setmem (object, size, const0_rtx, align))
     ;
   else
     return clear_storage_via_libcall (object, size,
 				      method == BLOCK_OP_TAILCALL);
 
   return NULL;
-}
-
-/* A subroutine of clear_storage.  Expand a clrmem pattern;
-   return true if successful.  */
-
-static bool
-clear_storage_via_clrmem (rtx object, rtx size, unsigned int align)
-{
-  /* Try the most limited insn first, because there's no point
-     including more than one in the machine description unless
-     the more limited one has some advantage.  */
-
-  rtx opalign = GEN_INT (align / BITS_PER_UNIT);
-  enum machine_mode mode;
-
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
-    {
-      enum insn_code code = clrmem_optab[(int) mode];
-      insn_operand_predicate_fn pred;
-
-      if (code != CODE_FOR_nothing
-	  /* We don't need MODE to be narrower than
-	     BITS_PER_HOST_WIDE_INT here because if SIZE is less than
-	     the mode mask, as it is returned by the macro, it will
-	     definitely be less than the actual mode mask.  */
-	  && ((GET_CODE (size) == CONST_INT
-	       && ((unsigned HOST_WIDE_INT) INTVAL (size)
-		   <= (GET_MODE_MASK (mode) >> 1)))
-	      || GET_MODE_BITSIZE (mode) >= BITS_PER_WORD)
-	  && ((pred = insn_data[(int) code].operand[0].predicate) == 0
-	      || (*pred) (object, BLKmode))
-	  && ((pred = insn_data[(int) code].operand[2].predicate) == 0
-	      || (*pred) (opalign, VOIDmode)))
-	{
-	  rtx op1;
-	  rtx last = get_last_insn ();
-	  rtx pat;
-
-	  op1 = convert_to_mode (mode, size, 1);
-	  pred = insn_data[(int) code].operand[1].predicate;
-	  if (pred != 0 && ! (*pred) (op1, mode))
-	    op1 = copy_to_mode_reg (mode, op1);
-
-	  pat = GEN_FCN ((int) code) (object, op1, opalign);
-	  if (pat)
-	    {
-	      emit_insn (pat);
-	      return true;
-	    }
-	  else
-	    delete_insns_since (last);
-	}
-    }
-
-  return false;
 }
 
 /* A subroutine of clear_storage.  Expand a call to memset.
@@ -2635,6 +2578,67 @@ clear_storage_libcall_fn (int for_call)
 
   return block_clear_fn;
 }
+
+/* Expand a setmem pattern; return true if successful.  */
+
+bool
+set_storage_via_setmem (rtx object, rtx size, rtx val, unsigned int align)
+{
+  /* Try the most limited insn first, because there's no point
+     including more than one in the machine description unless
+     the more limited one has some advantage.  */
+
+  rtx opalign = GEN_INT (align / BITS_PER_UNIT);
+  enum machine_mode mode;
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    {
+      enum insn_code code = setmem_optab[(int) mode];
+      insn_operand_predicate_fn pred;
+
+      if (code != CODE_FOR_nothing
+	  /* We don't need MODE to be narrower than
+	     BITS_PER_HOST_WIDE_INT here because if SIZE is less than
+	     the mode mask, as it is returned by the macro, it will
+	     definitely be less than the actual mode mask.  */
+	  && ((GET_CODE (size) == CONST_INT
+	       && ((unsigned HOST_WIDE_INT) INTVAL (size)
+		   <= (GET_MODE_MASK (mode) >> 1)))
+	      || GET_MODE_BITSIZE (mode) >= BITS_PER_WORD)
+	  && ((pred = insn_data[(int) code].operand[0].predicate) == 0
+	      || (*pred) (object, BLKmode))
+	  && ((pred = insn_data[(int) code].operand[3].predicate) == 0
+	      || (*pred) (opalign, VOIDmode)))
+	{
+	  rtx opsize,opchar;
+	  rtx last = get_last_insn ();
+	  rtx pat;
+
+	  opsize = convert_to_mode (mode, size, 1);
+	  pred = insn_data[(int) code].operand[1].predicate;
+	  if (pred != 0 && ! (*pred) (opsize, mode))
+	    opsize = copy_to_mode_reg (mode, opsize);
+	  
+	  opchar = convert_to_mode (mode, val, 1);
+	  pred = insn_data[(int) code].operand[2].predicate;
+	  if (pred != 0 && ! (*pred) (opchar, mode))
+	    opchar = copy_to_mode_reg (mode, opchar);
+
+	  pat = GEN_FCN ((int) code) (object, opsize, opchar, opalign);
+	  if (pat)
+	    {
+	      emit_insn (pat);
+	      return true;
+	    }
+	  else
+	    delete_insns_since (last);
+	}
+    }
+
+  return false;
+}
+
 
 /* Write to one of the components of the complex value CPLX.  Write VAL to
    the real part if IMAG_P is false, and the imaginary part if its true.  */

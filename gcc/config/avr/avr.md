@@ -410,28 +410,32 @@
   DONE;
 }")
 
-;; =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0 =0
-;; memset (%0, 0, %1)
+;; =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2 =%2
+;; memset (%0, %2, %1)
 
-(define_expand "clrmemhi"
+(define_expand "setmemhi"
   [(parallel [(set (match_operand:BLK 0 "memory_operand" "")
-		   (const_int 0))
+ 		   (match_operand 2 "const_int_operand" ""))
 	      (use (match_operand:HI 1 "const_int_operand" ""))
-	      (use (match_operand:HI 2 "const_int_operand" "n"))
-	      (clobber (match_scratch:HI 3 ""))
-	      (clobber (match_dup 4))])]
+	      (use (match_operand:HI 3 "const_int_operand" "n"))
+	      (clobber (match_scratch:HI 4 ""))
+	      (clobber (match_dup 5))])]
   ""
   "{
   rtx addr0;
   int cnt8;
   enum machine_mode mode;
 
+  /* If value to set is not zero, use the library routine.  */
+  if (operands[2] != const0_rtx)
+    FAIL;
+
   if (GET_CODE (operands[1]) != CONST_INT)
     FAIL;
 
   cnt8 = byte_immediate_operand (operands[1], GET_MODE (operands[1]));
   mode = cnt8 ? QImode : HImode;
-  operands[4] = gen_rtx_SCRATCH (mode);
+  operands[5] = gen_rtx_SCRATCH (mode);
   operands[1] = copy_to_mode_reg (mode,
                                   gen_int_mode (INTVAL (operands[1]), mode));
   addr0 = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));

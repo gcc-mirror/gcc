@@ -4069,7 +4069,7 @@ int
 alpha_expand_block_clear (rtx operands[])
 {
   rtx bytes_rtx	= operands[1];
-  rtx align_rtx = operands[2];
+  rtx align_rtx = operands[3];
   HOST_WIDE_INT orig_bytes = INTVAL (bytes_rtx);
   HOST_WIDE_INT bytes = orig_bytes;
   HOST_WIDE_INT align = INTVAL (align_rtx) * BITS_PER_UNIT;

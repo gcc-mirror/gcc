@@ -3253,19 +3253,21 @@ destination and source strings are operands 1 and 2, and both are
 the expansion of this pattern should store in operand 0 the address in
 which the @code{NUL} terminator was stored in the destination string.
 
-@cindex @code{clrmem@var{m}} instruction pattern
-@item @samp{clrmem@var{m}}
-Block clear instruction.  The destination string is the first operand,
+@cindex @code{setmem@var{m}} instruction pattern
+@item @samp{setmem@var{m}}
+Block set instruction.  The destination string is the first operand,
 given as a @code{mem:BLK} whose address is in mode @code{Pmode}.  The
-number of bytes to clear is the second operand, in mode @var{m}.  See
+number of bytes to set is the second operand, in mode @var{m}.  The value to
+initialize the memory with is the third operand. Targets that only support the
+clearing of memory should reject any value that is not the constant 0.  See
 @samp{movmem@var{m}} for a discussion of the choice of mode.
 
-The third operand is the known alignment of the destination, in the form
+The fourth operand is the known alignment of the destination, in the form
 of a @code{const_int} rtx.  Thus, if the compiler knows that the
 destination is word-aligned, it may provide the value 4 for this
 operand.
 
-The use for multiple @code{clrmem@var{m}} is as for @code{movmem@var{m}}.
+The use for multiple @code{setmem@var{m}} is as for @code{movmem@var{m}}.
 
 @cindex @code{cmpstr@var{m}} instruction pattern
 @item @samp{cmpstr@var{m}}

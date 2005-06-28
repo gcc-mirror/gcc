@@ -5162,9 +5162,9 @@ init_optabs (void)
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     {
       movmem_optab[i] = CODE_FOR_nothing;
-      clrmem_optab[i] = CODE_FOR_nothing;
       cmpstr_optab[i] = CODE_FOR_nothing;
       cmpmem_optab[i] = CODE_FOR_nothing;
+      setmem_optab[i] = CODE_FOR_nothing;
 
       sync_add_optab[i] = CODE_FOR_nothing;
       sync_sub_optab[i] = CODE_FOR_nothing;

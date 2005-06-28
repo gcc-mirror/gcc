@@ -3335,33 +3335,34 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode,
 	  return expand_expr (dest, target, mode, EXPAND_NORMAL);
 	}
 
+      len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
+      dest_mem = get_memory_rtx (dest);
+
       if (TREE_CODE (val) != INTEGER_CST)
 	{
 	  rtx val_rtx;
 
-	  if (!host_integerp (len, 1))
-	    return 0;
-
-	  if (optimize_size && tree_low_cst (len, 1) > 1)
-	    return 0;
+	  val = fold_build1 (CONVERT_EXPR, unsigned_char_type_node, val);
+	  val_rtx = expand_expr (val, NULL_RTX, VOIDmode, 0);
 
 	  /* Assume that we can memset by pieces if we can store the
 	   * the coefficients by pieces (in the required modes).
 	   * We can't pass builtin_memset_gen_str as that emits RTL.  */
 	  c = 1;
-	  if (!can_store_by_pieces (tree_low_cst (len, 1),
-				    builtin_memset_read_str,
-				    &c, dest_align))
+	  if (host_integerp (len, 1)
+	      && !(optimize_size && tree_low_cst (len, 1) > 1)
+	      && can_store_by_pieces (tree_low_cst (len, 1),
+				      builtin_memset_read_str, &c, dest_align))
+	    {
+	      val_rtx = force_reg (TYPE_MODE (unsigned_char_type_node), 
+				   val_rtx);
+	      store_by_pieces (dest_mem, tree_low_cst (len, 1),
+			       builtin_memset_gen_str, val_rtx, dest_align, 0);
+	    }
+	  else if (!set_storage_via_setmem(dest_mem, len_rtx, val_rtx, 
+					   dest_align))
 	    return 0;
 
-	  val = fold_build1 (CONVERT_EXPR, unsigned_char_type_node, val);
-	  val_rtx = expand_expr (val, NULL_RTX, VOIDmode, 0);
-	  val_rtx = force_reg (TYPE_MODE (unsigned_char_type_node),
-			       val_rtx);
-	  dest_mem = get_memory_rtx (dest);
-	  store_by_pieces (dest_mem, tree_low_cst (len, 1),
-			   builtin_memset_gen_str,
-			   val_rtx, dest_align, 0);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
 	  dest_mem = convert_memory_address (ptr_mode, dest_mem);
 	  return dest_mem;
@@ -3372,25 +3373,21 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode,
 
       if (c)
 	{
-	  if (!host_integerp (len, 1))
-	    return 0;
-	  if (!can_store_by_pieces (tree_low_cst (len, 1),
-				    builtin_memset_read_str, &c,
-				    dest_align))
+	  if (host_integerp (len, 1)
+	      && !(optimize_size && tree_low_cst (len, 1) > 1)
+	      && can_store_by_pieces (tree_low_cst (len, 1),
+				      builtin_memset_read_str, &c, dest_align))
+	    store_by_pieces (dest_mem, tree_low_cst (len, 1),
+			     builtin_memset_read_str, &c, dest_align, 0);
+	  else if (!set_storage_via_setmem (dest_mem, len_rtx, GEN_INT (c),
+					    dest_align))
 	    return 0;
 
-	  dest_mem = get_memory_rtx (dest);
-	  store_by_pieces (dest_mem, tree_low_cst (len, 1),
-			   builtin_memset_read_str,
-			   &c, dest_align, 0);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
 	  dest_mem = convert_memory_address (ptr_mode, dest_mem);
 	  return dest_mem;
 	}
 
-      len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
-
-      dest_mem = get_memory_rtx (dest);
       set_mem_align (dest_mem, dest_align);
       dest_addr = clear_storage (dest_mem, len_rtx,
 				 CALL_EXPR_TAILCALL (orig_exp)
