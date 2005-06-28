@@ -31,6 +31,7 @@ AT_class (a)
 {
   return a->dw_attr_val.val_class;
 }
+
 extern __inline__ dw_loc_list_ref
 AT_loc_list (a)
      dw_attr_ref a;
@@ -38,7 +39,8 @@ AT_loc_list (a)
   if (AT_class (a) == dw_val_class_loc_list)
     return a->dw_attr_val.v.val_loc_list;
 }
-static void
+
+void
 output_location_lists (die)
      dw_die_ref die;
 {

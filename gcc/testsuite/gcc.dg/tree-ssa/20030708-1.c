@@ -17,7 +17,7 @@ struct rtx_def
   enum rtx_code code:16;
 };
 
-static int
+int
 nonlocal_mentioned_p (x)
      rtx x;
 {

@@ -15,7 +15,7 @@ struct rtx_def
 };
 static rtx current_sym_addr;
 
-static int
+int
 foo ()
 {
   if (current_sym_addr->code == 42

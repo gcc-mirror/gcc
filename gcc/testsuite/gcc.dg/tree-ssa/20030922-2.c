@@ -9,7 +9,8 @@ struct rtx_def
 };
 static int *block_to_bb;
 static int target_bb;
-static int
+
+int
 rgn_rank (rtx insn1, rtx insn2)
 {
   if (block_to_bb[insn1->bb] != block_to_bb[insn2->bb])

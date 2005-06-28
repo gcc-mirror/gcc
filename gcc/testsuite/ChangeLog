@@ -1,3 +1,11 @@
+2005-06-28  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/tree-ssa/20030708-1.c: Remove static from test function.
+	* gcc.dg/tree-ssa/20030709-1.c, gcc.dg/tree-ssa/20030714-1.c,
+	gcc.dg/tree-ssa/20030807-1.c, gcc.dg/tree-ssa/20030807-5.c,
+	gcc.dg/tree-ssa/20030807-8.c, gcc.dg/tree-ssa/20030815-1.c,
+	gcc.dg/tree-ssa/20030922-2.c: Likewise.
+
 2005-06-28  Thomas Koenig  <Thomas.Koenig@online.de>
 
         PR libfortran/22142
