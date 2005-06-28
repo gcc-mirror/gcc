@@ -1,3 +1,10 @@
+2005-06-27  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc-act.c (objc_build_struct): Save the TYPE_OBJC_INFO
+	portion of TYPE_LANG_SPECIFIC info for all variants of
+	a class before calling finish_struct(), and restore
+	same TYPE_OBJC_INFO afterwards.
+
 2005-06-25  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* all files: Update FSF address in copyright headers.
