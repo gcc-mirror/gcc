@@ -1,5 +1,13 @@
 2005-06-28  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.c (ia64_expand_vecint_compare): Use unsigned
+	saturating subtraction for QI and HImode unsigned compares.  Use
+	bit arithmetic tricks for SImode unsigned compares.
+	(ia64_expand_vcondu_v2si): Remove.
+	(ia64_expand_vecint_cmov): Don't call it.
+
+2005-06-28  Richard Henderson  <rth@redhat.com>
+
 	* rtlanal.c (nonzero_bits1): Use the mode of the value for
 	determining integral-ness for comparisons.
 
