@@ -1533,11 +1533,13 @@ ia64_expand_vcondu_v2si (enum rtx_code code, rtx operands[])
   /* With the results of the comparisons, emit conditional moves.  */
 
   dl = gen_reg_rtx (SImode);
-  x = gen_rtx_IF_THEN_ELSE (SImode, bl, op1l, op2l);
+  x = gen_rtx_NE (VOIDmode, bl, const0_rtx);
+  x = gen_rtx_IF_THEN_ELSE (SImode, x, op1l, op2l);
   emit_insn (gen_rtx_SET (VOIDmode, dl, x));
 
   dh = gen_reg_rtx (SImode);
-  x = gen_rtx_IF_THEN_ELSE (SImode, bh, op1h, op2h);
+  x = gen_rtx_NE (VOIDmode, bh, const0_rtx);
+  x = gen_rtx_IF_THEN_ELSE (SImode, x, op1h, op2h);
   emit_insn (gen_rtx_SET (VOIDmode, dh, x));
 
   /* Merge the two partial results back into a vector.  */
@@ -1613,7 +1615,7 @@ bool
 ia64_expand_vecint_minmax (enum rtx_code code, enum machine_mode mode,
 			   rtx operands[])
 {
-  rtx xops[5];
+  rtx xops[6];
 
   /* These four combinations are supported directly.  */
   if (mode == V8QImode && (code == UMIN || code == UMAX))

@@ -1,5 +1,13 @@
 2005-06-27  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.c (ia64_expand_vcondu_v2si): Generate proper
+	comparison operations.
+	(ia64_expand_vecint_minmax): Fix size of xops.
+	* config/ia64/vect.md (umax<VECINT>3): Fix fallback pattern typo.
+	(vec_shl_<VECINT>, vec_shr_<VECINT>): New.
+
+2005-06-27  Richard Henderson  <rth@redhat.com>
+
 	* tree-vect-transform.c (get_initial_def_for_reduction): Use correct
 	type for DEF and INIT_VAL.  Pretend MIN/MAX need epilogue adjustment.
 
