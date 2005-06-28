@@ -2,6 +2,7 @@
 program intrinsic_eoshift
    integer, dimension(3, 3) :: a
    integer, dimension(3, 3, 2) :: b
+   integer, dimension(3) :: bo, sh
 
    ! Scalar shift and scalar bound.
    a = reshape ((/1, 2, 3, 4, 5, 6, 7, 8, 9/), (/3, 3/))
@@ -46,6 +47,13 @@ program intrinsic_eoshift
    a = eoshift (a, (/2, -2, 0/), (/99, -1, 42/), 2)
    if (any (a .ne. reshape ((/7, -1, 3, 99, -1, 6, 99, 2, 9/), (/3, 3/)))) &
       call abort
+
+   a = reshape ((/1, 2, 3, 4, 5, 6, 7, 8, 9/), (/3, 3/))
+   sh = (/ 3, -1, -3 /)
+   bo = (/-999, -99, -9 /)
+   a = eoshift(a, shift=sh, boundary=bo)
+   if (any (a .ne. reshape ((/ -999, -999, -999, -99, 4, 5, -9, -9, -9 /), &
+        shape(a)))) call abort
 
    ! Test arrays > rank 2
    b(:, :, 1) = reshape ((/1, 2, 3, 4, 5, 6, 7, 8, 9/), (/3, 3/))
