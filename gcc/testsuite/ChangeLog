@@ -1,3 +1,8 @@
+2005-06-27  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/vect/vect-reduc-1short.c: Remove XFAIL.
+	* gcc.dg/vect/vect-reduc-2char.c: Remove XFAIL.
+
 2005-06-27  Ziemowit Laski  <zlaski@apple.com>
 
 	* obj-c++.dg/proto-lossage-5.mm: New.
