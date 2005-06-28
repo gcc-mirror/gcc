@@ -727,8 +727,11 @@ get_initial_def_for_reduction (tree stmt, tree init_val, tree *scalar_def)
   switch (code)
   {
   case PLUS_EXPR:
-    def = INTEGRAL_TYPE_P (type) ? integer_zero_node :
-                                   build_real (type, dconst0);
+    if (INTEGRAL_TYPE_P (type))
+      def = build_int_cst (type, 0);
+    else
+      def = build_real (type, dconst0);
+
 #ifdef ADJUST_IN_EPILOG
     /* All the 'nunits' elements are set to 0. The final result will be
        adjusted by 'init_val' at the loop epilog.  */
@@ -746,7 +749,7 @@ get_initial_def_for_reduction (tree stmt, tree init_val, tree *scalar_def)
   case MAX_EXPR:
     def = init_val;
     nelements = nunits;
-    need_epilog_adjust = false;
+    need_epilog_adjust = true;
     break;
 
   default:
@@ -754,9 +757,7 @@ get_initial_def_for_reduction (tree stmt, tree init_val, tree *scalar_def)
   }
 
   for (i = nelements - 1; i >= 0; --i)
-    {
-      t = tree_cons (NULL_TREE, def, t);
-    }
+    t = tree_cons (NULL_TREE, def, t);
 
   if (nelements == nunits - 1)
     {
@@ -771,11 +772,15 @@ get_initial_def_for_reduction (tree stmt, tree init_val, tree *scalar_def)
   else
     vec = build_constructor (vectype, t);
     
-  if (need_epilog_adjust)
-    *scalar_def = init_val;
-  else
-    *scalar_def = INTEGRAL_TYPE_P (type) ? integer_zero_node
-                                           : build_real (type, dconst0);
+  if (!need_epilog_adjust)
+    {
+      if (INTEGRAL_TYPE_P (type))
+	init_val = build_int_cst (type, 0);
+      else
+	init_val = build_real (type, dconst0);
+    }
+  *scalar_def = init_val;
+
   return vect_init_vector (stmt, vec);
 }
 
