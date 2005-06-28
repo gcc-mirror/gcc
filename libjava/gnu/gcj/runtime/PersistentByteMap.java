@@ -175,10 +175,10 @@ public class PersistentByteMap
       // We're going to make that size prime.  This isn't
       // strictly necessary but it can't hurt.
       //
-      // We expand the size by 3/2 because the hash table is
-      // intolerably slow when more than 2/3 full.
+      // We expand the size by 3/2 and round the result because the
+      // hash table is intolerably slow when more than 2/3 full.
       
-      BigInteger size = new BigInteger(Integer.toString(capacity * 3/2));
+      BigInteger size = new BigInteger(Integer.toString(((capacity*3)+1)/2));
       BigInteger two = BigInteger.ONE.add(BigInteger.ONE);
       
       if (size.getLowestSetBit() != 0) // A hard way to say isEven()

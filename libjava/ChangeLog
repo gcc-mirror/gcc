@@ -1,3 +1,9 @@
+2005-06-28  Robin Green  <greenrd@greenrd.org>
+
+	PR java/22189
+	* gnu/gcj/runtime/PersistentByteMap.java (init): Fix rounding
+	error.
+
 2005-06-27  Tom Tromey  <tromey@redhat.com>
 
 	PR java/21540, PR java/13788:
