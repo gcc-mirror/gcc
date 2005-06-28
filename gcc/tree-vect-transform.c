@@ -926,17 +926,12 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
       int vec_size_in_bits = tree_low_cst (TYPE_SIZE (vectype), 1);
       tree vec_temp;
 
-      /* The result of the reduction is expected to be at the LSB bits
-	 of the vector. For big-endian targets this means at the right
-	 end of the vector. For little-endian targets this means at the
-	 left end of the vector.  */
-
-      if (BITS_BIG_ENDIAN
-	  && vec_shr_optab->handlers[mode].insn_code != CODE_FOR_nothing)
+      /* The result of the reduction is expected to be at the least
+	 significant bits of the vector.  This is merely convention,
+	 as it's the extraction later that really matters, and that
+	 is also under our control.  */
+      if (vec_shr_optab->handlers[mode].insn_code != CODE_FOR_nothing)
 	shift_code = VEC_RSHIFT_EXPR;
-      else if (!BITS_BIG_ENDIAN
-	       && vec_shl_optab->handlers[mode].insn_code != CODE_FOR_nothing)
-	shift_code = VEC_LSHIFT_EXPR;
       else
 	have_whole_vector_shift = false;
 

@@ -1,3 +1,8 @@
+2005-06-27  Richard Henderson  <rth@redhat.com>
+
+	* tree-vect-transform.c (vect_create_epilog_for_reduction): Remove
+	duplicate little-endian adjustment.
+
 2005-06-28  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* doc/include/texinfo.tex: Import from upstream CVS.
