@@ -1,3 +1,11 @@
+2005-06-28  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/22142
+	* m4/eoshift3.m4:  Correct bstride (it needs to be multiplied
+	by size since it's a char pointer).
+	* m4/eoshift3_4.c:  Regenerated.
+	* m4/eoshift3_8.c:  Regenerated.
+
 2005-06-28  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/22170

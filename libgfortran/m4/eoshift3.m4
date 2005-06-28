@@ -136,7 +136,7 @@ eoshift3_`'atype_kind (gfc_array_char *ret, gfc_array_char *array,
 
           hstride[n] = h->dim[n].stride;
           if (bound)
-            bstride[n] = bound->dim[n].stride;
+            bstride[n] = bound->dim[n].stride * size;
           else
             bstride[n] = 0;
           n++;
