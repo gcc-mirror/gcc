@@ -1,3 +1,10 @@
+2005-06-28  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/22170
+	* io/transfer.c (formatted_transfer): Do not iterate on the
+	repeat count of a FMT_SLASH, since this is already done in
+	next_format().
+
 2005-06-25  Thomas Koenig  <Thomas.Koenig@online.de>
 
         PR libfortran/22144
