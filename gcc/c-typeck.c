@@ -2501,11 +2501,19 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
   enum tree_code typecode = TREE_CODE (TREE_TYPE (arg));
   tree val;
   int noconvert = flag;
+  const char *invalid_op_diag;
 
   if (typecode == ERROR_MARK)
     return error_mark_node;
   if (typecode == ENUMERAL_TYPE || typecode == BOOLEAN_TYPE)
     typecode = INTEGER_TYPE;
+
+  if ((invalid_op_diag
+       = targetm.invalid_unary_op (code, TREE_TYPE (xarg))))
+    {
+      error (invalid_op_diag);
+      return error_mark_node;
+    }
 
   switch (code)
     {
@@ -7397,6 +7405,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
   tree type0, type1;
   enum tree_code code0, code1;
   tree op0, op1;
+  const char *invalid_op_diag;
 
   /* Expression code to give to the expression when it is built.
      Normally this is CODE, which is what the caller asked for,
@@ -7471,6 +7480,13 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 
   if (code0 == ERROR_MARK || code1 == ERROR_MARK)
     return error_mark_node;
+
+  if ((invalid_op_diag
+       = targetm.invalid_binary_op (code, type0, type1)))
+    {
+      error (invalid_op_diag);
+      return error_mark_node;
+    }
 
   objc_ok = objc_compare_types (type0, type1, -3, NULL_TREE);
 

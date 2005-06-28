@@ -36,6 +36,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "c-tree.h"
 #include "langhooks.h"
 #include "toplev.h"
+#include "target.h"
 
 /* Change of width--truncation and extension of integers or reals--
    is represented with NOP_EXPR.  Proper functioning of many things
@@ -69,10 +70,21 @@ convert (tree type, tree expr)
 {
   tree e = expr;
   enum tree_code code = TREE_CODE (type);
+  const char *invalid_conv_diag;
 
-  if (type == TREE_TYPE (expr)
-      || TREE_CODE (expr) == ERROR_MARK
-      || code == ERROR_MARK || TREE_CODE (TREE_TYPE (expr)) == ERROR_MARK)
+  if (type == error_mark_node
+      || expr == error_mark_node
+      || TREE_TYPE (expr) == error_mark_node)
+    return error_mark_node;
+
+  if ((invalid_conv_diag
+       = targetm.invalid_conversion (TREE_TYPE (expr), type)))
+    {
+      error (invalid_conv_diag);
+      return error_mark_node;
+    }
+
+  if (type == TREE_TYPE (expr))
     return expr;
 
   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (expr)))

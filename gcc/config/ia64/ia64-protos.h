@@ -45,7 +45,7 @@ extern int addp4_optimize_ok (rtx, rtx);
 extern void ia64_emit_cond_move (rtx, rtx, rtx);
 extern int ia64_depz_field_mask (rtx, rtx);
 extern void ia64_split_tmode_move (rtx[]);
-extern rtx spill_xfmode_operand (rtx, int);
+extern bool ia64_expand_movxf_movrf (enum machine_mode, rtx[]);
 extern rtx ia64_expand_compare (enum rtx_code, enum machine_mode);
 extern void ia64_expand_vecint_cmov (rtx[]);
 extern bool ia64_expand_vecint_minmax (enum rtx_code, enum machine_mode, rtx[]);

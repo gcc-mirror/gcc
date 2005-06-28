@@ -52,6 +52,7 @@ Boston, MA 02110-1301, USA.  */
 #include "langhooks.h"
 #include "cfglayout.h"
 #include "tree-gimple.h"
+#include "intl.h"
 
 /* This is used for communication between ASM_OUTPUT_LABEL and
    ASM_OUTPUT_LABELREF.  */
@@ -263,6 +264,9 @@ static bool ia64_scalar_mode_supported_p (enum machine_mode mode);
 static bool ia64_vector_mode_supported_p (enum machine_mode mode);
 static bool ia64_cannot_force_const_mem (rtx);
 static const char *ia64_mangle_fundamental_type (tree);
+static const char *ia64_invalid_conversion (tree, tree);
+static const char *ia64_invalid_unary_op (int, tree);
+static const char *ia64_invalid_binary_op (int, tree, tree);
 
 /* Table of valid machine attributes.  */
 static const struct attribute_spec ia64_attribute_table[] =
@@ -432,6 +436,13 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_MANGLE_FUNDAMENTAL_TYPE
 #define TARGET_MANGLE_FUNDAMENTAL_TYPE ia64_mangle_fundamental_type
+
+#undef TARGET_INVALID_CONVERSION
+#define TARGET_INVALID_CONVERSION ia64_invalid_conversion
+#undef TARGET_INVALID_UNARY_OP
+#define TARGET_INVALID_UNARY_OP ia64_invalid_unary_op
+#undef TARGET_INVALID_BINARY_OP
+#define TARGET_INVALID_BINARY_OP ia64_invalid_binary_op
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1285,8 +1296,8 @@ ia64_split_tmode_move (rtx operands[])
    This solution attempts to prevent this situation from occurring.  When
    we see something like the above, we spill the inner register to memory.  */
 
-rtx
-spill_xfmode_operand (rtx in, int force)
+static rtx
+spill_xfmode_rfmode_operand (rtx in, int force, enum machine_mode mode)
 {
   if (GET_CODE (in) == SUBREG
       && GET_MODE (SUBREG_REG (in)) == TImode
@@ -1294,16 +1305,142 @@ spill_xfmode_operand (rtx in, int force)
     {
       rtx memt = assign_stack_temp (TImode, 16, 0);
       emit_move_insn (memt, SUBREG_REG (in));
-      return adjust_address (memt, XFmode, 0);
+      return adjust_address (memt, mode, 0);
     }
   else if (force && GET_CODE (in) == REG)
     {
-      rtx memx = assign_stack_temp (XFmode, 16, 0);
+      rtx memx = assign_stack_temp (mode, 16, 0);
       emit_move_insn (memx, in);
       return memx;
     }
   else
     return in;
+}
+
+/* Expand the movxf or movrf pattern (MODE says which) with the given
+   OPERANDS, returning true if the pattern should then invoke
+   DONE.  */
+
+bool
+ia64_expand_movxf_movrf (enum machine_mode mode, rtx operands[])
+{
+  rtx op0 = operands[0];
+
+  if (GET_CODE (op0) == SUBREG)
+    op0 = SUBREG_REG (op0);
+
+  /* We must support XFmode loads into general registers for stdarg/vararg,
+     unprototyped calls, and a rare case where a long double is passed as
+     an argument after a float HFA fills the FP registers.  We split them into
+     DImode loads for convenience.  We also need to support XFmode stores
+     for the last case.  This case does not happen for stdarg/vararg routines,
+     because we do a block store to memory of unnamed arguments.  */
+
+  if (GET_CODE (op0) == REG && GR_REGNO_P (REGNO (op0)))
+    {
+      rtx out[2];
+
+      /* We're hoping to transform everything that deals with XFmode
+	 quantities and GR registers early in the compiler.  */
+      gcc_assert (!no_new_pseudos);
+
+      /* Struct to register can just use TImode instead.  */
+      if ((GET_CODE (operands[1]) == SUBREG
+	   && GET_MODE (SUBREG_REG (operands[1])) == TImode)
+	  || (GET_CODE (operands[1]) == REG
+	      && GR_REGNO_P (REGNO (operands[1]))))
+	{
+	  rtx op1 = operands[1];
+
+	  if (GET_CODE (op1) == SUBREG)
+	    op1 = SUBREG_REG (op1);
+	  else
+	    op1 = gen_rtx_REG (TImode, REGNO (op1));
+
+	  emit_move_insn (gen_rtx_REG (TImode, REGNO (op0)), op1);
+	  return true;
+	}
+
+      if (GET_CODE (operands[1]) == CONST_DOUBLE)
+	{
+	  emit_move_insn (gen_rtx_REG (DImode, REGNO (op0)),
+			  operand_subword (operands[1], 0, 0, mode));
+	  emit_move_insn (gen_rtx_REG (DImode, REGNO (op0) + 1),
+			  operand_subword (operands[1], 1, 0, mode));
+	  return true;
+	}
+
+      /* If the quantity is in a register not known to be GR, spill it.  */
+      if (register_operand (operands[1], mode))
+	operands[1] = spill_xfmode_rfmode_operand (operands[1], 1, mode);
+
+      gcc_assert (GET_CODE (operands[1]) == MEM);
+
+      out[WORDS_BIG_ENDIAN] = gen_rtx_REG (DImode, REGNO (op0));
+      out[!WORDS_BIG_ENDIAN] = gen_rtx_REG (DImode, REGNO (op0) + 1);
+
+      emit_move_insn (out[0], adjust_address (operands[1], DImode, 0));
+      emit_move_insn (out[1], adjust_address (operands[1], DImode, 8));
+      return true;
+    }
+
+  if (GET_CODE (operands[1]) == REG && GR_REGNO_P (REGNO (operands[1])))
+    {
+      /* We're hoping to transform everything that deals with XFmode
+	 quantities and GR registers early in the compiler.  */
+      gcc_assert (!no_new_pseudos);
+
+      /* Op0 can't be a GR_REG here, as that case is handled above.
+	 If op0 is a register, then we spill op1, so that we now have a
+	 MEM operand.  This requires creating an XFmode subreg of a TImode reg
+	 to force the spill.  */
+      if (register_operand (operands[0], mode))
+	{
+	  rtx op1 = gen_rtx_REG (TImode, REGNO (operands[1]));
+	  op1 = gen_rtx_SUBREG (mode, op1, 0);
+	  operands[1] = spill_xfmode_rfmode_operand (op1, 0, mode);
+	}
+
+      else
+	{
+	  rtx in[2];
+
+          gcc_assert (GET_CODE (operands[0]) == MEM);
+	  in[WORDS_BIG_ENDIAN] = gen_rtx_REG (DImode, REGNO (operands[1]));
+	  in[!WORDS_BIG_ENDIAN] = gen_rtx_REG (DImode, REGNO (operands[1]) + 1);
+
+	  emit_move_insn (adjust_address (operands[0], DImode, 0), in[0]);
+	  emit_move_insn (adjust_address (operands[0], DImode, 8), in[1]);
+	  return true;
+	}
+    }
+
+  if (!reload_in_progress && !reload_completed)
+    {
+      operands[1] = spill_xfmode_rfmode_operand (operands[1], 0, mode);
+
+      if (GET_MODE (op0) == TImode && GET_CODE (op0) == REG)
+	{
+	  rtx memt, memx, in = operands[1];
+	  if (CONSTANT_P (in))
+	    in = validize_mem (force_const_mem (mode, in));
+	  if (GET_CODE (in) == MEM)
+	    memt = adjust_address (in, TImode, 0);
+	  else
+	    {
+	      memt = assign_stack_temp (TImode, 16, 0);
+	      memx = adjust_address (memt, mode, 0);
+	      emit_move_insn (memx, in);
+	    }
+	  emit_move_insn (op0, memt);
+	  return true;
+	}
+
+      if (!ia64_move_ok (operands[0], operands[1]))
+	operands[1] = force_reg (mode, operands[1]);
+    }
+
+  return false;
 }
 
 /* Emit comparison instruction if necessary, returning the expression
@@ -3839,9 +3976,9 @@ ia64_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
                    gen_rtx_EXPR_LIST (VOIDmode,
 		     gen_rtx_REG (DImode, basereg + cum->words + offset),
 				      const0_rtx)));
-      /* Similarly, an anonymous XFmode value must be split into two
-	 registers and padded appropriately.  */
-      else if (BYTES_BIG_ENDIAN && mode == XFmode)
+      /* Similarly, an anonymous XFmode or RFmode value must be split
+	 into two registers and padded appropriately.  */
+      else if (BYTES_BIG_ENDIAN && (mode == XFmode || mode == RFmode))
 	{
 	  rtx loc[2];
 	  loc[0] = gen_rtx_EXPR_LIST (VOIDmode,
@@ -4159,7 +4296,7 @@ ia64_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
 	 the middle-end will give it XFmode anyway, and XFmode values
 	 don't normally fit in integer registers.  So we need to smuggle
 	 the value inside a parallel.  */
-      else if (mode == XFmode || mode == XCmode)
+      else if (mode == XFmode || mode == XCmode || mode == RFmode)
 	need_parallel = true;
 
       if (need_parallel)
@@ -4574,7 +4711,7 @@ ia64_register_move_cost (enum machine_mode mode, enum reg_class from,
      so that we get secondary memory reloads.  Between FR_REGS,
      we have to make this at least as expensive as MEMORY_MOVE_COST
      to avoid spectacularly poor register class preferencing.  */
-  if (mode == XFmode)
+  if (mode == XFmode || mode == RFmode)
     {
       if (to != GR_REGS || from != GR_REGS)
         return MEMORY_MOVE_COST (mode, to, 0);
@@ -8058,9 +8195,7 @@ ia64_init_builtins (void)
 
   /* The __fpreg type.  */
   fpreg_type = make_node (REAL_TYPE);
-  /* ??? The back end should know to load/save __fpreg variables using
-     the ldf.fill and stf.spill instructions.  */
-  TYPE_PRECISION (fpreg_type) = 80;
+  TYPE_PRECISION (fpreg_type) = 82;
   layout_type (fpreg_type);
   (*lang_hooks.types.register_builtin_type) (fpreg_type, "__fpreg");
 
@@ -8549,6 +8684,7 @@ ia64_scalar_mode_supported_p (enum machine_mode mode)
     case SFmode:
     case DFmode:
     case XFmode:
+    case RFmode:
       return true;
 
     case TFmode:
@@ -8659,6 +8795,48 @@ ia64_mangle_fundamental_type (tree type)
      double is 80 bits.  */
   if (TYPE_MODE (type) == XFmode)
     return TARGET_HPUX ? "u9__float80" : "e";
+  if (TYPE_MODE (type) == RFmode)
+    return "u7__fpreg";
+  return NULL;
+}
+
+/* Return the diagnostic message string if conversion from FROMTYPE to
+   TOTYPE is not allowed, NULL otherwise.  */
+static const char *
+ia64_invalid_conversion (tree fromtype, tree totype)
+{
+  /* Reject nontrivial conversion to or from __fpreg.  */
+  if (TYPE_MODE (fromtype) == RFmode
+      && TYPE_MODE (totype) != RFmode
+      && TYPE_MODE (totype) != VOIDmode)
+    return N_("invalid conversion from %<__fpreg%>");
+  if (TYPE_MODE (totype) == RFmode
+      && TYPE_MODE (fromtype) != RFmode)
+    return N_("invalid conversion to %<__fpreg%>");
+  return NULL;
+}
+
+/* Return the diagnostic message string if the unary operation OP is
+   not permitted on TYPE, NULL otherwise.  */
+static const char *
+ia64_invalid_unary_op (int op, tree type)
+{
+  /* Reject operations on __fpreg other than unary + or &.  */
+  if (TYPE_MODE (type) == RFmode
+      && op != CONVERT_EXPR
+      && op != ADDR_EXPR)
+    return N_("invalid operation on %<__fpreg%>");
+  return NULL;
+}
+
+/* Return the diagnostic message string if the binary operation OP is
+   not permitted on TYPE1 and TYPE2, NULL otherwise.  */
+static const char *
+ia64_invalid_binary_op (int op ATTRIBUTE_UNUSED, tree type1, tree type2)
+{
+  /* Reject operations on __fpreg.  */
+  if (TYPE_MODE (type1) == RFmode || TYPE_MODE (type2) == RFmode)
+    return N_("invalid operation on %<__fpreg%>");
   return NULL;
 }
 

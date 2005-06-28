@@ -1,3 +1,39 @@
+2005-06-28  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* target.h (invalid_conversion, invalid_unary_op,
+	invalid_binary_op): New hooks.
+	* target-def.h (TARGET_INVALID_CONVERSION,
+	TARGET_INVALID_UNARY_OP, TARGET_INVALID_BINARY_OP,
+	TARGET_INITIALIZER): Likewise.
+	* hooks.h (hook_constcharptr_tree_tree_null,
+	hook_constcharptr_int_tree_null,
+	hook_constcharptr_int_tree_tree_null): New.
+	* hooks.c (hook_constcharptr_tree_tree_null,
+	hook_constcharptr_int_tree_null,
+	hook_constcharptr_int_tree_tree_null): Likewise.
+	* gcc/doc/tm.texi (TARGET_INVALID_CONVERSION,
+	TARGET_INVALID_UNARY_OP, TARGET_INVALID_BINARY_OP): Document.
+	* c-convert.c (convert): Use invalid_conversion hook.
+	* c-typeck.c (build_unary_op): Use invalid_unary_op hook.
+	(build_binary_op): Use invalid_binary_op hook.
+	* config/ia64/ia64-modes.def: Define RFmode.
+	* config/ia64/ia64-protos.h (spill_xfmode_operand): Remove.
+	(ia64_expand_movxf_movrf): New.
+	* config/ia64/ia64.md (movxf): Move code to
+	ia64_expand_movxf_movrf.
+	(movrf, movrf_internal): New.
+	* ia64.c (ia64_invalid_conversion, ia64_invalid_unary_op,
+	ia64_invalid_binary_op, TARGET_INVALID_CONVERSION,
+	TARGET_INVALID_UNARY_OP, TARGET_INVALID_BINARY_OP): New.
+	(spill_xfmode_operand): Rename to spill_xfmode_rfmode_operand.
+	Add mode parameter.  Make static.
+	(ia64_expand_movxf_movrf): New, moved from ia64.md.  Handle RFmode
+	as well as XFmode.
+	(ia64_function_arg, ia64_function_value, ia64_register_move_cost,
+	ia64_scalar_mode_supported_p): Handle RFmode as well as XFmode.
+	(ia64_init_builtins): Set up __fpreg as RFmode.
+	(ia64_mangle_fundamental_type): Mangle __fpreg as u7__fpreg.
+
 2006-06-28  Adrian Straetling  <straetling@de.ibm.com>
 
 	* builtins.c: (expand_builtin_memset): Rewrite to support

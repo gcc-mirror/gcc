@@ -23,9 +23,12 @@ Boston, MA 02110-1301, USA.  */
 /* IA64 requires both XF and TF modes.
    XFmode is __float80 is IEEE extended; TFmode is __float128
    is IEEE quad.  Both these modes occupy 16 bytes, but XFmode
-   only has 80 significant bits.  */
+   only has 80 significant bits.  RFmode is __fpreg is IA64 internal
+   register format with 82 significant bits but otherwise handled like
+   XFmode.  */
 
 FRACTIONAL_FLOAT_MODE (XF, 80, 16, ieee_extended_intel_128_format);
+FRACTIONAL_FLOAT_MODE (RF, 82, 16, ieee_extended_intel_128_format);
 FLOAT_MODE (TF, 16, ieee_quad_format);
 
 /* The above produces:
@@ -53,6 +56,12 @@ ADJUST_FLOAT_FORMAT (XF, (TARGET_ILP32 && !TARGET_HPUX)
 			 : &ieee_extended_intel_128_format);
 ADJUST_BYTESIZE  (XF, (TARGET_ILP32 && !TARGET_HPUX) ? 12 : 16);
 ADJUST_ALIGNMENT (XF, (TARGET_ILP32 && !TARGET_HPUX) ?  4 : 16);
+
+ADJUST_FLOAT_FORMAT (RF, (TARGET_ILP32 && !TARGET_HPUX)
+			 ? &ieee_extended_intel_96_format
+			 : &ieee_extended_intel_128_format);
+ADJUST_BYTESIZE  (RF, (TARGET_ILP32 && !TARGET_HPUX) ? 12 : 16);
+ADJUST_ALIGNMENT (RF, (TARGET_ILP32 && !TARGET_HPUX) ?  4 : 16);
 
 ADJUST_ALIGNMENT (TF, (TARGET_ILP32 &&  TARGET_HPUX) ?  8 : 16);
 
