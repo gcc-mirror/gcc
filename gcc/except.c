@@ -826,6 +826,8 @@ find_exception_handler_labels (void)
     add_ehl_entry (return_label, NULL);
 }
 
+/* Returns true if the current function has exception handling regions.  */
+
 bool
 current_function_has_exception_handlers (void)
 {
@@ -835,9 +837,9 @@ current_function_has_exception_handlers (void)
     {
       struct eh_region *region = cfun->eh->region_array[i];
 
-      if (! region || region->region_number != i)
-	continue;
-      if (region->type != ERT_THROW)
+      if (region
+	  && region->region_number == i
+	  && region->type != ERT_THROW)
 	return true;
     }
 
