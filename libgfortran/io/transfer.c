@@ -746,9 +746,7 @@ formatted_transfer (bt type, void *p, int len)
 
 	case FMT_SLASH:
           consume_data_flag = 0 ;
-	  for (i = 0; i < f->repeat; i++)
-	    next_record (0);
-
+	  next_record (0);
 	  break;
 
 	case FMT_COLON:
