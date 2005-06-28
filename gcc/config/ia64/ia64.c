@@ -1526,7 +1526,8 @@ ia64_expand_compare (enum rtx_code code, enum machine_mode mode)
   return gen_rtx_fmt_ee (code, mode, cmp, const0_rtx);
 }
 
-/* Generate an integral vector comparison.  */
+/* Generate an integral vector comparison.  Return true if the condition has
+   been reversed, and so the sense of the comparison should be inverted.  */
 
 static bool
 ia64_expand_vecint_compare (enum rtx_code code, enum machine_mode mode,
@@ -1535,154 +1536,86 @@ ia64_expand_vecint_compare (enum rtx_code code, enum machine_mode mode,
   bool negate = false;
   rtx x;
 
+  /* Canonicalize the comparison to EQ, GT, GTU.  */
   switch (code)
     {
     case EQ:
     case GT:
+    case GTU:
       break;
 
     case NE:
-      code = EQ;
-      negate = true;
-      break;
-
     case LE:
-      code = GT;
+    case LEU:
+      code = reverse_condition (code);
       negate = true;
       break;
 
     case GE:
+    case GEU:
+      code = reverse_condition (code);
       negate = true;
       /* FALLTHRU */
 
     case LT:
-      x = op0;
-      op0 = op1;
-      op1 = x;
-      code = GT;
-      break;
-
-    case GTU:
-    case GEU:
     case LTU:
-    case LEU:
-      {
-	rtx w0h, w0l, w1h, w1l, ch, cl;
-	enum machine_mode wmode;
-	rtx (*unpack_l) (rtx, rtx, rtx);
-	rtx (*unpack_h) (rtx, rtx, rtx);
-	rtx (*pack) (rtx, rtx, rtx);
-
-	/* We don't have native unsigned comparisons, but we can generate
-	   them better than generic code can.  */
-
-	gcc_assert (mode != V2SImode);
-	switch (mode)
-	  {
-	  case V8QImode:
-	    wmode = V4HImode;
-	    pack = gen_pack2_sss;
-	    unpack_l = gen_unpack1_l;
-	    unpack_h = gen_unpack1_h;
-	    break;
-
-	  case V4HImode:
-	    wmode = V2SImode;
-	    pack = gen_pack4_sss;
-	    unpack_l = gen_unpack2_l;
-	    unpack_h = gen_unpack2_h;
-	    break;
-
-	  default:
-	    gcc_unreachable ();
-	  }
-
-	/* Unpack into wider vectors, zero extending the elements.  */
-
-	w0l = gen_reg_rtx (wmode);
-	w0h = gen_reg_rtx (wmode);
-	w1l = gen_reg_rtx (wmode);
-	w1h = gen_reg_rtx (wmode);
-	emit_insn (unpack_l (gen_lowpart (mode, w0l), op0, CONST0_RTX (mode)));
-	emit_insn (unpack_h (gen_lowpart (mode, w0h), op0, CONST0_RTX (mode)));
-	emit_insn (unpack_l (gen_lowpart (mode, w1l), op1, CONST0_RTX (mode)));
-	emit_insn (unpack_h (gen_lowpart (mode, w1h), op1, CONST0_RTX (mode)));
-
-	/* Compare in the wider mode.  */
-
-	cl = gen_reg_rtx (wmode);
-	ch = gen_reg_rtx (wmode);
-	code = signed_condition (code);
-	ia64_expand_vecint_compare (code, wmode, cl, w0l, w1l);
-	negate = ia64_expand_vecint_compare (code, wmode, ch, w0h, w1h);
-
-	/* Repack into a single narrower vector.  */
-
-	emit_insn (pack (dest, cl, ch));
-      }
-      return negate;
+      code = swap_condition (code);
+      x = op0, op0 = op1, op1 = x;
+      break;
 
     default:
       gcc_unreachable ();
+    }
+
+  /* Unsigned parallel compare is not supported by the hardware.  Play some
+     tricks to turn this into a GT comparison against 0.  */
+  if (code == GTU)
+    {
+      switch (mode)
+	{
+	case V2SImode:
+	  {
+	    rtx t1, t2, mask;
+
+	    /* Perform a parallel modulo subtraction.  */
+	    t1 = gen_reg_rtx (V2SImode);
+	    emit_insn (gen_subv2si3 (t1, op0, op1));
+
+	    /* Extract the original sign bit of op0.  */
+	    mask = GEN_INT (-0x80000000);
+	    mask = gen_rtx_CONST_VECTOR (V2SImode, gen_rtvec (2, mask, mask));
+	    mask = force_reg (V2SImode, mask);
+	    t2 = gen_reg_rtx (V2SImode);
+	    emit_insn (gen_andv2si3 (t2, op0, mask));
+
+	    /* XOR it back into the result of the subtraction.  This results
+	       in the sign bit set iff we saw unsigned underflow.  */
+	    x = gen_reg_rtx (V2SImode);
+	    emit_insn (gen_xorv2si3 (x, t1, t2));
+	  }
+	  break;
+
+	case V8QImode:
+	case V4HImode:
+	  /* Perform a parallel unsigned saturating subtraction.  */
+	  x = gen_reg_rtx (mode);
+	  emit_insn (gen_rtx_SET (VOIDmode, x,
+				  gen_rtx_US_MINUS (mode, op0, op1)));
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+
+      code = GT;
+      op0 = x;
+      op1 = CONST0_RTX (mode);
     }
 
   x = gen_rtx_fmt_ee (code, mode, op0, op1);
   emit_insn (gen_rtx_SET (VOIDmode, dest, x));
 
   return negate;
-}
-
-static void
-ia64_expand_vcondu_v2si (enum rtx_code code, rtx operands[])
-{
-  rtx dl, dh, bl, bh, op1l, op1h, op2l, op2h, op4l, op4h, op5l, op5h, x;
-
-  /* In this case, we extract the two SImode quantities and generate
-     normal comparisons for each of them.  */
-
-  op1l = gen_lowpart (SImode, operands[1]);
-  op2l = gen_lowpart (SImode, operands[2]);
-  op4l = gen_lowpart (SImode, operands[4]);
-  op5l = gen_lowpart (SImode, operands[5]);
-
-  op1h = gen_reg_rtx (SImode);
-  op2h = gen_reg_rtx (SImode);
-  op4h = gen_reg_rtx (SImode);
-  op5h = gen_reg_rtx (SImode);
-
-  emit_insn (gen_lshrdi3 (gen_lowpart (DImode, op1h),
-			  gen_lowpart (DImode, operands[1]), GEN_INT (32)));
-  emit_insn (gen_lshrdi3 (gen_lowpart (DImode, op2h),
-			  gen_lowpart (DImode, operands[2]), GEN_INT (32)));
-  emit_insn (gen_lshrdi3 (gen_lowpart (DImode, op4h),
-			  gen_lowpart (DImode, operands[4]), GEN_INT (32)));
-  emit_insn (gen_lshrdi3 (gen_lowpart (DImode, op5h),
-			  gen_lowpart (DImode, operands[5]), GEN_INT (32)));
-
-  bl = gen_reg_rtx (BImode);
-  x = gen_rtx_fmt_ee (code, BImode, op4l, op5l);
-  emit_insn (gen_rtx_SET (VOIDmode, bl, x));
-
-  bh = gen_reg_rtx (BImode);
-  x = gen_rtx_fmt_ee (code, BImode, op4h, op5h);
-  emit_insn (gen_rtx_SET (VOIDmode, bh, x));
-
-  /* With the results of the comparisons, emit conditional moves.  */
-
-  dl = gen_reg_rtx (SImode);
-  x = gen_rtx_NE (VOIDmode, bl, const0_rtx);
-  x = gen_rtx_IF_THEN_ELSE (SImode, x, op1l, op2l);
-  emit_insn (gen_rtx_SET (VOIDmode, dl, x));
-
-  dh = gen_reg_rtx (SImode);
-  x = gen_rtx_NE (VOIDmode, bh, const0_rtx);
-  x = gen_rtx_IF_THEN_ELSE (SImode, x, op1h, op2h);
-  emit_insn (gen_rtx_SET (VOIDmode, dh, x));
-
-  /* Merge the two partial results back into a vector.  */
-
-  x = gen_rtx_VEC_CONCAT (V2SImode, dl, dh);
-  emit_insn (gen_rtx_SET (VOIDmode, operands[0], x));
 }
 
 /* Emit an integral vector conditional move.  */
@@ -1694,15 +1627,6 @@ ia64_expand_vecint_cmov (rtx operands[])
   enum rtx_code code = GET_CODE (operands[3]);
   bool negate;
   rtx cmp, x, ot, of;
-
-  /* Since we don't have unsigned V2SImode comparisons, it's more efficient
-     to special-case them entirely.  */
-  if (mode == V2SImode
-      && (code == GTU || code == GEU || code == LEU || code == LTU))
-    {
-      ia64_expand_vcondu_v2si (code, operands);
-      return;
-    }
 
   cmp = gen_reg_rtx (mode);
   negate = ia64_expand_vecint_compare (code, mode, cmp,
