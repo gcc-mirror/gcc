@@ -83,6 +83,8 @@ cgraph_postorder (struct cgraph_node **order)
 	  }
       }
   free (stack);
+  for (node = cgraph_nodes; node; node = node->next)
+    node->aux = NULL;
   return order_pos;
 }
 

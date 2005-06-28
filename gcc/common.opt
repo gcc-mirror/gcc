@@ -476,6 +476,10 @@ finline-functions
 Common Report Var(flag_inline_functions)
 Integrate simple functions into their callers
 
+fearly-inlining
+Common Report Var(flag_early_inlining) Init(1)
+Perform early inlining
+
 finline-limit-
 Common RejectNegative Joined UInteger
 

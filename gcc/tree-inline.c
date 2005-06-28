@@ -1969,7 +1969,9 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
       else if (warn_inline && DECL_DECLARED_INLINE_P (fn)
 	       && !DECL_IN_SYSTEM_HEADER (fn)
 	       && strlen (reason)
-	       && !lookup_attribute ("noinline", DECL_ATTRIBUTES (fn)))
+	       && !lookup_attribute ("noinline", DECL_ATTRIBUTES (fn))
+	       /* Avoid warnings during early inline pass. */
+	       && (!flag_unit_at_a_time || cgraph_global_info_ready))
 	{
 	  warning (0, "%Jinlining failed in call to %qF: %s", fn, fn, reason);
 	  warning (0, "called from here");

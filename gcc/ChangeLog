@@ -1,3 +1,36 @@
+2005-06-28  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_remove_node): Do not release function bodies until
+	full cgraph is built.
+	* cgraph.h (cgraph_decide_inlining_incrementally): Add early argument.
+	* cgraphunit.c (cgraph_finalize_function): Update call of
+	cgraph_decide_inlining_incrementally.
+	(initialize_inline_failed): Break out of ...
+	(cgraph_analyze_function): ... here.
+	(rebuild_cgraph_edges): New function.
+	(pass_rebuild_cgraph_edges): New pass.
+	* common.opt (fearly-inlining): New flag.
+	* ipa-inline.c: Include ggc.h
+	(cgraph_clone_inlined_nodes): Avoid re-using of original copy
+	when cgraph is not fully built.
+	(cgraph_decide_inlining_incrementally): Add early mode.
+	(cgraph_early_inlining): New function.
+	(cgraph_gate_early_inlining): Likewise.
+	(pass_early_ipa_inline): New pass.
+	* ipa.c (cgraph_postorder): NULLify aux pointer.
+	* tree-inline.c (expand_call_inline): Avoid warning early.
+	* tree-optimize.c (pass_early_local_passes): New.
+	(execute_cleanup_cfg_pre_ipa): New.
+	(pass_cleanup_cfg): New.
+	(register_dump_files): Fix handling subpasses of IPA pass.
+	(init_tree_optimization_passes): Add early passes.
+	(execute_ipa_pass_list): Fix handling of subpasses of IPA pass.
+	* passes.h (pass_early_tree_profile, pass_rebuild_cgraph_edges,
+	pass_early_ipa_inline): New passes.
+	* tree-profile.c (do_early_tree_profiling, pass_early_tree_profile): New.
+
+	* invoke.texi: Document early-inlining.
+
 2005-06-28  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* doc/include/fdl.texi: Merge in changes from upstream.

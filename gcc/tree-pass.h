@@ -164,6 +164,7 @@ extern struct tree_opt_pass pass_lower_cf;
 extern struct tree_opt_pass pass_lower_eh;
 extern struct tree_opt_pass pass_build_cfg;
 extern struct tree_opt_pass pass_tree_profile;
+extern struct tree_opt_pass pass_early_tree_profile;
 extern struct tree_opt_pass pass_referenced_vars;
 extern struct tree_opt_pass pass_sra;
 extern struct tree_opt_pass pass_tail_recursion;
@@ -227,8 +228,10 @@ extern struct tree_opt_pass pass_del_pta;
 extern struct tree_opt_pass pass_uncprop;
 extern struct tree_opt_pass pass_return_slot;
 extern struct tree_opt_pass pass_reassoc;
+extern struct tree_opt_pass pass_rebuild_cgraph_edges;
 
 /* IPA Passes */
 extern struct tree_opt_pass pass_ipa_inline;
+extern struct tree_opt_pass pass_early_ipa_inline;
 
 #endif /* GCC_TREE_PASS_H */

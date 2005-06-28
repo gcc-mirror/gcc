@@ -427,7 +427,7 @@ cgraph_finalize_function (tree decl, bool nested)
   if (!flag_unit_at_a_time)
     {
       cgraph_analyze_function (node);
-      cgraph_decide_inlining_incrementally (node);
+      cgraph_decide_inlining_incrementally (node, false);
     }
 
   if (decide_is_function_needed (node, decl))
@@ -569,6 +569,73 @@ cgraph_create_edges (struct cgraph_node *node, tree body)
   visited_nodes = NULL;
 }
 
+/* Give initial reasons why inlining would fail.  Those gets
+   either NULLified or usually overwritten by more precise reason
+   later.  */
+static void
+initialize_inline_failed (struct cgraph_node *node)
+{
+  struct cgraph_edge *e;
+
+  for (e = node->callers; e; e = e->next_caller)
+    {
+      gcc_assert (!e->callee->global.inlined_to);
+      gcc_assert (e->inline_failed);
+      if (node->local.redefined_extern_inline)
+	e->inline_failed = N_("redefined extern inline functions are not "
+			   "considered for inlining");
+      else if (!node->local.inlinable)
+	e->inline_failed = N_("function not inlinable");
+      else
+	e->inline_failed = N_("function not considered for inlining");
+    }
+}
+
+/* Rebuild call edges from current function after a passes not aware
+   of cgraph updating.  */
+static void
+rebuild_cgraph_edges (void)
+{
+  basic_block bb;
+  struct cgraph_node *node = cgraph_node (current_function_decl);
+  block_stmt_iterator bsi;
+
+  cgraph_node_remove_callees (node);
+
+  node->count = ENTRY_BLOCK_PTR->count;
+
+  FOR_EACH_BB (bb)
+    for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+      {
+	tree stmt = bsi_stmt (bsi);
+	tree call = get_call_expr_in (stmt);
+	tree decl;
+
+	if (call && (decl = get_callee_fndecl (call)))
+	  cgraph_create_edge (node, cgraph_node (decl), stmt,
+			      bb->count,
+			      bb->loop_depth);
+      }
+  initialize_inline_failed (node);
+  gcc_assert (!node->global.inlined_to);
+}
+
+struct tree_opt_pass pass_rebuild_cgraph_edges =
+{
+  NULL,					/* name */
+  NULL,					/* gate */
+  rebuild_cgraph_edges,			/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  0,					/* tv_id */
+  PROP_cfg,				/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0,					/* todo_flags_finish */
+  0					/* letter */
+};
 
 /* Verify cgraph nodes of given cgraph node.  */
 void
@@ -764,7 +831,6 @@ static void
 cgraph_analyze_function (struct cgraph_node *node)
 {
   tree decl = node->decl;
-  struct cgraph_edge *e;
 
   current_function_decl = decl;
   push_cfun (DECL_STRUCT_FUNCTION (decl));
@@ -778,16 +844,7 @@ cgraph_analyze_function (struct cgraph_node *node)
   if (node->local.inlinable)
     node->local.disregard_inline_limits
       = lang_hooks.tree_inlining.disregard_inline_limits (decl);
-  for (e = node->callers; e; e = e->next_caller)
-    {
-      if (node->local.redefined_extern_inline)
-	e->inline_failed = N_("redefined extern inline functions are not "
-			   "considered for inlining");
-      else if (!node->local.inlinable)
-	e->inline_failed = N_("function not inlinable");
-      else
-	e->inline_failed = N_("function not considered for inlining");
-    }
+  initialize_inline_failed (node);
   if (flag_really_no_inline && !node->local.disregard_inline_limits)
     node->local.inlinable = 0;
   /* Inlining characteristics are maintained by the cgraph_mark_inline.  */

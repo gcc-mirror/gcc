@@ -473,7 +473,8 @@ cgraph_remove_node (struct cgraph_node *node)
     {
       struct cgraph_node *n = *slot;
       if (!n->next_clone && !n->global.inlined_to
-	  && (TREE_ASM_WRITTEN (n->decl) || DECL_EXTERNAL (n->decl)))
+	  && (cgraph_global_info_ready
+	      && (TREE_ASM_WRITTEN (n->decl) || DECL_EXTERNAL (n->decl))))
 	kill_body = true;
     }
 
