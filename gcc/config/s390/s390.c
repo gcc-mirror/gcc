@@ -245,6 +245,8 @@ struct machine_function GTY(())
 
   /* Some local-dynamic TLS symbol name.  */
   const char *some_ld_name;
+
+  bool has_landing_pad_p;
 };
 
 /* Few accessor macros for struct cfun->machine->s390_frame_layout.  */
@@ -262,6 +264,13 @@ struct machine_function GTY(())
 #define GP_ARG_NUM_REG 5
 #define FP_ARG_NUM_REG (TARGET_64BIT? 4 : 2)
 
+/* Set the has_landing_pad_p flag in struct machine_function to VALUE.  */
+
+void
+s390_set_has_landing_pad_p (bool value)
+{
+  cfun->machine->has_landing_pad_p = value;
+}
 
 /* Return true if SET either doesn't set the CC register, or else
    the source and destination have matching CC modes and that
@@ -5480,8 +5489,14 @@ s390_return_addr_rtx (int count, rtx frame ATTRIBUTE_UNUSED)
 
   if (count == 0)
     {
-      cfun_frame_layout.save_return_addr_p = true;
-      return gen_rtx_MEM (Pmode, return_address_pointer_rtx);
+      /* On non-z architectures branch splitting could overwrite r14.  */
+      if (TARGET_CPU_ZARCH)
+	return get_hard_reg_initial_val (Pmode, RETURN_REGNUM);
+      else
+	{
+	  cfun_frame_layout.save_return_addr_p = true;
+	  return gen_rtx_MEM (Pmode, return_address_pointer_rtx);
+	}
     }
 
   if (TARGET_PACKED_STACK)
@@ -5528,6 +5543,88 @@ find_unused_clobbered_reg (void)
   return 0;
 }
 
+
+/* Helper function for s390_regs_ever_clobbered.  Sets the fields in DATA for all 
+   clobbered hard regs in SETREG.  */
+
+static void
+s390_reg_clobbered_rtx (rtx setreg, rtx set_insn ATTRIBUTE_UNUSED, void *data)
+{
+  int *regs_ever_clobbered = (int *)data;
+  unsigned int i, regno;
+  enum machine_mode mode = GET_MODE (setreg);
+
+  if (GET_CODE (setreg) == SUBREG)
+    {
+      rtx inner = SUBREG_REG (setreg);
+      if (!GENERAL_REG_P (inner))
+	return;
+      regno = subreg_regno (setreg);
+    }
+  else if (GENERAL_REG_P (setreg))
+    regno = REGNO (setreg);
+  else
+    return;
+
+  for (i = regno;
+       i < regno + HARD_REGNO_NREGS (regno, mode);
+       i++)
+    regs_ever_clobbered[i] = 1;
+}
+
+/* Walks through all basic blocks of the current function looking
+   for clobbered hard regs using s390_reg_clobbered_rtx.  The fields
+   of the passed integer array REGS_EVER_CLOBBERED are set to one for
+   each of those regs.  */
+
+static void
+s390_regs_ever_clobbered (int *regs_ever_clobbered)
+{
+  basic_block cur_bb;
+  rtx cur_insn;
+  unsigned int i;
+
+  memset (regs_ever_clobbered, 0, 16 * sizeof (int));
+
+  /* For non-leaf functions we have to consider all call clobbered regs to be
+     clobbered.  */
+  if (!current_function_is_leaf)
+    {
+      for (i = 0; i < 16; i++)
+	regs_ever_clobbered[i] = call_really_used_regs[i];
+    }
+
+  /* Make the "magic" eh_return registers live if necessary.  For regs_ever_live
+     this work is done by liveness analysis (mark_regs_live_at_end).
+     Special care is needed for functions containing landing pads.  Landing pads
+     may use the eh registers, but the code which sets these registers is not
+     contained in that function.  Hence s390_regs_ever_clobbered is not able to
+     deal with this automatically.  */
+  if (current_function_calls_eh_return || cfun->machine->has_landing_pad_p)
+    for (i = 0; EH_RETURN_DATA_REGNO (i) != INVALID_REGNUM ; i++)
+      regs_ever_clobbered[EH_RETURN_DATA_REGNO (i)] = 1;
+
+  /* For nonlocal gotos all call-saved registers have to be saved.
+     This flag is also set for the unwinding code in libgcc.
+     See expand_builtin_unwind_init.  For regs_ever_live this is done by
+     reload.  */
+  if (current_function_has_nonlocal_label)
+    for (i = 0; i < 16; i++)
+      if (!call_really_used_regs[i])
+	regs_ever_clobbered[i] = 1;
+
+  FOR_EACH_BB (cur_bb)
+    {
+      FOR_BB_INSNS (cur_bb, cur_insn)
+	{
+	  if (INSN_P (cur_insn))
+	    note_stores (PATTERN (cur_insn),
+			 s390_reg_clobbered_rtx, 
+			 regs_ever_clobbered);
+	}
+    }
+}
+
 /* Determine the frame area which actually has to be accessed 
    in the function epilogue. The values are stored at the 
    given pointers AREA_BOTTOM (address of the lowest used stack
@@ -5571,10 +5668,10 @@ s390_frame_area (int *area_bottom, int *area_top)
 }
 
 /* Fill cfun->machine with info about register usage of current function.
-   Return in LIVE_REGS which GPRs are currently considered live.  */
+   Return in CLOBBERED_REGS which GPRs are currently considered set.  */
 
 static void
-s390_register_info (int live_regs[])
+s390_register_info (int clobbered_regs[])
 {
   int i, j;
 
@@ -5595,34 +5692,39 @@ s390_register_info (int live_regs[])
      Also, all registers with special meaning to the compiler need
      to be handled extra.  */
 
+  s390_regs_ever_clobbered (clobbered_regs);
+
   for (i = 0; i < 16; i++)
-    live_regs[i] = regs_ever_live[i] && !global_regs[i];
+    clobbered_regs[i] = clobbered_regs[i] && !global_regs[i];
+
+  if (frame_pointer_needed)
+    clobbered_regs[HARD_FRAME_POINTER_REGNUM] = 1;
 
   if (flag_pic)
-    live_regs[PIC_OFFSET_TABLE_REGNUM] 
+    clobbered_regs[PIC_OFFSET_TABLE_REGNUM] 
     = regs_ever_live[PIC_OFFSET_TABLE_REGNUM];
 
-  live_regs[BASE_REGNUM] 
+  clobbered_regs[BASE_REGNUM] 
     = cfun->machine->base_reg
       && REGNO (cfun->machine->base_reg) == BASE_REGNUM;
 
-  live_regs[RETURN_REGNUM]
+  clobbered_regs[RETURN_REGNUM]
     = cfun->machine->split_branches_pending_p
       || cfun_frame_layout.save_return_addr_p;
 
-  live_regs[STACK_POINTER_REGNUM]
+  clobbered_regs[STACK_POINTER_REGNUM]
     = !current_function_is_leaf
       || TARGET_TPF_PROFILING
       || cfun_save_high_fprs_p
       || get_frame_size () > 0
       || current_function_calls_alloca
       || current_function_stdarg;
-  
+
   for (i = 6; i < 16; i++)
-    if (live_regs[i])
+    if (clobbered_regs[i])
       break;
   for (j = 15; j > i; j--)
-    if (live_regs[j])
+    if (clobbered_regs[j])
       break;
 
   if (i == 16)
@@ -5804,10 +5906,12 @@ s390_init_frame_layout (void)
 {
   HOST_WIDE_INT frame_size;
   int base_used;
-  int live_regs[16];
+  int clobbered_regs[16];
 
   /* If return address register is explicitly used, we need to save it.  */
-  if (regs_ever_live[RETURN_REGNUM]
+  s390_regs_ever_clobbered (clobbered_regs);
+
+  if (clobbered_regs[RETURN_REGNUM]
       || !current_function_is_leaf
       || TARGET_TPF_PROFILING
       || current_function_stdarg
@@ -5841,7 +5945,7 @@ s390_init_frame_layout (void)
       else
 	cfun->machine->base_reg = gen_rtx_REG (Pmode, BASE_REGNUM);
 
-      s390_register_info (live_regs);
+      s390_register_info (clobbered_regs);
       s390_frame_info ();
     }
   while (frame_size != cfun_frame_layout.frame_size);
@@ -5855,13 +5959,13 @@ s390_init_frame_layout (void)
 static void
 s390_update_frame_layout (void)
 {
-  int live_regs[16];
+  int clobbered_regs[16];
 
-  s390_register_info (live_regs);
+  s390_register_info (clobbered_regs);
 
-  regs_ever_live[BASE_REGNUM] = live_regs[BASE_REGNUM];
-  regs_ever_live[RETURN_REGNUM] = live_regs[RETURN_REGNUM];
-  regs_ever_live[STACK_POINTER_REGNUM] = live_regs[STACK_POINTER_REGNUM];
+  regs_ever_live[BASE_REGNUM] = clobbered_regs[BASE_REGNUM];
+  regs_ever_live[RETURN_REGNUM] = clobbered_regs[RETURN_REGNUM];
+  regs_ever_live[STACK_POINTER_REGNUM] = clobbered_regs[STACK_POINTER_REGNUM];
 
   if (cfun->machine->base_reg)
     regs_ever_live[REGNO (cfun->machine->base_reg)] = 1;
@@ -6131,7 +6235,9 @@ s390_emit_prologue (void)
   /* Choose best register to use for temp use within prologue.
      See below for why TPF must use the register 1.  */
 
-  if (!current_function_is_leaf && !TARGET_TPF_PROFILING)
+  if (!has_hard_reg_initial_val (Pmode, RETURN_REGNUM) 
+      && !current_function_is_leaf 
+      && !TARGET_TPF_PROFILING)
     temp_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
   else
     temp_reg = gen_rtx_REG (Pmode, 1);
