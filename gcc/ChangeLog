@@ -1,3 +1,7 @@
+2005-06-28  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/rs6000/rs6000.md (setmemsi): Fix operand 2.
+
 2005-06-28  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* target.h (invalid_conversion, invalid_unary_op,
