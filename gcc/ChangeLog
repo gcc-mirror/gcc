@@ -1,3 +1,9 @@
+2005-06-28  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/22134
+	* config/i386/i386.md (fist<mode>2_with_temp splitter):
+	Clobber memory operand, not scratch register.
+
 2005-06-28  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (machine_function): New field has_landing_pad_p.
