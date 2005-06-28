@@ -1973,8 +1973,9 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
 	       /* Avoid warnings during early inline pass. */
 	       && (!flag_unit_at_a_time || cgraph_global_info_ready))
 	{
-	  warning (0, "%Jinlining failed in call to %qF: %s", fn, fn, reason);
-	  warning (0, "called from here");
+	  warning (OPT_Winline, "%Jinlining failed in call to %qF: %s",
+		   fn, fn, reason);
+	  warning (OPT_Winline, "called from here");
 	}
       goto egress;
     }

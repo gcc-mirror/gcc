@@ -1064,7 +1064,7 @@ function_types_compatible_p (tree f1, tree f2)
 	return 0;
       /* If one of these types comes from a non-prototype fn definition,
 	 compare that with the other type's arglist.
-	 If they don't match, ask for a warning (0, but no error).  */
+	 If they don't match, ask for a warning (but no error).  */
       if (TYPE_ACTUAL_ARG_TYPES (f1)
 	  && 1 != type_lists_compatible_p (args2, TYPE_ACTUAL_ARG_TYPES (f1)))
 	val = 2;
@@ -1721,9 +1721,9 @@ build_array_ref (tree array, tree index)
      deliberately.  ??? Existing practice has also been to warn only
      when the char index is syntactically the index, not for
      char[array].  */
-  if (warn_char_subscripts && !swapped
+  if (!swapped
       && TYPE_MAIN_VARIANT (TREE_TYPE (index)) == char_type_node)
-    warning (0, "array subscript has type %<char%>");
+    warning (OPT_Wchar_subscripts, "array subscript has type %<char%>");
 
   /* Apply default promotions *after* noticing character types.  */
   index = default_conversion (index);
@@ -2234,8 +2234,9 @@ convert_arguments (tree typelist, tree values, tree function, tree fundecl)
 			   and the actual arg is that enum type.  */
 			;
 		      else if (formal_prec != TYPE_PRECISION (type1))
-			warning (0, "passing argument %d of %qE with different "
-				 "width due to prototype", argnum, rname);
+			warning (OPT_Wconversion, "passing argument %d of %qE "
+				 "with different width due to prototype",
+				 argnum, rname);
 		      else if (TYPE_UNSIGNED (type) == TYPE_UNSIGNED (type1))
 			;
 		      /* Don't complain if the formal parameter type
@@ -2256,11 +2257,12 @@ convert_arguments (tree typelist, tree values, tree function, tree fundecl)
 			       && TYPE_UNSIGNED (TREE_TYPE (val)))
 			;
 		      else if (TYPE_UNSIGNED (type))
-			warning (0, "passing argument %d of %qE as unsigned "
-				 "due to prototype", argnum, rname);
+			warning (OPT_Wconversion, "passing argument %d of %qE "
+				 "as unsigned due to prototype",
+				 argnum, rname);
 		      else
-			warning (0, "passing argument %d of %qE as signed "
-				 "due to prototype", argnum, rname);
+			warning (OPT_Wconversion, "passing argument %d of %qE "
+				 "as signed due to prototype", argnum, rname);
 		    }
 		}
 
@@ -3249,7 +3251,7 @@ build_c_cast (tree type, tree expr)
 	}
 
       /* Warn about possible alignment problems.  */
-      if (STRICT_ALIGNMENT && warn_cast_align
+      if (STRICT_ALIGNMENT
 	  && TREE_CODE (type) == POINTER_TYPE
 	  && TREE_CODE (otype) == POINTER_TYPE
 	  && TREE_CODE (TREE_TYPE (otype)) != VOID_TYPE
@@ -3260,28 +3262,28 @@ build_c_cast (tree type, tree expr)
 		|| TREE_CODE (TREE_TYPE (otype)) == RECORD_TYPE)
 	       && TYPE_MODE (TREE_TYPE (otype)) == VOIDmode)
 	  && TYPE_ALIGN (TREE_TYPE (type)) > TYPE_ALIGN (TREE_TYPE (otype)))
-	warning (0, "cast increases required alignment of target type");
+	warning (OPT_Wcast_align,
+		 "cast increases required alignment of target type");
 
-      if (warn_pointer_to_int_cast
-	  && TREE_CODE (type) == INTEGER_TYPE
+      if (TREE_CODE (type) == INTEGER_TYPE
 	  && TREE_CODE (otype) == POINTER_TYPE
 	  && TYPE_PRECISION (type) != TYPE_PRECISION (otype)
 	  && !TREE_CONSTANT (value))
-	warning (0, "cast from pointer to integer of different size");
+	warning (OPT_Wpointer_to_int_cast,
+		 "cast from pointer to integer of different size");
 
-      if (warn_bad_function_cast
-	  && TREE_CODE (value) == CALL_EXPR
+      if (TREE_CODE (value) == CALL_EXPR
 	  && TREE_CODE (type) != TREE_CODE (otype))
-	warning (0, "cast from function call of type %qT to non-matching "
-		 "type %qT", otype, type);
+	warning (OPT_Wbad_function_cast, "cast from function call of type %qT "
+		 "to non-matching type %qT", otype, type);
 
-      if (warn_int_to_pointer_cast
-	  && TREE_CODE (type) == POINTER_TYPE
+      if (TREE_CODE (type) == POINTER_TYPE
 	  && TREE_CODE (otype) == INTEGER_TYPE
 	  && TYPE_PRECISION (type) != TYPE_PRECISION (otype)
 	  /* Don't warn about converting any constant.  */
 	  && !TREE_CONSTANT (value))
-	warning (0, "cast to pointer from integer of different size");
+	warning (OPT_Wint_to_pointer_cast, "cast to pointer from integer "
+		 "of different size");
 
       if (flag_strict_aliasing && warn_strict_aliasing
 	  && TREE_CODE (type) == POINTER_TYPE
@@ -3294,17 +3296,20 @@ build_c_cast (tree type, tree expr)
 	  /* Casting the address of an object to non void pointer. Warn
 	     if the cast breaks type based aliasing.  */
 	  if (!COMPLETE_TYPE_P (TREE_TYPE (type)))
-	    warning (0, "type-punning to incomplete type might break strict-aliasing rules");
+	    warning (OPT_Wstrict_aliasing, "type-punning to incomplete type "
+		     "might break strict-aliasing rules");
 	  else
 	    {
 	      HOST_WIDE_INT set1 = get_alias_set (TREE_TYPE (TREE_OPERAND (expr, 0)));
 	      HOST_WIDE_INT set2 = get_alias_set (TREE_TYPE (type));
 
 	      if (!alias_sets_conflict_p (set1, set2))
-		warning (0, "dereferencing type-punned pointer will break strict-aliasing rules");
+		warning (OPT_Wstrict_aliasing, "dereferencing type-punned "
+			 "pointer will break strict-aliasing rules");
 	      else if (warn_strict_aliasing > 1
 		       && !alias_sets_might_conflict_p (set1, set2))
-		warning (0, "dereferencing type-punned pointer might break strict-aliasing rules");
+		warning (OPT_Wstrict_aliasing, "dereferencing type-punned "
+			 "pointer might break strict-aliasing rules");
 	    }
 	}
 
@@ -3998,9 +4003,10 @@ store_init_value (tree decl, tree init)
 
   /* Store the expression if valid; else report error.  */
 
-  if (warn_traditional && !in_system_header
+  if (!in_system_header
       && AGGREGATE_TYPE_P (TREE_TYPE (decl)) && !TREE_STATIC (decl))
-    warning (0, "traditional C rejects automatic aggregate initialization");
+    warning (OPT_Wtraditional, "traditional C rejects automatic "
+	     "aggregate initialization");
 
   DECL_INITIAL (decl) = value;
 
@@ -6240,10 +6246,11 @@ process_init_element (struct c_expr value)
 	     again on the assumption that this must be conditional on
 	     __STDC__ anyway (and we've already complained about the
 	     member-designator already).  */
-	  if (warn_traditional && !in_system_header && !constructor_designated
+	  if (!in_system_header && !constructor_designated
 	      && !(value.value && (integer_zerop (value.value)
 				   || real_zerop (value.value))))
-	    warning (0, "traditional C rejects initialization of unions");
+	    warning (OPT_Wtraditional, "traditional C rejects initialization "
+		     "of unions");
 
 	  /* Accept a string constant to initialize a subarray.  */
 	  if (value.value != 0
@@ -6751,11 +6758,11 @@ c_start_case (tree exp)
 	{
 	  type = TYPE_MAIN_VARIANT (TREE_TYPE (exp));
 
-	  if (warn_traditional && !in_system_header
+	  if (!in_system_header
 	      && (type == long_integer_type_node
 		  || type == long_unsigned_type_node))
-	    warning (0, "%<long%> switch expression not converted to "
-		     "%<int%> in ISO C");
+	    warning (OPT_Wtraditional, "%<long%> switch expression not "
+		     "converted to %<int%> in ISO C");
 
 	  exp = default_conversion (exp);
 	  type = TREE_TYPE (exp);

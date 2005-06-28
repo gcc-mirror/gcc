@@ -1266,9 +1266,9 @@ finalize_record_size (record_layout_info rli)
   TYPE_SIZE_UNIT (rli->t)
     = round_up (unpadded_size_unit, TYPE_ALIGN_UNIT (rli->t));
 
-  if (warn_padded && TREE_CONSTANT (unpadded_size)
+  if (TREE_CONSTANT (unpadded_size)
       && simple_cst_equal (unpadded_size, TYPE_SIZE (rli->t)) == 0)
-    warning (0, "padding struct size to alignment boundary");
+    warning (OPT_Wpadded, "padding struct size to alignment boundary");
 
   if (warn_packed && TREE_CODE (rli->t) == RECORD_TYPE
       && TYPE_PACKED (rli->t) && ! rli->packed_maybe_necessary
@@ -1298,19 +1298,19 @@ finalize_record_size (record_layout_info rli)
 		name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (rli->t)));
 
 	      if (STRICT_ALIGNMENT)
-		warning (OPT_Wattributes, "packed attribute causes inefficient "
+		warning (OPT_Wpacked, "packed attribute causes inefficient "
 			 "alignment for %qs", name);
 	      else
-		warning (OPT_Wattributes,
+		warning (OPT_Wpacked,
 			 "packed attribute is unnecessary for %qs", name);
 	    }
 	  else
 	    {
 	      if (STRICT_ALIGNMENT)
-		warning (OPT_Wattributes,
+		warning (OPT_Wpacked,
 			 "packed attribute causes inefficient alignment");
 	      else
-		warning (OPT_Wattributes, "packed attribute is unnecessary");
+		warning (OPT_Wpacked, "packed attribute is unnecessary");
 	    }
 	}
     }
