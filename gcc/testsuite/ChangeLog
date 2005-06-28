@@ -1,5 +1,14 @@
 2005-06-27  Richard Henderson  <rth@redhat.com>
 
+	* gcc.dg/vect/vect-reduc-1.c: Adjust test to properly validate MIN.
+	* gcc.dg/vect/vect-reduc-1char.c: Likewise.
+	* gcc.dg/vect/vect-reduc-1short.c: Likewise.
+	* gcc.dg/vect/vect-reduc-2.c: Likewise.
+	* gcc.dg/vect/vect-reduc-2char.c: Likewise.
+	* gcc.dg/vect/vect-reduc-2short.c: Likewise.
+
+2005-06-27  Richard Henderson  <rth@redhat.com>
+
 	* gcc.dg/vect/vect-reduc-1short.c: Remove XFAIL.
 	* gcc.dg/vect/vect-reduc-2char.c: Remove XFAIL.
 

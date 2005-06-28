@@ -1,5 +1,10 @@
 2005-06-27  Richard Henderson  <rth@redhat.com>
 
+	* tree-vect-transform.c (get_initial_def_for_reduction): Use correct
+	type for DEF and INIT_VAL.  Pretend MIN/MAX need epilogue adjustment.
+
+2005-06-27  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/sse.md (vec_shl_<SSEMODEI>, vec_shr_<SSEMODEI>): New.
 	(smaxv16qi3, umaxv8hi3, sminv16qi3, uminv8hi3): New.
 
