@@ -770,8 +770,11 @@ extern int arm_structure_size_boundary;
 #define FIRST_HI_REGNUM		8
 #define LAST_HI_REGNUM		11
 
+#ifndef TARGET_UNWIND_INFO
 /* We use sjlj exceptions for backwards compatibility.  */
 #define MUST_USE_SJLJ_EXCEPTIONS 1
+#endif
+
 /* We can generate DWARF2 Unwind info, even though we don't use it.  */
 #define DWARF2_UNWIND_INFO 1
 
@@ -1976,6 +1979,15 @@ typedef struct
 #define ARM_DECLARE_FUNCTION_SIZE(STREAM, NAME, DECL)	\
   if (!TARGET_LONG_CALLS || ! DECL_SECTION_NAME (DECL)) \
     arm_encode_call_attribute (DECL, SHORT_CALL_FLAG_CHAR)
+
+#define ARM_OUTPUT_FN_UNWIND(F, PROLOGUE) arm_output_fn_unwind (F, PROLOGUE)
+
+#ifdef TARGET_UNWIND_INFO
+#define ARM_EABI_UNWIND_TABLES \
+  ((!USING_SJLJ_EXCEPTIONS && flag_exceptions) || flag_unwind_tables)
+#else
+#define ARM_EABI_UNWIND_TABLES 0
+#endif
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.

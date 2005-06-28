@@ -12,6 +12,11 @@ LIB1ASMFUNCS += \
 	_truncdfsf2 _negsf2 _addsubsf3 _muldivsf3 _cmpsf2 _unordsf2 \
 	_fixsfsi _fixunssfsi
 
+# Include the gcc personality routine
+UNWIND_H = $(srcdir)/config/arm/unwind-arm.h
+LIB2ADDEH = $(srcdir)/unwind-c.c
+LIB2ADDEHDEP = $(UNWIND_H)
+
 # Create a multilib for processors with VFP floating-point, and a
 # multilib for those without -- using the soft-float ABI in both
 # cases.  Symbian OS object should be compiled with interworking

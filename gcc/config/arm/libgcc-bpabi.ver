@@ -60,4 +60,18 @@ GCC_3.5 {
   __aeabi_ulcmp
   __aeabi_ul2d
   __aeabi_ul2f
+
+  # Exception-Handling
+  # \S 7.5
+  _Unwind_Complete
+  _Unwind_VRS_Get
+  _Unwind_VRS_Set
+  _Unwind_VRS_Pop
+  # \S 9.2
+  __aeabi_unwind_cpp_pr0
+  __aeabi_unwind_cpp_pr1
+  __aeabi_unwind_cpp_pr2
+  # The libstdc++ exception-handling personality routine uses this 
+  # GNU-specific entry point.
+  __gnu_unwind_frame
 }

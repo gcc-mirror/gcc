@@ -627,11 +627,8 @@ decode_options (unsigned int argc, const char **argv)
      modify it.  */
   target_flags = targetm.default_target_flags;
 
-  /* Unwind tables are always present when a target has ABI-specified unwind
-     tables, so the default should be ON.  */
-#ifdef TARGET_UNWIND_INFO
-  flag_unwind_tables = TARGET_UNWIND_INFO;
-#endif
+  /* Some tagets have ABI-specified unwind tables.  */
+  flag_unwind_tables = targetm.unwind_tables_default;
 
 #ifdef OPTIMIZATION_OPTIONS
   /* Allow default optimizations to be specified on a per-machine basis.  */

@@ -1,3 +1,51 @@
+2005-06-28  Paul Brook  <paul@codesourcery.com>
+
+	* Makefile.in: Set and use UNWIND_H.  Install as unwind.h.
+	* c-decl.c (finish_decl): Call default_init_unwind_resume_libfunc.
+	* except.c (add_ehspec_entry): Generate arm eabi filter lists.
+	(assign_filter_values): Ditto.
+	(output_ttype): New function.
+	(output_function_exception_table): Use output_ttype.  Generate arm
+	eabi filter lists.
+	(default_init_unwind_resume_libfunc): New function.
+	* except.h (default_init_unwind_resume_libfunc): Add prototype.
+	* optabs.c (init_optabs): Don't set unwind_resume_libfunc.
+	* opts.c (decode_options): Use targetm.unwind_tables_default.
+	* target-def.h (TARGET_ASM_TTYPE): Provide and use definition.
+	(TARGET_ARM_EABI_UNWINDER, TARGET_UNWIND_TABLES_DEFAULT): Ditto.
+	* target.h (struct gcc_target): Add asm.ttype, unwind_tables_default
+	and arm_eabi_unwinder.
+	* unwind-c.c: Support Arm EABI unwinder.
+	* unwind.h: Rename ...
+	* unwind-generic.h: ... To this.
+	* doc/tm.texi (TARGET_ASM_TTYPE, TARGET_ARM_EABI_UNWINDER): Document.
+	(TARGET_UNWID_TABLES_DEFAULT): Document.
+
+	* config/arm/arm-protos.h (arm_output_fn_unwind): Add prototype.
+	* config/arm/arm.c (arm_unwind_emit, arm_output_ttype): New functions.
+	(TARGET_UNWIND_EMIT, TARGET_ASM_TTYPE, TARGET_ARM_EABI_UNWINDER):
+	Define.
+	(thumb_pushpop, thumb_output_function_prologue): Output unwinding
+	directives.
+	(arm_unwind_emit_stm, arm_unwind_emit_set): New functions.
+	* config/arm/arm.h (MUST_USE_SJLJ_EXCEPTIONS): Only define when
+	!TARGET_UNWIND_INFO.
+	(ARM_OUTPUT_FN_UNWIND, ARM_EABI_UNWIND_TABLES): Define.
+	* config/arm/bpabi.h (TARGET_UNWIND_INFO): Define.
+	* config/arm/elf.h (ASM_DECLARE_FUNCTION_NAME,
+	ASM_DECLARE_FUNCTION_SIZE): Use ARM_OUTPUT_FN_UNWIND.
+	* config/arm/lib1funcs.asm: Include libunwind.S.
+	* config/arm/libgcc-bpabi.ver: Add unwinding routines.
+	* config/arm/libunwind.S: New file.
+	* config/arm/pr-support.c: New file.
+	* config/arm/t-bpabi (LIB1ASMFUNCS): Add _unwind.
+	(UNWIND_H, LIB2ADDEH, LIB2ADDEHDEP): Set.
+	* config/arm/t-symbian (UNWIND_H, LIB2ADDEH, LIB2ADDEHDEP): Set.
+	* config/arm/unwind-arm.c: New file.
+	* config/arm/unwind-arm.h: New file.
+	* config/i386/t-netware (USER_H): Remove unwind.h.
+	* config/ia64/ia64.h (TARGET_UNWIND_TABLES_DEFAULT): Define.
+
 2005-06-28  DJ Delorie  <dj@redhat.com>
 
 	* c-decl.c (pop_scope): Move warning control into warning call.

@@ -81,6 +81,20 @@ parse_lsda_header (struct _Unwind_Context *context, const unsigned char *p,
   return p;
 }
 
+#ifdef __ARM_EABI_UNWINDER__
+/* ARM EABI personality routines must also unwind the stack.  */
+#define CONTINUE_UNWINDING \
+  do								\
+    {								\
+      if (__gnu_unwind_frame (ue_header, context) != _URC_OK)	\
+	return _URC_FAILURE;					\
+      return _URC_CONTINUE_UNWIND;				\
+    }								\
+  while (0)
+#else
+#define CONTINUE_UNWINDING return _URC_CONTINUE_UNWIND
+#endif
+
 #ifdef __USING_SJLJ_EXCEPTIONS__
 #define PERSONALITY_FUNCTION    __gcc_personality_sj0
 #define __builtin_eh_return_data_regno(x) x
@@ -88,6 +102,16 @@ parse_lsda_header (struct _Unwind_Context *context, const unsigned char *p,
 #define PERSONALITY_FUNCTION    __gcc_personality_v0
 #endif
 
+#ifdef __ARM_EABI_UNWINDER__
+_Unwind_Reason_Code
+PERSONALITY_FUNCTION (_Unwind_State, struct _Unwind_Exception *,
+		      struct _Unwind_Context *);
+
+_Unwind_Reason_Code
+PERSONALITY_FUNCTION (_Unwind_State state,
+		      struct _Unwind_Exception * ue_header,
+		      struct _Unwind_Context * context)
+#else
 _Unwind_Reason_Code
 PERSONALITY_FUNCTION (int, _Unwind_Action, _Unwind_Exception_Class,
 		      struct _Unwind_Exception *, struct _Unwind_Context *);
@@ -98,24 +122,37 @@ PERSONALITY_FUNCTION (int version,
 		      _Unwind_Exception_Class exception_class ATTRIBUTE_UNUSED,
 		      struct _Unwind_Exception *ue_header,
 		      struct _Unwind_Context *context)
+#endif
 {
   lsda_header_info info;
   const unsigned char *language_specific_data, *p, *action_record;
   _Unwind_Ptr landing_pad, ip;
 
+#ifdef __ARM_EABI_UNWINDER__
+  if (state != _US_UNWIND_FRAME_STARTING)
+    CONTINUE_UNWINDING;
+
+  /* The dwarf unwinder assumes the context structure holds things like the
+     function and LSDA pointers.  The ARM implementation caches these in
+     the exception header (UCB).  To avoid rewriting everything we make the
+     virtual IP register point at the UCB.  */
+  ip = (_Unwind_Ptr) ue_header;
+  _Unwind_SetGR (context, 12, ip);
+#else
   if (version != 1)
     return _URC_FATAL_PHASE1_ERROR;
 
   /* Currently we only support cleanups for C.  */
   if ((actions & _UA_CLEANUP_PHASE) == 0)
-    return _URC_CONTINUE_UNWIND;
+    CONTINUE_UNWINDING;
+#endif
 
   language_specific_data = (const unsigned char *)
     _Unwind_GetLanguageSpecificData (context);
 
   /* If no LSDA, then there are no handlers or cleanups.  */
   if (! language_specific_data)
-    return _URC_CONTINUE_UNWIND;
+    CONTINUE_UNWINDING;
 
   /* Parse the LSDA header.  */
   p = parse_lsda_header (context, language_specific_data, &info);
@@ -171,20 +208,19 @@ PERSONALITY_FUNCTION (int version,
 	  goto found_something;
 	}
     }
-  
 #endif
 
   /* IP is not in table.  No associated cleanups.  */
   /* ??? This is where C++ calls std::terminate to catch throw
      from a destructor.  */
-  return _URC_CONTINUE_UNWIND;
+  CONTINUE_UNWINDING;
 
  found_something:
   if (landing_pad == 0)
     {
       /* IP is present, but has a null landing pad.
 	 No handler to be run.  */
-      return _URC_CONTINUE_UNWIND;
+      CONTINUE_UNWINDING;
     }
 
   _Unwind_SetGR (context, __builtin_eh_return_data_regno (0),

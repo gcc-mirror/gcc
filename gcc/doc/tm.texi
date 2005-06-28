@@ -7648,6 +7648,11 @@ Define this macro if your target has ABI specified unwind tables.  Usually
 these will be output by @code{TARGET_UNWIND_EMIT}.
 @end defmac
 
+@deftypevar {Target Hook} bool TARGET_UNWID_TABLES_DEFAULT
+This variable should be set to @code{true} if the target ABI requires unwinding
+tables even when exceptions are not used.
+@end deftypevar
+
 @defmac MUST_USE_SJLJ_EXCEPTIONS
 This macro need only be defined if @code{DWARF2_UNWIND_INFO} is
 runtime-variable.  In that case, @file{except.h} cannot correctly
@@ -7696,6 +7701,20 @@ register and its mode are represented in Dwarf in non-contiguous
 locations, or if the register should be represented in more than one
 register in Dwarf.  Otherwise, this hook should return @code{NULL_RTX}.
 If not defined, the default is to return @code{NULL_RTX}.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_ASM_TTYPE (rtx @var{sym})
+This hook is used to output a reference from a frame unwinding table to
+the type_info object identified by @var{sym}.  It should return @code{true}
+if the reference was output.  Returning @code{false} will cause the
+reference to be output using the normal Dwarf2 routines.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_ARM_EABI_UNWINDER
+This hook should be set to @code{true} on targets that use an ARM EABI
+based unwinding library, and @code{false} on other targets.  This effects
+the format of unwinding tables, and how the unwinder in entered after
+running a cleanup.  The default is @code{false}.
 @end deftypefn
 
 @node Alignment Output

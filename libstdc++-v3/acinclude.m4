@@ -1626,6 +1626,8 @@ EOF
         enable_sjlj_exceptions=yes
       elif grep _Unwind_Resume conftest.s >/dev/null 2>&1 ; then
         enable_sjlj_exceptions=no
+      elif grep __cxa_end_cleanup conftest.s >/dev/null 2>&1 ; then
+        enable_sjlj_exceptions=no
       fi
     fi
     CXXFLAGS="$old_CXXFLAGS"
