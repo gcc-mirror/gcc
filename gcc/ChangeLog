@@ -1,3 +1,8 @@
+2005-06-28  Richard Henderson  <rth@redhat.com>
+
+	* rtlanal.c (nonzero_bits1): Use the mode of the value for
+	determining integral-ness for comparisons.
+
 2005-06-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/rs6000/rs6000.md (setmemsi): Fix operand 2.
