@@ -2139,19 +2139,24 @@
     FAIL;
 }")
 
-;; String/block clear insn.
+;; String/block set insn.
 ;; Argument 0 is the destination
 ;; Argument 1 is the length
-;; Argument 2 is the alignment
+;; Argument 2 is the byte value -- ignore any value but zero
+;; Argument 3 is the alignment
 
-(define_expand "clrmemsi"
+(define_expand "setmemsi"
   [(parallel [(set (match_operand:BLK 0 "" "")
-		   (const_int 0))
+		   (match_operand 2 "" ""))
 	      (use (match_operand:SI 1 "" ""))
-	      (use (match_operand:SI 2 "" ""))])]
+	      (use (match_operand:SI 3 "" ""))])]
   ""
   "
 {
+  /* If value to set is not zero, use the library routine.  */
+  if (operands[2] != const0_rtx)
+    FAIL;
+
   if (frv_expand_block_clear (operands))
     DONE;
   else

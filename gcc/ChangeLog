@@ -1,3 +1,35 @@
+2006-06-28  Adrian Straetling  <straetling@de.ibm.com>
+
+	* builtins.c: (expand_builtin_memset): Rewrite to support
+	'set_storage_via_setmem'.
+	* expr.c: (enum insn_code setmem_optab): Define.
+	(enum insn_code clrmem_optab): Remove.
+	(set_storage_via_setmem): New function.
+	(clear_storage_via_setmem): Remove.
+	(clear_storage): Replace call to "clear_storage_via_clrmem" with
+	"set_storage_via_setmem".
+	* expr.h: (set_storage_via_setmem): Declare.
+	(CLEAR_RATIO): Redefine using HAVE_setmemM.
+	* optabs.h: (enum insn_code setmem_optab): Declare.
+	(enum insn_code clrmem_optab): Remove.
+	* optabs.c: (init_optabs): Initialize setmem_optab.
+	(enum insn_code clrmem_optab): Remove.
+	* genopinit.c: (otabs): Likewise.
+	* doc/md.texi: Document new standard pattern 'setmem'. Remove
+	  'clrmem'.
+	* config/alpha/alpha.c: (alpha_expand_block_clear): Adjust
+	'operands' ordering.
+	* config/frv/frv.c: (frv_expand_block_clear): Likewise.
+	* config/rs6000/rs6000.c: (expand_block_clear): Likewise.
+	* config/alpha/alpha.md: ("clrmemqi", "clrmemdi"): Rename to "setmemM".
+	FAIL on operands[2]!=const0_rtx. Adjust 'operands' ordering.
+	* config/avr/avr.md: ("clrmemhi"): Likewise.
+	* config/frv/frv.md: ("clrmemsi"): Likewise.
+	* config/i386/i386.md: ("clrmemsi", "clrmemdi"): Likewise.
+	* config/pa/pa.md: ("clrmemsi", "clrmemdi"): Likewise.
+	* config/rs6000/rs6000.md: ("clrmemsi"): Likewise.
+	* config/s390/s390.md: ("clrmem<mode>"): Likewise.
+
 2005-06-28  Paul Brook  <paul@codesourcery.com>
 
 	* Makefile.in: Set and use UNWIND_H.  Install as unwind.h.

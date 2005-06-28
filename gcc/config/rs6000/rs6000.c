@@ -8588,14 +8588,14 @@ rs6000_init_libfuncs (void)
 
    operands[0] is the destination
    operands[1] is the length
-   operands[2] is the alignment */
+   operands[3] is the alignment */
 
 int
 expand_block_clear (rtx operands[])
 {
   rtx orig_dest = operands[0];
   rtx bytes_rtx	= operands[1];
-  rtx align_rtx = operands[2];
+  rtx align_rtx = operands[3];
   bool constp	= (GET_CODE (bytes_rtx) == CONST_INT);
   HOST_WIDE_INT align;
   HOST_WIDE_INT bytes;

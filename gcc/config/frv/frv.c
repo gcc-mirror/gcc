@@ -2298,14 +2298,14 @@ frv_expand_block_move (rtx operands[])
 
    operands[0] is the destination
    operands[1] is the length
-   operands[2] is the alignment */
+   operands[3] is the alignment */
 
 int
 frv_expand_block_clear (rtx operands[])
 {
   rtx orig_dest = operands[0];
   rtx bytes_rtx	= operands[1];
-  rtx align_rtx = operands[2];
+  rtx align_rtx = operands[3];
   int constp	= (GET_CODE (bytes_rtx) == CONST_INT);
   int align;
   int bytes;

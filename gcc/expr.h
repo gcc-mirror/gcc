@@ -75,10 +75,10 @@ enum expand_modifier {EXPAND_NORMAL = 0, EXPAND_STACK_PARM, EXPAND_SUM,
 #endif
 
 /* If a clear memory operation would take CLEAR_RATIO or more simple
-   move-instruction sequences, we will do a clrmem or libcall instead.  */
+   move-instruction sequences, we will do a setmem or libcall instead.  */
 
 #ifndef CLEAR_RATIO
-#if defined (HAVE_clrmemqi) || defined (HAVE_clrmemhi) || defined (HAVE_clrmemsi) || defined (HAVE_clrmemdi) || defined (HAVE_clrmemti)
+#if defined (HAVE_setmemqi) || defined (HAVE_setmemhi) || defined (HAVE_setmemsi) || defined (HAVE_setmemdi) || defined (HAVE_setmemti)
 #define CLEAR_RATIO 2
 #else
 /* If we are optimizing for space, cut down the default clear ratio.  */
@@ -422,6 +422,9 @@ extern void use_group_regs (rtx *, rtx);
 /* Write zeros through the storage of OBJECT.
    If OBJECT has BLKmode, SIZE is its length in bytes.  */
 extern rtx clear_storage (rtx, rtx, enum block_op_methods);
+
+/* Expand a setmem pattern; return true if successful.  */
+extern bool set_storage_via_setmem (rtx, rtx, rtx, unsigned int);
 
 /* Determine whether the LEN bytes can be moved by using several move
    instructions.  Return nonzero if a call to move_by_pieces should

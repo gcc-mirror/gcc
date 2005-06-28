@@ -3518,24 +3518,28 @@
   "* return output_block_move (operands, !which_alternative);"
   [(set_attr "type" "multi,multi")])
 
-(define_expand "clrmemsi"
+(define_expand "setmemsi"
   [(parallel [(set (match_operand:BLK 0 "" "")
-		   (const_int 0))
-	      (clobber (match_dup 3))
+		   (match_operand 2 "const_int_operand" ""))
 	      (clobber (match_dup 4))
+	      (clobber (match_dup 5))
 	      (use (match_operand:SI 1 "arith_operand" ""))
-	      (use (match_operand:SI 2 "const_int_operand" ""))])]
+	      (use (match_operand:SI 3 "const_int_operand" ""))])]
   "!TARGET_64BIT && optimize > 0"
   "
 {
   int size, align;
+
+  /* If value to set is not zero, use the library routine.  */
+  if (operands[2] != const0_rtx)
+    FAIL;
 
   /* Undetermined size, use the library routine.  */
   if (GET_CODE (operands[1]) != CONST_INT)
     FAIL;
 
   size = INTVAL (operands[1]);
-  align = INTVAL (operands[2]);
+  align = INTVAL (operands[3]);
   align = align > 4 ? 4 : align;
 
   /* If size/alignment is large, then use the library routines.  */
@@ -3550,8 +3554,8 @@
   operands[0]
     = replace_equiv_address (operands[0],
 			     copy_to_mode_reg (SImode, XEXP (operands[0], 0)));
-  operands[3] = gen_reg_rtx (SImode);
   operands[4] = gen_reg_rtx (SImode);
+  operands[5] = gen_reg_rtx (SImode);
 }")
 
 (define_insn "clrmemsi_prereload"
@@ -3628,24 +3632,28 @@
   "* return output_block_clear (operands, !which_alternative);"
   [(set_attr "type" "multi,multi")])
 
-(define_expand "clrmemdi"
+(define_expand "setmemdi"
   [(parallel [(set (match_operand:BLK 0 "" "")
-		   (const_int 0))
-	      (clobber (match_dup 3))
+		   (match_operand 2 "const_int_operand" ""))
 	      (clobber (match_dup 4))
+	      (clobber (match_dup 5))
 	      (use (match_operand:DI 1 "arith_operand" ""))
-	      (use (match_operand:DI 2 "const_int_operand" ""))])]
+	      (use (match_operand:DI 3 "const_int_operand" ""))])]
   "TARGET_64BIT && optimize > 0"
   "
 {
   int size, align;
+
+  /* If value to set is not zero, use the library routine.  */
+  if (operands[2] != const0_rtx)
+    FAIL;
 
   /* Undetermined size, use the library routine.  */
   if (GET_CODE (operands[1]) != CONST_INT)
     FAIL;
 
   size = INTVAL (operands[1]);
-  align = INTVAL (operands[2]);
+  align = INTVAL (operands[3]);
   align = align > 8 ? 8 : align;
 
   /* If size/alignment is large, then use the library routines.  */
@@ -3660,8 +3668,8 @@
   operands[0]
     = replace_equiv_address (operands[0],
 			     copy_to_mode_reg (DImode, XEXP (operands[0], 0)));
-  operands[3] = gen_reg_rtx (DImode);
   operands[4] = gen_reg_rtx (DImode);
+  operands[5] = gen_reg_rtx (DImode);
 }")
 
 (define_insn "clrmemdi_prereload"

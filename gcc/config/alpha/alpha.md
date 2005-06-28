@@ -6552,25 +6552,29 @@
   [(set_attr "type" "multi")
    (set_attr "length" "28")])
 
-(define_expand "clrmemqi"
+(define_expand "setmemqi"
   [(parallel [(set (match_operand:BLK 0 "memory_operand" "")
-		   (const_int 0))
+		   (match_operand 2 "const_int_operand" ""))
 	      (use (match_operand:DI 1 "immediate_operand" ""))
-	      (use (match_operand:DI 2 "immediate_operand" ""))])]
+	      (use (match_operand:DI 3 "immediate_operand" ""))])]
   ""
 {
+  /* If value to set is not zero, use the library routine.  */
+  if (operands[2] != const0_rtx)
+    FAIL;
+
   if (alpha_expand_block_clear (operands))
     DONE;
   else
     FAIL;
 })
 
-(define_expand "clrmemdi"
+(define_expand "setmemdi"
   [(parallel [(set (match_operand:BLK 0 "memory_operand" "")
-		   (const_int 0))
+		   (match_operand 2 "const_int_operand" ""))
 	      (use (match_operand:DI 1 "immediate_operand" ""))
-	      (use (match_operand:DI 2 "immediate_operand" ""))
-	      (use (match_dup 3))
+	      (use (match_operand:DI 3 "immediate_operand" ""))
+	      (use (match_dup 4))
 	      (clobber (reg:DI 25))
 	      (clobber (reg:DI 16))
 	      (clobber (reg:DI 17))
@@ -6578,8 +6582,12 @@
 	      (clobber (reg:DI 27))])]
   "TARGET_ABI_OPEN_VMS"
 {
-  operands[3] = gen_rtx_SYMBOL_REF (Pmode, "OTS$ZERO");
-  alpha_need_linkage (XSTR (operands[3], 0), 0);
+  /* If value to set is not zero, use the library routine.  */
+  if (operands[2] != const0_rtx)
+    FAIL;
+
+  operands[4] = gen_rtx_SYMBOL_REF (Pmode, "OTS$ZERO");
+  alpha_need_linkage (XSTR (operands[4], 0), 0);
 })
 
 (define_insn "*clrmemdi_1"
