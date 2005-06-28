@@ -1649,6 +1649,41 @@ scev_probably_wraps_p (tree type, tree base, tree step,
       return true;
     }
 
+  /* If AT_STMT represents a cast operation, we may not be able to
+     take advantage of the undefinedness of signed type evolutions.
+     See PR 21959 for a test case.  Essentially, given a cast
+     operation
+     		unsigned char i;
+		signed char i.0;
+		...
+     		i.0_6 = (signed char) i_2;
+		if (i.0_6 < 0)
+		  ...
+
+     where i_2 and i.0_6 have the scev {0, +, 1}, we would consider
+     i_2 to wrap around, but not i.0_6, because it is of a signed
+     type.  This causes VRP to erroneously fold the predicate above
+     because it thinks that i.0_6 cannot be negative.  */
+  if (TREE_CODE (at_stmt) == MODIFY_EXPR)
+    {
+      tree rhs = TREE_OPERAND (at_stmt, 1);
+      tree outer_t = TREE_TYPE (rhs);
+
+      if (!TYPE_UNSIGNED (outer_t)
+	  && (TREE_CODE (rhs) == NOP_EXPR || TREE_CODE (rhs) == CONVERT_EXPR))
+	{
+	  tree inner_t = TREE_TYPE (TREE_OPERAND (rhs, 0));
+
+	  /* If the inner type is unsigned and its size and/or
+	     precision are smaller to that of the outer type, then the
+	     expression may wrap around.  */
+	  if (TYPE_UNSIGNED (inner_t)
+	      && (TYPE_SIZE (inner_t) <= TYPE_SIZE (outer_t)
+		  || TYPE_PRECISION (inner_t) <= TYPE_PRECISION (outer_t)))
+	    return true;
+	}
+    }
+
   /* After having set INIT_IS_MAX, we can return false: when not using
      wrapping arithmetic, signed types don't wrap.  */
   if (!flag_wrapv && !TYPE_UNSIGNED (type))

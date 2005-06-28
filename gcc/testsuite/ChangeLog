@@ -1,3 +1,8 @@
+2005-06-27  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 21959
+	* gcc.dg/tree-ssa/pr21959.c: New test.
+
 2005-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/builtins/lib/main.c (abort): Add prototype.
