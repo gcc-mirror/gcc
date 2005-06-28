@@ -3,10 +3,10 @@
 % Load plain if necessary, i.e., if running under initex.
 \expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
 %
-\def\texinfoversion{2004-10-31.06}
+\def\texinfoversion{2005-06-10.07}
 %
 % Copyright (C) 1985, 1986, 1988, 1990, 1991, 1992, 1993, 1994, 1995,
-% 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software
+% 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software
 % Foundation, Inc.
 %
 % This texinfo.tex file is free software; you can redistribute it and/or
@@ -21,8 +21,8 @@
 %
 % You should have received a copy of the GNU General Public License
 % along with this texinfo.tex file; see the file COPYING.  If not, write
-% to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-% Boston, MA 02111-1307, USA.
+% to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+% Boston, MA 02110-1301, USA.
 %
 % As a special exception, when this file is read by TeX when processing
 % a Texinfo source document, you may use the result without
@@ -89,10 +89,11 @@
 \let\ptexhat=^
 \let\ptexi=\i
 \let\ptexindent=\indent
-\let\ptexnoindent=\noindent
 \let\ptexinsert=\insert
 \let\ptexlbrace=\{
 \let\ptexless=<
+\let\ptexnewwrite\newwrite
+\let\ptexnoindent=\noindent
 \let\ptexplus=+
 \let\ptexrbrace=\}
 \let\ptexslash=\/
@@ -154,10 +155,12 @@
 
 % In some macros, we cannot use the `\? notation---the left quote is
 % in some cases the escape char.
+\chardef\backChar  = `\\
 \chardef\colonChar = `\:
 \chardef\commaChar = `\,
 \chardef\dotChar   = `\.
 \chardef\exclamChar= `\!
+\chardef\plusChar  = `\+
 \chardef\questChar = `\?
 \chardef\semiChar  = `\;
 \chardef\underChar = `\_
@@ -165,6 +168,12 @@
 \chardef\spaceChar = `\ %
 \chardef\spacecat = 10
 \def\spaceisspace{\catcode\spaceChar=\spacecat}
+
+{% for help with debugging.
+ % example usage: \expandafter\show\activebackslash
+ \catcode`\! = 0 \catcode`\\ = \active
+ !global!def!activebackslash{\}
+}
 
 % Ignore a token.
 %
@@ -565,7 +574,7 @@
 \let\}=\myrbrace
 \begingroup
   % Definitions to produce \{ and \} commands for indices,
-  % and @{ and @} for the aux file.
+  % and @{ and @} for the aux/toc files.
   \catcode`\{ = \other \catcode`\} = \other
   \catcode`\[ = 1 \catcode`\] = 2
   \catcode`\! = 0 \catcode`\\ = \other
@@ -646,13 +655,28 @@
 \let\/=\allowbreak
 
 % @. is an end-of-sentence period.
-\def\.{.\spacefactor=3000 }
+\def\.{.\spacefactor=\endofsentencespacefactor\space}
 
 % @! is an end-of-sentence bang.
-\def\!{!\spacefactor=3000 }
+\def\!{!\spacefactor=\endofsentencespacefactor\space}
 
 % @? is an end-of-sentence query.
-\def\?{?\spacefactor=3000 }
+\def\?{?\spacefactor=\endofsentencespacefactor\space}
+
+% @frenchspacing on|off  says whether to put extra space after punctuation.
+% 
+\def\onword{on}
+\def\offword{off}
+%
+\parseargdef\frenchspacing{%
+  \def\temp{#1}%
+  \ifx\temp\onword \plainfrenchspacing
+  \else\ifx\temp\offword \plainnonfrenchspacing
+  \else
+    \errhelp = \EMsimple
+    \errmessage{Unknown @frenchspacing option `\temp', must be on/off}%
+  \fi\fi
+}
 
 % @w prevents a word break.  Without the \leavevmode, @w at the
 % beginning of a paragraph, when TeX is still in vertical mode, would
@@ -1091,7 +1115,7 @@ where each line of input produces a line of output.}
 %
 \def\enddots{%
   \dots
-  \spacefactor=3000
+  \spacefactor=\endofsentencespacefactor
 }
 
 % @comma{} is so commas can be inserted into text without messing up
@@ -1175,7 +1199,62 @@ where each line of input produces a line of output.}
     \fi
   \fi
 \fi
-%
+
+% PDF uses PostScript string constants for the names of xref targets, to
+% for display in the outlines, and in other places.  Thus, we have to
+% double any backslashes.  Otherwise, a name like "\node" will be
+% interpreted as a newline (\n), followed by o, d, e.  Not good.
+% http://www.ntg.nl/pipermail/ntg-pdftex/2004-July/000654.html
+% (and related messages, the final outcome is that it is up to the TeX
+% user to double the backslashes and otherwise make the string valid, so
+% that's we do).
+
+% double active backslashes.
+% 
+{\catcode`\@=0 \catcode`\\=\active
+ @gdef@activebackslash{@catcode`@\=@active @otherbackslash}
+ @gdef@activebackslashdouble{%
+   @catcode@backChar=@active
+   @let\=@doublebackslash}
+}
+
+% To handle parens, we must adopt a different approach, since parens are
+% not active characters.  hyperref.dtx (which has the same problem as
+% us) handles it with this amazing macro to replace tokens.  I've
+% tinkered with it a little for texinfo, but it's definitely from there.
+% 
+% #1 is the tokens to replace.
+% #2 is the replacement.
+% #3 is the control sequence with the string.
+% 
+\def\HyPsdSubst#1#2#3{%
+  \def\HyPsdReplace##1#1##2\END{%
+    ##1%
+    \ifx\\##2\\%
+    \else
+      #2%
+      \HyReturnAfterFi{%
+        \HyPsdReplace##2\END
+      }%
+    \fi
+  }%
+  \xdef#3{\expandafter\HyPsdReplace#3#1\END}%
+}
+\long\def\HyReturnAfterFi#1\fi{\fi#1}
+
+% #1 is a control sequence in which to do the replacements.
+\def\backslashparens#1{%
+  \xdef#1{#1}% redefine it as its expansion; the definition is simply
+             % \lastnode when called from \setref -> \pdfmkdest.
+  \HyPsdSubst{(}{\backslashlparen}{#1}%
+  \HyPsdSubst{)}{\backslashrparen}{#1}%
+}
+
+{\catcode\exclamChar = 0 \catcode\backChar = \other
+ !gdef!backslashlparen{\(}%
+ !gdef!backslashrparen{\)}%
+}
+
 \ifpdf
   \input pdfcolor
   \pdfcatalog{/PageMode /UseOutlines}%
@@ -1200,13 +1279,19 @@ where each line of input produces a line of output.}
       \pdfrefximage \pdflastximage
     \fi}
   \def\pdfmkdest#1{{%
-    % We have to set dummies so commands such as @code in a section title
-    % aren't expanded.
+    % We have to set dummies so commands such as @code, and characters
+    % such as \, aren't expanded when present in a section title.
     \atdummies
-    \normalturnoffactive
-    \pdfdest name{#1} xyz%
-  }}
-  \def\pdfmkpgn#1{#1}
+    \turnoffactive
+    \activebackslashdouble
+    \def\pdfdestname{#1}%
+    \backslashparens\pdfdestname
+    \pdfdest name{\pdfdestname} xyz%
+  }}%
+  %
+  % used to mark target names; must be expandable.
+  \def\pdfmkpgn#1{#1}%
+  %
   \let\linkcolor = \Blue  % was Cyan, but that seems light?
   \def\endlink{\Black\pdfendlink}
   % Adding outlines to PDF; macros for calculating structure of outlines
@@ -1217,20 +1302,31 @@ where each line of input produces a line of output.}
     \advance\tempnum by 1
     \expandafter\xdef\csname#1\endcsname{\the\tempnum}}
   %
-  % #1 is the section text.  #2 is the pdf expression for the number
-  % of subentries (or empty, for subsubsections).  #3 is the node
-  % text, which might be empty if this toc entry had no
-  % corresponding node.  #4 is the page number.
+  % #1 is the section text, which is what will be displayed in the
+  % outline by the pdf viewer.  #2 is the pdf expression for the number
+  % of subentries (or empty, for subsubsections).  #3 is the node text,
+  % which might be empty if this toc entry had no corresponding node.
+  % #4 is the page number
   %
   \def\dopdfoutline#1#2#3#4{%
     % Generate a link to the node text if that exists; else, use the
     % page number.  We could generate a destination for the section
     % text in the case where a section has no node, but it doesn't
-    % seem worthwhile, since most documents are normally structured.
+    % seem worth the trouble, since most documents are normally structured.
     \def\pdfoutlinedest{#3}%
-    \ifx\pdfoutlinedest\empty \def\pdfoutlinedest{#4}\fi
+    \ifx\pdfoutlinedest\empty
+      \def\pdfoutlinedest{#4}%
+    \else
+      % Doubled backslashes in the name.
+      {\activebackslashdouble \xdef\pdfoutlinedest{#3}%
+       \backslashparens\pdfoutlinedest}%
+    \fi
     %
-    \pdfoutline goto name{\pdfmkpgn{\pdfoutlinedest}}#2{#1}%
+    % Also double the backslashes in the display string.
+    {\activebackslashdouble \xdef\pdfoutlinetext{#1}%
+     \backslashparens\pdfoutlinetext}%
+    %
+    \pdfoutline goto name{\pdfmkpgn{\pdfoutlinedest}}#2{\pdfoutlinetext}%
   }
   %
   \def\pdfmakeoutlines{%
@@ -1242,13 +1338,13 @@ where each line of input produces a line of output.}
       % Read toc silently, to get counts of subentries for \pdfoutline.
       \def\numchapentry##1##2##3##4{%
 	\def\thischapnum{##2}%
-	\let\thissecnum\empty
-	\let\thissubsecnum\empty
+	\def\thissecnum{0}%
+	\def\thissubsecnum{0}%
       }%
       \def\numsecentry##1##2##3##4{%
 	\advancenumber{chap\thischapnum}%
 	\def\thissecnum{##2}%
-	\let\thissubsecnum\empty
+	\def\thissubsecnum{0}%
       }%
       \def\numsubsecentry##1##2##3##4{%
 	\advancenumber{sec\thissecnum}%
@@ -1257,9 +1353,9 @@ where each line of input produces a line of output.}
       \def\numsubsubsecentry##1##2##3##4{%
 	\advancenumber{subsec\thissubsecnum}%
       }%
-      \let\thischapnum\empty
-      \let\thissecnum\empty
-      \let\thissubsecnum\empty
+      \def\thischapnum{0}%
+      \def\thissecnum{0}%
+      \def\thissubsecnum{0}%
       %
       % use \def rather than \let here because we redefine \chapentry et
       % al. a second time, below.
@@ -1271,7 +1367,7 @@ where each line of input produces a line of output.}
       \def\unnsecentry{\numsecentry}%
       \def\unnsubsecentry{\numsubsecentry}%
       \def\unnsubsubsecentry{\numsubsubsecentry}%
-      \input \jobname.toc
+      \readdatafile{toc}%
       %
       % Read toc second time, this time actually producing the outlines.
       % The `-' means take the \expnumber as the absolute number of
@@ -1297,41 +1393,12 @@ where each line of input produces a line of output.}
       % their "best" equivalent, based on the @documentencoding.  Right
       % now, I guess we'll just let the pdf reader have its way.
       \indexnofonts
-      \turnoffactive
+      \setupdatafile
+      \activebackslash
       \input \jobname.toc
     \endgroup
   }
   %
-  \def\makelinks #1,{%
-    \def\params{#1}\def\E{END}%
-    \ifx\params\E
-      \let\nextmakelinks=\relax
-    \else
-      \let\nextmakelinks=\makelinks
-      \ifnum\lnkcount>0,\fi
-      \picknum{#1}%
-      \startlink attr{/Border [0 0 0]}
-        goto name{\pdfmkpgn{\the\pgn}}%
-      \linkcolor #1%
-      \advance\lnkcount by 1%
-      \endlink
-    \fi
-    \nextmakelinks
-  }
-  \def\picknum#1{\expandafter\pn#1}
-  \def\pn#1{%
-    \def\p{#1}%
-    \ifx\p\lbrace
-      \let\nextpn=\ppn
-    \else
-      \let\nextpn=\ppnn
-      \def\first{#1}
-    \fi
-    \nextpn
-  }
-  \def\ppn#1{\pgn=#1\gobble}
-  \def\ppnn{\pgn=\first}
-  \def\pdfmklnk#1{\lnkcount=0\makelinks #1,END,}
   \def\skipspaces#1{\def\PP{#1}\def\D{|}%
     \ifx\PP\D\let\nextsp\relax
     \else\let\nextsp\skipspaces
@@ -1406,7 +1473,7 @@ where each line of input produces a line of output.}
 \def\rm{\fam=0 \setfontstyle{rm}}
 \def\it{\fam=\itfam \setfontstyle{it}}
 \def\sl{\fam=\slfam \setfontstyle{sl}}
-\def\bf{\fam=\bffam \setfontstyle{bf}}
+\def\bf{\fam=\bffam \setfontstyle{bf}}\def\bfstylename{bf}
 \def\tt{\fam=\ttfam \setfontstyle{tt}}
 
 % Texinfo sort of supports the sans serif font style, which plain TeX does not.
@@ -1468,17 +1535,10 @@ where each line of input produces a line of output.}
 \def\scbshape{csc}
 
 % Text fonts (11.2pt, magstep1).
-\newcount\mainmagstep
-\ifx\bigger\relax
-  % not really supported.
-  \mainmagstep=\magstep1
-  \setfont\textrm\rmshape{12}{1000}
-  \setfont\texttt\ttshape{12}{1000}
-\else
-  \mainmagstep=\magstephalf
-  \setfont\textrm\rmshape{10}{\mainmagstep}
-  \setfont\texttt\ttshape{10}{\mainmagstep}
-\fi
+\def\textnominalsize{11pt}
+\edef\mainmagstep{\magstephalf}
+\setfont\textrm\rmshape{10}{\mainmagstep}
+\setfont\texttt\ttshape{10}{\mainmagstep}
 \setfont\textbf\bfshape{10}{\mainmagstep}
 \setfont\textit\itshape{10}{\mainmagstep}
 \setfont\textsl\slshape{10}{\mainmagstep}
@@ -1495,6 +1555,7 @@ where each line of input produces a line of output.}
 \def\df{\let\tentt=\deftt \let\tenbf = \defbf \let\tenttsl=\defttsl \bf}
 
 % Fonts for indices, footnotes, small examples (9pt).
+\def\smallnominalsize{9pt}
 \setfont\smallrm\rmshape{9}{1000}
 \setfont\smalltt\ttshape{9}{1000}
 \setfont\smallbf\bfshape{10}{900}
@@ -1507,6 +1568,7 @@ where each line of input produces a line of output.}
 \font\smallsy=cmsy9
 
 % Fonts for small examples (8pt).
+\def\smallernominalsize{8pt}
 \setfont\smallerrm\rmshape{8}{1000}
 \setfont\smallertt\ttshape{8}{1000}
 \setfont\smallerbf\bfshape{10}{800}
@@ -1519,6 +1581,7 @@ where each line of input produces a line of output.}
 \font\smallersy=cmsy8
 
 % Fonts for title page (20.4pt):
+\def\titlenominalsize{20pt}
 \setfont\titlerm\rmbshape{12}{\magstep3}
 \setfont\titleit\itbshape{10}{\magstep4}
 \setfont\titlesl\slbshape{10}{\magstep4}
@@ -1533,6 +1596,7 @@ where each line of input produces a line of output.}
 \def\authortt{\sectt}
 
 % Chapter (and unnumbered) fonts (17.28pt).
+\def\chapnominalsize{17pt}
 \setfont\chaprm\rmbshape{12}{\magstep2}
 \setfont\chapit\itbshape{10}{\magstep3}
 \setfont\chapsl\slbshape{10}{\magstep3}
@@ -1545,6 +1609,7 @@ where each line of input produces a line of output.}
 \font\chapsy=cmsy10 scaled \magstep3
 
 % Section fonts (14.4pt).
+\def\secnominalsize{14pt}
 \setfont\secrm\rmbshape{12}{\magstep1}
 \setfont\secit\itbshape{10}{\magstep2}
 \setfont\secsl\slbshape{10}{\magstep2}
@@ -1557,6 +1622,7 @@ where each line of input produces a line of output.}
 \font\secsy=cmsy10 scaled \magstep2
 
 % Subsection fonts (13.15pt).
+\def\ssecnominalsize{13pt}
 \setfont\ssecrm\rmbshape{12}{\magstephalf}
 \setfont\ssecit\itbshape{10}{1315}
 \setfont\ssecsl\slbshape{10}{1315}
@@ -1569,6 +1635,7 @@ where each line of input produces a line of output.}
 \font\ssecsy=cmsy10 scaled 1315
 
 % Reduced fonts for @acro in text (10pt).
+\def\reducednominalsize{10pt}
 \setfont\reducedrm\rmshape{10}{1000}
 \setfont\reducedtt\ttshape{10}{1000}
 \setfont\reducedbf\bfshape{10}{1000}
@@ -1608,6 +1675,7 @@ where each line of input produces a line of output.}
   \let\tenbf=\textbf \let\tentt=\texttt \let\smallcaps=\textsc
   \let\tensf=\textsf \let\teni=\texti \let\tensy=\textsy
   \let\tenttsl=\textttsl
+  \def\curfontsize{text}%
   \def\lsize{reduced}\def\lllsize{smaller}%
   \resetmathfonts \setleading{\textleading}}
 \def\titlefonts{%
@@ -1615,13 +1683,16 @@ where each line of input produces a line of output.}
   \let\tenbf=\titlebf \let\tentt=\titlett \let\smallcaps=\titlesc
   \let\tensf=\titlesf \let\teni=\titlei \let\tensy=\titlesy
   \let\tenttsl=\titlettsl
+  \def\curfontsize{title}%
   \def\lsize{chap}\def\lllsize{subsec}%
   \resetmathfonts \setleading{25pt}}
 \def\titlefont#1{{\titlefonts\rm #1}}
 \def\chapfonts{%
   \let\tenrm=\chaprm \let\tenit=\chapit \let\tensl=\chapsl
   \let\tenbf=\chapbf \let\tentt=\chaptt \let\smallcaps=\chapsc
-  \let\tensf=\chapsf \let\teni=\chapi \let\tensy=\chapsy \let\tenttsl=\chapttsl
+  \let\tensf=\chapsf \let\teni=\chapi \let\tensy=\chapsy
+  \let\tenttsl=\chapttsl
+  \def\curfontsize{chap}%
   \def\lsize{sec}\def\lllsize{text}%
   \resetmathfonts \setleading{19pt}}
 \def\secfonts{%
@@ -1629,6 +1700,7 @@ where each line of input produces a line of output.}
   \let\tenbf=\secbf \let\tentt=\sectt \let\smallcaps=\secsc
   \let\tensf=\secsf \let\teni=\seci \let\tensy=\secsy
   \let\tenttsl=\secttsl
+  \def\curfontsize{sec}%
   \def\lsize{subsec}\def\lllsize{reduced}%
   \resetmathfonts \setleading{16pt}}
 \def\subsecfonts{%
@@ -1636,6 +1708,7 @@ where each line of input produces a line of output.}
   \let\tenbf=\ssecbf \let\tentt=\ssectt \let\smallcaps=\ssecsc
   \let\tensf=\ssecsf \let\teni=\sseci \let\tensy=\ssecsy
   \let\tenttsl=\ssecttsl
+  \def\curfontsize{ssec}%
   \def\lsize{text}\def\lllsize{small}%
   \resetmathfonts \setleading{15pt}}
 \let\subsubsecfonts = \subsecfonts
@@ -1644,6 +1717,7 @@ where each line of input produces a line of output.}
   \let\tenbf=\reducedbf \let\tentt=\reducedtt \let\reducedcaps=\reducedsc
   \let\tensf=\reducedsf \let\teni=\reducedi \let\tensy=\reducedsy
   \let\tenttsl=\reducedttsl
+  \def\curfontsize{reduced}%
   \def\lsize{small}\def\lllsize{smaller}%
   \resetmathfonts \setleading{10.5pt}}
 \def\smallfonts{%
@@ -1651,6 +1725,7 @@ where each line of input produces a line of output.}
   \let\tenbf=\smallbf \let\tentt=\smalltt \let\smallcaps=\smallsc
   \let\tensf=\smallsf \let\teni=\smalli \let\tensy=\smallsy
   \let\tenttsl=\smallttsl
+  \def\curfontsize{small}%
   \def\lsize{smaller}\def\lllsize{smaller}%
   \resetmathfonts \setleading{10.5pt}}
 \def\smallerfonts{%
@@ -1658,6 +1733,7 @@ where each line of input produces a line of output.}
   \let\tenbf=\smallerbf \let\tentt=\smallertt \let\smallcaps=\smallersc
   \let\tensf=\smallersf \let\teni=\smalleri \let\tensy=\smallersy
   \let\tenttsl=\smallerttsl
+  \def\curfontsize{smaller}%
   \def\lsize{smaller}\def\lllsize{smaller}%
   \resetmathfonts \setleading{9.5pt}}
 
@@ -1720,8 +1796,12 @@ where each line of input produces a line of output.}
 \let\dfn=\smartslanted
 \let\emph=\smartitalic
 
+% @b, explicit bold.
 \def\b#1{{\bf #1}}
 \let\strong=\b
+
+% @sansserif, explicit sans.
+\def\sansserif#1{{\sf #1}}
 
 % We can't just use \exhyphenpenalty, because that only has effect at
 % the end of a paragraph.  Restore normal hyphenation at the end of the
@@ -1735,14 +1815,21 @@ where each line of input produces a line of output.}
 % sometimes \x has an active definition that messes things up.
 %
 \catcode`@=11
-  \def\frenchspacing{%
+  \def\plainfrenchspacing{%
     \sfcode\dotChar  =\@m \sfcode\questChar=\@m \sfcode\exclamChar=\@m
     \sfcode\colonChar=\@m \sfcode\semiChar =\@m \sfcode\commaChar =\@m
+    \def\endofsentencespacefactor{1000}% for @. and friends
+  }
+  \def\plainnonfrenchspacing{%
+    \sfcode`\.3000\sfcode`\?3000\sfcode`\!3000
+    \sfcode`\:2000\sfcode`\;1500\sfcode`\,1250
+    \def\endofsentencespacefactor{3000}% for @. and friends
   }
 \catcode`@=\other
+\def\endofsentencespacefactor{3000}% default
 
 \def\t#1{%
-  {\tt \rawbackslash \frenchspacing #1}%
+  {\tt \rawbackslash \plainfrenchspacing #1}%
   \null
 }
 \def\samp#1{`\tclose{#1}'\null}
@@ -1779,7 +1866,7 @@ where each line of input produces a line of output.}
     \nohyphenation
     %
     \rawbackslash
-    \frenchspacing
+    \plainfrenchspacing
     #1%
   }%
   \null
@@ -1799,8 +1886,14 @@ where each line of input produces a line of output.}
   \catcode`\_=\active
   %
   \global\def\code{\begingroup
-    \catcode`\-=\active \let-\codedash
-    \catcode`\_=\active \let_\codeunder
+    \catcode`\-=\active  \catcode`\_=\active
+    \ifallowcodebreaks
+     \let-\codedash
+     \let_\codeunder
+    \else
+     \let-\realdash
+     \let_\realunder
+    \fi
     \codex
   }
 }
@@ -1820,6 +1913,28 @@ where each line of input produces a line of output.}
 }
 \def\codex #1{\tclose{#1}\endgroup}
 
+% An additional complication: the above will allow breaks after, e.g.,
+% each of the four underscores in __typeof__.  This is undesirable in
+% some manuals, especially if they don't have long identifiers in
+% general.  @allowcodebreaks provides a way to control this.
+% 
+\newif\ifallowcodebreaks  \allowcodebreakstrue
+
+\def\keywordtrue{true}
+\def\keywordfalse{false}
+
+\parseargdef\allowcodebreaks{%
+  \def\txiarg{#1}%
+  \ifx\txiarg\keywordtrue
+    \allowcodebreakstrue
+  \else\ifx\txiarg\keywordfalse
+    \allowcodebreaksfalse
+  \else
+    \errhelp = \EMsimple
+    \errmessage{Unknown @allowcodebreaks option `\txiarg'}%
+  \fi\fi
+}
+
 % @kbd is like @code, except that if the argument is just one @key command,
 % then @kbd has no effect.
 
@@ -1827,16 +1942,16 @@ where each line of input produces a line of output.}
 %   `example' (@kbd uses ttsl only inside of @example and friends),
 %   or `code' (@kbd uses normal tty font always).
 \parseargdef\kbdinputstyle{%
-  \def\arg{#1}%
-  \ifx\arg\worddistinct
+  \def\txiarg{#1}%
+  \ifx\txiarg\worddistinct
     \gdef\kbdexamplefont{\ttsl}\gdef\kbdfont{\ttsl}%
-  \else\ifx\arg\wordexample
+  \else\ifx\txiarg\wordexample
     \gdef\kbdexamplefont{\ttsl}\gdef\kbdfont{\tt}%
-  \else\ifx\arg\wordcode
+  \else\ifx\txiarg\wordcode
     \gdef\kbdexamplefont{\tt}\gdef\kbdfont{\tt}%
   \else
     \errhelp = \EMsimple
-    \errmessage{Unknown @kbdinputstyle option `\arg'}%
+    \errmessage{Unknown @kbdinputstyle option `\txiarg'}%
   \fi\fi\fi
 }
 \def\worddistinct{distinct}
@@ -1948,7 +2063,7 @@ where each line of input produces a line of output.}
 % 
 \def\abbr#1{\doabbr #1,,\finish}
 \def\doabbr#1,#2,#3\finish{%
-  {\frenchspacing #1}%
+  {\plainfrenchspacing #1}%
   \def\temp{#2}%
   \ifx\temp\empty \else
     \space ({\unsepspaces \ignorespaces \temp \unskip})%
@@ -1958,6 +2073,54 @@ where each line of input produces a line of output.}
 % @pounds{} is a sterling sign, which Knuth put in the CM italic font.
 %
 \def\pounds{{\it\$}}
+
+% @euro{} comes from a separate font, depending on the current style.
+% We use the free feym* fonts from the eurosym package by Henrik
+% Theiling, which support regular, slanted, bold and bold slanted (and
+% "outlined" (blackboard board, sort of) versions, which we don't need).
+% It is available from http://www.ctan.org/tex-archive/fonts/eurosym.
+% 
+% Although only regular is the truly official Euro symbol, we ignore
+% that.  The Euro is designed to be slightly taller than the regular
+% font height.
+% 
+% feymr - regular
+% feymo - slanted
+% feybr - bold
+% feybo - bold slanted
+% 
+% There is no good (free) typewriter version, to my knowledge.
+% A feymr10 euro is ~7.3pt wide, while a normal cmtt10 char is ~5.25pt wide.
+% Hmm.
+% 
+% Also doesn't work in math.  Do we need to do math with euro symbols?
+% Hope not.
+% 
+% 
+\def\euro{{\eurofont e}}
+\def\eurofont{%
+  % We set the font at each command, rather than predefining it in
+  % \textfonts and the other font-switching commands, so that
+  % installations which never need the symbol don't have to have the
+  % font installed.
+  % 
+  % There is only one designed size (nominal 10pt), so we always scale
+  % that to the current nominal size.
+  % 
+  % By the way, simply using "at 1em" works for cmr10 and the like, but
+  % does not work for cmbx10 and other extended/shrunken fonts.
+  % 
+  \def\eurosize{\csname\curfontsize nominalsize\endcsname}%
+  %
+  \ifx\curfontstyle\bfstylename 
+    % bold:
+    \font\thiseurofont = \ifusingit{feybo10}{feybr10} at \eurosize
+  \else 
+    % regular:
+    \font\thiseurofont = \ifusingit{feymo10}{feymr10} at \eurosize
+  \fi
+  \thiseurofont
+}
 
 % @registeredsymbol - R in a circle.  The font for the R should really
 % be smaller yet, but lllsize is the best we can do for now.
@@ -2972,9 +3135,8 @@ where each line of input produces a line of output.}
 % Index generation facilities
 
 % Define \newwrite to be identical to plain tex's \newwrite
-% except not \outer, so it can be used within \newindex.
-{\catcode`\@=11
-\gdef\newwrite{\alloc@7\write\chardef\sixt@@n}}
+% except not \outer, so it can be used within macros and \if's.
+\edef\newwrite{\makecsname{ptexnewwrite}}
 
 % \newindex {foo} defines an index named foo.
 % It automatically defines \fooindex such that
@@ -3093,9 +3255,10 @@ where each line of input produces a line of output.}
   \commondummies
 }
 
-% For the aux file, @ is the escape character.  So we want to redefine
-% everything using @ instead of \realbackslash.  When everything uses
-% @, this will be simpler.
+% For the aux and toc files, @ is the escape character.  So we want to
+% redefine everything using @ as the escape character (instead of
+% \realbackslash, still used for index files).  When everything uses @,
+% this will be simpler.
 %
 \def\atdummies{%
   \def\@{@@}%
@@ -3166,6 +3329,7 @@ where each line of input produces a line of output.}
   \definedummyword{enddots}%
   \definedummyword{equiv}%
   \definedummyword{error}%
+  \definedummyword{euro}%
   \definedummyword{expansion}%
   \definedummyword{minus}%
   \definedummyword{pounds}%
@@ -3304,6 +3468,7 @@ where each line of input produces a line of output.}
   \def\enddots{...}%
   \def\equiv{==}%
   \def\error{error}%
+  \def\euro{euro}%
   \def\expansion{==>}%
   \def\minus{-}%
   \def\pounds{pounds}%
@@ -4226,11 +4391,11 @@ where each line of input produces a line of output.}
     \ifx\temptype\Ynothingkeyword
       \setbox0 = \hbox{}%
       \def\toctype{unnchap}%
-      \def\thischapter{#1}%
+      \gdef\thischapter{#1}%
     \else\ifx\temptype\Yomitfromtockeyword
       \setbox0 = \hbox{}% contents like unnumbered, but no toc entry
       \def\toctype{omit}%
-      \xdef\thischapter{}%
+      \gdef\thischapter{}%
     \else\ifx\temptype\Yappendixkeyword
       \setbox0 = \hbox{\putwordAppendix{} #3\enspace}%
       \def\toctype{app}%
@@ -4419,11 +4584,11 @@ where each line of input produces a line of output.}
     \fi
     %
     \iflinks
-      \toks0 = {#2}%
-      \toks2 = \expandafter{\lastnode}%
-      \edef\temp{\write\tocfile{\realbackslash #1entry{\the\toks0}{#3}%
-                               {\the\toks2}{\noexpand\folio}}}%
-      \temp
+      {\atdummies \turnoffactive
+       \edef\temp{%
+         \write\tocfile{@#1entry{#2}{#3}{\lastnode}{\noexpand\folio}}}%
+       \temp
+      }
     \fi
   \fi
   %
@@ -4434,6 +4599,31 @@ where each line of input produces a line of output.}
   % two pages of the document.  Thus, we'd have two destinations named
   % `1', and two named `2'.
   \ifpdf \global\pdfmakepagedesttrue \fi
+}
+
+
+% These characters do not print properly in the Computer Modern roman
+% fonts, so we must take special care.  This is more or less redundant
+% with the Texinfo input format setup at the end of this file.
+% 
+\def\activecatcodes{%
+  \catcode`\"=\active
+  \catcode`\$=\active
+  \catcode`\<=\active
+  \catcode`\>=\active
+  \catcode`\\=\active
+  \catcode`\^=\active
+  \catcode`\_=\active
+  \catcode`\|=\active
+  \catcode`\~=\active
+}
+
+
+% Read the toc file, which is essentially Texinfo input.
+\def\readtocfile{%
+  \setupdatafile
+  \activecatcodes
+  \input \jobname.toc
 }
 
 \newskip\contentsrightmargin \contentsrightmargin=1in
@@ -4457,11 +4647,7 @@ where each line of input produces a line of output.}
   %
   \savepageno = \pageno
   \begingroup                  % Set up to handle contents files properly.
-    \catcode`\\=0  \catcode`\{=1  \catcode`\}=2  \catcode`\@=11
-    % We can't do this, because then an actual ^ in a section
-    % title fails, e.g., @chapter ^ -- exponentiation.  --karl, 9jul97.
-    %\catcode`\^=7 % to see ^^e4 as \"a etc. juha@piuha.ydi.vtt.fi
-    \raggedbottom             % Worry more about breakpoints than the bottom.
+    \raggedbottom              % Worry more about breakpoints than the bottom.
     \advance\hsize by -\contentsrightmargin % Don't use the full line length.
     %
     % Roman numerals for page numbers.
@@ -4474,7 +4660,7 @@ where each line of input produces a line of output.}
   \startcontents{\putwordTOC}%
     \openin 1 \jobname.toc
     \ifeof 1 \else
-      \input \jobname.toc
+      \readtocfile
     \fi
     \vfill \eject
     \contentsalignmacro % in case @setchapternewpage odd is in effect
@@ -4512,7 +4698,7 @@ where each line of input produces a line of output.}
     \let\unnsubsubsecentry = \numsecentry
     \openin 1 \jobname.toc
     \ifeof 1 \else
-      \input \jobname.toc
+      \readtocfile
     \fi
     \closein 1
     \vfill \eject
@@ -4702,6 +4888,7 @@ where each line of input produces a line of output.}
   \let\/=\ptexslash
   \let\*=\ptexstar
   \let\t=\ptext
+  \let\frenchspacing=\plainfrenchspacing
   %
   \def\endldots{\mathinner{\ldots\ldots\ldots\ldots}}%
   \def\enddots{\relax\ifmmode\endldots\else$\mathsurround=0pt \endldots\,$\fi}%
@@ -5839,7 +6026,6 @@ where each line of input produces a line of output.}
     {%
       \atdummies  % preserve commands, but don't expand them
       \turnoffactive
-      \otherbackslash
       \edef\writexrdef##1##2{%
 	\write\auxfile{@xrdef{#1-% #1 of \setref, expanded by the \edef
 	  ##1}{##2}}% these are parameters of \writexrdef
@@ -5893,13 +6079,17 @@ where each line of input produces a line of output.}
   \ifpdf
     \leavevmode
     \getfilename{#4}%
-    {\turnoffactive \otherbackslash
+    {\turnoffactive
+     % See comments at \activebackslashdouble.
+     {\activebackslashdouble \xdef\pdfxrefdest{#1}%
+      \backslashparens\pdfxrefdest}%
+     %
      \ifnum\filenamelength>0
        \startlink attr{/Border [0 0 0]}%
-         goto file{\the\filename.pdf} name{#1}%
+         goto file{\the\filename.pdf} name{\pdfxrefdest}%
      \else
        \startlink attr{/Border [0 0 0]}%
-         goto name{\pdfmkpgn{#1}}%
+         goto name{\pdfmkpgn{\pdfxrefdest}}%
      \fi
     }%
     \linkcolor
@@ -5913,7 +6103,6 @@ where each line of input produces a line of output.}
     % include an _ in the xref name, etc.
     \indexnofonts
     \turnoffactive
-    \otherbackslash
     \expandafter\global\expandafter\let\expandafter\Xthisreftitle
       \csname XR#1-title\endcsname
   }%
@@ -5948,7 +6137,7 @@ where each line of input produces a line of output.}
       % into the usual \leavevmode...\vrule stuff for purposes of
       % printing. So we \turnoffactive for the \refx-snt, back on for the
       % printing, back off for the \refx-pg.
-      {\turnoffactive \otherbackslash
+      {\turnoffactive
        % Only output a following space if the -snt ref is nonempty; for
        % @unnumbered and @anchor, it won't be.
        \setbox2 = \hbox{\ignorespaces \refx{#1-snt}{}}%
@@ -5961,7 +6150,7 @@ where each line of input produces a line of output.}
       ,\space
       %
       % output the `page 3'.
-      \turnoffactive \otherbackslash \putwordpage\tie\refx{#1-pg}{}%
+      \turnoffactive \putwordpage\tie\refx{#1-pg}{}%
     \fi
   \fi
   \endlink
@@ -6064,13 +6253,13 @@ where each line of input produces a line of output.}
 \def\tryauxfile{%
   \openin 1 \jobname.aux
   \ifeof 1 \else
-    \readauxfile
+    \readdatafile{aux}%
     \global\havexrefstrue
   \fi
   \closein 1
 }
 
-\def\readauxfile{\begingroup
+\def\setupdatafile{%
   \catcode`\^^@=\other
   \catcode`\^^A=\other
   \catcode`\^^B=\other
@@ -6139,11 +6328,11 @@ where each line of input produces a line of output.}
   %
   % Make the characters 128-255 be printing characters.
   {%
-    \count 1=128
+    \count1=128
     \def\loop{%
-      \catcode\count 1=\other
-      \advance\count 1 by 1
-      \ifnum \count 1<256 \loop \fi
+      \catcode\count1=\other
+      \advance\count1 by 1
+      \ifnum \count1<256 \loop \fi
     }%
   }%
   %
@@ -6151,10 +6340,13 @@ where each line of input produces a line of output.}
   \catcode`\{=1
   \catcode`\}=2
   \catcode`\@=0
-  %
-  \input \jobname.aux
-\endgroup}
+}
 
+\def\readdatafile#1{%
+\begingroup
+  \setupdatafile
+  \input\jobname.#1
+\endgroup}
 
 \message{insertions,}
 % including footnotes.
@@ -6501,7 +6693,7 @@ where each line of input produces a line of output.}
       % \floatlabel-lof.  Besides \floatident, we include the short
       % caption if specified, else the full caption if specified, else nothing.
       {%
-        \atdummies \turnoffactive \otherbackslash
+        \atdummies \turnoffactive
         % since we read the caption text in the macro world, where ^^M
         % is turned into a normal character, we have to scan it back, so
         % we don't write the literal three characters "^^M" into the aux file.
@@ -6691,9 +6883,9 @@ should work if nowhere else does.}
   \fi
 }
 
-% Parameters in order: 1) textheight; 2) textwidth; 3) voffset;
-% 4) hoffset; 5) binding offset; 6) topskip; 7) physical page height; 8)
-% physical page width.
+% Parameters in order: 1) textheight; 2) textwidth;
+% 3) voffset; 4) hoffset; 5) binding offset; 6) topskip;
+% 7) physical page height; 8) physical page width.
 %
 % We also call \setleading{\textleading}, so the caller should define
 % \textleading.  The caller should also set \parskip.
@@ -6740,7 +6932,7 @@ should work if nowhere else does.}
                     {11in}{8.5in}%
 }}
 
-% Use @smallbook to reset parameters for 7x9.5 (or so) format.
+% Use @smallbook to reset parameters for 7x9.25 trim size.
 \def\smallbook{{\globaldefs = 1
   \parskip = 2pt plus 1pt
   \textleading = 12pt
@@ -6755,6 +6947,24 @@ should work if nowhere else does.}
   \hfuzz = 1pt
   \contentsrightmargin = 0pt
   \defbodyindent = .5cm
+}}
+
+% Use @smallerbook to reset parameters for 6x9 trim size.
+% (Just testing, parameters still in flux.)
+\def\smallerbook{{\globaldefs = 1
+  \parskip = 1.5pt plus 1pt
+  \textleading = 12pt
+  %
+  \internalpagesizes{7.4in}{4.8in}%
+                    {-.2in}{-.4in}%
+                    {0pt}{14pt}%
+                    {9in}{6in}%
+  %
+  \lispnarrowing = 0.25in
+  \tolerance = 700
+  \hfuzz = 1pt
+  \contentsrightmargin = 0pt
+  \defbodyindent = .4cm
 }}
 
 % Use @afourpaper to print on European A4 paper.
@@ -6909,6 +7119,7 @@ should work if nowhere else does.}
 
 \catcode`\_=\active
 \def_{\ifusingtt\normalunderscore\_}
+\let\realunder=_
 % Subroutine for the previous macro.
 \def\_{\leavevmode \kern.07em \vbox{\hrule width.3em height.1ex}\kern .07em }
 
@@ -6946,8 +7157,9 @@ should work if nowhere else does.}
  @gdef@otherbackslash{@let\=@realbackslash}
 }
 
-% \realbackslash is an actual character `\' with catcode other.
-{\catcode`\\=\other @gdef@realbackslash{\}}
+% \realbackslash is an actual character `\' with catcode other, and
+% \doublebackslash is two of them (for the pdf outlines).
+{\catcode`\\=\other @gdef@realbackslash{\} @gdef@doublebackslash{\\}}
 
 % \normalbackslash outputs one backslash in fixed width font.
 \def\normalbackslash{{\tt\backslashcurfont}}
@@ -6990,7 +7202,7 @@ should work if nowhere else does.}
 % On the other hand, perhaps the file did not have a `\input texinfo'. Then
 % the first `\{ in the file would cause an error. This macro tries to fix
 % that, assuming it is called before the first `\' could plausibly occur.
-% Also back turn on active characters that might appear in the input
+% Also turn back on active characters that might appear in the input
 % file name, in case not using a pre-dumped format.
 %
 @gdef@fixbackslash{%
