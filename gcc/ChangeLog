@@ -1,5 +1,19 @@
 2005-06-28  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	* config/s390/s390.c (machine_function): New field has_landing_pad_p.
+	(s390_set_has_landing_pad_p, s390_reg_clobbered_rtx,
+	 s390_regs_ever_clobbered): New functions.
+	(s390_return_addr_rtx): Use get_hard_reg_initial_value.
+	(s390_register_info, s390_init_frame_layout, s390_update_frame_layout):
+	Use s390_regs_ever_clobbered.
+	(s390_emit_prologue): Don't use r14 as temp reg if its content is used
+	for builtin_return_address.
+	* config/s390/s390.md ("exception_receiver"): New expander.
+	* config/s390/s390-protos.h (s390_set_has_landing_pad_p): Prototype
+	added.
+
+2005-06-28  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* except.c (current_function_has_exception_handlers): Function 
 	description added and if statements merged.
 
