@@ -256,3 +256,25 @@ hook_constcharptr_rtx_null (rtx r ATTRIBUTE_UNUSED)
 {
   return NULL;
 }
+
+const char *
+hook_constcharptr_tree_tree_null (tree t0 ATTRIBUTE_UNUSED,
+				  tree t1 ATTRIBUTE_UNUSED)
+{
+  return NULL;
+}
+
+const char *
+hook_constcharptr_int_tree_null (int i ATTRIBUTE_UNUSED,
+				 tree t0 ATTRIBUTE_UNUSED)
+{
+  return NULL;
+}
+
+const char *
+hook_constcharptr_int_tree_tree_null (int i ATTRIBUTE_UNUSED,
+				      tree t0 ATTRIBUTE_UNUSED,
+				      tree t1 ATTRIBUTE_UNUSED)
+{
+  return NULL;
+}

@@ -379,6 +379,10 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #define TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN hook_invalid_arg_for_unprototyped_fn
 #endif
 
+#define TARGET_INVALID_CONVERSION hook_constcharptr_tree_tree_null
+#define TARGET_INVALID_UNARY_OP hook_constcharptr_int_tree_null
+#define TARGET_INVALID_BINARY_OP hook_constcharptr_int_tree_tree_null
+
 #define TARGET_FIXED_CONDITION_CODE_REGS hook_bool_uintp_uintp_false
 
 #define TARGET_CC_MODES_COMPATIBLE default_cc_modes_compatible
@@ -581,6 +585,9 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   TARGET_STACK_PROTECT_FAIL,			\
   TARGET_INVALID_WITHIN_DOLOOP,			\
   TARGET_CALLS,					\
+  TARGET_INVALID_CONVERSION,			\
+  TARGET_INVALID_UNARY_OP,			\
+  TARGET_INVALID_BINARY_OP,			\
   TARGET_CXX,					\
   TARGET_UNWIND_TABLES_DEFAULT,			\
   TARGET_HAVE_NAMED_SECTIONS,			\

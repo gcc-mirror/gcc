@@ -36,6 +36,7 @@ Boston, MA 02110-1301, USA.  */
 #include "convert.h"
 #include "toplev.h"
 #include "decl.h"
+#include "target.h"
 
 static tree cp_convert_to_pointer (tree, tree, bool);
 static tree convert_to_pointer_force (tree, tree);
@@ -601,12 +602,20 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 {
   tree e = expr;
   enum tree_code code = TREE_CODE (type);
+  const char *invalid_conv_diag;
 
   if (error_operand_p (e) || type == error_mark_node)
     return error_mark_node;
 
   complete_type (type);
   complete_type (TREE_TYPE (expr));
+
+  if ((invalid_conv_diag
+       = targetm.invalid_conversion (TREE_TYPE (expr), type)))
+    {
+      error (invalid_conv_diag);
+      return error_mark_node;
+    }
 
   e = integral_constant_value (e);
 

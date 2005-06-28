@@ -9606,6 +9606,26 @@ illegal to pass argument @var{val} to function @var{funcdecl}
 with prototype @var{typelist}.
 @end deftypefn
 
+@deftypefn {Target Hook} {const char *} TARGET_INVALID_CONVERSION (tree @var{fromtype}, tree @var{totype})
+If defined, this macro returns the diagnostic message when it is
+invalid to convert from @var{fromtype} to @var{totype}, or @code{NULL}
+if validity should be determined by the front end.
+@end deftypefn
+
+@deftypefn {Target Hook} {const char *} TARGET_INVALID_UNARY_OP (int @var{op}, tree @var{type})
+If defined, this macro returns the diagnostic message when it is
+invalid to apply operation @var{op} (where unary plus is denoted by
+@code{CONVERT_EXPR}) to an operand of type @var{type}, or @code{NULL}
+if validity should be determined by the front end.
+@end deftypefn
+
+@deftypefn {Target Hook} {const char *} TARGET_INVALID_BINARY_OP (int @var{op}, tree @var{type1}, tree @var{type2})
+If defined, this macro returns the diagnostic message when it is
+invalid to apply operation @var{op} to operands of types @var{type1}
+and @var{type2}, or @code{NULL} if validity should be determined by
+the front end.
+@end deftypefn
+
 @defmac TARGET_USE_JCR_SECTION
 This macro determines whether to use the JCR section to register Java
 classes. By default, TARGET_USE_JCR_SECTION is defined to 1 if both

@@ -598,6 +598,18 @@ struct gcc_target
 					     	    tree funcdecl, tree val);
   } calls;
 
+  /* Return the diagnostic message string if conversion from FROMTYPE
+     to TOTYPE is not allowed, NULL otherwise.  */
+  const char *(*invalid_conversion) (tree fromtype, tree totype);
+
+  /* Return the diagnostic message string if the unary operation OP is
+     not permitted on TYPE, NULL otherwise.  */
+  const char *(*invalid_unary_op) (int op, tree type);
+
+  /* Return the diagnostic message string if the binary operation OP
+     is not permitted on TYPE1 and TYPE2, NULL otherwise.  */
+  const char *(*invalid_binary_op) (int op, tree type1, tree type2);
+
   /* Functions specific to the C++ frontend.  */
   struct cxx {
     /* Return the integer type used for guard variables.  */
