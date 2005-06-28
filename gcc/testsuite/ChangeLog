@@ -1,3 +1,9 @@
+2005-06-28  Thomas Koenig  <Thomas.Koenig@online.de>
+
+        PR libfortran/22142
+	* gfortran.fortran-torture/execute/intrinsic_eoshift.f90:
+	Add testcase also testing eoshift1 for PR 22142.
+
 2005-06-28  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/tree-ssa/20030708-1.c: Remove static from test function.

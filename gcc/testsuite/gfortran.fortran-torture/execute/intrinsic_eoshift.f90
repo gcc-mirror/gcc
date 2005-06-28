@@ -37,6 +37,12 @@ program intrinsic_eoshift
    if (any (a .ne. reshape ((/99, -1, 42, 99, -1, 42, 1, 2, 3/), (/3, 3/)))) &
       call abort
 
+   a = reshape ((/1, 2, 3, 4, 5, 6, 7, 8, 9/), (/3, 3/))
+   bo = (/99, -1, 42/)
+   a = eoshift (a, -2, bo, 2)
+   if (any (a .ne. reshape ((/99, -1, 42, 99, -1, 42, 1, 2, 3/), (/3, 3/)))) &
+      call abort
+
    ! Array shift and array bound.
    a = reshape ((/1, 2, 3, 4, 5, 6, 7, 8, 9/), (/3, 3/))
    a = eoshift (a, (/1, 0, -1/), (/99, -1, 42/), 1)
