@@ -135,7 +135,7 @@ eoshift1_8 (gfc_array_char *ret,
           rstride[n] = ret->dim[dim].stride * size;
           sstride[n] = array->dim[dim].stride * size;
 
-          hstride[n] = h->dim[n].stride;
+          hstride[n] = h->dim[n].stride * size;
           n++;
         }
     }
