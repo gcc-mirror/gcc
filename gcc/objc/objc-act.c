@@ -801,6 +801,7 @@ objc_build_struct (tree name, tree fields, tree super_name)
 {
   tree s = start_struct (RECORD_TYPE, name);
   tree super = (super_name ? xref_tag (RECORD_TYPE, super_name) : NULL_TREE);
+  tree t, objc_info = NULL_TREE;
 
   if (super)
     {
@@ -844,7 +845,22 @@ objc_build_struct (tree name, tree fields, tree super_name)
       fields = base;
     }
 
+  /* NB: Calling finish_struct() may cause type TYPE_LANG_SPECIFIC fields
+     in all variants of this RECORD_TYPE to be clobbered, but it is therein
+     that we store protocol conformance info (e.g., 'NSObject <MyProtocol>').
+     Hence, we must squirrel away the ObjC-specific information before calling
+     finish_struct(), and then reinstate it afterwards.  */
+
+  for (t = TYPE_NEXT_VARIANT (s); t; t = TYPE_NEXT_VARIANT (t))
+    objc_info
+      = chainon (objc_info,
+		 build_tree_list (NULL_TREE, TYPE_OBJC_INFO (t)));
+
   s = finish_struct (s, fields, NULL_TREE);
+
+  for (t = TYPE_NEXT_VARIANT (s); t;
+       t = TYPE_NEXT_VARIANT (t), objc_info = TREE_CHAIN (objc_info))
+    TYPE_OBJC_INFO (t) = TREE_VALUE (objc_info);
 
   /* Use TYPE_BINFO structures to point at the super class, if any.  */
   objc_xref_basetypes (s, super);
