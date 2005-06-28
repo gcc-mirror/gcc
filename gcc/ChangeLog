@@ -1,3 +1,7 @@
+2005-06-28  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-optimize.c (init_tree_optimization_passes): Fix typo.
+
 2005-06-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/rs6000/rs6000.md (setmemsi): s/operand/operands/.

@@ -434,7 +434,7 @@ init_tree_optimization_passes (void)
   struct tree_opt_pass **p;
 
 #define NEXT_PASS(PASS)  (p = next_pass_1 (p, &PASS))
-  /* Intraprocedural optimization passes.  */
+  /* Interprocedural optimization passes.  */
   p = &all_ipa_passes;
   NEXT_PASS (pass_early_ipa_inline);
   NEXT_PASS (pass_early_local_passes);
