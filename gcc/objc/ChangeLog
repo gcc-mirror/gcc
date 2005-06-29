@@ -1,3 +1,15 @@
+2005-06-29  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc-act.c (objc_build_internal_const_str_type): New function.
+	(check_string_class_template): Use objc_get_class_ivars() instead
+	of TYPE_FIELDS() to retrieve ivar list.
+	(AT_LEAST_AS_LARGE_AS): Check the size of each field's type rather
+	than the field itself.
+	(objc_build_string_object): Synthesize a "__builtin_ObjCString"
+	type and use it to lay out compile-time string objects.
+	* objc-act.h (OCTI_INTERNAL_CNST_STR_TYPE, internal_const_str_type):
+	New.
+
 2005-06-28  Paul Brook  <paul@codesourcery.com>
 
 	* objc-act.c (objc_init_exceptions): Call

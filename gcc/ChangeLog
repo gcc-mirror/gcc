@@ -1,3 +1,8 @@
+2005-06-29  Ziemowit Laski  <zlaski@apple.com>
+
+	* config/darwin.c (machopic_select_section): constant ObjC string
+	objects now always have type "__builtin_ObjCString".
+
 2005-06-29  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.md (vec_shl_<VEC>, vec_shr_<VEC>): New.
