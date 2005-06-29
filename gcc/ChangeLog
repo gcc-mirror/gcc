@@ -1,3 +1,12 @@
+2005-06-29  Steve Ellcey  <sje@cup.hp.com>
+
+	PR middle-end/21969
+	* tree.h (TYPE_VECTOR_SUBPARTS): Change to shift expression.
+	(SET_TYPE_VECTOR_SUBPARTS): New.
+	* tree.c (make_vector_type): Replace TYPE_VECTOR_SUBPARTS with
+	SET_TYPE_VECTOR_SUBPARTS.
+	* tree-vect-transform.c (vect_transform_loop): Add cast.
+
 2005-06-29  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_decompose_address): Accept invalid

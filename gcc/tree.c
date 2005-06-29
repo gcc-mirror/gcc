@@ -5710,7 +5710,7 @@ make_vector_type (tree innertype, int nunits, enum machine_mode mode)
   tree t = make_node (VECTOR_TYPE);
 
   TREE_TYPE (t) = TYPE_MAIN_VARIANT (innertype);
-  TYPE_VECTOR_SUBPARTS (t) = nunits;
+  SET_TYPE_VECTOR_SUBPARTS (t, nunits);
   TYPE_MODE (t) = mode;
   TYPE_READONLY (t) = TYPE_READONLY (innertype);
   TYPE_VOLATILE (t) = TYPE_VOLATILE (innertype);

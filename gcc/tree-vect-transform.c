@@ -2771,7 +2771,7 @@ vect_transform_loop (loop_vec_info loop_vinfo,
 	             units and no inner unrolling is necessary.  */
 	  gcc_assert 
 		(TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info))
-		 == vectorization_factor);
+		 == (unsigned HOST_WIDE_INT) vectorization_factor);
 
 	  /* -------- vectorize statement ------------ */
 	  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
