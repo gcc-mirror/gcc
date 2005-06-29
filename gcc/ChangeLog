@@ -1,3 +1,7 @@
+2005-06-29  Kelley Cook <kcook@gcc.gnu.org>
+
+	* doc/gcc.texi: Update FSF address.
+
 2005-06-28  Eric Christopher  <echristo@redhat.com>
 
 	PR c/22052

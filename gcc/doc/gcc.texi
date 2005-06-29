@@ -90,9 +90,9 @@ Published by:
 @tab General: @tex press@@gnu.org @end tex
 @item Free Software Foundation
 @tab Orders:  @tex sales@@gnu.org @end tex
-@item 59 Temple Place Suite 330
+@item 51 Franklin Street, Fifth Floor
 @tab Tel 617-542-5942
-@item Boston, MA 02111-1307 USA
+@item Boston, MA 02110-1301 USA
 @tab Fax 617-542-2652
 @end multitable
 @sp 2
