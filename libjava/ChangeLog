@@ -1,3 +1,8 @@
+2005-06-29  Tom Tromey  <tromey@redhat.com>
+
+	* interpret.cc (run) <insn_checkcast, checkcast_resolved>: Use
+	_Jv_CheckCast.
+
 2005-06-28  Robin Green  <greenrd@greenrd.org>
 
 	PR java/22189

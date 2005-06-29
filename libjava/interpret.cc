@@ -25,7 +25,6 @@ details.  */
 #include <java/lang/StringBuffer.h>
 #include <java/lang/Class.h>
 #include <java/lang/reflect/Modifier.h>
-#include <java/lang/ClassCastException.h>
 #include <java/lang/VirtualMachineError.h>
 #include <java/lang/InternalError.h>
 #include <java/lang/NullPointerException.h>
@@ -3022,8 +3021,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 	jclass to = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
 						       index)).clazz;
 
-	if (value != NULL && ! to->isInstance (value))
-	  throw new java::lang::ClassCastException (to->getName());
+	value = (jobject) _Jv_CheckCast (to, value);
 
 	PUSHA (value);
 
@@ -3040,8 +3038,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
         SAVE_PC();
 	jobject value = POPA ();
 	jclass to = (jclass) AVAL ();
-	if (value != NULL && ! to->isInstance (value))
-	  throw new java::lang::ClassCastException (to->getName());
+	value = (jobject) _Jv_CheckCast (to, value);
 	PUSHA (value);
       }
       NEXT_INSN;
