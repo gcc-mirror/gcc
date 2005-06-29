@@ -63,7 +63,7 @@ main3 ()
 /* Currently only the loops in main2 and main3 get vectorized. After the merge 
    of the datarefs-analysis cleanups from autovect-branch to mainline, the loop
    in main1 will also be vectorized.  */ 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { xfail vect_no_int_add } } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
 /* { dg-final { scan-tree-dump-times "accesses have the same alignment." 2 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" } } */
