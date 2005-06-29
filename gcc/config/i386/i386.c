@@ -10501,94 +10501,102 @@ ix86_expand_fp_vcond (rtx operands[])
 /* Expand a signed integral vector conditional move.  */
 
 bool
-ix86_expand_int_vcond (rtx operands[], bool unsignedp)
+ix86_expand_int_vcond (rtx operands[])
 {
   enum machine_mode mode = GET_MODE (operands[0]);
   enum rtx_code code = GET_CODE (operands[3]);
-  rtx cmp, x;
+  bool negate = false;
+  rtx x, cop0, cop1;
 
-  if (unsignedp)
-    code = signed_condition (code);
-  if (code == NE || code == LE || code == GE)
+  cop0 = operands[4];
+  cop1 = operands[5];
+
+  /* Canonicalize the comparison to EQ, GT, GTU.  */
+  switch (code)
     {
-      /* Inverse of a supported code.  */
-      x = operands[1];
-      operands[1] = operands[2];
-      operands[2] = x;
+    case EQ:
+    case GT:
+    case GTU:
+      break;
+
+    case NE:
+    case LE:
+    case LEU:
       code = reverse_condition (code);
-    }
-  if (code == LT)
-    {
-      /* Swap of a supported code.  */
-      x = operands[4];
-      operands[4] = operands[5];
-      operands[5] = x;
+      negate = true;
+      break;
+
+    case GE:
+    case GEU:
+      code = reverse_condition (code);
+      negate = true;
+      /* FALLTHRU */
+
+    case LT:
+    case LTU:
       code = swap_condition (code);
+      x = cop0, cop0 = cop1, cop1 = x;
+      break;
+
+    default:
+      gcc_unreachable ();
     }
-  gcc_assert (code == EQ || code == GT);
 
-  /* Unlike floating-point, we can rely on the optimizers to have already
-     converted to MIN/MAX expressions, so we don't have to handle that.  */
-
-  /* Unsigned GT is not directly supported.  We can zero-extend QI and
-     HImode elements to the next wider element size, use a signed compare,
-     then repack.  For three extra instructions, this is definitely a win.  */
-  if (code == GT && unsignedp)
+  /* Unsigned parallel compare is not supported by the hardware.  Play some
+     tricks to turn this into a signed comparison against 0.  */
+  if (code == GTU)
     {
-      rtx o0l, o0h, o1l, o1h, cl, ch, zero;
-      enum machine_mode wider;
-      rtx (*unpackl) (rtx, rtx, rtx);
-      rtx (*unpackh) (rtx, rtx, rtx);
-      rtx (*pack) (rtx, rtx, rtx);
-
       switch (mode)
 	{
+	case V4SImode:
+	  {
+	    rtx t1, t2, mask;
+
+	    /* Perform a parallel modulo subtraction.  */
+	    t1 = gen_reg_rtx (mode);
+	    emit_insn (gen_subv4si3 (t1, cop0, cop1));
+
+	    /* Extract the original sign bit of op0.  */
+	    mask = GEN_INT (-0x80000000);
+	    mask = gen_rtx_CONST_VECTOR (mode,
+			gen_rtvec (4, mask, mask, mask, mask));
+	    mask = force_reg (mode, mask);
+	    t2 = gen_reg_rtx (mode);
+	    emit_insn (gen_andv4si3 (t2, cop0, mask));
+
+	    /* XOR it back into the result of the subtraction.  This results
+	       in the sign bit set iff we saw unsigned underflow.  */
+	    x = gen_reg_rtx (mode);
+	    emit_insn (gen_xorv4si3 (x, t1, t2));
+
+	    code = GT;
+	  }
+	  break;
+
 	case V16QImode:
-	  wider = V8HImode;
-	  unpackl = gen_sse2_punpcklbw;
-	  unpackh = gen_sse2_punpckhbw;
-	  pack = gen_sse2_packsswb;
-	  break;
 	case V8HImode:
-	  wider = V4SImode;
-	  unpackl = gen_sse2_punpcklwd;
-	  unpackh = gen_sse2_punpckhwd;
-	  pack = gen_sse2_packssdw;
+	  /* Perform a parallel unsigned saturating subtraction.  */
+	  x = gen_reg_rtx (mode);
+	  emit_insn (gen_rtx_SET (VOIDmode, x,
+				  gen_rtx_US_MINUS (mode, cop0, cop1)));
+
+	  code = EQ;
+	  negate = !negate;
 	  break;
+
 	default:
 	  gcc_unreachable ();
 	}
 
-      operands[4] = force_reg (mode, operands[4]);
-      operands[5] = force_reg (mode, operands[5]);
-
-      o0l = gen_reg_rtx (wider);
-      o0h = gen_reg_rtx (wider);
-      o1l = gen_reg_rtx (wider);
-      o1h = gen_reg_rtx (wider);
-      cl = gen_reg_rtx (wider);
-      ch = gen_reg_rtx (wider);
-      cmp = gen_reg_rtx (mode);
-      zero = force_reg (mode, CONST0_RTX (mode));
-
-      emit_insn (unpackl (gen_lowpart (mode, o0l), operands[4], zero));
-      emit_insn (unpackh (gen_lowpart (mode, o0h), operands[4], zero));
-      emit_insn (unpackl (gen_lowpart (mode, o1l), operands[5], zero));
-      emit_insn (unpackh (gen_lowpart (mode, o1h), operands[5], zero));
-
-      x = gen_rtx_GT (wider, o0l, o1l);
-      emit_insn (gen_rtx_SET (VOIDmode, cl, x));
-
-      x = gen_rtx_GT (wider, o0h, o1h);
-      emit_insn (gen_rtx_SET (VOIDmode, ch, x));
-
-      emit_insn (pack (cmp, cl, ch));
+      cop0 = x;
+      cop1 = CONST0_RTX (mode);
     }
-  else
-    cmp = ix86_expand_sse_cmp (operands[0], code, operands[4], operands[5],
-			       operands[1], operands[2]);
 
-  ix86_expand_sse_movcc (operands[0], cmp, operands[1], operands[2]);
+  x = ix86_expand_sse_cmp (operands[0], code, cop0, cop1,
+			   operands[1+negate], operands[2-negate]);
+
+  ix86_expand_sse_movcc (operands[0], x, operands[1+negate],
+			 operands[2-negate]);
   return true;
 }
 

@@ -30,6 +30,7 @@
 ;; Mix-n-match
 (define_mode_macro SSEMODE12 [V16QI V8HI])
 (define_mode_macro SSEMODE24 [V8HI V4SI])
+(define_mode_macro SSEMODE14 [V16QI V4SI])
 (define_mode_macro SSEMODE124 [V16QI V8HI V4SI])
 (define_mode_macro SSEMODE248 [V8HI V4SI V2DI])
 
@@ -2741,26 +2742,6 @@
   operands[1] = gen_lowpart (TImode, operands[1]);
 })
 
-(define_expand "smaxv16qi3"
-  [(set (match_operand:V16QI 0 "register_operand" "")
-	(smax:V16QI (match_operand:V16QI 1 "register_operand" "")
-		    (match_operand:V16QI 2 "register_operand" "")))]
-  "TARGET_SSE2"
-{
-  rtx xops[6];
-  bool ok;
-
-  xops[0] = operands[0];
-  xops[1] = operands[1];
-  xops[2] = operands[2];
-  xops[3] = gen_rtx_GT (VOIDmode, operands[1], operands[2]);
-  xops[4] = operands[1];
-  xops[5] = operands[2];
-  ok = ix86_expand_int_vcond (xops, false);
-  gcc_assert (ok);
-  DONE;
-})
-
 (define_expand "umaxv16qi3"
   [(set (match_operand:V16QI 0 "register_operand" "")
 	(umax:V16QI (match_operand:V16QI 1 "nonimmediate_operand" "")
@@ -2794,33 +2775,22 @@
    (set_attr "mode" "TI")])
 
 (define_expand "umaxv8hi3"
-  [(set (match_operand:V8HI 0 "register_operand" "")
-	(umax:V8HI (match_operand:V8HI 1 "register_operand" "")
-		   (match_operand:V8HI 2 "register_operand" "")))]
+  [(set (match_operand:V8HI 0 "register_operand" "=x")
+	(us_minus:V8HI (match_operand:V8HI 1 "register_operand" "0")
+		       (match_operand:V8HI 2 "nonimmediate_operand" "xm")))
+   (set (match_dup 3)
+	(plus:V8HI (match_dup 0) (match_dup 2)))]
   "TARGET_SSE2"
 {
-  rtx xops[6], t1, t2;
-  bool ok;
-
-  t1 = gen_reg_rtx (V8HImode);
-  emit_insn (gen_sse2_ussubv8hi3 (t1, operands[2], operands[1]));
-  t2 = force_reg (V8HImode, CONST0_RTX (V8HImode));
-
-  xops[0] = operands[0];
-  xops[1] = operands[1];
-  xops[2] = operands[2];
-  xops[3] = gen_rtx_EQ (VOIDmode, t1, t2);
-  xops[4] = t1;
-  xops[5] = t2;
-  ok = ix86_expand_int_vcond (xops, false);
-  gcc_assert (ok);
-  DONE;
+  operands[3] = operands[0];
+  if (rtx_equal_p (operands[0], operands[2]))
+    operands[0] = gen_reg_rtx (V8HImode);
 })
 
-(define_expand "sminv16qi3"
-  [(set (match_operand:V16QI 0 "register_operand" "")
-	(smin:V16QI (match_operand:V16QI 1 "register_operand" "")
-		    (match_operand:V16QI 2 "register_operand" "")))]
+(define_expand "smax<mode>3"
+  [(set (match_operand:SSEMODE14 0 "register_operand" "")
+	(smax:SSEMODE14 (match_operand:SSEMODE14 1 "register_operand" "")
+			(match_operand:SSEMODE14 2 "register_operand" "")))]
   "TARGET_SSE2"
 {
   rtx xops[6];
@@ -2830,9 +2800,29 @@
   xops[1] = operands[1];
   xops[2] = operands[2];
   xops[3] = gen_rtx_GT (VOIDmode, operands[1], operands[2]);
-  xops[4] = operands[2];
-  xops[5] = operands[1];
-  ok = ix86_expand_int_vcond (xops, false);
+  xops[4] = operands[1];
+  xops[5] = operands[2];
+  ok = ix86_expand_int_vcond (xops);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "umaxv4si3"
+  [(set (match_operand:V4SI 0 "register_operand" "")
+	(umax:V4SI (match_operand:V4SI 1 "register_operand" "")
+		   (match_operand:V4SI 2 "register_operand" "")))]
+  "TARGET_SSE2"
+{
+  rtx xops[6];
+  bool ok;
+
+  xops[0] = operands[0];
+  xops[1] = operands[1];
+  xops[2] = operands[2];
+  xops[3] = gen_rtx_GTU (VOIDmode, operands[1], operands[2]);
+  xops[4] = operands[1];
+  xops[5] = operands[2];
+  ok = ix86_expand_int_vcond (xops);
   gcc_assert (ok);
   DONE;
 })
@@ -2869,26 +2859,42 @@
   [(set_attr "type" "sseiadd")
    (set_attr "mode" "TI")])
 
-(define_expand "uminv8hi3"
-  [(set (match_operand:V8HI 0 "register_operand" "")
-	(umin:V8HI (match_operand:V8HI 1 "register_operand" "")
-		   (match_operand:V8HI 2 "register_operand" "")))]
+(define_expand "smin<mode>3"
+  [(set (match_operand:SSEMODE14 0 "register_operand" "")
+	(smin:SSEMODE14 (match_operand:SSEMODE14 1 "register_operand" "")
+			(match_operand:SSEMODE14 2 "register_operand" "")))]
   "TARGET_SSE2"
 {
-  rtx xops[6], t1, t2;
+  rtx xops[6];
   bool ok;
 
-  t1 = gen_reg_rtx (V8HImode);
-  emit_insn (gen_sse2_ussubv8hi3 (t1, operands[1], operands[2]));
-  t2 = force_reg (V8HImode, CONST0_RTX (V8HImode));
+  xops[0] = operands[0];
+  xops[1] = operands[2];
+  xops[2] = operands[1];
+  xops[3] = gen_rtx_GT (VOIDmode, operands[1], operands[2]);
+  xops[4] = operands[1];
+  xops[5] = operands[2];
+  ok = ix86_expand_int_vcond (xops);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "umin<mode>3"
+  [(set (match_operand:SSEMODE24 0 "register_operand" "")
+	(umin:SSEMODE24 (match_operand:SSEMODE24 1 "register_operand" "")
+			(match_operand:SSEMODE24 2 "register_operand" "")))]
+  "TARGET_SSE2"
+{
+  rtx xops[6];
+  bool ok;
 
   xops[0] = operands[0];
-  xops[1] = operands[1];
-  xops[2] = operands[2];
-  xops[3] = gen_rtx_EQ (VOIDmode, t1, t2);
-  xops[4] = t1;
-  xops[5] = t2;
-  ok = ix86_expand_int_vcond (xops, false);
+  xops[1] = operands[2];
+  xops[2] = operands[1];
+  xops[3] = gen_rtx_GTU (VOIDmode, operands[1], operands[2]);
+  xops[4] = operands[1];
+  xops[5] = operands[2];
+  ok = ix86_expand_int_vcond (xops);
   gcc_assert (ok);
   DONE;
 })
@@ -2929,7 +2935,7 @@
           (match_operand:SSEMODE124 2 "general_operand" "")))]
   "TARGET_SSE2"
 {
-  if (ix86_expand_int_vcond (operands, false))
+  if (ix86_expand_int_vcond (operands))
     DONE;
   else
     FAIL;
@@ -2945,7 +2951,7 @@
           (match_operand:SSEMODE12 2 "general_operand" "")))]
   "TARGET_SSE2"
 {
-  if (ix86_expand_int_vcond (operands, true))
+  if (ix86_expand_int_vcond (operands))
     DONE;
   else
     FAIL;
