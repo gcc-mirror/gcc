@@ -1,5 +1,11 @@
 2005-06-29  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	* config/sh/linux-unwind.h (shmedia_fallback_frame_state):
+	Disable	aliasing warning with void * cast.
+	(sh_fallback_frame_state): Likewise.
+
+2005-06-29  Kaz Kojima  <kkojima@gcc.gnu.org>
+
 	* target.h (gcc_target): New field allocate_initial_value.
 	* target-def.h (TARGET_ALLOCATE_INITIAL_VALUE): New macro.
 	(TARGET_INITIALIZER): Include it.
