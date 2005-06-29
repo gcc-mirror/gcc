@@ -1,5 +1,10 @@
 2005-06-28  Richard Henderson  <rth@redhat.com>
 
+	* tree-vectorizer.c (vect_is_simple_reduction): Compare types
+	using TYPE_MAIN_VARIANT.
+
+2005-06-28  Richard Henderson  <rth@redhat.com>
+
 	* config/ia64/ia64.c (ia64_expand_vecint_compare): Decompose to EQ
 	when using psubN.uuu.
 
