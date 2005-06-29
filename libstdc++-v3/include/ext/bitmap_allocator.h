@@ -401,8 +401,8 @@ namespace __gnu_cxx
 
     enum 
       { 
-	bits_per_byte = 8, 
-	bits_per_block = sizeof(size_t) * bits_per_byte 
+	bits_per_byte = 8,
+	bits_per_block = sizeof(size_t) * size_t(bits_per_byte) 
       };
 
     template<typename _ForwardIterator, typename _Tp, typename _Compare>
@@ -459,7 +459,7 @@ namespace __gnu_cxx
     template<typename _AddrPair>
       inline size_t
       __num_bitmaps(_AddrPair __ap)
-      { return __num_blocks(__ap) / bits_per_block; }
+      { return __num_blocks(__ap) / size_t(bits_per_block); }
 
     // _Tp should be a pointer type.
     template<typename _Tp>
@@ -570,7 +570,7 @@ namespace __gnu_cxx
 
 	_Counter_type
 	_M_offset() const throw()
-	{ return _M_data_offset * bits_per_block; }
+	{ return _M_data_offset * size_t(bits_per_block); }
       };
 
 
@@ -620,7 +620,7 @@ namespace __gnu_cxx
 	  _M_last_bmap_in_block = _M_curr_bmap
 	    - ((_M_vbp[_M_curr_index].second 
 		- _M_vbp[_M_curr_index].first + 1) 
-	       / bits_per_block - 1);
+	       / size_t(bits_per_block) - 1);
 	}
     
 	// Dangerous Function! Use with extreme care. Pass to this
@@ -660,7 +660,7 @@ namespace __gnu_cxx
 	_Index_type
 	_M_offset() const throw()
 	{
-	  return bits_per_block
+	  return size_t(bits_per_block)
 	    * ((reinterpret_cast<size_t*>(this->_M_base()) 
 		- _M_curr_bmap) - 1);
 	}
@@ -938,7 +938,8 @@ namespace __gnu_cxx
 	_S_check_for_free_blocks();
 #endif
 
-	const size_t __num_bitmaps = _S_block_size / balloc::bits_per_block;
+	const size_t __num_bitmaps = (_S_block_size
+				      / size_t(balloc::bits_per_block));
 	const size_t __size_to_allocate = sizeof(size_t) 
 	  + _S_block_size * sizeof(_Alloc_block) 
 	  + __num_bitmaps * sizeof(size_t);
@@ -1136,11 +1137,12 @@ namespace __gnu_cxx
 	  }
 
 	// Get the position of the iterator that has been found.
-	const size_t __rotate = __displacement % balloc::bits_per_block;
+	const size_t __rotate = (__displacement
+				 % size_t(balloc::bits_per_block));
 	size_t* __bitmapC = 
 	  reinterpret_cast<size_t*>
 	  (_S_mem_blocks[__diff].first) - 1;
-	__bitmapC -= (__displacement / balloc::bits_per_block);
+	__bitmapC -= (__displacement / size_t(balloc::bits_per_block));
       
 	balloc::__bit_free(__bitmapC, __rotate);
 	size_t* __puse_count = reinterpret_cast<size_t*>
@@ -1267,7 +1269,7 @@ namespace __gnu_cxx
 
   template<typename _Tp>
     size_t bitmap_allocator<_Tp>::_S_block_size = 
-    2 * balloc::bits_per_block;
+    2 * size_t(balloc::bits_per_block);
 
   template<typename _Tp>
     typename __gnu_cxx::bitmap_allocator<_Tp>::_BPVector::size_type 
