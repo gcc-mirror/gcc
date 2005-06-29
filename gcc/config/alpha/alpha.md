@@ -6361,6 +6361,26 @@
   ""
   "eqv %1,%2,%0"
   [(set_attr "type" "ilog")])
+
+(define_expand "vec_shl_<mode>"
+  [(set (match_operand:VEC 0 "register_operand" "")
+	(ashift:DI (match_operand:VEC 1 "register_operand" "")
+		   (match_operand:DI 2 "reg_or_6bit_operand" "")))]
+  ""
+{
+  operands[0] = gen_lowpart (DImode, operands[0]);
+  operands[1] = gen_lowpart (DImode, operands[1]);
+})
+
+(define_expand "vec_shr_<mode>"
+  [(set (match_operand:VEC 0 "register_operand" "")
+        (lshiftrt:DI (match_operand:VEC 1 "register_operand" "")
+                     (match_operand:DI 2 "reg_or_6bit_operand" "")))]
+  ""
+{
+  operands[0] = gen_lowpart (DImode, operands[0]);
+  operands[1] = gen_lowpart (DImode, operands[1]);
+})
 
 ;; Bit field extract patterns which use ext[wlq][lh]
 
