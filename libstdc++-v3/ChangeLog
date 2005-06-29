@@ -6,7 +6,7 @@
 	Adjust to assign the result also when digit grouping is
 	wrong (but the grammar is correct), as per 22.2.2.1.2, p11-12
 	(NB: consistently for money_get too).
-	* config/locale/generic/c_locale.cc (__convert_from_v): Do
+	* config/locale/generic/c_locale.cc (__convert_to_v): Do
 	not check ios_base::failbit at the outset.
 	* config/locale/gnu/c_locale.cc: Likewise.
 	* testsuite/22_locale/money_get/get/char/22131.cc: New.
