@@ -1950,7 +1950,7 @@ namespace std
        *  @brief  Numeric parsing.
        *
        *  Parses the input stream into the bool @a v.  It does so by calling
-       *  num_put::do_put().
+       *  num_get::do_get().
        *
        *  If ios_base::boolalpha is set, attempts to read
        *  ctype<CharT>::truename() or ctype<CharT>::falsename().  Sets
@@ -1979,7 +1979,7 @@ namespace std
        *  @brief  Numeric parsing.
        *
        *  Parses the input stream into the integral variable @a v.  It does so
-       *  by calling num_put::do_put().
+       *  by calling num_get::do_get().
        *
        *  Parsing is affected by the flag settings in @a io.
        *
@@ -2043,7 +2043,7 @@ namespace std
        *  @brief  Numeric parsing.
        *
        *  Parses the input stream into the integral variable @a v.  It does so
-       *  by calling num_put::do_put().
+       *  by calling num_get::do_get().
        *
        *  The input characters are parsed like the scanf %g specifier.  The
        *  matching type length modifier is also used.
@@ -2084,7 +2084,7 @@ namespace std
        *  @brief  Numeric parsing.
        *
        *  Parses the input stream into the pointer variable @a v.  It does so
-       *  by calling num_put::do_put().
+       *  by calling num_get::do_get().
        *
        *  The input characters are parsed like the scanf %p specifier.
        *
