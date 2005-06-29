@@ -1568,7 +1568,7 @@ ia64_expand_vecint_compare (enum rtx_code code, enum machine_mode mode,
     }
 
   /* Unsigned parallel compare is not supported by the hardware.  Play some
-     tricks to turn this into a GT comparison against 0.  */
+     tricks to turn this into a signed comparison against 0.  */
   if (code == GTU)
     {
       switch (mode)
@@ -1592,6 +1592,10 @@ ia64_expand_vecint_compare (enum rtx_code code, enum machine_mode mode,
 	       in the sign bit set iff we saw unsigned underflow.  */
 	    x = gen_reg_rtx (V2SImode);
 	    emit_insn (gen_xorv2si3 (x, t1, t2));
+
+	    code = GT;
+	    op0 = x;
+	    op1 = CONST0_RTX (mode);
 	  }
 	  break;
 
@@ -1601,15 +1605,16 @@ ia64_expand_vecint_compare (enum rtx_code code, enum machine_mode mode,
 	  x = gen_reg_rtx (mode);
 	  emit_insn (gen_rtx_SET (VOIDmode, x,
 				  gen_rtx_US_MINUS (mode, op0, op1)));
+
+	  code = EQ;
+	  op0 = x;
+	  op1 = CONST0_RTX (mode);
+	  negate = !negate;
 	  break;
 
 	default:
 	  gcc_unreachable ();
 	}
-
-      code = GT;
-      op0 = x;
-      op1 = CONST0_RTX (mode);
     }
 
   x = gen_rtx_fmt_ee (code, mode, op0, op1);
