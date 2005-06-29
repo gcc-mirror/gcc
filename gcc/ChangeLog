@@ -1,3 +1,9 @@
+2005-06-29  Caroline Tice  <ctice@apple.com>
+
+	Fix PR 21956
+	* varasm.c (assemble_start_function):  Add "L" to beginning of
+	local labels, so assembler & linker treat them as local.
+	
 2005-06-29  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_int_vcond): Remove unsignedp

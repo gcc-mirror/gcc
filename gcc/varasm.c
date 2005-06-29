@@ -1234,13 +1234,13 @@ assemble_start_function (tree decl, const char *fnname)
   first_function_block_is_cold = false;
   if (flag_reorder_blocks_and_partition)
     {
-      ASM_GENERATE_INTERNAL_LABEL (tmp_label, "HOTB", const_labelno);
+      ASM_GENERATE_INTERNAL_LABEL (tmp_label, "LHOTB", const_labelno);
       cfun->hot_section_label = ggc_strdup (tmp_label);
-      ASM_GENERATE_INTERNAL_LABEL (tmp_label, "COLDB", const_labelno);
+      ASM_GENERATE_INTERNAL_LABEL (tmp_label, "LCOLDB", const_labelno);
       cfun->cold_section_label = ggc_strdup (tmp_label);
-      ASM_GENERATE_INTERNAL_LABEL (tmp_label, "HOTE", const_labelno);
+      ASM_GENERATE_INTERNAL_LABEL (tmp_label, "LHOTE", const_labelno);
       cfun->hot_section_end_label = ggc_strdup (tmp_label);
-      ASM_GENERATE_INTERNAL_LABEL (tmp_label, "COLDE", const_labelno);
+      ASM_GENERATE_INTERNAL_LABEL (tmp_label, "LCOLDE", const_labelno);
       cfun->cold_section_end_label = ggc_strdup (tmp_label);
       const_labelno++;
     }
