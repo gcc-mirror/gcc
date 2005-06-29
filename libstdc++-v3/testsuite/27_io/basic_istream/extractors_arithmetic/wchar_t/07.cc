@@ -1,4 +1,4 @@
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -59,8 +59,8 @@ void test07()
   VERIFY( is.good() );
 
   is.clear();
-  is >> h2; 
-  VERIFY( h2 == 0 );
+  is >> h2;
+  VERIFY( h2 == 1232224 );
   VERIFY( static_cast<bool>(is.rdstate() & std::ios_base::failbit) );
   VERIFY( static_cast<bool>(is.rdstate() & std::ios_base::eofbit) );
 
@@ -122,8 +122,9 @@ void test07()
   VERIFY( is.good() );
 
   is >> h2; 
-  VERIFY( h2 == 0 );
+  VERIFY( h2 == 1000000 );
   VERIFY( static_cast<bool>(is.rdstate() & std::ios_base::failbit) );
+  h2 = 0;
   is.clear();
 
   is >> h2; 
@@ -132,7 +133,7 @@ void test07()
   h2 = 0;
 
   is >> h2; 
-  VERIFY( h2 == 0 );
+  VERIFY( h2 == 1234567 );
   VERIFY( static_cast<bool>(is.rdstate() & std::ios_base::failbit) );
   VERIFY( static_cast<bool>(is.rdstate() & std::ios_base::eofbit) );
   is.clear();

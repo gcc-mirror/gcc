@@ -1,3 +1,25 @@
+2005-06-29  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/22131
+	* include/bits/locale_facets.tcc (num_get<>::_M_extract_int,
+	num_get<>::_M_extract_float, money_get<>::_M_extract):
+	Adjust to assign the result also when digit grouping is
+	wrong (but the grammar is correct), as per 22.2.2.1.2, p11-12
+	(NB: consistently for money_get too).
+	* config/locale/generic/c_locale.cc (__convert_from_v): Do
+	not check ios_base::failbit at the outset.
+	* config/locale/gnu/c_locale.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/22131.cc: New.
+	* testsuite/22_locale/money_get/get/wchar_t/22131.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/22131.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/22131.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/12.cc: Adjust.
+	* testsuite/22_locale/num_get/get/wchar_t/12.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/07.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/07.cc:
+	Likewise.
+
 2005-06-28  Paul Brook  <paul@codesourcery.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_SJLJ_EXCEPTIONS): Check for

@@ -1,6 +1,7 @@
 // Wrapper for underlying C-language localization -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005 
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,16 +47,13 @@ namespace std
     __convert_to_v(const char* __s, float& __v, ios_base::iostate& __err, 
 		   const __c_locale& __cloc)
     {
-      if (!(__err & ios_base::failbit))
-	{
-	  char* __sanity;
-	  errno = 0;
-	  float __f = __strtof_l(__s, &__sanity, __cloc);
-          if (__sanity != __s && errno != ERANGE)
-	    __v = __f;
-	  else
-	    __err |= ios_base::failbit;
-	}
+      char* __sanity;
+      errno = 0;
+      float __f = __strtof_l(__s, &__sanity, __cloc);
+      if (__sanity != __s && errno != ERANGE)
+	__v = __f;
+      else
+	__err |= ios_base::failbit;
     }
 
   template<>
@@ -63,16 +61,13 @@ namespace std
     __convert_to_v(const char* __s, double& __v, ios_base::iostate& __err, 
 		   const __c_locale& __cloc)
     {
-      if (!(__err & ios_base::failbit))
-	{
-	  char* __sanity;
-	  errno = 0;
-	  double __d = __strtod_l(__s, &__sanity, __cloc);
-          if (__sanity != __s && errno != ERANGE)
-	    __v = __d;
-	  else
-	    __err |= ios_base::failbit;
-	}
+      char* __sanity;
+      errno = 0;
+      double __d = __strtod_l(__s, &__sanity, __cloc);
+      if (__sanity != __s && errno != ERANGE)
+	__v = __d;
+      else
+	__err |= ios_base::failbit;
     }
 
   template<>
@@ -80,16 +75,13 @@ namespace std
     __convert_to_v(const char* __s, long double& __v, ios_base::iostate& __err,
 		   const __c_locale& __cloc)
     {
-      if (!(__err & ios_base::failbit))
-	{
-	  char* __sanity;
-	  errno = 0;
-	  long double __ld = __strtold_l(__s, &__sanity, __cloc);
-          if (__sanity != __s && errno != ERANGE)
-	    __v = __ld;
-	  else
-	    __err |= ios_base::failbit;
-	}
+      char* __sanity;
+      errno = 0;
+      long double __ld = __strtold_l(__s, &__sanity, __cloc);
+      if (__sanity != __s && errno != ERANGE)
+	__v = __ld;
+      else
+	__err |= ios_base::failbit;
     }
 
   void
