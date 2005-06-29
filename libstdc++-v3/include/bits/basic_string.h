@@ -404,7 +404,7 @@ namespace std
       basic_string();
 
       /**
-       *  @brief  Construct an empty string using allocator a.
+       *  @brief  Construct an empty string using allocator @a a.
        */
       explicit
       basic_string(const _Alloc& __a);
@@ -439,7 +439,7 @@ namespace std
        *  @param  n  Number of characters to copy.
        *  @param  a  Allocator to use (default is default allocator).
        *
-       *  NB: s must have at least n characters, '\0' has no special
+       *  NB: @a s must have at least @a n characters, '\0' has no special
        *  meaning.
        */
       basic_string(const _CharT* __s, size_type __n,
@@ -636,8 +636,8 @@ namespace std
       /**
        *  @brief  Attempt to preallocate enough memory for specified number of
        *          characters.
-       *  @param  n  Number of characters required.
-       *  @throw  std::length_error  If @a n exceeds @c max_size().
+       *  @param  res_arg  Number of characters required.
+       *  @throw  std::length_error  If @a res_arg exceeds @c max_size().
        *
        *  This function attempts to reserve enough memory for the
        *  %string to hold the specified number of characters.  If the
@@ -670,7 +670,7 @@ namespace std
       // Element access:
       /**
        *  @brief  Subscript access to the data contained in the %string.
-       *  @param  n  The index of the character to access.
+       *  @param  pos  The index of the character to access.
        *  @return  Read-only (constant) reference to the character.
        *
        *  This operator allows for easy, array-style, data access.
@@ -687,7 +687,7 @@ namespace std
 
       /**
        *  @brief  Subscript access to the data contained in the %string.
-       *  @param  n  The index of the character to access.
+       *  @param  pos  The index of the character to access.
        *  @return  Read/write reference to the character.
        *
        *  This operator allows for easy, array-style, data access.
@@ -765,7 +765,7 @@ namespace std
 
       /**
        *  @brief  Append a character.
-       *  @param s  The character to append.
+       *  @param c  The character to append.
        *  @return  Reference to this string.
        */
       basic_string&
@@ -1204,15 +1204,15 @@ namespace std
        *  @brief  Replace characters with value of a C substring.
        *  @param pos  Index of first character to replace.
        *  @param n1  Number of characters to be replaced.
-       *  @param str  C string to insert.
-       *  @param n2  Number of characters from str to use.
+       *  @param s  C string to insert.
+       *  @param n2  Number of characters from @a s to use.
        *  @return  Reference to this string.
        *  @throw  std::out_of_range  If @a pos1 > size().
        *  @throw  std::length_error  If new length exceeds @c max_size().
        *
        *  Removes the characters in the range [pos,pos + n1) from this string.
-       *  In place, the first @a n2 characters of @a str are inserted, or all
-       *  of @a str if @a n2 is too large.  If @a pos is beyond end of string,
+       *  In place, the first @a n2 characters of @a s are inserted, or all
+       *  of @a s if @a n2 is too large.  If @a pos is beyond end of string,
        *  out_of_range is thrown.  If the length of result exceeds max_size(),
        *  length_error is thrown.  The value of the string doesn't change if
        *  an error is thrown.
@@ -1225,13 +1225,13 @@ namespace std
        *  @brief  Replace characters with value of a C string.
        *  @param pos  Index of first character to replace.
        *  @param n1  Number of characters to be replaced.
-       *  @param str  C string to insert.
+       *  @param s  C string to insert.
        *  @return  Reference to this string.
        *  @throw  std::out_of_range  If @a pos > size().
        *  @throw  std::length_error  If new length exceeds @c max_size().
        *
        *  Removes the characters in the range [pos,pos + n1) from this string.
-       *  In place, the first @a n characters of @a str are inserted.  If @a
+       *  In place, the first @a n characters of @a s are inserted.  If @a
        *  pos is beyond end of string, out_of_range is thrown.  If the length
        *  of result exceeds max_size(), length_error is thrown.  The value of
        *  the string doesn't change if an error is thrown.

@@ -1,3 +1,8 @@
+2005-06-29  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* include/bits/basic_string.h, include/bits/locale_facets.h: Fix
+	Doxygen comments that use wrong parameter and function names.
+
 2005-06-29  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 37.
