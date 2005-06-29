@@ -1490,19 +1490,22 @@ s390_decompose_address (rtx addr, struct s390_address *out)
   /* Validate displacement.  */
   if (!disp)
     {
-      /* If the argument pointer or the return address pointer are involved,
-	 the displacement will change later anyway as the virtual registers get
-	 eliminated.  This could make a valid displacement invalid, but it is 
-	 more likely to make an invalid displacement valid, because we sometimes
-	 access the register save area via negative offsets to one of those 
-	 registers.
+      /* If virtual registers are involved, the displacement will change later 
+	 anyway as the virtual registers get eliminated.  This could make a 
+	 valid displacement invalid, but it is more likely to make an invalid 
+	 displacement valid, because we sometimes access the register save area 
+	 via negative offsets to one of those registers.
 	 Thus we don't check the displacement for validity here.  If after
 	 elimination the displacement turns out to be invalid after all,
 	 this is fixed up by reload in any case.  */
       if (base != arg_pointer_rtx 
 	  && indx != arg_pointer_rtx 
 	  && base != return_address_pointer_rtx 
-	  && indx != return_address_pointer_rtx)
+	  && indx != return_address_pointer_rtx
+	  && base != frame_pointer_rtx 
+	  && indx != frame_pointer_rtx
+	  && base != virtual_stack_vars_rtx 
+	  && indx != virtual_stack_vars_rtx)
 	if (!DISP_IN_RANGE (offset))
 	  return false;
     }
@@ -5865,7 +5868,8 @@ s390_frame_info (void)
     return;
 
   if (!TARGET_PACKED_STACK)
-    cfun_frame_layout.frame_size += (STARTING_FRAME_OFFSET
+    cfun_frame_layout.frame_size += (STACK_POINTER_OFFSET
+				     + current_function_outgoing_args_size
 				     + cfun_frame_layout.high_fprs * 8);
   else
     {
@@ -6008,7 +6012,9 @@ s390_initial_elimination_offset (int from, int to)
   switch (from)
     {
     case FRAME_POINTER_REGNUM:
-      offset = 0;
+      offset = (get_frame_size() 
+		+ STACK_POINTER_OFFSET
+		+ current_function_outgoing_args_size);
       break;
 
     case ARG_POINTER_REGNUM:
