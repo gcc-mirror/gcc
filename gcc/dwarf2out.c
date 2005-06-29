@@ -499,7 +499,8 @@ expand_builtin_init_dwarf_reg_sizes (tree address)
 	if (offset < 0)
 	  continue;
 
-	emit_move_insn (adjust_address (mem, mode, offset), GEN_INT (size));
+	emit_move_insn (adjust_address (mem, mode, offset),
+			gen_int_mode (size, mode));
       }
 
 #ifdef DWARF_ALT_FRAME_RETURN_COLUMN
