@@ -1154,6 +1154,9 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
   bool warned = false;
   bool retval = true;
 
+#define DECL_EXTERN_INLINE(DECL) (DECL_DECLARED_INLINE_P (DECL)  \
+				  && DECL_EXTERNAL (DECL))
+
   /* If we have error_mark_node for either decl or type, just discard
      the previous decl - we're in an error cascade already.  */
   if (olddecl == error_mark_node || newdecl == error_mark_node)
@@ -1282,6 +1285,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
      Multiple definitions are not allowed (6.9p3,5) but GCC permits
      two definitions if one is 'extern inline' and one is not.  The non-
      extern-inline definition supersedes the extern-inline definition.  */
+
   else if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
       /* If you declare a built-in function name as static, or
@@ -1304,45 +1308,25 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	{
 	  if (DECL_INITIAL (olddecl))
 	    {
-	      /* If both decls have extern inline and are in the same TU,
-	         reject the new decl.  */
-	      if (DECL_DECLARED_INLINE_P (olddecl)
-		  && DECL_EXTERNAL (olddecl)
-		  && DECL_DECLARED_INLINE_P (newdecl)
-		  && DECL_EXTERNAL (newdecl)
+	      /* If both decls are in the same TU and the new declaration
+		 isn't overridding an extern inline reject the new decl.
+		 When we handle c99 style inline rules we'll want to reject
+		 the following:
+
+		 DECL_EXTERN_INLINE (olddecl)
+		 && !DECL_EXTERN_INLINE (newdecl)
+
+		 if they're in the same translation unit. Until we implement
+		 the full semantics we accept the construct.  */
+	      if (!(DECL_EXTERN_INLINE (olddecl)
+		    && !DECL_EXTERN_INLINE (newdecl))
 		  && same_translation_unit_p (newdecl, olddecl))
 		{
 		  error ("%Jredefinition of %qD", newdecl, newdecl);
 		  locate_old_decl (olddecl, error);
 		  return false;
 		}
-	      /* If both decls have not extern inline, reject the new decl.  */
-	      if (!DECL_DECLARED_INLINE_P (olddecl)
-		  && !DECL_EXTERNAL (olddecl)
-		  && !DECL_DECLARED_INLINE_P (newdecl)
-		  && !DECL_EXTERNAL (newdecl))
-		{
-		  error ("%Jredefinition of %qD", newdecl, newdecl);
-		  locate_old_decl (olddecl, error);
-		  return false;
-		}
-	      /* If the new decl is declared as extern inline, error if they are
-	         in the same TU, otherwise retain the old decl.  */
-	      if (!DECL_DECLARED_INLINE_P (olddecl)
-		  && !DECL_EXTERNAL (olddecl)
-		  && DECL_DECLARED_INLINE_P (newdecl)
-		  && DECL_EXTERNAL (newdecl))
-		{
-		  if (same_translation_unit_p (newdecl, olddecl))
-		    {
-		      error ("%Jredefinition of %qD", newdecl, newdecl);
-		      locate_old_decl (olddecl, error);
-		      return false;
-		    }
-		  else
-		    retval = false;
-		}
-	   }
+	    }
 	}
       /* If we have a prototype after an old-style function definition,
 	 the argument types must be checked specially.  */
@@ -1371,8 +1355,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	     occur only in Objective C; see also above.  (FIXME: Make
 	     Objective C use normal builtins.)  */
 	  if (!DECL_IS_BUILTIN (olddecl)
-	      && !(DECL_EXTERNAL (olddecl)
-		   && DECL_DECLARED_INLINE_P (olddecl)))
+	      && !DECL_EXTERN_INLINE (olddecl))
 	    {
 	      error ("%Jstatic declaration of %qD follows "
 		     "non-static declaration", newdecl, newdecl);
@@ -1584,6 +1567,8 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
   /* Report location of previous decl/defn in a consistent manner.  */
   if (warned || pedwarned)
     locate_old_decl (olddecl, pedwarned ? pedwarn : warning0);
+
+#undef DECL_EXTERN_INLINE
 
   return retval;
 }
