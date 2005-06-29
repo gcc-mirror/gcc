@@ -1,3 +1,20 @@
+2005-06-29  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c-tree.h (default_function_array_conversion): Take and return
+	struct c_expr.
+	* c-typeck.c (default_function_array_conversion): Split into
+	array_to_pointer_conversion and function_to_pointer_conversion.
+	Take and return struct c_expr.
+	(array_to_pointer_conversion): Do not handle type qualifiers or
+	COMPOUND_EXPRs specially.
+	(build_function_call): Call function_to_pointer_conversion for
+	function designators.
+	(build_unary_op): Call array_to_pointer_conversion, not
+	default_function_array_conversion.
+	(digest_init, output_init_element): Likewise.
+	* c-parser.c: All callers of default_function_array_conversion
+	changed.
+
 2005-06-29  Ziemowit Laski  <zlaski@apple.com>
 
 	* config/darwin.c (machopic_select_section): constant ObjC string
