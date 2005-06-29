@@ -1,3 +1,8 @@
+2005-06-29  Ian Lance Taylor  <ian@airs.com>
+
+	* dwarf2out.c (expand_builtin_init_dwarf_reg_sizes): Change
+	GEN_INT to gen_int_for_mode when storing register size to memory.
+
 2005-06-29  Stuart Hastings  <stuart@apple.com>
 
 	* gcc/config/i386/mmintrin.h: Mark vector intrinsics always_inline.
