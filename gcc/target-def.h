@@ -362,6 +362,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #define TARGET_ALIGN_ANON_BITFIELD hook_bool_void_false
 #define TARGET_RTX_COSTS hook_bool_rtx_int_int_intp_false
 #define TARGET_MANGLE_FUNDAMENTAL_TYPE hook_constcharptr_tree_null
+#define TARGET_ALLOCATE_INITIAL_VALUE NULL
 
 #ifndef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS hook_void_void
@@ -566,6 +567,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
   TARGET_VECTOR_OPAQUE_P,			\
   TARGET_RTX_COSTS,				\
   TARGET_ADDRESS_COST,				\
+  TARGET_ALLOCATE_INITIAL_VALUE,		\
   TARGET_DWARF_REGISTER_SPAN,                   \
   TARGET_FIXED_CONDITION_CODE_REGS,		\
   TARGET_CC_MODES_COMPATIBLE,			\

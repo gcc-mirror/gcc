@@ -446,6 +446,10 @@ struct gcc_target
      invalid addresses.  */
   int (* address_cost) (rtx x);
 
+  /* Return where to allocate pseudo for a given hard register initial
+     value.  */
+  rtx (* allocate_initial_value) (rtx x);
+
   /* Given a register, this hook should return a parallel of registers
      to represent where to find the register pieces.  Define this hook
      if the register and its mode are represented in Dwarf in

@@ -376,47 +376,50 @@ emit_initial_value_sets (void)
 void
 allocate_initial_values (rtx *reg_equiv_memory_loc ATTRIBUTE_UNUSED)
 {
-#ifdef ALLOCATE_INITIAL_VALUE
-  struct initial_value_struct *ivs = cfun->hard_reg_initial_vals;
-  int i;
-
-  if (ivs == 0)
-    return;
-
-  for (i = 0; i < ivs->num_entries; i++)
+  if (targetm.allocate_initial_value)
     {
-      int regno = REGNO (ivs->entries[i].pseudo);
-      rtx x = ALLOCATE_INITIAL_VALUE (ivs->entries[i].hard_reg);
+      struct initial_value_struct *ivs = cfun->hard_reg_initial_vals;
+      int i;
 
-      if (x && REG_N_SETS (REGNO (ivs->entries[i].pseudo)) <= 1)
+      if (ivs == 0)
+	return;
+
+      for (i = 0; i < ivs->num_entries; i++)
 	{
-	  if (MEM_P (x))
-	    reg_equiv_memory_loc[regno] = x;
-	  else
+	  int regno = REGNO (ivs->entries[i].pseudo);
+	  rtx x = targetm.allocate_initial_value (ivs->entries[i].hard_reg);
+  
+	  if (x && REG_N_SETS (REGNO (ivs->entries[i].pseudo)) <= 1)
 	    {
-	      basic_block bb;
-	      int new_regno;
-
-	      gcc_assert (REG_P (x));
-	      new_regno = REGNO (x);
-	      reg_renumber[regno] = new_regno;
-	      /* Poke the regno right into regno_reg_rtx so that even
-	     	 fixed regs are accepted.  */
-	      REGNO (ivs->entries[i].pseudo) = new_regno;
-	      /* Update global register liveness information.  */
-	      FOR_EACH_BB (bb)
+	      if (MEM_P (x))
+		reg_equiv_memory_loc[regno] = x;
+	      else
 		{
-		  struct rtl_bb_info *info = bb->il.rtl;
+		  basic_block bb;
+		  int new_regno;
 
-		  if (REGNO_REG_SET_P(info->global_live_at_start, regno))
-		    SET_REGNO_REG_SET (info->global_live_at_start, new_regno);
-		  if (REGNO_REG_SET_P(info->global_live_at_end, regno))
-		    SET_REGNO_REG_SET (info->global_live_at_end, new_regno);
+		  gcc_assert (REG_P (x));
+		  new_regno = REGNO (x);
+		  reg_renumber[regno] = new_regno;
+		  /* Poke the regno right into regno_reg_rtx so that even
+		     fixed regs are accepted.  */
+		  REGNO (ivs->entries[i].pseudo) = new_regno;
+		  /* Update global register liveness information.  */
+		  FOR_EACH_BB (bb)
+		    {
+		      struct rtl_bb_info *info = bb->il.rtl;
+
+		      if (REGNO_REG_SET_P(info->global_live_at_start, regno))
+			SET_REGNO_REG_SET (info->global_live_at_start,
+					   new_regno);
+		      if (REGNO_REG_SET_P(info->global_live_at_end, regno))
+			SET_REGNO_REG_SET (info->global_live_at_end,
+					   new_regno);
+		    }
 		}
 	    }
 	}
     }
-#endif
 }
 
 #include "gt-integrate.h"
