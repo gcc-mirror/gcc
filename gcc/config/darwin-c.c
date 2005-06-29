@@ -29,6 +29,7 @@ Boston, MA 02110-1301, USA.  */
 #include "c-tree.h"
 #include "c-incpath.h"
 #include "toplev.h"
+#include "flags.h"
 #include "tm_p.h"
 #include "cppdefault.h"
 #include "prefix.h"

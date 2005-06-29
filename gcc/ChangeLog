@@ -1,3 +1,12 @@
+2006-06-28  Ziemowit Laski  <zlaski@apple.com>
+
+	* c-common.c (flag_next_runtime): Move...
+	* toplev.c (flag_next_runtime): ... here.
+	* c-common.h (flag_next_runtime): Move...
+	* flags.h (flag_next_runtime): ... here.
+	* config/darwin-c.c: Include flags.h.
+	* config/t-darwin (darwin-c.o): Depend on flags.h.
+
 2005-06-29  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/linux-unwind.h (shmedia_fallback_frame_state):
