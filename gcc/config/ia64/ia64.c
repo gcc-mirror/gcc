@@ -1689,6 +1689,18 @@ ia64_expand_vecint_minmax (enum rtx_code code, enum machine_mode mode,
   if (mode == V4HImode && (code == SMIN || code == SMAX))
     return false;
 
+  /* This combination can be implemented with only saturating subtraction.  */
+  if (mode == V4HImode && code == UMAX)
+    {
+      rtx x, tmp = gen_reg_rtx (mode);
+
+      x = gen_rtx_US_MINUS (mode, operands[1], operands[2]);
+      emit_insn (gen_rtx_SET (VOIDmode, tmp, x));
+
+      emit_insn (gen_addv4hi3 (operands[0], tmp, operands[2]));
+      return true;
+    }
+
   /* Everything else implemented via vector comparisons.  */
   xops[0] = operands[0];
   xops[4] = xops[1] = operands[1];
