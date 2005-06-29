@@ -85,7 +85,10 @@ shmedia_fallback_frame_state (struct _Unwind_Context *context,
 	struct siginfo info;
 	struct ucontext uc;
       } *rt_ = context->cfa;
-      sc = (struct sigcontext *) &rt_->uc.uc_mcontext;
+      /* The void * cast is necessary to avoid an aliasing warning.
+         The aliasing warning is correct, but should not be a problem
+         because it does not alias anything.  */
+      sc = (struct sigcontext *) (void *) &rt_->uc.uc_mcontext;
     }
   else
     return _URC_END_OF_STACK;
@@ -178,7 +181,10 @@ sh_fallback_frame_state (struct _Unwind_Context *context,
 	struct siginfo info;
 	struct ucontext uc;
       } *rt_ = context->cfa;
-      sc = (struct sigcontext *) &rt_->uc.uc_mcontext;
+      /* The void * cast is necessary to avoid an aliasing warning.
+         The aliasing warning is correct, but should not be a problem
+         because it does not alias anything.  */
+      sc = (struct sigcontext *) (void *) &rt_->uc.uc_mcontext;
     }
   else
     return _URC_END_OF_STACK;
