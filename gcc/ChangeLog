@@ -1,3 +1,11 @@
+2005-06-29  Richard Henderson  <rth@redhat.com>
+
+	* tree-vect-transform.c (vect_min_worthwhile_factor): Declare.
+	(vect_create_epilog_for_reduction): Don't use vec_shr if the
+	operation is emulated.
+	(vectorizable_reduction): Duplicate vect_min_worthwhile_factor
+	tests from vectorizable_operation.
+
 2005-06-29  Caroline Tice  <ctice@apple.com>
 
 	Fix PR 21956

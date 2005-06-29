@@ -72,6 +72,7 @@ static void vect_update_inits_of_drs (loop_vec_info, tree);
 static void vect_do_peeling_for_alignment (loop_vec_info, struct loops *);
 static void vect_do_peeling_for_loop_bound 
   (loop_vec_info, tree *, struct loops *);
+static int vect_min_worthwhile_factor (enum tree_code);
 
 
 /* Function vect_get_new_vect_var.
@@ -940,6 +941,21 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
       else
 	have_whole_vector_shift = false;
 
+      /* Regardless of whether we have a whole vector shift, if we're
+	 emulating the operation via tree-vect-generic, we don't want
+	 to use it.  Only the first round of the reduction is likely
+	 to still be profitable via emulation.  */
+      /* ??? It might be better to emit a reduction tree code here, so that
+	 tree-vect-generic can expand the first round via bit tricks.  */
+      if (!VECTOR_MODE_P (mode))
+	have_whole_vector_shift = false;
+      else
+	{
+	  optab optab = optab_for_tree_code (code, vectype);
+	  if (optab->handlers[mode].insn_code == CODE_FOR_nothing)
+	    have_whole_vector_shift = false;
+	}
+
       if (have_whole_vector_shift)
         {
 	  /*** Case 2:
@@ -1211,6 +1227,21 @@ vectorizable_reduction (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
     {
       if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
         fprintf (vect_dump, "op not supported by target.");
+      if (GET_MODE_SIZE (vec_mode) != UNITS_PER_WORD
+          || LOOP_VINFO_VECT_FACTOR (loop_vinfo)
+	     < vect_min_worthwhile_factor (code))
+        return false;
+      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	fprintf (vect_dump, "proceeding using word mode.");
+    }
+
+  /* Worthwhile without SIMD support?  */
+  if (!VECTOR_MODE_P (TYPE_MODE (vectype))
+      && LOOP_VINFO_VECT_FACTOR (loop_vinfo)
+	 < vect_min_worthwhile_factor (code))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	fprintf (vect_dump, "not worthwhile without SIMD support.");
       return false;
     }
 
