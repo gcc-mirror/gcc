@@ -550,7 +550,7 @@ public class Thread implements Runnable
    *
    * @return whether this Thread is alive
    */
-  public final boolean isAlive()
+  public final synchronized boolean isAlive()
   {
     return alive_flag;
   }

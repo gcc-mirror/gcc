@@ -1,5 +1,15 @@
 2005-06-29  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/22211:
+	* testsuite/libjava.lang/pr22211.java: New file.
+	* java/lang/natThread.cc (finish_): Synchronize when updating
+	alive_flag.
+	(_Jv_AttachCurrentThread): Likewise.
+	(interrupt): Only call _Jv_ThreadInterrupt if thread is alive.
+	* java/lang/Thread.java (isAlive): Now synchronized.
+
+2005-06-29  Tom Tromey  <tromey@redhat.com>
+
 	* interpret.cc (run) <insn_checkcast, checkcast_resolved>: Use
 	_Jv_CheckCast.
 
