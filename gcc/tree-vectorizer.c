@@ -1870,9 +1870,10 @@ vect_is_simple_reduction (struct loop *loop ATTRIBUTE_UNUSED,
       return NULL_TREE;
     }
 
-  /* Check that it's ok to change the order of the computation  */
+  /* Check that it's ok to change the order of the computation.  */
   type = TREE_TYPE (operation);
-  if (type != TREE_TYPE (op1) || type != TREE_TYPE (op2))
+  if (TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (TREE_TYPE (op1))
+      || TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (TREE_TYPE (op2)))
     {
       if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
         {
