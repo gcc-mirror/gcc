@@ -1,3 +1,14 @@
+2005-06-29  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (s390_decompose_address): Accept invalid
+	displacements for addresses containing frame_pointer_rtx or
+	virtual_stack_vars_rtx.
+	(s390_frame_info): Replaced use of STARTING_FRAME_OFFSET.
+	(s390_initial_elimination_offset): New offset when eliminating the 
+	soft frame pointer.
+	* config/s390/s390.h (FRAME_GROWS_DOWNWARD): Defined as 1.
+	(STARTING_FRAME_OFFSET, STACK_DYNAMIC_OFFSET): Definitions changed.
+
 2006-06-28  Ziemowit Laski  <zlaski@apple.com>
 
 	* c-common.c (flag_next_runtime): Move...
