@@ -2880,7 +2880,7 @@ c_parser_initializer (c_parser *parser)
       ret = c_parser_expr_no_commas (parser, NULL);
       if (TREE_CODE (ret.value) != STRING_CST
 	  && TREE_CODE (ret.value) != COMPOUND_LITERAL_EXPR)
-	ret.value = default_function_array_conversion (ret.value);
+	ret = default_function_array_conversion (ret);
       return ret;
     }
 }
@@ -3036,11 +3036,11 @@ c_parser_initelt (c_parser *parser)
 		  rec = first;
 		  while (c_parser_next_token_is (parser, CPP_COMMA))
 		    {
-		      tree next;
+		      struct c_expr next;
 		      c_parser_consume_token (parser);
-		      next = c_parser_expr_no_commas (parser, NULL).value;
+		      next = c_parser_expr_no_commas (parser, NULL);
 		      next = default_function_array_conversion (next);
-		      rec = build_compound_expr (rec, next);
+		      rec = build_compound_expr (rec, next.value);
 		    }
 		parse_message_args:
 		  /* Now parse the objc-message-args.  */
@@ -3130,7 +3130,7 @@ c_parser_initval (c_parser *parser, struct c_expr *after)
       if (init.value != NULL_TREE
 	  && TREE_CODE (init.value) != STRING_CST
 	  && TREE_CODE (init.value) != COMPOUND_LITERAL_EXPR)
-	init.value = default_function_array_conversion (init.value);
+	init = default_function_array_conversion (init);
     }
   process_init_element (init);
 }
@@ -3990,7 +3990,8 @@ c_parser_asm_operands (c_parser *parser, bool convert_p)
   tree list = NULL_TREE;
   while (true)
     {
-      tree name, str, expr;
+      tree name, str;
+      struct c_expr expr;
       if (c_parser_next_token_is (parser, CPP_OPEN_SQUARE))
 	{
 	  c_parser_consume_token (parser);
@@ -4021,7 +4022,7 @@ c_parser_asm_operands (c_parser *parser, bool convert_p)
 	  c_lex_string_translate = 0;
 	  return NULL_TREE;
 	}
-      expr = c_parser_expression (parser).value;
+      expr = c_parser_expression (parser);
       if (convert_p)
 	expr = default_function_array_conversion (expr);
       c_lex_string_translate = 0;
@@ -4031,7 +4032,7 @@ c_parser_asm_operands (c_parser *parser, bool convert_p)
 	  return NULL_TREE;
 	}
       list = chainon (list, build_tree_list (build_tree_list (name, str),
-					     expr));
+					     expr.value));
       if (c_parser_next_token_is (parser, CPP_COMMA))
 	c_parser_consume_token (parser);
       else
@@ -4129,7 +4130,7 @@ c_parser_expr_no_commas (c_parser *parser, struct c_expr *after)
     }
   c_parser_consume_token (parser);
   rhs = c_parser_expr_no_commas (parser, NULL);
-  rhs.value = default_function_array_conversion (rhs.value);
+  rhs = default_function_array_conversion (rhs);
   ret.value = build_modify_expr (lhs.value, code, rhs.value);
   if (code == NOP_EXPR)
     ret.original_code = MODIFY_EXPR;
@@ -4163,7 +4164,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
   cond = c_parser_binary_expression (parser, after);
   if (c_parser_next_token_is_not (parser, CPP_QUERY))
     return cond;
-  cond.value = default_function_array_conversion (cond.value);
+  cond = default_function_array_conversion (cond);
   c_parser_consume_token (parser);
   if (c_parser_next_token_is (parser, CPP_COLON))
     {
@@ -4192,7 +4193,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
       return ret;
     }
   exp2 = c_parser_conditional_expression (parser, NULL);
-  exp2.value = default_function_array_conversion (exp2.value);
+  exp2 = default_function_array_conversion (exp2);
   skip_evaluation -= cond.value == truthvalue_true_node;
   ret.value = build_conditional_expr (cond.value, exp1.value, exp2.value);
   ret.original_code = ERROR_MARK;
@@ -4316,10 +4317,10 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after)
       default:								      \
 	break;								      \
       }									      \
-    stack[sp - 1].expr.value						      \
-      = default_function_array_conversion (stack[sp - 1].expr.value);	      \
-    stack[sp].expr.value						      \
-      = default_function_array_conversion (stack[sp].expr.value);	      \
+    stack[sp - 1].expr							      \
+      = default_function_array_conversion (stack[sp - 1].expr);		      \
+    stack[sp].expr							      \
+      = default_function_array_conversion (stack[sp].expr);		      \
     stack[sp - 1].expr = parser_build_binary_op (stack[sp].op,		      \
 						 stack[sp - 1].expr,	      \
 						 stack[sp].expr);	      \
@@ -4420,15 +4421,15 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after)
       switch (ocode)
 	{
 	case TRUTH_ANDIF_EXPR:
-	  stack[sp].expr.value
-	    = default_function_array_conversion (stack[sp].expr.value);
+	  stack[sp].expr
+	    = default_function_array_conversion (stack[sp].expr);
 	  stack[sp].expr.value = c_objc_common_truthvalue_conversion
 	    (default_conversion (stack[sp].expr.value));
 	  skip_evaluation += stack[sp].expr.value == truthvalue_false_node;
 	  break;
 	case TRUTH_ORIF_EXPR:
-	  stack[sp].expr.value
-	    = default_function_array_conversion (stack[sp].expr.value);
+	  stack[sp].expr
+	    = default_function_array_conversion (stack[sp].expr);
 	  stack[sp].expr.value = c_objc_common_truthvalue_conversion
 	    (default_conversion (stack[sp].expr.value));
 	  skip_evaluation += stack[sp].expr.value == truthvalue_true_node;
@@ -4472,7 +4473,7 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
     {
       struct c_type_name *type_name;
       struct c_expr ret;
-      tree expr;
+      struct c_expr expr;
       c_parser_consume_token (parser);
       type_name = c_parser_type_name (parser);
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
@@ -4485,9 +4486,9 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
       if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
 	return c_parser_postfix_expression_after_paren_type (parser,
 							     type_name);
-      expr = c_parser_cast_expression (parser, NULL).value;
+      expr = c_parser_cast_expression (parser, NULL);
       expr = default_function_array_conversion (expr);
-      ret.value = c_cast_expr (type_name, expr);
+      ret.value = c_cast_expr (type_name, expr.value);
       ret.original_code = ERROR_MARK;
       return ret;
     }
@@ -4532,12 +4533,12 @@ c_parser_unary_expression (c_parser *parser)
     case CPP_PLUS_PLUS:
       c_parser_consume_token (parser);
       op = c_parser_cast_expression (parser, NULL);
-      op.value = default_function_array_conversion (op.value);
+      op = default_function_array_conversion (op);
       return parser_build_unary_op (PREINCREMENT_EXPR, op);
     case CPP_MINUS_MINUS:
       c_parser_consume_token (parser);
       op = c_parser_cast_expression (parser, NULL);
-      op.value = default_function_array_conversion (op.value);
+      op = default_function_array_conversion (op);
       return parser_build_unary_op (PREDECREMENT_EXPR, op);
     case CPP_AND:
       c_parser_consume_token (parser);
@@ -4546,7 +4547,7 @@ c_parser_unary_expression (c_parser *parser)
     case CPP_MULT:
       c_parser_consume_token (parser);
       op = c_parser_cast_expression (parser, NULL);
-      op.value = default_function_array_conversion (op.value);
+      op = default_function_array_conversion (op);
       ret.value = build_indirect_ref (op.value, "unary *");
       ret.original_code = ERROR_MARK;
       return ret;
@@ -4556,22 +4557,22 @@ c_parser_unary_expression (c_parser *parser)
 	warning (OPT_Wtraditional,
 		 "traditional C rejects the unary plus operator");
       op = c_parser_cast_expression (parser, NULL);
-      op.value = default_function_array_conversion (op.value);
+      op = default_function_array_conversion (op);
       return parser_build_unary_op (CONVERT_EXPR, op);
     case CPP_MINUS:
       c_parser_consume_token (parser);
       op = c_parser_cast_expression (parser, NULL);
-      op.value = default_function_array_conversion (op.value);
+      op = default_function_array_conversion (op);
       return parser_build_unary_op (NEGATE_EXPR, op);
     case CPP_COMPL:
       c_parser_consume_token (parser);
       op = c_parser_cast_expression (parser, NULL);
-      op.value = default_function_array_conversion (op.value);
+      op = default_function_array_conversion (op);
       return parser_build_unary_op (BIT_NOT_EXPR, op);
     case CPP_NOT:
       c_parser_consume_token (parser);
       op = c_parser_cast_expression (parser, NULL);
-      op.value = default_function_array_conversion (op.value);
+      op = default_function_array_conversion (op);
       return parser_build_unary_op (TRUTH_NOT_EXPR, op);
     case CPP_AND_AND:
       /* Refer to the address of a label as a pointer.  */
@@ -4605,12 +4606,12 @@ c_parser_unary_expression (c_parser *parser)
 	case RID_REALPART:
 	  c_parser_consume_token (parser);
 	  op = c_parser_cast_expression (parser, NULL);
-	  op.value = default_function_array_conversion (op.value);
+	  op = default_function_array_conversion (op);
 	  return parser_build_unary_op (REALPART_EXPR, op);
 	case RID_IMAGPART:
 	  c_parser_consume_token (parser);
 	  op = c_parser_cast_expression (parser, NULL);
-	  op.value = default_function_array_conversion (op.value);
+	  op = default_function_array_conversion (op);
 	  return parser_build_unary_op (IMAGPART_EXPR, op);
 	default:
 	  return c_parser_postfix_expression (parser);
@@ -5250,7 +5251,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	case CPP_DOT:
 	  /* Structure element reference.  */
 	  c_parser_consume_token (parser);
-	  expr.value = default_function_array_conversion (expr.value);
+	  expr = default_function_array_conversion (expr);
 	  if (c_parser_next_token_is (parser, CPP_NAME))
 	    ident = c_parser_peek_token (parser)->value;
 	  else
@@ -5267,7 +5268,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	case CPP_DEREF:
 	  /* Structure element reference.  */
 	  c_parser_consume_token (parser);
-	  expr.value = default_function_array_conversion (expr.value);
+	  expr = default_function_array_conversion (expr);
 	  if (c_parser_next_token_is (parser, CPP_NAME))
 	    ident = c_parser_peek_token (parser)->value;
 	  else
@@ -5285,14 +5286,14 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	case CPP_PLUS_PLUS:
 	  /* Postincrement.  */
 	  c_parser_consume_token (parser);
-	  expr.value = default_function_array_conversion (expr.value);
+	  expr = default_function_array_conversion (expr);
 	  expr.value = build_unary_op (POSTINCREMENT_EXPR, expr.value, 0);
 	  expr.original_code = ERROR_MARK;
 	  break;
 	case CPP_MINUS_MINUS:
 	  /* Postdecrement.  */
 	  c_parser_consume_token (parser);
-	  expr.value = default_function_array_conversion (expr.value);
+	  expr = default_function_array_conversion (expr);
 	  expr.value = build_unary_op (POSTDECREMENT_EXPR, expr.value, 0);
 	  expr.original_code = ERROR_MARK;
 	  break;
@@ -5319,7 +5320,7 @@ c_parser_expression (c_parser *parser)
       struct c_expr next;
       c_parser_consume_token (parser);
       next = c_parser_expr_no_commas (parser, NULL);
-      next.value = default_function_array_conversion (next.value);
+      next = default_function_array_conversion (next);
       expr.value = build_compound_expr (expr.value, next.value);
       expr.original_code = COMPOUND_EXPR;
     }
@@ -5334,7 +5335,7 @@ c_parser_expression_conv (c_parser *parser)
 {
   struct c_expr expr;
   expr = c_parser_expression (parser);
-  expr.value = default_function_array_conversion (expr.value);
+  expr = default_function_array_conversion (expr);
   return expr;
 }
 
@@ -5353,14 +5354,14 @@ c_parser_expr_list (c_parser *parser, bool convert_p)
   tree ret, cur;
   expr = c_parser_expr_no_commas (parser, NULL);
   if (convert_p)
-    expr.value = default_function_array_conversion (expr.value);
+    expr = default_function_array_conversion (expr);
   ret = cur = build_tree_list (NULL_TREE, expr.value);
   while (c_parser_next_token_is (parser, CPP_COMMA))
     {
       c_parser_consume_token (parser);
       expr = c_parser_expr_no_commas (parser, NULL);
       if (convert_p)
-	expr.value = default_function_array_conversion (expr.value);
+	expr = default_function_array_conversion (expr);
       cur = TREE_CHAIN (cur) = build_tree_list (NULL_TREE, expr.value);
     }
   return ret;

@@ -1259,103 +1259,116 @@ decl_constant_value_for_broken_optimization (tree decl)
   return ret;
 }
 
+/* Convert the array expression EXP to a pointer.  */
+static tree
+array_to_pointer_conversion (tree exp)
+{
+  tree orig_exp = exp;
+  tree type = TREE_TYPE (exp);
+  tree adr;
+  tree restype = TREE_TYPE (type);
+  tree ptrtype;
+
+  gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
+
+  STRIP_TYPE_NOPS (exp);
+
+  if (TREE_NO_WARNING (orig_exp))
+    TREE_NO_WARNING (exp) = 1;
+
+  ptrtype = build_pointer_type (restype);
+
+  if (TREE_CODE (exp) == INDIRECT_REF)
+    return convert (ptrtype, TREE_OPERAND (exp, 0));
+
+  if (TREE_CODE (exp) == VAR_DECL)
+    {
+      /* We are making an ADDR_EXPR of ptrtype.  This is a valid
+	 ADDR_EXPR because it's the best way of representing what
+	 happens in C when we take the address of an array and place
+	 it in a pointer to the element type.  */
+      adr = build1 (ADDR_EXPR, ptrtype, exp);
+      if (!c_mark_addressable (exp))
+	return error_mark_node;
+      TREE_SIDE_EFFECTS (adr) = 0;   /* Default would be, same as EXP.  */
+      return adr;
+    }
+
+  /* This way is better for a COMPONENT_REF since it can
+     simplify the offset for a component.  */
+  adr = build_unary_op (ADDR_EXPR, exp, 1);
+  return convert (ptrtype, adr);
+}
+
+/* Convert the function expression EXP to a pointer.  */
+static tree
+function_to_pointer_conversion (tree exp)
+{
+  tree orig_exp = exp;
+
+  gcc_assert (TREE_CODE (TREE_TYPE (exp)) == FUNCTION_TYPE);
+
+  STRIP_TYPE_NOPS (exp);
+
+  if (TREE_NO_WARNING (orig_exp))
+    TREE_NO_WARNING (exp) = 1;
+
+  return build_unary_op (ADDR_EXPR, exp, 0);
+}
 
 /* Perform the default conversion of arrays and functions to pointers.
    Return the result of converting EXP.  For any other expression, just
    return EXP after removing NOPs.  */
 
-tree
-default_function_array_conversion (tree exp)
+struct c_expr
+default_function_array_conversion (struct c_expr exp)
 {
-  tree orig_exp;
-  tree type = TREE_TYPE (exp);
+  tree orig_exp = exp.value;
+  tree type = TREE_TYPE (exp.value);
   enum tree_code code = TREE_CODE (type);
-  int not_lvalue = 0;
 
-  /* Strip NON_LVALUE_EXPRs and no-op conversions, since we aren't using as
-     an lvalue.
-
-     Do not use STRIP_NOPS here!  It will remove conversions from pointer
-     to integer and cause infinite recursion.  */
-  orig_exp = exp;
-  while (TREE_CODE (exp) == NON_LVALUE_EXPR
-	 || (TREE_CODE (exp) == NOP_EXPR
-	     && TREE_TYPE (TREE_OPERAND (exp, 0)) == TREE_TYPE (exp)))
+  switch (code)
     {
-      if (TREE_CODE (exp) == NON_LVALUE_EXPR)
-	not_lvalue = 1;
-      exp = TREE_OPERAND (exp, 0);
+    case ARRAY_TYPE:
+      {
+	bool not_lvalue = false;
+	bool lvalue_array_p;
+
+	while ((TREE_CODE (exp.value) == NON_LVALUE_EXPR
+		|| TREE_CODE (exp.value) == NOP_EXPR)
+	       && TREE_TYPE (TREE_OPERAND (exp.value, 0)) == type)
+	  {
+	    if (TREE_CODE (exp.value) == NON_LVALUE_EXPR)
+	      not_lvalue = true;
+	    exp.value = TREE_OPERAND (exp.value, 0);
+	  }
+
+	if (TREE_NO_WARNING (orig_exp))
+	  TREE_NO_WARNING (exp.value) = 1;
+
+	lvalue_array_p = !not_lvalue && lvalue_p (exp.value);
+	if (!flag_isoc99 && !lvalue_array_p)
+	  {
+	    /* Before C99, non-lvalue arrays do not decay to pointers.
+	       Normally, using such an array would be invalid; but it can
+	       be used correctly inside sizeof or as a statement expression.
+	       Thus, do not give an error here; an error will result later.  */
+	    return exp;
+	  }
+
+	exp.value = array_to_pointer_conversion (exp.value);
+      }
+      break;
+    case FUNCTION_TYPE:
+      exp.value = function_to_pointer_conversion (exp.value);
+      break;
+    default:
+      STRIP_TYPE_NOPS (exp.value);
+      if (TREE_NO_WARNING (orig_exp))
+	TREE_NO_WARNING (exp.value) = 1;
+      break;
     }
 
-  if (TREE_NO_WARNING (orig_exp))
-    TREE_NO_WARNING (exp) = 1;
-
-  if (code == FUNCTION_TYPE)
-    {
-      return build_unary_op (ADDR_EXPR, exp, 0);
-    }
-  if (code == ARRAY_TYPE)
-    {
-      tree adr;
-      tree restype = TREE_TYPE (type);
-      tree ptrtype;
-      int constp = 0;
-      int volatilep = 0;
-      int lvalue_array_p;
-
-      if (REFERENCE_CLASS_P (exp) || DECL_P (exp))
-	{
-	  constp = TREE_READONLY (exp);
-	  volatilep = TREE_THIS_VOLATILE (exp);
-	}
-
-      if (TYPE_QUALS (type) || constp || volatilep)
-	restype
-	  = c_build_qualified_type (restype,
-				    TYPE_QUALS (type)
-				    | (constp * TYPE_QUAL_CONST)
-				    | (volatilep * TYPE_QUAL_VOLATILE));
-
-      if (TREE_CODE (exp) == INDIRECT_REF)
-	return convert (build_pointer_type (restype),
-			TREE_OPERAND (exp, 0));
-
-      if (TREE_CODE (exp) == COMPOUND_EXPR)
-	{
-	  tree op1 = default_conversion (TREE_OPERAND (exp, 1));
-	  return build2 (COMPOUND_EXPR, TREE_TYPE (op1),
-			 TREE_OPERAND (exp, 0), op1);
-	}
-
-      lvalue_array_p = !not_lvalue && lvalue_p (exp);
-      if (!flag_isoc99 && !lvalue_array_p)
-	{
-	  /* Before C99, non-lvalue arrays do not decay to pointers.
-	     Normally, using such an array would be invalid; but it can
-	     be used correctly inside sizeof or as a statement expression.
-	     Thus, do not give an error here; an error will result later.  */
-	  return exp;
-	}
-
-      ptrtype = build_pointer_type (restype);
-
-      if (TREE_CODE (exp) == VAR_DECL)
-	{
-	  /* We are making an ADDR_EXPR of ptrtype.  This is a valid
-	     ADDR_EXPR because it's the best way of representing what
-	     happens in C when we take the address of an array and place
-	     it in a pointer to the element type.  */
-	  adr = build1 (ADDR_EXPR, ptrtype, exp);
-	  if (!c_mark_addressable (exp))
-	    return error_mark_node;
-	  TREE_SIDE_EFFECTS (adr) = 0;   /* Default would be, same as EXP.  */
-	  return adr;
-	}
-      /* This way is better for a COMPONENT_REF since it can
-	 simplify the offset for a component.  */
-      adr = build_unary_op (ADDR_EXPR, exp, 1);
-      return convert (ptrtype, adr);
-    }
   return exp;
 }
 
@@ -1992,7 +2005,8 @@ build_function_call (tree function, tree params)
       name = DECL_NAME (function);
       fundecl = function;
     }
-  function = default_function_array_conversion (function);
+  if (TREE_CODE (TREE_TYPE (function)) == FUNCTION_TYPE)
+    function = function_to_pointer_conversion (function);
 
   /* For Objective-C, convert any calls via a cast to OBJC_TYPE_REF
      expressions, like those used for ObjC messenger dispatches.  */
@@ -2730,11 +2744,13 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
       /* For &x[y], return x+y */
       if (TREE_CODE (arg) == ARRAY_REF)
 	{
-	  if (!c_mark_addressable (TREE_OPERAND (arg, 0)))
+	  tree op0 = TREE_OPERAND (arg, 0);
+	  if (!c_mark_addressable (op0))
 	    return error_mark_node;
 	  return build_binary_op (PLUS_EXPR,
-				  default_function_array_conversion
-				    (TREE_OPERAND (arg, 0)),
+				  (TREE_CODE (TREE_TYPE (op0)) == ARRAY_TYPE
+				   ? array_to_pointer_conversion (op0)
+				   : op0),
 				  TREE_OPERAND (arg, 1), 1);
 	}
 
@@ -4367,16 +4383,18 @@ digest_init (tree type, tree init, bool strict_string, int require_constant)
     {
       if (code == POINTER_TYPE)
 	{
-	  if (TREE_CODE (inside_init) == STRING_CST
-	      || TREE_CODE (inside_init) == COMPOUND_LITERAL_EXPR)
-	    inside_init = default_function_array_conversion (inside_init);
-
 	  if (TREE_CODE (TREE_TYPE (inside_init)) == ARRAY_TYPE)
 	    {
-	      error_init ("invalid use of non-lvalue array");
-	      return error_mark_node;
+	      if (TREE_CODE (inside_init) == STRING_CST
+		  || TREE_CODE (inside_init) == COMPOUND_LITERAL_EXPR)
+		inside_init = array_to_pointer_conversion (inside_init);
+	      else
+		{
+		  error_init ("invalid use of non-lvalue array");
+		  return error_mark_node;
+		}
 	    }
-	 }
+	}
 
       if (code == VECTOR_TYPE)
 	/* Although the types are compatible, we may require a
@@ -4436,9 +4454,10 @@ digest_init (tree type, tree init, bool strict_string, int require_constant)
       || code == ENUMERAL_TYPE || code == BOOLEAN_TYPE || code == COMPLEX_TYPE
       || code == VECTOR_TYPE)
     {
-      if (TREE_CODE (init) == STRING_CST
-	  || TREE_CODE (init) == COMPOUND_LITERAL_EXPR)
-	init = default_function_array_conversion (init);
+      if (TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE
+	  && (TREE_CODE (init) == STRING_CST
+	      || TREE_CODE (init) == COMPOUND_LITERAL_EXPR))
+	init = array_to_pointer_conversion (init);
       inside_init
 	= convert_for_assignment (type, init, ic_init,
 				  NULL_TREE, NULL_TREE, 0);
@@ -5796,7 +5815,7 @@ output_init_element (tree value, bool strict_string, tree type, tree field,
 	   && INTEGRAL_TYPE_P (TREE_TYPE (type)))
       && !comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (value)),
 		     TYPE_MAIN_VARIANT (type)))
-    value = default_function_array_conversion (value);
+    value = array_to_pointer_conversion (value);
 
   if (TREE_CODE (value) == COMPOUND_LITERAL_EXPR
       && require_constant_value && !flag_isoc99 && pending)
