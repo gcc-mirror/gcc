@@ -1,5 +1,10 @@
 2005-06-29  Paolo Carlini  <pcarlini@suse.de>
 
+	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 37.
+	* docs/html/ext/howto.html: Adjust.
+
+2005-06-29  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/22131
 	* include/bits/locale_facets.tcc (num_get<>::_M_extract_int,
 	num_get<>::_M_extract_float, money_get<>::_M_extract):
