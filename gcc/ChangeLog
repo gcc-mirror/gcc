@@ -1,3 +1,10 @@
+2005-06-28  Eric Christopher  <echristo@redhat.com>
+
+	PR c/22052
+	PR c/21975
+	* c-decl.c (diagnose_mismatched_decls): Define DECL_EXTERN_INLINE.
+	Use. Fix detection of invalid extern inline redefinition.
+
 2005-06-28  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-optimize.c (init_tree_optimization_passes): Fix typo.

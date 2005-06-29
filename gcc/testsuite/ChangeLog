@@ -1,3 +1,13 @@
+2005-06-28  Eric Christopher  <echristo@redhat.com>
+
+	PR c/22052
+	PR c/21975
+	* gcc.dg/inline1.c: New test.
+	* gcc.dg/inline2.c: Ditto.
+	* gcc.dg/inline3.c: Ditto.
+	* gcc.dg/inline4.c: Ditto.
+	* gcc.dg/inline5.c: Ditto.
+	
 2005-06-28  Thomas Koenig  <Thomas.Koenig@online.de>
 
         PR libfortran/22142
