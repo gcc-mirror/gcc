@@ -1,5 +1,10 @@
 2005-06-29  Steve Ellcey  <sje@cup.hp.com>
 
+	PR testsuite/21969
+	* gcc.dg/torture/pr21817.c: Use -fno-common for hppa*-*-* targets.
+
+2005-06-29  Steve Ellcey  <sje@cup.hp.com>
+
 	PR middle-end/21969
 	* gcc.dg/vect/pr21969.c: New test.
 
