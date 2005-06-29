@@ -1,3 +1,17 @@
+2005-06-29  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_expand_int_vcond): Remove unsignedp
+	argument.  Simplify canonicalization of condition.  Use unsigned
+	saturating subtraction for QI and HImode unsigned compares.  Use
+	bit arithmetic tricks for SImode unsigned compares.
+	* config/i386/i386-protos.h (ix86_expand_int_vcond): Update decl.
+	* config/i386/sse.md (SSEMODE14): New.
+	(umaxv8hi3): Use us_minus+plus to avoid vcond.
+	(umaxv4si3): New.
+	(smax<SSEMODE14>3): Rename from smaxv16qi3 and macroize.
+	(smin<SSEMODE14>3): Similarly with sminv16qi3.
+	(umin<SSEMODE24>3): Similarly with uminv8hi3.
+
 2005-06-29  Ian Lance Taylor  <ian@airs.com>
 
 	* dwarf2out.c (expand_builtin_init_dwarf_reg_sizes): Change
