@@ -132,7 +132,6 @@ extern int sh_need_epilogue (void);
 extern void sh_set_return_address (rtx, rtx);
 extern int initial_elimination_offset (int, int);
 extern int fldi_ok (void);
-extern int sh_pr_n_sets (void);
 extern int sh_hard_regno_rename_ok (unsigned int, unsigned int);
 extern int sh_cfun_interrupt_handler_p (void);
 extern int sh_attr_renesas_p (tree);

@@ -1,3 +1,19 @@
+2005-06-29  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* target.h (gcc_target): New field allocate_initial_value.
+	* target-def.h (TARGET_ALLOCATE_INITIAL_VALUE): New macro.
+	(TARGET_INITIALIZER): Include it.
+	* integrate.c (allocate_initial_values): Use
+	targetm.allocate_initial_value.
+	* system.h: Poison ALLOCATE_INITIAL_VALUE.
+	* config/sh/sh-protos.h (sh_pr_n_sets): Delete.
+	* config/sh/sh.c (sh_pr_n_sets): Make it static.
+	(sh_allocate_initila_value): New function.
+	(TARGET_ALLOCATE_INITIAL_VALUE): Override default.
+	* config/sh/sh.h (ALLOCATE_INITIAL_VALUE): Delete.
+	* doc/tm.texi (TARGET_ALLOCATE_INITIAL_VALUE): Rename and
+	update from ALLOCATE_INITIAL_VALUE.
+
 2005-06-28  Richard Henderson  <rth@redhat.com>
 
 	* tree-vectorizer.c (vect_is_simple_reduction): Compare types

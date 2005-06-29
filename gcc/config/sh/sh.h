@@ -3360,18 +3360,6 @@ extern struct rtx_def *sp_switch;
 2:\n" TEXT_SECTION_ASM_OP);
 #endif /* (defined CRT_BEGIN || defined CRT_END) && ! __SHMEDIA__ */
 
-#define ALLOCATE_INITIAL_VALUE(hard_reg) \
-  (REGNO (hard_reg) == (TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG) \
-   ? (current_function_is_leaf \
-      && ! sh_pr_n_sets () \
-      && ! (TARGET_SHCOMPACT \
-	    && ((current_function_args_info.call_cookie \
-		 & ~ CALL_COOKIE_RET_TRAMP (1)) \
-		|| current_function_has_nonlocal_label)) \
-      ? (hard_reg) \
-      : gen_rtx_MEM (Pmode, return_address_pointer_rtx)) \
-   : NULL_RTX)
-
 #define SIMULTANEOUS_PREFETCHES 2
 
 /* FIXME: middle-end support for highpart optimizations is missing.  */
