@@ -1,6 +1,7 @@
 // Wrapper for underlying C-language localization -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,39 +51,36 @@ namespace std
     __convert_to_v(const char* __s, float& __v, ios_base::iostate& __err, 
 		   const __c_locale&) 	      
     {
-      if (!(__err & ios_base::failbit))
-	{
-	  // Assumes __s formatted for "C" locale.
-	  char* __old = strdup(setlocale(LC_ALL, NULL));
-	  setlocale(LC_ALL, "C");
-	  char* __sanity;
-	  errno = 0;
+      // Assumes __s formatted for "C" locale.
+      errno = 0;
+      char* __old = strdup(setlocale(LC_ALL, NULL));
+      setlocale(LC_ALL, "C");
+      char* __sanity;
 #if defined(_GLIBCXX_HAVE_STRTOF)
-	  float __f = strtof(__s, &__sanity);
+      float __f = strtof(__s, &__sanity);
 #else
-	  double __d = strtod(__s, &__sanity);
-	  float __f = static_cast<float>(__d);
+      double __d = strtod(__s, &__sanity);
+      float __f = static_cast<float>(__d);
 #ifdef _GLIBCXX_HAVE_FINITEF
-	  if (!finitef (__f))
-	    errno = ERANGE;
+      if (!finitef (__f))
+	errno = ERANGE;
 #elif defined (_GLIBCXX_HAVE_FINITE)
-	  if (!finite (static_cast<double> (__f)))
-	    errno = ERANGE;
+      if (!finite (static_cast<double> (__f)))
+	errno = ERANGE;
 #elif defined (_GLIBCXX_HAVE_ISINF)
-	  if (isinf (static_cast<double> (__f)))
-	    errno = ERANGE;
+      if (isinf (static_cast<double> (__f)))
+	errno = ERANGE;
 #else
-	  if (fabs(__d) > numeric_limits<float>::max())
-	    errno = ERANGE;
+      if (fabs(__d) > numeric_limits<float>::max())
+	errno = ERANGE;
 #endif
 #endif
-          if (__sanity != __s && errno != ERANGE)
-	    __v = __f;
-	  else
-	    __err |= ios_base::failbit;
-	  setlocale(LC_ALL, __old);
-	  free(__old);
-	}
+      if (__sanity != __s && errno != ERANGE)
+	__v = __f;
+      else
+	__err |= ios_base::failbit;
+      setlocale(LC_ALL, __old);
+      free(__old);
     }
 
   template<>
@@ -90,21 +88,18 @@ namespace std
     __convert_to_v(const char* __s, double& __v, ios_base::iostate& __err, 
 		   const __c_locale&) 
     {
-      if (!(__err & ios_base::failbit))
-	{
-	  // Assumes __s formatted for "C" locale.
-	  char* __old = strdup(setlocale(LC_ALL, NULL));
-	  setlocale(LC_ALL, "C");
-	  char* __sanity;
-	  errno = 0;
-	  double __d = strtod(__s, &__sanity);
-          if (__sanity != __s && errno != ERANGE)
-	    __v = __d;
-	  else
-	    __err |= ios_base::failbit;
-	  setlocale(LC_ALL, __old);
-	  free(__old);
-	}
+      // Assumes __s formatted for "C" locale.
+      errno = 0;
+      char* __old = strdup(setlocale(LC_ALL, NULL));
+      setlocale(LC_ALL, "C");
+      char* __sanity;
+      double __d = strtod(__s, &__sanity);
+      if (__sanity != __s && errno != ERANGE)
+	__v = __d;
+      else
+	__err |= ios_base::failbit;
+      setlocale(LC_ALL, __old);
+      free(__old);
     }
 
   template<>
@@ -112,31 +107,27 @@ namespace std
     __convert_to_v(const char* __s, long double& __v, 
 		   ios_base::iostate& __err, const __c_locale&) 
     {
-      if (!(__err & ios_base::failbit))
-	{
-	  // Assumes __s formatted for "C" locale.
-	  char* __old = strdup(setlocale(LC_ALL, NULL));
-	  setlocale(LC_ALL, "C");
+      // Assumes __s formatted for "C" locale.
+      errno = 0;
+      char* __old = strdup(setlocale(LC_ALL, NULL));
+      setlocale(LC_ALL, "C");
 #if defined(_GLIBCXX_HAVE_STRTOLD)
-	  char* __sanity;
-	  errno = 0;
-	  long double __ld = strtold(__s, &__sanity);
-          if (__sanity != __s && errno != ERANGE)
-	    __v = __ld;
+      char* __sanity;
+      long double __ld = strtold(__s, &__sanity);
+      if (__sanity != __s && errno != ERANGE)
+	__v = __ld;
 #else
-	  typedef char_traits<char>::int_type int_type;
-	  long double __ld;
-	  errno = 0;
-	  int __p = sscanf(__s, "%Lf", &__ld);
-	  if (__p && static_cast<int_type>(__p) != char_traits<char>::eof()
-	      && errno != ERANGE)
-	    __v = __ld;
+      typedef char_traits<char>::int_type int_type;
+      long double __ld;
+      int __p = sscanf(__s, "%Lf", &__ld);
+      if (__p && static_cast<int_type>(__p) != char_traits<char>::eof()
+	  && errno != ERANGE)
+	__v = __ld;
 #endif
-	  else
-	    __err |= ios_base::failbit;
-	  setlocale(LC_ALL, __old);
-	  free(__old);
-	}
+      else
+	__err |= ios_base::failbit;
+      setlocale(LC_ALL, __old);
+      free(__old);
     }
 
   void

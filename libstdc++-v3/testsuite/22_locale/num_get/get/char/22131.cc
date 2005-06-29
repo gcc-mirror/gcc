@@ -1,0 +1,126 @@
+// 2005-06-28  Paolo Carlini  <pcarlini@suse.de>
+
+// Copyright (C) 2005 Free Software Foundation
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING.  If not, write to the Free
+// Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+// USA.
+
+// 22.2.2.1.1  num_get members
+
+#include <locale>
+#include <sstream>
+#include <testsuite_hooks.h>
+
+struct Punct: std::numpunct<char>
+{
+  std::string do_grouping() const { return "\1"; }
+  char do_thousands_sep() const { return '#'; }
+};
+
+// libstdc++/22131
+void test01()
+{
+  using namespace std;
+  typedef istreambuf_iterator<char> iterator_type;
+  
+  bool test __attribute__((unused)) = true;
+
+  istringstream iss1, iss2;
+  iss1.imbue(locale(iss1.getloc(), new Punct));
+  const num_get<char>& ng1 = use_facet<num_get<char> >(iss1.getloc()); 
+
+  ios_base::iostate err = ios_base::goodbit;
+  iterator_type end;
+  long l = 0l;
+  long l1 = 1l;
+  long l2 = 2l;
+  long l3 = 3l;
+  double d = 0.0;
+  double d1 = 1.0;
+  double d2 = 2.0;
+
+  iss1.str("00#0#1");
+  err = ios_base::goodbit;
+  end = ng1.get(iss1.rdbuf(), 0, iss1, err, l);
+  VERIFY( err == (ios_base::eofbit | ios_base::failbit) );
+  VERIFY( l == l1 );
+
+  iss1.str("000##2");
+  iss1.clear();
+  err = ios_base::goodbit;
+  end = ng1.get(iss1.rdbuf(), 0, iss1, err, l);
+  VERIFY( err == ios_base::failbit );
+  VERIFY( *end == '#' );
+  VERIFY( l == l1 );
+
+  iss1.str("0#0#0#2");
+  iss1.clear();
+  err = ios_base::goodbit;
+  end = ng1.get(iss1.rdbuf(), 0, iss1, err, l);
+  VERIFY( err == ios_base::eofbit );
+  VERIFY( l == l2 );
+
+  iss1.str("00#0#1");
+  iss1.clear();
+  err = ios_base::goodbit;
+  end = ng1.get(iss1.rdbuf(), 0, iss1, err, d);
+  VERIFY( err == (ios_base::eofbit | ios_base::failbit) );
+  VERIFY( d == d1 );
+
+  iss1.str("000##2");
+  iss1.clear();
+  err = ios_base::goodbit;
+  end = ng1.get(iss1.rdbuf(), 0, iss1, err, d);
+  VERIFY( err == ios_base::failbit );
+  VERIFY( *end == '#' );
+  VERIFY( d == d1 );
+
+  iss1.str("0#0#0#2");
+  iss1.clear();
+  err = ios_base::goodbit;
+  end = ng1.get(iss1.rdbuf(), 0, iss1, err, d);
+  VERIFY( err == ios_base::eofbit );
+  VERIFY( d == d2 );
+
+  iss1.str("0#0");
+  iss1.clear();
+  iss1.unsetf(ios::basefield);
+  err = ios_base::goodbit;
+  end = ng1.get(iss1.rdbuf(), 0, iss1, err, l);
+  VERIFY( err == ios_base::failbit );
+  VERIFY( *end == '#' );
+  VERIFY( l == l2 );
+
+  iss1.str("00#0#3");
+  iss1.clear();
+  err = ios_base::goodbit;
+  end = ng1.get(iss1.rdbuf(), 0, iss1, err, l);
+  VERIFY( err == ios_base::eofbit );
+  VERIFY( l == l3 );
+
+  iss1.str("00#02");
+  iss1.clear();
+  err = ios_base::goodbit;
+  end = ng1.get(iss1.rdbuf(), 0, iss1, err, l);
+  VERIFY( err == (ios_base::eofbit | ios_base::failbit) );
+  VERIFY( l == l2 );
+}
+
+int main()
+{
+  test01();
+  return 0;
+}

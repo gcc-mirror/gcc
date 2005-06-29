@@ -306,6 +306,7 @@ namespace std
 
       // Next, look for leading zeros.
       bool __found_mantissa = false;
+      int __sep_pos = 0;
       while (!__testeof)
 	{
 	  if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep
@@ -318,6 +319,8 @@ namespace std
 		  __xtrc += '0';
 		  __found_mantissa = true;
 		}
+	      ++__sep_pos;
+
 	      if (++__beg != __end)
 		__c = *__beg;
 	      else
@@ -333,7 +336,6 @@ namespace std
       string __found_grouping;
       if (__lc->_M_use_grouping)
 	__found_grouping.reserve(32);
-      int __sep_pos = 0;
       const char_type* __q;
       const char_type* __lit_zero = __lit + __num_base::_S_izero;
       while (!__testeof)
@@ -353,7 +355,9 @@ namespace std
 		    }
 		  else
 		    {
-		      __err |= ios_base::failbit;
+		      // NB: __convert_to_v will not assign __v and will
+		      // set the failbit.
+		      __xtrc.clear();
 		      break;
 		    }
 		}
@@ -383,7 +387,7 @@ namespace std
 	    }
 	  else if ((__c == __lit[__num_base::_S_ie] 
 		    || __c == __lit[__num_base::_S_iE])
-		   && __found_mantissa && !__found_sci)
+		   && !__found_sci && __found_mantissa)
 	    {
 	      // Scientific notation.
 	      if (__found_grouping.size() && !__found_dec)
@@ -500,6 +504,7 @@ namespace std
 	// Next, look for leading zeros and check required digits
 	// for base formats.
 	bool __found_zero = false;
+	int __sep_pos = 0;
 	while (!__testeof)
 	  {
 	    if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep
@@ -507,25 +512,27 @@ namespace std
 	      break;
 	    else if (__c == __lit[__num_base::_S_izero] 
 		     && (!__found_zero || __base == 10))
-	      __found_zero = true;
-	    else if (__found_zero)
 	      {
-		if (__c == __lit[__num_base::_S_ix] 
-		    || __c == __lit[__num_base::_S_iX])
+		__found_zero = true;
+		++__sep_pos;
+		if (__basefield == 0)
+		  __base = 8;
+		if (__base == 8)
+		  __sep_pos = 0;
+	      }
+	    else if (__found_zero
+		     && (__c == __lit[__num_base::_S_ix]
+			 || __c == __lit[__num_base::_S_iX]))
+	      {
+		if (__basefield == 0)
+		  __base = 16;
+		if (__base == 16)
 		  {
-		    if (__basefield == 0)
-		      __base = 16;
-		    if (__base == 16)
-		      __found_zero = false;
-		    else
-		      break;
+		    __found_zero = false;
+		    __sep_pos = 0;
 		  }
 		else
-		  {
-		    if (__basefield == 0)
-		      __base = 8;
-		    break;
-		  }
+		  break;
 	      }
 	    else
 	      break;
@@ -549,8 +556,7 @@ namespace std
 	string __found_grouping;
 	if (__lc->_M_use_grouping)
 	  __found_grouping.reserve(32);
-	int __sep_pos = 0;
-	bool __overflow = false;
+	bool __testfail = false;
 	const __unsigned_type __max = __negative ?
 	  -numeric_limits<_ValueT>::min() : numeric_limits<_ValueT>::max();
 	const __unsigned_type __smax = __max / __base;
@@ -572,7 +578,7 @@ namespace std
 		  }
 		else
 		  {
-		    __err |= ios_base::failbit;
+		    __testfail = true;
 		    break;
 		  }
 	      }
@@ -584,11 +590,11 @@ namespace std
 		if (__digit > 15)
 		  __digit -= 6;
 		if (__result > __smax)
-		  __overflow = true;
+		  __testfail = true;
 		else
 		  {
 		    __result *= __base;
-		    __overflow |= __result > __max - __digit;
+		    __testfail |= __result > __max - __digit;
 		    __result += __digit;
 		    ++__sep_pos;
 		  }
@@ -616,8 +622,8 @@ namespace std
 	      __err |= ios_base::failbit;
 	  }
 
-	if (!(__err & ios_base::failbit) && !__overflow
-	    && (__sep_pos || __found_zero || __found_grouping.size()))
+	if (!__testfail && (__sep_pos || __found_zero 
+			    || __found_grouping.size()))
 	  __v = __negative ? -__result : __result;
 	else
 	  __err |= ios_base::failbit;
@@ -1444,7 +1450,7 @@ namespace std
 		if (!std::__verify_grouping(__lc->_M_grouping,
 					    __lc->_M_grouping_size,
 					    __grouping_tmp))
-		  __testvalid = false;
+		  __err |= ios_base::failbit;
 	      }
 	    
 	    // Iff not enough digits were supplied after the decimal-point.
