@@ -1667,7 +1667,12 @@ struct tree_block GTY(())
 
 /* For a VECTOR_TYPE, this is the number of sub-parts of the vector.  */
 #define TYPE_VECTOR_SUBPARTS(VECTOR_TYPE) \
-  (VECTOR_TYPE_CHECK (VECTOR_TYPE)->type.precision)
+  (((unsigned HOST_WIDE_INT) 1) \
+   << VECTOR_TYPE_CHECK (VECTOR_TYPE)->type.precision)
+
+/* Set precision to n when we have 2^n sub-parts of the vector.  */
+#define SET_TYPE_VECTOR_SUBPARTS(VECTOR_TYPE, X) \
+  (VECTOR_TYPE_CHECK (VECTOR_TYPE)->type.precision = exact_log2 (X))
 
 /* Indicates that objects of this type must be initialized by calling a
    function when they are created.  */
