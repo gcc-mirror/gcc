@@ -449,10 +449,6 @@ extern int warn_main;
 
 extern int flag_gen_declaration;
 
-/* Generate code for GNU or NeXT runtime environment.  */
-
-extern int flag_next_runtime;
-
 /* Tells the compiler that this is a special run.  Do not perform any
    compiling, instead we are to test some platform dependent features
    and output a C header file with appropriate definitions.  */

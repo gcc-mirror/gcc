@@ -6,7 +6,7 @@ darwin.o: $(srcdir)/config/darwin.c $(CONFIG_H) $(SYSTEM_H) coretypes.h     \
 
 darwin-c.o: $(srcdir)/config/darwin-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) $(CPPLIB_H) tree.h c-pragma.h $(C_TREE_H) toplev.h $(TM_P_H) \
-  c-incpath.h
+  c-incpath.h flags.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/darwin-c.c $(PREPROCESSOR_DEFINES)
 
 gt-darwin.h : s-gtype ; @true

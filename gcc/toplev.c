@@ -289,6 +289,14 @@ const char *aux_info_file_name;
 
 int flag_shlib;
 
+/* Generate code for GNU or NeXT Objective-C runtime environment.  */
+
+#ifdef NEXT_OBJC_RUNTIME
+int flag_next_runtime = 1;
+#else
+int flag_next_runtime = 0;
+#endif
+
 /* Set to the default thread-local storage (tls) model to use.  */
 
 enum tls_model flag_tls_default = TLS_MODEL_GLOBAL_DYNAMIC;
