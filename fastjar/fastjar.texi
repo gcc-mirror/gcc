@@ -58,8 +58,8 @@ Copyright @copyright{} @value{copyrights-gcj} Matthias Klose
 For the @value{which-gcj} Version*
 @sp 1
 Published by the Free Software Foundation @*
-59 Temple Place - Suite 330@*
-Boston, MA 02111-1307, USA@*
+51 Franklin Street, Fifth Floor@*
+Boston, MA 02110-1301, USA@*
 @sp 1
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU General Public License as published by the
