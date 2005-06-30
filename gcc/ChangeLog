@@ -1,3 +1,9 @@
+2005-06-29  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 22234
+	* tree-ssa-copy.c (fini_copy_prop): Do not overwrite copy_of
+	when following copy-of chains.
+
 2005-06-30  Jan Hubicka  <jh@suse.cz>
 
 	* function.h (struct function): Add saved blocks/unexpanded var list.

@@ -885,20 +885,24 @@ static void
 fini_copy_prop (void)
 {
   size_t i;
+  prop_value_t *tmp;
   
   /* Set the final copy-of value for each variable by traversing the
      copy-of chains.  */
+  tmp = xmalloc (num_ssa_names * sizeof (*tmp));
+  memset (tmp, 0, num_ssa_names * sizeof (*tmp));
   for (i = 1; i < num_ssa_names; i++)
     {
       tree var = ssa_name (i);
       if (var && copy_of[i].value && copy_of[i].value != var)
-	copy_of[i].value = get_last_copy_of (var);
+	tmp[i].value = get_last_copy_of (var);
     }
 
-  substitute_and_fold (copy_of, false);
+  substitute_and_fold (tmp, false);
 
   free (cached_last_copy_of);
   free (copy_of);
+  free (tmp);
 }
 
 
