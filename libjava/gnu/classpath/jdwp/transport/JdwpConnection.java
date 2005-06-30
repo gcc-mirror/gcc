@@ -40,7 +40,10 @@ exception statement from your version. */
 package gnu.classpath.jdwp.transport;
 
 import gnu.classpath.jdwp.Jdwp;
+import gnu.classpath.jdwp.event.Event;
+import gnu.classpath.jdwp.event.EventRequest;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -64,7 +67,8 @@ public class JdwpConnection
   extends Thread
 {
   // The JDWP handshake
-  private static final byte[] _HANDSHAKE = {'J', 'D', 'W', 'P', '-', 'H', 'a', 'n', 'd', 's', 'h', 'a', 'k', 'e'};
+  private static final byte[] _HANDSHAKE = {'J', 'D', 'W', 'P', '-', 'H', 'a',
+					    'n', 'd', 's', 'h', 'a', 'k', 'e'};
 
   // Transport method
   private ITransport _transport;
@@ -81,6 +85,12 @@ public class JdwpConnection
   // Output stream from transprot
   private DataOutputStream _outStream;
 
+  // A buffer used to construct the packet data
+  private ByteArrayOutputStream _bytes;
+
+  // A DataOutputStream for the byte buffer
+  private DataOutputStream _doStream;
+
   /**
    * Creates a new <code>JdwpConnection</code> instance
    *
@@ -91,6 +101,8 @@ public class JdwpConnection
     _transport = transport;
     _commandQueue = new ArrayList ();
     _shutdown = false;
+    _bytes = new ByteArrayOutputStream ();
+    _doStream = new DataOutputStream (_bytes);
   }
 
   /**
@@ -241,13 +253,35 @@ public class JdwpConnection
    * Send a packet to the debugger
    *
    * @param pkt a <code>JdwpPacket</code> to send
-   * @throws TransportException
+   * @throws IOException
    */
   public void sendPacket (JdwpPacket pkt)
     throws IOException
   {
     byte[] data = pkt.toBytes ();
     _outStream.write (data, 0, data.length);
+  }
+
+  /**
+   * Send an event notification to the debugger
+   *
+   * @param request  the debugger request that wanted this event
+   * @param event    the event
+   * @throws IOException
+   */
+  public void sendEvent (EventRequest request, Event event)
+    throws IOException
+  {
+    JdwpPacket pkt;
+
+    synchronized (_bytes)
+      {
+	_bytes.reset ();
+	pkt = event.toPacket (_doStream, request);
+	pkt.setData (_bytes.toByteArray ());
+      }
+
+    sendPacket (pkt);
   }
 
   /**
