@@ -258,8 +258,7 @@ public class JdwpConnection
   public void sendPacket (JdwpPacket pkt)
     throws IOException
   {
-    byte[] data = pkt.toBytes ();
-    _outStream.write (data, 0, data.length);
+    pkt.write (_outStream);
   }
 
   /**

@@ -1,5 +1,18 @@
 2005-06-30  Keith Seitz  <keiths@redhat.com>
 
+	* gnu/classpath/jdwp/transport/JdwpPacket.java (write): New method.
+	(myWrite): New abstract method.
+	(toBytes): Remove.
+	(myToBytes): Remove.
+	* gnu/classpath/jdwp/transport/JdwpReplyPacket.java (myWrite): New
+	method.
+	* gnu/classpath/jdwp/transport/JdwpCommandPacket.java (myWrite): New
+	method.
+	* gnu/classpath/jdwp/transport/JdwpConnection.java (sendPacket): Use
+	JdwpPacket.write instead of JdwpPacket.toBytes.
+
+2005-06-30  Keith Seitz  <keiths@redhat.com>
+
 	* gnu/classpath/jdwp/transport/JdwpConnection.java (sendEvent): New
 	method.
 	(_bytes): New member.

@@ -39,6 +39,9 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp.transport;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 /**
  * A class represents a JDWP reply packet.
  * This class adds an error code to the packet header information
@@ -115,13 +118,9 @@ public class JdwpReplyPacket extends JdwpPacket
   }
 
   // Writes the command packet data into the given buffer
-  protected int myToBytes (byte[] bytes, int index)
-  {
-    // Need to add error code
-    int i = 0;
-    bytes[index + i++] = (byte) (getErrorCode () >>> 8);
-    bytes[index + i++] = (byte) getErrorCode ();
-    
-    return i;
+  protected void myWrite (DataOutputStream dos)
+    throws IOException
+ {
+    dos.writeShort (getErrorCode ());
   }
 }
