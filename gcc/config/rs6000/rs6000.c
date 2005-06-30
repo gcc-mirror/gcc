@@ -728,7 +728,7 @@ static rtx rs6000_emit_vector_compare (enum rtx_code, rtx, rtx,
 				       enum machine_mode);
 static int get_vsel_insn (enum machine_mode);
 static void rs6000_emit_vector_select (rtx, rtx, rtx, rtx);
-
+static tree rs6000_stack_protect_fail (void);
 
 const int INSN_NOT_AVAILABLE = -1;
 static enum machine_mode rs6000_eh_return_filter_mode (void);
@@ -972,6 +972,9 @@ static const char alt_reg_names[][8] =
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS \
   (TARGET_DEFAULT | MASK_SCHED_PROLOG)
+
+#undef TARGET_STACK_PROTECT_FAIL
+#define TARGET_STACK_PROTECT_FAIL rs6000_stack_protect_fail
 
 /* MPC604EUM 3.5.2 Weak Consistency between Multiple Processors
    The PowerPC architecture requires only weak consistency among
@@ -10591,6 +10594,19 @@ rs6000_generate_compare (enum rtx_code code)
 		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (DFmode)),
 		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (DFmode)),
 		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (DFmode)))));
+      else if (GET_CODE (rs6000_compare_op1) == UNSPEC
+	       && XINT (rs6000_compare_op1, 1) == UNSPEC_SP_TEST)
+	{
+	  rtx op1 = XVECEXP (rs6000_compare_op1, 0, 0);
+	  comp_mode = CCEQmode;
+	  compare_result = gen_reg_rtx (CCEQmode);
+	  if (TARGET_64BIT)
+	    emit_insn (gen_stack_protect_testdi (compare_result,
+						 rs6000_compare_op0, op1));
+	  else
+	    emit_insn (gen_stack_protect_testsi (compare_result,
+						 rs6000_compare_op0, op1));
+	}
       else
 	emit_insn (gen_rtx_SET (VOIDmode, compare_result,
 				gen_rtx_COMPARE (comp_mode,
@@ -18371,6 +18387,19 @@ invalid_arg_for_unprototyped_fn (tree typelist, tree funcdecl, tree val)
                   && DECL_BUILT_IN_CLASS (funcdecl) != BUILT_IN_MD)))
 	  ? N_("AltiVec argument passed to unprototyped function")
 	  : NULL;
+}
+
+/* For TARGET_SECURE_PLT 32-bit PIC code we can save PIC register
+   setup by using __stack_chk_fail_local hidden function instead of
+   calling __stack_chk_fail directly.  Otherwise it is better to call
+   __stack_chk_fail directly.  */
+
+static tree
+rs6000_stack_protect_fail (void)
+{
+  return (DEFAULT_ABI == ABI_V4 && TARGET_SECURE_PLT && flag_pic)
+	 ? default_hidden_stack_protect_fail ()
+	 : default_external_stack_protect_fail ();
 }
 
 #include "gt-rs6000.h"
