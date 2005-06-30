@@ -121,7 +121,7 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate)
   if (!e->callee->callers->next_caller
       && (!e->callee->needed || DECL_EXTERNAL (e->callee->decl))
       && duplicate
-      && (flag_unit_at_a_time && cgraph_global_info_ready))
+      && flag_unit_at_a_time)
     {
       gcc_assert (!e->callee->global.inlined_to);
       if (!DECL_EXTERNAL (e->callee->decl))
