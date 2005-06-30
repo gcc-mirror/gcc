@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "*" } { "" } } */
 #include <cstdlib>
 
 int \u00C0(void) { return 1; }

@@ -1,3 +1,7 @@
+2005-06-29  David Edelsohn  <edelsohn@gnu.org>
+
+	* g++.dg/other/ucnid-1.C: xfail on AIX.
+
 2005-06-29  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 22234
