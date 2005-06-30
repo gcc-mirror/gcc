@@ -159,6 +159,7 @@ static void declare_inline_vars (tree, tree);
 static void remap_save_expr (tree *, void *, int *);
 
 static inline bool inlining_p (inline_data *id);
+static void add_lexical_block (tree current_block, tree new_block);
 
 /* Insert a tree->tree mapping for ID.  Despite the name suggests
    that the trees should be variables, it is used for more than that.  */
@@ -245,13 +246,6 @@ remap_decl (tree decl, inline_data *id)
 	  DECL_ANON_UNION_ELEMS (t) = nreverse (members);
 	}
 #endif
-
-      /* If we are inlining and this is a variable (not a label), declare the
-	 remapped variable in the callers' body.  */
-      if (inlining_p (id)
-	  && (TREE_CODE (t) == VAR_DECL
-	      || TREE_CODE (t) == PARM_DECL))
-	declare_inline_vars (id->block, t);
 
       /* Remember it, so that if we encounter this local entity
 	 again we can reuse this copy.  */
@@ -436,30 +430,30 @@ remap_block (tree *block, inline_data *id)
   BLOCK_VARS (new_block) = remap_decls (BLOCK_VARS (old_block), id);
 
   fn = id->caller;
-#if 1
-  /* FIXME!  It shouldn't be so hard to manage blocks.  Rebuilding them in
-     rest_of_compilation is a good start.  */
   if (id->cloning_p)
     /* We're building a clone; DECL_INITIAL is still
        error_mark_node, and current_binding_level is the parm
        binding level.  */
     lang_hooks.decls.insert_block (new_block);
-  else
-    {
-      /* Attach this new block after the DECL_INITIAL block for the
-	 function into which this block is being inlined.  In
-	 rest_of_compilation we will straighten out the BLOCK tree.  */
-      tree *first_block;
-      if (DECL_INITIAL (fn))
-	first_block = &BLOCK_CHAIN (DECL_INITIAL (fn));
-      else
-	first_block = &DECL_INITIAL (fn);
-      BLOCK_CHAIN (new_block) = *first_block;
-      *first_block = new_block;
-    }
-#endif
   /* Remember the remapped block.  */
   insert_decl_map (id, old_block, new_block);
+}
+
+/* Copy the whole block tree and root it in id->block.  */
+static tree
+remap_blocks (tree block, inline_data *id)
+{
+  tree t;
+  tree new = block;
+
+  if (!block)
+    return NULL;
+
+  remap_block (&new, id);
+  gcc_assert (new != block);
+  for (t = BLOCK_SUBBLOCKS (block); t ; t = BLOCK_CHAIN (t))
+    add_lexical_block (new, remap_blocks (t, id));
+  return new;
 }
 
 static void
@@ -503,6 +497,7 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
 {
   inline_data *id = (inline_data *) data;
   tree fn = id->callee;
+  tree new_block;
 
   /* Begin by recognizing trees that we'll completely rewrite for the
      inlining context.  Our output for these trees is completely
@@ -647,9 +642,23 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
       /* Here is the "usual case".  Copy this tree node, and then
 	 tweak some special cases.  */
       copy_tree_r (tp, walk_subtrees, NULL);
-      if (id->block
-	  && IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (*tp))))
-	TREE_BLOCK (*tp) = id->block;
+
+      /* If EXPR has block defined, map it to newly constructed block.
+         When inlining we want EXPRs without block appear in the block
+	 of function call.  */
+      if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (*tp))))
+	{
+	  new_block = id->block;
+	  if (TREE_BLOCK (*tp))
+	    {
+	      splay_tree_node n;
+	      n = splay_tree_lookup (id->decl_map,
+				     (splay_tree_key) TREE_BLOCK (*tp));
+	      gcc_assert (n);
+	      new_block = (tree) n->value;
+	    }
+	  TREE_BLOCK (*tp) = new_block;
+	}
 
       if (TREE_CODE (*tp) == RESX_EXPR && id->eh_region_offset)
 	TREE_OPERAND (*tp, 0) =
@@ -1870,7 +1879,6 @@ add_lexical_block (tree current_block, tree new_block)
     ;
   *blk_p = new_block;
   BLOCK_SUPERCONTEXT (new_block) = current_block;
-  BLOCK_SUBBLOCKS (new_block) = NULL_TREE;
 }
 
 /* If *TP is a CALL_EXPR, replace it with its inline expansion.  */
@@ -2035,6 +2043,11 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
   /* Record the function we are about to inline.  */
   id->callee = fn;
 
+  if (DECL_STRUCT_FUNCTION (fn)->saved_blocks)
+    add_lexical_block (id->block, remap_blocks (DECL_STRUCT_FUNCTION (fn)->saved_blocks, id));
+  else if (DECL_INITIAL (fn))
+    add_lexical_block (id->block, remap_blocks (DECL_INITIAL (fn), id));
+
   /* Return statements in the function body will be replaced by jumps
      to the RET_LABEL.  */
 
@@ -2088,6 +2101,21 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
   copy_body (id, bb->count, bb->frequency, bb, return_block);
   id->current_node = old_node;
 
+  /* Add local vars in this inlined callee to caller.  */
+  t_step = id->callee_cfun->unexpanded_var_list;
+  if (id->callee_cfun->saved_unexpanded_var_list)
+    t_step = id->callee_cfun->saved_unexpanded_var_list;
+  for (; t_step; t_step = TREE_CHAIN (t_step))
+    {
+      var = TREE_VALUE (t_step);
+      if (TREE_STATIC (var) && !TREE_ASM_WRITTEN (var))
+	cfun->unexpanded_var_list = tree_cons (NULL_TREE, var,
+					       cfun->unexpanded_var_list);
+      else
+	cfun->unexpanded_var_list = tree_cons (NULL_TREE, remap_decl (var, id),
+					       cfun->unexpanded_var_list);
+    }
+
   /* Clean up.  */
   splay_tree_delete (id->decl_map);
   id->decl_map = st;
@@ -2125,16 +2153,6 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
   /* Declare the 'auto' variables added with this inlined body.  */
   record_vars (BLOCK_VARS (id->block));
   id->block = NULL_TREE;
-
-  /* Add local static vars in this inlined callee to caller.  */
-  for (t_step = id->callee_cfun->unexpanded_var_list;
-       t_step;
-       t_step = TREE_CHAIN (t_step))
-    {
-      var = TREE_VALUE (t_step);
-      if (TREE_STATIC (var) && !TREE_ASM_WRITTEN (var))
-	record_vars (var);
-    }
   successfully_inlined = TRUE;
 
  egress:
@@ -2273,6 +2291,7 @@ save_body (tree fn, tree *arg_copy, tree *sc_copy)
   inline_data id;
   tree newdecl, *parg;
   basic_block fn_entry_block;
+  tree t_step;
 
   memset (&id, 0, sizeof (id));
   id.callee = fn;
@@ -2311,11 +2330,28 @@ save_body (tree fn, tree *arg_copy, tree *sc_copy)
 
   insert_decl_map (&id, DECL_RESULT (fn), DECL_RESULT (fn));
 
+  DECL_STRUCT_FUNCTION (fn)->saved_blocks
+    = remap_blocks (DECL_INITIAL (fn), &id);
+  for (t_step = id.callee_cfun->unexpanded_var_list;
+       t_step;
+       t_step = TREE_CHAIN (t_step))
+    {
+      tree var = TREE_VALUE (t_step);
+      if (TREE_STATIC (var) && !TREE_ASM_WRITTEN (var))
+	cfun->saved_unexpanded_var_list
+	  = tree_cons (NULL_TREE, var, cfun->saved_unexpanded_var_list);
+      else 
+	cfun->saved_unexpanded_var_list
+	  = tree_cons (NULL_TREE, remap_decl (var, &id),
+		       cfun->saved_unexpanded_var_list);
+    }
+
   /* Actually copy the body, including a new (struct function *) and CFG.
      EH info is also duplicated so its labels point into the copied
      CFG, not the original.  */
   fn_entry_block = ENTRY_BLOCK_PTR_FOR_FUNCTION (DECL_STRUCT_FUNCTION (fn));
-  newdecl = copy_body (&id, fn_entry_block->count, fn_entry_block->frequency, NULL, NULL);
+  newdecl = copy_body (&id, fn_entry_block->count, fn_entry_block->frequency,
+		       NULL, NULL);
   DECL_STRUCT_FUNCTION (fn)->saved_cfg = DECL_STRUCT_FUNCTION (newdecl)->cfg;
   DECL_STRUCT_FUNCTION (fn)->saved_eh = DECL_STRUCT_FUNCTION (newdecl)->eh;
 

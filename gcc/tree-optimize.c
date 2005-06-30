@@ -924,9 +924,13 @@ tree_rest_of_compilation (tree fndecl)
       DECL_ARGUMENTS (fndecl) = cfun->saved_args;
       cfun->cfg = cfun->saved_cfg;
       cfun->eh = cfun->saved_eh;
+      DECL_INITIAL (fndecl) = cfun->saved_blocks;
+      cfun->unexpanded_var_list = cfun->saved_unexpanded_var_list;
       cfun->saved_cfg = NULL;
       cfun->saved_eh = NULL;
       cfun->saved_args = NULL_TREE;
+      cfun->saved_blocks = NULL_TREE;
+      cfun->saved_unexpanded_var_list = NULL_TREE;
       cfun->static_chain_decl = cfun->saved_static_chain_decl;
       cfun->saved_static_chain_decl = NULL;
       /* When not in unit-at-a-time mode, we must preserve out of line copy

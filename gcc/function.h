@@ -178,6 +178,8 @@ struct function GTY(())
      inlining */
   tree saved_args;
   tree saved_static_chain_decl;
+  tree saved_blocks;
+  tree saved_unexpanded_var_list;
 
   /* For function.c.  */
 

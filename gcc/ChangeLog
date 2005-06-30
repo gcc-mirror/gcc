@@ -1,3 +1,18 @@
+2005-06-30  Jan Hubicka  <jh@suse.cz>
+
+	* function.h (struct function): Add saved blocks/unexpanded var list.
+	* gimple-low.c (record_vars): Insert only VAR_DECLs.
+	* tree-inline.c (add_lexical_block): Declare; do not clear sublocks.
+	(remap_decl): Do not declare vars.
+	(remap_block): Do not care inserting blocks.
+	(remap_blocks): New function.
+	(copy_body_r): Update debug info.
+	(expand_call_inline): Duplicate callee block tree into caller;
+	copy all the unexpanded_var_list.
+	(save_body): Save unexpanded_var_list and blocks.
+	* tree-optimize.c (tree_rest_of_optimization): Restore
+	blocks/unexpanded_var_list.
+
 2005-06-29  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.c (ia64_expand_vecint_minmax): Use us_minus and
