@@ -1,3 +1,7 @@
+2005-06-29  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_file_start): Use PPC405_ERRATUM77.
+
 2005-06-29  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 22234
