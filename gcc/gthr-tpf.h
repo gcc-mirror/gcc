@@ -65,7 +65,7 @@ typedef pthread_mutex_t __gthread_recursive_mutex_t;
 #define NOTATHREAD   00
 #define ECBBASEPTR (unsigned long int) *(unsigned int *)0x00000514u
 #define ECBPG2PTR  ECBBASEPTR + 0x1000
-#define CE2THRCPTR *((unsigned char *)(ECBPG2PTR + 208))
+#define CE2THRCPTR *((unsigned char *)(ECBPG2PTR + 16))
 #define __tpf_pthread_active() (CE2THRCPTR != NOTATHREAD)
 
 #if SUPPORTS_WEAK && GTHREAD_USE_WEAK
