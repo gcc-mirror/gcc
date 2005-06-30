@@ -52,8 +52,37 @@ DEF_VEC_ALLOC_I(complex_lattice_t, heap);
 
 static VEC(complex_lattice_t, heap) *complex_lattice_values;
 
-/* For each complex variable, a pair of variables for the components.  */
-static VEC(tree, heap) *complex_variable_components;
+/* For each complex variable, a pair of variables for the components exists in
+   the hashtable.  */
+static htab_t complex_variable_components;
+
+/* Lookup UID in the complex_variable_components hashtable and return the
+   associated tree.  */
+static tree 
+cvc_lookup (unsigned int uid)
+{
+  struct int_tree_map *h, in;
+  in.uid = uid;
+  h = htab_find_with_hash (complex_variable_components, &in, uid);
+  gcc_assert (h);
+  return h->to;
+}
+ 
+/* Insert the pair UID, TO into the complex_variable_components hashtable.  */
+
+static void 
+cvc_insert (unsigned int uid, tree to)
+{ 
+  struct int_tree_map *h;
+  void **loc;
+
+  h = xmalloc (sizeof (struct int_tree_map));
+  h->uid = uid;
+  h->to = to;
+  loc = htab_find_slot_with_hash (complex_variable_components, h,
+				  uid, INSERT);
+  *(struct int_tree_map **)  loc = h;
+}
 
 
 /* Return true if T is not a zero constant.  In the case of real values,
@@ -355,18 +384,19 @@ complex_visit_phi (tree phi)
 static void
 create_components (void)
 {
-  size_t k, n;
+  size_t n;
+  tree var;
+  referenced_var_iterator rvi;
 
   n = num_referenced_vars;
   if (n == 0)
     return;
 
-  complex_variable_components = VEC_alloc (tree, heap, 2*n);
-  VEC_safe_grow (tree, heap, complex_variable_components, 2*n);
+  complex_variable_components = htab_create (10,  int_tree_map_hash,
+					     int_tree_map_eq, free);
 
-  for (k = 0; k < n; ++k)
+  FOR_EACH_REFERENCED_VAR (var, rvi)
     {
-      tree var = referenced_var (k);
       tree r = NULL, i = NULL;
 
       if (var != NULL
@@ -409,8 +439,8 @@ create_components (void)
 	    }
 	}
 
-      VEC_replace (tree, complex_variable_components, 2*k, r);
-      VEC_replace (tree, complex_variable_components, 2*k + 1, i);
+      cvc_insert (2 * DECL_UID (var), r);
+      cvc_insert (2 * DECL_UID (var) + 1, i);
     }
 }
 
@@ -464,8 +494,7 @@ extract_component (block_stmt_iterator *bsi, tree t, bool imagpart_p,
 	      }
 	  }
 
-	return VEC_index (tree, complex_variable_components,
-			  var_ann (SSA_NAME_VAR (t))->uid * 2 + imagpart_p);
+	return cvc_lookup (DECL_UID (SSA_NAME_VAR (t)) * 2 + imagpart_p);
       }
 
     default:
@@ -478,16 +507,16 @@ extract_component (block_stmt_iterator *bsi, tree t, bool imagpart_p,
 static void
 update_complex_components (block_stmt_iterator *bsi, tree stmt, tree r, tree i)
 {
-  unsigned int uid = var_ann (SSA_NAME_VAR (TREE_OPERAND (stmt, 0)))->uid;
+  unsigned int uid = DECL_UID (SSA_NAME_VAR (TREE_OPERAND (stmt, 0)));
   tree v, x;
 
-  v = VEC_index (tree, complex_variable_components, 2*uid);
+  v = cvc_lookup (2*uid);
   x = build2 (MODIFY_EXPR, TREE_TYPE (v), v, r);
   SET_EXPR_LOCUS (x, EXPR_LOCUS (stmt));
   TREE_BLOCK (x) = TREE_BLOCK (stmt);
   bsi_insert_after (bsi, x, BSI_NEW_STMT);
 
-  v = VEC_index (tree, complex_variable_components, 2*uid + 1);
+  v = cvc_lookup (2*uid + 1);
   x = build2 (MODIFY_EXPR, TREE_TYPE (v), v, i);
   SET_EXPR_LOCUS (x, EXPR_LOCUS (stmt));
   TREE_BLOCK (x) = TREE_BLOCK (stmt);
@@ -497,10 +526,10 @@ update_complex_components (block_stmt_iterator *bsi, tree stmt, tree r, tree i)
 static void
 update_complex_components_on_edge (edge e, tree stmt, tree lhs, tree r, tree i)
 {
-  unsigned int uid = var_ann (SSA_NAME_VAR (lhs))->uid;
+  unsigned int uid = DECL_UID (SSA_NAME_VAR (lhs));
   tree v, x;
 
-  v = VEC_index (tree, complex_variable_components, 2*uid);
+  v = cvc_lookup (2*uid);
   x = build2 (MODIFY_EXPR, TREE_TYPE (v), v, r);
   if (stmt)
     {
@@ -509,7 +538,7 @@ update_complex_components_on_edge (edge e, tree stmt, tree lhs, tree r, tree i)
     }
   bsi_insert_on_edge (e, x);
 
-  v = VEC_index (tree, complex_variable_components, 2*uid + 1);
+  v = cvc_lookup (2*uid + 1);
   x = build2 (MODIFY_EXPR, TREE_TYPE (v), v, i);
   if (stmt)
     {
@@ -1406,7 +1435,9 @@ tree_lower_complex (void)
 
   bsi_commit_edge_inserts ();
 
-  VEC_free (tree, heap, complex_variable_components);
+  if (complex_variable_components)
+    htab_delete (complex_variable_components);
+
   VEC_free (complex_lattice_t, heap, complex_lattice_values);
 }
 

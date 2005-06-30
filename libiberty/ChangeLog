@@ -1,3 +1,8 @@
+2005-06-30  Daniel Berlin  <dberlin@dberlin.org>
+
+	* hashtab.c (EMPTY_ENTRY): Moved and renamed.
+	(DELETED_ENTRY): Ditto.	
+
 2005-06-20  Geoffrey Keating  <geoffk@apple.com>
 
 	* strverscmp.c: New.

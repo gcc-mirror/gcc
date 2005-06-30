@@ -373,17 +373,16 @@ error:
 static void
 verify_flow_insensitive_alias_info (void)
 {
-  size_t i;
   tree var;
   bitmap visited = BITMAP_ALLOC (NULL);
+  referenced_var_iterator rvi;
 
-  for (i = 0; i < num_referenced_vars; i++)
+  FOR_EACH_REFERENCED_VAR (var, rvi)
     {
       size_t j;
       var_ann_t ann;
       varray_type may_aliases;
 
-      var = referenced_var (i);
       ann = var_ann (var);
       may_aliases = ann->may_aliases;
 
@@ -391,7 +390,7 @@ verify_flow_insensitive_alias_info (void)
 	{
 	  tree alias = VARRAY_TREE (may_aliases, j);
 
-	  bitmap_set_bit (visited, var_ann (alias)->uid);
+	  bitmap_set_bit (visited, DECL_UID (alias));
 
 	  if (!may_be_aliased (alias))
 	    {
@@ -402,16 +401,14 @@ verify_flow_insensitive_alias_info (void)
 	}
     }
 
-  for (i = 0; i < num_referenced_vars; i++)
+  FOR_EACH_REFERENCED_VAR (var, rvi)
     {
       var_ann_t ann;
-
-      var = referenced_var (i);
       ann = var_ann (var);
 
       if (ann->mem_tag_kind == NOT_A_TAG
 	  && ann->is_alias_tag
-	  && !bitmap_bit_p (visited, ann->uid))
+	  && !bitmap_bit_p (visited, DECL_UID (var)))
 	{
 	  error ("Addressable variable that is an alias tag but is not in any alias set.");
 	  goto err;
@@ -554,13 +551,13 @@ verify_name_tags (void)
 	  for (i = 0; aliases && i < VARRAY_ACTIVE_SIZE (aliases); i++)
 	    {
 	      tree alias = VARRAY_TREE (aliases, i);
-	      bitmap_set_bit (type_aliases, var_ann (alias)->uid);
+	      bitmap_set_bit (type_aliases, DECL_UID (alias));
 	    }
 
 	  /* When grouping, we may have added PTR's type tag into the
 	     alias set of PTR's name tag.  To prevent a false
 	     positive, pretend that TMT is in its own alias set.  */
-	  bitmap_set_bit (type_aliases, var_ann (tmt)->uid);
+	  bitmap_set_bit (type_aliases, DECL_UID (tmt));
 
 	  if (bitmap_equal_p (type_aliases, pi->pt_vars))
 	    continue;
@@ -780,13 +777,31 @@ err:
   internal_error ("verify_ssa failed.");
 }
 
+/* Return true if the uid in both int tree maps are equal.  */
+
+int
+int_tree_map_eq (const void *va, const void *vb)
+{
+  const struct int_tree_map  *a = va, *b = vb;
+  return (a->uid == b->uid);
+}
+
+/* Hash a UID in a int_tree_map.  */
+
+unsigned int
+int_tree_map_hash (const void *item)
+{
+  return ((const struct int_tree_map *)item)->uid;
+}
+
 
 /* Initialize global DFA and SSA structures.  */
 
 void
 init_tree_ssa (void)
 {
-  referenced_vars = VEC_alloc (tree, gc, 20);
+  referenced_vars = htab_create_ggc (20, int_tree_map_hash, 
+				     int_tree_map_eq, NULL);
   call_clobbered_vars = BITMAP_ALLOC (NULL);
   addressable_vars = BITMAP_ALLOC (NULL);
   init_ssanames ();
@@ -804,6 +819,8 @@ delete_tree_ssa (void)
   size_t i;
   basic_block bb;
   block_stmt_iterator bsi;
+  referenced_var_iterator rvi;
+  tree var;
 
   /* Release any ssa_names still in use.  */
   for (i = 0; i < num_ssa_names; i++)
@@ -833,13 +850,13 @@ delete_tree_ssa (void)
     }
 
   /* Remove annotations from every referenced variable.  */
-  for (i = 0; i < num_referenced_vars; i++)
+  FOR_EACH_REFERENCED_VAR (var, rvi)
     {
-      tree var = referenced_var (i);
       ggc_free (var->common.ann);
       var->common.ann = NULL;
     }
-  VEC_free (tree, gc, referenced_vars);
+  htab_delete (referenced_vars);
+  referenced_vars = NULL;
 
   fini_ssanames ();
   fini_phinodes ();
