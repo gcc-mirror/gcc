@@ -1,3 +1,9 @@
+2005-06-30  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR testsuite/21967
+	* tree-ssa-live.c (mark_all_vars_used_1): Ignore variables in
+	TMR_ORIGINAL.
+
 2005-06-30  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.md (addv2hi3, subv2hi3, sminv2hi3, smaxv2hi3,

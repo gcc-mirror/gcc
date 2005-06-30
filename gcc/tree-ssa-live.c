@@ -286,6 +286,7 @@ change_partition_var (var_map map, tree var, int part)
     map->partition_to_var[map->compact_to_partition[part]] = var;
 }
 
+static inline void mark_all_vars_used (tree *);
 
 /* Helper function for mark_all_vars_used, called via walk_tree.  */
 
@@ -294,6 +295,17 @@ mark_all_vars_used_1 (tree *tp, int *walk_subtrees,
 		      void *data ATTRIBUTE_UNUSED)
 {
   tree t = *tp;
+
+  /* Ignore TREE_ORIGINAL for TARGET_MEM_REFS, as well as other
+     fields that do not contain vars.  */
+  if (TREE_CODE (t) == TARGET_MEM_REF)
+    {
+      mark_all_vars_used (&TMR_SYMBOL (t));
+      mark_all_vars_used (&TMR_BASE (t));
+      mark_all_vars_used (&TMR_INDEX (t));
+      *walk_subtrees = 0;
+      return NULL;
+    }
 
   /* Only need to mark VAR_DECLS; parameters and return results are not
      eliminated as unused.  */
