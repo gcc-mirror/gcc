@@ -1,3 +1,7 @@
+2005-06-30  J. D. Johnston  <jjohnst@us.ibm.com>
+
+	* gthr-tpf.h (CE2THRCPTR): Change field offset to 16.
+
 2005-06-30  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/c4x/c4x-protos.h: Remove the prototypes for those
