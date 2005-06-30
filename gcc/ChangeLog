@@ -1,3 +1,102 @@
+2005-06-29  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-complex.c (complex_variable_components): Now a hashtable.
+	(cvc_lookup): Ditto.
+	(cvc_insert): Ditto.
+	(create_components): Use referenced var iterator.
+	Initialize hashtable.	Use cvc_insert/lookup.
+	(extract_components): Use cvc_insert/lookup.
+	(update_complex_components): Ditto.
+	(update_complex_components_on_edge): Ditto.
+	* tree-dfa.c (referenced_vars): Now a hashtable.
+	(dump_referenced_vars): Use iterator.
+	(referenced_var_lookup): New function.
+	(referenced_var_insert): Ditto.
+	(add_referenced_var): Use referenced_var_insert.
+	(mark_new_vars_to_rename): Use DECL_UID.
+	* tree-flow-inline.h (first_htab_element): New function.
+	(end_htab_p): Ditto.
+	(next_htab_element): Ditto.
+	(first_referenced_var): Ditto.
+	(end_referenced_vars_p): Ditto.
+	(next_referenced_var): Ditto.
+	(is_call_clobbered): Use DECL_UID.
+	(mark_call_clobbered): Ditto.
+	(clear_call_clobbered): Ditto.
+	(mark_non_addressable): Ditto.
+	* tree-flow.h (htab_iterator): New struct.
+	(FOR_EACH_HTAB_ELEMENT): New macro.
+	(struct int_tree_map): New struct.
+	(int_tree_map_hash): Prototype.
+	(int_tree_map_eq): Ditto.
+	(referenced_var_iterator): Ditto.
+	(FOR_EACH_REFERENCED_VAR): New macro.
+	(referenced_vars): Now a hashtable.
+	* tree-into-ssa.c (symbol_marked_for_renaming): Use DECL_UID.
+	(add_new_name_mapping): Ditto.
+	(mark_def_sites): Ditto.
+	(insert_phi_nodes): Use referenced_var iterator.
+	(mark_def_site_blocks): Ditto.
+	(mark_sym_for_renaming): Use DECL_UID.
+	* tree-sra.c (is_sra_candidate_decl): Use DECL_UID.
+	(lookup_element): Ditto.
+	(find_candidates_for_sra): Use referenced_vars iterator.
+	Use DECL_UID.
+	* tree-ssa-alias.c (NUM_REFERENCES): New macro.
+	(NUM_REFERENCES_CLEAR): Ditto.
+	(NUM_REFERENCES_INC): Ditto.
+	(NUM_REFERENCES_SET): Ditto.
+	(alias_obstack): New bitmap obstack.
+	(struct alias_map_d): Use bitmap, not sbitmap.
+	(struct alias_info): Remove num_references.
+	(init_alias_info): Use referenced_var iterator.
+	Initialize bitmap obstack.
+	(delete_alias_info): Use referenced_var iterator.
+	Free bitmap obstack.
+	(compute_points_to_and_addr_escape): Use DECL_UID.
+	Use new NUM_REFERENCES macros.
+	(compute_flow_sensitive_aliasing): may_aliases is now a bitmap.
+	Use new NUM_REFERENCES macros.
+	(group_aliases_into): Update prototype to use bitmap.
+	(setup_pointers_and_addressables): Use referenced_vars iterator.
+	Use DECL_UID. Use new NUM_REFERENCES macros.
+	(add_pointed_to_var): Use DECL_UID.
+	(dump_alias_info): Use referenced_var iterator.
+	(add_type_alias): Ditto.
+	(used_portions): Now a hashtable.
+	(used_part_map_eq): New function.
+	(used_part_map_hash): Ditto.
+	(free_used_part_map): Ditto.
+	(up_lookup): Ditto.
+	(up_insert): Ditto.
+	(get_or_create_used_part_for): Use up_lookup.
+	(create_overlap_variables_for): Ditto.
+	(find_used_portions): Use up_insert.
+	Use DECL_UID.
+	(create_structure_vars): Init used_portions hashtable, use
+	referenced_vars iterator.
+	* tree-ssa-live.c (create_ssa_var_map): sbitmaps became bitmaps.
+	Use DECL_UID.
+	* tree-ssa-loop-im.c (gather_mem_refs_stmt): Use DECL_UID.
+	* tree-ssa-operands.c (get_asm_expr_operands): Ditto.
+	(note_addressable): Ditto.
+	* tree-ssa-structalias.c (set_uids_in_ptset): Ditto.
+	* tree-ssa.c (verify_flow_insensitive_alias_info): Use
+	referenced_var iterator.
+	Use DECL_UID.
+	(delete_tree_ssa): Ditto.
+	(int_tree_map_eq): New function.
+	(int_tree_map_hash): Ditto.
+	* tree-stdarg.c (find_va_list_reference): Use DECL_UID.
+	(va_list_ptr_read): Ditto.
+	(va_list_counter_struct_op): Ditto.
+	(va_list_ptr_write): Ditto.
+	(check_va_list_escapes): Ditto.
+	(check_all_va_list_escapes): Ditto.
+	(execute_optimize_stdarg): Ditto.
+	* tree-tailcall.c (suitable_for_tail_opt_p): Used referenced_var
+	iterator. 
+
 2005-06-30  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/rs6000/darwin.h (FRAME_POINTER_REGNUM): Rename to ...

@@ -454,7 +454,7 @@ static inline bool
 symbol_marked_for_renaming (tree sym)
 {
   gcc_assert (DECL_P (sym));
-  return bitmap_bit_p (syms_to_rename, var_ann (sym)->uid);
+  return bitmap_bit_p (syms_to_rename, DECL_UID (sym));
 }
 
 
@@ -582,7 +582,7 @@ add_new_name_mapping (tree new, tree old)
 	 Otherwise, the insertion of PHI nodes for each of the old
 	 names in these mappings will be very slow.  */
       sym = SSA_NAME_VAR (new);
-      uid = var_ann (sym)->uid;
+      uid = DECL_UID (sym);
       update_ssa_stats.num_virtual_mappings++;
       if (!bitmap_bit_p (update_ssa_stats.virtual_symbols, uid))
 	{
@@ -651,7 +651,7 @@ mark_def_sites (struct dom_walk_data *walk_data,
     {
       tree sym = USE_FROM_PTR (use_p);
       gcc_assert (DECL_P (sym));
-      if (!bitmap_bit_p (kills, var_ann (sym)->uid))
+      if (!bitmap_bit_p (kills, DECL_UID (sym)))
 	set_livein_block (sym, bb);
       REWRITE_THIS_STMT (stmt) = 1;
     }
@@ -676,7 +676,7 @@ mark_def_sites (struct dom_walk_data *walk_data,
     {
       gcc_assert (DECL_P (def));
       set_def_block (def, bb, false);
-      bitmap_set_bit (kills, var_ann (def)->uid);
+      bitmap_set_bit (kills, DECL_UID (def));
       REGISTER_DEFS_IN_THIS_STMT (stmt) = 1;
     }
 
@@ -861,15 +861,15 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
 static void
 insert_phi_nodes (bitmap *dfs)
 {
-  unsigned i;
+  referenced_var_iterator rvi;
+  tree var;
 
   timevar_push (TV_TREE_INSERT_PHI_NODES);
-
-  for (i = 0; i < num_referenced_vars; i++)
+  
+  FOR_EACH_REFERENCED_VAR (var, rvi)
     {
       struct def_blocks_d *def_map;
       bitmap idf;
-      tree var = referenced_var (i);
 
       def_map = find_def_blocks_for (var);
       if (def_map == NULL)
@@ -1662,16 +1662,16 @@ mark_def_sites_initialize_block (struct dom_walk_data *walk_data,
 static void
 mark_def_site_blocks (sbitmap interesting_blocks)
 {
-  size_t i;
   struct dom_walk_data walk_data;
   struct mark_def_sites_global_data mark_def_sites_global_data;
+  referenced_var_iterator rvi;
+  tree var;
 
   /* Allocate memory for the DEF_BLOCKS hash table.  */
-  def_blocks = htab_create (VEC_length (tree, referenced_vars),
+  def_blocks = htab_create (num_referenced_vars,
 			    def_blocks_hash, def_blocks_eq, def_blocks_free);
-
-  for (i = 0; i < num_referenced_vars; i++)
-    set_current_def (referenced_var (i), NULL_TREE);
+  FOR_EACH_REFERENCED_VAR(var, rvi)
+    set_current_def (var, NULL_TREE);
 
   /* Setup callbacks for the generic dominator tree walker to find and
      mark definition sites.  */
@@ -2287,7 +2287,7 @@ mark_sym_for_renaming (tree sym)
   if (need_to_initialize_update_ssa_p)
     init_update_ssa ();
 
-  bitmap_set_bit (syms_to_rename, var_ann (sym)->uid);
+  bitmap_set_bit (syms_to_rename, DECL_UID (sym));
 
   if (!is_gimple_reg (sym))
     need_to_update_vops_p = true;
@@ -2769,7 +2769,7 @@ update_ssa (unsigned update_flags)
 
       EXECUTE_IF_SET_IN_BITMAP (syms_to_rename, 0, i, bi)
 	insert_updated_phi_nodes_for (referenced_var (i), dfs, blocks,
-	                              update_flags);
+	    		              update_flags);
 
       FOR_EACH_BB (bb)
 	BITMAP_FREE (dfs[bb->index]);

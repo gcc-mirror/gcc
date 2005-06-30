@@ -1,3 +1,8 @@
+2005-06-30  Daniel Berlin  <dberlin@dberlin.org>
+	
+	* hashtab.h (HTAB_DELETED_ENTRY): New macro.
+	(HTAB_EMPTY_ENTRY): New macro.
+
 2005-06-20  Geoffrey Keating  <geoffk@apple.com>
 
 	* libiberty.h (strverscmp): Prototype. 

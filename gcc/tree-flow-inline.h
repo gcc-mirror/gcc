@@ -25,6 +25,87 @@ Boston, MA 02110-1301, USA.  */
 /* Inline functions for manipulating various data structures defined in
    tree-flow.h.  See tree-flow.h for documentation.  */
 
+/* Initialize the hashtable iterator HTI to point to hashtable TABLE */
+
+static inline void *
+first_htab_element (htab_iterator *hti, htab_t table)
+{
+  hti->htab = table;
+  hti->slot = table->entries;
+  hti->limit = hti->slot + htab_size (table);
+  do
+    {
+      PTR x = *(hti->slot);
+      if (x != HTAB_EMPTY_ENTRY && x != HTAB_DELETED_ENTRY)
+	break;
+    } while (++(hti->slot) < hti->limit);
+  
+  if (hti->slot < hti->limit)
+    return *(hti->slot);
+  return NULL;
+}
+
+/* Return current non-empty/deleted slot of the hashtable pointed to by HTI,
+   or NULL if we have  reached the end.  */
+
+static inline bool
+end_htab_p (htab_iterator *hti)
+{
+  if (hti->slot >= hti->limit)
+    return true;
+  return false;
+}
+
+/* Advance the hashtable iterator pointed by HTI to the next element of the
+   hashtable.  */
+
+static inline void *
+next_htab_element (htab_iterator *hti)
+{
+  while (++(hti->slot) < hti->limit)
+    {
+      PTR x = *(hti->slot);
+      if (x != HTAB_EMPTY_ENTRY && x != HTAB_DELETED_ENTRY)
+	return x;
+    };
+  return NULL;
+}
+
+/* Initialize ITER to point to the first referenced variable in the
+   referenced_vars hashtable, and return that variable.  */
+
+static inline tree
+first_referenced_var (referenced_var_iterator *iter)
+{
+  struct int_tree_map *itm;
+  itm = first_htab_element (&iter->hti, referenced_vars);
+  if (!itm) 
+    return NULL;
+  return itm->to;
+}
+
+/* Return true if we have hit the end of the referenced variables ITER is
+   iterating through.  */
+
+static inline bool
+end_referenced_vars_p (referenced_var_iterator *iter)
+{
+  return end_htab_p (&iter->hti);
+}
+
+/* Make ITER point to the next referenced_var in the referenced_var hashtable,
+   and return that variable.  */
+
+static inline tree
+next_referenced_var (referenced_var_iterator *iter)
+{
+  struct int_tree_map *itm;
+  itm = next_htab_element (&iter->hti);
+  if (!itm) 
+    return NULL;
+  return itm->to;
+} 
+ 
 /* Return the variable annotation for T, which must be a _DECL node.
    Return NULL if the variable annotation doesn't already exist.  */
 static inline var_ann_t
@@ -752,7 +833,7 @@ static inline bool
 is_call_clobbered (tree var)
 {
   return is_global_var (var)
-	 || bitmap_bit_p (call_clobbered_vars, var_ann (var)->uid);
+    || bitmap_bit_p (call_clobbered_vars, DECL_UID (var));
 }
 
 /* Mark variable VAR as being clobbered by function calls.  */
@@ -766,7 +847,7 @@ mark_call_clobbered (tree var)
      location in global memory.  */
   if (ann->mem_tag_kind != NOT_A_TAG && ann->mem_tag_kind != STRUCT_FIELD)
     DECL_EXTERNAL (var) = 1;
-  bitmap_set_bit (call_clobbered_vars, ann->uid);
+  bitmap_set_bit (call_clobbered_vars, DECL_UID (var));
   ssa_call_clobbered_cache_valid = false;
   ssa_ro_call_cache_valid = false;
 }
@@ -778,7 +859,7 @@ clear_call_clobbered (tree var)
   var_ann_t ann = var_ann (var);
   if (ann->mem_tag_kind != NOT_A_TAG && ann->mem_tag_kind != STRUCT_FIELD)
     DECL_EXTERNAL (var) = 0;
-  bitmap_clear_bit (call_clobbered_vars, ann->uid);
+  bitmap_clear_bit (call_clobbered_vars, DECL_UID (var));
   ssa_call_clobbered_cache_valid = false;
   ssa_ro_call_cache_valid = false;
 }
@@ -787,7 +868,7 @@ clear_call_clobbered (tree var)
 static inline void
 mark_non_addressable (tree var)
 {
-  bitmap_clear_bit (call_clobbered_vars, var_ann (var)->uid);
+  bitmap_clear_bit (call_clobbered_vars, DECL_UID (var));
   TREE_ADDRESSABLE (var) = 0;
   ssa_call_clobbered_cache_valid = false;
   ssa_ro_call_cache_valid = false;

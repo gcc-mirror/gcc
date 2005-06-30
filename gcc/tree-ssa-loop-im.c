@@ -1165,20 +1165,14 @@ gather_mem_refs_stmt (struct loop *loop, htab_t mem_refs,
 
   FOR_EACH_SSA_TREE_OPERAND (vname, stmt, oi,
 			     SSA_OP_VIRTUAL_USES | SSA_OP_VIRTUAL_KILLS)
-    {
-      bitmap_set_bit (ref->vops,
-		      var_ann (SSA_NAME_VAR (vname))->uid);
-    }
+    bitmap_set_bit (ref->vops, DECL_UID (SSA_NAME_VAR (vname)));
   record_mem_ref_loc (&ref->locs, stmt, mem);
   return;
 
 fail:
   FOR_EACH_SSA_TREE_OPERAND (vname, stmt, oi,
 			     SSA_OP_VIRTUAL_USES | SSA_OP_VIRTUAL_KILLS)
-    {
-      bitmap_set_bit (clobbered_vops,
-		      var_ann (SSA_NAME_VAR (vname))->uid);
-    }
+    bitmap_set_bit (clobbered_vops, DECL_UID (SSA_NAME_VAR (vname)));
 }
 
 /* Gathers memory references in LOOP.  Notes vops accessed through unrecognized

@@ -1555,10 +1555,10 @@ get_asm_expr_operands (tree stmt)
 	  add_stmt_operand (&global_var, s_ann, opf_is_def);
 	else
 	  EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i, bi)
-	      {
-		tree var = referenced_var (i);
-		add_stmt_operand (&var, s_ann, opf_is_def | opf_non_specific);
-	      }
+	    {
+	      tree var = referenced_var (i);
+	      add_stmt_operand (&var, s_ann, opf_is_def | opf_non_specific);
+	    }
 
 	/* Now clobber all addressables.  */
 	EXECUTE_IF_SET_IN_BITMAP (addressable_vars, 0, i, bi)
@@ -1937,10 +1937,10 @@ note_addressable (tree var, stmt_ann_t s_ann)
 	{
 	  subvar_t sv;
 	  for (sv = svars; sv; sv = sv->next)
-	    bitmap_set_bit (s_ann->addresses_taken, var_ann (sv->var)->uid);
+	    bitmap_set_bit (s_ann->addresses_taken, DECL_UID (sv->var));
 	}
       else
-	bitmap_set_bit (s_ann->addresses_taken, var_ann (var)->uid);
+	bitmap_set_bit (s_ann->addresses_taken, DECL_UID (var));
     }
 }
 

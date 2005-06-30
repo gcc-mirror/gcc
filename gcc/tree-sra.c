@@ -151,7 +151,7 @@ static tree generate_element_ref (struct sra_elt *);
 static bool
 is_sra_candidate_decl (tree decl)
 {
-  return DECL_P (decl) && bitmap_bit_p (sra_candidates, var_ann (decl)->uid);
+  return DECL_P (decl) && bitmap_bit_p (sra_candidates, DECL_UID (decl));
 }
 
 /* Return true if TYPE is a scalar type.  */
@@ -493,7 +493,7 @@ lookup_element (struct sra_elt *parent, tree child, tree type,
       if (TREE_CODE (child) == PARM_DECL)
 	{
 	  elt->n_copies = 1;
-	  bitmap_set_bit (needs_copy_in, var_ann (child)->uid);
+	  bitmap_set_bit (needs_copy_in, DECL_UID (child));
 	}
     }
 
@@ -940,15 +940,15 @@ sra_walk_function (const struct sra_walk_fns *fns)
 static bool
 find_candidates_for_sra (void)
 {
-  size_t i;
   bool any_set = false;
+  tree var;
+  referenced_var_iterator rvi;
 
-  for (i = 0; i < num_referenced_vars; i++)
+  FOR_EACH_REFERENCED_VAR (var, rvi)
     {
-      tree var = referenced_var (i);
       if (decl_can_be_decomposed_p (var))
         {
-          bitmap_set_bit (sra_candidates, var_ann (var)->uid);
+          bitmap_set_bit (sra_candidates, DECL_UID (var));
           any_set = true;
         }
     }

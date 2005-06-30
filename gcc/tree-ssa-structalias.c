@@ -2913,13 +2913,13 @@ set_uids_in_ptset (bitmap into, bitmap from)
 	  subvar_t svars = get_subvars_for_var (vi->decl);
 	  subvar_t sv;
 	  for (sv = svars; sv; sv = sv->next)
-	    bitmap_set_bit (into, var_ann (sv->var)->uid);    
+	    bitmap_set_bit (into, DECL_UID (sv->var));
 	}
       /* We may end up with labels in the points-to set because people
 	 take their address, and they are _DECL's.  */
       else if (TREE_CODE (vi->decl) == VAR_DECL 
 	  || TREE_CODE (vi->decl) == PARM_DECL)
-	bitmap_set_bit (into, var_ann (vi->decl)->uid);
+	bitmap_set_bit (into, DECL_UID (vi->decl));
 
 	  
     }
