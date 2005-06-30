@@ -1,6 +1,6 @@
 ;; Machine description for the TMS320C[34]x for GCC
 ;; Copyright (C) 1994, 1995, 1996, 1997, 1998,
-;; 1999, 2000, 2002, 2004 Free Software Foundation, Inc.
+;; 1999, 2000, 2002, 2004, 2005 Free Software Foundation, Inc.
 
 ;; Contributed by Michael Hayes (m.hayes@elec.canterbury.ac.nz)
 ;;            and Herman Ten Brugge (Haj.Ten.Brugge@net.HCC.nl)
@@ -907,6 +907,7 @@
                             (const_int 1) (const_int 0))]
              (const_int 0)))
 
+(include "predicates.md")
 
 ;
 ; C4x INSN PATTERNS:

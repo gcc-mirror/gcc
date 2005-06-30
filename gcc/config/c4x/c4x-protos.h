@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  TMS320C[34]x
-   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2003, 2004
+   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
    Contributed by Michael Hayes (m.hayes@elec.canterbury.ac.nz)
@@ -98,65 +98,11 @@ extern int c4x_check_laj_p (rtx);
 
 extern int c4x_autoinc_operand (rtx, enum machine_mode);
 
-extern int any_operand (rtx, enum machine_mode);
-
-extern int fp_zero_operand (rtx, enum machine_mode);
-
-extern int const_operand (rtx, enum machine_mode);
-
-extern int stik_const_operand (rtx, enum machine_mode);
-
-extern int not_const_operand (rtx, enum machine_mode);
-
-extern int parallel_operand (rtx, enum machine_mode);
-
 extern int reg_or_const_operand (rtx, enum machine_mode);
-
-extern int reg_operand (rtx, enum machine_mode);
 
 extern int mixed_subreg_operand (rtx, enum machine_mode);
 
 extern int reg_imm_operand (rtx, enum machine_mode);
-
-extern int r0r1_reg_operand (rtx, enum machine_mode);
-
-extern int r2r3_reg_operand (rtx, enum machine_mode);
-
-extern int ext_low_reg_operand (rtx, enum machine_mode);
-
-extern int ext_reg_operand (rtx, enum machine_mode);
-
-extern int std_reg_operand (rtx, enum machine_mode);
-
-extern int std_or_reg_operand (rtx, enum machine_mode);
-
-extern int dst_operand (rtx, enum machine_mode);
-
-extern int src_operand (rtx, enum machine_mode);
-
-extern int src_hi_operand (rtx, enum machine_mode);
-
-extern int lsrc_operand (rtx, enum machine_mode);
-
-extern int tsrc_operand (rtx, enum machine_mode);
-
-extern int nonimmediate_src_operand (rtx, enum machine_mode);
-
-extern int nonimmediate_lsrc_operand (rtx, enum machine_mode);
-
-extern int addr_reg_operand (rtx, enum machine_mode);
-
-extern int index_reg_operand (rtx, enum machine_mode);
-
-extern int dp_reg_operand (rtx, enum machine_mode);
-
-extern int sp_reg_operand (rtx, enum machine_mode);
-
-extern int rc_reg_operand (rtx, enum machine_mode);
-
-extern int st_reg_operand (rtx, enum machine_mode);
-
-extern int symbolic_address_operand (rtx, enum machine_mode);
 
 extern int ar0_reg_operand (rtx, enum machine_mode);
 
@@ -204,15 +150,17 @@ extern int group1_mem_operand (rtx, enum machine_mode);
 
 extern int arx_reg_operand (rtx, enum machine_mode);
 
-extern int call_address_operand (rtx, enum machine_mode);
-
-extern int par_ind_operand (rtx, enum machine_mode);
-
 extern int not_rc_reg (rtx, enum machine_mode);
 
 extern int not_modify_reg (rtx, enum machine_mode);
 
 extern int c4x_shiftable_constant (rtx);
+
+extern int c4x_immed_float_p (rtx);
+
+extern int c4x_a_register (rtx);
+
+extern int c4x_x_register (rtx);
 
 extern int c4x_H_constant (rtx);
 
@@ -220,11 +168,19 @@ extern int c4x_I_constant (rtx);
 
 extern int c4x_J_constant (rtx);
 
+extern int c4x_K_constant (rtx);
+
 extern int c4x_L_constant (rtx);
+
+extern int c4x_N_constant (rtx);
+
+extern int c4x_O_constant (rtx);
 
 extern int c4x_Q_constraint (rtx);
 
 extern int c4x_R_constraint (rtx);
+
+extern int c4x_S_indirect (rtx);
 
 extern int c4x_S_constraint (rtx);
 
