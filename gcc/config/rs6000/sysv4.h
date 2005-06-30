@@ -252,7 +252,9 @@ do {									\
 /* Size of the V.4 varargs area if needed.  */
 /* Override rs6000.h definition.  */
 #undef	RS6000_VARARGS_AREA
-#define RS6000_VARARGS_AREA (current_function_stdarg ? RS6000_VARARGS_SIZE : 0)
+#define RS6000_VARARGS_AREA \
+  ((DEFAULT_ABI == ABI_V4 && current_function_stdarg)		\
+   ? RS6000_VARARGS_SIZE : 0)
 
 /* Override default big endianism definitions in rs6000.h.  */
 #undef	BYTES_BIG_ENDIAN

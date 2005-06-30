@@ -1,3 +1,8 @@
+2005-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/sysv4.h (RS6000_VARARGS_AREA): Only return non-zero
+	if DEFAULT_ABI == ABI_V4.
+
 2005-06-30  Steven Bosscher  <stevenb@suse.de>
 
 	* coretypes.h (tls_model): Add TLS_MODEL_NONE as 0.
