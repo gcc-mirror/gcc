@@ -39,6 +39,9 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp.transport;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 /**
  * A class representing a JDWP command packet.
  * This class adds command set and command to the packet header
@@ -137,13 +140,10 @@ public class JdwpCommandPacket extends JdwpPacket
   }
 
   // Writes the command packet data into the given buffer
-  protected int myToBytes (byte[] bytes, int index)
+  protected void myWrite (DataOutputStream dos)
+    throws IOException
   {
-    // Need to add command set & command
-    int i = 0;
-    bytes[index + i++] = getCommandSet ();
-    bytes[index + i++] = getCommand ();
-
-    return i;
+    dos.writeByte (getCommandSet ());
+    dos.writeByte (getCommand ());
   }
 }

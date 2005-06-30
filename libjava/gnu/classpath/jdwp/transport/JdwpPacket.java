@@ -39,6 +39,9 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp.transport;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 /**
  * All command and reply packets in JDWP share
  * common header type information:
@@ -238,49 +241,38 @@ public abstract class JdwpPacket
     return null;
   }
 
-  // Put subclass information into bytes
-  protected abstract int myToBytes (byte[] bytes, int index);
+  /**
+   * Put subclass information onto the stream
+   *
+   * @param dos the output stream to which to write
+   */
+  protected abstract void myWrite (DataOutputStream dos)
+    throws IOException;
 
-  // Convert this packet to it byte representation (ready to send on the wire)
-  // NOTE: All integers should be big-endian.
-  public byte[] toBytes ()
+  /**
+   * Writes the packet to the output stream
+   *
+   * @param dos  the output stream to which to write the packet
+   */
+  public void write (DataOutputStream dos)
+    throws IOException
   {
-    // Allocate a new array to hold contents of packet
-    int length = getLength ();
-    byte[] bytes = new byte[length];
-	
-    int i = 0;
-
-    //
-    // Packet layout: length, id, flags, packet-specific, data (optional)
-    //
-
     // length
-    bytes[i++] = (byte) (length >>> 24);
-    bytes[i++] = (byte) (length >>> 16);
-    bytes[i++] = (byte) (length >>> 8);
-    bytes[i++] = (byte) length;
+    int length = getLength ();
+    dos.writeInt (length);
 
-    // id
-    bytes[i++] = (byte) (getId () >>> 24);
-    bytes[i++] = (byte) (getId () >>> 16);
-    bytes[i++] = (byte) (getId () >>> 8);
-    bytes[i++] = (byte) getId ();
+    // ID
+    dos.writeInt (getId ());
 
     // flag
-    bytes[i++] = getFlags ();
+    dos.writeByte (getFlags ());
 
     // packet-specific stuff
-    i += myToBytes (bytes, i);
+    myWrite (dos);
 
     // data (if any)
     byte[] data = getData ();
-    if (data.length > 0 && i < length)
-      {
-	// Would it pay to be over cautious?
-	System.arraycopy (data, 0, bytes, i, data.length);
-      }
-
-    return bytes;
+    if (data != null && data.length > 0)
+      dos.write (data, 0, data.length);
   }
 }
