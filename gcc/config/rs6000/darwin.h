@@ -151,8 +151,8 @@ do {									\
 
 /* Base register for access to local variables of the function.  */
 
-#undef  FRAME_POINTER_REGNUM
-#define FRAME_POINTER_REGNUM 30
+#undef  HARD_FRAME_POINTER_REGNUM
+#define HARD_FRAME_POINTER_REGNUM 30
 
 #undef  RS6000_PIC_OFFSET_TABLE_REGNUM
 #define RS6000_PIC_OFFSET_TABLE_REGNUM 31
