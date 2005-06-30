@@ -767,7 +767,9 @@ char rs6000_reg_names[][8] =
       "24", "25", "26", "27", "28", "29", "30", "31",
       "vrsave", "vscr",
       /* SPE registers.  */
-      "spe_acc", "spefscr"
+      "spe_acc", "spefscr",
+      /* Soft frame pointer.  */
+      "sfp"
 };
 
 #ifdef TARGET_REGNAMES
@@ -791,7 +793,9 @@ static const char alt_reg_names[][8] =
   "%v24", "%v25", "%v26", "%v27", "%v28", "%v29", "%v30", "%v31",
   "vrsave", "vscr",
   /* SPE registers.  */
-  "spe_acc", "spefscr"
+  "spe_acc", "spefscr",
+  /* Soft frame pointer.  */
+  "sfp"
 };
 #endif
 
@@ -12100,6 +12104,13 @@ rs6000_stack_info (void)
   info_ptr->vars_size    = RS6000_ALIGN (get_frame_size (), 8);
   info_ptr->parm_size    = RS6000_ALIGN (current_function_outgoing_args_size,
 					 TARGET_ALTIVEC ? 16 : 8);
+  if (FRAME_GROWS_DOWNWARD)
+    info_ptr->vars_size
+      += RS6000_ALIGN (info_ptr->fixed_size + info_ptr->varargs_size
+		       + info_ptr->vars_size + info_ptr->parm_size,
+		       ABI_STACK_BOUNDARY / BITS_PER_UNIT)
+	 - (info_ptr->fixed_size + info_ptr->varargs_size
+	    + info_ptr->vars_size + info_ptr->parm_size);
 
   if (TARGET_SPE_ABI && info_ptr->spe_64bit_regs_used != 0)
     info_ptr->spe_gp_size = 8 * (32 - info_ptr->first_gp_reg_save);
@@ -13767,7 +13778,7 @@ rs6000_emit_prologue (void)
   /* Set frame pointer, if needed.  */
   if (frame_pointer_needed)
     {
-      insn = emit_move_insn (gen_rtx_REG (Pmode, FRAME_POINTER_REGNUM),
+      insn = emit_move_insn (gen_rtx_REG (Pmode, HARD_FRAME_POINTER_REGNUM),
 			     sp_reg_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
@@ -18228,9 +18239,21 @@ rs6000_initial_elimination_offset (int from, int to)
   rs6000_stack_t *info = rs6000_stack_info ();
   HOST_WIDE_INT offset;
 
-  if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
+  if (from == HARD_FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
     offset = info->push_p ? 0 : -info->total_size;
-  else if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
+  else if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
+    {
+      offset = info->push_p ? 0 : -info->total_size;
+      if (FRAME_GROWS_DOWNWARD)
+	offset += info->fixed_size + info->varargs_size
+		  + info->vars_size + info->parm_size;
+    }
+  else if (from == FRAME_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
+    offset = FRAME_GROWS_DOWNWARD
+	     ? info->fixed_size + info->varargs_size
+	       + info->vars_size + info->parm_size
+	     : 0;
+  else if (from == ARG_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
     offset = info->total_size;
   else if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
     offset = info->push_p ? info->total_size : 0;
