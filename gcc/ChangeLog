@@ -1,3 +1,9 @@
+2005-06-30  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.md (addv2hi3, subv2hi3, sminv2hi3, smaxv2hi3,
+	mulv2hi3, negv2hi2, absv2hi2): Pattern names fixed by appending the
+	necessary digit.
+
 2005-06-29  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_file_start): Use PPC405_ERRATUM77.
