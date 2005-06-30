@@ -1,3 +1,7 @@
+2005-06-30  Aaron Luchko  <aluchko@redhat.com>
+
+	* gnu/classpath/jdwp/util/JdwpString.java: New file.
+
 2005-06-30  Keith Seitz  <keiths@redhat.com>
 
 	* gnu/classpath/jdwp/transport/JdwpPacket.java (write): New method.
