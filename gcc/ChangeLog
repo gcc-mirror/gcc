@@ -1,3 +1,7 @@
+2005-06-30  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (cgraph_clone_inlined_nodes): Revert previous patch.
+
 2005-06-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR middle-end/22247
