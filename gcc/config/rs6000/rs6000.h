@@ -568,15 +568,18 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
    We also create a pseudo register for float/int conversions, that will
    really represent the memory location used.  It is represented here as
    a register, in order to work around problems in allocating stack storage
-   in inline functions.  */
+   in inline functions.
 
-#define FIRST_PSEUDO_REGISTER 113
+   Another pseudo (not included in DWARF_FRAME_REGISTERS) is soft frame
+   pointer, which is eventually eliminated in favor of SP or FP.  */
+
+#define FIRST_PSEUDO_REGISTER 114
 
 /* This must be included for pre gcc 3.0 glibc compatibility.  */
 #define PRE_GCC3_DWARF_FRAME_REGISTERS 77
 
 /* Add 32 dwarf columns for synthetic SPE registers.  */
-#define DWARF_FRAME_REGISTERS (FIRST_PSEUDO_REGISTER + 32)
+#define DWARF_FRAME_REGISTERS ((FIRST_PSEUDO_REGISTER - 1) + 32)
 
 /* The SPE has an additional 32 synthetic registers, with DWARF debug
    info numbering for these registers starting at 1200.  While eh_frame
@@ -592,7 +595,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
    We must map them here to avoid huge unwinder tables mostly consisting
    of unused space.  */
 #define DWARF_REG_TO_UNWIND_COLUMN(r) \
-  ((r) > 1200 ? ((r) - 1200 + FIRST_PSEUDO_REGISTER) : (r))
+  ((r) > 1200 ? ((r) - 1200 + FIRST_PSEUDO_REGISTER - 1) : (r))
 
 /* Use gcc hard register numbering for eh_frame.  */
 #define DWARF_FRAME_REGNUM(REGNO) (REGNO)
@@ -617,7 +620,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    1, 1						   \
-   , 1, 1                                          \
+   , 1, 1, 1                                       \
 }
 
 /* 1 for registers not available across function calls.
@@ -637,7 +640,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    1, 1						   \
-   , 1, 1                                          \
+   , 1, 1, 1                                       \
 }
 
 /* Like `CALL_USED_REGISTERS' except this macro doesn't require that
@@ -656,7 +659,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0						   \
-   , 0, 0                                          \
+   , 0, 0, 0                                       \
 }
 
 #define MQ_REGNO     64
@@ -708,6 +711,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
 	v31 - v20	(saved; order given to save least number)
 	vrsave, vscr	(fixed)
 	spe_acc, spefscr (fixed)
+	sfp		(fixed)
 */
 
 #if FIXED_R2 == 1
@@ -739,7 +743,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
    96, 95, 94, 93, 92, 91,					\
    108, 107, 106, 105, 104, 103, 102, 101, 100, 99, 98, 97,	\
    109, 110,							\
-   111, 112							\
+   111, 112, 113						\
 }
 
 /* True if register is floating-point.  */
@@ -752,7 +756,8 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
 #define CR_REGNO_NOT_CR0_P(N) ((N) >= 69 && (N) <= 75)
 
 /* True if register is an integer register.  */
-#define INT_REGNO_P(N) ((N) <= 31 || (N) == ARG_POINTER_REGNUM)
+#define INT_REGNO_P(N) \
+  ((N) <= 31 || (N) == ARG_POINTER_REGNUM || (N) == FRAME_POINTER_REGNUM)
 
 /* SPE SIMD registers are just the GPRs.  */
 #define SPE_SIMD_REGNO_P(N) ((N) <= 31)
@@ -874,7 +879,10 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
 #define STACK_POINTER_REGNUM 1
 
 /* Base register for access to local variables of the function.  */
-#define FRAME_POINTER_REGNUM 31
+#define HARD_FRAME_POINTER_REGNUM 31
+
+/* Base register for access to local variables of the function.  */
+#define FRAME_POINTER_REGNUM 113
 
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms
@@ -986,26 +994,26 @@ enum reg_class
 #define REG_CLASS_CONTENTS						     \
 {									     \
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000 }, /* NO_REGS */	     \
-  { 0xfffffffe, 0x00000000, 0x00000008, 0x00000000 }, /* BASE_REGS */	     \
-  { 0xffffffff, 0x00000000, 0x00000008, 0x00000000 }, /* GENERAL_REGS */     \
+  { 0xfffffffe, 0x00000000, 0x00000008, 0x00020000 }, /* BASE_REGS */	     \
+  { 0xffffffff, 0x00000000, 0x00000008, 0x00020000 }, /* GENERAL_REGS */     \
   { 0x00000000, 0xffffffff, 0x00000000, 0x00000000 }, /* FLOAT_REGS */       \
   { 0x00000000, 0x00000000, 0xffffe000, 0x00001fff }, /* ALTIVEC_REGS */     \
   { 0x00000000, 0x00000000, 0x00000000, 0x00002000 }, /* VRSAVE_REGS */	     \
   { 0x00000000, 0x00000000, 0x00000000, 0x00004000 }, /* VSCR_REGS */	     \
   { 0x00000000, 0x00000000, 0x00000000, 0x00008000 }, /* SPE_ACC_REGS */     \
   { 0x00000000, 0x00000000, 0x00000000, 0x00010000 }, /* SPEFSCR_REGS */     \
-  { 0xffffffff, 0xffffffff, 0x00000008, 0x00000000 }, /* NON_SPECIAL_REGS */ \
+  { 0xffffffff, 0xffffffff, 0x00000008, 0x00020000 }, /* NON_SPECIAL_REGS */ \
   { 0x00000000, 0x00000000, 0x00000001, 0x00000000 }, /* MQ_REGS */	     \
   { 0x00000000, 0x00000000, 0x00000002, 0x00000000 }, /* LINK_REGS */	     \
   { 0x00000000, 0x00000000, 0x00000004, 0x00000000 }, /* CTR_REGS */	     \
   { 0x00000000, 0x00000000, 0x00000006, 0x00000000 }, /* LINK_OR_CTR_REGS */ \
   { 0x00000000, 0x00000000, 0x00000007, 0x00002000 }, /* SPECIAL_REGS */     \
-  { 0xffffffff, 0x00000000, 0x0000000f, 0x00002000 }, /* SPEC_OR_GEN_REGS */ \
+  { 0xffffffff, 0x00000000, 0x0000000f, 0x00022000 }, /* SPEC_OR_GEN_REGS */ \
   { 0x00000000, 0x00000000, 0x00000010, 0x00000000 }, /* CR0_REGS */	     \
   { 0x00000000, 0x00000000, 0x00000ff0, 0x00000000 }, /* CR_REGS */	     \
   { 0xffffffff, 0x00000000, 0x0000efff, 0x00000000 }, /* NON_FLOAT_REGS */   \
   { 0x00000000, 0x00000000, 0x00001000, 0x00000000 }, /* XER_REGS */	     \
-  { 0xffffffff, 0xffffffff, 0xffffffff, 0x0001ffff }  /* ALL_REGS */	     \
+  { 0xffffffff, 0xffffffff, 0xffffffff, 0x0003ffff }  /* ALL_REGS */	     \
 }
 
 /* The same information, inverted:
@@ -1026,9 +1034,10 @@ enum reg_class
   : (REGNO) == ARG_POINTER_REGNUM ? BASE_REGS	\
   : (REGNO) == XER_REGNO ? XER_REGS		\
   : (REGNO) == VRSAVE_REGNO ? VRSAVE_REGS	\
-  : (REGNO) == VSCR_REGNO ? VRSAVE_REGS	\
+  : (REGNO) == VSCR_REGNO ? VRSAVE_REGS		\
   : (REGNO) == SPE_ACC_REGNO ? SPE_ACC_REGS	\
   : (REGNO) == SPEFSCR_REGNO ? SPEFSCR_REGS	\
+  : (REGNO) == FRAME_POINTER_REGNUM ? BASE_REGS	\
   : NO_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
@@ -1262,10 +1271,12 @@ extern enum rs6000_abi rs6000_current_abi;	/* available for use by subtarget */
    outgoing parameter area.  */
 
 #define STARTING_FRAME_OFFSET						\
-  (RS6000_ALIGN (current_function_outgoing_args_size,			\
-		 TARGET_ALTIVEC ? 16 : 8)				\
-   + RS6000_VARARGS_AREA						\
-   + RS6000_SAVE_AREA)
+  (FRAME_GROWS_DOWNWARD							\
+   ? 0									\
+   : (RS6000_ALIGN (current_function_outgoing_args_size,		\
+		    TARGET_ALTIVEC ? 16 : 8)				\
+      + RS6000_VARARGS_AREA						\
+      + RS6000_SAVE_AREA))
 
 /* Offset from the stack pointer register to an item dynamically
    allocated on the stack, e.g., by `alloca'.
@@ -1603,10 +1614,12 @@ typedef struct rs6000_args
    of eliminable registers.  The "from" register number is given first,
    followed by "to".  Eliminations of the same "from" register are listed
    in order of preference.  */
-#define ELIMINABLE_REGS				\
-{{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
- { ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
- { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM},	\
+#define ELIMINABLE_REGS					\
+{{ HARD_FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
+ { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
+ { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},	\
+ { ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
+ { ARG_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},	\
  { RS6000_PIC_OFFSET_TABLE_REGNUM, RS6000_PIC_OFFSET_TABLE_REGNUM } }
 
 /* Given FROM and TO register numbers, say whether this elimination is allowed.
@@ -1646,14 +1659,18 @@ typedef struct rs6000_args
 #define REGNO_OK_FOR_INDEX_P(REGNO)				\
 ((REGNO) < FIRST_PSEUDO_REGISTER				\
  ? (REGNO) <= 31 || (REGNO) == 67				\
+   || (REGNO) == FRAME_POINTER_REGNUM				\
  : (reg_renumber[REGNO] >= 0					\
-    && (reg_renumber[REGNO] <= 31 || reg_renumber[REGNO] == 67)))
+    && (reg_renumber[REGNO] <= 31 || reg_renumber[REGNO] == 67	\
+	|| reg_renumber[REGNO] == FRAME_POINTER_REGNUM)))
 
 #define REGNO_OK_FOR_BASE_P(REGNO)				\
 ((REGNO) < FIRST_PSEUDO_REGISTER				\
  ? ((REGNO) > 0 && (REGNO) <= 31) || (REGNO) == 67		\
+   || (REGNO) == FRAME_POINTER_REGNUM				\
  : (reg_renumber[REGNO] > 0					\
-    && (reg_renumber[REGNO] <= 31 || reg_renumber[REGNO] == 67)))
+    && (reg_renumber[REGNO] <= 31 || reg_renumber[REGNO] == 67	\
+	|| reg_renumber[REGNO] == FRAME_POINTER_REGNUM)))
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 
@@ -1710,6 +1727,7 @@ typedef struct rs6000_args
   ((! (STRICT)							\
     && (REGNO (X) <= 31						\
 	|| REGNO (X) == ARG_POINTER_REGNUM			\
+	|| REGNO (X) == FRAME_POINTER_REGNUM			\
 	|| REGNO (X) >= FIRST_PSEUDO_REGISTER))			\
    || ((STRICT) && REGNO_OK_FOR_INDEX_P (REGNO (X))))
 
@@ -2188,6 +2206,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   &rs6000_reg_names[110][0],	/* vscr  */				\
   &rs6000_reg_names[111][0],	/* spe_acc */				\
   &rs6000_reg_names[112][0],	/* spefscr */				\
+  &rs6000_reg_names[113][0],	/* sfp  */				\
 }
 
 /* Table of additional register names to use in user input.  */
