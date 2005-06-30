@@ -1,3 +1,11 @@
+2005-06-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR middle-end/22247
+	* tree-ssa-structalias.c (build_constraint_graph, scc_visit,
+	process_unification_queue, init_topo_info, topo_visit,
+	init_scc_info, free_scc_info, perform_var_substitution,
+	solve_graph): Use unsigned instead of uint.
+	
 2005-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* function.c (gen_stack_protect_test): Add third argument.

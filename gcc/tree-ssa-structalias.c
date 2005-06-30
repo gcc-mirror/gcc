@@ -988,8 +988,8 @@ build_constraint_graph (void)
 static unsigned int changed_count;
 static sbitmap changed;
 
-DEF_VEC_I(uint);
-DEF_VEC_ALLOC_I(uint,heap);
+DEF_VEC_I(unsigned);
+DEF_VEC_ALLOC_I(unsigned,heap);
 
 
 /* Strongly Connected Component visitation info.  */
@@ -1000,8 +1000,8 @@ struct scc_info
   sbitmap in_component;
   int current_index;
   unsigned int *visited_index;
-  VEC(uint,heap) *scc_stack;
-  VEC(uint,heap) *unification_queue;
+  VEC(unsigned,heap) *scc_stack;
+  VEC(unsigned,heap) *unification_queue;
 };
 
 
@@ -1051,18 +1051,18 @@ scc_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
     {
       unsigned int t = si->visited_index[n];
       SET_BIT (si->in_component, n);
-      while (VEC_length (uint, si->scc_stack) != 0 
-	     && t < si->visited_index[VEC_last (uint, si->scc_stack)])
+      while (VEC_length (unsigned, si->scc_stack) != 0 
+	     && t < si->visited_index[VEC_last (unsigned, si->scc_stack)])
 	{
-	  unsigned int w = VEC_pop (uint, si->scc_stack);
+	  unsigned int w = VEC_pop (unsigned, si->scc_stack);
 	  get_varinfo (w)->node = n;
 	  SET_BIT (si->in_component, w);
 	  /* Mark this node for collapsing.  */
-	  VEC_safe_push (uint, heap, si->unification_queue, w);
+	  VEC_safe_push (unsigned, heap, si->unification_queue, w);
 	} 
     }
   else
-    VEC_safe_push (uint, heap, si->scc_stack, n);
+    VEC_safe_push (unsigned, heap, si->scc_stack, n);
 }
 
 
@@ -1132,9 +1132,9 @@ process_unification_queue (constraint_graph_t graph, struct scc_info *si,
 	changed rep's solution.
 	
 	Delete any 0 weighted self-edges we now have for rep.  */
-  while (i != VEC_length (uint, si->unification_queue))
+  while (i != VEC_length (unsigned, si->unification_queue))
     {
-      unsigned int tounify = VEC_index (uint, si->unification_queue, i);
+      unsigned int tounify = VEC_index (unsigned, si->unification_queue, i);
       unsigned int n = get_varinfo (tounify)->node;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1167,8 +1167,8 @@ process_unification_queue (constraint_graph_t graph, struct scc_info *si,
       /* If we've either finished processing the entire queue, or
 	 finished processing all nodes for component n, update the solution for
 	 n.  */
-      if (i == VEC_length (uint, si->unification_queue)
-	  || get_varinfo (VEC_index (uint, si->unification_queue, i))->node != n)
+      if (i == VEC_length (unsigned, si->unification_queue)
+	  || get_varinfo (VEC_index (unsigned, si->unification_queue, i))->node != n)
 	{
 	  struct constraint_edge edge;
 
@@ -1206,7 +1206,7 @@ struct topo_info
   sbitmap visited;
   /* Array that stores the topological order of the graph, *in
      reverse*.  */
-  VEC(uint,heap) *topo_order;
+  VEC(unsigned,heap) *topo_order;
 };
 
 
@@ -1219,7 +1219,7 @@ init_topo_info (void)
   struct topo_info *ti = xmalloc (sizeof (struct topo_info));
   ti->visited = sbitmap_alloc (size);
   sbitmap_zero (ti->visited);
-  ti->topo_order = VEC_alloc (uint, heap, 1);
+  ti->topo_order = VEC_alloc (unsigned, heap, 1);
   return ti;
 }
 
@@ -1230,7 +1230,7 @@ static void
 free_topo_info (struct topo_info *ti)
 {
   sbitmap_free (ti->visited);
-  VEC_free (uint, heap, ti->topo_order);
+  VEC_free (unsigned, heap, ti->topo_order);
   free (ti);
 }
 
@@ -1250,7 +1250,7 @@ topo_visit (constraint_graph_t graph, struct topo_info *ti,
       if (!TEST_BIT (ti->visited, c->dest))
 	topo_visit (graph, ti, c->dest);
     }
-  VEC_safe_push (uint, heap, ti->topo_order, n);
+  VEC_safe_push (unsigned, heap, ti->topo_order, n);
 }
 
 /* Return true if variable N + OFFSET is a legal field of N.  */
@@ -1447,8 +1447,8 @@ init_scc_info (void)
   si->in_component = sbitmap_alloc (size);
   sbitmap_ones (si->in_component);
   si->visited_index = xcalloc (sizeof (unsigned int), size + 1);
-  si->scc_stack = VEC_alloc (uint, heap, 1);
-  si->unification_queue = VEC_alloc (uint, heap, 1);
+  si->scc_stack = VEC_alloc (unsigned, heap, 1);
+  si->unification_queue = VEC_alloc (unsigned, heap, 1);
   return si;
 }
 
@@ -1460,8 +1460,8 @@ free_scc_info (struct scc_info *si)
   sbitmap_free (si->visited);
   sbitmap_free (si->in_component);
   free (si->visited_index);
-  VEC_free (uint, heap, si->scc_stack);
-  VEC_free (uint, heap, si->unification_queue);
+  VEC_free (unsigned, heap, si->scc_stack);
+  VEC_free (unsigned, heap, si->unification_queue);
   free(si); 
 }
 
@@ -1534,9 +1534,9 @@ perform_var_substitution (constraint_graph_t graph)
      node in topological order.  */
   compute_topo_order (graph, ti);
  
-  while (VEC_length (uint, ti->topo_order) != 0)
+  while (VEC_length (unsigned, ti->topo_order) != 0)
     {
-      unsigned int i = VEC_pop (uint, ti->topo_order);
+      unsigned int i = VEC_pop (unsigned, ti->topo_order);
       unsigned int pred;
       varinfo_t vi = get_varinfo (i);
       bool okay_to_elim = false;
@@ -1660,9 +1660,9 @@ solve_graph (constraint_graph_t graph)
 
       compute_topo_order (graph, ti);
 
-      while (VEC_length (uint, ti->topo_order) != 0)
+      while (VEC_length (unsigned, ti->topo_order) != 0)
 	{
-	  i = VEC_pop (uint, ti->topo_order);
+	  i = VEC_pop (unsigned, ti->topo_order);
 	  gcc_assert (get_varinfo (i)->node == i);
 
 	  /* If the node has changed, we need to process the
