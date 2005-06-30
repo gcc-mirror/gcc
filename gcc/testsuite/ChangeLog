@@ -1,3 +1,8 @@
+2005-06-29  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 22234
+	* gcc.dg/20050629-1.c: New test.
+
 2005-06-29  Ziemowit Laski  <zlaski@apple.com>
 
 	* obj-c++.dg/const-str-1[0-1].mm: New.
