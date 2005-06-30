@@ -2184,14 +2184,20 @@ extern void decl_debug_expr_insert (tree, tree);
 
 /* Nonzero means that the decl had its visibility specified rather than
    being inferred.  */
-#define DECL_VISIBILITY_SPECIFIED(NODE) (DECL_CHECK (NODE)->decl.visibility_specified)
+#define DECL_VISIBILITY_SPECIFIED(NODE) \
+  (DECL_CHECK (NODE)->decl.visibility_specified)
 
 /* In a FUNCTION_DECL, nonzero if the function cannot be inlined.  */
 #define DECL_UNINLINABLE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.uninlinable)
 
+/* In a VAR_DECL, the model to use if the data should be allocated from
+   thread-local storage.  */
+#define DECL_TLS_MODEL(NODE) (VAR_DECL_CHECK (NODE)->decl.tls_model)
+
 /* In a VAR_DECL, nonzero if the data should be allocated from
    thread-local storage.  */
-#define DECL_THREAD_LOCAL(NODE) (VAR_DECL_CHECK (NODE)->decl.thread_local_flag)
+#define DECL_THREAD_LOCAL_P(NODE) \
+  (VAR_DECL_CHECK (NODE)->decl.tls_model != TLS_MODEL_NONE)
 
 /* In a FUNCTION_DECL, the saved representation of the body of the
    entire function.  */
@@ -2385,6 +2391,8 @@ struct tree_decl GTY(())
   location_t locus;
   unsigned int uid;
   tree size;
+
+  /* 32 bits: */
   ENUM_BITFIELD(machine_mode) mode : 8;
 
   unsigned external_flag : 1;
@@ -2413,10 +2421,11 @@ struct tree_decl GTY(())
   ENUM_BITFIELD(built_in_class) built_in_class : 2;
   unsigned pure_flag : 1;
 
+  /* 32 bits: */
   unsigned non_addressable : 1;
   unsigned user_align : 1;
   unsigned uninlinable : 1;
-  unsigned thread_local_flag : 1;
+  unsigned gimple_reg_flag : 1;
   unsigned declared_inline_flag : 1;
   ENUM_BITFIELD(symbol_visibility) visibility : 2;
   unsigned visibility_specified : 1;
@@ -2438,8 +2447,9 @@ struct tree_decl GTY(())
   unsigned seen_in_bind_expr : 1;
   unsigned novops_flag : 1;
   unsigned has_value_expr : 1;
-  unsigned gimple_reg_flag : 1;
-  /* 7 unused bits.  */
+
+  ENUM_BITFIELD(tls_model) tls_model : 3;
+  /* 5 unused bits.  */
 
   union tree_decl_u1 {
     /* In a FUNCTION_DECL for which DECL_BUILT_IN holds, this is

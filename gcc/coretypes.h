@@ -54,7 +54,8 @@ struct cpp_reader;
    or SYMBOL_REF.  This isn't used much, but both trees and RTL refer
    to it, so it's here.  */
 enum tls_model {
-  TLS_MODEL_GLOBAL_DYNAMIC = 1,
+  TLS_MODEL_NONE,
+  TLS_MODEL_GLOBAL_DYNAMIC,
   TLS_MODEL_LOCAL_DYNAMIC,
   TLS_MODEL_INITIAL_EXEC,
   TLS_MODEL_LOCAL_EXEC

@@ -2089,7 +2089,8 @@ extern rtx emit_library_call_value (rtx, rtx, enum libcall_type,
 /* In varasm.c */
 extern int in_data_section (void);
 extern void init_varasm_once (void);
-
+extern enum tls_model decl_default_tls_model (tree);
+  
 /* In rtl.c */
 extern void traverse_md_constants (int (*) (void **, void *), void *);
 struct md_constant { char *name, *value; };

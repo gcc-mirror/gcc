@@ -4833,35 +4833,38 @@ static tree
 handle_tls_model_attribute (tree *node, tree name, tree args,
 			    int ARG_UNUSED (flags), bool *no_add_attrs)
 {
+  tree id;
   tree decl = *node;
+  enum tls_model kind;
 
-  if (!DECL_THREAD_LOCAL (decl))
+  *no_add_attrs = true;
+
+  if (!DECL_THREAD_LOCAL_P (decl))
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
-      *no_add_attrs = true;
+      return NULL_TREE;
     }
-  else
+
+  kind = DECL_TLS_MODEL (decl);
+  id = TREE_VALUE (args);
+  if (TREE_CODE (id) != STRING_CST)
     {
-      tree id;
-
-      id = TREE_VALUE (args);
-      if (TREE_CODE (id) != STRING_CST)
-	{
-	  error ("tls_model argument not a string");
-	  *no_add_attrs = true;
-	  return NULL_TREE;
-	}
-      if (strcmp (TREE_STRING_POINTER (id), "local-exec")
-	  && strcmp (TREE_STRING_POINTER (id), "initial-exec")
-	  && strcmp (TREE_STRING_POINTER (id), "local-dynamic")
-	  && strcmp (TREE_STRING_POINTER (id), "global-dynamic"))
-	{
-	  error ("tls_model argument must be one of \"local-exec\", \"initial-exec\", \"local-dynamic\" or \"global-dynamic\"");
-	  *no_add_attrs = true;
-	  return NULL_TREE;
-	}
+      error ("tls_model argument not a string");
+      return NULL_TREE;
     }
 
+  if (!strcmp (TREE_STRING_POINTER (id), "local-exec"))
+    kind = TLS_MODEL_LOCAL_EXEC;
+  else if (!strcmp (TREE_STRING_POINTER (id), "initial-exec"))
+    kind = TLS_MODEL_INITIAL_EXEC;
+  else if (!strcmp (TREE_STRING_POINTER (id), "local-dynamic"))
+    kind = optimize ? TLS_MODEL_LOCAL_DYNAMIC : TLS_MODEL_GLOBAL_DYNAMIC;
+  else if (!strcmp (TREE_STRING_POINTER (id), "global-dynamic"))
+    kind = TLS_MODEL_GLOBAL_DYNAMIC;
+  else
+    error ("tls_model argument must be one of \"local-exec\", \"initial-exec\", \"local-dynamic\" or \"global-dynamic\"");
+
+  DECL_TLS_MODEL (decl) = kind;
   return NULL_TREE;
 }
 

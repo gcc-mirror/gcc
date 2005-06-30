@@ -1384,9 +1384,9 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
     {
       /* Only variables can be thread-local, and all declarations must
 	 agree on this property.  */
-      if (DECL_THREAD_LOCAL (newdecl) != DECL_THREAD_LOCAL (olddecl))
+      if (DECL_THREAD_LOCAL_P (newdecl) != DECL_THREAD_LOCAL_P (olddecl))
 	{
-	  if (DECL_THREAD_LOCAL (newdecl))
+	  if (DECL_THREAD_LOCAL_P (newdecl))
 	    error ("%Jthread-local declaration of %qD follows "
 		   "non-thread-local declaration", newdecl, newdecl);
 	  else
@@ -3176,7 +3176,7 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
   if (TREE_CODE (decl) == VAR_DECL
       && !initialized
       && TREE_PUBLIC (decl)
-      && !DECL_THREAD_LOCAL (decl)
+      && !DECL_THREAD_LOCAL_P (decl)
       && !flag_no_common)
     DECL_COMMON (decl) = 1;
 
@@ -4663,7 +4663,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	if (threadp)
 	  {
 	    if (targetm.have_tls)
-	      DECL_THREAD_LOCAL (decl) = 1;
+	      DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
 	    else
 	      /* A mere warning is sure to result in improper semantics
 		 at runtime.  Don't bother to allow this to compile.  */

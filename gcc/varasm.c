@@ -1716,7 +1716,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
   if (DECL_SECTION_NAME (decl) || dont_output_data)
     ;
   /* We don't implement common thread-local data at present.  */
-  else if (DECL_THREAD_LOCAL (decl))
+  else if (DECL_THREAD_LOCAL_P (decl))
     {
       if (DECL_COMMON (decl))
 	sorry ("thread-local COMMON data not implemented");
@@ -4745,30 +4745,11 @@ init_varasm_once (void)
   const_alias_set = new_alias_set ();
 }
 
-static enum tls_model
-decl_tls_model (tree decl)
+enum tls_model
+decl_default_tls_model (tree decl)
 {
   enum tls_model kind;
-  tree attr = lookup_attribute ("tls_model", DECL_ATTRIBUTES (decl));
   bool is_local;
-
-  if (attr)
-    {
-      attr = TREE_VALUE (TREE_VALUE (attr));
-      gcc_assert (TREE_CODE (attr) == STRING_CST);
-      
-      if (!strcmp (TREE_STRING_POINTER (attr), "local-exec"))
-	kind = TLS_MODEL_LOCAL_EXEC;
-      else if (!strcmp (TREE_STRING_POINTER (attr), "initial-exec"))
-	kind = TLS_MODEL_INITIAL_EXEC;
-      else if (!strcmp (TREE_STRING_POINTER (attr), "local-dynamic"))
-	kind = optimize ? TLS_MODEL_LOCAL_DYNAMIC : TLS_MODEL_GLOBAL_DYNAMIC;
-      else if (!strcmp (TREE_STRING_POINTER (attr), "global-dynamic"))
-	kind = TLS_MODEL_GLOBAL_DYNAMIC;
-      else
-	gcc_unreachable ();
-      return kind;
-    }
 
   is_local = targetm.binds_local_p (decl);
   if (!flag_shlib)
@@ -4778,6 +4759,7 @@ decl_tls_model (tree decl)
       else
 	kind = TLS_MODEL_INITIAL_EXEC;
     }
+
   /* Local dynamic is inefficient when we're not combining the
      parts of the address.  */
   else if (optimize && is_local)
@@ -4828,7 +4810,7 @@ default_section_type_flags_1 (tree decl, const char *name, int reloc,
   if (decl && DECL_ONE_ONLY (decl))
     flags |= SECTION_LINKONCE;
 
-  if (decl && TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL (decl))
+  if (decl && TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL_P (decl))
     flags |= SECTION_TLS | SECTION_WRITE;
 
   if (strcmp (name, ".bss") == 0
@@ -5106,7 +5088,7 @@ categorize_decl_for_section (tree decl, int reloc, int shlib)
     ret = SECCAT_RODATA;
 
   /* There are no read-only thread-local sections.  */
-  if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL (decl))
+  if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL_P (decl))
     {
       /* Note that this would be *just* SECCAT_BSS, except that there's
 	 no concept of a read-only thread-local-data section.  */
@@ -5370,8 +5352,8 @@ default_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
     flags |= SYMBOL_FLAG_FUNCTION;
   if (targetm.binds_local_p (decl))
     flags |= SYMBOL_FLAG_LOCAL;
-  if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL (decl))
-    flags |= decl_tls_model (decl) << SYMBOL_FLAG_TLS_SHIFT;
+  if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL_P (decl))
+    flags |= DECL_TLS_MODEL (decl) << SYMBOL_FLAG_TLS_SHIFT;
   else if (targetm.in_small_data_p (decl))
     flags |= SYMBOL_FLAG_SMALL;
   /* ??? Why is DECL_EXTERNAL ever set for non-PUBLIC names?  Without

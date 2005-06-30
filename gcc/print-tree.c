@@ -357,8 +357,27 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 
       if (TREE_CODE (node) == VAR_DECL && DECL_IN_TEXT_SECTION (node))
 	fputs (" in-text-section", file);
-      if (TREE_CODE (node) == VAR_DECL && DECL_THREAD_LOCAL (node))
-	fputs (" thread-local", file);
+      if (TREE_CODE (node) == VAR_DECL && DECL_THREAD_LOCAL_P (node))
+	{
+	  enum tls_model kind = DECL_TLS_MODEL (node);
+	  switch (kind)
+	    {
+	      case TLS_MODEL_GLOBAL_DYNAMIC:
+		fputs (" tls-global-dynamic", file);
+		break;
+	      case TLS_MODEL_LOCAL_DYNAMIC:
+		fputs (" tls-local-dynamic", file);
+		break;
+	      case TLS_MODEL_INITIAL_EXEC:
+		fputs (" tls-initial-exec", file);
+		break;
+	      case TLS_MODEL_LOCAL_EXEC:
+		fputs (" tls-local-exec", file);
+		break;
+	      default:
+		gcc_unreachable ();
+	    }
+	}
 
       if (TREE_CODE (node) == PARM_DECL && DECL_TRANSPARENT_UNION (node))
 	fputs (" transparent-union", file);

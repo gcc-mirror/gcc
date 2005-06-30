@@ -1009,7 +1009,7 @@ rest_of_handle_cse2 (void)
   open_dump_file (DFI_cse2, current_function_decl);
   if (dump_file)
     dump_flow_info (dump_file);
-  /* CFG is no longer maintained up-to-date.  */
+
   tem = cse_main (get_insns (), max_reg_num (), dump_file);
 
   /* Run a pass to eliminate duplicated assignments to condition code

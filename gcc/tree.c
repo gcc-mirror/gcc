@@ -1652,7 +1652,7 @@ staticp (tree arg)
 
     case VAR_DECL:
       return ((TREE_STATIC (arg) || DECL_EXTERNAL (arg))
-	      && ! DECL_THREAD_LOCAL (arg)
+	      && ! DECL_THREAD_LOCAL_P (arg)
 	      && ! DECL_NON_ADDR_CONST_P (arg)
 	      ? arg : NULL);
 
@@ -2480,7 +2480,8 @@ do { tree _node = (NODE); \
 	;
       else if (decl_function_context (node) == current_function_decl
 	       /* Addresses of thread-local variables are invariant.  */
-	       || (TREE_CODE (node) == VAR_DECL && DECL_THREAD_LOCAL (node)))
+	       || (TREE_CODE (node) == VAR_DECL
+		   && DECL_THREAD_LOCAL_P (node)))
 	tc = false;
       else
 	ti = tc = false;
