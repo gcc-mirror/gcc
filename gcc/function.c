@@ -3972,8 +3972,8 @@ stack_protect_prologue (void)
    the end of a function to be protected.  */
 
 #ifndef HAVE_stack_protect_test
-# define HAVE_stack_protect_test	0
-# define gen_stack_protect_test(x, y)	(gcc_unreachable (), NULL_RTX)
+# define HAVE_stack_protect_test		0
+# define gen_stack_protect_test(x, y, z)	(gcc_unreachable (), NULL_RTX)
 #endif
 
 static void

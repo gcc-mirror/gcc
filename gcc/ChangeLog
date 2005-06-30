@@ -1,3 +1,7 @@
+2005-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* function.c (gen_stack_protect_test): Add third argument.
+
 2005-06-30  J. D. Johnston  <jjohnst@us.ibm.com>
 
 	* gthr-tpf.h (CE2THRCPTR): Change field offset to 16.
