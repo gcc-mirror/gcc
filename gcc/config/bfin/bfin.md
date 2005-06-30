@@ -1941,7 +1941,7 @@
 
 ;;; Vector instructions
 
-(define_insn "addv2hi"
+(define_insn "addv2hi3"
   [(set (match_operand:V2HI 0 "register_operand" "=d")
 	(plus:V2HI (match_operand:V2HI 1 "register_operand" "d")
 		   (match_operand:V2HI 2 "register_operand" "d")))]
@@ -1949,7 +1949,7 @@
   "%0 = %1 +|+ %2;"
   [(set_attr "type" "dsp32")])
 
-(define_insn "subv2hi"
+(define_insn "subv2hi3"
   [(set (match_operand:V2HI 0 "register_operand" "=d")
 	(minus:V2HI (match_operand:V2HI 1 "register_operand" "d")
 		   (match_operand:V2HI 2 "register_operand" "d")))]
@@ -1957,7 +1957,7 @@
   "%0 = %1 -|- %2;"
   [(set_attr "type" "dsp32")])
 
-(define_insn "sminv2hi"
+(define_insn "sminv2hi3"
   [(set (match_operand:V2HI 0 "register_operand" "=d")
 	(smin:V2HI (match_operand:V2HI 1 "register_operand" "d")
 		   (match_operand:V2HI 2 "register_operand" "d")))]
@@ -1965,7 +1965,7 @@
   "%0 = MIN (%1, %2) (V);"
   [(set_attr "type" "dsp32")])
 
-(define_insn "smaxv2hi"
+(define_insn "smaxv2hi3"
   [(set (match_operand:V2HI 0 "register_operand" "=d")
 	(smax:V2HI (match_operand:V2HI 1 "register_operand" "d")
 		   (match_operand:V2HI 2 "register_operand" "d")))]
@@ -1973,7 +1973,7 @@
   "%0 = MAX (%1, %2) (V);"
   [(set_attr "type" "dsp32")])
 
-(define_insn "mulv2hi"
+(define_insn "mulv2hi3"
   [(set (match_operand:V2HI 0 "register_operand" "=d")
 	(mult:V2HI (match_operand:V2HI 1 "register_operand" "d")
 		   (match_operand:V2HI 2 "register_operand" "d")))]
@@ -1981,14 +1981,14 @@
   "%h0 = %h1 * %h2, %d0 = %d1 * %d2 (IS);"
   [(set_attr "type" "dsp32")])
 
-(define_insn "negv2hi"
+(define_insn "negv2hi2"
   [(set (match_operand:V2HI 0 "register_operand" "=d")
 	(neg:V2HI (match_operand:V2HI 1 "register_operand" "d")))]
   ""
   "%0 = - %1 (V);"
   [(set_attr "type" "dsp32")])
 
-(define_insn "absv2hi"
+(define_insn "absv2hi2"
   [(set (match_operand:V2HI 0 "register_operand" "=d")
 	(abs:V2HI (match_operand:V2HI 1 "register_operand" "d")))]
   ""
