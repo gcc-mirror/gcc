@@ -88,8 +88,10 @@ namespace pb_assoc
     sizeof(typename PB_ASSOC_CLASS_C_DEC::size_type) << 3;
 
     PB_ASSOC_CLASS_T_DEC
-    const typename PB_ASSOC_CLASS_C_DEC::size_type PB_ASSOC_CLASS_C_DEC::s_highest_bit_1 =
-    1 << (s_num_bits_in_size_type - 1);
+    const typename PB_ASSOC_CLASS_C_DEC::size_type
+    PB_ASSOC_CLASS_C_DEC::s_highest_bit_1 =
+    (typename PB_ASSOC_CLASS_C_DEC::size_type) 1
+      << (s_num_bits_in_size_type - 1);
 
     PB_ASSOC_CLASS_T_DEC
     void

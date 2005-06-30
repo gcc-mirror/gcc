@@ -1,3 +1,9 @@
+2005-06-30  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* include/ext/pb_assoc/detail/hash_fn/mask_based_range_hashing.hpp
+	(PB_ASSOC_CLASS_C_DEC::s_highest_bit_1): Cast constant 1 to target
+	type before shifting.
+
 2005-06-29  Paolo Carlini  <pcarlini@suse.de>
 	    
 	PR libstdc++/21244 (cont^2)
