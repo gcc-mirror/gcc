@@ -31,7 +31,6 @@ Boston, MA 02110-1301, USA.  */
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "diagnostic.h"
-#include "c-pretty-print.h"
 #include "c-objc-common.h"
 
 enum c_language_kind c_language = clk_objc;

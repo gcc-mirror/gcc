@@ -69,7 +69,7 @@ cc1obj$(exeext): $(OBJC_OBJS) $(C_AND_OBJC_OBJS) cc1obj-checksum.o $(BACKEND) $(
 
 objc/objc-lang.o : objc/objc-lang.c \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
-   $(C_TREE_H) $(C_PRETTY_PRINT_H) $(DIAGNOSTIC_H) \
+   $(C_TREE_H) $(DIAGNOSTIC_H) \
    $(GGC_H) langhooks.h $(LANGHOOKS_DEF_H) $(C_COMMON_H) gtype-objc.h \
    c-objc-common.h objc/objc-act.h tree-gimple.h
 

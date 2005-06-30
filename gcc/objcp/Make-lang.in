@@ -69,7 +69,7 @@ cc1objplus$(exeext): $(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) $(LIBDEPS)
 
 objcp/objcp-lang.o : objcp/objcp-lang.c \
   $(CXX_TREE_H) $(TM_H) toplev.h debug.h langhooks.h objc/objc-act.h \
-  $(LANGHOOKS_DEF_H) c-common.h gtype-objcp.h $(CXX_PRETTY_PRINT_H) \
+  $(LANGHOOKS_DEF_H) c-common.h gtype-objcp.h \
   $(DIAGNOSTIC_H) cp/cp-objcp-common.h tree-gimple.h
 
 objcp/objcp-decl.o : objcp/objcp-decl.c \

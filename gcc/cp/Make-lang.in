@@ -236,7 +236,7 @@ CXX_PRETTY_PRINT_H = cp/cxx-pretty-print.h $(C_PRETTY_PRINT_H)
 cp/lex.o: cp/lex.c $(CXX_TREE_H) $(TM_H) flags.h \
   c-pragma.h toplev.h output.h input.h cp/operators.def $(TM_P_H)
 cp/cp-lang.o: cp/cp-lang.c $(CXX_TREE_H) $(TM_H) toplev.h debug.h langhooks.h \
-  $(LANGHOOKS_DEF_H) c-common.h gtype-cp.h $(CXX_PRETTY_PRINT_H) \
+  $(LANGHOOKS_DEF_H) c-common.h gtype-cp.h \
   $(DIAGNOSTIC_H) cp/cp-objcp-common.h
 cp/decl.o: cp/decl.c $(CXX_TREE_H) $(TM_H) flags.h cp/decl.h \
   output.h $(EXPR_H) except.h toplev.h $(HASHTAB_H) $(RTL_H) \

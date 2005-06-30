@@ -86,7 +86,8 @@ static void cp_diagnostic_starter (diagnostic_context *, diagnostic_info *);
 static void cp_diagnostic_finalizer (diagnostic_context *, diagnostic_info *);
 static void cp_print_error_function (diagnostic_context *, diagnostic_info *);
 
-static bool cp_printer (pretty_printer *, text_info *);
+static bool cp_printer (pretty_printer *, text_info *, const char *,
+			int, bool, bool, bool);
 static tree locate_error (const char *, va_list);
 static location_t location_of (tree);
 
@@ -2228,8 +2229,9 @@ print_instantiation_partial_context (diagnostic_context *context,
 				   TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
       loc = TINST_LOCATION (t);
     }
-  pp_verbatim (context->printer, "%s:%d:   instantiated from here\n",
+  pp_verbatim (context->printer, "%s:%d:   instantiated from here",
 	       xloc.file, xloc.line);
+  pp_base_newline (context->printer);
 }
 
 /* Called from cp_thing to print the template context for an error.  */
@@ -2266,24 +2268,23 @@ print_instantiation_context (void)
    %T   type.
    %V   cv-qualifier.  */
 static bool
-cp_printer (pretty_printer *pp, text_info *text)
+cp_printer (pretty_printer *pp, text_info *text, const char *spec,
+	    int precision, bool wide, bool set_locus, bool verbose)
 {
-  int verbose = 0;
   const char *result;
-#define next_tree    va_arg (*text->args_ptr, tree)
+  tree t = NULL;
+#define next_tree    (t = va_arg (*text->args_ptr, tree))
 #define next_tcode   va_arg (*text->args_ptr, enum tree_code)
 #define next_lang    va_arg (*text->args_ptr, enum languages)
 #define next_int     va_arg (*text->args_ptr, int)
 
-  if (*text->format_spec == '+')
-    ++text->format_spec;
-  if (*text->format_spec == '#')
-    {
-      verbose = 1;
-      ++text->format_spec;
-    }
+  if (precision != 0 || wide)
+    return false;
 
-  switch (*text->format_spec)
+  if (text->locus == NULL)
+    set_locus = false;
+
+  switch (*spec)
     {
     case 'A': result = args_to_string (next_tree, verbose);	break;
     case 'C': result = code_to_string (next_tcode);		break;
@@ -2302,6 +2303,8 @@ cp_printer (pretty_printer *pp, text_info *text)
     }
 
   pp_base_string (pp, result);
+  if (set_locus && t != NULL)
+    *text->locus = location_of (t);
   return true;
 #undef next_tree
 #undef next_tcode

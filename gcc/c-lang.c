@@ -32,7 +32,6 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "langhooks-def.h"
 #include "tree-inline.h"
 #include "diagnostic.h"
-#include "c-pretty-print.h"
 #include "c-objc-common.h"
 #include "c-pragma.h"
 

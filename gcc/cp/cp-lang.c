@@ -30,7 +30,6 @@ Boston, MA 02110-1301, USA.  */
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "diagnostic.h"
-#include "cxx-pretty-print.h"
 #include "debug.h"
 #include "cp-objcp-common.h"
 
