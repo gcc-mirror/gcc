@@ -1,5 +1,22 @@
 2005-06-30  Jakub Jelinek  <jakub@redhat.com>
 
+	* function.c (stack_protect_epilogue): Pass label to
+	stack_protect_test, assume it emitted also the conditional
+	branch.
+	* doc/md.texi (stack_protect_test): Adjust documentation.
+	* config/i386/i386.md (stack_protect_test): Add third argument,
+	emit beq with operands[2].
+	* config/rs6000/rs6000.h (FRAME_GROWS_DOWNWARD): Define to
+	flag_stack_protect != 0.
+	* config/rs6000/rs6000.md (UNSPEC_SP_SET, UNSPEC_SP_TEST): New
+	constants.
+	(stack_protect_set, stack_protect_test): New expanders.
+	(stack_protect_setsi, stack_protect_setdi, stack_protect_testsi,
+	stack_protect_testdi): New insns.
+	* config/rs6000/rs6000.c (rs6000_stack_protect_fail): New function.
+	(TARGET_STACK_PROTECT_FAIL): Define.
+	(rs6000_generate_compare): Handle UNSPEC_SP_TEST.
+
 	* config/rs6000/rs6000.h (FIRST_PSEUDO_REGISTER): Increment.
 	(DWARF_FRAME_REGISTERS, DWARF_REG_TO_UNWIND_COLUMN): Adjust, so
 	that addition of sfp doesn't change these.

@@ -3995,11 +3995,10 @@ stack_protect_epilogue (void)
   switch (HAVE_stack_protect_test != 0)
     {
     case 1:
-      tmp = gen_stack_protect_test (x, y);
+      tmp = gen_stack_protect_test (x, y, label);
       if (tmp)
 	{
 	  emit_insn (tmp);
-	  emit_jump_insn (bcc_gen_fctn[EQ] (label));
 	  break;
 	}
       /* FALLTHRU */
