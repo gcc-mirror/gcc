@@ -1,3 +1,33 @@
+2005-06-30  Steven Bosscher  <stevenb@suse.de>
+
+	* coretypes.h (tls_model): Add TLS_MODEL_NONE as 0.
+	* tree.h (struct tree_decl): New field `tls_model'.
+	(DECL_TLS_MODEL): New.
+	(DECL_THREAD_LOCAL_P): Rename from DECL_THREAD_LOCAL, make it
+	a predicate.
+	* rtl.h (decl_default_tls_model): Add prototype for it.
+	* varasm.c (decl_tls_model): Rewritten and renamed to ...
+	(decl_default_tls_model): ... this.
+	(default_encode_section_info): Use DECL_TLS_MODEL instead of
+	decl_tls_model.
+	(assemble_variable): Replace DECL_THREAD_LOCAL with
+	DECL_THREAD_LOCAL_P.
+	(default_section_type_flags_1): Likewise.
+	(categorize_decl_for_section): Likewise.
+	* tree.c (staticp): Likewise.
+	(recompute_tree_invarant_for_addr_expr): Likewise.
+	* drawf2out (loc_descriptor_from_tree_1): Likewise.
+	* c-decl.c (diagnose_mismatched_decls): Likewise.
+	with DECL_THREAD_LOCAL_P.
+	(start_decl): Likewise.
+	* print-tree.c (print_node): Likewise.  Print the TLS model.
+	(grokdeclarator): Set the default DECL_TLS_MODEL here.
+	* c-common.c (handle_tls_model_attribute): Rewrite to set the
+	TLS model up based on the attribute.  Never add the attribute
+	to the decl's attributes list.
+	* config/sparc/sol2.h (ASM_DECLARE_OBJECT_NAME): Replace
+	DECL_THREAD_LOCAL with DECL_THREAD_LOCAL_P.
+
 2005-06-30  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR testsuite/21967
@@ -933,7 +963,7 @@
 	config/sh/linux.h (FUNCTION_PROFILER): Constify a char*.
 
 2005-06-20  Roger Sayle  <roger@eyesopen.com>
-2005-06-20  Fariborz Jahanian <fjahanian@apple.com>
+	    Fariborz Jahanian <fjahanian@apple.com>
 
 	* combine.c (simplify_set): Simplify setting of CC register
 	by removing redundant compare with 0 on RHS.

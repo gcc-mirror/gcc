@@ -1,3 +1,10 @@
+2005-06-30  Steven Bosscher  <stevenb@suse.de>
+
+	* decl.c (start_decl): Replace DECL_THREAD_LOCAL with
+	DECL_THREAD_LOCAL_P.
+	(cp_finish_decl): Likewise.
+	(grokvardecl): Set the default DECL_TLS_MODEL here.
+
 2005-06-28  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* cvt.c (ocp_convert): Use invalid_conversion hook.

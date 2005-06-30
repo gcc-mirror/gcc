@@ -3749,7 +3749,7 @@ start_decl (const cp_declarator *declarator,
      produce errors about redefs; to do this we force variables into the
      data segment.  */
   DECL_COMMON (tem) = ((TREE_CODE (tem) != VAR_DECL
-			|| !DECL_THREAD_LOCAL (tem))
+			|| !DECL_THREAD_LOCAL_P (tem))
 		       && (flag_conserve_space || ! TREE_PUBLIC (tem)));
 #endif
 
@@ -4808,7 +4808,7 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
     {
       /* Only PODs can have thread-local storage.  Other types may require
 	 various kinds of non-trivial initialization.  */
-      if (DECL_THREAD_LOCAL (decl) && !pod_type_p (TREE_TYPE (decl)))
+      if (DECL_THREAD_LOCAL_P (decl) && !pod_type_p (TREE_TYPE (decl)))
 	error ("%qD cannot be thread-local because it has non-POD type %qT",
 	       decl, TREE_TYPE (decl));
       /* Convert the initializer to the type of DECL, if we have not
@@ -4822,7 +4822,7 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 	{
 	  init = check_initializer (decl, init, flags, &cleanup);
 	  /* Thread-local storage cannot be dynamically initialized.  */
-	  if (DECL_THREAD_LOCAL (decl) && init)
+	  if (DECL_THREAD_LOCAL_P (decl) && init)
 	    {
 	      error ("%qD is thread-local and so cannot be dynamically "
 		     "initialized", decl);
@@ -5884,7 +5884,7 @@ grokvardecl (tree type,
   if (declspecs->specs[(int)ds_thread])
     {
       if (targetm.have_tls)
-	DECL_THREAD_LOCAL (decl) = 1;
+	DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
       else
 	/* A mere warning is sure to result in improper semantics
 	   at runtime.  Don't bother to allow this to compile.  */

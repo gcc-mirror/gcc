@@ -83,7 +83,7 @@ Boston, MA 02110-1301, USA.  */
     {								\
       HOST_WIDE_INT size;					\
 								\
-      if (DECL_THREAD_LOCAL (DECL))				\
+      if (DECL_THREAD_LOCAL_P (DECL))				\
 	ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "tls_object");	\
       else							\
 	ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "object");	\
