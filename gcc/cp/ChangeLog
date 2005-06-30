@@ -1,3 +1,13 @@
+2005-06-30  Zack Weinberg  <zack@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-lang.c: No need to include cxx-pretty-print.h.
+	* error.c (cp_printer): Update signature.  No need to process
+	flags.
+	(print_instantiation_partial_context): Output last newline
+	with pp_base_newline.
+	* Make-lang.in: Update dependencies.
+
 2005-06-30  Steven Bosscher  <stevenb@suse.de>
 
 	* decl.c (start_decl): Replace DECL_THREAD_LOCAL with

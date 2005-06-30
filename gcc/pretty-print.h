@@ -25,6 +25,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "obstack.h"
 #include "input.h"
 
+/* Maximum number of format string arguments.  */
+#define PP_NL_ARGMAX   30
+
 /* The type of a text to be formatted according a format specification
    along with a list of things.  */
 typedef struct
@@ -32,6 +35,7 @@ typedef struct
   const char *format_spec;
   va_list *args_ptr;
   int err_no;  /* for %m */
+  location_t *locus;
 } text_info;
 
 /* How often diagnostics are prefixed by their locations:
@@ -46,12 +50,42 @@ typedef enum
   DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE = 0x2
 } diagnostic_prefixing_rule_t;
 
+/* The chunk_info data structure forms a stack of the results from the
+   first phase of formatting (pp_base_format) which have not yet been
+   output (pp_base_output_formatted_text).  A stack is necessary because
+   the diagnostic starter may decide to generate its own output by way
+   of the formatter.  */
+struct chunk_info
+{
+  /* Pointer to previous chunk on the stack.  */
+  struct chunk_info *prev;
+
+  /* Array of chunks to output.  Each chunk is a NUL-terminated string.
+     In the first phase of formatting, even-numbered chunks are
+     to be output verbatim, odd-numbered chunks are format specifiers.
+     The second phase replaces all odd-numbered chunks with formatted
+     text, and the third phase simply emits all the chunks in sequence
+     with appropriate line-wrapping.  */
+  const char *args[PP_NL_ARGMAX * 2];
+};
+
 /* The output buffer datatype.  This is best seen as an abstract datatype
    whose fields should not be accessed directly by clients.  */
 typedef struct 
 {
-  /* The obstack where the text is built up.  */  
-  struct obstack obstack;
+  /* Obstack where the text is built up.  */  
+  struct obstack formatted_obstack;
+
+  /* Obstack containing a chunked representation of the format
+     specification plus arguments.  */
+  struct obstack chunk_obstack;
+
+  /* Currently active obstack: one of the above two.  This is used so
+     that the text formatters don't need to know which phase we're in.  */
+  struct obstack *obstack;
+
+  /* Stack of chunk arrays.  These come from the chunk_obstack.  */
+  struct chunk_info *cur_chunk_array;
 
   /* Where to output formatted text.  */
   FILE *stream;
@@ -72,11 +106,34 @@ typedef enum
   pp_none, pp_before, pp_after
 } pp_padding;
 
+/* Structure for switching in and out of verbatim mode in a convenient
+   manner.  */
+typedef struct
+{
+  /* Current prefixing rule.  */
+  diagnostic_prefixing_rule_t rule;
+
+  /* The ideal upper bound of number of characters per line, as suggested
+     by front-end.  */  
+  int line_cutoff;
+} pp_wrapping_mode_t;
+
+/* Maximum characters per line in automatic line wrapping mode.
+   Zero means don't wrap lines.  */
+#define pp_line_cutoff(PP)  pp_base (PP)->wrapping.line_cutoff
+
+/* Prefixing rule used in formatting a diagnostic message.  */
+#define pp_prefixing_rule(PP)  pp_base (PP)->wrapping.rule
+
+/* Get or set the wrapping mode as a single entity.  */
+#define pp_wrapping_mode(PP) pp_base (PP)->wrapping
+
 /* The type of a hook that formats client-specific data onto a pretty_pinter.
    A client-supplied formatter returns true if everything goes well,
    otherwise it returns false.  */
 typedef struct pretty_print_info pretty_printer;
-typedef bool (*printer_fn) (pretty_printer *, text_info *);
+typedef bool (*printer_fn) (pretty_printer *, text_info *, const char *,
+			    int, bool, bool, bool);
 
 /* Client supplied function used to decode formats.  */
 #define pp_format_decoder(PP) pp_base (PP)->format_decoder
@@ -85,15 +142,8 @@ typedef bool (*printer_fn) (pretty_printer *, text_info *);
    formatting.  */
 #define pp_needs_newline(PP)  pp_base (PP)->need_newline 
 
-/* Maximum characters per line in automatic line wrapping mode.
-   Zero means don't wrap lines.  */
-#define pp_line_cutoff(PP)  pp_base (PP)->ideal_maximum_length
-
 /* True if PRETTY-PTINTER is in line-wrapping mode.  */
 #define pp_is_wrapping_line(PP) (pp_line_cutoff (PP) > 0)
-
-/* Prefixing rule used in formatting a diagnostic message.  */
-#define pp_prefixing_rule(PP)  pp_base (PP)->prefixing_rule
 
 /* The amount of whitespace to be emitted when starting a new line.  */
 #define pp_indentation(PP) pp_base (PP)->indent_skip
@@ -116,15 +166,11 @@ struct pretty_print_info
      account the case of a very very looong prefix.  */  
   int maximum_length;
 
-  /* The ideal upper bound of number of characters per line, as suggested
-     by front-end.  */  
-  int ideal_maximum_length;
-
   /* Indentation count.  */
   int indent_skip;
 
-  /* Current prefixing rule.  */
-  diagnostic_prefixing_rule_t prefixing_rule;
+  /* Current wrapping mode.  */
+  pp_wrapping_mode_t wrapping;
 
   /* If non-NULL, this function formats a TEXT into the BUFFER.  When called,
      TEXT->format_spec points to a format code.  FORMAT_DECODER should call
@@ -158,9 +204,9 @@ struct pretty_print_info
 #define pp_append_text(PP, B, E) \
   pp_base_append_text (pp_base (PP), B, E)
 #define pp_flush(PP)            pp_base_flush (pp_base (PP))
-#define pp_prepare_to_format(PP, TI, LOC) \
-  pp_base_prepare_to_format (pp_base (PP), TI, LOC)
-#define pp_format_text(PP, TI)  pp_base_format_text (pp_base (PP), TI)
+#define pp_format(PP, TI)       pp_base_format (pp_base (PP), TI)
+#define pp_output_formatted_text(PP) \
+  pp_base_output_formatted_text (pp_base (PP))
 #define pp_format_verbatim(PP, TI) \
   pp_base_format_verbatim (pp_base (PP), TI)
 
@@ -264,9 +310,8 @@ extern void pp_printf (pretty_printer *, const char *, ...)
 extern void pp_verbatim (pretty_printer *, const char *, ...)
      ATTRIBUTE_GCC_PPDIAG(2,3);
 extern void pp_base_flush (pretty_printer *);
-extern void pp_base_prepare_to_format (pretty_printer *, text_info *,
-				       location_t *);
-extern void pp_base_format_text (pretty_printer *, text_info *);
+extern void pp_base_format (pretty_printer *, text_info *);
+extern void pp_base_output_formatted_text (pretty_printer *);
 extern void pp_base_format_verbatim (pretty_printer *, text_info *);
 
 extern void pp_base_indent (pretty_printer *);
@@ -275,5 +320,16 @@ extern void pp_base_character (pretty_printer *, int);
 extern void pp_base_string (pretty_printer *, const char *);
 extern void pp_write_text_to_stream (pretty_printer *pp);
 extern void pp_base_maybe_space (pretty_printer *);
+
+/* Switch into verbatim mode and return the old mode.  */
+static inline pp_wrapping_mode_t
+pp_set_verbatim_wrapping_ (pretty_printer *pp)
+{
+  pp_wrapping_mode_t oldmode = pp_wrapping_mode (pp);
+  pp_line_cutoff (pp) = 0;
+  pp_prefixing_rule (pp) = DIAGNOSTICS_SHOW_PREFIX_NEVER;
+  return oldmode;
+}
+#define pp_set_verbatim_wrapping(PP) pp_set_verbatim_wrapping_ (pp_base (PP))
 
 #endif /* GCC_PRETTY_PRINT_H */

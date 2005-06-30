@@ -97,7 +97,7 @@ diagnostic_initialize (diagnostic_context *context)
   /* By default, diagnostics are sent to stderr.  */
   context->printer->buffer->stream = stderr;
   /* By default, we emit prefixes once per message.  */
-  context->printer->prefixing_rule = DIAGNOSTICS_SHOW_PREFIX_ONCE;
+  context->printer->wrapping.rule = DIAGNOSTICS_SHOW_PREFIX_ONCE;
 
   memset (context->diagnostic_count, 0, sizeof context->diagnostic_count);
   context->issue_warnings_are_errors_message = true;
@@ -347,10 +347,10 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 	  = ACONCAT ((diagnostic->message.format_spec,
 		      " [", cl_options[diagnostic->option_index].opt_text, "]", NULL));
 
-      pp_prepare_to_format (context->printer, &diagnostic->message,
-			    &diagnostic->location);
+      diagnostic->message.locus = &diagnostic->location;
+      pp_format (context->printer, &diagnostic->message);
       (*diagnostic_starter (context)) (context, diagnostic);
-      pp_format_text (context->printer, &diagnostic->message);
+      pp_output_formatted_text (context->printer);
       (*diagnostic_finalizer (context)) (context, diagnostic);
       pp_flush (context->printer);
       diagnostic_action_after_output (context, diagnostic);
@@ -405,6 +405,7 @@ verbatim (const char *gmsgid, ...)
   text.err_no = errno;
   text.args_ptr = &ap;
   text.format_spec = _(gmsgid);
+  text.locus = NULL;
   pp_format_verbatim (global_dc->printer, &text);
   pp_flush (global_dc->printer);
   va_end (ap);

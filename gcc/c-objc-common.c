@@ -40,7 +40,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "target.h"
 #include "c-objc-common.h"
 
-static bool c_tree_printer (pretty_printer *, text_info *);
+static bool c_tree_printer (pretty_printer *, text_info *, const char *,
+			    int, bool, bool, bool);
 
 bool
 c_missing_noreturn_ok_p (tree decl)
@@ -160,7 +161,8 @@ c_objc_common_init (void)
    Please notice when called, the `%' part was already skipped by the
    diagnostic machinery.  */
 static bool
-c_tree_printer (pretty_printer *pp, text_info *text)
+c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
+		int precision, bool wide, bool plus, bool hash)
 {
   tree t = va_arg (*text->args_ptr, tree);
   tree name;
@@ -168,7 +170,11 @@ c_tree_printer (pretty_printer *pp, text_info *text)
   c_pretty_printer *cpp = (c_pretty_printer *) pp;
   pp->padding = pp_none;
 
-  switch (*text->format_spec)
+  /* FUTURE: %+x should set the locus.  */
+  if (precision != 0 || wide || plus || hash)
+    return false;
+
+  switch (*spec)
     {
     case 'D':
       if (DECL_DEBUG_EXPR_IS_FROM (t) && DECL_DEBUG_EXPR (t))

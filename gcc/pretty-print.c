@@ -33,7 +33,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 /* A pointer to the formatted diagnostic message.  */
 #define pp_formatted_text_data(PP) \
-   ((const char *) obstack_base (&pp_base (PP)->buffer->obstack))
+   ((const char *) obstack_base (pp_base (PP)->buffer->obstack))
 
 /* Format an integer given by va_arg (ARG, type-specifier T) where
    type-specifier is a precision modifier as indicated by PREC.  F is
@@ -149,7 +149,7 @@ pp_maybe_wrap_text (pretty_printer *pp, const char *start, const char *end)
 static inline void
 pp_append_r (pretty_printer *pp, const char *start, int length)
 {
-  obstack_grow (&pp->buffer->obstack, start, length);
+  obstack_grow (pp->buffer->obstack, start, length);
   pp->buffer->line_length += length;
 }
 
@@ -166,42 +166,7 @@ pp_base_indent (pretty_printer *pp)
     pp_space (pp);
 }
 
-/* Prepare PP to format a message pointed to by TEXT, with tentative
-   location LOCUS.  It is expected that a call to pp_format_text with
-   exactly the same PP and TEXT arguments will follow.  This routine
-   may modify the data in memory at TEXT and LOCP, and if it does,
-   caller is expected to notice.
-
-   Currently, all this does is notice a %H or %J escape at the beginning
-   of the string, and update LOCUS to match.  */
-void
-pp_base_prepare_to_format (pretty_printer *pp ATTRIBUTE_UNUSED,
-			   text_info *text,
-			   location_t *locus)
-{
-  const char *p = text->format_spec;
-  tree t;
-
-  /* Extract the location information if any.  */
-  if (p[0] == '%')
-    switch (p[1])
-      {
-      case 'H':
-	*locus = *va_arg (*text->args_ptr, location_t *);
-	text->format_spec = p + 2;
-	break;
-
-      case 'J':
-	t = va_arg (*text->args_ptr, tree);
-	*locus = DECL_SOURCE_LOCATION (t);
-	text->format_spec = p + 2;
-	break;
-      }
-}
-
-
-/* Format a message pointed to by TEXT.  The following format specifiers are
-   recognized as being client independent:
+/* The following format specifiers are recognized as being client independent:
    %d, %i: (signed) integer in base ten.
    %u: unsigned integer in base ten.
    %o: unsigned integer in base eight.
@@ -218,59 +183,245 @@ pp_base_prepare_to_format (pretty_printer *pp ATTRIBUTE_UNUSED,
    %>: closing quote.
    %': apostrophe (should only be used in untranslated messages;
        translations should use appropriate punctuation directly).
-   %.*s: a substring the length of which is specified by an integer.
+   %.*s: a substring the length of which is specified by an argument
+	 integer.
+   %Ns: likewise, but length specified as constant in the format string.
    %H: location_t.
-   Flag 'q': quote formatted text (must come immediately after '%').  */
+   %J: a decl tree, from which DECL_SOURCE_LOCATION will be recorded.
+   Flag 'q': quote formatted text (must come immediately after '%').
+
+   Arguments can be used sequentially, or through %N$ resp. *N$
+   notation Nth argument after the format string.  If %N$ / *N$
+   notation is used, it must be used for all arguments, except %m, %%,
+   %<, %> and %', which may not have a number, as they do not consume
+   an argument.  When %M$.*N$s is used, M must be N + 1.  (This may
+   also be written %M$.*s, provided N is not otherwise used.)  The
+   format string must have conversion specifiers with argument numbers
+   1 up to highest argument; each argument may only be used once.
+   A format string can have at most 30 arguments.  */
+
+/* Formatting phases 1 and 2: render TEXT->format_spec plus
+   TEXT->args_ptr into a series of chunks in PP->buffer->args[].
+   Phase 3 is in pp_base_format_text.  */
+
 void
-pp_base_format_text (pretty_printer *pp, text_info *text)
+pp_base_format (pretty_printer *pp, text_info *text)
 {
-  for (; *text->format_spec; ++text->format_spec)
+  output_buffer *buffer = pp->buffer;
+  const char *p;
+  const char **args;
+  struct chunk_info *new_chunk_array;
+
+  unsigned int curarg = 0, chunk = 0, argno;
+  pp_wrapping_mode_t old_wrapping_mode;
+  bool any_unnumbered = false, any_numbered = false;
+  const char **formatters[PP_NL_ARGMAX];
+
+  /* Allocate a new chunk structure.  */
+  new_chunk_array = XOBNEW (&buffer->chunk_obstack, struct chunk_info);
+  new_chunk_array->prev = buffer->cur_chunk_array;
+  buffer->cur_chunk_array = new_chunk_array;
+  args = new_chunk_array->args;
+
+  /* Formatting phase 1: split up TEXT->format_spec into chunks in
+     PP->buffer->args[].  Even-numbered chunks are to be output
+     verbatim, odd-numbered chunks are format specifiers.
+     %m, %%, %<, %>, and %' are replaced with the appropriate text at
+     this point.  */
+
+  memset (formatters, 0, sizeof formatters);
+  
+  for (p = text->format_spec; *p; )
+    {
+      while (*p != '\0' && *p != '%')
+	{
+	  obstack_1grow (&buffer->chunk_obstack, *p);
+	  p++;
+	}
+
+      if (*p == '\0')
+	break;
+
+      switch (*++p)
+	{
+	case '\0':
+	  gcc_unreachable ();
+	  
+	case '%':
+	  obstack_1grow (&buffer->chunk_obstack, '%');
+	  p++;
+	  continue;
+
+	case '<':
+	  obstack_grow (&buffer->chunk_obstack,
+			open_quote, strlen (open_quote));
+	  p++;
+	  continue;
+
+	case '>':
+	case '\'':
+	  obstack_grow (&buffer->chunk_obstack,
+			open_quote, strlen (close_quote));
+	  p++;
+	  continue;
+
+	case 'm':
+	  {
+	    const char *errstr = xstrerror (text->err_no);
+	    obstack_grow (&buffer->chunk_obstack, errstr, strlen (errstr));
+	  }
+	  p++;
+	  continue;
+
+	default:
+	  /* Handled in phase 2.  Terminate the plain chunk here.  */
+	  obstack_1grow (&buffer->chunk_obstack, '\0');
+	  gcc_assert (chunk < PP_NL_ARGMAX * 2);
+	  args[chunk++] = XOBFINISH (&buffer->chunk_obstack, const char *);
+	  break;
+	}
+
+      if (ISDIGIT (*p))
+	{
+	  char *end;
+	  argno = strtoul (p, &end, 10) - 1;
+	  p = end;
+	  gcc_assert (*p == '$');
+	  p++;
+
+	  any_numbered = true;
+	  gcc_assert (!any_unnumbered);
+	}
+      else
+	{
+	  argno = curarg++;
+	  any_unnumbered = true;
+	  gcc_assert (!any_numbered);
+	}
+      gcc_assert (argno < PP_NL_ARGMAX);
+      gcc_assert (!formatters[argno]);
+      formatters[argno] = &args[chunk];
+      do
+	{
+	  obstack_1grow (&buffer->chunk_obstack, *p);
+	  p++;
+	}
+      while (strchr ("qwl+#", p[-1]));
+
+      if (p[-1] == '.')
+	{
+	  /* We handle '%.Ns' and '%.*s' or '%M$.*N$s'
+	     (where M == N + 1).  */
+	  if (ISDIGIT (*p))
+	    {
+	      do
+		{
+		  obstack_1grow (&buffer->chunk_obstack, *p);
+		  p++;
+		}
+	      while (ISDIGIT (p[-1]));
+	      gcc_assert (p[-1] == 's');
+	    }
+	  else
+	    {
+	      gcc_assert (*p == '*');
+	      obstack_1grow (&buffer->chunk_obstack, '*');
+	      p++;
+
+	      if (ISDIGIT (*p))
+		{
+		  char *end;
+		  unsigned int argno2 = strtoul (p, &end, 10) - 1;
+		  p = end;
+		  gcc_assert (argno2 == argno - 1);
+		  gcc_assert (!any_unnumbered);
+		  gcc_assert (*p == '$');
+
+		  p++;
+		  formatters[argno2] = formatters[argno];
+		}
+	      else
+		{
+		  gcc_assert (!any_numbered);
+		  formatters[argno+1] = formatters[argno];
+		  curarg++;
+		}
+	      gcc_assert (*p == 's');
+	      obstack_1grow (&buffer->chunk_obstack, 's');
+	      p++;
+	    }
+	}
+      if (*p == '\0')
+	break;
+
+      obstack_1grow (&buffer->chunk_obstack, '\0');
+      gcc_assert (chunk < PP_NL_ARGMAX * 2);
+      args[chunk++] = XOBFINISH (&buffer->chunk_obstack, const char *);
+    }
+
+  obstack_1grow (&buffer->chunk_obstack, '\0');
+  gcc_assert (chunk < PP_NL_ARGMAX * 2);
+  args[chunk++] = XOBFINISH (&buffer->chunk_obstack, const char *);
+  args[chunk] = 0;
+		  
+  /* Set output to the argument obstack, and switch line-wrapping and
+     prefixing off.  */
+  buffer->obstack = &buffer->chunk_obstack;
+  old_wrapping_mode = pp_set_verbatim_wrapping (pp);
+
+  /* Second phase.  Replace each formatter with the formatted text it
+     corresponds to.  */
+
+  for (argno = 0; formatters[argno]; argno++)
     {
       int precision = 0;
       bool wide = false;
-      bool quoted = false;
+      bool plus = false;
+      bool hash = false;
+      bool quote = false;
 
-      /* Ignore text.  */
-      {
-	const char *p = text->format_spec;
-	while (*p && *p != '%')
-	  ++p;
-	pp_wrap_text (pp, text->format_spec, p);
-        text->format_spec = p;
-      }
+      /* We do not attempt to enforce any ordering on the modifier
+	 characters.  */
 
-      if (*text->format_spec == '\0')
-	break;
-
-      /* We got a '%'.  Check for 'q', then parse precision modifiers,
-	 if any.  */
-      if (*++text->format_spec == 'q')
+      for (p = *formatters[argno];; p++)
 	{
-	  quoted = true;
-	  ++text->format_spec;
+	  switch (*p)
+	    {
+	    case 'q':
+	      gcc_assert (!quote);
+	      quote = true;
+	      continue;
+
+	    case '+':
+	      gcc_assert (!plus);
+	      plus = true;
+	      continue;
+
+	    case '#':
+	      gcc_assert (!hash);
+	      hash = true;
+	      continue;
+
+	    case 'w':
+	      gcc_assert (!wide);
+	      wide = true;
+	      continue;
+
+	    case 'l':
+	      /* We don't support precision beyond that of "long long".  */
+	      gcc_assert (precision < 2);
+	      precision++;
+	      continue;
+	    }
+	  break;
 	}
-      switch (*text->format_spec)
-        {
-        case 'w':
-          wide = true;
-          ++text->format_spec;
-          break;
 
-        case 'l':
-          do
-            ++precision;
-          while (*++text->format_spec == 'l');
-          break;
+      gcc_assert (!wide || precision == 0);
 
-        default:
-          break;
-        }
-      /* We don't support precision beyond that of "long long".  */
-      gcc_assert (precision <= 2);
-
-      if (quoted)
+      if (quote)
 	pp_string (pp, open_quote);
-      switch (*text->format_spec)
+
+      switch (*p)
 	{
 	case 'c':
 	  pp_character (pp, va_arg (*text->args_ptr, int));
@@ -278,87 +429,92 @@ pp_base_format_text (pretty_printer *pp, text_info *text)
 
 	case 'd':
 	case 'i':
-          if (wide)
-            pp_wide_integer (pp, va_arg (*text->args_ptr, HOST_WIDE_INT));
-          else
-            pp_integer_with_precision
-              (pp, *text->args_ptr, precision, int, "d");
+	  if (wide)
+	    pp_wide_integer (pp, va_arg (*text->args_ptr, HOST_WIDE_INT));
+	  else
+	    pp_integer_with_precision
+	      (pp, *text->args_ptr, precision, int, "d");
 	  break;
 
 	case 'o':
-          if (wide)
-            pp_scalar (pp, "%" HOST_WIDE_INT_PRINT "o",
-                       va_arg (*text->args_ptr, unsigned HOST_WIDE_INT));
-          else
-            pp_integer_with_precision
-              (pp, *text->args_ptr, precision, unsigned, "u");
+	  if (wide)
+	    pp_scalar (pp, "%" HOST_WIDE_INT_PRINT "o",
+		       va_arg (*text->args_ptr, unsigned HOST_WIDE_INT));
+	  else
+	    pp_integer_with_precision
+	      (pp, *text->args_ptr, precision, unsigned, "o");
 	  break;
 
 	case 's':
 	  pp_string (pp, va_arg (*text->args_ptr, const char *));
 	  break;
 
-        case 'p':
-          pp_pointer (pp, va_arg (*text->args_ptr, void *));
-          break;
+	case 'p':
+	  pp_pointer (pp, va_arg (*text->args_ptr, void *));
+	  break;
 
 	case 'u':
-          if (wide)
-            pp_scalar (pp, HOST_WIDE_INT_PRINT_UNSIGNED,
-                       va_arg (*text->args_ptr, unsigned HOST_WIDE_INT));
-          else
-            pp_integer_with_precision
-              (pp, *text->args_ptr, precision, unsigned, "u");
+	  if (wide)
+	    pp_scalar (pp, HOST_WIDE_INT_PRINT_UNSIGNED,
+		       va_arg (*text->args_ptr, unsigned HOST_WIDE_INT));
+	  else
+	    pp_integer_with_precision
+	      (pp, *text->args_ptr, precision, unsigned, "u");
 	  break;
 
 	case 'x':
-          if (wide)
-            pp_scalar (pp, HOST_WIDE_INT_PRINT_HEX,
-                       va_arg (*text->args_ptr, unsigned HOST_WIDE_INT));
-          else
-            pp_integer_with_precision
-              (pp, *text->args_ptr, precision, unsigned, "x");
+	  if (wide)
+	    pp_scalar (pp, HOST_WIDE_INT_PRINT_HEX,
+		       va_arg (*text->args_ptr, unsigned HOST_WIDE_INT));
+	  else
+	    pp_integer_with_precision
+	      (pp, *text->args_ptr, precision, unsigned, "x");
 	  break;
 
-	case 'm':
-	  pp_string (pp, xstrerror (text->err_no));
+	case 'H':
+	  {
+	    location_t *locus = va_arg (*text->args_ptr, location_t *);
+	    gcc_assert (text->locus != NULL);
+	    *text->locus = *locus;
+	  }
 	  break;
 
-	case '%':
-	  pp_character (pp, '%');
+	case 'J':
+	  {
+	    tree t = va_arg (*text->args_ptr, tree);
+	    gcc_assert (text->locus != NULL);
+	    *text->locus = DECL_SOURCE_LOCATION (t);
+	  }
 	  break;
-
-	case '<':
-	  pp_string (pp, open_quote);
-	  break;
-
-	case '>':
-	case '\'':
-	  pp_string (pp, close_quote);
-	  break;
-
-        case 'H':
-          {
-            location_t *locus = va_arg (*text->args_ptr, location_t *);
-	    expanded_location s = expand_location (*locus);
-            pp_string (pp, "file '");
-            pp_string (pp, s.file);
-            pp_string (pp, "', line ");
-            pp_decimal_int (pp, s.line);
-          }
-          break;
 
 	case '.':
 	  {
 	    int n;
 	    const char *s;
-	    /* We handle no precision specifier but '%.*s'.  */
-	    ++text->format_spec;
-	    gcc_assert (*text->format_spec == '*');
-	    ++text->format_spec;
-	    gcc_assert (*text->format_spec == 's');
 
-	    n = va_arg (*text->args_ptr, int);
+	    /* We handle '%.Ns' and '%.*s' or '%M$.*N$s'
+	       (where M == N + 1).  The format string should be verified
+	       already from the first phase.  */
+	    p++;
+	    if (ISDIGIT (*p))
+	      {
+		char *end;
+		n = strtoul (p, &end, 10);
+		p = end;
+		gcc_assert (*p == 's');
+	      }
+	    else
+	      {
+		gcc_assert (*p == '*');
+		p++;
+		gcc_assert (*p == 's');
+		n = va_arg (*text->args_ptr, int);
+
+		/* This consumes a second entry in the formatters array.  */
+		gcc_assert (formatters[argno] == formatters[argno+1]);
+		argno++;
+	      }
+
 	    s = va_arg (*text->args_ptr, const char *);
 	    pp_append_text (pp, s, s + n);
 	  }
@@ -367,15 +523,54 @@ pp_base_format_text (pretty_printer *pp, text_info *text)
 	default:
 	  {
 	    bool ok;
-	    
+
 	    gcc_assert (pp_format_decoder (pp));
-	    ok = pp_format_decoder (pp) (pp, text);
+	    ok = pp_format_decoder (pp) (pp, text, p,
+					 precision, wide, plus, hash);
 	    gcc_assert (ok);
 	  }
 	}
-      if (quoted)
+
+      if (quote)
 	pp_string (pp, close_quote);
+
+      obstack_1grow (&buffer->chunk_obstack, '\0');
+      *formatters[argno] = XOBFINISH (&buffer->chunk_obstack, const char *);
     }
+
+#ifdef ENABLE_CHECKING
+  for (; argno < PP_NL_ARGMAX; argno++)
+    gcc_assert (!formatters[argno]);
+#endif
+
+  /* Revert to normal obstack and wrapping mode.  */
+  buffer->obstack = &buffer->formatted_obstack;
+  buffer->line_length = 0;
+  pp_wrapping_mode (pp) = old_wrapping_mode;
+  pp_clear_state (pp);
+}
+
+/* Format of a message pointed to by TEXT.  */
+void
+pp_base_output_formatted_text (pretty_printer *pp)
+{
+  unsigned int chunk;
+  output_buffer *buffer = pp_buffer (pp);
+  struct chunk_info *chunk_array = buffer->cur_chunk_array;
+  const char **args = chunk_array->args;
+
+  gcc_assert (buffer->obstack == &buffer->formatted_obstack);
+  gcc_assert (buffer->line_length == 0);
+
+  /* This is a third phase, first 2 phases done in pp_base_format_args.
+     Now we actually print it.  */
+  for (chunk = 0; args[chunk]; chunk++)
+    pp_string (pp, args[chunk]);
+
+  /* Deallocate the chunk structure and everything after it (i.e. the
+     associated series of formatted strings).  */
+  buffer->cur_chunk_array = chunk_array->prev;
+  obstack_free (&buffer->chunk_obstack, chunk_array);
 }
 
 /* Helper subroutine of output_verbatim and verbatim. Do the appropriate
@@ -383,17 +578,15 @@ pp_base_format_text (pretty_printer *pp, text_info *text)
 void
 pp_base_format_verbatim (pretty_printer *pp, text_info *text)
 {
-  diagnostic_prefixing_rule_t rule = pp_prefixing_rule (pp);
-  int line_cutoff = pp_line_cutoff (pp);
-
   /* Set verbatim mode.  */
-  pp->prefixing_rule = DIAGNOSTICS_SHOW_PREFIX_NEVER;
-  pp_line_cutoff (pp) = 0;
+  pp_wrapping_mode_t oldmode = pp_set_verbatim_wrapping (pp);
+
   /* Do the actual formatting.  */
-  pp_format_text (pp, text);
+  pp_format (pp, text);
+  pp_output_formatted_text (pp);
+
   /* Restore previous settings.  */
-  pp_prefixing_rule (pp) = rule;
-  pp_line_cutoff (pp) = line_cutoff;
+  pp_wrapping_mode (pp) = oldmode;
 }
 
 /* Flush the content of BUFFER onto the attached stream.  */
@@ -421,7 +614,7 @@ pp_base_set_line_maximum_length (pretty_printer *pp, int length)
 void
 pp_base_clear_output_area (pretty_printer *pp)
 {
-  obstack_free (&pp->buffer->obstack, obstack_base (&pp->buffer->obstack));
+  obstack_free (pp->buffer->obstack, obstack_base (pp->buffer->obstack));
   pp->buffer->line_length = 0;
 }
 
@@ -485,7 +678,9 @@ pp_construct (pretty_printer *pp, const char *prefix, int maximum_length)
 {
   memset (pp, 0, sizeof (pretty_printer));
   pp->buffer = xcalloc (1, sizeof (output_buffer));
-  obstack_init (&pp->buffer->obstack);
+  obstack_init (&pp->buffer->chunk_obstack);
+  obstack_init (&pp->buffer->formatted_obstack);
+  pp->buffer->obstack = &pp->buffer->formatted_obstack;
   pp->buffer->stream = stderr;
   pp_line_cutoff (pp) = maximum_length;
   pp_prefixing_rule (pp) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
@@ -516,7 +711,7 @@ pp_base_append_text (pretty_printer *pp, const char *start, const char *end)
 const char *
 pp_base_formatted_text (pretty_printer *pp)
 {
-  obstack_1grow (&pp->buffer->obstack, '\0');
+  obstack_1grow (pp->buffer->obstack, '\0');
   return pp_formatted_text_data (pp);
 }
 
@@ -526,7 +721,7 @@ const char *
 pp_base_last_position_in_text (const pretty_printer *pp)
 {
   const char *p = NULL;
-  struct obstack *text = &pp->buffer->obstack;
+  struct obstack *text = pp->buffer->obstack;
 
   if (obstack_base (text) != obstack_next_free (text))
     p = ((const char *) obstack_next_free (text)) - 1;
@@ -553,7 +748,9 @@ pp_printf (pretty_printer *pp, const char *msg, ...)
   text.err_no = errno;
   text.args_ptr = &ap;
   text.format_spec = msg;
-  pp_format_text (pp, &text);
+  text.locus = NULL;
+  pp_format (pp, &text);
+  pp_output_formatted_text (pp);
   va_end (ap);
 }
 
@@ -569,6 +766,7 @@ pp_verbatim (pretty_printer *pp, const char *msg, ...)
   text.err_no = errno;
   text.args_ptr = &ap;
   text.format_spec = msg;
+  text.locus = NULL;
   pp_format_verbatim (pp, &text);
   va_end (ap);
 }
@@ -579,7 +777,7 @@ pp_verbatim (pretty_printer *pp, const char *msg, ...)
 void
 pp_base_newline (pretty_printer *pp)
 {
-  obstack_1grow (&pp->buffer->obstack, '\n');
+  obstack_1grow (pp->buffer->obstack, '\n');
   pp->buffer->line_length = 0;
 }
 
@@ -594,7 +792,7 @@ pp_base_character (pretty_printer *pp, int c)
       if (ISSPACE (c))
         return;
     }
-  obstack_1grow (&pp->buffer->obstack, c);
+  obstack_1grow (pp->buffer->obstack, c);
   ++pp->buffer->line_length;
 }
 

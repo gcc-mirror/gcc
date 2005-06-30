@@ -120,11 +120,11 @@ struct diagnostic_context
 #define diagnostic_format_decoder(DC) ((DC)->printer->format_decoder)
 
 /* Same as output_prefixing_rule.  Works on 'diagnostic_context *'.  */
-#define diagnostic_prefixing_rule(DC) ((DC)->printer->prefixing_rule)
+#define diagnostic_prefixing_rule(DC) ((DC)->printer->wrapping.rule)
 
 /* Maximum characters per line in automatic line wrapping mode.
    Zero means don't wrap lines.  */
-#define diagnostic_line_cutoff(DC) ((DC)->printer->ideal_maximum_length)
+#define diagnostic_line_cutoff(DC) ((DC)->printer->wrapping.line_cutoff)
 
 #define diagnostic_flush_buffer(DC) pp_base_flush ((DC)->printer)
 

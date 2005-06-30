@@ -442,9 +442,9 @@ announce_function (tree decl)
   if (!quiet_flag)
     {
       if (rtl_dump_and_exit)
-	verbatim ("%s ", IDENTIFIER_POINTER (DECL_NAME (decl)));
+	fprintf (stderr, "%s ", IDENTIFIER_POINTER (DECL_NAME (decl)));
       else
-	verbatim (" %s", lang_hooks.decl_printable_name (decl, 2));
+	fprintf (stderr, " %s", lang_hooks.decl_printable_name (decl, 2));
       fflush (stderr);
       pp_needs_newline (global_dc->printer) = true;
       diagnostic_set_last_function (global_dc);
@@ -1355,11 +1355,16 @@ default_pch_valid_p (const void *data_p, size_t len)
 
 /* Default tree printer.   Handles declarations only.  */
 static bool
-default_tree_printer (pretty_printer * pp, text_info *text)
+default_tree_printer (pretty_printer * pp, text_info *text, const char *spec,
+		      int precision, bool wide, bool plus, bool hash)
 {
   tree t;
 
-  switch (*text->format_spec)
+  /* FUTURE: %+x should set the locus.  */
+  if (precision != 0 || wide || plus || hash)
+    return false;
+
+  switch (*spec)
     {
     case 'D':
       t = va_arg (*text->args_ptr, tree);

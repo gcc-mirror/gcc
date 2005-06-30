@@ -1,3 +1,43 @@
+2005-06-30  Zack Weinberg  <zack@codesourcery.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* pretty-print.h (PP_NL_ARGMAX): New.
+	(text_info): Add locus.
+	(struct chunk_info): New.
+	(output_buffer): Add formatted_obstack, chunk_obstack, and
+	cur_chunk_array. Change obstack to a pointer.
+	(pp_wrapping_mode_t, pp_wrapping_mode, pp_set_verbatim_wrapping): New.
+	(struct pretty_print_info): Replace ideal_maximum_length and
+	prefixing_rule with wrapping.
+	(pp_line_cutoff, pp_prefixing_rule): Update to match.
+	Update prototypes and wrapper macros throughout.
+	* pretty-print.c (pp_formatted_text_data, pp_append_r)
+	(pp_base_clear_output_area, pp_construct, pp_base_formatted_text)
+	(pp_base_last_position_in_text, pp_base_newline, pp_base_character):
+	Update for changes to pp structure.
+	(pp_base_prepare_to_format, pp_base_format_text): Delete.
+	(pp_base_format, pp_base_output_formatted_text): New functions.
+	(pp_base_format_verbatim): Use pp_set_verbatim_wrapping.
+	(pp_verbatim): Clear text.locus.
+	(pp_printf): Likewise.  Use pp_format and pp_output_formatted_text.
+	* c-objc-common.c (c_tree_printer): Update function signature.
+	* diagnostic.c (diagnostic_initialize): Update for changes to
+	pp structure.
+	(diagnostic_report_diagnostic): Call pp_format and then
+	pp_output_formatted_text.
+	(verbatim): Clear text.locus.
+	* diagnostic.h (diagnostic_prefixing_rule, diagnostic_line_cutoff):
+	Update for changes to pp structure.
+
+	* c-lang.c: No need to include c-pretty-print.h.
+	* Makefile.in: Remove bogus line containing only a tab.
+	(c-lang.o): Update dependencies.
+	* toplev.c (announce_function): Don't use verbatim.
+	(default_tree_printer): Update signature.
+
+	* objc/objc-lang.c: No need to include c-pretty-print.h.
+	* objc/Make-lang.in: Update dependencies.
+
 2005-06-29  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-complex.c (complex_variable_components): Now a hashtable.
