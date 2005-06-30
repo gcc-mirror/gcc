@@ -516,10 +516,12 @@ record_vars (tree vars)
     {
       tree var = vars;
 
+      /* BIND_EXPRs contains also function/type/constant declarations
+         we don't need to care about.  */
+      if (TREE_CODE (var) != VAR_DECL)
+	continue;
       /* Nothing to do in this case.  */
       if (DECL_EXTERNAL (var))
-	continue;
-      if (TREE_CODE (var) == FUNCTION_DECL)
 	continue;
 
       /* Record the variable.  */
