@@ -3704,6 +3704,12 @@ foo<int (*) [3]>
 _ZN13PatternDriver23StringScalarDeleteValueC1ERKNS_25ConflateStringScalarValueERKNS_25AbstractStringScalarValueERKNS_12TemplateEnumINS_12pdcomplementELZNS_16complement_namesEELZNS_14COMPLEMENTENUMEEEE
 _ZN13PatternDriver23StringScalarDeleteValueC1ERKNS_25ConflateStringScalarValueERKNS_25AbstractStringScalarValueERKNS_12TemplateEnumINS_12pdcomplementELZNS_16complement_namesEELZNS_14COMPLEMENTENUMEEEE
 PatternDriver::StringScalarDeleteValue::StringScalarDeleteValue
+#
+# This used to cause the demangler to walk into undefined memory--PR 22268
+--format=gnu-v3 --no-params
+ALsetchannels
+ALsetchannels
+ALsetchannels
 # Test GNU V3 constructor and destructor identification.
 # 0 means it is not a constructor/destructor.
 # Other integers correspond to enum gnu_v3_{c,d}tor_kinds in demangle.h.

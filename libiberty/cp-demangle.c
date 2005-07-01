@@ -2337,7 +2337,11 @@ d_expr_primary (struct d_info *di)
 	}
       s = d_str (di);
       while (d_peek_char (di) != 'E')
-	d_advance (di, 1);
+	{
+	  if (d_peek_char (di) == '\0')
+	    return NULL;
+	  d_advance (di, 1);
+	}
       ret = d_make_comp (di, t, type, d_make_name (di, s, d_str (di) - s));
     }
   if (d_next_char (di) != 'E')
