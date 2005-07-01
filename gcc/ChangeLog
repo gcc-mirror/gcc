@@ -1,3 +1,9 @@
+2005-06-30  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/rs6000/darwin.h (STARTING_FRAME_OFFSET):
+	Set to 0 for FRAME_GROWS_DOWNWARD.
+	(REGISTER_NAMES): Add sfp.
+
 2005-07-01  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* config/arm/libunwind.S, config/arm/pr-support.c,
