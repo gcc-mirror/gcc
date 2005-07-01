@@ -406,7 +406,7 @@ should_transpose (tree rhs ATTRIBUTE_UNUSED,
 
   /* Also, see if the LHS's high ranked op should be switched with our
      RHS simply because it is greater in rank than our current RHS.  */
-  if (TREE_CODE (TREE_OPERAND (lhsdefop, 0)) == SSA_NAME)
+  if (TREE_CODE (TREE_OPERAND (lhsdefop, highrankop)) == SSA_NAME)
     {
       tree iop = SSA_NAME_DEF_STMT (TREE_OPERAND (lhsdefop, highrankop));
       if (TREE_CODE (iop) == MODIFY_EXPR)
