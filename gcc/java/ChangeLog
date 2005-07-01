@@ -1,3 +1,8 @@
+2005-06-29  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* parse.y (issue_warning_error_from_context): Update for the
+	renaming of pp_format_text to pp_format.
+
 2005-06-28  Paul Brook  <paul@codesourcery.com>
 
 	* decl.c (java_init_decl_processing): Call
