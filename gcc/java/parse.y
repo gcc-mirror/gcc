@@ -3142,6 +3142,7 @@ issue_warning_error_from_context (
   text.args_ptr = ap;
   text.format_spec = gmsgid;
   pp_format (global_dc->printer, &text);
+  pp_output_formatted_text (global_dc->printer);
   strncpy (buffer, pp_formatted_text (global_dc->printer), sizeof (buffer) - 1);
   buffer[sizeof (buffer) - 1] = '\0';
   pp_clear_output_area (global_dc->printer);
