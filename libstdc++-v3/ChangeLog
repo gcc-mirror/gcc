@@ -1,3 +1,16 @@
+2005-07-01  Paolo Carlini  <pcarlini@suse.de>
+
+        Port from libstdcxx_so_7-branch:
+	2004-10-28  Chris Jefferson  <chris@bubblescope.net>
+
+	PR libstdc++/17441
+	* include/bit/stl_algo.h (find(,,,input_iterator_tag),
+	find(,,,random_access_interator_tag),
+	find_if(,,,input_iterator_tag),
+	find_if(,,,random_access_iterator_tag)): Uglify function name.
+	(find, find_if): Use new uglified specialisation names.
+	* testsuite/25_algorithms/find/17441.cc: New.
+
 2005-06-30  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* include/ext/pb_assoc/detail/hash_fn/mask_based_range_hashing.hpp
