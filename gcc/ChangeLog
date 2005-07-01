@@ -1,3 +1,10 @@
+2005-07-01  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (find_equivalent_equality_comparison): Do not
+	a eliminate type conversion which feeds an equality comparison
+	if the original type or either operand in the comparison is a
+	function pointer.
+
 2005-06-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/22260

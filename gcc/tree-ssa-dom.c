@@ -1929,6 +1929,18 @@ find_equivalent_equality_comparison (tree cond)
     {
       tree def_rhs = TREE_OPERAND (def_stmt, 1);
 
+
+      /* If either operand to the comparison is a pointer to
+	 a function, then we can not apply this optimization
+	 as some targets require function pointers to be
+	 canonicalized and in this case this optimization would
+	 eliminate a necessary canonicalization.  */
+      if ((POINTER_TYPE_P (TREE_TYPE (op0))
+	   && TREE_CODE (TREE_TYPE (TREE_TYPE (op0))) == FUNCTION_TYPE)
+	  || (POINTER_TYPE_P (TREE_TYPE (op1))
+	      && TREE_CODE (TREE_TYPE (TREE_TYPE (op1))) == FUNCTION_TYPE))
+	return NULL;
+	      
       /* Now make sure the RHS of the MODIFY_EXPR is a typecast.  */
       if ((TREE_CODE (def_rhs) == NOP_EXPR
 	   || TREE_CODE (def_rhs) == CONVERT_EXPR)
@@ -1940,6 +1952,16 @@ find_equivalent_equality_comparison (tree cond)
 
 	  if (TYPE_PRECISION (def_rhs_inner_type)
 	      > TYPE_PRECISION (TREE_TYPE (def_rhs)))
+	    return NULL;
+
+	  /* If the inner type of the conversion is a pointer to
+	     a function, then we can not apply this optimization
+	     as some targets require function pointers to be
+	     canonicalized.  This optimization would result in
+	     canonicalization of the pointer when it was not originally
+	     needed/intended.  */
+	  if (POINTER_TYPE_P (def_rhs_inner_type)
+	      && TREE_CODE (TREE_TYPE (def_rhs_inner_type)) == FUNCTION_TYPE)
 	    return NULL;
 
 	  /* What we want to prove is that if we convert OP1 to
