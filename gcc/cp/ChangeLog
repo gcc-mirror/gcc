@@ -1,3 +1,8 @@
+2005-06-30  Daniel Berlin  <dberlin@dberlin.org> 
+	
+	* decl.c (require_complete_types_for_parms): Call relayout_decl
+	instead of layout_decl.
+
 2005-06-30  Zack Weinberg  <zack@codesourcery.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
