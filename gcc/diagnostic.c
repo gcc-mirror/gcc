@@ -291,8 +291,9 @@ diagnostic_report_current_module (diagnostic_context *context)
 		       ",\n                 from %s:%d",
 		       xloc.file, xloc.line);
 	}
-      pp_verbatim (context->printer, ":\n");
+      pp_verbatim (context->printer, ":");
       diagnostic_set_last_module (context);
+      pp_newline (context->printer);
     }
 }
 
