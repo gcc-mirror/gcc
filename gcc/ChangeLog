@@ -1,3 +1,9 @@
+2005-07-01  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR other/22264
+	* diagnostic.c (diagnostic_report_current_module): Use pp_newline to
+	print out the last new line.
+
 2005-07-01  Hans-Peter Nilsson  <hp@axis.se>
 
 	* config/cris/cris.md (CRIS_CC0_REGNUM): New constant.
