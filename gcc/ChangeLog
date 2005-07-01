@@ -1,3 +1,20 @@
+2005-07-01  Hans-Peter Nilsson  <hp@axis.se>
+
+	* config/cris/cris.md (CRIS_CC0_REGNUM): New constant.
+	Swap numbers for CRIS_AP_REGNUM and CRIS_MOF_REGNUM.
+	* config/cris/cris.c (cris_conditional_register_usage): Adjust
+	reg_names[CRIS_CC0_REGNUM] for early CRIS versions.
+	(cris_print_operand) <case REG>: Handle CRIS_CC0_REGNUM.
+	(cris_md_asm_clobbers): Clobber CRIS_CC0_REGNUM for all asms.
+	* config/cris/cris.h (CRIS_CANONICAL_CC0_REGNUM): New macro.
+	(enum reg_class): New member CC0_REGS.
+	(REG_CLASS_FROM_LETTER): Add 'c' for CC0_REGS.
+	(FIRST_PSEUDO_REGISTER, CALL_USED_REGISTERS, REG_ALLOC_ORDER)
+	(HARD_REGNO_MODE_OK, MODES_TIEABLE_P, REG_CLASS_NAMES)
+	(CRIS_SPECIAL_REGS_CONTENTS, REG_CLASS_CONTENTS, REGNO_REG_CLASS)
+	(PREFERRED_RELOAD_CLASS, REGISTER_NAMES, DBX_REGISTER_NUMBER):
+	Adjust for register now described.
+
 2005-07-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/22262

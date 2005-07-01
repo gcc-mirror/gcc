@@ -61,6 +61,10 @@ Boston, MA 02110-1301, USA.  */
    When passing debug-info, we need the real hardware register number.  */
 #define CRIS_CANONICAL_SRP_REGNUM (16 + 11)
 #define CRIS_CANONICAL_MOF_REGNUM (16 + 7)
+/* We have CCR in all models including v10, but that's 16 bits, so let's
+   prefer the DCCR number, which is a DMA pointer in pre-v8, so we'll
+   never clash with it for GCC purposes.  */
+#define CRIS_CANONICAL_CC0_REGNUM (16 + 13)
 
 /* When generating PIC, these suffixes are added to the names of non-local
    functions when being output.  Contrary to other ports, we have offsets
@@ -422,8 +426,8 @@ extern int target_flags;
 /* Node: Register Basics */
 
 /*  We count all 16 non-special registers, SRP, a faked argument
-    pointer register and MOF.  */
-#define FIRST_PSEUDO_REGISTER (16 + 1 + 1 + 1)
+    pointer register, MOF and CCR/DCCR.  */
+#define FIRST_PSEUDO_REGISTER (16 + 1 + 1 + 1 + 1)
 
 /* For CRIS, these are r15 (pc) and r14 (sp). Register r8 is used as a
    frame-pointer, but is not fixed.  SRP is not included in general
@@ -431,12 +435,12 @@ extern int target_flags;
    registers are fixed at the moment.  The faked argument pointer register
    is fixed too.  */
 #define FIXED_REGISTERS \
- {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1}
+ {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0}
 
 /* Register r9 is used for structure-address, r10-r13 for parameters,
    r10- for return values.  */
 #define CALL_USED_REGISTERS \
- {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1}
+ {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1}
 
 #define CONDITIONAL_REGISTER_USAGE cris_conditional_register_usage ()
 
@@ -462,7 +466,7 @@ extern int target_flags;
     Use struct-return address first, since very few functions use
    structure return values so it is likely to be available.  */
 #define REG_ALLOC_ORDER \
- {9, 13, 12, 11, 10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 18, 16, 17}
+ {9, 13, 12, 11, 10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 17, 16, 18, 19}
 
 
 /* Node: Values in Registers */
@@ -473,10 +477,19 @@ extern int target_flags;
  (MODE == VOIDmode \
   ? 1 : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
-/* CRIS permits all registers to hold all modes.  */
-#define HARD_REGNO_MODE_OK(REGNO, MODE) 1
+/* CRIS permits all registers to hold all modes.  Well, except for the
+   condition-code register.  And we can't hold larger-than-register size
+   modes in the last special register that can hold a full 32 bits.  */
+#define HARD_REGNO_MODE_OK(REGNO, MODE)		\
+ (((MODE) == CCmode				\
+   || (REGNO) != CRIS_CC0_REGNUM)		\
+  && (GET_MODE_SIZE (MODE) <= UNITS_PER_WORD	\
+      || (REGNO) != CRIS_MOF_REGNUM))
 
-#define MODES_TIEABLE_P(MODE1, MODE2)  1
+/* Because CCmode isn't covered by the "narrower mode" statement in
+   tm.texi, we can still say all modes are tieable despite not having an
+   always 1 HARD_REGNO_MODE_OK.  */
+#define MODES_TIEABLE_P(MODE1, MODE2) 1
 
 
 /* Node: Leaf Functions */
@@ -491,30 +504,34 @@ extern int target_flags;
 enum reg_class 
   {
     NO_REGS,
-    MOF_REGS, SPECIAL_REGS, GENERAL_REGS, ALL_REGS,
+    MOF_REGS, CC0_REGS, SPECIAL_REGS, GENERAL_REGS, ALL_REGS,
     LIM_REG_CLASSES
   };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
 #define REG_CLASS_NAMES							\
-  {"NO_REGS", "MOF_REGS", "SPECIAL_REGS", "GENERAL_REGS", "ALL_REGS"}
+  {"NO_REGS",								\
+   "MOF_REGS", "CC0_REGS", "SPECIAL_REGS", "GENERAL_REGS", "ALL_REGS"}
 
 #define CRIS_SPECIAL_REGS_CONTENTS					\
- ((1 << CRIS_SRP_REGNUM) | (1 << CRIS_MOF_REGNUM))
+ ((1 << CRIS_SRP_REGNUM) | (1 << CRIS_MOF_REGNUM) | (1 << CRIS_CC0_REGNUM))
 
 /* Count in the faked argument register in GENERAL_REGS.  Keep out SRP.  */
 #define REG_CLASS_CONTENTS			\
   {						\
    {0},						\
    {1 << CRIS_MOF_REGNUM},			\
+   {1 << CRIS_CC0_REGNUM},			\
    {CRIS_SPECIAL_REGS_CONTENTS},		\
-   {0x2ffff},					\
-   {0x2ffff | CRIS_SPECIAL_REGS_CONTENTS}	\
+   {0xffff | (1 << CRIS_AP_REGNUM)},		\
+   {0xffff | (1 << CRIS_AP_REGNUM)		\
+    | CRIS_SPECIAL_REGS_CONTENTS}		\
   }
 
 #define REGNO_REG_CLASS(REGNO)			\
   ((REGNO) == CRIS_MOF_REGNUM ? MOF_REGS :	\
+   (REGNO) == CRIS_CC0_REGNUM ? CC0_REGS :	\
    (REGNO) == CRIS_SRP_REGNUM ? SPECIAL_REGS :	\
    GENERAL_REGS)
 
@@ -526,6 +543,7 @@ enum reg_class
   (						\
    (C) == 'h' ? MOF_REGS :			\
    (C) == 'x' ? SPECIAL_REGS :			\
+   (C) == 'c' ? CC0_REGS :			\
    NO_REGS					\
   )
 
@@ -550,6 +568,7 @@ enum reg_class
    a bug.  */
 #define PREFERRED_RELOAD_CLASS(X, CLASS)	\
  ((CLASS) != MOF_REGS				\
+  && (CLASS) != CC0_REGS			\
   && (CLASS) != SPECIAL_REGS			\
   ? GENERAL_REGS : (CLASS))
 
@@ -1247,7 +1266,7 @@ struct cum_args {int regs;};
 
 #define REGISTER_NAMES					\
  {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8",	\
-  "r9", "r10", "r11", "r12", "r13", "sp", "pc", "srp", "faked_ap", "mof"}
+  "r9", "r10", "r11", "r12", "r13", "sp", "pc", "srp", "mof", "faked_ap", "dccr"}
 
 #define ADDITIONAL_REGISTER_NAMES \
  {{"r14", 14}, {"r15", 15}}
@@ -1336,6 +1355,7 @@ struct cum_args {int regs;};
 #define DBX_REGISTER_NUMBER(REGNO)				\
  ((REGNO) == CRIS_SRP_REGNUM ? CRIS_CANONICAL_SRP_REGNUM :	\
   (REGNO) == CRIS_MOF_REGNUM ? CRIS_CANONICAL_MOF_REGNUM :	\
+  (REGNO) == CRIS_CC0_REGNUM ? CRIS_CANONICAL_CC0_REGNUM :	\
  (REGNO))
 
 /* FIXME: Investigate DEBUGGER_AUTO_OFFSET, DEBUGGER_ARG_OFFSET.  */

@@ -73,8 +73,9 @@
    (CRIS_FP_REGNUM 8)
    (CRIS_SP_REGNUM 14)
    (CRIS_SRP_REGNUM 16)
-   (CRIS_AP_REGNUM 17)
-   (CRIS_MOF_REGNUM 18)]
+   (CRIS_MOF_REGNUM 17)
+   (CRIS_AP_REGNUM 18)
+   (CRIS_CC0_REGNUM 19)]
 )
 
 ;; We need an attribute to define whether an instruction can be put in
