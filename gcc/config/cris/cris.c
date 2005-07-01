@@ -398,6 +398,11 @@ cris_conditional_register_usage (void)
 
   if (TARGET_HAS_MUL_INSNS)
     fixed_regs[CRIS_MOF_REGNUM] = 0;
+
+  /* On early versions, we must use the 16-bit condition-code register,
+     which has another name.  */
+  if (cris_cpu_version < 8)
+    reg_names[CRIS_CC0_REGNUM] = "ccr";
 }
 
 /* Return current_function_uses_pic_offset_table.  For use in cris.md,
@@ -979,7 +984,8 @@ cris_print_operand (FILE *file, rtx x, int code)
     case REG:
       if (REGNO (operand) > 15
 	  && REGNO (operand) != CRIS_MOF_REGNUM
-	  && REGNO (operand) != CRIS_SRP_REGNUM)
+	  && REGNO (operand) != CRIS_SRP_REGNUM
+	  && REGNO (operand) != CRIS_CC0_REGNUM)
 	internal_error ("internal error: bad register: %d", REGNO (operand));
       fprintf (file, "$%s", reg_names[REGNO (operand)]);
       return;
@@ -3228,13 +3234,23 @@ cris_arg_partial_bytes (CUMULATIVE_ARGS *ca, enum machine_mode mode,
 /* Worker function for TARGET_MD_ASM_CLOBBERS.  */
 
 static tree
-cris_md_asm_clobbers (tree outputs, tree inputs, tree clobbers)
+cris_md_asm_clobbers (tree outputs, tree inputs, tree in_clobbers)
 {
   HARD_REG_SET mof_set;
+  tree clobbers;
   tree t;
 
   CLEAR_HARD_REG_SET (mof_set);
   SET_HARD_REG_BIT (mof_set, CRIS_MOF_REGNUM);
+
+  /* For the time being, all asms clobber condition codes.  Revisit when
+     there's a reasonable use for inputs/outputs that mention condition
+     codes.  */
+  clobbers
+    = tree_cons (NULL_TREE,
+		 build_string (strlen (reg_names[CRIS_CC0_REGNUM]),
+			       reg_names[CRIS_CC0_REGNUM]),
+		 in_clobbers);
 
   for (t = outputs; t != NULL; t = TREE_CHAIN (t))
     {
