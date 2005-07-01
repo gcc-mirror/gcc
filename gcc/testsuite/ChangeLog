@@ -1,3 +1,10 @@
+2005-06-30  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 21584
+	PR 22219
+	* g++.dg/tree-ssa/pr21584-1.C: New test.
+	* g++.dg/tree-ssa/pr21584-2.C: New test.
+
 2005-06-30  Ziemowit Laski  <zlaski@apple.com>
 
 	* obj-c++.dg/try-catch-11.mm: New.
