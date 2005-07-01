@@ -1,4 +1,9 @@
-2005-06-29  Andrew Pinski  <pinskia@physics.uc.edu>
+2005-07-01  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* parse.y (issue_warning_error_from_context): Call
+	pp_output_formatted_text to be able to get the buffer.
+
+2005-06-30  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* parse.y (issue_warning_error_from_context): Update for the
 	renaming of pp_format_text to pp_format.
