@@ -179,12 +179,12 @@ unpack1 (gfc_array_char *ret, const gfc_array_char *vector,
 }
 iexport(unpack1);
 
-extern void unpack0 (const gfc_array_char *, const gfc_array_char *,
+extern void unpack0 (gfc_array_char *, const gfc_array_char *,
 		     const gfc_array_l4 *, char *);
 export_proto(unpack0);
 
 void
-unpack0 (const gfc_array_char *ret, const gfc_array_char *vector,
+unpack0 (gfc_array_char *ret, const gfc_array_char *vector,
 	 const gfc_array_l4 *mask, char *field)
 {
   gfc_array_char tmp;

@@ -439,7 +439,7 @@ formatted_transfer (bt type, void *p, int len)
 {
   int pos ,m ;
   fnode *f;
-  int i, n;
+  int n;
   int consume_data_flag;
 
   /* Change a complex data item into a pair of reals.  */
