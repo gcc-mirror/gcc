@@ -1,3 +1,7 @@
+2005-07-01  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* zh_CN.po: Update.
+
 2006-07-01  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* gcc.pot: Regenerate.
