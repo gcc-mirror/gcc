@@ -185,6 +185,7 @@ static tree build_protocol_initializer (tree, tree, tree, tree, tree);
 static tree get_class_ivars (tree, bool);
 static tree generate_protocol_list (tree);
 static void build_protocol_reference (tree);
+static tree objc_build_volatilized_type (tree);
 
 #ifdef OBJCPLUS
 static void objc_generate_cxx_cdtors (void);
@@ -868,6 +869,41 @@ objc_build_struct (tree name, tree fields, tree super_name)
   return s;
 }
 
+/* Build a type differing from TYPE only in that TYPE_VOLATILE is set.
+   Unlike tree.c:build_qualified_type(), preserve TYPE_LANG_SPECIFIC in the
+   process.  */
+static tree
+objc_build_volatilized_type (tree type)
+{
+  tree t;
+
+  /* Check if we have not constructed the desired variant already.  */
+  for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
+    {
+      /* The type qualifiers must (obviously) match up.  */
+      if (!TYPE_VOLATILE (t)
+	  || (TYPE_READONLY (t) != TYPE_READONLY (type))
+	  || (TYPE_RESTRICT (t) != TYPE_RESTRICT (type)))
+	continue;
+
+      /* For pointer types, the pointees (and hence their TYPE_LANG_SPECIFIC
+	 info, if any) must match up.  */
+      if (POINTER_TYPE_P (t)
+	  && (TREE_TYPE (t) != TREE_TYPE (type)))
+	continue;
+
+      /* Everything matches up!  */
+      return t;
+    }
+
+  /* Ok, we could not re-use any of the pre-existing variants.  Create
+     a new one.  */
+  t = build_variant_type_copy (type);
+  TYPE_VOLATILE (t) = 1;
+  
+  return t;
+}
+
 /* Mark DECL as being 'volatile' for purposes of Darwin
    _setjmp()/_longjmp() exception handling.  Called from
    objc_mark_locals_volatile().  */
@@ -884,8 +920,7 @@ objc_volatilize_decl (tree decl)
       struct volatilized_type key;
       void **loc;
 
-      t = build_qualified_type (t, (TYPE_QUALS (t)
-				    | TYPE_QUAL_VOLATILE));
+      t = objc_build_volatilized_type (t);
       key.type = t;
       loc = htab_find_slot (volatilized_htab, &key, INSERT);
 

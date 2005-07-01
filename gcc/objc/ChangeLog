@@ -1,3 +1,9 @@
+2005-06-30  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc-act.c (objc_build_volatilized_type): New function.
+	(objc_volatilize_decl): Call objc_build_volatilized_type()
+	instead of build_qualified_type().
+
 2005-06-29  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc-act.c (objc_build_internal_const_str_type): New function.
