@@ -1940,6 +1940,25 @@ bitpos_of_field (const tree fdecl)
 }
 
 
+/* Return true if an access to [ACCESSPOS, ACCESSSIZE]
+   overlaps with a field at [FIELDPOS, FIELDSIZE] */
+
+static bool
+offset_overlaps_with_access (const unsigned HOST_WIDE_INT fieldpos,
+			     const unsigned HOST_WIDE_INT fieldsize,
+			     const unsigned HOST_WIDE_INT accesspos,
+			     const unsigned HOST_WIDE_INT accesssize)
+{
+  if (fieldpos == accesspos && fieldsize == accesssize)
+    return true;
+  if (accesspos >= fieldpos && accesspos <= (fieldpos + fieldsize))
+    return true;
+  if (accesspos < fieldpos && (accesspos + accesssize > fieldpos))
+    return true;
+  
+  return false;
+}
+
 /* Given a COMPONENT_REF T, return the constraint_expr for it.  */
 
 static struct constraint_expr
@@ -2000,8 +2019,27 @@ get_constraint_for_component_ref (tree t)
 	 we may have to do something cute here.  */
       
       if (result.offset < get_varinfo (result.var)->fullsize)	
-	result.var = first_vi_for_offset (get_varinfo (result.var), 
-					  result.offset)->id;
+	{
+	  /* It's also not true that the constraint will actually start at the
+	     right offset, it may start in some padding.  We only care about
+	     setting the constraint to the first actual field it touches, so
+	     walk to find it.  */ 
+	  varinfo_t curr;
+	  for (curr = get_varinfo (result.var); curr; curr = curr->next)
+	    {
+	      if (offset_overlaps_with_access (curr->offset, curr->size,
+					       result.offset, bitsize))
+		{
+		  result.var = curr->id;
+		  break;
+
+		}
+	    }
+	  /* assert that we found *some* field there. The user couldn't be
+	     accessing *only* padding.  */
+	     
+	  gcc_assert (curr);
+	}
       else
 	if (dump_file && (dump_flags & TDF_DETAILS))
 	  fprintf (dump_file, "Access to past the end of variable, ignoring\n");

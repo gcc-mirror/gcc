@@ -1,3 +1,11 @@
+2005-06-29  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/22071
+	
+	* tree-ssa-structalias.c (offset_overlaps_with_access): New
+	function.
+	(get_constraint_for_component_ref): Use it.
+
 2005-07-01  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR other/22264
