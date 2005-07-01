@@ -1,3 +1,7 @@
+2006-07-01  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* gcc.pot: Regenerate.
+
 2005-06-25  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* exgettext: Update FSF address in copyright headers.
