@@ -17,8 +17,8 @@
 -- MERCHANTABILITY  or  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Gen- --
 -- eral Library Public License  for more details.  You should have received --
 -- a  copy of the GNU Library General Public License along with GNARL;  see --
--- file COPYING.LIB.  If not,  write to the  Free Software Foundation,   59 --
--- Temple Place - Suite 330, Boston, MA 02111-1307, USA.                    --
+-- file COPYING.LIB.  If not,  write to the  Free Software Foundation,   51 --
+-- Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.                --
 --                                                                          --
 -- As a special exception,  if other files  instantiate  generics from this --
 -- unit, or you link  this unit with other files  to produce an executable, --

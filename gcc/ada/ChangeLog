@@ -1,3 +1,8 @@
+2005-06-30  Kelley Cook
+
+	* all files:  Update FSF address in copyright headers.
+	* gen-soccon.co (main): Output new FSF address in generated files.
+
 2005-06-28  Paul Brook  <paul@codesourcery.com>
 
 	* misc.c (gnat_init_gcc_eh): Call default_init_unwind_resume_libfunc.
