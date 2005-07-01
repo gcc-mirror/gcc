@@ -1,3 +1,10 @@
+2005-07-01  Ian Lance Taylor  <ian@airs.com>
+
+	PR other/22268
+	* cp-demangle.c (d_expr_primary): Don't run off the end of the
+	string while looking for the end of a literal value.
+	* testsuite/demangle-expected: Add test case.
+
 2005-06-30  Daniel Berlin  <dberlin@dberlin.org>
 
 	* hashtab.c (EMPTY_ENTRY): Moved and renamed.
