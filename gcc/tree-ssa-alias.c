@@ -791,14 +791,21 @@ compute_points_to_and_addr_escape (struct alias_info *ai)
    are assigned the same name tag.  */
 
 static void
-create_name_tags (struct alias_info *ai)
+create_name_tags (void)
 {
   size_t i;
 
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (ai->processed_ptrs); i++)
+  for (i = 1; i < num_ssa_names; i++)
     {
-      tree ptr = VARRAY_TREE (ai->processed_ptrs, i);
-      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
+      tree ptr = ssa_name (i);
+      struct ptr_info_def *pi;
+
+      if (!ptr
+	  || !POINTER_TYPE_P (TREE_TYPE (ptr))
+	  || !SSA_NAME_PTR_INFO (ptr))
+	continue;
+
+      pi = SSA_NAME_PTR_INFO (ptr);
 
       if (pi->pt_anything || !pi->is_dereferenced)
 	{
@@ -824,10 +831,15 @@ create_name_tags (struct alias_info *ai)
 	     problems if they both had different name tags because
 	     they would have different SSA version numbers (which
 	     would force us to take the name tags in and out of SSA).  */
-	  for (j = 0; j < i; j++)
+	  for (j = 1; j < i; j++)
 	    {
-	      tree q = VARRAY_TREE (ai->processed_ptrs, j);
-	      struct ptr_info_def *qi = SSA_NAME_PTR_INFO (q);
+	      tree q = ssa_name (j);
+	      struct ptr_info_def *qi;
+
+	      if (!q || !POINTER_TYPE_P (TREE_TYPE (q)))
+		continue;
+
+	      qi = SSA_NAME_PTR_INFO (q);
 
 	      if (qi
 		  && qi->pt_vars
@@ -896,7 +908,8 @@ compute_flow_sensitive_aliasing (struct alias_info *ai)
 	  find_what_p_points_to (ptr);
 	}
     }
-  create_name_tags (ai);
+
+  create_name_tags ();
 
   for (i = 0; i < VARRAY_ACTIVE_SIZE (ai->processed_ptrs); i++)
     {

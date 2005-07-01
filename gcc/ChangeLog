@@ -1,3 +1,11 @@
+2005-06-30  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 21584
+	PR 22219
+	* tree-ssa-alias.c (create_name_tags): Also process
+	non-dereferenced pointers.
+	Remove argument 'ai'.  Update all callers.
+
 2005-06-30  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/rs6000/darwin.h (STARTING_FRAME_OFFSET):
