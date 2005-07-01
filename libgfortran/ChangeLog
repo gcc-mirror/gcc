@@ -1,3 +1,9 @@
+2005-07-01  Andreas Jaeger  <aj@suse.de>
+
+	* intrinsics/unpack_generic.c: Remove const from parameter.
+
+	* io/transfer.c (formatted_transfer): Remove unused variable.
+
 2005-06-28  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/22142
@@ -46,7 +52,7 @@
 	* aclocal.m4: Regenerated.
 	* Makefile.in: Regenerated.
 	* configure: Regenerated.
-	* intrinsics/hyper.c: New file, adds new wrapper functions. 
+	* intrinsics/hyper.c: New file, adds new wrapper functions.
 
 2005-06-23  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
@@ -233,7 +239,7 @@
 	concerning advancing I/O.
 	(data_transfer_init): Likewise.
 	(finalize_transfer): Likewise.
-	
+
 2005-05-27  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* runtime/in_pack_generic.c:  Adjust copyright years.
