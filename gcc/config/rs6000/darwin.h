@@ -161,9 +161,11 @@ do {									\
 
 #undef STARTING_FRAME_OFFSET
 #define STARTING_FRAME_OFFSET						\
-  (RS6000_ALIGN (current_function_outgoing_args_size, 16)		\
-   + RS6000_VARARGS_AREA						\
-   + RS6000_SAVE_AREA)
+  (FRAME_GROWS_DOWNWARD							\
+   ? 0									\
+   : (RS6000_ALIGN (current_function_outgoing_args_size, 16)		\
+      + RS6000_VARARGS_AREA						\
+      + RS6000_SAVE_AREA))
 
 #undef STACK_DYNAMIC_OFFSET
 #define STACK_DYNAMIC_OFFSET(FUNDECL)					\
@@ -206,7 +208,8 @@ do {									\
     "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23",             \
     "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31",             \
     "vrsave", "vscr",							\
-    "spe_acc", "spefscr"                                                \
+    "spe_acc", "spefscr",                                               \
+    "sfp"								\
 }
 
 /* This outputs NAME to FILE.  */
