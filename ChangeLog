@@ -1,3 +1,7 @@
+2005-07-01  Richard Guenther  <rguenther@suse.de>
+
+	* MAINTAINERS: Change my e-mail address and affiliation.
+
 2005-06-22  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.def (stagefeedback): Come after profile.
