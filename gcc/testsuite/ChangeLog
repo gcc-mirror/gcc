@@ -1,3 +1,8 @@
+2005-07-01  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/22269
+	* gcc.c-torture/compile/pr22269.c: New test.
+
 2005-06-30  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 21584
