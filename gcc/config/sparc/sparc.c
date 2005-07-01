@@ -8895,17 +8895,26 @@ sparc_rtx_costs (rtx x, int code, int outer_code, int *total)
     }
 }
 
-/* Emit the sequence of insns SEQ while preserving the register REG.  */
+/* Emit the sequence of insns SEQ while preserving the registers.  */
 
 static void
-emit_and_preserve (rtx seq, rtx reg)
+emit_and_preserve (rtx seq, rtx reg, rtx reg2)
 {
+  /* STACK_BOUNDARY guarantees that this is a 2-word slot.  */
   rtx slot = gen_rtx_MEM (word_mode,
 			  plus_constant (stack_pointer_rtx, SPARC_STACK_BIAS));
 
   emit_insn (gen_stack_pointer_dec (GEN_INT (STACK_BOUNDARY/BITS_PER_UNIT)));
   emit_insn (gen_rtx_SET (VOIDmode, slot, reg));
+  if (reg2)
+    emit_insn (gen_rtx_SET (VOIDmode,
+			    adjust_address (slot, word_mode, UNITS_PER_WORD),
+			    reg2));
   emit_insn (seq);
+  if (reg2)
+    emit_insn (gen_rtx_SET (VOIDmode,
+			    reg2,
+			    adjust_address (slot, word_mode, UNITS_PER_WORD)));
   emit_insn (gen_rtx_SET (VOIDmode, reg, slot));
   emit_insn (gen_stack_pointer_inc (GEN_INT (STACK_BOUNDARY/BITS_PER_UNIT)));
 }
@@ -9046,11 +9055,12 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
     {
       /* The hoops we have to jump through in order to generate a sibcall
 	 without using delay slots...  */
-      rtx spill_reg, seq, scratch = gen_rtx_REG (Pmode, 1);
+      rtx spill_reg, spill_reg2, seq, scratch = gen_rtx_REG (Pmode, 1);
 
       if (flag_pic)
         {
 	  spill_reg = gen_rtx_REG (word_mode, 15);  /* %o7 */
+	  spill_reg2 = gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM);
 	  start_sequence ();
 	  /* Delay emitting the PIC helper function because it needs to
 	     change the section and we are emitting assembly code.  */
@@ -9058,7 +9068,7 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	  scratch = legitimize_pic_address (funexp, Pmode, scratch);
 	  seq = get_insns ();
 	  end_sequence ();
-	  emit_and_preserve (seq, spill_reg);
+	  emit_and_preserve (seq, spill_reg, spill_reg2);
 	}
       else if (TARGET_ARCH32)
 	{
@@ -9087,7 +9097,7 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	      sparc_emit_set_symbolic_const64 (scratch, funexp, spill_reg);
 	      seq = get_insns ();
 	      end_sequence ();
-	      emit_and_preserve (seq, spill_reg);
+	      emit_and_preserve (seq, spill_reg, 0);
 	      break;
 
 	    default:

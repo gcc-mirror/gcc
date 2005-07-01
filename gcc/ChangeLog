@@ -1,3 +1,11 @@
+2005-06-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/22260
+	* config/sparc/sparc.c (emit_and_preserve): Add 2nd register.
+	Preserve the 2nd register too, if present.
+	(sparc_output_mi_thunk) <PIC case>: Preserve the PIC register too.
+	Adjust call to emit_and_preserve.
+
 2005-06-24  Mark Mitchell  <mark@codesourcery.com>
 
 	PR 22171
