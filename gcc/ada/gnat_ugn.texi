@@ -17,8 +17,8 @@
 @c  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License  o
 @c  for  more details.  You should have  received  a copy of the GNU General  o
 @c  Public License  distributed with GNAT;  see file COPYING.  If not, write  o
-@c  to  the Free Software Foundation,  59 Temple Place - Suite 330,  Boston,  o
-@c  MA 02111-1307, USA.                                                       o
+@c  to  the  Free Software Foundation,  51  Franklin  Street,  Fifth  Floor,  o
+@c  Boston, MA 02110-1301, USA.                                               o
 @c                                                                            o
 @c oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 
