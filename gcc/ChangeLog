@@ -1,3 +1,9 @@
+2005-07-01  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* config/arm/libunwind.S, config/arm/pr-support.c,
+	config/arm/unwind-arm.c, config/arm/unwind-arm.h,
+	config/c4x/predicates.md, tree-object-size.c: Update FSF address.
+
 2005-06-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/22260
