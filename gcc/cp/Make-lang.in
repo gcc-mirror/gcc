@@ -95,8 +95,8 @@ cc1plus-dummy$(exeext): $(CXX_OBJS) dummy-checksum.o $(BACKEND) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 	      $(CXX_OBJS) dummy-checksum.o $(BACKEND) $(LIBS)
 
-cc1plus-checksum.c : cc1plus-dummy$(exeext) build/genchecksum$(exeext)
-	build/genchecksum$(exeext) cc1plus-dummy$(exeext) > $@
+cc1plus-checksum.c : cc1plus-dummy$(exeext) build/genchecksum$(build_exeext)
+	build/genchecksum$(build_exeext) cc1plus-dummy$(exeext) > $@
 
 cc1plus-checksum.o : cc1plus-checksum.c
 
