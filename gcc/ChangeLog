@@ -1,3 +1,9 @@
+2005-07-02  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/22280
+
+	* tree-sra.c (generate_element_init): Remove useless loop.
+
 2005-07-02  Richard Henderson  <rth@redhat.com>
 
         * config/alpha/alpha.c (alpha_legitimize_address): Check for
