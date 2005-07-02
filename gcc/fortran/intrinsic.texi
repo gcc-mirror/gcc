@@ -77,8 +77,12 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{DPROD}:         DPROD,     Double product function
 * @code{DREAL}:         DREAL,     Double real part function
 * @code{DTIME}:         DTIME,     Execution time subroutine (or function)
+* @code{EOSHIFT}:       EOSHIFT,   End-off shift function
+* @code{EPSILON}:       EPSILON,   Epsilon function
 * @code{ERF}:           ERF,       Error function
 * @code{ERFC}:          ERFC,      Complementary error function
+* @code{ETIME}:         ETIME,     Execution time subroutine (or function)
+* @code{EXIT}:          EXIT,      Exit the program with status.
 * @code{EXP}:           EXP,       Cosine function
 * @code{LOG}:           LOG,       Logarithm function
 * @code{LOG10}:         LOG10,     Base 10 logarithm function 
@@ -665,8 +669,8 @@ end program test_anint
 
 @table @asis
 @item @emph{Description}:
-@code{ANY(MASK [, DIM])} determines if any of the values in the logical array @var{MASK}
-along dimension @var{DIM} are @code{.TRUE.}.
+@code{ANY(MASK [, DIM])} determines if any of the values in the logical array
+@var{MASK} along dimension @var{DIM} are @code{.TRUE.}.
 
 @item @emph{Option}:
 f95, gnu
@@ -1225,7 +1229,8 @@ end program test_besyn
 
 @table @asis
 @item @emph{Description}:
-@code{BIT_SIZE(I)} returns the number of bits (integer precision plus sign bit) represented by the type of @var{I}.
+@code{BIT_SIZE(I)} returns the number of bits (integer precision plus sign bit)
+represented by the type of @var{I}.
 
 @item @emph{Option}:
 f95, gnu
@@ -1264,7 +1269,8 @@ end program test_bit_size
 
 @table @asis
 @item @emph{Description}:
-@code{BTEST(I,POS)} returns logical .TRUE. if the bit at @var{POS} in @var{I} is set.
+@code{BTEST(I,POS)} returns logical @code{.TRUE.} if the bit at @var{POS}
+in @var{I} is set.
 
 @item @emph{Option}:
 f95, gnu
@@ -1964,7 +1970,6 @@ program test_digits
     integer :: i = 12345
     real :: x = 3.143
     real(8) :: y = 2.33
-    complex :: z = (23.0,45.6)
     print *, digits(i)
     print *, digits(x)
     print *, digits(y)
@@ -2166,9 +2171,11 @@ end program test_dreal
 @code{DTIME(TARRAY, RESULT)} initially returns the number of seconds of runtime
 since the start of the process's execution in @var{RESULT}.  @var{TARRAY}
 returns the user and system components of this time in @code{TARRAY(1)} and
-@code{TARRAY(2)} respectively. @var{RESULT} is equal to @code{TARRAY(1) + TARRAY(2)}.
+@code{TARRAY(2)} respectively. @var{RESULT} is equal to @code{TARRAY(1) +
+TARRAY(2)}.
 
-Subsequent invocations of @code{DTIME} return values accumulated since the previous invocation.
+Subsequent invocations of @code{DTIME} return values accumulated since the
+previous invocation.
 
 On some systems, the underlying timings are represented using types with
 sufficiently small limits that overflows (wraparounds) are possible, such as
@@ -2194,8 +2201,10 @@ gnu
 subroutine
 
 @item @emph{Syntax}:
-@code{CALL DTIME(TARRAY, RESULT)}
-@code{RESULT = DTIME(TARRAY)}, (not recommended)
+@multitable @columnfractions .80
+@item @code{CALL DTIME(TARRAY, RESULT)}.
+@item @code{RESULT = DTIME(TARRAY)}, (not recommended).
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -2224,6 +2233,110 @@ program test_dtime
     print *, tarray(1)
     print *, tarray(2)
 end program test_dtime
+@end smallexample
+@end table
+
+
+
+@node EOSHIFT
+@section @code{EOSHIFT} --- End-off shift function
+@findex @code{EOSHIFT} intrinsic
+@cindex eoshift intrinsic
+
+@table @asis
+@item @emph{Description}:
+@code{EOSHIFT(ARRAY, SHIFT[,BOUNDARY, DIM])} performs an end-off shift on
+elements of @var{ARRAY} along the dimension of @var{DIM}.  If @var{DIM} is
+omitted it is taken to be @code{1}.  @var{DIM} is a scaler of type
+@code{INTEGER} in the range of @math{1 /leq DIM /leq n)} where @math{n} is the
+rank of @var{ARRAY}.  If the rank of @var{ARRAY} is one, then all elements of
+@var{ARRAY} are shifted by @var{SHIFT} places.  If rank is greater than one,
+then all complete rank one sections of @var{ARRAY} along the given dimension are
+shifted.  Elements shifted out one end of each rank one section are dropped.  If
+@var{BOUNDARY} is present then the cooresponding value of from @var{BOUNDARY}
+is copied back in the other end.  If @var{BOUNDARY} is not present then the
+following are copied in depending on the type of @var{ARRAY}.
+
+@multitable @columnfractions .15 .80
+@item @emph{Array Type} @tab @emph{Boundary Value}
+@item Numeric  @tab 0 of the type and kind of @var{ARRAY}.
+@item Logical  @tab @code{.FALSE.}.
+@item Character(@var{len}) @tab @var{len} blanks.
+@end multitable
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+transformational function
+
+@item @emph{Syntax}:
+@code{A = EOSHIFT(A, SHIFT[,BOUNDARY, DIM])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{ARRAY}  @tab May be any type, not scaler.
+@item @var{SHIFT}  @tab The type shall be @code{INTEGER}.
+@item @var{BOUNDARY} @tab Same type as @var{ARRAY}. 
+@item @var{DIM}    @tab The type shall be @code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+Returns an array of same type and rank as the @var{ARRAY} argument.
+
+@item @emph{Example}:
+@smallexample
+program test_eoshift
+    integer, dimension(3,3) :: a
+    a = reshape( (/ 1, 2, 3, 4, 5, 6, 7, 8, 9 /), (/ 3, 3 /))
+    print '(3i3)', a(1,:)
+    print '(3i3)', a(2,:)
+    print '(3i3)', a(3,:)    
+    a = EOSHIFT(a, SHIFT=(/1, 2, 1/), BOUNDARY=-5, DIM=2)
+    print *
+    print '(3i3)', a(1,:)
+    print '(3i3)', a(2,:)
+    print '(3i3)', a(3,:)
+end program test_eoshift
+@end smallexample
+@end table
+
+
+
+@node EPSILON
+@section @code{EPSILON} --- Epsilon function
+@findex @code{EPSILON} intrinsic
+@cindex epsilon, significant
+
+@table @asis
+@item @emph{Description}:
+@code{EPSILON(X)} returns a nearly negligible number relative to @code{1}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+inquiry function
+
+@item @emph{Syntax}:
+@code{C = EPSILON(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be @code{REAL(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of same type as the argument.
+
+@item @emph{Example}:
+@smallexample
+program test_epsilon
+    real :: x = 3.143
+    real(8) :: y = 2.33
+    print *, EPSILON(x)
+    print *, EPSILON(y)
+end program test_epsilon
 @end smallexample
 @end table
 
@@ -2313,6 +2426,119 @@ end program test_erfc
 @item Name            @tab Argument          @tab Return type       @tab Option
 @item @code{DERFC(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab gnu
 @end multitable
+@end table
+
+
+
+@node ETIME
+@section @code{ETIME} --- Execution time subroutine (or function)
+@findex @code{ETIME} intrinsic
+@cindex ETIME subroutine 
+
+@table @asis
+@item @emph{Description}:
+@code{ETIME(TARRAY, RESULT)} returns the number of seconds of runtime
+since the start of the process's execution in @var{RESULT}.  @var{TARRAY}
+returns the user and system components of this time in @code{TARRAY(1)} and
+@code{TARRAY(2)} respectively. @var{RESULT} is equal to @code{TARRAY(1) + TARRAY(2)}.
+
+On some systems, the underlying timings are represented using types with
+sufficiently small limits that overflows (wraparounds) are possible, such as
+32-bit types. Therefore, the values returned by this intrinsic might be, or
+become, negative, or numerically less than previous values, during a single
+run of the compiled program.
+
+If @code{ETIME} is invoked as a function, it can not be invoked as a
+subroutine, and vice versa.
+
+@var{TARRAY} and @var{RESULT} are @code{INTENT(OUT)} and provide the following:
+
+@multitable @columnfractions .15 .30 .60
+@item @tab @code{TARRAY(1)}: @tab User time in seconds.
+@item @tab @code{TARRAY(2)}: @tab System time in seconds.
+@item @tab @code{RESULT}: @tab Run time since start in seconds.
+@end multitable
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+subroutine
+
+@item @emph{Syntax}:
+@multitable @columnfractions .8
+@item @code{CALL ETIME(TARRAY, RESULT)}.
+@item @code{RESULT = ETIME(TARRAY)}, (not recommended).
+@end multitable
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{TARRAY}@tab The type shall be @code{REAL, DIMENSION(2)}.
+@item @var{RESULT}@tab The type shall be @code{REAL}.
+@end multitable
+
+@item @emph{Return value}:
+Elapsed time in seconds since the start of program execution.
+
+@item @emph{Example}:
+@smallexample
+program test_etime
+    integer(8) :: i, j
+    real, dimension(2) :: tarray
+    real :: result
+    call ETIME(tarray, result)
+    print *, result
+    print *, tarray(1)
+    print *, tarray(2)   
+    do i=1,100000000    ! Just a delay
+        j = i * i - i
+    end do
+    call ETIME(tarray, result)
+    print *, result
+    print *, tarray(1)
+    print *, tarray(2)
+end program test_etime
+@end smallexample
+@end table
+
+
+
+@node EXIT
+@section @code{EXIT} --- Exit the program with status. 
+@findex @code{EXIT}
+@cindex exit
+
+@table @asis
+@item @emph{Description}:
+@code{EXIT} causes immediate termination of the program with status.  If status
+is omitted it returns the connonical @emph{success} for the system.  All Fortran
+I/O units are closed. 
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+non-elemental subroutine
+
+@item @emph{Syntax}:
+@code{CALL EXIT([STATUS])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{STATUS} @tab The type of the argument shall be @code{INTEGER(*)}.
+@end multitable
+
+@item @emph{Return value}:
+@code{STATUS} is passed to the parent process on exit.
+
+@item @emph{Example}:
+@smallexample
+program test_exit
+  integer :: STATUS = 0
+  print *, 'This program is going to exit.'
+  call EXIT(STATUS)
+end program test_exit
+@end smallexample
 @end table
 
 
@@ -2709,13 +2935,6 @@ end program test_tanh
 
 
 
-@comment gen   eoshift
-@comment 
-@comment gen   epsilon
-@comment 
-@comment gen   etime
-@comment sub   etime
-@comment 
 @comment sub   exit
 @comment 
 @comment gen   exponent
