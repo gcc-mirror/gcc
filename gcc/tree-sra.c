@@ -1729,16 +1729,9 @@ generate_element_init (struct sra_elt *elt, tree init, tree *list_p)
   if (ret && *list_p)
     {
       tree_stmt_iterator i;
-      size_t old, new, j;
-
-      old = num_referenced_vars;
 
       for (i = tsi_start (*list_p); !tsi_end_p (i); tsi_next (&i))
 	find_new_referenced_vars (tsi_stmt_ptr (i));
-
-      new = num_referenced_vars;
-      for (j = old; j < new; ++j)
-	mark_sym_for_renaming (referenced_var (j));
     }
 
   return ret;
