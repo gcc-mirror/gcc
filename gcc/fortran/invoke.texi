@@ -464,8 +464,8 @@ debugging options.
 
 @cindex INCLUDE directive
 @cindex directive, INCLUDE
-There options affect how affect how @command{gfortran} searches
-for files specified via the @code{INCLUDE} directive, and where it searches
+These options affect how @command{gfortran} searches
+for files specified by the @code{INCLUDE} directive and where it searches
 for previously compiled modules.
 
 It also affects the search paths used by @command{cpp} when used to preprocess
@@ -573,10 +573,8 @@ Do not transform names of entities specified in the Fortran
 source file by appending underscores to them.
 
 With @option{-funderscoring} in effect, @command{gfortran} appends one
-underscore to external names with no underscores.
-
-This is done to ensure compatibility with code produced by many
-UNIX Fortran compilers.
+underscore to external names with no underscores.  This is done to ensure
+compatibility with code produced by many UNIX Fortran compilers.
 
 @emph{Caution}: The default behavior of @command{gfortran} is
 incompatible with @command{f2c} and @command{g77}, please use the
