@@ -4051,9 +4051,9 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
       && TARGET_ALTIVEC_ABI
       && ALTIVEC_VECTOR_MODE (TYPE_MODE (TREE_TYPE (fntype))))
     {
-      error ("Cannot return value in vector register because"
+      error ("cannot return value in vector register because"
 	     " altivec instructions are disabled, use -maltivec"
-	     " to enable them.");
+	     " to enable them");
     }
 }
 
@@ -4297,9 +4297,9 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	{
 	  cum->vregno++;
 	  if (!TARGET_ALTIVEC)
-	    error ("Cannot pass argument in vector register because"
+	    error ("cannot pass argument in vector register because"
 		   " altivec instructions are disabled, use -maltivec"
-		   " to enable them.");
+		   " to enable them");
 
 	  /* PowerPC64 Linux and AIX allocate GPRs for a vector argument
 	     even if it is going to be passed in a vector register.

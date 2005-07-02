@@ -1,5 +1,9 @@
 2005-07-02  Joseph S. Myers  <joseph@codesourcery.com>
 
+	* objc-act.c: Use %q to quote in diagnostics.
+
+2005-07-02  Joseph S. Myers  <joseph@codesourcery.com>
+
 	* objc-act.c: Use '+' flag instead of %J.  Use 'q' flag for
 	quoting.
 

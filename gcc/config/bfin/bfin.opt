@@ -25,7 +25,7 @@ Omit frame pointer for leaf functions
 
 mlow64k
 Target Report Mask(LOW_64K)
-Program is entirely located in low 64k of memory.
+Program is entirely located in low 64k of memory
 
 mcsync
 Target Report Mask(CSYNC)

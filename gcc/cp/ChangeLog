@@ -1,3 +1,8 @@
+2005-07-02  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* name-lookup.c, parser.c: Use %q, %< and %> to quote in
+	diagnostics.
+
 2005-07-02  Zack Weinberg  <zack@codesourcery.com>
             Joseph S. Myers  <joseph@codesourcery.com>
 

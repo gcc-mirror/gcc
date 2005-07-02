@@ -7074,13 +7074,13 @@ add_instance_variable (tree class, int public, tree field_decl)
 	  if (TYPE_NEEDS_CONSTRUCTING (field_type)
 	      && !TYPE_HAS_DEFAULT_CONSTRUCTOR (field_type))
 	    {
-	      warning (0, "type `%s' has no default constructor to call",
+	      warning (0, "type %qs has no default constructor to call",
 		       type_name);
 
 	      /* If we cannot call a constructor, we should also avoid
 		 calling the destructor, for symmetry.  */
 	      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (field_type))
-		warning (0, "destructor for `%s' shall not be run either",
+		warning (0, "destructor for %qs shall not be run either",
 			 type_name);
 	    }
         }
@@ -7092,9 +7092,9 @@ add_instance_variable (tree class, int public, tree field_decl)
 	    {
 	      /* Vtable pointers are Real Bad(tm), since Obj-C cannot
 		 initialize them.  */
-	      error ("type `%s' has virtual member functions", type_name);
-	      error ("illegal aggregate type `%s' specified "
-		     "for instance variable `%s'",
+	      error ("type %qs has virtual member functions", type_name);
+	      error ("illegal aggregate type %qs specified "
+		     "for instance variable %qs",
 		     type_name, ivar_name);
 	      /* Return class as is without adding this ivar.  */
 	      return class;
@@ -7103,9 +7103,9 @@ add_instance_variable (tree class, int public, tree field_decl)
 	  /* User-defined constructors and destructors are not known to Obj-C
 	     and hence will not be called.  This may or may not be a problem. */
 	  if (TYPE_NEEDS_CONSTRUCTING (field_type))
-	    warning (0, "type `%s' has a user-defined constructor", type_name);
+	    warning (0, "type %qs has a user-defined constructor", type_name);
 	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (field_type))
-	    warning (0, "type `%s' has a user-defined destructor", type_name);
+	    warning (0, "type %qs has a user-defined destructor", type_name);
 
 	  if (!warn_cxx_ivars)
 	    {

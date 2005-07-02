@@ -687,7 +687,7 @@ decode_options (unsigned int argc, const char **argv)
       && !targetm.have_named_sections)
     {
       inform 
-       ("-freorder-blocks-and-partition does not work on this architecture.");
+       ("-freorder-blocks-and-partition does not work on this architecture");
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }

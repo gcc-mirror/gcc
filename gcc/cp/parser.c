@@ -16290,7 +16290,7 @@ cp_parser_objc_expression (cp_parser* parser)
 	  break;
 	}
     default:
-      error ("misplaced `@%D' Objective-C++ construct", kwd->value);
+      error ("misplaced %<@%D%> Objective-C++ construct", kwd->value);
       cp_parser_skip_to_end_of_block_or_statement (parser);
     }
 
@@ -16431,7 +16431,7 @@ cp_parser_objc_encode_expression (cp_parser* parser)
 
   if (!type)
     {
-      error ("`@encode' must specify a type as an argument");
+      error ("%<@encode%> must specify a type as an argument");
       return error_mark_node;
     }
 
@@ -17057,7 +17057,7 @@ cp_parser_objc_protocol_declaration (cp_parser* parser)
   cp_lexer_consume_token (parser->lexer);  /* Eat '@protocol'.  */
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_NAME))
     {
-      error ("identifier expected after `@protocol'");
+      error ("identifier expected after %<@protocol%>");
       goto finish;
     }
 
@@ -17193,7 +17193,7 @@ cp_parser_objc_declaration (cp_parser* parser)
       cp_parser_objc_end_implementation (parser);
       break;
     default:
-      error ("misplaced `@%D' Objective-C++ construct", kwd->value);
+      error ("misplaced %<@%D%> Objective-C++ construct", kwd->value);
       cp_parser_skip_to_end_of_block_or_statement (parser);
     }
 }
@@ -17324,7 +17324,7 @@ cp_parser_objc_statement (cp_parser * parser) {
     case RID_AT_THROW:
       return cp_parser_objc_throw_statement (parser);
     default:
-      error ("misplaced `@%D' Objective-C++ construct", kwd->value);
+      error ("misplaced %<@%D%> Objective-C++ construct", kwd->value);
       cp_parser_skip_to_end_of_block_or_statement (parser);
     }
 

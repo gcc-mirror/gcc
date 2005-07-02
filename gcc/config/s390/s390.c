@@ -1212,9 +1212,9 @@ override_options (void)
 
   /* Sanity checks.  */
   if (TARGET_ZARCH && !(s390_arch_flags & PF_ZARCH))
-    error ("z/Architecture mode not supported on %s.", s390_arch_string);
+    error ("z/Architecture mode not supported on %s", s390_arch_string);
   if (TARGET_64BIT && !TARGET_ZARCH)
-    error ("64-bit ABI not supported in ESA/390 mode.");
+    error ("64-bit ABI not supported in ESA/390 mode");
 
 
   /* Set processor cost function.  */
@@ -1226,7 +1226,7 @@ override_options (void)
 
   if (TARGET_BACKCHAIN && TARGET_PACKED_STACK && TARGET_HARD_FLOAT)
     error ("-mbackchain -mpacked-stack -mhard-float are not supported "
-	   "in combination.");
+	   "in combination");
 
   if (s390_stack_size)
     {
@@ -3781,7 +3781,7 @@ print_operand_address (FILE *file, rtx addr)
   if (!s390_decompose_address (addr, &ad)
       || (ad.base && !REG_OK_FOR_BASE_STRICT_P (ad.base))
       || (ad.indx && !REG_OK_FOR_INDEX_STRICT_P (ad.indx)))
-    output_operand_lossage ("Cannot decompose address.");
+    output_operand_lossage ("cannot decompose address");
 
   if (ad.disp)
     output_addr_const (file, ad.disp);
@@ -5801,7 +5801,7 @@ s390_frame_info (void)
 
   cfun_frame_layout.frame_size = get_frame_size ();
   if (!TARGET_64BIT && cfun_frame_layout.frame_size > 0x7fff0000)
-    fatal_error ("Total size of local variables exceeds architecture limit.");
+    fatal_error ("total size of local variables exceeds architecture limit");
   
   if (!TARGET_PACKED_STACK)
     {

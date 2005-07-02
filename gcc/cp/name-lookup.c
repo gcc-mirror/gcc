@@ -2825,7 +2825,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
   if (scope == current_namespace)
     {
       if (at_namespace_scope_p ())
-	error ("explicit qualification in declaration of `%D'",
+	error ("explicit qualification in declaration of %qD",
 	       decl);
       return;
     }

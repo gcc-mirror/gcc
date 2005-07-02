@@ -188,14 +188,14 @@ DEFPARAM(PARAM_MAX_GCSE_PASSES,
    (Added loads execution count)					  */
 DEFPARAM(PARAM_GCSE_AFTER_RELOAD_PARTIAL_FRACTION,
 	"gcse-after-reload-partial-fraction",
-	"The threshold ratio for performing partial redundancy elimination after reload.",
+	"The threshold ratio for performing partial redundancy elimination after reload",
         3, 0, 0)
 /* This is the threshold ratio of the critical edges execution count compared to
    the redundant loads execution count that permits performing the load
    redundancy elimination in gcse after reload.  */
 DEFPARAM(PARAM_GCSE_AFTER_RELOAD_CRITICAL_FRACTION,
 	"gcse-after-reload-critical-fraction",
-	"The threshold ratio of critical edges execution count that permit performing redundancy elimination after reload.",
+	"The threshold ratio of critical edges execution count that permit performing redundancy elimination after reload",
         10, 0, 0)
 /* This parameter limits the number of insns in a loop that will be unrolled,
    and by how much the loop is unrolled.
@@ -417,7 +417,7 @@ DEFPARAM(PARAM_MAX_RELOAD_SEARCH_INSNS,
 
 DEFPARAM(PARAM_MAX_ALIASED_VOPS,
          "max-aliased-vops",
-	 "The maximum number of virtual operands allowed to represent aliases before triggering alias grouping.",
+	 "The maximum number of virtual operands allowed to represent aliases before triggering alias grouping",
 	 500, 0, 0)
 
 DEFPARAM(PARAM_MAX_SCHED_REGION_BLOCKS,

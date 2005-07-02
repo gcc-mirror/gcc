@@ -1,3 +1,13 @@
+2005-07-02  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c.opt, common.opt, config/bfin/bfin.opt, config/pa/pa.opt,
+	config/rs6000/rs6000.opt, params.def: Remove "." from end of help
+	texts.
+	* config/avr/avr.c: Do not use '`' as left quote.
+	* config/rs6000/rs6000.c, config/s390/s390.c, opts.c, tree.c:
+	Remove "." from end of diagnostics.  Make diagnostics start with
+	lowercase letter.
+
 2005-07-02  Zack Weinberg  <zack@codesourcery.com>
             Joseph S. Myers  <joseph@codesourcery.com>
 
