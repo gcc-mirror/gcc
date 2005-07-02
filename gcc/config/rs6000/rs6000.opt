@@ -164,7 +164,7 @@ Generate VRSAVE instructions when generating AltiVec code
 
 mvrsave=
 Target RejectNegative Joined
--mvrsave=yes/no	Deprecated option.  Use -mvrsave/-mno-vrsave instead.
+-mvrsave=yes/no	Deprecated option.  Use -mvrsave/-mno-vrsave instead
 
 misel
 Target Var(rs6000_isel)
@@ -212,7 +212,7 @@ Warn about deprecated 'vector long ...' AltiVec type usage
 
 mfloat-gprs=
 Target RejectNegative Joined
--mfloat-gprs=	Select GPR floating point method.
+-mfloat-gprs=	Select GPR floating point method
 
 mlong-double-
 Target RejectNegative Joined UInteger

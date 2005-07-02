@@ -3368,7 +3368,7 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
       if (TREE_CODE (node) == FUNCTION_DECL  && DECL_INITIAL (node)
           && !DECL_DECLARED_INLINE_P (node))
 	{
-	  error ("function %q+D definition is marked dllimport.", node);
+	  error ("function %q+D definition is marked dllimport", node);
 	  *no_add_attrs = true;
 	}
 
@@ -3376,7 +3376,7 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
 	{
 	  if (DECL_INITIAL (node))
 	    {
-	      error ("variable %q+D definition is marked dllimport.",
+	      error ("variable %q+D definition is marked dllimport",
 		     node);
 	      *no_add_attrs = true;
 	    }
@@ -3397,7 +3397,7 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
 	  || TREE_CODE (node) == FUNCTION_DECL))
     {
       error ("external linkage required for symbol %q+D because of "
-	     "%qs attribute.", node, IDENTIFIER_POINTER (name));
+	     "%qs attribute", node, IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
     }
 

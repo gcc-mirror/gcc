@@ -417,11 +417,11 @@ Give strings the type \"array of char\"
 
 Wpointer-sign
 C ObjC Var(warn_pointer_sign) Init(1)
-Warn when a pointer differs in signedness in an assignment.
+Warn when a pointer differs in signedness in an assignment
 
 ansi
 C ObjC C++ ObjC++
-A synonym for -std=c89 (for C) or -std=c++98 (for C++).
+A synonym for -std=c89 (for C) or -std=c++98 (for C++)
 
 d
 C ObjC C++ ObjC++ Joined
@@ -493,7 +493,7 @@ C ObjC C++ ObjC++ Joined RejectNegative
 
 finput-charset=
 C ObjC C++ ObjC++ Joined RejectNegative
--finput-charset=<cset>	Specify the default character set for source files.
+-finput-charset=<cset>	Specify the default character set for source files
 
 
 fexternal-templates
@@ -680,7 +680,7 @@ C++ ObjC++
 
 fthreadsafe-statics
 C++ ObjC++
--fno-threadsafe-statics	Do not generate thread-safe code for initializing local statics.
+-fno-threadsafe-statics	Do not generate thread-safe code for initializing local statics
 
 funsigned-bitfields
 C ObjC C++ ObjC++
@@ -798,7 +798,7 @@ Generate C header of platform-specific features
 
 print-pch-checksum
 C ObjC C++ ObjC++
-Print a checksum of the executable for PCH validity checking, and stop.
+Print a checksum of the executable for PCH validity checking, and stop
 
 remap
 C ObjC C++ ObjC++

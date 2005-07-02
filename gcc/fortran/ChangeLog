@@ -1,3 +1,7 @@
+2005-07-02  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* lang.opt: Remove "." from end of help texts.
+
 2005-07-01  Jerry DeLisle  <jvdelisle@verizon.net>
 
     * gfortran.texi: Fix typos and grammar.

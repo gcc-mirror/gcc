@@ -49,7 +49,7 @@ Generate fast indirect calls
 
 mfixed-range=
 Target RejectNegative Joined
-Specify range of registers to make fixed.
+Specify range of registers to make fixed
 
 mgas
 Target Report Mask(GAS)
@@ -98,7 +98,7 @@ Use portable calling conventions
 
 mschedule=
 Target RejectNegative Joined
-Specify CPU for scheduling purposes.  Valid arguments are 700, 7100, 7100LC, 7200, 7300, and 8000.
+Specify CPU for scheduling purposes.  Valid arguments are 700, 7100, 7100LC, 7200, 7300, and 8000
 
 msoft-float
 Target Report Mask(SOFT_FLOAT)

@@ -91,11 +91,11 @@ Specify that backslash in string introduces an escape character
 
 fdump-parse-tree
 F95
-Display the code tree after parsing.
+Display the code tree after parsing
 
 ff2c
 F95
-Use f2c calling convention.
+Use f2c calling convention
 
 ffixed-form
 F95
@@ -127,7 +127,7 @@ F95 RejectNegative Joined UInteger
 
 fmax-identifier-length=
 F95 RejectNegative Joined UInteger
--fmax-identifier-length=<n>	Maximum identifier length.
+-fmax-identifier-length=<n>	Maximum identifier length
 
 fmax-stack-var-size=
 F95 RejectNegative Joined UInteger
@@ -155,18 +155,18 @@ F95 RejectNegative Joined UInteger
 
 std=f95
 F95
-Conform to the ISO Fortran 95 standard.
+Conform to the ISO Fortran 95 standard
 
 std=f2003
 F95
-Conform to the ISO Fortran 2003 standard.
+Conform to the ISO Fortran 2003 standard
 
 std=gnu
 F95
-Conform nothing in particular.
+Conform nothing in particular
 
 std=legacy
 F95
-Accept extensions to support legacy code.
+Accept extensions to support legacy code
 
 ; This comment is to ensure we retain the blank line above.
