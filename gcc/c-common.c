@@ -4559,8 +4559,8 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 		   && strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
 			      TREE_STRING_POINTER (TREE_VALUE (args))) != 0)
 	    {
-	      error ("%Jsection of %qD conflicts with previous declaration",
-		     *node, *node);
+	      error ("section of %q+D conflicts with previous declaration",
+		     *node);
 	      *no_add_attrs = true;
 	    }
 	  else
@@ -4568,7 +4568,7 @@ handle_section_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 	}
       else
 	{
-	  error ("%Jsection attribute not allowed for %qD", *node, *node);
+	  error ("section attribute not allowed for %q+D", *node);
 	  *no_add_attrs = true;
 	}
     }
@@ -4642,7 +4642,7 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
   else if (TREE_CODE (decl) != VAR_DECL
 	   && TREE_CODE (decl) != FIELD_DECL)
     {
-      error ("%Jalignment may not be specified for %qD", decl, decl);
+      error ("alignment may not be specified for %q+D", decl);
       *no_add_attrs = true;
     }
   else
@@ -4680,7 +4680,7 @@ handle_alias_attribute (tree *node, tree name, tree args,
   if ((TREE_CODE (decl) == FUNCTION_DECL && DECL_INITIAL (decl))
       || (TREE_CODE (decl) != FUNCTION_DECL && !DECL_EXTERNAL (decl)))
     {
-      error ("%J%qD defined both normally and as an alias", decl, decl);
+      error ("%q+D defined both normally and as an alias", decl);
       *no_add_attrs = true;
     }
 

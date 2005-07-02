@@ -1,3 +1,8 @@
+2005-07-02  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* objc-act.c: Use '+' flag instead of %J.  Use 'q' flag for
+	quoting.
+
 2005-06-30  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc-act.c (objc_build_volatilized_type): New function.

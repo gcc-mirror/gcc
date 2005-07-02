@@ -464,7 +464,7 @@ named_section (tree decl, const char *name, int reloc)
     {
       flags = get_named_section_flags (name);
       if ((flags & SECTION_OVERRIDE) == 0)
-	error ("%J%D causes a section type conflict", decl, decl);
+	error ("%+D causes a section type conflict", decl);
     }
 
   named_section_real (name, flags, decl);
@@ -925,15 +925,15 @@ make_decl_rtl (tree decl)
       reg_number = decode_reg_name (name);
       /* First detect errors in declaring global registers.  */
       if (reg_number == -1)
-	error ("%Jregister name not specified for %qD", decl, decl);
+	error ("register name not specified for %q+D", decl);
       else if (reg_number < 0)
-	error ("%Jinvalid register name for %qD", decl, decl);
+	error ("invalid register name for %q+D", decl);
       else if (TYPE_MODE (TREE_TYPE (decl)) == BLKmode)
-	error ("%Jdata type of %qD isn%'t suitable for a register",
-	       decl, decl);
+	error ("data type of %q+D isn%'t suitable for a register",
+	       decl);
       else if (! HARD_REGNO_MODE_OK (reg_number, TYPE_MODE (TREE_TYPE (decl))))
-	error ("%Jregister specified for %qD isn%'t suitable for data type",
-               decl, decl);
+	error ("register specified for %q+D isn%'t suitable for data type",
+               decl);
       /* Now handle properly declared static register variables.  */
       else
 	{
@@ -983,7 +983,7 @@ make_decl_rtl (tree decl)
       {
 	reg_number = decode_reg_name (name);
 	if (reg_number >= 0 || reg_number == -3)
-	  error ("%Jregister name given for non-register variable %qD", decl, decl);
+	  error ("register name given for non-register variable %q+D", decl);
       }
 #endif
   }
@@ -1629,7 +1629,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 
   if (!dont_output_data && DECL_SIZE (decl) == 0)
     {
-      error ("%Jstorage size of %qD isn%'t known", decl, decl);
+      error ("storage size of %q+D isn%'t known", decl);
       TREE_ASM_WRITTEN (decl) = 1;
       return;
     }
@@ -1657,7 +1657,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
   if (! dont_output_data
       && ! host_integerp (DECL_SIZE_UNIT (decl), 1))
     {
-      error ("%Jsize of variable %qD is too large", decl, decl);
+      error ("size of variable %q+D is too large", decl);
       return;
     }
 
@@ -1680,8 +1680,8 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
      In particular, a.out format supports a maximum alignment of 4.  */
   if (align > MAX_OFILE_ALIGNMENT)
     {
-      warning (0, "%Jalignment of %qD is greater than maximum object "
-               "file alignment.  Using %d", decl, decl,
+      warning (0, "alignment of %q+D is greater than maximum object "
+               "file alignment.  Using %d", decl,
 	       MAX_OFILE_ALIGNMENT/BITS_PER_UNIT);
       align = MAX_OFILE_ALIGNMENT;
     }
@@ -1744,8 +1744,8 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 
 #if !defined(ASM_OUTPUT_ALIGNED_COMMON) && !defined(ASM_OUTPUT_ALIGNED_DECL_COMMON) && !defined(ASM_OUTPUT_ALIGNED_BSS)
       if ((unsigned HOST_WIDE_INT) DECL_ALIGN_UNIT (decl) > rounded)
-	warning (0, "%Jrequested alignment for %qD is greater than "
-                 "implemented alignment of %d", decl, decl, rounded);
+	warning (0, "requested alignment for %q+D is greater than "
+                 "implemented alignment of %d", decl, rounded);
 #endif
 
       /* If the target cannot output uninitialized but not common global data
@@ -4335,16 +4335,16 @@ merge_weak (tree newdecl, tree olddecl)
 	 declare_weak because the NEWDECL and OLDDECL was not yet
 	 been merged; therefore, TREE_ASM_WRITTEN was not set.  */
       if (TREE_ASM_WRITTEN (olddecl))
-	error ("%Jweak declaration of %qD must precede definition",
-	       newdecl, newdecl);
+	error ("weak declaration of %q+D must precede definition",
+	       newdecl);
 
       /* If we've already generated rtl referencing OLDDECL, we may
 	 have done so in a way that will not function properly with
 	 a weak symbol.  */
       else if (TREE_USED (olddecl)
 	       && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (olddecl)))
-	warning (0, "%Jweak declaration of %qD after first use results "
-                 "in unspecified behavior", newdecl, newdecl);
+	warning (0, "weak declaration of %q+D after first use results "
+                 "in unspecified behavior", newdecl);
 
       if (SUPPORTS_WEAK)
 	{
@@ -4377,16 +4377,16 @@ void
 declare_weak (tree decl)
 {
   if (! TREE_PUBLIC (decl))
-    error ("%Jweak declaration of %qD must be public", decl, decl);
+    error ("weak declaration of %q+D must be public", decl);
   else if (TREE_CODE (decl) == FUNCTION_DECL && TREE_ASM_WRITTEN (decl))
-    error ("%Jweak declaration of %qD must precede definition", decl, decl);
+    error ("weak declaration of %q+D must precede definition", decl);
   else if (SUPPORTS_WEAK)
     {
       if (! DECL_WEAK (decl))
 	weak_decls = tree_cons (NULL, decl, weak_decls);
     }
   else
-    warning (0, "%Jweak declaration of %qD not supported", decl, decl);
+    warning (0, "weak declaration of %q+D not supported", decl);
 
   mark_weak (decl);
 }
@@ -4583,11 +4583,11 @@ finish_aliases_1 (void)
 
       target_decl = find_decl_and_mark_needed (p->decl, p->target);
       if (target_decl == NULL)
-	error ("%J%qD aliased to undefined symbol %qE",
-	       p->decl, p->decl, p->target);
+	error ("%q+D aliased to undefined symbol %qE",
+	       p->decl, p->target);
       else if (DECL_EXTERNAL (target_decl))
-	error ("%J%qD aliased to external symbol %qE",
-	       p->decl, p->decl, p->target);
+	error ("%q+D aliased to external symbol %qE",
+	       p->decl, p->target);
     }
 }
 

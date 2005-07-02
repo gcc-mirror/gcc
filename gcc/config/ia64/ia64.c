@@ -515,21 +515,21 @@ ia64_handle_model_attribute (tree *node, tree name, tree args,
 	  && !TREE_STATIC (decl))
 	{
 	  error ("%Jan address area attribute cannot be specified for "
-		 "local variables", decl, decl);
+		 "local variables", decl);
 	  *no_add_attrs = true;
 	}
       area = ia64_get_addr_area (decl);
       if (area != ADDR_AREA_NORMAL && addr_area != area)
 	{
-	  error ("%Jaddress area of '%s' conflicts with previous "
-		 "declaration", decl, decl);
+	  error ("address area of %q+D conflicts with previous "
+		 "declaration", decl);
 	  *no_add_attrs = true;
 	}
       break;
 
     case FUNCTION_DECL:
       error ("%Jaddress area attribute cannot be specified for functions",
-	     decl, decl);
+	     decl);
       *no_add_attrs = true;
       break;
 

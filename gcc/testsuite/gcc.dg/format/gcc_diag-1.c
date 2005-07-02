@@ -40,6 +40,9 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   diag ("%d%i%o%u%x%c%s%p%%", i, i, u, u, u, i, s, p);
   cdiag ("%d%i%o%u%x%c%s%p%%", i, i, u, u, u, i, s, p);
   cxxdiag ("%d%i%o%u%x%c%s%p%%", i, i, u, u, u, i, s, p);
+  diag ("%qd%qi%qo%qu%qx%qc%qs%qp%<%%%'%>", i, i, u, u, u, i, s, p);
+  cdiag ("%qd%qi%qo%qu%qx%qc%qs%qp%<%%%'%>", i, i, u, u, u, i, s, p);
+  cxxdiag ("%qd%qi%qo%qu%qx%qc%qs%qp%<%%%'%>", i, i, u, u, u, i, s, p);
   diag ("%ld%li%lo%lu%lx", l, l, ul, ul, ul);
   cdiag ("%ld%li%lo%lu%lx", l, l, ul, ul, ul);
   cxxdiag ("%ld%li%lo%lu%lx", l, l, ul, ul, ul);
@@ -65,6 +68,8 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   cxxdiag ("%J", t1);
 
   cdiag ("%D%F%T", t1, t1, t1);
+  cdiag ("%+D%+F%+T", t1, t1, t1);
+  cdiag ("%q+D%q+F%q+T", t1, t1, t1);
   cdiag ("%D%D%D%D", t1, t2, *t3, t4[5]);
   cxxdiag ("%A%D%E%F%T%V", t1, t1, t1, t1, t1, t1);
   cxxdiag ("%D%D%D%D", t1, t2, *t3, t4[5]);
@@ -107,7 +112,7 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   diag ("%D", t1); /* { dg-warning "format" "bogus tree" } */
   cdiag ("%A", t1); /* { dg-warning "format" "bogus tree" } */
   cdiag ("%#D", t1); /* { dg-warning "format" "bogus modifier" } */
-  cdiag ("%+D", t1); /* { dg-warning "format" "bogus modifier" } */
+  cdiag ("%+D", t1);
   cxxdiag ("%C"); /* { dg-warning "format" "missing arg" } */
   cxxdiag ("%C", l); /* { dg-warning "format" "wrong arg" } */
   cxxdiag ("%C", i, i); /* { dg-warning "format" "extra arg" } */

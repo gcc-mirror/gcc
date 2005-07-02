@@ -522,13 +522,13 @@ sort_mem_initializers (tree t, tree mem_inits)
       if (warn_reorder && !subobject_init)
 	{
 	  if (TREE_CODE (TREE_PURPOSE (next_subobject)) == FIELD_DECL)
-	    cp_warning_at ("%qD will be initialized after",
-			   TREE_PURPOSE (next_subobject));
+	    warning (0, "%q+D will be initialized after",
+		     TREE_PURPOSE (next_subobject));
 	  else
 	    warning (0, "base %qT will be initialized after",
 		     TREE_PURPOSE (next_subobject));
 	  if (TREE_CODE (subobject) == FIELD_DECL)
-	    cp_warning_at ("  %q#D", subobject);
+	    warning (0, "  %q+#D", subobject);
 	  else
 	    warning (0, "  base %qT", subobject);
 	  warning (0, "%J  when initialized here", current_function_decl);

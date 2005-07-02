@@ -1839,9 +1839,9 @@ check_final_overrider (tree overrider, tree basefn)
 	    fail = 2;
 	  else
 	    {
-	      cp_warning_at ("deprecated covariant return type for %q#D",
+	      warning (0, "deprecated covariant return type for %q+#D",
 			     overrider);
-	      cp_warning_at ("  overriding %q#D", basefn);
+	      warning (0, "  overriding %q+#D", basefn);
 	    }
 	}
       else
@@ -1855,14 +1855,13 @@ check_final_overrider (tree overrider, tree basefn)
     {
       if (fail == 1)
 	{
-	  cp_error_at ("invalid covariant return type for %q#D", overrider);
-	  cp_error_at ("  overriding %q#D", basefn);
+	  error ("invalid covariant return type for %q+#D", overrider);
+	  error ("  overriding %q+#D", basefn);
 	}
       else
 	{
-	  cp_error_at ("conflicting return type specified for %q#D",
-		       overrider);
-	  cp_error_at ("  overriding %q#D", basefn);
+	  error ("conflicting return type specified for %q+#D", overrider);
+	  error ("  overriding %q+#D", basefn);
 	}
       DECL_INVALID_OVERRIDER_P (overrider) = 1;
       return 0;
@@ -1871,8 +1870,8 @@ check_final_overrider (tree overrider, tree basefn)
   /* Check throw specifier is at least as strict.  */
   if (!comp_except_specs (base_throw, over_throw, 0))
     {
-      cp_error_at ("looser throw specifier for %q#F", overrider);
-      cp_error_at ("  overriding %q#F", basefn);
+      error ("looser throw specifier for %q+#F", overrider);
+      error ("  overriding %q+#F", basefn);
       DECL_INVALID_OVERRIDER_P (overrider) = 1;
       return 0;
     }
@@ -1965,8 +1964,8 @@ look_for_overrides_r (tree type, tree fndecl)
 	{
 	  /* A static member function cannot match an inherited
 	     virtual member function.  */
-	  cp_error_at ("%q#D cannot be declared", fndecl);
-	  cp_error_at ("  since %q#D declared in base class", fn);
+	  error ("%q+#D cannot be declared", fndecl);
+	  error ("  since %q+#D declared in base class", fn);
 	}
       else
 	{

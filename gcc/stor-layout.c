@@ -451,10 +451,10 @@ layout_decl (tree decl, unsigned int known_align)
 	  int size_as_int = TREE_INT_CST_LOW (size);
 
 	  if (compare_tree_int (size, size_as_int) == 0)
-	    warning (0, "%Jsize of %qD is %d bytes", decl, decl, size_as_int);
+	    warning (0, "size of %q+D is %d bytes", decl, size_as_int);
 	  else
-	    warning (0, "%Jsize of %qD is larger than %d bytes",
-                     decl, decl, larger_than_size);
+	    warning (0, "size of %q+D is larger than %d bytes",
+                     decl, larger_than_size);
 	}
     }
 
@@ -851,11 +851,11 @@ place_field (record_layout_info rli, tree field)
 	  if (TYPE_ALIGN (type) > desired_align)
 	    {
 	      if (STRICT_ALIGNMENT)
-		warning (OPT_Wattributes, "%Jpacked attribute causes "
-                         "inefficient alignment for %qD", field, field);
+		warning (OPT_Wattributes, "packed attribute causes "
+                         "inefficient alignment for %q+D", field);
 	      else
-		warning (OPT_Wattributes, "%Jpacked attribute is "
-			 "unnecessary for %qD", field, field);
+		warning (OPT_Wattributes, "packed attribute is "
+			 "unnecessary for %q+D", field);
 	    }
 	}
       else
@@ -869,7 +869,7 @@ place_field (record_layout_info rli, tree field)
       /* No, we need to skip space before this field.
 	 Bump the cumulative size to multiple of field alignment.  */
 
-      warning (OPT_Wpadded, "%Jpadding struct to align %qD", field, field);
+      warning (OPT_Wpadded, "padding struct to align %q+D", field);
 
       /* If the alignment is still within offset_align, just align
 	 the bit position.  */

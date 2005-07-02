@@ -13058,7 +13058,7 @@ cp_parser_class_head (cp_parser* parser,
   if (type != error_mark_node && COMPLETE_TYPE_P (type))
     {
       error ("redefinition of %q#T", type);
-      cp_error_at ("previous definition of %q#T", type);
+      error ("previous definition of %q+#T", type);
       type = NULL_TREE;
       goto done;
     }

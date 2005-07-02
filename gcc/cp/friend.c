@@ -314,7 +314,7 @@ make_friend_class (tree type, tree friend_type, bool complain)
 		{
 		  error ("%qT is not a member class template of %qT",
 			 name, ctype);
-		  cp_error_at ("%qD declared here", decl);
+		  error ("%q+D declared here", decl);
 		  return;
 		}
 	      if (!template_member_p && (TREE_CODE (decl) != TYPE_DECL
@@ -322,7 +322,7 @@ make_friend_class (tree type, tree friend_type, bool complain)
 		{
 		  error ("%qT is not a nested class of %qT",
 			 name, ctype);
-		  cp_error_at ("%qD declared here", decl);
+		  error ("%q+D declared here", decl);
 		  return;
 		}
 

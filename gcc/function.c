@@ -820,7 +820,7 @@ assign_temp (tree type_or_decl, int keep, int memory_required,
       if (decl && size == -1
 	  && TREE_CODE (TYPE_SIZE_UNIT (type)) == INTEGER_CST)
 	{
-	  error ("%Jsize of variable %qD is too large", decl, decl);
+	  error ("size of variable %q+D is too large", decl);
 	  size = 1;
 	}
 
@@ -3451,9 +3451,9 @@ setjmp_vars_warning (tree block)
 	  && DECL_RTL_SET_P (decl)
 	  && REG_P (DECL_RTL (decl))
 	  && regno_clobbered_at_setjmp (REGNO (DECL_RTL (decl))))
-	warning (0, "%Jvariable %qD might be clobbered by %<longjmp%>"
+	warning (0, "variable %q+D might be clobbered by %<longjmp%>"
 		 " or %<vfork%>",
-		 decl, decl);
+		 decl);
     }
 
   for (sub = BLOCK_SUBBLOCKS (block); sub; sub = TREE_CHAIN (sub))
@@ -3472,8 +3472,8 @@ setjmp_args_warning (void)
     if (DECL_RTL (decl) != 0
 	&& REG_P (DECL_RTL (decl))
 	&& regno_clobbered_at_setjmp (REGNO (DECL_RTL (decl))))
-      warning (0, "%Jargument %qD might be clobbered by %<longjmp%> or %<vfork%>",
-	       decl, decl);
+      warning (0, "argument %q+D might be clobbered by %<longjmp%> or %<vfork%>",
+	       decl);
 }
 
 
@@ -4277,7 +4277,7 @@ do_warn_unused_parameter (tree fn)
        decl; decl = TREE_CHAIN (decl))
     if (!TREE_USED (decl) && TREE_CODE (decl) == PARM_DECL
 	&& DECL_NAME (decl) && !DECL_ARTIFICIAL (decl))
-      warning (0, "%Junused parameter %qD", decl, decl);
+      warning (0, "unused parameter %q+D", decl);
 }
 
 static GTY(()) rtx initial_trampoline;

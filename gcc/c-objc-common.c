@@ -78,8 +78,8 @@ c_cannot_inline_tree_fn (tree *fnp)
       && lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) == NULL)
     {
       if (do_warning)
-	warning (0, "%Jfunction %qF can never be inlined because it "
-		 "is suppressed using -fno-inline", fn, fn);
+	warning (0, "function %q+F can never be inlined because it "
+		 "is suppressed using -fno-inline", fn);
       goto cannot_inline;
     }
 
@@ -88,16 +88,16 @@ c_cannot_inline_tree_fn (tree *fnp)
   if (!DECL_DECLARED_INLINE_P (fn) && !targetm.binds_local_p (fn))
     {
       if (do_warning)
-	warning (0, "%Jfunction %qF can never be inlined because it might not "
-		 "be bound within this unit of translation", fn, fn);
+	warning (0, "function %q+F can never be inlined because it might not "
+		 "be bound within this unit of translation", fn);
       goto cannot_inline;
     }
 
   if (!function_attribute_inlinable_p (fn))
     {
       if (do_warning)
-	warning (0, "%Jfunction %qF can never be inlined because it uses "
-		 "attributes conflicting with inlining", fn, fn);
+	warning (0, "function %q+F can never be inlined because it uses "
+		 "attributes conflicting with inlining", fn);
       goto cannot_inline;
     }
 
@@ -162,7 +162,7 @@ c_objc_common_init (void)
    diagnostic machinery.  */
 static bool
 c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
-		int precision, bool wide, bool plus, bool hash)
+		int precision, bool wide, bool set_locus, bool hash)
 {
   tree t = va_arg (*text->args_ptr, tree);
   tree name;
@@ -170,9 +170,11 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
   c_pretty_printer *cpp = (c_pretty_printer *) pp;
   pp->padding = pp_none;
 
-  /* FUTURE: %+x should set the locus.  */
-  if (precision != 0 || wide || plus || hash)
+  if (precision != 0 || wide || hash)
     return false;
+
+  if (set_locus && text->locus)
+    *text->locus = DECL_SOURCE_LOCATION (t);
 
   switch (*spec)
     {

@@ -970,11 +970,11 @@ tree_rest_of_compilation (tree fndecl)
 	    = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (ret_type));
 
 	  if (compare_tree_int (TYPE_SIZE_UNIT (ret_type), size_as_int) == 0)
-	    warning (0, "%Jsize of return value of %qD is %u bytes",
-                     fndecl, fndecl, size_as_int);
+	    warning (0, "size of return value of %q+D is %u bytes",
+                     fndecl, size_as_int);
 	  else
-	    warning (0, "%Jsize of return value of %qD is larger than %wd bytes",
-                     fndecl, fndecl, larger_than_size);
+	    warning (0, "size of return value of %q+D is larger than %wd bytes",
+                     fndecl, larger_than_size);
 	}
     }
 

@@ -1,3 +1,14 @@
+2005-07-02  Zack Weinberg  <zack@codesourcery.com>
+            Joseph S. Myers  <joseph@codesourcery.com>
+
+	* error.c (location_of): Add comment.
+	(locate_error, cp_error_at, cp_warning_at, cp_pedwarn_at): Remove.
+	* cp-tree.h (cp_error_at, cp_warning_at, cp_pedwarn_at): Remove.
+	* call.c, class.c, decl.c, decl2.c, friend.c, init.c,
+	name-lookup.c, parser.c, pt.c, search.c, semantics.c, typeck.c,
+	typeck2.c: Use '+' flag instead of %J, cp_error_at, cp_warning_at
+	or cp_pedwarn_at.  Mark up some diagnostic strings with N_.
+
 2005-06-30  Daniel Berlin  <dberlin@dberlin.org> 
 	
 	* decl.c (require_complete_types_for_parms): Call relayout_decl
