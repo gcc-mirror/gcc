@@ -8575,11 +8575,11 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  && !TREE_SIDE_EFFECTS (arg1))
 	{
 	  tem = fold_to_nonsharp_ineq_using_bound (arg0, arg1);
-	  if (tem)
+	  if (tem && !operand_equal_p (tem, arg0, 0))
 	    return fold_build2 (code, type, tem, arg1);
 
 	  tem = fold_to_nonsharp_ineq_using_bound (arg1, arg0);
-	  if (tem)
+	  if (tem && !operand_equal_p (tem, arg1, 0))
 	    return fold_build2 (code, type, arg0, tem);
 	}
 
@@ -8863,6 +8863,30 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		      || (code0 == PLUS_EXPR && is_positive < 0)))
 		return constant_boolean_node (0, type);
 	    }
+	}
+
+      /* Transform comparisons of the form X +- C1 CMP C2 to X CMP C2 +- C1.  */
+      if ((TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
+	  && (TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
+	      && !TREE_OVERFLOW (TREE_OPERAND (arg0, 1))
+	      && !TYPE_UNSIGNED (TREE_TYPE (arg1))
+	      && !(flag_wrapv || flag_trapv))
+	  && (TREE_CODE (arg1) == INTEGER_CST
+	      && !TREE_OVERFLOW (arg1)))
+	{
+	  tree const1 = TREE_OPERAND (arg0, 1);
+	  tree const2 = arg1;
+	  tree variable = TREE_OPERAND (arg0, 0);
+	  tree lhs;
+	  int lhs_add;
+	  lhs_add = TREE_CODE (arg0) != PLUS_EXPR;
+	  
+	  lhs = fold_build2 (lhs_add ? PLUS_EXPR : MINUS_EXPR,
+			     TREE_TYPE (arg1), const2, const1);
+	  if (TREE_CODE (lhs) == TREE_CODE (arg1)
+	      && (TREE_CODE (lhs) != INTEGER_CST
+	          || !TREE_OVERFLOW (lhs)))
+	    return fold_build2 (code, type, variable, lhs);
 	}
 
       if (FLOAT_TYPE_P (TREE_TYPE (arg0)))
