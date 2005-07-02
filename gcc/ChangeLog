@@ -1,3 +1,9 @@
+2005-07-02  Richard Henderson  <rth@redhat.com>
+
+        * config/alpha/alpha.c (alpha_legitimize_address): Check for
+         TLS_MODEL_NONE.
+        (alpha_stdarg_optimize_hook): Use DECL_UID with va_list_vars.
+
 2005-07-02  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/14490
