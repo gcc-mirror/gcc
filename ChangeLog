@@ -1,3 +1,10 @@
+2005-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.def (target_modules): Add libssp.
+	* configure.in (target_libraries): Add target-libssp.
+	* configure: Rebuilt.
+	* Makefile.in: Rebuilt.
+
 2005-07-01  Zack Weinberg  <zackw@panix.com>
 
 	* MAINTAINERS: Change email address.  Resign from maintainership.

@@ -15514,6 +15514,54 @@ _ACEOF
 
 fi
 
+# Test for stack protector support in target C library.
+case "$target" in
+  *-*-linux*)
+    echo "$as_me:$LINENO: checking __stack_chk_fail in target GNU C library" >&5
+echo $ECHO_N "checking __stack_chk_fail in target GNU C library... $ECHO_C" >&6
+if test "${gcc_cv_libc_provides_ssp+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_libc_provides_ssp=no
+      if test x$host != x$target || test "x$TARGET_SYSTEM_ROOT" != x; then
+	if test "x$with_sysroot" = x; then
+	  glibc_header_dir="${exec_prefix}/${target_noncanonical}/sys-include"
+	elif test "x$with_sysroot" = xyes; then
+	  glibc_header_dir="${exec_prefix}/${target_noncanonical}/sys-root/usr/include"
+	else
+	  glibc_header_dir="${with_sysroot}/usr/include"
+	fi
+      else
+	glibc_header_dir=/usr/include
+      fi
+      # glibc 2.4 and later provides __stack_chk_fail and
+      # either __stack_chk_guard, or TLS access to stack guard canary.
+      if test -f $glibc_header_dir/features.h \
+	 && $EGREP '^[ 	]*#[ 	]*define[ 	]+__GNU_LIBRARY__[ 	]+([1-9][0-9]|[6-9])' \
+	    $glibc_header_dir/features.h > /dev/null; then
+	if $EGREP '^[ 	]*#[ 	]*define[ 	]+__GLIBC__[ 	]+([1-9][0-9]|[3-9])' \
+	   $glibc_header_dir/features.h > /dev/null; then
+	  gcc_cv_libc_provides_ssp=yes
+	elif $EGREP '^[ 	]*#[ 	]*define[ 	]+__GLIBC__[ 	]+2' \
+	     $glibc_header_dir/features.h > /dev/null \
+	     && $EGREP '^[ 	]*#[ 	]*define[ 	]+__GLIBC_MINOR__[ 	]+([1-9][0-9]|[4-9])' \
+	     $glibc_header_dir/features.h > /dev/null; then
+	  gcc_cv_libc_provides_ssp=yes
+	fi
+      fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_libc_provides_ssp" >&5
+echo "${ECHO_T}$gcc_cv_libc_provides_ssp" >&6 ;;
+  *) gcc_cv_libc_provides_ssp=no ;;
+esac
+if test x$gcc_cv_libc_provides_ssp = xyes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define TARGET_LIBC_PROVIDES_SSP 1
+_ACEOF
+
+fi
+
 # Find out what GC implementation we want, or may, use.
 
 # Check whether --with-gc or --without-gc was given.

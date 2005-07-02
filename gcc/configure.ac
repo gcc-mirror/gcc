@@ -2972,6 +2972,45 @@ if test x$with_sysroot = x && test x$host = x$target \
 [Define to PREFIX/include if cpp should also search that directory.])
 fi
 
+# Test for stack protector support in target C library.
+case "$target" in
+  *-*-linux*)
+    AC_CACHE_CHECK(__stack_chk_fail in target GNU C library,
+      gcc_cv_libc_provides_ssp,
+      [gcc_cv_libc_provides_ssp=no
+      if test x$host != x$target || test "x$TARGET_SYSTEM_ROOT" != x; then
+	if test "x$with_sysroot" = x; then
+	  glibc_header_dir="${exec_prefix}/${target_noncanonical}/sys-include"
+	elif test "x$with_sysroot" = xyes; then
+	  glibc_header_dir="${exec_prefix}/${target_noncanonical}/sys-root/usr/include"
+	else
+	  glibc_header_dir="${with_sysroot}/usr/include"
+	fi
+      else
+	glibc_header_dir=/usr/include
+      fi
+      # glibc 2.4 and later provides __stack_chk_fail and
+      # either __stack_chk_guard, or TLS access to stack guard canary.
+      if test -f $glibc_header_dir/features.h \
+	 && $EGREP '^@<:@ 	@:>@*#[ 	]*define[ 	]+__GNU_LIBRARY__[ 	]+([1-9][0-9]|[6-9])' \
+	    $glibc_header_dir/features.h > /dev/null; then
+	if $EGREP '^@<:@ 	@:>@*#[ 	]*define[ 	]+__GLIBC__[ 	]+([1-9][0-9]|[3-9])' \
+	   $glibc_header_dir/features.h > /dev/null; then
+	  gcc_cv_libc_provides_ssp=yes
+	elif $EGREP '^@<:@ 	@:>@*#[ 	]*define[ 	]+__GLIBC__[ 	]+2' \
+	     $glibc_header_dir/features.h > /dev/null \
+	     && $EGREP '^@<:@ 	@:>@*#[ 	]*define[ 	]+__GLIBC_MINOR__[ 	]+([1-9][0-9]|[4-9])' \
+	     $glibc_header_dir/features.h > /dev/null; then
+	  gcc_cv_libc_provides_ssp=yes
+	fi
+      fi]) ;;
+  *) gcc_cv_libc_provides_ssp=no ;;
+esac
+if test x$gcc_cv_libc_provides_ssp = xyes; then
+  AC_DEFINE(TARGET_LIBC_PROVIDES_SSP, 1,
+	    [Define if your target C library provides stack protector support])
+fi
+
 # Find out what GC implementation we want, or may, use.
 AC_ARG_WITH(gc,
 [  --with-gc={page,zone}   choose the garbage collection mechanism to use

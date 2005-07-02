@@ -900,6 +900,7 @@ target_libraries="target-libiberty \
 		target-newlib \
 		target-libstdc++-v3 \
 		target-libmudflap \
+		target-libssp \
 		target-libgfortran \
 		${libgcj} \
 		target-libobjc \
