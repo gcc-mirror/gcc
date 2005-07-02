@@ -1,3 +1,10 @@
+2005-07-01  Jerry DeLisle  <jvdelisle@verizon.net>
+
+    * gfortran.texi: Fix typos and grammar.
+    * invoke.texi: Fix typos and grammar.
+    * intrinsic.texi: Add documentaion for eoshift, epsilon, etime, and exit.
+    Fixed alignment of text for dtime syntax. Fixed a few line lengths.
+
 2005-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-stmt.c (gfc_trans_forall_1): Prefer to use smaller logical
