@@ -480,7 +480,7 @@ PICFLAG_FOR_TARGET =
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
 # so that prorgams built for the target machine work.
-TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libmudflap)$(HOST_LIB_PATH_gcc)
+TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libmudflap)$(TARGET_LIB_PATH_libssp)$(HOST_LIB_PATH_gcc)
 
 @if target-libstdc++-v3
 TARGET_LIB_PATH_libstdc++-v3 = $$r/$(TARGET_SUBDIR)/libstdc++-v3/.libs:
@@ -489,6 +489,10 @@ TARGET_LIB_PATH_libstdc++-v3 = $$r/$(TARGET_SUBDIR)/libstdc++-v3/.libs:
 @if target-libmudflap
 TARGET_LIB_PATH_libmudflap = $$r/$(TARGET_SUBDIR)/libmudflap/.libs:
 @endif target-libmudflap
+
+@if target-libssp
+TARGET_LIB_PATH_libssp = $$r/$(TARGET_SUBDIR)/libssp/.libs:
+@endif target-libssp
 
 
 
@@ -731,6 +735,7 @@ configure-host:  \
 configure-target:  \
     maybe-configure-target-libstdc++-v3 \
     maybe-configure-target-libmudflap \
+    maybe-configure-target-libssp \
     maybe-configure-target-newlib \
     maybe-configure-target-libgfortran \
     maybe-configure-target-libobjc \
@@ -834,6 +839,7 @@ all-host:  \
 all-target:  \
     maybe-all-target-libstdc++-v3 \
     maybe-all-target-libmudflap \
+    maybe-all-target-libssp \
     maybe-all-target-newlib \
     maybe-all-target-libgfortran \
     maybe-all-target-libobjc \
@@ -933,6 +939,7 @@ info-host:  \
 info-target:  \
     maybe-info-target-libstdc++-v3 \
     maybe-info-target-libmudflap \
+    maybe-info-target-libssp \
     maybe-info-target-newlib \
     maybe-info-target-libgfortran \
     maybe-info-target-libobjc \
@@ -1027,6 +1034,7 @@ dvi-host:  \
 dvi-target:  \
     maybe-dvi-target-libstdc++-v3 \
     maybe-dvi-target-libmudflap \
+    maybe-dvi-target-libssp \
     maybe-dvi-target-newlib \
     maybe-dvi-target-libgfortran \
     maybe-dvi-target-libobjc \
@@ -1121,6 +1129,7 @@ html-host:  \
 html-target:  \
     maybe-html-target-libstdc++-v3 \
     maybe-html-target-libmudflap \
+    maybe-html-target-libssp \
     maybe-html-target-newlib \
     maybe-html-target-libgfortran \
     maybe-html-target-libobjc \
@@ -1215,6 +1224,7 @@ TAGS-host:  \
 TAGS-target:  \
     maybe-TAGS-target-libstdc++-v3 \
     maybe-TAGS-target-libmudflap \
+    maybe-TAGS-target-libssp \
     maybe-TAGS-target-newlib \
     maybe-TAGS-target-libgfortran \
     maybe-TAGS-target-libobjc \
@@ -1309,6 +1319,7 @@ install-info-host:  \
 install-info-target:  \
     maybe-install-info-target-libstdc++-v3 \
     maybe-install-info-target-libmudflap \
+    maybe-install-info-target-libssp \
     maybe-install-info-target-newlib \
     maybe-install-info-target-libgfortran \
     maybe-install-info-target-libobjc \
@@ -1403,6 +1414,7 @@ installcheck-host:  \
 installcheck-target:  \
     maybe-installcheck-target-libstdc++-v3 \
     maybe-installcheck-target-libmudflap \
+    maybe-installcheck-target-libssp \
     maybe-installcheck-target-newlib \
     maybe-installcheck-target-libgfortran \
     maybe-installcheck-target-libobjc \
@@ -1497,6 +1509,7 @@ mostlyclean-host:  \
 mostlyclean-target:  \
     maybe-mostlyclean-target-libstdc++-v3 \
     maybe-mostlyclean-target-libmudflap \
+    maybe-mostlyclean-target-libssp \
     maybe-mostlyclean-target-newlib \
     maybe-mostlyclean-target-libgfortran \
     maybe-mostlyclean-target-libobjc \
@@ -1591,6 +1604,7 @@ clean-host:  \
 clean-target:  \
     maybe-clean-target-libstdc++-v3 \
     maybe-clean-target-libmudflap \
+    maybe-clean-target-libssp \
     maybe-clean-target-newlib \
     maybe-clean-target-libgfortran \
     maybe-clean-target-libobjc \
@@ -1685,6 +1699,7 @@ distclean-host:  \
 distclean-target:  \
     maybe-distclean-target-libstdc++-v3 \
     maybe-distclean-target-libmudflap \
+    maybe-distclean-target-libssp \
     maybe-distclean-target-newlib \
     maybe-distclean-target-libgfortran \
     maybe-distclean-target-libobjc \
@@ -1779,6 +1794,7 @@ maintainer-clean-host:  \
 maintainer-clean-target:  \
     maybe-maintainer-clean-target-libstdc++-v3 \
     maybe-maintainer-clean-target-libmudflap \
+    maybe-maintainer-clean-target-libssp \
     maybe-maintainer-clean-target-newlib \
     maybe-maintainer-clean-target-libgfortran \
     maybe-maintainer-clean-target-libobjc \
@@ -1932,6 +1948,7 @@ do-check: unstage  \
     maybe-check-gnattools \
     maybe-check-target-libstdc++-v3 \
     maybe-check-target-libmudflap \
+    maybe-check-target-libssp \
     maybe-check-target-newlib \
     maybe-check-target-libgfortran \
     maybe-check-target-libobjc \
@@ -2118,6 +2135,7 @@ install-host:  \
 install-target:  \
     maybe-install-target-libstdc++-v3 \
     maybe-install-target-libmudflap \
+    maybe-install-target-libssp \
     maybe-install-target-newlib \
     maybe-install-target-libgfortran \
     maybe-install-target-libobjc \
@@ -27936,6 +27954,341 @@ maintainer-clean-target-libmudflap:
 
 
 # There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
+@if target-libssp
+$(TARGET_SUBDIR)/libssp/multilib.out: multilib.out
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libssp ; \
+	rm -f $(TARGET_SUBDIR)/libssp/Makefile || : ; \
+	cp multilib.out $(TARGET_SUBDIR)/libssp/multilib.out
+@endif target-libssp
+
+
+
+.PHONY: configure-target-libssp maybe-configure-target-libssp
+maybe-configure-target-libssp:
+@if target-libssp
+maybe-configure-target-libssp: configure-target-libssp
+configure-target-libssp: $(TARGET_SUBDIR)/libssp/multilib.out
+	@test ! -f $(TARGET_SUBDIR)/libssp/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libssp ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo Configuring in $(TARGET_SUBDIR)/libssp; \
+	cd "$(TARGET_SUBDIR)/libssp" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libssp/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libssp"; \
+	libsrcdir="$$s/libssp"; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
+	  $(TARGET_CONFIGARGS) $${srcdiroption}  \
+	  || exit 1
+@endif target-libssp
+
+
+
+
+
+.PHONY: all-target-libssp maybe-all-target-libssp
+maybe-all-target-libssp:
+@if target-libssp
+TARGET-target-libssp=all
+maybe-all-target-libssp: all-target-libssp
+all-target-libssp: configure-target-libssp
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libssp && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  $(TARGET-target-libssp))
+@endif target-libssp
+
+
+
+
+
+.PHONY: check-target-libssp maybe-check-target-libssp
+maybe-check-target-libssp:
+@if target-libssp
+maybe-check-target-libssp: check-target-libssp
+
+check-target-libssp:
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libssp && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
+
+@endif target-libssp
+
+.PHONY: install-target-libssp maybe-install-target-libssp
+maybe-install-target-libssp:
+@if target-libssp
+maybe-install-target-libssp: install-target-libssp
+
+install-target-libssp: installdirs
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libssp && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-libssp
+
+# Other targets (info, dvi, etc.)
+
+.PHONY: maybe-info-target-libssp info-target-libssp
+maybe-info-target-libssp:
+@if target-libssp
+maybe-info-target-libssp: info-target-libssp
+
+info-target-libssp: \
+    configure-target-libssp 
+	@[ -f $(TARGET_SUBDIR)/libssp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing info in $(TARGET_SUBDIR)/libssp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libssp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           info) \
+	  || exit 1
+
+@endif target-libssp
+
+.PHONY: maybe-dvi-target-libssp dvi-target-libssp
+maybe-dvi-target-libssp:
+@if target-libssp
+maybe-dvi-target-libssp: dvi-target-libssp
+
+dvi-target-libssp: \
+    configure-target-libssp 
+	@[ -f $(TARGET_SUBDIR)/libssp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing dvi in $(TARGET_SUBDIR)/libssp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libssp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           dvi) \
+	  || exit 1
+
+@endif target-libssp
+
+.PHONY: maybe-html-target-libssp html-target-libssp
+maybe-html-target-libssp:
+@if target-libssp
+maybe-html-target-libssp: html-target-libssp
+
+html-target-libssp: \
+    configure-target-libssp 
+	@[ -f $(TARGET_SUBDIR)/libssp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing html in $(TARGET_SUBDIR)/libssp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libssp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           html) \
+	  || exit 1
+
+@endif target-libssp
+
+.PHONY: maybe-TAGS-target-libssp TAGS-target-libssp
+maybe-TAGS-target-libssp:
+@if target-libssp
+maybe-TAGS-target-libssp: TAGS-target-libssp
+
+TAGS-target-libssp: \
+    configure-target-libssp 
+	@[ -f $(TARGET_SUBDIR)/libssp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing TAGS in $(TARGET_SUBDIR)/libssp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libssp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           TAGS) \
+	  || exit 1
+
+@endif target-libssp
+
+.PHONY: maybe-install-info-target-libssp install-info-target-libssp
+maybe-install-info-target-libssp:
+@if target-libssp
+maybe-install-info-target-libssp: install-info-target-libssp
+
+install-info-target-libssp: \
+    configure-target-libssp \
+    info-target-libssp 
+	@[ -f $(TARGET_SUBDIR)/libssp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-info in $(TARGET_SUBDIR)/libssp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libssp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           install-info) \
+	  || exit 1
+
+@endif target-libssp
+
+.PHONY: maybe-installcheck-target-libssp installcheck-target-libssp
+maybe-installcheck-target-libssp:
+@if target-libssp
+maybe-installcheck-target-libssp: installcheck-target-libssp
+
+installcheck-target-libssp: \
+    configure-target-libssp 
+	@[ -f $(TARGET_SUBDIR)/libssp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing installcheck in $(TARGET_SUBDIR)/libssp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libssp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           installcheck) \
+	  || exit 1
+
+@endif target-libssp
+
+.PHONY: maybe-mostlyclean-target-libssp mostlyclean-target-libssp
+maybe-mostlyclean-target-libssp:
+@if target-libssp
+maybe-mostlyclean-target-libssp: mostlyclean-target-libssp
+
+mostlyclean-target-libssp: 
+	@[ -f $(TARGET_SUBDIR)/libssp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libssp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libssp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           mostlyclean) \
+	  || exit 1
+
+@endif target-libssp
+
+.PHONY: maybe-clean-target-libssp clean-target-libssp
+maybe-clean-target-libssp:
+@if target-libssp
+maybe-clean-target-libssp: clean-target-libssp
+
+clean-target-libssp: 
+	@[ -f $(TARGET_SUBDIR)/libssp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing clean in $(TARGET_SUBDIR)/libssp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libssp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           clean) \
+	  || exit 1
+
+@endif target-libssp
+
+.PHONY: maybe-distclean-target-libssp distclean-target-libssp
+maybe-distclean-target-libssp:
+@if target-libssp
+maybe-distclean-target-libssp: distclean-target-libssp
+
+distclean-target-libssp: 
+	@[ -f $(TARGET_SUBDIR)/libssp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing distclean in $(TARGET_SUBDIR)/libssp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libssp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           distclean) \
+	  || exit 1
+
+@endif target-libssp
+
+.PHONY: maybe-maintainer-clean-target-libssp maintainer-clean-target-libssp
+maybe-maintainer-clean-target-libssp:
+@if target-libssp
+maybe-maintainer-clean-target-libssp: maintainer-clean-target-libssp
+
+maintainer-clean-target-libssp: 
+	@[ -f $(TARGET_SUBDIR)/libssp/Makefile ] || exit 0 ; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libssp" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libssp && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	           maintainer-clean) \
+	  || exit 1
+
+@endif target-libssp
+
+
+
+# There's only one multilib.out.  Cleverer subdirs shouldn't need it copied.
 @if target-newlib
 $(TARGET_SUBDIR)/newlib/multilib.out: multilib.out
 	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/newlib ; \
@@ -34566,6 +34919,8 @@ do-distclean: distclean-stage1
 configure-target-libstdc++-v3: maybe-all-gcc
 
 configure-target-libmudflap: maybe-all-gcc
+
+configure-target-libssp: maybe-all-gcc
 
 configure-target-newlib: maybe-all-gcc
 

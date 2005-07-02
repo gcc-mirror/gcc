@@ -1,3 +1,36 @@
+2005-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c (LINK_SSP_SPEC): Define.
+	(link_ssp_spec): New variable.
+	(LINK_COMMAND_SPEC): Add %(link_ssp).
+	(static_specs): Add link_ssp_spec.
+	* configure.ac (TARGET_LIBC_PROVIDES_SSP): New test.
+	* configure: Rebuilt.
+	* config.in: Rebuilt.
+
+	* config/rs6000/linux.h (TARGET_THREAD_SSP_OFFSET): Define.
+	* config/rs6000/linux64.h (TARGET_THREAD_SSP_OFFSET): Likewise.
+	* config/i386/linux.h (TARGET_THREAD_SSP_OFFSET): Likewise.
+	* config/i386/linux64.h (TARGET_THREAD_SSP_OFFSET): Likewise.
+	* config/rs6000/rs6000.md (stack_protect_set, stack_protect_test):
+	If TARGET_THREAD_SSP_OFFSET is defined, use -0x7010(13) resp.
+	-0x7008(2) instead of reading __stack_chk_guard variable.
+	* config/i386/i386.md (UNSPEC_SP_SET, UNSPEC_SP_TEST): Change
+	number.
+	(UNSPEC_SP_TLS_SET, UNSPEC_SP_TLS_TEST): New constants.
+	(stack_protect_set, stack_protect_test): Use *_tls* patterns
+	if TARGET_THREAD_SSP_OFFSET is defined.
+	(stack_tls_protect_set_si, stack_tls_protect_set_di,
+	stack_tls_protect_test_si, stack_tls_protect_test_di): New insns.
+
+	Revert:
+	2005-06-27  Richard Henderson  <rth@redhat.com>
+	* libgcc-std.ver (GCC_4.1.0): New.
+	* libgcc.h (__stack_chk_guard): Declare.
+	(__stack_chk_fail, __stack_chk_fail_local): Declare.
+	* libgcc2.c (L_stack_chk, L_stack_chk_local): New.
+	* mklibgcc.in (lib2funcs): Add them.
+
 2005-07-01  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/linux-unwind.h (x86_64_fallback_frame_state): Cast to

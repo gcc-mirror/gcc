@@ -390,11 +390,6 @@ extern int __parityDI2 (UDWtype);
 
 extern void __enable_execute_stack (void *);
 
-extern void *__stack_chk_guard;
-extern void __stack_chk_fail (void) __attribute__ ((__noreturn__));
-extern void __stack_chk_fail_local (void)
-	__attribute__ ((__noreturn__)) ATTRIBUTE_HIDDEN;
-
 #ifndef HIDE_EXPORTS
 #pragma GCC visibility pop
 #endif

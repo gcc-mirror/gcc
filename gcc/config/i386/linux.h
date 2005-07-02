@@ -185,3 +185,8 @@ Boston, MA 02110-1301, USA.  */
 
 /* This macro may be overridden in i386/k*bsd-gnu.h.  */
 #define REG_NAME(reg) reg
+
+#ifdef TARGET_LIBC_PROVIDES_SSP
+/* i386 glibc provides __stack_chk_guard in %gs:0x14.  */
+#define TARGET_THREAD_SSP_OFFSET	0x14
+#endif
