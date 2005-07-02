@@ -2922,8 +2922,8 @@ objc_declare_class (tree ident_list)
 		{
 		  error ("%qs redeclared as different kind of symbol",
 			 IDENTIFIER_POINTER (ident));
-		  error ("%Jprevious declaration of '%D'",
-			 record, record);
+		  error ("previous declaration of %q+D",
+			 record);
 		}
 	    }
 
@@ -4317,8 +4317,8 @@ encode_method_prototype (tree method_decl)
       /* If a type size is not known, bail out.  */
       if (sz < 0)
 	{
-	  error ("%Jtype '%D' does not have a known size",
-		 type, type);
+	  error ("type %q+D does not have a known size",
+		 type);
 	  /* Pretend that the encoding succeeded; the compilation will
 	     fail nevertheless.  */
 	  goto finish_encoding;
@@ -7493,8 +7493,8 @@ start_class (enum tree_code code, tree class_name, tree super_name,
     {
       error ("%qs redeclared as different kind of symbol",
 	     IDENTIFIER_POINTER (class_name));
-      error ("%Jprevious declaration of '%D'",
-	     decl, decl);
+      error ("previous declaration of %q+D",
+	     decl);
     }
 
   if (code == CLASS_IMPLEMENTATION_TYPE)

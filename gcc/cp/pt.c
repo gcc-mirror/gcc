@@ -667,7 +667,7 @@ check_specialization_namespace (tree tmpl)
   else
     {
       pedwarn ("specialization of %qD in different namespace", tmpl);
-      cp_pedwarn_at ("  from definition of %q#D", tmpl);
+      pedwarn ("  from definition of %q+#D", tmpl);
       return false;
     }
 }
@@ -736,8 +736,8 @@ maybe_process_partial_specialization (tree type)
 	      != decl_namespace_context (CLASSTYPE_TI_TEMPLATE (type)))
 	    {
 	      pedwarn ("specializing %q#T in different namespace", type);
-	      cp_pedwarn_at ("  from definition of %q#D",
-			     CLASSTYPE_TI_TEMPLATE (type));
+	      pedwarn ("  from definition of %q+#D",
+		       CLASSTYPE_TI_TEMPLATE (type));
 	    }
 
 	  /* Check for invalid specialization after instantiation:
@@ -1284,7 +1284,7 @@ print_candidates (tree fns)
       tree f;
 
       for (f = TREE_VALUE (fn); f; f = OVL_NEXT (f))
-	cp_error_at ("%s %+#D", str, OVL_CURRENT (f));
+	error ("%s %+#D", str, OVL_CURRENT (f));
       str = "               ";
     }
 }
@@ -1533,17 +1533,16 @@ determine_specialization (tree template_id,
 
   if (templates == NULL_TREE && candidates == NULL_TREE)
     {
-      cp_error_at ("template-id %qD for %q+D does not match any template "
-		   "declaration",
-		   template_id, decl);
+      error ("template-id %qD for %q+D does not match any template "
+	     "declaration", template_id, decl);
       return error_mark_node;
     }
   else if ((templates && TREE_CHAIN (templates))
 	   || (candidates && TREE_CHAIN (candidates))
 	   || (templates && candidates))
     {
-      cp_error_at ("ambiguous template specialization %qD for %q+D",
-		   template_id, decl);
+      error ("ambiguous template specialization %qD for %q+D",
+	     template_id, decl);
       chainon (candidates, templates);
       print_candidates (candidates);
       return error_mark_node;
@@ -2197,8 +2196,8 @@ check_template_shadow (tree decl)
       || TEMPLATE_PARMS_FOR_INLINE (current_template_parms))
     return;
 
-  cp_error_at ("declaration of %q#D", decl);
-  cp_error_at (" shadows template parm %q#D", olddecl);
+  error ("declaration of %q+#D", decl);
+  error (" shadows template parm %q+#D", olddecl);
 }
 
 /* Return a new TEMPLATE_PARM_INDEX with the indicated INDEX, LEVEL,
@@ -3219,7 +3218,7 @@ redeclare_class_template (tree type, tree parms)
 
   if (TREE_VEC_LENGTH (parms) != TREE_VEC_LENGTH (tmpl_parms))
     {
-      cp_error_at ("previous declaration %qD", tmpl);
+      error ("previous declaration %q+D", tmpl);
       error ("used %d template parameter(s) instead of %d",
 	     TREE_VEC_LENGTH (tmpl_parms),
 	     TREE_VEC_LENGTH (parms));
@@ -3239,7 +3238,7 @@ redeclare_class_template (tree type, tree parms)
 	  || (TREE_CODE (tmpl_parm) != TYPE_DECL
 	      && !same_type_p (TREE_TYPE (tmpl_parm), TREE_TYPE (parm))))
 	{
-	  cp_error_at ("template parameter %q#D", tmpl_parm);
+	  error ("template parameter %q+#D", tmpl_parm);
 	  error ("redeclared here as %q#D", parm);
 	  return;
 	}
@@ -3960,7 +3959,7 @@ coerce_template_parms (tree parms,
 		 nargs, nparms);
 
 	  if (in_decl)
-	    cp_error_at ("provided for %qD", in_decl);
+	    error ("provided for %q+D", in_decl);
 	}
 
       return error_mark_node;
@@ -4347,7 +4346,7 @@ lookup_template_class (tree d1,
 	{
 	  error ("non-template type %qT used as a template", d1);
 	  if (in_decl)
-	    cp_error_at ("for template declaration %qD", in_decl);
+	    error ("for template declaration %q+D", in_decl);
 	}
       POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
     }
@@ -5441,7 +5440,7 @@ instantiate_class_template (tree type)
 	{
 	  if (get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t), args))
 	    {
-	      cp_error_at ("%s %+#T", str, TREE_TYPE (t));
+	      error ("%s %+#T", str, TREE_TYPE (t));
 	      str = "               ";
 	    }
 	}
@@ -6547,7 +6546,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 					complain, in_decl);
 	TREE_CHAIN (r) = NULL_TREE;
 	if (VOID_TYPE_P (type))
-	  cp_error_at ("instantiation of %qD as type %qT", r, type);
+	  error ("instantiation of %q+D as type %qT", r, type);
       }
       break;
 
@@ -6723,7 +6722,7 @@ tsubst_arg_types (tree arg_types,
 	{
 	  error ("invalid parameter type %qT", type);
 	  if (in_decl)
-	    cp_error_at ("in declaration %qD", in_decl);
+	    error ("in declaration %q+D", in_decl);
 	}
       return error_mark_node;
     }
@@ -11624,11 +11623,10 @@ instantiate_pending_templates (int retries)
      to avoid infinite loop.  */
   if (pending_templates && retries >= max_tinst_depth)
     {
-      cp_error_at ("template instantiation depth exceeds maximum of %d"
-		   " (use -ftemplate-depth-NN to increase the maximum)"
-		   " instantiating %q+D, possibly from virtual table"
-		   " generation",
-		   max_tinst_depth, TREE_VALUE (pending_templates));
+      error ("template instantiation depth exceeds maximum of %d"
+	    " instantiating %q+D, possibly from virtual table generation"
+	    " (use -ftemplate-depth-NN to increase the maximum)",
+	    max_tinst_depth, TREE_VALUE (pending_templates));
       return;
     }
 

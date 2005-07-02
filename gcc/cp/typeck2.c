@@ -214,7 +214,7 @@ complete_type_check_abstract (tree type)
 
 	  /* Tweak input_location so that the diagnostic appears at the correct
 	    location. Notice that this is only needed if the decl is an
-	    IDENTIFIER_NODE, otherwise cp_error_at.  */
+	    IDENTIFIER_NODE.  */
 	  input_location = pat->locus;
 	  abstract_virtuals_error (pat->decl, pat->type);
 	  pat = pat->next;
@@ -289,27 +289,24 @@ abstract_virtuals_error (tree decl, tree type)
 	return 0;
 
       if (TREE_CODE (decl) == VAR_DECL)
-	cp_error_at ("cannot declare variable %q+D to be of abstract "
-		     "type %qT", decl, type);
+	error ("cannot declare variable %q+D to be of abstract "
+	       "type %qT", decl, type);
       else if (TREE_CODE (decl) == PARM_DECL)
-	cp_error_at ("cannot declare parameter %q+D to be of abstract "
-		     "type %qT", decl, type);
+	error ("cannot declare parameter %q+D to be of abstract type %qT",
+	       decl, type);
       else if (TREE_CODE (decl) == FIELD_DECL)
-	cp_error_at ("cannot declare field %q+D to be of abstract "
-		     "type %qT", decl, type);
+	error ("cannot declare field %q+D to be of abstract type %qT",
+	       decl, type);
       else if (TREE_CODE (decl) == FUNCTION_DECL
 	       && TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
-	cp_error_at ("invalid abstract return type for member function %q+#D",
-		     decl);
+	error ("invalid abstract return type for member function %q+#D", decl);
       else if (TREE_CODE (decl) == FUNCTION_DECL)
-	cp_error_at ("invalid abstract return type for function %q+#D",
-		     decl);
+	error ("invalid abstract return type for function %q+#D", decl);
       else if (TREE_CODE (decl) == IDENTIFIER_NODE)
-	/* Here we do not have location information, so use error instead
-	   of cp_error_at.  */
+	/* Here we do not have location information.  */
 	error ("invalid abstract type %qT for %qE", type, decl);
       else
-	cp_error_at ("invalid abstract type for %q+D", decl);
+	error ("invalid abstract type for %q+D", decl);
     }
   else
     error ("cannot allocate an object of abstract type %qT", type);
@@ -324,7 +321,7 @@ abstract_virtuals_error (tree decl, tree type)
 	      "within %qT:", TYPE_MAIN_DECL (type), type);
 
       for (ix = 0; VEC_iterate (tree, pure, ix, fn); ix++)
-	inform ("%J\t%#D", fn, fn);
+	inform ("\t%+#D", fn);
       /* Now truncate the vector.  This leaves it non-null, so we know
 	 there are pure virtuals, but empty so we don't list them out
 	 again.  */
@@ -348,23 +345,13 @@ cxx_incomplete_type_diagnostic (tree value, tree type, int diag_type)
 {
   int decl = 0;
   void (*p_msg) (const char *, ...) ATTRIBUTE_GCC_CXXDIAG(1,2);
-  void (*p_msg_at) (const char *, ...) ATTRIBUTE_GCC_CXXDIAG(1,2);
 
   if (diag_type == 1)
-    {
-      p_msg = warning0;
-      p_msg_at = cp_warning_at;
-    }
+    p_msg = warning0;
   else if (diag_type == 2)
-    {
-      p_msg = pedwarn;
-      p_msg_at = cp_pedwarn_at;
-    }
+    p_msg = pedwarn;
   else
-    {
-      p_msg = error;
-      p_msg_at = cp_error_at;
-    }
+    p_msg = error;
 
   /* Avoid duplicate error message.  */
   if (TREE_CODE (type) == ERROR_MARK)
@@ -374,7 +361,7 @@ cxx_incomplete_type_diagnostic (tree value, tree type, int diag_type)
 		     || TREE_CODE (value) == PARM_DECL
 		     || TREE_CODE (value) == FIELD_DECL))
     {
-      (*p_msg_at) ("%qD has incomplete type", value);
+      p_msg ("%q+D has incomplete type", value);
       decl = 1;
     }
  retry:
@@ -386,15 +373,15 @@ cxx_incomplete_type_diagnostic (tree value, tree type, int diag_type)
     case UNION_TYPE:
     case ENUMERAL_TYPE:
       if (!decl)
-	(*p_msg) ("invalid use of undefined type %q#T", type);
+	p_msg ("invalid use of undefined type %q#T", type);
       if (!TYPE_TEMPLATE_INFO (type))
-	(*p_msg_at) ("forward declaration of %q#T", type);
+	p_msg ("forward declaration of %q+#T", type);
       else
-	(*p_msg_at) ("declaration of %q#T", type);
+	p_msg ("declaration of %q+#T", type);
       break;
 
     case VOID_TYPE:
-      (*p_msg) ("invalid use of %qT", type);
+      p_msg ("invalid use of %qT", type);
       break;
 
     case ARRAY_TYPE:
@@ -403,28 +390,28 @@ cxx_incomplete_type_diagnostic (tree value, tree type, int diag_type)
 	  type = TREE_TYPE (type);
 	  goto retry;
 	}
-      (*p_msg) ("invalid use of array with unspecified bounds");
+      p_msg ("invalid use of array with unspecified bounds");
       break;
 
     case OFFSET_TYPE:
     bad_member:
-      (*p_msg) ("invalid use of member (did you forget the %<&%> ?)");
+      p_msg ("invalid use of member (did you forget the %<&%> ?)");
       break;
 
     case TEMPLATE_TYPE_PARM:
-      (*p_msg) ("invalid use of template type parameter");
+      p_msg ("invalid use of template type parameter");
       break;
 
     case UNKNOWN_TYPE:
       if (value && TREE_CODE (value) == COMPONENT_REF)
 	goto bad_member;
       else if (value && TREE_CODE (value) == ADDR_EXPR)
-	(*p_msg) ("address of overloaded function with no contextual "
-		  "type information");
+	p_msg ("address of overloaded function with no contextual "
+	       "type information");
       else if (value && TREE_CODE (value) == OVERLOAD)
-	(*p_msg) ("overloaded function with no contextual type information");
+	p_msg ("overloaded function with no contextual type information");
       else
-	(*p_msg) ("insufficient contextual information to determine type");
+	p_msg ("insufficient contextual information to determine type");
       break;
 
     default:

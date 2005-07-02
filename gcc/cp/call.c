@@ -2388,9 +2388,9 @@ print_z_candidate (const char *msgstr, struct z_candidate *candidate)
   else if (TYPE_P (candidate->fn))
     inform ("%s %T <conversion>", msgstr, candidate->fn);
   else if (candidate->viable == -1)
-    inform ("%J%s %+#D <near match>", candidate->fn, msgstr, candidate->fn);
+    inform ("%s %+#D <near match>", msgstr, candidate->fn);
   else
-    inform ("%J%s %+#D", candidate->fn, msgstr, candidate->fn);
+    inform ("%s %+#D", msgstr, candidate->fn);
 }
 
 static void
@@ -4052,11 +4052,11 @@ enforce_access (tree basetype_path, tree decl)
   if (!accessible_p (basetype_path, decl, true))
     {
       if (TREE_PRIVATE (decl))
-	cp_error_at ("%q+#D is private", decl);
+	error ("%q+#D is private", decl);
       else if (TREE_PROTECTED (decl))
-	cp_error_at ("%q+#D is protected", decl);
+	error ("%q+#D is protected", decl);
       else
-	cp_error_at ("%q+#D is inaccessible", decl);
+	error ("%q+#D is inaccessible", decl);
       error ("within this context");
       return false;
     }

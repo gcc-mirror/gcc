@@ -505,7 +505,7 @@ supplement_binding (cxx_binding *binding, tree decl)
   else
     {
       error ("declaration of %q#D", decl);
-      cp_error_at ("conflicts with previous declaration %q#D", bval);
+      error ("conflicts with previous declaration %q+#D", bval);
       ok = false;
     }
 
@@ -721,7 +721,7 @@ pushdecl (tree x)
 		     [basic.start.main]
 
 		     This function shall not be overloaded.  */
-		  cp_error_at ("invalid redeclaration of %qD", t);
+		  error ("invalid redeclaration of %q+D", t);
 		  error ("as %qD", x);
 		  /* We don't try to push this declaration since that
 		     causes a crash.  */
@@ -811,7 +811,7 @@ pushdecl (tree x)
 	      && !same_type_p (TREE_TYPE (x), TREE_TYPE (decl)))
 	    {
 	      pedwarn ("type mismatch with previous external decl of %q#D", x);
-	      cp_pedwarn_at ("previous external decl of %q#D", decl);
+	      pedwarn ("previous external decl of %q+#D", decl);
 	    }
 	}
 
@@ -894,7 +894,7 @@ pushdecl (tree x)
 	      else
 		{
 		  warning (0, "extern declaration of %q#D doesn't match", x);
-		  cp_warning_at ("global declaration %q#D", oldglobal);
+		  warning (0, "global declaration %q+#D", oldglobal);
 		}
 	    }
 	  /* If we have a local external declaration,
@@ -1092,9 +1092,9 @@ check_for_out_of_scope_variable (tree decl)
       if (!DECL_ERROR_REPORTED (decl))
 	{
 	  warning (0, "name lookup of %qD changed", DECL_NAME (decl));
-	  cp_warning_at ("  matches this %qD under ISO standard rules",
-			 shadowed);
-	  cp_warning_at ("  matches this %qD under old rules", decl);
+	  warning (0, "  matches this %q+D under ISO standard rules",
+		   shadowed);
+	  warning (0, "  matches this %q+D under old rules", decl);
 	  DECL_ERROR_REPORTED (decl) = 1;
 	}
       return shadowed;
@@ -1114,15 +1114,15 @@ check_for_out_of_scope_variable (tree decl)
     {
       error ("name lookup of %qD changed for new ISO %<for%> scoping",
 	     DECL_NAME (decl));
-      cp_error_at ("  cannot use obsolete binding at %qD because "
-		   "it has a destructor", decl);
+      error ("  cannot use obsolete binding at %q+D because "
+	     "it has a destructor", decl);
       return error_mark_node;
     }
   else
     {
       pedwarn ("name lookup of %qD changed for new ISO %<for%> scoping",
 	       DECL_NAME (decl));
-      cp_pedwarn_at ("  using obsolete binding at %qD", decl);
+      pedwarn ("  using obsolete binding at %q+D", decl);
     }
 
   return decl;
@@ -1895,7 +1895,7 @@ push_overloaded_decl (tree decl, int flags)
 	old = NULL_TREE;
       else
 	{
-	  cp_error_at ("previous non-function declaration %q#D", old);
+	  error ("previous non-function declaration %q+#D", old);
 	  error ("conflicts with function declaration %q#D", decl);
 	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, decl);
 	}
@@ -3386,9 +3386,9 @@ ambiguous_decl (tree name, struct scope_binding *old, cxx_binding *new,
 	      if (old->value != error_mark_node)
 		{
 		  error ("use of %qD is ambiguous", name);
-		  cp_error_at ("  first declared as %q#D here", old->value);
+		  error ("  first declared as %q+#D here", old->value);
 		}
-	      cp_error_at ("  also declared as %q#D here", val);
+	      error ("  also declared as %q+#D here", val);
 	    }
 	  old->value = error_mark_node;
 	}
@@ -4165,8 +4165,8 @@ add_function (struct arg_lookup *k, tree fn)
 	{
 	  fn = f1; f1 = f2; f2 = fn;
 	}
-      cp_error_at ("%qD is not a function,", f1);
-      cp_error_at ("  conflict with %qD", f2);
+      error ("%q+D is not a function,", f1);
+      error ("  conflict with %q+D", f2);
       error ("  in call to %qD", k->name);
       return true;
     }

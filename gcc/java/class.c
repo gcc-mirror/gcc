@@ -2359,8 +2359,8 @@ layout_class_method (tree this_class, tree super_class,
 	      && ! flag_indirect_dispatch
 	      && !CLASS_FROM_SOURCE_P (this_class)
 	      && ! DECL_ARTIFICIAL (super_method))
-	    error ("%Jnon-static method '%D' overrides static method",
-                   method_decl, method_decl);
+	    error ("non-static method %q+D overrides static method",
+                   method_decl);
 	}
       else if (this_class == object_type_node
 	       && (METHOD_FINAL (method_decl)

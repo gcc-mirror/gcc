@@ -199,8 +199,8 @@ i386_pe_dllimport_p (tree decl)
 	{
 	   /* Don't warn about artificial methods.  */
 	  if (!DECL_ARTIFICIAL (decl))
-	    warning (0, "%Jfunction '%D' is defined after prior declaration "
-		     "as dllimport: attribute ignored", decl, decl);
+	    warning (0, "function %q+D is defined after prior declaration "
+		     "as dllimport: attribute ignored", decl);
 	  return 0;
 	}
 
@@ -210,8 +210,8 @@ i386_pe_dllimport_p (tree decl)
       else if (TREE_CODE (decl) == FUNCTION_DECL && DECL_INLINE (decl))
         {
 	  if (extra_warnings)
-	    warning (0, "%Jinline function '%D' is declared as dllimport: "
-		     "attribute ignored.", decl, decl);
+	    warning (0, "inline function %q+D is declared as dllimport: "
+		     "attribute ignored", decl);
 	  return 0;
 	}
 
@@ -222,8 +222,8 @@ i386_pe_dllimport_p (tree decl)
 	       && !DECL_EXTERNAL (decl) && context_imp)
 	{
 	  if (!DECL_VIRTUAL_P (decl))
-            error ("%Jdefinition of static data member '%D' of "
-		   "dllimport'd class.", decl, decl);
+            error ("definition of static data member %q+D of "
+		   "dllimport'd class", decl);
 	  return 0;
 	}
 
@@ -279,8 +279,8 @@ i386_pe_mark_dllexport (tree decl)
   oldname = XSTR (rtlname, 0);
   if (i386_pe_dllimport_name_p (oldname))
     {
-      warning (0, "%Jinconsistent dll linkage for '%D', dllexport assumed.",
-	       decl, decl);
+      warning (0, "inconsistent dll linkage for %q+D, dllexport assumed",
+	       decl);
      /* Remove DLL_IMPORT_PREFIX.  */
       oldname += strlen (DLL_IMPORT_PREFIX);
       DECL_NON_ADDR_CONST_P (decl) = 0;
@@ -463,12 +463,12 @@ i386_pe_encode_section_info (tree decl, rtx rtl, int first)
 	 We leave these alone for now.  */
 
       if (DECL_INITIAL (decl) || !DECL_EXTERNAL (decl))
-	warning (0, "%J'%D' defined locally after being "
-		 "referenced with dllimport linkage", decl, decl);
+	warning (0, "%q+D defined locally after being "
+		 "referenced with dllimport linkage", decl);
       else
-	warning (OPT_Wattributes, "%J'%D' redeclared without dllimport "
+	warning (OPT_Wattributes, "%q+D redeclared without dllimport "
 		 "attribute after being referenced with dllimport linkage",
-		 decl, decl);
+		 decl);
     }
 }
 
@@ -634,7 +634,7 @@ i386_pe_section_type_flags (tree decl, const char *name, int reloc)
   else
     {
       if (decl && **slot != flags)
-	error ("%J'%D' causes a section type conflict", decl, decl);
+	error ("%q+D causes a section type conflict", decl);
     }
 
   return flags;

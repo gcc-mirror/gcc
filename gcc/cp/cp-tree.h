@@ -4375,8 +4375,4 @@ extern void cp_genericize			(tree);
 #define ATTRIBUTE_GCC_CXXDIAG(m, n) ATTRIBUTE_NONNULL(m)
 #endif
 
-extern void cp_error_at		(const char *, ...) ATTRIBUTE_GCC_CXXDIAG(1, 2);
-extern void cp_warning_at	(const char *, ...) ATTRIBUTE_GCC_CXXDIAG(1, 2);
-extern void cp_pedwarn_at	(const char *, ...) ATTRIBUTE_GCC_CXXDIAG(1, 2);
-
 #endif /* ! GCC_CP_TREE_H */

@@ -2560,8 +2560,7 @@ convert_arguments (tree typelist, tree values, tree fndecl, int flags)
 	{
 	  if (fndecl)
 	    {
-	      cp_error_at ("too many arguments to %s %q+#D", called_thing,
-			   fndecl);
+	      error ("too many arguments to %s %q+#D", called_thing, fndecl);
 	      error ("at this point in file");
 	    }
 	  else
@@ -2663,8 +2662,7 @@ convert_arguments (tree typelist, tree values, tree fndecl, int flags)
 	{
 	  if (fndecl)
 	    {
-	      cp_error_at ("too few arguments to %s %q+#D",
-			   called_thing, fndecl);
+	      error ("too few arguments to %s %q+#D", called_thing, fndecl);
 	      error ("at this point in file");
 	    }
 	  else
@@ -6018,9 +6016,9 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
       if (fndecl)
 	{
 	  if (warningcount > savew)
-	    cp_warning_at ("in passing argument %P of %q+D", parmnum, fndecl);
+	    warning (0, "in passing argument %P of %q+D", parmnum, fndecl);
 	  else if (errorcount > savee)
-	    cp_error_at ("in passing argument %P of %q+D", parmnum, fndecl);
+	    error ("in passing argument %P of %q+D", parmnum, fndecl);
 	}
       return rhs;
     }
@@ -6089,11 +6087,11 @@ maybe_warn_about_returning_address_of_local (tree retval)
 	   || TREE_PUBLIC (whats_returned)))
     {
       if (TREE_CODE (valtype) == REFERENCE_TYPE)
-	cp_warning_at ("reference to local variable %qD returned",
-		       whats_returned);
+	warning (0, "reference to local variable %q+D returned",
+		 whats_returned);
       else
-	cp_warning_at ("address of local variable %qD returned",
-		       whats_returned);
+	warning (0, "address of local variable %q+D returned",
+		 whats_returned);
       return;
     }
 }

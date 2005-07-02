@@ -2895,7 +2895,7 @@ mcore_mark_dllimport (tree decl)
       && !DECL_VIRTUAL_P (decl)
       && DECL_INITIAL (decl))
     {
-      error ("%Jinitialized variable '%D' is marked dllimport", decl, decl);
+      error ("initialized variable %q+D is marked dllimport", decl);
       return;
     }
   

@@ -1029,15 +1029,15 @@ add_method (tree type, tree method, tree using_decl)
 		    /* Defer to the local function.  */
 		    return;
 		  if (DECL_CONTEXT (fn) == DECL_CONTEXT (method))
-		    cp_error_at ("repeated using declaration %qD", using_decl);
+		    error ("repeated using declaration %q+D", using_decl);
 		  else
-		    cp_error_at ("using declaration %qD conflicts with a previous using declaration",
-				 using_decl);
+		    error ("using declaration %q+D conflicts with a previous using declaration",
+			   using_decl);
 		}
 	      else
 		{
-		  cp_error_at ("%q#D cannot be overloaded", method);
-		  cp_error_at ("with %q#D", fn);
+		  error ("%q+#D cannot be overloaded", method);
+		  error ("with %q+#D", fn);
 		}
 
 	      /* We don't call duplicate_decls here to merge the
@@ -1092,8 +1092,8 @@ alter_access (tree t, tree fdecl, tree access)
       if (TREE_VALUE (elem) != access)
 	{
 	  if (TREE_CODE (TREE_TYPE (fdecl)) == FUNCTION_DECL)
-	    cp_error_at ("conflicting access specifications for method"
-			 " %qD, ignored", TREE_TYPE (fdecl));
+	    error ("conflicting access specifications for method"
+		   " %q+D, ignored", TREE_TYPE (fdecl));
 	  else
 	    error ("conflicting access specifications for field %qE, ignored",
 		   DECL_NAME (fdecl));
@@ -1156,16 +1156,16 @@ handle_using_decl (tree using_decl, tree t)
 	   the same name already present in the current class.  */;
       else
 	{
-	  cp_error_at ("%qD invalid in %q#T", using_decl, t);
-	  cp_error_at ("  because of local method %q#D with same name",
-		       OVL_CURRENT (old_value));
+	  error ("%q+D invalid in %q#T", using_decl, t);
+	  error ("  because of local method %q+#D with same name",
+		 OVL_CURRENT (old_value));
 	  return;
 	}
     }
   else if (!DECL_ARTIFICIAL (old_value))
     {
-      cp_error_at ("%qD invalid in %q#T", using_decl, t);
-      cp_error_at ("  because of local member %q#D with same name", old_value);
+      error ("%q+D invalid in %q#T", using_decl, t);
+      error ("  because of local member %q+#D with same name", old_value);
       return;
     }
 
@@ -2383,8 +2383,8 @@ warn_hidden (tree t)
       while (base_fndecls)
 	{
 	  /* Here we know it is a hider, and no overrider exists.  */
-	  cp_warning_at ("%qD was hidden", TREE_VALUE (base_fndecls));
-	  cp_warning_at ("  by %qD", fns);
+	  warning (0, "%q+D was hidden", TREE_VALUE (base_fndecls));
+	  warning (0, "  by %q+D", fns);
 	  base_fndecls = TREE_CHAIN (base_fndecls);
 	}
     }
@@ -2425,18 +2425,15 @@ finish_struct_anon (tree t)
 
 	      if (TREE_CODE (elt) != FIELD_DECL)
 		{
-		  cp_pedwarn_at ("%q#D invalid; an anonymous union can "
-				 "only have non-static data members",
-				 elt);
+		  pedwarn ("%q+#D invalid; an anonymous union can "
+			   "only have non-static data members", elt);
 		  continue;
 		}
 
 	      if (TREE_PRIVATE (elt))
-		cp_pedwarn_at ("private member %q#D in anonymous union",
-			       elt);
+		pedwarn ("private member %q+#D in anonymous union", elt);
 	      else if (TREE_PROTECTED (elt))
-		cp_pedwarn_at ("protected member %q#D in anonymous union",
-			       elt);
+		pedwarn ("protected member %q+#D in anonymous union", elt);
 
 	      TREE_PRIVATE (elt) = TREE_PRIVATE (field);
 	      TREE_PROTECTED (elt) = TREE_PROTECTED (field);
@@ -2602,7 +2599,7 @@ check_bitfield_decl (tree field)
   if (DECL_INITIAL (field)
       && ! INTEGRAL_TYPE_P (TREE_TYPE (field)))
     {
-      cp_error_at ("bit-field %q#D with non-integral type", field);
+      error ("bit-field %q+#D with non-integral type", field);
       w = error_mark_node;
     }
 
@@ -2619,24 +2616,23 @@ check_bitfield_decl (tree field)
 
       if (TREE_CODE (w) != INTEGER_CST)
 	{
-	  cp_error_at ("bit-field %qD width not an integer constant",
-		       field);
+	  error ("bit-field %q+D width not an integer constant", field);
 	  w = error_mark_node;
 	}
       else if (tree_int_cst_sgn (w) < 0)
 	{
-	  cp_error_at ("negative width in bit-field %qD", field);
+	  error ("negative width in bit-field %q+D", field);
 	  w = error_mark_node;
 	}
       else if (integer_zerop (w) && DECL_NAME (field) != 0)
 	{
-	  cp_error_at ("zero width for bit-field %qD", field);
+	  error ("zero width for bit-field %q+D", field);
 	  w = error_mark_node;
 	}
       else if (compare_tree_int (w, TYPE_PRECISION (type)) > 0
 	       && TREE_CODE (type) != ENUMERAL_TYPE
 	       && TREE_CODE (type) != BOOLEAN_TYPE)
-	cp_warning_at ("width of %qD exceeds its type", field);
+	warning (0, "width of %q+D exceeds its type", field);
       else if (TREE_CODE (type) == ENUMERAL_TYPE
 	       && (0 > compare_tree_int (w,
 					 min_precision (TYPE_MIN_VALUE (type),
@@ -2645,8 +2641,7 @@ check_bitfield_decl (tree field)
 					     min_precision
 					     (TYPE_MAX_VALUE (type),
 					      TYPE_UNSIGNED (type)))))
-	cp_warning_at ("%qD is too small to hold all values of %q#T",
-		       field, type);
+	warning (0, "%q+D is too small to hold all values of %q#T", field, type);
     }
 
   /* Remove the bit-field width indicator so that the rest of the
@@ -2705,14 +2700,13 @@ check_field_decl (tree field,
       if (TREE_CODE (t) == UNION_TYPE)
 	{
 	  if (TYPE_NEEDS_CONSTRUCTING (type))
-	    cp_error_at ("member %q#D with constructor not allowed in union",
-			 field);
+	    error ("member %q+#D with constructor not allowed in union",
+		   field);
 	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
-	    cp_error_at ("member %q#D with destructor not allowed in union",
-			 field);
+	    error ("member %q+#D with destructor not allowed in union", field);
 	  if (TYPE_HAS_COMPLEX_ASSIGN_REF (type))
-	    cp_error_at ("member %q#D with copy assignment operator not allowed in union",
-			 field);
+	    error ("member %q+#D with copy assignment operator not allowed in union",
+		   field);
 	}
       else
 	{
@@ -2794,8 +2788,9 @@ check_field_decls (tree t, tree *access_decls,
 	  if (TYPE_PACKED (t))
 	    {
 	      if (!pod_type_p (TREE_TYPE (x)) && !TYPE_PACKED (TREE_TYPE (x)))
-		cp_warning_at
-		  ("ignoring packed attribute on unpacked non-POD field %q#D",
+		warning
+		  (0,
+		   "ignoring packed attribute on unpacked non-POD field %q+#D",
 		   x);
 	      else
 		DECL_PACKED (x) = 1;
@@ -2855,33 +2850,33 @@ check_field_decls (tree t, tree *access_decls,
 	     reference type, the program is ill-formed.  */
 	  if (TREE_CODE (x) == VAR_DECL)
 	    {
-	      cp_error_at ("%qD may not be static because it is a member of a union", x);
+	      error ("%q+D may not be static because it is a member of a union", x);
 	      continue;
 	    }
 	  if (TREE_CODE (type) == REFERENCE_TYPE)
 	    {
-	      cp_error_at ("%qD may not have reference type %qT because"
-			   " it is a member of a union",
-			   x, type);
+	      error ("%q+D may not have reference type %qT because"
+		     " it is a member of a union",
+		     x, type);
 	      continue;
 	    }
 	}
 
       /* ``A local class cannot have static data members.'' ARM 9.4 */
       if (current_function_decl && TREE_STATIC (x))
-	cp_error_at ("field %qD in local class cannot be static", x);
+	error ("field %q+D in local class cannot be static", x);
 
       /* Perform error checking that did not get done in
 	 grokdeclarator.  */
       if (TREE_CODE (type) == FUNCTION_TYPE)
 	{
-	  cp_error_at ("field %qD invalidly declared function type", x);
+	  error ("field %q+D invalidly declared function type", x);
 	  type = build_pointer_type (type);
 	  TREE_TYPE (x) = type;
 	}
       else if (TREE_CODE (type) == METHOD_TYPE)
 	{
-	  cp_error_at ("field %qD invalidly declared method type", x);
+	  error ("field %q+D invalidly declared method type", x);
 	  type = build_pointer_type (type);
 	  TREE_TYPE (x) = type;
 	}
@@ -2913,7 +2908,7 @@ check_field_decls (tree t, tree *access_decls,
 
 	  if (! TYPE_HAS_CONSTRUCTOR (t) && CLASSTYPE_NON_AGGREGATE (t)
 	      && extra_warnings)
-	    cp_warning_at ("non-static reference %q#D in class without a constructor", x);
+	    warning (0, "non-static reference %q+#D in class without a constructor", x);
 	}
 
       type = strip_array_types (type);
@@ -2960,7 +2955,7 @@ check_field_decls (tree t, tree *access_decls,
 
 	  if (! TYPE_HAS_CONSTRUCTOR (t) && CLASSTYPE_NON_AGGREGATE (t)
 	      && extra_warnings)
-	    cp_warning_at ("non-static const member %q#D in class without a constructor", x);
+	    warning (0, "non-static const member %q+#D in class without a constructor", x);
 	}
       /* A field that is pseudo-const makes the structure likewise.  */
       else if (CLASS_TYPE_P (type))
@@ -2975,7 +2970,7 @@ check_field_decls (tree t, tree *access_decls,
 	 different name from the class iff the class has a
 	 user-defined constructor.  */
       if (constructor_name_p (DECL_NAME (x), t) && TYPE_HAS_CONSTRUCTOR (t))
-	cp_pedwarn_at ("field %q#D with same name as class", x);
+	pedwarn ("field %q+#D with same name as class", x);
 
       /* We set DECL_C_BIT_FIELD in grokbitfield.
 	 If the type and width are valid, we'll also set DECL_BIT_FIELD.  */
@@ -3644,7 +3639,7 @@ check_methods (tree t)
     {
       check_for_override (x, t);
       if (DECL_PURE_VIRTUAL_P (x) && ! DECL_VINDEX (x))
-	cp_error_at ("initializer specified for non-virtual method %qD", x);
+	error ("initializer specified for non-virtual method %q+D", x);
       /* The name of the field is the original field name
 	 Save this in auxiliary field for later overloading.  */
       if (DECL_VINDEX (x))
@@ -4662,9 +4657,8 @@ layout_class_type (tree t, tree *virtuals_p)
 	  && !integer_zerop (size_binop (TRUNC_MOD_EXPR,
 					 DECL_FIELD_BIT_OFFSET (field),
 					 bitsize_unit_node)))
-	cp_warning_at ("offset of %qD is not ABI-compliant and may "
-		       "change in a future version of GCC",
-		       field);
+	warning (0, "offset of %q+D is not ABI-compliant and may "
+		 "change in a future version of GCC", field);
 
       /* G++ used to use DECL_FIELD_OFFSET as if it were the byte
 	 offset of the field.  */
@@ -4672,10 +4666,9 @@ layout_class_type (tree t, tree *virtuals_p)
 	  && !tree_int_cst_equal (DECL_FIELD_OFFSET (field),
 				  byte_position (field))
 	  && contains_empty_class_p (TREE_TYPE (field)))
-	cp_warning_at ("%qD contains empty classes which may cause base "
-		       "classes to be placed at different locations in a "
-		       "future version of GCC",
-		       field);
+	warning (0, "%q+D contains empty classes which may cause base "
+		 "classes to be placed at different locations in a "
+		 "future version of GCC", field);
 
       /* If we needed additional padding after this field, add it
 	 now.  */
@@ -6249,9 +6242,8 @@ note_name_declared_in_class (tree name, tree decl)
 	 in its context and when re-evaluated in the completed scope of
 	 S.  */
       error ("declaration of %q#D", decl);
-      cp_error_at ("changes meaning of %qD from %q+#D",
-		   DECL_NAME (OVL_CURRENT (decl)),
-		   (tree) n->value);
+      error ("changes meaning of %qD from %q+#D",
+	     DECL_NAME (OVL_CURRENT (decl)), (tree) n->value);
     }
 }
 

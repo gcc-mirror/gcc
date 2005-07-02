@@ -2138,7 +2138,7 @@ v850_handle_data_area_attribute (tree* node,
       if (current_function_decl != NULL_TREE)
 	{
           error ("%Jdata area attributes cannot be specified for "
-                 "local variables", decl, decl);
+                 "local variables", decl);
 	  *no_add_attrs = true;
 	}
 
@@ -2148,8 +2148,8 @@ v850_handle_data_area_attribute (tree* node,
       area = v850_get_data_area (decl);
       if (area != DATA_AREA_NORMAL && data_area != area)
 	{
-	  error ("%Jdata area of '%D' conflicts with previous declaration",
-                 decl, decl);
+	  error ("data area of %q+D conflicts with previous declaration",
+                 decl);
 	  *no_add_attrs = true;
 	}
       break;

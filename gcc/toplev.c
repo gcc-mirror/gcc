@@ -823,10 +823,10 @@ check_global_declarations (tree *vec, int len)
 	      || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
 	{
 	  if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
-	    pedwarn ("%J%qF used but never defined", decl, decl);
+	    pedwarn ("%q+F used but never defined", decl);
 	  else
-	    warning (0, "%J%qF declared %<static%> but never defined",
-		     decl, decl);
+	    warning (0, "%q+F declared %<static%> but never defined",
+		     decl);
 	  /* This symbol is effectively an "extern" declaration now.  */
 	  TREE_PUBLIC (decl) = 1;
 	  assemble_external (decl);
@@ -851,7 +851,7 @@ check_global_declarations (tree *vec, int len)
 	  && ! (TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
 	  /* Otherwise, ask the language.  */
 	  && lang_hooks.decls.warn_unused_global (decl))
-	warning (0, "%J%qD defined but not used", decl, decl);
+	warning (0, "%q+D defined but not used", decl);
 
       /* Avoid confusing the debug information machinery when there are
 	 errors.  */
@@ -1356,12 +1356,12 @@ default_pch_valid_p (const void *data_p, size_t len)
 /* Default tree printer.   Handles declarations only.  */
 static bool
 default_tree_printer (pretty_printer * pp, text_info *text, const char *spec,
-		      int precision, bool wide, bool plus, bool hash)
+		      int precision, bool wide, bool set_locus, bool hash)
 {
   tree t;
 
   /* FUTURE: %+x should set the locus.  */
-  if (precision != 0 || wide || plus || hash)
+  if (precision != 0 || wide || hash)
     return false;
 
   switch (*spec)
@@ -1380,6 +1380,9 @@ default_tree_printer (pretty_printer * pp, text_info *text, const char *spec,
     default:
       return false;
     }
+
+  if (set_locus && text->locus)
+    *text->locus = DECL_SOURCE_LOCATION (t);
 
   if (DECL_P (t))
     {

@@ -1342,10 +1342,9 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
     {
       if (current_function_decl
 	  && DECL_STATIC_FUNCTION_P (current_function_decl))
-	cp_error_at ("invalid use of member %qD in static member function",
-		     decl);
+	error ("invalid use of member %q+D in static member function", decl);
       else
-	cp_error_at ("invalid use of non-static data member %qD", decl);
+	error ("invalid use of non-static data member %q+D", decl);
       error ("from this location");
 
       return error_mark_node;
@@ -1384,7 +1383,7 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
 
 	  if (!access_type)
 	    {
-	      cp_error_at ("object missing in reference to %qD", decl);
+	      error ("object missing in reference to %q+D", decl);
 	      error ("from this location");
 	      return error_mark_node;
 	    }
@@ -2789,7 +2788,7 @@ finish_id_expression (tree id_expression,
 		  error (TREE_CODE (decl) == VAR_DECL
 			 ? "use of %<auto%> variable from containing function"
 			 : "use of parameter from containing function");
-		  cp_error_at ("  %q#D declared here", decl);
+		  error ("  %q+#D declared here", decl);
 		  return error_mark_node;
 		}
 	    }

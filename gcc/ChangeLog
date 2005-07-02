@@ -1,3 +1,22 @@
+2005-07-02  Zack Weinberg  <zack@codesourcery.com>
+            Joseph S. Myers  <joseph@codesourcery.com>
+
+	* toplev.c (default_tree_printer): Handle setting location with
+	'+' flag.
+	* c-objc.common.c (c_tree_printer): Likewise.
+	* c-format.c (gcc_diag_flag_specs): Add '+'.
+	(gcc_cdiag_char_table): Allow '+' flag for tree formats.
+	(format_types_orig): Allow '+' flag for gcc_diag and gcc_cdiag
+	formats.
+	* c-common.c, c-decl.c, c-objc-common.c, c-pragma.c,
+	config/arm/pe.c, config/i386/winnt.c, config/ia64/ia64.c,
+	config/mcore/mcore.c, config/sh/symbian.c, config/sol2.c,
+	config/v850/v850.c, function.c, stor-layout.c, toplev.c,
+	tree-inline.c, tree-optimize.c, tree.c, varasm.c: Use '+' flag
+	instead of %J or %H.  Use 'q' flag for quoting.  Avoid '.' at end
+	of diagnostics.  Use %q+D not %s for a decl.  Do not pass excess
+	format arguments where %J is used without %D.
+
 2005-07-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c (LINK_SSP_SPEC): Define.
