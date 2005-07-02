@@ -1,3 +1,7 @@
+2005-07-01  James E. Wilson  <wilson@specifixinc.com>
+
+	* doc/invoke.texi (-funit-at-a-time): Correct grammar in second bullet.
+
 2005-07-01  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/22269

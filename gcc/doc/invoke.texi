@@ -5235,7 +5235,7 @@ though, can be replaced by @code{section} attributes.
 
 @item
 @emph{unit-at-a-time} mode removes unreferenced static variables
-and functions are removed.  This may result in undefined references
+and functions.  This may result in undefined references
 when an @code{asm} statement refers directly to variables or functions
 that are otherwise unused.  In that case either the variable/function
 shall be listed as an operand of the @code{asm} statement operand or,
