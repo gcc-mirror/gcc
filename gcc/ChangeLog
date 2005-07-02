@@ -1,3 +1,9 @@
+2005-07-01  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/linux-unwind.h (x86_64_fallback_frame_state): Cast to
+	void * before struct sigcontext *.
+	(x86_fallback_frame_state): Likewise.
+
 2005-07-01  James E. Wilson  <wilson@specifixinc.com>
 
 	* doc/invoke.texi (-funit-at-a-time): Correct grammar in second bullet.

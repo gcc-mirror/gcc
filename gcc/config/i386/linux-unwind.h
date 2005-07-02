@@ -52,7 +52,10 @@ x86_64_fallback_frame_state (struct _Unwind_Context *context,
       && *(unsigned long *)(pc+1) == 0x050f0000000fc0c7)
     {
       struct ucontext *uc_ = context->cfa;
-      sc = (struct sigcontext *) &uc_->uc_mcontext;
+      /* The void * cast is necessary to avoid an aliasing warning.
+         The aliasing warning is correct, but should not be a problem
+         because it does not alias anything.  */
+      sc = (struct sigcontext *) (void *) &uc_->uc_mcontext;
     }
   else
     return _URC_END_OF_STACK;
@@ -138,7 +141,10 @@ x86_fallback_frame_state (struct _Unwind_Context *context,
 	struct siginfo info;
 	struct ucontext uc;
       } *rt_ = context->cfa;
-      sc = (struct sigcontext *) &rt_->uc.uc_mcontext;
+      /* The void * cast is necessary to avoid an aliasing warning.
+         The aliasing warning is correct, but should not be a problem
+         because it does not alias anything.  */
+      sc = (struct sigcontext *) (void *) &rt_->uc.uc_mcontext;
     }
   else
     return _URC_END_OF_STACK;
