@@ -2660,6 +2660,16 @@ write_complex_part (rtx cplx, rtx val, bool imag_p)
   imode = GET_MODE_INNER (cmode);
   ibitsize = GET_MODE_BITSIZE (imode);
 
+  /* For MEMs simplify_gen_subreg may generate an invalid new address
+     because, e.g., the original address is considered mode-dependent
+     by the target, which restricts simplify_subreg from invoking
+     adjust_address_nv.  Instead of preparing fallback support for an
+     invalid address, we call adjust_address_nv directly.  */
+  if (MEM_P (cplx))
+    emit_move_insn (adjust_address_nv (cplx, imode,
+				       imag_p ? GET_MODE_SIZE (imode) : 0),
+		    val);
+
   /* If the sub-object is at least word sized, then we know that subregging
      will work.  This special case is important, since store_bit_field
      wants to operate on integer modes, and there's rarely an OImode to
@@ -2671,11 +2681,7 @@ write_complex_part (rtx cplx, rtx val, bool imag_p)
 	 where the natural size of floating-point regs is 32-bit.  */
       || (REG_P (cplx)
 	  && REGNO (cplx) < FIRST_PSEUDO_REGISTER
-	  && hard_regno_nregs[REGNO (cplx)][cmode] % 2 == 0)
-      /* For MEMs we always try to make a "subreg", that is to adjust
-	 the MEM, because store_bit_field may generate overly
-	 convoluted RTL for sub-word fields.  */
-      || MEM_P (cplx))
+	  && hard_regno_nregs[REGNO (cplx)][cmode] % 2 == 0))
     {
       rtx part = simplify_gen_subreg (imode, cplx, cmode,
 				      imag_p ? GET_MODE_SIZE (imode) : 0);
@@ -2720,6 +2726,15 @@ read_complex_part (rtx cplx, bool imag_p)
 	}
     }
 
+  /* For MEMs simplify_gen_subreg may generate an invalid new address
+     because, e.g., the original address is considered mode-dependent
+     by the target, which restricts simplify_subreg from invoking
+     adjust_address_nv.  Instead of preparing fallback support for an
+     invalid address, we call adjust_address_nv directly.  */
+  if (MEM_P (cplx))
+    return adjust_address_nv (cplx, imode,
+			      imag_p ? GET_MODE_SIZE (imode) : 0);
+
   /* If the sub-object is at least word sized, then we know that subregging
      will work.  This special case is important, since extract_bit_field
      wants to operate on integer modes, and there's rarely an OImode to
@@ -2731,11 +2746,7 @@ read_complex_part (rtx cplx, bool imag_p)
 	 where the natural size of floating-point regs is 32-bit.  */
       || (REG_P (cplx)
 	  && REGNO (cplx) < FIRST_PSEUDO_REGISTER
-	  && hard_regno_nregs[REGNO (cplx)][cmode] % 2 == 0)
-      /* For MEMs we always try to make a "subreg", that is to adjust
-	 the MEM, because extract_bit_field may generate overly
-	 convoluted RTL for sub-word fields.  */
-      || MEM_P (cplx))
+	  && hard_regno_nregs[REGNO (cplx)][cmode] % 2 == 0))
     {
       rtx ret = simplify_gen_subreg (imode, cplx, cmode,
 				     imag_p ? GET_MODE_SIZE (imode) : 0);

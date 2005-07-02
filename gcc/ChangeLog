@@ -1,3 +1,9 @@
+2005-07-02  David Edelsohn  <edelsohn@gnu.org>
+
+	PR middle-end/21742
+	* expr.c (write_complex_part): Use adjust_address for MEM.
+	(read_complex_part): Same.
+
 2005-07-02  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/22280
