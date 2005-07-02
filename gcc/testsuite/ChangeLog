@@ -1,3 +1,8 @@
+2005-07-02  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/pr22051-1.c: New test.
+	* gcc.dg/tree-ssa/pr22051-2.c: New test.
+
 2005-07-02  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/format/gcc_diag-1.c: Update.
