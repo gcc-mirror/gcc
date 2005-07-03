@@ -1,6 +1,6 @@
 2005-07-03  Kazu Hirata  <kazu@codesourcery.com>
 
-	* gfortran.texi, intrinsic.texi: Fix typo.
+	* gfortran.texi, intrinsic.texi: Fix typos.
 	* symbol.c: Fix a comment typo.
 
 2005-07-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
