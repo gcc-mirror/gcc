@@ -1308,7 +1308,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	  if (DECL_INITIAL (olddecl))
 	    {
 	      /* If both decls are in the same TU and the new declaration
-		 isn't overridding an extern inline reject the new decl.
+		 isn't overriding an extern inline reject the new decl.
 		 When we handle c99 style inline rules we'll want to reject
 		 the following:
 

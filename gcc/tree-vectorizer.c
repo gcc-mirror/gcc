@@ -1747,7 +1747,7 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
    CODE - tree_code of a reduction operations.
 
    Output:
-   REDUC_CODE - the correponding tree-code to be used to reduce the
+   REDUC_CODE - the corresponding tree-code to be used to reduce the
       vector of partial results into a single scalar result (which
       will also reside in a vector).
 
