@@ -1,3 +1,8 @@
+2005-07-03  Steve Ellcey  <sje@cup.hp.com>
+
+	PR other/13906
+	* md5.c (md5_process_bytes): Check alignment.
+
 2005-07-01  Ian Lance Taylor  <ian@airs.com>
 
 	PR other/22268
