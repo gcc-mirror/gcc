@@ -28,7 +28,7 @@
 #include "unwind.h"
 
 /* Definitions for C++ runtime support routines.  We make these weak
-   declarations to avoid pulling in libsupc++ unneccesarily.  */
+   declarations to avoid pulling in libsupc++ unnecessarily.  */
 typedef unsigned char bool;
 
 typedef struct _ZSt9type_info type_info; /* This names C++ type_info type */
@@ -119,7 +119,7 @@ typedef struct
 } phase2_vrs;
 
 
-/* An exeption index table entry.  */
+/* An exception index table entry.  */
 
 typedef struct __EIT_entry
 {
@@ -375,7 +375,7 @@ search_EIT_table (const __EIT_entry * table, int nrec, _uw return_address)
 
 /* Find the exception index table eintry for the given address.
    Fill in the relevant fields of the UCB.
-   Returns _URC_FAILURE if an error occured, _URC_OK on success*/
+   Returns _URC_FAILURE if an error occurred, _URC_OK on success.  */
 
 static _Unwind_Reason_Code
 get_eit_entry (_Unwind_Control_Block *ucbp, _uw return_address)
@@ -676,7 +676,7 @@ __gnu_unwind_pr_common (_Unwind_State state,
 		  /* Cleanup in range, and we are running cleanups.  */
 		  _uw lp;
 
-		  /* Landing pad address is 31-bit pc-relatvie offset.  */
+		  /* Landing pad address is 31-bit pc-relative offset.  */
 		  lp = selfrel_offset31 (data);
 		  data++;
 		  /* Save the exception data pointer.  */
@@ -705,7 +705,7 @@ __gnu_unwind_pr_common (_Unwind_State state,
 		      if (data[1] == (_uw) -2)
 			return _URC_FAILURE;
 
-		      /* The thrown object immediately folows the ECB.  */
+		      /* The thrown object immediately follows the ECB.  */
 		      matched = (void *)(ucbp + 1);
 		      if (data[1] != (_uw) -1)
 			{
@@ -739,7 +739,7 @@ __gnu_unwind_pr_common (_Unwind_State state,
 		  _Unwind_SetGR (context, 0, (_uw) ucbp);
 		  return _URC_INSTALL_CONTEXT;
 		}
-	      /* Catch handler not mached.  Advance to the next descriptor.  */
+	      /* Catch handler not matched.  Advance to the next descriptor.  */
 	      data += 2;
 	      break;
 
@@ -818,7 +818,7 @@ __gnu_unwind_pr_common (_Unwind_State state,
 
   if (phase2_call_unexpected_after_unwind)
     {
-      /* Enter __cxa_unexpected as if called from the callsite.  */
+      /* Enter __cxa_unexpected as if called from the call site.  */
       _Unwind_SetGR (context, R_LR, _Unwind_GetGR (context, R_PC));
       _Unwind_SetGR (context, R_PC, (_uw) &__cxa_call_unexpected);
       return _URC_INSTALL_CONTEXT;

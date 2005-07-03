@@ -1,3 +1,9 @@
+2005-07-03  Kazu Hirata  <kazu@codesourcery.com>
+
+	* c-decl.c, tree-object-size.c, tree-vectorizer.c,
+	config/arm/unwind-arm.c, config/arm/unwind-arm.h: Fix comment
+	typos.
+
 2005-07-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (fix_range): Fix typo in comment.

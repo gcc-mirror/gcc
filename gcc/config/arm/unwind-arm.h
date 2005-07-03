@@ -26,8 +26,8 @@
    the Free Software Foundation, 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301, USA.  */
 
-/* Language-independent unwinder header public defines.  This contins both
-   ABI defined objects, and GNU support routines.*/
+/* Language-independent unwinder header public defines.  This contains both
+   ABI defined objects, and GNU support routines.  */
 
 #ifndef UNWIND_ARM_H
 #define UNWIND_ARM_H
@@ -223,7 +223,7 @@ extern "C" {
       tmp += ptr;
       tmp = *(_Unwind_Word *) tmp;
 #elif defined(__symbian__)
-      /* Absoute pointer.  Nothing more to do.  */
+      /* Absolute pointer.  Nothing more to do.  */
 #else
       /* Pc-relative pointer.  */
       tmp += ptr;
@@ -250,7 +250,7 @@ extern "C" {
     }
 
   /* The dwarf unwinder doesn't understand arm/thumb state.  We assume the
-     landing pad uses the same instruction set as the callsite.  */
+     landing pad uses the same instruction set as the call site.  */
 #define _Unwind_SetIP(context, val) \
   _Unwind_SetGR (context, 15, val | (_Unwind_GetGR (context, 15) & 1))
 
