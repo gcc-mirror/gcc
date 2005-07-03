@@ -1,3 +1,9 @@
+2005-07-03  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/22029 (and 22135)
+	* tree-pretty-print.c (dump_generic_node): Check that the node is not
+	a phi node before calling dump_vops.
+
 2005-07-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* tree-dump.h (dump_string_field): Declare.
