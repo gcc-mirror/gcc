@@ -1,3 +1,8 @@
+2005-07-03  Kazu Hirata  <kazu@codesourcery.com>
+
+	* Make-lang.in (cc1plus-checksum.c): Use
+	build/genchecksum$(build_exeext), not build/genchecksum$(exeext).
+
 2005-07-02  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* objc-act.c: Use %q to quote in diagnostics.

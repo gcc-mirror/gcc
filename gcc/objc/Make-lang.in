@@ -55,8 +55,8 @@ cc1obj-dummy$(exeext): $(OBJC_OBJS) $(C_AND_OBJC_OBJS) dummy-checksum.o $(BACKEN
 	      $(OBJC_OBJS) $(C_AND_OBJC_OBJS) dummy-checksum.o \
 	      $(BACKEND) $(LIBS)
 
-cc1obj-checksum.c : cc1obj-dummy$(exeext) build/genchecksum$(exeext)
-	build/genchecksum$(exeext) cc1obj-dummy$(exeext) > $@
+cc1obj-checksum.c : cc1obj-dummy$(exeext) build/genchecksum$(build_exeext)
+	build/genchecksum$(build_exeext) cc1obj-dummy$(exeext) > $@
 
 cc1obj-checksum.o : cc1obj-checksum.c
 
