@@ -245,7 +245,7 @@ pdp11_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
     {
       fprintf (stream, "\t/*abuse empty parameter slot for locals!*/\n");
       if (size > 2)
-	fprintf(stream, "\tsub $%#o, sp\n", size - 2);
+	asm_fprintf (stream, "\tsub $%#wo, sp\n", size - 2);
 
     }
 }
@@ -285,7 +285,7 @@ pdp11_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
 
     /* make frame */
     if (fsize)							
-	fprintf (stream, "\tsub $%#o, sp\n", fsize);			
+	asm_fprintf (stream, "\tsub $%#wo, sp\n", fsize);
 
     /* save CPU registers  */
     for (regno = 0; regno < 8; regno++)				

@@ -2485,7 +2485,7 @@ void
 v850_output_aligned_bss (FILE * file,
                          tree decl,
                          const char * name,
-                         int size,
+                         unsigned HOST_WIDE_INT size,
                          int align)
 {
   switch (v850_get_data_area (decl))

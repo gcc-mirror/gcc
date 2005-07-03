@@ -4367,9 +4367,11 @@ extern void cp_genericize			(tree);
 
 /* In order for the format checking to accept the C++ frontend
    diagnostic framework extensions, you must include this file before
-   toplev.h, not after.  */
+   toplev.h, not after.  We override the definition of GCC_DIAG_STYLE
+   in c-common.h.  */
+#undef GCC_DIAG_STYLE
 #define GCC_DIAG_STYLE __gcc_cxxdiag__
-#if GCC_VERSION >= 3004
+#if GCC_VERSION >= 4001
 #define ATTRIBUTE_GCC_CXXDIAG(m, n) __attribute__ ((__format__ (GCC_DIAG_STYLE, m, n))) ATTRIBUTE_NONNULL(m)
 #else
 #define ATTRIBUTE_GCC_CXXDIAG(m, n) ATTRIBUTE_NONNULL(m)

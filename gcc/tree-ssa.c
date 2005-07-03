@@ -346,7 +346,7 @@ verify_phi_args (tree phi, basic_block bb, basic_block *definition_block)
       if (e->dest != bb)
 	{
 	  error ("Wrong edge %d->%d for PHI argument\n",
-	         e->src->index, e->dest->index, bb->index);
+	         e->src->index, e->dest->index);
 	  err = true;
 	}
 

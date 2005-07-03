@@ -25,8 +25,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tm.h"
 #include "tree.h"
 #include "flags.h"
-#include "toplev.h"
 #include "c-common.h"
+#include "toplev.h"
 #include "intl.h"
 #include "diagnostic.h"
 #include "langhooks.h"
@@ -58,7 +58,8 @@ set_Wformat (int setting)
    format_type_error.  Target-specific format types do not have
    matching enum values.  */
 enum format_type { printf_format_type, asm_fprintf_format_type,
-		   gcc_diag_format_type, gcc_cdiag_format_type,
+		   gcc_diag_format_type, gcc_tdiag_format_type,
+		   gcc_cdiag_format_type,
 		   gcc_cxxdiag_format_type,
 		   scanf_format_type, strftime_format_type,
 		   strfmon_format_type, format_type_error = -1};
@@ -310,6 +311,7 @@ static const format_length_info gcc_diag_length_specs[] =
 };
 
 /* The custom diagnostics all accept the same length specifiers.  */
+#define gcc_tdiag_length_specs gcc_diag_length_specs
 #define gcc_cdiag_length_specs gcc_diag_length_specs
 #define gcc_cxxdiag_length_specs gcc_diag_length_specs
 
@@ -386,6 +388,7 @@ static const format_flag_pair gcc_diag_flag_pairs[] =
   { 0, 0, 0, 0 }
 };
 
+#define gcc_tdiag_flag_pairs gcc_diag_flag_pairs
 #define gcc_cdiag_flag_pairs gcc_diag_flag_pairs
 #define gcc_cxxdiag_flag_pairs gcc_diag_flag_pairs
 
@@ -398,6 +401,7 @@ static const format_flag_spec gcc_diag_flag_specs[] =
   { 0, 0, 0, NULL, NULL, 0 }
 };
 
+#define gcc_tdiag_flag_specs gcc_diag_flag_specs
 #define gcc_cdiag_flag_specs gcc_diag_flag_specs
 
 static const format_flag_spec gcc_cxxdiag_flag_specs[] =
@@ -543,6 +547,29 @@ static const format_char_info gcc_diag_char_table[] =
   { NULL,  0, 0, NOLENGTHS, NULL, NULL, NULL }
 };
 
+static const format_char_info gcc_tdiag_char_table[] =
+{
+  /* C89 conversion specifiers.  */
+  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   T9L_LL,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
+  { "ox",  0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
+  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
+  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
+  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "pq", "cR", NULL },
+  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "c",  NULL },
+
+  /* Custom conversion specifiers.  */
+
+  /* %H will require "location_t" at runtime.  */
+  { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
+
+  /* These will require a "tree" at runtime.  */
+  { "DFJT", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
+
+  { "<>'", 0, STD_C89, NOARGUMENTS, "",      "",   NULL },
+  { "m",   0, STD_C89, NOARGUMENTS, "q",     "",   NULL },
+  { NULL,  0, 0, NOLENGTHS, NULL, NULL, NULL }
+};
+
 static const format_char_info gcc_cdiag_char_table[] =
 {
   /* C89 conversion specifiers.  */
@@ -662,6 +689,12 @@ static const format_kind_info format_types_orig[] =
   },
   { "gcc_diag",   gcc_diag_length_specs,  gcc_diag_char_table, "q+", NULL, 
     gcc_diag_flag_specs, gcc_diag_flag_pairs,
+    FMT_FLAG_ARG_CONVERT,
+    0, 0, 'p', 0, 'L',
+    NULL, &integer_type_node
+  },
+  { "gcc_tdiag",   gcc_tdiag_length_specs,  gcc_tdiag_char_table, "q+", NULL, 
+    gcc_tdiag_flag_specs, gcc_tdiag_flag_pairs,
     FMT_FLAG_ARG_CONVERT,
     0, 0, 'p', 0, 'L',
     NULL, &integer_type_node
@@ -2360,7 +2393,7 @@ init_dynamic_diag_info (void)
 
   if (!loc || !t || !hwi)
     {
-      static format_char_info *diag_fci, *cdiag_fci, *cxxdiag_fci;
+      static format_char_info *diag_fci, *tdiag_fci, *cdiag_fci, *cxxdiag_fci;
       static format_length_info *diag_ls;
       unsigned int i;
 
@@ -2441,6 +2474,7 @@ init_dynamic_diag_info (void)
       /* All the GCC diag formats use the same length specs.  */
       if (!diag_ls)
 	dynamic_format_types[gcc_diag_format_type].length_char_specs =
+	  dynamic_format_types[gcc_tdiag_format_type].length_char_specs =
 	  dynamic_format_types[gcc_cdiag_format_type].length_char_specs =
 	  dynamic_format_types[gcc_cxxdiag_format_type].length_char_specs =
 	  diag_ls = (format_length_info *)
@@ -2477,6 +2511,30 @@ init_dynamic_diag_info (void)
 	  i = find_char_info_specifier_index (diag_fci, 'J');
 	  diag_fci[i].types[0].type = &t;
 	  diag_fci[i].pointer_count = 1;
+	}
+
+      /* Handle the __gcc_tdiag__ format specifics.  */
+      if (!tdiag_fci)
+	dynamic_format_types[gcc_tdiag_format_type].conversion_specs =
+	  tdiag_fci = (format_char_info *)
+		      xmemdup (gcc_tdiag_char_table,
+			       sizeof (gcc_tdiag_char_table),
+			       sizeof (gcc_tdiag_char_table));
+      if (loc)
+        {
+	  i = find_char_info_specifier_index (tdiag_fci, 'H');
+	  tdiag_fci[i].types[0].type = &loc;
+	  tdiag_fci[i].pointer_count = 1;
+	}
+      if (t)
+        {
+	  /* All specifiers taking a tree share the same struct.  */
+	  i = find_char_info_specifier_index (tdiag_fci, 'D');
+	  tdiag_fci[i].types[0].type = &t;
+	  tdiag_fci[i].pointer_count = 1;
+	  i = find_char_info_specifier_index (tdiag_fci, 'J');
+	  tdiag_fci[i].types[0].type = &t;
+	  tdiag_fci[i].pointer_count = 1;
 	}
 
       /* Handle the __gcc_cdiag__ format specifics.  */
@@ -2603,6 +2661,7 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
      initialize certain bits a runtime.  */
   if (info.format_type == asm_fprintf_format_type
       || info.format_type == gcc_diag_format_type
+      || info.format_type == gcc_tdiag_format_type
       || info.format_type == gcc_cdiag_format_type
       || info.format_type == gcc_cxxdiag_format_type)
     {
@@ -2620,6 +2679,7 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       /* If this is one of the diagnostic attributes, then we have to
          initialize 'location_t' and 'tree' at runtime.  */
       else if (info.format_type == gcc_diag_format_type
+	       || info.format_type == gcc_tdiag_format_type
 	       || info.format_type == gcc_cdiag_format_type
 	       || info.format_type == gcc_cxxdiag_format_type)
 	init_dynamic_diag_info ();

@@ -4583,11 +4583,11 @@ finish_aliases_1 (void)
 
       target_decl = find_decl_and_mark_needed (p->decl, p->target);
       if (target_decl == NULL)
-	error ("%q+D aliased to undefined symbol %qE",
-	       p->decl, p->target);
+	error ("%q+D aliased to undefined symbol %qs",
+	       p->decl, IDENTIFIER_POINTER (p->target));
       else if (DECL_EXTERNAL (target_decl))
-	error ("%q+D aliased to external symbol %qE",
-	       p->decl, p->target);
+	error ("%q+D aliased to external symbol %qs",
+	       p->decl, IDENTIFIER_POINTER (p->target));
     }
 }
 

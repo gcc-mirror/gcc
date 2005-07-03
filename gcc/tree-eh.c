@@ -1764,7 +1764,7 @@ mark_eh_edge (struct eh_region *region, void *data)
   e = find_edge (src, dst);
   if (!e)
     {
-      error ("EH edge %i->%i is missing %i %i.", src->index, dst->index, src, dst);
+      error ("EH edge %i->%i is missing.", src->index, dst->index);
       mark_eh_edge_found_error = true;
     }
   else if (!(e->flags & EDGE_EH))

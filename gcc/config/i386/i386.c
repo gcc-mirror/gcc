@@ -14659,7 +14659,7 @@ get_element_number (tree vec_type, tree arg)
   if (!host_integerp (arg, 1)
       || (elt = tree_low_cst (arg, 1), elt > max))
     {
-      error ("selector must be an integer constant in the range 0..%i", max);
+      error ("selector must be an integer constant in the range 0..%wi", max);
       return 0;
     }
 
