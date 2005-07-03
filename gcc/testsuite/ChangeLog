@@ -1,3 +1,8 @@
+2005-07-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/20842
+	* gfortran.dg/io_invalid_1.f90: New test.
+
 2005-07-03  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/format/gcc_diag-1.c: Update.
