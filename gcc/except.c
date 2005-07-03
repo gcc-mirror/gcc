@@ -3746,7 +3746,7 @@ verify_eh_tree (struct function *fun)
 	      {
 		if (depth != -1)
 		  {
-		    error ("Tree list ends on depth %i", depth + 1);
+		    error ("tree list ends on depth %i", depth + 1);
 		    err = true;
 		  }
 		if (count != nvisited)
@@ -3757,7 +3757,7 @@ verify_eh_tree (struct function *fun)
 		if (err)
 		  {
 		    dump_eh_tree (stderr, fun);
-		    internal_error ("verify_eh_tree failed.");
+		    internal_error ("verify_eh_tree failed");
 		  }
 	        return;
 	      }

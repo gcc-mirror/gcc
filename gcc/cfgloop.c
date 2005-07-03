@@ -1085,7 +1085,7 @@ verify_loop_structure (struct loops *loops)
 
       if (loops->parray[i]->num_nodes != sizes[i])
 	{
-	  error ("Size of loop %d should be %d, not %d.",
+	  error ("size of loop %d should be %d, not %d",
 		   i, sizes[i], loops->parray[i]->num_nodes);
 	  err = 1;
 	}
@@ -1102,7 +1102,7 @@ verify_loop_structure (struct loops *loops)
       for (j = 0; j < loop->num_nodes; j++)
 	if (!flow_bb_inside_loop_p (loop, bbs[j]))
 	  {
-	    error ("Bb %d do not belong to loop %d.",
+	    error ("bb %d do not belong to loop %d",
 		    bbs[j]->index, i);
 	    err = 1;
 	  }
@@ -1119,36 +1119,36 @@ verify_loop_structure (struct loops *loops)
       if ((loops->state & LOOPS_HAVE_PREHEADERS)
 	  && EDGE_COUNT (loop->header->preds) != 2)
 	{
-	  error ("Loop %d's header does not have exactly 2 entries.", i);
+	  error ("loop %d's header does not have exactly 2 entries", i);
 	  err = 1;
 	}
       if (loops->state & LOOPS_HAVE_SIMPLE_LATCHES)
 	{
 	  if (!single_succ_p (loop->latch))
 	    {
-	      error ("Loop %d's latch does not have exactly 1 successor.", i);
+	      error ("loop %d's latch does not have exactly 1 successor", i);
 	      err = 1;
 	    }
 	  if (single_succ (loop->latch) != loop->header)
 	    {
-	      error ("Loop %d's latch does not have header as successor.", i);
+	      error ("loop %d's latch does not have header as successor", i);
 	      err = 1;
 	    }
 	  if (loop->latch->loop_father != loop)
 	    {
-	      error ("Loop %d's latch does not belong directly to it.", i);
+	      error ("loop %d's latch does not belong directly to it", i);
 	      err = 1;
 	    }
 	}
       if (loop->header->loop_father != loop)
 	{
-	  error ("Loop %d's header does not belong directly to it.", i);
+	  error ("loop %d's header does not belong directly to it", i);
 	  err = 1;
 	}
       if ((loops->state & LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS)
 	  && (loop_latch_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP))
 	{
-	  error ("Loop %d's latch is marked as part of irreducible region.", i);
+	  error ("loop %d's latch is marked as part of irreducible region", i);
 	  err = 1;
 	}
     }
@@ -1181,13 +1181,13 @@ verify_loop_structure (struct loops *loops)
 	  if ((bb->flags & BB_IRREDUCIBLE_LOOP)
 	      && !TEST_BIT (irreds, bb->index))
 	    {
-	      error ("Basic block %d should be marked irreducible.", bb->index);
+	      error ("basic block %d should be marked irreducible", bb->index);
 	      err = 1;
 	    }
 	  else if (!(bb->flags & BB_IRREDUCIBLE_LOOP)
 	      && TEST_BIT (irreds, bb->index))
 	    {
-	      error ("Basic block %d should not be marked irreducible.", bb->index);
+	      error ("basic block %d should not be marked irreducible", bb->index);
 	      err = 1;
 	    }
 	  FOR_EACH_EDGE (e, ei, bb->succs)
@@ -1195,14 +1195,14 @@ verify_loop_structure (struct loops *loops)
 	      if ((e->flags & EDGE_IRREDUCIBLE_LOOP)
 		  && !(e->flags & (EDGE_ALL_FLAGS + 1)))
 		{
-		  error ("Edge from %d to %d should be marked irreducible.",
+		  error ("edge from %d to %d should be marked irreducible",
 			 e->src->index, e->dest->index);
 		  err = 1;
 		}
 	      else if (!(e->flags & EDGE_IRREDUCIBLE_LOOP)
 		       && (e->flags & (EDGE_ALL_FLAGS + 1)))
 		{
-		  error ("Edge from %d to %d should not be marked irreducible.",
+		  error ("edge from %d to %d should not be marked irreducible",
 			 e->src->index, e->dest->index);
 		  err = 1;
 		}
@@ -1237,11 +1237,11 @@ verify_loop_structure (struct loops *loops)
 		  if (loop->single_exit
 		      && loop->single_exit != e)
 		    {
-		      error ("Wrong single exit %d->%d recorded for loop %d.",
+		      error ("wrong single exit %d->%d recorded for loop %d",
 			     loop->single_exit->src->index,
 			     loop->single_exit->dest->index,
 			     loop->num);
-		      error ("Right exit is %d->%d.",
+		      error ("right exit is %d->%d",
 			     e->src->index, e->dest->index);
 		      err = 1;
 		    }
@@ -1258,14 +1258,14 @@ verify_loop_structure (struct loops *loops)
 	  if (sizes[i] == 1
 	      && !loop->single_exit)
 	    {
-	      error ("Single exit not recorded for loop %d.", loop->num);
+	      error ("single exit not recorded for loop %d", loop->num);
 	      err = 1;
 	    }
 
 	  if (sizes[i] != 1
 	      && loop->single_exit)
 	    {
-	      error ("Loop %d should not have single exit (%d -> %d).",
+	      error ("loop %d should not have single exit (%d -> %d)",
 		     loop->num,
 		     loop->single_exit->src->index,
 		     loop->single_exit->dest->index);

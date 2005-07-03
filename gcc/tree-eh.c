@@ -1764,18 +1764,18 @@ mark_eh_edge (struct eh_region *region, void *data)
   e = find_edge (src, dst);
   if (!e)
     {
-      error ("EH edge %i->%i is missing.", src->index, dst->index);
+      error ("EH edge %i->%i is missing", src->index, dst->index);
       mark_eh_edge_found_error = true;
     }
   else if (!(e->flags & EDGE_EH))
     {
-      error ("EH edge %i->%i miss EH flag.", src->index, dst->index);
+      error ("EH edge %i->%i miss EH flag", src->index, dst->index);
       mark_eh_edge_found_error = true;
     }
   else if (e->aux)
     {
       /* ??? might not be mistake.  */
-      error ("EH edge %i->%i has duplicated regions.", src->index, dst->index);
+      error ("EH edge %i->%i has duplicated regions", src->index, dst->index);
       mark_eh_edge_found_error = true;
     }
   else
@@ -1827,7 +1827,7 @@ verify_eh_edges (tree stmt)
     {
       if ((e->flags & EDGE_EH) && !e->aux)
 	{
-	  error ("Unnecessary EH edge %i->%i", bb->index, e->dest->index);
+	  error ("unnecessary EH edge %i->%i", bb->index, e->dest->index);
 	  mark_eh_edge_found_error = true;
 	  return true;
 	}

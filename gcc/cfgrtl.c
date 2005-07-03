@@ -1983,7 +1983,7 @@ rtl_verify_flow_info_1 (void)
 		      && e->src != ENTRY_BLOCK_PTR
 		      && e->dest != EXIT_BLOCK_PTR))
 	    { 
-		  error ("Fallthru edge crosses section boundary (bb %i)",
+		  error ("fallthru edge crosses section boundary (bb %i)",
 			 e->src->index);
 		  err = 1;
 		}
@@ -2008,7 +2008,7 @@ rtl_verify_flow_info_1 (void)
       if (n_eh && GET_CODE (PATTERN (BB_END (bb))) != RESX
 	  && !find_reg_note (BB_END (bb), REG_EH_REGION, NULL_RTX))
 	{
-	  error ("Missing REG_EH_REGION note in the end of bb %i", bb->index);
+	  error ("missing REG_EH_REGION note in the end of bb %i", bb->index);
 	  err = 1;
 	}
       if (n_branch
@@ -2016,28 +2016,28 @@ rtl_verify_flow_info_1 (void)
 	      || (n_branch > 1 && (any_uncondjump_p (BB_END (bb))
 				   || any_condjump_p (BB_END (bb))))))
 	{
-	  error ("Too many outgoing branch edges from bb %i", bb->index);
+	  error ("too many outgoing branch edges from bb %i", bb->index);
 	  err = 1;
 	}
       if (n_fallthru && any_uncondjump_p (BB_END (bb)))
 	{
-	  error ("Fallthru edge after unconditional jump %i", bb->index);
+	  error ("fallthru edge after unconditional jump %i", bb->index);
 	  err = 1;
 	}
       if (n_branch != 1 && any_uncondjump_p (BB_END (bb)))
 	{
-	  error ("Wrong amount of branch edges after unconditional jump %i", bb->index);
+	  error ("wrong amount of branch edges after unconditional jump %i", bb->index);
 	  err = 1;
 	}
       if (n_branch != 1 && any_condjump_p (BB_END (bb))
 	  && JUMP_LABEL (BB_END (bb)) == BB_HEAD (fallthru->dest))
 	{
-	  error ("Wrong amount of branch edges after conditional jump %i", bb->index);
+	  error ("wrong amount of branch edges after conditional jump %i", bb->index);
 	  err = 1;
 	}
       if (n_call && !CALL_P (BB_END (bb)))
 	{
-	  error ("Call edges for non-call insn in bb %i", bb->index);
+	  error ("call edges for non-call insn in bb %i", bb->index);
 	  err = 1;
 	}
       if (n_abnormal
@@ -2046,7 +2046,7 @@ rtl_verify_flow_info_1 (void)
 	      || any_condjump_p (BB_END (bb))
 	      || any_uncondjump_p (BB_END (bb))))
 	{
-	  error ("Abnormal edges for no purpose in bb %i", bb->index);
+	  error ("abnormal edges for no purpose in bb %i", bb->index);
 	  err = 1;
 	}
 

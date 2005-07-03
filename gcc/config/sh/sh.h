@@ -604,7 +604,7 @@ do {									\
 	 --with-newlib --with-headers.  But there is no way to check	\
 	 here we have a working libgcov, so just assume that we have.  */\
       if (profile_flag)							\
-	warning (0, "Profiling is still experimental for this target.");\
+	warning (0, "profiling is still experimental for this target");\
     }									\
   else									\
     {									\

@@ -108,38 +108,38 @@ verify_ssa_name (tree ssa_name, bool is_virtual)
 {
   if (TREE_CODE (ssa_name) != SSA_NAME)
     {
-      error ("Expected an SSA_NAME object");
+      error ("expected an SSA_NAME object");
       return true;
     }
 
   if (TREE_TYPE (ssa_name) != TREE_TYPE (SSA_NAME_VAR (ssa_name)))
     {
-      error ("Type mismatch between an SSA_NAME and its symbol.");
+      error ("type mismatch between an SSA_NAME and its symbol");
       return true;
     }
 
   if (SSA_NAME_IN_FREE_LIST (ssa_name))
     {
-      error ("Found an SSA_NAME that had been released into the free pool");
+      error ("found an SSA_NAME that had been released into the free pool");
       return true;
     }
 
   if (is_virtual && is_gimple_reg (ssa_name))
     {
-      error ("Found a virtual definition for a GIMPLE register");
+      error ("found a virtual definition for a GIMPLE register");
       return true;
     }
 
   if (!is_virtual && !is_gimple_reg (ssa_name))
     {
-      error ("Found a real definition for a non-register");
+      error ("found a real definition for a non-register");
       return true;
     }
 
   if (is_virtual && var_ann (SSA_NAME_VAR (ssa_name)) 
       && get_subvars_for_var (SSA_NAME_VAR (ssa_name)) != NULL)
     {
-      error ("Found real variable when subvariables should have appeared");
+      error ("found real variable when subvariables should have appeared");
       return true;
     }
 
@@ -235,13 +235,13 @@ verify_use (basic_block bb, basic_block def_bb, use_operand_p use_p,
     ; /* Default definitions have empty statements.  Nothing to do.  */
   else if (!def_bb)
     {
-      error ("Missing definition");
+      error ("missing definition");
       err = true;
     }
   else if (bb != def_bb
 	   && !dominated_by_p (CDI_DOMINATORS, bb, def_bb))
     {
-      error ("Definition in block %i does not dominate use in block %i",
+      error ("definition in block %i does not dominate use in block %i",
 	     def_bb->index, bb->index);
       err = true;
     }
@@ -249,7 +249,7 @@ verify_use (basic_block bb, basic_block def_bb, use_operand_p use_p,
 	   && names_defined_in_bb != NULL
 	   && !bitmap_bit_p (names_defined_in_bb, SSA_NAME_VERSION (ssa_name)))
     {
-      error ("Definition in block %i follows the use", def_bb->index);
+      error ("definition in block %i follows the use", def_bb->index);
       err = true;
     }
 
@@ -264,7 +264,7 @@ verify_use (basic_block bb, basic_block def_bb, use_operand_p use_p,
      element to make sure it's the same.  */
   if (use_p->prev == NULL)
     {
-      error ("No immediate_use list");
+      error ("no immediate_use list");
       err = true;
     }
   else
@@ -276,7 +276,7 @@ verify_use (basic_block bb, basic_block def_bb, use_operand_p use_p,
 	listvar = USE_FROM_PTR (use_p->prev);
       if (listvar != ssa_name)
         {
-	  error ("Wrong immediate use list");
+	  error ("wrong immediate use list");
 	  err = true;
 	}
     }
@@ -309,7 +309,7 @@ verify_phi_args (tree phi, basic_block bb, basic_block *definition_block)
 
   if (EDGE_COUNT (bb->preds) != phi_num_args)
     {
-      error ("Incoming edge count does not match number of PHI arguments\n");
+      error ("incoming edge count does not match number of PHI arguments");
       err = true;
       goto error;
     }
@@ -324,7 +324,7 @@ verify_phi_args (tree phi, basic_block bb, basic_block *definition_block)
 
       if (op == NULL_TREE)
 	{
-	  error ("PHI argument is missing for edge %d->%d\n",
+	  error ("PHI argument is missing for edge %d->%d",
 	         e->src->index,
 		 e->dest->index);
 	  err = true;
@@ -345,7 +345,7 @@ verify_phi_args (tree phi, basic_block bb, basic_block *definition_block)
 
       if (e->dest != bb)
 	{
-	  error ("Wrong edge %d->%d for PHI argument\n",
+	  error ("wrong edge %d->%d for PHI argument",
 	         e->src->index, e->dest->index);
 	  err = true;
 	}
@@ -394,7 +394,7 @@ verify_flow_insensitive_alias_info (void)
 
 	  if (!may_be_aliased (alias))
 	    {
-	      error ("Non-addressable variable inside an alias set.");
+	      error ("non-addressable variable inside an alias set");
 	      debug_variable (alias);
 	      goto err;
 	    }
@@ -410,7 +410,7 @@ verify_flow_insensitive_alias_info (void)
 	  && ann->is_alias_tag
 	  && !bitmap_bit_p (visited, DECL_UID (var)))
 	{
-	  error ("Addressable variable that is an alias tag but is not in any alias set.");
+	  error ("addressable variable that is an alias tag but is not in any alias set");
 	  goto err;
 	}
     }
@@ -420,7 +420,7 @@ verify_flow_insensitive_alias_info (void)
 
 err:
   debug_variable (var);
-  internal_error ("verify_flow_insensitive_alias_info failed.");
+  internal_error ("verify_flow_insensitive_alias_info failed");
 }
 
 
@@ -462,7 +462,7 @@ verify_flow_sensitive_alias_info (void)
       ann = var_ann (var);
       if (pi->is_dereferenced && !pi->name_mem_tag && !ann->type_mem_tag)
 	{
-	  error ("Dereferenced pointers should have a name or a type tag");
+	  error ("dereferenced pointers should have a name or a type tag");
 	  goto err;
 	}
 
@@ -470,7 +470,7 @@ verify_flow_sensitive_alias_info (void)
 	  && !pi->pt_malloc
 	  && (pi->pt_vars == NULL || bitmap_empty_p (pi->pt_vars)))
 	{
-	  error ("Pointers with a memory tag, should have points-to sets or point to malloc");
+	  error ("pointers with a memory tag, should have points-to sets or point to malloc");
 	  goto err;
 	}
 
@@ -478,7 +478,7 @@ verify_flow_sensitive_alias_info (void)
 	  && pi->name_mem_tag
 	  && !is_call_clobbered (pi->name_mem_tag))
 	{
-	  error ("Pointer escapes but its name tag is not call-clobbered.");
+	  error ("pointer escapes but its name tag is not call-clobbered");
 	  goto err;
 	}
     }
@@ -487,7 +487,7 @@ verify_flow_sensitive_alias_info (void)
 
 err:
   debug_variable (ptr);
-  internal_error ("verify_flow_sensitive_alias_info failed.");
+  internal_error ("verify_flow_sensitive_alias_info failed");
 }
 
 DEF_VEC_P (bitmap);
@@ -564,7 +564,7 @@ verify_name_tags (void)
 
 	  if (!bitmap_intersect_compl_p (type_aliases, pi->pt_vars))
 	    {
-	      error ("Alias set of a pointer's type tag should be a superset of the corresponding name tag");
+	      error ("alias set of a pointer's type tag should be a superset of the corresponding name tag");
 	      debug_variable (tmt);
 	      debug_variable (pi->name_mem_tag);
 	      goto err;
@@ -580,7 +580,7 @@ verify_name_tags (void)
 	 { 
 	   if (bitmap_equal_p (first, second))
 	     {
-	       error ("Two different pointers with identical points-to sets but different name tags");
+	       error ("two different pointers with identical points-to sets but different name tags");
 	       debug_variable (VEC_index (tree, name_tag_reps, j));
 	       goto err;
 	     }
@@ -683,7 +683,7 @@ verify_ssa (bool check_modified_stmt)
 	{
 	  if (e->aux)
 	    {
-	      error ("AUX pointer initialized for edge %d->%d\n", e->src->index,
+	      error ("AUX pointer initialized for edge %d->%d", e->src->index,
 		      e->dest->index);
 	      goto err;
 	    }
@@ -706,7 +706,7 @@ verify_ssa (bool check_modified_stmt)
 
 	  if (check_modified_stmt && stmt_modified_p (stmt))
 	    {
-	      error ("Stmt (%p) marked modified after optimization pass : ",
+	      error ("stmt (%p) marked modified after optimization pass : ",
 		     (void *)stmt);
 	      print_generic_stmt (stderr, stmt, TDF_VOPS);
 	      goto err;
@@ -724,7 +724,7 @@ verify_ssa (bool check_modified_stmt)
 		  && SSA_VAR_P (base_address)
 		  && ZERO_SSA_OPERANDS (stmt, SSA_OP_VMAYDEF|SSA_OP_VMUSTDEF))
 		{
-		  error ("Statement makes a memory store, but has no "
+		  error ("statement makes a memory store, but has no "
 			 "V_MAY_DEFS nor V_MUST_DEFS");
 		  print_generic_stmt (stderr, stmt, TDF_VOPS);
 		  goto err;
@@ -735,7 +735,7 @@ verify_ssa (bool check_modified_stmt)
 	  if (stmt_ann (stmt)->makes_aliased_stores 
 	      && ZERO_SSA_OPERANDS (stmt, SSA_OP_VMAYDEF))
 	    {
-	      error ("Statement makes aliased stores, but has no V_MAY_DEFS");
+	      error ("statement makes aliased stores, but has no V_MAY_DEFS");
 	      print_generic_stmt (stderr, stmt, TDF_VOPS);
 	      goto err;
 	    }
@@ -774,7 +774,7 @@ verify_ssa (bool check_modified_stmt)
   return;
 
 err:
-  internal_error ("verify_ssa failed.");
+  internal_error ("verify_ssa failed");
 }
 
 /* Return true if the uid in both int tree maps are equal.  */

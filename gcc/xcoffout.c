@@ -184,7 +184,7 @@ xcoff_assign_fundamental_type_number (tree decl)
 /* Print an error message for unrecognized stab codes.  */
 
 #define UNKNOWN_STAB(STR)	\
-  internal_error ("no sclass for %s stab (0x%x)\n", STR, stab)
+  internal_error ("no sclass for %s stab (0x%x)", STR, stab)
 
 /* Conversion routine from BSD stabs to AIX storage classes.  */
 

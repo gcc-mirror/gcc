@@ -6799,7 +6799,7 @@ cse_main (rtx f, int nregs, FILE *file)
       max_qty = val.nsets * 2;
 
       if (file)
-	fnotice (file, ";; Processing block from %d to %d, %d sets.\n",
+	fprintf (file, ";; Processing block from %d to %d, %d sets.\n",
 		 INSN_UID (insn), val.last ? INSN_UID (val.last) : 0,
 		 val.nsets);
 

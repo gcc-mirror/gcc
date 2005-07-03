@@ -1863,7 +1863,7 @@ verify_hot_cold_block_grouping (void)
 	{
 	  if (switched_sections)
 	    {
-	      error ("Multiple hot/cold transitions found (bb %i)",
+	      error ("multiple hot/cold transitions found (bb %i)",
 		     bb->index);
 	      err = 1;
 	    }

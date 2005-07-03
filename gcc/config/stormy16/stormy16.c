@@ -494,7 +494,7 @@ xs_hi_general_operand (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   if ((GET_CODE (x) == CONST_INT) 
    && ((INTVAL (x) >= 32768) || (INTVAL (x) < -32768)))
-    error ("Constant halfword load operand out of range.");
+    error ("constant halfword load operand out of range");
   return general_operand (x, mode);
 }
 
@@ -504,7 +504,7 @@ xs_hi_nonmemory_operand (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   if ((GET_CODE (x) == CONST_INT) 
    && ((INTVAL (x) >= 32768) || (INTVAL (x) < -32768)))
-    error ("Constant arithmetic operand out of range.");
+    error ("constant arithmetic operand out of range");
   return nonmemory_operand (x, mode);
 }
 
@@ -1107,7 +1107,7 @@ xstormy16_expand_prologue (void)
   layout = xstormy16_compute_stack_layout ();
 
   if (layout.locals_size >= 32768)
-    error ("Local variable memory requirements exceed capacity.");
+    error ("local variable memory requirements exceed capacity");
 
   /* Save the argument registers if necessary.  */
   if (layout.stdarg_save_size)
@@ -2306,7 +2306,7 @@ xstormy16_handle_below100_attribute (tree *node,
       if (! (TREE_PUBLIC (*node) || TREE_STATIC (*node)))
 	{
 	  warning (OPT_Wattributes, "__BELOW100__ attribute not allowed "
-		   "with auto storage class.");
+		   "with auto storage class");
 	  *no_add_attrs = true;
 	}
     }

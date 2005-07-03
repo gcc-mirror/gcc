@@ -1805,7 +1805,7 @@ save_restore_insns (int store_p)
 
   if (gp_offset < 0 || end_offset < 0)
     internal_error
-      ("gp_offset (%ld) or end_offset (%ld) is less than zero.",
+      ("gp_offset (%ld) or end_offset (%ld) is less than zero",
        (long) gp_offset, (long) end_offset);
 
   else if (gp_offset < 32768)

@@ -2510,7 +2510,7 @@ frv_print_operand_address (FILE * stream, rtx x)
       break;
     }
 
-  fatal_insn ("Bad insn to frv_print_operand_address:", x);
+  fatal_insn ("bad insn to frv_print_operand_address:", x);
 }
 
 
@@ -2521,7 +2521,7 @@ frv_print_operand_memory_reference_reg (FILE * stream, rtx x)
   if (GPR_P (regno))
     fputs (reg_names[regno], stream);
   else
-    fatal_insn ("Bad register to frv_print_operand_memory_reference_reg:", x);
+    fatal_insn ("bad register to frv_print_operand_memory_reference_reg:", x);
 }
 
 /* Print a memory reference suitable for the ld/st instructions.  */
@@ -2560,7 +2560,7 @@ frv_print_operand_memory_reference (FILE * stream, rtx x, int addr_offset)
       break;
 
     default:
-      fatal_insn ("Bad insn to frv_print_operand_memory_reference:", x);
+      fatal_insn ("bad insn to frv_print_operand_memory_reference:", x);
       break;
 
     }
@@ -2570,7 +2570,7 @@ frv_print_operand_memory_reference (FILE * stream, rtx x, int addr_offset)
       if (!x1)
 	x1 = const0_rtx;
       else if (GET_CODE (x1) != CONST_INT)
-	fatal_insn ("Bad insn to frv_print_operand_memory_reference:", x);
+	fatal_insn ("bad insn to frv_print_operand_memory_reference:", x);
     }
 
   fputs ("@(", stream);
@@ -2579,7 +2579,7 @@ frv_print_operand_memory_reference (FILE * stream, rtx x, int addr_offset)
   else if (GET_CODE (x0) == REG || GET_CODE (x0) == SUBREG)
     frv_print_operand_memory_reference_reg (stream, x0);
   else
-    fatal_insn ("Bad insn to frv_print_operand_memory_reference:", x);
+    fatal_insn ("bad insn to frv_print_operand_memory_reference:", x);
 
   fputs (",", stream);
   if (!x1)
@@ -2600,12 +2600,12 @@ frv_print_operand_memory_reference (FILE * stream, rtx x, int addr_offset)
 
 	case CONST:
 	  if (!frv_const_unspec_p (x1, &unspec))
-	    fatal_insn ("Bad insn to frv_print_operand_memory_reference:", x1);
+	    fatal_insn ("bad insn to frv_print_operand_memory_reference:", x1);
 	  frv_output_const_unspec (stream, &unspec);
 	  break;
 
 	default:
-	  fatal_insn ("Bad insn to frv_print_operand_memory_reference:", x);
+	  fatal_insn ("bad insn to frv_print_operand_memory_reference:", x);
 	}
     }
 
@@ -2766,7 +2766,7 @@ frv_print_operand (FILE * file, rtx x, int code)
 	value = CONST_DOUBLE_LOW (x);
 
       else
-        fatal_insn ("Bad insn in frv_print_operand, bad const_double", x);
+        fatal_insn ("bad insn in frv_print_operand, bad const_double", x);
     }
 
   else
@@ -2827,7 +2827,7 @@ frv_print_operand (FILE * file, rtx x, int code)
 	fputs ("0", file);
 
       else
-	fatal_insn ("Bad insn to frv_print_operand, 'e' modifier:", x);
+	fatal_insn ("bad insn to frv_print_operand, 'e' modifier:", x);
       break;
 
     case 'F':
@@ -2835,7 +2835,7 @@ frv_print_operand (FILE * file, rtx x, int code)
       switch (GET_CODE (x))
 	{
 	default:
-	  fatal_insn ("Bad insn to frv_print_operand, 'F' modifier:", x);
+	  fatal_insn ("bad insn to frv_print_operand, 'F' modifier:", x);
 
 	case EQ:  fputs ("ne",  file); break;
 	case NE:  fputs ("eq",  file); break;
@@ -2851,7 +2851,7 @@ frv_print_operand (FILE * file, rtx x, int code)
       switch (GET_CODE (x))
 	{
 	default:
-	  fatal_insn ("Bad insn to frv_print_operand, 'f' modifier:", x);
+	  fatal_insn ("bad insn to frv_print_operand, 'f' modifier:", x);
 
 	case EQ:  fputs ("eq",  file); break;
 	case NE:  fputs ("ne",  file); break;
@@ -2865,7 +2865,7 @@ frv_print_operand (FILE * file, rtx x, int code)
     case 'g':
       /* Print appropriate GOT function.  */
       if (GET_CODE (x) != CONST_INT)
-	fatal_insn ("Bad insn to frv_print_operand, 'g' modifier:", x);
+	fatal_insn ("bad insn to frv_print_operand, 'g' modifier:", x);
       fputs (unspec_got_name (INTVAL (x)), file);
       break;
 
@@ -2913,7 +2913,7 @@ frv_print_operand (FILE * file, rtx x, int code)
       if (GET_CODE (x) == REG)
 	fputs (reg_names[ REGNO (x)+1 ], file);
       else
-	fatal_insn ("Bad insn to frv_print_operand, 'L' modifier:", x);
+	fatal_insn ("bad insn to frv_print_operand, 'L' modifier:", x);
       break;
 
     /* case 'l': print a LABEL_REF.  */
@@ -2926,7 +2926,7 @@ frv_print_operand (FILE * file, rtx x, int code)
       switch (GET_CODE (x))
 	{
 	default:
-	  fatal_insn ("Bad insn to frv_print_operand, 'M/N' modifier:", x);
+	  fatal_insn ("bad insn to frv_print_operand, 'M/N' modifier:", x);
 
 	case MEM:
 	  frv_print_operand_memory_reference (file, XEXP (x, 0), offset);
@@ -2947,7 +2947,7 @@ frv_print_operand (FILE * file, rtx x, int code)
       switch (GET_CODE (x))
 	{
 	default:
-	  fatal_insn ("Bad insn to frv_print_operand, 'O' modifier:", x);
+	  fatal_insn ("bad insn to frv_print_operand, 'O' modifier:", x);
 
 	case PLUS:     fputs ("add", file); break;
 	case MINUS:    fputs ("sub", file); break;
@@ -2965,7 +2965,7 @@ frv_print_operand (FILE * file, rtx x, int code)
     case 'P':
       /* Print PIC label using operand as the number.  */
       if (GET_CODE (x) != CONST_INT)
-	fatal_insn ("Bad insn to frv_print_operand, P modifier:", x);
+	fatal_insn ("bad insn to frv_print_operand, P modifier:", x);
 
       fprintf (file, ".LCF%ld", (long)INTVAL (x));
       break;
@@ -2985,7 +2985,7 @@ frv_print_operand (FILE * file, rtx x, int code)
         fputs (reg_names [REGNO (x)], file);
 
       else
-        fatal_insn ("Bad insn in frv_print_operand, z case", x);
+        fatal_insn ("bad insn in frv_print_operand, z case", x);
       break;
 
     case 'x':
@@ -3016,7 +3016,7 @@ frv_print_operand (FILE * file, rtx x, int code)
         frv_print_operand_address (file, x);
 
       else
-        fatal_insn ("Bad insn in frv_print_operand, 0 case", x);
+        fatal_insn ("bad insn in frv_print_operand, 0 case", x);
 
       break;
 
@@ -4390,7 +4390,7 @@ output_move_single (rtx operands[], rtx insn)
 	}
     }
 
-  fatal_insn ("Bad output_move_single operand", insn);
+  fatal_insn ("bad output_move_single operand", insn);
   return "";
 }
 
@@ -4517,7 +4517,7 @@ output_move_double (rtx operands[], rtx insn)
 	}
     }
 
-  fatal_insn ("Bad output_move_double operand", insn);
+  fatal_insn ("bad output_move_double operand", insn);
   return "";
 }
 
@@ -4659,7 +4659,7 @@ output_condmove_single (rtx operands[], rtx insn)
 	}
     }
 
-  fatal_insn ("Bad output_condmove_single operand", insn);
+  fatal_insn ("bad output_condmove_single operand", insn);
   return "";
 }
 

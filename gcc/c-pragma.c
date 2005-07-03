@@ -619,7 +619,7 @@ handle_pragma_visibility (cpp_reader *dummy ATTRIBUTE_UNUSED)
         {
           if (!VEC_length (visibility, visstack))
             {
-              GCC_BAD ("No matching push for %<#pragma GCC visibility pop%>");
+              GCC_BAD ("no matching push for %<#pragma GCC visibility pop%>");
             }
           else
             {

@@ -162,7 +162,7 @@ verify_flow_info (void)
 	}
       if (n_fallthru > 1)
 	{
-	  error ("Wrong amount of branch edges after unconditional jump %i", bb->index);
+	  error ("wrong amount of branch edges after unconditional jump %i", bb->index);
 	  err = 1;
 	}
 
@@ -285,7 +285,7 @@ redirect_edge_and_branch (edge e, basic_block dest)
   edge ret;
 
   if (!cfg_hooks->redirect_edge_and_branch)
-    internal_error ("%s does not support redirect_edge_and_branch.",
+    internal_error ("%s does not support redirect_edge_and_branch",
 		    cfg_hooks->name);
 
   ret = cfg_hooks->redirect_edge_and_branch (e, dest);
@@ -303,7 +303,7 @@ redirect_edge_and_branch_force (edge e, basic_block dest)
   basic_block ret;
 
   if (!cfg_hooks->redirect_edge_and_branch_force)
-    internal_error ("%s does not support redirect_edge_and_branch_force.",
+    internal_error ("%s does not support redirect_edge_and_branch_force",
 		    cfg_hooks->name);
 
   ret = cfg_hooks->redirect_edge_and_branch_force (e, dest);
@@ -321,7 +321,7 @@ split_block (basic_block bb, void *i)
   basic_block new_bb;
 
   if (!cfg_hooks->split_block)
-    internal_error ("%s does not support split_block.", cfg_hooks->name);
+    internal_error ("%s does not support split_block", cfg_hooks->name);
 
   new_bb = cfg_hooks->split_block (bb, i);
   if (!new_bb)
@@ -357,7 +357,7 @@ move_block_after (basic_block bb, basic_block after)
   bool ret;
 
   if (!cfg_hooks->move_block_after)
-    internal_error ("%s does not support move_block_after.", cfg_hooks->name);
+    internal_error ("%s does not support move_block_after", cfg_hooks->name);
 
   ret = cfg_hooks->move_block_after (bb, after);
 
@@ -370,7 +370,7 @@ void
 delete_basic_block (basic_block bb)
 {
   if (!cfg_hooks->delete_basic_block)
-    internal_error ("%s does not support delete_basic_block.", cfg_hooks->name);
+    internal_error ("%s does not support delete_basic_block", cfg_hooks->name);
 
   cfg_hooks->delete_basic_block (bb);
 
@@ -402,7 +402,7 @@ split_edge (edge e)
   bool irr = (e->flags & EDGE_IRREDUCIBLE_LOOP) != 0;
 
   if (!cfg_hooks->split_edge)
-    internal_error ("%s does not support split_edge.", cfg_hooks->name);
+    internal_error ("%s does not support split_edge", cfg_hooks->name);
 
   ret = cfg_hooks->split_edge (e);
   ret->count = count;
@@ -463,7 +463,7 @@ create_basic_block (void *head, void *end, basic_block after)
   basic_block ret;
 
   if (!cfg_hooks->create_basic_block)
-    internal_error ("%s does not support create_basic_block.", cfg_hooks->name);
+    internal_error ("%s does not support create_basic_block", cfg_hooks->name);
 
   ret = cfg_hooks->create_basic_block (head, end, after);
 
@@ -491,7 +491,7 @@ can_merge_blocks_p (basic_block bb1, basic_block bb2)
   bool ret;
 
   if (!cfg_hooks->can_merge_blocks_p)
-    internal_error ("%s does not support can_merge_blocks_p.", cfg_hooks->name);
+    internal_error ("%s does not support can_merge_blocks_p", cfg_hooks->name);
 
   ret = cfg_hooks->can_merge_blocks_p (bb1, bb2);
 
@@ -502,7 +502,7 @@ void
 predict_edge (edge e, enum br_predictor predictor, int probability)
 {
   if (!cfg_hooks->predict_edge)
-    internal_error ("%s does not support predict_edge.", cfg_hooks->name);
+    internal_error ("%s does not support predict_edge", cfg_hooks->name);
 
   cfg_hooks->predict_edge (e, predictor, probability);
 }
@@ -511,7 +511,7 @@ bool
 predicted_by_p (basic_block bb, enum br_predictor predictor)
 {
   if (!cfg_hooks->predict_edge)
-    internal_error ("%s does not support predicted_by_p.", cfg_hooks->name);
+    internal_error ("%s does not support predicted_by_p", cfg_hooks->name);
 
   return cfg_hooks->predicted_by_p (bb, predictor);
 }
@@ -525,7 +525,7 @@ merge_blocks (basic_block a, basic_block b)
   edge_iterator ei;
 
   if (!cfg_hooks->merge_blocks)
-    internal_error ("%s does not support merge_blocks.", cfg_hooks->name);
+    internal_error ("%s does not support merge_blocks", cfg_hooks->name);
 
   cfg_hooks->merge_blocks (a, b);
 
@@ -570,7 +570,7 @@ make_forwarder_block (basic_block bb, bool (*redirect_edge_p) (edge),
   basic_block dummy, jump;
 
   if (!cfg_hooks->make_forwarder_block)
-    internal_error ("%s does not support make_forwarder_block.",
+    internal_error ("%s does not support make_forwarder_block",
 		    cfg_hooks->name);
 
   fallthru = split_block_after_labels (bb);
@@ -675,7 +675,7 @@ can_duplicate_block_p (basic_block bb)
   edge e;
 
   if (!cfg_hooks->can_duplicate_block_p)
-    internal_error ("%s does not support can_duplicate_block_p.",
+    internal_error ("%s does not support can_duplicate_block_p",
 		    cfg_hooks->name);
 
   if (bb == EXIT_BLOCK_PTR || bb == ENTRY_BLOCK_PTR)
@@ -702,7 +702,7 @@ duplicate_block (basic_block bb, edge e)
   edge_iterator ei;
 
   if (!cfg_hooks->duplicate_block)
-    internal_error ("%s does not support duplicate_block.",
+    internal_error ("%s does not support duplicate_block",
 		    cfg_hooks->name);
 
   if (bb->count < new_count)

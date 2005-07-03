@@ -652,7 +652,7 @@ verify_cgraph_node (struct cgraph_node *node)
   for (e = node->callees; e; e = e->next_callee)
     if (e->aux)
       {
-	error ("Aux field set for edge %s->%s",
+	error ("aux field set for edge %s->%s",
 	       cgraph_node_name (e->caller), cgraph_node_name (e->callee));
 	error_found = true;
       }
@@ -664,30 +664,30 @@ verify_cgraph_node (struct cgraph_node *node)
 	      != (e->caller->global.inlined_to
 		  ? e->caller->global.inlined_to : e->caller))
 	    {
-	      error ("Inlined_to pointer is wrong");
+	      error ("inlined_to pointer is wrong");
 	      error_found = true;
 	    }
 	  if (node->callers->next_caller)
 	    {
-	      error ("Multiple inline callers");
+	      error ("multiple inline callers");
 	      error_found = true;
 	    }
 	}
       else
 	if (node->global.inlined_to)
 	  {
-	    error ("Inlined_to pointer set for noninline callers");
+	    error ("inlined_to pointer set for noninline callers");
 	    error_found = true;
 	  }
     }
   if (!node->callers && node->global.inlined_to)
     {
-      error ("Inlined_to pointer is set but no predecesors found");
+      error ("inlined_to pointer is set but no predecesors found");
       error_found = true;
     }
   if (node->global.inlined_to == node)
     {
-      error ("Inlined_to pointer refers to itself");
+      error ("inlined_to pointer refers to itself");
       error_found = true;
     }
 
@@ -697,7 +697,7 @@ verify_cgraph_node (struct cgraph_node *node)
       break;
   if (!node)
     {
-      error ("Node not found in DECL_ASSEMBLER_NAME hash");
+      error ("node not found in DECL_ASSEMBLER_NAME hash");
       error_found = true;
     }
   
@@ -725,13 +725,13 @@ verify_cgraph_node (struct cgraph_node *node)
 		      {
 			if (e->aux)
 			  {
-			    error ("Shared call_stmt:");
+			    error ("shared call_stmt:");
 			    debug_generic_stmt (stmt);
 			    error_found = true;
 			  }
 			if (e->callee->decl != cgraph_node (decl)->decl)
 			  {
-			    error ("Edge points to wrong declaration:");
+			    error ("edge points to wrong declaration:");
 			    debug_tree (e->callee->decl);
 			    fprintf (stderr," Instead of:");
 			    debug_tree (decl);
@@ -740,7 +740,7 @@ verify_cgraph_node (struct cgraph_node *node)
 		      }
 		    else
 		      {
-			error ("Missing callgraph edge for call stmt:");
+			error ("missing callgraph edge for call stmt:");
 			debug_generic_stmt (stmt);
 			error_found = true;
 		      }
@@ -757,7 +757,7 @@ verify_cgraph_node (struct cgraph_node *node)
 	{
 	  if (!e->aux)
 	    {
-	      error ("Edge %s->%s has no corresponding call_stmt",
+	      error ("edge %s->%s has no corresponding call_stmt",
 		     cgraph_node_name (e->caller),
 		     cgraph_node_name (e->callee));
 	      debug_generic_stmt (e->call_stmt);
@@ -769,7 +769,7 @@ verify_cgraph_node (struct cgraph_node *node)
   if (error_found)
     {
       dump_cgraph_node (stderr, node);
-      internal_error ("verify_cgraph_node failed.");
+      internal_error ("verify_cgraph_node failed");
     }
   timevar_pop (TV_CGRAPH_VERIFY);
 }
@@ -1271,7 +1271,7 @@ cgraph_optimize (void)
 	    dump_cgraph_node (stderr, node);
  	  }
       if (error_found)
-	internal_error ("Nodes with no released memory found.");
+	internal_error ("nodes with no released memory found");
     }
 #endif
 }

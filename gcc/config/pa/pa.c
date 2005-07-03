@@ -449,12 +449,12 @@ override_options (void)
 
   if (flag_pic && TARGET_PORTABLE_RUNTIME)
     {
-      warning (0, "PIC code generation is not supported in the portable runtime model\n");
+      warning (0, "PIC code generation is not supported in the portable runtime model");
     }
 
   if (flag_pic && TARGET_FAST_INDIRECT_CALLS)
    {
-      warning (0, "PIC code generation is not compatible with fast indirect calls\n");
+      warning (0, "PIC code generation is not compatible with fast indirect calls");
    }
 
   if (! TARGET_GAS && write_symbols != NO_DEBUG)

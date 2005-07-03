@@ -4098,8 +4098,8 @@ c4x_rptb_rpts_p (rtx insn, rtx op)
          where they are and print a warning.  We should
          probably move these insns before the repeat block insn.  */
       if (TARGET_DEBUG)
-	fatal_insn("c4x_rptb_rpts_p: Repeat block top label moved\n",
-		   insn);
+	fatal_insn ("c4x_rptb_rpts_p: Repeat block top label moved",
+		    insn);
       return 0;
     }
 
