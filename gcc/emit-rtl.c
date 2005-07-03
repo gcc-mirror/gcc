@@ -2198,11 +2198,11 @@ verify_rtx_sharing (rtx orig, rtx insn)
 #ifdef ENABLE_CHECKING
   if (RTX_FLAG (x, used))
     {
-      error ("Invalid rtl sharing found in the insn");
+      error ("invalid rtl sharing found in the insn");
       debug_rtx (insn);
-      error ("Shared rtx");
+      error ("shared rtx");
       debug_rtx (x);
-      internal_error ("Internal consistency failure");
+      internal_error ("internal consistency failure");
     }
 #endif
   gcc_assert (!RTX_FLAG (x, used));

@@ -1470,7 +1470,7 @@ cris_notice_update_cc (rtx exp, rtx insn)
       break;
 
     default:
-      internal_error ("Unknown cc_attr value");
+      internal_error ("unknown cc_attr value");
     }
 
   CC_STATUS_INIT;

@@ -218,7 +218,7 @@ C ObjC C++ ObjC++ Joined
 
 Winit-self
 C ObjC C++ ObjC++ Var(warn_init_self)
-Warn about variables which are initialized to themselves.
+Warn about variables which are initialized to themselves
 
 Wimplicit
 C ObjC C++ ObjC++
@@ -233,7 +233,7 @@ Warn when a declaration does not specify a type
 
 Wimport
 C ObjC C++ ObjC++
-Deprecated.  This switch has no effect.
+Deprecated.  This switch has no effect
 
 Wint-to-pointer-cast
 C ObjC Var(warn_int_to_pointer_cast) Init(1)

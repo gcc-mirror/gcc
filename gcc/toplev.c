@@ -1093,19 +1093,25 @@ const char *const debug_type_names[] =
 void
 print_version (FILE *file, const char *indent)
 {
+  static const char fmt1[] =
+#ifdef __GNUC__
+    N_("%s%s%s version %s (%s)\n%s\tcompiled by GNU C version %s.\n")
+#else
+    N_("%s%s%s version %s (%s) compiled by CC.\n")
+#endif
+    ;
+  static const char fmt2[] =
+    N_("%s%sGGC heuristics: --param ggc-min-expand=%d --param ggc-min-heapsize=%d\n");
 #ifndef __VERSION__
 #define __VERSION__ "[?]"
 #endif
-  fnotice (file,
-#ifdef __GNUC__
-	   "%s%s%s version %s (%s)\n%s\tcompiled by GNU C version %s.\n"
-#else
-	   "%s%s%s version %s (%s) compiled by CC.\n"
-#endif
-	   , indent, *indent != 0 ? " " : "",
+  fprintf (file,
+	   file == stderr ? _(fmt1) : fmt1,
+	   indent, *indent != 0 ? " " : "",
 	   lang_hooks.name, version_string, TARGET_NAME,
 	   indent, __VERSION__);
-  fnotice (file, "%s%sGGC heuristics: --param ggc-min-expand=%d --param ggc-min-heapsize=%d\n",
+  fprintf (file,
+	   file == stderr ? _(fmt2) : fmt2,
 	   indent, *indent != 0 ? " " : "",
 	   PARAM_VALUE (GGC_MIN_EXPAND), PARAM_VALUE (GGC_MIN_HEAPSIZE));
 }

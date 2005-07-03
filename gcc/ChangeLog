@@ -1,3 +1,18 @@
+2005-07-03  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* bb-reorder.c, c-pch.c, c-pragma.c, c.opt, cfghooks.c, cfgloop.c,
+	cfgrtl.c, cgraphunit.c, config/c4x/c4x.c, config/cris/cris.c,
+	config/frv/frv.c, config/host-darwin.c, config/iq2000/iq2000.c,
+	config/lynx.h, config/m68k/m68k.c, config/pa/pa.c, config/sh/sh.h,
+	config/stormy16/stormy16.c, config/v850/v850.c,
+	config/vax/netbsd-elf.h, coverage.c, dwarf2out.c, emit-rtl.c,
+	except.c, gcc.c, tree-cfg.c, tree-eh.c, tree-ssa.c, xcoffout.c:
+	Avoid "." or "\n" at end of diagnostics and capital letters at
+	start of diagnostics.
+	* combine.c, cse.c: Don't translate dump file output.
+	* toplev.c (print_version): Only translate output if going to
+	stderr.
+
 2005-07-03  Kazu Hirata  <kazu@codesourcery.com>
 
 	* c-decl.c, tree-object-size.c, tree-vectorizer.c,

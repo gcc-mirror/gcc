@@ -2278,7 +2278,7 @@ construct_restore_jr (rtx op)
   
   if (count <= 2)
     {
-      error ("bogus JR construction: %d\n", count);
+      error ("bogus JR construction: %d", count);
       return NULL;
     }
 
@@ -2684,7 +2684,7 @@ construct_dispose_instruction (rtx op)
   
   if (count <= 2)
     {
-      error ("Bogus DISPOSE construction: %d\n", count);
+      error ("bogus DISPOSE construction: %d", count);
       return NULL;
     }
 
@@ -2703,7 +2703,7 @@ construct_dispose_instruction (rtx op)
      will fit into the DISPOSE instruction.  */
   if (stack_bytes > 128)
     {
-      error ("Too much stack space to dispose of: %d", stack_bytes);
+      error ("too much stack space to dispose of: %d", stack_bytes);
       return NULL;
     }
 
@@ -2805,7 +2805,7 @@ construct_prepare_instruction (rtx op)
   
   if (count <= 1)
     {
-      error ("Bogus PREPEARE construction: %d\n", count);
+      error ("bogus PREPEARE construction: %d", count);
       return NULL;
     }
 
@@ -2824,7 +2824,7 @@ construct_prepare_instruction (rtx op)
      will fit into the DISPOSE instruction.  */
   if (stack_bytes < -128)
     {
-      error ("Too much stack space to prepare: %d", stack_bytes);
+      error ("too much stack space to prepare: %d", stack_bytes);
       return NULL;
     }
 

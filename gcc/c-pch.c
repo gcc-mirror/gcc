@@ -464,7 +464,7 @@ c_common_pch_pragma (cpp_reader *pfile)
   
   fd = open (name, O_RDONLY | O_BINARY, 0666);
   if (fd == -1)
-    fatal_error ("%s: couldn%'t open PCH file: %m\n", name);
+    fatal_error ("%s: couldn%'t open PCH file: %m", name);
   
   if (c_common_valid_pch (pfile, name, fd) != 1)
     {

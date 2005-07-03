@@ -39,7 +39,7 @@ Boston, MA 02110-1301, USA.  */
    is added to the compiler.  */
 #define LINK_SPEC \
   "%{assert*} %{R*} %{rpath*} \
-   %{shared:%eThe -shared option is not currently supported for VAX ELF.} \
+   %{shared:%ethe -shared option is not currently supported for VAX ELF} \
    %{!shared: \
      -dc -dp \
      %{!nostdlib: \
