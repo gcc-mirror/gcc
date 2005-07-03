@@ -267,7 +267,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
   if (TREE_CODE (node) != ERROR_MARK
       && is_gimple_stmt (node)
       && (flags & TDF_VOPS)
-      && stmt_ann (node))
+      && stmt_ann (node)
+      && TREE_CODE (node) != PHI_NODE)
     dump_vops (buffer, node, spc, flags);
 
   if (is_stmt && (flags & TDF_STMTADDR))
