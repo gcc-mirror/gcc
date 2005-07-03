@@ -1,3 +1,8 @@
+2005-07-03  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gfortran.texi, intrinsic.texi: Fix typo.
+	* symbol.c: Fix a comment typo.
+
 2005-07-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* error.c (error_printf, error_print): Use ATTRIBUTE_GCC_GFC.

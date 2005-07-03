@@ -2342,7 +2342,7 @@ gfc_is_var_automatic (gfc_symbol * sym)
   if (sym->attr.dimension && sym->as
       && !gfc_is_compile_time_shape (sym->as))
     return true;
-  /* Check for non-constant length character vairables.  */
+  /* Check for non-constant length character variables.  */
   if (sym->ts.type == BT_CHARACTER
       && sym->ts.cl
       && gfc_is_constant_expr (sym->ts.cl->length))
