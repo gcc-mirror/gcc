@@ -844,7 +844,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
       if (cond_code == LT_EXPR)
 	{
 	  tree one = build_int_cst (type, 1);
-	  max = fold (build (MINUS_EXPR, type, max, one));
+	  max = fold_build2 (MINUS_EXPR, type, max, one);
 	}
 
       set_value_range (vr_p, VR_RANGE, min, max, vr_p->equiv);
@@ -867,7 +867,7 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
       if (cond_code == GT_EXPR)
 	{
 	  tree one = build_int_cst (type, 1);
-	  min = fold (build (PLUS_EXPR, type, min, one));
+	  min = fold_build2 (PLUS_EXPR, type, min, one);
 	}
 
       set_value_range (vr_p, VR_RANGE, min, max, vr_p->equiv);

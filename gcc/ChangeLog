@@ -1,3 +1,8 @@
+2005-07-03  Kazu Hirata  <kazu@codesourcery.com>
+
+	* tree-vrp.c (extract_range_from_assert): Replace
+	fold (build (...)) with fold_build2.
+
 2005-07-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-format.c (gcc_gfc_format_type, gcc_gfc_flag_pairs,
