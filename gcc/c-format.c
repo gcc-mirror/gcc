@@ -60,7 +60,7 @@ set_Wformat (int setting)
 enum format_type { printf_format_type, asm_fprintf_format_type,
 		   gcc_diag_format_type, gcc_tdiag_format_type,
 		   gcc_cdiag_format_type,
-		   gcc_cxxdiag_format_type,
+		   gcc_cxxdiag_format_type, gcc_gfc_format_type,
 		   scanf_format_type, strftime_format_type,
 		   strfmon_format_type, format_type_error = -1};
 
@@ -392,6 +392,11 @@ static const format_flag_pair gcc_diag_flag_pairs[] =
 #define gcc_cdiag_flag_pairs gcc_diag_flag_pairs
 #define gcc_cxxdiag_flag_pairs gcc_diag_flag_pairs
 
+static const format_flag_pair gcc_gfc_flag_pairs[] =
+{
+  { 0, 0, 0, 0 }
+};
+
 static const format_flag_spec gcc_diag_flag_specs[] =
 {
   { '+',  0, 0, N_("'+' flag"),        N_("the '+' printf flag"),              STD_C89 },
@@ -619,6 +624,23 @@ static const format_char_info gcc_cxxdiag_char_table[] =
   { NULL,  0, 0, NOLENGTHS, NULL, NULL, NULL }
 };
 
+static const format_char_info gcc_gfc_char_table[] =
+{
+  /* C89 conversion specifiers.  */
+  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "", NULL },
+  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "", NULL },
+  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "cR", NULL },
+
+  /* gfc conversion specifiers.  */
+
+  { "C",   0, STD_C89, NOARGUMENTS, "",      "",   NULL },
+
+  /* This will require a "locus" at runtime.  */
+  { "L",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "R", NULL },
+
+  { NULL,  0, 0, NOLENGTHS, NULL, NULL, NULL }
+};
+
 static const format_char_info scan_char_table[] =
 {
   /* C89 conversion specifiers.  */
@@ -710,6 +732,12 @@ static const format_kind_info format_types_orig[] =
     FMT_FLAG_ARG_CONVERT,
     0, 0, 'p', 0, 'L',
     NULL, &integer_type_node
+  },
+  { "gcc_gfc", NULL, gcc_gfc_char_table, "", NULL, 
+    NULL, gcc_gfc_flag_pairs,
+    FMT_FLAG_ARG_CONVERT,
+    0, 0, 0, 0, 0,
+    NULL, NULL
   },
   { "scanf",    scanf_length_specs,   scan_char_table,  "*'I", NULL, 
     scanf_flag_specs, scanf_flag_pairs,
@@ -2383,6 +2411,55 @@ init_dynamic_asm_fprintf_info (void)
     }
 }
 
+/* Determine the type of a "locus" in the code being compiled for use
+   in GCC's __gcc_gfc__ custom format attribute.  You must have set
+   dynamic_format_types before calling this function.  */
+static void
+init_dynamic_gfc_info (void)
+{
+  static tree locus;
+  
+  if (!locus)
+    {
+      static format_char_info *gfc_fci;
+
+      /* For the GCC __gcc_gfc__ custom format specifier to work, one
+	 must have declared 'locus' prior to using this attribute.  If
+	 we haven't seen this declarations then you shouldn't use the
+	 specifier requiring that type.  */
+      if ((locus = maybe_get_identifier ("locus")))
+	{
+	  locus = identifier_global_value (locus);
+	  if (locus)
+	    {
+	      if (TREE_CODE (locus) != TYPE_DECL)
+		{
+		  error ("%<locus%> is not defined as a type");
+		  locus = 0;
+		}
+	      else
+		locus = TREE_TYPE (locus);
+	    }
+	}
+
+      /* Assign the new data for use.  */
+
+      /* Handle the __gcc_gfc__ format specifics.  */
+      if (!gfc_fci)
+	dynamic_format_types[gcc_gfc_format_type].conversion_specs =
+	  gfc_fci = (format_char_info *)
+		     xmemdup (gcc_gfc_char_table,
+			      sizeof (gcc_gfc_char_table),
+			      sizeof (gcc_gfc_char_table));
+      if (locus)
+        {
+	  const unsigned i = find_char_info_specifier_index (gfc_fci, 'L');
+	  gfc_fci[i].types[0].type = &locus;
+	  gfc_fci[i].pointer_count = 1;
+	}
+    }
+}
+
 /* Determine the types of "tree" and "location_t" in the code being
    compiled for use in GCC's diagnostic custom format attributes.  You
    must have set dynamic_format_types before calling this function.  */
@@ -2660,6 +2737,7 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
   /* If this is a custom GCC-internal format type, we have to
      initialize certain bits a runtime.  */
   if (info.format_type == asm_fprintf_format_type
+      || info.format_type == gcc_gfc_format_type
       || info.format_type == gcc_diag_format_type
       || info.format_type == gcc_tdiag_format_type
       || info.format_type == gcc_cdiag_format_type
@@ -2676,6 +2754,10 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
          GCC's notion of HOST_WIDE_INT for checking %wd.  */
       if (info.format_type == asm_fprintf_format_type)
 	init_dynamic_asm_fprintf_info ();
+      /* If this is format __gcc_gfc__, we have to initialize GCC's
+	 notion of 'locus' at runtime for %L.  */
+      else if (info.format_type == gcc_gfc_format_type)
+	init_dynamic_gfc_info ();
       /* If this is one of the diagnostic attributes, then we have to
          initialize 'location_t' and 'tree' at runtime.  */
       else if (info.format_type == gcc_diag_format_type

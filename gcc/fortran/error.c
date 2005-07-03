@@ -118,7 +118,7 @@ error_string (const char *p)
    locus.  Calls error_printf() recursively, but the recursion is at
    most one level deep.  */
 
-static void error_printf (const char *, ...) ATTRIBUTE_PRINTF_1;
+static void error_printf (const char *, ...) ATTRIBUTE_GCC_GFC(1,2);
 
 static void
 show_locus (int offset, locus * loc)
@@ -314,7 +314,7 @@ separate:
 #define IBUF_LEN 30
 #define MAX_ARGS 10
 
-static void
+static void ATTRIBUTE_GCC_GFC(2,0)
 error_print (const char *type, const char *format0, va_list argp)
 {
   char c, *p, int_buf[IBUF_LEN], c_arg[MAX_ARGS], *cp_arg[MAX_ARGS];

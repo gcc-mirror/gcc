@@ -1,3 +1,11 @@
+2005-07-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* error.c (error_printf, error_print): Use ATTRIBUTE_GCC_GFC.
+	* gfortran.h (ATTRIBUTE_GCC_GFC): New.
+	(gfc_warning, gfc_warning_now, gfc_error, gfc_error_now,
+	gfc_fatal_error, gfc_internal_error, gfc_notify_std): Use
+	ATTRIBUTE_GCC_GFC.
+
 2005-07-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/20842

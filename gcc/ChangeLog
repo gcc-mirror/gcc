@@ -1,3 +1,10 @@
+2005-07-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-format.c (gcc_gfc_format_type, gcc_gfc_flag_pairs,
+	gcc_gfc_char_table, init_dynamic_gfc_info): New.
+	(format_types_orig, handle_format_attribute): Add support for
+	format "gcc_gfc".
+
 2005-07-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* varasm.c (assemble_variable): Fix format specifier thinko.
