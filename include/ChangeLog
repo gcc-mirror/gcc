@@ -1,3 +1,10 @@
+2005-07-03  Steve Ellcey  <sje@cup.hp.com>
+
+	PR other/13906
+	* ansidecl.h (ATTRIBUTE_ALIGNED_ALIGNOF): New.
+	* md5.h (md5_uintptr): New.
+	(md5_ctx): Align buffer field.
+
 2005-06-30  Daniel Berlin  <dberlin@dberlin.org>
 	
 	* hashtab.h (HTAB_DELETED_ENTRY): New macro.
