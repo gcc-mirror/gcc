@@ -306,7 +306,7 @@ fix_range (const char *const_str)
      REG2 are either register names or register numbers.  The effect
      of this option is to mark the registers in the range from REG1 to
      REG2 as ``fixed'' so they won't be used by the compiler.  This is
-     used, e.g., to ensure that kernel mode code doesn't use f32-f127.  */
+     used, e.g., to ensure that kernel mode code doesn't use fr4-fr31.  */
 
   i = strlen (const_str);
   str = (char *) alloca (i + 1);
