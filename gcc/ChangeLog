@@ -1,3 +1,7 @@
+2005-07-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* varasm.c (assemble_variable): Fix format specifier thinko.
+
 2005-07-03  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/22029 (and 22135)
