@@ -1,3 +1,29 @@
+2005-07-03  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c-common.h (GCC_DIAG_STYLE): Define.
+	* c-tree.h (GCC_DIAG_STYLE): Do not define.  Change minimum GCC
+	version for format checking to 4.1.
+	* c-format.c: Include toplev.h after c-common.h.
+	(enum format_type): Add gcc_tdiag_format_type.
+	(gcc_tdiag_length_specs, gcc_tdiag_flag_pairs,
+	gcc_tdiag_flag_specs, gcc_tdiag_char_table): New.
+	(format_types_orig): Add gcc_tdiag.
+	(init_dynamic_diag_info): Support gcc_tdiag formats.
+	(handle_format_attribute): Likewise.
+	* toplev.h (NO_FRONT_END_DIAG, ATTRIBUTE_GCC_FE_DIAG): Remove.
+	(GCC_DIAG_STYLE): Default to __gcc_tdiag__.  Change minimum GCC
+	version for format checking to 4.1.
+	(warning0, warning, error, pedwarn, sorry): Use
+	ATTRIBUTE_GCC_DIAG.
+	* config/rs6000/rs6000.c (altivec_expand_builtin), varasm.c
+	(finish_aliases_1): Do not use %qE.
+	* config/arm/arm.c, config/i386/i386.c, config/mmix/mmix.c,
+	config/pdp11/pdp11.c, stor-layout.c, tree-eh.c, tree-ssa.c:
+	Correct format bugs.
+	* config/v850/v850-protos.h (v850_output_aligned_bss): Change size
+	parameter to unsigned HOST_WIDE_INT.
+	* config/v850/v850.c (v850_output_aligned_bss): Likewise.
+
 2005-07-02  David Edelsohn  <edelsohn@gnu.org>
 
 	PR middle-end/21742

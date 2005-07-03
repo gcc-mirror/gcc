@@ -61,7 +61,7 @@ extern rtx    function_arg                  (CUMULATIVE_ARGS *, Mmode, tree, int
 
 #ifdef TREE_CODE
 extern int    v850_interrupt_function_p     (tree);
-extern void   v850_output_aligned_bss       (FILE *, tree, const char *, int, int);
+extern void   v850_output_aligned_bss       (FILE *, tree, const char *, unsigned HOST_WIDE_INT, int);
 extern void   v850_output_common            (FILE *, tree, const char *, int, int);
 extern void   v850_output_local             (FILE *, tree, const char *, int, int);
 extern v850_data_area v850_get_data_area    (tree);

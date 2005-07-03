@@ -14750,7 +14750,7 @@ arm_unwind_emit_stm (FILE * asm_out_file, rtx p)
   else if (reg >= FIRST_FPA_REGNUM && reg <= LAST_FPA_REGNUM)
     {
       /* FPA registers are done differently.  */
-      asm_fprintf (asm_out_file, "\t.save %r, %d\n", reg, nregs);
+      asm_fprintf (asm_out_file, "\t.save %r, %wd\n", reg, nregs);
       return;
     }
   else
@@ -14848,7 +14848,7 @@ arm_unwind_emit_set (FILE * asm_out_file, rtx p)
 	      || GET_CODE (XEXP (e1, 1)) != CONST_INT)
 	    abort ();
 
-	  asm_fprintf (asm_out_file, "\t.pad #%d\n",
+	  asm_fprintf (asm_out_file, "\t.pad #%wd\n",
 		       -INTVAL (XEXP (e1, 1)));
 	}
       else if (REGNO (e0) == HARD_FRAME_POINTER_REGNUM)
@@ -14863,7 +14863,7 @@ arm_unwind_emit_set (FILE * asm_out_file, rtx p)
 		abort ();
 	      reg = REGNO (XEXP (e1, 0));
 	      offset = INTVAL (XEXP (e1, 1));
-	      asm_fprintf (asm_out_file, "\t.setfp %r, %r, #%d\n",
+	      asm_fprintf (asm_out_file, "\t.setfp %r, %r, #%wd\n",
 			   HARD_FRAME_POINTER_REGNUM, reg,
 			   INTVAL (XEXP (e1, 1)));
 	    }

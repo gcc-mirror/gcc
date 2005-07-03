@@ -1891,7 +1891,7 @@ mmix_expand_prologue (void)
 
   /* Make sure we don't get an unaligned stack.  */
   if ((stack_space_to_allocate % 8) != 0)
-    internal_error ("stack frame not a multiple of 8 bytes: %d",
+    internal_error ("stack frame not a multiple of 8 bytes: %wd",
 		    stack_space_to_allocate);
 
   if (current_function_pretend_args_size)
@@ -2127,7 +2127,7 @@ mmix_expand_epilogue (void)
 
   /* Make sure we don't get an unaligned stack.  */
   if ((stack_space_to_deallocate % 8) != 0)
-    internal_error ("stack frame not a multiple of octabyte: %d",
+    internal_error ("stack frame not a multiple of octabyte: %wd",
 		    stack_space_to_deallocate);
 
   /* We will add back small offsets to the stack pointer as we go.

@@ -1,3 +1,8 @@
+2005-07-03  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* cp-tree.h (GCC_DIAG_STYLE): #undef before defining.  Change
+	minimum GCC version for format checking to 4.1.
+
 2005-07-02  Kazu Hirata  <kazu@codesourcery.com>
 
 	* Make-lang.in (cc1plus-checksum.c): Use

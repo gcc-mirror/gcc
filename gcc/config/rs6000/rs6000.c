@@ -6826,7 +6826,7 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
       && fcode <= ALTIVEC_BUILTIN_OVERLOADED_LAST)
     {
       *expandedp = true;
-      error ("unresolved overload for Altivec builtin %qE", fndecl);
+      error ("unresolved overload for Altivec builtin %qF", fndecl);
       return const0_rtx;
     }
 

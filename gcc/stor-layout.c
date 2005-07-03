@@ -30,6 +30,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "flags.h"
 #include "function.h"
 #include "expr.h"
+#include "output.h"
 #include "toplev.h"
 #include "ggc.h"
 #include "target.h"
@@ -453,7 +454,7 @@ layout_decl (tree decl, unsigned int known_align)
 	  if (compare_tree_int (size, size_as_int) == 0)
 	    warning (0, "size of %q+D is %d bytes", decl, size_as_int);
 	  else
-	    warning (0, "size of %q+D is larger than %d bytes",
+	    warning (0, "size of %q+D is larger than %wd bytes",
                      decl, larger_than_size);
 	}
     }
