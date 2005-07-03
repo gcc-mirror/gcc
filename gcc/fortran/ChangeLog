@@ -1,13 +1,20 @@
+2005-07-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/20842
+	* io.c (match_dt_element): Do not allow END tag in PRINT or
+	WRITE statement.
+
 2005-07-02  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* lang.opt: Remove "." from end of help texts.
 
 2005-07-01  Jerry DeLisle  <jvdelisle@verizon.net>
 
-    * gfortran.texi: Fix typos and grammar.
-    * invoke.texi: Fix typos and grammar.
-    * intrinsic.texi: Add documentaion for eoshift, epsilon, etime, and exit.
-    Fixed alignment of text for dtime syntax. Fixed a few line lengths.
+	* gfortran.texi: Fix typos and grammar.
+	* invoke.texi: Fix typos and grammar.
+	* intrinsic.texi: Add documentaion for eoshift, epsilon, etime, and
+	exit. Fixed alignment of text for dtime syntax. Fixed a few line
+	lengths.
 
 2005-06-25  Jakub Jelinek  <jakub@redhat.com>
 
