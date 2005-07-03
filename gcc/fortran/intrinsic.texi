@@ -64,7 +64,7 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{CONJG}:         CONJG,     Complex conjugate function
 * @code{COS}:           COS,       Cosine function
 * @code{COSH}:          COSH,      Hyperbolic cosine function
-* @code{COUNT}:         COUNT,     Count occurences of .TRUE. in an array
+* @code{COUNT}:         COUNT,     Count occurrences of .TRUE. in an array
 * @code{CPU_TIME}:      CPU_TIME,  CPU time subroutine
 * @code{CSHIFT}:        CSHIFT,    Circular array shift function
 * @code{DATE_AND_TIME}: DATE_AND_TIME, Date and time subroutine
@@ -1806,7 +1806,7 @@ subroutine
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
 @item @var{DATE}  @tab (Optional) The type shall be @code{CHARACTER(8)} or larger.
-@item @var{TIME}  @tab (OPtional) The type shall be @code{CHARACTER(10)} or larger.
+@item @var{TIME}  @tab (Optional) The type shall be @code{CHARACTER(10)} or larger.
 @item @var{ZONE}  @tab (Optional) The type shall be @code{CHARACTER(5)} or larger.
 @item @var{VALUES}@tab (Optional) The type shall be @code{INTEGER(8)}.
 @end multitable
@@ -2253,7 +2253,7 @@ rank of @var{ARRAY}.  If the rank of @var{ARRAY} is one, then all elements of
 @var{ARRAY} are shifted by @var{SHIFT} places.  If rank is greater than one,
 then all complete rank one sections of @var{ARRAY} along the given dimension are
 shifted.  Elements shifted out one end of each rank one section are dropped.  If
-@var{BOUNDARY} is present then the cooresponding value of from @var{BOUNDARY}
+@var{BOUNDARY} is present then the corresponding value of from @var{BOUNDARY}
 is copied back in the other end.  If @var{BOUNDARY} is not present then the
 following are copied in depending on the type of @var{ARRAY}.
 
@@ -2511,7 +2511,7 @@ end program test_etime
 @table @asis
 @item @emph{Description}:
 @code{EXIT} causes immediate termination of the program with status.  If status
-is omitted it returns the connonical @emph{success} for the system.  All Fortran
+is omitted it returns the canonical @emph{success} for the system.  All Fortran
 I/O units are closed. 
 
 @item @emph{Option}:
