@@ -1,3 +1,9 @@
+2005-07-03  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_output_mi_thunk): Initialize and clean
+	up the minimal CFG stuff always when optimize > 0.  Call
+	split_all_insns_noflow in PIC case if needed.
+
 2005-07-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
             Christian Ehrhardt <ehrhardt@mathematik.uni-ulm.de>
 

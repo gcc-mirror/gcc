@@ -9619,7 +9619,7 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   insn_locators_initialize ();
   insns = get_insns ();
 
-  if (optimize > 0 && flag_schedule_insns_after_reload)
+  if (optimize > 0)
     {
       /* Initialize the bitmap obstacks.  */
       bitmap_obstack_initialize (NULL);
@@ -9627,31 +9627,36 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
       if (! cfun->cfg)
 	init_flow ();
       rtl_register_cfg_hooks ();
+      init_rtl_bb_info (ENTRY_BLOCK_PTR);
+      init_rtl_bb_info (EXIT_BLOCK_PTR);
+      ENTRY_BLOCK_PTR->flags |= BB_RTL;
+      EXIT_BLOCK_PTR->flags |= BB_RTL;
       find_basic_blocks (insns);
-      life_analysis (dump_file, PROP_FINAL);
 
-      split_all_insns (1);
+      if (flag_schedule_insns_after_reload)
+	{
+	  life_analysis (dump_file, PROP_FINAL);
 
-      schedule_insns (dump_file);
+	  split_all_insns (1);
+
+	  schedule_insns (dump_file);
+	}
+      /* We must split jmp insn in PIC case.  */
+      else if (flag_pic)
+	split_all_insns_noflow ();
     }
 
   sh_reorg ();
 
   if (optimize > 0 && flag_delayed_branch)
-    {
-      if (! cfun->cfg)
-	{
-	  init_flow ();
-	  find_basic_blocks (insns);
-	}
-      dbr_schedule (insns, dump_file);
-    }
+    dbr_schedule (insns, dump_file);
+
   shorten_branches (insns);
   final_start_function (insns, file, 1);
   final (insns, file, 1);
   final_end_function ();
 
-  if (optimize > 0 && flag_schedule_insns_after_reload)
+  if (optimize > 0)
     {
       /* Release all memory allocated by flow.  */
       free_basic_block_vars ();
