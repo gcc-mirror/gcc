@@ -1,3 +1,15 @@
+2005-07-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+            Christian Ehrhardt <ehrhardt@mathematik.uni-ulm.de>
+
+	PR c++/18279
+	* c-decl.c (c_write_global_declarations): Dump contents of
+	external scope to.
+	* tree-dump.c (dequeue_and_dump): Dump abstract origin of a decl.
+	<TRY_FINALLY_EXPR>, <RETURN_EXPR>, <CASE_LABEL_EXPR>, <LABEL_EXPR>,
+	<GOTO_EXPR>, <SWITCH_EXPR>: Add.
+	(dump_enabled_p): Return TRUE if PHASE is TDI_all and any dump
+	is enabled.
+	
 2005-07-03  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-common.h (GCC_DIAG_STYLE): Define.
