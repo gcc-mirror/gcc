@@ -1,3 +1,7 @@
+2005-07-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/format/gcc_gfc-1.c: New.
+
 2005-07-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* pr14490-[1-4].c: Fix typos scan-tree-dump-times so they now pass.
