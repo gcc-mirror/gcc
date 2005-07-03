@@ -1745,7 +1745,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 #if !defined(ASM_OUTPUT_ALIGNED_COMMON) && !defined(ASM_OUTPUT_ALIGNED_DECL_COMMON) && !defined(ASM_OUTPUT_ALIGNED_BSS)
       if ((unsigned HOST_WIDE_INT) DECL_ALIGN_UNIT (decl) > rounded)
 	warning (0, "requested alignment for %q+D is greater than "
-                 "implemented alignment of %d", decl, rounded);
+                 "implemented alignment of %wu", decl, rounded);
 #endif
 
       /* If the target cannot output uninitialized but not common global data
