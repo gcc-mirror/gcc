@@ -38,7 +38,6 @@ static void dump_index (dump_info_p, unsigned int);
 static void dequeue_and_dump (dump_info_p);
 static void dump_new_line (dump_info_p);
 static void dump_maybe_newline (dump_info_p);
-static void dump_string_field (dump_info_p, const char *, const char *);
 static int dump_enable_all (int, int);
 
 /* Add T to the end of the queue of nodes to dump.  Returns the index
@@ -195,7 +194,7 @@ dump_string (dump_info_p di, const char *string)
 
 /* Dump the string field S.  */
 
-static void
+void
 dump_string_field (dump_info_p di, const char *field, const char *string)
 {
   dump_maybe_newline (di);
@@ -259,7 +258,7 @@ dequeue_and_dump (dump_info_p di)
       dump_child ("type", BINFO_TYPE (t));
 
       if (BINFO_VIRTUAL_P (t))
-	dump_string (di, "virt");
+	dump_string_field (di, "spec", "virt");
 
       dump_int (di, "bases", BINFO_N_BASE_BINFOS (t));
       for (ix = 0; BINFO_BASE_ITERATE (t, ix, base); ix++)
@@ -277,7 +276,7 @@ dequeue_and_dump (dump_info_p di)
 	  else
 	    gcc_unreachable ();
 
-	  dump_string (di, string);
+	  dump_string_field (di, "accs", string);
 	  queue_and_dump_index (di, "binf", base, DUMP_BINFO);
 	}
 
@@ -345,7 +344,7 @@ dequeue_and_dump (dump_info_p di)
 	}
       /* And any declaration can be compiler-generated.  */
       if (DECL_ARTIFICIAL (t))
-	dump_string (di, "artificial");
+	dump_string_field (di, "note", "artificial");
       if (TREE_CHAIN (t) && !dump_flag (di, TDF_SLIM, NULL))
 	dump_child ("chan", TREE_CHAIN (t));
     }
@@ -427,8 +426,7 @@ dequeue_and_dump (dump_info_p di)
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
       dump_int (di, "prec", TYPE_PRECISION (t));
-      if (TYPE_UNSIGNED (t))
-	dump_string (di, "unsigned");
+      dump_string_field (di, "sign", TYPE_UNSIGNED (t) ? "unsigned": "signed");
       dump_child ("min", TYPE_MIN_VALUE (t));
       dump_child ("max", TYPE_MAX_VALUE (t));
 
@@ -465,9 +463,9 @@ dequeue_and_dump (dump_info_p di)
     case RECORD_TYPE:
     case UNION_TYPE:
       if (TREE_CODE (t) == RECORD_TYPE)
-	dump_string (di, "struct");
+	dump_string_field (di, "tag", "struct");
       else
-	dump_string (di, "union");
+	dump_string_field (di, "tag", "union");
 
       dump_child ("flds", TYPE_FIELDS (t));
       dump_child ("fncs", TYPE_METHODS (t));
@@ -500,18 +498,18 @@ dequeue_and_dump (dump_info_p di)
 	{
 	  dump_int (di, "used", TREE_USED (t));
 	  if (DECL_REGISTER (t))
-	    dump_string (di, "register");
+	    dump_string_field (di, "spec", "register");
 	}
       break;
 
     case FUNCTION_DECL:
       dump_child ("args", DECL_ARGUMENTS (t));
       if (DECL_EXTERNAL (t))
-	dump_string (di, "undefined");
+	dump_string_field (di, "body", "undefined");
       if (TREE_PUBLIC (t))
-	dump_string (di, "extern");
+	dump_string_field (di, "link", "extern");
       else
-	dump_string (di, "static");
+	dump_string_field (di, "link", "static");
       if (DECL_LANG_SPECIFIC (t) && !dump_flag (di, TDF_SLIM, t))
 	dump_child ("body", DECL_SAVED_TREE (t));
       break;

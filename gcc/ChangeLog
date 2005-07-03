@@ -1,3 +1,9 @@
+2005-07-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* tree-dump.h (dump_string_field): Declare.
+	* tree-dump.c: Use it instead of dump_string.
+	(dump_string_field): Make non-static.
+
 2005-07-03  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (sh_output_mi_thunk): Initialize and clean

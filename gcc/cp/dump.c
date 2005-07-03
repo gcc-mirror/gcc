@@ -39,11 +39,11 @@ static void
 dump_access (dump_info_p di, tree t)
 {
   if (TREE_PROTECTED(t))
-    dump_string (di, "protected");
+    dump_string_field (di, "accs", "prot");
   else if (TREE_PRIVATE(t))
-    dump_string (di, "private");
+    dump_string_field (di, "accs", "priv");
   else
-    dump_string (di, "public");
+    dump_string_field (di, "accs", "pub");
 }
 
 /* Dump a representation of the specific operator for an overloaded
@@ -215,7 +215,7 @@ cp_dump_tree (void* dump_info, tree t)
   if (DECL_P (t))
     {
       if (DECL_LANG_SPECIFIC (t) && DECL_LANGUAGE (t) != lang_cplusplus)
-	dump_string (di, language_to_string (DECL_LANGUAGE (t)));
+	dump_string_field (di, "lang", language_to_string (DECL_LANGUAGE (t)));
     }
 
   switch (code)
@@ -223,7 +223,7 @@ cp_dump_tree (void* dump_info, tree t)
     case IDENTIFIER_NODE:
       if (IDENTIFIER_OPNAME_P (t))
 	{
-	  dump_string (di, "operator");
+	  dump_string_field (di, "note", "operator");
 	  return true;
 	}
       else if (IDENTIFIER_TYPENAME_P (t))
@@ -234,7 +234,7 @@ cp_dump_tree (void* dump_info, tree t)
       break;
 
     case OFFSET_TYPE:
-      dump_string (di, "ptrmem");
+      dump_string_field (di, "note", "ptrmem");
       dump_child ("ptd", TYPE_PTRMEM_POINTED_TO_TYPE (t));
       dump_child ("cls", TYPE_PTRMEM_CLASS_TYPE (t));
       return true;
@@ -242,7 +242,7 @@ cp_dump_tree (void* dump_info, tree t)
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (t))
 	{
-	  dump_string (di, "ptrmem");
+	  dump_string_field (di, "note", "ptrmem");
 	  dump_child ("ptd", TYPE_PTRMEM_POINTED_TO_TYPE (t));
 	  dump_child ("cls", TYPE_PTRMEM_CLASS_TYPE (t));
 	  return true;
@@ -276,7 +276,7 @@ cp_dump_tree (void* dump_info, tree t)
 	    {
 	      dump_child ("base", BINFO_TYPE (base_binfo));
 	      if (BINFO_VIRTUAL_P (base_binfo))
-		dump_string (di, "virtual");
+		dump_string_field (di, "spec", "virt");
 	      dump_access (di, base_binfo);
 	    }
 	}
@@ -285,55 +285,55 @@ cp_dump_tree (void* dump_info, tree t)
     case FIELD_DECL:
       dump_access (di, t);
       if (DECL_MUTABLE_P (t))
-	dump_string(di, "mutable");
+	dump_string_field (di, "spec", "mutable");
       break;
 
     case VAR_DECL:
       if (TREE_CODE (CP_DECL_CONTEXT (t)) == RECORD_TYPE)
 	dump_access (di, t);
       if (TREE_STATIC (t) && !TREE_PUBLIC (t))
-	dump_string (di, "static");
+	dump_string_field (di, "link", "static");
       break;
 
     case FUNCTION_DECL:
       if (!DECL_THUNK_P (t))
 	{
 	  if (DECL_OVERLOADED_OPERATOR_P (t)) {
-	    dump_string (di, "operator");
+	    dump_string_field (di, "note", "operator");
 	    dump_op (di, t);
 	  }
 	  if (DECL_FUNCTION_MEMBER_P (t))
 	    {
-	      dump_string (di, "member");
+	      dump_string_field (di, "note", "member");
 	      dump_access (di, t);
 	    }
 	  if (DECL_PURE_VIRTUAL_P (t))
-	    dump_string (di, "pure");
+	    dump_string_field (di, "spec", "pure");
 	  if (DECL_VIRTUAL_P (t))
-	    dump_string (di, "virtual");
+	    dump_string_field (di, "spec", "virt");
 	  if (DECL_CONSTRUCTOR_P (t))
-	    dump_string (di, "constructor");
+	    dump_string_field (di, "note", "constructor");
 	  if (DECL_DESTRUCTOR_P (t))
-	    dump_string (di, "destructor");
+	    dump_string_field (di, "note", "destructor");
 	  if (DECL_CONV_FN_P (t))
-	    dump_string (di, "conversion");
+	    dump_string_field (di, "note", "conversion");
 	  if (DECL_GLOBAL_CTOR_P (t))
-	    dump_string (di, "global init");
+	    dump_string_field (di, "note", "global init");
 	  if (DECL_GLOBAL_DTOR_P (t))
-	    dump_string (di, "global fini");
+	    dump_string_field (di, "note", "global fini");
 	  if (DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (t))
-	    dump_string (di, "pseudo tmpl");
+	    dump_string_field (di, "note", "pseudo tmpl");
 	}
       else
 	{
 	  tree virt = THUNK_VIRTUAL_OFFSET (t);
 
-	  dump_string (di, "thunk");
+	  dump_string_field (di, "note", "thunk");
 	  if (DECL_THIS_THUNK_P (t))
-	    dump_string (di, "this adjusting");
+	    dump_string_field (di, "note", "this adjusting");
 	  else
 	    {
-	      dump_string (di, "result adjusting");
+	      dump_string_field (di, "note", "result adjusting");
 	      if (virt)
 		virt = BINFO_VPTR_FIELD (virt);
 	    }
@@ -366,7 +366,7 @@ cp_dump_tree (void* dump_info, tree t)
     case TRY_BLOCK:
       dump_stmt (di, t);
       if (CLEANUP_P (t))
-	dump_string (di, "cleanup");
+	dump_string_field (di, "note", "cleanup");
       dump_child ("body", TRY_STMTS (t));
       dump_child ("hdlr", TRY_HANDLERS (t));
       break;
