@@ -1,3 +1,7 @@
+2005-07-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* pr14490-[1-4].c: Fix typos scan-tree-dump-times so they now pass.
+
 2005-07-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/20842
