@@ -322,6 +322,8 @@ dequeue_and_dump (dump_info_p di)
       if (DECL_ASSEMBLER_NAME_SET_P (t)
 	  && DECL_ASSEMBLER_NAME (t) != DECL_NAME (t))
 	dump_child ("mngl", DECL_ASSEMBLER_NAME (t));
+      if (DECL_ABSTRACT_ORIGIN (t))
+        dump_child ("orig", DECL_ABSTRACT_ORIGIN (t));
       /* And types.  */
       queue_and_dump_type (di, t);
       dump_child ("scpe", DECL_CONTEXT (t));
@@ -572,6 +574,11 @@ dequeue_and_dump (dump_info_p di)
       dump_child ("op 2", TREE_OPERAND (t, 2));
       break;
 
+    case TRY_FINALLY_EXPR:
+      dump_child ("op 0", TREE_OPERAND (t, 0));
+      dump_child ("op 1", TREE_OPERAND (t, 1));
+      break;
+
     case CALL_EXPR:
       dump_child ("fn", TREE_OPERAND (t, 0));
       dump_child ("args", TREE_OPERAND (t, 1));
@@ -594,6 +601,10 @@ dequeue_and_dump (dump_info_p di)
       dump_child ("cond", TREE_OPERAND (t, 0));
       break;
 
+    case RETURN_EXPR:
+      dump_child ("expr", TREE_OPERAND (t, 0));
+      break;
+
     case TARGET_EXPR:
       dump_child ("decl", TREE_OPERAND (t, 0));
       dump_child ("init", TREE_OPERAND (t, 1));
@@ -605,6 +616,29 @@ dequeue_and_dump (dump_info_p di)
       dump_child ("init", TREE_OPERAND (t, 3));
       break;
 
+    case CASE_LABEL_EXPR:
+      dump_child ("name", CASE_LABEL (t));
+      if (CASE_LOW (t)) {
+        dump_child ("low ", CASE_LOW (t));
+	if (CASE_HIGH (t)) {
+	  dump_child ("high", CASE_HIGH (t));
+	}
+      }
+      break;
+    case LABEL_EXPR:
+      dump_child ("name", TREE_OPERAND (t,0));
+      break;
+    case GOTO_EXPR:
+      dump_child ("labl", TREE_OPERAND (t, 0));
+      break;
+    case SWITCH_EXPR:
+      dump_child ("cond", TREE_OPERAND (t, 0));
+      dump_child ("body", TREE_OPERAND (t, 1));
+      if (TREE_OPERAND (t, 2))
+        {
+      	  dump_child ("labl", TREE_OPERAND (t,2));
+        }
+      break;
     default:
       /* There are no additional fields to print.  */
       break;
@@ -859,13 +893,28 @@ dump_begin (enum tree_dump_index phase, int *flag_ptr)
   return stream;
 }
 
-/* Returns nonzero if tree dump PHASE is enabled.  */
+/* Returns nonzero if tree dump PHASE is enabled.  If PHASE is
+   TDI_tree_all, return nonzero if any dump is enabled.  */
 
 int
 dump_enabled_p (enum tree_dump_index phase)
 {
-  struct dump_file_info *dfi = get_dump_file_info (phase);
-  return dfi->state;
+  if (phase == TDI_tree_all)
+    {
+      size_t i;
+      for (i = TDI_none + 1; i < (size_t) TDI_end; i++)
+	if (dump_files[i].state)
+	  return 1;
+      for (i = 0; i < extra_dump_files_in_use; i++)
+	if (extra_dump_files[i].state)
+	  return 1;
+      return 0;
+    }
+  else
+    {
+      struct dump_file_info *dfi = get_dump_file_info (phase);
+      return dfi->state;
+    }
 }
 
 /* Returns nonzero if tree dump PHASE has been initialized.  */

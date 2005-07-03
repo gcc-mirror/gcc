@@ -7541,6 +7541,17 @@ c_write_global_declarations (void)
      through wrapup_global_declarations and check_global_declarations.  */
   for (t = all_translation_units; t; t = TREE_CHAIN (t))
     c_write_global_declarations_1 (BLOCK_VARS (DECL_INITIAL (t)));
+  if (ext_block)
+    {
+      tree tmp = BLOCK_VARS (ext_block);
+      int flags;
+      FILE * stream = dump_begin (TDI_tu, &flags);
+      if (stream && tmp)
+        {
+          dump_node (tmp, flags & ~TDF_SLIM, stream);
+          dump_end (TDI_tu, stream);
+        }
+    }
   c_write_global_declarations_1 (BLOCK_VARS (ext_block));
 
   /* Generate functions to call static constructors and destructors
