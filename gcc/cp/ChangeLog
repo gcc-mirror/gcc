@@ -1,3 +1,7 @@
+2005-07-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* dump.c: Use dump_string_field.
+
 2005-07-03  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* cp-tree.h (GCC_DIAG_STYLE): #undef before defining.  Change
