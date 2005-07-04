@@ -3927,15 +3927,30 @@ package body Sem_Eval is
 
       elsif Has_Discriminants (T1) or else Has_Discriminants (T2) then
 
-         --  We really need comments here ???
+         --  Because of view exchanges in multiple instantiations, conformance
+         --  checking might try to match a partial view of a type with no
+         --  discriminants with a full view that has defaulted discriminants.
+         --  In such a case, use the discriminant constraint of the full view,
+         --  which must exist because we know that the two subtypes have the
+         --  same base type.
 
          if Has_Discriminants (T1) /= Has_Discriminants (T2) then
-            if In_Instance
-              and then Is_Private_Type (T2)
-              and then Present (Full_View (T2))
-              and then Has_Discriminants (Full_View (T2))
-            then
-               return Subtypes_Statically_Match (T1, Full_View (T2));
+            if In_Instance then
+               if Is_Private_Type (T2)
+                 and then Present (Full_View (T2))
+                 and then Has_Discriminants (Full_View (T2))
+               then
+                  return Subtypes_Statically_Match (T1, Full_View (T2));
+
+               elsif Is_Private_Type (T1)
+                 and then Present (Full_View (T1))
+                 and then Has_Discriminants (Full_View (T1))
+               then
+                  return Subtypes_Statically_Match (Full_View (T1), T2);
+
+               else
+                  return False;
+               end if;
             else
                return False;
             end if;
