@@ -969,7 +969,7 @@ package GNAT.Sockets is
    --  this procedure process blocking. Note that a Timeout of 0.0 returns
    --  immediately. Also note that two different Socket_Set_Type objects must
    --  be passed as R_Socket_Set and W_Socket_Set (even if they denote the
-   --  same set of Sockets), or some event will be lost.
+   --  same set of Sockets), or some event may be lost.
    --  Socket_Error is raised when the select(2) system call returns an
    --  error condition, or when a read error occurs on the signalling socket
    --  used for the implementation of Abort_Selector.

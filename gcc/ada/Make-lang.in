@@ -289,6 +289,16 @@ gnat-cross: force
 	make $(GNAT1_ADA_OBJS) CC="gcc -B../stage1/" CFLAGS="-S -gnatp" \
 		$(FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) HOST_CFLAGS= HOST_CC=cc
 
+gen-soccon: force
+	$(MAKE) -C ada $(FLAGS_TO_PASS)  \
+	   GNATLIBFLAGS="$(GNATLIBFLAGS)" \
+	   GNATLIBCFLAGS="$(GNATLIBCFLAGS)" \
+	   TARGET_LIBGCC2_CFLAGS="$(TARGET_LIBGCC2_CFLAGS)" \
+	   THREAD_KIND="$(THREAD_KIND)" \
+	   TRACE="$(TRACE)" \
+	   LIBGNAT_OBJS=gen-soccon \
+	   gnatlib
+
 gt-ada-decl.h gt-ada-trans.h gt-ada-utils.h gtype-ada.h : s-gtype ; @true
 
 # Build hooks:
@@ -1051,8 +1061,8 @@ ada/misc.o : ada/misc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    ada/adadecode.h opts.h options.h target.h real.h
 
 ada/targtyps.o : ada/targtyps.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-   ada/ada.h ada/types.h ada/atree.h ada/nlists.h ada/elists.h ada/uintp.h \
-   ada/sinfo.h ada/einfo.h ada/namet.h ada/snames.h ada/stringt.h \
+   $(TREE_H) ada/ada.h ada/types.h ada/atree.h ada/nlists.h ada/elists.h \
+   ada/uintp.h ada/sinfo.h ada/einfo.h ada/namet.h ada/snames.h ada/stringt.h \
    ada/urealp.h ada/fe.h $(ADA_TREE_H) ada/gigi.h
 
 ada/trans.o : ada/trans.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \

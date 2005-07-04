@@ -1,26 +1,26 @@
-/*****************************************************************************
-**                                                                          **
-**                          GNAT SYSTEM UTILITIES                           **
-**                                                                          **
-**                           G E N - S O C C O N                            **
-**                                                                          **
-**            Copyright (C) 2004-2005 Free Software Foundation, Inc.        **
-**                                                                          **
-** GNAT is free software;  you can  redistribute it  and/or modify it under **
-** terms of the  GNU General Public License as published  by the Free Soft- **
-** ware  Foundation;  either version 2,  or (at your option) any later ver- **
-** sion.  GNAT is distributed in the hope that it will be useful, but WITH- **
-** OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY **
-** or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License **
-** for  more details.  You should have  received  a copy of the GNU General **
-** Public License  distributed with GNAT;  see file COPYING.  If not, write **
-** to  the  Free Software Foundation,  51  Franklin  Street,  Fifth  Floor, **
-** Boston, MA 02110-1301, USA.                                              **
-**                                                                          **
-** GNAT was originally developed  by the GNAT team at  New York University. **
-** Extensive contributions were provided by Ada Core Technologies Inc.      **
-**                                                                          **
-******************************************************************************/
+/****************************************************************************
+ *                                                                          *
+ *                          GNAT SYSTEM UTILITIES                           *
+ *                                                                          *
+ *                           G E N - S O C C O N                            *
+ *                                                                          *
+ *            Copyright (C) 2004-2005 Free Software Foundation, Inc.        *
+ *                                                                          *
+ * GNAT is free software;  you can  redistribute it  and/or modify it under *
+ * terms of the  GNU General Public License as published  by the Free Soft- *
+ * ware  Foundation;  either version 2,  or (at your option) any later ver- *
+ * sion.  GNAT is distributed in the hope that it will be useful, but WITH- *
+ * OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY *
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License *
+ * for  more details.  You should have  received  a copy of the GNU General *
+ * Public License  distributed with GNAT;  see file COPYING.  If not, write *
+ * to  the  Free Software Foundation,  51  Franklin  Street,  Fifth  Floor, *
+ * Boston, MA 02110-1301, USA.                                              *
+ *                                                                          *
+ * GNAT was originally developed  by the GNAT team at  New York University. *
+ * Extensive contributions were provided by Ada Core Technologies Inc.      *
+ *                                                                          *
+ ****************************************************************************/
 
 /* This program generates g-soccon.ads */
 
@@ -478,16 +478,6 @@ _NL
 #endif
 CND(TCP_NODELAY, "Do not coalesce packets")
 
-#ifndef SO_SNDBUF
-#define SO_SNDBUF -1
-#endif
-CND(SO_SNDBUF, "Set/get send buffer size")
-
-#ifndef SO_RCVBUF
-#define SO_RCVBUF -1
-#endif
-CND(SO_RCVBUF, "Set/get recv buffer size")
-
 #ifndef SO_REUSEADDR
 #define SO_REUSEADDR -1
 #endif
@@ -503,15 +493,35 @@ CND(SO_KEEPALIVE, "Enable keep-alive msgs")
 #endif
 CND(SO_LINGER, "Defer close to flush data")
 
-#ifndef SO_ERROR
-#define SO_ERROR -1
-#endif
-CND(SO_ERROR, "Get/clear error status")
-
 #ifndef SO_BROADCAST
 #define SO_BROADCAST -1
 #endif
 CND(SO_BROADCAST, "Can send broadcast msgs")
+
+#ifndef SO_SNDBUF
+#define SO_SNDBUF -1
+#endif
+CND(SO_SNDBUF, "Set/get send buffer size")
+
+#ifndef SO_RCVBUF
+#define SO_RCVBUF -1
+#endif
+CND(SO_RCVBUF, "Set/get recv buffer size")
+
+#ifndef SO_SNDTIMEO
+#define SO_SNDTIMEO -1
+#endif
+CND(SO_SNDTIMEO, "Emission timeout")
+
+#ifndef SO_RCVTIMEO
+#define SO_RCVTIMEO -1
+#endif
+CND(SO_RCVTIMEO, "Reception timeout")
+
+#ifndef SO_ERROR
+#define SO_ERROR -1
+#endif
+CND(SO_ERROR, "Get/clear error status")
 
 #ifndef IP_MULTICAST_IF
 #define IP_MULTICAST_IF -1

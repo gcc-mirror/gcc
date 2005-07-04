@@ -4662,6 +4662,24 @@ package VMS_Data is
    --   unless the indentation is set to 1: in that case the default value for
    --   continuation line indentation is also 1.
 
+   S_Pretty_Eol       : aliased constant S := "/END_OF_LINE="              &
+                                                "DOS "                     &
+                                                   "--eol=dos "            &
+                                                "UNIX "                    &
+                                                   "--eol=unix "           &
+                                                "CRLF "                    &
+                                                   "--eol=crlf "           &
+                                                "LF "                      &
+                                                   "--eol=lf";
+   --        /END_OF_LINE=[option]
+   --
+   --   Specifies the form of the line terminators in the produced source.
+   --   By default, the form of the line terminator depends on the platforms.
+   --   On Unix and VMS, it is a Line Feed (LF) chararcter. On Windows (DOS),
+   --   It is a Carriage Return (CR) followed by a Line Feed.
+   --   The Options DOS and CRLF are equivalent. The options UNIX and LF are
+   --   also equivalent.
+
    S_Pretty_Ext       : aliased constant S := "/EXTERNAL_REFERENCE=" & '"' &
                                             "-X" & '"';
    --        /EXTERNAL_REFERENCE="name=val"
@@ -4924,9 +4942,10 @@ package VMS_Data is
       S_Pretty_Config    'Access,
       S_Pretty_Constr    'Access,
       S_Pretty_Comind    'Access,
-      S_Pretty_Ext       'Access,
       S_Pretty_Current   'Access,
       S_Pretty_Dico      'Access,
+      S_Pretty_Eol       'Access,
+      S_Pretty_Ext       'Access,
       S_Pretty_Files     'Access,
       S_Pretty_Forced    'Access,
       S_Pretty_Formfeed  'Access,
