@@ -1054,6 +1054,8 @@ begin
            Pragma_License                      |
            Pragma_Link_With                    |
            Pragma_Linker_Alias                 |
+           Pragma_Linker_Constructor           |
+           Pragma_Linker_Destructor            |
            Pragma_Linker_Options               |
            Pragma_Linker_Section               |
            Pragma_Locking_Policy               |

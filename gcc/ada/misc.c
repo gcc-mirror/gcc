@@ -462,9 +462,9 @@ gnat_init_gcc_eh (void)
   using_eh_for_cleanups ();
 
   eh_personality_libfunc = init_one_libfunc ("__gnat_eh_personality");
-  default_init_unwind_resume_libfunc ();
   lang_eh_type_covers = gnat_eh_type_covers;
   lang_eh_runtime_type = gnat_eh_runtime_type;
+  default_init_unwind_resume_libfunc ();
 
   /* Turn on -fexceptions and -fnon-call-exceptions. The first one triggers
      the generation of the necessary exception runtime tables. The second one
@@ -634,6 +634,14 @@ gnat_expand_body (tree gnu_decl)
     return;
 
   tree_rest_of_compilation (gnu_decl);
+
+  if (DECL_STATIC_CONSTRUCTOR (gnu_decl) && targetm.have_ctors_dtors)
+    targetm.asm_out.constructor (XEXP (DECL_RTL (gnu_decl), 0),
+                                 DEFAULT_INIT_PRIORITY);
+
+  if (DECL_STATIC_DESTRUCTOR (gnu_decl) && targetm.have_ctors_dtors)
+    targetm.asm_out.destructor (XEXP (DECL_RTL (gnu_decl), 0),
+                                DEFAULT_INIT_PRIORITY);
 }
 
 /* Adjusts the RLI used to layout a record after all the fields have been

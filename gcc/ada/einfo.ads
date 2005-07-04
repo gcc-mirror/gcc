@@ -1358,13 +1358,15 @@ package Einfo is
 
 --    Has_Gigi_Rep_Item (Flag82)
 --       This flag is set if the rep item chain (referenced by First_Rep_Item
---       and linked through the Next_Rep_Item chain contains a representation
+--       and linked through the Next_Rep_Item chain) contains a representation
 --       item that needs to be specially processed by Gigi, i.e. one of the
 --       following items:
 --
 --          Machine_Attribute pragma
 --          Linker_Alias pragma
 --          Linker_Section pragma
+--          Linker_Constructor pragma
+--          Linker_Destructor pragma
 --          Weak_External pragma
 --
 --       If this flag is set, then Gigi should scan the rep item chain to
@@ -2244,7 +2246,7 @@ package Einfo is
 --    Is_Private_Composite (Flag107)
 --       Present in composite types that have a private component. Used to
 --       enforce the rule that operations on the composite type that depend
---       on the fulll view of the component, do not become visible until the
+--       on the full view of the component, do not become visible until the
 --       immediate scope of the composite type itself (7.3.1 (5)). Both this
 --       flag and Is_Limited_Composite are needed.
 
@@ -6017,7 +6019,7 @@ package Einfo is
      (E  : Entity_Id;
       Id : Attribute_Id) return Node_Id;
    --  Searches the Rep_Item chain for a given entity E, for an instance
-   --  of an attribute definition clause with the given attibute Id Id. If
+   --  of an attribute definition clause with the given attribute Id. If
    --  found, the value returned is the N_Attribute_Definition_Clause node,
    --  otherwise Empty is returned.
 
@@ -6035,7 +6037,7 @@ package Einfo is
      (E  : Entity_Id;
       Id : Attribute_Id) return Boolean;
    --  Searches the Rep_Item chain for a given entity E, for an instance
-   --  of an attribute definition clause with the given attibute Id Id. If
+   --  of an attribute definition clause with the given attribute Id. If
    --  found, True is returned, otherwise False indicates that no matching
    --  entry was found.
 
