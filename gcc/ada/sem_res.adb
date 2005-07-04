@@ -2582,12 +2582,15 @@ package body Sem_Res is
             --  If the formal is Out or In_Out, do not resolve and expand the
             --  conversion, because it is subsequently expanded into explicit
             --  temporaries and assignments. However, the object of the
-            --  conversion can be resolved. An exception is the case of
-            --  a tagged type conversion with a class-wide actual. In that
-            --  case we want the tag check to occur and no temporary will
-            --  will be needed (no representation change can occur) and
-            --  the parameter is passed by reference, so we go ahead and
-            --  resolve the type conversion.
+            --  conversion can be resolved. An exception is the case of a
+            --  tagged type conversion with a class-wide actual. In that case
+            --  we want the tag check to occur and no temporary will be needed
+            --  (no representation change can occur) and the parameter is
+            --  passed by reference, so we go ahead and resolve the type
+            --  conversion. Another excpetion is the case of reference to a
+            --  component or subcomponent of a bit-packed array, in which case
+            --  we want to defer expansion to the point the in and out
+            --  assignments are performed.
 
             if Ekind (F) /= E_In_Parameter
               and then Nkind (A) = N_Type_Conversion
@@ -2628,8 +2631,9 @@ package body Sem_Res is
                   end if;
                end if;
 
-               if Conversion_OK (A)
-                 or else Valid_Conversion (A, Etype (A), Expression (A))
+               if (Conversion_OK (A)
+                     or else Valid_Conversion (A, Etype (A), Expression (A)))
+                 and then not Is_Ref_To_Bit_Packed_Array (Expression (A))
                then
                   Resolve (Expression (A));
                end if;
