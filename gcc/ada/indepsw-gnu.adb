@@ -5,9 +5,9 @@
 --                              I N D E P S W                               --
 --                                                                          --
 --                                 B o d y                                  --
---                            (GNU/Linux version)                           --
+--                              (GNU version)                               --
 --                                                                          --
---            Copyright (C) 2004 Free Software Foundation, Inc.             --
+--            Copyright (C) 2005 Free Software Foundation, Inc.             --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,7 +32,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the GNU/Linux version
+--  This is the GNU ld version
 
 package body Indepsw is
 
