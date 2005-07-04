@@ -60,10 +60,6 @@ package body Makegpr is
    --  The maximum number of arguments for a single invocation of the
    --  Archive Indexer (ar).
 
-   Cpp_Linker : constant String := "c++linker";
-   --  The name of a linking script, built one the fly, when there are C++
-   --  sources and the C++ compiler is not g++.
-
    No_Argument : aliased Argument_List := (1 .. 0 => null);
    --  Null argument list representing case of no arguments
 
@@ -1023,6 +1019,7 @@ package body Makegpr is
       Data      : Project_Data :=
                     Project_Tree.Projects.Table (Main_Project);
       Source_Id : Other_Source_Id;
+      S_Id      : Other_Source_Id;
       Source    : Other_Source;
       Success   : Boolean;
 
@@ -1090,22 +1087,28 @@ package body Makegpr is
                --  Put all sources of language other than Ada in
                --  Source_Indexes.
 
-               for Proj in Project_Table.First ..
-                           Project_Table.Last (Project_Tree.Projects)
-               loop
-                  Data := Project_Tree.Projects.Table (Proj);
+               declare
+                  Local_Data : Project_Data;
 
-                  if not Data.Library then
-                     Last_Source := 0;
-                     Source_Id := Data.First_Other_Source;
+               begin
+                  Last_Source := 0;
 
-                     while Source_Id /= No_Other_Source loop
-                        Add_Source_Id (Proj, Source_Id);
-                        Source_Id := Project_Tree.Other_Sources.Table
-                                       (Source_Id).Next;
-                     end loop;
-                  end if;
-               end loop;
+                  for Proj in Project_Table.First ..
+                    Project_Table.Last (Project_Tree.Projects)
+                  loop
+                     Local_Data := Project_Tree.Projects.Table (Proj);
+
+                     if not Local_Data.Library then
+                        Source_Id := Local_Data.First_Other_Source;
+
+                        while Source_Id /= No_Other_Source loop
+                           Add_Source_Id (Proj, Source_Id);
+                           Source_Id := Project_Tree.Other_Sources.Table
+                             (Source_Id).Next;
+                        end loop;
+                     end if;
+                  end loop;
+               end;
 
                --  Read the dependency file, line by line
 
@@ -1120,9 +1123,8 @@ package body Makegpr is
                   --  Check if this object file is for a source of this project
 
                   for S in 1 .. Last_Source loop
-                     Source_Id := Source_Indexes (S).Id;
-                     Source := Project_Tree.Other_Sources.Table
-                                 (Source_Id);
+                     S_Id := Source_Indexes (S).Id;
+                     Source := Project_Tree.Other_Sources.Table (S_Id);
 
                      if (not Source_Indexes (S).Found)
                        and then Source.Object_Path = Object_Path
@@ -1130,6 +1132,7 @@ package body Makegpr is
                         --  We have found the object file: get the source
                         --  data, and mark it as found.
 
+                        Source_Id := S_Id;
                         Source_Indexes (S).Found := True;
                         exit;
                      end if;
@@ -3369,18 +3372,9 @@ package body Makegpr is
 
       procedure Add_C_Plus_Plus_Link_For_Gnatmake is
       begin
-         if Compiler_Is_Gcc (C_Plus_Plus_Language_Index) then
-            Add_Argument
-              ("--LINK=" & Compiler_Names (C_Plus_Plus_Language_Index).all,
-               Verbose_Mode);
-
-         else
-            Add_Argument
-              ("--LINK=" &
-               Object_Dir & Directory_Separator &
-               Cpp_Linker,
-               Verbose_Mode);
-         end if;
+         Add_Argument
+           ("--LINK=" & Compiler_Names (C_Plus_Plus_Language_Index).all,
+            Verbose_Mode);
       end Add_C_Plus_Plus_Link_For_Gnatmake;
 
       -----------------------
@@ -3448,29 +3442,6 @@ package body Makegpr is
       begin
          if Compiler_Names (C_Plus_Plus_Language_Index) = null then
             Get_Compiler (C_Plus_Plus_Language_Index);
-         end if;
-
-         if not Compiler_Is_Gcc (C_Plus_Plus_Language_Index) then
-            Change_Dir (Object_Dir);
-
-            declare
-               File : Ada.Text_IO.File_Type;
-               use Ada.Text_IO;
-
-            begin
-               Create (File, Out_File, Cpp_Linker);
-
-               Put_Line (File, "#!/bin/sh");
-
-               Put_Line (File, "LIBGCC=`gcc -print-libgcc-file-name`");
-               Put_Line
-                 (File,
-                  Compiler_Names (C_Plus_Plus_Language_Index).all &
-                  " $* ${LIBGCC}");
-
-               Close (File);
-               Set_Executable (Cpp_Linker);
-            end;
          end if;
       end Choose_C_Plus_Plus_Link_Process;
 
