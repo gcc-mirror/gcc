@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2000, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,6 +37,6 @@ package System.String_Ops_Concat_4 is
 pragma Pure (String_Ops_Concat_4);
 
    function Str_Concat_4 (S1, S2, S3, S4 : String) return String;
-   --  Concatenate two strings and return resulting string
+   --  Concatenate four strings and return resulting string
 
 end System.String_Ops_Concat_4;
