@@ -87,6 +87,9 @@ procedure Load is
    Unum : Unit_Number_Type;
    --  Unit number of loaded unit
 
+   Limited_With_Found : Boolean := False;
+   --  Set True if a limited WITH is found, used to ???
+
    function Same_File_Name_Except_For_Case
      (Expected_File_Name : File_Name_Type;
       Actual_File_Name   : File_Name_Type) return Boolean;
@@ -350,83 +353,109 @@ begin
       Reset_Validity_Check_Options;
    end if;
 
-   --  Loop through context items
+   --  Load the context items in two rounds: the first round handles normal
+   --  withed units and the second round handles Ada 2005 limited-withed units.
+   --  This is required to allow the low-level circuitry that detects circular
+   --  dependencies of units the correct notification of the following error:
 
-   Context_Node := First (Context_Items (Curunit));
-   while Present (Context_Node) loop
-      if Nkind (Context_Node) = N_With_Clause then
-         With_Node := Context_Node;
-         Spec_Name := Get_Unit_Name (With_Node);
+   --       limited with D;
+   --       with D;                  with C;
+   --       package C is ...         package D is ...
 
-         Unum :=
-           Load_Unit
-             (Load_Name         => Spec_Name,
-              Required          => False,
-              Subunit           => False,
-              Error_Node        => With_Node,
-              Renamings         => True,
-              From_Limited_With => From_Limited_With
-                                     or else
-                                   Limited_Present (Context_Node));
+   for Round in 1 .. 2 loop
+      Context_Node := First (Context_Items (Curunit));
+      while Present (Context_Node) loop
 
-         --  If we find the unit, then set spec pointer in the N_With_Clause
-         --  to point to the compilation unit for the spec. Remember that
-         --  the Load routine itself sets our Fatal_Error flag if the loaded
-         --  unit gets a fatal error, so we don't need to worry about that.
+         --  During the first round we check if there is some limited-with
+         --  context clause; otherwise the second round will be skipped
 
-         if Unum /= No_Unit then
-            Set_Library_Unit (With_Node, Cunit (Unum));
+         if Nkind (Context_Node) = N_With_Clause
+           and then Round = 1
+           and then Limited_Present (Context_Node)
+         then
+            Limited_With_Found := True;
+         end if;
 
-         --  If the spec isn't found, then try finding the corresponding
-         --  body, since it is possible that we have a subprogram body
-         --  that is acting as a spec (since no spec is present).
+         if Nkind (Context_Node) = N_With_Clause
+           and then ((Round = 1 and then not Limited_Present (Context_Node))
+                        or else
+                     (Round = 2 and then Limited_Present (Context_Node)))
+         then
+            With_Node := Context_Node;
+            Spec_Name := Get_Unit_Name (With_Node);
 
-         else
-            Body_Name := Get_Body_Name (Spec_Name);
             Unum :=
               Load_Unit
-                (Load_Name  => Body_Name,
-                 Required   => False,
-                 Subunit    => False,
-                 Error_Node => With_Node,
-                 Renamings  => True);
+                (Load_Name         => Spec_Name,
+                 Required          => False,
+                 Subunit           => False,
+                 Error_Node        => With_Node,
+                 Renamings         => True,
+                 From_Limited_With => From_Limited_With
+                                        or else
+                                      Limited_Present (Context_Node));
 
-            --  If we got a subprogram body, then mark that we are using
-            --  the body as a spec in the file table, and set the spec
-            --  pointer in the N_With_Clause to point to the body entity.
+            --  If we find the unit, then set spec pointer in the N_With_Clause
+            --  to point to the compilation unit for the spec. Remember that
+            --  the Load routine itself sets our Fatal_Error flag if the loaded
+            --  unit gets a fatal error, so we don't need to worry about that.
 
-            if Unum /= No_Unit
-              and then Nkind (Unit (Cunit (Unum))) = N_Subprogram_Body
-            then
-               With_Cunit := Cunit (Unum);
-               Set_Library_Unit (With_Node, With_Cunit);
-               Set_Acts_As_Spec (With_Cunit, True);
-               Set_Library_Unit (With_Cunit, With_Cunit);
+            if Unum /= No_Unit then
+               Set_Library_Unit (With_Node, Cunit (Unum));
 
-            --  If we couldn't find the body, or if it wasn't a body spec
-            --  then we are in trouble. We make one more call to Load to
-            --  require the spec. We know it will fail of course, the
-            --  purpose is to generate the required error message (we prefer
-            --  that this message refer to the missing spec, not the body)
+            --  If the spec isn't found, then try finding the corresponding
+            --  body, since it is possible that we have a subprogram body
+            --  that is acting as a spec (since no spec is present).
 
             else
+               Body_Name := Get_Body_Name (Spec_Name);
                Unum :=
                  Load_Unit
-                   (Load_Name  => Spec_Name,
-                    Required   => True,
+                   (Load_Name  => Body_Name,
+                    Required   => False,
                     Subunit    => False,
                     Error_Node => With_Node,
                     Renamings  => True);
 
-               --  Here we create a dummy package unit for the missing unit
+               --  If we got a subprogram body, then mark that we are using
+               --  the body as a spec in the file table, and set the spec
+               --  pointer in the N_With_Clause to point to the body entity.
 
-               Unum := Create_Dummy_Package_Unit (With_Node, Spec_Name);
-               Set_Library_Unit (With_Node, Cunit (Unum));
+               if Unum /= No_Unit
+                 and then Nkind (Unit (Cunit (Unum))) = N_Subprogram_Body
+               then
+                  With_Cunit := Cunit (Unum);
+                  Set_Library_Unit (With_Node, With_Cunit);
+                  Set_Acts_As_Spec (With_Cunit, True);
+                  Set_Library_Unit (With_Cunit, With_Cunit);
+
+               --  If we couldn't find the body, or if it wasn't a body spec
+               --  then we are in trouble. We make one more call to Load to
+               --  require the spec. We know it will fail of course, the
+               --  purpose is to generate the required error message (we prefer
+               --  that this message refer to the missing spec, not the body)
+
+               else
+                  Unum :=
+                    Load_Unit
+                      (Load_Name  => Spec_Name,
+                       Required   => True,
+                       Subunit    => False,
+                       Error_Node => With_Node,
+                       Renamings  => True);
+
+                  --  Here we create a dummy package unit for the missing unit
+
+                  Unum := Create_Dummy_Package_Unit (With_Node, Spec_Name);
+                  Set_Library_Unit (With_Node, Cunit (Unum));
+               end if;
             end if;
          end if;
-      end if;
 
-      Next (Context_Node);
+         Next (Context_Node);
+      end loop;
+
+      exit when not Limited_With_Found;
    end loop;
 
    --  Restore style/validity check mode for main unit
