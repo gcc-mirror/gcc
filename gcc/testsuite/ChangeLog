@@ -1,3 +1,8 @@
+2005-07-04  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gcc.dg/compare1.c: Skip on arm*-*-eabi* arm*-*-symbianelf*.
+	* gcc.dg/compare9.c: New.
+
 2005-07-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* gfortran.dg/io_invalid_1.f90: Fix expected error message.
