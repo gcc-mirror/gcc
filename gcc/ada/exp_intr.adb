@@ -664,12 +664,21 @@ package body Exp_Intr is
 
          --  If the type is tagged, then we must force dispatching on the
          --  finalization call because the designated type may not be the
-         --  actual type of the object
+         --  actual type of the object.
 
          if Is_Tagged_Type (Desig_T)
            and then not Is_Class_Wide_Type (Desig_T)
          then
             Deref := Unchecked_Convert_To (Class_Wide_Type (Desig_T), Deref);
+
+         elsif not Is_Tagged_Type (Desig_T) then
+
+            --  Set type of result, to force a conversion when needed (see
+            --  exp_ch7, Convert_View), given that Deep_Finalize may be
+            --  inherited from the parent type, and we need the type of the
+            --  expression to see whether the conversion is in fact needed.
+
+            Set_Etype (Deref, Desig_T);
          end if;
 
          Free_Cod :=
