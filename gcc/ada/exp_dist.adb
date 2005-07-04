@@ -9638,11 +9638,6 @@ package body Exp_Dist is
                   U_Type := Base_Type (U_Type);
                end if;
 
-               if Is_Itype (U_Type) then
-                  return Build_TypeCode_Call
-                    (Loc, Associated_Node_For_Itype (U_Type), Decls);
-               end if;
-
                if U_Type = Standard_Boolean then
                   Lib_RE := RE_TC_B;
 
@@ -10105,18 +10100,12 @@ package body Exp_Dist is
               and then not Is_Tagged_Type (Typ)
             then
                declare
-                  D_Node : constant Node_Id := Declaration_Node (Typ);
                   Parent_Type : Entity_Id := Etype (Typ);
                begin
 
-                  if Is_Enumeration_Type (Typ)
-                    and then Nkind (D_Node) = N_Subtype_Declaration
-                    and then Nkind (Original_Node (D_Node))
-                    /= N_Subtype_Declaration
-                  then
+                  if Is_Itype (Parent_Type) then
 
-                     --  Parent_Type is the implicit intermediate base type
-                     --  created by Build_Derived_Enumeration_Type.
+                     --  Skip implicit base type
 
                      Parent_Type := Etype (Parent_Type);
                   end if;
