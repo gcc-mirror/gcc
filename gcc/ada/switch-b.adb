@@ -67,11 +67,16 @@ package body Switch.B is
 
          case C is
 
+         --  Processing for a switch
+
+         when 'a' =>
+            Ptr := Ptr + 1;
+            Use_Pragma_Linker_Constructor := True;
+
          --  Processing for A switch
 
          when 'A' =>
             Ptr := Ptr + 1;
-
             Ada_Bind_File := True;
 
          --  Processing for b switch

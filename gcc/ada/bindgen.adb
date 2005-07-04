@@ -2351,10 +2351,18 @@ package body Bindgen is
       WBI ("   pragma Export (C, " & Ada_Final_Name.all & ", """ &
            Ada_Final_Name.all & """);");
 
+      if Use_Pragma_Linker_Constructor then
+         WBI ("   pragma Linker_Destructor (" & Ada_Final_Name.all & ");");
+      end if;
+
       WBI ("");
       WBI ("   procedure " & Ada_Init_Name.all & ";");
       WBI ("   pragma Export (C, " & Ada_Init_Name.all & ", """ &
            Ada_Init_Name.all & """);");
+
+      if Use_Pragma_Linker_Constructor then
+         WBI ("   pragma Linker_Constructor (" & Ada_Init_Name.all & ");");
+      end if;
 
       if Bind_Main_Program then
 

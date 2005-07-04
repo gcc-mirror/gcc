@@ -47,12 +47,6 @@ package body MLib.Tgt is
    No_Arguments        : aliased Argument_List         := (1 .. 0 => null);
    Empty_Argument_List : constant Argument_List_Access := No_Arguments'Access;
 
-   Wl_Initfini_String  : constant String := "-Wl,-binitfini:";
-
-   Init_Fini_List      :  constant Argument_List_Access :=
-                            new Argument_List'(1 => null);
-   --  Used to put switch for automatic elaboration/finalization
-
    Bexpall : aliased String := "-Wl,-bexpall";
    Bexpall_Option : constant String_Access := Bexpall'Access;
    --  The switch to export all symbols
@@ -142,15 +136,12 @@ package body MLib.Tgt is
       pragma Unreferenced (Interfaces);
       pragma Unreferenced (Symbol_Data);
       pragma Unreferenced (Lib_Version);
+      pragma Unreferenced (Auto_Init);
 
       Lib_File : constant String :=
                    Lib_Dir & Directory_Separator & "lib" &
                    MLib.Fil.Ext_To (Lib_Filename, DLL_Ext);
       --  The file name of the library
-
-      Init_Fini : Argument_List_Access := Empty_Argument_List;
-      --  The switch for automatic initialization of Stand-Alone Libraries.
-      --  Changed to a real switch when Auto_Init is True.
 
       Thread_Opts : Argument_List_Access := Empty_Argument_List;
       --  Set to Thread_Options if -lgnarl is found in the Options
@@ -159,15 +150,6 @@ package body MLib.Tgt is
       if Opt.Verbose_Mode then
          Write_Str ("building relocatable shared library ");
          Write_Line (Lib_File);
-      end if;
-
-      --  If specified, add automatic elaboration/finalization
-
-      if Auto_Init then
-         Init_Fini := Init_Fini_List;
-         Init_Fini (1) :=
-           new String'(Wl_Initfini_String & Lib_Filename & "init:" &
-                       Lib_Filename & "final");
       end if;
 
       --  Look for -lgnarl in Options. If found, set the thread options.
@@ -223,7 +205,7 @@ package body MLib.Tgt is
       MLib.Utl.Gcc
         (Output_File => Lib_File,
          Objects     => Ofiles,
-         Options     => Options & Bexpall_Option & Init_Fini.all,
+         Options     => Options & Bexpall_Option,
          Driver_Name => Driver_Name,
          Options_2   => Options_2 & Thread_Opts.all);
    end Build_Dynamic_Library;

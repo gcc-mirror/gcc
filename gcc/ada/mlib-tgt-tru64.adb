@@ -45,21 +45,6 @@ package body MLib.Tgt is
 
    Expect_Unresolved : aliased String := "-Wl,-expect_unresolved,*";
 
-   No_Arguments        : aliased Argument_List         := (1 .. 0 => null);
-   Empty_Argument_List : constant Argument_List_Access := No_Arguments'Access;
-
-   Wl_Init_String : aliased String         := "-Wl,-init";
-   Wl_Init        : constant String_Access := Wl_Init_String'Access;
-   Wl_Fini_String : aliased String         := "-Wl,-fini";
-   Wl_Fini        : constant String_Access := Wl_Fini_String'Access;
-
-   Init_Fini_List :  constant Argument_List_Access :=
-                       new Argument_List'(1 => Wl_Init,
-                                          2 => null,
-                                          3 => Wl_Fini,
-                                          4 => null);
-   --  Used to put switches for automatic elaboration/finalization
-
    ---------------------
    -- Archive_Builder --
    ---------------------
@@ -127,6 +112,8 @@ package body MLib.Tgt is
       pragma Unreferenced (Afiles);
       pragma Unreferenced (Interfaces);
       pragma Unreferenced (Symbol_Data);
+      pragma Unreferenced (Auto_Init);
+      --  Initialization is done through the contructor mechanism
 
       Lib_File : constant String :=
                    Lib_Dir & Directory_Separator & "lib" &
@@ -134,8 +121,6 @@ package body MLib.Tgt is
 
       Version_Arg          : String_Access;
       Symbolic_Link_Needed : Boolean := False;
-
-      Init_Fini : Argument_List_Access := Empty_Argument_List;
 
    begin
       if Opt.Verbose_Mode then
@@ -145,20 +130,11 @@ package body MLib.Tgt is
 
       --  If specified, add automatic elaboration/finalization
 
-      if Auto_Init then
-         Init_Fini := Init_Fini_List;
-         Init_Fini (2) := new String'("-Wl," & Lib_Filename & "init");
-         Init_Fini (4) := new String'("-Wl," & Lib_Filename & "final");
-      end if;
-
       if Lib_Version = "" then
          Utl.Gcc
            (Output_File => Lib_File,
             Objects     => Ofiles,
-            Options     =>
-              Options &
-              Expect_Unresolved'Access &
-              Init_Fini.all,
+            Options     => Options & Expect_Unresolved'Access,
             Options_2   => Options_2,
             Driver_Name => Driver_Name);
 
@@ -170,10 +146,7 @@ package body MLib.Tgt is
               (Output_File => Lib_Version,
                Objects     => Ofiles,
                Options     =>
-                 Options &
-                 Version_Arg &
-                 Expect_Unresolved'Access &
-                 Init_Fini.all,
+                 Options & Version_Arg & Expect_Unresolved'Access,
                Options_2   => Options_2,
                Driver_Name => Driver_Name);
             Symbolic_Link_Needed := Lib_Version /= Lib_File;
@@ -183,10 +156,7 @@ package body MLib.Tgt is
               (Output_File => Lib_Dir & Directory_Separator & Lib_Version,
                Objects     => Ofiles,
                Options     =>
-                 Options &
-                 Version_Arg &
-                 Expect_Unresolved'Access &
-                 Init_Fini.all,
+                 Options & Version_Arg & Expect_Unresolved'Access,
                Options_2   => Options_2,
                Driver_Name => Driver_Name);
             Symbolic_Link_Needed :=

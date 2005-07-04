@@ -51,6 +51,11 @@ begin
    Write_Str ("  -aIdir    Specify source files search path");
    Write_Eol;
 
+   --  Line for a switch
+
+   Write_Str ("  -a        Automatically initialize elaboration procedure");
+   Write_Eol;
+
    --  Line for A switch
 
    Write_Str ("  -A        Generate binder program in Ada (default)");

@@ -2028,6 +2028,7 @@ __gnat_locate_regular_file (char *file_name, char *path_val)
 char *
 __gnat_locate_exec (char *exec_name, char *path_val)
 {
+  char *ptr;
   if (!strstr (exec_name, HOST_EXECUTABLE_SUFFIX))
     {
       char *full_exec_name
@@ -2035,7 +2036,11 @@ __gnat_locate_exec (char *exec_name, char *path_val)
 
       strcpy (full_exec_name, exec_name);
       strcat (full_exec_name, HOST_EXECUTABLE_SUFFIX);
-      return __gnat_locate_regular_file (full_exec_name, path_val);
+      ptr = __gnat_locate_regular_file (full_exec_name, path_val);
+
+      if (ptr == 0)
+         return __gnat_locate_regular_file (exec_name, path_val);
+      return ptr;
     }
   else
     return __gnat_locate_regular_file (exec_name, path_val);
@@ -2666,5 +2671,29 @@ __gnat_set_close_on_exec (int fd ATTRIBUTE_UNUSED,
      the HANDLE_INHERIT property from fd. This is not implemented yet,
      but for our purposes (support of GNAT.Expect) this does not matter,
      as by default handles are *not* inherited. */
+#endif
+}
+
+/* Indicates if platforms supports automatic initialization through the
+   constructor mechanism */
+int
+__gnat_binder_supports_auto_init ()
+{
+#ifdef VMS
+   return 0;
+#else
+   return 1;
+#endif
+}
+
+/* Indicates that Stand-Alone Libraries are automatically initialized through
+   the constructor mechanism */
+int
+__gnat_sals_init_using_constructors ()
+{
+#if defined (__vxworks) || defined (__Lynx__) || defined (VMS)
+   return 0;
+#else
+   return 1;
 #endif
 }

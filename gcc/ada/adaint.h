@@ -167,4 +167,7 @@ extern int get_gcc_version		     (void);
 /* This function offers a hook for libgnarl to set the
    locking subprograms for libgcc_eh. */
 extern void __gnatlib_install_locks	     (void (*) (void),
-					      void (*) (void));
+                                          void (*) (void));
+
+extern int __gnat_binder_supports_auto_init (void);
+extern int __gnat_sals_init_using_constructors (void);
