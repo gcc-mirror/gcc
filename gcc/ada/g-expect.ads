@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 2000-2004 Ada Core Technologies, Inc.            --
+--           Copyright (C) 2000-2005 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,8 +35,9 @@
 --  for VMS. It is not yet implemented for any of the cross-ports (e.g. it
 --  is not available for VxWorks or LynxOS).
 
---  Usage
---  =====
+--  -----------
+--  -- Usage --
+--  -----------
 
 --  This package provides a set of subprograms similar to what is available
 --  with the standard Tcl Expect tool.
@@ -111,11 +112,14 @@
 --      Send (Fd, "command");
 --      Expect (Fd, Result, ".."); -- match only on the output of command
 
---  Task Safety
---  ===========
+--  -----------------
+--  -- Task Safety --
+--  -----------------
 
 --  This package is not task-safe: there should be not concurrent calls to
---  the functions defined in this package.
+--  the functions defined in this package. In other words, separate tasks
+--  may not access the facilities of this package without synchronization
+--  that serializes access.
 
 with System;
 with GNAT.OS_Lib;
@@ -195,7 +199,7 @@ package GNAT.Expect is
    procedure Send_Signal
      (Descriptor : Process_Descriptor;
       Signal     : Integer);
-   --  Send a given signal to the process.
+   --  Send a given signal to the process
 
    procedure Interrupt (Descriptor : in out Process_Descriptor);
    --  Interrupt the process (the equivalent of Ctrl-C on unix and windows)
@@ -204,22 +208,33 @@ package GNAT.Expect is
    function Get_Input_Fd
      (Descriptor : Process_Descriptor)
       return       GNAT.OS_Lib.File_Descriptor;
-   --  Return the input file descriptor associated with Descriptor.
+   --  Return the input file descriptor associated with Descriptor
 
    function Get_Output_Fd
      (Descriptor : Process_Descriptor)
       return       GNAT.OS_Lib.File_Descriptor;
-   --  Return the output file descriptor associated with Descriptor.
+   --  Return the output file descriptor associated with Descriptor
 
    function Get_Error_Fd
      (Descriptor : Process_Descriptor)
       return       GNAT.OS_Lib.File_Descriptor;
-   --  Return the error output file descriptor associated with Descriptor.
+   --  Return the error output file descriptor associated with Descriptor
 
    function Get_Pid
      (Descriptor : Process_Descriptor)
       return       Process_Id;
-   --  Return the process id assocated with a given process descriptor.
+   --  Return the process id assocated with a given process descriptor
+
+   function Get_Command_Output
+     (Command    : String;
+      Arguments  : GNAT.OS_Lib.Argument_List;
+      Input      : String;
+      Status     : access Integer;
+      Err_To_Out : Boolean := False) return String;
+   --  Execute Command with the specified Arguments and Input, and return the
+   --  generated standard output data as a single string. If Err_To_Out is
+   --  True, generated standard error output is included as well. On return,
+   --  Status is set to the command's exit status.
 
    --------------------
    -- Adding filters --
@@ -302,10 +317,10 @@ package GNAT.Expect is
 
    type Expect_Match is new Integer;
    Expect_Full_Buffer : constant Expect_Match := -1;
-   --  If the buffer was full and some characters were discarded.
+   --  If the buffer was full and some characters were discarded
 
    Expect_Timeout : constant Expect_Match := -2;
-   --  If not output matching the regexps was found before the timeout.
+   --  If not output matching the regexps was found before the timeout
 
    function "+" (S : String) return GNAT.OS_Lib.String_Access;
    --  Allocate some memory for the string. This is merely a convenience
@@ -380,7 +395,7 @@ package GNAT.Expect is
       Matched     : out GNAT.Regpat.Match_Array;
       Timeout     : Integer := 10000;
       Full_Buffer : Boolean := False);
-   --  Same as above, but with a precompiled regular expression.
+   --  Same as above, but with a precompiled regular expression
 
    -------------------------------------------------------------
    -- Working on the output (single process, multiple regexp) --
@@ -461,7 +476,7 @@ package GNAT.Expect is
       Matched     : out GNAT.Regpat.Match_Array;
       Timeout     : Integer := 10000;
       Full_Buffer : Boolean := False);
-   --  Same as above, but for multi processes.
+   --  Same as above, but for multi processes
 
    procedure Expect
      (Result      : out Expect_Match;
@@ -535,7 +550,7 @@ private
    type Pipe_Type is record
       Input, Output : GNAT.OS_Lib.File_Descriptor;
    end record;
-   --  This type represents a pipe, used to communicate between two processes.
+   --  This type represents a pipe, used to communicate between two processes
 
    procedure Set_Up_Communications
      (Pid        : in out Process_Descriptor;
