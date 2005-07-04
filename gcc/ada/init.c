@@ -404,6 +404,7 @@ __gnat_install_handler (void)
 
 static void __gnat_error_handler (int, siginfo_t *, struct sigcontext *);
 extern char *__gnat_get_code_loc (struct sigcontext *);
+extern void __gnat_set_code_loc (struct sigcontext *, char *);
 extern void __gnat_enter_handler (struct sigcontext *, char *);
 extern size_t __gnat_machine_state_length (void);
 
@@ -517,6 +518,13 @@ __gnat_get_code_loc (struct sigcontext *context)
 {
   return (char *) context->sc_pc;
 }
+
+void
+__gnat_set_code_loc (struct sigcontext *context, char *pc)
+{
+  context->sc_pc = (long) pc;
+}
+
 
 void
 __gnat_enter_handler (struct sigcontext *context, char *pc)
