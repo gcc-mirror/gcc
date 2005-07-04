@@ -1,3 +1,11 @@
+2005-07-04  Aaron Luchko  <aluchko@redhat.com>
+
+	* gnu/classpath/jdwp/processor/CommandSet.java: New file.
+	* gnu/classpath/jdwp/processor/PacketProcessor.java: Use
+	CommandSets to handle JdwpCommandPackets.
+	* gnu/classpath/jdwp/transport/JdwpReplyPacket.java: New
+	Constructor.
+
 2005-07-01  Tom Tromey  <tromey@redhat.com>
 
 	* libtool-version: Updated.
