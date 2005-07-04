@@ -1951,7 +1951,7 @@ offset_overlaps_with_access (const unsigned HOST_WIDE_INT fieldpos,
 {
   if (fieldpos == accesspos && fieldsize == accesssize)
     return true;
-  if (accesspos >= fieldpos && accesspos <= (fieldpos + fieldsize))
+  if (accesspos >= fieldpos && accesspos < (fieldpos + fieldsize))
     return true;
   if (accesspos < fieldpos && (accesspos + accesssize > fieldpos))
     return true;
