@@ -76,7 +76,7 @@ package body Ada.Containers.Indefinite_Vectors is
                   end if;
                exception
                   when others =>
-                     for J in Index_Type'First .. Index_Type'Pred (I) loop
+                     for J in Index_Type'First .. I - 1 loop
                         Free (Elements (J));
                      end loop;
 
@@ -106,7 +106,7 @@ package body Ada.Containers.Indefinite_Vectors is
                   end if;
                exception
                   when others =>
-                     for J in Index_Type'First .. Index_Type'Pred (I) loop
+                     for J in Index_Type'First .. I - 1 loop
                         Free (Elements (J));
                      end loop;
 
@@ -120,60 +120,67 @@ package body Ada.Containers.Indefinite_Vectors is
       end if;
 
       declare
-         Last_As_Int : constant Int'Base :=
+         Last_As_Int : constant Int'Base :=  -- TODO: handle overflow
                          Int (Index_Type'First) + Int (LN) + Int (RN) - 1;
 
-         Last : constant Index_Type := Index_Type (Last_As_Int);
-
-         LE : Elements_Type renames
-                Left.Elements (Index_Type'First .. Left.Last);
-
-         RE : Elements_Type renames
-                Right.Elements (Index_Type'First .. Right.Last);
-
-         Elements : Elements_Access :=
-                      new Elements_Type (Index_Type'First .. Last);
-
-         I : Index_Type'Base := Index_Type'Pred (Index_Type'First);
-
       begin
-         for LI in LE'Range loop
-            I := Index_Type'Succ (I);
+         if Last_As_Int > Index_Type'Pos (Index_Type'Last) then
+            raise Constraint_Error;
+         end if;
 
-            begin
-               if LE (LI) /= null then
-                  Elements (I) := new Element_Type'(LE (LI).all);
-               end if;
-            exception
-               when others =>
-                  for J in Index_Type'First .. Index_Type'Pred (I) loop
-                     Free (Elements (J));
-                  end loop;
+         declare
+            Last : constant Index_Type := Index_Type (Last_As_Int);
 
-                  Free (Elements);
-                  raise;
-            end;
-         end loop;
+            LE : Elements_Type renames
+                   Left.Elements (Index_Type'First .. Left.Last);
 
-         for RI in RE'Range loop
-            I := Index_Type'Succ (I);
+            RE : Elements_Type renames
+                   Right.Elements (Index_Type'First .. Right.Last);
 
-            begin
-               if RE (RI) /= null then
-                  Elements (I) := new Element_Type'(RE (RI).all);
-               end if;
-            exception
-               when others =>
-                  for J in Index_Type'First .. Index_Type'Pred (I) loop
-                     Free (Elements (J));
-                  end loop;
+            Elements : Elements_Access :=
+                         new Elements_Type (Index_Type'First .. Last);
 
-                  Free (Elements);
-                  raise;
-            end;
-         end loop;
+            I : Index_Type'Base := No_Index;
 
-         return (Controlled with Elements, Last, 0, 0);
+         begin
+            for LI in LE'Range loop
+               I := I + 1;
+
+               begin
+                  if LE (LI) /= null then
+                     Elements (I) := new Element_Type'(LE (LI).all);
+                  end if;
+               exception
+                  when others =>
+                     for J in Index_Type'First .. I - 1 loop
+                        Free (Elements (J));
+                     end loop;
+
+                     Free (Elements);
+                     raise;
+               end;
+            end loop;
+
+            for RI in RE'Range loop
+               I := I + 1;
+
+               begin
+                  if RE (RI) /= null then
+                     Elements (I) := new Element_Type'(RE (RI).all);
+                  end if;
+               exception
+                  when others =>
+                     for J in Index_Type'First .. I - 1 loop
+                        Free (Elements (J));
+                     end loop;
+
+                     Free (Elements);
+                     raise;
+               end;
+            end loop;
+
+            return (Controlled with Elements, Last, 0, 0);
+         end;
       end;
    end "&";
 
@@ -205,49 +212,51 @@ package body Ada.Containers.Indefinite_Vectors is
          Last_As_Int : constant Int'Base :=
                          Int (Index_Type'First) + Int (LN);
 
-         Last : constant Index_Type := Index_Type (Last_As_Int);
-
-         LE : Elements_Type renames
-                Left.Elements (Index_Type'First .. Left.Last);
-
-         Elements : Elements_Access :=
-                      new Elements_Type (Index_Type'First .. Last);
-
       begin
-         for I in LE'Range loop
+         if Last_As_Int > Index_Type'Pos (Index_Type'Last) then
+            raise Constraint_Error;
+         end if;
+
+         declare
+            Last : constant Index_Type := Index_Type (Last_As_Int);
+
+            LE : Elements_Type renames
+                   Left.Elements (Index_Type'First .. Left.Last);
+
+            Elements : Elements_Access :=
+                        new Elements_Type (Index_Type'First .. Last);
+
+         begin
+            for I in LE'Range loop
+               begin
+                  if LE (I) /= null then
+                     Elements (I) := new Element_Type'(LE (I).all);
+                  end if;
+               exception
+                  when others =>
+                     for J in Index_Type'First .. I - 1 loop
+                        Free (Elements (J));
+                     end loop;
+
+                     Free (Elements);
+                     raise;
+               end;
+            end loop;
+
             begin
-               if LE (I) /= null then
-                  Elements (I) := new Element_Type'(LE (I).all);
-               end if;
+               Elements (Elements'Last) := new Element_Type'(Right);
             exception
                when others =>
-                  for J in Index_Type'First .. Index_Type'Pred (I) loop
+                  for J in Index_Type'First .. Elements'Last - 1 loop
                      Free (Elements (J));
                   end loop;
 
                   Free (Elements);
                   raise;
             end;
-         end loop;
 
-         begin
-            Elements (Elements'Last) := new Element_Type'(Right);
-         exception
-            when others =>
-               declare
-                  subtype J_Subtype is Index_Type'Base range
-                    Index_Type'First .. Index_Type'Pred (Elements'Last);
-               begin
-                  for J in J_Subtype loop
-                     Free (Elements (J));
-                  end loop;
-               end;
-
-               Free (Elements);
-               raise;
+            return (Controlled with Elements, Last, 0, 0);
          end;
-
-         return (Controlled with Elements, Last, 0, 0);
       end;
    end "&";
 
@@ -279,72 +288,86 @@ package body Ada.Containers.Indefinite_Vectors is
          Last_As_Int : constant Int'Base :=
                          Int (Index_Type'First) + Int (RN);
 
-         Last : constant Index_Type := Index_Type (Last_As_Int);
+      begin
+         if Last_As_Int > Index_Type'Pos (Index_Type'Last) then
+            raise Constraint_Error;
+         end if;
 
-         RE : Elements_Type renames
-                Right.Elements (Index_Type'First .. Right.Last);
+         declare
+            Last : constant Index_Type := Index_Type (Last_As_Int);
 
-         Elements : Elements_Access :=
-                      new Elements_Type (Index_Type'First .. Last);
+            RE : Elements_Type renames
+                   Right.Elements (Index_Type'First .. Right.Last);
 
-         I : Index_Type'Base := Index_Type'First;
+            Elements : Elements_Access :=
+                         new Elements_Type (Index_Type'First .. Last);
 
+            I : Index_Type'Base := Index_Type'First;
+
+         begin
+            begin
+               Elements (I) := new Element_Type'(Left);
+            exception
+               when others =>
+                  Free (Elements);
+                  raise;
+            end;
+
+            for RI in RE'Range loop
+               I := I + 1;
+
+               begin
+                  if RE (RI) /= null then
+                     Elements (I) := new Element_Type'(RE (RI).all);
+                  end if;
+               exception
+                  when others =>
+                     for J in Index_Type'First .. I - 1 loop
+                        Free (Elements (J));
+                     end loop;
+
+                     Free (Elements);
+                     raise;
+               end;
+            end loop;
+
+            return (Controlled with Elements, Last, 0, 0);
+         end;
+      end;
+   end "&";
+
+   function "&" (Left, Right : Element_Type) return Vector is
+   begin
+      if Index_Type'First >= Index_Type'Last then
+         raise Constraint_Error;
+      end if;
+
+      declare
+         Last : constant Index_Type := Index_Type'First + 1;
+
+         subtype ET is Elements_Type (Index_Type'First .. Last);
+
+         Elements : Elements_Access := new ET;
       begin
          begin
-            Elements (I) := new Element_Type'(Left);
+            Elements (Elements'First) := new Element_Type'(Left);
          exception
             when others =>
                Free (Elements);
                raise;
          end;
 
-         for RI in RE'Range loop
-            I := Index_Type'Succ (I);
+         begin
+            Elements (Elements'Last) := new Element_Type'(Right);
+         exception
+            when others =>
+               Free (Elements (Elements'First));
+               Free (Elements);
+               raise;
+         end;
 
-            begin
-               if RE (RI) /= null then
-                  Elements (I) := new Element_Type'(RE (RI).all);
-               end if;
-            exception
-               when others =>
-                  for J in Index_Type'First .. Index_Type'Pred (I) loop
-                     Free (Elements (J));
-                  end loop;
-
-                  Free (Elements);
-                  raise;
-            end;
-         end loop;
-
-         return (Controlled with Elements, Last, 0, 0);
+         return (Controlled with Elements, Elements'Last, 0, 0);
       end;
-   end "&";
-
-   function "&" (Left, Right : Element_Type) return Vector is
-      subtype IT is Index_Type'Base range
-        Index_Type'First .. Index_Type'Succ (Index_Type'First);
-
-      Elements : Elements_Access := new Elements_Type (IT);
-
-   begin
-      begin
-         Elements (Elements'First) := new Element_Type'(Left);
-      exception
-         when others =>
-            Free (Elements);
-            raise;
-      end;
-
-      begin
-         Elements (Elements'Last) := new Element_Type'(Right);
-      exception
-         when others =>
-            Free (Elements (Elements'First));
-            Free (Elements);
-            raise;
-      end;
-
-      return (Controlled with Elements, Elements'Last, 0, 0);
    end "&";
 
    ---------
@@ -362,17 +385,6 @@ package body Ada.Containers.Indefinite_Vectors is
       end if;
 
       for J in Index_Type'First .. Left.Last loop
-         --  NOTE:
-         --  I think it's a bounded error to read or otherwise manipulate
-         --  an "empty" element, which here means that it has the value
-         --  null.  If it's a bounded error then an exception might
-         --  propagate, or it might not.  We take advantage of that
-         --  permission here to allow empty elements to be compared.
-         --
-         --  Whether this is the right decision I'm not really sure.  If
-         --  you have a contrary argument then let me know.
-         --  END NOTE.
-
          if Left.Elements (J) = null then
             if Right.Elements (J) /= null then
                return False;
@@ -383,7 +395,6 @@ package body Ada.Containers.Indefinite_Vectors is
 
          elsif Left.Elements (J).all /= Right.Elements (J).all then
             return False;
-
          end if;
       end loop;
 
@@ -396,13 +407,7 @@ package body Ada.Containers.Indefinite_Vectors is
 
    procedure Adjust (Container : in out Vector) is
    begin
-      if Container.Elements = null then
-         return;
-      end if;
-
-      if Container.Elements'Length = 0
-        or else Container.Last < Index_Type'First
-      then
+      if Container.Last = No_Index then
          Container.Elements := null;
          return;
       end if;
@@ -410,6 +415,7 @@ package body Ada.Containers.Indefinite_Vectors is
       declare
          E : Elements_Type renames Container.Elements.all;
          L : constant Index_Type := Container.Last;
+
       begin
          Container.Elements := null;
          Container.Last := No_Index;
@@ -438,9 +444,13 @@ package body Ada.Containers.Indefinite_Vectors is
          return;
       end if;
 
+      if Container.Last = Index_Type'Last then
+         raise Constraint_Error;
+      end if;
+
       Insert
         (Container,
-         Index_Type'Succ (Container.Last),
+         Container.Last + 1,
          New_Item);
    end Append;
 
@@ -454,9 +464,13 @@ package body Ada.Containers.Indefinite_Vectors is
          return;
       end if;
 
+      if Container.Last = Index_Type'Last then
+         raise Constraint_Error;
+      end if;
+
       Insert
         (Container,
-         Index_Type'Succ (Container.Last),
+         Container.Last + 1,
          New_Item,
          Count);
    end Append;
@@ -522,12 +536,12 @@ package body Ada.Containers.Indefinite_Vectors is
          raise Program_Error;
       end if;
 
-      for J in reverse Index_Type'First .. Container.Last loop
+      while Container.Last >= Index_Type'First loop
          declare
-            X : Element_Access := Container.Elements (J);
+            X : Element_Access := Container.Elements (Container.Last);
          begin
-            Container.Elements (J) := null;
-            Container.Last := Index_Type'Pred (J);
+            Container.Elements (Container.Last) := null;
+            Container.Last := Container.Last - 1;
             Free (X);
          end;
       end loop;
@@ -575,37 +589,53 @@ package body Ada.Containers.Indefinite_Vectors is
       end if;
 
       declare
-         I_As_Int : constant Int := Int (Index);
-
+         Index_As_Int    : constant Int := Int (Index);
          Old_Last_As_Int : constant Int := Int (Container.Last);
 
+         --  TODO: somewhat vestigial...fix.
          Count1 : constant Int'Base := Int (Count);
-         Count2 : constant Int'Base := Old_Last_As_Int - I_As_Int + 1;
+         Count2 : constant Int'Base := Old_Last_As_Int - Index_As_Int + 1;
+         N      : constant Int'Base := Int'Min (Count1, Count2);
 
-         N : constant Int'Base := Int'Min (Count1, Count2);
-
-         J_As_Int : constant Int'Base := I_As_Int + N;
-         J        : constant Index_Type'Base := Index_Type'Base (J_As_Int);
-
-         E : Elements_Type renames Container.Elements.all;
-
-         New_Last_As_Int : constant Int'Base := Old_Last_As_Int - N;
-
-         New_Last : constant Extended_Index :=
-                      Extended_Index (New_Last_As_Int);
+         J_As_Int : constant Int'Base := Index_As_Int + N;
+         E        : Elements_Type renames Container.Elements.all;
 
       begin
-         for K in Index .. Index_Type'Pred (J) loop
-            declare
-               X : Element_Access := E (K);
-            begin
-               E (K) := null;
-               Free (X);
-            end;
-         end loop;
+         if J_As_Int > Old_Last_As_Int then
+            while Container.Last >= Index loop
+               declare
+                  K : constant Index_Type := Container.Last;
+                  X : Element_Access := E (K);
 
-         E (Index .. New_Last) := E (J .. Container.Last);
-         Container.Last := New_Last;
+               begin
+                  E (K) := null;
+                  Container.Last := K - 1;
+                  Free (X);
+               end;
+            end loop;
+
+         else
+            declare
+               J : constant Index_Type := Index_Type (J_As_Int);
+
+               New_Last_As_Int : constant Int'Base := Old_Last_As_Int - N;
+               New_Last        : constant Index_Type :=
+                                   Index_Type (New_Last_As_Int);
+
+            begin
+               for K in Index .. J - 1 loop
+                  declare
+                     X : Element_Access := E (K);
+                  begin
+                     E (K) := null;
+                     Free (X);
+                  end;
+               end loop;
+
+               E (Index .. New_Last) := E (J .. Container.Last);
+               Container.Last := New_Last;
+            end;
+         end if;
       end;
    end Delete;
 
@@ -664,21 +694,35 @@ package body Ada.Containers.Indefinite_Vectors is
      (Container : in out Vector;
       Count     : Count_Type := 1)
    is
-      Index : Int'Base;
+      N : constant Count_Type := Length (Container);
 
    begin
-      if Count = 0 then
+      if Count = 0
+        or else N = 0
+      then
          return;
       end if;
 
-      if Count >= Length (Container) then
-         Clear (Container);
-         return;
+      if Container.Busy > 0 then
+         raise Program_Error;
       end if;
 
-      Index := Int'Base (Container.Last) - Int'Base (Count) + 1;
+      declare
+         E : Elements_Type renames Container.Elements.all;
 
-      Delete (Container, Index_Type'Base (Index), Count);
+      begin
+         for Indx in 1 .. Count_Type'Min (Count, N) loop
+            declare
+               J : constant Index_Type := Container.Last;
+               X : Element_Access := E (J);
+
+            begin
+               E (J) := null;
+               Container.Last := J - 1;
+               Free (X);
+            end;
+         end loop;
+      end;
    end Delete_Last;
 
    -------------
@@ -689,14 +733,20 @@ package body Ada.Containers.Indefinite_Vectors is
      (Container : Vector;
       Index     : Index_Type) return Element_Type
    is
-      subtype T is Index_Type'Base range
-        Index_Type'First .. Container.Last;
    begin
-      return Container.Elements (T'(Index)).all;
+      if Index > Container.Last then
+         raise Constraint_Error;
+      end if;
+
+      return Container.Elements (Index).all;
    end Element;
 
    function Element (Position : Cursor) return Element_Type is
    begin
+      if Position.Container = null then
+         raise Constraint_Error;
+      end if;
+
       return Element (Position.Container.all, Position.Index);
    end Element;
 
@@ -970,10 +1020,7 @@ package body Ada.Containers.Indefinite_Vectors is
       New_Last_As_Int : Int'Base;
       New_Last        : Index_Type;
 
-      Index : Extended_Index;  -- TODO: see note in a-convec.adb.
-
-      Dst_Last : Index_Type;
-      Dst      : Elements_Access;
+      Dst : Elements_Access;
 
    begin
       if Before < Index_Type'First then
@@ -995,6 +1042,11 @@ package body Ada.Containers.Indefinite_Vectors is
 
       begin
          New_Last_As_Int := Old_Last_As_Int + N;
+
+         if New_Last_As_Int > Index_Type'Pos (Index_Type'Last) then
+            raise Constraint_Error;
+         end if;
+
          New_Last := Index_Type (New_Last_As_Int);
       end;
 
@@ -1002,28 +1054,16 @@ package body Ada.Containers.Indefinite_Vectors is
          raise Program_Error;
       end if;
 
-      declare
-         Old_First_As_Int : constant Int := Int (Before);
-
-         New_First_As_Int : constant Int'Base := Old_First_As_Int + N;
-
-      begin
-         Index := Extended_Index (New_First_As_Int);  --  TODO
-      end;
-
       if Container.Elements = null then
-         declare
-            subtype Elements_Subtype is
-              Elements_Type (Index_Type'First .. New_Last);
-         begin
-            Container.Elements := new Elements_Subtype;
-            Container.Last := Index_Type'Pred (Index_Type'First);
+         Container.Elements :=
+           new Elements_Type (Index_Type'First .. New_Last);
 
-            for J in Container.Elements'Range loop
-               Container.Elements (J) := new Element_Type'(New_Item);
-               Container.Last := J;
-            end loop;
-         end;
+         Container.Last := No_Index;
+
+         for J in Container.Elements'Range loop
+            Container.Elements (J) := new Element_Type'(New_Item);
+            Container.Last := J;
+         end loop;
 
          return;
       end if;
@@ -1032,105 +1072,116 @@ package body Ada.Containers.Indefinite_Vectors is
          declare
             E : Elements_Type renames Container.Elements.all;
          begin
-            E (Index .. New_Last) := E (Before .. Container.Last);
-            Container.Last := New_Last;
+            if Before <= Container.Last then
+               declare
+                  Index_As_Int : constant Int'Base :=
+                                   Index_Type'Pos (Before) + N;
 
-            --  NOTE:
-            --  Now we do the allocation.  If it fails, we can propagate the
-            --  exception and invariants are more or less satisfied.  The
-            --  issue is that we have some slots still null, and the client
-            --  has no way of detecting whether the slot is null (unless we
-            --  give him a way).
-            --
-            --  Another way is to allocate a subarray on the stack, do the
-            --  allocation into that array, and if that success then do
-            --  the insertion proper.  The issue there is that you have to
-            --  allocate the subarray on the stack, and that may fail if the
-            --  subarray is long.
-            --
-            --  Or we could try to roll-back the changes: deallocate the
-            --  elements we have successfully deallocated, and then copy
-            --  the elements ptrs back to their original posns.
-            --  END NOTE.
+                  Index : constant Index_Type := Index_Type (Index_As_Int);
 
-            --  NOTE: I have written the loop manually here.  I could
-            --  have done it this way too:
-            --    E (Before .. Index_Type'Pred (Index)) :=
-            --      (others => new Element_Type'New_Item);
-            --  END NOTE.
+                  J : Index_Type'Base := Before;
 
-            for J in Before .. Index_Type'Pred (Index) loop
                begin
-                  E (J) := new Element_Type'(New_Item);
+                  E (Index .. New_Last) := E (Before .. Container.Last);
+                  Container.Last := New_Last;
+
+                  while J < Index loop
+                     E (J) := new Element_Type'(New_Item);
+                     J := J + 1;
+                  end loop;
                exception
                   when others =>
-                     E (J .. Index_Type'Pred (Index)) := (others => null);
+                     E (J .. Index - 1) := (others => null);
                      raise;
                end;
-            end loop;
+
+            else
+               for J in Before .. New_Last loop
+                  E (J) := new Element_Type'(New_Item);
+                  Container.Last := J;
+               end loop;
+            end if;
          end;
 
          return;
       end if;
 
       declare
-         First : constant Int := Int (Index_Type'First);
-
+         First    : constant Int := Int (Index_Type'First);
          New_Size : constant Int'Base := New_Last_As_Int - First + 1;
-         Max_Size : constant Int'Base := Int (Index_Type'Last) - First + 1;
-
-         Size, Dst_Last_As_Int : Int'Base;
+         Size     : Int'Base := Int'Max (1, Container.Elements'Length);
 
       begin
-         if New_Size >= Max_Size / 2 then
-            Dst_Last := Index_Type'Last;
-
-         else
-            Size := Container.Elements'Length;
-
-            if Size = 0 then
-               Size := 1;
+         while Size < New_Size loop
+            if Size > Int'Last / 2 then
+               Size := Int'Last;
+               exit;
             end if;
 
-            while Size < New_Size loop
-               Size := 2 * Size;
+            Size := 2 * Size;
+         end loop;
+
+         --  TODO: The following calculations aren't quite right, since
+         --  there will be overflow if Index_Type'Range is very large
+         --  (e.g. this package is instantiated with a 64-bit integer).
+         --  END TODO.
+
+         declare
+            Max_Size : constant Int'Base := Int (Index_Type'Last) - First + 1;
+         begin
+            if Size > Max_Size then
+               Size := Max_Size;
+            end if;
+         end;
+
+         declare
+            Dst_Last : constant Index_Type := Index_Type (First + Size - 1);
+         begin
+            Dst := new Elements_Type (Index_Type'First .. Dst_Last);
+         end;
+      end;
+
+      if Before <= Container.Last then
+         declare
+            Index_As_Int : constant Int'Base :=
+                             Index_Type'Pos (Before) + N;
+
+            Index : constant Index_Type := Index_Type (Index_As_Int);
+
+            Src : Elements_Access := Container.Elements;
+
+         begin
+            Dst (Index_Type'First .. Before - 1) :=
+              Src (Index_Type'First .. Before - 1);
+
+            Dst (Index .. New_Last) := Src (Before .. Container.Last);
+
+            Container.Elements := Dst;
+            Container.Last := New_Last;
+            Free (Src);
+
+            for J in Before .. Index - 1 loop
+               Dst (J) := new Element_Type'(New_Item);
             end loop;
+         end;
 
-            Dst_Last_As_Int := First + Size - 1;
-            Dst_Last := Index_Type (Dst_Last_As_Int);
-         end if;
-      end;
+      else
+         declare
+            Src : Elements_Access := Container.Elements;
 
-      Dst := new Elements_Type (Index_Type'First .. Dst_Last);
+         begin
+            Dst (Index_Type'First .. Container.Last) :=
+              Src (Index_Type'First .. Container.Last);
 
-      declare
-         Src : Elements_Type renames Container.Elements.all;
+            Container.Elements := Dst;
+            Free (Src);
 
-      begin
-         Dst (Index_Type'First .. Index_Type'Pred (Before)) :=
-           Src (Index_Type'First .. Index_Type'Pred (Before));
-
-         Dst (Index .. New_Last) := Src (Before .. Container.Last);
-      end;
-
-      declare
-         X : Elements_Access := Container.Elements;
-      begin
-         Container.Elements := Dst;
-         Container.Last := New_Last;
-
-         Free (X);
-      end;
-
-      --  NOTE:
-      --  Now do the allocation.  If the allocation fails,
-      --  then the worst thing is that we have a few null slots.
-      --  Our invariants are otherwise satisfied.
-      --  END NOTE.
-
-      for J in Before .. Index_Type'Pred (Index) loop
-         Dst (J) := new Element_Type'(New_Item);
-      end loop;
+            for J in Before .. New_Last loop
+               Dst (J) := new Element_Type'(New_Item);
+               Container.Last := J;
+            end loop;
+         end;
+      end if;
    end Insert;
 
    procedure Insert
@@ -1157,29 +1208,26 @@ package body Ada.Containers.Indefinite_Vectors is
 
       Insert_Space (Container, Before, Count => N);
 
-      if Container'Address = New_Item'Address then
-         declare
-            Dst_Last_As_Int : constant Int'Base :=
-                                Int'Base (Before) + Int'Base (N) - 1;
+      declare
+         Dst_Last_As_Int : constant Int'Base :=
+                             Int'Base (Before) + Int'Base (N) - 1;
 
-            Dst_Last : constant Index_Type := Index_Type (Dst_Last_As_Int);
+         Dst_Last : constant Index_Type := Index_Type (Dst_Last_As_Int);
 
-            Dst_Index : Index_Type'Base := Index_Type'Pred (Before);
+         Dst : Elements_Type renames
+                 Container.Elements (Before .. Dst_Last);
 
-            Dst : Elements_Type renames
-                    Container.Elements (Before .. Dst_Last);
+         Dst_Index : Index_Type'Base := Before - 1;
 
-         begin
+      begin
+         if Container'Address /= New_Item'Address then
             declare
-               subtype Src_Index_Subtype is Index_Type'Base range
-                 Index_Type'First .. Index_Type'Pred (Before);
-
                Src : Elements_Type renames
-                       Container.Elements (Src_Index_Subtype);
+                       New_Item.Elements (Index_Type'First .. New_Item.Last);
 
             begin
                for Src_Index in Src'Range loop
-                  Dst_Index := Index_Type'Succ (Dst_Index);
+                  Dst_Index := Dst_Index + 1;
 
                   if Src (Src_Index) /= null then
                      Dst (Dst_Index) := new Element_Type'(Src (Src_Index).all);
@@ -1187,41 +1235,19 @@ package body Ada.Containers.Indefinite_Vectors is
                end loop;
             end;
 
-            declare
-               subtype Src_Index_Subtype is Index_Type'Base range
-                 Index_Type'Succ (Dst_Last) .. Container.Last;
+            return;
+         end if;
 
-               Src : Elements_Type renames
-                       Container.Elements (Src_Index_Subtype);
-
-            begin
-               for Src_Index in Src'Range loop
-                  Dst_Index := Index_Type'Succ (Dst_Index);
-
-                  if Src (Src_Index) /= null then
-                     Dst (Dst_Index) := new Element_Type'(Src (Src_Index).all);
-                  end if;
-               end loop;
-            end;
-         end;
-
-      else
          declare
-            Dst_Last_As_Int : constant Int'Base :=
-                                Int'Base (Before) + Int'Base (N) - 1;
-
-            Dst_Last : constant Index_Type := Index_Type (Dst_Last_As_Int);
-
-            Dst_Index : Index_Type'Base := Index_Type'Pred (Before);
+            subtype Src_Index_Subtype is Index_Type'Base range
+              Index_Type'First .. Before - 1;
 
             Src : Elements_Type renames
-                    New_Item.Elements (Index_Type'First .. New_Item.Last);
+                    Container.Elements (Src_Index_Subtype);
 
-            Dst : Elements_Type renames
-                    Container.Elements (Before .. Dst_Last);
          begin
             for Src_Index in Src'Range loop
-               Dst_Index := Index_Type'Succ (Dst_Index);
+               Dst_Index := Dst_Index + 1;
 
                if Src (Src_Index) /= null then
                   Dst (Dst_Index) := new Element_Type'(Src (Src_Index).all);
@@ -1229,7 +1255,27 @@ package body Ada.Containers.Indefinite_Vectors is
             end loop;
          end;
 
-      end if;
+         if Dst_Last = Container.Last then
+            return;
+         end if;
+
+         declare
+            subtype Src_Index_Subtype is Index_Type'Base range
+              Dst_Last + 1 .. Container.Last;
+
+            Src : Elements_Type renames
+                    Container.Elements (Src_Index_Subtype);
+
+         begin
+            for Src_Index in Src'Range loop
+               Dst_Index := Dst_Index + 1;
+
+               if Src (Src_Index) /= null then
+                  Dst (Dst_Index) := new Element_Type'(Src (Src_Index).all);
+               end if;
+            end loop;
+         end;
+      end;
    end Insert;
 
    procedure Insert
@@ -1253,7 +1299,12 @@ package body Ada.Containers.Indefinite_Vectors is
       if Before.Container = null
         or else Before.Index > Container.Last
       then
-         Index := Index_Type'Succ (Container.Last);
+         if Container.Last = Index_Type'Last then
+            raise Constraint_Error;
+         end if;
+
+         Index := Container.Last + 1;
+
       else
          Index := Before.Index;
       end if;
@@ -1291,7 +1342,12 @@ package body Ada.Containers.Indefinite_Vectors is
       if Before.Container = null
         or else Before.Index > Container.Last
       then
-         Index := Index_Type'Succ (Container.Last);
+         if Container.Last = Index_Type'Last then
+            raise Constraint_Error;
+         end if;
+
+         Index := Container.Last + 1;
+
       else
          Index := Before.Index;
       end if;
@@ -1323,7 +1379,12 @@ package body Ada.Containers.Indefinite_Vectors is
       if Before.Container = null
         or else Before.Index > Container.Last
       then
-         Index := Index_Type'Succ (Container.Last);
+         if Container.Last = Index_Type'Last then
+            raise Constraint_Error;
+         end if;
+
+         Index := Container.Last + 1;
+
       else
          Index := Before.Index;
       end if;
@@ -1362,7 +1423,12 @@ package body Ada.Containers.Indefinite_Vectors is
       if Before.Container = null
         or else Before.Index > Container.Last
       then
-         Index := Index_Type'Succ (Container.Last);
+         if Container.Last = Index_Type'Last then
+            raise Constraint_Error;
+         end if;
+
+         Index := Container.Last + 1;
+
       else
          Index := Before.Index;
       end if;
@@ -1386,10 +1452,7 @@ package body Ada.Containers.Indefinite_Vectors is
       New_Last_As_Int : Int'Base;
       New_Last        : Index_Type;
 
-      Index : Extended_Index;  --  TODO: see a-convec.adb.
-
-      Dst_Last : Index_Type;
-      Dst      : Elements_Access;
+      Dst : Elements_Access;
 
    begin
       if Before < Index_Type'First then
@@ -1411,6 +1474,11 @@ package body Ada.Containers.Indefinite_Vectors is
 
       begin
          New_Last_As_Int := Old_Last_As_Int + N;
+
+         if New_Last_As_Int > Index_Type'Pos (Index_Type'Last) then
+            raise Constraint_Error;
+         end if;
+
          New_Last := Index_Type (New_Last_As_Int);
       end;
 
@@ -1418,90 +1486,98 @@ package body Ada.Containers.Indefinite_Vectors is
          raise Program_Error;
       end if;
 
-      declare
-         Old_First_As_Int : constant Int := Int (Before);
-
-         New_First_As_Int : constant Int'Base := Old_First_As_Int + N;
-
-      begin
-         Index := Extended_Index (New_First_As_Int);  --  TODO
-      end;
-
       if Container.Elements = null then
-         declare
-            subtype Elements_Subtype is
-              Elements_Type (Index_Type'First .. New_Last);
-         begin
-            Container.Elements := new Elements_Subtype;
-            Container.Last := New_Last;
-         end;
+         Container.Elements :=
+           new Elements_Type (Index_Type'First .. New_Last);
 
+         Container.Last := New_Last;
          return;
       end if;
 
       if New_Last <= Container.Elements'Last then
          declare
             E : Elements_Type renames Container.Elements.all;
-         begin
-            E (Index .. New_Last) := E (Before .. Container.Last);
-            E (Before .. Index_Type'Pred (Index)) := (others => null);
 
-            Container.Last := New_Last;
+         begin
+            if Before <= Container.Last then
+               declare
+                  Index_As_Int : constant Int'Base :=
+                                   Index_Type'Pos (Before) + N;
+
+                  Index : constant Index_Type := Index_Type (Index_As_Int);
+
+               begin
+                  E (Index .. New_Last) := E (Before .. Container.Last);
+                  E (Before .. Index - 1) := (others => null);
+               end;
+            end if;
          end;
 
+         Container.Last := New_Last;
          return;
       end if;
 
       declare
-         First : constant Int := Int (Index_Type'First);
-
-         New_Size : constant Int'Base :=
-                      Int (New_Last_As_Int) - First + 1;
-
-         Max_Size : constant Int'Base :=
-                      Int (Index_Type'Last) - First + 1;
-
-         Size, Dst_Last_As_Int : Int'Base;
+         First    : constant Int := Int (Index_Type'First);
+         New_Size : constant Int'Base := New_Last_As_Int - First + 1;
+         Size     : Int'Base := Int'Max (1, Container.Elements'Length);
 
       begin
-         if New_Size >= Max_Size / 2 then
-            Dst_Last := Index_Type'Last;
-
-         else
-            Size := Container.Elements'Length;
-
-            if Size = 0 then
-               Size := 1;
+         while Size < New_Size loop
+            if Size > Int'Last / 2 then
+               Size := Int'Last;
+               exit;
             end if;
 
-            while Size < New_Size loop
-               Size := 2 * Size;
-            end loop;
+            Size := 2 * Size;
+         end loop;
 
-            Dst_Last_As_Int := First + Size - 1;
-            Dst_Last := Index_Type (Dst_Last_As_Int);
+         --  TODO: The following calculations aren't quite right, since
+         --  there will be overflow if Index_Type'Range is very large
+         --  (e.g. this package is instantiated with a 64-bit integer).
+         --  END TODO.
+
+         declare
+            Max_Size : constant Int'Base := Int (Index_Type'Last) - First + 1;
+         begin
+            if Size > Max_Size then
+               Size := Max_Size;
+            end if;
+         end;
+
+         declare
+            Dst_Last : constant Index_Type := Index_Type (First + Size - 1);
+         begin
+            Dst := new Elements_Type (Index_Type'First .. Dst_Last);
+         end;
+      end;
+
+      declare
+         Src : Elements_Access := Container.Elements;
+
+      begin
+         if Before <= Container.Last then
+            declare
+               Index_As_Int : constant Int'Base :=
+                                Index_Type'Pos (Before) + N;
+
+               Index : constant Index_Type := Index_Type (Index_As_Int);
+
+            begin
+               Dst (Index_Type'First .. Before - 1) :=
+                 Src (Index_Type'First .. Before - 1);
+
+               Dst (Index .. New_Last) := Src (Before .. Container.Last);
+            end;
+
+         else
+            Dst (Index_Type'First .. Container.Last) :=
+              Src (Index_Type'First .. Container.Last);
          end if;
-      end;
 
-      Dst := new Elements_Type (Index_Type'First .. Dst_Last);
-
-      declare
-         Src : Elements_Type renames Container.Elements.all;
-
-      begin
-         Dst (Index_Type'First .. Index_Type'Pred (Before)) :=
-           Src (Index_Type'First .. Index_Type'Pred (Before));
-
-         Dst (Index .. New_Last) := Src (Before .. Container.Last);
-      end;
-
-      declare
-         X : Elements_Access := Container.Elements;
-      begin
          Container.Elements := Dst;
          Container.Last := New_Last;
-
-         Free (X);
+         Free (Src);
       end;
    end Insert_Space;
 
@@ -1535,7 +1611,12 @@ package body Ada.Containers.Indefinite_Vectors is
       if Before.Container = null
         or else Before.Index > Container.Last
       then
-         Index := Index_Type'Succ (Container.Last);
+         if Container.Last = Index_Type'Last then
+            raise Constraint_Error;
+         end if;
+
+         Index := Container.Last + 1;
+
       else
          Index := Before.Index;
       end if;
@@ -1620,7 +1701,12 @@ package body Ada.Containers.Indefinite_Vectors is
       L : constant Int := Int (Container.Last);
       F : constant Int := Int (Index_Type'First);
       N : constant Int'Base := L - F + 1;
+
    begin
+      if N > Count_Type'Pos (Count_Type'Last) then
+         raise Constraint_Error;
+      end if;
+
       return Count_Type (N);
    end Length;
 
@@ -1644,16 +1730,13 @@ package body Ada.Containers.Indefinite_Vectors is
       Clear (Target);
 
       declare
-         X : Elements_Access := Target.Elements;
+         Target_Elements : constant Elements_Access := Target.Elements;
       begin
-         Target.Elements := null;
-         Free (X);
+         Target.Elements := Source.Elements;
+         Source.Elements := Target_Elements;
       end;
 
-      Target.Elements := Source.Elements;
       Target.Last := Source.Last;
-
-      Source.Elements := null;
       Source.Last := No_Index;
    end Move;
 
@@ -1668,7 +1751,7 @@ package body Ada.Containers.Indefinite_Vectors is
       end if;
 
       if Position.Index < Position.Container.Last then
-         return (Position.Container, Index_Type'Succ (Position.Index));
+         return (Position.Container, Position.Index + 1);
       end if;
 
       return No_Element;
@@ -1685,7 +1768,7 @@ package body Ada.Containers.Indefinite_Vectors is
       end if;
 
       if Position.Index < Position.Container.Last then
-         Position.Index := Index_Type'Succ (Position.Index);
+         Position.Index := Position.Index + 1;
       else
          Position := No_Element;
       end if;
@@ -1723,7 +1806,7 @@ package body Ada.Containers.Indefinite_Vectors is
       end if;
 
       if Position.Index > Index_Type'First then
-         Position.Index := Index_Type'Pred (Position.Index);
+         Position.Index := Position.Index - 1;
       else
          Position := No_Element;
       end if;
@@ -1736,7 +1819,7 @@ package body Ada.Containers.Indefinite_Vectors is
       end if;
 
       if Position.Index > Index_Type'First then
-         return (Position.Container, Index_Type'Pred (Position.Index));
+         return (Position.Container, Position.Index - 1);
       end if;
 
       return No_Element;
@@ -1751,21 +1834,20 @@ package body Ada.Containers.Indefinite_Vectors is
       Index     : Index_Type;
       Process   : not null access procedure (Element : in Element_Type))
    is
-      subtype T is Index_Type'Base range
-        Index_Type'First .. Container.Last;
-
-      E : Element_Type renames Container.Elements (T'(Index)).all;
-
       V : Vector renames Container'Unrestricted_Access.all;
       B : Natural renames V.Busy;
       L : Natural renames V.Lock;
 
    begin
+      if Index > Container.Last then
+         raise Constraint_Error;
+      end if;
+
       B := B + 1;
       L := L + 1;
 
       begin
-         Process (E);
+         Process (V.Elements (Index).all);
       exception
          when others =>
             L := L - 1;
@@ -1782,6 +1864,10 @@ package body Ada.Containers.Indefinite_Vectors is
       Process  : not null access procedure (Element : in Element_Type))
    is
    begin
+      if Position.Container = null then
+         raise Constraint_Error;
+      end if;
+
       Query_Element (Position.Container.all, Position.Index, Process);
    end Query_Element;
 
@@ -1808,7 +1894,7 @@ package body Ada.Containers.Indefinite_Vectors is
       end if;
 
       for J in Count_Type range 1 .. Length loop
-         Last := Index_Type'Succ (Last);
+         Last := Last + 1;
 
          Boolean'Read (Stream, B);
 
@@ -1830,22 +1916,29 @@ package body Ada.Containers.Indefinite_Vectors is
       Index     : Index_Type;
       By        : Element_Type)
    is
-      subtype T is Index_Type'Base range
-        Index_Type'First .. Container.Last;
-
-      X : Element_Access := Container.Elements (T'(Index));
-
    begin
+      if Index > Container.Last then
+         raise Constraint_Error;
+      end if;
+
       if Container.Lock > 0 then
          raise Program_Error;
       end if;
 
-      Container.Elements (T'(Index)) := new Element_Type'(By);
-      Free (X);
+      declare
+         X : Element_Access := Container.Elements (Index);
+      begin
+         Container.Elements (Index) := new Element_Type'(By);
+         Free (X);
+      end;
    end Replace_Element;
 
    procedure Replace_Element (Position : Cursor; By : Element_Type) is
    begin
+      if Position.Container = null then
+         raise Constraint_Error;
+      end if;
+
       Replace_Element (Position.Container.all, Position.Index, By);
    end Replace_Element;
 
@@ -1885,11 +1978,11 @@ package body Ada.Containers.Indefinite_Vectors is
                  Elements_Type (Array_Index_Subtype);
 
                X : Elements_Access := Container.Elements;
+
             begin
                Container.Elements := new Array_Subtype'(Src);
                Free (X);
             end;
-
          end if;
 
          return;
@@ -1900,14 +1993,20 @@ package body Ada.Containers.Indefinite_Vectors is
             Last_As_Int : constant Int'Base :=
                             Int (Index_Type'First) + Int (Capacity) - 1;
 
-            Last : constant Index_Type :=
-                     Index_Type (Last_As_Int);
-
-            subtype Array_Subtype is
-              Elements_Type (Index_Type'First .. Last);
-
          begin
-            Container.Elements := new Array_Subtype;
+            if Last_As_Int > Index_Type'Pos (Index_Type'Last) then
+               raise Constraint_Error;
+            end if;
+
+            declare
+               Last : constant Index_Type := Index_Type (Last_As_Int);
+
+               subtype Array_Subtype is
+                 Elements_Type (Index_Type'First .. Last);
+
+            begin
+               Container.Elements := new Array_Subtype;
+            end;
          end;
 
          return;
@@ -1935,7 +2034,6 @@ package body Ada.Containers.Indefinite_Vectors is
                Container.Elements := new Array_Subtype'(Src);
                Free (X);
             end;
-
          end if;
 
          return;
@@ -1953,28 +2051,35 @@ package body Ada.Containers.Indefinite_Vectors is
          Last_As_Int : constant Int'Base :=
                          Int (Index_Type'First) + Int (Capacity) - 1;
 
-         Last        : constant Index_Type := Index_Type (Last_As_Int);
-
-         subtype Array_Subtype is
-           Elements_Type (Index_Type'First .. Last);
-
-         X : Elements_Access := Container.Elements;
-
       begin
-         Container.Elements := new Array_Subtype;
+         if Last_As_Int > Index_Type'Pos (Index_Type'Last) then
+            raise Constraint_Error;
+         end if;
 
          declare
-            Src : Elements_Type renames
-                    X (Index_Type'First .. Container.Last);
+            Last : constant Index_Type := Index_Type (Last_As_Int);
 
-            Tgt : Elements_Type renames
-                    Container.Elements (Index_Type'First .. Container.Last);
+            subtype Array_Subtype is
+              Elements_Type (Index_Type'First .. Last);
+
+            X : Elements_Access := Container.Elements;
 
          begin
-            Tgt := Src;
-         end;
+            Container.Elements := new Array_Subtype;
 
-         Free (X);
+            declare
+               Src : Elements_Type renames
+                       X (Index_Type'First .. Container.Last);
+
+               Tgt : Elements_Type renames
+                       Container.Elements (Index_Type'First .. Container.Last);
+
+            begin
+               Tgt := Src;
+            end;
+
+            Free (X);
+         end;
       end;
    end Reserve_Capacity;
 
@@ -2087,42 +2192,36 @@ package body Ada.Containers.Indefinite_Vectors is
          return;
       end if;
 
-      if Length = 0 then
-         Clear (Container);
+      if Container.Busy > 0 then
+         raise Program_Error;
+      end if;
+
+      if Length < N then
+         for Index in 1 .. N - Length loop
+            declare
+               J : constant Index_Type := Container.Last;
+               X : Element_Access := Container.Elements (J);
+
+            begin
+               Container.Elements (J) := null;
+               Container.Last := J - 1;
+               Free (X);
+            end;
+         end loop;
+
          return;
       end if;
 
-      if Container.Busy > 0 then
-         raise Program_Error;
+      if Length > Capacity (Container) then
+         Reserve_Capacity (Container, Capacity => Length);
       end if;
 
       declare
          Last_As_Int : constant Int'Base :=
                          Int (Index_Type'First) + Int (Length) - 1;
 
-         Last        : constant Index_Type :=
-                         Index_Type (Last_As_Int);
-
       begin
-         if Length > N then
-            if Length > Capacity (Container) then
-               Reserve_Capacity (Container, Capacity => Length);
-            end if;
-
-            Container.Last := Last;
-            return;
-         end if;
-
-         for Indx in reverse Index_Type'Succ (Last) .. Container.Last loop
-            declare
-               X : Element_Access := Container.Elements (Indx);
-
-            begin
-               Container.Elements (Indx) := null;
-               Container.Last := Index_Type'Pred (Container.Last);
-               Free (X);
-            end;
-         end loop;
+         Container.Last := Index_Type (Last_As_Int);
       end;
    end Set_Length;
 
@@ -2134,19 +2233,27 @@ package body Ada.Containers.Indefinite_Vectors is
      (Container : Vector;
       I, J      : Index_Type)
    is
-      subtype T is Index_Type'Base range
-        Index_Type'First .. Container.Last;
-
-      EI : Element_Type renames Container.Elements (T'(I)).all;
-      EJ : Element_Type renames Container.Elements (T'(J)).all;
-
    begin
+      if I > Container.Last
+        or else J > Container.Last
+      then
+         raise Constraint_Error;
+      end if;
+
+      if I = J then
+         return;
+      end if;
+
       if Container.Lock > 0 then
          raise Program_Error;
       end if;
 
       declare
-         EI_Copy : constant Element_Type := EI;
+         EI : Element_Access renames Container.Elements (I);
+         EJ : Element_Access renames Container.Elements (J);
+
+         EI_Copy : constant Element_Access := EI;
+
       begin
          EI := EJ;
          EJ := EI_Copy;
@@ -2215,10 +2322,17 @@ package body Ada.Containers.Indefinite_Vectors is
       declare
          First       : constant Int := Int (Index_Type'First);
          Last_As_Int : constant Int'Base := First + Int (Length) - 1;
-         Last        : constant Index_Type := Index_Type (Last_As_Int);
-         Elements    : constant Elements_Access :=
-                         new Elements_Type (Index_Type'First .. Last);
+         Last        : Index_Type;
+         Elements    : Elements_Access;
+
       begin
+         if Last_As_Int > Index_Type'Pos (Index_Type'Last) then
+            raise Constraint_Error;
+         end if;
+
+         Last := Index_Type (Last_As_Int);
+         Elements := new Elements_Type (Index_Type'First .. Last);
+
          return (Controlled with Elements, Last, 0, 0);
       end;
    end To_Vector;
@@ -2235,24 +2349,34 @@ package body Ada.Containers.Indefinite_Vectors is
       declare
          First       : constant Int := Int (Index_Type'First);
          Last_As_Int : constant Int'Base := First + Int (Length) - 1;
-         Last        : constant Index_Type := Index_Type (Last_As_Int);
-         Elements    : Elements_Access :=
-                         new Elements_Type (Index_Type'First .. Last);
+         Last        : Index_Type'Base;
+         Elements    : Elements_Access;
+
       begin
-         for Indx in Elements'Range loop
-            begin
-               Elements (Indx) := new Element_Type'(New_Item);
-            exception
-               when others =>
-                  for J in Index_Type'First .. Index_Type'Pred (Indx) loop
-                     Free (Elements (J));
-                  end loop;
+         if Last_As_Int > Index_Type'Pos (Index_Type'Last) then
+            raise Constraint_Error;
+         end if;
 
-                  Free (Elements);
-                  raise;
-            end;
+         Last := Index_Type (Last_As_Int);
+         Elements := new Elements_Type (Index_Type'First .. Last);
 
-         end loop;
+         Last := Index_Type'First;
+
+         begin
+            loop
+               Elements (Last) := new Element_Type'(New_Item);
+               exit when Last = Elements'Last;
+               Last := Last + 1;
+            end loop;
+         exception
+            when others =>
+               for J in Index_Type'First .. Last - 1 loop
+                  Free (Elements (J));
+               end loop;
+
+               Free (Elements);
+               raise;
+         end;
 
          return (Controlled with Elements, Last, 0, 0);
       end;
@@ -2267,21 +2391,20 @@ package body Ada.Containers.Indefinite_Vectors is
       Index     : Index_Type;
       Process   : not null access procedure (Element : in out Element_Type))
    is
-      subtype T is Index_Type'Base range
-        Index_Type'First .. Container.Last;
-
-      E : Element_Type renames Container.Elements (T'(Index)).all;
-
       V : Vector renames Container'Unrestricted_Access.all;
       B : Natural renames V.Busy;
       L : Natural renames V.Lock;
 
    begin
+      if Index > Container.Last then
+         raise Constraint_Error;
+      end if;
+
       B := B + 1;
       L := L + 1;
 
       begin
-         Process (E);
+         Process (V.Elements (Index).all);
       exception
          when others =>
             L := L - 1;
@@ -2298,6 +2421,10 @@ package body Ada.Containers.Indefinite_Vectors is
       Process  : not null access procedure (Element : in out Element_Type))
    is
    begin
+      if Position.Container = null then
+         raise Constraint_Error;
+      end if;
+
       Update_Element (Position.Container.all, Position.Index, Process);
    end Update_Element;
 
@@ -2327,9 +2454,7 @@ package body Ada.Containers.Indefinite_Vectors is
             --  There's another way to do this.  Instead a separate
             --  Boolean for each element, you could write a Boolean
             --  followed by a count of how many nulls or non-nulls
-            --  follow in the array.  Alternately you could use a
-            --  signed integer, and use the sign as the indicator
-            --  of null-ness.
+            --  follow in the array.
 
             if E (Indx) = null then
                Boolean'Write (Stream, False);
