@@ -96,6 +96,8 @@ package body MLib.Prj is
    Compile_Switch_String : aliased String := "-c";
    Compile_Switch : constant String_Access := Compile_Switch_String'Access;
 
+   Auto_Initialize : constant String := "-a";
+
    --  List of objects to put inside the library
 
    Object_Files : Argument_List_Access;
@@ -240,6 +242,10 @@ package body MLib.Prj is
    procedure Reset_Tables;
    --  Make sure that all the above tables are empty
    --  (Objects, Foreign_Objects, Ali_Files, Options).
+
+   function SALs_Use_Constructors return Boolean;
+   --  Indicate if Stand-Alone Libraries are automatically initialized using
+   --  the constructor mechanism.
 
    ------------------
    -- Add_Argument --
@@ -810,6 +816,10 @@ package body MLib.Prj is
             Add_Argument
               (B_Start & Get_Name_String (Data.Library_Name) & ".adb");
             Add_Argument ("-L" & Get_Name_String (Data.Library_Name));
+
+            if Data.Lib_Auto_Init and then SALs_Use_Constructors then
+               Add_Argument (Auto_Initialize);
+            end if;
 
             --  Check if Binder'Default_Switches ("Ada") is defined. If it is,
             --  add these switches to call gnatbind.
@@ -2020,5 +2030,17 @@ package body MLib.Prj is
       Processed_Projects.Reset;
       Library_Projs.Init;
    end Reset_Tables;
+
+   ---------------------------
+   -- SALs_Use_Constructors --
+   ---------------------------
+
+   function SALs_Use_Constructors return Boolean is
+      function C_SALs_Init_Using_Constructors return Integer;
+      pragma Import (C, C_SALs_Init_Using_Constructors,
+                     "__gnat_sals_init_using_constructors");
+   begin
+      return C_SALs_Init_Using_Constructors /= 0;
+   end SALs_Use_Constructors;
 
 end MLib.Prj;
