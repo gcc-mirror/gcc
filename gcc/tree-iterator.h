@@ -95,9 +95,9 @@ tsi_stmt (tree_stmt_iterator i)
 
 enum tsi_iterator_update
 {
-  TSI_NEW_STMT,		/* Leave the iterator at the same statement.  */
-  TSI_SAME_STMT,	/* Only valid when single statement is added, move
+  TSI_NEW_STMT,		/* Only valid when single statement is added, move
 			   iterator to it.  */
+  TSI_SAME_STMT,	/* Leave the iterator at the same statement.  */
   TSI_CHAIN_START,	/* Only valid when chain of statements is added, move
 			   iterator to the first statement in the chain.  */
   TSI_CHAIN_END,	/* Only valid when chain of statements is added, move
