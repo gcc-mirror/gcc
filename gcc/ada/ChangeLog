@@ -1,3 +1,306 @@
+2005-07-04  Thomas Quinot  <quinot@adacore.com>
+
+	* g-expect-vms.adb, g-expect.ads, g-expect.adb
+	(Get_Command_Output): New subprogram to launch a process and get its
+	standard output as a string.
+
+2005-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* s-mastop-tru64.adb (Pop_Frame): Use exc_lookup_function_entry to
+	fetch a code-range descriptor associated with the machine state. On
+	failure set the machine state's PC to 0; on success, pass the
+	descriptor to exc_virtual_unwind.
+
+	* init.c (Tru64 section): New function __gnat_set_code_loc.
+
+2005-07-04  Vincent Celier  <celier@adacore.com>
+
+	* mlib-tgt-tru64.adb, mlib-tgt-aix.adb, mlib-tgt-irix.adb, 
+	mlib-tgt-hpux.adb, mlib-tgt-linux.adb, mlib-tgt-solaris.adb, 
+	mlib-tgt-mingw.adb, mlib-tgt-darwin.adb (Build_Dynamic_Library):
+	Remove all auto-initialization code, as this is now done through the
+	constructor mechanism.
+
+	* adaint.h, adaint.c (__gnat_binder_supports_auto_init,
+	__gnat_sals_init_using_constructors): New functions.
+
+	* bindgen.adb (Gen_Output_File_Ada): Generate pragmas
+	Linker_Constructor and Linker_Destructor when switch -a is used.
+
+	* bindusg.adb: Add line for new switch -a
+
+	* gnatbind.adb (Gnatbind_Supports_Auto_Init): New Boolean function
+	(Gnatbind): When switch -a is used, check if it is allowed
+
+	* switch-b.adb (Scan_Binder_Switches): Process new switch -a
+
+2005-07-04  Joel Brobecker  <brobecker@adacore.com>
+
+	* a-tags.adb (Type_Specific_Data): Define Tags_Table as a small array.
+	This prevents us from hitting a limitation during the debug info
+	generation when using stabs.
+	(Prims_Ptr): Likewise.
+
+2005-07-04  Gary Dismukes  <dismukes@adacore.com>
+	    Ed Schonberg  <schonberg@adacore.com>
+	    Javier Miranda  <miranda@adacore.com>
+
+	* checks.adb (Null_Exclusion_Static_Checks): In the case of
+	N_Object_Declaration, only perform the checks if the Object_Definition
+	is not an Access_Definition.
+
+        * sem_ch3.adb (Access_Subprogram_Declaration): Add test for the case
+        where the parent of an the access definition is an N_Object_Declaration
+        when determining the Associated_Node_For_Itype and scope of an
+        anonymous access-to-subprogram type.
+
+	* exp_ch6.adb (Expand_N_Subprogram_Declaration): Set the
+	Corresponding_Spec on the body created for a null procedure. Add ???
+	comment. Remove New_Copy_Tree call on body argument to
+	Set_Body_To_Inline.
+
+	* exp_ch6.adb (Add_Simple_Call_By_Copy_Code): For an out parameter with
+	discriminants, use the type of the actual as well, because the
+	discriminants may be read by the called subprogram.
+
+	* sem_ch3.adb (Access_Type_Declaration): If the designated type is an
+	access type we do not need to handle non-limited views.
+	(Build_Derived_Record_Type): Additional check to check that in case of
+	private types, interfaces are only allowed in private extensions.
+
+2005-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (prepend_attributes) <Pragma_Linker_Constructor>: New case.
+	<Pragma_Linker_Destructor>: Likewise.
+
+	* einfo.ads (Has_Gigi_Rep_Item): Document Pragma_Linker_Constructor and
+	Pragma_Linker_Destructor.
+
+	* gigi.h (attr_type): Add ATTR_LINK_CONSTRUCTOR and
+	ATTR_LINK_DESTRUCTOR.
+	(static_ctors, static_dtors): New variables.
+
+	* misc.c (gnat_expand_body): Output current function as constructor
+	and destructor if requested.
+
+	* par-prag.adb: Add processing for pragma Linker_Constructor and
+	Linker_Destructor.
+
+	* sem_prag.adb (Find_Unique_Parameterless_Procedure): New function
+	extracted from Check_Interrupt_Or_Attach_Handler.
+	(Check_Interrupt_Or_Attach_Handler): Invoke it.
+	Implement pragma Linker_Constructor and Linker_Destructor with the
+	help of Find_Unique_Parameterless_Procedure.
+	Replace Name_Alias with Name_Target for pragma Linker_Alias.
+
+	* snames.h, snames.ads, snames.adb: 
+	Add Name_Linker_Constructor and Name_Linker_Destructor.
+	Add Pragma_Linker_Constructor and Pragma_Linker_Destructor.
+	* snames.adb: Remove Name_Alias.
+
+	* trans.c: Include cgraph.h.
+	(build_global_cdtor): New function.
+	(Compilation_Unit_to_gnu): Build global constructor and destructor if
+	needed.
+	(tree_transform) <N_Identifier>: Substitute renaming of view-conversions
+	of objects too.
+	(addressable_p) <COMPONENT_REF>: Unconditionally test
+	DECL_NONADDRESSABLE_P on STRICT_ALIGNMENT platforms.
+
+	* utils.c (process_attributes) <ATTR_LINK_ALIAS>: Do not assemble the
+	variable if it is external.
+
+	(static_ctors, static_dtors): New global variables.
+	(process_attributes) <ATTR_LINK_CONSTRUCTOR>: New case.
+	<ATTR_LINK_DESTRUCTOR>: Likewise.
+	(end_subprog_body): Chain function as constructor and destructor
+	if requested.
+
+	* exp_util.adb (Force_Evaluation): Unconditionally invoke
+	Remove_Side_Effects with Variable_Ref set to true.
+	(Remove_Side_Effects): Handle scalar types first. Use a renaming
+	for non-scalar types even if Variable_Ref is true and for class-wide
+	expressions.
+
+2005-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb (Mod): Evaluate condition expression with checks off,
+	to prevent spurious warnings.
+
+2005-07-04  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb (Build_TypeCode_Call): Remove incorrect processing for
+	Itypes. Itypes are really unexpected there.
+	(Build_TypeCode_Function): Generalise special processing for Itypes to
+	handle the case of numeric implicit base types as well as enumerated
+	ones.
+
+2005-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_intr.adb (Expand_Unc_Deallocation): If the designated type is
+	controlled, indicate the expected type of the dereference that is
+	created for the call to Deep_Finalize, to prevent spurious errors when
+	the designated type is private and completed with a derivation from
+	another private type.
+
+2005-07-04  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Change_To_Object_Directory): When unable to change the
+	current dir to the object directory, output the full path of the
+	directory.
+
+2005-07-04  Matthew Gingell  <gingell@adacore.com>
+
+	* Makefile.in: Replace indepsw-linux.adb by indepsw-gnu.adb
+
+	* indepsw-linux.adb: Replace by...
+
+	* indepsw-gnu.adb: ...this new file
+
+2005-07-04  Vincent Celier  <celier@adacore.com>
+
+	* mlib-prj.adb (Auto_Initialize): New constant String
+	(SALs_Use_Constructors): New Boolean function
+	(Build_Library): Call gnatbind with Auto_Initialize switch when
+	SALs_Use_Constructors returns True.
+
+	* mlib-tgt.ads: Minor reformatting
+
+	* mlib-utl.ads: Minor reformatting
+
+	* opt.ads: (Use_Pragma_Linker_Constructor): New Boolean flag
+
+2005-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch9.adb (P_Task, P_Protected): Indicate that single task and
+	single protected declarations can have an interface list.
+	(P_Entry_Declaration): Add handler for Error_Resync, which can be raised
+	with seriously malformed entry declarations, and lead to compilation
+	abandoned messages.
+
+2005-07-04  Javier Miranda  <miranda@adacore.com>
+
+	* par-load.adb: Load the context items in two rounds.
+
+2005-07-04  Robert Dewar  <dewar@adacore.com>
+
+	* scng.adb: Do not consider Mod used as an attribute to be a keyword
+
+2005-07-04  Ed Schonberg  <schonberg@adacore.com>
+	    Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch10.adb (Build_Limited_Views): A type declared with a private
+	type extension needs a limited view.
+	Remove previous restriction on private types available through the
+	limited-view (only tagged private types were previously allowed).
+	(Install_Withed_Unit): In the code that implements the
+	legality rule given in AI-377, exclude a child unit with the name
+	Standard, because it is a homonym of the Standard environment package.
+
+2005-07-04  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch4.adb (Transform_Object_Operation): For an actual that is an
+	overloaded function call, carry interpretations from the original tree
+	to the copy.
+
+2005-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Conforming_Types): If the types are anonymous access
+	types check whether some designated type is a limited view, and use
+	the non-limited view if available.
+
+2005-07-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_eval.adb (Subtypes_Statically_Match): Use the discriminant
+	constraint of full view of a private view T1 if present, when T2 is a
+	discriminated full view.
+
+2005-07-04  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Do not resolve the expression of an
+	actual that is a view conversion of a bit packed array reference.
+
+2005-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_type.adb (Covers): Verify that Corresponding_Record_Type is
+	present before checking whether an interface type covers a synchronized
+	type.
+
+2005-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Is_Object_Reference): An indexed or selected component
+	whose prefix is an implicit dereference is an object reference. Removes
+	spurious errors when compiling with -gnatc.
+
+2005-07-04  Robert Dewar  <dewar@adacore.com>
+
+	PR ada/22039
+
+	* s-sopco3.ads, s-sopco4.ads, s-sopco5.ads: Minor documentation fix
+
+2005-07-04  Matthew Gingell  <gingell@adacore.com>
+
+	* tracebak.c: Enable tracebacks on ia64 platforms
+
+2005-07-04  Vincent Celier  <celier@adacore.com>
+
+	* vms_conv.adb (Initialize): Allow multiple ALI files to be given to
+	the GNAT BIND command, as gnatbind accepts multiples ALI files with
+	the -L or -n switches.
+
+2005-07-04  Vincent Celier  <celier@adacore.com>
+
+	* makegpr.adb (Build_Global_Archive): Make sure the list of sources is
+	correctly computed and the main project data is not modified while
+	doing so.
+	(Add_C_Plus_Plus_Link_For_Gnatmake): Always link with the C++ compiler
+	(Choose_C_Plus_Plus_Link_Process): Do not generate shell script
+	c++linker as this does not work on some platforms.
+
+2005-07-04  Matthew Heaney  <heaney@adacore.com>
+
+	* a-convec.ads, a-coinve.ads: Declaration of subtype Extended_Index
+	was changed.
+	* a-coinve.adb: Perform constraint checks explicitly.
+
+2005-07-04  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+	    Thomas Quinot  <quinot@adacore.com>
+
+	* Make-lang.in: (ada/targtyps.o): Add missing TREE_H dependency.
+	new target gen-soccon.
+
+2005-07-04  Robert Dewar  <dewar@adacore.com>
+
+	* s-mastop-irix.adb, s-mastop-vms.adb: Minor reformatting
+
+2005-07-04  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.ads (Check_Selector): Minor rewording of comment.
+
+2005-07-04  Vincent Celier  <celier@adacore.com>
+
+	* vms_data.ads: Add VMS qualifiers for new gnatpp switch --eol=
+
+2005-07-04  Thomas Quinot  <quinot@adacore.com>
+
+	* gen-soccon.c: Add constants SO_SNDTIMEO and SO_RCVTIMEO.
+
+2005-07-04  Sergey Rybin  <rybin@adacore.com>
+
+        * gnat_ugn.texi: Add description of --eol gnatpp option
+
+2005-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+	    Thomas Quinot  <quinot@adacore.com>
+
+        * gnat_rm.texi: Add a note that pragma Unreferenced is not appropriate
+	if the user wants all calls of a subprogram to be flagged,
+	independently of whether they are made from within the same unit or
+	another unit.
+        Mention restriction for pragma Linker_Alias on some platforms.
+        Document pragma Linker_Constructor and Linker_Destructor.
+        Rewrite documentation of Weak_External, Linker_Section and
+        Linker_Alias pragmas.
+
 2005-07-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-stausa.ads, s-stausa.adb: New files.
