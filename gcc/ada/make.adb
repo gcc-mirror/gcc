@@ -1097,7 +1097,11 @@ package body Make is
       --  Fail if unable to change to the object directory
 
       when Directory_Error =>
-         Make_Failed ("unable to change to object directory of project " &
+         Make_Failed ("unable to change to object directory """ &
+                      Get_Name_String
+                        (Project_Tree.Projects.Table
+                           (Actual_Project).Object_Directory) &
+                      """ of project " &
                       Get_Name_String (Project_Tree.Projects.Table
                                          (Actual_Project).Display_Name));
    end Change_To_Object_Directory;
