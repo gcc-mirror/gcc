@@ -613,9 +613,9 @@ package body Sem_Type is
    --  Start of processing for Covers
 
    begin
-      --  If either operand missing, then this is an error, but ignore
-      --  it (and pretend we have a cover) if errors already detected,
-      --  since this may simply mean we have malformed trees.
+      --  If either operand missing, then this is an error, but ignore it (and
+      --  pretend we have a cover) if errors already detected, since this may
+      --  simply mean we have malformed trees.
 
       if No (T1) or else No (T2) then
          if Total_Errors_Detected /= 0 then
@@ -763,8 +763,8 @@ package body Sem_Type is
       then
          return True;
 
-      --  If the expected type is an anonymous access, the designated
-      --  type must cover that of the expression.
+      --  If the expected type is an anonymous access, the designated type must
+      --  cover that of the expression.
 
       elsif Ekind (T1) = E_Anonymous_Access_Type
         and then Is_Access_Type (T2)
@@ -852,8 +852,8 @@ package body Sem_Type is
             (From_With_Type (Designated_Type (T1))
               and then Covers (Designated_Type (T2), Designated_Type (T1)));
 
-      --  A boolean operation on integer literals is compatible with a
-      --  modular context.
+      --  A boolean operation on integer literals is compatible with modular
+      --  context.
 
       elsif T2 = Any_Modular
         and then Is_Modular_Integer_Type (T1)
@@ -865,10 +865,10 @@ package body Sem_Type is
       elsif Base_Type (T2) = Any_Type then
          return True;
 
-      --  A packed array type covers its corresponding non-packed type.
-      --  This is not legitimate Ada, but allows the omission of a number
-      --  of otherwise useless unchecked conversions, and since this can
-      --  only arise in (known correct) expanded code, no harm is done
+      --  A packed array type covers its corresponding non-packed type. This is
+      --  not legitimate Ada, but allows the omission of a number of otherwise
+      --  useless unchecked conversions, and since this can only arise in
+      --  (known correct) expanded code, no harm is done
 
       elsif Is_Array_Type (T2)
         and then Is_Packed (T2)
@@ -964,14 +964,14 @@ package body Sem_Type is
       User_Subp   : Entity_Id;
 
       function Inherited_From_Actual (S : Entity_Id) return Boolean;
-      --  Determine whether one of the candidates is an operation inherited
-      --  by a type that is derived from an actual in an instantiation.
+      --  Determine whether one of the candidates is an operation inherited by
+      --  a type that is derived from an actual in an instantiation.
 
       function Is_Actual_Subprogram (S : Entity_Id) return Boolean;
-      --  Determine whether a subprogram is an actual in an enclosing
-      --  instance. An overloading between such a subprogram and one
-      --  declared outside the instance is resolved in favor of the first,
-      --  because it resolved in the generic.
+      --  Determine whether a subprogram is an actual in an enclosing instance.
+      --  An overloading between such a subprogram and one declared outside the
+      --  instance is resolved in favor of the first, because it resolved in
+      --  the generic.
 
       function Matches (Actual, Formal : Node_Id) return Boolean;
       --  Look for exact type match in an instance, to remove spurious
@@ -981,16 +981,16 @@ package body Sem_Type is
       --  Comment required ???
 
       function Remove_Conversions return Interp;
-      --  Last chance for pathological cases involving comparisons on
-      --  literals, and user overloadings of the same operator. Such
-      --  pathologies have been removed from the ACVC, but still appear in
-      --  two DEC tests, with the following notable quote from Ben Brosgol:
+      --  Last chance for pathological cases involving comparisons on literals,
+      --  and user overloadings of the same operator. Such pathologies have
+      --  been removed from the ACVC, but still appear in two DEC tests, with
+      --  the following notable quote from Ben Brosgol:
       --
       --  [Note: I disclaim all credit/responsibility/blame for coming up with
-      --  this example;  Robert Dewar brought it to our attention, since it
-      --  is apparently found in the ACVC 1.5. I did not attempt to find
-      --  the reason in the Reference Manual that makes the example legal,
-      --  since I was too nauseated by it to want to pursue it further.]
+      --  this example; Robert Dewar brought it to our attention, since it is
+      --  apparently found in the ACVC 1.5. I did not attempt to find the
+      --  reason in the Reference Manual that makes the example legal, since I
+      --  was too nauseated by it to want to pursue it further.]
       --
       --  Accordingly, this is not a fully recursive solution, but it handles
       --  DEC tests c460vsa, c460vsb. It also handles ai00136a, which pushes
@@ -1102,9 +1102,9 @@ package body Sem_Type is
                  and then Etype (F1) = Standard_Boolean
                then
                   --  If the two candidates are the original ones, the
-                  --  ambiguity is real. Otherwise keep the original,
-                  --  further calls to Disambiguate will take care of
-                  --  others in the list of candidates.
+                  --  ambiguity is real. Otherwise keep the original, further
+                  --  calls to Disambiguate will take care of others in the
+                  --  list of candidates.
 
                   if It1 /= No_Interp then
                      if It = Disambiguate.It1
@@ -1142,9 +1142,9 @@ package body Sem_Type is
                Get_Next_Interp (I, It);
          end loop;
 
-         --  After some error, a formal may have Any_Type and yield
-         --  a spurious match. To avoid cascaded errors if possible,
-         --  check for such a formal in either candidate.
+         --  After some error, a formal may have Any_Type and yield a spurious
+         --  match. To avoid cascaded errors if possible, check for such a
+         --  formal in either candidate.
 
          if Serious_Errors_Detected > 0 then
             declare
@@ -1269,9 +1269,9 @@ package body Sem_Type is
          elsif Chars (Nam1) /= Name_Op_Not
            and then (Typ = Standard_Boolean or else Typ = Any_Boolean)
          then
-            --  Equality or comparison operation. Choose predefined operator
-            --  if arguments are universal. The node may be an operator, a
-            --  name, or a function call, so unpack arguments accordingly.
+            --  Equality or comparison operation. Choose predefined operator if
+            --  arguments are universal. The node may be an operator, name, or
+            --  a function call, so unpack arguments accordingly.
 
             declare
                Arg1, Arg2 : Node_Id;
@@ -1345,10 +1345,10 @@ package body Sem_Type is
             end if;
 
          --  If the ambiguity occurs within an instance, it is due to several
-         --  formal types with the same actual. Look for an exact match
-         --  between the types of the formals of the overloadable entities,
-         --  and the actuals in the call, to recover the unambiguous match
-         --  in the original generic.
+         --  formal types with the same actual. Look for an exact match between
+         --  the types of the formals of the overloadable entities, and the
+         --  actuals in the call, to recover the unambiguous match in the
+         --  original generic.
 
          --  The ambiguity can also be due to an overloading between a formal
          --  subprogram and a subprogram declared outside the generic. If the
@@ -1456,9 +1456,9 @@ package body Sem_Type is
             return It2;
          end if;
 
-      --  Otherwise, the predefined operator has precedence, or if the
-      --  user-defined operation is directly visible we have a true ambiguity.
-      --  If this is a fixed-point multiplication and division in Ada83 mode,
+      --  Otherwise, the predefined operator has precedence, or if the user-
+      --  defined operation is directly visible we have a true ambiguity. If
+      --  this is a fixed-point multiplication and division in Ada83 mode,
       --  exclude the universal_fixed operator, which often causes ambiguities
       --  in legacy code.
 
@@ -1506,8 +1506,8 @@ package body Sem_Type is
 
    function Entity_Matches_Spec (Old_S, New_S : Entity_Id) return Boolean is
    begin
-      --  Simple case: same entity kinds, type conformance is required.
-      --  A parameterless function can also rename a literal.
+      --  Simple case: same entity kinds, type conformance is required. A
+      --  parameterless function can also rename a literal.
 
       if Ekind (Old_S) = Ekind (New_S)
         or else (Ekind (New_S) = E_Function
@@ -1573,8 +1573,8 @@ package body Sem_Type is
          null;
       end if;
 
-      --  If one of the operands is Universal_Fixed, the type of the
-      --  other operand provides the context.
+      --  If one of the operands is Universal_Fixed, the type of the other
+      --  operand provides the context.
 
       if Etype (R) = Universal_Fixed then
          return T;
@@ -1683,10 +1683,13 @@ package body Sem_Type is
          return
            Covers (Typ, Etype (N))
 
-            --  Ada 2005 (AI-345)
+            --  Ada 2005 (AI-345) The context may be a synchronized interface.
+            --  If the type is already frozen use the corresponding_record
+            --  to check whether it is a proper descendant.
 
            or else
              (Is_Concurrent_Type (Etype (N))
+                and then Present (Corresponding_Record_Type (Etype (N)))
                 and then Covers (Typ, Corresponding_Record_Type (Etype (N))))
 
            or else
@@ -1741,7 +1744,6 @@ package body Sem_Type is
 
    function Hides_Op (F : Entity_Id; Op : Entity_Id) return Boolean is
       Btyp : constant Entity_Id := Base_Type (Etype (First_Formal (F)));
-
    begin
       return Operator_Matches_Spec (Op, F)
         and then (In_Open_Scopes (Scope (F))
