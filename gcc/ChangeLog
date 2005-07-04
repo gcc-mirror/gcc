@@ -1,3 +1,10 @@
+2005-07-04  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/22279
+	
+	* tree-ssa-structalias.c (offset_overlaps_with_access): Use
+	correct operator.
+	
 2005-07-04  J"orn Rennecke <joern.rennecke@st.com>
 
 	* sh.c (output_ieee_ccmpeq): Replace "\\;" with "\n\t".
