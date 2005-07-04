@@ -818,6 +818,7 @@ package body Sem_Ch3 is
       while Nkind (D_Ityp) /= N_Full_Type_Declaration
          and then Nkind (D_Ityp) /= N_Procedure_Specification
          and then Nkind (D_Ityp) /= N_Function_Specification
+         and then Nkind (D_Ityp) /= N_Object_Declaration
          and then Nkind (D_Ityp) /= N_Object_Renaming_Declaration
          and then Nkind (D_Ityp) /= N_Formal_Type_Declaration
       loop
@@ -833,6 +834,7 @@ package body Sem_Ch3 is
          Set_Scope (Desig_Type, Scope (Defining_Unit_Name (D_Ityp)));
 
       elsif Nkind (D_Ityp) = N_Full_Type_Declaration
+        or else Nkind (D_Ityp) = N_Object_Declaration
         or else Nkind (D_Ityp) = N_Object_Renaming_Declaration
         or else Nkind (D_Ityp) = N_Formal_Type_Declaration
       then
@@ -981,7 +983,9 @@ package body Sem_Ch3 is
          N_Desig : Entity_Id;
 
       begin
-         if From_With_Type (Desig) then
+         if From_With_Type (Desig)
+           and then Ekind (Desig) /= E_Access_Type
+         then
             Set_From_With_Type (T);
 
             if Ekind (Desig) = E_Incomplete_Type then
@@ -5870,9 +5874,17 @@ package body Sem_Ch3 is
                   Same_Interfaces    : Boolean := True;
 
                begin
+                  if Nkind (N_Partial) /= N_Private_Extension_Declaration then
+                     Error_Msg_N
+                       ("(Ada 2005) interfaces only allowed in private"
+                        & " extension declarations", N_Partial);
+                  end if;
+
                   --  Count the interfaces implemented by the partial view
 
-                  if not Is_Empty_List (Interface_List (N_Partial)) then
+                  if Nkind (N_Partial) = N_Private_Extension_Declaration
+                    and then not Is_Empty_List (Interface_List (N_Partial))
+                  then
                      Iface_Partial := First (Interface_List (N_Partial));
 
                      while Present (Iface_Partial) loop

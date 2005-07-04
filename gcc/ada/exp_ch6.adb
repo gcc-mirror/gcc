@@ -760,13 +760,25 @@ package body Exp_Ch6 is
          Outcod := New_Copy_Tree (Incod);
 
          --  Generate declaration of temporary variable, initializing it
-         --  with the input parameter unless we have an OUT variable or
+         --  with the input parameter unless we have an OUT formal or
          --  this is an initialization call.
+
+         --  If the formal is an out parameter with discriminants, the
+         --  discriminants must be captured even if the rest of the object
+         --  is in principle uninitialized, because the discriminants may
+         --  be read by the called subprogram.
 
          if Ekind (Formal) = E_Out_Parameter then
             Incod := Empty;
 
+            if Has_Discriminants (Etype (Formal)) then
+               Indic := New_Occurrence_Of (Etype (Actual), Loc);
+            end if;
+
          elsif Inside_Init_Proc then
+
+            --  Could use a comment here to match comment below ???
+
             if Nkind (Actual) /= N_Selected_Component
               or else
                 not Has_Discriminant_Dependent_Constraint
@@ -774,11 +786,10 @@ package body Exp_Ch6 is
             then
                Incod := Empty;
 
-            else
-               --  We need the component in order to generate the proper
-               --  actual subtype, that depends on enclosing discriminants.
-               --  What is the comment for, given code below is null ???
+            --  Otherwise, keep the component in order to generate the proper
+            --  actual subtype, that depends on enclosing discriminants.
 
+            else
                null;
             end if;
          end if;
@@ -3859,9 +3870,20 @@ package body Exp_Ch6 is
                         Make_Handled_Sequence_Of_Statements (Loc,
                           Statements => New_List (Make_Null_Statement (Loc))));
          begin
-            Set_Body_To_Inline (N, New_Copy_Tree (Bod));
+            Set_Body_To_Inline (N, Bod);
             Insert_After (N, Bod);
             Analyze (Bod);
+
+            --  Corresponding_Spec isn't being set by Analyze_Subprogram_Body,
+            --  evidently because Set_Has_Completion is called earlier for null
+            --  procedures in Analyze_Subprogram_Declaration, so we force its
+            --  setting here. If the setting of Has_Completion is not set
+            --  earlier, then it can result in missing body errors if other
+            --  errors were already reported (since expansion is turned off).
+
+            --  Should creation of the empty body be moved to the analyzer???
+
+            Set_Corresponding_Spec (Bod, Defining_Entity (Specification (N)));
          end;
       end if;
    end Expand_N_Subprogram_Declaration;

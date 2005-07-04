@@ -2637,13 +2637,17 @@ package body Checks is
 
          when N_Object_Declaration =>
             Msg_K := Objects;
-            Has_Null_Exclusion := Null_Exclusion_Present (N);
-            Typ := Entity (Object_Definition (N));
-            Related_Nod := Object_Definition (N);
-            Check_Must_Be_Access (Typ, Has_Null_Exclusion);
-            Check_Already_Null_Excluding_Type
-              (Typ, Has_Null_Exclusion, Related_Nod);
-            Check_Must_Be_Initialized (N, Related_Nod);
+
+            if Nkind (Object_Definition (N)) /= N_Access_Definition then
+               Has_Null_Exclusion := Null_Exclusion_Present (N);
+               Typ := Entity (Object_Definition (N));
+               Related_Nod := Object_Definition (N);
+               Check_Must_Be_Access (Typ, Has_Null_Exclusion);
+               Check_Already_Null_Excluding_Type
+                 (Typ, Has_Null_Exclusion, Related_Nod);
+               Check_Must_Be_Initialized (N, Related_Nod);
+            end if;
+
             Check_Null_Not_Allowed (N);
 
          when N_Discriminant_Specification =>
