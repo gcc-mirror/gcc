@@ -56,7 +56,8 @@ package body Ch9 is
    --      [is [new INTERFACE_LIST with] TASK_DEFINITION];
 
    --  SINGLE_TASK_DECLARATION ::=
-   --    task DEFINING_IDENTIFIER [is TASK_DEFINITION];
+   --    task DEFINING_IDENTIFIER
+   --      [is [new INTERFACE_LIST with] TASK_DEFINITION];
 
    --  TASK_BODY ::=
    --    task body DEFINING_IDENTIFIER is
@@ -348,7 +349,8 @@ package body Ch9 is
    --      is [new INTERFACE_LIST with] PROTECTED_DEFINITION;
 
    --  SINGLE_PROTECTED_DECLARATION ::=
-   --    protected DEFINING_IDENTIFIER is PROTECTED_DEFINITION;
+   --    protected DEFINING_IDENTIFIER
+   --    is [new INTERFACE_LIST with] PROTECTED_DEFINITION;
 
    --  PROTECTED_BODY ::=
    --    protected body DEFINING_IDENTIFIER is
@@ -860,6 +862,11 @@ package body Ch9 is
 
       TF_Semicolon;
       return Decl_Node;
+
+   exception
+      when Error_Resync =>
+         Resync_Past_Semicolon;
+         return Error;
    end P_Entry_Declaration;
 
    -----------------------------
