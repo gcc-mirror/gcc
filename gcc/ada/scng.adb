@@ -2330,14 +2330,18 @@ package body Scng is
             --  Ada 2005 (AI-284): Do not apply the style check in case of
             --  "pragma Interface"
 
+            --  Ada 2005 (AI-340): Do not apply the style check in case of
+            --  MOD attribute.
+
             if Style_Check
               and then Source (Token_Ptr) <= 'Z'
               and then (Prev_Token /= Tok_Apostrophe
                           or else
-                            (Token /= Tok_Access
-                               and then Token /= Tok_Delta
-                               and then Token /= Tok_Digits
-                               and then Token /= Tok_Range))
+                            (Token /= Tok_Access and then
+                             Token /= Tok_Delta  and then
+                             Token /= Tok_Digits and then
+                             Token /= Tok_Mod    and then
+                             Token /= Tok_Range))
               and then (Token /= Tok_Interface
                           or else
                             (Token = Tok_Interface
