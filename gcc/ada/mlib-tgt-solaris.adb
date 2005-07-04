@@ -40,18 +40,6 @@ with System;
 
 package body MLib.Tgt is
 
-   No_Arguments        : aliased Argument_List         := (1 .. 0 => null);
-   Empty_Argument_List : constant Argument_List_Access := No_Arguments'Access;
-
-   Wl_Init_String : constant String         := "-Wl,-zinitarray=";
-   Wl_Fini_String : constant String         := "-Wl,-zfiniarray=";
-
-   Init_Fini_List :  constant Argument_List_Access :=
-                       new Argument_List'(1 => null,
-                                          2 => null);
-
-   --  Used to put switches for automatic elaboration/finalization
-
    ---------------------
    -- Archive_Builder --
    ---------------------
@@ -119,6 +107,7 @@ package body MLib.Tgt is
       pragma Unreferenced (Afiles);
       pragma Unreferenced (Interfaces);
       pragma Unreferenced (Symbol_Data);
+      pragma Unreferenced (Auto_Init);
 
       Lib_File : constant String :=
                    Lib_Dir & Directory_Separator & "lib" &
@@ -127,29 +116,17 @@ package body MLib.Tgt is
       Version_Arg          : String_Access;
       Symbolic_Link_Needed : Boolean := False;
 
-      Init_Fini : Argument_List_Access := Empty_Argument_List;
-
    begin
       if Opt.Verbose_Mode then
          Write_Str ("building relocatable shared library ");
          Write_Line (Lib_File);
       end if;
 
-      --  If specified, add automatic elaboration/finalization
-
-      if Auto_Init then
-         Init_Fini := Init_Fini_List;
-         Init_Fini (1) :=
-           new String'(Wl_Init_String & Lib_Filename & "init");
-         Init_Fini (2) :=
-           new String'(Wl_Fini_String & Lib_Filename & "final");
-      end if;
-
       if Lib_Version = "" then
          Utl.Gcc
            (Output_File => Lib_File,
             Objects     => Ofiles,
-            Options     => Options & Init_Fini.all,
+            Options     => Options,
             Options_2   => Options_2,
             Driver_Name => Driver_Name);
 
@@ -160,7 +137,7 @@ package body MLib.Tgt is
             Utl.Gcc
               (Output_File => Lib_Version,
                Objects     => Ofiles,
-               Options     => Options & Version_Arg & Init_Fini.all,
+               Options     => Options & Version_Arg,
                Options_2   => Options_2,
                Driver_Name => Driver_Name);
             Symbolic_Link_Needed := Lib_Version /= Lib_File;
@@ -169,7 +146,7 @@ package body MLib.Tgt is
             Utl.Gcc
               (Output_File => Lib_Dir & Directory_Separator & Lib_Version,
                Objects     => Ofiles,
-               Options     => Options & Version_Arg & Init_Fini.all,
+               Options     => Options & Version_Arg,
                Options_2   => Options_2,
                Driver_Name => Driver_Name);
             Symbolic_Link_Needed :=

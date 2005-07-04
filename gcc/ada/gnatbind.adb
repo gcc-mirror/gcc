@@ -75,6 +75,10 @@ procedure Gnatbind is
 
    Mapping_File : String_Ptr := null;
 
+   function Gnatbind_Supports_Auto_Init return Boolean;
+   --  Indicates if automatic initialization of elaboration procedure
+   --  through the constructor mechanism is possible on the platform.
+
    procedure List_Applicable_Restrictions;
    --  List restrictions that apply to this partition if option taken
 
@@ -82,6 +86,18 @@ procedure Gnatbind is
    --  Scan and process binder specific arguments. Argv is a single argument.
    --  All the one character arguments are still handled by Switch. This
    --  routine handles -aO -aI and -I-.
+
+   ---------------------------------
+   -- Gnatbind_Supports_Auto_Init --
+   ---------------------------------
+
+   function Gnatbind_Supports_Auto_Init return Boolean is
+      function gnat_binder_supports_auto_init return Integer;
+      pragma Import (C, gnat_binder_supports_auto_init,
+                     "__gnat_binder_supports_auto_init");
+   begin
+      return gnat_binder_supports_auto_init /= 0;
+   end Gnatbind_Supports_Auto_Init;
 
    ----------------------------------
    -- List_Applicable_Restrictions --
@@ -392,6 +408,19 @@ begin
       end;
       Next_Arg := Next_Arg + 1;
    end loop Scan_Args;
+
+   if Use_Pragma_Linker_Constructor then
+      if Bind_Main_Program then
+         Fail ("switch -a must be used in conjunction with -n or -Lxxx");
+
+      elsif not Ada_Bind_File then
+         Fail ("switch -a cannot be used when C code is generated");
+
+      elsif not Gnatbind_Supports_Auto_Init then
+         Fail ("automatic initialisation of elaboration " &
+               "not supported on this platform");
+      end if;
+   end if;
 
    --  Test for trailing -o switch
 

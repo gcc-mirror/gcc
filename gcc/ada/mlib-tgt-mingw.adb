@@ -31,8 +31,6 @@
 --  This is the Windows version of the body. Works only with GCC versions
 --  supporting the "-shared" option.
 
-with Ada.Characters.Handling; use Ada.Characters.Handling;
-with Ada.Text_IO;             use Ada; use Ada.Text_IO;
 with GNAT.OS_Lib;             use GNAT.OS_Lib;
 
 with Namet;  use Namet;
@@ -47,6 +45,9 @@ package body MLib.Tgt is
 
    package Files renames MLib.Fil;
    package Tools renames MLib.Utl;
+
+   No_Argument_List : constant String_List := (1 .. 0 => null);
+   --  Used as value of parameter Options or Options2 in calls to Gcc
 
    ---------------------
    -- Archive_Builder --
@@ -116,6 +117,7 @@ package body MLib.Tgt is
       pragma Unreferenced (Symbol_Data);
       pragma Unreferenced (Interfaces);
       pragma Unreferenced (Lib_Version);
+      pragma Unreferenced (Auto_Init);
 
       Lib_File : constant String :=
                    Lib_Dir & Directory_Separator &
@@ -129,149 +131,12 @@ package body MLib.Tgt is
          Write_Line (Lib_File);
       end if;
 
-      --  Generate auto-init routine if in Auto_Init mode
-
-      if Auto_Init then
-         declare
-            Compile_Only  : aliased String := "-c";
-            GCC           : constant String_Access :=
-                              Locate_Exec_On_Path ("gcc.exe");
-            Filename      : constant String := To_Lower (Lib_Filename);
-            Autoinit_Spec : constant String := Filename & "_autoinit.ads";
-            Autoinit_Body : aliased String  := Filename & "_autoinit.adb";
-            Autoinit_Obj  : aliased String  := Filename & "_autoinit.o";
-            Autoinit_Ali  : constant String := Filename & "_autoinit.ali";
-            Init_Proc     : constant String := Lib_Filename & "init";
-            Final_Proc    : constant String := Lib_Filename & "final";
-            Autoinit_Opt  : constant Argument_List :=
-                              (1 => Autoinit_Obj'Unchecked_Access);
-            Arguments     : constant Argument_List (1 .. 2) :=
-                              (Compile_Only'Unchecked_Access,
-                               Autoinit_Body'Unchecked_Access);
-            File          : Text_IO.File_Type;
-            Success       : Boolean;
-
-         begin
-            if Opt.Verbose_Mode then
-               Write_Str ("Creating auto-init Ada file """);
-               Write_Str (Autoinit_Spec);
-               Write_Str (""" and """);
-               Write_Str (Autoinit_Body);
-               Write_Line ("""");
-            end if;
-
-            --  Create the spec
-
-            Create (File, Out_File, Autoinit_Spec);
-
-            Put_Line (File, "package " & Lib_Filename & "_autoinit is");
-            New_Line (File);
-            Put_Line (File, "   type HINSTANCE is new Integer;");
-            Put_Line (File, "   type DWORD     is new Integer;");
-            Put_Line (File, "   type LPVOID    is new Integer;");
-            Put_Line (File, "   type BOOL      is new Integer;");
-            New_Line (File);
-            Put_Line (File, "   function DllMain");
-            Put_Line (File, "     (hinstdll    : HINSTANCE;");
-            Put_Line (File, "      fdwreason   : DWORD;");
-            Put_Line (File, "      lpvreserved : LPVOID)");
-            Put_Line (File, "      return BOOL;");
-            Put_Line
-              (File, "   pragma Export (Stdcall, DllMain, ""DllMain"");");
-            New_Line (File);
-            Put_Line (File, "end " & Lib_Filename & "_autoinit;");
-
-            Close (File);
-
-            --  Create the body
-
-            Create (File, Out_File, Autoinit_Body);
-
-            Put_Line (File, "package body " & Lib_Filename & "_autoinit is");
-            New_Line (File);
-            Put_Line (File, "   DLL_PROCESS_DETACH : constant := 0;");
-            Put_Line (File, "   DLL_PROCESS_ATTACH : constant := 1;");
-            Put_Line (File, "   DLL_THREAD_ATTACH  : constant := 2;");
-            Put_Line (File, "   DLL_THREAD_DETACH  : constant := 3;");
-            New_Line (File);
-            Put_Line (File, "   procedure " & Init_Proc & ";");
-            Put      (File, "   pragma Import (C, " & Init_Proc);
-            Put_Line (File, ", """ & Init_Proc & """);");
-            New_Line (File);
-            Put_Line (File, "   procedure " & Final_Proc & ";");
-            Put      (File, "   pragma Import (C, " & Final_Proc);
-            Put_Line (File, ", """ & Final_Proc & """);");
-            New_Line (File);
-            Put_Line (File, "   function DllMain");
-            Put_Line (File, "     (hinstdll    : HINSTANCE;");
-            Put_Line (File, "      fdwreason   : DWORD;");
-            Put_Line (File, "      lpvreserved : LPVOID)");
-            Put_Line (File, "      return BOOL");
-            Put_Line (File, "   is");
-            Put_Line (File, "      pragma Unreferenced (hinstDLL);");
-            Put_Line (File, "      pragma Unreferenced (lpvReserved);");
-            Put_Line (File, "   begin");
-            Put_Line (File, "      case fdwReason is");
-            Put_Line (File, "         when DLL_PROCESS_ATTACH =>");
-            Put_Line (File, "            " & Init_Proc & ";");
-            Put_Line (File, "         when DLL_PROCESS_DETACH =>");
-            Put_Line (File, "            " & Final_Proc & ";");
-            Put_Line (File, "         when DLL_THREAD_ATTACH =>");
-            Put_Line (File, "            null;");
-            Put_Line (File, "         when DLL_THREAD_DETACH =>");
-            Put_Line (File, "            null;");
-            Put_Line (File, "         when others =>");
-            Put_Line (File, "            null;");
-            Put_Line (File, "      end case;");
-            Put_Line (File, "      return 1;");
-            Put_Line (File, "   exception");
-            Put_Line (File, "      when others =>");
-            Put_Line (File, "         return 0;");
-            Put_Line (File, "   end DllMain;");
-            New_Line (File);
-            Put_Line (File, "end " & Lib_Filename & "_autoinit;");
-
-            Close (File);
-
-            --  Compile the auto-init file
-
-            Spawn (GCC.all, Arguments, Success);
-
-            if not Success then
-               Fail ("unable to compile the auto-init unit for library """,
-                     Lib_Filename, """");
-            end if;
-
-            --  Build the SAL library
-
-            Tools.Gcc
-              (Output_File => Lib_File,
-               Objects     => Ofiles,
-               Options     => Tools.No_Argument_List,
-               Options_2   => Options & Options_2 & Autoinit_Opt,
-               Driver_Name => Driver_Name);
-
-            --  Remove generated files
-
-            if Opt.Verbose_Mode then
-               Write_Str ("deleting auto-init generated files");
-               Write_Eol;
-            end if;
-
-            Delete_File (Autoinit_Spec, Success);
-            Delete_File (Autoinit_Body, Success);
-            Delete_File (Autoinit_Obj, Success);
-            Delete_File (Autoinit_Ali, Success);
-         end;
-
-      else
-         Tools.Gcc
-           (Output_File => Lib_File,
-            Objects     => Ofiles,
-            Options     => Tools.No_Argument_List,
-            Options_2   => Options & Options_2,
-            Driver_Name => Driver_Name);
-      end if;
+      Tools.Gcc
+        (Output_File => Lib_File,
+         Objects     => Ofiles,
+         Options     => No_Argument_List,
+         Options_2   => Options & Options_2,
+         Driver_Name => Driver_Name);
    end Build_Dynamic_Library;
 
    -------------
