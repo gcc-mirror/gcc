@@ -48,8 +48,7 @@ pragma Preelaborate (Indefinite_Vectors);
 
    subtype Extended_Index is Index_Type'Base
      range Index_Type'First - 1 ..
-            Index_Type'Last +
-            Boolean'Pos (Index_Type'Base'Last > Index_Type'Last);
+           Index_Type'Min (Index_Type'Base'Last - 1, Index_Type'Last) + 1;
 
    No_Index : constant Extended_Index := Extended_Index'First;
 
