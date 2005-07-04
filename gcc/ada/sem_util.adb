@@ -4074,7 +4074,9 @@ package body Sem_Util is
       else
          case Nkind (N) is
             when N_Indexed_Component | N_Slice =>
-               return Is_Object_Reference (Prefix (N));
+               return
+                 Is_Object_Reference (Prefix (N))
+                   or else Is_Access_Type (Etype (Prefix (N)));
 
             --  In Ada95, a function call is a constant object
 
@@ -4089,7 +4091,9 @@ package body Sem_Util is
             when N_Selected_Component =>
                return
                  Is_Object_Reference (Selector_Name (N))
-                   and then Is_Object_Reference (Prefix (N));
+                   and then
+                     (Is_Object_Reference (Prefix (N))
+                        or else Is_Access_Type (Etype (Prefix (N))));
 
             when N_Explicit_Dereference =>
                return True;
