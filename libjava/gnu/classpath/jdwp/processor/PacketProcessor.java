@@ -40,15 +40,17 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp.processor;
 
-import gnu.classpath.jdwp.Jdwp;
-import gnu.classpath.jdwp.event.Event;
+import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.exception.JdwpException;
-import gnu.classpath.jdwp.transport.JdwpConnection;
 import gnu.classpath.jdwp.transport.JdwpCommandPacket;
+import gnu.classpath.jdwp.transport.JdwpConnection;
 import gnu.classpath.jdwp.transport.JdwpPacket;
 import gnu.classpath.jdwp.transport.JdwpReplyPacket;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * This class is responsible for processing packets from the
@@ -66,7 +68,16 @@ public class PacketProcessor
   
   // Shutdown this thread?
   private boolean _shutdown;
+  
+  // A Mapping of the command set (Byte) to the specific CommandSet
+  private CommandSet[] _sets;
 
+  // Contents of the ReplyPackets data field
+  private ByteArrayOutputStream _outputBytes;
+
+  // Output stream around _outputBytes
+  private DataOutputStream _os;
+  
   /**
    * Constructs a new <code>PacketProcessor</code> object
    * Connection must be validated before getting here!
@@ -77,20 +88,68 @@ public class PacketProcessor
   {
     _connection = con;
     _shutdown = false;
-  }
+    
+    // MAXIMUM is the value of the largest command set we may receive 
+    _sets = new CommandSet[JdwpConstants.CommandSet.MAXIMUM + 1];
+    _outputBytes = new ByteArrayOutputStream();
+    _os = new DataOutputStream (_outputBytes);
 
+    // Create all the Command Sets and add them to our array
+    _sets[JdwpConstants.CommandSet.VirtualMachine.CS_VALUE] =
+      new VirtualMachineCommandSet();
+    _sets[JdwpConstants.CommandSet.ReferenceType.CS_VALUE] =
+      new ReferenceTypeCommandSet();
+    _sets[JdwpConstants.CommandSet.ClassType.CS_VALUE] =
+      new ClassTypeCommandSet();
+    _sets[JdwpConstants.CommandSet.ArrayType.CS_VALUE] =
+      new ArrayTypeCommandSet();
+    _sets[JdwpConstants.CommandSet.InterfaceType.CS_VALUE] =
+      new InterfaceTypeCommandSet();
+    _sets[JdwpConstants.CommandSet.Method.CS_VALUE] =
+      new MethodCommandSet();
+    _sets[JdwpConstants.CommandSet.Field.CS_VALUE] =
+      new FieldCommandSet();
+    _sets[JdwpConstants.CommandSet.ObjectReference.CS_VALUE] =
+      new ObjectReferenceCommandSet();
+    _sets[JdwpConstants.CommandSet.StringReference.CS_VALUE] =
+      new StringReferenceCommandSet();
+    _sets[JdwpConstants.CommandSet.ThreadReference.CS_VALUE] =
+      new ThreadReferenceCommandSet();
+    _sets[JdwpConstants.CommandSet.ThreadGroupReference.CS_VALUE] =
+      new ThreadGroupReferenceCommandSet();
+    _sets[JdwpConstants.CommandSet.ArrayReference.CS_VALUE] =
+      new ArrayReferenceCommandSet();
+    _sets[JdwpConstants.CommandSet.ClassLoaderReference.CS_VALUE] =
+      new ClassLoaderReferenceCommandSet();
+    _sets[JdwpConstants.CommandSet.EventRequest.CS_VALUE] =
+      new EventRequestCommandSet();
+    _sets[JdwpConstants.CommandSet.StackFrame.CS_VALUE] =
+      new StackFrameCommandSet();
+    _sets[JdwpConstants.CommandSet.ClassObjectReference.CS_VALUE] =
+      new ClassObjectReferenceCommandSet();
+  }
+  
   /**
    * Main run routine for this thread. Will loop getting packets
    * from the connection and processing them.
    */
   public void run ()
   {
-    while (!_shutdown)
+    try
       {
-	_processOnePacket ();
+        while (!_shutdown)
+          {
+            _processOnePacket ();
+          }
       }
+    catch (IOException ex)
+      {
+        ex.printStackTrace();
+      }
+    // Time to shutdown, tell the _connection thread to stop reading
+    _connection.shutdown();
   }
-
+  
   /**
    * Shutdown the packet processor
    */
@@ -99,40 +158,58 @@ public class PacketProcessor
     _shutdown = true;
     interrupt ();
   }
-
+  
   // Helper function which actually does all the work of waiting
   // for a packet and getting it processed.
   private void _processOnePacket ()
+    throws IOException
   {
     JdwpPacket pkt = _connection.getPacket ();
-    if (pkt instanceof JdwpReplyPacket)
+    
+    if (!(pkt instanceof JdwpCommandPacket))
       {
-	// We're not supposed to get these from the debugger!
-	// Drop it on the floor
-	return;
+        // We're not supposed to get these from the debugger!
+        // Drop it on the floor
+        return;
       }
-
+    
     if (pkt != null)
       {
-	JdwpReplyPacket reply;
-	try
-	  {
-	    // !! process packet here !!
-	    reply = new JdwpReplyPacket (pkt, (short) 0);
-	  }
-	catch (JdwpException ex)
-	  {
-	    reply = new JdwpReplyPacket (pkt, ex.getErrorCode ());
-	  }
-
-	try
-	  {
-	    _connection.sendPacket (reply);
-	  }
-	catch (IOException ioe)
-	  {
-	    // Not much we can do...
-	  }
+        JdwpCommandPacket commandPkt = (JdwpCommandPacket) pkt;
+        JdwpReplyPacket reply = new JdwpReplyPacket(commandPkt);
+        
+        // Reset our output stream
+        _outputBytes.reset();
+        
+        // Create a ByteBuffer around the command packet 
+        ByteBuffer bb = ByteBuffer.wrap(commandPkt.getData());
+        byte command = commandPkt.getCommand();
+        byte commandSet = commandPkt.getCommandSet();
+        
+        CommandSet set = null;
+        try
+          {
+            // There is no command set with value 0
+            if (commandSet > 0 && commandSet < _sets.length)
+              {
+                set = _sets[commandPkt.getCommandSet()];
+              }
+            if (set != null) 
+              {
+                _shutdown = set.runCommand(bb, _os, command);
+                reply.setData(_outputBytes.toByteArray());
+              }
+            else
+              {
+                // This command set wasn't in our tree
+                reply.setErrorCode(JdwpConstants.Error.NOT_IMPLEMENTED);
+              }
+          }
+          catch (JdwpException ex)
+            {
+            reply.setErrorCode(ex.getErrorCode ());
+            }
+          _connection.sendPacket (reply);
       }
   }
 }

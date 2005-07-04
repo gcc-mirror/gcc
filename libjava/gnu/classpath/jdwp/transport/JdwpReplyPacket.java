@@ -78,9 +78,20 @@ public class JdwpReplyPacket extends JdwpPacket
    */
   public JdwpReplyPacket (JdwpPacket pkt, short errorCode)
   {
+    this(pkt);
+    _errorCode = errorCode;
+  }
+
+  /**
+   * Constructs a <code>JdwpReplyPacket</code> with the
+   * id from the given packet and an empty error code
+   *
+   * @param pkt        the packet whose id this packet will use
+   */
+  public JdwpReplyPacket (JdwpPacket pkt)
+  {
     super (pkt);
     _flags = (byte) JDWP_FLAG_REPLY;
-    _errorCode = errorCode;
   }
 
   /**
