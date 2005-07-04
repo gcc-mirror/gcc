@@ -1,3 +1,7 @@
+2005-07-04  J"orn Rennecke <joern.rennecke@st.com>
+
+	* sh.c (output_ieee_ccmpeq): Replace "\\;" with "\n\t".
+
 2005-07-03  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* bb-reorder.c, c-pch.c, c-pragma.c, c.opt, cfghooks.c, cfgloop.c,
