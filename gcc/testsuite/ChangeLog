@@ -1,3 +1,7 @@
+2005-07-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.dg/io_invalid_1.f90: Fix expected error message.
+
 2005-07-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR testsuite/22288
