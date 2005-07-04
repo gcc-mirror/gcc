@@ -207,7 +207,7 @@ package body VMS_Conv is
             Unixcmd  => new S'("gnatbind"),
             Unixsws  => null,
             Switches => Bind_Switches'Access,
-            Params   => new Parameter_Array'(1 => File),
+            Params   => new Parameter_Array'(1 => Unlimited_Files),
             Defext   => "ali"),
 
          Chop =>
