@@ -3714,7 +3714,8 @@ package body Sem_Ch10 is
       --  instance I1 of a generic unit G1 has an explicit child unit I1.G2,
       --  G1 has a generic child also named G2, and the context includes with_
       --  clauses for both I1.G2 and for G1.G2, making an implicit declaration
-      --  of I1.G2 visible as well.
+      --  of I1.G2 visible as well. If the child unit is named Standard, do
+      --  not apply the check to the Standard package itself.
 
       if Is_Child_Unit (Uname)
         and then Is_Visible_Child_Unit (Uname)
@@ -3728,7 +3729,9 @@ package body Sem_Ch10 is
 
          begin
             U2 := Homonym (Uname);
-            while Present (U2) loop
+            while Present (U2)
+              and U2 /= Standard_Standard
+           loop
                P2 := Scope (U2);
                Decl2  := Unit_Declaration_Node (P2);
 
@@ -4057,13 +4060,15 @@ package body Sem_Ch10 is
 
                Set_Non_Limited_View (Lim_Typ, Comp_Typ);
 
-            elsif Nkind (Decl) = N_Private_Type_Declaration
-              and then Tagged_Present (Decl)
-            then
+            elsif Nkind (Decl) = N_Private_Type_Declaration then
                Comp_Typ := Defining_Identifier (Decl);
 
                if not Analyzed_Unit then
-                  Decorate_Tagged_Type (Sloc (Decl), Comp_Typ, Scope);
+                  if Tagged_Present (Decl) then
+                     Decorate_Tagged_Type (Sloc (Decl), Comp_Typ, Scope);
+                  else
+                     Decorate_Incomplete_Type (Comp_Typ, Scope);
+                  end if;
                end if;
 
                Lim_Typ  := New_Internal_Shadow_Entity
@@ -4075,8 +4080,33 @@ package body Sem_Ch10 is
                Set_Parent (Lim_Typ, Parent (Comp_Typ));
                Set_From_With_Type (Lim_Typ);
 
-               Decorate_Tagged_Type (Sloc (Decl), Lim_Typ, Scope);
+               if Tagged_Present (Decl) then
+                  Decorate_Tagged_Type (Sloc (Decl), Lim_Typ, Scope);
+               else
+                  Decorate_Incomplete_Type (Lim_Typ, Scope);
+               end if;
 
+               Set_Non_Limited_View (Lim_Typ, Comp_Typ);
+
+            elsif Nkind (Decl) = N_Private_Extension_Declaration then
+               Comp_Typ := Defining_Identifier (Decl);
+
+               if not Analyzed_Unit then
+                  Decorate_Tagged_Type (Sloc (Decl), Comp_Typ, Scope);
+               end if;
+
+               --  Create shadow entity for type
+
+               Lim_Typ := New_Internal_Shadow_Entity
+                 (Kind       => Ekind (Comp_Typ),
+                  Sloc_Value => Sloc (Comp_Typ),
+                  Id_Char    => 'Z');
+
+               Set_Chars  (Lim_Typ, Chars (Comp_Typ));
+               Set_Parent (Lim_Typ, Parent (Comp_Typ));
+               Set_From_With_Type (Lim_Typ);
+
+               Decorate_Tagged_Type (Sloc (Decl), Lim_Typ, Scope);
                Set_Non_Limited_View (Lim_Typ, Comp_Typ);
 
             elsif Nkind (Decl) = N_Package_Declaration then
