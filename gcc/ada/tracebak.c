@@ -347,6 +347,17 @@ struct layout
 #define PC_ADJUST -2
 /* The minimum size of call instructions on this architecture is 2 bytes */
 
+/*----------------------------- ia64 ---------------------------------*/
+
+#elif defined (__ia64__)
+
+#define USE_GCC_UNWINDER
+
+#define PC_ADJUST -16
+/* Every call on ia64 is part of a 128 bit bundle, so an adjustment of
+   minus 16 bytes from the point of return finds the address of the
+   previous bundle. */
+
 #endif
 
 /*---------------------------------------------------------------------*
