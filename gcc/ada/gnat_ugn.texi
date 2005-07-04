@@ -2860,7 +2860,7 @@ The build procedure for this application is similar to the last
 example's.  First, compile the foreign language files to generate object
 files:
 @smallexample
-gcc -c main.c
+^gcc -c main.c^gcc -c main.c^
 @end smallexample
 
 @item
@@ -4948,14 +4948,14 @@ may not be properly initialized.
 @cindex Ada 2005 compatibility issues warnings
 For the most part Ada 2005 is upwards compatible with Ada 95,
 but there are some exceptions (for example the fact that
-@code{interface} is now a reserved word in Ada 2005. This
+@code{interface} is now a reserved word in Ada 2005). This
 switch activates several warnings to help in identifying
 and correcting such incompatibilities. The default is that
 these warnings are generated. Note that at one point Ada 2005
 was called Ada 0Y, hence the choice of character.
 
 @item -gnatwY
-@emph{Disab le warnings for Ada 2005 compatibility issues.}
+@emph{Disable warnings for Ada 2005 compatibility issues.}
 @cindex @option{-gnatwY} (@command{gcc})
 @cindex Ada 2005 compatibility issues warnings
 This switch suppresses several warnings intended to help in identifying
@@ -15049,13 +15049,31 @@ already exists, it is overwritten.
 @cindex @option{^-rnb^/NO_BACKUP^} (@code{gnatpp})
 Replace the input source file with the reformatted output without
 creating any backup copy of the input source.
+
+@item ^--eol=@var{xxx}^/END_OF_LINE=@var{xxx}^
+@cindex @option{^--eol^/END_OF_LINE^} (@code{gnatpp})
+Specifies the format of the reformatted output file. The @var{xxx}
+^string specified with the switch^option^ may be either
+@itemize @bullet
+@item ``@option{^dos^DOS^}'' MS DOS style, lines end with CR LF characters
+@item ``@option{^crlf^CRLF^}''
+the same as @option{^crlf^CRLF^}
+@item ``@option{^unix^UNIX^}'' UNIX style, lines end with LF character
+@item ``@option{^lf^LF^}''
+the same as @option{^unix^UNIX^}
+@end itemize
+
 @end table
 
 @noindent
 Options @option{^-pipe^/STANDARD_OUTPUT^},
 @option{^-o^/OUTPUT^} and
 @option{^-of^/FORCED_OUTPUT^} are allowed only if the call to gnatpp
-contains only one file to reformat
+contains only one file to reformat.
+Option
+@option{^--eol^/END_OF_LINE^}
+can not be used together
+with @option{^-pipe^/STANDARD_OUTPUT^} option.
 
 @node Other gnatpp Switches
 @subsection Other @code{gnatpp} Switches

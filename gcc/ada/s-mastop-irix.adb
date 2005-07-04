@@ -420,7 +420,6 @@ package body System.Machine_State_Operations is
    is
       pragma Warnings (Off, M);
       pragma Warnings (Off, Context);
-
    begin
       null;
    end Set_Signal_Machine_State;

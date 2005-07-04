@@ -69,7 +69,7 @@ GNAT, The GNU Ada 95 Compiler@*
 GCC version @value{version-GCC}@*
 
 @noindent
-Ada Core Technologies, Inc.
+AdaCore
 
 @menu
 * About This Guide::
@@ -149,6 +149,8 @@ Implementation Defined Pragmas
 * Pragma License::
 * Pragma Link_With::
 * Pragma Linker_Alias::
+* Pragma Linker_Constructor::
+* Pragma Linker_Destructor::
 * Pragma Linker_Section::
 * Pragma Long_Float::
 * Pragma Machine_Attribute::
@@ -678,6 +680,8 @@ consideration, the use of these pragmas should be minimized.
 * Pragma License::
 * Pragma Link_With::
 * Pragma Linker_Alias::
+* Pragma Linker_Constructor::
+* Pragma Linker_Destructor::
 * Pragma Linker_Section::
 * Pragma Long_Float::
 * Pragma Machine_Attribute::
@@ -2637,12 +2641,90 @@ Syntax:
 @smallexample @c ada
 pragma Linker_Alias (
   [Entity =>] local_NAME
-  [Alias  =>] static_string_EXPRESSION);
+  [Target =>] static_string_EXPRESSION);
 @end smallexample
 
 @noindent
-This pragma establishes a linker alias for the given named entity.  For
-further details on the exact effect, consult the GCC manual.
+@var{local_NAME} must refer to an object that is declared at the library
+level. This pragma establishes the given entity as a linker alias for the
+given target. It is equivalent to @code{__attribute__((alias))} in GNU C
+and causes @var{local_NAME} to be emitted as an alias for the symbol
+@var{static_string_EXPRESSION} in the object file, that is to say no space
+is reserved for @var{local_NAME} by the assembler and it will be resolved
+to the same address as @var{static_string_EXPRESSION} by the linker.
+
+The actual linker name for the target must be used (e.g. the fully
+encoded name with qualification in Ada, or the mangled name in C++),
+or it must be declared using the C convention with @code{pragma Import}
+or @code{pragma Export}.
+
+Not all target machines support this pragma. On some of them it is accepted
+only if @code{pragma Weak_External} has been applied to @var{local_NAME}.
+
+@smallexample @c ada
+--  Example of the use of pragma Linker_Alias
+
+package p is
+  i : Integer := 1;
+  pragma Export (C, i);
+
+  new_name_for_i : Integer;
+  pragma Linker_Alias (new_name_for_i, "i");
+end p; 
+@end smallexample
+
+@node Pragma Linker_Constructor
+@unnumberedsec Pragma Linker_Constructor
+@findex Linker_Constructor
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Linker_Constructor (procedure_LOCAL_NAME);
+@end smallexample
+
+@noindent
+@var{procedure_local_NAME} must refer to a parameterless procedure that
+is declared at the library level. A procedure to which this pragma is
+applied will be treated as an initialization routine by the linker.
+It is equivalent to @code{__attribute__((constructor))} in GNU C and
+causes @var{procedure_LOCAL_NAME} to be invoked before the entry point
+of the executable is called (or immediately after the shared library is
+loaded if the procedure is linked in a shared library), in particular
+before the Ada run-time environment is set up.
+
+Because of these specific contexts, the set of operations such a procedure
+can perform is very limited and the type of objects it can manipulate is
+essentially restricted to the elementary types. In particular, it must only
+contain code to which pragma Restrictions (No_Elaboration_Code) applies.
+
+This pragma is used by GNAT to implement auto-initialization of shared Stand
+Alone Libraries, which provides a related capability without the restrictions
+listed above. Where possible, the use of Stand Alone Libraries is preferable
+to the use of this pragma.
+
+@node Pragma Linker_Destructor
+@unnumberedsec Pragma Linker_Destructor
+@findex Linker_Destructor
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Linker_Destructor (procedure_LOCAL_NAME);
+@end smallexample
+
+@noindent
+@var{procedure_local_NAME} must refer to a parameterless procedure that
+is declared at the library level. A procedure to which this pragma is
+applied will be treated as a finalization routine by the linker.
+It is equivalent to @code{__attribute__((destructor))} in GNU C and
+causes @var{procedure_LOCAL_NAME} to be invoked after the entry point
+of the executable has exited (or immediately before the shared library
+is unloaded if the procedure is linked in a shared library), in particular
+after the Ada run-time environment is shut down.
+
+See @code{pragma Linker_Constructor} for the set of restrictions that apply
+because of these specific contexts.
 
 @node Pragma Linker_Section
 @unnumberedsec Pragma Linker_Section
@@ -2657,8 +2739,41 @@ pragma Linker_Section (
 @end smallexample
 
 @noindent
-This pragma specifies the name of the linker section for the given entity.
-For further details on the exact effect, consult the GCC manual.
+@var{local_NAME} must refer to an object that is declared at the library
+level. This pragma specifies the name of the linker section for the given
+entity. It is equivalent to @code{__attribute__((section))} in GNU C and
+causes @var{local_NAME} to be placed in the @var{static_string_EXPRESSION}
+section of the executable (assuming the linker doesn't rename the section).
+
+The compiler normally places library-level objects in standard sections
+depending on their type: procedures and functions generally go in the
+@code{.text} section, initialized variables in the @code{.data} section
+and uninitialized variables in the @code{.bss} section.
+
+Other, special sections may exist on given target machines to map special
+hardware, for example I/O ports or flash memory. This pragma is a means to
+defer the final layout of the executable to the linker, thus fully working
+at the symbolic level with the compiler.
+
+Some file formats do not support arbitrary sections so not all target
+machines support this pragma. The use of this pragma may cause a program
+execution to be erroneous if it is used to place an entity into an
+inappropriate section (e.g. a modified variable into the @code{.text}
+section). See also @code{pragma Persistent_BSS}.
+
+@smallexample @c ada
+--  Example of the use of pragma Linker_Section
+
+package IO_Card is
+  Port_A : Integer;
+  pragma Volatile (Port_A);
+  pragma Linker_Section (Port_A, ".bss.port_a");
+
+  Port_B : Integer;
+  pragma Volatile (Port_B);
+  pragma Linker_Section (Port_B, ".bss.port_b");
+end IO_Card;
+@end smallexample
 
 @node Pragma Long_Float
 @unnumberedsec Pragma Long_Float
@@ -3914,6 +4029,12 @@ The left hand side of an assignment does not count as a reference for the
 purpose of this pragma. Thus it is fine to assign to an entity for which
 pragma Unreferenced is given.
 
+Note that if a warning is desired for all calls to a given subprogram,
+regardless of whether they occur in the same unit as the subprogram
+declaration, then this pragma should not be used (calls from another
+unit would not be flagged); pragma Obsolescent can be used instead
+for this purpose (@xref{Pragma Obsolescent}).
+
 @node Pragma Unreserve_All_Interrupts
 @unnumberedsec Pragma Unreserve_All_Interrupts
 @findex Unreserve_All_Interrupts
@@ -4105,9 +4226,45 @@ pragma Weak_External ([Entity =>] local_NAME);
 @end smallexample
 
 @noindent
-This pragma specifies that the given entity should be marked as a weak
-external (one that does not have to be resolved) for the linker.  For
-further details, consult the GCC manual.
+@var{local_NAME} must refer to an object that is declared at the library
+level. This pragma specifies that the given entity should be marked as a
+weak symbol for the linker. It is equivalent to @code{__attribute__((weak))}
+in GNU C and causes @var{local_NAME} to be emitted as a weak symbol instead
+of a regular symbol, that is to say a symbol that does not have to be
+resolved by the linker if used in conjunction with a pragma Import.
+
+When a weak symbol is not resolved by the linker, its address is set to
+zero. This is useful in writing interfaces to external modules that may
+or may not be linked in the final executable, for example depending on
+configuration settings.
+
+If a program references at run time an entity to which this pragma has been
+applied, and the corresponding symbol was not resolved at link time, then
+the execution of the program is erroneous. It is not erroneous to take the
+Address of such an entity, for example to guard potential references,
+as shown in the example below.
+
+Some file formats do not support weak symbols so not all target machines
+support this pragma. 
+
+@smallexample @c ada
+--  Example of the use of pragma Weak_External
+
+package External_Module is
+  key : Integer;
+  pragma Import (C, key);
+  pragma Weak_External (key);
+  function Present return boolean;
+end External_Module;
+
+with System; use System;
+package body External_Module is
+  function Present return boolean is
+  begin
+    return key'Address /= System.Null_Address;
+  end Present;
+end External_Module;
+@end smallexample
 
 @node Implementation Defined Attributes
 @chapter Implementation Defined Attributes
