@@ -80,60 +80,83 @@ package body Ada.Tags is
 
    type Type_Specific_Data is record
       Idepth            : Natural;
+      --  Inheritance Depth Level: Used to implement the membership test
+      --  associated with single inheritance of tagged types in constant-time.
+      --  In addition it also indicates the size of the first table stored in
+      --  the Tags_Table component (see comment below).
+
       Access_Level      : Natural;
+      --  Accessibility level required to give support to Ada 2005 nested type
+      --  extensions. This feature allows safe nested type extensions by
+      --  shifting the accessibility checks to certain operations, rather than
+      --  being enforced at the type declaration. In particular, by performing
+      --  run-time accessibility checks on class-wide allocators, class-wide
+      --  function return, and class-wide stream I/O, the danger of objects
+      --  outliving their type declaration can be eliminated (Ada 2005: AI-344)
+
       Expanded_Name     : Cstring_Ptr;
       External_Tag      : Cstring_Ptr;
       HT_Link           : Tag;
-      Remotely_Callable : Boolean;
-      RC_Offset         : SSE.Storage_Offset;
-      Num_Interfaces    : Natural;
-      Tags_Table        : Tag_Table (Natural);
+      --  Components used to give support to the Ada.Tags subprograms described
+      --  in ARM 3.9
 
+      Remotely_Callable : Boolean;
+      --  Used to check ARM E.4 (18)
+
+      RC_Offset         : SSE.Storage_Offset;
+      --  Controller Offset: Used to give support to tagged controlled objects
+      --  (see Get_Deep_Controller at s-finimp)
+
+      Num_Interfaces    : Natural;
+      --  Number of abstract interface types implemented by the tagged type.
+      --  The value Idepth+Num_Interfaces indicates the end of the second table
+      --  stored in the Tags_Table component. It is used to implement the
+      --  membership test associated with interfaces (Ada 2005:AI-251)
+
+      Tags_Table : Tag_Table (0 .. 1);
       --  The size of the Tags_Table array actually depends on the tagged type
       --  to which it applies. The compiler ensures that has enough space to
       --  store all the entries of the two tables phisically stored there: the
       --  "table of ancestor tags" and the "table of interface tags". For this
       --  purpose we are using the same mechanism as for the Prims_Ptr array in
-      --  the Dispatch_Table record. See comments below for more details.
-
+      --  the Dispatch_Table record. See comments below on Prims_Ptr for
+      --  further details.
    end record;
 
    type Dispatch_Table is record
       --  Offset_To_Top : Natural;
-      --  Typeinfo_Ptr  : System.Address; -- Currently TSD is also here???
-      Prims_Ptr : Address_Array (Positive);
+      --  Typeinfo_Ptr  : System.Address;
+
+      --  According to the C++ ABI the components Offset_To_Top and
+      --  Typeinfo_Ptr are stored just "before" the dispatch table (that is,
+      --  the Prims_Ptr table), and they are referenced with negative offsets
+      --  referring to the base of the dispatch table. The _Tag (or the
+      --  VTable_Ptr in C++ terminology) must point to the base of the virtual
+      --  table, just after these components, to point to the Prims_Ptr table.
+      --  For this purpose the expander generates a Prims_Ptr table that has
+      --  enough space for these additional components, and generates code that
+      --  displaces the _Tag to point after these components.
+
+      Prims_Ptr : Address_Array (1 .. 1);
+      --  The size of the Prims_Ptr array actually depends on the tagged type
+      --  to which it applies. For each tagged type, the expander computes the
+      --  actual array size, allocates the Dispatch_Table record accordingly,
+      --  and generates code that displaces the base of the record after the
+      --  Typeinfo_Ptr component. For this reason the first two components have
+      --  been commented in the previous declaration. The access to these
+      --  components is done by means of local functions.
+      --
+      --  To avoid the use of discriminants to define the actual size of the
+      --  dispatch table, we used to declare the tag as a pointer to a record
+      --  that contains an arbitrary array of addresses, using Positive as its
+      --  index. This ensures that there are never range checks when accessing
+      --  the dispatch table, but it prevents GDB from displaying tagged types
+      --  properly. A better approach is to declare this record type as holding
+      --  small number of addresses, and to explicitly suppress checks on it.
+      --
+      --  Note that in both cases, this type is never allocated, and serves
+      --  only to declare the corresponding access type.
    end record;
-
-   --  Note on the commented out fields of the Dispatch_Table
-   --
-   --  According to the C++ ABI the components Offset_To_Top and Typeinfo_Ptr
-   --  are stored just "before" the dispatch table (that is, the Prims_Ptr
-   --  table), and they are referenced with negative offsets referring to the
-   --  base of the dispatch table. The _Tag (or the VTable_Ptr in C++ termi-
-   --  nology) must point to the base of the virtual table, just after these
-   --  components, to point to the Prims_Ptr table. For this purpose the
-   --  expander generates a Prims_Ptr table that has enough space for these
-   --  additional components, and generates code that displaces the _Tag to
-   --  point after these components.
-
-   --  The size of the Prims_Ptr array actually depends on the tagged type to
-   --  which it applies. For each tagged type, the expander computes the
-   --  actual array size, allocates the Dispatch_Table record accordingly, and
-   --  generates code that displaces the base of the record after the
-   --  Typeinfo_Ptr component. For this reason the first two components have
-   --  been commented in the previous declaration. The access to these
-   --  components is done by means of local functions.
-   --
-   --  To avoid the use of discriminants to define the actual size of the
-   --  dispatch table, we used to declare the tag as a pointer to a record
-   --  that contains an arbitrary array of addresses, using Positive as its
-   --  index. This ensures that there are never range checks when accessing
-   --  the dispatch table, but it prevents GDB from displaying tagged types
-   --  properly. A better approach is to declare this record type as holding a
-   --  small number of addresses, and to explicitly suppress checks on it.
-   --
-   --  Note that in both cases, this type is never allocated, and serves only
-   --  to declare the corresponding access type.
 
    ---------------------------------------------
    -- Unchecked Conversions for String Fields --
