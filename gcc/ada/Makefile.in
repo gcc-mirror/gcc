@@ -813,7 +813,7 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
 
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt.adb<mlib-tgt-linux.adb \
-    indepsw.adb<indepsw-linux.adb
+    indepsw.adb<indepsw-gnu.adb
 
   THREADSLIB = -lpthread
   GNATLIB_SHARED = gnatlib-shared-dual
@@ -1067,7 +1067,9 @@ ifeq ($(strip $(filter-out ibm aix%,$(manu) $(osys))),)
 endif
 
 ifeq ($(strip $(filter-out lynxos,$(osys))),)
-  TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-lynxos.adb 
+  TOOLS_TARGET_PAIRS = \
+  mlib-tgt.adb<mlib-tgt-lynxos.adb \
+  indepsw.adb<indepsw-gnu.adb
 
   ifeq ($(strip $(filter-out %86 lynxos,$(arch) $(osys))),)
     LIBGNAT_TARGET_PAIRS = \
@@ -1321,7 +1323,7 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(arch) $(osys))),)
 
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt.adb<mlib-tgt-linux.adb \
-    indepsw.adb<indepsw-linux.adb
+    indepsw.adb<indepsw-gnu.adb
 
   THREADSLIB = -lpthread
   GNATLIB_SHARED = gnatlib-shared-dual
@@ -1346,7 +1348,7 @@ ifeq ($(strip $(filter-out sparc% linux%,$(arch) $(osys))),)
 
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt.adb<mlib-tgt-linux.adb \
-    indepsw.adb<indepsw-linux.adb
+    indepsw.adb<indepsw-gnu.adb
 
   THREADSLIB = -lpthread
   GNATLIB_SHARED = gnatlib-shared-dual
@@ -1371,7 +1373,7 @@ ifeq ($(strip $(filter-out hppa% linux%,$(arch) $(osys))),)
 
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt.adb<mlib-tgt-linux.adb \
-    indepsw.adb<indepsw-linux.adb
+    indepsw.adb<indepsw-gnu.adb
 
   THREADSLIB = -lpthread
   GNATLIB_SHARED = gnatlib-shared-dual
@@ -1396,7 +1398,7 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(arch) $(osys))),)
 
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt.adb<mlib-tgt-linux.adb \
-    indepsw.adb<indepsw-linux.adb
+    indepsw.adb<indepsw-gnu.adb
 
   MISCLIB=
   THREADSLIB=-lpthread
@@ -1421,7 +1423,7 @@ ifeq ($(strip $(filter-out alpha% linux%,$(arch) $(osys))),)
 
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt.adb<mlib-tgt-linux.adb \
-    indepsw.adb<indepsw-linux.adb
+    indepsw.adb<indepsw-gnu.adb
 
   MISCLIB=
   THREADSLIB=-lpthread
@@ -1447,7 +1449,7 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
 
   TOOLS_TARGET_PAIRS =  \
     mlib-tgt.adb<mlib-tgt-linux.adb \
-    indepsw.adb<indepsw-linux.adb
+    indepsw.adb<indepsw-gnu.adb
 
   THREADSLIB=-lpthread
   GNATLIB_SHARED=gnatlib-shared-dual
