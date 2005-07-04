@@ -4913,7 +4913,19 @@ package body Sem_Ch4 is
             begin
                Actual := First (Parameter_Associations (Parent_Node));
                while Present (Actual) loop
-                  Append (New_Copy_Tree (Actual), Actuals);
+                  declare
+                     New_Actual : constant Node_Id := New_Copy_Tree (Actual);
+
+                  begin
+                     Append (New_Actual, Actuals);
+
+                     if Nkind (Actual) = N_Function_Call
+                       and then Is_Overloaded (Name (Actual))
+                     then
+                        Save_Interps (Name (Actual), Name (New_Actual));
+                     end if;
+                  end;
+
                   Next (Actual);
                end loop;
             end;
