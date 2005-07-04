@@ -4523,6 +4523,14 @@ prepend_attributes (Entity_Id gnat_entity, struct attrib ** attr_list)
 	    etype = ATTR_LINK_SECTION;
 	    break;
 
+	  case Pragma_Linker_Constructor:
+	    etype = ATTR_LINK_CONSTRUCTOR;
+	    break;
+
+	  case Pragma_Linker_Destructor:
+	    etype = ATTR_LINK_DESTRUCTOR;
+	    break;
+
 	  case Pragma_Weak_External:
 	    etype = ATTR_WEAK_EXTERNAL;
 	    break;

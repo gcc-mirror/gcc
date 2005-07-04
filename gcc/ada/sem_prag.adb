@@ -452,6 +452,13 @@ package body Sem_Prag is
       --  unit pragma that is not a compilation unit pragma, then the
       --  identifier must be visible.
 
+      function Find_Unique_Parameterless_Procedure
+        (Name : Entity_Id;
+         Arg  : Node_Id) return Entity_Id;
+      --  Used for a procedure pragma to find the unique parameterless
+      --  procedure identified by Name, returns it if it exists, otherwise
+      --  errors out and uses Arg as the pragma argument for the message.
+
       procedure Gather_Associations
         (Names : Name_List;
          Args  : out Args_List);
@@ -1075,107 +1082,41 @@ package body Sem_Prag is
 
       procedure Check_Interrupt_Or_Attach_Handler is
          Arg1_X : constant Node_Id := Expression (Arg1);
+         Handler_Proc, Proc_Scope : Entity_Id;
 
       begin
          Analyze (Arg1_X);
 
-         if not Is_Entity_Name (Arg1_X) then
-            Error_Pragma_Arg
-              ("argument of pragma% must be entity name", Arg1);
-
-         elsif Prag_Id = Pragma_Interrupt_Handler then
+         if Prag_Id = Pragma_Interrupt_Handler then
             Check_Restriction (No_Dynamic_Attachment, N);
          end if;
 
-         declare
-            Handler_Proc : Entity_Id := Empty;
-            Proc_Scope   : Entity_Id;
-            Found        : Boolean := False;
+         Handler_Proc := Find_Unique_Parameterless_Procedure (Arg1_X, Arg1);
+         Proc_Scope := Scope (Handler_Proc);
 
-         begin
-            if not Is_Overloaded (Arg1_X) then
-               Handler_Proc := Entity (Arg1_X);
+         --  On AAMP only, a pragma Interrupt_Handler is supported for
+         --  nonprotected parameterless procedures.
 
-            else
-               declare
-                  It    : Interp;
-                  Index : Interp_Index;
-
-               begin
-                  Get_First_Interp (Arg1_X, Index, It);
-                  while Present (It.Nam) loop
-                     Handler_Proc := It.Nam;
-
-                     if Ekind (Handler_Proc) = E_Procedure
-                       and then No (First_Formal (Handler_Proc))
-                     then
-                        if not Found then
-                           Found := True;
-                           Set_Entity (Arg1_X, Handler_Proc);
-                           Set_Is_Overloaded (Arg1_X, False);
-                        else
-                           Error_Pragma_Arg
-                             ("ambiguous handler name for pragma% ", Arg1);
-                        end if;
-                     end if;
-
-                     Get_Next_Interp (Index, It);
-                  end loop;
-
-                  if not Found then
-                     Error_Pragma_Arg
-                       ("argument of pragma% must be parameterless procedure",
-                        Arg1);
-                  else
-                     Handler_Proc := Entity (Arg1_X);
-                  end if;
-               end;
-            end if;
-
-            Proc_Scope := Scope (Handler_Proc);
-
-            --  On AAMP only, a pragma Interrupt_Handler is supported for
-            --  nonprotected parameterless procedures.
-
-            if AAMP_On_Target
-              and then Prag_Id = Pragma_Interrupt_Handler
-            then
-               if Ekind (Handler_Proc) /= E_Procedure then
-                  Error_Pragma_Arg
-                    ("argument of pragma% must be a procedure", Arg1);
-               end if;
-
-            elsif Ekind (Handler_Proc) /= E_Procedure
-              or else Ekind (Proc_Scope) /= E_Protected_Type
-            then
+         if not AAMP_On_Target
+           or else Prag_Id = Pragma_Attach_Handler
+         then
+            if Ekind (Proc_Scope) /= E_Protected_Type then
                Error_Pragma_Arg
                  ("argument of pragma% must be protected procedure", Arg1);
             end if;
 
-            if (not AAMP_On_Target or else Prag_Id = Pragma_Attach_Handler)
-              and then Ekind (Proc_Scope) = E_Protected_Type
-            then
-               if Parent (N) /=
-                    Protected_Definition (Parent (Proc_Scope))
-               then
-                  Error_Pragma ("pragma% must be in protected definition");
-               end if;
+            if Parent (N) /= Protected_Definition (Parent (Proc_Scope)) then
+               Error_Pragma ("pragma% must be in protected definition");
             end if;
+         end if;
 
-            if not Is_Library_Level_Entity (Proc_Scope)
-              or else (AAMP_On_Target
-                        and then not Is_Library_Level_Entity (Handler_Proc))
-            then
-               Error_Pragma_Arg
-                 ("pragma% requires library-level entity", Arg1);
-            end if;
-
-            if Present (First_Formal (Handler_Proc)) then
-               Error_Pragma_Arg
-                 ("argument of pragma% must be parameterless procedure",
-                  Arg1);
-            end if;
-         end;
+         if not Is_Library_Level_Entity (Proc_Scope)
+           or else (AAMP_On_Target
+                     and then not Is_Library_Level_Entity (Handler_Proc))
+         then
+            Error_Pragma_Arg
+              ("argument for pragma% must be library level entity", Arg1);
+         end if;
       end Check_Interrupt_Or_Attach_Handler;
 
       -------------------------------------------
@@ -1614,8 +1555,73 @@ package body Sem_Prag is
          else
             Analyze (Id);
          end if;
-
       end Find_Program_Unit_Name;
+
+      -----------------------------------------
+      -- Find_Unique_Parameterless_Procedure --
+      -----------------------------------------
+
+      function Find_Unique_Parameterless_Procedure
+        (Name : Entity_Id;
+         Arg  : Node_Id) return Entity_Id
+      is
+         Proc : Entity_Id := Empty;
+
+      begin
+         --  The body of this procedure needs some comments ???
+
+         if not Is_Entity_Name (Name) then
+            Error_Pragma_Arg
+              ("argument of pragma% must be entity name", Arg);
+
+         elsif not Is_Overloaded (Name) then
+            Proc := Entity (Name);
+
+            if Ekind (Proc) /= E_Procedure
+                 or else Present (First_Formal (Proc)) then
+               Error_Pragma_Arg
+                 ("argument of pragma% must be parameterless procedure", Arg);
+            end if;
+
+         else
+            declare
+               Found : Boolean := False;
+               It    : Interp;
+               Index : Interp_Index;
+
+            begin
+               Get_First_Interp (Name, Index, It);
+               while Present (It.Nam) loop
+                  Proc := It.Nam;
+
+                  if Ekind (Proc) = E_Procedure
+                    and then No (First_Formal (Proc))
+                  then
+                     if not Found then
+                        Found := True;
+                        Set_Entity (Name, Proc);
+                        Set_Is_Overloaded (Name, False);
+                     else
+                        Error_Pragma_Arg
+                          ("ambiguous handler name for pragma% ", Arg);
+                     end if;
+                  end if;
+
+                  Get_Next_Interp (Index, It);
+               end loop;
+
+               if not Found then
+                  Error_Pragma_Arg
+                    ("argument of pragma% must be parameterless procedure",
+                     Arg);
+               else
+                  Proc := Entity (Name);
+               end if;
+            end;
+         end if;
+
+         return Proc;
+      end Find_Unique_Parameterless_Procedure;
 
       -------------------------
       -- Gather_Associations --
@@ -2168,7 +2174,7 @@ package body Sem_Prag is
             Comp_Unit := Get_Source_Unit (E);
             Set_Convention_From_Pragma (E);
 
-            --  Treat a pragma Import as an implicit body, for GPS use.
+            --  Treat a pragma Import as an implicit body, for GPS use
 
             if Prag_Id = Pragma_Import then
                   Generate_Reference (E, Id, 'b');
@@ -4403,7 +4409,7 @@ package body Sem_Prag is
 
             Lib_Entity := Find_Lib_Unit_Name;
 
-            --  This pragma should only apply to a RCI unit (RM E.2.3(23)).
+            --  This pragma should only apply to a RCI unit (RM E.2.3(23))
 
             if Present (Lib_Entity)
               and then not Debug_Flag_U
@@ -7659,14 +7665,14 @@ package body Sem_Prag is
 
          --  pragma Linker_Alias (
          --      [Entity =>]  LOCAL_NAME
-         --      [Alias  =>]  static_string_EXPRESSION);
+         --      [Target =>]  static_string_EXPRESSION);
 
          when Pragma_Linker_Alias =>
             GNAT_Pragma;
-            Check_Arg_Order ((Name_Entity, Name_Alias));
+            Check_Arg_Order ((Name_Entity, Name_Target));
             Check_Arg_Count (2);
             Check_Optional_Identifier (Arg1, Name_Entity);
-            Check_Optional_Identifier (Arg2, Name_Alias);
+            Check_Optional_Identifier (Arg2, Name_Target);
             Check_Arg_Is_Library_Level_Local_Name (Arg1);
             Check_Arg_Is_Static_Expression (Arg2, Standard_String);
 
@@ -7680,6 +7686,52 @@ package body Sem_Prag is
             else
                Set_Has_Gigi_Rep_Item (Entity (Expression (Arg1)));
             end if;
+
+         ------------------------
+         -- Linker_Constructor --
+         ------------------------
+
+         --  pragma Linker_Constructor (procedure_LOCAL_NAME);
+
+         --  Code is shared with Linker_Destructor
+
+         -----------------------
+         -- Linker_Destructor --
+         -----------------------
+
+         --  pragma Linker_Destructor (procedure_LOCAL_NAME);
+
+         when Pragma_Linker_Constructor |
+              Pragma_Linker_Destructor =>
+         Linker_Constructor : declare
+            Arg1_X : Node_Id;
+            Proc   : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_Arg_Count (1);
+            Check_No_Identifiers;
+            Check_Arg_Is_Local_Name (Arg1);
+            Arg1_X := Expression (Arg1);
+            Analyze (Arg1_X);
+            Proc := Find_Unique_Parameterless_Procedure (Arg1_X, Arg1);
+
+            if not Is_Library_Level_Entity (Proc) then
+               Error_Pragma_Arg
+                ("argument for pragma% must be library level entity", Arg1);
+            end if;
+
+            --  The only processing required is to link this item on to the
+            --  list of rep items for the given entity. This is accomplished
+            --  by the call to Rep_Item_Too_Late (when no error is detected
+            --  and False is returned).
+
+            if Rep_Item_Too_Late (Proc, N) then
+               return;
+            else
+               Set_Has_Gigi_Rep_Item (Proc);
+            end if;
+         end Linker_Constructor;
 
          --------------------
          -- Linker_Options --
@@ -10555,6 +10607,8 @@ package body Sem_Prag is
       Pragma_License                      => -1,
       Pragma_Link_With                    => -1,
       Pragma_Linker_Alias                 => -1,
+      Pragma_Linker_Constructor           => -1,
+      Pragma_Linker_Destructor            => -1,
       Pragma_Linker_Options               => -1,
       Pragma_Linker_Section               => -1,
       Pragma_List                         => -1,

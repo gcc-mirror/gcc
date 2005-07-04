@@ -262,6 +262,8 @@ package body Snames is
      "keep_names#" &
      "link_with#" &
      "linker_alias#" &
+     "linker_constructor#" &
+     "linker_destructor#" &
      "linker_options#" &
      "linker_section#" &
      "list#" &
@@ -322,7 +324,6 @@ package body Snames is
      "default#" &
      "dll#" &
      "win32#" &
-     "alias#" &
      "as_is#" &
      "attribute_name#" &
      "body_file_name#" &

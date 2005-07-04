@@ -301,8 +301,15 @@ extern int force_global;
 
 /* Data structures used to represent attributes.  */
 
-enum attr_type {ATTR_MACHINE_ATTRIBUTE, ATTR_LINK_ALIAS,
-		ATTR_LINK_SECTION, ATTR_WEAK_EXTERNAL};
+enum attr_type
+{
+  ATTR_MACHINE_ATTRIBUTE,
+  ATTR_LINK_ALIAS,
+  ATTR_LINK_SECTION,
+  ATTR_LINK_CONSTRUCTOR,
+  ATTR_LINK_DESTRUCTOR,
+  ATTR_WEAK_EXTERNAL
+};
 
 struct attrib
 {
@@ -358,6 +365,9 @@ enum standard_datatypes
 
 extern GTY(()) tree gnat_std_decls[(int) ADT_LAST];
 extern GTY(()) tree gnat_raise_decls[(int) LAST_REASON_CODE + 1];
+
+extern GTY(()) tree static_ctors;
+extern GTY(()) tree static_dtors;
 
 #define longest_float_type_node gnat_std_decls[(int) ADT_longest_float_type]
 #define void_type_decl_node gnat_std_decls[(int) ADT_void_type_decl]

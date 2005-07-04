@@ -35,6 +35,7 @@
 #include "rtl.h"
 #include "expr.h"
 #include "ggc.h"
+#include "cgraph.h"
 #include "function.h"
 #include "except.h"
 #include "debug.h"
@@ -164,6 +165,7 @@ static tree pos_to_constructor (Node_Id, tree, Entity_Id);
 static tree maybe_implicit_deref (tree);
 static tree gnat_stabilize_reference_1 (tree, bool);
 static void annotate_with_node (tree, Node_Id);
+static void build_global_cdtor (int, tree *);
 
 
 /* This is the main program of the back-end.  It sets up all the table
@@ -410,7 +412,11 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	       && (! DECL_RENAMING_GLOBAL_P (gnu_result)
 		   || global_bindings_p ())
 	       /* Make sure it's an lvalue like INDIRECT_REF.  */
-	       && (DECL_P (renamed_obj) || REFERENCE_CLASS_P (renamed_obj)))
+	       && (DECL_P (renamed_obj)
+		   || REFERENCE_CLASS_P (renamed_obj)
+		   || (TREE_CODE (renamed_obj) == VIEW_CONVERT_EXPR
+		       && (DECL_P (TREE_OPERAND (renamed_obj, 0))
+			   || REFERENCE_CLASS_P (TREE_OPERAND (renamed_obj,0))))))
 	gnu_result = renamed_obj;
       else
 	gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE,
@@ -2405,7 +2411,7 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   Sloc_to_locus (Sloc (gnat_unit_entity), &cfun->function_end_locus);
   cfun = 0;
 
-      /* For a body, first process the spec if there is one. */
+  /* For a body, first process the spec if there is one. */
   if (Nkind (Unit (gnat_node)) == N_Package_Body
       || (Nkind (Unit (gnat_node)) == N_Subprogram_Body
 	      && !Acts_As_Spec (gnat_node)))
@@ -2445,6 +2451,15 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   /* Generate elaboration code for this unit, if necessary, and say whether
      we did or not.  */
   pop_stack (&gnu_elab_proc_stack);
+
+  /* Generate functions to call static constructors and destructors
+     for targets that do not support .ctors/.dtors sections.  These
+     functions have magic names which are detected by collect2.  */
+  if (static_ctors)
+    build_global_cdtor ('I', &static_ctors);
+
+  if (static_dtors)
+    build_global_cdtor ('D', &static_dtors);
 }
 
 /* This function is the driver of the GNAT to GCC tree transformation
@@ -5353,8 +5368,8 @@ addressable_p (tree gnu_expr)
 
     case COMPONENT_REF:
       return (!DECL_BIT_FIELD (TREE_OPERAND (gnu_expr, 1))
-	      && (!DECL_NONADDRESSABLE_P (TREE_OPERAND (gnu_expr, 1))
-		  || !flag_strict_aliasing)
+	      && !(STRICT_ALIGNMENT
+		   && DECL_NONADDRESSABLE_P (TREE_OPERAND (gnu_expr, 1)))
 	      && addressable_p (TREE_OPERAND (gnu_expr, 0)));
 
     case ARRAY_REF:  case ARRAY_RANGE_REF:
@@ -5858,6 +5873,28 @@ gnat_stabilize_reference_1 (tree e, bool force)
   TREE_THIS_VOLATILE (result) = TREE_THIS_VOLATILE (e);
   TREE_SIDE_EFFECTS (result) |= TREE_SIDE_EFFECTS (e);
   return result;
+}
+
+/* Build a global constructor or destructor function.  METHOD_TYPE gives
+   the type of the function and CDTORS points to the list of constructor
+   or destructor functions to be invoked.  FIXME: Migrate into cgraph.  */
+
+static void
+build_global_cdtor (int method_type, tree *cdtors)
+{
+  tree body = 0;
+
+  for (; *cdtors; *cdtors = TREE_CHAIN (*cdtors))
+    {
+      tree fn = TREE_VALUE (*cdtors);
+      tree fntype = TREE_TYPE (fn);
+      tree fnaddr = build1 (ADDR_EXPR, build_pointer_type (fntype), fn);
+      tree fncall = build3 (CALL_EXPR, TREE_TYPE (fntype), fnaddr, NULL_TREE,
+			    NULL_TREE);
+      append_to_statement_list (fncall, &body);
+    }
+
+  cgraph_build_static_cdtor (method_type, body, DEFAULT_INIT_PRIORITY);
 }
 
 extern char *__gnat_to_canonical_file_spec (char *);

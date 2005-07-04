@@ -1485,43 +1485,8 @@ package body Exp_Util is
    ----------------------
 
    procedure Force_Evaluation (Exp : Node_Id; Name_Req : Boolean := False) is
-      Component_In_Lhs : Boolean := False;
-      Par              : Node_Id;
-
    begin
-      --  Loop to determine whether there is a component reference in the left
-      --  hand side if Exp appears on the left side of an assignment statement.
-      --  Needed to determine if form of result must be a variable.
-
-      Par := Exp;
-      while Present (Par)
-        and then
-         (Nkind (Par) = N_Selected_Component
-            or else
-          Nkind (Par) = N_Indexed_Component)
-      loop
-         if Nkind (Parent (Par)) = N_Assignment_Statement
-           and then Par = Name (Parent (Par))
-         then
-            Component_In_Lhs := True;
-            exit;
-         else
-            Par := Parent (Par);
-         end if;
-      end loop;
-
-      --  If the expression is a selected component, it is being evaluated as
-      --  part of a discriminant check. If it is part of a left-hand side, this
-      --  is the last use of its value and it is safe to create a renaming for
-      --  it, rather than a temporary. In addition, if it is not an addressable
-      --  field, creating a temporary may be a problem for gigi, or might drop
-      --  the value of the assignment. Therefore, if the expression is on the
-      --  lhs of an assignment, remove side effects without requiring a
-      --  temporary, and create a renaming. (See remove_side_effects for
-      --  details).
-
-      Remove_Side_Effects
-        (Exp, Name_Req, Variable_Ref => not Component_In_Lhs);
+      Remove_Side_Effects (Exp, Name_Req, Variable_Ref => True);
    end Force_Evaluation;
 
    ------------------------
@@ -3828,10 +3793,37 @@ package body Exp_Util is
 
       Scope_Suppress := (others => True);
 
+      --  If it is a scalar type and we need to capture the value, just
+      --  make a copy.  Likewise for a function call.  And if we have a
+      --  volatile variable and Nam_Req is not set (see comments above
+      --  for Side_Effect_Free).
+
+      if Is_Elementary_Type (Exp_Type)
+        and then (Variable_Ref
+                   or else Nkind (Exp) = N_Function_Call
+                   or else (not Name_Req
+                             and then Is_Entity_Name (Exp)
+                             and then Treat_As_Volatile (Entity (Exp))))
+      then
+
+         Def_Id := Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+         Set_Etype (Def_Id, Exp_Type);
+         Res := New_Reference_To (Def_Id, Loc);
+
+         E :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Def_Id,
+             Object_Definition   => New_Reference_To (Exp_Type, Loc),
+             Constant_Present    => True,
+             Expression          => Relocate_Node (Exp));
+
+         Set_Assignment_OK (E);
+         Insert_Action (Exp, E);
+
       --  If the expression has the form v.all then we can just capture
       --  the pointer, and then do an explicit dereference on the result.
 
-      if Nkind (Exp) = N_Explicit_Dereference then
+      elsif Nkind (Exp) = N_Explicit_Dereference then
          Def_Id :=
            Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
          Res :=
@@ -3873,86 +3865,6 @@ package body Exp_Util is
          Scope_Suppress := Svg_Suppress;
          return;
 
-      --  For expressions that denote objects, we can use a renaming scheme.
-      --  We skip using this if we have a volatile variable and we do not
-      --  have Nam_Req set true (see comments above for Side_Effect_Free).
-      --  We also skip this scheme for class-wide expressions in order to
-      --  avoid recursive expansion (see Expand_N_Object_Renaming_Declaration)
-      --  If the object is a function call, we need to create a temporary and
-      --  not a renaming.
-
-      --  Note that we could use ordinary object declarations in the case of
-      --  expressions not appearing as lvalues. That is left as a possible
-      --  optimization in the future but we prefer to generate renamings
-      --  right now, since we may indeed be transforming an lvalue.
-
-      elsif Is_Object_Reference (Exp)
-        and then Nkind (Exp) /= N_Function_Call
-        and then not Variable_Ref
-        and then (Name_Req
-                   or else not Is_Entity_Name (Exp)
-                   or else not Treat_As_Volatile (Entity (Exp)))
-        and then not Is_Class_Wide_Type (Exp_Type)
-      then
-         Def_Id := Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
-
-         if Nkind (Exp) = N_Selected_Component
-           and then Nkind (Prefix (Exp)) = N_Function_Call
-           and then Is_Array_Type (Etype (Exp))
-         then
-            --  Avoid generating a variable-sized temporary, by generating
-            --  the renaming declaration just for the function call. The
-            --  transformation could be refined to apply only when the array
-            --  component is constrained by a discriminant???
-
-            Res :=
-              Make_Selected_Component (Loc,
-                Prefix => New_Occurrence_Of (Def_Id, Loc),
-                Selector_Name => Selector_Name (Exp));
-
-            Insert_Action (Exp,
-              Make_Object_Renaming_Declaration (Loc,
-                Defining_Identifier => Def_Id,
-                Subtype_Mark        =>
-                  New_Reference_To (Base_Type (Etype (Prefix (Exp))), Loc),
-                Name                => Relocate_Node (Prefix (Exp))));
-
-            --  The temporary must be elaborated by gigi, and is of course
-            --  not to be replaced in-line by the expression it renames,
-            --  which would defeat the purpose of removing the side-effect.
-
-            Set_Is_Renaming_Of_Object (Def_Id, False);
-
-         else
-            Res := New_Reference_To (Def_Id, Loc);
-
-            Insert_Action (Exp,
-              Make_Object_Renaming_Declaration (Loc,
-                Defining_Identifier => Def_Id,
-                Subtype_Mark        => New_Reference_To (Exp_Type, Loc),
-                Name                => Relocate_Node (Exp)));
-
-            Set_Is_Renaming_Of_Object (Def_Id, False);
-         end if;
-
-      --  If it is a scalar type, just make a copy
-
-      elsif Is_Elementary_Type (Exp_Type) then
-         Def_Id := Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
-         Set_Etype (Def_Id, Exp_Type);
-         Res := New_Reference_To (Def_Id, Loc);
-
-         E :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Def_Id,
-             Object_Definition   => New_Reference_To (Exp_Type, Loc),
-             Constant_Present    => True,
-             Expression          => Relocate_Node (Exp));
-
-         Set_Assignment_OK (E);
-         Insert_Action (Exp, E);
-
-      --  Always use a renaming for an unchecked conversion
       --  If this is an unchecked conversion that Gigi can't handle, make
       --  a copy or a use a renaming to capture the value.
 
@@ -3988,6 +3900,56 @@ package body Exp_Util is
             Set_Assignment_OK (E);
             Insert_Action (Exp, E);
          end if;
+
+      --  For expressions that denote objects, we can use a renaming scheme.
+      --  We skip using this if we have a volatile variable and we do not
+      --  have Nam_Req set true (see comments above for Side_Effect_Free).
+
+      elsif Is_Object_Reference (Exp)
+        and then Nkind (Exp) /= N_Function_Call
+        and then (Name_Req
+                   or else not Is_Entity_Name (Exp)
+                   or else not Treat_As_Volatile (Entity (Exp)))
+      then
+         Def_Id := Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+
+         if Nkind (Exp) = N_Selected_Component
+           and then Nkind (Prefix (Exp)) = N_Function_Call
+           and then Is_Array_Type (Etype (Exp))
+         then
+            --  Avoid generating a variable-sized temporary, by generating
+            --  the renaming declaration just for the function call. The
+            --  transformation could be refined to apply only when the array
+            --  component is constrained by a discriminant???
+
+            Res :=
+              Make_Selected_Component (Loc,
+                Prefix => New_Occurrence_Of (Def_Id, Loc),
+                Selector_Name => Selector_Name (Exp));
+
+            Insert_Action (Exp,
+              Make_Object_Renaming_Declaration (Loc,
+                Defining_Identifier => Def_Id,
+                Subtype_Mark        =>
+                  New_Reference_To (Base_Type (Etype (Prefix (Exp))), Loc),
+                Name                => Relocate_Node (Prefix (Exp))));
+
+         else
+            Res := New_Reference_To (Def_Id, Loc);
+
+            Insert_Action (Exp,
+              Make_Object_Renaming_Declaration (Loc,
+                Defining_Identifier => Def_Id,
+                Subtype_Mark        => New_Reference_To (Exp_Type, Loc),
+                Name                => Relocate_Node (Exp)));
+
+         end if;
+
+         --  The temporary must be elaborated by gigi, and is of course
+         --  not to be replaced in-line by the expression it renames,
+         --  which would defeat the purpose of removing the side-effect.
+
+         Set_Is_Renaming_Of_Object (Def_Id, False);
 
       --  Otherwise we generate a reference to the value
 
