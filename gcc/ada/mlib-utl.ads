@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2001-2004, Ada Core Technologies, Inc           --
+--            Copyright (C) 2001-2005, Ada Core Technologies, Inc           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,9 +29,6 @@
 
 package MLib.Utl is
 
-   No_Argument_List : constant Argument_List := (1 .. 0 => null);
-   --  Comment needed ???
-
    procedure Delete_File (Filename : in String);
    --  Delete the file Filename
    --  Why is this different from the standard OS_Lib routine???
@@ -43,18 +40,18 @@ package MLib.Utl is
       Options_2   : Argument_List;
       Driver_Name : Name_Id := No_Name);
    --  Driver_Name indicates the "driver" to invoke; by default, the "driver"
-   --  is gcc.
-   --  This procedure invokes the driver to create a shared library.
+   --  is gcc. This procedure invokes the driver to create a shared library.
    --  Options are passed to gcc before the objects, Options_2 after.
-   --  Output_File is the name of the library file to create.
-   --  Objects are the names of the object files to put in the library.
+   --  Output_File is the name of the library file to create. Objects are the
+   --  names of the object files to put in the library.
 
    procedure Ar
      (Output_File : String;
       Objects     : Argument_List);
-   --  Run ar to move all the binaries inside the archive.
-   --  If ranlib is on the path, run it also.
-   --  Arguments need documenting ???
+   --  Run ar to move all the binaries inside the archive. If ranlib is on the
+   --  path, run it also. Output_File is the path name of the archive to
+   --  create. Objects is the list of the path names of the object files to be
+   --  put in the archive.
 
    function Lib_Directory return String;
    --  Return the directory containing libgnat

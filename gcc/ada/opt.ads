@@ -1012,6 +1012,10 @@ package Opt is
    --  Set to True if -h (-gnath for the compiler) switch encountered
    --  requesting usage information
 
+   Use_Pragma_Linker_Constructor : Boolean := False;
+   --  GNATBIND
+   --  True if pragma Linker_Constructor applies to adainit
+
    Use_VADS_Size : Boolean := False;
    --  GNAT
    --  Set to True if a valid pragma Use_VADS_Size is processed
