@@ -1,5 +1,9 @@
 2005-07-04  Diego Novillo  <dnovillo@redhat.com>
 
+	* tree-ssa-structalias.c: Don't include expr.h.
+
+2005-07-04  Diego Novillo  <dnovillo@redhat.com>
+
 	* tree-iterator.h (TSI_NEW_STMT, TSI_SAME_STMT): Fix
 	comments.
 
