@@ -1,3 +1,7 @@
+2005-07-05  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* Makefile.in (final.o): Fix dependencies.
+
 2005-07-05  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/22013
