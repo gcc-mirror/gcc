@@ -3,7 +3,7 @@
 	* gcc.dg/compare1.c: Add -fno-short-enums.  Don't skip on any
 	target.
 	* gcc.dg/compare9.c: Use -fshort-enums instead of
-	-fshort-enums.  Change the last test to dg-bogus.
+	-fno-short-enums.  Change the last test to dg-bogus.
 
 2005-07-04  Kazu Hirata  <kazu@codesourcery.com>
 
