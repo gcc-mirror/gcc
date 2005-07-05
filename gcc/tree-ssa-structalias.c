@@ -1849,13 +1849,14 @@ get_constraint_exp_from_ssa_var (tree t)
 
   cexpr.type = SCALAR;
   
-  if (TREE_READONLY (t))
+  cexpr.var = get_id_for_tree (t);
+  /* If we determine the result is "anything", and we know this is readonly,
+     say it points to readonly memory instead.  */
+  if (cexpr.var == anything_id && TREE_READONLY (t))
     {
       cexpr.type = ADDRESSOF;
       cexpr.var = readonly_id;
     }
-  else
-    cexpr.var = get_id_for_tree (t);    
     
   cexpr.offset = 0;
   return cexpr;
