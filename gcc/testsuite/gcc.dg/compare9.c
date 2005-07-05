@@ -1,11 +1,10 @@
 /* Test for a bogus warning on comparison between signed and unsigned.
    This was inspired by code in gcc.  This testcase is identical to
-   compare1.c except that we add -fno-short-enums to accomodate
-   targets with short enums being default, such as arm*-*-eabi* and
-   arm*-*-symbianelf*.  */
+   compare1.c except that we use -fshort-enums here and do not expect
+   a warning from case 4.  */
 
 /* { dg-do compile } */
-/* { dg-options "-fno-short-enums -Wsign-compare" } */
+/* { dg-options "-fshort-enums -Wsign-compare" } */
 
 int tf = 1;
 
@@ -38,5 +37,5 @@ int h(enum mm2 x)
 
 int i(enum mm2 x)
 {
-  return x == (tf?DI2:-1); /* { dg-warning "signed and unsigned" "case 4" } */
+  return x == (tf?DI2:-1); /* { dg-bogus "signed and unsigned" "case 4" } */
 }
