@@ -1,3 +1,7 @@
+2005-07-05  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* testsuite/libjava.compile/PR19674.java: New test.
+
 2005-07-05  Aaron Luchko  <aluchko@redhat.com>
 
 	* gnu/classpath/jdwp/processor/StringReferenceCommandSet.java:
