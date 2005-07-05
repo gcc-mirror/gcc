@@ -34,7 +34,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "basic-block.h"
 #include "output.h"
 #include "errors.h"
-#include "expr.h"
 #include "diagnostic.h"
 #include "tree.h"
 #include "c-common.h"
