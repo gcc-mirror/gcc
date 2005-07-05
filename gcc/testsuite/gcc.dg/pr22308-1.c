@@ -9,5 +9,5 @@ struct foo { const int z; };
 void
 bar (void)
 {
-  t = s; /* { dg-error "error: assignment of read-only variable 't'" } */
+  t = s; /* { dg-error "error: assignment of read-only variable `t'" } */
 }
