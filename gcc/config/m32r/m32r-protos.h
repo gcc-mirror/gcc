@@ -29,7 +29,6 @@ extern void   m32r_init (void);
 extern void   m32r_init_expanders (void);
 extern unsigned m32r_compute_frame_size (int);
 extern void   m32r_expand_prologue (void);
-extern void   m32r_finalize_pic (void);
 extern int    direct_return (void);
 extern void   m32r_load_pic_register (void);
 
