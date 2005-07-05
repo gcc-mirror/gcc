@@ -5,6 +5,7 @@
 	standard output as a string.
 
 2005-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
 
 	* s-mastop-tru64.adb (Pop_Frame): Use exc_lookup_function_entry to
 	fetch a code-range descriptor associated with the machine state. On
