@@ -1,3 +1,13 @@
+2005-07-05  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
+
+	* config/m32r/m32r-protos.h: Remove m32r_finalize_pic.
+	* config/m32r/m32r.c (m32r_compute_frame_size,
+	m32r_expand_prologue): Take current_function_profile into
+	account whenever we reference
+	current_function_uses_pic_offset_table.
+	(m32r_finalize_pic): Remove.
+	* config/m32r/m32r.h (FINALIZE_PIC): Likewise.
+
 2005-07-05  Kazu Hirata  <kazu@codesourcery.com>
 
 	* Makefile.in (stamp-as): Use $(ORIGINAL_AS_FOR_TARGET)
