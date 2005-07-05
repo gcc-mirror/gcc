@@ -1320,6 +1320,7 @@ interface_member_declaration:
 		{ end_class_declaration (1); }
 |	interface_declaration	/* Added, JDK1.1 inner interfaces */
 		{ end_class_declaration (1); }
+|	empty_statement
 ;
 
 constant_declaration:

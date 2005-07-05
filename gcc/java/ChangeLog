@@ -1,3 +1,9 @@
+2005-07-05  Bryce McKinlay  <mckinlay@redhat.com>
+
+        PR java/19674
+        * parse.y (interface_member_declaration): Allow empty statements in
+        interface declarations.
+
 2005-07-05  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.in (parse.o): Adjust dependencies.
