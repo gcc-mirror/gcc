@@ -2790,9 +2790,6 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 
       val = build1 (ADDR_EXPR, argtype, arg);
 
-      if (TREE_CODE (arg) == COMPOUND_LITERAL_EXPR)
-	TREE_INVARIANT (val) = TREE_CONSTANT (val) = 1;
-
       return val;
 
     default:
@@ -8141,4 +8138,25 @@ c_objc_common_truthvalue_conversion (tree expr)
   /* ??? Should we also give an error for void and vectors rather than
      leaving those to give errors later?  */
   return c_common_truthvalue_conversion (expr);
+}
+
+
+/* Convert EXPR to a contained DECL, updating *TC, *TI and *SE as
+   required.  */
+
+tree
+c_expr_to_decl (tree expr, bool *tc ATTRIBUTE_UNUSED,
+		bool *ti ATTRIBUTE_UNUSED, bool *se)
+{
+  if (TREE_CODE (expr) == COMPOUND_LITERAL_EXPR)
+    {
+      tree decl = COMPOUND_LITERAL_EXPR_DECL (expr);
+      /* Executing a compound literal inside a function reinitializes
+	 it.  */
+      if (!TREE_STATIC (decl))
+	*se = true;
+      return decl;
+    }
+  else
+    return expr;
 }
