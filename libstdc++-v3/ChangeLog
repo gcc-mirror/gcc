@@ -1,3 +1,33 @@
+2005-07-05  Paolo Carlini  <pcarlini@suse.de>
+
+	Add class __versa_string, a versatile "basic_string-type" class:
+	an additional, non-standard, template parameter allows to specify
+	the preferred base class. Two are provided: __rc_string_base,
+	which implements a behavior very similar to our standard string,
+	and __sso_string_base, not reference-counted and optimized for
+	short strings. 
+	* include/ext/rc_string_base.h: New.
+	* include/ext/sso_string_base.h: Likewise.
+	* include/ext/vstring.h: Likewise.
+	* include/ext/vstring.tcc: Likewise.
+	* include/ext/vstring_fwd.h: Likewise.
+	* include/ext/vstring_util.h: Likewise.
+	* include/Makefile.am: Add.
+	* include/Makefile.in: Regenerate.
+	* testsuite/ext/vstring/explicit_instantiation/1.cc: New.
+	* testsuite/ext/vstring/explicit_instantiation/2.cc: Likewise.
+	* testsuite/ext/vstring/explicit_instantiation/char/1.cc: Likewise.
+	* testsuite/ext/vstring/explicit_instantiation/wchar_t/1.cc: Likewise.
+
+	* Makefile.in: Regenerate with autotools 1.9.3 (to date, the version
+	officially used by v3).
+	* aclocal.m4: Likewise.
+	* libmath/Makefile.in: Likewise.
+	* libsupc++/Makefile.in: Likewise.
+	* po/Makefile.in: Likewise.
+	* src/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
 2005-07-01  Paolo Carlini  <pcarlini@suse.de>
 
         Port from libstdcxx_so_7-branch:
