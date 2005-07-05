@@ -83,6 +83,11 @@
 #include "expr.h"
 #include "params.h"
 #include "toplev.h"
+#include "tree-pass.h"
+
+#ifndef HAVE_conditional_execution
+#define HAVE_conditional_execution 0
+#endif
 
 /* The number of rounds.  In most cases there will only be 4 rounds, but
    when partitioning hot and cold basic blocks into separate sections of
@@ -1894,8 +1899,6 @@ reorder_basic_blocks (unsigned int flags)
   if (targetm.cannot_modify_jumps_p ())
     return;
 
-  timevar_push (TV_REORDER_BLOCKS);
-
   cfg_layout_initialize (flags);
 
   set_edge_can_fallthru_flag ();
@@ -1931,8 +1934,6 @@ reorder_basic_blocks (unsigned int flags)
   cfg_layout_finalize ();
   if (flag_reorder_blocks_and_partition)
     verify_hot_cold_block_grouping ();
-
-  timevar_pop (TV_REORDER_BLOCKS);
 }
 
 /* Determine which partition the first basic block in the function
@@ -1970,7 +1971,14 @@ insert_section_boundary_note (void)
    which can seriously pessimize code with many computed jumps in the source
    code, such as interpreters.  See e.g. PR15242.  */
 
-void
+static bool
+gate_duplicate_computed_gotos (void)
+{
+  return (optimize > 0 && flag_expensive_optimizations && !optimize_size);
+}
+
+
+static void
 duplicate_computed_gotos (void)
 {
   basic_block bb, new_bb;
@@ -1982,8 +1990,6 @@ duplicate_computed_gotos (void)
 
   if (targetm.cannot_modify_jumps_p ())
     return;
-
-  timevar_push (TV_REORDER_BLOCKS);
 
   cfg_layout_initialize (0);
 
@@ -2076,9 +2082,25 @@ done:
   cfg_layout_finalize ();
 
   BITMAP_FREE (candidates);
-
-  timevar_pop (TV_REORDER_BLOCKS);
 }
+
+struct tree_opt_pass pass_duplicate_computed_gotos =
+{
+  NULL,                                 /* name */
+  gate_duplicate_computed_gotos,        /* gate */
+  duplicate_computed_gotos,             /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_REORDER_BLOCKS,                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  0,                                    /* todo_flags_finish */
+  0                                     /* letter */
+};
+
 
 /* This function is the main 'entrance' for the optimization that
    partitions hot and cold basic blocks into separate sections of the
@@ -2169,3 +2191,104 @@ partition_hot_cold_basic_blocks (void)
 
   cfg_layout_finalize();
 }
+
+static bool
+gate_handle_reorder_blocks (void)
+{
+  return (optimize > 0);
+}
+
+
+/* Reorder basic blocks.  */
+static void
+rest_of_handle_reorder_blocks (void)
+{
+  bool changed;
+  unsigned int liveness_flags;
+
+  /* Last attempt to optimize CFG, as scheduling, peepholing and insn
+     splitting possibly introduced more crossjumping opportunities.  */
+  liveness_flags = (!HAVE_conditional_execution ? CLEANUP_UPDATE_LIFE : 0);
+  changed = cleanup_cfg (CLEANUP_EXPENSIVE | liveness_flags);
+
+  if (flag_sched2_use_traces && flag_schedule_insns_after_reload)
+    {
+      timevar_push (TV_TRACER);
+      tracer (liveness_flags);
+      timevar_pop (TV_TRACER);
+    }
+
+  if (flag_reorder_blocks || flag_reorder_blocks_and_partition)
+    reorder_basic_blocks (liveness_flags);
+  if (flag_reorder_blocks || flag_reorder_blocks_and_partition
+      || (flag_sched2_use_traces && flag_schedule_insns_after_reload))
+    changed |= cleanup_cfg (CLEANUP_EXPENSIVE | liveness_flags);
+
+  /* On conditional execution targets we can not update the life cheaply, so
+     we deffer the updating to after both cleanups.  This may lose some cases
+     but should not be terribly bad.  */
+  if (changed && HAVE_conditional_execution)
+    update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES,
+                      PROP_DEATH_NOTES);
+}
+
+struct tree_opt_pass pass_reorder_blocks =
+{
+  "bbro",                               /* name */
+  gate_handle_reorder_blocks,           /* gate */
+  rest_of_handle_reorder_blocks,        /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_REORDER_BLOCKS,                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func,                       /* todo_flags_finish */
+  'B'                                   /* letter */
+};
+
+static bool
+gate_handle_partition_blocks (void)
+{
+  /* The optimization to partition hot/cold basic blocks into separate
+     sections of the .o file does not work well with linkonce or with
+     user defined section attributes.  Don't call it if either case
+     arises.  */
+
+  return (flag_reorder_blocks_and_partition
+          && !DECL_ONE_ONLY (current_function_decl)
+          && !user_defined_section_attribute);
+}
+
+/* Partition hot and cold basic blocks.  */
+static void
+rest_of_handle_partition_blocks (void)
+{
+  no_new_pseudos = 0;
+  partition_hot_cold_basic_blocks ();
+  allocate_reg_life_data ();
+  update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES,
+                    PROP_LOG_LINKS | PROP_REG_INFO | PROP_DEATH_NOTES);
+  no_new_pseudos = 1;
+}
+
+struct tree_opt_pass pass_partition_blocks =
+{
+  NULL,                                 /* name */
+  gate_handle_partition_blocks,         /* gate */
+  rest_of_handle_partition_blocks,      /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_REORDER_BLOCKS,                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  0,		                        /* todo_flags_finish */
+  0                                     /* letter */
+};
+
+

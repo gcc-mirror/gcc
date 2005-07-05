@@ -47,6 +47,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "gcov-io.h"
 #include "df.h"
 #include "ddg.h"
+#include "timevar.h"
+#include "tree-pass.h"
 
 #ifdef INSN_SCHEDULING
 
@@ -2517,5 +2519,67 @@ ps_unschedule_node (partial_schedule_ptr ps, ddg_node_ptr n)
 
   return remove_node_from_ps (ps, ps_i);
 }
-#endif /* INSN_SCHEDULING*/
+#endif /* INSN_SCHEDULING */
+
+static bool
+gate_handle_sms (void)
+{
+  return (optimize > 0 && flag_modulo_sched);
+}
+
+
+/* Run instruction scheduler.  */
+/* Perform SMS module scheduling.  */
+static void
+rest_of_handle_sms (void)
+{
+#ifdef INSN_SCHEDULING
+  basic_block bb;
+  sbitmap blocks;
+
+  /* We want to be able to create new pseudos.  */
+  no_new_pseudos = 0;
+  /* Collect loop information to be used in SMS.  */
+  cfg_layout_initialize (CLEANUP_UPDATE_LIFE);
+  sms_schedule (dump_file);
+
+  /* Update the life information, because we add pseudos.  */
+  max_regno = max_reg_num ();
+  allocate_reg_info (max_regno, FALSE, FALSE);
+  blocks = sbitmap_alloc (last_basic_block);
+  sbitmap_ones (blocks);
+  update_life_info (blocks, UPDATE_LIFE_GLOBAL_RM_NOTES,
+                    (PROP_DEATH_NOTES
+                     | PROP_REG_INFO
+                     | PROP_KILL_DEAD_CODE
+                     | PROP_SCAN_DEAD_CODE));
+
+  no_new_pseudos = 1;
+
+  /* Finalize layout changes.  */
+  FOR_EACH_BB (bb)
+    if (bb->next_bb != EXIT_BLOCK_PTR)
+      bb->aux = bb->next_bb;
+  cfg_layout_finalize ();
+  free_dominance_info (CDI_DOMINATORS);
+#endif /* INSN_SCHEDULING */
+}
+
+struct tree_opt_pass pass_sms =
+{
+  "sms",                                /* name */
+  gate_handle_sms,                      /* gate */
+  rest_of_handle_sms,                   /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_SMS,                               /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func |
+  TODO_ggc_collect,                     /* todo_flags_finish */
+  'm'                                   /* letter */
+};
 

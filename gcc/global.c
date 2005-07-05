@@ -36,6 +36,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "reload.h"
 #include "output.h"
 #include "toplev.h"
+#include "tree-pass.h"
+#include "timevar.h"
 
 /* This pass of the compiler performs global register allocation.
    It assigns hard register numbers to all the pseudo registers
@@ -2474,3 +2476,50 @@ make_accurate_live_analysis (void)
     }
   free_bb_info ();
 }
+/* Run old register allocator.  Return TRUE if we must exit
+   rest_of_compilation upon return.  */
+static void
+rest_of_handle_global_alloc (void)
+{
+  bool failure;
+
+  /* If optimizing, allocate remaining pseudo-regs.  Do the reload
+     pass fixing up any insns that are invalid.  */
+
+  if (optimize)
+    failure = global_alloc (dump_file);
+  else
+    {
+      build_insn_chain (get_insns ());
+      failure = reload (get_insns (), 0);
+    }
+
+  if (dump_enabled_p (pass_global_alloc.static_pass_number))
+    {
+      timevar_push (TV_DUMP);
+      dump_global_regs (dump_file);
+      timevar_pop (TV_DUMP);
+    }
+
+  gcc_assert (reload_completed || failure);
+  reload_completed = !failure;
+}
+
+struct tree_opt_pass pass_global_alloc =
+{
+  "greg",                               /* name */
+  NULL,                                 /* gate */
+  rest_of_handle_global_alloc,          /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_GLOBAL_ALLOC,                      /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func |
+  TODO_ggc_collect,                     /* todo_flags_finish */
+  'g'                                   /* letter */
+};
+

@@ -23,6 +23,59 @@ Boston, MA 02110-1301, USA.  */
 #ifndef GCC_TREE_PASS_H
 #define GCC_TREE_PASS_H 1
 
+/* In tree-dump.c */
+
+/* Different tree dump places.  When you add new tree dump places,
+   extend the DUMP_FILES array in tree-dump.c.  */
+enum tree_dump_index
+{
+  TDI_none,			/* No dump */
+  TDI_tu,			/* dump the whole translation unit.  */
+  TDI_class,			/* dump class hierarchy.  */
+  TDI_original,			/* dump each function before optimizing it */
+  TDI_generic,			/* dump each function after genericizing it */
+  TDI_nested,			/* dump each function after unnesting it */
+  TDI_inlined,			/* dump each function after inlining
+				   within it.  */
+  TDI_vcg,			/* create a VCG graph file for each
+				   function's flowgraph.  */
+  TDI_tree_all,                 /* enable all the GENERIC/GIMPLE dumps.  */
+  TDI_rtl_all,                  /* enable all the RTL dumps.  */
+  TDI_ipa_all,                  /* enable all the IPA dumps.  */
+
+  TDI_cgraph,                   /* dump function call graph.  */
+  TDI_end
+};
+
+/* Bit masks to control dumping. Not all values are applicable to
+   all dumps. Add new ones at the end. When you define new
+   values, extend the DUMP_OPTIONS array in tree-dump.c */
+#define TDF_ADDRESS	(1 << 0)	/* dump node addresses */
+#define TDF_SLIM	(1 << 1)	/* don't go wild following links */
+#define TDF_RAW  	(1 << 2)	/* don't unparse the function */
+#define TDF_DETAILS	(1 << 3)	/* show more detailed info about
+					   each pass */
+#define TDF_STATS	(1 << 4)	/* dump various statistics about
+					   each pass */
+#define TDF_BLOCKS	(1 << 5)	/* display basic block boundaries */
+#define TDF_VOPS	(1 << 6)	/* display virtual operands */
+#define TDF_LINENO	(1 << 7)	/* display statement line numbers */
+#define TDF_UID		(1 << 8)	/* display decl UIDs */
+
+#define TDF_TREE	(1 << 9)	/* is a tree dump */
+#define TDF_RTL		(1 << 10)	/* is a RTL dump */
+#define TDF_IPA		(1 << 11)	/* is an IPA dump */
+#define TDF_STMTADDR	(1 << 12)	/* Address of stmt.  */
+
+extern char *get_dump_file_name (enum tree_dump_index);
+extern int dump_enabled_p (enum tree_dump_index);
+extern int dump_initialized_p (enum tree_dump_index);
+extern FILE *dump_begin (enum tree_dump_index, int *);
+extern void dump_end (enum tree_dump_index, FILE *);
+extern void dump_node (tree, int, FILE *);
+extern int dump_switch_p (const char *);
+extern const char *dump_flag_name (enum tree_dump_index);
+
 /* Global variables used to communicate with passes.  */
 extern FILE *dump_file;
 extern int dump_flags;
@@ -154,7 +207,6 @@ struct dump_file_info
 #define TODO_verify_all \
   (TODO_verify_ssa | TODO_verify_flow | TODO_verify_stmts)
 
-extern void ipa_passes (void);
 extern void tree_lowering_passes (tree decl);
 
 extern struct tree_opt_pass pass_mudflap_1;
@@ -165,6 +217,7 @@ extern struct tree_opt_pass pass_lower_eh;
 extern struct tree_opt_pass pass_build_cfg;
 extern struct tree_opt_pass pass_tree_profile;
 extern struct tree_opt_pass pass_early_tree_profile;
+extern struct tree_opt_pass pass_cleanup_cfg;
 extern struct tree_opt_pass pass_referenced_vars;
 extern struct tree_opt_pass pass_sra;
 extern struct tree_opt_pass pass_tail_recursion;
@@ -233,5 +286,84 @@ extern struct tree_opt_pass pass_rebuild_cgraph_edges;
 /* IPA Passes */
 extern struct tree_opt_pass pass_ipa_inline;
 extern struct tree_opt_pass pass_early_ipa_inline;
+extern struct tree_opt_pass pass_early_local_passes;
+
+extern struct tree_opt_pass pass_all_optimizations;
+extern struct tree_opt_pass pass_cleanup_cfg_post_optimizing;
+extern struct tree_opt_pass pass_free_cfg_annotations;
+extern struct tree_opt_pass pass_free_datastructures;
+extern struct tree_opt_pass pass_init_datastructures;
+extern struct tree_opt_pass pass_fixup_cfg;
+
+extern struct tree_opt_pass pass_remove_unnecessary_notes;
+extern struct tree_opt_pass pass_init_function;
+extern struct tree_opt_pass pass_jump;
+extern struct tree_opt_pass pass_insn_locators_initialize;
+extern struct tree_opt_pass pass_rtl_eh;
+extern struct tree_opt_pass pass_initial_value_sets;
+extern struct tree_opt_pass pass_unshare_all_rtl;
+extern struct tree_opt_pass pass_instantiate_virtual_regs;
+extern struct tree_opt_pass pass_jump2;
+extern struct tree_opt_pass pass_cse;
+extern struct tree_opt_pass pass_gcse;
+extern struct tree_opt_pass pass_loop_optimize;
+extern struct tree_opt_pass pass_jump_bypass;
+extern struct tree_opt_pass pass_cfg;
+extern struct tree_opt_pass pass_profiling;
+extern struct tree_opt_pass pass_rtl_ifcvt;
+extern struct tree_opt_pass pass_tracer;
+extern struct tree_opt_pass pass_loop2;
+extern struct tree_opt_pass pass_web;
+extern struct tree_opt_pass pass_cse2;
+extern struct tree_opt_pass pass_life;
+extern struct tree_opt_pass pass_combine;
+extern struct tree_opt_pass pass_if_after_combine;
+extern struct tree_opt_pass pass_partition_blocks;
+extern struct tree_opt_pass pass_partition_blocks;
+extern struct tree_opt_pass pass_regmove;
+extern struct tree_opt_pass pass_split_all_insns;
+extern struct tree_opt_pass pass_mode_switching;
+extern struct tree_opt_pass pass_recompute_reg_usage;
+extern struct tree_opt_pass pass_sms;
+extern struct tree_opt_pass pass_sched;
+extern struct tree_opt_pass pass_local_alloc;
+extern struct tree_opt_pass pass_global_alloc;
+extern struct tree_opt_pass pass_postreload;
+extern struct tree_opt_pass pass_clean_state;
+extern struct tree_opt_pass pass_branch_prob;
+extern struct tree_opt_pass pass_value_profile_transformations;
+extern struct tree_opt_pass pass_remove_death_notes;
+extern struct tree_opt_pass pass_postreload_cse;
+extern struct tree_opt_pass pass_gcse2;
+extern struct tree_opt_pass pass_flow2;
+extern struct tree_opt_pass pass_stack_adjustments;
+extern struct tree_opt_pass pass_peephole2;
+extern struct tree_opt_pass pass_if_after_reload;
+extern struct tree_opt_pass pass_regrename;
+extern struct tree_opt_pass pass_reorder_blocks;
+extern struct tree_opt_pass pass_branch_target_load_optimize;
+extern struct tree_opt_pass pass_leaf_regs;
+extern struct tree_opt_pass pass_sched2;
+extern struct tree_opt_pass pass_stack_regs;
+extern struct tree_opt_pass pass_compute_alignments;
+extern struct tree_opt_pass pass_duplicate_computed_gotos;
+extern struct tree_opt_pass pass_variable_tracking;
+extern struct tree_opt_pass pass_free_cfg;
+extern struct tree_opt_pass pass_machine_reorg;
+extern struct tree_opt_pass pass_purge_lineno_notes;
+extern struct tree_opt_pass pass_cleanup_barriers;
+extern struct tree_opt_pass pass_delay_slots;
+extern struct tree_opt_pass pass_split_for_shorten_branches;
+extern struct tree_opt_pass pass_split_before_regstack;
+extern struct tree_opt_pass pass_convert_to_eh_region_ranges;
+extern struct tree_opt_pass pass_shorten_branches;
+extern struct tree_opt_pass pass_set_nothrow_function_flags;
+extern struct tree_opt_pass pass_final;
+
+/* The root of the compilation pass tree, once constructed.  */
+extern struct tree_opt_pass *all_passes, *all_ipa_passes, *all_lowering_passes;
+
+extern void execute_pass_list (struct tree_opt_pass *);
+extern void execute_ipa_pass_list (struct tree_opt_pass *);
 
 #endif /* GCC_TREE_PASS_H */

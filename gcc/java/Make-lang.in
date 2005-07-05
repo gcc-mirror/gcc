@@ -365,7 +365,8 @@ java/parse-scan.o: java/parse-scan.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) toplev.h $(JAVA_LEX_C) java/parse.h java/lex.h input.h
 java/parse.o: java/parse.c java/jcf-reader.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) function.h $(JAVA_TREE_H) $(JAVA_LEX_C) java/parse.h \
-  java/lex.h input.h $(GGC_H) debug.h gt-java-parse.h gtype-java.h target.h
+  java/lex.h input.h $(GGC_H) debug.h gt-java-parse.h gtype-java.h target.h \
+  $(TREE_DUMP_H)
 
 # jcf-io.o needs $(ZLIBINC) added to cflags.
 java/jcf-io.o: java/jcf-io.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \

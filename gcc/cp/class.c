@@ -36,6 +36,7 @@ Boston, MA 02110-1301, USA.  */
 #include "target.h"
 #include "convert.h"
 #include "cgraph.h"
+#include "tree-dump.h"
 
 /* The number of nested classes being processed.  If we are not in the
    scope of any class, this is zero.  */

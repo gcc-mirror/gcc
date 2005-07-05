@@ -133,6 +133,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "resource.h"
 #include "except.h"
 #include "params.h"
+#include "timevar.h"
+#include "target.h"
+#include "tree-pass.h"
 
 #ifdef DELAY_SLOTS
 
@@ -3809,3 +3812,73 @@ dbr_schedule (rtx first, FILE *file)
 #endif
 }
 #endif /* DELAY_SLOTS */
+
+static bool
+gate_handle_delay_slots (void)
+{
+#ifdef DELAY_SLOTS
+  return flag_delayed_branch;
+#else 
+  return 0;
+#endif
+}
+
+/* Run delay slot optimization.  */
+static void
+rest_of_handle_delay_slots (void)
+{
+#ifdef DELAY_SLOTS
+  dbr_schedule (get_insns (), dump_file);
+#endif
+}   
+
+struct tree_opt_pass pass_delay_slots =
+{
+  "dbr",                                /* name */
+  gate_handle_delay_slots,              /* gate */
+  rest_of_handle_delay_slots,           /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_DBR_SCHED,                         /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func |
+  TODO_ggc_collect,                     /* todo_flags_finish */
+  'd'                                   /* letter */
+};
+
+/* Machine dependent reorg pass.  */
+static bool
+gate_handle_machine_reorg (void)
+{
+  return targetm.machine_dependent_reorg != 0;
+}
+
+
+static void
+rest_of_handle_machine_reorg (void)
+{
+  targetm.machine_dependent_reorg ();
+}
+
+struct tree_opt_pass pass_machine_reorg =
+{
+  "mach",                               /* name */
+  gate_handle_machine_reorg,            /* gate */
+  rest_of_handle_machine_reorg,         /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_MACH_DEP,                          /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func |
+  TODO_ggc_collect,                     /* todo_flags_finish */
+  'M'                                   /* letter */
+};
+

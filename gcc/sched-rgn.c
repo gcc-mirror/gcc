@@ -65,6 +65,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "params.h"
 #include "sched-int.h"
 #include "target.h"
+#include "timevar.h"
+#include "tree-pass.h"
 
 /* Define when we want to do count REG_DEAD notes before and after scheduling
    for sanity checking.  We can't do that when conditional execution is used,
@@ -2588,3 +2590,95 @@ schedule_insns (FILE *dump_file)
   sbitmap_free (large_region_blocks);
 }
 #endif
+
+static bool
+gate_handle_sched (void)
+{
+#ifdef INSN_SCHEDULING
+  return flag_schedule_insns;
+#else
+  return 0;
+#endif
+}
+
+/* Run instruction scheduler.  */
+static void
+rest_of_handle_sched (void)
+{
+#ifdef INSN_SCHEDULING
+  /* Do control and data sched analysis,
+     and write some of the results to dump file.  */
+
+  schedule_insns (dump_file);
+#endif
+}
+
+static bool
+gate_handle_sched2 (void)
+{
+#ifdef INSN_SCHEDULING
+  return optimize > 0 && flag_schedule_insns_after_reload;
+#else
+  return 0;
+#endif
+}
+
+/* Run second scheduling pass after reload.  */
+static void
+rest_of_handle_sched2 (void)
+{
+#ifdef INSN_SCHEDULING
+  /* Do control and data sched analysis again,
+     and write some more of the results to dump file.  */
+
+  split_all_insns (1);
+
+  if (flag_sched2_use_superblocks || flag_sched2_use_traces)
+    {
+      schedule_ebbs (dump_file);
+      /* No liveness updating code yet, but it should be easy to do.
+         reg-stack recomputes the liveness when needed for now.  */
+      count_or_remove_death_notes (NULL, 1);
+      cleanup_cfg (CLEANUP_EXPENSIVE);
+    }
+  else
+    schedule_insns (dump_file);
+#endif
+}
+
+struct tree_opt_pass pass_sched =
+{
+  "sched1",                             /* name */
+  gate_handle_sched,                    /* gate */
+  rest_of_handle_sched,                 /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_SCHED,                             /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func |
+  TODO_ggc_collect,                     /* todo_flags_finish */
+  'S'                                   /* letter */
+};
+
+struct tree_opt_pass pass_sched2 =
+{
+  "sched2",                             /* name */
+  gate_handle_sched2,                   /* gate */
+  rest_of_handle_sched2,                /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_SCHED2,                            /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func |
+  TODO_ggc_collect,                     /* todo_flags_finish */
+  'R'                                   /* letter */
+};
+

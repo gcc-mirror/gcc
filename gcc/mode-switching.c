@@ -34,6 +34,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "output.h"
 #include "tm_p.h"
 #include "function.h"
+#include "tree-pass.h"
+#include "timevar.h"
 
 /* We want target macros for the mode switching code to be able to refer
    to instruction attribute values.  */
@@ -708,4 +710,43 @@ optimize_mode_switching (FILE *file)
 
   return 1;
 }
+
 #endif /* OPTIMIZE_MODE_SWITCHING */
+
+static bool
+gate_mode_switching (void)
+{
+#ifdef OPTIMIZE_MODE_SWITCHING
+  return true;
+#else
+  return false;
+#endif
+}
+
+static void
+rest_of_handle_mode_switching (void)
+{
+#ifdef OPTIMIZE_MODE_SWITCHING
+  no_new_pseudos = 0;
+  optimize_mode_switching (NULL);
+  no_new_pseudos = 1;
+#endif /* OPTIMIZE_MODE_SWITCHING */
+}
+
+
+struct tree_opt_pass pass_mode_switching =
+{
+  NULL,                                 /* name */
+  gate_mode_switching,                  /* gate */
+  rest_of_handle_mode_switching,        /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_MODE_SWITCH,                       /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  0,                                    /* todo_flags_finish */
+  0                                     /* letter */
+};

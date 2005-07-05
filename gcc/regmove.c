@@ -43,6 +43,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "except.h"
 #include "toplev.h"
 #include "reload.h"
+#include "timevar.h"
+#include "tree-pass.h"
 
 
 /* Turn STACK_GROWS_DOWNWARD into a boolean.  */
@@ -2461,3 +2463,80 @@ combine_stack_adjustments_for_block (basic_block bb)
   if (memlist)
     free_csa_memlist (memlist);
 }
+
+static bool
+gate_handle_regmove (void)
+{
+  return (optimize > 0 && flag_regmove);
+}
+
+
+/* Register allocation pre-pass, to reduce number of moves necessary
+   for two-address machines.  */
+static void
+rest_of_handle_regmove (void)
+{
+  regmove_optimize (get_insns (), max_reg_num (), dump_file);
+  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_UPDATE_LIFE);
+}
+
+struct tree_opt_pass pass_regmove =
+{
+  "regmove",                            /* name */
+  gate_handle_regmove,                  /* gate */
+  rest_of_handle_regmove,               /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_REGMOVE,                           /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func |
+  TODO_ggc_collect,                     /* todo_flags_finish */
+  'N'                                   /* letter */
+};
+
+
+static bool
+gate_handle_stack_adjustments (void)
+{
+  return (optimize > 0);
+}
+
+static void
+rest_of_handle_stack_adjustments (void)
+{
+  life_analysis (dump_file, PROP_POSTRELOAD);
+  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_UPDATE_LIFE
+               | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0));
+
+  /* This is kind of a heuristic.  We need to run combine_stack_adjustments
+     even for machines with possibly nonzero RETURN_POPS_ARGS
+     and ACCUMULATE_OUTGOING_ARGS.  We expect that only ports having
+     push instructions will have popping returns.  */
+#ifndef PUSH_ROUNDING
+  if (!ACCUMULATE_OUTGOING_ARGS)
+#endif
+    combine_stack_adjustments ();
+}
+
+struct tree_opt_pass pass_stack_adjustments =
+{
+  NULL,                                 /* name */
+  gate_handle_stack_adjustments,        /* gate */
+  rest_of_handle_stack_adjustments,     /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  0,                                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func |
+  TODO_ggc_collect,                     /* todo_flags_finish */
+  0                                     /* letter */
+};
+

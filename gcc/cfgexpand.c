@@ -37,8 +37,8 @@ Boston, MA 02110-1301, USA.  */
 #include "flags.h"
 #include "diagnostic.h"
 #include "toplev.h"
+#include "debug.h"
 #include "params.h"
-
 
 /* Verify that there is exactly single jump instruction since last and attach
    REG_BR_PROB note specifying probability.
@@ -1556,6 +1556,30 @@ tree_expand_cfg (void)
 	       "\n\n;;\n;; Full RTL generated for this function:\n;;\n");
       /* And the pass manager will dump RTL for us.  */
     }
+
+  /* If we're emitting a nested function, make sure its parent gets
+     emitted as well.  Doing otherwise confuses debug info.  */
+  {   
+    tree parent;
+    for (parent = DECL_CONTEXT (current_function_decl);
+         parent != NULL_TREE;
+         parent = get_containing_scope (parent))
+      if (TREE_CODE (parent) == FUNCTION_DECL)
+        TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (parent)) = 1;
+  }
+    
+  /* We are now committed to emitting code for this function.  Do any
+     preparation, such as emitting abstract debug info for the inline
+     before it gets mangled by optimization.  */
+  if (cgraph_function_possibly_inlined_p (current_function_decl))
+    (*debug_hooks->outlining_inline_function) (current_function_decl);
+
+  TREE_ASM_WRITTEN (current_function_decl) = 1;
+
+#ifdef FINALIZE_PIC
+  if (flag_pic)
+    FINALIZE_PIC;
+#endif
 }
 
 struct tree_opt_pass pass_expand =
@@ -1572,6 +1596,6 @@ struct tree_opt_pass pass_expand =
   PROP_rtl,                             /* properties_provided */
   PROP_gimple_leh,			/* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,					/* todo_flags_finish */
+  TODO_dump_func,                       /* todo_flags_finish */
   'r'					/* letter */
 };

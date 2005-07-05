@@ -44,6 +44,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "toplev.h"
 #include "except.h"
 #include "tree.h"
+#include "timevar.h"
+#include "tree-pass.h"
 
 static int reload_cse_noop_set_p (rtx);
 static void reload_cse_simplify (rtx, rtx);
@@ -1561,3 +1563,39 @@ move2add_note_store (rtx dst, rtx set, void *data ATTRIBUTE_UNUSED)
 	reg_set_luid[i] = 0;
     }
 }
+
+static bool
+gate_handle_postreload (void)
+{
+  return (optimize > 0);
+}
+
+
+static void
+rest_of_handle_postreload (void)
+{
+  /* Do a very simple CSE pass over just the hard registers.  */
+  reload_cse_regs (get_insns ());
+  /* reload_cse_regs can eliminate potentially-trapping MEMs.
+     Remove any EH edges associated with them.  */
+  if (flag_non_call_exceptions)
+    purge_all_dead_edges ();
+}
+
+struct tree_opt_pass pass_postreload_cse =
+{
+  "postreload",                         /* name */
+  gate_handle_postreload,               /* gate */
+  rest_of_handle_postreload,            /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_RELOAD_CSE_REGS,                   /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func,                       /* todo_flags_finish */
+  'o'                                   /* letter */
+};
+

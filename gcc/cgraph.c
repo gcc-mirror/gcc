@@ -98,6 +98,7 @@ The varpool data structure:
 #include "output.h"
 #include "intl.h"
 #include "tree-gimple.h"
+#include "tree-dump.h"
 
 static void cgraph_node_remove_callers (struct cgraph_node *node);
 static inline void cgraph_edge_remove_caller (struct cgraph_edge *e);

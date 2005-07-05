@@ -169,6 +169,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "intl.h"
 #include "obstack.h"
 #include "timevar.h"
+#include "tree-pass.h"
 
 /* Propagate flow information through back edges and thus enable PRE's
    moving loop invariant calculations out of loops.
@@ -6558,5 +6559,113 @@ is_too_expensive (const char *pass)
 
   return false;
 }
+
+static bool
+gate_handle_jump_bypass (void)
+{
+  return optimize > 0 && flag_gcse;
+}
+
+/* Perform jump bypassing and control flow optimizations.  */
+static void
+rest_of_handle_jump_bypass (void)
+{
+  cleanup_cfg (CLEANUP_EXPENSIVE);
+  reg_scan (get_insns (), max_reg_num ());
+
+  if (bypass_jumps (dump_file))
+    {
+      rebuild_jump_labels (get_insns ());
+      cleanup_cfg (CLEANUP_EXPENSIVE);
+      delete_trivially_dead_insns (get_insns (), max_reg_num ());
+    }
+}
+
+struct tree_opt_pass pass_jump_bypass =
+{
+  "bypass",                             /* name */
+  gate_handle_jump_bypass,              /* gate */   
+  rest_of_handle_jump_bypass,           /* execute */       
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_BYPASS,                            /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func |
+  TODO_ggc_collect | TODO_verify_flow,  /* todo_flags_finish */
+  'G'                                   /* letter */
+};
+
+
+static bool
+gate_handle_gcse (void)
+{
+  return optimize > 0 && flag_gcse;
+}
+
+
+static void
+rest_of_handle_gcse (void)
+{
+  int save_csb, save_cfj;
+  int tem2 = 0, tem;
+
+  tem = gcse_main (get_insns (), dump_file);
+  rebuild_jump_labels (get_insns ());
+  delete_trivially_dead_insns (get_insns (), max_reg_num ());
+
+  save_csb = flag_cse_skip_blocks;
+  save_cfj = flag_cse_follow_jumps;
+  flag_cse_skip_blocks = flag_cse_follow_jumps = 0;
+
+  /* If -fexpensive-optimizations, re-run CSE to clean up things done
+     by gcse.  */
+  if (flag_expensive_optimizations)
+    {
+      timevar_push (TV_CSE);
+      reg_scan (get_insns (), max_reg_num ());
+      tem2 = cse_main (get_insns (), max_reg_num (), dump_file);
+      purge_all_dead_edges ();
+      delete_trivially_dead_insns (get_insns (), max_reg_num ());
+      timevar_pop (TV_CSE);
+      cse_not_expected = !flag_rerun_cse_after_loop;
+    }
+
+  /* If gcse or cse altered any jumps, rerun jump optimizations to clean
+     things up.  */
+  if (tem || tem2)
+    {
+      timevar_push (TV_JUMP);
+      rebuild_jump_labels (get_insns ());
+      delete_dead_jumptables ();
+      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
+      timevar_pop (TV_JUMP);
+    }
+
+  flag_cse_skip_blocks = save_csb;
+  flag_cse_follow_jumps = save_cfj;
+}
+
+struct tree_opt_pass pass_gcse =
+{
+  "gcse1",                              /* name */
+  gate_handle_gcse,                     /* gate */   
+  rest_of_handle_gcse,			/* execute */       
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_GCSE,                              /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func |
+  TODO_verify_flow | TODO_ggc_collect,  /* todo_flags_finish */
+  'G'                                   /* letter */
+};
+
 
 #include "gt-gcse.h"

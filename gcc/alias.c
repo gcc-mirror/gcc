@@ -44,6 +44,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "target.h"
 #include "cgraph.h"
 #include "varray.h"
+#include "tree-pass.h"
 
 /* The alias sets assigned to MEMs assist the back-end in determining
    which MEMs can alias which other MEMs.  In general, two MEMs in
@@ -2967,5 +2968,57 @@ end_alias_analysis (void)
       alias_invariant_size = 0;
     }
 }
+
+/* Do control and data flow analysis; write some of the results to the
+   dump file.  */
+static void
+rest_of_handle_cfg (void)
+{
+  if (dump_file)
+    dump_flow_info (dump_file);
+  if (optimize)
+    cleanup_cfg (CLEANUP_EXPENSIVE
+                 | (flag_thread_jumps ? CLEANUP_THREADING : 0));
+
+  /* It may make more sense to mark constant functions after dead code is
+     eliminated by life_analysis, but we need to do it early, as -fprofile-arcs
+     may insert code making function non-constant, but we still must consider
+     it as constant, otherwise -fbranch-probabilities will not read data back.
+
+     life_analysis rarely eliminates modification of external memory.
+
+     FIXME: now with tree based profiling we are in the trap described above
+     again.  It seems to be easiest to disable the optimization for time
+     being before the problem is either solved by moving the transformation
+     to the IPA level (we need the CFG for this) or the very early optimization
+     passes are made to ignore the const/pure flags so code does not change.  */
+  if (optimize
+      && (!flag_tree_based_profiling
+          || (!profile_arc_flag && !flag_branch_probabilities)))
+    {
+      /* Alias analysis depends on this information and mark_constant_function
+       depends on alias analysis.  */
+      reg_scan (get_insns (), max_reg_num ());
+      mark_constant_function ();
+    }
+}
+
+struct tree_opt_pass pass_cfg =
+{
+  "cfg",                                /* name */
+  NULL,					/* gate */   
+  rest_of_handle_cfg,                   /* execute */       
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_FLOW,                              /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func,                       /* todo_flags_finish */
+  'f'                                   /* letter */
+};
+
 
 #include "gt-alias.h"

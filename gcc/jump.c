@@ -56,6 +56,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "reload.h"
 #include "predict.h"
 #include "timevar.h"
+#include "tree-pass.h"
 
 /* Optimize jump y; x: ... y: jumpif... x?
    Don't know if it is worth bothering with.  */
@@ -120,8 +121,25 @@ cleanup_barriers (void)
     }
 }
 
+struct tree_opt_pass pass_cleanup_barriers =
+{
+  NULL,                                 /* name */
+  NULL,                                 /* gate */
+  cleanup_barriers,                     /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  0,                                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  0,                                    /* todo_flags_finish */
+  0                                     /* letter */
+};
+
 void
-purge_line_number_notes (rtx f)
+purge_line_number_notes (void)
 {
   rtx last_note = 0;
   rtx insn;
@@ -130,7 +148,7 @@ purge_line_number_notes (rtx f)
      extraneous.  There should be some indication where that line belonged,
      even if it became empty.  */
 
-  for (insn = f; insn; insn = NEXT_INSN (insn))
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     if (NOTE_P (insn))
       {
 	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG)
@@ -157,6 +175,24 @@ purge_line_number_notes (rtx f)
 	  }
       }
 }
+
+struct tree_opt_pass pass_purge_lineno_notes =
+{
+  NULL,                                 /* name */
+  NULL,                                 /* gate */
+  purge_line_number_notes,              /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  0,                                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  0,                                    /* todo_flags_finish */
+  0                                     /* letter */
+};
+
 
 /* Initialize LABEL_NUSES and JUMP_LABEL fields.  Delete any REG_LABEL
    notes whose labels don't occur in the insn any more.  Returns the

@@ -1,3 +1,9 @@
+2005-07-05  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.in (class.o, decl2.o): Adjust dependencies.
+	* class.c: Include tree-dump.h.
+	* decl2.c: Include tree-dump.h.
+	
 2005-07-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* dump.c: Use dump_string_field.
