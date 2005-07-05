@@ -1,3 +1,8 @@
+2005-07-04  Kazu Hirata  <kazu@codesourcery.com>
+
+	* Makefile.in (stamp-as): Use $(ORIGINAL_AS_FOR_TARGET)
+	instead of $<.  Don't remove ./as if it already exists.
+
 2005-07-04  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/21723

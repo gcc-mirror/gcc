@@ -1206,13 +1206,17 @@ cpp$(exeext): gcc.o cppspec.o version.o intl.o prefix.o \
 # can be either `sometool' (if it is a script) or `sometool$(exeext)'
 # (if it is a hard link).
 stamp-as: $(ORIGINAL_AS_FOR_TARGET)
-	@echo creating as; rm -f as; \
-	case "$<" in \
-	  ./*) ;; \
+	@echo creating as; \
+	case "$(ORIGINAL_AS_FOR_TARGET)" in \
+	  ./as) ;; \
 	  ../*) \
+	     rm -f as$(exeext); \
 	     echo $(LN) $< as$(exeext); \
 	     $(LN) $< as$(exeext) || cp $< as$(exeext) ;; \
-	  *) echo '#!$(SHELL)' > as; echo 'exec $< "$$@"' >> as ; \
+	  *) \
+	     rm -f as; \
+	     echo '#!$(SHELL)' > as; \
+	     echo 'exec $(ORIGINAL_AS_FOR_TARGET) "$$@"' >> as ; \
 	     chmod +x as ;; \
 	esac
 	echo timestamp > $@
