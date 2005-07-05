@@ -456,7 +456,13 @@ ext_headers = \
 	${ext_srcdir}/rope \
 	${ext_srcdir}/ropeimpl.h \
 	${ext_srcdir}/slist \
-	${ext_srcdir}/typelist.h 
+	${ext_srcdir}/typelist.h \
+	${ext_srcdir}/rc_string_base.h \
+	${ext_srcdir}/sso_string_base.h \
+	${ext_srcdir}/vstring.h \
+	${ext_srcdir}/vstring.tcc \
+	${ext_srcdir}/vstring_fwd.h \
+	${ext_srcdir}/vstring_util.h	
 
 
 tr1_srcdir = ${glibcxx_srcdir}/include/tr1
