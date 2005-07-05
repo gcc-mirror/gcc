@@ -1,3 +1,9 @@
+2005-07-04  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-structalias.c (get_constraint_exp_from_ssa_var):
+	Only fall back to saying it points to readonly memory if
+	we can't do better.
+
 2005-07-05  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
 
 	* config/m32r/m32r-protos.h: Remove m32r_finalize_pic.
