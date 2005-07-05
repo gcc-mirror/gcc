@@ -55,6 +55,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "ggc.h"
 #include "debug.h"
 #include "langhooks.h"
+#include "tree-pass.h"
 
 /* Commonly used modes.  */
 
@@ -2135,6 +2136,24 @@ unshare_all_rtl (void)
   unshare_all_rtl_1 (current_function_decl, get_insns ());
 }
 
+struct tree_opt_pass pass_unshare_all_rtl =
+{
+  NULL,                                 /* name */
+  NULL,                                 /* gate */
+  unshare_all_rtl,                      /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  0,                                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  0,                                    /* todo_flags_finish */
+  0                                     /* letter */
+};
+
+
 /* Check that ORIG is not marked when it should not be and mark ORIG as in use,
    Recursively does the same for subexpressions.  */
 
@@ -3704,6 +3723,23 @@ remove_unnecessary_notes (void)
   /* Too many EH_REGION_BEG notes.  */
   gcc_assert (!eh_stack);
 }
+
+struct tree_opt_pass pass_remove_unnecessary_notes =
+{
+  NULL,                                 /* name */ 
+  NULL,					/* gate */
+  remove_unnecessary_notes,             /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  0,					/* tv_id */ 
+  0,					/* properties_required */
+  0,                                    /* properties_provided */
+  0,					/* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  0,					/* todo_flags_finish */
+  0                                     /* letter */ 
+};
 
 
 /* Emit insn(s) of given code and pattern

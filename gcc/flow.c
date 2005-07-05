@@ -140,6 +140,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #include "obstack.h"
 #include "splay-tree.h"
+#include "tree-pass.h"
 
 #ifndef HAVE_epilogue
 #define HAVE_epilogue 0
@@ -4357,6 +4358,23 @@ recompute_reg_usage (void)
   update_life_info (NULL, UPDATE_LIFE_LOCAL, PROP_REG_INFO | PROP_DEATH_NOTES);
 }
 
+struct tree_opt_pass pass_recompute_reg_usage =
+{
+  NULL,                                 /* name */
+  NULL,                                 /* gate */
+  recompute_reg_usage,                  /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  0,                                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  0,                                    /* todo_flags_finish */
+  0                                     /* letter */
+};
+
 /* Optionally removes all the REG_DEAD and REG_UNUSED notes from a set of
    blocks.  If BLOCKS is NULL, assume the universal set.  Returns a count
    of the number of registers that died.  */
@@ -4504,3 +4522,131 @@ reg_set_to_hard_reg_set (HARD_REG_SET *to, bitmap from)
       SET_HARD_REG_BIT (*to, i);
     }
 }
+
+
+static bool
+gate_remove_death_notes (void)
+{
+  return flag_profile_values;
+}
+
+static void
+rest_of_handle_remove_death_notes (void)
+{
+  count_or_remove_death_notes (NULL, 1);
+}
+
+struct tree_opt_pass pass_remove_death_notes =
+{
+  NULL,                                 /* name */
+  gate_remove_death_notes,              /* gate */
+  rest_of_handle_remove_death_notes,    /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  0,                                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  0,                                    /* todo_flags_finish */
+  0                                     /* letter */
+};
+
+/* Perform life analysis.  */
+static void
+rest_of_handle_life (void)
+{
+  regclass_init ();
+
+  life_analysis (dump_file, PROP_FINAL);
+  if (optimize)
+    cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_UPDATE_LIFE | CLEANUP_LOG_LINKS
+                 | (flag_thread_jumps ? CLEANUP_THREADING : 0));
+
+  if (extra_warnings)
+    {
+      setjmp_vars_warning (DECL_INITIAL (current_function_decl));
+      setjmp_args_warning ();
+    }
+
+  if (optimize)
+    {
+      if (initialize_uninitialized_subregs ())
+        {
+          /* Insns were inserted, and possibly pseudos created, so
+             things might look a bit different.  */
+          allocate_reg_life_data ();
+          update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES,
+                            PROP_LOG_LINKS | PROP_REG_INFO | PROP_DEATH_NOTES);
+        }
+    }
+
+  no_new_pseudos = 1;
+}
+
+struct tree_opt_pass pass_life =
+{
+  "life",                               /* name */
+  NULL,                                 /* gate */
+  rest_of_handle_life,                  /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_FLOW,                              /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  TODO_verify_flow,                     /* todo_flags_start */
+  TODO_dump_func |
+  TODO_ggc_collect,                     /* todo_flags_finish */
+  'f'                                   /* letter */
+};
+
+static void
+rest_of_handle_flow2 (void)
+{
+  /* Re-create the death notes which were deleted during reload.  */
+#ifdef ENABLE_CHECKING
+  verify_flow_info ();
+#endif
+
+  /* If optimizing, then go ahead and split insns now.  */
+#ifndef STACK_REGS
+  if (optimize > 0)
+#endif
+    split_all_insns (0);
+
+  if (flag_branch_target_load_optimize)
+    branch_target_load_optimize (epilogue_completed);
+
+  if (optimize)
+    cleanup_cfg (CLEANUP_EXPENSIVE);
+
+  /* On some machines, the prologue and epilogue code, or parts thereof,
+     can be represented as RTL.  Doing so lets us schedule insns between
+     it and the rest of the code and also allows delayed branch
+     scheduling to operate in the epilogue.  */
+  thread_prologue_and_epilogue_insns (get_insns ());
+  epilogue_completed = 1;
+  flow2_completed = 1;
+}
+
+struct tree_opt_pass pass_flow2 =
+{
+  "flow2",                              /* name */
+  NULL,                                 /* gate */
+  rest_of_handle_flow2,                 /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_FLOW2,                             /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  TODO_verify_flow,                     /* todo_flags_start */
+  TODO_dump_func |
+  TODO_ggc_collect,                     /* todo_flags_finish */
+  'w'                                   /* letter */
+};
+

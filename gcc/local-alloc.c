@@ -78,6 +78,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "integrate.h"
 #include "reload.h"
 #include "ggc.h"
+#include "timevar.h"
+#include "tree-pass.h"
 
 /* Next quantity number available for allocation.  */
 
@@ -2496,3 +2498,69 @@ dump_local_alloc (FILE *file)
     if (reg_renumber[i] != -1)
       fprintf (file, ";; Register %d in %d.\n", i, reg_renumber[i]);
 }
+
+/* Run old register allocator.  Return TRUE if we must exit
+   rest_of_compilation upon return.  */
+static void
+rest_of_handle_local_alloc (void)
+{
+  int rebuild_notes;
+
+  /* Determine if the current function is a leaf before running reload
+     since this can impact optimizations done by the prologue and
+     epilogue thus changing register elimination offsets.  */
+  current_function_is_leaf = leaf_function_p ();
+
+  /* Allocate the reg_renumber array.  */
+  allocate_reg_info (max_regno, FALSE, TRUE);
+
+  /* And the reg_equiv_memory_loc array.  */
+  VARRAY_GROW (reg_equiv_memory_loc_varray, max_regno);
+  reg_equiv_memory_loc = &VARRAY_RTX (reg_equiv_memory_loc_varray, 0);
+
+  allocate_initial_values (reg_equiv_memory_loc);
+
+  regclass (get_insns (), max_reg_num (), dump_file);
+  rebuild_notes = local_alloc ();
+
+  /* Local allocation may have turned an indirect jump into a direct
+     jump.  If so, we must rebuild the JUMP_LABEL fields of jumping
+     instructions.  */
+  if (rebuild_notes)
+    {
+      timevar_push (TV_JUMP);
+
+      rebuild_jump_labels (get_insns ());
+      purge_all_dead_edges ();
+      delete_unreachable_blocks ();
+
+      timevar_pop (TV_JUMP);
+    }
+
+  if (dump_enabled_p (pass_local_alloc.static_pass_number))
+    {
+      timevar_push (TV_DUMP);
+      dump_flow_info (dump_file);
+      dump_local_alloc (dump_file);
+      timevar_pop (TV_DUMP);
+    }
+}
+
+struct tree_opt_pass pass_local_alloc =
+{
+  "lreg",                               /* name */
+  NULL,                                 /* gate */
+  rest_of_handle_local_alloc,           /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_LOCAL_ALLOC,                       /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func |
+  TODO_ggc_collect,                     /* todo_flags_finish */
+  'l'                                   /* letter */
+};
+

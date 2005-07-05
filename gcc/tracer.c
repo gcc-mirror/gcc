@@ -48,6 +48,7 @@
 #include "timevar.h"
 #include "params.h"
 #include "coverage.h"
+#include "tree-pass.h"
 
 static int count_insns (basic_block);
 static bool ignore_bb_p (basic_block);
@@ -365,8 +366,6 @@ tracer (unsigned int flags)
   if (n_basic_blocks <= 1)
     return;
 
-  timevar_push (TV_TRACER);
-
   cfg_layout_initialize (flags);
   mark_dfs_back_edges ();
   if (dump_file)
@@ -379,6 +378,39 @@ tracer (unsigned int flags)
 
   /* Merge basic blocks in duplicated traces.  */
   cleanup_cfg (CLEANUP_EXPENSIVE);
-
-  timevar_pop (TV_TRACER);
 }
+
+static bool
+gate_handle_tracer (void)
+{
+  return (optimize > 0 && flag_tracer);
+}
+
+/* Run tracer.  */
+static void
+rest_of_handle_tracer (void)
+{
+  if (dump_file)
+    dump_flow_info (dump_file);
+  tracer (0);
+  cleanup_cfg (CLEANUP_EXPENSIVE);
+  reg_scan (get_insns (), max_reg_num ());
+}
+
+struct tree_opt_pass pass_tracer =
+{
+  "tracer",                             /* name */
+  gate_handle_tracer,                   /* gate */
+  rest_of_handle_tracer,                /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_TRACER,                            /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func,                       /* todo_flags_finish */
+  'T'                                   /* letter */
+};
+

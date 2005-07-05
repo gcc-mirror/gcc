@@ -40,6 +40,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "coverage.h"
 #include "tree.h"
 #include "gcov-io.h"
+#include "timevar.h"
+#include "tree-pass.h"
 
 static struct value_prof_hooks *value_prof_hooks;
 
@@ -1798,3 +1800,40 @@ value_profile_transformations (void)
   VEC_free (histogram_value, heap, static_values);
   return retval;
 }
+
+static bool 
+gate_handle_value_profile_transformations (void)
+{
+  return flag_branch_probabilities
+         && flag_profile_values
+         && !flag_tree_based_profiling
+         && (flag_value_profile_transformations
+             || flag_speculative_prefetching);
+}
+
+
+/* Do optimizations based on expression value profiles.  */
+static void
+rest_of_handle_value_profile_transformations (void)
+{
+  if (value_profile_transformations ())
+    cleanup_cfg (CLEANUP_EXPENSIVE);
+}
+
+struct tree_opt_pass pass_value_profile_transformations =
+{
+  "vpt",                               /* name */
+  gate_handle_value_profile_transformations,           /* gate */
+  rest_of_handle_value_profile_transformations,        /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_VPT,                               /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func,                       /* todo_flags_finish */
+  'V'                                   /* letter */
+};
+

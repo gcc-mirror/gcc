@@ -41,6 +41,8 @@
 #include "tm_p.h"
 #include "cfgloop.h"
 #include "target.h"
+#include "timevar.h"
+#include "tree-pass.h"
 
 
 #ifndef HAVE_conditional_execution
@@ -3579,3 +3581,120 @@ if_convert (int x_life_data_ok)
   verify_flow_info ();
 #endif
 }
+
+static bool
+gate_handle_if_conversion (void)
+{
+  return (optimize > 0);
+}
+
+/* If-conversion and CFG cleanup.  */
+static void
+rest_of_handle_if_conversion (void)
+{
+  if (flag_if_conversion)
+    {
+      if (dump_file)
+        dump_flow_info (dump_file);
+      cleanup_cfg (CLEANUP_EXPENSIVE);
+      reg_scan (get_insns (), max_reg_num ());
+      if_convert (0);
+    }
+
+  timevar_push (TV_JUMP);
+  cleanup_cfg (CLEANUP_EXPENSIVE);
+  reg_scan (get_insns (), max_reg_num ());
+  timevar_pop (TV_JUMP);
+}
+
+struct tree_opt_pass pass_rtl_ifcvt =
+{
+  "ce1",                                /* name */
+  gate_handle_if_conversion,            /* gate */
+  rest_of_handle_if_conversion,         /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_IFCVT,                             /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func,                       /* todo_flags_finish */
+  'C'                                   /* letter */
+};
+
+static bool
+gate_handle_if_after_combine (void)
+{
+  return (optimize > 0 && flag_if_conversion);
+}
+
+
+/* Rerun if-conversion, as combine may have simplified things enough
+   to now meet sequence length restrictions.  */
+static void
+rest_of_handle_if_after_combine (void)
+{
+  no_new_pseudos = 0;
+  if_convert (1);
+  no_new_pseudos = 1;
+}
+
+struct tree_opt_pass pass_if_after_combine =
+{
+  "ce2",                                /* name */
+  gate_handle_if_after_combine,         /* gate */
+  rest_of_handle_if_after_combine,      /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_IFCVT,                             /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func |
+  TODO_ggc_collect,                     /* todo_flags_finish */
+  'C'                                   /* letter */
+};
+
+
+static bool
+gate_handle_if_after_reload (void)
+{
+  return (optimize > 0);
+}
+
+static void
+rest_of_handle_if_after_reload (void)
+{
+  /* Last attempt to optimize CFG, as scheduling, peepholing and insn
+     splitting possibly introduced more crossjumping opportunities.  */
+  cleanup_cfg (CLEANUP_EXPENSIVE
+               | CLEANUP_UPDATE_LIFE
+               | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0));
+  if (flag_if_conversion2)
+    if_convert (1);
+}
+
+
+struct tree_opt_pass pass_if_after_reload =
+{
+  "ce3",                                /* name */
+  gate_handle_if_after_reload,          /* gate */
+  rest_of_handle_if_after_reload,       /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_IFCVT2,                            /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func |
+  TODO_ggc_collect,                     /* todo_flags_finish */
+  'E'                                   /* letter */
+};
+
+

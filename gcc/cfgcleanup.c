@@ -50,6 +50,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "target.h"
 #include "cfglayout.h"
 #include "emit-rtl.h"
+#include "tree-pass.h"
+#include "cfgloop.h"
+#include "expr.h"
 
 /* cleanup_cfg maintains following flags for each basic block.  */
 
@@ -2136,3 +2139,81 @@ cleanup_cfg (int mode)
 
   return changed;
 }
+
+static void
+rest_of_handle_jump (void)
+{
+  delete_unreachable_blocks ();
+
+  if (cfun->tail_call_emit)
+    fixup_tail_calls ();
+}
+
+struct tree_opt_pass pass_jump =
+{
+  "sibling",                            /* name */
+  NULL,                                 /* gate */   
+  rest_of_handle_jump,			/* execute */       
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_JUMP,                              /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  TODO_ggc_collect,                     /* todo_flags_start */
+  TODO_dump_func |
+  TODO_verify_flow,                     /* todo_flags_finish */
+  'i'                                   /* letter */
+};
+
+
+static void
+rest_of_handle_jump2 (void)
+{
+  /* Turn NOTE_INSN_EXPECTED_VALUE into REG_BR_PROB.  Do this
+     before jump optimization switches branch directions.  */
+  if (flag_guess_branch_prob)
+    expected_value_to_br_prob ();
+
+  delete_trivially_dead_insns (get_insns (), max_reg_num ());
+  reg_scan (get_insns (), max_reg_num ());
+  if (dump_file)
+    dump_flow_info (dump_file);
+  cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0) | CLEANUP_PRE_LOOP
+               | (flag_thread_jumps ? CLEANUP_THREADING : 0));
+
+  create_loop_notes ();
+
+  purge_line_number_notes ();
+
+  if (optimize)
+    cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
+
+  /* Jump optimization, and the removal of NULL pointer checks, may
+     have reduced the number of instructions substantially.  CSE, and
+     future passes, allocate arrays whose dimensions involve the
+     maximum instruction UID, so if we can reduce the maximum UID
+     we'll save big on memory.  */
+  renumber_insns (dump_file);
+}
+
+
+struct tree_opt_pass pass_jump2 =
+{
+  "jump",                               /* name */
+  NULL,                                 /* gate */   
+  rest_of_handle_jump2,			/* execute */       
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_JUMP,                              /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  TODO_ggc_collect,                     /* todo_flags_start */
+  TODO_dump_func,                       /* todo_flags_finish */
+  'j'                                   /* letter */
+};
+
+

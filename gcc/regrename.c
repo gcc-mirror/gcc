@@ -36,6 +36,8 @@
 #include "flags.h"
 #include "toplev.h"
 #include "obstack.h"
+#include "timevar.h"
+#include "tree-pass.h"
 
 struct du_chain
 {
@@ -1907,3 +1909,38 @@ validate_value_data (struct value_data *vd)
 		      vd->e[i].next_regno);
 }
 #endif
+
+static bool
+gate_handle_regrename (void)
+{
+  return (optimize > 0 && (flag_rename_registers || flag_cprop_registers));
+}
+
+
+/* Run the regrename and cprop passes.  */
+static void
+rest_of_handle_regrename (void)
+{
+  if (flag_rename_registers)
+    regrename_optimize ();
+  if (flag_cprop_registers)
+    copyprop_hardreg_forward ();
+}
+
+struct tree_opt_pass pass_regrename =
+{
+  "rnreg",                              /* name */
+  gate_handle_regrename,                /* gate */
+  rest_of_handle_regrename,             /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_RENAME_REGISTERS,                  /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func,                       /* todo_flags_finish */
+  'n'                                   /* letter */
+};
+

@@ -170,6 +170,8 @@
 #include "varray.h"
 #include "reload.h"
 #include "ggc.h"
+#include "timevar.h"
+#include "tree-pass.h"
 
 /* We use this array to cache info about insns, because otherwise we
    spend too much time in stack_regs_mentioned_p.
@@ -3126,5 +3128,52 @@ reg_to_stack (FILE *file)
   return true;
 }
 #endif /* STACK_REGS */
+
+static bool
+gate_handle_stack_regs (void)
+{
+#ifdef STACK_REGS
+  return 1;
+#else
+  return 0;
+#endif
+}
+
+/* Convert register usage from flat register file usage to a stack
+   register file.  */
+static void
+rest_of_handle_stack_regs (void)
+{
+#ifdef STACK_REGS
+  if (reg_to_stack (dump_file) && optimize)
+    {
+      if (cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK
+                       | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0))
+          && (flag_reorder_blocks || flag_reorder_blocks_and_partition))
+        {
+          reorder_basic_blocks (0);
+          cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK);
+        }
+    }
+#endif
+}
+
+struct tree_opt_pass pass_stack_regs =
+{
+  "stack",                              /* name */
+  gate_handle_stack_regs,               /* gate */
+  rest_of_handle_stack_regs,            /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_REG_STACK,                         /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func |
+  TODO_ggc_collect,                     /* todo_flags_finish */
+  'k'                                   /* letter */
+};
 
 #include "gt-reg-stack.h"

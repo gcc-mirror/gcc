@@ -75,6 +75,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "langhooks.h"
 #include "cgraph.h"
 #include "diagnostic.h"
+#include "tree-pass.h"
+#include "timevar.h"
 
 /* Provide defaults for stuff that may not be defined when using
    sjlj exceptions.  */
@@ -2711,6 +2713,23 @@ set_nothrow_function_flags (void)
       }
 }
 
+struct tree_opt_pass pass_set_nothrow_function_flags =
+{
+  NULL,                                 /* name */
+  NULL,                                 /* gate */
+  set_nothrow_function_flags,           /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  0,                                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  0,                                    /* todo_flags_finish */
+  0                                     /* letter */
+};
+
 
 /* Various hooks for unwind library.  */
 
@@ -3219,6 +3238,23 @@ convert_to_eh_region_ranges (void)
 
   htab_delete (ar_hash);
 }
+
+struct tree_opt_pass pass_convert_to_eh_region_ranges =
+{
+  NULL,                                 /* name */
+  NULL,                                 /* gate */
+  convert_to_eh_region_ranges,          /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  0,                                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  0,                                    /* todo_flags_finish */
+  0                                     /* letter */
+};
 
 
 static void
@@ -3768,7 +3804,6 @@ verify_eh_tree (struct function *fun)
     }
 }
 
-
 /* Initialize unwind_resume_libfunc.  */
 
 void
@@ -3779,5 +3814,38 @@ default_init_unwind_resume_libfunc (void)
     init_one_libfunc ( USING_SJLJ_EXCEPTIONS ? "_Unwind_SjLj_Resume"
 					     : "_Unwind_Resume");
 }
+
+
+static bool
+gate_handle_eh (void)
+{
+  return doing_eh (0);
+}
+
+/* Complete generation of exception handling code.  */
+static void
+rest_of_handle_eh (void)
+{
+  cleanup_cfg (CLEANUP_PRE_LOOP | CLEANUP_NO_INSN_DEL);
+  finish_eh_generation ();
+  cleanup_cfg (CLEANUP_PRE_LOOP | CLEANUP_NO_INSN_DEL);
+}
+
+struct tree_opt_pass pass_rtl_eh =
+{
+  "eh",                                 /* name */
+  gate_handle_eh,                       /* gate */   
+  rest_of_handle_eh,			/* execute */       
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_JUMP,                              /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func,                       /* todo_flags_finish */
+  'h'                                   /* letter */
+};
 
 #include "gt-except.h"

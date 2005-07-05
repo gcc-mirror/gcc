@@ -61,8 +61,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "target.h"
 #include "cfglayout.h"
 #include "tree-gimple.h"
+#include "tree-pass.h"
 #include "predict.h"
-
 
 #ifndef LOCAL_ALIGNMENT
 #define LOCAL_ALIGNMENT(TYPE, ALIGNMENT) ALIGNMENT
@@ -1662,6 +1662,24 @@ instantiate_virtual_regs (void)
      frame_pointer_rtx.  */
   virtuals_instantiated = 1;
 }
+
+struct tree_opt_pass pass_instantiate_virtual_regs =
+{
+  NULL,                                 /* name */
+  NULL,                                 /* gate */
+  instantiate_virtual_regs,             /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  0,                                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  0,                                    /* todo_flags_finish */
+  0                                     /* letter */
+};
+
 
 /* Return 1 if EXP is an aggregate type (or a value with aggregate type).
    This means a type for which function calls must pass an address to the
@@ -3884,6 +3902,24 @@ init_function_for_compilation (void)
   gcc_assert (VEC_length (int, sibcall_epilogue) == 0);
 }
 
+struct tree_opt_pass pass_init_function =
+{
+  NULL,                                 /* name */
+  NULL,                                 /* gate */   
+  init_function_for_compilation,        /* execute */       
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  0,                                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  0,                                    /* todo_flags_finish */
+  0                                     /* letter */
+};
+
+
 void
 expand_main_function (void)
 {
@@ -5499,5 +5535,33 @@ current_function_name (void)
 {
   return lang_hooks.decl_printable_name (cfun->decl, 2);
 }
+
+
+static void
+rest_of_handle_check_leaf_regs (void)
+{
+#ifdef LEAF_REGISTERS
+  current_function_uses_only_leaf_regs
+    = optimize > 0 && only_leaf_regs_used () && leaf_function_p ();
+#endif
+}
+
+struct tree_opt_pass pass_leaf_regs =
+{
+  NULL,                                 /* name */
+  NULL,                                 /* gate */
+  rest_of_handle_check_leaf_regs,       /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  0,                                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  0,                                    /* todo_flags_finish */
+  0                                     /* letter */
+};
+
 
 #include "gt-function.h"

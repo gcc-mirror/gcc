@@ -1,3 +1,163 @@
+2005-07-05  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.in: Adjust dependencies.
+	* tree-pass.h: Add new passes and passes formerly in tree-optimize.c.
+	* basic-block.h (duplicate_computed_gotos): Remove, it is now static.
+	* alias.c (rest_of_handle_cfg, pass_cfg): New.
+	* bb-reorder.c (duplicate_computed_gotos): Make it static.
+	* cfgexpand.c (tree_expand_cfg): Add code formerly at the beginning of
+	rest_of_compilation.
+
+	* bb-reorder.c (gate_duplicate_computed_gotos,
+	pass_duplicate_computed_gotos, gate_handle_reorder_blocks,
+	rest_of_handle_reorder_blocks, pass_reorder_blocks,
+	gate_handle_partition_blocks, rest_of_handle_partition_blocks,
+	pass_partition_blocks): New.
+	* bt-load.c (gate_handle_branch_target_load_optimize,
+	rest_of_handle_branch_target_load_optimize,
+	pass_branch_target_load_optimize): New.
+	* cfgcleanup.c (rest_of_handle_jump, pass_jump, rest_of_handle_jump2,
+	pass_jump2): New.
+	* cfglayout.c (pass_insn_locators_initialize): New.
+	* cfgrtl.c (pass_free_cfg): New.
+	* combine.c (gate_handle_combine, rest_of_handle_combine,
+	pass_combine): New.
+	* cse.c (gate_handle_cse, rest_of_handle_cse, pass_cse,
+	gate_handle_cse2, rest_of_handle_cse2, pass_cse2): New.
+	* emit-rtl.c (pass_unshare_all_rtl, pass_remove_unnecessary_notes): New.
+	* except.c (pass_set_nothrow_function_flags,
+	pass_convert_to_eh_region_ranges, gate_handle_eh, rest_of_handle_eh,
+	pass_rtl_eh): New.
+	* final.c (pass_compute_alignments, rest_of_handle_final, pass_final,
+	rest_of_handle_shorten_branches, pass_shorten_branches,
+	rest_of_clean_state, pass_clean_state): New.
+	* flow.c (pass_recompute_reg_usage, gate_remove_death_notes,
+	rest_of_handle_remove_death_notes, pass_remove_death_notes,
+	rest_of_handle_life, pass_life, rest_of_handle_flow2,
+	pass_flow2): New.
+	* function.c (pass_instantiate_virtual_regs, pass_init_function,
+	rest_of_handle_check_leaf_regs, pass_leaf_regs): New.
+	* gcse.c (gate_handle_jump_bypass, rest_of_handle_jump_bypass,
+	pass_jump_bypass, gate_handle_gcse, rest_of_handle_gcse,
+	pass_gcse): New.
+	* global.c (rest_of_handle_global_alloc, pass_global_alloc): New.
+	* ifcvt.c (gate_handle_if_conversion, rest_of_handle_if_conversion,
+	pass_rtl_ifcvt, gate_handle_if_after_combine,
+	rest_of_handle_if_after_combine, pass_if_after_combine,
+	gate_handle_if_after_reload, rest_of_handle_if_after_reload,
+	pass_if_after_reload): New.
+	* integrate.c (pass_initial_value_sets): New.
+	* jump.c (pass_cleanup_barriers, purge_line_number_notes,
+	pass_purge_lineno_notes): New.
+	* mode-switching.c (rest_of_handle_mode_switching,
+	pass_mode_switching): New.
+	* local-alloc.c (rest_of_handle_local_alloc, pass_local_alloc): New.
+	* loop-init.c (gate_handle_loop2, rest_of_handle_loop2,
+	pass_loop2): New.
+	* loop.c (gate_handle_loop_optimize, rest_of_handle_loop_optimize,
+	pass_loop_optimize): New.
+	* modulo-sched.c (gate_handle_sms, rest_of_handle_sms,
+	pass_sms): New.
+	* postreload-gcse.c (gate_handle_gcse2, rest_of_handle_gcse2,
+	pass_gcse2): New.
+	* postreload.c (gate_handle_postreload, rest_of_handle_postreload,
+	pass_postreload_cse): New.
+	* profile.c (gate_handle_profiling, pass_profiling,
+	rest_of_handle_branch_prob, pass_branch_prob): New.
+	* recog.c (pass pass_split_for_shorten_branches, gate_do_final_split, 
+	pass_split_before_regstack, gate_handle_split_before_regstack,
+	gate_handle_peephole2, rest_of_handle_peephole2, pass_peephole2,
+	rest_of_handle_split_all_insns, pass_split_all_insns): New.
+	* reg-stack.c (gate_handle_stack_regs, rest_of_handle_stack_regs,
+	pass_stack_regs): New.
+	* regmove.c (gate_handle_regmove, rest_of_handle_regmove, pass_regmove,
+	gate_handle_stack_adjustments, rest_of_handle_stack_adjustments,
+	pass_stack_adjustments): New.
+	* regrename.c (gate_handle_regrename, rest_of_handle_regrename,
+	pass_regrename): New.
+	* reorg.c (gate_handle_delay_slots, rest_of_handle_delay_slots,
+	pass_delay_slots, gate_handle_machine_reorg,
+	rest_of_handle_machine_reorg, pass_machine_reorg): New.
+	* rtl.h (extern void purge_line_number_notes): New.
+	* sched-rgn.c (gate_handle_sched, rest_of_handle_sched,
+	gate_handle_sched2, rest_of_handle_sched2, pass_sched,
+	pass_sched2): New.
+	* tracer.c (gate_handle_tracer, rest_of_handle_tracer,
+	pass_tracer): New.
+	* value-prof.c (gate_handle_value_profile_transformations,
+	rest_of_handle_value_profile_transformations,
+	pass_value_profile_transformations): New.
+	* var-tracking.c (gate_handle_var_tracking,
+	pass_variable_tracking): New.
+	* web.c (gate_handle_web, rest_of_handle_web, pass_web): New.
+
+	* passes.c (open_dump_file, close_dump_file, rest_of_handle_final,
+	rest_of_handle_delay_slots, rest_of_handle_stack_regs,
+	rest_of_handle_variable_tracking, rest_of_handle_machine_reorg,
+	rest_of_handle_old_regalloc, rest_of_handle_regrename,
+	rest_of_handle_reorder_blocks, rest_of_handle_partition_blocks,
+	rest_of_handle_sms, rest_of_handle_sched, rest_of_handle_sched2,
+	rest_of_handle_gcse2, rest_of_handle_regmove,
+	rest_of_handle_tracer, rest_of_handle_if_conversion,
+	rest_of_handle_if_after_combine, rest_of_handle_if_after_reload,
+	rest_of_handle_web, rest_of_handle_branch_prob,
+	rest_of_handle_value_profile_transformations, rest_of_handle_cfg,
+	rest_of_handle_jump_bypass, rest_of_handle_combine,
+	rest_of_handle_life, rest_of_handle_cse, rest_of_handle_cse2,
+	rest_of_handle_gcse, rest_of_handle_loop_optimize,
+	rest_of_handle_loop2, rest_of_handle_branch_target_load_optimize,
+	rest_of_handle_mode_switching, rest_of_handle_jump,
+	rest_of_handle_eh, rest_of_handle_stack_adjustments,
+	rest_of_handle_flow2, rest_of_handle_jump2,
+	rest_of_handle_peephole2, rest_of_handle_postreload,
+	rest_of_handle_shorten_branches, rest_of_clean_state,
+	rest_of_compilation): Remove.
+
+	* cgraphunit.c (ipa_passes): Moved from tree-optimize.c.
+	* passes.c (dump_flags, in_gimple_form, all_passes,
+	all_ipa_passes, all_lowering_passes, register_one_dump_file,
+	register_dump_files, next_pass_1, last_verified, execute_todo,
+	execute_one_pass, execute_pass_list, execute_ipa_pass_list): Moved
+	from tree-optimize.c.
+	(init_optimization_passes): Moved from tree-optimize.c,
+	adding the RTL optimizations.
+	* tree-dump.h (dump_info_p, dump_flag): Moved from tree.h.
+	* tree-optimize.c (dump_flags, in_gimple_form, all_passes,
+	all_ipa_passes, all_lowering_passes, register_one_dump_file,
+	register_dump_files, next_pass_1, last_verified, execute_todo,
+	execute_one_pass, execute_pass_list, execute_ipa_pass_list,
+	init_tree_optimization_passes, ipa_passes): Delete.
+	* tree-pass.h (enum tree_dump_index): Moved from tree.h, removing
+	the RTL dumps.
+	(TDF_*, get_dump_file_name, dump_enabled_p, dump_initialized_p,
+	dump_begin, dump_end, dump_node, dump_switch_p, dump_flag_name): Moved
+	from tree.h.
+	(ipa_passes): Remove.
+	(all_passes, all_ipa_passes, all_lowering_passes): Now extern.
+	* tree.h (enum tree_dump_index, TDF_*, get_dump_file_name,
+	dump_enabled_p, dump_initialized_p, dump_begin, dump_end, dump_node,
+	dump_switch_p, dump_flag_name): Moved to tree-pass.h.
+	(dump_info_p, dump_flag): Moved to tree-dump.h.
+	
+	* Makefile.in: Adjust dependencies for tree-pretty-print.c,
+	cgraph.c, opts.c.
+	* passes.c (finish_optimization_passes): Use dump_begin
+	and dump_end, TDI_end.
+	(gate_rest_of_compilation): New.
+	(pass_rest_of_compilation): Use it.
+	(gate_postreload, pass_postreload): New.
+	* toplev.c (general_init): Rename init_tree_optimization_passes.
+	* toplev.h (init_tree_optimization_passes): Rename to
+	init_optimizations_passes.
+	* tree-dump.c (dump_flag): Make static.
+	(dump_files): Remove RTL dumps.
+	* tree-optimize.c (pass_all_optimizations, pass_early_local_passes,
+	pass_cleanup_cfg, pass_free_cfg_annotations,
+	pass_cleanup_cfg_post_optimizing, pass_free_datastructures,
+	pass_init_datastructures, pass_fixup_cfg): Make non-static.
+	* tree-pretty-print.c: Include tree-pass.h.
+	* cgraph.c: Include tree-dump.h.
+	
 2005-07-04  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-structalias.c (get_constraint_exp_from_ssa_var):

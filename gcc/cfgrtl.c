@@ -59,6 +59,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "target.h"
 #include "cfgloop.h"
 #include "ggc.h"
+#include "tree-pass.h"
 
 static int can_delete_note_p (rtx);
 static int can_delete_label_p (rtx);
@@ -417,6 +418,23 @@ free_bb_for_insn (void)
     if (!BARRIER_P (insn))
       BLOCK_FOR_INSN (insn) = NULL;
 }
+
+struct tree_opt_pass pass_free_cfg =
+{
+  NULL,                                 /* name */
+  NULL,                                 /* gate */
+  free_bb_for_insn,                     /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  0,                                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  PROP_cfg,                             /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  0,                                    /* todo_flags_finish */
+  0                                     /* letter */
+};
 
 /* Return RTX to emit after when we want to emit code on the entry of function.  */
 rtx

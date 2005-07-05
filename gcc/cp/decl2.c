@@ -49,6 +49,7 @@ Boston, MA 02110-1301, USA.  */
 #include "cgraph.h"
 #include "tree-inline.h"
 #include "c-pragma.h"
+#include "tree-dump.h"
 #include "intl.h"
 
 extern cpp_reader *parse_in;

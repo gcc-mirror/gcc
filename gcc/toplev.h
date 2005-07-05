@@ -69,7 +69,7 @@ extern void verbatim (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern void rest_of_decl_compilation (tree, int, int);
 extern void rest_of_type_compilation (tree, int);
 extern void tree_rest_of_compilation (tree);
-extern void init_tree_optimization_passes (void);
+extern void init_optimization_passes (void);
 extern void finish_optimization_passes (void);
 extern bool enable_rtl_dump_file (int);
 

@@ -104,6 +104,8 @@
 #include "hashtab.h"
 #include "regs.h"
 #include "expr.h"
+#include "timevar.h"
+#include "tree-pass.h"
 
 /* Type of micro operation.  */
 enum micro_operation_type
@@ -2809,3 +2811,29 @@ variable_tracking_main (void)
 
   vt_finalize ();
 }
+
+static bool
+gate_handle_var_tracking (void)
+{
+  return (flag_var_tracking);
+}
+
+
+
+struct tree_opt_pass pass_variable_tracking =
+{
+  "vartrack",                           /* name */
+  gate_handle_var_tracking,             /* gate */
+  variable_tracking_main,               /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_VAR_TRACKING,                      /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func,                       /* todo_flags_finish */
+  'V'                                   /* letter */
+};
+

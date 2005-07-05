@@ -36,6 +36,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "ggc.h"
 #include "alloc-pool.h"
 #include "flags.h"
+#include "tree-pass.h"
 
 /* Holds the interesting trailing notes for the function.  */
 rtx cfg_layout_function_footer, cfg_layout_function_header;
@@ -329,6 +330,24 @@ insn_locators_initialize (void)
 
   free_block_changes ();
 }
+
+struct tree_opt_pass pass_insn_locators_initialize =
+{
+  NULL,                                 /* name */
+  NULL,                                 /* gate */   
+  insn_locators_initialize,             /* execute */       
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  0,                                    /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  0,                                    /* todo_flags_finish */
+  0                                     /* letter */
+};
+
 
 /* For each lexical block, set BLOCK_NUMBER to the depth at which it is
    found in the block tree.  */

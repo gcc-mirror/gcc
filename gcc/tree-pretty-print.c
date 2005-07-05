@@ -31,6 +31,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "langhooks.h"
 #include "tree-iterator.h"
 #include "tree-chrec.h"
+#include "tree-pass.h"
 
 /* Local functions, macros and variables.  */
 static int op_prio (tree);

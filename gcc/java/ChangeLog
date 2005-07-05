@@ -1,3 +1,8 @@
+2005-07-05  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.in (parse.o): Adjust dependencies.
+	* parse.y: Include tree-dump.h.
+
 2005-07-02  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* class.c, decl.c, expr.c: Use '+' flag instead of %J.  Use 'q'

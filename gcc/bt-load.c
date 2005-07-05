@@ -34,6 +34,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "function.h"
 #include "except.h"
 #include "tm_p.h"
+#include "toplev.h"
+#include "tree-pass.h"
 
 /* Target register optimizations - these are performed after reload.  */
 
@@ -1479,3 +1481,50 @@ branch_target_load_optimize (bool after_prologue_epilogue_gen)
 			PROP_DEATH_NOTES | PROP_REG_INFO);
     }
 }
+
+static bool
+gate_handle_branch_target_load_optimize (void)
+{
+  return (optimize > 0 && flag_branch_target_load_optimize2);
+}
+
+
+static void
+rest_of_handle_branch_target_load_optimize (void)
+{
+  static int warned = 0;
+
+  /* Leave this a warning for now so that it is possible to experiment
+     with running this pass twice.  In 3.6, we should either make this
+     an error, or use separate dump files.  */
+  if (flag_branch_target_load_optimize
+      && flag_branch_target_load_optimize2
+      && !warned)
+    {
+      warning (0, "branch target register load optimization is not intended "
+                  "to be run twice");
+
+      warned = 1;
+    }
+
+  branch_target_load_optimize (epilogue_completed);
+}
+
+struct tree_opt_pass pass_branch_target_load_optimize =
+{
+  "btl",                               /* name */
+  gate_handle_branch_target_load_optimize,      /* gate */
+  rest_of_handle_branch_target_load_optimize,   /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  0,		                        /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func |
+  TODO_ggc_collect,                     /* todo_flags_finish */
+  'd'                                   /* letter */
+};
+

@@ -72,6 +72,7 @@ definitions and other extensions.  */
 #include "ggc.h"
 #include "debug.h"
 #include "tree-inline.h"
+#include "tree-dump.h"
 #include "cgraph.h"
 #include "target.h"
 
