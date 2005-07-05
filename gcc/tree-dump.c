@@ -712,7 +712,7 @@ static struct dump_file_info dump_files[TDI_end] =
   {NULL, "rtl-all", NULL, TDF_RTL, 0, 0, 0},
   {NULL, "ipa-all", NULL, TDF_IPA, 0, 0, 0},
 
-  { ".cgraph", "ipa-cgraph", NULL,	TDF_IPA, 0,  1, 0},
+  { ".cgraph", "ipa-cgraph", NULL,	TDF_IPA, 0,  0, 0},
 
   { ".sibling", "rtl-sibling", NULL,	TDF_RTL, 0,  1, 'i'},
   { ".eh", "rtl-eh", NULL,		TDF_RTL, 0,  2, 'h'},
