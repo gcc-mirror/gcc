@@ -1,3 +1,8 @@
+2005-07-05  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/22308
+	* gcc.dg/pr22308-1.c: New test.
+
 2005-07-05  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gcc.dg/compare1.c: Add -fno-short-enums.  Don't skip on any
