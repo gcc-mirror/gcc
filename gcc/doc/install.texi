@@ -1068,6 +1068,10 @@ be built.  This can be useful for debugging, or for compatibility with
 previous Ada build procedures, when it was required to explicitly
 do a @samp{make -C gcc gnatlib_and_tools}.
 
+@item --disable-libssp
+Specify that the run-time libraries for stack smashing protection
+should not be built.
+
 @item --with-dwarf2
 Specify that the compiler should
 use DWARF 2 debugging information as the default.
