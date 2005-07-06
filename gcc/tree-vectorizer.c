@@ -176,6 +176,9 @@ enum verbosity_levels vect_verbosity_level = MAX_VERBOSITY_LEVEL;
 
 /* Number of loops, at the beginning of vectorization.  */
 unsigned int vect_loops_num;
+
+/* Loop location.  */
+static LOC vect_loop_location;
 
 /*************************************************************************
   Simple Loop Peeling Utilities
@@ -1299,17 +1302,18 @@ vect_set_dump_settings (void)
    For vectorization debug dumps.  */
 
 bool
-vect_print_dump_info (enum verbosity_levels vl, LOC loc)
+vect_print_dump_info (enum verbosity_levels vl)
 {
   if (vl > vect_verbosity_level)
     return false;
 
-  if (loc == UNKNOWN_LOC)
+  if (vect_loop_location == UNKNOWN_LOC)
     fprintf (vect_dump, "\n%s:%d: note: ",
 		 DECL_SOURCE_FILE (current_function_decl),
 		 DECL_SOURCE_LINE (current_function_decl));
   else
-    fprintf (vect_dump, "\n%s:%d: note: ", LOC_FILE (loc), LOC_LINE (loc));
+    fprintf (vect_dump, "\n%s:%d: note: ", 
+	     LOC_FILE (vect_loop_location), LOC_LINE (vect_loop_location));
 
 
   return true;
@@ -1407,7 +1411,6 @@ new_loop_vec_info (struct loop *loop)
   VARRAY_GENERIC_PTR_INIT (LOOP_VINFO_DATAREF_READS (res), 20,
 			   "loop_read_datarefs");
   LOOP_VINFO_UNALIGNED_DR (res) = NULL;
-  LOOP_VINFO_LOC (res) = UNKNOWN_LOC;
 
   return res;
 }
@@ -1549,7 +1552,7 @@ get_vectype_for_scalar_type (tree scalar_type)
   nunits = UNITS_PER_SIMD_WORD / nbytes;
 
   vectype = build_vector_type (scalar_type, nunits);
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     {
       fprintf (vect_dump, "get vectype with %d units of type ", nunits);
       print_generic_expr (vect_dump, scalar_type, TDF_SLIM);
@@ -1558,7 +1561,7 @@ get_vectype_for_scalar_type (tree scalar_type)
   if (!vectype)
     return NULL_TREE;
 
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     {
       fprintf (vect_dump, "vectype: ");
       print_generic_expr (vect_dump, vectype, TDF_SLIM);
@@ -1567,7 +1570,7 @@ get_vectype_for_scalar_type (tree scalar_type)
   if (!VECTOR_MODE_P (TYPE_MODE (vectype))
       && !INTEGRAL_MODE_P (TYPE_MODE (vectype)))
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "mode not supported by target.");
       return NULL_TREE;
     }
@@ -1633,7 +1636,7 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
   *def_stmt = NULL_TREE;
   *def = NULL_TREE;
   
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     {
       fprintf (vect_dump, "vect_is_simple_use: operand ");
       print_generic_expr (vect_dump, operand, TDF_SLIM);
@@ -1647,7 +1650,7 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
     
   if (TREE_CODE (operand) != SSA_NAME)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "not ssa-name.");
       return false;
     }
@@ -1655,12 +1658,12 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
   *def_stmt = SSA_NAME_DEF_STMT (operand);
   if (*def_stmt == NULL_TREE )
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "no def_stmt.");
       return false;
     }
 
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     {
       fprintf (vect_dump, "def_stmt: ");
       print_generic_expr (vect_dump, *def_stmt, TDF_SLIM);
@@ -1678,7 +1681,7 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
           return true;
         }
 
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "Unexpected empty stmt.");
       return false;
     }
@@ -1694,7 +1697,7 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
 
   if (*dt == vect_unknown_def_type)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "Unsupported pattern.");
       return false;
     }
@@ -1703,12 +1706,12 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
      a reduction operation cannot have uses in the loop.  */
   if (*dt == vect_reduction_def && TREE_CODE (*def_stmt) != PHI_NODE)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "reduction used in loop.");
       return false;
     }
 
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "type of def: %d.",*dt);
 
   switch (TREE_CODE (*def_stmt))
@@ -1725,14 +1728,14 @@ vect_is_simple_use (tree operand, loop_vec_info loop_vinfo, tree *def_stmt,
       break;
 
     default:
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "unsupported defining stmt: ");
       return false;
     }
 
   if (*dt == vect_induction_def)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "induction not supported.");
       return false;
     }
@@ -1810,7 +1813,7 @@ vect_is_simple_reduction (struct loop *loop ATTRIBUTE_UNUSED,
 
   if (TREE_CODE (loop_arg) != SSA_NAME)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         {
           fprintf (vect_dump, "reduction: not ssa_name: ");
           print_generic_expr (vect_dump, loop_arg, TDF_SLIM);
@@ -1821,14 +1824,14 @@ vect_is_simple_reduction (struct loop *loop ATTRIBUTE_UNUSED,
   def_stmt = SSA_NAME_DEF_STMT (loop_arg);
   if (!def_stmt)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "reduction: no def_stmt.");
       return NULL_TREE;
     }
 
   if (TREE_CODE (def_stmt) != MODIFY_EXPR)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         {
           print_generic_expr (vect_dump, def_stmt, TDF_SLIM);
         }
@@ -1839,7 +1842,7 @@ vect_is_simple_reduction (struct loop *loop ATTRIBUTE_UNUSED,
   code = TREE_CODE (operation);
   if (!commutative_tree_code (code) || !associative_tree_code (code))
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         {
           fprintf (vect_dump, "reduction: not commutative/associative: ");
           print_generic_expr (vect_dump, operation, TDF_SLIM);
@@ -1850,7 +1853,7 @@ vect_is_simple_reduction (struct loop *loop ATTRIBUTE_UNUSED,
   op_type = TREE_CODE_LENGTH (code);
   if (op_type != binary_op)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         {
           fprintf (vect_dump, "reduction: not binary operation: ");
           print_generic_expr (vect_dump, operation, TDF_SLIM);
@@ -1862,7 +1865,7 @@ vect_is_simple_reduction (struct loop *loop ATTRIBUTE_UNUSED,
   op2 = TREE_OPERAND (operation, 1);
   if (TREE_CODE (op1) != SSA_NAME || TREE_CODE (op2) != SSA_NAME)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         {
           fprintf (vect_dump, "reduction: uses not ssa_names: ");
           print_generic_expr (vect_dump, operation, TDF_SLIM);
@@ -1875,7 +1878,7 @@ vect_is_simple_reduction (struct loop *loop ATTRIBUTE_UNUSED,
   if (TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (TREE_TYPE (op1))
       || TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (TREE_TYPE (op2)))
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         {
           fprintf (vect_dump, "reduction: multiple types: operation type: ");
           print_generic_expr (vect_dump, type, TDF_SLIM);
@@ -1891,7 +1894,7 @@ vect_is_simple_reduction (struct loop *loop ATTRIBUTE_UNUSED,
   if (SCALAR_FLOAT_TYPE_P (type) && !flag_unsafe_math_optimizations)
     {
       /* Changing the order of operations changes the sematics.  */
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         {
           fprintf (vect_dump, "reduction: unsafe fp math optimization: ");
           print_generic_expr (vect_dump, operation, TDF_SLIM);
@@ -1901,7 +1904,7 @@ vect_is_simple_reduction (struct loop *loop ATTRIBUTE_UNUSED,
   else if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type) && flag_trapv)
     {
       /* Changing the order of operations changes the sematics.  */
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         {
           fprintf (vect_dump, "reduction: unsafe int math optimization: ");
           print_generic_expr (vect_dump, operation, TDF_SLIM);
@@ -1917,7 +1920,7 @@ vect_is_simple_reduction (struct loop *loop ATTRIBUTE_UNUSED,
   def2 = SSA_NAME_DEF_STMT (op2);
   if (!def1 || !def2)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         {
           fprintf (vect_dump, "reduction: no defs for operands: ");
           print_generic_expr (vect_dump, operation, TDF_SLIM);
@@ -1929,7 +1932,7 @@ vect_is_simple_reduction (struct loop *loop ATTRIBUTE_UNUSED,
       && flow_bb_inside_loop_p (loop, bb_for_stmt (def1))
       && def2 == phi)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         {
           fprintf (vect_dump, "detected reduction:");
           print_generic_expr (vect_dump, operation, TDF_SLIM);
@@ -1946,7 +1949,7 @@ vect_is_simple_reduction (struct loop *loop ATTRIBUTE_UNUSED,
       /* Swap operands (just for simplicity - so that the rest of the code
 	 can assume that the reduction variable is always the last (second)
 	 argument).  */
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         {
           fprintf (vect_dump, "detected reduction: need to swap operands:");
           print_generic_expr (vect_dump, operation, TDF_SLIM);
@@ -1965,7 +1968,7 @@ vect_is_simple_reduction (struct loop *loop ATTRIBUTE_UNUSED,
     }
   else
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         {
           fprintf (vect_dump, "reduction: unknown pattern.");
           print_generic_expr (vect_dump, operation, TDF_SLIM);
@@ -2003,7 +2006,7 @@ vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
   init_expr = unshare_expr (initial_condition_in_loop_num (access_fn,
                                                            loop_nb));
 
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     {
       fprintf (vect_dump, "step: ");
       print_generic_expr (vect_dump, step_expr, TDF_SLIM);
@@ -2016,7 +2019,7 @@ vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
 
   if (TREE_CODE (step_expr) != INTEGER_CST)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "step unknown.");
       return false;
     }
@@ -2052,6 +2055,7 @@ vectorize_loops (struct loops *loops)
       if (!loop)
         continue;
 
+      vect_loop_location = find_loop_location (loop);
       loop_vinfo = vect_analyze_loop (loop);
       loop->aux = loop_vinfo;
 
@@ -2062,7 +2066,7 @@ vectorize_loops (struct loops *loops)
       num_vectorized_loops++;
     }
 
-  if (vect_print_dump_info (REPORT_VECTORIZED_LOOPS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_VECTORIZED_LOOPS))
     fprintf (vect_dump, "vectorized %u loops in function.\n",
 	     num_vectorized_loops);
 
