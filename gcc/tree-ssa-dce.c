@@ -96,6 +96,13 @@ static bitmap *control_dependence_map;
    processed that it is control dependent on.  */
 static sbitmap visited_control_parents;
 
+/* TRUE if this pass alters the CFG (by removing control statements).
+   FALSE otherwise.
+
+   If this pass alters the CFG, then it will arrange for the dominators
+   to be recomputed.  */
+static bool cfg_altered;
+
 /* Execute CODE for each edge (given number EDGE_NUMBER within the CODE)
    for which the block with index N is control dependent.  */
 #define EXECUTE_IF_CONTROL_DEPENDENT(N, EDGE_NUMBER, CODE)		      \
@@ -774,7 +781,15 @@ remove_dead_stmt (block_stmt_iterator *i, basic_block bb)
 
       /* Remove the remaining the outgoing edges.  */
       while (!single_succ_p (bb))
-        remove_edge (EDGE_SUCC (bb, 1));
+	{
+	  /* FIXME.  When we remove the edge, we modify the CFG, which
+	     in turn modifies the dominator and post-dominator tree.
+	     Is it safe to postpone recomputing the dominator and
+	     post-dominator tree until the end of this pass given that
+	     the post-dominators are used above?  */
+	  cfg_altered = true;
+          remove_edge (EDGE_SUCC (bb, 1));
+	}
     }
   
   FOR_EACH_SSA_DEF_OPERAND (def_p, t, iter, SSA_OP_VIRTUAL_DEFS)
@@ -833,6 +848,7 @@ tree_dce_init (bool aggressive)
   sbitmap_zero (processed);
 
   worklist = VEC_alloc (tree, heap, 64);
+  cfg_altered = false;
 }
 
 /* Cleanup after this pass.  */
@@ -902,6 +918,12 @@ perform_tree_ssa_dce (bool aggressive)
 
   if (aggressive)
     free_dominance_info (CDI_POST_DOMINATORS);
+
+  /* If we removed paths in the CFG, then we need to update
+     dominators as well.  I haven't investigated the possibility
+     of incrementally updating dominators.  */
+  if (cfg_altered)
+    free_dominance_info (CDI_DOMINATORS);
 
   /* Debugging dumps.  */
   if (dump_file)

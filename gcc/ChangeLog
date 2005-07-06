@@ -1,3 +1,12 @@
+2005-07-06  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dce.c (cfg_altered): New global.
+	(tree_dce_init): Initialize cfg_altered.
+	(remove_dead_stmt): If we remove an edge in the CFG, then set
+	CFG_ALTERED.
+	(perform_tree_ssa_dce): If we altered the CFG, then invalidate
+	the dominators.
+
 2005-07-06  Kazu Hirata  <kazu@codesourcery.com>
 
 	* Makefile.in (stamp-collect-ld): Use
