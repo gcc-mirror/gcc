@@ -1,3 +1,7 @@
+2005-07-06  Kazu Hirata  <kazu@codesourcery.com>
+
+	* doc/install.texi (--disable-libssp): New.
+
 2005-07-06  Fariborz Jahanian <fjahanian@apple.com>
 
         * doc/invoke.texi: Update -fforce-mem documentation.

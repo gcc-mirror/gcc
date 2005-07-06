@@ -307,6 +307,14 @@ if test "${ENABLE_LIBADA}" != "yes" ; then
   noconfigdirs="$noconfigdirs gnattools"
 fi
 
+AC_ARG_ENABLE(libssp,
+[  --enable-libssp        Builds libssp directory],
+ENABLE_LIBSSP=$enableval,
+ENABLE_LIBSSP=yes)
+if test "${ENABLE_LIBSSP}" != "yes" ; then
+  noconfigdirs="$noconfigdirs target-libssp"
+fi
+
 # Save it here so that, even in case of --enable-libgcj, if the Java
 # front-end isn't enabled, we still get libgcj disabled.
 libgcj_saved=$libgcj
