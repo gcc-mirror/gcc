@@ -1,3 +1,8 @@
+2005-07-06  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* aclocal.m4: Update macros for autoconf 2.59 style.
+	* configure.ac: Likewise.
+
 2005-07-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (function_value): Handle small aggregates on 32-bit targets.

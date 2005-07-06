@@ -16,10 +16,10 @@ dnl 	[ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND [, INCLUDES]]])
 AC_DEFUN([gcc_AC_CHECK_DECL],
 [AC_MSG_CHECKING([whether $1 is declared])
 AC_CACHE_VAL(gcc_cv_have_decl_$1,
-[AC_TRY_COMPILE([$4],
+[AC_COMPILE_IFELSE([AC_LANG_PROGRAM([$4],
 [#ifndef $1
 char *(*pfn) = (char *(*)) $1 ;
-#endif], eval "gcc_cv_have_decl_$1=yes", eval "gcc_cv_have_decl_$1=no")])
+#endif])], eval "gcc_cv_have_decl_$1=yes", eval "gcc_cv_have_decl_$1=no")])
 if eval "test \"`echo '$gcc_cv_have_decl_'$1`\" = yes"; then
   AC_MSG_RESULT(yes) ; ifelse([$2], , :, [$2])
 else
@@ -93,7 +93,7 @@ dnl See if the printf functions in libc support %p in format strings.
 AC_DEFUN([gcc_AC_FUNC_PRINTF_PTR],
 [AC_CACHE_CHECK(whether the printf functions support %p,
   gcc_cv_func_printf_ptr,
-[AC_TRY_RUN([#include <stdio.h>
+[AC_RUN_IFELSE([AC_LANG_SOURCE([[#include <stdio.h>
 
 int main()
 {
@@ -102,7 +102,7 @@ int main()
   sprintf(buf, "%p", p);
   sscanf(buf, "%p", &q);
   return (p != q);
-}], gcc_cv_func_printf_ptr=yes, gcc_cv_func_printf_ptr=no,
+}]])], gcc_cv_func_printf_ptr=yes, gcc_cv_func_printf_ptr=no,
 	gcc_cv_func_printf_ptr=no)
 rm -f core core.* *.core])
 if test $gcc_cv_func_printf_ptr = yes ; then
@@ -151,7 +151,7 @@ dnl Define MKDIR_TAKES_ONE_ARG if mkdir accepts only one argument instead
 dnl of the usual 2.
 AC_DEFUN([gcc_AC_FUNC_MKDIR_TAKES_ONE_ARG],
 [AC_CACHE_CHECK([if mkdir takes one argument], gcc_cv_mkdir_takes_one_arg,
-[AC_TRY_COMPILE([
+[AC_COMPILE_IFELSE([AC_LANG_PROGRAM([
 #include <sys/types.h>
 #ifdef HAVE_SYS_STAT_H
 # include <sys/stat.h>
@@ -161,7 +161,7 @@ AC_DEFUN([gcc_AC_FUNC_MKDIR_TAKES_ONE_ARG],
 #endif
 #ifdef HAVE_DIRECT_H
 # include <direct.h>
-#endif], [mkdir ("foo", 0);], 
+#endif], [mkdir ("foo", 0);])],
         gcc_cv_mkdir_takes_one_arg=no, gcc_cv_mkdir_takes_one_arg=yes)])
 if test $gcc_cv_mkdir_takes_one_arg = yes ; then
   AC_DEFINE(MKDIR_TAKES_ONE_ARG, 1, [Define if host mkdir takes a single argument.])
@@ -279,7 +279,7 @@ else
 
    # Unlike /dev/zero, the MAP_ANON(YMOUS) defines can be probed for.
    AC_CACHE_CHECK([for MAP_ANON(YMOUS)], gcc_cv_decl_map_anon,
-    [AC_TRY_COMPILE(
+    [AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 [#include <sys/types.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -288,7 +288,7 @@ else
 #define MAP_ANONYMOUS MAP_ANON
 #endif
 ],
-[int n = MAP_ANONYMOUS;],
+[int n = MAP_ANONYMOUS;])],
     gcc_cv_decl_map_anon=yes,
     gcc_cv_decl_map_anon=no)])
 
@@ -338,7 +338,7 @@ if test -n "[$]$1"; then
   ac_prog_version=`<<$>>$1 $3 2>&1 |
                    sed -n 's/^.*patsubst(<<$4>>,/,\/).*$/\1/p'`
 changequote([,])dnl
-  echo "configure:__oline__: version of $2 is $ac_prog_version" >&AC_FD_CC
+  echo "configure:__oline__: version of $2 is $ac_prog_version" >&AS_MESSAGE_LOG_FD
 changequote(<<,>>)dnl
   case $ac_prog_version in
     '')     gcc_cv_prog_$2_modern=no;;
@@ -358,7 +358,7 @@ dnl be either signed or unsigned.
 dnl
 AC_DEFUN([gcc_AC_C_ENUM_BF_UNSIGNED],
 [AC_CACHE_CHECK(for unsigned enumerated bitfields, gcc_cv_enum_bf_unsigned,
-[AC_TRY_RUN(#include <stdlib.h>
+[AC_RUN_IFELSE([AC_LANG_SOURCE([#include <stdlib.h>
 enum t { BLAH = 128 } ;
 struct s_t { enum t member : 8; } s ;
 int main(void)
@@ -367,7 +367,7 @@ int main(void)
         if (s.member < 0) exit(1);
         exit(0);
 
-}, gcc_cv_enum_bf_unsigned=yes, gcc_cv_enum_bf_unsigned=no, gcc_cv_enum_bf_unsigned=yes)])
+}])], gcc_cv_enum_bf_unsigned=yes, gcc_cv_enum_bf_unsigned=no, gcc_cv_enum_bf_unsigned=yes)])
 if test $gcc_cv_enum_bf_unsigned = yes; then
   AC_DEFINE(ENUM_BITFIELDS_ARE_UNSIGNED, 1,
     [Define if enumerated bitfields are treated as unsigned values.])
@@ -391,11 +391,11 @@ if test $gcc_cv_decl_char_bit = no; then
 [i=8
  gcc_cv_c_nbby=
  while test $i -lt 65; do
-   AC_TRY_COMPILE(,
+   AC_COMPILE_IFELSE([AC_LANG_PROGRAM(,
      [switch(0) {
   case (unsigned char)((unsigned long)1 << $i) == ((unsigned long)1 << $i):
   case (unsigned char)((unsigned long)1<<($i-1)) == ((unsigned long)1<<($i-1)):
-  ; }], 
+  ; }])],
      [gcc_cv_c_nbby=$i; break])
    i=`expr $i + 1`
  done
@@ -414,8 +414,8 @@ dnl From Bruno Haible.
 AC_DEFUN([AM_LANGINFO_CODESET],
 [
   AC_CACHE_CHECK([for nl_langinfo and CODESET], am_cv_langinfo_codeset,
-    [AC_TRY_LINK([#include <langinfo.h>],
-      [char* cs = nl_langinfo(CODESET);],
+    [AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <langinfo.h>],
+      [char* cs = nl_langinfo(CODESET);])],
       am_cv_langinfo_codeset=yes,
       am_cv_langinfo_codeset=no)
     ])
@@ -431,11 +431,11 @@ AC_DEFUN([gcc_AC_INITFINI_ARRAY],
 	[], [
 AC_CACHE_CHECK(for .preinit_array/.init_array/.fini_array support,
 		 gcc_cv_initfini_array, [dnl
-  AC_TRY_RUN([
+  AC_RUN_IFELSE([AC_LANG_SOURCE([
 static int x = -1;
 int main (void) { return x; }
 int foo (void) { x = 0; }
-int (*fp) (void) __attribute__ ((section (".init_array"))) = foo;],
+int (*fp) (void) __attribute__ ((section (".init_array"))) = foo;])],
 	     [gcc_cv_initfini_array=yes], [gcc_cv_initfini_array=no],
 	     [gcc_cv_initfini_array=no])])
   enable_initfini_array=$gcc_cv_initfini_array
@@ -517,12 +517,12 @@ AC_DEFUN([gcc_GAS_CHECK_FEATURE],
     gcc_GAS_VERSION_GTE_IFELSE($3, [[$2]=yes])
   el])if test x$gcc_cv_as != x; then
     echo ifelse(m4_substr([$5],0,1),[$], "[$5]", '[$5]') > conftest.s
-    if AC_TRY_COMMAND([$gcc_cv_as $4 -o conftest.o conftest.s >&AC_FD_CC])
+    if AC_TRY_COMMAND([$gcc_cv_as $4 -o conftest.o conftest.s >&AS_MESSAGE_LOG_FD])
     then
 	ifelse([$6],, [$2]=yes, [$6])
     else
-      echo "configure: failed program was" >&AC_FD_CC
-      cat conftest.s >&AC_FD_CC
+      echo "configure: failed program was" >&AS_MESSAGE_LOG_FD
+      cat conftest.s >&AS_MESSAGE_LOG_FD
     fi
     rm -f conftest.o conftest.s
   fi])
