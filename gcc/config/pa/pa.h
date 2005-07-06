@@ -1003,13 +1003,18 @@ extern int may_call_alloca;
 
 #define MAX_REGS_PER_ADDRESS 2
 
+/* Non-TLS symbolic references.  */
+#define PA_SYMBOL_REF_TLS_P(RTX) \
+  (GET_CODE (RTX) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (RTX) != 0)
+
 /* Recognize any constant value that is a valid address except
    for symbolic addresses.  We get better CSE by rejecting them
    here and allowing hppa_legitimize_address to break them up.  We
    use most of the constants accepted by CONSTANT_P, except CONST_DOUBLE.  */
 
 #define CONSTANT_ADDRESS_P(X) \
-  ((GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
+  ((GET_CODE (X) == LABEL_REF 						\
+   || (GET_CODE (X) == SYMBOL_REF && !SYMBOL_REF_TLS_MODEL (X))		\
    || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
    || GET_CODE (X) == HIGH) 						\
    && (reload_in_progress || reload_completed || ! symbolic_expression_p (X)))
@@ -1919,3 +1924,8 @@ forget_section (void)							\
 /* We need a libcall to canonicalize function pointers on TARGET_ELF32.  */
 #define CANONICALIZE_FUNCPTR_FOR_COMPARE_LIBCALL \
   "__canonicalize_funcptr_for_compare"
+
+#ifdef HAVE_AS_TLS
+#undef TARGET_HAVE_TLS
+#define TARGET_HAVE_TLS true
+#endif
