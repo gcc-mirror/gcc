@@ -1,3 +1,8 @@
+2005-07-06  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* function.c (expand_function_end): Revert part of 2005-06-27
+	patch.  Do sjlj_emit_function_exit_after after return_label.
+
 2005-07-06  Kazu Hirata  <kazu@codesourcery.com>
 
 	* doc/install.texi (--disable-libssp): New.
