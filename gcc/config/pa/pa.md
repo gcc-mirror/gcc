@@ -32,6 +32,13 @@
   [(UNSPEC_CFFC		0)	; canonicalize_funcptr_for_compare
    (UNSPEC_GOTO		1)	; indirect_goto
    (UNSPEC_DLTIND14R	2)	; 
+   (UNSPEC_TP		3)
+   (UNSPEC_TLSGD	4)
+   (UNSPEC_TLSLDM	5)
+   (UNSPEC_TLSLDO	6)
+   (UNSPEC_TLSLDBASE	7)
+   (UNSPEC_TLSIE	8)
+   (UNSPEC_TLSLE 	9)
   ])
 
 ;; UNSPEC_VOLATILE:
@@ -9347,3 +9354,83 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 }
   [(set_attr "type" "load")
    (set_attr "length" "4")])
+
+
+;; TLS Support
+(define_insn "tgd_load"
+ [(set (match_operand:SI 0 "register_operand" "=r")
+       (unspec:SI [(match_operand 1 "tgd_symbolic_operand" "")] UNSPEC_TLSGD))
+  (clobber (reg:SI 1))]
+  ""
+  "*
+{
+  if (flag_pic)
+    return \"addil LT'%1-$tls_gdidx$,%%r19\;ldo RT'%1-$tls_gdidx$(%%r1),%0\";
+  else
+    return \"addil LR'%1-$tls_gdidx$,%%r27\;ldo RR'%1-$tls_gdidx$(%%r1),%0\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
+(define_insn "tld_load"
+ [(set (match_operand:SI 0 "register_operand" "=r")
+       (unspec:SI [(match_operand 1 "tld_symbolic_operand" "")] UNSPEC_TLSLDM))
+  (clobber (reg:SI 1))]
+  ""
+  "*
+{
+  if (flag_pic)
+    return \"addil LT'%1-$tls_ldidx$,%%r19\;ldo RT'%1-$tls_ldidx$(%%r1),%0\";
+  else
+    return \"addil LR'%1-$tls_ldidx$,%%r27\;ldo RR'%1-$tls_ldidx$(%%r1),%0\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
+(define_insn "tld_offset_load"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (plus:SI (unspec:SI [(match_operand 1 "tld_symbolic_operand" "")] 
+		 	    UNSPEC_TLSLDO)
+		 (match_operand:SI 2 "register_operand" "r")))
+   (clobber (reg:SI 1))]
+  ""
+  "*
+{
+  return \"addil LR'%1-$tls_dtpoff$,%2\;ldo RR'%1-$tls_dtpoff$(%%r1),%0\"; 
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
+(define_insn "tp_load"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(const_int 0)] UNSPEC_TP))]
+  ""
+  "{mfctl|mfctl,w} %%cr27,%0"
+  [(set_attr "type" "multi")
+   (set_attr "length" "4")])
+
+(define_insn "tie_load"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (unspec:SI [(match_operand 1 "tie_symbolic_operand" "")] UNSPEC_TLSIE))
+   (clobber (reg:SI 1))]
+  ""
+  "*
+{
+  if (flag_pic)
+    return \"addil LT'%1-$tls_ieoff$,%%r19\;ldw RT'%1-$tls_ieoff$(%%r1),%0\";
+  else
+    return \"addil LR'%1-$tls_ieoff$,%%r27\;ldw RR'%1-$tls_ieoff$(%%r1),%0\";
+}"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
+
+(define_insn "tle_load"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (plus:SI (unspec:SI [(match_operand 1 "tle_symbolic_operand" "")] 
+		 	    UNSPEC_TLSLE)
+		 (match_operand:SI 2 "register_operand" "r")))
+   (clobber (reg:SI 1))]
+  ""
+  "addil LR'%1-$tls_leoff$,%2\;ldo RR'%1-$tls_leoff$(%%r1),%0"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])

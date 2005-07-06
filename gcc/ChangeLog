@@ -1,3 +1,29 @@
+2005-07-05  Randolph Chung  <tausq@debian.org>
+
+	* configure.ac (hppa*-*-linux*: Check for a TLS capable gas.
+	* configure: Regenerate.
+	* config/pa/pa-protos.h (tls_symbolic_operand): Declare.
+	(pa_tls_referenced_p): Declare.
+	* config/pa/pa.c (legitimize_pic_address): Reject TLS operands.
+	(gen_tls_tga, gen_tls_get_addr, hppa_tls_call): New.
+	(legitimize_tls_address): New.
+	(hppa_legitimize_address): Handle TLS addresses.
+	(pa_tls_symbol_ref_1, pa_tls_referenced_p): New.
+	(TARGET_CANNOT_FORCE_CONST_MEM): Define.
+	(emit_move_sequence): Handle TLS addresses.
+	(pa_encode_section_info): Call default handler to handle common 
+	sections.
+	* config/pa/pa.h (PA_SYMBOL_REF_TLS_P): New.
+	(CONSTANT_ADDRESS_P): Reject TLS operands.
+	(TARGET_HAVE_TLS) [HAVE_AS_TLS]: Define.
+	* config/pa/pa.md (UNSPEC_TP, UNSPEC_TLSGD, UNSPEC_TLSLDM)
+	(UNSPEC_TLSLDO, UNSPEC_TLSLDBASE, UNSPEC_TLSIE)
+	(UNSPEC_TLSLE): Define new constants. 
+	(tgd_load, tld_load, tld_offset_load, tp_load, tie_load, tle_load): New.
+	* config/pa/predicates.md (symbolic_operand): Reject TLS operands.
+	(tls_symbolic_operand, tgd_symbolic_operand, tld_symbolic_operand)
+	(tie_symbolic_operand, tle_symbolic_operand): New
+
 2005-07-06  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* aclocal.m4: Update macros for autoconf 2.59 style.

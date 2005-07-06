@@ -68,11 +68,13 @@
   switch (GET_CODE (op))
     {
     case SYMBOL_REF:
+      return !SYMBOL_REF_TLS_MODEL (op);
     case LABEL_REF:
       return 1;
     case CONST:
       op = XEXP (op, 0);
-      return ((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
+      return (((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
+                && !SYMBOL_REF_TLS_MODEL (XEXP (op, 0)))
 	       || GET_CODE (XEXP (op, 0)) == LABEL_REF)
 	      && GET_CODE (XEXP (op, 1)) == CONST_INT);
     default:
@@ -91,9 +93,31 @@
   if (GET_CODE (op) != MEM)
     return 0;
   op = XEXP (op, 0);
-  return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == CONST
-	  || GET_CODE (op) == HIGH || GET_CODE (op) == LABEL_REF);
+  return ((GET_CODE (op) == SYMBOL_REF && !SYMBOL_REF_TLS_MODEL (op))
+  	 || GET_CODE (op) == CONST || GET_CODE (op) == HIGH 
+	 || GET_CODE (op) == LABEL_REF);
 })
+
+;; Return true if OP is a symbolic operand for the TLS Global Dynamic model.
+(define_predicate "tgd_symbolic_operand"
+  (and (match_code "symbol_ref")
+       (match_test "SYMBOL_REF_TLS_MODEL (op) == TLS_MODEL_GLOBAL_DYNAMIC")))
+
+;; Return true if OP is a symbolic operand for the TLS Local Dynamic model.
+(define_predicate "tld_symbolic_operand"
+  (and (match_code "symbol_ref")
+       (match_test "SYMBOL_REF_TLS_MODEL (op) == TLS_MODEL_LOCAL_DYNAMIC")))
+
+;; Return true if OP is a symbolic operand for the TLS Initial Exec model.
+(define_predicate "tie_symbolic_operand"
+  (and (match_code "symbol_ref")
+       (match_test "SYMBOL_REF_TLS_MODEL (op) == TLS_MODEL_INITIAL_EXEC")))
+
+;; Return true if OP is a symbolic operand for the TLS Local Exec model.
+(define_predicate "tle_symbolic_operand"
+  (and (match_code "symbol_ref")
+       (match_test "SYMBOL_REF_TLS_MODEL (op) == TLS_MODEL_LOCAL_EXEC")))
+
 
 ;; Return 1 if the operand is a register operand or a non-symbolic
 ;; memory operand after reload.  This predicate is used for branch

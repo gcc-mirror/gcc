@@ -14015,6 +14015,35 @@ x:      .long   25
 	tls_first_major=2
 	tls_first_minor=14
 	;;
+  hppa*-*-linux*)
+    conftest_s='
+t1:	.reg	%r20
+t2:	.reg	%r21
+gp:	.reg	%r19
+	.section ".tdata","awT",@progbits
+foo:	.long	25
+	.text
+	.align	4
+	addil LT%foo-$tls_gdidx$,gp
+	ldo RT%foo-$tls_gdidx$(%r1),%arg0
+	b __tls_get_addr
+	nop
+	addil LT%foo-$tls_ldidx$,gp
+	b __tls_get_addr
+	ldo RT%foo-$tls_ldidx$(%r1),%arg0
+	addil LR%foo-$tls_dtpoff$,%ret0
+	ldo RR%foo-$tls_dtpoff$(%r1),%t1
+	mfctl %cr27,%t1
+	addil LT%foo-$tls_ieoff$,gp
+	ldw RT%foo-$tls_ieoff$(%r1),%t2
+	add %t1,%t2,%t3
+	mfctl %cr27,%t1
+	addil LR%foo-$tls_leoff$,%t1
+	ldo RR%foo-$tls_leoff$(%r1),%t2'
+	tls_first_major=2
+	tls_first_minor=15
+	tls_as_opt=--fatal-warnings
+	;;
   i[34567]86-*-*)
     conftest_s='
 	.section ".tdata","awT",@progbits

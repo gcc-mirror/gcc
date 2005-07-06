@@ -292,6 +292,9 @@ static size_t n_deferred_plabels = 0;
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P pa_scalar_mode_supported_p
 
+#undef TARGET_CANNOT_FORCE_CONST_MEM
+#define TARGET_CANNOT_FORCE_CONST_MEM pa_tls_referenced_p
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Parse the -mfixed-range= option string.  */
@@ -595,6 +598,9 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 {
   rtx pic_ref = orig;
 
+  if (PA_SYMBOL_REF_TLS_P (orig))
+    abort();
+
   /* Labels need special handling.  */
   if (pic_label_operand (orig, mode))
     {
@@ -671,6 +677,80 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
   return pic_ref;
 }
 
+static GTY(()) rtx gen_tls_tga;
+
+static rtx
+gen_tls_get_addr (void)
+{
+  if (!gen_tls_tga)
+    gen_tls_tga = init_one_libfunc ("__tls_get_addr");
+  return gen_tls_tga;
+}
+
+static rtx
+hppa_tls_call (rtx arg)
+{
+  rtx ret;
+
+  ret = gen_reg_rtx (Pmode);
+  emit_library_call_value (gen_tls_get_addr (), ret,
+		  	   LCT_CONST, Pmode, 1, arg, Pmode);
+
+  return ret;
+}
+
+static rtx
+legitimize_tls_address (rtx addr)
+{
+  rtx ret, insn, tmp, t1, t2, tp;
+  enum tls_model model = SYMBOL_REF_TLS_MODEL (addr);
+
+  switch (model) 
+    {
+      case TLS_MODEL_GLOBAL_DYNAMIC:
+	tmp = gen_reg_rtx (Pmode);
+	emit_insn (gen_tgd_load (tmp, addr));
+	ret = hppa_tls_call (tmp);
+	break;
+
+      case TLS_MODEL_LOCAL_DYNAMIC:
+	ret = gen_reg_rtx (Pmode);
+	tmp = gen_reg_rtx (Pmode);
+	start_sequence ();
+	emit_insn (gen_tld_load (tmp, addr));
+	t1 = hppa_tls_call (tmp);
+	insn = get_insns ();
+	end_sequence ();
+	t2 = gen_reg_rtx (Pmode);
+	emit_libcall_block (insn, t2, t1, 
+			    gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
+				            UNSPEC_TLSLDBASE));
+	emit_insn (gen_tld_offset_load (ret, addr, t2));
+	break;
+
+      case TLS_MODEL_INITIAL_EXEC:
+	tp = gen_reg_rtx (Pmode);
+	tmp = gen_reg_rtx (Pmode);
+	ret = gen_reg_rtx (Pmode);
+	emit_insn (gen_tp_load (tp));
+	emit_insn (gen_tie_load (tmp, addr));
+	emit_move_insn (ret, gen_rtx_PLUS (Pmode, tp, tmp));
+	break;
+
+      case TLS_MODEL_LOCAL_EXEC:
+	tp = gen_reg_rtx (Pmode);
+	ret = gen_reg_rtx (Pmode);
+	emit_insn (gen_tp_load (tp));
+	emit_insn (gen_tle_load (ret, addr, tp));
+	break;
+
+      default:
+	abort();
+    }
+
+  return ret;
+}
+
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.
    This macro is used in only one place: `memory_address' in explow.c.
@@ -740,7 +820,9 @@ hppa_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       && !REG_POINTER (XEXP (x, 1)))
     return gen_rtx_PLUS (Pmode, XEXP (x, 1), XEXP (x, 0));
 
-  if (flag_pic)
+  if (PA_SYMBOL_REF_TLS_P (x))
+    return legitimize_tls_address (x);
+  else if (flag_pic)
     return legitimize_pic_address (x, mode, gen_reg_rtx (Pmode));
 
   /* Strip off CONST.  */
@@ -1188,6 +1270,25 @@ force_mode (enum machine_mode mode, rtx orig)
   gcc_assert (REGNO (orig) < FIRST_PSEUDO_REGISTER);
 
   return gen_rtx_REG (mode, REGNO (orig));
+}
+
+/* Return 1 if *X is a thread-local symbol.  */
+
+static int
+pa_tls_symbol_ref_1 (rtx *x, void *data ATTRIBUTE_UNUSED)
+{
+  return PA_SYMBOL_REF_TLS_P (*x);
+}
+
+/* Return 1 if X contains a thread-local symbol.  */
+
+bool
+pa_tls_referenced_p (rtx x)
+{
+  if (!TARGET_HAVE_TLS)
+    return false;
+
+  return for_each_rtx (&x, &pa_tls_symbol_ref_1, 0);
 }
 
 /* Emit insns to move operands[1] into operands[0].
@@ -1706,6 +1807,26 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 
 	    }
 	  return 1;
+	}
+      else if (pa_tls_referenced_p (operand1))
+	{
+	  rtx tmp = operand1;
+	  rtx addend = NULL;
+
+	  if (GET_CODE (tmp) == CONST && GET_CODE (XEXP (tmp, 0)) == PLUS)
+	    {
+	      addend = XEXP (XEXP (tmp, 0), 1);
+	      tmp = XEXP (XEXP (tmp, 0), 0);
+	    }
+
+	  gcc_assert (GET_CODE (tmp) == SYMBOL_REF);
+	  tmp = legitimize_tls_address (tmp);
+	  if (addend)
+	    {
+	      tmp = gen_rtx_PLUS (mode, tmp, addend);
+	      tmp = force_operand (tmp, operands[0]);
+	    }
+	  operands[1] = tmp;
 	}
       else if (GET_CODE (operand1) != CONST_INT
 	       || !cint_ok_for_move (INTVAL (operand1)))
@@ -7371,6 +7492,8 @@ hppa_encode_label (rtx sym)
 static void
 pa_encode_section_info (tree decl, rtx rtl, int first)
 {
+  default_encode_section_info (decl, rtl, first);
+
   if (first && TEXT_SPACE_P (decl))
     {
       SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;
