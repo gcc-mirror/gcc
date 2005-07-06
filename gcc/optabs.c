@@ -1030,21 +1030,6 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
   class = GET_MODE_CLASS (mode);
 
-  if (flag_force_mem)
-    {
-      /* Load duplicate non-volatile operands once.  */
-      if (rtx_equal_p (op0, op1) && ! volatile_refs_p (op0))
-	{
-	  op0 = force_not_mem (op0);
-	  op1 = op0;
-	}
-      else
-	{
-	  op0 = force_not_mem (op0);
-	  op1 = force_not_mem (op1);
-	}
-    }
-
   /* If subtracting an integer constant, convert this into an addition of
      the negated constant.  */
 
@@ -1871,9 +1856,6 @@ expand_twoval_unop (optab unoptab, rtx op0, rtx targ0, rtx targ1,
 
   class = GET_MODE_CLASS (mode);
 
-  if (flag_force_mem)
-    op0 = force_not_mem (op0);
-
   if (!targ0)
     targ0 = gen_reg_rtx (mode);
   if (!targ1)
@@ -1965,12 +1947,6 @@ expand_twoval_binop (optab binoptab, rtx op0, rtx op1, rtx targ0, rtx targ1,
   rtx last;
 
   class = GET_MODE_CLASS (mode);
-
-  if (flag_force_mem)
-    {
-      op0 = force_not_mem (op0);
-      op1 = force_not_mem (op1);
-    }
 
   /* If we are inside an appropriately-short loop and we are optimizing,
      force expensive constants into a register.  */
@@ -2357,9 +2333,6 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
   rtx pat;
 
   class = GET_MODE_CLASS (mode);
-
-  if (flag_force_mem)
-    op0 = force_not_mem (op0);
 
   if (unoptab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
     {
@@ -2987,19 +2960,12 @@ emit_unop_insn (int icode, rtx target, rtx op0, enum rtx_code code)
 
   temp = target;
 
-  /* Sign and zero extension from memory is often done specially on
-     RISC machines, so forcing into a register here can pessimize
-     code.  */
-  if (flag_force_mem && code != SIGN_EXTEND && code != ZERO_EXTEND)
-    op0 = force_not_mem (op0);
-
   /* Now, if insn does not accept our operands, put them into pseudos.  */
 
   if (!insn_data[icode].operand[1].predicate (op0, mode0))
     op0 = copy_to_mode_reg (mode0, op0);
 
-  if (!insn_data[icode].operand[0].predicate (temp, GET_MODE (temp))
-      || (flag_force_mem && MEM_P (temp)))
+  if (!insn_data[icode].operand[0].predicate (temp, GET_MODE (temp)))
     temp = gen_reg_rtx (GET_MODE (temp));
 
   pat = GEN_FCN (icode) (temp, op0);
@@ -3414,21 +3380,6 @@ prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
   enum mode_class class;
 
   class = GET_MODE_CLASS (mode);
-
-  if (mode != BLKmode && flag_force_mem)
-    {
-      /* Load duplicate non-volatile operands once.  */
-      if (rtx_equal_p (x, y) && ! volatile_refs_p (x))
-	{
-	  x = force_not_mem (x);
-	  y = x;
-	}
-      else
-	{
-	  x = force_not_mem (x);
-	  y = force_not_mem (y);
-	}
-    }
 
   /* If we are inside an appropriately-short loop and we are optimizing,
      force expensive constants into a register.  */
@@ -3916,12 +3867,6 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
   if (icode == CODE_FOR_nothing)
     return 0;
 
-  if (flag_force_mem)
-    {
-      op2 = force_not_mem (op2);
-      op3 = force_not_mem (op3);
-    }
-
   if (!target)
     target = gen_reg_rtx (mode);
 
@@ -4049,12 +3994,6 @@ emit_conditional_add (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
   if (icode == CODE_FOR_nothing)
     return 0;
-
-  if (flag_force_mem)
-    {
-      op2 = force_not_mem (op2);
-      op3 = force_not_mem (op3);
-    }
 
   if (!target)
     target = gen_reg_rtx (mode);
@@ -4379,9 +4318,6 @@ expand_float (rtx to, rtx from, int unsignedp)
       rtx temp;
       REAL_VALUE_TYPE offset;
 
-      if (flag_force_mem)
-	from = force_not_mem (from);
-
       /* Look for a usable floating mode FMODE wider than the source and at
 	 least as wide as the target.  Using FMODE will avoid rounding woes
 	 with unsigned values greater than the signed maximum value.  */
@@ -4488,9 +4424,6 @@ expand_float (rtx to, rtx from, int unsignedp)
 
       if (GET_MODE_SIZE (GET_MODE (from)) < GET_MODE_SIZE (SImode))
 	from = convert_to_mode (SImode, from, unsignedp);
-
-      if (flag_force_mem)
-	from = force_not_mem (from);
 
       libfunc = tab->handlers[GET_MODE (to)][GET_MODE (from)].libfunc;
       gcc_assert (libfunc);
@@ -4609,9 +4542,6 @@ expand_fix (rtx to, rtx from, int unsignedp)
 	  lab1 = gen_label_rtx ();
 	  lab2 = gen_label_rtx ();
 
-	  if (flag_force_mem)
-	    from = force_not_mem (from);
-
 	  if (fmode != GET_MODE (from))
 	    from = convert_to_mode (fmode, from, 0);
 
@@ -4677,9 +4607,6 @@ expand_fix (rtx to, rtx from, int unsignedp)
       convert_optab tab = unsignedp ? ufix_optab : sfix_optab;
       libfunc = tab->handlers[GET_MODE (to)][GET_MODE (from)].libfunc;
       gcc_assert (libfunc);
-
-      if (flag_force_mem)
-	from = force_not_mem (from);
 
       start_sequence ();
 

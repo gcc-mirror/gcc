@@ -408,14 +408,6 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	}
     }
 
-  if (flag_force_mem)
-    {
-      int old_generating_concat_p = generating_concat_p;
-      generating_concat_p = 0;
-      value = force_not_mem (value);
-      generating_concat_p = old_generating_concat_p;
-    }
-
   /* If the target is a register, overwriting the entire object, or storing
      a full-word or multi-word field can be done with just a SUBREG.
 
@@ -633,8 +625,6 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
       /* If this machine's insv can only insert into a register, copy OP0
 	 into a register and save it back later.  */
-      /* This used to check flag_force_mem, but that was a serious
-	 de-optimization now that flag_force_mem is enabled by -O2.  */
       if (MEM_P (op0)
 	  && ! ((*insn_data[(int) CODE_FOR_insv].operand[0].predicate)
 		(op0, VOIDmode)))
@@ -902,7 +892,7 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT offset,
   /* Now clear the chosen bits in OP0,
      except that if VALUE is -1 we need not bother.  */
 
-  subtarget = (REG_P (op0) || ! flag_force_mem) ? op0 : 0;
+  subtarget = op0;
 
   if (! all_one)
     {
@@ -1449,8 +1439,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
 	  unit = GET_MODE_BITSIZE (maxmode);
 
-	  if (xtarget == 0
-	      || (flag_force_mem && MEM_P (xtarget)))
+	  if (xtarget == 0)
 	    xtarget = xspec_target = gen_reg_rtx (tmode);
 
 	  if (GET_MODE (xtarget) != maxmode)
@@ -1577,8 +1566,7 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
 	  unit = GET_MODE_BITSIZE (maxmode);
 
-	  if (xtarget == 0
-	      || (flag_force_mem && MEM_P (xtarget)))
+	  if (xtarget == 0)
 	    xtarget = xspec_target = gen_reg_rtx (tmode);
 
 	  if (GET_MODE (xtarget) != maxmode)

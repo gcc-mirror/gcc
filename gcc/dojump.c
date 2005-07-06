@@ -761,12 +761,6 @@ compare_from_rtx (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
       code = swap_condition (code);
     }
 
-  if (flag_force_mem)
-    {
-      op0 = force_not_mem (op0);
-      op1 = force_not_mem (op1);
-    }
-
   do_pending_stack_adjust ();
 
   code = unsignedp ? unsigned_condition (code) : code;
@@ -828,12 +822,6 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
       op0 = op1;
       op1 = tem;
       code = swap_condition (code);
-    }
-
-  if (flag_force_mem)
-    {
-      op0 = force_not_mem (op0);
-      op1 = force_not_mem (op1);
     }
 
   do_pending_stack_adjust ();

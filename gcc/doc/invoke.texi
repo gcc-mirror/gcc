@@ -102,7 +102,7 @@ of the same kind; for example, if you specify @option{-L} more than once,
 the directories are searched in the order specified.
 
 Many options have long names starting with @samp{-f} or with
-@samp{-W}---for example, @option{-fforce-mem},
+@samp{-W}---for example, 
 @option{-fstrength-reduce}, @option{-Wformat} and so on.  Most of
 these have both positive and negative forms; the negative form of
 @option{-ffoo} would be @option{-fno-foo}.  This manual documents
@@ -302,7 +302,7 @@ Objective-C and Objective-C++ Dialects}.
 -fcse-skip-blocks  -fcx-limited-range  -fdata-sections @gol
 -fdelayed-branch  -fdelete-null-pointer-checks -fearly-inlining @gol
 -fexpensive-optimizations  -ffast-math  -ffloat-store @gol
--fforce-addr  -fforce-mem  -ffunction-sections @gol
+-fforce-addr  -ffunction-sections @gol
 -fgcse  -fgcse-lm  -fgcse-sm  -fgcse-las  -fgcse-after-reload @gol
 -floop-optimize -fcrossjumping  -fif-conversion  -fif-conversion2 @gol
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions @gol
@@ -4322,7 +4322,6 @@ also turns on the following optimization flags:
 -fstrength-reduce @gol
 -frerun-cse-after-loop  -frerun-loop-opt @gol
 -fcaller-saves @gol
--fforce-mem @gol
 -fpeephole2 @gol
 -fschedule-insns  -fschedule-insns2 @gol
 -fsched-interblock  -fsched-spec @gol
@@ -4399,15 +4398,12 @@ Force memory operands to be copied into registers before doing
 arithmetic on them.  This produces better code by making all memory
 references potential common subexpressions.  When they are not common
 subexpressions, instruction combination should eliminate the separate
-register-load.
-
-Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+register-load. This option is now a nop and will be removed in 4.2.
 
 @item -fforce-addr
 @opindex fforce-addr
 Force memory address constants to be copied into registers before
-doing arithmetic on them.  This may produce better code just as
-@option{-fforce-mem} may.
+doing arithmetic on them.
 
 @item -fomit-frame-pointer
 @opindex fomit-frame-pointer
