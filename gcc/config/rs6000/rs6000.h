@@ -1251,15 +1251,8 @@ extern enum rs6000_abi rs6000_current_abi;	/* available for use by subtarget */
 				     plus_constant (stack_pointer_rtx, \
 						    (TARGET_32BIT ? 20 : 40)))
 
-/* Size of the V.4 varargs area if needed */
-#define RS6000_VARARGS_AREA 0
-
 /* Align an address */
 #define RS6000_ALIGN(n,a) (((n) + (a) - 1) & ~((a) - 1))
-
-/* Size of V.4 varargs area in bytes */
-#define RS6000_VARARGS_SIZE \
-  ((GP_ARG_NUM_REG * (TARGET_32BIT ? 4 : 8)) + (FP_ARG_NUM_REG * 8) + 8)
 
 /* Offset within stack frame to start allocating local variables at.
    If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
@@ -1275,7 +1268,6 @@ extern enum rs6000_abi rs6000_current_abi;	/* available for use by subtarget */
    ? 0									\
    : (RS6000_ALIGN (current_function_outgoing_args_size,		\
 		    TARGET_ALTIVEC ? 16 : 8)				\
-      + RS6000_VARARGS_AREA						\
       + RS6000_SAVE_AREA))
 
 /* Offset from the stack pointer register to an item dynamically
@@ -1413,20 +1405,6 @@ extern enum rs6000_abi rs6000_current_abi;	/* available for use by subtarget */
    || ((unsigned) (N) - FP_ARG_MIN_REG < FP_ARG_NUM_REG			\
        && TARGET_HARD_FLOAT && TARGET_FPRS))
 
-/* A C structure for machine-specific, per-function data.
-   This is added to the cfun structure.  */
-typedef struct machine_function GTY(())
-{
-  /* Flags if __builtin_return_address (n) with n >= 1 was used.  */
-  int ra_needs_full_frame;
-  /* Some local-dynamic symbol.  */
-  const char *some_ld_name;
-  /* Whether the instruction chain has been scanned already.  */
-  int insn_chain_scanned_p;
-  /* Flags if __builtin_return_address (0) was used.  */
-  int ra_need_lr;
-} machine_function;
-
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
    hold all necessary information about the function itself
