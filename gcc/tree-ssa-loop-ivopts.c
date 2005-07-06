@@ -2983,6 +2983,7 @@ get_computation_aff (struct loop *loop,
   unsigned HOST_WIDE_INT ustepi, cstepi;
   HOST_WIDE_INT ratioi;
   struct affine_tree_combination cbase_aff, expr_aff;
+  tree cstep_orig = cstep, ustep_orig = ustep;
 
   if (TYPE_PRECISION (utype) > TYPE_PRECISION (ctype))
     {
@@ -3012,13 +3013,18 @@ get_computation_aff (struct loop *loop,
       expr = fold_convert (uutype, expr);
       cbase = fold_convert (uutype, cbase);
       cstep = fold_convert (uutype, cstep);
+
+      /* If the conversion is not noop, we must take it into account when
+	 considering the value of the step.  */
+      if (TYPE_PRECISION (utype) < TYPE_PRECISION (ctype))
+	cstep_orig = cstep;
     }
 
-  if (cst_and_fits_in_hwi (cstep)
-      && cst_and_fits_in_hwi (ustep))
+  if (cst_and_fits_in_hwi (cstep_orig)
+      && cst_and_fits_in_hwi (ustep_orig))
     {
-      ustepi = int_cst_value (ustep);
-      cstepi = int_cst_value (cstep);
+      ustepi = int_cst_value (ustep_orig);
+      cstepi = int_cst_value (cstep_orig);
 
       if (!divide (TYPE_PRECISION (uutype), ustepi, cstepi, &ratioi))
 	{
@@ -3032,7 +3038,7 @@ get_computation_aff (struct loop *loop,
     }
   else
     {
-      ratio = constant_multiple_of (uutype, ustep, cstep);
+      ratio = constant_multiple_of (uutype, ustep_orig, cstep_orig);
       if (!ratio)
 	return false;
 
