@@ -4951,12 +4951,10 @@ final_prescan_insn (rtx insn, rtx *opvec ATTRIBUTE_UNUSED,
 	  rtx pattern;
 
 	  pattern = PATTERN (insn);
+	  if (GET_CODE (pattern) == PARALLEL)
+	    pattern = XVECEXP (pattern, 0, 0);
 	  switch (GET_CODE (pattern))
 	    {
-	    case PARALLEL:
-	      pattern = XVECEXP (pattern, 0, 0);
-	      break;
-
 	    case SET:
 	      if (GET_CODE (SET_SRC (pattern)) != CALL
 		  && get_attr_type (insn) != TYPE_SFUNC)
