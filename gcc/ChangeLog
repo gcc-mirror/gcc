@@ -1,3 +1,7 @@
+2005-07-06  J"orn Rennecke <joern.rennecke@st.com>
+
+	* sh.c (final_prescan_insn): Undo bogus change from 2005-05-09.
+
 2005-07-06  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/22319
