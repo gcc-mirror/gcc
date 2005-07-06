@@ -1222,25 +1222,33 @@ stamp-as: $(ORIGINAL_AS_FOR_TARGET)
 	echo timestamp > $@
 
 stamp-collect-ld: $(ORIGINAL_LD_FOR_TARGET)
-	@echo creating collect-ld; rm -f collect-ld; \
-	case "$<" in \
-	  ./*) ;; \
+	@echo creating collect-ld; \
+	case "$(ORIGINAL_LD_FOR_TARGET)" in \
+	  ./collect-ld) ;; \
 	  ../*) \
+	     rm -f collect-ld$(exeext); \
 	     echo $(LN) $< collect-ld$(exeext); \
 	     $(LN) $< collect-ld$(exeext) || cp $< collect-ld$(exeext) ;; \
-	  *) echo '#!$(SHELL)' > collect-ld; echo 'exec $< "$$@"' >> collect-ld ; \
+	  *) \
+	     rm -f collect-ld$(exeext); \
+	     echo '#!$(SHELL)' > collect-ld; \
+	     echo 'exec $(ORIGINAL_LD_FOR_TARGET) "$$@"' >> collect-ld ; \
 	     chmod +x collect-ld ;; \
 	esac
 	echo timestamp > $@
 
 stamp-nm: $(ORIGINAL_NM_FOR_TARGET)
-	@echo creating nm; rm -f nm; \
-	case "$<" in \
-	  ./*) ;; \
+	@echo creating nm; \
+	case "$(ORIGINAL_NM_FOR_TARGET)" in \
+	  ./nm) ;; \
 	  ../*) \
+	     rm -f nm$(exeext); \
 	     echo $(LN) $< nm$(exeext); \
 	     $(LN) $< nm$(exeext) || cp $< nm$(exeext) ;; \
-	  *) echo '#!$(SHELL)' > nm; echo 'exec $< "$$@"' >> nm ; \
+	  *) \
+	     rm -f nm$(exeext); \
+	     echo '#!$(SHELL)' > nm; \
+	     echo 'exec $(ORIGINAL_NM_FOR_TARGET) "$$@"' >> nm ; \
 	     chmod +x nm ;; \
 	esac
 	echo timestamp > $@
