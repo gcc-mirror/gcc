@@ -598,8 +598,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 {
   rtx pic_ref = orig;
 
-  if (PA_SYMBOL_REF_TLS_P (orig))
-    abort();
+  gcc_assert (!PA_SYMBOL_REF_TLS_P (orig));
 
   /* Labels need special handling.  */
   if (pic_label_operand (orig, mode))
@@ -745,7 +744,7 @@ legitimize_tls_address (rtx addr)
 	break;
 
       default:
-	abort();
+	gcc_unreachable ();
     }
 
   return ret;
