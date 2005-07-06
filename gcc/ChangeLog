@@ -1,3 +1,8 @@
+2005-07-06  John David Anglin  <dave.anglin@nrc-crnc.gc.ca>
+
+	* pa.c (legitimize_pic_address): Use gcc_assert instead of abort.
+	(legitimize_tls_address): Use gcc_unreachable instead of abort.
+
 2005-07-06  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* function.c (expand_function_end): Revert part of 2005-06-27
