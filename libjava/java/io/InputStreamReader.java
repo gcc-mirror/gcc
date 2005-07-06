@@ -289,9 +289,23 @@ public class InputStreamReader extends Reader
 	  return -1;
 	converter.setInput(in.buf, in.pos, in.count);
 	int count = converter.read(buf, offset, length);
-	in.skip(converter.inpos - in.pos);
-	if (count > 0)
-	  return count;
+
+	// We might have bytes but not have made any progress.  In
+	// this case we try to refill.  If refilling fails, we assume
+	// we have a malformed character at the end of the stream.
+	if (count == 0 && converter.inpos == in.pos)
+	  {
+	    in.mark(in.count);
+	    if (! in.refill ())
+	      throw new CharConversionException ();
+	    in.reset();
+	  }
+	else
+	  {
+	    in.skip(converter.inpos - in.pos);
+	    if (count > 0)
+	      return count;
+	  }
       }
   }
 }

@@ -1,5 +1,11 @@
 2005-07-06  Tom Tromey  <tromey@redhat.com>
 
+	* java/io/InputStreamReader.java (refill): Handle no-progress
+	case correctly.
+	* gnu/gcj/convert/IOConverter.java: Add 'utf8' alias.
+
+2005-07-06  Tom Tromey  <tromey@redhat.com>
+
 	* testsuite/libjava.jacks/jacks.xfail: Removed 9.1.3-body-5.
 
 2005-07-05  Bryce McKinlay  <mckinlay@redhat.com>
