@@ -57,6 +57,9 @@
    (UNSPEC_ALIGNDATA		48)
    (UNSPEC_ALIGNADDR		49)
    (UNSPEC_PDIST		50)
+
+   (UNSPEC_SP_SET		60)
+   (UNSPEC_SP_TEST		61)
   ])
 
 (define_constants
@@ -8153,6 +8156,96 @@
   "TARGET_TLS && TARGET_ARCH64"
   "stx\t%0, [%1 + %2], %%tldo_add(%3)"
   [(set_attr "type" "store")])
+
+
+;; Stack protector instructions.
+
+(define_expand "stack_protect_set"
+  [(match_operand 0 "memory_operand" "")
+   (match_operand 1 "memory_operand" "")]
+  ""
+{
+#ifdef TARGET_THREAD_SSP_OFFSET
+  rtx tlsreg = gen_rtx_REG (Pmode, 7);
+  rtx addr = gen_rtx_PLUS (Pmode, tlsreg, GEN_INT (TARGET_THREAD_SSP_OFFSET));
+  operands[1] = gen_rtx_MEM (Pmode, addr);
+#endif
+  if (TARGET_ARCH64)
+    emit_insn (gen_stack_protect_setdi (operands[0], operands[1]));
+  else
+    emit_insn (gen_stack_protect_setsi (operands[0], operands[1]));
+  DONE;
+})
+
+(define_insn "stack_protect_setsi"
+  [(set (match_operand:SI 0 "memory_operand" "=m")
+	(unspec:SI [(match_operand:SI 1 "memory_operand" "m")] UNSPEC_SP_SET))
+   (set (match_scratch:SI 2 "=&r") (const_int 0))]
+  "TARGET_ARCH32"
+  "ld\t%1, %2\;st\t%2, %0\;mov\t0, %2"
+  [(set_attr "type" "multi")
+   (set_attr "length" "3")])
+
+(define_insn "stack_protect_setdi"
+  [(set (match_operand:DI 0 "memory_operand" "=m")
+	(unspec:DI [(match_operand:DI 1 "memory_operand" "m")] UNSPEC_SP_SET))
+   (set (match_scratch:DI 2 "=&r") (const_int 0))]
+  "TARGET_ARCH64"
+  "ldx\t%1, %2\;stx\t%2, %0\;mov\t0, %2"
+  [(set_attr "type" "multi")
+   (set_attr "length" "3")])
+
+(define_expand "stack_protect_test"
+  [(match_operand 0 "memory_operand" "")
+   (match_operand 1 "memory_operand" "")
+   (match_operand 2 "" "")]
+  ""
+{
+#ifdef TARGET_THREAD_SSP_OFFSET
+  rtx tlsreg = gen_rtx_REG (Pmode, 7);
+  rtx addr = gen_rtx_PLUS (Pmode, tlsreg, GEN_INT (TARGET_THREAD_SSP_OFFSET));
+  operands[1] = gen_rtx_MEM (Pmode, addr);
+#endif
+  if (TARGET_ARCH64)
+    {
+      rtx temp = gen_reg_rtx (Pmode);
+      emit_insn (gen_stack_protect_testdi (temp, operands[0], operands[1]));
+      sparc_compare_op0 = temp;
+      sparc_compare_op1 = const0_rtx;
+    }
+  else
+    {
+      emit_insn (gen_stack_protect_testsi (operands[0], operands[1]));
+      sparc_compare_op0 = operands[0];
+      sparc_compare_op1 = operands[1];
+      sparc_compare_emitted = gen_rtx_REG (CCmode, SPARC_ICC_REG);
+    }
+  emit_jump_insn (gen_beq (operands[2]));
+  DONE;
+})
+
+(define_insn "stack_protect_testsi"
+  [(set (reg:CC 100)
+	(unspec:CC [(match_operand:SI 0 "memory_operand" "m")
+		    (match_operand:SI 1 "memory_operand" "m")]
+		   UNSPEC_SP_TEST))
+   (clobber (match_scratch:SI 2 "=&r"))
+   (set (match_scratch:SI 3 "=r") (const_int 0))]
+  "TARGET_ARCH32"
+  "ld\t%0, %2\;ld\t%1, %3\;xorcc\t%2, %3, %2\;mov\t0, %3"
+  [(set_attr "type" "multi")
+   (set_attr "length" "4")])
+
+(define_insn "stack_protect_testdi"
+  [(set (match_operand:DI 0 "register_operand" "=&r")
+	(unspec:DI [(match_operand:DI 1 "memory_operand" "m")
+		    (match_operand:DI 2 "memory_operand" "m")]
+		   UNSPEC_SP_TEST))
+   (set (match_scratch:DI 3 "=r") (const_int 0))]
+  "TARGET_ARCH64"
+  "ldx\t%1, %0\;ldx\t%2, %3\;xor\t%0, %3, %0\;mov\t0, %3"
+  [(set_attr "type" "multi")
+   (set_attr "length" "4")])
 
 
 ;; Vector instructions.

@@ -1,3 +1,18 @@
+2005-07-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.h (sparc_compare_emitted): New extern.
+	* config/sparc/sparc.c (sparc_compare_emitted): New variable.
+	(gen_compare_reg): If sparc_compare_emitted is set, clear it
+	and return its previous value.
+	(emit_v9_brxx_insn): Assert sparc_compare_emitted is NULL.
+	* config/sparc/sparc.md (UNSPEC_SP_SET, UNSPEC_SP_TEST): New
+	constants.
+	(stack_protect_set, stack_protect_test): New expanders.
+	(stack_protect_setsi, stack_protect_setdi, stack_protect_testsi,
+	stack_protect_testdi): New insns.
+	* config/sparc/linux.h (TARGET_THREAD_SSP_OFFSET): Define.
+	* config/sparc/linux64.h (TARGET_THREAD_SSP_OFFSET): Define.
+
 2005-07-06  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dce.c (cfg_altered): New global.
