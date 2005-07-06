@@ -560,7 +560,6 @@ decode_options (unsigned int argc, const char **argv)
       flag_rerun_cse_after_loop = 1;
       flag_rerun_loop_opt = 1;
       flag_caller_saves = 1;
-      flag_force_mem = 1;
       flag_peephole2 = 1;
 #ifdef INSN_SCHEDULING
       flag_schedule_insns = 1;
@@ -1040,6 +1039,10 @@ common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_pedantic_errors:
       flag_pedantic_errors = pedantic = 1;
+      break;
+
+    case OPT_fforce_mem:
+      warning (0, "-f[no-]force-mem is nop and option will be removed in 4.2");
       break;
 
     default:

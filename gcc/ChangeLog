@@ -1,3 +1,17 @@
+2005-07-06  Fariborz Jahanian <fjahanian@apple.com>
+
+        * doc/invoke.texi: Update -fforce-mem documentation.
+        * dojump.c (compare_from_rtx,do_compare_rtx_and_jump): Remove 
+        code for -fforce-mem.
+        * expmed.c: (store_bit_field,store_fixed_bit_field,
+        extract_bit_field): Ditto.
+        * expr.c: (convert_move): Ditto.
+        * optabs.c: (expand_binop,expand_twoval_unop,expand_twoval_binop,
+        expand_unop,emit_unop_insn,prepare_cmp_insn,emit_conditional_move,
+        emit_conditional_add,expand_float,expand_fix): Ditto.
+        * opts.c: (decode_options): Remove setting of flag_force_mem flag.
+        (common_handle_option): Issue warning when -fforce-mem specified.
+
 2005-07-06  Paul Brook  <paul@codesourcery.com>
 
 	* aclocal.m4: Work around a bug in AC_PATH_PROGS when its last

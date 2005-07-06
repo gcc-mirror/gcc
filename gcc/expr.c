@@ -642,9 +642,6 @@ convert_move (rtx to, rtx from, int unsignedp)
       if ((code = can_extend_p (to_mode, from_mode, unsignedp))
 	  != CODE_FOR_nothing)
 	{
-	  if (flag_force_mem)
-	    from = force_not_mem (from);
-
 	  emit_unop_insn (code, to, from, equiv_code);
 	  return;
 	}

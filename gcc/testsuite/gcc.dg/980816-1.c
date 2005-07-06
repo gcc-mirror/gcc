@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-options -fno-force-mem } */
 
 int
 div_and_round_double (lden_orig, hden_orig)

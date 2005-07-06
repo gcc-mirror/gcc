@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O -fstrength-reduce -fstrict-aliasing -fforce-mem -fgcse" } */
+/* { dg-options "-O -fstrength-reduce -fstrict-aliasing -fgcse" } */
 
 /* PR optimization/10087 */
 /* Contributed by Peter van Hoof <p.van-hoof@qub.ac.uk> */
