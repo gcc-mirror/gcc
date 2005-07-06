@@ -1,3 +1,14 @@
+2005-07-06  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/22319
+	Fix PR tree-optimization/22140
+	Fix PR tree-optimization/22310
+
+	* tree-ssa-structalias.c (do_structure_copy): Give up earlier on
+	variable sized types.
+	Use correct type for intermediate structure on *a = *b structure
+	copies.
+		
 2005-07-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.h (RS6000_VARARGS_AREA, RS6000_VARARGS_SIZE):

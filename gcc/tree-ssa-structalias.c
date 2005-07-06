@@ -2396,18 +2396,39 @@ do_structure_copy (tree lhsop, tree rhsop)
     }
   else
     {
+      tree rhstype = TREE_TYPE (rhsop);
+      tree lhstype = TREE_TYPE (lhsop);
+      tree rhstypesize = TYPE_SIZE (rhstype);
+      tree lhstypesize = TYPE_SIZE (lhstype);
+
+      /* If we have a variably sized types on the rhs or lhs, and a deref
+	 constraint, add the constraint, lhsconstraint = &ANYTHING.
+	 This is conservatively correct because either the lhs is an unknown
+	 sized var (if the constraint is SCALAR), or the lhs is a DEREF
+	 constraint, and every variable it can point to must be unknown sized
+	 anyway, so we don't need to worry about fields at all.  */
+      if ((rhs.type == DEREF && TREE_CODE (rhstypesize) != INTEGER_CST)
+	  || (lhs.type == DEREF && TREE_CODE (lhstypesize) != INTEGER_CST))
+	{
+	  rhs.var = anything_id;
+	  rhs.type = ADDRESSOF;
+	  rhs.offset = 0;
+	  process_constraint (new_constraint (lhs, rhs));
+	  return;
+	}
+
       /* The size only really matters insofar as we don't set more or less of
 	 the variable.  If we hit an unknown size var, the size should be the
 	 whole darn thing.  */
       if (get_varinfo (rhs.var)->is_unknown_size_var)
 	rhssize = ~0;
       else
-	rhssize = TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (rhsop)));
+	rhssize = TREE_INT_CST_LOW (rhstypesize);
 
       if (get_varinfo (lhs.var)->is_unknown_size_var)
 	lhssize = ~0;
       else
-	lhssize = TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (lhsop)));
+	lhssize = TREE_INT_CST_LOW (lhstypesize);
 
   
       if (rhs.type == SCALAR && lhs.type == SCALAR)  
@@ -2418,9 +2439,7 @@ do_structure_copy (tree lhsop, tree rhsop)
 	do_lhs_deref_structure_copy (lhs, rhs, MIN (lhssize, rhssize));
       else
 	{
-	  tree rhsdecl = get_varinfo (rhs.var)->decl;
-	  tree pointertype = TREE_TYPE (rhsdecl);
-	  tree pointedtotype = TREE_TYPE (pointertype);
+	  tree pointedtotype = lhstype;
 	  tree tmpvar;  
 
 	  gcc_assert (rhs.type == DEREF && lhs.type == DEREF);
