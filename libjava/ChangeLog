@@ -1,3 +1,7 @@
+2005-07-06  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.jacks/jacks.xfail: Removed 9.1.3-body-5.
+
 2005-07-05  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* testsuite/libjava.compile/PR19674.java: New test.
