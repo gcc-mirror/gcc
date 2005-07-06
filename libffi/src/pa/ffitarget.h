@@ -51,7 +51,9 @@ typedef enum ffi_abi {
 
 #define FFI_TRAMPOLINE_SIZE 32
 
-#define FFI_TYPE_SMALL_STRUCT1 -1
-#define FFI_TYPE_SMALL_STRUCT2 -2
+#define FFI_TYPE_SMALL_STRUCT3 -1
+#define FFI_TYPE_SMALL_STRUCT5 -2
+#define FFI_TYPE_SMALL_STRUCT6 -3
+#define FFI_TYPE_SMALL_STRUCT7 -4
 #endif
 

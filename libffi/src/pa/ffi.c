@@ -27,6 +27,7 @@
 #include <ffi_common.h>
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #define ROUND_UP(v, a)  (((size_t)(v) + (a) - 1) & ~((a) - 1))
 #define ROUND_DOWN(v, a)  (((size_t)(v) - (a) + 1) & ~((a) - 1))
@@ -53,11 +54,15 @@ static inline int ffi_struct_type(ffi_type *t)
   else if (sz == 2)
     return FFI_TYPE_UINT16;
   else if (sz == 3)
-    return FFI_TYPE_SMALL_STRUCT1;
+    return FFI_TYPE_SMALL_STRUCT3;
   else if (sz == 4)
     return FFI_TYPE_UINT32;
-  else if (sz <= 6)
-    return FFI_TYPE_SMALL_STRUCT2;
+  else if (sz == 5)
+    return FFI_TYPE_SMALL_STRUCT5;
+  else if (sz == 6)
+    return FFI_TYPE_SMALL_STRUCT6;
+  else if (sz == 7)
+    return FFI_TYPE_SMALL_STRUCT7;
   else if (sz <= 8)
     return FFI_TYPE_UINT64;
   else
@@ -491,34 +496,32 @@ UINT32 ffi_closure_inner_LINUX(ffi_closure *closure, UINT32 *stack)
   /* Invoke the closure.  */
   (closure->fun) (cif, rvalue, avalue, closure->user_data);
 
-  debug(3, "after calling function, ret[0] = %d, ret[1] = %d\n", ret[0], ret[1]);
+  debug(3, "after calling function, ret[0] = %08x, ret[1] = %08x\n", ret[0], ret[1]);
 
   /* Store the result */
   switch (cif->flags)
     {
     case FFI_TYPE_UINT8:
-      *(stack - FIRST_ARG_SLOT) = *(UINT8 *)&ret[0];
+      *(stack - FIRST_ARG_SLOT) = (UINT8)(ret[0] >> 24);
       break;
     case FFI_TYPE_SINT8:
-      *(stack - FIRST_ARG_SLOT) = *(SINT8 *)&ret[0];
+      *(stack - FIRST_ARG_SLOT) = (SINT8)(ret[0] >> 24);
       break;
     case FFI_TYPE_UINT16:
-      *(stack - FIRST_ARG_SLOT) = *(UINT16 *)&ret[0];
+      *(stack - FIRST_ARG_SLOT) = (UINT16)(ret[0] >> 16);
       break;
     case FFI_TYPE_SINT16:
-      *(stack - FIRST_ARG_SLOT) = *(SINT16 *)&ret[0];
+      *(stack - FIRST_ARG_SLOT) = (SINT16)(ret[0] >> 16);
       break;
     case FFI_TYPE_INT:
-    case FFI_TYPE_UINT32:
-      *(stack - FIRST_ARG_SLOT) = *(UINT32 *)&ret[0];
-      break;
     case FFI_TYPE_SINT32:
-      *(stack - FIRST_ARG_SLOT) = *(SINT32 *)&ret[0];
+    case FFI_TYPE_UINT32:
+      *(stack - FIRST_ARG_SLOT) = ret[0];
       break;
     case FFI_TYPE_SINT64:
     case FFI_TYPE_UINT64:
-      *(stack - FIRST_ARG_SLOT) = *(UINT32 *)&ret[0];
-      *(stack - FIRST_ARG_SLOT - 1) = *(UINT32 *)&ret[1];
+      *(stack - FIRST_ARG_SLOT) = ret[0];
+      *(stack - FIRST_ARG_SLOT - 1) = ret[1];
       break;
 
     case FFI_TYPE_DOUBLE:
@@ -533,15 +536,34 @@ UINT32 ffi_closure_inner_LINUX(ffi_closure *closure, UINT32 *stack)
       /* Don't need a return value, done by caller.  */
       break;
 
-    case FFI_TYPE_SMALL_STRUCT1:
+    case FFI_TYPE_SMALL_STRUCT3:
       tmp = (void*)(stack -  FIRST_ARG_SLOT);
       tmp += 4 - cif->rtype->size;
       memcpy((void*)tmp, &ret[0], cif->rtype->size);
       break;
 
-    case FFI_TYPE_SMALL_STRUCT2:
-      *(stack - FIRST_ARG_SLOT) = ret[0];
-      *(stack - FIRST_ARG_SLOT - 1) = ret[1];
+    case FFI_TYPE_SMALL_STRUCT5:
+    case FFI_TYPE_SMALL_STRUCT6:
+    case FFI_TYPE_SMALL_STRUCT7:
+      {
+	unsigned int ret2[2];
+	int off;
+
+	/* Right justify ret[0] and ret[1] */
+	switch (cif->flags)
+	  {
+	    case FFI_TYPE_SMALL_STRUCT5: off = 3; break;
+	    case FFI_TYPE_SMALL_STRUCT6: off = 2; break;
+	    case FFI_TYPE_SMALL_STRUCT7: off = 1; break;
+	    default: off = 0; break;
+	  }
+
+	memset (ret2, 0, sizeof (ret2));
+	memcpy ((char *)ret2 + off, ret, 8 - off);
+
+	*(stack - FIRST_ARG_SLOT) = ret2[0];
+	*(stack - FIRST_ARG_SLOT - 1) = ret2[1];
+      }
       break;
 
     case FFI_TYPE_POINTER:

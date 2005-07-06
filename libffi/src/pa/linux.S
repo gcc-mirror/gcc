@@ -28,6 +28,7 @@
 #include <ffi.h>
 
 	.text
+	.level 1.1
 	.align 4
 
 	/* void ffi_call_LINUX(void (*)(char *, extended_cif *),
@@ -105,21 +106,46 @@ ffi_call_LINUX:
 
 	/* Store the result according to the return type.  */
 
-checksmst1:
-	comib,<>,n FFI_TYPE_SMALL_STRUCT1, %r21, checksmst2
-	/* There is maybe a better way to handle 3 byte structs.  */
-	sh2add %ret0,0,%ret0
-	sh2add %ret0,0,%ret0
-	sh2add %ret0,0,%ret0
-	sh2add %ret0,0,%ret0
+checksmst3:
+	comib,<>,n FFI_TYPE_SMALL_STRUCT3, %r21, checksmst567
+	/* 3-byte structs are returned in ret0 as ??xxyyzz.  Shift
+	   left 8 bits to write to the result structure.  */
+	zdep %ret0, 23, 24, %r22
 	b done
-	stw %ret0, 0(%r20)
+	stw %r22, 0(%r20)
 
-checksmst2:
-	comib,<>,n FFI_TYPE_SMALL_STRUCT2, %r21, checkint8
-	/* Up to now I don't have a way to handle 6/7 byte structs.
-	   The values are left bounded in the registers. In the struct
-	   itself they are left bounded.  */
+checksmst567:
+	/* 5-7 byte values are returned right justified:
+	      ret0     ret1
+	   5: ??????aa bbccddee
+	   6: ????aabb ccddeeff
+	   7: ??aabbcc ddeeffgg
+
+	   To store this in the result, write the first 4 bytes into a temp
+	   register using shrpw (t1 = aabbccdd), followed by a rotation of
+	   ret1:
+
+	      ret0     ret1	   ret1
+	   5: ??????aa bbccddee -> eebbccdd (rotate 8)
+	   6: ????aabb ccddeeff -> eeffccdd (rotate 16)
+	   7: ??aabbcc ddeeffgg -> eeffggdd (rotate 24)
+
+	   then we write (t1, ret1) into the result.  */
+
+	addi,<> -FFI_TYPE_SMALL_STRUCT5,%r21,%r0
+	ldi 8, %r22
+	addi,<> -FFI_TYPE_SMALL_STRUCT6,%r21,%r0
+	ldi 16, %r22
+	addi,<> -FFI_TYPE_SMALL_STRUCT7,%r21,%r0
+	ldi 24, %r22
+
+	/* This relies on all the FFI_TYPE_*_STRUCT* defines being <0 */
+	cmpib,<=,n 0, %r21, checkint8
+	mtsar %r22
+
+	shrpw %ret0, %ret1, %sar, %ret0  /* ret0 = aabbccdd */
+	shrpw %ret1, %ret1, %sar, %ret1  /* rotate ret1 */
+	
 	stw %ret0, 0(%r20)
 	b done
 	stw %ret1, 4(%r20)
