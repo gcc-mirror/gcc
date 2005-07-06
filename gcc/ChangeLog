@@ -1,3 +1,9 @@
+2005-07-06  Paul Brook  <paul@codesourcery.com>
+
+	* aclocal.m4: Work around a bug in AC_PATH_PROGS when its last
+	argument is empty.
+	* configure: Regenerate.
+
 2005-07-06  J"orn Rennecke <joern.rennecke@st.com>
 
 	* sh.c (final_prescan_insn): Undo bogus change from 2005-05-09.
