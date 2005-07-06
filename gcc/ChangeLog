@@ -1,3 +1,26 @@
+2005-07-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/rs6000.h (RS6000_VARARGS_AREA, RS6000_VARARGS_SIZE):
+	Remove.
+	(STARTING_FRAME_OFFSET): Don't add RS6000_VARARGS_AREA.
+	(machine_function): Move typedef to...
+	* config/rs6000/rs6000.c (machine_function): ... here.  Add
+	varargs_save_offset field.
+	(rs6000_stack_t): Remove varargs_size field.
+	(setup_incoming_varargs): Allocate varargs save area using
+	assign_stack_local, try to make it as small as possible.
+	Save offset from virtual_stack_vars_rtx to the save area
+	in cfun->machine->varargs_save_offset.  Use UNITS_PER_FP_WORD
+	instead of magic 8 when fp word byte size is used.
+	(rs6000_va_start): Use cfun->machine->varargs_save_offset
+	instead of -RS6000_VARARGS_SIZE.
+	(rs6000_stack_info, debug_stack_info,
+	rs6000_initial_elimination_offset): Remove all traces of
+	varargs_size.
+	* config/rs6000/sysv4.h (RS6000_VARARGS_AREA): Remove.
+	* config/rs6000/darwin.h (STARTING_FRAME_OFFSET): Don't add
+	RS6000_VARARGS_AREA.
+
 2005-07-06  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/21963
@@ -467,9 +490,9 @@
 
 2005-07-02  Richard Henderson  <rth@redhat.com>
 
-        * config/alpha/alpha.c (alpha_legitimize_address): Check for
-         TLS_MODEL_NONE.
-        (alpha_stdarg_optimize_hook): Use DECL_UID with va_list_vars.
+	* config/alpha/alpha.c (alpha_legitimize_address): Check for
+	TLS_MODEL_NONE.
+	(alpha_stdarg_optimize_hook): Use DECL_UID with va_list_vars.
 
 2005-07-02  Andrew Pinski  <pinskia@physics.uc.edu>
 

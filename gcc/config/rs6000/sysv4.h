@@ -249,13 +249,6 @@ do {									\
    so it is not available to the normal user.  */
 #define FIXED_R13 1
 
-/* Size of the V.4 varargs area if needed.  */
-/* Override rs6000.h definition.  */
-#undef	RS6000_VARARGS_AREA
-#define RS6000_VARARGS_AREA \
-  ((DEFAULT_ABI == ABI_V4 && current_function_stdarg)		\
-   ? RS6000_VARARGS_SIZE : 0)
-
 /* Override default big endianism definitions in rs6000.h.  */
 #undef	BYTES_BIG_ENDIAN
 #undef	WORDS_BIG_ENDIAN

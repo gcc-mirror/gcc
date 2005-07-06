@@ -164,7 +164,6 @@ do {									\
   (FRAME_GROWS_DOWNWARD							\
    ? 0									\
    : (RS6000_ALIGN (current_function_outgoing_args_size, 16)		\
-      + RS6000_VARARGS_AREA						\
       + RS6000_SAVE_AREA))
 
 #undef STACK_DYNAMIC_OFFSET

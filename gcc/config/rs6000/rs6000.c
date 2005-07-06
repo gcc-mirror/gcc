@@ -93,7 +93,6 @@ typedef struct rs6000_stack {
   int varargs_save_offset;	/* offset to save the varargs registers */
   int ehrd_offset;		/* offset to EH return data */
   int reg_size;			/* register size (4 or 8) */
-  int varargs_size;		/* size to hold V.4 args passed in regs */
   HOST_WIDE_INT vars_size;	/* variable save area size */
   int parm_size;		/* outgoing parameter size */
   int save_size;		/* save area size */
@@ -112,6 +111,23 @@ typedef struct rs6000_stack {
   HOST_WIDE_INT total_size;	/* total bytes allocated for stack */
   int spe_64bit_regs_used;
 } rs6000_stack_t;
+
+/* A C structure for machine-specific, per-function data.
+   This is added to the cfun structure.  */
+typedef struct machine_function GTY(())
+{
+  /* Flags if __builtin_return_address (n) with n >= 1 was used.  */
+  int ra_needs_full_frame;
+  /* Some local-dynamic symbol.  */
+  const char *some_ld_name;
+  /* Whether the instruction chain has been scanned already.  */
+  int insn_chain_scanned_p;
+  /* Flags if __builtin_return_address (0) was used.  */
+  int ra_need_lr;
+  /* Offset from virtual_stack_vars_rtx to the start of the ABI_V4
+     varargs save area.  */
+  HOST_WIDE_INT varargs_save_offset;
+} machine_function;
 
 /* Target cpu type */
 
@@ -5218,11 +5234,70 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
   if (DEFAULT_ABI == ABI_V4)
     {
-      if (! no_rtl)
-	save_area = plus_constant (virtual_stack_vars_rtx,
-				   - RS6000_VARARGS_SIZE);
-
       first_reg_offset = next_cum.sysv_gregno - GP_ARG_MIN_REG;
+
+      if (! no_rtl)
+	{
+	  int gpr_reg_num = 0, gpr_size = 0, fpr_size = 0;
+	  HOST_WIDE_INT offset = 0;
+
+	  /* Try to optimize the size of the varargs save area.
+	     The ABI requires that ap.reg_save_area is doubleword
+	     aligned, but we don't need to allocate space for all
+	     the bytes, only those to which we actually will save
+	     anything.  */
+	  if (cfun->va_list_gpr_size && first_reg_offset < GP_ARG_NUM_REG)
+	    gpr_reg_num = GP_ARG_NUM_REG - first_reg_offset;
+	  if (TARGET_HARD_FLOAT && TARGET_FPRS
+	      && next_cum.fregno <= FP_ARG_V4_MAX_REG
+	      && cfun->va_list_fpr_size)
+	    {
+	      if (gpr_reg_num)
+		fpr_size = (next_cum.fregno - FP_ARG_MIN_REG)
+			   * UNITS_PER_FP_WORD;
+	      if (cfun->va_list_fpr_size
+		  < FP_ARG_V4_MAX_REG + 1 - next_cum.fregno)
+		fpr_size += cfun->va_list_fpr_size * UNITS_PER_FP_WORD;
+	      else
+		fpr_size += (FP_ARG_V4_MAX_REG + 1 - next_cum.fregno)
+			    * UNITS_PER_FP_WORD;
+	    }
+	  if (gpr_reg_num)
+	    {
+	      offset = -((first_reg_offset * reg_size) & ~7);
+	      if (!fpr_size && gpr_reg_num > cfun->va_list_gpr_size)
+		{
+		  gpr_reg_num = cfun->va_list_gpr_size;
+		  if (reg_size == 4 && (first_reg_offset & 1))
+		    gpr_reg_num++;
+		}
+	      gpr_size = (gpr_reg_num * reg_size + 7) & ~7;
+	    }
+	  else if (fpr_size)
+	    offset = - (int) (next_cum.fregno - FP_ARG_MIN_REG)
+		       * UNITS_PER_FP_WORD
+		     - (int) (GP_ARG_NUM_REG * reg_size);
+
+	  if (gpr_size + fpr_size)
+	    {
+	      rtx reg_save_area
+		= assign_stack_local (BLKmode, gpr_size + fpr_size, 64);
+	      gcc_assert (GET_CODE (reg_save_area) == MEM);
+	      reg_save_area = XEXP (reg_save_area, 0);
+	      if (GET_CODE (reg_save_area) == PLUS)
+		{
+		  gcc_assert (XEXP (reg_save_area, 0)
+			      == virtual_stack_vars_rtx);
+		  gcc_assert (GET_CODE (XEXP (reg_save_area, 1)) == CONST_INT);
+		  offset += INTVAL (XEXP (reg_save_area, 1));
+		}
+	      else
+		gcc_assert (reg_save_area == virtual_stack_vars_rtx);
+	    }
+
+	  cfun->machine->varargs_save_offset = offset;
+	  save_area = plus_constant (virtual_stack_vars_rtx, offset);
+	}
     }
   else
     {
@@ -5272,7 +5347,8 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
       int fregno = next_cum.fregno, nregs;
       rtx cr1 = gen_rtx_REG (CCmode, CR1_REGNO);
       rtx lab = gen_label_rtx ();
-      int off = (GP_ARG_NUM_REG * reg_size) + ((fregno - FP_ARG_MIN_REG) * 8);
+      int off = (GP_ARG_NUM_REG * reg_size) + ((fregno - FP_ARG_MIN_REG)
+					       * UNITS_PER_FP_WORD);
 
       emit_jump_insn
 	(gen_rtx_SET (VOIDmode,
@@ -5285,7 +5361,7 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
       for (nregs = 0;
 	   fregno <= FP_ARG_V4_MAX_REG && nregs < cfun->va_list_fpr_size;
-	   fregno++, off += 8, nregs++)
+	   fregno++, off += UNITS_PER_FP_WORD, nregs++)
 	{
 	  mem = gen_rtx_MEM (DFmode, plus_constant (save_area, off));
 	  set_mem_alias_set (mem, set);
@@ -5423,8 +5499,9 @@ rs6000_va_start (tree valist, rtx nextarg)
 
   /* Find the register save area.  */
   t = make_tree (TREE_TYPE (sav), virtual_stack_vars_rtx);
-  t = build (PLUS_EXPR, TREE_TYPE (sav), t,
-	     build_int_cst (NULL_TREE, -RS6000_VARARGS_SIZE));
+  if (cfun->machine->varargs_save_offset)
+    t = build (PLUS_EXPR, TREE_TYPE (sav), t,
+	       build_int_cst (NULL_TREE, cfun->machine->varargs_save_offset));
   t = build (MODIFY_EXPR, TREE_TYPE (sav), sav, t);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -12116,17 +12193,16 @@ rs6000_stack_info (void)
   /* Determine various sizes.  */
   info_ptr->reg_size     = reg_size;
   info_ptr->fixed_size   = RS6000_SAVE_AREA;
-  info_ptr->varargs_size = RS6000_VARARGS_AREA;
   info_ptr->vars_size    = RS6000_ALIGN (get_frame_size (), 8);
   info_ptr->parm_size    = RS6000_ALIGN (current_function_outgoing_args_size,
 					 TARGET_ALTIVEC ? 16 : 8);
   if (FRAME_GROWS_DOWNWARD)
     info_ptr->vars_size
-      += RS6000_ALIGN (info_ptr->fixed_size + info_ptr->varargs_size
-		       + info_ptr->vars_size + info_ptr->parm_size,
+      += RS6000_ALIGN (info_ptr->fixed_size + info_ptr->vars_size
+		       + info_ptr->parm_size,
 		       ABI_STACK_BOUNDARY / BITS_PER_UNIT)
-	 - (info_ptr->fixed_size + info_ptr->varargs_size
-	    + info_ptr->vars_size + info_ptr->parm_size);
+	 - (info_ptr->fixed_size + info_ptr->vars_size
+	    + info_ptr->parm_size);
 
   if (TARGET_SPE_ABI && info_ptr->spe_64bit_regs_used != 0)
     info_ptr->spe_gp_size = 8 * (32 - info_ptr->first_gp_reg_save);
@@ -12251,8 +12327,7 @@ rs6000_stack_info (void)
 
   non_fixed_size	 = (info_ptr->vars_size
 			    + info_ptr->parm_size
-			    + info_ptr->save_size
-			    + info_ptr->varargs_size);
+			    + info_ptr->save_size);
 
   info_ptr->total_size = RS6000_ALIGN (non_fixed_size + info_ptr->fixed_size,
 				       ABI_STACK_BOUNDARY / BITS_PER_UNIT);
@@ -12451,9 +12526,6 @@ debug_stack_info (rs6000_stack_t *info)
   if (info->total_size)
     fprintf (stderr, "\ttotal_size          = "HOST_WIDE_INT_PRINT_DEC"\n",
 	     info->total_size);
-
-  if (info->varargs_size)
-    fprintf (stderr, "\tvarargs_size        = %5d\n", info->varargs_size);
 
   if (info->vars_size)
     fprintf (stderr, "\tvars_size           = "HOST_WIDE_INT_PRINT_DEC"\n",
@@ -18261,13 +18333,11 @@ rs6000_initial_elimination_offset (int from, int to)
     {
       offset = info->push_p ? 0 : -info->total_size;
       if (FRAME_GROWS_DOWNWARD)
-	offset += info->fixed_size + info->varargs_size
-		  + info->vars_size + info->parm_size;
+	offset += info->fixed_size + info->vars_size + info->parm_size;
     }
   else if (from == FRAME_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
     offset = FRAME_GROWS_DOWNWARD
-	     ? info->fixed_size + info->varargs_size
-	       + info->vars_size + info->parm_size
+	     ? info->fixed_size + info->vars_size + info->parm_size
 	     : 0;
   else if (from == ARG_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
     offset = info->total_size;
