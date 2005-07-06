@@ -1,3 +1,9 @@
+2005-07-06  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/21963
+	* tree-ssa-loop-ivopts.c (get_computation_aff): Use
+	constant_multiple_of in the same way get_computation_cost_at does.
+
 2005-07-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.h (sparc_compare_emitted): New extern.
