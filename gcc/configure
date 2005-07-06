@@ -12896,7 +12896,12 @@ fi
 
 exec 6>/dev/null
 if test "x$gcc_cv_as" = x; then
-	for ac_prog in as
+	# The AC_PATH_PROGS macro doesn't work properly when its 4th argument
+	# is empty.
+	if test "x$gcc_cv_tool_dirs" = x; then
+		gcc_cv_as=
+	else
+		for ac_prog in as
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -12940,6 +12945,7 @@ fi
   test -n "$gcc_cv_as" && break
 done
 
+	fi
 fi
 if test "x$gcc_cv_as" = x; then
 	# If the loop above did not find a tool, then use whatever
@@ -13068,7 +13074,12 @@ fi
 
 exec 6>/dev/null
 if test "x$gcc_cv_ld" = x; then
-	for ac_prog in ld
+	# The AC_PATH_PROGS macro doesn't work properly when its 4th argument
+	# is empty.
+	if test "x$gcc_cv_tool_dirs" = x; then
+		gcc_cv_ld=
+	else
+		for ac_prog in ld
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -13112,6 +13123,7 @@ fi
   test -n "$gcc_cv_ld" && break
 done
 
+	fi
 fi
 if test "x$gcc_cv_ld" = x; then
 	# If the loop above did not find a tool, then use whatever
@@ -13206,7 +13218,12 @@ fi
 
 exec 6>/dev/null
 if test "x$gcc_cv_nm" = x; then
-	for ac_prog in nm
+	# The AC_PATH_PROGS macro doesn't work properly when its 4th argument
+	# is empty.
+	if test "x$gcc_cv_tool_dirs" = x; then
+		gcc_cv_nm=
+	else
+		for ac_prog in nm
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -13250,6 +13267,7 @@ fi
   test -n "$gcc_cv_nm" && break
 done
 
+	fi
 fi
 if test "x$gcc_cv_nm" = x; then
 	# If the loop above did not find a tool, then use whatever

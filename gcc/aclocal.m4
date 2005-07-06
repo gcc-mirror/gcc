@@ -711,7 +711,13 @@ dnl shut up useless "checking for..." messages
 dnl we can still read them in config.log
 exec AS_MESSAGE_FD([])>/dev/null
 if test "x[$]$1" = x; then
-	AC_PATH_PROGS($1, $2, , $gcc_cv_tool_dirs)
+	# The AC_PATH_PROGS macro doesn't work properly when its 4th argument
+	# is empty.
+	if test "x$gcc_cv_tool_dirs" = x; then
+		$1=
+	else
+		AC_PATH_PROGS($1, $2, , $gcc_cv_tool_dirs)
+	fi
 fi
 if test "x[$]$1" = x; then
 	# If the loop above did not find a tool, then use whatever
