@@ -4403,6 +4403,11 @@ expand_function_end (void)
   /* Output the label for the actual return from the function.  */
   emit_label (return_label);
 
+  /* Let except.c know where it should emit the call to unregister
+     the function context for sjlj exceptions.  */
+  if (flag_exceptions && USING_SJLJ_EXCEPTIONS)
+    sjlj_emit_function_exit_after (get_last_insn ());
+
   /* If scalar return value was computed in a pseudo-reg, or was a named
      return value that got dumped to the stack, copy that to the hard
      return register.  */
@@ -4529,11 +4534,6 @@ expand_function_end (void)
 
   /* Output the label for the naked return from the function.  */
   emit_label (naked_return_label);
-
-  /* Let except.c know where it should emit the call to unregister
-     the function context for sjlj exceptions.  */
-  if (flag_exceptions && USING_SJLJ_EXCEPTIONS)
-    sjlj_emit_function_exit_after (get_last_insn ());
 
   /* If stack protection is enabled for this function, check the guard.  */
   if (cfun->stack_protect_guard)
