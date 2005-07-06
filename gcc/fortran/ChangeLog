@@ -1,3 +1,8 @@
+2005-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (gfc_match_entry): Allow ENTRY without parentheses
+	even in FUNCTIONs.
+
 2005-07-03  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gfortran.texi, intrinsic.texi: Fix typos.
