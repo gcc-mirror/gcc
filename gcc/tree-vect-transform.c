@@ -232,7 +232,7 @@ vect_create_addr_base_for_vector_ref (tree stmt,
   TREE_OPERAND (vec_stmt, 0) = new_temp;
   append_to_statement_list_force (vec_stmt, new_stmt_list);
 
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     {
       fprintf (vect_dump, "created ");
       print_generic_expr (vect_dump, vec_stmt, TDF_SLIM);
@@ -332,7 +332,7 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
   base_name =  build_fold_indirect_ref (unshare_expr (
 		      STMT_VINFO_VECT_DR_BASE_ADDRESS (stmt_info)));
 
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     {
       tree data_ref_base = base_name;
       fprintf (vect_dump, "create array_ref of type: ");
@@ -497,7 +497,7 @@ vect_init_vector (tree stmt, tree vector_var)
   new_bb = bsi_insert_on_edge_immediate (pe, init_stmt);
   gcc_assert (!new_bb);
 
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     {
       fprintf (vect_dump, "created new init_stmt: ");
       print_generic_expr (vect_dump, init_stmt, TDF_SLIM);
@@ -539,7 +539,7 @@ vect_get_vec_def_for_operand (tree op, tree stmt, tree *scalar_def)
   enum vect_def_type dt;
   bool is_simple_use;
 
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     {
       fprintf (vect_dump, "vect_get_vec_def_for_operand: ");
       print_generic_expr (vect_dump, op, TDF_SLIM);
@@ -547,7 +547,7 @@ vect_get_vec_def_for_operand (tree op, tree stmt, tree *scalar_def)
 
   is_simple_use = vect_is_simple_use (op, loop_vinfo, &def_stmt, &def, &dt);
   gcc_assert (is_simple_use);
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     {
       if (def)
         {
@@ -570,7 +570,7 @@ vect_get_vec_def_for_operand (tree op, tree stmt, tree *scalar_def)
 	  *scalar_def = op;
 
         /* Create 'vect_cst_ = {cst,cst,...,cst}'  */
-        if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+        if (vect_print_dump_info (REPORT_DETAILS))
           fprintf (vect_dump, "Create vector_cst. nunits = %d", nunits);
 
         for (i = nunits - 1; i >= 0; --i)
@@ -588,7 +588,7 @@ vect_get_vec_def_for_operand (tree op, tree stmt, tree *scalar_def)
 	  *scalar_def = def;
 
         /* Create 'vec_inv = {inv,inv,..,inv}'  */
-        if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+        if (vect_print_dump_info (REPORT_DETAILS))
           fprintf (vect_dump, "Create vector_inv.");
 
         for (i = nunits - 1; i >= 0; --i)
@@ -627,7 +627,7 @@ vect_get_vec_def_for_operand (tree op, tree stmt, tree *scalar_def)
     /* Case 5: operand is defined by loop-header phi - induction.  */
     case vect_induction_def:
       {
-        if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+        if (vect_print_dump_info (REPORT_DETAILS))
           fprintf (vect_dump, "induction - unsupported.");
         internal_error ("no support for induction"); /* FORNOW */
       }
@@ -647,7 +647,7 @@ vect_finish_stmt_generation (tree stmt, tree vec_stmt, block_stmt_iterator *bsi)
 {
   bsi_insert_before (bsi, vec_stmt, BSI_SAME_STMT);
 
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     {
       fprintf (vect_dump, "add new stmt: ");
       print_generic_expr (vect_dump, vec_stmt, TDF_SLIM);
@@ -877,7 +877,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
   /* 1.2 set the loop-latch arg for the reduction-phi:  */
   add_phi_arg (reduction_phi, vect_def, loop_latch_edge (loop));
 
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     {
       fprintf (vect_dump, "transform reduction: created def-use cycle:");
       print_generic_expr (vect_dump, reduction_phi, TDF_SLIM);
@@ -909,7 +909,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
       /*** Case 1:  Create:
 	   v_out2 = reduc_expr <v_out1>  */
 
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "Reduce using direct vector reduction.");
 
       vec_dest = vect_create_destination_var (scalar_dest, vectype);
@@ -965,7 +965,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
 	          Create:  va = vop <va, va'>
 	        }  */
 
-	  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "Reduce using vector shifts");
 
 	  vec_dest = vect_create_destination_var (scalar_dest, vectype);
@@ -982,7 +982,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
 	      new_name = make_ssa_name (vec_dest, epilog_stmt);
 	      TREE_OPERAND (epilog_stmt, 0) = new_name;
 	      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
-	      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	      if (vect_print_dump_info (REPORT_DETAILS))
 		print_generic_expr (vect_dump, epilog_stmt, TDF_SLIM);
 
 
@@ -991,7 +991,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
 	      new_temp = make_ssa_name (vec_dest, epilog_stmt);
 	      TREE_OPERAND (epilog_stmt, 0) = new_temp;
 	      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
-	      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	      if (vect_print_dump_info (REPORT_DETAILS))
 		print_generic_expr (vect_dump, epilog_stmt, TDF_SLIM);
 	    }
 
@@ -1008,7 +1008,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
 	         Create:  s = op <s, s'>
 	       }  */
 
-	  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "Reduce using scalar code. ");
 
 	  vec_temp = PHI_RESULT (new_phi);
@@ -1026,7 +1026,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
               new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
               TREE_OPERAND (epilog_stmt, 0) = new_temp;
               bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
-              if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+              if (vect_print_dump_info (REPORT_DETAILS))
                 print_generic_expr (vect_dump, epilog_stmt, TDF_SLIM);
 	      
 	      bit_offset = element_bitsize;
@@ -1049,7 +1049,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
 	      new_name = make_ssa_name (new_scalar_dest, epilog_stmt);
 	      TREE_OPERAND (epilog_stmt, 0) = new_name;
 	      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
-	      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	      if (vect_print_dump_info (REPORT_DETAILS))
 		print_generic_expr (vect_dump, epilog_stmt, TDF_SLIM);
 
 
@@ -1058,7 +1058,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
 	      new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
 	      TREE_OPERAND (epilog_stmt, 0) = new_temp;
 	      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
-	      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	      if (vect_print_dump_info (REPORT_DETAILS))
 		print_generic_expr (vect_dump, epilog_stmt, TDF_SLIM);
 	    }
 
@@ -1073,7 +1073,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
   
   if (extract_scalar_result)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "extract scalar result");
 
       /* The result is in the low order bits.  */
@@ -1090,7 +1090,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
       new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
       TREE_OPERAND (epilog_stmt, 0) = new_temp; 
       bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
 	print_generic_expr (vect_dump, epilog_stmt, TDF_SLIM);
     }
 
@@ -1110,7 +1110,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
       TREE_OPERAND (epilog_stmt, 0) = new_temp;
       bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
 
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         print_generic_expr (vect_dump, epilog_stmt, TDF_SLIM);
     }
 
@@ -1218,20 +1218,20 @@ vectorizable_reduction (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   optab = optab_for_tree_code (code, vectype);
   if (!optab)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "no optab.");
       return false;
     }
   vec_mode = TYPE_MODE (vectype);
   if (optab->handlers[(int) vec_mode].insn_code == CODE_FOR_nothing)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "op not supported by target.");
       if (GET_MODE_SIZE (vec_mode) != UNITS_PER_WORD
           || LOOP_VINFO_VECT_FACTOR (loop_vinfo)
 	     < vect_min_worthwhile_factor (code))
         return false;
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "proceeding using word mode.");
     }
 
@@ -1240,7 +1240,7 @@ vectorizable_reduction (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
       && LOOP_VINFO_VECT_FACTOR (loop_vinfo)
 	 < vect_min_worthwhile_factor (code))
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "not worthwhile without SIMD support.");
       return false;
     }
@@ -1251,13 +1251,13 @@ vectorizable_reduction (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   reduc_optab = optab_for_tree_code (reduc_code, vectype);
   if (!reduc_optab)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "no optab for reduction.");
       reduc_code = NUM_TREE_CODES;
     }
   if (reduc_optab->handlers[(int) vec_mode].insn_code == CODE_FOR_nothing)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "reduc op not supported by target.");
       reduc_code = NUM_TREE_CODES;
     }
@@ -1270,7 +1270,7 @@ vectorizable_reduction (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 
   /** Transform.  **/
 
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "transform reduction.");
 
   /* Create the destination vector  */
@@ -1338,7 +1338,7 @@ vectorizable_assignment (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   op = TREE_OPERAND (stmt, 1);
   if (!vect_is_simple_use (op, loop_vinfo, &def_stmt, &def, &dt))
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "use not simple.");
       return false;
     }
@@ -1350,7 +1350,7 @@ vectorizable_assignment (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
     }
 
   /** Transform.  **/
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "transform assignment.");
 
   /* Handle def.  */
@@ -1434,7 +1434,7 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   if (STMT_VINFO_LIVE_P (stmt_info))
     {
       /* FORNOW: not yet supported.  */
-      if (vect_print_dump_info (REPORT_DETAILS, LOOP_LOC (loop_vinfo)))
+      if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "value used after loop.");
       return false;
     }
@@ -1453,7 +1453,7 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   op_type = TREE_CODE_LENGTH (code);
   if (op_type != unary_op && op_type != binary_op)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "num. args = %d (not unary/binary op).", op_type);
       return false;
     }
@@ -1463,7 +1463,7 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
       op = TREE_OPERAND (operation, i);
       if (!vect_is_simple_use (op, loop_vinfo, &def_stmt, &def, &dt))
 	{
-	  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "use not simple.");
 	  return false;
 	}	
@@ -1472,20 +1472,20 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   /* Supportable by target?  */
   if (!optab)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "no optab.");
       return false;
     }
   vec_mode = TYPE_MODE (vectype);
   if (optab->handlers[(int) vec_mode].insn_code == CODE_FOR_nothing)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "op not supported by target.");
       if (GET_MODE_SIZE (vec_mode) != UNITS_PER_WORD
           || LOOP_VINFO_VECT_FACTOR (loop_vinfo)
 	     < vect_min_worthwhile_factor (code))
         return false;
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "proceeding using word mode.");
     }
 
@@ -1494,7 +1494,7 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
       && LOOP_VINFO_VECT_FACTOR (loop_vinfo)
 	 < vect_min_worthwhile_factor (code))
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "not worthwhile without SIMD support.");
       return false;
     }
@@ -1507,7 +1507,7 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 
   /** Transform.  **/
 
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "transform binary/unary operation.");
 
   /* Handle def.  */
@@ -1579,7 +1579,7 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   op = TREE_OPERAND (stmt, 1);
   if (!vect_is_simple_use (op, loop_vinfo, &def_stmt, &def, &dt))
     {
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "use not simple.");
       return false;
     }
@@ -1602,7 +1602,7 @@ vectorizable_store (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 
   /** Transform.  **/
 
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "transform store");
 
   alignment_support_cheme = vect_supportable_dr_alignment (dr);
@@ -1680,7 +1680,7 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   if (STMT_VINFO_LIVE_P (stmt_info))
     {
       /* FORNOW: not yet supported.  */
-      if (vect_print_dump_info (REPORT_DETAILS, LOOP_LOC (loop_vinfo)))
+      if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "value used after loop.");
       return false;
     }
@@ -1705,7 +1705,7 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
     (e.g. - data copies).  */
   if (mov_optab->handlers[mode].insn_code == CODE_FOR_nothing)
     {
-      if (vect_print_dump_info (REPORT_DETAILS, LOOP_LOC (loop_vinfo)))
+      if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "Aligned load, but unsupported type.");
       return false;
     }
@@ -1718,7 +1718,7 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 
   /** Transform.  **/
 
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "transform load.");
 
   alignment_support_cheme = vect_supportable_dr_alignment (dr);
@@ -1907,7 +1907,7 @@ vectorizable_live_operation (tree stmt,
       op = TREE_OPERAND (operation, i);
       if (!vect_is_simple_use (op, loop_vinfo, &def_stmt, &def, &dt))
         {
-          if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+          if (vect_print_dump_info (REPORT_DETAILS))
             fprintf (vect_dump, "use not simple.");
           return false;
         }
@@ -1998,7 +1998,7 @@ vectorizable_condition (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   if (STMT_VINFO_LIVE_P (stmt_info))
     {
       /* FORNOW: not yet supported.  */
-      if (vect_print_dump_info (REPORT_DETAILS, LOOP_LOC (loop_vinfo)))
+      if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "value used after loop.");
       return false;
     }
@@ -2120,7 +2120,7 @@ vect_transform_stmt (tree stmt, block_stmt_iterator *bsi)
 	break;
 
       default:
-	if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	if (vect_print_dump_info (REPORT_DETAILS))
 	  fprintf (vect_dump, "stmt not supported.");
 	gcc_unreachable ();
       }
@@ -2388,7 +2388,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
       tree var, stmt, ni, ni_name;
       block_stmt_iterator last_bsi;
 
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         {
           fprintf (vect_dump, "vect_update_ivs_after_vectorizer: phi: ");
           print_generic_expr (vect_dump, phi, TDF_SLIM);
@@ -2397,7 +2397,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
       /* Skip virtual phi's.  */
       if (!is_gimple_reg (SSA_NAME_VAR (PHI_RESULT (phi))))
 	{
-	  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "virtual phi. skip.");
 	  continue;
 	}
@@ -2405,7 +2405,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
       /* Skip reduction phis.  */
       if (STMT_VINFO_DEF_TYPE (vinfo_for_stmt (phi)) == vect_reduction_def)
         { 
-          if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+          if (vect_print_dump_info (REPORT_DETAILS))
             fprintf (vect_dump, "reduc phi. skip.");
           continue;
         } 
@@ -2465,7 +2465,7 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
   basic_block preheader;
   int loop_num;
 
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_do_peeling_for_loop_bound ===");
 
   initialize_original_copy_tables ();
@@ -2555,7 +2555,7 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
       int element_size = vectype_align/vf;
       int elem_misalign = byte_misalign / element_size;
 
-      if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+      if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "known alignment = %d.", byte_misalign);
       iters = build_int_cst (niters_type, (vf - elem_misalign)&(vf-1));
     }
@@ -2598,7 +2598,7 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
   if (TREE_CODE (loop_niters) != INTEGER_CST)
     iters = build2 (MIN_EXPR, niters_type, iters, loop_niters);
 
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     {
       fprintf (vect_dump, "niters for prolog loop: ");
       print_generic_expr (vect_dump, iters, TDF_SLIM);
@@ -2687,7 +2687,7 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, struct loops *loops)
   tree n_iters;
   struct loop *new_loop;
 
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_do_peeling_for_alignment ===");
 
   initialize_original_copy_tables ();
@@ -2737,7 +2737,7 @@ vect_transform_loop (loop_vec_info loop_vinfo,
   tree ratio = NULL;
   int vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
 
-  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+  if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vec_transform_loop ===");
 
   /* Peel the loop if there are data refs with unknown alignment.
@@ -2785,7 +2785,7 @@ vect_transform_loop (loop_vec_info loop_vinfo,
 	  stmt_vec_info stmt_info;
 	  bool is_store;
 
-	  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	  if (vect_print_dump_info (REPORT_DETAILS))
 	    {
 	      fprintf (vect_dump, "------>vectorizing statement: ");
 	      print_generic_expr (vect_dump, stmt, TDF_SLIM);
@@ -2805,7 +2805,7 @@ vect_transform_loop (loop_vec_info loop_vinfo,
 		 == (unsigned HOST_WIDE_INT) vectorization_factor);
 
 	  /* -------- vectorize statement ------------ */
-	  if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
+	  if (vect_print_dump_info (REPORT_DETAILS))
 	    fprintf (vect_dump, "transform statement.");
 
 	  is_store = vect_transform_stmt (stmt, &si);
@@ -2830,6 +2830,6 @@ vect_transform_loop (loop_vec_info loop_vinfo,
      until all the loops have been transformed?  */
   update_ssa (TODO_update_ssa);
 
-  if (vect_print_dump_info (REPORT_VECTORIZED_LOOPS, LOOP_LOC (loop_vinfo)))
+  if (vect_print_dump_info (REPORT_VECTORIZED_LOOPS))
     fprintf (vect_dump, "LOOP VECTORIZED.");
 }

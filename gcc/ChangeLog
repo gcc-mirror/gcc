@@ -1,3 +1,33 @@
+2005-07-05  Devang Patel  <dpatel@apple.com>
+
+	* tree-vectorizer.h (struct _loop_vec_info): Remove loop_line_number.
+	(LOOP_VINFO_LOC, LOOP_LOC): Remove.
+	* tree-vectorizer.c (vect_loop_location): New.
+	(vect_print_dump_info): Use vect_loop_location.
+	(new_loop_vec_info): Do not set LOOP_VINFO_LOC.
+	(vectorize_loops): Set vect_loop_location.
+	* tree-vect-analyze.c (vect_analyze_offset_expr, 
+	vect_determin_vectorization_factor, vect_analyze_operations,
+	vect_analyze_scalar_cycles, vect_analyze_data_ref_dependence,
+	vect_analyze_data_ref_dependences, vect_compute_data_ref_alignment,
+	vect_analyze_data_refs_alignment, vect_analyze_data_ref_access,
+	vect_analyze_data_ref_accesses, vect_analyze_pointer_ref_access,
+	vect_object_analysis, vect_analyze_data_refs, vect_mark_relevant,
+	vect_stmt_relevant_p, vect_mark_stmts_to_be_vectorized,
+	vect_can_advance_ivs_p, vect_get_loop_niters, vect_analyze_loop_form,
+	vect_analyze_loop): Adjust vect_print_dump_info API.
+	* tree-vect-transform.c (vect_create_addr_base_for_vector_ref,
+	vect_create_data_ref_ptr, vect_init_vector, vect_get_vec_def_for_operand,
+	vect_finish_stmt_generation, vectorizable_assignment, 
+	vectorizable_operation, vectorizable_store, vectorizable_load, 
+	vectorizable_live_operation, vectorizable_condition, vect_transform_stmt,
+	vect_update_ivs_after_vectorizer, vect_do_peeling_for_loop_bound,
+	vect_gen_ninters_for_prolog_loop, vect_do_peeling_for_alignment,
+	vect_transform_loop): Same.
+	* tree-vectorizer.c (get_vectype_for_scalar_type, vect_is_simple_use,
+	vect_is_simple_reduction, vect_is_simple_iv_evolution, vectorize_loops):
+	Same.
+
 2005-07-05  Randolph Chung  <tausq@debian.org>
 
 	* configure.ac (hppa*-*-linux*: Check for a TLS capable gas.

@@ -122,8 +122,6 @@ typedef struct _loop_vec_info {
   /* All data references in the loop that are being read from.  */
   varray_type data_ref_reads;
 
-  /* The loop location in the source.  */
-  LOC loop_line_number;
 } *loop_vec_info;
 
 /* Access Functions.  */
@@ -138,9 +136,6 @@ typedef struct _loop_vec_info {
 #define LOOP_VINFO_INT_NITERS(L) (TREE_INT_CST_LOW ((L)->num_iters))
 #define LOOP_PEELING_FOR_ALIGNMENT(L) (L)->peeling_for_alignment
 #define LOOP_VINFO_UNALIGNED_DR(L) (L)->unaligned_dr
-#define LOOP_VINFO_LOC(L)          (L)->loop_line_number
-
-#define LOOP_LOC(L)    LOOP_VINFO_LOC(L)
 
 
 #define LOOP_VINFO_NITERS_KNOWN_P(L)                     \
@@ -311,6 +306,7 @@ extern enum verbosity_levels vect_verbosity_level;
 
 /* Number of loops, at the beginning of vectorization.  */
 extern unsigned int vect_loops_num;
+
 /*-----------------------------------------------------------------*/
 /* Function prototypes.                                            */
 /*-----------------------------------------------------------------*/
@@ -374,7 +370,7 @@ extern void vect_transform_loop (loop_vec_info, struct loops *);
 /*************************************************************************
   Vectorization Debug Information - in tree-vectorizer.c
  *************************************************************************/
-extern bool vect_print_dump_info (enum verbosity_levels, LOC);
+extern bool vect_print_dump_info (enum verbosity_levels);
 extern void vect_set_verbosity_level (const char *);
 extern LOC find_loop_location (struct loop *);
 
