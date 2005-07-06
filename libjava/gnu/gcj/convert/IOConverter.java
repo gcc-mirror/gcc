@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2001  Free Software Foundation
+/* Copyright (C) 2000, 2001, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -28,6 +28,8 @@ public abstract class IOConverter
     // canonical name.
     hash.put ("iso-latin-1", "8859_1");
     hash.put ("iso8859_1", "8859_1");
+    // At least one build script out there uses 'utf8'.
+    hash.put ("utf8", "UTF8");
     // On Solaris the default encoding, as returned by nl_langinfo(),
     // is `646' (aka ASCII), but the Solaris iconv_open() doesn't
     // understand that.  We work around the problem by adding an
