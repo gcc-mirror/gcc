@@ -82,6 +82,11 @@ gfc_expr *gfc_complex2complex (gfc_expr *, int);
 gfc_expr *gfc_log2log (gfc_expr *, int);
 gfc_expr *gfc_log2int (gfc_expr *, int);
 gfc_expr *gfc_int2log (gfc_expr *, int);
+gfc_expr *gfc_hollerith2int (gfc_expr *, int);
+gfc_expr *gfc_hollerith2real (gfc_expr *, int);
+gfc_expr *gfc_hollerith2complex (gfc_expr *, int);
+gfc_expr *gfc_hollerith2character (gfc_expr *, int);
+gfc_expr *gfc_hollerith2logical (gfc_expr *, int);
 
 #endif /* GFC_ARITH_H  */
 

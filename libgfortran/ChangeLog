@@ -1,3 +1,9 @@
+2005-07-07  Feng Wang  <fengwang@nudt.edu.cn>
+
+	PR fortran/16531
+	* io/transfer.c (formatted_transfer): Enable FMT_A on other types to
+	support Hollerith constants.
+
 2005-07-01  Andreas Jaeger  <aj@suse.de>
 
 	* intrinsics/unpack_generic.c: Remove const from parameter.
