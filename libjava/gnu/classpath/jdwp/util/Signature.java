@@ -39,6 +39,7 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp.util;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 /**
@@ -61,6 +62,19 @@ public class Signature
     StringBuffer sb = new StringBuffer ();
     _addToSignature (sb, theClass);
     return sb.toString ();
+  }
+
+  /**
+   * Computes the field signature which is just the class signature of the
+   * field's type, ie a Field of type java.lang.String this will return
+   * "Ljava/lang/String;".
+   *
+   * @param field  the field for which to compute the signature
+   * @return       the field's type signature
+   */
+  public static String computeFieldSignature (Field field)
+  {
+    return computeClassSignature (field.getType());
   }
 
   /**
