@@ -401,7 +401,7 @@ config.h: stamp-h ; @true
 stamp-h: $(srcdir)/config.in config.status Makefile
 	CONFIG_FILES= CONFIG_HEADERS=config.h:$(srcdir)/config.in $(SHELL) ./config.status
 
-config.status: $(srcdir)/configure $(srcdir)/config.table
+config.status: $(srcdir)/configure
 	$(SHELL) ./config.status --recheck
 
 # Depending on config.h makes sure that config.status has been re-run
