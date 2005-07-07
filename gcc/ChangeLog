@@ -1,4 +1,11 @@
 2005-07-07  Adrian Straetling  <straetling@de.ibm.com>
+	
+	* config/s390/s390.c: (optimization_options): Enable
+	TARGET_MVCLE at -Os.
+	* doc/invoke.texi: Document changes in default behaviour.
+	* config/s390/s390.opt: ("mvcle"): Fix typo: is "mmvcle".
+
+2005-07-07  Adrian Straetling  <straetling@de.ibm.com>
 
 	* expr.c: (set_storage_via_setmem): Convert opchar to mode
 	defined by back-end.
