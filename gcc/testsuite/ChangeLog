@@ -1,3 +1,8 @@
+2005-07-07  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp17.c: Simplify.  Remove dependency on
+	argument evaluation order.
+
 2005-07-07  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/21594
