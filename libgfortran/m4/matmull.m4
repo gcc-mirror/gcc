@@ -92,7 +92,7 @@ matmul_`'rtype_code (rtype * retarray, gfc_array_l4 * a, gfc_array_l4 * b)
           
       retarray->data
 	= internal_malloc_size (sizeof (rtype_name) * size0 ((array_t *) retarray));
-      retarray->base = 0;
+      retarray->offset = 0;
     }
 
   abase = a->data;

@@ -62,7 +62,7 @@ minloc0_4_r4 (gfc_array_i4 * retarray, gfc_array_r4 *array)
       retarray->dim[0].ubound = rank-1;
       retarray->dim[0].stride = 1;
       retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
-      retarray->base = 0;
+      retarray->offset = 0;
       retarray->data = internal_malloc_size (sizeof (GFC_INTEGER_4) * rank);
     }
   else
@@ -180,7 +180,7 @@ mminloc0_4_r4 (gfc_array_i4 * retarray, gfc_array_r4 *array,
       retarray->dim[0].ubound = rank-1;
       retarray->dim[0].stride = 1;
       retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
-      retarray->base = 0;
+      retarray->offset = 0;
       retarray->data = internal_malloc_size (sizeof (GFC_INTEGER_4) * rank);
     }
   else

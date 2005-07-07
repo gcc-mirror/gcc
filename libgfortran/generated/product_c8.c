@@ -92,7 +92,7 @@ product_c8 (gfc_array_c8 *retarray, gfc_array_c8 *array, index_type *pdim)
 	 = internal_malloc_size (sizeof (GFC_COMPLEX_8)
 		 		 * retarray->dim[rank-1].stride
 				 * extent[rank-1]);
-      retarray->base = 0;
+      retarray->offset = 0;
       retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
     }
   else
@@ -237,7 +237,7 @@ mproduct_c8 (gfc_array_c8 * retarray, gfc_array_c8 * array,
 	 = internal_malloc_size (sizeof (GFC_COMPLEX_8)
 		 		 * retarray->dim[rank-1].stride
 				 * extent[rank-1]);
-      retarray->base = 0;
+      retarray->offset = 0;
       retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
     }
   else

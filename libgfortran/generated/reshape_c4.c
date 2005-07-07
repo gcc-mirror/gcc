@@ -97,7 +97,7 @@ reshape_c4 (gfc_array_c4 * ret, gfc_array_c4 * source, shape_type * shape,
 	  ret->dim[n].stride = rs;
 	  rs *= rex;
 	}
-      ret->base = 0;
+      ret->offset = 0;
       ret->data = internal_malloc_size ( rs * sizeof (GFC_COMPLEX_4));
       ret->dtype = (source->dtype & ~GFC_DTYPE_RANK_MASK) | rdim;
     }

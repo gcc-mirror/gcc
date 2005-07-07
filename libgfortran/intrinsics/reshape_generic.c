@@ -100,7 +100,7 @@ reshape (parray *ret, parray *source, shape_type *shape,
 	  ret->dim[n].stride = rs;
 	  rs *= rex;
 	}
-      ret->base = 0;
+      ret->offset = 0;
       ret->data = internal_malloc_size ( rs * size );
       ret->dtype = (source->dtype & ~GFC_DTYPE_RANK_MASK) | rdim;
     }

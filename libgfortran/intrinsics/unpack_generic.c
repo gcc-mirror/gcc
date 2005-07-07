@@ -87,7 +87,7 @@ unpack1 (gfc_array_char *ret, const gfc_array_char *vector,
 	  mstride[n] = mask->dim[n].stride;
 	  rs *= extent[n];
 	}
-      ret->base = 0;
+      ret->offset = 0;
       ret->data = internal_malloc_size (rs * size);
     }
   else

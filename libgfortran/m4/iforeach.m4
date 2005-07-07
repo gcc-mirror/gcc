@@ -29,7 +29,7 @@ name`'rtype_qual`_'atype_code (rtype * retarray, atype *array)
       retarray->dim[0].ubound = rank-1;
       retarray->dim[0].stride = 1;
       retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
-      retarray->base = 0;
+      retarray->offset = 0;
       retarray->data = internal_malloc_size (sizeof (rtype_name) * rank);
     }
   else
@@ -139,7 +139,7 @@ void
       retarray->dim[0].ubound = rank-1;
       retarray->dim[0].stride = 1;
       retarray->dtype = (retarray->dtype & ~GFC_DTYPE_RANK_MASK) | 1;
-      retarray->base = 0;
+      retarray->offset = 0;
       retarray->data = internal_malloc_size (sizeof (rtype_name) * rank);
     }
   else
