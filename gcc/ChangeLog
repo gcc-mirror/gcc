@@ -1,3 +1,9 @@
+2005-07-07  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in (echo_quoted_to_gtyp): New template for outputing
+	filenames to gtyp-gen.h.
+	(s-typ-gen): Use it in place of for loops.
+
 2005-07-07  J"orn Rennecke <joern.rennecke@st.com>
 
 	* hooks.c (hook_bool_rtx_int_false): New function.

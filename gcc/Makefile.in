@@ -2724,6 +2724,11 @@ gt-tree-phinodes.h gt-tree-nested.h \
 gt-tree-ssa-operands.h gt-tree-ssa-propagate.h \
 gt-stringpool.h gt-targhooks.h : s-gtype ; @true
 
+define echo_quoted_to_gtyp
+ echo "\"$(gtyp)\", " >> tmp-gtyp.h
+
+endef
+
 gtyp-gen.h: s-gtyp-gen ; @true
 s-gtyp-gen: Makefile
 	echo "/* This file is machine generated.  Do not edit.  */" > tmp-gtyp.h
@@ -2731,24 +2736,16 @@ s-gtyp-gen: Makefile
 	echo "\"$(GTFILES_SRCDIR)\"" >> tmp-gtyp.h
 	echo ";" >> tmp-gtyp.h
 	echo "static const char *const lang_files[] = {" >> tmp-gtyp.h
-	ll="$(GTFILES_FILES_FILES)"; \
-	for f in $$ll; do \
-	echo "\"$$f\", "; done >> tmp-gtyp.h
+	$(foreach gtyp,$(GTFILES_FILES_FILES),$(echo_quoted_to_gtyp))
 	echo "NULL};" >> tmp-gtyp.h
 	echo "static const char *const langs_for_lang_files[] = {" >> tmp-gtyp.h
-	ff="$(GTFILES_FILES_LANGS)"; \
-	for f in $$ff; do \
-	echo "\"$$f\", " ; done  >> tmp-gtyp.h
+	$(foreach gtyp,$(GTFILES_FILES_LANGS),$(echo_quoted_to_gtyp))
 	echo "NULL};" >> tmp-gtyp.h
 	echo "static const char *const all_files[] = {" >> tmp-gtyp.h
-	gf="$(GTFILES)"; \
-	for f in $$gf; do \
-	echo "\"$$f\", "; done >> tmp-gtyp.h
+	$(foreach gtyp,$(GTFILES),$(echo_quoted_to_gtyp))
 	echo " NULL};" >> tmp-gtyp.h
 	echo "static const char *const lang_dir_names[] = { \"c\", " >> tmp-gtyp.h
-	gf="$(GTFILES_LANG_DIR_NAMES)"; \
-	for l in $$gf; do \
-	echo "\"$$l\", "; done >> tmp-gtyp.h
+	$(foreach gtyp,$(GTFILES_LANG_DIR_NAMES),$(echo_quoted_to_gtyp))
 	echo "NULL};" >> tmp-gtyp.h
 	$(SHELL) $(srcdir)/../move-if-change tmp-gtyp.h gtyp-gen.h
 	$(STAMP) s-gtyp-gen
