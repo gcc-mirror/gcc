@@ -1,3 +1,9 @@
+2005-07-07  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.def (flags_to_pass): Add CFLAGS_FOR_BUILD.
+	* Makefile.tpl (EXTRA_GCC_FLAGS): Don't pass CFLAGS_FOR_BUILD here.
+	* Makefile.in: Regenerated.
+
 2005-07-06  Geoffrey Keating  <geoffk@apple.com>
 
 	* configure.in: Don't build sim or rda when targetting darwin.
