@@ -839,15 +839,13 @@ preprocessor_line (char *c)
 
   line = atoi (c);
 
-  /* Set new line number.  */
-  current_file->line = line;
-
-  c = strchr (c, ' '); 
+  c = strchr (c, ' ');
   if (c == NULL)
-    /* No file name given.  */
-    return;
-
-
+    {
+      /* No file name given.  Set new line number.  */
+      current_file->line = line;
+      return;
+    }
 
   /* Skip spaces.  */
   while (*c == ' ' || *c == '\t')
@@ -880,7 +878,7 @@ preprocessor_line (char *c)
 
 
   /* Get flags.  */
-  
+
   flag[1] = flag[2] = flag[3] = flag[4] = flag[5] = false;
 
   for (;;)
@@ -895,24 +893,32 @@ preprocessor_line (char *c)
       if (1 <= i && i <= 4)
 	flag[i] = true;
     }
-     
+
   /* Interpret flags.  */
-  
+
   if (flag[1] || flag[3]) /* Starting new file.  */
     {
       f = get_file (filename, LC_RENAME);
       f->up = current_file;
       current_file = f;
     }
-  
+
   if (flag[2]) /* Ending current file.  */
     {
-      current_file = current_file->up;
+      if (strcmp (current_file->filename, filename) != 0)
+	{
+	  gfc_warning_now ("%s:%d: file %s left but not entered",
+			   current_file->filename, current_file->line,
+			   filename);
+	  return;
+	}
+      if (current_file->up)
+	current_file = current_file->up;
     }
-  
+
   /* The name of the file can be a temporary file produced by
      cpp. Replace the name if it is different.  */
-  
+
   if (strcmp (current_file->filename, filename) != 0)
     {
       gfc_free (current_file->filename);
@@ -920,10 +926,12 @@ preprocessor_line (char *c)
       strcpy (current_file->filename, filename);
     }
 
+  /* Set new line number.  */
+  current_file->line = line;
   return;
 
  bad_cpp_line:
-  gfc_warning_now ("%s:%d: Illegal preprocessor directive", 
+  gfc_warning_now ("%s:%d: Illegal preprocessor directive",
 		   current_file->filename, current_file->line);
   current_file->line++;
 }

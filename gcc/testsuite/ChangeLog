@@ -1,3 +1,7 @@
+2005-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/badline.f: New test.
+
 2005-07-07  Feng Wang  <fengwang@nudt.edu.cn>
 
 	PR fortran/16531
