@@ -195,7 +195,7 @@ __gnat_waitpid (int pid)
   int status = 0;
 
   waitpid (pid, &status, 0);
-  status =  WEXITSTATUS (status);
+  status = WEXITSTATUS (status);
 
   return status;
 }
@@ -346,7 +346,7 @@ __gnat_waitpid (int pid)
   int status = 0;
 
   waitpid (pid, &status, 0);
-  status =  WEXITSTATUS (status);
+  status = WEXITSTATUS (status);
 
   return status;
 }
