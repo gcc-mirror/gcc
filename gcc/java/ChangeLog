@@ -1,3 +1,15 @@
+2005-07-07  Bryce McKinlay  <mckinlay@redhat.com>
+
+        PR java/21045
+	* parse.y (add_exception_to_throws): New function.
+	(purge_unchecked_exceptions): Removed.
+	(get_constructor_super): Renamed from verify_constructor_super. Now
+	returns the super constructor after verification.
+	(java_complete_expand_method): Don't use purge_unchecked_exceptions
+	or save/restore the exception list.
+	(check_thrown_exceptions): Add uncaught exceptions in anonymous
+	class initializers and constructors to the throws clause of the method.	
+
 2005-07-05  Bryce McKinlay  <mckinlay@redhat.com>
 
         PR java/19674
