@@ -683,11 +683,10 @@ gfc_gobble_whitespace (void)
    load_line returns wether the line was truncated.  */
 
 static int
-load_line (FILE * input, char **pbuf)
+load_line (FILE * input, char **pbuf, int *pbuflen)
 {
-  int c, maxlen, i, preprocessor_flag;
+  int c, maxlen, i, preprocessor_flag, buflen = *pbuflen;
   int trunc_flag = 0;
-  static int buflen = 0;
   char *buffer;
 
   /* Determine the maximum allowed line length.  */
@@ -753,15 +752,18 @@ load_line (FILE * input, char **pbuf)
       *buffer++ = c;
       i++;
 
-      if (i >= buflen && (maxlen == 0 || preprocessor_flag))
+      if (maxlen == 0 || preprocessor_flag)
 	{
-	  /* Reallocate line buffer to double size to hold the
-	     overlong line.  */
-	  buflen = buflen * 2;
-	  *pbuf = xrealloc (*pbuf, buflen);
-	  buffer = (*pbuf)+i;
+	  if (i >= buflen)
+	    {
+	      /* Reallocate line buffer to double size to hold the
+	         overlong line.  */
+	      buflen = buflen * 2;
+	      *pbuf = xrealloc (*pbuf, buflen + 1);
+	      buffer = (*pbuf)+i;
+	    }
 	}
-      else if (i >= buflen)
+      else if (i >= maxlen)
 	{			
 	  /* Truncate the rest of the line.  */
 	  for (;;)
@@ -782,10 +784,11 @@ load_line (FILE * input, char **pbuf)
       && gfc_option.fixed_line_length > 0
       && !preprocessor_flag
       && c != EOF)
-    while (i++ < buflen)
+    while (i++ < gfc_option.fixed_line_length)
       *buffer++ = ' ';
 
   *buffer = '\0';
+  *pbuflen = buflen;
 
   return trunc_flag;
 }
@@ -1001,7 +1004,7 @@ load_file (char *filename, bool initial)
   gfc_linebuf *b;
   gfc_file *f;
   FILE *input;
-  int len;
+  int len, line_len;
 
   for (f = current_file; f; f = f->up)
     if (strcmp (filename, f->filename) == 0)
@@ -1036,10 +1039,11 @@ load_file (char *filename, bool initial)
   current_file = f;
   current_file->line = 1;
   line = NULL;
+  line_len = 0;
 
   for (;;) 
     {
-      int trunc = load_line (input, &line);
+      int trunc = load_line (input, &line, &line_len);
 
       len = strlen (line);
       if (feof (input) && len == 0)
