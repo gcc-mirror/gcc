@@ -11433,7 +11433,8 @@ to the GNU/Linux for zSeries ABI, the default is @option{-mzarch}.
 @opindex mno-mvcle
 Generate (or do not generate) code using the @code{mvcle} instruction
 to perform block moves.  When @option{-mno-mvcle} is specified,
-use a @code{mvc} loop instead.  This is the default.
+use a @code{mvc} loop instead.  This is the default unless optimizing for
+size.
 
 @item -mdebug
 @itemx -mno-debug

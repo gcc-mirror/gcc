@@ -1107,6 +1107,10 @@ optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
   /* By default, always emit DWARF-2 unwind info.  This allows debugging
      without maintaining a stack frame back-chain.  */
   flag_asynchronous_unwind_tables = 1;
+
+  /* Use MVCLE instructions to decrease code size if requested.  */
+  if (size != 0)
+    target_flags |= MASK_MVCLE;
 }
 
 /* Return true if ARG is the name of a processor.  Set *TYPE and *FLAGS

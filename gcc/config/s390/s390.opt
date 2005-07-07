@@ -79,7 +79,7 @@ mtune=
 Target RejectNegative Joined
 Schedule code for given CPU
 
-mvcle
+mmvcle
 Target Report Mask(MVCLE)
 mvcle use
 
