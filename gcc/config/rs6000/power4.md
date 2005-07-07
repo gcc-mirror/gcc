@@ -174,6 +174,12 @@
   |(du3_power4,lsu2_power4,vec_power4)\
   |(du4_power4,lsu1_power4,vec_power4)")
 
+(define_insn_reservation "power4-llsc" 11
+  (and (eq_attr "type" "load_l,store_c,sync")
+       (eq_attr "cpu" "power4"))
+  "du1_power4+du2_power4+du3_power4+du4_power4,\
+  lsu1_power4")
+
 
 ; Integer latency is 2 cycles
 (define_insn_reservation "power4-integer" 2
@@ -353,6 +359,12 @@
   |(du2_power4,fpu2_power4*35)\
   |(du3_power4,fpu2_power4*35)\
   |(du4_power4,fpu2_power4*35)")
+
+(define_insn_reservation "power4-isync" 2
+  (and (eq_attr "type" "isync")
+       (eq_attr "cpu" "power4"))
+  "du1_power4+du2_power4+du3_power4+du4_power4,\
+  lsu1_power4")
 
 
 ; VMX

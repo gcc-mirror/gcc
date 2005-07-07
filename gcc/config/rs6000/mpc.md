@@ -27,7 +27,8 @@
 ;; 505/801/821/823
 
 (define_insn_reservation "mpccore-load" 2
-  (and (eq_attr "type" "load,load_ext,load_ext_u,load_ext_ux,load_ux,load_u")
+  (and (eq_attr "type" "load,load_ext,load_ext_u,load_ext_ux,load_ux,load_u,\
+			load_l,store_c,sync")
        (eq_attr "cpu" "mpccore"))
   "lsu_mpc")
 
@@ -103,7 +104,7 @@
   "bpu_mpc")
 
 (define_insn_reservation "mpccore-jmpreg" 1
-  (and (eq_attr "type" "jmpreg,branch,cr_logical,delayed_cr,mfcr,mtcr")
+  (and (eq_attr "type" "jmpreg,branch,cr_logical,delayed_cr,mfcr,mtcr,isync")
        (eq_attr "cpu" "mpccore"))
   "bpu_mpc")
 
