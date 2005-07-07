@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---              Copyright (C) 2001-2004 Ada Core Technologies, Inc.         --
+--                     Copyright (C) 2001-2005 AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -395,7 +395,6 @@ private
    pragma Import (Stdcall, C_Getservbyport, "getservbyport");
    pragma Import (Stdcall, C_Getsockname, "getsockname");
    pragma Import (Stdcall, C_Getsockopt, "getsockopt");
-   pragma Import (Stdcall, C_Inet_Addr, "inet_addr");
    pragma Import (Stdcall, C_Ioctl, "ioctlsocket");
    pragma Import (Stdcall, C_Listen, "listen");
    pragma Import (Stdcall, C_Recv, "recv");

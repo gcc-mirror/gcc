@@ -117,8 +117,8 @@ package body GNAT.Sockets is
    function Resolve_Error
      (Error_Value : Integer;
       From_Errno  : Boolean := True) return Error_Type;
-   --  Associate an enumeration value (error_type) to en error value
-   --  (errno). From_Errno prevents from mixing h_errno with errno.
+   --  Associate an enumeration value (error_type) to en error value (errno).
+   --  From_Errno prevents from mixing h_errno with errno.
 
    function To_Name   (N  : String) return Name_Type;
    function To_String (HN : Name_Type) return String;
@@ -143,11 +143,10 @@ package body GNAT.Sockets is
    function Image
      (Val :  Inet_Addr_VN_Type;
       Hex :  Boolean := False) return String;
-   --  Output an array of inet address components either in
-   --  hexadecimal or in decimal mode.
+   --  Output an array of inet address components in hex or decimal mode
 
    function Is_IP_Address (Name : String) return Boolean;
-   --  Return true when Name is an IP address in standard dot notation.
+   --  Return true when Name is an IP address in standard dot notation
 
    function To_In_Addr (Addr : Inet_Addr_Type) return Thin.In_Addr;
    function To_Inet_Addr (Addr : In_Addr) return Inet_Addr_Type;
@@ -163,12 +162,11 @@ package body GNAT.Sockets is
    --  Separate Val in seconds and microseconds
 
    procedure Raise_Socket_Error (Error : Integer);
-   --  Raise Socket_Error with an exception message describing
-   --  the error code.
+   --  Raise Socket_Error with an exception message describing the error code
 
    procedure Raise_Host_Error (Error : Integer);
-   --  Raise Host_Error exception with message describing error code
-   --  (note hstrerror seems to be obsolete).
+   --  Raise Host_Error exception with message describing error code (note
+   --  hstrerror seems to be obsolete).
 
    procedure Narrow (Item : in out Socket_Set_Type);
    --  Update Last as it may be greater than the real last socket
@@ -434,8 +432,8 @@ package body GNAT.Sockets is
          Raise_Socket_Error (Socket_Errno);
       end if;
 
-      --  If Select was resumed because of read signalling socket,
-      --  read this data and remove socket from set.
+      --  If Select was resumed because of read signalling socket, read this
+      --  data and remove socket from set.
 
       if Is_Set (RSet, Selector.R_Sig_Socket) then
          Clear (RSet, Selector.R_Sig_Socket);
@@ -457,8 +455,7 @@ package body GNAT.Sockets is
          Status := Expired;
       end if;
 
-      --  Update RSet, WSet and ESet in regard to their new socket
-      --  sets.
+      --  Update RSet, WSet and ESet in regard to their new socket sets
 
       Narrow (RSet);
       Narrow (WSet);
@@ -499,7 +496,6 @@ package body GNAT.Sockets is
       Socket : Socket_Type)
    is
       Last : aliased C.int := C.int (Item.Last);
-
    begin
       if Item.Last /= No_Socket then
          Remove_Socket_From_Set (Item.Set, C.int (Socket));
@@ -519,7 +515,6 @@ package body GNAT.Sockets is
    begin
       begin
          Close_Socket (Selector.R_Sig_Socket);
-
       exception
          when Socket_Error =>
             null;
@@ -527,7 +522,6 @@ package body GNAT.Sockets is
 
       begin
          Close_Socket (Selector.W_Sig_Socket);
-
       exception
          when Socket_Error =>
             null;
@@ -616,7 +610,6 @@ package body GNAT.Sockets is
 
          when N_Bytes_To_Read =>
             Request.Size := Natural (Arg);
-
       end case;
    end Control_Socket;
 
@@ -651,13 +644,14 @@ package body GNAT.Sockets is
 
    begin
       --  We open two signalling sockets. One of them is used to send data to
-      --  send data to the other, which is included in a C_Select socket set.
-      --  The communication is used to force the call to C_Select to complete,
-      --  and the waiting task to resume its execution.
+      --  the other, which is included in a C_Select socket set. The
+      --  communication is used to force the call to C_Select to complete, and
+      --  the waiting task to resume its execution.
 
       --  Create a listening socket
 
       S0 := C_Socket (Constants.AF_INET, Constants.SOCK_STREAM, 0);
+
       if S0 = Failure then
          Raise_Socket_Error (Socket_Errno);
       end if;
@@ -671,6 +665,7 @@ package body GNAT.Sockets is
       Sin.Sin_Port := 0;
 
       Res := C_Bind (S0, Sin'Address, Len);
+
       if Res = Failure then
          Err := Socket_Errno;
          Res := C_Close (S0);
@@ -819,10 +814,8 @@ package body GNAT.Sockets is
    begin
       if Stream = null then
          raise Socket_Error;
-
       elsif Stream.all in Datagram_Socket_Stream_Type then
          return Datagram_Socket_Stream_Type (Stream.all).From;
-
       else
          return Get_Peer_Name (Stream_Socket_Stream_Type (Stream.all).Socket);
       end if;
@@ -898,7 +891,6 @@ package body GNAT.Sockets is
 
       declare
          HE : constant Host_Entry_Type := To_Host_Entry (Res.all);
-
       begin
          Task_Lock.Unlock;
          return HE;
@@ -1154,7 +1146,6 @@ package body GNAT.Sockets is
       procedure Img10 (V : Inet_Addr_Comp_Type) is
          Img : constant String := V'Img;
          Len : constant Natural := Img'Length - 1;
-
       begin
          Buffer (Length .. Length + Len - 1) := Img (2 .. Img'Last);
          Length := Length + Len;
@@ -1243,8 +1234,14 @@ package body GNAT.Sockets is
       --  has the same in_addr_t value as Failure, and thus cannot be
       --  properly returned by inet_addr(3).
 
-      if Image (Image'Range) = "255.255.255.255" then
+      if Image = "255.255.255.255" then
          return Broadcast_Inet_Addr;
+
+      --  Special case for an empty Image as on some platforms (e.g. Windows)
+      --  calling Inet_Addr("") will not return an error.
+
+      elsif Image = "" then
+         Raise_Socket_Error (Constants.EINVAL);
       end if;
 
       Img := New_String (Image);
@@ -1457,8 +1454,8 @@ package body GNAT.Sockets is
 
          Last  := Index;
 
-         --  Exit when all or zero data received. Zero means that
-         --  the socket peer is closed.
+         --  Exit when all or zero data received. Zero means that the socket
+         --  peer is closed.
 
          exit when Index < First or else Index = Max;
 
@@ -1484,8 +1481,8 @@ package body GNAT.Sockets is
          Receive_Socket (Stream.Socket, Item (First .. Max), Index);
          Last  := Index;
 
-         --  Exit when all or zero data received. Zero means that
-         --  the socket peer is closed.
+         --  Exit when all or zero data received. Zero means that the socket
+         --  peer is closed.
 
          exit when Index < First or else Index = Max;
 
@@ -1964,7 +1961,6 @@ package body GNAT.Sockets is
 
    function Stream (Socket : Socket_Type) return Stream_Access is
       S : Stream_Socket_Stream_Access;
-
    begin
       S := new Stream_Socket_Stream_Type;
       S.Socket := Socket;
@@ -1992,13 +1988,13 @@ package body GNAT.Sockets is
 
       Aliases : constant Chars_Ptr_Array :=
                   Chars_Ptr_Pointers.Value (E.H_Aliases);
-      --  H_Aliases points to a list of name aliases. The list is
-      --  terminated by a NULL pointer.
+      --  H_Aliases points to a list of name aliases. The list is terminated by
+      --  a NULL pointer.
 
       Addresses : constant In_Addr_Access_Array :=
                     In_Addr_Access_Pointers.Value (E.H_Addr_List);
-      --  H_Addr_List points to a list of binary addresses (in network
-      --  byte order). The list is terminated by a NULL pointer.
+      --  H_Addr_List points to a list of binary addresses (in network byte
+      --  order). The list is terminated by a NULL pointer.
       --
       --  H_Length is not used because it is currently only set to 4.
       --  H_Addrtype is always AF_INET
@@ -2201,8 +2197,8 @@ package body GNAT.Sockets is
             Index,
             Stream.To);
 
-         --  Exit when all or zero data sent. Zero means that the
-         --  socket has been closed by peer.
+         --  Exit when all or zero data sent. Zero means that the socket has
+         --  been closed by peer.
 
          exit when Index < First or else Index = Max;
 
@@ -2230,8 +2226,8 @@ package body GNAT.Sockets is
       loop
          Send_Socket (Stream.Socket, Item (First .. Max), Index);
 
-         --  Exit when all or zero data sent. Zero means that the
-         --  socket has been closed by peer.
+         --  Exit when all or zero data sent. Zero means that the socket has
+         --  been closed by peer.
 
          exit when Index < First or else Index = Max;
 

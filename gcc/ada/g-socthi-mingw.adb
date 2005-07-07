@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2001-2004 Ada Core Technologies, Inc.         --
+--                     Copyright (C) 2001-2005 AdaCore                      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -408,6 +408,31 @@ package body GNAT.Sockets.Thin is
 
       return Res;
    end C_Select;
+
+   -----------------
+   -- C_Inet_Addr --
+   -----------------
+
+   function C_Inet_Addr
+     (Cp : C.Strings.chars_ptr) return C.int
+   is
+      use type C.unsigned_long;
+
+      function Internal_Inet_Addr
+        (Cp : C.Strings.chars_ptr) return C.unsigned_long;
+      pragma Import (Stdcall, Internal_Inet_Addr, "inet_addr");
+
+      Res : C.unsigned_long;
+   begin
+      Res := Internal_Inet_Addr (Cp);
+
+      if Res = C.unsigned_long'Last then
+         --  This value is returned in case of error
+         return -1;
+      else
+         return C.int (Internal_Inet_Addr (Cp));
+      end if;
+   end C_Inet_Addr;
 
    --------------
    -- C_Writev --
