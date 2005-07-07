@@ -1915,7 +1915,7 @@ objc_build_string_object (tree string)
 
       if (!flag_next_runtime)
 	constructor
-	  = objc_add_static_instance (constructor, internal_const_str_type);
+	  = objc_add_static_instance (constructor, constant_string_type);
       else
         {
 	  var = build_decl (CONST_DECL, NULL, TREE_TYPE (constructor));

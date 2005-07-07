@@ -1,3 +1,9 @@
+2005-07-07  Ziemowit Laski  <zlaski@apple.com>
+
+	PR objc/22274
+	* objc-act.c (objc_build_string_object): For GNU-style constants,
+	use the @interface type rather than the built-in type.
+
 2005-07-03  Kazu Hirata  <kazu@codesourcery.com>
 
 	* Make-lang.in (cc1plus-checksum.c): Use
