@@ -3225,25 +3225,49 @@ s390_expand_movmem (rtx dst, rtx src, rtx len)
     }
 }
 
-/* Emit code to clear LEN bytes at DST.  */
+/* Emit code to set LEN bytes at DST to VAL.
+   Make use of clrmem if VAL is zero.  */
 
 void
-s390_expand_clrmem (rtx dst, rtx len)
+s390_expand_setmem (rtx dst, rtx len, rtx val)
 {
-  if (GET_CODE (len) == CONST_INT && INTVAL (len) >= 0 && INTVAL (len) <= 256)
+  gcc_assert (GET_CODE (len) != CONST_INT || INTVAL (len) > 0);
+  gcc_assert (GET_CODE (val) == CONST_INT || GET_MODE (val) == QImode);
+  
+  if (GET_CODE (len) == CONST_INT && INTVAL (len) <= 257)
     {
-      if (INTVAL (len) > 0)
+      if (val == const0_rtx && INTVAL (len) <= 256)
         emit_insn (gen_clrmem_short (dst, GEN_INT (INTVAL (len) - 1)));
+      else
+	{
+	  /* Initialize memory by storing the first byte.  */
+	  emit_move_insn (adjust_address (dst, QImode, 0), val);
+	  
+	  if (INTVAL (len) > 1)
+	    {
+	      /* Initiate 1 byte overlap move.
+	         The first byte of DST is propagated through DSTP1.
+		 Prepare a movmem for:  DST+1 = DST (length = LEN - 1).
+		 DST is set to size 1 so the rest of the memory location
+		 does not count as source operand.  */
+	      rtx dstp1 = adjust_address (dst, VOIDmode, 1);
+	      set_mem_size (dst, const1_rtx);
+
+	      emit_insn (gen_movmem_short (dstp1, dst, 
+					   GEN_INT (INTVAL (len) - 2)));
+	    }
+	}
     }
 
   else if (TARGET_MVCLE)
     {
-      emit_insn (gen_clrmem_long (dst, convert_to_mode (Pmode, len, 1)));
+      val = force_not_mem (convert_modes (Pmode, QImode, val, 1));
+      emit_insn (gen_setmem_long (dst, convert_to_mode (Pmode, len, 1), val));
     }
 
   else
     {
-      rtx dst_addr, src_addr, count, blocks, temp;
+      rtx dst_addr, src_addr, count, blocks, temp, dstp1 = NULL_RTX;
       rtx loop_start_label = gen_label_rtx ();
       rtx loop_end_label = gen_label_rtx ();
       rtx end_label = gen_label_rtx ();
@@ -3265,7 +3289,22 @@ s390_expand_clrmem (rtx dst, rtx len)
       emit_move_insn (dst_addr, force_operand (XEXP (dst, 0), NULL_RTX));
       dst = change_address (dst, VOIDmode, dst_addr);
 
-      temp = expand_binop (mode, add_optab, count, constm1_rtx, count, 1, 0);
+      if (val == const0_rtx)
+        temp = expand_binop (mode, add_optab, count, constm1_rtx, count, 1, 0);
+      else
+	{
+	  dstp1 = adjust_address (dst, VOIDmode, 1);
+	  set_mem_size (dst, const1_rtx);
+
+	  /* Initialize memory by storing the first byte.  */
+	  emit_move_insn (adjust_address (dst, QImode, 0), val);
+	  
+	  /* If count is 1 we are done.  */
+	  emit_cmp_and_jump_insns (count, const1_rtx,
+				   EQ, NULL_RTX, mode, 1, end_label);
+
+	  temp = expand_binop (mode, add_optab, count, GEN_INT (-2), count, 1, 0);
+	}
       if (temp != count)
         emit_move_insn (count, temp);
 
@@ -3278,7 +3317,10 @@ s390_expand_clrmem (rtx dst, rtx len)
 
       emit_label (loop_start_label);
 
-      emit_insn (gen_clrmem_short (dst, GEN_INT (255)));
+      if (val == const0_rtx)
+	emit_insn (gen_clrmem_short (dst, GEN_INT (255)));
+      else
+	emit_insn (gen_movmem_short (dstp1, dst, GEN_INT (255)));
       s390_load_address (dst_addr,
 			 gen_rtx_PLUS (Pmode, dst_addr, GEN_INT (256)));
 
@@ -3292,7 +3334,10 @@ s390_expand_clrmem (rtx dst, rtx len)
       emit_jump (loop_start_label);
       emit_label (loop_end_label);
 
-      emit_insn (gen_clrmem_short (dst, convert_to_mode (Pmode, count, 1)));
+      if (val == const0_rtx)
+        emit_insn (gen_clrmem_short (dst, convert_to_mode (Pmode, count, 1)));
+      else
+        emit_insn (gen_movmem_short (dstp1, dst, convert_to_mode (Pmode, count, 1)));
       emit_label (end_label);
     }
 }
@@ -3637,7 +3682,9 @@ s390_delegitimize_address (rtx orig_x)
   return orig_x;
 }
 
-/* Output shift count operand OP to stdio stream FILE.  */
+/* Output operand OP to stdio stream FILE.
+   OP is an address (register + offset) which is not used to address data;
+   instead the rightmost bits are interpreted as the value.  */
 
 static void
 print_shift_count_operand (FILE *file, rtx op)
@@ -3667,8 +3714,8 @@ print_shift_count_operand (FILE *file, rtx op)
       gcc_assert (REGNO_REG_CLASS (REGNO (op)) == ADDR_REGS);
     }
 
-  /* Shift counts are truncated to the low six bits anyway.  */
-  fprintf (file, HOST_WIDE_INT_PRINT_DEC, offset & 63);
+  /* Offsets are constricted to twelve bits.  */
+  fprintf (file, HOST_WIDE_INT_PRINT_DEC, offset & ((1 << 12) - 1));
   if (op)
     fprintf (file, "(%s)", reg_names[REGNO (op)]);
 }
