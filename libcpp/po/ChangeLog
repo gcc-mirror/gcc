@@ -1,3 +1,7 @@
+2005-07-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* cpplib.pot: Regenerate.
+
 2005-06-18  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* tr.po, vi.po: Update.

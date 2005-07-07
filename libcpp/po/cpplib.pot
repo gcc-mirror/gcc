@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2005-06-06 21:32+0200\n"
+"POT-Creation-Date: 2005-07-07 10:59-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -35,7 +35,8 @@ msgstr ""
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr ""
 
-#: charset.c:760 charset.c:1243
+#: charset.c:760
+#: charset.c:1243
 msgid "converting to execution character set"
 msgstr ""
 
@@ -120,7 +121,8 @@ msgstr ""
 msgid "converting escape sequence to execution character set"
 msgstr ""
 
-#: charset.c:1306 charset.c:1369
+#: charset.c:1306
+#: charset.c:1369
 msgid "character constant too long for its type"
 msgstr ""
 
@@ -233,7 +235,8 @@ msgstr ""
 msgid "line number out of range"
 msgstr ""
 
-#: directives.c:816 directives.c:893
+#: directives.c:816
+#: directives.c:893
 #, c-format
 msgid "\"%s\" is not a valid filename"
 msgstr ""
@@ -301,7 +304,8 @@ msgstr ""
 msgid "#else after #else"
 msgstr ""
 
-#: directives.c:1558 directives.c:1591
+#: directives.c:1558
+#: directives.c:1591
 msgid "the conditional began here"
 msgstr ""
 
@@ -394,7 +398,8 @@ msgstr ""
 msgid "invalid suffix \"%.*s\" on floating constant"
 msgstr ""
 
-#: expr.c:250 expr.c:275
+#: expr.c:250
+#: expr.c:275
 #, c-format
 msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr ""
@@ -450,7 +455,8 @@ msgstr ""
 msgid "\"%s\" is not defined"
 msgstr ""
 
-#: expr.c:716 expr.c:745
+#: expr.c:716
+#: expr.c:745
 #, c-format
 msgid "missing binary operator before token \"%s\""
 msgstr ""
@@ -655,7 +661,8 @@ msgstr ""
 msgid "no newline at end of file"
 msgstr ""
 
-#: lex.c:948 traditional.c:162
+#: lex.c:948
+#: traditional.c:162
 msgid "unterminated comment"
 msgstr ""
 
@@ -693,7 +700,8 @@ msgstr ""
 msgid "macro \"%s\" is not used"
 msgstr ""
 
-#: macro.c:124 macro.c:287
+#: macro.c:124
+#: macro.c:287
 #, c-format
 msgid "invalid built-in macro \"%s\""
 msgstr ""
@@ -725,7 +733,8 @@ msgstr ""
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr ""
 
-#: macro.c:642 traditional.c:675
+#: macro.c:642
+#: traditional.c:675
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr ""
@@ -800,7 +809,9 @@ msgstr ""
 msgid "invalid hash type %d in cpp_macro_definition"
 msgstr ""
 
-#: pch.c:84 pch.c:332 pch.c:354
+#: pch.c:84
+#: pch.c:332
+#: pch.c:354
 #: pch.c:360
 msgid "while writing precompiled header"
 msgstr ""
@@ -820,7 +831,8 @@ msgstr ""
 msgid "%s: not used because `%s' is defined"
 msgstr ""
 
-#: pch.c:533 pch.c:696
+#: pch.c:533
+#: pch.c:696
 msgid "while reading precompiled header"
 msgstr ""
 
