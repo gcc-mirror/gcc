@@ -167,7 +167,14 @@ eoshift3_8 (gfc_array_char *ret, gfc_array_char *array,
     {
       /* Do the shift for this dimension.  */
       sh = *hptr;
-      delta = (sh >= 0) ? sh: -sh;
+      if (( sh >= 0 ? sh : -sh ) > len)
+	{
+	  delta = len;
+	  sh = len;
+	}
+      else
+	delta = (sh >= 0) ? sh: -sh;
+
       if (sh > 0)
         {
           src = &sptr[delta * soffset];
