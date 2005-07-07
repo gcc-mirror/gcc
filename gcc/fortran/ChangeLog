@@ -1,3 +1,8 @@
+2005-07-07  Feng Wang  <fengwang@nudt.edu.cn>
+
+	PR fortran/22327
+	* trans-array.c (gfc_trans_array_constructor_value): Fix index of data.
+
 2005-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl.c (gfc_match_entry): Allow ENTRY without parentheses

@@ -1,3 +1,8 @@
+2005-07-07  Feng Wang  <fengwang@nudt.edu.cn>
+
+	PR fortran/22327
+	* gfortran.dg/array_constructor_5.f90: New test.
+
 2005-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.fortran-torture/execute/entry_9.f90: New test.
