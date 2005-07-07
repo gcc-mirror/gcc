@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -726,6 +726,16 @@ package body Sem_Ch8 is
       end if;
 
       T2 := Etype (Nam);
+
+      --  (Ada 2005: AI-326): Handle wrong use of incomplete type
+
+      if Nkind (Nam) = N_Explicit_Dereference
+        and then Ekind (Etype (T2)) = E_Incomplete_Type
+      then
+         Error_Msg_N ("invalid use of incomplete type", Id);
+         return;
+      end if;
+
       Set_Ekind (Id, E_Variable);
       Init_Size_Align (Id);
 
@@ -861,7 +871,7 @@ package body Sem_Ch8 is
          if Present (Renamed_Object (Old_P)) then
             Set_Renamed_Object (New_P,  Renamed_Object (Old_P));
          else
-            Set_Renamed_Object (New_P,  Old_P);
+            Set_Renamed_Object (New_P, Old_P);
          end if;
 
          Set_Has_Completion (New_P);
@@ -1349,16 +1359,16 @@ package body Sem_Ch8 is
          Check_Fully_Conformant (New_S, Rename_Spec);
          Set_Public_Status (New_S);
 
-         --  Indicate that the entity in the declaration functions like
-         --  the corresponding body, and is not a new entity. The body will
-         --  be constructed later at the freeze point, so indicate that
-         --  the completion has not been seen yet.
+         --  Indicate that the entity in the declaration functions like the
+         --  corresponding body, and is not a new entity. The body will be
+         --  constructed later at the freeze point, so indicate that the
+         --  completion has not been seen yet.
 
          Set_Ekind (New_S, E_Subprogram_Body);
          New_S := Rename_Spec;
          Set_Has_Completion (Rename_Spec, False);
 
-         --  Ada 2005: check overriding indicator.
+         --  Ada 2005: check overriding indicator
 
          if Must_Override (Specification (N))
            and then not Is_Overriding_Operation (Rename_Spec)
@@ -1385,10 +1395,10 @@ package body Sem_Ch8 is
          end if;
       end if;
 
-      --  There is no need for elaboration checks on the new entity, which
-      --  may be called before the next freezing point where the body will
-      --  appear. Elaboration checks refer to the real entity, not the one
-      --  created by the renaming declaration.
+      --  There is no need for elaboration checks on the new entity, which may
+      --  be called before the next freezing point where the body will appear.
+      --  Elaboration checks refer to the real entity, not the one created by
+      --  the renaming declaration.
 
       Set_Kill_Elaboration_Checks (New_S, True);
 
@@ -1399,8 +1409,8 @@ package body Sem_Ch8 is
       elsif Nkind (Nam) = N_Selected_Component then
 
          --  Renamed entity is an entry or protected subprogram. For those
-         --  cases an explicit body is built (at the point of freezing of
-         --  this entity) that contains a call to the renamed entity.
+         --  cases an explicit body is built (at the point of freezing of this
+         --  entity) that contains a call to the renamed entity.
 
          Analyze_Renamed_Entry (N, New_S, Present (Rename_Spec));
          return;
@@ -1430,9 +1440,8 @@ package body Sem_Ch8 is
 
       end if;
 
-      --  Most common case: subprogram renames subprogram. No body is
-      --  generated in this case, so we must indicate that the declaration
-      --  is complete as is.
+      --  Most common case: subprogram renames subprogram. No body is generated
+      --  in this case, so we must indicate the declaration is complete as is.
 
       if No (Rename_Spec) then
          Set_Has_Completion (New_S);
@@ -1441,6 +1450,7 @@ package body Sem_Ch8 is
       --  Find the renamed entity that matches the given specification. Disable
       --  Ada_83 because there is no requirement of full conformance between
       --  renamed entity and new entity, even though the same circuit is used.
+
       --  This is a bit of a kludge, which introduces a really irregular use of
       --  Ada_Version[_Explicit]. Would be nice to find cleaner way to do this
       --  ???
@@ -3274,10 +3284,9 @@ package body Sem_Ch8 is
             elsif
               Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
             then
-               --  A use-clause in the body of a system file creates a
-               --  conflict with some entity in a user scope, while rtsfind
-               --  is active. Keep only the entity that comes from another
-               --  predefined unit.
+               --  A use-clause in the body of a system file creates conflict
+               --  with some entity in a user scope, while rtsfind is active.
+               --  Keep only the entity coming from another predefined unit.
 
                E2 := E;
                while Present (E2) loop
@@ -3291,7 +3300,7 @@ package body Sem_Ch8 is
                   E2 := Homonym (E2);
                end loop;
 
-               --  Entity must exist because predefined unit is correct.
+               --  Entity must exist because predefined unit is correct
 
                raise Program_Error;
 
@@ -3334,15 +3343,39 @@ package body Sem_Ch8 is
          E2 := Homonym (E);
          while Present (E2) loop
             if Is_Immediately_Visible (E2) then
-               for J in Level + 1 .. Scope_Stack.Last loop
-                  if Scope_Stack.Table (J).Entity = Scope (E2)
-                    or else Scope_Stack.Table (J).Entity = E2
-                  then
-                     Level := J;
-                     E := E2;
-                     exit;
-                  end if;
-               end loop;
+
+               --  If a generic package contains a local declaration that
+               --  has the same name as the generic, there may be a visibility
+               --  conflict in an instance, where the local declaration must
+               --  also hide the name of the corresponding package renaming.
+               --  We check explicitly for a package declared by a renaming,
+               --  whose renamed entity is an instance that is on the scope
+               --  stack, and that contains a homonym in the same scope. Once
+               --  we have found it, we know that the package renaming is not
+               --  immediately visible, and that the identifier denotes the
+               --  other entity (and its homonyms if overloaded).
+
+               if Scope (E) = Scope (E2)
+                 and then Ekind (E) = E_Package
+                 and then Present (Renamed_Object (E))
+                 and then Is_Generic_Instance (Renamed_Object (E))
+                 and then In_Open_Scopes (Renamed_Object (E))
+                 and then Comes_From_Source (N)
+               then
+                  Set_Is_Immediately_Visible (E, False);
+                  E := E2;
+
+               else
+                  for J in Level + 1 .. Scope_Stack.Last loop
+                     if Scope_Stack.Table (J).Entity = Scope (E2)
+                       or else Scope_Stack.Table (J).Entity = E2
+                     then
+                        Level := J;
+                        E := E2;
+                        exit;
+                     end if;
+                  end loop;
+               end if;
             end if;
 
             E2 := Homonym (E2);
