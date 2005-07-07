@@ -1,3 +1,8 @@
+2005-07-07  Steven Bosscher  <stevenb@suse.de>
+
+	* primary.c (match_hollerith_constant): Use int, not unsigned int,
+	for the hollerith length.  Fix indentation.
+
 2005-07-07  Feng Wang  <fengwang@nudt.edu.cn>
 
 	PR fortran/16531

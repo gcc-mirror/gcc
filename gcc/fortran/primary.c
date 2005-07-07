@@ -237,8 +237,8 @@ match_hollerith_constant (gfc_expr ** result)
   gfc_expr * e = NULL;
   const char * msg;
   char * buffer;
-  unsigned int num;
-  unsigned int i;  
+  int num;
+  int i;  
 
   old_loc = gfc_current_locus;
   gfc_gobble_whitespace ();
@@ -271,7 +271,7 @@ match_hollerith_constant (gfc_expr ** result)
 	}
       else
 	{
-	  buffer = (char *)gfc_getmem (sizeof(char)*num+1);
+	  buffer = (char *) gfc_getmem (sizeof(char) * num + 1);
 	  for (i = 0; i < num; i++)
 	    {
 	      buffer[i] = gfc_next_char_literal (1);
