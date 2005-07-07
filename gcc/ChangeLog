@@ -1,4 +1,16 @@
 2005-07-07  Adrian Straetling  <straetling@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_expand_clrmem): Delete.
+	(s390_expand_setmem): New.
+	* config/s390/s390.c: Likewise. 
+	(print_shift_count_operand): Truncate to 12 bits instead of 6.
+	Adapt comments.
+	* config/s390/s390.md: ("setmem<mode>"): Accept character as
+	general_operand.  Call new function "s390_expand_setmem".
+	("clrmem_long", "*clrmem_long"): Rewrite to ...
+	("setmem_long", "*setmem_long"): ... this.
+
+2005-07-07  Adrian Straetling  <straetling@de.ibm.com>
 	
 	* config/s390/s390.c: (optimization_options): Enable
 	TARGET_MVCLE at -Os.

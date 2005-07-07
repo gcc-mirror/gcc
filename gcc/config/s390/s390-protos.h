@@ -69,7 +69,7 @@ extern void s390_expand_plus_operand (rtx, rtx, rtx);
 extern void emit_symbolic_move (rtx *);
 extern void s390_load_address (rtx, rtx);
 extern void s390_expand_movmem (rtx, rtx, rtx);
-extern void s390_expand_clrmem (rtx, rtx);
+extern void s390_expand_setmem (rtx, rtx, rtx);
 extern void s390_expand_cmpmem (rtx, rtx, rtx, rtx);
 extern bool s390_expand_addcc (enum rtx_code, rtx, rtx, rtx, rtx, rtx);
 extern rtx s390_return_addr_rtx (int, rtx);
