@@ -349,7 +349,7 @@ struct layout
 
 /*----------------------------- ia64 ---------------------------------*/
 
-#elif defined (__ia64__)
+#elif defined (__ia64__) && !defined (USE_LIBUNWIND_EXCEPTIONS)
 
 #define USE_GCC_UNWINDER
 
