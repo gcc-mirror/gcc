@@ -6658,13 +6658,15 @@ arm_must_pass_in_stack (enum machine_mode mode, tree type)
 
 /* For use by FUNCTION_ARG_PADDING (MODE, TYPE).
    Return true if an argument passed on the stack should be padded upwards,
-   i.e. if the least-significant byte has useful data.  */
+   i.e. if the least-significant byte has useful data.
+   For legacy APCS ABIs we use the default.  For AAPCS based ABIs small
+   aggregate types are placed in the lowest memory address.  */
 
 bool
 arm_pad_arg_upward (enum machine_mode mode, tree type)
 {
   if (!TARGET_AAPCS_BASED)
-    return DEFAULT_FUNCTION_ARG_PADDING(mode, type);
+    return DEFAULT_FUNCTION_ARG_PADDING(mode, type) == upward;
 
   if (type && BYTES_BIG_ENDIAN && INTEGRAL_TYPE_P (type))
     return false;
