@@ -1,5 +1,10 @@
 2005-07-07  Aaron Luchko  <aluchko@redhat.com>
 
+	* gnu/classpath/jdwp/util/Signature.java
+	(computeFieldSignature): New Method.
+
+2005-07-07  Aaron Luchko  <aluchko@redhat.com>
+
 	* gnu/classpath/jdwp/processor/ReferenceTypeCommandSet.java:New
 	file.
 
