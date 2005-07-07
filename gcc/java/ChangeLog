@@ -1,5 +1,17 @@
 2005-07-07  Bryce McKinlay  <mckinlay@redhat.com>
 
+	PR java/18119
+	* parse.y (inner_class_accessible): New function. Logic moved from
+	check_inner_class_access.
+	(check_inner_class_access): Use inner_class_accessible.
+	(resolve_inner_class): Simplify arguments. Create circularity hash
+	here. Keep looking for classes if we found one that was inaccessible. 
+	Return the inaccessible class only if there is no other match.
+	(do_resolve_class): Update for new resolve_inner_class arguments.
+	Don't create circularity_hash here.
+
+2005-07-07  Bryce McKinlay  <mckinlay@redhat.com>
+
         PR java/21045
 	* parse.y (add_exception_to_throws): New function.
 	(purge_unchecked_exceptions): Removed.

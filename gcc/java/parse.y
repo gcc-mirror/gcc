@@ -112,6 +112,7 @@ static int process_imports (void);
 static void read_import_dir (tree);
 static int find_in_imports_on_demand (tree, tree);
 static void find_in_imports (tree, tree);
+static bool inner_class_accessible (tree, tree);
 static void check_inner_class_access (tree, tree, tree);
 static int check_pkg_class_access (tree, tree, bool, tree);
 static tree resolve_package (tree, tree *, tree *);
@@ -311,7 +312,7 @@ static int pop_current_osb (struct parser_ctxt *);
 static tree maybe_make_nested_class_name (tree);
 static int make_nested_class_name (tree);
 static void link_nested_class_to_enclosing (void);
-static tree resolve_inner_class (htab_t, tree, tree *, tree *, tree);
+static tree resolve_inner_class (tree, tree, tree, tree);
 static tree find_as_inner_class (tree, tree, tree);
 static tree find_as_inner_class_do (tree, tree);
 static int check_inner_class_redefinition (tree, tree);
@@ -3663,46 +3664,52 @@ check_inner_class_redefinition (tree raw_name, tree cl)
   return 0;
 }
 
-/* Tries to find a decl for CLASS_TYPE within ENCLOSING. If we fail,
-   we remember ENCLOSING and SUPER.  */
+/* Tries to find a decl for CLASS_TYPE within ENCLOSING.  May return an
+   invisible/non-accessible matching decl when an accessible one could not be 
+   found, in order to give a better error message when accessibility is 
+   checked later.  */
 
 static tree
-resolve_inner_class (htab_t circularity_hash, tree cl, tree *enclosing,
-		     tree *super, tree class_type)
+resolve_inner_class (tree context, tree cl, tree enclosing, tree class_type)
 {
-  tree local_enclosing = *enclosing;
   tree local_super = NULL_TREE;
+  tree candidate = NULL_TREE;
 
-  while (local_enclosing)
+  /* This hash table is used to register the classes we're going
+     through when searching the current class as an inner class, in
+     order to detect circular references.  */
+  htab_t circularity_hash = htab_create (20, htab_hash_pointer, htab_eq_pointer,
+					 NULL);
+
+  while (enclosing)
     {
-      tree intermediate, decl;
+      tree decl;
 
-      *htab_find_slot (circularity_hash, local_enclosing, INSERT) =
-	local_enclosing;
+      *htab_find_slot (circularity_hash, enclosing, INSERT) = enclosing;
 
-      if ((decl = find_as_inner_class (local_enclosing, class_type, cl)))
-	return decl;
-
-      intermediate = local_enclosing;
-      /* Explore enclosing contexts. */
-      while (INNER_CLASS_DECL_P (intermediate))
-	{
-	  intermediate = DECL_CONTEXT (intermediate);
-	  if ((decl = find_as_inner_class (intermediate, class_type, cl)))
-	    return decl;
-	}
+      if ((decl = find_as_inner_class (enclosing, class_type, cl)))
+        {
+	  if (inner_class_accessible (decl, context))
+	    {
+	      candidate = decl;
+	      break;
+	    }
+	  else
+	    if (candidate == NULL_TREE)
+	      candidate = decl;
+	}	
 
       /* Now go to the upper classes, bail out if necessary.  We will
 	 analyze the returned SUPER and act accordingly (see
 	 do_resolve_class).  */
-      if (JPRIMITIVE_TYPE_P (TREE_TYPE (local_enclosing))
-	  || TREE_TYPE (local_enclosing) == void_type_node)
+      if (JPRIMITIVE_TYPE_P (TREE_TYPE (enclosing))
+	  || TREE_TYPE (enclosing) == void_type_node)
 	{
 	  parse_error_context (cl, "Qualifier must be a reference");
-	  local_enclosing = NULL_TREE;
+	  enclosing = NULL_TREE;
 	  break;
 	}
-      local_super = CLASSTYPE_SUPER (TREE_TYPE (local_enclosing));
+      local_super = CLASSTYPE_SUPER (TREE_TYPE (enclosing));
       if (!local_super || local_super == object_type_node)
         break;
 
@@ -3716,22 +3723,22 @@ resolve_inner_class (htab_t circularity_hash, tree cl, tree *enclosing,
       if (htab_find (circularity_hash, local_super) != NULL)
         {
           if (!cl)
-            cl = lookup_cl (local_enclosing);
+            cl = lookup_cl (enclosing);
 
           parse_error_context
             (cl, "Cyclic inheritance involving %s",
-	     IDENTIFIER_POINTER (DECL_NAME (local_enclosing)));
-	  local_enclosing = NULL_TREE;
+	     IDENTIFIER_POINTER (DECL_NAME (enclosing)));
+	  enclosing = NULL_TREE;
         }
       else
-	local_enclosing = local_super;
+	enclosing = local_super;
     }
 
-  /* We failed. Return LOCAL_SUPER and LOCAL_ENCLOSING. */
-  *super = local_super;
-  *enclosing = local_enclosing;
+  htab_delete (circularity_hash);
 
-  return NULL_TREE;
+  /* We failed, but we might have found a matching class that wasn't 
+     accessible.  Return that to get a better error message.  */
+  return candidate;
 }
 
 /* Within ENCLOSING, find a decl for NAME and return it. NAME can be
@@ -5866,10 +5873,10 @@ tree
 do_resolve_class (tree enclosing, tree import_type, tree class_type, tree decl,
 		  tree cl)
 {
-  tree new_class_decl = NULL_TREE, super = NULL_TREE;
+  tree new_class_decl = NULL_TREE;
   tree saved_enclosing_type = enclosing ? TREE_TYPE (enclosing) : NULL_TREE;
+  tree candidate = NULL_TREE;
   tree decl_result;
-  htab_t circularity_hash;
 
   if (QUALIFIED_P (TYPE_NAME (class_type)))
     {
@@ -5893,12 +5900,7 @@ do_resolve_class (tree enclosing, tree import_type, tree class_type, tree decl,
 
   if (enclosing)
     {
-      /* This hash table is used to register the classes we're going
-	 through when searching the current class as an inner class, in
-	 order to detect circular references. Remember to free it before
-	 returning the section 0- of this function. */
-      circularity_hash = htab_create (20, htab_hash_pointer, htab_eq_pointer,
-				      NULL);
+      tree context = enclosing;
 
       /* 0- Search in the current class as an inner class.
 	 Maybe some code here should be added to load the class or
@@ -5906,21 +5908,22 @@ do_resolve_class (tree enclosing, tree import_type, tree class_type, tree decl,
 	 being loaded from class file. FIXME. */
       while (enclosing)
 	{
-	  new_class_decl = resolve_inner_class (circularity_hash, cl, &enclosing,
-						&super, class_type);
+	  new_class_decl = resolve_inner_class (context, cl, enclosing, class_type);
+	  
 	  if (new_class_decl)
-	    break;
+	    {
+	      if (inner_class_accessible (new_class_decl, context))
+	        break;
+	      else
+	        if (candidate == NULL_TREE)
+		  candidate = new_class_decl;
+		new_class_decl = NULL_TREE;
+	    }
 
-	  /* If we haven't found anything because SUPER reached Object and
-	     ENCLOSING happens to be an innerclass, try the enclosing context. */
-	  if ((!super || super == object_type_node) &&
-	      enclosing && INNER_CLASS_DECL_P (enclosing))
-	    enclosing = DECL_CONTEXT (enclosing);
-	  else
-	    enclosing = NULL_TREE;
+	  /* Now that we've looked through all superclasses, try the enclosing
+	     context. */
+	  enclosing = DECL_CONTEXT (enclosing);
 	}
-
-      htab_delete (circularity_hash);
 
       if (new_class_decl)
 	return new_class_decl;
@@ -6007,7 +6010,10 @@ do_resolve_class (tree enclosing, tree import_type, tree class_type, tree decl,
          }
       } while (!decl_result && separator);
     }
-  return decl_result;
+  if (decl_result)
+    return decl_result;
+  else
+    return candidate;
 }
 
 static tree
@@ -7263,24 +7269,13 @@ resolve_package (tree pkg, tree *next, tree *type_name)
   return decl;
 }
 
+/* Check accessibility of inner class DECL, from the context ENCLOSING_DECL,
+   according to member access rules.  */
 
-/* Check accessibility of inner classes according to member access rules.
-   DECL is the inner class, ENCLOSING_DECL is the class from which the
-   access is being attempted. */
-
-static void
-check_inner_class_access (tree decl, tree enclosing_decl, tree cl)
+static bool
+inner_class_accessible (tree decl, tree enclosing_decl)
 {
-  const char *access;
   tree enclosing_decl_type;
-
-  /* We don't issue an error message when CL is null. CL can be null
-     as a result of processing a JDEP crafted by source_start_java_method
-     for the purpose of patching its parm decl. But the error would
-     have been already trapped when fixing the method's signature.
-     DECL can also be NULL in case of earlier errors. */
-  if (!decl || !cl)
-    return;
 
   enclosing_decl_type = TREE_TYPE (enclosing_decl);
 
@@ -7294,15 +7289,14 @@ check_inner_class_access (tree decl, tree enclosing_decl, tree cl)
       while (DECL_CONTEXT (enclosing_decl))
         enclosing_decl = DECL_CONTEXT (enclosing_decl);
       if (top_level == enclosing_decl)
-        return;
-      access = "private";
+        return true;
     }
   else if (CLASS_PROTECTED (decl))
     {
       tree decl_context;
       /* Access is permitted from within the same package... */
       if (in_same_package (decl, enclosing_decl))
-        return;
+        return true;
 
       /* ... or from within the body of a subtype of the context in which
          DECL is declared. */
@@ -7313,29 +7307,57 @@ check_inner_class_access (tree decl, tree enclosing_decl, tree cl)
 	    {
 	      if (interface_of_p (TREE_TYPE (decl_context),
 				  enclosing_decl_type))
-		return;
+		return true;
 	    }
 	  else
 	    {
 	      /* Eww. The order of the arguments is different!! */
 	      if (inherits_from_p (enclosing_decl_type,
 				   TREE_TYPE (decl_context)))
-		return;
+		return true;
 	    }
 	  enclosing_decl = DECL_CONTEXT (enclosing_decl);
 	}
-      access = "protected";
     }
   else if (! CLASS_PUBLIC (decl))
     {
       /* Access is permitted only from within the same package as DECL. */
       if (in_same_package (decl, enclosing_decl))
-        return;
-      access = "non-public";
+        return true;
     }
   else
     /* Class is public. */
+    return true;
+
+  return false;
+}
+
+/* Check accessibility of inner classes according to member access rules.
+   DECL is the inner class, ENCLOSING_DECL is the class from which the
+   access is being attempted. */
+
+static void
+check_inner_class_access (tree decl, tree enclosing_decl, tree cl)
+{
+  const char *access;
+
+  /* We don't issue an error message when CL is null. CL can be null
+     as a result of processing a JDEP crafted by source_start_java_method
+     for the purpose of patching its parm decl. But the error would
+     have been already trapped when fixing the method's signature.
+     DECL can also be NULL in case of earlier errors. */
+  if (!decl || !cl)
     return;
+
+  if (inner_class_accessible (decl, enclosing_decl))
+    return;
+
+  if (CLASS_PRIVATE (decl))
+      access = "private";
+  else if (CLASS_PROTECTED (decl))
+      access = "protected";
+  else
+      access = "non-public";
 
   parse_error_context (cl, "Nested %s %s is %s; cannot be accessed from here",
 		       (CLASS_INTERFACE (decl) ? "interface" : "class"),
