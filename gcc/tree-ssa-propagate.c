@@ -1108,7 +1108,14 @@ substitute_and_fold (prop_value_t *prop_value, bool use_ranges_p)
 	  /* If we have range information, see if we can fold
 	     predicate expressions.  */
 	  if (use_ranges_p)
-	    did_replace = fold_predicate_in (stmt);
+	    {
+	      did_replace = fold_predicate_in (stmt);
+
+	      /* Some statements may be simplified using ranges.  For
+		 example, division may be replaced by shifts, modulo
+		 replaced with bitwise and, etc.  */
+	      simplify_stmt_using_ranges (stmt);
+	    }
 
 	  if (prop_value)
 	    {

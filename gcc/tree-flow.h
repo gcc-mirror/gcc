@@ -626,6 +626,7 @@ tree widen_bitfield (tree, tree, tree);
 /* In tree-vrp.c  */
 bool expr_computes_nonzero (tree);
 tree vrp_evaluate_conditional (tree, bool);
+void simplify_stmt_using_ranges (tree);
 
 /* In tree-ssa-dom.c  */
 extern void dump_dominator_optimization_stats (FILE *);

@@ -1,3 +1,16 @@
+2005-07-06  Jeff Law  <law@redhat.com>
+
+	* tree-vrp.c (simplify_using_ranges): Kill.
+	(vrp_finalize): Remove call to simplify_using_ranges.
+	(simplify_stmt_using_ranges): New function extracted from
+	simplify_using_ranges.
+	(simplify_div_or_mod_using_ranges): Likewise.
+	(simplify_abs_using_ranges): Likewise.
+	(simplify_cond_using_ranges): New function.
+	* tree-flow.h (simplify_stmt_using_ranges): Prototype.
+	* tree-ssa-propagate.c (substitute_and_fold): Call
+	simplify_stmt_using_ranges if we have range information.
+
 2005-07-06  James E. Wilson  <wilson@specifixinc.com>
 
 	* config/ia64/ia64.c (ia64_reorg): Check optimize before
