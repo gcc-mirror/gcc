@@ -1,3 +1,18 @@
+2005-07-07  J"orn Rennecke <joern.rennecke@st.com>
+
+	* hooks.c (hook_bool_rtx_int_false): New function.
+	* hooks.h (hook_bool_rtx_int_false): Declare.
+	* target-def.h (TARGET_COMMUTATIVE_P): Define.
+	(TARGET_INITIALIZER): Add TARGET_COMMUTATIVE_P.
+	* target.h (struct gcc_target): Add commutative_p member.
+	* targhooks.c (hook_bool_rtx_commutative_p): New function.
+	* targhooks.h (hook_bool_rtx_commutative_p): Declare.
+	* pa.c (TARGET_COMMUTATIVE_P): Redefine.
+	(pa_commutative_p): New function.
+	* jump.c (target.h): Include.
+	(rtx_renumbered_equal_p): Use targetm.commutative_p.
+	* doc/tm.texi: Document TARGET_COMMUTATIVE_P.
+
 2005-07-07  Adrian Straetling  <straetling@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_expand_clrmem): Delete.

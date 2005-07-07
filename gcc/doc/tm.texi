@@ -9445,6 +9445,13 @@ filling of delay slots can result in branches being redirected, and this
 may in turn cause a branch offset to overflow.
 @end defmac
 
+@deftypefn {Target Hook} bool TARGET_COMMUTATIVE_P (rtx @var{x}, @var{outer_code})
+This target hook returns @code{true} if @var{x} is considered to be commutative.
+Usually, this is just COMMUTATIVE_P (@var{x}), but the HP PA doesn't consider
+PLUS to be commutative inside a MEM.  @var{outer_code} is the rtx code
+of the enclosing rtl, if known, otherwise it is UNKNOWN.
+@end deftypefn
+
 @deftypefn {Target Hook} rtx TARGET_ALLOCATE_INITIAL_VALUE (rtx @var{hard_reg})
 
 When the initial value of a hard register has been copied in a pseudo

@@ -411,4 +411,10 @@ default_hidden_stack_protect_fail (void)
 #endif
 }
 
+bool
+hook_bool_rtx_commutative_p (rtx x, int outer_code ATTRIBUTE_UNUSED)
+{
+  return COMMUTATIVE_P (x);
+}
+
 #include "gt-targhooks.h"
