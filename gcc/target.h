@@ -393,6 +393,9 @@ struct gcc_target
   /* True if the insn X cannot be duplicated.  */
   bool (* cannot_copy_insn_p) (rtx);
 
+  /* True if X is considered to be commutative.  */
+  bool (* commutative_p) (rtx, int);
+
   /* Given an address RTX, undo the effects of LEGITIMIZE_ADDRESS.  */
   rtx (* delegitimize_address) (rtx);
 

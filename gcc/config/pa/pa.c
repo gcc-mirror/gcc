@@ -124,6 +124,7 @@ static void pa_init_builtins (void);
 static rtx hppa_builtin_saveregs (void);
 static tree hppa_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 static bool pa_scalar_mode_supported_p (enum machine_mode);
+static bool pa_commutative_p (rtx x, int outer_code);
 static void copy_fp_args (rtx) ATTRIBUTE_UNUSED;
 static int length_fp_args (rtx) ATTRIBUTE_UNUSED;
 static struct deferred_plabel *get_plabel (rtx) ATTRIBUTE_UNUSED;
@@ -225,6 +226,9 @@ static size_t n_deferred_plabels = 0;
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL pa_function_ok_for_sibcall
+
+#undef TARGET_COMMUTATIVE_P
+#define TARGET_COMMUTATIVE_P pa_commutative_p
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK pa_asm_output_mi_thunk
@@ -7818,6 +7822,17 @@ pa_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 
   /* Sibcalls are only ok within a translation unit.  */
   return (decl && !TREE_PUBLIC (decl));
+}
+
+/* ??? Addition is not commutative on the PA due to the weird implicit
+   space register selection rules for memory addresses.  Therefore, we
+   don't consider a + b == b + a, as this might be inside a MEM.  */
+static bool
+pa_commutative_p (rtx x, int outer_code)
+{
+  return (COMMUTATIVE_P (x)
+	  && ((outer_code != UNKNOWN && outer_code != MEM)
+	      || GET_CODE (x) != PLUS));
 }
 
 /* Returns 1 if the 6 operands specified in OPERANDS are suitable for

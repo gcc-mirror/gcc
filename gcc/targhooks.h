@@ -66,3 +66,4 @@ extern int hook_int_CUMULATIVE_ARGS_mode_tree_bool_0
   (CUMULATIVE_ARGS *, enum machine_mode, tree, bool);
 extern const char *hook_invalid_arg_for_unprototyped_fn
   (tree, tree, tree);
+extern bool hook_bool_rtx_commutative_p (rtx, int);
