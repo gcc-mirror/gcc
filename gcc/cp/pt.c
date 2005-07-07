@@ -109,7 +109,7 @@ static tree add_outermost_template_args (tree, tree);
 static bool check_instantiated_args (tree, tree, tsubst_flags_t);
 static int maybe_adjust_types_for_deduction (unification_kind_t, tree*, tree*);
 static int  type_unification_real (tree, tree, tree, tree,
-				   int, unification_kind_t, int);
+				   int, unification_kind_t);
 static void note_template_header (int);
 static tree convert_nontype_argument_function (tree, tree);
 static tree convert_nontype_argument (tree, tree);
@@ -9167,7 +9167,6 @@ fn_type_unification (tree fn,
 
   if (return_type)
     {
-      /* We've been given a return type to match, prepend it.  */
       parms = tree_cons (NULL_TREE, TREE_TYPE (fntype), parms);
       args = tree_cons (NULL_TREE, return_type, args);
     }
@@ -9178,7 +9177,7 @@ fn_type_unification (tree fn,
      event.  */
   result = type_unification_real (DECL_INNERMOST_TEMPLATE_PARMS (fn),
 				  targs, parms, args, /*subr=*/0,
-				  strict, /*allow_incomplete*/1);
+				  strict);
 
   if (result == 0)
     /* All is well so far.  Now, check:
@@ -9294,8 +9293,7 @@ type_unification_real (tree tparms,
 		       tree xparms,
 		       tree xargs,
 		       int subr,
-		       unification_kind_t strict,
-		       int allow_incomplete)
+		       unification_kind_t strict)
 {
   tree parm, arg;
   int i;
@@ -9426,8 +9424,6 @@ type_unification_real (tree tparms,
 	      && !saw_undeduced++)
 	    goto again;
 
-	  if (!allow_incomplete)
-	    error ("incomplete type unification");
 	  return 2;
 	}
 
@@ -10253,8 +10249,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 		 TREE_TYPE (arg), UNIFY_ALLOW_NONE))
 	return 1;
       return type_unification_real (tparms, targs, TYPE_ARG_TYPES (parm),
-				    TYPE_ARG_TYPES (arg), 1,
-				    DEDUCE_EXACT, 0);
+				    TYPE_ARG_TYPES (arg), 1, DEDUCE_EXACT);
 
     case OFFSET_TYPE:
       /* Unify a pointer to member with a pointer to member function, which
