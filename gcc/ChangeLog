@@ -1,3 +1,7 @@
+2005-07-06  James E. Wilson  <wilson@specifixinc.com>
+
+	* ia64.c (ia64_reorg): Check optimize before ia64_flag_schedule_isns2.
+
 2005-07-06  John David Anglin  <dave.anglin@nrc-crnc.gc.ca>
 
 	* pa.c (legitimize_pic_address): Use gcc_assert instead of abort.
