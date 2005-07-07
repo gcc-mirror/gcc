@@ -1,3 +1,8 @@
+2005-07-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* MAINTAINERS: Remove Dave Brolley as a cpplib maintainer.  Add Dave
+	Brolley to write-after-approval. 
+
 2005-07-07  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.def (flags_to_pass): Add CFLAGS_FOR_BUILD.
