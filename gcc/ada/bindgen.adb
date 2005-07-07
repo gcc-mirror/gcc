@@ -2522,8 +2522,18 @@ package body Bindgen is
       WBI ("  (int, int, char, char, char, char,");
       WBI ("   const char *, const char *,");
       WBI ("   int, int, int, int, int);");
-      WBI ("extern void " & Ada_Final_Name.all & " (void);");
-      WBI ("extern void " & Ada_Init_Name.all & " (void);");
+
+      if Use_Pragma_Linker_Constructor then
+         WBI ("extern void " & Ada_Final_Name.all &
+              " (void) __attribute__((destructor));");
+         WBI ("extern void " & Ada_Init_Name.all &
+              " (void) __attribute__((constructor));");
+
+      else
+         WBI ("extern void " & Ada_Final_Name.all & " (void);");
+         WBI ("extern void " & Ada_Init_Name.all & " (void);");
+      end if;
+
       WBI ("extern void system__standard_library__adafinal (void);");
 
       if not No_Main_Subprogram then
