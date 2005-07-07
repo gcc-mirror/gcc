@@ -413,9 +413,6 @@ begin
       if Bind_Main_Program then
          Fail ("switch -a must be used in conjunction with -n or -Lxxx");
 
-      elsif not Ada_Bind_File then
-         Fail ("switch -a cannot be used when C code is generated");
-
       elsif not Gnatbind_Supports_Auto_Init then
          Fail ("automatic initialisation of elaboration " &
                "not supported on this platform");
