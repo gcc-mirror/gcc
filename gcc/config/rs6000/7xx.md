@@ -48,13 +48,19 @@
 
 (define_insn_reservation "ppc750-load" 2
   (and (eq_attr "type" "load,load_ext,load_ext_u,load_ext_ux,\
-		        load_ux,load_u,fpload,fpload_ux,fpload_u,vecload")
+		        load_ux,load_u,fpload,fpload_ux,fpload_u,\
+			vecload,load_l")
        (eq_attr "cpu" "ppc750,ppc7400"))
   "ppc750_du,lsu_7xx")
 
-(define_insn_reservation "ppc750-store" 1
+(define_insn_reservation "ppc750-store" 2
   (and (eq_attr "type" "store,store_ux,store_u,\
 		        fpstore,fpstore_ux,fpstore_u,vecstore")
+       (eq_attr "cpu" "ppc750,ppc7400"))
+  "ppc750_du,lsu_7xx")
+
+(define_insn_reservation "ppc750-storec" 8
+  (and (eq_attr "type" "store_c")
        (eq_attr "cpu" "ppc750,ppc7400"))
   "ppc750_du,lsu_7xx")
 
@@ -137,10 +143,10 @@
 (define_insn_reservation "ppc750-crlogical" 3
   (and (eq_attr "type" "cr_logical,delayed_cr")
        (eq_attr "cpu" "ppc750,ppc7400"))
-  "ppc750_du,sru_7xx*2")
+  "nothing,sru_7xx*2")
 
 (define_insn_reservation "ppc750-mtjmpr" 2
-  (and (eq_attr "type" "mtjmpr")
+  (and (eq_attr "type" "mtjmpr,isync,sync")
        (eq_attr "cpu" "ppc750,ppc7400"))
   "nothing,sru_7xx*2")
 
@@ -150,7 +156,7 @@
   "nothing,sru_7xx*2")
 
 (define_insn_reservation "ppc750-jmpreg" 1
-  (and (eq_attr "type" "jmpreg,branch")
+  (and (eq_attr "type" "jmpreg,branch,isync")
        (eq_attr "cpu" "ppc750,ppc7400"))
   "nothing,bpu_7xx")
 

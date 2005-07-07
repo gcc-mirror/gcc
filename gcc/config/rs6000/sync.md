@@ -22,51 +22,77 @@
 (define_mode_attr larx [(SI "lwarx") (DI "ldarx")])
 (define_mode_attr stcx [(SI "stwcx.") (DI "stdcx.")])
 
-(define_insn "memory_barrier"
-  [(set (mem:BLK (match_scratch 0 "X"))
-	(unspec:BLK [(mem:BLK (match_scratch 1 "X"))] UNSPEC_SYNC))]
+(define_expand "memory_barrier"
+  [(set (mem:BLK (match_dup 0))
+        (unspec_volatile:BLK [(mem:BLK (match_dup 0))] UNSPECV_SYNC))]
   ""
-  "{ics|sync}")
+{
+  operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+  MEM_VOLATILE_P (operands[0]) = 1;
+})
 
-(define_expand "sync_compare_and_swap<mode>"
-  [(parallel [(set (match_operand:GPR 1 "memory_operand" "")
-		   (unspec:GPR [(match_dup 1)
-				(match_operand:GPR 2 "reg_or_short_operand" "")
-				(match_operand:GPR 3 "gpc_reg_operand" "")]
-			       UNSPEC_SYNC_SWAP))
-	      (set (match_operand:GPR 0 "gpc_reg_operand" "") (match_dup 1))
-	      (set (mem:BLK (match_scratch 5 ""))
-		   (unspec:BLK [(mem:BLK (match_scratch 6 ""))] UNSPEC_SYNC))
-	      (clobber (match_scratch:CC 4 ""))])]
-  "TARGET_POWERPC")
+(define_insn "*sync_internal"
+  [(set (match_operand:BLK 0 "" "")
+        (unspec_volatile:BLK [(match_operand:BLK 1 "" "")] UNSPECV_SYNC))]
+  ""
+  "{dcs|sync}"
+  [(set_attr "type" "sync")])
 
-(define_insn "sync_compare_and_swap<mode>_internal"
-  [(set (match_operand:GPR 1 "memory_operand" "+Z")
-	(unspec:GPR [(match_dup 1)
-		     (match_operand:GPR 2 "reg_or_short_operand" "rI")
-		     (match_operand:GPR 3 "gpc_reg_operand" "r")]
-		    UNSPEC_SYNC_SWAP))
-   (set (match_operand:GPR 0 "gpc_reg_operand" "=&r") (match_dup 1))
-   (set (mem:BLK (match_scratch 5 "X"))
-	(unspec:BLK [(mem:BLK (match_scratch 6 "X"))] UNSPEC_SYNC))
+(define_insn "load_locked_<mode>"
+  [(set (match_operand:GPR 0 "gpc_reg_operand" "=r")
+	(unspec_volatile:GPR
+	  [(match_operand:GPR 1 "memory_operand" "m")] UNSPECV_LL))]
+  "TARGET_POWERPC"
+  "<larx> %0,%y1"
+  [(set_attr "type" "load_l")])
+
+(define_insn "store_conditional_<mode>"
+  [(set (match_operand:CC 0 "cc_reg_operand" "=x")
+	(unspec_volatile:CC [(const_int 0)] UNSPECV_SC))
+   (set (match_operand:GPR 1 "memory_operand" "=m")
+	(match_operand:GPR 2 "gpc_reg_operand" "r"))]
+  "TARGET_POWERPC"
+  "<stcx> %2,%y1"
+  [(set_attr "type" "store_c")])
+
+(define_insn_and_split "sync_compare_and_swap<mode>"
+  [(set (match_operand:GPR 0 "gpc_reg_operand" "=&r")
+	(match_operand:GPR 1 "memory_operand" "+m"))
+   (set (match_dup 1)
+	(unspec_volatile:GPR
+	  [(match_operand:GPR 2 "reg_or_short_operand" "rI")
+	   (match_operand:GPR 3 "gpc_reg_operand" "r")]
+	  UNSPECV_CMPXCHG))
+   (clobber (match_scratch:GPR 4 "=&r"))
+   (clobber (match_scratch:CC 5 "=&x"))]
+  "TARGET_POWERPC"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rs6000_split_compare_and_swap (operands[0], operands[1], operands[2],
+				 operands[3], operands[4]);
+  DONE;
+})
+
+(define_insn_and_split "sync_lock_test_and_set<mode>"
+  [(set (match_operand:GPR 0 "gpc_reg_operand" "=&r")
+        (match_operand:GPR 1 "memory_operand" "+m"))
+   (set (match_dup 1)
+	(unspec_volatile:GPR
+	  [(match_operand:GPR 2 "reg_or_short_operand" "rL")]
+	  UNSPECV_CMPXCHG))
+   (clobber (match_scratch:GPR 3 "=&r"))
    (clobber (match_scratch:CC 4 "=&x"))]
-  "TARGET_POWERPC && !PPC405_ERRATUM77"
-  "sync\n\t<larx> %0,%y1\n\tcmp<wd>%I2 %0,%2\n\tbne- $+12\n\t<stcx> %3,%y1\n\tbne- $-16\n\tisync"
-  [(set_attr "length" "28")])
-
-(define_insn "sync_compare_and_swap<mode>_ppc405"
-  [(set (match_operand:GPR 1 "memory_operand" "+Z")
-	(unspec:GPR [(match_dup 1)
-		     (match_operand:GPR 2 "reg_or_short_operand" "rI")
-		     (match_operand:GPR 3 "gpc_reg_operand" "r")]
-		    UNSPEC_SYNC_SWAP))
-   (set (match_operand:GPR 0 "gpc_reg_operand" "=&r") (match_dup 1))
-   (set (mem:BLK (match_scratch 5 "X"))
-	(unspec:BLK [(mem:BLK (match_scratch 6 "X"))] UNSPEC_SYNC))
-   (clobber (match_scratch:CC 4 "=&x"))]
-  "TARGET_POWERPC && PPC405_ERRATUM77"
-  "sync\n\t<larx> %0,%y1\n\tcmp<wd>%I2 %0,%2\n\tbne- $+12\n\tsync\n\t<stcx> %3,%y1\n\tbne- $-16\n\tisync"
-  [(set_attr "length" "32")])
+  "TARGET_POWERPC"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rs6000_split_lock_test_and_set (operands[0], operands[1], operands[2],
+				  operands[3]);
+  DONE;
+})
 
 (define_expand "sync_add<mode>"
   [(use (match_operand:INT1 0 "memory_operand" ""))
@@ -296,8 +322,8 @@
 		 (match_operand:GPR 1 "add_operand" "rI,L")))
    (set (match_operand:GPR 3 "gpc_reg_operand" "=&b,&b") (match_dup 0))
    (set (match_dup 0) 
-	(unspec:GPR [(plus:GPR (match_dup 0) (match_dup 1))]
-		   UNSPEC_SYNC_OP))
+	(unspec_volatile:GPR [(plus:GPR (match_dup 0) (match_dup 1))]
+		   UNSPECV_SYNC_OP))
    (clobber (match_scratch:CC 4 "=&x,&x"))]
   "TARGET_POWERPC && !PPC405_ERRATUM77"
   "@
@@ -313,10 +339,10 @@
 		(and:SI (not:SI (match_dup 4)) (match_dup 0))))
    (set (match_operand:SI 3 "gpc_reg_operand" "=&b") (match_dup 0))
    (set (match_dup 0) 
-	(unspec:SI [(ior:SI (and:SI (plus:SI (match_dup 0) (match_dup 1))
+	(unspec_volatile:SI [(ior:SI (and:SI (plus:SI (match_dup 0) (match_dup 1))
 				    (match_dup 4))
 			    (and:SI (not:SI (match_dup 4)) (match_dup 0)))]
-		   UNSPEC_SYNC_OP))
+		   UNSPECV_SYNC_OP))
    (clobber (match_scratch:CC 5 "=&x"))
    (clobber (match_scratch:SI 6 "=&r"))]
   "TARGET_POWERPC && !PPC405_ERRATUM77"
@@ -329,8 +355,8 @@
 		  (match_operand:GPR 1 "gpc_reg_operand" "r")))
    (set (match_operand:GPR 3 "gpc_reg_operand" "=&b") (match_dup 0))
    (set (match_dup 0) 
-	(unspec:GPR [(minus:GPR (match_dup 0) (match_dup 1))]
-		   UNSPEC_SYNC_OP))
+	(unspec_volatile:GPR [(minus:GPR (match_dup 0) (match_dup 1))]
+		   UNSPECV_SYNC_OP))
    (clobber (match_scratch:CC 4 "=&x"))]
   "TARGET_POWERPC && !PPC405_ERRATUM77"
   "<larx> %3,%y0\n\tsubf %2,%1,%3\n\t<stcx> %2,%y0\n\tbne- $-12"
@@ -342,8 +368,8 @@
 		(match_operand:SI 1 "and_operand" "r,T,K,L")))
    (set (match_operand:SI 3 "gpc_reg_operand" "=&b,&b,&b,&b") (match_dup 0))
    (set (match_dup 0) 
-	(unspec:SI [(and:SI (match_dup 0) (match_dup 1))]
-		   UNSPEC_SYNC_OP))
+	(unspec_volatile:SI [(and:SI (match_dup 0) (match_dup 1))]
+		   UNSPECV_SYNC_OP))
    (clobber (match_scratch:CC 4 "=&x,&x,&x,&x"))]
   "TARGET_POWERPC && !PPC405_ERRATUM77"
   "@
@@ -359,8 +385,8 @@
 		(match_operand:DI 1 "and_operand" "r,S,T,K,J")))
    (set (match_operand:DI 3 "gpc_reg_operand" "=&b,&b,&b,&b,&b") (match_dup 0))
    (set (match_dup 0) 
-	(unspec:DI [(and:DI (match_dup 0) (match_dup 1))]
-		   UNSPEC_SYNC_OP))
+	(unspec_volatile:DI [(and:DI (match_dup 0) (match_dup 1))]
+		   UNSPECV_SYNC_OP))
    (clobber (match_scratch:CC 4 "=&x,&x,&x,&x,&x"))]
   "TARGET_POWERPC64"
   "@
@@ -377,7 +403,7 @@
 	 [(match_operand:SI 0 "memory_operand" "+Z,Z,Z")
 	  (match_operand:SI 1 "logical_operand" "r,K,L")]))
    (set (match_operand:SI 3 "gpc_reg_operand" "=&b,&b,&b") (match_dup 0))
-   (set (match_dup 0) (unspec:SI [(match_dup 4)] UNSPEC_SYNC_OP))
+   (set (match_dup 0) (unspec_volatile:SI [(match_dup 4)] UNSPECV_SYNC_OP))
    (clobber (match_scratch:CC 5 "=&x,&x,&x"))]
   "TARGET_POWERPC && !PPC405_ERRATUM77"
   "@
@@ -392,7 +418,7 @@
 	 [(match_operand:DI 0 "memory_operand" "+Z,Z,Z")
 	  (match_operand:DI 1 "logical_operand" "r,K,JF")]))
    (set (match_operand:DI 3 "gpc_reg_operand" "=&b,&b,&b") (match_dup 0))
-   (set (match_dup 0) (unspec:DI [(match_dup 4)] UNSPEC_SYNC_OP))
+   (set (match_dup 0) (unspec_volatile:DI [(match_dup 4)] UNSPECV_SYNC_OP))
    (clobber (match_scratch:CC 5 "=&x,&x,&x"))]
   "TARGET_POWERPC64"
   "@
@@ -407,7 +433,7 @@
 	 [(not:GPR (match_operand:GPR 0 "memory_operand" "+Z"))
 	  (match_operand:GPR 1 "gpc_reg_operand" "r")]))
    (set (match_operand:GPR 3 "gpc_reg_operand" "=&b") (match_dup 0))
-   (set (match_dup 0) (unspec:GPR [(match_dup 4)] UNSPEC_SYNC_OP))
+   (set (match_dup 0) (unspec_volatile:GPR [(match_dup 4)] UNSPECV_SYNC_OP))
    (clobber (match_scratch:CC 5 "=&x"))]
   "TARGET_POWERPC && !PPC405_ERRATUM77"
   "<larx> %3,%y0\n\t%q4 %2,%1,%3\n\t<stcx> %2,%y0\n\tbne- $-12"
@@ -424,7 +450,7 @@
 		  (match_operand:SI 5 "logical_operand" "rK"))
 	  (match_operand:SI 1 "gpc_reg_operand" "r")]))
    (set (match_operand:SI 3 "gpc_reg_operand" "=&b") (match_dup 0))
-   (set (match_dup 0) (unspec:SI [(match_dup 4)] UNSPEC_SYNC_OP))
+   (set (match_dup 0) (unspec_volatile:SI [(match_dup 4)] UNSPECV_SYNC_OP))
    (clobber (match_scratch:CC 6 "=&x"))]
   "TARGET_POWERPC && !PPC405_ERRATUM77"
   "lwarx %3,%y0\n\txor%I2 %2,%3,%5\n\t%q4 %2,%2,%1\n\tstwcx. %2,%y0\n\tbne- $-16"
@@ -436,7 +462,7 @@
 	 [(not:GPR (match_operand:GPR 1 "gpc_reg_operand" "r"))
 	  (match_operand:GPR 0 "memory_operand" "+Z")]))
    (set (match_operand:GPR 3 "gpc_reg_operand" "=&b") (match_dup 0))
-   (set (match_dup 0) (unspec:GPR [(match_dup 4)] UNSPEC_SYNC_OP))
+   (set (match_dup 0) (unspec_volatile:GPR [(match_dup 4)] UNSPECV_SYNC_OP))
    (clobber (match_scratch:CC 5 "=&x"))]
   "TARGET_POWERPC && !PPC405_ERRATUM77"
   "<larx> %3,%y0\n\t%q4 %2,%3,%1\n\t<stcx> %2,%y0\n\tbne- $-12"
@@ -448,7 +474,7 @@
 	 [(not:GPR (match_operand:GPR 0 "memory_operand" "+Z"))
 	  (not:GPR (match_operand:GPR 1 "gpc_reg_operand" "r"))]))
    (set (match_operand:GPR 3 "gpc_reg_operand" "=&b") (match_dup 0))
-   (set (match_dup 0) (unspec:GPR [(match_dup 4)] UNSPEC_SYNC_OP))
+   (set (match_dup 0) (unspec_volatile:GPR [(match_dup 4)] UNSPECV_SYNC_OP))
    (clobber (match_scratch:CC 5 "=&x"))]
   "TARGET_POWERPC && !PPC405_ERRATUM77"
   "<larx> %3,%y0\n\t%q4 %2,%1,%3\n\t<stcx> %2,%y0\n\tbne- $-12"
@@ -456,21 +482,10 @@
 
 (define_insn "isync"
   [(set (mem:BLK (match_scratch 0 "X"))
-        (unspec:BLK [(mem:BLK (match_scratch 1 "X"))] UNSPEC_ISYNC))]
-  "TARGET_POWERPC"
-  "isync")
-
-(define_insn "sync_lock_test_and_set<mode>"
-  [(set (match_operand:GPR 0 "gpc_reg_operand" "=&r")
-	(match_operand:GPR 1 "memory_operand" "+Z"))
-   (set (match_dup 1) (unspec:GPR [(match_operand:GPR 2 "gpc_reg_operand" "r")] 
-				 UNSPEC_SYNC_OP))
-   (clobber (match_scratch:CC 3 "=&x"))
-   (set (mem:BLK (match_scratch 4 "X"))
-        (unspec:BLK [(mem:BLK (match_scratch 5 "X"))] UNSPEC_ISYNC))]
-  "TARGET_POWERPC && !PPC405_ERRATUM77"
-  "<larx> %0,%y1\n\t<stcx> %2,%y1\n\tbne- $-8\n\tisync"
-  [(set_attr "length" "16")])
+        (unspec_volatile:BLK [(mem:BLK (match_scratch 1 "X"))] UNSPECV_ISYNC))]
+  ""
+  "{ics|isync}"
+  [(set_attr "type" "isync")])
 
 (define_expand "sync_lock_release<mode>"
   [(set (match_operand:INT 0 "memory_operand")
@@ -486,7 +501,8 @@
 ; Some AIX assemblers don't accept lwsync, so we use a .long.
 (define_insn "lwsync"
   [(set (mem:BLK (match_scratch 0 "X"))
-        (unspec:BLK [(mem:BLK (match_scratch 1 "X"))] UNSPEC_LWSYNC))]
+        (unspec_volatile:BLK [(mem:BLK (match_scratch 1 "X"))] UNSPECV_LWSYNC))]
   ""
-  ".long 0x7c2004ac")
+  ".long 0x7c2004ac"
+  [(set_attr "type" "sync")])
 

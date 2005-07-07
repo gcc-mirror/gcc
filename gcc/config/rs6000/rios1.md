@@ -26,7 +26,8 @@
 ;; RIOS1  32-bit IU, FPU, BPU
 
 (define_insn_reservation "rios1-load" 2
-  (and (eq_attr "type" "load,load_ext,load_ext_u,load_ext_ux,load_ux,load_u")
+  (and (eq_attr "type" "load,load_ext,load_ext_u,load_ext_ux,load_ux,load_u,\
+		        load_l,store_c,sync")
        (eq_attr "cpu" "rios1,ppc601"))
   "iu_rios1")
 
@@ -183,7 +184,7 @@
   "iu_rios1,bpu_rios1")
 
 (define_insn_reservation "rios1-branch" 1
-  (and (eq_attr "type" "jmpreg,branch")
+  (and (eq_attr "type" "jmpreg,branch,isync")
        (eq_attr "cpu" "rios1,ppc601"))
   "bpu_rios1")
 

@@ -63,6 +63,16 @@
        (eq_attr "cpu" "ppc604,ppc604e,ppc620,ppc630"))
   "lsu_6xx")
 
+(define_insn_reservation "ppc604-llsc" 3
+  (and (eq_attr "type" "load_l,store_c")
+       (eq_attr "cpu" "ppc604,ppc604e"))
+  "lsu_6xx")
+  
+(define_insn_reservation "ppc630-llsc" 4
+  (and (eq_attr "type" "load_l,store_c")
+       (eq_attr "cpu" "ppc620,ppc630"))
+  "lsu_6xx")
+  
 (define_insn_reservation "ppc604-integer" 1
   (and (eq_attr "type" "integer,insert_word")
        (eq_attr "cpu" "ppc604,ppc604e,ppc620,ppc630"))
@@ -242,3 +252,23 @@
        (eq_attr "cpu" "ppc604,ppc604e,ppc620,ppc630"))
   "bpu_6xx")
 
+(define_insn_reservation "ppc604-isync" 0
+  (and (eq_attr "type" "isync")
+       (eq_attr "cpu" "ppc604,ppc604e"))
+  "bpu_6xx")
+  
+(define_insn_reservation "ppc630-isync" 6
+  (and (eq_attr "type" "isync")
+       (eq_attr "cpu" "ppc620,ppc630"))
+  "bpu_6xx")
+  
+(define_insn_reservation "ppc604-sync" 35
+  (and (eq_attr "type" "sync")
+       (eq_attr "cpu" "ppc604,ppc604e"))
+  "lsu_6xx")
+  
+(define_insn_reservation "ppc630-sync" 26
+  (and (eq_attr "type" "sync")
+       (eq_attr "cpu" "ppc620,ppc630"))
+  "lsu_6xx")
+  

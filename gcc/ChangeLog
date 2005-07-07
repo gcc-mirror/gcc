@@ -1,3 +1,39 @@
+2005-07-07  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (UNSPEC_SYNC, UNSPEC_SYNC_OP,
+	UNSPEC_SYNC_SWAP, UNSPEC_LWSYNC, UNSPEC_ISYNC): Delete.
+	(UNSPECV_LL, UNSPECV_SC, UNSPECV_ATOMIC, UNSPECV_SYNC,
+	UNSPECV_SYNC_OP, UNSPECV_CMPXCHG, UNSPECV_LWSYNC, UNSPECV_ISYNC): New.
+	(define_attr "type"): Add isync, sync, load_l, store_c.
+	* config/rs6000/sync.md (memory_barrier): Change to define_expand.
+	Create scratch volatile MEM.
+	(sync_internal): New.  POWER mnemonic is dcs, not ics.  Attribute
+	sync.
+	(load_locked_<mode>): New.
+	(store_conditional_<mode>): New.
+	(sync_compare_and_swap<mode>): Replace with splitter.
+	(sync_lock_test_and_set<mode>): Replace with splitter.
+	(sync_<fetchop><mode>): Change to unspec_volatile UNSPECV_SYNC_OP
+	and UNSPECV_ISYNC.
+	(isync): Change to unspec_volatile UNSPECV_ISYNC.  POWER mnemonic
+	is ics.  Attribute isync.
+	(lwsync): Change to unspec_volatile UNSPECV_LWSYNC.  Attribute
+	lwsync.
+	* config/rs6000/rs6000.c (rs6000_emit_sync): Use UNSPEC_VOLATILE
+	and UNSPECV_SYNC_OP.
+	(emit_unlikely_jump): New.
+	(emit_load_locked): New.
+	(emit_store_conditional): New.
+	(rs6000_split_compare_and_swap): New.
+	(rs6000_split_lock_test_and_set): New.
+	(is_dispatch_slot_restricted): Return 4 for TYPE_LOAD_L,
+	TYPE_STORE_C, TYPE_ISYNC, TYPE_SYNC.
+	* config/rs6000/rs6000-protos.h (rs6000_split_compare_and_swap,
+	rs6000_split_lock_test_and_set): Declare.
+	* config/rs6000/{40x.md,440.md,603.md,6xx.md,7450.md,7xx.md,8540.md,
+	mpc.md,power4.md,power5.md,rios1.md,rios2.md,rs64.md): Add load_l,
+	store_c, isync, sync.
+
 2005-07-07  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in (echo_quoted_to_gtyp): New template for outputing
