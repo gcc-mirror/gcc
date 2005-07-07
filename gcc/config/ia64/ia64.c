@@ -1363,10 +1363,13 @@ ia64_expand_movxf_movrf (enum machine_mode mode, rtx operands[])
 
       if (GET_CODE (operands[1]) == CONST_DOUBLE)
 	{
+	  /* Don't word-swap when reading in the constant.  */
 	  emit_move_insn (gen_rtx_REG (DImode, REGNO (op0)),
-			  operand_subword (operands[1], 0, 0, mode));
+			  operand_subword (operands[1], WORDS_BIG_ENDIAN,
+					   0, mode));
 	  emit_move_insn (gen_rtx_REG (DImode, REGNO (op0) + 1),
-			  operand_subword (operands[1], 1, 0, mode));
+			  operand_subword (operands[1], !WORDS_BIG_ENDIAN,
+					   0, mode));
 	  return true;
 	}
 
@@ -1376,8 +1379,9 @@ ia64_expand_movxf_movrf (enum machine_mode mode, rtx operands[])
 
       gcc_assert (GET_CODE (operands[1]) == MEM);
 
-      out[WORDS_BIG_ENDIAN] = gen_rtx_REG (DImode, REGNO (op0));
-      out[!WORDS_BIG_ENDIAN] = gen_rtx_REG (DImode, REGNO (op0) + 1);
+      /* Don't word-swap when reading in the value.  */
+      out[0] = gen_rtx_REG (DImode, REGNO (op0));
+      out[1] = gen_rtx_REG (DImode, REGNO (op0) + 1);
 
       emit_move_insn (out[0], adjust_address (operands[1], DImode, 0));
       emit_move_insn (out[1], adjust_address (operands[1], DImode, 8));
@@ -1405,9 +1409,11 @@ ia64_expand_movxf_movrf (enum machine_mode mode, rtx operands[])
 	{
 	  rtx in[2];
 
-          gcc_assert (GET_CODE (operands[0]) == MEM);
-	  in[WORDS_BIG_ENDIAN] = gen_rtx_REG (DImode, REGNO (operands[1]));
-	  in[!WORDS_BIG_ENDIAN] = gen_rtx_REG (DImode, REGNO (operands[1]) + 1);
+	  gcc_assert (GET_CODE (operands[0]) == MEM);
+
+	  /* Don't word-swap when writing out the value.  */
+	  in[0] = gen_rtx_REG (DImode, REGNO (operands[1]));
+	  in[1] = gen_rtx_REG (DImode, REGNO (operands[1]) + 1);
 
 	  emit_move_insn (adjust_address (operands[0], DImode, 0), in[0]);
 	  emit_move_insn (adjust_address (operands[0], DImode, 8), in[1]);
@@ -3917,19 +3923,6 @@ ia64_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
                    gen_rtx_EXPR_LIST (VOIDmode,
 		     gen_rtx_REG (DImode, basereg + cum->words + offset),
 				      const0_rtx)));
-      /* Similarly, an anonymous XFmode or RFmode value must be split
-	 into two registers and padded appropriately.  */
-      else if (BYTES_BIG_ENDIAN && (mode == XFmode || mode == RFmode))
-	{
-	  rtx loc[2];
-	  loc[0] = gen_rtx_EXPR_LIST (VOIDmode,
-		     gen_rtx_REG (DImode, basereg + cum->words + offset),
-				      const0_rtx);
-	  loc[1] = gen_rtx_EXPR_LIST (VOIDmode,
-		     gen_rtx_REG (DImode, basereg + cum->words + offset + 1),
-				      GEN_INT (UNITS_PER_WORD));
-	  return gen_rtx_PARALLEL (mode, gen_rtvec_v (2, loc));
-	}
       else
 	return gen_rtx_REG (mode, basereg + cum->words + offset);
     }
