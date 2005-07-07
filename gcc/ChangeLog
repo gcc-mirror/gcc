@@ -1,6 +1,11 @@
 2005-07-06  James E. Wilson  <wilson@specifixinc.com>
 
-	* ia64.c (ia64_reorg): Check optimize before ia64_flag_schedule_isns2.
+	* config/ia64/ia64.c (ia64_reorg): Check optimize before
+	ia64_flag_schedule_isns2.
+
+	* config/ia64/ia64.c (ia64_expand_movxf_movrf): Don't word swap when
+	reading/writing general registers.
+	(ia64_function_arg): Revert 2005-06-18 change.
 
 2005-07-06  John David Anglin  <dave.anglin@nrc-crnc.gc.ca>
 
