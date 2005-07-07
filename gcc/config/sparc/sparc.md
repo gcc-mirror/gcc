@@ -8229,8 +8229,8 @@
 	(unspec:CC [(match_operand:SI 0 "memory_operand" "m")
 		    (match_operand:SI 1 "memory_operand" "m")]
 		   UNSPEC_SP_TEST))
-   (clobber (match_scratch:SI 2 "=&r"))
-   (set (match_scratch:SI 3 "=r") (const_int 0))]
+   (set (match_scratch:SI 3 "=r") (const_int 0))
+   (clobber (match_scratch:SI 2 "=&r"))]
   "TARGET_ARCH32"
   "ld\t%0, %2\;ld\t%1, %3\;xorcc\t%2, %3, %2\;mov\t0, %3"
   [(set_attr "type" "multi")

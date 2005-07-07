@@ -1,3 +1,10 @@
+2005-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.md (stack_protect_testsi): Put clobbers after
+	all sets in the pattern.
+	* config/rs6000/rs6000.md (stack_protect_testsi,
+	stack_protect_testdi): Likewise.
+
 2005-07-06  Jeff Law  <law@redhat.com>
 
 	* tree-vrp.c (simplify_using_ranges): Kill.
