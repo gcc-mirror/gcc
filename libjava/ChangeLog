@@ -1,5 +1,10 @@
 2005-07-07  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* testsuite/libjava.jacks/jacks.xfail: Remove 6.5.5.1-nested-4,
+	6.5.5.1-nested-7, 6.5.5.1-nested-16, 6.5.5.1-nested-17.
+
+2005-07-07  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* testsuite/libjava.compile/PR21045.java: New test.
 	* testsuite/libjava.jacks/jacks.xfail: Remove 15.9.5.1-exception-1,
 	15.9.5.1-exception-3, 8.3.2-abrupt-6, 8.3.2-abrupt-7.
