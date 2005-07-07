@@ -59,14 +59,14 @@ pb_assoc::tree_assoc_cntnr<
   pb_assoc::order_statistics_key_cmp<std::less<int> >,
   pb_assoc::splay_tree_ds_tag,
   pb_assoc::order_statistics_node_updator<int> >
-map_t;
+map_type;
 
 int
 main()
 {
   typedef pb_assoc::order_statistics_key< int> int_order_statistics_key;
 
-  map_t s0;
+  map_type s0;
 
   // Insert some entries into s0.
 
@@ -76,13 +76,13 @@ main()
 
   // The order of the keys should be: 12, 30, 505.
 
-  pb_assoc::find_by_order<map_t> by_order;
+  pb_assoc::find_by_order<map_type> by_order;
 
   assert(by_order(s0, 0)->first == 12);
   assert(by_order(s0, 1)->first == 30);
   assert(by_order(s0, 2)->first == 505);
 
-  map_t s1;
+  map_type s1;
 
   // Insert some entries into s1.
 

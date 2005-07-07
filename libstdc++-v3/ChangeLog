@@ -1,3 +1,8 @@
+2005-07-07  David Edelsohn  <edelsohn@gnu.org>
+
+	* testsuite/ext/pb_assoc/example/tree_order_statistics_join.cc:
+	Change map_t to map_type.
+
 2005-07-05  Paolo Carlini  <pcarlini@suse.de>
 
 	Add class __versa_string, a versatile "basic_string-type" class:
