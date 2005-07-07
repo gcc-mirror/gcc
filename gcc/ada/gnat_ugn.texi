@@ -14892,6 +14892,11 @@ All the VT characters are removed from the comment text. All the HT characters
 are expanded with the sequences of space characters to get to the next tab
 stops.
 
+@cindex @option{^--no-separate-is^/NO_SEPARATE_IS^} (@command{gnatpp})
+@item ^--no-separate-is^/NO_SEPARATE_IS^
+Do not place the keyword @code{is} on a separate line in a subprogram body in
+case if the specification occupies more then one line.
+
 @end table
 
 @ifclear vms
