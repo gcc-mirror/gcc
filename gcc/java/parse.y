@@ -233,13 +233,13 @@ static tree build_try_finally_statement (int, tree, tree);
 static tree patch_try_statement (tree);
 static tree patch_synchronized_statement (tree, tree);
 static tree patch_throw_statement (tree, tree);
+static void add_exception_to_throws (tree, tree);
 #ifdef USE_MAPPED_LOCATION
 static void check_thrown_exceptions (source_location, tree, tree);
 #else
 static void check_thrown_exceptions (int, tree, tree);
 #endif
 static int check_thrown_exceptions_do (tree);
-static void purge_unchecked_exceptions (tree);
 static bool ctors_unchecked_throws_clause_p (tree);
 static void check_concrete_throws_clauses (tree, tree, tree, tree);
 static void check_throws_clauses (tree, tree, tree);
@@ -256,7 +256,7 @@ static tree build_instinit_invocation (tree);
 static void fix_constructors (tree);
 static tree build_alias_initializer_parameter_list (int, tree, tree, int *);
 static tree craft_constructor (tree, tree);
-static int verify_constructor_super (tree);
+static tree get_constructor_super (tree);
 static tree create_artificial_method (tree, int, tree, tree, tree);
 static void start_artificial_method_body (tree);
 static void end_artificial_method_body (tree);
@@ -2082,7 +2082,7 @@ anonymous_class_creation:
 		     must be generated following the hints provided by
 		     the `new' expression. Whether a super constructor
 		     of that nature exists or not is to be verified
-		     later on in verify_constructor_super.
+		     later on in get_constructor_super.
 
 		     It's during the expansion of a `new' statement
 		     referring to an anonymous class that a ctor will
@@ -8161,11 +8161,6 @@ java_complete_expand_method (tree mdecl)
   current_this = (!METHOD_STATIC (mdecl) ?
 		  BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (mdecl)) : NULL_TREE);
 
-  /* Purge the `throws' list of unchecked exceptions (we save a copy
-     of the list and re-install it later.) */
-  exception_copy = copy_list (DECL_FUNCTION_THROWS (mdecl));
-  purge_unchecked_exceptions (mdecl);
-
   /* Install exceptions thrown with `throws' */
   PUSH_EXCEPTIONS (DECL_FUNCTION_THROWS (mdecl));
 
@@ -8223,9 +8218,6 @@ java_complete_expand_method (tree mdecl)
   POP_EXCEPTIONS();
   if (currently_caught_type_list)
     abort ();
-
-  /* Restore the copy of the list of exceptions. */
-  DECL_FUNCTION_THROWS (mdecl) = exception_copy;
 }
 
 /* For with each class for which there's code to generate. */
@@ -9038,7 +9030,8 @@ fix_constructors (tree mdecl)
       /* It is an error for the compiler to generate a default
 	 constructor if the superclass doesn't have a constructor that
 	 takes no argument, or the same args for an anonymous class */
-      if (verify_constructor_super (mdecl))
+      tree sdecl = get_constructor_super (mdecl);
+      if (sdecl == NULL_TREE)
 	{
 	  tree sclass_decl = TYPE_NAME (CLASSTYPE_SUPER (class_type));
 	  tree save = DECL_NAME (mdecl);
@@ -9049,6 +9042,13 @@ fix_constructors (tree mdecl)
 	     "No constructor matching %qs found in class %qs",
 	     lang_printable_name (mdecl, 2), n);
 	  DECL_NAME (mdecl) = save;
+	}
+
+      if (ANONYMOUS_CLASS_P (class_type))
+	{
+	  /* Copy throws clause from the super constructor.  */
+	  tree throws = DECL_FUNCTION_THROWS (sdecl);
+	  DECL_FUNCTION_THROWS (mdecl) = copy_list (throws);
 	}
 
       /* The constructor body must be crafted by hand. It's the
@@ -9135,19 +9135,18 @@ fix_constructors (tree mdecl)
 }
 
 /* Browse constructors in the super class, searching for a constructor
-   that doesn't take any argument. Return 0 if one is found, 1
-   otherwise.  If the current class is an anonymous inner class, look
-   for something that has the same signature. */
-
-static int
-verify_constructor_super (tree mdecl)
+   that doesn't take any argument. Return the constructor if one is found, 
+   NULL_TREE otherwise.  If the current class is an anonymous inner class, 
+   look for something that has the same signature. */
+static tree
+get_constructor_super (tree mdecl)
 {
   tree class = CLASSTYPE_SUPER (current_class);
   int super_inner = PURE_INNER_CLASS_TYPE_P (class);
   tree sdecl;
 
   if (!class)
-    return 0;
+    return NULL_TREE;
 
   if (ANONYMOUS_CLASS_P (current_class))
     {
@@ -9171,7 +9170,7 @@ verify_constructor_super (tree mdecl)
 		break;
 
 	    if (arg_type == end_params_node && m_arg_type == end_params_node)
-	      return 0;
+	      return sdecl;
 	  }
     }
   else
@@ -9182,10 +9181,10 @@ verify_constructor_super (tree mdecl)
 	  if (super_inner)
 	    arg = TREE_CHAIN (arg);
 	  if (DECL_CONSTRUCTOR_P (sdecl) && arg == end_params_node)
-	    return 0;
+	    return sdecl;
 	}
     }
-  return 1;
+  return NULL_TREE;
 }
 
 /* Generate code for all context remembered for code generation.  */
@@ -15911,6 +15910,34 @@ patch_throw_statement (tree node, tree wfl_op1)
   return node;
 }
 
+/* Add EXCEPTION to the throws clause of MDECL.  If MDECL already throws
+   a super-class of EXCEPTION, keep the superclass instead.  If MDECL already
+   throws a sub-class of EXCEPTION, replace the sub-class with EXCEPTION.  */
+static void
+add_exception_to_throws (tree mdecl, tree exception)
+{
+  tree mthrows;
+  
+  /* Ignore unchecked exceptions. */
+  if (IS_UNCHECKED_EXCEPTION_P (exception))
+    return;
+
+  for (mthrows = DECL_FUNCTION_THROWS (mdecl);
+       mthrows; mthrows = TREE_CHAIN (mthrows))
+    {
+      if (inherits_from_p (exception, TREE_VALUE (mthrows)))
+        return;
+      if (inherits_from_p (TREE_VALUE (mthrows), exception))
+        {
+	  TREE_VALUE (mthrows) = exception;
+	  return;
+	}
+    }
+  
+  mthrows = DECL_FUNCTION_THROWS (mdecl);
+  DECL_FUNCTION_THROWS (mdecl) = build_tree_list (mthrows, exception);
+}
+
 /* Check that exception said to be thrown by method DECL can be
    effectively caught from where DECL is invoked.  THIS_EXPR is the
    expression that computes `this' for the method call.  */
@@ -15950,10 +15977,21 @@ check_thrown_exceptions (
 #else
 	EXPR_WFL_LINECOL (wfl_operator) = location;
 #endif
-	if (DECL_FINIT_P (current_function_decl))
-	  parse_error_context
-            (wfl_operator, "Exception %qs can't be thrown in initializer",
-	     lang_printable_name (TREE_VALUE (throws), 0));
+	if (ANONYMOUS_CLASS_P (DECL_CONTEXT (current_function_decl))
+	    && (DECL_FINIT_P (current_function_decl)
+	        || DECL_INIT_P (current_function_decl)
+		|| DECL_CONSTRUCTOR_P (current_function_decl)))
+	  {
+	    /* Add "throws" to the initializer's exception list */
+	    tree exception = TREE_VALUE (throws);
+	    add_exception_to_throws (current_function_decl, exception);	  
+	  }
+	else if (DECL_FINIT_P (current_function_decl))
+	  {
+	    parse_error_context
+              (wfl_operator, "Exception %qs can't be thrown in initializer",
+	       lang_printable_name (TREE_VALUE (throws), 0));
+	  }
 	else
 	  {
 	    parse_error_context
@@ -15988,26 +16026,6 @@ check_thrown_exceptions_do (tree exception)
       list = TREE_CHAIN (list);
     }
   return 0;
-}
-
-static void
-purge_unchecked_exceptions (tree mdecl)
-{
-  tree throws = DECL_FUNCTION_THROWS (mdecl);
-  tree new = NULL_TREE;
-
-  while (throws)
-    {
-      tree next = TREE_CHAIN (throws);
-      if (!IS_UNCHECKED_EXCEPTION_P (TREE_VALUE (throws)))
-	{
-	  TREE_CHAIN (throws) = new;
-	  new = throws;
-	}
-      throws = next;
-    }
-  /* List is inverted here, but it doesn't matter */
-  DECL_FUNCTION_THROWS (mdecl) = new;
 }
 
 /* This function goes over all of CLASS_TYPE ctors and checks whether

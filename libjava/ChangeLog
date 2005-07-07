@@ -1,3 +1,9 @@
+2005-07-07  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* testsuite/libjava.compile/PR21045.java: New test.
+	* testsuite/libjava.jacks/jacks.xfail: Remove 15.9.5.1-exception-1,
+	15.9.5.1-exception-3, 8.3.2-abrupt-6, 8.3.2-abrupt-7.
+
 2005-07-06  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/InputStreamReader.java (refill): Handle no-progress
