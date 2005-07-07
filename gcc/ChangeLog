@@ -1,3 +1,8 @@
+2005-07-07  Richard Henderson  <rth@redhat.com>
+
+	* function.c (locate_and_pad_parm): Record parameter alignment in
+	stack_alignment_needed.
+
 2005-07-07  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (UNSPEC_SYNC, UNSPEC_SYNC_OP,

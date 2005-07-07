@@ -3256,7 +3256,7 @@ locate_and_pad_parm (enum machine_mode passed_mode, tree type, int in_regs,
 {
   tree sizetree;
   enum direction where_pad;
-  int boundary;
+  unsigned int boundary;
   int reg_parm_stack_space = 0;
   int part_size_in_regs;
 
@@ -3290,6 +3290,13 @@ locate_and_pad_parm (enum machine_mode passed_mode, tree type, int in_regs,
   boundary = FUNCTION_ARG_BOUNDARY (passed_mode, type);
   locate->where_pad = where_pad;
   locate->boundary = boundary;
+
+  /* Remember if the outgoing parameter requires extra alignment on the
+     calling function side.  */
+  if (boundary > PREFERRED_STACK_BOUNDARY)
+    boundary = PREFERRED_STACK_BOUNDARY;
+  if (cfun->stack_alignment_needed < boundary)
+    cfun->stack_alignment_needed = boundary;
 
 #ifdef ARGS_GROW_DOWNWARD
   locate->slot_offset.constant = -initial_offset_ptr->constant;
