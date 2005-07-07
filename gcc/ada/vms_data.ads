@@ -4662,6 +4662,13 @@ package VMS_Data is
    --   unless the indentation is set to 1: in that case the default value for
    --   continuation line indentation is also 1.
 
+   S_Pretty_Compact_Is : aliased constant S := "/NO_SEPARATE_IS "          &
+                                                 "--no-separate-is";
+   --        /NO_SEPARATE_IS
+   --
+   --   Do not place the IS keyword on a separate line in a subprogram body in
+   --   case if the specification occupies more then one line.
+
    S_Pretty_Eol       : aliased constant S := "/END_OF_LINE="              &
                                                 "DOS "                     &
                                                    "--eol=dos "            &
@@ -4939,6 +4946,7 @@ package VMS_Data is
       S_Pretty_All_Prjs  'Access,
       S_Pretty_Attrib    'Access,
       S_Pretty_Comments  'Access,
+      S_Pretty_Compact_Is'Access,
       S_Pretty_Config    'Access,
       S_Pretty_Constr    'Access,
       S_Pretty_Comind    'Access,
