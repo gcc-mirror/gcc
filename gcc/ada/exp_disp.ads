@@ -55,11 +55,19 @@ package Exp_Disp is
        TSD_Prologue_Size);
 
    function Fill_DT_Entry
-     (Loc      : Source_Ptr;
-      Prim     : Entity_Id;
-      Thunk_Id : Entity_Id := Empty) return Node_Id;
+     (Loc          : Source_Ptr;
+      Prim         : Entity_Id) return Node_Id;
    --  Generate the code necessary to fill the appropriate entry of the
    --  dispatch table of Prim's controlling type with Prim's address.
+
+   function Fill_Secondary_DT_Entry
+     (Loc          : Source_Ptr;
+      Prim         : Entity_Id;
+      Thunk_Id     : Entity_Id;
+      Iface_DT_Ptr : Entity_Id) return Node_Id;
+   --  (Ada 2005): Generate the code necessary to fill the appropriate entry of
+   --  the secondary dispatch table of Prim's controlling type with Thunk_Id's
+   --  address.
 
    procedure Make_Abstract_Interface_DT
      (AI_Tag          : Entity_Id;
@@ -102,9 +110,10 @@ package Exp_Disp is
    --  secondary dispatch table
 
    function Expand_Interface_Thunk
-     (N         : Node_Id;
-      Thunk_Id  : Entity_Id;
-      Iface_Tag : Entity_Id) return Node_Id;
+     (N           : Node_Id;
+      Thunk_Alias : Node_Id;
+      Thunk_Id    : Entity_Id;
+      Iface_Tag   : Entity_Id) return Node_Id;
    --  Ada 2005 (AI-251): When a tagged type implements abstract interfaces we
    --  generate additional subprograms (thunks) to have a layout compatible
    --  with the C++ ABI. The thunk modifies the value of the first actual of

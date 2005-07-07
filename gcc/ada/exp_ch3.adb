@@ -1361,10 +1361,6 @@ package body Exp_Ch3 is
       Rec_Type    : Entity_Id;
       Set_Tag     : Entity_Id := Empty;
 
-      ADT      : Elmt_Id;
-      Aux_N    : Node_Id;
-      Aux_Comp : Node_Id;
-
       function Build_Assignment (Id : Entity_Id; N : Node_Id) return List_Id;
       --  Build a assignment statement node which assigns to record
       --  component its default expression if defined. The left hand side
@@ -1735,6 +1731,100 @@ package body Exp_Ch3 is
          Record_Extension_Node : Node_Id;
          Init_Tag              : Node_Id;
 
+         procedure Init_Secondary_Tags (Typ : Entity_Id);
+         --  Ada 2005 (AI-251): Initialize the tags of all the secondary
+         --  tables associated with abstract interface types
+
+         -------------------------
+         -- Init_Secondary_Tags --
+         -------------------------
+
+         procedure Init_Secondary_Tags (Typ : Entity_Id) is
+            ADT : Elmt_Id;
+
+            procedure Init_Secondary_Tags_Internal (Typ : Entity_Id);
+            --  Internal subprogram used to recursively climb to the root type
+
+            ----------------------------------
+            -- Init_Secondary_Tags_Internal --
+            ----------------------------------
+
+            procedure Init_Secondary_Tags_Internal (Typ : Entity_Id) is
+               E     : Entity_Id;
+               Aux_N : Node_Id;
+
+            begin
+               if not Is_Interface (Typ)
+                 and then Etype (Typ) /= Typ
+               then
+                  Init_Secondary_Tags_Internal (Etype (Typ));
+               end if;
+
+               if Present (Abstract_Interfaces (Typ))
+                 and then not Is_Empty_Elmt_List (Abstract_Interfaces (Typ))
+               then
+                  E := First_Entity (Typ);
+                  while Present (E) loop
+                     if Is_Tag (E)
+                       and then Chars (E) /= Name_uTag
+                     then
+                        Aux_N := Node (ADT);
+                        pragma Assert (Present (Aux_N));
+
+                        --  Initialize the pointer to the secondary DT
+                        --  associated with the interface
+
+                        Append_To (Body_Stmts,
+                          Make_Assignment_Statement (Loc,
+                            Name =>
+                              Make_Selected_Component (Loc,
+                                Prefix => Make_Identifier (Loc, Name_uInit),
+                                Selector_Name =>
+                                  New_Reference_To (E, Loc)),
+                            Expression =>
+                              New_Reference_To (Aux_N, Loc)));
+
+                        --  Generate:
+                        --    Set_Offset_To_Top (DT_Ptr, n);
+
+                        Append_To (Body_Stmts,
+                          Make_Procedure_Call_Statement (Loc,
+                            Name => New_Reference_To
+                                      (RTE (RE_Set_Offset_To_Top), Loc),
+                            Parameter_Associations => New_List (
+                              Unchecked_Convert_To (RTE (RE_Tag),
+                                New_Reference_To (Aux_N, Loc)),
+                              Unchecked_Convert_To (RTE (RE_Storage_Offset),
+                                Make_Attribute_Reference (Loc,
+                                  Prefix         =>
+                                   Make_Selected_Component (Loc,
+                                     Prefix         => Make_Identifier (Loc,
+                                                         Name_uInit),
+                                     Selector_Name  => New_Reference_To
+                                                         (E, Loc)),
+                                 Attribute_Name => Name_Position)))));
+
+                        Next_Elmt (ADT);
+                     end if;
+
+                     Next_Entity (E);
+                  end loop;
+               end if;
+            end Init_Secondary_Tags_Internal;
+
+         --  Start of processing for Init_Secondary_Tags
+
+         begin
+            --  Skip the first _Tag, which is the main tag of the
+            --  tagged type. Following tags correspond with abstract
+            --  interfaces.
+
+            ADT := Next_Elmt (First_Elmt (Access_Disp_Table (Typ)));
+            Init_Secondary_Tags_Internal (Typ);
+         end Init_Secondary_Tags;
+
+      --  Start of processing for Build_Init_Procedure
+
       begin
          Body_Stmts := New_List;
          Body_Node := New_Node (N_Subprogram_Body, Loc);
@@ -1864,55 +1954,10 @@ package body Exp_Ch3 is
                --  Ada 2005 (AI-251): Initialization of all the tags
                --  corresponding with abstract interfaces
 
-               if Present (First_Tag_Component (Rec_Type)) then
-
-                  --  Skip the first _Tag, which is the main tag of the
-                  --  tagged type. Following tags correspond with abstract
-                  --  interfaces.
-
-                  Aux_Comp :=
-                    Next_Tag_Component (First_Tag_Component (Rec_Type));
-
-                  ADT := Next_Elmt (First_Elmt (Access_Disp_Table (Rec_Type)));
-                  while Present (ADT) loop
-                     Aux_N := Node (ADT);
-
-                     --  Initialize the pointer to the secondary DT associated
-                     --  with the interface
-
-                     Append_To (Body_Stmts,
-                       Make_Assignment_Statement (Loc,
-                         Name =>
-                           Make_Selected_Component (Loc,
-                             Prefix => Make_Identifier (Loc, Name_uInit),
-                             Selector_Name =>
-                               New_Reference_To (Aux_Comp, Loc)),
-                         Expression =>
-                           New_Reference_To (Aux_N, Loc)));
-
-                     --  Generate:
-                     --    Set_Offset_To_Top (DT_Ptr, n);
-
-                     Append_To (Body_Stmts,
-                       Make_Procedure_Call_Statement (Loc,
-                         Name => New_Reference_To (RTE (RE_Set_Offset_To_Top),
-                                                   Loc),
-                         Parameter_Associations => New_List (
-                           Unchecked_Convert_To (RTE (RE_Tag),
-                             New_Reference_To (Aux_N, Loc)),
-                           Unchecked_Convert_To (RTE (RE_Storage_Offset),
-                             Make_Attribute_Reference (Loc,
-                               Prefix         =>
-                                Make_Selected_Component (Loc,
-                                  Prefix         => Make_Identifier (Loc,
-                                                      Name_uInit),
-                                  Selector_Name  => New_Reference_To
-                                                      (Aux_Comp, Loc)),
-                              Attribute_Name => Name_Position)))));
-
-                     Aux_Comp := Next_Tag_Component (Aux_Comp);
-                     Next_Elmt (ADT);
-                  end loop;
+               if Ada_Version >= Ada_05
+                 and then not Is_Interface (Rec_Type)
+               then
+                  Init_Secondary_Tags (Rec_Type);
                end if;
 
             else
@@ -4480,36 +4525,6 @@ package body Exp_Ch3 is
                Expand_Tagged_Root (Def_Id);
             end if;
 
-            --  Build the secondary tables
-
-            if not Java_VM
-              and then Present (Abstract_Interfaces (Def_Id))
-              and then not Is_Empty_Elmt_List (Abstract_Interfaces (Def_Id))
-            then
-               declare
-                  E      : Entity_Id;
-                  Result : List_Id;
-                  ADT    : Elist_Id := Access_Disp_Table (Def_Id);
-
-               begin
-                  E := First_Entity (Def_Id);
-                  while Present (E) loop
-                     if Is_Tag (E) and then Chars (E) /= Name_uTag then
-                        Make_Abstract_Interface_DT
-                          (AI_Tag          => E,
-                           Acc_Disp_Tables => ADT,
-                           Result          => Result);
-
-                        Append_Freeze_Actions (Def_Id, Result);
-                     end if;
-
-                     Next_Entity (E);
-                  end loop;
-
-                  Set_Access_Disp_Table (Def_Id, ADT);
-               end;
-            end if;
-
             --  Unfreeze momentarily the type to add the predefined primitives
             --  operations. The reason we unfreeze is so that these predefined
             --  operations will indeed end up as primitive operations (which
@@ -4533,7 +4548,55 @@ package body Exp_Ch3 is
             --  dispatching mechanism is handled internally by the JVM.
 
             if not Java_VM then
-               Append_Freeze_Actions (Def_Id, Make_DT (Def_Id));
+
+               --  Ada 2005 (AI-251): Build the secondary dispatch tables
+
+               declare
+                  ADT : Elist_Id := Access_Disp_Table (Def_Id);
+
+                  procedure Add_Secondary_Tables (Typ : Entity_Id);
+                  --  Comment required ???
+
+                  --------------------------
+                  -- Add_Secondary_Tables --
+                  --------------------------
+
+                  procedure Add_Secondary_Tables (Typ : Entity_Id) is
+                     E      : Entity_Id;
+                     Result : List_Id;
+
+                  begin
+                     if Etype (Typ) /= Typ then
+                        Add_Secondary_Tables (Etype (Typ));
+                     end if;
+
+                     if Present (Abstract_Interfaces (Typ))
+                       and then not Is_Empty_Elmt_List
+                                      (Abstract_Interfaces (Typ))
+                     then
+                        E := First_Entity (Typ);
+                        while Present (E) loop
+                           if Is_Tag (E) and then Chars (E) /= Name_uTag then
+                              Make_Abstract_Interface_DT
+                                (AI_Tag          => E,
+                                 Acc_Disp_Tables => ADT,
+                                 Result          => Result);
+
+                              Append_Freeze_Actions (Def_Id, Result);
+                           end if;
+
+                           Next_Entity (E);
+                        end loop;
+                     end if;
+                  end Add_Secondary_Tables;
+
+               --  Start of processing to build secondary dispatch tables
+
+               begin
+                  Add_Secondary_Tables  (Def_Id);
+                  Set_Access_Disp_Table (Def_Id, ADT);
+                  Append_Freeze_Actions (Def_Id, Make_DT (Def_Id));
+               end;
             end if;
 
             --  Make sure that the primitives Initialize, Adjust and Finalize
@@ -5681,7 +5744,7 @@ package body Exp_Ch3 is
 
         Ret_Type => Standard_Integer));
 
-      --  Specs for dispatching stream attributes.
+      --  Specs for dispatching stream attributes
 
       declare
          Stream_Op_TSS_Names :
