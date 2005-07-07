@@ -13491,7 +13491,7 @@ thumb_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
       if (l_mask)
 	{
 	  thumb_pushpop (f, l_mask, 1, &cfa_offset, l_mask);
-	  offset = bit_count (l_mask);
+	  offset = bit_count (l_mask) * UNITS_PER_WORD;
 	}
       else
 	offset = 0;

@@ -1,3 +1,8 @@
+2005-07-07  Khem Raj  <kraj@mvista.com>
+
+	* config/arm/arm.c (thumb_output_function_prologue): Calculate offset
+	in bytes, not words.
+
 2005-07-07  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (arm_pad_arg_upward): Compare return value of
