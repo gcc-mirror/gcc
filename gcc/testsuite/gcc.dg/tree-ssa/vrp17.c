@@ -19,19 +19,12 @@ union tree_node
   struct tree_exp exp;
 };
 int
-gimplify_for_stmt (tree * stmt_p, tree * pre_p)
+gimplify_for_stmt (tree stmt)
 {
-  tree stmt = *stmt_p;
-  arf (({
-	  if (3 >= tree_code_length[stmt->common.code])
-	    abort ();
-	  stmt->exp.operands[3];
-        }),
-       ({
-	  if (2 >= tree_code_length[stmt->common.code])
-	    abort ();
-          stmt->exp.operands[2];
-        }));
+  if (2 >= tree_code_length[stmt->common.code])
+    abort ();
+  if (3 >= tree_code_length[stmt->common.code])
+    abort ();
 }
 
 /* { dg-final { scan-tree-dump-times "== 3" 1 "vrp" } } */
