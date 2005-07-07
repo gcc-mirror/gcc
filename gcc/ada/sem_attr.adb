@@ -1101,13 +1101,64 @@ package body Sem_Attr is
       -------------------------------
 
       procedure Check_Not_Incomplete_Type is
+         E   : Entity_Id;
+         Typ : Entity_Id;
+
       begin
+         --  Ada 2005 (AI-50217, AI-326): If the prefix is an explicit
+         --  dereference we have to check wrong uses of incomplete types
+         --  (other wrong uses are checked at their freezing point).
+
+         --  Example 1: Limited-with
+
+         --    limited with Pkg;
+         --    package P is
+         --       type Acc is access Pkg.T;
+         --       X : Acc;
+         --       S : Integer := X.all'Size;                    -- ERROR
+         --    end P;
+
+         --  Example 2: Tagged incomplete
+
+         --     type T is tagged;
+         --     type Acc is access all T;
+         --     X : Acc;
+         --     S : constant Integer := X.all'Size;             -- ERROR
+         --     procedure Q (Obj : Integer := X.all'Alignment); -- ERROR
+
+         if Ada_Version >= Ada_05
+           and then Nkind (P) = N_Explicit_Dereference
+         then
+            E := P;
+            while Nkind (E) = N_Explicit_Dereference loop
+               E := Prefix (E);
+            end loop;
+
+            if From_With_Type (Etype (E)) then
+               Error_Attr
+                 ("prefix of % attribute cannot be an incomplete type", P);
+
+            else
+               if Is_Access_Type (Etype (E)) then
+                  Typ := Directly_Designated_Type (Etype (E));
+               else
+                  Typ := Etype (E);
+               end if;
+
+               if Ekind (Typ) = E_Incomplete_Type
+                 and then not Present (Full_View (Typ))
+               then
+                  Error_Attr
+                    ("prefix of % attribute cannot be an incomplete type", P);
+               end if;
+            end if;
+         end if;
+
          if not Is_Entity_Name (P)
            or else not Is_Type (Entity (P))
            or else In_Default_Expression
          then
             return;
-
          else
             Check_Fully_Declared (P_Type, P);
          end if;

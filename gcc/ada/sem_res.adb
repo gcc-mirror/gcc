@@ -4924,6 +4924,19 @@ package body Sem_Res is
         and then Ekind (Entity (Prefix (N))) = E_In_Parameter
       then
          null;
+
+      --  Ada 2005 (AI-326): Tagged incomplete types allowed. The wrong usages
+      --  are handled by Analyze_Access_Attribute, Analyze_Assignment, Analyze_
+      --  Object_Renaming, and Freeze_Entity.
+
+      elsif Ada_Version >= Ada_05
+        and then Is_Entity_Name (Prefix (N))
+        and then Ekind (Directly_Designated_Type (Etype (Prefix (N))))
+                   = E_Incomplete_Type
+        and then Is_Tagged_Type (Directly_Designated_Type (Etype (Prefix (N))))
+      then
+         null;
+
       else
          Check_Fully_Declared (Typ, N);
       end if;

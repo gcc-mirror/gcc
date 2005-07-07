@@ -2235,6 +2235,32 @@ package body Freeze is
                         Error_Msg_Qual_Level := 0;
                      end if;
 
+                     --  Ada 2005 (AI-326): Check wrong use of tag incomplete
+                     --  types with unknown discriminants. For example:
+
+                     --    type T (<>) is tagged;
+                     --    procedure P (X : access T); -- ERROR
+                     --    procedure P (X : T);        -- ERROR
+
+                     if not From_With_Type (F_Type) then
+                        if Is_Access_Type (F_Type) then
+                           F_Type := Designated_Type (F_Type);
+                        end if;
+
+                        if Ekind (F_Type) = E_Incomplete_Type
+                          and then Is_Tagged_Type (F_Type)
+                          and then not Is_Class_Wide_Type (F_Type)
+                          and then No (Full_View (F_Type))
+                          and then Unknown_Discriminants_Present
+                                     (Parent (F_Type))
+                          and then No (Stored_Constraint (F_Type))
+                        then
+                           Error_Msg_N
+                             ("(Ada 2005): invalid use of unconstrained tagged"
+                              & " incomplete type", E);
+                        end if;
+                     end if;
+
                      Next_Formal (Formal);
                   end loop;
 
@@ -2259,6 +2285,20 @@ package body Freeze is
                         Error_Msg_N
                           ("?foreign convention function& should not " &
                            "return unconstrained array", E);
+
+                     --  Ada 2005 (AI-326): Check wrong use of tagged
+                     --  incomplete type
+                     --
+                     --    type T is tagged;
+                     --    function F (X : Boolean) return T; -- ERROR
+
+                     elsif Ekind (Etype (E)) = E_Incomplete_Type
+                       and then Is_Tagged_Type (Etype (E))
+                       and then No (Full_View (Etype (E)))
+                     then
+                        Error_Msg_N
+                          ("(Ada 2005): invalid use of tagged incomplete type",
+                           E);
                      end if;
                   end if;
                end;
@@ -2948,15 +2988,55 @@ package body Freeze is
 
             Freeze_Subprogram (E);
 
+            --  AI-326: Check wrong use of tag incomplete type
+            --
+            --    type T is tagged;
+            --    type Acc is access function (X : T) return T; -- ERROR
+
+            if Ekind (Etype (E)) = E_Incomplete_Type
+              and then Is_Tagged_Type (Etype (E))
+              and then No (Full_View (Etype (E)))
+            then
+               Error_Msg_N
+                 ("(Ada 2005): invalid use of tagged incomplete type", E);
+            end if;
+
          --  For access to a protected subprogram, freeze the equivalent
          --  type (however this is not set if we are not generating code)
          --  or if this is an anonymous type used just for resolution).
 
-         elsif Ekind (E) = E_Access_Protected_Subprogram_Type
-           and then Operating_Mode = Generate_Code
-           and then Present (Equivalent_Type (E))
-         then
-            Freeze_And_Append (Equivalent_Type (E), Loc, Result);
+         elsif Ekind (E) = E_Access_Protected_Subprogram_Type then
+
+            --  AI-326: Check wrong use of tagged incomplete types
+
+            --    type T is tagged;
+            --    type As3D is access protected
+            --      function (X : Float) return T; -- ERROR
+
+            declare
+               Etyp : Entity_Id;
+
+            begin
+               Etyp := Etype (Directly_Designated_Type (E));
+
+               if Is_Class_Wide_Type (Etyp) then
+                  Etyp := Etype (Etyp);
+               end if;
+
+               if Ekind (Etyp) = E_Incomplete_Type
+                 and then Is_Tagged_Type (Etyp)
+                 and then No (Full_View (Etyp))
+               then
+                  Error_Msg_N
+                    ("(Ada 2005): invalid use of tagged incomplete type", E);
+               end if;
+            end;
+
+            if Operating_Mode = Generate_Code
+              and then Present (Equivalent_Type (E))
+            then
+               Freeze_And_Append (Equivalent_Type (E), Loc, Result);
+            end if;
          end if;
 
          --  Generic types are never seen by the back-end, and are also not

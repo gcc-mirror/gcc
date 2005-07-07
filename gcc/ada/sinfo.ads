@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2762,7 +2762,7 @@ package Sinfo is
       -----------------------------------------
 
       --  INCOMPLETE_TYPE_DECLARATION ::=
-      --    type DEFINING_IDENTIFIER [DISCRIMINANT_PART];
+      --    type DEFINING_IDENTIFIER [DISCRIMINANT_PART] [IS TAGGED];
 
       --  N_Incomplete_Type_Declaration
       --  Sloc points to TYPE
@@ -2771,6 +2771,7 @@ package Sinfo is
       --   discriminant part, or if the discriminant part is an
       --   unknown discriminant part)
       --  Unknown_Discriminants_Present (Flag13) set if (<>) discriminant
+      --  Tagged_Present (Flag15)
 
       ----------------------------
       -- 3.11  Declarative Part --
@@ -3947,7 +3948,7 @@ package Sinfo is
       --   parent library unit package name is present.
       --  Identifier (Node1)
 
-      --  Note that the identifier can also be an operator symbol here.
+      --  Note that the identifier can also be an operator symbol here
 
       ------------------------------
       -- 6.1  Defining Designator --
@@ -4534,7 +4535,7 @@ package Sinfo is
       --      HANDLED_SEQUENCE_OF_STATEMENTS
       --    end [task_IDENTIFIER];
 
-      --  Gigi restriction: This node never appears.
+      --  Gigi restriction: This node never appears
 
       --  N_Task_Body
       --  Sloc points to TASK
@@ -4625,7 +4626,7 @@ package Sinfo is
 
       --  Note: protected bodies are not allowed in Ada 83 mode
 
-      --  Gigi restriction: This node never appears.
+      --  Gigi restriction: This node never appears
 
       --  N_Protected_Body
       --  Sloc points to PROTECTED
@@ -4675,7 +4676,7 @@ package Sinfo is
       --        HANDLED_SEQUENCE_OF_STATEMENTS
       --    end [entry_IDENTIFIER]];
 
-      --  Gigi restriction: This node never appears.
+      --  Gigi restriction: This node never appears
 
       --  Note: there are no explicit declarations allowed in an accept
       --  statement. However, the implicit declarations for any statement
@@ -4714,7 +4715,7 @@ package Sinfo is
       --  the ENTRY_BODY_FORMAL_PART to avoid the N_Entry_Body node getting
       --  too full (it would otherwise have too many fields)
 
-      --  Gigi restriction: This node never appears.
+      --  Gigi restriction: This node never appears
 
       --  N_Entry_Body
       --  Sloc points to ENTRY
@@ -4737,7 +4738,7 @@ package Sinfo is
       --  formal part itself. Also this means that the barrier condition
       --  always has somewhere to be stored.
 
-      --  Gigi restriction: This node never appears.
+      --  Gigi restriction: This node never appears
 
       --  N_Entry_Body_Formal_Part
       --  Sloc points to first token
@@ -4758,7 +4759,7 @@ package Sinfo is
       --  ENTRY_INDEX_SPECIFICATION ::=
       --    for DEFINING_IDENTIFIER in DISCRETE_SUBTYPE_DEFINITION
 
-      --  Gigi restriction: This node never appears.
+      --  Gigi restriction: This node never appears
 
       --  N_Entry_Index_Specification
       --  Sloc points to FOR
@@ -4774,7 +4775,7 @@ package Sinfo is
       --  The parser may generate a procedure call for this construct. The
       --  semantic pass must correct this misidentification where needed.
 
-      --  Gigi restriction: This node never appears.
+      --  Gigi restriction: This node never appears
 
       --  N_Entry_Call_Statement
       --  Sloc points to first token of name
@@ -4791,7 +4792,7 @@ package Sinfo is
 
       --  Note: requeue statements are not permitted in Ada 83 mode
 
-      --  Gigi restriction: This node never appears.
+      --  Gigi restriction: This node never appears
 
       --  N_Requeue_Statement
       --  Sloc points to REQUEUE
@@ -4814,7 +4815,7 @@ package Sinfo is
 
       --  Note: delay until statements are not permitted in Ada 83 mode
 
-      --  Gigi restriction: This node never appears.
+      --  Gigi restriction: This node never appears
 
       --  N_Delay_Until_Statement
       --  Sloc points to DELAY
@@ -4826,7 +4827,7 @@ package Sinfo is
 
       --  DELAY_RELATIVE_STATEMENT ::= delay delay_EXPRESSION;
 
-      --  Gigi restriction: This node never appears.
+      --  Gigi restriction: This node never appears
 
       --  N_Delay_Relative_Statement
       --  Sloc points to DELAY
@@ -4857,7 +4858,7 @@ package Sinfo is
       --      SEQUENCE_OF_STATEMENTS]
       --    end select;
 
-      --  Gigi restriction: This node never appears.
+      --  Gigi restriction: This node never appears
 
       --  Note: the guard expression, if present, appears in the node for
       --  the select alternative.
@@ -4892,7 +4893,7 @@ package Sinfo is
       --  ACCEPT_ALTERNATIVE ::=
       --    ACCEPT_STATEMENT [SEQUENCE_OF_STATEMENTS]
 
-      --  Gigi restriction: This node never appears.
+      --  Gigi restriction: This node never appears
 
       --  N_Accept_Alternative
       --  Sloc points to ACCEPT
@@ -4909,7 +4910,7 @@ package Sinfo is
       --  DELAY_ALTERNATIVE ::=
       --    DELAY_STATEMENT [SEQUENCE_OF_STATEMENTS]
 
-      --  Gigi restriction: This node never appears.
+      --  Gigi restriction: This node never appears
 
       --  N_Delay_Alternative
       --  Sloc points to DELAY
@@ -4924,7 +4925,7 @@ package Sinfo is
 
       --  TERMINATE_ALTERNATIVE ::= terminate;
 
-      --  Gigi restriction: This node never appears.
+      --  Gigi restriction: This node never appears
 
       --  N_Terminate_Alternative
       --  Sloc points to TERMINATE
@@ -4943,7 +4944,7 @@ package Sinfo is
       --      DELAY_ALTERNATIVE
       --    end select;
 
-      --  Gigi restriction: This node never appears.
+      --  Gigi restriction: This node never appears
 
       --  N_Timed_Entry_Call
       --  Sloc points to SELECT
@@ -4957,7 +4958,7 @@ package Sinfo is
       --  ENTRY_CALL_ALTERNATIVE ::=
       --    ENTRY_CALL_STATEMENT [SEQUENCE_OF_STATEMENTS]
 
-      --  Gigi restriction: This node never appears.
+      --  Gigi restriction: This node never appears
 
       --  N_Entry_Call_Alternative
       --  Sloc points to first token of entry call statement
@@ -4976,7 +4977,7 @@ package Sinfo is
       --      SEQUENCE_OF_STATEMENTS
       --    end select;
 
-      --  Gigi restriction: This node never appears.
+      --  Gigi restriction: This node never appears
 
       --  N_Conditional_Entry_Call
       --  Sloc points to SELECT
@@ -4996,7 +4997,7 @@ package Sinfo is
 
       --  Note: asynchronous select is not permitted in Ada 83 mode
 
-      --  Gigi restriction: This node never appears.
+      --  Gigi restriction: This node never appears
 
       --  N_Asynchronous_Select
       --  Sloc points to SELECT
@@ -5010,7 +5011,7 @@ package Sinfo is
       --  TRIGGERING_ALTERNATIVE ::=
       --    TRIGGERING_STATEMENT [SEQUENCE_OF_STATEMENTS]
 
-      --  Gigi restriction: This node never appears.
+      --  Gigi restriction: This node never appears
 
       --  N_Triggering_Alternative
       --  Sloc points to first token of triggering statement
@@ -5030,7 +5031,7 @@ package Sinfo is
 
       --  ABORTABLE_PART ::= SEQUENCE_OF_STATEMENTS
 
-      --  Gigi restriction: This node never appears.
+      --  Gigi restriction: This node never appears
 
       --  N_Abortable_Part
       --  Sloc points to ABORT
@@ -5042,7 +5043,7 @@ package Sinfo is
 
       --  ABORT_STATEMENT ::= abort task_NAME {, task_NAME};
 
-      --  Gigi restriction: This node never appears.
+      --  Gigi restriction: This node never appears
 
       --  N_Abort_Statement
       --  Sloc points to ABORT
@@ -5390,7 +5391,7 @@ package Sinfo is
       --  is true even in the case of an accept statement (see description of
       --  the N_Accept_Statement node).
 
-      --  End_Label refers to the containing construct.
+      --  End_Label refers to the containing construct
 
       -----------------------------
       -- 11.2  Exception Handler --
@@ -6192,7 +6193,7 @@ package Sinfo is
       --  an expanded name node to a selected component node to be done
       --  easily, see Sinfo.CN.Change_Selected_Component_To_Expanded_Name.
 
-      --  There is no special sprint syntax for an expanded name.
+      --  There is no special sprint syntax for an expanded name
 
       --  N_Expanded_Name
       --  Sloc points to the period
@@ -6448,7 +6449,7 @@ package Sinfo is
       --  with all checks off, regardless of the current setting of scope
       --  suppress flags.
 
-      --  Sprint syntax: `(expression).
+      --  Sprint syntax: `(expression)
 
       --  Note: this node is always removed from the tree (and replaced by
       --  its constituent expression) on completion of analysis, so it only
@@ -6478,7 +6479,7 @@ package Sinfo is
       --  clearly a function call to an instantiation of Unchecked_Conversion
       --  is not a variable in any case.
 
-      --  Sprint syntax: subtype-mark!(expression).
+      --  Sprint syntax: subtype-mark!(expression)
 
       --  N_Unchecked_Type_Conversion
       --  Sloc points to related node in source
