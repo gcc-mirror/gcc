@@ -5496,6 +5496,7 @@ loop_givs_rescan (struct loop *loop, struct iv_class *bl, rtx *reg_map)
 						  v->new_reg));
 	  else if (GET_CODE (*v->location) == PLUS
 		   && REG_P (XEXP (*v->location, 0))
+		   && REG_P (v->new_reg)
 		   && CONSTANT_P (XEXP (*v->location, 1)))
 	    loop_insn_emit_before (loop, 0, v->insn,
 				   gen_move_insn (XEXP (*v->location, 0),

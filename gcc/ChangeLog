@@ -1,3 +1,8 @@
+2005-07-07  John David Anglin  <dave.anglin@nrc-crc.gc.ca>
+
+	PR middle-end/22239
+	* loop.c (loop_givs_rescan): Check that v->new_reg is a REG.
+
 2005-07-07  Khem Raj  <kraj@mvista.com>
 
 	* config/arm/arm.c (thumb_output_function_prologue): Calculate offset
