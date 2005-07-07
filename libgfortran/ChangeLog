@@ -1,3 +1,16 @@
+2005-07-07  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/21594
+	* intrinsics/eoshift0.c:  If abs(shift) > len, fill the
+	the whole array with the boundary value, but don't overrun it.
+	* intrinsics/eoshift2.c:  Likewise.
+	* m4/eoshift1.m4:  Likewise.
+	* m4/eoshift3.m4:  Likewise.
+	* generated/eoshift1_4.c:  Regenerated.
+	* generated/eoshift1_8.c:  Regenerated.
+	* generated/eoshift3_4.c:  Regenerated.
+	* generated/eoshift3_8.c:  Regenerated.
+
 2005-07-07  Feng Wang  <fengwang@nudt.edu.cn>
 
 	PR fortran/16531
