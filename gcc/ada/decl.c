@@ -3426,8 +3426,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    if (TREE_CODE (gnu_param_type) == RECORD_TYPE
 		&& TYPE_IS_PADDING_P (gnu_param_type)
 		&& (req_by_ref || Has_Foreign_Convention (gnat_entity)
-		    || !must_pass_by_ref (TREE_TYPE (TYPE_FIELDS
-						     (gnu_param_type)))))
+		    || (!must_pass_by_ref (TREE_TYPE (TYPE_FIELDS
+					              (gnu_param_type)))
+			&& (req_by_copy
+			    || !default_pass_by_ref (TREE_TYPE
+			    			      (TYPE_FIELDS
+						       (gnu_param_type)))))))
 	      gnu_param_type = TREE_TYPE (TYPE_FIELDS (gnu_param_type));
 
 	    /* If this is an IN parameter it is read-only, so make a variant
