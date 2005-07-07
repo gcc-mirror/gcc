@@ -1,3 +1,148 @@
+2005-07-07  Pascal Obry  <obry@adacore.com>
+
+	* g-socthi-mingw.adb (C_Inet_Addr): New body used to convert the
+	returned type on Windows.
+
+	* g-socthi-mingw.ads (C_Inet_Addr): Remove pragma Import for this
+	routine.
+
+	* g-socket.adb (Inet_Addr): Check for empty Image and raises an
+	exception in this case.
+	Simplify the code as "Image (Image'Range)" = "Image".
+
+2005-07-07  Vincent Celier  <celier@adacore.com>
+
+	* bindgen.adb (Gen_Output_File_C): When switch -a was specified, put
+	the destructor/constructor attributes for <lib>final/<lib>init.
+
+	* gnatbind.adb (Gnatbind): Allow -a to be used in conjunction with -C
+
+2005-07-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (gnat_to_gnu_entity) <E_Procedure>: Do not strip the padding
+	type if the parameter is not passed by copy but reference by default.
+
+2005-07-07  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Build_Record_Init_Proc/Freeze_Record_Type):
+	Reimplementation of the support for abstract interface types in order
+	to leave the code more clear and easy to maintain.
+
+	* exp_ch6.adb (Freeze_Subprogram): Reimplementation of the support for
+	abstract interface types in order to leave the code clearer and easier
+	to maintain.
+
+	* exp_disp.ads, exp_disp.adb (Fill_DT_Entry): Part of its functionality
+	is now implemented by the new subprogram Fill_Secondary_DT_Entry.
+	(Fill_Secondary_DT_Entry): Generate the code necessary to fill the
+	appropriate entry of the secondary dispatch table.
+	(Make_DT): Add code to inherit the secondary dispatch tables of
+	the ancestors.
+
+	* exp_util.adb (Find_Interface_Tag/Find_Interface_ADT): Instead of
+	implementing both functionalities by means of a common routine, each
+	routine has its own code.
+
+2005-07-07  Javier Miranda  <miranda@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Check wrong uses of tag incomplete types.
+
+	* par-ch3.adb (P_Type_Declaration): Give support to tagged incomplete
+	types:
+	--
+	  type DEFINING_IDENTIFIER [DISCRIMINANT_PART] [IS TAGGED];
+	--
+
+	* sem_attr.adb (Check_Not_Incomplete_Type): Additional checks for wrong
+	use of tag incomplete types.
+
+	* sem_ch3.adb (Analyze_Incomplete_Type): Add mininum decoration to
+	give support to tagged incomplete types.
+
+	* sem_ch5.adb (Analyze_Case_Statement): In generated code, if the
+	expression is a discriminant reference and its type is private, as can
+	happen within a stream operation for a mutable record, use the full
+	view of the type to resolve the case alternatives.
+	(Analyze_Assignment): Check wrong dereference of incomplete types.
+
+	* sem_ch6.adb (Process_Formals): Allow the use of tagged incomplete
+	types.
+
+	* sem_res.adb (Resolve_Explicit_Dereference): Allow the use of tagged
+	incomplete types.
+
+	* sinfo.adb (Taggged_Present/Set_Taggged_Present): Applicable to
+	N_Incomplete_Type_Declaration nodes.
+
+	* sinfo.ads (N_Incomplete_Type_Declaration): Addition of attribute
+	Tag_Present to give support to tagged incomplete types:
+	--
+	  type DEFINING_IDENTIFIER [DISCRIMINANT_PART] [IS TAGGED];
+	--
+
+2005-07-07  Olivier Hainque  <hainque@adacore.com>
+
+	PR ada/22301
+
+	* raise.c: Only include unwind.h if IN_RTS, and provide dummy type
+	definitions for the Unwind wrappers in the compiler case.
+
+2005-07-07  Ed Schonberg  <schonberg@adacore.com>
+	    Javier Miranda  <miranda@adacore.com>
+
+	* par-load.adb (Load): If a child unit is loaded through a limited_with
+	clause, each parent must be loaded as a limited unit as well.
+
+	* sem_ch10.adb (Previous_Withed_Unit): Better name for
+	Check_Withed_Unit. Return true if there is a previous with_clause for
+	this unit, whether limited or not.
+	(Expand_Limited_With_Clause): Do not generate a limited_with_clause on
+	the current unit.
+	(Is_Visible_Through_Renamings): New local subprogram of install_limited
+	_withed_unit that checks if some package installed through normal with
+	clauses has a renaming declaration of package whose limited-view is
+	ready to be installed. This enforces the check of the rule 10.1.2 (21/2)
+	of the current Draft document for Ada 2005.
+	(Analyze_Context): Complete the list of compilation units that
+	are allowed to contain limited-with clauses. It also contains
+	checks that were previously done by Install_Limited_Context_Clauses.
+	This makes the code more clear and easy to maintain.
+	(Expand_Limited_With_Clause) It is now a local subprogram of
+	Install_Limited_Context_Clauses, and contains the code that adds
+	the implicit limited-with clauses for parents of child units.
+	This functionality was prevously done by Analyze_Context.
+
+	* sem_ch4.adb (Analyze_Selected_Component): Check wrong use of
+	incomplete type.
+
+	* sem_ch7.adb (Analyze_Package_Declaration): Check if the package has
+	been erroneously named in a limited-with clause of its own context.
+	In this case the error has been previously notified by Analyze_Context.
+
+2005-07-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Find_Direct_Name): Handle properly the case of a
+	generic package that contains local declarations with the same name.
+	(Analyze_Object_Renaming): Check wrong renaming of incomplete type.
+
+2005-07-07  Bernard Banner  <banner@adacore.com>
+
+	* tracebak.c: Refine tracebacks to use Unwind_Backtrace scheme on
+	ia64 platform only on platforms that you the GCC unwind library
+	rather than the system unwind library.
+
+2005-07-07  Thomas Quinot  <quinot@adacore.com>
+
+	* expect.c: Minor reformatting
+
+2005-07-07  Sergey Rybin  <rybin@adacore.com>
+
+	* vms_data.ads: Add VMS qualifiers for new gnatpp switch
+	--no-separate-is
+
+	* gnat_ugn.texi: Add description for new gnatpp option
+	(--no-separate-is)
+
 2005-07-04  Thomas Quinot  <quinot@adacore.com>
 
 	* g-expect-vms.adb, g-expect.ads, g-expect.adb
