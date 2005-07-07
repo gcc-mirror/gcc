@@ -1,7 +1,7 @@
 /* Sanity check for GNU-runtime version of constant strings,
    regardless of runtime used on target system.  */
 
-/* { dg-do run } */
+/* { dg-do compile } */
 /* { dg-options "-fgnu-runtime" } */
 
 #include <objc/Object.h>
