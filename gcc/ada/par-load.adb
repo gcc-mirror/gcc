@@ -301,6 +301,8 @@ begin
       end if;
 
    --  If current unit is a child unit spec, load its parent
+   --  If the child unit is loaded through a limited with, the parent
+   --  must be as well.
 
    elsif Nkind (Unit (Curunit)) = N_Package_Declaration
      or else Nkind (Unit (Curunit)) =  N_Subprogram_Declaration
@@ -323,7 +325,8 @@ begin
              (Load_Name  => Spec_Name,
               Required   => True,
               Subunit    => False,
-              Error_Node => Curunit);
+              Error_Node => Curunit,
+              From_Limited_With => From_Limited_With);
 
          if Unum /= No_Unit then
             Set_Parent_Spec (Unit (Curunit), Cunit (Unum));
