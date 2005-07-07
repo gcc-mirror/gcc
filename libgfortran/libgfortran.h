@@ -235,7 +235,7 @@ descriptor_dimension;
 #define GFC_ARRAY_DESCRIPTOR(r, type) \
 struct {\
   type *data;\
-  type *base;\
+  size_t offset;\
   index_type dtype;\
   descriptor_dimension dim[r];\
 }

@@ -100,7 +100,7 @@ matmul_c8 (gfc_array_c8 * retarray, gfc_array_c8 * a, gfc_array_c8 * b)
 
       retarray->data
 	= internal_malloc_size (sizeof (GFC_COMPLEX_8) * size0 ((array_t *) retarray));
-      retarray->base = 0;
+      retarray->offset = 0;
     }
 
   abase = a->data;

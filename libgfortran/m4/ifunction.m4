@@ -77,7 +77,7 @@ name`'rtype_qual`_'atype_code (rtype *retarray, atype *array, index_type *pdim)
 	 = internal_malloc_size (sizeof (rtype_name)
 		 		 * retarray->dim[rank-1].stride
 				 * extent[rank-1]);
-      retarray->base = 0;
+      retarray->offset = 0;
       retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
     }
   else
@@ -222,7 +222,7 @@ void
 	 = internal_malloc_size (sizeof (rtype_name)
 		 		 * retarray->dim[rank-1].stride
 				 * extent[rank-1]);
-      retarray->base = 0;
+      retarray->offset = 0;
       retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
     }
   else

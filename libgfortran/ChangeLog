@@ -1,3 +1,55 @@
+2005-07-07  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* libgfortran.h (GFC_ARRAY_DESCRIPTOR): Replace 'type *base' by
+	'size_t offset'.
+	* intrinsics/cshift0.c, intrinsics/eoshift0.c,
+	intrinsics/eoshift2.c,intrinsics/pack_generic.c,
+	intrinsics/reshape_generic.c, intrinsics/spread_generic.c,
+	intrinsics/transpose_generic.c, intrinsics/unpack_generic,
+	m4/cshift1.m4, m4/eoshift1.m4, m4/eoshift3.m4, m4/iforeach.m4,
+	m4/ifunction.m4, m4/matmul.m4, m4/matmull.m4, m4/reshape.m4,
+	m4,transpose.m4: Set renamed field 'offset' to zero instead of
+	'base'.
+	* generated/all_l4.c, generated/all_l8.c,
+	generated/any_l4.c, generated/any_l8.c, generated/count_4_l4.c,
+	generated/count_4_l8.c, generated/count_8_l4.c,
+	generated/count_8_l8.c, generated/chift1_4.c,
+	generated/cshift1_8.c, generated/eoshift1_4.c,
+	generated/eoshift1_8.c, generated/eoshift3_4.c,
+	generated/eoshift3_8.c, generated/matmul_c4.c,
+	generated/matmul_c8.c, generated/matmul_i4.c, matmul_i8.c,
+	generated/matmul_l4.c, generated/matmul_l8.c,
+	generated/matmul_r4.c, generated/matmul_r8.c,
+	generated/maxloc0_4_i4.c, generated/maxloc0_4_i8.c,
+	generated/maxloc0_4_r4.c, generated/maxloc0_4_r8.c,
+	generated/maxloc0_8_i4.c, generated/maxloc0_8_i8.c,
+	generated/maxloc0_8_r4.c, generated/maxloc0_8_r8.c,
+	generated/maxloc1_4_i4.c, generated/maxloc1_4_i8.c,
+	generated/maxloc1_4_r4.c, generated/maxloc1_4_r8.c,
+	generated/maxloc1_8_i4.c, generated/maxloc1_8_i8.c,
+	generated/maxloc1_8_r4.c, generated/maxloc1_8_r8.c,
+	generated/maxval_i4.c, generated/maxval_i8.c,
+	generated/maxval_r4.c, generated/maxval_r8.c,
+	generated/minloc0_4_i4.c, generated/minloc0_4_i8.c,
+	generated/minloc0_4_r4.c, generated/minloc0_4_r8.c,
+	generated/minloc0_8_i4.c, generated/minloc0_8_i8.c,
+	generated/minloc0_8_r4.c, generated/minloc0_8_r8.c,
+	generated/minloc1_4_i4.c, generated/minloc1_4_i8.c,
+	generated/minloc1_4_r4.c, generated/minloc1_4_r8.c,
+	generated/minloc1_8_i4.c, generated/minloc1_8_i8.c,
+	generated/minloc1_8_r4.c, generated/minloc1_8_r8.c,
+	generated/minval_i4.c, generated/minval_i8.c,
+	generated/minval_r4.c, generated/minval_r8.c,
+	generated/product_c4.c, generated/product_c8.c,
+	generated/product_i4.c, generated/product_i8.c,
+	generated/product_r4.c, generated/product_r8.c,
+	generated/reshape_c4.c, generated/reshape_c8.c,
+	generated/reshape_i4.c, generated/reshape_i8.c,
+	generated/sum_c4.c, generated/sum_c8.c, generated/sum_i4.c,
+	generated/sum_i8.c, generated/sum_r4.c, generated/sum_r8.c,
+	generated/transpose_c4.c, generated/transpose_c8.c,
+	generated/transpose_i4.c, generated/transpose_i8.c: Regenerate:
+
 2005-07-07  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/21594

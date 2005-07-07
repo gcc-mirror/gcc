@@ -105,7 +105,7 @@ spread (gfc_array_char *ret, const gfc_array_char *source,
 	      dim++;
 	    }
 	}
-      ret->base = 0;
+      ret->offset = 0;
       ret->data = internal_malloc_size (rs * size);
     }
   else

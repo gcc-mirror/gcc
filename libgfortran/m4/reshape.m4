@@ -99,7 +99,7 @@ reshape_`'rtype_ccode (rtype * ret, rtype * source, shape_type * shape,
 	  ret->dim[n].stride = rs;
 	  rs *= rex;
 	}
-      ret->base = 0;
+      ret->offset = 0;
       ret->data = internal_malloc_size ( rs * sizeof (rtype_name));
       ret->dtype = (source->dtype & ~GFC_DTYPE_RANK_MASK) | rdim;
     }

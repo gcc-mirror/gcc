@@ -201,7 +201,7 @@ pack (gfc_array_char *ret, const gfc_array_char *array,
       ret->dim[0].stride = 1;
 
       ret->data = internal_malloc_size (size * total);
-      ret->base = 0;
+      ret->offset = 0;
 
       if (total == 0)
 	/* In this case, nothing remains to be done.  */
@@ -342,7 +342,7 @@ pack_s (gfc_array_char *ret, const gfc_array_char *array,
 	      ret->dim[0].ubound = -1;
 	      ret->dim[0].stride = 1;
 	      ret->data = internal_malloc_size (0);
-	      ret->base = 0;
+	      ret->offset = 0;
 
 	      return;
 	    }
@@ -354,7 +354,7 @@ pack_s (gfc_array_char *ret, const gfc_array_char *array,
       ret->dim[0].stride = 1;
 
       ret->data = internal_malloc_size (size * total);
-      ret->base = 0;
+      ret->offset = 0;
     }
 
   rstride0 = ret->dim[0].stride * size;

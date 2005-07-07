@@ -93,7 +93,7 @@ maxval_i4 (gfc_array_i4 *retarray, gfc_array_i4 *array, index_type *pdim)
 	 = internal_malloc_size (sizeof (GFC_INTEGER_4)
 		 		 * retarray->dim[rank-1].stride
 				 * extent[rank-1]);
-      retarray->base = 0;
+      retarray->offset = 0;
       retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
     }
   else
@@ -239,7 +239,7 @@ mmaxval_i4 (gfc_array_i4 * retarray, gfc_array_i4 * array,
 	 = internal_malloc_size (sizeof (GFC_INTEGER_4)
 		 		 * retarray->dim[rank-1].stride
 				 * extent[rank-1]);
-      retarray->base = 0;
+      retarray->offset = 0;
       retarray->dtype = (array->dtype & ~GFC_DTYPE_RANK_MASK) | rank;
     }
   else

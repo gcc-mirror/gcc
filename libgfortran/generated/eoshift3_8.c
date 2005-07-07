@@ -95,7 +95,7 @@ eoshift3_8 (gfc_array_char *ret, gfc_array_char *array,
       int i;
 
       ret->data = internal_malloc_size (size * size0 ((array_t *)array));
-      ret->base = 0;
+      ret->offset = 0;
       ret->dtype = array->dtype;
       for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
         {
