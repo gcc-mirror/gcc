@@ -1,5 +1,12 @@
 2005-07-07  Kelley Cook  <kcook@gcc.gnu.org>
 
+	* config.table: Delete file.  Move former contents into ...
+	* configure.ac: ... here and escape any brackets for m4.
+	* Makefile.in (config.status): Remove dependency on config.table.
+	* configure: Regenerate.
+
+2005-07-07  Kelley Cook  <kcook@gcc.gnu.org>
+
 	* config.in: Regenerate for 6/20 change.
 
 2005-07-03  Steve Ellcey  <sje@cup.hp.com>
