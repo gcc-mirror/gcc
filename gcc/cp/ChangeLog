@@ -1,3 +1,10 @@
+2005-07-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* pt.c (type_unification_real): Remove allow_incomplete argument.
+	Remove unreachable code.
+	(fn_type_unification): Adjust call to type_unification_real.
+	(unify): Likewise.
+
 2005-07-05  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.in (class.o, decl2.o): Adjust dependencies.
