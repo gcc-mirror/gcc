@@ -2608,7 +2608,8 @@ set_storage_via_setmem (rtx object, rtx size, rtx val, unsigned int align)
 	  && ((pred = insn_data[(int) code].operand[3].predicate) == 0
 	      || (*pred) (opalign, VOIDmode)))
 	{
-	  rtx opsize,opchar;
+	  rtx opsize, opchar;
+	  enum machine_mode char_mode;
 	  rtx last = get_last_insn ();
 	  rtx pat;
 
@@ -2617,10 +2618,15 @@ set_storage_via_setmem (rtx object, rtx size, rtx val, unsigned int align)
 	  if (pred != 0 && ! (*pred) (opsize, mode))
 	    opsize = copy_to_mode_reg (mode, opsize);
 	  
-	  opchar = convert_to_mode (mode, val, 1);
-	  pred = insn_data[(int) code].operand[2].predicate;
-	  if (pred != 0 && ! (*pred) (opchar, mode))
-	    opchar = copy_to_mode_reg (mode, opchar);
+	  opchar = val;
+	  char_mode = insn_data[(int) code].operand[2].mode;
+	  if (char_mode != VOIDmode)
+	    {
+	      opchar = convert_to_mode (char_mode, opchar, 1);
+	      pred = insn_data[(int) code].operand[2].predicate;
+	      if (pred != 0 && ! (*pred) (opchar, char_mode))
+		opchar = copy_to_mode_reg (char_mode, opchar);
+	    }
 
 	  pat = GEN_FCN ((int) code) (object, opsize, opchar, opalign);
 	  if (pat)
