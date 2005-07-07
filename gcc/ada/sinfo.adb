@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2450,6 +2450,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Formal_Private_Type_Definition
+        or else NT (N).Nkind = N_Incomplete_Type_Declaration
         or else NT (N).Nkind = N_Private_Type_Declaration
         or else NT (N).Nkind = N_Record_Definition
         or else NT (N).Nkind = N_With_Type_Clause);
@@ -5001,6 +5002,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Formal_Private_Type_Definition
+        or else NT (N).Nkind = N_Incomplete_Type_Declaration
         or else NT (N).Nkind = N_Private_Type_Declaration
         or else NT (N).Nkind = N_Record_Definition
         or else NT (N).Nkind = N_With_Type_Clause);

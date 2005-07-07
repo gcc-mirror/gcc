@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,7 @@
 
 pragma Style_Checks (All_Checks);
 --  Turn off subprogram body ordering check. Subprograms are in order
---  by RM section rather than alphabetical
+--  by RM section rather than alphabetical.
 
 with Sinfo.CN; use Sinfo.CN;
 
@@ -228,7 +228,7 @@ package body Ch3 is
    --  | CONCURRENT_TYPE_DECLARATION
 
    --  INCOMPLETE_TYPE_DECLARATION ::=
-   --    type DEFINING_IDENTIFIER [DISCRIMINANT_PART];
+   --    type DEFINING_IDENTIFIER [DISCRIMINANT_PART] [IS TAGGED];
 
    --  PRIVATE_TYPE_DECLARATION ::=
    --    type DEFINING_IDENTIFIER [DISCRIMINANT_PART]
@@ -517,6 +517,24 @@ package body Ch3 is
 
             when Tok_Tagged =>
                Scan; -- past TAGGED
+
+               --  Ada 2005 (AI-326): If the words IS TAGGED appear, the type
+               --  is a tagged incomplete type.
+
+               if Ada_Version >= Ada_05
+                 and then Token = Tok_Semicolon
+               then
+                  Scan; -- past ;
+
+                  Decl_Node :=
+                    New_Node (N_Incomplete_Type_Declaration, Type_Loc);
+                  Set_Defining_Identifier           (Decl_Node, Ident_Node);
+                  Set_Tagged_Present                (Decl_Node);
+                  Set_Unknown_Discriminants_Present (Decl_Node, Unknown_Dis);
+                  Set_Discriminant_Specifications   (Decl_Node, Discr_List);
+
+                  return Decl_Node;
+               end if;
 
                if Token = Tok_Abstract then
                   Error_Msg_SC ("ABSTRACT must come before TAGGED");
@@ -1480,7 +1498,7 @@ package body Ch3 is
                Not_Null_Present := P_Null_Exclusion; --  Ada 2005 (AI-231)
                Set_Null_Exclusion_Present (Decl_Node, Not_Null_Present);
 
-               --  Access definition (AI-406) or subtype indication.
+               --  Access definition (AI-406) or subtype indication
 
                if Token = Tok_Access then
                   if Ada_Version < Ada_05 then
@@ -1589,7 +1607,7 @@ package body Ch3 is
 
             Acc_Node := P_Access_Definition (Null_Exclusion_Present => False);
 
-            --  Object declaration with access definition, or renaming.
+            --  Object declaration with access definition, or renaming
 
             if Token /= Tok_Renames then
                Decl_Node := New_Node (N_Object_Declaration, Ident_Sloc);
@@ -4183,7 +4201,7 @@ package body Ch3 is
 
       SIS_Entry_Active := False;
 
-      --  Test for assorted illegal declarations not diagnosed elsewhere.
+      --  Test for assorted illegal declarations not diagnosed elsewhere
 
       Decl := First (Decls);
 

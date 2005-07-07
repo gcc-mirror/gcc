@@ -339,6 +339,29 @@ package body Sem_Ch5 is
       --  to avoid scoping issues in the back-end.
 
       T1 := Etype (Lhs);
+
+      --  Ada 2005 (AI-50217, AI-326): Check wrong dereference of incomplete
+      --  type. For example:
+
+      --    limited with P;
+      --    package Pkg is
+      --      type Acc is access P.T;
+      --    end Pkg;
+
+      --    with Pkg; use Acc;
+      --    procedure Example is
+      --       A, B : Acc;
+      --    begin
+      --       A.all := B.all;  -- ERROR
+      --    end Example;
+
+      if Nkind (Lhs) = N_Explicit_Dereference
+        and then Ekind (T1) = E_Incomplete_Type
+      then
+         Error_Msg_N ("invalid use of incomplete type", Lhs);
+         return;
+      end if;
+
       Set_Assignment_Type (Lhs, T1);
 
       Resolve (Rhs, T1);
@@ -357,6 +380,17 @@ package body Sem_Ch5 is
       else
          Wrong_Type (Rhs, Etype (Lhs));
          return;
+      end if;
+
+      --  Ada 2005 (AI-326): In case of explicit dereference of incomplete
+      --  types, use the non-limited view if available
+
+      if Nkind (Rhs) = N_Explicit_Dereference
+        and then Ekind (T2) = E_Incomplete_Type
+        and then Is_Tagged_Type (T2)
+        and then Present (Non_Limited_View (T2))
+      then
+         T2 := Non_Limited_View (T2);
       end if;
 
       Set_Assignment_Type (Rhs, T2);
@@ -752,9 +786,30 @@ package body Sem_Ch5 is
    begin
       Unblocked_Exit_Count := 0;
       Exp := Expression (N);
-      Analyze_And_Resolve (Exp, Any_Discrete);
+      Analyze (Exp);
+
+      --  The expression must be of any discrete type. In rare cases, the
+      --  expander constructs a case statement whose expression has a private
+      --  type whose full view is discrete. This can happen when generating
+      --  a stream operation for a variant type after the type is frozen,
+      --  when the partial of view of the type of the discriminant is private.
+      --  In that case, use the full view to analyze case alternatives.
+
+      if not Is_Overloaded (Exp)
+        and then not Comes_From_Source (N)
+        and then Is_Private_Type (Etype (Exp))
+        and then Present (Full_View (Etype (Exp)))
+        and then Is_Discrete_Type (Full_View (Etype (Exp)))
+      then
+         Resolve (Exp, Etype (Exp));
+         Exp_Type := Full_View (Etype (Exp));
+
+      else
+         Analyze_And_Resolve (Exp, Any_Discrete);
+         Exp_Type := Etype (Exp);
+      end if;
+
       Check_Unset_Reference (Exp);
-      Exp_Type  := Etype (Exp);
       Exp_Btype := Base_Type (Exp_Type);
 
       --  The expression must be of a discrete type which must be determinable
@@ -1124,8 +1179,8 @@ package body Sem_Ch5 is
       --  assignment statements block to capture the bounds and perform
       --  required finalization actions in case a bound includes a function
       --  call that uses the temporary stack. We first pre-analyze a copy of
-      --  the range in order to determine the expected type, and analyze
-      --  and resolve the original bounds.
+      --  the range in order to determine the expected type, and analyze and
+      --  resolve the original bounds.
 
       procedure Check_Controlled_Array_Attribute (DS : Node_Id);
       --  If the bounds are given by a 'Range reference on a function call
@@ -1167,12 +1222,12 @@ package body Sem_Ch5 is
             Decl   : Node_Id;
 
          begin
-            --  If the bound is a constant or an object, no need for a
-            --  separate declaration. If the bound is the result of previous
-            --  expansion it is already analyzed and should not be modified.
-            --  Note that the Bound will be resolved later, if needed, as
-            --  part of the call to Make_Index (literal bounds may need to
-            --  be resolved to type Integer).
+            --  If the bound is a constant or an object, no need for a separate
+            --  declaration. If the bound is the result of previous expansion
+            --  it is already analyzed and should not be modified. Note that
+            --  the Bound will be resolved later, if needed, as part of the
+            --  call to Make_Index (literal bounds may need to be resolved to
+            --  type Integer).
 
             if Analyzed (Original_Bound) then
                return Original_Bound;

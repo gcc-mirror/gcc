@@ -1529,6 +1529,16 @@ package body Sem_Ch3 is
       Init_Size_Align (T);
       Set_Is_First_Subtype (T, True);
       Set_Etype (T, T);
+
+      --  Ada 2005 (AI-326): Mininum decoration to give support to tagged
+      --  incomplete types
+
+      if Tagged_Present (N) then
+         Set_Is_Tagged_Type (T);
+         Make_Class_Wide_Type (T);
+         Set_Primitive_Operations (T, New_Elmt_List);
+      end if;
+
       New_Scope (T);
 
       Set_Stored_Constraint (T, No_Elist);
@@ -7535,10 +7545,10 @@ package body Sem_Ch3 is
 
          while Present (I) loop
 
-            --  Protect against wrong usages. Example:
+            --  Protect against wrong uses. For example:
             --    type I is interface;
             --    type O is tagged null record;
-            --    type Wrong is new I and O with null record;
+            --    type Wrong is new I and O with null record; -- ERROR
 
             if Is_Interface (Etype (I)) then
 
@@ -14131,7 +14141,7 @@ package body Sem_Ch3 is
          H    : Entity_Id;
 
       begin
-         --  If there is a previous partial view, no need to create a new one.
+         --  If there is a previous partial view, no need to create a new one
 
          if Prev /= T then
             return;
