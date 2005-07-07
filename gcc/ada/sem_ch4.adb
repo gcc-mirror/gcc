@@ -2679,6 +2679,25 @@ package body Sem_Ch4 is
 
                Resolve (Name);
 
+               --  Ada 2005 (AI-50217): Check wrong use of incomplete type.
+               --  Example:
+
+               --    limited with Pkg;
+               --    package Pkg is
+               --       type Acc_Inc is access Pkg.T;
+               --       X : Acc_Inc;
+               --       N : Natural := X.all.Comp; -- ERROR
+               --    end Pkg;
+
+               if Nkind (Name) = N_Explicit_Dereference
+                 and then From_With_Type (Etype (Prefix (Name)))
+                 and then not Is_Potentially_Use_Visible (Etype (Name))
+               then
+                  Error_Msg_NE
+                    ("premature usage of incomplete}", Prefix (Name),
+                     Etype (Prefix (Name)));
+               end if;
+
                --  We never need an actual subtype for the case of a selection
                --  for a indexed component of a non-packed array, since in
                --  this case gigi generates all the checks and can find the

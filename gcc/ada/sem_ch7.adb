@@ -623,6 +623,17 @@ package body Sem_Ch7 is
       PF : Boolean;
 
    begin
+      --  Ada 2005 (AI-217): Check if the package has been erroneously named
+      --  in a limited-with clause of its own context. In this case the error
+      --  has been previously notified by Analyze_Context.
+
+      --     limited with Pkg; -- ERROR
+      --     package Pkg is ...
+
+      if From_With_Type (Id) then
+         return;
+      end if;
+
       Generate_Definition (Id);
       Enter_Name (Id);
       Set_Ekind (Id, E_Package);
