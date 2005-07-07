@@ -95,15 +95,36 @@ __gnat_unhandled_terminate (void)
 /* Below is the code related to the integration of the GCC mechanism for
    exception handling.  */
 
-#include "unwind.h"
-
 /* The names of a couple of "standard" routines for unwinding/propagation
    actually vary depending on the underlying GCC scheme for exception handling
    (SJLJ or DWARF). We need a consistently named interface to import from
-   a-except, so stubs are defined here.  */
+   a-except, so wrappers are defined here.
+
+   Besides, eventhough the compiler is never setup to use the GCC propagation
+   circuitry, it still relies on exceptions internally and part of the sources
+   to handle to exceptions are shared with the run-time library.  We need
+   dummy definitions for the wrappers to satisfy the linker in this case.
+
+   The types to be used by those wrappers in the run-time library are target
+   types exported by unwind.h.  We used to piggyback on them for the compiler
+   stubs, but there is no guarantee that unwind.h is always in sight so we
+   define our own set below.  These are dummy types as the wrappers are never
+   called in the compiler case.  */
+
+#ifdef IN_RTS
+
+#include "unwind.h"
 
 typedef struct _Unwind_Context _Unwind_Context;
 typedef struct _Unwind_Exception _Unwind_Exception;
+
+#else
+
+typedef void _Unwind_Context;
+typedef void _Unwind_Exception;
+typedef int  _Unwind_Reason_Code;
+
+#endif
 
 _Unwind_Reason_Code
 __gnat_Unwind_RaiseException (_Unwind_Exception *);
@@ -1088,7 +1109,7 @@ __gnat_eh_personality (int uw_version,
   return _URC_INSTALL_CONTEXT;
 }
 
-/* Define the consistently named stubs imported by Propagate_Exception.  */
+/* Define the consistently named wrappers imported by Propagate_Exception.  */
 
 #ifdef __USING_SJLJ_EXCEPTIONS__
 
@@ -1133,14 +1154,7 @@ __gnat_Unwind_ForcedUnwind (_Unwind_Exception *e,
 #else
 /* ! IN_RTS  */
 
-/* The calls to the GCC runtime interface for exception raising are currently
-   issued from a-exexpr.adb, which is used by both the runtime library and the
-   compiler.
-
-   As the compiler binary is not linked against the GCC runtime library, we
-   need also need stubs for this interface in the compiler case. We should not
-   be using the GCC eh mechanism for the compiler, however, so expect these
-   functions never to be called.  */
+/* Define the corresponding stubs for the compiler.  */
 
 /* We don't want fancy_abort here.  */
 #undef abort
