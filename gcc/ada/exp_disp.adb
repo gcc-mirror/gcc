@@ -902,6 +902,7 @@ package body Exp_Disp is
 
    function Expand_Interface_Thunk
      (N           : Node_Id;
+      Thunk_Alias : Entity_Id;
       Thunk_Id    : Entity_Id;
       Iface_Tag   : Entity_Id) return Node_Id
    is
@@ -910,7 +911,6 @@ package body Exp_Disp is
       Decl        : constant List_Id    := New_List;
       Formals     : constant List_Id    := New_List;
       Thunk_Tag   : constant Node_Id    := Iface_Tag;
-      Thunk_Alias : constant Entity_Id  := Alias (Entity (N));
       Target      : Entity_Id;
       New_Code    : Node_Id;
       Formal      : Node_Id;
@@ -950,11 +950,7 @@ package body Exp_Disp is
 
          if Is_Controlling_Formal (Formal) then
             Set_Parameter_Type (New_Formal,
-              New_Reference_To (Etype (First_Entity (Entity (N))), Loc));
-
-            --  Why is this line silently commented out ???
-
-            --  New_Reference_To (Etype (Formal), Loc));
+              New_Reference_To (Etype (First_Entity (N)), Loc));
          end if;
 
          Append_To (Formals, New_Formal);
@@ -1150,52 +1146,27 @@ package body Exp_Disp is
       end if;
 
       Analyze (New_Code);
-      Insert_After (N, New_Code);
       return New_Code;
    end Expand_Interface_Thunk;
 
-   -------------
-   -- Fill_DT --
-   -------------
+   -------------------
+   -- Fill_DT_Entry --
+   -------------------
 
    function Fill_DT_Entry
-     (Loc      : Source_Ptr;
-      Prim     : Entity_Id;
-      Thunk_Id : Entity_Id := Empty) return Node_Id
+     (Loc     : Source_Ptr;
+      Prim    : Entity_Id) return Node_Id
    is
       Typ     : constant Entity_Id := Scope (DTC_Entity (Prim));
-      DT_Ptr  : Entity_Id := Node (First_Elmt (Access_Disp_Table (Typ)));
-      Target  : Entity_Id;
-      Tag     : Entity_Id := First_Tag_Component (Typ);
-      Prim_Op : Entity_Id := Prim;
+      DT_Ptr  : constant Entity_Id :=
+                  Node (First_Elmt (Access_Disp_Table (Typ)));
+      Pos     : constant Uint      := DT_Position (Prim);
+      Tag     : constant Entity_Id := First_Tag_Component (Typ);
 
    begin
-      --  Ada 2005 (AI-251): If we have a thunk available then generate code
-      --  that saves its address in the secondary dispatch table of its
-      --  abstract interface; otherwise save the address of the primitive
-      --  subprogram in the main virtual table.
-
-      if Thunk_Id /= Empty then
-         Target := Thunk_Id;
-      else
-         Target := Prim;
+      if Pos = Uint_0 or else Pos > DT_Entry_Count (Tag) then
+         raise Program_Error;
       end if;
-
-      --  Ada 2005 (AI-251): If the subprogram is the alias of an abstract
-      --  interface subprogram then find the correct dispatch table pointer
-
-      if Present (Abstract_Interface_Alias (Prim)) then
-         Prim_Op := Abstract_Interface_Alias (Prim);
-
-         DT_Ptr  := Find_Interface_ADT
-                      (T     => Typ,
-                       Iface => Scope (DTC_Entity (Prim_Op)));
-
-         Tag := First_Tag_Component (Scope (DTC_Entity (Prim_Op)));
-      end if;
-
-      pragma Assert (DT_Position (Prim_Op) <= DT_Entry_Count (Tag));
-      pragma Assert (DT_Position (Prim_Op) > Uint_0);
 
       return
         Make_DT_Access_Action (Typ,
@@ -1204,12 +1175,47 @@ package body Exp_Disp is
             Unchecked_Convert_To (RTE (RE_Tag),
               New_Reference_To (DT_Ptr, Loc)),                  -- DTptr
 
-            Make_Integer_Literal (Loc, DT_Position (Prim_Op)),  -- Position
+            Make_Integer_Literal (Loc, Pos),                    -- Position
 
             Make_Attribute_Reference (Loc,                      -- Value
-              Prefix          => New_Reference_To (Target, Loc),
+              Prefix          => New_Reference_To (Prim, Loc),
               Attribute_Name  => Name_Address)));
    end Fill_DT_Entry;
+
+   -----------------------------
+   -- Fill_Secondary_DT_Entry --
+   -----------------------------
+
+   function Fill_Secondary_DT_Entry
+     (Loc          : Source_Ptr;
+      Prim         : Entity_Id;
+      Thunk_Id     : Entity_Id;
+      Iface_DT_Ptr : Entity_Id) return Node_Id
+   is
+      Typ        : constant Entity_Id := Scope (DTC_Entity (Alias (Prim)));
+      Iface_Prim : constant Entity_Id := Abstract_Interface_Alias (Prim);
+      Pos        : constant Uint      := DT_Position (Iface_Prim);
+      Tag        : constant Entity_Id :=
+                     First_Tag_Component (Scope (DTC_Entity (Iface_Prim)));
+
+   begin
+      if Pos = Uint_0 or else Pos > DT_Entry_Count (Tag) then
+         raise Program_Error;
+      end if;
+
+      return
+        Make_DT_Access_Action (Typ,
+          Action => Set_Prim_Op_Address,
+          Args   => New_List (
+            Unchecked_Convert_To (RTE (RE_Tag),
+              New_Reference_To (Iface_DT_Ptr, Loc)),            -- DTptr
+
+            Make_Integer_Literal (Loc, Pos),                    -- Position
+
+            Make_Attribute_Reference (Loc,                      -- Value
+              Prefix          => New_Reference_To (Thunk_Id, Loc),
+              Attribute_Name  => Name_Address)));
+   end Fill_Secondary_DT_Entry;
 
    ---------------------------
    -- Get_Remotely_Callable --
@@ -1313,7 +1319,6 @@ package body Exp_Disp is
       Nb_Prim := UI_To_Int (DT_Entry_Count (First_Tag_Component (Typ)));
 
       --  ----------------------------------------------------------------
-
       --  Dispatch table and related entities are allocated statically
 
       Set_Ekind (DT, E_Variable);
@@ -1538,6 +1543,71 @@ package body Exp_Disp is
             Node3 => Make_Integer_Literal (Loc,
                        DT_Entry_Count (First_Tag_Component (Etype (Typ)))))));
 
+      --  Inherit the secondary dispatch tables of the ancestor
+
+      if not Is_CPP_Class (Etype (Typ)) then
+         declare
+            Sec_DT_Ancestor : Elmt_Id :=
+              Next_Elmt (First_Elmt (Access_Disp_Table (Etype (Typ))));
+            Sec_DT_Typ      : Elmt_Id :=
+              Next_Elmt (First_Elmt (Access_Disp_Table (Typ)));
+
+            procedure Copy_Secondary_DTs (Typ : Entity_Id);
+            --  ??? comment required
+
+            ------------------------
+            -- Copy_Secondary_DTs --
+            ------------------------
+
+            procedure Copy_Secondary_DTs (Typ : Entity_Id) is
+               E : Entity_Id;
+
+            begin
+               if Etype (Typ) /= Typ then
+                  Copy_Secondary_DTs (Etype (Typ));
+               end if;
+
+               if Present (Abstract_Interfaces (Typ))
+                 and then not Is_Empty_Elmt_List
+                                (Abstract_Interfaces (Typ))
+               then
+                  E := First_Entity (Typ);
+
+                  while Present (E)
+                    and then Present (Node (Sec_DT_Ancestor))
+                  loop
+                     if Is_Tag (E) and then Chars (E) /= Name_uTag then
+                        Append_To (Elab_Code,
+                          Make_DT_Access_Action (Typ,
+                            Action => Inherit_DT,
+                            Args   => New_List (
+                              Node1 => Unchecked_Convert_To
+                                         (RTE (RE_Tag),
+                                          New_Reference_To
+                                            (Node (Sec_DT_Ancestor), Loc)),
+                              Node2 => Unchecked_Convert_To
+                                         (RTE (RE_Tag),
+                                          New_Reference_To
+                                            (Node (Sec_DT_Typ), Loc)),
+                              Node3 => Make_Integer_Literal (Loc,
+                                         DT_Entry_Count (E)))));
+
+                        Next_Elmt (Sec_DT_Ancestor);
+                        Next_Elmt (Sec_DT_Typ);
+                     end if;
+
+                     Next_Entity (E);
+                  end loop;
+               end if;
+            end Copy_Secondary_DTs;
+
+         begin
+            if Present (Node (Sec_DT_Ancestor)) then
+               Copy_Secondary_DTs (Typ);
+            end if;
+         end;
+      end if;
+
       --  Generate: Inherit_TSD (parent'tag, DT_Ptr);
 
       Append_To (Elab_Code,
@@ -1547,17 +1617,20 @@ package body Exp_Disp is
             Node1 => Old_Tag2,
             Node2 => New_Reference_To (DT_Ptr, Loc))));
 
-      --  for types with no controlled components
-      --    Generate: Set_RC_Offset (DT_Ptr, 0);
-      --  for simple types with controlled components
-      --    Generate: Set_RC_Offset (DT_Ptr, type._record_controller'position);
-      --  for complex types with controlled components where the position
+      --  For types with no controlled components, generate:
+      --    Set_RC_Offset (DT_Ptr, 0);
+
+      --  For simple types with controlled components, generate:
+      --    Set_RC_Offset (DT_Ptr, type._record_controller'position);
+
+      --  For complex types with controlled components where the position
       --  of the record controller is not statically computable, if there are
-      --  controlled components at this level
-      --    Generate: Set_RC_Offset (DT_Ptr, -1);
-      --  to indicate that the _controller field is right after the _parent or
-      --  if there are no controlled components at this level,
-      --    Generate: Set_RC_Offset (DT_Ptr, -2);
+      --  controlled components at this level, generate:
+      --    Set_RC_Offset (DT_Ptr, -1);
+      --  to indicate that the _controller field is right after the _parent
+
+      --  Or if there are no controlled components at this level, generate:
+      --    Set_RC_Offset (DT_Ptr, -2);
       --  to indicate that we need to get the position from the parent.
 
       declare
@@ -1588,6 +1661,8 @@ package body Exp_Disp is
             --  the back end (see comment on the Bit_Component attribute in
             --  sem_attr). So we avoid semantic checking here.
 
+            --  Is this documented in sinfo.ads??? it should be!
+
             Set_Analyzed (Position);
             Set_Etype (Prefix (Position), RTE (RE_Record_Controller));
             Set_Etype (Prefix (Prefix (Position)), Typ);
@@ -1604,8 +1679,8 @@ package body Exp_Disp is
                Node2 => Position)));
       end;
 
-      --  Generate: Set_Remotely_Callable (DT_Ptr, Status);
-      --  where Status is described in E.4 (18)
+      --  Generate: Set_Remotely_Callable (DT_Ptr, Status); where Status is
+      --  described in E.4 (18)
 
       declare
          Status : Entity_Id;
@@ -1681,8 +1756,8 @@ package body Exp_Disp is
       --  Ada 2005 (AI-251): Register the tag of the interfaces into
       --  the table of implemented interfaces
 
-      if Present (Abstract_Interfaces (Typ))
-        and then not Is_Empty_Elmt_List (Abstract_Interfaces (Typ))
+      if Present (Abstract_Interfaces (Typ_Copy))
+        and then not Is_Empty_Elmt_List (Abstract_Interfaces (Typ_Copy))
       then
          AI := First_Elmt (Abstract_Interfaces (Typ_Copy));
          while Present (AI) loop
@@ -1718,9 +1793,8 @@ package body Exp_Disp is
       Result          : out List_Id)
    is
       Loc         : constant Source_Ptr := Sloc (AI_Tag);
-      Tname       : constant Name_Id := Chars (AI_Tag);
-      Name_DT     : constant Name_Id := New_External_Name (Tname, 'T');
-      Name_DT_Ptr : constant Name_Id := New_External_Name (Tname, 'P');
+      Name_DT     : constant Name_Id := New_Internal_Name ('T');
+      Name_DT_Ptr : constant Name_Id := New_Internal_Name ('P');
 
       Iface_DT     : constant Node_Id :=
                        Make_Defining_Identifier (Loc, Name_DT);
@@ -1848,7 +1922,6 @@ package body Exp_Disp is
       end if;
 
       Append_Elmt (Iface_DT_Ptr, Acc_Disp_Tables);
-
    end Make_Abstract_Interface_DT;
 
    ---------------------------
@@ -2117,6 +2190,7 @@ package body Exp_Disp is
 
          Prim_Elmt  := First_Prim;
          Count_Prim := 0;
+
          while Present (Prim_Elmt) loop
             Count_Prim := Count_Prim + 1;
             Prim       := Node (Prim_Elmt);

@@ -4062,37 +4062,157 @@ package body Exp_Ch6 is
    procedure Freeze_Subprogram (N : Node_Id) is
       Loc       : constant Source_Ptr := Sloc (N);
       E         : constant Entity_Id  := Entity (N);
-      Thunk_Id  : Entity_Id;
-      Iface_Tag : Entity_Id;
-      New_Thunk : Node_Id;
 
-   begin
-      --  When a primitive is frozen, enter its name in the corresponding
-      --  dispatch table. If the DTC_Entity field is not set this is an
-      --  overridden primitive that can be ignored. We suppress the
-      --  initialization of the dispatch table entry when Java_VM because
-      --  the dispatching mechanism is handled internally by the JVM.
+      procedure Check_Overriding_Inherited_Interfaces (E : Entity_Id);
+      --  (Ada 2005): Check if the primitive E covers some interface already
+      --  implemented by some ancestor of the tagged-type associated with E
 
-      if Is_Dispatching_Operation (E)
-        and then not Is_Abstract (E)
-        and then Present (DTC_Entity (E))
-        and then not Is_CPP_Class (Scope (DTC_Entity (E)))
-        and then not Java_VM
-      then
-         Check_Overriding_Operation (E);
+      procedure Register_Interface_DT_Entry
+        (Prim                : Entity_Id;
+         Ancestor_Iface_Prim : Entity_Id := Empty);
+      --  (Ada 2005): Register an interface primitive in a secondary dispatch
+      --  table. If Prim overrides an ancestor primitive of its associated
+      --  tagged-type then Ancestor_Iface_Prim indicates the entity of that
+      --  immediate ancestor associated with the interface; otherwise Prim and
+      --  Ancestor_Iface_Prim have the same info.
 
-         --  Common case: Primitive subprogram
+      -------------------------------------------
+      -- Check_Overriding_Inherited_Interfaces --
+      -------------------------------------------
 
-         if not Present (Abstract_Interface_Alias (E)) then
-            Insert_After (N, Fill_DT_Entry (Sloc (N), E));
+      procedure Check_Overriding_Inherited_Interfaces (E : Entity_Id) is
+         Typ          : Entity_Id;
+         Elmt         : Elmt_Id;
+         Prim_Op      : Entity_Id;
+         Overriden_Op : Entity_Id := Empty;
 
-         --  Ada 2005 (AI-251): Primitive subprogram that covers an interface
+      begin
+         if Ada_Version < Ada_05
+           or else not Is_Overriding_Operation (E)
+           or else Is_Predefined_Dispatching_Operation (E)
+           or else Present (Alias (E))
+         then
+            return;
+         end if;
+
+         --  Get the entity associated with this primitive operation
+
+         Typ := Scope (DTC_Entity (E));
+         while Etype (Typ) /= Typ loop
+
+            --  Climb to the immediate ancestor
+
+            Typ := Etype (Typ);
+
+            if Present (Abstract_Interfaces (Typ)) then
+
+               --  Look for the overriden subprogram in the primary dispatch
+               --  table of the ancestor.
+
+               Overriden_Op := Empty;
+               Elmt         := First_Elmt (Primitive_Operations (Typ));
+               while Present (Elmt) loop
+                  Prim_Op := Node (Elmt);
+
+                  if DT_Position (Prim_Op) = DT_Position (E)
+                    and then Etype (DTC_Entity (Prim_Op)) = RTE (RE_Tag)
+                    and then not Present (Abstract_Interface_Alias (Prim_Op))
+                  then
+                     if Overriden_Op /= Empty then
+                        raise Program_Error;
+                     end if;
+
+                     Overriden_Op := Prim_Op;
+                  end if;
+
+                  Next_Elmt (Elmt);
+               end loop;
+
+               --  if not found this is the first overriding of some
+               --  abstract interface
+
+               if Overriden_Op /= Empty then
+                  Elmt := First_Elmt (Primitive_Operations (Typ));
+
+                  --  Find the entries associated with interfaces that are
+                  --  alias of this primitive operation in the ancestor
+
+                  while Present (Elmt) loop
+                     Prim_Op := Node (Elmt);
+
+                     if Present (Abstract_Interface_Alias (Prim_Op))
+                       and then Alias (Prim_Op) = Overriden_Op
+                     then
+                        Register_Interface_DT_Entry (E, Prim_Op);
+                     end if;
+
+                     Next_Elmt (Elmt);
+                  end loop;
+               end if;
+            end if;
+         end loop;
+      end Check_Overriding_Inherited_Interfaces;
+
+      ---------------------------------
+      -- Register_Interface_DT_Entry --
+      ---------------------------------
+
+      procedure Register_Interface_DT_Entry
+        (Prim                : Entity_Id;
+         Ancestor_Iface_Prim : Entity_Id := Empty)
+      is
+         Prim_Typ     : Entity_Id;
+         Prim_Op      : Entity_Id;
+         Iface_Typ    : Entity_Id;
+         Iface_DT_Ptr : Entity_Id;
+         Iface_Tag    : Entity_Id;
+         New_Thunk    : Node_Id;
+         Thunk_Id     : Entity_Id;
+
+      begin
+         if not Present (Ancestor_Iface_Prim) then
+            Prim_Typ  := Scope (DTC_Entity (Alias (Prim)));
+            Iface_Typ := Scope (DTC_Entity (Abstract_Interface_Alias (Prim)));
+            Iface_Tag := Find_Interface_Tag
+                           (T     => Prim_Typ,
+                            Iface => Iface_Typ);
+
+            --  Generate the code of the thunk only when this primitive
+            --  operation is associated with a secondary dispatch table
+
+            if Etype (Iface_Tag) = RTE (RE_Interface_Tag) then
+               Thunk_Id  := Make_Defining_Identifier (Loc,
+                              New_Internal_Name ('T'));
+               New_Thunk :=
+                 Expand_Interface_Thunk
+                   (N           => Prim,
+                    Thunk_Alias => Alias (Prim),
+                    Thunk_Id    => Thunk_Id,
+                    Iface_Tag   => Iface_Tag);
+
+               Insert_After (N, New_Thunk);
+
+               Iface_DT_Ptr :=
+                 Find_Interface_ADT
+                   (T     => Prim_Typ,
+                    Iface => Iface_Typ);
+
+               Insert_After (New_Thunk,
+                 Fill_Secondary_DT_Entry (Sloc (Prim),
+                   Prim         => Prim,
+                   Iface_DT_Ptr => Iface_DT_Ptr,
+                   Thunk_Id     => Thunk_Id));
+            end if;
 
          else
+            Iface_Typ :=
+              Scope (DTC_Entity (Abstract_Interface_Alias
+                                  (Ancestor_Iface_Prim)));
+
             Iface_Tag :=
               Find_Interface_Tag
-                (T     => Scope (DTC_Entity (Alias (E))),    -- Formal Type
-                 Iface => Scope (DTC_Entity (Abstract_Interface_Alias (E))));
+                (T     => Scope (DTC_Entity (Alias (Ancestor_Iface_Prim))),
+                 Iface => Iface_Typ);
 
             --  Generate the thunk only if the associated tag is an interface
             --  tag. The case in which the associated tag is the primary tag
@@ -4107,12 +4227,69 @@ package body Exp_Ch6 is
                Thunk_Id  := Make_Defining_Identifier (Loc,
                               New_Internal_Name ('T'));
 
-               New_Thunk := Expand_Interface_Thunk (N, Thunk_Id, Iface_Tag);
+               if Present (Alias (Prim)) then
+                  Prim_Op := Alias (Prim);
+               else
+                  Prim_Op := Prim;
+               end if;
+
+               New_Thunk :=
+                 Expand_Interface_Thunk
+                   (N           => Ancestor_Iface_Prim,
+                    Thunk_Alias => Prim_Op,
+                    Thunk_Id    => Thunk_Id,
+                    Iface_Tag   => Iface_Tag);
+
+               Insert_After (N, New_Thunk);
+
+               Iface_DT_Ptr :=
+                 Find_Interface_ADT
+                   (T     => Scope (DTC_Entity (Prim_Op)),
+                    Iface => Iface_Typ);
 
                Insert_After (New_Thunk,
-                  Fill_DT_Entry (Sloc (N),
-                     Prim     => E,
-                     Thunk_Id => Thunk_Id));
+                 Fill_Secondary_DT_Entry (Sloc (Prim),
+                   Prim         => Ancestor_Iface_Prim,
+                   Iface_DT_Ptr => Iface_DT_Ptr,
+                   Thunk_Id     => Thunk_Id));
+            end if;
+         end if;
+      end Register_Interface_DT_Entry;
+
+   --  Start of processing for Freeze_Subprogram
+
+   begin
+      --  When a primitive is frozen, enter its name in the corresponding
+      --  dispatch table. If the DTC_Entity field is not set this is an
+      --  overridden primitive that can be ignored. We suppress the
+      --  initialization of the dispatch table entry when Java_VM because
+      --  the dispatching mechanism is handled internally by the JVM.
+
+      if Is_Dispatching_Operation (E)
+        and then not Is_Abstract (E)
+        and then Present (DTC_Entity (E))
+        and then not Java_VM
+        and then not Is_CPP_Class (Scope (DTC_Entity (E)))
+      then
+         Check_Overriding_Operation (E);
+
+         if Ada_Version < Ada_05 then
+            Insert_After (N,
+              Fill_DT_Entry (Sloc (N), Prim => E));
+
+         else
+            --  Ada 2005 (AI-251): Check if this entry corresponds with
+            --  a subprogram that covers an abstract interface type
+
+            if Present (Abstract_Interface_Alias (E)) then
+               Register_Interface_DT_Entry (E);
+
+            --  Common case: Primitive subprogram
+
+            else
+               Insert_After (N,
+                 Fill_DT_Entry (Sloc (N), Prim => E));
+               Check_Overriding_Inherited_Interfaces (E);
             end if;
          end if;
       end if;
