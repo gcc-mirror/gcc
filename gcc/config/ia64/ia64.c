@@ -7583,7 +7583,7 @@ ia64_reorg (void)
      non-optimizing bootstrap.  */
   update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES, PROP_DEATH_NOTES);
 
-  if (ia64_flag_schedule_insns2)
+  if (optimize && ia64_flag_schedule_insns2)
     {
       timevar_push (TV_SCHED2);
       ia64_final_schedule = 1;
