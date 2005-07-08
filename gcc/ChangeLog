@@ -1,3 +1,7 @@
+2005-07-07  Ian Lance Taylor  <ian@airs.com>
+
+	* config/mips/mips.md (abs<mode>2) [GPR]: Remove.
+
 2005-07-07  John David Anglin  <dave.anglin@nrc-crc.gc.ca>
 
 	PR middle-end/22239
