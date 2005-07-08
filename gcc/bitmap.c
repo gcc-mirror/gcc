@@ -583,7 +583,14 @@ bitmap_and (bitmap dst, bitmap a, bitmap b)
   bitmap_element *b_elt = b->first;
   bitmap_element *dst_prev = NULL;
 
-  gcc_assert (dst != a && dst != b && a != b);
+  gcc_assert (dst != a && dst != b);
+
+  if (a == b)
+    {
+      bitmap_copy (dst, a);
+      return;
+    }
+
   while (a_elt && b_elt)
     {
       if (a_elt->indx < b_elt->indx)
@@ -631,7 +638,9 @@ bitmap_and_into (bitmap a, bitmap b)
   bitmap_element *b_elt = b->first;
   bitmap_element *next;
 
-  gcc_assert (a != b);
+  if (a == b) 
+    return;
+
   while (a_elt && b_elt)
     {
       if (a_elt->indx < b_elt->indx)
@@ -677,8 +686,14 @@ bitmap_and_compl (bitmap dst, bitmap a, bitmap b)
   bitmap_element *b_elt = b->first;
   bitmap_element *dst_prev = NULL;
 
-  gcc_assert (dst != a && dst != b && a != b);
+  gcc_assert (dst != a && dst != b);
   
+  if (a == b)
+    {
+      bitmap_clear (dst);
+      return;
+    }
+
   while (a_elt)
     {
       if (!b_elt || a_elt->indx < b_elt->indx)
@@ -737,7 +752,17 @@ bitmap_and_compl_into (bitmap a, bitmap b)
   bitmap_element *next;
   BITMAP_WORD changed = 0;
 
-  gcc_assert (a != b);
+  if (a == b)
+    {
+      if (bitmap_empty_p (a))
+	return false;
+      else
+	{
+	  bitmap_clear (a);
+	  return true;
+	}
+    }
+
   while (a_elt && b_elt)
     {
       if (a_elt->indx < b_elt->indx)
@@ -782,7 +807,8 @@ bitmap_ior (bitmap dst, bitmap a, bitmap b)
   bitmap_element *dst_prev = NULL;
   bool changed = false;  
 
-  gcc_assert (dst != a && dst != b && a != b);
+  gcc_assert (dst != a && dst != b);
+
   while (a_elt || b_elt)
     {
       if (a_elt && b_elt && a_elt->indx == b_elt->indx)
@@ -883,7 +909,9 @@ bitmap_ior_into (bitmap a, bitmap b)
   bitmap_element *a_prev = NULL;
   bool changed = false;
 
-  gcc_assert (a != b);
+  if (a == b)
+    return false;
+
   while (b_elt)
     {
       if (!a_elt || b_elt->indx < a_elt->indx)
@@ -946,7 +974,13 @@ bitmap_xor (bitmap dst, bitmap a, bitmap b)
   bitmap_element *b_elt = b->first;
   bitmap_element *dst_prev = NULL;
 
-  gcc_assert (dst != a && dst != b && a != b);
+  gcc_assert (dst != a && dst != b);
+  if (a == b)
+    {
+      bitmap_clear (dst);
+      return;
+    }
+
   while (a_elt || b_elt)
     {
       if (a_elt && b_elt && a_elt->indx == b_elt->indx)
@@ -1014,7 +1048,12 @@ bitmap_xor_into (bitmap a, bitmap b)
   bitmap_element *b_elt = b->first;
   bitmap_element *a_prev = NULL;
 
-  gcc_assert (a != b);
+  if (a == b)
+    {
+      bitmap_clear (a);
+      return;
+    }
+
   while (b_elt)
     {
       if (!a_elt || b_elt->indx < a_elt->indx)
