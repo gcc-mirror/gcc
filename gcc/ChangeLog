@@ -1,3 +1,7 @@
+2005-07-08  David Billinghurst  <David.Billinghurst@riotinto.com>
+
+	* final.c: Include sdbout.h when required.
+
 2005-07-07  Geoffrey Keating  <geoffk@apple.com>
 
 	* config.gcc (*-*-darwin*): Only one target-specific header file
