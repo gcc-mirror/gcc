@@ -1,3 +1,10 @@
+2005-07-08  David Edelsohn  <edelsohn@gnu.org>
+
+	Backport from mainline:
+	2005-06-18  Roger Sayle  <roger@eyesopen.com>
+	PR target/22083
+	* config/rs6000/aix51.h (TARGET_C99_FUNCTIONS): Remove definition.
+
 2005-07-08  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific): Do not specify the concrete
