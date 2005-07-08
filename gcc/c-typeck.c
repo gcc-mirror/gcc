@@ -2061,7 +2061,8 @@ build_function_call (tree function, tree params)
 
   /* Check that the arguments to the function are valid.  */
 
-  check_function_arguments (TYPE_ATTRIBUTES (fntype), coerced_params);
+  check_function_arguments (TYPE_ATTRIBUTES (fntype), coerced_params,
+			    TYPE_ARG_TYPES (fntype));
 
   result = build3 (CALL_EXPR, TREE_TYPE (fntype),
 		   function, coerced_params, NULL_TREE);

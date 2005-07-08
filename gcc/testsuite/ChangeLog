@@ -1,3 +1,8 @@
+2005-07-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR c/21911
+	* gcc.dg/format/sentinel-1.c: Update.  Fix execl* calls.
+
 2005-07-08  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/22308

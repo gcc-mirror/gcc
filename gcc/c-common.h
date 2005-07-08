@@ -632,7 +632,7 @@ extern void finish_fname_decls (void);
 extern const char *fname_as_string (int);
 extern tree fname_decl (unsigned, tree);
 
-extern void check_function_arguments (tree, tree);
+extern void check_function_arguments (tree, tree, tree);
 extern void check_function_arguments_recurse (void (*)
 					      (void *, tree,
 					       unsigned HOST_WIDE_INT),

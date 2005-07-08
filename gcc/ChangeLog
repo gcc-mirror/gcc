@@ -1,3 +1,12 @@
+2005-07-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR c/21911
+	* c-common.c (check_function_sentinel): Pass in named argument
+	list, skip over named arguments before looking for a sentinel.
+	(check_function_arguments): Pass in named argument list.
+	* c-common.h (check_function_arguments): Likewise.
+	* c-typeck.c (build_function_call): Likewise.
+
 2005-07-08  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/22308

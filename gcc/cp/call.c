@@ -4790,7 +4790,7 @@ build_over_call (struct z_candidate *cand, int flags)
   converted_args = nreverse (converted_args);
 
   check_function_arguments (TYPE_ATTRIBUTES (TREE_TYPE (fn)),
-			    converted_args);
+			    converted_args, TYPE_ARG_TYPES (TREE_TYPE (fn)));
 
   /* Avoid actually calling copy constructors and copy assignment operators,
      if possible.  */

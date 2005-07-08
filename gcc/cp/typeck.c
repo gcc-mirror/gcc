@@ -2490,7 +2490,8 @@ build_function_call (tree function, tree params)
   /* Check for errors in format strings and inappropriately
      null parameters.  */
 
-  check_function_arguments (TYPE_ATTRIBUTES (fntype), coerced_params);
+  check_function_arguments (TYPE_ATTRIBUTES (fntype), coerced_params,
+			    TYPE_ARG_TYPES (fntype));
 
   return build_cxx_call (function, coerced_params);
 }

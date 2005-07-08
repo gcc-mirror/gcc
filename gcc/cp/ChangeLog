@@ -1,3 +1,9 @@
+2005-07-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* call.c (build_over_call): Pass in named argument list to
+	`check_function_arguments'.
+	* typeck.c (build_function_call): Likewise.
+
 2005-07-07  Release Manager
 
 	* GCC 4.0.1 released.
