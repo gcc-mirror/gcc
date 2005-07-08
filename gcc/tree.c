@@ -6417,43 +6417,64 @@ tree
 upper_bound_in_type (tree outer, tree inner)
 {
   unsigned HOST_WIDE_INT lo, hi;
-  unsigned bits = TYPE_PRECISION (inner);
+  unsigned int det = 0;
+  unsigned oprec = TYPE_PRECISION (outer);
+  unsigned iprec = TYPE_PRECISION (inner);
+  unsigned prec;
 
-  if (TYPE_UNSIGNED (outer) || TYPE_UNSIGNED (inner))
+  /* Compute a unique number for every combination.  */
+  det |= (oprec > iprec) ? 4 : 0;
+  det |= TYPE_UNSIGNED (outer) ? 2 : 0;
+  det |= TYPE_UNSIGNED (inner) ? 1 : 0;
+
+  /* Determine the exponent to use.  */
+  switch (det)
     {
-      /* Zero extending in these cases.  */
-      if (bits <= HOST_BITS_PER_WIDE_INT)
-	{
-	  hi = 0;
-	  lo = (~(unsigned HOST_WIDE_INT) 0)
-		  >> (HOST_BITS_PER_WIDE_INT - bits);
-	}
-      else
-	{
-	  hi = (~(unsigned HOST_WIDE_INT) 0)
-		  >> (2 * HOST_BITS_PER_WIDE_INT - bits);
-	  lo = ~(unsigned HOST_WIDE_INT) 0;
-	}
+    case 0:
+    case 1:
+      /* oprec <= iprec, outer: signed, inner: don't care.  */
+      prec = oprec - 1;
+      break;
+    case 2:
+    case 3:
+      /* oprec <= iprec, outer: unsigned, inner: don't care.  */
+      prec = oprec;
+      break;
+    case 4:
+      /* oprec > iprec, outer: signed, inner: signed.  */
+      prec = iprec - 1;
+      break;
+    case 5:
+      /* oprec > iprec, outer: signed, inner: unsigned.  */
+      prec = iprec;
+      break;
+    case 6:
+      /* oprec > iprec, outer: unsigned, inner: signed.  */
+      prec = oprec;
+      break;
+    case 7:
+      /* oprec > iprec, outer: unsigned, inner: unsigned.  */
+      prec = iprec;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Compute 2^^prec - 1.  */
+  if (prec <= HOST_BITS_PER_WIDE_INT)
+    {
+      hi = 0;
+      lo = ((~(unsigned HOST_WIDE_INT) 0)
+	    >> (HOST_BITS_PER_WIDE_INT - prec));
     }
   else
     {
-      /* Sign extending in these cases.  */
-      if (bits <= HOST_BITS_PER_WIDE_INT)
-	{
-	  hi = 0;
-	  lo = (~(unsigned HOST_WIDE_INT) 0)
-		  >> (HOST_BITS_PER_WIDE_INT - bits) >> 1;
-	}
-      else
-	{
-	  hi = (~(unsigned HOST_WIDE_INT) 0)
-		  >> (2 * HOST_BITS_PER_WIDE_INT - bits) >> 1;
-	  lo = ~(unsigned HOST_WIDE_INT) 0;
-	}
+      hi = ((~(unsigned HOST_WIDE_INT) 0)
+	    >> (2 * HOST_BITS_PER_WIDE_INT - prec));
+      lo = ~(unsigned HOST_WIDE_INT) 0;
     }
 
-  return fold_convert (outer,
-		       build_int_cst_wide (inner, lo, hi));
+  return build_int_cst_wide (outer, lo, hi);
 }
 
 /* Returns the smallest value obtainable by casting something in INNER type to
@@ -6463,23 +6484,39 @@ tree
 lower_bound_in_type (tree outer, tree inner)
 {
   unsigned HOST_WIDE_INT lo, hi;
-  unsigned bits = TYPE_PRECISION (inner);
+  unsigned oprec = TYPE_PRECISION (outer);
+  unsigned iprec = TYPE_PRECISION (inner);
 
-  if (TYPE_UNSIGNED (outer) || TYPE_UNSIGNED (inner))
+  /* If OUTER type is unsigned, we can definitely cast 0 to OUTER type
+     and obtain 0.  */
+  if (TYPE_UNSIGNED (outer)
+      /* If we are widening something of an unsigned type, OUTER type
+	 contains all values of INNER type.  In particular, both INNER
+	 and OUTER types have zero in common.  */
+      || (oprec > iprec && TYPE_UNSIGNED (inner)))
     lo = hi = 0;
-  else if (bits <= HOST_BITS_PER_WIDE_INT)
-    {
-      hi = ~(unsigned HOST_WIDE_INT) 0;
-      lo = (~(unsigned HOST_WIDE_INT) 0) << (bits - 1);
-    }
   else
     {
-      hi = (~(unsigned HOST_WIDE_INT) 0) << (bits - HOST_BITS_PER_WIDE_INT - 1);
-      lo = 0;
+      /* If we are widening a signed type to another signed type, we
+	 want to obtain -2^^(iprec-1).  If we are keeping the
+	 precision or narrowing to a signed type, we want to obtain
+	 -2^(oprec-1).  */
+      unsigned prec = oprec > iprec ? iprec : oprec;
+
+      if (prec <= HOST_BITS_PER_WIDE_INT)
+	{
+	  hi = ~(unsigned HOST_WIDE_INT) 0;
+	  lo = (~(unsigned HOST_WIDE_INT) 0) << (prec - 1);
+	}
+      else
+	{
+	  hi = ((~(unsigned HOST_WIDE_INT) 0)
+		<< (prec - HOST_BITS_PER_WIDE_INT - 1));
+	  lo = 0;
+	}
     }
 
-  return fold_convert (outer,
-		       build_int_cst_wide (inner, lo, hi));
+  return build_int_cst_wide (outer, lo, hi);
 }
 
 /* Return nonzero if two operands that are suitable for PHI nodes are

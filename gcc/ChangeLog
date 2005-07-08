@@ -1,3 +1,12 @@
+2005-07-08  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR tree-optimization/22360
+	* tree.c (upper_bound_in_type): Fix calculations for casting
+	to a non-wider signed type and casting a signed value to a
+	wider unsigned type.
+	(lower_bound_in_type): Fix calculations for casting to a
+	non-wider signed type.
+
 2005-07-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/22356
