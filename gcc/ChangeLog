@@ -1,3 +1,9 @@
+2005-07-08  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific): Do not specify the concrete
+	versions of GCC provided by Cygwin.  Simplify the part on
+	building on Cygwin.
+
 2005-07-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR c/21911

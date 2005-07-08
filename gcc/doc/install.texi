@@ -3860,14 +3860,11 @@ respects, this target is the same as the
 @end html
 @heading @anchor{windows}Microsoft Windows (32-bit)
 
-A port of GCC 2.95.2 and 3.x is included with the
+Ports of GCC are included with the
 @uref{http://www.cygwin.com/,,Cygwin environment}.
 
-Current (as of early 2001) snapshots of GCC will build under Cygwin
-without modification.
-
-GCC does not currently build with Microsoft's C++ compiler and there
-are no plans to make it do so.
+GCC will build under Cygwin without modification; it does not build
+with Microsoft's C++ compiler and there are no plans to make it do so.
 
 @html
 <hr />
