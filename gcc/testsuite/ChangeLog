@@ -12,6 +12,11 @@
 
 2005-07-07  Ziemowit Laski  <zlaski@apple.com>
 
+	* obj-c++.dg/proto-lossage-6.mm: New.
+	* objc.dg/proto-lossage-6.m: New.
+
+2005-07-07  Ziemowit Laski  <zlaski@apple.com>
+
 	* obj-c++.dg/gnu-runtime-2.mm: Compile, do not run.
 	* objc.dg/gnu-runtime-2.m: Likewise.
 

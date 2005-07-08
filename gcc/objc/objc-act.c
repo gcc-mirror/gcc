@@ -794,12 +794,13 @@ objc_is_class_id (tree type)
   return OBJC_TYPE_NAME (type) == objc_class_id;
 }
 
-/* Construct a C struct with tag NAME, a base struct with tag
+/* Construct a C struct with same name as CLASS, a base struct with tag
    SUPER_NAME (if any), and FIELDS indicated.  */
 
 static tree
-objc_build_struct (tree name, tree fields, tree super_name)
+objc_build_struct (tree class, tree fields, tree super_name)
 {
+  tree name = CLASS_NAME (class);
   tree s = start_struct (RECORD_TYPE, name);
   tree super = (super_name ? xref_tag (RECORD_TYPE, super_name) : NULL_TREE);
   tree t, objc_info = NULL_TREE;
@@ -857,14 +858,25 @@ objc_build_struct (tree name, tree fields, tree super_name)
       = chainon (objc_info,
 		 build_tree_list (NULL_TREE, TYPE_OBJC_INFO (t)));
 
+  /* Point the struct at its related Objective-C class.  */
+  INIT_TYPE_OBJC_INFO (s);
+  TYPE_OBJC_INTERFACE (s) = class;
+
   s = finish_struct (s, fields, NULL_TREE);
 
   for (t = TYPE_NEXT_VARIANT (s); t;
        t = TYPE_NEXT_VARIANT (t), objc_info = TREE_CHAIN (objc_info))
-    TYPE_OBJC_INFO (t) = TREE_VALUE (objc_info);
+    {
+      TYPE_OBJC_INFO (t) = TREE_VALUE (objc_info);
+      /* Replace the IDENTIFIER_NODE with an actual @interface.  */
+      TYPE_OBJC_INTERFACE (t) = class;
+    }
 
   /* Use TYPE_BINFO structures to point at the super class, if any.  */
   objc_xref_basetypes (s, super);
+
+  /* Mark this struct as a class template.  */
+  CLASS_STATIC_TEMPLATE (class) = s;
 
   return s;
 }
@@ -1098,6 +1110,16 @@ objc_compare_types (tree ltyp, tree rtyp, int argno, tree callee)
     }
   else
     rcls = rproto = NULL_TREE;
+
+  /* If we could not find an @interface declaration, we must have
+     only seen a @class declaration; for purposes of type comparison,
+     treat it as a stand-alone (root) class.  */
+
+  if (lcls && TREE_CODE (lcls) == IDENTIFIER_NODE)
+    lcls = NULL_TREE;
+
+  if (rcls && TREE_CODE (rcls) == IDENTIFIER_NODE)
+    rcls = NULL_TREE;
 
   /* If either type is an unqualified 'id', we're done.  */
   if ((!lproto && objc_is_object_id (ltyp))
@@ -4109,14 +4131,9 @@ build_private_template (tree class)
 {
   if (!CLASS_STATIC_TEMPLATE (class))
     {
-      tree record = objc_build_struct (CLASS_NAME (class),
+      tree record = objc_build_struct (class,
 				       get_class_ivars (class, false),
 				       CLASS_SUPER_NAME (class));
-
-      /* mark this record as class template - for class type checking */
-      INIT_TYPE_OBJC_INFO (record);
-      TYPE_OBJC_INTERFACE (record) = class;
-      CLASS_STATIC_TEMPLATE (class) = record;
 
       /* Set the TREE_USED bit for this struct, so that stab generator
 	 can emit stabs for this struct type.  */
