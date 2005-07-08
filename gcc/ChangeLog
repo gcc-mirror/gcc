@@ -1,3 +1,8 @@
+2005-06-28  Geoffrey Keating  <geoffk@apple.com>
+
+	* tree-inline.c (expand_call_inline): Prevent 'may reach end'
+	warning in system headers.
+
 2005-07-08  Aldy Hernandez  <aldyh@redhat.com>
 
 	Backport from mainline:

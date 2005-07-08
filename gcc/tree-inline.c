@@ -1693,7 +1693,8 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
 	&& !TREE_NO_WARNING (fn)
 	&& !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fn)))
 	&& return_slot_addr == NULL_TREE
-	&& block_may_fallthru (copy))
+	&& block_may_fallthru (copy)
+	&& !DECL_IN_SYSTEM_HEADER (fn))
       {
 	warning ("control may reach end of non-void function %qD being inlined",
 		 fn);
