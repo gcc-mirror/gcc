@@ -1,3 +1,8 @@
+2005-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* primary.c (gfc_match_rvalue): Handle ENTRY the same way
+	as FUNCTION.
+
 2005-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* scanner.c (load_line): Add pbuflen argument, don't make
