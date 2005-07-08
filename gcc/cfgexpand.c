@@ -1575,11 +1575,6 @@ tree_expand_cfg (void)
     (*debug_hooks->outlining_inline_function) (current_function_decl);
 
   TREE_ASM_WRITTEN (current_function_decl) = 1;
-
-#ifdef FINALIZE_PIC
-  if (flag_pic)
-    FINALIZE_PIC;
-#endif
 }
 
 struct tree_opt_pass pass_expand =

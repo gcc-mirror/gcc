@@ -1,3 +1,9 @@
+2005-07-08  Kazu Hirata  <kazu@codesourcery.com>
+
+	* cfgexpand.c (tree_expand_cfg): Don't use FINALIZE_PIC.
+	* system.h: Poison FINALIZE_PIC.
+	* doc/tm.texi (FINALIZE_PIC): Remove.
+
 2005-07-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/22329
