@@ -30,6 +30,7 @@ details.  */
 #include <java/lang/NullPointerException.h>
 #include <java/lang/ArithmeticException.h>
 #include <java/lang/IncompatibleClassChangeError.h>
+#include <java/lang/InstantiationException.h>
 #include <java/lang/Thread.h>
 #include <java-insns.h>
 #include <java-signal.h>
@@ -2942,6 +2943,10 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 	int index = GET2U ();
 	jclass klass = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
 							  index)).clazz;
+	/* VM spec, section 3.11.5 */
+	if ((klass->getModifiers() & Modifier::ABSTRACT)
+	    || klass->isInterface())
+	  throw new java::lang::InstantiationException;
 	jobject res = _Jv_AllocObject (klass);
 	PUSHA (res);
 
