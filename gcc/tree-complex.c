@@ -833,6 +833,7 @@ expand_complex_libcall (block_stmt_iterator *bsi, tree ar, tree ai,
   if (in_ssa_p)
     {
       tree lhs = TREE_OPERAND (stmt, 0);
+      type = TREE_TYPE (type);
       update_complex_components (bsi, stmt,
 				 build1 (REALPART_EXPR, type, lhs),
 				 build1 (IMAGPART_EXPR, type, lhs));
