@@ -197,7 +197,3 @@ do {									\
 #undef LD_INIT_SWITCH
 #define LD_INIT_SWITCH "-binitfini"
 
-/* AIX 5.1 has the float and long double forms of math functions.  */
-#undef TARGET_C99_FUNCTIONS
-#define TARGET_C99_FUNCTIONS  1
-
