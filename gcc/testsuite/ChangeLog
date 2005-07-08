@@ -1,5 +1,17 @@
 2005-07-08  Steven G. Kargl <kargls@comcast.net>
 
+ 	PR fortran/17792
+	PR fortran/21375
+	* gfortran.dg/deallocate_stat.f90:  New test.
+
+	PR fortran/19926
+	* gfortran.dg/pr19926.f90: New test.
+
+	PR fortran/21257
+	* gfortran.dg/duplicate_labels.f90: New test.
+
+2005-07-08  Steven G. Kargl <kargls@comcast.net>
+
 	* gfortran.dg/dev_null.f90: Run test only on linux and solaris.
 
 2005-07-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
