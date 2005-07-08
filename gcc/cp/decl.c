@@ -608,7 +608,10 @@ poplevel (int keep, int reverse, int functionbody)
 	      /* Keep track of what should have happened when we
 		 popped the binding.  */
 	      if (ob && ob->value)
-		DECL_SHADOWED_FOR_VAR (link) = ob->value;
+		{
+		  SET_DECL_SHADOWED_FOR_VAR (link, ob->value);
+		  DECL_HAS_SHADOWED_FOR_VAR_P (link) = 1;
+		}
 
 	      /* Add it to the list of dead variables in the next
 		 outermost binding to that we can remove these when we
@@ -1805,6 +1808,13 @@ duplicate_decls (tree newdecl, tree olddecl)
       DECL_VISIBILITY (newdecl) = DECL_VISIBILITY (olddecl);
       DECL_VISIBILITY_SPECIFIED (newdecl) = 1;
     }
+  /* Init priority used to be merged from newdecl to olddecl by the memcpy, 
+     so keep this behavior.  */
+  if (TREE_CODE (newdecl) == VAR_DECL && DECL_HAS_INIT_PRIORITY_P (newdecl))
+    {
+      SET_DECL_INIT_PRIORITY (olddecl, DECL_INIT_PRIORITY (newdecl));
+      DECL_HAS_INIT_PRIORITY_P (olddecl) = 1;
+    }
 
   /* The DECL_LANG_SPECIFIC information in OLDDECL will be replaced
      with that from NEWDECL below.  */
@@ -1819,12 +1829,15 @@ duplicate_decls (tree newdecl, tree olddecl)
     {
       int function_size;
 
-      function_size = sizeof (struct tree_decl);
+      function_size = sizeof (struct tree_decl_common);
 
       memcpy ((char *) olddecl + sizeof (struct tree_common),
 	      (char *) newdecl + sizeof (struct tree_common),
 	      function_size - sizeof (struct tree_common));
 
+      memcpy ((char *) olddecl + sizeof (struct tree_decl_common),
+	      (char *) newdecl + sizeof (struct tree_decl_common),
+	      sizeof (struct tree_function_decl) - sizeof (struct tree_decl_common));
       if (DECL_TEMPLATE_INSTANTIATION (newdecl))
 	/* If newdecl is a template instantiation, it is possible that
 	   the following sequence of events has occurred:
@@ -1853,12 +1866,34 @@ duplicate_decls (tree newdecl, tree olddecl)
     }
   else
     {
+      size_t size = tree_code_size (TREE_CODE (olddecl));
       memcpy ((char *) olddecl + sizeof (struct tree_common),
 	      (char *) newdecl + sizeof (struct tree_common),
-	      sizeof (struct tree_decl) - sizeof (struct tree_common)
-	      + TREE_CODE_LENGTH (TREE_CODE (newdecl)) * sizeof (char *));
+	      sizeof (struct tree_decl_common) - sizeof (struct tree_common));
+      switch (TREE_CODE (olddecl))       
+	{
+	case LABEL_DECL:
+	case VAR_DECL:
+	case RESULT_DECL:
+	case PARM_DECL:
+	case FIELD_DECL:
+	case TYPE_DECL:
+	case CONST_DECL:
+	  {
+	    memcpy ((char *) olddecl + sizeof (struct tree_decl_common),
+		    (char *) newdecl + sizeof (struct tree_decl_common),
+		    size - sizeof (struct tree_decl_common)
+		    + TREE_CODE_LENGTH (TREE_CODE (newdecl)) * sizeof (char *));
+	  }
+	  break;
+	default:
+	  memcpy ((char *) olddecl + sizeof (struct tree_decl_common),
+		  (char *) newdecl + sizeof (struct tree_decl_common),
+		  sizeof (struct tree_decl_non_common) - sizeof (struct tree_decl_common)
+		  + TREE_CODE_LENGTH (TREE_CODE (newdecl)) * sizeof (char *));
+	  break;
+	}
     }
-
   DECL_UID (olddecl) = olddecl_uid;
   if (olddecl_friend)
     DECL_FRIEND_P (olddecl) = 1;

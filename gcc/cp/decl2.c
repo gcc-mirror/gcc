@@ -2321,14 +2321,15 @@ static tree
 start_static_initialization_or_destruction (tree decl, int initp)
 {
   tree guard_if_stmt = NULL_TREE;
-  int priority;
+  int priority = 0;
   tree cond;
   tree guard;
   tree init_cond;
   priority_info pi;
 
-  /* Figure out the priority for this declaration.  */
-  priority = DECL_INIT_PRIORITY (decl);
+    /* Figure out the priority for this declaration.  */
+  if (DECL_HAS_INIT_PRIORITY_P (decl))
+    priority = DECL_INIT_PRIORITY (decl);
   if (!priority)
     priority = DEFAULT_INIT_PRIORITY;
 

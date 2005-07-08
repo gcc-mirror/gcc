@@ -4631,6 +4631,9 @@ dwarf_form_name (unsigned int form)
 static tree
 decl_ultimate_origin (tree decl)
 {
+  if (!CODE_CONTAINS_STRUCT (TREE_CODE (decl), TS_DECL_COMMON))
+    return NULL_TREE;
+
   /* output_inline_function sets DECL_ABSTRACT_ORIGIN for all the
      nodes in the function to point to themselves; ignore that if
      we're trying to output the abstract instance of this function.  */
@@ -10143,7 +10146,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
 	 XXX: If you split a variable across multiple sections, this
 	 won't notice.  */
 
-      if (DECL_SECTION_NAME (decl))
+      if (VAR_OR_FUNCTION_DECL_P (decl) && DECL_SECTION_NAME (decl))
 	{
 	  tree sectree = DECL_SECTION_NAME (decl);
 	  secname = TREE_STRING_POINTER (sectree);

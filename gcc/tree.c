@@ -133,12 +133,6 @@ static GTY ((if_marked ("ggc_marked_p"), param_is (union tree_node)))
 
 /* General tree->tree mapping  structure for use in hash tables.  */
 
-struct tree_map GTY(())
-{
-  hashval_t hash;
-  tree from;
-  tree to;
-};
 
 static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map))) 
      htab_t debug_expr_for_decl;
@@ -146,11 +140,20 @@ static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map)))
 static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map))) 
      htab_t value_expr_for_decl;
 
+static GTY ((if_marked ("tree_int_map_marked_p"), param_is (struct tree_int_map)))
+  htab_t init_priority_for_decl;
+
+struct tree_int_map GTY(())
+{
+  tree from;
+  unsigned short to;
+};
+static unsigned int tree_int_map_hash (const void *);
+static int tree_int_map_eq (const void *, const void *);
+static int tree_int_map_marked_p (const void *);
 static void set_type_quals (tree, int);
 static int type_hash_eq (const void *, const void *);
 static hashval_t type_hash_hash (const void *);
-static int tree_map_eq (const void *, const void *);
-static hashval_t tree_map_hash (const void *);
 static hashval_t int_cst_hash_hash (const void *);
 static int int_cst_hash_eq (const void *, const void *);
 static void print_type_hash_statistics (void);
@@ -158,19 +161,20 @@ static void print_debug_expr_statistics (void);
 static void print_value_expr_statistics (void);
 static tree make_vector_type (tree, int, enum machine_mode);
 static int type_hash_marked_p (const void *);
-static int tree_map_marked_p (const void *);
 static unsigned int type_hash_list (tree, hashval_t);
 static unsigned int attribute_hash_list (tree, hashval_t);
 
 tree global_trees[TI_MAX];
 tree integer_types[itk_none];
 
+unsigned char tree_contains_struct[256][64];
 
 /* Init tree.c.  */
 
 void
 init_ttree (void)
 {
+
   /* Initialize the hash table of types.  */
   type_hash_table = htab_create_ggc (TYPE_HASH_INITIAL_SIZE, type_hash_hash,
 				     type_hash_eq, 0);
@@ -180,12 +184,62 @@ init_ttree (void)
 
   value_expr_for_decl = htab_create_ggc (512, tree_map_hash,
 					 tree_map_eq, 0);
+  init_priority_for_decl = htab_create_ggc (512, tree_int_map_hash,
+					    tree_int_map_eq, 0);
 
   int_cst_hash_table = htab_create_ggc (1024, int_cst_hash_hash,
 					int_cst_hash_eq, NULL);
   
   int_cst_node = make_node (INTEGER_CST);
 
+  tree_contains_struct[FUNCTION_DECL][TS_DECL_NON_COMMON] = 1;
+  tree_contains_struct[TRANSLATION_UNIT_DECL][TS_DECL_NON_COMMON] = 1;
+  tree_contains_struct[TYPE_DECL][TS_DECL_NON_COMMON] = 1;
+  
+
+  tree_contains_struct[CONST_DECL][TS_DECL_COMMON] = 1;
+  tree_contains_struct[VAR_DECL][TS_DECL_COMMON] = 1;
+  tree_contains_struct[PARM_DECL][TS_DECL_COMMON] = 1;
+  tree_contains_struct[RESULT_DECL][TS_DECL_COMMON] = 1;
+  tree_contains_struct[FUNCTION_DECL][TS_DECL_COMMON] = 1;
+  tree_contains_struct[TYPE_DECL][TS_DECL_COMMON] = 1;
+  tree_contains_struct[TRANSLATION_UNIT_DECL][TS_DECL_COMMON] = 1;
+  tree_contains_struct[LABEL_DECL][TS_DECL_COMMON] = 1;
+  tree_contains_struct[FIELD_DECL][TS_DECL_COMMON] = 1;
+
+
+  tree_contains_struct[CONST_DECL][TS_DECL_WRTL] = 1;
+  tree_contains_struct[VAR_DECL][TS_DECL_WRTL] = 1;
+  tree_contains_struct[PARM_DECL][TS_DECL_WRTL] = 1;
+  tree_contains_struct[RESULT_DECL][TS_DECL_WRTL] = 1;
+  tree_contains_struct[FUNCTION_DECL][TS_DECL_WRTL] = 1;
+  tree_contains_struct[LABEL_DECL][TS_DECL_WRTL] = 1; 
+
+  tree_contains_struct[CONST_DECL][TS_DECL_MINIMAL] = 1;
+  tree_contains_struct[VAR_DECL][TS_DECL_MINIMAL] = 1;
+  tree_contains_struct[PARM_DECL][TS_DECL_MINIMAL] = 1;
+  tree_contains_struct[RESULT_DECL][TS_DECL_MINIMAL] = 1;
+  tree_contains_struct[FUNCTION_DECL][TS_DECL_MINIMAL] = 1;
+  tree_contains_struct[TYPE_DECL][TS_DECL_MINIMAL] = 1;
+  tree_contains_struct[TRANSLATION_UNIT_DECL][TS_DECL_MINIMAL] = 1;
+  tree_contains_struct[LABEL_DECL][TS_DECL_MINIMAL] = 1;
+  tree_contains_struct[FIELD_DECL][TS_DECL_MINIMAL] = 1;
+
+  tree_contains_struct[VAR_DECL][TS_DECL_WITH_VIS] = 1;
+  tree_contains_struct[FUNCTION_DECL][TS_DECL_WITH_VIS] = 1;
+  tree_contains_struct[TYPE_DECL][TS_DECL_WITH_VIS] = 1;
+  tree_contains_struct[TRANSLATION_UNIT_DECL][TS_DECL_WITH_VIS] = 1;
+  
+  tree_contains_struct[VAR_DECL][TS_VAR_DECL] = 1;
+  tree_contains_struct[FIELD_DECL][TS_FIELD_DECL] = 1;
+  tree_contains_struct[PARM_DECL][TS_PARM_DECL] = 1;
+  tree_contains_struct[LABEL_DECL][TS_LABEL_DECL] = 1;
+  tree_contains_struct[RESULT_DECL][TS_RESULT_DECL] = 1;
+  tree_contains_struct[CONST_DECL][TS_CONST_DECL] = 1;
+  tree_contains_struct[TYPE_DECL][TS_TYPE_DECL] = 1;
+  tree_contains_struct[FUNCTION_DECL][TS_FUNCTION_DECL] = 1;
+
+  lang_hooks.init_ts ();
 }
 
 
@@ -197,7 +251,7 @@ decl_assembler_name (tree decl)
 {
   if (!DECL_ASSEMBLER_NAME_SET_P (decl))
     lang_hooks.set_decl_assembler_name (decl);
-  return DECL_CHECK (decl)->decl.assembler_name;
+  return DECL_WITH_VIS_CHECK (decl)->decl_with_vis.assembler_name;
 }
 
 /* Compute the number of bytes occupied by a tree with code CODE.
@@ -209,7 +263,29 @@ tree_code_size (enum tree_code code)
   switch (TREE_CODE_CLASS (code))
     {
     case tcc_declaration:  /* A decl node */
-      return sizeof (struct tree_decl);
+      {
+	switch (code)
+	  {
+	  case FIELD_DECL:
+	    return sizeof (struct tree_field_decl);
+	  case PARM_DECL:
+	    return sizeof (struct tree_parm_decl);
+	  case VAR_DECL:
+	    return sizeof (struct tree_var_decl);
+	  case LABEL_DECL:
+	    return sizeof (struct tree_label_decl);
+	  case RESULT_DECL:
+	    return sizeof (struct tree_result_decl);
+	  case CONST_DECL:
+	    return sizeof (struct tree_const_decl);
+	  case TYPE_DECL:
+	    return sizeof (struct tree_type_decl);
+	  case FUNCTION_DECL:
+	    return sizeof (struct tree_function_decl);
+	  default:
+	    return sizeof (struct tree_decl_non_common);
+	  }
+      }
 
     case tcc_type:  /* a type node */
       return sizeof (struct tree_type);
@@ -395,12 +471,13 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
       if (code != FUNCTION_DECL)
 	DECL_ALIGN (t) = 1;
       DECL_USER_ALIGN (t) = 0;
-      DECL_IN_SYSTEM_HEADER (t) = in_system_header;
+      if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
+	DECL_IN_SYSTEM_HEADER (t) = in_system_header;
+      /* We have not yet computed the alias set for this declaration.  */
+      DECL_POINTER_ALIAS_SET (t) = -1;
       DECL_SOURCE_LOCATION (t) = input_location;
       DECL_UID (t) = next_decl_uid++;
 
-      /* We have not yet computed the alias set for this declaration.  */
-      DECL_POINTER_ALIAS_SET (t) = -1;
       break;
 
     case tcc_type:
@@ -479,6 +556,11 @@ copy_node_stat (tree node MEM_STAT_DECL)
 	{
 	  SET_DECL_VALUE_EXPR (t, DECL_VALUE_EXPR (node));
 	  DECL_HAS_VALUE_EXPR_P (t) = 1;
+	}
+      if (TREE_CODE (node) == VAR_DECL && DECL_HAS_INIT_PRIORITY_P (node))
+	{
+	  SET_DECL_INIT_PRIORITY (t, DECL_INIT_PRIORITY (node));
+	  DECL_HAS_INIT_PRIORITY_P (t) = 1;
 	}
       
     }
@@ -1814,9 +1896,31 @@ tree_node_structure (tree t)
   enum tree_code code = TREE_CODE (t);
 
   switch (TREE_CODE_CLASS (code))
-    {
+    {      
     case tcc_declaration:
-      return TS_DECL;
+      {
+	switch (code)
+	  {
+	  case FIELD_DECL:
+	    return TS_FIELD_DECL;
+	  case PARM_DECL:
+	    return TS_PARM_DECL;
+	  case VAR_DECL:
+	    return TS_VAR_DECL;
+	  case LABEL_DECL:
+	    return TS_LABEL_DECL;
+	  case RESULT_DECL:
+	    return TS_RESULT_DECL;
+	  case CONST_DECL:
+	    return TS_CONST_DECL;
+	  case TYPE_DECL:
+	    return TS_TYPE_DECL;
+	  case FUNCTION_DECL:
+	    return TS_FUNCTION_DECL;
+	  default:
+	    return TS_DECL_NON_COMMON;
+	  }
+      }
     case tcc_type:
       return TS_TYPE;
     case tcc_reference:
@@ -2877,10 +2981,13 @@ build_decl_stat (enum tree_code code, tree name, tree type MEM_STAT_DECL)
   else if (code == FUNCTION_DECL)
     DECL_MODE (t) = FUNCTION_MODE;
 
-  /* Set default visibility to whatever the user supplied with
-     visibility_specified depending on #pragma GCC visibility.  */
-  DECL_VISIBILITY (t) = default_visibility;
-  DECL_VISIBILITY_SPECIFIED (t) = visibility_options.inpragma;
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
+    {
+      /* Set default visibility to whatever the user supplied with
+	 visibility_specified depending on #pragma GCC visibility.  */
+      DECL_VISIBILITY (t) = default_visibility;
+      DECL_VISIBILITY_SPECIFIED (t) = visibility_options.inpragma;
+    }
 
   return t;
 }
@@ -3513,7 +3620,7 @@ build_variant_type_copy (tree type)
 
 /* Return true if the from tree in both tree maps are equal.  */
 
-static int
+int
 tree_map_eq (const void *va, const void *vb)
 {
   const struct tree_map  *a = va, *b = vb;
@@ -3522,7 +3629,7 @@ tree_map_eq (const void *va, const void *vb)
 
 /* Hash a from tree in a tree_map.  */
 
-static hashval_t
+unsigned int
 tree_map_hash (const void *item)
 {
   return (((const struct tree_map *) item)->hash);
@@ -3532,13 +3639,72 @@ tree_map_hash (const void *item)
    purposes.  We simply return true if the from tree is marked, so that this
    structure goes away when the from tree goes away.  */
 
-static int
+int
 tree_map_marked_p (const void *p)
 {
   tree from = ((struct tree_map *) p)->from;
 
   return ggc_marked_p (from);
 }
+
+/* Return true if the trees in the tree_int_map *'s VA and VB are equal.  */
+
+static int
+tree_int_map_eq (const void *va, const void *vb)
+{
+  const struct tree_int_map  *a = va, *b = vb;
+  return (a->from == b->from);
+}
+
+/* Hash a from tree in the tree_int_map * ITEM.  */
+
+static unsigned int
+tree_int_map_hash (const void *item)
+{
+  return htab_hash_pointer (((const struct tree_int_map *)item)->from);
+}
+
+/* Return true if this tree int map structure is marked for garbage collection
+   purposes.  We simply return true if the from tree_int_map *P's from tree is marked, so that this
+   structure goes away when the from tree goes away.  */
+
+static int
+tree_int_map_marked_p (const void *p)
+{
+  tree from = ((struct tree_int_map *) p)->from;
+
+  return ggc_marked_p (from);
+}
+/* Lookup an init priority for FROM, and return it if we find one.  */
+
+unsigned short
+decl_init_priority_lookup (tree from)
+{
+  struct tree_int_map *h, in;
+  in.from = from;
+
+  h = htab_find_with_hash (init_priority_for_decl, 
+			   &in, htab_hash_pointer (from));
+  if (h)
+    return h->to;
+  return 0;
+}
+
+/* Insert a mapping FROM->TO in the init priority hashtable.  */
+
+void
+decl_init_priority_insert (tree from, unsigned short to)
+{
+  struct tree_int_map *h;
+  void **loc;
+
+  h = ggc_alloc (sizeof (struct tree_int_map));
+  h->from = from;
+  h->to = to;
+  loc = htab_find_slot_with_hash (init_priority_for_decl, h, 
+				  htab_hash_pointer (from), INSERT);
+  *(struct tree_int_map **) loc = h;
+}  
 
 /* Print out the statistics for the DECL_DEBUG_EXPR hash table.  */
 
@@ -5664,6 +5830,31 @@ tree_class_check_failed (const tree node, const enum tree_code_class cl,
      TREE_CODE_CLASS_STRING (TREE_CODE_CLASS (TREE_CODE (node))),
      tree_code_name[TREE_CODE (node)], function, trim_filename (file), line);
 }
+#undef DEFTREESTRUCT
+#define DEFTREESTRUCT(VAL, NAME) NAME,
+
+static const char *ts_enum_names[] = {
+#include "treestruct.def"
+};
+#undef DEFTREESTRUCT
+
+#define TS_ENUM_NAME(EN) (ts_enum_names[(EN)])
+
+/* Similar to tree_class_check_failed, except that we check for
+   whether CODE contains the tree structure identified by EN.  */
+
+void
+tree_contains_struct_check_failed (const tree node, 
+				   const enum tree_node_structure_enum en,
+				   const char *file, int line, 
+				   const char *function)
+{
+  internal_error
+    ("tree check: expected tree that contains %qs structure, have %qs  in %s, at %s:%d",
+     TS_ENUM_NAME(en),
+     tree_code_name[TREE_CODE (node)], function, trim_filename (file), line);
+}
+
 
 /* Similar to above, except that the check is for the bounds of a TREE_VEC's
    (dynamically sized) vector.  */

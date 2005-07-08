@@ -1,3 +1,17 @@
+2005-07-08  Daniel Berlin  <dberlin@dberlin.org>
+	
+	* objc-act.c (objc_push_parm): DECL_ARG_TYPE_AS_WRITTEN is
+	removed.
+	* objc-act.h (KEYWORD_ARG_NAME): Use decl_non_common.
+	(KEYWORD_KEY_NAME): Use decl_minimal.
+	(METHOD_SEL_NAME): Ditto..
+	(METHOD_SEL_ARGS): Use decl_non_common.
+	(METHOD_ADD_ARGS): Ditto.
+	(METHOD_ADD_ARGS_ELLIPSIS_P): Use decl_common.
+	(METHOD_DEFINITION): Ditto.
+	(METHOD_ENCODING): Ditto.
+	* objc-lang.c: (objc_init_ts): New function.
+
 2005-07-07  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc-act.c (objc_build_struct): Pass in an actual @interface

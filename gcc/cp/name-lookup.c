@@ -1081,10 +1081,12 @@ check_for_out_of_scope_variable (tree decl)
   if (!(TREE_CODE (decl) == VAR_DECL && DECL_DEAD_FOR_LOCAL (decl)))
     return decl;
 
-  shadowed = DECL_SHADOWED_FOR_VAR (decl);
+  shadowed = DECL_HAS_SHADOWED_FOR_VAR_P (decl) 
+    ? DECL_SHADOWED_FOR_VAR (decl) : NULL_TREE ;
   while (shadowed != NULL_TREE && TREE_CODE (shadowed) == VAR_DECL
 	 && DECL_DEAD_FOR_LOCAL (shadowed))
-    shadowed = DECL_SHADOWED_FOR_VAR (shadowed);
+    shadowed = DECL_HAS_SHADOWED_FOR_VAR_P (shadowed) 
+      ? DECL_SHADOWED_FOR_VAR (shadowed) : NULL_TREE;
   if (!shadowed)
     shadowed = IDENTIFIER_NAMESPACE_VALUE (DECL_NAME (decl));
   if (shadowed)

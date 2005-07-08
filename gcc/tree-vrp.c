@@ -111,7 +111,7 @@ expr_computes_nonzero (tree expr)
      has requested not to remove NULL pointer checks.  */
   if (flag_delete_null_pointer_checks
       && TREE_CODE (expr) == ADDR_EXPR
-      && DECL_P (TREE_OPERAND (expr, 0))
+      && VAR_OR_FUNCTION_DECL_P (TREE_OPERAND (expr, 0))
       && !DECL_WEAK (TREE_OPERAND (expr, 0)))
     return true;
 

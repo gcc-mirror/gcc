@@ -167,11 +167,13 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
   int len;
   int i;
   expanded_location xloc;
+  enum tree_code code;
 
   if (node == 0)
     return;
-
-  class = TREE_CODE_CLASS (TREE_CODE (node));
+  
+  code = TREE_CODE (node);
+  class = TREE_CODE_CLASS (code);
 
   /* Don't get too deep in nesting.  If the user wants to see deeper,
      it is easy to use the address of a lowest-level node
@@ -319,21 +321,23 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
       if (DECL_IGNORED_P (node))
 	fputs (" ignored", file);
       if (DECL_ABSTRACT (node))
-	fputs (" abstract", file);
-      if (DECL_IN_SYSTEM_HEADER (node))
-	fputs (" in_system_header", file);
-      if (DECL_COMMON (node))
-	fputs (" common", file);
+	fputs (" abstract", file);      
       if (DECL_EXTERNAL (node))
 	fputs (" external", file);
-      if (DECL_WEAK (node))
-	fputs (" weak", file);
-      if (DECL_REGISTER (node) && TREE_CODE (node) != FIELD_DECL
-	  && TREE_CODE (node) != FUNCTION_DECL
-	  && TREE_CODE (node) != LABEL_DECL)
-	fputs (" regdecl", file);
       if (DECL_NONLOCAL (node))
 	fputs (" nonlocal", file);
+      if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
+	{
+	  if (DECL_WEAK (node))
+	    fputs (" weak", file);
+	  if (DECL_IN_SYSTEM_HEADER (node))
+	    fputs (" in_system_header", file);
+	}
+      if (CODE_CONTAINS_STRUCT (code, TS_DECL_WRTL)
+	  && TREE_CODE (node) != LABEL_DECL
+	  && TREE_CODE (node) != FUNCTION_DECL
+	  && DECL_REGISTER (node))
+	fputs (" regdecl", file);
 
       if (TREE_CODE (node) == TYPE_DECL && TYPE_DECL_SUPPRESS_DEBUG (node))
 	fputs (" suppress-debug", file);
@@ -357,6 +361,8 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 
       if (TREE_CODE (node) == VAR_DECL && DECL_IN_TEXT_SECTION (node))
 	fputs (" in-text-section", file);
+      if (TREE_CODE (node) == VAR_DECL && DECL_COMMON (node))
+	fputs (" common", file);
       if (TREE_CODE (node) == VAR_DECL && DECL_THREAD_LOCAL_P (node))
 	{
 	  enum tls_model kind = DECL_TLS_MODEL (node);
@@ -384,7 +390,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 
       if (DECL_VIRTUAL_P (node))
 	fputs (" virtual", file);
-      if (DECL_DEFER_OUTPUT (node))
+      if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS)  && DECL_DEFER_OUTPUT (node))
 	fputs (" defer-output", file);
 
       if (DECL_PRESERVE_P (node))
@@ -450,13 +456,20 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	}
 
       print_node_brief (file, "context", DECL_CONTEXT (node), indent + 4);
+
       print_node_brief (file, "attributes",
 			DECL_ATTRIBUTES (node), indent + 4);
-      print_node_brief (file, "abstract_origin",
-			DECL_ABSTRACT_ORIGIN (node), indent + 4);
-
-      print_node (file, "arguments", DECL_ARGUMENTS (node), indent + 4);
-      print_node (file, "result", DECL_RESULT_FLD (node), indent + 4);
+      
+      if (CODE_CONTAINS_STRUCT (code, TS_DECL_WRTL))
+	{
+	  print_node_brief (file, "abstract_origin",
+			    DECL_ABSTRACT_ORIGIN (node), indent + 4);
+	}
+      if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
+	{
+	  print_node (file, "arguments", DECL_ARGUMENTS (node), indent + 4);
+	  print_node (file, "result", DECL_RESULT_FLD (node), indent + 4);
+	}
       print_node_brief (file, "initial", DECL_INITIAL (node), indent + 4);
 
       lang_hooks.print_decl (file, node, indent);
@@ -470,8 +483,6 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
       if (TREE_CODE (node) == PARM_DECL)
 	{
 	  print_node (file, "arg-type", DECL_ARG_TYPE (node), indent + 4);
-	  print_node (file, "arg-type-as-written",
-		      DECL_ARG_TYPE_AS_WRITTEN (node), indent + 4);
 
 	  if (DECL_INCOMING_RTL (node) != 0)
 	    {

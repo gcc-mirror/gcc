@@ -186,7 +186,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 static const size_t extra_order_size_table[] = {
   sizeof (struct stmt_ann_d),
-  sizeof (struct tree_decl),
+  sizeof (struct tree_decl_non_common),
+  sizeof (struct tree_field_decl),
+  sizeof (struct tree_parm_decl),
+  sizeof (struct tree_var_decl),
   sizeof (struct tree_list),
   TREE_EXP_SIZE (2),
   RTL_SIZE (2),			/* MEM, PLUS, etc.  */

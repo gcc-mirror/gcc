@@ -1841,7 +1841,8 @@ handle_init_priority_attribute (tree* node,
 
   if (SUPPORTS_INIT_PRIORITY)
     {
-      DECL_INIT_PRIORITY (decl) = pri;
+      SET_DECL_INIT_PRIORITY (decl, pri);
+      DECL_HAS_INIT_PRIORITY_P (decl) = 1;
       return NULL_TREE;
     }
   else
@@ -2128,7 +2129,7 @@ decl_linkage (tree decl)
      template instantiations have internal linkage (in the object
      file), but the symbols should still be treated as having external
      linkage from the point of view of the language.  */
-  if (DECL_LANG_SPECIFIC (decl) && DECL_COMDAT (decl))
+  if (TREE_CODE (decl) != TYPE_DECL && DECL_LANG_SPECIFIC (decl) && DECL_COMDAT (decl))
     return lk_external;
 
   /* Things in local scope do not have linkage, if they don't have

@@ -137,7 +137,8 @@ copy_decl_for_inlining (tree decl, tree from_fn, tree to_fn)
   DECL_ABSTRACT_ORIGIN (copy) = DECL_ORIGIN (decl);
 
   /* The new variable/label has no RTL, yet.  */
-  if (!TREE_STATIC (copy) && !DECL_EXTERNAL (copy))
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (copy), TS_DECL_WRTL) 
+      && !TREE_STATIC (copy) && !DECL_EXTERNAL (copy))
     SET_DECL_RTL (copy, NULL_RTX);
 
   /* These args would always appear unused, if not for this.  */

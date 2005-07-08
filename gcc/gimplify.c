@@ -860,7 +860,8 @@ gimplify_bind_expr (tree *expr_p, tree temp, tree *pre_p)
   /* Mark variables seen in this bind expr.  */
   for (t = BIND_EXPR_VARS (bind_expr); t ; t = TREE_CHAIN (t))
     {
-      DECL_SEEN_IN_BIND_EXPR_P (t) = 1;
+      if (TREE_CODE (t) == VAR_DECL)
+	DECL_SEEN_IN_BIND_EXPR_P (t) = 1;
 
       /* Preliminarily mark non-addressed complex variables as eligible
 	 for promotion to gimple registers.  We'll transform their uses
@@ -3035,7 +3036,8 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
 		 When optimizing, the return_slot pass marks more functions
 		 as safe after we have escape info.  */
 	      use_target = false;
-	    else if (DECL_GIMPLE_FORMAL_TEMP_P (*to_p))
+	    else if (TREE_CODE (*to_p) != PARM_DECL 
+		     && DECL_GIMPLE_FORMAL_TEMP_P (*to_p))
 	      /* Don't use the original target if it's a formal temp; we
 		 don't want to take their addresses.  */
 	      use_target = false;

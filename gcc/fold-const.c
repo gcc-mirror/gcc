@@ -8736,7 +8736,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	 object against zero, then we know the result.  */
       if ((code == EQ_EXPR || code == NE_EXPR)
 	  && TREE_CODE (arg0) == ADDR_EXPR
-	  && DECL_P (TREE_OPERAND (arg0, 0))
+	  && VAR_OR_FUNCTION_DECL_P (TREE_OPERAND (arg0, 0))
 	  && ! DECL_WEAK (TREE_OPERAND (arg0, 0))
 	  && integer_zerop (arg1))
 	return constant_boolean_node (code != EQ_EXPR, type);
@@ -8746,13 +8746,13 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	 have access to attributes for externs), then we know the result.  */
       if ((code == EQ_EXPR || code == NE_EXPR)
 	  && TREE_CODE (arg0) == ADDR_EXPR
-	  && DECL_P (TREE_OPERAND (arg0, 0))
+	  && VAR_OR_FUNCTION_DECL_P (TREE_OPERAND (arg0, 0))
 	  && ! DECL_WEAK (TREE_OPERAND (arg0, 0))
 	  && ! lookup_attribute ("alias",
 				 DECL_ATTRIBUTES (TREE_OPERAND (arg0, 0)))
 	  && ! DECL_EXTERNAL (TREE_OPERAND (arg0, 0))
 	  && TREE_CODE (arg1) == ADDR_EXPR
-	  && DECL_P (TREE_OPERAND (arg1, 0))
+	  && VAR_OR_FUNCTION_DECL_P (TREE_OPERAND (arg1, 0))
 	  && ! DECL_WEAK (TREE_OPERAND (arg1, 0))
 	  && ! lookup_attribute ("alias",
 				 DECL_ATTRIBUTES (TREE_OPERAND (arg1, 0)))
@@ -10181,14 +10181,14 @@ fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
 {
   void **slot;
   enum tree_code code;
-  char buf[sizeof (struct tree_decl)];
+  char buf[sizeof (struct tree_decl_non_common)];
   int i, len;
   
 recursive_label:
 
   gcc_assert ((sizeof (struct tree_exp) + 5 * sizeof (tree)
-	       <= sizeof (struct tree_decl))
-	      && sizeof (struct tree_type) <= sizeof (struct tree_decl));
+	       <= sizeof (struct tree_decl_non_common))
+	      && sizeof (struct tree_type) <= sizeof (struct tree_decl_non_common));
   if (expr == NULL)
     return;
   slot = htab_find_slot (ht, expr, INSERT);
@@ -10834,7 +10834,7 @@ tree_expr_nonzero_p (tree t)
 	  return false;
 
 	/* Weak declarations may link to NULL.  */
-	if (DECL_P (base))
+	if (VAR_OR_FUNCTION_DECL_P (base))
 	  return !DECL_WEAK (base);
 
 	/* Constants are never weak.  */

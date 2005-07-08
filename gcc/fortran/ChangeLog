@@ -1,3 +1,8 @@
+2005-07-08  Daniel Berlin  <dberlin@dberlin.org>
+	
+	* trans-decl.c (create_function_arglist): DECL_ARG_TYPE_AS_WRITTEN
+	is removed.
+
 2005-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* primary.c (gfc_match_rvalue): Handle ENTRY the same way

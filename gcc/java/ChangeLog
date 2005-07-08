@@ -1,3 +1,10 @@
+2005-07-08  Daniel Berlin  <dberlin@dberlin.org>
+	
+	* java-tree.h (LABEL_RETURN_LABELS): Use decl_non_common.
+	(LABEL_PENDING_CHAIN): Ditto.
+	(LABEL_PC): Ditto.
+	(DECL_BIT_INDEX): Ditto.	
+
 2005-07-07  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR java/18119
