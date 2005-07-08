@@ -1,3 +1,8 @@
+2005-07-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* version.c (version_string): Set to 4.0.2, in prerelease format.
+	* doc/include/gcc-common.texi (version): Set to 4.0.2.
+	
 2005-07-07  Release Manager
 
 	* GCC 4.0.1 released.
