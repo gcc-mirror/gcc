@@ -1,3 +1,10 @@
+2005-07-08  Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* bitmap.c (bitmap_and, bitmap_and_into, bitmap_and_compl,
+	bitmap_and_compl_into, bitmap_xor, bitmap_xor_into): Removed "a !=
+	b" assert and inserted fastpath code for this case.
+	(bitmap_ior): Removed "a != b" assert.
+
 2005-07-08  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
 
 	* config/m32r/linux.h (STARTFILE_SPEC): Support PIE.
