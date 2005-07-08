@@ -1,3 +1,11 @@
+2005-07-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21799
+	* pt.c (type_unification_real): Add is_method argument.  Use it
+	for this pointer unification.
+	(fn_type_unification): Adjust type_unification_real call.
+	(unify): Likewise.
+
 2005-07-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (type_unification_real): Remove allow_incomplete argument.
