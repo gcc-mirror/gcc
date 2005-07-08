@@ -425,6 +425,12 @@ struct lang_hooks
 			    enum built_in_class bt_class,
 			    const char *library_name, tree attrs);
 
+  /* Called by recompute_tree_invarant_for_addr_expr to go from EXPR
+     to a contained expression or DECL, possibly updating *TC, *TI or
+     *SE if in the process TREE_CONSTANT, TREE_INVARIANT or
+     TREE_SIDE_EFFECTS need updating.  */
+  tree (*expr_to_decl) (tree expr, bool *tc, bool *ti, bool *se);
+
   /* Whenever you add entries here, make sure you adjust langhooks-def.h
      and langhooks.c accordingly.  */
 };

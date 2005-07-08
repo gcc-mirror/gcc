@@ -2745,9 +2745,6 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 
       val = build1 (ADDR_EXPR, argtype, arg);
 
-      if (TREE_CODE (arg) == COMPOUND_LITERAL_EXPR)
-	TREE_INVARIANT (val) = TREE_CONSTANT (val) = 1;
-
       return val;
 
     default:
@@ -8011,4 +8008,25 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
       result = convert (final_type, result);
     return result;
   }
+}
+
+
+/* Convert EXPR to a contained DECL, updating *TC, *TI and *SE as
+   required.  */
+
+tree
+c_expr_to_decl (tree expr, bool *tc ATTRIBUTE_UNUSED,
+		bool *ti ATTRIBUTE_UNUSED, bool *se)
+{
+  if (TREE_CODE (expr) == COMPOUND_LITERAL_EXPR)
+    {
+      tree decl = COMPOUND_LITERAL_EXPR_DECL (expr);
+      /* Executing a compound literal inside a function reinitializes
+	 it.  */
+      if (!TREE_STATIC (decl))
+	*se = true;
+      return decl;
+    }
+  else
+    return expr;
 }

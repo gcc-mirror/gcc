@@ -69,6 +69,7 @@ extern const char *lhd_comdat_group (tree);
 extern tree lhd_expr_size (tree);
 extern size_t lhd_tree_size (enum tree_code);
 extern HOST_WIDE_INT lhd_to_target_charset (HOST_WIDE_INT);
+extern tree lhd_expr_to_decl (tree, bool *, bool *, bool *);
 
 /* Declarations of default tree inlining hooks.  */
 extern tree lhd_tree_inlining_walk_subtrees (tree *, int *, walk_tree_fn,
@@ -123,6 +124,7 @@ extern int lhd_gimplify_expr (tree *, tree *, tree *);
 #define LANG_HOOKS_TREE_SIZE		lhd_tree_size
 #define LANG_HOOKS_TYPES_COMPATIBLE_P	lhd_types_compatible_p
 #define LANG_HOOKS_BUILTIN_FUNCTION	builtin_function
+#define LANG_HOOKS_EXPR_TO_DECL		lhd_expr_to_decl
 #define LANG_HOOKS_TO_TARGET_CHARSET	lhd_to_target_charset
 
 #define LANG_HOOKS_FUNCTION_INIT	lhd_do_nothing_f
@@ -300,6 +302,7 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_GIMPLIFY_EXPR, \
   LANG_HOOKS_FOLD_OBJ_TYPE_REF, \
   LANG_HOOKS_BUILTIN_FUNCTION, \
+  LANG_HOOKS_EXPR_TO_DECL, \
 }
 
 #endif /* GCC_LANG_HOOKS_DEF_H */

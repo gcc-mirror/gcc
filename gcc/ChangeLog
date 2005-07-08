@@ -1,3 +1,20 @@
+2005-07-08  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/22013
+	PR c/22098
+	* langhooks.h (struct lang_hooks): Add expr_to_decl.
+	* langhooks.c (lhd_expr_to_decl): New.
+	* langhooks-def.h (lhd_expr_to_decl, LANG_HOOKS_EXPR_TO_DECL):
+	New.
+	(LANG_HOOKS_INITIALIZER): Update.
+	* tree.c (recompute_tree_invarant_for_addr_expr): Call
+	expr_to_decl langhook.
+	* c-tree.h (c_expr_to_decl): Declare.
+	* c-typeck.c (c_expr_to_decl): New.
+	(build_unary_op): Do not handle ADDR_EXPR of COMPOUND_LITERAL_EXPR
+	specially.
+	* c-objc-common.h (LANG_HOOKS_EXPR_TO_DECL): Define.
+
 2005-07-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* version.c (version_string): Set to 4.0.2, in prerelease format.

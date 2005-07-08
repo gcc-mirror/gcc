@@ -2422,6 +2422,8 @@ do { tree _node = (NODE); \
 	UPDATE_TITCSE (TREE_OPERAND (node, 2));
     }
 
+  node = lang_hooks.expr_to_decl (node, &tc, &ti, &se);
+
   /* Now see what's inside.  If it's an INDIRECT_REF, copy our properties from
      the address, since &(*a)->b is a form of addition.  If it's a decl, it's
      invariant and constant if the decl is static.  It's also invariant if it's

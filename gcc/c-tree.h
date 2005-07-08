@@ -572,6 +572,7 @@ extern tree c_finish_goto_label (tree);
 extern tree c_finish_goto_ptr (tree);
 extern void c_begin_vm_scope (unsigned int);
 extern void c_end_vm_scope (unsigned int);
+extern tree c_expr_to_decl (tree, bool *, bool *, bool *);
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */

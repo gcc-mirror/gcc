@@ -552,3 +552,10 @@ lhd_to_target_charset (HOST_WIDE_INT c)
 {
   return c;
 }
+
+tree
+lhd_expr_to_decl (tree expr, bool *tc ATTRIBUTE_UNUSED,
+		  bool *ti ATTRIBUTE_UNUSED, bool *se ATTRIBUTE_UNUSED)
+{
+  return expr;
+}
