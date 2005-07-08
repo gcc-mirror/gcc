@@ -244,13 +244,11 @@ extern int dot_symbols;
    the first field is an FP double, only if in power alignment mode.  */
 #undef  ROUND_TYPE_ALIGN
 #define ROUND_TYPE_ALIGN(STRUCT, COMPUTED, SPECIFIED)			\
-  ((TARGET_ALTIVEC && TREE_CODE (STRUCT) == VECTOR_TYPE)		\
-   ? MAX (MAX ((COMPUTED), (SPECIFIED)), 128)				\
-   : (TARGET_64BIT							\
-      && (TREE_CODE (STRUCT) == RECORD_TYPE				\
-	  || TREE_CODE (STRUCT) == UNION_TYPE				\
-	  || TREE_CODE (STRUCT) == QUAL_UNION_TYPE)			\
-      && TARGET_ALIGN_NATURAL == 0)					\
+  ((TARGET_64BIT							\
+    && (TREE_CODE (STRUCT) == RECORD_TYPE				\
+	|| TREE_CODE (STRUCT) == UNION_TYPE				\
+	|| TREE_CODE (STRUCT) == QUAL_UNION_TYPE)			\
+    && TARGET_ALIGN_NATURAL == 0)					\
    ? rs6000_special_round_type_align (STRUCT, COMPUTED, SPECIFIED)	\
    : MAX ((COMPUTED), (SPECIFIED)))
 

@@ -1,3 +1,13 @@
+2005-07-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	Backport from mainline:
+
+	2005-06-09  Aldy Hernandez  <aldyh@redhat.com>
+        PR 17961
+        * config/rs6000/sysv4.h (ROUND_TYPE_ALIGN): Remove.
+        * config/rs6000/linux64.h (ROUND_TYPE_ALIGN): Remove vector check.
+        * testsuite/gcc.dg/simd-3.c: New.
+
 2005-07-08  David Edelsohn  <edelsohn@gnu.org>
 
 	Backport from mainline:
