@@ -90,6 +90,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "dbxout.h"
 #endif
 
+#ifdef SDB_DEBUGGING_INFO
+#include "sdbout.h"
+#endif
+
 /* If we aren't using cc0, CC_STATUS_INIT shouldn't exist.  So define a
    null default for it to save conditionalization later.  */
 #ifndef CC_STATUS_INIT
