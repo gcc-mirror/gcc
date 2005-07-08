@@ -542,3 +542,57 @@ find_subframework_header (cpp_reader *pfile, const char *header, cpp_dir **dirp)
 
   return 0;
 }
+
+/* Return the value of darwin_macosx_version_min suitable for the
+   __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ macro,
+   so '10.4.2' becomes 1042.  
+   Print a warning if the version number is not known.  */
+static const char *
+version_as_macro (void)
+{
+  static char result[] = "1000";
+  
+  if (strncmp (darwin_macosx_version_min, "10.", 3) != 0)
+    goto fail;
+  if (! ISDIGIT (darwin_macosx_version_min[3]))
+    goto fail;
+  result[2] = darwin_macosx_version_min[3];
+  if (darwin_macosx_version_min[4] != '\0')
+    {
+      if (darwin_macosx_version_min[4] != '.')
+	goto fail;
+      if (! ISDIGIT (darwin_macosx_version_min[5]))
+	goto fail;
+      if (darwin_macosx_version_min[6] != '\0')
+	goto fail;
+      result[3] = darwin_macosx_version_min[5];
+    }
+  else
+    result[3] = '0';
+  
+  return result;
+  
+ fail:
+  error ("Unknown value %qs of -mmacosx-version-min",
+	 darwin_macosx_version_min);
+  return "1000";
+}
+
+/* Define additional CPP flags for Darwin.   */
+
+#define builtin_define(TXT) cpp_define (pfile, TXT)
+
+void
+darwin_cpp_builtins (cpp_reader *pfile)
+{
+  builtin_define ("__MACH__");
+  builtin_define ("__APPLE__");
+
+  /* __APPLE_CC__ is defined as some old Apple include files expect it
+     to be defined and won't work if it isn't.  */
+  builtin_define_with_value ("__APPLE_CC__", "1", false);
+
+  if (darwin_macosx_version_min)
+    builtin_define_with_value ("__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__",
+			       version_as_macro(), false);
+}

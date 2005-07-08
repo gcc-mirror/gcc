@@ -185,13 +185,11 @@ Boston, MA 02110-1301, USA.  */
    !strcmp (STR, "dylinker_install_name") ? 1 : \
    0)
 
-/* Machine dependent cpp options.  __APPLE_CC__ is defined as the
-   Apple include files expect it to be defined and won't work if it
-   isn't.  */
+/* Machine dependent cpp options.  Don't add more options here, add
+   them to darwin_cpp_builtins in darwin-c.c.  */
 
 #undef	CPP_SPEC
-#define CPP_SPEC "%{static:%{!dynamic:-D__STATIC__}}%{!static:-D__DYNAMIC__}\
-    -D__APPLE_CC__=1"
+#define CPP_SPEC "%{static:%{!dynamic:-D__STATIC__}}%{!static:-D__DYNAMIC__}"
 
 /* This is mostly a clone of the standard LINK_COMMAND_SPEC, plus
    precomp, libtool, and fat build additions.  Also we
@@ -291,12 +289,9 @@ Boston, MA 02110-1301, USA.  */
    %{dylinker} %{Mach} "
 
 
-/* Machine dependent libraries but do not redefine it if we already on 7.0 and
-   above as it needs to link with libmx also.  */
+/* Machine dependent libraries.  */
 
-#ifndef	LIB_SPEC
 #define LIB_SPEC "%{!static:-lSystem}"
-#endif
 
 /* -dynamiclib implies -shared-libgcc just like -shared would on linux.  */
 #define REAL_LIBGCC_SPEC \
@@ -1033,10 +1028,8 @@ void add_framework_path (char *);
 
 #define TARGET_HAS_F_SETLKW
 
-/* Darwin before 7.0 does not have C99 functions.   */
-#ifndef TARGET_C99_FUNCTIONS
-#define TARGET_C99_FUNCTIONS 0
-#endif
+/* All new versions of Darwin have C99 functions.  */
+#define TARGET_C99_FUNCTIONS
 
 #define WINT_TYPE "int"
 

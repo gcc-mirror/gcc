@@ -1,3 +1,16 @@
+2005-07-07  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/darwin-version-1.c: New.
+	* gcc.dg/builtins-18.c: On Darwin, needs -mmacosx-version-min=10.3.
+	* gcc.dg/builtins-20.c: Likewise.
+	* gcc.dg/builtins-53.c: Likewise.
+	* gcc.dg/torture/builtins-convert-1.c: Likewise.
+	* gcc.dg/torture/builtins-convert-2.c: Likewise.
+	* gcc.dg/torture/builtins-convert-3.c: Likewise.
+	* gcc.dg/torture/builtins-power-1.c: Likewise.
+	* gcc.dg/builtins-config.h: Complain if macosx-version-min not set
+	on Darwin.
+
 2005-07-07  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/vrp17.c: Simplify.  Remove dependency on

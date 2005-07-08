@@ -19,16 +19,15 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
-/* Darwin 7.0 and above have C99 functions.   */
-#define TARGET_C99_FUNCTIONS 1
-
 /* Machine dependent libraries.  Include libmx when compiling on
    Darwin 7.0 and above, but before libSystem, since the functions are
    actually in libSystem but for 7.x compatibility we want them to be
-   looked for in libmx first.  Include libSystemStubs when compiling
-   on 8.0 and above and not 64-bit long double.  */
+   looked for in libmx first---but only do this if 7.x compatibility
+   is a concern, which it's not in 64-bit mode.  Include
+   libSystemStubs when compiling on (not necessarily for) 8.0 and
+   above and not 64-bit long double.  */
 
 #undef	LIB_SPEC
 #define LIB_SPEC "%{!static:\
   %{!mlong-double-64:%{pg:-lSystemStubs_profile;:-lSystemStubs}} \
-  -lmx -lSystem}"
+  %{!m64:%:version-compare(>< 10.3 10.4 mmacosx-version-min= -lmx)} -lSystem}"

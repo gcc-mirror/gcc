@@ -33,8 +33,7 @@ Boston, MA 02110-1301, USA.  */
     {                                           \
       builtin_define ("__i386__");              \
       builtin_define ("__LITTLE_ENDIAN__");     \
-      builtin_define ("__MACH__");              \
-      builtin_define ("__APPLE__");             \
+      darwin_cpp_builtins (pfile);		\
     }                                           \
   while (0)
 

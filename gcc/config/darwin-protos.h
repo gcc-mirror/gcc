@@ -1,5 +1,5 @@
 /* Prototypes.
-   Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -135,3 +135,4 @@ extern void darwin_assemble_visibility (tree, int);
 extern void darwin_asm_output_dwarf_delta (FILE *, int, const char *,
 					   const char *);
 extern bool darwin_binds_local_p (tree);
+extern void darwin_cpp_builtins (struct cpp_reader *);

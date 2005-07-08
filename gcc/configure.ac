@@ -1049,8 +1049,9 @@ AM_LANGINFO_CODESET
 # We will need to find libiberty.h and ansidecl.h
 saved_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -I${srcdir} -I${srcdir}/../include"
-gcc_AC_CHECK_DECLS(getenv atol asprintf sbrk abort atof getcwd getwd strsignal \
-	strstr errno snprintf vsnprintf vasprintf malloc realloc calloc \
+gcc_AC_CHECK_DECLS(getenv atol asprintf sbrk abort atof getcwd getwd \
+	strsignal strstr strverscmp \
+	errno snprintf vsnprintf vasprintf malloc realloc calloc \
 	free basename getopt clock getpagesize gcc_UNLOCKED_FUNCS, , ,[
 #include "ansidecl.h"
 #include "system.h"])

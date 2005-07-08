@@ -80,6 +80,7 @@ compilation is specified by a string called a "spec".  */
 #if ! defined( SIGCHLD ) && defined( SIGCLD )
 #  define SIGCHLD SIGCLD
 #endif
+#include "xregex.h"
 #include "obstack.h"
 #include "intl.h"
 #include "prefix.h"
@@ -349,6 +350,7 @@ static const char *convert_filename (const char *, int, int);
 static const char *if_exists_spec_function (int, const char **);
 static const char *if_exists_else_spec_function (int, const char **);
 static const char *replace_outfile_spec_function (int, const char **);
+static const char *version_compare_spec_function (int, const char **);
 
 /* The Specs Language
 
@@ -1577,6 +1579,7 @@ static const struct spec_function static_spec_functions[] =
   { "if-exists",		if_exists_spec_function },
   { "if-exists-else",		if_exists_else_spec_function },
   { "replace-outfile",		replace_outfile_spec_function },
+  { "version-compare",		version_compare_spec_function },
   { 0, 0 }
 };
 
@@ -7573,8 +7576,9 @@ if_exists_else_spec_function (int argc, const char **argv)
 }
 
 /* replace-outfile built-in spec function.
-   This looks for the first argument in the outfiles array's name and replaces it
-   with the second argument.  */
+
+   This looks for the first argument in the outfiles array's name and
+   replaces it with the second argument.  */
 
 static const char *
 replace_outfile_spec_function (int argc, const char **argv)
@@ -7592,3 +7596,120 @@ replace_outfile_spec_function (int argc, const char **argv)
   return NULL;
 }
 
+/* Given two version numbers, compares the two numbers.  
+   A version number must match the regular expression
+   ([1-9][0-9]*|0)(\.([1-9][0-9]*|0))*
+*/
+static int
+compare_version_strings (const char *v1, const char *v2)
+{
+  int rresult;
+  regex_t r;
+  
+  if (regcomp (&r, "^([1-9][0-9]*|0)(\\.([1-9][0-9]*|0))*$",
+	       REG_EXTENDED | REG_NOSUB) != 0)
+    abort ();
+  rresult = regexec (&r, v1, 0, NULL, 0);
+  if (rresult == REG_NOMATCH)
+    fatal ("invalid version number `%s'", v1);
+  else if (rresult != 0)
+    abort ();
+  rresult = regexec (&r, v2, 0, NULL, 0);
+  if (rresult == REG_NOMATCH)
+    fatal ("invalid version number `%s'", v2);
+  else if (rresult != 0)
+    abort ();
+
+  return strverscmp (v1, v2);
+}
+
+
+/* version_compare built-in spec function.
+
+   This takes an argument of the following form:
+
+   <comparison-op> <arg1> [<arg2>] <switch> <result>
+
+   and produces "result" if the comparison evaluates to true,
+   and nothing if it doesn't.
+
+   The supported <comparison-op> values are:
+   
+   >=  true if switch is a later (or same) version than arg1
+   !>  opposite of >=
+   <   true if switch is an earlier version than arg1
+   !<  opposite of <
+   ><  true if switch is arg1 or later, and earlier than arg2
+   <>  true if switch is earlier than arg1 or is arg2 or later
+
+   If the switch is not present, the condition is false unless
+   the first character of the <comparison-op> is '!'.
+
+   For example,
+   %:version-compare(>= 10.3 mmacosx-version-min= -lmx)
+   adds -lmx if -mmacosx-version-min=10.3.9 was passed.  */
+
+static const char *
+version_compare_spec_function (int argc, const char **argv)
+{
+  int comp1, comp2;
+  size_t switch_len;
+  const char *switch_value = NULL;
+  int nargs = 1, i;
+  bool result;
+
+  if (argc < 3)
+    abort ();
+  if (argv[0][0] == '\0')
+    abort ();
+  if ((argv[0][1] == '<' || argv[0][1] == '>') && argv[0][0] != '!')
+    nargs = 2;
+  if (argc != nargs + 3)
+    abort ();
+
+  switch_len = strlen (argv[nargs + 1]);
+  for (i = 0; i < n_switches; i++)
+    if (!strncmp (switches[i].part1, argv[nargs + 1], switch_len)
+	&& check_live_switch (i, switch_len))
+      switch_value = switches[i].part1 + switch_len;
+
+  if (switch_value == NULL)
+    comp1 = comp2 = -1;
+  else
+    {
+      comp1 = compare_version_strings (switch_value, argv[1]);
+      if (nargs == 2)
+	comp2 = compare_version_strings (switch_value, argv[2]);
+      else
+	comp2 = -1;  /* This value unused.  */
+    }
+
+  switch (argv[0][0] << 8 | argv[0][1])
+    {
+    case '>' << 8 | '=':
+      result = comp1 >= 0;
+      break;
+    case '!' << 8 | '<':
+      result = comp1 >= 0 || switch_value == NULL;
+      break;
+    case '<' << 8:
+      result = comp1 < 0;
+      break;
+    case '!' << 8 | '>':
+      result = comp1 < 0 || switch_value == NULL;
+      break;
+    case '>' << 8 | '<':
+      result = comp1 >= 0 && comp2 < 0;
+      break;
+    case '<' << 8 | '>':
+      result = comp1 < 0 || comp2 >= 0;
+      break;
+      
+    default:
+      abort ();
+    }
+  if (! result)
+    return NULL;
+
+  return argv[nargs + 2];
+}

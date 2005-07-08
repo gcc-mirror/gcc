@@ -19,6 +19,15 @@
 /* FreeBSD before version 5 doesn't have the entire C99 runtime. */
 #elif defined(__netware__)
 /* NetWare doesn't have the entire C99 runtime.  */
+#elif (defined(__APPLE__) \
+       && ! defined (__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__))
+/* MacOS versions before 10.3 don't have many C99 functions.  
+   But, if you're including this file, you probably want to test the
+   newer behaviour, so: */
+#error forgot to set -mmacosx-version-min.
+#elif (defined(__APPLE__) \
+       && __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 1030)
+/* MacOS versions before 10.3 don't have many C99 functions.  */
 #else
 /* Newlib has the "f" variants of the math functions, but not the "l"
    variants.  TARGET_C99_FUNCTIONS is only defined if all C99

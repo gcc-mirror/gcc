@@ -10,6 +10,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O2 -ffast-math" } */
+/* { dg-options "-O2 -ffast-math -mmacosx-version-min=10.3" { target powerpc-*-darwin* } } */
 
 #include "builtins-config.h"
 
