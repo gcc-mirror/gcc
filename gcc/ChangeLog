@@ -1,3 +1,9 @@
+2005-07-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/22356
+	* tree-complex.c (expand_complex_libcall): Produce
+	REALPART_EXPR/IMAGPART_EXPR with the correct type.
+
 2005-07-08  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* bitmap.c (bitmap_and, bitmap_and_into, bitmap_and_compl,
