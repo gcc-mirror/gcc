@@ -2778,7 +2778,7 @@ gfc_array_allocate (gfc_se * se, gfc_ref * ref, tree pstat)
 /*GCC ARRAYS*/
 
 tree
-gfc_array_deallocate (tree descriptor)
+gfc_array_deallocate (tree descriptor, tree pstat)
 {
   tree var;
   tree tmp;
@@ -2793,7 +2793,7 @@ gfc_array_deallocate (tree descriptor)
 
   /* Parameter is the address of the data component.  */
   tmp = gfc_chainon_list (NULL_TREE, var);
-  tmp = gfc_chainon_list (tmp, integer_zero_node);
+  tmp = gfc_chainon_list (tmp, pstat);
   tmp = gfc_build_function_call (gfor_fndecl_deallocate, tmp);
   gfc_add_expr_to_block (&block, tmp);
 
@@ -4026,7 +4026,7 @@ gfc_trans_deferred_array (gfc_symbol * sym, tree body)
       gfc_start_block (&block);
 
       /* Deallocate if still allocated at the end of the procedure.  */
-      deallocate = gfc_array_deallocate (descriptor);
+      deallocate = gfc_array_deallocate (descriptor, null_pointer_node);
 
       tmp = gfc_conv_descriptor_data (descriptor);
       tmp = build2 (NE_EXPR, boolean_type_node, tmp, 

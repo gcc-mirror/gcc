@@ -1,3 +1,28 @@
+2005-07-08  Steven G. Kargl  <kargls@comcast.net>
+
+	Backport from the mainline:
+	PR fortran/21257
+	(port from g95)
+	* match.c (gfc_match_label): Detect duplicate labels.
+	* gfortran.dg/duplicate_labels.f90: New test.
+
+	PR fortran/19926
+	* primary.c (gfc_match_rvalue):  expr_type can be EXPR_CONSTANT
+	for an array; check that sym->as is NULL.
+	* gfortran.dg/pr19926.f90: New test.
+
+	PR fortran/17792
+	PR fortran/21375
+	* trans-array.c (gfc_array_deallocate): pstat is new argument
+	(gfc_array_allocate): update gfc_array_deallocate() call.
+	(gfc_trans_deferred_array): ditto.
+	* trans-array.h: update gfc_array_deallocate() prototype.
+	* trans-decl.c (gfc_build_builtin_function_decls): update declaration
+	* trans-stmt.c (gfc_trans_deallocate): Implement STAT= feature.
+
+	* intrinsic.c (gfc_intrinsic_func_interface): Enable errors for generic
+	functions whose simplification routine return FAILURE.
+
 2005-07-07  Release Manager
 
 	* GCC 4.0.1 released.

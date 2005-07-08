@@ -1802,8 +1802,11 @@ gfc_match_rvalue (gfc_expr ** result)
       break;
 
     case FL_PARAMETER:
-      if (sym->value
-	  && sym->value->expr_type != EXPR_ARRAY)
+      /* A statement of the form "REAL, parameter :: a(0:10) = 1" will
+	 end up here.  Unfortunately, sym->value->expr_type is set to 
+	 EXPR_CONSTANT, and so the if () branch would be followed without
+	 the !sym->as check.  */
+      if (sym->value && sym->value->expr_type != EXPR_ARRAY && !sym->as)
 	e = gfc_copy_expr (sym->value);
       else
 	{

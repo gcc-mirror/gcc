@@ -265,18 +265,15 @@ gfc_match_label (void)
       return MATCH_ERROR;
     }
 
-  if (gfc_new_block->attr.flavor != FL_LABEL
-      && gfc_add_flavor (&gfc_new_block->attr, FL_LABEL,
-			 gfc_new_block->name, NULL) == FAILURE)
-    return MATCH_ERROR;
+  if (gfc_new_block->attr.flavor == FL_LABEL)
+    {
+      gfc_error ("Duplicate construct label '%s' at %C", name);
+      return MATCH_ERROR;
+    }
 
-  for (p = gfc_state_stack; p; p = p->previous)
-    if (p->sym == gfc_new_block)
-      {
-	gfc_error ("Label %s at %C already in use by a parent block",
-		   gfc_new_block->name);
-	return MATCH_ERROR;
-      }
+  if (gfc_add_flavor (&gfc_new_block->attr, FL_LABEL,
+		      gfc_new_block->name, NULL) == FAILURE)
+    return MATCH_ERROR;
 
   return MATCH_YES;
 }

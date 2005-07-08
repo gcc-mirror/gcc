@@ -2996,11 +2996,9 @@ got_specific:
   expr->value.function.isym = specific;
   gfc_intrinsic_symbol (expr->symtree->n.sym);
 
+  gfc_suppress_error = 0;
   if (do_simplify (specific, expr) == FAILURE)
-    {
-      gfc_suppress_error = 0;
-      return MATCH_ERROR;
-    }
+    return MATCH_ERROR;
 
   /* TODO: We should probably only allow elemental functions here.  */
   flag |= (expr->ts.type != BT_INTEGER && expr->ts.type != BT_CHARACTER);

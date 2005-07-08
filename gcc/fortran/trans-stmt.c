@@ -3291,18 +3291,55 @@ gfc_trans_allocate (gfc_code * code)
 }
 
 
+/* Translate a DEALLOCATE statement.
+   There are two cases within the for loop:
+   (1) deallocate(a1, a2, a3) is translated into the following sequence
+       _gfortran_deallocate(a1, 0B)
+       _gfortran_deallocate(a2, 0B)
+       _gfortran_deallocate(a3, 0B)
+       where the STAT= variable is passed a NULL pointer.
+   (2) deallocate(a1, a2, a3, stat=i) is translated into the following
+       astat = 0
+       _gfortran_deallocate(a1, &stat)
+       astat = astat + stat
+       _gfortran_deallocate(a2, &stat)
+       astat = astat + stat
+       _gfortran_deallocate(a3, &stat)
+       astat = astat + stat
+    In case (1), we simply return at the end of the for loop.  In case (2)
+    we set STAT= astat.  */
 tree
 gfc_trans_deallocate (gfc_code * code)
 {
   gfc_se se;
   gfc_alloc *al;
   gfc_expr *expr;
-  tree var;
-  tree tmp;
-  tree type;
+  tree apstat, astat, parm, pstat, stat, tmp, type, var;
   stmtblock_t block;
 
   gfc_start_block (&block);
+
+  /* Set up the optional STAT= */
+  if (code->expr)
+    {
+      tree gfc_int4_type_node = gfc_get_int_type (4);
+
+      /* Variable used with the library call.  */
+      stat = gfc_create_var (gfc_int4_type_node, "stat");
+      pstat = gfc_build_addr_expr (NULL, stat);
+
+      /* Running total of possible deallocation failures.  */
+      astat = gfc_create_var (gfc_int4_type_node, "astat");
+      apstat = gfc_build_addr_expr (NULL, astat);
+
+      /* Initialize astat to 0.  */
+      gfc_add_modify_expr (&block, astat, build_int_cst (TREE_TYPE (astat), 0));
+    }
+  else
+    {
+      pstat = apstat = null_pointer_node;
+      stat = astat = NULL_TREE;
+    }
 
   for (al = code->ext.alloc_list; al != NULL; al = al->next)
     {
@@ -3317,10 +3354,7 @@ gfc_trans_deallocate (gfc_code * code)
       gfc_conv_expr (&se, expr);
 
       if (expr->symtree->n.sym->attr.dimension)
-	{
-	  tmp = gfc_array_deallocate (se.expr);
-	  gfc_add_expr_to_block (&se.pre, tmp);
-	}
+	tmp = gfc_array_deallocate (se.expr, pstat);
       else
 	{
 	  type = build_pointer_type (TREE_TYPE (se.expr));
@@ -3328,13 +3362,33 @@ gfc_trans_deallocate (gfc_code * code)
 	  tmp = gfc_build_addr_expr (type, se.expr);
 	  gfc_add_modify_expr (&se.pre, var, tmp);
 
-	  tmp = gfc_chainon_list (NULL_TREE, var);
-	  tmp = gfc_chainon_list (tmp, integer_zero_node);
-	  tmp = gfc_build_function_call (gfor_fndecl_deallocate, tmp);
-	  gfc_add_expr_to_block (&se.pre, tmp);
+	  parm = gfc_chainon_list (NULL_TREE, var);
+	  parm = gfc_chainon_list (parm, pstat);
+	  tmp = gfc_build_function_call (gfor_fndecl_deallocate, parm);
 	}
+
+      gfc_add_expr_to_block (&se.pre, tmp);
+
+      /* Keep track of the number of failed deallocations by adding stat
+	 of the last deallocation to the running total.  */
+      if (code->expr)
+	{
+	  apstat = build2 (PLUS_EXPR, TREE_TYPE (stat), astat, stat);
+	  gfc_add_modify_expr (&se.pre, astat, apstat);
+	}
+
       tmp = gfc_finish_block (&se.pre);
       gfc_add_expr_to_block (&block, tmp);
+
+    }
+
+  /* Assign the value to the status variable.  */
+  if (code->expr)
+    {
+      gfc_init_se (&se, NULL);
+      gfc_conv_expr_lhs (&se, code->expr);
+      tmp = convert (TREE_TYPE (se.expr), astat);
+      gfc_add_modify_expr (&block, se.expr, tmp);
     }
 
   return gfc_finish_block (&block);
