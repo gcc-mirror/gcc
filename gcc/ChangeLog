@@ -1,3 +1,35 @@
+2005-07-07  Geoffrey Keating  <geoffk@apple.com>
+
+	* config.gcc (*-*-darwin*): Only one target-specific header file
+	for generic darwin.
+	(powerpc-*-darwin*): Add version-specific header files.
+	* configure.in (gcc_AC_CHECK_DECLS): Add strverscmp.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* gcc.c: Include xregex.h.
+	(version_compare_spec_function): New.
+	(spec_function): Add version-compare.
+	(replace_outfile_spec_function): Reformat comment.
+	(compare_version_strings): New.
+	* config/darwin-c.c (version_as_macro): New.
+	(builtin_define): New.
+	(darwin_cpp_builtins): New.
+	* config/darwin-protos.h (darwin_cpp_builtins): New.
+	* config/darwin.h (CPP_SPEC): Don't define APPLE_CC here.
+	(LIB_SPEC): Make unconditional, update comment.
+	(TARGET_C99_FUNCTIONS): Define.
+	* config/darwin.opt: Sort.
+	(mmacosx-version-min=): New.
+	* config/darwin7.h: Delete.
+	* config/darwin8.h: Delete.
+	* config/i386/darwin.h (): Call darwin_cpp_builtins.
+	* config/rs6000/darwin.h (): Call darwin_cpp_builtins.
+	(TARGET_C99_FUNCTIONS): Define.
+	* config/rs6000/darwin7.h: New.
+	* config/rs6000/darwin8.h: New.
+	* doc/invoke.texi (Darwin Options): Add -mmacosx-version-min=
+	(-mmacosx-version-min): Document.
+
 2005-07-07  Ian Lance Taylor  <ian@airs.com>
 
 	* config/mips/mips.md (abs<mode>2) [GPR]: Remove.

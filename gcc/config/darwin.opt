@@ -19,10 +19,14 @@
 ; Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 ; 02110-1301, USA.
 
-mone-byte-bool
-Target RejectNegative Report Var(darwin_one_byte_bool)
-Set sizeof(bool) to 1
-
 mfix-and-continue
 Target Report Var(darwin_fix_and_continue)
 Generate code suitable for fast turn around debugging
+
+mmacosx-version-min=
+Target Joined Report Var(darwin_macosx_version_min)
+The earliest MacOS X version on which this program will run
+
+mone-byte-bool
+Target RejectNegative Report Var(darwin_one_byte_bool)
+Set sizeof(bool) to 1

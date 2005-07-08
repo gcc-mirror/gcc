@@ -451,7 +451,8 @@ Objective-C and Objective-C++ Dialects}.
 -single_module  -static  -sub_library  -sub_umbrella @gol
 -twolevel_namespace  -umbrella  -undefined @gol
 -unexported_symbols_list  -weak_reference_mismatches @gol
--whatsloaded -F -gused -gfull -mone-byte-bool}
+-whatsloaded -F -gused -gfull -mmacosx-min-version=@var{version} @gol
+-mone-byte-bool}
 
 @emph{DEC Alpha Options}
 @gccoptlist{-mno-fp-regs  -msoft-float  -malpha-as  -mgas @gol
@@ -7667,6 +7668,14 @@ This is by default ON@.
 @item -gfull
 @opindex -gfull
 Emit debugging information for all symbols and types.
+
+@item -mmacosx-version-min=@var{version}
+The earliest version of MacOS X that this executable will run on
+is @var{version}.  Typical values of @var{version} include @code{10.1},
+@code{10.2}, and @code{10.3.9}.
+
+The default for this option is to make choices that seem to be most
+useful.  
 
 @item -mone-byte-bool
 @opindex -mone-byte-bool

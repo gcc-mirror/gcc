@@ -577,6 +577,13 @@
 #endif
 
 
+/* Define to 1 if we found a declaration for 'strverscmp', otherwise define to
+   0. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_DECL_STRVERSCMP
+#endif
+
+
 /* Define to 1 if we found a declaration for 'times', otherwise define to 0.
    */
 #ifndef USED_FOR_TARGET

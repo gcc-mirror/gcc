@@ -19,11 +19,13 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
-/* Darwin 7.0 and above have C99 functions.   */
-#define TARGET_C99_FUNCTIONS 1
-
-/* Machine dependent libraries, include libmx when compiling on Darwin 7.0
-   and above.  */
+/* Machine dependent libraries.  Include libmx when compiling for
+   Darwin 7.0 and above, but before libSystem, since the functions are
+   actually in libSystem but for 7.x compatibility we want them to be
+   looked for in libmx first.  Include libmx by default because otherwise
+   libstdc++ isn't usable.  */
 
 #undef	LIB_SPEC
-#define LIB_SPEC "%{!static:-lSystem -lmx}"
+#define LIB_SPEC "%{!static:\
+  %:version-compare(!< 10.3 mmacosx-version-min= -lmx)\
+  -lSystem}"

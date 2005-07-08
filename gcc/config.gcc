@@ -355,12 +355,6 @@ esac
 # Common parts for widely ported systems.
 case ${target} in
 *-*-darwin*)
-  case ${target} in
-    *-darwin1[0-9]*) tm_file="${tm_file} darwin8.h" ;;
-    *-darwin[0-6]*) ;;
-    *-darwin7*) tm_file="${tm_file} darwin7.h" ;;
-    *) tm_file="${tm_file} darwin8.h" ;;
-  esac
   tm_file="${tm_file} darwin.h"
   tm_p_file="${tm_p_file} darwin-protos.h"
   tmake_file="t-darwin t-slibgcc-darwin"
@@ -1608,9 +1602,15 @@ powerpc-*-darwin*)
 	tmake_file="${tmake_file} rs6000/t-darwin"
 	extra_options="${extra_options} rs6000/darwin.opt"
 	case ${target} in
-	  *-darwin1[0-9]*) tmake_file="${tmake_file} rs6000/t-darwin8" ;;
-	  *-darwin[0-7]*) ;;
-	  *-darwin[8-9]*) tmake_file="${tmake_file} rs6000/t-darwin8" ;;
+	  *-darwin1[0-9]* | *-darwin[8-9]*)
+	    tmake_file="${tmake_file} rs6000/t-darwin8" 
+	    tm_file="${tm_file} rs6000/darwin8.h"
+	    ;;
+	  *-darwin7*)
+	    tm_file="${tm_file} rs6000/darwin7.h"
+	    ;;
+	  *-darwin[0-6]*)
+	    ;;
 	esac
 	extra_headers=altivec.h
 	;;
