@@ -1898,20 +1898,6 @@
 ;; exception on -2147483648 (sigh).
 
 (define_insn "abs<mode>2"
-  [(set (match_operand:GPR 0 "register_operand" "=d")
-	(abs:GPR (match_operand:GPR 1 "register_operand" "d")))]
-  "!TARGET_MIPS16"
-{
-  if (REGNO (operands[0]) == REGNO (operands[1]) && GENERATE_BRANCHLIKELY)
-    return "%(bltzl\t%1,1f\;<d>subu\t%0,%.,%0\n%~1:%)";
-  else
-    return "%(bgez\t%1,1f\;move\t%0,%1\;<d>subu\t%0,%.,%0\n%~1:%)";
-}
-  [(set_attr "type" "multi")
-   (set_attr "mode" "<MODE>")
-   (set_attr "length" "12")])
-
-(define_insn "abs<mode>2"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
 	(abs:ANYF (match_operand:ANYF 1 "register_operand" "f")))]
   ""
