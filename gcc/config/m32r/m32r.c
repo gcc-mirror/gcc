@@ -1532,10 +1532,18 @@ m32r_output_function_epilogue (FILE * file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	  else if (reg_offset < 32768)
 	    fprintf (file, "\tadd3 %s,%s,%s%d\n",
 		     sp_str, sp_str, IMMEDIATE_PREFIX, reg_offset);
-	  else
+	  else if (reg_offset < (1 << 24))
 	    fprintf (file, "\tld24 %s,%s%d\n\tadd %s,%s\n",
 		     reg_names[PROLOGUE_TMP_REGNUM],
 		     IMMEDIATE_PREFIX, reg_offset,
+		     sp_str, reg_names[PROLOGUE_TMP_REGNUM]);
+	  else
+	    fprintf (file, "\tseth %s,%s%d\n\tor3 %s,%s,%s%d\n\tadd %s,%s\n",
+		     reg_names[PROLOGUE_TMP_REGNUM],
+		     IMMEDIATE_PREFIX, reg_offset >> 16,
+		     reg_names[PROLOGUE_TMP_REGNUM],
+		     reg_names[PROLOGUE_TMP_REGNUM],
+		     IMMEDIATE_PREFIX, reg_offset & 0xffff,
 		     sp_str, reg_names[PROLOGUE_TMP_REGNUM]);
 	}
       else if (frame_pointer_needed)
@@ -1547,10 +1555,18 @@ m32r_output_function_epilogue (FILE * file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	  else if (reg_offset < 32768)
 	    fprintf (file, "\tadd3 %s,%s,%s%d\n",
 		     sp_str, fp_str, IMMEDIATE_PREFIX, reg_offset);
-	  else
+	  else if (reg_offset < (1 << 24))
 	    fprintf (file, "\tld24 %s,%s%d\n\tadd %s,%s\n",
 		     reg_names[PROLOGUE_TMP_REGNUM],
 		     IMMEDIATE_PREFIX, reg_offset,
+		     sp_str, reg_names[PROLOGUE_TMP_REGNUM]);
+	  else
+	    fprintf (file, "\tseth %s,%s%d\n\tor3 %s,%s,%s%d\n\tadd %s,%s\n",
+		     reg_names[PROLOGUE_TMP_REGNUM],
+		     IMMEDIATE_PREFIX, reg_offset >> 16,
+		     reg_names[PROLOGUE_TMP_REGNUM],
+		     reg_names[PROLOGUE_TMP_REGNUM],
+		     IMMEDIATE_PREFIX, reg_offset & 0xffff,
 		     sp_str, reg_names[PROLOGUE_TMP_REGNUM]);
 	}
       else
