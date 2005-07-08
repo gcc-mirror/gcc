@@ -1,5 +1,14 @@
 2005-07-07  Ziemowit Laski  <zlaski@apple.com>
 
+	* objc-act.c (objc_build_struct): Pass in an actual @interface
+	instead of its name, and annotate the struct created (and all
+	existing variants thereof) with the @interface.
+	(objc_compare_types): Treat forward-declared ObjC classes
+	as stand-alone (root) classes for purposes of type comparisons.
+	(build_private_template): Move some code to objc_build_struct().
+
+2005-07-07  Ziemowit Laski  <zlaski@apple.com>
+
 	PR objc/22274
 	* objc-act.c (objc_build_string_object): For GNU-style constants,
 	use the @interface type rather than the built-in type.
