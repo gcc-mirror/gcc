@@ -1981,7 +1981,12 @@ remove_bb (basic_block bb)
 	}
       else
         {
-	  release_defs (stmt);
+	  /* Release SSA definitions if we are in SSA.  Note that we
+	     may be called when not in SSA.  For example,
+	     final_cleanup calls this function via
+	     cleanup_tree_cfg.  */
+	  if (in_ssa_p)
+	    release_defs (stmt);
 
 	  bsi_remove (&i);
 	}
