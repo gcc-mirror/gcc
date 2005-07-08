@@ -4130,7 +4130,6 @@ create_vtable_ptr (tree t, tree* virtuals_p)
       tree field;
 
       field = build_decl (FIELD_DECL, get_vfield_name (t), vtbl_ptr_type_node);
-      SET_DECL_ASSEMBLER_NAME (field, get_identifier (VFIELD_BASE));
       DECL_VIRTUAL_P (field) = 1;
       DECL_ARTIFICIAL (field) = 1;
       DECL_FIELD_CONTEXT (field) = t;

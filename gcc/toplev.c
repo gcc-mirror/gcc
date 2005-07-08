@@ -704,7 +704,8 @@ wrapup_global_declarations (tree *vec, int len)
 
       /* We're not deferring this any longer.  Assignment is
 	 conditional to avoid needlessly dirtying PCH pages.  */
-      if (DECL_DEFER_OUTPUT (decl) != 0)
+      if (CODE_CONTAINS_STRUCT (TREE_CODE (decl), TS_DECL_WITH_VIS)
+	  && DECL_DEFER_OUTPUT (decl) != 0)
 	DECL_DEFER_OUTPUT (decl) = 0;
 
       if (TREE_CODE (decl) == VAR_DECL && DECL_SIZE (decl) == 0)

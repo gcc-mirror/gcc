@@ -1578,7 +1578,7 @@ print_declaration (pretty_printer *buffer, tree t, int spc, int flags)
   if (TREE_CODE (t) == TYPE_DECL)
     pp_string (buffer, "typedef ");
 
-  if (DECL_REGISTER (t))
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WRTL) && DECL_REGISTER (t))
     pp_string (buffer, "register ");
 
   if (TREE_PUBLIC (t) && DECL_EXTERNAL (t))

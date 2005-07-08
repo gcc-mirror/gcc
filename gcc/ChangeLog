@@ -1,3 +1,101 @@
+2005-07-08  Daniel Berlin  <dberlin@dberlin.org>
+
+	* Makefile.in (TREE_H): Add treestruct.def.
+	(c-decl.o): Add pointer-set.h
+	* c-decl.c (diagnose_mismatched_decls): Don't attempt to look at
+	visibility on regular DECL's.
+	(merge_decls): Fix the copying of decl nodes of various types for
+	the new structures.  Don't update RTL, section name, weak status,
+	etc, on DECL's without RTL.	
+	(grokdeclarator): DECL_ARG_TYPE_AS_WRITTEN is gone.
+	Don't check volatile on non-variable types.
+	(store_parm_decls_oldstyle): Use pointer_set instead of DECL_WEAK
+	to check whether we have seen arguments.
+	* c-objc-common.c (c_tree_printer): Reverse order of tests so that
+	flag is checked before field (flag is common, field is not).	
+	* dwarf2out.c (decl_ultimate_origin):  Only DECL's with
+	TS_DECL_COMMON could have an origin.
+	(add_location_or_const_value_attribute): Don't check section name
+	on non-var/function decls.
+	(dwarf2out_var_location): Reverse order of tests.
+	* emit-rtl.c (set_reg_attrs_for_parm): DECL_CHECK is dead, replace
+	with DECL_WRTL_CHECK.
+	* expmed.c (make_tree): rtl is now in decl_with_rtl.
+	* fold-const.c (fold_binary): Don't check weakness on
+	non-var/function decls.
+	(tree_expr_nonzero_p): Ditto.
+	(fold_checksum_tree): Use tree_decl_extra as sizeof
+	buffer.
+	* ggc-page.c (extra_order_size_table): Add sizes for
+	tree_decl_non_common, tree_parm_decl,  tree_var_decl, and
+	tree_field_decl.
+	* gimplify.c (gimplify_bind_expr): Only set
+	DECL_SEEN_IN_BIND_EXPR_P on VAR_DECL.
+	* integrate.c (copy_decl_for_inlining): Don't set RTL on decl's
+	without RTL.
+	* langhooks-def.h (LANG_HOOK_INIT_TS): New.
+	* langhooks.h (init_ts). New langhook.
+	* passes.c (rest_of_decl_compilation): Reverse order of tests.
+	* print-tree.c (print_node): Update to only print fields that
+	exist in the structures the passed decl has.
+	* toplev.c (wrapup_global_declarations): Don't reset
+	DECL_DEFER_OUTPUT on DECL's that don't contain it.
+	* tree-browser.c (browse_tree): DECL_ARG_TYPE_AS_WRITTEN removed.
+	* tree-inline.c (remap_decl): Ditto.
+	* tree-outof-ssa.c (create_temp): Reverse order of tests.
+	* tree-pretty-print.c (print_declaration): Don't print
+	DECL_REGISTER on things that don't contain it.
+	* tree-vrp.c (expr_computes_nonzero): Don't check weakness on
+	non-var/function decls.
+	* tree.c (tree_contains_struct): New structure.
+	(init_priority_for_decl): New hashtable.
+	(tree_int_map): New structure.
+	(tree_int_map_eq): New function.
+	(tree_int_map_marked_p): Ditto.
+	(tree_int_map_hash): Ditto.
+	(tree_map): Move to tree.h.
+	(tree_map_eq): Externalize.
+	(tree_map_hash): Ditto.
+	(tree_map_marked_p): Ditto.
+	(init_ttree): Set up tree_contains_struct and call langhook.
+	(decl_assembler_name): Use DECL_NON_COMMON_CHECK..
+	(tree_code_size): Update for new structures.
+	(tree_node_structure): Update for new structures.
+	(make_node_stat): Don't try to set DECL_IN_SYSTEM_HEADER on decls
+	without the field.
+	(copy_node_stat):  Copy init priority.
+	(build_decl_stat): Ditto for visibility.
+	(ts_enum_names): New.
+	(tree_contains_struct_check_failed): New function.
+	(decl_init_priority_lookup): Ditto.
+	(decl_init_priority_insert): Ditto.
+	* treestruct.def: New file.
+	* tree.h (CODE_CONTAINS_STRUCT): New macro.
+	(CONTAINS_STRUCT_CHECK): Ditto.
+	(tree_contains_struct_check_failed): New prototype.
+	(DECL_CHECK): Removed.
+	(DECL_MINIMAL_CHECK): New.
+	(DECL_COMMON_CHECK): Ditto.
+	(DECL_WRTL_CHECK): Ditto.
+	(DECL_NON_COMMON_CHECK): Ditto.
+	(DECL_WITH_VIS_CHECK): Ditto.
+	(VAR_OR_FUNCTION_DECL_P): Ditto
+	(struct tree_decl_minimal): New structure.
+	(struct tree_decl_common): Ditto.
+	(struct tree_decl_with_rtl): Ditto.
+	(struct tree_decl_with_vis): Ditto.
+	(struct tree_decl_non_common): Ditto.
+	(struct tree_field_decl): Ditto.
+	(struct tree_parm_decl): Ditto.
+	(struct tree_var_decl): Ditto.
+	(struct tree_function_decl): Ditto.
+	(struct tree_const_decl): Ditto.
+	(struct tree_result_decl): Ditto.
+	(union tree_node): Add new structures.
+	* var-tracking.c (track_expr_p): Reverse order of tests.
+	
+	* doc/c-tree.texi: Add documentation on DECL node internal structure.
+
 2005-07-08  Kazu Hirata  <kazu@codesourcery.com>
 
 	* cfgexpand.c (tree_expand_cfg): Don't use FINALIZE_PIC.

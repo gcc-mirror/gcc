@@ -1,3 +1,30 @@
+2005-07-08  Daniel Berlin  <dberlin@dberlin.org>
+	
+	* Make-lang.in: Add gt-cp-lang.h.
+	(cp-lang.o): Ditto.	
+	* class.c (create_vtable_ptr): Stop setting DECL_ASSEMBLER_NAME on
+	the field.
+	* config-lang.in: Add cp-lang.c to gtfiles.
+	* cp-lang.c: Include hashtab.h.
+	(cp_init_ts): New function.
+	(LANG_HOOK_INIT_TS): Use macro.
+	(decl_shadowed_for_var_lookup): New function.
+	(decl_shadowed_for_var_insert): Ditto.
+	* cp-tree.h (THUNK_FUNCTION_CHECK): Use decl_common.
+	(NON_THUNK_FUNCTION_CHECK): Ditto.
+	(DECL_NAMESPACE_ASSOCIATIONS): Use decl_non_common.
+	(DECL_INIT_PRIORITY): Ditto.
+	(DECL_HAS_SHADOWED_FOR_VAR_P): Ditto.
+	(DECL_SHADOWED_FOR_VAR): Use hashtable.
+	(SET_DECL_SHADOWED_FOR_VAR): Ditto.
+	* decl.c (duplicate_decls): Update for new/updated structures.
+	(poplevel): Use SET_DECL_SHADOWED_FOR_VAR.
+	* decl2.c (start_static_initialization_or_destruction): Deal with
+	priority. 
+	* pt.c (tsubst_decl): Check TS_DECL_WRTL before doing
+	SET_DECL_RTL.
+	* tree.c (handle_init_priority_attribute): Handle priority.
+
 2005-07-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/21799

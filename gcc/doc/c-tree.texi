@@ -847,6 +847,15 @@ internal representation, except for declarations of functions
 (represented by @code{FUNCTION_DECL} nodes), which are described in
 @ref{Functions}.
 
+@menu
+* Working with declarations::  Macros and functions that work on
+declarations.
+* Internal structure:: How declaration nodes are represented. 
+@end menu
+
+@node Working with declarations
+@subsection Working with declarations
+
 Some macros can be used with any kind of declaration.  These include:
 @ftable @code
 @item DECL_NAME
@@ -990,6 +999,179 @@ contains partial specializations of the class.
 Back ends can safely ignore these nodes.
 
 @end table
+
+@node Internal structure
+@subsection Internal structure
+
+@code{DECL} nodes are represented internally as a hierarchy of
+structures.
+
+@menu
+* Current structure hierarchy::  The current DECL node structure
+hierarchy.
+* Adding new DECL node types:: How to add a new DECL node to a
+frontend.
+@end menu
+
+@node Current structure hierarchy
+@subsubsection Current structure hierarchy
+
+@table @code
+
+@item struct tree_decl_minimal
+This is the minimal structure to inherit from in order for common
+@code{DECL} macros to work.  The fields it contains are a unique ID,
+source location, context, and name.
+
+@item struct tree_decl_common
+This structure inherits from @code{struct tree_decl_minimal}.  It
+contains fields that most @code{DECL} nodes need, such as a field to
+store alignment, machine mode, size, and attributes.
+
+@item struct tree_field_decl
+This structure inherits from @code{struct tree_decl_common}.  It is
+used to represent @code{FIELD_DECL}.
+
+@item struct tree_label_decl
+This structure inherits from @code{struct tree_decl_common}.  It is
+used to represent @code{LABEL_DECL}.
+
+@item struct tree_translation_unit_decl
+This structure inherits from @code{struct tree_decl_common}.  It is
+used to represent @code{TRANSLATION_UNIT_DECL}.
+
+@item struct tree_decl_with_rtl
+This structure inherits from @code{struct tree_decl_common}.  It
+contains a field to store the low-level RTL associated with a
+@code{DECL} node.
+
+@item struct tree_result_decl
+This structure inherits from @code{struct tree_decl_with_rtl}.  It is
+used to represent @code{RESULT_DECL}.
+
+@item struct tree_const_decl
+This structure inherits from @code{struct tree_decl_with_rtl}.  It is
+used to represent @code{CONST_DECL}.
+
+@item struct tree_parm_decl
+This structure inherits from @code{struct tree_decl_with_rtl}.  It is
+used to represent @code{PARM_DECL}.  
+
+@item struct tree_decl_with_vis
+This structure inherits from @code{struct tree_decl_with_rtl}.  It
+contains fields necessary to store visibility information, as well as
+a section name and assembler name.
+
+@item struct tree_var_decl
+This structure inherits from @code{struct tree_decl_with_vis}.  It is
+used to represent @code{VAR_DECL}.  
+
+@item struct tree_function_decl
+This structure inherits from @code{struct tree_decl_with_vis}.  It is
+used to represent @code{FUNCTION_DECL}.  
+
+@end table
+@node Adding new DECL node types
+@subsubsection Adding new DECL node types
+
+Adding a new @code{DECL} tree consists of the following steps
+
+@table @asis
+
+@item Add a new tree code for the @code{DECL} node
+For language specific @code{DECL} nodes, there is a @file{.def} file
+in each frontend directory where the tree code should be added.
+For @code{DECL} nodes that are part of the middle-end, the code should
+be added to @file{tree.def}.
+
+@item Create a new structure type for the @code{DECL} node
+These structures should inherit from one of the existing structures in
+the language hierarchy by using that structure as the first member.
+
+@smallexample
+struct tree_foo_decl
+@{
+   struct tree_decl_with_vis common;
+@}
+@end smallexample
+
+Would create a structure name @code{tree_foo_decl} that inherits from
+@code{struct tree_decl_with_vis}.
+
+For language specific @code{DECL} nodes, this new structure type
+should go in the appropriate @file{.h} file.
+For @code{DECL} nodes that are part of the middle-end, the structure
+type should go in @file{tree.h}.
+
+@item Add a member to the tree structure enumerator for the node
+For garbage collection and dynamic checking purposes, each @code{DECL}
+node structure type is required to have a unique enumerator value
+specified with it.
+For language specific @code{DECL} nodes, this new enumerator value
+should go in the approriate @file{.def} file.
+For @code{DECL} nodes that are part of the middle-end, the enumerator
+values are specified in @file{treestruct.def}.
+
+@item Update @code{union tree_node}
+In order to make your new structure type usable, it must be added to
+@code{union tree_node}.
+For language specific @code{DECL} nodes, a new entry should be added
+to the approriate @file{.h} file of the form
+@smallexample
+  struct tree_foo_decl GTY ((tag ("TS_VAR_DECL"))) foo_decl;
+@end smallexample
+For @code{DECL} nodes that are part of the middle-end, the additional
+member goes directly into @code{union tree_node} in @file{tree.h}.
+
+@item Update dynamic checking info
+In order to be able to check whether accessing a named portion of
+@code{union tree_node} is legal, and whether a certain @code{DECL} node
+contains one of the enumerated @code{DECL} node structures in the
+hierarchy, a simple lookup table is used.
+This lookup table needs to be kept up to date with the tree structure
+hierarchy, or else checking and containment macros will fail
+inapproriately.
+
+For language specific @code{DECL} nodes, their is an @code{init_ts}
+function in an approriate @file{.c} file, which initializes the lookup
+table.
+Code setting up the table for new @code{DECL} nodes should be added
+there.
+For each @code{DECL} tree code and enumerator value representing a
+member of the inheritance  hierarchy, the table should contain 1 if
+that tree code inherits (directly or indirectly) from that member.
+Thus, a @code{FOO_DECL} node derived from @code{struct decl_with_rtl},
+and enumerator value @code{TS_FOO_DECL}, would be set up as follows
+@smallexample
+tree_contains_struct[FOO_DECL][TS_FOO_DECL] = 1;
+tree_contains_struct[FOO_DECL][TS_DECL_WRTL] = 1;
+tree_contains_struct[FOO_DECL][TS_DECL_COMMON] = 1;
+tree_contains_struct[FOO_DECL][TS_DECL_MINIMAL] = 1;
+@end smallexample
+
+For @code{DECL} nodes that are part of the middle-end, the setup code
+goes into @file{tree.c}.
+
+@item Add macros to access any new fields and flags
+
+Each added field or flag should have a macro that is used to access
+it, that performs approriate checking to ensure only the right type of
+@code{DECL} nodes access the field.
+
+These macros generally take the following form
+@smallexample
+#define FOO_DECL_FIELDNAME(NODE) FOO_DECL_CHECK(NODE)->foo_decl.fieldname
+@end smallexample
+However, if the structure is simply a base class for further
+structures, something like the following should be used
+@smallexample
+#define BASE_STRUCT_CHECK(T) CONTAINS_STRUCT_CHECK(T, TS_BASE_STRUCT)
+#define BASE_STRUCT_FIELDNAME(NODE) \
+   (BASE_STRUCT_CHECK(NODE)->base_struct.fieldname
+@end smallexample
+
+@end table
+
 
 @c ---------------------------------------------------------------------
 @c Functions

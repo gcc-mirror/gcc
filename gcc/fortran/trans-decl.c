@@ -1217,7 +1217,6 @@ create_function_arglist (gfc_symbol * sym)
 	  /* Fill in arg stuff.  */
 	  DECL_CONTEXT (parm) = fndecl;
 	  DECL_ARG_TYPE (parm) = type;
-	  DECL_ARG_TYPE_AS_WRITTEN (parm) = type;
 	  /* All implementation args are read-only.  */
 	  TREE_READONLY (parm) = 1;
 

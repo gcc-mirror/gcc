@@ -209,9 +209,6 @@ remap_decl (tree decl, inline_data *id)
       TREE_TYPE (t) = remap_type (TREE_TYPE (t), id);
       if (TREE_CODE (t) == TYPE_DECL)
         DECL_ORIGINAL_TYPE (t) = remap_type (DECL_ORIGINAL_TYPE (t), id);
-      else if (TREE_CODE (t) == PARM_DECL)
-        DECL_ARG_TYPE_AS_WRITTEN (t)
-	  = remap_type (DECL_ARG_TYPE_AS_WRITTEN (t), id);
 
       /* Remap sizes as necessary.  */
       walk_tree (&DECL_SIZE (t), copy_body_r, id, NULL);

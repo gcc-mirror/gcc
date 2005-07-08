@@ -954,7 +954,7 @@ set_reg_attrs_for_parm (rtx parm_rtx, rtx mem)
 void
 set_decl_rtl (tree t, rtx x)
 {
-  DECL_CHECK (t)->decl.rtl = x;
+  DECL_WRTL_CHECK (t)->decl_with_rtl.rtl = x;
 
   if (!x)
     return;

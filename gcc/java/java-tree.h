@@ -850,11 +850,11 @@ union lang_tree_node
 #define FIELD_THISN(DECL) DECL_LANG_FLAG_7 (VAR_OR_FIELD_CHECK (DECL))
 
 /* In a LABEL_DECL, a TREE_VEC that saves the type_map at that point. */
-#define LABEL_TYPE_STATE(NODE) (DECL_INITIAL (LABEL_DECL_CHECK (NODE)))
+#define LABEL_TYPE_STATE(NODE) (LABEL_DECL_CHECK (NODE)->label_decl.java_field_1)
 
 /* In the label of a subroutine, a dummy label that records the
    state following a merge of all the ret instructions in this subroutine. */
-#define LABEL_RETURN_LABEL(DECL) DECL_ARGUMENTS(DECL)
+#define LABEL_RETURN_LABEL(DECL) (LABEL_DECL_CHECK (DECL)->label_decl.java_field_2)
 
 /* In the label of a sub-routine, records the type state at return.
    A local may be TYPE_UNUSED, which means that the local is not
@@ -869,14 +869,14 @@ union lang_tree_node
 
 /* In the label of a sub-routine, a chain of the return location labels. */
 #define LABEL_RETURN_LABELS(node) \
-  (LABEL_DECL_CHECK (LABEL_RETURN_LABEL (node))->decl.result)
+  (LABEL_DECL_CHECK (LABEL_RETURN_LABEL (node))->label_decl.java_field_3)
 
 /* In a LABEL_DECL, the next pending label.
    See pending_blocks in expr.c. */
-#define LABEL_PENDING_CHAIN(NODE) (LABEL_DECL_CHECK (NODE)->decl.result)
+#define LABEL_PENDING_CHAIN(NODE) (LABEL_DECL_CHECK (NODE)->label_decl.java_field_3)
 
 /* In a LABEL_DECL, the corresponding bytecode program counter. */
-#define LABEL_PC(NODE) (LABEL_DECL_CHECK (NODE)->decl.u2.i)
+#define LABEL_PC(NODE) (LABEL_DECL_CHECK (NODE)->label_decl.java_field_4)
 
 /* Used during verification to mark the label has "changed". (See JVM Spec). */
 #define LABEL_CHANGED(NODE) DECL_LANG_FLAG_6 (LABEL_DECL_CHECK (NODE))
@@ -969,7 +969,7 @@ union lang_tree_node
    that specifies if this decl is definitively assigned.
    The value -1 means the variable has been definitely assigned (and not
    definitely unassigned).  The value -2 means we already reported an error. */
-#define DECL_BIT_INDEX(DECL) VAR_OR_FIELD_CHECK (DECL)->decl.pointer_alias_set
+#define DECL_BIT_INDEX(DECL) VAR_OR_FIELD_CHECK (DECL)->decl_common.pointer_alias_set
 
 /* DECL_LANG_SPECIFIC for FUNCTION_DECLs. */
 struct lang_decl_func GTY(())

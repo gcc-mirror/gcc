@@ -1494,7 +1494,6 @@ create_param_decl (tree param_name, tree param_type, bool readonly)
     }
 
   DECL_ARG_TYPE (param_decl) = param_type;
-  DECL_ARG_TYPE_AS_WRITTEN (param_decl) = param_type;
   TREE_READONLY (param_decl) = readonly;
   return param_decl;
 }

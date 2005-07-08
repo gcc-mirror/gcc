@@ -32,8 +32,10 @@ Boston, MA 02110-1301, USA.  */
 #include "diagnostic.h"
 #include "debug.h"
 #include "cp-objcp-common.h"
+#include "hashtab.h"
 
 enum c_language_kind c_language = clk_cxx;
+static void cp_init_ts (void);
 
 /* Lang hooks common to C++ and ObjC++ are declared in cp/cp-objcp-common.h;
    consequently, there should be very few hooks below.  */
@@ -46,6 +48,8 @@ enum c_language_kind c_language = clk_cxx;
 #define LANG_HOOKS_DECL_PRINTABLE_NAME	cxx_printable_name
 #undef LANG_HOOKS_FOLD_OBJ_TYPE_REF
 #define LANG_HOOKS_FOLD_OBJ_TYPE_REF cp_fold_obj_type_ref
+#undef LANG_HOOKS_INIT_TS
+#define LANG_HOOKS_INIT_TS cp_init_ts
 
 /* Each front end provides its own lang hook initializer.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
@@ -106,10 +110,79 @@ objcp_tsubst_copy_and_build (tree t ATTRIBUTE_UNUSED,
   return NULL_TREE;
 }
 
+static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map))) 
+     htab_t shadowed_var_for_decl;
+
+
+static void
+cp_init_ts (void)
+{
+  tree_contains_struct[NAMESPACE_DECL][TS_DECL_NON_COMMON] = 1;
+  tree_contains_struct[USING_DECL][TS_DECL_NON_COMMON] = 1;
+  tree_contains_struct[TEMPLATE_DECL][TS_DECL_NON_COMMON] = 1;
+  tree_contains_struct[ALIAS_DECL][TS_DECL_NON_COMMON] = 1;
+
+  tree_contains_struct[NAMESPACE_DECL][TS_DECL_WITH_VIS] = 1;
+  tree_contains_struct[USING_DECL][TS_DECL_WITH_VIS] = 1;
+  tree_contains_struct[TEMPLATE_DECL][TS_DECL_WITH_VIS] = 1;
+  tree_contains_struct[ALIAS_DECL][TS_DECL_WITH_VIS] = 1;
+
+  tree_contains_struct[NAMESPACE_DECL][TS_DECL_WRTL] = 1;
+  tree_contains_struct[USING_DECL][TS_DECL_WRTL] = 1;
+  tree_contains_struct[TEMPLATE_DECL][TS_DECL_WRTL] = 1;
+  tree_contains_struct[ALIAS_DECL][TS_DECL_WRTL] = 1;
+  
+  tree_contains_struct[NAMESPACE_DECL][TS_DECL_COMMON] = 1;
+  tree_contains_struct[USING_DECL][TS_DECL_COMMON] = 1;
+  tree_contains_struct[TEMPLATE_DECL][TS_DECL_COMMON] = 1;
+  tree_contains_struct[ALIAS_DECL][TS_DECL_COMMON] = 1;
+ 
+  tree_contains_struct[NAMESPACE_DECL][TS_DECL_MINIMAL] = 1;
+  tree_contains_struct[USING_DECL][TS_DECL_MINIMAL] = 1;
+  tree_contains_struct[TEMPLATE_DECL][TS_DECL_MINIMAL] = 1;
+  tree_contains_struct[ALIAS_DECL][TS_DECL_MINIMAL] = 1;
+
+  shadowed_var_for_decl = htab_create_ggc (512, tree_map_hash,
+					   tree_map_eq, 0);
+
+}
+
+/* Lookup a shadowed var for FROM, and return it if we find one.  */
+
+tree 
+decl_shadowed_for_var_lookup (tree from)
+{
+  struct tree_map *h, in;
+  in.from = from;
+
+  h = htab_find_with_hash (shadowed_var_for_decl, &in, 
+			   htab_hash_pointer (from));
+  if (h)
+    return h->to;
+  return NULL_TREE;
+}
+
+/* Insert a mapping FROM->TO in the shadowed var hashtable.  */
+
+void
+decl_shadowed_for_var_insert (tree from, tree to)
+{
+  struct tree_map *h;
+  void **loc;
+
+  h = ggc_alloc (sizeof (struct tree_map));
+  h->hash = htab_hash_pointer (from);
+  h->from = from;
+  h->to = to;
+  loc = htab_find_slot_with_hash (shadowed_var_for_decl, h, h->hash, INSERT);
+  *(struct tree_map **) loc = h;
+}
+
 void
 finish_file (void)
 {
   cp_finish_file ();
 }
 
+#include "gt-cp-cp-lang.h"
 #include "gtype-cp.h"

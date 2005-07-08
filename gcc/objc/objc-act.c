@@ -8244,7 +8244,6 @@ objc_push_parm (tree parm)
   else if (TREE_CODE (TREE_TYPE (parm)) == FUNCTION_TYPE)
     TREE_TYPE (parm) = build_pointer_type (TREE_TYPE (parm));
 
-  DECL_ARG_TYPE_AS_WRITTEN (parm) = TREE_TYPE (parm);
   DECL_ARG_TYPE (parm)
     = lang_hooks.types.type_promotes_to (TREE_TYPE (parm));
 

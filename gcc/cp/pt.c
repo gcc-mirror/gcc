@@ -2251,9 +2251,10 @@ reduce_template_parm_level (tree index, tree type, int levels)
 				     decl, type);
       TEMPLATE_PARM_DESCENDANTS (index) = t;
 
-      /* Template template parameters need this.  */
-      DECL_TEMPLATE_PARMS (decl)
-	= DECL_TEMPLATE_PARMS (TEMPLATE_PARM_DECL (index));
+	/* Template template parameters need this.  */
+      if (TREE_CODE (decl) != CONST_DECL)
+	DECL_TEMPLATE_PARMS (decl)
+	  = DECL_TEMPLATE_PARMS (TEMPLATE_PARM_DECL (index));
     }
 
   return TEMPLATE_PARM_DESCENDANTS (index);
@@ -6646,12 +6647,14 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	DECL_CONTEXT (r) = ctx;
 	/* Clear out the mangled name and RTL for the instantiation.  */
 	SET_DECL_ASSEMBLER_NAME (r, NULL_TREE);
-	SET_DECL_RTL (r, NULL_RTX);
+	if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WRTL))
+	  SET_DECL_RTL (r, NULL_RTX);
 
 	/* Don't try to expand the initializer until someone tries to use
 	   this variable; otherwise we run into circular dependencies.  */
 	DECL_INITIAL (r) = NULL_TREE;
-	SET_DECL_RTL (r, NULL_RTX);
+	if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WRTL))
+	  SET_DECL_RTL (r, NULL_RTX);
 	DECL_SIZE (r) = DECL_SIZE_UNIT (r) = 0;
 
 	/* Even if the original location is out of scope, the newly

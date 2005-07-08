@@ -313,13 +313,6 @@ browse_tree (tree begin)
 	    TB_WF;
 	  break;
 
-	case TB_ARG_TYPE_AS_WRITTEN:
-	  if (head && TREE_CODE (head) == PARM_DECL)
-	    TB_SET_HEAD (DECL_ARG_TYPE_AS_WRITTEN (head));
-	  else
-	    TB_WF;
-	  break;
-
 	case TB_ARG_TYPE:
 	  if (head && TREE_CODE (head) == PARM_DECL)
 	    TB_SET_HEAD (DECL_ARG_TYPE (head));

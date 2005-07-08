@@ -44,16 +44,16 @@ enum gimplify_status objc_gimplify_expr (tree *, tree *, tree *);
 #define OBJC_INFO_SLOT_ELTS		2
 
 /* KEYWORD_DECL */
-#define KEYWORD_KEY_NAME(DECL) ((DECL)->decl.name)
-#define KEYWORD_ARG_NAME(DECL) ((DECL)->decl.arguments)
+#define KEYWORD_KEY_NAME(DECL) ((DECL)->decl_minimal.name)
+#define KEYWORD_ARG_NAME(DECL) ((DECL)->decl_non_common.arguments)
 
 /* INSTANCE_METHOD_DECL, CLASS_METHOD_DECL */
-#define METHOD_SEL_NAME(DECL) ((DECL)->decl.name)
-#define METHOD_SEL_ARGS(DECL) ((DECL)->decl.arguments)
-#define METHOD_ADD_ARGS(DECL) ((DECL)->decl.result)
-#define METHOD_ADD_ARGS_ELLIPSIS_P(DECL) ((DECL)->decl.lang_flag_0)
-#define METHOD_DEFINITION(DECL) ((DECL)->decl.initial)
-#define METHOD_ENCODING(DECL) ((DECL)->decl.context)
+#define METHOD_SEL_NAME(DECL) ((DECL)->decl_minimal.name)
+#define METHOD_SEL_ARGS(DECL) ((DECL)->decl_non_common.arguments)
+#define METHOD_ADD_ARGS(DECL) ((DECL)->decl_non_common.result)
+#define METHOD_ADD_ARGS_ELLIPSIS_P(DECL) ((DECL)->decl_common.lang_flag_0)
+#define METHOD_DEFINITION(DECL) ((DECL)->decl_common.initial)
+#define METHOD_ENCODING(DECL) ((DECL)->decl_minimal.context)
 
 /* CLASS_INTERFACE_TYPE, CLASS_IMPLEMENTATION_TYPE,
    CATEGORY_INTERFACE_TYPE, CATEGORY_IMPLEMENTATION_TYPE,
