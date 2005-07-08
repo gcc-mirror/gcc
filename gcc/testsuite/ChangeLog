@@ -1,5 +1,10 @@
 2005-07-08  Joseph S. Myers  <joseph@codesourcery.com>
 
+	PR c/22308
+	* gcc.dg/pr22308-1.c: New test.
+
+2005-07-08  Joseph S. Myers  <joseph@codesourcery.com>
+
 	PR c/22013
 	PR c/22098
 	* gcc.c-torture/compile/pr22013-1.c,
