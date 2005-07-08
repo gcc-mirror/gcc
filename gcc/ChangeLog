@@ -1,3 +1,9 @@
+2005-07-08  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
+
+	* config/m32r/linux.h (STARTFILE_SPEC): Support PIE.
+	(ENDFILE_SPEC): Likewise.
+	* config/m32r/m32r.h (ASM_SPEC): Likewise.
+
 2005-07-08  David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* final.c: Include sdbout.h when required.
