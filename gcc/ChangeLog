@@ -1,4 +1,4 @@
-2005-06-28  Geoffrey Keating  <geoffk@apple.com>
+2005-07-08 Geoffrey Keating  <geoffk@apple.com>
 
 	* tree-inline.c (expand_call_inline): Prevent 'may reach end'
 	warning in system headers.
