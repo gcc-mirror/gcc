@@ -7,6 +7,14 @@
 	(lower_bound_in_type): Fix calculations for casting to a
 	non-wider signed type.
 
+	PR tree-optimization/20139
+	* tree-cfg.c (remove_bb): Check in_ssa_p before calling
+	release_defs.
+	* tree-optimize.c (execute_cleanup_cfg_post_optimizing): Call
+	fold_cond_expr_cond.
+	* tree-ssanames.c (release_defs): Assert in_ssa_p.
+	* tree.c (upper_bound_in_type, lower_bound_in_type): Rewrite.
+
 2005-07-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/22356
