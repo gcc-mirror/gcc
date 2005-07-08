@@ -4,6 +4,9 @@
 	(ENDFILE_SPEC): Likewise.
 	* config/m32r/m32r.h (ASM_SPEC): Likewise.
 
+	* config/m32r/m32r.c (m32r_output_function_epilogue): Care for
+	a large stack frame at epilogue.
+
 2005-07-08  David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* final.c: Include sdbout.h when required.
