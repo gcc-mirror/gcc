@@ -343,7 +343,7 @@ _Jv_ThreadSetPriority (_Jv_Thread_t *data, jint prio)
       struct sched_param param;
 
       param.sched_priority = prio;
-      pthread_setschedparam (data->thread, SCHED_RR, &param);
+      pthread_setschedparam (data->thread, SCHED_OTHER, &param);
     }
 #endif
 }
