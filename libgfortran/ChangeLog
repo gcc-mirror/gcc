@@ -1,3 +1,13 @@
+2005-07-09  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+	    Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/22217
+	* io/write.c (extract_unit):  New function; extract
+	ints as unsigned signed int of the correct size.
+	* io/write.c (write_int):  Use it.
+	* runtime/error.c:  Adjust copyright years.
+	Adjust size of buffer to maximum that can occur.
+
 2005-07-07  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* libgfortran.h (GFC_ARRAY_DESCRIPTOR): Replace 'type *base' by
