@@ -48,3 +48,5 @@ Boston, MA 02110-1301, USA.  */
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend%O%s crtn%O%s"
+
+#define NO_IMPLICIT_EXTERN_C 1
