@@ -1,3 +1,9 @@
+2005-07-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config-lang.in (gtfiles): Add cp-objcp-common.c.
+	* objcp-lang.c (objcxx_init_ts): New function.
+	(LANG_HOOKS_INIT_TS): Define.
+
 2005-07-03  Kazu Hirata  <kazu@codesourcery.com>
 
 	* Make-lang.in (cc1plus-checksum.c): Use

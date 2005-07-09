@@ -110,9 +110,9 @@ $(srcdir)/cp/cfns.h: $(srcdir)/cp/cfns.gperf
 		$(srcdir)/cp/cfns.gperf > $(srcdir)/cp/cfns.h
 
 gtype-cp.h gt-cp-call.h gt-cp-decl.h gt-cp-decl2.h : s-gtype; @true
-gt-cp-pt.h gt-cp-repo.h gt-cp-parser.h gt-cp-method.h gt-cp-lang.h : s-gtype; @true
+gt-cp-pt.h gt-cp-repo.h gt-cp-parser.h gt-cp-method.h : s-gtype; @true
 gt-cp-tree.h gt-cp-mangle.h gt-cp-name-lookup.h gt-cp-typeck2.h: s-gtype; @true
-gt-cp-rtti.h: s-gtype ; @true
+gt-cp-rtti.h gt-cp-cp-objcp-common.h: s-gtype ; @true
 
 #
 # Build hooks:
@@ -237,7 +237,7 @@ cp/lex.o: cp/lex.c $(CXX_TREE_H) $(TM_H) flags.h \
   c-pragma.h toplev.h output.h input.h cp/operators.def $(TM_P_H)
 cp/cp-lang.o: cp/cp-lang.c $(CXX_TREE_H) $(TM_H) toplev.h debug.h langhooks.h \
   $(LANGHOOKS_DEF_H) c-common.h gtype-cp.h \
-  $(DIAGNOSTIC_H) cp/cp-objcp-common.h gt-cp-lang.h
+  $(DIAGNOSTIC_H) cp/cp-objcp-common.h
 cp/decl.o: cp/decl.c $(CXX_TREE_H) $(TM_H) flags.h cp/decl.h \
   output.h $(EXPR_H) except.h toplev.h $(HASHTAB_H) $(RTL_H) \
   cp/operators.def $(TM_P_H) tree-inline.h diagnostic.h c-pragma.h \
@@ -248,7 +248,7 @@ cp/decl2.o: cp/decl2.c $(CXX_TREE_H) $(TM_H) flags.h cp/decl.h $(EXPR_H) \
 cp/cp-objcp-common.o : cp/cp-objcp-common.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) $(TREE_H) $(CXX_TREE_H) c-common.h toplev.h langhooks.h \
   $(LANGHOOKS_DEF_H) $(DIAGNOSTIC_H) debug.h $(CXX_PRETTY_PRINT_H) \
-  cp/cp-objcp-common.h
+  cp/cp-objcp-common.h gt-cp-cp-objcp-common.h
 cp/typeck2.o: cp/typeck2.c $(CXX_TREE_H) $(TM_H) flags.h toplev.h output.h \
   $(TM_P_H) diagnostic.h gt-cp-typeck2.h
 cp/typeck.o: cp/typeck.c $(CXX_TREE_H) $(TM_H) flags.h $(RTL_H) $(EXPR_H) \

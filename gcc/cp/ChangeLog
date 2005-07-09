@@ -1,3 +1,22 @@
+2005-07-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* cp-lang.c (shadowed_var_for_decl, decl_shadowed_for_var_lookup,
+	decl_shadowed_for_var_insert): Move over to cp-objcp-common.c.
+	(cp_init_ts): Call init_shadowed_var_for_decl.
+	Remove include of gt-cp-cp-lang.h.
+	* cp-objcp-common.c (shadowed_var_for_decl,
+	decl_shadowed_for_var_lookup, decl_shadowed_for_var_insert): Moved from
+	cp-lang.c.
+	(init_shadowed_var_for_decl): New function to initialize
+	shadowed_var_for_decl.
+	Include gt-cp-cp-objcp-common.h.
+	* Make-lang.in (gt-cp-lang.h): Remove.
+	(gt-cp-cp-objcp-common.h): Add.
+	(cp/cp-lang.o): Remove dependancy on gt-cp-lang.h.
+	(cp/cp-objcp-common.o): Add dependancy on gt-cp-cp-objcp-common.h.
+	* config-lang.in (gtfiles): Remove cp-lang.c and Add cp-objcp-common.c.
+	* cp-tree (init_shadowed_var_for_decl): Add prototype.
+
 2005-07-08  Daniel Berlin  <dberlin@dberlin.org>
 	
 	* Make-lang.in: Add gt-cp-lang.h.

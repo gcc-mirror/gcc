@@ -110,9 +110,6 @@ objcp_tsubst_copy_and_build (tree t ATTRIBUTE_UNUSED,
   return NULL_TREE;
 }
 
-static GTY ((if_marked ("tree_map_marked_p"), param_is (struct tree_map))) 
-     htab_t shadowed_var_for_decl;
-
 
 static void
 cp_init_ts (void)
@@ -142,40 +139,8 @@ cp_init_ts (void)
   tree_contains_struct[TEMPLATE_DECL][TS_DECL_MINIMAL] = 1;
   tree_contains_struct[ALIAS_DECL][TS_DECL_MINIMAL] = 1;
 
-  shadowed_var_for_decl = htab_create_ggc (512, tree_map_hash,
-					   tree_map_eq, 0);
+  init_shadowed_var_for_decl ();
 
-}
-
-/* Lookup a shadowed var for FROM, and return it if we find one.  */
-
-tree 
-decl_shadowed_for_var_lookup (tree from)
-{
-  struct tree_map *h, in;
-  in.from = from;
-
-  h = htab_find_with_hash (shadowed_var_for_decl, &in, 
-			   htab_hash_pointer (from));
-  if (h)
-    return h->to;
-  return NULL_TREE;
-}
-
-/* Insert a mapping FROM->TO in the shadowed var hashtable.  */
-
-void
-decl_shadowed_for_var_insert (tree from, tree to)
-{
-  struct tree_map *h;
-  void **loc;
-
-  h = ggc_alloc (sizeof (struct tree_map));
-  h->hash = htab_hash_pointer (from);
-  h->from = from;
-  h->to = to;
-  loc = htab_find_slot_with_hash (shadowed_var_for_decl, h, h->hash, INSERT);
-  *(struct tree_map **) loc = h;
 }
 
 void
@@ -184,5 +149,4 @@ finish_file (void)
   cp_finish_file ();
 }
 
-#include "gt-cp-cp-lang.h"
 #include "gtype-cp.h"
