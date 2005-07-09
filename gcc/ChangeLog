@@ -1,3 +1,7 @@
+2005-07-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/darwin.h (TARGET_C99_FUNCTIONS): Define to 1.
+
 2005-07-08  Daniel Berlin  <dberlin@dberlin.org>
 
 	* Makefile.in (TREE_H): Add treestruct.def.
