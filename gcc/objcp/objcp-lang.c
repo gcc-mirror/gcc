@@ -35,6 +35,7 @@ Boston, MA 02110-1301, USA.  */
 #include "cp-objcp-common.h"
 
 enum c_language_kind c_language = clk_objcxx;
+static void objcxx_init_ts (void);
 
 /* Lang hooks common to C++ and ObjC++ are declared in cp/cp-objcp-common.h;
    consequently, there should be very few hooks below.  */
@@ -49,6 +50,9 @@ enum c_language_kind c_language = clk_objcxx;
 #define LANG_HOOKS_GIMPLIFY_EXPR objc_gimplify_expr
 #undef LANG_HOOKS_GET_CALLEE_FNDECL
 #define LANG_HOOKS_GET_CALLEE_FNDECL	objc_get_callee_fndecl
+#undef LANG_HOOKS_INIT_TS
+#define LANG_HOOKS_INIT_TS objcxx_init_ts
+
 /* Each front end provides its own lang hook initializer.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
@@ -132,6 +136,60 @@ objcp_tsubst_copy_and_build (tree t, tree args, tsubst_flags_t complain,
 
 #undef RECURSE
 }
+
+static void
+objcxx_init_ts (void)
+{
+  /* objc decls */
+  tree_contains_struct[CLASS_METHOD_DECL][TS_DECL_NON_COMMON] = 1;
+  tree_contains_struct[INSTANCE_METHOD_DECL][TS_DECL_NON_COMMON] = 1;
+  tree_contains_struct[KEYWORD_DECL][TS_DECL_NON_COMMON] = 1;
+  
+  tree_contains_struct[CLASS_METHOD_DECL][TS_DECL_WITH_VIS] = 1;
+  tree_contains_struct[INSTANCE_METHOD_DECL][TS_DECL_WITH_VIS] = 1;
+  tree_contains_struct[KEYWORD_DECL][TS_DECL_WITH_VIS] = 1;
+
+  tree_contains_struct[CLASS_METHOD_DECL][TS_DECL_WRTL] = 1;
+  tree_contains_struct[INSTANCE_METHOD_DECL][TS_DECL_WRTL] = 1;
+  tree_contains_struct[KEYWORD_DECL][TS_DECL_WRTL] = 1;
+  
+  tree_contains_struct[CLASS_METHOD_DECL][TS_DECL_MINIMAL] = 1;
+  tree_contains_struct[INSTANCE_METHOD_DECL][TS_DECL_MINIMAL] = 1;
+  tree_contains_struct[KEYWORD_DECL][TS_DECL_MINIMAL] = 1;
+  
+  tree_contains_struct[CLASS_METHOD_DECL][TS_DECL_COMMON] = 1;
+  tree_contains_struct[INSTANCE_METHOD_DECL][TS_DECL_COMMON] = 1;
+  tree_contains_struct[KEYWORD_DECL][TS_DECL_COMMON] = 1;
+  
+  /* C++ decls */
+  tree_contains_struct[NAMESPACE_DECL][TS_DECL_NON_COMMON] = 1;
+  tree_contains_struct[USING_DECL][TS_DECL_NON_COMMON] = 1;
+  tree_contains_struct[TEMPLATE_DECL][TS_DECL_NON_COMMON] = 1;
+  tree_contains_struct[ALIAS_DECL][TS_DECL_NON_COMMON] = 1;
+
+  tree_contains_struct[NAMESPACE_DECL][TS_DECL_WITH_VIS] = 1;
+  tree_contains_struct[USING_DECL][TS_DECL_WITH_VIS] = 1;
+  tree_contains_struct[TEMPLATE_DECL][TS_DECL_WITH_VIS] = 1;
+  tree_contains_struct[ALIAS_DECL][TS_DECL_WITH_VIS] = 1;
+
+  tree_contains_struct[NAMESPACE_DECL][TS_DECL_WRTL] = 1;
+  tree_contains_struct[USING_DECL][TS_DECL_WRTL] = 1;
+  tree_contains_struct[TEMPLATE_DECL][TS_DECL_WRTL] = 1;
+  tree_contains_struct[ALIAS_DECL][TS_DECL_WRTL] = 1;
+  
+  tree_contains_struct[NAMESPACE_DECL][TS_DECL_COMMON] = 1;
+  tree_contains_struct[USING_DECL][TS_DECL_COMMON] = 1;
+  tree_contains_struct[TEMPLATE_DECL][TS_DECL_COMMON] = 1;
+  tree_contains_struct[ALIAS_DECL][TS_DECL_COMMON] = 1;
+ 
+  tree_contains_struct[NAMESPACE_DECL][TS_DECL_MINIMAL] = 1;
+  tree_contains_struct[USING_DECL][TS_DECL_MINIMAL] = 1;
+  tree_contains_struct[TEMPLATE_DECL][TS_DECL_MINIMAL] = 1;
+  tree_contains_struct[ALIAS_DECL][TS_DECL_MINIMAL] = 1;
+  
+  init_shadowed_var_for_decl ();
+}
+
 
 void
 finish_file (void)
