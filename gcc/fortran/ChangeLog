@@ -2,6 +2,13 @@
 
 	Backport from the mainline:
 	2005-07-07  Jakub Jelinek  <jakub@redhat.com>
+	* scanner.c (load_line): Add pbuflen argument, don't make
+	buflen static.  If maxlen == 0 or preprocessor_flag,
+	don't truncate at buflen, but at maxlen.  In xrealloc add
+	1 byte at the end for the terminating '\0'.  Don't fill
+	with spaces up to buflen, but gfc_option.fixed_line_length.
+	(load_file): Adjust load_line caller.  Add line_len variable.
+
 	* scanner.c (preprocessor_line): Only set current_file->line when errors
 	have not been encountered.  Warn and don't crash if a file leave
 	preprocessor line has no corresponding entering line.  Formatting.
