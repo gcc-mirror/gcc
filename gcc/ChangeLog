@@ -1,3 +1,11 @@
+2005-07-08  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/sync.md (load_locked_<mode>): Use Z for
+	memory_operand constraint.
+	(store_conditional_<mode>): Same.
+	(sync_compare_and_swap<mode>): Same.
+	(sync_lock_test_and_set<mode>): Same.
+
 2005-07-08  Hans-Peter Nilsson  <hp@axis.com>
 
 	Rewrite PIC support to more closely model actual instructions.
