@@ -1,3 +1,68 @@
+2005-07-08  Hans-Peter Nilsson  <hp@axis.com>
+
+	Rewrite PIC support to more closely model actual instructions.
+	* config/cris/cris-protos.h (cris_gotless_symbol, cris_got_symbol)
+	(cris_symbol): Remove prototypes for removed functions.
+	(cris_pic_symbol_type_of, cris_valid_pic_const)
+	(cris_expand_pic_call_address): Prototypes for new functions.
+	* config/cris/cris/cris.c (cris_pic_sympart_only): Remove unused
+	variable.
+	(cris_print_operand) <case 'v', 'P'>: Remove cases for unused
+	modifiers.
+	<case ':'>: Add case for new punctuation character.
+	<case 'd'>: Temporarily set flag_pic = 2 instead of incorrectly
+	emitting (extra) PIC modifier.
+	<case UNSPEC>: Do not assert for PLT.
+	(cris_initial_frame_pointer_offset, cris_simple_epilogue)
+	(cris_expand_prologue, cris_expand_epilogue): Check
+	for pic_offset_table_rtx usage instead of taking
+	current_function_uses_pic_offset_table as the final word.
+	(cris_rtx_costs, cris_address_cost, cris_side_effect_mode_ok):
+	Remove flag_pic difference.
+	(cris_valid_pic_const, cris_pic_symbol_type_of): New functions,
+	the moral equivalents of...
+	(cris_symbol, cris_gotless_symbol, cris_got_symbol): Remove
+	functions.
+	(cris_legitimate_pic_operand): Just call cris_valid_pic_const.
+	(cris_handle_option): Mark ARG as unused.
+	(cris_expand_pic_call_address): New worker function for "call",
+	"call_value".
+	(cris_asm_output_symbol_ref, cris_asm_output_label_ref): Do not
+	output PIC constructs here.
+	(cris_output_addr_const_extra): Changes for emitting PIC modifiers
+	as symbol-specific modifers, not whole or part of operands.
+	* config/cris/cris/cris.h (EXTRA_CONSTRAINT): Remove 'U' case.
+	(EXTRA_CONSTRAINT_S): Changed semantics: allow only CONST-wrapped
+	constants and flag_pic.
+	(CONSTANT_INDEX_P): Adjust for new functions.
+	(enum cris_pic_symbol_type): New helper type.
+	(PRINT_OPERAND_PUNCT_VALID_P): Add ':'.
+	* config/cris/cris/cris.md (CRIS_UNSPEC_GOTREL)
+	(CRIS_UNSPEC_GOTREAD, CRIS_UNSPEC_PLTGOTREAD): New
+	define_constants.
+	("movsi"): Emit actual instructions for GOT and relative access.
+	("*movsi_got_load"): New pattern to set up the register holding
+	the GOT pointer.
+	("*movsi_internal"): Operand 1 is not a plain general_operand.
+	Adjust FIXME for 'S'.
+	<output for 'S' alternative>: Sanity-check UNSPEC types for PIC.
+	Use "movs" for -fpic cases.
+	("addsi3"): Add alternative for 'S'; use adds.w when possible.
+	("uminsi3","*expanded_call_value"): Remove 'S' alternative.
+	("call", "call_value"): Just call cris_expand_pic_call_address for
+	PIC addresses.
+	("*expanded_call_no_gotplt", "*expanded_call_value_no_gotplt"):
+	Remove special pattern.
+	("*expanded_call_side", "*expanded_call_value_side"): New
+	patterns.
+	(gotplt-to-plt, gotplt-to-plt-side-call)
+	(gotplt-to-plt-side-call-value, gotplt-to-plt-side): New
+	peephole2:s.
+	* config/cris/cris/predicates.md
+	("cris_general_operand_or_gotless_symbol"): Remove unused
+	predicate.
+	("cris_general_operand_or_symbol"): Adjust for new functions.
+
 2005-07-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/darwin.h (TARGET_C99_FUNCTIONS): Define to 1.

@@ -634,8 +634,6 @@ enum reg_class
   (C) == 'S' ? EXTRA_CONSTRAINT_S (X) :		\
   /* A three-address addressing-mode?  */	\
   (C) == 'T' ? EXTRA_CONSTRAINT_T (X) :		\
-  /* A global PIC symbol?  */			\
-  (C) == 'U' ? EXTRA_CONSTRAINT_U (X) :		\
   0)
 
 #define EXTRA_MEMORY_CONSTRAINT(X, STR) ((X) == 'Q')
@@ -685,16 +683,9 @@ enum reg_class
 		  && BIAP_INDEX_P (XEXP (XEXP (X, 0), 0))))))		\
  )
 
-/* We're kind of out of constraints, so we use "S" for both gotless
-   symbols and the GOT-address load.  Both must go in a general register
-   only: for pre-V32, arithmetic is done on the destination.  */
+/* PIC-constructs for symbols.  */
 #define EXTRA_CONSTRAINT_S(X)						\
- (flag_pic								\
-  && ((CONSTANT_P (X) && cris_gotless_symbol (X))			\
-      || (GET_CODE (X) == UNSPEC && XINT ((X), 1) == CRIS_UNSPEC_GOT)))
-
-#define EXTRA_CONSTRAINT_U(X) \
- (flag_pic && CONSTANT_P (X) && cris_got_symbol (X))
+ (flag_pic && GET_CODE (X) == CONST && cris_valid_pic_const (X))
 
 
 /* Node: Frame Layout */
@@ -956,7 +947,7 @@ struct cum_args {int regs;};
 /* No symbol can be used as an index (or more correct, as a base) together
    with a register with PIC; the PIC register must be there.  */
 #define CONSTANT_INDEX_P(X) \
- (CONSTANT_P (X) && !(flag_pic && cris_symbol (X)))
+ (CONSTANT_P (X) && (!flag_pic || cris_valid_pic_const (X)))
 
 /* True if X is a valid base register.  */
 #define BASE_P(X) \
@@ -1003,10 +994,7 @@ struct cum_args {int regs;};
    rtx x1, x2;							\
    if (SIMPLE_ADDRESS_P (X))					\
      goto ADDR;							\
-   if (CONSTANT_P (X)						\
-       && (! flag_pic						\
-	   || cris_gotless_symbol (X)				\
-	   || ! cris_symbol (X)))				\
+   if (CONSTANT_INDEX_P (X))					\
      goto ADDR;							\
    /* Indexed?  */						\
    if (GET_CODE (X) == PLUS)					\
@@ -1150,6 +1138,17 @@ struct cum_args {int regs;};
 
 /* Node: PIC */
 
+/* Helper type.  */
+
+enum cris_pic_symbol_type
+  {
+    cris_no_symbol = 0,
+    cris_got_symbol = 1,
+    cris_gotrel_symbol = 2,
+    cris_got_symbol_needing_fixup = 3,
+    cris_invalid_pic_symbol = 4
+  };
+
 #define PIC_OFFSET_TABLE_REGNUM (flag_pic ? CRIS_GOT_REGNUM : INVALID_REGNUM)
 
 #define LEGITIMATE_PIC_OPERAND_P(X) cris_legitimate_pic_operand (X)
@@ -1276,7 +1275,7 @@ struct cum_args {int regs;};
 
 /* For delay-slot handling.  */
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)	\
- ((CODE) == '#' || (CODE) == '!')
+ ((CODE) == '#' || (CODE) == '!' || (CODE) == ':')
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR)	\
    cris_print_operand_address (FILE, ADDR)
