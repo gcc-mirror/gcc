@@ -1,5 +1,11 @@
 2005-07-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* decl.c (components_to_record): Use DECL_FCONTEXT instead of
+	DECL_SECTION_NAME.
+	(compare_field_bitpos): Likewise.
+
+2005-07-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	* utils.c (create_var_decl): Only set DECL_COMMON on
 	VAR_DECLs. Only set SET_DECL_ASSEMBLER_NAME on
 	VAR_OR_FUNCTION_DECL_P.
