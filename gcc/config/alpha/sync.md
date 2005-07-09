@@ -19,6 +19,7 @@
 ;; the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 ;; Boston, MA 02110-1301, USA.
 
+(define_mode_macro I12MODE [QI HI])
 (define_mode_macro I48MODE [SI DI])
 (define_mode_attr modesuffix [(SI "l") (DI "q")])
 
@@ -34,7 +35,7 @@
 
 (define_expand "memory_barrier"
   [(set (mem:BLK (match_dup 0))
-	(unspec_volatile:BLK [(mem:BLK (match_dup 0))] UNSPECV_MB))]
+	(unspec:BLK [(mem:BLK (match_dup 0))] UNSPEC_MB))]
   ""
 {
   operands[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (DImode));
@@ -43,7 +44,7 @@
 
 (define_insn "*mb_internal"
   [(set (match_operand:BLK 0 "" "")
-	(unspec_volatile:BLK [(match_operand:BLK 1 "" "")] UNSPECV_MB))]
+	(unspec:BLK [(match_operand:BLK 1 "" "")] UNSPEC_MB))]
   ""
   "mb"
   [(set_attr "type" "mb")])
@@ -75,10 +76,10 @@
 
 (define_insn_and_split "sync_<fetchop_name><mode>"
   [(set (match_operand:I48MODE 0 "memory_operand" "+m")
-	(unspec_volatile:I48MODE
+	(unspec:I48MODE
 	  [(FETCHOP:I48MODE (match_dup 0)
 	     (match_operand:I48MODE 1 "<fetchop_pred>" "<fetchop_constr>"))]
-	  UNSPECV_ATOMIC))
+	  UNSPEC_ATOMIC))
    (clobber (match_scratch:I48MODE 2 "=&r"))]
   ""
   "#"
@@ -93,10 +94,10 @@
 
 (define_insn_and_split "sync_nand<mode>"
   [(set (match_operand:I48MODE 0 "memory_operand" "+m")
-	(unspec_volatile:I48MODE
+	(unspec:I48MODE
 	  [(and:I48MODE (not:I48MODE (match_dup 0))
 	     (match_operand:I48MODE 1 "register_operand" "r"))]
-	  UNSPECV_ATOMIC))
+	  UNSPEC_ATOMIC))
    (clobber (match_scratch:I48MODE 2 "=&r"))]
   ""
   "#"
@@ -113,10 +114,10 @@
   [(set (match_operand:I48MODE 0 "register_operand" "=&r")
 	(match_operand:I48MODE 1 "memory_operand" "+m"))
    (set (match_dup 1)
-	(unspec_volatile:I48MODE
+	(unspec:I48MODE
 	  [(FETCHOP:I48MODE (match_dup 1)
 	     (match_operand:I48MODE 2 "<fetchop_pred>" "<fetchop_constr>"))]
-	  UNSPECV_ATOMIC))
+	  UNSPEC_ATOMIC))
    (clobber (match_scratch:I48MODE 3 "=&r"))]
   ""
   "#"
@@ -133,10 +134,10 @@
   [(set (match_operand:I48MODE 0 "register_operand" "=&r")
 	(match_operand:I48MODE 1 "memory_operand" "+m"))
    (set (match_dup 1)
-	(unspec_volatile:I48MODE
+	(unspec:I48MODE
 	  [(and:I48MODE (not:I48MODE (match_dup 1))
 	     (match_operand:I48MODE 2 "register_operand" "r"))]
-	  UNSPECV_ATOMIC))
+	  UNSPEC_ATOMIC))
    (clobber (match_scratch:I48MODE 3 "=&r"))]
   ""
   "#"
@@ -155,9 +156,9 @@
 	  (match_operand:I48MODE 1 "memory_operand" "+m")
 	  (match_operand:I48MODE 2 "<fetchop_pred>" "<fetchop_constr>")))
    (set (match_dup 1)
-	(unspec_volatile:I48MODE
+	(unspec:I48MODE
 	  [(FETCHOP:I48MODE (match_dup 1) (match_dup 2))]
-	  UNSPECV_ATOMIC))
+	  UNSPEC_ATOMIC))
    (clobber (match_scratch:I48MODE 3 "=&r"))]
   ""
   "#"
@@ -176,9 +177,9 @@
 	  (not:I48MODE (match_operand:I48MODE 1 "memory_operand" "+m"))
 	  (match_operand:I48MODE 2 "register_operand" "r")))
    (set (match_dup 1)
-	(unspec_volatile:I48MODE
+	(unspec:I48MODE
 	  [(and:I48MODE (not:I48MODE (match_dup 1)) (match_dup 2))]
-	  UNSPECV_ATOMIC))
+	  UNSPEC_ATOMIC))
    (clobber (match_scratch:I48MODE 3 "=&r"))]
   ""
   "#"
@@ -192,14 +193,50 @@
   [(set_attr "type" "multi")])
 
 (define_expand "sync_compare_and_swap<mode>"
+  [(match_operand:I12MODE 0 "register_operand" "")
+   (match_operand:I12MODE 1 "memory_operand" "")
+   (match_operand:I12MODE 2 "register_operand" "")
+   (match_operand:I12MODE 3 "add_operand" "")]
+  ""
+{
+  alpha_expand_compare_and_swap_12 (operands[0], operands[1],
+				    operands[2], operands[3]);
+  DONE;
+})
+
+(define_insn_and_split "sync_compare_and_swap<mode>_1"
+  [(set (match_operand:DI 0 "register_operand" "=&r,&r")
+	(zero_extend:DI
+	  (mem:I12MODE (match_operand:DI 1 "register_operand" "r,r"))))
+   (set (mem:I12MODE (match_dup 1))
+	(unspec:I12MODE
+	  [(match_operand:DI 2 "reg_or_8bit_operand" "J,rI")
+	   (match_operand:DI 3 "register_operand" "r,r")
+	   (match_operand:DI 4 "register_operand" "r,r")]
+	  UNSPEC_CMPXCHG))
+   (clobber (match_scratch:DI 5 "=&r,&r"))
+   (clobber (match_scratch:DI 6 "=X,&r"))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+{
+  alpha_split_compare_and_swap_12 (<MODE>mode, operands[0], operands[1],
+				   operands[2], operands[3], operands[4],
+				   operands[5], operands[6]);
+  DONE;
+}
+  [(set_attr "type" "multi")])
+
+(define_expand "sync_compare_and_swap<mode>"
   [(parallel
      [(set (match_operand:I48MODE 0 "register_operand" "")
 	   (match_operand:I48MODE 1 "memory_operand" ""))
       (set (match_dup 1)
-	   (unspec_volatile:I48MODE
+	   (unspec:I48MODE
 	     [(match_operand:I48MODE 2 "reg_or_8bit_operand" "")
 	      (match_operand:I48MODE 3 "add_operand" "rKL")]
-	     UNSPECV_CMPXCHG))
+	     UNSPEC_CMPXCHG))
       (clobber (match_scratch:I48MODE 4 "=&r"))])]
   ""
 {
@@ -211,10 +248,10 @@
   [(set (match_operand:I48MODE 0 "register_operand" "=&r")
 	(match_operand:I48MODE 1 "memory_operand" "+m"))
    (set (match_dup 1)
-	(unspec_volatile:I48MODE
+	(unspec:I48MODE
 	  [(match_operand:DI 2 "reg_or_8bit_operand" "rI")
 	   (match_operand:I48MODE 3 "add_operand" "rKL")]
-	  UNSPECV_CMPXCHG))
+	  UNSPEC_CMPXCHG))
    (clobber (match_scratch:I48MODE 4 "=&r"))]
   ""
   "#"
@@ -227,13 +264,44 @@
 }
   [(set_attr "type" "multi")])
 
+(define_expand "sync_lock_test_and_set<mode>"
+  [(match_operand:I12MODE 0 "register_operand" "")
+   (match_operand:I12MODE 1 "memory_operand" "")
+   (match_operand:I12MODE 2 "register_operand" "")]
+  ""
+{
+  alpha_expand_lock_test_and_set_12 (operands[0], operands[1], operands[2]);
+  DONE;
+})
+
+(define_insn_and_split "sync_lock_test_and_set<mode>_1"
+  [(set (match_operand:DI 0 "register_operand" "=&r")
+	(zero_extend:DI
+	  (mem:I12MODE (match_operand:DI 1 "register_operand" "r"))))
+   (set (mem:I12MODE (match_dup 1))
+	(unspec:I12MODE
+	  [(match_operand:DI 2 "reg_or_8bit_operand" "rI")
+	   (match_operand:DI 3 "register_operand" "r")]
+	  UNSPEC_XCHG))
+   (clobber (match_scratch:DI 4 "=&r"))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+{
+  alpha_split_lock_test_and_set_12 (<MODE>mode, operands[0], operands[1],
+				    operands[2], operands[3], operands[4]);
+  DONE;
+}
+  [(set_attr "type" "multi")])
+
 (define_insn_and_split "sync_lock_test_and_set<mode>"
   [(set (match_operand:I48MODE 0 "register_operand" "=&r")
 	(match_operand:I48MODE 1 "memory_operand" "+m"))
    (set (match_dup 1)
-	(unspec_volatile:I48MODE
+	(unspec:I48MODE
 	  [(match_operand:I48MODE 2 "add_operand" "rKL")]
-	  UNSPECV_XCHG))
+	  UNSPEC_XCHG))
    (clobber (match_scratch:I48MODE 3 "=&r"))]
   ""
   "#"
