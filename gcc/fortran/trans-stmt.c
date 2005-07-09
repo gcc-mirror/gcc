@@ -2413,11 +2413,17 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
      For now we assume a mask temporary is needed.  */
   if (code->expr)
     {
+      /* As the mask array can be very big, prefer compact
+	 boolean types.  */
+      tree smallest_boolean_type_node
+	= gfc_get_logical_type (gfc_logical_kinds[0].kind);
+
       /* Allocate the mask temporary.  */
       bytesize = fold (build2 (MULT_EXPR, gfc_array_index_type, size,
-			       TYPE_SIZE_UNIT (boolean_type_node)));
+			       TYPE_SIZE_UNIT (smallest_boolean_type_node)));
 
-      mask = gfc_do_allocate (bytesize, size, &pmask, &block, boolean_type_node);
+      mask = gfc_do_allocate (bytesize, size, &pmask, &block,
+			      smallest_boolean_type_node);
 
       maskindex = gfc_create_var_np (gfc_array_index_type, "mi");
       /* Record them in the info structure.  */
@@ -2436,7 +2442,7 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
       gfc_add_block_to_block (&body, &se.pre);
 
       /* Store the mask.  */
-      se.expr = convert (boolean_type_node, se.expr);
+      se.expr = convert (smallest_boolean_type_node, se.expr);
 
       if (pmask)
 	tmp = gfc_build_indirect_ref (mask);
