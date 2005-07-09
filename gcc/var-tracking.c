@@ -102,6 +102,8 @@
 #include "alloc-pool.h"
 #include "fibheap.h"
 #include "hashtab.h"
+#include "regs.h"
+#include "expr.h"
 
 /* Type of micro operation.  */
 enum micro_operation_type
@@ -2202,10 +2204,12 @@ emit_note_insn_var_location (void **varp, void *data)
   rtx insn = ((emit_note_data *)data)->insn;
   enum emit_note_where where = ((emit_note_data *)data)->where;
   rtx note;
-  int i;
+  int i, j, n_var_parts;
   bool complete;
   HOST_WIDE_INT last_limit;
   tree type_size_unit;
+  HOST_WIDE_INT offsets[MAX_VAR_PARTS];
+  rtx loc[MAX_VAR_PARTS];
 
 #ifdef ENABLE_CHECKING
   if (!var->decl)
@@ -2214,16 +2218,90 @@ emit_note_insn_var_location (void **varp, void *data)
 
   complete = true;
   last_limit = 0;
+  n_var_parts = 0;
   for (i = 0; i < var->n_var_parts; i++)
     {
+      enum machine_mode mode, wider_mode;
+
       if (last_limit < var->var_part[i].offset)
 	{
 	  complete = false;
 	  break;
 	}
-      last_limit
-	= (var->var_part[i].offset
-	   + GET_MODE_SIZE (GET_MODE (var->var_part[i].loc_chain->loc)));
+      else if (last_limit > var->var_part[i].offset)
+	continue;
+      offsets[n_var_parts] = var->var_part[i].offset;
+      loc[n_var_parts] = var->var_part[i].loc_chain->loc;
+      mode = GET_MODE (loc[n_var_parts]);
+      last_limit = offsets[n_var_parts] + GET_MODE_SIZE (mode);
+
+      /* Attempt to merge adjacent registers or memory.  */
+      wider_mode = GET_MODE_WIDER_MODE (mode);
+      for (j = i + 1; j < var->n_var_parts; j++)
+	if (last_limit <= var->var_part[j].offset)
+	  break;
+      if (j < var->n_var_parts
+	  && wider_mode != VOIDmode
+	  && GET_CODE (loc[n_var_parts])
+	     == GET_CODE (var->var_part[j].loc_chain->loc)
+	  && mode == GET_MODE (var->var_part[j].loc_chain->loc)
+	  && last_limit == var->var_part[j].offset)
+	{
+	  rtx new_loc = NULL;
+	  rtx loc2 = var->var_part[j].loc_chain->loc;
+
+	  if (REG_P (loc[n_var_parts])
+	      && hard_regno_nregs[REGNO (loc[n_var_parts])][mode] * 2
+		 == hard_regno_nregs[REGNO (loc[n_var_parts])][wider_mode]
+	      && REGNO (loc[n_var_parts])
+		 + hard_regno_nregs[REGNO (loc[n_var_parts])][mode]
+		 == REGNO (loc2))
+	    {
+	      if (! WORDS_BIG_ENDIAN && ! BYTES_BIG_ENDIAN)
+		new_loc = simplify_subreg (wider_mode, loc[n_var_parts],
+					   mode, 0);
+	      else if (WORDS_BIG_ENDIAN && BYTES_BIG_ENDIAN)
+		new_loc = simplify_subreg (wider_mode, loc2, mode, 0);
+	      if (new_loc)
+		{
+		  if (!REG_P (new_loc)
+		      || REGNO (new_loc) != REGNO (loc[n_var_parts]))
+		    new_loc = NULL;
+		  else
+		    REG_ATTRS (new_loc) = REG_ATTRS (loc[n_var_parts]);
+		}
+	    }
+	  else if (MEM_P (loc[n_var_parts])
+		   && GET_CODE (XEXP (loc2, 0)) == PLUS
+		   && GET_CODE (XEXP (XEXP (loc2, 0), 0)) == REG
+		   && GET_CODE (XEXP (XEXP (loc2, 0), 1)) == CONST_INT)
+	    {
+	      if ((GET_CODE (XEXP (loc[n_var_parts], 0)) == REG
+		   && rtx_equal_p (XEXP (loc[n_var_parts], 0),
+				   XEXP (XEXP (loc2, 0), 0))
+		   && INTVAL (XEXP (XEXP (loc2, 0), 1))
+		      == GET_MODE_SIZE (mode))
+		  || (GET_CODE (XEXP (loc[n_var_parts], 0)) == PLUS
+		      && GET_CODE (XEXP (XEXP (loc[n_var_parts], 0), 1))
+			 == CONST_INT
+		      && rtx_equal_p (XEXP (XEXP (loc[n_var_parts], 0), 0),
+				      XEXP (XEXP (loc2, 0), 0))
+		      && INTVAL (XEXP (XEXP (loc[n_var_parts], 0), 1))
+			 + GET_MODE_SIZE (mode)
+			 == INTVAL (XEXP (XEXP (loc2, 0), 1))))
+		new_loc = adjust_address_nv (loc[n_var_parts],
+					     wider_mode, 0);
+	    }
+
+	  if (new_loc)
+	    {
+	      loc[n_var_parts] = new_loc;
+	      mode = wider_mode;
+	      last_limit = offsets[n_var_parts] + GET_MODE_SIZE (mode);
+	      i = j;
+	    }
+	}
+      ++n_var_parts;
     }
   type_size_unit = TYPE_SIZE_UNIT (TREE_TYPE (var->decl));
   if ((unsigned HOST_WIDE_INT) last_limit < TREE_INT_CST_LOW (type_size_unit))
@@ -2239,26 +2317,24 @@ emit_note_insn_var_location (void **varp, void *data)
       NOTE_VAR_LOCATION (note) = gen_rtx_VAR_LOCATION (VOIDmode, var->decl,
 						       NULL_RTX);
     }
-  else if (var->n_var_parts == 1)
+  else if (n_var_parts == 1)
     {
       rtx expr_list
-	= gen_rtx_EXPR_LIST (VOIDmode,
-			     var->var_part[0].loc_chain->loc,
-			     GEN_INT (var->var_part[0].offset));
+	= gen_rtx_EXPR_LIST (VOIDmode, loc[0], GEN_INT (offsets[0]));
 
       NOTE_VAR_LOCATION (note) = gen_rtx_VAR_LOCATION (VOIDmode, var->decl,
 						       expr_list);
     }
-  else if (var->n_var_parts)
+  else if (n_var_parts)
     {
-      rtx argp[MAX_VAR_PARTS];
       rtx parallel;
 
-      for (i = 0; i < var->n_var_parts; i++)
-	argp[i] = gen_rtx_EXPR_LIST (VOIDmode, var->var_part[i].loc_chain->loc,
-				     GEN_INT (var->var_part[i].offset));
+      for (i = 0; i < n_var_parts; i++)
+	loc[i]
+	  = gen_rtx_EXPR_LIST (VOIDmode, loc[i], GEN_INT (offsets[i]));
+
       parallel = gen_rtx_PARALLEL (VOIDmode,
-				   gen_rtvec_v (var->n_var_parts, argp));
+				   gen_rtvec_v (n_var_parts, loc));
       NOTE_VAR_LOCATION (note) = gen_rtx_VAR_LOCATION (VOIDmode, var->decl,
 						       parallel);
     }
