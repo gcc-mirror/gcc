@@ -1,5 +1,7 @@
 2005-07-09  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/20050620-1.c: New test.
+
 	* gfortran.fortran-torture/execute/entry_10.f90: New test.
 
 	* gfortran.dg/longline.f: New test.

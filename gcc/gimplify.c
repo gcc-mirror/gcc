@@ -4361,15 +4361,14 @@ gimplify_type_sizes (tree type, tree *list_p)
 {
   tree field, t;
 
-  if (type == NULL)
+  if (type == NULL || type == error_mark_node)
     return;
 
   /* We first do the main variant, then copy into any other variants. */
   type = TYPE_MAIN_VARIANT (type);
 
   /* Avoid infinite recursion.  */
-  if (TYPE_SIZES_GIMPLIFIED (type)
-      || type == error_mark_node)
+  if (TYPE_SIZES_GIMPLIFIED (type))
     return;
 
   TYPE_SIZES_GIMPLIFIED (type) = 1;

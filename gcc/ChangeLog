@@ -4,6 +4,11 @@
 	in Intel syntax add %reg, OFFSET FLAT:_GLOBAL_OFFSET_TABLE_+(.-.Lx).
 
 	Backport from the mainline:
+	2005-06-26  Jakub Jelinek  <jakub@redhat.com>
+	PR middle-end/22028
+	* gimplify.c (gimplify_type_sizes): Check for type == error_mark_node
+	earlier in the function.
+
 	2005-06-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 	PR debug/21946
 	* dwarf2out.c (add_loc_descr_op_piece): Move to the
