@@ -1,3 +1,9 @@
+2005-07-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* utils.c (create_var_decl): Only set DECL_COMMON on
+	VAR_DECLs. Only set SET_DECL_ASSEMBLER_NAME on
+	VAR_OR_FUNCTION_DECL_P.
+
 2005-07-08  Daniel Berlin  <dberlin@dberlin.org>
 	
 	* utils.c (create_param_decl): DECL_ARG_TYPE_AS_WRITTEN is
