@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2003 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2005 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -63,7 +63,8 @@ iexport_data(filename);
 unsigned line = 0;
 iexport_data(line);
 
-static char buffer[32];		/* buffer for integer/ascii conversions */
+/* buffer for integer/ascii conversions.  */
+static char buffer[sizeof (GFC_UINTEGER_LARGEST) * 8 + 1];
 
 
 /* Returns a pointer to a static buffer. */

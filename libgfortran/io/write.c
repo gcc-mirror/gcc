@@ -102,6 +102,40 @@ extract_int (const void *p, int len)
   return i;
 }
 
+static GFC_UINTEGER_LARGEST
+extract_uint (const void *p, int len)
+{
+  GFC_UINTEGER_LARGEST i = 0;
+
+  if (p == NULL)
+    return i;
+
+  switch (len)
+    {
+    case 1:
+      i = (GFC_UINTEGER_1) *((const GFC_INTEGER_1 *) p);
+      break;
+    case 2:
+      i = (GFC_UINTEGER_2) *((const GFC_INTEGER_2 *) p);
+      break;
+    case 4:
+      i = (GFC_UINTEGER_4) *((const GFC_INTEGER_4 *) p);
+      break;
+    case 8:
+      i = (GFC_UINTEGER_8) *((const GFC_INTEGER_8 *) p);
+      break;
+#ifdef HAVE_GFC_INTEGER_16
+    case 16:
+      i = (GFC_UINTEGER_16) *((const GFC_INTEGER_16 *) p);
+      break;
+#endif
+    default:
+      internal_error ("bad integer kind");
+    }
+
+  return i;
+}
+
 static GFC_REAL_LARGEST
 extract_real (const void *p, int len)
 {
@@ -802,7 +836,7 @@ write_int (fnode *f, const char *source, int len,
   w = f->u.integer.w;
   m = f->u.integer.m;
 
-  n = extract_int (source, len);
+  n = extract_uint (source, len);
 
   /* Special case:  */
 
