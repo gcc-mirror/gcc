@@ -666,18 +666,19 @@ execute_todo (struct tree_opt_pass *pass, unsigned int flags, bool use_required)
     gcc_assert (flags & TODO_update_ssa_any);
 #endif
 
-  if (flags & TODO_update_ssa_any)
-    {
-      unsigned update_flags = flags & TODO_update_ssa_any;
-      update_ssa (update_flags);
-    }
-
+  /* Always cleanup the CFG before doing anything else.  */
   if (flags & TODO_cleanup_cfg)
     {
       if (current_loops)
 	cleanup_tree_cfg_loop ();
       else
 	cleanup_tree_cfg ();
+    }
+
+  if (flags & TODO_update_ssa_any)
+    {
+      unsigned update_flags = flags & TODO_update_ssa_any;
+      update_ssa (update_flags);
     }
 
   if ((flags & TODO_dump_func)
