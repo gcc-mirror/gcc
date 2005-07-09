@@ -1,5 +1,7 @@
 2005-07-09  Jakub Jelinek  <jakub@redhat.com>
 
+	* gfortran.fortran-torture/execute/entry_10.f90: New test.
+
 	* gfortran.dg/longline.f: New test.
 
 	* gfortran.dg/badline.f: New test.
