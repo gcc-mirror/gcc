@@ -724,12 +724,16 @@ reset_evolution_in_loop (unsigned loop_num,
 {
   if (TREE_CODE (chrec) == POLYNOMIAL_CHREC
       && CHREC_VARIABLE (chrec) > loop_num)
-    return build2
-      (TREE_CODE (chrec), 
-       build_int_cst (NULL_TREE, CHREC_VARIABLE (chrec)), 
-       reset_evolution_in_loop (loop_num, CHREC_LEFT (chrec), new_evol), 
-       reset_evolution_in_loop (loop_num, CHREC_RIGHT (chrec), new_evol));
-  
+    {
+      tree left = reset_evolution_in_loop (loop_num, CHREC_LEFT (chrec),
+					   new_evol);
+      tree right = reset_evolution_in_loop (loop_num, CHREC_RIGHT (chrec),
+					    new_evol);
+      return build3 (POLYNOMIAL_CHREC, TREE_TYPE (left),
+		     build_int_cst (NULL_TREE, CHREC_VARIABLE (chrec)),
+		     left, right);
+    }
+
   while (TREE_CODE (chrec) == POLYNOMIAL_CHREC
 	 && CHREC_VARIABLE (chrec) == loop_num)
     chrec = CHREC_LEFT (chrec);
