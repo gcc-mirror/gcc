@@ -2395,7 +2395,7 @@ gfc_match_entry (void)
   else
     {
       /* An entry in a function.  */
-      m = gfc_match_formal_arglist (entry, 0, 0);
+      m = gfc_match_formal_arglist (entry, 0, 1);
       if (m != MATCH_YES)
 	return MATCH_ERROR;
 

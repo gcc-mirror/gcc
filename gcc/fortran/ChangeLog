@@ -1,6 +1,10 @@
 2005-07-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from the mainline:
+	2005-07-07  Jakub Jelinek  <jakub@redhat.com>
+	* decl.c (gfc_match_entry): Allow ENTRY without parentheses
+	even in FUNCTIONs.
+
 	2005-06-25  Jakub Jelinek  <jakub@redhat.com>
 	* trans-stmt.c (gfc_trans_forall_1): Prefer to use smaller logical
 	type than boolean_type_node.
