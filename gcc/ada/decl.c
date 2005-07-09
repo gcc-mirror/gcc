@@ -5636,13 +5636,13 @@ components_to_record (tree gnu_record_type, Node_Id component_list,
       tree *gnu_arr = (tree *) alloca (sizeof (tree) * len);
       int i;
 
-      /* Set DECL_SECTION_NAME to increasing integers so we have a
+      /* Set/abuse DECL_FCONTEXT to increasing integers so we have a
 	 stable sort.  */
       for (i = 0, gnu_field = gnu_our_rep_list; gnu_field;
 	   gnu_field = TREE_CHAIN (gnu_field), i++)
 	{
 	  gnu_arr[i] = gnu_field;
-	  DECL_SECTION_NAME (gnu_field) = size_int (i);
+	  DECL_FCONTEXT (gnu_field) = size_int (i);
 	}
 
       qsort (gnu_arr, len, sizeof (tree), compare_field_bitpos);
@@ -5655,7 +5655,7 @@ components_to_record (tree gnu_record_type, Node_Id component_list,
 	  TREE_CHAIN (gnu_arr[i]) = gnu_our_rep_list;
 	  gnu_our_rep_list = gnu_arr[i];
 	  DECL_CONTEXT (gnu_arr[i]) = gnu_rep_type;
-	  DECL_SECTION_NAME (gnu_arr[i]) = NULL_TREE;
+	  DECL_FCONTEXT (gnu_arr[i]) = NULL_TREE;
 	}
 
       if (gnu_field_list)
@@ -5691,7 +5691,7 @@ compare_field_bitpos (const PTR rt1, const PTR rt2)
 
   if (tree_int_cst_equal (bit_position (*t1), bit_position (*t2)))
     return
-      (tree_int_cst_lt (DECL_SECTION_NAME (*t1), DECL_SECTION_NAME (*t2))
+      (tree_int_cst_lt (DECL_FCONTEXT (*t1), DECL_FCONTEXT (*t2))
        ? -1 : 1);
   else if (tree_int_cst_lt (bit_position (*t1), bit_position (*t2)))
     return -1;
