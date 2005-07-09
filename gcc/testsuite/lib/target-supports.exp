@@ -1122,6 +1122,7 @@ proc check_effective_target_sync_char_short { } {
         if { [istarget ia64-*-*]
 	     || [istarget i?86-*-*]
 	     || [istarget x86_64-*-*]
+	     || [istarget alpha*-*-*] 
 	     || [istarget powerpc*-*-*] } {
            set et_sync_char_short_saved 1
         }

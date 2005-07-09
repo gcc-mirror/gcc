@@ -4453,6 +4453,34 @@ emit_store_conditional (enum machine_mode mode, rtx res, rtx mem, rtx val)
   emit_insn (fn (res, mem, val));
 }
 
+/* A subroutine of the atomic operation splitters.  Emit an insxl
+   instruction in MODE.  */
+
+static rtx
+emit_insxl (enum machine_mode mode, rtx op1, rtx op2)
+{
+  rtx ret = gen_reg_rtx (DImode);
+  rtx (*fn) (rtx, rtx, rtx);
+
+  if (WORDS_BIG_ENDIAN)
+    {
+      if (mode == QImode)
+	fn = gen_insbl_be;
+      else
+	fn = gen_inswl_be;
+    }
+  else
+    {
+      if (mode == QImode)
+	fn = gen_insbl_le;
+      else
+	fn = gen_inswl_le;
+    }
+  emit_insn (fn (ret, op1, op2));
+
+  return ret;
+}
+
 /* Expand an an atomic fetch-and-operate pattern.  CODE is the binary operation
    to perform.  MEM is the memory on which to operate.  VAL is the second 
    operand of the binary operator.  BEFORE and AFTER are optional locations to
@@ -4530,6 +4558,79 @@ alpha_split_compare_and_swap (rtx retval, rtx mem, rtx oldval, rtx newval,
   emit_label (XEXP (label2, 0));
 }
 
+void
+alpha_expand_compare_and_swap_12 (rtx dst, rtx mem, rtx oldval, rtx newval)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  rtx addr, align, wdst;
+  rtx (*fn5) (rtx, rtx, rtx, rtx, rtx);
+
+  addr = force_reg (DImode, XEXP (mem, 0));
+  align = expand_simple_binop (Pmode, AND, addr, GEN_INT (-8),
+			       NULL_RTX, 1, OPTAB_DIRECT);
+
+  oldval = convert_modes (DImode, mode, oldval, 1);
+  newval = emit_insxl (mode, newval, addr);
+
+  wdst = gen_reg_rtx (DImode);
+  if (mode == QImode)
+    fn5 = gen_sync_compare_and_swapqi_1;
+  else
+    fn5 = gen_sync_compare_and_swaphi_1;
+  emit_insn (fn5 (wdst, addr, oldval, newval, align));
+
+  emit_move_insn (dst, gen_lowpart (mode, wdst));
+}
+
+void
+alpha_split_compare_and_swap_12 (enum machine_mode mode, rtx dest, rtx addr,
+				 rtx oldval, rtx newval, rtx align,
+				 rtx scratch, rtx cond)
+{
+  rtx label1, label2, mem, width, mask, x;
+
+  mem = gen_rtx_MEM (DImode, align);
+  MEM_VOLATILE_P (mem) = 1;
+
+  emit_insn (gen_memory_barrier ());
+  label1 = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
+  label2 = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
+  emit_label (XEXP (label1, 0));
+
+  emit_load_locked (DImode, scratch, mem);
+  
+  width = GEN_INT (GET_MODE_BITSIZE (mode));
+  mask = GEN_INT (mode == QImode ? 0xff : 0xffff);
+  if (WORDS_BIG_ENDIAN)
+    emit_insn (gen_extxl_be (dest, scratch, width, addr));
+  else
+    emit_insn (gen_extxl_le (dest, scratch, width, addr));
+
+  if (oldval == const0_rtx)
+    x = gen_rtx_NE (DImode, dest, const0_rtx);
+  else
+    {
+      x = gen_rtx_EQ (DImode, dest, oldval);
+      emit_insn (gen_rtx_SET (VOIDmode, cond, x));
+      x = gen_rtx_EQ (DImode, cond, const0_rtx);
+    }
+  emit_unlikely_jump (x, label2);
+
+  if (WORDS_BIG_ENDIAN)
+    emit_insn (gen_mskxl_be (scratch, scratch, mask, addr));
+  else
+    emit_insn (gen_mskxl_le (scratch, scratch, mask, addr));
+  emit_insn (gen_iordi3 (scratch, scratch, newval));
+
+  emit_store_conditional (DImode, scratch, mem, scratch);
+
+  x = gen_rtx_EQ (DImode, scratch, const0_rtx);
+  emit_unlikely_jump (x, label1);
+
+  emit_insn (gen_memory_barrier ());
+  emit_label (XEXP (label2, 0));
+}
+
 /* Expand an atomic exchange operation.  */
 
 void
@@ -4548,6 +4649,68 @@ alpha_split_lock_test_and_set (rtx retval, rtx mem, rtx val, rtx scratch)
   emit_store_conditional (mode, cond, mem, scratch);
 
   x = gen_rtx_EQ (DImode, cond, const0_rtx);
+  emit_unlikely_jump (x, label);
+}
+
+void
+alpha_expand_lock_test_and_set_12 (rtx dst, rtx mem, rtx val)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  rtx addr, align, wdst;
+  rtx (*fn4) (rtx, rtx, rtx, rtx);
+
+  /* Force the address into a register.  */
+  addr = force_reg (DImode, XEXP (mem, 0));
+
+  /* Align it to a multiple of 8.  */
+  align = expand_simple_binop (Pmode, AND, addr, GEN_INT (-8),
+			       NULL_RTX, 1, OPTAB_DIRECT);
+
+  /* Insert val into the correct byte location within the word.  */
+  val = emit_insxl (mode, val, addr);
+
+  wdst = gen_reg_rtx (DImode);
+  if (mode == QImode)
+    fn4 = gen_sync_lock_test_and_setqi_1;
+  else
+    fn4 = gen_sync_lock_test_and_sethi_1;
+  emit_insn (fn4 (wdst, addr, val, align));
+
+  emit_move_insn (dst, gen_lowpart (mode, wdst));
+}
+
+void
+alpha_split_lock_test_and_set_12 (enum machine_mode mode, rtx dest, rtx addr,
+				  rtx val, rtx align, rtx scratch)
+{
+  rtx label, mem, width, mask, x;
+
+  mem = gen_rtx_MEM (DImode, align);
+  MEM_VOLATILE_P (mem) = 1;
+
+  emit_insn (gen_memory_barrier ());
+  label = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
+  emit_label (XEXP (label, 0));
+
+  emit_load_locked (DImode, scratch, mem);
+  
+  width = GEN_INT (GET_MODE_BITSIZE (mode));
+  mask = GEN_INT (mode == QImode ? 0xff : 0xffff);
+  if (WORDS_BIG_ENDIAN)
+    {
+      emit_insn (gen_extxl_be (dest, scratch, width, addr));
+      emit_insn (gen_mskxl_be (scratch, scratch, mask, addr));
+    }
+  else
+    {
+      emit_insn (gen_extxl_le (dest, scratch, width, addr));
+      emit_insn (gen_mskxl_le (scratch, scratch, mask, addr));
+    }
+  emit_insn (gen_iordi3 (scratch, scratch, val));
+
+  emit_store_conditional (DImode, scratch, mem, scratch);
+
+  x = gen_rtx_EQ (DImode, scratch, const0_rtx);
   emit_unlikely_jump (x, label);
 }
 

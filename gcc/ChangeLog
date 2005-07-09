@@ -1,9 +1,30 @@
+2005-07-09  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (emit_insxl, alpha_expand_compare_and_swap_12,
+	alpha_split_compare_and_swap_12, alpha_expand_lock_test_and_set_12,
+	alpha_split_lock_test_and_set_12): New functions.
+	* config/alpha/alpha-protos.h: Update.
+	* config/alpha/alpha.md (UNSPEC_MB, UNSPEC_ATOMIC,
+	UNSPEC_CMPXCHG, UNSPEC_XCHG): Rename from UNSPECV_FOO.
+	* config/alpha/sync.md (I12MODE): New.
+	(memory_barrier, mb_internal): Use unspec instead of unspec_volatile.
+	(sync_<fetchop_name><I48MODE>): Likewise.
+	(sync_nand<I48MODE>): Likewise.
+	(sync_old_<fetchop_name><I48MODE>): Likewise.
+	(sync_new_<fetchop_name><I48MODE>): Likewise.
+	(sync_old_nand<I48MODE>, sync_new_nand<I48MODE>): Likewise.
+	(sync_compare_and_swap<I48MODE>): Likewise.
+	(sync_lock_test_and_set<I48MODE>): Likewise.
+	(sync_compare_and_swap<I12MODE>): New.
+	(sync_compare_and_swap<I12MODE>_1): New.
+	(sync_lock_test_and_set<I12MODE>): New.
+	(sync_lock_test_and_set<I12MODE>_1): New.
+
 2005-07-09  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 21356
 	PR 22332
-	* passes.c (execute_todo): Cleanup the CFG before updating
-	SSA.
+	* passes.c (execute_todo): Cleanup the CFG before updating SSA.
 
 2005-07-09  Jakub Jelinek  <jakub@redhat.com>
 

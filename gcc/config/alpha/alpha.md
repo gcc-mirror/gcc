@@ -56,6 +56,12 @@
    (UNSPEC_IMPLVER	25)
    (UNSPEC_PERR		26)
    (UNSPEC_COPYSIGN     27)
+
+   ;; Atomic operations
+   (UNSPEC_MB		28)
+   (UNSPEC_ATOMIC	31)
+   (UNSPEC_CMPXCHG	32)
+   (UNSPEC_XCHG		33)
   ])
 
 ;; UNSPEC_VOLATILE:
@@ -76,12 +82,8 @@
    (UNSPECV_SET_TP	12)
    (UNSPECV_RPCC	13)
    (UNSPECV_SETJMPR_ER	14)	; builtin_setjmp_receiver fragment
-   (UNSPECV_MB		15)
-   (UNSPECV_LL		16)	; load-locked
-   (UNSPECV_SC		17)	; store-conditional
-   (UNSPECV_ATOMIC	18)
-   (UNSPECV_CMPXCHG	19)
-   (UNSPECV_XCHG	20)
+   (UNSPECV_LL		15)	; load-locked
+   (UNSPECV_SC		16)	; store-conditional
   ])
 
 ;; Where necessary, the suffixes _le and _be are used to distinguish between
