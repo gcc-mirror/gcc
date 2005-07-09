@@ -1,3 +1,8 @@
+2005-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (output_set_got): Don't omit OFFSET FLAT:
+	in Intel syntax add %reg, OFFSET FLAT:_GLOBAL_OFFSET_TABLE_+(.-.Lx).
+
 2005-07-08  David Edelsohn  <edelsohn@gnu.org>
 
 	Backport from mainline:
