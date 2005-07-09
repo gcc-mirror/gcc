@@ -1,3 +1,8 @@
+2005-07-09  Richard SAndiford  <richard@codesourcery.com>
+
+	PR target/21656
+	* config/mips/elf.h (NO_IMPLICIT_EXTERN_C): Define.
+
 2005-07-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/sync.md (load_locked_<mode>): Use Z for
