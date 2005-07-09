@@ -41,7 +41,7 @@
 (define_insn "load_locked_<mode>"
   [(set (match_operand:GPR 0 "gpc_reg_operand" "=r")
 	(unspec_volatile:GPR
-	  [(match_operand:GPR 1 "memory_operand" "m")] UNSPECV_LL))]
+	  [(match_operand:GPR 1 "memory_operand" "Z")] UNSPECV_LL))]
   "TARGET_POWERPC"
   "<larx> %0,%y1"
   [(set_attr "type" "load_l")])
@@ -49,7 +49,7 @@
 (define_insn "store_conditional_<mode>"
   [(set (match_operand:CC 0 "cc_reg_operand" "=x")
 	(unspec_volatile:CC [(const_int 0)] UNSPECV_SC))
-   (set (match_operand:GPR 1 "memory_operand" "=m")
+   (set (match_operand:GPR 1 "memory_operand" "=Z")
 	(match_operand:GPR 2 "gpc_reg_operand" "r"))]
   "TARGET_POWERPC"
   "<stcx> %2,%y1"
@@ -57,7 +57,7 @@
 
 (define_insn_and_split "sync_compare_and_swap<mode>"
   [(set (match_operand:GPR 0 "gpc_reg_operand" "=&r")
-	(match_operand:GPR 1 "memory_operand" "+m"))
+	(match_operand:GPR 1 "memory_operand" "+Z"))
    (set (match_dup 1)
 	(unspec_volatile:GPR
 	  [(match_operand:GPR 2 "reg_or_short_operand" "rI")
@@ -77,7 +77,7 @@
 
 (define_insn_and_split "sync_lock_test_and_set<mode>"
   [(set (match_operand:GPR 0 "gpc_reg_operand" "=&r")
-        (match_operand:GPR 1 "memory_operand" "+m"))
+        (match_operand:GPR 1 "memory_operand" "+Z"))
    (set (match_dup 1)
 	(unspec_volatile:GPR
 	  [(match_operand:GPR 2 "reg_or_short_operand" "rL")]
