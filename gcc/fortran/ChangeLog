@@ -2,6 +2,11 @@
 
 	Backport from the mainline:
 	2005-07-07  Jakub Jelinek  <jakub@redhat.com>
+	* scanner.c (preprocessor_line): Only set current_file->line when errors
+	have not been encountered.  Warn and don't crash if a file leave
+	preprocessor line has no corresponding entering line.  Formatting.
+
+	2005-07-07  Jakub Jelinek  <jakub@redhat.com>
 	* decl.c (gfc_match_entry): Allow ENTRY without parentheses
 	even in FUNCTIONs.
 
