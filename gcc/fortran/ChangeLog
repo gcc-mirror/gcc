@@ -1,3 +1,17 @@
+2005-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from the mainline:
+	2005-06-13  Jakub Jelinek  <jakub@redhat.com>
+	* trans-expr.c (gfc_conv_function_call): Return int instead of
+	void.  Use a local variable for has_alternate_specifier and
+	return it.  Avoid modification of function type's return value
+	in place, since it may be shared.
+	* trans.h (has_alternate_specifier): Remove.
+	(gfc_conv_function_call): Change return type.
+	* trans-stmt.c (has_alternate_specifier): Remove.
+	(gfc_trans_call): Add a local has_alternate_specifier variable,
+	set it from gfc_conv_function_call return value.
+
 2005-07-08  Steven G. Kargl  <kargls@comcast.net>
 
 	Backport from the mainline:

@@ -1074,9 +1074,10 @@ gfc_conv_function_val (gfc_se * se, gfc_symbol * sym)
 
 
 /* Generate code for a procedure call.  Note can return se->post != NULL.
-   If se->direct_byref is set then se->expr contains the return parameter.  */
+   If se->direct_byref is set then se->expr contains the return parameter.
+   Return non-zero, if the call has alternate specifiers.  */
 
-void
+int
 gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 			gfc_actual_arglist * arg)
 {
@@ -1092,6 +1093,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
   tree len;
   tree stringargs;
   gfc_formal_arglist *formal;
+  int has_alternate_specifier = 0;
 
   arglist = NULL_TREE;
   stringargs = NULL_TREE;
@@ -1124,7 +1126,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 
 	      /* Bundle in the string length.  */
 	      se->string_length = len;
-              return;
+              return 0;
             }
 	}
       info = &se->ss->data.info;
@@ -1308,9 +1310,17 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
   /* Generate the actual call.  */
   gfc_conv_function_val (se, sym);
   /* If there are alternate return labels, function type should be
-     integer.  */
-  if (has_alternate_specifier)
-    TREE_TYPE (TREE_TYPE (TREE_TYPE (se->expr))) = integer_type_node;
+     integer.  Can't modify the type in place though, since it can be shared
+     with other functions.  */
+  if (has_alternate_specifier
+      && TREE_TYPE (TREE_TYPE (TREE_TYPE (se->expr))) != integer_type_node)
+    {
+      gcc_assert (! sym->attr.dummy);
+      TREE_TYPE (sym->backend_decl)
+        = build_function_type (integer_type_node,
+                               TYPE_ARG_TYPES (TREE_TYPE (sym->backend_decl)));
+      se->expr = gfc_build_addr_expr (NULL, sym->backend_decl);
+    }
 
   fntype = TREE_TYPE (TREE_TYPE (se->expr));
   se->expr = build3 (CALL_EXPR, TREE_TYPE (fntype), se->expr,
@@ -1382,6 +1392,8 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	    }
 	}
     }
+
+  return has_alternate_specifier;
 }
 
 

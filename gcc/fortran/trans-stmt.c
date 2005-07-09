@@ -37,8 +37,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "trans-const.h"
 #include "arith.h"
 
-int has_alternate_specifier;
-
 typedef struct iter_info
 {
   tree var;
@@ -208,6 +206,7 @@ tree
 gfc_trans_call (gfc_code * code)
 {
   gfc_se se;
+  int has_alternate_specifier;
 
   /* A CALL starts a new block because the actual arguments may have to
      be evaluated first.  */
@@ -215,10 +214,10 @@ gfc_trans_call (gfc_code * code)
   gfc_start_block (&se.pre);
 
   gcc_assert (code->resolved_sym);
-  has_alternate_specifier = 0;
 
   /* Translate the call.  */
-  gfc_conv_function_call (&se, code->resolved_sym, code->ext.actual);
+  has_alternate_specifier
+    = gfc_conv_function_call (&se, code->resolved_sym, code->ext.actual);
 
   /* A subroutine without side-effect, by definition, does nothing!  */
   TREE_SIDE_EFFECTS (se.expr) = 1;
