@@ -240,8 +240,8 @@ next_char (char **p, int *w)
 
   if (c != ' ')
     return c;
-  if (g.blank_status == BLANK_ZERO)
-    return '0';
+  if (g.blank_status != BLANK_UNSPECIFIED)
+    return ' ';  /* return a blank to signal a null */ 
 
   /* At this point, the rest of the field has to be trailing blanks */
 
@@ -309,7 +309,13 @@ read_decimal (fnode * f, char *dest, int length)
       c = next_char (&p, &w);
       if (c == '\0')
 	break;
-
+	
+      if (c == ' ')
+        {
+          if (g.blank_status == BLANK_NULL) continue;
+          if (g.blank_status == BLANK_ZERO) c = '0';
+        }
+        
       if (c < '0' || c > '9')
 	goto bad;
 
@@ -396,6 +402,11 @@ read_radix (fnode * f, char *dest, int length, int radix)
       c = next_char (&p, &w);
       if (c == '\0')
 	break;
+      if (c == ' ')
+        {
+          if (g.blank_status == BLANK_NULL) continue;
+          if (g.blank_status == BLANK_ZERO) c = '0';
+        }
 
       switch (radix)
 	{
@@ -640,19 +651,22 @@ read_f (fnode * f, char *dest, int length)
   p++;
   w--;
 
-  while (w > 0 && isdigit (*p))
-    {
-      exponent = 10 * exponent + *p - '0';
-      p++;
-      w--;
-    }
-
-  /* Only allow trailing blanks */
-
   while (w > 0)
     {
-      if (*p != ' ')
-	goto bad_float;
+      if (*p == ' ')
+        {
+          if (g.blank_status == BLANK_ZERO) *p = '0';
+          if (g.blank_status == BLANK_NULL)
+            {
+              p++;
+              w--;
+              continue;
+            }
+        }
+      if (!isdigit (*p))
+        goto bad_float;
+        
+      exponent = 10 * exponent + *p - '0';
       p++;
       w--;
     }
@@ -692,16 +706,22 @@ read_f (fnode * f, char *dest, int length)
     buffer = get_mem (i);
 
   /* Reformat the string into a temporary buffer.  As we're using atof it's
-     easiest to just leave the dcimal point in place.  */
+     easiest to just leave the decimal point in place.  */
   p = buffer;
   if (val_sign < 0)
     *(p++) = '-';
   for (; ndigits > 0; ndigits--)
     {
-      if (*digits == ' ' && g.blank_status == BLANK_ZERO)
-	*p = '0';
-      else
-	*p = *digits;
+      if (*digits == ' ')
+        {
+          if (g.blank_status == BLANK_ZERO) *digits = '0';
+          if (g.blank_status == BLANK_NULL)
+            {
+              digits++;
+              continue;
+            } 
+        }
+      *p = *digits;
       p++;
       digits++;
     }

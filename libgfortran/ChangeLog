@@ -1,3 +1,13 @@
+2005-07-10  Jerry DeLisle  <jvdelisle@verizon.net>
+
+	PR libfortran/21875  (FM111.f)
+	* io/read.c (next_char): Return a ' ' character when BLANK_ZERO or 
+	BLANK_NULL are active.
+	(read_decimal): Interpret ' ' character correctly for BZ or BN.
+	(read_radix): Interpret ' ' character correctly for BZ or BN.
+	(read_f): Interpret ' ' character correctly for BZ or BN.
+	* gfortran.dg/test (fmt_read_bz_bn.f90): New test case.
+
 2005-07-07  Release Manager
 
 	* GCC 4.0.1 released.
