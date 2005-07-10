@@ -1,3 +1,10 @@
+2005-07-10  Feng Wang  <fengwang@nudt.edu.cn>
+
+	* gfortran.dg/simplify_modulo.f90: New.
+
+	PR fortran/22327
+	* gfortran.dg/array_constructor_5.f90: New test.
+
 2005-07-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20050620-1.c: New test.

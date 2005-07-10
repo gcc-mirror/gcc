@@ -2279,12 +2279,11 @@ gfc_simplify_modulo (gfc_expr * a, gfc_expr * p)
       mpfr_div (quot, a->value.real, p->value.real, GFC_RND_MODE);
       mpfr_floor (iquot, quot);
       mpfr_mul (term, iquot, p->value.real, GFC_RND_MODE);
+      mpfr_sub (result->value.real, a->value.real, term, GFC_RND_MODE);
 
       mpfr_clear (quot);
       mpfr_clear (iquot);
       mpfr_clear (term);
-
-      mpfr_sub (result->value.real, a->value.real, term, GFC_RND_MODE);
       break;
 
     default:

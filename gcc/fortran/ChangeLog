@@ -1,3 +1,13 @@
+2005-07-10  Feng Wang  <fengwang@nudt.edu.cn>
+
+	Backport from the mainline:
+	2005-07-07  Feng Wang  <fengwang@nudt.edu.cn>
+	PR fortran/22327
+	* trans-array.c (gfc_trans_array_constructor_value): Fix index of data.
+
+	2005-06-24  Feng Wang  <fengwang@nudt.edu.cn>
+	* simplify.c (gfc_simplify_modulo): Don't clear before get result.
+
 2005-07-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from the mainline:
