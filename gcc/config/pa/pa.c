@@ -7831,7 +7831,8 @@ static bool
 pa_commutative_p (rtx x, int outer_code)
 {
   return (COMMUTATIVE_P (x)
-	  && ((outer_code != UNKNOWN && outer_code != MEM)
+	  && (TARGET_NO_SPACE_REGS
+	      || (outer_code != UNKNOWN && outer_code != MEM)
 	      || GET_CODE (x) != PLUS));
 }
 
