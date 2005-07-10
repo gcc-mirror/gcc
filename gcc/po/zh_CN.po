@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.0.1-b20050607\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2005-06-06 21:32+0200\n"
-"PO-Revision-Date: 2005-07-02 00:36+0800\n"
+"PO-Revision-Date: 2005-07-10 01:20+0800\n"
 "Last-Translator: Meng Jie <zuxyhere@eastday.com>\n"
 "Language-Team: Chinese (simplified) <i18n-translation@lists.linux.net.cn>\n"
 "MIME-Version: 1.0\n"
@@ -117,7 +117,7 @@ msgstr "涉及数组的赋值语句"
 
 #: c-format.c:418
 msgid "the assignment suppression scanf feature"
-msgstr ""
+msgstr "scanf 的取消赋值特性"
 
 #: c-format.c:419
 msgid "'a' flag"
@@ -269,7 +269,7 @@ msgstr "忽略重复的目录“%s”\n"
 #: c-incpath.c:73
 #, c-format
 msgid "  as it is a non-system directory that duplicates a system directory\n"
-msgstr ""
+msgstr "  因为它是一个重复了系统目录的非系统目录\n"
 
 #: c-incpath.c:77
 #, c-format
@@ -389,7 +389,7 @@ msgstr "用窄字符串初始化 wchar_t 数组"
 #: c-typeck.c:4388 c-typeck.c:5775
 #, gcc-internal-format
 msgid "initializer element is not computable at load time"
-msgstr ""
+msgstr "初始值设定中的元素在载入时无法被计算出"
 
 #. Although C99 is unclear about whether incomplete arrays
 #. of VLAs themselves count as VLAs, it does not make
@@ -548,7 +548,7 @@ msgstr "到达 --param max-inline-insns-single 给定的极限"
 
 #: cgraphunit.c:1427
 msgid "--param max-inline-insns-single limit reached after inlining into the callee"
-msgstr ""
+msgstr "内联至被调用者后达到 --param max-inline-insns-single 极限"
 
 #: cgraphunit.c:1477
 msgid "--param inline-unit-growth limit reached"
@@ -677,9 +677,9 @@ msgstr ""
 "ldd 输出带有构造/析构函数。\n"
 
 #: collect2.c:2295
-#, fuzzy, c-format
+#, c-format
 msgid "dynamic dependency %s not found"
-msgstr "找不到 %s。"
+msgstr "找不到动态依赖项 %s"
 
 #: collect2.c:2307
 #, c-format
@@ -761,7 +761,7 @@ msgstr "编译中断。\n"
 #: diagnostic.c:537
 #, c-format
 msgid "Internal compiler error: Error reporting routines re-entered.\n"
-msgstr ""
+msgstr "内部编译器错误：重入错误报告程序。\n"
 
 #: final.c:1062
 msgid "negative insn length"
@@ -825,7 +825,7 @@ msgstr "无效的表达式用作操作数"
 
 #: flow.c:1689
 msgid "Attempt to delete prologue/epilogue insn:"
-msgstr ""
+msgstr "试图删除前言/尾声指令："
 
 #: gcc.c:1632
 #, c-format
@@ -849,7 +849,7 @@ msgstr "从 %s 读取 specs\n"
 #: gcc.c:2020 gcc.c:2039
 #, c-format
 msgid "specs %%include syntax malformed after %ld characters"
-msgstr ""
+msgstr "specs %%include 在 %ld 字符后语法格式错误"
 
 #: gcc.c:2047
 #, c-format
@@ -859,7 +859,7 @@ msgstr "找不到 specs 文件 %s\n"
 #: gcc.c:2064 gcc.c:2072 gcc.c:2081 gcc.c:2090
 #, c-format
 msgid "specs %%rename syntax malformed after %ld characters"
-msgstr ""
+msgstr "specs %%rename 在 %ld 字符后语法格式错误"
 
 #: gcc.c:2099
 #, c-format
@@ -888,12 +888,12 @@ msgstr ""
 #: gcc.c:2126
 #, c-format
 msgid "specs unknown %% command after %ld characters"
-msgstr ""
+msgstr "specs 在 %ld 字符后出现未知的 %% 命令"
 
 #: gcc.c:2137 gcc.c:2150
 #, c-format
 msgid "specs file malformed after %ld characters"
-msgstr ""
+msgstr "specs 在 %ld 字符后文件格式错误"
 
 #: gcc.c:2203
 #, c-format
@@ -1708,9 +1708,9 @@ msgid "%s: usage '%s [ -VqfnkNlgC ] [ -B <dirname> ] [ filename ... ]'\n"
 msgstr "%s：用法‘%s [ -VqfnkNlgC ] [ -B <目录名> ] [ 文件名 ... ]'\n"
 
 #: protoize.c:735
-#, fuzzy, c-format
+#, c-format
 msgid "%s: warning: no read access for file '%s'\n"
-msgstr "<qt>无法读取文件 <b>%1</b> 的访问权限</qt>"
+msgstr "%s：警告：没有文件‘%s’的读权限\n"
 
 #: protoize.c:743
 #, c-format
@@ -1763,9 +1763,9 @@ msgid "%s: subprocess got fatal signal %d\n"
 msgstr "子进程收到致命信号 %d"
 
 #: protoize.c:1927
-#, fuzzy, c-format
+#, c-format
 msgid "%s: %s exited with status %d\n"
-msgstr "*** 退出状态：%1 ***"
+msgstr "%s：%s 以状态码 %d 退出\n"
 
 #: protoize.c:1976
 #, c-format
@@ -1813,9 +1813,9 @@ msgid "%s: warning: can't rename file '%s' to '%s': %s\n"
 msgstr "%s：警告：不能将文件‘%s’重命名为‘%s’：%s\n"
 
 #: protoize.c:2415
-#, fuzzy, c-format
+#, c-format
 msgid "%s: conflicting extern definitions of '%s'\n"
-msgstr " 找到%1个匹配的定义"
+msgstr "%s：‘%s’有相互冲突的外部定义\n"
 
 #: protoize.c:2419
 #, fuzzy, c-format
@@ -1956,11 +1956,13 @@ msgid "%s: can't open file '%s' for reading: %s\n"
 msgstr "%s：无法打开文件‘%s’读入：%s\n"
 
 #: protoize.c:4023
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "\n"
 "%s: error reading input file '%s': %s\n"
-msgstr "%s 错误：无输入文件。"
+msgstr ""
+"\n"
+"%s：读取输入文件‘%s’时出错：%s\n"
 
 #: protoize.c:4057
 #, fuzzy, c-format
@@ -1968,19 +1970,19 @@ msgid "%s: can't create/open clean file '%s': %s\n"
 msgstr "无法打开文件 %1 写入"
 
 #: protoize.c:4162
-#, fuzzy, c-format
+#, c-format
 msgid "%s: warning: file '%s' already saved in '%s'\n"
-msgstr "文件 %1 已经在列表中"
+msgstr "%s：警告：文件‘%s’已被保存在‘%s’中\n"
 
 #: protoize.c:4170
-#, fuzzy, c-format
+#, c-format
 msgid "%s: can't link file '%s' to '%s': %s\n"
-msgstr "把 UR&L 链接到文件"
+msgstr "%s：无法将文件‘%s’链接至文件‘%s’：%s\n"
 
 #: protoize.c:4200
-#, fuzzy, c-format
+#, c-format
 msgid "%s: can't create/open output file '%s': %s\n"
-msgstr "无法打开输出文件 %1。"
+msgstr "%s：无法创建/打开输出文件‘%s’：%s\n"
 
 #: protoize.c:4233
 #, c-format
@@ -2082,9 +2084,9 @@ msgstr ""
 "目标机特定的选项：\n"
 
 #: toplev.c:1100 toplev.c:1119
-#, fuzzy, c-format
+#, c-format
 msgid "  -m%-23s [undocumented]\n"
-msgstr "未记录在文档中的错误"
+msgstr "  -m%-23s [未列入文档]\n"
 
 #: toplev.c:1128
 #, c-format
@@ -2126,16 +2128,16 @@ msgstr "启用的选项："
 
 #: toplev.c:1491 config/sh/sh.c:7334
 msgid "created and used with different settings of -fpic"
-msgstr ""
+msgstr "创建和使用时使用了不同的 -fpic 设定"
 
 #: toplev.c:1493 config/sh/sh.c:7336
 msgid "created and used with different settings of -fpie"
-msgstr ""
+msgstr "创建和使用时使用了不同的 -fpie 设定"
 
 #: toplev.c:1544 config/sh/sh.c:7386
 #, c-format
 msgid "created and used with differing settings of '-m%s'"
-msgstr ""
+msgstr "创建和使用时使用了不同的‘-m%s’设定"
 
 #: toplev.c:1547 config/sh/sh.c:7389
 msgid "out of memory"
@@ -2172,7 +2174,7 @@ msgstr "警告："
 
 #: diagnostic.def:6
 msgid "anachronism: "
-msgstr ""
+msgstr "时代错误："
 
 #: diagnostic.def:7
 msgid "note: "
@@ -2184,7 +2186,7 @@ msgstr "调试："
 
 #: params.def:44
 msgid "The maximum structure size (in bytes) at which GCC will do block copies"
-msgstr ""
+msgstr "GCC 将为其考虑块复制的最大的结构大小(以字节表示)"
 
 #: params.def:54
 msgid "The threshold ratio between instantiated fields and the total structure size"
@@ -2220,7 +2222,7 @@ msgstr ""
 
 #: params.def:123
 msgid "The maximum number of instructions to consider to fill a delay slot"
-msgstr ""
+msgstr "考虑填充入延迟槽中的最大指令数"
 
 #: params.def:134
 msgid "The maximum number of instructions to consider to find accurate live register information"
@@ -2264,11 +2266,11 @@ msgstr ""
 
 #: params.def:201
 msgid "The maximum number of instructions to consider to unroll in a loop"
-msgstr ""
+msgstr "单个循环中考虑展开的最大指令数"
 
 #: params.def:207
 msgid "The maximum number of instructions to consider to unroll in a loop on average"
-msgstr ""
+msgstr "单个循环中考虑展开的平均最大指令数"
 
 #: params.def:212
 msgid "The maximum number of unrollings of a single loop"
@@ -2276,19 +2278,19 @@ msgstr "单个循环最多可以被展开的次数"
 
 #: params.def:217
 msgid "The maximum number of insns of a peeled loop"
-msgstr ""
+msgstr "剥离后的循环所能有的最大指令数"
 
 #: params.def:222
 msgid "The maximum number of peelings of a single loop"
-msgstr ""
+msgstr "单个循环最大的剥离数"
 
 #: params.def:227
 msgid "The maximum number of insns of a completely peeled loop"
-msgstr ""
+msgstr "一个完全剥离的循环所能有的最大指令数"
 
 #: params.def:232
 msgid "The maximum number of peelings of a single loop that is peeled completely"
-msgstr ""
+msgstr "一个完全剥离的单个循环最大的剥离数"
 
 #: params.def:237
 msgid "The maximum number of insns of a peeled loop that rolls only once"
@@ -2344,7 +2346,7 @@ msgstr ""
 
 #: params.def:300
 msgid "Stop reverse growth if the reverse probability of best edge is less than this threshold (in percent)"
-msgstr ""
+msgstr "当最优边的反向概率小于此阈值(以百分数表示)时停止反向增长"
 
 #: params.def:304
 msgid "Stop forward growth if the probability of best edge is less than this threshold (in percent). Used when profile feedback is available"
@@ -2368,7 +2370,7 @@ msgstr ""
 
 #: params.def:332
 msgid "The maximum length of path considered in cse"
-msgstr ""
+msgstr "公共子表达式消除时考虑的最大路径长度"
 
 #: params.def:339
 msgid "The minimum cost of an expensive expression in the loop invariant motion"
@@ -2404,11 +2406,11 @@ msgstr ""
 
 #: params.def:399
 msgid "Minimum heap size before we start collecting garbage, in kilobytes"
-msgstr ""
+msgstr "开始垃圾回收时最小的堆大小，以千字节表示"
 
 #: params.def:407
 msgid "The maximum number of instructions to search backward when looking for equivalent reload"
-msgstr ""
+msgstr "后向搜索以寻找等价重载入时要搜索的最大指令数量"
 
 #: params.def:412
 msgid "The maximum number of virtual operands allowed to represent aliases before triggering alias grouping."
@@ -2428,7 +2430,7 @@ msgstr ""
 
 #: params.def:435
 msgid "The upper bound for sharing integer constants"
-msgstr ""
+msgstr "共享整型常量的上界"
 
 #: config/darwin.h:155
 msgid "Set sizeof(bool) to 1"
@@ -2604,19 +2606,19 @@ msgstr "不使用 VAX 浮点单元"
 
 #: config/alpha/alpha.h:310
 msgid "Emit code for the byte/word ISA extension"
-msgstr ""
+msgstr "为字节/字 ISA 扩展生成代码"
 
 #: config/alpha/alpha.h:313
 msgid "Emit code for the motion video ISA extension"
-msgstr ""
+msgstr "为动态影像 ISA 扩展生成代码"
 
 #: config/alpha/alpha.h:316
 msgid "Emit code for the fp move and sqrt ISA extension"
-msgstr ""
+msgstr "为浮点转移和平方根 ISA 扩展生成代码"
 
 #: config/alpha/alpha.h:318
 msgid "Emit code for the counting ISA extension"
-msgstr ""
+msgstr "为计数 ISA 扩展生成代码"
 
 #: config/alpha/alpha.h:321
 msgid "Emit code using explicit relocation directives"
@@ -2624,11 +2626,11 @@ msgstr ""
 
 #: config/alpha/alpha.h:324
 msgid "Emit 16-bit relocations to the small data areas"
-msgstr ""
+msgstr "为小数据区域生成 16 位重定位信息"
 
 #: config/alpha/alpha.h:326
 msgid "Emit 32-bit relocations to the small data areas"
-msgstr ""
+msgstr "为小数据区域生成 32 位重定位信息"
 
 #: config/alpha/alpha.h:328
 msgid "Emit direct branches to local functions"
@@ -2667,7 +2669,7 @@ msgstr "控制生成的浮点舍入模式"
 
 #: config/alpha/alpha.h:370
 msgid "Control the IEEE trap mode"
-msgstr ""
+msgstr "控制 IEEE 陷阱模式"
 
 #: config/alpha/alpha.h:372
 msgid "Control the precision given to fp exceptions"
@@ -2675,38 +2677,38 @@ msgstr "控制浮点异常的精度"
 
 #: config/alpha/alpha.h:374
 msgid "Tune expected memory latency"
-msgstr ""
+msgstr "调整预期内存延迟"
 
 #: config/alpha/alpha.h:376 config/ia64/ia64.h:278 config/rs6000/sysv4.h:90
 msgid "Specify bit size of immediate TLS offsets"
 msgstr ""
 
 #: config/arc/arc.c:1739 config/m32r/m32r.c:2141
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%R code"
-msgstr "fr30_print_operand：%%A 代码操作数无效"
+msgstr "%%R 代码的操作数无效"
 
 #: config/arc/arc.c:1771 config/m32r/m32r.c:2164
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%H/%%L code"
-msgstr "fr30_print_operand：%%A 代码操作数无效"
+msgstr "%%H/%%L 代码的操作数无效"
 
 #: config/arc/arc.c:1794 config/m32r/m32r.c:2235
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%U code"
-msgstr "fr30_print_operand：%%A 代码操作数无效"
+msgstr "%%U 代码的操作数无效"
 
 #: config/arc/arc.c:1805
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%V code"
-msgstr "fr30_print_operand：%%A 代码操作数无效"
+msgstr "%%V 代码的操作数无效"
 
 #. Unknown flag.
 #. Undocumented flag.
 #: config/arc/arc.c:1812 config/m32r/m32r.c:2262 config/sparc/sparc.c:7517
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand output code"
-msgstr "fr30_print_operand：无效的 %%x 代码"
+msgstr "无效的操作数输出代码"
 
 #: config/arm/arm.c:10466 config/arm/arm.c:10484
 #, fuzzy, c-format
@@ -2722,9 +2724,9 @@ msgstr ""
 #: config/arm/arm.c:10626 config/arm/arm.c:10644 config/arm/arm.c:10679
 #: config/arm/arm.c:10698 config/arm/arm.c:10713 config/arm/arm.c:10739
 #: config/arm/arm.c:10746 config/arm/arm.c:10753
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand for code '%c'"
-msgstr "fr30_print_operand：无效的 %%x 代码"
+msgstr "代码‘%c’的操作数无效"
 
 #: config/arm/arm.c:10639
 #, c-format
@@ -2737,13 +2739,12 @@ msgid "missing operand"
 msgstr "缺少操作数"
 
 #: config/arm/arm.h:318
-#, fuzzy
 msgid "Generate APCS conformant stack frames"
-msgstr "尽可能不生成堆栈框架"
+msgstr "生成与 APCS 相容的堆栈框架"
 
 #: config/arm/arm.h:321
 msgid "Store function names in object code"
-msgstr ""
+msgstr "在目标文件中存储函数名"
 
 #: config/arm/arm.h:327
 msgid "Pass FP arguments in FP registers"
@@ -2751,7 +2752,7 @@ msgstr "在浮点寄存器中传递浮点参数"
 
 #: config/arm/arm.h:330
 msgid "Generate re-entrant, PIC code"
-msgstr ""
+msgstr "生成可重入的 PIC 代码"
 
 #: config/arm/arm.h:333
 msgid "Assume target CPU is configured as big endian"
@@ -2791,11 +2792,11 @@ msgstr "为 Thumb 而不是 ARM 编译"
 
 #: config/arm/arm.h:358
 msgid "Thumb: Generate (non-leaf) stack frames even if not needed"
-msgstr ""
+msgstr "Thumb：即使不需要也生成(非叶)堆栈框架"
 
 #: config/arm/arm.h:361
 msgid "Thumb: Generate (leaf) stack frames even if not needed"
-msgstr ""
+msgstr "Thumb：即使不需要也生成(叶)堆栈框架"
 
 #: config/arm/arm.h:364
 msgid "Thumb: Assume non-static functions may be called from ARM code"
@@ -2807,7 +2808,7 @@ msgstr ""
 
 #: config/arm/arm.h:372
 msgid "Cirrus: Place NOPs to avoid invalid instruction combinations"
-msgstr ""
+msgstr "Cirrus：插入 NOP 以避免无效的指令组合"
 
 #: config/arm/arm.h:374
 msgid "Cirrus: Do not break up invalid instruction combinations with NOPs"
@@ -2851,7 +2852,7 @@ msgstr "-mfloat-abi=hard 的别名"
 
 #: config/arm/pe.h:59
 msgid "Ignore dllimport attribute for functions"
-msgstr ""
+msgstr "忽略函数的 dllimport 属性"
 
 #: config/avr/avr.c:1117
 msgid "bad address, not (reg+disp):"
@@ -2902,16 +2903,15 @@ msgstr ""
 
 #: config/avr/avr.h:77
 msgid "Use subroutines for function prologue/epilogue"
-msgstr ""
+msgstr "使用子程序完成函数前言/尾声"
 
 #: config/avr/avr.h:79
 msgid "Change only the low 8 bits of the stack pointer"
 msgstr ""
 
 #: config/avr/avr.h:81
-#, fuzzy
 msgid "Do not generate tablejump insns"
-msgstr "不生成 H8S 代码"
+msgstr "不生成跳转表指令"
 
 #: config/avr/avr.h:83
 msgid "Use rjmp/rcall (limited range) on >8K devices"
@@ -2922,9 +2922,8 @@ msgid "Output instruction sizes to the asm file"
 msgstr ""
 
 #: config/avr/avr.h:102
-#, fuzzy
 msgid "Specify the initial stack address"
-msgstr "堆栈段栈底地址"
+msgstr "指定初始栈地址"
 
 #: config/avr/avr.h:103
 msgid "Specify the MCU name"
@@ -2936,9 +2935,9 @@ msgid "invalid %%j value"
 msgstr "无效的 %%j 值"
 
 #: config/bfin/bfin.c:1113
-#, fuzzy, c-format
+#, c-format
 msgid "invalid const_double operand"
-msgstr "无效的表达式用作操作数"
+msgstr "无效的双精度常量操作数"
 
 #: config/c4x/c4x.c:1598
 msgid "using CONST_DOUBLE for address"
@@ -2946,7 +2945,7 @@ msgstr "为地址使用 CONST_DOUBLE"
 
 #: config/c4x/c4x.c:1736
 msgid "c4x_address_cost: Invalid addressing mode"
-msgstr ""
+msgstr "c4x_address_cost：无效的寻址模式"
 
 #: config/c4x/c4x.c:1871
 #, c-format
@@ -2965,38 +2964,35 @@ msgstr "c4x_print_operand：%%O 不一致"
 
 #: config/c4x/c4x.c:2013
 msgid "c4x_print_operand: Bad operand case"
-msgstr ""
+msgstr "c4x_print_operand：错误的操作数类型"
 
 #: config/c4x/c4x.c:2054
 msgid "c4x_print_operand_address: Bad post_modify"
-msgstr ""
+msgstr "c4x_print_operand_address：错误的后更改"
 
 #: config/c4x/c4x.c:2076
 msgid "c4x_print_operand_address: Bad pre_modify"
-msgstr ""
+msgstr "c4x_print_operand_address：错误的前更改"
 
 #: config/c4x/c4x.c:2124 config/c4x/c4x.c:2136 config/c4x/c4x.c:2151
 msgid "c4x_print_operand_address: Bad operand case"
-msgstr ""
+msgstr "c4x_print_operand_address：错误的操作数类型"
 
 #: config/c4x/c4x.c:2402
 msgid "c4x_rptb_insert: Cannot find start label"
-msgstr ""
+msgstr "c4x_rptb_insert：找不到起始标号"
 
 #: config/c4x/c4x.c:3317 config/c4x/c4x.c:3335
-#, fuzzy
 msgid "mode not QImode"
-msgstr "无效的打开模式"
+msgstr "模型不是 QImode"
 
 #: config/c4x/c4x.c:3405
-#, fuzzy
 msgid "invalid indirect memory address"
-msgstr "Comment=无效的内存引用。"
+msgstr "无效的间接内存地址"
 
 #: config/c4x/c4x.c:3494
-#, fuzzy
 msgid "invalid indirect (S) memory address"
-msgstr "Comment=无效的内存引用。"
+msgstr "无效的间接(S)内存地址"
 
 #: config/c4x/c4x.c:3829
 msgid "c4x_valid_operands: Internal error"
@@ -3008,9 +3004,8 @@ msgid "c4x_operand_subword: invalid mode"
 msgstr "c4x_operand_subword：无效的自增量"
 
 #: config/c4x/c4x.c:4271
-#, fuzzy
 msgid "c4x_operand_subword: invalid operand"
-msgstr "c4x_operand_subword：无效的自增量"
+msgstr "c4x_operand_subword：无效操作数"
 
 #. We could handle these with some difficulty.
 #. e.g., *p-- => *(p-=2); *(p+1).
@@ -3024,7 +3019,7 @@ msgstr "c4x_operand_subword：无效地址"
 
 #: config/c4x/c4x.c:4314
 msgid "c4x_operand_subword: address not offsettable"
-msgstr ""
+msgstr "c4x_operand_subword：无法取偏移量的地址"
 
 #: config/c4x/c4x.c:4524
 msgid "c4x_rptb_rpts_p: Repeat block top label moved\n"
@@ -3154,20 +3149,19 @@ msgstr "在寄存器中传递参数"
 
 #: config/c4x/c4x.h:206
 msgid "Enable new features under development"
-msgstr ""
+msgstr "启用开发中的新特性"
 
 #: config/c4x/c4x.h:208
 msgid "Disable new features under development"
-msgstr ""
+msgstr "禁用开发中的新特性"
 
 #: config/c4x/c4x.h:210
 msgid "Use the BK register as a general purpose register"
-msgstr ""
+msgstr "将 BK 寄存器用作一个通用寄存器"
 
 #: config/c4x/c4x.h:212
-#, fuzzy
 msgid "Do not allocate BK register"
-msgstr "不使用 sb 寄存器"
+msgstr "不分配 BK 寄存器"
 
 #: config/c4x/c4x.h:214
 msgid "Enable use of DB instruction"
@@ -3191,7 +3185,7 @@ msgstr ""
 
 #: config/c4x/c4x.h:224
 msgid "Don't force constants into registers"
-msgstr ""
+msgstr "不将常量强行装入寄存器"
 
 #: config/c4x/c4x.h:226
 msgid "Force RTL generation to emit valid 3 operand insns"
@@ -3352,7 +3346,7 @@ msgstr "与预期不符的 PIC 符号"
 #: config/cris/cris.c:3012
 #, c-format
 msgid "PIC register isn't set up"
-msgstr ""
+msgstr "尚未设定好 PIC 寄存器"
 
 #: config/cris/aout.h:85
 msgid "Compile for the MMU-less Etrax 100-based elinux system"
@@ -3393,11 +3387,11 @@ msgstr "不调整堆栈对齐"
 
 #: config/cris/cris.h:382
 msgid "Do not tune writable data alignment"
-msgstr ""
+msgstr "不调整可写数据对齐"
 
 #: config/cris/cris.h:385
 msgid "Do not tune code and read-only data alignment"
-msgstr ""
+msgstr "不调整代码和只读数据对齐"
 
 #: config/cris/cris.h:394
 msgid "Align code and data to 32 bits"
@@ -3409,7 +3403,7 @@ msgstr ""
 
 #: config/cris/cris.h:410
 msgid "Do not emit function prologue or epilogue"
-msgstr ""
+msgstr "不生成函数前言和尾声"
 
 #. We have to handle this m-option here since we can't wash it off in      both CC1_SPEC and CC1PLUS_SPEC.
 #: config/cris/cris.h:414
@@ -3426,13 +3420,12 @@ msgid "Generate code for the specified chip or CPU version"
 msgstr "为指定的芯片或 CPU 版本生成代码"
 
 #: config/cris/cris.h:454
-#, fuzzy
 msgid "Tune alignment for the specified chip or CPU version"
-msgstr "为指定的芯片或 CPU 版本生成代码"
+msgstr "为指定的芯片或 CPU 版本调整对齐"
 
 #: config/cris/cris.h:456
 msgid "Warn when a stackframe is larger than the specified size"
-msgstr ""
+msgstr "当堆栈框架大于指定值时给出警告"
 
 #: config/cris/linux.h:69
 msgid "Together with -fpic and -fPIC, do not use GOTPLT references"
@@ -3627,9 +3620,8 @@ msgid "Consider access to byte sized memory slow"
 msgstr ""
 
 #: config/h8300/h8300.h:173
-#, fuzzy
 msgid "Enable linker relaxing"
-msgstr "启用链接器优化"
+msgstr "启用链接器松弛"
 
 #: config/h8300/h8300.h:174
 msgid "Generate H8/300H code"
@@ -3648,24 +3640,24 @@ msgid "Use H8/300 alignment rules"
 msgstr "使用 H8/300 对齐规则"
 
 #: config/i386/i386.c:6032
-#, fuzzy, c-format
+#, c-format
 msgid "invalid UNSPEC as operand"
-msgstr "无效的表达式用作操作数"
+msgstr "无效的 UNSPEC 用作操作数"
 
 #: config/i386/i386.c:6601
 #, c-format
 msgid "operand is neither a constant nor a condition code, invalid operand code 'c'"
-msgstr ""
+msgstr "操作数既不是一个常量也不是一个条件码，无效的操作数代码‘c’"
 
 #: config/i386/i386.c:6654
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand code '%c'"
-msgstr "fr30_print_operand：无效的 %%x 代码"
+msgstr "无效的操作数代码‘%c’"
 
 #: config/i386/i386.c:6697
-#, fuzzy, c-format
+#, c-format
 msgid "invalid constraints for operand"
-msgstr "无效的表达式用作操作数"
+msgstr "操作数的约束无效"
 
 #: config/i386/i386.c:11977
 msgid "unknown insn mode"
@@ -3944,9 +3936,9 @@ msgstr "生成 ELF 格式的输出文件"
 #. If the environment variable DJDIR is not defined, then DJGPP is not        installed correctly and GCC will quickly become confused with the        default prefix settings. Report the problem now so the user doesn't        receive deceptive "file not found" error messages later.
 #. DJDIR is automatically defined by the DJGPP environment config            file pointed to by the environment variable DJGPP. Examine DJGPP            to try and figure out what's wrong.
 #: config/i386/xm-djgpp.h:62
-#, fuzzy, c-format
+#, c-format
 msgid "environment variable DJGPP not defined"
-msgstr "错误：没有设置 DISPLAY 环境变量。\n"
+msgstr "没有定义 DJGPP 环境变量"
 
 #: config/i386/xm-djgpp.h:64
 #, c-format
@@ -3972,9 +3964,9 @@ msgid "Do not generate code which uses the FPU"
 msgstr "不生成使用 FPU 的代码"
 
 #: config/ia64/ia64.c:4302
-#, fuzzy, c-format
+#, c-format
 msgid "ia64_print_operand: unknown code"
-msgstr "fr30_print_operand：无法识别的 %%p 代码"
+msgstr "ia64_print_operand：未知代码"
 
 #. This macro defines names of command options to set and clear bits in
 #. `target_flags'.  Its definition is an initializer with a subgrouping for
@@ -4073,19 +4065,19 @@ msgstr "不内联平方根函数"
 
 #: config/ia64/ia64.h:225
 msgid "Enable Dwarf 2 line debug info via GNU as"
-msgstr ""
+msgstr "启用经由 GNU as 的 Dwarf 2 行调试信息"
 
 #: config/ia64/ia64.h:227
 msgid "Disable Dwarf 2 line debug info via GNU as"
-msgstr ""
+msgstr "禁用经由 GNU as 的 Dwarf 2 行调试信息"
 
 #: config/ia64/ia64.h:229
 msgid "Enable earlier placing stop bits for better scheduling"
-msgstr ""
+msgstr "及早放置停止位，以取得更好的调度效果"
 
 #: config/ia64/ia64.h:231
 msgid "Disable earlier placing stop bits"
-msgstr ""
+msgstr "不及早放置停止位"
 
 #: config/ia64/ia64.h:276
 msgid "Specify range of registers to make fixed"
@@ -4147,41 +4139,40 @@ msgid "Specify CPU for code generation purposes"
 msgstr "为代码生成指定目标 CPU"
 
 #: config/m32r/m32r.c:2111
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%s code"
-msgstr "fr30_print_operand：%%A 代码操作数无效"
+msgstr "%%s 代码的操作数无效"
 
 #: config/m32r/m32r.c:2118
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%p code"
-msgstr "fr30_print_operand：%%A 代码操作数无效"
+msgstr "%%p 代码的操作数无效"
 
 #: config/m32r/m32r.c:2173
-#, fuzzy
 msgid "bad insn for 'A'"
-msgstr "正在检查坏块..."
+msgstr "‘A’的指令错误"
 
 #: config/m32r/m32r.c:2220
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%T/%%B code"
-msgstr "fr30_print_operand：%%A 代码操作数无效"
+msgstr "%%T/%%B 代码的操作数无效"
 
 #: config/m32r/m32r.c:2243
-#, fuzzy, c-format
+#, c-format
 msgid "invalid operand to %%N code"
-msgstr "fr30_print_operand：%%A 代码操作数无效"
+msgstr "%%N 代码的操作数无效"
 
 #: config/m32r/m32r.c:2276
 msgid "pre-increment address is not a register"
-msgstr ""
+msgstr "前自增地址不是一个寄存器"
 
 #: config/m32r/m32r.c:2283
 msgid "pre-decrement address is not a register"
-msgstr ""
+msgstr "前自减地址不是一个寄存器"
 
 #: config/m32r/m32r.c:2290
 msgid "post-increment address is not a register"
-msgstr ""
+msgstr "后自增地址不是一个寄存器"
 
 #: config/m32r/m32r.c:2366 config/m32r/m32r.c:2382
 #: config/rs6000/rs6000.c:17609
@@ -4221,16 +4212,15 @@ msgstr ""
 
 #: config/m32r/m32r.h:316 config/mips/mips.h:796
 msgid "Don't call any cache flush functions"
-msgstr ""
+msgstr "不调用任何清空缓存的函数"
 
 #: config/m32r/m32r.h:318 config/mips/mips.h:798
-#, fuzzy
 msgid "Specify cache flush function"
-msgstr "无法刷新缓冲区 cache！"
+msgstr "指定清空缓存的函数"
 
 #: config/m32r/m32r.h:320
 msgid "Don't call any cache flush trap"
-msgstr ""
+msgstr "不调用任何清空缓存的陷阱"
 
 #: config/m32r/m32r.h:322
 msgid "Specify cache flush trap number"
@@ -4267,7 +4257,7 @@ msgstr "指令长度为负"
 
 #: config/m68hc11/m68hc11.c:4457
 msgid "registers IX, IY and Z used in the same INSN"
-msgstr ""
+msgstr "在相同指令中使用寄存器 IX、IY 和 Z"
 
 #: config/m68hc11/m68hc11.c:4794 config/m68hc11/m68hc11.c:5094
 #, fuzzy
@@ -4293,21 +4283,19 @@ msgstr "以 32 位整数模式编译"
 
 #: config/m68hc11/m68hc11.h:183
 msgid "Auto pre/post decrement increment allowed"
-msgstr ""
+msgstr "允许自动前/后自减增"
 
 #: config/m68hc11/m68hc11.h:185
 msgid "Auto pre/post decrement increment not allowed"
-msgstr ""
+msgstr "不允许自动前/后自减增"
 
 #: config/m68hc11/m68hc11.h:187
-#, fuzzy
 msgid "Min/max instructions allowed"
-msgstr "最大容许的比特速率："
+msgstr "允许 min/max 指令"
 
 #: config/m68hc11/m68hc11.h:189
-#, fuzzy
 msgid "Min/max instructions not allowed"
-msgstr "值 <= 最小值 || 最大值 <= 值 (不在两者之间)"
+msgstr "不允许 min/max 指令"
 
 #: config/m68hc11/m68hc11.h:191
 msgid "Use call and rtc for function calls and returns"
@@ -4319,11 +4307,11 @@ msgstr ""
 
 #: config/m68hc11/m68hc11.h:195
 msgid "Do not use direct addressing mode for soft registers"
-msgstr ""
+msgstr "不为软寄存器使用直接寻址"
 
 #: config/m68hc11/m68hc11.h:197
 msgid "Use direct addressing mode for soft registers"
-msgstr ""
+msgstr "为软寄存器使用直接寻址"
 
 #: config/m68hc11/m68hc11.h:199 config/m68hc11/m68hc11.h:205
 msgid "Compile for a 68HC11"
@@ -4347,13 +4335,12 @@ msgstr "为 68HCS12 汇编"
 #. option if the fixed part matches.  The actual option name is made
 #. by appending `-m' to the specified name.
 #: config/m68hc11/m68hc11.h:223
-#, fuzzy
 msgid "Specify the register allocation order"
-msgstr "列出寄存器分配和释放信息"
+msgstr "指定分配寄存器的顺序"
 
 #: config/m68hc11/m68hc11.h:225
 msgid "Indicate the number of soft registers available"
-msgstr ""
+msgstr "指示可用的软寄存器的数量"
 
 #: config/m68k/m68k.h:240 config/m68k/m68k.h:242
 msgid "Generate code for a 68020"
@@ -4548,24 +4535,24 @@ msgid "mips_debugger_offset called with non stack/frame/arg pointer"
 msgstr ""
 
 #: config/mips/mips.c:4856
-#, fuzzy, c-format
+#, c-format
 msgid "PRINT_OPERAND, invalid insn for %%C"
-msgstr "fr30_print_operand：无效的 %%x 代码"
+msgstr "PRINT_OPERAND，%%C 的指令无效"
 
 #: config/mips/mips.c:4873
-#, fuzzy, c-format
+#, c-format
 msgid "PRINT_OPERAND, invalid insn for %%N"
-msgstr "fr30_print_operand：无效的 %%x 代码"
+msgstr "PRINT_OPERAND，%%N 的指令无效"
 
 #: config/mips/mips.c:4882
-#, fuzzy, c-format
+#, c-format
 msgid "PRINT_OPERAND, invalid insn for %%F"
-msgstr "fr30_print_operand：无效的 %%x 代码"
+msgstr "PRINT_OPERAND，%%F 的指令无效"
 
 #: config/mips/mips.c:4891
-#, fuzzy, c-format
+#, c-format
 msgid "PRINT_OPERAND, invalid insn for %%W"
-msgstr "fr30_print_operand：无效的 %%x 代码"
+msgstr "PRINT_OPERAND，%%W 的指令无效"
 
 #: config/mips/mips.c:4912
 #, c-format
@@ -4573,9 +4560,8 @@ msgid "invalid %%Y value"
 msgstr "无效的 %%Y 值"
 
 #: config/mips/mips.c:4990
-#, fuzzy
 msgid "PRINT_OPERAND, invalid operand for relocation"
-msgstr "fr30_print_operand：无效的 %%x 代码"
+msgstr "PRINT_OPERAND，重定位的操作数无效"
 
 #. Target CPU builtins.
 #. Everyone but IRIX defines this to mips.
@@ -4606,7 +4592,7 @@ msgstr "优化 lui/addiu 内存载入"
 
 #: config/mips/mips.h:549
 msgid "Don't optimize lui/addiu address loads"
-msgstr ""
+msgstr "不优化 lui/addiu 地址载入"
 
 #: config/mips/mips.h:551
 msgid "Use GNU as (now ignored)"
@@ -4622,12 +4608,11 @@ msgstr ""
 
 #: config/mips/mips.h:561
 msgid "Output compiler statistics (now ignored)"
-msgstr ""
+msgstr "输出编译器统计(现已忽略)"
 
 #: config/mips/mips.h:563
-#, fuzzy
 msgid "Don't output compiler statistics"
-msgstr "显示没有修改的编译器输出。"
+msgstr "不输出编译器统计信息"
 
 #: config/mips/mips.h:565
 msgid "Don't optimize block moves"
@@ -4805,7 +4790,7 @@ msgstr ""
 
 #: config/mips/mips.h:661
 msgid "Use NewABI-style %reloc() assembly operators"
-msgstr ""
+msgstr "使用 NewABI 风格的 %reloc() 汇编运算符"
 
 #: config/mips/mips.h:663
 msgid "Use assembler macros instead of relocation operators"
@@ -4854,54 +4839,52 @@ msgstr "为 VR4130 mflo/mfhi 缺陷提供变通"
 
 #: config/mmix/mmix.c:1471 config/mmix/mmix.c:1601
 msgid "MMIX Internal: Expected a CONST_INT, not this"
-msgstr ""
+msgstr "MMIX 内部错误：预期的是整常量，不是这个"
 
 #: config/mmix/mmix.c:1550
 msgid "MMIX Internal: Bad value for 'm', not a CONST_INT"
-msgstr ""
+msgstr "MMIX 内部错误：‘m’值错误，不是一个整常量"
 
 #: config/mmix/mmix.c:1569
 msgid "MMIX Internal: Expected a register, not this"
-msgstr ""
+msgstr "MMIX 内部错误：预期的是寄存器，不是这个"
 
 #: config/mmix/mmix.c:1579
 msgid "MMIX Internal: Expected a constant, not this"
-msgstr ""
+msgstr "MMIX 内部错误：预期的是一个常量，不是这个"
 
 #. We need the original here.
 #: config/mmix/mmix.c:1663
 msgid "MMIX Internal: Cannot decode this operand"
-msgstr ""
+msgstr "MMIX 内部错误：无法解码此操作数"
 
 #: config/mmix/mmix.c:1720
 msgid "MMIX Internal: This is not a recognized address"
-msgstr ""
+msgstr "MMIX 内部错误：这不是一个可识别的地址"
 
 #: config/mmix/mmix.c:2786
 msgid "MMIX Internal: Trying to output invalidly reversed condition:"
-msgstr ""
+msgstr "MMIX 内部错误：试图输出无效地反转的条件："
 
 #: config/mmix/mmix.c:2793
 msgid "MMIX Internal: What's the CC of this?"
-msgstr ""
+msgstr "MMIX 内部错误：它的比较条件是什么？"
 
 #: config/mmix/mmix.c:2797
 msgid "MMIX Internal: What is the CC of this?"
-msgstr ""
+msgstr "MMIX 内部错误：它的比较条件是什么？"
 
 #: config/mmix/mmix.c:2867
 msgid "MMIX Internal: This is not a constant:"
-msgstr ""
+msgstr "MMIX 内部错误：这不是一个常量："
 
 #: config/mmix/mmix.h:132
-#, fuzzy
 msgid "Set start-address of the program"
-msgstr "设定提供给程序在执行时的额外参数"
+msgstr "设定程序的起始地址"
 
 #: config/mmix/mmix.h:134
-#, fuzzy
 msgid "Set start-address of data"
-msgstr "基本块外出现指令"
+msgstr "设定数据的起始地址"
 
 #. FIXME: Provide a way to *load* the epsilon register.
 #: config/mmix/mmix.h:198
@@ -4973,9 +4956,8 @@ msgid "Target the AM33/2.0 processor"
 msgstr "目标为 AM33/2.0 处理器"
 
 #: config/mn10300/linux.h:47 config/mn10300/mn10300.h:78
-#, fuzzy
 msgid "Enable linker relaxations"
-msgstr "启用链接器优化"
+msgstr "启用链接器松弛"
 
 #: config/mn10300/mn10300.h:69
 msgid "Work around hardware multiply bug"
@@ -4990,9 +4972,8 @@ msgid "Don't use hardware fp"
 msgstr "不使用硬件浮点单元"
 
 #: config/ns32k/ns32k.h:143
-#, fuzzy
 msgid "Alternative calling convention"
-msgstr "使用一般的调用约定"
+msgstr "另一种调用约定"
 
 #: config/ns32k/ns32k.h:145
 msgid "Pass some arguments in registers"
@@ -5031,14 +5012,12 @@ msgid "Do not use bit-field instructions"
 msgstr "不使用位段指令"
 
 #: config/ns32k/ns32k.h:158
-#, fuzzy
 msgid "Generate code for high memory"
-msgstr "为 gprof 生成附加代码"
+msgstr "为高端内存生成代码"
 
 #: config/ns32k/ns32k.h:159
-#, fuzzy
 msgid "Generate code for low memory"
-msgstr "为 gprof 生成附加代码"
+msgstr "为低端内存生成代码"
 
 #: config/ns32k/ns32k.h:160
 msgid "32381 fpu"
@@ -5672,9 +5651,8 @@ msgid "Do not allow bit-fields to cross word boundaries"
 msgstr ""
 
 #: config/rs6000/sysv4.h:135
-#, fuzzy
 msgid "Use alternate register names"
-msgstr "使用 in/loc/out 寄存器名"
+msgstr "使用另一套寄存器名"
 
 #: config/rs6000/sysv4.h:137
 #, fuzzy
@@ -6086,9 +6064,8 @@ msgstr ""
 
 #: config/xtensa/xtensa.c:1014 config/xtensa/xtensa.c:1046
 #: config/xtensa/xtensa.c:1055
-#, fuzzy
 msgid "bad test"
-msgstr "测试打印机(&T)..."
+msgstr "错误的测试"
 
 #: config/xtensa/xtensa.c:1895
 #, c-format
@@ -6800,9 +6777,8 @@ msgid "-D<macro>[=<val>]\tDefine a <macro> with <val> as its value.  If just <ma
 msgstr ""
 
 #: options.c:973
-#, fuzzy
 msgid "-F <dir>\tAdd <dir> to the end of the main framework include path"
-msgstr "-idirafter <目录>\t将 <目录> 添加至系统头文件目录列表末尾"
+msgstr "-F <目录>\t将 <目录> 添加至主框架包含路径的末尾"
 
 #: options.c:976
 msgid "-G<number>\tPut global and static data smaller than <number> bytes into a special section (on some targets)"
@@ -6891,9 +6867,8 @@ msgid "Synonym for -Wcomment"
 msgstr "-Wcomment 的同义词"
 
 #: options.c:1066
-#, fuzzy
 msgid "Warn about implicit conversion"
-msgstr "对没有文档的实体给出警告"
+msgstr "对隐式转换给出警告"
 
 #: options.c:1069
 msgid "Warn when all constructors and destructors are private"
@@ -6984,9 +6959,8 @@ msgid "Warn when a declaration does not specify a type"
 msgstr "当声明未指定类型时给出警告"
 
 #: options.c:1141
-#, fuzzy
 msgid "Warn about calls with implicit interface"
-msgstr "对隐式函数声明给出警告"
+msgstr "对带有隐式接口的调用给出警告"
 
 #: options.c:1144
 msgid "Deprecated.  This switch has no effect."
@@ -7211,7 +7185,6 @@ msgid "Warn if an undefined macro is used in an #if directive"
 msgstr "当 #if 指令中用到未定义的宏时给出警告"
 
 #: options.c:1312
-#, fuzzy
 msgid "Warn about underflow of numerical constant expressions"
 msgstr "数字常量表达式下溢时警告"
 
@@ -7329,20 +7302,19 @@ msgstr "假定实参既不互相重叠，也不与全局数据重叠"
 
 #: options.c:1429
 msgid "Recognize the \"asm\" keyword"
-msgstr "识别“asm”关键词"
+msgstr "识别“asm”关键字"
 
 #: options.c:1432
 msgid "Permit the use of the assert keyword"
-msgstr "允许使用 assert 关键词"
+msgstr "允许使用 assert 关键字"
 
 #: options.c:1441
 msgid "Generate unwind tables that are exact at each instruction boundary"
 msgstr "生成精确到每条指令边界的堆栈展开表"
 
 #: options.c:1444
-#, fuzzy
 msgid "--bootclasspath=<path>\tReplace system path"
-msgstr "  --bootclasspath PATH    覆盖内建的类路径\n"
+msgstr "--bootclasspath=<路径>\t替换系统路径"
 
 #: options.c:1447
 msgid "Generate code to check bounds before indexing arrays"
@@ -7358,11 +7330,11 @@ msgstr "为分支概率使用取样信息"
 
 #: options.c:1456
 msgid "Perform branch target load optimization before prologue / epilogue threading"
-msgstr ""
+msgstr "在开始/结末线程前进行分支目标载入优化"
 
 #: options.c:1459
 msgid "Perform branch target load optimization after prologue / epilogue threading"
-msgstr ""
+msgstr "在开始/结末线程后进行分支目标载入优化"
 
 #: options.c:1462
 msgid "Restrict target load migration not to re-use registers in any basic block"
@@ -7482,7 +7454,7 @@ msgstr "允许‘$’作为标识符的一部分"
 
 #: options.c:1561
 msgid "-fdump-<type>\tDump various compiler internals to a file"
-msgstr ""
+msgstr "-fdump-<类型>\t将不同类型的编译器内部信息转储到一个文件里"
 
 #: options.c:1564
 msgid "Display the code tree after parsing."
@@ -7533,9 +7505,8 @@ msgid "--extdirs=<path>\tSet the extension directory path"
 msgstr ""
 
 #: options.c:1618
-#, fuzzy
 msgid "Use f2c calling convention."
-msgstr "使用一般的调用约定"
+msgstr "使用 f2c 调用约定"
 
 #: options.c:1624
 msgid "Input file is a file with a list of filenames to compile"
@@ -7550,9 +7521,8 @@ msgid "-ffixed-<register>\tMark <register> as being unavailable to the compiler"
 msgstr "-ffixed-<寄存器>\t认为 <寄存器> 对编译器而言不可用"
 
 #: options.c:1633
-#, fuzzy
 msgid "Assume that the source file is fixed form"
-msgstr "假定指针没有别名"
+msgstr "假定源文件是固定格式的"
 
 #: options.c:1636
 msgid "-ffixed-line-length-<n>\t\tUse n as character line width in fixed mode"
@@ -7620,7 +7590,7 @@ msgstr "在全局公共子表达式消除后进行存储转移"
 
 #: options.c:1684
 msgid "Recognize GNU-defined keywords"
-msgstr "识别 GNU 定义的关键词"
+msgstr "识别 GNU 定义的关键字"
 
 #: options.c:1687
 msgid "Generate code for GNU runtime environment"
@@ -7748,7 +7718,7 @@ msgstr "试图合并不同编译单元中的相同常量"
 
 #: options.c:1798
 msgid "-fmessage-length=<number>\tLimit diagnostics to <number> characters per line.  0 suppresses line-wrapping"
-msgstr ""
+msgstr "-fmessage-length=<数字>\t将诊断信息限制在每行 <数字> 个字符每行。0 取消自动换行"
 
 #: options.c:1801
 msgid "Set default accessibility of module entities to PRIVATE"
@@ -7952,7 +7922,7 @@ msgstr ""
 
 #: options.c:1972
 msgid "Disable optimizations that assume default FP rounding behavior"
-msgstr ""
+msgstr "禁用假定默认浮点舍入行为的优化"
 
 #: options.c:1975
 msgid "Generate run time type descriptor information"
@@ -7991,9 +7961,8 @@ msgid "-fsched-stalled-insns=<number>\tSet number of queued insns that can be pr
 msgstr ""
 
 #: options.c:2002
-#, fuzzy
 msgid "-fsched-verbose=<number>\tSet the verbosity level of the scheduler"
-msgstr "-ftree-vectorizer-verbose=<数>\t设定矢量化器的输出详细程度"
+msgstr "-fsched-verbose=<number>\t设定调度器的输出详细程度"
 
 #: options.c:2005
 msgid "If scheduling post reload, do superblock scheduling"
@@ -8270,7 +8239,7 @@ msgstr ""
 
 #: options.c:2224
 msgid "-fvisibility=[default|internal|hidden|protected]\tSet the default symbol visibility"
-msgstr ""
+msgstr "-fvisibility=[default|internal|hidden|protected]\t设定默认的符号可见性"
 
 #: options.c:2227
 msgid "Use expression value profiles in optimizations"
@@ -8373,9 +8342,8 @@ msgid "-iprefix <path>\tSpecify <path> as a prefix for next two options"
 msgstr ""
 
 #: options.c:2302
-#, fuzzy
 msgid "-iquote <dir>\tAdd <dir> to the end of the quote include path"
-msgstr "-idirafter <目录>\t将 <目录> 添加至系统头文件目录列表末尾"
+msgstr "-iquote <目录>\t将 <目录> 添加至引号包含路径末尾"
 
 #: options.c:2305
 msgid "-isysroot <dir>\tSet <dir> to be the system root directory"
@@ -8386,14 +8354,12 @@ msgid "-isystem <dir>\tAdd <dir> to the start of the system include path"
 msgstr "-isystem <目录>\t将 <目录> 添加至系统头文件路径列表开头"
 
 #: options.c:2311
-#, fuzzy
 msgid "-iwithprefix <dir>\tAdd <dir> to the end of the system include path"
-msgstr "-idirafter <目录>\t将 <目录> 添加至系统头文件目录列表末尾"
+msgstr "-iwithprefix <目录>\t将 <目录> 添加至系统包含路径末尾"
 
 #: options.c:2314
-#, fuzzy
 msgid "-iwithprefixbefore <dir>\tAdd <dir> to the end of the main include path"
-msgstr "-idirafter <目录>\t将 <目录> 添加至系统头文件目录列表末尾"
+msgstr "-iwithprefixbefore <目录>\t将 <目录> 添加至主包含路径末尾"
 
 #: options.c:2326
 msgid "Do not search standard system include directories (those specified with -isystem will still be used)"
@@ -8421,7 +8387,7 @@ msgstr "与 -pedantic 类似，但将它们视作错误"
 
 #: options.c:2344
 msgid "Generate C header of platform-specific features"
-msgstr ""
+msgstr "生成有平台相关特性的 C 头文件"
 
 #: options.c:2347
 msgid "-qkind=<n>\tSet the kind for a real with the 'q' exponent to 'n'"
@@ -8556,7 +8522,7 @@ msgstr "SH2a 不支持低位字节在前"
 
 #: config/lynx.h:71
 msgid "Cannot use mthreads and mlegacy-threads together."
-msgstr ""
+msgstr "不能同时使用 mthreads 和 mlegacy-threads。"
 
 #: config/lynx.h:96
 msgid "Cannot use mshared and static together."
@@ -9566,9 +9532,9 @@ msgstr "%J%qD 的声明隐藏了先前的一个局部变量"
 
 #: c-decl.c:1909 cp/name-lookup.c:942 cp/name-lookup.c:973
 #: cp/name-lookup.c:981
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Jshadowed declaration is here"
-msgstr "The HangMan is drawn here"
+msgstr "%J被隐藏的声明在这里"
 
 #: c-decl.c:2110
 #, gcc-internal-format
@@ -9626,9 +9592,9 @@ msgid "%Hduplicate label %qD"
 msgstr "%H重复的标号 %qD"
 
 #: c-decl.c:2538
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Jjump into statement expression"
-msgstr "跳转至语句表达式中"
+msgstr "%J跳转至语句表达式中"
 
 #: c-decl.c:2540
 #, fuzzy, gcc-internal-format
@@ -9666,9 +9632,9 @@ msgid "useless type name in empty declaration"
 msgstr "空声明中类型名无用"
 
 #: c-decl.c:2910
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<inline%> in empty declaration"
-msgstr "空声明中 %<__thread%> 无用"
+msgstr "%<inline%> 用于空声明中"
 
 #: c-decl.c:2916
 #, gcc-internal-format
@@ -10346,9 +10312,9 @@ msgid "%Jparameter %qD declared with void type"
 msgstr "%J形参 %qD 声明为 void 类型"
 
 #: c-decl.c:6159 c-decl.c:6161
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Jtype of %qD defaults to %<int%>"
-msgstr "返回类型默认为 %<int%>"
+msgstr "%J%qD 的类型默认为 %<int%>"
 
 #: c-decl.c:6180
 #, gcc-internal-format
@@ -10376,9 +10342,9 @@ msgid "%Hprototype declaration"
 msgstr "%H原型声明"
 
 #: c-decl.c:6276
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "promoted argument %qD doesn%'t match built-in prototype"
-msgstr "提升后的实参 %qD 与原型不符"
+msgstr "提升后的实参 %qD 与内建原型不符"
 
 #: c-decl.c:6280
 #, gcc-internal-format
@@ -10386,9 +10352,9 @@ msgid "promoted argument %qD doesn%'t match prototype"
 msgstr "提升后的实参 %qD 与原型不符"
 
 #: c-decl.c:6290
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument %qD doesn%'t match built-in prototype"
-msgstr "实参 %qD 与原型不符"
+msgstr "实参 %qD 与内建原型不符"
 
 #: c-decl.c:6294
 #, gcc-internal-format
@@ -10634,9 +10600,9 @@ msgid "ISO C does not support complex integer types"
 msgstr "ISO C 不支持复整数"
 
 #: c-decl.c:7515 toplev.c:850
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%J%qF used but never defined"
-msgstr "%J%qF 声明为 %<static%> 却从未定义过"
+msgstr "%J%qF 使用过但从未定义"
 
 #: c-format.c:96 c-format.c:209
 #, gcc-internal-format
@@ -10664,9 +10630,9 @@ msgid "%qs is an unrecognized format function type"
 msgstr ""
 
 #: c-format.c:215
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<...%> has invalid operand number"
-msgstr "XPM 文件图像颜色数目不正确"
+msgstr "%<...%> 操作数数目不对"
 
 #: c-format.c:222
 #, gcc-internal-format
@@ -10784,9 +10750,9 @@ msgid "empty left precision in %s format"
 msgstr "%s 格式字符串中左精度为空"
 
 #: c-format.c:1648
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "empty precision in %s format"
-msgstr "%s 格式字符串中左精度为空"
+msgstr "%s 格式字符串中精度为空"
 
 #: c-format.c:1687
 #, gcc-internal-format
@@ -10809,9 +10775,9 @@ msgid "unknown conversion type character 0x%x in format"
 msgstr "格式字符串中出现无效的类型转换字符 0x%x"
 
 #: c-format.c:1758
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s does not support the %<%%%c%> %s format"
-msgstr "目标格式不支持无限大浮点数"
+msgstr "%s 不支持 %<%%%c%> %s 格式"
 
 #: c-format.c:1774
 #, fuzzy, gcc-internal-format
@@ -10940,14 +10906,14 @@ msgid "%<location_t%> is not defined as a type"
 msgstr ""
 
 #: c-format.c:2377
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<tree%> is not defined as a type"
-msgstr "%<%T::%D%> 不是一个类型"
+msgstr "%<tree%> 未被定义为一个类型"
 
 #: c-format.c:2382
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<tree%> is not defined as a pointer type"
-msgstr "无法转换为指针类型"
+msgstr "%<tree%> 未被定义为一个指针类型"
 
 #: c-format.c:2568
 #, gcc-internal-format
@@ -10980,20 +10946,20 @@ msgid "badly nested C headers from preprocessor"
 msgstr ""
 
 #: c-lex.c:307
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Hignoring #pragma %s %s"
-msgstr "Include/Pragma"
+msgstr "%H忽略 #pragma %s %s"
 
 #. ... or not.
 #: c-lex.c:411
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Hstray %<@%> in program"
-msgstr "在调试器里重新运行此程序"
+msgstr "%H程序中有游离的 %<@%>"
 
 #: c-lex.c:425
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "stray %qs in program"
-msgstr "在调试器里重新运行此程序"
+msgstr "程序中有游离的 %qs"
 
 #: c-lex.c:435
 #, gcc-internal-format
@@ -11001,14 +10967,14 @@ msgid "missing terminating %c character"
 msgstr "缺少结尾的 %c 字符"
 
 #: c-lex.c:437
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "stray %qc in program"
-msgstr "在调试器里重新运行此程序"
+msgstr "程序中有游离的 %qc"
 
 #: c-lex.c:439
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "stray %<\\%o%> in program"
-msgstr "在调试器里重新运行此程序"
+msgstr "程序中有游离的 %<\\%o%>"
 
 #: c-lex.c:599
 #, gcc-internal-format
@@ -11183,7 +11149,7 @@ msgstr "当写入输出到 %s 时：%m"
 #: c-opts.c:1229
 #, gcc-internal-format
 msgid "to generate dependencies you must specify either -M or -MM"
-msgstr ""
+msgstr "要生成依赖项，您必须指定 -M 或 -MM"
 
 #: c-opts.c:1394
 #, gcc-internal-format
@@ -11321,9 +11287,9 @@ msgid "braced-group within expression allowed only inside a function"
 msgstr ""
 
 #: c-parse.y:2263 objc/objc-parse.y:2358
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%E qualifier ignored on asm"
-msgstr "%qE 属性在类型上被忽略"
+msgstr "%E 限定在 asm 上被忽略"
 
 #: c-parse.y:2309 objc/objc-parse.y:2404
 #, gcc-internal-format
@@ -11351,9 +11317,9 @@ msgid "can%'t write to %s: %m"
 msgstr "无法写入 %s：%m"
 
 #: c-pch.c:164
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs is not a valid output file"
-msgstr "文件 \"%s\" 不是有效的插件信息文件."
+msgstr "%qs 不是一个有效的输出文件"
 
 #: c-pch.c:193 c-pch.c:208 c-pch.c:222
 #, gcc-internal-format
@@ -11361,9 +11327,9 @@ msgid "can%'t write %s: %m"
 msgstr "无法写入 %s：%m"
 
 #: c-pch.c:198 c-pch.c:215
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t seek in %s: %m"
-msgstr "<qt>无法写入数据到 <b>%1</b>。</qt>"
+msgstr "无法在 %s 中定位：%m"
 
 #: c-pch.c:206 c-pch.c:248 c-pch.c:276 c-pch.c:281 c-pch.c:365
 #, gcc-internal-format
@@ -11403,12 +11369,12 @@ msgstr "%s：PCH 文件无效"
 #: c-pragma.c:99
 #, gcc-internal-format
 msgid "#pragma pack (pop) encountered without matching #pragma pack (push)"
-msgstr ""
+msgstr "#pragma pack (pop) 没有相匹配的 #pragma pack (push)"
 
 #: c-pragma.c:112
 #, gcc-internal-format
 msgid "#pragma pack(pop, %s) encountered without matching #pragma pack(push, %s)"
-msgstr ""
+msgstr "#pragma pack(pop, %s) 没有相匹配的 #pragma pack(push, %s)"
 
 #: c-pragma.c:126
 #, gcc-internal-format
@@ -11443,7 +11409,7 @@ msgstr "%<#pragma pack(pop[, id])%> 格式错误 - 已忽略"
 #: c-pragma.c:178
 #, gcc-internal-format
 msgid "unknown action %qs for %<#pragma pack%> - ignored"
-msgstr ""
+msgstr "%<#pragma pack%> 动作 %qs 无效 - 已忽略"
 
 #: c-pragma.c:205
 #, gcc-internal-format
@@ -11541,9 +11507,9 @@ msgid "missing %<(%> after %<#pragma GCC visibility push%> - ignored"
 msgstr ""
 
 #: c-pragma.c:629
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed #pragma GCC visibility push"
-msgstr "%<#pragma pack(push[, id][, <n>])%> 格式错误 - 已忽略"
+msgstr "#pragma GCC visibility push 格式错误"
 
 #: c-pragma.c:633
 #, gcc-internal-format
@@ -11632,9 +11598,9 @@ msgid "dereferencing %<void *%> pointer"
 msgstr "提领 %<void *%> 指针"
 
 #: c-typeck.c:1661 cp/typeck.c:2125
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid type argument of %qs"
-msgstr "无效的选项参数 %qs"
+msgstr "%qs 的实参类型无效"
 
 #: c-typeck.c:1689 cp/typeck.c:2276
 #, gcc-internal-format
@@ -11642,9 +11608,9 @@ msgid "subscripted value is neither array nor pointer"
 msgstr "下标运算的左操作数既非数组也非指针"
 
 #: c-typeck.c:1700 cp/typeck.c:2195 cp/typeck.c:2281
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "array subscript is not an integer"
-msgstr "Python 列表不是一个数组"
+msgstr "数组下标不是一个整数"
 
 #: c-typeck.c:1706
 #, gcc-internal-format
@@ -11667,9 +11633,9 @@ msgid "ISO C90 forbids subscripting non-lvalue array"
 msgstr "ISO C90 不允许非左值的数组作为下标运算的左操作数"
 
 #: c-typeck.c:1998
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "called object %qE is not a function"
-msgstr "%s 是对函数 %qE 的一个引用而不是调用"
+msgstr "被调用的对象 %qE 不是一个函数"
 
 #. This situation leads to run-time undefined behavior.  We can't,
 #. therefore, simply error unless we can prove that all possible
@@ -11677,7 +11643,7 @@ msgstr "%s 是对函数 %qE 的一个引用而不是调用"
 #: c-typeck.c:2030
 #, gcc-internal-format
 msgid "function called through a non-compatible type"
-msgstr ""
+msgstr "函数经由不兼容的类型调用"
 
 #: c-typeck.c:2138
 #, gcc-internal-format
@@ -11790,9 +11756,9 @@ msgid "comparisons like X<=Y<=Z do not have their mathematical meaning"
 msgstr "形如 X<=Y<=Z 的比较并不具备其在数学上的意义"
 
 #: c-typeck.c:2408
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "pointer of type %<void *%> used in subtraction"
-msgstr "%<void *%> 型指针用在了算术表达式中"
+msgstr "在减法中使用类型为 %<void *%> 的指针"
 
 #: c-typeck.c:2410
 #, gcc-internal-format
@@ -11815,9 +11781,9 @@ msgid "ISO C does not support %<~%> for complex conjugation"
 msgstr "ISO C 不支持用 ~ 求共轭复数"
 
 #: c-typeck.c:2535
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "wrong type argument to bit-complement"
-msgstr "单目加的操作数类型错误"
+msgstr "按位取反的实参类型错误"
 
 #: c-typeck.c:2543
 #, gcc-internal-format
@@ -11850,14 +11816,14 @@ msgid "wrong type argument to decrement"
 msgstr "该类型的实参不能自减"
 
 #: c-typeck.c:2645
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "increment of pointer to unknown structure"
-msgstr "指向未知的外部数据 (“%s”类型)"
+msgstr "自增指向未知结构的指针"
 
 #: c-typeck.c:2647
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "decrement of pointer to unknown structure"
-msgstr "指向未知的外部数据 (“%s”类型)"
+msgstr "自减指向未知结构的指针"
 
 #: c-typeck.c:2817
 #, gcc-internal-format
@@ -11920,14 +11886,14 @@ msgid "register variable %qD used in nested function"
 msgstr ""
 
 #: c-typeck.c:2885
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "address of global register variable %qD requested"
-msgstr "要求全局寄存器变量 %qs 的地址"
+msgstr "要求全局寄存器变量 %qD 的地址"
 
 #: c-typeck.c:2887
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "address of register variable %qD requested"
-msgstr "要求寄存器变量 %qs 的地址"
+msgstr "要求寄存器变量 %qD 的地址。"
 
 #: c-typeck.c:2935
 #, gcc-internal-format
@@ -11942,7 +11908,7 @@ msgstr "有符号和无符号类型一起出现在条件表达式中"
 #: c-typeck.c:2986
 #, gcc-internal-format
 msgid "ISO C forbids conditional expr with only one void side"
-msgstr ""
+msgstr "ISO C 不允许条件表达式仅有一边为空"
 
 #: c-typeck.c:3002 c-typeck.c:3010
 #, gcc-internal-format
@@ -11950,9 +11916,9 @@ msgid "ISO C forbids conditional expr between %<void *%> and function pointer"
 msgstr "ISO C 不允许在条件表达式中同时使用 %<void *%> 和函数指针"
 
 #: c-typeck.c:3017
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "pointer type mismatch in conditional expression"
-msgstr "有符号和无符号类型一起出现在条件表达式中"
+msgstr "条件表达式指针类型不匹配"
 
 #: c-typeck.c:3024 c-typeck.c:3034
 #, gcc-internal-format
@@ -11980,9 +11946,9 @@ msgid "cast specifies function type"
 msgstr "类型转换指定了函数类型"
 
 #: c-typeck.c:3144
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ISO C forbids casting nonscalar to the same type"
-msgstr "ISO C++ 不允许转换为数组类型 %qT"
+msgstr "ISO C 不允许将非标量转换为其自身类型"
 
 #: c-typeck.c:3162
 #, gcc-internal-format
@@ -12301,7 +12267,7 @@ msgstr ""
 #: c-typeck.c:6765
 #, gcc-internal-format
 msgid "%<default%> label in statement expression not containing enclosing switch statement"
-msgstr ""
+msgstr "%<default%> 标号出现在没有相应 switch 语句的语句表达式中"
 
 #: c-typeck.c:6771
 #, gcc-internal-format
@@ -12326,7 +12292,7 @@ msgstr "%<default%> 标号未出现在 switch 语句内"
 #: c-typeck.c:6849
 #, gcc-internal-format
 msgid "%Hsuggest explicit braces to avoid ambiguous %<else%>"
-msgstr ""
+msgstr "%H建议显式地使用花括号以避免出现有歧义的 %<else%>"
 
 #: c-typeck.c:6859
 #, gcc-internal-format
@@ -12421,22 +12387,22 @@ msgstr "比较有符号和无符号数"
 #: c-typeck.c:7961 cp/typeck.c:3421
 #, gcc-internal-format
 msgid "comparison of promoted ~unsigned with constant"
-msgstr ""
+msgstr "比较常量和取反后又经提升的无符号数"
 
 #: c-typeck.c:7969 cp/typeck.c:3429
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "comparison of promoted ~unsigned with unsigned"
-msgstr "比较有符号和无符号数"
+msgstr "比较无符号数和取反后又经提升的无符号数"
 
 #: calls.c:1934
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "function call has aggregate value"
-msgstr "内部调用PostMessage失败. "
+msgstr "函数调用有聚合类型"
 
 #: cfghooks.c:90
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bb %d on wrong place"
-msgstr "约束，对某事添加一个约束"
+msgstr "基本块 %d 位置不对"
 
 #: cfghooks.c:96
 #, fuzzy, gcc-internal-format
@@ -12594,9 +12560,9 @@ msgid "Bb %d do not belong to loop %d."
 msgstr "基本块 %d 不属于循环 %d。"
 
 #: cfgloop.c:1346
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Loop %d's header does not have exactly 2 entries."
-msgstr "%s：域“%s”含有条目的个数不是十个"
+msgstr ""
 
 #: cfgloop.c:1353
 #, gcc-internal-format
@@ -12731,12 +12697,12 @@ msgstr ""
 #: cfgrtl.c:2106 cfgrtl.c:2116
 #, gcc-internal-format
 msgid "NOTE_INSN_BASIC_BLOCK is missing for block %d"
-msgstr ""
+msgstr "块 %d 缺少 NOTE_INSN_BASIC_BLOCK"
 
 #: cfgrtl.c:2129
 #, gcc-internal-format
 msgid "NOTE_INSN_BASIC_BLOCK %d in middle of basic block %d"
-msgstr ""
+msgstr "NOTE_INSN_BASIC_BLOCK %d 在基本块 %d 中间"
 
 #: cfgrtl.c:2139
 #, gcc-internal-format
@@ -12774,9 +12740,9 @@ msgid "%D renamed after being referenced in assembly"
 msgstr ""
 
 #: cgraphunit.c:513
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Shared call_expr:"
-msgstr "匹配正规表达式"
+msgstr "共享的 call_expr："
 
 #: cgraphunit.c:519
 #, gcc-internal-format
@@ -12799,9 +12765,9 @@ msgid "Inlined_to pointer is wrong"
 msgstr "下标运算的左操作数是函数指针"
 
 #: cgraphunit.c:571
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Multiple inline callers"
-msgstr "框架是内嵌的"
+msgstr "多个内联调用者"
 
 #: cgraphunit.c:578
 #, gcc-internal-format
@@ -12999,9 +12965,9 @@ msgid "Invalid rtl sharing found in the insn"
 msgstr ""
 
 #: emit-rtl.c:2234
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Shared rtx"
-msgstr "  共享物件"
+msgstr "共享的 rtx"
 
 #: emit-rtl.c:2236
 #, gcc-internal-format
@@ -13139,7 +13105,7 @@ msgstr ""
 #: gcc.c:5149
 #, gcc-internal-format
 msgid "spec failure: '%%*' has not been initialized by pattern match"
-msgstr ""
+msgstr "spec 失败：‘%%*’未经模式匹配初始化"
 
 #: gcc.c:5158
 #, gcc-internal-format
@@ -13250,14 +13216,14 @@ msgid "memory input %d is not directly addressable"
 msgstr "内存输入 %d 不可直接寻址"
 
 #: gimplify.c:4326
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "gimplification failed"
-msgstr "%s 备份失败\n"
+msgstr "gimplification 失败"
 
 #: global.c:371 global.c:384 global.c:398
 #, gcc-internal-format
 msgid "%s cannot be used in asm here"
-msgstr ""
+msgstr "%s 不能在这里用于 asm"
 
 #: graph.c:403 passes.c:131 java/jcf-parse.c:1047 java/jcf-parse.c:1194
 #: java/lex.c:1846 objc/objc-act.c:552
@@ -13380,32 +13346,32 @@ msgstr ""
 #: profile.c:284
 #, gcc-internal-format
 msgid "corrupted profile info: run_max * runs < sum_max"
-msgstr ""
+msgstr "损坏的样本信息：run_max * runs < sum_max"
 
 #: profile.c:290
 #, gcc-internal-format
 msgid "corrupted profile info: sum_all is smaller than sum_max"
-msgstr ""
+msgstr "损坏的样本信息：sum_all 小于 sum_max"
 
 #: profile.c:335
 #, gcc-internal-format
 msgid "corrupted profile info: edge from %i to %i exceeds maximal count"
-msgstr ""
+msgstr "损坏的样本信息：从 %i 到 %i 的边超过最大计数"
 
 #: profile.c:503
 #, gcc-internal-format
 msgid "corrupted profile info: number of iterations for basic block %d thought to be %i"
-msgstr ""
+msgstr "损坏的样本信息：基本块 %d 的迭代次数被认为是 %i"
 
 #: profile.c:524
 #, gcc-internal-format
 msgid "corrupted profile info: number of executions for edge %d-%d thought to be %i"
-msgstr ""
+msgstr "损坏的样本信息：边 %d-%d 的执行次数被认为是 %i"
 
 #: reg-stack.c:622
 #, gcc-internal-format
 msgid "output constraint %d must specify a single register"
-msgstr ""
+msgstr "输出约束 %d 必须指定单个寄存器"
 
 #: reg-stack.c:632
 #, gcc-internal-format
@@ -13496,12 +13462,12 @@ msgstr "一句 %<asm%> 中操作数约束不一致"
 #: reload1.c:1217
 #, gcc-internal-format
 msgid "frame size too large for reliable stack checking"
-msgstr ""
+msgstr "对可靠的堆栈检查来说框架太大了"
 
 #: reload1.c:1220
 #, gcc-internal-format
 msgid "try reducing the number of local variables"
-msgstr ""
+msgstr "试图减少局部变量的数量"
 
 #: reload1.c:1871
 #, gcc-internal-format
@@ -13624,14 +13590,14 @@ msgid "PIC register %qs clobbered in %<asm%>"
 msgstr ""
 
 #: stmt.c:728
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "more than %d operands in %<asm%>"
-msgstr "不能用超过一种方式进行分割"
+msgstr "%<asm%> 中的操作数超过 %d 个"
 
 #: stmt.c:791
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "output number %d not directly addressable"
-msgstr "内存输入 %d 不可直接寻址"
+msgstr "输出数 %d 不可直接寻址"
 
 #: stmt.c:870
 #, gcc-internal-format
@@ -13679,9 +13645,9 @@ msgid "undefined named operand %qs"
 msgstr "未定义的有名操作数 %qs"
 
 #: stmt.c:1465
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Hvalue computed is not used"
-msgstr "下列过程中哪个不使用发酵？"
+msgstr "%H计算出的值未被使用"
 
 #: stor-layout.c:152
 #, gcc-internal-format
@@ -13699,19 +13665,19 @@ msgid "%Jsize of %qD is %d bytes"
 msgstr "%J%qD 大小为 %d 字节"
 
 #: stor-layout.c:460
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Jsize of %qD is larger than %d bytes"
-msgstr "%J%qD 返回值的大小为 %u 字节"
+msgstr "%J%qD 的大小超过 %d 字节"
 
 #: stor-layout.c:844
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Jpacked attribute causes inefficient alignment for %qD"
-msgstr "packed 属性导致 %qs 低效率的对齐"
+msgstr "%Jpacked 属性导致 %qD 低效率的对齐"
 
 #: stor-layout.c:847
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Jpacked attribute is unnecessary for %qD"
-msgstr "packed 属性对 %qs 来说是不需要的"
+msgstr "%Jpacked 属性对 %qD 来说是不需要的"
 
 #: stor-layout.c:863
 #, gcc-internal-format
@@ -13794,9 +13760,9 @@ msgid "%J%qF declared %<static%> but never defined"
 msgstr "%J%qF 声明为 %<static%> 却从未定义过"
 
 #: toplev.c:878
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%J%qD defined but not used"
-msgstr "%J标号 %qD 使用前未定义"
+msgstr "%J%qD 定义后未使用"
 
 #: toplev.c:901 toplev.c:924
 #, gcc-internal-format
@@ -13831,11 +13797,9 @@ msgid "invalid option %qs"
 msgstr "无效选项 %qs"
 
 #: toplev.c:1413
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can%'t open %s for writing: %m"
-msgstr ""
-"无法打开“%s”并写入：\n"
-"%s"
+msgstr "无法打开 %s 并写入：%m"
 
 #: toplev.c:1758
 #, gcc-internal-format
@@ -13963,9 +13927,9 @@ msgid "Invalid reference prefix."
 msgstr "无效的引用前缀"
 
 #: tree-cfg.c:3447
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Is not a valid GIMPLE statement."
-msgstr "“%s”不是有效的缩放比例\n"
+msgstr "不是一个有效的 GIMPLE 语句。"
 
 #: tree-cfg.c:3467
 #, gcc-internal-format
@@ -14050,12 +14014,12 @@ msgstr ""
 #: tree-cfg.c:3768
 #, gcc-internal-format
 msgid "%<then%> label does not match edge at end of bb %d\n"
-msgstr ""
+msgstr "%<then%> 标号在基本块 %d 结尾不匹配边\n"
 
 #: tree-cfg.c:3776
 #, gcc-internal-format
 msgid "%<else%> label does not match edge at end of bb %d\n"
-msgstr ""
+msgstr "%<else%> 标号在基本块 %d 结尾不匹配边\n"
 
 #: tree-cfg.c:3786
 #, gcc-internal-format
@@ -14152,14 +14116,14 @@ msgid "%Jfunction %qF can never be inlined because it uses __builtin_return or _
 msgstr "%J函数 %qF 无法被内联，因为使用了 __builtin_return 或 __builtin_apply_args"
 
 #: tree-inline.c:1048
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Jfunction %qF can never be inlined because it contains a computed goto"
-msgstr "%J函数 %qF 无法被内联，因为使用了非局部的 goto"
+msgstr "%J函数 %qF 无法被内联，因为包含一个运行时 goto"
 
 #: tree-inline.c:1062
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Jfunction %qF can never be inlined because it receives a non-local goto"
-msgstr "%J函数 %qF 无法被内联，因为使用了非局部的 goto"
+msgstr "%J函数 %qF 无法被内联，因为它接受一个非局部的 goto"
 
 #: tree-inline.c:1087
 #, gcc-internal-format
@@ -14169,7 +14133,7 @@ msgstr "%J函数 %qF 无法被内联，因为使用了变长变量"
 #: tree-inline.c:1575 tree-inline.c:1583
 #, gcc-internal-format
 msgid "%Jinlining failed in call to %qF: %s"
-msgstr ""
+msgstr "%J调用 %qF 时内联失败：%s"
 
 #: tree-inline.c:1576 tree-inline.c:1584
 #, gcc-internal-format
@@ -14249,9 +14213,9 @@ msgid "internal error"
 msgstr "内部错误"
 
 #: tree-ssa.c:113
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Expected an SSA_NAME object"
-msgstr "请输入 Gfig 对象名称"
+msgstr "需要一个 SSA_NAME 对象"
 
 #: tree-ssa.c:119
 #, gcc-internal-format
@@ -14281,7 +14245,7 @@ msgstr ""
 #: tree-ssa.c:175
 #, gcc-internal-format
 msgid "SSA_NAME_DEF_STMT is wrong"
-msgstr ""
+msgstr "SSA_NAME_DEF_STMT 不正确"
 
 #: tree-ssa.c:227
 #, gcc-internal-format
@@ -14491,7 +14455,7 @@ msgstr ""
 #: varasm.c:917
 #, gcc-internal-format
 msgid "%Jregister specified for %qD isn%'t suitable for data type"
-msgstr ""
+msgstr "%J为 %qD 指定的寄存器不适合此数据类型"
 
 #: varasm.c:927
 #, gcc-internal-format
@@ -14521,7 +14485,7 @@ msgstr "全局构造函数在此目标机上不受支持"
 #: varasm.c:1607
 #, gcc-internal-format
 msgid "%Jalignment of %qD is greater than maximum object file alignment.  Using %d"
-msgstr ""
+msgstr "%J%qD的对齐要求大于目标文件的最大对齐边界。使用 %d"
 
 #: varasm.c:1646
 #, gcc-internal-format
@@ -14579,9 +14543,9 @@ msgid "%J%qD aliased to undefined symbol %qE"
 msgstr "%J%qD 是未定义符号 %qE 的别名"
 
 #: varasm.c:4513
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%J%qD aliased to external symbol %qE"
-msgstr "%J%qD 是未定义符号 %qE 的别名"
+msgstr "%J%qD 是外部符号 %qE 的别名"
 
 #: varasm.c:4544
 #, gcc-internal-format
@@ -14626,9 +14590,9 @@ msgstr ""
 
 #: config/darwin-c.c:104 config/darwin-c.c:107 config/darwin-c.c:109
 #: config/darwin-c.c:111
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed '#pragma options', ignoring"
-msgstr "%<#pragma pack%> 格式错误 - 已忽略"
+msgstr "‘#pragma options’格式错误 - 已忽略"
 
 #: config/darwin-c.c:114
 #, gcc-internal-format
@@ -14666,9 +14630,9 @@ msgid "internal and protected visibility attributes not supported in this config
 msgstr "内部和保护的可见性属性在此配置下不受支持；已忽略"
 
 #: config/sol2-c.c:94 config/sol2-c.c:110
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed %<#pragma align%>, ignoring"
-msgstr "%<#pragma pack%> 格式错误 - 已忽略"
+msgstr "%<#pragma align%> 格式错误 - 已忽略"
 
 #: config/sol2-c.c:103
 #, gcc-internal-format
@@ -14691,9 +14655,9 @@ msgid "junk at end of %<#pragma align%>"
 msgstr ""
 
 #: config/sol2-c.c:158 config/sol2-c.c:165
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed %<#pragma init%>, ignoring"
-msgstr "%<#pragma pack%> 格式错误 - 已忽略"
+msgstr "%<#pragma init%> 格式错误 - 已忽略"
 
 #: config/sol2-c.c:188 config/sol2-c.c:200
 #, gcc-internal-format
@@ -14706,9 +14670,9 @@ msgid "junk at end of %<#pragma init%>"
 msgstr "%<#pragma init%> 末尾有垃圾字符"
 
 #: config/sol2-c.c:216 config/sol2-c.c:223
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed %<#pragma fini%>, ignoring"
-msgstr "%<#pragma pack%> 格式错误 - 已忽略"
+msgstr "%<#pragma fini%> 格式错误 - 已忽略"
 
 #: config/sol2-c.c:246 config/sol2-c.c:258
 #, gcc-internal-format
@@ -14741,9 +14705,9 @@ msgid "profiler support for WindISS"
 msgstr "对 WindISS 的取样支持"
 
 #: config/alpha/alpha.c:254
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-f%s ignored for Unicos/Mk (not supported)"
-msgstr "-mieee 在 Unicos/Mk 上不被支持"
+msgstr "-f%s 在 Unicos/Mk 上被忽略(不受支持)"
 
 #: config/alpha/alpha.c:278
 #, gcc-internal-format
@@ -14758,22 +14722,22 @@ msgstr "-mieee-with-inexact 在 Unicos/Mk 上不被支持"
 #: config/alpha/alpha.c:306
 #, gcc-internal-format
 msgid "bad value %qs for -mtrap-precision switch"
-msgstr ""
+msgstr "-mtrap-precision 开关的值 %qs 不正确"
 
 #: config/alpha/alpha.c:320
 #, gcc-internal-format
 msgid "bad value %qs for -mfp-rounding-mode switch"
-msgstr ""
+msgstr "-mfp-rounding-mode 开关的值 %qs 不正确"
 
 #: config/alpha/alpha.c:335
 #, gcc-internal-format
 msgid "bad value %qs for -mfp-trap-mode switch"
-msgstr ""
+msgstr "-mfp-trap-mode 开关的值 %qs 不正确"
 
 #: config/alpha/alpha.c:347 config/rs6000/rs6000.c:1729
 #, gcc-internal-format
 msgid "bad value %qs for -mtls-size switch"
-msgstr ""
+msgstr "-mtls-size 开关的值 %qs 不正确"
 
 #: config/alpha/alpha.c:366 config/alpha/alpha.c:378
 #, gcc-internal-format
@@ -14781,9 +14745,9 @@ msgid "bad value %qs for -mcpu switch"
 msgstr "-mcpu 开关的值 %qs 错误"
 
 #: config/alpha/alpha.c:385
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "trap mode not supported on Unicos/Mk"
-msgstr "-mieee-with-inexact 在 Unicos/Mk 上不被支持"
+msgstr "陷阱模式在 Unicos/Mk 上不被支持"
 
 #: config/alpha/alpha.c:392
 #, gcc-internal-format
@@ -14796,9 +14760,9 @@ msgid "rounding mode not supported for VAX floats"
 msgstr "舍入模式不为 VAX 浮点数所支持"
 
 #: config/alpha/alpha.c:413
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "trap mode not supported for VAX floats"
-msgstr "舍入模式不为 VAX 浮点数所支持"
+msgstr "陷阱模式不为 VAX 浮点数所支持"
 
 #: config/alpha/alpha.c:417
 #, gcc-internal-format
@@ -14811,9 +14775,9 @@ msgid "L%d cache latency unknown for %s"
 msgstr "L%d 缓存延迟未知，对 %s 来说"
 
 #: config/alpha/alpha.c:460
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value %qs for -mmemory-latency"
-msgstr "-mcpu 开关的值 %qs 错误"
+msgstr "-mmemory-latency 开关的值 %qs 错误"
 
 #: config/alpha/alpha.c:6034 config/alpha/alpha.c:6037 config/s390/s390.c:8023
 #: config/s390/s390.c:8026
@@ -14874,17 +14838,17 @@ msgstr ""
 #: config/arm/arm.c:961
 #, gcc-internal-format
 msgid "-mapcs-stack-check incompatible with -mno-apcs-frame"
-msgstr ""
+msgstr "-mapcs-stack-check 和 -mno-apcs-frame 互不兼容"
 
 #: config/arm/arm.c:969
 #, gcc-internal-format
 msgid "-fpic and -mapcs-reent are incompatible"
-msgstr ""
+msgstr "-fpic 和 -mapcs-reent 互不兼容"
 
 #: config/arm/arm.c:972
 #, gcc-internal-format
 msgid "APCS reentrant code not supported.  Ignored"
-msgstr ""
+msgstr "不支持 APCS 重入代码。已忽略"
 
 #: config/arm/arm.c:980
 #, gcc-internal-format
@@ -14934,7 +14898,7 @@ msgstr "-mfloat-abi=hard 和 VFP"
 #: config/arm/arm.c:1148
 #, gcc-internal-format
 msgid "structure size boundary can only be set to %s"
-msgstr ""
+msgstr "结构大小边界只能被设定为 %s"
 
 #: config/arm/arm.c:1157
 #, gcc-internal-format
@@ -15007,12 +14971,12 @@ msgstr ""
 #: config/avr/avr.c:4693
 #, gcc-internal-format
 msgid "`%s' appears to be a misspelled interrupt handler"
-msgstr ""
+msgstr "‘%s’似乎是一个拼写错的中断处理者"
 
 #: config/avr/avr.c:4701
 #, gcc-internal-format
 msgid "`%s' appears to be a misspelled signal handler"
-msgstr ""
+msgstr "‘%s’似乎是一个拼写错的信号处理者"
 
 #: config/avr/avr.c:4770
 #, fuzzy, gcc-internal-format
@@ -15025,9 +14989,9 @@ msgid "MCU %qs supported for assembler only"
 msgstr "MCU %qs 只支持汇编器"
 
 #: config/avr/avr.h:766
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "trampolines not supported"
-msgstr "国家不支持。"
+msgstr "不支持蹦床"
 
 #: config/bfin/bfin.c:1728 config/m68k/m68k.c:216
 #, gcc-internal-format
@@ -15082,7 +15046,7 @@ msgstr "未知的 CPU 版本 %d，使用 40。\n"
 #: config/c4x/c4x.c:874
 #, gcc-internal-format
 msgid "ISR %s requires %d words of local vars, max is 32767"
-msgstr ""
+msgstr "ISR %s 需要 %d 字大小的局部变量，最大值为 32767"
 
 #: config/cris/cris.c:945
 #, gcc-internal-format
@@ -15092,7 +15056,7 @@ msgstr "堆栈框架太大：%d 字节"
 #: config/cris/cris.c:1256
 #, gcc-internal-format
 msgid "allocated but unused delay list in epilogue"
-msgstr ""
+msgstr "尾声中已分配但未使用的延迟列表"
 
 #: config/cris/cris.c:1266
 #, gcc-internal-format
@@ -15100,9 +15064,9 @@ msgid "unexpected function type needing stack adjustment for __builtin_eh_return
 msgstr ""
 
 #: config/cris/cris.c:1584
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "internal error: bad register: %d"
-msgstr "内部错误 - bad unget"
+msgstr "内部错误：错误的寄存器：%dt"
 
 #: config/cris/cris.c:2048
 #, gcc-internal-format
@@ -15118,17 +15082,17 @@ msgstr ""
 #: config/cris/cris.c:2622
 #, gcc-internal-format
 msgid "-max-stackframe=%d is not usable, not between 0 and %d"
-msgstr ""
+msgstr "-max-stackframe=%d 不可用，不在 0 和 %d 之间"
 
 #: config/cris/cris.c:2650
 #, gcc-internal-format
 msgid "unknown CRIS version specification in -march= or -mcpu= : %s"
-msgstr ""
+msgstr "-march= 或 -mcpu= 中未知的 CRIS CPU 版本设定：%s"
 
 #: config/cris/cris.c:2686
 #, gcc-internal-format
 msgid "unknown CRIS cpu version specification in -mtune= : %s"
-msgstr ""
+msgstr "-mtune= 中未知的 CRIS CPU 版本设定：%s"
 
 #: config/cris/cris.c:2704
 #, gcc-internal-format
@@ -15159,7 +15123,7 @@ msgstr "未知的 cpu：-mcpu=%s"
 #: config/frv/frv.c:9774
 #, gcc-internal-format
 msgid "accumulator is not a constant integer"
-msgstr ""
+msgstr "累加数不是一个整常量"
 
 #: config/frv/frv.c:9779
 #, fuzzy, gcc-internal-format
@@ -15172,14 +15136,14 @@ msgid "inappropriate accumulator for %qs"
 msgstr "(靠近 %qs 的初始化)"
 
 #: config/frv/frv.c:9856
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid IACC argument"
-msgstr "无效的参数值"
+msgstr "无效的 IACC 实参"
 
 #: config/frv/frv.c:9879
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs expects a constant argument"
-msgstr "%qs 属性需要一个整常量作为实参"
+msgstr "%qs 需要一个常量实参"
 
 #: config/frv/frv.c:9884
 #, gcc-internal-format
@@ -15232,9 +15196,9 @@ msgid "can't extend PCH file: %m"
 msgstr "无法扩展 PCH 文件：%m"
 
 #: config/i386/host-cygwin.c:76
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "can't set position in PCH file: %m"
-msgstr "不能在 PCH 文件中找到位置：%m"
+msgstr "不能在 PCH 文件中设定位置：%m"
 
 #: config/i386/i386.c:1242
 #, gcc-internal-format
@@ -15282,9 +15246,9 @@ msgid "bad value (%s) for -mtune= switch"
 msgstr "-mtune= 所带参数(%s)不正确"
 
 #: config/i386/i386.c:1359
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mregparm=%d is not between 0 and %d"
-msgstr "-malign-loops=%d 不在 0 和 %d 之间"
+msgstr "-mregparm=%d 不在 0 和 %d 之间"
 
 #: config/i386/i386.c:1372
 #, gcc-internal-format
@@ -15302,19 +15266,19 @@ msgid "-malign-jumps is obsolete, use -falign-jumps"
 msgstr "-malign-jumps 已经过时，请使用 -falign-jumps"
 
 #: config/i386/i386.c:1398
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-malign-functions is obsolete, use -falign-functions"
-msgstr "-malign-loops 已经过时，请使用 -falign-loops"
+msgstr "-malign-functions 已过时，请使用 -falign-functions"
 
 #: config/i386/i386.c:1436
 #, gcc-internal-format
 msgid "-mpreferred-stack-boundary=%d is not between %d and 12"
-msgstr ""
+msgstr "-mpreferred-stack-boundary=%d 不在 %d 和 12 之间"
 
 #: config/i386/i386.c:1448
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mbranch-cost=%d is not between 0 and 5"
-msgstr "-malign-loops=%d 不在 0 和 %d 之间"
+msgstr "-mbranch-cost=%d 不在 0 和 5 之间"
 
 #: config/i386/i386.c:1460
 #, gcc-internal-format
@@ -15342,9 +15306,9 @@ msgid "387 instruction set disabled, using SSE arithmetics"
 msgstr "387 指令集已禁用，使用 SSE 指令"
 
 #: config/i386/i386.c:1561
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value (%s) for -mfpmath= switch"
-msgstr "-march= 所带参数(%s)不正确"
+msgstr "-mfpmath= 开关的值(%s)错误"
 
 #: config/i386/i386.c:1714 config/i386/i386.c:1725
 #, gcc-internal-format
@@ -15412,29 +15376,29 @@ msgid "shift must be an immediate"
 msgstr "偏移值必须是立即数"
 
 #: config/i386/i386.c:15744
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs incompatible attribute ignored"
-msgstr "%qE 属性在类型上被忽略"
+msgstr "%qs 忽略不兼容的属性"
 
 #: config/i386/winnt.c:74
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs attribute only applies to variables"
-msgstr "属性 %qs 只对函数类型起作用"
+msgstr "%qs 属性只能为变量使用"
 
 #: config/i386/winnt.c:172
 #, gcc-internal-format
 msgid "%Jfunction '%D' is defined after prior declaration as dllimport: attribute ignored"
-msgstr ""
+msgstr "%J函数‘%D’在定义前被声明为 dllimport：忽略此属性"
 
 #: config/i386/winnt.c:183
 #, gcc-internal-format
 msgid "%Jinline function '%D' is declared as dllimport: attribute ignored."
-msgstr ""
+msgstr "%J内联函数‘%D’声明为 dllimport：忽略此属性。"
 
 #: config/i386/winnt.c:195
 #, gcc-internal-format
 msgid "%Jdefinition of static data member '%D' of dllimport'd class."
-msgstr ""
+msgstr "%J为 dllimport 类定义了静态数据成员‘%D’。"
 
 #: config/i386/winnt.c:255
 #, gcc-internal-format
@@ -15444,17 +15408,17 @@ msgstr "%J‘%D’的 dll 链接不一致，假定为 dllexport。"
 #: config/i386/winnt.c:299 config/sh/symbian.c:279
 #, gcc-internal-format
 msgid "%qs declared as both exported to and imported from a DLL"
-msgstr ""
+msgstr "%qs 既被声明从 DLL 中导出的又被声明为自 DLL 中导入的"
 
 #: config/i386/winnt.c:308
 #, gcc-internal-format
 msgid "%Jfailure in redeclaration of '%D': dllimport'd symbol lacks external linkage."
-msgstr ""
+msgstr "%J无法重声明‘%D’：dllimport 符号没有外部链接。"
 
 #: config/i386/winnt.c:447
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%J'%D' defined locally after being referenced with dllimport linkage"
-msgstr "%J‘%D’重声明时没有 dllimport 属性，但已被作为 dllimport 链接引用过"
+msgstr "%J‘%D’定义为局部变量，但已被作为 dllimport 链接引用过"
 
 #: config/i386/winnt.c:450
 #, gcc-internal-format
@@ -15472,9 +15436,9 @@ msgid "-f%s ignored for target (all code is position independent)"
 msgstr "-f%s 在目标机上被忽略(所有代码都是与位置无关的)"
 
 #: config/i386/djgpp.h:191
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mbnu210 is ignored (option is obsolete)"
-msgstr "“-LIST” 选项已过时；请使用 “-t LIST”"
+msgstr "-mbnu210 被忽略(选项已过时)"
 
 #: config/i386/i386-interix.h:257
 #, gcc-internal-format
@@ -15487,14 +15451,14 @@ msgid "malformed #pragma builtin"
 msgstr "%<#pragma align%> 格式错误"
 
 #: config/ia64/ia64.c:496 config/m32r/m32r.c:360
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid argument of %qs attribute"
-msgstr "无效的选项参数 %qs"
+msgstr "属性 %qs 的参数无效"
 
 #: config/ia64/ia64.c:508
 #, gcc-internal-format
 msgid "%Jan address area attribute cannot be specified for local variables"
-msgstr ""
+msgstr "%J不能为局部变量指定地址区域属性"
 
 #: config/ia64/ia64.c:515
 #, fuzzy, gcc-internal-format
@@ -15537,17 +15501,17 @@ msgid "not yet implemented: latency-optimized inline square root"
 msgstr "尚未实现：最小延迟优化的内联平方根运算"
 
 #: config/ia64/ia64.c:4813
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value (%s) for -mtls-size= switch"
-msgstr "为 -mtls-dialect= 开关指定了错误的值(%s)"
+msgstr "-mtls-size= 开关的值(%s)无效"
 
 #: config/ia64/ia64.c:4829
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value (%s) for -tune= switch"
-msgstr "-march= 所带参数(%s)不正确"
+msgstr "-tune 开关的值(%s)无效"
 
 #: config/iq2000/iq2000.c:1649
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value (%s) for -mcpu= switch"
 msgstr "-mcpu 开关的值(%s)无效"
 
@@ -15562,19 +15526,19 @@ msgid "gp_offset (%ld) or end_offset (%ld) is less than zero."
 msgstr ""
 
 #: config/iq2000/iq2000.c:2847
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument %qd is not a constant"
-msgstr "要求的对齐边界不是常数"
+msgstr "实参 %qd 不是一个常数"
 
 #: config/iq2000/iq2000.c:3150 config/xtensa/xtensa.c:2033
 #, gcc-internal-format
 msgid "PRINT_OPERAND_ADDRESS, null pointer"
-msgstr ""
+msgstr "PRINT_OPERAND_ADDRESS，空指针"
 
 #: config/iq2000/iq2000.c:3305
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "PRINT_OPERAND: Unknown punctuation '%c'"
-msgstr "c4x_print_operand：%%L 不一致"
+msgstr "PRINT_OPERAND：未知的标点‘%c’"
 
 #: config/iq2000/iq2000.c:3314 config/mips/mips.c:4836
 #: config/xtensa/xtensa.c:1887
@@ -15583,19 +15547,19 @@ msgid "PRINT_OPERAND null pointer"
 msgstr "c4x_print_operand：%%L 不一致"
 
 #: config/m32r/m32r.c:178
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value (%s) for -mmodel switch"
-msgstr "-march= 所带参数(%s)不正确"
+msgstr "-mmodel 开关的值(%s)无效"
 
 #: config/m32r/m32r.c:187
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value (%s) for -msdata switch"
-msgstr "-march= 所带参数(%s)不正确"
+msgstr "-msdata 开关的值(%s)无效"
 
 #: config/m32r/m32r.c:194
 #, gcc-internal-format
 msgid "bad value (%s) for -flush-trap=n (0=<n<=15)"
-msgstr ""
+msgstr "-flush-trap=n 值错误(%s)(0=<n<=15)"
 
 #: config/m68hc11/m68hc11.c:293
 #, gcc-internal-format
@@ -15605,14 +15569,12 @@ msgstr "-f%s 为 68HC11/68HC12 忽略(不受支持)"
 #: config/m68hc11/m68hc11.c:1444
 #, gcc-internal-format
 msgid "%<trap%> and %<far%> attributes are not compatible, ignoring %<far%>"
-msgstr ""
+msgstr "%<trap%> 和 %<far%> 属性互不兼容，忽略 %<far%>"
 
 #: config/m68hc11/m68hc11.c:1450
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<trap%> attribute is already used"
-msgstr ""
-"快捷键“%s”已经用于：\n"
-"“%s”\n"
+msgstr "已经使用了 %<trap%> 属性"
 
 #: config/m68k/m68k.c:233
 #, gcc-internal-format
@@ -15630,14 +15592,14 @@ msgid "stack limit expression is not supported"
 msgstr ""
 
 #: config/mcore/mcore.c:2992
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid option %<-mstack-increment=%s%>"
-msgstr "无效的行号增量：“%s”"
+msgstr "选项 %<-mstack-increment=%s%> 无效"
 
 #: config/mips/mips.c:4026
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value (%s) for -mabi= switch"
-msgstr "-march= 所带参数(%s)不正确"
+msgstr "-mabi= 开关的值(%s)不正确"
 
 #: config/mips/mips.c:4049
 #, gcc-internal-format
@@ -15676,9 +15638,9 @@ msgid "-mint64 is a deprecated option"
 msgstr "-mint64 选项已过时"
 
 #: config/mips/mips.c:4140
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unrecognized option %<-mfix-vr4130%s%>"
-msgstr "无法识别的 gcc 调试选项：%c"
+msgstr "无法识别的选项 %<-mfix-vr4130%s%>"
 
 #: config/mips/mips.c:4191
 #, gcc-internal-format
@@ -15688,52 +15650,52 @@ msgstr ""
 #: config/mips/mips.c:4208
 #, gcc-internal-format
 msgid "-G is incompatible with PIC code which is the default"
-msgstr ""
+msgstr "-G 与默认生成的 PIC 代码不兼容"
 
 #: config/mips/mips.c:4275
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mips3d requires -mpaired-single"
-msgstr "(match-all) 需要一个布尔结果"
+msgstr "-mips3d 需要 -mpaired-single"
 
 #: config/mips/mips.c:4284
 #, gcc-internal-format
 msgid "-mips3d/-mpaired-single must be used with -mfp64 -mhard-float"
-msgstr ""
+msgstr "-mips3d/-mpaired-single 必须与 -mfp64 -mhard-float 一起使用"
 
 #: config/mips/mips.c:4289
 #, gcc-internal-format
 msgid "-mips3d/-mpaired-single must be used with -mips64"
-msgstr ""
+msgstr "-mips3d/-mpaired-single 必须与 -mips64 一起使用"
 
 #: config/mips/mips.c:4773
 #, gcc-internal-format
 msgid "internal error: %%) found without a %%( in assembler pattern"
-msgstr ""
+msgstr "内部错误：未找到汇编器形式的 %%( 与已有的 %%) 匹配"
 
 #: config/mips/mips.c:4787
 #, gcc-internal-format
 msgid "internal error: %%] found without a %%[ in assembler pattern"
-msgstr ""
+msgstr "内部错误：未找到汇编器形式的 %%[ 与已有的 %%] 匹配"
 
 #: config/mips/mips.c:4800
 #, gcc-internal-format
 msgid "internal error: %%> found without a %%< in assembler pattern"
-msgstr ""
+msgstr "内部错误：未找到汇编器形式的 %%< 与已有的 %%> 匹配"
 
 #: config/mips/mips.c:4813
 #, gcc-internal-format
 msgid "internal error: %%} found without a %%{ in assembler pattern"
-msgstr ""
+msgstr "内部错误：未找到汇编器形式的 %%{ 与已有的 %%} 匹配"
 
 #: config/mips/mips.c:4827
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "PRINT_OPERAND: unknown punctuation '%c'"
-msgstr "c4x_print_operand：%%L 不一致"
+msgstr "PRINT_OPERAND：未知的标点‘%c’"
 
 #: config/mips/mips.c:7587
 #, gcc-internal-format
 msgid "cannot handle inconsistent calls to %qs"
-msgstr ""
+msgstr "无法处理对 %qs 不一致的调用"
 
 #: config/mips/mips.c:8987
 #, gcc-internal-format
@@ -15741,16 +15703,16 @@ msgid "the cpu name must be lower case"
 msgstr "cpu 名必须是小写"
 
 #: config/mips/mips.c:9009
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bad value (%s) for %s"
-msgstr "-march= 所带参数(%s)不正确"
+msgstr "值(%s)错误，对 %s 而言"
 
 #. Output assembler code to FILE to increment profiler label # LABELNO
 #. for profiling a function entry.
 #: config/mips/mips.h:2334
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "mips16 function profiling"
-msgstr "调试及性能测试"
+msgstr "mips16 函数取样"
 
 #: config/mmix/mmix.c:229
 #, gcc-internal-format
@@ -15775,33 +15737,33 @@ msgstr "对 MMIX 的 function_profiler 支持"
 #: config/mmix/mmix.c:863
 #, gcc-internal-format
 msgid "MMIX Internal: Last named vararg would not fit in a register"
-msgstr ""
+msgstr "MMIX 内部错误：最后一个有名的不定参数无法放入寄存器中"
 
 #: config/mmix/mmix.c:1479 config/mmix/mmix.c:1503 config/mmix/mmix.c:1619
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "MMIX Internal: Bad register: %d"
-msgstr "前置自增中使用了错误的寄存器"
+msgstr "MMIX 内部错误：错误的寄存器：%d"
 
 #. Presumably there's a missing case above if we get here.
 #: config/mmix/mmix.c:1611
 #, gcc-internal-format
 msgid "MMIX Internal: Missing %qc case in mmix_print_operand"
-msgstr ""
+msgstr "MMIX 内部错误：mmix_print_operand 缺少 %qc 类型"
 
 #: config/mmix/mmix.c:1897
 #, gcc-internal-format
 msgid "stack frame not a multiple of 8 bytes: %d"
-msgstr ""
+msgstr "堆栈框架大小不是 8 字节的倍数：%d"
 
 #: config/mmix/mmix.c:2133
 #, gcc-internal-format
 msgid "stack frame not a multiple of octabyte: %d"
-msgstr ""
+msgstr "堆栈框架大小不是 8 字节的倍数：%d"
 
 #: config/mmix/mmix.c:2606 config/mmix/mmix.c:2670
 #, gcc-internal-format
 msgid "MMIX Internal: %s is not a shiftable int"
-msgstr ""
+msgstr "MMIX 内部错误：%s 不是一个可移位的整数"
 
 #: config/pa/pa.c:418
 #, gcc-internal-format
@@ -15889,14 +15851,14 @@ msgid "Segmentation Fault"
 msgstr "段错误"
 
 #: config/rs6000/host-darwin.c:131
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "While setting up signal stack: %m"
-msgstr "%s：设置 %s 信号处理器出错：%s"
+msgstr "当设定信号栈时：%m"
 
 #: config/rs6000/host-darwin.c:137
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "While setting up signal handler: %m"
-msgstr "%s：设置 %s 信号处理器出错：%s"
+msgstr "当设置信号处理者时：%m"
 
 #: config/rs6000/host-darwin.c:181
 #, gcc-internal-format
@@ -15913,9 +15875,9 @@ msgstr ""
 #. whether or not new function declarations receive a longcall
 #. attribute by default.
 #: config/rs6000/rs6000-c.c:46
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "ignoring malformed #pragma longcall"
-msgstr "%<#pragma pack%> 格式错误 - 已忽略"
+msgstr "忽略格式错误的 #pragma longcall"
 
 #: config/rs6000/rs6000-c.c:59
 #, gcc-internal-format
@@ -15998,9 +15960,9 @@ msgid "unknown ABI specified: '%s'"
 msgstr "指定了未知的 ABI：‘%s’"
 
 #: config/rs6000/rs6000.c:1688
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid option for -mfloat-gprs"
-msgstr "%s：--view 选项的参数无效：%s！\n"
+msgstr "-mfloat-gprs 的选项无效"
 
 #: config/rs6000/rs6000.c:1704
 #, gcc-internal-format
@@ -16043,9 +16005,9 @@ msgid "argument 2 must be a 5-bit unsigned literal"
 msgstr "实参 2 必须是一个 5 位无符号字面值"
 
 #: config/rs6000/rs6000.c:6995
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument 1 of __builtin_altivec_predicate must be a constant"
-msgstr "%<__builtin_args_info%> 的实参必须是常量"
+msgstr "__builtin_altivec_predicate 的第一个实参必须是常量"
 
 #: config/rs6000/rs6000.c:7049
 #, gcc-internal-format
@@ -16053,19 +16015,19 @@ msgid "argument 1 of __builtin_altivec_predicate is out of range"
 msgstr ""
 
 #: config/rs6000/rs6000.c:7211
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument 3 must be a 4-bit unsigned literal"
-msgstr "实参 2 必须是一个 5 位无符号字面值"
+msgstr "实参 3 必须是一个 4 位无符号字面值"
 
 #: config/rs6000/rs6000.c:7383
 #, gcc-internal-format
 msgid "argument to %qs must be a 2-bit unsigned literal"
-msgstr ""
+msgstr "%qs 的实参必须是一个 2 位无符号字面常量"
 
 #: config/rs6000/rs6000.c:7496
 #, gcc-internal-format
 msgid "argument to dss must be a 2-bit unsigned literal"
-msgstr ""
+msgstr "dss 的实参必须是一个 2 位无符号字面常量"
 
 #: config/rs6000/rs6000.c:7511
 #, gcc-internal-format
@@ -16073,9 +16035,9 @@ msgid "invalid parameter combination for %qs AltiVec intrinsic"
 msgstr ""
 
 #: config/rs6000/rs6000.c:7745
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "argument 1 of __builtin_spe_predicate must be a constant"
-msgstr "%<__builtin_args_info%> 的实参必须是常量"
+msgstr "__builtin_spe_predicate 的第一个实参必须是常量"
 
 #: config/rs6000/rs6000.c:7818
 #, gcc-internal-format
@@ -16090,7 +16052,7 @@ msgstr "堆栈框架太大"
 #: config/rs6000/rs6000.c:16217
 #, gcc-internal-format
 msgid "no profiling of 64-bit code for this ABI"
-msgstr ""
+msgstr "此 ABI 不支持取样 64 位代码"
 
 #: config/rs6000/rs6000.c:17307
 #, gcc-internal-format
@@ -16130,12 +16092,12 @@ msgstr "在 AltiVec 类型中使用 %<complex%> 无效"
 #: config/rs6000/aix43.h:49 config/rs6000/aix51.h:48 config/rs6000/aix52.h:48
 #, gcc-internal-format
 msgid "-maix64 and POWER architecture are incompatible"
-msgstr ""
+msgstr "-maix64 和 POWER 架构互不兼容"
 
 #: config/rs6000/aix43.h:54 config/rs6000/aix51.h:53 config/rs6000/aix52.h:53
 #, gcc-internal-format
 msgid "-maix64 requires PowerPC64 architecture remain enabled"
-msgstr ""
+msgstr "-maix64 需要 PowerPC64 架构被启用"
 
 #: config/rs6000/aix43.h:58 config/rs6000/aix51.h:57 config/rs6000/aix52.h:57
 #, gcc-internal-format
@@ -16147,7 +16109,7 @@ msgstr "需要 -maix64：目前尚不支持 64 位计算和 32 位寻址混用"
 #: config/rs6000/darwin.h:89
 #, gcc-internal-format
 msgid "-mdynamic-no-pic overrides -fpic or -fPIC"
-msgstr ""
+msgstr "-mdynamic-no-pic 覆盖了 -fpic 或 -fPIC"
 
 #. Darwin doesn't support -fpic.
 #: config/rs6000/darwin.h:95
@@ -16209,9 +16171,9 @@ msgid "bad value for -msdata=%s"
 msgstr "-msdata=%s 值不正确"
 
 #: config/rs6000/sysv4.h:252
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mrelocatable and -msdata=%s are incompatible"
-msgstr "-fPIC 与 -mcall-%s 互不兼容"
+msgstr "-mrelocatable 与 -msdata=%s 互不兼容"
 
 #: config/rs6000/sysv4.h:261
 #, gcc-internal-format
@@ -16219,19 +16181,19 @@ msgid "-f%s and -msdata=%s are incompatible"
 msgstr "-f%s 和 -msdata=%s 互不兼容"
 
 #: config/rs6000/sysv4.h:270
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-msdata=%s and -mcall-%s are incompatible"
-msgstr "-fPIC 与 -mcall-%s 互不兼容"
+msgstr "-msdata=%s 与 -mcall-%s 互不兼容"
 
 #: config/rs6000/sysv4.h:279
 #, gcc-internal-format
 msgid "-mrelocatable and -mno-minimal-toc are incompatible"
-msgstr ""
+msgstr "-mrelocatable 和 -mno-minimal-toc 互不兼容"
 
 #: config/rs6000/sysv4.h:285
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "-mrelocatable and -mcall-%s are incompatible"
-msgstr "-fPIC 与 -mcall-%s 互不兼容"
+msgstr "-mrelocatable 与 -mcall-%s 互不兼容"
 
 #: config/rs6000/sysv4.h:292
 #, gcc-internal-format
@@ -16274,14 +16236,14 @@ msgid "-mbackchain -mpacked-stack -mhard-float are not supported in combination.
 msgstr "-mbackchain -mpacked-stack -mhard-float 一起使用不受支持"
 
 #: config/s390/s390.c:1450
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid value for -mwarn-framesize"
-msgstr "%2$s 的值“%1$ld”无效"
+msgstr "-mwarn-framesize 值无效"
 
 #: config/s390/s390.c:1460
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid value for -mstack-size"
-msgstr "%2$s 的值“%1$ld”无效"
+msgstr "-mstack-size 值无效"
 
 #: config/s390/s390.c:1463
 #, gcc-internal-format
@@ -16289,34 +16251,34 @@ msgid "stack size must be an exact power of 2"
 msgstr "栈大小必须刚好是 2 的某次方"
 
 #: config/s390/s390.c:1469
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid value for -mstack-guard"
-msgstr "%2$s 的值“%1$ld”无效"
+msgstr "-mstack-guard 值无效"
 
 #: config/s390/s390.c:1472
 #, gcc-internal-format
 msgid "stack size must be greater than the stack guard value"
-msgstr ""
+msgstr "栈大小必须大于栈防护值"
 
 #: config/s390/s390.c:1475
 #, gcc-internal-format
 msgid "stack guard value must be an exact power of 2"
-msgstr ""
+msgstr "栈防护值必须是 2 的整数次方"
 
 #: config/s390/s390.c:1478
 #, gcc-internal-format
 msgid "-mstack-size implies use of -mstack-guard"
-msgstr ""
+msgstr "-mstack-size 意味着使用 -mstack-guard"
 
 #: config/s390/s390.c:1482
 #, gcc-internal-format
 msgid "-mstack-guard implies use of -mstack-size"
-msgstr ""
+msgstr "-mstack-guard 意味着使用 -mstack-size"
 
 #: config/s390/s390.c:6542
 #, gcc-internal-format
 msgid "Total size of local variables exceeds architecture limit."
-msgstr ""
+msgstr "局部变量大小总和超过架构极限。"
 
 #: config/s390/s390.c:7078
 #, gcc-internal-format
@@ -16331,7 +16293,7 @@ msgstr " 字节"
 #: config/s390/s390.c:7082
 #, gcc-internal-format
 msgid "%qs uses dynamic stack allocation"
-msgstr ""
+msgstr "%qs 使用动态栈分配"
 
 #: config/sh/sh.c:6201
 #, gcc-internal-format
@@ -16341,7 +16303,7 @@ msgstr "__builtin_saveregs 在此子目标上不受支持"
 #: config/sh/sh.c:7194
 #, gcc-internal-format
 msgid "attribute interrupt_handler is not compatible with -m5-compact"
-msgstr ""
+msgstr "属性 interrupt_handler 与 -m5-compact 不兼容"
 
 #. The sp_switch attribute only has meaning for interrupt functions.
 #. The trap_exit attribute only has meaning for interrupt functions.
@@ -16352,45 +16314,45 @@ msgstr "%qs 属性只能应用到中断函数上"
 
 #. The argument must be a constant string.
 #: config/sh/sh.c:7223
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs attribute argument not a string constant"
-msgstr "%qs 属性需要一个整常量作为实参"
+msgstr "%qs 属性的参数不是一个字符串常量"
 
 #. The argument must be a constant integer.
 #: config/sh/sh.c:7258
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs attribute argument not an integer constant"
-msgstr "%qs 属性需要一个整常量作为实参"
+msgstr "%qs 属性的参数不是一个整型常量"
 
 #: config/sh/symbian.c:147
 #, gcc-internal-format
 msgid "%H function '%D' is defined after prior declaration as dllimport: attribute ignored"
-msgstr ""
+msgstr "%H 函数‘%D’在定义前被声明为 dllimport：忽略此属性"
 
 #: config/sh/symbian.c:158
 #, gcc-internal-format
 msgid "%Hinline function '%D' is declared as dllimport: attribute ignored."
-msgstr ""
+msgstr "%H内联函数‘%D’声明为 dllimport：忽略此属性。"
 
 #: config/sh/symbian.c:171
 #, gcc-internal-format
 msgid "%Hdefinition of static data member '%D' of dllimport'd class."
-msgstr ""
+msgstr "%H为 dllimport 类定义了静态数据成员‘%D’。"
 
 #: config/sh/symbian.c:286
 #, gcc-internal-format
 msgid "%Hfailure in redeclaration of '%D': dllimport'd symbol lacks external linkage."
-msgstr ""
+msgstr "%H无法重声明‘%D’：dllimport 符号没有外部链接。"
 
 #: config/sh/symbian.c:332
 #, gcc-internal-format
 msgid "%H%s '%D' %s after being referenced with dllimport linkage."
-msgstr ""
+msgstr "%H%s‘%D’%s 已被作为 dllimport 链接引用过。"
 
 #: config/sh/symbian.c:436
 #, gcc-internal-format
 msgid "%Hvariable %qD definition is marked dllimport."
-msgstr ""
+msgstr "%H变量 %qD 的定义被标记为 dllimport。"
 
 #: config/sh/symbian.c:511
 #, gcc-internal-format
@@ -16431,34 +16393,34 @@ msgid "Constant halfword load operand out of range."
 msgstr ""
 
 #: config/stormy16/stormy16.c:538
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Constant arithmetic operand out of range."
-msgstr "常量实参超过 %qs 的范围"
+msgstr "常量算术超过范围"
 
 #: config/stormy16/stormy16.c:1224
 #, gcc-internal-format
 msgid "Local variable memory requirements exceed capacity."
-msgstr ""
+msgstr "局部变量内存需求超过容量限制。"
 
 #: config/stormy16/stormy16.c:1390
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "function_profiler support"
-msgstr "对 MMIX 的 function_profiler 支持"
+msgstr "function_profiler 支持"
 
 #: config/stormy16/stormy16.c:1479
 #, gcc-internal-format
 msgid "cannot use va_start in interrupt function"
-msgstr ""
+msgstr "不能为中断函数使用 va_start"
 
 #: config/stormy16/stormy16.c:2052
 #, gcc-internal-format
 msgid "switch statement of size %lu entries too large"
-msgstr ""
+msgstr "switch 语句太大(%lu 个条目)"
 
 #: config/stormy16/stormy16.c:2434
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<__BELOW100__%> attribute only applies to variables"
-msgstr "属性 %qs 只对函数类型起作用"
+msgstr "属性 %<__BELOW100__%> 只对变量类型起作用"
 
 #: config/stormy16/stormy16.c:2441
 #, gcc-internal-format
@@ -16478,12 +16440,12 @@ msgstr ""
 #: config/v850/v850-c.c:94
 #, gcc-internal-format
 msgid "cannot set interrupt attribute: no current function"
-msgstr ""
+msgstr "无法设定中断属性：没有当前函数"
 
 #: config/v850/v850-c.c:102
 #, gcc-internal-format
 msgid "cannot set interrupt attribute: no such identifier"
-msgstr ""
+msgstr "无法设定中断属性：没有这个标识符"
 
 #: config/v850/v850-c.c:147
 #, gcc-internal-format
@@ -16496,9 +16458,9 @@ msgid "unrecognized section name \"%s\""
 msgstr "未知的节名“%s”"
 
 #: config/v850/v850-c.c:179
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "malformed #pragma ghs section"
-msgstr "%<#pragma pack%> 格式错误 - 已忽略"
+msgstr "格式错误的 #pragma ghs section"
 
 #: config/v850/v850-c.c:198
 #, gcc-internal-format
@@ -16536,9 +16498,9 @@ msgid "junk at end of #pragma ghs endzda"
 msgstr "#pragma ghs endzda 末尾有垃圾字符"
 
 #: config/v850/v850.c:168
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s=%s is not numeric"
-msgstr "%1 不是文件。"
+msgstr "%s=%s 不是数字"
 
 #: config/v850/v850.c:175
 #, gcc-internal-format
@@ -16548,12 +16510,12 @@ msgstr "%s=%s 太大"
 #: config/v850/v850.c:2246
 #, gcc-internal-format
 msgid "%Jdata area attributes cannot be specified for local variables"
-msgstr ""
+msgstr "%J不能为局部变量指定数据区域属性"
 
 #: config/v850/v850.c:2257
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Jdata area of '%D' conflicts with previous declaration"
-msgstr "%J%qD 所属节与先前的声明冲突"
+msgstr "%J‘%D’的数据区域与先前的声明冲突"
 
 #: config/v850/v850.c:2456
 #, fuzzy, gcc-internal-format
@@ -16621,9 +16583,9 @@ msgid "%<-gnat%> misspelled as %<-gant%>"
 msgstr "%<-gnat%> 被错误地拼写为 %<-gant%>"
 
 #: cp/call.c:288
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unable to call pointer to member function here"
-msgstr "必须用 %<.*%> or %<->*%> 调用 <%E (...)%> 中的成员函数指针"
+msgstr "无法在这里调用函数成员指针"
 
 #: cp/call.c:2376
 #, gcc-internal-format
@@ -16646,9 +16608,9 @@ msgid "%s %T <conversion>"
 msgstr "%s %T <转换>"
 
 #: cp/call.c:2391
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%J%s %+#D <near match>"
-msgstr "匹配选中内容(&M)"
+msgstr "%J%s %+#D <就近匹配>"
 
 #: cp/call.c:2393
 #, gcc-internal-format
@@ -16666,9 +16628,9 @@ msgid "no matching function for call to %<%D(%A)%>"
 msgstr "对 %<%D(%A)%> 的调用没有匹配的函数"
 
 #: cp/call.c:2770 cp/call.c:2828
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "call of overloaded %<%D(%A)%> is ambiguous"
-msgstr "的文件格式"
+msgstr "调用重载的 %<%D(%A)%> 有歧义"
 
 #. It's no good looking for an overloaded operator() on a
 #. pointer-to-member-function.
@@ -16678,9 +16640,9 @@ msgid "pointer-to-member function %E cannot be called without an object; conside
 msgstr ""
 
 #: cp/call.c:2965
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "no match for call to %<(%T) (%A)%>"
-msgstr "对 %<%D(%A)%> 的调用没有匹配的函数"
+msgstr "对 %<(%T) (%A)%> 的调用没有匹配"
 
 #: cp/call.c:2974
 #, gcc-internal-format
@@ -16790,7 +16752,7 @@ msgstr "实参 %qD 与原型不符"
 #: cp/call.c:4163
 #, gcc-internal-format
 msgid "passing NULL to non-pointer argument %P of %qD"
-msgstr ""
+msgstr "将 NULL 作为非指针实参 %P 传递给 %qD"
 
 #: cp/call.c:4166
 #, gcc-internal-format
@@ -16800,7 +16762,7 @@ msgstr "将 NULL 转换到非指针类型 %qT"
 #: cp/call.c:4174
 #, gcc-internal-format
 msgid "passing %qT for argument %P to %qD"
-msgstr ""
+msgstr "将 %qT 作为实参 %P 传递给 %qD"
 
 #: cp/call.c:4177
 #, gcc-internal-format
@@ -16810,12 +16772,12 @@ msgstr "当转换到 %qT (从 %qT)时"
 #: cp/call.c:4186
 #, gcc-internal-format
 msgid "passing negative value %qE for argument %P to %qD"
-msgstr ""
+msgstr "将负值 %qE 作为实参 %P 传递给 %qD"
 
 #: cp/call.c:4189
 #, gcc-internal-format
 msgid "converting negative value %qE to %qT"
-msgstr ""
+msgstr "将负值 %qE 转换为 %qT"
 
 #: cp/call.c:4331
 #, fuzzy, gcc-internal-format
@@ -16825,7 +16787,7 @@ msgstr "无法将右值 %qE 绑定到 %qT"
 #: cp/call.c:4334 cp/call.c:4350
 #, gcc-internal-format
 msgid "cannot bind packed field %qE to %qT"
-msgstr ""
+msgstr "不能将紧实的字段 %qE 绑定到 %qT"
 
 #: cp/call.c:4337
 #, gcc-internal-format
@@ -17050,9 +17012,9 @@ msgid "bit-field %q#D with non-integral type"
 msgstr ""
 
 #: cp/class.c:2650
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "bit-field %qD width not an integer constant"
-msgstr "位段 %qs 的宽度不是一个整数常量"
+msgstr "位段 %qD 的宽度不是一个整数常量"
 
 #: cp/class.c:2656
 #, gcc-internal-format
@@ -17065,9 +17027,9 @@ msgid "zero width for bit-field %qD"
 msgstr "位段 %qD 宽度为 0"
 
 #: cp/class.c:2667
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "width of %qD exceeds its type"
-msgstr "%qs 的宽度超过它自身的类型"
+msgstr "%qD 的宽度超过了它的类型"
 
 #: cp/class.c:2676
 #, gcc-internal-format
@@ -17097,32 +17059,32 @@ msgstr ""
 #: cp/class.c:2826
 #, gcc-internal-format
 msgid "ignoring packed attribute on unpacked non-POD field %q#D"
-msgstr ""
+msgstr "为非紧实的非简单旧数据字段 %q#D 忽略 packed 属性"
 
 #: cp/class.c:2886
 #, gcc-internal-format
 msgid "%qD may not be static because it is a member of a union"
-msgstr ""
+msgstr "%qD 不能是静态的，因为它是联合的成员"
 
 #: cp/class.c:2891
 #, gcc-internal-format
 msgid "%qD may not have reference type %qT because it is a member of a union"
-msgstr ""
+msgstr "%qD 不能有引用类型 %qT，因为它是联合的成员"
 
 #: cp/class.c:2900
 #, gcc-internal-format
 msgid "field %qD in local class cannot be static"
-msgstr ""
+msgstr "局部类中的字段 %qD 不能是静态的"
 
 #: cp/class.c:2906
 #, gcc-internal-format
 msgid "field %qD invalidly declared function type"
-msgstr ""
+msgstr "字段 %qD 无效地声明为函数类型"
 
 #: cp/class.c:2912
 #, gcc-internal-format
 msgid "field %qD invalidly declared method type"
-msgstr ""
+msgstr "字段 %qD 无效地声明为方法类型"
 
 #: cp/class.c:2944
 #, gcc-internal-format
@@ -17294,7 +17256,7 @@ msgstr "改变了 %qD 的意义，从 %q+#D"
 #: cp/cvt.c:90
 #, gcc-internal-format
 msgid "can't convert from incomplete type %qT to %qT"
-msgstr ""
+msgstr "无法从不完全类型 %qT 转换到 %qT"
 
 #: cp/cvt.c:99
 #, gcc-internal-format
@@ -17304,22 +17266,22 @@ msgstr "将 %qE 从 %qT 转换到 %qT 有歧义"
 #: cp/cvt.c:168 cp/cvt.c:237 cp/cvt.c:284
 #, gcc-internal-format
 msgid "cannot convert %qE from type %qT to type %qT"
-msgstr ""
+msgstr "无法将 %qE 从类型 %qT 转换到类型 %qT"
 
 #: cp/cvt.c:197 cp/cvt.c:201
 #, gcc-internal-format
 msgid "pointer to member cast from %qT to %qT is via virtual base"
-msgstr ""
+msgstr "成员指针经由虚基类从 %qT 转换到 %qT"
 
 #: cp/cvt.c:497
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "conversion from %qT to %qT discards qualifiers"
-msgstr "到类型 %qT 的转换无效，从类型 %qT"
+msgstr "从 %qT 到 %qT 的转换丢失了限定信息"
 
 #: cp/cvt.c:515 cp/typeck.c:4833
 #, gcc-internal-format
 msgid "casting %qT to %qT does not dereference pointer"
-msgstr ""
+msgstr "从 %qT 转换到 %qT 并未提领指针"
 
 #: cp/cvt.c:542
 #, gcc-internal-format
@@ -17371,7 +17333,7 @@ msgstr ""
 #: cp/cvt.c:892
 #, gcc-internal-format
 msgid "%s cannot resolve address of overloaded function"
-msgstr ""
+msgstr "%s 无法解析重载的函数地址"
 
 #. Only warn when there is no &.
 #: cp/cvt.c:898
@@ -17430,9 +17392,9 @@ msgid "%Jfunction %qD redeclared as inline"
 msgstr "%J函数 %qD 重声明为内联的"
 
 #: cp/decl.c:1059
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Jprevious declaration of %qD with attribute noinline"
-msgstr "%J%qD 的内联声明出现在带有 noinline 属性的声明之后"
+msgstr "%J先前 %qD 的声明带有 noinline 属性"
 
 #: cp/decl.c:1066
 #, gcc-internal-format
@@ -17522,9 +17484,9 @@ msgstr "%qD 先前被声明为 %q#D"
 #. declared as the name of any other entity in any global scope
 #. of the program.
 #: cp/decl.c:1342
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of namespace %qD conflicts with"
-msgstr "%J%qD 所属节与先前的声明冲突"
+msgstr "命名空间 %qD 的声明存在冲突，与"
 
 #: cp/decl.c:1343
 #, gcc-internal-format
@@ -17548,9 +17510,9 @@ msgid "prototype for %q#D"
 msgstr "%q#D 的原型"
 
 #: cp/decl.c:1366
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Jfollows non-prototype definition here"
-msgstr "%J%qD 的原型出现在非原型定义之后"
+msgstr ""
 
 #: cp/decl.c:1378
 #, gcc-internal-format
@@ -17560,7 +17522,7 @@ msgstr "%q#D 的先前声明有 %qL 链接"
 #: cp/decl.c:1380
 #, gcc-internal-format
 msgid "conflicts with new declaration with %qL linkage"
-msgstr ""
+msgstr "与带有 %qL 链接的新声明冲突"
 
 #: cp/decl.c:1403 cp/decl.c:1410
 #, fuzzy, gcc-internal-format
@@ -17568,9 +17530,9 @@ msgid "default argument given for parameter %d of %q#D"
 msgstr "默认终端的执行参数"
 
 #: cp/decl.c:1405 cp/decl.c:1412
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "after previous specification in %q#D"
-msgstr "在替换中无效的 $-指定."
+msgstr "在 %q#D 先前的指定之后"
 
 #: cp/decl.c:1421
 #, gcc-internal-format
@@ -17590,7 +17552,7 @@ msgstr "同一作用域中 %qD 冗余的重声明"
 #: cp/decl.c:1568
 #, gcc-internal-format
 msgid "declaration of %qF throws different exceptions"
-msgstr ""
+msgstr "%qF 的声明抛出不同的异常"
 
 #: cp/decl.c:1570
 #, gcc-internal-format
@@ -17608,7 +17570,7 @@ msgstr "于先前的声明 %qF"
 #: cp/decl.c:1731
 #, gcc-internal-format
 msgid "explicit specialization of %qD after first use"
-msgstr ""
+msgstr "在初次使用后显式特例化 %qD"
 
 #: cp/decl.c:1810
 #, gcc-internal-format
@@ -17722,9 +17684,9 @@ msgid "member %q#D with constructor not allowed in anonymous aggregate"
 msgstr "有构造函数的成员 %q#D 不允许在匿名聚合中出现"
 
 #: cp/decl.c:3374
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "member %q#D with destructor not allowed in anonymous aggregate"
-msgstr "有构造函数的成员 %q#D 不允许在匿名聚合中出现"
+msgstr "有构构函数的成员 %q#D 不允许在匿名聚合中出现"
 
 #: cp/decl.c:3378
 #, gcc-internal-format
@@ -17752,9 +17714,9 @@ msgid "ISO C++ prohibits anonymous structs"
 msgstr "ISO C++ 不允许匿名结构"
 
 #: cp/decl.c:3460
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs can only be specified for functions"
-msgstr "只能为对象和函数指定类型限定"
+msgstr "只能为函数指定 %qs"
 
 #: cp/decl.c:3466
 #, gcc-internal-format
@@ -17762,9 +17724,9 @@ msgid "%<friend%> can only be specified inside a class"
 msgstr "%<friend%> 只能在类中指定"
 
 #: cp/decl.c:3468
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<explicit%> can only be specified for constructors"
-msgstr "只能为对象和函数指定类型限定"
+msgstr "只能为构造函数指定 %<explicit%>"
 
 #: cp/decl.c:3470
 #, gcc-internal-format
@@ -17784,12 +17746,12 @@ msgstr "使内建声明 %q#D 出现歧义"
 #: cp/decl.c:3507
 #, gcc-internal-format
 msgid "attribute for %q#T must follow the %qs keyword"
-msgstr ""
+msgstr "%q#T 的属性必须跟在 %qs 关键字后面"
 
 #: cp/decl.c:3630
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "function %q#D is initialized like a variable"
-msgstr "函数 %qD 像变量一样被初始化"
+msgstr "函数 %q#D 像变量一样被初始化"
 
 #: cp/decl.c:3642
 #, gcc-internal-format
@@ -17817,9 +17779,9 @@ msgid "duplicate initialization of %qD"
 msgstr "ISO C++ 不允许成员 %qD 的初始化"
 
 #: cp/decl.c:3733
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of %q#D outside of class is not definition"
-msgstr "友元声明不在类定义内"
+msgstr "出现在类外的 %q#D 的声明不是定义"
 
 #: cp/decl.c:3782
 #, gcc-internal-format
@@ -17834,7 +17796,7 @@ msgstr "数组 %q#D 的元素类型不完全"
 #: cp/decl.c:3805
 #, gcc-internal-format
 msgid "aggregate %q#D has incomplete type and cannot be defined"
-msgstr ""
+msgstr "聚合 %q#D 类型不完全，无法被定义"
 
 #: cp/decl.c:3855
 #, gcc-internal-format
@@ -18002,7 +17964,7 @@ msgstr "%qD 声明为 %<inline%> %s"
 #: cp/decl.c:5418
 #, gcc-internal-format
 msgid "%<const%> and %<volatile%> function specifiers on %qD invalid in %s declaration"
-msgstr ""
+msgstr "为 %qD 指定的 %<const%> 和 %<volatile%> 在 %s 声明中无效"
 
 #: cp/decl.c:5422
 #, gcc-internal-format
@@ -18092,12 +18054,12 @@ msgstr ""
 #: cp/decl.c:5888
 #, gcc-internal-format
 msgid "non-local variable %q#D uses anonymous type"
-msgstr ""
+msgstr "非局部变量 %q#D 使用了匿名类型"
 
 #: cp/decl.c:5897
 #, gcc-internal-format
 msgid "non-local variable %q#D uses local type %qT"
-msgstr ""
+msgstr "非局部变量 %q#D 使用了局部类型 %qT"
 
 #: cp/decl.c:6014
 #, gcc-internal-format
@@ -18120,9 +18082,9 @@ msgid "size of array %qD has non-integral type %qT"
 msgstr ""
 
 #: cp/decl.c:6050
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "size of array has non-integral type %qT"
-msgstr "数组 %qs 的大小的类型不是整数"
+msgstr "数组 %qT 的大小的类型不是整数"
 
 #: cp/decl.c:6086
 #, gcc-internal-format
@@ -18210,19 +18172,19 @@ msgid "return type specified for %<operator %T%>"
 msgstr "为 %<operator %T%> 指定了返回值"
 
 #: cp/decl.c:6319
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unnamed variable or field declared void"
-msgstr "变量或字段 %qs 声明为 void"
+msgstr "无名变量或字段声明为 void"
 
 #: cp/decl.c:6323
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable or field %qE declared void"
-msgstr "变量或字段 %qs 声明为 void"
+msgstr "变量或字段 %qE 声明为 void"
 
 #: cp/decl.c:6326
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "variable or field declared void"
-msgstr "变量或字段 %qs 声明为 void"
+msgstr "变量或字段声明为 void"
 
 #: cp/decl.c:6481
 #, gcc-internal-format
@@ -18235,9 +18197,9 @@ msgid "declaration of %qD as non-function"
 msgstr "%qD 没有声明为一个函数"
 
 #: cp/decl.c:6507
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "declaration of %qD as non-member"
-msgstr "%qD 声明为 %qT 的一个成员"
+msgstr "%qD 未声明为成员"
 
 #: cp/decl.c:6537
 #, gcc-internal-format
@@ -18312,7 +18274,7 @@ msgstr ""
 #: cp/decl.c:6901
 #, gcc-internal-format
 msgid "member %qD cannot be declared both virtual and static"
-msgstr ""
+msgstr "成员 %qD 不能既被声明为虚函数，又被声明为静态函数"
 
 #: cp/decl.c:6908
 #, gcc-internal-format
@@ -18327,7 +18289,7 @@ msgstr "不能在参数声明中使用 %<::%>"
 #: cp/decl.c:6920
 #, gcc-internal-format
 msgid "storage class specifiers invalid in parameter declarations"
-msgstr ""
+msgstr "为形参声明指定了无效的存储类"
 
 #: cp/decl.c:6927
 #, gcc-internal-format
@@ -18352,7 +18314,7 @@ msgstr "在顶层将 %qs 声明为 %<auto%>"
 #: cp/decl.c:7016
 #, gcc-internal-format
 msgid "storage class specifiers invalid in friend function declarations"
-msgstr ""
+msgstr "为友元函数声明指定了无效的存储类"
 
 #: cp/decl.c:7142
 #, gcc-internal-format
@@ -18398,7 +18360,7 @@ msgstr "友元声明不在类定义内"
 #: cp/decl.c:7203
 #, gcc-internal-format
 msgid "can't define friend function %qs in a local class definition"
-msgstr ""
+msgstr "局部类定义中不能定义友元函数 %qs"
 
 #: cp/decl.c:7216
 #, gcc-internal-format
@@ -18556,7 +18518,7 @@ msgstr "错误地使用了 %<::%>"
 #: cp/decl.c:7789
 #, gcc-internal-format
 msgid "can't make %qD into a method -- not in a class"
-msgstr ""
+msgstr "%qD 不能是一个方法 -- 不在类中"
 
 #: cp/decl.c:7798
 #, gcc-internal-format
@@ -18692,9 +18654,9 @@ msgid "default argument %qE uses local variable %qD"
 msgstr ""
 
 #: cp/decl.c:8369
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "parameter %qD invalidly declared method type"
-msgstr "Java 方法 %qD 有非 Java 类型形参 %qT"
+msgstr "形参 %qD 被无效地被声明为具有方法类型"
 
 #: cp/decl.c:8393
 #, gcc-internal-format
@@ -18739,7 +18701,7 @@ msgstr "%qD 必须是一个非静态的成员函数"
 #: cp/decl.c:8704
 #, gcc-internal-format
 msgid "%qD must be either a non-static member function or a non-member function"
-msgstr ""
+msgstr "%qD 必须是一个非静态成员函数或非成员函数"
 
 #: cp/decl.c:8722
 #, gcc-internal-format
@@ -18833,9 +18795,9 @@ msgid "%qD has a previous declaration here"
 msgstr "%qD 先前在此处有过声明"
 
 #: cp/decl.c:9000
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qT referred to as %qs"
-msgstr "%qs 不能用于不完全的类型 %qT"
+msgstr "%qT 作为 %qs 被引用"
 
 #: cp/decl.c:9001 cp/decl.c:9009
 #, gcc-internal-format
@@ -18954,7 +18916,7 @@ msgid "invalid member function declaration"
 msgstr "无效的成员函数声明"
 
 #: cp/decl.c:10762
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD is already defined in class %qT"
 msgstr "%qD 已在类 %qT 中定义过"
 
@@ -18974,9 +18936,9 @@ msgid "ambiguous conversion for array subscript"
 msgstr ""
 
 #: cp/decl2.c:380
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid types %<%T[%T]%> for array subscript"
-msgstr "对非数组类型 %qs 使用数组初始值设定无效"
+msgstr "%<%T[%T]%> 用作数组下标类型无效"
 
 #: cp/decl2.c:423
 #, gcc-internal-format
@@ -19077,9 +19039,9 @@ msgid "cannot declare %qD to be a bit-field type"
 msgstr "不能将 %qD 声明为位段类型"
 
 #: cp/decl2.c:1028
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot declare bit-field %qD with function type"
-msgstr "不能将 %qD 声明为位段类型"
+msgstr "不能将位段 %qD 声明为函数类型"
 
 #: cp/decl2.c:1035
 #, gcc-internal-format
@@ -19087,9 +19049,9 @@ msgid "%qD is already defined in the class %qT"
 msgstr "%qD 已在类 %qT 中定义过"
 
 #: cp/decl2.c:1042
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "static member %qD cannot be a bit-field"
-msgstr "不能将 %qD 声明为位段类型"
+msgstr "静态成员 %qD 不能是位段"
 
 #: cp/decl2.c:1087
 #, gcc-internal-format
@@ -19099,7 +19061,7 @@ msgstr "匿名结构不在有名类型内"
 #: cp/decl2.c:1164
 #, gcc-internal-format
 msgid "namespace-scope anonymous aggregates must be static"
-msgstr ""
+msgstr "命名空间域的匿名聚合必须是静态的"
 
 #: cp/decl2.c:1171
 #, gcc-internal-format
@@ -19132,9 +19094,9 @@ msgid "inline function %qD used but never defined"
 msgstr "使用了内联函数 %qD 但从未定义过"
 
 #: cp/decl2.c:3165
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "default argument missing for parameter %P of %q+#D"
-msgstr "默认终端的执行参数"
+msgstr "形参 %P (属于 %q+#D)缺少默认实参"
 
 #. damn ICE suppression
 #: cp/error.c:2371
@@ -19289,9 +19251,9 @@ msgid "%Jdefault-initialization of %q#D, which has reference type"
 msgstr ""
 
 #: cp/init.c:379
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Juninitialized reference member %qD"
-msgstr "%qD 不是 %qD 的成员"
+msgstr "%J未初始化的引用成员 %qD"
 
 #: cp/init.c:382
 #, gcc-internal-format
@@ -19326,12 +19288,12 @@ msgstr "%J  当在这里初始化时"
 #: cp/init.c:550
 #, gcc-internal-format
 msgid "%Jmultiple initializations given for %qD"
-msgstr ""
+msgstr "%J为 %qD 给定了多个初始化设定"
 
 #: cp/init.c:553
 #, gcc-internal-format
 msgid "%Jmultiple initializations given for base %qT"
-msgstr ""
+msgstr "%J为基类 %qT 给定了多个初始化设定"
 
 #: cp/init.c:620
 #, gcc-internal-format
@@ -19354,9 +19316,9 @@ msgid "%q#D is a static data member; it can only be initialized at its definitio
 msgstr ""
 
 #: cp/init.c:919
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q#D is not a non-static data member of %qT"
-msgstr "%qT 没有名为 %qD 的非静态数据成员"
+msgstr "%q#D 不是 %qT 的非静态数据成员"
 
 #: cp/init.c:958
 #, gcc-internal-format
@@ -19401,7 +19363,7 @@ msgstr ""
 #: cp/init.c:1402
 #, gcc-internal-format
 msgid "incomplete type %qT does not have member %qD"
-msgstr ""
+msgstr "不完全类型 %qT 没有成员 %qD"
 
 #: cp/init.c:1421
 #, gcc-internal-format
@@ -19640,9 +19602,9 @@ msgid "previous external decl of %q#D"
 msgstr "%q#D 前一个外部声明"
 
 #: cp/name-lookup.c:897
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "extern declaration of %q#D doesn't match"
-msgstr "不匹配正则表达式"
+msgstr "%q#D 的外部声明不匹配"
 
 #: cp/name-lookup.c:898
 #, gcc-internal-format
@@ -19716,11 +19678,9 @@ msgid "XXX is_class_level != (current_scope == class_scope)\n"
 msgstr ""
 
 #: cp/name-lookup.c:1864
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%q#D hides constructor for %q#T"
-msgstr ""
-"\n"
-"等候服务器"
+msgstr "%q#D 隐藏了 %q#T 的构造函数"
 
 #: cp/name-lookup.c:1880
 #, gcc-internal-format
@@ -19838,9 +19798,9 @@ msgid "  also declared as %q#D here"
 msgstr "  也在这里被声明为 %q#D"
 
 #: cp/name-lookup.c:3362
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qD denotes an ambiguous type"
-msgstr "%qD 类型不完全"
+msgstr "%qD 表示一个有歧义的类型"
 
 #: cp/name-lookup.c:3363
 #, gcc-internal-format
@@ -20088,13 +20048,13 @@ msgstr ""
 #: cp/parser.c:7785
 #, gcc-internal-format
 msgid "keyword %<typename%> not allowed in this context (a qualified member initializer is implicitly a type)"
-msgstr ""
+msgstr "关键字 %<typename%> 不允许用在此上下文中(限定的初始值设定隐式地是一个类型)"
 
 #. Warn that we do not support `export'.
 #: cp/parser.c:8151
 #, gcc-internal-format
 msgid "keyword %<export%> not implemented, and will be ignored"
-msgstr ""
+msgstr "关键字 %<export%> 未实现，将被忽略"
 
 #. Otherwise, emit an error about the invalid digraph, but continue
 #. parsing because we got our argument list.
@@ -20235,7 +20195,7 @@ msgstr "%q#T 的前一个定义"
 #: cp/parser.c:13141
 #, gcc-internal-format
 msgid "%Hextra %<;%>"
-msgstr ""
+msgstr "%H多余的 %<;%>"
 
 #: cp/parser.c:13159
 #, gcc-internal-format
@@ -20245,7 +20205,7 @@ msgstr ""
 #: cp/parser.c:13173
 #, gcc-internal-format
 msgid "friend declaration does not name a class or function"
-msgstr ""
+msgstr "友元声明没有指定类或函数名"
 
 #: cp/parser.c:13349
 #, gcc-internal-format
@@ -20260,7 +20220,7 @@ msgstr "关键字 %<typename%> 不能在模板以外使用"
 #: cp/parser.c:13629
 #, gcc-internal-format
 msgid "keyword %<typename%> not allowed in this context (the base class is implicitly a type)"
-msgstr ""
+msgstr "关键字 %<typename%> 不允许用在此上下文中(基类隐式地是一个类型)"
 
 #: cp/parser.c:13904
 #, gcc-internal-format
@@ -20339,9 +20299,9 @@ msgid "data member %qD cannot be a member template"
 msgstr ""
 
 #: cp/pt.c:253
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid member template declaration %qD"
-msgstr "%qD 声明为 %qT 的一个成员"
+msgstr "无效的成员模板声明 %qD"
 
 #: cp/pt.c:575
 #, gcc-internal-format
@@ -20479,9 +20439,9 @@ msgid "no member function %qD declared in %qT"
 msgstr "成员函数 %qD 未在 %qT 中声明"
 
 #: cp/pt.c:2207
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid " shadows template parm %q#D"
-msgstr "另存为模板(&S)..."
+msgstr " 隐藏了模版形参 %q#D"
 
 #: cp/pt.c:2609
 #, gcc-internal-format
@@ -20721,9 +20681,9 @@ msgid "wrong number of template arguments (%d, should be %d)"
 msgstr "模板参数数目不对(%d，应该是 %d)"
 
 #: cp/pt.c:3969
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "provided for %qD"
-msgstr "%J%qD 类型冲突"
+msgstr "提供给 %qD"
 
 #: cp/pt.c:3999
 #, gcc-internal-format
@@ -21483,7 +21443,7 @@ msgstr ""
 #: cp/typeck.c:3177
 #, gcc-internal-format
 msgid "invalid operands of types %qT and %qT to binary %qO"
-msgstr ""
+msgstr "操作数类型 %qT 和 %qT 对双目 %qO 而言无效"
 
 #: cp/typeck.c:3341
 #, gcc-internal-format
@@ -21545,9 +21505,9 @@ msgid "ISO C++ forbids %sing an enum"
 msgstr "ISO C++ 不允许 %sing 一个枚举"
 
 #: cp/typeck.c:3865
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot %s a pointer to incomplete type %qT"
-msgstr "%qs 不能用于不完全的类型 %qT"
+msgstr "不能将指针 %s 到不完全的类型 %qT"
 
 #: cp/typeck.c:3871
 #, gcc-internal-format
@@ -21815,9 +21775,9 @@ msgid "cannot declare parameter %q+D to be of abstract type %qT"
 msgstr ""
 
 #: cp/typeck2.c:298
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot declare field %q+D to be of abstract type %qT"
-msgstr "不能将 %qD 声明为位段类型"
+msgstr "不能将字段 %q+D 声明为具有抽象类型 %qT"
 
 #: cp/typeck2.c:302
 #, gcc-internal-format
@@ -21877,9 +21837,9 @@ msgid "initializing array with parameter list"
 msgstr "使用形参列表初始化数组"
 
 #: cp/typeck2.c:710
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "int-array initialized from non-wide string"
-msgstr "用窄字符串初始化 wchar_t 数组"
+msgstr "int 型数组由非宽字符串初始化"
 
 #: cp/typeck2.c:743
 #, gcc-internal-format
@@ -21999,7 +21959,7 @@ msgstr ""
 #: cp/typeck2.c:1544
 #, gcc-internal-format
 msgid "call to function %qD which throws incomplete type %q#T"
-msgstr ""
+msgstr "调用的函数 %qD 会抛出不完全的类型 %q#T"
 
 #: cp/typeck2.c:1547
 #, gcc-internal-format
@@ -22168,7 +22128,7 @@ msgstr "变量 %qs 可能未经初始化"
 #: java/check-init.c:954
 #, gcc-internal-format
 msgid "internal error in check-init: tree code not implemented: %s"
-msgstr ""
+msgstr "check-init 时发生内部错误：树代码尚未实现：%s"
 
 #: java/check-init.c:1026
 #, gcc-internal-format
@@ -22288,7 +22248,7 @@ msgstr ""
 #: java/expr.c:2366
 #, gcc-internal-format
 msgid "invokestatic on non static method"
-msgstr ""
+msgstr "静态调用非静态方法"
 
 #: java/expr.c:2371
 #, gcc-internal-format
@@ -22298,7 +22258,7 @@ msgstr "为纯虚方法调用 invokestatic"
 #: java/expr.c:2379
 #, gcc-internal-format
 msgid "invoke[non-static] on static method"
-msgstr ""
+msgstr "非静态地调用静态方法"
 
 #: java/expr.c:2697
 #, gcc-internal-format
@@ -22470,7 +22430,7 @@ msgstr "词法分析 final 属性时出错"
 #: java/jcf-parse.c:802
 #, gcc-internal-format
 msgid "the %<java.lang.Object%> that was found in %qs didn't have the special zero-length %<gnu.gcj.gcj-compiled%> attribute.  This generally means that your classpath is incorrectly set.  Use %<info gcj \"Input Options\"%> to see the info page describing how to set the classpath"
-msgstr ""
+msgstr "在 %qs 中发现的 %<java.lang.Object%> 没有特殊的零长度的 %<gnu.gcj.gcj-compiled%> 属性，这一般意味着您的类路径设置有问题。用 %<info gcj \"Input Options\"%> 可查看如何设定类路径的 info 页"
 
 #: java/jcf-parse.c:876
 #, gcc-internal-format
@@ -22505,7 +22465,7 @@ msgstr "从 zip 文件读取 %s 时出错"
 #: java/jcf-write.c:2666
 #, gcc-internal-format
 msgid "internal error in generate_bytecode_insn - tree code not implemented: %s"
-msgstr ""
+msgstr "generate_bytecode_insn 时发生内部错误 - 树代码尚未实现：%s"
 
 #: java/jcf-write.c:3040
 #, gcc-internal-format
@@ -22545,7 +22505,7 @@ msgstr "文件未找到‘%s’"
 #: java/jvspec.c:436
 #, gcc-internal-format
 msgid "warning: already-compiled .class files ignored with -C"
-msgstr ""
+msgstr "警告：-C 忽略已经编译的 .class 文件"
 
 #: java/lang.c:629
 #, gcc-internal-format
@@ -22798,12 +22758,12 @@ msgstr ""
 #: java/parse.y:6196
 #, gcc-internal-format
 msgid "Type %qs not found in the declaration of the argument %qs of method %qs"
-msgstr ""
+msgstr "找不到类型 %qs，于实参 %qs(属于方法 %qs)的声明中"
 
 #: java/parse.y:6203
 #, gcc-internal-format
 msgid "Type %qs not found in the declaration of the return type of method %qs"
-msgstr ""
+msgstr "找不到类型 %qs，于方法 %qs 的返回值声明中"
 
 #: java/parse.y:6209
 #, gcc-internal-format
@@ -22813,7 +22773,7 @@ msgstr "基接口 %qs (派生 %s %qs) 未找到"
 #: java/parse.y:6216
 #, gcc-internal-format
 msgid "Type %qs not found in the declaration of the local variable %qs"
-msgstr ""
+msgstr "找不到类型 %qs，于局部变量 %qs 的声明中"
 
 #: java/parse.y:6223
 #, gcc-internal-format
@@ -22868,7 +22828,7 @@ msgstr "%<throw%> 子句中受查异常类 %qs 无效。异常必须是由 %qs �
 #: java/parse.y:6820
 #, gcc-internal-format
 msgid "Interface %qs inherits method %qs from interface %qs. This method is redefined with a different return type in interface %qs"
-msgstr ""
+msgstr "接口 %qs 继承了方法 %qs(自接口 %qs)。这一方法在接口 %qs 中重定义了不同的返回类型"
 
 #: java/parse.y:6995
 #, gcc-internal-format
@@ -22903,7 +22863,7 @@ msgstr ""
 #: java/parse.y:7436
 #, gcc-internal-format
 msgid "Can't access %s %qs. Only public classes and interfaces in other packages can be accessed"
-msgstr ""
+msgstr "不能访问 %s %qs。只能访问其他包中的公共类和接口"
 
 #: java/parse.y:7474
 #, gcc-internal-format
@@ -22943,7 +22903,7 @@ msgstr ""
 #: java/parse.y:9923 java/parse.y:12372
 #, gcc-internal-format
 msgid "Keyword %<this%> used outside allowed context"
-msgstr ""
+msgstr "关键字 %<this%> 用在允许的上下文以外"
 
 #: java/parse.y:9929 java/parse.y:10813
 #, gcc-internal-format
@@ -22958,12 +22918,12 @@ msgstr ""
 #: java/parse.y:9978
 #, gcc-internal-format
 msgid "Keyword %<super%> used outside allowed context"
-msgstr ""
+msgstr "关键字 %<super%> 用在允许的上下文以外"
 
 #: java/parse.y:10027
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "No variable %qs defined in class %qs"
-msgstr "没有与 %qs 匹配的构造函数，在类 %qs 中"
+msgstr "变量 %qs 未在类 %qs 中定义"
 
 #: java/parse.y:10032
 #, gcc-internal-format
@@ -23191,9 +23151,9 @@ msgid "%<return%> inside static initializer"
 msgstr "静态初始值设定中出现 %<return%>"
 
 #: java/parse.y:14945
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%<return%> with%s value from %<%s %s%>"
-msgstr "构造函数 %qs 中 %<return%> 带返回值"
+msgstr ""
 
 #: java/parse.y:14952
 #, gcc-internal-format
@@ -23290,22 +23250,22 @@ msgstr "实例初始块中不能抛出受查异常 %qs (至少有一个已声明
 #: java/parse.y:15870
 #, gcc-internal-format
 msgid "Checked exception %qs can't be caught by any of the catch clause(s) of the surrounding %<try%> block"
-msgstr ""
+msgstr "受查异常 %qs 不能为跟随此 %<try%> 块的任何 catch 子句所捕获"
 
 #: java/parse.y:15883
 #, gcc-internal-format
 msgid "Checked exception %qs can't be thrown in initializer"
-msgstr ""
+msgstr "不能在初始块中抛出受查异常 %qs"
 
 #: java/parse.y:15887
 #, gcc-internal-format
 msgid "Checked exception %qs isn't thrown from a %<try%> block"
-msgstr ""
+msgstr "受查异常 %qs 不是从 %<try%> 块中抛出的"
 
 #: java/parse.y:15893
 #, gcc-internal-format
 msgid "Checked exception %qs doesn't match any of current method's %<throws%> declaration(s)"
-msgstr ""
+msgstr "受查异常 %qs 与当前方法的 %<throw%> 声明不匹配"
 
 #: java/parse.y:15948
 #, gcc-internal-format
@@ -23421,9 +23381,9 @@ msgid "object does not conform to the %qs protocol"
 msgstr "对象不遵循 %qs 协议"
 
 #: objc/objc-act.c:1015 objc/objc-act.c:1092
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "class %qs does not implement the %qs protocol"
-msgstr "协议 %1 没有实现文件夹服务。"
+msgstr "类 %qs 没有实现 %qs 协议"
 
 #: objc/objc-act.c:1198
 #, gcc-internal-format
@@ -23464,7 +23424,7 @@ msgstr ""
 #: objc/objc-act.c:2563
 #, gcc-internal-format
 msgid "%qs is not an Objective-C class name or alias"
-msgstr ""
+msgstr "%qs 不是一个 Objective-C 类名或别名"
 
 #: objc/objc-act.c:2678 objc/objc-act.c:2696 objc/objc-act.c:6672
 #: objc/objc-act.c:6964 objc/objc-act.c:6994
@@ -23503,14 +23463,14 @@ msgid "@catch parameter is not a known Objective-C class type"
 msgstr ""
 
 #: objc/objc-act.c:3291
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "exception of type %<%T%> will be caught"
-msgstr "要同步的数据类型："
+msgstr "类型为 %<%T%> 的异常将被捕获"
 
 #: objc/objc-act.c:3293
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%H   by earlier handler for %<%T%>"
-msgstr "没有处理 %1 的方法"
+msgstr "%H   为早先的 %<%T%> 的处理者"
 
 #: objc/objc-act.c:3346
 #, gcc-internal-format
@@ -23523,9 +23483,9 @@ msgid "%<@throw%> (rethrow) used outside of a @catch block"
 msgstr ""
 
 #: objc/objc-act.c:3758
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%Jtype '%D' does not have a known size"
-msgstr "文件大小不相同！"
+msgstr "%J类型‘%D’大小未知"
 
 #: objc/objc-act.c:4271
 #, gcc-internal-format
@@ -23533,9 +23493,9 @@ msgid "%J%s %qs"
 msgstr "%J%s %qs"
 
 #: objc/objc-act.c:4294 objc/objc-act.c:4313
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "inconsistent instance variable specification"
-msgstr "实例变量 %qs 大小未知"
+msgstr "不一致的实例变量指定"
 
 #: objc/objc-act.c:5169
 #, gcc-internal-format
@@ -23553,9 +23513,9 @@ msgid "no super class declared in @interface for %qs"
 msgstr ""
 
 #: objc/objc-act.c:5645
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "found %<-%s%> instead of %<+%s%> in protocol(s)"
-msgstr "在协议中找不到 %<%c%s%>"
+msgstr "在协议中找到了 %<-%s%> 而不是 %<+%s%>"
 
 #: objc/objc-act.c:5704
 #, gcc-internal-format
@@ -23640,7 +23600,7 @@ msgstr "类型 %qs 有虚成员函数"
 #: objc/objc-act.c:6332
 #, gcc-internal-format
 msgid "illegal aggregate type %qs specified for instance variable %qs"
-msgstr ""
+msgstr "非法的聚合类型 %qs 指定给实例变量 %qs"
 
 #: objc/objc-act.c:6340
 #, gcc-internal-format
