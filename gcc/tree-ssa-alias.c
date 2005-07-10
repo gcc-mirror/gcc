@@ -2344,6 +2344,7 @@ static void
 free_used_part_map (void *item)
 {
   free (((struct used_part_map *)item)->to);
+  free (item);
 }
 
 /* Lookup a used_part structure for a UID.  */
@@ -2372,6 +2373,8 @@ up_insert (unsigned int uid, used_part_t to)
   h->to = to;
   loc = htab_find_slot_with_hash (used_portions, h,
 				  uid, INSERT);
+  if (*loc != NULL)
+    free (*loc);
   *(struct used_part_map **)  loc = h;
 }
 
