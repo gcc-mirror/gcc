@@ -25,6 +25,66 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 struct constraint;
 typedef struct constraint *constraint_t;
 
+/* Alias information used by compute_may_aliases and its helpers.  */
+struct alias_info
+{
+  /* SSA names visited while collecting points-to information.  If bit I
+     is set, it means that SSA variable with version I has already been
+     visited.  */
+  sbitmap ssa_names_visited;
+
+  /* Array of SSA_NAME pointers processed by the points-to collector.  */
+  varray_type processed_ptrs;
+
+  /* ADDRESSABLE_VARS contains all the global variables and locals that
+     have had their address taken.  */
+  struct alias_map_d **addressable_vars;
+  size_t num_addressable_vars;
+
+  /* POINTERS contains all the _DECL pointers with unique memory tags
+     that have been referenced in the program.  */
+  struct alias_map_d **pointers;
+  size_t num_pointers;
+
+  /* Number of function calls found in the program.  */
+  size_t num_calls_found;
+
+  /* Number of const/pure function calls found in the program.  */
+  size_t num_pure_const_calls_found;
+
+  /* Array of counters to keep track of how many times each pointer has
+     been dereferenced in the program.  This is used by the alias grouping
+     heuristic in compute_flow_insensitive_aliasing.  */
+  varray_type num_references;
+
+  /* Total number of virtual operands that will be needed to represent
+     all the aliases of all the pointers found in the program.  */
+  long total_alias_vops;
+
+  /* Variables that have been written to.  */
+  bitmap written_vars;
+
+  /* Pointers that have been used in an indirect store operation.  */
+  bitmap dereferenced_ptrs_store;
+
+  /* Pointers that have been used in an indirect load operation.  */
+  bitmap dereferenced_ptrs_load;
+};
+
+/* Keep track of how many times each pointer has been dereferenced in
+   the program using the aux variable.  This is used by the alias
+   grouping heuristic in compute_flow_insensitive_aliasing.  */
+#define NUM_REFERENCES(ANN) ((size_t)((ANN)->common.aux))
+#define NUM_REFERENCES_CLEAR(ANN) ((ANN)->common.aux) = 0
+#define NUM_REFERENCES_INC(ANN) (ANN)->common.aux = (void*) (((size_t)((ANN)->common.aux)) + 1)
+#define NUM_REFERENCES_SET(ANN, VAL) (ANN)->common.aux = (void*) ((void *)(VAL))
+
+/* In tree-ssa-alias.c.  */
+bool is_escape_site (tree, struct alias_info *);
+
+/* In tree-ssa-structalias.c.  */
+extern void compute_points_to_sets (struct alias_info *);
+extern void delete_points_to_sets (void);
 extern void dump_constraint (FILE *, constraint_t);
 extern void dump_constraints (FILE *);
 extern void debug_constraint (constraint_t);

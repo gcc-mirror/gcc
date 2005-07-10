@@ -276,8 +276,6 @@ extern struct tree_opt_pass pass_store_ccp;
 extern struct tree_opt_pass pass_store_copy_prop;
 extern struct tree_opt_pass pass_vrp;
 extern struct tree_opt_pass pass_create_structure_vars;
-extern struct tree_opt_pass pass_build_pta;
-extern struct tree_opt_pass pass_del_pta;
 extern struct tree_opt_pass pass_uncprop;
 extern struct tree_opt_pass pass_return_slot;
 extern struct tree_opt_pass pass_reassoc;

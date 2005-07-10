@@ -71,9 +71,6 @@ struct ptr_info_def GTY(())
      is pointing to.  */
   unsigned int pt_anything : 1;
 
-  /* Nonzero if this pointer is the result of a call to malloc.  */
-  unsigned int pt_malloc : 1;
-
   /* Nonzero if the value of this pointer escapes the current function.  */
   unsigned int value_escapes_p : 1;
 
@@ -160,19 +157,22 @@ enum mem_tag_kind {
   /* This variable represents a structure field.  */
   STRUCT_FIELD
 };
+
 struct subvar;
 typedef struct subvar *subvar_t;
 
 /* This structure represents a fake sub-variable for a structure field.  */
-
 struct subvar GTY(())
 {
-  /* Fake variable name */
+  /* Fake variable.  */
   tree var;
+
   /* Offset inside structure.  */
-  HOST_WIDE_INT offset;
-  /* Size of field.  */
-  HOST_WIDE_INT size;
+  unsigned HOST_WIDE_INT offset;
+
+  /* Size of the field.  */
+  unsigned HOST_WIDE_INT size;
+
   /* Next subvar for this structure.  */
   subvar_t next;
 };
@@ -552,6 +552,8 @@ extern void debug_referenced_vars (void);
 extern void dump_referenced_vars (FILE *);
 extern void dump_variable (FILE *, tree);
 extern void debug_variable (tree);
+extern void dump_subvars_for (FILE *, tree);
+extern void debug_subvars_for (tree);
 extern tree get_virtual_var (tree);
 extern void add_referenced_tmp_var (tree);
 extern void mark_new_vars_to_rename (tree);
@@ -578,11 +580,13 @@ extern void add_type_alias (tree, tree);
 extern void new_type_alias (tree, tree);
 extern void count_uses_and_derefs (tree, tree, unsigned *, unsigned *, bool *);
 static inline subvar_t get_subvars_for_var (tree);
+static inline tree get_subvar_at (tree, unsigned HOST_WIDE_INT);
 static inline bool ref_contains_array_ref (tree);
-extern tree okay_component_ref_for_subvars (tree, HOST_WIDE_INT *,
-					    HOST_WIDE_INT *);
+extern tree okay_component_ref_for_subvars (tree, unsigned HOST_WIDE_INT *,
+					    unsigned HOST_WIDE_INT *);
 static inline bool var_can_have_subvars (tree);
-static inline bool overlap_subvar (HOST_WIDE_INT, HOST_WIDE_INT,
+static inline bool overlap_subvar (unsigned HOST_WIDE_INT,
+				   unsigned HOST_WIDE_INT,
 				   subvar_t, bool *);
 
 /* Call-back function for walk_use_def_chains().  At each reaching

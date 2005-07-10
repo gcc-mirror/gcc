@@ -1,3 +1,7 @@
+2005-07-09  Diego Novillo  <dnovillo@redhat.com>
+
+	* gcc.dg/tree-ssa/pta-fp.c: Use -fdump-tree-alias1.
+
 2005-07-09  Richard Henderson  <rth@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_sync_char_short):
