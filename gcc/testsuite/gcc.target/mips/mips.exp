@@ -83,9 +83,19 @@ proc setup_mips_tests {} {
     set mips_forced_float [regexp -- {-m(hard|soft)-float} $compiler_flags]
 }
 
+# Return true if command-line option FLAG forces 32-bit code.
+proc is_gp32_flag {flag} {
+    switch -glob -- $flag {
+	-march=mips32* -
+	-mgp32 { return 1 }
+	default { return 0 }
+    }
+}
+
 # Like dg-options, but treats certain MIPS-specific options specially:
 #
 #    -mgp32
+#    -march=mips32*
 #	Force 32-bit code.  Skip the test if the multilib flags force
 #	a 64-bit ABI.
 #
@@ -125,7 +135,7 @@ proc dg-mips-options {args} {
 
     # First handle the -mgp* options.  Add an architecture option if necessary.
     foreach flag $flags {
-	if {$flag == "-mgp32" && $mips_mips64} {
+	if {[is_gp32_flag $flag] && $mips_mips64} {
 	    if {$mips_forced_abi} {
 		set matches 0
 	    } else {
