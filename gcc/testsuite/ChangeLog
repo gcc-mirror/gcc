@@ -1,3 +1,8 @@
+2005-07-10  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.target/mips/mips.exp (is_gp32_flag): New procedure.
+	(dg-mips-options): Use it.
+
 2005-07-09  Diego Novillo  <dnovillo@redhat.com>
 
 	* gcc.dg/tree-ssa/pta-fp.c: Use -fdump-tree-alias1.
