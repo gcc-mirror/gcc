@@ -1,3 +1,9 @@
+2005-07-10  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/libffi.call/cls_5_1_byte.c: New test file.
+	* testsuite/libffi.call/cls_6_1_byte.c: Likewise.
+	* testsuite/libffi.call/cls_7_1_byte.c: Likewise.
+
 2005-07-05  Randolph Chung  <tausq@debian.org>
 
 	* src/pa/ffi.c (ffi_struct_type): Rename FFI_TYPE_SMALL_STRUCT1
