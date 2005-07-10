@@ -32,7 +32,6 @@ Boston, MA 02110-1301, USA.  */
 #include "ggc.h"
 #include "timevar.h"
 #include "toplev.h"
-
 #include "langhooks.h"
 
 /* This file contains the code required to manage the operands cache of the 
@@ -148,7 +147,6 @@ static bool ops_active = false;
 static GTY (()) struct ssa_operand_memory_d *operand_memory = NULL;
 static unsigned operand_memory_index;
 
-static void note_addressable (tree, stmt_ann_t);
 static void get_expr_operands (tree, tree *, int);
 static void get_asm_expr_operands (tree);
 static void get_indirect_ref_operands (tree, tree, int);
@@ -1310,7 +1308,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
     case IMAGPART_EXPR:
       {
 	tree ref;
-	HOST_WIDE_INT offset, size;
+	unsigned HOST_WIDE_INT offset, size;
  	/* This component ref becomes an access to all of the subvariables
 	   it can touch,  if we can determine that, but *NOT* the real one.
 	   If we can't determine which fields we could touch, the recursion
@@ -1515,8 +1513,8 @@ get_asm_expr_operands (tree stmt)
       if (!allows_reg && allows_mem)
 	{
 	  tree t = get_base_address (TREE_VALUE (link));
-	  if (t && DECL_P (t))
-	    note_addressable (t, s_ann);
+	  if (t && DECL_P (t) && s_ann)
+	    add_to_addressable_set (t, &s_ann->addresses_taken);
 	}
 
       get_expr_operands (stmt, &TREE_VALUE (link), opf_is_def);
@@ -1534,8 +1532,8 @@ get_asm_expr_operands (tree stmt)
       if (!allows_reg && allows_mem)
 	{
 	  tree t = get_base_address (TREE_VALUE (link));
-	  if (t && DECL_P (t))
-	    note_addressable (t, s_ann);
+	  if (t && DECL_P (t) && s_ann)
+	    add_to_addressable_set (t, &s_ann->addresses_taken);
 	}
 
       get_expr_operands (stmt, &TREE_VALUE (link), 0);
@@ -1688,7 +1686,10 @@ get_tmr_operands (tree stmt, tree expr, int flags)
   flags &= ~opf_kill_def;
 
   if (TMR_SYMBOL (expr))
-    note_addressable (TMR_SYMBOL (expr), stmt_ann (stmt));
+    {
+      stmt_ann_t ann = stmt_ann (stmt);
+      add_to_addressable_set (TMR_SYMBOL (expr), &ann->addresses_taken);
+    }
 
   if (tag)
     add_stmt_operand (&tag, stmt_ann (stmt), flags);
@@ -1757,9 +1758,9 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
 
   /* If the operand is an ADDR_EXPR, add its operand to the list of
      variables that have had their address taken in this statement.  */
-  if (TREE_CODE (var) == ADDR_EXPR)
+  if (TREE_CODE (var) == ADDR_EXPR && s_ann)
     {
-      note_addressable (TREE_OPERAND (var, 0), s_ann);
+      add_to_addressable_set (TREE_OPERAND (var, 0), &s_ann->addresses_taken);
       return;
     }
 
@@ -1861,35 +1862,17 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
 
 	  if (flags & opf_is_def)
 	    {
-	      bool added_may_defs_p = false;
-
 	      /* If the variable is also an alias tag, add a virtual
 		 operand for it, otherwise we will miss representing
 		 references to the members of the variable's alias set.
 		 This fixes the bug in gcc.c-torture/execute/20020503-1.c.  */
 	      if (v_ann->is_alias_tag)
-		{
-		  added_may_defs_p = true;
-		  append_v_may_def (var);
-		}
+		append_v_may_def (var);
 
 	      for (i = 0; i < VARRAY_ACTIVE_SIZE (aliases); i++)
-		{
-		  /* While VAR may be modifiable, some of its aliases
-		     may not be.  If that's the case, we don't really
-		     need to add them a V_MAY_DEF for them.  */
-		  tree alias = VARRAY_TREE (aliases, i);
+		append_v_may_def (VARRAY_TREE (aliases, i));
 
-		  if (unmodifiable_var_p (alias))
-		    append_vuse (alias);
-		  else
-		    {
-		      append_v_may_def (alias);
-		      added_may_defs_p = true;
-		    }
-		}
-
-	      if (s_ann && added_may_defs_p)
+	      if (s_ann)
 		s_ann->makes_aliased_stores = 1;
 	    }
 	  else
@@ -1910,39 +1893,50 @@ add_stmt_operand (tree *var_p, stmt_ann_t s_ann, int flags)
 }
 
   
-/* Record that VAR had its address taken in the statement with annotations
-   S_ANN.  */
+/* Add the base address of REF to the set *ADDRESSES_TAKEN.  If
+   *ADDRESSES_TAKEN is NULL, a new set is created.  REF may be
+   a single variable whose address has been taken or any other valid
+   GIMPLE memory reference (structure reference, array, etc).  If the
+   base address of REF is a decl that has sub-variables, also add all
+   of its sub-variables.  */
 
-static void
-note_addressable (tree var, stmt_ann_t s_ann)
+void
+add_to_addressable_set (tree ref, bitmap *addresses_taken)
 {
+  tree var;
   subvar_t svars;
 
-  if (!s_ann)
-    return;
-  
+  gcc_assert (addresses_taken);
+
   /* Note that it is *NOT OKAY* to use the target of a COMPONENT_REF
-     as the only thing we take the address of.
-     See PR 21407 and the ensuing mailing list discussion.  */
-  
-  var = get_base_address (var);
+     as the only thing we take the address of.  If VAR is a structure,
+     taking the address of a field means that the whole structure may
+     be referenced using pointer arithmetic.  See PR 21407 and the
+     ensuing mailing list discussion.  */
+  var = get_base_address (ref);
   if (var && SSA_VAR_P (var))
     {
-      if (s_ann->addresses_taken == NULL)
-	s_ann->addresses_taken = BITMAP_GGC_ALLOC ();      
+      if (*addresses_taken == NULL)
+	*addresses_taken = BITMAP_GGC_ALLOC ();      
       
-
       if (var_can_have_subvars (var)
 	  && (svars = get_subvars_for_var (var)))
 	{
 	  subvar_t sv;
 	  for (sv = svars; sv; sv = sv->next)
-	    bitmap_set_bit (s_ann->addresses_taken, DECL_UID (sv->var));
+	    {
+	      bitmap_set_bit (*addresses_taken, DECL_UID (sv->var));
+	      TREE_ADDRESSABLE (sv->var) = 1;
+	    }
 	}
       else
-	bitmap_set_bit (s_ann->addresses_taken, DECL_UID (var));
+	{
+	  bitmap_set_bit (*addresses_taken, DECL_UID (var));
+	  TREE_ADDRESSABLE (var) = 1;
+	}
     }
 }
+
 
 /* Add clobbering definitions for .GLOBAL_VAR or for each of the call
    clobbered variables in the function.  */

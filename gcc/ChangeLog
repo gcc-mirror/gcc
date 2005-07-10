@@ -1,3 +1,87 @@
+2005-07-09  Diego Novillo  <dnovillo@redhat.com>
+
+	* Makefile.in (tree-ssa-alias.o): Depend on tree-ssa-structalias.h
+	* tree-cfg.c (CHECK_OP): Only test for is_gimple_val.
+	* tree-dfa.c (dump_subvars_for): New.
+	(debug_subvars_for): New.
+	(dump_variable): Show subvariables if VAR has them.
+	* tree-flow-inline.h (get_subvar_at): New.
+	(overlap_subvar): Change offset and size to unsigned HOST_WIDE_INT.
+	* tree-flow.h (struct ptr_info_def): Remove field pt_malloc.
+	Update all users.
+	(struct subvar): Change fields offset and size to unsigned
+	HOST_WIDE_INT.
+	(dump_subvars_for): Declare.
+	(debug_subvars_for): Declare.
+	(get_subvar_at): Declare.
+	(okay_component_ref_for_subvars): Change 2nd and 3rd argument
+	to unsigned HOST_WIDE_INT *.
+	(overlap_subvar): Likewise.
+	* tree-gimple.c (is_gimple_reg): Always return false for
+	SFTs and memory tags.
+	* tree-pass.h (pass_build_pta, pass_del_pta): Remove.
+	Update all callers.
+	* tree-ssa-alias.c: Include tree-ssa-structalias.h.
+	(compute_may_aliases): Call compute_points_to_sets.
+	(collect_points_to_info_for): Remove.
+	(compute_points_to_and_addr_escape): Remove.
+	(delete_alias_info): Call delete_points_to_sets.
+	(compute_flow_sensitive_aliasing): If the call to
+	find_what_p_points_to returns false, call set_pt_anything.
+	(add_may_alias): Set TREE_ADDRESSABLE when adding a new alias.
+	(set_pt_anything): Clear pi->pt_vars.
+	(set_pt_malloc): Remove.
+	(merge_pointed_to_info): Remove.
+	(add_pointed_to_expr): Remove.
+	(add_pointed_to_var): Remove.
+	(collect_points_to_info_r): Remove.
+	(is_escape_site): Make extern.
+	(create_sft): New.
+	(create_overlap_variables_for): Call it.
+	* tree-ssa-copy.c (merge_alias_info): Never merge
+	flow-sensitive alias information.
+	* tree-ssa-operands.c (get_expr_operands): Adjust variables
+	offset and size to be unsigned HOST_WIDE_INT.
+	(add_to_addressable_set): Rename from note_addressable.
+	Set TREE_ADDRESSABLE as the variables are added to the set.
+	Update all users.
+	(add_stmt_operand): Do not try to micro-optimize unmodifiable
+	operands into VUSEs when adding V_MAY_DEFs for members in an
+	alias set.
+	* tree-ssa-operands.h (add_to_addressable_set): Declare.
+	* tree-ssa-structalias.c: Include tree-ssa-structalias.h last.
+	(struct variable_info): Add bitfield is_heap_var.
+	(var_anyoffset, anyoffset_tree, anyoffset_id): Declare.
+	(new_var_info): Initialize is_heap_var.
+	(get_constraint_for): Add HEAP variables to the symbol table.
+	Mark them with is_heap_var.
+	(update_alias_info): New.  Taken mostly from the old
+	compute_points_to_and_addr_escape.
+	(handle_ptr_arith): New.
+	(find_func_aliases): Call update_alias_info.
+	Call handle_ptr_info for tcc_binary expressions.
+	Call mark_stmt_modified.
+	(create_variable_info_for): If DECL has subvars, do not create
+	variables for its subvars.  Always add all the fields.
+	(set_uids_in_ptset): If the solution includes ANYOFFSET and
+	SFTs, then add all the SFTs of the structure.
+	If VI->DECL is an aggregate with subvariables, add the SFT at
+	VI->OFFSET.
+	(find_what_p_points_to): If VI is an artificial variable,
+	translate to bitfields in SSA_NAME_PTR_INFO.
+	If the solution is empty, set pi->pt_vars to NULL
+	(init_base_vars): Create ANYOFFSET.
+	(compute_points_to_sets): Rename from create_alias_vars.
+	Make extern.
+	(pass_build_pta): Remove.
+	(delete_points_to_sets): Rename from delete_alias_vars.
+	(pass_del_pta): Remove.
+	* tree-ssa-structalias.h (struct alias_info): Move from
+	tree-ssa-alias.h.
+	(NUM_REFERENCES, NUM_REFERENCES_CLEAR, NUM_REFERENCES_INC,
+	NUM_REFERENCES_SET): Likewise.
+	(compute_points_to_sets, delete_points_to_sets): Declare.
+
 2005-07-09  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (emit_insxl, alpha_expand_compare_and_swap_12,

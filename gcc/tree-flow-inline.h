@@ -1444,6 +1444,20 @@ get_subvars_for_var (tree var)
   return subvars;
 }
 
+/* Return the subvariable of VAR at offset OFFSET.  */
+
+static inline tree
+get_subvar_at (tree var, unsigned HOST_WIDE_INT offset)
+{
+  subvar_t sv;
+
+  for (sv = get_subvars_for_var (var); sv; sv = sv->next)
+    if (sv->offset == offset)
+      return sv->var;
+
+  return NULL_TREE;
+}
+
 /* Return true if V is a tree that we can have subvars for.
    Normally, this is any aggregate type, however, due to implementation
    limitations ATM, we exclude array types as well.  */
@@ -1461,7 +1475,7 @@ var_can_have_subvars (tree v)
    *EXACT will be set to true upon return. */
 
 static inline bool
-overlap_subvar (HOST_WIDE_INT offset, HOST_WIDE_INT size,
+overlap_subvar (unsigned HOST_WIDE_INT offset, unsigned HOST_WIDE_INT size,
 		subvar_t sv,  bool *exact)
 {
   /* There are three possible cases of overlap.

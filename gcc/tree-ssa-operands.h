@@ -170,6 +170,8 @@ extern bool ssa_ro_call_cache_valid;
 
 extern bool ssa_operands_active (void);
 
+extern void add_to_addressable_set (tree, bitmap *);
+
 enum ssa_op_iter_type {
   ssa_op_iter_none = 0,
   ssa_op_iter_tree,

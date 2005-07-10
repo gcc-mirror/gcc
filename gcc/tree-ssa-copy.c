@@ -188,7 +188,9 @@ merge_alias_info (tree orig, tree new)
 #endif
 
   /* Synchronize the type tags.  If both pointers had a tag and they
-     are different, then something has gone wrong.  */
+     are different, then something has gone wrong.  Type tags can
+     always be merged because they are flow insensitive, all the SSA
+     names of the same base DECL share the same type tag.  */
   if (new_ann->type_mem_tag == NULL_TREE)
     new_ann->type_mem_tag = orig_ann->type_mem_tag;
   else if (orig_ann->type_mem_tag == NULL_TREE)
@@ -196,32 +198,41 @@ merge_alias_info (tree orig, tree new)
   else
     gcc_assert (new_ann->type_mem_tag == orig_ann->type_mem_tag);
 
-  /* Synchronize the name tags.  If NEW did not have a name tag, get
-     it from ORIG.  This happens when NEW is a compiler generated
-     temporary which still hasn't had its points-to information filled
-     in.  */
-  if (SSA_NAME_PTR_INFO (orig))
+  /* Check that flow-sensitive information is compatible.  Notice that
+     we may not merge flow-sensitive information here.  This function
+     is called when propagating equivalences dictated by the IL, like
+     a copy operation P_i = Q_j, and from equivalences dictated by
+     control-flow, like if (P_i == Q_j).
+     
+     In the former case, P_i and Q_j are equivalent in every block
+     dominated by the assignment, so their flow-sensitive information
+     is always the same.  However, in the latter case, the pointers
+     P_i and Q_j are only equivalent in one of the sub-graphs out of
+     the predicate, so their flow-sensitive information is not the
+     same in every block dominated by the predicate.
+
+     Since we cannot distinguish one case from another in this
+     function, we can only make sure that if P_i and Q_j have
+     flow-sensitive information, they should be compatible.  */
+  if (SSA_NAME_PTR_INFO (orig) && SSA_NAME_PTR_INFO (new))
     {
       struct ptr_info_def *orig_ptr_info = SSA_NAME_PTR_INFO (orig);
       struct ptr_info_def *new_ptr_info = SSA_NAME_PTR_INFO (new);
 
-      if (new_ptr_info == NULL)
-	duplicate_ssa_name_ptr_info (new, orig_ptr_info);
-      else if (orig_ptr_info->name_mem_tag
-	       && new_ptr_info->name_mem_tag
-	       && orig_ptr_info->pt_vars
-	       && new_ptr_info->pt_vars)
-	{
-	  /* Note that pointer NEW may actually have a different set
-	     of pointed-to variables.  However, since NEW is being
-	     copy-propagated into ORIG, it must always be true that
-	     the pointed-to set for pointer NEW is the same, or a
-	     subset, of the pointed-to set for pointer ORIG.  If this
-	     isn't the case, we shouldn't have been able to do the
-	     propagation of NEW into ORIG.  */
-	  gcc_assert (bitmap_intersect_p (new_ptr_info->pt_vars,
-		orig_ptr_info->pt_vars));
-	}
+      /* Note that pointer NEW and ORIG may actually have different
+	 pointed-to variables (e.g., PR 18291 represented in
+	 testsuite/gcc.c-torture/compile/pr18291.c).  However, since
+	 NEW is being copy-propagated into ORIG, it must always be
+	 true that the pointed-to set for pointer NEW is the same, or
+	 a subset, of the pointed-to set for pointer ORIG.  If this
+	 isn't the case, we shouldn't have been able to do the
+	 propagation of NEW into ORIG.  */
+      if (orig_ptr_info->name_mem_tag
+	  && new_ptr_info->name_mem_tag
+	  && orig_ptr_info->pt_vars
+	  && new_ptr_info->pt_vars)
+	gcc_assert (bitmap_intersect_p (new_ptr_info->pt_vars,
+					orig_ptr_info->pt_vars));
     }
 }   
 
