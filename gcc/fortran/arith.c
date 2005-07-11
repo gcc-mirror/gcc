@@ -2233,3 +2233,26 @@ gfc_log2log (gfc_expr * src, int kind)
 
   return result;
 }
+
+/* Convert logical to integer.  */
+
+gfc_expr *
+gfc_log2int (gfc_expr *src, int kind)
+{
+  gfc_expr *result;
+  result = gfc_constant_result (BT_INTEGER, kind, &src->where);
+  mpz_set_si (result->value.integer, src->value.logical);
+  return result;
+}
+
+/* Convert integer to logical.  */
+
+gfc_expr *
+gfc_int2log (gfc_expr *src, int kind)
+{
+  gfc_expr *result;
+  result = gfc_constant_result (BT_LOGICAL, kind, &src->where);
+  result->value.logical = (mpz_cmp_si (src->value.integer, 0) != 0);
+  return result;
+}
+

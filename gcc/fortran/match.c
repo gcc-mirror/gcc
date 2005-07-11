@@ -250,7 +250,6 @@ match
 gfc_match_label (void)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
-  gfc_state_data *p;
   match m;
 
   gfc_new_block = NULL;

@@ -1,3 +1,38 @@
+2005-07-10  Feng Wang  <fengwang@nudt.edu.cn>
+
+	* match.c (gfc_match_label): Remove unused variable.
+
+	Backport from the mainline:
+	2005-06-01  Roger Sayle  <roger@eyesopen.com>
+
+	* intrinsic.c (add_conv): No longer take a "simplify" argument as
+	its always gfc_convert_constant, instead take a "standard" argument.
+	(add_conversions): Change all existing calls of add_conv to pass
+	GFC_STD_F77 as appropriate.  Additionally, if we're allowing GNU
+	extensions support integer-logical and logical-integer conversions.
+	(gfc_convert_type_warn): Warn about use the use of these conversions
+	as a extension when appropriate, i.e. with -pedantic.
+	* simplify.c (gfc_convert_constant): Add support for integer to
+	logical and logical to integer conversions, using gfc_int2log and
+	gfc_log2int.
+	* arith.c (gfc_log2int, gfc_int2log): New functions.
+	* arith.h (gfc_log2int, gfc_int2log): Prototype here.
+	* gfortran.texi: Document this new GNU extension.
+
+	2005-05-30  Roger Sayle  <roger@eyesopen.com>
+	* gfortran.h (GFC_STD_LEGACY): New "standard" macro.  Reindent.
+	* options.c (gfc_init_options): By default, allow legacy extensions
+	but warn about them.
+	(gfc_post_options): Make -pedantic warn about legacy extensions
+	even with -std=legacy.
+	(gfc_handle_option): Make -std=gnu follow the default behaviour
+ 	of warning about legacy extensions, but allowing them. Make the
+	new -std=legacy accept everything and warn about nothing.
+	* lang.opt (std=legacy): New F95 command line option.
+	* invoke.texi: Document both -std=f2003 and -std=legacy.
+	* gfortran.texi: Explain the two types of extensions and document
+	how they are affected by the various -std= command line options.
+
 2005-07-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-stmt.c (gfc_trans_forall_loop): Clear maskindex before

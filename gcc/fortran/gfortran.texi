@@ -623,12 +623,20 @@ Variable for swapping Endianness during unformatted write.
 
 @command{gfortran} implements a number of extensions over standard
 Fortran. This chapter contains information on their syntax and
-meaning.
+meaning.  There are currently two categories of @command{gfortran}
+extensions, those that provide functionality beyond that provided
+by any standard, and those that are supported by @command{gfortran}
+purely for backward compatibility with legacy compilers.  By default,
+@option{-std=gnu} allows the compiler to accept both types of
+extensions, but to warn about the use of the latter.  Specifying
+either @option{-std=f95} or @option{-std=f2003} disables both types
+of extensions, and @option{-std=legacy} allows both without warning.
 
 @menu
 * Old-style kind specifications::
 * Old-style variable initialization::
 * Extensions to namelist::
+* Implicitly interconvert LOGICAL and INTEGER::
 @end menu
 
 @node Old-style kind specifications
@@ -724,6 +732,22 @@ had been called:
 
 To aid this dialog, when input is from stdin, errors produce send their
 messages to stderr and execution continues, even if IOSTAT is set.
+
+@node Implicitly interconvert LOGICAL and INTEGER
+@section Implicitly interconvert LOGICAL and INTEGER
+@cindex Implicitly interconvert LOGICAL and INTEGER
+
+As a GNU extension for backwards compatability with other compilers,
+@command{gfortran} allows the implicit conversion of LOGICALs to INTEGERs
+and vice versa.  When converting from a LOGICAL to an INTEGER, the numeric
+value of @code{.FALSE.} is zero, and that of @code{.TRUE.} is one.  When
+converting from INTEGER to LOGICAL, the value zero is interpreted as
+@code{.FALSE.} and any non-zero value is interpreted as @code{.TRUE.}.
+
+@smallexample
+       INTEGER*4 i
+       i = .FALSE.
+@end smallexample
 
 @include intrinsic.texi
 @c ---------------------------------------------------------------------

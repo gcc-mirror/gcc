@@ -270,7 +270,7 @@ Specify that no implicit typing is allowed, unless overridden by explicit
 @cindex option, -std=@var{std}
 @item -std=@var{std}
 Conform to the specified standard.  Allowed values for @var{std} are
-@samp{gnu} and @samp{f95}.
+@samp{gnu}, @samp{f95}, @samp{f2003} and @samp{legacy}.
 
 @end table
 
