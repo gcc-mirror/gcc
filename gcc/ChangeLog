@@ -1,3 +1,26 @@
+2005-07-07  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-structalias.c (struct variable_info): Heapify complex.
+	(varmap): Heapify varmap.
+	(constraints): Heapify constraints.
+	(struct constraint_graph): Heapify succs and preds.
+	(constraint_vec_find): Update for heapification.
+	(constraint_set_union): Ditto.
+	(insert_into_complex): Ditto.
+	(constraint_edge_vec_find): Ditto.
+	(erase_graph_self_edge): Ditto.
+	(add_graph_edge): Ditto.
+	(get_graph_weights): Ditto.
+	(merge_graph_nodes): Ditto.
+	(build_constraint_graph): Ditto.
+	(topo_visit): Ditto.
+	(solve_graph): Ditto.
+	(create_variable_info_for): Ditto.
+	(init_base_vars): Ditto.
+	(delete_points_to_sets): Free graph, varmap, and complex constraints.
+	(condese_varmap_nodes): Free complex vector.
+	(clear_edges_for_node): Clear succs and preds vector.
+
 2005-07-10  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-structalias.c (update_alias_info): Change counting of
