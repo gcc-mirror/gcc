@@ -1,3 +1,17 @@
+2005-07-11  Steven Bosscher  <stevenb@suse.de>
+
+	* basic-block.h: Give the BB flags enum a name, bb_flags.
+	Add new flags BB_FORWARDER_BLOCK, and BB_NONTHREADABLE_BLOCK.
+	* cfgcleanup.c (enum bb_flags): Remove here.
+	(BB_FLAGS, BB_SET_FLAG, BB_CLEAR_FLAG): Remove.
+	(notice_new_block): Set/test bb->flags instead of aux via BB_FLAGS.
+	(update_forwarder_flag): Likewise.
+	(thread_jump): Likewise.
+	(try_forward_edges): Likewise.
+	(try_optimize_cfg): Likewise.  Clear bb->flags before updating the
+	forwarder flags.  Don't clear bb->aux for all basic blocks.  Only
+	reset the BB_FORWARDER_BLOCK and BB_NONTHREADABLE_BLOCK flags.
+
 2005-07-11  Richard Guenther  <rguenther@suse.de>
 
 	* config/i386/i386.opt: New target option -msseregparm.

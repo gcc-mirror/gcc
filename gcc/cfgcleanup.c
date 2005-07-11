@@ -54,24 +54,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "cfgloop.h"
 #include "expr.h"
 
-/* cleanup_cfg maintains following flags for each basic block.  */
-
-enum bb_flags
-{
-    /* Set if BB is the forwarder block to avoid too many
-       forwarder_block_p calls.  */
-    BB_FORWARDER_BLOCK = 1,
-    BB_NONTHREADABLE_BLOCK = 2
-};
-
-#define BB_FLAGS(BB) (enum bb_flags) (BB)->aux
-#define BB_SET_FLAG(BB, FLAG) \
-  (BB)->aux = (void *) (long) ((enum bb_flags) (BB)->aux | (FLAG))
-#define BB_CLEAR_FLAG(BB, FLAG) \
-  (BB)->aux = (void *) (long) ((enum bb_flags) (BB)->aux & ~(FLAG))
-
-#define FORWARDER_BLOCK_P(BB) (BB_FLAGS (BB) & BB_FORWARDER_BLOCK)
-
+#define FORWARDER_BLOCK_P(BB) ((BB)->flags & BB_FORWARDER_BLOCK)
+  
 /* Set to true when we are running first pass of try_optimize_cfg loop.  */
 static bool first_pass;
 static bool try_crossjump_to_edge (int, edge, edge);
@@ -101,7 +85,7 @@ notice_new_block (basic_block bb)
     return;
 
   if (forwarder_block_p (bb))
-    BB_SET_FLAG (bb, BB_FORWARDER_BLOCK);
+    bb->flags |= BB_FORWARDER_BLOCK;
 }
 
 /* Recompute forwarder flag after block has been modified.  */
@@ -110,9 +94,9 @@ static void
 update_forwarder_flag (basic_block bb)
 {
   if (forwarder_block_p (bb))
-    BB_SET_FLAG (bb, BB_FORWARDER_BLOCK);
+    bb->flags |= BB_FORWARDER_BLOCK;
   else
-    BB_CLEAR_FLAG (bb, BB_FORWARDER_BLOCK);
+    bb->flags &= ~BB_FORWARDER_BLOCK;
 }
 
 /* Simplify a conditional jump around an unconditional jump.
@@ -285,7 +269,7 @@ thread_jump (int mode, edge e, basic_block b)
   bool failed = false;
   reg_set_iterator rsi;
 
-  if (BB_FLAGS (b) & BB_NONTHREADABLE_BLOCK)
+  if (b->flags & BB_NONTHREADABLE_BLOCK)
     return NULL;
 
   /* At the moment, we do handle only conditional jumps, but later we may
@@ -294,7 +278,7 @@ thread_jump (int mode, edge e, basic_block b)
     return NULL;
   if (EDGE_COUNT (b->succs) != 2)
     {
-      BB_SET_FLAG (b, BB_NONTHREADABLE_BLOCK);
+      b->flags |= BB_NONTHREADABLE_BLOCK;
       return NULL;
     }
 
@@ -304,7 +288,7 @@ thread_jump (int mode, edge e, basic_block b)
 
   if (!any_condjump_p (BB_END (b)) || !onlyjump_p (BB_END (b)))
     {
-      BB_SET_FLAG (b, BB_NONTHREADABLE_BLOCK);
+      b->flags |= BB_NONTHREADABLE_BLOCK;
       return NULL;
     }
 
@@ -342,7 +326,7 @@ thread_jump (int mode, edge e, basic_block b)
        insn = NEXT_INSN (insn))
     if (INSN_P (insn) && side_effects_p (PATTERN (insn)))
       {
-	BB_SET_FLAG (b, BB_NONTHREADABLE_BLOCK);
+	b->flags |= BB_NONTHREADABLE_BLOCK;
 	return NULL;
       }
 
@@ -386,7 +370,7 @@ thread_jump (int mode, edge e, basic_block b)
      have life information in cfg_cleanup.  */
   if (failed)
     {
-      BB_SET_FLAG (b, BB_NONTHREADABLE_BLOCK);
+      b->flags |= BB_NONTHREADABLE_BLOCK;
       goto failed_exit;
     }
 
@@ -612,7 +596,7 @@ try_forward_edges (int mode, basic_block b)
 			    / REG_BR_PROB_BASE);
 
 	  if (!FORWARDER_BLOCK_P (b) && forwarder_block_p (b))
-	    BB_SET_FLAG (b, BB_FORWARDER_BLOCK);
+	    b->flags |= BB_FORWARDER_BLOCK;
 
 	  do
 	    {
@@ -1837,11 +1821,11 @@ try_optimize_cfg (int mode)
   if (mode & CLEANUP_CROSSJUMP)
     add_noreturn_fake_exit_edges ();
 
-  FOR_EACH_BB (bb)
-    update_forwarder_flag (bb);
-
   if (mode & (CLEANUP_UPDATE_LIFE | CLEANUP_CROSSJUMP | CLEANUP_THREADING))
     clear_bb_flags ();
+
+  FOR_EACH_BB (bb)
+    update_forwarder_flag (bb);
 
   if (! targetm.cannot_modify_jumps_p ())
     {
@@ -2029,7 +2013,8 @@ try_optimize_cfg (int mode)
   if (mode & CLEANUP_CROSSJUMP)
     remove_fake_exit_edges ();
 
-  clear_aux_for_blocks ();
+  FOR_ALL_BB (b)
+    b->flags &= ~(BB_FORWARDER_BLOCK | BB_NONTHREADABLE_BLOCK);
 
   return changed_overall;
 }
