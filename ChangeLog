@@ -1,3 +1,10 @@
+2005-07-11  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR ada/22340
+
+	* Makefile.tpl (POSTSTAGE1_FLAGS_TO_PASS): Fix pasto.
+	* Makefile.in: Regenerate.
+
 2005-07-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* MAINTAINERS: Remove Dave Brolley as a cpplib maintainer.  Add Dave

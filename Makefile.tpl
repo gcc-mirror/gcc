@@ -1319,7 +1319,7 @@ objext = .o
 # Flags to pass to stage2 and later makes.
 POSTSTAGE1_FLAGS_TO_PASS = \
 	CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
-	STAGE_PREFIX=$$r/stage[+prev+]-gcc/ \
+	STAGE_PREFIX=$$r/prev-gcc/ \
 	CFLAGS="$(BOOT_CFLAGS)" \
 	ADAC="\$$(CC)"
 
