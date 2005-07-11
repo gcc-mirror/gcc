@@ -260,15 +260,12 @@ Boston, MA 02110-1301, USA.  */
 #define HARD_REGNO_RENAME_OK(OLD_REG, NEW_REG) \
   m68k_hard_regno_rename_ok (OLD_REG, NEW_REG)
 
-/* On the m68k, the cpu registers can hold any mode but the 68881 registers
-   can hold only SFmode or DFmode.  */
+/* Value is true if hard register REGNO can hold a value of machine-mode MODE.
+   On the 68000, the cpu registers can hold any mode except bytes in
+   address registers, the 68881 registers can hold only SFmode or DFmode.  */
+
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
-  (((REGNO) < 16					\
-    && !((REGNO) < 8 && (REGNO) + GET_MODE_SIZE (MODE) / 4 > 8))	\
-   || ((REGNO) >= 16 && (REGNO) < 24				        \
-       && (GET_MODE_CLASS (MODE) == MODE_FLOAT		\
-	   || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)		\
-       && GET_MODE_UNIT_SIZE (MODE) <= 12))
+  m68k_regno_mode_ok ((REGNO), (MODE))
 
 #define MODES_TIEABLE_P(MODE1, MODE2)			\
   (! TARGET_68881					\

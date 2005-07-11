@@ -1,3 +1,13 @@
+2005-07-12  Peter Barada  <peter@the-baradas.com>
+
+	PR middle-end/16719
+	PR middle-end/18421
+	* config/m68k/m68k.h (HARD_REGNO_MODE_OK): Disallow bytes
+	in address registers.
+	* config/m68k/m68k.c (hard_regno_mode_ok): Likewise.
+	* config/m68k/m68k.md: Replace 's' with 'i' in 4th
+	alternative of addsi3_5200.
+
 2005-07-11  Ian Lance Taylor  <ian@airs.com>
 
 	* config/mips/mips.md (ffs<mode>2): Remove.

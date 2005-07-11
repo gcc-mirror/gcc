@@ -54,6 +54,7 @@ extern int valid_dbcc_comparison_p_2 (rtx, enum machine_mode);
 
 #endif /* RTX_CODE */
 
+extern bool m68k_regno_mode_ok (int, enum machine_mode);
 extern int flags_in_68881 (void);
 extern bool use_return_insn (void);
 extern void override_options (void);
