@@ -1,0 +1,68 @@
+// 2005-07-11  Paolo Carlini  <pcarlini@suse.de>
+
+// Copyright (C) 2005 Free Software Foundation
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING.  If not, write to the Free
+// Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+// USA.
+
+// 22.2.2.2.1  num_put members
+
+#include <locale>
+#include <sstream>
+#include <testsuite_hooks.h>
+
+void test01()
+{
+  using namespace std;
+  bool test __attribute__((unused)) = true;
+
+  locale loc_c = locale::classic();
+
+  const wstring empty;
+
+  wstringstream ss;
+  ss.imbue(loc_c);
+  const num_put<wchar_t>& np = use_facet<num_put<wchar_t> >(ss.getloc()); 
+
+  long l = -1;
+  unsigned long ul = 0;
+
+  ss.setf(ios::hex, ios::basefield);
+  np.put(ss.rdbuf(), ss, L'+', l);
+  VERIFY( ss.str() != L"1" );
+  ss >> ul;
+  VERIFY( ul == static_cast<unsigned long>(l) );
+
+#ifdef _GLIBCXX_USE_LONG_LONG  
+  long long ll = -1LL;
+  unsigned long long ull = 0ULL;
+
+  ss.str(empty);
+  ss.clear();
+  np.put(ss.rdbuf(), ss, L'+', ll);
+  VERIFY( ss.str() != L"1" );
+  ss >> ull;
+  VERIFY( ull == static_cast<unsigned long long>(ll) );
+#endif
+}
+
+int main()
+{
+  test01();
+  return 0;
+}
+
+

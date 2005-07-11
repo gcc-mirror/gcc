@@ -1,3 +1,23 @@
+2005-07-11  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/ostream.tcc (basic_ostream<>::operator<<(long),
+	basic_ostream<>::operator<<(long long)): Don't deal with oct
+	and hex and casts to unsigned here...
+	* include/bits/locale_facets.tcc (__int_to_char(_CharT*, long,
+	const _CharT*, ios_base::fmtflags), __int_to_char(_CharT*, long
+	long, const _CharT*, ios_base::fmtflags)): ... do that here,
+	instead, as per Table 57.
+	(num_put<>::_M_insert_int): Tidy treatment of numeric base and
+	sign.
+	* include/std/std_ostream.h (operator<<(short), operator<<(int)):
+	Adjust logic, as per the letter of the resolution of DR117 [WP].
+	* testsuite/22_locale/num_put/put/char/10.cc: New.
+	* testsuite/22_locale/num_put/put/wchar_t/10.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/7.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/7.cc:
+	Likewise.
+
 2005-07-07  David Edelsohn  <edelsohn@gnu.org>
 
 	* testsuite/ext/pb_assoc/example/tree_order_statistics_join.cc:

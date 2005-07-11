@@ -175,9 +175,9 @@ namespace std
       __ostream_type& 
       operator<<(short __n)
       { 
-	ios_base::fmtflags __fmt = this->flags() & ios_base::basefield;
-	if (__fmt & ios_base::oct || __fmt & ios_base::hex)
-	  return this->operator<<(static_cast<unsigned long>
+	const ios_base::fmtflags __fmt = this->flags() & ios_base::basefield;
+	if (__fmt == ios_base::oct || __fmt == ios_base::hex)
+	  return this->operator<<(static_cast<long>
 				  (static_cast<unsigned short>(__n)));
 	else
 	  return this->operator<<(static_cast<long>(__n));
@@ -190,9 +190,9 @@ namespace std
       __ostream_type& 
       operator<<(int __n)
       { 
-	ios_base::fmtflags __fmt = this->flags() & ios_base::basefield;
-	if (__fmt & ios_base::oct || __fmt & ios_base::hex)
-	  return this->operator<<(static_cast<unsigned long>
+	const ios_base::fmtflags __fmt = this->flags() & ios_base::basefield;
+	if (__fmt == ios_base::oct || __fmt == ios_base::hex)
+	  return this->operator<<(static_cast<long>
 				  (static_cast<unsigned int>(__n)));
 	else
 	  return this->operator<<(static_cast<long>(__n));

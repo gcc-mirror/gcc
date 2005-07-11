@@ -1,6 +1,6 @@
 // ostream classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -130,19 +130,8 @@ namespace std
 	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
 	  try
 	    {
-	      bool __b = false;
-	      const char_type __c = this->fill();
-	      const ios_base::fmtflags __fmt = (this->flags()
-						& ios_base::basefield);
 	      const __num_put_type& __np = __check_facet(this->_M_num_put);
-	      if ((__fmt & ios_base::oct) || (__fmt & ios_base::hex))
-		{
-		  const unsigned long __l = static_cast<unsigned long>(__n);
-		  __b = __np.put(*this, *this, __c, __l).failed();
-		}
-	      else
-		__b = __np.put(*this, *this, __c, __n).failed();
-	      if (__b)
+	      if (__np.put(*this, *this, this->fill(), __n).failed())
 		__err |= ios_base::badbit;
 	    }
 	  catch(...)
@@ -188,20 +177,8 @@ namespace std
 	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
 	  try
 	    {
-	      bool __b = false;
-	      const char_type __c = this->fill();
-	      const ios_base::fmtflags __fmt = (this->flags()
-						& ios_base::basefield);
 	      const __num_put_type& __np = __check_facet(this->_M_num_put);
-	      if ((__fmt & ios_base::oct) || (__fmt & ios_base::hex))
-		{
-		  const unsigned long long __l = (static_cast<
-						  unsigned long long>(__n));
-		  __b = __np.put(*this, *this, __c, __l).failed();
-		}
-	      else
-		__b = __np.put(*this, *this, __c, __n).failed();
-	      if (__b)
+	      if (__np.put(*this, *this, this->fill(), __n).failed())
 		__err |= ios_base::badbit;
 	    }
 	  catch(...)
