@@ -1,3 +1,17 @@
+2005-07-11  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/22102
+	* include/bits/stl_tree.h (insert_unique(iterator, const _Val&),
+	insert_equal(iterator, const _Val&)): Reimplement to check both
+	before and after, as per the algorithm "ignore hint if wrong" of
+	ISO paper N1780.
+
+2005-07-11  Paolo Carlini  <pcarlini@suse.de>
+	    
+	PR libstdc++/21244 (cont^2)
+	* include/ext/bitmap_allocator.h: Convert everywhere
+	bits_per_block to size_t.
+
 2005-07-07  Release Manager
 
 	* GCC 4.0.1 released.
