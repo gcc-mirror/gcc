@@ -3065,6 +3065,7 @@ create_variable_info_for (tree decl, const char *name)
       
       field = fo->field;
       vi->size = TREE_INT_CST_LOW (DECL_SIZE (field));
+      vi->offset = fo->offset;
       for (i = 1; VEC_iterate (fieldoff_s, fieldstack, i, fo); i++)
 	{
 	  varinfo_t newvi;

@@ -2631,6 +2631,7 @@ struct tree_decl_non_common GTY(())
    VAR_DECL and PARM_DECL reserve the arguments slot for language-specific
    uses.  */
 #define DECL_ARGUMENTS(NODE) (FUNCTION_DECL_CHECK (NODE)->decl_non_common.arguments)
+#define DECL_ARGUMENT_FLD(NODE) (DECL_NON_COMMON_CHECK (NODE)->decl_non_common.arguments)
 
 /* FUNCTION_DECL inherits from DECL_NON_COMMON because of the use of the
    arguments/result/saved_tree fields by front ends.   It was either inherit
