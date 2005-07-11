@@ -1,3 +1,7 @@
+2005-07-12  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* gcc.dg/tree-ssa/loop-10.c: New test.
+
 2005-07-11  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gcc.c-torture/execute/20020720-1.x: Remove.

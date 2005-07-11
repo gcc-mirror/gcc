@@ -1,3 +1,13 @@
+2005-07-12  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* tree-flow.h (remove_empty_loops, single_dom_exit): Declare.
+	* passes.c (init_optimization_passes): Add pass_empty_loop.
+	* tree-pass.h (pass_empty_loop): Declare.
+	* tree-ssa-loop-ivcanon.c (empty_loop_p, remove_empty_loop,
+	try_remove_empty_loop, remove_empty_loops): New functions.
+	* tree-ssa-loop-ivopts.c (single_dom_exit): Export.
+	* tree-ssa-loop.c (tree_ssa_empty_loop, pass_empty_loop): New.
+
 2005-07-12  Peter Barada  <peter@the-baradas.com>
 
 	PR middle-end/16719

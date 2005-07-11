@@ -311,6 +311,34 @@ struct tree_opt_pass pass_scev_cprop =
   0					/* letter */
 };
 
+/* Remove empty loops.  */
+
+static void
+tree_ssa_empty_loop (void)
+{
+  if (!current_loops)
+    return;
+
+  remove_empty_loops (current_loops);
+}
+
+struct tree_opt_pass pass_empty_loop =
+{
+  "empty",				/* name */
+  NULL,					/* gate */
+  tree_ssa_empty_loop,		       	/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_COMPLETE_UNROLL,	  		/* tv_id */
+  PROP_cfg | PROP_ssa,			/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func | TODO_verify_loops,	/* todo_flags_finish */
+  0					/* letter */
+};
+
 /* Record bounds on numbers of iterations of loops.  */
 
 static void

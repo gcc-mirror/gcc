@@ -688,6 +688,7 @@ void tree_ssa_lim (struct loops *);
 void tree_ssa_unswitch_loops (struct loops *);
 void canonicalize_induction_variables (struct loops *);
 void tree_unroll_loops_completely (struct loops *, bool);
+void remove_empty_loops (struct loops *);
 void tree_ssa_iv_optimize (struct loops *);
 
 bool number_of_iterations_exit (struct loop *, edge,
@@ -719,6 +720,7 @@ struct loop *tree_ssa_loop_version (struct loops *, struct loop *, tree,
 				    basic_block *);
 tree expand_simple_operations (tree);
 void substitute_in_loop_info (struct loop *, tree, tree);
+edge single_dom_exit (struct loop *);
 
 /* In tree-ssa-loop-im.c  */
 /* The possibilities of statement movement.  */
