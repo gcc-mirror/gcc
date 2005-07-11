@@ -1906,45 +1906,6 @@
    (set_attr "mode" "<UNITMODE>")])
 
 ;;
-;;  ....................
-;;
-;;	FIND FIRST BIT INSTRUCTION
-;;
-;;  ....................
-;;
-
-(define_insn "ffs<mode>2"
-  [(set (match_operand:GPR 0 "register_operand" "=&d")
-	(ffs:GPR (match_operand:GPR 1 "register_operand" "d")))
-   (clobber (match_scratch:GPR 2 "=&d"))
-   (clobber (match_scratch:GPR 3 "=&d"))]
-  "!TARGET_MIPS16"
-{
-  if (optimize && find_reg_note (insn, REG_DEAD, operands[1]))
-    return "%(\
-move\t%0,%.\;\
-beq\t%1,%.,2f\n\
-%~1:\tand\t%2,%1,0x0001\;\
-<d>addu\t%0,%0,1\;\
-beq\t%2,%.,1b\;\
-<d>srl\t%1,%1,1\n\
-%~2:%)";
-
-  return "%(\
-move\t%0,%.\;\
-move\t%3,%1\;\
-beq\t%3,%.,2f\n\
-%~1:\tand\t%2,%3,0x0001\;\
-<d>addu\t%0,%0,1\;\
-beq\t%2,%.,1b\;\
-<d>srl\t%3,%3,1\n\
-%~2:%)";
-}
-  [(set_attr "type" "multi")
-   (set_attr "mode" "<MODE>")
-   (set_attr "length" "28")])
-
-;;
 ;;  ...................
 ;;
 ;;  Count leading zeroes.

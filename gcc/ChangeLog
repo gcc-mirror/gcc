@@ -1,5 +1,9 @@
 2005-07-11  Ian Lance Taylor  <ian@airs.com>
 
+	* config/mips/mips.md (ffs<mode>2): Remove.
+
+2005-07-11  Ian Lance Taylor  <ian@airs.com>
+
 	* doc/tree-ssa.texi (Cleanups): Improve description of
 	TRY_FINALLY_EXPR.
 	(GIMPLE Exception Handling): Clarify TRY_CATCH_EXPR cases.
