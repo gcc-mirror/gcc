@@ -193,6 +193,10 @@ msse3
 Target Report Mask(SSE3)
 Support MMX, SSE, SSE2 and SSE3 built-in functions and code generation
 
+msseregparm
+Target RejectNegative Mask(SSEREGPARM)
+Use SSE register passing conventions for SF and DF mode
+
 msvr3-shlib
 Target Report Mask(SVR3_SHLIB)
 Uninitialized locals in .bss
