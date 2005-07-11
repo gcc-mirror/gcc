@@ -1,3 +1,7 @@
+2005-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.fortran-torture/execute/forall_7.f90: New test.
+
 2005-07-10  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.target/mips/mips.exp (is_gp32_flag): New procedure.
