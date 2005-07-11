@@ -265,9 +265,11 @@ type_after_usual_arithmetic_conversions (tree t1, tree t2)
   /* FIXME: Attributes.  */
   gcc_assert (ARITHMETIC_TYPE_P (t1) 
 	      || TREE_CODE (t1) == COMPLEX_TYPE
+	      || TREE_CODE (t1) == VECTOR_TYPE
 	      || TREE_CODE (t1) == ENUMERAL_TYPE);
   gcc_assert (ARITHMETIC_TYPE_P (t2) 
 	      || TREE_CODE (t2) == COMPLEX_TYPE
+	      || TREE_CODE (t1) == VECTOR_TYPE
 	      || TREE_CODE (t2) == ENUMERAL_TYPE);
 
   /* In what follows, we slightly generalize the rules given in [expr] so
@@ -292,6 +294,16 @@ type_after_usual_arithmetic_conversions (tree t1, tree t2)
       else
 	return build_type_attribute_variant (build_complex_type (subtype),
 					     attributes);
+    }
+
+  if (code1 == VECTOR_TYPE)
+    {
+      /* When we get here we should have two vectors of the same size.
+	 Just prefer the unsigned one if present.  */
+      if (TYPE_UNSIGNED (t1))
+	return build_type_attribute_variant (t1, attributes);
+      else
+	return build_type_attribute_variant (t2, attributes);
     }
 
   /* If only one is real, use it as the result.  */
@@ -744,9 +756,9 @@ common_type (tree t1, tree t2)
   code2 = TREE_CODE (t2);
 
   if ((ARITHMETIC_TYPE_P (t1) || code1 == ENUMERAL_TYPE
-       || code1 == COMPLEX_TYPE)
+       || code1 == COMPLEX_TYPE || code1 == VECTOR_TYPE)
       && (ARITHMETIC_TYPE_P (t2) || code2 == ENUMERAL_TYPE
-	  || code2 == COMPLEX_TYPE))
+	  || code2 == COMPLEX_TYPE || code2 == VECTOR_TYPE))
     return type_after_usual_arithmetic_conversions (t1, t2);
 
   else if ((TYPE_PTR_P (t1) && TYPE_PTR_P (t2))
@@ -2907,7 +2919,8 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
     case BIT_AND_EXPR:
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
-      if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
+      if ((code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
+	  || (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE))
 	shorten = -1;
       break;
 
@@ -3163,10 +3176,21 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
       break;
     }
 
-  arithmetic_types_p = 
-    ((code0 == INTEGER_TYPE || code0 == REAL_TYPE || code0 == COMPLEX_TYPE)
-     && (code1 == INTEGER_TYPE || code1 == REAL_TYPE 
-	 || code1 == COMPLEX_TYPE));
+  if (((code0 == INTEGER_TYPE || code0 == REAL_TYPE || code0 == COMPLEX_TYPE)
+       && (code1 == INTEGER_TYPE || code1 == REAL_TYPE 
+	   || code1 == COMPLEX_TYPE)))
+    arithmetic_types_p = 1;
+  else
+    {
+      arithmetic_types_p = 0;
+      /* Vector arithmetic is only allowed when both sides are vectors.  */
+      if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
+	{
+	  if (!tree_int_cst_equal (TYPE_SIZE (type0), TYPE_SIZE (type1)))
+	    error ("can't convert between vector values of different size");
+	  arithmetic_types_p = 1;
+	}
+    }
   /* Determine the RESULT_TYPE, if it is not already known.  */
   if (!result_type
       && arithmetic_types_p 
