@@ -770,15 +770,14 @@ stack_protect_classify_type (tree type)
 	  || t == signed_char_type_node
 	  || t == unsigned_char_type_node)
 	{
-	  HOST_WIDE_INT max = PARAM_VALUE (PARAM_SSP_BUFFER_SIZE);
-	  HOST_WIDE_INT len;
+	  unsigned HOST_WIDE_INT max = PARAM_VALUE (PARAM_SSP_BUFFER_SIZE);
+	  unsigned HOST_WIDE_INT len;
 
-	  if (!TYPE_DOMAIN (type)
-	      || !TYPE_MAX_VALUE (TYPE_DOMAIN (type))
-	      || !host_integerp (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), 1))
-	    len = max + 1;
+	  if (!TYPE_SIZE_UNIT (type)
+	      || !host_integerp (TYPE_SIZE_UNIT (type), 1))
+	    len = max;
 	  else
-	    len = tree_low_cst (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), 1);
+	    len = tree_low_cst (TYPE_SIZE_UNIT (type), 1);
 
 	  if (len < max)
 	    ret = SPCT_HAS_SMALL_CHAR_ARRAY | SPCT_HAS_ARRAY;

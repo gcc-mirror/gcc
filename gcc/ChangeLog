@@ -1,3 +1,9 @@
+2005-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfgexpand.c (stack_protect_classify_type): Use TYPE_SIZE_UNIT (type)
+	instead of TYPE_MAX_VALUE (TYPE_DOMAIN (type)) to get array size in
+	bytes.
+
 2005-07-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/22239
