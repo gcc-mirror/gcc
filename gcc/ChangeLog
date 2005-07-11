@@ -1,3 +1,11 @@
+2005-07-11  Richard Guenther  <rguenther@suse.de>
+
+	* config/i386/i386.opt: New target option -msseregparm.
+	* config/i386/i386.c (override_options): Error out for
+	-msseregparm but no SSE support.
+	(ix86_function_sseregparm): Check for global sseregparm.
+	* doc/invoke.texi: Document -msseregparm.
+
 2005-07-11  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
 
 	* config.gcc (m32r-*-linux*): Use the default extra_parts.

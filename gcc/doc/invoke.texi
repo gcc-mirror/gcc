@@ -514,8 +514,8 @@ Objective-C and Objective-C++ Dialects}.
 -mmmx  -msse  -msse2 -msse3 -m3dnow @gol
 -mthreads  -mno-align-stringops  -minline-all-stringops @gol
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
--m96bit-long-double  -mregparm=@var{num}  -momit-leaf-frame-pointer @gol
--mno-red-zone -mno-tls-direct-seg-refs @gol
+-m96bit-long-double  -mregparm=@var{num}  -msseregparm @gol
+-momit-leaf-frame-pointer  -mno-red-zone -mno-tls-direct-seg-refs @gol
 -mcmodel=@var{code-model} @gol
 -m32  -m64}
 
@@ -9029,6 +9029,17 @@ function by using the function attribute @samp{regparm}.
 @var{num} is nonzero, then you must build all modules with the same
 value, including any libraries.  This includes the system libraries and
 startup modules.
+
+@item -msseregparm
+@opindex msseregparm
+Use SSE register passing conventions for float and double arguments
+and return values.  You can control this behavior for a specific
+function by using the function attribute @samp{sseregparm}.
+@xref{Function Attributes}.
+
+@strong{Warning:} if you use this switch then you must build all
+modules with the same value, including any libraries.  This includes
+the system libraries and startup modules.
 
 @item -mpreferred-stack-boundary=@var{num}
 @opindex mpreferred-stack-boundary
