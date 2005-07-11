@@ -48,7 +48,7 @@ extern int target_flags;
 /* Generate DSP instructions, like DSP halfword loads */
 #define TARGET_DSP			(1)
 
-#define TARGET_DEFAULT MASK_CSYNC
+#define TARGET_DEFAULT (MASK_SPECLD_ANOMALY | MASK_CSYNC_ANOMALY)
 
 /* Maximum number of library ids we permit */
 #define MAX_LIBRARY_ID 255

@@ -27,9 +27,14 @@ mlow64k
 Target Report Mask(LOW_64K)
 Program is entirely located in low 64k of memory
 
-mcsync
-Target Report Mask(CSYNC)
-Avoid speculative loads by inserting CSYNC or equivalent
+mcsync-anomaly
+Target Report Mask(CSYNC_ANOMALY)
+Work around a hardware anomaly by adding a number of NOPs before a
+CSYNC or SSYNC instruction.
+
+mspecld-anomaly
+Target Report Mask(SPECLD_ANOMALY)
+Avoid speculative loads to work around a hardware anomaly.
 
 mid-shared-library
 Target Report Mask(ID_SHARED_LIBRARY)

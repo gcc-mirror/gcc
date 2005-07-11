@@ -1,3 +1,17 @@
+2005-07-11  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.md (define_attr "type"): Add "sync".
+	(define_insn_reservation "alu"): Likewise.
+	(csync, ssync): Now of type sync.
+	* config/bfin/bfin.h (TARGET_DEFAULT): Defaults to
+	-mcsync-anomaly -mspecld-anomaly.
+	* config/bfin/bfin.opt (mcsync): Remove.
+	(mcsync-anomaly, mspecld-anomaly): Add.
+	* config/bfin/bfin.c: Include "insn-codes.h".
+	(bfin_reorg): Extend to handle the CSYNC anomaly as well.
+	(TARGET_DEFAULT_TARGET_FLAGS): New.
+	* doc/invoke.texi: Document -mcsync-anomaly, -mspecld-anomaly.
+
 2005-07-11  Steven Bosscher  <stevenb@suse.de>
 
 	* basic-block.h: Give the BB flags enum a name, bb_flags.
