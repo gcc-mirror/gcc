@@ -1,3 +1,7 @@
+2005-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.fortran-torture/execute/forall_7.f90: New test.
+
 2005-07-10  Feng Wang  <fengwang@nudt.edu.cn>
 
 	* gfortran.dg/simplify_modulo.f90: New.

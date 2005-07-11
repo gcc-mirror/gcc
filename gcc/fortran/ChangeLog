@@ -1,3 +1,11 @@
+2005-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-stmt.c (gfc_trans_forall_loop): Clear maskindex before
+	the outermost loop.
+	(gfc_trans_assign_need_temp, gfc_trans_pointer_assign_need_temp,
+	gfc_trans_forall_1, gfc_evaluate_where_mask, gfc_trans_where_2):
+	Don't clear maskindexes here.
+
 2005-07-10  Feng Wang  <fengwang@nudt.edu.cn>
 
 	Backport from the mainline:
