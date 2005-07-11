@@ -2501,9 +2501,9 @@ update_alias_info (tree stmt, struct alias_info *ai)
 {
   bitmap addr_taken;
   use_operand_p use_p;
-  def_operand_p def_p;
   ssa_op_iter iter;
   bool stmt_escapes_p = is_escape_site (stmt, ai);
+  tree op;
 
   /* Mark all the variables whose address are taken by the statement.  */
   addr_taken = addresses_taken (stmt);
@@ -2629,16 +2629,27 @@ update_alias_info (tree stmt, struct alias_info *ai)
 	}
     }
 
-  /* Update reference counter for definitions to any potentially
-     aliased variable.  This is used in the alias grouping heuristics.  */
-  FOR_EACH_PHI_OR_STMT_DEF (def_p, stmt, iter, SSA_OP_ALL_DEFS)
+  if (TREE_CODE (stmt) == PHI_NODE)
+    return;
+
+  /* Update reference counter for definitions to any
+     potentially aliased variable.  This is used in the alias
+     grouping heuristics.  */
+  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_DEF)
     {
-      tree op = DEF_FROM_PTR (def_p);
       tree var = SSA_NAME_VAR (op);
       var_ann_t ann = var_ann (var);
       bitmap_set_bit (ai->written_vars, DECL_UID (var));
       if (may_be_aliased (var))
 	NUM_REFERENCES_INC (ann);
+      
+    }
+  
+  /* Mark variables in V_MAY_DEF operands as being written to.  */
+  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_VIRTUAL_DEFS)
+    {
+      tree var = DECL_P (op) ? op : SSA_NAME_VAR (op);
+      bitmap_set_bit (ai->written_vars, DECL_UID (var));
     }
 }
 

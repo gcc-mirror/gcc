@@ -1,5 +1,10 @@
 2005-07-10  Daniel Berlin  <dberlin@dberlin.org>
 
+	* tree-ssa-structalias.c (update_alias_info): Change counting of
+	references to not include vdefs.
+	
+2005-07-10  Daniel Berlin  <dberlin@dberlin.org>
+
 	* tree-ssa-alias.c (free_used_part_map): Add missing free.
 	(up_insert): Ditto.
 
