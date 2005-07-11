@@ -49,6 +49,11 @@
        (and (match_code "const_int")
 	    (match_test "log2constp (INTVAL (op))"))))
 
+;; Return nonzero if OP is a register or an integer constant.
+(define_predicate "reg_or_const_int_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_code "const_int")))
+
 ;; Like register_operand, but make sure that hard regs have a valid mode.
 (define_predicate "valid_reg_operand"
   (match_operand 0 "register_operand")
