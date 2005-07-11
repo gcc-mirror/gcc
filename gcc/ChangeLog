@@ -1,5 +1,10 @@
 2005-07-11  Bernd Schmidt  <bernd.schmidt@analog.com>
 
+	* config/bfin/bfin.md (cmpsi, compare_eq, compare_ne, compare_lt,
+	compare_le, compare_leu, compare_ltu): Use reg_or_const_int_operand
+	for second comparison operand.
+	* config/bfin/predicates.md (reg_or_const_int_operand): New.
+
 	* config/bfin/bfin.md (define_attr "type"): Add "sync".
 	(define_insn_reservation "alu"): Likewise.
 	(csync, ssync): Now of type sync.
