@@ -5496,14 +5496,18 @@ loop_givs_rescan (struct loop *loop, struct iv_class *bl, rtx *reg_map)
 						  v->new_reg));
 	  else if (GET_CODE (*v->location) == PLUS
 		   && REG_P (XEXP (*v->location, 0))
-		   && REG_P (v->new_reg)
 		   && CONSTANT_P (XEXP (*v->location, 1)))
-	    loop_insn_emit_before (loop, 0, v->insn,
-				   gen_move_insn (XEXP (*v->location, 0),
-						  gen_rtx_MINUS
-						  (GET_MODE (*v->location),
-						   v->new_reg,
-						   XEXP (*v->location, 1))));
+	    {
+	      rtx tem;
+	      start_sequence ();
+	      tem = expand_simple_binop (GET_MODE (*v->location), MINUS,
+					 v->new_reg, XEXP (*v->location, 1),
+					 NULL_RTX, 0, OPTAB_LIB_WIDEN);
+	      emit_move_insn (XEXP (*v->location, 0), tem);
+	      tem = get_insns ();
+	      end_sequence ();
+	      loop_insn_emit_before (loop, 0, v->insn, tem);
+	    }
 	  else
 	    {
 	      /* If it wasn't a reg, create a pseudo and use that.  */

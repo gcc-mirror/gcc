@@ -1,3 +1,10 @@
+2005-07-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/22239
+	PR target/20126
+	* loop.c (loop_givs_rescan): Use expand_simple_binop instead of
+	gen_rtx_MINUS to handle non-replaceable (plus ((x) (const)).
+
 2005-07-07  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-structalias.c (struct variable_info): Heapify complex.
