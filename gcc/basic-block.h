@@ -292,7 +292,7 @@ typedef struct basic_block_def *basic_block;
    All other flags may be cleared by clear_bb_flags().  It is generally
    a bad idea to rely on any flags being up-to-date.  */
 
-enum
+enum bb_flags
 {
 
   /* Set if insns in BB have are modified.  Used for updating liveness info.  */
@@ -325,7 +325,15 @@ enum
   BB_DUPLICATED = 256,
 
   /* Set on blocks that are in RTL format.  */
-  BB_RTL = 1024
+  BB_RTL = 1024,
+
+  /* Set on blocks that are forwarder blocks.
+     Only used in cfgcleanup.c.  */
+  BB_FORWARDER_BLOCK = 2048,
+
+  /* Set on blocks that cannot be threaded through.
+     Only used in cfgcleanup.c.  */
+  BB_NONTHREADABLE_BLOCK = 4096
 };
 
 /* Dummy flag for convenience in the hot/cold partitioning code.  */
