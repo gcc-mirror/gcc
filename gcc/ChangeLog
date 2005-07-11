@@ -1,3 +1,8 @@
+2005-07-11  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
+
+	* config.gcc (m32r-*-linux*): Use the default extra_parts.
+	(m32rle-*-linux*): Ditto.
+
 2005-07-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* cfgexpand.c (stack_protect_classify_type): Use TYPE_SIZE_UNIT (type)
