@@ -167,7 +167,7 @@ static void build_constraint_graph (void);
 static bitmap_obstack ptabitmap_obstack;
 static bitmap_obstack iteration_obstack;
 DEF_VEC_P(constraint_t);
-DEF_VEC_ALLOC_P(constraint_t,gc);
+DEF_VEC_ALLOC_P(constraint_t,heap);
 
 static struct constraint_stats
 {
@@ -234,7 +234,7 @@ struct variable_info
 
   /* Vector of complex constraints for this node.  Complex
      constraints are those involving dereferences.  */
-  VEC(constraint_t,gc) *complex;
+  VEC(constraint_t,heap) *complex;
 };
 typedef struct variable_info *varinfo_t;
 
@@ -245,11 +245,11 @@ static alloc_pool variable_info_pool;
 
 DEF_VEC_P(varinfo_t);
 
-DEF_VEC_ALLOC_P(varinfo_t, gc);
+DEF_VEC_ALLOC_P(varinfo_t, heap);
 
 /* Table of variable info structures for constraint variables.  Indexed directly
    by variable info id.  */
-static VEC(varinfo_t,gc) *varmap;
+static VEC(varinfo_t,heap) *varmap;
 #define get_varinfo(n) VEC_index(varinfo_t, varmap, n)
 
 /* Variable that represents the unknown pointer.  */
@@ -342,7 +342,7 @@ struct constraint
 
 /* List of constraints that we use to build the constraint graph from.  */
 
-static VEC(constraint_t,gc) *constraints;
+static VEC(constraint_t,heap) *constraints;
 static alloc_pool constraint_pool;
 
 /* An edge in the constraint graph.  We technically have no use for
@@ -374,7 +374,7 @@ new_constraint_edge (unsigned int src, unsigned int dest)
 }
 
 DEF_VEC_P(constraint_edge_t);
-DEF_VEC_ALLOC_P(constraint_edge_t,gc);
+DEF_VEC_ALLOC_P(constraint_edge_t,heap);
 
 
 /* The constraint graph is simply a set of adjacency vectors, one per
@@ -383,12 +383,12 @@ DEF_VEC_ALLOC_P(constraint_edge_t,gc);
    IOW, all edges are "forward" edges, which is not like our CFG.  
    So remember that
    preds[x]->src == x, and
-   succs[x]->src == x*/
+   succs[x]->src == x.  */
 
 struct constraint_graph
 {
-  VEC(constraint_edge_t,gc) **succs;
-  VEC(constraint_edge_t,gc) **preds;
+  VEC(constraint_edge_t,heap) **succs;
+  VEC(constraint_edge_t,heap) **preds;
 };
 
 typedef struct constraint_graph *constraint_graph_t;
@@ -541,7 +541,7 @@ constraint_equal (struct constraint a, struct constraint b)
 /* Find a constraint LOOKFOR in the sorted constraint vector VEC */
 
 static constraint_t
-constraint_vec_find (VEC(constraint_t,gc) *vec,
+constraint_vec_find (VEC(constraint_t,heap) *vec,
 		     struct constraint lookfor)
 {
   unsigned int place;  
@@ -562,8 +562,8 @@ constraint_vec_find (VEC(constraint_t,gc) *vec,
 /* Union two constraint vectors, TO and FROM.  Put the result in TO.  */
 
 static void
-constraint_set_union (VEC(constraint_t,gc) **to,
-		      VEC(constraint_t,gc) **from)
+constraint_set_union (VEC(constraint_t,heap) **to,
+		      VEC(constraint_t,heap) **from)
 {
   int i;
   constraint_t c;
@@ -574,7 +574,7 @@ constraint_set_union (VEC(constraint_t,gc) **to,
 	{
 	  unsigned int place = VEC_lower_bound (constraint_t, *to, c,
 						constraint_less);
-	  VEC_safe_insert (constraint_t, gc, *to, place, c);
+	  VEC_safe_insert (constraint_t, heap, *to, place, c);
 	}
     }
 }
@@ -642,7 +642,7 @@ insert_into_complex (unsigned int var, constraint_t c)
   varinfo_t vi = get_varinfo (var);
   unsigned int place = VEC_lower_bound (constraint_t, vi->complex, c,
 					constraint_less);
-  VEC_safe_insert (constraint_t, gc, vi->complex, place, c);
+  VEC_safe_insert (constraint_t, heap, vi->complex, place, c);
 }
 
 
@@ -671,7 +671,7 @@ constraint_edge_less (const constraint_edge_t a, const constraint_edge_t b)
    Return the edge, if found, NULL otherwise.  */
 
 static constraint_edge_t 
-constraint_edge_vec_find (VEC(constraint_edge_t,gc) *vec, 
+constraint_edge_vec_find (VEC(constraint_edge_t,heap) *vec, 
 			  struct constraint_edge lookfor)
 {
   unsigned int place;  
@@ -719,6 +719,7 @@ condense_varmap_nodes (unsigned int to, unsigned int src)
 	c->lhs.var = to;
     }
   constraint_set_union (&tovi->complex, &srcvi->complex);
+  VEC_free (constraint_t, heap, srcvi->complex);
   srcvi->complex = NULL;
 }
 
@@ -728,8 +729,8 @@ condense_varmap_nodes (unsigned int to, unsigned int src)
 static void
 erase_graph_self_edge (constraint_graph_t graph, struct constraint_edge edge)
 {
-  VEC(constraint_edge_t,gc) *predvec = graph->preds[edge.src];
-  VEC(constraint_edge_t,gc) *succvec = graph->succs[edge.dest];
+  VEC(constraint_edge_t,heap) *predvec = graph->preds[edge.src];
+  VEC(constraint_edge_t,heap) *succvec = graph->succs[edge.dest];
   unsigned int place;
   gcc_assert (edge.src == edge.dest);
 
@@ -765,8 +766,8 @@ erase_graph_self_edge (constraint_graph_t graph, struct constraint_edge edge)
 static void
 clear_edges_for_node (constraint_graph_t graph, unsigned int node)
 {
-  VEC(constraint_edge_t,gc) *succvec = graph->succs[node];
-  VEC(constraint_edge_t,gc) *predvec = graph->preds[node];
+  VEC(constraint_edge_t,heap) *succvec = graph->succs[node];
+  VEC(constraint_edge_t,heap) *predvec = graph->preds[node];
   constraint_edge_t c;
   int i;
   
@@ -795,6 +796,8 @@ clear_edges_for_node (constraint_graph_t graph, unsigned int node)
 	VEC_ordered_remove (constraint_edge_t, graph->succs[c->dest], place);
       }    
   
+  VEC_free (constraint_edge_t, heap, graph->preds[node]);
+  VEC_free (constraint_edge_t, heap, graph->succs[node]);
   graph->preds[node] = NULL;
   graph->succs[node] = NULL;
 }
@@ -809,7 +812,7 @@ add_graph_edge (constraint_graph_t graph, struct constraint_edge newe)
   unsigned int place;
   unsigned int src = newe.src;
   unsigned int dest = newe.dest;
-  VEC(constraint_edge_t,gc) *vec;
+  VEC(constraint_edge_t,heap) *vec;
 
   vec = graph->preds[src];
   place = VEC_lower_bound (constraint_edge_t, vec, &newe, 
@@ -822,13 +825,13 @@ add_graph_edge (constraint_graph_t graph, struct constraint_edge newe)
 
       weightbitmap = BITMAP_ALLOC (&ptabitmap_obstack);
       edge->weights = weightbitmap;
-      VEC_safe_insert (constraint_edge_t, gc, graph->preds[edge->src], 
+      VEC_safe_insert (constraint_edge_t, heap, graph->preds[edge->src], 
 		       place, edge);
       edge = new_constraint_edge (dest, src);
       edge->weights = weightbitmap;
       place = VEC_lower_bound (constraint_edge_t, graph->succs[edge->src],
 			       edge, constraint_edge_less);
-      VEC_safe_insert (constraint_edge_t, gc, graph->succs[edge->src], 
+      VEC_safe_insert (constraint_edge_t, heap, graph->succs[edge->src], 
 		       place, edge);
       edge_added = true;
       return true;
@@ -845,7 +848,7 @@ get_graph_weights (constraint_graph_t graph, struct constraint_edge lookfor)
 {
   constraint_edge_t edge;
   unsigned int src = lookfor.src;
-  VEC(constraint_edge_t,gc) *vec;
+  VEC(constraint_edge_t,heap) *vec;
   vec = graph->preds[src];
   edge = constraint_edge_vec_find (vec, lookfor);
   gcc_assert (edge != NULL);
@@ -859,8 +862,8 @@ static void
 merge_graph_nodes (constraint_graph_t graph, unsigned int to, 
 		   unsigned int from)
 {
-  VEC(constraint_edge_t,gc) *succvec = graph->succs[from];
-  VEC(constraint_edge_t,gc) *predvec = graph->preds[from];
+  VEC(constraint_edge_t,heap) *succvec = graph->succs[from];
+  VEC(constraint_edge_t,heap) *predvec = graph->preds[from];
   int i;
   constraint_edge_t c;
   
@@ -950,11 +953,11 @@ build_constraint_graph (void)
   int i = 0;
   constraint_t c;
 
-  graph = ggc_alloc (sizeof (struct constraint_graph));
-  graph->succs = ggc_alloc_cleared (VEC_length (varinfo_t, varmap)
-                                    * sizeof (*graph->succs));
-  graph->preds = ggc_alloc_cleared (VEC_length (varinfo_t, varmap)
-                                    * sizeof (*graph->preds));
+  graph = xmalloc (sizeof (struct constraint_graph));
+  graph->succs = xcalloc (VEC_length (varinfo_t, varmap),
+			  sizeof (*graph->succs));
+  graph->preds = xcalloc (VEC_length (varinfo_t, varmap),
+			  sizeof (*graph->preds));
 
   for (i = 0; VEC_iterate (constraint_t, constraints, i, c); i++)
     {
@@ -1255,7 +1258,7 @@ static void
 topo_visit (constraint_graph_t graph, struct topo_info *ti,
 	    unsigned int n)
 {
-  VEC(constraint_edge_t,gc) *succs = graph->succs[n];
+  VEC(constraint_edge_t,heap) *succs = graph->succs[n];
   constraint_edge_t c;
   int i;
   SET_BIT (ti->visited, n);
@@ -1555,7 +1558,7 @@ perform_var_substitution (constraint_graph_t graph)
       varinfo_t vi = get_varinfo (i);
       bool okay_to_elim = false;
       unsigned int root = VEC_length (varinfo_t, varmap);
-      VEC(constraint_edge_t,gc) *predvec = graph->preds[i];
+      VEC(constraint_edge_t,heap) *predvec = graph->preds[i];
       constraint_edge_t ce;
       bitmap tmp;
 
@@ -1687,8 +1690,8 @@ solve_graph (constraint_graph_t graph)
 	      constraint_t c;
 	      constraint_edge_t e;
 	      bitmap solution;
-	      VEC(constraint_t,gc) *complex = get_varinfo (i)->complex;
-	      VEC(constraint_edge_t,gc) *succs;
+	      VEC(constraint_t,heap) *complex = get_varinfo (i)->complex;
+	      VEC(constraint_edge_t,heap) *succs;
 
 	      RESET_BIT (changed, i);
 	      changed_count--;
@@ -1928,13 +1931,13 @@ process_constraint (constraint_t t)
       for (vi = get_varinfo (rhs.var); vi != NULL; vi = vi->next)
 	vi->address_taken = true;
 
-      VEC_safe_push (constraint_t, gc, constraints, t);
+      VEC_safe_push (constraint_t, heap, constraints, t);
     }
   else
     {
       if (lhs.type != DEREF && rhs.type == DEREF)
 	get_varinfo (lhs.var)->indirect_target = true;
-      VEC_safe_push (constraint_t, gc, constraints, t);
+      VEC_safe_push (constraint_t, heap, constraints, t);
     }
 }
 
@@ -3014,7 +3017,7 @@ create_variable_info_for (tree decl, const char *name)
     }
   
   insert_id_for_tree (vi->decl, index);  
-  VEC_safe_push (varinfo_t, gc, varmap, vi);
+  VEC_safe_push (varinfo_t, heap, varmap, vi);
   if (is_global)
     make_constraint_to_anything (vi);
 
@@ -3078,7 +3081,7 @@ create_variable_info_for (tree decl, const char *name)
 	  newvi->size = TREE_INT_CST_LOW (DECL_SIZE (field));
 	  newvi->fullsize = vi->fullsize;
 	  insert_into_field_list (vi, newvi);
-	  VEC_safe_push (varinfo_t, gc, varmap, newvi);
+	  VEC_safe_push (varinfo_t, heap, varmap, newvi);
 	  if (is_global)
 	    make_constraint_to_anything (newvi);
 
@@ -3361,7 +3364,7 @@ init_base_vars (void)
   var_nothing->size = ~0;
   var_nothing->fullsize = ~0;
   nothing_id = 0;
-  VEC_safe_push (varinfo_t, gc, varmap, var_nothing);
+  VEC_safe_push (varinfo_t, heap, varmap, var_nothing);
 
   /* Create the ANYTHING variable, used to represent that a variable
      points to some unknown piece of memory.  */
@@ -3378,7 +3381,7 @@ init_base_vars (void)
   /* Anything points to anything.  This makes deref constraints just
      work in the presence of linked list and other p = *p type loops, 
      by saying that *ANYTHING = ANYTHING. */
-  VEC_safe_push (varinfo_t, gc, varmap, var_anything);
+  VEC_safe_push (varinfo_t, heap, varmap, var_anything);
   lhs.type = SCALAR;
   lhs.var = anything_id;
   lhs.offset = 0;
@@ -3390,7 +3393,7 @@ init_base_vars (void)
   /* This specifically does not use process_constraint because
      process_constraint ignores all anything = anything constraints, since all
      but this one are redundant.  */
-  VEC_safe_push (constraint_t, gc, constraints, new_constraint (lhs, rhs));
+  VEC_safe_push (constraint_t, heap, constraints, new_constraint (lhs, rhs));
   
   /* Create the READONLY variable, used to represent that a variable
      points to readonly memory.  */
@@ -3403,7 +3406,7 @@ init_base_vars (void)
   var_readonly->next = NULL;
   insert_id_for_tree (readonly_tree, 2);
   readonly_id = 2;
-  VEC_safe_push (varinfo_t, gc, varmap, var_readonly);
+  VEC_safe_push (varinfo_t, heap, varmap, var_readonly);
 
   /* readonly memory points to anything, in order to make deref
      easier.  In reality, it points to anything the particular
@@ -3429,7 +3432,7 @@ init_base_vars (void)
   var_integer->offset = 0;
   var_integer->next = NULL;
   integer_id = 3;
-  VEC_safe_push (varinfo_t, gc, varmap, var_integer);
+  VEC_safe_push (varinfo_t, heap, varmap, var_integer);
 
   /* *INTEGER = ANYTHING, because we don't know where a dereference of a random
      integer will point to.  */
@@ -3455,7 +3458,7 @@ init_base_vars (void)
   var_anyoffset->offset = 0;
   var_anyoffset->next = NULL;
   var_anyoffset->fullsize = ~0;
-  VEC_safe_push (varinfo_t, gc, varmap, var_anyoffset);
+  VEC_safe_push (varinfo_t, heap, varmap, var_anyoffset);
 
   /* ANYOFFSET points to ANYOFFSET.  */
   lhs.type = SCALAR;
@@ -3487,8 +3490,8 @@ compute_points_to_sets (struct alias_info *ai)
   constraint_edge_pool = create_alloc_pool ("Constraint edges",
 					    sizeof (struct constraint_edge), 30);
   
-  constraints = VEC_alloc (constraint_t, gc, 8);
-  varmap = VEC_alloc (varinfo_t, gc, 8);
+  constraints = VEC_alloc (constraint_t, heap, 8);
+  varmap = VEC_alloc (varinfo_t, heap, 8);
   id_for_tree = htab_create (10, tree_id_hash, tree_id_eq, free);
   memset (&stats, 0, sizeof (stats));
 
@@ -3544,10 +3547,27 @@ compute_points_to_sets (struct alias_info *ai)
 void
 delete_points_to_sets (void)
 {
+  varinfo_t v;
+  int i;
+
   htab_delete (id_for_tree);
+  bitmap_obstack_release (&ptabitmap_obstack);
+  VEC_free (constraint_t, heap, constraints);
+  
+  for (i = 0; VEC_iterate (varinfo_t, varmap, i, v); i++)
+    {
+      VEC_free (constraint_edge_t, heap, graph->succs[i]);
+      VEC_free (constraint_edge_t, heap, graph->preds[i]);
+      VEC_free (constraint_t, heap, v->complex);
+    }
+  free (graph->succs);
+  free (graph->preds);
+  free (graph);
+
+  VEC_free (varinfo_t, heap, varmap);
   free_alloc_pool (variable_info_pool);
   free_alloc_pool (constraint_pool); 
   free_alloc_pool (constraint_edge_pool);
-  bitmap_obstack_release (&ptabitmap_obstack);
+
   have_alias_info = false;
 }
