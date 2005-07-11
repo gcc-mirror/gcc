@@ -467,7 +467,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	}
       if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
 	{
-	  print_node (file, "arguments", DECL_ARGUMENTS (node), indent + 4);
+	  print_node (file, "arguments", DECL_ARGUMENT_FLD (node), indent + 4);
 	  print_node (file, "result", DECL_RESULT_FLD (node), indent + 4);
 	}
       print_node_brief (file, "initial", DECL_INITIAL (node), indent + 4);

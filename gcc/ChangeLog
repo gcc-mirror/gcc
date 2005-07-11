@@ -1,3 +1,15 @@
+2005-07-11  Daniel Berlin  <dberlin@dberlin.org>
+	
+	* print-tree.c (print_node): Use DECL_ARGUMENT_FLD.
+	* tree.h (DECL_ARGUMENT_FLD): New macro.
+
+2005-07-11  Daniel Berlin  <dberlin@dberlin.org>
+	
+	Fix PR tree-optimization/22404
+
+	* tree-ssa-structalias.c (create_variable_info_for): Use
+	correct offset.
+
 2005-07-11  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.md (cmpsi, compare_eq, compare_ne, compare_lt,
