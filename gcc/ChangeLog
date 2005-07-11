@@ -1,3 +1,22 @@
+2005-07-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	Backport from mainline:
+	2005-06-15  Aldy Hernandez  <aldyh@redhat.com>
+
+        * c-common.h (same_scalar_type_ignoring_signedness): Protoize.
+
+        * c-common.c (same_scalar_type_ignoring_signedness): New.
+
+        * c-typeck.c (build_binary_op): Check compatability of vector
+        types.  Move error report after switch.
+        Do not clobber code[01] on *_DIV_EXPR case.
+
+        * testsuite/gcc.dg/simd-1.c: Update error messages.
+        * testsuite/gcc.dg/simd-1b.c: Re-enable tests.  Update error
+        messages.
+        * testsuite/gcc.dg/simd-2.c: Update error messages.
+        * testsuite/gcc.dg/simd-4.c: New.
+
 2005-07-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (output_set_got): Don't omit OFFSET FLAT:

@@ -33,11 +33,10 @@ hanneke ()
   foo = a; /* { dg-error "incompatible types in assignment" } */
 
   /* Casted assignment between scalar and SIMD of same size.  */
-  foo = (typeof (foo)) foo2; /* { dg-bogus "aggregate value used where a float was expected" "" { xfail *-*-* } } */
+  foo = (typeof (foo)) foo2; /* { dg-error "aggregate value used where a float was expected" } */
 
   /* Casted assignment between scalar and SIMD of different size.  */
-/*  foo1 = (typeof (foo1)) foo2;  { dg*error "can't convert between vector values of different size" } */
-  foo1 = (typeof (foo1)) foo2; /* { dg-bogus "aggregate value used where a float was expected" "" { xfail *-*-* } } */
+  foo1 = (typeof (foo1)) foo2; /* { dg-error "aggregate value used where a float was expected" } */
 
   /* Operators on compatible SIMD types.  */
   a += b + b;
@@ -48,8 +47,8 @@ hanneke ()
   c = -d;
 
   /* Operators on incompatible SIMD types.  */
-  a = b + c; /* { dg-error "can't convert between vector values of different size" } */
-  a = b - c; /* { dg-error "can't convert between vector values of different size" } */
-  a = b * c; /* { dg-error "can't convert between vector values of different size" } */
-  a = b / c; /* { dg-error "can't convert between vector values of different size" } */
+  a = b + c; /* { dg-error "invalid operands to binary" } */
+  a = b - c; /* { dg-error "invalid operands to binary" } */
+  a = b * c; /* { dg-error "invalid operands to binary" } */
+  a = b / c; /* { dg-error "invalid operands to binary" } */
 }

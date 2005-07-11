@@ -7468,12 +7468,14 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE
 	      || code1 == COMPLEX_TYPE || code1 == VECTOR_TYPE))
 	{
-	  if (code0 == COMPLEX_TYPE || code0 == VECTOR_TYPE)
-	    code0 = TREE_CODE (TREE_TYPE (TREE_TYPE (op0)));
-	  if (code1 == COMPLEX_TYPE || code1 == VECTOR_TYPE)
-	    code1 = TREE_CODE (TREE_TYPE (TREE_TYPE (op1)));
+	  enum tree_code tcode0 = code0, tcode1 = code1;
 
-	  if (!(code0 == INTEGER_TYPE && code1 == INTEGER_TYPE))
+	  if (code0 == COMPLEX_TYPE || code0 == VECTOR_TYPE)
+	    tcode0 = TREE_CODE (TREE_TYPE (TREE_TYPE (op0)));
+	  if (code1 == COMPLEX_TYPE || code1 == VECTOR_TYPE)
+	    tcode1 = TREE_CODE (TREE_TYPE (TREE_TYPE (op1)));
+
+	  if (!(tcode0 == INTEGER_TYPE && tcode1 == INTEGER_TYPE))
 	    resultcode = RDIV_EXPR;
 	  else
 	    /* Although it would be tempting to shorten always here, that
@@ -7709,6 +7711,15 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 
   if (code0 == ERROR_MARK || code1 == ERROR_MARK)
     return error_mark_node;
+
+  if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
+      && (!tree_int_cst_equal (TYPE_SIZE (type0), TYPE_SIZE (type1))
+	  || !same_scalar_type_ignoring_signedness (TREE_TYPE (type0),
+						    TREE_TYPE (type1))))
+    {
+      binary_op_error (code);
+      return error_mark_node;
+    }
 
   if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE || code0 == COMPLEX_TYPE
        || code0 == VECTOR_TYPE)

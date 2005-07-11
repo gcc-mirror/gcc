@@ -54,8 +54,8 @@ hanneke ()
   a = -b;
 
   /* Operators on incompatible SIMD types.  */
-  a = b + c; /* { dg-error "can't convert between vector values of different size" } */
-  a = b - c; /* { dg-error "can't convert between vector values of different size" } */
-  a = b * c; /* { dg-error "can't convert between vector values of different size" } */
-  a = b / c; /* { dg-error "can't convert between vector values of different size" } */
+  a = b + c; /* { dg-error "invalid operands to binary +" } */
+  a = b - c; /* { dg-error "invalid operands to binary -" } */
+  a = b * c; /* { dg-error "invalid operands to binary *" } */
+  a = b / c; /* { dg-error "invalid operands to binary /" } */
 }
