@@ -820,15 +820,19 @@ namespace std
       __len = static_cast<int>(__w);
     }
 
-  // Forwarding functions to peel signed from unsigned integer types.
+  // Forwarding functions to peel signed from unsigned integer types and
+  // either cast or compute the absolute value for the former, depending
+  // on __basefield.
   template<typename _CharT>
     inline int
     __int_to_char(_CharT* __bufend, long __v, const _CharT* __lit,
 		  ios_base::fmtflags __flags)
     {
-      unsigned long __ul = static_cast<unsigned long>(__v);
-      if (__v < 0)
-	__ul = -__ul;
+      unsigned long __ul = __v;
+      const ios_base::fmtflags __basefield = __flags & ios_base::basefield;
+      if (__builtin_expect(__basefield != ios_base::oct
+			   && __basefield != ios_base::hex, true))
+	__ul = __v < 0 ? -__v : __ul;
       return __int_to_char(__bufend, __ul, __lit, __flags, false);
     }
 
@@ -844,9 +848,11 @@ namespace std
     __int_to_char(_CharT* __bufend, long long __v, const _CharT* __lit,
 		  ios_base::fmtflags __flags)
     {
-      unsigned long long __ull = static_cast<unsigned long long>(__v);
-      if (__v < 0)
-	__ull = -__ull;
+      unsigned long long __ull = __v;
+      const ios_base::fmtflags __basefield = __flags & ios_base::basefield;
+      if (__builtin_expect(__basefield != ios_base::oct
+			   && __basefield != ios_base::hex, true))
+	__ull = __v < 0 ? -__v : __ull;
       return __int_to_char(__bufend, __ull, __lit, __flags, false);
     }
 
@@ -966,16 +972,11 @@ namespace std
 	    else if (__v)
 	      *--__cs = __lit[__num_base::_S_ominus], ++__len;
 	  }
-	else if (__basefield == ios_base::oct)
+	else if (__flags & ios_base::showbase && __v)
 	  {
-	    // Octal.
-	    if (__flags & ios_base::showbase && __v)
+	    if (__basefield == ios_base::oct)
 	      *--__cs = __lit[__num_base::_S_odigits], ++__len;
-	  }
-	else
-	  {
-	    // Hex.
-	    if (__flags & ios_base::showbase && __v)
+	    else
 	      {
 		// 'x' or 'X'
 		const bool __uppercase = __flags & ios_base::uppercase;
@@ -1213,8 +1214,8 @@ namespace std
   template<typename _CharT, typename _OutIter>
     _OutIter
     num_put<_CharT, _OutIter>::
-    do_put(iter_type __s, ios_base& __b, char_type __fill, long long __v) const
-    { return _M_insert_int(__s, __b, __fill, __v); }
+    do_put(iter_type __s, ios_base& __io, char_type __fill, long long __v) const
+    { return _M_insert_int(__s, __io, __fill, __v); }
 
   template<typename _CharT, typename _OutIter>
     _OutIter
