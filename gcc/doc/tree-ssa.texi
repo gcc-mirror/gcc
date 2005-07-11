@@ -406,31 +406,77 @@ still happen in the future, perhaps by moving most of that logic into
 @cindex Cleanups
 
 Destructors for local C++ objects and similar dynamic cleanups are
-represented in GIMPLE by a @code{TRY_FINALLY_EXPR}.  When the controlled
-block exits, the cleanup is run.
+represented in GIMPLE by a @code{TRY_FINALLY_EXPR}.
+@code{TRY_FINALLY_EXPR} has two operands, both of which are a sequence
+of statements to execute.  The first sequence is executed.  When it
+completes the second sequence is executed.
+
+The first sequence may complete in the following ways:
+
+@enumerate
+
+@item Execute the last statement in the sequence and fall off the
+end.
+
+@item Execute a goto statement (@code{GOTO_EXPR}) to an ordinary
+label outside the sequence.
+
+@item Execute a return statement (@code{RETURN_EXPR}).
+
+@item Throw an exception.  This is currently not explicitly represented in
+GIMPLE.
+
+@end enumerate
+
+The second sequence is not executed if the first sequence completes by
+calling @code{setjmp} or @code{exit} or any other function that does
+not return.  The second sequence is also not executed if the first
+sequence completes via a non-local goto or a computed goto (in general
+the compiler does not know whether such a goto statement exits the
+first sequence or not, so we assume that it doesn't).
+
+After the second sequence is executed, if it completes normally by
+falling off the end, execution continues whereever the first sequence
+would have continued, by falling off the end, or doing a goto, etc.
 
 @code{TRY_FINALLY_EXPR} complicates the flow graph, since the cleanup
 needs to appear on every edge out of the controlled block; this
 reduces the freedom to move code across these edges.  Therefore, the
 EH lowering pass which runs before most of the optimization passes
 eliminates these expressions by explicitly adding the cleanup to each
-edge.
+edge.  Rethrowing the exception is represented using @code{RESX_EXPR}.
+
 
 @node GIMPLE Exception Handling
 @subsubsection Exception Handling
 @cindex GIMPLE Exception Handling
 
 Other exception handling constructs are represented using
-@code{TRY_CATCH_EXPR}.  The handler operand of a @code{TRY_CATCH_EXPR}
-can be a normal statement to be executed if the controlled block throws an
-exception, or it can have one of two special forms:
+@code{TRY_CATCH_EXPR}.  @code{TRY_CATCH_EXPR} has two operands.  The
+first operand is a sequence of statements to execute.  If executing
+these statements does not throw an exception, then the second operand
+is ignored.  Otherwise, if an exception is thrown, then the second
+operand of the @code{TRY_CATCH_EXPR} is checked.  The second operand
+may have the following forms:
 
 @enumerate
-@item A @code{CATCH_EXPR} executes its handler if the thrown exception
-  matches one of the allowed types.  Multiple handlers can be
-  expressed by a sequence of @code{CATCH_EXPR} statements.
-@item An @code{EH_FILTER_EXPR} executes its handler if the thrown
-  exception does not match one of the allowed types.
+
+@item A sequence of statements to execute.  When an exception occurs,
+these statements are executed, and then the exception is rethrown.
+
+@item A sequence of @code{CATCH_EXPR} expressions.  Each @code{CATCH_EXPR}
+has a list of applicable exception types and handler code.  If the
+thrown exception matches one of the caught types, the associated
+handler code is executed.  If the handler code falls off the bottom,
+execution continues after the original @code{TRY_CATCH_EXPR}.
+
+@item An @code{EH_FILTER_EXPR} expression.  This has a list of
+permitted exception types, and code to handle a match failure.  If the
+thrown exception does not match one of the allowed types, the
+associated match failure code is executed.  If the thrown exception
+does match, it continues unwinding the stack looking for the next
+handler.
+
 @end enumerate
 
 Currently throwing an exception is not directly represented in GIMPLE,
