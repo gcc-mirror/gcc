@@ -1,3 +1,13 @@
+2005-07-11  Aldy Hernandez  <aldyh@redhat.com>
+
+        Backport from mainline:
+        2005-06-15  Aldy Hernandez  <aldyh@redhat.com>
+
+        * gcc.dg/simd-1.c: Update error messages.
+        * gcc.dg/simd-1b.c: Re-enable tests.  Update error messages.
+        * gcc.dg/simd-2.c: Update error messages.
+        * gcc.dg/simd-4.c: New.
+
 2005-07-11  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/20563
