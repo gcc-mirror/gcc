@@ -1,3 +1,8 @@
+2005-07-11  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/20563
+	* g++.dg/ext/label4.C: New test.
+
 2005-07-11  Feng Wang  <fengwang@nudt.edu.cn>
 
 	Backport from the mainline:

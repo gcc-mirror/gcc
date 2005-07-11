@@ -14255,7 +14255,10 @@ cp_parser_label_declaration (cp_parser* parser)
 
       /* Look for an identifier.  */
       identifier = cp_parser_identifier (parser);
-      /* Declare it as a lobel.  */
+      /* If we failed, stop.  */
+      if (identifier == error_mark_node)
+	break;
+      /* Declare it as a label.  */
       finish_label_decl (identifier);
       /* If the next token is a `;', stop.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
