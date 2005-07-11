@@ -358,7 +358,7 @@ loop_data (struct loop *loop)
 
 /* The single loop exit if it dominates the latch, NULL otherwise.  */
 
-static edge
+edge
 single_dom_exit (struct loop *loop)
 {
   edge exit = loop->single_exit;

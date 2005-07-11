@@ -371,3 +371,155 @@ tree_unroll_loops_completely (struct loops *loops, bool may_increase_size)
   if (changed)
     cleanup_tree_cfg_loop ();
 }
+
+/* Checks whether LOOP is empty.  */
+
+static bool
+empty_loop_p (struct loop *loop)
+{
+  edge exit;
+  struct tree_niter_desc niter;
+  tree phi, def;
+  basic_block *body;
+  block_stmt_iterator bsi;
+  unsigned i;
+  tree stmt;
+
+  /* If the loop has multiple exits, it is too hard for us to handle.
+     Similarly, if the exit is not dominating, we cannot determine
+     whether the loop is not infinite.  */
+  exit = single_dom_exit (loop);
+  if (!exit)
+    return false;
+
+  /* The loop must be finite.  */
+  if (!number_of_iterations_exit (loop, exit, &niter))
+    return false;
+
+  /* Values of all loop exit phi nodes must be invariants.  */
+  for (phi = phi_nodes (exit->dest); phi; phi = PHI_CHAIN (phi))
+    {
+      if (!is_gimple_reg (PHI_RESULT (phi)))
+	continue;
+
+      def = PHI_ARG_DEF_FROM_EDGE (phi, exit);
+
+      if (!expr_invariant_in_loop_p (loop, def))
+	return false;
+    }
+
+  /* And there should be no memory modifying or from other reasons
+     unremovable statements.  */
+  body = get_loop_body (loop);
+  for (i = 0; i < loop->num_nodes; i++)
+    {
+      /* Irreducible region might be infinite.  */
+      if (body[i]->flags & BB_IRREDUCIBLE_LOOP)
+	{
+	  free (body);
+	  return false;
+	}
+	
+      for (bsi = bsi_start (body[i]); !bsi_end_p (bsi); bsi_next (&bsi))
+	{
+	  stmt = bsi_stmt (bsi);
+	  if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_VIRTUAL_DEFS)
+	      || stmt_ann (stmt)->has_volatile_ops)
+	    {
+	      free (body);
+	      return false;
+	    }
+
+	  /* Also, asm statements and calls may have side effects and we
+	     cannot change the number of times they are executed.  */
+	  switch (TREE_CODE (stmt))
+	    {
+	    case RETURN_EXPR:
+	    case MODIFY_EXPR:
+	      stmt = get_call_expr_in (stmt);
+	      if (!stmt)
+		break;
+
+	    case CALL_EXPR:
+	      if (TREE_SIDE_EFFECTS (stmt))
+		{
+		  free (body);
+		  return false;
+		}
+	      break;
+
+	    case ASM_EXPR:
+	      /* We cannot remove volatile assembler.  */
+	      if (ASM_VOLATILE_P (stmt))
+		{
+		  free (body);
+		  return false;
+		}
+	      break;
+
+	    default:
+	      break;
+	    }
+	}
+      }
+  free (body);
+
+  return true;
+}
+
+/* Remove LOOP by making it exit in the first iteration.  */
+
+static void
+remove_empty_loop (struct loop *loop)
+{
+  edge exit = single_dom_exit (loop);
+  tree cond_stmt = last_stmt (exit->src);
+  tree do_exit;
+
+  if (exit->flags & EDGE_TRUE_VALUE)
+    do_exit = boolean_true_node;
+  else
+    do_exit = boolean_false_node;
+
+  COND_EXPR_COND (cond_stmt) = do_exit;
+  update_stmt (cond_stmt);
+}
+
+/* Removes LOOP if it is empty.  Returns true if LOOP is removed.  CHANGED
+   is set to true if LOOP or any of its subloops is removed.  */
+
+static bool
+try_remove_empty_loop (struct loop *loop, bool *changed)
+{
+  bool nonempty_subloop = false;
+  struct loop *sub;
+
+  /* First, all subloops must be removed.  */
+  for (sub = loop->inner; sub; sub = sub->next)
+    nonempty_subloop |= !try_remove_empty_loop (sub, changed);
+
+  if (nonempty_subloop || !empty_loop_p (loop))
+    return false;
+
+  remove_empty_loop (loop);
+  *changed = true;
+  return true;
+}
+
+/* Remove the empty LOOPS.  */
+
+void
+remove_empty_loops (struct loops *loops)
+{
+  bool changed = false;
+  struct loop *loop;
+
+  for (loop = loops->tree_root->inner; loop; loop = loop->next)
+    try_remove_empty_loop (loop, &changed);
+
+  if (changed)
+    {
+      scev_reset ();
+      cleanup_tree_cfg_loop ();
+    }
+}
