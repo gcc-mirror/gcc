@@ -1,3 +1,9 @@
+2005-07-12  Tom Tromey  <tromey@redhat.com>
+
+	PR java/19674:
+	* parse-scan.y (interface_member_declaration): Added
+	empty_statement.
+
 2005-07-08  Daniel Berlin  <dberlin@dberlin.org>
 	
 	* java-tree.h (LABEL_RETURN_LABELS): Use decl_non_common.
