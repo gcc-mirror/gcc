@@ -1,3 +1,7 @@
+2005-07-11  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	gfortran.dg/dev_null.f90:  Remove targets.
+
 2005-07-12  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/22335
