@@ -1,3 +1,8 @@
+2005-07-12  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR bootstrap/21704
+	* host-linux.h: Include limits.h.
+
 2005-07-12  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.md (define_attr "type"): Add "sync".
