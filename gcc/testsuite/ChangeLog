@@ -1,3 +1,9 @@
+2005-07-12  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/22335
+	* gcc.dg/pr22335-1.c: New test.
+	* gcc.dg/pr22335-2.c: New test.
+
 2005-07-12  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/20172
