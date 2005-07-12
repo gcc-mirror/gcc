@@ -1,5 +1,10 @@
 2005-07-12  Aaron Luchko  <aluchko@redhat.com>
 
+	* gnu/classpath/jdwp/processor/PacketProcessor.java (run): Send
+	shutdown to jdwp instead of connection.
+
+2005-07-12  Aaron Luchko  <aluchko@redhat.com>
+
 	* gnu/classpath/jdwp/processor/ObjectReferenceCommandSet.java:
 	New file.
 

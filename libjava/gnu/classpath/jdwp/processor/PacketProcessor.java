@@ -40,6 +40,7 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp.processor;
 
+import gnu.classpath.jdwp.Jdwp;
 import gnu.classpath.jdwp.JdwpConstants;
 import gnu.classpath.jdwp.exception.JdwpException;
 import gnu.classpath.jdwp.transport.JdwpCommandPacket;
@@ -146,8 +147,8 @@ public class PacketProcessor
       {
         ex.printStackTrace();
       }
-    // Time to shutdown, tell the _connection thread to stop reading
-    _connection.shutdown();
+    // Time to shutdown, tell Jdwp to shutdown
+    Jdwp.getDefault().shutdown();
   }
   
   /**
