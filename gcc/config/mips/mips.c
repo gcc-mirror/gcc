@@ -4186,11 +4186,11 @@ mips_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
       COND_EXPR_ELSE (addr) = t;
 
       addr = fold_convert (build_pointer_type (type), addr);
-      addr = build_fold_indirect_ref (addr);
+      addr = build_va_arg_indirect_ref (addr);
     }
 
   if (indirect)
-    addr = build_fold_indirect_ref (addr);
+    addr = build_va_arg_indirect_ref (addr);
 
   return addr;
 }

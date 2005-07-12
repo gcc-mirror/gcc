@@ -725,10 +725,10 @@ c4x_gimplify_va_arg_expr (tree valist, tree type,
   t = build (PREDECREMENT_EXPR, TREE_TYPE (valist), valist,
 	     build_int_cst (NULL_TREE, int_size_in_bytes (type)));
   t = fold_convert (build_pointer_type (type), t);
-  t = build_fold_indirect_ref (t);
+  t = build_va_arg_indirect_ref (t);
 
   if (indirect)
-    t = build_fold_indirect_ref (t);
+    t = build_va_arg_indirect_ref (t);
 
   return t;
 }

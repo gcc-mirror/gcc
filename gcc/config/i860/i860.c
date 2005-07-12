@@ -2036,8 +2036,8 @@ i860_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 
   addr = fold_convert (type_ptr, addr);
   if (indirect)
-    addr = build_fold_indirect_ref (addr);
-  return build_fold_indirect_ref (addr);
+    addr = build_va_arg_indirect_ref (addr);
+  return build_va_arg_indirect_ref (addr);
 }
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
