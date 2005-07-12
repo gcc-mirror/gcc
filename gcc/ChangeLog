@@ -1,3 +1,11 @@
+2005-07-12  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/22335
+	* tree-ssa-dom.c (eliminate_redundant_computations): Reject the prop if
+	requiring a cast in a non RHS of modify_expr.  Add a cast when required.
+	(lookup_avail_expr): Use constant_boolean_node instead
+	of boolean_false_node/boolean_true_node.
+
 2005-07-12  Ben Elliston  <bje@au.ibm.com>
 
 	* tree-cfg.c (dump_cfg_stats): Add a new fmt_str_2 format string
