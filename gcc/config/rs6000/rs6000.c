@@ -18043,11 +18043,17 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total)
 	}
       /* FALLTHRU */
 
+    case FLOAT_EXTEND:
+      if (mode == DFmode)
+	*total = 0;
+      else
+	*total = rs6000_cost->fp;
+      return false;
+
     case FLOAT:
     case UNSIGNED_FLOAT:
     case FIX:
     case UNSIGNED_FIX:
-    case FLOAT_EXTEND:
     case FLOAT_TRUNCATE:
       *total = rs6000_cost->fp;
       return false;
