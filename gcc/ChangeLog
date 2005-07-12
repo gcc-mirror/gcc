@@ -1,3 +1,17 @@
+2005-07-12  Dale Johannesen  <dalej@apple.com>
+
+	* expr.c (compress_float_constant):  Add cost check.
+	* config/rs6000.c (rs6000_rtx_cost):  Adjust FLOAT_EXTEND cost.
+
+2005-07-12  Dale Johannesen  <dalej@apple.com>
+
+	* gcc.target/i386/compress-float-sse.c:  New.
+	* gcc.target/i386/compress-float-sse-pic.c:  New.
+	* gcc.target/i386/compress-float-387.c:  New.
+	* gcc.target/i386/compress-float-387-pic.c:  New.
+	* gcc.dg/compress-float-ppc.c:  New.
+	* gcc.dg/compress-float-ppc-pic.c:  New.
+
 2005-07-12  Eric Christopher  <echristo@redhat.com>
 
 	* gcc.c (struct infile): Update comment for language.
