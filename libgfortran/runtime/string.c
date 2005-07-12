@@ -40,7 +40,6 @@ Boston, MA 02111-1307, USA.  */
 static int
 compare0 (const char *s1, int s1_len, const char *s2)
 {
-  int i;
   int len;
 
   /* Strip trailing blanks from the Fortran string.  */

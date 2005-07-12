@@ -79,6 +79,10 @@ gfc_type_letter (bt type)
       c = 'c';
       break;
 
+    case BT_HOLLERITH:
+      c = 'h';
+      break;
+
     default:
       c = 'u';
       break;
@@ -2297,6 +2301,31 @@ add_conversions (void)
 		  BT_INTEGER, gfc_integer_kinds[i].kind, GFC_STD_F77);
       }
 
+  if ((gfc_option.allow_std & GFC_STD_LEGACY) != 0)
+    {
+      /* Hollerith-Integer conversions.  */
+      for (i = 0; gfc_integer_kinds[i].kind != 0; i++)
+	add_conv (BT_HOLLERITH, gfc_default_character_kind,
+		  BT_INTEGER, gfc_integer_kinds[i].kind, GFC_STD_LEGACY);
+      /* Hollerith-Real conversions.  */
+      for (i = 0; gfc_real_kinds[i].kind != 0; i++)
+	add_conv (BT_HOLLERITH, gfc_default_character_kind,
+		  BT_REAL, gfc_real_kinds[i].kind, GFC_STD_LEGACY);
+      /* Hollerith-Complex conversions.  */
+      for (i = 0; gfc_real_kinds[i].kind != 0; i++)
+	add_conv (BT_HOLLERITH, gfc_default_character_kind,
+		  BT_COMPLEX, gfc_real_kinds[i].kind, GFC_STD_LEGACY);
+
+      /* Hollerith-Character conversions.  */
+      add_conv (BT_HOLLERITH, gfc_default_character_kind, BT_CHARACTER,
+		  gfc_default_character_kind, GFC_STD_LEGACY);
+
+      /* Hollerith-Logical conversions.  */
+      for (i = 0; gfc_logical_kinds[i].kind != 0; i++)
+	add_conv (BT_HOLLERITH, gfc_default_character_kind,
+		  BT_LOGICAL, gfc_logical_kinds[i].kind, GFC_STD_LEGACY);
+    }
+
   /* Real/Complex - Real/Complex conversions.  */
   for (i = 0; gfc_real_kinds[i].kind != 0; i++)
     for (j = 0; gfc_real_kinds[j].kind != 0; j++)
@@ -2683,6 +2712,16 @@ do_simplify (gfc_intrinsic_sym * specific, gfc_expr * e)
   gfc_expr *result, *a1, *a2, *a3, *a4, *a5;
   gfc_actual_arglist *arg;
 
+  /* Check the arguments if there are Hollerith constants. We deal with
+     them at run-time.  */
+  for (arg = e->value.function.actual; arg != NULL; arg = arg->next)
+    {
+      if (arg->expr && arg->expr->from_H)
+	{
+	  result = NULL;
+	  goto finish;
+	}
+    }
   /* Max and min require special handling due to the variable number
      of args.  */
   if (specific->simplify.f1 == gfc_simplify_min)

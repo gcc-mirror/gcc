@@ -637,6 +637,7 @@ of extensions, and @option{-std=legacy} allows both without warning.
 * Old-style variable initialization::
 * Extensions to namelist::
 * Implicitly interconvert LOGICAL and INTEGER::
+* Hollerith constants support::
 @end menu
 
 @node Old-style kind specifications
@@ -747,6 +748,35 @@ converting from INTEGER to LOGICAL, the value zero is interpreted as
 @smallexample
        INTEGER*4 i
        i = .FALSE.
+@end smallexample
+
+@node Hollerith constants support
+@section Hollerith constants support
+@cindex Hollerith constants
+
+A Hollerith constant is a string of characters preceded by the letter @samp{H}
+or @samp{h}, and there must be an literal, unsigned, nonzero default integer
+constant indicating the number of characters in the string. Hollerith constants
+are stored as byte strings, one character per byte.
+
+@command{gfortran} supports Hollerith constants. They can be used as the right
+hands in the @code{DATA} statement and @code{ASSIGN} statement, also as the
+arguments. The left hands can be of Integer, Real, Complex and Logical type.
+The constant will be padded or trancated to fit the size of left hand.
+
+Valid Hollerith constants examples:
+@smallexample
+complex*16 x(2)
+data x /16Habcdefghijklmnop, 16Hqrstuvwxyz012345/
+call foo (4H abc)
+x(1) = 16Habcdefghijklmnop
+@end smallexample
+
+Invalid Hollerith constants examples:
+@smallexample
+integer*4 a
+a = 8H12345678 ! The Hollerith constant is too long. It will be truncated.
+a = 0H         ! At least one character needed.
 @end smallexample
 
 @include intrinsic.texi

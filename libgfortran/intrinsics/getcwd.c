@@ -46,7 +46,7 @@ iexport_proto(getcwd_i4_sub);
 void
 getcwd_i4_sub (char *cwd, GFC_INTEGER_4 *status, gfc_charlen_type cwd_len)
 {
-  char str[cwd_len + 1], *s;
+  char str[cwd_len + 1];
   GFC_INTEGER_4 stat;
 
   memset(cwd, ' ', (size_t) cwd_len);

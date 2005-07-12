@@ -524,8 +524,6 @@ formatted_transfer (bt type, void *p, int len)
 	case FMT_A:
 	  if (n == 0)
 	    goto need_data;
-	  if (require_type (BT_CHARACTER, type, f))
-	    return;
 
 	  if (g.mode == READING)
 	    read_a (f, p, len);

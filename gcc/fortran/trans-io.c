@@ -364,6 +364,68 @@ set_parameter_ref (stmtblock_t * block, tree var, gfc_expr * e)
   gfc_add_modify_expr (block, tmp, se.expr);
 }
 
+/* Given an array expr, find its address and length to get a string. If the
+   array is full, the string's address is the address of array's first element
+   and the length is the size of the whole array. If it is an element, the
+   string's address is the element's address and the length is the rest size of
+   the array.
+*/
+
+static void
+gfc_convert_array_to_string (gfc_se * se, gfc_expr * e)
+{
+  tree tmp;
+  tree array;
+  tree type;
+  tree size;
+  int rank;
+  gfc_symbol *sym;
+
+  sym = e->symtree->n.sym;
+  rank = sym->as->rank - 1;
+
+  if (e->ref->u.ar.type == AR_FULL)
+    {
+      se->expr = gfc_get_symbol_decl (sym);
+      se->expr = gfc_conv_array_data (se->expr);
+    }
+  else
+    {
+      gfc_conv_expr (se, e);
+    }
+
+  array = sym->backend_decl;
+  type = TREE_TYPE (array);
+
+  if (GFC_ARRAY_TYPE_P (type))
+    size = GFC_TYPE_ARRAY_SIZE (type);
+  else
+    {
+      gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
+      size = gfc_conv_array_stride (array, rank);
+      tmp = fold (build2 (MINUS_EXPR, gfc_array_index_type,
+		gfc_conv_array_ubound (array, rank),
+		gfc_conv_array_lbound (array, rank)));
+      tmp = fold (build2 (PLUS_EXPR, gfc_array_index_type, tmp,
+		gfc_index_one_node));
+      size = fold (build2 (MULT_EXPR, gfc_array_index_type, tmp, size));      
+    }
+
+  gcc_assert (size);
+
+  /* If it is an element, we need the its address and size of the rest.  */
+  if (e->ref->u.ar.type == AR_ELEMENT)
+    {
+      size = fold (build2 (MINUS_EXPR, gfc_array_index_type, size,
+		TREE_OPERAND (se->expr, 1)));
+      se->expr = gfc_build_addr_expr (NULL, se->expr);
+    }
+
+  tmp = TYPE_SIZE_UNIT (gfc_get_element_type (type));
+  size = fold (build2 (MULT_EXPR, gfc_array_index_type, size, tmp));
+
+  se->string_length = fold_convert (gfc_charlen_type_node, size);
+}
 
 /* Generate code to store a string and its length into the
    ioparm structure.  */
@@ -400,7 +462,15 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
     }
   else
     {
-      gfc_conv_expr (&se, e);
+      /* General character.  */
+      if (e->ts.type == BT_CHARACTER && e->rank == 0)
+	gfc_conv_expr (&se, e);
+      /* Array assigned Hollerith constant or character array.  */
+      else if (e->symtree && (e->symtree->n.sym->as->rank > 0))
+	gfc_convert_array_to_string (&se, e);
+      else
+	gcc_unreachable ();
+
       gfc_conv_string_parameter (&se);
       gfc_add_modify_expr (&se.pre, io, fold_convert (TREE_TYPE (io), se.expr));
       gfc_add_modify_expr (&se.pre, len, se.string_length);
@@ -408,7 +478,6 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
 
   gfc_add_block_to_block (block, &se.pre);
   gfc_add_block_to_block (postblock, &se.post);
-
 }
 
 

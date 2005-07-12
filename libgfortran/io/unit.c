@@ -288,7 +288,6 @@ is_internal_unit ()
 void
 init_units (void)
 {
-  gfc_offset m, n;
   gfc_unit *u;
   int i;
 

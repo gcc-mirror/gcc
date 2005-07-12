@@ -966,33 +966,63 @@ resolve_tag (const io_tag * tag, gfc_expr * e)
   if (gfc_resolve_expr (e) == FAILURE)
     return FAILURE;
 
-  if (e->ts.type != tag->type)
+  if (e->ts.type != tag->type && tag != &tag_format)
     {
-      /* Format label can be integer varibale.  */
-      if (tag != &tag_format || e->ts.type != BT_INTEGER)
-        {
-          gfc_error ("%s tag at %L must be of type %s or %s", tag->name,
-		&e->where, gfc_basic_typename (tag->type),
-		gfc_basic_typename (BT_INTEGER));
-          return FAILURE;
-        }
+      gfc_error ("%s tag at %L must be of type %s", tag->name,
+		&e->where, gfc_basic_typename (tag->type));
+      return FAILURE;
     }
 
   if (tag == &tag_format)
     {
-      if (e->rank != 1 && e->rank != 0)
+      /* If e's rank is zero and e is not an element of an array, it should be
+	 of integer or character type.  The integer variable should be
+	 ASSIGNED.  */
+      if (e->symtree == NULL || e->symtree->n.sym->as == NULL
+		|| e->symtree->n.sym->as->rank == 0)
 	{
-	  gfc_error ("FORMAT tag at %L cannot be array of strings",
-		     &e->where);
-	  return FAILURE;
+	  if (e->ts.type != BT_CHARACTER && e->ts.type != BT_INTEGER)
+	    {
+	      gfc_error ("%s tag at %L must be of type %s or %s", tag->name,
+			&e->where, gfc_basic_typename (BT_CHARACTER),
+			gfc_basic_typename (BT_INTEGER));
+	      return FAILURE;
+	    }
+	  else if (e->ts.type == BT_INTEGER && e->expr_type == EXPR_VARIABLE)
+	    {
+	      if (gfc_notify_std (GFC_STD_F95_DEL,
+			"Obsolete: ASSIGNED variable in FORMAT tag at %L",
+			&e->where) == FAILURE)
+		return FAILURE;
+	      if (e->symtree->n.sym->attr.assign != 1)
+		{
+		  gfc_error ("Variable '%s' at %L has not been assigned a "
+			"format label", e->symtree->n.sym->name, &e->where);
+		  return FAILURE;
+		}
+	    }
+	  return SUCCESS;
 	}
-      /* Check assigned label.  */
-      if (e->expr_type == EXPR_VARIABLE && e->ts.type == BT_INTEGER
-		&& e->symtree->n.sym->attr.assign != 1)
+      else
 	{
-	  gfc_error ("Variable '%s' has not been assigned a format label at %L",
-			e->symtree->n.sym->name, &e->where);
-	  return FAILURE;
+	  /* if rank is nonzero, we allow the type to be character under
+	     GFC_STD_GNU and other type under GFC_STD_LEGACY. It may be
+	     assigned an Hollerith constant.  */
+	  if (e->ts.type == BT_CHARACTER)
+	    {
+	      if (gfc_notify_std (GFC_STD_GNU,
+			"Extension: Character array in FORMAT tag at %L",
+			&e->where) == FAILURE)
+		return FAILURE;
+	    }
+	  else
+	    {
+	      if (gfc_notify_std (GFC_STD_LEGACY,
+			"Extension: Non-character in FORMAT tag at %L",
+			&e->where) == FAILURE)
+		return FAILURE;
+	    }
+	  return SUCCESS;
 	}
     }
   else

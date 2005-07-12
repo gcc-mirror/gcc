@@ -51,7 +51,7 @@ iexport_proto(unlink_i4_sub);
 void
 unlink_i4_sub (char *name, GFC_INTEGER_4 *status, gfc_charlen_type name_len)
 {
-  char *str, *s;
+  char *str;
   GFC_INTEGER_4 stat;
 
   /* Trim trailing spaces from name.  */

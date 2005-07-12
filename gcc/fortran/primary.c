@@ -228,6 +228,75 @@ match_integer_constant (gfc_expr ** result, int signflag)
 }
 
 
+/* Match a Hollerith constant.  */
+
+static match
+match_hollerith_constant (gfc_expr ** result)
+{
+  locus old_loc;
+  gfc_expr * e = NULL;
+  const char * msg;
+  char * buffer;
+  int num;
+  int i;  
+
+  old_loc = gfc_current_locus;
+  gfc_gobble_whitespace ();
+
+  if (match_integer_constant (&e, 0) == MATCH_YES
+	&& gfc_match_char ('h') == MATCH_YES)
+    {
+      if (gfc_notify_std (GFC_STD_LEGACY,
+		"Extention: Hollerith constant at %C")
+		== FAILURE)
+	goto cleanup;
+
+      msg = gfc_extract_int (e, &num);
+      if (msg != NULL)
+	{
+	  gfc_error (msg);
+	  goto cleanup;
+	}
+      if (num == 0)
+	{
+	  gfc_error ("Invalid Hollerith constant: %L must contain at least one "
+			"character", &old_loc);
+	  goto cleanup;
+	}
+      if (e->ts.kind != gfc_default_integer_kind)
+	{
+	  gfc_error ("Invalid Hollerith constant: Interger kind at %L "
+		"should be default", &old_loc);
+	  goto cleanup;
+	}
+      else
+	{
+	  buffer = (char *)gfc_getmem (sizeof(char)*num+1);
+	  for (i = 0; i < num; i++)
+	    {
+	      buffer[i] = gfc_next_char_literal (1);
+	    }
+	  gfc_free_expr (e);
+	  e = gfc_constant_result (BT_HOLLERITH,
+		gfc_default_character_kind, &gfc_current_locus);
+	  e->value.character.string = gfc_getmem (num+1);
+	  memcpy (e->value.character.string, buffer, num);
+	  e->value.character.length = num;
+	  *result = e;
+	  return MATCH_YES;
+	}
+    }
+
+  gfc_free_expr (e);
+  gfc_current_locus = old_loc;
+  return MATCH_NO;
+
+cleanup:
+  gfc_free_expr (e);
+  return MATCH_ERROR;
+}
+
+
 /* Match a binary, octal or hexadecimal constant that can be found in
    a DATA statement.  */
 
@@ -1156,6 +1225,10 @@ gfc_match_literal_constant (gfc_expr ** result, int signflag)
     return m;
 
   m = match_real_constant (result, signflag);
+  if (m != MATCH_NO)
+    return m;
+
+  m = match_hollerith_constant (result);
   if (m != MATCH_NO)
     return m;
 

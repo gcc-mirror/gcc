@@ -3777,6 +3777,34 @@ gfc_convert_constant (gfc_expr * e, bt type, int kind)
 	}
       break;
 
+    case BT_HOLLERITH:
+      switch (type)
+	{
+	case BT_INTEGER:
+	  f = gfc_hollerith2int;
+	  break;
+
+	case BT_REAL:
+	  f = gfc_hollerith2real;
+	  break;
+
+	case BT_COMPLEX:
+	  f = gfc_hollerith2complex;
+	  break;
+
+	case BT_CHARACTER:
+	  f = gfc_hollerith2character;
+	  break;
+
+	case BT_LOGICAL:
+	  f = gfc_hollerith2logical;
+	  break;
+
+	default:
+	  goto oops;
+	}
+      break;
+
     default:
     oops:
       gfc_internal_error ("gfc_convert_constant(): Unexpected type");

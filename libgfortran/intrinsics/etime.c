@@ -46,7 +46,6 @@ void
 etime_sub (gfc_array_r4 *t, GFC_REAL_4 *result)
 {
   GFC_REAL_4 tu, ts, tt, *tp;
-  index_type dim;
 
 #if defined(HAVE_SYS_TIME_H) && defined(HAVE_SYS_RESOURCE_H)
   struct rusage rt;

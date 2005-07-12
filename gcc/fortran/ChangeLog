@@ -1,4 +1,45 @@
-2005-07-10  Feng Wang  <fengwang@nudt.edu.cn>
+2005-07-12  Feng Wang  <fengwang@nudt.edu.cn>
+
+	Backport from the mainline:
+	2005-03-05  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+	* trans-const.c (gfc_conv_constant_to_tree): Use correct tree
+	type for COMPLEX constants.
+
+	2005-07-07  Feng Wang  <fengwang@nudt.edu.cn>
+	PR fortran/16531
+	PR fortran/15966
+	PR fortran/18781
+	* arith.c (gfc_hollerith2int, gfc_hollerith2real,
+	gfc_hollerith2complex, gfc_hollerith2character, gfc_hollerith2logical):
+	New functions.
+	(eval_intrinsic): Don't evaluate if Hollerith constant arguments exist.
+	* arith.h (gfc_hollerith2int, gfc_hollerith2real,
+	gfc_hollerith2complex, gfc_hollerith2character, gfc_hollerith2logical):
+	Add prototypes.
+	* expr.c (free_expr0): Free memery allocated for Hollerith constant.
+	(gfc_copy_expr): Allocate and copy string if Expr is from Hollerith.
+	(gfc_check_assign): Enable conversion from Hollerith to other.
+	* gfortran.h (bt): Add BT_HOLLERITH.
+	(gfc_expr): Add from_H flag.
+	* intrinsic.c (gfc_type_letter): Return 'h' for BT_HOLLERITH.
+	(add_conversions): Add conversions from Hollerith constant to other.
+	(do_simplify): Don't simplify if  Hollerith constant arguments exist.
+	* io.c (resolve_tag): Enable array in FORMAT tag under GFC_STD_GNU.
+	* misc.c (gfc_basetype_name): Return "HOLLERITH" for BT_HOLLERITH.
+	(gfc_type_name): Print "HOLLERITH" for BT_HOLLERITH.
+	* primary.c (match_hollerith_constant): New function.
+	(gfc_match_literal_constant): Add match Hollerith before Integer.
+	* simplify.c (gfc_convert_constant): Add conversion from Hollerith
+	to other.
+	* trans-const.c (gfc_conv_constant_to_tree): Use VIEW_CONVERT_EXPR to
+	convert Hollerith constant to tree.
+	* trans-io.c (gfc_convert_array_to_string): Get array's address and
+	length to set string expr.
+	(set_string): Deal with array assigned Hollerith constant and character
+	array.
+	* gfortran.texi: Document Hollerith constants as extention support.
+
+2005-07-11  Feng Wang  <fengwang@nudt.edu.cn>
 
 	* match.c (gfc_match_label): Remove unused variable.
 

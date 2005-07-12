@@ -127,7 +127,7 @@ gfc_source_form;
 
 typedef enum
 { BT_UNKNOWN = 1, BT_INTEGER, BT_REAL, BT_COMPLEX,
-  BT_LOGICAL, BT_CHARACTER, BT_DERIVED, BT_PROCEDURE
+  BT_LOGICAL, BT_CHARACTER, BT_DERIVED, BT_PROCEDURE, BT_HOLLERITH
 }
 bt;
 
@@ -1065,6 +1065,9 @@ typedef struct gfc_expr
   gfc_ref *ref;
 
   locus where;
+
+  /* True if it is converted from Hollerith constant.  */
+  unsigned int from_H : 1;
 
   union
   {

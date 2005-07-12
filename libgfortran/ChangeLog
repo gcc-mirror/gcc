@@ -1,3 +1,19 @@
+2005-07-12  Feng Wang  <fengwang@nudt.edu.cn>
+
+	* runtime/string.c (compare0): Remove unused variable.
+	* intrinsics/etime.c (etime_sub): Ditto.
+	* intrinsics/getcwd.c (getcwd_i4_sub): Ditto.
+	* intrinsics/stat.c (stat_i4_sub stat_i8_sub fstat_i4_sub
+	fstat_i8_sub): Ditto.
+	* intrinsics/unlink.c (unlink_i4_sub): Ditto.
+	* io/unit.c (init_units): Ditto.
+
+	Backport from mainline.
+	2005-07-07  Feng Wang  <fengwang@nudt.edu.cn>
+	PR fortran/16531
+	* io/transfer.c (formatted_transfer): Enable FMT_A on other types to
+	support Hollerith constants.
+
 2005-07-10  Jerry DeLisle  <jvdelisle@verizon.net>
 
 	PR libfortran/21875  (FM111.f)
