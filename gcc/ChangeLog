@@ -1,3 +1,8 @@
+2005-07-12  Eric Christopher  <echristo@redhat.com>
+
+	* gcc.c (struct infile): Update comment for language.
+	(main): Rewrite input file resetting code.
+
 2005-07-12  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/22335
