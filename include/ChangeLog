@@ -1,3 +1,8 @@
+2005-07-12  Ben Elliston  <bje@au.ibm.com>
+
+	* xregex2.h (regexec): Qualify this prototype with __extension__
+	when compiling with GNU C.
+
 2005-07-03  Steve Ellcey  <sje@cup.hp.com>
 
 	PR other/13906
