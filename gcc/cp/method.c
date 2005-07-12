@@ -471,10 +471,27 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 	finish_expr_stmt (t);
       else
 	{
-	  t = force_target_expr (TREE_TYPE (t), t);
 	  if (!this_adjusting)
-	    t = thunk_adjust (t, /*this_adjusting=*/0,
-			      fixed_offset, virtual_offset);
+	    {
+	      tree cond = NULL_TREE;
+
+	      if (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE)
+		{
+		  /* If the return type is a pointer, we need to
+		     protect against NULL.  We know there will be an
+		     adjustment, because that's why we're emitting a
+		     thunk.  */
+		  t = save_expr (t);
+		  cond = cp_convert (boolean_type_node, t);
+		}
+	      
+	      t = thunk_adjust (t, /*this_adjusting=*/0,
+				fixed_offset, virtual_offset);
+	      if (cond)
+		t = build3 (COND_EXPR, TREE_TYPE (t), cond, t,
+			    cp_convert (TREE_TYPE (t), integer_zero_node));
+	    }
+	  t = force_target_expr (TREE_TYPE (t), t);
 	  finish_return_stmt (t);
 	}
 
@@ -1090,7 +1107,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
   if (sfk == sfk_destructor)
     check_for_override (fn, type);
   /* Add it to CLASSTYPE_METHOD_VEC.  */
-  add_method (type, fn);
+  add_method (type, fn, NULL_TREE);
   /* Add it to TYPE_METHODS.  */
   if (sfk == sfk_destructor 
       && DECL_VIRTUAL_P (fn)

@@ -31,16 +31,16 @@ class C
 class D
 {
 public:
-  int foo2() {return b;}  
-  int foo2() {return b;}  // { dg-error "" } 
+  int foo2() {return b;}  // { dg-error "with" } 
+  int foo2() {return b;}  // { dg-error "overloaded" } 
   int b;
 };
 
 class E
 {
 public:
-  int foo2(); 
-  int foo2(); // { dg-error "" } 
+  int foo2(); // { dg-error "with" } 
+  int foo2(); // { dg-error "overloaded" } 
   int b;
 };
 

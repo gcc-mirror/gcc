@@ -1,3 +1,20 @@
+2005-07-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/20678
+	* g++.dg/other/crash-4.C: New.
+
+	PR 21903
+	* g++.dg/parse/defarg9.C: New.
+
+	PR c++/21929
+	* g++.dg/parse/crash26.C: New.
+	
+	PR c++/20789
+	* g++.dg/init/member1.C: New.
+
+	PR c++/20746
+	* g++.dg/abi/covariant5.C: New.
+
 2005-07-12  Feng Wang  <fengwang@nudt.edu.cn>
 
 	Backport from the mainline:

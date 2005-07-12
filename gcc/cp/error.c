@@ -1489,7 +1489,8 @@ dump_expr (tree t, int flags)
 	  {
 	    ob = TREE_OPERAND (ob, 0);
 	    if (TREE_CODE (ob) != PARM_DECL
-		|| strcmp (IDENTIFIER_POINTER (DECL_NAME (ob)), "this"))
+		|| (DECL_NAME (ob)
+		    && strcmp (IDENTIFIER_POINTER (DECL_NAME (ob)), "this")))
 	      {
 		dump_expr (ob, flags | TFF_EXPR_IN_PARENS);
 		pp_cxx_arrow (cxx_pp);

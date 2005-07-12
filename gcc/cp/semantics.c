@@ -2213,7 +2213,7 @@ finish_member_declaration (tree decl)
     {
       /* We also need to add this function to the
 	 CLASSTYPE_METHOD_VEC.  */
-      add_method (current_class_type, decl);
+      add_method (current_class_type, decl, NULL_TREE);
 
       TREE_CHAIN (decl) = TYPE_METHODS (current_class_type);
       TYPE_METHODS (current_class_type) = decl;

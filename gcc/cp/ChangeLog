@@ -1,3 +1,35 @@
+2005-07-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/20678
+	* error.c (dump_expr) <COMPONENT_REF case>: Check DECL_NAME is not
+	null.
+
+	PR 21903
+	* cp-tree.def (DEFAULT_ARG): Document TREE_CHAIN use.
+	* parser.c (cp_parser_late_parsing_default_args): Propagate parsed
+	argument to any early instantiations.
+	* pt.c (tsubst_arg_types): Chain early instantiation of default
+	arg.
+
+	PR c++/20789
+	* decl.c (cp_finish_decl): Clear runtime runtime initialization if
+	in-class decl's initializer is bad.
+	
+	PR c++/21929
+	* parser.c (struct cp_parser): Document that scope could be
+	error_mark.
+	(cp_parser_diagnose_invalid_type_name): Cope with error_mark for
+	scope.
+	(cp_parser_nested_name_specifier): Return NULL_TREE on error.
+	(cp_parser_postfix_expression): Deal with null or error_mark
+	scope.
+	(cp_parser_elaborated_type_specifier): Adjust
+	cp_parser_nested_name_specifier call.
+	
+	PR c++/20746
+	* method.c (use_thunk): Protect covariant pointer return
+	adjustments from NULL pointers.
+
 2005-07-11  Aldy Hernandez  <aldyh@redhat.com>
 
 	Backport from mainline:

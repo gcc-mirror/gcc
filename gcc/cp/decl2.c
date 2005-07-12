@@ -717,7 +717,7 @@ check_classfn (tree ctype, tree function, tree template_parms)
      case we'll only confuse ourselves when the function is declared
      properly within the class.  */
   if (COMPLETE_TYPE_P (ctype))
-    add_method (ctype, function);
+    add_method (ctype, function, NULL_TREE);
   return NULL_TREE;
 }
 

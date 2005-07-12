@@ -1195,7 +1195,8 @@ typedef struct cp_parser GTY(())
   /* The scope in which names should be looked up.  If NULL_TREE, then
      we look up names in the scope that is currently open in the
      source program.  If non-NULL, this is either a TYPE or
-     NAMESPACE_DECL for the scope in which we should look.
+     NAMESPACE_DECL for the scope in which we should look.  It can
+     also be ERROR_MARK, when we've parsed a bogus scope.
 
      This value is not cleared automatically after a name is looked
      up, so we must be careful to clear it before starting a new look
@@ -1203,7 +1204,7 @@ typedef struct cp_parser GTY(())
      will look up `Z' in the scope of `X', rather than the current
      scope.)  Unfortunately, it is difficult to tell when name lookup
      is complete, because we sometimes peek at a token, look it up,
-     and then decide not to consume it.  */
+     and then decide not to consume it.   */
   tree scope;
 
   /* OBJECT_SCOPE and QUALIFYING_SCOPE give the scopes in which the
@@ -1994,7 +1995,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree scope, tree id)
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     error ("invalid use of template-name %qE without an argument list",
       decl);
-  else if (!parser->scope)
+  else if (!parser->scope || parser->scope == error_mark_node)
     {
       /* Issue an error message.  */
       error ("%qE does not name a type", id);
@@ -2262,36 +2263,48 @@ cp_parser_consume_semicolon_at_end_of_statement (cp_parser *parser)
 static void
 cp_parser_skip_to_end_of_block_or_statement (cp_parser* parser)
 {
-  unsigned nesting_depth = 0;
+  int nesting_depth = 0;
 
-  while (true)
+  while (nesting_depth >= 0)
     {
-      cp_token *token;
-
-      /* Peek at the next token.  */
-      token = cp_lexer_peek_token (parser->lexer);
-      /* If we've run out of tokens, stop.  */
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
+      
       if (token->type == CPP_EOF)
 	break;
-      /* If the next token is a `;', we have reached the end of the
-	 statement.  */
-      if (token->type == CPP_SEMICOLON && !nesting_depth)
+
+      switch (token->type)
 	{
-	  /* Consume the `;'.  */
-	  cp_lexer_consume_token (parser->lexer);
+	case CPP_EOF:
+	  /* If we've run out of tokens, stop.  */
+	  nesting_depth = -1;
+	  continue;
+
+	case CPP_SEMICOLON:
+	  /* Stop if this is an unnested ';'. */
+	  if (!nesting_depth)
+	    nesting_depth = -1;
+	  break;
+
+	case CPP_CLOSE_BRACE:
+	  /* Stop if this is an unnested '}', or closes the outermost
+	     nesting level.  */
+	  nesting_depth--;
+	  if (!nesting_depth)
+	    nesting_depth = -1;
+	  break;
+	  
+	case CPP_OPEN_BRACE:
+	  /* Nest. */
+	  nesting_depth++;
+	  break;
+
+	default:
 	  break;
 	}
+      
       /* Consume the token.  */
-      token = cp_lexer_consume_token (parser->lexer);
-      /* If the next token is a non-nested `}', then we have reached
-	 the end of the current block.  */
-      if (token->type == CPP_CLOSE_BRACE
-	  && (nesting_depth == 0 || --nesting_depth == 0))
-	break;
-      /* If it the next token is a `{', then we are entering a new
-	 block.  Consume the entire block.  */
-      if (token->type == CPP_OPEN_BRACE)
-	++nesting_depth;
+      cp_lexer_consume_token (parser->lexer);
+      
     }
 }
 
@@ -3592,9 +3605,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 /* Parse a nested-name-specifier.  See
    cp_parser_nested_name_specifier_opt for details.  This function
    behaves identically, except that it will an issue an error if no
-   nested-name-specifier is present, and it will return
-   ERROR_MARK_NODE, rather than NULL_TREE, if no nested-name-specifier
-   is present.  */
+   nested-name-specifier is present.  */
 
 static tree
 cp_parser_nested_name_specifier (cp_parser *parser,
@@ -3616,7 +3627,6 @@ cp_parser_nested_name_specifier (cp_parser *parser,
     {
       cp_parser_error (parser, "expected nested-name-specifier");
       parser->scope = NULL_TREE;
-      return error_mark_node;
     }
 
   return scope;
@@ -3901,7 +3911,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p)
 	  id = cp_parser_identifier (parser);
 
 	/* Don't process id if nested name specifier is invalid.  */
-	if (scope == error_mark_node)
+	if (!scope || scope == error_mark_node)
 	  return error_mark_node;
 	/* If we look up a template-id in a non-dependent qualifying
 	   scope, there's no need to create a dependent type.  */
@@ -9757,12 +9767,11 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
   /* Look for the nested-name-specifier.  */
   if (tag_type == typename_type)
     {
-      if (cp_parser_nested_name_specifier (parser,
+      if (!cp_parser_nested_name_specifier (parser,
 					   /*typename_keyword_p=*/true,
 					   /*check_dependency_p=*/true,
 					   /*type_p=*/true,
-					   is_declaration)
-	  == error_mark_node)
+					    is_declaration))
 	return error_mark_node;
     }
   else
@@ -15460,19 +15469,32 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
        parm = TREE_CHAIN (parm))
     {
       cp_token_cache *tokens;
-
-      if (!TREE_PURPOSE (parm)
-	  || TREE_CODE (TREE_PURPOSE (parm)) != DEFAULT_ARG)
+      tree default_arg = TREE_PURPOSE (parm);
+      tree parsed_arg;
+      
+      if (!default_arg)
 	continue;
 
-       /* Push the saved tokens for the default argument onto the parser's
-	  lexer stack.  */
-      tokens = DEFARG_TOKENS (TREE_PURPOSE (parm));
+      if (TREE_CODE (default_arg) != DEFAULT_ARG)
+	/* This can happen for a friend declaration for a function
+	   already declared with default arguments.  */
+	continue;
+
+      /* Push the saved tokens for the default argument onto the parser's
+	 lexer stack.  */
+      tokens = DEFARG_TOKENS (default_arg);
       cp_parser_push_lexer_for_tokens (parser, tokens);
 
       /* Parse the assignment-expression.  */
-      TREE_PURPOSE (parm) = cp_parser_assignment_expression (parser,
-							     /*cast_p=*/false);
+      parsed_arg = cp_parser_assignment_expression (parser, /*cast_p=*/false);
+
+      TREE_PURPOSE (parm) = parsed_arg;
+
+      /* Update any instantiations we've already created.  */
+      for (default_arg = TREE_CHAIN (default_arg);
+	   default_arg;
+	   default_arg = TREE_CHAIN (default_arg))
+	TREE_PURPOSE (TREE_PURPOSE (default_arg)) = parsed_arg;
 
       /* If the token stream has not been completely used up, then
 	 there was extra junk after the end of the default
