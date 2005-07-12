@@ -169,6 +169,7 @@ static const char * const optabs[] =
   "reload_out_optab[$A] = CODE_FOR_$(reload_out$a$)",
   "movmem_optab[$A] = CODE_FOR_$(movmem$a$)",
   "cmpstr_optab[$A] = CODE_FOR_$(cmpstr$a$)",
+  "cmpstrn_optab[$A] = CODE_FOR_$(cmpstrn$a$)",
   "cmpmem_optab[$A] = CODE_FOR_$(cmpmem$a$)",
   "setmem_optab[$A] = CODE_FOR_$(setmem$a$)",
   "sync_add_optab[$A] = CODE_FOR_$(sync_add$I$a$)",

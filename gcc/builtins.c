@@ -3449,7 +3449,7 @@ expand_builtin_memcmp (tree exp ATTRIBUTE_UNUSED, tree arglist, rtx target,
 	return expand_expr (result, target, mode, EXPAND_NORMAL);
     }
 
-#if defined HAVE_cmpmemsi || defined HAVE_cmpstrsi
+#if defined HAVE_cmpmemsi || defined HAVE_cmpstrnsi
   {
     tree arg1 = TREE_VALUE (arglist);
     tree arg2 = TREE_VALUE (TREE_CHAIN (arglist));
@@ -3469,9 +3469,9 @@ expand_builtin_memcmp (tree exp ATTRIBUTE_UNUSED, tree arglist, rtx target,
       insn_mode = insn_data[(int) CODE_FOR_cmpmemsi].operand[0].mode;
     else
 #endif
-#ifdef HAVE_cmpstrsi
-    if (HAVE_cmpstrsi)
-      insn_mode = insn_data[(int) CODE_FOR_cmpstrsi].operand[0].mode;
+#ifdef HAVE_cmpstrnsi
+    if (HAVE_cmpstrnsi)
+      insn_mode = insn_data[(int) CODE_FOR_cmpstrnsi].operand[0].mode;
     else
 #endif
       return 0;
@@ -3504,10 +3504,10 @@ expand_builtin_memcmp (tree exp ATTRIBUTE_UNUSED, tree arglist, rtx target,
 			   GEN_INT (MIN (arg1_align, arg2_align)));
     else
 #endif
-#ifdef HAVE_cmpstrsi
-    if (HAVE_cmpstrsi)
-      insn = gen_cmpstrsi (result, arg1_rtx, arg2_rtx, arg3_rtx,
-			   GEN_INT (MIN (arg1_align, arg2_align)));
+#ifdef HAVE_cmpstrnsi
+    if (HAVE_cmpstrnsi)
+      insn = gen_cmpstrnsi (result, arg1_rtx, arg2_rtx, arg3_rtx,
+			    GEN_INT (MIN (arg1_align, arg2_align)));
     else
 #endif
       gcc_unreachable ();
@@ -3558,103 +3558,134 @@ expand_builtin_strcmp (tree exp, rtx target, enum machine_mode mode)
 	return expand_expr (result, target, mode, EXPAND_NORMAL);
     }
 
+#if defined HAVE_cmpstrsi || defined HAVE_cmpstrnsi
+  if (cmpstr_optab[SImode] != CODE_FOR_nothing
+      || cmpstrn_optab[SImode] != CODE_FOR_nothing)
+    {
+      rtx arg1_rtx, arg2_rtx;
+      rtx result, insn = NULL_RTX;
+      tree fndecl, fn;
+      
+      tree arg1 = TREE_VALUE (arglist);
+      tree arg2 = TREE_VALUE (TREE_CHAIN (arglist));
+      int arg1_align
+	= get_pointer_alignment (arg1, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
+      int arg2_align
+	= get_pointer_alignment (arg2, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
+
+      /* If we don't have POINTER_TYPE, call the function.  */
+      if (arg1_align == 0 || arg2_align == 0)
+	return 0;
+
+      /* Stabilize the arguments in case gen_cmpstr(n)si fail.  */
+      arg1 = builtin_save_expr (arg1);
+      arg2 = builtin_save_expr (arg2);
+
+      arg1_rtx = get_memory_rtx (arg1);
+      arg2_rtx = get_memory_rtx (arg2);
+
 #ifdef HAVE_cmpstrsi
-  if (HAVE_cmpstrsi)
-  {
-    tree arg1 = TREE_VALUE (arglist);
-    tree arg2 = TREE_VALUE (TREE_CHAIN (arglist));
-    tree len, len1, len2;
-    rtx arg1_rtx, arg2_rtx, arg3_rtx;
-    rtx result, insn;
-    tree fndecl, fn;
+      /* Try to call cmpstrsi.  */
+      if (HAVE_cmpstrsi)
+	{
+	  enum machine_mode insn_mode 
+	    = insn_data[(int) CODE_FOR_cmpstrsi].operand[0].mode;
 
-    int arg1_align
-      = get_pointer_alignment (arg1, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
-    int arg2_align
-      = get_pointer_alignment (arg2, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
-    enum machine_mode insn_mode
-      = insn_data[(int) CODE_FOR_cmpstrsi].operand[0].mode;
+	  /* Make a place to write the result of the instruction.  */
+	  result = target;
+	  if (! (result != 0
+		 && REG_P (result) && GET_MODE (result) == insn_mode
+		 && REGNO (result) >= FIRST_PSEUDO_REGISTER))
+	    result = gen_reg_rtx (insn_mode);
 
-    len1 = c_strlen (arg1, 1);
-    len2 = c_strlen (arg2, 1);
+	  insn = gen_cmpstrsi (result, arg1_rtx, arg2_rtx,
+			       GEN_INT (MIN (arg1_align, arg2_align)));
+	}
+#endif
+#if HAVE_cmpstrnsi 
+      /* Try to determine at least one length and call cmpstrnsi.  */
+      if (!insn && HAVE_cmpstrnsi) 
+	{
+	  tree len;
+	  rtx arg3_rtx;
 
-    if (len1)
-      len1 = size_binop (PLUS_EXPR, ssize_int (1), len1);
-    if (len2)
-      len2 = size_binop (PLUS_EXPR, ssize_int (1), len2);
+	  enum machine_mode insn_mode 
+	    = insn_data[(int) CODE_FOR_cmpstrnsi].operand[0].mode;
+	  tree len1 = c_strlen (arg1, 1);
+	  tree len2 = c_strlen (arg2, 1);
 
-    /* If we don't have a constant length for the first, use the length
-       of the second, if we know it.  We don't require a constant for
-       this case; some cost analysis could be done if both are available
-       but neither is constant.  For now, assume they're equally cheap,
-       unless one has side effects.  If both strings have constant lengths,
-       use the smaller.  */
+	  if (len1)
+	    len1 = size_binop (PLUS_EXPR, ssize_int (1), len1);
+	  if (len2)
+	    len2 = size_binop (PLUS_EXPR, ssize_int (1), len2);
 
-    if (!len1)
-      len = len2;
-    else if (!len2)
-      len = len1;
-    else if (TREE_SIDE_EFFECTS (len1))
-      len = len2;
-    else if (TREE_SIDE_EFFECTS (len2))
-      len = len1;
-    else if (TREE_CODE (len1) != INTEGER_CST)
-      len = len2;
-    else if (TREE_CODE (len2) != INTEGER_CST)
-      len = len1;
-    else if (tree_int_cst_lt (len1, len2))
-      len = len1;
-    else
-      len = len2;
+	  /* If we don't have a constant length for the first, use the length
+	     of the second, if we know it.  We don't require a constant for
+	     this case; some cost analysis could be done if both are available
+	     but neither is constant.  For now, assume they're equally cheap,
+	     unless one has side effects.  If both strings have constant lengths,
+	     use the smaller.  */
 
-    /* If both arguments have side effects, we cannot optimize.  */
-    if (!len || TREE_SIDE_EFFECTS (len))
-      return 0;
+	  if (!len1)
+	    len = len2;
+	  else if (!len2)
+	    len = len1;
+	  else if (TREE_SIDE_EFFECTS (len1))
+	    len = len2;
+	  else if (TREE_SIDE_EFFECTS (len2))
+	    len = len1;
+	  else if (TREE_CODE (len1) != INTEGER_CST)
+	    len = len2;
+	  else if (TREE_CODE (len2) != INTEGER_CST)
+	    len = len1;
+	  else if (tree_int_cst_lt (len1, len2))
+	    len = len1;
+	  else
+	    len = len2;
 
-    /* If we don't have POINTER_TYPE, call the function.  */
-    if (arg1_align == 0 || arg2_align == 0)
-      return 0;
+	  /* If both arguments have side effects, we cannot optimize.  */
+	  if (!len || TREE_SIDE_EFFECTS (len))
+	    return 0;
 
-    /* Make a place to write the result of the instruction.  */
-    result = target;
-    if (! (result != 0
-	   && REG_P (result) && GET_MODE (result) == insn_mode
-	   && REGNO (result) >= FIRST_PSEUDO_REGISTER))
-      result = gen_reg_rtx (insn_mode);
+	  /* Stabilize the arguments in case gen_cmpstrnsi fails.  */
+	  arg3_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
 
-    /* Stabilize the arguments in case gen_cmpstrsi fails.  */
-    arg1 = builtin_save_expr (arg1);
-    arg2 = builtin_save_expr (arg2);
+	  /* Make a place to write the result of the instruction.  */
+	  result = target;
+	  if (! (result != 0
+		 && REG_P (result) && GET_MODE (result) == insn_mode
+		 && REGNO (result) >= FIRST_PSEUDO_REGISTER))
+	    result = gen_reg_rtx (insn_mode);
 
-    arg1_rtx = get_memory_rtx (arg1);
-    arg2_rtx = get_memory_rtx (arg2);
-    arg3_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
-    insn = gen_cmpstrsi (result, arg1_rtx, arg2_rtx, arg3_rtx,
-			 GEN_INT (MIN (arg1_align, arg2_align)));
-    if (insn)
-      {
-	emit_insn (insn);
+	  insn = gen_cmpstrnsi (result, arg1_rtx, arg2_rtx, arg3_rtx,
+				GEN_INT (MIN (arg1_align, arg2_align)));
+	}
+#endif
 
-	/* Return the value in the proper mode for this function.  */
-	mode = TYPE_MODE (TREE_TYPE (exp));
-	if (GET_MODE (result) == mode)
-	  return result;
-	if (target == 0)
-	  return convert_to_mode (mode, result, 0);
-	convert_move (target, result, 0);
-	return target;
-      }
+      if (insn)
+	{
+	  emit_insn (insn);
 
-    /* Expand the library call ourselves using a stabilized argument
-       list to avoid re-evaluating the function's arguments twice.  */
-    arglist = build_tree_list (NULL_TREE, arg2);
-    arglist = tree_cons (NULL_TREE, arg1, arglist);
-    fndecl = get_callee_fndecl (exp);
-    fn = build_function_call_expr (fndecl, arglist);
-    if (TREE_CODE (fn) == CALL_EXPR)
-      CALL_EXPR_TAILCALL (fn) = CALL_EXPR_TAILCALL (exp);
-    return expand_call (fn, target, target == const0_rtx);
-  }
+	  /* Return the value in the proper mode for this function.  */
+	  mode = TYPE_MODE (TREE_TYPE (exp));
+	  if (GET_MODE (result) == mode)
+	    return result;
+	  if (target == 0)
+	    return convert_to_mode (mode, result, 0);
+	  convert_move (target, result, 0);
+	  return target;
+	}
+
+      /* Expand the library call ourselves using a stabilized argument
+	 list to avoid re-evaluating the function's arguments twice.  */
+      arglist = build_tree_list (NULL_TREE, arg2);
+      arglist = tree_cons (NULL_TREE, arg1, arglist);
+      fndecl = get_callee_fndecl (exp);
+      fn = build_function_call_expr (fndecl, arglist);
+      if (TREE_CODE (fn) == CALL_EXPR)
+	CALL_EXPR_TAILCALL (fn) = CALL_EXPR_TAILCALL (exp);
+      return expand_call (fn, target, target == const0_rtx);
+    }
 #endif
   return 0;
 }
@@ -3679,10 +3710,10 @@ expand_builtin_strncmp (tree exp, rtx target, enum machine_mode mode)
     }
 
   /* If c_strlen can determine an expression for one of the string
-     lengths, and it doesn't have side effects, then emit cmpstrsi
+     lengths, and it doesn't have side effects, then emit cmpstrnsi
      using length MIN(strlen(string)+1, arg3).  */
-#ifdef HAVE_cmpstrsi
-  if (HAVE_cmpstrsi)
+#ifdef HAVE_cmpstrnsi
+  if (HAVE_cmpstrnsi)
   {
     tree arg1 = TREE_VALUE (arglist);
     tree arg2 = TREE_VALUE (TREE_CHAIN (arglist));
@@ -3697,7 +3728,7 @@ expand_builtin_strncmp (tree exp, rtx target, enum machine_mode mode)
     int arg2_align
       = get_pointer_alignment (arg2, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
     enum machine_mode insn_mode
-      = insn_data[(int) CODE_FOR_cmpstrsi].operand[0].mode;
+      = insn_data[(int) CODE_FOR_cmpstrnsi].operand[0].mode;
 
     len1 = c_strlen (arg1, 1);
     len2 = c_strlen (arg2, 1);
@@ -3750,7 +3781,7 @@ expand_builtin_strncmp (tree exp, rtx target, enum machine_mode mode)
 	   && REGNO (result) >= FIRST_PSEUDO_REGISTER))
       result = gen_reg_rtx (insn_mode);
 
-    /* Stabilize the arguments in case gen_cmpstrsi fails.  */
+    /* Stabilize the arguments in case gen_cmpstrnsi fails.  */
     arg1 = builtin_save_expr (arg1);
     arg2 = builtin_save_expr (arg2);
     len = builtin_save_expr (len);
@@ -3758,8 +3789,8 @@ expand_builtin_strncmp (tree exp, rtx target, enum machine_mode mode)
     arg1_rtx = get_memory_rtx (arg1);
     arg2_rtx = get_memory_rtx (arg2);
     arg3_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
-    insn = gen_cmpstrsi (result, arg1_rtx, arg2_rtx, arg3_rtx,
-			 GEN_INT (MIN (arg1_align, arg2_align)));
+    insn = gen_cmpstrnsi (result, arg1_rtx, arg2_rtx, arg3_rtx,
+			  GEN_INT (MIN (arg1_align, arg2_align)));
     if (insn)
       {
 	emit_insn (insn);
