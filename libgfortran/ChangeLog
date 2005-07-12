@@ -1,5 +1,6 @@
 2005-07-12  Thomas Koenig  <Thomas.Koenig@online.de>
 
+	PR libfortran/21593
 	io/unix.c:  Add member special_file to type unix_stream.
 	(fd_truncate):  Don't call ftruncate or chsize if
 	s refers to a special file.
