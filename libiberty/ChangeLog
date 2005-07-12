@@ -1,3 +1,8 @@
+2005-07-12  Ben Elliston  <bje@au.ibm.com>
+
+	* pexecute.c (pexecute): Cast string litrals to char *.
+	* regex.c (re_comp): Cast a call to gettext() to char *.
+
 2005-07-07  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* config.table: Delete file.  Move former contents into ...
