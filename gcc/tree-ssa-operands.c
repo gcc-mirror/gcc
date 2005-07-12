@@ -896,7 +896,8 @@ parse_ssa_operands (tree stmt)
 	if (TREE_CODE (lhs) == VIEW_CONVERT_EXPR)
 	  lhs = TREE_OPERAND (lhs, 0);
 
-	if (TREE_CODE (lhs) != ARRAY_REF && TREE_CODE (lhs) != ARRAY_RANGE_REF
+	if (TREE_CODE (lhs) != ARRAY_REF
+	    && TREE_CODE (lhs) != ARRAY_RANGE_REF
 	    && TREE_CODE (lhs) != BIT_FIELD_REF
 	    && TREE_CODE (lhs) != REALPART_EXPR
 	    && TREE_CODE (lhs) != IMAGPART_EXPR)
@@ -1325,9 +1326,10 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 		bool exact;		
 		if (overlap_subvar (offset, size, sv, &exact))
 		  {
+	            bool subvar_flags = flags;
 		    if (!exact)
-		      flags &= ~opf_kill_def;
-		    add_stmt_operand (&sv->var, s_ann, flags);
+		      subvar_flags &= ~opf_kill_def;
+		    add_stmt_operand (&sv->var, s_ann, subvar_flags);
 		  }
 	      }
 	  }
