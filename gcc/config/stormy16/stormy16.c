@@ -1480,7 +1480,7 @@ xstormy16_expand_builtin_va_arg (tree valist, tree type, tree *pre_p,
   gimplify_and_add (t, pre_p);
   
   addr = fold_convert (build_pointer_type (type), addr);
-  return build_fold_indirect_ref (addr);
+  return build_va_arg_indirect_ref (addr);
 }
 
 /* Initialize the variable parts of a trampoline.  ADDR is an RTX for

@@ -6811,7 +6811,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
     result = tmp;
 
   if (pass_by_ref)
-    result = build_fold_indirect_ref (result);
+    result = build_va_arg_indirect_ref (result);
 
   return result;
 }

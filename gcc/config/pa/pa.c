@@ -5834,10 +5834,10 @@ hppa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 	}
 
       t = fold_convert (ptr, t);
-      t = build_fold_indirect_ref (t);
+      t = build_va_arg_indirect_ref (t);
 
       if (indirect)
-	t = build_fold_indirect_ref (t);
+	t = build_va_arg_indirect_ref (t);
 
       return t;
     }

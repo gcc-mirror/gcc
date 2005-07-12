@@ -6238,7 +6238,7 @@ alpha_gimplify_va_arg_1 (tree type, tree base, tree offset, tree *pre_p)
 	     build (PLUS_EXPR, TREE_TYPE (offset), offset, t));
   gimplify_and_add (t, pre_p);
 
-  return build_fold_indirect_ref (addr);
+  return build_va_arg_indirect_ref (addr);
 }
 
 static tree
@@ -6279,7 +6279,7 @@ alpha_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   gimplify_and_add (t, pre_p);
 
   if (indirect)
-    r = build_fold_indirect_ref (r);
+    r = build_va_arg_indirect_ref (r);
 
   return r;
 }

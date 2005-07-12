@@ -1,3 +1,17 @@
+2005-07-11  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_gimplify_va_arg_1): Use
+	build_va_arg_indirect_ref.
+	(alpha_gimplify_va_arg): Likewise.
+	* config/c4x/c4x.c (c4x_gimplify_va_arg_expr): Likewise.
+	* config/i860/i860.c (i860_gimplify_va_arg_expr): Likewise.
+	* config/mips/mips.c (mips_gimplify_va_arg_expr): Likewise.
+	* config/pa/pa.c (hppa_gimplify_va_arg_expr): Likewise.
+	* config/sh/sh.c (sh_gimplify_va_arg_expr): Likewise.
+	* config/stormy16/stormy16.c (xstormy16_expand_builtin_va_arg):
+	Likewise.
+	* config/xtensa/xtensa.c (xtensa_gimplify_va_arg_expr): Likewise.
+
 2005-07-12  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-flow.h (remove_empty_loops, single_dom_exit): Declare.
