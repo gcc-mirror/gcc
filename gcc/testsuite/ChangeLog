@@ -1,4 +1,8 @@
-2005-07-12  Thomas Koenig  <Thomas.Koenig@online.de>
+2005-07-12  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/compile/pr22379.c: New test.
+
+2005-07-11  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/21593
 	gfortran.dg/dev_null.f90:  Remove outdated comment about

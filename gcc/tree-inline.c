@@ -1966,7 +1966,9 @@ expand_call_inline (basic_block bb, tree stmt, tree *tp, void *data)
      inlining.  */
   if (!cgraph_inline_p (cg_edge, &reason))
     {
-      if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)))
+      if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn))
+	  /* Avoid warnings during early inline pass. */
+	  && (!flag_unit_at_a_time || cgraph_global_info_ready))
 	{
 	  sorry ("inlining failed in call to %q+F: %s", fn, reason);
 	  sorry ("called from here");
