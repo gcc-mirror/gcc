@@ -1,5 +1,10 @@
 2005-07-12  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR tree-opt/22105
+	* tree-ssa-loop-im.c (for_each_index): Handle COMPLEX_CST.
+
+2005-07-12  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR bootstrap/21704
 	* host-linux.h: Include limits.h.
 
