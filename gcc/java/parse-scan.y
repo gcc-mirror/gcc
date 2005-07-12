@@ -637,6 +637,7 @@ interface_member_declaration:
 |	abstract_method_declaration
 |	class_declaration	/* Added, JDK1.1 inner classes */
 |	interface_declaration	/* Added, JDK1.1 inner classes */
+|	empty_statement
 ;
 
 constant_declaration:
