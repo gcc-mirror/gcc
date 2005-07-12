@@ -22,6 +22,7 @@
 #include "system.h"
 #include "coretypes.h"
 #include <sys/mman.h>
+#include <limits.h>
 #include "hosthooks.h"
 #include "hosthooks-def.h"
 
