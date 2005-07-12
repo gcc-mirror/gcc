@@ -2936,6 +2936,13 @@ static struct switchstr *switches;
 
 static int n_switches;
 
+/* Language is one of three things:
+
+   1) The name of a real programming language.
+   2) NULL, indicating that no one has figured out
+   what it is yet.
+   3) '*', indicating that the file should be passed
+   to the linker.  */
 struct infile
 {
   const char *name;
@@ -6553,11 +6560,21 @@ main (int argc, const char **argv)
       clear_failure_queue ();
     }
 
-  /* Reset the output file name to the first input file name, for use
-     with %b in LINK_SPEC on a target that prefers not to emit a.out
-     by default.  */
+  /* Reset the input file name to the first compile/object file name, for use
+     with %b in LINK_SPEC. We use the first input file that we can find
+     a compiler to compile it instead of using infiles.language since for 
+     languages other than C we use aliases that we then lookup later.  */
   if (n_infiles > 0)
-    set_input (infiles[0].name);
+    {
+      int i;
+
+      for (i = 0; i < n_infiles ; i++)
+	if (infiles[i].language && infiles[i].language != '*')
+	  {
+	    set_input (infiles[i].name);
+	    break;
+	  }
+    }
 
   if (error_count == 0)
     {
