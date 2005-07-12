@@ -5449,6 +5449,7 @@ instructions, but allow the compiler to schedule those calls.
 @menu
 * Alpha Built-in Functions::
 * ARM Built-in Functions::
+* Blackfin Built-in Functions::
 * FR-V Built-in Functions::
 * X86 Built-in Functions::
 * MIPS Paired-Single Support::
@@ -5683,6 +5684,20 @@ v4hi __builtin_arm_wunpckilh (v4hi, v4hi)
 v2si __builtin_arm_wunpckilw (v2si, v2si)
 long long __builtin_arm_wxor (long long, long long)
 long long __builtin_arm_wzero ()
+@end smallexample
+
+@node Blackfin Built-in Functions
+@subsection Blackfin Built-in Functions
+
+Currently, there are two Blackfin-specific built-in functions.  These are
+used for generating @code{CSYNC} and @code{SSYNC} machine insns without
+using inline assembly; by using these built-in functions the compiler can
+automatically add workarounds for hardware errata involving these
+instructions.  These functions are named as follows:
+
+@smallexample
+void __builtin_bfin_csync (void)
+void __builtin_bfin_ssync (void)
 @end smallexample
 
 @node FR-V Built-in Functions

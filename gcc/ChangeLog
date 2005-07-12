@@ -1,3 +1,15 @@
+2005-07-12  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.md (UNSPEC_VOLATILE_CSYNC, UNSPEC_VOLATILE_SSYNC):
+	New constants.
+	(csync, ssync): New insn patterns.
+	* config/bfin/bfin.c (bfin_init_builtins, bfin_expand_builtin):
+	New functions.
+	(enum bfin_builtins): New.
+	(def_builtin): New macro.
+	(TARGET_INIT_BUILTINS, TARGET_EXPAND_BUILTIN): Define.
+	* doc/extend.texi (Blackfin Built-in Functions): New section.
+
 2005-07-11  Aldy Hernandez  <aldyh@redhat.com>
 
 	Backport from mainline:

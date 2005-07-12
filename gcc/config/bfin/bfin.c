@@ -2671,6 +2671,67 @@ bfin_output_mi_thunk (FILE *file ATTRIBUTE_UNUSED,
     output_asm_insn ("jump.l\t%P0", xops);
 }
 
+/* Codes for all the Blackfin builtins.  */
+enum bfin_builtins
+{
+  BFIN_BUILTIN_CSYNC,
+  BFIN_BUILTIN_SSYNC,
+  BFIN_BUILTIN_MAX
+};
+
+#define def_builtin(NAME, TYPE, CODE)				\
+do {								\
+  builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD,	\
+		    NULL, NULL_TREE);				\
+} while (0)
+
+/* Set up all builtin functions for this target.  */
+static void
+bfin_init_builtins (void)
+{
+  tree void_ftype_void
+    = build_function_type (void_type_node, void_list_node);
+
+  /* Add the remaining MMX insns with somewhat more complicated types.  */
+  def_builtin ("__builtin_bfin_csync", void_ftype_void, BFIN_BUILTIN_CSYNC);
+  def_builtin ("__builtin_bfin_ssync", void_ftype_void, BFIN_BUILTIN_SSYNC);
+}
+
+/* Expand an expression EXP that calls a built-in function,
+   with result going to TARGET if that's convenient
+   (and in mode MODE if that's convenient).
+   SUBTARGET may be used as the target for computing one of EXP's operands.
+   IGNORE is nonzero if the value is to be ignored.  */
+
+static rtx
+bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
+		     rtx subtarget ATTRIBUTE_UNUSED,
+		     enum machine_mode mode ATTRIBUTE_UNUSED,
+		     int ignore ATTRIBUTE_UNUSED)
+{
+  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+
+  switch (fcode)
+    {
+    case BFIN_BUILTIN_CSYNC:
+      emit_insn (gen_csync ());
+      return 0;
+    case BFIN_BUILTIN_SSYNC:
+      emit_insn (gen_ssync ());
+      return 0;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+#undef TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS bfin_init_builtins
+
+#undef TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN bfin_expand_builtin
+
 #undef TARGET_ASM_GLOBALIZE_LABEL
 #define TARGET_ASM_GLOBALIZE_LABEL bfin_globalize_label 
 
