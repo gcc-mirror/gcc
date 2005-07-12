@@ -1,3 +1,10 @@
+2005-06-22  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	PR middle-end/20593
+	* varasm.c (compute_reloc_for_constant): Treat VIEW_CONVER_EXPR
+	the same as the other cast operands.
+	(output_addressed_constants): Likewise.
+
 2005-07-12  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/22105
