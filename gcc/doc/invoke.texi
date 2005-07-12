@@ -7415,13 +7415,13 @@ by default.
 Don't generate extra code to prevent speculative loads from occurring.
 
 @item -mcsync-anomaly
-@opindex mspecld-anomaly
+@opindex mcsync-anomaly
 When enabled, the compiler will ensure that the generated code does not
 contain CSYNC or SSYNC instructions too soon after conditional branches.
 This option is enabled by default.
 
 @item -mno-csync-anomaly
-@opindex mno-specld-anomaly
+@opindex mno-csync-anomaly
 Don't generate extra code to prevent CSYNC or SSYNC instructions from
 occurring too soon after a conditional branch.
 

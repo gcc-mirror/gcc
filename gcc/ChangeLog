@@ -1,3 +1,9 @@
+2005-07-12  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* doc/extend.texi (Blackfin Built-in Functions): New section.
+	* doc/invoke.texi (mcsync-anomaly, mno-csync-anomaly): Fix the
+	@opindex.
+
 2005-07-12  Adrian Straetling  <straetling@de.ibm.com>
 
 	* builtins.c: (expand_builtin_memcmp, expand_builtin_strncmp):
