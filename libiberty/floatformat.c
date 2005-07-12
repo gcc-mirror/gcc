@@ -306,6 +306,13 @@ floatformat_to_double (const struct floatformat *fmt,
 	  mant_bits_left -= mant_bits;
 	}
 
+      /* On certain systems (such as GNU/Linux), the use of the
+	 INFINITY macro below may generate a warning that can not be
+	 silenced due to a bug in GCC (PR preprocessor/11931).  The
+	 preprocessor fails to recognise the __extension__ keyword in
+	 conjunction with the GNU/C99 extension for hexadecimal
+	 floating point constants and will issue a warning when
+	 compiling with -pedantic.  */
       if (nan)
 	dto = NAN;
       else

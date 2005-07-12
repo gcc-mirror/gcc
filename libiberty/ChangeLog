@@ -1,5 +1,10 @@
 2005-07-12  Ben Elliston  <bje@au.ibm.com>
 
+	* floatformat.c (floatformat_to_double): Add a comment about a
+	potential source of warnings when compiling this file.
+
+2005-07-12  Ben Elliston  <bje@au.ibm.com>
+
 	* pexecute.c (pexecute): Cast string litrals to char *.
 	* regex.c (re_comp): Cast a call to gettext() to char *.
 
