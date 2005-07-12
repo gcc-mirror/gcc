@@ -1,4 +1,9 @@
-2005-07-06  Colin Walters  <walters@verbum.org>
+2005-07-12  Aaron Luchko  <aluchko@redhat.com>
+
+	* gnu/classpath/jdwp/processor/ObjectReferenceCommandSet.java:
+	New file.
+
+2005-07-08  Colin Walters  <walters@verbum.org>
 
 	* verify.cc (class _Jv_BytecodeVerifier) <op_new>: Don't
 	check for abstract classes or interfaces here; JVM spec
@@ -8,9 +13,9 @@
 
 2005-07-08  Andrew Haley  <aph@redhat.com>
 
-        * posix-threads.cc (_Jv_ThreadSetPriority): Use SCHED_OTHER
-        (regular, non-realtime scheduling), not SCHED_RR (realtime,
-        round-robin).
+	* posix-threads.cc (_Jv_ThreadSetPriority): Use SCHED_OTHER
+	(regular, non-realtime scheduling), not SCHED_RR (realtime,
+	round-robin).
 
 2005-07-07  Aaron Luchko  <aluchko@redhat.com>
 
