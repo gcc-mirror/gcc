@@ -1,3 +1,8 @@
+2005-07-12  Ben Elliston  <bje@au.ibm.com>
+
+	* tree-cfg.c (dump_cfg_stats): Add a new fmt_str_2 format string
+	and use it when printing num_edges.
+
 2005-07-12  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* doc/extend.texi (Blackfin Built-in Functions): New section.
