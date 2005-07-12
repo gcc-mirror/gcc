@@ -1,10 +1,20 @@
 2005-07-12  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/20637
+	* cp-tree.h (add_method): Add using_decl parameter.
+	* class.c (add_method): Add using_decl parameter.  Adjust error
+	messages.
+	(handle_using_decl): Pass the using decl to add_method.
+	(clone_function_decl): Adjust add_member calls.
+	* decl2.c (check_classfn): Likewise.
+	* method.c (lazily_declare_fn): Likewise.
+	* semantics.c (finish_member_declaration): Likewise.
+	
 	PR c++/20678
 	* error.c (dump_expr) <COMPONENT_REF case>: Check DECL_NAME is not
 	null.
 
-	PR 21903
+	PR c++/21903
 	* cp-tree.def (DEFAULT_ARG): Document TREE_CHAIN use.
 	* parser.c (cp_parser_late_parsing_default_args): Propagate parsed
 	argument to any early instantiations.
