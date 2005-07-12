@@ -3426,6 +3426,8 @@ prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
 	  if (cmp_code == CODE_FOR_nothing)
 	    cmp_code = cmpstr_optab[cmp_mode];
 	  if (cmp_code == CODE_FOR_nothing)
+	    cmp_code = cmpstrn_optab[cmp_mode];
+	  if (cmp_code == CODE_FOR_nothing)
 	    continue;
 
 	  /* Must make sure the size fits the insn's mode.  */
@@ -5090,6 +5092,7 @@ init_optabs (void)
     {
       movmem_optab[i] = CODE_FOR_nothing;
       cmpstr_optab[i] = CODE_FOR_nothing;
+      cmpstrn_optab[i] = CODE_FOR_nothing;
       cmpmem_optab[i] = CODE_FOR_nothing;
       setmem_optab[i] = CODE_FOR_nothing;
 

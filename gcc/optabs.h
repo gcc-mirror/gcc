@@ -450,6 +450,7 @@ extern enum insn_code setmem_optab[NUM_MACHINE_MODES];
 /* These arrays record the insn_code of two different kinds of insns
    to perform block compares.  */
 extern enum insn_code cmpstr_optab[NUM_MACHINE_MODES];
+extern enum insn_code cmpstrn_optab[NUM_MACHINE_MODES];
 extern enum insn_code cmpmem_optab[NUM_MACHINE_MODES];
 
 /* Synchronization primitives.  This first set is atomic operation for

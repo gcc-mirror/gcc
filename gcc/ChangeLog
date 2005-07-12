@@ -1,3 +1,18 @@
+2005-07-12  Adrian Straetling  <straetling@de.ibm.com>
+
+	* builtins.c: (expand_builtin_memcmp, expand_builtin_strncmp):
+	s/cmpstrsi/cmpstrnsi
+	(expand_builtin_strcmp): Rewrite to support both 'cmpstrsi' and
+	'cmpstrnsi'.
+	* optabs.c: (prepare_cmp_insn): Add availability of 'cmpstrn'.
+	(init_optabs): Initialize cmpstrn_optab.
+	* optabs.h: (enum insn_code cmpstrn_optab): Declare.
+	* genopinit.c: (optabs[]): Add 'cmpstrn' to initialisation.
+	* expr.c: (enum insn_code cmpstrn_optab): Declare.
+	* config/i386/i386.md: s/cmpstr/cmpstrn
+	* config/c4x/c4x.md: s/cmpstr/cmpstrn
+	* doc/md.texi: Update documentation.
+
 2005-07-11  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_gimplify_va_arg_1): Use

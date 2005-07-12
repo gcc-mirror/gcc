@@ -202,9 +202,10 @@ enum insn_code movmem_optab[NUM_MACHINE_MODES];
 /* This array records the insn_code of insns to perform block sets.  */
 enum insn_code setmem_optab[NUM_MACHINE_MODES];
 
-/* These arrays record the insn_code of two different kinds of insns
+/* These arrays record the insn_code of three different kinds of insns
    to perform block compares.  */
 enum insn_code cmpstr_optab[NUM_MACHINE_MODES];
+enum insn_code cmpstrn_optab[NUM_MACHINE_MODES];
 enum insn_code cmpmem_optab[NUM_MACHINE_MODES];
 
 /* Synchronization primitives.  */

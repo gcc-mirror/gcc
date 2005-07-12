@@ -3269,8 +3269,8 @@ operand.
 
 The use for multiple @code{setmem@var{m}} is as for @code{movmem@var{m}}.
 
-@cindex @code{cmpstr@var{m}} instruction pattern
-@item @samp{cmpstr@var{m}}
+@cindex @code{cmpstrn@var{m}} instruction pattern
+@item @samp{cmpstrn@var{m}}
 String compare instruction, with five operands.  Operand 0 is the output;
 it has mode @var{m}.  The remaining four operands are like the operands
 of @samp{movmem@var{m}}.  The two memory blocks specified are compared
@@ -3280,6 +3280,25 @@ at a time since either string may end in the first byte and reading past
 that may access an invalid page or segment and cause a fault.  The
 effect of the instruction is to store a value in operand 0 whose sign
 indicates the result of the comparison.
+
+@cindex @code{cmpstr@var{m}} instruction pattern
+@item @samp{cmpstr@var{m}}
+String compare instruction, without known maximum length.  Operand 0 is the
+output; it has mode @var{m}.  The second and third operand are the blocks of
+memory to be compared; both are @code{mem:BLK} with an address in mode
+@code{Pmode}.
+
+The fourth operand is the known shared alignment of the source and
+destination, in the form of a @code{const_int} rtx.  Thus, if the
+compiler knows that both source and destination are word-aligned,
+it may provide the value 4 for this operand.
+
+The two memory blocks specified are compared byte by byte in lexicographic
+order starting at the beginning of each string.  The instruction is not allowed
+to prefetch more than one byte at a time since either string may end in the
+first byte and reading past that may access an invalid page or segment and
+cause a fault.  The effect of the instruction is to store a value in operand 0
+whose sign indicates the result of the comparison.
 
 @cindex @code{cmpmem@var{m}} instruction pattern
 @item @samp{cmpmem@var{m}}

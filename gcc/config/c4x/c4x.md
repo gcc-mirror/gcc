@@ -5714,7 +5714,7 @@
  }")
 
 
-(define_insn "*cmpstrqi"
+(define_insn "*cmpstrnqi"
   [(set (match_operand:QI 0 "ext_reg_operand" "=d")
         (compare:QI (mem:BLK (match_operand:QI 1 "addr_reg_operand" "+a"))
                     (mem:BLK (match_operand:QI 2 "addr_reg_operand" "+a"))))
@@ -5731,7 +5731,7 @@
     return \"\";
  }")
 
-(define_expand "cmpstrqi"
+(define_expand "cmpstrnqi"
   [(parallel [(set (match_operand:QI 0 "reg_operand" "")
                    (compare:QI (match_operand:BLK 1 "general_operand" "")
                                (match_operand:BLK 2 "general_operand" "")))
