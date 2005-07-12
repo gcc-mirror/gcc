@@ -1,3 +1,7 @@
+2005-07-12  Dale Johannesen  <dalej@apple.com>
+
+	* config/rs6000.c (rs6000_rtx_cost):  Move FLOAT_EXTEND.
+
 2005-07-12  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR bootstrap/21704
