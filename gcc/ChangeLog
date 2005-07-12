@@ -1,3 +1,8 @@
+2005-07-12  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR bootstrap/21704
+	* host-linux.h: Include limits.h.
+
 2005-07-12  Dale Johannesen  <dalej@apple.com>
 
 	* expr.c (compress_float_constant):  Add cost check.
