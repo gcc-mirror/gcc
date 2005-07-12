@@ -28,6 +28,7 @@
 #include "hard-reg-set.h"
 #include "real.h"
 #include "insn-config.h"
+#include "insn-codes.h"
 #include "conditions.h"
 #include "insn-flags.h"
 #include "output.h"
@@ -2470,9 +2471,11 @@ bfin_reorg (void)
   rtx insn, last_condjump = NULL_RTX;
   int cycles_since_jump = INT_MAX;
 
-  if (! TARGET_CSYNC)
+  if (! TARGET_SPECLD_ANOMALY || ! TARGET_CSYNC_ANOMALY)
     return;
 
+  /* First pass: find predicted-false branches; if something after them
+     needs nops, insert them or change the branch to predict true.  */
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       rtx pat;
@@ -2500,29 +2503,109 @@ bfin_reorg (void)
       else if (INSN_P (insn))
 	{
 	  enum attr_type type = get_attr_type (insn);
+	  int delay_needed = 0;
 	  if (cycles_since_jump < INT_MAX)
 	    cycles_since_jump++;
 
-	  if (type == TYPE_MCLD && cycles_since_jump < 3)
+	  if (type == TYPE_MCLD && TARGET_SPECLD_ANOMALY)
+	    {
+	      rtx pat = single_set (insn);
+	      if (may_trap_p (SET_SRC (pat)))
+		delay_needed = 3;
+	    }
+	  else if (type == TYPE_SYNC && TARGET_CSYNC_ANOMALY)
+	    delay_needed = 4;
+
+	  if (delay_needed > cycles_since_jump)
+	    {
+	      rtx pat;
+	      int num_clobbers;
+	      rtx *op = recog_data.operand;
+
+	      delay_needed -= cycles_since_jump;
+
+	      extract_insn (last_condjump);
+	      if (optimize_size)
+		{
+		  pat = gen_cbranch_predicted_taken (op[0], op[1], op[2],
+						     op[3]);
+		  cycles_since_jump = INT_MAX;
+		}
+	      else
+		/* Do not adjust cycles_since_jump in this case, so that
+		   we'll increase the number of NOPs for a subsequent insn
+		   if necessary.  */
+		pat = gen_cbranch_with_nops (op[0], op[1], op[2], op[3],
+					     GEN_INT (delay_needed));
+	      PATTERN (last_condjump) = pat;
+	      INSN_CODE (last_condjump) = recog (pat, insn, &num_clobbers);
+	    }
+	}
+    }
+  /* Second pass: for predicted-true branches, see if anything at the
+     branch destination needs extra nops.  */
+  if (! TARGET_CSYNC_ANOMALY)
+    return;
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    {
+      if (JUMP_P (insn)
+	  && any_condjump_p (insn)
+	  && (INSN_CODE (insn) == CODE_FOR_cbranch_predicted_taken
+	      || cbranch_predicted_taken_p (insn)))
+	{
+	  rtx target = JUMP_LABEL (insn);
+	  rtx label = target;
+	  cycles_since_jump = 0;
+	  for (; target && cycles_since_jump < 3; target = NEXT_INSN (target))
 	    {
 	      rtx pat;
 
-	      pat = single_set (insn);
-	      if (may_trap_p (SET_SRC (pat)))
-		{
-		  int num_clobbers;
-		  rtx *op = recog_data.operand;
+	      if (NOTE_P (target) || BARRIER_P (target) || LABEL_P (target))
+		continue;
 
-		  extract_insn (last_condjump);
-		  if (optimize_size)
-		    pat = gen_cbranch_predicted_taken (op[0], op[1], op[2],
-						       op[3]);
-		  else
-		    pat = gen_cbranch_with_nops (op[0], op[1], op[2], op[3],
-						 GEN_INT (3 - cycles_since_jump));
-		  PATTERN (last_condjump) = pat;
-		  INSN_CODE (last_condjump) = recog (pat, insn, &num_clobbers);
-		  cycles_since_jump = INT_MAX;
+	      pat = PATTERN (target);
+	      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER
+		  || GET_CODE (pat) == ASM_INPUT || GET_CODE (pat) == ADDR_VEC
+		  || GET_CODE (pat) == ADDR_DIFF_VEC || asm_noperands (pat) >= 0)
+		continue;
+
+	      if (INSN_P (target))
+		{
+		  enum attr_type type = get_attr_type (target);
+		  int delay_needed = 0;
+		  if (cycles_since_jump < INT_MAX)
+		    cycles_since_jump++;
+
+		  if (type == TYPE_SYNC && TARGET_CSYNC_ANOMALY)
+		    delay_needed = 2;
+
+		  if (delay_needed > cycles_since_jump)
+		    {
+		      rtx prev = prev_real_insn (label);
+		      delay_needed -= cycles_since_jump;
+		      if (dump_file)
+			fprintf (dump_file, "Adding %d nops after %d\n",
+				 delay_needed, INSN_UID (label));
+		      if (JUMP_P (prev)
+			  && INSN_CODE (prev) == CODE_FOR_cbranch_with_nops)
+			{
+			  rtx x;
+			  HOST_WIDE_INT v;
+
+			  if (dump_file)
+			    fprintf (dump_file,
+				     "Reducing nops on insn %d.\n",
+				     INSN_UID (prev));
+			  x = PATTERN (prev);
+			  x = XVECEXP (x, 0, 1);
+			  v = INTVAL (XVECEXP (x, 0, 0)) - delay_needed;
+			  XVECEXP (x, 0, 0) = GEN_INT (v);
+			}
+		      while (delay_needed-- > 0)
+			emit_insn_after (gen_nop (), label);
+		      break;
+		    }
 		}
 	    }
 	}

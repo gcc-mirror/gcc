@@ -48,21 +48,23 @@ extern int target_flags;
 /* Generate DSP instructions, like DSP halfword loads */
 #define TARGET_DSP			(1)
 
-#define TARGET_DEFAULT MASK_CSYNC
+#define TARGET_DEFAULT (MASK_CSYNC_ANOMALY | MASK_SPECLD_ANOMALY)
 
 /* Don't create frame pointers for leaf functions */
 #define TARGET_OMIT_LEAF_FRAME_POINTER (target_flags & MASK_OMIT_LEAF_FRAME_POINTER)
 #define TARGET_LOW_64K                 (target_flags & MASK_LOW_64K)
-#define TARGET_CSYNC		       (target_flags & MASK_CSYNC)
+#define TARGET_CSYNC_ANOMALY	       (target_flags & MASK_CSYNC_ANOMALY)
+#define TARGET_SPECLD_ANOMALY	       (target_flags & MASK_SPECLD_ANOMALY)
 #define TARGET_ID_SHARED_LIBRARY       (target_flags & MASK_ID_SHARED_LIBRARY)
 
 #define MASK_OMIT_LEAF_FRAME_POINTER 0x00000001
-#define MASK_CSYNC                   0x00000002
+#define MASK_CSYNC_ANOMALY           0x00000002
 #define MASK_LOW_64K           	     0x00000004
 /* Compile using library ID based shared libraries.
  * Set a specific ID using the -mshared-library-id=xxx option.
  */
 #define MASK_ID_SHARED_LIBRARY	     0x00000008
+#define MASK_SPECLD_ANOMALY          0x00000010
 
 #define TARGET_SWITCHES  {\
   { "omit-leaf-frame-pointer",	  MASK_OMIT_LEAF_FRAME_POINTER,		\
@@ -73,16 +75,20 @@ extern int target_flags;
     "Program is located in low 64K of memory" },			\
   { "no-low64k",	         -MASK_LOW_64K,				\
     "Program is not located in low 64K of memory (default)"},		\
-  { "csync",		         MASK_CSYNC,				\
-    "Avoid speculative loads by inserting CSYNC or equivalent"},	\
-  { "no-csync",			-MASK_CSYNC,				\
+  { "specld-anomaly",		 MASK_SPECLD_ANOMALY,			\
+    "Avoid speculative loads"},						\
+  { "no-specld-anomaly",	-MASK_SPECLD_ANOMALY,			\
     "Do not generate extra code to avoid speculative loads"},		\
+  { "csync-anomaly",		 MASK_CSYNC_ANOMALY,			\
+    "Avoid CSYNC/SSYNC after conditional jumps"},			\
+  { "no-csync-anomaly",		-MASK_CSYNC_ANOMALY,			\
+    "Do not generate extra code to avoid CSYNC/SSYNC after condjumps"},	\
   { "id-shared-library", MASK_ID_SHARED_LIBRARY,			\
     "Enable ID based shared library" },					\
   { "no-id-shared-library", -MASK_ID_SHARED_LIBRARY,			\
     "Disable ID based shared library" },				\
   { "", TARGET_DEFAULT,							\
-    "default: csync"}}
+    "default: csync-anomaly, specld-anomaly"}}
 
 /* This macro is similar to `TARGET_SWITCHES' but defines names of
    command options that have values.  Its definition is an

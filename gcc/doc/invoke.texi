@@ -400,9 +400,10 @@ Objective-C and Objective-C++ Dialects}.
 -mcall-prologues  -mno-tablejump  -mtiny-stack  -mint8}
 
 @emph{Blackfin Options}
-@gccoptlist{-momit-leaf-frame-pointer -mno-omit-leaf-frame-pointer -mcsync @gol
--mno-csync -mlow-64k -mno-low64k -mid-shared-library @gol
--mno-id-shared-library -mshared-library-id=@var{n} @gol}
+@gccoptlist{-momit-leaf-frame-pointer -mno-omit-leaf-frame-pointer @gol
+-mspecld-anomaly -mno-specld-anomaly -mcsync-anomaly -mno-csync-anomaly @gol
+-mlow-64k -mno-low64k -mid-shared-library @gol
+-mno-id-shared-library -mshared-library-id=@var{n}}
 
 @emph{CRIS Options}
 @gccoptlist{-mcpu=@var{cpu}  -march=@var{cpu}  -mtune=@var{cpu} @gol
@@ -7144,15 +7145,26 @@ makes an extra register available in leaf functions.  The option
 @option{-fomit-frame-pointer} removes the frame pointer for all functions
 which might make debugging harder.
 
-@item -mcsync
-@opindex mcsync
+@item -mspecld-anomaly
+@opindex mspecld-anomaly
 When enabled, the compiler will ensure that the generated code does not
 contain speculative loads after jump instructions.  This option is enabled
 by default.
 
-@item -mno-csync
-@opindex mno-csync
+@item -mno-specld-anomaly
+@opindex mno-specld-anomaly
 Don't generate extra code to prevent speculative loads from occurring.
+
+@item -mcsync-anomaly
+@opindex mcsync-anomaly
+When enabled, the compiler will ensure that the generated code does not
+contain CSYNC or SSYNC instructions too soon after conditional branches.
+This option is enabled by default.
+
+@item -mno-csync-anomaly
+@opindex mno-csync-anomaly
+Don't generate extra code to prevent CSYNC or SSYNC instructions from
+occurring too soon after a conditional branch.
 
 @item -mlow-64k
 @opindex mlow-64k

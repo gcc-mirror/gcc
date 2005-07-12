@@ -1,5 +1,15 @@
 2005-07-12  Bernd Schmidt  <bernd.schmidt@analog.com>
 
+	* config/bfin/bfin.md (define_attr "type"): Add "sync".
+	(define_insn_reservation "alu"): Likewise.
+	(csync, ssync): Now of type sync.
+	* config/bfin/bfin.h (MASK_CSYNC, TARGET_CSYNC): Removed.
+	(MASK_CSYNC_ANOMALY, MASK_SPECLD_ANOMALY, TARGET_CSYNC_ANOMALY,
+	TARGET_SPECLD_ANOMALY): New.
+	* config/bfin/bfin.c: Include "insn-codes.h".
+	(bfin_reorg): Extend to handle the CSYNC anomaly as well.
+	* doc/invoke.texi: Document -mcsync-anomaly, -mspecld-anomaly.
+
 	* config/bfin/bfin.md (UNSPEC_VOLATILE_CSYNC, UNSPEC_VOLATILE_SSYNC):
 	New constants.
 	(csync, ssync): New insn patterns.
