@@ -552,6 +552,10 @@ expand_one_stack_var (tree var)
 static void
 expand_one_static_var (tree var)
 {
+  /* In unit-at-a-time all the static variables are expanded at the end
+     of compilation process.  */
+  if (flag_unit_at_a_time)
+    return;
   /* If this is an inlined copy of a static local variable,
      look up the original.  */
   var = DECL_ORIGIN (var);
