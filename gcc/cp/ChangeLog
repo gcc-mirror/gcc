@@ -1,3 +1,10 @@
+2005-07-12  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/20172
+	* pt.c (tsubst_template_parms): Check for invalid non-type
+	parameters.
+
 2005-07-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* cp-lang.c (shadowed_var_for_decl, decl_shadowed_for_var_lookup,

@@ -1,3 +1,8 @@
+2005-07-12  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/20172
+	* g++.dg/template/nontype12.C : New test.
+
 2005-07-12  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* gcc.dg/tree-ssa/loop-10.c: New test.

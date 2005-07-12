@@ -5987,6 +5987,9 @@ tsubst_template_parms (tree parms, tree args, tsubst_flags_t complain)
 	  tree parm_decl = TREE_VALUE (tuple);
 
 	  parm_decl = tsubst (parm_decl, args, complain, NULL_TREE);
+	  if (TREE_CODE (parm_decl) == PARM_DECL
+	      && invalid_nontype_parm_type_p (TREE_TYPE (parm_decl), complain))
+	    parm_decl = error_mark_node;
 	  default_value = tsubst_template_arg (default_value, args,
 					       complain, NULL_TREE);
 
