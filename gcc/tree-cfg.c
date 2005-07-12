@@ -2240,6 +2240,7 @@ dump_cfg_stats (FILE *file)
   basic_block bb;
   const char * const fmt_str   = "%-30s%-13s%12s\n";
   const char * const fmt_str_1 = "%-30s%13d%11lu%c\n";
+  const char * const fmt_str_2 = "%-30s%13ld%11lu%c\n";
   const char * const fmt_str_3 = "%-43s%11lu%c\n";
   const char *funcname
     = lang_hooks.decl_printable_name (current_function_decl, 2);
@@ -2262,7 +2263,7 @@ dump_cfg_stats (FILE *file)
     num_edges += EDGE_COUNT (bb->succs);
   size = num_edges * sizeof (struct edge_def);
   total += size;
-  fprintf (file, fmt_str_1, "Edges", num_edges, SCALE (size), LABEL (size));
+  fprintf (file, fmt_str_2, "Edges", num_edges, SCALE (size), LABEL (size));
 
   fprintf (file, "---------------------------------------------------------\n");
   fprintf (file, fmt_str_3, "Total memory used by CFG data", SCALE (total),
