@@ -1,5 +1,8 @@
 2005-07-13  Jan Hubicka  <jh@suse.cz>
 
+	* cfgexpand.c (expand_one_stack_var): Do not expand variables when we
+	do unit-at-a-time.
+
 	* tree-ssa-operands.c (parse_ssa_operands): Fix formatting.
 	(get_expr_operands): Fix thinko wrt flags and subvars.
 
