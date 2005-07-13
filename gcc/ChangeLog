@@ -1,3 +1,8 @@
+2005-07-13  David Edelsohn  <edelsohn@gnu.org>
+
+	* tree-ssa-dom.c (lookup_avail_expr): Do not pass member in freed
+	structure as argument.
+
 2005-07-13  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/21921
