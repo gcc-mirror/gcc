@@ -71,10 +71,6 @@ mstack-size=
 Target RejectNegative Joined
 Emit extra code in the function prologue in order to trap if the stack size exceeds the given limit
 
-mtpf-trace
-Target Report Mask(TPF_PROFILING)
-Enable tpf OS tracing code
-
 mtune=
 Target RejectNegative Joined
 Schedule code for given CPU
