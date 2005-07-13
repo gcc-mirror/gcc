@@ -1,5 +1,8 @@
 2005-07-13  Jeff Law  <law@redhat.com>
 
+	* gcc.dg/tree-ssa/pr22051-2.c: Tweak expected output to allow
+	additional casts.
+
 	* gcc.dg/tree-ssa/pr22321.c: New test.
 
 2005-07-12  Nathan Sidwell  <nathan@codesourcery.com>
