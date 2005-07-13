@@ -1,3 +1,7 @@
+2005-07-13  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-operands.c (get_expr_operands): Fix typo in previous patch.
+
 2005-07-13  David Edelsohn  <edelsohn@gnu.org>
 
 	* tree-ssa-dom.c (lookup_avail_expr): Do not pass member in freed
