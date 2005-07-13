@@ -1,3 +1,13 @@
+2005-07-14  Jan Hubicka  <jh@suse.cz>
+
+	* tree-dfa.c (dump_variable): Use default_def function.
+	* tree-ssa-alias.c (dump_points_to_info): Likewise.
+	* tree-ssa.c (verify_use): Likewise.
+	* tree-ssanames.c (release_ssa_name): Likewise.
+	* tree-tailcall.c (eliminate_tail_call): Likewise.
+	(tree_optimize_tail_calls_1): Likewise.
+	* tree-vrp.c (get_value_range): Likewise.
+
 2005-07-14  Ben Elliston  <bje@au.ibm.com>
 
 	* gcc.c (main): Compare language[0] with '*' when iterating over

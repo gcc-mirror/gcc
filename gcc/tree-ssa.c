@@ -231,7 +231,7 @@ verify_use (basic_block bb, basic_block def_bb, use_operand_p use_p,
   TREE_VISITED (ssa_name) = 1;
 
   if (IS_EMPTY_STMT (SSA_NAME_DEF_STMT (ssa_name))
-      && var_ann (SSA_NAME_VAR (ssa_name))->default_def == ssa_name)
+      && default_def (SSA_NAME_VAR (ssa_name)) == ssa_name)
     ; /* Default definitions have empty statements.  Nothing to do.  */
   else if (!def_bb)
     {
