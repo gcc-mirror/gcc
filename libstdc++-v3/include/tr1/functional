@@ -1090,15 +1090,19 @@ namespace tr1
 #undef _GLIBCXX_JOIN2
 #undef _GLIBCXX_JOIN
 
-// Definition of default hash function std::tr1::hash<>.  The types for
-// which std::tr1::hash<T> is defined is in clause 6.3.3. of the PDTR.
+  // Definition of default hash function std::tr1::hash<>.  The types for
+  // which std::tr1::hash<T> is defined is in clause 6.3.3. of the PDTR.
+  template<typename T>
+    struct hash;
 
-  template <typename T> struct hash;
-
-  #define tr1_hashtable_define_trivial_hash(T)                              \
-    template <> struct hash<T> {                                                    \
-      std::size_t operator()(T val) const { return static_cast<std::size_t>(val); } \
-    }                                                                       \
+#define tr1_hashtable_define_trivial_hash(T)            \
+  template<>                                            \
+    struct hash<T>                                      \
+    {                                                   \
+      std::size_t                                       \
+      operator()(T val) const                           \
+      { return static_cast<std::size_t>(val); }         \
+    }                                                     
 
   tr1_hashtable_define_trivial_hash(bool);
   tr1_hashtable_define_trivial_hash(char);
@@ -1116,44 +1120,85 @@ namespace tr1
   tr1_hashtable_define_trivial_hash(double);
   tr1_hashtable_define_trivial_hash(long double);
 
-  #undef tr1_hashtable_define_trivial_hash
+#undef tr1_hashtable_define_trivial_hash
 
-  template <typename T>
-    struct hash<T*> {
-      std::size_t operator()(T* p) const {
-        return reinterpret_cast<std::size_t>(p);
+  template<typename T>
+    struct hash<T*>
+    {
+      std::size_t
+      operator()(T* p) const
+      { return reinterpret_cast<std::size_t>(p); }
+    };
+
+  // Fowler / Noll / Vo (FNV) Hash (type FNV-1a)
+  // (used by the next specializations of std::tr1::hash<>)
+
+  // Dummy generic implementation (for sizeof(size_t) != 4,8).
+  template<std::size_t = sizeof(std::size_t)>
+    struct Fnv_hash
+    {
+      static std::size_t
+      hash(const char* first, std::size_t length)
+      {
+	std::size_t result = 0;
+	for (; length > 0; --length)
+	  result = (result * 131) + *first++;
+	return result;
       }
     };
 
-  // ??? We can probably find a better hash function than this (i.e. one
-  // that vectorizes better and that produces a more uniform distribution).
+  template<>
+    struct Fnv_hash<4>
+    {
+      static std::size_t
+      hash(const char* first, std::size_t length)
+      {
+	std::size_t result = 2166136261UL;
+	for (; length > 0; --length)
+	  {
+	    result ^= (std::size_t)*first++;
+	    result *= 16777619UL;
+	  }
+	return result;
+      }
+    };
+  
+  template<>
+    struct Fnv_hash<8>
+    {
+      static std::size_t
+      hash(const char* first, std::size_t length)
+      {
+	std::size_t result = 14695981039346656037ULL;
+	for (; length > 0; --length)
+	  {
+	    result ^= (std::size_t)*first++;
+	    result *= 1099511628211ULL;
+	  }
+	return result;
+      }
+    };
 
   // XXX String hash probably shouldn't be an inline member function,
   // since it's nontrivial.  Once we have the framework for TR1 .cc
   // files, this should go in one.
-
-  template <>
+  template<>
     struct hash<std::string>
     {
-      std::size_t operator()(const std::string& s) const
-      {
-        std::size_t result = 0;
-        for (std::string::const_iterator i = s.begin(); i != s.end(); ++i)
-          result = (result * 131) + *i;
-        return result;
-      }
+      std::size_t
+      operator()(const std::string& s) const
+      { return Fnv_hash<>::hash(s.data(), s.length()); }
     };
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  template <>
+  template<>
     struct hash<std::wstring>
     {
-      std::size_t operator()(const std::wstring& s) const
+      std::size_t
+      operator()(const std::wstring& s) const
       {
-        std::size_t result = 0;
-        for (std::wstring::const_iterator i = s.begin(); i != s.end(); ++i)
-          result = (result * 131) + *i;
-        return result;
+	return Fnv_hash<>::hash(reinterpret_cast<const char*>(s.data()),
+				s.length() * sizeof(wchar_t));
       }
     };
 #endif
