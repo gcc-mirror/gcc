@@ -1294,15 +1294,14 @@ type_safe (unsigned int n, unsigned HOST_WIDE_INT *offset)
   /* For things we've globbed to single variables, any offset into the
      variable acts like the entire variable, so that it becomes offset
      0.  */
-  if (n == anything_id
+  if (ninfo->is_special_var
       || ninfo->is_artificial_var
       || ninfo->is_unknown_size_var)
     {
       *offset = 0;
       return true;
     }
-  return n > anything_id 
-    && (get_varinfo (n)->offset + *offset) < get_varinfo (n)->fullsize;
+  return (get_varinfo (n)->offset + *offset) < get_varinfo (n)->fullsize;
 }
 
 /* Process a constraint C that represents *x = &y.  */
