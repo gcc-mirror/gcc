@@ -1,3 +1,9 @@
+2005-07-13  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/21921
+	* tree-iterator.c (tsi_link_before): Support the case when
+	tsi_end_p (tsi) == true.
+
 2005-07-12  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/22442
