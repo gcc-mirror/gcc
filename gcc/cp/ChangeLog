@@ -182,11 +182,6 @@
 	change.
 	(create_pseudo_type_info): First parameter is an int.
 
-2005-06-15  Aldy Hernandez  <aldyh@redhat.com>
-
-	* typeck.c (build_binary_op): Same.
-	* testsuite/g++.dg/conversion/simd3.C: New.
-
 2005-06-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20678
