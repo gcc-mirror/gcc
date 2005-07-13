@@ -2334,8 +2334,17 @@ eliminate (void)
 		      fprintf (dump_file, " in ");
 		      print_generic_stmt (dump_file, stmt, 0);
 		    }
+		  
 		  if (TREE_CODE (sprime) == SSA_NAME) 
 		    NECESSARY (SSA_NAME_DEF_STMT (sprime)) = 1;
+		  /* We need to make sure the new and old types actually match,
+		     which may require adding a simple cast, which fold_convert
+		     will do for us.  */
+		  if (TREE_CODE (*rhs_p) != SSA_NAME
+		      && !tree_ssa_useless_type_conversion_1 (TREE_TYPE (*rhs_p),
+							      TREE_TYPE (sprime)))
+		    sprime = fold_convert (TREE_TYPE (*rhs_p), sprime);
+		  
 		  pre_stats.eliminations++;
 		  propagate_tree_value (rhs_p, sprime);
 		  update_stmt (stmt);
