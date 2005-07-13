@@ -1,3 +1,8 @@
+2005-07-13  Andreas Schwab  <schwab@suse.de>
+
+	* Make-lang.in (fortran/dependency.o): Depend on
+	$(GFORTRAN_TRANS_DEPS).
+
 2005-07-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-stmt.c (gfc_trans_forall_loop): Clear maskindex before
