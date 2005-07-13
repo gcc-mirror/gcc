@@ -1,5 +1,10 @@
 2005-07-12  Tom Tromey  <tromey@redhat.com>
 
+	* jvspec.c (lang_specific_driver): Put filelist_filename first on
+	command line.
+
+2005-07-12  Tom Tromey  <tromey@redhat.com>
+
 	PR java/19674:
 	* parse-scan.y (interface_member_declaration): Added
 	empty_statement.

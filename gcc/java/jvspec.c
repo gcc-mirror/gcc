@@ -1,6 +1,6 @@
 /* Specific flags and argument handling of the front-end of the 
    GNU compiler for the Java(TM) language.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -458,7 +458,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
       if (filelist_file == NULL)
 	pfatal_with_name (filelist_filename);
       num_args -= java_files_count + class_files_count + zip_files_count;
-      num_args += 2;  /* for the combined arg and "-xjava" */
+      num_args += 3;  /* for the combined arg "-xjava", and "-xnone" */
     }
   /* If we know we don't have to do anything, bail now.  */
 #if 0
@@ -493,11 +493,23 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
   arglist = xmalloc ((num_args + 1) * sizeof (char *));
   j = 0;
 
-  for (i = 0; i < argc; i++, j++)
+  arglist[j++] = argv[0];
+
+  if (combine_inputs || indirect_files_count > 0)
+    arglist[j++] = "-ffilelist-file";
+
+  if (combine_inputs)
+    {
+      arglist[j++] = "-xjava";
+      arglist[j++] = filelist_filename;
+      arglist[j++] = "-xnone";
+    }
+
+  for (i = 1; i < argc; i++, j++)
     {
       arglist[j] = argv[i];
 
-      if ((args[i] & PARAM_ARG) || i == 0)
+      if ((args[i] & PARAM_ARG))
 	continue;
 
       if ((args[i] & RESOURCE_FILE_ARG) != 0)
@@ -559,15 +571,10 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 	}
   }
 
-  if (combine_inputs || indirect_files_count > 0)
-    arglist[j++] = "-ffilelist-file";
-
   if (combine_inputs)
     {
       if (fclose (filelist_file))
 	pfatal_with_name (filelist_filename);
-      arglist[j++] = "-xjava";
-      arglist[j++] = filelist_filename;
     }
 
   /* If we saw no -O or -g option, default to -g1, for javac compatibility. */
