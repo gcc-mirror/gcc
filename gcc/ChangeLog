@@ -1,5 +1,11 @@
 2005-07-12  Zdenek Dvorak  <dvorakz@suse.cz>
 
+	PR tree-optimization/22442
+	* tree-chrec.c (chrec_fold_multiply_poly_poly): Associate chrecs
+	correctly.
+
+2005-07-12  Zdenek Dvorak  <dvorakz@suse.cz>
+
 	PR rtl-optimization/20376
 	* toplev.c (process_options): Enable -fweb and -frename-registers when
 	unrolling.
