@@ -167,6 +167,9 @@ chrec_fold_multiply_poly_poly (tree type,
 			       tree poly0, 
 			       tree poly1)
 {
+  tree t0, t1, t2;
+  int var;
+
   gcc_assert (poly0);
   gcc_assert (poly1);
   gcc_assert (TREE_CODE (poly0) == POLYNOMIAL_CHREC);
@@ -191,28 +194,25 @@ chrec_fold_multiply_poly_poly (tree type,
   
   /* poly0 and poly1 are two polynomials in the same variable,
      {a, +, b}_x * {c, +, d}_x  ->  {a*c, +, a*d + b*c + b*d, +, 2*b*d}_x.  */
-  return 
-    build_polynomial_chrec 
-    (CHREC_VARIABLE (poly0), 
-     build_polynomial_chrec 
-     (CHREC_VARIABLE (poly0), 
       
-      /* "a*c".  */
-      chrec_fold_multiply (type, CHREC_LEFT (poly0), CHREC_LEFT (poly1)),
-      
-      /* "a*d + b*c + b*d".  */
-      chrec_fold_plus 
-      (type, chrec_fold_multiply (type, CHREC_LEFT (poly0), CHREC_RIGHT (poly1)),
-       
-       chrec_fold_plus 
-       (type, 
-	chrec_fold_multiply (type, CHREC_RIGHT (poly0), CHREC_LEFT (poly1)),
-	chrec_fold_multiply (type, CHREC_RIGHT (poly0), CHREC_RIGHT (poly1))))),
-     
-     /* "2*b*d".  */
-     chrec_fold_multiply
-     (type, build_int_cst (NULL_TREE, 2),
-      chrec_fold_multiply (type, CHREC_RIGHT (poly0), CHREC_RIGHT (poly1))));
+  /* "a*c".  */
+  t0 = chrec_fold_multiply (type, CHREC_LEFT (poly0), CHREC_LEFT (poly1));
+
+  /* "a*d + b*c + b*d".  */
+  t1 = chrec_fold_multiply (type, CHREC_LEFT (poly0), CHREC_RIGHT (poly1));
+  t1 = chrec_fold_plus (type, t1, chrec_fold_multiply (type,
+						       CHREC_RIGHT (poly0),
+						       CHREC_LEFT (poly1)));
+  t1 = chrec_fold_plus (type, t1, chrec_fold_multiply (type,
+						       CHREC_RIGHT (poly0),
+						       CHREC_RIGHT (poly1)));
+  /* "2*b*d".  */
+  t2 = chrec_fold_multiply (type, CHREC_RIGHT (poly0), CHREC_RIGHT (poly1));
+  t2 = chrec_fold_multiply (type, build_int_cst_type (type, 2), t2);
+
+  var = CHREC_VARIABLE (poly0);
+  return build_polynomial_chrec (var, t0,
+				 build_polynomial_chrec (var, t1, t2));
 }
 
 /* When the operands are automatically_generated_chrec_p, the fold has
