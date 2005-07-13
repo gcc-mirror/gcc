@@ -984,11 +984,25 @@ read_complex (int length)
   if (parse_real (value, length))
     return;
 
+eol_1:
   eat_spaces ();
+  c = next_char ();
+  if (c == '\n' || c== '\r')
+    goto eol_1;
+  else
+    unget_char (c);
+
   if (next_char () != ',')
     goto bad_complex;
 
+eol_2:
   eat_spaces ();
+  c = next_char ();
+  if (c == '\n' || c== '\r')
+    goto eol_2;
+  else
+    unget_char (c);
+
   if (parse_real (value + length, length))
     return;
 
