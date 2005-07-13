@@ -216,6 +216,10 @@ struct variable_info
   /* True if this is a variable created by the constraint analysis, such as
      heap variables and constraints we had to break up.  */
   unsigned int is_artificial_var:1;
+  
+  /* True if this is a special variable whose solution set should not be
+     changed.  */
+  unsigned int is_special_var:1;
 
   /* True for variables whose size is not known or variable.  */
   unsigned int is_unknown_size_var:1;  
@@ -250,7 +254,14 @@ DEF_VEC_ALLOC_P(varinfo_t, heap);
 /* Table of variable info structures for constraint variables.  Indexed directly
    by variable info id.  */
 static VEC(varinfo_t,heap) *varmap;
-#define get_varinfo(n) VEC_index(varinfo_t, varmap, n)
+
+/* Return the varmap element N */
+
+static inline varinfo_t
+get_varinfo(unsigned int n)
+{
+  return VEC_index(varinfo_t, varmap, n);
+}
 
 /* Variable that represents the unknown pointer.  */
 static varinfo_t var_anything;
@@ -296,7 +307,9 @@ new_var_info (tree t, unsigned int id, const char *name, unsigned int node)
   ret->indirect_target = false;
   ret->is_artificial_var = false;
   ret->is_heap_var = false;
+  ret->is_special_var = false;
   ret->is_unknown_size_var = false;
+  ret->has_union = false;
   ret->solution = BITMAP_ALLOC (&ptabitmap_obstack);
   bitmap_clear (ret->solution);
   ret->variables = BITMAP_ALLOC (&ptabitmap_obstack);
@@ -602,6 +615,7 @@ solution_set_add (bitmap set, unsigned HOST_WIDE_INT offset)
 	  bitmap_set_bit (result, v->id);
 	}
       else if (get_varinfo (i)->is_artificial_var 
+	       || get_varinfo (i)->has_union
 	       || get_varinfo (i)->is_unknown_size_var)
 	{
 	  bitmap_set_bit (result, i);
@@ -1298,20 +1312,21 @@ do_da_constraint (constraint_graph_t graph ATTRIBUTE_UNUSED,
 		  constraint_t c, bitmap delta)
 {
   unsigned int rhs = c->rhs.var;
-  unsigned HOST_WIDE_INT offset = c->lhs.offset;
   unsigned int j;
   bitmap_iterator bi;
 
   /* For each member j of Delta (Sol(x)), add x to Sol(j)  */
   EXECUTE_IF_SET_IN_BITMAP (delta, 0, j, bi)
     {
-      if (type_safe (j, &offset))
+      unsigned HOST_WIDE_INT offset = c->lhs.offset;
+      if (type_safe (j, &offset) && !(get_varinfo (j)->is_special_var))
 	{
 	/* *x != NULL && *x != ANYTHING*/
 	  varinfo_t v;
 	  unsigned int t;
 	  bitmap sol;
 	  unsigned HOST_WIDE_INT fieldoffset = get_varinfo (j)->offset + offset;
+
 	  v = first_vi_for_offset (get_varinfo (j), fieldoffset);
 	  t = v->node;
 	  sol = get_varinfo (t)->solution;
@@ -1325,7 +1340,7 @@ do_da_constraint (constraint_graph_t graph ATTRIBUTE_UNUSED,
 		}
 	    }
 	}
-      else if (dump_file)
+      else if (dump_file && !(get_varinfo (j)->is_special_var))
 	fprintf (dump_file, "Untypesafe usage in do_da_constraint.\n");
       
     }
@@ -1339,7 +1354,6 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
 		  bitmap delta)
 {
   unsigned int lhs = get_varinfo (c->lhs.var)->node;
-  unsigned HOST_WIDE_INT roffset = c->rhs.offset;
   bool flag = false;
   bitmap sol = get_varinfo (lhs)->solution;
   unsigned int j;
@@ -1349,6 +1363,7 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
      an edge in the graph from j to x, and union Sol(j) into Sol(x).  */
   EXECUTE_IF_SET_IN_BITMAP (delta, 0, j, bi)
     {
+      unsigned HOST_WIDE_INT roffset = c->rhs.offset;
       if (type_safe (j, &roffset))
 	{
 	  varinfo_t v;
@@ -1360,7 +1375,7 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
 	  if (int_add_graph_edge (graph, lhs, t, 0))
 	    flag |= bitmap_ior_into (sol, get_varinfo (t)->solution);	  
 	}
-      else if (dump_file)
+      else if (dump_file && !(get_varinfo (j)->is_special_var))
 	fprintf (dump_file, "Untypesafe usage in do_sd_constraint\n");
       
     }
@@ -1383,7 +1398,6 @@ static void
 do_ds_constraint (constraint_graph_t graph, constraint_t c, bitmap delta)
 {
   unsigned int rhs = get_varinfo (c->rhs.var)->node;
-  unsigned HOST_WIDE_INT loff = c->lhs.offset;
   unsigned HOST_WIDE_INT roff = c->rhs.offset;
   bitmap sol = get_varinfo (rhs)->solution;
   unsigned int j;
@@ -1393,7 +1407,8 @@ do_ds_constraint (constraint_graph_t graph, constraint_t c, bitmap delta)
      union Sol(y) into Sol(j) */
   EXECUTE_IF_SET_IN_BITMAP (delta, 0, j, bi)
     {
-      if (type_safe (j, &loff))
+      unsigned HOST_WIDE_INT loff = c->lhs.offset;
+      if (type_safe (j, &loff) && !(get_varinfo(j)->is_special_var))
 	{
 	  varinfo_t v;
 	  unsigned int t;
@@ -1419,7 +1434,7 @@ do_ds_constraint (constraint_graph_t graph, constraint_t c, bitmap delta)
 		}
 	    }
 	}    
-      else if (dump_file)
+      else if (dump_file && !(get_varinfo (j)->is_special_var))
 	fprintf (dump_file, "Untypesafe usage in do_ds_constraint\n");
     }
 }
@@ -1446,7 +1461,8 @@ do_complex_constraint (constraint_graph_t graph, constraint_t c, bitmap delta)
   else
     {
       /* x = *y */
-      do_sd_constraint (graph, c, delta);
+      if (!(get_varinfo (c->lhs.var)->is_special_var))
+	do_sd_constraint (graph, c, delta);
     }
 }
 
@@ -2389,7 +2405,7 @@ do_structure_copy (tree lhsop, tree rhsop)
   rhs = get_constraint_for (rhsop);
   
   /* If we have special var = x, swap it around.  */
-  if (lhs.var <= integer_id && rhs.var > integer_id)
+  if (lhs.var <= integer_id && !(get_varinfo (rhs.var)->is_special_var))
     {
       tmp = lhs;
       lhs = rhs;
@@ -2400,7 +2416,7 @@ do_structure_copy (tree lhsop, tree rhsop)
       possible it's something we could handle.  However, most cases falling
       into this are dealing with transparent unions, which are slightly
       weird. */
-  if (rhs.type == ADDRESSOF && rhs.var > integer_id)
+  if (rhs.type == ADDRESSOF && !(get_varinfo (rhs.var)->is_special_var))
     {
       rhs.type = ADDRESSOF;
       rhs.var = anything_id;
@@ -2773,7 +2789,7 @@ find_func_aliases (tree t, struct alias_info *ai)
 			   type, from the LHS we can access any field
 			   of the RHS.  */
 			if (rhs.type == ADDRESSOF
-			    && rhs.var > anything_id
+			    && !(get_varinfo (rhs.var)->is_special_var)
 			    && AGGREGATE_TYPE_P (TREE_TYPE (TREE_TYPE (rhsop))))
 			  {
 			    rhs.var = anyoffset_id;
@@ -3364,6 +3380,7 @@ init_base_vars (void)
   var_nothing->offset = 0;
   var_nothing->size = ~0;
   var_nothing->fullsize = ~0;
+  var_nothing->is_special_var = 1;
   nothing_id = 0;
   VEC_safe_push (varinfo_t, heap, varmap, var_nothing);
 
@@ -3377,6 +3394,7 @@ init_base_vars (void)
   var_anything->offset = 0;
   var_anything->next = NULL;
   var_anything->fullsize = ~0;
+  var_anything->is_special_var = 1;
   anything_id = 1;
 
   /* Anything points to anything.  This makes deref constraints just
@@ -3405,6 +3423,7 @@ init_base_vars (void)
   var_readonly->size = ~0;
   var_readonly->fullsize = ~0;
   var_readonly->next = NULL;
+  var_readonly->is_special_var = 1;
   insert_id_for_tree (readonly_tree, 2);
   readonly_id = 2;
   VEC_safe_push (varinfo_t, heap, varmap, var_readonly);
@@ -3432,6 +3451,7 @@ init_base_vars (void)
   var_integer->fullsize = ~0;
   var_integer->offset = 0;
   var_integer->next = NULL;
+  var_integer->is_special_var = 1;
   integer_id = 3;
   VEC_safe_push (varinfo_t, heap, varmap, var_integer);
 
@@ -3459,6 +3479,7 @@ init_base_vars (void)
   var_anyoffset->offset = 0;
   var_anyoffset->next = NULL;
   var_anyoffset->fullsize = ~0;
+  var_anyoffset->is_special_var = 1;
   VEC_safe_push (varinfo_t, heap, varmap, var_anyoffset);
 
   /* ANYOFFSET points to ANYOFFSET.  */
