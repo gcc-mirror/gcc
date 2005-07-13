@@ -3104,7 +3104,7 @@ lookup_avail_expr (tree stmt, bool insert)
 	  tree t = element->rhs;
 	  free (element);
 	  return constant_boolean_node (TREE_CODE (t) != EQ_EXPR,
-					TREE_TYPE (element->rhs));
+					TREE_TYPE (t));
 	}
     }
 
