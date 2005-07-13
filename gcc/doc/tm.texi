@@ -9281,7 +9281,7 @@ functions, access, mkdir and  file locking with fcntl / F_SETLKW@.
 Defining @code{TARGET_POSIX_IO} will enable the test coverage code
 to use file locking when exiting a program, which avoids race conditions
 if the program has forked. It will also create directories at run-time
-for cross-profiling.  @xref{Cross-profiling}.
+for cross-profiling.
 @end defmac
 
 @defmac MAX_CONDITIONAL_EXECUTE
