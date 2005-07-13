@@ -1,3 +1,9 @@
+2005-07-12  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/21840
+	* tree-ssa-pre.c (eliminate): Convert the sprime to the correct type
+	if *rhs_p is not a SSA_NAME.
+
 2005-07-12  Daniel Berlin  <dberlin@dberlin.org>
 	
 	Fix PR tree-optimization/22422 

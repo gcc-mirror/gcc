@@ -1,3 +1,8 @@
+2005-07-12  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/21840
+	* gcc.c-torture/compile/pr21840.c: New test.
+
 2005-07-12  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/compile/pr22379.c: New test.
