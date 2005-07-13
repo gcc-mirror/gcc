@@ -272,6 +272,41 @@ s390_set_has_landing_pad_p (bool value)
   cfun->machine->has_landing_pad_p = value;
 }
 
+/* If two condition code modes are compatible, return a condition code
+   mode which is compatible with both.  Otherwise, return
+   VOIDmode.  */
+
+static enum machine_mode
+s390_cc_modes_compatible (enum machine_mode m1, enum machine_mode m2)
+{
+  if (m1 == m2)
+    return m1;
+
+  switch (m1)
+    {
+    case CCZmode:
+      if (m2 == CCUmode || m2 == CCTmode || m2 == CCZ1mode
+	  || m2 == CCSmode || m2 == CCSRmode || m2 == CCURmode)
+        return m2;
+      return VOIDmode;
+
+    case CCSmode:
+    case CCUmode:
+    case CCTmode:
+    case CCSRmode:
+    case CCURmode:
+    case CCZ1mode:
+      if (m2 == CCZmode)
+	return m1;
+      
+      return VOIDmode;
+
+    default:
+      return VOIDmode;
+    }
+  return VOIDmode;
+}
+
 /* Return true if SET either doesn't set the CC register, or else
    the source and destination have matching CC modes and that
    CC mode is at least as constrained as REQ_MODE.  */
@@ -612,6 +647,23 @@ s390_canonicalize_comparison (enum rtx_code *code, rtx *op0, rtx *op1)
 	  *code = new_code;
 	}
     }
+
+  /* Simplify cascaded EQ, NE with const0_rtx.  */
+  if ((*code == NE || *code == EQ)
+      && (GET_CODE (*op0) == EQ || GET_CODE (*op0) == NE)
+      && GET_MODE (*op0) == SImode
+      && GET_MODE (XEXP (*op0, 0)) == CCZ1mode
+      && REG_P (XEXP (*op0, 0))
+      && XEXP (*op0, 1) == const0_rtx
+      && *op1 == const0_rtx)
+    {
+      if ((*code == EQ && GET_CODE (*op0) == NE)
+          || (*code == NE && GET_CODE (*op0) == EQ))
+	*code = EQ;
+      else
+	*code = NE;
+      *op0 = XEXP (*op0, 0);
+    }
 }
 
 /* Emit a compare instruction suitable to implement the comparison
@@ -625,8 +677,10 @@ s390_emit_compare (enum rtx_code code, rtx op0, rtx op1)
   rtx ret = NULL_RTX;
 
   /* Do not output a redundant compare instruction if a compare_and_swap
-     pattern already computed the result and the machine modes match.  */
-  if (s390_compare_emitted && GET_MODE (s390_compare_emitted) == mode)
+     pattern already computed the result and the machine modes are compatible.  */
+  if (s390_compare_emitted 
+      && (s390_cc_modes_compatible (GET_MODE (s390_compare_emitted), mode)
+	  == GET_MODE (s390_compare_emitted)))
     ret = gen_rtx_fmt_ee (code, VOIDmode, s390_compare_emitted, const0_rtx); 
   else
     {
@@ -673,6 +727,7 @@ s390_branch_condition_mask (rtx code)
   switch (GET_MODE (XEXP (code, 0)))
     {
     case CCZmode:
+    case CCZ1mode:
       switch (GET_CODE (code))
         {
         case EQ:	return CC0;
@@ -7908,40 +7963,6 @@ s390_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
   *p2 = INVALID_REGNUM;
  
   return true;
-}
-
-/* If two condition code modes are compatible, return a condition code
-   mode which is compatible with both.  Otherwise, return
-   VOIDmode.  */
-
-static enum machine_mode
-s390_cc_modes_compatible (enum machine_mode m1, enum machine_mode m2)
-{
-  if (m1 == m2)
-    return m1;
-
-  switch (m1)
-    {
-    case CCZmode:
-      if (m2 == CCUmode || m2 == CCTmode
-	  || m2 == CCSmode || m2 == CCSRmode || m2 == CCURmode)
-        return m2;
-      return VOIDmode;
-
-    case CCSmode:
-    case CCUmode:
-    case CCTmode:
-    case CCSRmode:
-    case CCURmode:
-      if (m2 == CCZmode)
-	return m1;
-      
-      return VOIDmode;
-
-    default:
-      return VOIDmode;
-    }
-  return VOIDmode;
 }
 
 /* This function is used by the call expanders of the machine description.

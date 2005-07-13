@@ -35,6 +35,7 @@ Condition Codes
 Check for zero
 
 CCZ:  EQ          NE           NE          NE
+CCZ1: EQ          NE                                  (CS)
 
 Unsigned compares
 
@@ -146,10 +147,17 @@ CCL3 mode. Together with the CCU mode this mode is used for jumpless
 implementations of several if-constructs - see s390_expand_addcc for more
 details.
 
+CCZ1
+
+The compare and swap instructions sets the condition code to 0/1 if the
+operands were equal/unequal. The CCZ1 mode ensures the result can be
+effectively placed into a register.
+
 */   
 
 
 CC_MODE (CCZ);
+CC_MODE (CCZ1);
 CC_MODE (CCA);
 CC_MODE (CCAP);
 CC_MODE (CCAN);
