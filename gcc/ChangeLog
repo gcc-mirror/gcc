@@ -1,3 +1,7 @@
+2005-07-13  Ian Lance Taylor  <ian@airs.com>
+
+	* config/mips/mips.h (CLZ_DEFINED_VALUE_AT_ZERO): Define.
+
 2005-07-14  Jan Hubicka  <jh@suse.cz>
 
 	* tree-dfa.c (dump_variable): Use default_def function.
