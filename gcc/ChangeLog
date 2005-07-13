@@ -1,3 +1,8 @@
+2005-07-14  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.c (main): Compare language[0] with '*' when iterating over
+	the infiles.
+
 2005-07-13  Adrian Strae½tling  <straetling@de.ibm.com>
 
 	* config/s390/s390.c: (s390_cc_modes_compatible): Move before
