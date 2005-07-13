@@ -1,3 +1,16 @@
+2005-07-13  Adrian Strae½tling  <straetling@de.ibm.com>
+
+	* config/s390/s390.c: (s390_cc_modes_compatible): Move before
+	"s390_emit_compare".  Add handling of CCZ1mode.
+	(s390_canonicalize_comparison): Simplify cascaded EQ, NE.
+	(390_emit_compare): Use "s390_cc_modes_compatible" for mode
+	checking.
+	(s390_branch_condition_mask): Add CCZ1mode handling.
+	* config/s390/s390.md: ("seq", "*seq"): New pattern.
+	("sync_compare_and_swap_cc<mode>", "*sync_compare_and_swap_cc<mode>"):
+	Use CCZ1mode instead of CCZmode.
+	* config/s390/s390-modes.def: Add CCZ1mode.  Comment new mode.
+
 2006-07-13  Adrian Strae½tling  <straetling@de.ibm.com>
 
 	* config/s390/s390.md: ("cmpstrsi", "*cmpstr<mode>"): New
