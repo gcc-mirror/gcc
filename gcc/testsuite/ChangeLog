@@ -1,3 +1,7 @@
+2005-07-13  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/pr22321.c: New test.
+
 2005-07-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20637
@@ -41,10 +45,10 @@
 
 2005-07-11  Jeff Law  <law@redhat.com>
 
-	* gcc.dg/tree.ssa/pr22051-1.c: Remove dg-cleanup markers.  They
-	are not supported in the GCC 4.0 dg testsuite infrastructure. 
-	* gcc.dg/tree.ssa/pr22051-2.c: Remove dg-cleanup markers.  They
-	are not supported in the GCC 4.0 dg testsuite infrastructure. 
+	* gcc.dg/tree.ssa/pr22051-1.c: Remove dg-cleanup markers.  It
+	is not supported in the GCC 4.0 dg testsuite infrastructure. 
+	* gcc.dg/tree.ssa/pr22051-2.c: Remove dg-cleanup markers.  It
+	is not supported in the GCC 4.0 dg testsuite infrastructure. 
 
 	* gcc.dg/tree.ssa/pr22051-1.c: New test.
 	* gcc.dg/tree.ssa/pr22051-2.c: New test.

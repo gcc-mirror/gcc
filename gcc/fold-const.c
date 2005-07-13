@@ -8748,9 +8748,23 @@ fold (tree expr)
 	  && ! lookup_attribute ("alias",
 				 DECL_ATTRIBUTES (TREE_OPERAND (arg1, 0)))
 	  && ! DECL_EXTERNAL (TREE_OPERAND (arg1, 0)))
-	return constant_boolean_node (operand_equal_p (arg0, arg1, 0)
-				      ? code == EQ_EXPR : code != EQ_EXPR,
-				      type);
+	{
+	  /* We know that we're looking at the address of two
+	     non-weak, unaliased, static _DECL nodes.
+
+	     It is both wasteful and incorrect to call operand_equal_p
+	     to compare the two ADDR_EXPR nodes.  It is wasteful in that
+	     all we need to do is test pointer equality for the arguments
+	     to the two ADDR_EXPR nodes.  It is incorrect to use
+	     operand_equal_p as that function is NOT equivalent to a
+	     C equality test.  It can in fact return false for two
+	     objects which would test as equal using the C equality
+	     operator.  */
+	  bool equal = TREE_OPERAND (arg0, 0) == TREE_OPERAND (arg1, 0);
+	  return constant_boolean_node (equal
+				        ? code == EQ_EXPR : code != EQ_EXPR,
+				        type);
+	}
 
       /* If this is a comparison of two exprs that look like an
 	 ARRAY_REF of the same object, then we can fold this to a
