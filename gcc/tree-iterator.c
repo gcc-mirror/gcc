@@ -110,8 +110,11 @@ tsi_link_before (tree_stmt_iterator *i, tree t, enum tsi_iterator_update mode)
     }
   else
     {
-      gcc_assert (!STATEMENT_LIST_TAIL (i->container));
-      STATEMENT_LIST_HEAD (i->container) = head;
+      head->prev = STATEMENT_LIST_TAIL (i->container);
+      if (head->prev)
+       head->prev->next = head;
+      else
+       STATEMENT_LIST_HEAD (i->container) = head;
       STATEMENT_LIST_TAIL (i->container) = tail;
     }
 
@@ -127,7 +130,6 @@ tsi_link_before (tree_stmt_iterator *i, tree t, enum tsi_iterator_update mode)
       i->ptr = tail;
       break;
     case TSI_SAME_STMT:
-      gcc_assert (cur);
       break;
     }
 }

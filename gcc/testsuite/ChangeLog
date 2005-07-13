@@ -1,3 +1,8 @@
+2005-07-13  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/21921
+	* gcc.dg/tree-ssa/pr21921.c: New.
+
 2005-07-12  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimizatio/22442
