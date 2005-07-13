@@ -1,3 +1,11 @@
+2005-07-12  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR rtl-optimization/20376
+	* toplev.c (process_options): Enable -fweb and -frename-registers when
+	unrolling.
+	* doc/invoke.texi: Update the information about when -fweb and
+	-frename-registers are enabled.
+
 2005-07-12  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/21840
