@@ -1,3 +1,11 @@
+2005-07-13  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/21193 (string & wstring)
+	* include/tr1/functional (hash<string>, hash<wstring>):
+	Reimplement using the FNV hash.
+
+	* include/tr1/functional: Trivial formatting fixes.
+
 2005-07-11  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/ostream.tcc (basic_ostream<>::operator<<(long),
