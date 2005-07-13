@@ -110,7 +110,7 @@
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 
-#define TARGET_HAS_F_SETLKW
+#define TARGET_POSIX_IO
 
 #define MD_UNWIND_SUPPORT "config/rs6000/linux-unwind.h"
 

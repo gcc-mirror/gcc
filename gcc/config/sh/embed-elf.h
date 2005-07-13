@@ -23,4 +23,4 @@ Boston, MA 02110-1301, USA.  */
 #undef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX "_"
 
-#undef TARGET_HAS_F_SETLKW
+#undef TARGET_POSIX_IO

@@ -156,8 +156,8 @@ Boston, MA 02110-1301, USA.  */
     fprintf ((STREAM), "void __fini() {\n\t%s();\n}\n", (FUNC));	\
   } while (0)
 
-#undef TARGET_HAS_F_SETLKW
-#define TARGET_HAS_F_SETLKW
+#undef TARGET_POSIX_IO
+#define TARGET_POSIX_IO
 
 /* Handle #pragma weak and #pragma pack.  */
 

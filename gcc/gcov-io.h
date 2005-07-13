@@ -195,7 +195,7 @@ typedef signed gcov_type __attribute__ ((mode (QI)));
 #endif
 
 
-#if defined (TARGET_HAS_F_SETLKW)
+#if defined (TARGET_POSIX_IO)
 #define GCOV_LOCKED 1
 #else
 #define GCOV_LOCKED 0

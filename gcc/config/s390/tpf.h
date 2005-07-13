@@ -32,7 +32,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 #define NO_IMPLICIT_EXTERN_C
-#define TARGET_HAS_F_SETLKW
+#define TARGET_POSIX_IO
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
 

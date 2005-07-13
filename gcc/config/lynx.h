@@ -173,6 +173,6 @@ Boston, MA 02110-1301, USA.  */
 # define NO_IMPLICIT_EXTERN_C
 #endif
 
-#ifndef TARGET_HAS_F_SETLKW
-# define TARGET_HAS_F_SETLKW
+#ifndef TARGET_POSIX_IO
+# define TARGET_POSIX_IO
 #endif

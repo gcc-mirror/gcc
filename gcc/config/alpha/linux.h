@@ -71,7 +71,7 @@ Boston, MA 02110-1301, USA.  */
    runtime library.  */
 #define TARGET_C99_FUNCTIONS 1
 
-#define TARGET_HAS_F_SETLKW
+#define TARGET_POSIX_IO
 
 #define LINK_GCC_C_SEQUENCE_SPEC \
   "%{static:--start-group} %G %L %{static:--end-group}%{!static:%G}"

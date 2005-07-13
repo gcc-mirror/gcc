@@ -1026,7 +1026,7 @@ void darwin_register_objc_includes (const char *, const char *, int);
 void add_framework_path (char *);
 #define TARGET_OPTF add_framework_path
 
-#define TARGET_HAS_F_SETLKW
+#define TARGET_POSIX_IO
 
 /* All new versions of Darwin have C99 functions.  */
 #define TARGET_C99_FUNCTIONS 1
