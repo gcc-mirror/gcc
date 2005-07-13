@@ -1,5 +1,10 @@
 2005-07-13  Eric Christopher  <echristo@redhat.com>
 
+	* config/mips/mips.c (mips_canonicalize_comparison): New.
+	(mips_emit_int_relational): Use.
+
+2005-07-13  Eric Christopher  <echristo@redhat.com>
+
         * config.gcc (s390x-ibm-tpf*): Add extra_options. Remove
         static extra parts.
         * config/s390/s390.md: Include tpf.md. Move tpf specific
