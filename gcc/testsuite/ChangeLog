@@ -1,9 +1,7 @@
-2005-07-13  Jeff Law  <law@redhat.com>
+2005-07-13  Paul Thomas  <pault@gcc.gnu.org>
 
-	* gcc.dg/tree-ssa/pr22051-2.c: Tweak expected output to allow
-	additional casts.
-
-	* gcc.dg/tree-ssa/pr22321.c: New test
+	* gfortran.dg/past_eor.f90: New.
+	* gfortran.dg/complex_read.f90: New.
 
 2005-07-13  Paolo Bonzini  <bonzini@gnu.org>
 

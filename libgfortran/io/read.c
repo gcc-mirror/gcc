@@ -784,8 +784,12 @@ read_f (fnode * f, char *dest, int length)
 void
 read_x (fnode * f)
 {
-  int n;
+  int n, m;
 
   n = f->u.n;
-  read_block (&n);
+  m = (int)current_unit->bytes_left;
+  if (f->format == FMT_X)
+    n = (n > m) ? m : n;
+  if (n)
+    read_block (&n);
 }
