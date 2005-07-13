@@ -1,3 +1,15 @@
+2005-07-13  Eric Christopher  <echristo@redhat.com>
+
+        * config.gcc (s390x-ibm-tpf*): Add extra_options. Remove
+        static extra parts.
+        * config/s390/s390.md: Include tpf.md. Move tpf specific
+        patterns...
+        * config/s390/tpf.md: To here.
+        * config/s390/s390.opt: Move tpf specific options...
+        * config/s390/tpf.opt: to here. Add mmain option.
+        * config/s390/tpf-unwind.h: Remove unnecessary defines.
+        * config/s390/tpf.h: Rewrite.
+
 2005-07-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* doc/tm.texi: Remove @xref{Cross-profiling}.
@@ -119,6 +131,18 @@
 	* gcc.target/i386/compress-float-387-pic.c:  New.
 	* gcc.dg/compress-float-ppc.c:  New.
 	* gcc.dg/compress-float-ppc-pic.c:  New.
+
+2005-07-12  Eric Christopher  <echristo@redhat.com>
+
+	* config.gcc (s390x-ibm-tpf*): Add extra_options. Remove
+	static extra parts.
+	* config/s390/s390.md: Include tpf.md. Move tpf specific
+	patterns...
+	* config/s390/tpf.md: To here.
+	* config/s390/s390.opt: Move tpf specific options...
+	* config/s390/tpf.opt: to here. Add mmain option.
+	* config/s390/tpf-unwind.h: Remove unnecessary defines.
+	* config/s390/tpf.h: Rewrite.
 
 2005-07-12  Eric Christopher  <echristo@redhat.com>
 

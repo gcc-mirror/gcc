@@ -1820,14 +1820,15 @@ s390x-*-linux*)
 	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux64"
 	;;
 s390x-ibm-tpf*)
-	tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h svr4.h s390/tpf.h"
-	tm_p_file=s390/s390-protos.h
-	md_file=s390/s390.md
-	extra_modes=s390/s390-modes.def
-	extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
-	out_file=s390/s390.c
-	tmake_file="t-slibgcc-elf-ver s390/t-crtstuff s390/t-tpf"
-	thread_file='tpf'
+        tm_file="s390/s390x.h s390/s390.h dbxelf.h elfos.h svr4.h s390/tpf.h"
+        tm_p_file=s390/s390-protos.h
+        md_file=s390/s390.md
+        extra_modes=s390/s390-modes.def
+        out_file=s390/s390.c
+        extra_parts="crtbeginS.o crtendS.o"
+        tmake_file="s390/t-crtstuff s390/t-tpf"
+        thread_file='tpf'
+	extra_options="${extra_options} s390/tpf.opt"
 	;;
 sh-*-elf* | sh[12346l]*-*-elf* | sh*-*-kaos* | \
 sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \

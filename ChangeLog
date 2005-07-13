@@ -1,3 +1,8 @@
+2005-07-13  Eric Christopher  <echristo@redhat.com>
+
+	* configure.in: Add toplevel noconfigdir support for tpf.
+	* configure: Regenerate.
+
 2005-07-11  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR ada/22340

@@ -28,11 +28,7 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301, USA.  */
 
-#define __USE_GNU 1
-#define _GNU_SOURCE
 #include <dlfcn.h>
-#undef __USE_GNU
-#undef _GNU_SOURCE
 
 /* Function Name: __isPATrange
    Parameters passed into it:  address to check
