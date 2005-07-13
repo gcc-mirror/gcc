@@ -183,7 +183,7 @@ release_ssa_name (tree var)
 
   /* Never release the default definition for a symbol.  It's a
      special SSA name that should always exist once it's created.  */
-  if (var == var_ann (SSA_NAME_VAR (var))->default_def)
+  if (var == default_def (SSA_NAME_VAR (var)))
     return;
 
   /* If VAR has been registered for SSA updating, don't remove it.

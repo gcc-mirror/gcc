@@ -335,10 +335,10 @@ dump_variable (FILE *file, tree var)
   if (is_call_clobbered (var))
     fprintf (file, ", call clobbered");
 
-  if (ann->default_def)
+  if (default_def (var))
     {
       fprintf (file, ", default def: ");
-      print_generic_expr (file, ann->default_def, dump_flags);
+      print_generic_expr (file, default_def (var), dump_flags);
     }
 
   if (ann->may_aliases)

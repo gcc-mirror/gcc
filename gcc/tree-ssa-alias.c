@@ -2035,9 +2035,9 @@ dump_points_to_info (FILE *file)
     {
       if (POINTER_TYPE_P (TREE_TYPE (var)))
 	{
-	  var_ann_t ann = var_ann (var);
-	  if (ann->default_def)
-	    dump_points_to_info_for (file, ann->default_def);
+	  tree def = default_def (var);
+	  if (def)
+	    dump_points_to_info_for (file, def);
 	}
     }
 
