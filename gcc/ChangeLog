@@ -1,3 +1,20 @@
+2005-07-12  Daniel Berlin  <dberlin@dberlin.org>
+	
+	Fix PR tree-optimization/22422 
+	* tree-ssa-structalias.c (struct variable_info): Add flag for
+	special vars.
+	(get_varinfo): Now a static function.
+	(new_varinfo): init has_union and is_special_var to false.
+	(solution_set_add): Check has_union.
+	(do_da_constraint): Move temporary variable so it gets reset
+	properly.
+	Also check for special variable.
+	(do_ds_constraint): Ditto.
+	(do_sd_constraint): Ditto.
+	(do_structure_copy): Check for special variable.
+	(find_func_aliases): Ditto.
+	(init_base_vars): Set special vars properly.	
+
 2005-07-13  Jan Hubicka  <jh@suse.cz>
 
 	* cfgexpand.c (expand_one_stack_var): Do not expand variables when we
