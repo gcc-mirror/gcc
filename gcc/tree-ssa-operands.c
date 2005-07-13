@@ -1326,7 +1326,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 		bool exact;		
 		if (overlap_subvar (offset, size, sv, &exact))
 		  {
-	            bool subvar_flags = flags;
+	            int subvar_flags = flags;
 		    if (!exact)
 		      subvar_flags &= ~opf_kill_def;
 		    add_stmt_operand (&sv->var, s_ann, subvar_flags);
