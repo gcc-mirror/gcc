@@ -3186,8 +3186,13 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
       /* Vector arithmetic is only allowed when both sides are vectors.  */
       if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
 	{
-	  if (!tree_int_cst_equal (TYPE_SIZE (type0), TYPE_SIZE (type1)))
-	    error ("can't convert between vector values of different size");
+	  if (!tree_int_cst_equal (TYPE_SIZE (type0), TYPE_SIZE (type1))
+	      || !same_scalar_type_ignoring_signedness (TREE_TYPE (type0),
+							TREE_TYPE (type1)))
+	    {
+	      binary_op_error (code);
+	      return error_mark_node;
+	    }
 	  arithmetic_types_p = 1;
 	}
     }

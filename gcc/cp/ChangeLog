@@ -1,3 +1,8 @@
+2005-07-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* typeck.c (build_binary_op): Adjust error message to something
+	more meaningful.
+
 2005-07-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20637
