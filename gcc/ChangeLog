@@ -1,3 +1,9 @@
+2006-07-13  Adrian Strae½tling  <straetling@de.ibm.com>
+
+	* config/s390/s390.md: ("cmpstrsi", "*cmpstr<mode>"): New
+	pattern.
+	("strlen<mode>", "*strlen<mode>"): Use hard reg 0 in SImode.
+
 2005-07-13  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.c (mips_canonicalize_comparison): New.
