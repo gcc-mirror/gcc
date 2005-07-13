@@ -1,3 +1,28 @@
+2005-07-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/alpha/linux.h (TARGET_HAS_F_SETLKW): Renamed to ...
+	(TARGET_POSIX_IO): This.
+	* config/darwin.h: Likewise.
+	* config/freebsd.h: Likewise.
+	* config/linux.h: Likewise.
+	* config/lynx.h: Likewise.
+	* config/netbsd.h: Likewise.
+	* config/rs6000/linux64.h: Likewise.
+	* config/rs6000/linux.h: Likewise.
+	* config/s390/tpf.h: Likewise.
+	* config/sh/embed-elf.h: Likewise.
+	* config/sparc/linux64.h: Likewise.
+	* config/sparc/linux.h: Likewise.
+	* config/svr4.h: Likewise.
+	* gcov-io.h: Likewise.
+
+	* doc/tm.texi: Updated.
+
+	* libgcov.c (create_file_directory): Defined only if
+	TARGET_POSIX_IO is defined.
+	(gcov_exit): Call create_file_directory only if TARGET_POSIX_IO
+	is defined.
+
 2005-07-13  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-operands.c (get_expr_operands): Fix typo in previous patch.

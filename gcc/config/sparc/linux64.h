@@ -342,7 +342,7 @@ do {									\
    runtime library.  */
 #define TARGET_C99_FUNCTIONS 1
 
-#define TARGET_HAS_F_SETLKW
+#define TARGET_POSIX_IO
 
 #undef LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC \

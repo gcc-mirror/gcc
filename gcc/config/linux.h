@@ -103,4 +103,4 @@ Boston, MA 02110-1301, USA.  */
    is present in the runtime library.  */
 #define TARGET_C99_FUNCTIONS 1
 
-#define TARGET_HAS_F_SETLKW
+#define TARGET_POSIX_IO

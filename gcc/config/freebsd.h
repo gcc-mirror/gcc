@@ -84,4 +84,4 @@ Boston, MA 02110-1301, USA.  */
 /* Used by libgcc2.c.  We support file locking with fcntl / F_SETLKW.
    This enables the test coverage code to use file locking when exiting a
    program, which avoids race conditions if the program has forked.  */
-#define TARGET_HAS_F_SETLKW
+#define TARGET_POSIX_IO

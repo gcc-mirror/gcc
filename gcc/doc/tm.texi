@@ -9275,12 +9275,13 @@ You need only define this macro if the default of @samp{"LIBRARY_PATH"}
 is wrong.
 @end defmac
 
-@defmac TARGET_HAS_F_SETLKW
-Define this macro if the target supports file locking with fcntl / F_SETLKW@.
-Note that this functionality is part of POSIX@.
-Defining @code{TARGET_HAS_F_SETLKW} will enable the test coverage code
+@defmac TARGET_POSIX_IO
+Define this macro if the target supports the following POSIX@ file
+functions, access, mkdir and  file locking with fcntl / F_SETLKW@.
+Defining @code{TARGET_POSIX_IO} will enable the test coverage code
 to use file locking when exiting a program, which avoids race conditions
-if the program has forked.
+if the program has forked. It will also create directories at run-time
+for cross-profiling.  @xref{Cross-profiling}.
 @end defmac
 
 @defmac MAX_CONDITIONAL_EXECUTE
