@@ -1117,7 +1117,10 @@ match_complex_constant (gfc_expr ** result)
 
   m = match_complex_part (&real);
   if (m == MATCH_NO)
-    goto cleanup;
+    {
+      gfc_free_error (&old_error);
+      goto cleanup;
+    }
 
   if (gfc_match_char (',') == MATCH_NO)
     {
@@ -1132,7 +1135,10 @@ match_complex_constant (gfc_expr ** result)
      sort. These sort of lists are matched prior to coming here.  */
 
   if (m == MATCH_ERROR)
-    goto cleanup;
+    {
+      gfc_free_error (&old_error);
+      goto cleanup;
+    }
   gfc_pop_error (&old_error);
 
   m = match_complex_part (&imag);
