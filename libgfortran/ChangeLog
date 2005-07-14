@@ -1,3 +1,25 @@
+2005-07-14 Paul Thomas  <pault@gcc.gnu.org>
+
+	PR libfortran/16435
+	* transfer.c (formatted_transfer): Correct the problems
+	with X- and T-editting that caused TLs followed by TRs
+	to overwrite data, which caused NIST FM908.FOR to fail
+	on many tests.
+	(data_transfer_init): Zero X- and T-editting counters at
+	the start of formatted IO.
+	* write.c (write_x): Write specified number of skips with
+	specified number of spaces at the end.
+
+2005-07-14 Paul Thomas  <pault@gcc.gnu.org>
+
+	* io/read.c (read_complex): Prevent X formatting during reads
+	from going beyond EOR to fix NIST fm908.FOR failure.
+	* io/list_read.c (read_complex): Allow complex data in list-
+	directed reads to have eols either side of the comma to
+	fix NIST FM906.FOR failure.
+	(nml_get_obj_data): Cure warnings about initializer braces.
+	(namelist_read):  Cure warnings about potentially uninitialized pointers.
+
 2005-07-12  Feng Wang  <fengwang@nudt.edu.cn>
 
 	* runtime/string.c (compare0): Remove unused variable.

@@ -82,6 +82,13 @@ gfc_unit *current_unit = NULL;
 static int sf_seen_eor = 0;
 static int eor_condition = 0;
 
+/* Maximum righthand column written to.  */
+static int max_pos;
+/* Number of skips + spaces to be done for T and X-editing.  */
+static int skips;
+/* Number of spaces to be done for T and X-editing.  */
+static int pending_spaces;
+
 char scratch[SCRATCH_SIZE] = { };
 static char *line_buffer = NULL;
 
@@ -166,11 +173,11 @@ read_sf (int *length)
   do
     {
       if (is_internal_unit())
-        {
+	{
 	  /* readlen may be modified inside salloc_r if 
 	     is_internal_unit() is true.  */
-          readlen = 1;
-        }
+	  readlen = 1;
+	}
 
       q = salloc_r (current_unit->s, &readlen);
       if (q == NULL)
@@ -204,7 +211,7 @@ read_sf (int *length)
 
 	  current_unit->bytes_left = 0;
 	  *length = n;
-          sf_seen_eor = 1;
+	  sf_seen_eor = 1;
 	  break;
 	}
 
@@ -437,9 +444,10 @@ require_type (bt expected, bt actual, fnode * f)
 static void
 formatted_transfer (bt type, void *p, int len)
 {
-  int pos ,m ;
+  int pos;
   fnode *f;
-  int i, n;
+  format_token t;
+  int n;
   int consume_data_flag;
 
   /* Change a complex data item into a pair of reals.  */
@@ -456,12 +464,12 @@ formatted_transfer (bt type, void *p, int len)
   for (;;)
     {
       /* If reversion has occurred and there is another real data item,
-         then we have to move to the next record.  */
+	 then we have to move to the next record.  */
       if (g.reversion_flag && n > 0)
-        {
-          g.reversion_flag = 0;
-          next_record (0);
-        }
+	{
+	  g.reversion_flag = 0;
+	  next_record (0);
+	}
 
       consume_data_flag = 1 ;
       if (ioparm.library_return != LIBRARY_OK)
@@ -469,9 +477,23 @@ formatted_transfer (bt type, void *p, int len)
 
       f = next_format ();
       if (f == NULL)
-	return;		/* No data descriptors left (already raised).  */
+	return;	      /* No data descriptors left (already raised).  */
 
-      switch (f->format)
+      /* Now discharge T, TR and X movements to the right.  This is delayed
+	 until a data producing format to supress trailing spaces.  */
+      t = f->format;
+      if (g.mode == WRITING && skips > 0
+	&&    (t == FMT_I || t == FMT_B || t == FMT_O || t == FMT_Z
+	    || t == FMT_F || t == FMT_E || t == FMT_EN || t == FMT_ES
+	    || t == FMT_G || t == FMT_L || t == FMT_A || t == FMT_D
+	    || t == FMT_STRING))
+	{
+	  write_x (skips, pending_spaces);
+	  max_pos = current_unit->recl - current_unit->bytes_left;
+	  skips = pending_spaces = 0;
+	}
+
+      switch (t)
 	{
 	case FMT_I:
 	  if (n == 0)
@@ -651,7 +673,7 @@ formatted_transfer (bt type, void *p, int len)
 	  break;
 
 	case FMT_STRING:
-          consume_data_flag = 0 ;
+	  consume_data_flag = 0 ;
 	  if (g.mode == READING)
 	    {
 	      format_error (f, "Constant string in input format");
@@ -660,93 +682,101 @@ formatted_transfer (bt type, void *p, int len)
 	  write_constant_string (f);
 	  break;
 
-	  /* Format codes that don't transfer data.  */
+	/* Format codes that don't transfer data.  */
 	case FMT_X:
 	case FMT_TR:
-          consume_data_flag = 0 ;
+	  consume_data_flag = 0 ;
+
+	  pos = current_unit->recl - current_unit->bytes_left + f->u.n;
+	  skips = f->u.n;
+	  pending_spaces = pos - max_pos;
+
+	  /* Writes occur just before the switch on f->format, above, so that
+	     trailing blanks are suppressed.  */
 	  if (g.mode == READING)
 	    read_x (f);
-	  else
-	    write_x (f);
 
 	  break;
 
-        case FMT_TL:
-        case FMT_T:
-           if (f->format == FMT_TL)
-	     pos = current_unit->recl - current_unit->bytes_left - f->u.n;
-           else /* FMT_T */
-             {
-               consume_data_flag = 0 ;
-               pos = f->u.n - 1; 
-             }
+	case FMT_TL:
+	case FMT_T:
+	  if (f->format == FMT_TL)
+	    pos = current_unit->recl - current_unit->bytes_left - f->u.n;
+	  else /* FMT_T */
+	    {
+	      consume_data_flag = 0;
+	      pos = f->u.n - 1;
+	    }
 
-           if (pos < 0 || pos >= current_unit->recl )
-             {
-               generate_error (ERROR_EOR, "T or TL edit position error");
-               break ;
-             }
-            m = pos - (current_unit->recl - current_unit->bytes_left);
+	  /* Standard 10.6.1.1: excessive left tabbing is reset to the
+	     left tab limit.  We do not check if the position has gone
+	     beyond the end of record because a subsequent tab could
+	     bring us back again.  */
+	  pos = pos < 0 ? 0 : pos;
 
-            if (m == 0)
-               break;
+	  skips = skips + pos - (current_unit->recl - current_unit->bytes_left);
+	  pending_spaces =  pending_spaces + pos - max_pos;
 
-            if (m > 0)
-             {
-               f->u.n = m;
-               if (g.mode == READING)
-                 read_x (f);
-               else
-                 write_x (f);
-             }
-            if (m < 0)
-             {
-               move_pos_offset (current_unit->s,m);
-	       current_unit->bytes_left -= m;
-             }
+	  if (skips == 0)
+	    break;
 
-	  break;
+	  /* Writes occur just before the switch on f->format, above, so that
+	     trailing blanks are suppressed.  */
+	  if (skips > 0)
+	    {
+	      if (g.mode == READING)
+		{
+		  f->u.n = skips;
+		  read_x (f);
+		}
+	    }
+	  if (skips < 0)
+	    {
+	      move_pos_offset (current_unit->s, skips);
+	      current_unit->bytes_left -= skips;
+	      skips = pending_spaces = 0;
+	    }
+
+	break;
 
 	case FMT_S:
-          consume_data_flag = 0 ;
+	  consume_data_flag = 0 ;
 	  g.sign_status = SIGN_S;
-	  break;
+	break;
 
 	case FMT_SS:
-          consume_data_flag = 0 ;
+	  consume_data_flag = 0 ;
 	  g.sign_status = SIGN_SS;
-	  break;
+	break;
 
 	case FMT_SP:
-          consume_data_flag = 0 ;
+	  consume_data_flag = 0 ;
 	  g.sign_status = SIGN_SP;
-	  break;
+	break;
 
 	case FMT_BN:
-          consume_data_flag = 0 ;
+	  consume_data_flag = 0 ;
 	  g.blank_status = BLANK_NULL;
-	  break;
+	break;
 
 	case FMT_BZ:
-          consume_data_flag = 0 ;
+	  consume_data_flag = 0 ;
 	  g.blank_status = BLANK_ZERO;
-	  break;
+	break;
 
 	case FMT_P:
-          consume_data_flag = 0 ;
+	  consume_data_flag = 0 ;
 	  g.scale_factor = f->u.k;
 	  break;
 
 	case FMT_DOLLAR:
-          consume_data_flag = 0 ;
+	  consume_data_flag = 0 ;
 	  g.seen_dollar = 1;
 	  break;
 
 	case FMT_SLASH:
-          consume_data_flag = 0 ;
-	  for (i = 0; i < f->repeat; i++)
-	    next_record (0);
-
+	  consume_data_flag = 0 ;
+	  next_record (0);
 	  break;
 
 	case FMT_COLON:
@@ -754,7 +784,7 @@ formatted_transfer (bt type, void *p, int len)
 	     particular preventing another / descriptor from being
 	     processed) unless there is another data item to be
 	     transferred.  */
-          consume_data_flag = 0 ;
+	  consume_data_flag = 0 ;
 	  if (n == 0)
 	    return;
 	  break;
@@ -778,8 +808,15 @@ formatted_transfer (bt type, void *p, int len)
       if ((consume_data_flag > 0) && (n > 0))
       {
 	n--;
-        p = ((char *) p) + len;
+	p = ((char *) p) + len;
       }
+
+      if (g.mode == READING)
+	skips = 0;
+
+      pos = current_unit->recl - current_unit->bytes_left;
+      max_pos = (max_pos > pos) ? max_pos : pos;
+
     }
 
   return;
@@ -979,7 +1016,7 @@ data_transfer_init (int read_flag)
     {
       current_unit->recl = file_length(current_unit->s);
       if (g.mode==WRITING)
-        empty_internal_buffer (current_unit->s);
+	empty_internal_buffer (current_unit->s);
     }
 
   /* Check the action.  */
@@ -1009,14 +1046,14 @@ data_transfer_init (int read_flag)
 
   if (ioparm.namelist_name != NULL && ionml != NULL)
      {
-        if(ioparm.format != NULL)
-           generate_error (ERROR_OPTION_CONFLICT,
-                    "A format cannot be specified with a namelist");
+	if(ioparm.format != NULL)
+	   generate_error (ERROR_OPTION_CONFLICT,
+		    "A format cannot be specified with a namelist");
      }
   else if (current_unit->flags.form == FORM_FORMATTED &&
-           ioparm.format == NULL && !ioparm.list_format)
+	   ioparm.format == NULL && !ioparm.list_format)
     generate_error (ERROR_OPTION_CONFLICT,
-                    "Missing format for FORMATTED data transfer");
+		    "Missing format for FORMATTED data transfer");
 
 
   if (is_internal_unit () && current_unit->flags.form == FORM_UNFORMATTED)
@@ -1110,11 +1147,11 @@ data_transfer_init (int read_flag)
       /* Check to see if we might be reading what we wrote before  */
 
       if (g.mode == READING && current_unit->mode  == WRITING)
-         flush(current_unit->s);
+	 flush(current_unit->s);
 
       /* Position the file.  */
       if (sseek (current_unit->s,
-               (ioparm.rec - 1) * current_unit->recl) == FAILURE)
+	       (ioparm.rec - 1) * current_unit->recl) == FAILURE)
 	generate_error (ERROR_OS, NULL);
     }
 
@@ -1142,10 +1179,10 @@ data_transfer_init (int read_flag)
       else
 	{
 	  if (ioparm.list_format)
-            {
-               transfer = list_formatted_read;
-               init_at_eol();
-            }
+	    {
+	       transfer = list_formatted_read;
+	       init_at_eol();
+	    }
 	  else
 	    transfer = formatted_transfer;
 	}
@@ -1179,6 +1216,10 @@ data_transfer_init (int read_flag)
       if (advance_status == ADVANCE_YES && !g.seen_dollar)
 	current_unit->read_bad = 1;
     }
+
+  /* Reset counters for T and X-editing.  */
+  if (current_unit->flags.form == FORM_FORMATTED)
+    max_pos = skips = pending_spaces = 0;
 
   /* Start the data transfer if we are doing a formatted transfer.  */
   if (current_unit->flags.form == FORM_FORMATTED && !ioparm.list_format
@@ -1251,27 +1292,27 @@ next_record_r (int done)
 	}
 
       do
-        {
-          p = salloc_r (current_unit->s, &length);
+	{
+	  p = salloc_r (current_unit->s, &length);
 
-          /* In case of internal file, there may not be any '\n'.  */
-          if (is_internal_unit() && p == NULL)
-            {
-               break;
-            }
+	  /* In case of internal file, there may not be any '\n'.  */
+	  if (is_internal_unit() && p == NULL)
+	    {
+	       break;
+	    }
 
-          if (p == NULL)
-            {
-              generate_error (ERROR_OS, NULL);
-              break;
-            }
+	  if (p == NULL)
+	    {
+	      generate_error (ERROR_OS, NULL);
+	      break;
+	    }
 
-          if (length == 0)
-            {
-              current_unit->endfile = AT_ENDFILE;
-              break;
-            }
-        }
+	  if (length == 0)
+	    {
+	      current_unit->endfile = AT_ENDFILE;
+	      break;
+	    }
+	}
       while (*p != '\n');
 
       break;
@@ -1310,7 +1351,7 @@ next_record_w (int done)
 
     case UNFORMATTED_DIRECT:
       if (sfree (current_unit->s) == FAILURE)
-        goto io_error;
+	goto io_error;
       break;
 
     case UNFORMATTED_SEQUENTIAL:
@@ -1352,12 +1393,12 @@ next_record_w (int done)
       p = salloc_w (current_unit->s, &length);
 
       if (!is_internal_unit())
-        {
-          if (p)
-            *p = '\n'; /* No CR for internal writes.  */
-          else
-            goto io_error;
-        }
+	{
+	  if (p)
+	    *p = '\n'; /* No CR for internal writes.  */
+	  else
+	    goto io_error;
+	}
 
       if (sfree (current_unit->s) == FAILURE)
  	goto io_error;
@@ -1427,9 +1468,9 @@ finalize_transfer (void)
   if ((ionml != NULL) && (ioparm.namelist_name != NULL))
     {
        if (ioparm.namelist_read_mode)
-         namelist_read();
+	 namelist_read();
        else
-         namelist_write();
+	 namelist_write();
     }
 
   transfer = NULL;
@@ -1530,6 +1571,7 @@ export_proto(st_read);
 void
 st_read (void)
 {
+
   library_start ();
 
   data_transfer_init (1);
@@ -1546,11 +1588,11 @@ st_read (void)
 	break;
 
       case AT_ENDFILE:
-        if (!is_internal_unit())
-          {
-            generate_error (ERROR_END, NULL);
-            current_unit->endfile = AFTER_ENDFILE;
-          }
+	if (!is_internal_unit())
+	  {
+	    generate_error (ERROR_END, NULL);
+	    current_unit->endfile = AFTER_ENDFILE;
+	  }
 	break;
 
       case AFTER_ENDFILE:
@@ -1575,6 +1617,7 @@ export_proto(st_write);
 void
 st_write (void)
 {
+
   library_start ();
   data_transfer_init (0);
 }
@@ -1601,11 +1644,11 @@ st_write_done (void)
 
       case NO_ENDFILE:
 	if (current_unit->current_record > current_unit->last_record)
-          {
-            /* Get rid of whatever is after this record.  */
-            if (struncate (current_unit->s) == FAILURE)
-              generate_error (ERROR_OS, NULL);
-          }
+	  {
+	    /* Get rid of whatever is after this record.  */
+	    if (struncate (current_unit->s) == FAILURE)
+	      generate_error (ERROR_OS, NULL);
+	  }
 
 	current_unit->endfile = AT_ENDFILE;
 	break;

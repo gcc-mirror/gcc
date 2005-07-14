@@ -1,3 +1,14 @@
+2005-07-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR libfortran/16435
+	* gfortran.dg/tl_editting.f90: New.
+	* gfortran.dg/g77/f77-edit-x-out.f: Remove XFAIL.
+
+2005-07-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	* gfortran.dg/past_eor.f90: New.
+	* gfortran.dg/complex_read.f90: New.
+
 2005-07-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.dg/g77/cpp6.f: New test.

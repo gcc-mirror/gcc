@@ -984,11 +984,25 @@ read_complex (int length)
   if (parse_real (value, length))
     return;
 
+eol_1:
   eat_spaces ();
+  c = next_char ();
+  if (c == '\n' || c== '\r')
+    goto eol_1;
+  else
+    unget_char (c);
+
   if (next_char () != ',')
     goto bad_complex;
 
+eol_2:
   eat_spaces ();
+  c = next_char ();
+  if (c == '\n' || c== '\r')
+    goto eol_2;
+  else
+    unget_char (c);
+
   if (parse_real (value + length, length))
     return;
 
@@ -2022,8 +2036,8 @@ nml_get_obj_data (void)
   char c;
   char * ext_name;
   namelist_info * nl;
-  namelist_info * first_nl;
-  namelist_info * root_nl;
+  namelist_info * first_nl = NULL;
+  namelist_info * root_nl = NULL;
   int dim;
   int component_flag;
 
@@ -2184,8 +2198,8 @@ get_name:
 
   if (c == '(' && nl->type == GFC_DTYPE_CHARACTER)
     {
-      descriptor_dimension chd[1] = {1, clow, nl->string_length};
-      nml_loop_spec ind[1] = {1, clow, nl->string_length, 1};
+      descriptor_dimension chd[1] = { {1, clow, nl->string_length} };
+      nml_loop_spec ind[1] = { {1, clow, nl->string_length, 1} };
 
       if (nml_parse_qualifier (chd, ind, 1) == FAILURE)
 	{

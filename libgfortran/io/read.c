@@ -747,5 +747,9 @@ read_x (fnode * f)
   int n;
 
   n = f->u.n;
-  read_block (&n);
+  if (f->format == FMT_X)
+    n = (n > (int)current_unit->bytes_left)
+	  ? (int)current_unit->bytes_left : n;
+  if (n)
+    read_block (&n);
 }

@@ -638,7 +638,7 @@ internal_proto(write_l);
 extern void write_o (fnode *, const char *, int);
 internal_proto(write_o);
 
-extern void write_x (fnode *);
+extern void write_x (int, int);
 internal_proto(write_x);
 
 extern void write_z (fnode *, const char *, int);
