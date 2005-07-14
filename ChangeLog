@@ -1,3 +1,9 @@
+2005-07-14  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* COPYING, compile, config-ml.in, config.guess,
+	config.sub, install-sh, missing, mkinstalldirs,
+	symlink-tree, ylwrap: Sync from upstream sources.
+
 2005-07-13  Eric Christopher  <echristo@redhat.com>
 
 	* configure.in: Add toplevel noconfigdir support for tpf.
