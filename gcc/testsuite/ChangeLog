@@ -1,3 +1,10 @@
+2005-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/22417
+	* gfortran.dg/g77/cpp5.F: New test.
+	* gfortran.dg/g77/cpp5.h: New file.
+	* gfortran.dg/g77/cpp5inc.h: New file.
+
 2005-07-14  Steven G. Kargl  <kargls@comcast.net>
 
 	* gfortran.dg/char_array_constructor.f90: New test.

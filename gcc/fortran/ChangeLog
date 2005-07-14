@@ -1,3 +1,9 @@
+2005-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/22417
+	* scanner.c (preprocessor_line): Don't treat flag 3 as the start of a new
+	file.  Fix file left but not entered warning.
+
 2005-07-14  Feng Wang  <fengwang@nudt.edu.cn>
 	Steven G. Kargl  <kargls@comcast.net>
 
