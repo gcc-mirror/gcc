@@ -1,3 +1,10 @@
+2005-07-14  Alexandre Oliva  <aoliva@redhat.com>
+            Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR target/20126
+	* loop.c (loop_givs_rescan): Do not ICE if unable to reduce an IV
+	in some insn.
+
 2005-07-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.h (TARGET_TPF_PROFILING): Add default definition.
