@@ -1,3 +1,9 @@
+2005-07-14  Steven Bosscher  <stevenb@suse.de>
+
+	PR tree-optimization/22230
+	* tree-vrp.c (extract_range_from_binary_expr): Fix logics thinko in
+	the computation of the four cross productions for "range op range".
+
 2005-07-14  Alexandre Oliva  <aoliva@redhat.com>
             Ulrich Weigand  <uweigand@de.ibm.com>
 
