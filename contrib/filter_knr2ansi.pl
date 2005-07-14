@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# Goes thourgh the input line by line to find K&R style function
+# Goes through the input line by line to find K&R style function
 # declarations, and replaces them with ANSI style declarations.
 #
 @blah = <>;
