@@ -2895,7 +2895,7 @@ mips_canonicalize_comparison (enum rtx_code *code, rtx *cmp1,
     return false;
   
   original = INTVAL (*cmp1);
-  plus_one = trunc_int_for_mode (original + 1, mode);
+  plus_one = trunc_int_for_mode ((unsigned HOST_WIDE_INT) original + 1, mode);
   
   switch (*code)
     {

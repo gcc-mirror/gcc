@@ -1,5 +1,10 @@
 2005-07-14  Eric Christopher  <echristo@redhat.com>
 
+	* config/mips/mips.c (mips_canonicalize_comparison): Cast
+	argument of trunc_int_for_mode to unsigned HOST_WIDE_INT.
+
+2005-07-14  Eric Christopher  <echristo@redhat.com>
+
 	* config/s390/t-tpf (SHLIB_MAPFILES): Remove.
 
 2005-07-14  Steven Bosscher  <stevenb@suse.de>
