@@ -133,15 +133,24 @@ eoshift2 (gfc_array_char *ret, const gfc_array_char *array,
   bstride0 = bstride[0];
   rptr = ret->data;
   sptr = array->data;
+
+  if ((shift >= 0 ? shift : -shift ) > len)
+    {
+      shift = len;
+      len = 0;
+    }
+  else
+    {
+      if (shift > 0)
+	len = len - shift;
+      else
+	len = len + shift;
+    }
+  
   if (bound)
     bptr = bound->data;
   else
     bptr = zeros;
-
-  if (shift > 0)
-    len = len - shift;
-  else
-    len = len + shift;
 
   while (rptr)
     {

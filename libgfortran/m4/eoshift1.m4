@@ -38,14 +38,14 @@ include(iparm.m4)dnl
 static const char zeros[16] =
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-extern void eoshift1_`'atype_kind (const gfc_array_char *,
+extern void eoshift1_`'atype_kind (gfc_array_char *,
 				     const gfc_array_char *,
 				     const atype *, const char *,
 				     const atype_name *);
 export_proto(eoshift1_`'atype_kind);
 
 void
-eoshift1_`'atype_kind (const gfc_array_char *ret,
+eoshift1_`'atype_kind (gfc_array_char *ret,
 		       const gfc_array_char *array,
 		       const atype *h, const char *pbound,
 		       const atype_name *pwhich)
@@ -90,6 +90,26 @@ eoshift1_`'atype_kind (const gfc_array_char *ret,
   extent[0] = 1;
   count[0] = 0;
   size = GFC_DESCRIPTOR_SIZE (array);
+
+  if (ret->data == NULL)
+    {
+      int i;
+
+      ret->data = internal_malloc_size (size * size0 ((array_t *)array));
+      ret->base = 0;
+      ret->dtype = array->dtype;
+      for (i = 0; i < GFC_DESCRIPTOR_RANK (array); i++)
+        {
+          ret->dim[i].lbound = 0;
+          ret->dim[i].ubound = array->dim[i].ubound - array->dim[i].lbound;
+
+          if (i == 0)
+            ret->dim[i].stride = 1;
+          else
+            ret->dim[i].stride = (ret->dim[i-1].ubound + 1) * ret->dim[i-1].stride;
+        }
+    }
+
   n = 0;
   for (dim = 0; dim < GFC_DESCRIPTOR_RANK (array); dim++)
     {
@@ -110,7 +130,7 @@ eoshift1_`'atype_kind (const gfc_array_char *ret,
           rstride[n] = ret->dim[dim].stride * size;
           sstride[n] = array->dim[dim].stride * size;
 
-          hstride[n] = h->dim[n].stride;
+          hstride[n] = h->dim[n].stride * size;
           n++;
         }
     }
@@ -133,7 +153,14 @@ eoshift1_`'atype_kind (const gfc_array_char *ret,
     {
 `      /* Do the shift for this dimension.  */'
       sh = *hptr;
-      delta = (sh >= 0) ? sh: -sh;
+      if (( sh >= 0 ? sh : -sh ) > len)
+	{
+	  delta = len;
+	  sh = len;
+	}
+      else
+	delta = (sh >= 0) ? sh: -sh;
+
       if (sh > 0)
         {
           src = &sptr[delta * soffset];

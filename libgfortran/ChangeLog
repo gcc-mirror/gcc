@@ -1,3 +1,25 @@
+2005-07-14  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	Backport from mainline.
+	PR libfortran/21594
+	PR libfortran/22142
+	PR libfortran/22144
+	* intrinsics/eoshift0.c:  If abs(shift) > len, fill the
+	the whole array with the boundary value, but don't overrun it.
+	* intrinsics/eoshift2.c:  Likewise.
+	* m4/eoshift1.m4:  Likewise.
+	* m4/eoshift3.m4:  Likewise.
+	* m4/eoshift1.m4:  Correct bstride (it needs to be multiplied
+	by size since it's a char pointer).
+	* m4/eoshift3.m4:  Likewise.
+	* m4/cshift1.m4: Remove const from argument ret.
+        Populate return array descriptor if ret->data is NULL.
+	* m4/eoshift1.m4: Likewise.
+	* generated/eoshift1_4.c:  Regenerated.
+	* generated/eoshift1_8.c:  Regenerated.
+	* generated/eoshift3_4.c:  Regenerated.
+	* generated/eoshift3_8.c:  Regenerated.
+
 2005-07-14  David Edelsohn  <edelsohn@gnu.org>
 
 	Backport from mainline.

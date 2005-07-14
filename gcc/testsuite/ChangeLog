@@ -1,3 +1,15 @@
+2005-07-14  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	Backport from mainline:
+	PR libfortran/21594
+	PR libfortran/22144
+	PR libfortran/22142
+	* gfortran.fortran-torture/execute/intrinsic_eoshift.f90:
+	Add test cases where the shift length is greater than the
+	array length.
+	Add test cases for PR 22142 for eoshift1 and eoshift3.
+	* gfortran.dg/shift-alloc.f90:  New testcase.
+
 2005-07-14  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR libfortran/16435

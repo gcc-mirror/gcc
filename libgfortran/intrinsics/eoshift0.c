@@ -125,10 +125,19 @@ eoshift0 (gfc_array_char * ret, const gfc_array_char * array,
   sstride0 = sstride[0];
   rptr = ret->data;
   sptr = array->data;
-  if (shift > 0)
-    len = len - shift;
+
+  if ((shift >= 0 ? shift : -shift) > len)
+    {
+      shift = len;
+      len = 0;
+    }
   else
-    len = len + shift;
+    {
+      if (shift > 0)
+	len = len - shift;
+      else
+	len = len + shift;
+    }
 
   while (rptr)
     {
