@@ -550,7 +550,7 @@ extern HOST_WIDE_INT int_expr_size (tree);
 
 /* Return an rtx that refers to the value returned by a function
    in its original home.  This becomes invalid if any more code is emitted.  */
-extern rtx hard_function_value (tree, tree, int);
+extern rtx hard_function_value (tree, tree, tree, int);
 
 extern rtx prepare_call_address (rtx, rtx, rtx *, int, int);
 

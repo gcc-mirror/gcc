@@ -37,6 +37,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "ggc.h"
 #include "recog.h"
 #include "langhooks.h"
+#include "target.h"
 
 static rtx break_out_memory_refs (rtx);
 static void emit_stack_probe (rtx);
@@ -1405,24 +1406,19 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 /* Return an rtx representing the register or memory location
    in which a scalar value of data type VALTYPE
    was returned by a function call to function FUNC.
-   FUNC is a FUNCTION_DECL node if the precise function is known,
-   otherwise 0.
+   FUNC is a FUNCTION_DECL, FNTYPE a FUNCTION_TYPE node if the precise
+   function is known, otherwise 0.
    OUTGOING is 1 if on a machine with register windows this function
    should return the register in which the function will put its result
    and 0 otherwise.  */
 
 rtx
-hard_function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
+hard_function_value (tree valtype, tree func, tree fntype,
 		     int outgoing ATTRIBUTE_UNUSED)
 {
   rtx val;
 
-#ifdef FUNCTION_OUTGOING_VALUE
-  if (outgoing)
-    val = FUNCTION_OUTGOING_VALUE (valtype, func);
-  else
-#endif
-    val = FUNCTION_VALUE (valtype, func);
+  val = targetm.calls.function_value (valtype, func ? func : fntype, outgoing);
 
   if (REG_P (val)
       && GET_MODE (val) == BLKmode)

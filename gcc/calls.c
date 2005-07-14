@@ -2517,9 +2517,10 @@ expand_call (tree exp, rtx target, int ignore)
 	{
 	  if (pcc_struct_value)
 	    valreg = hard_function_value (build_pointer_type (TREE_TYPE (exp)),
-					  fndecl, (pass == 0));
+					  fndecl, NULL, (pass == 0));
 	  else
-	    valreg = hard_function_value (TREE_TYPE (exp), fndecl, (pass == 0));
+	    valreg = hard_function_value (TREE_TYPE (exp), fndecl, fntype,
+					  (pass == 0));
 	}
 
       /* Precompute all register parameters.  It isn't safe to compute anything
@@ -3266,7 +3267,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	{
 #ifdef PCC_STATIC_STRUCT_RETURN
 	  rtx pointer_reg
-	    = hard_function_value (build_pointer_type (tfom), 0, 0);
+	    = hard_function_value (build_pointer_type (tfom), 0, 0, 0);
 	  mem_value = gen_rtx_MEM (outmode, pointer_reg);
 	  pcc_struct_value = 1;
 	  if (value == 0)

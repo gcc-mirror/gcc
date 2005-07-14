@@ -417,4 +417,26 @@ hook_bool_rtx_commutative_p (rtx x, int outer_code ATTRIBUTE_UNUSED)
   return COMMUTATIVE_P (x);
 }
 
+rtx
+default_function_value (tree ret_type ATTRIBUTE_UNUSED,
+			tree fn_decl_or_type,
+			bool outgoing ATTRIBUTE_UNUSED)
+{
+  /* The old interface doesn't handle receiving the function type.  */
+  if (fn_decl_or_type
+      && !DECL_P (fn_decl_or_type))
+    fn_decl_or_type = NULL;
+
+#ifdef FUNCTION_OUTGOING_VALUE
+  if (outgoing)
+    return FUNCTION_OUTGOING_VALUE (ret_type, fn_decl_or_type);
+#endif
+
+#ifdef FUNCTION_VALUE
+  return FUNCTION_VALUE (ret_type, fn_decl_or_type);
+#else
+  return NULL_RTX;
+#endif
+}
+
 #include "gt-targhooks.h"

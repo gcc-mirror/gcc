@@ -172,6 +172,7 @@
 #include "ggc.h"
 #include "timevar.h"
 #include "tree-pass.h"
+#include "target.h"
 
 /* We use this array to cache info about insns, because otherwise we
    spend too much time in stack_regs_mentioned_p.
@@ -667,14 +668,8 @@ stack_result (tree decl)
 
   result = DECL_RTL_IF_SET (DECL_RESULT (decl));
   if (result != 0)
-    {
-#ifdef FUNCTION_OUTGOING_VALUE
-      result
-	= FUNCTION_OUTGOING_VALUE (TREE_TYPE (DECL_RESULT (decl)), decl);
-#else
-      result = FUNCTION_VALUE (TREE_TYPE (DECL_RESULT (decl)), decl);
-#endif
-    }
+    result = targetm.calls.function_value (TREE_TYPE (DECL_RESULT (decl)),
+					   decl, true);
 
   return result != 0 && STACK_REG_P (result) ? result : 0;
 }
