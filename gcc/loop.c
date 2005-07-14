@@ -5514,11 +5514,23 @@ loop_givs_rescan (struct loop *loop, struct iv_class *bl, rtx *reg_map)
 	      rtx reg, seq;
 	      start_sequence ();
 	      reg = force_reg (v->mode, *v->location);
-	      seq = get_insns ();
-	      end_sequence ();
-	      loop_insn_emit_before (loop, 0, v->insn, seq);
-	      if (!validate_change_maybe_volatile (v->insn, v->location, reg))
-		gcc_unreachable ();
+	      if (validate_change_maybe_volatile (v->insn, v->location, reg))
+		{
+		  seq = get_insns ();
+		  end_sequence ();
+		  loop_insn_emit_before (loop, 0, v->insn, seq);
+		}
+	      else
+		{
+		  end_sequence ();
+		  if (loop_dump_stream)
+		    fprintf (loop_dump_stream,
+			     "unable to reduce iv in insn %d\n",
+			     INSN_UID (v->insn));
+		  bl->all_reduced = 0;
+		  v->ignore = 1;
+		  continue;
+		}
 	    }
 	}
       else if (v->replaceable)
