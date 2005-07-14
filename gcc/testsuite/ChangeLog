@@ -1,3 +1,8 @@
+2005-07-15  Steven Bosscher  <stevenb@suse.de>
+
+	PR tree-optimization/22230
+	* gcc.dg/tree-ssa/pr22230.c: New test.
+
 2005-07-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.dg/g77/cpp6.f: New test.

@@ -1183,7 +1183,7 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
 	       ? vrp_int_const_binop (code, vr0.max, vr1.min)
 	       : NULL_TREE;
 
-      val[3] = (vr0.min != vr1.min && vr0.max != vr1.max)
+      val[3] = (vr0.min != vr0.max && vr1.min != vr1.max)
 	       ? vrp_int_const_binop (code, vr0.max, vr1.max)
 	       : NULL_TREE;
 
