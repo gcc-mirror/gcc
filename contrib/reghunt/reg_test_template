@@ -3,8 +3,9 @@
 # Template for the test script specified for REG_TEST.
 
 # Run the test case for a regression search.  The argument is the date
-# of the CVS sources.  The return value is 1 if the binary search should
-# continue with later dates, 0 if it should continue with earlier dates.
+# of the sources.  The return value is 1 if the binary search should
+# continue with later dates, 0 if it should continue with earlier
+# dates.
 
 DATE="${1}"
 
