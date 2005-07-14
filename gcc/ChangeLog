@@ -1,5 +1,26 @@
 2005-07-14  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/22347
+	* config/i386/i386-protos.h (ix86_function_value): Change
+	prototype to match new target hook.
+	* config/i386/i386.c (ix86_value_regno): Change prototype
+	to take extra type argument.
+	(TARGET_FUNCTION_VALUE): Define.
+	(ix86_function_ok_for_sibcall): Pass extra argument to
+	ix86_value_regno, check return slot rtx for exact match.
+	(ix86_function_value): Take extra parameter.  Dispatch to
+	ix86_value_regno with fndecl/fntype as provided.
+	(ix86_value_regno): Handle extra type argument.
+	* config/i386/i386.h (FUNCTION_VALUE): No longer define.
+
+	* testsuite/gcc.target/i386/sseregparm-3.c: New testcase.
+	* testsuite/gcc.target/i386/sseregparm-4.c: New testcase.
+	* testsuite/gcc.target/i386/sseregparm-5.c: New testcase.
+	* testsuite/gcc.target/i386/sseregparm-6.c: New testcase.
+	* testsuite/gcc.target/i386/sseregparm-7.c: New testcase.
+
+2005-07-14  Richard Guenther  <rguenther@suse.de>
+
 	* Makefile.in (explow.o, reg-stack.o): Depend on target.h.
 	* calls.c (expand_call): Pass fntype to hard_function_value.
 	(emit_library_call_value_1): Likewise.

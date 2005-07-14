@@ -891,7 +891,7 @@ static int ix86_function_regparm (tree, tree);
 const struct attribute_spec ix86_attribute_table[];
 static bool ix86_function_ok_for_sibcall (tree, tree);
 static tree ix86_handle_cconv_attribute (tree *, tree, tree, int, bool *);
-static int ix86_value_regno (enum machine_mode, tree);
+static int ix86_value_regno (enum machine_mode, tree, tree);
 static bool contains_128bit_aligned_vector_p (tree);
 static rtx ix86_struct_value_rtx (tree, int);
 static bool ix86_ms_bitfield_layout_p (tree);
@@ -1084,6 +1084,9 @@ static void init_ext_80387_constants (void);
 
 #undef TARGET_STACK_PROTECT_FAIL
 #define TARGET_STACK_PROTECT_FAIL ix86_stack_protect_fail
+
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE ix86_function_value
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1705,6 +1708,7 @@ static bool
 ix86_function_ok_for_sibcall (tree decl, tree exp)
 {
   tree func;
+  rtx a, b;
 
   /* If we are generating position-independent code, we cannot sibcall
      optimize any indirect call, or a direct call to a global function,
@@ -1715,16 +1719,23 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
   if (decl)
     func = decl;
   else
-    func = NULL;
+    {
+      func = TREE_TYPE (TREE_OPERAND (exp, 0));
+      if (POINTER_TYPE_P (func))
+        func = TREE_TYPE (func);
+    }
 
-  /* If we are returning floats on the 80387 register stack, we cannot
+  /* Check that the return value locations are the same.  Like
+     if we are returning floats on the 80387 register stack, we cannot
      make a sibcall from a function that doesn't return a float to a
      function that does or, conversely, from a function that does return
      a float to a function that doesn't; the necessary stack adjustment
-     would not be executed.  */
-  if (STACK_REG_P (ix86_function_value (TREE_TYPE (exp), func))
-      != STACK_REG_P (ix86_function_value (TREE_TYPE (DECL_RESULT (cfun->decl)),
-					   cfun->decl)))
+     would not be executed.  This is also the place we notice
+     differences in the return value ABI.  */
+  a = ix86_function_value (TREE_TYPE (exp), func, false);
+  b = ix86_function_value (TREE_TYPE (DECL_RESULT (cfun->decl)),
+			   cfun->decl, false);
+  if (! rtx_equal_p (a, b))
     return false;
 
   /* If this call is indirect, we'll need to be able to use a call-clobbered
@@ -3189,7 +3200,8 @@ ix86_function_value_regno_p (int regno)
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
    otherwise, FUNC is 0.  */
 rtx
-ix86_function_value (tree valtype, tree func)
+ix86_function_value (tree valtype, tree fntype_or_decl,
+		     bool outgoing ATTRIBUTE_UNUSED)
 {
   enum machine_mode natmode = type_natural_mode (valtype);
 
@@ -3205,7 +3217,15 @@ ix86_function_value (tree valtype, tree func)
       return ret;
     }
   else
-    return gen_rtx_REG (TYPE_MODE (valtype), ix86_value_regno (natmode, func));
+    {
+      tree fn = NULL_TREE, fntype;
+      if (fntype_or_decl
+	  && DECL_P (fntype_or_decl))
+        fn = fntype_or_decl;
+      fntype = fn ? TREE_TYPE (fn) : fntype_or_decl;
+      return gen_rtx_REG (TYPE_MODE (valtype),
+			  ix86_value_regno (natmode, fn, fntype));
+    }
 }
 
 /* Return false iff type is returned in memory.  */
@@ -3321,13 +3341,13 @@ ix86_libcall_value (enum machine_mode mode)
 	}
     }
   else
-    return gen_rtx_REG (mode, ix86_value_regno (mode, NULL));
+    return gen_rtx_REG (mode, ix86_value_regno (mode, NULL, NULL));
 }
 
 /* Given a mode, return the register to use for a return value.  */
 
 static int
-ix86_value_regno (enum machine_mode mode, tree func)
+ix86_value_regno (enum machine_mode mode, tree func, tree fntype)
 {
   gcc_assert (!TARGET_64BIT);
 
@@ -3347,9 +3367,10 @@ ix86_value_regno (enum machine_mode mode, tree func)
 
   /* Floating point return values in %st(0), except for local functions when
      SSE math is enabled or for functions with sseregparm attribute.  */
-  if (func && (mode == SFmode || mode == DFmode))
+  if ((func || fntype)
+      && (mode == SFmode || mode == DFmode))
     {
-      int sse_level = ix86_function_sseregparm (TREE_TYPE (func), func);
+      int sse_level = ix86_function_sseregparm (fntype, func);
       if ((sse_level >= 1 && mode == SFmode)
 	  || (sse_level == 2 && mode == DFmode))
         return FIRST_SSE_REG;

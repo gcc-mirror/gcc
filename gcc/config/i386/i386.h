@@ -1433,13 +1433,6 @@ enum reg_class
 #define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, SIZE) \
   ix86_return_pops_args ((FUNDECL), (FUNTYPE), (SIZE))
 
-/* Define how to find the value returned by a function.
-   VALTYPE is the data type of the value (as a tree).
-   If the precise function being called is known, FUNC is its FUNCTION_DECL;
-   otherwise, FUNC is 0.  */
-#define FUNCTION_VALUE(VALTYPE, FUNC)  \
-   ix86_function_value (VALTYPE, FUNC)
-
 #define FUNCTION_VALUE_REGNO_P(N) \
   ix86_function_value_regno_p (N)
 
