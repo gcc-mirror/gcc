@@ -1732,7 +1732,7 @@ aggregate_value_p (tree exp, tree fntype)
     return 1;
   /* Make sure we have suitable call-clobbered regs to return
      the value in; if not, we must return it in memory.  */
-  reg = hard_function_value (type, 0, 0);
+  reg = hard_function_value (type, 0, fntype, 0);
 
   /* If we have something other than a REG (e.g. a PARALLEL), then assume
      it is OK.  */
@@ -3055,13 +3055,8 @@ assign_parms (tree fndecl)
 	{
 	  rtx real_decl_rtl;
 
-#ifdef FUNCTION_OUTGOING_VALUE
-	  real_decl_rtl = FUNCTION_OUTGOING_VALUE (TREE_TYPE (decl_result),
-						   fndecl);
-#else
-	  real_decl_rtl = FUNCTION_VALUE (TREE_TYPE (decl_result),
-					  fndecl);
-#endif
+	  real_decl_rtl = targetm.calls.function_value (TREE_TYPE (decl_result),
+							fndecl, true);
 	  REG_FUNCTION_VALUE_P (real_decl_rtl) = 1;
 	  /* The delay slot scheduler assumes that current_function_return_rtx
 	     holds the hard register containing the return value, not a
@@ -4149,7 +4144,7 @@ expand_function_start (tree subr)
 	  /* In order to figure out what mode to use for the pseudo, we
 	     figure out what the mode of the eventual return register will
 	     actually be, and use that.  */
-	  rtx hard_reg = hard_function_value (return_type, subr, 1);
+	  rtx hard_reg = hard_function_value (return_type, subr, 0, 1);
 
 	  /* Structures that are returned in registers are not
 	     aggregate_value_p, so we may see a PARALLEL or a REG.  */
@@ -4499,13 +4494,8 @@ expand_function_end (void)
       else
 	value_address = XEXP (value_address, 0);
 
-#ifdef FUNCTION_OUTGOING_VALUE
-      outgoing = FUNCTION_OUTGOING_VALUE (build_pointer_type (type),
-					  current_function_decl);
-#else
-      outgoing = FUNCTION_VALUE (build_pointer_type (type),
-				 current_function_decl);
-#endif 
+      outgoing = targetm.calls.function_value (build_pointer_type (type),
+					       current_function_decl, true);
 
       /* Mark this as a function return value so integrate will delete the
 	 assignment and USE below when inlining this function.  */

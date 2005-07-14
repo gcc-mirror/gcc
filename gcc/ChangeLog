@@ -1,3 +1,24 @@
+2005-07-14  Richard Guenther  <rguenther@suse.de>
+
+	* Makefile.in (explow.o, reg-stack.o): Depend on target.h.
+	* calls.c (expand_call): Pass fntype to hard_function_value.
+	(emit_library_call_value_1): Likewise.
+	* explow.c: Include target.h.
+	(hard_function_value): Take extra argument, the fntype.
+	Use new target hook for function_value.
+	* expr.h (hard_function_value): Change prototype.
+	* function.c (aggregate_value_p): Pass 0 as fntype to
+	hard_function_value.
+	(assign_parms): Use new target hook for function_value.
+	Pass 0 as fntype to hard_function_value.
+	(expand_function_end): Likewise.
+	* reg-stack.c: Include target.h.
+	(stack_result): Use new target hook for function_value.
+	* target-def.h: New target hook function_value.
+	* target.h: Likewise.
+	* targhooks.c (default_function_value): New function.
+	* targhooks.h (default_function_value): Declare.
+
 2005-07-13  Ian Lance Taylor  <ian@airs.com>
 
 	* config/mips/mips.h (CLZ_DEFINED_VALUE_AT_ZERO): Define.
