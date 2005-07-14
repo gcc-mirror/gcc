@@ -1,9 +1,9 @@
 #! /bin/sh
 # Wrapper for compilers which do not understand `-c -o'.
 
-scriptversion=2004-10-12.08
+scriptversion=2005-05-14.22
 
-# Copyright (C) 1999, 2000, 2003, 2004 Free Software Foundation, Inc.
+# Copyright (C) 1999, 2000, 2003, 2004, 2005 Free Software Foundation, Inc.
 # Written by Tom Tromey <tromey@cygnus.com>.
 #
 # This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@ scriptversion=2004-10-12.08
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 # As a special exception to the GNU General Public License, if you
 # distribute this file as part of a program that contains a
@@ -47,11 +47,11 @@ right script to run: please start by reading the file `INSTALL'.
 
 Report bugs to <bug-automake@gnu.org>.
 EOF
-    exit 0
+    exit $?
     ;;
   -v | --v*)
     echo "compile $scriptversion"
-    exit 0
+    exit $?
     ;;
 esac
 
