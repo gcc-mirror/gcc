@@ -4267,8 +4267,11 @@ ia64_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
 static void
 ia64_output_dwarf_dtprel (FILE *file, int size, rtx x)
 {
-  gcc_assert (size == 8);
-  fputs ("\tdata8.ua\t@dtprel(", file);
+  gcc_assert (size == 4 || size == 8);
+  if (size == 4)
+    fputs ("\tdata4.ua\t@dtprel(", file);
+  else
+    fputs ("\tdata8.ua\t@dtprel(", file);
   output_addr_const (file, x);
   fputs (")", file);
 }
