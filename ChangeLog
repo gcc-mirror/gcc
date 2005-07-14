@@ -1,3 +1,8 @@
+2005-07-14  Jim Blandy  <jimb@redhat.com>
+
+	* configure.in: Add cases for Renesas m32c.
+	* configure: Regenerated.
+	
 2005-07-14  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* COPYING.LIB: Update from fsf.org.

@@ -423,6 +423,9 @@ case "${target}" in
   *-*-vxworks*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss target-libiberty ${libgcj}"
     ;;
+  m32c-*-*)
+    noconfigdirs="$noconfigdirs target-libstdc++-v3"
+    ;;
   alpha*-dec-osf*)
     # ld works, but does not support shared libraries.
     # newlib is not 64 bit ready.  I'm not sure about fileutils.
