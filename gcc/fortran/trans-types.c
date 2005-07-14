@@ -70,7 +70,7 @@ gfc_logical_info gfc_logical_kinds[MAX_INT_KINDS + 1];
 static GTY(()) tree gfc_integer_types[MAX_INT_KINDS + 1];
 static GTY(()) tree gfc_logical_types[MAX_INT_KINDS + 1];
 
-#define MAX_REAL_KINDS 4
+#define MAX_REAL_KINDS 5
 gfc_real_info gfc_real_kinds[MAX_REAL_KINDS + 1];
 static GTY(()) tree gfc_real_types[MAX_REAL_KINDS + 1];
 static GTY(()) tree gfc_complex_types[MAX_REAL_KINDS + 1];
