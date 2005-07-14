@@ -1,3 +1,18 @@
+2005-07-13  Andrew Haley  <aph@redhat.com>
+
+	* gnu/java/net/protocol/file/Connection.java (unquote): New
+	method.
+	(connect): Unquote filename.
+	gnu/java/net/protocol/jar/Connection.java (getInputStream):
+	Likewise.  
+	(getJarFile): Likewise.
+
+	* java/net/URLConnection.java (getContentHandler): Guard cast with
+	instaceof.
+
+	* java/net/URL.java (URL): If the file part of a spec is absolute,
+	ignore the file part of its context.
+
 2005-07-08  Colin Walters  <walters@verbum.org>
 
 	* verify.cc (class _Jv_BytecodeVerifier) <op_new>: Don't
