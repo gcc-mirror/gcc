@@ -1,3 +1,7 @@
+2005-07-14  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.h (TARGET_TPF_PROFILING): Add default definition.
+
 2005-07-14  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.c (ia64_output_dwarf_dtprel): Support ILP32 mode.
