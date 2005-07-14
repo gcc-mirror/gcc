@@ -899,7 +899,7 @@ preprocessor_line (char *c)
 
   /* Interpret flags.  */
 
-  if (flag[1] || flag[3]) /* Starting new file.  */
+  if (flag[1]) /* Starting new file.  */
     {
       f = get_file (filename, LC_RENAME);
       f->up = current_file;
@@ -908,15 +908,15 @@ preprocessor_line (char *c)
 
   if (flag[2]) /* Ending current file.  */
     {
-      if (strcmp (current_file->filename, filename) != 0)
+      if (!current_file->up
+	  || strcmp (current_file->up->filename, filename) != 0)
 	{
 	  gfc_warning_now ("%s:%d: file %s left but not entered",
 			   current_file->filename, current_file->line,
 			   filename);
 	  return;
 	}
-      if (current_file->up)
-	current_file = current_file->up;
+      current_file = current_file->up;
     }
 
   /* The name of the file can be a temporary file produced by
