@@ -1,3 +1,7 @@
+2005-07-14  Steve Ellcey  <sje@cup.hp.com>
+
+	* trans-types.c (MAX_REAL_KINDS): Increase from 4 to 5.
+
 2005-07-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.h (MAX_ERROR_MESSAGE): Remove.
