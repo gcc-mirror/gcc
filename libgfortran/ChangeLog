@@ -1,3 +1,11 @@
+2005-07-14  David Edelsohn  <edelsohn@gnu.org>
+
+	Backport from mainline.
+	PR libgfortran/22412
+	* io/write.c (otoa): Bias p by SCRATCH_SIZE, not
+	sizeof (SCRATCH_SIZE).
+	(btoa): Same.
+
 2005-07-14 Paul Thomas  <pault@gcc.gnu.org>
 
 	PR libfortran/16435

@@ -941,13 +941,13 @@ otoa (uint64_t n)
       return scratch;
     }
 
-  p = scratch + sizeof (SCRATCH_SIZE) - 1;
+  p = scratch + SCRATCH_SIZE - 1;
   *p-- = '\0';
 
   while (n != 0)
     {
       *p = '0' + (n & 7);
-      p -- ;
+      p--;
       n >>= 3;
     }
 
@@ -969,7 +969,7 @@ btoa (uint64_t n)
       return scratch;
     }
 
-  p = scratch + sizeof (SCRATCH_SIZE) - 1;
+  p = scratch + SCRATCH_SIZE - 1;
   *p-- = '\0';
 
   while (n != 0)
