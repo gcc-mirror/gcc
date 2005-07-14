@@ -1,5 +1,25 @@
 2005-07-14  Jakub Jelinek  <jakub@redhat.com>
 
+	* gfortran.h (MAX_ERROR_MESSAGE): Remove.
+	(gfc_error_buf): Add allocated and index fields.  Change message
+	field from array to a pointer.
+	* error.c (use_warning_buffer, error_ptr, warning_ptr): Remove.
+	(cur_error_buffer): New variable.
+	(error_char): Use cur_error_buffer->{message,index} instead of
+	{warning,error}_{buffer.message,ptr}.  Reallocate message buffer
+	if too small.
+	(gfc_warning, gfc_notify_std, gfc_error, gfc_error_now): Setup
+	cur_error_buffer and its index rather than {warning,error}_ptr
+	and use_warning_buffer.
+	(gfc_warning_check, gfc_error_check): Don't print anything if
+	message is NULL.
+	(gfc_push_error): Allocate saved message with xstrdup.
+	(gfc_pop_error): Free saved message with gfc_free.
+	(gfc_free_error): New function.
+	* primary.c (match_complex_constant): Call gfc_free_error if
+	gfc_pop_error will not be called.
+	* match.c (gfc_match_st_function): Likewise.
+
 	PR fortran/22417
 	* scanner.c (preprocessor_line): Don't treat flag 3 as the start of a new
 	file.  Fix file left but not entered warning.

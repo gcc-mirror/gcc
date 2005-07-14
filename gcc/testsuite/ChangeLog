@@ -1,5 +1,7 @@
 2005-07-14  Jakub Jelinek  <jakub@redhat.com>
 
+	* gfortran.dg/g77/cpp6.f: New test.
+
 	PR fortran/22417
 	* gfortran.dg/g77/cpp5.F: New test.
 	* gfortran.dg/g77/cpp5.h: New file.
