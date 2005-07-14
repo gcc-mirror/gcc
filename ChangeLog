@@ -1,8 +1,13 @@
 2005-07-14  Kelley Cook  <kcook@gcc.gnu.org>
 
-	* COPYING, compile, config-ml.in, config.guess,
+	* COPYING.LIB: Update from fsf.org.
+
+2005-07-14  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* COPYING, compile, config.guess,
 	config.sub, install-sh, missing, mkinstalldirs,
 	symlink-tree, ylwrap: Sync from upstream sources.
+	* config-ml.in: Update FSF address.
 
 2005-07-13  Eric Christopher  <echristo@redhat.com>
 
