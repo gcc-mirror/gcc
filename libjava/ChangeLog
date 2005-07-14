@@ -1,3 +1,8 @@
+2005-07-14  Aaron Luchko  <aluchko@redhat.com>
+
+	* gnu/classpath/jdwp/processor/VirtualMachineCommandSet.java:
+	Implemented VirtualMachine Command Set.
+
 2005-07-14  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/Class.java (getProtectionDomain): Merged javadoc from
