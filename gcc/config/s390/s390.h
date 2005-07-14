@@ -71,6 +71,11 @@ extern enum processor_flags s390_arch_flags;
 
 /* Run-time target specification.  */
 
+/* Defaults for option flags defined only on some subtargets.  */
+#ifndef TARGET_TPF_PROFILING
+#define TARGET_TPF_PROFILING 0
+#endif
+
 /* This will be overridden by OS headers.  */
 #define TARGET_TPF 0
 
