@@ -1516,7 +1516,14 @@ resolve_character_array_constructor (gfc_expr * expr)
 
   max_length = -1;
 
-  if (expr->ts.cl == NULL || expr->ts.cl->length == NULL)
+  if (expr->ts.cl == NULL)
+    {
+      expr->ts.cl = gfc_get_charlen ();
+      expr->ts.cl->next = gfc_current_ns->cl_list;
+      gfc_current_ns->cl_list = expr->ts.cl;
+    }
+
+  if (expr->ts.cl->length == NULL)
     {
       /* Find the maximum length of the elements. Do nothing for variable array
 	 constructor.  */
@@ -1529,8 +1536,6 @@ resolve_character_array_constructor (gfc_expr * expr)
       if (max_length != -1)
 	{
 	  /* Update the character length of the array constructor.  */
-	  if (expr->ts.cl == NULL)
-	    expr->ts.cl = gfc_get_charlen ();
 	  expr->ts.cl->length = gfc_int_expr (max_length);
 	  /* Update the element constructors.  */
 	  for (p = expr->value.constructor; p; p = p->next)

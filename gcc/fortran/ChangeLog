@@ -1,3 +1,9 @@
+2005-07-14  Feng Wang  <fengwang@nudt.edu.cn>
+	Steven G. Kargl  <kargls@comcast.net>
+
+	* array.c (resolve_character_array_constructor): Allocate gfc_charlen
+	for the array and attach to namespace list for automatic deallocation.
+
 2005-07-12  Feng Wang  <fengwang@nudt.edu.cn>
 
 	Backport from the mainline:

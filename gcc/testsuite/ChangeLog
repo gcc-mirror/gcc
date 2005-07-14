@@ -1,3 +1,7 @@
+2005-07-14  Steven G. Kargl  <kargls@comcast.net>
+
+	* gfortran.dg/char_array_constructor.f90: New test.
+
 2005-07-13  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/pr22051-2.c: Tweak expected output to allow
