@@ -1,3 +1,8 @@
+2005-07-14  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR c++/22452
+	* tree.c (decl_linkage): Don't check DECL_COMDAT on CONST_DECL.
+
 2005-07-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22132

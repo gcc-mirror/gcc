@@ -2123,6 +2123,11 @@ decl_linkage (tree decl)
   /* Things that are TREE_PUBLIC have external linkage.  */
   if (TREE_PUBLIC (decl))
     return lk_external;
+  
+  /* Linkage of a CONST_DECL depends on the linkage of the enumeration 
+     type.  */
+  if (TREE_CODE (decl) == CONST_DECL)
+    return decl_linkage (TYPE_NAME (TREE_TYPE (decl)));
 
   /* Some things that are not TREE_PUBLIC have external linkage, too.
      For example, on targets that don't have weak symbols, we make all
