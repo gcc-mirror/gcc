@@ -1,3 +1,8 @@
+2005-07-15  Jan Hubicka  <jh@suse.cz>
+
+	* cfg.c (update_bb_profile_for_threading): More diagnostic.
+	* tree-ssa-threadupdate.c (redirect_edges): Update profile of dup_block.
+
 2005-07-15  Richard Guenther  <rguenther@suse.de>
 
 	* c-common.c (handle_flatten_attribute): New function.

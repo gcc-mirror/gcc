@@ -850,7 +850,12 @@ update_bb_profile_for_threading (basic_block bb, int edge_frequency,
 
   bb->count -= count;
   if (bb->count < 0)
-    bb->count = 0;
+    {
+      if (dump_file)
+	fprintf (dump_file, "bb %i count became negative after threading",
+		 bb->index);
+      bb->count = 0;
+    }
 
   /* Compute the probability of TAKEN_EDGE being reached via threaded edge.
      Watch for overflows.  */
@@ -897,7 +902,12 @@ update_bb_profile_for_threading (basic_block bb, int edge_frequency,
   gcc_assert (bb == taken_edge->src);
   taken_edge->count -= count;
   if (taken_edge->count < 0)
-    taken_edge->count = 0;
+    {
+      if (dump_file)
+	fprintf (dump_file, "edge %i->%i count became negative after threading",
+		 taken_edge->src->index, taken_edge->dest->index);
+      taken_edge->count = 0;
+    }
 }
 
 /* Multiply all frequencies of basic blocks in array BBS of length NBBS
