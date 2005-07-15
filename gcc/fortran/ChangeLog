@@ -1,3 +1,11 @@
+2005-07-15 Paul Brook  <paul@codesourcery.com>
+
+	Backport form mainline.
+	2005-06-22 Paul Brook  <paul@codesourcery.com>
+	PR fortran/21034
+	* symbol.c (gfc_is_var_automatic): New function.
+	(save_symbol): Use it.
+
 2005-07-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.h (MAX_ERROR_MESSAGE): Remove.
