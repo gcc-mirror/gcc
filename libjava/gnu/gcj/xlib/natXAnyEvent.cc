@@ -69,14 +69,11 @@ jboolean gnu::gcj::xlib::XAnyEvent::loadNext(jboolean block)
   int xfd = XConnectionNumber(dpy);
   int pipefd = pipe[0];
   int n = (xfd > pipefd ? xfd : pipefd) + 1;
-  struct timeval timeout;
-  timeout.tv_usec = 100000;  // 100ms timeout
-  timeout.tv_sec = 0;
   fd_set rfds;
   FD_ZERO(&rfds);
   FD_SET(xfd, &rfds);
   FD_SET(pipefd, &rfds);  
-  int sel = _Jv_select (n, &rfds, NULL, NULL, &timeout);
+  int sel = _Jv_select (n, &rfds, NULL, NULL, NULL);
   if (sel > 0)
     {
       if (FD_ISSET(xfd, &rfds))

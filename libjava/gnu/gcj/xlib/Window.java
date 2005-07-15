@@ -73,6 +73,8 @@ public class Window extends Drawable
 
   public native void map();
   public native void unmap();
+  public native void toFront();
+  public native void toBack();
   
   protected boolean owned = false;
 

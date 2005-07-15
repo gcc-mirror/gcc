@@ -522,17 +522,20 @@ public class XGraphicsConfiguration extends GraphicsConfiguration
     };
      */
     
-    float[] normalizedComponents =
-    {
-      ((float)color.getRed ()) / 255F,
-      ((float)color.getGreen ()) / 255F,
-      ((float)color.getBlue ()) / 255F,
-      1
-    };
     int[] unnormalizedComponents = { 0, 0, 0, 0xff };
     ColorModel cm = getColorModel ();
-    cm.getUnnormalizedComponents(normalizedComponents, 0,
-				 unnormalizedComponents, 0);
+    if (color != null)
+    {
+      float[] normalizedComponents =
+      {
+        ((float)color.getRed ()) / 255F,
+        ((float)color.getGreen ()) / 255F,
+        ((float)color.getBlue ()) / 255F,
+        1
+      };
+      cm.getUnnormalizedComponents(normalizedComponents, 0,
+           unnormalizedComponents, 0);
+    }
     return cm.getDataElement (unnormalizedComponents, 0);
   }
 }

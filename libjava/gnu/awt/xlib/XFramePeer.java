@@ -22,7 +22,8 @@ import gnu.gcj.xlib.XConfigureEvent;
 
 public class XFramePeer extends XCanvasPeer implements FramePeer
 {
-
+  private boolean processingConfigureNotify = false;
+  
   public XFramePeer(Frame frame)
   {
     super(frame);
@@ -62,28 +63,24 @@ public class XFramePeer extends XCanvasPeer implements FramePeer
 
   void configureNotify(XConfigureEvent configEvent)
   {
+    processingConfigureNotify = true; // to avoid setBounds flood
     component.setBounds(configEvent.getBounds());
-    
-    /* FIXME: Validation should probably not be done here.  The best
-       strategy is probably to validate on the AWT thread in response
-       to an ComponentEvent.  This will make it possible to coalesce
-       resize validations. */
-    component.validate();
+    processingConfigureNotify = false;
   }
 
   /* Overridden to ignore request to set bounds if the request occurs
-     on the X event loop thread.  It is assumed that all requests that
-     occur on the X event loop thread are results of XConfigureNotify
-     events, in which case the X window already has the desired
-     bounds.  */
+     while processing an XConfigureNotify event, in which case the X
+     window already has the desired bounds.
+     That's what java.awt.Window.setBoundsCallback is for, but it's
+     package-private, and using our own flag eliminates the need to
+     circumvent java security.
+  */
   public void setBounds(int x, int y, int width, int height)
   {
-    if (EventQueue.isDispatchThread())
-      return;
-    
-    super.setBounds(x, y, width, height);
+    if (!processingConfigureNotify)
+      super.setBounds(x, y, width, height);
   }
- 
+  
   // Implementing ContainerPeer:
 
   static final Insets INSETS_0_PROTOTYPE = new Insets(0, 0, 0, 0);
@@ -114,12 +111,12 @@ public class XFramePeer extends XCanvasPeer implements FramePeer
 
   public void toBack()
   {
-    throw new UnsupportedOperationException("not implemented yet");	
+    window.toBack ();	
   }
   
   public void toFront()
   {
-    throw new UnsupportedOperationException("not implemented yet");	
+    window.toFront ();
   }
 
 
