@@ -1,3 +1,8 @@
+2005-07-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/22132
+	* g++.dg/expr/cast4.C: New test.
+
 2005-07-15  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/flatten-1.c: New testcase.
