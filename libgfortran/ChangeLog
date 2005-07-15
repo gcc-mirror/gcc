@@ -1,3 +1,18 @@
+2005-07-15  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	Backport from mainline.
+	PR libfortran/21926
+	PR libfortran/18857
+	* m4/matmul.m4:  Correct zeroing of result for non-packed
+	arrays with lowest stride is one.
+	Remove incorrect assertions (original patch by pault@gcc.gnu.org).
+	* generated/matmul_c4.c:  Regenerated.
+	* generated/matmul_c8.c:  Regenerated.
+	* generated/matmul_i4.c:  Regenerated.
+	* generated/matmul_i8.c:  Regenerated.
+	* generated/matmul_r4.c:  Regenerated.
+	* generated/matmul_r8.c:  Regenerated.
+
 2005-07-14  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	Backport from mainline.
