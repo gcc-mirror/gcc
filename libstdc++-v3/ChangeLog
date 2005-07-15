@@ -1,3 +1,20 @@
+2005-07-15  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/21193 (float, double, long double)
+	* include/tr1/functional (hash<float>, hash<double>):
+	Reimplement exploiting the Fnv_hash<>::hash helper.
+	(hash<long double>): Reimplement using frexp (in this
+	case, due to random padding bits, the former approach
+	is not generally viable).
+
+2005-07-15  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/21193 (string & wstring)
+	* include/tr1/functional (hash<string>, hash<wstring>):
+	Reimplement using the FNV hash.
+
+	* include/tr1/functional: Trivial formatting fixes.
+
 2005-07-11  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/22102

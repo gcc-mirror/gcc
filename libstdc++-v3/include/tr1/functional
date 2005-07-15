@@ -40,6 +40,7 @@
 #include <bits/cpp_type_traits.h>
 #include <string>               // for std::tr1::hash
 #include <cstdlib>              // for std::abort
+#include <cmath>                // for std::frexp
 #include <tr1/tuple>
 
 namespace std
@@ -1090,15 +1091,19 @@ namespace tr1
 #undef _GLIBCXX_JOIN2
 #undef _GLIBCXX_JOIN
 
-// Definition of default hash function std::tr1::hash<>.  The types for
-// which std::tr1::hash<T> is defined is in clause 6.3.3. of the PDTR.
+  // Definition of default hash function std::tr1::hash<>.  The types for
+  // which std::tr1::hash<T> is defined is in clause 6.3.3. of the PDTR.
+  template<typename T>
+    struct hash;
 
-  template <typename T> struct hash;
-
-  #define tr1_hashtable_define_trivial_hash(T)                              \
-    template <> struct hash<T> {                                                    \
-      std::size_t operator()(T val) const { return static_cast<std::size_t>(val); } \
-    }                                                                       \
+#define tr1_hashtable_define_trivial_hash(T)            \
+  template<>                                            \
+    struct hash<T>                                      \
+    {                                                   \
+      std::size_t                                       \
+      operator()(T val) const                           \
+      { return static_cast<std::size_t>(val); }         \
+    }                                                     
 
   tr1_hashtable_define_trivial_hash(bool);
   tr1_hashtable_define_trivial_hash(char);
@@ -1112,52 +1117,152 @@ namespace tr1
   tr1_hashtable_define_trivial_hash(unsigned int);
   tr1_hashtable_define_trivial_hash(unsigned long);
 
-  tr1_hashtable_define_trivial_hash(float);
-  tr1_hashtable_define_trivial_hash(double);
-  tr1_hashtable_define_trivial_hash(long double);
+#undef tr1_hashtable_define_trivial_hash
 
-  #undef tr1_hashtable_define_trivial_hash
+  template<typename T>
+    struct hash<T*>
+    {
+      std::size_t
+      operator()(T* p) const
+      { return reinterpret_cast<std::size_t>(p); }
+    };
 
-  template <typename T>
-    struct hash<T*> {
-      std::size_t operator()(T* p) const {
-        return reinterpret_cast<std::size_t>(p);
+  // Fowler / Noll / Vo (FNV) Hash (type FNV-1a)
+  // (used by the next specializations of std::tr1::hash<>)
+
+  // Dummy generic implementation (for sizeof(size_t) != 4, 8).
+  template<std::size_t = sizeof(std::size_t)>
+    struct Fnv_hash
+    {
+      static std::size_t
+      hash(const char* first, std::size_t length)
+      {
+	std::size_t result = 0;
+	for (; length > 0; --length)
+	  result = (result * 131) + *first++;
+	return result;
       }
     };
 
-  // ??? We can probably find a better hash function than this (i.e. one
-  // that vectorizes better and that produces a more uniform distribution).
+  template<>
+    struct Fnv_hash<4>
+    {
+      static std::size_t
+      hash(const char* first, std::size_t length)
+      {
+	std::size_t result = 2166136261UL;
+	for (; length > 0; --length)
+	  {
+	    result ^= (std::size_t)*first++;
+	    result *= 16777619UL;
+	  }
+	return result;
+      }
+    };
+  
+  template<>
+    struct Fnv_hash<8>
+    {
+      static std::size_t
+      hash(const char* first, std::size_t length)
+      {
+	std::size_t result = 14695981039346656037ULL;
+	for (; length > 0; --length)
+	  {
+	    result ^= (std::size_t)*first++;
+	    result *= 1099511628211ULL;
+	  }
+	return result;
+      }
+    };
 
-  // XXX String hash probably shouldn't be an inline member function,
-  // since it's nontrivial.  Once we have the framework for TR1 .cc
-  // files, this should go in one.
-
-  template <>
+  // XXX String and floating point hashes probably shouldn't be inline
+  // member functions, since are nontrivial.  Once we have the framework
+  // for TR1 .cc files, these should go in one.
+  template<>
     struct hash<std::string>
     {
-      std::size_t operator()(const std::string& s) const
-      {
-        std::size_t result = 0;
-        for (std::string::const_iterator i = s.begin(); i != s.end(); ++i)
-          result = (result * 131) + *i;
-        return result;
-      }
+      std::size_t
+      operator()(const std::string& s) const
+      { return Fnv_hash<>::hash(s.data(), s.length()); }
     };
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  template <>
+  template<>
     struct hash<std::wstring>
     {
-      std::size_t operator()(const std::wstring& s) const
+      std::size_t
+      operator()(const std::wstring& s) const
       {
-        std::size_t result = 0;
-        for (std::wstring::const_iterator i = s.begin(); i != s.end(); ++i)
-          result = (result * 131) + *i;
-        return result;
+	return Fnv_hash<>::hash(reinterpret_cast<const char*>(s.data()),
+				s.length() * sizeof(wchar_t));
       }
     };
 #endif
 
+  template<>
+    struct hash<float>
+    {
+      std::size_t
+      operator()(float fval) const
+      {
+	std::size_t result = 0;
+
+	// 0 and -0 both hash to zero.
+	if (fval != 0.0f)
+	  result = Fnv_hash<>::hash(reinterpret_cast<const char*>(&fval),
+				    sizeof(fval));
+	return result;
+      }
+    };
+
+  template<>
+    struct hash<double>
+    {
+      std::size_t
+      operator()(double dval) const
+      {
+	std::size_t result = 0;
+
+	// 0 and -0 both hash to zero.
+	if (dval != 0.0)
+	  result = Fnv_hash<>::hash(reinterpret_cast<const char*>(&dval),
+				    sizeof(dval));
+	return result;
+      }
+    };
+
+  // For long double, careful with random padding bits (e.g., on x86,
+  // 10 bytes -> 12 bytes) and resort to frexp.
+  template<>
+    struct hash<long double>
+    {
+      std::size_t
+      operator()(long double ldval) const
+      {
+	std::size_t result = 0;
+
+	int exponent;
+	ldval = std::frexp(ldval, &exponent);
+	ldval = ldval < 0.0l ? -(ldval + 0.5l) : ldval;
+
+	const long double mult = std::numeric_limits<std::size_t>::max() + 1.0l;
+	ldval *= mult;
+
+	// Try to use all the bits of the mantissa (really necessary only
+	// on 32-bit targets, at least for 80-bit floating point formats).
+	const std::size_t hibits = (std::size_t)ldval;
+	ldval = (ldval - (long double)hibits) * mult;
+
+	const std::size_t coeff =
+	  (std::numeric_limits<std::size_t>::max()
+	   / std::numeric_limits<long double>::max_exponent);
+
+	result = hibits + (std::size_t)ldval + coeff * exponent;
+
+	return result;
+      }
+    };
 }
 }
 
