@@ -1381,7 +1381,9 @@ rest_of_handle_branch_prob (void)
     flow_loops_dump (&loops, dump_file, NULL, 0);
 
   /* Estimate using heuristics if no profiling info is available.  */
-  if (flag_guess_branch_prob && profile_status == PROFILE_ABSENT)
+  if (flag_guess_branch_prob
+      && (profile_status == PROFILE_ABSENT
+          || (profile_status == PROFILE_READ && !flag_tree_based_profiling)))
     estimate_probability (&loops);
 
   flow_loops_free (&loops);
