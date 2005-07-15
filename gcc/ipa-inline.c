@@ -78,6 +78,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "fibheap.h"
 #include "intl.h"
 #include "tree-pass.h"
+#include "hashtab.h"
 #include "coverage.h"
 #include "ggc.h"
 
@@ -438,6 +439,65 @@ lookup_recursive_calls (struct cgraph_node *node, struct cgraph_node *where,
       lookup_recursive_calls (node, e->callee, heap);
 }
 
+/* Find callgraph nodes closing a circle in the graph.  The
+   resulting hashtab can be used to avoid walking the circles.
+   Uses the cgraph nodes ->aux field which needs to be zero
+   before and will be zero after operation.  */
+
+static void
+cgraph_find_cycles (struct cgraph_node *node, htab_t cycles)
+{
+  struct cgraph_edge *e;
+
+  if (node->aux)
+    {
+      void **slot;
+      slot = htab_find_slot (cycles, node, INSERT);
+      if (!*slot)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Cycle contains %s\n", cgraph_node_name (node));
+	  *slot = node;
+	}
+      return;
+    }
+
+  node->aux = node;
+  for (e = node->callees; e; e = e->next_callee)
+    cgraph_find_cycles (e->callee, cycles); 
+  node->aux = 0;
+}
+
+/* Leafify the cgraph node.  We have to be careful in recursing
+   as to not run endlessly in circles of the callgraph.
+   We do so by using a hashtab of cycle entering nodes as generated
+   by cgraph_find_cycles.  */
+
+static void
+cgraph_flatten_node (struct cgraph_node *node, htab_t cycles)
+{
+  struct cgraph_edge *e;
+
+  for (e = node->callees; e; e = e->next_callee)
+    {
+      /* Inline call, if possible, and recurse.  Be sure we are not
+	 entering callgraph circles here.  */
+      if (e->inline_failed
+	  && e->callee->local.inlinable
+	  && !cgraph_recursive_inlining_p (node, e->callee,
+				  	   &e->inline_failed)
+	  && !htab_find (cycles, e->callee))
+	{
+	  if (dump_file)
+    	    fprintf (dump_file, " inlining %s", cgraph_node_name (e->callee));
+          cgraph_mark_inline_edge (e);
+	  cgraph_flatten_node (e->callee, cycles);
+	}
+      else if (dump_file)
+	fprintf (dump_file, " !inlining %s", cgraph_node_name (e->callee));
+    }
+}
+
 /* Decide on recursive inlining: in the case function has recursive calls,
    inline until body size reaches given argument.  */
 
@@ -768,6 +828,24 @@ cgraph_decide_inlining (void)
       struct cgraph_edge *e, *next;
 
       node = order[i];
+
+      /* Handle nodes to be flattened, but don't update overall unit size.  */
+      if (lookup_attribute ("flatten", DECL_ATTRIBUTES (node->decl)) != NULL)
+        {
+	  int old_overall_insns = overall_insns;
+	  htab_t cycles;
+  	  if (dump_file)
+    	    fprintf (dump_file,
+	     	     "Leafifying %s\n", cgraph_node_name (node));
+	  cycles = htab_create (7, htab_hash_pointer, htab_eq_pointer, NULL);
+	  cgraph_find_cycles (node, cycles);
+	  cgraph_flatten_node (node, cycles);
+	  htab_delete (cycles);
+	  overall_insns = old_overall_insns;
+	  /* We don't need to consider always_inline functions inside the flattened
+	     function anymore.  */
+	  continue;
+        }
 
       if (!node->local.disregard_inline_limits)
 	continue;

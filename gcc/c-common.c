@@ -505,6 +505,7 @@ static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noinline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_always_inline_attribute (tree *, tree, tree, int,
 					    bool *);
+static tree handle_flatten_attribute (tree *, tree, tree, int, bool *);
 static tree handle_used_attribute (tree *, tree, tree, int, bool *);
 static tree handle_unused_attribute (tree *, tree, tree, int, bool *);
 static tree handle_externally_visible_attribute (tree *, tree, tree, int,
@@ -571,6 +572,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_noinline_attribute },
   { "always_inline",          0, 0, true,  false, false,
 			      handle_always_inline_attribute },
+  { "flatten",                0, 0, true,  false, false,
+                              handle_flatten_attribute },
   { "used",                   0, 0, true,  false, false,
 			      handle_used_attribute },
   { "unused",                 0, 0, false, false, false,
@@ -4150,6 +4153,28 @@ handle_always_inline_attribute (tree *node, tree name,
 
   return NULL_TREE;
 }
+
+/* Handle a "flatten" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_flatten_attribute (tree *node, tree name,
+                          tree args ATTRIBUTE_UNUSED,
+                          int flags ATTRIBUTE_UNUSED, bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    /* Do nothing else, just set the attribute.  We'll get at
+       it later with lookup_attribute.  */
+    ;
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 
 /* Handle a "used" attribute; arguments as in
    struct attribute_spec.handler.  */

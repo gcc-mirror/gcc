@@ -1,3 +1,14 @@
+2005-07-15  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.c (handle_flatten_attribute): New function.
+	Add flatten function attribute.
+	* doc/extend.texi: Document flatten function attribute.
+	* Makefile.in (ipa-inline.o): Depend on hashtab.h.
+	* ipa-inline.c (cgraph_find_cycles, cgraph_flatten_node):
+	New functions.
+	(cgraph_decide_inlining): Handle functions with flatten
+	attribute.
+
 2005-07-14  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (UNSPEC_SYNC, UNSPEC_LWSYNC,
