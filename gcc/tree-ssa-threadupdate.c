@@ -609,6 +609,9 @@ redirect_edges (void **slot, void *data)
 	    fprintf (dump_file, "  Threaded jump %d --> %d to %d\n",
 		     e->src->index, e->dest->index, rd->dup_block->index);
 
+	  rd->dup_block->count += e->count;
+	  rd->dup_block->frequency += EDGE_FREQUENCY (e);
+	  EDGE_SUCC (rd->dup_block, 0)->count += e->count;
 	  /* Redirect the incoming edge to the appropriate duplicate
 	     block.  */
 	  e2 = redirect_edge_and_branch (e, rd->dup_block);
