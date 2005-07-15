@@ -1,3 +1,7 @@
+2005-07-15  Eric Christopher  <echristo@redhat.com>
+
+	* MAINTAINERS: Change affiliation.
+
 2005-07-14  Jim Blandy  <jimb@redhat.com>
 
 	* configure.in: Add cases for Renesas m32c.
