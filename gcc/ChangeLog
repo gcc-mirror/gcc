@@ -1,3 +1,11 @@
+2005-07-13  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/22376
+	* tree-ssa-structalias.c (build_constraint_graph): We really meant
+	special var here.
+	(need_to_solve): New function.
+	(compute_points_to_sets): Use it.
+	
 2005-07-15  Jan Hubicka  <jh@suse.cz>
 
 	* cfg.c (update_bb_profile_for_threading): More diagnostic.

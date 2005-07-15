@@ -985,8 +985,8 @@ build_constraint_graph (void)
 	}
       else if (rhs.type == DEREF)
 	{
-	  /* !ANYTHING = *y */
-	  if (lhs.var > anything_id) 
+	  /* !special var= *y */
+	  if (!(get_varinfo (lhs.var)->is_special_var))
 	    insert_into_complex (rhs.var, c);
 	}
       else if (rhs.type == ADDRESSOF)
@@ -3491,6 +3491,38 @@ init_base_vars (void)
   process_constraint (new_constraint (lhs, rhs));
 }  
 
+/* Return true if we actually need to solve the constraint graph in order to
+   get our points-to sets.  This is false when, for example, no addresses are
+   taken other than special vars, or all points-to sets with members already
+   contain the anything variable.  */
+
+static bool
+need_to_solve (void)
+{
+  int i;
+  varinfo_t v;
+  bool found_address_taken = false;
+  bool found_non_anything = false;
+
+  for (i = 0; VEC_iterate (varinfo_t, varmap, i, v); i++)
+    {
+      if (v->is_special_var)
+	continue;
+
+      if (v->address_taken)
+	found_address_taken = true;
+
+      if (v->solution 
+	  && !bitmap_empty_p (v->solution) 
+	  && !bitmap_bit_p (v->solution, anything_id))
+	found_non_anything = true;
+
+      if (found_address_taken && found_non_anything)
+	return true;
+    }
+
+  return false;
+}
 
 /* Create points-to sets for the current function.  See the comments
    at the start of the file for an algorithmic overview.  */
@@ -3541,19 +3573,22 @@ compute_points_to_sets (struct alias_info *ai)
       fprintf (dump_file, "Points-to analysis\n\nConstraints:\n\n");
       dump_constraints (dump_file);
     }
-
-  if (dump_file)
-    fprintf (dump_file, "\nCollapsing static cycles and doing variable "
-	                "substitution:\n");
-
-  find_and_collapse_graph_cycles (graph, false);
-  perform_var_substitution (graph);
-
-  if (dump_file)
-    fprintf (dump_file, "\nSolving graph:\n");
-
-  solve_graph (graph);
-
+  
+  if (need_to_solve ())
+    {
+      if (dump_file)
+	fprintf (dump_file, "\nCollapsing static cycles and doing variable "
+		 "substitution:\n");
+      
+      find_and_collapse_graph_cycles (graph, false);
+      perform_var_substitution (graph);
+      
+      if (dump_file)
+	fprintf (dump_file, "\nSolving graph:\n");
+      
+      solve_graph (graph);
+    }
+  
   if (dump_file)
     dump_sa_points_to_info (dump_file);
   
