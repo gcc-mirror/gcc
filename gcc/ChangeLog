@@ -1,3 +1,47 @@
+2005-07-14  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (UNSPEC_SYNC, UNSPEC_LWSYNC,
+	UNSPEC_ISYNC, UNSPEC_SYNC_OP, UNSPEC_ATOMIC, UNSPEC_CMPXCHG,
+	UNSPEC_XCHG, UNSPEC_AND): New.
+	(UNSPECV_ATOMIC, UNSPECV_SYNC, UNSPECV_SYNC_OP, UNSPECV_CMPXCHG,
+	UNSPECV_LWSYNC, UNSPECV_ISYNC): Delete.
+	* config/rs6000/sync.md (FETCHOP): New code macro.
+	(fetchop_name, fetchop_pred, fetchopsi_constr, fetchopdi_constr):
+	New code attrs.
+	(memory_barrier, sync_internal): Use unspec instead of unspec_volatile.
+	(sync_compare_and_swap<mode>): Same.
+	(sync_lock_test_and_set<mode>): Same.
+	(sync_<fetchop><mode>, sync_nand<mode>): Only use rs6000_emit_sync
+	for QImode and HImode, and not PPC405.
+	(sync_old_<fetchop><mode>, sync_old_nand<mode>): Same.
+	(sync_new_<fetchop><mode>, sync_new_nand<mode>): Same.
+	(sync_<fetchop>{si,di}_internal): New.
+	(sync_nand{si,di}_internal): New.
+	(sync_old_<fetchop>{si,di}_internal): New.
+	(sync_old_nand{si,di}_internal): New
+	(sync_new_<fetchop>{si,di}_internal): New.
+	(sync_new_nand{si,di}_internal): New.
+	(atomic_and{si,di}): New.
+	(sync_new_nand{si,di}_internal): New.
+	(atomic_and{si,di}): New.
+	(sync_add<mode>_internal): Delete.
+	(sync_addshort_internal): Use unspec instead of unspec_volatile.
+	(sync_sub<mode>_internal): Delte.
+	(sync_subshort_internal): New.
+	(sync_andsi_internal): Use unspec instead of unspec_volatile.
+	(sync_anddi_internal): Delete.
+	(sync_boolsi_internal): Use unspec instead of unspec_volatile.
+	(sync_booldi_internal): Delete.
+	(sync_boolc<mode>_internal): Delete.
+	(sync_boolcshort_internal): Use unspec instead of unspec_volatile.
+	(sync_boolc<mode>_internal2): Delete.
+	(sync_boolcc<mode>_internal): Delete.
+	(isync, lwsync): Use unspec instead of unspec_volatile.
+	* config/rs6000/rs6000.c (rs6000_emit_sync): Implement MINUS.
+	Revert UNSPEC_VOLATILE.
+	(rs6000_split_atomic_op): New.
+	* config/rs6000/rs6000-protos.h (rs6000_split_atomic_op): Declare.
+
 2005-07-14  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.c (mips_canonicalize_comparison): Cast

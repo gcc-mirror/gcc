@@ -11560,6 +11560,7 @@ rs6000_emit_sync (enum rtx_code code, enum machine_mode mode,
 	}
       else
 	oldop = lowpart_subreg (SImode, op, mode);
+
       switch (code)
 	{
 	case IOR:
@@ -11578,6 +11579,7 @@ rs6000_emit_sync (enum rtx_code code, enum machine_mode mode,
 	  break;
 
 	case PLUS:
+	case MINUS:
 	  {
 	    rtx mask;
 	    
@@ -11590,8 +11592,11 @@ rs6000_emit_sync (enum rtx_code code, enum machine_mode mode,
 	    emit_move_insn (mask, GEN_INT (imask));
 	    emit_insn (gen_ashlsi3 (mask, mask, shift));
 
-	    newop = gen_rtx_AND (SImode, gen_rtx_PLUS (SImode, m, newop),
-				 mask);
+	    if (code == PLUS)
+	      newop = gen_rtx_PLUS (SImode, m, newop);
+	    else
+	      newop = gen_rtx_MINUS (SImode, m, newop);
+	    newop = gen_rtx_AND (SImode, newop, mask);
 	    newop = gen_rtx_IOR (SImode, newop,
 				 gen_rtx_AND (SImode,
 					      gen_rtx_NOT (SImode, mask),
@@ -11633,7 +11638,8 @@ rs6000_emit_sync (enum rtx_code code, enum machine_mode mode,
 	after = gen_reg_rtx (used_mode);
     }
   
-  if ((code == PLUS || GET_CODE (m) == NOT) && used_mode != mode)
+  if ((code == PLUS || code == MINUS || GET_CODE (m) == NOT)
+      && used_mode != mode)
     the_op = op;  /* Computed above.  */
   else if (GET_CODE (op) == NOT && GET_CODE (m) != NOT)
     the_op = gen_rtx_fmt_ee (code, used_mode, op, m);
@@ -11643,12 +11649,12 @@ rs6000_emit_sync (enum rtx_code code, enum machine_mode mode,
   set_after = gen_rtx_SET (VOIDmode, after, the_op);
   set_before = gen_rtx_SET (VOIDmode, before, used_m);
   set_atomic = gen_rtx_SET (VOIDmode, used_m,
-			    gen_rtx_UNSPEC_VOLATILE (used_mode,
-						     gen_rtvec (1, the_op),
-						     UNSPECV_SYNC_OP));
+			    gen_rtx_UNSPEC (used_mode,
+					    gen_rtvec (1, the_op),
+					    UNSPEC_SYNC_OP));
   cc_scratch = gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (CCmode));
 
-  if (code == PLUS && used_mode != mode)
+  if ((code == PLUS || code == MINUS) && used_mode != mode)
     vec = gen_rtvec (5, set_after, set_before, set_atomic, cc_scratch,
 		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (SImode)));
   else
@@ -11716,10 +11722,53 @@ emit_store_conditional (enum machine_mode mode, rtx res, rtx mem, rtx val)
   else if (mode == DImode)
     fn = gen_store_conditional_di;
 
+  /* Emit sync before stwcx. to address PPC405 Erratum.  */
   if (PPC405_ERRATUM77)
     emit_insn (gen_memory_barrier ());
 
   emit_insn (fn (res, mem, val));
+}
+
+/* Expand an an atomic fetch-and-operate pattern.  CODE is the binary operation
+   to perform.  MEM is the memory on which to operate.  VAL is the second 
+   operand of the binary operator.  BEFORE and AFTER are optional locations to
+   return the value of MEM either before of after the operation.  SCRATCH is
+   a scratch register.  */
+
+void
+rs6000_split_atomic_op (enum rtx_code code, rtx mem, rtx val,
+                       rtx before, rtx after, rtx scratch)
+{
+  enum machine_mode mode = GET_MODE (mem);
+  rtx label, x, cond = gen_rtx_REG (CCmode, CR0_REGNO);
+
+  emit_insn (gen_memory_barrier ());
+
+  label = gen_label_rtx ();
+  emit_label (label);
+  label = gen_rtx_LABEL_REF (VOIDmode, label);
+
+  if (before == NULL_RTX)
+    before = scratch;
+  emit_load_locked (mode, before, mem);
+
+  if (code == NOT)
+    x = gen_rtx_AND (mode, gen_rtx_NOT (mode, before), val);
+  else if (code == AND)
+    x = gen_rtx_UNSPEC (mode, gen_rtvec (2, before, val), UNSPEC_AND);
+  else
+    x = gen_rtx_fmt_ee (code, mode, before, val);
+
+  if (after != NULL_RTX)
+    emit_insn (gen_rtx_SET (VOIDmode, after, copy_rtx (x)));
+  emit_insn (gen_rtx_SET (VOIDmode, scratch, x));
+
+  emit_store_conditional (mode, cond, mem, scratch);
+
+  x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
+  emit_unlikely_jump (x, label);
+
+  emit_insn (gen_isync ());
 }
 
 /* Expand an atomic compare and swap operation.  MEM is the memory on which
