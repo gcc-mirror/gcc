@@ -1,3 +1,8 @@
+2005-07-16  Jan Hubicka  <jh@suse.cz>
+
+	* profile.c (rest_of_handle_branch_prob): Fix handling of estimation
+	after RTL profiling.
+
 2005-07-11  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/22398
