@@ -47,7 +47,6 @@ static tree convert_for_assignment (tree, tree, const char *, tree, int);
 static tree cp_pointer_int_sum (enum tree_code, tree, tree);
 static tree rationalize_conditional_expr (enum tree_code, tree);
 static int comp_ptr_ttypes_real (tree, tree, int);
-static int comp_ptr_ttypes_const (tree, tree);
 static bool comp_except_types (tree, tree, bool);
 static bool comp_array_types (tree, tree, bool);
 static tree common_base_type (tree, tree);
@@ -6369,15 +6368,17 @@ ptr_reasonably_similar (tree to, tree from)
     }
 }
 
-/* Like comp_ptr_ttypes, for const_cast.  */
+/* Return true if TO and FROM (both of which are POINTER_TYPEs or
+   pointer-to-member types) are the same, ignoring cv-qualification at
+   all levels.  */
 
-static int
+bool
 comp_ptr_ttypes_const (tree to, tree from)
 {
   for (; ; to = TREE_TYPE (to), from = TREE_TYPE (from))
     {
       if (TREE_CODE (to) != TREE_CODE (from))
-	return 0;
+	return false;
 
       if (TREE_CODE (from) == OFFSET_TYPE
 	  && same_type_p (TYPE_OFFSET_BASETYPE (from),

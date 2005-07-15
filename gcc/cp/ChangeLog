@@ -1,3 +1,21 @@
+2005-07-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/22132
+	* call.c (implicit_conversion): Add c_cast_p parameter.
+	(standard_conversion): Likewise.  Allow conversions between
+	differently-qualified pointer types when performing a C-style
+	cast.
+	(add_function_candidate): Adjust callee.
+	(build_builtin_candidate): Likewise.
+	(build_user_type_conversion_1): Likewise.
+	(conditional_conversion): Likewise.
+	(can_convert_arg): Likewise.
+	(can_convert_arg_bad): Likewise.
+	(perform_implicit_conversion): Likewise.
+	* cp-tree.h (comp_ptr_ttypes_const): Declare.
+	* typeck.c (comp_ptr_ttypes_const): Give it external linkage.
+	Return bool.
+	
 2005-07-13  Aldy Hernandez  <aldyh@redhat.com>
 
 	* typeck.c (build_binary_op): Adjust error message to something
