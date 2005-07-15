@@ -1,3 +1,8 @@
+2005-07-15  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/22398
+	* gcc.c-torture/compile/pr22398.c: New test.
+
 2005-07-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22132
