@@ -1,3 +1,9 @@
+2005-07-11  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/22398
+	* fold-const.c (build_range_check): Convert high/low to etype
+	if we are only comparing against exp.
+
 2005-07-13  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/22376

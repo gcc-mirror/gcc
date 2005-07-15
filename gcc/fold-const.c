@@ -3943,13 +3943,16 @@ build_range_check (tree type, tree exp, int in_p, tree low, tree high)
     return fold_convert (type, integer_one_node);
 
   if (low == 0)
-    return fold_build2 (LE_EXPR, type, exp, high);
+    return fold_build2 (LE_EXPR, type, exp,
+			fold_convert (etype, high));
 
   if (high == 0)
-    return fold_build2 (GE_EXPR, type, exp, low);
+    return fold_build2 (GE_EXPR, type, exp,
+			fold_convert (etype, low));
 
   if (operand_equal_p (low, high, 0))
-    return fold_build2 (EQ_EXPR, type, exp, low);
+    return fold_build2 (EQ_EXPR, type, exp,
+			fold_convert (etype, low));
 
   if (integer_zerop (low))
     {
