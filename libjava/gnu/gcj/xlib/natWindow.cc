@@ -77,6 +77,20 @@ void gnu::gcj::xlib::Window::setAttributes(WindowAttributes* attributes)
   // no fast fail
 }
 
+void gnu::gcj::xlib::Window::toBack()
+{
+  ::Display* dpy = (::Display*) (display->display);
+  ::Window window = xid;
+  XLowerWindow(dpy, window);
+}
+
+void gnu::gcj::xlib::Window::toFront()
+{
+  ::Display* dpy = (::Display*) (display->display);
+  ::Window window = xid;
+  XRaiseWindow(dpy, window);
+}
+
 void gnu::gcj::xlib::Window::map()
 {
   ::Display* dpy = (::Display*) (display->display);

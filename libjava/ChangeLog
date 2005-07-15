@@ -1,3 +1,39 @@
+2005-07-15  Scott Gilbertson  <scottg@mantatest.com>
+
+	* gnu/awt/xlib/XCanvasPeer.java (attributes): New field.
+	(eventMask): New field.
+	(XCanvasPeer(Component)): Use attributes field.
+	(setBackground): Implemented.
+	(setEventMask): Process mask only if changed.
+	* gnu/awt/xlib/XEventLoop.java (class): Iplement Runnable.
+	(eventLoopThread): New field.
+	(XEventLoop(Display,EventQueue)): Start eventLoopThread.
+	(interrupt): Removed.
+	(run): New method.
+	* gnu/awt/xlib/XEventQueue.java (getNextEvent): Process Container
+	and Component events.
+	* gnu/awt/xlib/XFramePeer.java (processingConfigureNotify): New
+	field.
+	(configureNotify): Set and clear processingConfigureNotify.
+	(setBounds): Process only if processingConfigureNotify is false.
+	(toBack): Implemented.
+	(toFront): Implemented.
+	* gnu/awt/xlib/XGraphics.java (setColor): Ignore null color.
+	* gnu/awt/xlib/XGraphicsConfiguration.java (getPixel): Ignore null
+	color.
+	* gnu/awt/xlib/XToolkit.java (nativeQueueEmpty): Always return true.
+	(wakeNativeQueue): Do nothing.
+	(iterateNativeQueue): Do queue.wait if blocking.
+	* gnu/gcj/xlib/Font.java (loadFont): New method.
+	(loadFontImpl): Renamed native method, was loadFont. 
+	* gnu/gcj/xlib/Window.java (toFront): New method.
+	(toBack): New method.
+	* gnu/gcj/xlib/natFont.cc (loadFontImpl): Renamed method, was 
+	loadFont.
+	* gnu/gcj/xlib/natWindow.cc (toBack): New method.
+	(toFront): New method. 
+	* gnu/gcj/xlib/natXAnyEvent.cc (loadNext): Removed timeout.
+
 2005-07-14  Andrew Haley  <aph@redhat.com>
 
         * gnu/java/net/protocol/file/Connection.java (unquote): New

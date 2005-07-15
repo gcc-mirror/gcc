@@ -445,13 +445,16 @@ public class XToolkit extends ClasspathToolkit
   }
 
   public boolean nativeQueueEmpty() 
-  { 
-    return eventLoop.isIdle(); 
+  {
+    // Tell EventQueue the native queue is empty, because XEventLoop
+    // separately ensures that native events are posted to AWT.
+    return true;
   }
 
   public void wakeNativeQueue() 
   {
-    eventLoop.interrupt();
+    // Not implemented, because the native queue is always awake.
+    // (i.e. it's polled in a thread separate from the AWT dispatch thread)
   }
 
   /** Checks the native event queue for events.  If blocking, waits until an
@@ -464,6 +467,18 @@ public class XToolkit extends ClasspathToolkit
    */
   public void iterateNativeQueue(java.awt.EventQueue locked, boolean block) 
   {
-    eventLoop.postNextEvent(block);
-  }
+    // There is nothing to do here except block, because XEventLoop 
+    // iterates the queue in a dedicated thread.
+    if (block)
+    {
+      try
+      {
+        queue.wait ();
+      }
+      catch (InterruptedException ie)
+      {
+        // InterruptedException intentionally ignored
+      }
+    }
+  }; 
 }

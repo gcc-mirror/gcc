@@ -16,7 +16,7 @@ details.  */
 #include <gnu/gcj/xlib/Font.h>
 #include <gnu/gcj/xlib/XException.h>
 
-gnu::gcj::RawData* gnu::gcj::xlib::Font::loadFont(Display* display,
+gnu::gcj::RawData* gnu::gcj::xlib::Font::loadFontImpl(Display* display,
 						  jstring lfdNamePattern)
 {
   ::Display* dpy = (::Display*) display->display;
