@@ -1,0 +1,251 @@
+/* include/config.h.in.  Generated from configure.ac by autoheader.  */
+
+/* 1234 = LIL_ENDIAN, 4321 = BIGENDIAN */
+#undef BYTEORDER
+
+/* Define to 1 if you want native library runtime debugging code enabled */
+#undef DEBUG
+
+/* defined if cairo support was built in */
+#undef GTK_CAIRO
+
+/* Define to 1 if you have the `accept' function. */
+#undef HAVE_ACCEPT
+
+/* Define to 1 if you have the <asm/ioctls.h> header file. */
+#undef HAVE_ASM_IOCTLS_H
+
+/* Define to 1 if you have the `bind' function. */
+#undef HAVE_BIND
+
+/* Define to 1 if you have BSD u_int32_t */
+#undef HAVE_BSD_INT32_DEFINED
+
+/* Define to 1 if you have the `close' function. */
+#undef HAVE_CLOSE
+
+/* Define to 1 if you have the `connect' function. */
+#undef HAVE_CONNECT
+
+/* Define to 1 if you have the <crt_externs.h> header file. */
+#undef HAVE_CRT_EXTERNS_H
+
+/* Define to 1 if you have the `execve' function. */
+#undef HAVE_EXECVE
+
+/* Define to 1 if you have the `fcntl' function. */
+#undef HAVE_FCNTL
+
+/* Define to 1 if you have the <fcntl.h> header file. */
+#undef HAVE_FCNTL_H
+
+/* Define to 1 if you have the `fork' function. */
+#undef HAVE_FORK
+
+/* Define to 1 if you have the `fstat' function. */
+#undef HAVE_FSTAT
+
+/* Define to 1 if you have the `fsync' function. */
+#undef HAVE_FSYNC
+
+/* Define to 1 if you have the `ftruncate' function. */
+#undef HAVE_FTRUNCATE
+
+/* Define to 1 if you have the `gethostname' function. */
+#undef HAVE_GETHOSTNAME
+
+/* Define to 1 if you have the `getpeername' function. */
+#undef HAVE_GETPEERNAME
+
+/* Define to 1 if you have the `getsockname' function. */
+#undef HAVE_GETSOCKNAME
+
+/* Define to 1 if you have the `getsockopt' function. */
+#undef HAVE_GETSOCKOPT
+
+/* Define to 1 if you have the `htonl' function. */
+#undef HAVE_HTONL
+
+/* Define to 1 if you have the `htons' function. */
+#undef HAVE_HTONS
+
+/* Define if you have the iconv() function. */
+#undef HAVE_ICONV
+
+/* Define to 1 if you have uint32_t */
+#undef HAVE_INT32_DEFINED
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the `listen' function. */
+#undef HAVE_LISTEN
+
+/* Define to 1 if you have the `localtime_r' function. */
+#undef HAVE_LOCALTIME_R
+
+/* Define to 1 if you have the `lseek' function. */
+#undef HAVE_LSEEK
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the `memset' function. */
+#undef HAVE_MEMSET
+
+/* Define to 1 if you have the `mktime' function. */
+#undef HAVE_MKTIME
+
+/* Define to 1 if you have the `open' function. */
+#undef HAVE_OPEN
+
+/* Define to 1 if you have the `pipe' function. */
+#undef HAVE_PIPE
+
+/* Define to 1 if you have the `read' function. */
+#undef HAVE_READ
+
+/* Define to 1 if you have the `recvfrom' function. */
+#undef HAVE_RECVFROM
+
+/* Define to 1 if you have the `select' function. */
+#undef HAVE_SELECT
+
+/* Define to 1 if you have the `send' function. */
+#undef HAVE_SEND
+
+/* Define to 1 if you have the `sendto' function. */
+#undef HAVE_SENDTO
+
+/* Define to 1 if you have the `setsockopt' function. */
+#undef HAVE_SETSOCKOPT
+
+/* Define to 1 if you have the `socket' function. */
+#undef HAVE_SOCKET
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define to 1 if you have the `strerror' function. */
+#undef HAVE_STRERROR
+
+/* Define to 1 if you have the `strerror_r' function. */
+#undef HAVE_STRERROR_R
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if `tm_zone' is member of `struct tm'. */
+#undef HAVE_STRUCT_TM_TM_ZONE
+
+/* Define to 1 if you have the <sys/config.h> header file. */
+#undef HAVE_SYS_CONFIG_H
+
+/* Define to 1 if you have the <sys/filio.h> header file. */
+#undef HAVE_SYS_FILIO_H
+
+/* Define to 1 if you have the <sys/ioctl.h> header file. */
+#undef HAVE_SYS_IOCTL_H
+
+/* Define to 1 if you have the <sys/select.h> header file. */
+#undef HAVE_SYS_SELECT_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <sys/utime.h> header file. */
+#undef HAVE_SYS_UTIME_H
+
+/* Define to 1 if you have the `time' function. */
+#undef HAVE_TIME
+
+/* Define if global 'timezone' exists. */
+#undef HAVE_TIMEZONE
+
+/* Define to 1 if your `struct tm' has `tm_zone'. Deprecated, use
+   `HAVE_STRUCT_TM_TM_ZONE' instead. */
+#undef HAVE_TM_ZONE
+
+/* Define to 1 if you don't have `tm_zone' but do have the external array
+   `tzname'. */
+#undef HAVE_TZNAME
+
+/* Define if your platform has the global _timezone variable. */
+#undef HAVE_UNDERSCORE_TIMEZONE
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the <utime.h> header file. */
+#undef HAVE_UTIME_H
+
+/* Define to 1 if you have the `write' function. */
+#undef HAVE_WRITE
+
+/* Define if the host machine stores words of multi-word integers in
+   big-endian order. */
+#undef HOST_WORDS_BIG_ENDIAN
+
+/* Define as const if the declaration of iconv() needs const. */
+#undef ICONV_CONST
+
+/* Name of package */
+#undef PACKAGE
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* Define if you want to synchronize VM threads portably by default; undef
+   otherwise */
+#undef PORTABLE_NATIVE_SYNC
+
+/* The number of bytes in type void * */
+#undef SIZEOF_VOID_P
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Define if struct tm has tm_gmtoff field. */
+#undef STRUCT_TM_HAS_GMTOFF
+
+/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
+#undef TIME_WITH_SYS_TIME
+
+/* Define to 1 if your <sys/time.h> declares `struct tm'. */
+#undef TM_IN_SYS_TIME
+
+/* Version number of package */
+#undef VERSION
+
+/* whether byteorder is bigendian */
+#undef WORDS_BIGENDIAN
+
+/* Define to 1 if the X Window System is missing or not being used. */
+#undef X_DISPLAY_MISSING
+
+/* Define to empty if `const' does not conform to ANSI C. */
+#undef const
