@@ -1,3 +1,8 @@
+2005-07-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* call.c (diagnostic_fn_t): New.
+	(build_temp, convert_like_real): Use diagnostic_fn_t.
+
 2005-07-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22204

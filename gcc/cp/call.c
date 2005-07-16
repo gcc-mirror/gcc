@@ -194,7 +194,8 @@ static void add_candidates (tree, tree, tree, bool, tree, tree,
 			    int, struct z_candidate **);
 static conversion *merge_conversion_sequences (conversion *, conversion *);
 static bool magic_varargs_p (tree);
-static tree build_temp (tree, tree, int, void (**)(const char *, ...));
+typedef void (*diagnostic_fn_t) (const char *, ...) ATTRIBUTE_GCC_CXXDIAG(1,2);
+static tree build_temp (tree, tree, int, diagnostic_fn_t *);
 static void check_constructor_callable (tree, tree);
 
 /* Returns nonzero iff the destructor name specified in NAME
@@ -4105,7 +4106,7 @@ check_constructor_callable (tree type, tree expr)
 
 static tree
 build_temp (tree expr, tree type, int flags,
-	    void (**diagnostic_fn)(const char *, ...))
+	    diagnostic_fn_t *diagnostic_fn)
 {
   int savew, savee;
 
@@ -4140,7 +4141,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 		   bool c_cast_p)
 {
   tree totype = convs->type;
-  void (*diagnostic_fn)(const char *, ...) ATTRIBUTE_GCC_CXXDIAG(1,2);
+  diagnostic_fn_t diagnostic_fn;
 
   if (convs->bad_p
       && convs->kind != ck_user
