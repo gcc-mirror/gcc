@@ -1,3 +1,8 @@
+2005-07-16  Eric Botcazou <ebotcazou@libertysurf.fr>
+
+	* doc/install.texi (*-*-solaris2*): Document recommended version
+	of GNU binutils and mention GNU linker problem on Solaris 10.
+
 2005-07-16  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/22421
