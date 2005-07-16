@@ -4442,6 +4442,10 @@ digest_init (tree type, tree init, bool strict_string, int require_constant)
 	  inside_init = error_mark_node;
 	}
 
+      /* Added to enable additional -Wmissing-format-attribute warnings.  */
+      if (TREE_CODE (TREE_TYPE (inside_init)) == POINTER_TYPE)
+	inside_init = convert_for_assignment (type, inside_init, ic_init, NULL_TREE,
+					      NULL_TREE, 0);
       return inside_init;
     }
 

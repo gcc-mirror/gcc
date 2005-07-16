@@ -1,3 +1,8 @@
+2005-07-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-typeck.c (digest_init): Call 'convert_for_assignment'
+	before returning.
+
 2005-07-16  Jan Hubicka  <jh@suse.cz>
 
 	* cfg.c (update_bb_profile_for_threading): Fix profile updating.
