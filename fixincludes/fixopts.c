@@ -26,7 +26,7 @@ ENV_TABLE
 #undef _ENV_
 
 void
-initialize_opts ()
+initialize_opts (void)
 {
   static const char var_not_found[] =
 #ifndef __STDC__

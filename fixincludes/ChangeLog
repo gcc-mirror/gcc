@@ -1,3 +1,15 @@
+2005-07-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (WARN_CFLAGS): New.
+	(.c.o): Add $(WARN_CFLAGS).
+	* aclocal.m4: Include ../config/warnings.m4.
+	* configure.ac: Invoke ACX_PROG_CC_WARNING_OPTS,
+	ACX_PROG_CC_WARNING_ALMOST_PEDANTIC and
+	ACX_PROG_CC_WARNINGS_ARE_ERRORS.
+	* fixopts.c (initialize_opts): Fix old-style definintion.
+
+	* configure: Regenerate.
+
 2005-06-24  Geoffrey Keating  <geoffk@geoffk.org>
 
 	* inclhack.def (AAB_darwin7_9_long_double_funcs): New.

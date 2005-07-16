@@ -29,6 +29,7 @@ STAMP = echo timestamp >
 
 CC = @CC@
 CFLAGS = @CFLAGS@
+WARN_CFLAGS = @WARN_CFLAGS@ @WARN_PEDANTIC@ @WERROR@
 LDFLAGS = @LDFLAGS@
 INCLUDES = -I. -I$(srcdir) -I../include -I$(srcdir)/../include
 FIXINC_CFLAGS = -DHAVE_CONFIG_H $(INCLUDES)
@@ -68,7 +69,7 @@ default : all
 # Now figure out from those variables how to compile and link.
 
 .c.o:
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(FIXINC_CFLAGS) $<
+	$(CC) -c $(CFLAGS) $(WARN_CFLAGS) $(CPPFLAGS) $(FIXINC_CFLAGS) $<
 
 # The only suffixes we want for implicit rules are .c and .o.
 .SUFFIXES:
