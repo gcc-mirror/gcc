@@ -896,7 +896,11 @@ update_bb_profile_for_threading (basic_block bb, int edge_frequency,
       int scale = 65536 * REG_BR_PROB_BASE / prob;
 
       FOR_EACH_EDGE (c, ei, bb->succs)
-	c->probability = (c->probability * scale) / 65536;
+	{
+	  c->probability = (c->probability * scale) / 65536;
+	  if (c->probability > REG_BR_PROB_BASE)
+	    c->probability = REG_BR_PROB_BASE;
+	}
     }
 
   gcc_assert (bb == taken_edge->src);
@@ -917,6 +921,10 @@ scale_bbs_frequencies_int (basic_block *bbs, int nbbs, int num, int den)
 {
   int i;
   edge e;
+  if (num < 0)
+    num = 0;
+  if (num > den)
+    return;
   for (i = 0; i < nbbs; i++)
     {
       edge_iterator ei;
