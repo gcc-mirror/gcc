@@ -1,3 +1,9 @@
+2005-07-16  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR fortran/13257
+	* io.c (check_format): Allow an optional comma
+	between descriptors.
+
 2005-07-15 Paul Brook  <paul@codesourcery.com>
 
 	Backport form mainline.

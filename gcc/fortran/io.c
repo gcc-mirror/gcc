@@ -433,6 +433,7 @@ check_format (void)
 format_item:
   /* In this state, the next thing has to be a format item.  */
   t = format_lex ();
+format_item_1:
   switch (t)
     {
     case FMT_POSINT:
@@ -705,8 +706,10 @@ between_desc:
       goto syntax;
 
     default:
-      error = "Missing comma";
-      goto syntax;
+      if (gfc_notify_std (GFC_STD_GNU, "Extension: Missing comma at %C")
+	  == FAILURE)
+	return FAILURE;
+      goto format_item_1;
     }
 
 optional_comma:
