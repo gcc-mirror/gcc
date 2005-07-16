@@ -315,10 +315,21 @@ pp_c_type_specifier (c_pretty_printer *pp, tree t)
     case INTEGER_TYPE:
     case REAL_TYPE:
       if (TYPE_NAME (t))
-        t = TYPE_NAME (t);
+	{
+	  t = TYPE_NAME (t);
+	  pp_c_type_specifier (pp, t);
+	}
       else
-        t = c_common_type_for_mode (TYPE_MODE (t), TYPE_UNSIGNED (t));
-      pp_c_type_specifier (pp, t);
+	{
+	  int prec = TYPE_PRECISION (t);
+	  t = c_common_type_for_mode (TYPE_MODE (t), TYPE_UNSIGNED (t));
+	  pp_c_type_specifier (pp, t);
+	  if (TYPE_PRECISION (t) != prec)
+	    {
+	      pp_string (pp, ":");
+	      pp_decimal_int (pp, prec);
+	    }
+	}
       break;
 
     case TYPE_DECL:
