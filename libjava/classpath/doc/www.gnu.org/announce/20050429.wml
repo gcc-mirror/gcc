@@ -1,0 +1,309 @@
+#!wml --include=..
+
+#use wml::std::page
+#use wml::std::lang
+#use wml::fmt::isolatin
+#use wml::std::case global=upper
+
+<lang:star:slice:>
+
+<set-var last-modified-author="prr">
+
+#include <include/macros.wml>
+
+<header title="GNU Classpath 0.15 Announcement (2005-04-29)"> 
+<pre>
+We are pleased to announce a new developer snapshot release of GNU Classpath.
+
+GNU Classpath, essential libraries for java, is a project to create free
+core class libraries for use with runtimes, compilers and tools for the
+java programming language.
+
+The GNU Classpath developer snapshot releases are not directly aimed
+at the end user but are meant to be integrated into larger development
+platforms. For example the GCC (gcj) and Kaffe projects will use the
+developer snapshots as a base for future versions.
+
+Some highlights of changes in this release (more extensive list below):
+
+Optimized nio and nio.charset plus io streams integration leading to
+large speedups in character stream performance.  To compliment this
+new framework a native iconv based charset provider was added.  Better
+support for free swing metal and pluggable lafs. Some org.omg.CORBA
+support added. Better java.beans support for the Eclipse Visual Editor
+Project. Completely lock free ThreadLocal implementation added. More
+javax.swing.text support for RTF and HTML. More flexible runtime
+interfaces and build configuration options.
+
+26 people actively contributed code to this release and made 299 CVS
+commits during the last two months of development. diffstat since 0.14:
+993 files changed, 74259 insertions(+), 15666 deletions(-)
+More details about the various changes and contributions below.
+
+GNU Classpath 0.15 can be downloaded from
+ftp://ftp.gnu.org/pub/gnu/classpath/
+or one of the ftp.gnu.org mirrors
+http://www.gnu.org/order/ftp.html
+
+File: classpath-0.15.tar.gz
+MD5sum: 036c23aec7cb53a43b7b9dc63a92fbbe
+SHA1sum: 971bdd436b8010ab30096869f689a44d41e5a01c
+
+Included, but not activated by default in this release is a Graphics2D
+implementation based on the Cairo Graphics framework
+(http://www.cairographics.org). Enabling this makes programs like
+JFreeChart work and JEdit start up on GNU Classpath based runtimes.
+To enable this support install the cairo 0.3.0 snapshot, configure
+GNU Classpath with --enable-gtk-cairo and make sure the system
+property gnu.java.awt.peer.gtk.Graphics=Graphics2D is set.
+
+Not yet included is an implementation of Generic collection classes
+and classes for other 1.5 language extensions.  Work on this is being
+done on a special development branch that will be included in a future
+GNU Classpath release when free runtimes, compilers and tools have all
+been upgraded to support these new language features.
+
+One of the major focusses of the GNU Classpath project is expanding
+and using the Mauve test suite for Compatibility, Completeness and
+Correctness checking.  Various groups around GNU Classpath collaborate
+on the free software Mauve test suite which contains more then 27.500
+library tests.  Mauve has various modules for testing core class
+library implementations, byte code verifiers, source to byte code and
+native code compiler tests.  Mauve also contains the Wonka visual test
+suite and the Jacks Compiler Killer Suite. This release passes 27.325
+of the mauve core library tests.
+See for more information: http://sources.redhat.com/mauve/ 
+
+Conformance reports for the included jaxp support can be found in the
+doc/README.jaxp file.
+
+The GNU Classpath developers site http://developer.classpath.org/
+provides detailed information on how to start with helping the GNU
+Classpath project and gives an overview of the core class library
+packages currently provided.  For each snapshot release generated
+documentation is provided through the GNU Classpath Tools gjdoc
+project. A documentation generation framework for java source files
+used by the GNU project. Full documentation on the currently
+implementated packages and classes can be found at:
+http://developer.classpath.org/doc/
+
+
+Here are answers to some questions you might have about this project and
+this release.
+
+1). Who should use this software?
+
+Although GNU Classpath is already capable of supporting many
+applications written in the java programming language, this is a
+development release. As such, there are still some unfinished
+components, and some problems are to be expected. You should install it
+if you are interested in GNU Classpath development or reporting bugs.
+We appreciate both.
+
+For end users we recommend to use one of the development environments
+based on GNU Classpath which combine the core libraries with compilers
+and other tools needed for creating applications and libraries.
+
+    * GCC with GCJ  (http://gcc.gnu.org/java/)
+    * Kaffe         (http://www.kaffe.org/)
+
+Both projects have CVS versions which track GNU Classpath closely.
+
+2). What is required to build/install/run?
+
+GNU Classpath requires a working GNU build environment and a byte code
+compiler such as jikes, gcj or kjc. When creating native code you will
+also need a working C compiler and up to date Gnome development
+libraries (gtk+, libart and gdk-pixbuf). More information on the
+precise version numbers for the tools and libraries can be found in
+the INSTALL file.
+
+You will also need a runtime environment.  Most active GNU Classpath
+hackers use JamVM (http://jamvm.sourceforge.net/) and the gcj or Jikes
+bytecode compiler (http://www.jikes.org) for quick development.  But
+other environments can certainly be used to hack on the GNU Classpath
+core libraries.
+
+For other environments that might need modified version of the current
+release see the README file.  A complete list of virtual machines and
+compilers known to be based on GNU Classpath can be found at our
+website: http://www.gnu.org/software/classpath/stories.html
+
+Note that these are just byte code execution compilers and/or
+runtimes. For development of programs written in the java programming
+language you will also need compilers and other tools for creating
+libraries and/or executables (see question 1).
+
+2). What platforms are supported?
+
+GNU/Linux and FreeBSD on x86 and powerpc are regularly tested by the
+developers.  Since 0.12 there is also support for cygwin.  We plan to
+eventually support many others.  Many more architectures and platforms
+are supported.  Check the actual runtime you use together with GNU
+Classpath for detailed information on the supported platforms.
+
+5). Where do I go for more information?
+
+The project home page with information on our mailing list can be
+found at http://www.gnu.org/software/classpath/
+
+The GNU Classpath developer recently held a conference during Fosdem.
+This was a standing room event and provided lot of communication between
+the GNU Classpath, Kaffe, GCJ, IKVM, Apache, java-gnome and Cacao hackers
+and users. The presentations of this event have been publised and should
+give a good overview of the current status and future plans of the project:
+http://www.gnu.org/software/classpath/events/escape_fosdem05.html
+
+Developers wanting to help out with the project will find more
+information and tools on http://developer.classpath.org/
+
+6). How do I extend the functionality of the core classes?
+
+Besides combining GNU Classpath with the runtimes and compilers above
+you might want to add support for additional encryption libraries and
+algorithms as provided by GNU Crypto
+(http://www.gnu.org/software/gnu-crypto/).  And for additional
+extension libraries (mail, activation, infobus, servlet, etc.) check
+out GNU ClasspathX (http://www.gnu.org/software/classpathx).
+
+Additional network protocol support is provided by a sub-project
+called GNU Classpath Inetlib, an extension library to provide extra
+network protocol support (ftp, finger, gopher) for GNU Classpath, but
+it can also standalone to ease adding http, imap, pop3 and smtp client
+support to applictions. Also distributed from
+<ftp://ftp.gnu.org/gnu/classpath/>
+
+The following projects extend the functionality of GNU Classpath
+with additional algorithms, new core packages and tools.
+All are released under GPL compatible licenses:
+
+* Jessie: A free implementation of the JSSE. Secure Sockets Extension.
+  http://www.nongnu.org/jessie/
+* Tritonus: A implementation of the javax.sound API.
+  http://www.tritonus.org/
+* gcjwebplugin: A plugin for the execution of applets in web browsers.
+  http://www.nongnu.org/gcjwebplugin/
+
+Note that the above libraries might already have been included in the
+various platforms that also integrate GNU Classpath like done by the
+Kaffe project.
+
+6). What is new in this release?
+
+New in release 0.15 (Apr 29, 2005)
+(See the ChangeLog file for a full list of changes.)
+
+* The old character encoding framework (gnu.java.io.EncodingManager)
+has been replaced by a system based completely on nio.charset
+providers. Many converters have been added, both the io, lang and nio
+frameworks now use the same set of converters and the whole character
+stream framework (Readers and Writers) have been optimized. For some
+workloads this leads to 2x till 20x speedups.
+
+The default charsets supported are:
+
+  Cp424, Cp437, Cp737, Cp775, Cp850, Cp852, Cp855, Cp857, Cp860, Cp861,
+  Cp862, Cp863, Cp864, Cp865, Cp866, Cp869, Cp874, ISO_8859_1, ISO_8859_13,
+  ISO_8859_15, ISO_8859_2, ISO_8859_3, ISO_8859_4, ISO_8859_5, ISO_8859_6,
+  ISO_8859_7, ISO_8859_8, ISO_8859_9, KOI_8, MS874, MacCentralEurope,
+  MacCroatian, MacCyrillic, MacDingbat, MacGreek, MacIceland, MacRoman,
+  MacRomania, MacSymbol, MacThai, MacTurkish, US_ASCII, UTF_16, UTF_16BE,
+  UTF_16Decoder, UTF_16Encoder, UTF_16LE, UTF_8, UnicodeLittle, Windows1250,
+  Windows1251, Windows1252, Windows1253, Windows1254, Windows1255,
+  Windows1256, Windows1257, Windows1258.
+
+Many more encoding are supported through the new IconvProvider
+depending on the platform iconv support. GNU libiconv is recommended.
+The IconvProvider is currently not enabled by default. To enable it
+define the system property gnu.classpath.nio.charset.provider.iconv=true.
+Some runtimes might choose to enable this by default by setting it
+through VMSystemProperties. We would like to get feedback on whether
+enabling or disabling the IconvProvider by default results in the
+highest speedups.
+
+* Free swing metal and pluggable look and feels have been improved.
+The GNU Classpath free swing example can now be run with different
+"skins" by setting the system property swing.defaultlaf to the GNU,
+Basic or Metal look and feel.
+
+* Some of the org.omg.CORBA classes and packages have now been
+implemented. The Savannah bug tracker contains additional tasks for
+which we are seeking help.
+
+* Fixed compatibility problems in the java.beans which affected
+Eclipse's Visual Editor Project.
+
+* New completely lock free (Inheritable)ThreadLocal implementation.
+
+* javax.swing.text.rtf framework added which can handle simple (plain)
+text tokens.
+
+* Support for parsing html files into Level 2 Document Object Model
+(org.w3c.dom.html2 and javax.swing.text.html.parser). And a start of
+javax.swing.text.html framework added.
+
+Runtime interface changes:
+
+* jni.h changed to better support compiling runtimes implementing jni;
+  see VM integration guide for details.
+* New --enable-default-toolkit option to configure can be used to set
+  the fully qualified class name of the default AWT toolkit to use.
+  If not given, the old default of gnu.java.awt.peerk.gtk.GtkToolkit
+  is used.
+* New --disable-core-jni option can be used to disable building the
+  "core" JNI libraries.  This is primarily useful if your VM can use the
+  Gtk peers but not the core JNI libraries.
+* New system property "gnu.classpath.boot.library.path" can be specified
+  to define the location of the JNI libraries. It is by all means meant
+  ONLY for VM implementors and GNU Classpath hackers. See the hacking
+  guide for more information.
+* The helper methods currentLoader() and allocateObject() for
+  java.io.ObjectInputStream have been moved to a VMObjectInputStream class.
+  Reference implementations are provided.
+* java.net.InetAddress now uses VMInetAddress for runtime/platform
+  specific methods getLocalHostname(), getHostByAddr() and
+  getHostByName(). java.net.NetworkInterface now uses VMNetworkInterface
+  for runtime/platform specific getInterfaces() support. Default
+  (Posix/GNU JNI) implementations are provided.
+* VMClass has a new method getModifiers(Class, boolean) which can be
+  used to get the real modifiers for an inner class or the ones
+  specified by the InnerClasses attribute.
+* All (possible) runtime specific methods of Object and Double are now
+  in VMObject and VMDouble. Where possible generic reference
+  implementations are provided.
+* The reference implementation of VMClassLoader now handles zip files
+  on the boot loader class path in getResources().
+
+The following people helped with this release:
+
+Andreas Tobler (Security warning fixes, fdlibm merging and cleanups)
+Andrew Haley (FileChannel optimizations)
+Andrew John Hughes (URL/URI, rmi.naming, java.text, Currency and generics)
+Archie Cobbs (RPM spec file, VMClassLoader fixes, jni cleanups)
+Audrius Meskauskas (Lots of corba work, javax.swing.text.html and dom parser)
+Casey Marshall (x509 and asn1/der fixes)
+Chris Burdess (writeUTF optimization, html2 dom support and net protocols)
+Dalibor Topic (FileChannel fixes, kaffe porting)
+David Daney (InetAddress fixes)
+David Gilbert (awt documentation, font fixes)
+Guilhem Lavaux (VMSelector and IndexColorModel fixes)
+Ito Kazumitsu (DecimalFormat parse fixes)
+Jeroen Frijters (nio optimizations, VMClass fixes, ThreadLocal rewrite)
+Luca Barbieri (FileChannel.tryLock fixes)
+Mark Wielaard (cleanups and packaging)
+Michael Franz (OSX testing)
+Michael Koch (VM interface restructuring, libgcj merging, lots of bug fixing)
+Mike Stump (fdlibm ppc64 fixes)
+Olafur Bragason (PipedInputStream bug reporting)
+Patrik Reali (Website maintenance)
+Rei Odaira (VMSelector bug reporting)
+Riccardo Mottola (Darwin6 testing)
+Robert Schuster (java.beans, boot.library.path, jni fixes, mediation work)
+Roman Kennke (Lots of free swing work, MediaTracker and RTF work)
+Sven de Marothy (io, nio and charset optimizations and rewrites)
+Thomas Fitzsimmons (URL, gtk-peers and free swing work)
+Tom Tromey (build and code cleanups, jni merging with libgcj and generics)
+
+</pre>
+
+<footer>

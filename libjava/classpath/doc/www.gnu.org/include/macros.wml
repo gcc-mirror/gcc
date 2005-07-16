@@ -1,0 +1,171 @@
+##
+#
+# Useful macros
+#
+# createlink, footer, news, newsitem, PROJECT-LIST, PROJECT
+#
+
+##
+#
+# commented-code, code-line
+#
+# insert a commented code example in the text
+#
+# tag
+#   commented-code
+# attributes
+#
+# body
+#   a list of code-lines
+#
+# tag
+#   code-line
+# attributes
+#   code
+# body
+#   comment
+#
+<define-tag commented-code endtag=required>
+  <ul>
+  <table cellspacing="0" cellpadding="4">
+  %body
+  </table>
+  </ul>
+</define-tag>
+
+<define-tag code-line endtag=required>
+  <preserve code>
+  <set-var %attributes>
+  <tr><td valign="top"><code><get-var code></code></td><td style="padding-left: 20px;">%body</td></tr>
+  <tr bgcolor="#999999"><td colspan="2"></td></tr>
+  <restore code>
+</define-tag>
+
+
+##
+#
+# createlink
+#
+# create a link (a tag); if no name given, uses url as name
+#
+# tag
+#   createlink
+# attributes
+#   name, url
+#
+
+<define-tag createlink>
+<preserve name>
+<preserve url>
+<set-var %attributes>
+<ifeq <get-var name> "" <set-var name="<get-var url>">>
+<a href="<get-var url>"><get-var name></a>
+<restore url>
+<restore name>
+</define-tag>
+
+##
+#
+# Newslines
+#
+# Use the news and newsitem to create a table with news entries
+#
+<define-tag news endtag=required>
+  <preserve newscount>
+  <preserve __NEWSCNT>
+  <set-var __NEWSCNT=0>
+  <set-var %attributes>
+  <table>
+  %body
+  </table>
+  <restore __NEWSCNT>
+  <restore newscount>
+</define-tag>
+
+<define-tag newsitem endtag=required>
+  <preserve date>
+  <set-var %attributes>
+  <if <lt <get-var __NEWSCNT> <get-var newscount>>
+    "<tr><td><strong><get-var date></strong></td><td>%body</td></tr>"
+  >
+  <increment __NEWSCNT>
+  <restore date>
+</define-tag>
+
+
+##
+#
+# Project table as custom tag, to ensure consistency and
+# simplify layout changes in the table
+#
+# tag: PROJECT-LIST
+# attributes:
+#
+# tag: PROJECT
+# attributes: name url
+#
+
+<define-tag project-list endtag=required>
+  <table border="0" cellpadding="6">
+  %body
+  </table>
+</define-tag>
+
+<define-tag project endtag=required>
+  <preserve name>
+  <preserve url>
+  <set-var %attributes>
+  <tr>
+    <td valign="top"><a href="<get-var url>"><get-var name></a></td>
+    <td>%body</td>
+  </tr>
+  <restore url>
+  <restore name>
+</define-tag>
+
+
+##
+#
+# Page footer
+#
+# tag: footer
+#
+
+
+<define-tag footer>
+<BR><BR>
+<HR>
+<en>
+Return to <A HREF="/home.html">GNU's home page</A>.
+<P>
+
+Please send FSF &amp; GNU inquiries &amp; questions to 
+
+<A HREF="mailto:gnu@gnu.org"><EM>gnu@gnu.org</EM></A>.
+There are also <A HREF="/home.html#ContactInfo">other ways to
+contact</A> the FSF.
+<P>
+
+Please send comments on these web pages to
+
+<A HREF="mailto:webmasters@www.gnu.org"><EM>webmasters@www.gnu.org</EM></A>,
+send other questions to
+<A HREF="mailto:gnu@gnu.org"><EM>gnu@gnu.org</EM></A>.
+<P>
+Copyright (C) 1999-2003 Free Software Foundation, Inc.,
+51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+<P>
+Verbatim copying and distribution of this entire article is
+permitted in any medium, provided this notice is preserved.<P>
+Updated:
+</en>
+$Date: 2005/07/02 20:32:08 $ $Author: mark $
+<!--
+<preserve info>
+<set-var info=<get-file-properties <__file__>>>
+<date <get-var info[2]>> <get-var last-modified-author>
+<restore info>
+-->
+<HR>
+</define-tag>
+

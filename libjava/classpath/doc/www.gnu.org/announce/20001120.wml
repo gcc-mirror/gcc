@@ -1,0 +1,137 @@
+#!wml --include=..
+
+#use wml::std::page
+#use wml::std::lang
+#use wml::fmt::isolatin
+#use wml::std::case global=upper
+
+<lang:new id=en short>
+<lang:star:slice:>
+
+<set-var last-modified-author="cbj">
+
+#include <include/macros.wml>
+
+<header title="<en>GNU Classpath Annoucement (2000-11-20)</en>">
+
+<p>
+<en>
+I am pleased to announce a new development release of GNU Classpath,
+a project to create a free software replacement for Sun's proprietary
+Java class libraries.  The project is initially providing class library
+support for the Japhar JVM.  There are a few other JVMs which have taken
+the project libraries and used them in their own projects as well.
+</en>
+</p>
+<p>
+<en>
+Here are the answers to some questions you might have about this project 
+and this release.
+</en>
+</p>
+<p>
+<en>
+1).  Where can I get it?
+</en>
+</p>
+<p>
+<en>
+GNU Classpath 0.01 can be downloaded from:
+
+<createlink url="ftp://alpha.gnu.org/pub/gnu/classpath/classpath-0.01.tar.gz"
+      name="ftp://alpha.gnu.org/pub/gnu/classpath/classpath-0.01.tar.gz">
+</en>
+</p>
+<p>
+<en>
+2).  What is included?
+</en>
+</p>
+<p>
+<en>
+The following java packages are supported:
+</en>
+</p>
+<UL>
+  <LI>java.beans</LI>
+  <LI>java.io</LI>
+  <LI>java.lang</LI>
+  <LI>java.lang.reflect</LI>
+  <LI>java.math</LI>
+  <LI>java.net</LI>
+  <LI>java.security (partial and non-functioning)</LI>
+  <LI>java.security.acl</LI>
+  <LI>java.security.interfaces</LI>
+  <LI>java.util</LI>
+</UL>
+<p>
+<en>
+This is enough to run many non-awt programs.  Not all classes and
+methods are implemented in this release, but most are.  Many of the
+implemented classes are already up to the Java 1.2 spec.
+</en>
+</p>
+<p>
+<en>
+3).  What is required to build/install/run?
+</en>
+</p>
+<p>
+<en>
+GNU Classpath requires that Japhar 0.09 be installed.  Information on
+obtaining Japhar is available from <createlink url="http://www.hungry.com/old-hungry/products/japhar/"
+name="http://www.hungry.com/old-hungry/products/japhar/">.  A working C compiler is also required.  You
+will need IBM's Jikes Java compiler installed if you elect to
+recompile the Java classes and Sun's 1.1.8 JDK javah installed to
+create native header files.  RPMs compatible with Red Hat 7 have been
+created of Japhar, NSPR, a cross platform thread library Japhar uses,
+and GNU Classpath.  Installing onto a Gnome workstation should
+provide the rest of the required libraries automatically.  Otherwise,
+you may need to install libart and other packages detailed more
+precisely in the HACKING file.
+</en>
+</p>
+<p>
+<en>
+4).  What platforms are supported?
+</en>
+</p>
+<p>
+<en>
+GNU/Linux is the only platform that has been tested.  We plan to 
+eventually support many others.
+</en>
+<p>
+<p>
+<en>
+5).  Who should use this software?
+</en>
+</p>
+<p>
+<en>
+This is a development release only.  You should only install it if you
+are interested in Classpath development or reporting bugs.  We appreciate
+both.  You might also be interested if you enjoy installing random alpha
+software.
+</en>
+</p>
+<p>
+<en>
+6).  Where do I go for more information?
+</en>
+</p>
+<p>
+<en>
+The project has a web page at 
+
+<createlink url="http://www.classpath.org/" name="http://www.classpath.org/">
+
+and
+
+<createlink url="http://www.gnu.org/software/classpath/classpath.html"
+      name="http://www.gnu.org/software/classpath/classpath.html">
+
+Information on our mailing list is available at the web site.
+</en>
+</p>
+<footer>

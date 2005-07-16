@@ -1,0 +1,149 @@
+#!wml --include=..
+
+#include "include/layout.wml"
+
+<set-var last-modified-author="mjw">
+<subject "Escape the Java Trap @ Fosdem 2005">
+
+<box>
+<boxitem>
+<h2>Escape the Java Trap! - GNU Classpath Hacker Room</h2>
+
+<i>Fosdem, Saturday/Sunday 26/27 February 2005, Brussels, Belgium</i>
+<p>
+<b>UPDATE: Presentations are now linked below!</b>
+<p>
+The Fosdem organisation has generously offered the developers of
+various projects around GNU classpath the opportunity to meet face
+to face in their own developer room.
+<p>
+We have brought together a wide range of different speakers from
+various projects that together provide a free software alternative to
+the proprietary java platform. Developers from these various projects
+will come from all over the world to discuss cooperation and to make
+development plans to the next year.
+<p>
+You are very welcome to join us and learn about the IKVM architecture
+and how to freely mix and match traditional java and .net applications
+and libraries, how GNU and Apache developers can and should work
+together, how you can do rapid GNOME desktop development through
+java-gnome, how researchers are using GNU Classpath to do cutting edge
+research into Just In Time compilation, see demonstrations of
+lightning fast native eclipse, learn what will be possible with GNU
+Classpath and GCC 4.0, whether Kaffe will ever release their version
+1.1.5, what we think about compatibility, freedom vs control and
+learn how you can create your own GNU Compiler Collection frontend for
+languages such as the 1.5 java programming language.
+<p>
+Full schedule and abstracts at <a
+href="http://www.fosdem.org/2005/index/dev_room_classpath/schedule">http://www.fosdem.org/2005/index/dev_room_classpath/schedule</a>
+<p>
+</boxitem>
+
+<boxitem>
+  <h3>Saturday 14:00 - 17:00 - "Building Bridges"</h3>
+
+  <p>
+    Reaching out to other communities.
+    How can GNU Classpath, GCC/GCJ and Kaffe hackers
+    learn from and work together with others?
+  </p>
+    <p>
+    <b>14:00 - 14:50</b> <i>Jeroen Frijters</i>
+    <a href="http://www.frijters.net/fosdem2005.sxi">IKVM.NET -- Motivation and Architecture</a> (sxi)
+    </p>
+    <p>
+    <b>15:00 - 15:50</b> <i>Leo Simons</i>
+    <a href="http://www.apache.org/~leosimons/presentations/fosdem2005/gump@fosdem.pdf">Apache Gump -- Continuous integration on steroids</a> (pdf)
+    </p>
+
+    <p>
+    <b>16:00 - 16:50</b> <i>Jeffrey Morgan</i>
+    <a href="http://java-gnome.sourceforge.net/presentations/fosdem05/img0.html">Liberation through Binding! -- Using java-gnome to build desktop applications</a> (html)
+    </p>
+    <p>
+    <b>17:00 - 17:30</b> <i>Christian Thalinger</i>
+    <a href="http://www.complang.tuwien.ac.at/cacaojvm/papers/fosdem2005.ps">CACAO -- From the fastest JIT to a JVM</a> (ps)
+    </p>
+<p>
+</boxitem>
+
+<boxitem>
+  <h3>Sunday 10:00 - 13:00 - "Demo Time!"</h3>
+  <p>
+    Public presentations and overviews of the current state of the
+    GNU Classpath library , GCC/GCJ(X) compiler and Kaffe runtime.
+  </p>
+    <p>
+    <b>10:00 - 10:50</b>
+    <i>Thomas Fitzsimmons</i>
+    <a href="http://people.redhat.com/fitzsim/fosdem-2005/html/fosdem-2005-presentation.html">Free AWT and Swing -- The GUI parts of GNU Classpath</a> (html)
+    (<a href="http://people.redhat.com/fitzsim/fosdem-2005/fosdem-2005-presentation.sxi">sxi</a>)
+    </p>
+    <p>
+    <b>11:00 - 11:50</b>
+    <i>Tom Tromey</i>
+    <a href="http://www.peakpeak.com/~tromey/fosdem-2005.sxi">GCJX -- Writing a new GCC front end</a> (sxi)
+    </p>
+    <p>
+    <b>12:00 - 12:50</b>
+    <i>Dalibor Topic</i>
+    <a href="http://www.kaffe.org/~robilad/kaffe-past-present-future-FOSDEM05.pdf">Kaffe -- Past, Present and Future</a> (pdf)
+    </p>
+<p>
+<boxitem>
+
+<boxitem>
+  <b>Extra (13h15 - 13h30) GCJ & Native Eclipse</b>
+  <p>
+  <i>Bryce McKinlay</i> -- Lightning Talk.
+  GCJ and the Eclipse IDE: desktop application development with Java-gnome.
+  </p>
+<p>
+</boxitem>
+
+<boxitem>
+  <h3>Sunday 14:00 - 17:00 - "The Future"</h3>
+   <p>
+
+   Technical Planning Session
+   <p>
+   This 3 hour session for hackers will consist of:
+   <ul>
+   <li> A general part explaining what is needed.
+   <li> Splitting up in groups to discuss specific topics to
+     solve the problems and make development plans.
+   <li> A short present by each group about the ideas discussed.
+   </ul>
+   <p>
+   Please add ideas and suggestions to the WIKI:
+<a href="http://developer.classpath.org/mediation/Fosdem2005">http://developer.classpath.org/mediation/Fosdem2005</a>
+<p>
+</boxitem>
+
+<boxitem>
+<b>Additional Resources:</b>
+<ul>
+<li><createlink name="Free But Shackled - The Java Trap"
+	url="http://www.gnu.org/philosophy/java-trap.html">
+	(by Richard Stallman)
+</li>
+</ul>
+<p>
+<boxitem>
+
+<boxitem>
+<b>Official links:</b>
+<ul>
+<li><createlink name="FOSDEM Homepage"
+	url="http://www.fosdem.org/">
+</li>
+<li><createlink name="GNU Classpath Room"
+	url="http://www.fosdem.org/2005/index/dev_room_classpath/">
+</li>
+<li><createlink name="GNU Classpath Room Schedule"
+	url="http://www.fosdem.org/2005/index/dev_room_classpath/schedule/">
+</li>
+</ul>
+<boxitem>
+</box>

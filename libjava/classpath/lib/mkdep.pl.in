@@ -1,0 +1,336 @@
+#!@PERL@
+#
+# Create a dependency file for use with make that will
+# a) not have duplicate entries
+# b) not include the source of a file as a dependency to separate file,
+#    just the class of the file
+# c) use jikes .u files
+# d) includes classes which need native compilation via simple parsing
+#    to find native methods requiring use of javah
+
+use strict;
+
+my ( $dir, $dep ) = "";
+my @dirs = ( 'java', 'javax', 'gnu' );
+my ( $depout ) = "makefile.dep";
+my ( $classout ) = "classes.dep";
+my ( $headerout ) = "headers.dep";
+my ( $javaout ) = "java.dep";
+my @deps = ();
+my @natives = ();
+use vars qw ( $classout $headerout @dirs @deps @natives $dir $dep $depout );
+
+# main
+{
+    if ($#ARGV == 0)
+    {
+	if ($ARGV[0] =~ /^-h/)
+	{
+	    findNativeFiles();
+	    writeNativeFile();
+	}
+	elsif ($ARGV[0] =~ /^-d/)
+	{
+	    foreach $dir (@dirs)
+	    {
+		# find all .u files recursively and parse'm
+		findDepFiles($dir);
+	    }
+	    writeDepFile();
+	}
+	elsif ($ARGV[0] =~ /^-c/)
+	{
+	    findClassFiles();
+	    writeClassFile();
+	}
+	elsif ($ARGV[0] =~ /^-j/)
+	{
+	    findJavaFiles();
+	    writeJavaFile();
+	}
+    }
+    else
+    {
+	print "Usage:\n";
+	print "mkdep.pl -h \tfor header files\n";
+	print "mkdep.pl -c \tfor a list of classes\n";
+	print "mkdep.pl -j \tfor a list of java files\n";
+	print "mkdep.pl -d \tfor dependency generation from jikes .u files\n";
+    }
+}
+
+sub writeNativeFile
+{
+    my ($i, $j, $k, $l) = "";
+    my $top_srcdir = "../";
+    if (defined $ENV{'top_srcdir'}) {
+	$top_srcdir = $ENV{'top_srcdir'};
+    }
+    my $top_srcdir_regex = $top_srcdir;
+    if ($top_srcdir_regex !~ /.*\/$/) {
+	$top_srcdir_regex .= '/';
+    }
+    $top_srcdir_regex =~ s/\./\\\./g;   # replace . with \.
+    $top_srcdir_regex =~ s/\//\\\//g;   # replace / with \/
+#    print "regex is $top_srcdir_regex\n";
+    open(MAKEDEP, ">$headerout") || die "Could not open file ", $headerout;
+
+    # the HEADERS = ... stuff
+    if ($#natives > -1)
+    {
+	print MAKEDEP "CP_HEADERS = \\", "\n";
+	foreach $i (0 .. $#natives-1)
+	{
+	    $j = $natives[$i];
+	    $j =~ s/^$top_srcdir_regex//;   # remove ../ or similar
+	    $j =~ s/^(\.\.\/)+//g;          # remove all preceding ../
+	    $j =~ s/^vm\/reference\///;   # remove vm/reference/
+	    $j =~ s/\//_/g;             # replace / with _
+	    $j =~ s/\.java$/\.h/;       # replace .java with .h
+	    print MAKEDEP "          \$(top_builddir)/include/", $j, " \\", "\n";	    
+	}
+	$j = $natives[$#natives];
+	$j =~ s/^$top_srcdir_regex//;   # remove ../
+	$j =~ s/^(\.\.\/)+//g;          # remove all preceding ../
+	$j =~ s/^vm\/reference\///;   # remove vm/reference/
+	$j =~ s/\//_/g;             # replace / with _
+	$j =~ s/\.java/\.h/;        # replace .java with .h
+	print MAKEDEP "          \$(top_builddir)/include/", $j, "\n\n";
+
+	# print rules to make .h files
+	# y/x.h : z/x.class
+	# y/x.h : ../z/x.java
+	#     javah -jni z.x
+	#     mv y_x.h $(top_srcdir)/include
+
+	# j = y/x.h
+	# k = z/x.class
+	# k = ../z/x.java
+	# l = z.x
+	foreach $i (0 .. $#natives-1)
+	{
+	    $j = $natives[$i];
+	    $j =~ s/^$top_srcdir_regex//;   # remove ../
+	    $j =~ s/^(\.\.\/)+//g;          # remove all preceding ../
+	    $j =~ s/^vm\/reference\///;   # remove vm/reference/
+#	    $k = $l = $j;
+	    $l = $j;
+	    $j =~ s/\//_/g;             # replace / with _
+	    $j =~ s/\.java$/\.h/;       # replace .java with .h
+
+            $k = $natives[$i];          # the original .java file
+#	    $k =~ s/\.java$/\.class/;   # replace .java with .class
+
+	    $l =~ s/\.java$//;          # remove .class
+	    $l =~ s/\//\./g;            # replace / with .
+
+	    print MAKEDEP "\$(top_builddir)/include/", $j, " : ", $k, "\n";
+	    print MAKEDEP "\t\$(JAVAH) ", $l, "\n";
+	    print MAKEDEP "\tmv ", $j, " \$(top_builddir)/include\n\n";
+	}
+	$j = $natives[$#natives];
+	$j =~ s/^$top_srcdir_regex//;          # remove ../
+	$j =~ s/^(\.\.\/)+//g;          # remove all preceding ../
+	$j =~ s/^vm\/reference\///; # remove vm/reference/
+#	$k = $l = $j;
+	$l = $j;
+	$j =~ s/\//_/g;             # replace / with _
+	$j =~ s/\.java/\.h/;        # replace .java with .h
+
+        $k = $natives[$#natives];          # the original .java file
+#	$k =~ s/\.java$/\.class/;   # replace .java with .class
+
+	$l =~ s/\.java$//;          # remove .class
+	$l =~ s/\//\./g;            # replace / with .
+
+	print MAKEDEP "\$(top_builddir)/include/", $j, " : ", $k, "\n";
+	print MAKEDEP "\t\$(JAVAH) ", $l, "\n";
+	print MAKEDEP "\tmv ", $j, " \$(top_builddir)/include\n\n";
+    }
+    close(MAKEDEP);
+}
+
+sub writeJavaFile
+{
+    my ($i, $j, $class, $depend, $source, $depend_source) = "";
+
+    open(MAKEDEP, ">$javaout") || die "Could not open file ", $classout;
+
+    # the JAVA_SRCS = ... stuff
+    if ($#natives > -1) 
+    { 
+	print MAKEDEP "JAVA_SRCS = \\", "\n";
+	foreach $i (0 .. $#natives-1)
+	{
+	    $j = $natives[$i];
+	    print MAKEDEP "           ", $j, " \\", "\n"; 
+	}
+	$j = $natives[$#natives];
+	print MAKEDEP "           ", $j, "\n\n";
+    }
+    close(MAKEDEP);
+}
+
+sub writeClassFile
+{
+    my ($i, $j, $class, $depend, $source, $depend_source) = "";
+
+    open(MAKEDEP, ">$classout") || die "Could not open file ", $classout;
+
+    # the CLASSES = ... stuff
+    if ($#natives > -1) 
+    { 
+	print MAKEDEP "CLASSES = \\", "\n";
+	foreach $i (0 .. $#natives-1)
+	{
+	    $j = $natives[$i];
+	    $j =~ s/\.java$/\.class/;
+	    print MAKEDEP "           ", $j, " \\", "\n"; 
+	}
+	$j = $natives[$#natives];
+	$j =~ s/\.java$/\.class/;
+	print MAKEDEP "           ", $j, "\n\n";
+    }
+    close(MAKEDEP);
+}
+
+sub writeDepFile
+{
+    my ($i, $j, $class, $depend, $source, $depend_source) = "";
+
+    open(MAKEDEP, ">$depout") || die "Could not open file ", $depout;
+
+    # the class dependencies
+    foreach $i (@deps)
+    {
+	open(FILE, "<$i") || die "Could not open file ", $i, "\n";
+	while(<FILE>)
+	{
+	    chop;
+	    ($class, $depend) = /(.+) : (.+)$/;
+	    $source = $class;
+	    $source =~ s/\.class$/\.java/;
+	    if (($source eq $depend) || ($depend !~ /\.java$/))
+	    {
+		if ($depend =~ /^\.\.\/.+\.class$/) 
+		{
+		    $depend =~ s/^\.\.\///;
+		}
+		if (($depend =~ /\.java$/) && ($depend !~ /^\.\.\//))
+		{
+		    $depend = "../" . $depend;
+		}
+		print MAKEDEP $class, " : ", $depend, "\n";
+	    } 
+	}
+	print MAKEDEP "\n";
+	close(FILE);
+    }
+    close(MAKEDEP);
+}
+
+sub findJavaFiles
+{
+    my ($file) = "";
+    open(CLASSES, "<classes") || die "Could not open file classes\n";
+    while(<CLASSES>)
+    {
+	chop;
+	$file = $_;
+	push @natives, $file;
+    }
+    close(CLASSES);
+}
+
+sub findClassFiles
+{
+    my ($file) = "";
+    open(CLASSES, "<classes") || die "Could not open file classes\n";
+    while(<CLASSES>)
+    {
+	chop;
+	$file = $_;
+	$file =~ s/^\.\.\///;
+	push @natives, $file;
+    }
+    close(CLASSES);
+}
+
+sub findNativeFiles
+{
+    my ($file) = "";
+    open(CLASSES, "<classes") || die "Could not open file classes\n";
+    while(<CLASSES>)
+    {
+	chop;
+	$file = $_;
+	if (hasNativeMethod($file))
+	{
+	    push @natives, $file;
+	}
+	
+    }
+    close(CLASSES);
+}
+
+sub hasNativeMethod
+{
+    my ($file) = @_;
+    my ($line, $one, $two) = "";
+    open(FILE, "<$file") || die "Could not open file ", $file, "\n";
+    while(<FILE>)
+    {
+	chop;
+	$one = $two;
+	$two = $_;
+
+	$line = $one . " " . $two;
+	if ( ($line =~ /^\s*public\s.*native\s+\S+\s+\S+\s*\(/) ||
+	     ($line =~ /^\s*public\s.*native\s+\S+\s+\S+\s+\S+\s*\(/) ||
+	     ($line =~ /^\s*protected\s.*native\s+\S+\s+\S+\s*\(/) ||
+	     ($line =~ /^\s*protected\s.*native\s+\S+\s+\S+\s+\S+\s*\(/) ||
+	     ($line =~ /^\s*private\s.*native\s+\S+\s+\S+\s*\(/) ||
+	     ($line =~ /^\s*private\s.*native\s+\S+\s+\S+\s+\S+\s*\(/) ||
+	     ($line =~ /^\s*abstract\s.*native\s+\S+\s+\S+\s*\(/) ||
+	     ($line =~ /^\s*final\s.*native\s+\S+\s+\S+\s*\(/) ||
+	     ($line =~ /^\s*synchronized\s.*native\s+\S+\s+\S+\s*\(/) ||
+	     ($line =~ /^\s*native\s.*/) )
+	{
+	    close(FILE);
+	    return 1;
+	}
+    }
+    close(FILE);
+    return 0;
+}
+
+sub findDepFiles
+{
+    
+    my ($dir) = @_;
+    my (@dirs) = ();
+    my (@local_deps) = ();
+    my (@entries) = ();
+    my ($i, $local_dep) = "";
+    if (opendir(DIR, $dir))
+    { 
+      @entries = grep(-d "$dir/$_" && !/^\.\.?$/, readdir(DIR));
+      foreach $i (@entries)
+      {
+      	  push @dirs, "$dir/$i";
+      }
+      rewinddir(DIR);
+      @entries= grep(/\.u$/, readdir(DIR));
+      closedir(DIR);
+      foreach $i (@entries)
+      {
+	  push @local_deps, "$dir/$i";
+      }
+      push @deps, @local_deps;
+      foreach $i (@dirs)
+      {
+	  findDepFiles($i);
+      }
+    }
+}
+

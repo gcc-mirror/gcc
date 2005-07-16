@@ -1,0 +1,28 @@
+#!wml --include=..
+
+#include "include/layout.wml"
+
+<set-var last-modified-author="prk">
+<subject "GNU Classpath Events">
+
+<box>
+<boxitem>
+<strong>Upcoming Events:</strong><br>
+<ul>
+none
+</ul>
+</boxitem>
+
+<boxitem>
+<strong>Past Events:</strong><br>
+<ul>
+<li>[26+27 Feb. 2004] FOSDEM'05 in Brussels, Belgium. [<createlink name="Escape The Java Trap!" url="events/escape_fosdem05.html">]
+<li>[14+15 Oct. 2003] Linux Kongress '03 in Saarbr&uuml;cken, Germany.
+<li>[21+22 Feb. 2004] FOSDEM'04 in Brussels, Belgium. [<createlink name="report" url="events/fosdem04.html">]
+<li>[14+15 Oct. 2003] Linux Kongress '03 in Saarbr&uuml;cken, Germany.
+</ul>
+<br><br><br>
+</boxitem>
+
+
+</box>

@@ -1,0 +1,87 @@
+#! @SH@
+# @configure_input@
+
+# Make sure sorting is done the same on all configurations
+LC_ALL=C; export LC_ALL
+LANG=C; export LANG
+
+echo "Adding java source files from srcdir '@top_srcdir@'."
+@FIND@ @top_srcdir@/java @top_srcdir@/javax @top_srcdir@/gnu \
+       @top_srcdir@/org \
+       @top_srcdir@/external/w3c_dom @top_srcdir@/external/sax \
+       -follow -type f -print | sort | grep '\.java$' \
+       > ${top_builddir}/lib/classes.1
+
+# Generate files for the VM classes.
+: > vm.omit
+: > vm.add
+vm_dirlist=`echo "@vm_classes@" | sed -e 's/:/ /g'`
+echo "Adding java source files from VM directory $vm_dirlist"
+for dir in $vm_dirlist; do
+   (cd $dir
+   for subdir in java javax gnu org; do
+      if test -d $subdir; then
+	 @FIND@ $subdir -name '*.java' -print
+      fi
+   done) |
+   while read f; do
+      echo $dir/$f >> vm.add
+      echo $f >> vm.omit
+   done
+done
+
+# Only include generated files once.
+if test ! "${top_builddir}" -ef "@top_srcdir@"; then
+  echo "Adding generated files in builddir '${top_builddir}'."
+  @FIND@ ${top_builddir}/gnu ${top_builddir}/java -follow -type f -print \
+  | sort | grep '\.java$' >> ${top_builddir}/lib/classes.1
+fi
+
+
+cat @top_srcdir@/lib/$1.omit vm.omit > tmp.omit
+for dir in $vm_dirlist; do
+   if test -f $dir/$1.omit; then
+      cat $dir/$1.omit >> tmp.omit
+   fi
+done
+
+for filexp in `cat tmp.omit`; do
+   grep -v ${filexp} < ${top_builddir}/lib/classes.1 > ${top_builddir}/lib/classes.2
+   mv ${top_builddir}/lib/classes.2 ${top_builddir}/lib/classes.1
+done
+
+
+for dir in $vm_dirlist; do
+   if test -f $dir/$1.omit; then
+      for filexp in `cat $dir/$1.omit`; do
+	 grep -v $filexp < vm.add > vm.add.1
+	 mv vm.add.1 vm.add
+      done
+   fi
+done
+cat vm.add >> classes.1
+
+rm vm.omit
+rm vm.add
+rm tmp.omit
+
+new=
+if test -e ${top_builddir}/lib/classes; then
+  p=`diff ${top_builddir}/lib/classes ${top_builddir}/lib/classes.1`
+  if test "$p" != ""; then
+    new="true"
+    cp ${top_builddir}/lib/classes.1 ${top_builddir}/lib/classes
+  fi
+else
+  new="true"
+  cp ${top_builddir}/lib/classes.1 ${top_builddir}/lib/classes
+fi
+
+if test "$new" = "true"; then
+  echo "JAVA_SRCS = \\" > ${top_builddir}/lib/java.dep
+  for i in `cat ${top_builddir}/lib/classes` ; do
+    echo $i "\\" >> ${top_builddir}/lib/java.dep
+  done
+fi
+
+exit 0

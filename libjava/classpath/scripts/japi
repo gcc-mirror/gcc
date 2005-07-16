@@ -1,0 +1,135 @@
+#!/bin/sh
+
+CLASSPATH_CVS=~/japi/classpath
+JAPIZE_DIR=~/japitools-0.9
+FTPROOT=~alpha/pub/gnu/classpath/nightly/tests
+LOG=/tmp/japi.log
+export PATH=${PATH}:/usr/java/j2sdk1.4.1/bin
+
+rm -f /tmp/japi.log > /dev/null 2>&1
+
+classpath_checkout ()
+{
+  if [ ! -d "${CLASSPATH_CVS}" ]; then
+    mkdir --parents ${CLASSPATH_CVS}
+    local dir=`dirname "${CLASSPATH_CVS}"`
+    cd "${dir}"
+    cvs -z3 -d :pserver:anoncvs@subversions.gnu.org:/cvsroot/classpath co classpath >> ${LOG} 2>/dev/null
+    if [ $? -ne 0 ]; then
+      echo "Error checking out classpath"
+      exit 1
+    fi
+  fi
+}
+
+classpath_update ()
+{
+  cd "${CLASSPATH_CVS}" && cvs update -d -P . >> ${LOG} 2>/dev/null
+  if [ $? -ne 0 ]; then
+    echo "Error checking out classpath"
+    exit 1
+  fi
+}
+
+classpath_clean ()
+{
+  if [ -d "${CLASSPATH_CVS}/build" ]; then
+    rm -rf "${CLASSPATH_CVS}/build"
+  fi
+#  if [ -d "${CLASSPATH_PREFIX}" ]; then
+#    rm -rf "${CLASSPATH_PREFIX}"
+#  fi
+  mkdir --parents "${CLASSPATH_CVS}/build"
+#  mkdir --parents "${CLASSPATH_PREFIX}"
+}
+
+classpath_configure ()
+{
+  cd "${CLASSPATH_CVS}"
+  aclocal >> ${LOG} 2>&1
+  if [ $? -ne 0 ]; then
+    echo "Error running aclocal"
+    exit 1
+  fi
+  autoheader >> ${LOG} 2>&1
+  if [ $? -ne 0 ]; then
+    echo "Error running autoheader"
+    exit 1
+  fi
+  automake >> ${LOG} 2>&1
+  if [ $? -ne 0 ]; then
+    echo "Error running automake"
+    exit 1
+  fi
+  autoconf >> ${LOG} 2>&1
+  if [ $? -ne 0 ]; then
+    echo "Error running autoconf"
+    exit 1
+  fi
+  cd "${CLASSPATH_CVS}/build" && ../configure --with-gcj >> ${LOG} 2>&1
+  if [ $? -ne 0 ]; then
+    echo "Error configuring"
+    exit 1
+  fi
+}
+
+classpath_build ()
+{
+  cd "${CLASSPATH_CVS}/build" && make >> ${LOG} 2>&1
+  if [ $? -ne 0 ]; then
+    echo "Error during make"
+    exit 1
+  fi
+}
+
+
+japize_classpath ()
+{
+  cd "${JAPIZE_DIR}/bin" && ./japize as classpath packages "${CLASSPATH_CVS}/build/lib/glibj.zip" +java +javax +org -java.awt.dnd.peer -java.awt.peer -org.apache -org.w3c.dom.css -org.w3c.dom.events -org.w3c.dom.html -org.w3c.dom.stylesheets -org.w3c.dom.traversal -org.w3c.dom.views -java.text.resources >> /tmp/japi.log 2>&1
+  if [ $? -ne 0 ]; then
+    echo "Error running japize"
+    exit 1
+  fi
+  cp -f "${JAPIZE_DIR}/bin/classpath.japi.gz" /tmp
+}
+
+japicompat_classpath ()
+{
+  today=`date`
+  echo "${today}" > /tmp/classpath-jdk11-compare.txt
+  cd "${JAPIZE_DIR}/bin" && ./japicompat -q jdk11.japi.gz classpath.japi.gz >> /tmp/classpath-jdk11-compare.txt
+  if [ $? -ne 0 ]; then
+    echo "Error running japicompat"
+    exit 1
+  fi
+  echo "${today}" > /tmp/classpath-jdk13-compare.txt
+  cd "${JAPIZE_DIR}/bin" && ./japicompat -q jdk13.japi.gz classpath.japi.gz >> /tmp/classpath-jdk13-compare.txt
+  if [ $? -ne 0 ]; then
+    echo "Error running japicompat"
+    exit 1
+  fi
+}
+
+#--------------------------------------------------------------------
+# Update Classpath CVS
+#--------------------------------------------------------------------
+classpath_checkout
+classpath_update
+
+#--------------------------------------------------------------------
+# Build Classpath with GCJ 3.2
+#--------------------------------------------------------------------
+classpath_clean
+classpath_configure
+classpath_build
+
+#--------------------------------------------------------------------
+# Run japize on glibj.zip
+#--------------------------------------------------------------------
+japize_classpath
+
+#--------------------------------------------------------------------
+# Run japicompat against jdk13
+#--------------------------------------------------------------------
+japicompat_classpath
+

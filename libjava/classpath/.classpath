@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="compat/|examples/|external/|gnu/javax/swing/plaf/|test/|testsuite/|vm/reference/" kind="src" path="">
+		<attributes>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="vm/reference">
+		<attributes>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="external/sax">
+		<attributes>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="external/w3c_dom">
+		<attributes>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="examples">
+		<attributes>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

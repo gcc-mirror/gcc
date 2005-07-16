@@ -1,0 +1,100 @@
+#!wml --include=..
+
+#use wml::std::page
+#use wml::std::lang
+#use wml::fmt::isolatin
+#use wml::std::case global=upper
+
+<lang:new id=en short>
+<lang:star:slice:>
+
+<set-var last-modified-author="<mjw>">
+
+#include <include/macros.wml>
+
+<header title="GNU Classpath and Jikes RVM">
+<en>
+<p>
+</p>
+
+<H4>Steps to use Jikes RVM and GNU Classpath on GNU/Linux</H4>
+<OL>
+  <LI>
+    Install jikes-1.18 on your machine, if you do not already have it.
+    Jikes can be retrieved from <createlink url="http://oss.software.ibm.com/developerworks/opensource/jikes/" name="http://oss.software.ibm.com/developerworks/opensource/jikes/">
+  </LI>
+  <LI>
+    Check out the GNU Classpath head into some directory (hereinafter 
+    called &lt;classpathdir&gt;)
+    <UL>
+      <LI>CVS root for GNU Classpath is :psevser:anoncvs@subversions.gnu.org:/cvsroot/classpath</LI>
+      <LI>Given that root, in &lt;classpathdir&gt; do `cvs checkout classpath'</LI>
+    </UL>
+  </LI>
+  <LI>
+    Build and configure GNU Classpath
+    <UL>
+      <LI>Do the aclocal; autoheader; automake; autoconf thing in &lt;classpathdir&gt;/classpath (see HACKING for details)</LI>
+      <LI>Make a directory '&lt;classpathdir&gt;i686' (i.e. &lt;classpathdir&gt; now contains a 'classpath' and a 'i686')</LI>
+      <LI>In i686, do a '../classpath/configure --enable-jni --with-jikes'</LI>
+      <LI>In i686, do 'make'</LI>
+    </UL>
+    <p>
+      You can, of course, use your own classpath tree if you have one.
+      But you must make an 'i686' directory parallel to the top of your tree,
+      and do configure there as specified above.
+    </p>
+  </LI>
+  <LI>Download Jikes RVM into some directory (hereinafter &lt;rvmroot&gt;)
+    <UL>
+      <LI>:pserver:anoncvs@www-124.ibm.com:/usr/cvs/jikesrvm</LI>
+      <LI>Given that root, in &lt;rvmroot&gt;, do 'cvs checkout rvm'</LI>
+    </UL>
+  </LI>
+  <LI>
+    Edit &lt;rvmroot&gt;/rvm/config/i686-pc-linux.eb to reflect your system.
+    Everything should be fine, except CLASSPATH_SRC, which should become 
+    &lt;classpathdir&gt;
+  </LI>
+  <LI>
+    Set the following environment variables (bash style below, 
+    mutatis mutandum)<br>
+    <pre>
+      export RVM_ROOT=&lt;rvmroot&gt;
+      export RVM_HOST_CONFIG=&lt;rvmroot&gt;/rvm/config/i686-pc-linux.eb
+      export RVM_TARGET_CONFIG=&lt;rvmroot&gt;/rvm/config/i686-pc-linux.eb
+      export RVM_BUILD=&lt;some directory that can be trashed or created&gt;
+      export PATH=&lt;rvmroot&gt;/rvm/bin:${PATH}
+    </pre>
+  </LI>
+  <LI>
+    Build Jikes RVM
+    <UL>
+      <LI>jconfigure -D RVM_WITH_GNU_CLASSPATH=1 BaseBaseSemiSpace</LI>
+      <LI>cd $RVM_BUILD</LI>
+      <LI>./jbuild</LI>
+    </UL>
+  </LI>
+</OL>
+
+<p>
+Many variations are possible.  Be warned that BaseBaseSemiSpace instructs 
+jconfigure to prepare a version of JikesRVM that is slow to run but quick
+to build.  After verifying that that works, you may want to try 
+FastAdaptiveSemiSpace instead (just change the last argument to jconfigure;
+you will probably want to change RVM_BUILD so that the FastAdaptive image 
+does not destroy the BaseBase one).  That will prepare a Jikes RVM version 
+that takes much longer to build (~25 minutes on a fast machine) but will run
+programs much faster.  Also be warned that you currently need rather a 
+lot of memory to build the FastAdaptiveSemiSpace image; recommended at least
+512MB.
+</p>
+<p>
+If you have problems, refer to specific install documentation for each 
+project.  Thank you to Julian Dolby for providing these instructions.
+</p>
+<ul>
+<li><createlink url="http://www-124.ibm.com/developerWorks/opensource/jikesrvm/" name="Jikes RVM"></li>
+</ul>
+</en>
+<footer>

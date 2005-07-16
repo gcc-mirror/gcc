@@ -1,0 +1,51 @@
+#include "include/layout.wml"
+
+<set-var last-modified-author="prk">
+<subject "GNU Classpath Test and Benchmark Page">
+
+<box>
+<boxtitle><a name="testing">Classpath::Testing</a></boxtitle>
+<boxitem>
+<p>
+The test framework for GNU Classpath is called 
+<createlink url="http://sources.redhat.com/mauve/" name="Mauve">.  There 
+are instructions within the Mauve website on how to download and use Mauve.
+Writing Mauve tests is the most important thing GNU Classpath developers
+could do for the project at this time.
+</p>
+<p>
+Java API compatibility testing can be performed using 
+<createlink url="http://www.kaffe.org/~stuart/japi/"
+name="japitools">.  Japitools already does
+full API comparisons but it doesn't have the capability to extract
+APIs from the documentation - instead, the "japize" tool uses the
+jode.bytecode library to identify the public members of a given set of
+packages from the binary jars or zips.  But japitools does separate the
+API-inspection phase ("japize") from the compatibility-testing phase
+("japicompat") so it would be easy to offer an alternative to japize
+that worked on API documentation.
+</p>
+<p>
+Another method of API compatibility testing is to use <createlink
+url="http://majestix.ucnet.uoc.gr/~jgeorgal/pub/jdiff.sh"
+name="jdiff.sh">, at least until this functionality is merged into
+japitools.
+</boxitem>
+
+
+<boxtitle><a name="benchmarks">Classpath::Benchmarks</a></boxtitle>
+<boxitem>
+Many free benchmarks are available. Benchmarks are a good way to test the functionality of a VM and at the same time get results that can be compared.
+
+<table border="0">
+<tr>
+	<th>Name</th><th>Description</th>
+</tr>
+<tr>
+	<td><createlink name="Ashes" url="http://www.sable.mcgill.ca/ashes/"></td>
+	<td>The Ashes benchmark</td>
+</tr>
+</table>
+</boxitem>
+
+</box>

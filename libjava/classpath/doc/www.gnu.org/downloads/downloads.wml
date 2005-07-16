@@ -1,0 +1,211 @@
+#!wml --include=..
+
+#include "include/layout.wml"
+
+##
+#
+# Special Tags
+#
+
+<:
+sub mylink {
+	my ($name, $url) = @_;
+
+	if ($url eq "") {
+		return "not available";
+	} else {
+		return '<a href="$url">$name</a>';
+	}
+}
+:>
+
+<define-tag maybelink>
+	<preserve name>
+	<preserve url>
+	<set-var %attributes>
+	<:{
+		my $name = qq|<get-var name>|;
+		my $url  = qq|<get-var url>|;
+		
+		if ($url eq '') {
+			print "not available";
+		} else {
+			print "<a href=\"$url\">$name</a>";
+		}
+	}:>
+	<restore url>
+	<restore name>
+</define-tag>
+
+<define-tag download-block endtag=required>
+	<div align="center">
+	<table cellspacing="2" cellpadding="4">
+		<tr><th>Version</th><th colspan="2">Links</th></tr>
+		%body
+	</table>
+	</div>
+</define-tag>
+
+<define-tag download>
+	<preserve date>
+	<preserve version>
+	<preserve url>
+	<preserve notes>
+	<set-var %attributes>
+
+	<tr bgcolor="#CCCCCC"> 
+		<td align="center"><strong><get-var version></strong> / <get-var date></td>
+		<td align="center"><maybelink name="download" url="<get-var url>"></td>
+		<td align="center">[ <maybelink name="release notes" url="<get-var notes>"> ]</td>
+	</tr>
+
+	<restore notes>
+	<restore url>
+	<restore version>
+	<restore date>
+</define-tag>
+
+<set-var last-modified-author="prk">
+
+<subject "GNU Classpath Downloads">
+
+<box>
+<boxtitle><a name="downloads">Classpath Downloads::Current Version</a></boxtitle>
+
+<boxitem>
+
+<download-block>
+
+<download
+	date="15 July 2005"
+	version="0.17"
+	url="ftp://ftp.gnu.org/gnu/classpath/classpath-0.17.tar.gz"
+	notes="http://www.gnu.org/software/classpath/announce/20050715.html"
+>
+
+<!-- download
+	date="yesterday"
+	version="tarball"
+	url=""
+	notes=""
+--->
+
+</download-block>
+</boxitem>
+
+
+<boxtitle><a name="downloads">Classpath Downloads::Archive</a></boxtitle>
+
+<boxitem>
+
+<download-block>
+<download
+	date="30 June 2005"
+	version="0.16"
+	url="ftp://ftp.gnu.org/gnu/classpath/classpath-0.16.tar.gz"
+	notes="http://www.gnu.org/software/classpath/announce/20050630.html"
+>
+<download
+	date="29 April 2005"
+	version="0.15"
+	url="ftp://ftp.gnu.org/gnu/classpath/classpath-0.15.tar.gz"
+	notes="http://www.gnu.org/software/classpath/announce/20050429.html"
+>
+<download
+	date="26 February 2005"
+	version="0.14"
+	url="ftp://ftp.gnu.org/gnu/classpath/classpath-0.14.tar.gz"
+	notes="http://www.gnu.org/software/classpath/announce/20050226.html"
+>
+
+<download
+	date="6 January 2005"
+	version="0.13"
+	url="ftp://ftp.gnu.org/gnu/classpath/classpath-0.13.tar.gz"
+	notes="http://www.gnu.org/software/classpath/announce/20050107.html"
+>
+
+<download
+	date="15 November 2004"
+	version="0.12"
+	url="ftp://ftp.gnu.org/gnu/classpath/classpath-0.12.tar.gz"
+	notes="http://www.gnu.org/software/classpath/announce/20041115.html"
+>
+
+<download
+	date="13 September 2004"
+	version="0.11"
+	url="ftp://ftp.gnu.org/gnu/classpath/classpath-0.11.tar.gz"
+	notes="http://www.gnu.org/software/classpath/announce/20040913.html"
+>
+<download
+	date="12 July 2004"
+	version="0.10"
+	url="ftp://ftp.gnu.org/gnu/classpath/classpath-0.10.tar.gz"
+	notes="http://www.gnu.org/software/classpath/announce/20040712.html"
+>
+<download
+	date="02 May 2004"
+	version="0.09"
+	url="ftp://ftp.gnu.org/gnu/classpath/classpath-0.09.tar.gz"
+	notes="http://www.gnu.org/software/classpath/announce/20040502.html"
+>
+<download
+	date="13 Mar. 2004"
+	version="0.08"
+	url="ftp://ftp.gnu.org/gnu/classpath/classpath-0.08.tar.gz"
+>
+<download
+	date="05 Dec. 2003"
+	version="0.07"
+	url="ftp://alpha.gnu.org/gnu/classpath/classpath-0.07.tar.gz"
+>
+
+<download
+	date="09 Sep. 2003"
+	version="0.06"
+	url="ftp://alpha.gnu.org/gnu/classpath/classpath-0.06.tar.gz"
+	notes="http://savannah.gnu.org/forum/forum.php?forum_id=2466"
+>
+
+<download
+	date="16 Feb. 2003"
+	version="0.05"
+	notes="http://mail.gnu.org/archive/html/classpath/2003-02/msg00043.html"
+>
+
+<download
+	date="06 May. 2002"
+	version="0.04"
+	notes="http://mail.gnu.org/archive/html/classpath/2002-05/msg00061.html"
+>
+
+<download
+	date="08 Feb. 2002"
+	version="0.03"
+	notes="downloads/20020208.html"
+>
+
+<download
+	date="06 Jan. 2001"
+	version="0.02"
+	notes="downloads/20010106.html"
+>
+
+<download
+	date="20 Nov. 2000"
+	version="0.01"
+	notes="downloads/20001120.html"
+>
+
+<download
+	date="06 Feb. 1999"
+	version="0.00"
+	notes="downloads/19990206.html"
+>
+
+
+</download-block>
+</boxitem>
+
+</box>

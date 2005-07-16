@@ -1,0 +1,326 @@
+#include "include/layout.wml"
+
+##
+#
+# Special Tags
+#
+
+# <task
+#	title="task title"
+#	contact="contact person"
+#	skills="..."
+#	estimation="..."
+# >
+# ... task description ...
+# </task>
+
+
+
+# the task counter
+#
+<set-var __TASKSEQCNT=1>
+
+<define-tag task-section endtag=required>
+	<preserve name>
+	<set-var %attributes>
+{#TASKINDEX#:
+		<boxitem>
+		<!---boxtitle--->
+		<strong><get-var __TASKSEQCNT>. <get-var name></strong> <br>
+		<!---/boxtitle--->
+:#TASKINDEX#}
+	<boxtitle><get-var __TASKSEQCNT>. <get-var name></boxtitle>
+	<set-var __TASKCNT=1>
+	%body
+{#TASKINDEX#:
+		</boxitem>
+		<br>
+:#TASKINDEX#}
+	<increment __TASKSEQCNT>
+	<restore name>
+</define-tag>
+
+<define-tag task endtag=required>
+<preserve title>
+<preserve contact>
+<preserve skills>
+<preserve estimation>
+<set-var %attributes>
+{#TASKINDEX#:
+	<!---strong--><a href="tasks.html#task<get-var __TASKSEQCNT>_<get-var __TASKCNT>"><get-var __TASKSEQCNT>.<get-var __TASKCNT> <get-var title></a><!---/strong--> (<get-var estimation>)<br>
+:#TASKINDEX#}
+	<boxitem>
+	<h3><a name="task<get-var __TASKSEQCNT>_<get-var __TASKCNT>"><get-var __TASKSEQCNT>.<get-var __TASKCNT> <get-var title></a></h3>
+	<table border="0">
+	<tr><td valign="top"><strong>Description:</strong></td><td>%body</td></tr>
+	<tr><td><strong>Skills:</strong></td><td><get-var skills></td></tr>
+	<tr><td><strong>Estimated time:</strong></td><td><get-var estimation></td></tr>
+	<tr><td><strong>Contact person:</strong></td><td><get-var contact></td></tr>
+	</table>
+	</boxitem>
+<increment __TASKCNT>
+<restore estimation>
+<restore skills>
+<restore contact>
+<restore title>
+
+</define-tag>
+
+
+<define-tag sb>
+	Sascha Brawer
+</define-tag>
+<define-tag mw>
+	Mark Wielaard
+</define-tag>
+<define-tag pr>
+	Patrik Reali
+</define-tag>
+<define-tag cm>
+	Casey Marshall
+</define-tag>
+<define-tag dt>
+	Dalibor Topic
+</define-tag>
+<define-tag mk>
+	Michael Koch
+</define-tag>
+
+<set-var last-modified-author="prk">
+
+<subject "GNU Classpath Tasklist">
+
+<h1>GNU Classpath Tasklist</h1>
+
+<box>
+
+<boxitem>
+This list is a collection of tasks for helping GNU Classpath's progress. They are a good starting point if you would like to help in producing a complete and high-quality free Java implementation.
+
+<p>Another source of inspiration are GNU Classpath's <createlink name="task list" url="http://savannah.gnu.org/pm/?group=classpath"> and <createlink name="patch list" url="http://savannah.gnu.org/patch/?group=classpath"> on Savannah, though these are usually meant for the project members.
+</boxitem>
+
+<boxtitle>Index</boxtitle>
+{#TASKINDEX#}
+
+
+
+<task-section name="Graphics">
+<task
+	title="javax.imageio"
+	estimation="2 weeks"
+	skills=""
+	contact="<sb> or <mk>"
+>
+Write an implementation of the javax.imageio framework.
+</task>
+
+<task
+	title="Constructive Area Geometry"
+	estimation="6 weeks (?)."
+	skills="Computational geometry skills"
+	contact="<sb>"
+>
+Implement java.awt.geom.Area. This would be useful for some
+graphics applications.
+</task>
+
+<task
+	title="Composite Contexts"
+	estimation="2 days for each operator"
+	skills="It helps if you are familiar with the java.awt.image framework."
+	contact="<sb>"
+>
+Implement some CompositeContexts for Porter/Duff operators on raster
+images. This would be useful for supporting 2D graphics. See
+java.awt.AlphaComposite and its createContext method.
+</task>
+
+</task-section>
+
+<task-section name="CORBA">
+<task
+	title="Help with CORBA implementation"
+	estimation="This depends on the sub-task you pick."
+	skills="Know or be ready to read the OMG documentation."
+	contact="Audrius Meskauskas"
+>
+The CORBA implementation in the Classpath project is
+now a working but incomplete prototype. A number of CORBA 
+related tasks are available. If you are not a CORBA expert, you should be ready
+to learn by reading the <createlink name="OMG specifications"
+url="http://www.omg.org/cgi-bin/doc?formal/04-03-12"> and probably by writing some 
+relatively simple classes.
+</task>
+</task-section>
+
+<task-section name="Testing">
+<task
+	title="Make Mauve an application"
+	estimation=""
+	skills=""
+	contact="<pr>"
+>
+On some environments, it is not possible to run shell scripts
+because there is no shell. Make the Mauve test suite a self-contained
+application (one big JAR file).
+</task>
+
+<task
+	title="Write Mauve tests"
+	estimation=""
+	skills=""
+	contact="<mw>"
+>
+Write Mauve tests.
+</task>
+
+<task
+	title="Mauve tests for javax.image.io"
+	estimation="1 week"
+	skills=""
+	contact="<sb>"
+>
+<p>Write Mauve tests for reading in images. You could use the test images
+at libpng.org and write Mauve testlets that load each image from
+a file. Compute a hash (such as SHA-1) over the contents of the
+DataBuffer. If the hash matches, the test succeeds.
+</p><p>
+Note that we don't have javax.imageio yet, so you'd have to develop
+this with the Sun JDK.
+</p>
+</task>
+
+<task
+	title="Generator for Mauve tests"
+	estimation="2 weeks (prototype) + 2 weeks (tuning)"
+	skills=""
+	contact="<dt>"
+>
+Write a program which automatically generates basic Mauve tests.
+
+
+</task>
+
+</task-section>
+
+<task-section name="Automation">
+
+<task
+	title="Script for running regression tests"
+	estimation="1 week"
+	skills="???"
+	contact=""
+>
+Write a script that once a night checks out Classpath from cvs,
+compiles it, runs the Mauve test suite (also from cvs) on it
+using some free JVM (e.g. Kissme), and posts the results to
+some web site. For comparison, it would be very helpful if the
+same Mauve testlets were also run with a current Sun JVM.
+</task>
+
+<task
+	title="Integrate Classpath testsuite into Mauve"
+	estimation=""
+	skills=""
+	contact="<mw>"
+>
+Classpath has a rather small number of tests in the subdirectories
+test/ and testsuite/. Look through these tests and check whether the
+same functionality is already tested by Mauve. If not, write a
+Mauve testlet and submit it to mauve-patches@sources.redhat.com <mailto:mauve-patches@sources.redhat.com>.
+The goal is to remove the test suite from Classpath.
+</task>
+
+
+<task
+	title="Script for running Japitools"
+	estimation="1 week"
+	skills=""
+	contact="???"
+>
+Write a script that once a night checks out Classpath from cvs,
+runs Japitools on it, and posts the results on some web site.
+</task>
+
+<task
+	title="Script for running gjdoc"
+	estimation="1 week"
+	skills=""
+	contact=""
+>
+Write a script that once a night checks out Classpath from cvs,
+runs gjdoc on it, and posts the generated documentation on some
+web site. While you're at it, fix gjdoc so it copies embedded
+documentation images (classpath-tools support request #102205).
+</task>
+
+<task
+	title="JAR file verification"
+	estimation=""
+	skills=""
+	contact="<mw>"
+>
+</task>
+</task-section>
+
+<task-section name="Native stuff">
+
+<task
+	title="Libiconv Service Provider for java.nio.charset"
+	estimation="2 weeks"
+	skills=""
+	contact=""
+>Write a service provider for java.nio.charset that uses the
+libiconv library for converting character encodings to and
+from UTF-16. This would be a first step for replacing
+gnu.java.io.EncodingManager by the java.nio.charset framework,
+which is richer and not specific to Classpath.
+</task>
+</task-section>
+
+<task-section name="Security">
+
+<task
+	title="Security Audit"
+	estimation=""
+	skills=""
+	contact=""
+>We need to make a pass over the Classpath Java source, making sure
+that all required calls to the SecurityManager are in place.  At the same
+time we need to ensure that there is no way to get around
+SecurityManager by directly calling code in gnu.*.
+</task>
+
+<task
+	title="Security Testing"
+	estimation=""
+	skills=""
+	contact=""
+>We need Mauve tests for all the calls to SecurityManager.
+Additionally, enabling a security manager will probably reveal
+code in Classpath that needs to be wrapped in AccessController.doPrivileged().
+</task>
+
+</task-section>
+
+<task-section name="Related Projects">
+<task
+	title="Help GNU Crypto"
+	estimation=""
+	skills=""
+	contact="<cm>"
+>
+</task>
+<task
+	title="Help Classpath-x"
+	estimation=""
+	skills=""
+	contact=""
+>
+??? (maybe this should be more specific, e.g. "Write an
+IMAP plug-in for javax.mail on top of inetlib" (if they want
+this at all)
+</task-section>
+
+</box>

@@ -1,0 +1,597 @@
+<!DOCTYPE html PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<HTML>
+<HEAD>
+<TITLE>GNU texidoclet - GNU Project - Free Software Foundation (FSF)</TITLE>
+<A HREF=""></A>
+</HEAD>
+<BODY BGCOLOR="#ffffff" TEXT="#000000" LINK="#1F00FF" ALINK="#FF0000" VLINK="#9900DD">
+<H1>GNU texidoclet</H1>
+
+<h2>Table Of Contents</h2>
+<ol>
+  </li><li><a href="#Introduction">Introduction</a> 
+
+  <ul>
+    <li><a href="#whatis">What is TexiDoclet?</a> 
+    </li><li><a href="#whyuse">Why use the info format?</a> 
+    </li><li><a href="#howstart">How do I get started?</a> 
+  </li></ul>
+
+  </li><li><a href="#Requirements">Requirements</a> 
+
+  </li><li><a href="#Download">Download</a> 
+
+  </li><li><a href="#Installation">Installation</a> 
+
+  </li><li><a href="#configure">Configure</a> 
+
+  </li><li><a href="#Usage">Usage</a> 
+  </li><li><a href="#Bugs">BUGS</a> 
+  </li><li><a href="#History">History</a> 
+  </li><li><a href="#Todo">TODO</a> 
+  </li>
+</ol>
+
+<hr>
+
+<a name="Introduction"></a> <h2>1. Introduction</h2> 
+
+<h3><a name="whatis"></a>What is GNU TexiDoclet?</h3>
+
+GNU TexiDoclet is a system for creating <b>info</b> pages from Java
+source documentation. It is part of the <a
+href="/software/classpath/">GNU Classpath</a> project, however it can
+also be used as standalone doclet used with any Java-compatible
+platform.
+
+<p>You can use TexiDoclet to create API documentation in <b>info</b>
+format for any set of Java packages (including classpath). The latter
+will reproduce the full Java API documentation for use on text-only
+displays, or for integrating it into the GNU Emacs online help
+facility.  </p><p>TexiDoclet also includes an Elisp package which adds
+context-sensitive help features to GNU Emacs. 
+</p>
+
+<table bgcolor="#cccccc" border="0" cols="1" width="100%">
+  <tbody>
+  <tr>
+    <td><b>Note:</b> This is alpha software. You should not use
+      TexiDoclet in a production environment, because it has not yet
+      been tested for reliability. Also, see <a href="#Bugs">Bugs</a>
+      for a list of currently missing
+      features.</td></tr></tbody></table> <h3><a name="whyuse"></a>Why
+      use the <b>info</b> format?</h3>Although the <b>info</b> format
+      is raw text with nearly no formatting or highlighting, using the
+      <b>info</b> version of the Java API documentation can have a
+      number of advantages even on graphical displays - especially if
+      you are using GNU Emacs:
+
+<ul>
+  <li>Because it is text-only, <b>info</b> is pretty fast. 
+  </li><li>You can easily navigate through <b>info</b> pages using only the keyboard 
+  - which doesn't hold true for most HTML browsers available today, where you 
+  always have to grab the mouse or tab the focus. 
+  </li><li>You can use all the powerful Emacs facilities to browse the documentation 
+  (e.g. incremental search, regular expressions, bookmarks). 
+  </li><li>You can copy documentation fragments (like the definition of a method you 
+  want to overload) easily using the keyboard, again having all Emacs facilities 
+  right at hand, such as the ring buffer. 
+  </li><li>You have no frames in <b>info</b>, but you can use the Speedbar contained 
+  in recent Emacs distributions for the same purpose [not tested as yet].
+  </li></ul>
+
+<h3><a name="howstart"></a>How do I get started?</h3>
+<ul>
+  <li>Check the <a href="#Requirements">Requirements</a> 
+  section and download/install any missing tools. 
+  </li><li><a href="#Download">Download</a> 
+  and <a href="#Installation">unpack</a> 
+  the TexiDoclet package. 
+  </li><li>See section <a href="#configure">Configure</a> 
+  for further instructions. </li></ul>
+
+<h3>Thanks!</h3>
+<p>TexiDoclet was originally written as a standalone doclet by <a
+href="http://savannah.gnu.org/users/julian/">Julian Scheid</a> and was
+contributed to the GNU Project as part of GNU Classpath.</a>
+</p>
+
+
+<hr>
+
+<a name="Requirements"></a>
+
+<h2>2. Requirements</h2>In order to use TexiDoclet, you need the
+following software installed:
+
+<ul>
+  <li>A Java platform 1.2 or better. The intention is to be able have
+  TexiDoclet work first and foremost with <a
+  href="/software/classpath/">GNU Classpath</a> and other completely
+  free toolchains (<em>with <a href="gjdoc.en.html">gjdoc</a> we are
+  99% there!</em>) although it can be used with non-free VMs.</li>
+
+  <li>GNU Make and GNU makeinfo. Note: makeinfo is contained in the GNU
+  texinfo package. </li>
+
+  <li>A Unix environment: 
+  <ul>
+    <li><tt>bash</tt> and the standard commands like <tt>cp</tt> are essential 
+    </li><li><tt>which</tt> and <tt>awk</tt> are required for checking the setup 
+    </li><li><tt>gzip</tt> is used to compress the <b>info</b> pages. </li>
+  </ul>
+  
+<!--
+  </li><li>The Java Community source code, if you want to reproduce
+  documentation for the Java core API. <strong>Note: this is
+  <em>not</em> distributed with TexiDoclet because it is released
+  under a non-free software license, the SCSL, which is incompatible
+  with the GNU GPL.  If you wish to create the Java API documentation
+  you must download and agree to it's terms (we cannot do
+  this).</strong></li>
+-->
+
+  </ul>
+
+  Makeinfo is required to convert the texinfo source into the
+  <b>info</b> format. If you only need the texinfo source, you don't
+  need makeinfo. Unix users will probably find a makeinfo preinstalled
+  on their system.  Windows users can find free precompiled binaries
+  on the Internet (look for the Texinfo package). <br> 
+
+<table bgcolor="#cccccc" border="0" cols="1" width="100%">
+  <tbody>
+  <tr>
+    <td><b>Note:</b> There are some 16-bit makeinfo binaries available online, 
+      but they won't work. You need to look for an up-to-date 32-bit 
+  binary.</td></tr></tbody>
+</table>
+
+<p>GNU Make is required because if you want to generate the full
+standard Java API documentation, each package must be processed
+individually. The Makefile works with patterns to process the packages
+individually and merge the results.</p>
+
+<p>Again, Unix users will find Make preinstalled. Windows users can
+find precompiled binaries on the Internet for free. <br> 
+</p>
+
+<table bgcolor="#cccccc" border="0" cols="1" width="100%">
+  <tbody>
+  <tr>
+      <td><b>Note:</b> Use only GNU Make - you will probably get into
+      trouble if you try to use a different Make tool, because the
+      TexiDoclet Makefile uses some GNU-specific
+      features.</td></tr>
+      </tbody>
+</table>
+
+<!--
+<p>You need the Java community source code if you want to reproduce the full 
+core API documentation. Get it from <a href="http://developer.java.sun.com/">Sun's Java Developer Website</a>. Having 
+the source at hand is generally recommended. <br>  
+</p>
+-->
+
+<table bgcolor="#cccccc" border="0" cols="1" width="100%">
+  <tbody>
+  <tr>
+    <td><b>Tip:</b> Configuring TexiDoclet is much easier if you make sure 
+      that all utilities (including the Java tools) are on your system search 
+      path.</td></tr></tbody></table>
+
+<p>
+TexiDoclet has been tested on the following systems:
+</p><p>
+
+</p><table border="1" cols="3" width="100%">
+  <tbody>
+  <tr>
+    <td><b>Operating System</b></td>
+    <td><b>JDK</b></td>
+    <td><b>Other</b></td></tr>
+
+<!-- Windows untested at the moment
+  <tr>
+    <td>Windows 98</td>
+    <td>Sun JDK 1.3 RC2</td>
+    <td>Cygwin B-20 (GNU bash 2.02.1) <br>GNU Make 3.78.1 <br>GNU makeinfo 
+      1.68 (GNU texinfo 3.12)  <br>GNU Emacs 20.6.1</td>
+ </tr>
+-->
+  <tr>
+    <td>Linux kernel 2.2.16 on Intel / Red Hat 7.0 distribution</td> 
+    <td>Sun JDK 1.2.2</td> 
+
+    <td>GNU bash 2.04.11 <br>GNU Make 3.79.1 <br>GNU makeinfo 4.0
+    <br>GNU Emacs 20.3.1</td></tr>
+
+    <tr>
+    <td>Linux kernel 2.2.9-27mdk / Mandrake distribution 
+    <em>(thanks to Owen Lydiard for the report)</em></td>
+    <td>JDK 1.3</td>
+    <td> GNU make 3.77<br>
+    makeinfo (GNU texinfo) 4.0<br>
+    GNU Emacs 20.3.1</td>
+    </tr>
+
+  <tr>
+
+    <td colspan="3">As of the date of this document, no other
+      configurations have been tested.  If you install TexiDoclet on a
+      different system, be it successful or not, please contact the <a
+      href="http://savannah.gnu.org/project/memberlist.php?group_id=508">developers</a>
+      so that this list can be extended.</td></tr></tbody>
+</table>
+
+
+<h3>3.1 Tool download locations for Windows users [untested]</h3>
+
+<p>Although the present version of TexiDoclet has not been tested on
+Windows, a previous incarnation was working using the following:
+Windows 98 / Sun JDK 1.3 RC2 / Cygwin B-20 (GNU bash 2.02.1) / GNU
+Make 3.78.1 / GNU makeinfo 1.68 (GNU texinfo 3.12) / GNU Emacs
+20.6.1</p>
+
+<p>Here are a few URLs for getting the Windows ports of the required
+software:</p>
+
+<ul>
+<li><a href="http://sourceware.cygnus.com/cygwin/">The Cygwin project</a> offers the most
+    sophisticated port of Unix utilities for free download. Their "full" package 
+    includes a Bash and a full-featured Unix environment (including <tt>grep</tt>, <tt>less</tt>, <tt>awk</tt> and other 
+    useful commands.) With regard to TexiDoclet, only GNU <tt>make</tt> and <tt>makeinfo</tt> 
+    are missing.
+
+</li><li><a href="http://www.tertius.com/projects/library/#cygwin32">tertius.com</a> contains a 
+    link to a Windows port of the texinfo package, 
+    including the required <tt>makeinfo</tt> tool. It also includes a standalone <b>info</b> viewer.
+
+</li>
+
+<li>Refer to the <a
+href="http://www.gnu.org/software/make/make.html">GNU Make
+homepage</a> and to <a
+href="http://ftp.gnu.org/pub/gnu/">http://ftp.gnu.org</a> for
+downloading the GNU Make binaries for Windows.  </li></ul>
+
+<hr> 
+
+<a name="Download"></a>
+
+<a name="Download">
+<h2>3. Download</a></h2>
+
+The old (pre-GNU) version of TexiDoclet is still located at our old
+development site on sourceforge and is available from <a
+href="http://sourceforge.net/project/showfiles.php?group_id=7984">SourceForge</a>.
+This (old) 0.5 version is provided purely as a convenience, and will
+soon be replaced by a new version .  Subsequent releases will be made
+available at via the GNU ftp site (<a
+href="http://ftp.gnu.org/pub/gnu/">http://ftp.gnu.org/pub/gnu/).</a>
+
+<p>The package includes an autoconfiguration system, the full source
+code, and additional Emacs add-ons.  It unpacks into a separate
+directory named "<tt>texidoclet-(version)</tt>".  </p>
+
+<p>If you want to take a look at TexiDoclet's output first, here is a
+<a
+href="http://texidoclet.sf.net/texidoclet-api-info-0.5.tar.gz">sample
+(32 K gzipped tar)</a>.  It's the converted `info' docs for the
+TexiDoclet API (please note that the package name
+<tt>gnu.texidoclet</tt> is now obsoleted by
+<tt>gnu.classpath.tools.doclets.texidoclet</tt>) itself.  [To view run
+the standalone <tt>info</tt> viewer: <tt>info -f
+texidoclet.info</tt>.]
+</p>
+
+<hr> 
+
+<a name="Installation"></a>
+
+<h2>4. Installation</h2>
+
+
+<p><strong>Please note the following instructions relate purely to the
+old 0.5 version of GNU texidoclet, which is currently the only
+release</strong></p>
+
+<p>In order to install TexiDoclet, you should unpack it to a location
+of your choice. TexiDoclet will unpack into a separate subdirectory,
+which contains the following files and directories:</p>
+
+<table>
+  <tbody>
+  <tr>
+    <td><tt>Makefile </tt></td>
+    <td></td>
+    <td>the TexiDoclet main Makefile.</td></tr>
+  <tr>
+    <td><tt>COPYING </tt></td>
+    <td> </td>
+    <td>the GNU public license (Version 2)</td></tr>
+  <tr>
+    <td><tt>etc/ </tt></td> <td></td> 
+
+    <td>contains Makefile template for generating the docs for Sun's
+    code.</td></tr>
+  <tr>
+    <td><tt>lisp/ </tt></td>
+    <td></td>
+    <td>contains add-ons for enabling context-sensitive help in Emacs.</td></tr>
+  <tr>
+    <td><tt>source/ </tt></td>
+    <td></td>
+    <td>contains the full Java source code for TexiDoclet</td></tr>
+</tbody></table>
+
+<p>After you have unpacked the archive, you should configure TexiDoclet as 
+described in the following section, <a href="#configure">Configure</a>.</p>
+
+<hr>
+
+<a name="configure"></a>
+
+<h2>6. Configure</h2>
+
+<p><strong>Please note the following instructions relate purely to the
+old 0.5 version of GNU texidoclet, which is currently the only
+release</strong></p>
+
+[Taken from the <tt>README</tt> file in the distribution]
+
+<pre>
+Installation:
+============
+
+1. The usual GNU autoconf procedure applies: 
+
+   ./configure
+   make
+
+   Read the generic INSTALL file for the details.
+
+2. Extra texidoclet-specific options for `configure':
+
+   `--with-jdkdir=DIR'      
+
+    DIR specifies the location of the JDK (if it's not on the PATH)
+
+   `--with-javadocjar=FILE'  
+
+   Use FILE as jar file with javadoc support.  
+
+3. This will generate the jar file in source/TexiDoclet.jar.  You can
+   choose to run "make install" at this point, although this is not,
+   strictly speaking, necessary.
+
+4.  To see an example of the invocation of TexiDoclet, type "make
+    check".  This will build the `info' docs for texidoclet itself in
+    the "source" subdirectory.
+</pre>
+
+<hr>
+
+<a name="Usage"></a>
+
+<h2>8. Usage</h2>
+
+<p><strong>Please note the following instructions relate purely to the
+old 0.5 version of GNU texidoclet, which is currently the only
+release</strong></p>
+
+[Taken from the <tt>README</tt> file in the distribution]
+
+<pre>
+Usage:
+=====
+
+1.  TexiDoclet now works like any other doclet [Consult
+    http://java.sun.com/j2se/javadoc/ for further information on
+    Javadoc and the Javadoc API], it can be invoked with default
+    options by merely supplying the path the doclet and the doclet
+    invocation class (which is `gnu.texidoclet.Driver'):
+
+javadoc -docletpath TexiDoclet.jar -doclet gnu.texidoclet.Driver &lt;filename&gt; ...
+
+2.  It also accepts all the Standard Sun doclet options, in addition
+    to some TexiDoclet-specific ones, which are listed if you invoke
+    javadoc without any Java source files or packages.  Here are those
+    options:
+
+-d &lt;directory&gt;            Destination directory for output files
+-tocbase         &lt;base&gt;   Prefix for all package-level texi files (default 'packages'
+-indexbase       &lt;base&gt;   Prefix for package index
+-allclassesbase  &lt;base&gt;   Prefix for all class list
+-treebase        &lt;base&gt;   Prefix for tree output
+-etagsname       &lt;base&gt;   Prefix for package etags
+-tocheader       &lt;text&gt;   Header for each texi file
+-tocfooter       &lt;text&gt;   Footer for each texi file
+-copyrightnotice &lt;text&gt;   Copyright information on each texi page
+-wordwrappos     &lt;chars&gt;  Number of columns at which to wrap
+-firstlineindent &lt;chars&gt;  Number of columns to indent
+-includeauthor            Include author information?
+-fulltreealignment &lt;type&gt; 'replace' or null
+-heritagealignment &lt;type&gt; 'replace' or null
+
+    Most of these options are self-explanatory and all have
+    `reasonable' defaults, and are in the process of being more fully
+    documented.
+
+3.  To generate the `info' documentation, invoke `makeinfo' on the
+    resultant `.texi' file.  See the documentation accompanying your
+    texinfo installation for more details.  [Note you can use texinfo
+    to also generate printed and HTML documentation from the `.texi'
+    files, but note that there are more specialised doclets for that
+    purpose].
+</pre>
+
+<hr>
+
+<a name="Bugs"></a>
+
+<h2>7. Bugs</h2>
+
+<p><strong>Please note the following instructions relate purely to the
+old 0.5 version of GNU texidoclet, which is currently the only
+release</strong></p>
+
+[Taken from <tt>BUGS</tt> in the distribution]
+
+<pre>Known Bugs, or "features not yet implemented", in roughly the order
+they will be attacked. New versions of this software implementing all
+or part of the missing features can be expected soon.
+
+* No cross-links for parameter types, return types, and thrown exceptions. 
+
+* No support for {@link}. 
+
+* Not very configurable at the time. 
+
+* Various small improvements on Info page layout pending. 
+
+* Elisp scripts for context sensitive help are preliminary. (Can
+  anyone help me out here? I am new to Lisp and would need some
+  advice.)
+
+* Autoconf support for the Cygnus environment (simply untested at the
+  moment).</pre>
+
+<hr>
+
+<a name="History"></a>
+
+<h2>8. History</h2>
+
+ [Taken from <tt>NEWS</tt> in the distribution]
+
+<pre>
+
+2002-01-24 -- CVS
+
+* now a GNU project (part of classpath)
+* all copyright changed to FSF.
+* distribution now based at http://savannah.gnu.org/projects/cp-tools/
+
+2001-04-02 -- 0.5
+
+* complete overhaul of distribution
+* distribution now based at SourceForge.
+* rewrote Makefile system to use GNU automake/autoconf
+* added a new Driver class to generate the .texi in one pass
+
+2000.04.02 -- 0.4.1  
+
+* features full information - all documentation nodes are implemented 
+* added "implements" information 
+* added post-processing to include information about derived and
+  implementing classes.
+* removed self-reference in heritage tree 
+* improved node reference formatting ("(package) class" instead of
+  "(package)class")
+* added switch to control inclusion of author information
+* added caption to index, all classes, and full tree node 
+* added "abstract" keyword and class prototype to class node 
+* added serialization node 
+* added ability to split the full index into 27 parts (A-Z|_) 
+ (not configurable yet)
+
+2000.04.01 -- 0.3.3
+
+* index is now sorted case-insensitive 
+* major revision of configuration file structure 
+* added preliminary version of inherited fields and methods 
+* took preparations for adding derivation information after generating
+  the texi files.
+
+2000.04.01 -- 0.3.2
+
+* improved front page layout 
+* added copyright messages as requested by Sun Microsystems Inc. so
+  that the core API docs
+* can be distributed in converted format. 
+* removed heritage chart from interfaces 
+* added "extends" line to class node 
+* added @author tag to all nodes 
+
+2000.03.30 -- 0.3.1
+
+* added Interfaces, Exceptions and Errors to package node 
+* fixed bug: bad layout when HTML paragraph ends with &lt;br&gt; 
+* added @deprecated and @since info to all nodes 
+* added support for multiple source paths 
+
+2000.03.29 -- 0.2.1
+
+* fixed bug: class node only displayed first description line. 
+* added @since tag for all nodes. 
+* fixed bug: generated text displayed bogus texi tags. 
+* corrected/finished full tree layout. 
+* fixed bug: field prototype was missing. 
+* &lt;sup&gt; is now translated to ^ (caret) for denoting powers. 
+* Method listing in class node is now sorted. 
+* added "see also" for classes 
+
+2000.03.28 -- 0.1.2
+
+* Source code structure significantly improved. 
+* added "all classes", full index, and full tree. 
+* added preliminary emacs .el-script for context-sensitive help. 
+
+2000.03.27 -- 0.1.1
+
+* Initial non-public pre-alpha release. 
+</pre>
+
+<hr>
+
+<a name="Todo"></a>
+
+<h2>9. TODO</h2>
+
+[Taken from <tt>TODO</tt> in distribution]
+
+<pre>
+* Check bug list. 
+
+* Improve source code documentation and this page.
+
+* Check Speedbar compatibility.
+
+* Look for a way to add a link to the corresponding Java source code
+  into all Info nodes.
+
+* Same for original HTML documentation (using browse-url)
+
+* Perhaps integrate XML/XSL support when it becomes part of the Java
+  standard. Currently, the user would have had to download a package
+  of some MB and install it, if an XML library would have been
+  employed for TexiDoclet.
+</pre>
+
+<BR>
+<HR>
+
+Return to <A HREF="/home.html">GNU's home page</A>.
+<P>
+Please send FSF &amp; GNU inquiries &amp; questions to
+<A HREF="mailto:gnu@gnu.org"><EM>gnu@gnu.org</EM></A>.
+There are also <A HREF="/home.html#ContactInfo">other ways to
+contact</A> the FSF.
+<P>
+Please send comments on these web pages to
+<A HREF="mailto:webmasters@www.gnu.org"><EM>webmasters@www.gnu.org</EM></A>,
+send other questions to
+<A HREF="mailto:gnu@gnu.org"><EM>gnu@gnu.org</EM></A>.
+<P>
+Copyright (C) 1999, 2005 Free Software Foundation, Inc.,
+51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+<P>
+Verbatim copying and distribution of this entire article is
+permitted in any medium, provided this notice is preserved.<P>
+Updated:
+
+$Date: 2005/07/02 20:32:08 $ by $Author: mark $
+<HR>
+</BODY>
+</HTML>

@@ -1,0 +1,1944 @@
+This is an historic file listing changes from the old GNU JAXP project.
+GNU JAXP is now part of GNU Classpath.  New changes to these files are listed
+in the main ChangeLog file or documented in the external subdirectories for
+the w3c dom and sax sources.
+
+2004-12-07  Chris Burdess  <dog@gnu.org>
+
+	* dom: Minor DOM Level 3 Core conformance improvements.
+
+2004-12-07  Mark Wielaard  <mark@klomp.org>
+
+   	* ReaderInputStream.java: Mark and reset implementation.
+   	
+2004-12-06  Chris Burdess  <dog@gnu.org>
+
+	* dom: Minor DOM Level 3 Core conformance improvements.
+
+2004-12-06  Mark Wielaard  <mark@klomp.org>
+
+   	* TransformerImpl.java: Use StreamResult's Writer if no byte stream
+   	is present.
+   	
+2004-12-05  Chris Burdess  <dog@gnu.org>
+
+	* TransformerImpl.java,XSLURIResolver.java: Permit identity
+	transforms with target nodes and null system IDs.
+
+2004-12-04  Dalibor Topic  <robilad@kaffe.org>
+
+   	* ElementAvailableFunction.java,FunctionAvailableFunction.java,
+	KeyFunction.java,SortKey.java,Stylesheet.java,
+	SystemPropertyFunction.java,TransformerImpl.java,XSLComparator.java,
+	NameTest.java,NamespaceTest.java,XPathParser.java,QName.java:
+   	Corrected QName.getLocalName to getLocalPart. Fixed missing imports.
+   	
+2004-12-02  Chris Burdess  <dog@gnu.org>
+
+   	* TransformerImpl.java: Implemented JAXP user output properties.
+   	* TransformerFactoryImpl.java: Implemented getAssociatedStylesheet.
+   	
+2004-12-01  Chris Burdess  <dog@gnu.org>
+
+   	* StreamSerializer.java: Use BOM for UTF-16 output.
+   	* XSLComparator.java: Implemented number data types.
+   	* SortKey.java: Implemented AVTs.
+   	* ApplyImportsNode.java: apply-imports implementation.
+   	
+2004-11-29  Chris Burdess  <dog@gnu.org>
+
+	* ls: Corrections to attribute namespaces.
+	* transform: element-available and function-available functions.
+
+2004-11-29  Chris Burdess  <dog@gnu.org>
+
+   	* transform,xpath: Clone entire stylesheet trees for reuse of
+   	stylesheets in JAXP templates. 
+   	
+2004-11-28  Chris Burdess  <dog@gnu.org>
+
+   	* StreamSerializer.java: Fix typo for disable-output-escaping.
+   	
+2004-11-27  Julian Scheid  <julian@sektor37.de>
+
+	* SubstringFunction.java: Fixed a bug which would copy one character
+   	short if the length is specified explicitly.
+	* TransformerFactory.java,ImplementationSource.java: Load libxmlj
+	classes dynamically.
+   	
+2004-11-26  Chris Burdess  <dog@gnu.org>
+
+	* TransformerException.java,TransformerConfigurationException.java:
+   	Include message from cause exception if none specified.
+	* transform: Import circularity detection.
+   	
+2004-11-25  Chris Burdess  <dog@gnu.org>
+
+   	* xpath: Selector and node test fixes.
+   	
+2004-11-24  Chris Burdess  <dog@gnu.org>
+
+   	* dom: Don't create attribute text node unless required.
+   	* transform: Better whitespace stripping, xsl:number algorithm
+   	improvements
+	* xpath: Improvements to math conformance.
+   	
+2004-11-23  Chris Burdess  <dog@gnu.org>
+
+   	* dom: Use LS implementation for JAXP DocumentBuilder.
+   	* ls: Fixed namespace node handling.
+   	
+2004-11-22  Chris Burdess  <dog@gnu.org>
+
+   	* transform,xpath: Namespace context support.
+   	* transform: XSL message instruction, special number handling, key()
+   	function
+   	
+2004-11-21  Chris Burdess  <dog@gnu.org>
+
+   	* dom: Use XMLConstants constants instead of literals.
+   	* transform: Fixed infinite loop in roman numeral generation.
+   	* xpath: Resolve functions at parse time.
+   	
+2004-11-20  Chris Burdess  <dog@gnu.org>
+
+   	* dom: Do not report events during DOM construction.
+   	
+2004-11-19  Chris Burdess  <dog@gnu.org>
+
+   	* transform: OASIS XSLT conformance improvements.
+   	
+2004-11-18  Chris Burdess  <dog@gnu.org>
+
+   	* ls: Implemented more of FilteredSAXEventSink.
+   	* transform: use-attribute-sets on literal result element.
+   	
+2004-11-16  Chris Burdess  <dog@gnu.org>
+
+   	* dom: Implemented Document.renameNode, Document.normalizeDocument,
+   	Element.setIdAttribute*. DomDocument.verifyXmlName accuracy was
+        improved. XML 1.1 Name, NCName, and Char checking was implemented,
+        and XML 1.0 rules applied.
+   	
+2004-11-15  Chris Burdess  <dog@gnu.org>
+
+   	* dom: Improved DOM Level 3 conformance.
+   	
+2004-11-14  Chris Burdess  <dog@gnu.org>
+
+   	* dom: TypeInfo implementations for DTD-specified type declarations.
+   	* ls: New DOM Level 3 Load and Save implementation.
+   	
+2004-11-11  Chris Burdess  <dog@gnu.org>
+
+   	* transform: Implemented decimal-formats and number formatting.
+   	* xpath: Implemented XSL-style pattern matching.
+   	
+2004-11-10  Chris Burdess  <dog@gnu.org>
+
+   	* transform: Additional XSLT XPath extension functions. More output
+ 	parameters taken into account. Attribute-sets and namespace aliases
+	implemented.
+   	
+2004-11-09  Chris Burdess  <dog@gnu.org>
+
+   	* xpath: Separated functions into separate classes for efficiency.
+   	Fixes to evaluation model, notably path components.
+   	* transform: Fixes to XPath expression evaluation.
+   	
+2004-11-08  Chris Burdess  <dog@gnu.org>
+
+   	* transform: Fixes to template calling in foreign stylesheets.
+   	
+2004-11-04  Chris Burdess  <dog@gnu.org>
+
+   	* ContentHandler2.java: Extension interface for reporting XML
+   	declaration.
+   	* SAXDriver.java,XmlParser.java: Report XML declaration to content
+   	handlers implementing the ContentHandler2 interface.
+   	* Consumer.java,DomConsumer.java,EventFilter.java: Pass xmlDecl
+   	events to ContentHandler2s.
+   	* JAXPFactory.java: Set document URI during parse.
+   	* transform,xpath: document() function, function calls, variable
+   	binding fixes
+   	
+2004-11-03  Chris Burdess  <dog@gnu.org>
+
+ 	* dom: Refactoring of DomNode for efficiency, using pointers to
+ 	next/previous/first/last nodes instead of arrays of children, and
+ 	explicit node type without the need for a method call. Fixed
+ 	problems inserting DocumentFragments.
+ 	* transform: whitespace stripping; parameters and variables;
+ 	document() function.
+ 	* xpath: Name test fix.
+   	
+2004-11-02  Chris Burdess  <dog@gnu.org>
+
+   	* transform: Fully compiled templates; many more XSL language
+   	features supported; stream, SAX, and DOM results.
+   	
+2004-10-31  Chris Burdess  <dog@gnu.org>
+
+	* DomNode.java: Implement Comparable using natural document order. 
+	* xpath: Use natural document ordering in DomNode.
+   	
+2004-10-30  Chris Burdess  <dog@gnu.org>
+
+   	* transform: Experimental XSLT transformer using XPath
+   	implementation.
+   	
+2004-10-28  Chris Burdess  <dog@gnu.org>
+
+   	* xpath: Implemented XPathFactory.newInstance(); added missing
+   	imports in GNU implementation.
+   	
+2004-10-27  Chris Burdess  <dog@gnu.org>
+
+   	* xpath: Added JAXP XPath implementation. Variable references and
+   	function calls now use JAXP resolver callback interfaces.
+   	
+2004-10-20  Chris Burdess  <dog@gnu.org>
+
+   	* all: Updates to bring API in line with JAXP 1.3: introduction of
+   	datatype, namespace, validation, and xpath JAXP packages and
+        miscellaneous updates to other packages. Style corrections.
+   	
+2004-10-18  Chris Burdess  <dog@gnu.org>
+
+   	* xpath: Number parsing fixes.
+   	
+2004-10-17  Chris Burdess  <dog@gnu.org>
+
+   	* xpath: XPath function calls.
+   	
+2004-10-18  Dalibor Topic  <robilad@kaffe.org>
+
+       * sources/gnu/xml/xpath/Index.java: Added missing include.
+          (toString) Convert left and right hand side to strings
+          explicitely.
+
+2004-10-17  Chris Burdess  <dog@gnu.org>
+
+   	* xpath: Added experimental XPath 1.0 engine.
+   	
+2004-10-06  Chris Burdess  <dog@gnu.org>
+
+   	* dom: Added framework for XPath expression evaluation.
+   	
+2004-08-10  Musachy Barroso  <musachy@gmail.com>
+
+   	* XmlParser.java: Fixed bug while reading 0x2028. Check
+   	for document version in external subset.
+   	
+2004-08-10  Musachy Barroso  <musachy@gmail.com>
+
+   	* XmlParser.java: Convert 0x2028 to '\r' when document is 1.1
+   	
+2004-08-08  Musachy Barroso  <musachy@gmail.com>
+
+   	* XmlParser.java: Report start name characters that are not
+   	BaseChar. (more of them)
+   	
+2004-08-08  Musachy Barroso  <musachy@gmail.com>
+
+   	* XmlParser.java: Report start name characters that are not
+   	BaseChar. 
+        
+2004-08-08  Musachy Barroso  <musachy@gmail.com>
+
+	* XmlParser.java: Report NEL characters as igorable if document
+        is 1.1
+	
+2004-08-07  Musachy Barroso  <musachy@gmail.com>
+
+	* XmlParser.java: Fixed bug while reading whitespaces in elements
+	content.
+	
+2004-08-06  Musachy Barroso  <musachy@gmail.com>
+
+	* SAXDriver.java: Check added for missing prefix in namespace 
+	declaration attribute.
+	
+2004-08-06  Musachy Barroso  <musachy@gmail.com>
+
+	* XmlParser.java: Partial character ref, partial entity 
+	references checks, moved to parseEntity(...)
+	
+2004-08-06  Musachy Barroso  <musachy@gmail.com>
+
+	* SAXDriver.java: Checks added for colon in entities, PI and
+	notations. Unbounded prefixes error changed to fatal.
+	
+2004-08-05  Musachy Barroso  <musachy@gmail.com>
+
+	* SAXDriver.java: Fixed bug intruduced with the partial character
+	ref, partial entity references checks.
+	
+2004-08-05  Musachy Barroso  <musachy@gmail.com>
+
+	* SAXDriver.java: Fixed bug intruduced with the partial character
+	ref, partial entity references checks.
+	
+2004-08-03  Musachy Barroso  <musachy@gmail.com>
+
+	* SAXDriver.java: Check added for namespaces names containing only
+	':'. 
+	
+2004-07-31  Musachy Barroso  <musachy@gmail.com>
+
+	* XmlParser.java: Improved check for partial character references
+	and partial entity references in internal entities. 
+	
+2004-07-31  Musachy Barroso  <musachy@gmail.com>
+
+	* XmlParser.java: Added check for partial character references
+	in internal entities. 
+	
+2004-07-29  Musachy Barroso  <musachy@gmail.com>
+
+	* SAXDriver.java: Added checks for invalid use of reserved 
+	prefixes and namespaces.
+	
+2004-07-28  Musachy Barroso  <musachy@gmail.com>
+
+	* XmlParser.java: Invalidate character range [0x7f - 0x9f] if the 
+	document version is 1.1. 0x85(NEL) is still valid.
+	 
+2004-07-25  Musachy Barroso  <musachy@gmail.com>
+
+	* XmlParser.java: Fixed end-of-line handling to comply with sec 2.11.
+	
+2004-07-11  Musachy Barroso  <musachy@gmail.com>
+
+	* XmlParser.java: Handle empty documents.
+	
+2004-07-11  Musachy Barroso  <musachy@gmail.com>
+
+	* XmlParser.java: Call StartDocument at the right time.
+	
+2004-07-11  Musachy Barroso  <musachy@gmail.com>
+
+	* XmlParser.java: Disable LIT_DISABLE_CREF flag on entities parsing.
+
+2004-07-11  Musachy Barroso  <musachy@gmail.com>
+	
+	* SAXDriver.java: Refactoring of various attributes lists into a single list.
+	
+2004-06-24  Chris Burdess <dog@bluezoo.org>
+
+	* SAXDriver.java: Introduced reset method to reset state before
+	    new parse. Thanks to Musachy Barroso.
+
+2003-12-01 00:32  Arnaud Vandyck <avdyk@users.sourceforge.net>
+
+	* source/: *.java : Removed al the cvs
+	  tags inside sources to avoid complicated synchro. Patch by
+	  Dalibor Topic. Many thanks
+
+2003-11-06 12:18  Arnaud Vandyck <avdyk@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/: SAXDriver.java, XmlParser.java: Ito
+	  conclusion patch
+
+2003-11-06 12:11  Arnaud Vandyck <avdyk@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/XIncludeFilter.java: Call methods of
+	  super class
+
+2003-10-23 15:28  Arnaud Vandyck <avdyk@users.sourceforge.net>
+
+	* source/org/xml/sax/helpers/XMLReaderFactory.java: Wrong exception
+	  catched, thanks to Michael Koch
+
+2003-10-18 12:51  Arnaud Vandyck <avdyk@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/SAXDriver.java: Ito Kazumitsu
+	  <kaz@maczuka.gcd.org>  found a case where GNU JAXP throws
+	  unwanted SAXParseExceptions. This is his patch.
+
+2003-09-13 15:56  Arnaud Vandyck <avdyk@users.sourceforge.net>
+
+	* source/javax/xml/transform/sax/SAXSource.java: Handle case where
+	  sourceToInputSource() is called with an existing SAXSource.
+	  Thanks to Jim Pick
+	  <http://www.kaffe.org/pipermail/kaffe/2003-August/043709.html>
+
+2003-09-13 15:43  Arnaud Vandyck <avdyk@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: Corrected parseCharRef()
+	  so that it may not flush data buffer when not desired. This patch
+	  has been done by Ito Kazumitsu <kaz@maczuka.gcd.org>, many thanks
+	  <http://www.kaffe.org/pipermail/kaffe/2003-September/043771.html>
+
+2003-08-19 11:52  Arnaud Vandyck <avdyk@users.sourceforge.net>
+
+	* source/javax/xml/transform/TransformerException.java:
+	  printStackTrace(System.out);// shouldn't it be System.err?
+
+2003-08-19 11:51  Arnaud Vandyck <avdyk@users.sourceforge.net>
+
+	* source/javax/xml/transform/TransformerConfigurationException.java:
+	  new instance variable SourceLocator locator and two new
+	  constructors: public TransformerConfigurationException(String
+	  msg, SourceLocator locator), public
+	  TransformerConfigurationException(String msg, SourceLocator
+	  locator, Throwable ex)
+
+2003-08-16 10:50  Arnaud Vandyck <avdyk@users.sourceforge.net>
+
+	* source/javax/xml/parsers/SAXParser.java: parse(...) throws
+	  IllegalArgumentException if the argument is null.
+
+2003-08-16 10:49  Arnaud Vandyck <avdyk@users.sourceforge.net>
+
+	* source/javax/xml/parsers/DocumentBuilderFactory.java: JavaDoc
+	  changes: getAttribute(String) and setAttribute(String,Object)
+	  throws IllegalArgumentException if String is null, newInstance()
+	  throws FactoryConfigurationError
+
+2003-08-16 10:49  Arnaud Vandyck <avdyk@users.sourceforge.net>
+
+	* source/javax/xml/parsers/DocumentBuilder.java: parse([*]) throws
+	  IllegalArgumentException if the argument is null. [*]File,
+	  InputSource, InputStream, InputStream, String
+
+2003-01-21 19:29  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/XIncludeFilter.java: identify some
+	  limitations from a more recent CR
+
+2003-01-21 19:18  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/SAXDriver.java: report the illegal 'no
+	  prefixes, no names' state
+
+2003-01-21 19:14  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/parsers/ClassStuff.java: add ie workaround
+
+2003-01-21 00:54  Nic Ferrier <nferrier@tapsellferrier.co.uk>
+
+	* source/javax/xml/parsers/ClassStuff.java: changed Exception to
+	  Throwable.
+
+2003-01-21 00:46  Nic Ferrier <nferrier@tapsellferrier.co.uk>
+
+	* source/: gnu/xml/aelfred2/SAXDriver.java,
+	  org/xml/sax/ext/Attributes2.java,
+	  org/xml/sax/ext/Attributes2Impl.java:
+	  source/gnu/xml/aelfred2/SAXDriver.java
+	  source/org/xml/sax/ext/Attributes2.java
+	  source/org/xml/sax/ext/Attributes2Impl.java:	 added isDeclared()
+	  definition.
+
+2002-12-06 18:18  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlReader.java: don't change
+	  namespace-prefixes setting when we bind() fixes bug reported with
+	  Kaffe, from Ito Kazumitsu
+
+2002-10-15 23:04  Nic Ferrier <nferrier@tapsellferrier.co.uk>
+
+	* tests/dom/: NodeType.java, nodetype.xml: new test code.
+
+2002-10-15 23:03  Nic Ferrier <nferrier@tapsellferrier.co.uk>
+
+	* source/gnu/xml/util/DoParse.java:
+	  source/gnu/xml/util/DoParse.java: added specific imports to fix a
+	  GCJ compilation problem.
+
+2002-10-15 23:02  Nic Ferrier <nferrier@tapsellferrier.co.uk>
+
+	* source/gnu/xml/aelfred2/XmlParser.java:
+	  source/gnu/xml/aelfred2/XmlParser.java (parseEntityDecl): get the
+	  value using flags instead of 0.
+
+2002-10-15 23:01  Nic Ferrier <nferrier@tapsellferrier.co.uk>
+
+	* source/gnu/xml/dom/DomNode.java: source/gnu/xml/dom/DomNode.java
+	  (checkMisc): debug code (commented out for now).
+
+2002-10-15 22:59  Nic Ferrier <nferrier@tapsellferrier.co.uk>
+
+	* HACKING, Makefile.aj, Makefile.in, README, aclocal.m4,
+	  automakejar, configure, configure.in: automakejar based build
+	  system.
+
+2002-05-31 18:09  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/: dom/DomDocument.java, pipeline/DomConsumer.java:
+	  xmlns URI needs a trailing "/"
+
+2002-04-21 23:32  Nic Ferrier <nferrier@tapsellferrier.co.uk>
+
+	* source/gnu/xml/dom/DomNode.java: added getNodeType for GCJ
+	  compatibility
+
+2002-03-07 21:38  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: cleanup, CDATA fix,
+	  bigger symtab
+
+2002-03-07 20:10  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/SAXDriver.java: minor fixes
+
+2002-03-07 20:06  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/EventFilter.java: ignore unrecognized
+	  properties
+
+2002-02-12 21:29  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/XsltFilter.java: bugfix: hookup output
+
+2002-02-08 20:15  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/util/Resolver.java: @see XCat
+
+2002-02-08 19:51  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/: parsers/DocumentBuilder.java,
+	  transform/stream/StreamSource.java: expect JVM to report
+	  FileNotFoundException
+
+2002-02-03 02:42  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/util/XCat.java: doc tweaks
+
+2002-02-02 22:21  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: add null transform
+
+2002-02-02 22:10  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/util/SAXNullTransformerFactory.java: create
+
+2002-02-01 21:06  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/*.java: sync with SAX (2.0.1)
+
+2001-12-31 23:51  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomImpl.java: don't create xmlns attribute
+
+2001-12-13 20:20  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/EventFilter.java: don't force static
+	  linking of so many other classes
+
+2001-12-10 21:08  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlReader.java: thinner import
+
+2001-12-06 00:16  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/parsers/SAXParser.java: doesn't discard File
+	  naming any more; doc and cleanup
+
+2001-12-05 23:49  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/parsers/: DocumentBuilderFactory.java,
+	  SAXParserFactory.java: rm extra import
+
+2001-12-05 23:48  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/parsers/DocumentBuilder.java: minor doc tweaks,
+	  fileToUrl is package-private
+
+2001-12-05 21:54  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: report VC +
+	  skippedEntity() if skipped PEs; report PE Nesting VCs; Microstar
+	  said "PD" too
+
+2001-12-05 21:33  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/SAXDriver.java: update note re Microstar
+	  license
+
+2001-12-03 22:35  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: report char data without
+	  extra buffer copy
+
+2001-11-30 00:35  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/util/DomParser.java: note conflict with Namespace
+	  REC
+
+2001-11-29 23:56  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/: CallFilter.java, XIncludeFilter.java:
+	  compile on jdk 1.1
+
+2001-11-29 23:55  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/DomConsumer.java: note conflict with
+	  Namespace REC
+
+2001-11-29 23:48  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/: Consumer.java, DomDoctype.java,
+	  DomDocument.java, DomNamedNodeMap.java: compile with jdk 1.1
+
+2001-11-29 23:38  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/: parsers/ClassStuff.java,
+	  transform/ClassStuff.java: compile with jdk 1.1
+
+2001-11-24 23:26  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: add XCat
+
+2001-11-24 23:21  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/util/XCat.java: create
+
+2001-11-21 03:29  David Brownell <dbrownell@users.sourceforge.net>
+
+	* manifest.mf: for now, don't seal
+
+2001-11-21 03:04  David Brownell <dbrownell@users.sourceforge.net>
+
+	* README: update
+
+2001-11-21 02:53  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomNode.java: minor speedups for traversal and
+	  notification
+
+2001-11-21 02:36  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/*.java: sync w/sax2r2pre3
+
+2001-11-20 23:23  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: minor cleanup to char ref
+	  parsing
+
+2001-11-20 05:57  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/: DomEvent.java, DomEx.java, DomImpl.java,
+	  DomIterator.java: update copyright date
+
+2001-11-20 05:54  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomText.java: move getNodeType() back into
+	  subclasses; rm isIgnorable
+
+2001-11-20 05:53  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomAttr.java, DomCDATA.java,
+	  DomCharacterData.java, DomComment.java, DomDoctype.java,
+	  DomDocument.java, DomElement.java, DomEntity.java,
+	  DomEntityReference.java, DomExtern.java, DomFragment.java,
+	  DomNotation.java, DomNsNode.java, DomPI.java: move getNodeType()
+	  back into subclasses
+
+2001-11-20 05:48  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomNode.java: move getNodeType() back into
+	  subclasses
+
+2001-11-20 05:46  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/: Consumer.java, DomNamedNodeMap.java: space
+	  savings for attribute lists
+
+2001-11-20 02:20  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/: Consumer.java, DomNode.java: compact lists
+	  of children
+
+2001-11-20 02:15  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/util/XMLWriter.java: force output buffering; don't
+	  use String.toCharArray() so much
+
+2001-11-19 23:29  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/DomConsumer.java: support cheaper
+	  construction
+
+2001-11-19 23:23  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/: DomCDATA.java, DomText.java, Consumer.java,
+	  DomDocument.java: support cheaper construction
+
+2001-11-19 23:21  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomCharacterData.java: use char arrays, not
+	  strings
+
+2001-11-19 19:49  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomDocument.java: check chars by default
+
+2001-11-19 19:27  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/SAXDriver.java: fix no-namespaces bug in
+	  previous
+
+2001-11-19 06:23  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/SAXDriver.java: correctly re-init
+	  namespace support
+
+2001-11-19 06:12  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: add javadoc package.html files
+
+2001-11-19 05:48  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomDocument.java: more attr defaulting on
+	  create
+
+2001-11-19 05:37  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/: transform/dom/package.html,
+	  transform/stream/package.html, parsers/package.html: create
+
+2001-11-19 04:27  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/Consumer.java: force name checking off in
+	  2nd-Nth passes too
+
+2001-11-19 04:24  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/JAXPFactory.java: use AElfred2 (conformance,
+	  performance)
+
+2001-11-19 00:29  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: speedup comment, PI,
+	  CDATA for faster parsing of well commmented dtds, and less
+	  garbage
+
+2001-11-17 04:02  David Brownell <dbrownell@users.sourceforge.net>
+
+	* README: update DOM test status
+
+2001-11-17 03:38  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomNode.java: correct namespace filtering
+
+2001-11-17 03:27  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomAttr.java: set isSpecified when value
+	  changes
+
+2001-11-17 00:17  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/: DomDocument.java, DomElement.java: namespace
+	  fixes
+
+2001-11-17 00:12  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/DomConsumer.java: namespace fixes
+
+2001-11-16 23:46  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomNode.java: localname null in most cases
+
+2001-11-16 23:44  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomNsNode.java: more errors to check for
+
+2001-11-16 23:42  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomNamedNodeMap.java: default namespaced attrs
+	  too
+
+2001-11-16 21:24  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomDocument.java: createElement defaults
+	  attrs; getElementById; NS fix
+
+2001-11-16 21:14  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomNamedNodeMap.java: restore defaulted
+	  attributes
+
+2001-11-16 21:13  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/Consumer.java: save attribute default/ID info
+
+2001-11-16 21:09  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomDoctype.java: remember defaulted/ID
+	  attributes
+
+2001-11-16 14:34  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomDocument.java: fix off-by-one w/namespaces
+
+2001-11-16 10:08  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/JAXPFactory.java: use right feature id for
+	  validation
+
+2001-11-16 09:37  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/DomConsumer.java: entity refs can now be
+	  on stack
+
+2001-11-14 22:54  David Brownell <dbrownell@users.sourceforge.net>
+
+	* README: update
+
+2001-11-14 22:23  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/package.html: describe MT behavior
+
+2001-11-14 22:13  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/: SAXDriver.java, XmlParser.java: support
+	  EntityResolver2; cleanup
+
+2001-11-13 21:57  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: add EntityResolver2 extension
+
+2001-11-13 21:54  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/: package.html, ext/Locator2.java: sync with
+	  latest
+
+2001-11-13 21:46  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/ext/: DefaultHandler2.java,
+	  EntityResolver2.java: sync w/latest (alpha) extensions
+
+2001-11-13 21:44  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/helpers/XMLReaderFactory.java: add
+	  compile-time fallback
+
+2001-11-13 21:43  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/helpers/NewInstance.java: sync: build with jdk
+	  1.1
+
+2001-11-13 21:41  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/: ext/package.html, helpers/package.html: doc
+	  sync
+
+2001-11-12 00:15  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: match all other SAX2
+	  parser startDTD calls
+
+2001-11-11 07:53  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: cleaner handling of base
+	  URI and absolutizing
+
+2001-11-11 07:49  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/SAXDriver.java: don't report illegal
+	  system IDs
+
+2001-11-11 04:27  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/EventFilter.java: throw
+	  SAXNotSupportedException
+
+2001-11-10 19:36  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: handles Japanese/... docs
+	  again; correctly flush text before reading an external entity
+
+2001-11-10 00:02  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: util.DefaultHandler -> sax.ext.DefaultHandler2
+
+2001-11-10 00:00  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/util/DefaultHandler.java: remove -- replaced by
+	  org.xml.sax.ext.DefaultHandler2
+
+2001-11-09 23:58  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/util/DomParser.java: use DefaultHandler2
+
+2001-11-09 23:55  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/: SAXDriver.java, XmlReader.java: use
+	  ext/Defaulthandler2
+
+2001-11-09 23:53  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/EventFilter.java: use ext/DefaultHandler2
+	  not util/DefaultHandler
+
+2001-11-09 23:53  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/: NSFilter.java, PipelineFactory.java,
+	  ValidationConsumer.java, WellFormednessFilter.java: rm import of
+	  unused class
+
+2001-11-09 22:03  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: unrecognized URI schemes
+	  are sometimes OK
+
+2001-11-09 21:26  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/SAXDriver.java: refix
+	  startEntity/resolveEntity sequence; null sysid OK given char/byte
+	  stream; default handlers are null
+
+2001-11-09 21:24  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: refix
+	  startEntity/resolveEntity sequence; don't absolutize null sysid
+
+2001-11-07 03:07  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/ext/DefaultHandler2.java,
+	  source/org/xml/sax/package.html, Makefile.in: sync w/sax2-ext
+
+2001-11-07 03:03  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/util/DomParser.java: get/set nulls for properties
+
+2001-11-07 02:17  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: resolve-dtd-uris flag; rm
+	  unused fn()
+
+2001-11-07 02:12  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/SAXDriver.java: resolve-dtd-uris flag;
+	  unset props are null
+
+2001-11-06 06:45  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/: XMLReader.java,
+	  helpers/NamespaceSupport.java, helpers/ParserAdapter.java,
+	  helpers/XMLFilterImpl.java: sync with sax@sourceforge
+
+2001-11-05 23:55  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlReader.java: validation forces some
+	  flag settings
+
+2001-11-05 23:38  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/: SAXDriver.java, XmlParser.java:
+	  optionally skip external PEs/GEs
+
+2001-11-05 08:25  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: bugfix UTF-8 BOM support
+
+2001-11-05 07:46  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/ValidationConsumer.java: E20 erratum
+
+2001-11-04 04:58  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/Consumer.java: after it's parsed, start to
+	  check names
+
+2001-11-04 04:43  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomNode.java: blush ;)
+
+2001-11-04 02:38  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/util/XMLWriter.java: write PE decls correctly
+
+2001-11-04 02:18  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/package.html: cleanup
+
+2001-11-04 02:17  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/Consumer.java: populate entity ref nodes
+
+2001-11-04 02:15  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/JAXPFactory.java: fixes to option handling
+
+2001-11-04 02:11  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/DomConsumer.java: hooks to populate
+	  entity refs; cleanup for noise options
+
+2001-11-04 01:51  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomNode.java: event bugfixes, construction
+	  tweak
+
+2001-11-04 01:49  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: bugfix reporting for
+	  internal entities; misc
+
+2001-11-04 00:28  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/util/XMLWriter.java: better indenting
+
+2001-11-03 01:51  David Brownell <dbrownell@users.sourceforge.net>
+
+	* README: update
+
+2001-11-03 01:51  David Brownell <dbrownell@users.sourceforge.net>
+
+	* LICENSE: clarify
+
+2001-11-03 01:50  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/JAXPFactory.java: patch from Mike Gratton
+	  <mike@vee.net>
+
+2001-11-03 01:44  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: cleanup, add release target
+
+2001-11-02 23:07  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/transform/: ErrorListener.java, OutputKeys.java,
+	  Result.java, Source.java, SourceLocator.java, Templates.java,
+	  Transformer.java, TransformerConfigurationException.java,
+	  TransformerException.java, TransformerFactory.java,
+	  TransformerFactoryConfigurationError.java, URIResolver.java,
+	  dom/DOMLocator.java, dom/DOMResult.java, dom/DOMSource.java,
+	  sax/SAXResult.java, sax/SAXSource.java,
+	  sax/SAXTransformerFactory.java, sax/TemplatesHandler.java,
+	  sax/TransformerHandler.java, stream/StreamResult.java,
+	  stream/StreamSource.java: license update
+
+2001-11-02 22:40  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/parsers/: DocumentBuilder.java,
+	  DocumentBuilderFactory.java, FactoryConfigurationError.java,
+	  ParserConfigurationException.java, SAXParserFactory.java: license
+	  update
+
+2001-11-02 22:39  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/parsers/SAXParser.java: license update; don't
+	  discard some URIs
+
+2001-10-29 23:05  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/transform/TransformerFactory.java: use
+	  ClassStuff; add javadoc
+
+2001-10-29 22:59  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: add transform/ClassStuff
+
+2001-10-29 22:49  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/util/: DefaultHandler.java, DomParser.java,
+	  Resolver.java: javadoc fixes
+
+2001-10-29 22:46  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/package.html: mention euro issues
+
+2001-10-27 19:12  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/transform/sax/SAXTransformerFactory.java: add
+	  javadoc
+
+2001-10-27 19:00  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/transform/Transformer.java: add javadoc
+
+2001-10-26 22:50  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/: parsers/DocumentBuilder.java,
+	  transform/stream/StreamResult.java,
+	  transform/stream/StreamSource.java: add/use jdk1.1-compatible
+	  fileToUrl()
+
+2001-10-26 22:47  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/: parsers/ClassStuff.java,
+	  transform/ClassStuff.java: both packages need factory utils
+
+2001-10-25 10:09  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/util/XMLWriter.java: javadoc tweaks
+
+2001-10-25 09:41  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/WellFormednessFilter.java: javadoc tweaks
+
+2001-10-25 09:32  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/XIncludeFilter.java: javadoc tweaks
+
+2001-10-25 09:25  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/ValidationConsumer.java: javadoc tweaks
+
+2001-10-25 09:11  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/LinkFilter.java: javadoc tweaks
+
+2001-10-25 09:06  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/NSFilter.java: javadoc tweaks
+
+2001-10-25 08:49  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/EventFilter.java: javadoc tweaks
+
+2001-10-25 00:50  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/TeeConsumer.java: javadoc tweaks
+
+2001-10-25 00:39  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/DomConsumer.java: javadoc tweaks
+
+2001-10-25 00:37  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/Consumer.java: Make "backdoor"
+	  public/subclassable; tweak for javadoc
+
+2001-10-24 19:29  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/transform/sax/TransformerHandler.java: must
+	  implement DTDHandler too
+
+2001-10-24 01:14  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: fixes
+
+2001-10-24 01:12  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/XsltFilter.java: fix typo
+
+2001-10-23 22:21  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/transform/package.html: doc
+
+2001-10-23 21:41  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/helpers/NamespaceSupport.java: latest sax2
+	  r2pre update
+
+2001-10-23 20:31  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/transform/Source.java: docs
+
+2001-10-23 20:29  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/transform/sax/SAXResult.java, SAXSource.java,
+	  SAXTransformerFactory.java, TransformerHandler.java,
+	  package.html: docs; add missing implementation
+
+2001-10-23 20:05  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/parsers/ClassStuff.java: use GPL with exception
+	  clause
+
+2001-10-23 20:00  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in, source/gnu/xml/pipeline/XsltFilter.java: Add XSLT
+	  pipeline stage
+
+2001-10-23 19:42  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/*.java: license text now includes GPL "exception"
+
+2001-10-19 00:20  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/PipelineFactory.java: dom stages weren't
+	  fully updated
+
+2001-10-19 00:08  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/Consumer.java: more pipeline support
+
+2001-10-19 00:08  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomDoctype.java: null pointer checks
+
+2001-10-18 08:41  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/NSFilter.java: handle some more errors
+
+2001-10-18 08:39  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/SAXDriver.java: rm docs for limitations
+	  removed ages ago
+
+2001-10-18 02:57  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/SAXDriver.java: implement Attributes2
+
+2001-10-18 02:48  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/Consumer.java: use Attributes2 info to set
+	  'specified' flag
+
+2001-10-18 02:45  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: add new files
+
+2001-10-18 02:40  David Brownell <dbrownell@users.sourceforge.net>
+
+	* LICENSE: add
+
+2001-10-18 02:39  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/ext/: Attributes2.java, Attributes2Impl.java,
+	  Locator2.java, Locator2Impl.java: sync with latest (alpha)
+	  extensions
+
+2001-10-18 02:36  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/*.java: sync with SAX2 r2pre2 and (alpha)
+	extensions
+
+2001-10-15 06:06  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/parsers/ClassStuff.java,
+	  DocumentBuilderFactory.java, SAXParserFactory.java: use the
+	  right class loader
+
+2001-10-15 04:48  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: cleanups, add XInclude
+
+2001-10-15 04:28  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: handle xml-stylesheet and
+	  similar PIs
+
+2001-10-15 04:23  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/PipelineFactory.java: teach about
+	  XInclude stage
+
+2001-10-15 04:18  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/EventFilter.java: minor binding magic for
+	  XInclude
+
+2001-10-15 04:12  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/XIncludeFilter.java: create
+
+2001-10-08 21:35  David Brownell <dbrownell@users.sourceforge.net>
+
+	* configure: match current configure.in
+
+2001-10-07 06:26  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/util/Resolver.java: refer to latest RFC on XML
+	  mimetypes
+
+2001-10-07 06:18  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/CallFilter.java: use encoding reported by
+	  server
+
+2001-10-07 06:09  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/helpers/XMLReaderFactory.java: bugfix system
+	  property and compiled-in default cases
+
+2001-10-07 06:04  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/SAXDriver.java: locator/entity bugfix,
+	  standalone flag, doc tweaks
+
+2001-10-07 05:56  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: better SAX2 conformance
+	  w.r.t. "declared" system IDs
+
+2001-09-29 09:25  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/helpers/NewInstance.java: added from
+	  sax@sourceforge
+
+2001-09-29 09:24  David Brownell <dbrownell@users.sourceforge.net>
+
+	* configure.in: autoconf variables aren't $variables like bash
+
+2001-09-29 08:40  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: sax added a file, configure --with-gcj
+
+2001-09-29 08:23  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/util/Resolver.java: document return type
+
+2001-09-29 07:54  David Brownell <dbrownell@users.sourceforge.net>
+
+	* configure, configure.in: "--with-gcj" as javac substitute
+
+2001-09-29 07:34  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/helpers/AttributeListImpl.java,
+	  AttributesImpl.java, DefaultHandler.java, LocatorImpl.java,
+	  NamespaceSupport.java, ParserAdapter.java, ParserFactory.java,
+	  XMLFilterImpl.java, XMLReaderAdapter.java, XMLReaderFactory.java,
+	  package.html: sync with latest sax@sourceforge
+
+2001-09-26 21:31  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/util/XMLWriter.java: minor doc update
+
+2001-08-30 01:45  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomDocument.java: "xml" illegal for pi target
+	  name
+
+2001-08-24 23:44  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/EventFilter.java: pipelines can optimize
+	  to null
+
+2001-08-24 23:43  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/DomConsumer.java: better subclass support
+
+2001-08-24 23:38  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomAttr.java, DomCharacterData.java: update
+	  createEvent() calls
+
+2001-08-24 23:36  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlReader.java: force prefixes=true when
+	  validating,
+
+2001-08-21 19:14  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomNode.java: use other notion of event "type"
+
+2001-08-18 22:23  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/w3c/dom/*.java: merge 6/21/2001 W3C mapping/javadoc
+	  errata
+
+2001-08-09 20:33  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: trim unneeded code; save
+	  standalone flag
+
+2001-08-09 20:31  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlReader.java: signature update
+
+2001-08-09 20:29  David Brownell <dbrownell@users.sourceforge.net>
+
+	* manifest.mf: initial version
+
+2001-08-09 20:29  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: META-INF support, don't build unused DOM modules
+
+2001-08-07 20:16  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/InputSource.java: sync w/sax@sourceforge
+
+2001-08-03 21:13  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/helpers/: AttributeListImpl.java,
+	  LocatorImpl.java, ParserFactory.java, XMLFilterImpl.java: sync
+	  w/sax@sourceforge
+
+2001-08-03 21:08  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/*.java: sync w/sax@sourceforge
+
+2001-08-03 21:00  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: tweak generated javadoc
+
+2001-08-03 20:58  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/helpers/XMLReaderAdapter.java: sync
+	  w/sax@sourceforge: doc
+
+2001-08-03 20:57  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/helpers/ParserAdapter.java: sync
+	  w/sax@sourceforge: bugs
+
+2001-08-03 20:56  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/helpers/NamespaceSupport.java: sync
+	  w/sax@sourceforge: doc, bugs
+
+2001-08-03 20:53  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/helpers/AttributesImpl.java: sync
+	  w/sax@sourceforge: bugfix
+
+2001-08-03 20:51  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/ext/DeclHandler.java,
+	  ext/LexicalHandler.java, ext/package.html,
+	  helpers/DefaultHandler.java: sync w/sax@sourceforge: doc
+
+2001-08-03 20:48  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/Locator.java, package.html: sync
+	  w/sax@sourceforge: doc
+
+2001-08-03 20:47  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/DTDHandler.java, EntityResolver.java,
+	  ErrorHandler.java: sync w/sax@sourceforge: doc fixes
+
+2001-07-31 08:42  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/SAXDriver.java: handle namespace decls
+	  in two passes (correctness)
+
+2001-07-31 08:38  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: absolutize URLs earlier;
+	  undo flush tweak; #IMPLIED attrs not reported
+
+2001-07-29 21:26  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: flush buffer more; MIME
+	  charset= bug
+
+2001-07-29 21:14  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/SAXDriver.java: better diagnostic for
+	  runtime exceptions
+
+2001-07-29 21:12  David Brownell <dbrownell@users.sourceforge.net>
+
+	* README: update
+
+2001-07-29 20:58  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/EventFilter.java: add chainTo() glue to
+	  XMLFilterImpl
+
+2001-07-18 19:03  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: handle UTF-8 BOM (yeech)
+
+2001-07-18 19:01  David Brownell <dbrownell@users.sourceforge.net>
+
+	* README: update
+
+2001-07-18 18:40  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: bugfix name of a javax.transform Error
+
+2001-07-18 18:39  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/SAXDriver.java: namespace checks must
+	  just be warnings
+
+2001-07-18 18:34  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/transform/: TFactoryConfigurationError.java,
+	  TransformerFactoryConfigurationError.java: fix error class name
+
+2001-07-18 18:32  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/transform/TransformerFactory.java: exception
+	  bugfix; alphabetize; style
+
+2001-07-18 18:28  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/transform/TransformerException.java: add missing
+	  method, missing implementations
+
+2001-07-18 18:27  David Brownell <dbrownell@users.sourceforge.net>
+
+	*
+	  source/javax/xml/transform/TransformerConfigurationException.java:
+	  alphabetize to match spec
+
+2001-07-18 18:25  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/transform/ErrorListener.java,
+	  SourceLocator.java: javadoc summary
+
+2001-07-18 18:24  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/transform/Transformer.java: alphabetize, match
+	  spec
+
+2001-07-18 18:22  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/transform/OutputKeys.java: alphabetize (match
+	  spec)
+
+2001-07-18 18:19  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/transform/stream/StreamResult.java,
+	  StreamSource.java: alphabetize; fix file-to-URL bug
+
+2001-07-18 18:15  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/transform/sax/SAXResult.java: export missing
+	  methods; alphabetize
+
+2001-07-17 22:20  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/SAXDriver.java: feature setting cleanup;
+	  don't save unrecognized props/features
+
+2001-07-16 18:11  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/parsers/DocumentBuilder.java,
+	  DocumentBuilderFactory.java: add missing method; method order
+	  matches spec
+
+2001-07-14 23:41  David Brownell <dbrownell@users.sourceforge.net>
+
+	* configure: current autoconf output
+
+2001-07-14 22:23  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: add javax.xml.transform to javadoc
+
+2001-07-14 22:14  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/SAXDriver.java: namespaces: intern uris,
+	  expect non-relative ones
+
+2001-07-14 21:49  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/helpers/package.html: import tweak given to
+	  sax@sourceforge
+
+2001-07-13 19:39  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/JAXPFactory.java: bugfix, from Zeger
+	  Hendrikse
+
+2001-07-12 23:07  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/package.html: update
+
+2001-07-12 23:03  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/InputSource.java: merge minor diff from
+	  sax@sourceforge
+
+2001-07-11 20:32  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: import CallFilter
+
+2001-07-11 20:32  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/CallFilter.java: import
+
+2001-07-11 19:51  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/package.html: import
+
+2001-07-11 19:50  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: more files, update
+
+2001-07-11 19:28  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/helpers/XMLReaderFactory.java: switch to
+	  optionally validating default
+
+2001-07-11 19:26  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/util/: DoParse.java, Resolver.java, package.html:
+	  import
+
+2001-07-11 19:15  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/util/XMLWriter.java: cleanup, start C14N support,
+	  add helpers
+
+2001-07-11 19:09  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/: SAXDriver.java, XmlParser.java: DTD
+	  callback simplification; minor tweaks
+
+2001-07-11 18:56  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/EventFilter.java: restore missing break
+
+2001-07-11 18:55  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/ValidationConsumer.java: that warning
+	  gets annoying
+
+2001-07-11 01:07  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: imported two more files
+
+2001-07-11 01:05  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: version != "1.0" is no
+	  longer fatal
+
+2001-07-11 01:00  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlReader.java: use EventFilter.bind()
+
+2001-07-11 00:56  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/WellFormednessFilter.java: add some more
+	  wfness checks
+
+2001-07-11 00:55  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/EventFilter.java: merge the last
+	  important EventProducer features
+
+2001-07-11 00:52  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/: NSFilter.java, LinkFilter.java,
+	  PipelineFactory.java: import
+
+2001-07-11 00:29  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/DomConsumer.java: restore "filter" mode;
+	  DomProducer is now gone
+
+2001-07-10 23:23  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/: TeeConsumer.java, TextConsumer.java,
+	  ValidationConsumer.java: use EventFilter updates
+
+2001-07-10 23:22  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/EventFilter.java: add bind(), constants
+	  for URIs
+
+2001-07-08 14:30  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/ValidationConsumer.java: doc,
+	  getDocumentLocator()
+
+2001-07-08 14:29  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/NSFilter.java: use getDocumentLocator()
+
+2001-07-08 14:27  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/EventFilter.java: doc update, bugtweak,
+	  getDocumentLocator()
+
+2001-07-07 20:15  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/: SAXDriver.java, XmlParser.java:
+	  scrub-a-dub
+
+2001-07-05 04:42  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/JAXPFactory.java: use new
+	  optionally-validating parser
+
+2001-07-05 04:06  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: import validation support
+
+2001-07-05 04:04  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/package.html: javadoc update
+
+2001-07-05 04:02  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: don't report entity
+	  expansions within markup
+
+2001-07-05 04:00  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/SAXDriver.java: javadoc update
+
+2001-07-05 03:52  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlReader.java: new _optionally_
+	  validating parser
+
+2001-07-05 03:47  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/ValidationConsumer.java: import
+
+2001-07-05 03:43  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/: EventFilter.java, TeeConsumer.java,
+	  TextConsumer.java, WellFormednessFilter.java: handler -->
+	  property; copyright dates
+
+2001-07-04 18:59  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/SAXDriver.java: SAX2 conformance:
+	  attributeDecl() reports NOTATION enum
+
+2001-07-04 18:50  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/package.html: update matching recent
+	  improvements
+
+2001-06-24 22:47  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: attribute defaults are
+	  yet another place PE ref syntax is ignored
+
+2001-06-24 19:51  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/XmlParser.java: strict UTF-8 decoding
+	  (Unicode 3.1 rules)
+
+2001-06-24 06:14  David Brownell <dbrownell@users.sourceforge.net>
+
+	* README: provide info about conformance testing
+
+2001-06-24 06:12  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/: Consumer.java, DomCharacterData.java,
+	  DomNode.java: bugfixes
+
+2001-06-24 06:11  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/JAXPFactory.java: closer match to jaxp config
+	  flags
+
+2001-06-24 06:10  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/DomConsumer.java: closer match to jaxp
+	  config model
+
+2001-06-24 06:06  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/: SAXDriver.java, XmlParser.java: report
+	  entity boundaries; cleanup
+
+2001-06-23 23:15  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: new class; populate DOM doctype nodes
+
+2001-06-23 23:13  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/: dom/Consumer.java, dom/DomDoctype.java,
+	  dom/JAXPFactory.java, pipeline/DomConsumer.java: populate doctype
+	  nodes
+
+2001-06-23 07:23  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomCharacterData.java: bugfixes for data manip
+
+2001-06-23 07:19  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomNode.java: insertBefore bugfixes
+
+2001-06-23 07:17  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/DomImpl.java: handle alternative "null
+	  version"
+
+2001-06-23 07:14  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/JAXPFactory.java: publicize default
+	  constructor
+
+2001-06-22 17:54  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: add more pipeline stages
+
+2001-06-22 17:53  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/TeeConsumer.java, TextConsumer.java:
+	  more event consumers
+
+2001-06-22 17:52  David Brownell <dbrownell@users.sourceforge.net>
+
+	* .cvsignore: ignore javadoc output too
+
+2001-06-22 17:50  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/DomConsumer.java: rm javadoc warning
+
+2001-06-22 17:29  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/NSFilter.java,
+	  WellFormednessFilter.java: import more filters
+
+2001-06-22 17:16  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/util/DomParser.java: import DOM --> SAX2 parser
+
+2001-06-22 16:53  David Brownell <dbrownell@users.sourceforge.net>
+
+	* README: mention autoconf/configure/make
+
+2001-06-22 16:52  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in: bring over dom, javadoc
+
+2001-06-22 16:50  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/JAXPFactory.java, package.html: initial jaxp
+	  bootstrap support
+
+2001-06-22 16:47  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/parsers/DocumentBuilder.java,
+	  DocumentBuilderFactory.java: misc updates, doc
+
+2001-06-22 16:45  David Brownell <dbrownell@users.sourceforge.net>
+
+	* .cvsignore: ignore more
+
+2001-06-22 16:44  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/pipeline/DomConsumer.java, EventConsumer.java,
+	  EventFilter.java: partial import of pipelines
+
+2001-06-20 23:30  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/dom/*.java: import "dom2" implementation
+
+2001-06-20 22:48  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/package.html: add "lost" sax2 feature flag
+
+2001-06-20 22:46  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/parsers/SAXParserFactory.java: add javadoc, use
+	  gnu for system default parser
+
+2001-06-20 22:43  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/SAXDriver.java, XmlParser.java,
+	  package.html: recognize "lost" sax2 feature flag, doc tweaks
+
+2001-06-20 22:39  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/JAXPFactory.java: initial version
+
+2001-06-20 22:36  David Brownell <dbrownell@users.sourceforge.net>
+
+	* .cvsignore, AUTHORS: add
+
+2001-06-20 22:36  David Brownell <dbrownell@users.sourceforge.net>
+
+	* Makefile.in, configure.in: add initial autoconf support
+
+2001-06-20 17:16  David Brownell <dbrownell@users.sourceforge.net>
+
+	* README: add GPL "library exception"
+
+2001-06-08 23:00  David Brownell <dbrownell@users.sourceforge.net>
+
+	* README: add
+
+2001-06-08 22:59  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/gnu/xml/aelfred2/SAXDriver.java, aelfred2/XmlParser.java,
+	  aelfred2/package.html, util/DefaultHandler.java,
+	  util/XHTMLWriter.java, util/XMLWriter.java: initial add for
+	  AElfred2, XMLWriter
+
+2001-06-08 22:51  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/w3c/dom/Attr.java, CDATASection.java,
+	  CharacterData.java, Comment.java, DOMException.java,
+	  DOMImplementation.java, Document.java, DocumentFragment.java,
+	  DocumentType.java, Element.java, Entity.java,
+	  EntityReference.java, NamedNodeMap.java, Node.java,
+	  NodeList.java, Notation.java, ProcessingInstruction.java,
+	  Text.java, package.html: add dom interfaces (from w3c) and doc
+	  (not)
+
+2001-06-08 22:44  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/w3c/dom/events/DocumentEvent.java, events/Event.java,
+	  events/EventException.java, events/EventListener.java,
+	  events/EventTarget.java, events/MouseEvent.java,
+	  events/MutationEvent.java, events/UIEvent.java,
+	  events/package.html, traversal/DocumentTraversal.java,
+	  traversal/NodeFilter.java, traversal/NodeIterator.java,
+	  traversal/TreeWalker.java, traversal/package.html,
+	  css/CSS2Azimuth.java, css/CSS2BackgroundPosition.java,
+	  css/CSS2BorderSpacing.java, css/CSS2CounterIncrement.java,
+	  css/CSS2CounterReset.java, css/CSS2Cursor.java,
+	  css/CSS2FontFaceSrc.java, css/CSS2FontFaceWidths.java,
+	  css/CSS2PageSize.java, css/CSS2PlayDuring.java,
+	  css/CSS2Properties.java, css/CSS2TextShadow.java,
+	  css/CSSCharsetRule.java, css/CSSFontFaceRule.java,
+	  css/CSSImportRule.java, css/CSSMediaRule.java,
+	  css/CSSPageRule.java, css/CSSPrimitiveValue.java,
+	  css/CSSRule.java, css/CSSRuleList.java,
+	  css/CSSStyleDeclaration.java, css/CSSStyleRule.java,
+	  css/CSSStyleSheet.java, css/CSSUnknownRule.java,
+	  css/CSSValue.java, css/CSSValueList.java, css/Counter.java,
+	  css/DOMImplementationCSS.java, css/DocumentCSS.java,
+	  css/ElementCSSInlineStyle.java, css/RGBColor.java,
+	  css/Rect.java, css/ViewCSS.java, css/package.html,
+	  html/HTMLAnchorElement.java, html/HTMLAppletElement.java,
+	  html/HTMLAreaElement.java, html/HTMLBRElement.java,
+	  html/HTMLBaseElement.java, html/HTMLBaseFontElement.java,
+	  html/HTMLBodyElement.java, html/HTMLButtonElement.java,
+	  html/HTMLCollection.java, html/HTMLDListElement.java,
+	  html/HTMLDOMImplementation.java, html/HTMLDirectoryElement.java,
+	  html/HTMLDivElement.java, html/HTMLDocument.java,
+	  html/HTMLElement.java, html/HTMLFieldSetElement.java,
+	  html/HTMLFontElement.java, html/HTMLFormElement.java,
+	  html/HTMLFrameElement.java, html/HTMLFrameSetElement.java,
+	  html/HTMLHRElement.java, html/HTMLHeadElement.java,
+	  html/HTMLHeadingElement.java, html/HTMLHtmlElement.java,
+	  html/HTMLIFrameElement.java, html/HTMLImageElement.java,
+	  html/HTMLInputElement.java, html/HTMLIsIndexElement.java,
+	  html/HTMLLIElement.java, html/HTMLLabelElement.java,
+	  html/HTMLLegendElement.java, html/HTMLLinkElement.java,
+	  html/HTMLMapElement.java, html/HTMLMenuElement.java,
+	  html/HTMLMetaElement.java, html/HTMLModElement.java,
+	  html/HTMLOListElement.java, html/HTMLObjectElement.java,
+	  html/HTMLOptGroupElement.java, html/HTMLOptionElement.java,
+	  html/HTMLParagraphElement.java, html/HTMLParamElement.java,
+	  html/HTMLPreElement.java, html/HTMLQuoteElement.java,
+	  html/HTMLScriptElement.java, html/HTMLSelectElement.java,
+	  html/HTMLStyleElement.java, html/HTMLTableCaptionElement.java,
+	  html/HTMLTableCellElement.java, html/HTMLTableColElement.java,
+	  html/HTMLTableElement.java, html/HTMLTableRowElement.java,
+	  html/HTMLTableSectionElement.java,
+	  html/HTMLTextAreaElement.java, html/HTMLTitleElement.java,
+	  html/HTMLUListElement.java, html/package.html,
+	  ranges/DocumentRange.java, ranges/Range.java,
+	  ranges/RangeException.java, ranges/package.html,
+	  stylesheets/DocumentStyle.java, stylesheets/LinkStyle.java,
+	  stylesheets/MediaList.java, stylesheets/StyleSheet.java,
+	  stylesheets/StyleSheetList.java, stylesheets/package.html,
+	  views/AbstractView.java, views/DocumentView.java,
+	  views/package.html: add dom interfaces (from w3c) and docs (not)
+
+2001-06-08 22:42  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/*.java, ext/*.java, helpers/*.java: Public
+	  Domain --> GPL
+
+2001-06-08 22:22  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/parsers/*.java, transform/*.java,
+	transform/dom/*.java, transform/sax/*.java,
+	transform/stream/*.java: LGPL --> GPL
+
+2001-06-08 21:55  David Brownell <dbrownell@users.sourceforge.net>
+
+	* COPYING, COPYRIGHT.html: add GPL and w3c.dom licences
+
+2001-06-07 03:30  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/org/xml/sax/*.java, ext/*.java, helpers/*.java: add SAX2
+
+2001-06-07 03:21  David Brownell <dbrownell@users.sourceforge.net>
+
+	* source/javax/xml/parsers/*.java, transform/*.java,
+	  transform/dom/*.java, transform/sax/*.java,
+	  transform/stream/*.java: add sun-defined bits of jaxp
+

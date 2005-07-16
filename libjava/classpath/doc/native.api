@@ -1,0 +1,81 @@
+GNU Classpath Native State API - Version 0.99.1
+Written by Paul Fisher (rao@gnu.org)
+
+For all function calls, if an error occurs, such that `NULL' or a
+negative value is returned, it's very possible that an exception has
+been thrown from within the function.  The exception is not cleared,
+and you are responsible for dealing with the thrown exception.
+
+High level API:
+
+For using the highlevel API, in all cases, OBJ must contain a `final
+int' field called "native_state", which has been previously set to the
+value of java.lang.System.identityHashCode(OBJ).
+
+Function: struct state_table * init_state_table (JNIEnv *ENV, 
+                                                 jclass CLAZZ)
+
+  Creates a state table of default size.  Returns `NULL' on error.
+
+Function: struct state_table * init_state_table_with_size (JNIEnv *ENV,
+                                                           jclass CLAZZ,
+                                                           jint SIZE)
+
+  Creates a state table, with a tablesize of SIZE.  SIZE should
+  always be prime.  Returns `NULL' on error.
+
+Function: jint set_state (JNIEnv *ENV, jobject OBJ, 
+                          struct state_table *TABLE, void *STATE)
+
+  Associates STATE with OBJ, in TABLE.  Returns 0 on success, and a
+  negative value on failure.  STATE must not be `NULL'.  set_state is
+  reentrant, and calls to set_state/get_state/remove_state_slot may be
+  made at the same time.
+        
+Function: void * get_state (JNIEnv *ENV, jobject OBJ,
+                            struct state_table *TABLE)
+
+  Retrieves the state associated with OBJ, in TABLE.  Returns `NULL'
+  if no value is associated with OBJ, or if a failure occurs.
+  get_state is reentrant, and calls to
+  get_state/set_state/remove_state_slot may be made at the same time.
+
+Function: void * remove_state_slot (JNIEnv *ENV, jobject OBJ,
+                                    struct state_table *TABLE)
+
+  Removes the internal slot associated with OBJ, in TABLE.  Returns a
+  pointer to the C state if a state was associated with OBJ,
+  otherwise, `NULL' is returned.  After `remove_state' is called,
+  `get_state' passing OBJ, will result in `NULL' being returned.  This
+  function is generally called in the `finalize' method of a class.
+  remove_state_slot is reentrant, and calls to
+  get_state/set_state/remove_state_slot may be made at the same time.
+
+Low level API:
+
+Function: void set_state_oid (JNIEnv *ENV, jobject LOCK, 
+                              struct state_table *TABLE, 
+                              jint OBJECT_ID, void *STATE)
+
+  Associates STATE with OBJECT_ID, in TABLE.  STATE must not be
+  `NULL'.  On entering, a lock is obtained on LOCK.  On exiting, the
+  lock is released.
+
+Function: void * get_state_oid (JNIEnv *ENV, jobject LOCK, 
+                                struct state_table *TABLE, 
+                                jint OBJECT_ID)
+
+  Retrieves the state associated with OBJECT_ID, in TABLE.  Returns
+  `NULL' if no value is associated with OBJECT_ID.  On entering, a
+  lock is obtained on LOCK.  On exiting, the lock is released.
+
+Function: void * remove_state_oid (JNIEnv *ENV, jobject LOCK, 
+                                   struct state_table *TABLE, 
+                                   jint OBJECT_ID)
+
+  Removes the value associated with OBJECT_ID, in TABLE.  Returns a
+  pointer to the C state if a state was associated with OBJECT_ID,
+  otherwise, `NULL' is returned.  After `remove_state_oid' is called,
+  `get_state_oid' passing OBJECT_ID, will result in `NULL' being
+  returned.  On entering, a lock is obtained on LOCK.  On exiting, the
+  lock is released.
