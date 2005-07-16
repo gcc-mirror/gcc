@@ -1,3 +1,7 @@
+2005-07-16  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* docs/html/21_strings/gotw29a.txt:  Update code to corrected version.
+
 2005-07-15  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/21193 (float, double, long double)
