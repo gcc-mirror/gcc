@@ -570,16 +570,7 @@ flags_from_decl_or_type (tree exp)
 
   if (DECL_P (exp))
     {
-      struct cgraph_rtl_info *i = cgraph_rtl_info (exp);
       type = TREE_TYPE (exp);
-
-      if (i)
-	{
-	  if (i->pure_function)
-	    flags |= ECF_PURE | ECF_LIBCALL_BLOCK;
-	  if (i->const_function)
-	    flags |= ECF_CONST | ECF_LIBCALL_BLOCK;
-	}
 
       /* The function exp may have the `malloc' attribute.  */
       if (DECL_IS_MALLOC (exp))

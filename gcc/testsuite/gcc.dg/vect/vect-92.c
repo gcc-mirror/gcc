@@ -80,7 +80,7 @@ int main (void)
 
   main1 (a,b,c);
   main2 (a,b,c);
-  main3 (a,b,c,N);
+  main3 (a,b,c,N-1);
 
   return 0;
 }

@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O1 -fdump-tree-optimized" } */
+/* { dg-options "-O3 -fdump-tree-optimized" } */
 
 /* Test for SRA. */
 
@@ -22,5 +22,5 @@ copystruct11 (teststruct *param)
 
 
 /* There should be no reference to link_error. */
-/* { dg-final { scan-tree-dump-times "link_error" 0 "optimized" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "link_error" 0 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -43,6 +43,7 @@ Boston, MA 02110-1301, USA.  */
 #include "tree-ssa-structalias.h"
 #include "convert.h"
 #include "params.h"
+#include "ipa-type-escape.h"
 #include "vec.h"
 #include "bitmap.h"
 
@@ -86,6 +87,8 @@ struct alias_stats_d
   unsigned int simple_resolved;
   unsigned int tbaa_queries;
   unsigned int tbaa_resolved;
+  unsigned int structnoaddress_queries;
+  unsigned int structnoaddress_resolved;
 };
 
 
@@ -95,7 +98,7 @@ static struct alias_stats_d alias_stats;
 /* Local functions.  */
 static void compute_flow_insensitive_aliasing (struct alias_info *);
 static void dump_alias_stats (FILE *);
-static bool may_alias_p (tree, HOST_WIDE_INT, tree, HOST_WIDE_INT);
+static bool may_alias_p (tree, HOST_WIDE_INT, tree, HOST_WIDE_INT, bool);
 static tree create_memory_tag (tree type, bool is_type_tag);
 static tree get_tmt_for (tree, struct alias_info *);
 static tree get_nmt_for (tree);
@@ -346,6 +349,7 @@ count_ptr_derefs (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
   struct count_ptr_d *count_p = (struct count_ptr_d *) data;
 
   if (INDIRECT_REF_P (*tp) && TREE_OPERAND (*tp, 0) == count_p->ptr)
+/*       || (TREE_CODE (*tp) == MEM_REF && MEM_REF_SYMBOL (*tp) == count_p->ptr)) */
     count_p->count++;
 
   return NULL_TREE;
@@ -432,7 +436,6 @@ count_uses_and_derefs (tree ptr, tree stmt, unsigned *num_uses_p,
 
   gcc_assert (*num_uses_p >= *num_derefs_p);
 }
-
 
 /* Initialize the data structures used for alias analysis.  */
 
@@ -780,8 +783,8 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 	                 || bitmap_bit_p (ai->written_vars, DECL_UID (var));
 	  if (!tag_stored_p && !var_stored_p)
 	    continue;
-
-	  if (may_alias_p (p_map->var, p_map->set, var, v_map->set))
+	     
+	  if (may_alias_p (p_map->var, p_map->set, var, v_map->set, false))
 	    {
 	      subvar_t svars;
 	      size_t num_tag_refs, num_var_refs;
@@ -862,7 +865,7 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 	  bitmap may_aliases2 = p_map2->may_aliases;
 
 	  /* If the pointers may not point to each other, do nothing.  */
-	  if (!may_alias_p (p_map1->var, p_map1->set, tag2, p_map2->set))
+	  if (!may_alias_p (p_map1->var, p_map1->set, tag2, p_map2->set, true))
 	    continue;
 
 	  /* The two pointers may alias each other.  If they already have
@@ -1453,7 +1456,8 @@ maybe_create_global_var (struct alias_info *ai)
 
 static bool
 may_alias_p (tree ptr, HOST_WIDE_INT mem_alias_set,
-	     tree var, HOST_WIDE_INT var_alias_set)
+	     tree var, HOST_WIDE_INT var_alias_set,
+	     bool alias_set_only)
 {
   tree mem;
   var_ann_t m_ann;
@@ -1520,6 +1524,65 @@ may_alias_p (tree ptr, HOST_WIDE_INT mem_alias_set,
       alias_stats.tbaa_resolved++;
       return false;
     }
+
+  /* If var is a record or union type, ptr cannot point into var
+     unless there is some operation explicit address operation in the
+     program that can reference a field of the ptr's dereferenced
+     type.  This also assumes that the types of both var and ptr are
+     contained within the compilation unit, and that there is no fancy
+     addressing arithmetic associated with any of the types
+     involved.  */
+
+  if ((mem_alias_set != 0) && (var_alias_set != 0))
+    {
+      tree ptr_type = TREE_TYPE (ptr);
+      tree var_type = TREE_TYPE (var);
+      
+      /* The star count is -1 if the type at the end of the pointer_to 
+	 chain is not a record or union type. */ 
+      if ((!alias_set_only) && 
+	  ipa_type_escape_star_count_of_interesting_type (var_type) >= 0)
+	{
+	  int ptr_star_count = 0;
+	  
+	  /* Ipa_type_escape_star_count_of_interesting_type is a little to
+	     restrictive for the pointer type, need to allow pointers to
+	     primitive types as long as those types cannot be pointers
+	     to everything.  */
+	  while (POINTER_TYPE_P (ptr_type))
+	    /* Strip the *'s off.  */ 
+	    {
+	      ptr_type = TREE_TYPE (ptr_type);
+	      ptr_star_count++;
+	    }
+	  
+	  /* There does not appear to be a better test to see if the 
+	     pointer type was one of the pointer to everything 
+	     types.  */
+	  
+	  if (ptr_star_count > 0)
+	    {
+	      alias_stats.structnoaddress_queries++;
+	      if (ipa_type_escape_field_does_not_clobber_p (var_type, 
+							    TREE_TYPE (ptr))) 
+		{
+		  alias_stats.structnoaddress_resolved++;
+		  alias_stats.alias_noalias++;
+		  return false;
+		}
+	    }
+	  else if (ptr_star_count == 0)
+	    {
+	      /* If ptr_type was not really a pointer to type, it cannot 
+		 alias.  */ 
+	      alias_stats.structnoaddress_queries++;
+	      alias_stats.structnoaddress_resolved++;
+	      alias_stats.alias_noalias++;
+	      return false;
+	    }
+	}
+    }
+
   alias_stats.alias_mayalias++;
   return true;
 }
@@ -1851,6 +1914,10 @@ dump_alias_stats (FILE *file)
 	   alias_stats.tbaa_queries);
   fprintf (file, "Total TBAA resolved:\t%u\n",
 	   alias_stats.tbaa_resolved);
+  fprintf (file, "Total non-addressable structure type queries:\t%u\n",
+	   alias_stats.structnoaddress_queries);
+  fprintf (file, "Total non-addressable structure type resolved:\t%u\n",
+	   alias_stats.structnoaddress_resolved);
 }
   
 

@@ -523,6 +523,8 @@ decode_options (unsigned int argc, const char **argv)
       flag_loop_optimize = 1;
       flag_if_conversion = 1;
       flag_if_conversion2 = 1;
+      flag_ipa_pure_const = 1;
+      flag_ipa_reference = 1;
       flag_tree_ccp = 1;
       flag_tree_dce = 1;
       flag_tree_dom = 1;
@@ -556,6 +558,7 @@ decode_options (unsigned int argc, const char **argv)
       flag_cse_skip_blocks = 1;
       flag_gcse = 1;
       flag_expensive_optimizations = 1;
+      flag_ipa_type_escape = 1;
       flag_strength_reduce = 1;
       flag_rerun_cse_after_loop = 1;
       flag_rerun_loop_opt = 1;
@@ -583,6 +586,7 @@ decode_options (unsigned int argc, const char **argv)
 
   if (optimize >= 3)
     {
+      flag_tree_promote_statics = 1;
       flag_inline_functions = 1;
       flag_unswitch_loops = 1;
       flag_gcse_after_reload = 1;

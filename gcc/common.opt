@@ -491,6 +491,18 @@ finstrument-functions
 Common Report Var(flag_instrument_function_entry_exit)
 Instrument function entry and exit with profiling calls
 
+fipa-pure-const
+Common Report Var(flag_ipa_pure_const) Init(0)
+Discover pure and const functions
+
+fipa-reference
+Common Report Var(flag_ipa_reference) Init(0)
+Discover readonly and non addressable static variables
+
+fipa-type-escape
+Common Report Var(flag_ipa_type_escape) Init(0)
+Type based escape and alias analysis
+
 fivopts
 Common Report Var(flag_ivopts) Init(1)
 Optimize induction variables on trees
@@ -914,6 +926,10 @@ Enable loop optimizations on tree level
 ftree-pre
 Common Report Var(flag_tree_pre)
 Enable SSA-PRE optimization on trees
+
+ftree-promote-statics
+Common Report Var(flag_tree_promote_statics) Init(0)
+Enable promotion of static variables
 
 ftree-salias
 Common Report Var(flag_tree_salias)
