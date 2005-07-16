@@ -285,7 +285,8 @@ repo_emit_p (tree decl)
       else if (DECL_TINFO_P (decl))
 	type = TREE_TYPE (DECL_NAME (decl));
       if (!DECL_TEMPLATE_INSTANTIATION (decl)
-	  && !CLASSTYPE_TEMPLATE_INSTANTIATION (type))
+	  && (!TYPE_LANG_SPECIFIC (type)
+	      || !CLASSTYPE_TEMPLATE_INSTANTIATION (type)))
 	return 2;
     }
   else if (!DECL_TEMPLATE_INSTANTIATION (decl))
