@@ -36,8 +36,8 @@ proc gcj_jni_compile_c_to_so {file {options {}}} {
     lappend options "additional_flags=-Wmissing-prototypes"
   }
 
-  # Find jni.h.
-  lappend options "additional_flags=-I$srcdir/../include"
+  # Find jni.h and jni_md.h.
+  lappend options "additional_flags=-I$srcdir/../include -I$srcdir/../classpath/include"
 
   # Append C++ options
   lappend options "additional_flags=$options_cxx"
@@ -201,8 +201,8 @@ proc gcj_jni_invocation_compile_c_to_binary {file {options {}}} {
   # Find the generated header.
   lappend options "additional_flags=-I. -I.."
 
-  # Find jni.h.
-  lappend options "additional_flags=-I$srcdir/../include"
+  # Find jni.h and jni_md.h.
+  lappend options "additional_flags=-I$srcdir/../include -I$srcdir/../classpath/include"
 
   # Append C++ options
   lappend options "additional_flags=$options_cxx"

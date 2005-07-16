@@ -272,7 +272,7 @@ PACKAGE_STRING='libjava version-unused'
 PACKAGE_BUGREPORT=''
 
 ac_unique_file="java/lang/System.java"
-ac_subdirs_all="$ac_subdirs_all libltdl"
+ac_subdirs_all="$ac_subdirs_all classpath libltdl"
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>
@@ -310,7 +310,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os build_subdir host_subdir target_subdir libgcj_basedir host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical LN_S mkinstalldirs CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LDFLAGS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBGCJ_CFLAGS LIBGCJ_CXXFLAGS LIBGCJ_JAVAFLAGS LIBGCJ_LD_SYMBOLIC INCLTDL LIBLTDL DIRLTDL LIBTOOL CXXCPP CPPFLAGS GCJ GCJFLAGS GCJDEPMODE am__fastdepGCJ_TRUE am__fastdepGCJ_FALSE subdirs TESTSUBDIR_TRUE TESTSUBDIR_FALSE JAVA_HOME_SET_TRUE JAVA_HOME_SET_FALSE JAVA_HOME LIBGCJDEBUG INTERPRETER LIBFFI LIBFFIINCS PLATFORM_INNER_NAT_HDRS CPP EGREP USING_WIN32_PLATFORM_TRUE USING_WIN32_PLATFORM_FALSE USING_POSIX_PLATFORM_TRUE USING_POSIX_PLATFORM_FALSE USING_DARWIN_CRT_TRUE USING_DARWIN_CRT_FALSE SYSTEMSPEC LIBGCJTESTSPEC ZLIBSPEC ZLIBTESTSPEC X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS TOOLKIT XLIB_AWT_TRUE XLIB_AWT_FALSE GTK_AWT_TRUE GTK_AWT_FALSE GTK_CAIRO_TRUE GTK_CAIRO_FALSE PKG_CONFIG CAIRO_CFLAGS CAIRO_LIBS PANGOFT2_CFLAGS PANGOFT2_LIBS GCLIBS GCINCS GCDEPS GCSPEC JC1GCSPEC GCTESTSPEC USING_BOEHMGC_TRUE USING_BOEHMGC_FALSE USING_NOGC_TRUE USING_NOGC_FALSE THREADLIBS THREADINCS THREADDEPS THREADSPEC THREADLDFLAGS THREADCXXFLAGS USING_POSIX_THREADS_TRUE USING_POSIX_THREADS_FALSE USING_WIN32_THREADS_TRUE USING_WIN32_THREADS_FALSE USING_NO_THREADS_TRUE USING_NO_THREADS_FALSE HASH_SYNC_SPEC USING_GCC_TRUE USING_GCC_FALSE LIBICONV LTLIBICONV GTK_CFLAGS GTK_LIBS GLIB_CFLAGS GLIB_LIBS LIBART_CFLAGS LIBART_LIBS SUPPLY_BACKTRACE_TRUE SUPPLY_BACKTRACE_FALSE GCJH ZIP CLASSPATH_SEPARATOR ac_ct_GCJ ZLIBS SYS_ZLIBS ZINCS DIVIDESPEC CHECKREFSPEC EXCEPTIONSPEC BACKTRACESPEC IEEESPEC NATIVE_TRUE NATIVE_FALSE NEEDS_DATA_START_TRUE NEEDS_DATA_START_FALSE GCC_UNWIND_INCLUDE toolexecdir toolexecmainlibdir toolexeclibdir GCJVERSION gxx_include_dir libstdcxx_incdir ALLOCA PERL SYSDEP_SOURCES here LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os build_subdir host_subdir target_subdir libgcj_basedir host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical LN_S mkinstalldirs CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LDFLAGS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBGCJ_CFLAGS LIBGCJ_CXXFLAGS LIBGCJ_JAVAFLAGS LIBGCJ_LD_SYMBOLIC LIBGCJDEBUG TOOLKIT XLIB_AWT_TRUE XLIB_AWT_FALSE GTK_AWT_TRUE GTK_AWT_FALSE GCJH ZIP INCLTDL LIBLTDL DIRLTDL LIBTOOL CXXCPP CPPFLAGS GCJ GCJFLAGS GCJDEPMODE am__fastdepGCJ_TRUE am__fastdepGCJ_FALSE subdirs TESTSUBDIR_TRUE TESTSUBDIR_FALSE JAVA_HOME_SET_TRUE JAVA_HOME_SET_FALSE JAVA_HOME INTERPRETER LIBFFI LIBFFIINCS PLATFORM_INNER_NAT_HDRS CPP EGREP USING_WIN32_PLATFORM_TRUE USING_WIN32_PLATFORM_FALSE USING_POSIX_PLATFORM_TRUE USING_POSIX_PLATFORM_FALSE USING_DARWIN_CRT_TRUE USING_DARWIN_CRT_FALSE SYSTEMSPEC LIBGCJTESTSPEC ZLIBSPEC ZLIBTESTSPEC X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS GTK_CAIRO_TRUE GTK_CAIRO_FALSE PKG_CONFIG CAIRO_CFLAGS CAIRO_LIBS PANGOFT2_CFLAGS PANGOFT2_LIBS GCLIBS GCINCS GCDEPS GCSPEC JC1GCSPEC GCTESTSPEC USING_BOEHMGC_TRUE USING_BOEHMGC_FALSE USING_NOGC_TRUE USING_NOGC_FALSE THREADLIBS THREADINCS THREADDEPS THREADSPEC THREADLDFLAGS THREADCXXFLAGS USING_POSIX_THREADS_TRUE USING_POSIX_THREADS_FALSE USING_WIN32_THREADS_TRUE USING_WIN32_THREADS_FALSE USING_NO_THREADS_TRUE USING_NO_THREADS_FALSE HASH_SYNC_SPEC USING_GCC_TRUE USING_GCC_FALSE LIBICONV LTLIBICONV GTK_CFLAGS GTK_LIBS GLIB_CFLAGS GLIB_LIBS LIBART_CFLAGS LIBART_LIBS SUPPLY_BACKTRACE_TRUE SUPPLY_BACKTRACE_FALSE CLASSPATH_SEPARATOR ac_ct_GCJ ZLIBS SYS_ZLIBS ZINCS DIVIDESPEC CHECKREFSPEC EXCEPTIONSPEC BACKTRACESPEC IEEESPEC NATIVE_TRUE NATIVE_FALSE NEEDS_DATA_START_TRUE NEEDS_DATA_START_FALSE GCC_UNWIND_INCLUDE toolexecdir toolexecmainlibdir toolexeclibdir GCJVERSION gxx_include_dir libstdcxx_incdir ALLOCA PERL SYSDEP_SOURCES here LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -857,6 +857,8 @@ Optional Features:
   --enable-dependency-tracking   do not reject slow dependency extractors
   --enable-maintainer-mode  enable make rules and dependencies not useful
 			  (and sometimes confusing) to the casual installer
+  --enable-libgcj-debug   enable runtime debugging code
+  --enable-java-awt       list of AWT peer implementations to be built
   --enable-shared=PKGS  build shared libraries default=yes
   --enable-static=PKGS  build static libraries default=yes
   --enable-fast-install=PKGS  optimize for fast installation default=yes
@@ -865,14 +867,12 @@ Optional Features:
                           don't set system properties from GCJ_PROPERTIES
   --enable-hash-synchronization
                           use global hash table for monitor locks
-  --enable-libgcj-debug   enable runtime debugging code
   --enable-gc-debug       include full support for pointer backtracing etc.
   --enable-interpreter    enable interpreter
   --enable-sjlj-exceptions
                           force use of builtin_setjmp for exceptions
   --disable-java-net      disable java.net
   --disable-jvmpi         disable JVMPI support
-  --enable-java-awt       list of AWT peer implementations to be built
   --enable-gtk-cairo      build the cairo Graphics2D implementation on GTK
   --enable-java-gc=TYPE   choose garbage collector (default is boehm)
   --disable-rpath         do not hardcode runtime library paths
@@ -4014,6 +4014,191 @@ LIBGCJ_LD_SYMBOLIC="${libgcj_ld_symbolic}"
                     ac_config_headers="$ac_config_headers include/config.h gcj/libgcj-config.h"
 
 
+
+# See if the user has requested runtime debugging.
+LIBGCJDEBUG="disable"
+
+# Check whether --enable-libgcj-debug or --disable-libgcj-debug was given.
+if test "${enable_libgcj_debug+set}" = set; then
+  enableval="$enable_libgcj_debug"
+  if test "$enable_libgcj_debug" = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define DEBUG 1
+_ACEOF
+
+    LIBGCJDEBUG="enable"
+  fi
+fi;
+
+# Determine which AWT peer libraries to build
+# Check whether --enable-java-awt or --disable-java-awt was given.
+if test "${enable_java_awt+set}" = set; then
+  enableval="$enable_java_awt"
+
+fi;
+
+peerlibs="`echo ${enable_java_awt} | tr ',' ' '`"
+use_xlib_awt=""
+use_gtk_awt=""
+# The default toolkit to use is the first one specified.
+TOOLKIT=
+
+
+for peer in $peerlibs ; do
+  case $peer in
+    xlib)
+      if test "$no_x" = yes; then
+        echo "*** xlib peers requested but no X library available" 1>&2
+        exit 1
+      else
+        # This code has bit-rotted a bit.
+	echo "*** xlib peers can't currently be compiled -- disabling" 1>&2
+#        use_xlib_awt="yes"
+#	if test -z "$TOOLKIT"; then
+#	   TOOLKIT=gnu.awt.xlib.XToolkit
+#	fi
+      fi
+      ;;
+    gtk)
+      if test "$no_x" = yes; then
+	 echo "*** xlib peers requested but no X library available" 1>&2
+	 exit 1
+      else
+	 use_gtk_awt=yes
+	 if test -z "$TOOLKIT"; then
+	    TOOLKIT=gnu.java.awt.peer.gtk.GtkToolkit
+	 fi
+      fi
+      ;;
+    no)
+      use_xlib_awt=
+      use_gtk_awt=
+      break
+      ;;
+    *)
+      echo "*** unrecognised argument \"${peer}\" for --enable-java-awt" 1>&2
+      exit 1
+  esac
+done
+
+
+
+if test "$use_xlib_awt" = yes; then
+  XLIB_AWT_TRUE=
+  XLIB_AWT_FALSE='#'
+else
+  XLIB_AWT_TRUE='#'
+  XLIB_AWT_FALSE=
+fi
+
+
+
+if test "$use_gtk_awt" = yes; then
+  GTK_AWT_TRUE=
+  GTK_AWT_FALSE='#'
+else
+  GTK_AWT_TRUE='#'
+  GTK_AWT_FALSE=
+fi
+
+
+
+if test -z "${with_multisubdir}"; then
+   builddotdot=.
+else
+   builddotdot=`echo ${with_multisubdir} | sed -e 's:[^/][^/]*:..:g'`
+fi
+
+NATIVE=yes
+
+# Which gcj do we use?
+which_gcj=default
+built_gcc_dir="`cd ${builddotdot}/../../${host_subdir}/gcc && ${PWDCMD-pwd}`"
+if test -n "${with_cross_host}"; then
+  # We are being configured with a cross compiler. We can't
+  # use ac_exeext, because that is for the target platform.
+  NATIVE=no
+  cross_host_exeext=
+  case "${with_cross_host}" in
+     *mingw* | *cygwin*)
+         cross_host_exeext=.exe
+     ;;
+  esac
+  if test -x "${built_gcc_dir}/gcj${cross_host_exeext}"; then
+     if test x"$build_noncanonical" = x"$with_cross_host"; then
+        # Ordinary cross (host!=target and host=build)
+        which_gcj=built
+     else
+        # Canadian cross (host!=target and host!=build)
+        which_gcj=cross
+     fi
+  else
+     which_gcj=cross
+  fi
+else
+  # We are being configured with a native or crossed-native compiler
+  if test -x "${built_gcc_dir}/gcj${ac_exeext}"; then
+     if test x"$build" = x"$host"; then
+        # True native build (host=target and host=build)
+        which_gcj=built
+     else
+        # Crossed-native build (host=target and host!=build)
+        which_gcj=cross
+     fi
+  else
+     which_gcj=path
+  fi
+fi
+case "${which_gcj}" in
+   built)
+      GCJ="$built_gcc_dir/gcj -B`${PWDCMD-pwd}`/ -B$built_gcc_dir/"
+      GCJH='$(top_builddir)/$(MULTIBUILDTOP)../../$(host_subdir)/gcc/gcjh'
+      ZIP='$(top_builddir)/$(MULTIBUILDTOP)../../$(host_subdir)/fastjar/fastjar'
+   ;;
+   cross)
+      if test "x${with_newlib}" = "xyes"; then
+         # FIXME (comment): Why is this needed?
+         GCC_UNWIND_INCLUDE=
+         GCJ="${target_noncanonical}-gcj"
+      else
+         GCJ="${target_noncanonical}-gcj -B`${PWDCMD-pwd}`/"
+      fi
+      ZIP='$(target_noncanonical)-fastjar'
+      GCJH='$(target_noncanonical)-gcjh'
+   ;;
+   path)
+      GCJ="gcj -B`${PWDCMD-pwd}`/"
+      ## In this case, gcj is found outside the build tree.  However, zip is
+      ## found in the build tree.
+      ZIP='$(top_builddir)/$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar'
+      GCJH=gcjh
+   ;;
+esac
+
+
+
+
+# Create it, so that compile/link tests don't fail
+test -f libgcj.spec || touch libgcj.spec
+
+
+
+# Set up to configure Classpath.
+# FIXME: no supported way to pass args in autoconf.
+ac_configure_args="$ac_configure_args --disable-load-library"
+ac_configure_args="$ac_configure_args --${LIBGCJDEBUG}-debug"
+ac_configure_args="$ac_configure_args --enable-default-toolkit=$TOOLKIT"
+dir1=`cd $srcdir && pwd`
+dir2=`pwd`
+ac_configure_args="$ac_configure_args --with-vm-classes=$dir1:$dir2"
+ac_configure_args="$ac_configure_args --disable-core-jni"
+ac_configure_args="$ac_configure_args --disable-examples"
+ac_configure_args="$ac_configure_args --with-glibj=build"
+if test "$use_gtk_awt" != yes; then
+  ac_configure_args="$ac_configure_args --disable-gtk-peer"
+fi
+
 # Only use libltdl for non-newlib builds.
 if test "x${with_newlib}" = "x" || test "x${with_newlib}" = "xno"; then
      case $enable_ltdl_convenience in
@@ -4432,67 +4617,6 @@ deplibs_check_method=$lt_cv_deplibs_check_method
 
 # Autoconf 2.13's AC_OBJEXT and AC_EXEEXT macros only works for C compilers!
 
-# find the maximum length of command line arguments
-echo "$as_me:$LINENO: checking the maximum length of command line arguments" >&5
-echo $ECHO_N "checking the maximum length of command line arguments... $ECHO_C" >&6
-if test "${lt_cv_sys_max_cmd_len+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-    i=0
-  teststring="ABCD"
-
-  case $build_os in
-  msdosdjgpp*)
-    # On DJGPP, this test can blow up pretty badly due to problems in libc
-    # (any single argument exceeding 2000 bytes causes a buffer overrun
-    # during glob expansion).  Even if it were fixed, the result of this
-    # check would be larger than it should be.
-    lt_cv_sys_max_cmd_len=12288;    # 12K is about right
-    ;;
-
-  cygwin* | mingw*)
-    # On Win9x/ME, this test blows up -- it succeeds, but takes
-    # about 5 minutes as the teststring grows exponentially.
-    # Worse, since 9x/ME are not pre-emptively multitasking,
-    # you end up with a "frozen" computer, even though with patience
-    # the test eventually succeeds (with a max line length of 256k).
-    # Instead, let's just punt: use the minimum linelength reported by
-    # all of the supported platforms: 8192 (on NT/2K/XP).
-    lt_cv_sys_max_cmd_len=8192;
-    ;;
-
-  amigaos*)
-    # On AmigaOS with pdksh, this test takes hours, literally.
-    # So we just punt and use a minimum line length of 8192.
-    lt_cv_sys_max_cmd_len=8192;
-    ;;
-
-  netbsd* | freebsd* | openbsd* | darwin* | dragonfly*)
-    # This has been around since 386BSD, at least.  Likely further.
-    if test -x /sbin/sysctl; then
-      lt_cv_sys_max_cmd_len=`/sbin/sysctl -n kern.argmax`
-    elif test -x /usr/sbin/sysctl; then
-      lt_cv_sys_max_cmd_len=`/usr/sbin/sysctl -n kern.argmax`
-    else
-      lt_cv_sys_max_cmd_len=65536 # usable default for *BSD
-    fi
-    # And add a safety zone
-    lt_cv_sys_max_cmd_len=`expr $lt_cv_sys_max_cmd_len \/ 4`
-    lt_cv_sys_max_cmd_len=`expr $lt_cv_sys_max_cmd_len \* 3`
-    ;;
-  esac
-
-fi
-
-if test -n "$lt_cv_sys_max_cmd_len" ; then
-  echo "$as_me:$LINENO: result: $lt_cv_sys_max_cmd_len" >&5
-echo "${ECHO_T}$lt_cv_sys_max_cmd_len" >&6
-else
-  echo "$as_me:$LINENO: result: none" >&5
-echo "${ECHO_T}none" >&6
-fi
-
-
 # Only perform the check for file, if the check method requires it
 case $deplibs_check_method in
 file_magic*)
@@ -4826,7 +4950,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4829 "configure"' > conftest.$ac_ext
+  echo '#line 4953 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -5661,7 +5785,8 @@ fi
 
 
 
-subdirs="$subdirs libltdl"
+
+subdirs="$subdirs classpath libltdl"
 
 
 # The -no-testsuite modules omit the test subdir.
@@ -5779,23 +5904,6 @@ _ACEOF
 
 fi
 
-
-# See if the user has requested runtime debugging.
-LIBGCJDEBUG="false"
-
-# Check whether --enable-libgcj-debug or --disable-libgcj-debug was given.
-if test "${enable_libgcj_debug+set}" = set; then
-  enableval="$enable_libgcj_debug"
-  if test "$enable_libgcj_debug" = yes; then
-
-cat >>confdefs.h <<\_ACEOF
-#define DEBUG 1
-_ACEOF
-
-    LIBGCJDEBUG="true"
-  fi
-fi;
-
 # Check for gc debugging.  This option is handled both here and in the GC.
 # Check whether --enable-gc-debug or --disable-gc-debug was given.
 if test "${enable_gc_debug+set}" = set; then
@@ -5845,7 +5953,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then
   :
 else
   cat > conftest.$ac_ext << EOF
-#line 5848 "configure"
+#line 5956 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -7973,77 +8081,6 @@ fi
 
   LDFLAGS=$ac_save_LDFLAGS
 
-fi
-
-
-# Determine which AWT peer libraries to build
-# Check whether --enable-java-awt or --disable-java-awt was given.
-if test "${enable_java_awt+set}" = set; then
-  enableval="$enable_java_awt"
-
-fi;
-
-peerlibs="`echo ${enable_java_awt} | tr ',' ' '`"
-use_xlib_awt=""
-use_gtk_awt=""
-# The default toolkit to use is the first one specified.
-TOOLKIT=
-
-
-for peer in $peerlibs ; do
-  case $peer in
-    xlib)
-      if test "$no_x" = yes; then
-        echo "*** xlib peers requested but no X library available" 1>&2
-        exit 1
-      else
-        use_xlib_awt="yes"
-	if test -z "$TOOLKIT"; then
-	   TOOLKIT=gnu.awt.xlib.XToolkit
-	fi
-      fi
-      ;;
-    gtk)
-      if test "$no_x" = yes; then
-	 echo "*** xlib peers requested but no X library available" 1>&2
-	 exit 1
-      else
-	 use_gtk_awt=yes
-	 if test -z "$TOOLKIT"; then
-	    TOOLKIT=gnu.java.awt.peer.gtk.GtkToolkit
-	 fi
-	 test -d jniinclude || mkdir jniinclude
-      fi
-      ;;
-    no)
-      use_xlib_awt=
-      use_gtk_awt=
-      break
-      ;;
-    *)
-      echo "*** unrecognised argument \"${peer}\" for --enable-java-awt" 1>&2
-      exit 1
-  esac
-done
-
-
-
-if test "$use_xlib_awt" = yes; then
-  XLIB_AWT_TRUE=
-  XLIB_AWT_FALSE='#'
-else
-  XLIB_AWT_TRUE='#'
-  XLIB_AWT_FALSE=
-fi
-
-
-
-if test "$use_gtk_awt" = yes; then
-  GTK_AWT_TRUE=
-  GTK_AWT_FALSE='#'
-else
-  GTK_AWT_TRUE='#'
-  GTK_AWT_FALSE=
 fi
 
 
@@ -13311,84 +13348,6 @@ else
 fi
 
 
-if test -z "${with_multisubdir}"; then
-   builddotdot=.
-else
-   builddotdot=`echo ${with_multisubdir} | sed -e 's:[^/][^/]*:..:g'`
-fi
-
-NATIVE=yes
-
-# Which gcj do we use?
-which_gcj=default
-built_gcc_dir="`cd ${builddotdot}/../../${host_subdir}/gcc && ${PWDCMD-pwd}`"
-if test -n "${with_cross_host}"; then
-  # We are being configured with a cross compiler. We can't
-  # use ac_exeext, because that is for the target platform.
-  NATIVE=no
-  cross_host_exeext=
-  case "${with_cross_host}" in
-     *mingw* | *cygwin*)
-         cross_host_exeext=.exe
-     ;;
-  esac
-  if test -x "${built_gcc_dir}/gcj${cross_host_exeext}"; then
-     if test x"$build_noncanonical" = x"$with_cross_host"; then
-        # Ordinary cross (host!=target and host=build)
-        which_gcj=built
-     else
-        # Canadian cross (host!=target and host!=build)
-        which_gcj=cross
-     fi
-  else
-     which_gcj=cross
-  fi
-else
-  # We are being configured with a native or crossed-native compiler
-  if test -x "${built_gcc_dir}/gcj${ac_exeext}"; then
-     if test x"$build" = x"$host"; then
-        # True native build (host=target and host=build)
-        which_gcj=built
-     else
-        # Crossed-native build (host=target and host!=build)
-        which_gcj=cross
-     fi
-  else
-     which_gcj=path
-  fi
-fi
-case "${which_gcj}" in
-   built)
-      GCJ="$built_gcc_dir/gcj -B`${PWDCMD-pwd}`/ -B$built_gcc_dir/"
-      GCJH='$(top_builddir)/$(MULTIBUILDTOP)../../$(host_subdir)/gcc/gcjh'
-      ZIP='$(top_builddir)/$(MULTIBUILDTOP)../../$(host_subdir)/fastjar/fastjar'
-   ;;
-   cross)
-      if test "x${with_newlib}" = "xyes"; then
-         # FIXME (comment): Why is this needed?
-         GCC_UNWIND_INCLUDE=
-         GCJ="${target_noncanonical}-gcj"
-      else
-         GCJ="${target_noncanonical}-gcj -B`${PWDCMD-pwd}`/"
-      fi
-      ZIP='$(target_noncanonical)-fastjar'
-      GCJH='$(target_noncanonical)-gcjh'
-   ;;
-   path)
-      GCJ="gcj -B`${PWDCMD-pwd}`/"
-      ## In this case, gcj is found outside the build tree.  However, zip is
-      ## found in the build tree.
-      ZIP='$(top_builddir)/$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar'
-      GCJH=gcjh
-   ;;
-esac
-
-
-
-
-# Create it, so that compile/link tests don't fail
-test -f libgcj.spec || touch libgcj.spec
-
 # Use a semicolon as CLASSPATH separator for MinGW, otherwise a colon.
 case $build in
     *-mingw32) CLASSPATH_SEPARATOR=';' ;;
@@ -13406,8 +13365,8 @@ CPPFLAGS="$CPPFLAGS -I`${PWDCMD-pwd}` -I`cd $srcdir && ${PWDCMD-pwd}`"
 if test ! -f gnu/classpath/Configuration.java; then
   test -d gnu || mkdir gnu
   test -d gnu/classpath || mkdir gnu/classpath
-  sed -e 's,@LIBGCJDEBUG@,$LIBGCJDEBUG,' \
-      -e 's,@TOOLKIT@,$TOOLKIT,' \
+  sed -e "s,@LIBGCJDEBUG@,$LIBGCJDEBUG," \
+      -e "s,@TOOLKIT@,$TOOLKIT," \
 	< $srcdir/gnu/classpath/Configuration.java.in \
 	> gnu/classpath/Configuration.java
   # We do not want to redirect the output of the grep below to /dev/null,
@@ -13504,6 +13463,9 @@ fi
 
 
 
+
+# Now remove it.
+rm -f gnu/classpath/Configuration.java
 
 CPPFLAGS=$GCJ_SAVE_CPPFLAGS
 
@@ -15574,7 +15536,7 @@ if test x$gcc_no_link = xyes; then
     ac_cv_func_mmap_fixed_mapped=no
   fi
 fi
-if test "x${ac_cv_func_mmap_fixed_mapped}" != xno; then
+if test "x${ac_cv_func_mmap_fixed_mapped+set}" != xset; then
 
 
 for ac_header in stdlib.h unistd.h
@@ -16134,7 +16096,7 @@ here=`${PWDCMD-pwd}`
 # We get this from the environment.
 
 
-                                                                                                              ac_config_files="$ac_config_files Makefile libgcj.pc libgcj.spec libgcj-test.spec gnu/classpath/Configuration.java gcj/Makefile include/Makefile testsuite/Makefile external/Makefile external/sax/Makefile external/w3c_dom/Makefile"
+                                                                      ac_config_files="$ac_config_files Makefile libgcj.pc libgcj.spec libgcj-test.spec gcj/Makefile include/Makefile testsuite/Makefile"
 
 
           ac_config_commands="$ac_config_commands default"
@@ -16259,6 +16221,20 @@ echo "$as_me: error: conditional \"MAINTAINER_MODE\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
+if test -z "${XLIB_AWT_TRUE}" && test -z "${XLIB_AWT_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"XLIB_AWT\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"XLIB_AWT\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${GTK_AWT_TRUE}" && test -z "${GTK_AWT_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"GTK_AWT\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"GTK_AWT\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
 if test -z "${am__fastdepGCJ_TRUE}" && test -z "${am__fastdepGCJ_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"am__fastdepGCJ\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
@@ -16298,20 +16274,6 @@ if test -z "${USING_DARWIN_CRT_TRUE}" && test -z "${USING_DARWIN_CRT_FALSE}"; th
   { { echo "$as_me:$LINENO: error: conditional \"USING_DARWIN_CRT\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
 echo "$as_me: error: conditional \"USING_DARWIN_CRT\" was never defined.
-Usually this means the macro was only invoked conditionally." >&2;}
-   { (exit 1); exit 1; }; }
-fi
-if test -z "${XLIB_AWT_TRUE}" && test -z "${XLIB_AWT_FALSE}"; then
-  { { echo "$as_me:$LINENO: error: conditional \"XLIB_AWT\" was never defined.
-Usually this means the macro was only invoked conditionally." >&5
-echo "$as_me: error: conditional \"XLIB_AWT\" was never defined.
-Usually this means the macro was only invoked conditionally." >&2;}
-   { (exit 1); exit 1; }; }
-fi
-if test -z "${GTK_AWT_TRUE}" && test -z "${GTK_AWT_FALSE}"; then
-  { { echo "$as_me:$LINENO: error: conditional \"GTK_AWT\" was never defined.
-Usually this means the macro was only invoked conditionally." >&5
-echo "$as_me: error: conditional \"GTK_AWT\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -16847,13 +16809,9 @@ do
   "libgcj.pc" ) CONFIG_FILES="$CONFIG_FILES libgcj.pc" ;;
   "libgcj.spec" ) CONFIG_FILES="$CONFIG_FILES libgcj.spec" ;;
   "libgcj-test.spec" ) CONFIG_FILES="$CONFIG_FILES libgcj-test.spec" ;;
-  "gnu/classpath/Configuration.java" ) CONFIG_FILES="$CONFIG_FILES gnu/classpath/Configuration.java" ;;
   "gcj/Makefile" ) CONFIG_FILES="$CONFIG_FILES gcj/Makefile" ;;
   "include/Makefile" ) CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
   "testsuite/Makefile" ) CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
-  "external/Makefile" ) CONFIG_FILES="$CONFIG_FILES external/Makefile" ;;
-  "external/sax/Makefile" ) CONFIG_FILES="$CONFIG_FILES external/sax/Makefile" ;;
-  "external/w3c_dom/Makefile" ) CONFIG_FILES="$CONFIG_FILES external/w3c_dom/Makefile" ;;
   "include/platform.h" ) CONFIG_LINKS="$CONFIG_LINKS include/platform.h:include/$PLATFORMH" ;;
   "java/io/natFile.cc" ) CONFIG_LINKS="$CONFIG_LINKS java/io/natFile.cc:java/io/natFile${FILE-${PLATFORM}}.cc" ;;
   "java/lang/ConcreteProcess.java" ) CONFIG_LINKS="$CONFIG_LINKS java/lang/ConcreteProcess.java:java/lang/${PLATFORM}Process.java" ;;
@@ -17037,6 +16995,14 @@ s,@LIBGCJ_CFLAGS@,$LIBGCJ_CFLAGS,;t t
 s,@LIBGCJ_CXXFLAGS@,$LIBGCJ_CXXFLAGS,;t t
 s,@LIBGCJ_JAVAFLAGS@,$LIBGCJ_JAVAFLAGS,;t t
 s,@LIBGCJ_LD_SYMBOLIC@,$LIBGCJ_LD_SYMBOLIC,;t t
+s,@LIBGCJDEBUG@,$LIBGCJDEBUG,;t t
+s,@TOOLKIT@,$TOOLKIT,;t t
+s,@XLIB_AWT_TRUE@,$XLIB_AWT_TRUE,;t t
+s,@XLIB_AWT_FALSE@,$XLIB_AWT_FALSE,;t t
+s,@GTK_AWT_TRUE@,$GTK_AWT_TRUE,;t t
+s,@GTK_AWT_FALSE@,$GTK_AWT_FALSE,;t t
+s,@GCJH@,$GCJH,;t t
+s,@ZIP@,$ZIP,;t t
 s,@INCLTDL@,$INCLTDL,;t t
 s,@LIBLTDL@,$LIBLTDL,;t t
 s,@DIRLTDL@,$DIRLTDL,;t t
@@ -17054,7 +17020,6 @@ s,@TESTSUBDIR_FALSE@,$TESTSUBDIR_FALSE,;t t
 s,@JAVA_HOME_SET_TRUE@,$JAVA_HOME_SET_TRUE,;t t
 s,@JAVA_HOME_SET_FALSE@,$JAVA_HOME_SET_FALSE,;t t
 s,@JAVA_HOME@,$JAVA_HOME,;t t
-s,@LIBGCJDEBUG@,$LIBGCJDEBUG,;t t
 s,@INTERPRETER@,$INTERPRETER,;t t
 s,@LIBFFI@,$LIBFFI,;t t
 s,@LIBFFIINCS@,$LIBFFIINCS,;t t
@@ -17075,11 +17040,6 @@ s,@X_CFLAGS@,$X_CFLAGS,;t t
 s,@X_PRE_LIBS@,$X_PRE_LIBS,;t t
 s,@X_LIBS@,$X_LIBS,;t t
 s,@X_EXTRA_LIBS@,$X_EXTRA_LIBS,;t t
-s,@TOOLKIT@,$TOOLKIT,;t t
-s,@XLIB_AWT_TRUE@,$XLIB_AWT_TRUE,;t t
-s,@XLIB_AWT_FALSE@,$XLIB_AWT_FALSE,;t t
-s,@GTK_AWT_TRUE@,$GTK_AWT_TRUE,;t t
-s,@GTK_AWT_FALSE@,$GTK_AWT_FALSE,;t t
 s,@GTK_CAIRO_TRUE@,$GTK_CAIRO_TRUE,;t t
 s,@GTK_CAIRO_FALSE@,$GTK_CAIRO_FALSE,;t t
 s,@PKG_CONFIG@,$PKG_CONFIG,;t t
@@ -17122,8 +17082,6 @@ s,@LIBART_CFLAGS@,$LIBART_CFLAGS,;t t
 s,@LIBART_LIBS@,$LIBART_LIBS,;t t
 s,@SUPPLY_BACKTRACE_TRUE@,$SUPPLY_BACKTRACE_TRUE,;t t
 s,@SUPPLY_BACKTRACE_FALSE@,$SUPPLY_BACKTRACE_FALSE,;t t
-s,@GCJH@,$GCJH,;t t
-s,@ZIP@,$ZIP,;t t
 s,@CLASSPATH_SEPARATOR@,$CLASSPATH_SEPARATOR,;t t
 s,@ac_ct_GCJ@,$ac_ct_GCJ,;t t
 s,@ZLIBS@,$ZLIBS,;t t

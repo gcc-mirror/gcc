@@ -7,36 +7,46 @@ explained in this HACKING file. Please add them if you discover them :)
 
 --
 
-A lot of the standard library files come from the GNU Classpath project.
-<http://www.gnu.org/software/classpath/>
-The libgcj and Classpath project have officially merged, but the merge
-is not yet complete. Our eventual goal is for Classpath to be an upstream
-source provider for libgcj, however it will be some time before this becomes
-reality: libgcj and Classpath have different implementations of many core
-java classes. In order to merge them, we need to select the best (most
-efficient, cleanest) implementation of each method/class/package, resolve
-any conflicts created by the merge, and test the final result.
+libgcj uses GNU Classpath as an upstream provider.  Snapshots of
+Classpath are imported into the libgcj source tree.  Some classes are
+overridden by local versions; these files still appear in the libgcj
+tree.
 
-The merged files can be recognized by the standard Classpath copyright
-comments at the top of the file. If you make changes to these files
-then you should also check in the fix to Classpath.  For small changes
-it may be easier to send a patch to the classpath mailinglist.  For
-large changes, if you have direct write access to the libgcj tree,
-then you will also need to get a Classpath account and do the work
-yourself.
-<http://mail.gnu.org/mailman/listinfo/classpath/>
-<mailto:classpath@gnu.org>
+To import a new release:
 
-If you merge a libgcj class with a classpath class then you must update the
-copyright notice at the top of the file so others can see that this is a
-shared libgcj/classpath file.
+- Check out a classpath snapshot
+- Use auto* to create configure, Makefile.in, etc
+  You have to make sure to use the gcc libtool.m4 and gcc lt* scripts
+  cd .../classpath
+  cp ../../lt* .
+  aclocal -I m4 -I ../..
+  autoconf
+  autoheader
+  automake
+  rm -rf autom4te.cache
+- Test everything first.  The simplest way to do this is by overlaying
+  the checked out classpath on your gcc tree and then doing a build.
+- Use 'cvs import' to import.  The vendor tag is 'CLASSPATH'.  For the
+  release tag, if this is a released classpath version, use something
+  like 'classpath-import-VERSION'; otherwise something like
+  'classpath-import-DATE'.
+  Be sure to use -ko and -I\!
+- Remove any files that were deleted in Classpath
+- Run 'scripts/makemake.tcl > sources.am' in the source tree
+- Run automake for libgcj
+
+Over time we plan to remove as many of the remaining divergences as
+possible.
+
+File additions and deletions require running scripts/makemake.tcl
+before running automake.
+
 
 --
 
 If you need to add new java files to libgcj then you have to edit the
 Makefile.am file in the top (libjava) directory. And run automake.
 
-Tom Tromey adds:
 If you add a class to java.lang, java.io, or java.util
 (including sub-packages, like java.lang.ref).
 
@@ -45,8 +55,10 @@ If you add a class to java.lang, java.io, or java.util
 * Go to the `namespace java' line, and delete that entire block (the   
   entire contents of the namespace)
 
-* Then insert the output of `perl ../scripts/classes.pl' into the file
-  at that point.
+* Then insert the output of `perl scripts/classes.pl' into the file
+  at that point.  This must be run from the build tree, in
+  <build>/classpath/lib; it uses the .class file name to determine
+  what to print.
 
 If you're generating a patch there is a program you can get to do an
 offline `cvs add' (it will fake an `add' if you don't have write

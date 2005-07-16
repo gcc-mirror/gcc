@@ -9,4 +9,4 @@ gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 target_noncanonical = @target_noncanonical@
 
 tool_include_dir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)/include
-tool_include__HEADERS = jni.h jni_md.h jawt.h jawt_md.h jvmpi.h
+tool_include__HEADERS = jni_md.h jawt.h jawt_md.h jvmpi.h

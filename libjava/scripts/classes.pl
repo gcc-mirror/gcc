@@ -1,17 +1,15 @@
 # classes.pl - A perl program to generate most of the contents of
 # javaprims.h automatically.
 
-# Copyright (C) 1998, 1999, 2000, 2002  Red Hat, Inc.
+# Copyright (C) 1998, 1999, 2000, 2002, 2005  Free Software Foundation
 #
-# This file is part of libjava.
+# This file is part of libgcj.
 #
 # This software is copyrighted work licensed under the terms of the
-# Libjava License.  Please consult the file "LIBJAVA_LICENSE" for
+# Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 # details.
 
-# Usage: cd <top-srcdir> ; perl classes.pl.
-# Can also be run from the `include' directory; this lets us
-# more easily insert the output into javaprims.h (which is where it goes).
+# Usage: cd <build>/classpath/lib ; perl classes.pl.
 
 use DirHandle;
 
@@ -62,38 +60,8 @@ sub scan
 		push (@subdirs, $name);
 		next;
 	    }
-	    next unless $name =~ /\.java$/;
-
-	    open (FILE, "< $dir/$name");
-	    local ($outer, $classname);
-	    while (<FILE>)
-	    {
-		s,//.*$,,;
-		# NOTE: we don't skip `/*' comments.  However, we do
-		# skip lines with a `*' with leading whitespace.  This
-		# catches the most important cases.
-		s,^\s*\*.*$,,;
-
-		# For now assume that class names start with upper
-		# case letter.
-		next unless /\b(class|interface) ([A-Z][A-Za-z0-9]+)/;
-		$classname = $2;
-
-		# We assume the code is properly indented, so that we
-		# can print inner classes properly.
-		if (/^\s/)
-		{
-		    die "no outer class for $classname in $dir/$name"
-			unless $outer;
-		    $classes{$outer . "\$" . $classname} = 1;
-		}
-		else
-		{
-		    $classes{$classname} = 1;
-		    $outer = $classname;
-		}
-	    }
-	    close (FILE);
+	    next unless $name =~ s/\.class$//;
+	    $classes{$name} = 1;
 	}
 
 	undef $d;
