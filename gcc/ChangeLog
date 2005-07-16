@@ -1,3 +1,8 @@
+2005-07-16  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-structalias.c (need_to_solve): Need to check for preds,
+	too.
+
 2005-07-16  Eric Botcazou <ebotcazou@libertysurf.fr>
 
 	* doc/install.texi (*-*-solaris2*): Document recommended version
