@@ -1,3 +1,8 @@
+2005-07-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/22204
+	* g++.dg/rtti/repo1.C: New test.
+
 2005-07-15  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	Backport from mainline.

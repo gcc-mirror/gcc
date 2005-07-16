@@ -1,5 +1,10 @@
 2005-07-15  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/22204
+	* repo.c (repo_emit_p): Robustify.
+
+2005-07-15  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/22132
 	* call.c (implicit_conversion): Add c_cast_p parameter.
 	(standard_conversion): Likewise.  Allow conversions between
