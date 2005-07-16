@@ -239,6 +239,7 @@ proc emit_package_rule {package} {
 
   # A rule to make the phony file we are going to compile.
   puts "$lname: \$($varname)"
+  puts "\t@\$(mkinstalldirs) \$(dir \$@)"
   puts "\t@for file in \$($varname); do \\"
   puts "\t  if test -f \$(srcdir)/\$\$file; then \\"
   puts "\t    echo \$(srcdir)/\$\$file; \\"

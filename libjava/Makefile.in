@@ -6403,10 +6403,10 @@ lib-gnu-awt-xlib.la: $(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_DEPEND
 	-rpath $(toolexeclibdir) $(lib_gnu_awt_xlib_la_LDFLAGS) $(LIBS)
 
 %.lo: %.list
-	-mkdir $(dir $@) > /dev/null 2>&1
 	$(LTGCJCOMPILE) -c -o $@ -MT $@ -MD -MP -MF $(basename $@).deps @$<
 
 gnu/awt.list: $(gnu_awt_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_awt_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6416,6 +6416,7 @@ gnu/awt.list: $(gnu_awt_source_files)
 -include gnu/awt.deps
 
 gnu/awt/j2d.list: $(gnu_awt_j2d_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_awt_j2d_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6425,6 +6426,7 @@ gnu/awt/j2d.list: $(gnu_awt_j2d_source_files)
 -include gnu/awt/j2d.deps
 
 gnu/classpath.list: $(gnu_classpath_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_classpath_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6434,6 +6436,7 @@ gnu/classpath.list: $(gnu_classpath_source_files)
 -include gnu/classpath.deps
 
 gnu/classpath/debug.list: $(gnu_classpath_debug_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_classpath_debug_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6443,6 +6446,7 @@ gnu/classpath/debug.list: $(gnu_classpath_debug_source_files)
 -include gnu/classpath/debug.deps
 
 gnu/gcj.list: $(gnu_gcj_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_gcj_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6452,6 +6456,7 @@ gnu/gcj.list: $(gnu_gcj_source_files)
 -include gnu/gcj.deps
 
 gnu/gcj/convert.list: $(gnu_gcj_convert_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_gcj_convert_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6461,6 +6466,7 @@ gnu/gcj/convert.list: $(gnu_gcj_convert_source_files)
 -include gnu/gcj/convert.deps
 
 gnu/gcj/io.list: $(gnu_gcj_io_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_gcj_io_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6470,6 +6476,7 @@ gnu/gcj/io.list: $(gnu_gcj_io_source_files)
 -include gnu/gcj/io.deps
 
 gnu/gcj/runtime.list: $(gnu_gcj_runtime_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_gcj_runtime_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6479,6 +6486,7 @@ gnu/gcj/runtime.list: $(gnu_gcj_runtime_source_files)
 -include gnu/gcj/runtime.deps
 
 gnu/gcj/util.list: $(gnu_gcj_util_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_gcj_util_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6488,6 +6496,7 @@ gnu/gcj/util.list: $(gnu_gcj_util_source_files)
 -include gnu/gcj/util.deps
 
 gnu/java/awt.list: $(gnu_java_awt_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_awt_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6497,6 +6506,7 @@ gnu/java/awt.list: $(gnu_java_awt_source_files)
 -include gnu/java/awt.deps
 
 gnu/java/awt/color.list: $(gnu_java_awt_color_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_awt_color_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6506,6 +6516,7 @@ gnu/java/awt/color.list: $(gnu_java_awt_color_source_files)
 -include gnu/java/awt/color.deps
 
 gnu/java/awt/image.list: $(gnu_java_awt_image_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_awt_image_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6515,6 +6526,7 @@ gnu/java/awt/image.list: $(gnu_java_awt_image_source_files)
 -include gnu/java/awt/image.deps
 
 gnu/java/awt/peer.list: $(gnu_java_awt_peer_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_awt_peer_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6532,6 +6544,7 @@ gnu-java-beans.lo: $(gnu_java_beans_source_files)
 		`find classpath/lib/gnu/java/beans -name '*.class' | sort -r`
 
 gnu/java/io.list: $(gnu_java_io_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_io_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6541,6 +6554,7 @@ gnu/java/io.list: $(gnu_java_io_source_files)
 -include gnu/java/io.deps
 
 gnu/java/lang.list: $(gnu_java_lang_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_lang_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6550,6 +6564,7 @@ gnu/java/lang.list: $(gnu_java_lang_source_files)
 -include gnu/java/lang.deps
 
 gnu/java/lang/reflect.list: $(gnu_java_lang_reflect_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_lang_reflect_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6559,6 +6574,7 @@ gnu/java/lang/reflect.list: $(gnu_java_lang_reflect_source_files)
 -include gnu/java/lang/reflect.deps
 
 gnu/java/locale.list: $(gnu_java_locale_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_locale_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6568,6 +6584,7 @@ gnu/java/locale.list: $(gnu_java_locale_source_files)
 -include gnu/java/locale.deps
 
 gnu/java/math.list: $(gnu_java_math_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_math_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6577,6 +6594,7 @@ gnu/java/math.list: $(gnu_java_math_source_files)
 -include gnu/java/math.deps
 
 gnu/java/net.list: $(gnu_java_net_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_net_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6586,6 +6604,7 @@ gnu/java/net.list: $(gnu_java_net_source_files)
 -include gnu/java/net.deps
 
 gnu/java/net/protocol/file.list: $(gnu_java_net_protocol_file_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_net_protocol_file_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6595,6 +6614,7 @@ gnu/java/net/protocol/file.list: $(gnu_java_net_protocol_file_source_files)
 -include gnu/java/net/protocol/file.deps
 
 gnu/java/net/protocol/ftp.list: $(gnu_java_net_protocol_ftp_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_net_protocol_ftp_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6604,6 +6624,7 @@ gnu/java/net/protocol/ftp.list: $(gnu_java_net_protocol_ftp_source_files)
 -include gnu/java/net/protocol/ftp.deps
 
 gnu/java/net/protocol/http.list: $(gnu_java_net_protocol_http_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_net_protocol_http_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6613,6 +6634,7 @@ gnu/java/net/protocol/http.list: $(gnu_java_net_protocol_http_source_files)
 -include gnu/java/net/protocol/http.deps
 
 gnu/java/net/protocol/http/event.list: $(gnu_java_net_protocol_http_event_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_net_protocol_http_event_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6622,6 +6644,7 @@ gnu/java/net/protocol/http/event.list: $(gnu_java_net_protocol_http_event_source
 -include gnu/java/net/protocol/http/event.deps
 
 gnu/java/net/protocol/https.list: $(gnu_java_net_protocol_https_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_net_protocol_https_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6631,6 +6654,7 @@ gnu/java/net/protocol/https.list: $(gnu_java_net_protocol_https_source_files)
 -include gnu/java/net/protocol/https.deps
 
 gnu/java/net/protocol/jar.list: $(gnu_java_net_protocol_jar_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_net_protocol_jar_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6640,6 +6664,7 @@ gnu/java/net/protocol/jar.list: $(gnu_java_net_protocol_jar_source_files)
 -include gnu/java/net/protocol/jar.deps
 
 gnu/java/nio.list: $(gnu_java_nio_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_nio_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6649,6 +6674,7 @@ gnu/java/nio.list: $(gnu_java_nio_source_files)
 -include gnu/java/nio.deps
 
 gnu/java/nio/channels.list: $(gnu_java_nio_channels_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_nio_channels_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6658,6 +6684,7 @@ gnu/java/nio/channels.list: $(gnu_java_nio_channels_source_files)
 -include gnu/java/nio/channels.deps
 
 gnu/java/nio/charset.list: $(gnu_java_nio_charset_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_nio_charset_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6667,6 +6694,7 @@ gnu/java/nio/charset.list: $(gnu_java_nio_charset_source_files)
 -include gnu/java/nio/charset.deps
 
 gnu/java/rmi.list: $(gnu_java_rmi_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_rmi_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6676,6 +6704,7 @@ gnu/java/rmi.list: $(gnu_java_rmi_source_files)
 -include gnu/java/rmi.deps
 
 gnu/java/rmi/dgc.list: $(gnu_java_rmi_dgc_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_rmi_dgc_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6685,6 +6714,7 @@ gnu/java/rmi/dgc.list: $(gnu_java_rmi_dgc_source_files)
 -include gnu/java/rmi/dgc.deps
 
 gnu/java/rmi/registry.list: $(gnu_java_rmi_registry_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_rmi_registry_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6694,6 +6724,7 @@ gnu/java/rmi/registry.list: $(gnu_java_rmi_registry_source_files)
 -include gnu/java/rmi/registry.deps
 
 gnu/java/rmi/server.list: $(gnu_java_rmi_server_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_rmi_server_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6703,6 +6734,7 @@ gnu/java/rmi/server.list: $(gnu_java_rmi_server_source_files)
 -include gnu/java/rmi/server.deps
 
 gnu/java/security.list: $(gnu_java_security_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_security_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6712,6 +6744,7 @@ gnu/java/security.list: $(gnu_java_security_source_files)
 -include gnu/java/security.deps
 
 gnu/java/security/action.list: $(gnu_java_security_action_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_security_action_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6721,6 +6754,7 @@ gnu/java/security/action.list: $(gnu_java_security_action_source_files)
 -include gnu/java/security/action.deps
 
 gnu/java/security/ber.list: $(gnu_java_security_ber_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_security_ber_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6730,6 +6764,7 @@ gnu/java/security/ber.list: $(gnu_java_security_ber_source_files)
 -include gnu/java/security/ber.deps
 
 gnu/java/security/der.list: $(gnu_java_security_der_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_security_der_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6739,6 +6774,7 @@ gnu/java/security/der.list: $(gnu_java_security_der_source_files)
 -include gnu/java/security/der.deps
 
 gnu/java/security/pkcs.list: $(gnu_java_security_pkcs_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_security_pkcs_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6748,6 +6784,7 @@ gnu/java/security/pkcs.list: $(gnu_java_security_pkcs_source_files)
 -include gnu/java/security/pkcs.deps
 
 gnu/java/security/provider.list: $(gnu_java_security_provider_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_security_provider_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6757,6 +6794,7 @@ gnu/java/security/provider.list: $(gnu_java_security_provider_source_files)
 -include gnu/java/security/provider.deps
 
 gnu/java/security/util.list: $(gnu_java_security_util_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_security_util_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6766,6 +6804,7 @@ gnu/java/security/util.list: $(gnu_java_security_util_source_files)
 -include gnu/java/security/util.deps
 
 gnu/java/security/x509.list: $(gnu_java_security_x509_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_security_x509_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6775,6 +6814,7 @@ gnu/java/security/x509.list: $(gnu_java_security_x509_source_files)
 -include gnu/java/security/x509.deps
 
 gnu/java/security/x509/ext.list: $(gnu_java_security_x509_ext_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_security_x509_ext_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6784,6 +6824,7 @@ gnu/java/security/x509/ext.list: $(gnu_java_security_x509_ext_source_files)
 -include gnu/java/security/x509/ext.deps
 
 gnu/java/text.list: $(gnu_java_text_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_text_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6793,6 +6834,7 @@ gnu/java/text.list: $(gnu_java_text_source_files)
 -include gnu/java/text.deps
 
 gnu/java/util.list: $(gnu_java_util_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_util_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6802,6 +6844,7 @@ gnu/java/util.list: $(gnu_java_util_source_files)
 -include gnu/java/util.deps
 
 gnu/java/util/prefs.list: $(gnu_java_util_prefs_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_util_prefs_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6811,6 +6854,7 @@ gnu/java/util/prefs.list: $(gnu_java_util_prefs_source_files)
 -include gnu/java/util/prefs.deps
 
 gnu/javax/swing/text/html/parser.list: $(gnu_javax_swing_text_html_parser_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_javax_swing_text_html_parser_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6820,6 +6864,7 @@ gnu/javax/swing/text/html/parser.list: $(gnu_javax_swing_text_html_parser_source
 -include gnu/javax/swing/text/html/parser.deps
 
 gnu/javax/swing/text/html/parser/models.list: $(gnu_javax_swing_text_html_parser_models_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_javax_swing_text_html_parser_models_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6829,6 +6874,7 @@ gnu/javax/swing/text/html/parser/models.list: $(gnu_javax_swing_text_html_parser
 -include gnu/javax/swing/text/html/parser/models.deps
 
 gnu/javax/swing/text/html/parser/support.list: $(gnu_javax_swing_text_html_parser_support_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_javax_swing_text_html_parser_support_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6838,6 +6884,7 @@ gnu/javax/swing/text/html/parser/support.list: $(gnu_javax_swing_text_html_parse
 -include gnu/javax/swing/text/html/parser/support.deps
 
 gnu/javax/swing/text/html/parser/support/low.list: $(gnu_javax_swing_text_html_parser_support_low_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_javax_swing_text_html_parser_support_low_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6847,6 +6894,7 @@ gnu/javax/swing/text/html/parser/support/low.list: $(gnu_javax_swing_text_html_p
 -include gnu/javax/swing/text/html/parser/support/low.deps
 
 gnu/regexp.list: $(gnu_regexp_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_regexp_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6860,6 +6908,7 @@ gnu-xml.lo: $(gnu_xml_source_files)
 		`find classpath/lib/gnu/xml -name '*.class' | sort -r`
 
 java/applet.list: $(java_applet_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_applet_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6869,6 +6918,7 @@ java/applet.list: $(java_applet_source_files)
 -include java/applet.deps
 
 java/awt.list: $(java_awt_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6878,6 +6928,7 @@ java/awt.list: $(java_awt_source_files)
 -include java/awt.deps
 
 java/awt/color.list: $(java_awt_color_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_color_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6887,6 +6938,7 @@ java/awt/color.list: $(java_awt_color_source_files)
 -include java/awt/color.deps
 
 java/awt/datatransfer.list: $(java_awt_datatransfer_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_datatransfer_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6896,6 +6948,7 @@ java/awt/datatransfer.list: $(java_awt_datatransfer_source_files)
 -include java/awt/datatransfer.deps
 
 java/awt/dnd.list: $(java_awt_dnd_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_dnd_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6905,6 +6958,7 @@ java/awt/dnd.list: $(java_awt_dnd_source_files)
 -include java/awt/dnd.deps
 
 java/awt/dnd/peer.list: $(java_awt_dnd_peer_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_dnd_peer_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6914,6 +6968,7 @@ java/awt/dnd/peer.list: $(java_awt_dnd_peer_source_files)
 -include java/awt/dnd/peer.deps
 
 java/awt/event.list: $(java_awt_event_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_event_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6923,6 +6978,7 @@ java/awt/event.list: $(java_awt_event_source_files)
 -include java/awt/event.deps
 
 java/awt/font.list: $(java_awt_font_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_font_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6932,6 +6988,7 @@ java/awt/font.list: $(java_awt_font_source_files)
 -include java/awt/font.deps
 
 java/awt/geom.list: $(java_awt_geom_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_geom_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6941,6 +6998,7 @@ java/awt/geom.list: $(java_awt_geom_source_files)
 -include java/awt/geom.deps
 
 java/awt/im.list: $(java_awt_im_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_im_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6950,6 +7008,7 @@ java/awt/im.list: $(java_awt_im_source_files)
 -include java/awt/im.deps
 
 java/awt/im/spi.list: $(java_awt_im_spi_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_im_spi_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6959,6 +7018,7 @@ java/awt/im/spi.list: $(java_awt_im_spi_source_files)
 -include java/awt/im/spi.deps
 
 java/awt/image.list: $(java_awt_image_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_image_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6968,6 +7028,7 @@ java/awt/image.list: $(java_awt_image_source_files)
 -include java/awt/image.deps
 
 java/awt/image/renderable.list: $(java_awt_image_renderable_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_image_renderable_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6977,6 +7038,7 @@ java/awt/image/renderable.list: $(java_awt_image_renderable_source_files)
 -include java/awt/image/renderable.deps
 
 java/awt/peer.list: $(java_awt_peer_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_peer_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6986,6 +7048,7 @@ java/awt/peer.list: $(java_awt_peer_source_files)
 -include java/awt/peer.deps
 
 java/awt/print.list: $(java_awt_print_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_print_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -6995,6 +7058,7 @@ java/awt/print.list: $(java_awt_print_source_files)
 -include java/awt/print.deps
 
 java/beans.list: $(java_beans_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_beans_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7004,6 +7068,7 @@ java/beans.list: $(java_beans_source_files)
 -include java/beans.deps
 
 java/beans/beancontext.list: $(java_beans_beancontext_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_beans_beancontext_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7013,6 +7078,7 @@ java/beans/beancontext.list: $(java_beans_beancontext_source_files)
 -include java/beans/beancontext.deps
 
 java/io.list: $(java_io_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_io_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7022,6 +7088,7 @@ java/io.list: $(java_io_source_files)
 -include java/io.deps
 
 java/lang.list: $(java_lang_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_lang_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7031,6 +7098,7 @@ java/lang.list: $(java_lang_source_files)
 -include java/lang.deps
 
 java/lang/annotation.list: $(java_lang_annotation_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_lang_annotation_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7040,6 +7108,7 @@ java/lang/annotation.list: $(java_lang_annotation_source_files)
 -include java/lang/annotation.deps
 
 java/lang/ref.list: $(java_lang_ref_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_lang_ref_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7049,6 +7118,7 @@ java/lang/ref.list: $(java_lang_ref_source_files)
 -include java/lang/ref.deps
 
 java/lang/reflect.list: $(java_lang_reflect_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_lang_reflect_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7058,6 +7128,7 @@ java/lang/reflect.list: $(java_lang_reflect_source_files)
 -include java/lang/reflect.deps
 
 java/math.list: $(java_math_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_math_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7067,6 +7138,7 @@ java/math.list: $(java_math_source_files)
 -include java/math.deps
 
 java/net.list: $(java_net_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_net_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7076,6 +7148,7 @@ java/net.list: $(java_net_source_files)
 -include java/net.deps
 
 java/nio.list: $(java_nio_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_nio_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7085,6 +7158,7 @@ java/nio.list: $(java_nio_source_files)
 -include java/nio.deps
 
 java/nio/channels.list: $(java_nio_channels_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_nio_channels_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7094,6 +7168,7 @@ java/nio/channels.list: $(java_nio_channels_source_files)
 -include java/nio/channels.deps
 
 java/nio/channels/spi.list: $(java_nio_channels_spi_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_nio_channels_spi_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7103,6 +7178,7 @@ java/nio/channels/spi.list: $(java_nio_channels_spi_source_files)
 -include java/nio/channels/spi.deps
 
 java/nio/charset.list: $(java_nio_charset_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_nio_charset_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7112,6 +7188,7 @@ java/nio/charset.list: $(java_nio_charset_source_files)
 -include java/nio/charset.deps
 
 java/nio/charset/spi.list: $(java_nio_charset_spi_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_nio_charset_spi_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7121,6 +7198,7 @@ java/nio/charset/spi.list: $(java_nio_charset_spi_source_files)
 -include java/nio/charset/spi.deps
 
 java/rmi.list: $(java_rmi_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_rmi_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7130,6 +7208,7 @@ java/rmi.list: $(java_rmi_source_files)
 -include java/rmi.deps
 
 java/rmi/activation.list: $(java_rmi_activation_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_rmi_activation_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7139,6 +7218,7 @@ java/rmi/activation.list: $(java_rmi_activation_source_files)
 -include java/rmi/activation.deps
 
 java/rmi/dgc.list: $(java_rmi_dgc_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_rmi_dgc_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7148,6 +7228,7 @@ java/rmi/dgc.list: $(java_rmi_dgc_source_files)
 -include java/rmi/dgc.deps
 
 java/rmi/registry.list: $(java_rmi_registry_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_rmi_registry_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7157,6 +7238,7 @@ java/rmi/registry.list: $(java_rmi_registry_source_files)
 -include java/rmi/registry.deps
 
 java/rmi/server.list: $(java_rmi_server_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_rmi_server_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7166,6 +7248,7 @@ java/rmi/server.list: $(java_rmi_server_source_files)
 -include java/rmi/server.deps
 
 java/security.list: $(java_security_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_security_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7175,6 +7258,7 @@ java/security.list: $(java_security_source_files)
 -include java/security.deps
 
 java/security/acl.list: $(java_security_acl_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_security_acl_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7184,6 +7268,7 @@ java/security/acl.list: $(java_security_acl_source_files)
 -include java/security/acl.deps
 
 java/security/cert.list: $(java_security_cert_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_security_cert_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7193,6 +7278,7 @@ java/security/cert.list: $(java_security_cert_source_files)
 -include java/security/cert.deps
 
 java/security/interfaces.list: $(java_security_interfaces_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_security_interfaces_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7202,6 +7288,7 @@ java/security/interfaces.list: $(java_security_interfaces_source_files)
 -include java/security/interfaces.deps
 
 java/security/spec.list: $(java_security_spec_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_security_spec_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7211,6 +7298,7 @@ java/security/spec.list: $(java_security_spec_source_files)
 -include java/security/spec.deps
 
 java/sql.list: $(java_sql_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_sql_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7220,6 +7308,7 @@ java/sql.list: $(java_sql_source_files)
 -include java/sql.deps
 
 java/text.list: $(java_text_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_text_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7229,6 +7318,7 @@ java/text.list: $(java_text_source_files)
 -include java/text.deps
 
 java/util.list: $(java_util_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_util_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7238,6 +7328,7 @@ java/util.list: $(java_util_source_files)
 -include java/util.deps
 
 java/util/jar.list: $(java_util_jar_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_util_jar_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7247,6 +7338,7 @@ java/util/jar.list: $(java_util_jar_source_files)
 -include java/util/jar.deps
 
 java/util/logging.list: $(java_util_logging_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_util_logging_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7256,6 +7348,7 @@ java/util/logging.list: $(java_util_logging_source_files)
 -include java/util/logging.deps
 
 java/util/prefs.list: $(java_util_prefs_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_util_prefs_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7265,6 +7358,7 @@ java/util/prefs.list: $(java_util_prefs_source_files)
 -include java/util/prefs.deps
 
 java/util/regex.list: $(java_util_regex_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_util_regex_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7274,6 +7368,7 @@ java/util/regex.list: $(java_util_regex_source_files)
 -include java/util/regex.deps
 
 java/util/zip.list: $(java_util_zip_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_util_zip_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7283,6 +7378,7 @@ java/util/zip.list: $(java_util_zip_source_files)
 -include java/util/zip.deps
 
 javax/accessibility.list: $(javax_accessibility_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_accessibility_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7292,6 +7388,7 @@ javax/accessibility.list: $(javax_accessibility_source_files)
 -include javax/accessibility.deps
 
 javax/crypto.list: $(javax_crypto_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_crypto_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7301,6 +7398,7 @@ javax/crypto.list: $(javax_crypto_source_files)
 -include javax/crypto.deps
 
 javax/crypto/interfaces.list: $(javax_crypto_interfaces_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_crypto_interfaces_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7310,6 +7408,7 @@ javax/crypto/interfaces.list: $(javax_crypto_interfaces_source_files)
 -include javax/crypto/interfaces.deps
 
 javax/crypto/spec.list: $(javax_crypto_spec_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_crypto_spec_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7323,6 +7422,7 @@ javax-imageio.lo: $(javax_imageio_source_files)
 		`find classpath/lib/javax/imageio -name '*.class' | sort -r`
 
 javax/naming.list: $(javax_naming_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_naming_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7332,6 +7432,7 @@ javax/naming.list: $(javax_naming_source_files)
 -include javax/naming.deps
 
 javax/naming/directory.list: $(javax_naming_directory_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_naming_directory_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7341,6 +7442,7 @@ javax/naming/directory.list: $(javax_naming_directory_source_files)
 -include javax/naming/directory.deps
 
 javax/naming/event.list: $(javax_naming_event_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_naming_event_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7350,6 +7452,7 @@ javax/naming/event.list: $(javax_naming_event_source_files)
 -include javax/naming/event.deps
 
 javax/naming/ldap.list: $(javax_naming_ldap_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_naming_ldap_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7359,6 +7462,7 @@ javax/naming/ldap.list: $(javax_naming_ldap_source_files)
 -include javax/naming/ldap.deps
 
 javax/naming/spi.list: $(javax_naming_spi_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_naming_spi_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7368,6 +7472,7 @@ javax/naming/spi.list: $(javax_naming_spi_source_files)
 -include javax/naming/spi.deps
 
 javax/net.list: $(javax_net_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_net_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7377,6 +7482,7 @@ javax/net.list: $(javax_net_source_files)
 -include javax/net.deps
 
 javax/net/ssl.list: $(javax_net_ssl_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_net_ssl_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7386,6 +7492,7 @@ javax/net/ssl.list: $(javax_net_ssl_source_files)
 -include javax/net/ssl.deps
 
 javax/print.list: $(javax_print_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_print_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7395,6 +7502,7 @@ javax/print.list: $(javax_print_source_files)
 -include javax/print.deps
 
 javax/print/attribute.list: $(javax_print_attribute_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_print_attribute_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7404,6 +7512,7 @@ javax/print/attribute.list: $(javax_print_attribute_source_files)
 -include javax/print/attribute.deps
 
 javax/print/attribute/standard.list: $(javax_print_attribute_standard_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_print_attribute_standard_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7413,6 +7522,7 @@ javax/print/attribute/standard.list: $(javax_print_attribute_standard_source_fil
 -include javax/print/attribute/standard.deps
 
 javax/print/event.list: $(javax_print_event_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_print_event_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7422,6 +7532,7 @@ javax/print/event.list: $(javax_print_event_source_files)
 -include javax/print/event.deps
 
 javax/security/auth.list: $(javax_security_auth_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_security_auth_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7431,6 +7542,7 @@ javax/security/auth.list: $(javax_security_auth_source_files)
 -include javax/security/auth.deps
 
 javax/security/auth/callback.list: $(javax_security_auth_callback_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_security_auth_callback_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7440,6 +7552,7 @@ javax/security/auth/callback.list: $(javax_security_auth_callback_source_files)
 -include javax/security/auth/callback.deps
 
 javax/security/auth/login.list: $(javax_security_auth_login_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_security_auth_login_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7449,6 +7562,7 @@ javax/security/auth/login.list: $(javax_security_auth_login_source_files)
 -include javax/security/auth/login.deps
 
 javax/security/auth/spi.list: $(javax_security_auth_spi_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_security_auth_spi_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7458,6 +7572,7 @@ javax/security/auth/spi.list: $(javax_security_auth_spi_source_files)
 -include javax/security/auth/spi.deps
 
 javax/security/auth/x500.list: $(javax_security_auth_x500_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_security_auth_x500_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7467,6 +7582,7 @@ javax/security/auth/x500.list: $(javax_security_auth_x500_source_files)
 -include javax/security/auth/x500.deps
 
 javax/security/cert.list: $(javax_security_cert_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_security_cert_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7476,6 +7592,7 @@ javax/security/cert.list: $(javax_security_cert_source_files)
 -include javax/security/cert.deps
 
 javax/security/sasl.list: $(javax_security_sasl_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_security_sasl_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7485,6 +7602,7 @@ javax/security/sasl.list: $(javax_security_sasl_source_files)
 -include javax/security/sasl.deps
 
 javax/sql.list: $(javax_sql_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_sql_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7494,6 +7612,7 @@ javax/sql.list: $(javax_sql_source_files)
 -include javax/sql.deps
 
 javax/swing.list: $(javax_swing_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7503,6 +7622,7 @@ javax/swing.list: $(javax_swing_source_files)
 -include javax/swing.deps
 
 javax/swing/border.list: $(javax_swing_border_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_border_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7512,6 +7632,7 @@ javax/swing/border.list: $(javax_swing_border_source_files)
 -include javax/swing/border.deps
 
 javax/swing/colorchooser.list: $(javax_swing_colorchooser_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_colorchooser_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7521,6 +7642,7 @@ javax/swing/colorchooser.list: $(javax_swing_colorchooser_source_files)
 -include javax/swing/colorchooser.deps
 
 javax/swing/event.list: $(javax_swing_event_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_event_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7530,6 +7652,7 @@ javax/swing/event.list: $(javax_swing_event_source_files)
 -include javax/swing/event.deps
 
 javax/swing/filechooser.list: $(javax_swing_filechooser_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_filechooser_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7539,6 +7662,7 @@ javax/swing/filechooser.list: $(javax_swing_filechooser_source_files)
 -include javax/swing/filechooser.deps
 
 javax/swing/plaf.list: $(javax_swing_plaf_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_plaf_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7548,6 +7672,7 @@ javax/swing/plaf.list: $(javax_swing_plaf_source_files)
 -include javax/swing/plaf.deps
 
 javax/swing/plaf/basic.list: $(javax_swing_plaf_basic_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_plaf_basic_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7557,6 +7682,7 @@ javax/swing/plaf/basic.list: $(javax_swing_plaf_basic_source_files)
 -include javax/swing/plaf/basic.deps
 
 javax/swing/plaf/metal.list: $(javax_swing_plaf_metal_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_plaf_metal_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7566,6 +7692,7 @@ javax/swing/plaf/metal.list: $(javax_swing_plaf_metal_source_files)
 -include javax/swing/plaf/metal.deps
 
 javax/swing/table.list: $(javax_swing_table_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_table_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7575,6 +7702,7 @@ javax/swing/table.list: $(javax_swing_table_source_files)
 -include javax/swing/table.deps
 
 javax/swing/text.list: $(javax_swing_text_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_text_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7584,6 +7712,7 @@ javax/swing/text.list: $(javax_swing_text_source_files)
 -include javax/swing/text.deps
 
 javax/swing/text/html.list: $(javax_swing_text_html_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_text_html_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7593,6 +7722,7 @@ javax/swing/text/html.list: $(javax_swing_text_html_source_files)
 -include javax/swing/text/html.deps
 
 javax/swing/text/html/parser.list: $(javax_swing_text_html_parser_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_text_html_parser_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7602,6 +7732,7 @@ javax/swing/text/html/parser.list: $(javax_swing_text_html_parser_source_files)
 -include javax/swing/text/html/parser.deps
 
 javax/swing/text/rtf.list: $(javax_swing_text_rtf_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_text_rtf_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7611,6 +7742,7 @@ javax/swing/text/rtf.list: $(javax_swing_text_rtf_source_files)
 -include javax/swing/text/rtf.deps
 
 javax/swing/tree.list: $(javax_swing_tree_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_tree_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7620,6 +7752,7 @@ javax/swing/tree.list: $(javax_swing_tree_source_files)
 -include javax/swing/tree.deps
 
 javax/swing/undo.list: $(javax_swing_undo_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_undo_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7629,6 +7762,7 @@ javax/swing/undo.list: $(javax_swing_undo_source_files)
 -include javax/swing/undo.deps
 
 javax/transaction.list: $(javax_transaction_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_transaction_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7638,6 +7772,7 @@ javax/transaction.list: $(javax_transaction_source_files)
 -include javax/transaction.deps
 
 javax/transaction/xa.list: $(javax_transaction_xa_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_transaction_xa_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -7651,6 +7786,7 @@ javax-xml.lo: $(javax_xml_source_files)
 		`find classpath/lib/javax/xml -name '*.class' | sort -r`
 
 org/ietf/jgss.list: $(org_ietf_jgss_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(org_ietf_jgss_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
