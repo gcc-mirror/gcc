@@ -3494,7 +3494,8 @@ init_base_vars (void)
 /* Return true if we actually need to solve the constraint graph in order to
    get our points-to sets.  This is false when, for example, no addresses are
    taken other than special vars, or all points-to sets with members already
-   contain the anything variable.  */
+   contain the anything variable and there are no predecessors for other
+   sets.  */
 
 static bool
 need_to_solve (void)
@@ -3515,6 +3516,9 @@ need_to_solve (void)
       if (v->solution 
 	  && !bitmap_empty_p (v->solution) 
 	  && !bitmap_bit_p (v->solution, anything_id))
+	found_non_anything = true;
+      else if (bitmap_empty_p (v->solution)
+	       && VEC_length (constraint_edge_t, graph->preds[v->id]) != 0)
 	found_non_anything = true;
 
       if (found_address_taken && found_non_anything)
