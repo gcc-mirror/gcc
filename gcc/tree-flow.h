@@ -29,6 +29,7 @@ Boston, MA 02110-1301, USA.  */
 #include "tree-gimple.h"
 #include "tree-ssa-operands.h"
 #include "cgraph.h"
+#include "ipa-reference.h"
 
 /* Forward declare structures for the garbage collector GTY markers.  */
 #ifndef GCC_BASIC_BLOCK_H
@@ -239,6 +240,11 @@ struct var_ann_d GTY(())
      current version of this variable (an SSA_NAME).  */
   tree current_def;
   
+  /* Pointer to the structure that contains the sets of global
+     variables modified by function calls.  This field is only used
+     for FUNCTION_DECLs.  */
+  ipa_reference_vars_info_t GTY ((skip)) reference_vars_info;
+
   /* If this variable is a structure, this fields holds a list of
      symbols representing each of the fields of the structure.  */
   subvar_t subvars;
@@ -392,6 +398,7 @@ typedef struct
 extern GTY((param_is (struct int_tree_map))) htab_t referenced_vars;
 
 extern tree referenced_var_lookup (unsigned int);
+extern tree referenced_var_lookup_if_exists (unsigned int);
 #define num_referenced_vars htab_elements (referenced_vars)
 #define referenced_var(i) referenced_var_lookup (i)
 
@@ -772,6 +779,10 @@ bool is_hidden_global_store (tree);
 
 /* In tree-sra.c  */
 void insert_edge_copies (tree, basic_block);
+void sra_insert_before (block_stmt_iterator *, tree);
+void sra_insert_after (block_stmt_iterator *, tree);
+void sra_init_cache (void);
+bool sra_type_can_be_decomposed_p (tree);
 
 /* In tree-loop-linear.c  */
 extern void linear_transform_loops (struct loops *);

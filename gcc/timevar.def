@@ -42,6 +42,9 @@ DEFTIMEVAR (TV_DUMP                  , "dump files")
 
 DEFTIMEVAR (TV_CGRAPH                , "callgraph construction")
 DEFTIMEVAR (TV_CGRAPHOPT             , "callgraph optimization")
+DEFTIMEVAR (TV_IPA_REFERENCE         , "ipa reference")
+DEFTIMEVAR (TV_IPA_PURE_CONST        , "ipa pure const")
+DEFTIMEVAR (TV_IPA_TYPE_ESCAPE       , "ipa type escape")
 /* Time spent by constructing CFG.  */
 DEFTIMEVAR (TV_CFG                   , "cfg construction")
 /* Time spent by cleaning up CFG.  */
@@ -66,6 +69,7 @@ DEFTIMEVAR (TV_TREE_GIMPLIFY	     , "tree gimplify")
 DEFTIMEVAR (TV_TREE_EH		     , "tree eh")
 DEFTIMEVAR (TV_TREE_CFG		     , "tree CFG construction")
 DEFTIMEVAR (TV_TREE_CLEANUP_CFG	     , "tree CFG cleanup")
+DEFTIMEVAR (TV_TREE_PROMOTE_STATICS  , "tree promote statics")
 DEFTIMEVAR (TV_TREE_VRP              , "tree VRP")
 DEFTIMEVAR (TV_TREE_COPY_PROP        , "tree copy propagation")
 DEFTIMEVAR (TV_TREE_STORE_COPY_PROP  , "tree store copy prop")

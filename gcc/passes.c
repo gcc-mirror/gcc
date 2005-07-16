@@ -431,6 +431,9 @@ init_optimization_passes (void)
   NEXT_PASS (pass_early_ipa_inline);
   NEXT_PASS (pass_early_local_passes);
   NEXT_PASS (pass_ipa_inline);
+  NEXT_PASS (pass_ipa_reference);
+  NEXT_PASS (pass_ipa_pure_const); 
+  NEXT_PASS (pass_ipa_type_escape);
   *p = NULL;
 
   /* All passes needed to lower the function into shape optimizers can operate
@@ -469,6 +472,7 @@ init_optimization_passes (void)
 
   p = &pass_all_optimizations.sub;
   NEXT_PASS (pass_referenced_vars);
+  NEXT_PASS (pass_promote_statics); 
   NEXT_PASS (pass_create_structure_vars);
   NEXT_PASS (pass_build_ssa);
   NEXT_PASS (pass_may_alias);

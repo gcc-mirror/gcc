@@ -33,6 +33,7 @@ Boston, MA 02110-1301, USA.  */
 #include "timevar.h"
 #include "toplev.h"
 #include "langhooks.h"
+#include "ipa-reference.h"
 
 /* This file contains the code required to manage the operands cache of the 
    SSA optimizer.  For every stmt, we maintain an operand cache in the stmt 
@@ -156,7 +157,7 @@ static inline void append_def (tree *);
 static inline void append_use (tree *);
 static void append_v_may_def (tree);
 static void append_v_must_def (tree);
-static void add_call_clobber_ops (tree);
+static void add_call_clobber_ops (tree, tree);
 static void add_call_read_ops (tree);
 static void add_stmt_operand (tree *, stmt_ann_t, int);
 static void build_ssa_operands (tree stmt);
@@ -1727,7 +1728,7 @@ get_call_expr_operands (tree stmt, tree expr)
 	 there is no point in recording that.  */ 
       if (TREE_SIDE_EFFECTS (expr)
 	  && !(call_flags & (ECF_PURE | ECF_CONST | ECF_NORETURN)))
-	add_call_clobber_ops (stmt);
+	add_call_clobber_ops (stmt, get_callee_fndecl (expr));
       else if (!(call_flags & ECF_CONST))
 	add_call_read_ops (stmt);
     }
@@ -1944,7 +1945,7 @@ add_to_addressable_set (tree ref, bitmap *addresses_taken)
    clobbered variables in the function.  */
 
 static void
-add_call_clobber_ops (tree stmt)
+add_call_clobber_ops (tree stmt, tree callee)
 {
   int i;
   unsigned u;
@@ -1952,6 +1953,7 @@ add_call_clobber_ops (tree stmt)
   bitmap_iterator bi;
   stmt_ann_t s_ann = stmt_ann (stmt);
   struct stmt_ann_d empty_ann;
+  bitmap not_read_b, not_written_b;
 
   /* Functions that are not const, pure or never return may clobber
      call-clobbered variables.  */
@@ -1966,8 +1968,22 @@ add_call_clobber_ops (tree stmt)
       return;
     }
 
+  /* FIXME - if we have better information from the static vars
+     analysis, we need to make the cache call site specific.  This way
+     we can have the performance benefits even if we are doing good
+     optimization.  */
+
+  /* Get info for local and module level statics.  There is a bit
+     set for each static if the call being processed does not read
+     or write that variable.  */
+
+  not_read_b = callee ? ipa_reference_get_not_read_global (callee) : NULL; 
+  not_written_b = callee ? ipa_reference_get_not_written_global (callee) : NULL; 
+
   /* If cache is valid, copy the elements into the build vectors.  */
-  if (ssa_call_clobbered_cache_valid)
+  if (ssa_call_clobbered_cache_valid
+      && (!not_read_b || bitmap_empty_p (not_read_b))
+      && (!not_written_b || bitmap_empty_p (not_written_b)))
     {
       /* Process the caches in reverse order so we are always inserting at
          the head of the list.  */
@@ -2002,43 +2018,62 @@ add_call_clobber_ops (tree stmt)
       if (unmodifiable_var_p (var))
 	add_stmt_operand (&var, &empty_ann, opf_none);
       else
-	add_stmt_operand (&var, &empty_ann, opf_is_def | opf_non_specific);
+	{
+	  bool not_read
+	    = not_read_b ? bitmap_bit_p (not_read_b, u) : false;
+	  bool not_written
+	    = not_written_b ? bitmap_bit_p (not_written_b, u) : false;
+
+	  if ((TREE_READONLY (var)
+	       && (TREE_STATIC (var) || DECL_EXTERNAL (var)))
+	      || not_written)
+	    {
+	      if (!not_read)
+		add_stmt_operand (&var, &empty_ann, opf_none);
+	    }
+	  else
+	    add_stmt_operand (&var, &empty_ann, opf_is_def);
+	}
     }
 
-  clobbered_aliased_loads = empty_ann.makes_aliased_loads;
-  clobbered_aliased_stores = empty_ann.makes_aliased_stores;
-
-  /* Set the flags for a stmt's annotation.  */
-  if (s_ann)
+  if ((!not_read_b || bitmap_empty_p (not_read_b))
+      && (!not_written_b || bitmap_empty_p (not_written_b)))
     {
-      s_ann->makes_aliased_loads = empty_ann.makes_aliased_loads;
-      s_ann->makes_aliased_stores = empty_ann.makes_aliased_stores;
+      clobbered_aliased_loads = empty_ann.makes_aliased_loads;
+      clobbered_aliased_stores = empty_ann.makes_aliased_stores;
+
+      /* Set the flags for a stmt's annotation.  */
+      if (s_ann)
+	{
+	  s_ann->makes_aliased_loads = empty_ann.makes_aliased_loads;
+	  s_ann->makes_aliased_stores = empty_ann.makes_aliased_stores;
+	}
+
+      /* Prepare empty cache vectors.  */
+      VEC_truncate (tree, clobbered_vuses, 0);
+      VEC_truncate (tree, clobbered_v_may_defs, 0);
+
+      /* Now fill the clobbered cache with the values that have been found.  */
+      for (i = opbuild_first (&build_vuses);
+	   i != OPBUILD_LAST;
+	   i = opbuild_next (&build_vuses, i))
+	VEC_safe_push (tree, heap, clobbered_vuses,
+		       opbuild_elem_virtual (&build_vuses, i));
+
+      gcc_assert (opbuild_num_elems (&build_vuses) 
+		  == VEC_length (tree, clobbered_vuses));
+
+      for (i = opbuild_first (&build_v_may_defs);
+	   i != OPBUILD_LAST;
+	   i = opbuild_next (&build_v_may_defs, i))
+	VEC_safe_push (tree, heap, clobbered_v_may_defs, 
+		       opbuild_elem_virtual (&build_v_may_defs, i));
+
+      gcc_assert (opbuild_num_elems (&build_v_may_defs) 
+		  == VEC_length (tree, clobbered_v_may_defs));
+
+      ssa_call_clobbered_cache_valid = true;
     }
-
-  /* Prepare empty cache vectors.  */
-  VEC_truncate (tree, clobbered_vuses, 0);
-  VEC_truncate (tree, clobbered_v_may_defs, 0);
-
-  /* Now fill the clobbered cache with the values that have been found.  */
-  for (i = opbuild_first (&build_vuses);
-       i != OPBUILD_LAST;
-       i = opbuild_next (&build_vuses, i))
-    VEC_safe_push (tree, heap, clobbered_vuses,
-		   opbuild_elem_virtual (&build_vuses, i));
-
-  gcc_assert (opbuild_num_elems (&build_vuses) 
-	      == VEC_length (tree, clobbered_vuses));
-
-  for (i = opbuild_first (&build_v_may_defs);
-       i != OPBUILD_LAST;
-       i = opbuild_next (&build_v_may_defs, i))
-    VEC_safe_push (tree, heap, clobbered_v_may_defs, 
-		   opbuild_elem_virtual (&build_v_may_defs, i));
-
-  gcc_assert (opbuild_num_elems (&build_v_may_defs) 
-	      == VEC_length (tree, clobbered_v_may_defs));
-
-  ssa_call_clobbered_cache_valid = true;
 }
 
 

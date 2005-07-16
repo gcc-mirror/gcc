@@ -107,8 +107,6 @@ struct cgraph_global_info GTY(())
 struct cgraph_rtl_info GTY(())
 {
    int preferred_incoming_stack_boundary;
-   bool const_function;
-   bool pure_function;
 };
 
 /* The cgraph data structure.
