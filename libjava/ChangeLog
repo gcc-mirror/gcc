@@ -1,3 +1,28 @@
+2005-07-15  Tom Tromey  <tromey@redhat.com>
+
+	Major merge with Classpath.
+	Removed many duplicate files.
+	* HACKING: Updated.x
+	* classpath: Imported new directory.
+	* standard.omit: New file.
+	* Makefile.in, aclocal.m4, configure: Rebuilt.
+	* sources.am: New file.
+	* configure.ac: Run Classpath configure script.  Moved code around
+	to support.  Disable xlib AWT peers (temporarily).
+	* Makefile.am (SUBDIRS): Added 'classpath'
+	(JAVAC): Removed.
+	(AM_CPPFLAGS): Added more -I options.
+	(BOOTCLASSPATH): Simplified.
+	Completely redid how sources are built.
+	Include sources.am.
+	* include/Makefile.am (tool_include__HEADERS): Removed jni.h.
+	* include/jni.h: Removed (in Classpath).
+	* scripts/classes.pl: Updated to look at built classes.
+	* scripts/makemake.tcl: New file.
+	* testsuite/libjava.jni/jni.exp (gcj_jni_compile_c_to_so): Added
+	-I options.
+	(gcj_jni_invocation_compile_c_to_binary): Likewise.
+
 2005-07-15  Scott Gilbertson  <scottg@mantatest.com>
 
 	* gnu/awt/xlib/XCanvasPeer.java (attributes): New field.
