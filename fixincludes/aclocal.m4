@@ -1,6 +1,7 @@
 sinclude(../config/acx.m4)
 sinclude(../config/gettext.m4)
 sinclude(../config/progtest.m4)
+sinclude(../config/warnings.m4)
 
 dnl See whether we need a declaration for a function.
 dnl The result is highly dependent on the INCLUDES passed in, so make sure
