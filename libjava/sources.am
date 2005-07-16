@@ -7,6 +7,7 @@ gnu/awt/LightweightRedirector.java
 gnu_awt_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_awt_source_files)))
 
 gnu/awt.list: $(gnu_awt_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_awt_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -26,6 +27,7 @@ gnu/awt/j2d/MappedRaster.java
 gnu_awt_j2d_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_awt_j2d_source_files)))
 
 gnu/awt/j2d.list: $(gnu_awt_j2d_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_awt_j2d_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -47,6 +49,7 @@ gnu/classpath/SystemProperties.java
 gnu_classpath_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_classpath_source_files))))
 
 gnu/classpath.list: $(gnu_classpath_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_classpath_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -64,6 +67,7 @@ classpath/gnu/classpath/debug/SystemLogger.java
 gnu_classpath_debug_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_classpath_debug_source_files)))
 
 gnu/classpath/debug.list: $(gnu_classpath_debug_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_classpath_debug_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -81,6 +85,7 @@ gnu/gcj/RawDataManaged.java
 gnu_gcj_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_gcj_source_files)))
 
 gnu/gcj.list: $(gnu_gcj_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_gcj_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -116,6 +121,7 @@ gnu/gcj/convert/UnicodeToBytes.java
 gnu_gcj_convert_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_gcj_convert_source_files)))
 
 gnu/gcj/convert.list: $(gnu_gcj_convert_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_gcj_convert_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -133,6 +139,7 @@ gnu/gcj/io/SimpleSHSStream.java
 gnu_gcj_io_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_gcj_io_source_files)))
 
 gnu/gcj/io.list: $(gnu_gcj_io_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_gcj_io_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -159,6 +166,7 @@ gnu/gcj/runtime/SystemClassLoader.java
 gnu_gcj_runtime_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_gcj_runtime_source_files)))
 
 gnu/gcj/runtime.list: $(gnu_gcj_runtime_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_gcj_runtime_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -174,6 +182,7 @@ gnu/gcj/util/Debug.java
 gnu_gcj_util_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_gcj_util_source_files)))
 
 gnu/gcj/util.list: $(gnu_gcj_util_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_gcj_util_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -198,6 +207,7 @@ classpath/gnu/java/awt/GradientPaintContext.java
 gnu_java_awt_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_awt_source_files)))
 
 gnu/java/awt.list: $(gnu_java_awt_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_awt_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -225,6 +235,7 @@ classpath/gnu/java/awt/color/ToneReproductionCurve.java
 gnu_java_awt_color_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_awt_color_source_files)))
 
 gnu/java/awt/color.list: $(gnu_java_awt_color_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_awt_color_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -241,6 +252,7 @@ classpath/gnu/java/awt/image/XBMDecoder.java
 gnu_java_awt_image_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_awt_image_source_files)))
 
 gnu/java/awt/image.list: $(gnu_java_awt_image_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_awt_image_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -259,6 +271,7 @@ classpath/gnu/java/awt/peer/GLightweightPeer.java
 gnu_java_awt_peer_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_awt_peer_source_files)))
 
 gnu/java/awt/peer.list: $(gnu_java_awt_peer_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_awt_peer_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -388,6 +401,7 @@ classpath/gnu/java/io/PlatformHelper.java
 gnu_java_io_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_io_source_files)))
 
 gnu/java/io.list: $(gnu_java_io_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_io_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -406,6 +420,7 @@ gnu/java/lang/MainThread.java
 gnu_java_lang_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_lang_source_files))))
 
 gnu/java/lang.list: $(gnu_java_lang_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_lang_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -421,6 +436,7 @@ classpath/gnu/java/lang/reflect/TypeSignature.java
 gnu_java_lang_reflect_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_lang_reflect_source_files)))
 
 gnu/java/lang/reflect.list: $(gnu_java_lang_reflect_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_lang_reflect_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -575,6 +591,7 @@ gnu/java/locale/LocaleInformation_zh_TW.java
 gnu_java_locale_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_locale_source_files))))
 
 gnu/java/locale.list: $(gnu_java_locale_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_locale_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -590,6 +607,7 @@ classpath/gnu/java/math/MPN.java
 gnu_java_math_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_math_source_files)))
 
 gnu/java/math.list: $(gnu_java_math_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_math_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -620,6 +638,7 @@ gnu/java/net/protocol/gcjlib/Handler.java
 gnu_java_net_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_net_source_files))))
 
 gnu/java/net.list: $(gnu_java_net_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_net_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -636,6 +655,7 @@ gnu/java/net/protocol/file/Handler.java
 gnu_java_net_protocol_file_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_net_protocol_file_source_files)))
 
 gnu/java/net/protocol/file.list: $(gnu_java_net_protocol_file_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_net_protocol_file_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -666,6 +686,7 @@ classpath/gnu/java/net/protocol/ftp/StreamOutputStream.java
 gnu_java_net_protocol_ftp_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_net_protocol_ftp_source_files)))
 
 gnu/java/net/protocol/ftp.list: $(gnu_java_net_protocol_ftp_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_net_protocol_ftp_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -698,6 +719,7 @@ classpath/gnu/java/net/protocol/http/SimpleCookieManager.java
 gnu_java_net_protocol_http_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_net_protocol_http_source_files)))
 
 gnu/java/net/protocol/http.list: $(gnu_java_net_protocol_http_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_net_protocol_http_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -716,6 +738,7 @@ classpath/gnu/java/net/protocol/http/event/RequestListener.java
 gnu_java_net_protocol_http_event_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_net_protocol_http_event_source_files)))
 
 gnu/java/net/protocol/http/event.list: $(gnu_java_net_protocol_http_event_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_net_protocol_http_event_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -731,6 +754,7 @@ classpath/gnu/java/net/protocol/https/Handler.java
 gnu_java_net_protocol_https_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_net_protocol_https_source_files)))
 
 gnu/java/net/protocol/https.list: $(gnu_java_net_protocol_https_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_net_protocol_https_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -747,6 +771,7 @@ classpath/gnu/java/net/protocol/jar/Handler.java
 gnu_java_net_protocol_jar_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_net_protocol_jar_source_files))))
 
 gnu/java/net/protocol/jar.list: $(gnu_java_net_protocol_jar_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_net_protocol_jar_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -783,6 +808,7 @@ gnu/java/nio/VMSelector.java
 gnu_java_nio_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_nio_source_files))))
 
 gnu/java/nio.list: $(gnu_java_nio_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_nio_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -798,6 +824,7 @@ gnu/java/nio/channels/FileChannelImpl.java
 gnu_java_nio_channels_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_nio_channels_source_files)))
 
 gnu/java/nio/channels.list: $(gnu_java_nio_channels_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_nio_channels_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -873,6 +900,7 @@ classpath/gnu/java/nio/charset/Windows1258.java
 gnu_java_nio_charset_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_nio_charset_source_files))))
 
 gnu/java/nio/charset.list: $(gnu_java_nio_charset_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_nio_charset_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -897,6 +925,7 @@ gnu/java/rmi/rmic/TabbedWriter.java
 gnu_java_rmi_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_rmi_source_files))))
 
 gnu/java/rmi.list: $(gnu_java_rmi_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_rmi_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -914,6 +943,7 @@ classpath/gnu/java/rmi/dgc/DGCImpl_Stub.java
 gnu_java_rmi_dgc_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_rmi_dgc_source_files)))
 
 gnu/java/rmi/dgc.list: $(gnu_java_rmi_dgc_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_rmi_dgc_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -931,6 +961,7 @@ classpath/gnu/java/rmi/registry/RegistryImpl_Stub.java
 gnu_java_rmi_registry_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_rmi_registry_source_files)))
 
 gnu/java/rmi/registry.list: $(gnu_java_rmi_registry_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_rmi_registry_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -960,6 +991,7 @@ classpath/gnu/java/rmi/server/UnicastServerRef.java
 gnu_java_rmi_server_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_rmi_server_source_files)))
 
 gnu/java/rmi/server.list: $(gnu_java_rmi_server_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_rmi_server_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -977,6 +1009,7 @@ classpath/gnu/java/security/PolicyFile.java
 gnu_java_security_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_source_files)))
 
 gnu/java/security.list: $(gnu_java_security_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_security_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -994,6 +1027,7 @@ classpath/gnu/java/security/action/SetAccessibleAction.java
 gnu_java_security_action_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_action_source_files)))
 
 gnu/java/security/action.list: $(gnu_java_security_action_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_security_action_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1012,6 +1046,7 @@ classpath/gnu/java/security/ber/BERValue.java
 gnu_java_security_ber_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_ber_source_files)))
 
 gnu/java/security/ber.list: $(gnu_java_security_ber_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_security_ber_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1032,6 +1067,7 @@ classpath/gnu/java/security/der/DERWriter.java
 gnu_java_security_der_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_der_source_files)))
 
 gnu/java/security/der.list: $(gnu_java_security_der_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_security_der_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1048,6 +1084,7 @@ classpath/gnu/java/security/pkcs/SignerInfo.java
 gnu_java_security_pkcs_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_pkcs_source_files)))
 
 gnu/java/security/pkcs.list: $(gnu_java_security_pkcs_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_security_pkcs_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1087,6 +1124,7 @@ classpath/gnu/java/security/provider/X509CertificateFactory.java
 gnu_java_security_provider_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_provider_source_files)))
 
 gnu/java/security/provider.list: $(gnu_java_security_provider_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_security_provider_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1102,6 +1140,7 @@ classpath/gnu/java/security/util/Prime.java
 gnu_java_security_util_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_util_source_files)))
 
 gnu/java/security/util.list: $(gnu_java_security_util_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_security_util_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1126,6 +1165,7 @@ classpath/gnu/java/security/x509/X509Certificate.java
 gnu_java_security_x509_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_x509_source_files)))
 
 gnu/java/security/x509.list: $(gnu_java_security_x509_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_security_x509_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1155,6 +1195,7 @@ classpath/gnu/java/security/x509/ext/SubjectKeyIdentifier.java
 gnu_java_security_x509_ext_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_security_x509_ext_source_files)))
 
 gnu/java/security/x509/ext.list: $(gnu_java_security_x509_ext_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_security_x509_ext_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1178,6 +1219,7 @@ classpath/gnu/java/text/WordBreakIterator.java
 gnu_java_text_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_text_source_files)))
 
 gnu/java/text.list: $(gnu_java_text_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_text_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1194,6 +1236,7 @@ classpath/gnu/java/util/EmptyEnumeration.java
 gnu_java_util_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_util_source_files)))
 
 gnu/java/util.list: $(gnu_java_util_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_util_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1213,6 +1256,7 @@ classpath/gnu/java/util/prefs/NodeWriter.java
 gnu_java_util_prefs_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_util_prefs_source_files)))
 
 gnu/java/util/prefs.list: $(gnu_java_util_prefs_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_java_util_prefs_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1231,6 +1275,7 @@ classpath/gnu/javax/swing/text/html/parser/htmlValidator.java
 gnu_javax_swing_text_html_parser_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_swing_text_html_parser_source_files)))
 
 gnu/javax/swing/text/html/parser.list: $(gnu_javax_swing_text_html_parser_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_javax_swing_text_html_parser_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1251,6 +1296,7 @@ classpath/gnu/javax/swing/text/html/parser/models/transformer.java
 gnu_javax_swing_text_html_parser_models_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_swing_text_html_parser_models_source_files)))
 
 gnu/javax/swing/text/html/parser/models.list: $(gnu_javax_swing_text_html_parser_models_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_javax_swing_text_html_parser_models_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1269,6 +1315,7 @@ classpath/gnu/javax/swing/text/html/parser/support/textPreProcessor.java
 gnu_javax_swing_text_html_parser_support_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_swing_text_html_parser_support_source_files)))
 
 gnu/javax/swing/text/html/parser/support.list: $(gnu_javax_swing_text_html_parser_support_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_javax_swing_text_html_parser_support_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1292,6 +1339,7 @@ classpath/gnu/javax/swing/text/html/parser/support/low/pattern.java
 gnu_javax_swing_text_html_parser_support_low_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_javax_swing_text_html_parser_support_low_source_files)))
 
 gnu/javax/swing/text/html/parser/support/low.list: $(gnu_javax_swing_text_html_parser_support_low_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_javax_swing_text_html_parser_support_low_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1331,6 +1379,7 @@ classpath/gnu/regexp/UncheckedRE.java
 gnu_regexp_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_regexp_source_files)))
 
 gnu/regexp.list: $(gnu_regexp_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_regexp_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1627,6 +1676,7 @@ classpath/java/applet/AudioClip.java
 java_applet_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_applet_source_files)))
 
 java/applet.list: $(java_applet_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_applet_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1742,6 +1792,7 @@ classpath/java/awt/Window.java
 java_awt_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_awt_source_files)))
 
 java/awt.list: $(java_awt_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1763,6 +1814,7 @@ classpath/java/awt/color/ProfileDataException.java
 java_awt_color_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_awt_color_source_files)))
 
 java/awt/color.list: $(java_awt_color_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_color_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1787,6 +1839,7 @@ classpath/java/awt/datatransfer/UnsupportedFlavorException.java
 java_awt_datatransfer_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_awt_datatransfer_source_files)))
 
 java/awt/datatransfer.list: $(java_awt_datatransfer_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_datatransfer_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1824,6 +1877,7 @@ classpath/java/awt/dnd/MouseDragGestureRecognizer.java
 java_awt_dnd_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_awt_dnd_source_files)))
 
 java/awt/dnd.list: $(java_awt_dnd_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_dnd_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1841,6 +1895,7 @@ classpath/java/awt/dnd/peer/DropTargetPeer.java
 java_awt_dnd_peer_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_awt_dnd_peer_source_files)))
 
 java/awt/dnd/peer.list: $(java_awt_dnd_peer_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_dnd_peer_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1898,6 +1953,7 @@ classpath/java/awt/event/WindowStateListener.java
 java_awt_event_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_awt_event_source_files)))
 
 java/awt/event.list: $(java_awt_event_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_event_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1929,6 +1985,7 @@ classpath/java/awt/font/TransformAttribute.java
 java_awt_font_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_awt_font_source_files)))
 
 java/awt/font.list: $(java_awt_font_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_font_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1960,6 +2017,7 @@ classpath/java/awt/geom/RoundRectangle2D.java
 java_awt_geom_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_awt_geom_source_files)))
 
 java/awt/geom.list: $(java_awt_geom_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_geom_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1978,6 +2036,7 @@ classpath/java/awt/im/InputSubset.java
 java_awt_im_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_awt_im_source_files)))
 
 java/awt/im.list: $(java_awt_im_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_im_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -1995,6 +2054,7 @@ classpath/java/awt/im/spi/InputMethodDescriptor.java
 java_awt_im_spi_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_awt_im_spi_source_files)))
 
 java/awt/im/spi.list: $(java_awt_im_spi_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_im_spi_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2061,6 +2121,7 @@ classpath/java/awt/image/WritableRenderedImage.java
 java_awt_image_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_awt_image_source_files)))
 
 java/awt/image.list: $(java_awt_image_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_image_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2082,6 +2143,7 @@ classpath/java/awt/image/renderable/RenderedImageFactory.java
 java_awt_image_renderable_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_awt_image_renderable_source_files)))
 
 java/awt/image/renderable.list: $(java_awt_image_renderable_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_image_renderable_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2123,6 +2185,7 @@ classpath/java/awt/peer/WindowPeer.java
 java_awt_peer_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_awt_peer_source_files)))
 
 java/awt/peer.list: $(java_awt_peer_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_peer_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2147,6 +2210,7 @@ classpath/java/awt/print/PrinterJob.java
 java_awt_print_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_awt_print_source_files)))
 
 java/awt/print.list: $(java_awt_print_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_awt_print_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2193,6 +2257,7 @@ classpath/java/beans/XMLDecoder.java
 java_beans_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_beans_source_files)))
 
 java/beans.list: $(java_beans_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_beans_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2225,6 +2290,7 @@ classpath/java/beans/beancontext/BeanContextSupport.java
 java_beans_beancontext_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_beans_beancontext_source_files)))
 
 java/beans/beancontext.list: $(java_beans_beancontext_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_beans_beancontext_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2317,6 +2383,7 @@ classpath/java/io/Writer.java
 java_io_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_io_source_files))))
 
 java/io.list: $(java_io_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_io_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2418,6 +2485,7 @@ classpath/java/lang/Void.java
 java_lang_header_files = $(filter-out java/lang/Object.h java/lang/Class.h,$(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_lang_source_files)))))
 
 java/lang.list: $(java_lang_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_lang_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2434,6 +2502,7 @@ classpath/java/lang/annotation/AnnotationTypeMismatchException.java
 java_lang_annotation_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_lang_annotation_source_files)))
 
 java/lang/annotation.list: $(java_lang_annotation_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_lang_annotation_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2453,6 +2522,7 @@ classpath/java/lang/ref/WeakReference.java
 java_lang_ref_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_lang_ref_source_files))))
 
 java/lang/ref.list: $(java_lang_ref_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_lang_ref_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2484,6 +2554,7 @@ classpath/java/lang/reflect/WildcardType.java
 java_lang_reflect_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_lang_reflect_source_files))))
 
 java/lang/reflect.list: $(java_lang_reflect_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_lang_reflect_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2500,6 +2571,7 @@ classpath/java/math/BigInteger.java
 java_math_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_math_source_files)))
 
 java/math.list: $(java_math_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_math_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2560,6 +2632,7 @@ java/net/VMNetworkInterface.java
 java_net_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_net_source_files))))
 
 java/net.list: $(java_net_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_net_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2605,6 +2678,7 @@ java/nio/VMDirectByteBuffer.java
 java_nio_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_nio_source_files))))
 
 java/nio.list: $(java_nio_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_nio_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2654,6 +2728,7 @@ classpath/java/nio/channels/WritableByteChannel.java
 java_nio_channels_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_nio_channels_source_files))))
 
 java/nio/channels.list: $(java_nio_channels_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_nio_channels_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2673,6 +2748,7 @@ classpath/java/nio/channels/spi/SelectorProvider.java
 java_nio_channels_spi_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_nio_channels_spi_source_files)))
 
 java/nio/channels/spi.list: $(java_nio_channels_spi_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_nio_channels_spi_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2698,6 +2774,7 @@ classpath/java/nio/charset/UnsupportedCharsetException.java
 java_nio_charset_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_nio_charset_source_files))))
 
 java/nio/charset.list: $(java_nio_charset_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_nio_charset_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2713,6 +2790,7 @@ classpath/java/nio/charset/spi/CharsetProvider.java
 java_nio_charset_spi_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_nio_charset_spi_source_files)))
 
 java/nio/charset/spi.list: $(java_nio_charset_spi_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_nio_charset_spi_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2747,6 +2825,7 @@ classpath/java/rmi/UnmarshalException.java
 java_rmi_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_rmi_source_files)))
 
 java/rmi.list: $(java_rmi_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_rmi_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2775,6 +2854,7 @@ classpath/java/rmi/activation/UnknownObjectException.java
 java_rmi_activation_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_rmi_activation_source_files)))
 
 java/rmi/activation.list: $(java_rmi_activation_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_rmi_activation_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2792,6 +2872,7 @@ classpath/java/rmi/dgc/VMID.java
 java_rmi_dgc_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_rmi_dgc_source_files)))
 
 java/rmi/dgc.list: $(java_rmi_dgc_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_rmi_dgc_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2809,6 +2890,7 @@ classpath/java/rmi/registry/RegistryHandler.java
 java_rmi_registry_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_rmi_registry_source_files)))
 
 java/rmi/registry.list: $(java_rmi_registry_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_rmi_registry_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2849,6 +2931,7 @@ classpath/java/rmi/server/Unreferenced.java
 java_rmi_server_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_rmi_server_source_files)))
 
 java/rmi/server.list: $(java_rmi_server_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_rmi_server_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2930,6 +3013,7 @@ classpath/java/security/UnresolvedPermission.java
 java_security_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_security_source_files))))
 
 java/security.list: $(java_security_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_security_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -2952,6 +3036,7 @@ classpath/java/security/acl/Permission.java
 java_security_acl_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_security_acl_source_files)))
 
 java/security/acl.list: $(java_security_acl_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_security_acl_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3008,6 +3093,7 @@ classpath/java/security/cert/X509Extension.java
 java_security_cert_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_security_cert_source_files)))
 
 java/security/cert.list: $(java_security_cert_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_security_cert_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3032,6 +3118,7 @@ classpath/java/security/interfaces/RSAPublicKey.java
 java_security_interfaces_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_security_interfaces_source_files)))
 
 java/security/interfaces.list: $(java_security_interfaces_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_security_interfaces_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3063,6 +3150,7 @@ classpath/java/security/spec/X509EncodedKeySpec.java
 java_security_spec_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_security_spec_source_files)))
 
 java/security/spec.list: $(java_security_spec_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_security_spec_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3106,6 +3194,7 @@ classpath/java/sql/Types.java
 java_sql_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_sql_source_files)))
 
 java/sql.list: $(java_sql_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_sql_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3143,6 +3232,7 @@ classpath/java/text/StringCharacterIterator.java
 java_text_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_text_source_files))))
 
 java/text.list: $(java_text_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_text_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3219,6 +3309,7 @@ classpath/java/util/WeakHashMap.java
 java_util_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_util_source_files))))
 
 java/util.list: $(java_util_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_util_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3240,6 +3331,7 @@ classpath/java/util/jar/Manifest.java
 java_util_jar_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_util_jar_source_files)))
 
 java/util/jar.list: $(java_util_jar_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_util_jar_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3270,6 +3362,7 @@ classpath/java/util/logging/XMLFormatter.java
 java_util_logging_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_util_logging_source_files))))
 
 java/util/logging.list: $(java_util_logging_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_util_logging_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3293,6 +3386,7 @@ classpath/java/util/prefs/PreferencesFactory.java
 java_util_prefs_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_util_prefs_source_files)))
 
 java/util/prefs.list: $(java_util_prefs_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_util_prefs_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3310,6 +3404,7 @@ classpath/java/util/regex/PatternSyntaxException.java
 java_util_regex_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_util_regex_source_files)))
 
 java/util/regex.list: $(java_util_regex_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_util_regex_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3342,6 +3437,7 @@ classpath/java/util/zip/ZipOutputStream.java
 java_util_zip_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_util_zip_source_files))))
 
 java/util/zip.list: $(java_util_zip_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(java_util_zip_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3379,6 +3475,7 @@ classpath/javax/accessibility/AccessibleValue.java
 javax_accessibility_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_accessibility_source_files)))
 
 javax/accessibility.list: $(javax_accessibility_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_accessibility_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3417,6 +3514,7 @@ classpath/javax/crypto/ShortBufferException.java
 javax_crypto_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_crypto_source_files)))
 
 javax/crypto.list: $(javax_crypto_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_crypto_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3435,6 +3533,7 @@ classpath/javax/crypto/interfaces/PBEKey.java
 javax_crypto_interfaces_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_crypto_interfaces_source_files)))
 
 javax/crypto/interfaces.list: $(javax_crypto_interfaces_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_crypto_interfaces_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3461,6 +3560,7 @@ classpath/javax/crypto/spec/SecretKeySpec.java
 javax_crypto_spec_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_crypto_spec_source_files)))
 
 javax/crypto/spec.list: $(javax_crypto_spec_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_crypto_spec_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3568,6 +3668,7 @@ classpath/javax/naming/TimeLimitExceededException.java
 javax_naming_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_naming_source_files)))
 
 javax/naming.list: $(javax_naming_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_naming_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3600,6 +3701,7 @@ classpath/javax/naming/directory/SearchResult.java
 javax_naming_directory_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_naming_directory_source_files)))
 
 javax/naming/directory.list: $(javax_naming_directory_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_naming_directory_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3621,6 +3723,7 @@ classpath/javax/naming/event/ObjectChangeListener.java
 javax_naming_event_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_naming_event_source_files)))
 
 javax/naming/event.list: $(javax_naming_event_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_naming_event_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3646,6 +3749,7 @@ classpath/javax/naming/ldap/UnsolicitedNotificationListener.java
 javax_naming_ldap_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_naming_ldap_source_files)))
 
 javax/naming/ldap.list: $(javax_naming_ldap_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_naming_ldap_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3671,6 +3775,7 @@ classpath/javax/naming/spi/StateFactory.java
 javax_naming_spi_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_naming_spi_source_files)))
 
 javax/naming/spi.list: $(javax_naming_spi_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_naming_spi_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3689,6 +3794,7 @@ classpath/javax/net/VanillaSocketFactory.java
 javax_net_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_net_source_files)))
 
 javax/net.list: $(javax_net_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_net_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3733,6 +3839,7 @@ classpath/javax/net/ssl/X509TrustManager.java
 javax_net_ssl_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_net_ssl_source_files)))
 
 javax/net/ssl.list: $(javax_net_ssl_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_net_ssl_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3762,6 +3869,7 @@ classpath/javax/print/URIException.java
 javax_print_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_print_source_files)))
 
 javax/print.list: $(javax_print_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_print_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3802,6 +3910,7 @@ classpath/javax/print/attribute/UnmodifiableSetException.java
 javax_print_attribute_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_print_attribute_source_files)))
 
 javax/print/attribute.list: $(javax_print_attribute_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_print_attribute_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3883,6 +3992,7 @@ classpath/javax/print/attribute/standard/Sides.java
 javax_print_attribute_standard_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_print_attribute_standard_source_files)))
 
 javax/print/attribute/standard.list: $(javax_print_attribute_standard_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_print_attribute_standard_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3905,6 +4015,7 @@ classpath/javax/print/event/PrintServiceAttributeListener.java
 javax_print_event_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_print_event_source_files)))
 
 javax/print/event.list: $(javax_print_event_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_print_event_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3928,6 +4039,7 @@ classpath/javax/security/auth/SubjectDomainCombiner.java
 javax_security_auth_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_security_auth_source_files)))
 
 javax/security/auth.list: $(javax_security_auth_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_security_auth_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3952,6 +4064,7 @@ classpath/javax/security/auth/callback/UnsupportedCallbackException.java
 javax_security_auth_callback_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_security_auth_callback_source_files)))
 
 javax/security/auth/callback.list: $(javax_security_auth_callback_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_security_auth_callback_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3974,6 +4087,7 @@ classpath/javax/security/auth/login/NullConfiguration.java
 javax_security_auth_login_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_security_auth_login_source_files)))
 
 javax/security/auth/login.list: $(javax_security_auth_login_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_security_auth_login_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -3989,6 +4103,7 @@ classpath/javax/security/auth/spi/LoginModule.java
 javax_security_auth_spi_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_security_auth_spi_source_files)))
 
 javax/security/auth/spi.list: $(javax_security_auth_spi_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_security_auth_spi_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4005,6 +4120,7 @@ classpath/javax/security/auth/x500/X500PrivateCredential.java
 javax_security_auth_x500_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_security_auth_x500_source_files)))
 
 javax/security/auth/x500.list: $(javax_security_auth_x500_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_security_auth_x500_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4027,6 +4143,7 @@ classpath/javax/security/cert/X509Certificate.java
 javax_security_cert_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_security_cert_source_files)))
 
 javax/security/cert.list: $(javax_security_cert_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_security_cert_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4051,6 +4168,7 @@ classpath/javax/security/sasl/SaslServerFactory.java
 javax_security_sasl_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_security_sasl_source_files)))
 
 javax/security/sasl.list: $(javax_security_sasl_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_security_sasl_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4079,6 +4197,7 @@ classpath/javax/sql/XADataSource.java
 javax_sql_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_sql_source_files)))
 
 javax/sql.list: $(javax_sql_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_sql_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4215,6 +4334,7 @@ classpath/javax/swing/WindowConstants.java
 javax_swing_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_source_files)))
 
 javax/swing.list: $(javax_swing_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4239,6 +4359,7 @@ classpath/javax/swing/border/TitledBorder.java
 javax_swing_border_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_border_source_files)))
 
 javax/swing/border.list: $(javax_swing_border_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_border_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4261,6 +4382,7 @@ classpath/javax/swing/colorchooser/DefaultSwatchChooserPanel.java
 javax_swing_colorchooser_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_colorchooser_source_files)))
 
 javax/swing/colorchooser.list: $(javax_swing_colorchooser_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_colorchooser_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4318,6 +4440,7 @@ classpath/javax/swing/event/UndoableEditListener.java
 javax_swing_event_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_event_source_files)))
 
 javax/swing/event.list: $(javax_swing_event_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_event_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4336,6 +4459,7 @@ classpath/javax/swing/filechooser/UnixFileSystemView.java
 javax_swing_filechooser_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_filechooser_source_files)))
 
 javax/swing/filechooser.list: $(javax_swing_filechooser_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_filechooser_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4391,6 +4515,7 @@ classpath/javax/swing/plaf/ViewportUI.java
 javax_swing_plaf_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_plaf_source_files)))
 
 javax/swing/plaf.list: $(javax_swing_plaf_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_plaf_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4463,6 +4588,7 @@ classpath/javax/swing/plaf/basic/DefaultMenuLayout.java
 javax_swing_plaf_basic_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_plaf_basic_source_files)))
 
 javax/swing/plaf/basic.list: $(javax_swing_plaf_basic_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_plaf_basic_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4507,6 +4633,7 @@ classpath/javax/swing/plaf/metal/MetalUtils.java
 javax_swing_plaf_metal_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_plaf_metal_source_files)))
 
 javax/swing/plaf/metal.list: $(javax_swing_plaf_metal_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_plaf_metal_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4531,6 +4658,7 @@ classpath/javax/swing/table/TableModel.java
 javax_swing_table_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_table_source_files)))
 
 javax/swing/table.list: $(javax_swing_table_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_table_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4590,6 +4718,7 @@ classpath/javax/swing/text/ViewFactory.java
 javax_swing_text_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_text_source_files)))
 
 javax/swing/text.list: $(javax_swing_text_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_text_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4608,6 +4737,7 @@ classpath/javax/swing/text/html/HTMLFrameHyperlinkEvent.java
 javax_swing_text_html_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_text_html_source_files)))
 
 javax/swing/text/html.list: $(javax_swing_text_html_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_text_html_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4632,6 +4762,7 @@ classpath/javax/swing/text/html/parser/TagElement.java
 javax_swing_text_html_parser_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_text_html_parser_source_files)))
 
 javax/swing/text/html/parser.list: $(javax_swing_text_html_parser_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_text_html_parser_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4653,6 +4784,7 @@ classpath/javax/swing/text/rtf/Token.java
 javax_swing_text_rtf_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_text_rtf_source_files)))
 
 javax/swing/text/rtf.list: $(javax_swing_text_rtf_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_text_rtf_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4684,6 +4816,7 @@ classpath/javax/swing/tree/VariableHeightLayoutCache.java
 javax_swing_tree_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_tree_source_files)))
 
 javax/swing/tree.list: $(javax_swing_tree_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_tree_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4707,6 +4840,7 @@ classpath/javax/swing/undo/UndoableEditSupport.java
 javax_swing_undo_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_undo_source_files)))
 
 javax/swing/undo.list: $(javax_swing_undo_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_swing_undo_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4735,6 +4869,7 @@ classpath/javax/transaction/UserTransaction.java
 javax_transaction_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_transaction_source_files)))
 
 javax/transaction.list: $(javax_transaction_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_transaction_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4752,6 +4887,7 @@ classpath/javax/transaction/xa/Xid.java
 javax_transaction_xa_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_transaction_xa_source_files)))
 
 javax/transaction/xa.list: $(javax_transaction_xa_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(javax_transaction_xa_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \
@@ -4832,6 +4968,7 @@ classpath/org/ietf/jgss/Oid.java
 org_ietf_jgss_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(org_ietf_jgss_source_files)))
 
 org/ietf/jgss.list: $(org_ietf_jgss_source_files)
+	@$(mkinstalldirs) $(dir $@)
 	@for file in $(org_ietf_jgss_source_files); do \
 	  if test -f $(srcdir)/$$file; then \
 	    echo $(srcdir)/$$file; \

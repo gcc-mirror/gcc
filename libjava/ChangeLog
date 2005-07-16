@@ -1,3 +1,10 @@
+2005-07-16  Andreas Schwab  <schwab@suse.de>
+
+	* scripts/makemake.tcl (emit_package_rule): Emit command to create
+	target directory.
+	* Makefile.am (%.lo): Don't create it here.
+	* sources.am, Makefile.in: Regenerated.
+
 2005-07-15  Tom Tromey  <tromey@redhat.com>
 
 	Major merge with Classpath.
