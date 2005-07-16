@@ -1,0 +1,13 @@
+HACKING GNU Classpath - Last updated: April 2, 2004
+Please read the README and INSTALL files first.
+
+You only need the information in this file when working on non-released (CVS)
+versions of GNU Classpath. Installation information for released versions
+of GNU Classpath can be found in the INSTALL file.
+
+Everything you ever wanted to know about hacking on GNU Classpath and
+how to obtain CVS checkouts can be found in doc/hacking.texi and/or
+on the website http://www.gnu.org/software/classpath/docs/hacking.html
+
+If you have any questions, suggestions, etc., send them to
+classpath@gnu.org.

@@ -1,0 +1,109 @@
+All HTML files are generated from WML source.
+
+If you wish to generate/view the HTML files locally, you'll need to
+have wml and texi2html installed.  To make the HTML files, just
+type "make".
+
+
+Quick and dirty "How To"
+
+How to create a webpage:
+
+1. When working in a subdirectory, begin the page with:
+   #!wml --include=..
+
+2. Add:
+   #include "include/layout.wml"
+
+3. Add <subject "page title">
+
+   this will set the page title to:
+   "page title - GNU Project -Free Software Foundation (FSF)" 
+
+4. Write your contents. Use the following pattern:
+
+  <box>
+    <boxtitle>...section title...</boxtitle>
+    <boxitem>...section contents...</boxitem>
+
+    <boxtitle>...section title...</boxtitle>
+    <boxitem>...section contents...</boxitem>
+  </box>
+
+5. To change the menu entries, edit include/layout.wml
+
+6. Call make to build the pages.
+
+7. Set "CLASSPATH_WEBROOT" to a directory before calling "make publish"
+   to deploy the pages locally
+
+A few useful tags (defined in layout.wml)
+
+* <createlink name="name" url="url>
+
+creates a <a href="url">name</a> entry
+
+Some pages define their own tags (e.g. faq.wml, tools.wml, downloads.wml)
+to organize their content.
+
+
+Guide to the custom-defined tags
+--------------------------------
+
+Links
+  Description:
+    creates a <a href="url">name</a> entry; if name is missing, uses the url 
+    as name
+  Availability:
+    everywhere (defined in macros.wml)
+  Format:
+    <createlink name="name" url="url>
+    <createlink url="url>
+
+Commented code
+  Description:
+    creates a commented code example
+  Availability:
+    everywhere (defined in macros.wml)
+  Format:
+    <commented-code>
+      <code-line code="1st code-line">comment to 1st line of code</code-line>
+      <code-line code="2nd code-line">comment to 2nd line of code</code-line>
+      <code-line code="3rd code-line" />
+    </commented-code>
+
+
+FAQ-Lists
+
+  <faq-section name="section name">
+    <faq question="1st question">
+      1st answer
+    </faq>
+    <faq question="2nd question">
+      2nd answer
+    </faq>
+  </faq-section>
+  <faq-section name="section name">
+    <faq question="1st question">
+      1st answer
+    </faq>
+  </faq-section>
+
+Project Tables
+  Description:
+    Define a project in a project table
+  Example: 
+    stories.wml
+  Availability:
+    everywhere (defined in macros.wml)
+  Format:
+    <project-list>
+      <project name="proj name"  url="proj url">
+        project description
+      </project>
+      <project name="proj name"  url="proj url">
+        project description
+      </project>
+    </project-list>
+
+

@@ -1,0 +1,38 @@
+<html><head>trax </head><body>
+
+<p>Base "TRAX" API for XSLT transformers.
+This API borrows many structural notions from SAX,
+such as the way error handling and external entity
+resolution are handled, although it does not reuse
+the corresponding SAX classes.
+To use XSLT transformers: <ul>
+
+<li>Start with <em>TransformerFactory.newInstance()</em>;
+
+<li>Then you may wish to configure that factory through
+its features and properties.  This includes modifying
+the way errors are handled and URIs are resolved.
+
+<li>Then you have several options for how to perform
+the XSLT transformations.  One generic option is to ask the
+factory for a <a href="Transformer.html">Transformer</a>
+and then use <em>Transformer.transform()</em> to pull
+input text onto output text.
+
+<li>Alternatively, most factories support flexible integration
+with SAX event streams.  You can cast such factories to a
+<a href="sax/SAXTransformerFactory.html">SAXTransformerFactory</a>
+and perform either push or pull mode transformations.
+
+</ul>
+
+<p>The <a href="OutputKeys.html">OutputKeys</a> class
+holds constants that can be used to configure output
+properties used with <em>Result</em> objects, as if
+they were specified in <em>xslt:output</em> attributes
+in the stylesheet specifying the transform.
+
+<p>The <a href="Templates.html">Templates</a> class
+accomodates the notion of "compiled" transforms.
+
+</body></html>

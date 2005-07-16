@@ -1,0 +1,255 @@
+<html><head><title>
+blah
+<!--
+/*
+ * Copyright (C) 1999-2001 The Free Software Foundation, Inc.
+ */
+-->
+</title></head><body>
+
+<p>This package exposes a kind of XML processing pipeline, based on sending
+SAX events, which can be used as components of application architectures.
+Pipelines are used to convey streams of processing events from a producer
+to one or more consumers, and to let each consumer control the data seen by
+later consumers.
+
+<p> There is a <a href="PipelineFactory.html">PipelineFactory</a> class which
+accepts a syntax describing how to construct some simple pipelines.  Strings
+describing such pipelines can be used in command line tools (see the
+<a href="../util/DoParse.html">DoParse</a> class)
+and in other places that it is
+useful to let processing be easily reconfigured.  Pipelines can of course
+be constructed programmatically, providing access to options that the
+factory won't.
+
+<p> Web applications are supported by making it easy for servlets (or
+non-Java web application components) to be part of a pipeline.  They can
+originate XML (or XHTML) data through an <em>InputSource</em> or in
+response to XML messages sent from clients using <em>CallFilter</em>
+pipeline stages.  Such facilities are available using the simple syntax
+for pipeline construction.
+
+
+<h2> Programming Models </h2>
+
+<p> Pipelines should be simple to understand.
+
+<ul>
+    <li> XML content, typically entire documents,
+    is pushed through consumers by producers.
+
+    <li> Pipelines are basically about consuming SAX2 callback events,
+    where the events encapsulate XML infoset-level data.<ul>
+
+	<li> Pipelines are constructed by taking one or more consumer
+	stages and combining them to produce a composite consumer.
+
+	<li> A pipeline is presumed to have pending tasks and state from
+	the beginning of its ContentHandler.startDocument() callback until
+	it's returned from its ContentHandler.doneDocument() callback.
+
+	<li> Pipelines may have multiple output stages ("fan-out")
+	or multiple input stages ("fan-in") when appropriate.
+
+	<li> Pipelines may be long-lived, but need not be.
+
+	</ul>
+
+    <li> There is flexibility about event production. <ul>
+
+	<li> SAX2 XMLReader objects are producers, which
+	provide a high level "pull" model: documents (text or DOM) are parsed,
+	and the parser pushes individual events through the pipeline.
+
+	<li> Events can be pushed directly to event consumer components
+	by application modules, if they invoke SAX2 callbacks directly.
+	That is, application modules use the XML Infoset as exposed
+	through SAX2 event callbacks.
+
+	</ul>
+    
+    <li> Multiple producer threads may concurrently access a pipeline,
+    if they coordinate appropriately.
+
+    <li> Pipeline processing is not the only framework applications
+    will use.
+
+    </ul>
+
+
+<h3> Producers: XMLReader or Custom </h3>
+
+<p> Many producers will be SAX2 XMLReader objects, and
+will read (pull) data which is then written (pushed) as events.
+Typically these will parse XML text (acquired from
+<code>org.xml.sax.helpers.XMLReaderFactory</code>) or a DOM tree
+(using a <code><a href="../util/DomParser.html">DomParser</a></code>)
+These may be bound to event consumer using a convenience routine,
+<em><a href="EventFilter.html">EventFilter</a>.bind()</em>.
+Once bound, these producers may be given additional documents to
+sent through its pipeline.
+
+<p> In other cases, you will write producers yourself.  For example, some
+data structures might know how to write themselves out using one or
+more XML models, expressed as sequences of SAX2 event callbacks.
+An application module might
+itself be a producer, issuing startDocument and endDocument events
+and then asking those data structures to write themselves out to a
+given EventConsumer, or walking data structures (such as JDBC query
+results) and applying its own conversion rules.  WAP format XML
+(WBMXL) can be directly converted to producer output.
+
+<p> SAX2 introduced an "XMLFilter" interface, which is a kind of XMLReader.
+It is most useful in conjunction with its XMLFilterImpl helper class;
+see the <em><a href="EventFilter.html">EventFilter</a></em> javadoc
+for information contrasting that XMLFilterImpl approach with the
+relevant parts of this pipeline framework.  Briefly, such XMLFilterImpl
+children can be either producers or consumers, and are more limited in
+configuration flexibility.  In this framework, the focus of filters is
+on the EventConsumer side; see the section on
+<a href="#fitting">pipe fitting</a> below.
+
+
+<h3> Consume to Standard or Custom Data Representations </h3>
+
+<p> Many consumers will be used to create standard representations of XML
+data.  The <a href="TextConsumer.html">TextConsumer</a> takes its events
+and writes them as text for a single XML document,
+using an internal <a href="../util/XMLWriter.html">XMLWriter</a>.
+The <a href="DomConsumer.html">DomConsumer</a> takes its events and uses
+them to create and populate a DOM Document.
+
+<p> In other cases, you will write consumers yourself.  For example,
+you might use a particular unmarshaling filter to produce objects
+that fit your application's requirements, instead of using DOM.
+Such consumers work at the level of XML data models, rather than with
+specific representations such as XML text or a DOM tree.  You could
+convert your output directly to WAP format data (WBXML).
+
+
+<h3><a name="fitting">Pipe Fitting</a></h3>
+
+<p> Pipelines are composite event consumers, with each stage having
+the opportunity to transform the data before delivering it to any
+subsequent stages.
+
+<p> The <a href="PipelineFactory.html">PipelineFactory</a> class
+provides access to much of this functionality through a simple syntax.
+See the table in that class's javadoc describing a number of standard
+components.  Direct API calls are still needed for many of the most
+interesting pipeline configurations, including ones leveraging actual
+or logical concurrency.
+
+<p> Four basic types of pipe fitting are directly supported.  These may
+be used to construct complex pipeline networks.  <ul>
+
+    <li> <a href="TeeConsumer.html">TeeConsumer</a> objects split event
+    flow so it goes to two two different consumers, one before the other.
+    This is a basic form of event fan-out; you can use this class to
+    copy events to any number of output pipelines.
+
+    <li> Clients can call remote components through HTTP or HTTPS using
+    the <a href="CallFilter.html">CallFilter</a> component, and Servlets
+    can implement such components by extending the
+    <a href="XmlServlet.html">XmlServlet</a> component.  Java is not
+    required on either end, and transport protocols other than HTTP may
+    also be used.
+
+    <li> <a href="EventFilter.html">EventFilter</a> objects selectively
+    provide handling for callbacks, and can pass unhandled ones to a
+    subsequent stage.  They are often subclassed, since much of the
+    basic filtering machinery is already in place in the base class.
+
+    <li> Applications can merge two event flows by just using the same
+    consumer in each one.  If multiple threads are in use, synchronization
+    needs to be addressed by the appropriate application level policy.
+
+    </ul>
+
+<p> Note that filters can be as complex as
+<a href="XsltFilter.html">XSLT transforms</a>
+available) on input data, or as simple as removing simple syntax data
+such as ignorable whitespace, comments, and CDATA delimiters.
+Some simple "built-in" filters are part of this package.
+
+
+<h3> Coding Conventions:  Filter and Terminus Stages</h3>
+
+<p> If you follow these coding conventions, your classes may be used
+directly (give the full class name) in pipeline descriptions as understood
+by the PipelineFactory.  There are four constructors the factory may
+try to use; in order of decreasing numbers of parameters, these are: <ul>
+
+    <li> Filters that need a single String setup parameter should have
+    a public constructor with two parameters:  that string, then the
+    EventConsumer holding the "next" consumer to get events.
+
+    <li> Filters that don't need setup parameters should have a public
+    constructor that accepts a single EventConsumer holding the "next"
+    consumer to get events when they are done.
+
+    <li> Terminus stages may have a public constructor taking a single
+    paramter:  the string value of that parameter.
+
+    <li> Terminus stages may have a public no-parameters constructor.
+
+    </ul>
+
+<p> Of course, classes may support more than one such usage convention;
+if they do, they can automatically be used in multiple modes.  If you
+try to use a terminus class as a filter, and that terminus has a constructor
+with the appropriate number of arguments, it is automatically wrapped in
+a "tee" filter.
+
+
+<h2> Debugging Tip: "Tee" Joints can Snapshot Data</h2>
+
+<p> It can sometimes be hard to see what's happening, when something
+goes wrong.  Easily fixed:  just snapshot the data.  Then you can find
+out where things start to go wrong.
+
+<p> If you're using pipeline descriptors so that they're easily
+administered, just stick a <em>write&nbsp;(&nbsp;filename&nbsp;)</em>
+filter into the pipeline at an appropriate point.
+
+<p> Inside your programs, you can do the same thing directly: perhaps
+by saving a Writer (perhaps a StringWriter) in a variable, using that
+to create a TextConsumer, and making that the first part of a tee --
+splicing that into your pipeline at a convenient location.
+
+<p> You can also use a DomConsumer to buffer the data, but remember
+that DOM doesn't save all the information that XML provides, so that DOM
+snapshots are relatively low fidelity.  They also are substantially more
+expensive in terms of memory than a StringWriter holding similar data.
+
+<h2> Debugging Tip: Non-XML Producers</h2>
+
+<p> Producers in pipelines don't need to start from XML
+data structures, such as text in XML syntax (likely coming
+from some <em>XMLReader</em> that parses XML) or a
+DOM representation (perhaps with a
+<a href="../util/DomParser.html">DomParser</a>).
+
+<p> One common type of event producer will instead make
+direct calls to SAX event handlers returned from an
+<a href="EventConsumer.html">EventConsumer</a>.
+For example, making <em>ContentHandler.startElement</em>
+calls and matching <em>ContentHandler.endElement</em> calls.
+
+<p> Applications making such calls can catch certain
+common "syntax errors" by using a
+<a href="WellFormednessFilter.html">WellFormednessFilter</a>.
+That filter will detect (and report) erroneous input data
+such as mismatched document, element, or CDATA start/end calls.
+Use such a filter near the head of the pipeline that your
+producer feeds, at least while debugging, to help ensure that
+you're providing legal XML Infoset data.
+
+<p> You can also arrange to validate data on the fly.
+For DTD validation, you can configure a
+<a href="ValidationConsumer.html">ValidationConsumer</a>
+to work as a filter, using any DTD you choose.
+Other validation schemes can be handled with other
+validation filters.
+
+</body></html>

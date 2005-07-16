@@ -1,0 +1,90 @@
+GNU Classpath README - Last updated: Jul 9, 2004
+
+GNU Classpath, Essential Libraries for Java is a project to create a
+free software implementation of the core class libraries for the java
+programming language.
+
+Additionally GNU Classpath includes a sub-project called GNU Classpath
+Tools whose goal is to provide a number of free replacements for
+standard Java development tools like javadoc, javap, javah, and
+others.  And a sub-project called GNU Inetlib, an extension library to
+provide extra network protocol support (ftp, finger, gopher) for GNU
+Classpath, but it can also standalone to ease adding http, imap, pop3
+and smtp client support to applictions. These subprojects are normally
+released independent from the core libraries.
+
+This is a development snapshot release only and is not for general
+purpose use.  GNU Classpath needs to be combine with a proper
+development environments to be useable for end users.  Eventually,
+these essential libraries for java will work with as many free
+compilers and runtimes as possible.
+
+Complete development environments known to be based on GNU Classpath
+include (recommended for end users):
+
+	* GCC with GCJ 	(http://gcc.gnu.org/java/)
+	* Kaffe		(http://www.kaffe.org/)
+
+Smaller environments (runtime only, no compilers, no tools) which work
+with this GNU Classpath releases include
+(tested by and recommended for GNU Classpath hackers):
+
+	* JamVM		(http://jamvm.sourceforge.net/)
+	* Jikes RVM	(http://www.ibm.com/developerworks/oss/jikesrvm/)
+	* Kissme	(http://kissme.sourceforge.net/)
+
+In general the latest releases of the above VMs will work out of the box
+with the latest GNU Classpath release (and in most cases directly with the
+development sources from CVS).
+
+Besides combining GNU Classpath with the runtimes and compilers above
+you might want to add support for encryption libraries as provided by
+GNU Crypto (http://www.gnu.org/software/gnu-crypto/).
+And for additional extension libraries (mail, xml, activation, infobus,
+servlet) check out GNU ClasspathX (http://www.gnu.org/software/classpathx).
+
+Some tools come with their own customized version of GNU Classpath.
+Please check if there is a customised version available for the tool you
+use before trying the bare bones GNU Classpath release. We are working with
+the tool creators to keep the differences between the core classes as small
+as possible. Please tell us if you make GNU Classpath work with a new tool.
+
+Active projects which use modified versions of the Classpath libraries
+some of which synchronizes with the Classpath CVS head every couple of weeks:
+
+	* IKVM.NET	(http://www.ikvm.net/)
+	* JC		(http://jcvm.sourceforge.net/)
+	* JNode		(http://jnode.sourceforge.net/)
+	* SableVM       (http://www.sablevm.org)
+
+See for a more complete list of GNU Classpath based projects the
+GNU Classpath website: http://www.gnu.org/software/classpath/stories.html
+
+See the file INSTALL for details on installing GNU Classpath.
+See the file NEWS for details on what is included in this release.
+See the file TODO for the latest to do list.
+See the file HACKING for working on (non-released) CVS development versions.
+
+Homepage: http://www.gnu.org/software/classpath/
+
+General Mailing List: classpath@gnu.org
+  --> Bugs and patches can be reported via Savannah if you have a browser
+      or via this address otherwise.
+  --> To subscribe send email to classpath-request@gnu.org with a 
+      subject and body of "subscribe".  To unsubscribe do the same,
+      only with a body and subject of "unsubscribe".  This is a
+      smartlist managed mailing list.
+
+CVS Commit, Bugs and Patches List: commit-classpath@gnu.org
+  --> To subscribe send email to commit-classpath-request@gnu.org with a 
+      subject and body of "subscribe".  To unsubscribe do the same,
+      only with a body and subject of "unsubscribe".  This is a
+      smartlist managed mailing list.
+
+Anonymous CVS:
+  --> export CVS_RSH="ssh"
+  --> cvs -z3 -d:ext:anoncvs@savannah.gnu.org:/cvsroot/classpath co classpath
+  --> More detailed instructions available on the Savannah project website.
+      http://savannah.gnu.org/projects/classpath/
+
+Happy Hacking!

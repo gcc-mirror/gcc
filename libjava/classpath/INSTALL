@@ -1,0 +1,135 @@
+Installing GNU Classpath - Last updated: January 6, 2005
+
+First, this is a development release only! Unless you are interested in
+active development and debugging, or just like running random alpha code,
+this release is probably not for you. Please see the README file for a
+list of VMs that work with GNU Classpath.
+
+Note that if you are building from a non-released (CVS) version of GNU
+classpath, installation instructions are found in the doc/hacking.texi
+file. Or at http://www.gnu.org/software/classpath/docs/hacking.html
+
+------------------------------------------------------------------
+Suggested Software
+------------------------------------------------------------------
+	GNU make ("gmake") is required for building Classpath.
+
+	For any build environment involving native libraries, these 
+	new versions of autoconf, automake, and libtool are required
+        if changes are made that require rebuilding configure, Makefile.in,
+        aclocal.m4, or config.h.in.
+
+        - GNU autoconf 2.59+
+        - GNU automake 1.9+
+        - GNU libtool 1.5+
+
+	When working from CVS you can run the above tools by executing
+	./autogen.sh in the source directory.
+
+	For building the Java bytecode (.class files), one of these
+	compilers are required.  You can select which compiler using
+	--with-jikes, --with-gcj or --with-kjc as argument to
+	configure; the present default is gcj.
+
+        - GCJ 3.3+ (part of the GNU GCC package).
+        - IBM jikes 1.19+.  
+        - The kjc compiler is supported with configure but we have
+          been unable to successfully compile with it.
+
+	For building the gtk+ AWT peer JNI native libraries, the following
+	are required unless --disable-gtk-peer is used as an argument to
+	configure.
+
+        - GTK+ 2.4.x (or higher)
+        - gdk-pixbuf
+
+	- XTest Extension (libXtst) for GdkRobot support in java.awt.
+
+	For building the Cairo GdkGraphics2D backend you need at least
+	Cairo 0.5.0.
+
+	For building the xmlj JAXP implementation (dsabled by default, use
+	configure --enable-xmlj) you need the following installed:
+	- The XML C library for Gnome (libxml2)
+	  http://www.xmlsoft.org/
+	  Minimum version of libxml2 required: 2.6.8
+
+	- The XSLT C library for Gnome (libxslt)
+	  http://www.xmlsoft.org/XSLT/
+	  Minimum version of libxslt required: 1.1.11
+
+	For building the documentation you will need
+
+	- texinfo 4.2 or higher.
+
+This package was designed to use the GNU standard for configuration
+and makefiles.  To build and install do the following:
+
+1).  Run the "configure" script to configure the package.  There are
+various options you might want to pass to configure to control how the
+package is built.  Consider the following options, "configure --help"
+gives a complete list.  
+
+  --enable-java           compile Java source default=yes
+  --enable-jni            compile JNI source default=yes
+  --enable-gtk-peer       compile GTK native peers default=yes
+  --enable-gtk-cairo      compile cairo based Graphics2D default=no
+  --enable-load-library   enable to use JNI native methods default=yes
+  --with-jikes            to compile the class library using jikes
+                          the default is to use gcj
+  --with-glibj            define what to install (zip|flat|both|none)
+                          default=zip
+  --enable-Werror         whether to compile C code with -Werror which turns
+                          any compiler warning into a compilation failure
+                          default=no
+  --enable-xmlj           compile native libxml/xslt library default=no
+  --with-gjdoc		  generate documentation using gjdoc default=no
+  --with-jay              Regenerate the parsers with jay must be given the
+                          path to the jay executable
+
+For more flags run configure --help.
+
+2).  Type "gmake" to build the package.  There is no longer a
+dependency problem and we aim to keep it that way.
+
+3).  Type "gmake install" to install everything.  This may require
+being the superuser. The default install path is /usr/local/classpath
+you may change it by giving configure the --prefix=<path> option.
+
+Report bugs to classpath@gnu.org or much better via Savannah at this
+URL: http://savannah.gnu.org/support/?func=addsupport&group=classpath
+
+Happy Hacking!
+
+Once installed, GNU Classpath is ready to be used by any VM that supports
+using the official version of GNU Classpath.  Simply ensure that
+/usr/local/classpath/share/classpath is in your $CLASSPATH environment
+variable.  You'll also have to set your LD_LIBRARY_PATH
+variable (or similar system configuration) to include the Classpath
+native libraries in /usr/local/classpath/lib/classpath.  
+
+*NOTE* All example paths assume the default prefix is used with configure.
+If you don't know what this means then the examples are correct.
+
+LD_LIBRARY_PATH=/usr/local/classpath/lib/classpath
+CLASSPATH=/usr/local/classpath/share/classpath/glibj.zip:.
+export LD_LIBRARY_PATH CLASSPATH
+
+More information about the VMs that use GNU Classpath can be found in the
+README file.
+
+------------------------------------------------------------------
+Misc. Notes
+------------------------------------------------------------------
+Compilation is accomplished using a compiler's @file syntax.  For our
+part, we avoid placing make style dependencies as rules upon the
+compilation of a particular class file and leave this up to the Java
+compiler instead.
+
+The --enable-maintainer-mode option to configure currently does very 
+little and shouldn't be used by ordinary developers or users anyway.
+
+On Windows machines, the native libraries do not currently build, but
+the Java bytecode library will.  Gcj trunk is beginning to work under
+Cygwin.  The mingw32 version of jikes cannot follow symbolic links, you 
+must use a cygwin build of jikes to access this limited functionality.

@@ -1,0 +1,25 @@
+diff -r -u orp-1.0.9.orig/arch/ia32/base/root_set_enum_ia32.cpp orp-1.0.9/arch/ia32/base/root_set_enum_ia32.cpp
+--- orp-1.0.9.orig/arch/ia32/base/root_set_enum_ia32.cpp	Thu Jan 17 06:49:40 2002
++++ orp-1.0.9/arch/ia32/base/root_set_enum_ia32.cpp	Thu Feb  7 15:13:02 2002
+@@ -35,9 +35,6 @@
+ #include "../x86/x86.h"
+ 
+ #ifdef ORP_POSIX
+-#ifdef __linux__
+-#include <asm/spinlock.h>
+-#endif
+ #include "platform2.h"
+ #endif
+ 
+diff -r -u orp-1.0.9.orig/base_natives/common_olv2/mon_enter_exit.cpp orp-1.0.9/base_natives/common_olv2/mon_enter_exit.cpp
+--- orp-1.0.9.orig/base_natives/common_olv2/mon_enter_exit.cpp	Thu Jan 17 06:49:40 2002
++++ orp-1.0.9/base_natives/common_olv2/mon_enter_exit.cpp	Thu Feb  7 15:13:57 2002
+@@ -294,7 +294,7 @@
+ #else
+ 		"nop;nop;nop"
+ #endif
+-		::: "memory"
++		: : : "memory"
+ 	);
+ 
+ #else

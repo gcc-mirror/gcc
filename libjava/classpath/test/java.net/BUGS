@@ -1,0 +1,5 @@
+Why can I only send a 65332 sized UDP packet?  Is there that much UDP overhead?
+
+Setting the multicast interface doesn't seem to work.
+
+

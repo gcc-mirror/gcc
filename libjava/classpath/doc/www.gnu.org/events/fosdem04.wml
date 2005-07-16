@@ -1,0 +1,100 @@
+#!wml --include=..
+
+#include "include/layout.wml"
+
+<set-var last-modified-author="prk">
+<subject "GNU Classpath: FOSDEM'04">
+
+<box>
+<boxitem>
+<h2>GNU Classpath at FOSDEM'04</h2>
+
+Saturday, 21 February 2004
+
+A whole room was devoted to Free Java Developers. The following talks took place:
+<ul>
+<li><strong>GNU Classpath -- Core Classes for a Diversity of Free Java Virtual Machines</strong>, Sascha Brawer and Mark Wielaard (GNU Classpath)<br>
+[<createlink name="slides" url="http://www.dandelis.ch/people/brawer/articles/classpathFeb2004/">]<br>
+<i>Mark presented an overview of the GNU Classpath project, the current development state, and the problems encountered, in particular the ability to fit so many JVM with different requirements and constraints</i>
+
+<li><strong>SableVM - the Apache of Java Virtual Machines</strong>, Grzegorz B. Prokopski (SableVM)<br>
+[<createlink name="slides" url="http://gadek.debian.net/FOSDEM/">]<br>
+<i>Grzegorz presented the SableVM JVM and its technical details; a whole unter the hood tour, including the use of m4 macro expansion for generating the VM code and an overview of interpreter and JIT techniques used.</i><br>
+
+
+<li><strong>fbAWT - Direct to your buffer</strong>, Stephane Meslin-Weber<br>
+<i>Stephane presented his project to map AWT directly to a framebuffer and VNC, and made a short demo of it.</i>
+
+</ul>
+
+Sunday, 22 February 2004
+
+There was a whole track of Java-related presentations:
+
+<ul>
+<li><strong>JOnAS</strong>, Florent Benoit (WebObjects)
+<li><strong>GCJ</strong>, Tom Tromey (GCJ, Red Hat)<br>
+[<createlink name="slides" url="http://www.peakpeak.com/~tromey/FOSDEM/gcj.html">]<br>
+<i>Tom presented the GCJ project and its goals. Many details on performance and status.</i><br>
+
+<li><strong>NetBeans</strong>, Ian Formanek (Sun)
+<li><strong>Java Security: How Free Software Is Secured Using the Java Language
+</strong>, Sascha Brawer (GNU Classpath, Dandelis)<br>
+Abstract: After a general introduction to why Java seems a reasonable choice for
+writing large and robust free software packages, the talk discusses the
+security features of the Java platform. It is shown how several actors
+play together to ensure type safety, encapsulation and declarative access
+control. Four concrete denial-of-service attacks illustrate the
+importance of enhancing the platform by techniques for managing resource
+consumption.
+<br>[<createlink name="slides" url="http://www.dandelis.ch/people/brawer/articles/classpathSecurity/">]
+</ul>
+
+</ul>
+
+In the afternoon, more discussions took place in the Free Java Developers room.
+
+<ul>
+<li><strong>Packaging Free Java Applications For Free Operating Systems</strong>, Dalibor Topic (Kaffe) and Arnaud Vandyck (Debian)<br>
+[<createlink name="Wiki" url="http://java.debian.net">]<br>
+<i>Dalibor and Arnaud explained the problems encountered while packaging Java for Debian.</i>
+
+<li><strong>Free Discussion</strong><br>
+<i>A proposal by Andrew Haley (GCJ) for the standardization of the JIT interface in the VM was discussed.</i>
+
+</ul>
+
+</boxitem>
+<boxitem>
+In Mark Wielaard's words
+<ul>
+<li> <i>There were between 20 and 50 people following the different
+presentations, talks and discussions in our developer room. And Tom
+Tromey his talk on gcj in the big room got 120 interested people.</li>
+<li> <i>We could have had more in depth technical discussions. Most of the
+presentations now were more overviews of what was already there. Which
+is great for attracting new developers and explaining our goals to
+outsiders. But for next time we must really appoint people that lead
+some technical issue. Many thanks to Andrew for just standing up and
+starting the pluggable JIT interface discussion by telling how gcj would
+like to support it.
+</i>
+
+</ul>
+
+See his whole message in the <createlink name="mail archive" url="http://mail.gnu.org/archive/html/classpath/2004-02/msg00051.html">.
+</boxitem>
+<boxitem>
+Additional Resources:
+<ul>
+<li><createlink name="GNU Classpath's Flyer" url="http://www.klomp.org/mark/classpath/fosdem/"> (Kudos to Mark Wielaard)
+<li><createlink name="Group Picture" url="http://adorphuye.com/gallery/FOSDEM2004/IMGP0234"> (thanks to Stephane Meslin-Weber)
+</ul>
+
+Official links:
+<ul>
+<li><createlink name="FOSDEM Homepage" url="http://www.fosdem.org">
+<li><createlink name="FOSDEM Java Dev Room" url="http://www.fosdem.org/2004/index/dev_room_java/">
+<li><createlink name="FOSDEM Java Dev Room Schedule" url="http://www.fosdem.org/2004/index/dev_room_java/schedule/">
+</ul>
+</box>

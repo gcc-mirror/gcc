@@ -1,0 +1,32 @@
+#!/bin/sh
+
+echo "Running java.net tests"
+echo "I assume japhar is in /usr/local/japhar"
+echo "Please make sure background processes don't block on a tty write"
+echo "Please do an 'ifconfig multicast' and 'ifconfig allmulti' on your"
+echo "network interfaces"
+
+export CLASSPATH=.:/usr/local/japhar/share
+export PATH=$PATH:/usr/local/japhar/bin
+
+echo "Executing name lookup test ..."
+japhar TestNameLookups
+
+echo "Executing stream socket tests ..."
+japhar ServerSocketTest &
+japhar ClientSocket
+
+echo "Executing datagram socket tests ..."
+japhar ServerDatagram &
+japhar ClientDatagram
+
+echo "Executing multicast socket tests ..."
+japhar MulticastServer &
+japhar MulticastClient
+
+echo "Executing URL tests ..."
+japhar URLTest
+
+echo "java.net Testing complete."
+exit 0
+

@@ -1,0 +1,585 @@
+#!wml --include=..
+
+#include "include/layout.wml"
+
+##
+#
+# Special Tags
+#
+
+
+
+#
+# <faq-section name="XYZ>
+#	<faq question="ABC">answer</faq>
+#	<faq question="ABC">answer</faq>
+# </faq-section>	
+#
+
+# the section counter
+#
+<set-var __SECCNT=1>
+
+<define-tag faq-section endtag=required>
+	<preserve name>
+	<set-var %attributes>
+{#FAQINDEX#:
+		<boxtitle><get-var __SECCNT>. <get-var name></boxtitle>
+		<boxitem>
+:#FAQINDEX#}
+	<boxtitle><get-var __SECCNT>. <get-var name></boxtitle>
+	<set-var __FAQCNT=1>
+	<boxitem>%body</boxitem>
+{#FAQINDEX#:
+		<br>
+		</boxitem>
+:#FAQINDEX#}
+	<increment __SECCNT>
+	<restore name>
+</define-tag>
+
+<define-tag faq endtag=required>
+<preserve question>
+<set-var %attributes>
+{#FAQINDEX#:
+	<strong><a href="faq/faq.html#faq<get-var __SECCNT>_<get-var __FAQCNT>"><get-var __SECCNT>.<get-var __FAQCNT> <get-var question></a></strong><br>
+:#FAQINDEX#}
+	<h3><a name="faq<get-var __SECCNT>_<get-var __FAQCNT>"><get-var __SECCNT>.<get-var __FAQCNT> <get-var question></a></h3>
+	%body
+	<br>
+<increment __FAQCNT>
+<restore question>
+</define-tag>
+
+
+<set-var last-modified-author="prk">
+
+<subject "GNU Classpath FAQ">
+
+<box>
+{#FAQINDEX#}
+
+<faq-section name="introduction">
+<faq question="What is GNU Classpath?">
+<p>GNU Classpath is a set of essential libraries for supporting
+the Java programming language.</p>
+
+<p>Classpath serves the same role that <a
+href="http://www.gnu.org/software/libc/libc.html">libc</a> has for C,
+but is much richer in functionality. The broadness of the standard
+library is an important reason why Java has been so successful. For
+example, the library includes frameworks to convert between character
+encodings, for accessing relational databases, for building Graphical
+User Interfaces, for encryption, for logging, and for numerous other
+tasks that are needed to build complex applications.</p>
+
+</faq>
+
+<faq question="Why Java?">
+<p>On the GNU operating system, we want to run software independent of
+the programming language in which it was written. Because Java is
+widespread, and because Java has some nice features, we want to
+support Java as well.</p>
+
+</faq>
+
+<faq question="But isn't Java free already?">
+<p>Sun Microsystems, the company who has created Java, currently
+distributes the &#x201c;Java Development Kit&#x201d; and &#x201c;Java
+Runtime Environment&#x201d; at no cost. The former even comes with the
+source code of the standard class library. However, the &#x201c;Sun
+Community Source License&#x201d; <a
+href="http://www.gnu.org/licenses/license-list.html#SunCommunitySourceLicense">does
+not grant essential freedoms</a>, for example the right to distribute
+a modified version of the code.</p>
+
+<p>Therefore, Sun&#x2019;s implementation does not qualify as Free
+Software.</p>
+
+</faq>
+
+<faq question="What do we need to make Java free?">
+
+<p>Though it would be helpful if Sun would open their sources, this is not the
+most important step toward a free Java. Even more important for a free Java are:
+<ul>
+<li>Access to the TCK (Technology Compatibility Kits) on acceptable terms
+<li>Involvement in the JCP without contamination or other unacceptable
+   constraints
+<li>Easing of the requirements on subsetting.  The free software
+   community doesn't work well with the "one big perfect release"
+   model that Sun seems to want.  
+</ul>
+
+<p>There was already a lot of discussions around this topic on other sites:
+<ul>
+<li><createlink name="Sys-Con: <i>Let's Bundle Free Java with Linux</i>, Says IBM's Sutor" url="http://sys-con.com/story/print.cfm?storyid=43969">
+<li><createlink name="Hacking Log 4.0: RE: JCP 2.6 - Are we there yet?" url="http://linuxintegrators.com/blog/acoliver/news/?permalink=0124.html">
+<li><createlink name="Javalobby: ESR - Open Letter to Sun: Let Java Go" url="http://www.javalobby.org/thread.jspa?forumID=61&threadID=11412">
+</ul>
+
+
+</faq>
+
+<faq question="Is GNU Classpath all that is needed for running Java programs?">
+<p>GNU Classpath is a free implementation of Java&#x2019;s standard
+library.  To execute Java programs, it is also necessary to have a
+Java Virtual Machine (JVM). This component manages memory, enforces
+security restrictions, compiles Java bytecodes to the instruction set
+of your computer, and provides other runtime services.  There exist
+several projects for <createlink name="free JVMs" url="stories.html#jvm">. Most use GNU Classpath as the
+up-stream source for their library.</p>
+
+<p>Java programs can also be compiled &#x201c;ahead of time,&#x201d;
+like C++ or other compiled languages. The GNU Compiler Collection
+(GCC) does this, and its Java library is mostly derived from GNU
+Classpath.</p>
+</faq>
+
+</faq-section>
+
+<faq-section name="licensing">
+
+<faq question="Under which licence is GNU Classpath released?">
+GNU Classpath is licensed under the GPL plus a special exception:
+
+<blockquote>
+<p>
+<code>
+Linking this library statically or dynamically with other modules is
+making a combined work based on this library.  Thus, the terms and
+conditions of the GNU General Public License cover the whole
+combination.
+</code>
+</p>
+<p>
+<code>
+As a special exception, the copyright holders of this library give you
+permission to link this library with independent modules to produce an
+executable, regardless of the license terms of these independent
+modules, and to copy and distribute the resulting executable under
+terms of your choice, provided that you also meet, for each linked
+independent module, the terms and conditions of the license of that
+module.  An independent module is a module which is not derived from
+or based on this library.  If you modify this library, you may extend
+this exception to your version of the library, but you are not
+obligated to do so.  If you do not wish to do so, delete this
+exception statement from your version.
+</code>
+</p>
+</blockquote>
+
+</faq>
+
+<faq question="Where can I find more about the GPL?">
+Please check the FSF FAQ on the GNU GPL: <createlink name="http://www.fsf.org/licenses/gpl-faq.html" url="http://www.fsf.org/licenses/gpl-faq.html">.
+</faq>
+
+<faq question="What does the exception allow me to do?">
+<p>If you combine GNU Classpath <em>with independent modules to produce an
+executable</em> you can <em>copy and distribute the resulting executable under
+terms of your choice</em>.</p>
+
+<p>So you can use and distribute GNU Classpath as is in your program without changing the license of your software.</p>
+</faq>
+
+<faq question="I have a question about licensing GNU Classpath. Who can I ask?">
+Direct such questions to <a href="mailto:licensing@gnu.org">licensing@gnu.org</a>. The FSF is the
+official copyright holder of Classpath and sets the distribution terms
+</faq>
+
+<faq question="How can I be sure that my application does not break the license?">
+The FSF has a GPL-compliance lab which offers consulting services for
+companies who are working to develop products that incorporate Free
+Software so that they can do so in ways that comply with the terms of
+the GPL and other Free Software licenses. If you are interested in this
+service, please write to <a href="mailto:compliance-lab@fsf.org">compliance-lab@fsf.org</a>.
+</faq>
+</faq-section>
+
+<faq-section name="Classpath Development">
+
+<faq question="I would like to contribute, where shall I start?">
+<p>See the <a
+href="docs/">documentation page</a>, especially the <a
+href="docs/hacking.html">GNU
+Classpath Hacker&#x2019;s Guide</a>, and pick up a <createlink name="task" url="tasks.html"> from the list!
+</faq>
+
+<faq question="Can I look at source code distributed with other
+implementations to get inspiration?">
+If you are going to contribute source code to GNU Classpath we must
+make sure that you have not studied the source code of the JDK/JRE or
+decompiled any of its classes. Furthermore you must not have signed
+any non-disclosure agreements with Sun or other companies in regard
+with java technology that might cover the core class libaries or
+tools. The reason for this requirement is that we want to make sure
+that Sun or any other company cannot rightfully claim that GNU
+Classpath infringes their copyright. You are therefore questioned
+about your experience with other implementations of similar source
+code and any agreements with companies you might have signed when you
+request to contribute to GNU Classpath.
+<p>
+Please note that this does not mean you cannot help GNU Classpath at
+all in such a case. Here is a list of things you can do instead:
+<ul>
+  <li>write Mauve test cases</li>
+  <li>write example applications demonstrating the usage of the packages</li>
+  <li>writing/fixing helper programs (like japitools) and scripts</li>
+  <li>report bugs</li>
+  <li>help fixing the documentation</li>
+  <li>help in other related Free software projects
+  (e.g. virtual machine development,
+   <createlink name="GUMP" url="http://gump.apache.org/">)
+</ul>
+<p>
+Here are some rough guidelines for deciding whether or not it would be
+wise to accept a contribution from someone that studied source code
+for another implementation of the core libraries or is under contract
+with some company covering implementations of core library classes.
+<p>
+If the developer got access to the source code by signing some
+contract (like the SCSL) with Sun then it would be best to examine
+that contract (by FSF legal) before deciding.
+<p>
+If the developer just accidentally saw some of the source code and had
+no intention (and didn't actually) study the implementation (with the
+intention of contributing to GNU Classpath) there is no problem.
+<p>
+Studying a proprietary implementation with the intention of
+implementing it (better) for GNU Classpath is a clear no-no.
+<strong>The general rule is that if you have looked at or studied any
+(proprietary) implementation of a package you should not work on that
+package for GNU Classpath.</strong> That is because it would be
+difficult to proof that you really did an independent
+implementation. Since what you create might look very similar (which
+is not unlikely). Working on something completely unrelated is OK (as
+long as there are no contractual obligations with Sun or some other
+company to not do this of course).
+<p>
+The important thing is that we want to be clear on the fact that we
+created an independent implementation. We don't want to get into
+tricky legal situations. We want to avoid risking to go to court over
+reverse engineering or clean room situation questions if not
+absolutely necessary. That is why we in general just say "please don't
+contribute if you looked at other implementations". If someone thinks
+that their actions might be explained as copying directly or
+indirectly another (proprietary) implementation then that could be a
+problem that we want to avoid.
+<p>
+FSF Legal will always advise not to take any unnecessary risks that
+might endanger the (perceived) free software status of a GNU
+project. (If we might need to go to court to proof that what we did
+was OK, then don't!)
+<p>
+This isn't a GNU Classpath project specific issue.
+See <createlink name="GNU: Reading Non-Free Code"
+url="http://www.gnu.org/prep/standards/html_node/Reading-Non_002dFree-Code.html">.
+</faq>
+
+<faq question="I'm tainted by; can I help anyway?">
+Even if you have seen Sun's source and you cannot contribute code to GNU Classpath, there are still many way you can help us.
+
+Here's a few examples of contributions you can make that would greatly help us:
+<ul>
+<li>Mauve test cases
+<li>Example programs for GNU Classpath
+<li>Documentation fixes
+<li>Help programs (e.g. japitools) and scripts
+</ul>
+
+In general, if you just accidentally saw some of the source code and had no intention (and didn't actually) study the implementation (with the intention of contributing to GNU Classpath), there is no problem.
+
+In case of doubt, please refer to FSF legal.
+</faq>
+
+<faq question="Why do I have to give the copyright to the FSF?">
+Some contributors of Classpath might be annoyed if their work was being
+used under conditions that are not according to the terms of the license.
+However, enforcing the license in court (if this was ever needed) would
+be easier if the Free Software Foundation can claim to speak in the name
+of all authors. For this reason, and for others that are specific to the
+intellectual property system of the United States, GNU projects tend to
+be a bit picky about getting signatures from all contributors. Please do
+not see this as a personal offence.
+
+<p>Giving the copyright to the FSF also gives us a clear paper trail where changes come from, which confirms our clean-room status.
+
+<p>See also <a href="http://www.gnu.org/licenses/why-assign.html">http://www.gnu.org/licenses/why-assign.html</a>.
+</p>
+
+<p>For getting the assignment form, please send an e-mail with your name (as
+it appears in your passport) and your current postal address to the
+maintainer of GNU Classpath, Mark Wielaard <mark@klomp.org>.
+</p>
+</faq>
+
+<faq question="How do I install GNU Classpath?">
+<p>Follow these steps to install GNU Classpath. Please note that you need this only if you want to work directly with it; usually JVMs contain a pre-packaged version of GNU Classpath.
+
+<bold>Prerequisites</bold>
+
+Please check the exact version of the prerequisites from your release's INSTALL file.
+
+In every case, you need:
+<ul>
+<li>GNU gmake
+<li>GNU autoconf
+<li>GNU automake
+<li>GNU libtool
+</ul>
+
+For building the Java bytecode (.class files), one of these compilers are required.  You can select which compiler using --with-jikes, --with-gcj or --with-kjc as argument to configure; the present default is gcj.
+
+<ul>
+<li>GCJ (part of GNU GCC)
+<li>IBM Jikes
+</ul>
+
+For building the JNI native libraries, the following are required unless --disable-gtk-peer is used as an argument to configure.
+<ul>
+<li><createlink name="GTK+ 2" url="http://www.gtk.org/">
+<li>gdk-pixbuf
+</ul>
+
+For building the documentation you will need:
+<ul>
+<li>texinfo
+</ul>
+
+<bold>Install from CVS</bold>
+
+<commented-code>
+<code-line code="cvs checkout" />
+<code-line code="./autogen.sh" />
+<code-line code="./configure" />
+<code-line code="make" />
+</commented-code>
+
+<bold>Install a release</bold>
+<commented-code>
+<code-line code="<createlink url="ftp://ftp.gnu.org/gnu/classpath/">">
+  Download the current release
+</code-line>
+<code-line code="tar zxf classpath-<i>version</i>.tar.gz">
+  unpack
+</code-line>
+<code-line code="cd classpath-<i>version</i>" />
+<code-line code="more INSTALL">
+  make sure you have all pre-requirements
+</code-line>
+<code-line code="./configure">
+  configure the distribution; use <code>--help</code> to get the list of options: you will usually need <code>--prefix=<i>dest/dir/for/classpath</i>; use <code>--disable-gtk-peer</code> if you don't use gtk+/gnome.
+</code-line>
+
+<code-line code="make; make install" />
+</commented-code>
+
+
+</faq>
+
+<faq question="How do I install Mauve?">
+
+<commented-code>
+<code-line code="export CVSROOT=:ext:anoncvs@bogus.example.com:/cvs/mauve" />
+<code-line code="cvs login">password is anoncvs</code-line>
+<code-line code="cvs checkout mauve" />
+<code-line code="cd mauve" />
+<code-line code="./configure">
+The main thing this does is creating the gnu/testlet/config.java. You could also do this by hand from the config.java.in file
+</code-line>
+<code-line code="vi batch_runner">
+Edit the script 'batch_runner' to set the variable COMPILER correctly
+  (there are a couple of example settings)
+</code-line>
+<code-line code="vi runner">
+Edit script 'runner' to set the variable RUNTIME correctly
+  (there are a couple of example settings)
+</code-line>
+<code-line code="./batch_run">
+run ./batch_run and look at the results. You can also run individual tests with<br>
+<code>- echo gnu.testlet.java.lang.String.getBytes | jamvm 
+gnu.testlet.SimpleTestHarness</code><br>
+(Option flags are -verbose and -debug)
+
+</code-line>
+
+</commented-code>
+
+
+</faq>
+
+<faq question="How can I synchronize my sources with GNU Classpath?">
+
+When developing a JVM that uses GNU Classpath, a copy of GNU Classpath local to the JVM is often used. To keep the Classpath sources synchronized with the main development, a few approaches are possible (we assume here that you are keeping the local copy of Classpath in your JVM revision control software):
+<ul>
+<li>Use CVS import and CVS update as explained in <createlink url="http://www.cvshome.org/docs/manual/cvs-1.11.14/cvs_13.html#SEC104" name="Section 13: Tracking Thirdparty sources"> of the CVS manual. This works well for minor changes, but has the disadvantage of a limited control on the update / merge of the sources. In fact, most of the developers prefer merging the changes by hand.
+
+<li>libgcj, which is almost always trying to be
+as synchronized as possible with GNU Classpath CVS, has a script
+that runs daily which produces a (colored) differences overview
+(including patch/diffs). They also put in special markers into the
+source for gcj specific changes that the script recognizes.
+<ul>
+<li>Script can be found at:
+<createlink url="http://savannah.gnu.org/cgi-bin/viewcvs/gcc/wwwdocs/bin/gen-classpath-compare">
+
+<li>Daily updated result:
+<createlink url="http://gcc.gnu.org/java/libgcj-classpath-compare.html">
+</ul>
+</ul>
+
+</faq>
+
+<faq question="How do I avoid compiling some files or packages?">
+The file <code>lib/standard.omit</code> controls which files are omitted from the compilation. Add a regex with the files to be omitted and rebuild classpath.
+</faq>
+
+<faq question="How do I change classpath's web pages?">
+
+<p>To modify and upload GNU Classpath's web pages, you need write access to the CVS. First, checkout the modules "classpath" and "website".
+
+<p>The web pages are stored in doc/www.gnu.org and are written in wml (Web Meta Language, see <createlink url="http://thewml.org/">).
+
+<p>A typical page usually looks like this:
+<pre>
+\#include "include/layout.wml"
+
+&lt;subject "here goes the page title">
+
+&lt;box>
+
+&lt;boxtitle>Section 1 Title&lt;\boxtitle>
+&lt;boxitem>
+  section 1 contents
+&lt;\boxitem>
+
+....
+
+&lt;\box>
+
+</pre>
+
+<p>Invoking "make" creates the html pages in the same directory. To copy those pages to another directory, use
+<pre>
+> export CLASSPATH_WEBROOT=...destination...
+> make publish
+</pre>
+
+<p>The steps to publish the pages are:
+<ol>
+<li>Update ChangeLog
+<li>Commit your changes in module Classpath to the CVS
+<li>cd doc/www.gnu.org
+<li>make
+<li>copy the modified / new pages to the website module
+<li>commit the changes in the website module
+</ol>
+
+<p>Note that it takes up to an hour for the pages to appear on the GNU website after an upload.
+
+
+</faq>
+
+<faq question="Is it possible to use Classpath in a prorietary VM?">
+
+<p>Only the proprietary VM's vendor can make it work with GNU Classpath, by the nature of the VM being proprietary. GNU Classpath provides well documented and widely used interfaces for interfacing with runtimes. It's up to proprietary VM vendors to make their products work with GNU Classpath, if they wish to do so. If you, as a customer, want the runtime to use GNU Classpath, please talk to your proprietary software vendor. 
+
+<p>You can also try using a free runtime that supports GNU Classpath out-of-the-box instead.
+
+</faq>
+
+</faq-section>
+
+<faq-section name="Classpath Implementation">
+
+<faq question="Why does java.lang.Throwable delay the StackTrace array construction?">
+
+Well consider what happens in a VM.  VMThrowable.fillInStackTrace() is
+very fast -- it's just a chain of addresses.
+VMThrowable.getStackTrace() is very slow, because it has to convert
+all those addresses into StackTraceElements.  I suspect that you can
+get the trace for the whole stack in less time than it takes to create
+a single StackTraceElement.  For this reason, the vmState is stored
+and lazily converted to a StackTraceElement[]. (<i>Andrew Haley</i>)
+
+<p> A particular problem is posed by OutOfMemoryException: throwing it shouldn't require any memory (there's none anyway). Some propose that the VM should preallocate it at bootstrap, but this doesn't solve the problem. In Chris Gray's words <i>"if several threads throw OOME at the same time, the stack traces can get mixed up [...snip...] This situation is less improbable than you might think, since if one thread encounters an OOM situation, all other threads should encounter one too.  With some forms of co-operative multi-threading you may get away with it, but in the general pre-emptive case you could be living dangerously."</i></p>
+
+</faq>
+</faq-section>
+
+
+<faq-section name="Varia">
+<faq question="How to generate API Documentation with gjdoc/libxmlj?">
+
+Beware: generating the complete API Documentation non-trivial and the generation of a full tree takes more then one and half hour (on a 1.4 Ghz Athlon),
+150+ MB of memory, at least 25MB of tmp storage, and at least
+twice so much in your obj build dir.
+
+<ol>
+<br><li>set the CVS_RSH environment variable to ssh<br>
+<br><li>install gcj 3.3.2 (or higher)<br>
+<code>
+gjdoc CVS :ext:anoncvs@savannah.gnu.org:/cvsroot/cp-tools module gjdoc
+</code>
+<br><li>install libxmlj<br>
+<code>
+libxmlj CVS :ext:anoncvs@savannah.gnu.org:/cvsroot/classpathx module libxmlj<br>
+make && make install
+</code>
+
+<br><li>For gjdoc add at the start of gnu/classpath/tools/gjdoc/Main.java (main):<br>
+
+<code>
+  System.setProperty("javax.xml.transform.TransformerFactory",
+            "gnu.xml.libxmlj.transform.TransformerFactoryImpl");
+</code>
+
+<br><li>There is a ant build.xml file, but you can also compile it all by hand together with the external/jaxp/source files from Classpath which can be copied in the src direcrory as follows:<br>
+
+<code>
+  find * -name \*.java | xargs gcj -O2 -g -o gjdoc \<br>
+  --main=gnu.classpath.tools.gjdoc.Main
+</code>
+
+<br><li>Create a simple gjdoc script and put it in your PATH:<br>
+
+<code>
+  &#35;!/bin/sh<br>
+  CLASSPATH=/home/mark/src/libxmlj:/home/mark/src/gjdoc/src/resources \<br>
+  LD_LIBRARY_PATH=/usr/local/libxmlj/lib \<br>
+  /home/mark/src/gjdoc/src/gjdoc $*
+</code>
+
+<br><li>Configure classpah with --enable-gjdoc.
+<br><li>Type make and go get yourself some coffe, take a shower and do some work in the garden.
+</ol>
+
+<p>There is one catch. The above setup is completely broken for some HTML
+entities (see [bugs #4823] HTML entities such as auml and nbsp should be
+put back in the API doc). So if you have  spectacular and mysterious
+crashes then make sure that your java source files don't contain such
+entities.
+
+
+<p>Alternatively, you may also try the following command (the one used to generate the doc on <createlink url="http://developer.classpath.org/doc/">):<br>
+<ul>
+<code>
+&#36;(GJDOC) -public -use \<br>
+        -sourcepath "$(sourcepath)" \<br>
+        -encoding UTF-8 \<br>
+        -breakiterator \<br>
+        -licensetext \<br>
+        -linksource \<br>
+        -splitindex \<br>
+        -d html \<br>
+        -doctitle "GNU Classpath $(VERSION)" \<br>
+        -windowtitle "GNU Classpath $(VERSION) Documentation" \<br>
+        -header $(classpathbox) -footer $(classpathbox) \<br>
+        -subpackages java:javax:org
+</code>
+</ul>
+
+</faq>
+</faq-section>
+</box>

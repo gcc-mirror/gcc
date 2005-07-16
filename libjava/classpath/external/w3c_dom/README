@@ -1,0 +1,97 @@
+Bindings for the Document Object Model (DOM).
+DOM is not maintained as part of GNU Classpath, but is used with GNU Classpath.
+
+The packages includes are:
+
+Document Object Model (DOM) Level 3 Core Specification
+http://www.w3.org/TR/DOM-Level-3-Core/
+(07 April 2004)
+
+Document Object Model (DOM) Level 3 Load and Save Specification
+http://www.w3.org/TR/DOM-Level-3-LS/
+(07 April 2004)
+
+Document Object Model (DOM) Level 2 Events Specification
+http://www.w3.org/TR/DOM-Level-2-Events/
+(13 November 2000)
+Latest errata: 20021016
+
+Document Object Model (DOM) Level 2 Views Specification
+http://www.w3.org/TR/DOM-Level-2-Views/
+(13 November 2000)
+Latest errata: 20021016
+
+Document Object Model (DOM) Level 2 Style Specification
+http://www.w3.org/TR/DOM-Level-2-Style/
+(13 November 2000)
+Latest errata: 20021016
+
+Document Object Model (DOM) Level 2 Traversal and Range Specification
+http://www.w3.org/TR/DOM-Level-2-Traversal-Range/
+(13 November 2000)
+Latest errata: 20021016
+
+Document Object Model (DOM) Level 2 HTML Specification
+http://www.w3.org/TR/DOM-Level-2-HTML/
+(09 January 2003)
+
+Document Object Model (DOM) Level 3 XPath Specification
+http://www.w3.org/TR/DOM-Level-3-XPath/
+(26 February 2004)
+
+Errata can be found at:
+http://www.w3.org/2000/11/DOM-Level-2-errata
+http://www.w3.org/2004/01/DOM-Level-3-errata
+
+The only change to the sources is setting the additional fallback for
+org.w3c.dom.bootstrap.DOMImplementationRegistry.newInstance() to
+gnu.xml.dom.ImplementationSource.
+
+When importing new versions don't forget to update the Makefile.am
+to list any new files (or to remove old ones).
+
+All files are distributed under the following
+W3C Software Short Notice:
+
+  Copyright (c) 2004 World Wide Web Consortium,
+
+  (Massachusetts Institute of Technology, European Research Consortium for
+  Informatics and Mathematics, Keio University). All Rights Reserved. This
+  work is distributed under the W3C(r) Software License [1] in the hope that
+  it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+  warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+  [1] http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
+
+  Permission to copy, modify, and distribute this software and its
+  documentation, with or without modification, for any purpose and
+  without fee or royalty is hereby granted, provided that you include
+  the following on ALL copies of the software and documentation or
+  portions thereof, including modifications:
+
+  1. The full text of this NOTICE in a location viewable to users of
+  the redistributed or derivative work.
+  2. Any pre-existing intellectual property disclaimers, notices, or
+  terms and conditions. If none exist, the W3C Software Short Notice
+  should be included (hypertext is preferred, text is permitted) within
+  the body of any redistributed or derivative code.
+  3. Notice of any changes or modifications to the files, including
+  the date changes were made. (We recommend you provide URIs to the
+  location from which the code is derived.)
+
+  THIS SOFTWARE AND DOCUMENTATION IS PROVIDED "AS IS," AND COPYRIGHT
+  HOLDERS MAKE NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED,
+  INCLUDING BUT NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY OR FITNESS
+  FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF THE SOFTWARE OR
+  DOCUMENTATION WILL NOT INFRINGE ANY THIRD PARTY PATENTS, COPYRIGHTS,
+  TRADEMARKS OR OTHER RIGHTS.
+
+  COPYRIGHT HOLDERS WILL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, SPECIAL
+  OR CONSEQUENTIAL DAMAGES ARISING OUT OF ANY USE OF THE SOFTWARE OR
+  DOCUMENTATION.
+
+  The name and trademarks of copyright holders may NOT be used in
+  advertising or publicity pertaining to the software without specific,
+  written prior permission. Title to copyright in this software and any
+  associated documentation will at all times remain with copyright
+  holders.

@@ -1,0 +1,177 @@
+<newsitem date="15 Jul 2005">
+<createlink name="GNU Classpath 0.17"
+            url="announce/20050715.html">
+</newsitem>
+
+<newsitem date="30 Jun 2005">
+<createlink name="GNU Classpath 0.16"
+            url="announce/20050630.html">
+</newsitem>
+
+<newsitem date="29 Apr 2005">
+<createlink name="GNU Classpath 0.15"
+            url="announce/20050429.html">
+</newsitem>
+
+<newsitem date="25 Feb 2005">
+<createlink name="GNU Classpath 0.14"
+            url="announce/20050226.html">
+Base core class libraries for the GCC 4.0 (gcj) and Kaffe 1.1.5 releases.
+</newsitem>
+
+<newsitem date="18 Feb 2005">
+<createlink
+ name="The gui branch is dead!"
+ url="http://lists.gnu.org/archive/html/classpath/2005-02/msg00081.html">
+ Long live the gui work.
+</newsitem>
+
+<newsitem date="18 Feb 2005">
+<createlink name="Escape the Java Trap @ Fosdem 2005"
+            url="events/escape_fosdem05.html">
+</newsitem>
+
+<newsitem date="14 Feb 2005">
+<createlink name="Calientra runs on GNU Classpath" 
+            url="http://lists.gnu.org/archive/html/classpath/2005-02/msg00065.html">
+</newsitem>
+
+<newsitem date="07 Jan 2005">
+<createlink name="GNU Classpath 0.13" url="announce/20050107.html">
+</newsitem>
+
+<newsitem date="15 Nov 2004">
+<createlink name="GNU Classpath 0.12" url="announce/20041115.html">
+</newsitem>
+
+<newsitem date="06 Nov 2004">
+GNU Classpath is full API compatible with JDK 1.0 (<createlink url="http://www.kaffe.org/~stuart/japi/htmlout/h-jdk10-classpath.html" name="japi results for 1.0">)
+</newsitem>
+
+<newsitem date="03 Oct 2004">
+GNU Classpath Tools (cp-tools) now part of savannah classpath project (<createlink url="http://lists.gnu.org/archive/html/classpath/2004-10/msg00012.html" name="link">)
+</newsitem>
+
+<newsitem date="13 Sep 2004">
+<createlink name="GNU Classpath 0.11" url="announce/20040913.html">
+</newsitem>
+
+<newsitem date="03 Sep 2004">
+<createlink url="ftp://ftp.gnu.org/gnu/classpath/inetlib-1.1.tar.gz" name="inetlib 1.1"> released.
+</newsitem>
+
+<newsitem date="15 Aug 2004">
+<createlink url="http://lists.gnu.org/archive/html/classpath-patches/2004-08/msg00078.html" name="JSpinner"> added to classpath.
+</newsitem>
+
+<newsitem date="13 Aug 2004">
+<createlink url="http://lists.gnu.org/archive/html/classpath/2004-08/msg00076.html" name="javax.crypto and javax.security"> implementation added to classpath.
+</newsitem>
+
+<newsitem date="05 Aug 2004">
+CVS generics-branch started for java 1.5 related changes. [<createlink name="more..." url="http://lists.gnu.org/archive/html/classpath/2004-08/msg00030.html">]
+</newsitem>
+
+<newsitem date="02 Aug 2004">
+Latest <createlink name="AWT" url="http://www.klomp.org/mark/classpath/awtdemo-2004-jul-25.png"> and <createlink name="SWING" url="http://www.klomp.org/mark/classpath/swingdemo-2004-jul-25.png"> screenshots by Mark.
+</newsitem>
+
+<newsitem date="27 Jul 2004">
+AWT bug reports are now on <createlink name="GCC Bugzilla" url="http://gcc.gnu.org/bugzilla/">
+</newsitem>
+
+<newsitem date="23 Jul 2004">
+HTTP client added to inetlib
+</newsitem>
+
+<newsitem date="27 Jul 2004">
+Directory with Examples added to the project.
+</newsitem>
+
+<newsitem date="22 Jul 2004">
+Latest "montly-changes" for AWT committed. This now required GTK+ 2.4.
+</newsitem>
+
+<newsitem date="18 Jul 2004">
+Roman Kennke's <createlink name="automated mauve reports" url="http://ontographics.com/classpath/mauve/mauvereport.cgi">.
+</newsitem>
+
+<newsitem date="13 Jul 2004">
+<createlink name="JC 1.2.1" url="http://lists.gnu.org/archive/html/classpath/2004-07/msg00168.html"> released
+</newsitem>
+
+<newsitem date="12 Jul 2004">
+<createlink name="GNU Classpath 0.10" url="announce/20040712.html">
+</newsitem>
+
+<newsitem date="10 Jul 2004">
+<createlink name="SableVM 1.1.6" url="http://lists.gnu.org/archive/html/classpath/2004-07/msg00148.html">
+</newsitem>
+
+<newsitem date="06 Jul 2004">
+<createlink name="Emacs support for GNU Classpath coding style" url="http://lists.gnu.org/archive/html/classpath/2004-07/msg00077.html">
+</newsitem>
+
+<newsitem date="14 Jun 2004">
+<createlink name="Inetlib 1.0 released" url="http://lists.gnu.org/archive/html/classpath/2004-06/msg00077.html">
+</newsitem>
+
+<newsitem date="14 Jun 2004">
+<createlink name="Some fresh Swing snapshots" url="http://gadek.debian.net/SableVM-Swing-new/"> from SableVM.
+</newsitem>
+
+<newsitem date="02 Jun 2004">
+<createlink name="SableVM 1.1.5" url="http://lists.gnu.org/archive/html/classpath/2004-06/msg00011.html"> released
+</newsitem>
+
+<newsitem date="22 May 2004">
+<createlink name="JamVM 1.1.4" url="http://mail.gnu.org/archive/html/classpath/2004-05/msg00090.html"> released
+</newsitem>
+
+<newsitem date="15 May 2004">
+<createlink name="SableVM 1.1.4" url="http://mail.gnu.org/archive/html/classpath/2004-05/msg00075.html"> released
+</newsitem>
+
+<newsitem date="2 May 2004">
+<createlink name="GNU Classpath 0.09" url="announce/20040502.html"> released
+</newsitem>
+
+<newsitem date="29 Apr 2004">
+Use Eclipse to hack GNU Classpath; see the <createlink url="http://mail.gnu.org/archive/html/classpath/2004-04/msg00371.html" name="instructions">
+</newsitem>
+
+<newsitem date="12 Apr 2004">
+<createlink url="http://mail.gnu.org/archive/html/classpath/2004-04/msg00228.html" name="SableVM 1.1.3"> released
+</newsitem>
+
+<newsitem date="12 Apr 2004">
+<createlink url="http://mail.gnu.org/archive/html/classpath/2004-04/msg00226.html" name="JC 1.1"> released ; upgraded to GNU Classpath 0.08.
+</newsitem>
+
+<newsitem date="12 Apr 2004">
+<createlink url="http://mail.gnu.org/archive/html/classpath/2004-04/msg00225.html" name="Jikes RVM 2.3.2"> released ; upgraded to GNU Classpath 0.08 and completely built with free tools!
+</newsitem>
+
+<newsitem date="8 Apr 2004">
+The big NIO patch: java.io file operations now rely on java.nio.channels
+</newsitem>
+
+<newsitem date="29 Mar 2004">
+<createlink name="JamVM-1.1.2 " url="http://mail.gnu.org/archive/html/classpath/2004-03/msg00267.html"> released 
+</newsitem>
+
+<newsitem date="26 Mar. 2004">
+<createlink name="Planet Classpath" url="http://classpath.wildebeest.org/planet/"> launched; it aggregates the blogs of most Classpath's developers
+</nextitem>
+
+<newsitem date="19 Mar. 2004">
+Sascha has released <createlink name="ServiceFactory" url="http://mail.gnu.org/archive/html/classpath/2004-03/msg00153.html">
+</nextitem>
+
+<newsitem date="13 Mar. 2004">
+<createlink name="GNU Classpath 0.08" url="announce/20040313.html"> released
+</nextitem>
+
+<newsitem date="21+22 Feb. 2004">
+GNU Classpath at the <createlink name="FOSDEM'04" url="http://www.fosdem.org/2004/">: see the <createlink name="report" url="events/fosdem04.html">
+</newsitem>

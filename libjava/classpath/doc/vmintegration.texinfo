@@ -1,0 +1,1291 @@
+\input texinfo @c -*-texinfo-*-
+
+@c %**start of header
+@setfilename vmintegration.info
+@settitle GNU Classpath VM Integration Guide
+@c %**end of header
+
+@setchapternewpage off
+
+@ifinfo
+This file contains important information you will need to know if you
+are going to write an interface between GNU Classpath and a Virtual
+Machine.
+
+Copyright (C) 1998-2002, 2004, 2005 Free Software Foundation, Inc.
+
+@ifnotplaintext
+@dircategory GNU Libraries
+@direntry
+* VM Integration: (vmintegration).   GNU Classpath VM Integration Guide
+@end direntry
+@end ifnotplaintext
+@end ifinfo
+
+@titlepage
+@title GNU Classpath VM Integration Guide
+@author John Keiser
+@author C. Brian Jones
+@author Mark Wielaard
+
+@page
+@vskip 0pt plus 1filll
+Copyright @copyright{} 1998-2002 Free Software Foundation, Inc.
+@sp 2
+Permission is granted to make and distribute verbatim copies of
+this document provided the copyright notice and this permission notice
+are preserved on all copies.
+
+Permission is granted to copy and distribute modified versions of this
+document under the conditions for verbatim copying, provided that the
+entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be stated in a translation
+approved by the Free Software Foundation.
+
+@end titlepage
+
+@ifinfo
+@node Top, Introduction, (dir), (dir)
+@top GNU Classpath Hacker's Guide
+
+This file contains important information you will need to know if you
+are going to write an interface between GNU Classpath and a Virtual
+Machine.
+
+This document is incomplete, as we are still in alpha with the interface.
+
+@end ifinfo
+
+@menu
+* Introduction::                An introduction to the Classpath project
+* Initialization::              Initializing the classes
+* Classpath Hooks::             Hooks from Classpath to the VM
+* VM Hooks::                    Hooks from the underlying VM to Classpath
+* JNI Implementation::		Hooking the VM to jni.h
+* Miscellaneous VM Requirements::  
+@end menu
+
+@node Introduction, Initialization, Top, Top
+@comment node-name, next, previous, up
+@chapter Introduction
+
+The Classpath Project's ambition to be a 100% clean room implementation
+of the standard Java class libraries cannot be fulfilled without some
+level of integration with the Virtual Machine, the underlying machinery
+that actually runs Java.
+
+There are several VMs out there, here is a small list.
+
+@itemize @bullet
+@item @uref{http://www.hungry.com/old-hungry/products/japhar/,Japhar}
+Japhar was the first VM to use GNU Classpath.  Today you can see that
+sort of relationship in the source tree which denotes several Japhar
+specific files as a reference implementation of those pieces.  This VM
+has been primarily tested against Linux and lacks garbage collections, a
+JIT, and suffers recently from slow development.
+
+@item @uref{http://www.intel.com/research/mrl/orp/,Intel's Open Runtime Platform}
+Intel surprised us not long ago with the release of this rather advanced
+VM that uses GNU Classpath for a set of class libraries and works on
+Linux and Windows 2000.  As of June, 2004, it does not appear that ORP
+is under active development.
+
+@item @uref{http://www.sablevm.org/,SableVM}
+SableVM is a robust, extremely portable, efficient, and
+specifications-compliant Java Virtual Machine that aims to be easy to
+maintain and to extend. It features a state-of-the-art, efficient
+interpreter engine. Its source code is very accessible and easy to
+understand, and has many robustness features that have been the object
+of careful design.
+
+@item @uref{http://www.kaffe.org,Kaffe}
+Kaffe is an advanced VM and together with its own class libraries
+provides a Java 1.1 compatible environment.
+
+@item @uref{http://www.mozilla.org/projects/ef,Electrical Fire}
+The Electrical File VM continues to be listed as a Mozilla project
+though development has been somewhat quiet.  A number of concepts from
+EF were expected at one point to be rolled into Japhar, but that
+development has not occurred as of yet.
+
+@item @uref{http://latte.snu.ac.kr/,LaTTe}
+This VM project so far supports only Sun UltraSparc processors using the
+proprietary Solaris 2.5.1 or higher operating system.  LaTTe was derived
+from Kaffe but claims a number of improvements.
+
+@item @uref{http://gcc.gnu.org/java/,GNU Compiler for Java (GCJ)}
+This is a portable, optimizing, ahead-of-time compiler for the Java
+Programming Language. It can compile Java source code directly to native
+machine code, Java source code to Java bytecode (class files), and Java
+bytecode to native machine code. Compiled applications are linked with the
+GCJ runtime, libgcj which is based on the GNU Classpath code, which provides
+the core class libraries, a garbage collector, and a bytecode interpreter.
+libgcj can dynamically load and interpret class files, resulting in mixed
+compiled/interpreted applications.
+GCJ is part of the GNU Compiler Collection (@uref{http://gcc.gnu.org/,GCC}).
+On March 6 2000 the libgcj and GNU Classpath projects were officially merged
+and there is active work on merging all the classes between the projects.
+Licensed under GPL+exception, just as GNU Classpath is.
+
+@item @uref{http://kissme.sourceforge.net/,Kissme}
+This is a free Java Virtual Machine that is being developed on GNU/Linux
+and can run console Java applications.  Kissme also provides support for
+orthogonally persistent Java.
+@c I don't know what ``orthogonally persistent Java'' is, and I bet
+@c there are other people don't know either. -- Steve Augart, 4 June 2004
+
+@item @uref{http://jamvm.sourceforge.net/,JamVM}
+A simple, small bytecode interpreter that works out-of-the-box with
+pure GNU Classpath; it is emerging as the preferred platform for
+quickly testing a new build of GNU Classpath.  Licensed under the GPL.
+
+@item @uref{http://oss.software.ibm.com/jikesrvm,Jikes RVM}
+A free runtime environment for Java, written in Java.  Works
+out-of-the-box with pure GNU Classpath.  Features an optimizing JIT.
+Runs on the x86 and PowerPC architectures, on the AIX, Linux, and Mac
+OS/X operating systems.  Licensed under the CPL (Common Public
+License).  Extensively documented.  Actively developed as of June,
+2004.
+
+@end itemize
+
+In the past integration efforts were focused mainly on Japhar with an eye
+towards getting Electrical Fire to work.  Most information contained in
+this document is gleaned from these efforts. Recently more work has been
+done on getting gcj, orp and kissme to work out of the box with GNU Classpath
+but there is much to do before that becomes a reality.
+
+
+@node Initialization, Classpath Hooks, Introduction, Top
+@comment node-name, next, previous, up
+@chapter Initialization
+
+The order of initialization, as far as I can tell, doesn't matter just
+yet.  However, when we move to 1.2 support, it probably will matter, so
+we'll have a note in here at that time.
+
+The initialization order is currently documented in the
+@file{Runtime.java} source file.
+
+@node Classpath Hooks, VM Hooks, Initialization, Top
+@comment node-name, next, previous, up
+@chapter Classpath Hooks
+
+The primary method of interaction between Classpath and the VM is via
+the helper classes, which are named after the relevant core library
+class, but include an additional `VM' prefix.  The library classes from
+Classpath call out to these to get certain VM-specific dirty work done.
+A reference copy of each VM class exists.  The majority consist of a
+series of static methods, some of which are simply declared
+@code{native}, and some which provide a default implementation.  VMs may
+either use these as is, or create their own local variations.  When
+using the default implementations, the VM is responsible for
+implementing any of the code marked as @code{native} which corresponds
+to functionality they wish their VM to provide.  When using their own
+versions of the classes, VM implementors may choose to change the mix of
+native and non-native methods from that below, so as to best suit their
+implementation.
+
+@menu
+* java.lang::
+* gnu.classpath::
+* java.util::
+* java.io::
+* java.security::
+* java.net::
+* java.nio::
+* java.nio.channels::
+* gnu.java.nio::
+* Classpath Callbacks::
+@end menu
+
+@node java.lang, gnu.classpath, Classpath Hooks, Classpath Hooks
+@comment  node-name,  next,  previous,  up
+
+@section @code{java.lang}
+
+@code{java.lang} is the core Java package, being imported automatically by all
+classes.  It includes basic classes as @code{Object} and @code{String}.
+A VM must implement at least some parts of this package in order to
+become operable.
+
+@menu
+* java.lang.VMClass::
+* java.lang.VMObject::
+* java.lang.VMClassLoader::
+* java.lang.VMSystem::
+* java.lang.VMThrowable::
+* java.lang.VMCompiler::
+* java.lang.VMDouble::
+* java.lang.VMFloat::
+* java.lang.VMProcess::
+* java.lang.VMRuntime::
+* java.lang.VMString::
+* java.lang.VMThread::
+@end menu
+
+@node java.lang.VMClass, java.lang.VMObject ,java.lang,java.lang
+@subsection @code{java.lang.VMClass}
+
+The core class, @code{java.lang.Class}, and the corresponding VM class,
+@code{java.lang.VMClass}, provide two main functions within GNU Classpath.
+
+@enumerate
+@item For basic VM operation, @code{java.lang.Class} provides the link between
+the Java-based representation of a class it embodies and the VM's own
+internal structure for a class.  @xref{VM Hooks}.
+
+@item As far as the user is concerned, the main function of
+@code{java.lang.Class} is as an entry point to the reflection
+facilities, and so it also provides this functionality, backed by the
+VM class.
+@end enumerate
+
+This VM class lists the following methods, organized by the version of the
+Java specification in which they occur.  All are @code{native}, unless
+otherwise specified, and pertain to reflection.  As a result, the VM only
+needs to implement these methods in order to provide reflection support,
+and then only to the degree required.
+
+@itemize @bullet
+@item 1.0
+@itemize @bullet
+@item @code{isInterface(Class)} -- This is simply a property test, and matches
+the presence of an appropriate flag within the class file.
+@item @code{getName(Class)} -- Returns the fully-qualified name of the class.
+@item @code{getSuperclass(Class)} -- Returns a @code{Class} instance which
+represents the superclass.  Again, the class file contains an element directly
+relating to this.  @code{null} is returned for primitives, interfaces and
+@code{Object}.
+@item @code{getInterfaces(Class)} -- Same as the above, but the implemented
+or extended interfaces rather than the superclass.  An empty array should
+be returned, rather than @code{null}.
+@item @code{getDeclaredClasses(Class,boolean)} -- Returns the internal classes
+this instance declares directly.  The flag determines whether or not the
+VM should filter out non-public classes.
+@item @code{getDeclaredFields(Class,boolean)} -- The same for fields.
+@item @code{getDeclaredMethods(Class,boolean)} -- And for methods.
+@item @code{getDeclaredConstructors(Class,boolean)} -- And constructors.
+@item @code{getClassLoader(Class)} -- Returns the @code{ClassLoader} instance
+which is responsible for the specified class.
+@item @code{forName(String)} -- The VM should create a @code{Class} instance
+corresponding to the named class.  As noted in @ref{VM Hooks}, the internal
+content of the instance is the responsibility of the VM.
+@item @code{isArray(Class)} -- Another property test, corresponding to a
+class file flag.
+@item @code{initialize(Class)} -- The VM should initialize the class fully,
+if it has not already done so.
+@item @code{loadArrayClass(String,ClassLoader)} -- This is called if
+@code{forName} returns @code{null} and the string specifies an array class.
+The specified array class should be loaded with the supplied class loader.
+@item @code{throwException(Throwable)} -- The VM should throw the supplied
+checked exception, without declaring it.
+@end itemize
+@item 1.1
+@itemize @bullet
+@item @code{isInstance(Class,Object)} -- This is a reflection-based equivalent
+of the @code{instanceof} operator.
+@item @code{isAssignableFrom(Class,Class)} -- Mainly a shorthand for the above,
+removing the need to create an instance to test assignability.  
+@item @code{isPrimitive(Class)} -- Returns true if this class is simply
+a representation of one of the primitive types: @code{boolean}, @code{byte},
+@code{char}, @code{short}, @code{int}, @code{long}, @code{float},
+@code{double} and @code{void}.
+@item @code{getComponentType(Class)} -- Produces a @code{Class} instance which
+represents the type of the members of the array the class instance represents.
+Classes which don't represent an array type return @code{null}.
+@item @code{getModifiers(Class,boolean)} -- Returns an integer which encodes
+the class' modifiers, such as @code{public}.  Again, this relates to
+information stored in the class file.
+@item @code{getDeclaringClass(Class)} -- Returns the class that declared
+an inner or member class, or @code{null} if the instance refers to a top-level
+class.
+@end itemize
+@end itemize
+
+@node java.lang.VMObject, java.lang.VMClassLoader, java.lang.VMClass, java.lang
+@subsection @code{java.lang.VMObject}
+
+@code{VMObject} is the bridge between the low level @code{Object} facilities
+such as making a clone, getting the class of the object and the wait/notify
+semantics.  This is accomplished using the following @code{native}
+methods.
+
+@itemize @bullet
+@item @code{getClass(Object)} -- Returns the @code{Class} instance for the
+object.  @code{Class} objects are produced by the VM, as described in
+@ref{VM Hooks}.
+@item @code{clone(Cloneable)} -- The VM should produce a low-level clone of the
+specified object, creating a field-by-field shallow copy of the original.
+The only difference between the two is that the new object should still be
+@code{finalizable}, even if the original is not.
+@item @code{notify(Object)} -- The VM should choose one of the threads waiting
+for a lock on the specified object arbitrarily, and wake it.  If the current
+thread does not currently hold the lock on the object, then an
+@code{IllegalMonitorStateException} should be thrown.
+@item @code{notifyAll(Object)} -- Same as the above, but all threads are
+awakened.
+@item @code{wait(Object,long,int)} -- The VM should set the current thread
+into a waiting state, which persists until it receives a notify signal or the
+specified time (in milliseconds and nanoseconds) is exceeded.  The nanoseconds
+restriction may be ignored if such granularity is not available, and a
+@code{IllegalMonitorStateException} should be thrown if the current thread
+doesn't own the object.
+@end itemize
+
+@node java.lang.VMClassLoader, java.lang.VMSystem, java.lang.VMObject, java.lang
+@subsection @code{java.lang.VMClassLoader}
+@code{VMClassLoader} provides methods for defining and resolving core and
+primitive classes, as well as handling resources, packages and assertions.
+The class is a mixture of @code{native} methods and Java-based
+implementations, with some of the latter being @emph{stubs}.
+
+@itemize @bullet
+@item Native Methods
+@itemize @bullet
+@item @code{defineClass(ClassLoader,String,byte[],int,int,ProtectionDomain)}
+-- The VM should create a @code{Class} instance from the supplied byte array.
+@item @code{resolveClass(Class)} -- Resolve references to other classes in the
+supplied class.
+@item @code{loadClass(name,boolean)} -- Load a class using the bootstrap
+loader.
+@item @code{getPrimitiveClass(char)} -- The VM should provide a @code{Class}
+implementation for one of the primitive classes.  The supplied character
+matches the JNI code for the primitive class e.g. `B' for byte and
+`Z' for boolean.
+@end itemize
+@item Java Methods
+@itemize @bullet
+@item @code{getResource(String)} -- The default implementation calls
+@code{getResources} and returns the first element in the returned enumeration,
+or @code{null} if there are no elements.
+@item @code{getResources(String)} -- By default, this compiles a list of
+URLs via the boot class path.  Any matching files within a zip file are added,
+and directories on the boot class path are automatically converted to file
+URLs that refer to join the directory with the resource name (whether or not
+it actually exists).
+@item @code{getPackage(String)} -- Always returns null, which may be suitable
+if the VM does not wish to return a @code{Package} implementation. Otherwise,
+it may be necessary to make this a @code{native} method.
+@item @code{getPackages()} -- As with the last, a default stub implementation
+exists (returning an empty array) which may be replaced if support is
+required. 
+@item @code{defaultAssertionStatus()} -- A stub which can be implemented
+by VMs providing assertion support.  At present, it always returns @code{true}.
+@item @code{packageAssertionStatus()} -- Much the same status as the above.
+The method should return a map converting package names to boolean status
+values.  The stub implementation provides an empty map.
+@item @code{classAssertionStatus()} -- Same as the last, but for classes.
+@item @code{getSystemClassLoader()} -- The default calls @code{ClassLoader}
+to create a new auxillary class loader with a system and extension class
+loader.  The VM may wish to replace it if it wishes to supply its own custom
+system class loader.
+@end itemize
+@end itemize
+@node java.lang.VMSystem, java.lang.VMThrowable, java.lang.VMClassLoader, java.lang
+@subsection @code{java.lang.VMSystem}
+@code{VMSystem} handles the default I/O streams, provides access to the
+system clock and environment variables and provides methods for
+@code{System.arraycopy} and the @code{identityHashCode} of an
+@code{Object}.  It consists of @code{native} methods, but the default
+implementation also provides some helper methods to simplify stream
+creation.  
+
+@itemize @bullet
+@item Native Methods
+@itemize @bullet
+@item @code{arraycopy(Object,int,Object,int,int)} -- The VM should copy
+a specified number of array objects from one array to another, with 
+appropriate checks for compatible typing, available elements and space.
+The VM should be able to perform this more efficiently using native code
+and direct memory manipulation than would have been achieved by using Java.
+@item @code{identityHashCode(Object)} -- This is the hashcode for
+@code{Object}, which relates to the actual location of the object in memory.
+@item @code{setIn(InputStream)} -- Set the system input stream.
+@item @code{setOut(PrintStream)} -- Set the system output stream.
+@item @code{setErr(PrintStream)} -- Set the system error stream.
+@item @code{currentTimeMillis()} -- Gets the system time in milliseconds.
+@item @code{getenv(String)} -- Returns the value of the specified environment
+variable.
+@end itemize
+@item Java Methods
+@itemize @bullet
+@item @code{makeStandardInputStream()} -- Helps provide the functionality of
+@code{System.in} by wrapping the appropriate file descriptor in a buffered
+file input stream.  VMs may choose to create the stream from the descriptor
+differently rather than using this method.
+@item @code{makeStandardOutputStream()} -- Helps provide the functionality of
+@code{System.out} by wrapping the appropriate file descriptor in a buffered
+file output stream.  VMs may choose to create the stream from the descriptor
+differently rather than using this method.
+@item @code{makeStandardErrorStream()} -- Helps provide the functionality of
+@code{System.err} by wrapping the appropriate file descriptor in a buffered
+file output stream.  VMs may choose to create the stream from the descriptor
+differently rather than using this method.
+@end itemize
+@end itemize
+
+Classpath also provides native implementations of
+
+@itemize @bullet
+@item @code{setIn(InputStream)} 
+@item @code{setOut(PrintStream)} 
+@item @code{setErr(PrintStream)} 
+@item @code{currentTimeMillis()} 
+@item @code{getenv(String)}
+@end itemize
+
+making a VM implementation optional.
+
+@node java.lang.VMThrowable, java.lang.VMCompiler, java.lang.VMSystem, java.lang
+@subsection @code{java.lang.VMThrowable}
+@code{VMThrowable} is used to hold the VM state of a throwable, created either
+when a @code{Throwable} is created or the @code{fillInStackTrace()} method is
+called (i.e. when the actual stack trace is needed, as a lot of exceptions are
+never actually used).  The actual class has two @code{native} methods,
+one (@code{fillInStackTrace()}) being a method of the class used to obtain
+instances, and the other an instance method, @code{getStackTrace()}.
+@itemize @bullet
+@item @code{fillInStackTrace(Throwable)} -- The VM should return the current
+execution state of the @code{Throwable} in the form of a @code{VMThrowable}
+instance.  The VM may also return @code{null} if it does not support this
+functionality.
+@item @code{getStackTrace()} -- This is used to create a real
+@code{StackTraceElement} array for the exception, using the state data
+stored during creation of the instance.
+@end itemize
+
+@node java.lang.VMCompiler, java.lang.VMDouble, java.lang.VMThrowable, java.lang
+@subsection @code{java.lang.VMCompiler}
+
+@code{VMCompiler} provides an interface for VMs which wish to provide
+JIT compilation support.  The default implementation is simply a series
+of stubs. The property, @code{java.compiler}, should point to a library
+containing the function @code{java_lang_Compiler_start()} if such support
+is to be provided.
+
+@itemize @bullet
+@item @code{compileClass(Class)} -- Invoke the compiler to compile the specific
+class, returning @code{true} if successful.
+@item @code{compileClasses(String)} -- The compiler should compile the classes
+matching the specified string, again returning @code{true} on success.
+@item @code{command(Object)} -- The object represents a command given to the
+compiler, and is specific to the compiler implementation.
+@item @code{enable} -- Enable the operation of the compiler.
+@item @code{disable} -- Disable compiler operation.
+@end itemize
+
+@node java.lang.VMDouble, java.lang.VMFloat, java.lang.VMCompiler, java.lang
+@subsection @code{java.lang.VMDouble}
+
+@code{VMDouble} provides native support for the conversion and parsing
+of doubles.
+
+@itemize @bullet
+@item @code{doubleToLongBits(double)} -- Converts the double to the IEEE 754
+bit layout, collapsing NaNs to @code{0x7ff8000000000000L}.
+@item @code{doubleToRawLongBits(double)} -- Same as the above, but preserves
+NaNs.
+@item @code{longBitsToDouble(long)} -- This is the inverse of the last method,
+preserving NaNs so that the output of one can be fed into the other without
+data loss.
+@item @code{toString(double,boolean)} -- Converts the double to a string,
+giving a shorter value if the flag @code{isFloat} is @code{true}, indicating
+that the conversion was requested by @code{java.lang.Float} rather than
+@code{java.lang.Double}.
+@item @code{initIDs} -- Used by JNI-based solutions to initialize the cache
+of the static field IDs.  The default @code{VMDouble} implementation has a
+static initializer which loads the JNI library and calls this method.
+@item @code{parseDouble} -- Turn the string into a usable double value.
+@end itemize
+
+Classpath provides native implementations of all these, making VM
+implementation optional.
+
+@node java.lang.VMFloat, java.lang.VMProcess, java.lang.VMDouble, java.lang
+@subsection @code{java.lang.VMFloat}
+
+@code{VMFloat} provides native support for the conversion of floats.
+
+@itemize @bullet
+@item @code{floatToIntBits(float)} -- Converts the float to the IEEE 754
+bit layout, collapsing NaNs to @code{0x7fc00000}.
+@item @code{floatToRawIntBits(float)} -- Same as the above, but preserves
+NaNs.
+@item @code{intBitsToFloat(int)} -- This is the inverse of the last method,
+preserving NaNs so that the output of one can be fed into the other without
+data loss.
+@end itemize
+
+Classpath provides native implementations of all these, making VM
+implementation optional.
+
+@node java.lang.VMProcess, java.lang.VMRuntime, java.lang.VMFloat, java.lang
+@subsection @code{java.lang.VMProcess}
+
+@code{VMProcess} handles the execution of external processes.  In the
+default implementation, threads are spawned and reaped by @code{ProcessThread}.
+A constructor creates a new @code{VMProcess}, which extends rather than
+complements @code{Process}, using an array of arguments, an array of
+environment variables and a working directory.  The instance maintains
+system input, output and error streams linked to the external process.
+Three @code{native} methods are used, and implementations are provided
+for all three by Classpath, making VM implementation optional.  These use
+the POSIX functions, @code{fork()}, @code{waitpid()} and @code{kill()}.
+
+@itemize @bullet
+@item @code{nativeSpawn(String[],String[],File)} -- The VM should create a
+new process which uses the specified command-line arguments, environment
+variables and working directory.  Unlike the other two methods, this
+method is linked to an instance, and must call @code{setProcessInfo()} with
+the results before returning.
+@item @code{nativeReap()} -- This is called to perform a reap of any
+zombie processes, and should not block, instead returning a boolean as to
+whether reaping actually took place.
+@item @code{nativeKill(long)} -- The VM should terminate the specified PID.
+@end itemize
+
+@node java.lang.VMRuntime, java.lang.VMString, java.lang.VMProcess, java.lang
+@subsection @code{java.lang.VMRuntime}
+
+The @code{VMRuntime} class provides a series of native methods
+which divulge information about the runtime or invoke certain
+operations.  This includes retrieving the amount of available memory,
+and scheduling the garbage collector.  There are two exceptions: the
+@code{enableShutdownHooks} method, which allows the VM to put in its own
+shutdown hooks when @code{Runtime.addShutdownHook()} is first invoked,
+and @code{exec(String[],String[],File)} which spawns an external process.
+These are Java-based static methods instead.  The first is simply a stub by
+default, while the second simply links to the functionality of
+@code{VMProcess} (and should be changed if a different @code{Process}
+implementation is used).
+
+@itemize @bullet
+@item @code{availableProcessors()} -- Returns the number of processors 
+available to the VM.
+@item @code{freeMemory()} -- Returns the amount of memory the VM has available
+on the heap for allocating.
+@item @code{totalMemory()} -- Returns the size of the heap.
+@item @code{maxMemory()} -- Returns the maximum memory block the VM will
+attempt to allocate.  May be simply @code{Long.MAX_VALUE} (8 exabytes!)
+@item @code{gc()} -- Allows users to explicitly invoke the garbage collector.
+This is a suggestion to the VM, rather than a command, and the garbage
+collector should run anyway @emph{without} it being invoked.
+@item @code{runFinalization()} -- Like the above, but related to the
+finalilzation of objects rather than the garbage collector.
+@item @code{runFinalizationForExit()} -- Called immediately prior to VM
+shutdown in order to finalize all objects (including `live' ones)
+@item @code{traceInstructions(boolean)} -- This turns on and off the optional
+VM functionality of printing a trace of executed bytecode instructions.
+@item @code{traceMethodCalls(boolean)} -- This turns on and off the optional
+VM functionality of printing a trace of methods called.
+@item @code{runFinalizersOnExit(boolean)} -- A toggleable setting for
+running the finalization process at exit.
+@item @code{exit(int)} -- The VM should shutdown with the specified exit code.
+@item @code{nativeLoad(String,ClassLoader)} -- Attempts to load a file,
+returning an integer which is non-zero for success.  Nothing happens if the
+file has already been loaded.
+@item @code{mapLibraryName(String)} -- The VM should map the system-independent
+library name supplied to the platform-dependent equivalent (e.g. a @code{.so}
+or @code{.dll} file)
+@end itemize
+
+@node java.lang.VMString, java.lang.VMThread, java.lang.VMRuntime, java.lang
+@subsection @code{java.lang.VMString}
+@code{VMString} is responsible for handling interned strings.  If two strings
+are equal (using the @code{equals()} method), then the results of calling
+the @code{intern()} method on each of them makes them equal
+(using @code{==}).  Thus, the same string object is always returned by
+@code{intern} if the two strings are equal.  The default implementation
+is Java-based and implements @code{intern(String)} by maintaining a
+@code{WeakHashMap} which links the strings to their @code{WeakReference}.
+A new mapping is created for each new string being @code{intern}ed.  
+A VM may implement this differently by implementing this method,
+which is @code{static} and the only one in @code{VMString}.
+
+@node java.lang.VMThread,, java.lang.VMString, java.lang
+@subsection @code{java.lang.VMThread}
+
+@code{VMThread} provides the link between Java's threads and the platform
+threading support.  A @code{VMThread} is created via a private constructor
+and linked to a @code{Thread} instance.  This occurs when the @code{Thread}
+instance is started by the static @code{create(Thread,long)} method (the second
+argument requests a certain stack size, usually zero).  The thread itself is
+executed via the @code{run()} method, which handles any problems with the
+running of the thread and its eventual death.
+
+@code{VMThread} provides the following accessors and mutators for accessing
+the thread state via @code{VMThread},
+
+@itemize @bullet
+@item @code{getName()}
+@item @code{setName(String)}
+@item @code{getPriority()}
+@item @code{setPriotity(int)}
+@item @code{isDaemon()}
+@end itemize
+
+all of which refer to the @code{Thread} instance. @code{setPriority(int)} also
+calls the appropriate native method.  @code{stop(Throwable)} similarly wraps
+a native method, merely adding in a check for the state of the thread.
+
+The default implementation also provides Java-based implementations of
+@code{join(long,int)}, @code{sleep(long,int)} and
+@code{holdsLock(Object)}.  @code{join} and @code{sleep} simply wait for
+the appropriate amount of time, with @code{join} additionally waiting
+for the thread instance to become @code{null}.  @code{holdsLock} simply
+checks if an object is locked by the current thread by trying to invoke
+the @code{notify} method, and catching the failing exception if this is
+not the case.
+
+The remainder of the class is a series of @code{native} methods, some of
+which are mandatory for VM implementation and others which provide optional
+or deprecated functionality.
+
+@itemize @bullet
+@item Mandatory Instance Methods
+@itemize @bullet
+@item @code{start(long)} -- The VM should create the native thread and start
+it running using the @code{run} method of the @code{VMThread} instance on
+which this method is called.
+@item @code{interrupt()} -- The VM should interrupt the running thread and
+throw an appropriate exception.
+@item @code{isInterrupted()} -- Checks the interrupted state of the thread.
+@item @code{suspend()} -- The thread should be suspended until resumed.
+@item @code{resume()} -- The thread should be resumed from its suspended state.
+This pair of methods are deprecated, due to the possibility of a deadlock
+occuring when a thread with locks is suspended.
+@item @code{nativeSetPriority(int)} -- Called by @code{setPriority}
+to allow the setting to flow down to the native thread.
+@item @code{nativeStop(Throwable)} -- The VM should stop the thread abnormally
+and throw the specified exception.  This is clearly deprecated, due to the
+ambiguous state an abruptly-stopped thread may leave.
+@end itemize
+@item Mandatory Class Methods
+@itemize @bullet
+@item @code{currentThread()} -- Return a reference to the thread currently
+being executed.
+@item @code{yield()} -- The VM should allow some other thread to run.
+The current thread maintains its locks even though it stops executing for
+the time being.
+@item @code{interrupted()} -- A shortcut to obtaining the interrupted state
+of the current thread.
+@end itemize
+@item Other Methods
+@itemize @bullet
+@item @code{countStackFrames()} -- Returns a count of the number of stack
+frames in the thread.  This depends on the deprecated method @code{suspend()}
+having returned true, and is thus deprecated as a result.
+@end itemize
+@end itemize
+
+@node gnu.classpath, java.util, java.lang, Classpath Hooks
+@section @code{gnu.classpath}
+
+The @code{gnu.classpath} package provides Classpath-specific functionality,
+primarily relating to the features in @code{java.lang}.  At present, this
+includes the context of a class (the stack) and the system properties.
+
+@menu
+* gnu.classpath.VMStackWalker::
+* gnu.classpath.VMSystemProperties::
+@end menu
+
+@node gnu.classpath.VMStackWalker,gnu.classpath.VMSystemProperties,gnu.classpath,gnu.classpath
+@subsection @code{gnu.classpath.VMStackWalker}
+
+@code{VMStackWalker} provides access to the class context or stack.  The
+default implementation consists of a @code{native} @code{static} method,
+@code{getClassContext()}, which obtains the class context, and two helper
+methods which obtain the calling class (the 3rd element in the context array)
+and its class loader, respectively.
+
+@itemize @bullet
+@item @code{getClassContext()} -- The VM should return an array of
+@code{Class} objects, each of which relates to the method currently being
+executed at that point on the stack.  Thus, the first item (index 0) is the
+class that contains this method.
+@item @code{getCallingClass()} -- A Java-based helper method which returns
+the @code{Class} object which contains the method that called the method
+accessing @code{getCallingClass()}. 
+@item @code{getCallingClassLoader()} -- Like the last, but returning the class
+loader of the class.
+@end itemize
+
+@node gnu.classpath.VMSystemProperties,,gnu.classpath.VMStackWalker,gnu.classpath
+@subsection @code{gnu.classpath.VMSystemProperties}
+
+@code{VMSystemProperties} allows the VM to hook into the property creation
+process, both before and after the system properties are added by GNU
+Classpath.  The default implementation assumes that the VM will add its
+properties first, by making the pre-initialisation method @code{native},
+and that the Classpath properties may then be altered by a Java-based
+post-initialisation method.
+
+As these methods are called as part of the bootstrap process, caution should
+be used as to what classes are used, and properties should only be set
+using @code{Properties.setProperty()}.  Specifically, I/O classes should be
+avoided at this early stage.
+
+@itemize @bullet
+@item @code{preInit(Properties)} -- Allows the VM to add properties
+@emph{before} the Classpath properties are added. The default implementation
+includes a full list of properties that @emph{must} be added by the VM, but
+additional VM-specific ones may also be added.  
+@item @code{postInit(Properties)} -- Same as the last, but called after the
+Classpath properties have been added.  The main purpose of this is to allow
+the VM to alter the properties added by GNU Classpath to suit it.
+@end itemize
+
+@node java.util, java.io, gnu.classpath, Classpath Hooks
+@section java.util
+
+The @code{java.util} VM hooks provide links between the mix of functionality
+present in that package, which includes collections, date and time handling
+and parsing.  At present, there is only one hook, which connects GNU Classpath
+to the timezone information provided by the underlying platform.
+
+@menu
+* java.util.VMTimeZone::
+@end menu
+
+@node java.util.VMTimeZone,,java.util,java.util
+@subsection @code{java.util.VMTimeZone}
+
+@code{VMTimeZone} joins @code{TimeZone} to the platform timezone information
+via the static method, @code{getDefaultTimeZoneId()}.  The VM hook is
+expected to return a @code{TimeZone} instance that represents the current
+timezone in use by the platform.  The default implementation provides
+this functionality for POSIX or GNU-like systems, and VMs that want this
+functionality can keep this implementation and implement the native
+method, @code{getSystemTimeZoneId()}.  This method is only called when
+obtaining the timezone name from the @code{TZ} environment variable,
+@code{/etc/timezone} and @code{/etc/localtime} all fail.  This fallback
+mechanism also means that a system which doesn't provide the above three
+methods, but does provide a timezone in string form, can still use this
+implementation.
+
+@node java.io, java.security, java.util, Classpath Hooks
+@section java.io
+
+The @code{java.io} package is heavily reliant on access to the I/O facilities
+of the underlying platform.  As far as its VM hooks go, they provide two
+areas of functionality to GNU Classpath, these being
+
+@itemize @bullet
+@item File and directory queries and manipulation
+@item Serialization of objects
+@end itemize
+
+The first corresponds directly to most of the @code{File} class, while
+the latter underlies the functionality provided by the
+@code{ObjectInputStream} and @code{ObjectOutputStream}.  More low-level I/O
+is provided by @ref{java.nio}.
+
+@menu
+* java.io.VMFile::
+* java.io.VMObjectInputStream::
+* java.io.VMObjectStreamClass::
+@end menu
+
+@node java.io.VMFile,java.io.VMObjectInputStream,java.io,java.io
+@subsection @code{java.io.VMFile}
+
+@code{VMFile} allows GNU Classpath's @code{File} representations to
+probe and modify the file system using the native functions of the
+platform.  The default implementation (which consists of both a
+@code{VMFile} class and the native methods) is primarily UNIX-centric,
+working with POSIX functions and assuming case-sensitive filenames,
+without the restriction of the 8.3 format.  It consists mainly of
+@code{static} @code{native} methods, with a few Java helper methods.
+The native methods represent the file as a string containing its path,
+rather than using the object itself.
+
+@itemize @bullet
+@item Native Methods
+@itemize @bullet
+@item @code{lastModified(String)} -- The native method should return a
+@code{long} value that represents the last modified date of the file.
+@item @code{setReadOnly(String)} -- Sets the file's permissions to read only,
+in whichever way this is realised by the platform.
+@item @code{create(String)} -- Create the named file.
+@item @code{list(String)} -- The native method opens the named directory,
+reads the contents and returns them as a Java @code{String} array.
+@item @code{renameTo(String,String)} -- Renames the first file to the second.
+@item @code{length(String)} -- Returns a @code{long} value representing
+the file size.
+@item @code{exists(String)} -- Tests for the existence of the named file
+or directory.
+@item @code{delete(String)} -- Deletes the file or directory.
+@item @code{setLastModified(String,long)} -- Change the last modified time.
+@item @code{mkdir(String)} -- Creates the named directory.
+@item @code{isFile(String)} -- Tests that the named path references a file.
+@item @code{canWrite(String)} -- Tests that the file can be written to.
+This method is @code{synchronized}, so the object is locked during the check.
+@item @code{canRead(String)} -- Complement of the last method.
+@item @code{isDirectory(String)} -- Tests that the named path references
+a directory.
+@end itemize
+@item Java Helper Methods
+@itemize @bullet
+@item @code{canWriteDirectory(File)} -- Checks that the directory can be
+written to, by trying to create a temporary file in it.
+@item @code{listRoots()} -- Returns the root of a GNU filesystem i.e. `/'
+in an array.
+@item @code{isHidden(String)} -- Checks whether the file starts with `.',
+which is how files are hidden on UNIX-style systems.
+@item @code{getName(String)} -- Pulls the actual filename from the end of
+the path, by breaking off the characters after the last occurrence of the
+platform's file separator.
+@item @code{getCanonicalForm(String)} -- This converts a UNIX path to
+its canonical form by removing the `.' and `..' sections that occur within.
+@end itemize
+@end itemize
+
+@node java.io.VMObjectInputStream,java.io.VMObjectStreamClass,java.io.VMFile,java.io
+@subsection @code{java.io.VMObjectInputStream}
+
+This class consists of two methods which provide functionality used in
+deserializing an object.  @code{currentClassLoader()} provides the first
+user-defined class loader from the class context
+(@xref{gnu.classpath.VMStackWalker},) via a @code{PrivilegedAction}.
+@code{allocateObject(Class,Class,Constructor)} is a @code{native} method
+(a reference implementation is provided) which creates an object but
+calls the constructor of another class, which is a superclass of the
+object's class.
+
+@node java.io.VMObjectStreamClass,,java.io.VMObjectInputStream,java.io
+@subsection @code{java.io.VMObjectStreamClass}
+
+@code{VMObjectStreamClass} is a series of @code{static} @code{native}
+methods that provide some of the groundwork for @code{ObjectStreamClass}
+and @code{ObjectStreamField}.  @code{hasClassInitializer(Class)} works
+with the former, and checks for the presence of a static initializer.
+The remaining methods are of the form @code{setXXXNative(Field,Object,XXX)}
+and support @code{ObjectStreamField}.  One exists for each of the main types
+(boolean, float, double, long, int, short, char, byte and object) and is used
+to set the specified field in the supplied instance to the given value.
+
+A default implementation is provided for all of them, so a VM implementation
+is optional.
+
+@node java.security, java.net, java.io, Classpath Hooks
+@section java.security
+
+The @code{java.security} package provides support for Java's security
+architecture.  At present, @code{VMAccessController} represents the sole
+VM hook for this.
+
+@menu
+* java.security.VMAccessController::
+@end menu
+
+@node java.security.VMAccessController,,java.security,java.security
+@subsection @code{java.security.VMAccessController}
+
+The @code{AccessController} is used to perform privileged actions.  Its
+hook class, @code{VMAccessController}, maintains the
+@code{AccessControlContext} and the default implementation is purely
+Java-based.  The VM may choose to replace this with their own.
+The methods in the reference version are as follows:
+
+@itemize @bullet
+@item @code{pushContext(AccessControlContext)} -- Adds a new context to the
+stack for the current thread.  This is called before a privileged action
+takes place.
+@item @code{popContext()} -- Removes the top context from the stack.  This
+is performed after the privileged action takes place.
+@item @code{getContext()} -- Either derives a context based on the 
+@code{ProtectionDomain}s of the call stack (see the next method) or returns
+the top of the context stack.
+@item @code{getStack()} -- Provides access to the call stack as a pair of
+arrays of classes and method names.  The actual implementation returns
+an empty array, indicating that there are no permissions.
+@end itemize
+
+@node java.net, java.nio, java.security, Classpath Hooks
+@section java.net
+
+The @code{java.net} package is heavily reliant on access to the networking
+facilities of the underlying platform.  The VM hooks provide information
+about the available network interfaces, and access to lookup facilities
+for network addresses.
+
+@menu
+* java.net.VMInetAddress::
+* java.net.VMNetworkInterface::
+@end menu
+
+@node java.net.VMInetAddress,java.net.VMNetworkInterface,java.net,java.net
+@subsection @code{java.net.VMInetAddress}
+
+@code{VMInetAddress} is a series of @code{static} @code{native} methods
+which provide access to the platform's lookup facilities.  All the methods
+are implemented by GNU Classpath, making VM implementation optional, and
+are as follows:
+
+@itemize @bullet
+@item @code{getLocalHostname()} -- Wraps the @code{gethostname} function, and
+falls back on `localhost'.
+@item @code{lookupInaddrAny()} -- Returns the value of @code{INADDR_ANY}.
+@item @code{getHostByAddr(byte[])} -- Looks up the hostname based on an IP
+address.
+@item @code{getHostByName(String)} -- The reverse of the last method, it
+returns the IP addresses which the given host name resolves to.
+@end itemize
+
+@node java.net.VMNetworkInterface,,java.net.VMInetAddress,java.net
+@subsection @code{java.net.VMNetworkInterface}
+
+@code{VMNetworkInterface} currently consists of a single @code{static}
+@code{native} method, @code{getInterfaces()}, which retrieves the
+network interfaces available on the underlying platform as a @code{Vector}.
+The current GNU Classpath implementation is a native stub.
+
+@node java.nio, java.nio.channels, java.net, Classpath Hooks
+@section java.nio
+
+The @code{java.nio} package is part of the New I/O framework added in
+Java 1.4.  This splits I/O into the concepts of @emph{buffers},
+@emph{charsets}, @emph{channels} and @emph{selectors}, and
+@code{java.nio} defines the buffer classes.  As far as native and VM
+code is concerned, the new package needs support for low-level efficient
+buffer operations.
+
+@menu
+* java.nio.VMDirectByteBuffer::
+@end menu
+
+@node java.nio.VMDirectByteBuffer,,java.nio,java.nio
+@subsection @code{java.nio.VMDirectByteBuffer}
+
+A @code{ByteBuffer} maintains a buffer of bytes, and allows it to be
+manipulated using primitive operations such as @code{get}, @code{put},
+@code{allocate} and @code{free}.  A direct buffer avoids intermediate
+copying, and uses native data which shouldn't be manipulated by a
+garbage collector.  The VM class consists of @code{static} @code{native}
+methods, all of which are given default implementations by GNU
+Classpath.
+
+@itemize @bullet
+@item @code{init()} -- Creates an instance of an appropriate
+@code{gnu.classpath.RawData} class.  This class is not garbage
+collected, is created natively and is used in the other methods to reference
+the buffered data.
+@item @code{allocate(int)} -- Allocates the memory for the buffer using
+@code{malloc} and returns a reference to the @code{RawData} class.
+@item @code{free(RawData)} -- Frees the memory used by the buffer.
+@item @code{get(RawData,int)}  -- Returns the data at the specified index.
+@item @code{get(RawData,int,byte[],int,int)} -- Copies a section of the
+data into a byte array using @code{memcpy}.
+@item @code{put(RawData,int,byte)} -- Puts the given data in the buffer
+at the specified index.
+@item @code{adjustAddress(RawData,int)} -- Adjusts the pointer into the buffer.
+@item @code{shiftDown(RawData,int,int,int)} -- Moves the content of the buffer
+at an offset down to a new offset using @code{memmove}.
+@end itemize
+ 
+@node java.nio.channels, gnu.java.nio, java.nio, Classpath Hooks
+@section java.nio.channels
+
+Channels provide the data for the buffers with the New I/O packages.
+For example, a channel may wrap a file or a socket.  The VM hooks,
+at the moment, simply allow the channels to be accessed by @code{java.io}
+streams.
+
+@menu
+* java.nio.channels.VMChannels::
+@end menu
+
+@node java.nio.channels.VMChannels,,java.nio.channels,java.nio.channels
+@subsection @code{java.nio.channels.VMChannels}
+
+@code{VMChannels} provides the methods that create the channels or
+streams.  The default implementation is in pure Java and simply wraps
+the channels in standard I/O classes from @code{java.io}.
+
+@itemize @bullet
+@item @code{createStream(Class,Channel)} -- Creates a @code{FileChannel}
+which wraps an instance of the specified stream class, created by reflection.
+This method is private, and is used by the other two.
+@item @code{newInputStream(ReadableByteChannel)} -- Wraps the channel
+in a @code{FileInputStream}.
+@item @code{newOutputStream(WritableByteChannel)} -- Wraps the channel
+in a @code{FileOutputStream}.
+@end itemize
+
+@node gnu.java.nio, Classpath Callbacks, java.nio.channels, Classpath Hooks
+@section gnu.java.nio
+
+The @code{gnu.java.nio} class provides Classpath implementations of the
+interfaces provided by @code{java.nio}.  The VM classes provide the native
+support necessary to implement @emph{pipes} and @emph{selectors}.
+
+@menu
+* gnu.java.nio.VMPipe::
+* gnu.java.nio.VMSelector::
+@end menu
+
+@node gnu.java.nio.VMPipe,gnu.java.nio.VMSelector,gnu.java.nio,gnu.java.nio
+@subsection @code{gnu.java.nio.VMPipe}
+
+@code{VMPipe} provides the native functionality for a uni-directional pipe
+between a source and a destination (sink) channel.  It consists of one 
+@code{static} @code{native} method, @code{init(PipeImpl,SelectorProvider)},
+the reference implementation of which is currently a native stub.  Ideally,
+this should initialise the pipe at the native level.
+
+@node gnu.java.nio.VMSelector,,gnu.java.nio.VMPipe,gnu.java.nio
+@subsection @code{gnu.java.nio.VMSelector}
+
+A @code{Selector} selects between multiple @code{SelectableChannel}s based
+on their readiness and a key set.  The VM hook for the Classpath implementation
+of this is @code{VMSelector}, and this allows the actual @code{select()}
+operation to be performed.  This is represented by the @code{static}
+@code{native} method, @code{select(int[],int[],int[],long)}, and a default
+implementation of this is provided.
+
+@node Classpath Callbacks, , gnu.java.nio, Classpath Hooks
+Some of the classes you implement for the VM will need to call back to
+package-private methods in Classpath:
+
+@itemize @bullet
+@item @code{java.lang.ThreadGroup.addThread(Thread)}
+Call this method from @code{Thread} when a new @code{Thread} is created, to add it to
+the group.
+
+@item @code{java.lang.ThreadGroup.removeThread(Thread)}
+Call this method from @code{Thread} when a @code{Thread} is stopped or destroyed.
+@end itemize
+
+@node VM Hooks, JNI Implementation, Classpath Hooks, Top
+@comment node-name, next, previous, up
+@chapter VM Hooks
+
+VMs need to do some dirty work; there are some things in the VM that
+unfortunately are dependent on the internal structure of various
+classes.  This is a guide to all of the things the VM itself needs to
+know about classes.
+
+Some of the core classes, while being implemented by GNU Classpath,
+provide space for state (in the form of a @code{vmdata} object) to be
+stored by the VM, and can not be constructed normally.
+
+@itemize @bullet
+@item java.lang.Class
+@item java.lang.ClassLoader
+@end itemize
+
+The default implementations of some VM classes also follow this methodology,
+when it is intended that most VMs will keep the default.
+
+@itemize @bullet
+@item java.lang.VMThread
+@item java.lang.VMThrowable
+@end itemize
+
+Several core classes must be completely implemented by the VM for Classpath to
+work, although reference implementations are provided.  These classes are:
+
+@itemize @bullet
+@item java.lang.reflect.Constructor
+@item java.lang.reflect.Method
+@item java.lang.reflect.Field
+@end itemize
+
+The following issues are of note;
+
+@itemize @bullet
+@item @code{java.lang.Class} @*
+The GNU Classpath implementation of @code{java.lang.Class} provides an
+object for storing the internal state of the class maintained by the VM.
+This is the only known place where this matters.  The class is
+constructed with this data by the VM.  Some VMs do not create the
+@code{Class} object at the point where the class is defined; instead,
+they wait until a @code{Class} object is actually used.
+
+@item Array Classes @*
+When you are creating an array class, you should set the
+@code{ClassLoader} of the array class to the @code{ClassLoader} of its
+component type.  Whenever you add a class to a @code{ClassLoader}, you
+need to notify the @code{ClassLoader} and add the new @code{Class} to
+its internal cache of classes.  To do this, call
+@code{ClassLoader.addVMCreatedClass(Class)}.  @emph{Note: this is
+written in anticipation of 1.2 support and does not apply just yet.}
+
+@item Primordial Class Loader @*
+When the primordial class loader loads a class, it needs to tell
+Classpath what it has done in order for security stuff to work right.
+To do this, call the static method
+@code{ClassLoader.newPrimordialClass(Class)}.
+
+Even the first few core classes need to do this; in order to do it,
+simply call this method @emph{after} the initial class loading has been
+done.  No harm will come, as long as you follow the guidelines in the
+@pxref{Initialization} section.
+
+@emph{Note: this is written in anticipation of 1.2 support and does not
+apply just yet.}
+
+@item Top-level Exception Handler @*
+Exceptions take care of themselves in Classpath; all you need to do in
+the top-level exception handler is call @code{Throwable.printStackTrace()}.
+
+@item Security and Traces @*
+There will eventually be a feature in the 1.2 security that keeps the
+@code{AccessController} from having to evaluate @emph{all} of the
+@code{ProtectionDomain}s every time a security check is made.  I think a common
+case is a single method doing a lot of things that require security
+checks.  However, I don't want to bog down the method stack too much, so
+this feature of the VM will have the @code{AccessController} for a thread
+calling out to the VM to tell it how high it was on the stack when it
+made the last security request.  Every time the stack goes lower than
+that number, the VM will decrement the number.  The @code{AccessController}
+will remember what the accumulated protection status was at every stack
+level (an @code{AccessControlContext}) and use that aggregated information to
+do the check.  I am not sure, however, whether the savings are
+substantial enough to outweigh the integer check and set after every
+method call.  I will investigate.
+
+@item Threading @*
+I figured I'd put this here because a VM guy might be wondering about it.
+We implement @code{ThreadGroup}, but that class is almost entirely
+VM-independent.  The root @code{ThreadGroup}, a static field called
+@code{ThreadGroup.root}, should be initialized by Classpath, but if you wish to
+reinitialize it yourself, there should be no harm.
+
+@end itemize
+
+@node JNI Implementation, Miscellaneous VM Requirements, VM Hooks, Top
+@comment  node-name,  next,  previous,  up
+@chapter JNI Implementation
+
+Classpath comes with its own implementation of @file{jni.h}.  This
+file can be customized by the VM in a few ways, by defining macros
+that affect the interpretation of the file.  These macros are all
+intended for use by a VM which uses GNU Classpath and which wants to
+use a single copy of @file{jni.h} for both internal and external use.
+
+@itemize @bullet
+@item _CLASSPATH_VM_JNI_TYPES_DEFINED
+Some VMs like to define JNI ``object'' types in a special way.  If
+this macro is defined, the Classpath @file{jni.h} will avoid defining
+these types.  By default, these types are defined in @file{jni.h}.
+The full list of types and macros treated this way is: @samp{jobject},
+@samp{jclass}, @samp{jstring}, @samp{jthrowable}, @samp{jweak},
+@samp{jarray}, @samp{jobjectArray}, @samp{jbyteArray},
+@samp{jshortArray}, @samp{jintArray}, @samp{jlongArray},
+@samp{jbooleanArray}, @samp{jcharArray}, @samp{jfloatArray},
+@samp{jdoubleArray}, @samp{JNIEnv}, @samp{JavaVM}, @samp{JNI_TRUE}
+(macro), @samp{JNI_FALSE} (macro).
+
+@item _CLASSPATH_VM_INTERNAL_TYPES_DEFINED
+If the VM has its own definitions for @samp{jfieldID} and
+@samp{jmethodID}, then it should define this macro.  Otherwise,
+@file{jni.h} will provide definitions for these types.
+
+@item _CLASSPATH_JNIIMPEXP
+Three functions -- @samp{JNI_GetDefaultJavaVMInitArgs},
+@samp{JNI_CreateJavaVM}, and @samp{JNI_GetCreatedJavaVMs} -- must be
+marked as @samp{JNIIMPORT} when seen by user code, but most likely
+should be marked as @samp{JNIEXPORT} when defined in the VM
+implementation.  This macro can be defined to one or the other by the
+VM as appropriate.  If this macro is not defined, it defaults to
+@samp{JNIIMPORT}.
+
+@item _CLASSPATH_JNIENV_CONTENTS
+A VM can add fields to the @samp{JNIEnv} structure by defining this to
+be a sequence of field declarations.
+
+@end itemize
+
+
+@node Miscellaneous VM Requirements,  , JNI Implementation, Top
+@comment  node-name,  next,  previous,  up
+@chapter Miscellaneous VM Requirements
+
+Classpath places a few requirements on the VM that uses it.
+
+@menu
+* JNI Version::                 
+* VM Threading Model::          
+* Boot Library Path Property::
+@end menu
+
+@node JNI Version, VM Threading Model, Miscellaneous VM Requirements, Miscellaneous VM Requirements
+@comment  node-name,  next,  previous,  up
+@section JNI Version
+
+Classpath currently uses only JNI 1.1, except for one JNI 1.2 function
+in the JNI Invocation API: GetEnv().  And GetEnv() is only used in the
+``portable native sync'' code, so it's only actually used by Jikes RVM
+and Kaffe.  
+
+A future direction will probably be to require that all VMs provide
+JNI 1.2.  If this poses problems, please raise them on the classpath
+mailing list. 
+
+@node VM Threading Model, Boot Library Path Property, JNI Version, Miscellaneous VM Requirements
+@comment  node-name,  next,  previous,  up
+@section VM Threading Model
+
+Classpath's AWT peers use GTK+.  GTK+ uses GLIB.  Normally, Classpath
+will initialize GLIB's @dfn{gthreads} to use
+the platform's native threading model@footnote{The native threading
+model is pthreads on Linux and AIX, the two platforms Classpath
+currently runs on.}
+
+If the Java runtime doesn't use the native threading model, then you
+will want Classpath to tell GLIB to use the Java threading primitives
+instead.  Otherwise, GLIB would use the native threading model to
+perform operations such as creating thread-local data, and that just
+doesn't work on systems (such as Kaffe in some configurations, and
+such as Jikes RVM) that use @i{m}:@i{n} threading.
+
+Historically, enabling the Java threading primitives had been done at
+build time, by configuring classpath with the
+@option{--portable-native-sync} option.  This had bad consequences,
+though -- it meant that the prebuild GNU Classpath package distributed
+with Debian GNU/Linux would not be usable with VMs that could
+otherwise have used it.  Instead, we encourage
+the use of the Java system property
+@code{gnu.classpath.awt.gtk.portable.native.sync}.  A VM that wants
+GLIB to use the Java threading primitives should modify
+@code{VMRuntime.insertSystemProperties()} to include code like the
+following:
+
+@example
+static void insertSystemProperties(Properties @var{p}) 
+@end example
+...
+@example
+@var{p}.put("gnu.classpath.awt.gtk.portable.native.sync", "true");
+@end example
+
+So, the configure option
+@option{--portable-native-sync} is deprecated, and should go away in a
+subsequent release of GNU Classpath.
+
+@node Boot Library Path Property,  , VM Threading Model, Miscellaneous VM Requirements
+@comment  node-name,  next,  previous,  up
+@section Boot Library Path Property
+
+As of GNU Classpath 0.15 a system property named @code{gnu.classpath.boot.library.path}
+can be set by the VM to specify the directories which contain GNU Classpath's native
+libraries. Usually this value is given at configuration time and is then hardcoded
+in the VM. However for development purposes it is handy to switch to another installation
+by overriding the properties' value on the command line.
+
+A VM that does not support this feature can simply ignore the property.
+
+For compatibility reasons we suggest to set the default value of @code{java.library.path}
+to the value of the @code{LD_LIBRARY_PATH} environment if it exists on your platform.
+
+@bye
+
+
+

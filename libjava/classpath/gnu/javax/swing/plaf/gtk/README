@@ -1,0 +1,37 @@
+This is a start at a GTK look and feel for Java.
+It is usable already, but it mainly just defaults back to Basic Look and
+Feel for everything.
+
+Sliders are currently broken.  I haven't figured out why yet.
+
+A bunch of system colors defined in GtkLookandFeel though I have a feeling 
+I'll be defining more ColorUIResources shortly.
+
+Based on Gnome File Manager colors... or my Window Manager setup
+
+desktop			#000000	(gtk)
+activeCaption		#163555	(window manager)	
+activeCaptionText	#FFFFFF	(window manager)
+activeCaptionBorder	#000000 (unsure of this)
+inactiveCaption		#375676 (window manager)
+inactiveCaptionText	#999999 (window manager)
+inactiveCaptionBorder	#000000 (unsure of this)
+window			#FFFFFF (gtk)
+windowBorder		#969696 (gtk)
+windowText		#000000 (gtk)
+menu			#d6d6d6 (gtk)
+menuText		#000000 (gtk)
+text			#FFFFFF (gtk)
+textText		#000000 (gtk)
+textHighlight		#00009c (gtk)
+textHighlightText	#FFFFFF (gtk)
+textInactiveText	#999999 (unsure of this)
+control			#d6d6d6 (gtk)
+controlText		#000000 (gtk)
+controlHighlight	#eaeaea (gtk)
+controlLtHighlight	#eaeaea (unsure of this)
+controlShadow		#c3c3c3 (gtk)
+controlDkShadow		#888888 (unsure of this)
+scrollbar		#c3c3c3 (gtk)
+info			#d6d6d6 (gtk)
+infoText		#000000 (gtk)

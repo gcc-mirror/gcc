@@ -1,0 +1,48 @@
+This directory contains example programs that show how the GNU Classpath
+library can be used.
+
+Each example has its own package under gnu.classpath.examples and has a
+class Demo which contains a main() method to run that particular example.
+
+The examples can be compiled and run with gcj as follows:
+
+  gcj -o swingdemo --main=gnu.classpath.examples.swing.Demo \
+      gnu/classpath/examples/swing/Demo.java
+  ./swingdemo
+
+Or with a traditional byte code interpreter like:
+
+  gcj -C gnu/classpath/examples/awt/Demo.java
+  gij gnu.classpath.examples.awt.Demo
+
+The installation also comes with an examples.zip archive that contains
+all needed resources and compiled byte code class files that can be
+run as follows:
+
+  kaffe -classpath examples.zip gnu.classpath.examples.awt.Demo
+  kaffe -classpath examples.zip gnu.classpath.examples.swing.Demo
+
+All example code is distributed under the GNU General Public License (GPL).
+
+The example icons used in some of the examples come from gnome-icon-theme
+version 1.2.3 and are also distributed under the GPL.
+All these images are stored in the directory gnu/classpath/examples/icons/.
+
+More free icons can be found in the gnome-icon-theme package:
+http://ftp.gnome.org/pub/GNOME/sources/gnome-icon-theme/
+
+
+GNU Classpath examples are free software; you can redistribute it
+and/or modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2, or (at
+your option) any later version.
+
+GNU Classpath examples are distributed in the hope that they will be
+useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath examples; see the file COPYING.  If not,
+write to the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+Boston, MA 02110-1301, USA.

@@ -1,0 +1,64 @@
+I am pleased to announce the first development release of GNU Classpath,
+a project to create a free software replacement for Sun's proprietary
+Java class libraries.  The project is initially providing class library
+support for the Japhar JVM.
+
+Here are the answers to some questions you might have about this project 
+and this release.
+
+1).  Where can I get it?
+
+GNU Classpath 0.00 can be downloaded from:
+
+ftp://alpha.gnu.ai.mit.edu/pub/gnu/classpath-0.00.tar.gz
+
+2).  What is included?
+
+The following java packages are supported:
+   -- java.beans
+   -- java.io
+   -- java.lang
+   -- java.lang.reflect
+   -- java.math
+   -- java.net
+   -- java.security (partial and non-functioning)
+   -- java.security.acl
+   -- java.security.interfaces
+   -- java.util
+
+This is enough to run many non-awt programs.  Not all classes and methods
+are implemented in this release, but most are.  The major missing piece
+of core functionality is java.text.  Many of the implemented classes are
+already up to the Java 1.2 spec.
+
+3).  What is required to build/install/run?
+
+GNU Classpath requires that Japhar 0.07 be installed.  Information on
+obtaining Japhar is available from http://www.japhar.org/.  A working
+C compiler is also required.  You will need the Sun JDK installed if you
+elect to recompile the Java classes.
+
+4).  What platforms are supported?
+
+GNU/Linux is the only platform that has been tested.  We plan to 
+eventually support many others.
+
+5).  Who should use this software?
+
+This is a development release only.  You should only install it if you
+are interested in Classpath development or reporting bugs.  We appreciate
+both.  You might also be interested if you enjoy installing random alpha
+software.
+
+6).  Where do I go for more information?
+
+The project has a web page at 
+
+http://www.classpath.org/
+
+and
+
+http://www.gnu.org/software/classpath/classpath.html
+
+Information on our mailing list is available at the web site.
+
