@@ -1,5 +1,4 @@
 Makefile
-Makefile.in
 *.info
 *.aux
 *.cp
