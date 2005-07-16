@@ -1,3 +1,10 @@
+2005-07-16  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/22421
+	* c-decl.c (c_build_bitfield_integer_type): New function.
+	(finish_struct): Call it.
+	* c-pretty-print.c (pp_c_type_specifier): Handle bit-field types.
+
 2005-07-13  Jeff Law  <law@redhat.com>
 
 	* fold-const.c (fold): When comparing two simple ADDR_EXPR

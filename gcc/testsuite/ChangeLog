@@ -1,3 +1,8 @@
+2005-07-16  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/22421
+	* gcc.dg/format/bitfld-1.c: New test.
+
 2005-07-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22204
