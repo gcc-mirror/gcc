@@ -1,5 +1,11 @@
 2005-07-16  Jan Hubicka  <jh@suse.cz>
 
+	* cfg.c (update_bb_profile_for_threading): Fix profile updating.
+	(scale_bbs_frequencies_int): Watch roundoff errors.
+	* predict.c (return_prediction): Initialize return_stmt.
+
+2005-07-16  Jan Hubicka  <jh@suse.cz>
+
 	* profile.c (rest_of_handle_branch_prob): Fix handling of estimation
 	after RTL profiling.
 

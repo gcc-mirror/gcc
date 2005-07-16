@@ -1206,7 +1206,7 @@ return_prediction (tree val, enum prediction *prediction)
 static void
 apply_return_prediction (int *heads)
 {
-  tree return_stmt;
+  tree return_stmt = NULL;
   tree return_val;
   edge e;
   tree phi;
