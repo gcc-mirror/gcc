@@ -1,5 +1,11 @@
 2005-07-17  Daniel Berlin  <dberlin@dberlin.org>
 
+	Fix PR tree-optimization/22531
+	* tree-ssa-pre.c (do_eustores):  Make sure LHS is a decl for the
+	 moment.
+
+2005-07-17  Daniel Berlin  <dberlin@dberlin.org>
+
 	* tree-promote-statics.c (pass_promote_statics): Change dump file
 	 name.
 
