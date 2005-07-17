@@ -579,7 +579,7 @@ gate_promote_statics (void)
 
 struct tree_opt_pass pass_promote_statics = 
 {
-  "tree-promote-static",		/* name */
+  "promote-statics",			/* name */
   gate_promote_statics,			/* gate */
   execute_promote_statics,		/* execute */
   NULL,					/* sub */
