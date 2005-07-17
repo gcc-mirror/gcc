@@ -207,9 +207,7 @@ enum __mf_dynamic_index
   dyn_munmap, dyn_realloc,
   dyn_INITRESOLVE,  /* Marker for last init-time resolution. */
 #ifdef LIBMUDFLAPTH
-  dyn_pthread_create,
-  dyn_pthread_join,
-  dyn_pthread_exit
+  dyn_pthread_create
 #endif
 };
 
@@ -233,12 +231,25 @@ extern pthread_mutex_t __mf_biglock;
 #define UNLOCKTH() do {} while (0)
 #endif
 
-#ifdef LIBMUDFLAPTH
-extern enum __mf_state_enum *__mf_state_perthread ();
-#define __mf_state (* __mf_state_perthread ())
+#if defined(LIBMUDFLAPTH) && !defined(HAVE_TLS)
+extern enum __mf_state_enum __mf_get_state (void);
+extern void __mf_set_state (enum __mf_state_enum);
 #else
-extern enum __mf_state_enum __mf_state;
+# ifdef LIBMUDFLAPTH
+extern __thread enum __mf_state_enum __mf_state_1;
+# else
+extern enum __mf_state_enum __mf_state_1;
+# endif
+static inline enum __mf_state_enum __mf_get_state (void)
+{
+  return __mf_state_1;
+}
+static inline void __mf_set_state (enum __mf_state_enum s)
+{
+  __mf_state_1 = s;
+}
 #endif
+
 extern int __mf_starting_p;
 extern struct __mf_options __mf_opts;
 
@@ -362,7 +373,7 @@ ret __mfwrap_ ## fname (__VA_ARGS__)
   {                                         \
     return CALL_BACKUP(fname, __VA_ARGS__); \
   }                                         \
-  else if (UNLIKELY (__mf_state == reentrant))   \
+  else if (UNLIKELY (__mf_get_state () == reentrant))   \
   {                                         \
     extern unsigned long __mf_reentrancy;   \
     __mf_reentrancy ++; \

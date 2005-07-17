@@ -141,20 +141,25 @@ static void mfsplay_tree_rebalance (mfsplay_tree sp);
 #define __MF_VIOL_WATCH 5
 
 /* Protect against recursive calls. */
-#define BEGIN_RECURSION_PROTECT() do { \
-  if (UNLIKELY (__mf_state == reentrant)) { \
-    write (2, "mf: erroneous reentrancy detected in `", 38); \
-    write (2, __PRETTY_FUNCTION__, strlen(__PRETTY_FUNCTION__)); \
-    write (2, "'\n", 2); \
-    abort (); } \
-  __mf_state = reentrant;  \
-  } while (0)
 
-#define END_RECURSION_PROTECT() do { \
-  __mf_state = active; \
-  } while (0)
+static void
+begin_recursion_protect1 (const char *pf)
+{
+  if (__mf_get_state () == reentrant)
+    {
+      write (2, "mf: erroneous reentrancy detected in `", 38);
+      write (2, pf, strlen(pf));
+      write (2, "'\n", 2); \
+      abort ();
+    }
+  __mf_set_state (reentrant);
+}
 
+#define BEGIN_RECURSION_PROTECT() \
+  begin_recursion_protect1 (__PRETTY_FUNCTION__)
 
+#define END_RECURSION_PROTECT() \
+  __mf_set_state (active)
 
 /* ------------------------------------------------------------------------ */
 /* Required globals.  */
@@ -169,14 +174,15 @@ unsigned char __mf_lc_shift = LOOKUP_CACHE_SHIFT_DFL;
 #define LOOKUP_CACHE_SIZE (__mf_lc_mask + 1)
 
 struct __mf_options __mf_opts;
-
 int __mf_starting_p = 1;
-#ifndef LIBMUDFLAPTH
-enum __mf_state_enum __mf_state = active;
-#else
-/* See __mf_state_perthread() in mf-hooks.c. */
-#endif
 
+#ifdef LIBMUDFLAPTH
+#ifdef HAVE_TLS
+__thread enum __mf_state_enum __mf_state_1 = active;
+#endif
+#else
+enum __mf_state_enum __mf_state_1 = active;
+#endif
 
 #ifdef LIBMUDFLAPTH
 pthread_mutex_t __mf_biglock =
@@ -196,7 +202,6 @@ pthread_mutex_t __mf_biglock =
 #else
 #define pthread_join NULL
 #endif
-const void *threads_active_p = (void *) pthread_join;
 #endif
 
 
@@ -442,7 +447,7 @@ __mf_usage ()
            "any of the following options.  Use `-no-OPTION' to disable options.\n"
            "\n",
 #if HAVE_PTHREAD_H
-           (threads_active_p ? "multi-threaded " : "single-threaded "),
+           (pthread_join ? "multi-threaded " : "single-threaded "),
 #else
            "",
 #endif
@@ -2211,7 +2216,7 @@ __mf_sigusr1_respond ()
   if (__mf_sigusr1_received > __mf_sigusr1_handled)
     {
       __mf_sigusr1_handled ++;
-      assert (__mf_state == reentrant);
+      assert (__mf_get_state () == reentrant);
       __mfu_report ();
       handler_installed = 0; /* We may need to re-enable signal; this might be a SysV library. */
     }

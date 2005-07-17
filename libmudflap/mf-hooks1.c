@@ -79,7 +79,19 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 void *
 __mf_0fn_malloc (size_t c)
 {
-  /* fprintf (stderr, "0fn malloc c=%lu\n", c); */
+  enum foo { BS = 4096, NB=10 };
+  static char bufs[NB][BS];
+  static unsigned bufs_used[NB];
+  unsigned i;
+
+  for (i=0; i<NB; i++)
+    {
+      if (! bufs_used[i] && c < BS)
+	{
+	  bufs_used[i] = 1;
+	  return & bufs[i][0];
+	}
+    }
   return NULL;
 }
 #endif
@@ -114,21 +126,7 @@ WRAPPER(void *, malloc, size_t c)
 void *
 __mf_0fn_calloc (size_t c, size_t n)
 {
-  enum foo { BS = 4096, NB=10 };
-  static char bufs[NB][BS];
-  static unsigned bufs_used[NB];
-  unsigned i;
-
-  /* fprintf (stderr, "0fn calloc c=%lu n=%lu\n", c, n); */
-  for (i=0; i<NB; i++)
-    {
-      if (! bufs_used[i] && (c*n) < BS)
-	{
-	  bufs_used[i] = 1;
-	  return & bufs[i][0];
-	}
-    }
-  return NULL;
+  return __mf_0fn_malloc (c * n);
 }
 #endif
 
@@ -194,7 +192,7 @@ WRAPPER(void *, realloc, void *buf, size_t c)
   /* Ensure heap wiping doesn't occur during this peculiar
      unregister/reregister pair.  */
   LOCKTH ();
-  __mf_state = reentrant;
+  __mf_set_state (reentrant);
   saved_wipe_heap = __mf_opts.wipe_heap;
   __mf_opts.wipe_heap = 0;
 
@@ -212,7 +210,7 @@ WRAPPER(void *, realloc, void *buf, size_t c)
   /* Restore previous setting.  */
   __mf_opts.wipe_heap = saved_wipe_heap;
 
-  __mf_state = active;
+  __mf_set_state (active);
   UNLOCKTH ();
 
   return result;

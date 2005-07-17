@@ -598,7 +598,7 @@ proper position among the other output files.  */
 #define MFWRAP_SPEC " %{static: %{fmudflap|fmudflapth: \
  --wrap=malloc --wrap=free --wrap=calloc --wrap=realloc\
  --wrap=mmap --wrap=munmap --wrap=alloca\
-} %{fmudflapth: --wrap=pthread_create --wrap=pthread_join --wrap=pthread_exit\
+} %{fmudflapth: --wrap=pthread_create\
 }} %{fmudflap|fmudflapth: --wrap=main}"
 #endif
 #ifndef MFLIB_SPEC

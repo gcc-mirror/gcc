@@ -229,5 +229,8 @@ else
   multilib_arg=
 fi
 
+# See if we support thread-local storage.
+LIBMUDFLAP_CHECK_TLS
+
 AC_CONFIG_FILES([Makefile testsuite/Makefile testsuite/mfconfig.exp])
 AC_OUTPUT
