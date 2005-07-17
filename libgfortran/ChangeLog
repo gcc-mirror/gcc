@@ -1,3 +1,14 @@
+2005-07-17  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	Backport from mainline.
+	PR libfortran/21480
+	* m4/reshape.m4:  Use sizeof (rtype_name) for sizes to be passed
+	to reshape_packed.
+	* generated/reshape_c4.c:  Regenerated.
+	* generated/reshape_c8.c:  Regenerated.
+	* generated/reshape_i4.c:  Regenerated.
+	* generated/reshape_i8.c:  Regenerated.
+
 2005-07-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR fortran/13257

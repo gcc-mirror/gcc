@@ -174,9 +174,9 @@ reshape_4 (gfc_array_i4 * ret, gfc_array_i4 * source, shape_type * shape,
 
   if (rsize != 0 && ssize != 0 && psize != 0)
     {
-      rsize *= 4;
-      ssize *= 4;
-      psize *= 4;
+      rsize *= sizeof (GFC_INTEGER_4);
+      ssize *= sizeof (GFC_INTEGER_4);
+      psize *= sizeof (GFC_INTEGER_4);
       reshape_packed ((char *)ret->data, rsize, (char *)source->data,
 		      ssize, pad ? (char *)pad->data : NULL, psize);
       return;

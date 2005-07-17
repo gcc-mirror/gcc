@@ -174,9 +174,9 @@ reshape_c8 (gfc_array_c8 * ret, gfc_array_c8 * source, shape_type * shape,
 
   if (rsize != 0 && ssize != 0 && psize != 0)
     {
-      rsize *= 8;
-      ssize *= 8;
-      psize *= 8;
+      rsize *= sizeof (GFC_COMPLEX_8);
+      ssize *= sizeof (GFC_COMPLEX_8);
+      psize *= sizeof (GFC_COMPLEX_8);
       reshape_packed ((char *)ret->data, rsize, (char *)source->data,
 		      ssize, pad ? (char *)pad->data : NULL, psize);
       return;

@@ -1,3 +1,10 @@
+2005-07-17  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	Backport from mainline.
+	PR libfortran/21480
+	* gfortran.dg/reshape-complex.f90:  Add a test for a packed
+	complex array.
+
 2005-07-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR fortran/13257
