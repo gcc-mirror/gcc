@@ -1,3 +1,36 @@
+2005-07-16  Richard Henderson  <rth@redhat.com>
+
+	* acinclude.m4: New file.
+	* configure.ac: Invoke LIBMUDFLAP_CHECK_TLS.
+	* configure, config.h.in, Makefile.in, testsuite/Makefile.in: Rebuild.
+	* mf-hooks1.c (__mf_0fn_malloc): Move body from ...
+	(__mf_0fn_calloc): ... here.
+	* mf-hooks3.c (struct pthread_info): Remove.
+	(__mf_pthread_info, __mf_pthread_info_idx): Remove.
+	(LIBMUDFLAPTH_THREADS_MAX): Set to 1021.
+	(struct mf_thread_data): New.
+	(mf_thread_data, mf_thread_data_lock): New.
+	(__mf_allocate_blank_threadinfo): Remove.
+	(__mf_find_threadinfo): Rewrite and simplify.  Only use if TLS is
+	not available.
+	(__mf_state_perthread): Remove.
+	(__mf_get_state, __mf_set_state): New.
+	(__mf_pthread_cleanup): Use &errno, rather than saved pointer.
+	Update mf_thread_data killing procedure.
+	(__mf_pthread_spawner): Similarly.
+	(__mf_0fn_pthread_create): Only use wrapper if necessary.  Remove
+	code to allocate thread stack space.
+	(__mf_0fn_pthread_join, pthread_join): Remove.
+	(__mf_0fn_pthread_exit, pthread_exit): Remove.
+	* mf-impl.h (dyn_pthread_join, dyn_pthread_exit): Remove.
+	(__mf_state_1): Rename from __mf_state; use TLS when available.
+	(__mf_get_state, __mf_set_state): New.  Update all users.
+	* mf-runtime.c (begin_recursion_protect1): New.
+	(BEGIN_RECURSION_PROTECT): Use it.
+	(__mf_state_1): Rename from __mf_state; use TLS when available.
+	(threads_active_p): Remove.
+	(__mf_usage): Compute it directly.
+
 2005-06-19  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* testsuite/libmudflap.c/externs-1.c (main): Add return statement.
