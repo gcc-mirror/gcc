@@ -1,3 +1,9 @@
+2005-07-14  Jerry DeLisle  <jvdelisle@verizon.net>
+
+    * io/write.c (write_float): Fix field width checks for
+    printing 'Infinity' or 'Inf'.
+    (output_float): Fix typo in comment.
+
 2005-07-12 Paul Thomas  <pault@gcc.gnu.org>
 
 	PR libfortran/16435
