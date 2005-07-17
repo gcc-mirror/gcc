@@ -3,6 +3,17 @@
 	PR fortran/21730
 	* gfortran.dg/pr21730.f: New test.
 
+2005-07-16  Danny Berlin <dberlin@dberlin.org>
+	    Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* gcc.dg/tree-ssa/ssa-dce-2.c: Changed dg-options to run at -O2
+	since pure const detection cannot run at -O1 in c compiler.
+	* gcc.dg/tree-ssa/20030714-1.c Changed scanning patterns because we
+	can now optimize this case properly.
+	* gcc.dg/tree-ssa/sra-2.c: Changed to -O3 and removed xfail
+	because we now pass.
+	* gcc.dg/vect/vect-92.c: Removed out of bounds array access.
+
 2005-07-16  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/22421
