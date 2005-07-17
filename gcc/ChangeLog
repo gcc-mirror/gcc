@@ -17,9 +17,6 @@
 	compute_flow_insensitive_aliasing): Ditto.
 	* calls.c (flags_from_decl_or_type): Removed reference to
 	cgraph_rtl_info. 
-	(flags_from_decl_or_type): Support ECF_POINTER_NO_CAPTURE attribute.
-	* c-common.c (handle_pointer_no_capture_attribute): New function
-	and added pointer_no_capture attribute.
       	* c-typeck.c (convert_arguments): Make builtins tolerant of having
 	too many arguments.  This is necessary for Spec 2000.
 	* cgraph.h (const_function, pure_function): Removed.
@@ -29,7 +26,6 @@
 	* passes.c: Added ipa and tree-promote-statics passes. 
 	* timevar.def: Added TV_IPA_PURE_CONST, TV_IPA_REFERENCE,
 	TV_IPA_TYPE_ESCAPE, and TV_PROMOTE_STATICS.
-	* tree.h: Support ECF_POINTER_NO_CAPTURE attribute.
 	* tree-dfa.c (referenced_var_lookup_if_exists): New function.
 	* tree-flow.h: Added exposed sra calls and addition of 
 	reference_vars_info field for FUNCTION_DECLS.
