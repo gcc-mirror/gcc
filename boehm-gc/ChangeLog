@@ -1,3 +1,7 @@
+2005-07-17  SUGIOKA Toshinobu  <sugioka@itonet.co.jp>
+
+	* include/private/gcconfig.h (sh-linux): Use LINUX_STACKBOTTOM.
+
 2005-07-07  Release Manager
 
 	* GCC 4.0.1 released.
