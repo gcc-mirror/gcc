@@ -1,3 +1,11 @@
+2005-07-17  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/22139
+	* cp-tree.h (DECL_TEMPLATE_INFO): Improve documentation.
+	* decl.c (duplicate_decls): Re-register template specializations
+	for functions that have DECL_TEMLPLATE_INFO, even if they do not
+	have DECL_TEMPLATE_INSTANTIATION set.
+
 2005-07-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22204

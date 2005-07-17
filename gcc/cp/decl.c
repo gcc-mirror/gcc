@@ -1837,7 +1837,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	      (char *) newdecl + sizeof (struct tree_common),
 	      function_size - sizeof (struct tree_common));
 
-      if (DECL_TEMPLATE_INSTANTIATION (newdecl))
+      if (DECL_TEMPLATE_INFO (newdecl))
 	/* If newdecl is a template instantiation, it is possible that
 	   the following sequence of events has occurred:
 
