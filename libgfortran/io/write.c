@@ -649,7 +649,7 @@ output_float (fnode *f, GFC_REAL_LARGEST value)
   else
     leadzero = 0;
 
-  /* Padd to full field width.  */
+  /* Pad to full field width.  */
 
 
   if ( ( nblanks > 0 ) && !no_leading_blank )
@@ -788,11 +788,11 @@ write_float (fnode *f, const char *source, int len)
 	      else
 		fin = '+';
 
-	      if (nb > 7)
+	      if (nb > 8)
 		memcpy(p + nb - 8, "Infinity", 8);
 	      else
 		memcpy(p + nb - 3, "Inf", 3);
-	      if (nb < 8 && nb > 3)
+	      if (nb < 9 && nb > 3)
 		p[nb - 4] = fin;
 	      else if (nb > 8)
 		p[nb - 9] = fin;
