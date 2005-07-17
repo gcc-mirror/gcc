@@ -1,3 +1,9 @@
+2005-07-16  David Edelsohn  <edelsohn@gnu.org>
+
+	PR fortran/21730
+	* decl.c (do_parm): Adjust character initializer to character length
+	of symbol before assigning.
+
 2005-07-14  Steve Ellcey  <sje@cup.hp.com>
 
 	* trans-types.c (MAX_REAL_KINDS): Increase from 4 to 5.
