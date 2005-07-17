@@ -960,7 +960,6 @@ _Jv_ClassReader::handleClassBegin (int access_flags, int this_class, int super_c
   // needed.
   *found_name = def->name;
 
-  jclass the_super = NULL;
   if (super_class != 0)
     {
       // Load the superclass.
