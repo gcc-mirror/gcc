@@ -2807,6 +2807,7 @@ do_eustores (void)
 
 	      if (NUM_SSA_OPERANDS (found, SSA_OP_VUSE) != 1
 		  || VUSE_OP (VUSE_OPS (found)) != kill
+		  || !DECL_P (TREE_OPERAND (stmt, 0))
 		  || !operand_equal_p (TREE_OPERAND (found, 1), 
 				       TREE_OPERAND (stmt, 0), 0))
 		{
