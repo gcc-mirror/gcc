@@ -1,3 +1,7 @@
+2005-07-17  SUGIOKA Toshinobu  <sugioka@itonet.co.jp>
+
+	* include/private/gcconfig.h (sh-linux): Use LINUX_STACKBOTTOM.
+
 2005-06-15  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* os_dep.c: Add FreeBSD/PowerPC bits.
