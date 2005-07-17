@@ -300,7 +300,6 @@ struct tree_opt_pass pass_init_datastructures =
   0					/* letter */
 };
 
-
 void
 tree_lowering_passes (tree fn)
 {

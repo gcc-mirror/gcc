@@ -1,3 +1,13 @@
+2005-07-12  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-optimize.c (init_tree_optimization_passes): Add
+	pass_eliminate_useless_stores pass.
+	* tree-pass.h (pass_eliminate_useless_stores): New pass structure.
+	* tree-ssa-pre.c (is_copy_stmt): New function.
+	(follow_copies_till_vuse): Ditto.
+	(do_eustores): Ditto.
+	(gate_eustores): Ditto.	
+	
 2005-07-16  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c (MFWRAP_SPEC): Don't wrap pthread_join or pthread_exit.
