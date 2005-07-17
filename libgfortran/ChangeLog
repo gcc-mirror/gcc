@@ -1,4 +1,4 @@
-2005-07-14  Jerry DeLisle  <jvdelisle@verizon.net>
+2005-07-17  Jerry DeLisle  <jvdelisle@verizon.net>
 
     * io/write.c (write_float): Fix field width checks for
     printing 'Infinity' or 'Inf'.
