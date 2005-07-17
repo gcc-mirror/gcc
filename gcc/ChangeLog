@@ -1,4 +1,9 @@
-2005-07-12  Daniel Berlin  <dberlin@dberlin.org>
+2005-07-17  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-promote-statics.c (pass_promote_statics): Change dump file
+	 name.
+
+2005-07-17  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-optimize.c (init_tree_optimization_passes): Add
 	pass_eliminate_useless_stores pass.
