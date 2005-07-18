@@ -785,7 +785,7 @@ SUFFIXES = .class .java .h .properties .list
 gnu_awt_source_files = \
 gnu/awt/LightweightRedirector.java
 
-gnu_awt_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_awt_source_files)))
+gnu_awt_header_files = $(patsubst %.java,%.h,$(gnu_awt_source_files))
 gnu_awt_j2d_source_files = \
 gnu/awt/j2d/AbstractGraphicsState.java \
 gnu/awt/j2d/DirectRasterGraphics.java \
@@ -793,7 +793,7 @@ gnu/awt/j2d/Graphics2DImpl.java \
 gnu/awt/j2d/IntegerGraphicsState.java \
 gnu/awt/j2d/MappedRaster.java
 
-gnu_awt_j2d_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_awt_j2d_source_files)))
+gnu_awt_j2d_header_files = $(patsubst %.java,%.h,$(gnu_awt_j2d_source_files))
 gnu_classpath_source_files = \
 classpath/gnu/classpath/Configuration.java \
 classpath/gnu/classpath/RawData.java \
@@ -803,7 +803,7 @@ classpath/gnu/classpath/ServiceFactory.java \
 classpath/gnu/classpath/ServiceProviderLoadingAction.java \
 gnu/classpath/SystemProperties.java
 
-gnu_classpath_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_classpath_source_files))))
+gnu_classpath_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_classpath_source_files)))
 gnu_classpath_debug_source_files = \
 classpath/gnu/classpath/debug/Component.java \
 classpath/gnu/classpath/debug/PreciseFilter.java \
@@ -815,7 +815,7 @@ gnu/gcj/Core.java \
 gnu/gcj/RawData.java \
 gnu/gcj/RawDataManaged.java
 
-gnu_gcj_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_gcj_source_files)))
+gnu_gcj_header_files = $(patsubst %.java,%.h,$(gnu_gcj_source_files))
 gnu_gcj_convert_source_files = \
 gnu/gcj/convert/BytesToUnicode.java \
 gnu/gcj/convert/Convert.java \
@@ -839,13 +839,13 @@ gnu/gcj/convert/Output_UnicodeLittleUnmarked.java \
 gnu/gcj/convert/Output_iconv.java \
 gnu/gcj/convert/UnicodeToBytes.java
 
-gnu_gcj_convert_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_gcj_convert_source_files)))
+gnu_gcj_convert_header_files = $(patsubst %.java,%.h,$(gnu_gcj_convert_source_files))
 gnu_gcj_io_source_files = \
 gnu/gcj/io/DefaultMimeTypes.java \
 gnu/gcj/io/MimeTypes.java \
 gnu/gcj/io/SimpleSHSStream.java
 
-gnu_gcj_io_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_gcj_io_source_files)))
+gnu_gcj_io_header_files = $(patsubst %.java,%.h,$(gnu_gcj_io_source_files))
 gnu_gcj_runtime_source_files = \
 gnu/gcj/runtime/BootClassLoader.java \
 gnu/gcj/runtime/ExtensionClassLoader.java \
@@ -860,11 +860,11 @@ gnu/gcj/runtime/SharedLibLoader.java \
 gnu/gcj/runtime/StringBuffer.java \
 gnu/gcj/runtime/SystemClassLoader.java
 
-gnu_gcj_runtime_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_gcj_runtime_source_files)))
+gnu_gcj_runtime_header_files = $(patsubst %.java,%.h,$(gnu_gcj_runtime_source_files))
 gnu_gcj_util_source_files = \
 gnu/gcj/util/Debug.java
 
-gnu_gcj_util_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_gcj_util_source_files)))
+gnu_gcj_util_header_files = $(patsubst %.java,%.h,$(gnu_gcj_util_source_files))
 gnu_java_awt_source_files = \
 classpath/gnu/java/awt/AWTUtilities.java \
 classpath/gnu/java/awt/BitMaskExtent.java \
@@ -1022,7 +1022,7 @@ classpath/gnu/java/lang/CharData.java \
 classpath/gnu/java/lang/ClassHelper.java \
 gnu/java/lang/MainThread.java
 
-gnu_java_lang_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_lang_source_files))))
+gnu_java_lang_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_lang_source_files)))
 gnu_java_lang_reflect_source_files = \
 classpath/gnu/java/lang/reflect/TypeSignature.java
 
@@ -1169,7 +1169,7 @@ gnu/java/locale/LocaleInformation_zh_HK.java \
 gnu/java/locale/LocaleInformation_zh_SG.java \
 gnu/java/locale/LocaleInformation_zh_TW.java
 
-gnu_java_locale_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_locale_source_files))))
+gnu_java_locale_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_locale_source_files)))
 gnu_java_math_source_files = \
 classpath/gnu/java/math/MPN.java
 
@@ -1192,12 +1192,12 @@ gnu/java/net/protocol/core/Handler.java \
 gnu/java/net/protocol/gcjlib/Connection.java \
 gnu/java/net/protocol/gcjlib/Handler.java
 
-gnu_java_net_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_net_source_files))))
+gnu_java_net_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_net_source_files)))
 gnu_java_net_protocol_file_source_files = \
 gnu/java/net/protocol/file/Connection.java \
 gnu/java/net/protocol/file/Handler.java
 
-gnu_java_net_protocol_file_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_net_protocol_file_source_files)))
+gnu_java_net_protocol_file_header_files = $(patsubst %.java,%.h,$(gnu_java_net_protocol_file_source_files))
 gnu_java_net_protocol_ftp_source_files = \
 classpath/gnu/java/net/protocol/ftp/ActiveModeDTP.java \
 classpath/gnu/java/net/protocol/ftp/BlockInputStream.java \
@@ -1253,7 +1253,7 @@ gnu_java_net_protocol_jar_source_files = \
 gnu/java/net/protocol/jar/Connection.java \
 classpath/gnu/java/net/protocol/jar/Handler.java
 
-gnu_java_net_protocol_jar_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_net_protocol_jar_source_files))))
+gnu_java_net_protocol_jar_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_net_protocol_jar_source_files)))
 gnu_java_nio_source_files = \
 classpath/gnu/java/nio/ChannelInputStream.java \
 classpath/gnu/java/nio/ChannelOutputStream.java \
@@ -1278,11 +1278,11 @@ gnu/java/nio/SocketChannelSelectionKey.java \
 gnu/java/nio/VMPipe.java \
 gnu/java/nio/VMSelector.java
 
-gnu_java_nio_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_nio_source_files))))
+gnu_java_nio_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_nio_source_files)))
 gnu_java_nio_channels_source_files = \
 gnu/java/nio/channels/FileChannelImpl.java
 
-gnu_java_nio_channels_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_nio_channels_source_files)))
+gnu_java_nio_channels_header_files = $(patsubst %.java,%.h,$(gnu_java_nio_channels_source_files))
 gnu_java_nio_charset_source_files = \
 classpath/gnu/java/nio/charset/ByteCharset.java \
 classpath/gnu/java/nio/charset/Cp424.java \
@@ -1346,7 +1346,7 @@ classpath/gnu/java/nio/charset/Windows1256.java \
 classpath/gnu/java/nio/charset/Windows1257.java \
 classpath/gnu/java/nio/charset/Windows1258.java
 
-gnu_java_nio_charset_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_nio_charset_source_files))))
+gnu_java_nio_charset_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_nio_charset_source_files)))
 gnu_java_rmi_source_files = \
 classpath/gnu/java/rmi/RMIMarshalledObjectInputStream.java \
 classpath/gnu/java/rmi/RMIMarshalledObjectOutputStream.java \
@@ -1359,7 +1359,7 @@ gnu/java/rmi/rmic/RMIC.java \
 gnu/java/rmi/rmic/RMICException.java \
 gnu/java/rmi/rmic/TabbedWriter.java
 
-gnu_java_rmi_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_rmi_source_files))))
+gnu_java_rmi_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_rmi_source_files)))
 gnu_java_rmi_dgc_source_files = \
 classpath/gnu/java/rmi/dgc/DGCImpl.java \
 classpath/gnu/java/rmi/dgc/DGCImpl_Skel.java \
@@ -2357,7 +2357,7 @@ java/io/VMObjectStreamClass.java \
 classpath/java/io/WriteAbortedException.java \
 classpath/java/io/Writer.java
 
-java_io_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_io_source_files))))
+java_io_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_io_source_files)))
 java_lang_source_files = \
 classpath/java/lang/AbstractMethodError.java \
 classpath/java/lang/Appendable.java \
@@ -2447,7 +2447,7 @@ classpath/java/lang/VerifyError.java \
 classpath/java/lang/VirtualMachineError.java \
 classpath/java/lang/Void.java
 
-java_lang_header_files = $(filter-out java/lang/Object.h java/lang/Class.h,$(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_lang_source_files)))))
+java_lang_header_files = $(filter-out java/lang/Object.h java/lang/Class.h,$(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_lang_source_files))))
 java_lang_annotation_source_files = \
 classpath/java/lang/annotation/AnnotationFormatError.java \
 classpath/java/lang/annotation/AnnotationTypeMismatchException.java
@@ -2460,7 +2460,7 @@ classpath/java/lang/ref/ReferenceQueue.java \
 classpath/java/lang/ref/SoftReference.java \
 classpath/java/lang/ref/WeakReference.java
 
-java_lang_ref_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_lang_ref_source_files))))
+java_lang_ref_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_lang_ref_source_files)))
 java_lang_reflect_source_files = \
 classpath/java/lang/reflect/AccessibleObject.java \
 java/lang/reflect/Array.java \
@@ -2480,7 +2480,7 @@ classpath/java/lang/reflect/Type.java \
 classpath/java/lang/reflect/UndeclaredThrowableException.java \
 classpath/java/lang/reflect/WildcardType.java
 
-java_lang_reflect_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_lang_reflect_source_files))))
+java_lang_reflect_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_lang_reflect_source_files)))
 java_math_source_files = \
 classpath/java/math/BigDecimal.java \
 classpath/java/math/BigInteger.java
@@ -2534,7 +2534,7 @@ classpath/java/net/UnknownHostException.java \
 classpath/java/net/UnknownServiceException.java \
 java/net/VMNetworkInterface.java
 
-java_net_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_net_source_files))))
+java_net_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_net_source_files)))
 java_nio_source_files = \
 java/nio/Buffer.java \
 classpath/java/nio/BufferOverflowException.java \
@@ -2568,7 +2568,7 @@ classpath/java/nio/ShortBufferImpl.java \
 classpath/java/nio/ShortViewBufferImpl.java \
 java/nio/VMDirectByteBuffer.java
 
-java_nio_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_nio_source_files))))
+java_nio_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_nio_source_files)))
 java_nio_channels_source_files = \
 classpath/java/nio/channels/AlreadyConnectedException.java \
 classpath/java/nio/channels/AsynchronousCloseException.java \
@@ -2606,7 +2606,7 @@ classpath/java/nio/channels/UnresolvedAddressException.java \
 classpath/java/nio/channels/UnsupportedAddressTypeException.java \
 classpath/java/nio/channels/WritableByteChannel.java
 
-java_nio_channels_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_nio_channels_source_files))))
+java_nio_channels_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_nio_channels_source_files)))
 java_nio_channels_spi_source_files = \
 classpath/java/nio/channels/spi/AbstractInterruptibleChannel.java \
 classpath/java/nio/channels/spi/AbstractSelectableChannel.java \
@@ -2628,7 +2628,7 @@ classpath/java/nio/charset/MalformedInputException.java \
 classpath/java/nio/charset/UnmappableCharacterException.java \
 classpath/java/nio/charset/UnsupportedCharsetException.java
 
-java_nio_charset_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_nio_charset_source_files))))
+java_nio_charset_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_nio_charset_source_files)))
 java_nio_charset_spi_source_files = \
 classpath/java/nio/charset/spi/CharsetProvider.java
 
@@ -2783,7 +2783,7 @@ classpath/java/security/Signer.java \
 classpath/java/security/UnrecoverableKeyException.java \
 classpath/java/security/UnresolvedPermission.java
 
-java_security_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_security_source_files))))
+java_security_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_security_source_files)))
 java_security_acl_source_files = \
 classpath/java/security/acl/Acl.java \
 classpath/java/security/acl/AclEntry.java \
@@ -2930,7 +2930,7 @@ classpath/java/text/RuleBasedCollator.java \
 java/text/SimpleDateFormat.java \
 classpath/java/text/StringCharacterIterator.java
 
-java_text_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_text_source_files))))
+java_text_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_text_source_files)))
 java_util_source_files = \
 classpath/java/util/AbstractCollection.java \
 classpath/java/util/AbstractList.java \
@@ -2995,7 +2995,7 @@ java/util/VMTimeZone.java \
 classpath/java/util/Vector.java \
 classpath/java/util/WeakHashMap.java
 
-java_util_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_util_source_files))))
+java_util_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_util_source_files)))
 java_util_jar_source_files = \
 classpath/java/util/jar/Attributes.java \
 classpath/java/util/jar/JarEntry.java \
@@ -3024,7 +3024,7 @@ classpath/java/util/logging/SocketHandler.java \
 classpath/java/util/logging/StreamHandler.java \
 classpath/java/util/logging/XMLFormatter.java
 
-java_util_logging_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_util_logging_source_files))))
+java_util_logging_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_util_logging_source_files)))
 java_util_prefs_source_files = \
 classpath/java/util/prefs/AbstractPreferences.java \
 classpath/java/util/prefs/BackingStoreException.java \
@@ -3063,7 +3063,7 @@ java/util/zip/ZipFile.java \
 classpath/java/util/zip/ZipInputStream.java \
 classpath/java/util/zip/ZipOutputStream.java
 
-java_util_zip_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_util_zip_source_files))))
+java_util_zip_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_util_zip_source_files)))
 javax_accessibility_source_files = \
 classpath/javax/accessibility/Accessible.java \
 classpath/javax/accessibility/AccessibleAction.java \
@@ -6526,12 +6526,14 @@ gnu/java/awt/peer.list: $(gnu_java_awt_peer_source_files)
 -include gnu/java/awt/peer.deps
 
 gnu-java-awt-peer-gtk.lo: $(gnu_java_awt_peer_gtk_source_files)
-	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-java-awt-peer-gtk.lo \
-		`find classpath/lib/gnu/java/awt/peer/gtk -name '*.class' | sort -r`
+	@find classpath/lib/gnu/java/awt/peer/gtk -name '*.class' > gnu-java-awt-peer-gtk.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-java-awt-peer-gtk.lo @gnu-java-awt-peer-gtk.list
+	@rm -f gnu-java-awt-peer-gtk.list
 
 gnu-java-beans.lo: $(gnu_java_beans_source_files)
-	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-java-beans.lo \
-		`find classpath/lib/gnu/java/beans -name '*.class' | sort -r`
+	@find classpath/lib/gnu/java/beans -name '*.class' > gnu-java-beans.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-java-beans.lo @gnu-java-beans.list
+	@rm -f gnu-java-beans.list
 
 gnu/java/io.list: $(gnu_java_io_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -6894,8 +6896,9 @@ gnu/regexp.list: $(gnu_regexp_source_files)
 -include gnu/regexp.deps
 
 gnu-xml.lo: $(gnu_xml_source_files)
-	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-xml.lo \
-		`find classpath/lib/gnu/xml -name '*.class' | sort -r`
+	@find classpath/lib/gnu/xml -name '*.class' > gnu-xml.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-xml.lo @gnu-xml.list
+	@rm -f gnu-xml.list
 
 java/applet.list: $(java_applet_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -7408,8 +7411,9 @@ javax/crypto/spec.list: $(javax_crypto_spec_source_files)
 -include javax/crypto/spec.deps
 
 javax-imageio.lo: $(javax_imageio_source_files)
-	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o javax-imageio.lo \
-		`find classpath/lib/javax/imageio -name '*.class' | sort -r`
+	@find classpath/lib/javax/imageio -name '*.class' > javax-imageio.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o javax-imageio.lo @javax-imageio.list
+	@rm -f javax-imageio.list
 
 javax/naming.list: $(javax_naming_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -7772,8 +7776,9 @@ javax/transaction/xa.list: $(javax_transaction_xa_source_files)
 -include javax/transaction/xa.deps
 
 javax-xml.lo: $(javax_xml_source_files)
-	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o javax-xml.lo \
-		`find classpath/lib/javax/xml -name '*.class' | sort -r`
+	@find classpath/lib/javax/xml -name '*.class' > javax-xml.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o javax-xml.lo @javax-xml.list
+	@rm -f javax-xml.list
 
 org/ietf/jgss.list: $(org_ietf_jgss_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -7786,12 +7791,14 @@ org/ietf/jgss.list: $(org_ietf_jgss_source_files)
 -include org/ietf/jgss.deps
 
 org-w3c.lo: $(org_w3c_source_files)
-	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o org-w3c.lo \
-		`find classpath/lib/org/w3c -name '*.class' | sort -r`
+	@find classpath/lib/org/w3c -name '*.class' > org-w3c.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o org-w3c.lo @org-w3c.list
+	@rm -f org-w3c.list
 
 org-xml.lo: $(org_xml_source_files)
-	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o org-xml.lo \
-		`find classpath/lib/org/xml -name '*.class' | sort -r`
+	@find classpath/lib/org/xml -name '*.class' > org-xml.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o org-xml.lo @org-xml.list
+	@rm -f org-xml.list
 
 $(generic_header_files): %.h: classpath/lib/%.class
 	name=`echo $< | sed -e 's/\.class$$//' -e 's,classpath/lib/,,'`; \
