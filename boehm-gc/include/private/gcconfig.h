@@ -1751,7 +1751,7 @@
 #   endif
 #   ifdef LINUX
 #     define OS_TYPE "LINUX"
-#     define STACKBOTTOM ((ptr_t) 0x7c000000)
+#     define LINUX_STACKBOTTOM
 #     define USE_GENERIC_PUSH_REGS
 #     define DYNAMIC_LOADING
 #     define SEARCH_FOR_DATA_START

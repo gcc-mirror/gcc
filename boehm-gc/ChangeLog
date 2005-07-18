@@ -1,3 +1,7 @@
+2005-07-17  SUGIOKA Toshinobu  <sugioka@itonet.co.jp>
+
+	* include/private/gcconfig.h (sh-linux): Use LINUX_STACKBOTTOM.
+
 2005-05-25  Andrew Haley  <aph@redhat.com>
 
 	* include/private/gcconfig.h (HBLKSIZE): Define to 4096 on
