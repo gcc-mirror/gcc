@@ -204,16 +204,19 @@ proc emit_bc_rule {package} {
   }
   set varname [join [split $pkgname /] _]_source_files
   set loname [join [split $pkgname /] -].lo
+  set tname [join [split $pkgname /] -].list
 
   puts "$loname: \$($varname)"
-  puts "\t\$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o $loname \\"
+  # Create a temporary list file and then compile it.  This works
+  # around the libtool problem mentioned in PR 21058.  classpath was
+  # built first, so the class files are to be found there.
   set omit ""
   if {[info exists exclusion_map($package)]} {
     set omit "| grep -v $exclusion_map($package)"
   }
-  # classpath was built first, so the class files are to be found
-  # there.
-  puts  "\t\t`find classpath/lib/$package -name '*.class' | sort -r$omit`"
+  puts  "\t@find classpath/lib/$package -name '*.class'${omit} > $tname"
+  puts "\t\$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o $loname @$tname"
+  puts "\t@rm -f $tname"
   puts ""
 
   # We skip this one because it is built into its own library and is
@@ -287,7 +290,9 @@ proc emit_source_var {package} {
     # Ugly code to build up the appropriate patsubst.
     set result "\$(patsubst %.java,%.h,\$($varname))"
     foreach dir [lsort [array names dirs]] {
-      set result "\$(patsubst $dir/%,%,$result)"
+      if {$dir != "."} {
+	set result "\$(patsubst $dir/%,%,$result)"
+      }
     }
 
     if {$package == "." || $package == "java/lang"} {

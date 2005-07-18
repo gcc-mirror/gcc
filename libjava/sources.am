@@ -4,7 +4,7 @@
 gnu_awt_source_files = \
 gnu/awt/LightweightRedirector.java
 
-gnu_awt_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_awt_source_files)))
+gnu_awt_header_files = $(patsubst %.java,%.h,$(gnu_awt_source_files))
 
 gnu/awt.list: $(gnu_awt_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -24,7 +24,7 @@ gnu/awt/j2d/Graphics2DImpl.java \
 gnu/awt/j2d/IntegerGraphicsState.java \
 gnu/awt/j2d/MappedRaster.java
 
-gnu_awt_j2d_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_awt_j2d_source_files)))
+gnu_awt_j2d_header_files = $(patsubst %.java,%.h,$(gnu_awt_j2d_source_files))
 
 gnu/awt/j2d.list: $(gnu_awt_j2d_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -46,7 +46,7 @@ classpath/gnu/classpath/ServiceFactory.java \
 classpath/gnu/classpath/ServiceProviderLoadingAction.java \
 gnu/classpath/SystemProperties.java
 
-gnu_classpath_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_classpath_source_files))))
+gnu_classpath_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_classpath_source_files)))
 
 gnu/classpath.list: $(gnu_classpath_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -82,7 +82,7 @@ gnu/gcj/Core.java \
 gnu/gcj/RawData.java \
 gnu/gcj/RawDataManaged.java
 
-gnu_gcj_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_gcj_source_files)))
+gnu_gcj_header_files = $(patsubst %.java,%.h,$(gnu_gcj_source_files))
 
 gnu/gcj.list: $(gnu_gcj_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -118,7 +118,7 @@ gnu/gcj/convert/Output_UnicodeLittleUnmarked.java \
 gnu/gcj/convert/Output_iconv.java \
 gnu/gcj/convert/UnicodeToBytes.java
 
-gnu_gcj_convert_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_gcj_convert_source_files)))
+gnu_gcj_convert_header_files = $(patsubst %.java,%.h,$(gnu_gcj_convert_source_files))
 
 gnu/gcj/convert.list: $(gnu_gcj_convert_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -136,7 +136,7 @@ gnu/gcj/io/DefaultMimeTypes.java \
 gnu/gcj/io/MimeTypes.java \
 gnu/gcj/io/SimpleSHSStream.java
 
-gnu_gcj_io_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_gcj_io_source_files)))
+gnu_gcj_io_header_files = $(patsubst %.java,%.h,$(gnu_gcj_io_source_files))
 
 gnu/gcj/io.list: $(gnu_gcj_io_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -163,7 +163,7 @@ gnu/gcj/runtime/SharedLibLoader.java \
 gnu/gcj/runtime/StringBuffer.java \
 gnu/gcj/runtime/SystemClassLoader.java
 
-gnu_gcj_runtime_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_gcj_runtime_source_files)))
+gnu_gcj_runtime_header_files = $(patsubst %.java,%.h,$(gnu_gcj_runtime_source_files))
 
 gnu/gcj/runtime.list: $(gnu_gcj_runtime_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -179,7 +179,7 @@ gnu/gcj/runtime.list: $(gnu_gcj_runtime_source_files)
 gnu_gcj_util_source_files = \
 gnu/gcj/util/Debug.java
 
-gnu_gcj_util_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_gcj_util_source_files)))
+gnu_gcj_util_header_files = $(patsubst %.java,%.h,$(gnu_gcj_util_source_files))
 
 gnu/gcj/util.list: $(gnu_gcj_util_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -329,8 +329,9 @@ classpath/gnu/java/awt/peer/gtk/GtkVolatileImage.java \
 classpath/gnu/java/awt/peer/gtk/GtkWindowPeer.java
 
 gnu-java-awt-peer-gtk.lo: $(gnu_java_awt_peer_gtk_source_files)
-	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-java-awt-peer-gtk.lo \
-		`find classpath/lib/gnu/java/awt/peer/gtk -name '*.class' | sort -r`
+	@find classpath/lib/gnu/java/awt/peer/gtk -name '*.class' > gnu-java-awt-peer-gtk.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-java-awt-peer-gtk.lo @gnu-java-awt-peer-gtk.list
+	@rm -f gnu-java-awt-peer-gtk.list
 
 gnu_java_beans_source_files = \
 classpath/gnu/java/beans/BeanInfoEmbryo.java \
@@ -387,8 +388,9 @@ classpath/gnu/java/beans/editors/NativeShortEditor.java \
 classpath/gnu/java/beans/editors/StringEditor.java
 
 gnu-java-beans.lo: $(gnu_java_beans_source_files)
-	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-java-beans.lo \
-		`find classpath/lib/gnu/java/beans -name '*.class' | sort -r`
+	@find classpath/lib/gnu/java/beans -name '*.class' > gnu-java-beans.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-java-beans.lo @gnu-java-beans.list
+	@rm -f gnu-java-beans.list
 
 gnu_java_io_source_files = \
 classpath/gnu/java/io/ASN1ParsingException.java \
@@ -417,7 +419,7 @@ classpath/gnu/java/lang/CharData.java \
 classpath/gnu/java/lang/ClassHelper.java \
 gnu/java/lang/MainThread.java
 
-gnu_java_lang_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_lang_source_files))))
+gnu_java_lang_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_lang_source_files)))
 
 gnu/java/lang.list: $(gnu_java_lang_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -588,7 +590,7 @@ gnu/java/locale/LocaleInformation_zh_HK.java \
 gnu/java/locale/LocaleInformation_zh_SG.java \
 gnu/java/locale/LocaleInformation_zh_TW.java
 
-gnu_java_locale_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_locale_source_files))))
+gnu_java_locale_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_locale_source_files)))
 
 gnu/java/locale.list: $(gnu_java_locale_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -635,7 +637,7 @@ gnu/java/net/protocol/core/Handler.java \
 gnu/java/net/protocol/gcjlib/Connection.java \
 gnu/java/net/protocol/gcjlib/Handler.java
 
-gnu_java_net_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_net_source_files))))
+gnu_java_net_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_net_source_files)))
 
 gnu/java/net.list: $(gnu_java_net_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -652,7 +654,7 @@ gnu_java_net_protocol_file_source_files = \
 gnu/java/net/protocol/file/Connection.java \
 gnu/java/net/protocol/file/Handler.java
 
-gnu_java_net_protocol_file_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_net_protocol_file_source_files)))
+gnu_java_net_protocol_file_header_files = $(patsubst %.java,%.h,$(gnu_java_net_protocol_file_source_files))
 
 gnu/java/net/protocol/file.list: $(gnu_java_net_protocol_file_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -768,7 +770,7 @@ gnu_java_net_protocol_jar_source_files = \
 gnu/java/net/protocol/jar/Connection.java \
 classpath/gnu/java/net/protocol/jar/Handler.java
 
-gnu_java_net_protocol_jar_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_net_protocol_jar_source_files))))
+gnu_java_net_protocol_jar_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_net_protocol_jar_source_files)))
 
 gnu/java/net/protocol/jar.list: $(gnu_java_net_protocol_jar_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -805,7 +807,7 @@ gnu/java/nio/SocketChannelSelectionKey.java \
 gnu/java/nio/VMPipe.java \
 gnu/java/nio/VMSelector.java
 
-gnu_java_nio_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_nio_source_files))))
+gnu_java_nio_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_nio_source_files)))
 
 gnu/java/nio.list: $(gnu_java_nio_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -821,7 +823,7 @@ gnu/java/nio.list: $(gnu_java_nio_source_files)
 gnu_java_nio_channels_source_files = \
 gnu/java/nio/channels/FileChannelImpl.java
 
-gnu_java_nio_channels_header_files = $(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_nio_channels_source_files)))
+gnu_java_nio_channels_header_files = $(patsubst %.java,%.h,$(gnu_java_nio_channels_source_files))
 
 gnu/java/nio/channels.list: $(gnu_java_nio_channels_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -897,7 +899,7 @@ classpath/gnu/java/nio/charset/Windows1256.java \
 classpath/gnu/java/nio/charset/Windows1257.java \
 classpath/gnu/java/nio/charset/Windows1258.java
 
-gnu_java_nio_charset_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_nio_charset_source_files))))
+gnu_java_nio_charset_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_nio_charset_source_files)))
 
 gnu/java/nio/charset.list: $(gnu_java_nio_charset_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -922,7 +924,7 @@ gnu/java/rmi/rmic/RMIC.java \
 gnu/java/rmi/rmic/RMICException.java \
 gnu/java/rmi/rmic/TabbedWriter.java
 
-gnu_java_rmi_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(gnu_java_rmi_source_files))))
+gnu_java_rmi_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(gnu_java_rmi_source_files)))
 
 gnu/java/rmi.list: $(gnu_java_rmi_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -1664,8 +1666,9 @@ classpath/gnu/xml/xpath/XPathParser.java \
 classpath/gnu/xml/xpath/XPathTokenizer.java
 
 gnu-xml.lo: $(gnu_xml_source_files)
-	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-xml.lo \
-		`find classpath/lib/gnu/xml -name '*.class' | sort -r`
+	@find classpath/lib/gnu/xml -name '*.class' > gnu-xml.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-xml.lo @gnu-xml.list
+	@rm -f gnu-xml.list
 
 java_applet_source_files = \
 classpath/java/applet/Applet.java \
@@ -2380,7 +2383,7 @@ java/io/VMObjectStreamClass.java \
 classpath/java/io/WriteAbortedException.java \
 classpath/java/io/Writer.java
 
-java_io_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_io_source_files))))
+java_io_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_io_source_files)))
 
 java/io.list: $(java_io_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -2482,7 +2485,7 @@ classpath/java/lang/VerifyError.java \
 classpath/java/lang/VirtualMachineError.java \
 classpath/java/lang/Void.java
 
-java_lang_header_files = $(filter-out java/lang/Object.h java/lang/Class.h,$(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_lang_source_files)))))
+java_lang_header_files = $(filter-out java/lang/Object.h java/lang/Class.h,$(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_lang_source_files))))
 
 java/lang.list: $(java_lang_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -2519,7 +2522,7 @@ classpath/java/lang/ref/ReferenceQueue.java \
 classpath/java/lang/ref/SoftReference.java \
 classpath/java/lang/ref/WeakReference.java
 
-java_lang_ref_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_lang_ref_source_files))))
+java_lang_ref_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_lang_ref_source_files)))
 
 java/lang/ref.list: $(java_lang_ref_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -2551,7 +2554,7 @@ classpath/java/lang/reflect/Type.java \
 classpath/java/lang/reflect/UndeclaredThrowableException.java \
 classpath/java/lang/reflect/WildcardType.java
 
-java_lang_reflect_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_lang_reflect_source_files))))
+java_lang_reflect_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_lang_reflect_source_files)))
 
 java/lang/reflect.list: $(java_lang_reflect_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -2629,7 +2632,7 @@ classpath/java/net/UnknownHostException.java \
 classpath/java/net/UnknownServiceException.java \
 java/net/VMNetworkInterface.java
 
-java_net_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_net_source_files))))
+java_net_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_net_source_files)))
 
 java/net.list: $(java_net_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -2675,7 +2678,7 @@ classpath/java/nio/ShortBufferImpl.java \
 classpath/java/nio/ShortViewBufferImpl.java \
 java/nio/VMDirectByteBuffer.java
 
-java_nio_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_nio_source_files))))
+java_nio_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_nio_source_files)))
 
 java/nio.list: $(java_nio_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -2725,7 +2728,7 @@ classpath/java/nio/channels/UnresolvedAddressException.java \
 classpath/java/nio/channels/UnsupportedAddressTypeException.java \
 classpath/java/nio/channels/WritableByteChannel.java
 
-java_nio_channels_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_nio_channels_source_files))))
+java_nio_channels_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_nio_channels_source_files)))
 
 java/nio/channels.list: $(java_nio_channels_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -2771,7 +2774,7 @@ classpath/java/nio/charset/MalformedInputException.java \
 classpath/java/nio/charset/UnmappableCharacterException.java \
 classpath/java/nio/charset/UnsupportedCharsetException.java
 
-java_nio_charset_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_nio_charset_source_files))))
+java_nio_charset_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_nio_charset_source_files)))
 
 java/nio/charset.list: $(java_nio_charset_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -3010,7 +3013,7 @@ classpath/java/security/Signer.java \
 classpath/java/security/UnrecoverableKeyException.java \
 classpath/java/security/UnresolvedPermission.java
 
-java_security_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_security_source_files))))
+java_security_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_security_source_files)))
 
 java/security.list: $(java_security_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -3229,7 +3232,7 @@ classpath/java/text/RuleBasedCollator.java \
 java/text/SimpleDateFormat.java \
 classpath/java/text/StringCharacterIterator.java
 
-java_text_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_text_source_files))))
+java_text_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_text_source_files)))
 
 java/text.list: $(java_text_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -3306,7 +3309,7 @@ java/util/VMTimeZone.java \
 classpath/java/util/Vector.java \
 classpath/java/util/WeakHashMap.java
 
-java_util_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_util_source_files))))
+java_util_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_util_source_files)))
 
 java/util.list: $(java_util_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -3359,7 +3362,7 @@ classpath/java/util/logging/SocketHandler.java \
 classpath/java/util/logging/StreamHandler.java \
 classpath/java/util/logging/XMLFormatter.java
 
-java_util_logging_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_util_logging_source_files))))
+java_util_logging_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_util_logging_source_files)))
 
 java/util/logging.list: $(java_util_logging_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -3434,7 +3437,7 @@ java/util/zip/ZipFile.java \
 classpath/java/util/zip/ZipInputStream.java \
 classpath/java/util/zip/ZipOutputStream.java
 
-java_util_zip_header_files = $(patsubst classpath/%,%,$(patsubst ./%,%,$(patsubst %.java,%.h,$(java_util_zip_source_files))))
+java_util_zip_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_util_zip_source_files)))
 
 java/util/zip.list: $(java_util_zip_source_files)
 	@$(mkinstalldirs) $(dir $@)
@@ -3619,8 +3622,9 @@ classpath/javax/imageio/stream/MemoryCacheImageInputStream.java \
 classpath/javax/imageio/stream/MemoryCacheImageOutputStream.java
 
 javax-imageio.lo: $(javax_imageio_source_files)
-	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o javax-imageio.lo \
-		`find classpath/lib/javax/imageio -name '*.class' | sort -r`
+	@find classpath/lib/javax/imageio -name '*.class' > javax-imageio.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o javax-imageio.lo @javax-imageio.list
+	@rm -f javax-imageio.list
 
 javax_naming_source_files = \
 classpath/javax/naming/AuthenticationException.java \
@@ -4952,8 +4956,9 @@ classpath/javax/xml/xpath/XPathFunctionResolver.java \
 classpath/javax/xml/xpath/XPathVariableResolver.java
 
 javax-xml.lo: $(javax_xml_source_files)
-	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o javax-xml.lo \
-		`find classpath/lib/javax/xml -name '*.class' | sort -r`
+	@find classpath/lib/javax/xml -name '*.class' > javax-xml.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o javax-xml.lo @javax-xml.list
+	@rm -f javax-xml.list
 
 org_ietf_jgss_source_files = \
 classpath/org/ietf/jgss/ChannelBinding.java \
@@ -5127,8 +5132,9 @@ classpath/external/w3c_dom/org/w3c/dom/xpath/XPathNamespace.java \
 classpath/external/w3c_dom/org/w3c/dom/xpath/XPathResult.java
 
 org-w3c.lo: $(org_w3c_source_files)
-	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o org-w3c.lo \
-		`find classpath/lib/org/w3c -name '*.class' | sort -r`
+	@find classpath/lib/org/w3c -name '*.class' > org-w3c.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o org-w3c.lo @org-w3c.list
+	@rm -f org-w3c.list
 
 org_xml_source_files = \
 classpath/external/sax/org/xml/sax/AttributeList.java \
@@ -5169,8 +5175,9 @@ classpath/external/sax/org/xml/sax/helpers/XMLReaderAdapter.java \
 classpath/external/sax/org/xml/sax/helpers/XMLReaderFactory.java
 
 org-xml.lo: $(org_xml_source_files)
-	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o org-xml.lo \
-		`find classpath/lib/org/xml -name '*.class' | sort -r`
+	@find classpath/lib/org/xml -name '*.class' > org-xml.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o org-xml.lo @org-xml.list
+	@rm -f org-xml.list
 
 
 all_packages_source_files = \
