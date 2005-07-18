@@ -1,3 +1,15 @@
+2005-07-18  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/22263
+	* cp-tree.h (instantiate_decl): Change prototype.
+	* decl2.c (mark_used): Adjust accordingly.
+	* pt.c (do_decl_instantiation): Likewise.
+	(instantiate_class_member): Likewise.
+	(instantiate_decl): Rename undefined_ok as expl_inst_class_mem_p.
+	Clear DECL_INTERFACE_KNOWN for an explicitly instantiated template
+	that has no definition available.
+	(instantiate_pending_templates): Adjust call to instantiate_decl.
+
 2005-07-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22139

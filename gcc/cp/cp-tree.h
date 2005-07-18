@@ -3997,7 +3997,7 @@ extern int more_specialized_fn			(tree, tree, int);
 extern void mark_class_instantiated		(tree, int);
 extern void do_decl_instantiation		(tree, tree);
 extern void do_type_instantiation		(tree, tree, tsubst_flags_t);
-extern tree instantiate_decl			(tree, int, int);
+extern tree instantiate_decl			(tree, int, bool);
 extern int push_tinst_level			(tree);
 extern void pop_tinst_level			(void);
 extern int more_specialized_class		(tree, tree, tree);

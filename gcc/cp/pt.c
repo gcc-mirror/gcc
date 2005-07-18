@@ -11010,7 +11010,8 @@ do_decl_instantiation (tree decl, tree storage)
 
   mark_decl_instantiated (result, extern_p);
   if (! extern_p)
-    instantiate_decl (result, /*defer_ok=*/1, /*undefined_ok=*/0);
+    instantiate_decl (result, /*defer_ok=*/1, 
+		      /*expl_inst_class_mem_p=*/false);
 }
 
 void
@@ -11047,7 +11048,8 @@ instantiate_class_member (tree decl, int extern_p)
 {
   mark_decl_instantiated (decl, extern_p);
   if (! extern_p)
-    instantiate_decl (decl, /*defer_ok=*/1, /* undefined_ok=*/1);
+    instantiate_decl (decl, /*defer_ok=*/1, 
+		      /*expl_inst_class_mem_p=*/true);
 }
 
 /* Perform an explicit instantiation of template class T.  STORAGE, if
@@ -11343,14 +11345,12 @@ template_for_substitution (tree decl)
    DEFER_OK is nonzero, then we don't have to actually do the
    instantiation now; we just have to do it sometime.  Normally it is
    an error if this is an explicit instantiation but D is undefined.
-   If UNDEFINED_OK is nonzero, then instead we treat it as an implicit
-   instantiation.  UNDEFINED_OK is nonzero only if we are being used
-   to instantiate the members of an explicitly instantiated class
-   template.  */
-
+   EXPL_INST_CLASS_MEM_P is true iff D is a member of an
+   explicitly instantiated class template.  */
 
 tree
-instantiate_decl (tree d, int defer_ok, int undefined_ok)
+instantiate_decl (tree d, int defer_ok, 
+		  bool expl_inst_class_mem_p)
 {
   tree tmpl = DECL_TI_TEMPLATE (d);
   tree gen_args;
@@ -11439,9 +11439,14 @@ instantiate_decl (tree d, int defer_ok, int undefined_ok)
 
   input_location = DECL_SOURCE_LOCATION (d);
 
-  if (! pattern_defined && DECL_EXPLICIT_INSTANTIATION (d) && undefined_ok)
+  /* If D is a member of an explicitly instantiated class template,
+     and no definition is available, treat it like an implicit
+     instantiation.  */ 
+  if (!pattern_defined && expl_inst_class_mem_p 
+      && DECL_EXPLICIT_INSTANTIATION (d)) 
     {
       DECL_NOT_REALLY_EXTERN (d) = 0;
+      DECL_INTERFACE_KNOWN (d) = 0;
       SET_DECL_IMPLICIT_INSTANTIATION (d);
     }
 
@@ -11678,8 +11683,9 @@ instantiate_pending_templates (int retries)
 			 fn;
 			 fn = TREE_CHAIN (fn))
 		      if (! DECL_ARTIFICIAL (fn))
-			instantiate_decl (fn, /*defer_ok=*/0,
-					  /*undefined_ok=*/0);
+			instantiate_decl (fn, 
+					  /*defer_ok=*/0,
+					  /*expl_inst_class_mem_p=*/false);
 		  if (COMPLETE_TYPE_P (instantiation))
 		    reconsider = 1;
 		}
@@ -11699,9 +11705,10 @@ instantiate_pending_templates (int retries)
 	      if (!DECL_TEMPLATE_SPECIALIZATION (instantiation)
 		  && !DECL_TEMPLATE_INSTANTIATED (instantiation))
 		{
-		  instantiation = instantiate_decl (instantiation,
-						    /*defer_ok=*/0,
-						    /*undefined_ok=*/0);
+		  instantiation 
+		    = instantiate_decl (instantiation,
+					/*defer_ok=*/0,
+					/*expl_inst_class_mem_p=*/false);
 		  if (DECL_TEMPLATE_INSTANTIATED (instantiation))
 		    reconsider = 1;
 		}
