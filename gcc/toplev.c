@@ -145,7 +145,7 @@ location_t unknown_location = { NULL, 0 };
 
 /* Used to enable -fvar-tracking, -fweb and -frename-registers according
    to optimize and default_debug_hooks in process_options ().  */
-#define AUTODETECT_FLAG_VAR_TRACKING 2
+#define AUTODETECT_VALUE 2
 
 /* Current position in real source file.  */
 
@@ -334,9 +334,9 @@ rtx stack_limit_rtx;
 int flag_renumber_insns = 1;
 
 /* Nonzero if we should track variables.  When
-   flag_var_tracking == AUTODETECT_FLAG_VAR_TRACKING it will be set according
+   flag_var_tracking == AUTODETECT_VALUE it will be set according
    to optimize, debug_info_level and debug_hooks in process_options ().  */
-int flag_var_tracking = AUTODETECT_FLAG_VAR_TRACKING;
+int flag_var_tracking = AUTODETECT_VALUE;
 
 /* True if the user has tagged the function with the 'section'
    attribute.  */
@@ -1531,14 +1531,14 @@ process_options (void)
     flag_unroll_loops = 1;
 
   /* The loop unrolling code assumes that cse will be run after loop.
-     Also enable -fweb and -frename-registers that help scheduling
-     the unrolled loop.  */
-  if (flag_unroll_loops || flag_peel_loops)
-    {
-      flag_rerun_cse_after_loop = 1;
-      flag_web = 1;
-      flag_rename_registers = 1;
-    }
+     web and rename-registers also help when run after loop unrolling.  */
+
+  if (flag_rerun_cse_after_loop == AUTODETECT_VALUE)
+    flag_rerun_cse_after_loop = flag_unroll_loops || flag_peel_loops;
+  if (flag_web == AUTODETECT_VALUE)
+    flag_web = flag_unroll_loops || flag_peel_loops;
+  if (flag_rename_registers == AUTODETECT_VALUE)
+    flag_rename_registers = flag_unroll_loops || flag_peel_loops;
 
   /* If explicitly asked to run new loop optimizer, switch off the old
      one.  */
@@ -1693,11 +1693,11 @@ process_options (void)
       flag_var_tracking = 0;
     }
 
-  if (flag_rename_registers == AUTODETECT_FLAG_VAR_TRACKING)
+  if (flag_rename_registers == AUTODETECT_VALUE)
     flag_rename_registers = default_debug_hooks->var_location
 	    		    != do_nothing_debug_hooks.var_location;
 
-  if (flag_var_tracking == AUTODETECT_FLAG_VAR_TRACKING)
+  if (flag_var_tracking == AUTODETECT_VALUE)
     flag_var_tracking = optimize >= 1;
 
   /* If auxiliary info generation is desired, open the output file.
