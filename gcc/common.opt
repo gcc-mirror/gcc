@@ -431,7 +431,7 @@ Perform redundant load after store elimination in global common subexpression
 elimination
 
 fgcse-after-reload
-Common Report Var(flag_gcse_after_reload)
+Common Report Var(flag_gcse_after_reload) Init(2)
 Perform global common subexpression elimination after register allocation
 has finished
 
@@ -674,7 +674,7 @@ Common Report Var(flag_regmove)
 Enables a register move optimization
 
 frename-registers
-Common Report Var(flag_rename_registers)
+Common Report Var(flag_rename_registers) Init(2)
 Perform a register renaming optimization pass
 
 freorder-blocks
@@ -1015,7 +1015,7 @@ Common Report Var(flag_value_profile_transformations)
 Use expression value profiles in optimizations
 
 fweb
-Common Report Var(flag_web) Init(0)
+Common Report Var(flag_web) Init(2)
 Construct webs and split unrelated uses of single variable
 
 fwhole-program

@@ -1,3 +1,12 @@
+2005-07-18  Steve Ellcey  <sje@cup.hp.com>
+
+	* common.opt (frename-registers): Initialize to 2.
+	(fweb): Ditto.
+	(fgcse-after-reload): Ditto.
+	* toplev.c (AUTODETECT_FLAG_VAR_TRACKING): Rename to AUTODETECT_VALUE.
+	(process_options): Only change flag_web, flag_rename_registers,
+	and flag_rerun_cse_after_loop if not explicitly set by user.
+
 2005-07-18  Jan Beulich  <jbeulich@novell.com>
 
 	* config/i386/i386.c (ix86_expand_branch, ix86_expand_setcc,
