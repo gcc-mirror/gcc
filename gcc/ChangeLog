@@ -1,5 +1,25 @@
 2005-07-18  Jan Beulich  <jbeulich@novell.com>
 
+	* config/i386/i386.c (ix86_expand_branch, ix86_expand_setcc,
+	ix86_expand_carry_flag_compare, ix86_expand_int_movcc): Handle TImode
+	in 64-bit mode the same as DImode in 32-bit mode.
+	(ix86_expand_ashl_const, ix86_split_ashl, ix86_split_ashr,
+	ix86_split_lshr): Likewise. Rename to no longer refer to a specific
+	mode. Add new mode parameter. 
+	* config/i386/i386.h (CONST_OK_FOR_LETTER_P): Describe and handle 'O'.
+	* config/i386/i386.md (cmpti, addti3, subti3, negti2, ashlti3, ashrti3,
+	x86_64_shift_adj): New expanders.
+	(*addti3_1, *subti3_1, *negti2_1, ashlti3_1, *ashlti3_2, ashrti3_1,
+	*ashrti3_2, lshrti3_1, *lshrti3_2, x86_64_shld, x86_64_shrd): New
+	insns.
+	Respective new splitters. Use renamed shift splitter helpers in 32-bit
+	DImode shift splitters.
+	* config/i386/i386-protos.h (ix86_split_ashl, ix86_split_ashr,
+	ix86_split_lshr): Renamed from ix86_split_[al]sh[rl]di. Added new
+	mode parameter.
+
+2005-07-18  Jan Beulich  <jbeulich@novell.com>
+
 	* i386.md (movdi_extzv_1): New.
 	(zero_extendhidi2): Combine alternatives and never force use of
 	REX64 prefix.
