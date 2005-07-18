@@ -1,3 +1,10 @@
+2005-07-18  Jan Beulich  <jbeulich@novell.com>
+
+	* i386.md (movdi_extzv_1): New.
+	(zero_extendhidi2): Combine alternatives and never force use of
+	REX64 prefix.
+	(zero_extendqidi2): Likewise. Don't restrict input selection.
+
 2005-07-17  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/22531
