@@ -155,9 +155,9 @@ extern void ix86_expand_call (rtx, rtx, rtx, rtx, rtx, int);
 extern void x86_initialize_trampoline (rtx, rtx, rtx);
 extern rtx ix86_zero_extend_to_Pmode (rtx);
 extern void ix86_split_long_move (rtx[]);
-extern void ix86_split_ashldi (rtx *, rtx);
-extern void ix86_split_ashrdi (rtx *, rtx);
-extern void ix86_split_lshrdi (rtx *, rtx);
+extern void ix86_split_ashl (rtx *, rtx, enum machine_mode);
+extern void ix86_split_ashr (rtx *, rtx, enum machine_mode);
+extern void ix86_split_lshr (rtx *, rtx, enum machine_mode);
 extern rtx ix86_find_base_term (rtx);
 extern int ix86_check_movabs (rtx, int);
 
