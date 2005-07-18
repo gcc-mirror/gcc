@@ -1,3 +1,10 @@
+2005-07-18  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/gnu/ctype_members.cc (do_is(mask, wchar_t)):
+	Speed-up for the common case of mask == ctype_base::space;
+	otherwise, exit the loop earlier if the mask is one of the
+	elementary ones.
+
 2005-07-14  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/21193 (float, double, long double)
