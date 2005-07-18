@@ -3278,7 +3278,8 @@ mark_used (tree decl)
        times.  Maintaining a stack of active functions is expensive,
        and the inliner knows to instantiate any functions it might
        need.  */
-    instantiate_decl (decl, /*defer_ok=*/true, /*undefined_ok=*/0);
+    instantiate_decl (decl, /*defer_ok=*/true, 
+		      /*expl_inst_class_mem_p=*/false);
 }
 
 #include "gt-cp-decl2.h"
