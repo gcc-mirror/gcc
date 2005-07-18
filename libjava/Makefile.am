@@ -943,6 +943,7 @@ create-headers: $(headers_to_make)
 .PHONY: create-headers
 
 $(libgcj_la_OBJECTS) $(gcj_dbtool_OBJECTS) $(xlib_nat_files): headers.stamp
+$(libgij_la_OBJECTS): headers.stamp
 
 ## ################################################################
 
