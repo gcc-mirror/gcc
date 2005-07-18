@@ -50,22 +50,45 @@ internal_unpack (gfc_array_char * d, const void * s)
   const char *src;
   int n;
   int size;
+  int type;
 
   dest = d->data;
   /* This check may be redundant, but do it anyway.  */
   if (s == dest || !s)
     return;
 
+  type = GFC_DESCRIPTOR_TYPE (d);
   size = GFC_DESCRIPTOR_SIZE (d);
-  switch (size)
+  switch (type)
     {
-    case 4:
-      internal_unpack_4 ((gfc_array_i4 *)d, (const GFC_INTEGER_4 *)s);
-      return;
+    case GFC_DTYPE_INTEGER:
+    case GFC_DTYPE_LOGICAL:
+    case GFC_DTYPE_REAL:
+      switch (size)
+	{
+	case 4:
+	  internal_unpack_4 ((gfc_array_i4 *)d, (const GFC_INTEGER_4 *)s);
+	  return;
 
-    case 8:
-      internal_unpack_8 ((gfc_array_i8 *)d, (const GFC_INTEGER_8 *)s);
-      return;
+	case 8:
+	  internal_unpack_8 ((gfc_array_i8 *)d, (const GFC_INTEGER_8 *)s);
+	  return;
+	}
+      break;
+
+    case GFC_DTYPE_COMPLEX:
+      switch (size) 
+	{
+	case 8:
+	  internal_unpack_c4 ((gfc_array_c4 *)d, (const GFC_COMPLEX_4 *)s);
+	  return;
+
+	case 16:
+	  internal_unpack_c8 ((gfc_array_c8 *)d, (const GFC_COMPLEX_8 *)s);
+	  return;
+	}
+    default:
+      break;
     }
 
   if (d->dim[0].stride == 0)

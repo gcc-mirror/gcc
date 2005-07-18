@@ -71,7 +71,7 @@ internal_unpack_4 (gfc_array_i4 * d, const GFC_INTEGER_4 * src)
 
   if (dsize != 0)
     {
-      memcpy (dest, src, dsize * 4);
+      memcpy (dest, src, dsize * sizeof (GFC_INTEGER_4));
       return;
     }
 

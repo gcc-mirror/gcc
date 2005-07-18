@@ -1,3 +1,9 @@
+2005-07-18  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	Backport from mainline.
+	PR libfortran/21333
+	* gfortran.fortran-torture/execute/in-pack.f90:  New test.
+
 2005-07-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22263

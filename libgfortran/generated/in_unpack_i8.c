@@ -71,7 +71,7 @@ internal_unpack_8 (gfc_array_i8 * d, const GFC_INTEGER_8 * src)
 
   if (dsize != 0)
     {
-      memcpy (dest, src, dsize * 8);
+      memcpy (dest, src, dsize * sizeof (GFC_INTEGER_8));
       return;
     }
 
