@@ -1,3 +1,10 @@
+2005-07-18  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/22263
+	* pt.c (instantiate_decl): Clear DECL_INTERFACE_KNOWN for an
+	explicitly instantiated template that has no definition
+	available. 
+
 2005-07-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22139

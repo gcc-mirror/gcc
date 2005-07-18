@@ -11437,6 +11437,7 @@ instantiate_decl (tree d, int defer_ok, int undefined_ok)
   if (! pattern_defined && DECL_EXPLICIT_INSTANTIATION (d) && undefined_ok)
     {
       DECL_NOT_REALLY_EXTERN (d) = 0;
+      DECL_INTERFACE_KNOWN (d) = 0;
       SET_DECL_IMPLICIT_INSTANTIATION (d);
     }
 
