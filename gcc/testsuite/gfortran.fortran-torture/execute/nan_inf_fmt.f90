@@ -52,9 +52,9 @@
 ! check a field width = 8
        fmt = '(F8.0)'
        write(l,fmt=fmt)pos_inf
-       if (l.ne.'Infinity') call abort
+       if (l.ne.'    +Inf') call abort
        write(l,fmt=fmt)neg_inf
-       if (l.ne.'Infinity') call abort
+       if (l.ne.'    -Inf') call abort
        write(l,fmt=fmt)nan
        if (l.ne.'     NaN') call abort
 
