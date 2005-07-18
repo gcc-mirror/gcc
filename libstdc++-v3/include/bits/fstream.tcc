@@ -535,13 +535,28 @@ namespace std
 	       __n -= __avail;
 	     }
 
-	   const streamsize __len = _M_file.xsgetn(reinterpret_cast<char*>(__s),
-						   __n);
-	   if (__len == -1)
-	     __throw_ios_failure(__N("basic_filebuf::xsgetn "
-				     "error reading the file"));
-	   __ret += __len;
-	   if (__len == __n)
+	   // Need to loop in case of short reads (relatively common
+	   // with pipes).
+	   streamsize __len;
+	   for (;;)
+	     {
+	       __len = _M_file.xsgetn(reinterpret_cast<char*>(__s),
+				      __n);
+	       if (__len == -1)
+		 __throw_ios_failure(__N("basic_filebuf::xsgetn "
+					 "error reading the file"));
+	       if (__len == 0)
+		 break;
+
+	       __n -= __len;
+	       __ret += __len;
+	       if (__n == 0)
+		 break;
+
+	       __s += __len;
+	     }
+
+	   if (__n == 0)
 	     {
 	       _M_set_buffer(0);
 	       _M_reading = true;

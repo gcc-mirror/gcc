@@ -1,3 +1,10 @@
+2005-07-18  Paolo Carlini  <pcarlini@suse.de>
+	    Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/21286
+	* include/bits/fstream.tcc (basic_filebuf<>::xsgetn):
+	Loop on short reads.
+
 2005-05-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/Makefile.in: Regenerate with Automake 1.7.8.
