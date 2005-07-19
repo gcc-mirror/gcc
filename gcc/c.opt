@@ -331,6 +331,10 @@ Wpointer-to-int-cast
 C ObjC Var(warn_pointer_to_int_cast) Init(1)
 Warn when a pointer is cast to an integer of a different size
 
+Wpragmas
+C ObjC C++ ObjC++ Var(warn_pragmas) Init(1)
+Warn about misuses of pragmas
+
 Wprotocol
 ObjC ObjC++ Var(warn_protocol) Init(1)
 Warn if inherited methods are unimplemented

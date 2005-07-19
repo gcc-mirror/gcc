@@ -1,3 +1,42 @@
+2005-07-15  DJ Delorie  <dj@redhat.com>
+
+	* toplev.h: Add comment about the first parameter for warning().
+	* errors.h: Likewise.
+
+	* c.opt (Wpragmas): New.
+	* doc/invoke.texi: Document it.
+	
+	* function.c (do_warn_unused_parameter): Add warning control to
+	warning call.
+	* c-decl.c (warn_if_shadowing): Likewise.
+	* c-lex.c (cb_def_pragma): Likewise.
+	* c-pragma.c (GCC_BAD, GCC_BAD2): Likewise.
+	(pop_alignment): Likewise.
+	(handle_pragma_pack): Likewise.
+	(apply_pragma_weak): Likewise.
+	(handle_pragma_weak): Likewise.
+	(handle_pragma_redefine_extname): Likewise.
+	(add_to_renaming_pragma_list): Likewise.
+	(handle_pragma_extern_prefix): Likewise.
+	(maybe_apply_renaming_pragma): Likewise.
+	(handle_pragma_visibility): Likewise.
+	
+	* config/c4x/c4x-c.c (BAD): Likewise.
+	(c4x_parse_pragma): Likewise.
+	* config/ia64/ia64-c.c (ia64_hpux_handle_builtin_pragma): Likewise.
+	* config/rs6000/rs6000-c.c (SYNTAX_ERROR): Likewise.
+	(rs6000_pragma_longcall): Likewise.
+	* config/v850/v850-c.c (pop_data_area): Likewise.
+	(ghs_pragma_section): Likewise.
+	(ghs_pragma_section): Likewise.
+	(ghs_pragma_interrupt): Likewise.
+	(ghs_pragma_starttda): Likewise.
+	(ghs_pragma_startsda): Likewise.
+	(ghs_pragma_startzda): Likewise.
+	(ghs_pragma_endtda): Likewise.
+	(ghs_pragma_endsda): Likewise.
+	(ghs_pragma_endzda): Likewise.
+
 2005-07-19  Danny Berlin <dberlin@dberlin.org>
 	    Kenneth Zadeck <zadeck@naturalbridge.com>
 

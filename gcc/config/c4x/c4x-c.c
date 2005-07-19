@@ -57,7 +57,8 @@ static int c4x_parse_pragma (const char *, tree *, tree *);
    the STRING_CST node of the string.  If SECT is null, then this
    pragma doesn't take a section string.  Returns 0 for a good pragma,
    -1 for a malformed pragma.  */
-#define BAD(gmsgid, arg) do { warning (0, gmsgid, arg); return -1; } while (0)
+#define BAD(gmsgid, arg) \
+  do { warning (OPT_Wpragmas, gmsgid, arg); return -1; } while (0)
 
 static int
 c4x_parse_pragma (name, func, sect)
@@ -86,7 +87,7 @@ c4x_parse_pragma (name, func, sect)
     BAD ("missing ')' for '#pragma %s' - ignored", name);
 
   if (c_lex (&x) != CPP_EOF)
-    warning (0, "junk at end of '#pragma %s'", name);
+    warning (OPT_Wpragmas, "junk at end of '#pragma %s'", name);
 
   *func = f;
   return 0;
