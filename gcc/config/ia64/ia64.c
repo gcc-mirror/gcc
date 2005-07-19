@@ -7392,7 +7392,9 @@ emit_predicate_relation_info (void)
 	  && NOTE_LINE_NUMBER (NEXT_INSN (head)) == NOTE_INSN_BASIC_BLOCK)
 	head = NEXT_INSN (head);
 
-      for (r = PR_REG (0); r < PR_REG (64); r += 2)
+      /* Skip p0, which may be thought to be live due to (reg:DI p0)
+	 grabbing the entire block of predicate registers.  */
+      for (r = PR_REG (2); r < PR_REG (64); r += 2)
 	if (REGNO_REG_SET_P (bb->global_live_at_start, r))
 	  {
 	    rtx p = gen_rtx_REG (BImode, r);

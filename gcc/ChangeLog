@@ -1,3 +1,9 @@
+2005-07-19  Steve Ellcey  <sje@cup.hp.com>
+
+	Backport from mainline.
+	PR target/21721
+	* config/ia64/ia64.c (emit_predicate_relation_info): Skip p0.
+
 2005-07-18  Ian Lance Taylor  <ian@airs.com>
 
 	PR middle-end/22057
