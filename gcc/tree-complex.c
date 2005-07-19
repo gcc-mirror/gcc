@@ -386,7 +386,8 @@ create_components (void)
 {
   size_t n;
   tree var;
-  referenced_var_iterator rvi;
+  safe_referenced_var_iterator rvi;
+  VEC (tree, heap) *refvars;
 
   n = num_referenced_vars;
   if (n == 0)
@@ -395,7 +396,7 @@ create_components (void)
   complex_variable_components = htab_create (10,  int_tree_map_hash,
 					     int_tree_map_eq, free);
 
-  FOR_EACH_REFERENCED_VAR (var, rvi)
+  FOR_EACH_REFERENCED_VAR_SAFE (var, refvars, rvi)
     {
       tree r = NULL, i = NULL;
 
@@ -442,6 +443,7 @@ create_components (void)
       cvc_insert (2 * DECL_UID (var), r);
       cvc_insert (2 * DECL_UID (var) + 1, i);
     }
+  VEC_free (tree, heap, refvars);
 }
 
 /* Extract the real or imaginary part of a complex variable or constant.

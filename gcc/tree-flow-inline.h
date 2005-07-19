@@ -105,7 +105,19 @@ next_referenced_var (referenced_var_iterator *iter)
     return NULL;
   return itm->to;
 } 
- 
+
+/* Fill up VEC with the variables in the referenced vars hashtable.  */
+
+static inline void
+fill_referenced_var_vec (VEC (tree, heap) **vec)
+{
+  referenced_var_iterator rvi;
+  tree var;
+  *vec = NULL;
+  FOR_EACH_REFERENCED_VAR (var, rvi)
+    VEC_safe_push (tree, heap, *vec, var);
+}
+
 /* Return the variable annotation for T, which must be a _DECL node.
    Return NULL if the variable annotation doesn't already exist.  */
 static inline var_ann_t

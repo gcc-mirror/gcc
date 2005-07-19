@@ -1168,6 +1168,8 @@ setup_pointers_and_addressables (struct alias_info *ai)
   size_t n_vars, num_addressable_vars, num_pointers;
   referenced_var_iterator rvi;
   tree var;
+  VEC (tree, heap) *varvec = NULL;
+  safe_referenced_var_iterator srvi;
 
   /* Size up the arrays ADDRESSABLE_VARS and POINTERS.  */
   num_addressable_vars = num_pointers = 0;
@@ -1204,7 +1206,7 @@ setup_pointers_and_addressables (struct alias_info *ai)
      unnecessarily.  */
   n_vars = num_referenced_vars;
 
-  FOR_EACH_REFERENCED_VAR (var, rvi)
+  FOR_EACH_REFERENCED_VAR_SAFE (var, varvec, srvi)
     {
       var_ann_t v_ann = var_ann (var);
       subvar_t svars;
@@ -1336,6 +1338,7 @@ setup_pointers_and_addressables (struct alias_info *ai)
 	    }
 	}
     }
+  VEC_free (tree, heap, varvec);
 }
 
 
@@ -2218,14 +2221,14 @@ add_type_alias (tree ptr, tree var)
   tree tag;
   var_ann_t ann = var_ann (ptr);
   subvar_t svars;
-  
+  VEC (tree, heap) *varvec = NULL;  
 
   if (ann->type_mem_tag == NULL_TREE)
     {
       tree q = NULL_TREE;
       tree tag_type = TREE_TYPE (TREE_TYPE (ptr));
       HOST_WIDE_INT tag_set = get_alias_set (tag_type);
-      referenced_var_iterator rvi;
+      safe_referenced_var_iterator rvi;
 
       /* PTR doesn't have a type tag, create a new one and add VAR to
 	 the new tag's alias set.
@@ -2234,7 +2237,7 @@ add_type_alias (tree ptr, tree var)
 	 whether there is another pointer Q with the same alias set as
 	 PTR.  This could be sped up by having type tags associated
 	 with types.  */
-      FOR_EACH_REFERENCED_VAR (q, rvi)
+      FOR_EACH_REFERENCED_VAR_SAFE (q, varvec, rvi)
 	{
 	  if (POINTER_TYPE_P (TREE_TYPE (q))
 	      && tag_set == get_alias_set (TREE_TYPE (TREE_TYPE (q))))
@@ -2292,6 +2295,7 @@ found_tag:
       for (i = 0; i < VARRAY_ACTIVE_SIZE (aliases); i++)
 	mark_sym_for_renaming (VARRAY_TREE (aliases, i));
     }
+  VEC_free (tree, heap, varvec);
 }
 
 
@@ -2766,7 +2770,8 @@ static void
 create_structure_vars (void)
 {
   basic_block bb;
-  referenced_var_iterator rvi;
+  safe_referenced_var_iterator rvi;
+  VEC (tree, heap) *varvec = NULL;
   tree var;
 
   used_portions = htab_create (10, used_part_map_hash, used_part_map_eq, 
@@ -2782,7 +2787,7 @@ create_structure_vars (void)
 					NULL);
 	}
     }
-  FOR_EACH_REFERENCED_VAR (var, rvi)
+  FOR_EACH_REFERENCED_VAR_SAFE (var, varvec, rvi)
     {
       /* The C++ FE creates vars without DECL_SIZE set, for some reason.  */
       if (var 	  
@@ -2793,6 +2798,7 @@ create_structure_vars (void)
 	create_overlap_variables_for (var);
     }
   htab_delete (used_portions);
+  VEC_free (tree, heap, varvec);
 
 }
 
