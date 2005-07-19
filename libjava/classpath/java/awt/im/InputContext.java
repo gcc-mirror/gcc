@@ -102,8 +102,8 @@ public class InputContext
     while (e.hasMoreElements())
       {
         URL url = (URL) e.nextElement();
-        BufferedReader in;
-        String line;
+        BufferedReader in = null;
+        String line = null;
         try
           {
             in = new BufferedReader
