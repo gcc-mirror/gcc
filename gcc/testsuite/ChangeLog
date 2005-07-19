@@ -1,3 +1,8 @@
+2005-07-19  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/20842
+	* gfortran.dg/io_invalid_1.f90: New test.
+
 2005-07-18  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	Backport from mainline.
