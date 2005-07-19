@@ -353,7 +353,7 @@ is_cfg_nonregular (void)
 static void
 extract_edgelst (sbitmap set, edgelst *el)
 {
-  unsigned int i;
+  unsigned int i = 0;
   sbitmap_iterator sbi;
 
   /* edgelst table space is reused in each call to extract_edgelst.  */

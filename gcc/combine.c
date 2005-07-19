@@ -641,7 +641,7 @@ combine_instructions (rtx f, unsigned int nregs)
   rtx prev;
 #endif
   int i;
-  unsigned int j;
+  unsigned int j = 0;
   rtx links, nextlinks;
   sbitmap_iterator sbi;
 

@@ -692,7 +692,7 @@ static ddg_scc_ptr
 create_scc (ddg_ptr g, sbitmap nodes)
 {
   ddg_scc_ptr scc;
-  unsigned int u;
+  unsigned int u = 0;
   sbitmap_iterator sbi;
 
   scc = (ddg_scc_ptr) xmalloc (sizeof (struct ddg_scc));
@@ -783,7 +783,7 @@ get_node_of_insn (ddg_ptr g, rtx insn)
 void
 find_successors (sbitmap succ, ddg_ptr g, sbitmap ops)
 {
-  unsigned int i;
+  unsigned int i = 0;
   sbitmap_iterator sbi;
 
   EXECUTE_IF_SET_IN_SBITMAP (ops, 0, i, sbi)
@@ -802,7 +802,7 @@ find_successors (sbitmap succ, ddg_ptr g, sbitmap ops)
 void
 find_predecessors (sbitmap preds, ddg_ptr g, sbitmap ops)
 {
-  unsigned int i;
+  unsigned int i = 0;
   sbitmap_iterator sbi;
 
   EXECUTE_IF_SET_IN_SBITMAP (ops, 0, i, sbi)
@@ -905,7 +905,7 @@ find_nodes_on_paths (sbitmap result, ddg_ptr g, sbitmap from, sbitmap to)
 {
   int answer;
   int change;
-  unsigned int u;
+  unsigned int u = 0;
   int num_nodes = g->num_nodes;
   sbitmap_iterator sbi;
 
@@ -1015,7 +1015,7 @@ int
 longest_simple_path (struct ddg * g, int src, int dest, sbitmap nodes)
 {
   int i;
-  unsigned int u;
+  unsigned int u = 0;
   int change = 1;
   int result;
   int num_nodes = g->num_nodes;

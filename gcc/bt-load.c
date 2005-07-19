@@ -701,7 +701,7 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
 		{
 		  /* Find all the reaching defs for this use.  */
 		  sbitmap reaching_defs_of_reg = sbitmap_alloc(max_uid);
-		  unsigned int uid;
+		  unsigned int uid = 0;
 		  sbitmap_iterator sbi;
 
 		  if (user->use)

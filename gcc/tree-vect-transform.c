@@ -924,7 +924,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
     }
   else
     {
-      enum tree_code shift_code;
+      enum tree_code shift_code = 0;
       bool have_whole_vector_shift = true;
       enum tree_code code = TREE_CODE (TREE_OPERAND (stmt, 1)); /* CHECKME */
       int bit_offset;
