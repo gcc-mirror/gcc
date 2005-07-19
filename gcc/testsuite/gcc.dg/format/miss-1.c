@@ -1,7 +1,7 @@
 /* Test for warnings for missing format attributes.  */
 /* Origin: Joseph Myers <jsm28@cam.ac.uk> */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99 -Wformat -Wmissing-format-attribute" } */
+/* { dg-options "-std=gnu99 -Wmissing-format-attribute" } */
 
 #include "format.h"
 

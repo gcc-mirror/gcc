@@ -5505,11 +5505,11 @@ check_function_arguments (tree attrs, tree params, tree typelist)
 
   /* Check for errors in format strings.  */
 
-  if (warn_format)
-    {
+  if (warn_format || warn_missing_format_attribute)
       check_function_format (attrs, params);
-      check_function_sentinel (attrs, params, typelist);
-    }
+
+  if (warn_format)
+    check_function_sentinel (attrs, params, typelist);
 }
 
 /* Generic argument checking recursion routine.  PARAM is the argument to

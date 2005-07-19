@@ -1,3 +1,11 @@
+2005-07-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/format/miss-1.c, gcc.dg/format/miss-2.c: Don't
+	specify -Wformat for these tests.
+	* gcc.dg/format/miss-3.c, gcc.dg/format/miss-4.c,
+	gcc.dg/format/miss-5.c, gcc.dg/format/miss-6.c: New.
+	* gcc.dg/format/opt-6.c: Delete.
+
 2005-07-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc.dg/tree-ssa/sra-2.c: Pass --param sra-max-structure-size.

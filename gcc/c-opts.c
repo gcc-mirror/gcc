@@ -991,8 +991,6 @@ c_common_post_options (const char **pfilename)
 	       "-Wformat-nonliteral ignored without -Wformat");
       warning (OPT_Wformat_security,
 	       "-Wformat-security ignored without -Wformat");
-      warning (OPT_Wmissing_format_attribute,
-	       "-Wmissing-format-attribute ignored without -Wformat");
     }
 
   /* C99 requires special handling of complex multiplication and division;
