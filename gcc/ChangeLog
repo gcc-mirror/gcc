@@ -24,6 +24,11 @@
 	* config/i386/i386.md (lrint<mode>2): Use temporary
 	instead of clobbering non-existent memory.
 
+2005-07-19  Nick Clifton  <nickc@redhat.com>
+
+	* config/avr/avr.c (legitimate_address_p): Fix debugging print
+	statement to avoid displaying ASCII control characters.
+
 2005-07-19  Ben Elliston  <bje@au.ibm.com>
 
 	* bt-load.c (link_btr_uses): Fix uninitialised warnings.
