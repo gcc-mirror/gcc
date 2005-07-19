@@ -1,3 +1,20 @@
+2005-07-19  Steven Bosscher  <stevenb@suse.de>
+
+	* loop-init.c (rest_of_handle_loop2): Remove.
+	(rtl_loop_init, rtl_loop_done, rtl_move_loop_invariants,
+	rtl_unswitch, rtl_unroll_and_peel_loops, rtl_doloop): New functions.
+	(pass_rtl_loop_init, pass_rtl_loop_done,
+	pass_rtl_move_loop_invariants, pass_rtl_unswitch,
+	pass_rtl_unroll_and_peel_loops, pass_rtl_doloop): New passes.
+	* tree-ssa-loop.c (pass_loop, pass_loop_init, pass_loop_done,
+	pass_unswitch): Rename to pass_tree_loop, pass_tree_loop_init,
+	pass_tree_loop_done, and pass_tree_unswitch.
+	(gate_loop): Rename to gate_tree_loop.
+	* passes.c (init_optimization_passes): Update for renamed tree
+	loop passes.  Add the new loop2 passes as subpasses of loop2.
+	* tree-pass.h: Add extern declarations for the new loop2 subpasses.
+	Update for the renamed tree loop passes.
+
 2005-07-18  Ian Lance Taylor  <ian@airs.com>
 
 	PR middle-end/22057

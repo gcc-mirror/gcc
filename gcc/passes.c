@@ -525,7 +525,7 @@ init_optimization_passes (void)
   NEXT_PASS (pass_reassoc);
   NEXT_PASS (pass_pre);
   NEXT_PASS (pass_sink_code);
-  NEXT_PASS (pass_loop);
+  NEXT_PASS (pass_tree_loop);
   NEXT_PASS (pass_dominator);
   NEXT_PASS (pass_copy_prop);
   NEXT_PASS (pass_cd_dce);
@@ -553,11 +553,11 @@ init_optimization_passes (void)
   NEXT_PASS (pass_cleanup_cfg_post_optimizing);
   *p = NULL;
 
-  p = &pass_loop.sub;
-  NEXT_PASS (pass_loop_init);
+  p = &pass_tree_loop.sub;
+  NEXT_PASS (pass_tree_loop_init);
   NEXT_PASS (pass_copy_prop);
   NEXT_PASS (pass_lim);
-  NEXT_PASS (pass_unswitch);
+  NEXT_PASS (pass_tree_unswitch);
   NEXT_PASS (pass_scev_cprop);
   NEXT_PASS (pass_empty_loop);
   NEXT_PASS (pass_record_bounds);
@@ -571,9 +571,18 @@ init_optimization_passes (void)
   NEXT_PASS (pass_lower_vector_ssa);
   NEXT_PASS (pass_complete_unroll);
   NEXT_PASS (pass_iv_optimize);
-  NEXT_PASS (pass_loop_done);
+  NEXT_PASS (pass_tree_loop_done);
   *p = NULL;
 
+  p = &pass_loop2.sub;
+  NEXT_PASS (pass_rtl_loop_init);
+  NEXT_PASS (pass_rtl_move_loop_invariants);
+  NEXT_PASS (pass_rtl_unswitch);
+  NEXT_PASS (pass_rtl_unroll_and_peel_loops);
+  NEXT_PASS (pass_rtl_doloop);
+  NEXT_PASS (pass_rtl_loop_done);
+  *p = NULL;
+  
   p = &pass_rest_of_compilation.sub;
   NEXT_PASS (pass_remove_unnecessary_notes);
   NEXT_PASS (pass_init_function);
@@ -592,6 +601,9 @@ init_optimization_passes (void)
   NEXT_PASS (pass_profiling);
   NEXT_PASS (pass_rtl_ifcvt);
   NEXT_PASS (pass_tracer);
+  /* Perform loop optimizations.  It might be better to do them a bit
+     sooner, but we want the profile feedback to work more
+     efficiently.  */
   NEXT_PASS (pass_loop2);
   NEXT_PASS (pass_web);
   NEXT_PASS (pass_cse2);
