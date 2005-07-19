@@ -2,7 +2,7 @@
    relevant parameters for a format attribute; see c/1017.  */
 /* Origin: Joseph Myers <jsm28@cam.ac.uk> */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99 -Wformat -Wmissing-format-attribute" } */
+/* { dg-options "-std=gnu99 -Wmissing-format-attribute" } */
 
 #include "format.h"
 

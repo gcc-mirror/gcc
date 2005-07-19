@@ -3126,14 +3126,23 @@ hosted C environments.
 @item -Wmissing-format-attribute
 @opindex Wmissing-format-attribute
 @opindex Wformat
-If @option{-Wformat} is enabled, also warn about functions which might be
-candidates for @code{format} attributes.  Note these are only possible
-candidates, not absolute ones.  GCC will guess that @code{format}
-attributes might be appropriate for any function that calls a function
-like @code{vprintf} or @code{vscanf}, but this might not always be the
+Warn about function pointers which might be candidates for @code{format}
+attributes.  Note these are only possible candidates, not absolute ones.
+GCC will guess that function pointers with @code{format} attributes that
+are used in assignment, initialization, parameter passing or return
+statements should have a corresponding @code{format} attribute in the
+resulting type.  I.e.@: the left-hand side of the assignment or
+initialization, the type of the parameter variable, or the return type
+of the containing function respectively should also have a @code{format}
+attribute to avoid the warning.
+
+GCC will also warn about function definitions which might be
+candidates for @code{format} attributes.  Again, these are only
+possible candidates.  GCC will guess that @code{format} attributes
+might be appropriate for any function that calls a function like
+@code{vprintf} or @code{vscanf}, but this might not always be the
 case, and some functions for which @code{format} attributes are
-appropriate may not be detected.  This option has no effect unless
-@option{-Wformat} is enabled (possibly by @option{-Wall}).
+appropriate may not be detected.
 
 @item -Wno-multichar
 @opindex Wno-multichar

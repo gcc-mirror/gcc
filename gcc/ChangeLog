@@ -1,3 +1,18 @@
+2005-07-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR c/22476
+	* c-common.c (check_function_arguments): Call
+	'check_function_format' if either -Wformat or
+	-Wmissing-format-attribute are specified.
+	* c-format.c (check_function_format): Check -Wformat before
+	calling 'check_format_info'.
+	* c-opts.c (c_common_post_options): Don't warn for
+	-Wmissing-format-attribute without -Wformat.
+	* c-typeck.c (convert_for_assignment): Detect additional cases for
+	-Wmissing-format-attribute.
+	* doc/invoke.texi (-Wmissing-format-attribute): Document new
+	behavior.
+
 2005-07-19  Richard Guenther  <rguenther@suse.de>
 
 	* config/i386/i386.md (lrint<mode>2): Use temporary
