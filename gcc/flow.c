@@ -572,7 +572,7 @@ update_life_info (sbitmap blocks, enum update_life_extent extent,
 		  int prop_flags)
 {
   regset tmp;
-  unsigned i;
+  unsigned i = 0;
   int stabilized_prop_flags = prop_flags;
   basic_block bb;
 
@@ -4383,7 +4383,7 @@ int
 count_or_remove_death_notes (sbitmap blocks, int kill)
 {
   int count = 0;
-  unsigned int i;
+  unsigned int i = 0;
   basic_block bb;
 
   /* This used to be a loop over all the blocks with a membership test
@@ -4489,7 +4489,7 @@ clear_log_links (sbitmap blocks)
     }
   else
     {
-      unsigned int i;
+      unsigned int i = 0;
       sbitmap_iterator sbi;
 
       EXECUTE_IF_SET_IN_SBITMAP (blocks, 0, i, sbi)

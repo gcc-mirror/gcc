@@ -1,3 +1,29 @@
+2005-07-19  Ben Elliston  <bje@au.ibm.com>
+
+	* bt-load.c (link_btr_uses): Fix uninitialised warnings.
+	* cfganal.c (find_edge_index): Ditto.
+	* combine.c (combine_instructions): Ditto.
+	* ddg.c (create_scc): Ditto.
+	(find_successors): Ditto.
+	(find_predecessors): Ditto.
+	(find_nodes_on_paths): Ditto.
+	(longest_simple_path): Ditto.
+	* flow.c (update_life_info): Ditto.
+	(count_or_remove_death_notes): Ditto.
+	(clear_log_links): Ditto.
+	* modulo-sched.c (generate_reg_moves): Ditto.
+	(find_max_asap): Ditto.
+	(find_max_hv_min_mob): Ditto.
+	(find_max_dv_min_mob): Ditto.
+	* sbitmap.c (sbitmap_first_set_bit): Ditto.
+	* sched-rgn.c (extract_edgelst): Ditto.
+	* tree-into-ssa.c (prepare_names_to_update): Ditto.
+	(dump_update_ssa): Ditto.
+	(ssa_names_to_replace) Ditto.
+	(switch_virtuals_to_full_rewrite): Ditto.
+	(update_ssa): Ditto.
+	* tree-vect-transform.c (vect_create_epilog_for_reduction): Ditto.
+
 2005-07-18  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/22483
@@ -139,7 +165,6 @@
 	produced in ipa-reference pass.  Changed call clobbering so that
 	statics are not marked as clobbered if the call does not clobber
 	them.
-
 
 2005-07-16  Daniel Berlin  <dberlin@dberlin.org>
 

@@ -521,7 +521,7 @@ find_edge_index (struct edge_list *edge_list, basic_block pred, basic_block succ
 void
 flow_nodes_print (const char *str, const sbitmap nodes, FILE *file)
 {
-  unsigned int node;
+  unsigned int node = 0;
   sbitmap_iterator sbi;
 
   if (! nodes)

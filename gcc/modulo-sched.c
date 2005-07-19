@@ -501,7 +501,7 @@ generate_reg_moves (partial_schedule_ptr ps)
 
       for (i_reg_move = 0; i_reg_move < nreg_moves; i_reg_move++)
 	{
-	  unsigned int i_use;
+	  unsigned int i_use = 0;
 	  rtx new_reg = gen_reg_rtx (GET_MODE (prev_reg));
 	  rtx reg_move = gen_move_insn (new_reg, prev_reg);
 	  sbitmap_iterator sbi;
@@ -1845,7 +1845,7 @@ calculate_order_params (ddg_ptr g, int mii ATTRIBUTE_UNUSED)
 static int
 find_max_asap (ddg_ptr g, sbitmap nodes)
 {
-  unsigned int u;
+  unsigned int u = 0;
   int max_asap = -1;
   int result = -1;
   sbitmap_iterator sbi;
@@ -1866,7 +1866,7 @@ find_max_asap (ddg_ptr g, sbitmap nodes)
 static int
 find_max_hv_min_mob (ddg_ptr g, sbitmap nodes)
 {
-  unsigned int u;
+  unsigned int u = 0;
   int max_hv = -1;
   int min_mob = INT_MAX;
   int result = -1;
@@ -1895,7 +1895,7 @@ find_max_hv_min_mob (ddg_ptr g, sbitmap nodes)
 static int
 find_max_dv_min_mob (ddg_ptr g, sbitmap nodes)
 {
-  unsigned int u;
+  unsigned int u = 0;
   int max_dv = -1;
   int min_mob = INT_MAX;
   int result = -1;

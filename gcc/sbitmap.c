@@ -690,7 +690,7 @@ sbitmap_union_of_preds (sbitmap dst, sbitmap *src, int bb)
 int
 sbitmap_first_set_bit (sbitmap bmap)
 {
-  unsigned int n;
+  unsigned int n = 0;
   sbitmap_iterator sbi;
 
   EXECUTE_IF_SET_IN_SBITMAP (bmap, 0, n, sbi)

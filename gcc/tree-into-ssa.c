@@ -2031,7 +2031,7 @@ prepare_def_site_for (tree name, bitmap blocks, bool insert_phi_p)
 static void
 prepare_names_to_update (bitmap blocks, bool insert_phi_p)
 {
-  unsigned i;
+  unsigned i = 0;
   bitmap_iterator bi;
   sbitmap_iterator sbi;
 
@@ -2098,7 +2098,7 @@ debug_names_replaced_by (tree name)
 void
 dump_update_ssa (FILE *file)
 {
-  unsigned i;
+  unsigned i = 0;
   bitmap_iterator bi;
 
   if (!need_ssa_update_p ())
@@ -2347,7 +2347,7 @@ name_registered_for_update_p (tree n)
 bitmap
 ssa_names_to_replace (void)
 {
-  unsigned i;
+  unsigned i = 0;
   bitmap ret;
   sbitmap_iterator sbi;
   
@@ -2519,7 +2519,7 @@ switch_virtuals_to_full_rewrite_p (void)
 static void
 switch_virtuals_to_full_rewrite (void)
 {
-  unsigned i;
+  unsigned i = 0;
   sbitmap_iterator sbi;
 
   if (dump_file)
@@ -2618,7 +2618,7 @@ update_ssa (unsigned update_flags)
   bitmap blocks;
   basic_block bb, start_bb;
   bitmap_iterator bi;
-  unsigned i;
+  unsigned i = 0;
   sbitmap tmp;
   bool insert_phi_p;
   sbitmap_iterator sbi;
