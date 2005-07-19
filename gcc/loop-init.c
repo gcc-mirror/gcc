@@ -1,4 +1,4 @@
-/* Loop optimizer initialization routines.
+/* Loop optimizer initialization routines and RTL loop optimization passes.
    Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -32,7 +32,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "timevar.h"
 #include "flags.h"
 
-/* Initialize loop optimizer.  */
+
+/* Initialize loop optimizer.  This is used by the tree and RTL loop
+   optimizers.  */
 
 struct loops *
 loop_optimizer_init (FILE *dumpfile)
@@ -119,7 +121,11 @@ loop_optimizer_finalize (struct loops *loops, FILE *dumpfile)
   verify_flow_info ();
 #endif
 }
+
 
+/* Gate for the RTL loop superpass.  The actual passes are subpasses.
+   See passes.c for more on that.  */
+
 static bool
 gate_handle_loop2 (void)
 {
@@ -131,45 +137,64 @@ gate_handle_loop2 (void)
               || flag_branch_on_count_reg));
 }
 
-/* Perform loop optimizations.  It might be better to do them a bit
-   sooner, but we want the profile feedback to work more
-   efficiently.  */
-static void
-rest_of_handle_loop2 (void)
+struct tree_opt_pass pass_loop2 =
 {
-  struct loops *loops;
-  basic_block bb;
+  "loop2",                              /* name */
+  gate_handle_loop2, 		        /* gate */
+  NULL,                                 /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_LOOP,                              /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func |
+  TODO_ggc_collect,                     /* todo_flags_finish */
+  'L'                                   /* letter */
+};
 
+
+/* Initialization of the RTL loop passes.  */
+static void
+rtl_loop_init (void)
+{
   if (dump_file)
     dump_flow_info (dump_file);
 
   /* Initialize structures for layout changes.  */
   cfg_layout_initialize (0);
 
-  loops = loop_optimizer_init (dump_file);
+  current_loops = loop_optimizer_init (dump_file);
+}
 
-  if (loops)
-    {
-      /* The optimizations:  */
-      if (flag_move_loop_invariants)
-        move_loop_invariants (loops);
+struct tree_opt_pass pass_rtl_loop_init =
+{
+  "loopinit",                           /* name */
+  NULL,                                 /* gate */
+  rtl_loop_init,                        /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_LOOP,                              /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func,                       /* todo_flags_finish */
+  'L'                                   /* letter */
+};
 
-      if (flag_unswitch_loops)
-        unswitch_loops (loops);
+
+/* Finalization of the RTL loop passes.  */
+static void
+rtl_loop_done (void)
+{
+  basic_block bb;
 
-      if (flag_peel_loops || flag_unroll_loops)
-        unroll_and_peel_loops (loops,
-                               (flag_peel_loops ? UAP_PEEL : 0) |
-                               (flag_unroll_loops ? UAP_UNROLL : 0) |
-                               (flag_unroll_all_loops ? UAP_UNROLL_ALL : 0));
-
-#ifdef HAVE_doloop_end
-      if (flag_branch_on_count_reg && HAVE_doloop_end)
-        doloop_optimize_loops (loops);
-#endif /* HAVE_doloop_end */
-
-      loop_optimizer_finalize (loops, dump_file);
-    }
+  if (current_loops)
+    loop_optimizer_finalize (current_loops, dump_file);
 
   free_dominance_info (CDI_DOMINATORS);
 
@@ -184,13 +209,15 @@ rest_of_handle_loop2 (void)
   reg_scan (get_insns (), max_reg_num ());
   if (dump_file)
     dump_flow_info (dump_file);
+
+  current_loops = NULL;
 }
 
-struct tree_opt_pass pass_loop2 =
+struct tree_opt_pass pass_rtl_loop_done =
 {
-  "loop2",                              /* name */
-  gate_handle_loop2, 		        /* gate */
-  rest_of_handle_loop2,      		/* execute */
+  "loopdone",                           /* name */
+  NULL,                                 /* gate */
+  rtl_loop_done,                        /* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
@@ -199,8 +226,126 @@ struct tree_opt_pass pass_loop2 =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  TODO_dump_func |
-  TODO_ggc_collect,                     /* todo_flags_finish */
+  TODO_dump_func,                       /* todo_flags_finish */
+  'L'                                   /* letter */
+};
+
+
+/* Loop invariant code motion.  */
+static void
+rtl_move_loop_invariants (void)
+{
+  if (current_loops && flag_move_loop_invariants)
+    move_loop_invariants (current_loops);
+}
+
+struct tree_opt_pass pass_rtl_move_loop_invariants =
+{
+  "loop_invariant",                     /* name */
+  NULL,                                 /* gate */
+  rtl_move_loop_invariants,             /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_LOOP,                              /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func,                       /* todo_flags_finish */
+  'L'                                   /* letter */
+};
+
+
+/* Loop unswitching for RTL.  */
+static void
+rtl_unswitch (void)
+{
+  if (current_loops && flag_unswitch_loops)
+    unswitch_loops (current_loops);
+}
+
+struct tree_opt_pass pass_rtl_unswitch =
+{
+  "loop_unswitch",                      /* name */
+  NULL,                                 /* gate */
+  rtl_unswitch,                         /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_LOOP,                              /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func,                       /* todo_flags_finish */
+  'L'                                   /* letter */
+};
+
+
+/* Loop unswitching for RTL.  */
+static void
+rtl_unroll_and_peel_loops (void)
+{
+  if (current_loops
+      && (flag_peel_loops || flag_unroll_loops || flag_unroll_all_loops))
+    {
+      int flags = 0;
+
+      if (flag_peel_loops)
+	flags |= UAP_PEEL;
+      if (flag_unroll_loops)
+	flags |= UAP_UNROLL;
+      if (flag_unroll_all_loops)
+	flags |= UAP_UNROLL_ALL;
+
+      unroll_and_peel_loops (current_loops, flags);
+    }
+}
+
+struct tree_opt_pass pass_rtl_unroll_and_peel_loops =
+{
+  "loop_unroll",                        /* name */
+  NULL,                                 /* gate */
+  rtl_unroll_and_peel_loops,            /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_LOOP,                              /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func,                       /* todo_flags_finish */
+  'L'                                   /* letter */
+};
+
+
+/* The doloop optimization.  */
+static void
+rtl_doloop (void)
+{
+#ifdef HAVE_doloop_end
+  if (current_loops
+      && (flag_branch_on_count_reg && HAVE_doloop_end))
+    doloop_optimize_loops (current_loops);
+#endif
+}
+
+struct tree_opt_pass pass_rtl_doloop =
+{
+  "loop_doloop",                        /* name */
+  NULL,                                 /* gate */
+  rtl_doloop,                           /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_LOOP,                              /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_dump_func,                       /* todo_flags_finish */
   'L'                                   /* letter */
 };
 
