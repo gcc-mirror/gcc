@@ -927,20 +927,28 @@ cleanup_tree_cfg (void)
   retval = cleanup_control_flow ();
   retval |= delete_unreachable_blocks ();
 
-  /* cleanup_forwarder_blocks can redirect edges out of SWITCH_EXPRs,
-     which can get expensive.  So we want to enable recording of edge
-     to CASE_LABEL_EXPR mappings around the call to
-     cleanup_forwarder_blocks.  */
-  start_recording_case_labels ();
-  retval |= cleanup_forwarder_blocks ();
-  end_recording_case_labels ();
+  /* Forwarder blocks can carry line number information which is
+     useful when debugging, so we only clean them up when
+     optimizing.  */
+
+  if (optimize > 0)
+    {
+      /* cleanup_forwarder_blocks can redirect edges out of
+	 SWITCH_EXPRs, which can get expensive.  So we want to enable
+	 recording of edge to CASE_LABEL_EXPR mappings around the call
+	 to cleanup_forwarder_blocks.  */
+      start_recording_case_labels ();
+      retval |= cleanup_forwarder_blocks ();
+      end_recording_case_labels ();
+    }
 
 #ifdef ENABLE_CHECKING
   if (retval)
     {
       gcc_assert (!cleanup_control_flow ());
       gcc_assert (!delete_unreachable_blocks ());
-      gcc_assert (!cleanup_forwarder_blocks ());
+      if (optimize > 0)
+	gcc_assert (!cleanup_forwarder_blocks ());
     }
 #endif
 

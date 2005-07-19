@@ -1,3 +1,9 @@
+2005-07-18  Ian Lance Taylor  <ian@airs.com>
+
+	PR middle-end/22057
+	* tree-cfg.c (cleanup_tree_cfg): Only remove forwarder blocks when
+	optimizing.
+
 2005-07-16  Eric Botcazou <ebotcazou@libertysurf.fr>
 
 	* doc/install.texi (*-*-solaris2*): Document recommended version
