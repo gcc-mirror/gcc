@@ -586,7 +586,6 @@ decode_options (unsigned int argc, const char **argv)
 
   if (optimize >= 3)
     {
-      flag_tree_promote_statics = 1;
       flag_inline_functions = 1;
       flag_unswitch_loops = 1;
       flag_gcse_after_reload = 1;

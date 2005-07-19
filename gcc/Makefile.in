@@ -948,7 +948,7 @@ OBJS-common = \
  integrate.o intl.o jump.o  langhooks.o lcm.o lists.o local-alloc.o  	   \
  loop.o mode-switching.o modulo-sched.o optabs.o options.o opts.o	   \
  params.o postreload.o postreload-gcse.o predict.o			   \
- insn-preds.o pointer-set.o tree-promote-statics.o		   	   \
+ insn-preds.o pointer-set.o 					   	   \
  print-rtl.o print-tree.o profile.o value-prof.o var-tracking.o		   \
  real.o recog.o reg-stack.o regclass.o regmove.o regrename.o		   \
  reload.o reload1.o reorg.o resource.o rtl.o rtlanal.o rtl-error.o	   \
@@ -2218,9 +2218,6 @@ tree-vect-generic.o : tree-vect-generic.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
     $(FLAGS_H) $(OPTABS_H) $(RTL_H) $(MACHMODE_H) $(EXPR_H) \
     langhooks.h $(FLAGS_H) $(DIAGNOSTIC_H) gt-tree-vect-generic.h $(GGC_H) \
     coretypes.h insn-codes.h
-tree-promote-statics.o : tree-promote-statics.c $(CONFIG_H) system.h \
-   $(TREE_H) $(TM_H) $(BASIC_BLOCK_H) $(TREE_FLOW_H) $(IPA_UTILS_H) \
-   $(IPA_REFERENCE_H) bitmap.h tree-pass.h $(FLAGS_H) $(TIMEVAR_H) 
 df.o : df.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    insn-config.h $(RECOG_H) function.h $(REGS_H) alloc-pool.h hard-reg-set.h \
    $(BASIC_BLOCK_H) $(DF_H) bitmap.h sbitmap.h $(TM_P_H)

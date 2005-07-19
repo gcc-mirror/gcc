@@ -927,10 +927,6 @@ ftree-pre
 Common Report Var(flag_tree_pre)
 Enable SSA-PRE optimization on trees
 
-ftree-promote-statics
-Common Report Var(flag_tree_promote_statics) Init(0)
-Enable promotion of static variables
-
 ftree-salias
 Common Report Var(flag_tree_salias)
 Perform structural alias analysis
