@@ -62,6 +62,13 @@ typedef enum ffi_abi {
   FFI_DEFAULT_ABI = FFI_DARWIN,
 #endif
 
+#ifdef POWERPC_FREEBSD
+  FFI_SYSV,
+  FFI_GCC_SYSV,
+  FFI_LINUX64,
+  FFI_DEFAULT_ABI = FFI_SYSV,
+#endif
+
   FFI_LAST_ABI = FFI_DEFAULT_ABI + 1
 } ffi_abi;
 #endif
@@ -70,6 +77,9 @@ typedef enum ffi_abi {
 
 #define FFI_CLOSURES 1
 #define FFI_NATIVE_RAW_API 0
+
+/* Needed for FFI_SYSV small structure returns.  */
+#define FFI_SYSV_TYPE_SMALL_STRUCT  (FFI_TYPE_LAST)
 
 #if defined(POWERPC64) || defined(POWERPC_AIX)
 #define FFI_TRAMPOLINE_SIZE 24

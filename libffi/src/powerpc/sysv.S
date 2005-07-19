@@ -99,6 +99,7 @@ ENTRY(ffi_call_SYSV)
 
 	/* Now, deal with the return value.  */
 	mtcrf	0x01,%r31
+	bt-	31,L(small_struct_return_value)
 	bt-	30,L(done_return_value)
 	bt-	29,L(fp_return_value)
 	stw	%r3,0(%r30)
@@ -124,6 +125,27 @@ L(fp_return_value):
 L(float_return_value):
 	stfs	%f1,0(%r30)
 	b	L(done_return_value)
+
+L(small_struct_return_value):
+	mtcrf	0x10,%r31	/* cr3  */
+	bt-	15,L(smst_one_register)
+	mtcrf	0x08,%r31	/* cr4  */
+	bt-	16,L(smst_two_register)
+	b       L(done_return_value)
+
+L(smst_one_register):
+	rlwinm  %r5,%r31,5+23,32-5,31 /* Extract the value to shift.  */
+	slw	%r3,%r3,%r5
+	stw	%r3,0(%r30)
+	b	L(done_return_value)
+L(smst_two_register):
+	rlwinm  %r5,%r31,5+23,32-5,31 /* Extract the value to shift.  */
+	bl	__ashldi3  /* libgcc function to shift r3/r4,
+			      shift value in r5.  */
+	stw	%r3,0(%r30)
+	stw	%r4,4(%r30)
+	b	L(done_return_value)
+
 .LFE1:
 END(ffi_call_SYSV)
 

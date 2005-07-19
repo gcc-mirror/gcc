@@ -41,6 +41,7 @@ extern void hidden ffi_closure_LINUX64(void);
 
 enum {
   /* The assembly depends on these exact flags.  */
+  FLAG_RETURNS_SMST	= 1 << (31-31), /* Used for FFI_SYSV small structs.  */
   FLAG_RETURNS_NOTHING  = 1 << (31-30), /* These go in cr7 */
   FLAG_RETURNS_FP       = 1 << (31-29),
   FLAG_RETURNS_64BITS   = 1 << (31-28),
@@ -462,6 +463,7 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
   unsigned flags = 0;
   unsigned struct_copy_size = 0;
   unsigned type = cif->rtype->type;
+  unsigned size = cif->rtype->size;
 
   if (cif->abi != FFI_LINUX64)
     {
@@ -518,15 +520,30 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
       break;
 
     case FFI_TYPE_STRUCT:
-      if (cif->abi != FFI_GCC_SYSV && cif->abi != FFI_LINUX64)
+      if (cif->abi == FFI_SYSV)
 	{
-	  if (cif->rtype->size <= 4)
-	    break;
-	  else if (cif->rtype->size <= 8)
-	    {
-	      flags |= FLAG_RETURNS_64BITS;
+	  /* The final SYSV ABI says that structures smaller or equal 8 bytes
+	     are returned in r3/r4. The FFI_GCC_SYSV ABI instead returns them
+	     in memory.  */
+
+	  /* Treat structs with size <= 8 bytes.  */
+	  if (size <= 8) {
+	    flags |= FLAG_RETURNS_SMST;
+	    /* These structs are returned in r3. We pack the type and the
+	       precalculated shift value (needed in the sysv.S) into flags.
+	       The same applies for the structs returned in r3/r4.  */
+	    if (size <= 4) {
+	      flags |= 1 << (31 - FFI_SYSV_TYPE_SMALL_STRUCT - 1 )
+		| (8 * (4 - size) << 4);
 	      break;
 	    }
+	    /* These structs are returned in r3 and r4. See above.   */
+	    if  (size <= 8) {
+	      flags |= 1 << (31 - FFI_SYSV_TYPE_SMALL_STRUCT - 2 )
+		| (8 * (8 - size) << 4);
+	    break;
+	    }
+	  }
 	}
       /* else fall through.  */
 #if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
@@ -573,7 +590,7 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 	    /* 'long long' arguments are passed as two words, but
 	       either both words must fit in registers or both go
 	       on the stack.  If they go on the stack, they must
-	       be 8-byte-aligned.  
+	       be 8-byte-aligned.
 
 	       Also, only certain register pairs can be used for
 	       passing long long int -- specifically (r3,r4), (r5,r6),
@@ -770,7 +787,7 @@ ffi_prep_closure (ffi_closure* closure,
 #else
   unsigned int *tramp;
 
-  FFI_ASSERT (cif->abi == FFI_GCC_SYSV);
+  FFI_ASSERT (cif->abi == FFI_GCC_SYSV || cif->abi == FFI_SYSV);
 
   tramp = (unsigned int *) &closure->tramp[0];
   tramp[0] = 0x7c0802a6;  /*   mflr    r0 */
@@ -829,20 +846,27 @@ ffi_closure_helper_SYSV (ffi_closure* closure, void * rvalue,
   long             ng;   /* number of general registers already used */
   ffi_cif *        cif;
   double           temp;
+  unsigned         size;
 
   cif = closure->cif;
   avalue = alloca(cif->nargs * sizeof(void *));
+  size = cif->rtype->size;
 
   nf = 0;
   ng = 0;
 
   /* Copy the caller's structure return value address so that the closure
-     returns the data directly to the caller.  */
+     returns the data directly to the caller.
+     For FFI_SYSV the result is passed in r3/r4 if the struct size is less
+     or equal 8 bytes.  */
+
   if (cif->rtype->type == FFI_TYPE_STRUCT)
     {
-      rvalue = (void *) *pgr;
-      ng++;
-      pgr++;
+      if (!((cif->abi == FFI_SYSV) && (size <= 8))) {
+	rvalue = (void *) *pgr;
+	ng++;
+	pgr++;
+      }
     }
 
   i = 0;
@@ -986,7 +1010,12 @@ ffi_closure_helper_SYSV (ffi_closure* closure, void * rvalue,
 
   (closure->fun) (cif, rvalue, avalue, closure->user_data);
 
-  /* Tell ffi_closure_SYSV how to perform return type promotions.  */
+  /* Tell ffi_closure_SYSV how to perform return type promotions.
+     Because the FFI_SYSV ABI returns the structures <= 8 bytes in r3/r4
+     we have to tell ffi_closure_SYSV how to treat them.  */
+  if (cif->abi == FFI_SYSV && cif->rtype->type == FFI_TYPE_STRUCT
+      && size <= 8)
+    return FFI_SYSV_TYPE_SMALL_STRUCT + size;
   return cif->rtype->type;
 
 }

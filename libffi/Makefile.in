@@ -51,14 +51,15 @@ target_triplet = @target@
 @POWERPC_TRUE@am__append_10 = src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closure.S src/powerpc/linux64.S src/powerpc/linux64_closure.S
 @POWERPC_AIX_TRUE@am__append_11 = src/powerpc/ffi_darwin.c src/powerpc/aix.S src/powerpc/aix_closure.S
 @POWERPC_DARWIN_TRUE@am__append_12 = src/powerpc/ffi_darwin.c src/powerpc/darwin.S src/powerpc/darwin_closure.S
-@ARM_TRUE@am__append_13 = src/arm/sysv.S src/arm/ffi.c
-@LIBFFI_CRIS_TRUE@am__append_14 = src/cris/sysv.S src/cris/ffi.c
-@FRV_TRUE@am__append_15 = src/frv/eabi.S src/frv/ffi.c
-@S390_TRUE@am__append_16 = src/s390/sysv.S src/s390/ffi.c
-@X86_64_TRUE@am__append_17 = src/x86/ffi64.c src/x86/unix64.S src/x86/ffi.c src/x86/sysv.S
-@SH_TRUE@am__append_18 = src/sh/sysv.S src/sh/ffi.c
-@SH64_TRUE@am__append_19 = src/sh64/sysv.S src/sh64/ffi.c
-@PA_TRUE@am__append_20 = src/pa/linux.S src/pa/ffi.c
+@POWERPC_FREEBSD_TRUE@am__append_13 = src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closure.S
+@ARM_TRUE@am__append_14 = src/arm/sysv.S src/arm/ffi.c
+@LIBFFI_CRIS_TRUE@am__append_15 = src/cris/sysv.S src/cris/ffi.c
+@FRV_TRUE@am__append_16 = src/frv/eabi.S src/frv/ffi.c
+@S390_TRUE@am__append_17 = src/s390/sysv.S src/s390/ffi.c
+@X86_64_TRUE@am__append_18 = src/x86/ffi64.c src/x86/unix64.S src/x86/ffi.c src/x86/sysv.S
+@SH_TRUE@am__append_19 = src/sh/sysv.S src/sh/ffi.c
+@SH64_TRUE@am__append_20 = src/sh64/sysv.S src/sh64/ffi.c
+@PA_TRUE@am__append_21 = src/pa/linux.S src/pa/ffi.c
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	$(srcdir)/../config.guess $(srcdir)/../config.sub \
 	$(srcdir)/../depcomp $(srcdir)/../install-sh \
@@ -111,36 +112,40 @@ am_libffi_la_OBJECTS = src/debug.lo src/prep_cif.lo src/types.lo \
 @POWERPC_DARWIN_TRUE@am__objects_12 = src/powerpc/ffi_darwin.lo \
 @POWERPC_DARWIN_TRUE@	src/powerpc/darwin.lo \
 @POWERPC_DARWIN_TRUE@	src/powerpc/darwin_closure.lo
-@ARM_TRUE@am__objects_13 = src/arm/sysv.lo src/arm/ffi.lo
-@LIBFFI_CRIS_TRUE@am__objects_14 = src/cris/sysv.lo src/cris/ffi.lo
-@FRV_TRUE@am__objects_15 = src/frv/eabi.lo src/frv/ffi.lo
-@S390_TRUE@am__objects_16 = src/s390/sysv.lo src/s390/ffi.lo
-@X86_64_TRUE@am__objects_17 = src/x86/ffi64.lo src/x86/unix64.lo \
+@POWERPC_FREEBSD_TRUE@am__objects_13 = src/powerpc/ffi.lo \
+@POWERPC_FREEBSD_TRUE@	src/powerpc/sysv.lo \
+@POWERPC_FREEBSD_TRUE@	src/powerpc/ppc_closure.lo
+@ARM_TRUE@am__objects_14 = src/arm/sysv.lo src/arm/ffi.lo
+@LIBFFI_CRIS_TRUE@am__objects_15 = src/cris/sysv.lo src/cris/ffi.lo
+@FRV_TRUE@am__objects_16 = src/frv/eabi.lo src/frv/ffi.lo
+@S390_TRUE@am__objects_17 = src/s390/sysv.lo src/s390/ffi.lo
+@X86_64_TRUE@am__objects_18 = src/x86/ffi64.lo src/x86/unix64.lo \
 @X86_64_TRUE@	src/x86/ffi.lo src/x86/sysv.lo
-@SH_TRUE@am__objects_18 = src/sh/sysv.lo src/sh/ffi.lo
-@SH64_TRUE@am__objects_19 = src/sh64/sysv.lo src/sh64/ffi.lo
-@PA_TRUE@am__objects_20 = src/pa/linux.lo src/pa/ffi.lo
+@SH_TRUE@am__objects_19 = src/sh/sysv.lo src/sh/ffi.lo
+@SH64_TRUE@am__objects_20 = src/sh64/sysv.lo src/sh64/ffi.lo
+@PA_TRUE@am__objects_21 = src/pa/linux.lo src/pa/ffi.lo
 nodist_libffi_la_OBJECTS = $(am__objects_1) $(am__objects_2) \
 	$(am__objects_3) $(am__objects_4) $(am__objects_5) \
 	$(am__objects_6) $(am__objects_7) $(am__objects_8) \
 	$(am__objects_9) $(am__objects_10) $(am__objects_11) \
 	$(am__objects_12) $(am__objects_13) $(am__objects_14) \
 	$(am__objects_15) $(am__objects_16) $(am__objects_17) \
-	$(am__objects_18) $(am__objects_19) $(am__objects_20)
+	$(am__objects_18) $(am__objects_19) $(am__objects_20) \
+	$(am__objects_21)
 libffi_la_OBJECTS = $(am_libffi_la_OBJECTS) \
 	$(nodist_libffi_la_OBJECTS)
 libffi_convenience_la_LIBADD =
-am__objects_21 = src/debug.lo src/prep_cif.lo src/types.lo \
+am__objects_22 = src/debug.lo src/prep_cif.lo src/types.lo \
 	src/raw_api.lo src/java_raw_api.lo
-am_libffi_convenience_la_OBJECTS = $(am__objects_21)
-am__objects_22 = $(am__objects_1) $(am__objects_2) $(am__objects_3) \
+am_libffi_convenience_la_OBJECTS = $(am__objects_22)
+am__objects_23 = $(am__objects_1) $(am__objects_2) $(am__objects_3) \
 	$(am__objects_4) $(am__objects_5) $(am__objects_6) \
 	$(am__objects_7) $(am__objects_8) $(am__objects_9) \
 	$(am__objects_10) $(am__objects_11) $(am__objects_12) \
 	$(am__objects_13) $(am__objects_14) $(am__objects_15) \
 	$(am__objects_16) $(am__objects_17) $(am__objects_18) \
-	$(am__objects_19) $(am__objects_20)
-nodist_libffi_convenience_la_OBJECTS = $(am__objects_22)
+	$(am__objects_19) $(am__objects_20) $(am__objects_21)
+nodist_libffi_convenience_la_OBJECTS = $(am__objects_23)
 libffi_convenience_la_OBJECTS = $(am_libffi_convenience_la_OBJECTS) \
 	$(nodist_libffi_convenience_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
@@ -259,6 +264,8 @@ POWERPC_AIX_TRUE = @POWERPC_AIX_TRUE@
 POWERPC_DARWIN_FALSE = @POWERPC_DARWIN_FALSE@
 POWERPC_DARWIN_TRUE = @POWERPC_DARWIN_TRUE@
 POWERPC_FALSE = @POWERPC_FALSE@
+POWERPC_FREEBSD_FALSE = @POWERPC_FREEBSD_FALSE@
+POWERPC_FREEBSD_TRUE = @POWERPC_FREEBSD_TRUE@
 POWERPC_TRUE = @POWERPC_TRUE@
 RANLIB = @RANLIB@
 S390_FALSE = @S390_FALSE@
@@ -404,7 +411,8 @@ nodist_libffi_la_SOURCES = $(am__append_1) $(am__append_2) \
 	$(am__append_9) $(am__append_10) $(am__append_11) \
 	$(am__append_12) $(am__append_13) $(am__append_14) \
 	$(am__append_15) $(am__append_16) $(am__append_17) \
-	$(am__append_18) $(am__append_19) $(am__append_20)
+	$(am__append_18) $(am__append_19) $(am__append_20) \
+	$(am__append_21)
 libffi_convenience_la_SOURCES = $(libffi_la_SOURCES)
 nodist_libffi_convenience_la_SOURCES = $(nodist_libffi_la_SOURCES)
 AM_CFLAGS = -Wall -g -fexceptions
