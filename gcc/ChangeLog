@@ -1,3 +1,15 @@
+2005-07-19  Danny Berlin <dberlin@dberlin.org>
+	    Kenneth Zadeck <zadeck@naturalbridge.com>
+
+	* Makefile.in: Removed tree-promote-statics.c
+	* tree-promote-statics.c: Removed.
+	* common.opt: Removed flag-promote-statics.
+	* opts.c: Ditto.
+	* passes.c: Removed tree-promote-statics pass. 
+	* tree-pass.h: Ditto.
+	* timevar.def: Removed TV_PROMOTE_STATICS.
+
+
 2005-07-19  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config.gcc: Add support for *-*-freebsd7, *-*-freebsd8,
