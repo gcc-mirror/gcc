@@ -1,5 +1,10 @@
 2005-07-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* gcc.dg/tree-ssa/sra-2.c: Pass --param sra-max-structure-size.
+	* gcc.dg/tree-ssa/sra-3.c: Likewise.
+
+2005-07-18  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	* gcc.dg/tree-ssa/alias-2.c: New test.
 
 2005-07-18  Mark Mitchell  <mark@codesourcery.com>
