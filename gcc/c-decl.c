@@ -1908,27 +1908,28 @@ warn_if_shadowing (tree new_decl)
 
 	if (old_decl == error_mark_node)
 	  {
-	    warning (0, "declaration of %q+D shadows previous non-variable",
-		     new_decl);
+	    warning (OPT_Wshadow, "declaration of %q+D shadows previous "
+		     "non-variable", new_decl);
 	    break;
 	  }
 	else if (TREE_CODE (old_decl) == PARM_DECL)
-	  warning (0, "declaration of %q+D shadows a parameter", new_decl);
-	else if (DECL_FILE_SCOPE_P (old_decl))
-	  warning (0, "declaration of %q+D shadows a global declaration",
+	  warning (OPT_Wshadow, "declaration of %q+D shadows a parameter",
 		   new_decl);
+	else if (DECL_FILE_SCOPE_P (old_decl))
+	  warning (OPT_Wshadow, "declaration of %q+D shadows a global "
+		   "declaration", new_decl);
 	else if (TREE_CODE (old_decl) == FUNCTION_DECL
 		 && DECL_BUILT_IN (old_decl))
 	  {
-	    warning (0, "declaration of %q+D shadows a built-in function",
-		     new_decl);
+	    warning (OPT_Wshadow, "declaration of %q+D shadows "
+		     "a built-in function", new_decl);
 	    break;
 	  }
 	else
-	  warning (0, "declaration of %q+D shadows a previous local",
+	  warning (OPT_Wshadow, "declaration of %q+D shadows a previous local",
 		   new_decl);
 
-	warning (0, "%Jshadowed declaration is here", old_decl);
+	warning (OPT_Wshadow, "%Jshadowed declaration is here", old_decl);
 
 	break;
       }

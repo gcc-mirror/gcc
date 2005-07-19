@@ -50,10 +50,10 @@ static tree altivec_resolve_overloaded_builtin (tree, tree);
    whether or not new function declarations receive a longcall
    attribute by default.  */
 
-#define SYNTAX_ERROR(gmsgid) do {			\
-  warning (0, gmsgid);					\
-  warning (0, "ignoring malformed #pragma longcall");	\
-  return;						\
+#define SYNTAX_ERROR(gmsgid) do {					\
+  warning (OPT_Wpragmas, gmsgid);					\
+  warning (OPT_Wpragmas, "ignoring malformed #pragma longcall");	\
+  return;								\
 } while (0)
 
 void
@@ -75,7 +75,7 @@ rs6000_pragma_longcall (cpp_reader *pfile ATTRIBUTE_UNUSED)
     SYNTAX_ERROR ("number must be 0 or 1");
 
   if (c_lex (&x) != CPP_EOF)
-    warning (0, "junk at end of #pragma longcall");
+    warning (OPT_Wpragmas, "junk at end of #pragma longcall");
 
   rs6000_default_long_calls = (n == integer_one_node);
 }

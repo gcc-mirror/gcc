@@ -4315,7 +4315,7 @@ do_warn_unused_parameter (tree fn)
        decl; decl = TREE_CHAIN (decl))
     if (!TREE_USED (decl) && TREE_CODE (decl) == PARM_DECL
 	&& DECL_NAME (decl) && !DECL_ARTIFICIAL (decl))
-      warning (0, "unused parameter %q+D", decl);
+      warning (OPT_Wunused_parameter, "unused parameter %q+D", decl);
 }
 
 static GTY(()) rtx initial_trampoline;

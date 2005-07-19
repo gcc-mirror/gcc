@@ -299,7 +299,8 @@ cb_def_pragma (cpp_reader *pfile, source_location loc)
 	    name = cpp_token_as_text (pfile, s);
 	}
 
-      warning (0, "%Hignoring #pragma %s %s", &fe_loc, space, name);
+      warning (OPT_Wunknown_pragmas, "%Hignoring #pragma %s %s",
+	       &fe_loc, space, name);
     }
 }
 

@@ -37,9 +37,10 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "vec.h"
 #include "target.h"
 
-#define GCC_BAD(gmsgid) do { warning (0, gmsgid); return; } while (0)
+#define GCC_BAD(gmsgid) \
+  do { warning (OPT_Wpragmas, gmsgid); return; } while (0)
 #define GCC_BAD2(gmsgid, arg) \
-  do { warning (0, gmsgid, arg); return; } while (0)
+  do { warning (OPT_Wpragmas, gmsgid, arg); return; } while (0)
 
 typedef struct align_stack GTY(())
 {
@@ -110,7 +111,7 @@ pop_alignment (tree id)
 	    break;
 	  }
       if (entry == NULL)
-	warning (0, "\
+	warning (OPT_Wpragmas, "\
 #pragma pack(pop, %s) encountered without matching #pragma pack(push, %s)"
 		 , IDENTIFIER_POINTER (id), IDENTIFIER_POINTER (id));
     }
@@ -203,7 +204,7 @@ handle_pragma_pack (cpp_reader * ARG_UNUSED (dummy))
     GCC_BAD ("malformed %<#pragma pack%> - ignored");
 
   if (c_lex (&x) != CPP_EOF)
-    warning (0, "junk at end of %<#pragma pack%>");
+    warning (OPT_Wpragmas, "junk at end of %<#pragma pack%>");
 
   if (flag_pack_struct)
     GCC_BAD ("#pragma pack has no effect with -fpack-struct - ignored");
@@ -259,8 +260,8 @@ apply_pragma_weak (tree decl, tree value)
   if (SUPPORTS_WEAK && DECL_EXTERNAL (decl) && TREE_USED (decl)
       && !DECL_WEAK (decl) /* Don't complain about a redundant #pragma.  */
       && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
-    warning (0, "applying #pragma weak %q+D after first use results "
-             "in unspecified behavior", decl);
+    warning (OPT_Wpragmas, "applying #pragma weak %q+D after first use "
+             "results in unspecified behavior", decl);
 
   declare_weak (decl);
 }
@@ -342,7 +343,7 @@ handle_pragma_weak (cpp_reader * ARG_UNUSED (dummy))
       t = c_lex (&x);
     }
   if (t != CPP_EOF)
-    warning (0, "junk at end of #pragma weak");
+    warning (OPT_Wpragmas, "junk at end of #pragma weak");
 
   decl = identifier_global_value (name);
   if (decl && DECL_P (decl))
@@ -415,7 +416,7 @@ handle_pragma_redefine_extname (cpp_reader * ARG_UNUSED (dummy))
     GCC_BAD ("malformed #pragma redefine_extname, ignored");
   t = c_lex (&x);
   if (t != CPP_EOF)
-    warning (0, "junk at end of #pragma redefine_extname");
+    warning (OPT_Wpragmas, "junk at end of #pragma redefine_extname");
 
   if (!flag_mudflap && !targetm.handle_pragma_redefine_extname)
     {
@@ -438,8 +439,8 @@ handle_pragma_redefine_extname (cpp_reader * ARG_UNUSED (dummy))
 	  name = targetm.strip_name_encoding (name);
 
 	  if (strcmp (name, IDENTIFIER_POINTER (newname)))
-	    warning (0, "#pragma redefine_extname ignored due to conflict with "
-		     "previous rename");
+	    warning (OPT_Wpragmas, "#pragma redefine_extname ignored due to "
+		     "conflict with previous rename");
 	}
       else
 	change_decl_assembler_name (decl, newname);
@@ -461,8 +462,8 @@ add_to_renaming_pragma_list (tree oldname, tree newname)
   if (previous)
     {
       if (TREE_VALUE (previous) != newname)
-	warning (0, "#pragma redefine_extname ignored due to conflict with "
-		 "previous #pragma redefine_extname");
+	warning (OPT_Wpragmas, "#pragma redefine_extname ignored due to "
+		 "conflict with previous #pragma redefine_extname");
       return;
     }
   
@@ -483,7 +484,7 @@ handle_pragma_extern_prefix (cpp_reader * ARG_UNUSED (dummy))
     GCC_BAD ("malformed #pragma extern_prefix, ignored");
   t = c_lex (&x);
   if (t != CPP_EOF)
-    warning (0, "junk at end of #pragma extern_prefix");
+    warning (OPT_Wpragmas, "junk at end of #pragma extern_prefix");
 
   if (targetm.handle_pragma_extern_prefix)
     /* Note that the length includes the null terminator.  */
@@ -516,7 +517,7 @@ maybe_apply_renaming_pragma (tree decl, tree asmname)
       oldname = targetm.strip_name_encoding (oldname);
 
       if (asmname && strcmp (TREE_STRING_POINTER (asmname), oldname))
-	  warning (0, "asm declaration ignored due to "
+	  warning (OPT_Wpragmas, "asm declaration ignored due to "
 		   "conflict with previous rename");
 
       /* Take any pending redefine_extname off the list.  */
@@ -525,7 +526,7 @@ maybe_apply_renaming_pragma (tree decl, tree asmname)
 	  {
 	    /* Only warn if there is a conflict.  */
 	    if (strcmp (IDENTIFIER_POINTER (TREE_VALUE (t)), oldname))
-	      warning (0, "#pragma redefine_extname ignored due to "
+	      warning (OPT_Wpragmas, "#pragma redefine_extname ignored due to "
 		       "conflict with previous rename");
 
 	    *p = TREE_CHAIN (t);
@@ -547,7 +548,7 @@ maybe_apply_renaming_pragma (tree decl, tree asmname)
 	  {
 	    if (strcmp (TREE_STRING_POINTER (asmname),
 			IDENTIFIER_POINTER (newname)) != 0)
-	      warning (0, "#pragma redefine_extname ignored due to "
+	      warning (OPT_Wpragmas, "#pragma redefine_extname ignored due to "
 		       "conflict with __asm__ declaration");
 	    return asmname;
 	  }
@@ -661,7 +662,7 @@ handle_pragma_visibility (cpp_reader *dummy ATTRIBUTE_UNUSED)
         }
     }
   if (c_lex (&x) != CPP_EOF)
-    warning (0, "junk at end of %<#pragma GCC visibility%>");
+    warning (OPT_Wpragmas, "junk at end of %<#pragma GCC visibility%>");
 }
 
 #endif

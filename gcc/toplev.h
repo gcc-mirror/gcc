@@ -57,6 +57,7 @@ extern void _fatal_insn (const char *, rtx, const char *, int, const char *)
 extern void internal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
      ATTRIBUTE_NORETURN;
 extern void warning0 (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
+/* Pass one of the OPT_W* from options.h as the first parameter.  */
 extern void warning (int, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern void error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern void fatal_error (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2)
