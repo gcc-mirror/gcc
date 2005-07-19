@@ -1,0 +1,20 @@
+// { dg-do compile }
+external_definition int first_nonzero (int arg5, int arg6);
+
+first_nonzero
+{
+  automatic int y;
+  automatic int y;  // { dg-error "Duplicate" }
+  if (arg5)
+    {
+      return arg5;
+    }
+  else
+    {
+      automatic int j;
+      j = arg6;
+      return j;
+    }
+  return arg6;
+}
+
