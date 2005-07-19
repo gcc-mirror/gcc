@@ -1,3 +1,37 @@
+2005-07-18  Thomas Koenig  <Thomas.Koenig@onlinde.de>
+
+	Backport from mainline.
+	PR libfortran/21333
+	* Makefile.am: Add in_pack_c4.c, in_pack_c8.c, in_unpack_c4.c
+	and in_unpack_c8.c.
+	* Makefile.in: Regenerate.
+	* libgfortran.h:  Declare internal_pack_c4, internal_pack_c8,
+	internal_unpack_c4 and internal_unpack_c8.
+	* m4/in_pack.m4: Use rtype_ccode insteald of rtype_kind
+	in function name.
+	Use sizeof (rtype_name) as size for memory allocation.
+	* m4/in_unpack.m4: Use rtype_ccode insteald of rtype_kind
+	in function name.
+	Use sizeof (rtype_name) for calculation of sizes for memcpy.
+	* runtime/in_pack_generic.c:  For real, integer and logical
+	call internal_pack_4 if size==4 and internal_pack_8 if
+	size==8.
+	For complex, call internal_pack_c4 if size==8 and
+	internal_pack_c8 if size==16.
+	* runtime/in_unpack_generic.c: For real, integer and logical
+	call internal_unpack_4 if size==4 and internal_unpack_8 if
+	size==8.
+	For complex, call internal_unpack_c4 if size==8 and
+	internal_unpack_c8 if size==16.
+	* generated/in_pack_i4.c:  Regenerated.
+	* generated/in_pack_i8.c:  Regenerated.
+	* generated/in_unpack_i4.c:  Regenerated.
+	* generated/in_unpack_i8.c:  Regenerated.
+	* generated/in_pack_c4.c:  New file.
+	* generated/in_pack_c8.c:  New file.
+	* generated/in_unpack_c4.c:  New file.
+	* generated/in_unpack_c8.c:  New file.
+
 2005-07-17  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	Backport from mainline.
