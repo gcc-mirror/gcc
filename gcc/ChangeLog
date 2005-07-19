@@ -1,3 +1,8 @@
+2005-07-19  Richard Guenther  <rguenther@suse.de>
+
+	* config/i386/i386.md (lrint<mode>2): Use temporary
+	instead of clobbering non-existent memory.
+
 2005-07-19  Ben Elliston  <bje@au.ibm.com>
 
 	* bt-load.c (link_btr_uses): Fix uninitialised warnings.
