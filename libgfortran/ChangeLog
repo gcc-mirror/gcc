@@ -1,3 +1,12 @@
+2005-07-19  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	Backport from mainline.
+	PR libfortran/21593
+	io/unix.c:  Add member special_file to type unix_stream.
+	(fd_truncate):  Don't call ftruncate or chsize if
+	s refers to a special file.
+	(fd_to_stream):  initialize s->special_file.
+
 2005-07-18  Thomas Koenig  <Thomas.Koenig@onlinde.de>
 
 	Backport from mainline.

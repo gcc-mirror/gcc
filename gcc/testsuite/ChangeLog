@@ -1,3 +1,9 @@
+2005-07-19  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	Backport from mainline.
+	PR libfortran/21593
+	gfortran.dg/dev_null.f90:  Remove targets.
+
 2005-07-19  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/20842

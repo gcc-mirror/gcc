@@ -137,6 +137,8 @@ typedef struct
   int prot;
   int ndirty;			/* Dirty bytes starting at dirty_offset */
 
+  int special_file;		/* =1 if the fd refers to a special file */
+
   unsigned unbuffered:1, mmaped:1;
 
   char small_buffer[BUFFER_SIZE];
@@ -507,13 +509,14 @@ fd_truncate (unix_stream * s)
     return FAILURE;
 
   /* non-seekable files, like terminals and fifo's fail the lseek.
-     the fd is a regular file at this point */
-
+     Using ftruncate on a seekable special file (like /dev/null)
+     is undefined, so we treat it as if the ftruncate failed.
+  */
 #ifdef HAVE_FTRUNCATE
-  if (ftruncate (s->fd, s->logical_offset))
+  if (s->special_file || ftruncate (s->fd, s->logical_offset))
 #else
 #ifdef HAVE_CHSIZE
-  if (chsize (s->fd, s->logical_offset))
+  if (s->special_file || chsize (s->fd, s->logical_offset))
 #endif
 #endif
     {
@@ -912,6 +915,7 @@ fd_to_stream (int fd, int prot, int avoid_mmap)
 
   fstat (fd, &statbuf);
   s->file_length = S_ISREG (statbuf.st_mode) ? statbuf.st_size : -1;
+  s->special_file = !S_ISREG (statbuf.st_mode);
 
 #if HAVE_MMAP
   if (avoid_mmap)
