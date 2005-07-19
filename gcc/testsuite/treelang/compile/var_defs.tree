@@ -2,7 +2,6 @@
 // { dg-options "-Wuninitialized -O" }
 external_definition void boring (int arg0);
 external_definition char condition (char arg1, char arg2);
-external_definition int first_nonzero (int arg5, int arg6);
 
 boring
 {
@@ -23,21 +22,5 @@ condition
       return j; // { dg-warning "uninitialized" }
     }
 }
-
-first_nonzero
-{
-  automatic int y;
-  automatic int y;  // { dg-error "Duplicate" }
-  if (arg5)
-    {
-      return arg5;
-    }
-  else
-    {
-      automatic int j;
-      j = arg6;
-      return j;
-    }
-  return arg6;
 }
 

@@ -1,3 +1,8 @@
+2005-07-19  James A. Morrrison  <phython@gcc.gnu.org>
+
+	* compile/var_defs.tree: Remove duplicate variable.
+	* compile/var_defs-2.tree: Add duplicate variable test.
+
 2005-03-22  James A. Morrison  <phython@gcc.gnu.org>
 
 	* compile/memory.tree: New test.
