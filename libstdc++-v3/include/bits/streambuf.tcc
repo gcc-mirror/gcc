@@ -1,6 +1,6 @@
 // Stream buffer classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -52,11 +52,11 @@ namespace std
       streamsize __ret = 0;
       while (__ret < __n)
 	{
-	  const size_t __buf_len = this->egptr() - this->gptr();
+	  const streamsize __buf_len = this->egptr() - this->gptr();
 	  if (__buf_len)
 	    {
-	      const size_t __remaining = __n - __ret;
-	      const size_t __len = std::min(__buf_len, __remaining);
+	      const streamsize __remaining = __n - __ret;
+	      const streamsize __len = std::min(__buf_len, __remaining);
 	      traits_type::copy(__s, this->gptr(), __len);
 	      __ret += __len;
 	      __s += __len;
@@ -86,11 +86,11 @@ namespace std
       streamsize __ret = 0;
       while (__ret < __n)
 	{
-	  const size_t __buf_len = this->epptr() - this->pptr();
+	  const streamsize __buf_len = this->epptr() - this->pptr();
 	  if (__buf_len)
 	    {
-	      const size_t __remaining = __n - __ret;
-	      const size_t __len = std::min(__buf_len, __remaining);
+	      const streamsize __remaining = __n - __ret;
+	      const streamsize __len = std::min(__buf_len, __remaining);
 	      traits_type::copy(this->pptr(), __s, __len);
 	      __ret += __len;
 	      __s += __len;

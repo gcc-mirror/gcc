@@ -1,3 +1,9 @@
+2005-07-20  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/streambuf.tcc (xsgetn, xsputn): Use streamsize
+	instead of size_t.
+	* src/streambuf.cc (__copy_streambufs): Likewise.
+
 2005-07-18  Paolo Carlini  <pcarlini@suse.de>
 
 	* config/locale/gnu/ctype_members.cc (do_is(mask, wchar_t)):
