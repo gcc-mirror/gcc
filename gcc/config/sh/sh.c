@@ -169,7 +169,7 @@ enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER] =
   DF_REGS, DF_REGS, DF_REGS, DF_REGS,
   NO_REGS, GENERAL_REGS, PR_REGS, T_REGS,
   MAC_REGS, MAC_REGS, FPUL_REGS, FPSCR_REGS,
-  GENERAL_REGS,
+  GENERAL_REGS, GENERAL_REGS,
 };
 
 char sh_register_names[FIRST_PSEUDO_REGISTER] \
@@ -6004,7 +6004,7 @@ sh_expand_prologue (void)
 		       stack_pointer_rtx, 0, NULL);
 
   if (frame_pointer_needed)
-    frame_insn (GEN_MOV (frame_pointer_rtx, stack_pointer_rtx));
+    frame_insn (GEN_MOV (hard_frame_pointer_rtx, stack_pointer_rtx));
 
   if (TARGET_SHCOMPACT
       && (current_function_args_info.call_cookie & ~ CALL_COOKIE_RET_TRAMP(1)))
@@ -6066,14 +6066,15 @@ sh_expand_epilogue (bool sibcall_p)
 	 when exception handling is enabled.  See PR/18032.  */
       if (flag_exceptions)
 	emit_insn (gen_blockage ());
-      output_stack_adjust (frame_size, frame_pointer_rtx, e, &live_regs_mask);
+      output_stack_adjust (frame_size, hard_frame_pointer_rtx, e,
+			   &live_regs_mask);
 
       /* We must avoid moving the stack pointer adjustment past code
 	 which reads from the local frame, else an interrupt could
 	 occur after the SP adjustment and clobber data in the local
 	 frame.  */
       emit_insn (gen_blockage ());
-      emit_insn (GEN_MOV (stack_pointer_rtx, frame_pointer_rtx));
+      emit_insn (GEN_MOV (stack_pointer_rtx, hard_frame_pointer_rtx));
     }
   else if (frame_size)
     {
@@ -6350,7 +6351,7 @@ sh_set_return_address (rtx ra, rtx tmp)
     pr_offset = rounded_frame_size (d);
 
   emit_insn (GEN_MOV (tmp, GEN_INT (pr_offset)));
-  emit_insn (GEN_ADD3 (tmp, tmp, frame_pointer_rtx));
+  emit_insn (GEN_ADD3 (tmp, tmp, hard_frame_pointer_rtx));
 
   tmp = gen_rtx_MEM (Pmode, tmp);
   emit_insn (GEN_MOV (tmp, ra));
@@ -7269,7 +7270,7 @@ initial_elimination_offset (int from, int to)
 
   total_saved_regs_space = regs_saved + regs_saved_rounding;
 
-  if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
+  if (from == ARG_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
     return total_saved_regs_space + total_auto_space
       + current_function_args_info.byref_regs * 8;
 
@@ -7278,11 +7279,18 @@ initial_elimination_offset (int from, int to)
       + current_function_args_info.byref_regs * 8;
 
   /* Initial gap between fp and sp is 0.  */
-  if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
+  if (from == HARD_FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
     return 0;
 
+  if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
+    return rounded_frame_size (0);
+
+  if (from == FRAME_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
+    return rounded_frame_size (0);
+
   gcc_assert (from == RETURN_ADDRESS_POINTER_REGNUM
-	      && (to == FRAME_POINTER_REGNUM || to == STACK_POINTER_REGNUM));
+	      && (to == HARD_FRAME_POINTER_REGNUM
+		  || to == STACK_POINTER_REGNUM));
   if (TARGET_SH5)
     {
       int n = total_saved_regs_space;

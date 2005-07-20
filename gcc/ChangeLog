@@ -1,3 +1,35 @@
+2005-07-20  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (regno_reg_class): Add GENERAL_REGS for
+	soft frame pointer.
+	(sh_expand_prologue): Use hard_frame_pointer_rtx instead
+	of frame_pointer_rtx.
+	(sh_expand_epilogue): Likewise.
+	(sh_set_return_address): Likewise.
+	(initial_elimination_offset): Use HARD_FRAME_POINTER_REGNUM
+	instead of FRAME_POINTER_REGNUM if needed.  Add elimination
+	offsets from FRAME_POINTER_REGNUM.
+	* config/sh/sh.h (SH_REGISTER_NAMES_INITIALIZER): Add sfp.
+	(sh_register_names): Add initializer for sfp.
+	(GENERAL_OR_AP_REGISTER_P): Permit FRAME_POINTER_REGNUM.
+	(VALID_REGISTER_P): Likewise.
+	(FIRST_PSEUDO_REGISTER): Update.
+	(DWARF_FRAME_REGISTERS): Define.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS): Add sfp.
+	(HARD_FRAME_POINTER_REGNUM): Define.
+	(FRAME_POINTER_REGNUM): Redefine.
+	(ELIMINABLE_REGS): Never eliminate to FRAME_POINTER_REGNUM,
+	but HARD_FRAME_POINTER_REGNUM instead.  Add eliminations
+	from FRAME_POINTER_REGNUM.
+	(CAN_ELIMINATE): Use HARD_FRAME_POINTER_REGNUM instead of
+	FRAME_POINTER_REGNUM.
+	(REG_CLASS_CONTENTS): Add sfp.
+	(REG_ALLOC_ORDER): Likewise.
+	(FRAME_GROWS_DOWNWARD): Set to 1.  Update comment.
+	(GO_IF_LEGITIMATE_ADDRESS): Use hard_frame_pointer_rtx instead
+	of frame_pointer_rtx.
+	(LEGITIMIZE_RELOAD_ADDRESS): Likewise.
+
 2005-07-19  James A. Morrison  <phython@gcc.gnu.org>
 
 	* fold-const.c (tree_expr_nonnegative_p): Only return true for

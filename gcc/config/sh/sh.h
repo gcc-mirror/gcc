@@ -882,7 +882,7 @@ extern char sh_register_names[][MAX_REGISTER_NAME_LENGTH + 1];
   "tr0",  "tr1",  "tr2",  "tr3",  "tr4",  "tr5",  "tr6",  "tr7", 	\
   "xd0",  "xd2",  "xd4",  "xd6",  "xd8",  "xd10", "xd12", "xd14",	\
   "gbr",  "ap",	  "pr",   "t",    "mach", "macl", "fpul", "fpscr",	\
-  "rap"									\
+  "rap",  "sfp"								\
 }
 
 #define REGNAMES_ARR_INDEX_1(index) \
@@ -907,7 +907,7 @@ extern char sh_register_names[][MAX_REGISTER_NAME_LENGTH + 1];
   REGNAMES_ARR_INDEX_8 (128), \
   REGNAMES_ARR_INDEX_8 (136), \
   REGNAMES_ARR_INDEX_8 (144), \
-  REGNAMES_ARR_INDEX_1 (152) \
+  REGNAMES_ARR_INDEX_2 (152) \
 }
 
 #define ADDREGNAMES_SIZE 32
@@ -969,7 +969,8 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 	    (unsigned HOST_WIDE_INT) LAST_GENERAL_REG)
 
 #define GENERAL_OR_AP_REGISTER_P(REGNO) \
-  (GENERAL_REGISTER_P (REGNO) || ((REGNO) == AP_REG))
+  (GENERAL_REGISTER_P (REGNO) || ((REGNO) == AP_REG)	\
+   || ((REGNO) == FRAME_POINTER_REGNUM))
 
 #define FP_REGISTER_P(REGNO) \
   ((int) (REGNO) >= FIRST_FP_REG && (int) (REGNO) <= LAST_FP_REG)
@@ -999,6 +1000,7 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 #define VALID_REGISTER_P(REGNO) \
   (SHMEDIA_REGISTER_P (REGNO) || XD_REGISTER_P (REGNO) \
    || (REGNO) == AP_REG || (REGNO) == RAP_REG \
+   || (REGNO) == FRAME_POINTER_REGNUM \
    || (TARGET_SH1 && (SPECIAL_REGISTER_P (REGNO) || (REGNO) == PR_REG)) \
    || (TARGET_SH2E && (REGNO) == FPUL_REG))
 
@@ -1011,7 +1013,10 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
    ? DImode \
    : SImode)
 
-#define FIRST_PSEUDO_REGISTER 153
+#define FIRST_PSEUDO_REGISTER 154
+
+/* Don't count soft frame pointer.  */
+#define DWARF_FRAME_REGISTERS (FIRST_PSEUDO_REGISTER - 1)
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
@@ -1048,8 +1053,8 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
   0,      0,      0,      0,      0,      0,      0,      0,		\
 /*"gbr",  "ap",	  "pr",   "t",    "mach", "macl", "fpul", "fpscr", */	\
   1,      1,      1,      1,      1,      1,      0,      1,		\
-/*"rap" */								\
-  1,									\
+/*"rap",  "sfp" */							\
+  1,	  1,								\
 }
 
 /* 1 for registers not available across function calls.
@@ -1088,8 +1093,8 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
   1,      1,      1,      1,      1,      1,      0,      0,		\
 /*"gbr",  "ap",	  "pr",   "t",    "mach", "macl", "fpul", "fpscr", */	\
   1,      1,      1,      1,      1,      1,      1,      1,		\
-/*"rap" */								\
-  1,									\
+/*"rap",  "sfp" */							\
+  1,	  1,								\
 }
 
 /* CONDITIONAL_REGISTER_USAGE might want to make a register call-used, yet
@@ -1204,7 +1209,10 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 #define STACK_POINTER_REGNUM	SP_REG
 
 /* Base register for access to local variables of the function.  */
-#define FRAME_POINTER_REGNUM	FP_REG
+#define HARD_FRAME_POINTER_REGNUM	FP_REG
+
+/* Base register for access to local variables of the function.  */
+#define FRAME_POINTER_REGNUM	153
 
 /* Fake register that holds the address on the stack of the
    current function's return address.  */
@@ -1246,16 +1254,18 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
    of elimination fail.  */
 
 #define ELIMINABLE_REGS						\
-{{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},			\
+{{ HARD_FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
+ { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},			\
+ { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},		\
  { RETURN_ADDRESS_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
- { RETURN_ADDRESS_POINTER_REGNUM, FRAME_POINTER_REGNUM},	\
+ { RETURN_ADDRESS_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},	\
  { ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},			\
- { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM},}
+ { ARG_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},}
 
 /* Given FROM and TO register numbers, say whether this elimination
    is allowed.  */
 #define CAN_ELIMINATE(FROM, TO) \
-  (!((FROM) == FRAME_POINTER_REGNUM && FRAME_POINTER_REQUIRED))
+  (!((FROM) == HARD_FRAME_POINTER_REGNUM && FRAME_POINTER_REQUIRED))
 
 /* Define the offset between two registers, one to be eliminated, and the other
    its replacement, at the start of a routine.  */
@@ -1380,7 +1390,7 @@ enum reg_class
 /* SIBCALL_REGS: Initialized in CONDITIONAL_REGISTER_USAGE.  */	\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	\
 /* GENERAL_REGS:  */							\
-  { 0xffffffff, 0xffffffff, 0x00000000, 0x00000000, 0x01020000 },	\
+  { 0xffffffff, 0xffffffff, 0x00000000, 0x00000000, 0x03020000 },	\
 /* FP0_REGS:  */							\
   { 0x00000000, 0x00000000, 0x00000001, 0x00000000, 0x00000000 },	\
 /* FP_REGS:  */								\
@@ -1396,7 +1406,7 @@ enum reg_class
 /* TARGET_REGS:  */							\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x000000ff },	\
 /* ALL_REGS:  */							\
-  { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0x01ffffff },	\
+  { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0x03ffffff },	\
 }
 
 /* The same information, inverted:
@@ -1446,7 +1456,7 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
    128,129,130,131,132,133,134,135, \
    /* Fixed registers */ \
     15, 16, 24, 25, 26, 27, 63,144, \
-   145,146,147,148,149,152 }
+   145,146,147,148,149,152,153 }
 
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS \
@@ -1695,10 +1705,8 @@ extern enum reg_class reg_class_from_letter[];
 #define STACK_GROWS_DOWNWARD
 
 /*  Define this macro to non-zero if the addresses of local variable slots
-    are at negative offsets from the frame pointer.
-
-    The SH only has positive indexes, so grow the frame up.  */
-#define FRAME_GROWS_DOWNWARD 0
+    are at negative offsets from the frame pointer.  */
+#define FRAME_GROWS_DOWNWARD 1
 
 /* Offset from the frame pointer to the first local variable slot to
    be allocated.  */
@@ -2528,9 +2536,11 @@ struct sh_args {
       if (GET_MODE_SIZE (MODE) <= 8 && BASE_REGISTER_RTX_P (xop0))	\
 	GO_IF_LEGITIMATE_INDEX ((MODE), xop1, LABEL);			\
       if ((ALLOW_INDEXED_ADDRESS || GET_MODE (X) == DImode		\
-	   || ((xop0 == stack_pointer_rtx || xop0 == frame_pointer_rtx)	\
+	   || ((xop0 == stack_pointer_rtx				\
+		|| xop0 == hard_frame_pointer_rtx)			\
 	       && REG_P (xop1) && REGNO (xop1) == R0_REG)		\
-	   || ((xop1 == stack_pointer_rtx || xop1 == frame_pointer_rtx)	\
+	   || ((xop1 == stack_pointer_rtx				\
+		|| xop1 == hard_frame_pointer_rtx)			\
 	       && REG_P (xop0) && REGNO (xop0) == R0_REG))		\
 	  && ((!TARGET_SHMEDIA && GET_MODE_SIZE (MODE) <= 4)		\
 	      || (TARGET_SHMEDIA && GET_MODE_SIZE (MODE) <= 8)		\
@@ -2625,7 +2635,7 @@ struct sh_args {
       && ! ((MODE) == PSImode && (TYPE) == RELOAD_FOR_INPUT_ADDRESS)	\
       && (ALLOW_INDEXED_ADDRESS						\
 	  || XEXP ((X), 0) == stack_pointer_rtx				\
-	  || XEXP ((X), 0) == frame_pointer_rtx))			\
+	  || XEXP ((X), 0) == hard_frame_pointer_rtx))			\
     {									\
       rtx index_rtx = XEXP (X, 1);					\
       HOST_WIDE_INT offset = INTVAL (index_rtx), offset_base;		\
