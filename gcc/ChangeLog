@@ -1,3 +1,35 @@
+2005-07-20  DJ Delorie  <dj@redhat.com>
+
+	* config.gcc: Add m32c-elf support.
+
+	* doc/contrib.texi: Mention m32c.
+	* doc/extend.texi: Document m32c extensions.
+	* doc/install.texi: Mention m32c.
+	* doc/invoke.texi: Document m32c options.
+	* doc/md.texi: Document m32c constraints.
+
+	* config/m32c/addsub.md: New file.
+	* config/m32c/bitops.md: New file.
+	* config/m32c/cond.md: New file.
+	* config/m32c/jump.md: New file.
+	* config/m32c/m32c-lib1.S: New file.
+	* config/m32c/m32c-lib2.c: New file.
+	* config/m32c/m32c-modes.def: New file.
+	* config/m32c/m32c-pragma.c: New file.
+	* config/m32c/m32c-protos.h: New file.
+	* config/m32c/m32c.abi: New file.
+	* config/m32c/m32c.c: New file.
+	* config/m32c/m32c.h: New file.
+	* config/m32c/m32c.md: New file.
+	* config/m32c/m32c.opt: New file.
+	* config/m32c/minmax.md: New file.
+	* config/m32c/mov.md: New file.
+	* config/m32c/muldiv.md: New file.
+	* config/m32c/predicates.md: New file.
+	* config/m32c/prologue.md: New file.
+	* config/m32c/shift.md: New file.
+	* config/m32c/t-m32c: New file.
+
 2005-07-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.md (UNSPEC_SP_SET, UNSPEC_SP_TEST): New constants.

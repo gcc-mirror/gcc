@@ -544,6 +544,9 @@ Objective-C and Objective-C++ Dialects}.
 -mno-flush-trap -mflush-trap=@var{number} @gol
 -G @var{num}}
 
+@emph{M32C Options}
+@gccoptlist{-mcpu=@var{cpu} -msim -memregs=@var{number}}
+
 @emph{M680x0 Options}
 @gccoptlist{-m68000  -m68020  -m68020-40  -m68020-60  -m68030  -m68040 @gol
 -m68060  -mcpu32  -m5200  -m68881  -mbitfield  -mc68000  -mc68020   @gol
@@ -6957,6 +6960,7 @@ platform.
 * HPPA Options::
 * i386 and x86-64 Options::
 * IA-64 Options::
+* M32C Options::
 * M32R/D Options::
 * M680x0 Options::
 * M68hc1x Options::
@@ -9368,6 +9372,39 @@ Generate code for a 32-bit or 64-bit environment.
 The 32-bit environment sets int, long and pointer to 32 bits.
 The 64-bit environment sets int to 32 bits and long and pointer
 to 64 bits.  These are HP-UX specific flags.
+
+@end table
+
+@node M32C Options
+@subsection M32C Options
+@cindex M32C options
+
+@table @gcctabopt
+@item -mcpu=@var{name}
+@opindex mcpu=
+Select the CPU for which code is generated.  @var{name} may be one of
+@samp{r8c} for the R8C/Tiny series, @samp{m16c} for the M16C (up to
+/60) series, @samp{m32cm} for the M16C/80 series, or @samp{m32c} for
+the M32C/80 series.
+
+@item -msim
+@opindex msim
+Specifies that the program will be run on the simulator.  This causes
+an alternate runtime library to be linked in which supports, for
+example, file I/O.  You must not use this option when generating
+programs that will run on real hardware; you must provide your own
+runtime library for whatever I/O functions are needed.
+
+@item -memregs=@var{number}
+@opindex memregs=
+Specifies the number of memory-based pseudo-registers GCC will use
+during code generation.  These pseudo-registers will be used like real
+registers, so there is a tradeoff between GCC's ability to fit the
+code into available registers, and the performance penalty of using
+memory instead of registers.  Note that all modules in a program must
+be compiled with the same value for this option.  Because of that, you
+must not use this option with the default runtime libraries gcc
+builds.
 
 @end table
 

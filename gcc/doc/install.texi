@@ -2246,6 +2246,8 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#iq2000-x-elf,,iq2000-*-elf}
 @item
+@uref{#m32c-x-elf,,m32c-*-elf}
+@item
 @uref{#m32r-x-elf,,m32r-*-elf}
 @item
 @uref{#m6811-elf,,m6811-elf}
@@ -3179,6 +3181,13 @@ switch and using the configure option @option{--with-cpu-@var{cpu_type}}.
 @heading @anchor{iq2000-x-elf}iq2000-*-elf
 Vitesse IQ2000 processors.  These are used in embedded
 applications.  There are no standard Unix configurations.
+
+@html
+<hr />
+@end html
+@heading @anchor{m32c-x-elf}m32c-*-elf
+Renesas M32C processor.
+This configuration is intended for embedded systems.
 
 @html
 <hr />
