@@ -2081,7 +2081,8 @@ dbxout_type (tree type, int full)
 				   access == access_protected_node
 				   ? '1' :'0');
 		    if (BINFO_VIRTUAL_P (child)
-			&& strcmp (lang_hooks.name, "GNU C++") == 0)
+			&& (strcmp (lang_hooks.name, "GNU C++") == 0
+			    || strcmp (lang_hooks.name, "GNU Objective-C++") == 0))
 		      /* For a virtual base, print the (negative)
 		     	 offset within the vtable where we must look
 		     	 to find the necessary adjustment.  */
