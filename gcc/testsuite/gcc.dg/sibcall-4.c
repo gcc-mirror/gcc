@@ -5,7 +5,7 @@
    Copyright (C) 2002 Free Software Foundation Inc.
    Contributed by Hans-Peter Nilsson  <hp@bitrange.com>  */
 
-/* { dg-do run { xfail arc-*-* avr-*-* c4x-*-* cris-*-* h8300-*-* hppa*64*-*-* ip2k-*-* m32r-*-* m68hc1?-*-* m681?-*-* m680*-*-* m68k-*-* mcore-*-* mn10300-*-* ns32k-*-* xstormy16-*-* v850*-*-* vax-*-* xtensa-*-* } } */
+/* { dg-do run { xfail arc-*-* avr-*-* c4x-*-* cris-*-* h8300-*-* hppa*64*-*-* m32r-*-* m68hc1?-*-* m681?-*-* m680*-*-* m68k-*-* mcore-*-* mn10300-*-* xstormy16-*-* v850*-*-* vax-*-* xtensa-*-* } } */
 /* { dg-options "-O2 -foptimize-sibling-calls" } */
 
 /* The option -foptimize-sibling-calls is the default, but serves as

@@ -599,12 +599,6 @@ Objective-C and Objective-C++ Dialects}.
 -mam33-2  -mno-am33-2 @gol
 -mno-crt0  -mrelax}
 
-@emph{NS32K Options}
-@gccoptlist{-m32032  -m32332  -m32532  -m32081  -m32381 @gol
--mmult-add  -mnomult-add  -msoft-float  -mrtd  -mnortd @gol
--mregparam  -mnoregparam  -msb  -mnosb @gol
--mbitfield  -mnobitfield  -mhimem  -mnohimem}
-
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
 -mbcopy  -mbcopy-builtin  -mint32  -mno-int16 @gol
@@ -6970,7 +6964,6 @@ platform.
 * MIPS Options::
 * MMIX Options::
 * MN10300 Options::
-* NS32K Options::
 * PDP-11 Options::
 * PowerPC Options::
 * RS/6000 and PowerPC Options::
@@ -10405,148 +10398,6 @@ to shorten branches, calls and absolute memory addresses.  This option only
 has an effect when used on the command line for the final link step.
 
 This option makes symbolic debugging impossible.
-@end table
-
-@node NS32K Options
-@subsection NS32K Options
-@cindex NS32K options
-
-These are the @samp{-m} options defined for the 32000 series.  The default
-values for these options depends on which style of 32000 was selected when
-the compiler was configured; the defaults for the most common choices are
-given below.
-
-@table @gcctabopt
-@item -m32032
-@itemx -m32032
-@opindex m32032
-@opindex m32032
-Generate output for a 32032.  This is the default
-when the compiler is configured for 32032 and 32016 based systems.
-
-@item -m32332
-@itemx -m32332
-@opindex m32332
-@opindex m32332
-Generate output for a 32332.  This is the default
-when the compiler is configured for 32332-based systems.
-
-@item -m32532
-@itemx -m32532
-@opindex m32532
-@opindex m32532
-Generate output for a 32532.  This is the default
-when the compiler is configured for 32532-based systems.
-
-@item -m32081
-@opindex m32081
-Generate output containing 32081 instructions for floating point.
-This is the default for all systems.
-
-@item -m32381
-@opindex m32381
-Generate output containing 32381 instructions for floating point.  This
-also implies @option{-m32081}.  The 32381 is only compatible with the 32332
-and 32532 cpus.  This is the default for the pc532-netbsd configuration.
-
-@item -mmulti-add
-@opindex mmulti-add
-Try and generate multiply-add floating point instructions @code{polyF}
-and @code{dotF}.  This option is only available if the @option{-m32381}
-option is in effect.  Using these instructions requires changes to
-register allocation which generally has a negative impact on
-performance.  This option should only be enabled when compiling code
-particularly likely to make heavy use of multiply-add instructions.
-
-@item -mnomulti-add
-@opindex mnomulti-add
-Do not try and generate multiply-add floating point instructions
-@code{polyF} and @code{dotF}.  This is the default on all platforms.
-
-@item -msoft-float
-@opindex msoft-float
-Generate output containing library calls for floating point.
-@strong{Warning:} the requisite libraries may not be available.
-
-@item -mieee-compare
-@itemx -mno-ieee-compare
-@opindex mieee-compare
-@opindex mno-ieee-compare
-Control whether or not the compiler uses IEEE floating point
-comparisons.  These handle correctly the case where the result of a
-comparison is unordered.
-@strong{Warning:} the requisite kernel support may not be available.
-
-@item -mnobitfield
-@opindex mnobitfield
-Do not use the bit-field instructions.  On some machines it is faster to
-use shifting and masking operations.  This is the default for the pc532.
-
-@item -mbitfield
-@opindex mbitfield
-Do use the bit-field instructions.  This is the default for all platforms
-except the pc532.
-
-@item -mrtd
-@opindex mrtd
-Use a different function-calling convention, in which functions
-that take a fixed number of arguments return pop their
-arguments on return with the @code{ret} instruction.
-
-This calling convention is incompatible with the one normally
-used on Unix, so you cannot use it if you need to call libraries
-compiled with the Unix compiler.
-
-Also, you must provide function prototypes for all functions that
-take variable numbers of arguments (including @code{printf});
-otherwise incorrect code will be generated for calls to those
-functions.
-
-In addition, seriously incorrect code will result if you call a
-function with too many arguments.  (Normally, extra arguments are
-harmlessly ignored.)
-
-This option takes its name from the 680x0 @code{rtd} instruction.
-
-
-@item -mregparam
-@opindex mregparam
-Use a different function-calling convention where the first two arguments
-are passed in registers.
-
-This calling convention is incompatible with the one normally
-used on Unix, so you cannot use it if you need to call libraries
-compiled with the Unix compiler.
-
-@item -mnoregparam
-@opindex mnoregparam
-Do not pass any arguments in registers.  This is the default for all
-targets.
-
-@item -msb
-@opindex msb
-It is OK to use the sb as an index register which is always loaded with
-zero.  This is the default for the pc532-netbsd target.
-
-@item -mnosb
-@opindex mnosb
-The sb register is not available for use or has not been initialized to
-zero by the run time system.  This is the default for all targets except
-the pc532-netbsd.  It is also implied whenever @option{-mhimem} or
-@option{-fpic} is set.
-
-@item -mhimem
-@opindex mhimem
-Many ns32000 series addressing modes use displacements of up to 512MB@.
-If an address is above 512MB then displacements from zero can not be used.
-This option causes code to be generated which can be loaded above 512MB@.
-This may be useful for operating systems or ROM code.
-
-@item -mnohimem
-@opindex mnohimem
-Assume code will be loaded in the first 512MB of virtual address space.
-This is the default for all platforms.
-
 @end table
 
 @node PDP-11 Options

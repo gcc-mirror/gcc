@@ -1,4 +1,0 @@
-# We want fine grained libraries, so use the new code to build the
-# floating point emulation libraries.
-LIB2FUNCS_EXTRA = $(srcdir)/config/ns32k/__unorddf2.c \
-                  $(srcdir)/config/ns32k/__unordsf2.c

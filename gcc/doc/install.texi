@@ -2244,8 +2244,6 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#x-ibm-aix,,*-ibm-aix*}
 @item
-@uref{#ip2k-x-elf,,ip2k-*-elf}
-@item
 @uref{#iq2000-x-elf,,iq2000-*-elf}
 @item
 @uref{#m32r-x-elf,,m32r-*-elf}
@@ -3174,16 +3172,6 @@ both Power or PowerPC processors.
 
 A default can be specified with the @option{-mcpu=@var{cpu_type}}
 switch and using the configure option @option{--with-cpu-@var{cpu_type}}.
-
-@html
-<hr />
-@end html
-@heading @anchor{ip2k-x-elf}ip2k-*-elf
-Ubicom IP2022 micro controller.
-This configuration is intended for embedded systems.
-There are no standard Unix configurations.
-
-Use @samp{configure --target=ip2k-elf --enable-languages=c} to configure GCC@.
 
 @html
 <hr />

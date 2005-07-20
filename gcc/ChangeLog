@@ -1,3 +1,14 @@
+2005-07-20  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config.gcc: Remove support for sparc-*-openbsd*,
+	i860-*-sysv4*, ip2k-*-elf, ns32k-*-netbsdelf*,
+	ns32k-*-netbsd*.
+	* config.host: Remove support for i860-*-sysv4* as a host.
+	* config/i860/*, config/ip2k/*, config/ns32k/*,
+	config/sparc/openbsd.h, config/sparc/t-openbsd: Remove.
+	* doc/install.texi, doc/invoke.texi, doc/md.texi: Don't
+	mention obsolete ports.
+
 2005-07-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (regno_reg_class): Add GENERAL_REGS for

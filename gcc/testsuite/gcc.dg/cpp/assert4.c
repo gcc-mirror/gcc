@@ -254,14 +254,6 @@
 # error
 #endif
 
-#if defined __i860__
-# if !#cpu(i860) || !#machine(i860)
-#  error
-# endif
-#elif #cpu(i860) || #machine(i860)
-# error
-#endif
-
 #if defined __ia64__
 # if !#cpu(ia64) || !#machine(ia64)
 #  error
@@ -316,14 +308,6 @@
 #  error
 # endif
 #elif #cpu(mn10300) || #machine(mn10300)
-# error
-#endif
-
-#if defined __ns32k__
-# if !#cpu(ns32k) || !#machine(ns32k)
-#  error
-# endif
-#elif #cpu(ns32k) || #machine(ns32k)
 # error
 #endif
 
