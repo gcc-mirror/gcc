@@ -177,9 +177,6 @@ case ${host} in
     out_host_hook_obj="${out_host_hook_obj} host-i386-darwin.o"
     host_xmake_file="${host_xmake_file} i386/x-darwin"
     ;;
-  i860-*-sysv4*)
-    host_xmake_file=i860/x-sysv4
-    ;;
   powerpc-*-beos*)
     host_can_use_collect2=no
     ;;

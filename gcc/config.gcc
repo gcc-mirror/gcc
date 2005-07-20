@@ -184,12 +184,7 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
-   sparc-*-openbsd*	\
- | i860-*-sysv4*	\
- | ip2k-*-elf		\
- | ns32k-*-netbsdelf*	\
- | ns32k-*-netbsd*	\
- | c4x-*		\
+   c4x-*		\
  | tic4x-*		\
  )
     if test "x$enable_obsolete" != xyes; then
@@ -1226,12 +1221,6 @@ i[34567]86-*-kaos*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/i386elf.h kaos.h i386/kaos-i386.h"
 	tmake_file="i386/t-i386elf t-svr4"
 	;;
-i860-*-sysv4*)
-        tm_file="${tm_file} elfos.h svr4.h i860/sysv4.h"
-        tmake_file="i860/t-i860 i860/t-svr4"
-        extra_parts="crtbegin.o crtend.o"
-	use_fixproto=yes
-        ;;
 ia64*-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h ia64/sysv4.h ia64/elf.h"
 	tmake_file="ia64/t-ia64"
@@ -1278,10 +1267,6 @@ ia64*-*-hpux*)
 	# If we decide to run fixproto we should define FIXPROTO_DEFINES
 	# in ia64/t-hpux, and also fix the definition of putenv in
 	# sys-protos.h (const char not char).
-	;;
-ip2k-*-elf)
-	tm_file="elfos.h ${tm_file}"
-	use_fixproto=yes
 	;;
 iq2000*-*-elf*)
         tm_file="svr4.h elfos.h iq2000/iq2000.h"
@@ -1556,16 +1541,6 @@ mn10300-*-*)
 	fi
 	use_collect2=no
 	use_fixproto=yes
-	;;
-ns32k-*-netbsdelf*)
-	echo "GCC does not yet support the ${target} target"; exit 1
-	;;
-ns32k-*-netbsd*)
-	tm_file="${tm_file} netbsd.h netbsd-aout.h ns32k/netbsd.h"
-	# On NetBSD, the headers are already okay, except for math.h.
-	tmake_file="t-netbsd ns32k/t-ns32k"
-	extra_parts=""
-	use_collect2=yes
 	;;
 pdp11-*-bsd)
 	tm_file="${tm_file} pdp11/2bsd.h"
@@ -1994,14 +1969,6 @@ sh-*-*)
 sparc-*-netbsdelf*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h netbsd.h netbsd-elf.h sparc/netbsd-elf.h"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
-	;;
-sparc-*-openbsd*)
-	tm_defines=OBSD_OLD_GAS
-	tm_file="sparc/sparc.h openbsd.h sparc/openbsd.h"
-	# needed to unconfuse gdb
-	tmake_file="t-libc-ok t-openbsd sparc/t-openbsd"
-	# we need collect2 until our bug is fixed...
-	use_collect2=yes
 	;;
 sparc64-*-openbsd*)
 	tm_file="sparc/openbsd1-64.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/sp64-elf.h openbsd.h sparc/openbsd64.h"

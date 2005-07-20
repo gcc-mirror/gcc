@@ -1,3 +1,8 @@
+2005-07-20  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gcc.dg/20020312-2.c, gcc.dg/sibcall-3.c, gcc.dg/sibcall-4.c,
+	gcc.dg/cpp/assert4.c: Don't mention obsolete ports.
+
 2005-07-19  James A. Morrison  <phython@gcc.gnu.org>
 
 	* gcc.dg/fold-abs-1.c: New test.
