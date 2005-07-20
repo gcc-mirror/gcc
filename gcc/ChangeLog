@@ -1,3 +1,9 @@
+2005-07-20  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config.gcc: Add support for *-*-freebsd7, *-*-freebsd8,
+	and *-*-freebsd9.
+	* config/freebsd-spec.h (FBSD_TARGET_OS_CPP_BUILTINS): Ditto.
+	
 2005-07-20  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c: Include "langhooks.h".
