@@ -5975,8 +5975,6 @@ output_init_element (tree value, bool strict_string, tree type, tree field,
   /* Otherwise, output this element either to
      constructor_elements or to the assembler file.  */
 
-  if (field && TREE_CODE (field) == INTEGER_CST)
-    field = copy_node (field);
   celt = VEC_safe_push (constructor_elt, gc, constructor_elements, NULL);
   celt->index = field;
   celt->value = value;
