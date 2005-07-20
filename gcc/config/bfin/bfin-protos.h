@@ -64,7 +64,6 @@ extern void print_operand (FILE *,  rtx, char);
 extern void print_address_operand (FILE *, rtx);
 extern void split_di (rtx [], int, rtx [], rtx []);
 extern int split_load_immediate (rtx []);
-extern rtx legitimize_pic_address (rtx, rtx);
 extern void emit_pic_move (rtx *, Mmode);
 extern void override_options (void);
 extern void asm_conditional_branch (rtx, rtx *, int, int);
