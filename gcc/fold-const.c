@@ -6827,7 +6827,8 @@ fold_unary (enum tree_code code, tree type, tree op0)
 						    TREE_TYPE (targ0),
 						    targ0));
 	}
-      else if (tree_expr_nonnegative_p (arg0))
+      /* ABS_EXPR<ABS_EXPR<x>> = ABS_EXPR<x> even if flag_wrapv is on.  */
+      else if (tree_expr_nonnegative_p (arg0) || TREE_CODE (arg0) == ABS_EXPR)
 	return arg0;
 
       /* Strip sign ops from argument.  */
@@ -10527,7 +10528,11 @@ tree_expr_nonnegative_p (tree t)
   switch (TREE_CODE (t))
     {
     case ABS_EXPR:
-      return 1;
+      /* We can't return 1 if flag_wrapv is set because
+	 ABS_EXPR<INT_MIN> = INT_MIN.  */
+      if (!flag_wrapv)
+        return 1;
+      break;
 
     case INTEGER_CST:
       return tree_int_cst_sgn (t) >= 0;
@@ -10804,8 +10809,7 @@ tree_expr_nonzero_p (tree t)
   switch (TREE_CODE (t))
     {
     case ABS_EXPR:
-      if (!TYPE_UNSIGNED (type) && !flag_wrapv)
-	return tree_expr_nonzero_p (TREE_OPERAND (t, 0));
+      return tree_expr_nonzero_p (TREE_OPERAND (t, 0));
 
     case INTEGER_CST:
       /* We used to test for !integer_zerop here.  This does not work correctly

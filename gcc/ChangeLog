@@ -1,3 +1,12 @@
+2005-07-19  James A. Morrison  <phython@gcc.gnu.org>
+
+	* fold-const.c (tree_expr_nonnegative_p): Only return true for
+	ABS_EXPR when flag_wrapv is false because of INT_MIN.
+	(tree_expr_nonzero_p): Always call tree_expr_nonzero_p on the argument
+	of an ABS_EXPR.
+	(fold_unary): Always fold ABS_EXPR<ABS_EXPR<x>> into
+	ABS_EXPR<x>.
+
 2005-07-20  Giovanni Bajo  <giovannibajo@libero.it>
 
 	Make CONSTRUCTOR use VEC to store initializers.
