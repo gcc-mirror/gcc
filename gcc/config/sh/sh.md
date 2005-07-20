@@ -150,6 +150,8 @@
   (UNSPEC_DIV_INV20	34)
   (UNSPEC_ASHIFTRT	35)
   (UNSPEC_THUNK		36)
+  (UNSPEC_SP_SET	40)
+  (UNSPEC_SP_TEST	41)
 
   ;; These are used with unspec_volatile.
   (UNSPECV_BLOCKAGE	0)
@@ -13131,3 +13133,112 @@ mov.l\\t1f,r0\\n\\
   if (!n_changes)
     FAIL;
 }")
+
+; Stack Protector Patterns
+
+(define_expand "stack_protect_set"
+  [(set (match_operand 0 "memory_operand" "")
+	(match_operand 1 "memory_operand" ""))]
+  ""
+{
+  if (TARGET_SHMEDIA)
+    {
+      if (TARGET_SHMEDIA64)
+	emit_insn (gen_stack_protect_set_di_media (operands[0], operands[1]));
+      else
+	emit_insn (gen_stack_protect_set_si_media (operands[0], operands[1]));
+    }
+  else
+    emit_insn (gen_stack_protect_set_si (operands[0], operands[1]));
+
+  DONE;
+})
+
+(define_insn "stack_protect_set_si"
+  [(set (match_operand:SI 0 "memory_operand" "=m")
+        (unspec:SI [(match_operand:SI 1 "memory_operand" "m")] UNSPEC_SP_SET))
+   (set (match_scratch:SI 2 "=&r") (const_int 0))]
+  "!TARGET_SHMEDIA"
+  "mov.l\t%1, %2\;mov.l\t%2, %0\;mov\t#0, %2"
+  [(set_attr "type" "other")
+   (set_attr "length" "6")])
+
+(define_insn "stack_protect_set_si_media"
+  [(set (match_operand:SI 0 "memory_operand" "=m")
+        (unspec:SI [(match_operand:SI 1 "memory_operand" "m")] UNSPEC_SP_SET))
+   (set (match_scratch:SI 2 "=&r") (const_int 0))]
+  "TARGET_SHMEDIA"
+  "ld%M1.l\t%m1, %2\;st%M0.l\t%m0, %2\;movi\t0, %2"
+  [(set_attr "type" "other")
+   (set_attr "length" "12")])
+
+(define_insn "stack_protect_set_di_media"
+  [(set (match_operand:DI 0 "memory_operand" "=m")
+        (unspec:DI [(match_operand:DI 1 "memory_operand" "m")] UNSPEC_SP_SET))
+   (set (match_scratch:DI 2 "=&r") (const_int 0))]
+  "TARGET_SHMEDIA64"
+  "ld%M1.q\t%m1, %2\;st%M0.q\t%m0, %2\;movi\t0, %2"
+  [(set_attr "type" "other")
+   (set_attr "length" "12")])
+
+(define_expand "stack_protect_test"
+  [(match_operand 0 "memory_operand" "")
+   (match_operand 1 "memory_operand" "")
+   (match_operand 2 "" "")]
+  ""
+{
+  if (TARGET_SHMEDIA)
+    {
+      rtx tmp = gen_reg_rtx (GET_MODE (operands[0]));
+
+      if (TARGET_SHMEDIA64)
+	emit_insn (gen_stack_protect_test_di_media (tmp, operands[0],
+						    operands[1]));
+      else
+	emit_insn (gen_stack_protect_test_si_media (tmp, operands[0],
+						    operands[1]));
+
+      emit_jump_insn (gen_bne_media (operands[2], tmp, const0_rtx));
+    }
+  else
+    {
+      emit_insn (gen_stack_protect_test_si (operands[0], operands[1]));
+      emit_jump_insn (gen_branch_true (operands[2]));
+    }
+
+  DONE;
+})
+
+(define_insn "stack_protect_test_si"
+  [(set (reg:SI T_REG)
+        (unspec:SI [(match_operand:SI 0 "memory_operand" "m")
+		    (match_operand:SI 1 "memory_operand" "m")]
+		   UNSPEC_SP_TEST))
+  (set (match_scratch:SI 2 "=&r") (const_int 0))
+  (set (match_scratch:SI 3 "=&r") (const_int 0))]
+  "!TARGET_SHMEDIA"
+  "mov.l\t%0, %2\;mov.l\t%1, %3\;cmp/eq\t%2, %3\;mov\t#0, %2\;mov\t#0, %3"
+  [(set_attr "type" "other")
+   (set_attr "length" "10")])
+
+(define_insn "stack_protect_test_si_media"
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+        (unspec:SI [(match_operand:SI 1 "memory_operand" "m")
+		    (match_operand:SI 2 "memory_operand" "m")]
+		   UNSPEC_SP_TEST))
+  (set (match_scratch:SI 3 "=&r") (const_int 0))]
+  "TARGET_SHMEDIA"
+  "ld%M1.l\t%m1, %0\;ld%M2.l\t%m2, %3\;cmpeq\t%0, %3, %0\;movi\t0, %3"
+  [(set_attr "type" "other")
+   (set_attr "length" "16")])
+
+(define_insn "stack_protect_test_di_media"
+  [(set (match_operand:DI 0 "register_operand" "=&r")
+        (unspec:DI [(match_operand:DI 1 "memory_operand" "m")
+		    (match_operand:DI 2 "memory_operand" "m")]
+		   UNSPEC_SP_TEST))
+  (set (match_scratch:DI 3 "=&r") (const_int 0))]
+  "TARGET_SHMEDIA64"
+  "ld%M1.q\t%m1, %0\;ld%M2.q\t%m2, %3\;cmpeq\t%0, %3, %0\;movi\t0, %3"
+  [(set_attr "type" "other")
+   (set_attr "length" "16")])
