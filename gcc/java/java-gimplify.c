@@ -296,7 +296,8 @@ java_gimplify_new_array_init (tree exp)
   HOST_WIDE_INT ilength = java_array_type_length (array_type);
   tree length = build_int_cst (NULL_TREE, ilength);
   tree init = TREE_OPERAND (exp, 0);
-  tree values = CONSTRUCTOR_ELTS (init);
+  tree value;
+  unsigned HOST_WIDE_INT cnt;
 
   tree array_ptr_type = build_pointer_type (array_type);
   tree tmp = create_tmp_var (array_ptr_type, "array");
@@ -306,7 +307,7 @@ java_gimplify_new_array_init (tree exp)
   int index = 0;
 
   /* FIXME: try to allocate array statically?  */
-  while (values != NULL_TREE)
+  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (init), cnt, value)
     {
       /* FIXME: Should use build_java_arrayaccess here, but avoid
 	 bounds checking.  */
@@ -317,9 +318,8 @@ java_gimplify_new_array_init (tree exp)
 				build4 (ARRAY_REF, element_type, lhs,
 					build_int_cst (NULL_TREE, index++),
 					NULL_TREE, NULL_TREE),
-				TREE_VALUE (values));
+				value);
       body = build2 (COMPOUND_EXPR, element_type, body, assignment);
-      values = TREE_CHAIN (values);
     }
 
   return build2 (COMPOUND_EXPR, array_ptr_type, body, tmp);

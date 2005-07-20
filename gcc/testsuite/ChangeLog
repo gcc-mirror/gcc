@@ -1,3 +1,10 @@
+2005-07-20  Giovanni Bajo  <giovannibajo@libero.it>
+
+	Make CONSTRUCTOR use VEC to store initializers.
+	* g++.dg/ext/complit3.C: Check for specific error messages.
+	* g++.dg/init/brace2.C: Update error message.
+	* g++.dg/warn/Wbraces2.C: Likewise.
+
 2005-07-19 Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/16940

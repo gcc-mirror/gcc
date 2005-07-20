@@ -1266,6 +1266,23 @@ dump_expr_list (tree l, int flags)
     }
 }
 
+/* Print out a vector of initializers (subr of dump_expr).  */
+
+static void
+dump_expr_init_vec (VEC(constructor_elt,gc) *v, int flags)
+{
+  unsigned HOST_WIDE_INT idx;
+  tree value;
+
+  FOR_EACH_CONSTRUCTOR_VALUE (v, idx, value)
+    {
+      dump_expr (value, flags | TFF_EXPR_IN_PARENS);
+      if (idx != VEC_length (constructor_elt, v) - 1)
+	pp_separate_with_comma (cxx_pp);
+    }
+}
+
+
 /* Print out an expression E under control of FLAGS.  */
 
 static void
@@ -1659,7 +1676,7 @@ dump_expr (tree t, int flags)
 		}
 	    }
 	}
-      if (TREE_TYPE (t) && !CONSTRUCTOR_ELTS (t))
+      if (TREE_TYPE (t) && EMPTY_CONSTRUCTOR_P (t))
 	{
 	  dump_type (TREE_TYPE (t), 0);
 	  pp_cxx_left_paren (cxx_pp);
@@ -1668,7 +1685,7 @@ dump_expr (tree t, int flags)
       else
 	{
 	  pp_cxx_left_brace (cxx_pp);
-	  dump_expr_list (CONSTRUCTOR_ELTS (t), flags);
+	  dump_expr_init_vec (CONSTRUCTOR_ELTS (t), flags);
 	  pp_cxx_right_brace (cxx_pp);
 	}
 

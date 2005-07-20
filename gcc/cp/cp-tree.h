@@ -2417,9 +2417,10 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 #define BRACE_ENCLOSED_INITIALIZER_P(NODE) \
   (TREE_CODE (NODE) == CONSTRUCTOR && !TREE_TYPE (NODE))
 
-#define EMPTY_CONSTRUCTOR_P(NODE) (TREE_CODE (NODE) == CONSTRUCTOR	   \
-				   && CONSTRUCTOR_ELTS (NODE) == NULL_TREE \
-				   && ! TREE_HAS_CONSTRUCTOR (NODE))
+#define EMPTY_CONSTRUCTOR_P(NODE) (TREE_CODE (NODE) == CONSTRUCTOR \
+				   && VEC_empty (constructor_elt, \
+						 CONSTRUCTOR_ELTS (NODE)) \
+				   && !TREE_HAS_CONSTRUCTOR (NODE))
 
 /* Nonzero means that an object of this type can not be initialized using
    an initializer list.  */
@@ -4168,7 +4169,7 @@ extern tree finish_increment_expr		(tree, enum tree_code);
 extern tree finish_this_expr			(void);
 extern tree finish_pseudo_destructor_expr       (tree, tree, tree);
 extern tree finish_unary_op_expr		(enum tree_code, tree);
-extern tree finish_compound_literal		(tree, tree);
+extern tree finish_compound_literal		(tree, VEC(constructor_elt,gc) *);
 extern tree finish_fname			(tree);
 extern void finish_translation_unit		(void);
 extern tree finish_template_type_parm		(tree, tree);
@@ -4348,7 +4349,7 @@ extern void complete_type_check_abstract	(tree);
 extern int abstract_virtuals_error		(tree, tree);
 
 extern tree store_init_value			(tree, tree);
-extern tree digest_init				(tree, tree, tree *);
+extern tree digest_init				(tree, tree);
 extern tree build_scoped_ref			(tree, tree, tree *);
 extern tree build_x_arrow			(tree);
 extern tree build_m_component_ref		(tree, tree);

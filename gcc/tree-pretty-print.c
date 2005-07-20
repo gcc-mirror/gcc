@@ -778,36 +778,29 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
     case CONSTRUCTOR:
       {
-	tree lnode;
+	unsigned HOST_WIDE_INT ix;
+	tree field, val;
 	bool is_struct_init = FALSE;
 	pp_character (buffer, '{');
-	lnode = CONSTRUCTOR_ELTS (node);
 	if (TREE_CODE (TREE_TYPE (node)) == RECORD_TYPE
 	    || TREE_CODE (TREE_TYPE (node)) == UNION_TYPE)
 	  is_struct_init = TRUE;
-	while (lnode && lnode != error_mark_node)
+	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (node), ix, field, val)
 	  {
-	    tree val;
-	    if (TREE_PURPOSE (lnode) && is_struct_init)
+	    if (field && is_struct_init)
 	      {
 		pp_character (buffer, '.');
-		dump_generic_node (buffer, TREE_PURPOSE (lnode), spc, flags, false);
+		dump_generic_node (buffer, field, spc, flags, false);
 		pp_string (buffer, "=");
 	      }
-	    val = TREE_VALUE (lnode);
 	    if (val && TREE_CODE (val) == ADDR_EXPR)
 	      if (TREE_CODE (TREE_OPERAND (val, 0)) == FUNCTION_DECL)
 		val = TREE_OPERAND (val, 0);
 	    if (val && TREE_CODE (val) == FUNCTION_DECL)
-	      {
 		dump_decl_name (buffer, val, flags);
-	      }
 	    else
-	      {
-		dump_generic_node (buffer, TREE_VALUE (lnode), spc, flags, false);
-	      }
-	    lnode = TREE_CHAIN (lnode);
-	    if (lnode && TREE_CODE (lnode) == TREE_LIST)
+		dump_generic_node (buffer, val, spc, flags, false);
+	    if (ix != VEC_length (constructor_elt, CONSTRUCTOR_ELTS (node)) - 1)
 	      {
 		pp_character (buffer, ',');
 		pp_space (buffer);

@@ -1390,10 +1390,13 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
       {
 	/* General aggregate CONSTRUCTORs have been decomposed, but they
 	   are still in use as the COMPLEX_EXPR equivalent for vectors.  */
+	constructor_elt *ce;
+	unsigned HOST_WIDE_INT idx;
 
-	tree t;
-	for (t = TREE_OPERAND (expr, 0); t ; t = TREE_CHAIN (t))
-	  get_expr_operands (stmt, &TREE_VALUE (t), opf_none);
+	for (idx = 0;
+	     VEC_iterate (constructor_elt, CONSTRUCTOR_ELTS (expr), idx, ce);
+	     idx++)
+	  get_expr_operands (stmt, &ce->value, opf_none);
 
 	return;
       }

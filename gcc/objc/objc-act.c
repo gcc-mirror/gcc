@@ -2001,7 +2001,7 @@ objc_add_static_instance (tree constructor, tree class_decl)
 static tree
 objc_build_constructor (tree type, tree elts)
 {
-  tree constructor = build_constructor (type, elts);
+  tree constructor = build_constructor_from_list (type, elts);
 
   TREE_CONSTANT (constructor) = 1;
   TREE_STATIC (constructor) = 1;

@@ -903,37 +903,24 @@ grokfield (const cp_declarator *declarator,
       else if (pedantic && TREE_CODE (value) != VAR_DECL)
 	/* Already complained in grokdeclarator.  */
 	init = NULL_TREE;
-      else
+      else if (!processing_template_decl)
 	{
-	  /* We allow initializers to become parameters to base
-	     initializers.  */
-	  if (TREE_CODE (init) == TREE_LIST)
-	    {
-	      if (TREE_CHAIN (init) == NULL_TREE)
-		init = TREE_VALUE (init);
-	      else
-		init = digest_init (TREE_TYPE (value), init, (tree *)0);
-	    }
+	  if (TREE_CODE (init) == CONSTRUCTOR)
+	    init = digest_init (TREE_TYPE (value), init);
+	  else
+	    init = integral_constant_value (init);
 
-	  if (!processing_template_decl)
+	  if (init != error_mark_node && !TREE_CONSTANT (init))
 	    {
-	      if (TREE_CODE (init) == CONSTRUCTOR)
-		init = digest_init (TREE_TYPE (value), init, (tree *)0);
-	      else
-		init = integral_constant_value (init);
-
-	      if (init != error_mark_node && ! TREE_CONSTANT (init))
+	      /* We can allow references to things that are effectively
+		 static, since references are initialized with the
+		 address.  */
+	      if (TREE_CODE (TREE_TYPE (value)) != REFERENCE_TYPE
+		  || (TREE_STATIC (init) == 0
+		      && (!DECL_P (init) || DECL_EXTERNAL (init) == 0)))
 		{
-		  /* We can allow references to things that are effectively
-		     static, since references are initialized with the
-		     address.  */
-		  if (TREE_CODE (TREE_TYPE (value)) != REFERENCE_TYPE
-		      || (TREE_STATIC (init) == 0
-			  && (!DECL_P (init) || DECL_EXTERNAL (init) == 0)))
-		    {
-		      error ("field initializer is not constant");
-		      init = error_mark_node;
-		    }
+		  error ("field initializer is not constant");
+		  init = error_mark_node;
 		}
 	    }
 	}
@@ -1262,11 +1249,12 @@ coerce_delete_type (tree type)
 static void
 mark_vtable_entries (tree decl)
 {
-  tree entries = CONSTRUCTOR_ELTS (DECL_INITIAL (decl));
+  tree fnaddr;
+  unsigned HOST_WIDE_INT idx;
 
-  for (; entries; entries = TREE_CHAIN (entries))
+  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (DECL_INITIAL (decl)),
+			      idx, fnaddr)
     {
-      tree fnaddr = TREE_VALUE (entries);
       tree fn;
 
       STRIP_NOPS (fnaddr);

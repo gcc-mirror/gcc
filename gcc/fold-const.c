@@ -9861,9 +9861,11 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
       if (TREE_CODE (arg0) == CONSTRUCTOR
 	  && ! type_contains_placeholder_p (TREE_TYPE (arg0)))
 	{
-	  tree m = purpose_member (arg1, CONSTRUCTOR_ELTS (arg0));
-	  if (m)
-	    return TREE_VALUE (m);
+	  unsigned HOST_WIDE_INT idx;
+	  tree field, value;
+	  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (arg0), idx, field, value)
+	    if (field == arg1)
+	      return value;
 	}
       return NULL_TREE;
 

@@ -2241,7 +2241,7 @@ stabilize_init (tree init, tree *initp)
       if (TREE_CODE (t) == COMPOUND_EXPR)
 	t = expr_last (t);
       if (TREE_CODE (t) == CONSTRUCTOR
-	  && CONSTRUCTOR_ELTS (t) == NULL_TREE)
+	  && EMPTY_CONSTRUCTOR_P (t))
 	{
 	  /* Default-initialization.  */
 	  *initp = NULL_TREE;

@@ -5625,7 +5625,8 @@ extract_values (tree values, tree record_type)
       else if (DECL_INTERNAL_P (field))
 	{
 	  value = extract_values (values, TREE_TYPE (field));
-	  if (TREE_CODE (value) == CONSTRUCTOR && !CONSTRUCTOR_ELTS (value))
+	  if (TREE_CODE (value) == CONSTRUCTOR
+	      && VEC_empty (constructor_elt, CONSTRUCTOR_ELTS (value)))
 	    value = 0;
 	}
       else

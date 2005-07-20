@@ -184,12 +184,9 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
   else if (CLASS_TYPE_P (type))
     {
       tree field;
-      tree inits;
+      VEC(constructor_elt,gc) *v = NULL;
 
-      /* Build a constructor to contain the initializations.  */
-      init = build_constructor (type, NULL_TREE);
       /* Iterate over the fields, building initializations.  */
-      inits = NULL_TREE;
       for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
 	{
 	  if (TREE_CODE (field) != FIELD_DECL)
@@ -200,27 +197,27 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
 	     over TYPE_FIELDs will result in correct initialization of
 	     all of the subobjects.  */
 	  if (static_storage_p && !zero_init_p (TREE_TYPE (field)))
-	    inits = tree_cons (field,
-			       build_zero_init (TREE_TYPE (field),
-						/*nelts=*/NULL_TREE,
-						static_storage_p),
-			       inits);
+	    {
+	      tree value = build_zero_init (TREE_TYPE (field),
+					    /*nelts=*/NULL_TREE,
+					    static_storage_p);
+	      CONSTRUCTOR_APPEND_ELT(v, field, value);
+	    }
 
 	  /* For unions, only the first field is initialized.  */
 	  if (TREE_CODE (type) == UNION_TYPE)
 	    break;
 	}
-      CONSTRUCTOR_ELTS (init) = nreverse (inits);
+
+	/* Build a constructor to contain the initializations.  */
+	init = build_constructor (type, v);
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     {
       tree max_index;
-      tree inits;
+      VEC(constructor_elt,gc) *v = NULL;
 
-      /* Build a constructor to contain the initializations.  */
-      init = build_constructor (type, NULL_TREE);
       /* Iterate over the array elements, building initializations.  */
-      inits = NULL_TREE;
       if (nelts)
 	max_index = fold_build2 (MINUS_EXPR, TREE_TYPE (nelts),
 				 nelts, integer_one_node);
@@ -232,21 +229,25 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
 	 have an upper bound of -1.  */
       if (!tree_int_cst_equal (max_index, integer_minus_one_node))
 	{
-	  tree elt_init = build_zero_init (TREE_TYPE (type),
-					   /*nelts=*/NULL_TREE,
-					   static_storage_p);
-	  tree range;
+	  constructor_elt *ce;
+
+	  v = VEC_alloc (constructor_elt, gc, 1);
+	  ce = VEC_quick_push (constructor_elt, v, NULL);
 
 	  /* If this is a one element array, we just use a regular init.  */
 	  if (tree_int_cst_equal (size_zero_node, max_index))
-	    range = size_zero_node;
+	    ce->index = size_zero_node;
 	  else
-	   range = build2 (RANGE_EXPR, sizetype, size_zero_node, max_index);
+	    ce->index = build2 (RANGE_EXPR, sizetype, size_zero_node,
+				max_index);
 
-	  inits = tree_cons (range, elt_init, inits);
+	  ce->value = build_zero_init (TREE_TYPE (type),
+				       /*nelts=*/NULL_TREE,
+				       static_storage_p);
 	}
 
-      CONSTRUCTOR_ELTS (init) = nreverse (inits);
+      /* Build a constructor to contain the initializations.  */
+      init = build_constructor (type, v);
     }
   else
     gcc_assert (TREE_CODE (type) == REFERENCE_TYPE);
@@ -1191,7 +1192,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags)
 	{
 	  /* A brace-enclosed initializer for an aggregate.  */
 	  gcc_assert (CP_AGGREGATE_TYPE_P (type));
-	  init = digest_init (type, init, (tree *)NULL);
+	  init = digest_init (type, init);
 	}
       else
 	init = ocp_convert (type, init, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);
@@ -2417,7 +2418,7 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
       && ((TREE_CODE (init) == CONSTRUCTOR
 	   /* Don't do this if the CONSTRUCTOR might contain something
 	      that might throw and require us to clean up.  */
-	   && (CONSTRUCTOR_ELTS (init) == NULL_TREE
+	   && (VEC_empty (constructor_elt, CONSTRUCTOR_ELTS (init))
 	       || ! TYPE_HAS_NONTRIVIAL_DESTRUCTOR (inner_elt_type)))
 	  || from_array))
     {
@@ -2485,13 +2486,12 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
     {
       /* Do non-default initialization of non-POD arrays resulting from
 	 brace-enclosed initializers.  */
-
-      tree elts;
+      unsigned HOST_WIDE_INT idx;
+      tree elt;
       from_array = 0;
 
-      for (elts = CONSTRUCTOR_ELTS (init); elts; elts = TREE_CHAIN (elts))
+      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (init), idx, elt)
 	{
-	  tree elt = TREE_VALUE (elts);
 	  tree baseref = build1 (INDIRECT_REF, type, base);
 
 	  num_initialized_elts++;

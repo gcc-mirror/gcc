@@ -1220,14 +1220,14 @@ gfc_trans_character_select (gfc_code *code)
       tmp = gfc_build_addr_expr (pvoid_type_node, labels[i]);
       node = tree_cons (ss_target, tmp, node);
 
-      tmp = build1 (CONSTRUCTOR, select_struct, nreverse (node));
+      tmp = build_constructor_from_list (select_struct, nreverse (node));
       init = tree_cons (NULL_TREE, tmp, init);
     }
 
   type = build_array_type (select_struct, build_index_type
 			   (build_int_cst (NULL_TREE, n - 1)));
 
-  init = build1 (CONSTRUCTOR, type, nreverse(init));
+  init = build_constructor_from_list (type, nreverse(init));
   TREE_CONSTANT (init) = 1;
   TREE_INVARIANT (init) = 1;
   TREE_STATIC (init) = 1;

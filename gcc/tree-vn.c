@@ -182,7 +182,8 @@ set_value_handle (tree e, tree v)
 {
   if (TREE_CODE (e) == SSA_NAME)
     SSA_NAME_VALUE (e) = v;
-  else if (EXPR_P (e) || DECL_P (e) || TREE_CODE (e) == TREE_LIST)
+  else if (EXPR_P (e) || DECL_P (e) || TREE_CODE (e) == TREE_LIST
+	   || TREE_CODE (e) == CONSTRUCTOR)
     get_tree_ann (e)->common.value_handle = v;
   else
     /* Do nothing.  Constants are their own value handles.  */
@@ -287,7 +288,8 @@ get_value_handle (tree expr)
 
   if (TREE_CODE (expr) == SSA_NAME)
     return SSA_NAME_VALUE (expr);
-  else if (EXPR_P (expr) || DECL_P (expr) || TREE_CODE (expr) == TREE_LIST)
+  else if (EXPR_P (expr) || DECL_P (expr) || TREE_CODE (expr) == TREE_LIST
+	   || TREE_CODE (expr) == CONSTRUCTOR)
     {
       tree_ann_t ann = tree_ann (expr);
       return ((ann) ? ann->common.value_handle : NULL_TREE);

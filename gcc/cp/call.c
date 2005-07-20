@@ -4544,7 +4544,7 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
 
   if (TREE_CODE (arg) == CONSTRUCTOR)
     {
-      arg = digest_init (type, arg, 0);
+      arg = digest_init (type, arg);
       arg = convert_for_initialization (0, type, arg, LOOKUP_NORMAL,
 					"default argument", fn, parmnum);
     }

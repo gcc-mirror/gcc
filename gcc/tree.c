@@ -93,6 +93,7 @@ static const char * const tree_node_kind_names[] = {
   "binfos",
   "phi_nodes",
   "ssa names",
+  "constructors",
   "random kinds",
   "lang_decl kinds",
   "lang_type kinds"
@@ -328,6 +329,7 @@ tree_code_size (enum tree_code code)
 	case STATEMENT_LIST:	return sizeof (struct tree_statement_list);
 	case BLOCK:		return sizeof (struct tree_block);
 	case VALUE_HANDLE:	return sizeof (struct tree_value_handle);
+	case CONSTRUCTOR:	return sizeof (struct tree_constructor);
 
 	default:
 	  return lang_hooks.tree_size (code);
@@ -418,7 +420,7 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 	  kind = id_kind;
 	  break;
 
-	case TREE_VEC:;
+	case TREE_VEC:
 	  kind = vec_kind;
 	  break;
 
@@ -436,6 +438,10 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 
 	case BLOCK:
 	  kind = b_kind;
+	  break;
+
+	case CONSTRUCTOR:
+	  kind = constr_kind;
 	  break;
 
 	default:
@@ -904,26 +910,71 @@ build_vector (tree type, tree vals)
   return v;
 }
 
-/* Return a new CONSTRUCTOR node whose type is TYPE and whose values
-   are in a list pointed to by VALS.  */
+/* Return a new VECTOR_CST node whose type is TYPE and whose values
+   are extracted from V, a vector of CONSTRUCTOR_ELT.  */
+
 tree
-build_constructor (tree type, tree vals)
+build_vector_from_ctor (tree type, VEC(constructor_elt,gc) *v)
+{
+  tree list = NULL_TREE;
+  unsigned HOST_WIDE_INT idx;
+  tree value;
+
+  FOR_EACH_CONSTRUCTOR_VALUE (v, idx, value)
+    list = tree_cons (NULL_TREE, value, list);
+  return build_vector (type, nreverse (list));
+}
+
+/* Return a new CONSTRUCTOR node whose type is TYPE and whose values
+   are in the VEC pointed by VALS.  */
+tree
+build_constructor (tree type, VEC(constructor_elt,gc) *vals)
 {
   tree c = make_node (CONSTRUCTOR);
   TREE_TYPE (c) = type;
   CONSTRUCTOR_ELTS (c) = vals;
-
-  /* ??? May not be necessary.  Mirrors what build does.  */
-  if (vals)
-    {
-      TREE_SIDE_EFFECTS (c) = TREE_SIDE_EFFECTS (vals);
-      TREE_READONLY (c) = TREE_READONLY (vals);
-      TREE_CONSTANT (c) = TREE_CONSTANT (vals);
-      TREE_INVARIANT (c) = TREE_INVARIANT (vals);
-    }
-
   return c;
 }
+
+/* Build a CONSTRUCTOR node made of a single initializer, with the specified
+   INDEX and VALUE.  */
+tree
+build_constructor_single (tree type, tree index, tree value)
+{
+  VEC(constructor_elt,gc) *v;
+  constructor_elt *elt;
+
+  v = VEC_alloc (constructor_elt, gc, 1);
+  elt = VEC_quick_push (constructor_elt, v, NULL);
+  elt->index = index;
+  elt->value = value;
+
+  return build_constructor (type, v);
+}
+
+
+/* Return a new CONSTRUCTOR node whose type is TYPE and whose values
+   are in a list pointed to by VALS.  */
+tree
+build_constructor_from_list (tree type, tree vals)
+{
+  tree t;
+  VEC(constructor_elt,gc) *v = NULL;
+
+  if (vals)
+    {
+      v = VEC_alloc (constructor_elt, gc, list_length (vals));
+      for (t = vals; t; t = TREE_CHAIN (t))
+	{
+	  constructor_elt *elt = VEC_quick_push (constructor_elt, v, NULL);
+	  elt->index = TREE_PURPOSE (t);
+	  elt->value = TREE_VALUE (t);
+	}
+    }
+
+  return build_constructor (type, v);
+}
+
 
 /* Return a new REAL_CST node whose type is TYPE and value is D.  */
 
@@ -1951,6 +2002,7 @@ tree_node_structure (tree t)
     case PLACEHOLDER_EXPR:	return TS_COMMON;
     case STATEMENT_LIST:	return TS_STATEMENT_LIST;
     case BLOCK:			return TS_BLOCK;
+    case CONSTRUCTOR:		return TS_CONSTRUCTOR;
     case TREE_BINFO:		return TS_BINFO;
     case VALUE_HANDLE:		return TS_VALUE_HANDLE;
 
@@ -4321,8 +4373,21 @@ simple_cst_equal (tree t1, tree t2)
 			 TREE_STRING_LENGTH (t1)));
 
     case CONSTRUCTOR:
-      return simple_cst_list_equal (CONSTRUCTOR_ELTS (t1),
-	                            CONSTRUCTOR_ELTS (t2));
+      {
+	unsigned HOST_WIDE_INT idx;
+	VEC(constructor_elt, gc) *v1 = CONSTRUCTOR_ELTS (t1);
+	VEC(constructor_elt, gc) *v2 = CONSTRUCTOR_ELTS (t2);
+
+	if (VEC_length (constructor_elt, v1) != VEC_length (constructor_elt, v2))
+	  return false;
+
+        for (idx = 0; idx < VEC_length (constructor_elt, v1); ++idx)
+	  /* ??? Should we handle also fields here? */
+	  if (!simple_cst_equal (VEC_index (constructor_elt, v1, idx)->value,
+				 VEC_index (constructor_elt, v2, idx)->value))
+	    return false;
+	return true;
+      }
 
     case SAVE_EXPR:
       return simple_cst_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
@@ -4530,6 +4595,17 @@ iterative_hash_expr (tree t, hashval_t val)
       for (; t; t = TREE_CHAIN (t))
 	val = iterative_hash_expr (TREE_VALUE (t), val);
       return val;
+    case CONSTRUCTOR:
+      {
+	unsigned HOST_WIDE_INT idx;
+	tree field, value;
+	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), idx, field, value)
+	  {
+	    val = iterative_hash_expr (field, val);
+	    val = iterative_hash_expr (value, val);
+	  }
+	return val;
+      }
     case FUNCTION_DECL:
       /* When referring to a built-in FUNCTION_DECL, use the
 	 __builtin__ form.  Otherwise nodes that compare equal
@@ -6402,14 +6478,14 @@ initializer_zerop (tree init)
       return true;
 
     case CONSTRUCTOR:
-      elt = CONSTRUCTOR_ELTS (init);
-      if (elt == NULL_TREE)
-	return true;
+      {
+	unsigned HOST_WIDE_INT idx;
 
-      for (; elt ; elt = TREE_CHAIN (elt))
-	if (! initializer_zerop (TREE_VALUE (elt)))
-	  return false;
-      return true;
+	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (init), idx, elt)
+	  if (!initializer_zerop (elt))
+	    return false;
+	return true;
+      }
 
     default:
       return false;
@@ -7057,7 +7133,16 @@ walk_tree (tree *tp, walk_tree_fn func, void *data, struct pointer_set_t *pset)
 	  WALK_SUBTREE_TAIL (TREE_IMAGPART (*tp));
 
 	case CONSTRUCTOR:
-	  WALK_SUBTREE_TAIL (CONSTRUCTOR_ELTS (*tp));
+	  {
+	    unsigned HOST_WIDE_INT idx;
+	    constructor_elt *ce;
+
+	    for (idx = 0;
+		 VEC_iterate(constructor_elt, CONSTRUCTOR_ELTS (*tp), idx, ce);
+		 idx++)
+	      WALK_SUBTREE (ce->value);
+	  }
+	  break;
 
 	case SAVE_EXPR:
 	  WALK_SUBTREE_TAIL (TREE_OPERAND (*tp, 0));

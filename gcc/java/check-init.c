@@ -918,9 +918,11 @@ check_init (tree exp, words before)
 
     case NEW_ARRAY_INIT:
       {
-	tree x = CONSTRUCTOR_ELTS (TREE_OPERAND (exp, 0));
-	for ( ;  x != NULL_TREE;  x = TREE_CHAIN (x))
-	  check_init (TREE_VALUE (x), before);
+	tree value;
+	unsigned HOST_WIDE_INT idx;
+	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (TREE_OPERAND (exp, 0)),
+				    idx, value)
+	  check_init (value, before);
       }
       break;
 

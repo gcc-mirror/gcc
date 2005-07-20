@@ -5640,6 +5640,7 @@ build_ptrmemfunc1 (tree type, tree delta, tree pfn)
   tree u = NULL_TREE;
   tree delta_field;
   tree pfn_field;
+  VEC(constructor_elt, gc) *v;
 
   /* Pull the FIELD_DECLs out of the type.  */
   pfn_field = TYPE_FIELDS (type);
@@ -5649,9 +5650,10 @@ build_ptrmemfunc1 (tree type, tree delta, tree pfn)
   delta = convert_and_check (delta_type_node, delta);
 
   /* Finish creating the initializer.  */
-  u = tree_cons (pfn_field, pfn,
-		 build_tree_list (delta_field, delta));
-  u = build_constructor (type, u);
+  v = VEC_alloc(constructor_elt, gc, 2);
+  CONSTRUCTOR_APPEND_ELT(v, pfn_field, pfn);
+  CONSTRUCTOR_APPEND_ELT(v, delta_field, delta);
+  u = build_constructor (type, v);
   TREE_CONSTANT (u) = TREE_CONSTANT (pfn) & TREE_CONSTANT (delta);
   TREE_INVARIANT (u) = TREE_INVARIANT (pfn) & TREE_INVARIANT (delta);
   TREE_STATIC (u) = (TREE_CONSTANT (u)

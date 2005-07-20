@@ -1,3 +1,56 @@
+2005-07-20  Giovanni Bajo  <giovannibajo@libero.it>
+
+	Make CONSTRUCTOR use VEC to store initializers.
+	* c-common.c (complete_array_type): Update to cope with VEC in
+	CONSTRUCTOR_ELTS.
+	* c-pretty-print.c (pp_c_initializer_list): Use pp_c_constructor_elts.
+	(pp_c_constructor_elts): New function.
+	* c-pretty-print.h (pp_c_constructor_elts): Declare.
+	* c-typeck.c (build_function_call, build_c_cast, digest_init,
+	struct constructor_stack, struct initializer_stack,
+	constructor_elements, push_init_level, pop_init_level,
+	add_pending_init, find_init_member, output_init_element): Update to
+	cope with VEC in CONSTRUCTOR_ELTS.
+	* coverage.c (build_fn_info_value, build_ctr_info_value,
+	build_gcov_info): Likewise.
+	* expr.c (categorize_ctor_elements_1, store_constructor,
+	expand_expr_real_1): Likewise.
+	* fold-const.c (fold_ternary): Likewise.
+	* gimplify.c (gimplify_init_ctor_preeval, zero_sized_field_decl,
+	gimplify_init_constructor, gimplify_expr): Likewise.
+	* tree-dump.c (dequeue_and_dump): Likewise.
+	* tree-inline.c (copy_tree_r): Add code to duplicate a CONSTRUCTOR
+	node.
+	* tree-pretty-print.c (dump_generic_node): Update to cope with VEC in
+	CONSTRUCTOR_ELTS.
+	* tree-sra.c (generate_element_init_1): Likewise.
+	* tree-ssa-ccp.c (fold_const_aggregate_ref): Likewise.
+	* tree-ssa-operands.c (get_expr_operands): Likewise.
+	* tree-vect-generic.c (expand_vector_piecewise): Likewise.
+	* tree-vect-transform.c (vect_get_vec_def_for_operand):
+	(get_initial_def_for_reduction): Likewise.
+	* tree-vn.c (set_value_handle, get_value_handle): CONSTURCTOR uses
+	value handle in annotations.
+	* tree.c (tree_node_kind, tree_code_size, make_node_stat,
+	tree_node_structure): Add support for constr_kind.
+	(build_vector_from_ctor, build_constructor_single,
+	build_constructor_from_list): New functions.
+	(build_constructor): Update to take a VEC instead of a TREE_LIST.
+	(simple_cst_equal, iterative_hash_expr, initializer_zerop, walk_tree):
+	Update to cope with VEC in CONSTRUCTOR_ELTS.
+	* tree.def (CONSTRUCTOR): Make it a tcc_exceptional node.
+	* tree.h (FOR_EACH_CONSTRUCTOR_VALUE, FOR_EACH_CONSTRUCTOR_ELT,
+	CONSTRUCTOR_APPEND_ELT): New macros.
+	(struct constructor_elt, struct	tree_constructor): New data types.
+	(union tree_node): Add tree_constructor field.
+	* treestruct.def: Define TS_CONSTRUCTOR.
+	* varasm.c (const_hash_1, compare_constant, copy_constant,
+	compute_reloc_for_constant, output_addressed_constants,
+	initializer_constant_valid_p, output_constant,
+	array_size_for_constructor, output_constructor): Update to cope with
+	VEC in CONSTRUCTOR_ELTS.
+	* vec.h (VEC_empty, VEC_copy): New macros.
+
 2005-07-19  Devang Patel  <dpatel@apple.com>
 
 	* dbxout.c (dbxout_type): Check Objective-C++ lang.

@@ -2061,8 +2061,7 @@ build_function_call (tree function, tree params)
 
 	  if (AGGREGATE_TYPE_P (return_type))
 	    rhs = build_compound_literal (return_type,
-					  build_constructor (return_type,
-							     NULL_TREE));
+					  build_constructor (return_type, 0));
 	  else
 	    rhs = fold_build1 (NOP_EXPR, return_type, integer_zero_node);
 
@@ -3210,8 +3209,7 @@ build_c_cast (tree type, tree expr)
 	  if (pedantic)
 	    pedwarn ("ISO C forbids casts to union type");
 	  t = digest_init (type,
-			   build_constructor (type,
-					      build_tree_list (field, value)),
+			   build_constructor_single (type, field, value),
 			   true, 0);
 	  TREE_CONSTANT (t) = TREE_CONSTANT (value);
 	  TREE_INVARIANT (t) = TREE_INVARIANT (value);
@@ -4397,18 +4395,22 @@ digest_init (tree type, tree init, bool strict_string, int require_constant)
 
       if (TREE_CODE (inside_init) == CONSTRUCTOR)
 	{
-	  tree link;
+	  unsigned HOST_WIDE_INT ix;
+	  tree value;
+	  bool constant_p = true;
 
 	  /* Iterate through elements and check if all constructor
 	     elements are *_CSTs.  */
-	  for (link = CONSTRUCTOR_ELTS (inside_init);
-	       link;
-	       link = TREE_CHAIN (link))
-	    if (! CONSTANT_CLASS_P (TREE_VALUE (link)))
-	      break;
+	  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (inside_init), ix, value)
+	    if (!CONSTANT_CLASS_P (value))
+	      {
+		constant_p = false;
+		break;
+	      }
 
-	  if (link == NULL)
-	    return build_vector (type, CONSTRUCTOR_ELTS (inside_init));
+	  if (constant_p)
+	    return build_vector_from_ctor (type,
+					   CONSTRUCTOR_ELTS (inside_init));
 	}
     }
 
@@ -4574,7 +4576,7 @@ static tree constructor_bit_index;
 /* If we are saving up the elements rather than allocating them,
    this is the list of elements so far (in reverse order,
    most recent first).  */
-static tree constructor_elements;
+static VEC(constructor_elt,gc) *constructor_elements;
 
 /* 1 if constructor should be incrementally stored into a constructor chain,
    0 if all the elements should be kept in AVL tree.  */
@@ -4645,7 +4647,7 @@ struct constructor_stack
   tree unfilled_index;
   tree unfilled_fields;
   tree bit_index;
-  tree elements;
+  VEC(constructor_elt,gc) *elements;
   struct init_node *pending_elts;
   int offset;
   int depth;
@@ -4689,7 +4691,7 @@ struct initializer_stack
   tree decl;
   struct constructor_stack *constructor_stack;
   struct constructor_range_stack *constructor_range_stack;
-  tree elements;
+  VEC(constructor_elt,gc) *elements;
   struct spelling *spelling;
   struct spelling *spelling_base;
   int spelling_size;
@@ -5024,7 +5026,7 @@ push_init_level (int implicit)
       constructor_constant = TREE_CONSTANT (value);
       constructor_simple = TREE_STATIC (value);
       constructor_elements = CONSTRUCTOR_ELTS (value);
-      if (constructor_elements
+      if (!VEC_empty (constructor_elt, constructor_elements)
 	  && (TREE_CODE (constructor_type) == RECORD_TYPE
 	      || TREE_CODE (constructor_type) == ARRAY_TYPE))
 	set_nonincremental_init ();
@@ -5199,19 +5201,19 @@ pop_init_level (int implicit)
     {
       /* A nonincremental scalar initializer--just return
 	 the element, after verifying there is just one.  */
-      if (constructor_elements == 0)
+      if (VEC_empty (constructor_elt,constructor_elements))
 	{
 	  if (!constructor_erroneous)
 	    error_init ("empty scalar initializer");
 	  ret.value = error_mark_node;
 	}
-      else if (TREE_CHAIN (constructor_elements) != 0)
+      else if (VEC_length (constructor_elt,constructor_elements) != 1)
 	{
 	  error_init ("extra elements in scalar initializer");
-	  ret.value = TREE_VALUE (constructor_elements);
+	  ret.value = VEC_index (constructor_elt,constructor_elements,0)->value;
 	}
       else
-	ret.value = TREE_VALUE (constructor_elements);
+	ret.value = VEC_index (constructor_elt,constructor_elements,0)->value;
     }
   else
     {
@@ -5220,7 +5222,7 @@ pop_init_level (int implicit)
       else
 	{
 	  ret.value = build_constructor (constructor_type,
-					 nreverse (constructor_elements));
+					 constructor_elements);
 	  if (constructor_constant)
 	    TREE_CONSTANT (ret.value) = TREE_INVARIANT (ret.value) = 1;
 	  if (constructor_constant && constructor_simple)
@@ -5669,14 +5671,15 @@ add_pending_init (tree purpose, tree value)
 static void
 set_nonincremental_init (void)
 {
-  tree chain;
+  unsigned HOST_WIDE_INT ix;
+  tree index, value;
 
   if (TREE_CODE (constructor_type) != RECORD_TYPE
       && TREE_CODE (constructor_type) != ARRAY_TYPE)
     return;
 
-  for (chain = constructor_elements; chain; chain = TREE_CHAIN (chain))
-    add_pending_init (TREE_PURPOSE (chain), TREE_VALUE (chain));
+  FOR_EACH_CONSTRUCTOR_ELT (constructor_elements, ix, index, value)
+    add_pending_init (index, value);
   constructor_elements = 0;
   if (TREE_CODE (constructor_type) == RECORD_TYPE)
     {
@@ -5828,9 +5831,10 @@ find_init_member (tree field)
     }
   else if (TREE_CODE (constructor_type) == UNION_TYPE)
     {
-      if (constructor_elements
-	  && TREE_PURPOSE (constructor_elements) == field)
-	return TREE_VALUE (constructor_elements);
+      if (!VEC_empty (constructor_elt, constructor_elements)
+	  && (VEC_last (constructor_elt, constructor_elements)->index
+	      == field))
+	return VEC_last (constructor_elt, constructor_elements)->value;
     }
   return 0;
 }
@@ -5852,6 +5856,8 @@ static void
 output_init_element (tree value, bool strict_string, tree type, tree field,
 		     int pending)
 {
+  constructor_elt *celt;
+
   if (type == error_mark_node || value == error_mark_node)
     {
       constructor_erroneous = 1;
@@ -5956,9 +5962,10 @@ output_init_element (tree value, bool strict_string, tree type, tree field,
       return;
     }
   else if (TREE_CODE (constructor_type) == UNION_TYPE
-	   && constructor_elements)
+	   && !VEC_empty (constructor_elt, constructor_elements))
     {
-      if (TREE_SIDE_EFFECTS (TREE_VALUE (constructor_elements)))
+      if (TREE_SIDE_EFFECTS (VEC_last (constructor_elt,
+				       constructor_elements)->value))
 	warning_init ("initialized field with side-effects overwritten");
 
       /* We can have just one union field set.  */
@@ -5970,8 +5977,9 @@ output_init_element (tree value, bool strict_string, tree type, tree field,
 
   if (field && TREE_CODE (field) == INTEGER_CST)
     field = copy_node (field);
-  constructor_elements
-    = tree_cons (field, value, constructor_elements);
+  celt = VEC_safe_push (constructor_elt, gc, constructor_elements, NULL);
+  celt->index = field;
+  celt->value = value;
 
   /* Advance the variable that indicates sequential elements output.  */
   if (TREE_CODE (constructor_type) == ARRAY_TYPE)

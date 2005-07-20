@@ -1,3 +1,14 @@
+2005-07-20  Giovanni Bajo  <giovannibajo@libero.it>
+
+	Make CONSTRUCTOR use VEC to store initializers.
+	* trans-array.c (gfc_build_null_descriptor,
+	gfc_trans_array_constructor_value, gfc_conv_array_initializer):
+	Update to cope with VEC in CONSTRUCTOR_ELTS.
+	* trans-common.c (create_common): Likewise.
+	* trans-expr.c (gfc_conv_structure): Likewise.
+	* trans-stmt.c (gfc_trans_character_select): Use
+	build_constructor_from_list instead of build_constructor.
+
 2005-07-19 Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/16940
