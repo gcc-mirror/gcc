@@ -1,3 +1,16 @@
+2005-07-20  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* src/sh/ffi.c (ffi_call): Handle small structures correctly.
+	Remove empty line.
+	* src/sh64/ffi.c (simple_type): Remove.
+	(return_type): Handle small structures correctly.
+	(ffi_prep_args): Likewise.
+	(ffi_call): Likewise.
+	(ffi_closure_helper_SYSV): Likewise.
+	* src/sh64/sysv.S (ffi_call_SYSV): Handle 1, 2 and 4-byte return.
+	Emit position independent code if PIC and remove wrong datalabel
+	prefixes from EH data.
+
 2005-07-19  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* Makefile.am (nodist_libffi_la_SOURCES): Add POWERPC_FREEBSD.
