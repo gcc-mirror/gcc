@@ -1,3 +1,12 @@
+2005-07-20  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.md (UNSPEC_SP_SET, UNSPEC_SP_TEST): New constants.
+	(stack_protect_set, stack_protect_test): New expanders.
+        (stack_protect_set_si, stack_protect_set_si_media,
+	stack_protect_set_di_media, stack_protect_test_si,
+        stack_protect_test_si_media, stack_protect_test_di_media):
+	New insns.
+
 2005-07-20  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* c-typeck.c (output_init_element): Don't copy the INTEGER_CST.
