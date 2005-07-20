@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 2002, 2003, 2004 Kaz Kojima
+   ffi.c - Copyright (c) 2002, 2003, 2004, 2005 Kaz Kojima
    
    SuperH Foreign Function Interface 
 
@@ -427,6 +427,7 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
 	      /*@dependent@*/ void **avalue)
 {
   extended_cif ecif;
+  UINT64 trvalue;
 
   ecif.cif = cif;
   ecif.avalue = avalue;
@@ -434,7 +435,10 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
   /* If the return value is a struct and we don't have a return	*/
   /* value address then we need to make one		        */
 
-  if ((rvalue == NULL) && 
+  if (cif->rtype->type == FFI_TYPE_STRUCT
+      && return_type (cif->rtype) != FFI_TYPE_STRUCT)
+    ecif.rvalue = &trvalue;
+  else if ((rvalue == NULL) && 
       (cif->rtype->type == FFI_TYPE_STRUCT))
     {
       /*@-sysunrecog@*/
@@ -443,7 +447,6 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
     }
   else
     ecif.rvalue = rvalue;
-    
 
   switch (cif->abi) 
     {
@@ -457,6 +460,11 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
       FFI_ASSERT(0);
       break;
     }
+
+  if (rvalue
+      && cif->rtype->type == FFI_TYPE_STRUCT
+      && return_type (cif->rtype) != FFI_TYPE_STRUCT)
+    memcpy (rvalue, &trvalue, cif->rtype->size);
 }
 
 extern void ffi_closure_SYSV (void);

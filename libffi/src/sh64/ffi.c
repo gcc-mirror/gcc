@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 2003 Kaz Kojima
+   ffi.c - Copyright (c) 2003, 2004 Kaz Kojima
    
    SuperH SHmedia Foreign Function Interface 
 
@@ -31,48 +31,21 @@
 #define NGREGARG 8
 #define NFREGARG 12
 
-/* If the structure has essentialy an unique element, return its type.  */
-static int
-simple_type (ffi_type *arg)
-{
-  if (arg->type != FFI_TYPE_STRUCT)
-    return arg->type;
-  else if (arg->elements[1])
-    return FFI_TYPE_STRUCT;
-
-  return simple_type (arg->elements[0]);
-}
-
 static int
 return_type (ffi_type *arg)
 {
-  unsigned short type;
 
   if (arg->type != FFI_TYPE_STRUCT)
     return arg->type;
 
-  type = simple_type (arg->elements[0]);
-  if (! arg->elements[1])
-    {
-      switch (type)
-	{
-	case FFI_TYPE_SINT8:
-	case FFI_TYPE_UINT8:
-	case FFI_TYPE_SINT16:
-	case FFI_TYPE_UINT16:
-	case FFI_TYPE_SINT32:
-	case FFI_TYPE_UINT32:
-	case FFI_TYPE_SINT64:
-	case FFI_TYPE_UINT64:
-	  return FFI_TYPE_UINT64;
-
-	default:
-	  return type;
-	}
-    }
-
   /* gcc uses r2 if the result can be packed in on register.  */
-  if (arg->size <= sizeof (UINT64))
+  if (arg->size <= sizeof (UINT8))
+    return FFI_TYPE_UINT8;
+  else if (arg->size <= sizeof (UINT16))
+    return FFI_TYPE_UINT16;
+  else if (arg->size <= sizeof (UINT32))
+    return FFI_TYPE_UINT32;
+  else if (arg->size <= sizeof (UINT64))
     return FFI_TYPE_UINT64;
 
   return FFI_TYPE_STRUCT;
@@ -105,8 +78,10 @@ void ffi_prep_args(char *stack, extended_cif *ecif)
   for (i = 0, p_arg = ecif->cif->arg_types; i < avn; i++, p_arg++, p_argv++)
     {
       size_t z;
+      int align;
 
       z = (*p_arg)->size;
+      align = (*p_arg)->alignment;
       if (z < sizeof (UINT32))
 	{
 	  switch ((*p_arg)->type)
@@ -128,7 +103,7 @@ void ffi_prep_args(char *stack, extended_cif *ecif)
 	      break;
   
 	    case FFI_TYPE_STRUCT:
-	      *(UINT64 *) argp = (UINT64) *(UINT32 *)(*p_argv);
+	      memcpy (argp, *p_argv, z);
 	      break;
 
 	    default:
@@ -136,12 +111,31 @@ void ffi_prep_args(char *stack, extended_cif *ecif)
 	    }
 	  argp += sizeof (UINT64);
 	}
-      else if (z == sizeof (UINT32))
+      else if (z == sizeof (UINT32) && align == sizeof (UINT32))
 	{
-	  *(UINT64 *) argp = (UINT64) *(UINT32 *) (*p_argv);
+	  switch ((*p_arg)->type)
+	    {
+	    case FFI_TYPE_INT:
+	    case FFI_TYPE_SINT32:
+	      *(SINT64 *) argp = (SINT64) *(SINT32 *) (*p_argv);
+	      break;
+
+	    case FFI_TYPE_FLOAT:
+	    case FFI_TYPE_POINTER:
+	    case FFI_TYPE_UINT32:
+	    case FFI_TYPE_STRUCT:
+	      *(UINT64 *) argp = (UINT64) *(UINT32 *) (*p_argv);
+	      break;
+
+	    default:
+	      FFI_ASSERT(0);
+	      break;
+	    }
 	  argp += sizeof (UINT64);
 	}
-      else if (z == sizeof (UINT64))
+      else if (z == sizeof (UINT64)
+	       && align == sizeof (UINT64)
+	       && ((int) *p_argv & (sizeof (UINT64) - 1)) == 0)
 	{
 	  *(UINT64 *) argp = *(UINT64 *) (*p_argv);
 	  argp += sizeof (UINT64);
@@ -254,6 +248,7 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
 	      /*@dependent@*/ void **avalue)
 {
   extended_cif ecif;
+  UINT64 trvalue;
 
   ecif.cif = cif;
   ecif.avalue = avalue;
@@ -261,7 +256,10 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
   /* If the return value is a struct and we don't have a return	*/
   /* value address then we need to make one		        */
 
-  if ((rvalue == NULL) && 
+  if (cif->rtype->type == FFI_TYPE_STRUCT
+      && return_type (cif->rtype) != FFI_TYPE_STRUCT)
+    ecif.rvalue = &trvalue;
+  else if ((rvalue == NULL) && 
       (cif->rtype->type == FFI_TYPE_STRUCT))
     {
       /*@-sysunrecog@*/
@@ -283,6 +281,11 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
       FFI_ASSERT(0);
       break;
     }
+
+  if (rvalue
+      && cif->rtype->type == FFI_TYPE_STRUCT
+      && return_type (cif->rtype) != FFI_TYPE_STRUCT)
+    memcpy (rvalue, &trvalue, cif->rtype->size);
 }
 
 extern void ffi_closure_SYSV (void);
@@ -353,7 +356,7 @@ ffi_closure_helper_SYSV (ffi_closure *closure, UINT64 *rvalue,
 
   /* Copy the caller's structure return value address so that the closure
      returns the data directly to the caller.  */
-  if (cif->rtype->type == FFI_TYPE_STRUCT)
+  if (return_type (cif->rtype) == FFI_TYPE_STRUCT)
     {
       rvalue = *pgr;
       greg = 1;
@@ -443,6 +446,6 @@ ffi_closure_helper_SYSV (ffi_closure *closure, UINT64 *rvalue,
   (closure->fun) (cif, rvalue, avalue, closure->user_data);
 
   /* Tell ffi_closure_SYSV how to perform return type promotions.  */
-  return cif->rtype->type;
+  return return_type (cif->rtype);
 }
 
