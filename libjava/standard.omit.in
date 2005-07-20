@@ -17,5 +17,3 @@ java/util/zip/InflaterHuffmanTree.java
 java/util/zip/OutputWindow.java
 java/util/zip/PendingBuffer.java
 java/util/zip/StreamManipulator.java
-gnu/awt/xlib
-gnu/gcj/xlib

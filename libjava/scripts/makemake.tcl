@@ -56,8 +56,8 @@ set package_map(java/lang/Object.java) ignore
 
 # More special cases.  These end up in their own library.
 # Note that if we BC-compile AWT we must update these as well.
-set package_map(gnu/gcj/xlib) ignore
-set package_map(gnu/awt/xlib) ignore
+set package_map(gnu/gcj/xlib) package
+set package_map(gnu/awt/xlib) package
 
 # Some BC ABI packages have classes which must not be compiled BC.
 # This maps such packages to a grep expression for excluding such
@@ -253,7 +253,9 @@ proc emit_package_rule {package} {
   puts ""
   puts ""
 
-  lappend package_files $lname
+  if {$pkgname != "gnu/gcj/xlib" && $pkgname != "gnu/awt/xlib"} {
+    lappend package_files $lname
+  }
 }
 
 # Emit a source file variable for a package, and corresponding header
@@ -301,8 +303,10 @@ proc emit_source_var {package} {
     }
 
     puts "${uname}_header_files = $result"
-    lappend header_vars "${uname}_header_files"
     puts ""
+    if {$pkgname != "gnu/gcj/xlib" && $pkgname != "gnu/awt/xlib"} {
+      lappend header_vars "${uname}_header_files"
+    }
   }
 }
 
@@ -318,7 +322,7 @@ proc pp_var {name valueList {pre ""} {post ""}} {
 }
 
 # Read the proper .omit files.
-read_omit_file standard.omit
+read_omit_file standard.omit.in
 read_omit_file classpath/lib/standard.omit
 
 # Scan classpath first.

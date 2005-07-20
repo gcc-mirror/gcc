@@ -154,12 +154,6 @@ BOOTCLASSPATH = $(here)/classpath/lib
 
 ## ################################################################
 
-# In the future these may be defined manually, if we decide to split libgcj.so
-# into multiple shared libraries.  For now, everything but xlib goes into
-# all_libgcj_lo_files
-all_xlib_lo_files = gnu/gcj/xlib.lo gnu/awt/xlib.lo
-all_libgcj_lo_files = $(filter-out $(all_xlib_lo_files), $(all_java_lo_files))
-
 all_property_files = $(property_files) \
     java/util/logging/logging.properties
 
@@ -276,8 +270,9 @@ libgcjawt_la_LDFLAGS = \
 libgcjawt_la_LINK = $(LIBLINK)
 
 lib_gnu_awt_xlib_la_SOURCES = $(xlib_nat_source_files)
-lib_gnu_awt_xlib_la_LIBADD = $(all_xlib_lo_files)
-lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-$(gcc_version).jar libgcj.la libgcj.spec \
+lib_gnu_awt_xlib_la_LIBADD = gnu/awt/xlib.lo gnu/gcj/xlib.lo
+lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
+	libgcj.la libgcj.spec \
 	$(lib_gnu_awt_xlib_la_LIBADD)
 ## We require libstdc++-v3 to be in the same build tree.
 lib_gnu_awt_xlib_la_CPPFLAGS = \
@@ -389,7 +384,7 @@ nat_headers = $(ordinary_header_files) $(inner_nat_headers) \
 	gnu/gcj/tools/gcj_dbtool/Main.h
 nat_headers_install = $(ordinary_header_files)
 
-xlib_nat_headers = $(patsubst %.java,%.h,$(xlib_java_source_files))
+xlib_nat_headers = $(gnu_awt_xlib_header_files) $(gnu_gcj_xlib_header_files)
 
 java/lang/ClassLoader.h: classpath/lib/java/lang/ClassLoader.class
 	$(GCJH) -classpath '' -bootclasspath classpath/lib \
@@ -817,42 +812,6 @@ java/util/natVMTimeZone.cc \
 java/util/logging/natLogger.cc \
 java/util/zip/natDeflater.cc \
 java/util/zip/natInflater.cc
-
-xlib_java_source_files = \
-gnu/gcj/xlib/Clip.java \
-gnu/gcj/xlib/Colormap.java \
-gnu/gcj/xlib/Display.java \
-gnu/gcj/xlib/Drawable.java \
-gnu/gcj/xlib/Font.java \
-gnu/gcj/xlib/GC.java \
-gnu/gcj/xlib/Pixmap.java \
-gnu/gcj/xlib/Screen.java \
-gnu/gcj/xlib/Visual.java \
-gnu/gcj/xlib/WMSizeHints.java \
-gnu/gcj/xlib/Window.java \
-gnu/gcj/xlib/WindowAttributes.java \
-gnu/gcj/xlib/XAnyEvent.java \
-gnu/gcj/xlib/XButtonEvent.java \
-gnu/gcj/xlib/XColor.java \
-gnu/gcj/xlib/XConfigureEvent.java \
-gnu/gcj/xlib/XConnectException.java \
-gnu/gcj/xlib/XEvent.java \
-gnu/gcj/xlib/XException.java \
-gnu/gcj/xlib/XExposeEvent.java \
-gnu/gcj/xlib/XID.java \
-gnu/gcj/xlib/XImage.java \
-gnu/gcj/xlib/XUnmapEvent.java \
-gnu/awt/xlib/XCanvasPeer.java \
-gnu/awt/xlib/XEventLoop.java \
-gnu/awt/xlib/XEventQueue.java \
-gnu/awt/xlib/XFontMetrics.java \
-gnu/awt/xlib/XFramePeer.java \
-gnu/awt/xlib/XGraphics.java \
-gnu/awt/xlib/XGraphicsConfiguration.java \
-gnu/awt/xlib/XOffScreenImage.java \
-gnu/awt/xlib/XPanelPeer.java \
-gnu/awt/xlib/XFontPeer.java \
-gnu/awt/xlib/XToolkit.java
 
 xlib_nat_source_files = \
 gnu/gcj/xlib/natClip.cc \
