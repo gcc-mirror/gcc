@@ -1,5 +1,8 @@
 2005-07-20  Bernd Schmidt  <bernd.schmidt@analog.com>
 
+	* config/bfin/bfin.c: Include "langhooks.h".
+	(def_builtin): Go through lang_hooks to call builtin_function.
+
 	* config/bfin/bfin-protos.h (bfin_longcall_p): Declare.
 	* config/bfin/predicates.md (symbol_ref_operand): New.
 	(call_insn_operand): Delete.  All callers changed to use
