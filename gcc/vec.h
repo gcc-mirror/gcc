@@ -147,6 +147,15 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #define VEC_length(T,V)	(VEC_OP(T,base,length)(VEC_BASE(V)))
 
+
+/* Check if vector is empty
+   int VEC_T_empty(const VEC(T) *v);
+
+   Return non-zero if V is an empty vector (or V is NULL), zero otherwise. */
+
+#define VEC_empty(T,V)	(VEC_length (T,V) == 0)
+
+
 /* Get the final element of the vector.
    T VEC_T_last(VEC(T) *v); // Integer
    T VEC_T_last(VEC(T) *v); // Pointer
@@ -204,6 +213,14 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #define VEC_embedded_size(T,N)	 (VEC_OP(T,base,embedded_size)(N))
 #define VEC_embedded_init(T,O,N) (VEC_OP(T,base,embedded_init)(VEC_BASE(O),N))
+
+/* Copy a vector.
+   VEC(T,A) *VEC_T_A_copy(VEC(T) *);
+
+   Copy the live elements of a vector into a new vector.  The new and
+   old vectors need not be allocated by the same mechanim.  */
+
+#define VEC_copy(T,A,V) (VEC_OP(T,A,copy)(VEC_BASE(V) MEM_STAT_INFO))
 
 /* Determine if a vector has additional capacity.
    
@@ -667,6 +684,23 @@ static inline void VEC_OP (T,A,free)					  \
   *vec_ = NULL;								  \
 }									  \
 									  \
+static inline VEC(T,A) *VEC_OP (T,A,copy) (VEC(T,base) *vec_ MEM_STAT_DECL) \
+{									  \
+  size_t len_ = vec_ ? vec_->num : 0;					  \
+  VEC (T,A) *new_vec_ = NULL;						  \
+									  \
+  if (len_)								  \
+    {									  \
+      /* We must request exact size allocation, hence the negation. */	  \
+      new_vec_ = (VEC (T,A) *)(vec_##A##_p_reserve			  \
+			       (NULL, -len_ PASS_MEM_STAT));		  \
+									  \
+      new_vec_->base.num = len_;					  \
+      memcpy (new_vec_->base.vec, vec_->vec, sizeof (T) * len_);	  \
+    }									  \
+  return new_vec_;							  \
+}									  \
+									  \
 static inline int VEC_OP (T,A,reserve)	       				  \
      (VEC(T,A) **vec_, int alloc_ VEC_CHECK_DECL MEM_STAT_DECL)		  \
 {									  \
@@ -893,6 +927,25 @@ static inline VEC(T,A) *VEC_OP (T,A,alloc)      			  \
                                            offsetof (VEC(T,A),base.vec),  \
 					   sizeof (T)			  \
                                            PASS_MEM_STAT);		  \
+}									  \
+									  \
+static inline VEC(T,A) *VEC_OP (T,A,copy) (VEC(T,base) *vec_ MEM_STAT_DECL) \
+{									  \
+  size_t len_ = vec_ ? vec_->num : 0;					  \
+  VEC (T,A) *new_vec_ = NULL;						  \
+									  \
+  if (len_)								  \
+    {									  \
+      /* We must request exact size allocation, hence the negation. */	  \
+      new_vec_ = (VEC (T,A) *)(vec_##A##_o_reserve			  \
+			       (NULL, -len_,				  \
+				offsetof (VEC(T,A),base.vec), sizeof (T)  \
+				PASS_MEM_STAT));			  \
+									  \
+      new_vec_->base.num = len_;					  \
+      memcpy (new_vec_->base.vec, vec_->vec, sizeof (T) * len_);	  \
+    }									  \
+  return new_vec_;							  \
 }									  \
 									  \
 static inline void VEC_OP (T,A,free)					  \

@@ -274,7 +274,7 @@ static void missing_return_error (tree);
 static tree build_new_array_init (int, tree);
 static tree patch_new_array_init (tree, tree);
 static tree maybe_build_array_element_wfl (tree);
-static int array_constructor_check_entry (tree, tree);
+static int array_constructor_check_entry (tree, constructor_elt *);
 static const char *purify_type_name (const char *);
 static tree fold_constant_for_init (tree, tree);
 static jdeplist *reverse_jdep_list (struct parser_ctxt *);
@@ -14793,7 +14793,8 @@ maybe_build_array_element_wfl (tree node)
 static tree
 build_new_array_init (int location, tree values)
 {
-  tree constructor = build_constructor (NULL_TREE, values);
+  tree constructor = build_constructor_from_list (NULL_TREE,
+						  nreverse (values));
   tree to_return = build1 (NEW_ARRAY_INIT, NULL_TREE, constructor);
   EXPR_WFL_LINECOL (to_return) = location;
   return to_return;
@@ -14807,8 +14808,9 @@ static tree
 patch_new_array_init (tree type, tree node)
 {
   int error_seen = 0;
-  tree current, element_type;
-  HOST_WIDE_INT length;
+  tree element_type;
+  unsigned HOST_WIDE_INT length;
+  constructor_elt *current;
   int all_constant = 1;
   tree init = TREE_OPERAND (node, 0);
 
@@ -14822,16 +14824,16 @@ patch_new_array_init (tree type, tree node)
   type = TREE_TYPE (type);
   element_type = TYPE_ARRAY_ELEMENT (type);
 
-  CONSTRUCTOR_ELTS (init) = nreverse (CONSTRUCTOR_ELTS (init));
-
-  for (length = 0, current = CONSTRUCTOR_ELTS (init);
-       current;  length++, current = TREE_CHAIN (current))
+  for (length = 0;
+       VEC_iterate (constructor_elt, CONSTRUCTOR_ELTS (init),
+		    length, current);
+       length++)
     {
-      tree elt = TREE_VALUE (current);
+      tree elt = current->value;
       if (elt == NULL_TREE || TREE_CODE (elt) != NEW_ARRAY_INIT)
 	{
 	  error_seen |= array_constructor_check_entry (element_type, current);
-	  elt = TREE_VALUE (current);
+	  elt = current->value;
 	  /* When compiling to native code, STRING_CST is converted to
 	     INDIRECT_REF, but still with a TREE_CONSTANT flag. */
 	  if (! TREE_CONSTANT (elt) || TREE_CODE (elt) == INDIRECT_REF)
@@ -14839,8 +14841,8 @@ patch_new_array_init (tree type, tree node)
 	}
       else
 	{
-	  TREE_VALUE (current) = patch_new_array_init (element_type, elt);
-	  TREE_PURPOSE (current) = NULL_TREE;
+	  current->value = patch_new_array_init (element_type, elt);
+	  current->index = NULL_TREE;
 	  all_constant = 0;
 	}
       if (elt && TREE_CODE (elt) == TREE_LIST
@@ -14869,16 +14871,16 @@ patch_new_array_init (tree type, tree node)
    otherwise.  */
 
 static int
-array_constructor_check_entry (tree type, tree entry)
+array_constructor_check_entry (tree type, constructor_elt *entry)
 {
   char *array_type_string = NULL;	/* For error reports */
   tree value, type_value, new_value, wfl_value, patched;
   int error_seen = 0;
 
   new_value = NULL_TREE;
-  wfl_value = TREE_VALUE (entry);
+  wfl_value = entry->value;
 
-  value = java_complete_tree (TREE_VALUE (entry));
+  value = java_complete_tree (entry->value);
   /* patch_string return error_mark_node if arg is error_mark_node */
   if ((patched = patch_string (value)))
     value = patched;
@@ -14889,7 +14891,7 @@ array_constructor_check_entry (tree type, tree entry)
 
   /* At anytime, try_builtin_assignconv can report a warning on
      constant overflow during narrowing. */
-  SET_WFL_OPERATOR (wfl_operator, TREE_PURPOSE (entry), wfl_value);
+  SET_WFL_OPERATOR (wfl_operator, entry->index, wfl_value);
   new_value = try_builtin_assignconv (wfl_operator, type, value);
   if (!new_value && (new_value = try_reference_assignconv (type, value)))
     type_value = promote_type (type);
@@ -14908,12 +14910,12 @@ array_constructor_check_entry (tree type, tree entry)
     }
 
   if (new_value)
-    TREE_VALUE (entry) = new_value;
+    entry->value = new_value;
 
   if (array_type_string)
     free (array_type_string);
 
-  TREE_PURPOSE (entry) = NULL_TREE;
+  entry->index = NULL_TREE;
   return error_seen;
 }
 

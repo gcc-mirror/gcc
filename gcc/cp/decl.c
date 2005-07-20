@@ -114,7 +114,7 @@ static void store_parm_decls (tree);
 static void initialize_local_var (tree, tree);
 static void expand_static_init (tree, tree);
 static tree next_initializable_field (tree);
-static tree reshape_init (tree, tree *);
+static tree reshape_init (tree, tree);
 
 /* Erroneous argument lists can use this *IFF* they do not modify it.  */
 tree error_mark_list;
@@ -4103,6 +4103,18 @@ check_for_uninitialized_const_var (tree decl)
     error ("uninitialized const %qD", decl);
 }
 
+
+/* Structure holding the current initializer being processed by reshape_init.
+   CUR is a pointer to the current element being processed, END is a pointer
+   after the last element present in the initializer.  */
+typedef struct reshape_iterator_t
+{
+  constructor_elt *cur;
+  constructor_elt *end;
+} reshape_iter;
+
+static tree reshape_init_r (tree, reshape_iter *, bool);
+
 /* FIELD is a FIELD_DECL or NULL.  In the former case, the value
    returned is the next FIELD_DECL (possibly FIELD itself) that can be
    initialized.  If there are no more such fields, the return value
@@ -4120,21 +4132,22 @@ next_initializable_field (tree field)
   return field;
 }
 
-/* Subroutine of reshape_init. Reshape the constructor for an array. INITP
-   is the pointer to the old constructor list (to the CONSTRUCTOR_ELTS of
-   the CONSTRUCTOR we are processing), while NEW_INIT is the CONSTRUCTOR we
-   are building.
-   ELT_TYPE is the element type of the array. MAX_INDEX is an INTEGER_CST
-   representing the size of the array minus one (the maximum index), or
-   NULL_TREE if the array was declared without specifying the size.  */
+/* Subroutine of reshape_init_array and reshape_init_vector, which does
+   the actual work. ELT_TYPE is the element type of the array. MAX_INDEX is an
+   INTEGER_CST representing the size of the array minus one (the maximum index),
+   or NULL_TREE if the array was declared without specifying the size. D is
+   the iterator within the constructor.  */
 
-static bool
-reshape_init_array (tree elt_type, tree max_index,
-		    tree *initp, tree new_init)
+static tree
+reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d)
 {
+  tree new_init;
   bool sized_array_p = (max_index != NULL_TREE);
   unsigned HOST_WIDE_INT max_index_cst = 0;
   unsigned HOST_WIDE_INT index;
+
+  /* The initializer for an array is always a CONSTRUCTOR.  */
+  new_init = build_constructor (NULL_TREE, NULL);
 
   if (sized_array_p)
     {
@@ -4148,104 +4161,181 @@ reshape_init_array (tree elt_type, tree max_index,
 
   /* Loop until there are no more initializers.  */
   for (index = 0;
-       *initp && (!sized_array_p || index <= max_index_cst);
+       d->cur != d->end && (!sized_array_p || index <= max_index_cst);
        ++index)
     {
-      tree element_init;
-      tree designated_index;
+      tree elt_init;
 
-      element_init = reshape_init (elt_type, initp);
-      if (element_init == error_mark_node)
-	return false;
-      TREE_CHAIN (element_init) = CONSTRUCTOR_ELTS (new_init);
-      CONSTRUCTOR_ELTS (new_init) = element_init;
-      designated_index = TREE_PURPOSE (element_init);
-      if (designated_index)
+      if (d->cur->index)
 	{
 	  /* Handle array designated initializers (GNU extension).  */
-	  if (TREE_CODE (designated_index) == IDENTIFIER_NODE)
+	  if (TREE_CODE (d->cur->index) == IDENTIFIER_NODE)
 	    {
 	      error ("name %qD used in a GNU-style designated "
-		     "initializer for an array", designated_index);
-	      TREE_PURPOSE (element_init) = NULL_TREE;
+		     "initializer for an array", d->cur->index);
 	    }
 	  else
 	    gcc_unreachable ();
 	}
+
+      elt_init = reshape_init_r (elt_type, d, /*first_initializer_p=*/false);
+      CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_init), NULL_TREE, elt_init);
     }
 
-  return true;
+  return new_init;
 }
 
-/* Undo the brace-elision allowed by [dcl.init.aggr] in a
-   brace-enclosed aggregate initializer.
-
-   *INITP is one of a list of initializers describing a brace-enclosed
-   initializer for an entity of the indicated aggregate TYPE.  It may
-   not presently match the shape of the TYPE; for example:
-
-     struct S { int a; int b; };
-     struct S a[] = { 1, 2, 3, 4 };
-
-   Here *INITP will point to TREE_LIST of four elements, rather than a
-   list of two elements, each itself a list of two elements.  This
-   routine transforms INIT from the former form into the latter.  The
-   revised initializer is returned.  */
+/* Subroutine of reshape_init_r, processes the initializers for arrays.
+   Parameters are the same of reshape_init_r.  */
 
 static tree
-reshape_init (tree type, tree *initp)
+reshape_init_array (tree type, reshape_iter *d)
 {
-  tree inits;
-  tree old_init;
-  tree old_init_value;
+  tree max_index = NULL_TREE;
+
+  gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
+
+  if (TYPE_DOMAIN (type))
+    max_index = array_type_nelts (type);
+
+  return reshape_init_array_1 (TREE_TYPE (type), max_index, d);
+}
+
+/* Subroutine of reshape_init_r, processes the initializers for vectors.
+   Parameters are the same of reshape_init_r.  */
+
+static tree
+reshape_init_vector (tree type, reshape_iter *d)
+{
+  tree max_index = NULL_TREE;
+  tree rtype;
+
+  gcc_assert (TREE_CODE (type) == VECTOR_TYPE);
+
+  if (TREE_CODE (d->cur->value) == CONSTRUCTOR
+      && TREE_HAS_CONSTRUCTOR (d->cur->value))
+    {
+      tree value = d->cur->value;
+      if (!same_type_p (TREE_TYPE (value), type))
+	{
+	  error ("invalid type %qT as initializer for a vector of type %qT",
+		TREE_TYPE (d->cur->value), type);
+  	  value = error_mark_node;
+	}
+      ++d->cur;
+      return value;
+    }
+
+  /* For a vector, the representation type is a struct
+      containing a single member which is an array of the
+      appropriate size.  */
+  rtype = TYPE_DEBUG_REPRESENTATION_TYPE (type);
+  if (rtype && TYPE_DOMAIN (TREE_TYPE (TYPE_FIELDS (rtype))))
+    max_index = array_type_nelts (TREE_TYPE (TYPE_FIELDS (rtype)));
+
+  return reshape_init_array_1 (TREE_TYPE (type), max_index, d);
+}
+
+/* Subroutine of reshape_init_r, processes the initializers for classes
+   or union. Parameters are the same of reshape_init_r.  */
+
+static tree
+reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p)
+{
+  tree field;
   tree new_init;
-  bool brace_enclosed_p;
-  bool string_init_p;
 
-  old_init = *initp;
-  old_init_value = (TREE_CODE (*initp) == TREE_LIST
-		    ? TREE_VALUE (*initp) : old_init);
+  gcc_assert (CLASS_TYPE_P (type));
 
-  gcc_assert (old_init_value);
+  /* The initializer for a class is always a CONSTRUCTOR.  */
+  new_init = build_constructor (NULL_TREE, NULL);
+  field = next_initializable_field (TYPE_FIELDS (type));
 
-  /* If the initializer is brace-enclosed, pull initializers from the
-     enclosed elements.  Advance past the brace-enclosed initializer
-     now.  */
-  if (TREE_CODE (old_init_value) == CONSTRUCTOR
-      && BRACE_ENCLOSED_INITIALIZER_P (old_init_value))
+  if (!field)
     {
-      *initp = TREE_CHAIN (old_init);
-      TREE_CHAIN (old_init) = NULL_TREE;
-      inits = CONSTRUCTOR_ELTS (old_init_value);
-      initp = &inits;
-      brace_enclosed_p = true;
+      /* [dcl.init.aggr]
+
+	An initializer for an aggregate member that is an
+	empty class shall have the form of an empty
+	initializer-list {}.  */
+      if (!first_initializer_p)
+	{
+	  error ("initializer for %qT must be brace-enclosed", type);
+	  return error_mark_node;
+	}
+      return new_init;
     }
-  else
+
+  /* Loop through the initializable fields, gathering initializers.  */
+  while (d->cur != d->end)
     {
-      inits = NULL_TREE;
-      brace_enclosed_p = false;
+      tree field_init;
+
+      /* Handle designated initializers, as an extension.  */
+      if (d->cur->index)
+	{
+	  if (pedantic)
+	    pedwarn ("ISO C++ does not allow designated initializers");
+  	
+	  field = lookup_field_1 (type, d->cur->index, /*want_type=*/false);
+
+	  if (!field || TREE_CODE (field) != FIELD_DECL)
+	    error ("%qT has no non-static data member named %qD", type,
+		  d->cur->index);
+	}
+
+      /* If we processed all the member of the class, we are done.  */
+      if (!field)
+	break;
+
+      field_init = reshape_init_r (TREE_TYPE (field), d,
+				   /*first_initializer_p=*/false);
+      CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_init), field, field_init);
+
+      /* [dcl.init.aggr]
+
+	When a union  is  initialized with a brace-enclosed
+	initializer, the braces shall only contain an
+	initializer for the first member of the union.  */
+      if (TREE_CODE (type) == UNION_TYPE)
+	break;
+
+      field = next_initializable_field (TREE_CHAIN (field));
     }
+
+  return new_init;
+}
+
+/* Subroutine of reshape_init, which processes a single initializer (part of
+   a CONSTRUCTOR). TYPE is the type of the variable being initialized, D is the
+   iterator within the CONSTRUCTOR which points to the initializer to process.
+   FIRST_INITIALIZER_P is true if this is the first initializer of the
+   CONSTRUCTOR node.  */
+
+static tree
+reshape_init_r (tree type, reshape_iter *d, bool first_initializer_p)
+{
+  tree init = d->cur->value;
 
   /* A non-aggregate type is always initialized with a single
      initializer.  */
   if (!CP_AGGREGATE_TYPE_P (type))
-      {
-	*initp = TREE_CHAIN (old_init);
-	TREE_CHAIN (old_init) = NULL_TREE;
-	/* It is invalid to initialize a non-aggregate type with a
-	   brace-enclosed initializer.  */
-	if (brace_enclosed_p)
-	  {
-	    error ("brace-enclosed initializer used to initialize %qT",
-		   type);
-	    if (TREE_CODE (old_init) == TREE_LIST)
-	      TREE_VALUE (old_init) = error_mark_node;
-	    else
-	      old_init = error_mark_node;
-	  }
-
-	return old_init;
-      }
+    {
+      /* It is invalid to initialize a non-aggregate type with a
+	 brace-enclosed initializer.
+	 We need to check for BRACE_ENCLOSED_INITIALIZER_P here because
+	 of g++.old-deja/g++.mike/p7626.C: a pointer-to-member constant is
+	 a CONSTRUCTOR (with a record type).  */
+      if (TREE_CODE (init) == CONSTRUCTOR
+	  && BRACE_ENCLOSED_INITIALIZER_P (init))  /* p7626.C */
+	{
+	  error ("braces around scalar initializer for type %qT", type);
+	  init = error_mark_node;
+	}
+	
+      d->cur++;
+      return init;
+    }
 
   /* [dcl.init.aggr]
 
@@ -4256,139 +4346,124 @@ reshape_init (tree type, tree *initp)
      non-empty subaggregate, brace elision is assumed and the
      initializer is considered for the initialization of the first
      member of the subaggregate.  */
-  if (!brace_enclosed_p
-      && can_convert_arg (type, TREE_TYPE (old_init_value), old_init_value))
+  if (TREE_CODE (init) != CONSTRUCTOR
+      && can_convert_arg (type, TREE_TYPE (init), init))
     {
-      *initp = TREE_CHAIN (old_init);
-      TREE_CHAIN (old_init) = NULL_TREE;
-      return old_init;
+      d->cur++;
+      return init;
     }
 
-  string_init_p = false;
-  if (TREE_CODE (old_init_value) == STRING_CST
-      && TREE_CODE (type) == ARRAY_TYPE
+  /* [dcl.init.string]
+
+      A char array (whether plain char, signed char, or unsigned char)
+      can be initialized by a string-literal (optionally enclosed in
+      braces); a wchar_t array can be initialized by a wide
+      string-literal (optionally enclosed in braces).  */
+  if (TREE_CODE (type) == ARRAY_TYPE
       && char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (type))))
     {
-      /* [dcl.init.string]
+      tree str_init = init;
 
-	 A char array (whether plain char, signed char, or unsigned char)
-	 can be initialized by a string-literal (optionally enclosed in
-	 braces); a wchar_t array can be initialized by a wide
-	 string-literal (optionally enclosed in braces).  */
-      new_init = old_init;
-      /* Move past the initializer.  */
-      *initp = TREE_CHAIN (old_init);
-      TREE_CHAIN (old_init) = NULL_TREE;
-      string_init_p = true;
-    }
-  else
-    {
-      /* Build a CONSTRUCTOR to hold the contents of the aggregate.  */
-      new_init = build_constructor (NULL_TREE, NULL_TREE);
-
-      if (CLASS_TYPE_P (type))
+      /* Strip one level of braces if and only if they enclose a single
+         element (as allowed by [dcl.init.string]).  */
+      if (!first_initializer_p
+	  && TREE_CODE (str_init) == CONSTRUCTOR
+	  && VEC_length (constructor_elt, CONSTRUCTOR_ELTS (str_init)) == 1)
 	{
-	  tree field;
+	  str_init = VEC_index (constructor_elt,
+				CONSTRUCTOR_ELTS (str_init), 0)->value;
+	}
+  
+      /* If it's a string literal, then it's the initializer for the array
+         as a whole. Otherwise, continue with normal initialization for
+	 array types (one value per array element).  */
+      if (TREE_CODE (str_init) == STRING_CST)
+	{
+	  d->cur++;
+	  return str_init;
+	}
+    }
 
-	  field = next_initializable_field (TYPE_FIELDS (type));
-
-	  if (!field)
+  /* The following cases are about aggregates. If we are not within a full
+     initializer already, and there is not a CONSTRUCTOR, it means that there
+     is a missing set of braces (that is, we are processing the case for
+     which reshape_init exists).  */
+  if (!first_initializer_p)
+    {
+      if (TREE_CODE (init) == CONSTRUCTOR)
+	{
+	  /* For a nested compound literal, there is no need to reshape since
+	     brace elision is not allowed. Even if we decided to allow it,
+	     we should add a call to reshape_init in finish_compound_literal,
+	     before calling digest_init, so changing this code would still
+	     not be necessary.  */
+	  if (!TREE_HAS_CONSTRUCTOR (init))
 	    {
-	      /* [dcl.init.aggr]
-
-		 An initializer for an aggregate member that is an
-		 empty class shall have the form of an empty
-		 initializer-list {}.  */
-	      if (!brace_enclosed_p)
-		{
-		  error ("initializer for %qT must be brace-enclosed", type);
-		  return error_mark_node;
-		}
+	      ++d->cur;
+	      gcc_assert (BRACE_ENCLOSED_INITIALIZER_P (init));
+	      return reshape_init (type, init);
 	    }
 	  else
-	    {
-	      /* Loop through the initializable fields, gathering
-		 initializers.  */
-	      while (*initp)
-		{
-		  tree field_init;
-
-		  /* Handle designated initializers, as an extension.  */
-		  if (TREE_PURPOSE (*initp))
-		    {
-		      if (pedantic)
-			pedwarn ("ISO C++ does not allow designated initializers");
-		      field = lookup_field_1 (type, TREE_PURPOSE (*initp),
-					      /*want_type=*/false);
-		      if (!field || TREE_CODE (field) != FIELD_DECL)
-			error ("%qT has no non-static data member named %qD",
-			       type, TREE_PURPOSE (*initp));
-		    }
-		  if (!field)
-		    break;
-
-		  field_init = reshape_init (TREE_TYPE (field), initp);
-		  if (field_init == error_mark_node)
-		    return error_mark_node;
-		  TREE_CHAIN (field_init) = CONSTRUCTOR_ELTS (new_init);
-		  CONSTRUCTOR_ELTS (new_init) = field_init;
-		  /* [dcl.init.aggr]
-
-		     When a union  is  initialized with a brace-enclosed
-		     initializer, the braces shall only contain an
-		     initializer for the first member of the union.  */
-		  if (TREE_CODE (type) == UNION_TYPE)
-		    break;
-		  field = next_initializable_field (TREE_CHAIN (field));
-		}
-	    }
+	    gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (init));
 	}
-      else if (TREE_CODE (type) == ARRAY_TYPE
-	       || TREE_CODE (type) == VECTOR_TYPE)
-	{
-	    /* If the bound of the array is known, take no more initializers
-	      than are allowed.  */
-	    tree max_index = NULL_TREE;
-	    if (TREE_CODE (type) == ARRAY_TYPE)
-	      {
-		if (TYPE_DOMAIN (type))
-		  max_index = array_type_nelts (type);
-	      }
-	    else
-	      {
-		/* For a vector, the representation type is a struct
-		  containing a single member which is an array of the
-		  appropriate size.  */
-		tree rtype = TYPE_DEBUG_REPRESENTATION_TYPE (type);
-		if (rtype && TYPE_DOMAIN (TREE_TYPE (TYPE_FIELDS (rtype))))
-		  max_index = array_type_nelts (TREE_TYPE (TYPE_FIELDS
-							   (rtype)));
-	      }
 
-	  if (!reshape_init_array (TREE_TYPE (type), max_index,
-				   initp, new_init))
-	    return error_mark_node;
-	}
-      else
-	gcc_unreachable ();
-
-      /* The initializers were placed in reverse order in the
-	 CONSTRUCTOR.  */
-      CONSTRUCTOR_ELTS (new_init) = nreverse (CONSTRUCTOR_ELTS (new_init));
-
-      if (TREE_CODE (old_init) == TREE_LIST)
-	new_init = build_tree_list (TREE_PURPOSE (old_init), new_init);
+      warning (OPT_Wmissing_braces, "missing braces around initializer for %qT",
+	       type);
     }
 
-  /* If there are more initializers than necessary, issue a
-     diagnostic.  */
-  if (*initp)
-    {
-      if (brace_enclosed_p)
-	error ("too many initializers for %qT", type);
-      else if (warn_missing_braces && !string_init_p)
-	warning (0, "missing braces around initializer");
-    }
+  /* Dispatch to specialized routines.  */
+  if (CLASS_TYPE_P (type))
+    return reshape_init_class (type, d, first_initializer_p);
+  else if (TREE_CODE (type) == ARRAY_TYPE)
+    return reshape_init_array (type, d);
+  else if (TREE_CODE (type) == VECTOR_TYPE)
+    return reshape_init_vector (type, d);
+  else
+    gcc_unreachable();
+}
+
+/* Undo the brace-elision allowed by [dcl.init.aggr] in a
+   brace-enclosed aggregate initializer.
+
+   INIT is the CONSTRUCTOR containing the list of initializers describing
+   a brace-enclosed initializer for an entity of the indicated aggregate TYPE.
+   It may not presently match the shape of the TYPE; for example:
+
+     struct S { int a; int b; };
+     struct S a[] = { 1, 2, 3, 4 };
+
+   Here INIT will hold a VEC of four elements, rather than a
+   VEC of two elements, each itself a VEC of two elements.  This
+   routine transforms INIT from the former form into the latter.  The
+   revised CONSTRUCTOR node is returned.  */
+
+static tree
+reshape_init (tree type, tree init)
+{
+  VEC(constructor_elt, gc) *v;
+  reshape_iter d;
+  tree new_init;
+
+  gcc_assert (TREE_CODE (init) == CONSTRUCTOR);
+  gcc_assert (BRACE_ENCLOSED_INITIALIZER_P (init));
+
+  v = CONSTRUCTOR_ELTS (init);
+
+  /* An empty constructor does not need reshaping, and it is always a valid
+     initializer.  */
+  if (VEC_empty (constructor_elt, v))
+    return init;
+
+  /* Recurse on this CONSTRUCTOR.  */
+  d.cur = VEC_index (constructor_elt, v, 0);
+  d.end = d.cur + VEC_length (constructor_elt, v);
+
+  new_init = reshape_init_r (type, &d, true);
+
+  /* Make sure all the element of the constructor were used. Otherwise,
+     issue an error about exceeding initializers.  */
+  if (d.cur != d.end)
+    error ("too many initializers for %qT", type);
 
   return new_init;
 }
@@ -4455,20 +4530,13 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
     init = grok_reference_init (decl, type, init, cleanup);
   else if (init)
     {
+      /* Do not reshape constructors of vectors (they don't need to be
+         reshaped.  */
       if (TREE_CODE (init) == CONSTRUCTOR
-	  && BRACE_ENCLOSED_INITIALIZER_P (init))
+	  && !TREE_HAS_CONSTRUCTOR (init)
+	  && !TREE_TYPE (init))  /* ptrmemfunc */
 	{
-	  /* [dcl.init] paragraph 13,
-	     If T is a scalar type, then a declaration of the form
-	     T x = { a };
-	     is equivalent to
-	     T x = a;
-
-	     reshape_init will complain about the extra braces,
-	     and doesn't do anything useful in the case where TYPE is
-	     scalar, so just don't call it.  */
-	  if (CP_AGGREGATE_TYPE_P (type))
-	    init = reshape_init (type, &init);
+	  init = reshape_init (type, init);
 
 	  if ((*targetm.vector_opaque_p) (type))
 	    {
@@ -4486,9 +4554,9 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
 	{
 	  if (TREE_CODE (type) == ARRAY_TYPE)
 	    goto initialize_aggr;
-	  else if (TREE_CODE (init) == CONSTRUCTOR
-		   && BRACE_ENCLOSED_INITIALIZER_P (init))
+	  else if (TREE_CODE (init) == CONSTRUCTOR)
 	    {
+	      gcc_assert (BRACE_ENCLOSED_INITIALIZER_P (init));
 	      if (TYPE_NON_AGGREGATE_CLASS (type))
 		{
 		  error ("%qD must be initialized by constructor, "
@@ -4713,7 +4781,7 @@ initialize_local_var (tree decl, tree init)
 void
 initialize_artificial_var (tree decl, tree init)
 {
-  DECL_INITIAL (decl) = build_constructor (NULL_TREE, init);
+  DECL_INITIAL (decl) = build_constructor_from_list (NULL_TREE, init);
   DECL_INITIALIZED_P (decl) = 1;
   determine_visibility (decl);
   layout_var_decl (decl);
@@ -5401,14 +5469,21 @@ cp_complete_array_type (tree *ptype, tree initial_value, bool do_default)
   if (initial_value)
     {
       /* An array of character type can be initialized from a
-	 brace-enclosed string constant.  */
+	 brace-enclosed string constant.
+
+	 FIXME: this code is duplicated from reshape_init. Probably
+	 we should just call reshape_init here?  */
       if (char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (*ptype)))
 	  && TREE_CODE (initial_value) == CONSTRUCTOR
-	  && CONSTRUCTOR_ELTS (initial_value)
-	  && (TREE_CODE (TREE_VALUE (CONSTRUCTOR_ELTS (initial_value)))
-	      == STRING_CST)
-	  && TREE_CHAIN (CONSTRUCTOR_ELTS (initial_value)) == NULL_TREE)
-	initial_value = TREE_VALUE (CONSTRUCTOR_ELTS (initial_value));
+	  && !VEC_empty (constructor_elt, CONSTRUCTOR_ELTS (initial_value)))
+	{
+	  VEC(constructor_elt,gc) *v = CONSTRUCTOR_ELTS (initial_value);
+	  tree value = VEC_index (constructor_elt, v, 0)->value;
+
+	  if (TREE_CODE (value) == STRING_CST
+	      && VEC_length (constructor_elt, v) == 1)
+	    initial_value = value;
+	}
     }
 
   failure = complete_array_type (ptype, initial_value, do_default);

@@ -2400,13 +2400,14 @@ const_hash_1 (const tree exp)
 
     case CONSTRUCTOR:
       {
-	tree link;
+	unsigned HOST_WIDE_INT idx;
+	tree value;
 	
 	hi = 5 + int_size_in_bytes (TREE_TYPE (exp));
 	
-	for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
-	  if (TREE_VALUE (link))
-	    hi = hi * 603 + const_hash_1 (TREE_VALUE (link));
+	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (exp), idx, value)
+	  if (value)
+	    hi = hi * 603 + const_hash_1 (value);
 	
 	return hi;
       }
@@ -2517,7 +2518,8 @@ compare_constant (const tree t1, const tree t2)
 
     case CONSTRUCTOR:
       {
-	tree l1, l2;
+	VEC(constructor_elt, gc) *v1, *v2;
+	unsigned HOST_WIDE_INT idx;
 	
 	typecode = TREE_CODE (TREE_TYPE (t1));
 	if (typecode != TREE_CODE (TREE_TYPE (t2)))
@@ -2540,28 +2542,34 @@ compare_constant (const tree t1, const tree t2)
 	      return 0;
 	  }
 
-	for (l1 = CONSTRUCTOR_ELTS (t1), l2 = CONSTRUCTOR_ELTS (t2);
-	     l1 && l2;
-	     l1 = TREE_CHAIN (l1), l2 = TREE_CHAIN (l2))
+	v1 = CONSTRUCTOR_ELTS (t1);
+	v2 = CONSTRUCTOR_ELTS (t2);
+	if (VEC_length (constructor_elt, v1)
+	    != VEC_length (constructor_elt, v2))
+	    return 0;
+
+	for (idx = 0; idx < VEC_length (constructor_elt, v1); ++idx)
 	  {
+	    constructor_elt *c1 = VEC_index (constructor_elt, v1, idx);
+	    constructor_elt *c2 = VEC_index (constructor_elt, v2, idx);
+
 	    /* Check that each value is the same...  */
-	    if (! compare_constant (TREE_VALUE (l1), TREE_VALUE (l2)))
+	    if (!compare_constant (c1->value, c2->value))
 	      return 0;
 	    /* ... and that they apply to the same fields!  */
 	    if (typecode == ARRAY_TYPE)
 	      {
-		if (! compare_constant (TREE_PURPOSE (l1),
-					TREE_PURPOSE (l2)))
+		if (!compare_constant (c1->index, c2->index))
 		  return 0;
 	      }
 	    else
 	      {
-		if (TREE_PURPOSE (l1) != TREE_PURPOSE (l2))
+		if (c1->index != c2->index)
 		  return 0;
 	      }
 	  }
 	
-	return l1 == NULL_TREE && l2 == NULL_TREE;
+	return 1;
       }
 
     case ADDR_EXPR:
@@ -2645,13 +2653,19 @@ copy_constant (tree exp)
     case CONSTRUCTOR:
       {
 	tree copy = copy_node (exp);
-	tree list = copy_list (CONSTRUCTOR_ELTS (exp));
-	tree tail;
-
-	CONSTRUCTOR_ELTS (copy) = list;
-	for (tail = list; tail; tail = TREE_CHAIN (tail))
-	  TREE_VALUE (tail) = copy_constant (TREE_VALUE (tail));
-
+	VEC(constructor_elt, gc) *v;
+	unsigned HOST_WIDE_INT idx;
+	tree purpose, value;
+	
+	v = VEC_alloc(constructor_elt, gc, VEC_length(constructor_elt,
+						      CONSTRUCTOR_ELTS (exp)));
+	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (exp), idx, purpose, value)
+	  {
+	    constructor_elt *ce = VEC_quick_push (constructor_elt, v, NULL);
+	    ce->index = purpose;
+	    ce->value = copy_constant (value);
+	  }
+	CONSTRUCTOR_ELTS (copy) = v;
 	return copy;
       }
 
@@ -3476,10 +3490,12 @@ compute_reloc_for_constant (tree exp)
       break;
 
     case CONSTRUCTOR:
-      for (tem = CONSTRUCTOR_ELTS (exp); tem; tem = TREE_CHAIN (tem))
-	if (TREE_VALUE (tem) != 0)
-	  reloc |= compute_reloc_for_constant (TREE_VALUE (tem));
-
+      {
+	unsigned HOST_WIDE_INT idx;
+	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (exp), idx, tem)
+	  if (tem != 0)
+	    reloc |= compute_reloc_for_constant (tem);
+      }
       break;
 
     default:
@@ -3533,10 +3549,12 @@ output_addressed_constants (tree exp)
       break;
 
     case CONSTRUCTOR:
-      for (tem = CONSTRUCTOR_ELTS (exp); tem; tem = TREE_CHAIN (tem))
-	if (TREE_VALUE (tem) != 0)
-	  output_addressed_constants (TREE_VALUE (tem));
-
+      {
+	unsigned HOST_WIDE_INT idx;
+	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (exp), idx, tem)
+	  if (tem != 0)
+	    output_addressed_constants (tem);
+      }
       break;
 
     default:
@@ -3567,16 +3585,16 @@ initializer_constant_valid_p (tree value, tree endtype)
       if ((TREE_CODE (TREE_TYPE (value)) == UNION_TYPE
 	   || TREE_CODE (TREE_TYPE (value)) == RECORD_TYPE)
 	  && TREE_CONSTANT (value)
-	  && CONSTRUCTOR_ELTS (value))
+	  && !VEC_empty (constructor_elt, CONSTRUCTOR_ELTS (value)))
 	{
+	  unsigned HOST_WIDE_INT idx;
 	  tree elt;
 	  bool absolute = true;
 
-	  for (elt = CONSTRUCTOR_ELTS (value); elt; elt = TREE_CHAIN (elt))
+	  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (value), idx, elt)
 	    {
 	      tree reloc;
-	      value = TREE_VALUE (elt);
-	      reloc = initializer_constant_valid_p (value, TREE_TYPE (value));
+	      reloc = initializer_constant_valid_p (elt, TREE_TYPE (elt));
 	      if (!reloc)
 		return NULL_TREE;
 	      if (reloc != null_pointer_node)
@@ -3832,7 +3850,8 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
 
   /* Allow a constructor with no elements for any data type.
      This means to fill the space with zeros.  */
-  if (TREE_CODE (exp) == CONSTRUCTOR && CONSTRUCTOR_ELTS (exp) == 0)
+  if (TREE_CODE (exp) == CONSTRUCTOR
+      && VEC_empty (constructor_elt, CONSTRUCTOR_ELTS (exp)))
     {
       assemble_zeros (size);
       return;
@@ -3942,6 +3961,8 @@ static unsigned HOST_WIDE_INT
 array_size_for_constructor (tree val)
 {
   tree max_index, i;
+  unsigned HOST_WIDE_INT cnt;
+  tree index, value;
 
   /* This code used to attempt to handle string constants that are not
      arrays of single-bytes, but nothing else does, so there's no point in
@@ -3950,10 +3971,8 @@ array_size_for_constructor (tree val)
     return TREE_STRING_LENGTH (val);
 
   max_index = NULL_TREE;
-  for (i = CONSTRUCTOR_ELTS (val); i; i = TREE_CHAIN (i))
+  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (val), cnt, index, value)
     {
-      tree index = TREE_PURPOSE (i);
-
       if (TREE_CODE (index) == RANGE_EXPR)
 	index = TREE_OPERAND (index, 1);
       if (max_index == NULL_TREE || tree_int_cst_lt (max_index, index))
@@ -3983,7 +4002,7 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
 		    unsigned int align)
 {
   tree type = TREE_TYPE (exp);
-  tree link, field = 0;
+  tree field = 0;
   tree min_index = 0;
   /* Number of bytes output or skipped so far.
      In other words, current position within the constructor.  */
@@ -3991,6 +4010,8 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
   /* Nonzero means BYTE contains part of a byte, to be output.  */
   int byte_buffer_in_use = 0;
   int byte = 0;
+  unsigned HOST_WIDE_INT cnt;
+  constructor_elt *ce;
 
   gcc_assert (HOST_BITS_PER_WIDE_INT >= BITS_PER_UNIT);
 
@@ -4010,23 +4031,22 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
      There is always a maximum of one element in the chain LINK for unions
      (even if the initializer in a source program incorrectly contains
      more one).  */
-  for (link = CONSTRUCTOR_ELTS (exp);
-       link;
-       link = TREE_CHAIN (link),
-       field = field ? TREE_CHAIN (field) : 0)
+  for (cnt = 0;
+       VEC_iterate (constructor_elt, CONSTRUCTOR_ELTS (exp), cnt, ce);
+       cnt++, field = field ? TREE_CHAIN (field) : 0)
     {
-      tree val = TREE_VALUE (link);
+      tree val = ce->value;
       tree index = 0;
 
       /* The element in a union constructor specifies the proper field
 	 or index.  */
       if ((TREE_CODE (type) == RECORD_TYPE || TREE_CODE (type) == UNION_TYPE
 	   || TREE_CODE (type) == QUAL_UNION_TYPE)
-	  && TREE_PURPOSE (link) != 0)
-	field = TREE_PURPOSE (link);
+	  && ce->index != 0)
+	field = ce->index;
 
       else if (TREE_CODE (type) == ARRAY_TYPE)
-	index = TREE_PURPOSE (link);
+	index = ce->index;
 
 #ifdef ASM_COMMENT_START
       if (field && flag_verbose_asm)
@@ -4089,6 +4109,7 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
 	     if each element has the proper size.  */
 	  if ((field != 0 || index != 0) && pos != total_bytes)
 	    {
+	      gcc_assert (pos >= total_bytes);
 	      assemble_zeros (pos - total_bytes);
 	      total_bytes = pos;
 	    }
@@ -4164,6 +4185,7 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
 	      /* If still not at proper byte, advance to there.  */
 	      if (next_offset / BITS_PER_UNIT != total_bytes)
 		{
+		  gcc_assert (next_offset / BITS_PER_UNIT >= total_bytes);
 		  assemble_zeros (next_offset / BITS_PER_UNIT - total_bytes);
 		  total_bytes = next_offset / BITS_PER_UNIT;
 		}

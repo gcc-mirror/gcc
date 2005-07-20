@@ -596,7 +596,8 @@ vect_get_vec_def_for_operand (tree op, tree stmt, tree *scalar_def)
             t = tree_cons (NULL_TREE, def, t);
           }
 
-        vec_inv = build_constructor (vectype, t);
+	/* FIXME: use build_constructor directly.  */
+        vec_inv = build_constructor_from_list (vectype, t);
         return vect_init_vector (stmt, vec_inv);
       }
 
@@ -771,7 +772,7 @@ get_initial_def_for_reduction (tree stmt, tree init_val, tree *scalar_def)
   if (TREE_CODE (init_val) == INTEGER_CST || TREE_CODE (init_val) == REAL_CST)
     vec = build_vector (vectype, t);
   else
-    vec = build_constructor (vectype, t);
+    vec = build_constructor_from_list (vectype, t);
     
   if (!need_epilog_adjust)
     {

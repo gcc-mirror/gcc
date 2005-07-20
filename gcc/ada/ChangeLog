@@ -1,3 +1,13 @@
+2005-07-20  Giovanni Bajo  <giovannibajo@libero.it>
+
+	Make CONSTRUCTOR use VEC to store initializers.
+	* decl.c (gnat_to_gnu_entity): Update to cope with VEC in
+	CONSTRUCTOR_ELTS.
+	* trans.c (extract_values): Likewise.
+	* utils.c (convert, remove_conversions): Likewise.
+	* utils2.c (contains_save_expr_p, build_binary_op, build_unary_op,
+	gnat_build_constructor): Likewise.
+
 2005-07-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* decl.c (components_to_record): Use DECL_FCONTEXT instead of

@@ -1642,6 +1642,8 @@ generate_element_init_1 (struct sra_elt *elt, tree init, tree *list_p)
   enum tree_code init_code;
   struct sra_elt *sub;
   tree t;
+  unsigned HOST_WIDE_INT idx;
+  tree value, purpose;
 
   /* We can be passed DECL_INITIAL of a static variable.  It might have a
      conversion, which we strip off here.  */
@@ -1675,11 +1677,8 @@ generate_element_init_1 (struct sra_elt *elt, tree init, tree *list_p)
       break;
 
     case CONSTRUCTOR:
-      for (t = CONSTRUCTOR_ELTS (init); t ; t = TREE_CHAIN (t))
+      FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (init), idx, purpose, value)
 	{
-	  tree purpose = TREE_PURPOSE (t);
-	  tree value = TREE_VALUE (t);
-
 	  if (TREE_CODE (purpose) == RANGE_EXPR)
 	    {
 	      tree lower = TREE_OPERAND (purpose, 0);

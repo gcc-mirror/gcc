@@ -299,8 +299,7 @@ gfc_build_null_descriptor (tree type)
   field = TYPE_FIELDS (type);
 
   /* Set a NULL data pointer.  */
-  tmp = tree_cons (field, null_pointer_node, NULL_TREE);
-  tmp = build1 (CONSTRUCTOR, type, tmp);
+  tmp = build_constructor_single (type, field, null_pointer_node);
   TREE_CONSTANT (tmp) = 1;
   TREE_INVARIANT (tmp) = 1;
   /* All other fields are ignored.  */
@@ -834,7 +833,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 					  gfc_index_zero_node, bound);
 	      tmptype = build_array_type (type, tmptype);
 
-	      init = build1 (CONSTRUCTOR, tmptype, nreverse (list));
+	      init = build_constructor_from_list (tmptype, nreverse (list));
 	      TREE_CONSTANT (init) = 1;
 	      TREE_INVARIANT (init) = 1;
 	      TREE_STATIC (init) = 1;
@@ -2833,15 +2832,14 @@ tree
 gfc_conv_array_initializer (tree type, gfc_expr * expr)
 {
   gfc_constructor *c;
-  tree list;
   tree tmp;
   mpz_t maxval;
   gfc_se se;
   HOST_WIDE_INT hi;
   unsigned HOST_WIDE_INT lo;
   tree index, range;
+  VEC(constructor_elt,gc) *v = NULL;
 
-  list = NULL_TREE;
   switch (expr->expr_type)
     {
     case EXPR_CONSTANT:
@@ -2865,7 +2863,7 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
       /* This will probably eat buckets of memory for large arrays.  */
       while (hi != 0 || lo != 0)
         {
-          list = tree_cons (NULL_TREE, se.expr, list);
+	  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, se.expr);
           if (lo == 0)
             hi--;
           lo--;
@@ -2873,7 +2871,7 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
       break;
 
     case EXPR_ARRAY:
-      /* Create a list of all the elements.  */
+      /* Create a vector of all the elements.  */
       for (c = expr->value.constructor; c; c = c->next)
         {
           if (c->iterator)
@@ -2917,26 +2915,24 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
 	    case EXPR_CONSTANT:
 	      gfc_conv_constant (&se, c->expr);
               if (range == NULL_TREE)
-                list = tree_cons (index, se.expr, list);
+		CONSTRUCTOR_APPEND_ELT (v, index, se.expr);
               else
                 {
                   if (index != NULL_TREE)
-                    list = tree_cons (index, se.expr, list);
-                  list = tree_cons (range, se.expr, list);
+		    CONSTRUCTOR_APPEND_ELT (v, index, se.expr);
+		  CONSTRUCTOR_APPEND_ELT (v, range, se.expr);
                 }
 	      break;
 
 	    case EXPR_STRUCTURE:
               gfc_conv_structure (&se, c->expr, 1);
-              list = tree_cons (index, se.expr, list);
+	      CONSTRUCTOR_APPEND_ELT (v, index, se.expr);
 	      break;
 
 	    default:
 	      gcc_unreachable ();
 	    }
         }
-      /* We created the list in reverse order.  */
-      list = nreverse (list);
       break;
 
     default:
@@ -2944,7 +2940,7 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
     }
 
   /* Create a constructor from the list of elements.  */
-  tmp = build1 (CONSTRUCTOR, type, list);
+  tmp = build_constructor (type, v);
   TREE_CONSTANT (tmp) = 1;
   TREE_INVARIANT (tmp) = 1;
   return tmp;

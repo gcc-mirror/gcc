@@ -422,10 +422,10 @@ create_common (gfc_common_head *com, segment_info * head, bool saw_equiv)
 
   if (is_init)
     {
-      tree list, ctor, tmp;
+      tree ctor, tmp;
       HOST_WIDE_INT offset = 0;
+      VEC(constructor_elt,gc) *v = NULL;
 
-      list = NULL_TREE;
       for (s = head; s; s = s->next)
         {
           if (s->sym->value)
@@ -442,20 +442,25 @@ create_common (gfc_common_head *com, segment_info * head, bool saw_equiv)
 	      tmp = gfc_conv_initializer (s->sym->value, &s->sym->ts,
 		  TREE_TYPE (s->field), s->sym->attr.dimension,
 		  s->sym->attr.pointer || s->sym->attr.allocatable);
-	      list = tree_cons (s->field, tmp, list);
+
+	      CONSTRUCTOR_APPEND_ELT (v, s->field, tmp);
               offset = s->offset + s->length;
             }
         }
-      gcc_assert (list);
-      ctor = build1 (CONSTRUCTOR, union_type, nreverse(list));
+      gcc_assert (!VEC_empty (constructor_elt, v));
+      ctor = build_constructor (union_type, v);
       TREE_CONSTANT (ctor) = 1;
       TREE_INVARIANT (ctor) = 1;
       TREE_STATIC (ctor) = 1;
       DECL_INITIAL (decl) = ctor;
 
 #ifdef ENABLE_CHECKING
-      for (tmp = CONSTRUCTOR_ELTS (ctor); tmp; tmp = TREE_CHAIN (tmp))
-	gcc_assert (TREE_CODE (TREE_PURPOSE (tmp)) == FIELD_DECL);
+      {
+	tree field, value;
+	unsigned HOST_WIDE_INT idx;
+	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), idx, field, value)
+	  gcc_assert (TREE_CODE (field) == FIELD_DECL);
+      }
 #endif
     }
 

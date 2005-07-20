@@ -940,16 +940,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    gnu_alloc_type
 		      = TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (gnu_alloc_type)));
 
-                   if (TREE_CODE (gnu_expr) == CONSTRUCTOR
-                       &&
-                       TREE_CHAIN (CONSTRUCTOR_ELTS (gnu_expr)) == NULL_TREE)
-                     gnu_expr = 0;
-                   else
-                     gnu_expr
-                       = build_component_ref
-                         (gnu_expr, NULL_TREE,
-                          TREE_CHAIN (TYPE_FIELDS (TREE_TYPE (gnu_expr))),
-			  false);
+		    if (TREE_CODE (gnu_expr) == CONSTRUCTOR
+			&& VEC_length (constructor_elt,
+				       CONSTRUCTOR_ELTS (gnu_expr)) == 1)
+		      gnu_expr = 0;
+		    else
+		      gnu_expr
+			= build_component_ref
+			  (gnu_expr, NULL_TREE,
+			  TREE_CHAIN (TYPE_FIELDS (TREE_TYPE (gnu_expr))),
+			      false);
 		  }
 
 		if (TREE_CODE (TYPE_SIZE_UNIT (gnu_alloc_type)) == INTEGER_CST

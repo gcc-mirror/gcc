@@ -5938,9 +5938,9 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 	}
       else if (TREE_CODE (initial_value) == CONSTRUCTOR)
 	{
-	  tree elts = CONSTRUCTOR_ELTS (initial_value);
+	  VEC(constructor_elt,gc) *v = CONSTRUCTOR_ELTS (initial_value);
 
-	  if (elts == NULL)
+	  if (VEC_empty (constructor_elt, v))
 	    {
 	      if (pedantic)
 		failure = 3;
@@ -5949,15 +5949,21 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 	  else
 	    {
 	      tree curindex;
+	      unsigned HOST_WIDE_INT cnt;
+	      constructor_elt *ce;
 
-	      if (TREE_PURPOSE (elts))
-		maxindex = fold_convert (sizetype, TREE_PURPOSE (elts));
+	      if (VEC_index (constructor_elt, v, 0)->index)
+		maxindex = fold_convert (sizetype,
+					 VEC_index (constructor_elt,
+						    v, 0)->index);
 	      curindex = maxindex;
 
-	      for (elts = TREE_CHAIN (elts); elts; elts = TREE_CHAIN (elts))
+	      for (cnt = 1;
+		   VEC_iterate (constructor_elt, v, cnt, ce);
+		   cnt++)
 		{
-		  if (TREE_PURPOSE (elts))
-		    curindex = fold_convert (sizetype, TREE_PURPOSE (elts));
+		  if (ce->index)
+		    curindex = fold_convert (sizetype, ce->index);
 		  else
 		    curindex = size_binop (PLUS_EXPR, curindex, size_one_node);
 

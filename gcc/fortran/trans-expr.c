@@ -1812,11 +1812,10 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
 {
   gfc_constructor *c;
   gfc_component *cm;
-  tree head;
-  tree tail;
   tree val;
   tree type;
   tree tmp;
+  VEC(constructor_elt,gc) *v = NULL;
 
   gcc_assert (se->ss == NULL);
   gcc_assert (expr->expr_type == EXPR_STRUCTURE);
@@ -1831,9 +1830,6 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
       return;
     }
 
-  head = build1 (CONSTRUCTOR, type, NULL_TREE);
-  tail = NULL_TREE;
-
   cm = expr->ts.derived->components;
   for (c = expr->value.constructor; c; c = c->next, cm = cm->next)
     {
@@ -1844,19 +1840,10 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
       val = gfc_conv_initializer (c->expr, &cm->ts,
 	  TREE_TYPE (cm->backend_decl), cm->dimension, cm->pointer);
 
-      /* Build a TREE_CHAIN to hold it.  */
-      val = tree_cons (cm->backend_decl, val, NULL_TREE);
-
-      /* Add it to the list.  */
-      if (tail == NULL_TREE)
-        TREE_OPERAND(head, 0) = tail = val;
-      else
-        {
-          TREE_CHAIN (tail) = val;
-          tail = val;
-        }
+      /* Append it to the constructor list.  */
+      CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl, val);
     }
-  se->expr = head;
+  se->expr = build_constructor (type, v);
 }
 
 

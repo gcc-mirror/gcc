@@ -1,3 +1,54 @@
+2005-07-20  Giovanni Bajo  <giovannibajo@libero.it>
+
+	Make CONSTRUCTOR use VEC to store initializers.
+	* call.c (convert_default_arg): Update call to digest_init.
+	* class.c (dump_class_hierarchy, dump_array): Update to cope with
+	VEC in CONSTRUCTOR_ELTS.
+	* cp-tree.h (EMPTY_CONSTRUCTOR_P): Likewise.
+	(finish_compound_literal, digest_init): Update declaration.
+	* decl.c (struct reshape_iter): New data type.
+	(reshape_init_array): Rename to...
+	(reshape_init_array_1): Update to cope with VEC in CONSTRUCTOR_ELTS.
+	(reshape_init): Rewrite from scratch. Split parts into...
+	(reshape_init_array, reshape_init_vector, reshape_init_class,
+	reshape_init_r): New functions.
+	(check_initializer): Update call to reshape_init. Remove obsolete
+	code.
+	(initialize_artificial_var, cp_complete_array_type): Update to cope
+	with VEC in CONSTRUCTOR_ELTS.
+	* decl2.c (grokfield): Update calls to digest_init.
+	(mark_vtable_entries): Update to cope with VEC in CONSTRUCTOR_ELTS.
+	* error.c (dump_expr_init_vec): New function.
+	(dump_expr): Use dump_expr_init_vec.
+	* init.c (build_zero_init, build_vec_init): Update to cope with VEC
+	in CONSTRUCTOR_ELTS.
+	(expand_default_init): Update call to digest_init.
+	* parser.c  (cp_parser_postfix_expression): Use a VEC for the
+	initializers.
+	(cp_parser_initializer_list): Build a VEC of initializers.
+	* pt.c (tsubst_copy, tsubst_copy_and_build): Update to cope with VEC
+	in CONSTRUCTOR_ELTS.
+	* rtti.c (tinfo_base_init, generic_initializer, ptr_initializer,
+	ptm_initializer, class_initializer, get_pseudo_ti_init): Use
+	build_constructor_from_list instead of build_constructor.
+	* semantics.c (finish_compound_literal): Update call to digest_init.
+	* tree.c (stabilize_init): Update to cope with VEC in
+	CONSTRUCTOR_ELTS.
+	* typeck.c (build_ptrmemfunc1): Likewise.
+	* typeck2.c: (cxx_incomplete_type_error, split_nonconstant_init_1):
+	Likewise.
+	(store_init_value): Use build_constructor_from_list and update call
+	to digest_init.
+	(digest_init): Rewrite.
+	(process_init_constructor): Rewrite from scratch. Split into...
+	(process_init_constructor_array, picflag_from_initializer,
+	process_init_constructor_record, process_init_constructor_union):
+	New functions.
+	(PICFLAG_ERRONEOUS, PICFLAG_NOT_ALL_CONSTANT, PICFLAG_NOT_ALL_SIMPLE):
+	New macros.
+	(build_functional_cast): Use build_constructor_from_list instead of
+	build_constructor.
+
 2005-07-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22263

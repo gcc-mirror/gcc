@@ -2395,7 +2395,22 @@ copy_tree_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       if (TREE_CODE (*tp) == BIND_EXPR)
 	BIND_EXPR_BLOCK (*tp) = NULL_TREE;
     }
+  else if (code == CONSTRUCTOR)
+    {
+      /* CONSTRUCTOR nodes need special handling because
+         we need to duplicate the vector of elements.  */
+      tree new;
 
+      new = copy_node (*tp);
+
+      /* Propagate mudflap marked-ness.  */
+      if (flag_mudflap && mf_marked_p (*tp))
+        mf_mark (new);
+
+      CONSTRUCTOR_ELTS (new) = VEC_copy (constructor_elt, gc,
+					 CONSTRUCTOR_ELTS (*tp));
+      *tp = new;
+    }
   else if (TREE_CODE_CLASS (code) == tcc_type)
     *walk_subtrees = 0;
   else if (TREE_CODE_CLASS (code) == tcc_declaration)

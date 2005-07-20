@@ -1546,7 +1546,7 @@ static tree cp_parser_initializer
   (cp_parser *, bool *, bool *);
 static tree cp_parser_initializer_clause
   (cp_parser *, bool *);
-static tree cp_parser_initializer_list
+static VEC(constructor_elt,gc) *cp_parser_initializer_list
   (cp_parser *, bool *);
 
 static bool cp_parser_ctor_initializer_opt_and_function_body
@@ -4027,7 +4027,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p)
 	if (cp_parser_allow_gnu_extensions_p (parser)
 	    && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
 	  {
-	    tree initializer_list = NULL_TREE;
+	    VEC(constructor_elt,gc) *initializer_list = NULL;
 	    bool saved_in_type_id_in_expr_p;
 
 	    cp_parser_parse_tentatively (parser);
@@ -12298,7 +12298,7 @@ cp_parser_initializer (cp_parser* parser, bool* is_parenthesized_init,
    returned is simply a representation for the expression.
 
    Otherwise, a CONSTRUCTOR is returned.  The CONSTRUCTOR_ELTS will be
-   the elements of the initializer-list (or NULL_TREE, if the last
+   the elements of the initializer-list (or NULL, if the last
    production is used).  The TREE_TYPE for the CONSTRUCTOR will be
    NULL_TREE.  There is no way to detect whether or not the optional
    trailing `,' was provided.  NON_CONSTANT_P is as for
@@ -12358,15 +12358,15 @@ cp_parser_initializer_clause (cp_parser* parser, bool* non_constant_p)
      identifier : initializer-clause
      initializer-list, identifier : initializer-clause
 
-   Returns a TREE_LIST.  The TREE_VALUE of each node is an expression
-   for the initializer.  If the TREE_PURPOSE is non-NULL, it is the
+   Returns a VEC of constructor_elt.  The VALUE of each elt is an expression
+   for the initializer.  If the INDEX of the elt is non-NULL, it is the
    IDENTIFIER_NODE naming the field to initialize.  NON_CONSTANT_P is
    as for cp_parser_initializer.  */
 
-static tree
+static VEC(constructor_elt,gc) *
 cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
 {
-  tree initializers = NULL_TREE;
+  VEC(constructor_elt,gc) *v = NULL;
 
   /* Assume all of the expressions are constant.  */
   *non_constant_p = false;
@@ -12400,8 +12400,9 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
       /* If any clause is non-constant, so is the entire initializer.  */
       if (clause_non_constant_p)
 	*non_constant_p = true;
-      /* Add it to the list.  */
-      initializers = tree_cons (identifier, initializer, initializers);
+
+      /* Add it to the vector.  */
+      CONSTRUCTOR_APPEND_ELT(v, identifier, initializer);
 
       /* If the next token is not a comma, we have reached the end of
 	 the list.  */
@@ -12420,9 +12421,7 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
       cp_lexer_consume_token (parser->lexer);
     }
 
-  /* The initializers were built up in reverse order, so we need to
-     reverse them now.  */
-  return nreverse (initializers);
+  return v;
 }
 
 /* Classes [gram.class] */

@@ -39,7 +39,9 @@ Boston, MA 02110-1301, USA.  */
 #include "output.h"
 #include "diagnostic.h"
 
-static tree process_init_constructor (tree, tree, tree *);
+static tree
+process_init_constructor (tree type, tree init);
+
 
 /* Print an error message stemming from an attempt to use
    BASETYPE as a base class for TYPE.  */
@@ -435,11 +437,12 @@ cxx_incomplete_type_error (tree value, tree type)
 static void
 split_nonconstant_init_1 (tree dest, tree init)
 {
-  tree *pelt, elt, type = TREE_TYPE (dest);
-  tree sub, code, inner_type = NULL;
+  unsigned HOST_WIDE_INT idx;
+  tree field_index, value;
+  tree type = TREE_TYPE (dest);
+  tree inner_type = NULL;
   bool array_type_p = false;
 
-  pelt = &CONSTRUCTOR_ELTS (init);
   switch (TREE_CODE (type))
     {
     case ARRAY_TYPE:
@@ -450,16 +453,21 @@ split_nonconstant_init_1 (tree dest, tree init)
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
-      while ((elt = *pelt))
+      FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (init), idx,
+				field_index, value)
 	{
-	  tree field_index = TREE_PURPOSE (elt);
-	  tree value = TREE_VALUE (elt);
+	  /* The current implementation of this algorithm assumes that
+	     the field was set for all the elements. This is usually done
+	     by process_init_constructor.  */
+	  gcc_assert (field_index);
 
 	  if (!array_type_p)
 	    inner_type = TREE_TYPE (field_index);
 
 	  if (TREE_CODE (value) == CONSTRUCTOR)
 	    {
+	      tree sub;
+
 	      if (array_type_p)
 		sub = build4 (ARRAY_REF, inner_type, dest, field_index,
 			      NULL_TREE, NULL_TREE);
@@ -471,7 +479,19 @@ split_nonconstant_init_1 (tree dest, tree init)
 	    }
 	  else if (!initializer_constant_valid_p (value, inner_type))
 	    {
-	      *pelt = TREE_CHAIN (elt);
+	      tree code;
+	      tree sub;
+
+	      /* FIXME: Ordered removal is O(1) so the whole function is
+		 worst-case quadratic. This could be fixed using an aside
+		 bitmap to record which elements must be removed and remove
+		 them all at the same time. Or by merging
+		 split_non_constant_init into process_init_constructor_array,
+		 that is separating constants from non-constants while building
+		 the vector.  */
+	      VEC_ordered_remove (constructor_elt, CONSTRUCTOR_ELTS (init),
+				  idx);
+	      --idx;
 
 	      if (array_type_p)
 		sub = build4 (ARRAY_REF, inner_type, dest, field_index,
@@ -485,14 +505,13 @@ split_nonconstant_init_1 (tree dest, tree init)
 	      add_stmt (code);
 	      continue;
 	    }
-
-	  pelt = &TREE_CHAIN (elt);
 	}
       break;
 
     case VECTOR_TYPE:
       if (!initializer_constant_valid_p (init, type))
 	{
+	  tree code;
 	  tree cons = copy_node (init);
 	  CONSTRUCTOR_ELTS (init) = NULL;
 	  code = build2 (MODIFY_EXPR, type, dest, cons);
@@ -568,7 +587,7 @@ store_init_value (tree decl, tree init)
 	{
 	  error ("constructor syntax used, but no constructor declared "
 		 "for type %qT", type);
-	  init = build_constructor (NULL_TREE, nreverse (init));
+	  init = build_constructor_from_list (NULL_TREE, nreverse (init));
 	}
     }
   else if (TREE_CODE (init) == TREE_LIST
@@ -591,7 +610,7 @@ store_init_value (tree decl, tree init)
   /* End of special C++ code.  */
 
   /* Digest the specified initializer into an expression.  */
-  value = digest_init (type, init, (tree *) 0);
+  value = digest_init (type, init);
   /* If the initializer is not a constant, fill in DECL_INITIAL with
      the bits that are constant, and then return an expression that
      will perform the dynamic initialization.  */
@@ -607,39 +626,22 @@ store_init_value (tree decl, tree init)
 }
 
 
-/* Digest the parser output INIT as an initializer for type TYPE.
-   Return a C expression of type TYPE to represent the initial value.
+/* Process the initializer INIT for a variable of type TYPE, emitting
+   diagnostics for invalid initializers and converting the initializer as
+   appropriate.
 
-   If TAIL is nonzero, it points to a variable holding a list of elements
-   of which INIT is the first.  We update the list stored there by
-   removing from the head all the elements that we use.
-   Normally this is only one; we use more than one element only if
-   TYPE is an aggregate and INIT is not a constructor.  */
+   For aggregate types, it assumes that reshape_init has already run, thus the
+   initializer will have the right shape (brace elision has been undone).  */
 
 tree
-digest_init (tree type, tree init, tree* tail)
+digest_init (tree type, tree init)
 {
   enum tree_code code = TREE_CODE (type);
-  tree element = NULL_TREE;
-  tree old_tail_contents = NULL_TREE;
 
-  /* By default, assume we use one element from a list.
-     We correct this later in the sole case where it is not true.  */
-
-  if (tail)
-    {
-      old_tail_contents = *tail;
-      *tail = TREE_CHAIN (*tail);
-    }
-
-  if (init == error_mark_node || (TREE_CODE (init) == TREE_LIST
-				  && TREE_VALUE (init) == error_mark_node))
+  if (init == error_mark_node)
     return error_mark_node;
 
-  if (TREE_CODE (init) == ERROR_MARK)
-    /* __PRETTY_FUNCTION__'s initializer is a bogus expression inside
-       a template function. This gets substituted during instantiation.  */
-    return init;
+  gcc_assert (init);
 
   /* We must strip the outermost array type when completing the type,
      because the its bounds might be incomplete at the moment.  */
@@ -647,60 +649,38 @@ digest_init (tree type, tree init, tree* tail)
 			      ? TREE_TYPE (type) : type, NULL_TREE))
     return error_mark_node;
 
-  /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
+  /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue
+     (g++.old-deja/g++.law/casts2.C).  */
   if (TREE_CODE (init) == NON_LVALUE_EXPR)
     init = TREE_OPERAND (init, 0);
 
-  if (BRACE_ENCLOSED_INITIALIZER_P (init)
-      && CONSTRUCTOR_ELTS (init) != 0
-      && TREE_CHAIN (CONSTRUCTOR_ELTS (init)) == 0)
-    {
-      element = TREE_VALUE (CONSTRUCTOR_ELTS (init));
-      /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
-      if (element && TREE_CODE (element) == NON_LVALUE_EXPR)
-	element = TREE_OPERAND (element, 0);
-      if (element == error_mark_node)
-	return element;
-    }
-
-  /* Initialization of an array of chars from a string constant
-     optionally enclosed in braces.  */
-
+  /* Initialization of an array of chars from a string constant. The initializer
+     can be optionally enclosed in braces, but reshape_init has already removed
+     them if they were present.  */
   if (code == ARRAY_TYPE)
     {
-      tree typ1;
-
-      if (TREE_CODE (init) == TREE_LIST)
-	{
-	  error ("initializing array with parameter list");
-	  return error_mark_node;
-	}
-
-      typ1 = TYPE_MAIN_VARIANT (TREE_TYPE (type));
+      tree typ1 = TYPE_MAIN_VARIANT (TREE_TYPE (type));
       if (char_type_p (typ1)
-	  && ((init && TREE_CODE (init) == STRING_CST)
-	      || (element && TREE_CODE (element) == STRING_CST)))
+	  /*&& init */
+	  && TREE_CODE (init) == STRING_CST)
 	{
-	  tree string = element ? element : init;
+	  tree char_type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (init)));
 
-	  if ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (string)))
-	       != char_type_node)
+	  if (char_type != char_type_node
 	      && TYPE_PRECISION (typ1) == BITS_PER_UNIT)
 	    {
 	      error ("char-array initialized from wide string");
 	      return error_mark_node;
 	    }
-	  if ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (string)))
-	       == char_type_node)
+	  if (char_type == char_type_node
 	      && TYPE_PRECISION (typ1) != BITS_PER_UNIT)
 	    {
 	      error ("int-array initialized from non-wide string");
 	      return error_mark_node;
 	    }
 
-	  TREE_TYPE (string) = type;
-	  if (TYPE_DOMAIN (type) != 0
-	      && TREE_CONSTANT (TYPE_SIZE (type)))
+	  TREE_TYPE (init) = type;
+	  if (TYPE_DOMAIN (type) != 0 && TREE_CONSTANT (TYPE_SIZE (type)))
 	    {
 	      int size = TREE_INT_CST_LOW (TYPE_SIZE (type));
 	      size = (size + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
@@ -708,419 +688,372 @@ digest_init (tree type, tree init, tree* tail)
 		 because it's ok to ignore the terminating null char that is
 		 counted in the length of the constant, but in C++ this would
 		 be invalid.  */
-	      if (size < TREE_STRING_LENGTH (string))
+	      if (size < TREE_STRING_LENGTH (init))
 		pedwarn ("initializer-string for array of chars is too long");
 	    }
-	  return string;
+	  return init;
 	}
     }
 
   /* Handle scalar types, including conversions,
      and signature pointers and references.  */
+  if (SCALAR_TYPE_P (type)
+      || code == REFERENCE_TYPE)
+    return convert_for_initialization (0, type, init, LOOKUP_NORMAL,
+				       "initialization", NULL_TREE, 0);
 
-  if (code == INTEGER_TYPE || code == REAL_TYPE || code == POINTER_TYPE
-      || code == ENUMERAL_TYPE || code == REFERENCE_TYPE
-      || code == BOOLEAN_TYPE || code == COMPLEX_TYPE
-      || TYPE_PTR_TO_MEMBER_P (type))
+  /* Come here only for aggregates: records, arrays, unions, complex numbers
+     and vectors.  */
+  gcc_assert (TREE_CODE (type) == ARRAY_TYPE
+	      || TREE_CODE (type) == VECTOR_TYPE
+	      || TREE_CODE (type) == RECORD_TYPE
+	      || TREE_CODE (type) == UNION_TYPE
+	      || TREE_CODE (type) == COMPLEX_TYPE);
+
+  if (BRACE_ENCLOSED_INITIALIZER_P (init))
+      return process_init_constructor (type, init);
+  else
     {
-      if (BRACE_ENCLOSED_INITIALIZER_P (init))
+      if (TREE_HAS_CONSTRUCTOR (init)
+	  && TREE_CODE (type) == ARRAY_TYPE)
 	{
-	  if (element == 0)
-	    {
-	      error ("initializer for scalar variable requires one element");
-	      return error_mark_node;
-	    }
-	  init = element;
-	}
-      while (BRACE_ENCLOSED_INITIALIZER_P (init))
-	{
-	  pedwarn ("braces around scalar initializer for %qT", type);
-	  init = CONSTRUCTOR_ELTS (init);
-	  if (TREE_CHAIN (init))
-	    pedwarn ("ignoring extra initializers for %qT", type);
-	  init = TREE_VALUE (init);
-	}
+	  error ("cannot initialize aggregate of type %qT with "
+		 "a compound literal", type);
 
-      return convert_for_initialization (0, type, init, LOOKUP_NORMAL,
+	  return error_mark_node;
+	}
+      return convert_for_initialization (NULL_TREE, type, init,
+					 LOOKUP_NORMAL | LOOKUP_ONLYCONVERTING,
 					 "initialization", NULL_TREE, 0);
     }
-
-  /* Come here only for records and arrays (and unions with constructors).  */
-
-  if (COMPLETE_TYPE_P (type) && ! TREE_CONSTANT (TYPE_SIZE (type)))
-    {
-      error ("variable-sized object of type %qT may not be initialized",
-		type);
-      return error_mark_node;
-    }
-
-  if (code == ARRAY_TYPE || code == VECTOR_TYPE || IS_AGGR_TYPE_CODE (code))
-    {
-      if (BRACE_ENCLOSED_INITIALIZER_P (init))
-	{
-	  if (TYPE_NON_AGGREGATE_CLASS (type))
-	    {
-	      error ("subobject of type %qT must be initialized by "
-		     "constructor, not by %qE",
-		     type, init);
-	      return error_mark_node;
-	    }
-	  return process_init_constructor (type, init, (tree *)0);
-	}
-      else if (can_convert_arg (type, TREE_TYPE (init), init)
-	       || TYPE_NON_AGGREGATE_CLASS (type))
-	/* These are never initialized from multiple constructor elements.  */;
-      else if (tail != 0)
-	{
-	  *tail = old_tail_contents;
-	  return process_init_constructor (type, 0, tail);
-	}
-
-      if (code != ARRAY_TYPE)
-	{
-	  int flags = LOOKUP_NORMAL;
-	  /* Initialization from { } is copy-initialization.  */
-	  if (tail)
-	    flags |= LOOKUP_ONLYCONVERTING;
-
-	  return convert_for_initialization (NULL_TREE, type, init, flags,
-					     "initialization", NULL_TREE, 0);
-	}
-    }
-
-  error ("invalid initializer");
-  return error_mark_node;
 }
+
 
-/* Process a constructor for a variable of type TYPE.
-   The constructor elements may be specified either with INIT or with ELTS,
-   only one of which should be non-null.
+/* Set of flags used within process_init_constructor to describe the
+   initializers.  */
+#define PICFLAG_ERRONEOUS 1
+#define PICFLAG_NOT_ALL_CONSTANT 2
+#define PICFLAG_NOT_ALL_SIMPLE 4
 
-   If INIT is specified, it is a CONSTRUCTOR node which is specifically
-   and solely for initializing this datum.
+/* Given an initializer INIT, return the flag (PICFLAG_*) which better
+   describe it.  */
 
-   If ELTS is specified, it is the address of a variable containing
-   a list of expressions.  We take as many elements as we need
-   from the head of the list and update the list.
-
-   In the resulting constructor, TREE_CONSTANT is set if all elts are
-   constant, and TREE_STATIC is set if, in addition, all elts are simple enough
-   constants that the assembler and linker can compute them.  */
-
-static tree
-process_init_constructor (tree type, tree init, tree* elts)
+static int
+picflag_from_initializer (tree init)
 {
-  tree tail;
-  /* List of the elements of the result constructor,
-     in reverse order.  */
-  tree members = NULL;
-  tree next1;
-  tree result;
-  int allconstant = 1;
-  int allsimple = 1;
-  int erroneous = 0;
+  if (init == error_mark_node)
+    return PICFLAG_ERRONEOUS;
+  else if (!TREE_CONSTANT (init))
+    return PICFLAG_NOT_ALL_CONSTANT;
+  else if (!initializer_constant_valid_p (init, TREE_TYPE (init)))
+    return PICFLAG_NOT_ALL_SIMPLE;
+  return 0;
+}
 
-  /* Make TAIL be the list of elements to use for the initialization,
-     no matter how the data was given to us.  */
+/* Subroutine of process_init_constructor, which will process an initializer
+   INIT for a array or vector of type TYPE. Returns the flags (PICFLAG_*) which
+   describe the initializers.  */
 
-  if (elts)
+static int
+process_init_constructor_array (tree type, tree init)
+{
+  unsigned HOST_WIDE_INT i, len = 0;
+  int flags = 0;
+  bool unbounded = false;
+  constructor_elt *ce;
+  VEC(constructor_elt,gc) *v = CONSTRUCTOR_ELTS (init);
+
+  gcc_assert (TREE_CODE (type) == ARRAY_TYPE
+	      || TREE_CODE (type) == VECTOR_TYPE);
+
+  if (TREE_CODE (type) == ARRAY_TYPE)
     {
-      if (warn_missing_braces)
-	warning (0, "aggregate has a partly bracketed initializer");
-      tail = *elts;
+      tree domain = TYPE_DOMAIN (type);
+      if (domain)
+	len = (TREE_INT_CST_LOW (TYPE_MAX_VALUE (domain))
+	      - TREE_INT_CST_LOW (TYPE_MIN_VALUE (domain))
+	      + 1);
+      else
+	unbounded = true;  /* Take as many as there are.  */
     }
   else
-    tail = CONSTRUCTOR_ELTS (init);
+    /* Vectors are like simple fixed-size arrays.  */
+    len = TYPE_VECTOR_SUBPARTS (type);
 
-  /* Gobble as many elements as needed, and make a constructor or initial value
-     for each element of this aggregate.  Chain them together in result.
-     If there are too few, use 0 for each scalar ultimate component.  */
+  /* There cannot be more initializers than needed (or reshape_init would
+     detect this before we do.  */
+  if (!unbounded)
+    gcc_assert (VEC_length (constructor_elt, v) <= len);
 
-  if (TREE_CODE (type) == ARRAY_TYPE || TREE_CODE (type) == VECTOR_TYPE)
+  for (i = 0; VEC_iterate (constructor_elt, v, i, ce); ++i)
     {
-      long len;
-      int i;
-
-      if (TREE_CODE (type) == ARRAY_TYPE)
+      if (ce->index)
 	{
-	  tree domain = TYPE_DOMAIN (type);
-	  if (domain)
-	    len = (TREE_INT_CST_LOW (TYPE_MAX_VALUE (domain))
-		   - TREE_INT_CST_LOW (TYPE_MIN_VALUE (domain))
-		   + 1);
+	  gcc_assert (TREE_CODE (ce->index) == INTEGER_CST);
+	  if (compare_tree_int (ce->index, i) != 0)
+	    sorry ("non-trivial designated initializers not supported");
+	}
+      else
+	ce->index = size_int (i);
+      gcc_assert (ce->value);
+      ce->value = digest_init (TREE_TYPE (type), ce->value);
+
+      if (ce->value != error_mark_node)
+	gcc_assert (same_type_ignoring_top_level_qualifiers_p
+		      (TREE_TYPE (type), TREE_TYPE (ce->value)));
+
+      flags |= picflag_from_initializer (ce->value);
+    }
+
+  /* No more initializers. If the array is unbounded, we are done. Otherwise,
+     we must add initializers ourselves.  */
+  if (!unbounded)
+    for (; i < len; ++i)
+      {
+	tree next;
+
+	if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (type)))
+	  {
+	    /* If this type needs constructors run for default-initialization,
+	      we can't rely on the backend to do it for us, so build up
+	      TARGET_EXPRs.  If the type in question is a class, just build
+	      one up; if it's an array, recurse.  */
+	    if (IS_AGGR_TYPE (TREE_TYPE (type)))
+		next = build_functional_cast (TREE_TYPE (type), NULL_TREE);
+	    else
+		next = build_constructor (NULL_TREE, NULL);
+	    next = digest_init (TREE_TYPE (type), next);
+	  }
+	else if (!zero_init_p (TREE_TYPE (type)))
+	  next = build_zero_init (TREE_TYPE (type),
+				  /*nelts=*/NULL_TREE,
+				  /*static_storage_p=*/false);
+	else
+	  /* The default zero-initialization is fine for us; don't
+	     add anything to the CONSTRUCTOR.  */
+	  break;
+
+	flags |= picflag_from_initializer (next);    
+	CONSTRUCTOR_APPEND_ELT (v, size_int (i), next);
+      }
+
+  CONSTRUCTOR_ELTS (init) = v;
+  return flags;
+}
+
+/* Subroutine of process_init_constructor, which will process an initializer
+   INIT for a class of type TYPE. Returns the flags (PICFLAG_*) which describe
+   the initializers.  */
+
+static int
+process_init_constructor_record (tree type, tree init)
+{
+  VEC(constructor_elt,gc) *v = NULL;
+  int flags = 0;
+  tree field;
+  unsigned HOST_WIDE_INT idx = 0;
+
+  gcc_assert (TREE_CODE (type) == RECORD_TYPE);
+  gcc_assert (!CLASSTYPE_VBASECLASSES (type));
+  gcc_assert (!TYPE_BINFO (type)
+	      || !BINFO_N_BASE_BINFOS (TYPE_BINFO (type)));
+  gcc_assert (!TYPE_POLYMORPHIC_P (type));
+
+  /* Generally, we will always have an index for each initializer (which is
+     a FIELD_DECL, put by reshape_init), but compound literals don't go trough
+     reshape_init. So we need to handle both cases.  */
+  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+    {
+      tree next;
+
+      if (!DECL_NAME (field) && DECL_C_BIT_FIELD (field))
+	{
+	  flags |= picflag_from_initializer (integer_zero_node);
+	  CONSTRUCTOR_APPEND_ELT (v, field, integer_zero_node);
+	  continue;
+	}
+
+      if (TREE_CODE (field) != FIELD_DECL || DECL_ARTIFICIAL (field))
+	continue;
+
+      if (idx < VEC_length (constructor_elt, CONSTRUCTOR_ELTS (init)))
+	{
+	  constructor_elt *ce = VEC_index (constructor_elt,
+					   CONSTRUCTOR_ELTS (init), idx);
+	  if (ce->index)
+	    {
+	      /* We can have either a FIELD_DECL or an IDENTIFIER_NODE. The
+		 latter case can happen in templates where lookup has to be
+		 deferred.  */
+	      gcc_assert (TREE_CODE (ce->index) == FIELD_DECL
+			  || TREE_CODE (ce->index) == IDENTIFIER_NODE);
+	      if (ce->index != field
+	          && ce->index != DECL_NAME (field))
+		sorry ("non-trivial designated initializers not supported");
+	    }
+
+	  gcc_assert (ce->value);
+	  next = digest_init (TREE_TYPE (field), ce->value);
+	  ++idx;
+	}
+      else if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (field)))
+	{
+	  /* If this type needs constructors run for
+	     default-initialization, we can't rely on the backend to do it
+	     for us, so build up TARGET_EXPRs.  If the type in question is
+	     a class, just build one up; if it's an array, recurse.  */
+	  if (IS_AGGR_TYPE (TREE_TYPE (field)))
+	    next = build_functional_cast (TREE_TYPE (field), NULL_TREE);
 	  else
-	    len = -1;  /* Take as many as there are.  */
+	    next = build_constructor (NULL_TREE, NULL);
+
+	  next = digest_init (TREE_TYPE (field), next);
+
+	  /* Warn when some struct elements are implicitly initialized.  */
+	  warning (OPT_Wmissing_field_initializers,
+		   "missing initializer for member %qD", field);
 	}
       else
 	{
-	  /* Vectors are like simple fixed-size arrays.  */
-	  len = TYPE_VECTOR_SUBPARTS (type);
-	}
+	  if (TREE_READONLY (field))
+	    error ("uninitialized const member %qD", field);
+	  else if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (TREE_TYPE (field)))
+	    error ("member %qD with uninitialized const fields", field);
+	  else if (TREE_CODE (TREE_TYPE (field)) == REFERENCE_TYPE)
+	    error ("member %qD is uninitialized reference", field);
 
-      for (i = 0; len < 0 || i < len; i++)
-	{
-	  if (tail)
-	    {
-	      if (TREE_PURPOSE (tail)
-		  && (TREE_CODE (TREE_PURPOSE (tail)) != INTEGER_CST
-		      || compare_tree_int (TREE_PURPOSE (tail), i) != 0))
-		sorry ("non-trivial labeled initializers");
+	  /* Warn when some struct elements are implicitly initialized
+	     to zero.  */
+	  warning (OPT_Wmissing_field_initializers,
+		   "missing initializer for member %qD", field);
 
-	      if (TREE_VALUE (tail) != 0)
-		{
-		  tree tail1 = tail;
-		  next1 = digest_init (TREE_TYPE (type),
-				       TREE_VALUE (tail), &tail1);
-		  if (next1 == error_mark_node)
-		    return next1;
-		  gcc_assert (same_type_ignoring_top_level_qualifiers_p
-			      (TREE_TYPE (type), TREE_TYPE (next1)));
-		  gcc_assert (!tail1 || TREE_CODE (tail1) == TREE_LIST);
-		  if (tail == tail1 && len < 0)
-		    {
-		      error ("non-empty initializer for array of empty elements");
-		      /* Just ignore what we were supposed to use.  */
-		      tail1 = NULL_TREE;
-		    }
-		  tail = tail1;
-		}
-	      else
-		{
-		  next1 = error_mark_node;
-		  tail = TREE_CHAIN (tail);
-		}
-	    }
-	  else if (len < 0)
-	    /* We're done.  */
-	    break;
-	  else if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (type)))
-	    {
-	      /* If this type needs constructors run for
-		 default-initialization, we can't rely on the backend to do it
-		 for us, so build up TARGET_EXPRs.  If the type in question is
-		 a class, just build one up; if it's an array, recurse.  */
-
-	      if (IS_AGGR_TYPE (TREE_TYPE (type)))
-		next1 = build_functional_cast (TREE_TYPE (type), NULL_TREE);
-	      else
-		next1 = build_constructor (NULL_TREE, NULL_TREE);
-	      next1 = digest_init (TREE_TYPE (type), next1, 0);
-	    }
-	  else if (! zero_init_p (TREE_TYPE (type)))
-	    next1 = build_zero_init (TREE_TYPE (type),
-				     /*nelts=*/NULL_TREE,
-				     /*static_storage_p=*/false);
+	  if (!zero_init_p (TREE_TYPE (field)))
+	    next = build_zero_init (TREE_TYPE (field), /*nelts=*/NULL_TREE,
+				    /*static_storage_p=*/false);
 	  else
 	    /* The default zero-initialization is fine for us; don't
-	       add anything to the CONSTRUCTOR.  */
-	    break;
-
-	  if (next1 == error_mark_node)
-	    erroneous = 1;
-	  else if (!TREE_CONSTANT (next1))
-	    allconstant = 0;
-	  else if (! initializer_constant_valid_p (next1, TREE_TYPE (next1)))
-	    allsimple = 0;
-	  members = tree_cons (size_int (i), next1, members);
-	}
-    }
-  else if (TREE_CODE (type) == RECORD_TYPE)
-    {
-      tree field;
-
-      if (tail)
-	{
-	  gcc_assert (!CLASSTYPE_VBASECLASSES (type));
-	  gcc_assert (!TYPE_BINFO (type)
-		      || !BINFO_N_BASE_BINFOS (TYPE_BINFO (type)));
-	  gcc_assert (!TYPE_POLYMORPHIC_P (type));
-	}
-
-      for (field = TYPE_FIELDS (type); field;
-	   field = TREE_CHAIN (field))
-	{
-	  if (! DECL_NAME (field) && DECL_C_BIT_FIELD (field))
-	    {
-	      members = tree_cons (field, integer_zero_node, members);
-	      continue;
-	    }
-
-	  if (TREE_CODE (field) != FIELD_DECL || DECL_ARTIFICIAL (field))
+	    add anything to the CONSTRUCTOR.  */
 	    continue;
+	}
 
-	  if (tail)
+      flags |= picflag_from_initializer (next);
+      CONSTRUCTOR_APPEND_ELT (v, field, next);
+    }
+
+  CONSTRUCTOR_ELTS (init) = v;
+  return flags;
+}
+
+/* Subroutine of process_init_constructor, which will process a single
+   initializer INIT for an union of type TYPE. Returns the flags (PICFLAG_*)
+   which describe the initializer.  */
+
+static int
+process_init_constructor_union (tree type, tree init)
+{
+  constructor_elt *ce;
+
+  /* If the initializer was empty, use default zero initialization.  */
+  if (VEC_empty (constructor_elt, CONSTRUCTOR_ELTS (init)))
+    return 0;
+
+  gcc_assert (VEC_length (constructor_elt, CONSTRUCTOR_ELTS (init)) == 1);
+  ce = VEC_index (constructor_elt, CONSTRUCTOR_ELTS (init), 0);
+
+  /* If this element specifies a field, initialize via that field.  */
+  if (ce->index)
+    {
+      if (TREE_CODE (ce->index) == FIELD_DECL)
+	;
+      else if (TREE_CODE (ce->index) == IDENTIFIER_NODE)
+	{
+	  /* This can happen within a cast, see g++.dg/opt/cse2.C.  */
+	  tree name = ce->index;
+	  tree field;
+	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	    if (DECL_NAME (field) == name)
+	      break;
+	  if (!field)
 	    {
-	      if (TREE_PURPOSE (tail)
-		  && TREE_PURPOSE (tail) != field
-		  && TREE_PURPOSE (tail) != DECL_NAME (field))
-		sorry ("non-trivial labeled initializers");
-
-	      if (TREE_VALUE (tail) != 0)
-		{
-		  tree tail1 = tail;
-
-		  next1 = digest_init (TREE_TYPE (field),
-				       TREE_VALUE (tail), &tail1);
-		  gcc_assert (!tail1 || TREE_CODE (tail1) == TREE_LIST);
-		  tail = tail1;
-		}
-	      else
-		{
-		  next1 = error_mark_node;
-		  tail = TREE_CHAIN (tail);
-		}
+	      error ("no field %qD found in union being initialized", field);
+	      ce->value = error_mark_node;
 	    }
-	  else if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (field)))
-	    {
-	      /* If this type needs constructors run for
-		 default-initialization, we can't rely on the backend to do it
-		 for us, so build up TARGET_EXPRs.  If the type in question is
-		 a class, just build one up; if it's an array, recurse.  */
-
-	      if (IS_AGGR_TYPE (TREE_TYPE (field)))
-		next1 = build_functional_cast (TREE_TYPE (field),
-					       NULL_TREE);
-	      else
-		{
-		  next1 = build_constructor (NULL_TREE, NULL_TREE);
-		  if (init)
-		    TREE_HAS_CONSTRUCTOR (next1)
-		       = TREE_HAS_CONSTRUCTOR (init);
-		}
-	      next1 = digest_init (TREE_TYPE (field), next1, 0);
-
-	      /* Warn when some struct elements are implicitly initialized.  */
-	      if (warn_missing_field_initializers
-		  && (!init || BRACE_ENCLOSED_INITIALIZER_P (init)))
-		warning (0, "missing initializer for member %qD", field);
-	    }
-	  else
-	    {
-	      if (TREE_READONLY (field))
-		error ("uninitialized const member %qD", field);
-	      else if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (TREE_TYPE (field)))
-		error ("member %qD with uninitialized const fields", field);
-	      else if (TREE_CODE (TREE_TYPE (field)) == REFERENCE_TYPE)
-		error ("member %qD is uninitialized reference", field);
-
-	      /* Warn when some struct elements are implicitly initialized
-		 to zero.  */
-	      if (warn_missing_field_initializers
-		  && (!init || BRACE_ENCLOSED_INITIALIZER_P (init)))
-		warning (0, "missing initializer for member %qD", field);
-
-	      if (! zero_init_p (TREE_TYPE (field)))
-		next1 = build_zero_init (TREE_TYPE (field),
-					 /*nelts=*/NULL_TREE,
-					 /*static_storage_p=*/false);
-	      else
-		/* The default zero-initialization is fine for us; don't
-		   add anything to the CONSTRUCTOR.  */
-		continue;
-	    }
-
-	  if (next1 == error_mark_node)
-	    erroneous = 1;
-	  else if (!TREE_CONSTANT (next1))
-	    allconstant = 0;
-	  else if (! initializer_constant_valid_p (next1, TREE_TYPE (next1)))
-	    allsimple = 0;
-	  members = tree_cons (field, next1, members);
+	  ce->index = field;
+	}
+      else
+	{
+	  gcc_assert (TREE_CODE (ce->index) == INTEGER_CST
+		      || TREE_CODE (ce->index) == RANGE_EXPR);
+	  error ("index value instead of field name in union initializer");
+	  ce->value = error_mark_node;
 	}
     }
-  else if (TREE_CODE (type) == UNION_TYPE
-	   /* If the initializer was empty, use default zero initialization.  */
-	   && tail)
+  else
     {
-      tree field = TYPE_FIELDS (type);
-
       /* Find the first named field.  ANSI decided in September 1990
 	 that only named fields count here.  */
+      tree field = TYPE_FIELDS (type);
       while (field && (!DECL_NAME (field) || TREE_CODE (field) != FIELD_DECL))
 	field = TREE_CHAIN (field);
-
-      /* If this element specifies a field, initialize via that field.  */
-      if (TREE_PURPOSE (tail) != NULL_TREE)
-	{
-	  int win = 0;
-
-	  if (TREE_CODE (TREE_PURPOSE (tail)) == FIELD_DECL)
-	    /* Handle the case of a call by build_c_cast.  */
-	    field = TREE_PURPOSE (tail), win = 1;
-	  else if (TREE_CODE (TREE_PURPOSE (tail)) != IDENTIFIER_NODE)
-	    error ("index value instead of field name in union initializer");
-	  else
-	    {
-	      tree temp;
-	      for (temp = TYPE_FIELDS (type);
-		   temp;
-		   temp = TREE_CHAIN (temp))
-		if (DECL_NAME (temp) == TREE_PURPOSE (tail))
-		  break;
-	      if (temp)
-		field = temp, win = 1;
-	      else
-		error ("no field %qD in union being initialized",
-		       TREE_PURPOSE (tail));
-	    }
-	  if (!win)
-	    TREE_VALUE (tail) = error_mark_node;
-	}
-      else if (field == 0)
+      if (!field)
 	{
 	  error ("union %qT with no named members cannot be initialized",
 		 type);
-	  TREE_VALUE (tail) = error_mark_node;
+	  ce->value = error_mark_node;
 	}
-
-      if (TREE_VALUE (tail) != 0)
-	{
-	  tree tail1 = tail;
-
-	  next1 = digest_init (TREE_TYPE (field),
-			       TREE_VALUE (tail), &tail1);
-	  gcc_assert (!tail1 || TREE_CODE (tail1) == TREE_LIST);
-	  tail = tail1;
-	}
-      else
-	{
-	  next1 = error_mark_node;
-	  tail = TREE_CHAIN (tail);
-	}
-
-      if (next1 == error_mark_node)
-	erroneous = 1;
-      else if (!TREE_CONSTANT (next1))
-	allconstant = 0;
-      else if (initializer_constant_valid_p (next1, TREE_TYPE (next1)) == 0)
-	allsimple = 0;
-      members = tree_cons (field, next1, members);
+      ce->index = field;
     }
 
-  /* If arguments were specified as a list, just remove the ones we used.  */
-  if (elts)
-    *elts = tail;
-  /* If arguments were specified as a constructor,
-     complain unless we used all the elements of the constructor.  */
-  else if (tail)
-    pedwarn ("excess elements in aggregate initializer");
+  if (ce->value && ce->value != error_mark_node)
+    ce->value = digest_init (TREE_TYPE (ce->index), ce->value);
 
-  if (erroneous)
+  return picflag_from_initializer (ce->value);
+}
+
+/* Process INIT, a constructor for a variable of aggregate type TYPE. The
+   constructor is a brace-enclosed initializer, and will be modified in-place.
+
+   Each element is converted to the right type through digest_init, and
+   missing initializers are added following the language rules (zero-padding,
+   etc.).
+
+   After the execution, the initializer will have TREE_CONSTANT if all elts are
+   constant, and TREE_STATIC set if, in addition, all elts are simple enough
+   constants that the assembler and linker can compute them.
+   
+   The function returns the initializer itself, or error_mark_node in case
+   of error.  */
+
+static tree
+process_init_constructor (tree type, tree init)
+{
+  int flags;
+
+  gcc_assert (BRACE_ENCLOSED_INITIALIZER_P (init));
+
+  if (TREE_CODE (type) == ARRAY_TYPE || TREE_CODE (type) == VECTOR_TYPE)
+    flags = process_init_constructor_array (type, init);
+  else if (TREE_CODE (type) == RECORD_TYPE)
+    flags = process_init_constructor_record (type, init);
+  else if (TREE_CODE (type) == UNION_TYPE)
+    flags = process_init_constructor_union (type, init);
+  else
+    gcc_unreachable ();
+
+  if (flags & PICFLAG_ERRONEOUS)
     return error_mark_node;
 
-  result = build_constructor (type, nreverse (members));
+  TREE_TYPE (init) = type;
   if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type) == NULL_TREE)
-    cp_complete_array_type (&TREE_TYPE (result), result, /*do_default=*/0);
-  if (init)
-    TREE_HAS_CONSTRUCTOR (result) = TREE_HAS_CONSTRUCTOR (init);
-  if (allconstant)
+    cp_complete_array_type (&TREE_TYPE (init), init, /*do_default=*/0);
+  if (!(flags & PICFLAG_NOT_ALL_CONSTANT))
     {
-      TREE_CONSTANT (result) = 1;
-      TREE_INVARIANT (result) = 1;
-      if (allsimple)
-	TREE_STATIC (result) = 1;
+      TREE_CONSTANT (init) = 1;
+      TREE_INVARIANT (init) = 1;
+      if (!(flags & PICFLAG_NOT_ALL_SIMPLE))
+	TREE_STATIC (init) = 1;
     }
-  return result;
+  return init;
 }
 
 /* Given a structure or union value DATUM, construct and return
@@ -1396,7 +1329,7 @@ build_functional_cast (tree exp, tree parms)
   if (parms == NULL_TREE && !TYPE_NEEDS_CONSTRUCTING (type)
       && TYPE_HAS_DEFAULT_CONSTRUCTOR (type))
     {
-      exp = build_constructor (type, NULL_TREE);
+      exp = build_constructor (type, NULL);
       return get_target_expr (exp);
     }
 

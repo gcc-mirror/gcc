@@ -6437,8 +6437,8 @@ dump_class_hierarchy (tree t)
 static void
 dump_array (FILE * stream, tree decl)
 {
-  tree inits;
-  int ix;
+  tree value;
+  unsigned HOST_WIDE_INT ix;
   HOST_WIDE_INT elt;
   tree size = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (decl)));
 
@@ -6450,10 +6450,10 @@ dump_array (FILE * stream, tree decl)
 			   TFF_PLAIN_IDENTIFIER));
   fprintf (stream, "\n");
 
-  for (ix = 0, inits = CONSTRUCTOR_ELTS (DECL_INITIAL (decl));
-       inits; ix++, inits = TREE_CHAIN (inits))
+  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (DECL_INITIAL (decl)),
+			      ix, value)
     fprintf (stream, "%-4ld  %s\n", (long)(ix * elt),
-	     expr_as_string (TREE_VALUE (inits), TFF_PLAIN_IDENTIFIER));
+	     expr_as_string (value, TFF_PLAIN_IDENTIFIER));
 }
 
 static void

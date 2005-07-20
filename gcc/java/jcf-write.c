@@ -2461,14 +2461,16 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
       break;
     case NEW_ARRAY_INIT:
       {
-	tree values = CONSTRUCTOR_ELTS (TREE_OPERAND (exp, 0));
+	VEC(constructor_elt,gc) *v = CONSTRUCTOR_ELTS (TREE_OPERAND (exp, 0));
 	tree array_type = TREE_TYPE (TREE_TYPE (exp));
 	tree element_type = TYPE_ARRAY_ELEMENT (array_type);
+	unsigned HOST_WIDE_INT idx;
+	tree value;
 	HOST_WIDE_INT length = java_array_type_length (array_type);
 	if (target == IGNORE_TARGET)
 	  {
-	    for ( ;  values != NULL_TREE;  values = TREE_CHAIN (values))
-	      generate_bytecode_insns (TREE_VALUE (values), target, state);
+	    FOR_EACH_CONSTRUCTOR_VALUE (v, idx, value)
+	      generate_bytecode_insns (value, target, state);
 	    break;
 	  }
 	push_int_const (length, state);
@@ -2489,16 +2491,17 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	  }
 	offset = 0;
 	jopcode = OPCODE_iastore + adjust_typed_op (element_type, 7);
-	for ( ;  values != NULL_TREE;  values = TREE_CHAIN (values), offset++)
+	FOR_EACH_CONSTRUCTOR_VALUE (v, idx, value)
 	  {
 	    int save_SP = state->code_SP;
 	    emit_dup (1, 0, state);
 	    push_int_const (offset, state);
 	    NOTE_PUSH (1);
-	    generate_bytecode_insns (TREE_VALUE (values), STACK_TARGET, state);
+	    generate_bytecode_insns (value, STACK_TARGET, state);
 	    RESERVE (1);
 	    OP1 (jopcode);
 	    state->code_SP = save_SP;
+	    offset++;
 	  }
       }
       break;

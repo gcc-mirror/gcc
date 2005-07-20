@@ -263,13 +263,15 @@ contains_save_expr_p (tree exp)
       return contains_save_expr_p (TREE_OPERAND (exp, 0));
 
     case CONSTRUCTOR:
-      return (CONSTRUCTOR_ELTS (exp)
-	      && contains_save_expr_p (CONSTRUCTOR_ELTS (exp)));
+      {
+	tree value;
+	unsigned HOST_WIDE_INT ix;
 
-    case TREE_LIST:
-      return (contains_save_expr_p (TREE_VALUE (exp))
-	      || (TREE_CHAIN (exp)
-		  && contains_save_expr_p (TREE_CHAIN (exp))));
+	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (exp), ix, value)
+	  if (contains_save_expr_p (value))
+	    return true;
+	return false;
+      }
 
     default:
       return false;
@@ -884,8 +886,9 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	 just compare the data pointer.  */
       else if (TYPE_FAT_POINTER_P (left_base_type)
 	       && TREE_CODE (right_operand) == CONSTRUCTOR
-	       && integer_zerop (TREE_VALUE
-				 (CONSTRUCTOR_ELTS (right_operand))))
+	       && integer_zerop (VEC_index (constructor_elt,
+					    CONSTRUCTOR_ELTS (right_operand),
+					    0)->value))
 	{
 	  right_operand = build_component_ref (left_operand, NULL_TREE,
 					       TYPE_FIELDS (left_base_type),
@@ -1138,9 +1141,11 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	     a pointer to our type.  */
 	  if (TREE_CODE (type) == RECORD_TYPE && TYPE_IS_PADDING_P (type))
 	    {
+	      result = VEC_index (constructor_elt,
+				  CONSTRUCTOR_ELTS (operand),
+				  0)->value;
 	      result
-		= build_unary_op (ADDR_EXPR, NULL_TREE,
-				  TREE_VALUE (CONSTRUCTOR_ELTS (operand)));
+		= build_unary_op (ADDR_EXPR, NULL_TREE, result);
 	      result = convert (build_pointer_type (TREE_TYPE (operand)),
 				result);
 	      break;
@@ -1501,7 +1506,7 @@ gnat_build_constructor (tree type, tree list)
 	}
     }
 
-  result = build_constructor (type, list);
+  result = build_constructor_from_list (type, list);
   TREE_CONSTANT (result) = TREE_INVARIANT (result)
     = TREE_STATIC (result) = allconstant;
   TREE_SIDE_EFFECTS (result) = side_effects;

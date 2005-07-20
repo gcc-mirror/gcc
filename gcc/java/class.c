@@ -1278,7 +1278,7 @@ make_field_value (tree fdecl)
 
   PUSH_FIELD_VALUE
     (finit, "info",
-     build_constructor (field_info_union_node,
+     build_constructor_from_list (field_info_union_node,
 	    build_tree_list
 	    ((FIELD_STATIC (fdecl)
 	      ? TREE_CHAIN (TYPE_FIELDS (field_info_union_node))
@@ -1359,7 +1359,7 @@ make_method_value (tree mdecl)
 	    table = tree_cons (NULL_TREE, utf8, table);
 	  }
 	type = build_prim_array_type (ptr_type_node, length);
-	table = build_constructor (type, table);
+	table = build_constructor_from_list (type, table);
 	/* Compute something unique enough.  */
 	sprintf (buf, "_methods%d", method_name_count++);
 	array = build_decl (VAR_DECL, get_identifier (buf), type);
@@ -1480,8 +1480,9 @@ get_dispatch_table (tree type, tree this_class_addr)
   if (TARGET_VTABLE_USES_DESCRIPTORS)
     arraysize *= TARGET_VTABLE_USES_DESCRIPTORS;
   arraysize += 2;
-  return build_constructor (build_prim_array_type (nativecode_ptr_type_node,
-						   arraysize), list);
+  return build_constructor_from_list
+	  (build_prim_array_type (nativecode_ptr_type_node,
+				  arraysize), list);
 }
 
 
@@ -1608,8 +1609,8 @@ make_class_data (tree type)
       field_array_type = build_prim_array_type (field_type_node, field_count);
       fields_decl = build_decl (VAR_DECL, mangled_classname ("_FL_", type),
 				field_array_type);
-      DECL_INITIAL (fields_decl) = build_constructor (field_array_type,
-						      static_fields);
+      DECL_INITIAL (fields_decl) = build_constructor_from_list
+				    (field_array_type, static_fields);
       TREE_STATIC (fields_decl) = 1;
       DECL_ARTIFICIAL (fields_decl) = 1;
       DECL_IGNORED_P (fields_decl) = 1;
@@ -1639,8 +1640,8 @@ make_class_data (tree type)
   method_array_type = build_prim_array_type (method_type_node, method_count);
   methods_decl = build_decl (VAR_DECL, mangled_classname ("_MT_", type),
 			     method_array_type);
-  DECL_INITIAL (methods_decl) = build_constructor (method_array_type,
-						   nreverse (methods));
+  DECL_INITIAL (methods_decl) = build_constructor_from_list
+				 (method_array_type, nreverse (methods));
   TREE_STATIC (methods_decl) = 1;
   DECL_ARTIFICIAL (methods_decl) = 1;
   DECL_IGNORED_P (methods_decl) = 1;
@@ -1715,7 +1716,8 @@ make_class_data (tree type)
 	    }
 	  init = tree_cons (NULL_TREE, index, init); 
 	}
-      DECL_INITIAL (idecl) = build_constructor (interface_array_type, init);
+      DECL_INITIAL (idecl) = build_constructor_from_list (interface_array_type,
+							  init);
       TREE_STATIC (idecl) = 1;
       DECL_ARTIFICIAL (idecl) = 1;
       DECL_IGNORED_P (idecl) = 1;
@@ -2528,7 +2530,7 @@ emit_symbol_table (tree name, tree the_table, tree decl_list,
 
   /* Put the list in the right order and make it a constructor. */
   list = nreverse (list);
-  table = build_constructor (symbols_array_type, list);  
+  table = build_constructor_from_list (symbols_array_type, list);  
 
   /* Make it the initial value for otable_syms and emit the decl. */
   DECL_INITIAL (the_syms_decl) = table;
@@ -2589,7 +2591,7 @@ emit_catch_table (tree this_class)
   table = 
     build_decl (VAR_DECL, DECL_NAME (TYPE_CTABLE_DECL (this_class)), array_type);
   DECL_INITIAL (table) = 
-    build_constructor (array_type, TYPE_CATCH_CLASSES (this_class));
+    build_constructor_from_list (array_type, TYPE_CATCH_CLASSES (this_class));
   TREE_STATIC (table) = 1;
   TREE_READONLY (table) = 1;  
   DECL_IGNORED_P (table) = 1;
@@ -2669,7 +2671,7 @@ emit_assertion_table (tree class)
   
   /* Put the list in the right order and make it a constructor. */
   list = nreverse (list);
-  ctor = build_constructor (assertion_table_type, list);
+  ctor = build_constructor_from_list (assertion_table_type, list);
 
   table_decl = build_decl (VAR_DECL, mangled_classname ("_type_assert_", class),
 			   assertion_table_type);

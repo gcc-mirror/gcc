@@ -583,7 +583,17 @@ dequeue_and_dump (dump_info_p di)
       break;
 
     case CONSTRUCTOR:
-      dump_child ("elts", CONSTRUCTOR_ELTS (t));
+      {
+	unsigned HOST_WIDE_INT cnt;
+	tree index, value;
+	dump_int (di, "lngt", VEC_length (constructor_elt,
+					  CONSTRUCTOR_ELTS (t)));
+	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), cnt, index, value)
+	  {
+	    dump_child ("idx", index);
+	    dump_child ("val", value);
+	  }
+      }
       break;
 
     case BIND_EXPR:

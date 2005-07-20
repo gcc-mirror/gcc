@@ -1,3 +1,26 @@
+2005-07-20  Giovanni Bajo  <giovannibajo@libero.it>
+
+	Make CONSTRUCTOR use VEC to store initializers.
+	* check-init.c (check_init): Update to cope with VEC in
+	CONSTRUCTOR_ELTS.
+	* class.c (make_field_value, make_method_value, get_dispatch_table,
+	make_class_data, emit_symbol_table, emit_catch_table,
+	emit_assertion_table): Use build_constructor_from_list instead of
+	build_constructor.
+	* constants.c (build_constants_constructor): Likewise.
+	* java-gimplify.c (java_gimplify_new_array_init): Update to cope with
+	VEC in CONSTRUCTOR_ELTS.
+	* java-tree.h (START_RECORD_CONSTRUCTOR, PUSH_SUPER_VALUE,
+	PUSH_FIELD_VALUE, FINISH_RECORD_CONSTRUCTOR): Create a VEC instead
+	of a TREE_LIST.
+	* jcf-write.c (generate_bytecode_insns): Update to cope with VEC in
+	CONSTRUCTOR_ELTS.
+	* parse.y (build_new_array_init): Use build_constructor_from_list
+	instead of build_constructor.
+	(patch_new_array_init): Update to cope with VEC in
+	CONSTRUCTOR_ELTS.
+	(array_constructor_check_entry): Likewise.
+
 2005-07-12  Tom Tromey  <tromey@redhat.com>
 
 	* jvspec.c (lang_specific_driver): Put filelist_filename first on

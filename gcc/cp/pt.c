@@ -8006,13 +8006,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	return t;
 
     case CONSTRUCTOR:
-      {
-	r = build_constructor
-	  (tsubst (TREE_TYPE (t), args, complain, in_decl),
-	   tsubst_copy (CONSTRUCTOR_ELTS (t), args, complain, in_decl));
-	TREE_HAS_CONSTRUCTOR (r) = TREE_HAS_CONSTRUCTOR (t);
-	return r;
-      }
+      /* This is handled by tsubst_copy_and_build.  */
+      gcc_unreachable ();
 
     case VA_ARG_EXPR:
       return build_x_va_arg (tsubst_copy (TREE_OPERAND (t, 0), args, complain,
@@ -8814,38 +8809,35 @@ tsubst_copy_and_build (tree t,
 
     case CONSTRUCTOR:
       {
+	VEC(constructor_elt,gc) *n;
+	constructor_elt *ce;
+	unsigned HOST_WIDE_INT idx;
 	tree r;
-	tree elts;
 	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
-	bool purpose_p;
+	bool process_index_p;
 
 	/* digest_init will do the wrong thing if we let it.  */
 	if (type && TYPE_PTRMEMFUNC_P (type))
 	  return t;
 
-	r = NULL_TREE;
-	/* We do not want to process the purpose of aggregate
+	/* We do not want to process the index of aggregate
 	   initializers as they are identifier nodes which will be
 	   looked up by digest_init.  */
-	purpose_p = !(type && IS_AGGR_TYPE (type));
-	for (elts = CONSTRUCTOR_ELTS (t);
-	     elts;
-	     elts = TREE_CHAIN (elts))
-	  {
-	    tree purpose = TREE_PURPOSE (elts);
-	    tree value = TREE_VALUE (elts);
+	process_index_p = !(type && IS_AGGR_TYPE (type));
 
-	    if (purpose && purpose_p)
-	      purpose = RECUR (purpose);
-	    value = RECUR (value);
-	    r = tree_cons (purpose, value, r);
+	n = VEC_copy (constructor_elt, gc, CONSTRUCTOR_ELTS (t));
+	for (idx = 0; VEC_iterate (constructor_elt, n, idx, ce); idx++)
+	  {
+	    if (ce->index && process_index_p)
+	      ce->index = RECUR (ce->index);
+	    ce->value = RECUR (ce->value);
 	  }
 
-	r = build_constructor (NULL_TREE, nreverse (r));
+	r = build_constructor (NULL_TREE, n);
 	TREE_HAS_CONSTRUCTOR (r) = TREE_HAS_CONSTRUCTOR (t);
 
 	if (type)
-	  return digest_init (type, r, 0);
+	  return digest_init (type, r);
 	return r;
       }
 

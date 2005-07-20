@@ -1190,15 +1190,63 @@ struct tree_vec GTY(())
   tree GTY ((length ("TREE_VEC_LENGTH ((tree)&%h)"))) a[1];
 };
 
+/* In a CONSTRUCTOR node.  */
+#define CONSTRUCTOR_ELTS(NODE) (CONSTRUCTOR_CHECK (NODE)->constructor.elts)
+
+/* Iterate through the vector V of CONSTRUCTOR_ELT elements, yielding the
+   value of each element (stored within VAL). IX must be a scratch variable
+   of unsigned integer type.  */
+#define FOR_EACH_CONSTRUCTOR_VALUE(V, IX, VAL) \
+  for (IX = 0; (IX >= VEC_length (constructor_elt, V)) \
+	       ? false \
+	       : ((VAL = VEC_index (constructor_elt, V, IX)->value), \
+	       true); \
+       (IX)++)
+
+/* Iterate through the vector V of CONSTRUCTOR_ELT elements, yielding both
+   the value of each element (stored within VAL) and its index (stored
+   within INDEX). IX must be a scratch variable of unsigned integer type.  */
+#define FOR_EACH_CONSTRUCTOR_ELT(V, IX, INDEX, VAL) \
+  for (IX = 0; (IX >= VEC_length (constructor_elt, V)) \
+	       ? false \
+	       : ((VAL = VEC_index (constructor_elt, V, IX)->value), \
+		  (INDEX = VEC_index (constructor_elt, V, IX)->index), \
+	       true); \
+       (IX)++)
+
+/* Append a new constructor element to V, with the specified INDEX and VAL.  */
+#define CONSTRUCTOR_APPEND_ELT(V, INDEX, VALUE) \
+  do { \
+    constructor_elt *_ce___ = VEC_safe_push (constructor_elt, gc, V, NULL); \
+    _ce___->index = INDEX; \
+    _ce___->value = VALUE; \
+  } while (0)
+
+/* A single element of a CONSTRUCTOR. VALUE holds the actual value of the
+   element. INDEX can optionally design the position of VALUE: in arrays,
+   it is the index where VALUE has to be placed; in structures, it is the
+   FIELD_DECL of the member.  */
+typedef struct constructor_elt_d GTY(())
+{
+  tree index;
+  tree value;
+} constructor_elt;
+
+DEF_VEC_O(constructor_elt);
+DEF_VEC_ALLOC_O(constructor_elt,gc);
+
+struct tree_constructor GTY(())
+{
+  struct tree_common common;
+  VEC(constructor_elt,gc) *elts;
+};
+
 /* Define fields and accessors for some nodes that represent expressions.  */
 
 /* Nonzero if NODE is an empty statement (NOP_EXPR <0>).  */
 #define IS_EMPTY_STMT(NODE)	(TREE_CODE (NODE) == NOP_EXPR \
 				 && VOID_TYPE_P (TREE_TYPE (NODE)) \
 				 && integer_zerop (TREE_OPERAND (NODE, 0)))
-
-/* In a CONSTRUCTOR node.  */
-#define CONSTRUCTOR_ELTS(NODE) TREE_OPERAND_CHECK_CODE (NODE, CONSTRUCTOR, 0)
 
 /* In ordinary expression nodes.  */
 #define TREE_OPERAND(NODE, I) TREE_OPERAND_CHECK (NODE, I)
@@ -2725,8 +2773,6 @@ struct tree_value_handle GTY(())
   unsigned int id;
 };
 
-
-
 /* Define the overall contents of a tree node.
    It may be any of the structures declared above
    for various types of node.  */
@@ -2764,6 +2810,7 @@ union tree_node GTY ((ptr_alias (union lang_tree_node),
   struct tree_binfo GTY ((tag ("TS_BINFO"))) binfo;
   struct tree_statement_list GTY ((tag ("TS_STATEMENT_LIST"))) stmt_list;
   struct tree_value_handle GTY ((tag ("TS_VALUE_HANDLE"))) value_handle;
+  struct tree_constructor GTY ((tag ("TS_CONSTRUCTOR"))) constructor;
 };
 
 /* Standard named or nameless data types of the C compiler.  */
@@ -3104,7 +3151,10 @@ extern tree build_int_cst_type (tree, HOST_WIDE_INT);
 extern tree build_int_cstu (tree, unsigned HOST_WIDE_INT);
 extern tree build_int_cst_wide (tree, unsigned HOST_WIDE_INT, HOST_WIDE_INT);
 extern tree build_vector (tree, tree);
-extern tree build_constructor (tree, tree);
+extern tree build_vector_from_ctor (tree, VEC(constructor_elt,gc) *);
+extern tree build_constructor (tree, VEC(constructor_elt,gc) *);
+extern tree build_constructor_single (tree, tree, tree);
+extern tree build_constructor_from_list (tree, tree);
 extern tree build_real_from_int_cst (tree, tree);
 extern tree build_complex (tree, tree, tree);
 extern tree build_string (int, const char *);
@@ -4081,6 +4131,7 @@ typedef enum
   binfo_kind,
   phi_kind,
   ssa_name_kind,
+  constr_kind,
   x_kind,
   lang_decl,
   lang_type,
