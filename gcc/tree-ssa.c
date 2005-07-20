@@ -804,6 +804,15 @@ tree_ssa_useless_type_conversion_1 (tree outer_type, tree inner_type)
 	   && TREE_CODE (TREE_TYPE (outer_type)) == VOID_TYPE)
     return true;
 
+  /* Don't lose casts between pointers to volatile and non-volatile
+     qualified types.  Doing so would result in changing the semantics
+     of later accesses.  */
+  else if (POINTER_TYPE_P (inner_type)
+           && POINTER_TYPE_P (outer_type)
+	   && TYPE_VOLATILE (TREE_TYPE (outer_type))
+	      != TYPE_VOLATILE (TREE_TYPE (inner_type)))
+    return false;
+
   /* Pointers and references are equivalent once we get to GENERIC,
      so strip conversions that just switch between them.  */
   else if (POINTER_TYPE_P (inner_type)

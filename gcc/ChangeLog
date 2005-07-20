@@ -1,3 +1,11 @@
+2005-07-19  Richard Henderson  <rth@redhat.com>
+
+        PR tree-opt/22278
+        * gimplify.c (gimplify_expr): Use main variant type for the temp
+        destination for a discarded volatile read.
+        * tree-ssa.c (tree_ssa_useless_type_conversion_1): Don't elide
+        casts between non-void types that change volatility.
+
 2005-07-19  Steve Ellcey  <sje@cup.hp.com>
 
 	Backport from mainline.
