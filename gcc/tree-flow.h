@@ -659,7 +659,6 @@ bool fold_stmt_inplace (tree);
 tree widen_bitfield (tree, tree, tree);
 
 /* In tree-vrp.c  */
-bool expr_computes_nonzero (tree);
 tree vrp_evaluate_conditional (tree, bool);
 void simplify_stmt_using_ranges (tree);
 

@@ -95,36 +95,6 @@ static sbitmap blocks_visited;
 static value_range_t **vr_value;
 
 
-/* Return true if EXPR computes a non-zero value.  */
-
-bool
-expr_computes_nonzero (tree expr)
-{
-  /* Type casts won't change anything, so just strip them.  */
-  STRIP_NOPS (expr);
-
-  /* Calling alloca, guarantees that the value is non-NULL.  */
-  if (alloca_call_p (expr))
-    return true;
-
-  /* The address of a non-weak symbol is never NULL, unless the user
-     has requested not to remove NULL pointer checks.  */
-  if (flag_delete_null_pointer_checks
-      && TREE_CODE (expr) == ADDR_EXPR
-      && VAR_OR_FUNCTION_DECL_P (TREE_OPERAND (expr, 0))
-      && !DECL_WEAK (TREE_OPERAND (expr, 0)))
-    return true;
-
-  /* IOR of any value with a nonzero value will result in a nonzero
-     value.  */
-  if (TREE_CODE (expr) == BIT_IOR_EXPR
-      && integer_nonzerop (TREE_OPERAND (expr, 1)))
-    return true;
-
-  return false;
-}
-
-
 /* Return true if ARG is marked with the nonnull attribute in the
    current function signature.  */
 
@@ -393,13 +363,13 @@ symbolic_range_p (value_range_t *vr)
 }
 
 
-/* Like expr_computes_nonzero, but this function uses value ranges
+/* Like tree_expr_nonzero_p, but this function uses value ranges
    obtained so far.  */
 
 static bool
 vrp_expr_computes_nonzero (tree expr)
 {
-  if (expr_computes_nonzero (expr))
+  if (tree_expr_nonzero_p (expr))
     return true;
 
   /* If we have an expression of the form &X->a, then the expression
@@ -1319,7 +1289,7 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
      determining if it evaluates to NULL [0, 0] or non-NULL (~[0, 0]).  */
   if (POINTER_TYPE_P (TREE_TYPE (expr)) || POINTER_TYPE_P (TREE_TYPE (op0)))
     {
-      if (range_is_nonnull (&vr0) || expr_computes_nonzero (expr))
+      if (range_is_nonnull (&vr0) || tree_expr_nonzero_p (expr))
 	set_value_range_to_nonnull (vr, TREE_TYPE (expr));
       else if (range_is_null (&vr0))
 	set_value_range_to_null (vr, TREE_TYPE (expr));

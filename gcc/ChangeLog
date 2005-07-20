@@ -1,3 +1,17 @@
+2005-07-20  James A. Morrison  <phython@gcc.gnu.org>
+
+	* tree.h (tree_expr_nonzero_p): Export.
+	* fold-const.c (tree_expr_nonzero_p): Likewise.
+	Return true for CALL_EXPRs that are alloca calls.
+	(fold_binary): Use omit_one_operand when checking EQ_EXPRs or NE_EXPRs
+	against zero.
+	* tree-flow.h (expr_computes_nonzero): Remove.
+	* tree-vrp.c (expr_computes_nonzero): Remove.
+ 	(vrp_expr_computes_nonzero): Use tree_expr_nonzero_p.
+	(extract_range_from_unary_expr): Likewise.
+	* tree-ssa-dom.c (record_equivalences_from_stmt): Use
+	tree_expr_nonzero_p.
+
 2005-07-20  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin-protos.h (legitimize_pic_address): Don't declare.

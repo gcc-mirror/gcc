@@ -132,7 +132,6 @@ static bool reorder_operands_p (tree, tree);
 static tree fold_negate_const (tree, tree);
 static tree fold_not_const (tree, tree);
 static tree fold_relational_const (enum tree_code, tree, tree, tree);
-static bool tree_expr_nonzero_p (tree);
 
 /* We know that A1 + B1 = SUM1, using 2's complement arithmetic and ignoring
    overflow.  Suppose A, B and SUM have the same respective signs as A1, B1,
@@ -9694,10 +9693,12 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	}
 
       if ((code == EQ_EXPR || code == NE_EXPR)
-	  && !TREE_SIDE_EFFECTS (arg0)
 	  && integer_zerop (arg1)
 	  && tree_expr_nonzero_p (arg0))
-	return constant_boolean_node (code==NE_EXPR, type);
+        {
+	  tree res = constant_boolean_node (code==NE_EXPR, type);
+	  return omit_one_operand (type, res, arg0);
+	}
 
       t1 = fold_relational_const (code, type, arg0, arg1);
       return t1 == NULL_TREE ? NULL_TREE : t1;
@@ -10797,7 +10798,7 @@ tree_expr_nonnegative_p (tree t)
    For floating point we further ensure that T is not denormal.
    Similar logic is present in nonzero_address in rtlanal.h.  */
 
-static bool
+bool
 tree_expr_nonzero_p (tree t)
 {
   tree type = TREE_TYPE (t);
@@ -10903,6 +10904,9 @@ tree_expr_nonzero_p (tree t)
     case BIT_IOR_EXPR:
       return tree_expr_nonzero_p (TREE_OPERAND (t, 1))
 	     || tree_expr_nonzero_p (TREE_OPERAND (t, 0));
+
+    case CALL_EXPR:
+      return alloca_call_p (t);
 
     default:
       break;
