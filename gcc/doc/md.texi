@@ -2165,6 +2165,135 @@ An integer constant with all bits set except exactly one.
 Any SYMBOL_REF.
 @end table
 
+@item M32C---@file{m32c.c}
+
+@item Rsp
+@itemx Rfb
+@itemx Rsb
+@samp{$sp}, @samp{$fb}, @samp{$sb}.
+
+@item Rcr
+Any control register, when they're 16 bits wide (nothing if control
+registers are 24 bits wide)
+
+@item Rcl
+Any control register, when they're 24 bits wide.
+
+@item R0w
+@itemx R1w
+@itemx R2w
+@itemx R3w
+$r0, $r1, $r2, $r3.
+
+@item R02
+$r0 or $r2, or $r2r0 for 32 bit values.
+
+@item R13
+$r1 or $r3, or $r3r1 for 32 bit values.
+
+@item Rdi
+A register that can hold a 64 bit value.
+
+@item Rhl
+$r0 or $r1 (registers with addressable high/low bytes)
+
+@item R23
+$r2 or $r3
+
+@item Raa
+Address registers
+
+@item Raw
+Address registers when they're 16 bits wide.
+
+@item Ral
+Address registers when they're 24 bits wide.
+
+@item Rqi
+Registers that can hold QI values.
+
+@item Rad
+Registers that can be used with displacements ($a0, $a1, $sb).
+
+@item Rsi
+Registers that can hold 32 bit values.
+
+@item Rhi
+Registers that can hold 16 bit values.
+
+@item Rhc
+Registers chat can hold 16 bit values, including all control
+registers.
+
+@item Rra
+$r0 through R1, plus $a0 and $a1.
+
+@item Rfl
+The flags register.
+
+@item Rmm
+The memory-based pseudo-registers $mem0 through $mem15.
+
+@item Rpi
+Registers that can hold pointers (16 bit registers for r8c, m16c; 24
+bit registers for m32cm, m32c).
+
+@item Rpa
+Matches multiple registers in a PARALLEL to form a larger register.
+Used to match function return values.
+
+@item Is3
+-8 @dots{} 7
+
+@item IS1
+-128 @dots{} 127
+
+@item IS2
+-32768 @dots{} 32767
+
+@item IU2
+0 @dots{} 65535
+
+@item In4
+-8 @dots{} -1 or 1 @dots{} 8
+
+@item In5
+-16 @dots{} -1 or 1 @dots{} 16
+
+@item In4
+-8 @dots{} -1 or 1 @dots{} 8
+
+@item IM2
+-65536 @dots{} -1
+
+@item Ilb
+An 8 bit value with exactly one bit set.
+
+@item Ilw
+A 16 bit value with exactly one bit set.
+
+@item Sd
+The common src/dest memory addressing modes.
+
+@item Sa
+Memory addressed using $a0 or $a1.
+
+@item Si
+Memory addressed with immediate addresses.
+
+@item Ss
+Memory addressed using the stack pointer ($sp).
+
+@item Sf
+Memory addressed using the frame base register ($fb).
+
+@item Ss
+Memory addressed using the small base register ($sb).
+
+@item S1
+$r1h
+
+
 @item MIPS---@file{mips.h}
 @table @code
 @item d

@@ -1887,10 +1887,10 @@ this attribute to work correctly.
 
 @item interrupt
 @cindex interrupt handler functions
-Use this attribute on the ARM, AVR, C4x, M32R/D and Xstormy16 ports to indicate
-that the specified function is an interrupt handler.  The compiler will
-generate function entry and exit sequences suitable for use in an
-interrupt handler when this attribute is present.
+Use this attribute on the ARM, AVR, C4x, M32C, M32R/D and Xstormy16
+ports to indicate that the specified function is an interrupt handler.
+The compiler will generate function entry and exit sequences suitable
+for use in an interrupt handler when this attribute is present.
 
 Note, interrupt handlers for the Blackfin, m68k, H8/300, H8/300H, H8S, and
 SH processors can be specified via the @code{interrupt_handler} attribute.
@@ -8953,6 +8953,7 @@ for further explanation.
 
 @menu
 * ARM Pragmas::
+* M32C Pragmas::
 * RS/6000 and PowerPC Pragmas::
 * Darwin Pragmas::
 * Solaris Pragmas::
@@ -8982,6 +8983,21 @@ Set all subsequent functions to have the @code{short_call} attribute.
 @cindex pragma, long_calls_off
 Do not affect the @code{long_call} or @code{short_call} attributes of
 subsequent functions.
+@end table
+
+@node M32C Pragmas
+@subsection M32C Pragmas
+
+@table @code
+@item memregs @var{number}
+@cindex pragma, memregs
+Overrides the command line option @code{-memregs=} for the current
+file.  Use with care!  This pragma must be before any function in the
+file, and mixing different memregs values in different objects may
+make them incompatible.  This pragma is useful when a
+performance-critical function uses a memreg for temporary values,
+as it may allow you to reduce the number of memregs used.
+
 @end table
 
 @node RS/6000 and PowerPC Pragmas

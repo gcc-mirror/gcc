@@ -231,6 +231,10 @@ tm_p_file=
 cpu_type=`echo ${target} | sed 's/-.*$//'`
 cpu_is_64bit=
 case ${target} in
+m32c*-*-*)
+        cpu_type=m32c
+	tmake_file=m32c/t-m32c
+        ;;
 alpha*-*-*)
 	cpu_type=alpha
 	need_64bit_hwint=yes
@@ -2255,6 +2259,12 @@ am33_2.0-*-linux*)
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 	use_collect2=no
 	;;
+m32c-*-elf*)
+	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
+	c_target_objs="m32c-pragma.o"
+	cxx_target_objs="m32c-pragma.o"
+	use_fixproto=yes
+ 	;;
 *)
 	echo "*** Configuration ${target} not supported" 1>&2
 	exit 1

@@ -206,8 +206,8 @@ Bud Davis for work on the G77 and gfortran compilers.
 Mo DeJong for GCJ and libgcj bug fixes.
 
 @item
-DJ Delorie for the DJGPP port, build and libiberty maintenance, and
-various bug fixes.
+DJ Delorie for the DJGPP port, build and libiberty maintenance,
+various bug fixes, and the M32C port.
 
 @item
 Arnaud Desitter for helping to debug gfortran.
