@@ -56,6 +56,7 @@ i860 port		Jason Eckhardt		jle@rice.edu
 ia64 port		Jim Wilson		wilson@specifixinc.com
 ip2k port		Denis Chertykov		denisc@overta.ru
 iq2000 port		Nick Clifton		nickc@redhat.com
+m32c port		DJ Delorie		dj@redhat.com
 m32r port		Nick Clifton		nickc@redhat.com
 m68hc11 port		Stephane Carrez		stcarrez@nerim.fr
 m68k port (?)		Jeff Law		law@redhat.com
