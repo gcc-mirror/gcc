@@ -1142,7 +1142,7 @@ print_operand (FILE *file, rtx x, char code)
 */
 
 void
-init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype ATTRIBUTE_UNUSED,
+init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 		      rtx libname ATTRIBUTE_UNUSED)
 {
   static CUMULATIVE_ARGS zero_cum;
@@ -1153,6 +1153,13 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype ATTRIBUTE_UNUSED,
 
   cum->nregs = max_arg_registers;
   cum->arg_regs = arg_regs;
+
+  cum->call_cookie = CALL_NORMAL;
+  /* Check for a longcall attribute.  */
+  if (fntype && lookup_attribute ("shortcall", TYPE_ATTRIBUTES (fntype)))
+    cum->call_cookie |= CALL_SHORT;
+  else if (fntype && lookup_attribute ("longcall", TYPE_ATTRIBUTES (fntype)))
+    cum->call_cookie |= CALL_LONG;
 
   return;
 }
@@ -1206,6 +1213,10 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
 {
   int bytes
     = (mode == BLKmode) ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
+
+  if (mode == VOIDmode)
+    /* Compute operand 2 of the call insn.  */
+    return GEN_INT (cum->call_cookie);
 
   if (bytes == -1)
     return NULL_RTX;
@@ -1520,37 +1531,59 @@ split_di (rtx operands[], int num, rtx lo_half[], rtx hi_half[])
     }
 }
 
+bool
+bfin_longcall_p (rtx op, int call_cookie)
+{
+  gcc_assert (GET_CODE (op) == SYMBOL_REF);
+  if (call_cookie & CALL_SHORT)
+    return 0;
+  if (call_cookie & CALL_LONG)
+    return 1;
+  if (TARGET_LONG_CALLS)
+    return 1;
+  return 0;
+}
+
 /* Expand a call instruction.  FNADDR is the call target, RETVAL the return value.
+   COOKIE is a CONST_INT holding the call_cookie prepared init_cumulative_args.
    SIBCALL is nonzero if this is a sibling call.  */
 
 void
-bfin_expand_call (rtx retval, rtx fnaddr, rtx callarg1, int sibcall)
+bfin_expand_call (rtx retval, rtx fnaddr, rtx callarg1, rtx cookie, int sibcall)
 {
   rtx use = NULL, call;
+  rtx callee = XEXP (fnaddr, 0);
+  rtx pat = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (sibcall ? 3 : 2));
+
+  /* In an untyped call, we can get NULL for operand 2.  */
+  if (cookie == NULL_RTX)
+    cookie = const0_rtx;
 
   /* Static functions and indirect calls don't need the pic register.  */
   if (flag_pic
-      && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF
-      && ! SYMBOL_REF_LOCAL_P (XEXP (fnaddr, 0)))
+      && GET_CODE (callee) == SYMBOL_REF
+      && !SYMBOL_REF_LOCAL_P (callee))
     use_reg (&use, pic_offset_table_rtx);
 
-  if (! call_insn_operand (XEXP (fnaddr, 0), Pmode))
+  if ((!register_no_elim_operand (callee, Pmode)
+       && GET_CODE (callee) != SYMBOL_REF)
+      || (GET_CODE (callee) == SYMBOL_REF
+	  && (flag_pic
+	      || bfin_longcall_p (callee, INTVAL (cookie)))))
     {
-      fnaddr = copy_to_mode_reg (Pmode, XEXP (fnaddr, 0));
-      fnaddr = gen_rtx_MEM (Pmode, fnaddr);
+      callee = copy_to_mode_reg (Pmode, callee);
+      fnaddr = gen_rtx_MEM (Pmode, callee);
     }
   call = gen_rtx_CALL (VOIDmode, fnaddr, callarg1);
 
   if (retval)
     call = gen_rtx_SET (VOIDmode, retval, call);
+
+  XVECEXP (pat, 0, 0) = call;
+  XVECEXP (pat, 0, 1) = gen_rtx_USE (VOIDmode, cookie);
   if (sibcall)
-    {
-      rtx pat = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
-      XVECEXP (pat, 0, 0) = call;
-      XVECEXP (pat, 0, 1) = gen_rtx_RETURN (VOIDmode);
-      call = pat;
-    }
-  call = emit_call_insn (call);
+    XVECEXP (pat, 0, 2) = gen_rtx_RETURN (VOIDmode);
+  call = emit_call_insn (pat);
   if (use)
     CALL_INSN_FUNCTION_USAGE (call) = use;
 }
@@ -2668,7 +2701,41 @@ bfin_comp_type_attributes (tree type1, tree type2)
       != !lookup_attribute ("kspisusp", TYPE_ATTRIBUTES (type2)))
     return 0;
 
+  if (!lookup_attribute ("longcall", TYPE_ATTRIBUTES (type1))
+      != !lookup_attribute ("longcall", TYPE_ATTRIBUTES (type2)))
+    return 0;
+
   return 1;
+}
+
+/* Handle a "longcall" or "shortcall" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+bfin_handle_longcall_attribute (tree *node, tree name, 
+				tree args ATTRIBUTE_UNUSED, 
+				int flags ATTRIBUTE_UNUSED, 
+				bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_TYPE
+      && TREE_CODE (*node) != FIELD_DECL
+      && TREE_CODE (*node) != TYPE_DECL)
+    {
+      warning ("`%s' attribute only applies to functions",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+
+  if ((strcmp (IDENTIFIER_POINTER (name), "longcall") == 0
+       && lookup_attribute ("shortcall", TYPE_ATTRIBUTES (*node)))
+      || (strcmp (IDENTIFIER_POINTER (name), "shortcall") == 0
+	  && lookup_attribute ("longcall", TYPE_ATTRIBUTES (*node))))
+    {
+      warning ("can't apply both longcall and shortcall attributes to the same function");
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
 }
 
 /* Table of valid machine attributes.  */
@@ -2681,6 +2748,8 @@ const struct attribute_spec bfin_attribute_table[] =
   { "nesting", 0, 0, false, true,  true, NULL },
   { "kspisusp", 0, 0, false, true,  true, NULL },
   { "saveall", 0, 0, false, true,  true, NULL },
+  { "longcall",  0, 0, false, true,  true,  bfin_handle_longcall_attribute },
+  { "shortcall", 0, 0, false, true,  true,  bfin_handle_longcall_attribute },
   { NULL, 0, 0, false, false, false, NULL }
 };
 

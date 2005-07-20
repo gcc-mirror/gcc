@@ -1218,80 +1218,140 @@
 ;;  Call instructions..
 
 (define_expand "call"
-  [(call (match_operand:SI 0 "" "")
-	 (match_operand 1 "" ""))]
+  [(parallel [(call (match_operand:SI 0 "" "")
+		    (match_operand 1 "" ""))
+	      (use (match_operand 2 "" ""))])]
   ""
-  "bfin_expand_call (NULL_RTX, operands[0], operands[1], 0); DONE;")
+{
+  bfin_expand_call (NULL_RTX, operands[0], operands[1], operands[2], 0);
+  DONE;
+})
 
 (define_expand "sibcall"
   [(parallel [(call (match_operand:SI 0 "" "")
 		    (match_operand 1 "" ""))
+	      (use (match_operand 2 "" ""))
 	      (return)])]
   ""
-  "bfin_expand_call (NULL_RTX, operands[0], operands[1], 1); DONE;")
+{
+  bfin_expand_call (NULL_RTX, operands[0], operands[1], operands[2], 1);
+  DONE;
+})
 
 (define_expand "call_value"
-  [(set (match_operand 0 "validreg_operand" "")
-         (call (match_operand:SI 1 "" "")
-	       (match_operand 2 "" "")))]
-  ""
-  "bfin_expand_call (operands[0], operands[1], operands[2], 0); DONE;")
-
-(define_expand "sibcall_value"
-  [(parallel [(set (match_operand 0 "validreg_operand" "")
+  [(parallel [(set (match_operand 0 "register_operand" "")
 		   (call (match_operand:SI 1 "" "")
 			 (match_operand 2 "" "")))
+	      (use (match_operand 3 "" ""))])]
+  ""
+{
+  bfin_expand_call (operands[0], operands[1], operands[2], operands[3], 0);
+  DONE;
+})
+
+(define_expand "sibcall_value"
+  [(parallel [(set (match_operand 0 "register_operand" "")
+		   (call (match_operand:SI 1 "" "")
+			 (match_operand 2 "" "")))
+	      (use (match_operand 3 "" ""))
 	      (return)])]
   ""
-  "bfin_expand_call (operands[0], operands[1], operands[2], 1); DONE;")
+{
+  bfin_expand_call (operands[0], operands[1], operands[2], operands[3], 1);
+  DONE;
+})
+
+(define_insn "*call_symbol"
+  [(call (mem:SI (match_operand:SI 0 "symbol_ref_operand" "Q"))
+	 (match_operand 1 "general_operand" "g"))
+   (use (match_operand 2 "" ""))]
+  "! SIBLING_CALL_P (insn)
+   && !flag_pic
+   && GET_CODE (operands[0]) == SYMBOL_REF
+   && !bfin_longcall_p (operands[0], INTVAL (operands[2]))"
+  "call %G0;"
+  [(set_attr "type" "call")
+   (set_attr "length" "4")])
+
+(define_insn "*sibcall_symbol"
+  [(call (mem:SI (match_operand:SI 0 "symbol_ref_operand" "Q"))
+	 (match_operand 1 "general_operand" "g"))
+   (use (match_operand 2 "" ""))
+   (return)]
+  "SIBLING_CALL_P (insn)
+   && !flag_pic
+   && GET_CODE (operands[0]) == SYMBOL_REF
+   && !bfin_longcall_p (operands[0], INTVAL (operands[2]))"
+  "jump.l %G0;"
+  [(set_attr "type" "br")
+   (set_attr "length" "4")])
+
+(define_insn "*call_value_symbol"
+  [(set (match_operand 0 "register_operand" "=d")
+        (call (mem:SI (match_operand:SI 1 "symbol_ref_operand" "Q"))
+	      (match_operand 2 "general_operand" "g")))
+   (use (match_operand 3 "" ""))]
+  "! SIBLING_CALL_P (insn)
+   && !flag_pic
+   && GET_CODE (operands[1]) == SYMBOL_REF
+   && !bfin_longcall_p (operands[1], INTVAL (operands[3]))"
+  "call %G1;"
+  [(set_attr "type" "call")
+   (set_attr "length" "4")])
+
+(define_insn "*sibcall_value_symbol"
+  [(set (match_operand 0 "register_operand" "=d")
+         (call (mem:SI (match_operand:SI 1 "symbol_ref_operand" "Q"))
+	       (match_operand 2 "general_operand" "g")))
+   (use (match_operand 3 "" ""))
+   (return)]
+  "SIBLING_CALL_P (insn)
+   && !flag_pic
+   && GET_CODE (operands[1]) == SYMBOL_REF
+   && !bfin_longcall_p (operands[1], INTVAL (operands[3]))"
+  "jump.l %G1;"
+  [(set_attr "type" "br")
+   (set_attr "length" "4")])
 
 (define_insn "*call_insn"
-  [(call (mem:SI (match_operand:SI 0 "call_insn_operand" "a,Q"))
-	 (match_operand 1 "general_operand" "g,g"))]
-  "! SIBLING_CALL_P (insn)
-   && (GET_CODE (operands[0]) == SYMBOL_REF || GET_CODE (operands[0]) == REG)"
-  "@
-  call (%0);
-  call %G0;"
+  [(call (mem:SI (match_operand:SI 0 "register_no_elim_operand" "a"))
+	 (match_operand 1 "general_operand" "g"))
+   (use (match_operand 2 "" ""))]
+  "! SIBLING_CALL_P (insn)"
+  "call (%0);"
   [(set_attr "type" "call")
-   (set_attr "length" "2,4")])
+   (set_attr "length" "2")])
 
 (define_insn "*sibcall_insn"
-  [(call (mem:SI (match_operand:SI 0 "call_insn_operand" "z,Q"))
-	 (match_operand 1 "general_operand" "g,g"))
+  [(call (mem:SI (match_operand:SI 0 "register_no_elim_operand" "z"))
+	 (match_operand 1 "general_operand" "g"))
+   (use (match_operand 2 "" ""))
    (return)]
-  "SIBLING_CALL_P (insn)
-   && (GET_CODE (operands[0]) == SYMBOL_REF || GET_CODE (operands[0]) == REG)"
-  "@
-  jump (%0);
-  jump.l %G0;"
+  "SIBLING_CALL_P (insn)"
+  "jump (%0);"
   [(set_attr "type" "br")
-   (set_attr "length" "2,4")])
+   (set_attr "length" "2")])
 
 (define_insn "*call_value_insn"
-  [(set (match_operand 0 "validreg_operand" "=d,d")
-        (call (mem:SI (match_operand:SI 1 "call_insn_operand" "a,Q"))
-	      (match_operand 2 "general_operand" "g,g")))]
-  "! SIBLING_CALL_P (insn)
-   && (GET_CODE (operands[0]) == SYMBOL_REF || GET_CODE (operands[0]) == REG)"
-  "@
-  call (%1);
-  call %G1;"
+  [(set (match_operand 0 "register_operand" "=d")
+        (call (mem:SI (match_operand:SI 1 "register_no_elim_operand" "a"))
+	      (match_operand 2 "general_operand" "g")))
+   (use (match_operand 3 "" ""))]
+  "! SIBLING_CALL_P (insn)"
+  "call (%1);"
   [(set_attr "type" "call")
-   (set_attr "length" "2,4")])
+   (set_attr "length" "2")])
 
 (define_insn "*sibcall_value_insn"
-  [(set (match_operand 0 "validreg_operand" "=d,d")
-         (call (mem:SI (match_operand:SI 1 "call_insn_operand" "z,Q"))
-	       (match_operand 2 "general_operand" "g,g")))
+  [(set (match_operand 0 "register_operand" "=d")
+         (call (mem:SI (match_operand:SI 1 "register_no_elim_operand" "z"))
+	       (match_operand 2 "general_operand" "g")))
+   (use (match_operand 3 "" ""))
    (return)]
-  "SIBLING_CALL_P (insn)
-   && (GET_CODE (operands[0]) == SYMBOL_REF || GET_CODE (operands[0]) == REG)"
-  "@
-  jump (%1);
-  jump.l %G1;"
+  "SIBLING_CALL_P (insn)"
+  "jump (%1);"
   [(set_attr "type" "br")
-   (set_attr "length" "2,4")])
+   (set_attr "length" "2")])
 
 ;; Block move patterns
 

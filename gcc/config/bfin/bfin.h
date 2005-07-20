@@ -56,6 +56,7 @@ extern int target_flags;
 #define TARGET_CSYNC_ANOMALY	       (target_flags & MASK_CSYNC_ANOMALY)
 #define TARGET_SPECLD_ANOMALY	       (target_flags & MASK_SPECLD_ANOMALY)
 #define TARGET_ID_SHARED_LIBRARY       (target_flags & MASK_ID_SHARED_LIBRARY)
+#define TARGET_LONG_CALLS              (target_flags & MASK_LONG_CALLS)
 
 #define MASK_OMIT_LEAF_FRAME_POINTER 0x00000001
 #define MASK_CSYNC_ANOMALY           0x00000002
@@ -65,6 +66,7 @@ extern int target_flags;
  */
 #define MASK_ID_SHARED_LIBRARY	     0x00000008
 #define MASK_SPECLD_ANOMALY          0x00000010
+#define MASK_LONG_CALLS              0x00000020
 
 #define TARGET_SWITCHES  {\
   { "omit-leaf-frame-pointer",	  MASK_OMIT_LEAF_FRAME_POINTER,		\
@@ -83,6 +85,10 @@ extern int target_flags;
     "Avoid CSYNC/SSYNC after conditional jumps"},			\
   { "no-csync-anomaly",		-MASK_CSYNC_ANOMALY,			\
     "Do not generate extra code to avoid CSYNC/SSYNC after condjumps"},	\
+  { "long-calls",	         MASK_LONG_CALLS,			\
+    "Don't generate PC-relative calls, use indirection"},		\
+  { "no-cmov",			-MASK_LONG_CALLS,			\
+    "Don't use long calls by default"},					\
   { "id-shared-library", MASK_ID_SHARED_LIBRARY,			\
     "Enable ID based shared library" },					\
   { "no-id-shared-library", -MASK_ID_SHARED_LIBRARY,			\
@@ -584,10 +590,16 @@ typedef enum {
 
 #define FUNCTION_ARG_REGISTERS { REG_R0, REG_R1, REG_R2, -1 }
 
+/* Flags for the call/call_value rtl operations set up by function_arg */
+#define CALL_NORMAL		0x00000000	/* no special processing */
+#define CALL_LONG		0x00000001	/* always call indirect */
+#define CALL_SHORT		0x00000002	/* always call by symbol */
+
 typedef struct {
   int words;			/* # words passed so far */
   int nregs;			/* # registers available for passing */
   int *arg_regs;		/* array of register -1 terminated */
+  int call_cookie;		/* Do special things for this call */
 } CUMULATIVE_ARGS;
 
 /* Define where to put the arguments to a function.

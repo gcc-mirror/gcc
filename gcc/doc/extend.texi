@@ -1918,12 +1918,12 @@ instruction directly.
 
 @item longcall/shortcall
 @cindex functions called via pointer on the RS/6000 and PowerPC
-On the RS/6000 and PowerPC, the @code{longcall} attribute causes the
-compiler to always call this function via a pointer, just as it would if
+On the Blackfin, RS/6000 and PowerPC, the @code{longcall} attribute causes
+the compiler to always call this function via a pointer, just as it would if
 the @option{-mlongcall} option had been specified.  The @code{shortcall}
 attribute causes the compiler not to do this.  These attributes override
-both the @option{-mlongcall} switch and the @code{#pragma longcall}
-setting.
+both the @option{-mlongcall} switch and, on the RS/6000 and PowerPC, the
+@code{#pragma longcall} setting.
 
 @xref{RS/6000 and PowerPC Options}, for more information on whether long
 calls are necessary.

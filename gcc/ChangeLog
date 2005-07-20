@@ -1,3 +1,32 @@
+2005-07-20  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin-protos.h (bfin_longcall_p): Declare.
+	* config/bfin/predicates.md (symbol_ref_operand): New.
+	(call_insn_operand): Delete.  All callers changed to use
+	register_no_elim_operand.
+	* config/bfin/bfin.c (init_cumulative_args): Initialize the new
+	call_cookie field.
+	(function_arg): Use it to generate the call's operand 2.
+	(bfin_longcall_p): New function.
+	(bfin_expand_call): Extra arg "cookie".  All callers and declaration
+	changed.  Emit extra USE in the pattern.  Use bfin_longcall_p to
+	determine if the address needs to be in a REG.
+	(bfin_handle_longcall_attribute): New function.
+	(bfin_attribute_table): Add "longcall" and "shortcall".
+	* config/bfin/bfin.h (CALL_NORMAL, CALL_LONG, CALL_SHORT): New macros.
+	(TARGET_LONG_CALLS, MASK_LONG_CALLS): New macros.
+	(TARGET_OPTIONS): Add -mlong-calls, -mno-long-calls.
+	(CUMULATIVE_ARGS): New member call_cookie.
+	(PREDICATE_CODES): Add symbol_ref_operand.
+	* config/bfin/bfin.md (call, call_value, sibcall, sibcall_value): Add
+	extra USE to the pattern.
+	(call_symbol, sibcall_symbol, call_value_symbol, sibcall_value_symbol):
+	New patterns, split off call_insn, sibcall_insn, call_value_insn and
+	sibcall_value_insn; now the new patterns handle direct calls and the
+	old ones indirect calls.
+	* doc/extend.texi: Mention Blackfin in longcall/shortcall docs.
+	* doc/invoke.texi (Blackfin Options): Add -mlong-call, -mno-long-call.
+
 2005-07-19  Richard Henderson  <rth@redhat.com>
 
         PR tree-opt/22278
