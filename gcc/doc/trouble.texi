@@ -1220,14 +1220,10 @@ However, the rationale here is that optimization of a nonempty loop
 cannot produce an empty one. This held for carefully written C compiled
 with less powerful optimizers but is not always the case for carefully
 written C++ or with more powerful optimizers.
-
-@opindex funroll-loops
 Thus GCC will remove operations from loops whenever it can determine
 those operations are not externally visible (apart from the time taken
-to execute them, of course).  As GCC improves, it will remove the loop
-itself.  Indeed, with @option{-funroll-loops} small loops can already be
-removed, so leaving an empty non-unrolled loop is both sub-optimal and
-inconsistent.
+to execute them, of course).  In case the loop can be proved to be finite,
+GCC will also remove the loop itself.
 
 Be aware of this when performing timing tests, for instance the
 following loop can be completely removed, provided

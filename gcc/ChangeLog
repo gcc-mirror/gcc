@@ -1,3 +1,7 @@
+2005-07-20  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* doc/trouble.texi: Update section on handling of empty loops.
+
 2005-07-20  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config.gcc: Remove support for sparc-*-openbsd*,
