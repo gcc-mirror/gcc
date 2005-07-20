@@ -106,6 +106,10 @@
   (ior (match_code "const_int,const_double")
        (match_operand 0 "symbolic_operand")))
 
+;; Returns 1 if OP is a SYMBOL_REF.
+(define_predicate "symbol_ref_operand"
+  (match_code "symbol_ref"))
+
 ;; True for any non-virtual or eliminable register.  Used in places where
 ;; instantiation of such a register may cause the pattern to not be recognized.
 (define_predicate "register_no_elim_operand"
@@ -118,14 +122,6 @@
 	   || (REGNO (op) >= FIRST_PSEUDO_REGISTER
 	       && REGNO (op) <= LAST_VIRTUAL_REGISTER));
 })
-
-;; Test for a valid operand for a call instruction.  Don't allow the
-;; arg pointer register or virtual regs since they may decay into
-;; reg + const, which the patterns can't handle.
-;; We only allow SYMBOL_REF if !flag_pic.
-(define_predicate "call_insn_operand"
-  (ior (and (match_test "!flag_pic && !TARGET_LONG_CALLS") (match_code "symbol_ref"))
-       (match_operand 0 "register_no_elim_operand")))
 
 ;; Test for an operator valid in a conditional branch
 (define_predicate "bfin_cbranch_operator"
