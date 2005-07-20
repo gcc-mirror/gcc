@@ -15,6 +15,9 @@ tree.
 To import a new release:
 
 - Check out a classpath snapshot
+  I use 'cvs export' for this.  Make a tag to ensure future hackers
+  know exactly what revision was checked out; tags are of the form
+  'libgcj-import-DATE'.
 - Use auto* to create configure, Makefile.in, etc
   You have to make sure to use the gcc libtool.m4 and gcc lt* scripts
   cd .../classpath
@@ -41,11 +44,21 @@ possible.
 File additions and deletions require running scripts/makemake.tcl
 before running automake.
 
-
 --
 
-If you need to add new java files to libgcj then you have to edit the
-Makefile.am file in the top (libjava) directory. And run automake.
+In general you should not make any changes in the classpath/
+directory.  Changes here should come via imports from upstream.
+However, there are two (known) exceptions to this rule:
+
+* In an emergency, such as a bootstrap breakage, it is ok to commit a
+  patch provided that the problem is resolved (by fixing a compiler
+  bug or fixing the Classpath bug upstream) somehow and the resolution
+  is later checked in (erasing the local diff).
+
+* On a release branch to fix a bug, where a full-scale import of
+  Classpath is not advisable.
+
+--
 
 If you add a class to java.lang, java.io, or java.util
 (including sub-packages, like java.lang.ref).
@@ -64,4 +77,3 @@ If you're generating a patch there is a program you can get to do an
 offline `cvs add' (it will fake an `add' if you don't have write
 permission yet).  Then you can use `cvs diff -N' to generate the
 patch.  See http://www.red-bean.com/cvsutils/
-
