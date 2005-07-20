@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2002, 2003  Free Software Foundation
+/* Copyright (C) 2000, 2002, 2003, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -26,8 +26,10 @@ import gnu.gcj.xlib.Display;
 import gnu.gcj.xlib.Screen;
 import gnu.gcj.xlib.Visual;
 import gnu.java.awt.ClasspathToolkit;
+import gnu.java.awt.EmbeddedWindow;
 import gnu.java.awt.peer.ClasspathFontPeer;
 import gnu.java.awt.peer.ClasspathTextLayoutPeer;
+import gnu.java.awt.peer.EmbeddedWindowPeer;
 
 public class XToolkit extends ClasspathToolkit
 {
@@ -440,6 +442,11 @@ public class XToolkit extends ClasspathToolkit
   }
 
   public RobotPeer createRobot (GraphicsDevice screen) throws AWTException
+  {
+    throw new java.lang.UnsupportedOperationException ();
+  }
+
+  public EmbeddedWindowPeer createEmbeddedWindow (EmbeddedWindow w)
   {
     throw new java.lang.UnsupportedOperationException ();
   }

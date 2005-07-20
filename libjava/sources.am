@@ -37,6 +37,32 @@ gnu/awt/j2d.list: $(gnu_awt_j2d_source_files)
 -include gnu/awt/j2d.deps
 
 
+gnu_awt_xlib_source_files = \
+gnu/awt/xlib/XCanvasPeer.java \
+gnu/awt/xlib/XEventLoop.java \
+gnu/awt/xlib/XEventQueue.java \
+gnu/awt/xlib/XFontMetrics.java \
+gnu/awt/xlib/XFontPeer.java \
+gnu/awt/xlib/XFramePeer.java \
+gnu/awt/xlib/XGraphics.java \
+gnu/awt/xlib/XGraphicsConfiguration.java \
+gnu/awt/xlib/XOffScreenImage.java \
+gnu/awt/xlib/XPanelPeer.java \
+gnu/awt/xlib/XToolkit.java
+
+gnu_awt_xlib_header_files = $(patsubst %.java,%.h,$(gnu_awt_xlib_source_files))
+
+gnu/awt/xlib.list: $(gnu_awt_xlib_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_awt_xlib_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/awt/xlib.list
+
+-include gnu/awt/xlib.deps
+
+
 gnu_classpath_source_files = \
 classpath/gnu/classpath/Configuration.java \
 classpath/gnu/classpath/RawData.java \
@@ -190,6 +216,44 @@ gnu/gcj/util.list: $(gnu_gcj_util_source_files)
 	done > gnu/gcj/util.list
 
 -include gnu/gcj/util.deps
+
+
+gnu_gcj_xlib_source_files = \
+gnu/gcj/xlib/Clip.java \
+gnu/gcj/xlib/Colormap.java \
+gnu/gcj/xlib/Display.java \
+gnu/gcj/xlib/Drawable.java \
+gnu/gcj/xlib/Font.java \
+gnu/gcj/xlib/GC.java \
+gnu/gcj/xlib/Pixmap.java \
+gnu/gcj/xlib/Screen.java \
+gnu/gcj/xlib/Visual.java \
+gnu/gcj/xlib/WMSizeHints.java \
+gnu/gcj/xlib/Window.java \
+gnu/gcj/xlib/WindowAttributes.java \
+gnu/gcj/xlib/XAnyEvent.java \
+gnu/gcj/xlib/XButtonEvent.java \
+gnu/gcj/xlib/XColor.java \
+gnu/gcj/xlib/XConfigureEvent.java \
+gnu/gcj/xlib/XConnectException.java \
+gnu/gcj/xlib/XEvent.java \
+gnu/gcj/xlib/XException.java \
+gnu/gcj/xlib/XExposeEvent.java \
+gnu/gcj/xlib/XID.java \
+gnu/gcj/xlib/XImage.java \
+gnu/gcj/xlib/XUnmapEvent.java
+
+gnu_gcj_xlib_header_files = $(patsubst %.java,%.h,$(gnu_gcj_xlib_source_files))
+
+gnu/gcj/xlib.list: $(gnu_gcj_xlib_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_gcj_xlib_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/gcj/xlib.list
+
+-include gnu/gcj/xlib.deps
 
 
 gnu_java_awt_source_files = \

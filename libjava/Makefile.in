@@ -111,7 +111,6 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(toolexecmainlibdir)"
 toolexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
-am__DEPENDENCIES_1 = gnu/gcj/xlib.lo gnu/awt/xlib.lo
 am__dirstamp = $(am__leading_dot)dirstamp
 am__objects_1 = gnu/gcj/xlib/lib_gnu_awt_xlib_la-natClip.lo \
 	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natColormap.lo \
@@ -136,13 +135,13 @@ am__objects_1 = gnu/gcj/xlib/lib_gnu_awt_xlib_la-natClip.lo \
 am_lib_gnu_awt_xlib_la_OBJECTS = $(am__objects_1)
 lib_gnu_awt_xlib_la_OBJECTS = $(am_lib_gnu_awt_xlib_la_OBJECTS)
 @XLIB_AWT_TRUE@am_lib_gnu_awt_xlib_la_rpath = -rpath $(toolexeclibdir)
-am__DEPENDENCIES_2 =
+am__DEPENDENCIES_1 =
 am_lib_gnu_java_awt_peer_gtk_la_OBJECTS =
 lib_gnu_java_awt_peer_gtk_la_OBJECTS =  \
 	$(am_lib_gnu_java_awt_peer_gtk_la_OBJECTS)
 @GTK_AWT_TRUE@am_lib_gnu_java_awt_peer_gtk_la_rpath = -rpath \
 @GTK_AWT_TRUE@	$(toolexeclibdir)
-am__DEPENDENCIES_3 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
+am__DEPENDENCIES_2 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 	gnu/classpath/debug.lo gnu/gcj.lo gnu/gcj/convert.lo \
 	gnu/gcj/io.lo gnu/gcj/runtime.lo gnu/gcj/util.lo \
 	gnu/java/awt.lo gnu/java/awt/color.lo gnu/java/awt/image.lo \
@@ -199,9 +198,9 @@ am__DEPENDENCIES_3 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 	javax/swing/text/rtf.lo javax/swing/tree.lo \
 	javax/swing/undo.lo javax/transaction.lo \
 	javax/transaction/xa.lo org/ietf/jgss.lo
-am__DEPENDENCIES_4 = gnu-java-beans.lo gnu-xml.lo javax-imageio.lo \
+am__DEPENDENCIES_3 = gnu-java-beans.lo gnu-xml.lo javax-imageio.lo \
 	javax-xml.lo org-w3c.lo org-xml.lo
-am__DEPENDENCIES_5 = $(patsubst \
+am__DEPENDENCIES_4 = $(patsubst \
 	classpath/resource/%,%,$(property_files:.properties=.properties.lo))
 am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	stacktrace.cc link.cc defineclass.cc interpret.cc verify.cc \
@@ -685,12 +684,6 @@ AM_CPPFLAGS = -I$(top_srcdir) \
 	$(GCC_UNWIND_INCLUDE) $(ZINCS) $(LIBFFIINCS)
 
 BOOTCLASSPATH = $(here)/classpath/lib
-
-# In the future these may be defined manually, if we decide to split libgcj.so
-# into multiple shared libraries.  For now, everything but xlib goes into
-# all_libgcj_lo_files
-all_xlib_lo_files = gnu/gcj/xlib.lo gnu/awt/xlib.lo
-all_libgcj_lo_files = $(filter-out $(all_xlib_lo_files), $(all_java_lo_files))
 all_property_files = $(property_files) \
     java/util/logging/logging.properties
 
@@ -752,8 +745,9 @@ libgcjawt_la_LDFLAGS = \
 
 libgcjawt_la_LINK = $(LIBLINK)
 lib_gnu_awt_xlib_la_SOURCES = $(xlib_nat_source_files)
-lib_gnu_awt_xlib_la_LIBADD = $(all_xlib_lo_files)
-lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-$(gcc_version).jar libgcj.la libgcj.spec \
+lib_gnu_awt_xlib_la_LIBADD = gnu/awt/xlib.lo gnu/gcj/xlib.lo
+lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
+	libgcj.la libgcj.spec \
 	$(lib_gnu_awt_xlib_la_LIBADD)
 
 lib_gnu_awt_xlib_la_CPPFLAGS = \
@@ -794,6 +788,20 @@ gnu/awt/j2d/IntegerGraphicsState.java \
 gnu/awt/j2d/MappedRaster.java
 
 gnu_awt_j2d_header_files = $(patsubst %.java,%.h,$(gnu_awt_j2d_source_files))
+gnu_awt_xlib_source_files = \
+gnu/awt/xlib/XCanvasPeer.java \
+gnu/awt/xlib/XEventLoop.java \
+gnu/awt/xlib/XEventQueue.java \
+gnu/awt/xlib/XFontMetrics.java \
+gnu/awt/xlib/XFontPeer.java \
+gnu/awt/xlib/XFramePeer.java \
+gnu/awt/xlib/XGraphics.java \
+gnu/awt/xlib/XGraphicsConfiguration.java \
+gnu/awt/xlib/XOffScreenImage.java \
+gnu/awt/xlib/XPanelPeer.java \
+gnu/awt/xlib/XToolkit.java
+
+gnu_awt_xlib_header_files = $(patsubst %.java,%.h,$(gnu_awt_xlib_source_files))
 gnu_classpath_source_files = \
 classpath/gnu/classpath/Configuration.java \
 classpath/gnu/classpath/RawData.java \
@@ -865,6 +873,32 @@ gnu_gcj_util_source_files = \
 gnu/gcj/util/Debug.java
 
 gnu_gcj_util_header_files = $(patsubst %.java,%.h,$(gnu_gcj_util_source_files))
+gnu_gcj_xlib_source_files = \
+gnu/gcj/xlib/Clip.java \
+gnu/gcj/xlib/Colormap.java \
+gnu/gcj/xlib/Display.java \
+gnu/gcj/xlib/Drawable.java \
+gnu/gcj/xlib/Font.java \
+gnu/gcj/xlib/GC.java \
+gnu/gcj/xlib/Pixmap.java \
+gnu/gcj/xlib/Screen.java \
+gnu/gcj/xlib/Visual.java \
+gnu/gcj/xlib/WMSizeHints.java \
+gnu/gcj/xlib/Window.java \
+gnu/gcj/xlib/WindowAttributes.java \
+gnu/gcj/xlib/XAnyEvent.java \
+gnu/gcj/xlib/XButtonEvent.java \
+gnu/gcj/xlib/XColor.java \
+gnu/gcj/xlib/XConfigureEvent.java \
+gnu/gcj/xlib/XConnectException.java \
+gnu/gcj/xlib/XEvent.java \
+gnu/gcj/xlib/XException.java \
+gnu/gcj/xlib/XExposeEvent.java \
+gnu/gcj/xlib/XID.java \
+gnu/gcj/xlib/XImage.java \
+gnu/gcj/xlib/XUnmapEvent.java
+
+gnu_gcj_xlib_header_files = $(patsubst %.java,%.h,$(gnu_gcj_xlib_source_files))
 gnu_java_awt_source_files = \
 classpath/gnu/java/awt/AWTUtilities.java \
 classpath/gnu/java/awt/BitMaskExtent.java \
@@ -4592,7 +4626,7 @@ nat_headers = $(ordinary_header_files) $(inner_nat_headers) \
 	gnu/gcj/tools/gcj_dbtool/Main.h
 
 nat_headers_install = $(ordinary_header_files)
-xlib_nat_headers = $(patsubst %.java,%.h,$(xlib_java_source_files))
+xlib_nat_headers = $(gnu_awt_xlib_header_files) $(gnu_gcj_xlib_header_files)
 extra_headers = java/lang/Object.h java/lang/Class.h
 NM = nm
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@gen_from_JIS_SOURCES = \
@@ -4701,42 +4735,6 @@ java/util/natVMTimeZone.cc \
 java/util/logging/natLogger.cc \
 java/util/zip/natDeflater.cc \
 java/util/zip/natInflater.cc
-
-xlib_java_source_files = \
-gnu/gcj/xlib/Clip.java \
-gnu/gcj/xlib/Colormap.java \
-gnu/gcj/xlib/Display.java \
-gnu/gcj/xlib/Drawable.java \
-gnu/gcj/xlib/Font.java \
-gnu/gcj/xlib/GC.java \
-gnu/gcj/xlib/Pixmap.java \
-gnu/gcj/xlib/Screen.java \
-gnu/gcj/xlib/Visual.java \
-gnu/gcj/xlib/WMSizeHints.java \
-gnu/gcj/xlib/Window.java \
-gnu/gcj/xlib/WindowAttributes.java \
-gnu/gcj/xlib/XAnyEvent.java \
-gnu/gcj/xlib/XButtonEvent.java \
-gnu/gcj/xlib/XColor.java \
-gnu/gcj/xlib/XConfigureEvent.java \
-gnu/gcj/xlib/XConnectException.java \
-gnu/gcj/xlib/XEvent.java \
-gnu/gcj/xlib/XException.java \
-gnu/gcj/xlib/XExposeEvent.java \
-gnu/gcj/xlib/XID.java \
-gnu/gcj/xlib/XImage.java \
-gnu/gcj/xlib/XUnmapEvent.java \
-gnu/awt/xlib/XCanvasPeer.java \
-gnu/awt/xlib/XEventLoop.java \
-gnu/awt/xlib/XEventQueue.java \
-gnu/awt/xlib/XFontMetrics.java \
-gnu/awt/xlib/XFramePeer.java \
-gnu/awt/xlib/XGraphics.java \
-gnu/awt/xlib/XGraphicsConfiguration.java \
-gnu/awt/xlib/XOffScreenImage.java \
-gnu/awt/xlib/XPanelPeer.java \
-gnu/awt/xlib/XFontPeer.java \
-gnu/awt/xlib/XToolkit.java
 
 xlib_nat_source_files = \
 gnu/gcj/xlib/natClip.cc \
@@ -6415,6 +6413,16 @@ gnu/awt/j2d.list: $(gnu_awt_j2d_source_files)
 
 -include gnu/awt/j2d.deps
 
+gnu/awt/xlib.list: $(gnu_awt_xlib_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_awt_xlib_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/awt/xlib.list
+
+-include gnu/awt/xlib.deps
+
 gnu/classpath.list: $(gnu_classpath_source_files)
 	@$(mkinstalldirs) $(dir $@)
 	@for file in $(gnu_classpath_source_files); do \
@@ -6484,6 +6492,16 @@ gnu/gcj/util.list: $(gnu_gcj_util_source_files)
 	done > gnu/gcj/util.list
 
 -include gnu/gcj/util.deps
+
+gnu/gcj/xlib.list: $(gnu_gcj_xlib_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(gnu_gcj_xlib_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > gnu/gcj/xlib.list
+
+-include gnu/gcj/xlib.deps
 
 gnu/java/awt.list: $(gnu_java_awt_source_files)
 	@$(mkinstalldirs) $(dir $@)

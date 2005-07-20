@@ -175,12 +175,10 @@ for peer in $peerlibs ; do
         echo "*** xlib peers requested but no X library available" 1>&2
         exit 1
       else
-        # This code has bit-rotted a bit.
-	echo "*** xlib peers can't currently be compiled -- disabling" 1>&2
-#        use_xlib_awt="yes"
-#	if test -z "$TOOLKIT"; then
-#	   TOOLKIT=gnu.awt.xlib.XToolkit
-#	fi
+        use_xlib_awt="yes"
+	if test -z "$TOOLKIT"; then
+	   TOOLKIT=gnu.awt.xlib.XToolkit
+	fi
       fi
       ;;
     gtk)
@@ -208,6 +206,15 @@ done
 AM_CONDITIONAL(XLIB_AWT, test "$use_xlib_awt" = yes)
 AM_CONDITIONAL(GTK_AWT, test "$use_gtk_awt" = yes)
 
+# Create standard.omit based on decisions we just made.
+cp $srcdir/standard.omit.in standard.omit
+if test "$use_xlib_awt" != yes; then
+   echo gnu/awt/xlib >> standard.omit
+   echo gnu/gcj/xlib >> standard.omit
+fi
+if test "$use_gtk_awt" != yes; then
+   echo gnu/java/awt/peer/gtk >> standard.omit
+fi
 
 if test -z "${with_multisubdir}"; then
    builddotdot=.
