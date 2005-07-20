@@ -2633,7 +2633,7 @@ record_equivalences_from_stmt (tree stmt,
 	      || is_gimple_min_invariant (rhs)))
 	SSA_NAME_VALUE (lhs) = rhs;
 
-      if (expr_computes_nonzero (rhs))
+      if (tree_expr_nonzero_p (rhs))
 	record_var_is_nonzero (lhs);
     }
 

@@ -1,3 +1,7 @@
+2005-07-20  James A. Morrison  <phython@gcc.gnu.org>
+
+	* gcc.dg/fold-alloc-1.c: New test.
+
 2005-07-20  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gcc.dg/20020312-2.c, gcc.dg/sibcall-3.c, gcc.dg/sibcall-4.c,

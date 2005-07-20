@@ -3851,6 +3851,8 @@ extern enum tree_code swap_tree_comparison (enum tree_code);
 extern bool ptr_difference_const (tree, tree, HOST_WIDE_INT *);
 extern enum tree_code invert_tree_comparison (enum tree_code, bool);
 
+extern bool tree_expr_nonzero_p (tree);
+
 /* In builtins.c */
 extern tree fold_builtin (tree, tree, bool);
 extern tree fold_builtin_fputs (tree, bool, bool, tree);
