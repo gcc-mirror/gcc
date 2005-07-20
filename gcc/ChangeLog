@@ -1,3 +1,7 @@
+2005-07-20  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* c-typeck.c (output_init_element): Don't copy the INTEGER_CST.
+
 2005-07-20  James A. Morrison  <phython@gcc.gnu.org>
 
 	* tree.h (tree_expr_nonzero_p): Export.
