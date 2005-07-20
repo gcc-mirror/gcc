@@ -1,5 +1,15 @@
 2005-07-20  Bernd Schmidt  <bernd.schmidt@analog.com>
 
+	* config/bfin/bfin-protos.h (legitimize_pic_address): Don't declare.
+	* config/bfin/bfin.c (legitimize_pic_address): Now static.  Take
+	extra arg "picreg" and use it instead of pic_offset_table_rtx.
+	All callers changed.
+	(frame_related_constant_load): New arg "related" which controls
+	setting of RTX_FRAME_RELATED_P.  All callers changed.
+	(bfin_load_pic_reg): New function, broken out of bfin_expand_prologue.
+	(bfin_expand_prologue): Add stack limit checking.
+	* config/bfin/bfin.md (trapifcc): New pattern.
+
 	* config/bfin/bfin.c: Include "langhooks.h".
 	(def_builtin): Go through lang_hooks to call builtin_function.
 
