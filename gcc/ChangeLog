@@ -1,3 +1,8 @@
+2005-07-20  Daniel Berlin  <dberlin@dberlin.org>
+	
+	* alias.c (nonoverlapping_component_refs_p): Use TYPE_MAIN_VARIANT,
+	revert to returning false.
+
 2005-07-21  Uros Bizjak  <uros@kss-loka.si>
 
         PR target/21149
