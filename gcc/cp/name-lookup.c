@@ -399,7 +399,7 @@ pop_binding (tree id, tree decl)
     }
 }
 
-/* BINDING records an existing declaration for a namein the current scope.
+/* BINDING records an existing declaration for a name in the current scope.
    But, DECL is another declaration for that same identifier in the
    same scope.  This is the `struct stat' hack whereby a non-typedef
    class name or enum-name can be bound at the same level as some other
@@ -4592,7 +4592,7 @@ maybe_process_template_type_declaration (tree type, int is_friend,
 		{
 		  maybe_add_class_template_decl_list (current_class_type,
 						      type, /*friend_p=*/0);
-		  /* Put this UDT in the table of UDTs for the class.  */
+		  /* Put this UTD in the table of UTDs for the class.  */
 		  if (CLASSTYPE_NESTED_UTDS (current_class_type) == NULL)
 		    CLASSTYPE_NESTED_UTDS (current_class_type) =
 		      binding_table_new (SCOPE_DEFAULT_HT_SIZE);

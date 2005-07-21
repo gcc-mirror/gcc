@@ -72,7 +72,7 @@ typedef enum conversion_rank {
 
 /* An implicit conversion sequence, in the sense of [over.best.ics].
    The first conversion to be performed is at the end of the chain.
-   That conversion is always an cr_identity conversion.  */
+   That conversion is always a cr_identity conversion.  */
 
 typedef struct conversion conversion;
 struct conversion {
