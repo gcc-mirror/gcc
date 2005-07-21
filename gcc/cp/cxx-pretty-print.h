@@ -29,7 +29,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 typedef enum
 {
-  /* Ask for an qualified-id.  */
+  /* Ask for a qualified-id.  */
   pp_cxx_flag_default_argument = 1 << pp_c_flag_last_bit
 
 } cxx_pretty_printer_flags;

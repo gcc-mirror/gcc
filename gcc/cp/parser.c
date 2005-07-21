@@ -2042,7 +2042,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree scope, tree id)
   decl = cp_parser_lookup_name_simple (parser, id);
   parser->scope = old_scope;
   /* If the lookup found a template-name, it means that the user forgot
-  to specify an argument list. Emit an useful error message.  */
+  to specify an argument list. Emit a useful error message.  */
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     error ("invalid use of template-name %qE without an argument list",
       decl);
@@ -12239,7 +12239,7 @@ cp_parser_ctor_initializer_opt_and_function_body (cp_parser *parser)
      = initializer-clause
      ( expression-list )
 
-   Returns a expression representing the initializer.  If no
+   Returns an expression representing the initializer.  If no
    initializer is present, NULL_TREE is returned.
 
    *IS_PARENTHESIZED_INIT is set to TRUE if the `( expression-list )'
@@ -14683,7 +14683,7 @@ cp_parser_maybe_treat_template_as_class (tree decl, bool tag_name_p)
 
        template <typename T> struct A::B {};
 
-     Similarly, in a elaborated-type-specifier:
+     Similarly, in an elaborated-type-specifier:
 
        namespace N { struct X{}; }
 
