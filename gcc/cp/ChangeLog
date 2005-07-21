@@ -1,3 +1,8 @@
+2005-07-21  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR C++/22358
+	* class.c (build_base_path): Convert BINFO_OFFSET to the correct type.
+
 2005-07-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* call.c: Fix comment typo(s).
