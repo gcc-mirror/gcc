@@ -57,7 +57,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "basic-block.h"
 #include "cfgloop.h"
 #include "expr.h"
+#include "intl.h"
 #include "output.h"
+#include "toplev.h"
 
 /* The insn information.  */
 
@@ -2691,6 +2693,41 @@ get_simple_loop_desc (struct loop *loop)
   iv_analysis_loop_init (loop);
   find_simple_exit (loop, desc);
   loop->aux = desc;
+
+  if (desc->simple_p && (desc->assumptions || desc->infinite))
+    {
+      const char *wording; 
+
+      /* Assume that no overflow happens and that the loop is finite.  
+	 We already warned at the tree level if we ran optimizations there.  */
+      if (!flag_tree_loop_optimize && warn_unsafe_loop_optimizations)
+	{
+	  if (desc->infinite)
+	    {
+	      wording = 
+		flag_unsafe_loop_optimizations
+		? N_("assuming that the loop is not infinite")
+		: N_("cannot optimize possibly infinite loops");
+	      warning (OPT_Wunsafe_loop_optimizations, "%s",
+		       gettext (wording));
+	    }
+	  if (desc->assumptions)
+	    {
+	      wording = 
+		flag_unsafe_loop_optimizations
+		? N_("assuming that the loop counter does not overflow")
+		: N_("cannot optimize loop, the loop counter may overflow");
+	      warning (OPT_Wunsafe_loop_optimizations, "%s",
+		       gettext (wording));
+	    }
+	}
+
+      if (flag_unsafe_loop_optimizations)
+	{
+	  desc->assumptions = NULL_RTX;
+	  desc->infinite = NULL_RTX;
+	}
+    }
 
   return desc;
 }

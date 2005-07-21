@@ -1,3 +1,8 @@
+2005-07-21  Paolo Bonzini  <bonzini@gnu.org>
+
+        * gcc.dg/tree-ssa/pr19210-1.c: New.
+        * gcc.dg/tree-ssa/pr19210-2.c: New.
+
 2005-07-21  Richard Sandiford  <richard@codesourcery.com>
 
 	PR rtl-optimization/22167

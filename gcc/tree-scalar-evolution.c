@@ -2235,7 +2235,7 @@ number_of_iterations_in_loop (struct loop *loop)
   if (!exit)
     goto end;
 
-  if (!number_of_iterations_exit (loop, exit, &niter_desc))
+  if (!number_of_iterations_exit (loop, exit, &niter_desc, false))
     goto end;
 
   type = TREE_TYPE (niter_desc.niter);

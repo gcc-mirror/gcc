@@ -393,7 +393,7 @@ empty_loop_p (struct loop *loop)
     return false;
 
   /* The loop must be finite.  */
-  if (!number_of_iterations_exit (loop, exit, &niter))
+  if (!number_of_iterations_exit (loop, exit, &niter, false))
     return false;
 
   /* Values of all loop exit phi nodes must be invariants.  */

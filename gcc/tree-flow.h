@@ -722,7 +722,7 @@ void remove_empty_loops (struct loops *);
 void tree_ssa_iv_optimize (struct loops *);
 
 bool number_of_iterations_exit (struct loop *, edge,
-				struct tree_niter_desc *niter);
+				struct tree_niter_desc *niter, bool);
 tree find_loop_niter (struct loop *, edge *);
 tree loop_niter_by_eval (struct loop *, edge);
 tree find_loop_niter_by_eval (struct loop *, edge *);
