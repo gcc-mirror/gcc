@@ -11,7 +11,7 @@ struct coperator_stack
 struct helper {};
 
 template<class F>
-void bla(F f)
+void bla(F f) // { dg-error "candidates" }
 {
 }
 
@@ -20,7 +20,7 @@ struct definition
 {
  definition()
  {
-   bla(coperator_stack::push3<helper>); // { dg-error "" } 
+   bla(coperator_stack::push3<helper>); // { dg-error "" }
  }
 };
 

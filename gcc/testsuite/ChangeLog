@@ -1,3 +1,19 @@
+2005-07-20  Douglas Gregor <doug.gregor@gmail.com>
+
+	PR c++/2922
+	* g++.dg/lookup/two-stage2.C: New.
+	* g++.dg/lookup/two-stage3.C: New.
+	* g++.dg/lookup/two-stage4.C: New. Illustrates how we have not yet
+	fixed two-stage name lookup for operators.
+	* g++.dg/template/call3.C: Compiler now produces an appropriate
+	error message. 
+	* g++.dg/template/crash37.C: Compiler now describes bla() on line
+	14 as a candidate. 
+	* g++.dg/template/ptrmem4.C: Compiler produces different error
+	message.
+	* g++.old-deja/g++.other/pmf3.C: Compiler now describes
+	connect_to_method as a candidate.
+	
 2005-07-20  James A. Morrison  <phython@gcc.gnu.org>
 
 	* gcc.dg/fold-alloc-1.c: New test.
