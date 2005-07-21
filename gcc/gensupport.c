@@ -1218,10 +1218,7 @@ add_predicate (struct pred_data *pred)
 }
 
 /* This array gives the initial content of the predicate table.  It
-   has entries for all predicates defined in recog.c.  The back end
-   can define PREDICATE_CODES to give additional entries for the
-   table; this is considered an obsolete mechanism (use
-   define_predicate instead).  */
+   has entries for all predicates defined in recog.c.  */
 
 struct old_pred_table
 {
@@ -1251,31 +1248,21 @@ static const struct old_pred_table old_preds[] = {
   {"indirect_operand", {SUBREG, MEM}},
   {"comparison_operator", {EQ, NE, LE, LT, GE, GT, LEU, LTU, GEU, GTU,
 			   UNORDERED, ORDERED, UNEQ, UNGE, UNGT, UNLE,
-			   UNLT, LTGT}},
-#ifdef PREDICATE_CODES
-  PREDICATE_CODES
-#endif
+			   UNLT, LTGT}}
 };
 #define NUM_KNOWN_OLD_PREDS ARRAY_SIZE (old_preds)
 
-/* This table gives the initial set of special predicates.  It has
-   entries for all special predicates defined in recog.c.  The back
-   end can define SPECIAL_MODE_PREDICATES to give additional entries
-   for the table; this is considered an obsolete mechanism (use
-   define_special_predicate instead).  */
+/* This table gives the set of special predicates.  It has entries for
+   all special predicates defined in recog.c.  */
 static const char *const old_special_pred_table[] = {
   "address_operand",
   "pmode_register_operand",
-#ifdef SPECIAL_MODE_PREDICATES
-  SPECIAL_MODE_PREDICATES
-#endif
 };
 
 #define NUM_OLD_SPECIAL_MODE_PREDS ARRAY_SIZE (old_special_pred_table)
 
 /* Initialize the table of predicate definitions, starting with
-   the information we have on generic predicates, and the old-style
-   PREDICATE_CODES definitions.  */
+   the information we have on generic predicates.  */
 
 static void
 init_predicate_table (void)
