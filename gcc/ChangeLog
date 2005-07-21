@@ -1,3 +1,8 @@
+2005-07-21  Richard Sandiford  <richard@codesourcery.com>
+
+	PR rtl-optimization/22167
+	* gcse.c (hoist_code): Fix hoist_exprs[] check.
+
 2005-07-19  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config.gcc: Add support for *-*-freebsd7, *-*-freebsd8,

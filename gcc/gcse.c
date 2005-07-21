@@ -6445,7 +6445,7 @@ hoist_code (void)
 	  insn_inserted_p = 0;
 
 	  /* These tests should be the same as the tests above.  */
-	  if (TEST_BIT (hoist_vbeout[bb->index], i))
+	  if (TEST_BIT (hoist_exprs[bb->index], i))
 	    {
 	      /* We've found a potentially hoistable expression, now
 		 we look at every block BB dominates to see if it
