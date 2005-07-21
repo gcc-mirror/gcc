@@ -64,7 +64,7 @@ m68k port (?)		Jeff Law		law@redhat.com
 m68k port		Andreas Schwab		schwab@suse.de
 m68k-motorola-sysv port	Philippe De Muyter	phdm@macqel.be
 mcore port		Nick Clifton		nickc@redhat.com
-mips port               Eric Christopher        echristo@gmail.com
+mips port               Eric Christopher        echristo@apple.com
 mips port		Richard Sandiford	richard@codesourcery.com
 mmix port		Hans-Peter Nilsson	hp@bitrange.com
 mn10300 port		Jeff Law		law@redhat.com
