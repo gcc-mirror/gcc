@@ -1,5 +1,10 @@
 2005-07-21  Uros Bizjak  <uros@kss-loka.si>
 
+        PR target/21149
+        * config/i386/i386.md (sse_movhlps): Fix vec_select values.
+
+2005-07-21  Uros Bizjak  <uros@kss-loka.si>
+
 	PR target/22576
 	* config/i386/i386.md (cmpxf): Change operand constraints
 	to "nonmemory_operand".
