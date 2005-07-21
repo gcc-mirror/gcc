@@ -38,8 +38,8 @@
    1 for informative messages about decisions to add attributes
    2 for verbose information about what is being done.  */
 #define SYMBIAN_DEBUG 0
-//#define SYMBIAN_DEBUG 1
-//#define SYMBIAN_DEBUG 2
+/* #define SYMBIAN_DEBUG 1 */
+/* #define SYMBIAN_DEBUG 2 */
 
 /* A unique character to encode declspec encoded objects.  */
 #define SH_SYMBIAN_FLAG_CHAR "$"
@@ -375,8 +375,10 @@ symbian_add_attribute (tree node, const char *attr_name)
 
   attr = get_identifier (attr_name);
 
-  (DECL_P (node) ? DECL_ATTRIBUTES (node) : TYPE_ATTRIBUTES (node))
-    = tree_cons (attr, NULL_TREE, attrs);
+  if (DECL_P (node))
+    DECL_ATTRIBUTES (node) = tree_cons (attr, NULL_TREE, attrs);
+  else
+    TYPE_ATTRIBUTES (node) = tree_cons (attr, NULL_TREE, attrs);
 
 #if SYMBIAN_DEBUG
   fprintf (stderr, "propogate %s attribute", attr_name);
@@ -549,18 +551,18 @@ sh_symbian_handle_dll_attribute (tree *pnode, tree name, tree args,
 static void
 symbian_possibly_export_base_class (tree base_class)
 {
-  tree methods;
+  VEC(tree,gc) *method_vec;
   int len;
 
   if (! (TYPE_CONTAINS_VPTR_P (base_class)))
     return;
 
-  methods = CLASSTYPE_METHOD_VEC (base_class);
-  len = methods ? TREE_VEC_LENGTH (methods) : 0;
+  method_vec = CLASSTYPE_METHOD_VEC (base_class);
+  len = method_vec ? VEC_length (tree, method_vec) : 0;
 
   for (;len --;)
     {
-      tree member = TREE_VEC_ELT (methods, len);
+      tree member = VEC_index (tree, method_vec, len);
 
       if (! member)
 	continue;
@@ -611,7 +613,7 @@ symbian_export_vtable_and_rtti_p (tree ctype)
   bool dllimport_ctor_dtor;
   bool dllimport_member;
   tree binfo, base_binfo;
-  tree methods;
+  VEC(tree,gc) *method_vec;
   tree key;
   int i;
   int len;
@@ -653,12 +655,12 @@ symbian_export_vtable_and_rtti_p (tree ctype)
   dllimport_ctor_dtor = false;
   dllimport_member = false;
 
-  methods = CLASSTYPE_METHOD_VEC (ctype);
-  len = methods ? TREE_VEC_LENGTH (methods) : 0;
+  method_vec = CLASSTYPE_METHOD_VEC (ctype);
+  len = method_vec ? VEC_length (tree, method_vec) : 0;
 
   for (;len --;)
     {
-      tree member = TREE_VEC_ELT (methods, len);
+      tree member = VEC_index (tree, method_vec, len);
 
       if (! member)
 	continue;
@@ -754,22 +756,27 @@ symbian_add_attribute_to_class_vtable_and_rtti (tree ctype, const char *attr_nam
 static bool
 symbian_class_needs_attribute_p (tree ctype, const char *attribute_name)
 {
+  VEC(tree,gc) *method_vec;
+
+  method_vec = CLASSTYPE_METHOD_VEC (ctype);
+
   /* If the key function has the attribute then the class needs it too.  */
   if (TYPE_POLYMORPHIC_P (ctype)
-      && CLASSTYPE_KEY_METHOD (ctype)
+      && method_vec
       && lookup_attribute (attribute_name,
-			   DECL_ATTRIBUTES (CLASSTYPE_KEY_METHOD (ctype))))
+			   DECL_ATTRIBUTES (VEC_index (tree, method_vec, 0))))
     return true;
 
   /* Check the class's member functions.  */
   if (TREE_CODE (ctype) == RECORD_TYPE)
     {
-      tree methods = CLASSTYPE_METHOD_VEC (ctype);
-      unsigned int len = methods ? TREE_VEC_LENGTH (methods) : 0;
+      unsigned int len;
+
+      len = method_vec ? VEC_length (tree, method_vec) : 0;
 
       for (;len --;)
 	{
-	  tree member = TREE_VEC_ELT (methods, len);
+	  tree member = VEC_index (tree, method_vec, len);
 
 	  if (! member)
 	    continue;
