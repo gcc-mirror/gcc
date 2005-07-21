@@ -339,6 +339,7 @@ extern enum rs6000_nop_insertion rs6000_sched_insert_nops;
 /* Target pragma.  */
 #define REGISTER_TARGET_PRAGMAS() do {				\
   c_register_pragma (0, "longcall", rs6000_pragma_longcall);	\
+  targetm.resolve_overloaded_builtin = altivec_resolve_overloaded_builtin; \
 } while (0)
 
 /* Target #defines.  */

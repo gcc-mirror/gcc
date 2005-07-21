@@ -1,5 +1,11 @@
 2005-07-21  Paolo Bonzini  <bonzini@gnu.org>
 
+	PR target/22085
+	* gcc.dg/altivec-pr22085.c: New.
+
+2005-07-21  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/19210
         * gcc.dg/tree-ssa/pr19210-1.c: New.
         * gcc.dg/tree-ssa/pr19210-2.c: New.
 

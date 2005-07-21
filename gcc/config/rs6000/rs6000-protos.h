@@ -115,6 +115,7 @@ extern void function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				  tree, int, int);
 extern int function_arg_boundary (enum machine_mode, tree);
 extern rtx function_arg (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
+extern tree altivec_resolve_overloaded_builtin (tree, tree);
 extern rtx rs6000_function_value (tree, tree);
 extern rtx rs6000_libcall_value (enum machine_mode);
 extern rtx rs6000_va_arg (tree, tree);
