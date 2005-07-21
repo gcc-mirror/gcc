@@ -925,8 +925,8 @@
 	  (vec_concat:V8SF
 	    (match_operand:V4SF 1 "nonimmediate_operand" " 0,o,x")
 	    (match_operand:V4SF 2 "nonimmediate_operand" " x,0,0"))
-	  (parallel [(const_int 4)
-		     (const_int 5)
+	  (parallel [(const_int 6)
+		     (const_int 7)
 		     (const_int 2)
 		     (const_int 3)])))]
   "TARGET_SSE && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
