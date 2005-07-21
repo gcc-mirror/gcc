@@ -23,7 +23,6 @@ Boston, MA 02110-1301, USA.  */
 
 /* Things to do:
 
-   - PREDICATE_CODES
    - incscc, decscc?
    - print active compiler options in assembler output
 */

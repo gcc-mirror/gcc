@@ -77,8 +77,8 @@
   return 0;
 })
 
-;; Like arith_reg_dest, but this predicate belongs to
-;; SPECIAL_MODE_PREDICATES.
+;; Like arith_reg_dest, but this predicate is defined with
+;; define_special_predicate, not define_predicate.
 
 (define_special_predicate "any_arith_reg_dest"
   (match_code "subreg,reg")
@@ -86,8 +86,8 @@
   return arith_reg_dest (op, mode);
 })
 
-;; Like register_operand, but this predicate belongs to
-;; SPECIAL_MODE_PREDICATES.
+;; Like register_operand, but this predicate is defined with
+;; define_special_predicate, not define_predicate.
 
 (define_special_predicate "any_register_operand"
   (match_code "subreg,reg")

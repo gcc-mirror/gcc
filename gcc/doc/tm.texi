@@ -8667,56 +8667,6 @@ is in effect.  The default is to return false to use @code{__cxa_atexit}.
 @c prevent bad page break with this line
 Here are several miscellaneous parameters.
 
-@defmac PREDICATE_CODES
-Define this if you have defined special-purpose predicates in the file
-@file{@var{machine}.c}.  This macro is called within an initializer of an
-array of structures.  The first field in the structure is the name of a
-predicate and the second field is an array of rtl codes.  For each
-predicate, list all rtl codes that can be in expressions matched by the
-predicate.  The list should have a trailing comma.  Here is an example
-of two entries in the list for a typical RISC machine:
-
-@smallexample
-#define PREDICATE_CODES \
-  @{"gen_reg_rtx_operand", @{SUBREG, REG@}@},  \
-  @{"reg_or_short_cint_operand", @{SUBREG, REG, CONST_INT@}@},
-@end smallexample
-
-Defining this macro does not affect the generated code (however,
-incorrect definitions that omit an rtl code that may be matched by the
-predicate can cause the compiler to malfunction).  Instead, it allows
-the table built by @file{genrecog} to be more compact and efficient,
-thus speeding up the compiler.  The most important predicates to include
-in the list specified by this macro are those used in the most insn
-patterns.
-
-For each predicate function named in @code{PREDICATE_CODES}, a
-declaration will be generated in @file{insn-codes.h}.
-
-Use of this macro is deprecated; use @code{define_predicate} instead.
-@xref{Defining Predicates}.
-@end defmac
-
-@defmac SPECIAL_MODE_PREDICATES
-Define this if you have special predicates that know special things
-about modes.  Genrecog will warn about certain forms of
-@code{match_operand} without a mode; if the operand predicate is
-listed in @code{SPECIAL_MODE_PREDICATES}, the warning will be
-suppressed.
-
-Here is an example from the IA-32 port (@code{ext_register_operand}
-specially checks for @code{HImode} or @code{SImode} in preparation
-for a byte extraction from @code{%ah} etc.).
-
-@smallexample
-#define SPECIAL_MODE_PREDICATES \
-  "ext_register_operand",
-@end smallexample
-
-Use of this macro is deprecated; use @code{define_special_predicate}
-instead.  @xref{Defining Predicates}.
-@end defmac
-
 @defmac HAS_LONG_COND_BRANCH
 Define this boolean macro to indicate whether or not your architecture
 has conditional branches that can span all of memory.  It is used in

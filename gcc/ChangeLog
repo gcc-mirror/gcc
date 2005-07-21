@@ -1,3 +1,15 @@
+2005-07-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gensupport.c (old_preds): Don't reference PREDICATE_CODES.
+	(old_special_pred_table): Don't reference
+	SPECIAL_MODE_PREDICATES.
+	* system.h (PREDICATE_CODES, SPECIAL_MODE_PREDICATES): Poison.
+	* config/arc/arc.h: Don't mention PREDICATE_CODES.
+	* config/sh/predicates.h: Don't mention
+	SPECIAL_MODE_PREDICATES.
+	* doc/tm.texi (PREDICATE_CODES, SPECIAL_MODE_PREDICATES):
+	Remove.
+
 2005-07-20  DJ Delorie  <dj@redhat.com>
 
 	* config.gcc: Add m32c-elf support.
