@@ -106,3 +106,20 @@
 
 #undef HAVE_AS_TLS
 #define HAVE_AS_TLS 0
+
+#ifdef CRT_BEGIN
+/* This function is part of crtbegin*.o which is at the beginning of
+   the link and is called from .fini which is usually toward the end
+   of the executable.  Make it longcall so that we don't limit the
+   text size of the executables to 32M.  */
+
+static void __do_global_dtors_aux (void) __attribute__ ((longcall));
+#endif	/* CRT_BEGIN */
+
+#ifdef CRT_END
+/* Similarly here.  This function resides in crtend*.o which is toward
+   to end of the link and is called from .init which is at the
+   beginning.  */
+
+static void __do_global_ctors_aux (void) __attribute__ ((longcall));
+#endif	/* CRT_END */
