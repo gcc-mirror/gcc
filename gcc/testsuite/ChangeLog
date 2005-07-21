@@ -1,5 +1,10 @@
 2005-07-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/15938
+	* g++.dg/init/union2.C: New test.
+
+2005-07-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	PR c/22393
 	* gcc.dg/complex-4.c: New test.
 
