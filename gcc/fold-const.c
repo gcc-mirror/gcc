@@ -8059,6 +8059,54 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	  goto bit_ior;
 	}
 
+      /* (X | Y) ^ X -> Y & ~ X*/
+      if (TREE_CODE (arg0) == BIT_IOR_EXPR
+          && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0))
+        {
+	  tree t2 = TREE_OPERAND (arg0, 1);
+	  t1 = fold_build1 (BIT_NOT_EXPR, TREE_TYPE (arg1),
+			    arg1);
+	  t1 = fold_build2 (BIT_AND_EXPR, type, fold_convert (type, t2),
+			    fold_convert (type, t1));
+	  return t1;
+	}
+
+      /* (Y | X) ^ X -> Y & ~ X*/
+      if (TREE_CODE (arg0) == BIT_IOR_EXPR
+          && operand_equal_p (TREE_OPERAND (arg0, 1), arg1, 0))
+        {
+	  tree t2 = TREE_OPERAND (arg0, 0);
+	  t1 = fold_build1 (BIT_NOT_EXPR, TREE_TYPE (arg1),
+			    arg1);
+	  t1 = fold_build2 (BIT_AND_EXPR, type, fold_convert (type, t2),
+			    fold_convert (type, t1));
+	  return t1;
+	}
+
+      /* X ^ (X | Y) -> Y & ~ X*/
+      if (TREE_CODE (arg1) == BIT_IOR_EXPR
+          && operand_equal_p (TREE_OPERAND (arg1, 0), arg0, 0))
+        {
+	  tree t2 = TREE_OPERAND (arg1, 1);
+	  t1 = fold_build1 (BIT_NOT_EXPR, TREE_TYPE (arg0),
+			    arg0);
+	  t1 = fold_build2 (BIT_AND_EXPR, type, fold_convert (type, t2),
+			    fold_convert (type, t1));
+	  return t1;
+	}
+
+      /* X ^ (Y | X) -> Y & ~ X*/
+      if (TREE_CODE (arg1) == BIT_IOR_EXPR
+          && operand_equal_p (TREE_OPERAND (arg1, 1), arg0, 0))
+        {
+	  tree t2 = TREE_OPERAND (arg1, 0);
+	  t1 = fold_build1 (BIT_NOT_EXPR, TREE_TYPE (arg0),
+			    arg0);
+	  t1 = fold_build2 (BIT_AND_EXPR, type, fold_convert (type, t2),
+			    fold_convert (type, t1));
+	  return t1;
+	}
+	
       /* Convert ~X ^ ~Y to X ^ Y.  */
       if (TREE_CODE (arg0) == BIT_NOT_EXPR
 	  && TREE_CODE (arg1) == BIT_NOT_EXPR)

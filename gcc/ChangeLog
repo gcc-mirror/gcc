@@ -1,3 +1,8 @@
+2005-07-21  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/19055
+	* fold-const.c (fold_binary): Transform "(X | Y) ^ X" to "Y & ~ X".
+
 2005-07-21  Paolo Bonzini  <bonzini@gnu.org>
 
 	* common.opt (-fforward-propagate): Committed by mistake,
