@@ -52,6 +52,6 @@ int __attribute__((flatten)) leaf3(int i)
   return j;
 }
 
-/* { dg-final { scan-assembler-not "g:" } } */
-/* { dg-final { scan-assembler-not "f:" } } */
-/* { dg-final { scan-assembler-not "bar:" } } */
+/* { dg-final { scan-assembler-not "g\[: \t\n\]" } } */
+/* { dg-final { scan-assembler-not "f\[: \t\n\]" } } */
+/* { dg-final { scan-assembler-not "bar\[: \t\n\]" } } */
