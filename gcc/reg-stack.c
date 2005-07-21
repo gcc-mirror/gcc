@@ -228,7 +228,7 @@ enum emit_where
 static basic_block current_block;
 
 /* In the current_block, whether we're processing the first register
-   stack or call instruction, i.e. the the regstack is currently the
+   stack or call instruction, i.e. the regstack is currently the
    same as BLOCK_INFO(current_block)->stack_in.  */
 static bool starting_stack_p;
 

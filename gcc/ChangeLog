@@ -1,3 +1,9 @@
+2005-07-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* reg-stack.c: Fix comment typo(s).
+	* tree-ssa-operands.c: Likewise.
+	* tree-vectorizer: Likewise.
+
 2005-07-21  Nick Clifton  <nickc@redhat.com>
 
 	* config/sh/symbian.c: Replace C++ style line comments with C
