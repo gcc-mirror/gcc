@@ -4497,34 +4497,18 @@ tree
 lookup_arg_dependent (tree name, tree fns, tree args)
 {
   struct arg_lookup k;
-  tree fn = NULL_TREE;
 
   timevar_push (TV_NAME_LOOKUP);
   k.name = name;
   k.functions = fns;
   k.classes = NULL_TREE;
 
-  /* We've already looked at some namespaces during normal unqualified
-     lookup -- but we don't know exactly which ones.  If the functions
-     we found were brought into the current namespace via a using
-     declaration, we have not really checked the namespace from which
-     they came.  Therefore, we check all namespaces here -- unless the
-     function we have is from the current namespace.  Even then, we
-     must check all namespaces if the function is a local
-     declaration; any other declarations present at namespace scope
-     should be visible during argument-dependent lookup.  */
-  if (fns)
-    fn = OVL_CURRENT (fns);
-  if (fn && TREE_CODE (fn) == FUNCTION_DECL
-      && (CP_DECL_CONTEXT (fn) != current_decl_namespace ()
-	  || DECL_LOCAL_FUNCTION_P (fn)))
-    k.namespaces = NULL_TREE;
-  else
-    /* Setting NAMESPACES is purely an optimization; it prevents
-       adding functions which are already in FNS.  Adding them would
-       be safe -- "joust" will eliminate the duplicates -- but
-       wasteful.  */
-    k.namespaces = build_tree_list (current_decl_namespace (), NULL_TREE);
+  /* We previously performed an optimization here by setting
+     NAMESPACES to the current namespace when it was safe. However, DR
+     164 says that namespaces that were already searched in the first
+     stage of template processing are searched again (potentially
+     picking up later definitions) in the second stage. */
+  k.namespaces = NULL_TREE;
 
   arg_assoc_args (&k, args);
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, k.functions);

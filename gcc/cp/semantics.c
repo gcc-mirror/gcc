@@ -1738,8 +1738,6 @@ perform_koenig_lookup (tree fn, tree args)
 	/* The unqualified name could not be resolved.  */
 	fn = unqualified_fn_lookup_error (identifier);
     }
-  else
-    fn = identifier;
 
   return fn;
 }
