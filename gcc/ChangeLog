@@ -1,3 +1,8 @@
+2005-07-21  Paolo Bonzini  <bonzini@gnu.org>
+
+	* common.opt (-fforward-propagate): Committed by mistake,
+	removed.
+
 2005-07-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* reg-stack.c: Fix comment typo(s).
