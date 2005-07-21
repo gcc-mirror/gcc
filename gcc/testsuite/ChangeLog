@@ -1,3 +1,8 @@
+2005-07-21  Janis Johnson  <janis187@us.ibm.com>
+
+	PR target/20191
+	* gcc.c-torture/compile/20050721-1.c: New test.
+
 2005-07-21  Richard Sandiford  <richard@codesourcery.com>
 
 	PR rtl-optimization/22167

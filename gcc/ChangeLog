@@ -1,3 +1,17 @@
+2005-07-21  Janis Johnson  <janis187@us.ibm.com>
+
+	PR target/20191
+	Backport from mainline:
+
+	2004-04-23  Dale Johannesen  <dalej@apple.com>
+
+	* config/rs6000.md (movsf_hardfloat): Add POWER form of nop.
+	(movdf_hardfloat64):  Ditto.
+	(movdf_softfloat64):  Ditto.
+
+	* config/rs6000.md (movsf_hardfloat): Accept CTR-to-CTR copy.
+	(movdf_hardfloat64):  Ditto.
+
 2005-07-21  Richard Sandiford  <richard@codesourcery.com>
 
 	PR rtl-optimization/22167
