@@ -1,3 +1,7 @@
+2005-07-21  Paul Woegerer  <paul.woegerer@nsc.com>
+
+	* MAINTAINERS: Add self as crx port maintainer.
+
 2005-07-20  DJ Delorie  <dj@redhat.com>
 
 	* MAINTAINERS: Add self as m32c maintainer.
