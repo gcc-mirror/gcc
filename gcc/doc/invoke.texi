@@ -230,7 +230,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wimport  -Wno-import  -Winit-self  -Winline @gol
 -Wno-int-to-pointer-cast @gol
 -Wno-invalid-offsetof  -Winvalid-pch @gol
--Wlarger-than-@var{len}  -Wlong-long @gol
+-Wlarger-than-@var{len}  -Wunsafe-loop-optimizations  -Wlong-long @gol
 -Wmain  -Wmissing-braces  -Wmissing-field-initializers @gol
 -Wmissing-format-attribute  -Wmissing-include-dirs @gol
 -Wmissing-noreturn @gol
@@ -311,7 +311,7 @@ Objective-C and Objective-C++ Dialects}.
 -fno-default-inline  -fno-defer-pop -floop-optimize2 -fmove-loop-invariants @gol
 -fno-function-cse  -fno-guess-branch-probability @gol
 -fno-inline  -fno-math-errno  -fno-peephole  -fno-peephole2 @gol
--funsafe-math-optimizations  -ffinite-math-only @gol
+-funsafe-math-optimizations  -funsafe-loop-optimizations  -ffinite-math-only @gol
 -fno-trapping-math  -fno-zero-initialized-in-bss @gol
 -fomit-frame-pointer  -foptimize-register-move @gol
 -foptimize-sibling-calls  -fprefetch-loop-arrays @gol
@@ -2988,6 +2988,13 @@ global variable or whenever a built-in function is shadowed.
 @opindex Wlarger-than
 Warn whenever an object of larger than @var{len} bytes is defined.
 
+@item -Wunsafe-loop-optimizations
+@opindex Wunsafe-loop-optimizations
+Warn if the loop cannot be optimized because the compiler could not
+assume anything on the bounds of the loop indices.  With
+@option{-funsafe-loop-optimizations} warn if the compiler made
+such assumptions.
+
 @item -Wpointer-arith
 @opindex Wpointer-arith
 Warn about anything that depends on the ``size of'' a function type or
@@ -4727,6 +4734,15 @@ Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 Perform loop optimizations using the new loop optimizer.  The optimizations
 (loop unrolling, peeling and unswitching, loop invariant motion) are enabled
 by separate flags.
+
+@item -funsafe-loop-optimizations
+@opindex funsafe-loop-optimizations
+If given, the loop optimizer will assume that loop indices do not
+overflow, and that the loops with nontrivial exit condition are not
+infinite.  This enables a wider range of loop optimizations even if
+the loop optimizer itself cannot prove that these assumptions are valid.
+Using @option{-Wunsafe-loop-optimizations}, the compiler will warn you
+if it finds this kind of loop.
 
 @item -fcrossjumping
 @opindex crossjumping

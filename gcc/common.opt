@@ -93,6 +93,10 @@ Wlarger-than-
 Common RejectNegative Joined UInteger
 -Wlarger-than-<number>	Warn if an object is larger than <number> bytes
 
+Wunsafe-loop-optimizations
+Common Var(warn_unsafe_loop_optimizations)
+Warn if the loop cannot be optimized due to nontrivial assumptions.
+
 Wmissing-noreturn
 Common Var(warn_missing_noreturn)
 Warn about functions which might be candidates for __attribute__((noreturn))
@@ -401,6 +405,10 @@ Copy memory address constants into registers before use
 fforce-mem
 Common Report Var(flag_force_mem)
 Copy memory operands into registers before use
+
+fforward-propagate
+Common Report Var(flag_forward_propagate)
+Perform a forward propagation pass on RTL
 
 ; Nonzero means don't put addresses of constant functions in registers.
 ; Used for compiling the Unix kernel, where strange substitutions are
@@ -962,6 +970,13 @@ Perform loop unrolling when iteration count is known
 funroll-all-loops
 Common Report Var(flag_unroll_all_loops)
 Perform loop unrolling for all loops
+
+; Nonzero means that loop optimizer may assume that the induction variables
+; that control loops do not overflow and that the loops with nontrivial
+; exit condition are not infinite
+funsafe-loop-optimizations
+Common Report Var(flag_unsafe_loop_optimizations)
+Allow loop optimizations to assume that the loops behave in normal way
 
 ; Nonzero means that unsafe floating-point math optimizations are allowed
 ; for the sake of speed.  IEEE compliance is not guaranteed, and operations

@@ -712,7 +712,8 @@ niter_for_exit (struct ivopts_data *data, edge exit)
       nfe_desc = xmalloc (sizeof (struct nfe_cache_elt));
       nfe_desc->exit = exit;
       nfe_desc->valid_p = number_of_iterations_exit (data->current_loop,
-						     exit, &nfe_desc->niter);
+						     exit, &nfe_desc->niter,
+						     true);
       *slot = nfe_desc;
     }
   else

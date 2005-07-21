@@ -29,6 +29,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "basic-block.h"
 #include "output.h"
 #include "diagnostic.h"
+#include "intl.h"
 #include "tree-flow.h"
 #include "tree-dump.h"
 #include "cfgloop.h"
@@ -39,6 +40,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-data-ref.h"
 #include "params.h"
 #include "flags.h"
+#include "toplev.h"
 #include "tree-inline.h"
 
 #define SWAP(X, Y) do { void *tmp = (X); (X) = (Y); (Y) = tmp; } while (0)
@@ -906,11 +908,14 @@ simplify_using_outer_evolutions (struct loop *loop, tree expr)
    EXIT (an exit edge of the LOOP) in NITER.  Returns true if some
    useful information could be derived (and fields of NITER has
    meaning described in comments at struct tree_niter_desc
-   declaration), false otherwise.  */
+   declaration), false otherwise.  If WARN is true and
+   -Wunsafe-loop-optimizations was given, warn if the optimizer is going to use
+   potentially unsafe assumptions.  */
 
 bool
 number_of_iterations_exit (struct loop *loop, edge exit,
-			   struct tree_niter_desc *niter)
+			   struct tree_niter_desc *niter,
+			   bool warn)
 {
   tree stmt, cond, type;
   tree op0, base0, step0;
@@ -990,7 +995,45 @@ number_of_iterations_exit (struct loop *loop, edge exit,
 	  = simplify_using_initial_conditions (loop,
 					       niter->may_be_zero,
 					       &niter->additional_info);
-  return integer_onep (niter->assumptions);
+
+  if (integer_onep (niter->assumptions))
+    return true;
+
+  /* With -funsafe-loop-optimizations we assume that nothing bad can happen.
+     But if we can prove that there is overflow or some other source of weird
+     behavior, ignore the loop even with -funsafe-loop-optimizations.  */
+  if (integer_zerop (niter->assumptions))
+    return false;
+
+  if (flag_unsafe_loop_optimizations)
+    niter->assumptions = boolean_true_node;
+
+  if (warn)
+    {
+      const char *wording;
+      location_t loc = EXPR_LOCATION (stmt);
+  
+      /* We can provide a more specific warning if one of the operator is
+	 constant and the other advances by +1 or -1.  */
+      if (step1 ? !step0 && (integer_onep (step1) || integer_all_onesp (step1))
+	  	: step0 && (integer_onep (step0) || integer_all_onesp (step0)))
+        wording =
+          flag_unsafe_loop_optimizations
+          ? N_("assuming that the loop is not infinite")
+          : N_("cannot optimize possibly infinite loops");
+      else
+	wording = 
+	  flag_unsafe_loop_optimizations
+	  ? N_("assuming that the loop counter does not overflow")
+	  : N_("cannot optimize loop, the loop counter may overflow");
+
+      if (LOCATION_LINE (loc) > 0)
+	warning (OPT_Wunsafe_loop_optimizations, "%H%s", &loc, gettext (wording));
+      else
+	warning (OPT_Wunsafe_loop_optimizations, "%s", gettext (wording));
+    }
+
+  return flag_unsafe_loop_optimizations;
 }
 
 /* Try to determine the number of iterations of LOOP.  If we succeed,
@@ -1014,7 +1057,7 @@ find_loop_niter (struct loop *loop, edge *exit)
       if (!just_once_each_iteration_p (loop, ex->src))
 	continue;
 
-      if (!number_of_iterations_exit (loop, ex, &desc))
+      if (!number_of_iterations_exit (loop, ex, &desc, false))
 	continue;
 
       if (nonzero_p (desc.may_be_zero))
@@ -1360,7 +1403,7 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
   exits = get_loop_exit_edges (loop, &n_exits);
   for (i = 0; i < n_exits; i++)
     {
-      if (!number_of_iterations_exit (loop, exits[i], &niter_desc))
+      if (!number_of_iterations_exit (loop, exits[i], &niter_desc, false))
 	continue;
 
       niter = niter_desc.niter;

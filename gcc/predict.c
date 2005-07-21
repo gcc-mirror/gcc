@@ -643,7 +643,7 @@ predict_loops (struct loops *loops_info, bool rtlsimpleloops)
 	    {
 	      tree niter = NULL;
 
-	      if (number_of_iterations_exit (loop, exits[j], &niter_desc))
+	      if (number_of_iterations_exit (loop, exits[j], &niter_desc, false))
 		niter = niter_desc.niter;
 	      if (!niter || TREE_CODE (niter_desc.niter) != INTEGER_CST)
 	        niter = loop_niter_by_eval (loop, exits[j]);

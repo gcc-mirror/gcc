@@ -1,3 +1,24 @@
+2005-07-21  Paolo Bonzini  <bonzini@gnu.org>
+            Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/19210
+	* common.opt (Wunsafe-loop-optimizations, funsafe-loop-optimizations):
+	New.
+	* Makefile.in (tree-ssa-loop-niter.o): Depend intl.o.
+	* loop-iv.c (get_simple_loop_desc): If -funsafe-loop-optimizations,
+	rely on unproven assumptions.
+	* predict.c (predict_loops): Adjust call to number_of_iterations_exit.
+	* tree-flow.h (number_of_iterations_exit): Add final parameter.
+	* tree-scalar-evolution.c (number_of_iterations_in_loop): Adjust call
+	to number_of_iterations_exit.
+	* tree-ssa-loop-ivcanon.c (empty_loop_p): Likewise.
+	* tree-ssa-loop-ivopts.c (niter_for_exit): Likewise.
+	* tree-ssa-loop-niter.c (find_loop_niter,
+	estimate_numbers_of_iterations_loop): Likewise.
+	(number_of_iterations_exit): Honor the new options.
+	* doc/invoke.texi (Wunsafe-loop-optimizations,
+	funsafe-loop-optimizations): Document them.
+
 2005-07-21  Richard Sandiford  <richard@codesourcery.com>
 
 	PR rtl-optimization/22167
