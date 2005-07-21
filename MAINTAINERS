@@ -44,6 +44,7 @@ avr port		Marek Michalkiewicz	marekm@amelek.gda.pl
 bfin port		Bernd Schmidt		bernd.schmidt@analog.com
 c4x port		Michael Hayes		m.hayes@elec.canterbury.ac.nz
 cris port		Hans-Peter Nilsson	hp@axis.com
+crx port		Paul Woegerer		paul.woegerer@nsc.com
 fr30 port		Nick Clifton		nickc@redhat.com
 frv port		Aldy Hernandez		aldyh@redhat.com
 frv port		Alexandre Oliva		aoliva@redhat.com
