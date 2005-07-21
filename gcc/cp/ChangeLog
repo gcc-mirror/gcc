@@ -11,7 +11,9 @@
 	* semantics.c (perform_koenig_lookup): For dependent calls, just
 	return the set of functions we've found so far. Later, it will be
 	augmented by those found through argument-dependent lookup.
-	* name-lookup.c (lookup_arg_dependent): 
+	* name-lookup.c (lookup_arg_dependent): Implement DR 164 by removing 
+	the optimization that skips namespaces where the functions were
+	originally found.
 
 2005-07-20  Giovanni Bajo  <giovannibajo@libero.it>
 
