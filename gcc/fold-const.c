@@ -10391,11 +10391,33 @@ recursive_label:
 tree
 fold_build1 (enum tree_code code, tree type, tree op0)
 {
-  tree tem = fold_unary (code, type, op0);
-  if (tem)
-    return tem;
+  tree tem;
+#ifdef ENABLE_FOLD_CHECKING
+  unsigned char checksum_before[16], checksum_after[16];
+  struct md5_ctx ctx;
+  htab_t ht;
 
-  return build1 (code, type, op0);
+  ht = htab_create (32, htab_hash_pointer, htab_eq_pointer, NULL);
+  md5_init_ctx (&ctx);
+  fold_checksum_tree (op0, &ctx, ht);
+  md5_finish_ctx (&ctx, checksum_before);
+  htab_empty (ht);
+#endif
+  
+  tem = fold_unary (code, type, op0);
+  if (!tem)
+    tem = build1 (code, type, op0);
+  
+#ifdef ENABLE_FOLD_CHECKING
+  md5_init_ctx (&ctx);
+  fold_checksum_tree (op0, &ctx, ht);
+  md5_finish_ctx (&ctx, checksum_after);
+  htab_delete (ht);
+
+  if (memcmp (checksum_before, checksum_after, 16))
+    fold_check_failed (op0, tem);
+#endif
+  return tem;
 }
 
 /* Fold a binary tree expression with code CODE of type TYPE with
@@ -10406,11 +10428,49 @@ fold_build1 (enum tree_code code, tree type, tree op0)
 tree
 fold_build2 (enum tree_code code, tree type, tree op0, tree op1)
 {
-  tree tem = fold_binary (code, type, op0, op1);
-  if (tem)
-    return tem;
+  tree tem;
+#ifdef ENABLE_FOLD_CHECKING
+  unsigned char checksum_before_op0[16],
+                checksum_before_op1[16],
+		checksum_after_op0[16],
+		checksum_after_op1[16];
+  struct md5_ctx ctx;
+  htab_t ht;
 
-  return build2 (code, type, op0, op1);
+  ht = htab_create (32, htab_hash_pointer, htab_eq_pointer, NULL);
+  md5_init_ctx (&ctx);
+  fold_checksum_tree (op0, &ctx, ht);
+  md5_finish_ctx (&ctx, checksum_before_op0);
+  htab_empty (ht);
+
+  md5_init_ctx (&ctx);
+  fold_checksum_tree (op1, &ctx, ht);
+  md5_finish_ctx (&ctx, checksum_before_op1);
+  htab_empty (ht);
+#endif
+
+  tem = fold_binary (code, type, op0, op1);
+  if (!tem)
+    tem = build2 (code, type, op0, op1);
+  
+#ifdef ENABLE_FOLD_CHECKING
+  md5_init_ctx (&ctx);
+  fold_checksum_tree (op0, &ctx, ht);
+  md5_finish_ctx (&ctx, checksum_after_op0);
+  htab_empty (ht);
+
+  if (memcmp (checksum_before_op0, checksum_after_op0, 16))
+    fold_check_failed (op0, tem);
+  
+  md5_init_ctx (&ctx);
+  fold_checksum_tree (op1, &ctx, ht);
+  md5_finish_ctx (&ctx, checksum_after_op1);
+  htab_delete (ht);
+
+  if (memcmp (checksum_before_op1, checksum_after_op1, 16))
+    fold_check_failed (op1, tem);
+#endif
+  return tem;
 }
 
 /* Fold a ternary tree expression with code CODE of type TYPE with
@@ -10420,12 +10480,64 @@ fold_build2 (enum tree_code code, tree type, tree op0, tree op1)
 
 tree
 fold_build3 (enum tree_code code, tree type, tree op0, tree op1, tree op2)
-{
-  tree tem = fold_ternary (code, type, op0, op1, op2);
-  if (tem)
-    return tem;
+{  tree tem;
+#ifdef ENABLE_FOLD_CHECKING
+  unsigned char checksum_before_op0[16],
+                checksum_before_op1[16],
+                checksum_before_op2[16],
+		checksum_after_op0[16],
+		checksum_after_op1[16],
+		checksum_after_op2[16];
+  struct md5_ctx ctx;
+  htab_t ht;
 
-  return build3 (code, type, op0, op1, op2);
+  ht = htab_create (32, htab_hash_pointer, htab_eq_pointer, NULL);
+  md5_init_ctx (&ctx);
+  fold_checksum_tree (op0, &ctx, ht);
+  md5_finish_ctx (&ctx, checksum_before_op0);
+  htab_empty (ht);
+
+  md5_init_ctx (&ctx);
+  fold_checksum_tree (op1, &ctx, ht);
+  md5_finish_ctx (&ctx, checksum_before_op1);
+  htab_empty (ht);
+
+  md5_init_ctx (&ctx);
+  fold_checksum_tree (op2, &ctx, ht);
+  md5_finish_ctx (&ctx, checksum_before_op2);
+  htab_empty (ht);
+#endif
+  
+  tem = fold_ternary (code, type, op0, op1, op2);
+  if (!tem)
+    tem =  build3 (code, type, op0, op1, op2);
+      
+#ifdef ENABLE_FOLD_CHECKING
+  md5_init_ctx (&ctx);
+  fold_checksum_tree (op0, &ctx, ht);
+  md5_finish_ctx (&ctx, checksum_after_op0);
+  htab_empty (ht);
+
+  if (memcmp (checksum_before_op0, checksum_after_op0, 16))
+    fold_check_failed (op0, tem);
+  
+  md5_init_ctx (&ctx);
+  fold_checksum_tree (op1, &ctx, ht);
+  md5_finish_ctx (&ctx, checksum_after_op1);
+  htab_empty (ht);
+
+  if (memcmp (checksum_before_op1, checksum_after_op1, 16))
+    fold_check_failed (op1, tem);
+  
+  md5_init_ctx (&ctx);
+  fold_checksum_tree (op2, &ctx, ht);
+  md5_finish_ctx (&ctx, checksum_after_op2);
+  htab_delete (ht);
+
+  if (memcmp (checksum_before_op2, checksum_after_op2, 16))
+    fold_check_failed (op2, tem);
+#endif
+  return tem;
 }
 
 /* Perform constant folding and related simplification of initializer

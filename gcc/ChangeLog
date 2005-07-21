@@ -1,5 +1,12 @@
 2005-07-21  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR middle-end/21180
+	* fold-const.c (fold_build1): Add checksum for the operands.
+	(fold_build2): Likewise.	
+	(fold_build3): Likewise.
+
+2005-07-21  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR middle-end/19055
 	* fold-const.c (fold_binary): Transform "(X | Y) ^ X" to "Y & ~ X".
 
