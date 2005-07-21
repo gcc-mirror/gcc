@@ -1,3 +1,15 @@
+2005-07-21  Nick Clifton  <nickc@redhat.com>
+
+	* config/sh/symbian.c: Replace C++ style line comments with C
+	style line comments.
+        (symbian_add_attribute): Do not use a ? operator on the LHS of
+	an assignment.
+        (sh_symbian_handle_dll_attribute): Change the type of the
+	method vector to "VEC(tree,gc)*" and use vector accessor
+	macros to walk over the elements.
+        (symbian_export_vtable_and_rtti_p): Likewise.
+        (symbian_class_needs_attribute_p): Likewise.
+
 2005-07-21  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/22085
