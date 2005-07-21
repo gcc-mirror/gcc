@@ -365,8 +365,8 @@ build_base_path (enum tree_code code,
 			 build2 (EQ_EXPR, boolean_type_node,
 				 current_in_charge_parm, integer_zero_node),
 			 v_offset,
-			 convet_to_integer (ptrdiff_type_node,
-					    BINFO_OFFSET (binfo)));
+			 convert_to_integer (ptrdiff_type_node,
+					     BINFO_OFFSET (binfo)));
       else
 	offset = v_offset;
     }

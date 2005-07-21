@@ -1,5 +1,9 @@
 2005-07-21  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* class.c (build_base_path): Fix typo.
+
+2005-07-21  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR C++/22358
 	* class.c (build_base_path): Convert BINFO_OFFSET to the correct type.
 
