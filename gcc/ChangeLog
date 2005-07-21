@@ -1,4 +1,16 @@
 2005-07-21  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/22085
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Do not
+	initialize targetm.resolve_overloaded_builtin here.
+	(altivec_expand_overloaded_builtin): Make it non-static.
+	* config/rs6000/rs6000-protos.h
+	(altivec_expand_overloaded_builtin): New prototype.
+	* config/rs6000/rs6000.h (REGISTER_TARGET_PRAGMAS): Initialize
+	targetm.resolve_overloaded_builtin here.
+	* config/rs6000/darwin.h (REGISTER_TARGET_PRAGMAS): Likewise.
+
+2005-07-21  Paolo Bonzini  <bonzini@gnu.org>
             Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/19210
