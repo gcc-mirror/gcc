@@ -1,3 +1,10 @@
+2005-07-21  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/22522
+	* gcc.dg/tree-ssa/flatten-1.c: Use correct regexp for
+	scanning for asm labels.
+	* gcc.dg/tree-ssa/flatten-2.c: Likewise.
+
 2005-07-21  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR target/22085
