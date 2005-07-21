@@ -459,10 +459,10 @@ ssa_operand_alloc (unsigned size)
 }
 
 
-/* Make sure PTR is inn the correct immediate use list.  Since uses are simply
+/* Make sure PTR is in the correct immediate use list.  Since uses are simply
    pointers into the stmt TREE, there is no way of telling if anyone has
    changed what this pointer points to via TREE_OPERANDS (exp, 0) = <...>.
-   THe contents are different, but the the pointer is still the same.  This
+   The contents are different, but the pointer is still the same.  This
    routine will check to make sure PTR is in the correct list, and if it isn't
    put it in the correct list.  We cannot simply check the previous node 
    because all nodes in the same stmt might have be changed.  */
@@ -482,7 +482,7 @@ correct_use_link (use_operand_p ptr, tree stmt)
     {
       bool stmt_mod = true;
       /* Find the first element which isn't a SAFE iterator, is in a different
-	 stmt, and is not a a modified stmt,  That node is in the correct list,
+	 stmt, and is not a modified stmt.  That node is in the correct list,
 	 see if we are too.  */
 
       while (stmt_mod)

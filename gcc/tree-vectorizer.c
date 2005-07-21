@@ -1792,7 +1792,7 @@ reduction_code_for_scalar_code (enum tree_code code,
   
    such that:
    1. operation is commutative and associative and it is safe to 
-      change the the order of the computation.
+      change the order of the computation.
    2. no uses for a2 in the loop (a2 is used out of the loop)
    3. no uses of a1 in the loop besides the reduction operation.
 
