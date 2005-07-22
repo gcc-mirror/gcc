@@ -1,3 +1,10 @@
+2005-07-22  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+            Laurent GUERBY  <laurent@guerby.net>
+
+        PR tree-optimization/22336
+        * function.c (record_block_change): Check for 
+        cfun->ib_boundaries_block.
+	
 2005-07-21  James A. Morrison  <phython@gcc.gnu.org>
 
 	* fold-const.c (fold_unary): Don't strip signed nops from ABS_EXPRs.
