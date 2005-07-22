@@ -304,7 +304,7 @@ init_units (void)
       u->flags.access = ACCESS_SEQUENTIAL;
       u->flags.form = FORM_FORMATTED;
       u->flags.status = STATUS_OLD;
-      u->flags.blank = BLANK_ZERO;
+      u->flags.blank = BLANK_UNSPECIFIED;
       u->flags.position = POSITION_ASIS;
 
       u->recl = options.default_recl;
@@ -326,7 +326,7 @@ init_units (void)
       u->flags.access = ACCESS_SEQUENTIAL;
       u->flags.form = FORM_FORMATTED;
       u->flags.status = STATUS_OLD;
-      u->flags.blank = BLANK_ZERO;
+      u->flags.blank = BLANK_UNSPECIFIED;
       u->flags.position = POSITION_ASIS;
 
       u->recl = options.default_recl;
@@ -348,7 +348,7 @@ init_units (void)
       u->flags.access = ACCESS_SEQUENTIAL;
       u->flags.form = FORM_FORMATTED;
       u->flags.status = STATUS_OLD;
-      u->flags.blank = BLANK_ZERO;
+      u->flags.blank = BLANK_UNSPECIFIED;
       u->flags.position = POSITION_ASIS;
 
       u->recl = options.default_recl;
