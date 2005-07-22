@@ -447,6 +447,8 @@ gfc_match_symbol (gfc_symbol ** matched_symbol, int host_assoc)
       else
         *matched_symbol = NULL;
     }
+  else
+    *matched_symbol = NULL;
   return m;
 }
 

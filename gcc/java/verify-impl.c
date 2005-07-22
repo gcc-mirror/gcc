@@ -1946,7 +1946,7 @@ check_pool_index (int index)
 static type
 check_class_constant (int index)
 {
-  type t;
+  type t = { 0, 0, 0 };
   vfy_constants *pool;
 
   check_pool_index (index);
@@ -1963,7 +1963,7 @@ check_class_constant (int index)
 static type
 check_constant (int index)
 {
-  type t;
+  type t = { 0, 0, 0 };
   vfy_constants *pool;
 
   check_pool_index (index);
@@ -1983,7 +1983,7 @@ check_constant (int index)
 static type
 check_wide_constant (int index)
 {
-  type t;
+  type t = { 0, 0, 0 };
   vfy_constants *pool;
 
   check_pool_index (index);

@@ -1,3 +1,11 @@
+2005-07-22  Manfred Hollstein  <mh@suse.com>
+
+	* tree-ssa-structalias.c (merge_graph_nodes): Fix uninitialised
+	warnings.
+	(int_add_graph_edge): Likewise.
+	(collapse_nodes): Likewise.
+	(process_unification_queue): Likewise.
+
 2005-07-22  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
             Laurent GUERBY  <laurent@guerby.net>
 

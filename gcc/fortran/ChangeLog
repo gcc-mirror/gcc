@@ -1,3 +1,8 @@
+2005-07-22  Manfred Hollstein  <mh@suse.com>
+
+	* match.c (gfc_match_symbol): Fix uninitialised warnings.
+	* matchexp.c (gfc_match_expr): Likewise.
+
 2005-07-20  Giovanni Bajo  <giovannibajo@libero.it>
 
 	Make CONSTRUCTOR use VEC to store initializers.
