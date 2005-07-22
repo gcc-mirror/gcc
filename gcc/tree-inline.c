@@ -1528,7 +1528,7 @@ inlinable_function_p (tree fn)
       if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)))
 	sorry (inline_forbidden_reason, fn);
       else if (do_warning)
-	warning (0, inline_forbidden_reason, fn);
+	warning (OPT_Winline, inline_forbidden_reason, fn);
 
       inlinable = false;
     }
