@@ -779,6 +779,11 @@ cris-*-linux*)
 	tmake_file="cris/t-cris t-slibgcc-elf-ver cris/t-linux"
 	extra_options="${extra_options} cris/linux.opt"
 	;;
+crx-*-elf)
+	tm_file="elfos.h ${tm_file}"
+	extra_parts="crtbegin.o crtend.o"
+	use_collect2=no
+	;;
 fr30-*-elf)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
 	tmake_file=fr30/t-fr30
