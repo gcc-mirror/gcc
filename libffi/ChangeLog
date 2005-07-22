@@ -1,3 +1,13 @@
+2005-07-22  SUGIOKA Toshinobu  <sugioka@itonet.co.jp>
+
+	* src/sh/sysv.S (ffi_call_SYSV): Stop argument popping correctly
+	on sh3.
+	(ffi_closure_SYSV): Change the stack layout for sh3 struct argument.
+	* src/sh/ffi.c (ffi_prep_args): Fix sh3 argument copy, when it is
+	partially on register.
+	(ffi_closure_helper_SYSV): Likewise.
+	(ffi_prep_cif_machdep): Don't set too many cif->flags.
+
 2005-07-20  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* src/sh/ffi.c (ffi_call): Handle small structures correctly.

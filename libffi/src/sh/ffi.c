@@ -210,15 +210,11 @@ void ffi_prep_args(char *stack, extended_cif *ecif)
 #if defined(__SH4__)
 	  if (greg + n - 1 >= NGREGARG)
 	    continue;
-	  greg += n;
 #else
 	  if (greg >= NGREGARG)
 	    continue;
-	  else if (greg + n - 1 >= NGREGARG)
-	    greg = NGREGARG;
-	  else
-	    greg += n;
 #endif
+	  greg += n;
 	  memcpy (argp, *p_argv, z);
 	  argp += n * sizeof (int);
 	}
@@ -380,9 +376,8 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
       if (greg >= NGREGARG)
 	continue;
       else if (greg + n - 1 >= NGREGARG)
-	greg = NGREGARG;
-      else
-	greg += n;
+	n = NGREGARG - greg;
+      greg += n;
       for (m = 0; m < n; m++)
         cif->flags += FFI_TYPE_INT << (2 * j++);
     }
@@ -628,15 +623,11 @@ ffi_closure_helper_SYSV (ffi_closure *closure, void *rvalue,
 #if defined(__SH4__)
 	  if (greg + n - 1 >= NGREGARG)
 	    continue;
-	  greg += n;
 #else
 	  if (greg >= NGREGARG)
 	    continue;
-	  else if (greg + n - 1 >= NGREGARG)
-	    greg = NGREGARG;
-	  else
-	    greg += n;
 #endif
+	  greg += n;
 	  avalue[i] = pgr;
 	  pgr += n;
 	}
@@ -720,7 +711,8 @@ ffi_closure_helper_SYSV (ffi_closure *closure, void *rvalue,
 #if (! defined(__SH4__))
 	  else if (greg < NGREGARG)
 	    {
-	      greg = NGREGARG;
+	      greg += n;
+	      pst += greg - NGREGARG;
 	      continue;
 	    }
 #endif

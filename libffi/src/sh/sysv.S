@@ -401,6 +401,9 @@ L_pop_d:
 	 mov.l	@r15+,r7
 
 L_pass_i:
+	cmp/eq	#FFI_TYPE_INT,r0
+	bf	L_call_it
+
 	mov	#8,r0
 	cmp/hs	r0,r2
 	bt/s	2f
@@ -492,39 +495,42 @@ L_epilogue:
 
 ENTRY(ffi_closure_SYSV)
 .LFB2:
-	mov.l	r14,@-r15
+	mov.l	r7,@-r15
 .LCFI7:
+	mov.l	r6,@-r15
+.LCFI8:
+	mov.l	r5,@-r15
+.LCFI9:
+	mov.l	r4,@-r15
+.LCFIA:
+	mov.l	r14,@-r15
+.LCFIB:
 	sts.l	pr,@-r15
 
 	/* Stack layout:	
-	   ...
-	   32 bytes (floating register parameters, SH-4 only)
+	   xx bytes (on stack parameters)
 	   16 bytes (register parameters)
+	    4 bytes (saved frame pointer)
+	    4 bytes (saved return address)
+	   32 bytes (floating register parameters, SH-4 only)
 	    8 bytes (result)
 	    4 bytes (pad)
 	    4 bytes (5th arg)
 	   <- new stack pointer
 	*/
-.LCFI8:
+.LCFIC:
 #if defined(__SH4__)
-	add	#-64,r15
+	add	#-48,r15
 #else
-	add	#-32,r15
+	add	#-16,r15
 #endif
-.LCFI9:
+.LCFID:
 	mov	r15,r14
-.LCFIA:
-	mov	r14,r1
-	add	#32,r1
-	mov.l	r7,@-r1
-	mov.l	r6,@-r1
-	mov.l	r5,@-r1
-	mov.l	r4,@-r1
-	mov	r1,r6
+.LCFIE:
 
 #if defined(__SH4__)
 	mov	r14,r1
-	add	#64,r1
+	add	#48,r1
 #ifdef __LITTLE_ENDIAN__
 	fmov.s	fr10,@-r1
 	fmov.s	fr11,@-r1
@@ -545,6 +551,11 @@ ENTRY(ffi_closure_SYSV)
 	fmov.s	fr4,@-r1
 #endif
 	mov	r1,r7
+	mov	r14,r6
+	add	#56,r6
+#else
+	mov	r14,r6
+	add	#24,r6
 #endif
 
 	bt/s	10f
@@ -678,13 +689,14 @@ L_case_uh:
 
 L_case_v:
 #if defined(__SH4__)
-	add	#64,r15
+	add	#48,r15
 #else
-	add	#32,r15
+	add	#16,r15
 #endif
 	lds.l	@r15+,pr
+	mov.l	@r15+,r14
 	rts
-	 mov.l	@r15+,r14
+	 add	#16,r15
 .LFE2:
 .ffi_closure_SYSV_end:
         .size    CNAME(ffi_closure_SYSV),.ffi_closure_SYSV_end-CNAME(ffi_closure_SYSV)
@@ -788,21 +800,45 @@ __FRAME_BEGIN__:
 	.byte	0x4	/* DW_CFA_advance_loc4 */
 	.4byte	.LCFI8-.LCFI7
 	.byte	0xe	/* DW_CFA_def_cfa_offset */
-	.byte	0x8	/* uleb128 0x8 */
+	.byte	0x8	/* uleb128 0x4 */
 	.byte	0x4	/* DW_CFA_advance_loc4 */
 	.4byte	.LCFI9-.LCFI8
 	.byte	0xe	/* DW_CFA_def_cfa_offset */
-#if defined(__SH4__)
-	.byte	8+64	/* uleb128 8+64 */
-#else
-	.byte	8+32	/* uleb128 8+32 */
-#endif
-	.byte	0x91	/* DW_CFA_offset, column 0x11 */
-        .byte	0x2
-        .byte	0x8e	/* DW_CFA_offset, column 0xe */
-        .byte	0x1
+	.byte	0xc	/* uleb128 0x4 */
 	.byte	0x4	/* DW_CFA_advance_loc4 */
 	.4byte	.LCFIA-.LCFI9
+	.byte	0xe	/* DW_CFA_def_cfa_offset */
+	.byte	0x10	/* uleb128 0x4 */
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.4byte	.LCFIB-.LCFIA
+	.byte	0xe	/* DW_CFA_def_cfa_offset */
+	.byte	0x14	/* uleb128 0x4 */
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.4byte	.LCFIC-.LCFIB
+	.byte	0xe	/* DW_CFA_def_cfa_offset */
+	.byte	0x18	/* uleb128 0x4 */
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.4byte	.LCFID-.LCFIC
+	.byte	0xe	/* DW_CFA_def_cfa_offset */
+#if defined(__SH4__)
+	.byte	24+48	/* uleb128 24+48 */
+#else
+	.byte	24+16	/* uleb128 24+16 */
+#endif
+	.byte	0x91	/* DW_CFA_offset, column 0x11 */
+	.byte	0x6	/* uleb128 0x6 */
+	.byte	0x8e	/* DW_CFA_offset, column 0xe */
+	.byte	0x5	/* uleb128 0x5 */
+	.byte	0x8b	/* DW_CFA_offset, column 0xb */
+	.byte	0x4	/* uleb128 0x4 */
+	.byte	0x8a	/* DW_CFA_offset, column 0xa */
+	.byte	0x3	/* uleb128 0x3 */
+	.byte	0x89	/* DW_CFA_offset, column 0x9 */
+	.byte	0x2	/* uleb128 0x2 */
+	.byte	0x88	/* DW_CFA_offset, column 0x8 */
+	.byte	0x1	/* uleb128 0x1 */
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.4byte	.LCFIE-.LCFID
 	.byte	0xd	/* DW_CFA_def_cfa_register */
 	.byte	0xe	/* uleb128 0xe */
 	.align	2
