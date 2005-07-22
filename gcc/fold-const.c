@@ -6524,9 +6524,11 @@ fold_unary (enum tree_code code, tree type, tree op0)
   arg0 = op0;
   if (arg0)
     {
-      if (code == NOP_EXPR || code == FLOAT_EXPR || code == CONVERT_EXPR)
+      if (code == NOP_EXPR || code == CONVERT_EXPR
+	  || code == FLOAT_EXPR || code == ABS_EXPR)
 	{
-	  /* Don't use STRIP_NOPS, because signedness of argument type matters.  */
+	  /* Don't use STRIP_NOPS, because signedness of argument type
+	     matters.  */
 	  STRIP_SIGN_NOPS (arg0);
 	}
       else
@@ -10686,6 +10688,9 @@ multiple_of_p (tree type, tree top, tree bottom)
 int
 tree_expr_nonnegative_p (tree t)
 {
+  if (TYPE_UNSIGNED (TREE_TYPE (t)))
+    return 1;
+
   switch (TREE_CODE (t))
     {
     case ABS_EXPR:
