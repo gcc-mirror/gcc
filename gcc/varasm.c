@@ -60,6 +60,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #endif
 
 /* The (assembler) name of the first globally-visible object output.  */
+extern GTY(()) const char *first_global_object_name;
+extern GTY(()) const char *weak_global_object_name;
+
 const char *first_global_object_name;
 const char *weak_global_object_name;
 
@@ -1207,11 +1210,11 @@ notice_global_symbol (tree decl)
   if (!*type)
     {
       const char *p;
-      char *name;
+      const char *name;
       rtx decl_rtl = DECL_RTL (decl);
 
       p = targetm.strip_name_encoding (XSTR (XEXP (decl_rtl, 0), 0));
-      name = xstrdup (p);
+      name = ggc_strdup (p);
 
       *type = name;
     }
