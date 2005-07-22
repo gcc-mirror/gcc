@@ -1,3 +1,8 @@
+2005-07-21  James A. Morrison  <phython@gcc.gnu.org>
+
+	* fold-const.c (fold_unary): Don't strip signed nops from ABS_EXPRs.
+	(tree_expr_nonnegative_p): Return try for TYPE_UNSIGNED.
+
 2005-07-21  DJ Delorie  <dj@redhat.com>
 
 	* toplev.c (warn_deprecated_use): Add warning control to warning
