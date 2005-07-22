@@ -1,3 +1,13 @@
+2005-07-22  Mark Mitchell  <mark@codesourcery.com>
+
+	PR debug/21828
+	* toplev.c (check_global_declarations): Do not mark undefined
+	variables as DECL_IGNORED_P.
+	* varasm.c (first_global_object_name): GTY it.
+	(weak_global_object_name): Likewise.
+	(notice_global_symbol): Use ggc_strdup, not xstrdup, when creating
+	a string to go into {weak,first}_global_object_name.
+
 2005-07-21  Uros Bizjak  <uros@kss-loka.si>
 
         PR target/21149

@@ -825,13 +825,6 @@ check_global_declarations (tree *vec, int len)
     {
       decl = vec[i];
 
-      /* Do not emit debug information about variables that are in
-	 static storage, but not defined.  */
-      if (TREE_CODE (decl) == VAR_DECL
-	  && TREE_STATIC (decl)
-	  && !TREE_ASM_WRITTEN (decl))
-	DECL_IGNORED_P (decl) = 1;
- 
       /* Warn about any function
 	 declared static but not defined.
 	 We don't warn about variables,
