@@ -41,6 +41,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "cselib.h"
 #include "params.h"
 #include "alloc-pool.h"
+#include "target.h"
 
 static bool cselib_record_memory;
 static int entry_and_rtx_equal_p (const void *, const void *);
@@ -54,7 +55,7 @@ static int discard_useless_locs (void **, void *);
 static int discard_useless_values (void **, void *);
 static void remove_useless_values (void);
 static rtx wrap_constant (enum machine_mode, rtx);
-static unsigned int cselib_hash_rtx (rtx, enum machine_mode, int);
+static unsigned int cselib_hash_rtx (rtx, int);
 static cselib_val *new_cselib_val (unsigned int, enum machine_mode);
 static void add_mem_for_addr (cselib_val *, cselib_val *, rtx);
 static cselib_val *cselib_lookup_mem (rtx, int);
@@ -499,6 +500,11 @@ rtx_equal_for_cselib_p (rtx x, rtx y)
 	  break;
 
 	case 'e':
+	  if (i == 1
+	      && targetm.commutative_p (x, UNKNOWN)
+	      && rtx_equal_for_cselib_p (XEXP (x, 1), XEXP (y, 0))
+	      && rtx_equal_for_cselib_p (XEXP (x, 0), XEXP (y, 1)))
+	    return 1;
 	  if (! rtx_equal_for_cselib_p (XEXP (x, i), XEXP (y, i)))
 	    return 0;
 	  break;
@@ -546,11 +552,22 @@ wrap_constant (enum machine_mode mode, rtx x)
    Possible reasons for return 0 are: the object is volatile, or we couldn't
    find a register or memory location in the table and CREATE is zero.  If
    CREATE is nonzero, table elts are created for regs and mem.
-   MODE is used in hashing for CONST_INTs only;
-   otherwise the mode of X is used.  */
+   N.B. this hash function returns the same hash value for RTXes that
+   differ only in the order of operands, thus it is suitable for comparisons
+   that take commutativity into account.
+   If we wanted to also support associative rules, we'd have to use a different
+   strategy to avoid returning spurious 0, e.g. return ~(~0U >> 1) .
+   We used to have a MODE argument for hashing for CONST_INTs, but that
+   didn't make sense, since it caused spurious hash differences between
+    (set (reg:SI 1) (const_int))
+    (plus:SI (reg:SI 2) (reg:SI 1))
+   and
+    (plus:SI (reg:SI 2) (const_int))
+   If the mode is important in any context, it must be checked specifically
+   in a comparison anyway, since relying on hash differences is unsafe.  */
 
 static unsigned int
-cselib_hash_rtx (rtx x, enum machine_mode mode, int create)
+cselib_hash_rtx (rtx x, int create)
 {
   cselib_val *e;
   int i, j;
@@ -572,7 +589,7 @@ cselib_hash_rtx (rtx x, enum machine_mode mode, int create)
       return e->value;
 
     case CONST_INT:
-      hash += ((unsigned) CONST_INT << 7) + (unsigned) mode + INTVAL (x);
+      hash += ((unsigned) CONST_INT << 7) + INTVAL (x);
       return hash ? hash : (unsigned int) CONST_INT;
 
     case CONST_DOUBLE:
@@ -596,7 +613,7 @@ cselib_hash_rtx (rtx x, enum machine_mode mode, int create)
 	for (i = 0; i < units; ++i)
 	  {
 	    elt = CONST_VECTOR_ELT (x, i);
-	    hash += cselib_hash_rtx (elt, GET_MODE (elt), 0);
+	    hash += cselib_hash_rtx (elt, 0);
 	  }
 
 	return hash;
@@ -644,7 +661,7 @@ cselib_hash_rtx (rtx x, enum machine_mode mode, int create)
 	case 'e':
 	  {
 	    rtx tem = XEXP (x, i);
-	    unsigned int tem_hash = cselib_hash_rtx (tem, 0, create);
+	    unsigned int tem_hash = cselib_hash_rtx (tem, create);
 	    
 	    if (tem_hash == 0)
 	      return 0;
@@ -656,7 +673,7 @@ cselib_hash_rtx (rtx x, enum machine_mode mode, int create)
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    {
 	      unsigned int tem_hash
-		= cselib_hash_rtx (XVECEXP (x, i, j), 0, create);
+		= cselib_hash_rtx (XVECEXP (x, i, j), create);
 	      
 	      if (tem_hash == 0)
 		return 0;
@@ -936,7 +953,7 @@ cselib_lookup (rtx x, enum machine_mode mode, int create)
   if (MEM_P (x))
     return cselib_lookup_mem (x, create);
 
-  hashval = cselib_hash_rtx (x, mode, create);
+  hashval = cselib_hash_rtx (x, create);
   /* Can't even create if hashing is not possible.  */
   if (! hashval)
     return 0;
