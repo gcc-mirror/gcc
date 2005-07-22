@@ -1,3 +1,8 @@
+2005-07-22  DJ Delorie  <dj@redhat.com>
+
+	* c-format.c (check_function_format): Change warning control
+	option from OPT_Wattribute to OPT_Wmissing_format_attribute.
+
 2005-07-22  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-alias.c (count_ptr_derefs): Do not consider
