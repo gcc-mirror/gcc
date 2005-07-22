@@ -1,5 +1,10 @@
 2005-07-22  Ben Elliston  <bje@gnu.org>
 
+	* getopt.c: Include "ansidecl.h".
+	(_getopt_initialize): Mark argc and argv parameters as unused.
+
+2005-07-22  Ben Elliston  <bje@gnu.org>
+
 	* regex.c (regcomp): Change type of `i' from unsigned to int.
 
 2005-07-22  Ben Elliston  <bje@gnu.org>

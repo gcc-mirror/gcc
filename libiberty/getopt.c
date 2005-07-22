@@ -3,8 +3,8 @@
    "Keep this file name-space clean" means, talk to drepper@gnu.org
    before changing it!
 
-   Copyright (C) 1987, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98
-   	Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995,
+   1996, 1997, 1998, 2005 Free Software Foundation, Inc.
 
    NOTE: This source is derived from an old version taken from the GNU C
    Library (glibc).
@@ -43,6 +43,7 @@
 #endif
 
 #include <stdio.h>
+#include "ansidecl.h"
 
 /* Comment out all this code if we are using the GNU C Library, and are not
    actually compiling the library itself.  This code is part of the GNU C
@@ -397,7 +398,9 @@ exchange (char **argv)
 static const char *_getopt_initialize (int, char *const *, const char *);
 #endif
 static const char *
-_getopt_initialize (int argc, char *const *argv, const char *optstring)
+_getopt_initialize (int argc ATTRIBUTE_UNUSED,
+		    char *const *argv ATTRIBUTE_UNUSED,
+		    const char *optstring)
 {
   /* Start processing options with ARGV-element 1 (since ARGV-element 0
      is the program name); the sequence of previously skipped
