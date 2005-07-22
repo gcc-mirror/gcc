@@ -1,5 +1,9 @@
 2005-07-22  J"orn Rennecke <joern.rennecke@st.com>
 
+	PR rtl-optimization/20370
+	* ifcvt.c (dead_or_predicable): Before calling propagate_block,
+	call allocate_reg_info if necessary.
+
 	PR rtl-optimization/21848
 	* calls.c (emit_library_call_value_1): For const functions, add
 	USEs of the stack slots to CALL_INSN_FUNCTION_USAGE.
