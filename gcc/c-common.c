@@ -5259,7 +5259,8 @@ check_function_sentinel (tree attrs, tree params, tree typelist)
       }
       
       if (typelist || !params)
-	warning (0, "not enough variable arguments to fit a sentinel");
+	warning (OPT_Wformat,
+		 "not enough variable arguments to fit a sentinel");
       else
         {
 	  tree sentinel, end;
@@ -5281,7 +5282,8 @@ check_function_sentinel (tree attrs, tree params, tree typelist)
 	    }
 	  if (pos > 0)
 	    {
-	      warning (0, "not enough variable arguments to fit a sentinel");
+	      warning (OPT_Wformat,
+		       "not enough variable arguments to fit a sentinel");
 	      return;
 	    }
 
@@ -5302,7 +5304,7 @@ check_function_sentinel (tree attrs, tree params, tree typelist)
 		 We warn with -Wstrict-null-sentinel, though.  */
               && (warn_strict_null_sentinel
 		  || null_node != TREE_VALUE (sentinel)))
-	    warning (0, "missing sentinel in function call");
+	    warning (OPT_Wformat, "missing sentinel in function call");
 	}
     }
 }
@@ -5344,8 +5346,8 @@ check_nonnull_arg (void * ARG_UNUSED (ctx), tree param,
     return;
 
   if (integer_zerop (param))
-    warning (0, "null argument where non-null required (argument %lu)",
-	     (unsigned long) param_num);
+    warning (OPT_Wnonnull, "null argument where non-null required "
+	     "(argument %lu)", (unsigned long) param_num);
 }
 
 /* Helper for nonnull attribute handling; fetch the operand number

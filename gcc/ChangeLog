@@ -4,6 +4,8 @@
 	call.
 	* c-typeck.c (parser_build_binary_op): Likewise.
 	(c_finish_if_stmt): Likewise.
+	* c-common.c (check_function_sentinel): Likewise.
+	(check_nonnull_arg): Likewise.
 
 2005-07-21  Richard Henderson  <rth@redhat.com>
 
