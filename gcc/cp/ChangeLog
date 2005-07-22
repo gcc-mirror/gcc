@@ -1,3 +1,7 @@
+2005-07-22  Manfred Hollstein  <mh@suse.com>
+
+	* parser.c (cp_parser_declaration): Fix unitialised warnings.
+
 2005-07-21  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* class.c (build_base_path): Fix typo.

@@ -897,6 +897,7 @@ merge_graph_nodes (constraint_graph_t graph, unsigned int to,
       add_graph_edge (graph, newe);
       olde.src = from;
       olde.dest = c->dest;
+      olde.weights = NULL;
       temp = get_graph_weights (graph, olde);
       weights = get_graph_weights (graph, newe);
       bitmap_ior_into (weights, temp);
@@ -917,6 +918,7 @@ merge_graph_nodes (constraint_graph_t graph, unsigned int to,
       add_graph_edge (graph, newe);
       olde.src = c->dest;
       olde.dest = from;
+      olde.weights = NULL;
       temp = get_graph_weights (graph, olde);
       weights = get_graph_weights (graph, newe);
       bitmap_ior_into (weights, temp);
@@ -942,6 +944,7 @@ int_add_graph_edge (constraint_graph_t graph, unsigned int to,
       struct constraint_edge edge;
       edge.src = to;
       edge.dest = from;
+      edge.weights = NULL;
       r = add_graph_edge (graph, edge);
       r |= !bitmap_bit_p (get_graph_weights (graph, edge), weight);
       bitmap_set_bit (get_graph_weights (graph, edge), weight);
@@ -1113,6 +1116,7 @@ collapse_nodes (constraint_graph_t graph, unsigned int to, unsigned int from)
   merge_graph_nodes (graph, to, from);
   edge.src = to;
   edge.dest = to;
+  edge.weights = NULL;
   if (valid_graph_edge (graph, edge))
     {
       bitmap weights = get_graph_weights (graph, edge);
@@ -1216,6 +1220,7 @@ process_unification_queue (constraint_graph_t graph, struct scc_info *si,
 	  bitmap_clear (tmp);
 	  edge.src = n;
 	  edge.dest = n;
+	  edge.weights = NULL;
 	  if (valid_graph_edge (graph, edge))
 	    {
 	      bitmap weights = get_graph_weights (graph, edge);

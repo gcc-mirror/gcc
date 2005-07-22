@@ -852,6 +852,7 @@ gfc_match_expr (gfc_expr ** result)
 
   for (;;)
     {
+      uop = NULL;
       m = match_defined_operator (&uop);
       if (m == MATCH_NO)
 	break;
