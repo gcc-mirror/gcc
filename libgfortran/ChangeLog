@@ -1,3 +1,27 @@
+2005-07-22 Jerry DeLisle <jvdelisle@verizon.net>
+
+	PR libfortran/22570
+	* io/unit.c (init_units): Replace BLANK_ZERO with
+	BLANK_UNSPECIFIED.
+	* io/read.c (next_char): Return a ' ' character when BLANK_ZERO
+	or BLANK_NULL are active.
+	(read_decimal): Interpret ' ' character correctly for BZ or BN.
+	(read_radix): Interpret ' ' character correctly for BZ or BN.
+	(read_f): Interpret ' ' character correctly for BZ or BN.
+
+2005-07-22 Paul Thomas  <pault@gcc.gnu.org>
+
+	PR libfortran/22570
+	* read.c (read_x): Correct the condition for doing the
+	x-editing during formatted input.
+	* transfer.c (formatted_transfer): Cast offset difference
+	as int, clean-up arithmetic with new variable, bytes_used,
+	zero counters for FMT_SLASH,
+	(data_transfer_init) Zero X- and T-editing counters
+	unconditionally.
+	(next_record_w) Zero X- and T-editing counters.
+	unconditionally.
+
 2005-07-19  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	Backport from mainline.

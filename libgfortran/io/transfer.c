@@ -444,7 +444,7 @@ require_type (bt expected, bt actual, fnode * f)
 static void
 formatted_transfer (bt type, void *p, int len)
 {
-  int pos;
+  int pos, bytes_used;
   fnode *f;
   format_token t;
   int n;
@@ -489,9 +489,11 @@ formatted_transfer (bt type, void *p, int len)
 	    || t == FMT_STRING))
 	{
 	  write_x (skips, pending_spaces);
-	  max_pos = current_unit->recl - current_unit->bytes_left;
+	  max_pos = (int)(current_unit->recl - current_unit->bytes_left);
 	  skips = pending_spaces = 0;
 	}
+
+      bytes_used = (int)(current_unit->recl - current_unit->bytes_left);
 
       switch (t)
 	{
@@ -687,8 +689,8 @@ formatted_transfer (bt type, void *p, int len)
 	case FMT_TR:
 	  consume_data_flag = 0 ;
 
-	  pos = current_unit->recl - current_unit->bytes_left + f->u.n;
-	  skips = f->u.n;
+	  pos = bytes_used + f->u.n + skips;
+	  skips = f->u.n + skips;
 	  pending_spaces = pos - max_pos;
 
 	  /* Writes occur just before the switch on f->format, above, so that
@@ -701,7 +703,7 @@ formatted_transfer (bt type, void *p, int len)
 	case FMT_TL:
 	case FMT_T:
 	  if (f->format == FMT_TL)
-	    pos = current_unit->recl - current_unit->bytes_left - f->u.n;
+	    pos = bytes_used - f->u.n;
 	  else /* FMT_T */
 	    {
 	      consume_data_flag = 0;
@@ -714,7 +716,7 @@ formatted_transfer (bt type, void *p, int len)
 	     bring us back again.  */
 	  pos = pos < 0 ? 0 : pos;
 
-	  skips = skips + pos - (current_unit->recl - current_unit->bytes_left);
+	  skips = skips + pos - bytes_used;
 	  pending_spaces =  pending_spaces + pos - max_pos;
 
 	  if (skips == 0)
@@ -776,6 +778,8 @@ formatted_transfer (bt type, void *p, int len)
 
 	case FMT_SLASH:
 	  consume_data_flag = 0 ;
+	  skips = pending_spaces = 0;
+	  current_unit->bytes_left = 0;
 	  next_record (0);
 	  break;
 
@@ -1218,8 +1222,7 @@ data_transfer_init (int read_flag)
     }
 
   /* Reset counters for T and X-editing.  */
-  if (current_unit->flags.form == FORM_FORMATTED)
-    max_pos = skips = pending_spaces = 0;
+  max_pos = skips = pending_spaces = 0;
 
   /* Start the data transfer if we are doing a formatted transfer.  */
   if (current_unit->flags.form == FORM_FORMATTED && !ioparm.list_format
@@ -1331,6 +1334,9 @@ next_record_w (int done)
   gfc_offset c, m;
   int length;
   char *p;
+
+  /* Zero counters for X- and T-editing.  */
+  max_pos = skips = pending_spaces = 0;
 
   switch (current_mode ())
     {
