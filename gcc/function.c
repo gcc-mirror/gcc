@@ -5492,6 +5492,9 @@ record_block_change (tree block)
   if (!block)
     return;
 
+  if(!cfun->ib_boundaries_block)
+    return;
+
   last_block = VARRAY_TOP_TREE (cfun->ib_boundaries_block);
   VARRAY_POP (cfun->ib_boundaries_block);
   n = get_max_uid ();
