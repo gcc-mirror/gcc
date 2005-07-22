@@ -1557,6 +1557,85 @@ cant_combine_insn_p (rtx insn)
   return 0;
 }
 
+struct likely_spilled_retval_info
+{
+  unsigned regno, nregs;
+  unsigned mask;
+};
+
+/* Called via note_stores by likely_spilled_retval_p.  Remove from info->mask
+   hard registers that are known to be written to / clobbered in full.  */
+static void
+likely_spilled_retval_1 (rtx x, rtx set, void *data)
+{
+  struct likely_spilled_retval_info *info = data;
+  unsigned regno, nregs;
+  unsigned new_mask;
+
+  if (!REG_P (XEXP (set, 0)))
+    return;
+  regno = REGNO (x);
+  if (regno >= info->regno + info->nregs)
+    return;
+  nregs = hard_regno_nregs[regno][GET_MODE (x)];
+  if (regno + nregs <= info->regno)
+    return;
+  new_mask = (2U << (nregs - 1)) - 1;
+  if (regno < info->regno)
+    new_mask >>= info->regno - regno;
+  else
+    new_mask <<= regno - info->regno;
+  info->mask &= new_mask;
+}
+
+/* Return nonzero iff part of the return value is live during INSN, and
+   it is likely spilled.  This can happen when more than one insn is needed
+   to copy the return value, e.g. when we consider to combine into the
+   second copy insn for a complex value.  */
+
+static int
+likely_spilled_retval_p (rtx insn)
+{
+  rtx use = BB_END (this_basic_block);
+  rtx reg, p;
+  unsigned regno, nregs;
+  /* We assume here that no machine mode needs more than
+     32 hard registers when the value overlaps with a register
+     for which FUNCTION_VALUE_REGNO_P is true.  */
+  unsigned mask;
+  struct likely_spilled_retval_info info;
+
+  if (!NONJUMP_INSN_P (use) || GET_CODE (PATTERN (use)) != USE || insn == use)
+    return 0;
+  reg = XEXP (PATTERN (use), 0);
+  if (!REG_P (reg) || !FUNCTION_VALUE_REGNO_P (REGNO (reg)))
+    return 0;
+  regno = REGNO (reg);
+  nregs = hard_regno_nregs[regno][GET_MODE (reg)];
+  if (nregs == 1)
+    return 0;
+  mask = (2U << (nregs - 1)) - 1;
+
+  /* Disregard parts of the return value that are set later.  */
+  info.regno = regno;
+  info.nregs = nregs;
+  info.mask = mask;
+  for (p = PREV_INSN (use); info.mask && p != insn; p = PREV_INSN (p))
+    note_stores (PATTERN (insn), likely_spilled_retval_1, &info);
+  mask = info.mask;
+
+  /* Check if any of the (probably) live return value registers is
+     likely spilled.  */
+  nregs --;
+  do
+    {
+      if ((mask & 1 << nregs)
+	  && CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (regno + nregs)))
+	return 1;
+    } while (nregs--);
+  return 0;
+}
+
 /* Adjust INSN after we made a change to its destination.
 
    Changing the destination can invalidate notes that say something about
@@ -1644,6 +1723,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
   if (cant_combine_insn_p (i3)
       || cant_combine_insn_p (i2)
       || (i1 && cant_combine_insn_p (i1))
+      || likely_spilled_retval_p (i3)
       /* We also can't do anything if I3 has a
 	 REG_LIBCALL note since we don't want to disrupt the contiguity of a
 	 libcall.  */
