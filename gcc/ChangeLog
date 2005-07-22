@@ -1,3 +1,20 @@
+2005-07-22  Paul Woegerer  <paul.woegerer@nsc.com>
+
+	* config.gcc: Add crx-elf support.
+
+	* doc/contrib.texi: Mention crx.
+	* doc/extend.texi: Document crx extensions.
+	* doc/install.texi: Document crx install.
+	* doc/invoke.texi: Document crx options.
+	* doc/md.texi: Document crx constraints.
+
+	* config/crx/crx-protos.h: New file.
+	* config/crx/crx.c: New file.
+	* config/crx/crx.h: New file.
+	* config/crx/crx.md: New file.
+	* config/crx/crx.opt: New file.
+	* config/crx/t-crx: New file.
+	
 2005-07-22  Manfred Hollstein  <mh@suse.com>
 
 	* tree-ssa-structalias.c (merge_graph_nodes): Fix uninitialised
