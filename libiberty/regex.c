@@ -7923,7 +7923,7 @@ regcomp (regex_t *preg, const char *pattern, int cflags)
 
   if (cflags & REG_ICASE)
     {
-      unsigned i;
+      int i;
 
       preg->translate
 	= (RE_TRANSLATE_TYPE) malloc (CHAR_SET_SIZE
@@ -7933,7 +7933,7 @@ regcomp (regex_t *preg, const char *pattern, int cflags)
 
       /* Map uppercase characters to corresponding lowercase ones.  */
       for (i = 0; i < CHAR_SET_SIZE; i++)
-        preg->translate[i] = ISUPPER (i) ? TOLOWER (i) : (int) i;
+        preg->translate[i] = ISUPPER (i) ? TOLOWER (i) : i;
     }
   else
     preg->translate = NULL;
