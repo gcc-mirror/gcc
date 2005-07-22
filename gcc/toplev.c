@@ -875,7 +875,8 @@ warn_deprecated_use (tree node)
   if (DECL_P (node))
     {
       expanded_location xloc = expand_location (DECL_SOURCE_LOCATION (node));
-      warning (0, "%qs is deprecated (declared at %s:%d)",
+      warning (OPT_Wdeprecated_declarations,
+	       "%qs is deprecated (declared at %s:%d)",
 	       IDENTIFIER_POINTER (DECL_NAME (node)),
 	       xloc.file, xloc.line);
     }
@@ -898,18 +899,20 @@ warn_deprecated_use (tree node)
 	  expanded_location xloc
 	    = expand_location (DECL_SOURCE_LOCATION (decl));
 	  if (what)
-	    warning (0, "%qs is deprecated (declared at %s:%d)", what,
-		       xloc.file, xloc.line);
+	    warning (OPT_Wdeprecated_declarations,
+		     "%qs is deprecated (declared at %s:%d)", what,
+		     xloc.file, xloc.line);
 	  else
-	    warning (0, "type is deprecated (declared at %s:%d)",
+	    warning (OPT_Wdeprecated_declarations,
+		     "type is deprecated (declared at %s:%d)",
 		     xloc.file, xloc.line);
 	}
       else
 	{
 	  if (what)
-	    warning (0, "%qs is deprecated", what);
+	    warning (OPT_Wdeprecated_declarations, "%qs is deprecated", what);
 	  else
-	    warning (0, "type is deprecated");
+	    warning (OPT_Wdeprecated_declarations, "type is deprecated");
 	}
     }
 }
