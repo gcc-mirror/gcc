@@ -1,5 +1,11 @@
 2005-07-22  J"orn Rennecke <joern.rennecke@st.com>
 
+	PR rtl-optimization/22445
+	* cselib.c (target.h): Include.
+	(rtx_equal_for_cselib_p): Allow commutative matches.
+	(cselib_hash_rtx): Don't use MODE for CONST_INT hashing.
+	Remove MODE parameter.  Changed all callers.
+
 	PR rtl-optimization/22258
 	* combine.c (likely_spilled_retval_1, likely_spilled_retval_p):
 	New functions.
