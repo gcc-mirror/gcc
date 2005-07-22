@@ -3341,6 +3341,14 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
       /* ??? bb->local_set is only valid during calculate_global_regs_live,
 	 so we must recompute usage for MERGE_BB.  Not so bad, I suppose,
          since we've already asserted that MERGE_BB is small.  */
+      /* If we allocated new pseudos (e.g. in the conditional move
+	 expander called from noce_emit_cmove), we must resize the
+	 array first.  */
+      if (max_regno < max_reg_num ())
+	{
+	  max_regno = max_reg_num ();
+	  allocate_reg_info (max_regno, FALSE, FALSE);
+	}
       propagate_block (merge_bb, tmp, merge_set, merge_set, 0);
 
       /* For small register class machines, don't lengthen lifetimes of
