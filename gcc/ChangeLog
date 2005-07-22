@@ -1,3 +1,10 @@
+2005-07-22  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR rtl-optimization/22258
+	* combine.c (likely_spilled_retval_1, likely_spilled_retval_p):
+	New functions.
+	(try_combine): Use likely_spilled_retval_p.
+
 2005-07-22  Paul Woegerer  <paul.woegerer@nsc.com>
 
 	* config.gcc: Add crx-elf support.
