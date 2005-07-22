@@ -78,7 +78,7 @@ c_cannot_inline_tree_fn (tree *fnp)
       && lookup_attribute ("always_inline", DECL_ATTRIBUTES (fn)) == NULL)
     {
       if (do_warning)
-	warning (0, "function %q+F can never be inlined because it "
+	warning (OPT_Winline, "function %q+F can never be inlined because it "
 		 "is suppressed using -fno-inline", fn);
       goto cannot_inline;
     }
@@ -88,16 +88,16 @@ c_cannot_inline_tree_fn (tree *fnp)
   if (!DECL_DECLARED_INLINE_P (fn) && !targetm.binds_local_p (fn))
     {
       if (do_warning)
-	warning (0, "function %q+F can never be inlined because it might not "
-		 "be bound within this unit of translation", fn);
+	warning (OPT_Winline, "function %q+F can never be inlined because it "
+		 "might not be bound within this unit of translation", fn);
       goto cannot_inline;
     }
 
   if (!function_attribute_inlinable_p (fn))
     {
       if (do_warning)
-	warning (0, "function %q+F can never be inlined because it uses "
-		 "attributes conflicting with inlining", fn);
+	warning (OPT_Winline, "function %q+F can never be inlined because it "
+		 "uses attributes conflicting with inlining", fn);
       goto cannot_inline;
     }
 
