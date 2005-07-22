@@ -344,12 +344,20 @@ struct count_ptr_d
    (ALIGN/MISALIGNED_)INDIRECT_REF nodes for the pointer passed in DATA.  */
 
 static tree
-count_ptr_derefs (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
+count_ptr_derefs (tree *tp, int *walk_subtrees, void *data)
 {
   struct count_ptr_d *count_p = (struct count_ptr_d *) data;
 
+  /* Do not walk inside ADDR_EXPR nodes.  In the expression &ptr->fld,
+     pointer 'ptr' is *not* dereferenced, it is simply used to compute
+     the address of 'fld' as 'ptr + offsetof(fld)'.  */
+  if (TREE_CODE (*tp) == ADDR_EXPR)
+    {
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+
   if (INDIRECT_REF_P (*tp) && TREE_OPERAND (*tp, 0) == count_p->ptr)
-/*       || (TREE_CODE (*tp) == MEM_REF && MEM_REF_SYMBOL (*tp) == count_p->ptr)) */
     count_p->count++;
 
   return NULL_TREE;

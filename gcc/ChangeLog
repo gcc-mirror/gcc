@@ -1,3 +1,10 @@
+2005-07-22  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-alias.c (count_ptr_derefs): Do not consider
+	&PTR->FLD a dereference of PTR.
+	* tree-ssa-structalias.c (update_alias_info): Consider &PTR->FLD
+	a potential dereference of PTR.
+
 2005-07-22  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR rtl-optimization/20370
