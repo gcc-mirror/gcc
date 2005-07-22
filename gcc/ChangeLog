@@ -1,3 +1,8 @@
+2005-07-21  DJ Delorie  <dj@redhat.com>
+
+	* toplev.c (warn_deprecated_use): Add warning control to warning
+	call.
+
 2005-07-21  Richard Henderson  <rth@redhat.com>
 
 	PR tree-opt/22504
