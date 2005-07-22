@@ -1,3 +1,19 @@
+2005-07-21  Richard Henderson  <rth@redhat.com>
+
+	PR tree-opt/22504
+	* tree-complex.c (complex_ssa_name_components): New.
+	(cvc_lookup): Allow entry not found.
+	(create_components): Remove.
+	(create_one_component_var, get_component_var): New.
+	(get_component_ssa_name, set_component_ssa_name): New.
+	(extract_component): Use get_component_ssa_name.
+	(update_complex_components): Use set_component_ssa_name.
+	(update_complex_components_on_edge): Likewise.
+	(update_phi_components): Create new PHI nodes directly, instead
+	of adding insns to edges.
+	(tree_lower_complex): Allocate and free complex_variable_components
+	and complex_ssa_name_components here.
+
 2005-07-20  Daniel Berlin  <dberlin@dberlin.org>
 	
 	* alias.c (nonoverlapping_component_refs_p): Use TYPE_MAIN_VARIANT,

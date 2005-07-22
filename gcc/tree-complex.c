@@ -56,6 +56,9 @@ static VEC(complex_lattice_t, heap) *complex_lattice_values;
    the hashtable.  */
 static htab_t complex_variable_components;
 
+/* For each complex SSA_NAME, a pair of ssa names for the components.  */
+static VEC(tree, heap) *complex_ssa_name_components;
+
 /* Lookup UID in the complex_variable_components hashtable and return the
    associated tree.  */
 static tree 
@@ -64,8 +67,7 @@ cvc_lookup (unsigned int uid)
   struct int_tree_map *h, in;
   in.uid = uid;
   h = htab_find_with_hash (complex_variable_components, &in, uid);
-  gcc_assert (h);
-  return h->to;
+  return h ? h->to : NULL;
 }
  
 /* Insert the pair UID, TO into the complex_variable_components hashtable.  */
@@ -81,9 +83,8 @@ cvc_insert (unsigned int uid, tree to)
   h->to = to;
   loc = htab_find_slot_with_hash (complex_variable_components, h,
 				  uid, INSERT);
-  *(struct int_tree_map **)  loc = h;
+  *(struct int_tree_map **) loc = h;
 }
-
 
 /* Return true if T is not a zero constant.  In the case of real values,
    we're only interested in +0.0.  */
@@ -378,72 +379,165 @@ complex_visit_phi (tree phi)
   return new_l == VARYING ? SSA_PROP_VARYING : SSA_PROP_INTERESTING;
 }
 
-/* For each referenced complex gimple register, set up a pair of registers
-   to hold the components of the complex value.  */
+/* Create one backing variable for a complex component of ORIG.  */
 
-static void
-create_components (void)
+static tree
+create_one_component_var (tree type, tree orig, const char *prefix,
+			  const char *suffix, enum tree_code code)
 {
-  size_t n;
-  tree var;
-  safe_referenced_var_iterator rvi;
-  VEC (tree, heap) *refvars;
+  tree r = create_tmp_var (type, prefix);
+  add_referenced_tmp_var (r);
 
-  n = num_referenced_vars;
-  if (n == 0)
-    return;
+  DECL_SOURCE_LOCATION (r) = DECL_SOURCE_LOCATION (orig);
+  DECL_ARTIFICIAL (r) = 1;
 
-  complex_variable_components = htab_create (10,  int_tree_map_hash,
-					     int_tree_map_eq, free);
-
-  FOR_EACH_REFERENCED_VAR_SAFE (var, refvars, rvi)
+  if (DECL_NAME (orig) && !DECL_IGNORED_P (orig))
     {
-      tree r = NULL, i = NULL;
+      const char *name = IDENTIFIER_POINTER (DECL_NAME (orig));
+      tree inner_type;
 
-      if (var != NULL
-	  && TREE_CODE (TREE_TYPE (var)) == COMPLEX_TYPE
-	  && is_gimple_reg (var))
+      DECL_NAME (r) = get_identifier (ACONCAT ((name, suffix, NULL)));
+
+      inner_type = TREE_TYPE (TREE_TYPE (orig));
+      SET_DECL_DEBUG_EXPR (r, build1 (code, type, orig));
+      DECL_DEBUG_EXPR_IS_FROM (r) = 1;
+      DECL_IGNORED_P (r) = 0;
+      TREE_NO_WARNING (r) = TREE_NO_WARNING (orig);
+    }
+  else
+    {
+      DECL_IGNORED_P (r) = 1;
+      TREE_NO_WARNING (r) = 1;
+    }
+
+  return r;
+}
+
+/* Retrieve a value for a complex component of VAR.  */
+
+static tree
+get_component_var (tree var, bool imag_p)
+{
+  size_t decl_index = DECL_UID (var) * 2 + imag_p;
+  tree ret = cvc_lookup (decl_index);
+
+  if (ret == NULL)
+    {
+      ret = create_one_component_var (TREE_TYPE (TREE_TYPE (var)), var,
+				      imag_p ? "CI" : "CR",
+				      imag_p ? "$imag" : "$real",
+				      imag_p ? IMAGPART_EXPR : REALPART_EXPR);
+      cvc_insert (decl_index, ret);
+    }
+
+  return ret;
+}
+
+/* Retrieve a value for a complex component of SSA_NAME.  */
+
+static tree
+get_component_ssa_name (tree ssa_name, bool imag_p)
+{
+  complex_lattice_t lattice = find_lattice_value (ssa_name);
+  size_t ssa_name_index;
+  tree ret;
+
+  if (lattice == (imag_p ? ONLY_REAL : ONLY_IMAG))
+    {
+      tree inner_type = TREE_TYPE (TREE_TYPE (ssa_name));
+      if (SCALAR_FLOAT_TYPE_P (inner_type))
+	return build_real (inner_type, dconst0);
+      else
+	return build_int_cst (inner_type, 0);
+    }
+
+  ssa_name_index = SSA_NAME_VERSION (ssa_name) * 2 + imag_p;
+  ret = VEC_index (tree, complex_ssa_name_components, ssa_name_index);
+  if (ret == NULL)
+    {
+      ret = get_component_var (SSA_NAME_VAR (ssa_name), imag_p);
+      ret = make_ssa_name (ret, NULL);
+
+      /* Copy some properties from the original.  In particular, whether it
+	 is used in an abnormal phi, and whether it's uninitialized.  */
+      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ret)
+	= SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ssa_name);
+      if (TREE_CODE (SSA_NAME_VAR (ssa_name)) == VAR_DECL
+	  && IS_EMPTY_STMT (SSA_NAME_DEF_STMT (ssa_name)))
 	{
-	  tree inner_type = TREE_TYPE (TREE_TYPE (var));
-
-	  r = make_rename_temp (inner_type, "CR");
-	  i = make_rename_temp (inner_type, "CI");
-	  DECL_SOURCE_LOCATION (r) = DECL_SOURCE_LOCATION (var);
-	  DECL_SOURCE_LOCATION (i) = DECL_SOURCE_LOCATION (var);
-	  DECL_ARTIFICIAL (r) = 1;
-	  DECL_ARTIFICIAL (i) = 1;
-
-	  if (DECL_NAME (var) && !DECL_IGNORED_P (var))
-	    {
-	      const char *name = IDENTIFIER_POINTER (DECL_NAME (var));
-
-	      DECL_NAME (r) = get_identifier (ACONCAT ((name, "$real", NULL)));
-	      DECL_NAME (i) = get_identifier (ACONCAT ((name, "$imag", NULL)));
-
-	      SET_DECL_DEBUG_EXPR (r, build1 (REALPART_EXPR, inner_type, var));
-	      SET_DECL_DEBUG_EXPR (i, build1 (IMAGPART_EXPR, inner_type, var));
-	      DECL_DEBUG_EXPR_IS_FROM (r) = 1;
-	      DECL_DEBUG_EXPR_IS_FROM (i) = 1;
-
-	      DECL_IGNORED_P (r) = 0;
-	      DECL_IGNORED_P (i) = 0;
-
-	      TREE_NO_WARNING (r) = TREE_NO_WARNING (var);
-	      TREE_NO_WARNING (i) = TREE_NO_WARNING (var);
-	    }
-	  else
-	    {
-	      DECL_IGNORED_P (r) = 1;
-	      DECL_IGNORED_P (i) = 1;
-	      TREE_NO_WARNING (r) = 1;
-	      TREE_NO_WARNING (i) = 1;
-	    }
+	  SSA_NAME_DEF_STMT (ret) = SSA_NAME_DEF_STMT (ssa_name);
+	  set_default_def (SSA_NAME_VAR (ret), ret);
 	}
 
-      cvc_insert (2 * DECL_UID (var), r);
-      cvc_insert (2 * DECL_UID (var) + 1, i);
+      VEC_replace (tree, complex_ssa_name_components, ssa_name_index, ret);
     }
-  VEC_free (tree, heap, refvars);
+
+  return ret;
+}
+
+/* Set a value for a complex component of SSA_NAME, return a STMT_LIST of
+   stuff that needs doing.  */
+
+static tree
+set_component_ssa_name (tree ssa_name, bool imag_p, tree value)
+{
+  complex_lattice_t lattice = find_lattice_value (ssa_name);
+  size_t ssa_name_index;
+  tree comp, list, last;
+
+  /* We know the value must be zero, else there's a bug in our lattice
+     analysis.  But the value may well be a variable known to contain
+     zero.  We should be safe ignoring it.  */
+  if (lattice == (imag_p ? ONLY_REAL : ONLY_IMAG))
+    return NULL;
+
+  /* If we've already assigned an SSA_NAME to this component, then this
+     means that our walk of the basic blocks found a use before the set.
+     This is fine.  Now we should create an initialization for the value
+     we created earlier.  */
+  ssa_name_index = SSA_NAME_VERSION (ssa_name) * 2 + imag_p;
+  comp = VEC_index (tree, complex_ssa_name_components, ssa_name_index);
+  if (comp)
+    ;
+
+  /* If we've nothing assigned, and the value we're given is already stable,
+     then install that as the value for this SSA_NAME.  This pre-emptively
+     copy-propagates the value, which avoids unnecessary memory allocation.  */
+  else if (is_gimple_min_invariant (value))
+    {
+      VEC_replace (tree, complex_ssa_name_components, ssa_name_index, value);
+      return NULL;
+    }
+  else if (TREE_CODE (value) == SSA_NAME
+	   && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ssa_name))
+    {
+      /* Replace an anonymous base value with the variable from cvc_lookup.
+	 This should result in better debug info.  */
+      if (DECL_IGNORED_P (SSA_NAME_VAR (value))
+	  && !DECL_IGNORED_P (SSA_NAME_VAR (ssa_name)))
+	{
+	  comp = get_component_var (SSA_NAME_VAR (ssa_name), imag_p);
+	  SSA_NAME_VAR (value) = comp;
+	}
+
+      VEC_replace (tree, complex_ssa_name_components, ssa_name_index, value);
+      return NULL;
+    }
+
+  /* Finally, we need to stabilize the result by installing the value into
+     a new ssa name.  */
+  else
+    comp = get_component_ssa_name (ssa_name, imag_p);
+  
+  /* Do all the work to assign VALUE to COMP.  */
+  value = force_gimple_operand (value, &list, false, NULL);
+  last = build2 (MODIFY_EXPR, TREE_TYPE (comp), comp, value);
+  append_to_statement_list (last, &list);
+
+  gcc_assert (SSA_NAME_DEF_STMT (comp) == NULL);
+  SSA_NAME_DEF_STMT (comp) = last;
+
+  return list;
 }
 
 /* Extract the real or imaginary part of a complex variable or constant.
@@ -480,24 +574,7 @@ extract_component (block_stmt_iterator *bsi, tree t, bool imagpart_p,
       }
 
     case SSA_NAME:
-      {
-	tree def = SSA_NAME_DEF_STMT (t);
-
-	if (TREE_CODE (def) == MODIFY_EXPR)
-	  {
-	    def = TREE_OPERAND (def, 1);
-	    if (TREE_CODE (def) == COMPLEX_CST)
-	      return imagpart_p ? TREE_IMAGPART (def) : TREE_REALPART (def);
-	    if (TREE_CODE (def) == COMPLEX_EXPR)
-	      {
-		def = TREE_OPERAND (def, imagpart_p);
-		if (TREE_CONSTANT (def))
-		  return def;
-	      }
-	  }
-
-	return cvc_lookup (DECL_UID (SSA_NAME_VAR (t)) * 2 + imagpart_p);
-      }
+      return get_component_ssa_name (t, imagpart_p);
 
     default:
       gcc_unreachable ();
@@ -509,45 +586,30 @@ extract_component (block_stmt_iterator *bsi, tree t, bool imagpart_p,
 static void
 update_complex_components (block_stmt_iterator *bsi, tree stmt, tree r, tree i)
 {
-  unsigned int uid = DECL_UID (SSA_NAME_VAR (TREE_OPERAND (stmt, 0)));
-  tree v, x;
+  tree lhs = TREE_OPERAND (stmt, 0);
+  tree list;
 
-  v = cvc_lookup (2*uid);
-  x = build2 (MODIFY_EXPR, TREE_TYPE (v), v, r);
-  SET_EXPR_LOCUS (x, EXPR_LOCUS (stmt));
-  TREE_BLOCK (x) = TREE_BLOCK (stmt);
-  bsi_insert_after (bsi, x, BSI_NEW_STMT);
+  list = set_component_ssa_name (lhs, false, r);
+  if (list)
+    bsi_insert_after (bsi, list, BSI_CONTINUE_LINKING);
 
-  v = cvc_lookup (2*uid + 1);
-  x = build2 (MODIFY_EXPR, TREE_TYPE (v), v, i);
-  SET_EXPR_LOCUS (x, EXPR_LOCUS (stmt));
-  TREE_BLOCK (x) = TREE_BLOCK (stmt);
-  bsi_insert_after (bsi, x, BSI_NEW_STMT);
+  list = set_component_ssa_name (lhs, true, i);
+  if (list)
+    bsi_insert_after (bsi, list, BSI_CONTINUE_LINKING);
 }
 
 static void
-update_complex_components_on_edge (edge e, tree stmt, tree lhs, tree r, tree i)
+update_complex_components_on_edge (edge e, tree lhs, tree r, tree i)
 {
-  unsigned int uid = DECL_UID (SSA_NAME_VAR (lhs));
-  tree v, x;
+  tree list;
 
-  v = cvc_lookup (2*uid);
-  x = build2 (MODIFY_EXPR, TREE_TYPE (v), v, r);
-  if (stmt)
-    {
-      SET_EXPR_LOCUS (x, EXPR_LOCUS (stmt));
-      TREE_BLOCK (x) = TREE_BLOCK (stmt);
-    }
-  bsi_insert_on_edge (e, x);
+  list = set_component_ssa_name (lhs, false, r);
+  if (list)
+    bsi_insert_on_edge (e, list);
 
-  v = cvc_lookup (2*uid + 1);
-  x = build2 (MODIFY_EXPR, TREE_TYPE (v), v, i);
-  if (stmt)
-    {
-      SET_EXPR_LOCUS (x, EXPR_LOCUS (stmt));
-      TREE_BLOCK (x) = TREE_BLOCK (stmt);
-    }
-  bsi_insert_on_edge (e, x);
+  list = set_component_ssa_name (lhs, true, i);
+  if (list)
+    bsi_insert_on_edge (e, list);
 }
 
 /* Update an assignment to a complex variable in place.  */
@@ -591,7 +653,7 @@ update_parameter_components (void)
 
       r = build1 (REALPART_EXPR, type, ssa_name);
       i = build1 (IMAGPART_EXPR, type, ssa_name);
-      update_complex_components_on_edge (entry_edge, NULL, ssa_name, r, i);
+      update_complex_components_on_edge (entry_edge, ssa_name, r, i);
     }
 }
 
@@ -606,24 +668,36 @@ update_phi_components (basic_block bb)
   for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
     if (is_complex_reg (PHI_RESULT (phi)))
       {
+	tree lr, li, pr = NULL, pi = NULL;
 	unsigned int i, n;
-	tree lhs = PHI_RESULT (phi);
 
+	lr = get_component_ssa_name (PHI_RESULT (phi), false);
+	if (TREE_CODE (lr) == SSA_NAME)
+	  {
+	    pr = create_phi_node (lr, bb);
+	    SSA_NAME_DEF_STMT (lr) = pr;
+	  }
+
+	li = get_component_ssa_name (PHI_RESULT (phi), true);
+	if (TREE_CODE (li) == SSA_NAME)
+	  {
+	    pi = create_phi_node (li, bb);
+	    SSA_NAME_DEF_STMT (li) = pi;
+	  }
+	
 	for (i = 0, n = PHI_NUM_ARGS (phi); i < n; ++i)
 	  {
-	    edge e = PHI_ARG_EDGE (phi, i);
-	    tree arg = PHI_ARG_DEF (phi, i);
-	    tree r, i;
-
-	    /* Avoid no-op assignments.  This also prevents insertting stmts
-	       onto abnormal edges, assuming the PHI isn't already broken.  */
-	    if (TREE_CODE (arg) == SSA_NAME
-		&& SSA_NAME_VAR (arg) == SSA_NAME_VAR (lhs))
-	      continue;
-
-	    r = extract_component (NULL, arg, 0, false);
-	    i = extract_component (NULL, arg, 1, false);
-	    update_complex_components_on_edge (e, NULL, lhs, r, i);
+	    tree comp, arg = PHI_ARG_DEF (phi, i);
+	    if (pr)
+	      {
+		comp = extract_component (NULL, arg, false, false);
+		SET_PHI_ARG_DEF (pr, i, comp);
+	      }
+	    if (pi)
+	      {
+		comp = extract_component (NULL, arg, true, false);
+		SET_PHI_ARG_DEF (pi, i, comp);
+	      }
 	  }
       }
 }
@@ -671,7 +745,7 @@ expand_complex_move (block_stmt_iterator *bsi, tree stmt, tree type,
 
 	  r = build1 (REALPART_EXPR, inner_type, lhs);
 	  i = build1 (IMAGPART_EXPR, inner_type, lhs);
-	  update_complex_components_on_edge (e, stmt, lhs, r, i);
+	  update_complex_components_on_edge (e, lhs, r, i);
 	}
       else if (TREE_CODE (rhs) == CALL_EXPR || TREE_SIDE_EFFECTS (rhs))
 	{
@@ -1419,13 +1493,21 @@ tree_lower_complex (void)
 		 complex_lattice_values, num_ssa_names);
   memset (VEC_address (complex_lattice_t, complex_lattice_values), 0,
 	  num_ssa_names * sizeof(complex_lattice_t));
-  init_parameter_lattice_values ();
 
+  init_parameter_lattice_values ();
   ssa_propagate (complex_visit_stmt, complex_visit_phi);
 
-  create_components ();
+  complex_variable_components = htab_create (10,  int_tree_map_hash,
+					     int_tree_map_eq, free);
+
+  complex_ssa_name_components = VEC_alloc (tree, heap, 2*num_ssa_names);
+  VEC_safe_grow (tree, heap, complex_ssa_name_components, 2*num_ssa_names);
+  memset (VEC_address (tree, complex_ssa_name_components), 0,
+	  2 * num_ssa_names * sizeof(tree));
+
   update_parameter_components ();
 
+  /* ??? Ideally we'd traverse the blocks in breadth-first order.  */
   old_last_basic_block = last_basic_block;
   FOR_EACH_BB (bb)
     {
@@ -1438,9 +1520,8 @@ tree_lower_complex (void)
 
   bsi_commit_edge_inserts ();
 
-  if (complex_variable_components)
-    htab_delete (complex_variable_components);
-
+  htab_delete (complex_variable_components);
+  VEC_free (tree, heap, complex_ssa_name_components);
   VEC_free (complex_lattice_t, heap, complex_lattice_values);
 }
 
