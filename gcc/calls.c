@@ -3623,6 +3623,28 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	      stack_usage_map[i] = 1;
 
 	  NO_DEFER_POP;
+
+	  if (flags & ECF_CONST)
+	    {
+	      rtx use;
+
+	      /* Indicate argument access so that alias.c knows that these
+		 values are live.  */
+	      if (argblock)
+		use = plus_constant (argblock,
+				     argvec[argnum].locate.offset.constant);
+	      else
+		/* When arguemnts are pushed, trying to tell alias.c where
+		   exactly this argument is won't work, because the
+		   auto-increment causes confusion.  So we merely indicate
+		   that we access something with a known mode somewhere on
+		   the stack.  */
+	        use = gen_rtx_PLUS (Pmode, virtual_outgoing_args_rtx,
+				    gen_rtx_SCRATCH (Pmode));
+	      use = gen_rtx_MEM (argvec[argnum].mode, use);
+	      use = gen_rtx_USE (VOIDmode, use);
+	      call_fusage = gen_rtx_EXPR_LIST (VOIDmode, use, call_fusage);
+	    }
 	}
     }
 

@@ -1,5 +1,9 @@
 2005-07-22  J"orn Rennecke <joern.rennecke@st.com>
 
+	PR rtl-optimization/21848
+	* calls.c (emit_library_call_value_1): For const functions, add
+	USEs of the stack slots to CALL_INSN_FUNCTION_USAGE.
+
 	PR rtl-optimization/22445
 	* cselib.c (target.h): Include.
 	(rtx_equal_for_cselib_p): Allow commutative matches.
