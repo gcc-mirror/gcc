@@ -1,3 +1,10 @@
+2005-07-22 Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/16940
+	* resolve.c (resolve_symbol): A symbol with FL_UNKNOWN
+	is matched against interfaces in parent namespaces. If there
+	the symtree is set to point to the interface.
+
 2005-07-19  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/20842

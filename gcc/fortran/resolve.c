@@ -4031,9 +4031,34 @@ resolve_symbol (gfc_symbol * sym)
   int i;
   const char *whynot;
   gfc_namelist *nl;
+  gfc_symtree * symtree;
+  gfc_symtree * this_symtree;
+  gfc_namespace * ns;
 
   if (sym->attr.flavor == FL_UNKNOWN)
     {
+
+    /* If we find that a flavorless symbol is an interface in one of the
+       parent namespaces, find its symtree in this namespace, free the
+       symbol and set the symtree to point to the interface symbol.  */
+      for (ns = gfc_current_ns->parent; ns; ns = ns->parent)
+	{
+	  symtree = gfc_find_symtree (ns->sym_root, sym->name);
+	  if (symtree && symtree->n.sym->generic)
+	    {
+	      this_symtree = gfc_find_symtree (gfc_current_ns->sym_root,
+					       sym->name);
+	      sym->refs--;
+	      if (!sym->refs)
+		gfc_free_symbol (sym);
+	      symtree->n.sym->refs++;
+	      this_symtree->n.sym = symtree->n.sym;
+	      return;
+	    }
+	}
+
+      /* Otherwise give it a flavor according to such attributes as
+	 it has.  */
       if (sym->attr.external == 0 && sym->attr.intrinsic == 0)
 	sym->attr.flavor = FL_VARIABLE;
       else
