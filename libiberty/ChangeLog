@@ -1,5 +1,13 @@
 2005-07-22  Ben Elliston  <bje@gnu.org>
 
+	Recover patch lost in the sourceware repository:
+	2005-07-09  Ben Elliston  <bje@au.ibm.com>
+	* memcpy.c: Remove ANSI_PROTOTYPES conditional code.
+	* memmove.c: Likewise.
+	* objalloc.c: Likewise.
+
+2005-07-22  Ben Elliston  <bje@gnu.org>
+
 	* configure.ac: Check for a getopt(3) declaration.
 	* configure, config.in: Regenerate.
 

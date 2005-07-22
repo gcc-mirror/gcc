@@ -13,11 +13,7 @@ Copies @var{count} bytes from memory area @var{from} to memory area
 */
 
 #include <ansidecl.h>
-#ifdef ANSI_PROTOTYPES
 #include <stddef.h>
-#else
-#define size_t unsigned long
-#endif
 
 void bcopy (const void*, void*, size_t);
 

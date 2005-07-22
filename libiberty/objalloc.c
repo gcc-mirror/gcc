@@ -30,10 +30,8 @@ Boston, MA 02110-1301, USA.  */
 #include <unixlib.h>
 #else
 
-#ifdef ANSI_PROTOTYPES
 /* Get a definition for size_t.  */
 #include <stddef.h>
-#endif
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
