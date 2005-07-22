@@ -2,6 +2,8 @@
 
 	* toplev.c (warn_deprecated_use): Add warning control to warning
 	call.
+	* c-typeck.c (parser_build_binary_op): Likewise.
+	(c_finish_if_stmt): Likewise.
 
 2005-07-21  Richard Henderson  <rth@redhat.com>
 
