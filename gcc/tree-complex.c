@@ -517,7 +517,7 @@ set_component_ssa_name (tree ssa_name, bool imag_p, tree value)
 	  && !DECL_IGNORED_P (SSA_NAME_VAR (ssa_name)))
 	{
 	  comp = get_component_var (SSA_NAME_VAR (ssa_name), imag_p);
-	  SSA_NAME_VAR (value) = comp;
+	  replace_ssa_name_symbol (value, comp);
 	}
 
       VEC_replace (tree, complex_ssa_name_components, ssa_name_index, value);
