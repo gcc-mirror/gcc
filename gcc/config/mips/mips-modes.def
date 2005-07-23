@@ -28,6 +28,7 @@ FLOAT_MODE (TF, 16, mips_quad_format);
 
 /* Vector modes.  */
 VECTOR_MODES (FLOAT, 8);      /*            V4HF V2SF */
+VECTOR_MODES (INT, 4);        /*            V4QI V2HI */
 
 /* Paired single comparison instructions use 2 or 4 CC.  */
 CC_MODE (CCV2);
@@ -37,3 +38,6 @@ ADJUST_ALIGNMENT (CCV2, 8);
 CC_MODE (CCV4);
 ADJUST_BYTESIZE (CCV4, 16);
 ADJUST_ALIGNMENT (CCV4, 16);
+
+/* For MIPS DSP control registers.  */
+CC_MODE (CCDSP);

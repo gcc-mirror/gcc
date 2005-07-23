@@ -1,3 +1,88 @@
+2005-07-23  Chao-ying Fu  <fu@mips.com>
+
+	* config/mips/mips-dsp.md: New file.
+	* config/mips/mips-modes.def (V4QI, V2HI, CCDSP): New modes.
+	* config/mips/mips.c (mips_function_type): Add types for DSP builtin
+	functions.
+	(mips_builtin_type): Add MIPS_BUILTIN_DIRECT_NO_TARGET and
+	MIPS_BUILTIN_BPOSGE32.
+	(mips_expand_builtin_direct): Add one parameter to indicate that
+	builtin functions need to return a value.
+	(mips_expand_builtin_bposge): New for expanding "bposge" builtin
+	functions.
+	(mips_regno_to_class): Add classes for 12 new DSP registers.
+	(mips_subword): Change to check four HI registers.
+	(mips_output_move): Output move to and from 6 new DSP accumulators.
+	(override_options): Make sure -mdsp and -mips16 are not used together.
+	Map 'A' to DSP_ACC_REGS and 'a' to ACC_REGS.  Enable DSP accumulators
+	for machine modes.
+	(mips_conditional_register_usage): Disable 6 new DSP accumulators
+	when !TARGET_DSP.
+	(print_operand): Add 'q' for printing DSP accumulators.
+	(mips_cannot_change_mode_class): Check ACC_REGS.
+	(mips_secondary_reload_class): Check ACC_REGS.
+	(mips_vector_mode_supported_p): Enable V2HI and V4QI when TARGET_DSP.
+	(mips_register_move_cost): Check ACC_REGS.
+	(CODE_FOR_mips_addq_ph, CODE_FOR_mips_addu_qb, CODE_FOR_mips_subq_ph)
+	(CODE_FOR_mips_subu_qb): New code-aliasing macros.
+	(DIRECT_NO_TARGET_BUILTIN, BPOSGE_BUILTIN): New macros.
+	(dsp_bdesc): New array.
+	(bdesc_arrays): Add DSP builtin function table.
+	(mips_prepare_builtin_arg): Check predicate again after
+	copy_to_mode_reg.
+	(mips_expand_builtin): Add one more parameter to
+	mips_expand_builtin_direct. Expand MIPS_BUILTIN_DIRECT_NO_TARGET and
+	MIPS_BUILTIN_BPOSGE32.
+	(mips_init_builtins): Initialize new function types.
+	(mips_expand_builtin_direct): Check if builtin functions need to
+	return a value and pass operands properly.
+	(mips_expand_builtin_bposge): New function.
+	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Add __mips_dsp.
+	(ASM_SPEC): Map -mdsp to -mdsp in GAS.
+	(FIRST_PSEUDO_REGISTER): Increase to 188.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS, CALL_REALLY_USED_REGISTERS):
+	Update for 12 new DSP registers.
+	(DSP_ACC_REG_FIRST, DSP_ACC_REG_LAST, DSP_ACC_REG_NUM, AC1HI_REGNUM)
+	(AC1LO_REGNUM, AC2HI_REGNUM, AC2LO_REGNUM, AC3HI_REGNUM, AC3LO_REGNUM):
+	(DSP_ACC_REG_P, ACC_REG_P, ACC_HI_REG_P): New macros.
+	(reg_class): Add DSP_ACC_REGS and ACC_REGS.
+	(REG_CLASS_NAMES): Add names for DSP_ACC_REGS and ACC_REGS.
+	(REG_CLASS_CONTENTS): Update for DSP_ACC_REGS, ACC_REGS and ALL_REGS.
+	(REG_ALLOC_ORDER): Update for 12 new DSP registers.
+	(mips_char_to_class): Add 'A' for DSP_ACC_REGS and 'a' for ACC_REGS.
+	(UIMM6_OPERAND, IMM10_OPERAND): New macros.
+	(EXTRA_CONSTRAINT_Y): Add YA and YB extra constraints.
+	(REGISTER_NAMES): Add names for 12 new DSP registers.
+	* config/mips/mips.md: Include mips-dsp.md.
+	(UNSPEC_ADDQ, UNSPEC_ADDQ_S, UNSPEC_SUBQ, UNSPEC_SUBQ_S, UNSPEC_ADDSC)
+	(UNSPEC_ADDWC, UNSPEC_MODSUB, UNSPEC_RADDU_W_QB, UNSPEC_ABSQ_S)
+	(UNSPEC_PRECRQ_QB_PH, UNSPEC_PRECRQ_PH_W, UNSPEC_PRECRQ_RS_PH_W)
+	(UNSPEC_PRECRQU_S_QB_PH, UNSPEC_PRECEQ_W_PHL, UNSPEC_PRECEQ_W_PHR)
+	(UNSPEC_PRECEQU_PH_QBL, UNSPEC_PRECEQU_PH_QBR, UNSPEC_PRECEQU_PH_QBLA)
+	(UNSPEC_PRECEQU_PH_QBRA, UNSPEC_PRECEU_PH_QBL, UNSPEC_PRECEU_PH_QBR)
+	(UNSPEC_PRECEU_PH_QBLA, UNSPEC_PRECEU_PH_QBRA, UNSPEC_SHLL)
+	(UNSPEC_SHLL_S, UNSPEC_SHRL_QB, UNSPEC_SHRA_PH, UNSPEC_SHRA_R)
+	(UNSPEC_MULEU_S_PH_QBL, UNSPEC_MULEU_S_PH_QBR, UNSPEC_MULQ_RS_PH)
+	(UNSPEC_MULEQ_S_W_PHL, UNSPEC_MULEQ_S_W_PHR, UNSPEC_DPAU_H_QBL)
+	(UNSPEC_DPAU_H_QBR, UNSPEC_DPSU_H_QBL, UNSPEC_DPSU_H_QBR)
+	(UNSPEC_DPAQ_S_W_PH, UNSPEC_DPSQ_S_W_PH, UNSPEC_MULSAQ_S_W_PH)
+	(UNSPEC_DPAQ_SA_L_W, UNSPEC_DPSQ_SA_L_W, UNSPEC_MAQ_S_W_PHL)
+	(UNSPEC_MAQ_S_W_PHR, UNSPEC_MAQ_SA_W_PHL, UNSPEC_MAQ_SA_W_PHR)
+	(UNSPEC_BITREV, UNSPEC_INSV, UNSPEC_REPL_QB, UNSPEC_REPL_PH)
+	(UNSPEC_CMP_EQ, UNSPEC_CMP_LT, UNSPEC_CMP_LE, UNSPEC_CMPGU_EQ_QB)
+	(UNSPEC_CMPGU_LT_QB, UNSPEC_CMPGU_LE_QB, UNSPEC_PICK, UNSPEC_PACKRL_PH)
+	(UNSPEC_EXTR_W, UNSPEC_EXTR_R_W, UNSPEC_EXTR_RS_W, UNSPEC_EXTR_S_H)
+	(UNSPEC_EXTP, UNSPEC_EXTPDP, UNSPEC_SHILO, UNSPEC_MTHLIP, UNSPEC_WRDSP)
+	(UNSPEC_RDDSP): New constants.
+	(*movdi_32bit): Change 'x' to 'a' for ACC_REGS.
+	(*movsi_internal): Change 'x' to 'a' for ACC_REGS.  Add an
+	A<-d alternative.
+	* config/mips/mips.opt (-mdsp): New option.
+	* config/mips/predicates.md (const_uimm6_operand, const_imm10_operand)
+	(reg_imm10_operand): New predicates.
+	* doc/extend.texi (MIPS DSP Built-in Functions): New section.
+	* doc/invoke.texi (-mdsp): Document new option.
+
 2005-07-22  DJ Delorie  <dj@redhat.com>
 
 	* c-objc-common.c (c_cannot_inline_tree_fn): Add warning control

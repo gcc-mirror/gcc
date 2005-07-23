@@ -5777,6 +5777,7 @@ instructions, but allow the compiler to schedule those calls.
 * Blackfin Built-in Functions::
 * FR-V Built-in Functions::
 * X86 Built-in Functions::
+* MIPS DSP Built-in Functions::
 * MIPS Paired-Single Support::
 * PowerPC AltiVec Built-in Functions::
 * SPARC VIS Built-in Functions::
@@ -6674,6 +6675,208 @@ v2sf __builtin_ia32_pfpnacc (v2sf, v2sf)
 v2sf __builtin_ia32_pi2fw (v2si)
 v2sf __builtin_ia32_pswapdsf (v2sf)
 v2si __builtin_ia32_pswapdsi (v2si)
+@end smallexample
+
+@node MIPS DSP Built-in Functions
+@subsection MIPS DSP Built-in Functions
+
+The MIPS DSP Application-Specific Extension (ASE) includes new
+instructions that are designed to improve the performance of DSP and
+media applications.  It provides instructions that operate on packed
+8-bit integer data, Q15 fractional data and Q31 fractional data.
+
+GCC supports MIPS DSP operations using both the generic
+vector extensions (@pxref{Vector Extensions}) and a collection of
+MIPS-specific built-in functions.  Both kinds of support are
+enabled by the @option{-mdsp} command-line option.
+
+At present, GCC only provides support for operations on 32-bit
+vectors.  The vector type associated with 8-bit integer data is
+usually called @code{v4i8} and the vector type associated with Q15 is
+usually called @code{v2q15}.  They can be defined in C as follows:
+
+@smallexample
+typedef char v4i8 __attribute__ ((vector_size(4)));
+typedef short v2q15 __attribute__ ((vector_size(4)));
+@end smallexample
+
+@code{v4i8} and @code{v2q15} values are initialized in the same way as
+aggregates.  For example:
+
+@smallexample
+v4i8 a = @{1, 2, 3, 4@};
+v4i8 b;
+b = (v4i8) @{5, 6, 7, 8@};
+
+v2q15 c = @{0x0fcb, 0x3a75@};
+v2q15 d;
+d = (v2q15) @{0.1234 * 0x1.0p15, 0.4567 * 0x1.0p15@};
+@end smallexample
+
+@emph{Note:} The CPU's endianness determines the order in which values
+are packed.  On little-endian targets, the first value is the least
+significant and the last value is the most significant.  The opposite
+order applies to big-endian targets.  For example, the code above will
+set the lowest byte of @code{a} to @code{1} on little-endian targets
+and @code{4} on big-endian targets.
+
+@emph{Note:} Q15 and Q31 values must be initialized with their integer
+representation.  As shown in this example, the integer representation
+of a Q15 value can be obtained by multiplying the fractional value by
+@code{0x1.0p15}.  The equivalent for Q31 values is to multiply by
+@code{0x1.0p31}.
+
+The table below lists the @code{v4i8} and @code{v2q15} operations for which
+hardware support exists.  @code{a} and @code{b} are @code{v4i8} values,
+and @code{c} and @code{d} are @code{v2q15} values.
+
+@multitable @columnfractions .50 .50
+@item C code @tab MIPS instruction
+@item @code{a + b} @tab @code{addu.qb}
+@item @code{c + d} @tab @code{addq.ph}
+@item @code{a - b} @tab @code{subu.qb}
+@item @code{c - d} @tab @code{subq.ph}
+@end multitable
+
+It is easier to describe the DSP built-in functions if we first define
+the following types:
+
+@smallexample
+typedef int q31;
+typedef int i32;
+typedef long long a64;
+@end smallexample
+
+@code{q31} and @code{i32} are actually the same as @code{int}, but we
+use @code{q31} to indicate a Q31 fractional value and @code{i32} to
+indicate a 32-bit integer value.  Similarly, @code{a64} is the same as
+@code{long long}, but we use @code{a64} to indicate values that will
+be placed in one of the four DSP accumulators (@code{$ac0},
+@code{$ac1}, @code{$ac2} or @code{$ac3}).
+
+Also, some built-in functions prefer or require immediate numbers as
+parameters, because the corresponding DSP instructions accept both immediate
+numbers and register operands, or accept immediate numbers only.  The
+immediate parameters are listed as follows.
+
+@smallexample
+imm0_7: 0 to 7.
+imm0_15: 0 to 15.
+imm0_31: 0 to 31.
+imm0_63: 0 to 63.
+imm0_255: 0 to 255.
+imm_n32_31: -32 to 31.
+imm_n512_511: -512 to 511.
+@end smallexample
+
+The following built-in functions map directly to a particular MIPS DSP
+instruction.  Please refer to the architecture specification
+for details on what each instruction does.
+
+@smallexample
+v2q15 __builtin_mips_addq_ph (v2q15, v2q15)
+v2q15 __builtin_mips_addq_s_ph (v2q15, v2q15)
+q31 __builtin_mips_addq_s_w (q31, q31)
+v4i8 __builtin_mips_addu_qb (v4i8, v4i8)
+v4i8 __builtin_mips_addu_s_qb (v4i8, v4i8)
+v2q15 __builtin_mips_subq_ph (v2q15, v2q15)
+v2q15 __builtin_mips_subq_s_ph (v2q15, v2q15)
+q31 __builtin_mips_subq_s_w (q31, q31)
+v4i8 __builtin_mips_subu_qb (v4i8, v4i8)
+v4i8 __builtin_mips_subu_s_qb (v4i8, v4i8)
+i32 __builtin_mips_addsc (i32, i32)
+i32 __builtin_mips_addwc (i32, i32)
+i32 __builtin_mips_modsub (i32, i32)
+i32 __builtin_mips_raddu_w_qb (v4i8)
+v2q15 __builtin_mips_absq_s_ph (v2q15)
+q31 __builtin_mips_absq_s_w (q31)
+v4i8 __builtin_mips_precrq_qb_ph (v2q15, v2q15)
+v2q15 __builtin_mips_precrq_ph_w (q31, q31)
+v2q15 __builtin_mips_precrq_rs_ph_w (q31, q31)
+v4i8 __builtin_mips_precrqu_s_qb_ph (v2q15, v2q15)
+q31 __builtin_mips_preceq_w_phl (v2q15)
+q31 __builtin_mips_preceq_w_phr (v2q15)
+v2q15 __builtin_mips_precequ_ph_qbl (v4i8)
+v2q15 __builtin_mips_precequ_ph_qbr (v4i8)
+v2q15 __builtin_mips_precequ_ph_qbla (v4i8)
+v2q15 __builtin_mips_precequ_ph_qbra (v4i8)
+v2q15 __builtin_mips_preceu_ph_qbl (v4i8)
+v2q15 __builtin_mips_preceu_ph_qbr (v4i8)
+v2q15 __builtin_mips_preceu_ph_qbla (v4i8)
+v2q15 __builtin_mips_preceu_ph_qbra (v4i8)
+v4i8 __builtin_mips_shll_qb (v4i8, imm0_7)
+v4i8 __builtin_mips_shll_qb (v4i8, i32)
+v2q15 __builtin_mips_shll_ph (v2q15, imm0_15)
+v2q15 __builtin_mips_shll_ph (v2q15, i32)
+v2q15 __builtin_mips_shll_s_ph (v2q15, imm0_15)
+v2q15 __builtin_mips_shll_s_ph (v2q15, i32)
+q31 __builtin_mips_shll_s_w (q31, imm0_31)
+q31 __builtin_mips_shll_s_w (q31, i32)
+v4i8 __builtin_mips_shrl_qb (v4i8, imm0_7)
+v4i8 __builtin_mips_shrl_qb (v4i8, i32)
+v2q15 __builtin_mips_shra_ph (v2q15, imm0_15)
+v2q15 __builtin_mips_shra_ph (v2q15, i32)
+v2q15 __builtin_mips_shra_r_ph (v2q15, imm0_15)
+v2q15 __builtin_mips_shra_r_ph (v2q15, i32)
+q31 __builtin_mips_shra_r_w (q31, imm0_31)
+q31 __builtin_mips_shra_r_w (q31, i32)
+v2q15 __builtin_mips_muleu_s_ph_qbl (v4i8, v2q15)
+v2q15 __builtin_mips_muleu_s_ph_qbr (v4i8, v2q15)
+v2q15 __builtin_mips_mulq_rs_ph (v2q15, v2q15)
+q31 __builtin_mips_muleq_s_w_phl (v2q15, v2q15)
+q31 __builtin_mips_muleq_s_w_phr (v2q15, v2q15)
+a64 __builtin_mips_dpau_h_qbl (a64, v4i8, v4i8)
+a64 __builtin_mips_dpau_h_qbr (a64, v4i8, v4i8)
+a64 __builtin_mips_dpsu_h_qbl (a64, v4i8, v4i8)
+a64 __builtin_mips_dpsu_h_qbr (a64, v4i8, v4i8)
+a64 __builtin_mips_dpaq_s_w_ph (a64, v2q15, v2q15)
+a64 __builtin_mips_dpaq_sa_l_w (a64, q31, q31)
+a64 __builtin_mips_dpsq_s_w_ph (a64, v2q15, v2q15)
+a64 __builtin_mips_dpsq_sa_l_w (a64, q31, q31)
+a64 __builtin_mips_mulsaq_s_w_ph (a64, v2q15, v2q15)
+a64 __builtin_mips_maq_s_w_phl (a64, v2q15, v2q15)
+a64 __builtin_mips_maq_s_w_phr (a64, v2q15, v2q15)
+a64 __builtin_mips_maq_sa_w_phl (a64, v2q15, v2q15)
+a64 __builtin_mips_maq_sa_w_phr (a64, v2q15, v2q15)
+i32 __builtin_mips_bitrev (i32)
+i32 __builtin_mips_insv (i32, i32)
+v4i8 __builtin_mips_repl_qb (imm0_255)
+v4i8 __builtin_mips_repl_qb (i32)
+v2q15 __builtin_mips_repl_ph (imm_n512_511)
+v2q15 __builtin_mips_repl_ph (i32)
+void __builtin_mips_cmpu_eq_qb (v4i8, v4i8)
+void __builtin_mips_cmpu_lt_qb (v4i8, v4i8)
+void __builtin_mips_cmpu_le_qb (v4i8, v4i8)
+i32 __builtin_mips_cmpgu_eq_qb (v4i8, v4i8)
+i32 __builtin_mips_cmpgu_lt_qb (v4i8, v4i8)
+i32 __builtin_mips_cmpgu_le_qb (v4i8, v4i8)
+void __builtin_mips_cmp_eq_ph (v2q15, v2q15)
+void __builtin_mips_cmp_lt_ph (v2q15, v2q15)
+void __builtin_mips_cmp_le_ph (v2q15, v2q15)
+v4i8 __builtin_mips_pick_qb (v4i8, v4i8)
+v2q15 __builtin_mips_pick_ph (v2q15, v2q15)
+v2q15 __builtin_mips_packrl_ph (v2q15, v2q15)
+i32 __builtin_mips_extr_w (a64, imm0_31)
+i32 __builtin_mips_extr_w (a64, i32)
+i32 __builtin_mips_extr_r_w (a64, imm0_31)
+i32 __builtin_mips_extr_s_h (a64, i32)
+i32 __builtin_mips_extr_rs_w (a64, imm0_31)
+i32 __builtin_mips_extr_rs_w (a64, i32)
+i32 __builtin_mips_extr_s_h (a64, imm0_31)
+i32 __builtin_mips_extr_r_w (a64, i32)
+i32 __builtin_mips_extp (a64, imm0_31)
+i32 __builtin_mips_extp (a64, i32)
+i32 __builtin_mips_extpdp (a64, imm0_31)
+i32 __builtin_mips_extpdp (a64, i32)
+a64 __builtin_mips_shilo (a64, imm_n32_31)
+a64 __builtin_mips_shilo (a64, i32)
+a64 __builtin_mips_mthlip (a64, i32)
+void __builtin_mips_wrdsp (i32, imm0_63)
+i32 __builtin_mips_rddsp (imm0_63)
+i32 __builtin_mips_lbux (void *, i32)
+i32 __builtin_mips_lhx (void *, i32)
+i32 __builtin_mips_lwx (void *, i32)
+i32 __builtin_mips_bposge32 (void)
 @end smallexample
 
 @node MIPS Paired-Single Support

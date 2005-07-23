@@ -72,6 +72,76 @@
    (UNSPEC_RSQRT2		209)
    (UNSPEC_RECIP1		210)
    (UNSPEC_RECIP2		211)
+
+   ;; MIPS DSP ASE Revision 0.98 3/24/2005
+   (UNSPEC_ADDQ			300)
+   (UNSPEC_ADDQ_S		301)
+   (UNSPEC_SUBQ			302)
+   (UNSPEC_SUBQ_S		303)
+   (UNSPEC_ADDSC		304)
+   (UNSPEC_ADDWC		305)
+   (UNSPEC_MODSUB		306)
+   (UNSPEC_RADDU_W_QB		307)
+   (UNSPEC_ABSQ_S		308)
+   (UNSPEC_PRECRQ_QB_PH		309)
+   (UNSPEC_PRECRQ_PH_W		310)
+   (UNSPEC_PRECRQ_RS_PH_W	311)
+   (UNSPEC_PRECRQU_S_QB_PH	312)
+   (UNSPEC_PRECEQ_W_PHL		313)
+   (UNSPEC_PRECEQ_W_PHR		314)
+   (UNSPEC_PRECEQU_PH_QBL	315)
+   (UNSPEC_PRECEQU_PH_QBR	316)
+   (UNSPEC_PRECEQU_PH_QBLA	317)
+   (UNSPEC_PRECEQU_PH_QBRA	318)
+   (UNSPEC_PRECEU_PH_QBL	319)
+   (UNSPEC_PRECEU_PH_QBR	320)
+   (UNSPEC_PRECEU_PH_QBLA	321)
+   (UNSPEC_PRECEU_PH_QBRA	322)
+   (UNSPEC_SHLL			323)
+   (UNSPEC_SHLL_S		324)
+   (UNSPEC_SHRL_QB		325)
+   (UNSPEC_SHRA_PH		326)
+   (UNSPEC_SHRA_R		327)
+   (UNSPEC_MULEU_S_PH_QBL	328)
+   (UNSPEC_MULEU_S_PH_QBR	329)
+   (UNSPEC_MULQ_RS_PH		330)
+   (UNSPEC_MULEQ_S_W_PHL	331)
+   (UNSPEC_MULEQ_S_W_PHR	332)
+   (UNSPEC_DPAU_H_QBL		333)
+   (UNSPEC_DPAU_H_QBR		334)
+   (UNSPEC_DPSU_H_QBL		335)
+   (UNSPEC_DPSU_H_QBR		336)
+   (UNSPEC_DPAQ_S_W_PH		337)
+   (UNSPEC_DPSQ_S_W_PH		338)
+   (UNSPEC_MULSAQ_S_W_PH	339)
+   (UNSPEC_DPAQ_SA_L_W		340)
+   (UNSPEC_DPSQ_SA_L_W		341)
+   (UNSPEC_MAQ_S_W_PHL		342)
+   (UNSPEC_MAQ_S_W_PHR		343)
+   (UNSPEC_MAQ_SA_W_PHL		344)
+   (UNSPEC_MAQ_SA_W_PHR		345)
+   (UNSPEC_BITREV		346)
+   (UNSPEC_INSV			347)
+   (UNSPEC_REPL_QB		348)
+   (UNSPEC_REPL_PH		349)
+   (UNSPEC_CMP_EQ		350)
+   (UNSPEC_CMP_LT		351)
+   (UNSPEC_CMP_LE		352)
+   (UNSPEC_CMPGU_EQ_QB		353)
+   (UNSPEC_CMPGU_LT_QB		354)
+   (UNSPEC_CMPGU_LE_QB		355)
+   (UNSPEC_PICK			356)
+   (UNSPEC_PACKRL_PH		357)
+   (UNSPEC_EXTR_W		358)
+   (UNSPEC_EXTR_R_W		359)
+   (UNSPEC_EXTR_RS_W		360)
+   (UNSPEC_EXTR_S_H		361)
+   (UNSPEC_EXTP			362)
+   (UNSPEC_EXTPDP		363)
+   (UNSPEC_SHILO		364)
+   (UNSPEC_MTHLIP		365)
+   (UNSPEC_WRDSP		366)
+   (UNSPEC_RDDSP		367)
   ]
 )
 
@@ -3124,8 +3194,8 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*movdi_32bit"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,d,m,*x,*d,*B*C*D,*B*C*D,*d,*m")
-	(match_operand:DI 1 "move_operand" "d,i,m,d,*J*d,*x,*d,*m,*B*C*D,*B*C*D"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,d,m,*a,*d,*B*C*D,*B*C*D,*d,*m")
+	(match_operand:DI 1 "move_operand" "d,i,m,d,*J*d,*a,*d,*m,*B*C*D,*B*C*D"))]
   "!TARGET_64BIT && !TARGET_MIPS16
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
@@ -3242,15 +3312,15 @@
 ;; in FP registers (off by default, use -mdebugh to enable).
 
 (define_insn "*movsi_internal"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,e,d,m,*f,*f,*f,*d,*m,*d,*z,*x,*B*C*D,*B*C*D,*d,*m")
-	(match_operand:SI 1 "move_operand" "d,U,T,m,dJ,*f,*d*J,*m,*f,*f,*z,*d,*J*d,*d,*m,*B*C*D,*B*C*D"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,e,d,m,*f,*f,*f,*d,*m,*d,*z,*a,*d,*B*C*D,*B*C*D,*d,*m")
+	(match_operand:SI 1 "move_operand" "d,U,T,m,dJ,*f,*d*J,*m,*f,*f,*z,*d,*J*d,*A,*d,*m,*B*C*D,*B*C*D"))]
   "!TARGET_MIPS16
    && (register_operand (operands[0], SImode)
        || reg_or_0_operand (operands[1], SImode))"
   { return mips_output_move (operands[0], operands[1]); }
-  [(set_attr "type"	"arith,const,const,load,store,fmove,xfer,fpload,xfer,fpstore,xfer,xfer,mthilo,xfer,load,xfer,store")
+  [(set_attr "type"	"arith,const,const,load,store,fmove,xfer,fpload,xfer,fpstore,xfer,xfer,mthilo,mfhilo,xfer,load,xfer,store")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"4,*,*,*,*,4,4,*,4,*,4,4,4,4,*,4,*")])
+   (set_attr "length"	"4,*,*,*,*,4,4,*,4,*,4,4,4,4,4,*,4,*")])
 
 (define_insn "*movsi_mips16"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=d,y,d,d,d,d,d,m")
@@ -5353,3 +5423,7 @@
 ; The MIPS Paired-Single Floating Point and MIPS-3D Instructions.
 
 (include "mips-ps-3d.md")
+
+; The MIPS DSP Instructions.
+
+(include "mips-dsp.md")

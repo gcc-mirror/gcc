@@ -150,6 +150,35 @@ enum mips_function_type
   MIPS_DF_FTYPE_DF,
   MIPS_DF_FTYPE_DF_DF,
 
+  /* For MIPS DSP ASE  */
+  MIPS_DI_FTYPE_DI_SI,
+  MIPS_DI_FTYPE_DI_SI_SI,
+  MIPS_DI_FTYPE_DI_V2HI_V2HI,
+  MIPS_DI_FTYPE_DI_V4QI_V4QI,
+  MIPS_SI_FTYPE_DI_SI,
+  MIPS_SI_FTYPE_PTR_SI,
+  MIPS_SI_FTYPE_SI,
+  MIPS_SI_FTYPE_SI_SI,
+  MIPS_SI_FTYPE_V2HI,
+  MIPS_SI_FTYPE_V2HI_V2HI,
+  MIPS_SI_FTYPE_V4QI,
+  MIPS_SI_FTYPE_V4QI_V4QI,
+  MIPS_SI_FTYPE_VOID,
+  MIPS_V2HI_FTYPE_SI,
+  MIPS_V2HI_FTYPE_SI_SI,
+  MIPS_V2HI_FTYPE_V2HI,
+  MIPS_V2HI_FTYPE_V2HI_SI,
+  MIPS_V2HI_FTYPE_V2HI_V2HI,
+  MIPS_V2HI_FTYPE_V4QI,
+  MIPS_V2HI_FTYPE_V4QI_V2HI,
+  MIPS_V4QI_FTYPE_SI,
+  MIPS_V4QI_FTYPE_V2HI_V2HI,
+  MIPS_V4QI_FTYPE_V4QI_SI,
+  MIPS_V4QI_FTYPE_V4QI_V4QI,
+  MIPS_VOID_FTYPE_SI_SI,
+  MIPS_VOID_FTYPE_V2HI_V2HI,
+  MIPS_VOID_FTYPE_V4QI_V4QI,
+
   /* The last type.  */
   MIPS_MAX_FTYPE_MAX
 };
@@ -161,6 +190,10 @@ enum mips_builtin_type
      value is mapped to operand 0 and the arguments are mapped to
      operands 1 and above.  */
   MIPS_BUILTIN_DIRECT,
+
+  /* The builtin corresponds directly to an .md pattern.  There is no return
+     value and the arguments are mapped to operands 0 and above.  */
+  MIPS_BUILTIN_DIRECT_NO_TARGET,
 
   /* The builtin corresponds to a comparison instruction followed by
      a mips_cond_move_tf_ps pattern.  The first two arguments are the
@@ -185,7 +218,10 @@ enum mips_builtin_type
   MIPS_BUILTIN_CMP_LOWER,
 
   /* As above, but the instruction only sets a single $fcc register.  */
-  MIPS_BUILTIN_CMP_SINGLE
+  MIPS_BUILTIN_CMP_SINGLE,
+
+  /* For generating bposge32 branch instructions in MIPS32 DSP ASE.  */
+  MIPS_BUILTIN_BPOSGE32
 };
 
 /* Invokes MACRO (COND) for each c.cond.fmt condition.  */
@@ -362,13 +398,14 @@ static rtx mips_prepare_builtin_arg (enum insn_code, unsigned int, tree *);
 static rtx mips_prepare_builtin_target (enum insn_code, unsigned int, rtx);
 static rtx mips_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static void mips_init_builtins (void);
-static rtx mips_expand_builtin_direct (enum insn_code, rtx, tree);
+static rtx mips_expand_builtin_direct (enum insn_code, rtx, tree, bool);
 static rtx mips_expand_builtin_movtf (enum mips_builtin_type,
 				      enum insn_code, enum mips_fp_condition,
 				      rtx, tree);
 static rtx mips_expand_builtin_compare (enum mips_builtin_type,
 					enum insn_code, enum mips_fp_condition,
 					rtx, tree);
+static rtx mips_expand_builtin_bposge (enum mips_builtin_type, rtx);
 
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
@@ -644,7 +681,10 @@ const enum reg_class mips_regno_to_class[] =
   COP3_REGS,	COP3_REGS,	COP3_REGS,	COP3_REGS,
   COP3_REGS,	COP3_REGS,	COP3_REGS,	COP3_REGS,
   COP3_REGS,	COP3_REGS,	COP3_REGS,	COP3_REGS,
-  COP3_REGS,	COP3_REGS,	COP3_REGS,	COP3_REGS
+  COP3_REGS,	COP3_REGS,	COP3_REGS,	COP3_REGS,
+  DSP_ACC_REGS,	DSP_ACC_REGS,	DSP_ACC_REGS,	DSP_ACC_REGS,
+  DSP_ACC_REGS,	DSP_ACC_REGS,	ALL_REGS,	ALL_REGS,
+  ALL_REGS,	ALL_REGS,	ALL_REGS,	ALL_REGS
 };
 
 /* Map register constraint character to register class.  */
@@ -2608,8 +2648,8 @@ mips_subword (rtx op, int high_p)
     {
       if (FP_REG_P (REGNO (op)))
 	return gen_rtx_REG (word_mode, high_p ? REGNO (op) + 1 : REGNO (op));
-      if (REGNO (op) == HI_REGNUM)
-	return gen_rtx_REG (word_mode, high_p ? HI_REGNUM : LO_REGNUM);
+      if (ACC_HI_REG_P (REGNO (op)))
+	return gen_rtx_REG (word_mode, high_p ? REGNO (op) : REGNO (op) + 1);
     }
 
   if (MEM_P (op))
@@ -2723,6 +2763,14 @@ mips_output_move (rtx dest, rtx src)
 	  if (MD_REG_P (REGNO (dest)))
 	    return "mt%0\t%z1";
 
+	  if (DSP_ACC_REG_P (REGNO (dest)))
+	    {
+	      static char retval[] = "mt__\t%z1,%q0";
+	      retval[2] = reg_names[REGNO (dest)][4];
+	      retval[3] = reg_names[REGNO (dest)][5];
+	      return retval;
+	    }
+
 	  if (FP_REG_P (REGNO (dest)))
 	    return (dbl_p ? "dmtc1\t%z1,%0" : "mtc1\t%z1,%0");
 
@@ -2741,6 +2789,14 @@ mips_output_move (rtx dest, rtx src)
     {
       if (src_code == REG)
 	{
+	  if (DSP_ACC_REG_P (REGNO (src)))
+	    {
+	      static char retval[] = "mf__\t%0,%q1";
+	      retval[2] = reg_names[REGNO (src)][4];
+	      retval[3] = reg_names[REGNO (src)][5];
+	      return retval;
+	    }
+
 	  if (ST_REG_P (REGNO (src)) && ISA_HAS_8CC)
 	    return "lui\t%0,0x3f80\n\tmovf\t%0,%.,%1";
 
@@ -4722,6 +4778,9 @@ override_options (void)
   if (TARGET_PAIRED_SINGLE_FLOAT && !ISA_MIPS64)
     error ("-mips3d/-mpaired-single must be used with -mips64");
 
+  if (TARGET_MIPS16 && TARGET_DSP)
+    error ("-mips16 and -mdsp cannot be used together");
+
   mips_print_operand_punct['?'] = 1;
   mips_print_operand_punct['#'] = 1;
   mips_print_operand_punct['/'] = 1;
@@ -4761,6 +4820,8 @@ override_options (void)
   mips_char_to_class['B'] = COP0_REGS;
   mips_char_to_class['C'] = COP2_REGS;
   mips_char_to_class['D'] = COP3_REGS;
+  mips_char_to_class['A'] = DSP_ACC_REGS;
+  mips_char_to_class['a'] = ACC_REGS;
 
   /* Set up array to map GCC register number to debug register number.
      Ignore the special purpose register numbers.  */
@@ -4826,10 +4887,10 @@ override_options (void)
 			/* Allow TFmode for CCmode reloads.  */
 			|| (ISA_HAS_8CC && mode == TFmode));
 
-	  else if (MD_REG_P (regno))
+          else if (ACC_REG_P (regno))
 	    temp = (INTEGRAL_MODE_P (mode)
 		    && (size <= UNITS_PER_WORD
-			|| (regno == MD_REG_FIRST
+			|| (ACC_HI_REG_P (regno)
 			    && size == 2 * UNITS_PER_WORD)));
 
 	  else if (ALL_COP_REG_P (regno))
@@ -4978,6 +5039,13 @@ override_options (void)
 void
 mips_conditional_register_usage (void)
 {
+  if (!TARGET_DSP)
+    {
+      int regno;
+
+      for (regno = DSP_ACC_REG_FIRST; regno <= DSP_ACC_REG_LAST; regno++)
+	fixed_regs[regno] = call_used_regs[regno] = 1;
+    }
   if (!TARGET_HARD_FLOAT)
     {
       int regno;
@@ -5122,6 +5190,7 @@ mips_debugger_offset (rtx addr, HOST_WIDE_INT offset)
    'Y'  for a CONST_INT X, print mips_fp_conditions[X]
    'Z'  print the operand and a comma for ISA_HAS_8CC, otherwise print nothing
    'R'  print the reloc associated with LO_SUM
+   'q'  print DSP accumulator registers
 
    The punctuation characters are:
 
@@ -5370,6 +5439,22 @@ print_operand (FILE *file, rtx op, int letter)
 	  print_operand (file, op, 0);
 	  fputc (',', file);
 	}
+    }
+
+  else if (letter == 'q')
+    {
+      int regnum;
+
+      if (code != REG)
+	fatal_insn ("PRINT_OPERAND, invalid insn for %%q", op);
+
+      regnum = REGNO (op);
+      if (MD_REG_P (regnum))
+	fprintf (file, "$ac0");
+      else if (DSP_ACC_REG_P (regnum))
+	fprintf (file, "$ac%c", reg_names[regnum][3]);
+      else
+	fatal_insn ("PRINT_OPERAND, invalid insn for %%q", op);
     }
 
   else if (code == REG || code == SUBREG)
@@ -7316,8 +7401,10 @@ mips_cannot_change_mode_class (enum machine_mode from,
 	  /* LO_REGNO == HI_REGNO + 1, so if a multi-word value is stored
 	     in LO and HI, the high word always comes first.  We therefore
 	     can't allow values stored in HI to change between single-word
-	     and multi-word modes.  */
-	  if (reg_classes_intersect_p (HI_REG, class))
+	     and multi-word modes.
+	     This rule applies to both the original HI/LO pair and the new
+	     DSP accumulators.  */
+	  if (reg_classes_intersect_p (ACC_REGS, class))
 	    return true;
 	}
     }
@@ -7398,8 +7485,10 @@ mips_secondary_reload_class (enum reg_class class,
     }
 
   /* Copying from HI or LO to anywhere other than a general register
-     requires a general register.  */
-  if (class == HI_REG || class == LO_REG || class == MD_REGS)
+     requires a general register.
+     This rule applies to both the original HI/LO pair and the new
+     DSP accumulators.  */
+  if (reg_class_subset_p (class, ACC_REGS))
     {
       if (TARGET_MIPS16 && in_p)
 	{
@@ -7408,7 +7497,7 @@ mips_secondary_reload_class (enum reg_class class,
 	}
       return gp_reg_p ? NO_REGS : gr_regs;
     }
-  if (MD_REG_P (regno))
+  if (ACC_REG_P (regno))
     {
       if (TARGET_MIPS16 && ! in_p)
 	{
@@ -7519,10 +7608,18 @@ mips_valid_pointer_mode (enum machine_mode mode)
 static bool
 mips_vector_mode_supported_p (enum machine_mode mode)
 {
-  if (mode == V2SFmode && TARGET_PAIRED_SINGLE_FLOAT)
-    return true;
-  else
-    return false;
+  switch (mode)
+    {
+    case V2SFmode:
+      return TARGET_PAIRED_SINGLE_FLOAT;
+
+    case V2HImode:
+    case V4QImode:
+      return TARGET_DSP;
+
+    default:
+      return false;
+    }
 }
 
 /* If we can access small data directly (using gp-relative relocation
@@ -8887,7 +8984,7 @@ mips_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 	}
       else if (to == FP_REGS)
 	return 4;
-      else if (to == HI_REG || to == LO_REG || to == MD_REGS)
+      else if (reg_class_subset_p (to, ACC_REGS))
 	{
 	  if (TARGET_MIPS16)
 	    return 12;
@@ -8908,7 +9005,7 @@ mips_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
       else if (to == ST_REGS)
 	return 8;
     }
-  else if (from == HI_REG || from == LO_REG || from == MD_REGS)
+  else if (reg_class_subset_p (from, ACC_REGS))
     {
       if (GR_REG_CLASS_P (to))
 	{
@@ -9910,6 +10007,116 @@ static const struct builtin_description sb1_bdesc[] =
   DIRECT_BUILTIN (sqrt_ps, MIPS_V2SF_FTYPE_V2SF, MASK_PAIRED_SINGLE_FLOAT)
 };
 
+/* Builtin functions for DSP ASE.  */
+
+#define CODE_FOR_mips_addq_ph CODE_FOR_addv2hi3
+#define CODE_FOR_mips_addu_qb CODE_FOR_addv4qi3
+#define CODE_FOR_mips_subq_ph CODE_FOR_subv2hi3
+#define CODE_FOR_mips_subu_qb CODE_FOR_subv4qi3
+
+/* Define a MIPS_BUILTIN_DIRECT_NO_TARGET function for instruction
+   CODE_FOR_mips_<INSN>.  FUNCTION_TYPE and TARGET_FLAGS are
+   builtin_description fields.  */
+#define DIRECT_NO_TARGET_BUILTIN(INSN, FUNCTION_TYPE, TARGET_FLAGS)	\
+  { CODE_FOR_mips_ ## INSN, 0, "__builtin_mips_" #INSN,			\
+    MIPS_BUILTIN_DIRECT_NO_TARGET, FUNCTION_TYPE, TARGET_FLAGS }
+
+/* Define __builtin_mips_bposge<VALUE>.  <VALUE> is 32 for the MIPS32 DSP
+   branch instruction.  TARGET_FLAGS is a builtin_description field.  */
+#define BPOSGE_BUILTIN(VALUE, TARGET_FLAGS)				\
+  { CODE_FOR_mips_bposge, 0, "__builtin_mips_bposge" #VALUE,		\
+    MIPS_BUILTIN_BPOSGE ## VALUE, MIPS_SI_FTYPE_VOID, TARGET_FLAGS }
+
+static const struct builtin_description dsp_bdesc[] =
+{
+  DIRECT_BUILTIN (addq_ph, MIPS_V2HI_FTYPE_V2HI_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (addq_s_ph, MIPS_V2HI_FTYPE_V2HI_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (addq_s_w, MIPS_SI_FTYPE_SI_SI, MASK_DSP),
+  DIRECT_BUILTIN (addu_qb, MIPS_V4QI_FTYPE_V4QI_V4QI, MASK_DSP),
+  DIRECT_BUILTIN (addu_s_qb, MIPS_V4QI_FTYPE_V4QI_V4QI, MASK_DSP),
+  DIRECT_BUILTIN (subq_ph, MIPS_V2HI_FTYPE_V2HI_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (subq_s_ph, MIPS_V2HI_FTYPE_V2HI_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (subq_s_w, MIPS_SI_FTYPE_SI_SI, MASK_DSP),
+  DIRECT_BUILTIN (subu_qb, MIPS_V4QI_FTYPE_V4QI_V4QI, MASK_DSP),
+  DIRECT_BUILTIN (subu_s_qb, MIPS_V4QI_FTYPE_V4QI_V4QI, MASK_DSP),
+  DIRECT_BUILTIN (addsc, MIPS_SI_FTYPE_SI_SI, MASK_DSP),
+  DIRECT_BUILTIN (addwc, MIPS_SI_FTYPE_SI_SI, MASK_DSP),
+  DIRECT_BUILTIN (modsub, MIPS_SI_FTYPE_SI_SI, MASK_DSP),
+  DIRECT_BUILTIN (raddu_w_qb, MIPS_SI_FTYPE_V4QI, MASK_DSP),
+  DIRECT_BUILTIN (absq_s_ph, MIPS_V2HI_FTYPE_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (absq_s_w, MIPS_SI_FTYPE_SI, MASK_DSP),
+  DIRECT_BUILTIN (precrq_qb_ph, MIPS_V4QI_FTYPE_V2HI_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (precrq_ph_w, MIPS_V2HI_FTYPE_SI_SI, MASK_DSP),
+  DIRECT_BUILTIN (precrq_rs_ph_w, MIPS_V2HI_FTYPE_SI_SI, MASK_DSP),
+  DIRECT_BUILTIN (precrqu_s_qb_ph, MIPS_V4QI_FTYPE_V2HI_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (preceq_w_phl, MIPS_SI_FTYPE_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (preceq_w_phr, MIPS_SI_FTYPE_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (precequ_ph_qbl, MIPS_V2HI_FTYPE_V4QI, MASK_DSP),
+  DIRECT_BUILTIN (precequ_ph_qbr, MIPS_V2HI_FTYPE_V4QI, MASK_DSP),
+  DIRECT_BUILTIN (precequ_ph_qbla, MIPS_V2HI_FTYPE_V4QI, MASK_DSP),
+  DIRECT_BUILTIN (precequ_ph_qbra, MIPS_V2HI_FTYPE_V4QI, MASK_DSP),
+  DIRECT_BUILTIN (preceu_ph_qbl, MIPS_V2HI_FTYPE_V4QI, MASK_DSP),
+  DIRECT_BUILTIN (preceu_ph_qbr, MIPS_V2HI_FTYPE_V4QI, MASK_DSP),
+  DIRECT_BUILTIN (preceu_ph_qbla, MIPS_V2HI_FTYPE_V4QI, MASK_DSP),
+  DIRECT_BUILTIN (preceu_ph_qbra, MIPS_V2HI_FTYPE_V4QI, MASK_DSP),
+  DIRECT_BUILTIN (shll_qb, MIPS_V4QI_FTYPE_V4QI_SI, MASK_DSP),
+  DIRECT_BUILTIN (shll_ph, MIPS_V2HI_FTYPE_V2HI_SI, MASK_DSP),
+  DIRECT_BUILTIN (shll_s_ph, MIPS_V2HI_FTYPE_V2HI_SI, MASK_DSP),
+  DIRECT_BUILTIN (shll_s_w, MIPS_SI_FTYPE_SI_SI, MASK_DSP),
+  DIRECT_BUILTIN (shrl_qb, MIPS_V4QI_FTYPE_V4QI_SI, MASK_DSP),
+  DIRECT_BUILTIN (shra_ph, MIPS_V2HI_FTYPE_V2HI_SI, MASK_DSP),
+  DIRECT_BUILTIN (shra_r_ph, MIPS_V2HI_FTYPE_V2HI_SI, MASK_DSP),
+  DIRECT_BUILTIN (shra_r_w, MIPS_SI_FTYPE_SI_SI, MASK_DSP),
+  DIRECT_BUILTIN (muleu_s_ph_qbl, MIPS_V2HI_FTYPE_V4QI_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (muleu_s_ph_qbr, MIPS_V2HI_FTYPE_V4QI_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (mulq_rs_ph, MIPS_V2HI_FTYPE_V2HI_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (muleq_s_w_phl, MIPS_SI_FTYPE_V2HI_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (muleq_s_w_phr, MIPS_SI_FTYPE_V2HI_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (dpau_h_qbl, MIPS_DI_FTYPE_DI_V4QI_V4QI, MASK_DSP),
+  DIRECT_BUILTIN (dpau_h_qbr, MIPS_DI_FTYPE_DI_V4QI_V4QI, MASK_DSP),
+  DIRECT_BUILTIN (dpsu_h_qbl, MIPS_DI_FTYPE_DI_V4QI_V4QI, MASK_DSP),
+  DIRECT_BUILTIN (dpsu_h_qbr, MIPS_DI_FTYPE_DI_V4QI_V4QI, MASK_DSP),
+  DIRECT_BUILTIN (dpaq_s_w_ph, MIPS_DI_FTYPE_DI_V2HI_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (dpsq_s_w_ph, MIPS_DI_FTYPE_DI_V2HI_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (mulsaq_s_w_ph, MIPS_DI_FTYPE_DI_V2HI_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (dpaq_sa_l_w, MIPS_DI_FTYPE_DI_SI_SI, MASK_DSP),
+  DIRECT_BUILTIN (dpsq_sa_l_w, MIPS_DI_FTYPE_DI_SI_SI, MASK_DSP),
+  DIRECT_BUILTIN (maq_s_w_phl, MIPS_DI_FTYPE_DI_V2HI_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (maq_s_w_phr, MIPS_DI_FTYPE_DI_V2HI_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (maq_sa_w_phl, MIPS_DI_FTYPE_DI_V2HI_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (maq_sa_w_phr, MIPS_DI_FTYPE_DI_V2HI_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (bitrev, MIPS_SI_FTYPE_SI, MASK_DSP),
+  DIRECT_BUILTIN (insv, MIPS_SI_FTYPE_SI_SI, MASK_DSP),
+  DIRECT_BUILTIN (repl_qb, MIPS_V4QI_FTYPE_SI, MASK_DSP),
+  DIRECT_BUILTIN (repl_ph, MIPS_V2HI_FTYPE_SI, MASK_DSP),
+  DIRECT_NO_TARGET_BUILTIN (cmpu_eq_qb, MIPS_VOID_FTYPE_V4QI_V4QI, MASK_DSP),
+  DIRECT_NO_TARGET_BUILTIN (cmpu_lt_qb, MIPS_VOID_FTYPE_V4QI_V4QI, MASK_DSP),
+  DIRECT_NO_TARGET_BUILTIN (cmpu_le_qb, MIPS_VOID_FTYPE_V4QI_V4QI, MASK_DSP),
+  DIRECT_BUILTIN (cmpgu_eq_qb, MIPS_SI_FTYPE_V4QI_V4QI, MASK_DSP),
+  DIRECT_BUILTIN (cmpgu_lt_qb, MIPS_SI_FTYPE_V4QI_V4QI, MASK_DSP),
+  DIRECT_BUILTIN (cmpgu_le_qb, MIPS_SI_FTYPE_V4QI_V4QI, MASK_DSP),
+  DIRECT_NO_TARGET_BUILTIN (cmp_eq_ph, MIPS_VOID_FTYPE_V2HI_V2HI, MASK_DSP),
+  DIRECT_NO_TARGET_BUILTIN (cmp_lt_ph, MIPS_VOID_FTYPE_V2HI_V2HI, MASK_DSP),
+  DIRECT_NO_TARGET_BUILTIN (cmp_le_ph, MIPS_VOID_FTYPE_V2HI_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (pick_qb, MIPS_V4QI_FTYPE_V4QI_V4QI, MASK_DSP),
+  DIRECT_BUILTIN (pick_ph, MIPS_V2HI_FTYPE_V2HI_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (packrl_ph, MIPS_V2HI_FTYPE_V2HI_V2HI, MASK_DSP),
+  DIRECT_BUILTIN (extr_w, MIPS_SI_FTYPE_DI_SI, MASK_DSP),
+  DIRECT_BUILTIN (extr_r_w, MIPS_SI_FTYPE_DI_SI, MASK_DSP),
+  DIRECT_BUILTIN (extr_rs_w, MIPS_SI_FTYPE_DI_SI, MASK_DSP),
+  DIRECT_BUILTIN (extr_s_h, MIPS_SI_FTYPE_DI_SI, MASK_DSP),
+  DIRECT_BUILTIN (extp, MIPS_SI_FTYPE_DI_SI, MASK_DSP),
+  DIRECT_BUILTIN (extpdp, MIPS_SI_FTYPE_DI_SI, MASK_DSP),
+  DIRECT_BUILTIN (shilo, MIPS_DI_FTYPE_DI_SI, MASK_DSP),
+  DIRECT_BUILTIN (mthlip, MIPS_DI_FTYPE_DI_SI, MASK_DSP),
+  DIRECT_NO_TARGET_BUILTIN (wrdsp, MIPS_VOID_FTYPE_SI_SI, MASK_DSP),
+  DIRECT_BUILTIN (rddsp, MIPS_SI_FTYPE_SI, MASK_DSP),
+  DIRECT_BUILTIN (lbux, MIPS_SI_FTYPE_PTR_SI, MASK_DSP),
+  DIRECT_BUILTIN (lhx, MIPS_SI_FTYPE_PTR_SI, MASK_DSP),
+  DIRECT_BUILTIN (lwx, MIPS_SI_FTYPE_PTR_SI, MASK_DSP),
+  BPOSGE_BUILTIN (32, MASK_DSP)
+};
+
 /* This helps provide a mapping from builtin function codes to bdesc
    arrays.  */
 
@@ -9929,7 +10136,8 @@ struct bdesc_map
 static const struct bdesc_map bdesc_arrays[] =
 {
   { mips_bdesc, ARRAY_SIZE (mips_bdesc), PROCESSOR_MAX },
-  { sb1_bdesc, ARRAY_SIZE (sb1_bdesc), PROCESSOR_SB1 }
+  { sb1_bdesc, ARRAY_SIZE (sb1_bdesc), PROCESSOR_SB1 },
+  { dsp_bdesc, ARRAY_SIZE (dsp_bdesc), PROCESSOR_MAX }
 };
 
 /* Take the head of argument list *ARGLIST and convert it into a form
@@ -9946,7 +10154,15 @@ mips_prepare_builtin_arg (enum insn_code icode,
   value = expand_expr (TREE_VALUE (*arglist), NULL_RTX, VOIDmode, 0);
   mode = insn_data[icode].operand[op].mode;
   if (!insn_data[icode].operand[op].predicate (value, mode))
-    value = copy_to_mode_reg (mode, value);
+    {
+      value = copy_to_mode_reg (mode, value);
+      /* Check the predicate again.  */
+      if (!insn_data[icode].operand[op].predicate (value, mode))
+	{
+	  error ("invalid argument to builtin function");
+	  return const0_rtx;
+	}
+    }
 
   *arglist = TREE_CHAIN (*arglist);
   return value;
@@ -10003,7 +10219,10 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   switch (type)
     {
     case MIPS_BUILTIN_DIRECT:
-      return mips_expand_builtin_direct (icode, target, arglist);
+      return mips_expand_builtin_direct (icode, target, arglist, true);
+
+    case MIPS_BUILTIN_DIRECT_NO_TARGET:
+      return mips_expand_builtin_direct (icode, target, arglist, false);
 
     case MIPS_BUILTIN_MOVT:
     case MIPS_BUILTIN_MOVF:
@@ -10017,6 +10236,9 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case MIPS_BUILTIN_CMP_SINGLE:
       return mips_expand_builtin_compare (type, icode, bdesc[fcode].cond,
 					  target, arglist);
+
+    case MIPS_BUILTIN_BPOSGE32:
+      return mips_expand_builtin_bposge (type, target);
 
     default:
       return 0;
@@ -10032,70 +10254,214 @@ mips_init_builtins (void)
   const struct bdesc_map *m;
   tree types[(int) MIPS_MAX_FTYPE_MAX];
   tree V2SF_type_node;
+  tree V2HI_type_node;
+  tree V4QI_type_node;
   unsigned int offset;
 
-  /* We have only builtins for -mpaired-single and -mips3d.  */
-  if (!TARGET_PAIRED_SINGLE_FLOAT)
+  /* We have only builtins for -mpaired-single, -mips3d and -mdsp.  */
+  if (!TARGET_PAIRED_SINGLE_FLOAT && !TARGET_DSP)
     return;
 
-  V2SF_type_node = build_vector_type_for_mode (float_type_node, V2SFmode);
+  if (TARGET_PAIRED_SINGLE_FLOAT)
+    {
+      V2SF_type_node = build_vector_type_for_mode (float_type_node, V2SFmode);
 
-  types[MIPS_V2SF_FTYPE_V2SF]
-    = build_function_type_list (V2SF_type_node, V2SF_type_node, NULL_TREE);
+      types[MIPS_V2SF_FTYPE_V2SF]
+	= build_function_type_list (V2SF_type_node, V2SF_type_node, NULL_TREE);
 
-  types[MIPS_V2SF_FTYPE_V2SF_V2SF]
-    = build_function_type_list (V2SF_type_node,
-				V2SF_type_node, V2SF_type_node, NULL_TREE);
+      types[MIPS_V2SF_FTYPE_V2SF_V2SF]
+	= build_function_type_list (V2SF_type_node,
+				    V2SF_type_node, V2SF_type_node, NULL_TREE);
 
-  types[MIPS_V2SF_FTYPE_V2SF_V2SF_INT]
-    = build_function_type_list (V2SF_type_node,
-				V2SF_type_node, V2SF_type_node,
-				integer_type_node, NULL_TREE);
+      types[MIPS_V2SF_FTYPE_V2SF_V2SF_INT]
+	= build_function_type_list (V2SF_type_node,
+				    V2SF_type_node, V2SF_type_node,
+				    integer_type_node, NULL_TREE);
 
-  types[MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF]
-    = build_function_type_list (V2SF_type_node,
-				V2SF_type_node, V2SF_type_node,
-				V2SF_type_node, V2SF_type_node, NULL_TREE);
+      types[MIPS_V2SF_FTYPE_V2SF_V2SF_V2SF_V2SF]
+	= build_function_type_list (V2SF_type_node,
+				    V2SF_type_node, V2SF_type_node,
+				    V2SF_type_node, V2SF_type_node, NULL_TREE);
 
-  types[MIPS_V2SF_FTYPE_SF_SF]
-    = build_function_type_list (V2SF_type_node,
-				float_type_node, float_type_node, NULL_TREE);
+      types[MIPS_V2SF_FTYPE_SF_SF]
+	= build_function_type_list (V2SF_type_node,
+				    float_type_node, float_type_node, NULL_TREE);
 
-  types[MIPS_INT_FTYPE_V2SF_V2SF]
-    = build_function_type_list (integer_type_node,
-				V2SF_type_node, V2SF_type_node, NULL_TREE);
+      types[MIPS_INT_FTYPE_V2SF_V2SF]
+	= build_function_type_list (integer_type_node,
+				    V2SF_type_node, V2SF_type_node, NULL_TREE);
 
-  types[MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF]
-    = build_function_type_list (integer_type_node,
-				V2SF_type_node, V2SF_type_node,
-				V2SF_type_node, V2SF_type_node, NULL_TREE);
+      types[MIPS_INT_FTYPE_V2SF_V2SF_V2SF_V2SF]
+	= build_function_type_list (integer_type_node,
+				    V2SF_type_node, V2SF_type_node,
+				    V2SF_type_node, V2SF_type_node, NULL_TREE);
 
-  types[MIPS_INT_FTYPE_SF_SF]
-    = build_function_type_list (integer_type_node,
-				float_type_node, float_type_node, NULL_TREE);
+      types[MIPS_INT_FTYPE_SF_SF]
+	= build_function_type_list (integer_type_node,
+				    float_type_node, float_type_node, NULL_TREE);
 
-  types[MIPS_INT_FTYPE_DF_DF]
-    = build_function_type_list (integer_type_node,
-				double_type_node, double_type_node, NULL_TREE);
+      types[MIPS_INT_FTYPE_DF_DF]
+	= build_function_type_list (integer_type_node,
+				    double_type_node, double_type_node, NULL_TREE);
 
-  types[MIPS_SF_FTYPE_V2SF]
-    = build_function_type_list (float_type_node, V2SF_type_node, NULL_TREE);
+      types[MIPS_SF_FTYPE_V2SF]
+	= build_function_type_list (float_type_node, V2SF_type_node, NULL_TREE);
 
-  types[MIPS_SF_FTYPE_SF]
-    = build_function_type_list (float_type_node,
-				float_type_node, NULL_TREE);
+      types[MIPS_SF_FTYPE_SF]
+	= build_function_type_list (float_type_node,
+				    float_type_node, NULL_TREE);
 
-  types[MIPS_SF_FTYPE_SF_SF]
-    = build_function_type_list (float_type_node,
-				float_type_node, float_type_node, NULL_TREE);
+      types[MIPS_SF_FTYPE_SF_SF]
+	= build_function_type_list (float_type_node,
+				    float_type_node, float_type_node, NULL_TREE);
 
-  types[MIPS_DF_FTYPE_DF]
-    = build_function_type_list (double_type_node,
-				double_type_node, NULL_TREE);
+      types[MIPS_DF_FTYPE_DF]
+	= build_function_type_list (double_type_node,
+				    double_type_node, NULL_TREE);
 
-  types[MIPS_DF_FTYPE_DF_DF]
-    = build_function_type_list (double_type_node,
-				double_type_node, double_type_node, NULL_TREE);
+      types[MIPS_DF_FTYPE_DF_DF]
+	= build_function_type_list (double_type_node,
+				    double_type_node, double_type_node, NULL_TREE);
+    }
+
+  if (TARGET_DSP)
+    {
+      V2HI_type_node = build_vector_type_for_mode (intHI_type_node, V2HImode);
+      V4QI_type_node = build_vector_type_for_mode (intQI_type_node, V4QImode);
+
+      types[MIPS_V2HI_FTYPE_V2HI_V2HI]
+	= build_function_type_list (V2HI_type_node,
+				    V2HI_type_node, V2HI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_SI_FTYPE_SI_SI]
+	= build_function_type_list (intSI_type_node,
+				    intSI_type_node, intSI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_V4QI_FTYPE_V4QI_V4QI]
+	= build_function_type_list (V4QI_type_node,
+				    V4QI_type_node, V4QI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_SI_FTYPE_V4QI]
+	= build_function_type_list (intSI_type_node,
+				    V4QI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_V2HI_FTYPE_V2HI]
+	= build_function_type_list (V2HI_type_node,
+				    V2HI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_SI_FTYPE_SI]
+	= build_function_type_list (intSI_type_node,
+				    intSI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_V4QI_FTYPE_V2HI_V2HI]
+	= build_function_type_list (V4QI_type_node,
+				    V2HI_type_node, V2HI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_V2HI_FTYPE_SI_SI]
+	= build_function_type_list (V2HI_type_node,
+				    intSI_type_node, intSI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_SI_FTYPE_V2HI]
+	= build_function_type_list (intSI_type_node,
+				    V2HI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_V2HI_FTYPE_V4QI]
+	= build_function_type_list (V2HI_type_node,
+				    V4QI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_V4QI_FTYPE_V4QI_SI]
+	= build_function_type_list (V4QI_type_node,
+				    V4QI_type_node, intSI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_V2HI_FTYPE_V2HI_SI]
+	= build_function_type_list (V2HI_type_node,
+				    V2HI_type_node, intSI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_V2HI_FTYPE_V4QI_V2HI]
+	= build_function_type_list (V2HI_type_node,
+				    V4QI_type_node, V2HI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_SI_FTYPE_V2HI_V2HI]
+	= build_function_type_list (intSI_type_node,
+				    V2HI_type_node, V2HI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_DI_FTYPE_DI_V4QI_V4QI]
+	= build_function_type_list (intDI_type_node,
+				    intDI_type_node, V4QI_type_node, V4QI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_DI_FTYPE_DI_V2HI_V2HI]
+	= build_function_type_list (intDI_type_node,
+				    intDI_type_node, V2HI_type_node, V2HI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_DI_FTYPE_DI_SI_SI]
+	= build_function_type_list (intDI_type_node,
+				    intDI_type_node, intSI_type_node, intSI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_V4QI_FTYPE_SI]
+	= build_function_type_list (V4QI_type_node,
+				    intSI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_V2HI_FTYPE_SI]
+	= build_function_type_list (V2HI_type_node,
+				    intSI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_VOID_FTYPE_V4QI_V4QI]
+	= build_function_type_list (void_type_node,
+				    V4QI_type_node, V4QI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_SI_FTYPE_V4QI_V4QI]
+	= build_function_type_list (intSI_type_node,
+				    V4QI_type_node, V4QI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_VOID_FTYPE_V2HI_V2HI]
+	= build_function_type_list (void_type_node,
+				    V2HI_type_node, V2HI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_SI_FTYPE_DI_SI]
+	= build_function_type_list (intSI_type_node,
+				    intDI_type_node, intSI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_DI_FTYPE_DI_SI]
+	= build_function_type_list (intDI_type_node,
+				    intDI_type_node, intSI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_VOID_FTYPE_SI_SI]
+	= build_function_type_list (void_type_node,
+				    intSI_type_node, intSI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_SI_FTYPE_PTR_SI]
+	= build_function_type_list (intSI_type_node,
+				    ptr_type_node, intSI_type_node,
+				    NULL_TREE);
+
+      types[MIPS_SI_FTYPE_VOID]
+	= build_function_type (intSI_type_node, void_list_node);
+    }
 
   /* Iterate through all of the bdesc arrays, initializing all of the
      builtin functions.  */
@@ -10115,30 +10481,40 @@ mips_init_builtins (void)
 
 /* Expand a MIPS_BUILTIN_DIRECT function.  ICODE is the code of the
    .md pattern and ARGLIST is the list of function arguments.  TARGET,
-   if nonnull, suggests a good place to put the result.  */
+   if nonnull, suggests a good place to put the result.
+   HAS_TARGET indicates the function must return something.  */
 
 static rtx
-mips_expand_builtin_direct (enum insn_code icode, rtx target, tree arglist)
+mips_expand_builtin_direct (enum insn_code icode, rtx target, tree arglist,
+			    bool has_target)
 {
   rtx ops[MAX_RECOG_OPERANDS];
-  int i;
+  int i = 0;
 
-  target = mips_prepare_builtin_target (icode, 0, target);
-  for (i = 1; i < insn_data[icode].n_operands; i++)
+  if (has_target)
+    {
+      /* We save target to ops[0].  */
+      ops[0] = mips_prepare_builtin_target (icode, 0, target);
+      i = 1;
+    }
+
+  /* We need to test if arglist is not zero.  Some instructions have extra
+     clobber registers.  */
+  for (; i < insn_data[icode].n_operands && arglist != 0; i++)
     ops[i] = mips_prepare_builtin_arg (icode, i, &arglist);
 
-  switch (insn_data[icode].n_operands)
+  switch (i)
     {
     case 2:
-      emit_insn (GEN_FCN (icode) (target, ops[1]));
+      emit_insn (GEN_FCN (icode) (ops[0], ops[1]));
       break;
 
     case 3:
-      emit_insn (GEN_FCN (icode) (target, ops[1], ops[2]));
+      emit_insn (GEN_FCN (icode) (ops[0], ops[1], ops[2]));
       break;
 
     case 4:
-      emit_insn (GEN_FCN (icode) (target, ops[1], ops[2], ops[3]));
+      emit_insn (GEN_FCN (icode) (ops[0], ops[1], ops[2], ops[3]));
       break;
 
     default:
@@ -10264,6 +10640,60 @@ mips_expand_builtin_compare (enum mips_builtin_type builtin_type,
 
   /* Fix TARGET for CMP_RESULT != CMP_VALUE.  */
   emit_move_insn (target, target_if_unequal);
+  emit_label (label2);
+
+  return target;
+}
+
+/* Expand a bposge builtin of type BUILTIN_TYPE.  TARGET, if nonnull,
+   suggests a good place to put the boolean result.
+
+   The sequence we want is
+
+	li	target, 0
+	bposge*	label1
+	j	label2
+   label1:
+	li 	target, 1
+   label2:  */
+
+static rtx
+mips_expand_builtin_bposge (enum mips_builtin_type builtin_type, rtx target)
+{
+  rtx label1, label2, if_then_else;
+  rtx cmp_result;
+  int cmp_value;
+
+  if (target == 0 || GET_MODE (target) != SImode)
+    target = gen_reg_rtx (SImode);
+
+  cmp_result = gen_rtx_REG (CCDSPmode, CCDSP_PO_REGNUM);
+
+  if (builtin_type == MIPS_BUILTIN_BPOSGE32)
+    cmp_value = 32;
+  else
+    gcc_assert (0);
+
+  /* Move 0 to target */
+  emit_move_insn (target, const0_rtx);
+
+  /* Generate two labels */
+  label1 = gen_label_rtx ();
+  label2 = gen_label_rtx ();
+
+  /* Generate if_then_else */
+  if_then_else
+    = gen_rtx_IF_THEN_ELSE (VOIDmode,
+			    gen_rtx_fmt_ee (GE, CCDSPmode,
+					    cmp_result, GEN_INT (cmp_value)),
+			    gen_rtx_LABEL_REF (VOIDmode, label1), pc_rtx);
+
+  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, if_then_else));
+  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
+                               gen_rtx_LABEL_REF (VOIDmode, label2)));
+  emit_barrier ();
+  emit_label (label1);
+  emit_move_insn (target, const1_rtx);
   emit_label (label2);
 
   return target;

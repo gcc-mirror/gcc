@@ -1,3 +1,8 @@
+2005-07-23  Chao-ying Fu  <fu@mips.com>
+
+	* gcc.target/mips/mips32-dsp-type.c: New test.
+	* gcc.target/mips/mips32-dsp.c: New test.
+
 2005-07-23  Oyvind Harboe  <oyvind.harboe@zylin.com>
 
 	PR testsuite/21073
