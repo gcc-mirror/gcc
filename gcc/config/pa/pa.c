@@ -1998,10 +1998,12 @@ reloc_needed (tree exp)
 
     case CONSTRUCTOR:
       {
-	register tree link;
-	for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
-	  if (TREE_VALUE (link) != 0)
-	    reloc |= reloc_needed (TREE_VALUE (link));
+	tree value;
+	unsigned HOST_WIDE_INT ix;
+
+	FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (exp), ix, value)
+	  if (value)
+	    reloc |= reloc_needed (value);
       }
       break;
 
