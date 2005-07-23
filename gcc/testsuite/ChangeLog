@@ -1,3 +1,12 @@
+2005-07-23  Oyvind Harboe  <oyvind.harboe@zylin.com>
+
+	PR testsuite/21073
+	* g++.old-deja/g++.mike/p3060d.C: Fix type of VoidObjMemberFunc.
+
+	PR testsuite/20454
+	* gcc.dg/20001117-1.c: Fix type of __cyg_profile_func_enter
+	and __cyg_profile_func_exit.
+
 2005-07-22  David Edelsohn  <edelsohn@gnu.org>
 
 	* gfortran.dg/comma_format_extension_3.f: Fix typo.
