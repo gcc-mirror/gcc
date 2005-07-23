@@ -1,3 +1,10 @@
+2005-07-22  David Edelsohn  <edelsohn@gnu.org>
+
+	* gfortran.dg/comma_format_extension_3.f: Fix typo.
+	* gfortran.dg/comma_format_extension_4.f: Same.
+	* gfortran.dg/pr15332.f: Same.
+	* gfortran.dg/pr21730.f: Same.
+
 2005-07-22  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* g++.dg/opt/vrp2.C: Fix testcase.
