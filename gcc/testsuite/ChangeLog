@@ -1,3 +1,9 @@
+2005-07-23  Jerry DeLisle  <jvdelisle@verizon.net>
+
+        PR libgfortran/21875
+        * gfortran.dg/fmt_read_bz_bn.f90: Revised test to include case
+        with trailing blanks on normal formatted read.
+
 2005-07-23  Chao-ying Fu  <fu@mips.com>
 
 	* gcc.target/mips/mips32-dsp-type.c: New test.
