@@ -1,3 +1,7 @@
+2005-07-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* getopt.c: Include ansidecl.h before system headers.
+
 2005-07-22  Ben Elliston  <bje@gnu.org>
 
 	* getopt.c: Include "ansidecl.h".
