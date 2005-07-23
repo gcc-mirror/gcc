@@ -1,3 +1,10 @@
+2005-07-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (C_TREE_H): Update dependencies.
+	* c-tree.h: Include toplev.h.
+	* diagnostic.h (diagnostic_set_info): Add format attribute.
+	* rtl-error.c (diagnostic_for_asm): Likewise.
+
 2005-07-23  Chao-ying Fu  <fu@mips.com>
 
 	* config/mips/mips-dsp.md: New file.
