@@ -55,6 +55,10 @@ mdouble-float
 Target Report RejectNegative InverseMask(SINGLE_FLOAT, DOUBLE_FLOAT)
 Allow hardware floating-point instructions to cover both 32-bit and 64-bit operations
 
+mdsp
+Target Report Mask(DSP)
+Use MIPS-DSP instructions
+
 mdebug
 Target Var(TARGET_DEBUG_MODE) Undocumented
 

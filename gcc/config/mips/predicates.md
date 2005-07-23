@@ -34,6 +34,18 @@
   (ior (match_operand 0 "const_arith_operand")
        (match_operand 0 "register_operand")))
 
+(define_predicate "const_uimm6_operand"
+  (and (match_code "const_int")
+       (match_test "UIMM6_OPERAND (INTVAL (op))")))
+
+(define_predicate "const_imm10_operand"
+  (and (match_code "const_int")
+       (match_test "IMM10_OPERAND (INTVAL (op))")))
+
+(define_predicate "reg_imm10_operand"
+  (ior (match_operand 0 "const_imm10_operand")
+       (match_operand 0 "register_operand")))
+
 (define_predicate "sle_operand"
   (and (match_code "const_int")
        (match_test "SMALL_OPERAND (INTVAL (op) + 1)")))
