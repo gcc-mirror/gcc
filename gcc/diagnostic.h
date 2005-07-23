@@ -181,8 +181,10 @@ extern void diagnostic_report_current_module (diagnostic_context *);
 extern void diagnostic_report_current_function (diagnostic_context *);
 extern void diagnostic_report_diagnostic (diagnostic_context *,
 					  diagnostic_info *);
+#ifdef ATTRIBUTE_GCC_DIAG
 extern void diagnostic_set_info (diagnostic_info *, const char *, va_list *,
-				 location_t, diagnostic_t);
+				 location_t, diagnostic_t) ATTRIBUTE_GCC_DIAG(2,0);
+#endif
 extern char *diagnostic_build_prefix (diagnostic_info *);
 
 /* Pure text formatting support functions.  */

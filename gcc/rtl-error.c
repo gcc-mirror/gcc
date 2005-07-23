@@ -34,7 +34,7 @@ Boston, MA 02110-1301, USA.  */
 #include "diagnostic.h"
 
 static location_t location_for_asm (rtx);
-static void diagnostic_for_asm (rtx, const char *, va_list *, diagnostic_t);
+static void diagnostic_for_asm (rtx, const char *, va_list *, diagnostic_t) ATTRIBUTE_GCC_DIAG(2,0);
 
 /* Figure the location of the given INSN.  */
 static location_t
