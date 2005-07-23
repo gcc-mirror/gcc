@@ -1,3 +1,8 @@
+2005-07-23 Paul Thomas <pault@gcc.gnu.org>
+
+	* gfortran.dg/io_invalid_1.f90: Match test case to modified error
+	message.
+
 2005-07-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR debug/21828
