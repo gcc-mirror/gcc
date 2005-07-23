@@ -7,7 +7,7 @@
 
 extern "C" void abort (void);
 struct T { int i; } t;
-struct A : T { int j; } q, *p = &q;
+struct A : T { int j; } *p = __null;
 
 int main (void)
 {

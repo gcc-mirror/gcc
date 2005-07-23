@@ -1,5 +1,7 @@
 2005-07-22  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* g++.dg/opt/vrp2.C: Fix testcase.
+
 	PR tree-opt/22625
 	* g++.dg/opt/vrp2.C: New test.
 
