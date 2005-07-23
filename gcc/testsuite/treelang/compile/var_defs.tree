@@ -22,5 +22,3 @@ condition
       return j; // { dg-warning "uninitialized" }
     }
 }
-}
-

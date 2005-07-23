@@ -1,3 +1,7 @@
+2005-07-23  James A. Morrrison  <phython@gcc.gnu.org>
+
+	* compile/var_defs.tree: Remove extra lines.
+
 2005-07-19  James A. Morrrison  <phython@gcc.gnu.org>
 
 	* compile/var_defs.tree: Remove duplicate variable.
