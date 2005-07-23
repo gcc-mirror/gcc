@@ -2,7 +2,7 @@
 ! We used to accept this as an extension but
 ! did do the correct thing at runtime.
 ! Note the missing , before i1 in the format.
-! { do-do run }
+! { dg-do run }
 ! { dg-options "" }
       character*12 c
 

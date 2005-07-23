@@ -1,5 +1,5 @@
 ! PR fortran/21730
-! {do-do run}
+! { dg-do run }
       character*2 a
       character*4 b
       character*6 c
