@@ -1,8 +1,8 @@
 2005-07-23  Jerry DeLisle  <jvdelisle@verizon.net>
 
-    * io/write.c (write_float): Revise output of IEEE exceptional
-    values to comply with F95 and F2003 standards.
-    
+	* io/write.c (write_float): Revise output of IEEE exceptional
+	values to comply with F95 and F2003 standards.
+
 2005-07-22 Jerry DeLisle <jvdelisle@verizon.net>
 
 	PR libfortran/22570
@@ -33,9 +33,9 @@
 
 2005-07-17  Jerry DeLisle  <jvdelisle@verizon.net>
 
-    * io/write.c (write_float): Fix field width checks for
-    printing 'Infinity' or 'Inf'.
-    (output_float): Fix typo in comment.
+	* io/write.c (write_float): Fix field width checks for
+	printing 'Infinity' or 'Inf'.
+	(output_float): Fix typo in comment.
 
 2005-07-12 Paul Thomas  <pault@gcc.gnu.org>
 
@@ -60,17 +60,17 @@
 2005-07-12  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/21593
-	io/unix.c:  Add member special_file to type unix_stream.
+	* io/unix.c:  Add member special_file to type unix_stream.
 	(fd_truncate):  Don't call ftruncate or chsize if
 	s refers to a special file.
 	(fd_to_stream):  initialize s->special_file.
 
 2005-07-11  David Edelsohn  <edelsohn@gnu.org>
 
-        PR libgfortran/22412
-        * io/write.c (otoa): Bias p by SCRATCH_SIZE, not
-        sizeof (SCRATCH_SIZE).
-        (btoa): Same.
+	PR libgfortran/22412
+	* io/write.c (otoa): Bias p by SCRATCH_SIZE, not
+	sizeof (SCRATCH_SIZE).
+	(btoa): Same.
 
 2005-07-09  Jerry DeLisle  <jvdelisle@verizon.net>
 
@@ -88,7 +88,7 @@
 	PR libfortran/22217
 	* io/write.c (extract_unit):  New function; extract
 	ints as unsigned signed int of the correct size.
-	* io/write.c (write_int):  Use it.
+	(write_int):  Use it.
 	* runtime/error.c:  Adjust copyright years.
 	Adjust size of buffer to maximum that can occur.
 
@@ -194,17 +194,17 @@
 
 2005-06-25  Thomas Koenig  <Thomas.Koenig@online.de>
 
-        PR libfortran/22144
-        * m4/cshift1.m4: Remove const from argument ret.
-        Populate return array descriptor if ret->data is NULL.
-        * m4/eoshift1.m4: Likewise.
-        * m4/eoshift3.m4: Likewise.
-        * generated/cshift1_4.c:  Regenerated.
-        * generated/cshift1_8.c:  Regenerated.
-        * generated/eoshift1_4.c:  Regenerated.
-        * generated/eoshift1_8.c:  Regenerated.
-        * generated/eoshift3_4.c:  Regenerated.
-        * generated/eoshift3_8.c:  Regenerated.
+	PR libfortran/22144
+	* m4/cshift1.m4: Remove const from argument ret.
+	Populate return array descriptor if ret->data is NULL.
+	* m4/eoshift1.m4: Likewise.
+	* m4/eoshift3.m4: Likewise.
+	* generated/cshift1_4.c:  Regenerated.
+	* generated/cshift1_8.c:  Regenerated.
+	* generated/eoshift1_4.c:  Regenerated.
+	* generated/eoshift1_8.c:  Regenerated.
+	* generated/eoshift3_4.c:  Regenerated.
+	* generated/eoshift3_8.c:  Regenerated.
 
 2005-06-24  Jerry DeLisle <jvdelisle@verizon.net>
 
@@ -957,7 +957,7 @@
 	(finalize_transfer):  If there is an EOR condition, raise the error.
 
 2005-04-09  Bud Davis  <bdavis@gfortran.org>
-            Steven G. Kargl <kargls@comcast.net>
+	    Steven G. Kargl <kargls@comcast.net>
 
 	PR fortran/19872
 	* io/transfer.c (data_transfer_init): truncate an existing
@@ -1072,7 +1072,7 @@
 	the scale factor, but it needs to be restored afterwards.
 
 2005-04-03  Dale Ranta  <dir@lanl.gov>
-            Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+	    Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/20068
 	PR libfortran/20125
@@ -1222,7 +1222,7 @@
 
 2005-02-19  Steven G. Kargl  <kargls@comcast.net>
 
-      *  intrinsic/date_and_time.c: Fix conformance problems.
+	*  intrinsic/date_and_time.c: Fix conformance problems.
 
 2005-02-01  Paul Thomas <paulthomas2@wanadoo.fr>
 
@@ -2361,7 +2361,7 @@
 	(random_r8): fix infinite loop.
 
 2004-06-12  Bud Davis  <bdavis9659@comcast.net>
-      Steve Kargl  <sgk@troutmask.apl.washington.edu>
+	    Steve Kargl  <sgk@troutmask.apl.washington.edu>
 
 	PR gfortran/15292
 	* intrinsics/c99_functions.c: New file.
