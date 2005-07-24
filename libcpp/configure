@@ -2691,7 +2691,8 @@ test -n "$AUTOHEADER" || AUTOHEADER="$MISSING autoheader"
 WARN_CFLAGS=
 save_CFLAGS="$CFLAGS"
 for option in -W -Wall -Wwrite-strings -Wstrict-prototypes \
-			  -Wmissing-prototypes -Wold-style-definition; do
+			  -Wmissing-prototypes -Wold-style-definition \
+			  -Wmissing-format-attribute; do
   as_acx_Woption=`echo "acx_cv_prog_cc_warning_$option" | $as_tr_sh`
 
   echo "$as_me:$LINENO: checking whether $CC supports $option" >&5
