@@ -1,5 +1,10 @@
 2005-07-23  Jerry DeLisle  <jvdelisle@verizon.net>
 
+        * gfortran.fortran-torture/execute/nan_inf_fmt.f90: Revise test to
+        include case of field width of zero. 
+
+2005-07-23  Jerry DeLisle  <jvdelisle@verizon.net>
+
         PR libgfortran/21875
         * gfortran.dg/fmt_read_bz_bn.f90: Revised test to include case
         with trailing blanks on normal formatted read.
