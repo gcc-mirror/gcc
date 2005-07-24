@@ -1,3 +1,9 @@
+2005-07-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++.dg/warn/miss-format-1.C, g++.dg/warn/miss-format-2.C,
+	g++.dg/warn/miss-format-3.C, g++.dg/warn/miss-format-4.C,
+	g++.dg/warn/miss-format-5.C, g++.dg/warn/miss-format-6.C: New.
+
 2005-07-23  Jerry DeLisle  <jvdelisle@verizon.net>
 
         * gfortran.fortran-torture/execute/nan_inf_fmt.f90: Revise test to

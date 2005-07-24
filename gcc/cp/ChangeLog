@@ -1,3 +1,9 @@
+2005-07-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* call.c (convert_for_arg_passing): Check function pointers when
+	-Wmissing-format-attribute is activated.
+	* typeck.c (convert_for_assignment): Likewise.
+
 2005-07-22  Manfred Hollstein  <mh@suse.com>
 
 	* parser.c (cp_parser_declaration): Fix unitialised warnings.

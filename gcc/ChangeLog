@@ -1,3 +1,9 @@
+2005-07-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-common.c (check_missing_format_attribute): New.
+	* c-common.h (check_missing_format_attribute): Likewise.
+	* c-typeck.c (convert_for_assignment): Use it.
+
 2005-07-24  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.md ("extendqidi2"): When source is an address

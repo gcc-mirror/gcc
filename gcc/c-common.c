@@ -6208,4 +6208,30 @@ same_scalar_type_ignoring_signedness (tree t1, tree t2)
     == lang_hooks.types.signed_type (t2);
 }
 
+/* Check for missing format attributes on function pointers.  LTYPE is
+   the new type or left-hand side type.  RTYPE is the old type or
+   right-hand side type.  Returns TRUE if LTYPE is missing the desired
+   attribute.  */
+
+bool
+check_missing_format_attribute (tree ltype, tree rtype)
+{
+  tree const ttr = TREE_TYPE (rtype), ttl = TREE_TYPE (ltype);
+  tree ra;
+
+  for (ra = TYPE_ATTRIBUTES (ttr); ra; ra = TREE_CHAIN (ra))
+    if (is_attribute_p ("format", TREE_PURPOSE (ra)))
+      break;
+  if (ra)
+    {
+      tree la;
+      for (la = TYPE_ATTRIBUTES (ttl); la; la = TREE_CHAIN (la))
+	if (is_attribute_p ("format", TREE_PURPOSE (la)))
+	  break;
+      return !la;
+    }
+  else
+    return false;
+}
+
 #include "gt-c-common.h"

@@ -4601,6 +4601,17 @@ convert_for_arg_passing (tree type, tree val)
 	   && INT_CST_LT_UNSIGNED (TYPE_SIZE (type),
 				   TYPE_SIZE (integer_type_node)))
     val = perform_integral_promotions (val);
+  if (warn_missing_format_attribute)
+    {
+      tree rhstype = TREE_TYPE (val);
+      const enum tree_code coder = TREE_CODE (rhstype);
+      const enum tree_code codel = TREE_CODE (type);
+      if ((codel == POINTER_TYPE || codel == REFERENCE_TYPE)
+	  && coder == codel
+	  && check_missing_format_attribute (type, rhstype))
+	warning (OPT_Wmissing_format_attribute,
+		 "argument of function call might be a candidate for a format attribute");
+    }
   return val;
 }
 
