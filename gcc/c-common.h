@@ -925,6 +925,7 @@ extern void init_pp_output (FILE *);
 extern void preprocess_file (cpp_reader *);
 extern void pp_file_change (const struct line_map *);
 extern void pp_dir_change (cpp_reader *, const char *);
+extern bool check_missing_format_attribute (tree, tree);
 
 /* In order for the format checking to accept the C frontend
    diagnostic framework extensions, you must include this file before

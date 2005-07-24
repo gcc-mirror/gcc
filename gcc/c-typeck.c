@@ -3802,51 +3802,36 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 
       /* Check if the right-hand side has a format attribute but the
 	 left-hand side doesn't.  */
-      if (warn_missing_format_attribute)
+      if (warn_missing_format_attribute
+	  && check_missing_format_attribute (type, rhstype))
         {
-	  tree rattrs = TYPE_ATTRIBUTES (ttr), ra;
-	  for (ra = rattrs; ra; ra = TREE_CHAIN (ra))
-	    {
-	      if (is_attribute_p ("format", TREE_PURPOSE (ra)))
-		break;
-	    }
-	  if (ra)
-	    {
-	      tree lattrs = TYPE_ATTRIBUTES (ttl), la;
-	      for (la = lattrs; la; la = TREE_CHAIN (la))
-	      {
-		if (is_attribute_p ("format", TREE_PURPOSE (la)))
-		  break;
-	      }
-	      if (!la)
-		switch (errtype)
-		  {
-		  case ic_argpass:
-		  case ic_argpass_nonproto:
-		    warning (OPT_Wmissing_format_attribute,
-			     "argument %d of %qE might be "
-			     "a candidate for a format attribute",
-			     parmnum, rname);
-		    break;
-		  case ic_assign:
-		    warning (OPT_Wmissing_format_attribute,
-			     "assignment left-hand side might be "
-			     "a candidate for a format attribute");
-		    break;
-		  case ic_init:
-		    warning (OPT_Wmissing_format_attribute,
-			     "initialization left-hand side might be "
-			     "a candidate for a format attribute");
-		    break;
-		  case ic_return:
-		    warning (OPT_Wmissing_format_attribute,
-			     "return type might be "
-			     "a candidate for a format attribute");
-		    break;
-		  default:
-		    gcc_unreachable ();
-		  }
-	    }
+	  switch (errtype)
+	  {
+	  case ic_argpass:
+	  case ic_argpass_nonproto:
+	    warning (OPT_Wmissing_format_attribute,
+		     "argument %d of %qE might be "
+		     "a candidate for a format attribute",
+		     parmnum, rname);
+	    break;
+	  case ic_assign:
+	    warning (OPT_Wmissing_format_attribute,
+		     "assignment left-hand side might be "
+		     "a candidate for a format attribute");
+	    break;
+	  case ic_init:
+	    warning (OPT_Wmissing_format_attribute,
+		     "initialization left-hand side might be "
+		     "a candidate for a format attribute");
+	    break;
+	  case ic_return:
+	    warning (OPT_Wmissing_format_attribute,
+		     "return type might be "
+		     "a candidate for a format attribute");
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
 	}
       
       /* Any non-function converts to a [const][volatile] void *

@@ -5948,6 +5948,17 @@ convert_for_assignment (tree type, tree rhs,
 	  return error_mark_node;
 	}
     }
+  if (warn_missing_format_attribute)
+    {
+      const enum tree_code codel = TREE_CODE (type);
+      if ((codel == POINTER_TYPE || codel == REFERENCE_TYPE)
+	  && coder == codel
+	  && check_missing_format_attribute (type, rhstype))
+	warning (OPT_Wmissing_format_attribute,
+		 "%s might be a candidate for a format attribute",
+		 errtype);
+    }
+  
   return perform_implicit_conversion (strip_top_quals (type), rhs);
 }
 
