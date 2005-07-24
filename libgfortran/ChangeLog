@@ -1,4 +1,9 @@
-2005-07-22 Jerry DeLisle <jvdelisle@verizon.net>
+2005-07-23  Jerry DeLisle  <jvdelisle@verizon.net>
+
+    * io/write.c (write_float): Revise output of IEEE exceptional
+    values to comply with F95 and F2003 standards.
+
+2005-07-22  Jerry DeLisle  <jvdelisle@verizon.net>
 
 	PR libfortran/22570
 	* io/unit.c (init_units): Replace BLANK_ZERO with
@@ -9,7 +14,7 @@
 	(read_radix): Interpret ' ' character correctly for BZ or BN.
 	(read_f): Interpret ' ' character correctly for BZ or BN.
 
-2005-07-22 Paul Thomas  <pault@gcc.gnu.org>
+2005-07-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR libfortran/22570
 	* read.c (read_x): Correct the condition for doing the

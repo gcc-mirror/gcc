@@ -702,6 +702,11 @@ write_float (fnode *f, const char *source, int len)
       if (res == 0)
 	{
 	  nb =  f->u.real.w;
+	  
+	  /* If the field width is zero, the processor must select a width 
+	     not zero.  4 is chosen to allow output of '-Inf' or '+Inf' */
+	     
+	  if (nb == 0) nb = 4;
 	  p = write_block (nb);
 	  if (nb < 3)
 	    {
@@ -710,22 +715,47 @@ write_float (fnode *f, const char *source, int len)
 	    }
 
 	  memset(p, ' ', nb);
-	  res = !isnan (n); 
+	  res = !isnan (n);
 	  if (res != 0)
 	    {
-	      if (signbit(n))   
-		fin = '-';
+	      if (signbit(n))
+	        {
+	        
+	          /* If the sign is negative and the width is 3, there is
+	             insufficient room to output '-Inf', so output asterisks */
+	             
+	          if (nb == 3)
+	            {
+	              memset (p, '*',nb);
+	              return;
+	            }
+	            
+	          /* The negative sign is mandatory */
+	            
+	          fin = '-';
+		}    
 	      else
-		fin = '+';
+	      
+	          /* The positive sign is optional, but we output it for
+	             consistency */
+	             
+		  fin = '+';
 
-	      if (nb > 7)
-		memcpy(p + nb - 8, "Infinity", 8); 
+	      if (nb > 8)
+	      
+	        /* We have room, so output 'Infinity' */
+	        
+		memcpy(p + nb - 8, "Infinity", 8);
 	      else
+	      
+	        /* For the case of width equals 8, there is not enough room
+	           for the sign and 'Infinity' so we go with 'Inf' */
+	            
 		memcpy(p + nb - 3, "Inf", 3);
-	      if (nb < 8 && nb > 3)
-		p[nb - 4] = fin;
+	      if (nb < 9 && nb > 3)
+		p[nb - 4] = fin;  /* Put the sign in front of Inf */
 	      else if (nb > 8)
-		p[nb - 9] = fin; 
+		p[nb - 9] = fin;  /* Put the sign in front of Infinity */
 	    }
 	  else
 	    memcpy(p + nb - 3, "NaN", 3);
