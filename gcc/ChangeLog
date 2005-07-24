@@ -1,3 +1,9 @@
+2005-07-24  Ira Rosen  <irar@il.ibm.com>
+
+        PR tree-optimization/22526
+        * tree-vectorizer.c (slpeel_tree_peel_loop_to_edge): Match the type
+        of the zero node.
+
 2005-07-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* builtins.def: Add DEF_EXT_C99RES_BUILTIN to define builtins

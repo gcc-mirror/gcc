@@ -1142,7 +1142,8 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop, struct loops *loops,
   add_bb_to_loop (bb_before_second_loop, first_loop->outer);
 
   pre_condition =
-    fold_build2 (LE_EXPR, boolean_type_node, first_niters, integer_zero_node);
+    fold_build2 (LE_EXPR, boolean_type_node, first_niters, 
+                 build_int_cst (TREE_TYPE (first_niters), 0));
   skip_e = slpeel_add_loop_guard (bb_before_first_loop, pre_condition,
                                   bb_before_second_loop, bb_before_first_loop);
   slpeel_update_phi_nodes_for_guard1 (skip_e, first_loop,
