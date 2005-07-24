@@ -1990,7 +1990,7 @@ mail-report-with-warnings.log: warning.log
 # Installation targets.
 
 .PHONY: install uninstall
-install: installdirs install-host install-target
+install: unstage installdirs install-host install-target stage
 
 .PHONY: install-host-nogcc
 install-host-nogcc:  \

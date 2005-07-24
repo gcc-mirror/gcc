@@ -1,3 +1,8 @@
+2005-07-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.tpl: Wrap install between unstage and stage
+	* Makefile.in: Regenerate.
+
 2005-07-21  Eric Christopher  <echristo@apple.com>
 
 	* MAINTAINERS: Update affiliation.
