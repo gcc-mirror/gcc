@@ -1,3 +1,8 @@
+2005-07-24  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.md ("extendqidi2"): When source is an address
+	register use a word move.  Correct operand of ext.w in 68000 code.
+
 2005-07-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* dwarf2out.c (gen_variable_die): Treat un-emitted COMDAT
