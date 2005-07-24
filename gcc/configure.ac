@@ -330,7 +330,6 @@ if test $ac_cv_prog_cc_w_no_long_long = yes \
    && test $ac_cv_prog_cc_w_no_variadic_macros = yes ; then
   strict1_warn="-pedantic -Wno-long-long -Wno-variadic-macros"
 fi
-AC_SUBST(strict1_warn)
 
 # Add -Wold-style-definition if it's accepted
 AC_CACHE_CHECK(
@@ -347,6 +346,21 @@ if test $ac_cv_prog_cc_w_old_style_definition = yes ; then
   strict1_warn="${strict1_warn} -Wold-style-definition"
 fi
 
+# Add -Wmissing-format-attribute if it's accepted
+AC_CACHE_CHECK(
+  [whether ${CC} accepts -Wmissing-format-attribute],
+  [ac_cv_prog_cc_w_missing_format_attribute],
+  [save_CFLAGS="$CFLAGS"
+  CFLAGS="-Wmissing-format-attribute"
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE([[]])],
+                    [ac_cv_prog_cc_w_missing_format_attribute=yes],
+                    [ac_cv_prog_cc_w_missing_format_attribute=no])
+  CFLAGS="$save_CFLAGS"
+  ])
+if test $ac_cv_prog_cc_w_missing_format_attribute = yes ; then
+  strict1_warn="${strict1_warn} -Wmissing-format-attribute"
+fi
+
 # Enable -Werror, period.
 AC_ARG_ENABLE(werror_always, 
 [  --enable-werror-always         enable -Werror always], [],
@@ -355,6 +369,8 @@ if test x${enable_werror_always} = xyes ; then
   strict1_warn="${strict1_warn} -Werror"
   WERROR=-Werror
 fi
+
+AC_SUBST(strict1_warn)
 
 # If the native compiler is GCC, we can enable warnings even in stage1.  
 # That's useful for people building cross-compilers, or just running a

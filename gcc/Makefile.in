@@ -176,7 +176,7 @@ LOOSE_WARN = -W -Wall -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes
 STRICT_WARN = @strict1_warn@
 WERROR_FLAGS = @WERROR@
 STRICT2_WARN = -pedantic -Wno-long-long -Wno-variadic-macros \
-  -Wold-style-definition $(WERROR_FLAGS)
+  -Wold-style-definition -Wmissing-format-attribute $(WERROR_FLAGS)
 
 # This is set by --enable-checking.  The idea is to catch forgotten
 # "extern" tags in header files.

@@ -1,3 +1,10 @@
+2005-07-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (STRICT2_WARN): Add -Wmissing-format-attribute.
+	* configure.ac: Check for -Wmissing-format-attribute.
+	
+	* configure: Regenerate.
+
 2005-07-23  Richard Henderson  <rth@redhat.com>
 
 	PR tree-optimization/22623

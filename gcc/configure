@@ -6164,7 +6164,6 @@ if test $ac_cv_prog_cc_w_no_long_long = yes \
   strict1_warn="-pedantic -Wno-long-long -Wno-variadic-macros"
 fi
 
-
 # Add -Wold-style-definition if it's accepted
 echo "$as_me:$LINENO: checking whether ${CC} accepts -Wold-style-definition" >&5
 echo $ECHO_N "checking whether ${CC} accepts -Wold-style-definition... $ECHO_C" >&6
@@ -6220,6 +6219,61 @@ if test $ac_cv_prog_cc_w_old_style_definition = yes ; then
   strict1_warn="${strict1_warn} -Wold-style-definition"
 fi
 
+# Add -Wmissing-format-attribute if it's accepted
+echo "$as_me:$LINENO: checking whether ${CC} accepts -Wmissing-format-attribute" >&5
+echo $ECHO_N "checking whether ${CC} accepts -Wmissing-format-attribute... $ECHO_C" >&6
+if test "${ac_cv_prog_cc_w_missing_format_attribute+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  save_CFLAGS="$CFLAGS"
+  CFLAGS="-Wmissing-format-attribute"
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_prog_cc_w_missing_format_attribute=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_cv_prog_cc_w_missing_format_attribute=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+  CFLAGS="$save_CFLAGS"
+
+fi
+echo "$as_me:$LINENO: result: $ac_cv_prog_cc_w_missing_format_attribute" >&5
+echo "${ECHO_T}$ac_cv_prog_cc_w_missing_format_attribute" >&6
+if test $ac_cv_prog_cc_w_missing_format_attribute = yes ; then
+  strict1_warn="${strict1_warn} -Wmissing-format-attribute"
+fi
+
 # Enable -Werror, period.
 # Check whether --enable-werror_always or --disable-werror_always was given.
 if test "${enable_werror_always+set}" = set; then
@@ -6232,6 +6286,8 @@ if test x${enable_werror_always} = xyes ; then
   strict1_warn="${strict1_warn} -Werror"
   WERROR=-Werror
 fi
+
+
 
 # If the native compiler is GCC, we can enable warnings even in stage1.
 # That's useful for people building cross-compilers, or just running a
@@ -7408,7 +7464,7 @@ if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
 else
     ac_prog_version=`$MAKEINFO --version 2>&1 |
                    sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
-  echo "configure:7411: version of makeinfo is $ac_prog_version" >&5
+  echo "configure:7467: version of makeinfo is $ac_prog_version" >&5
   case $ac_prog_version in
     '')     gcc_cv_prog_makeinfo_modern=no;;
     4.[2-9]*)
