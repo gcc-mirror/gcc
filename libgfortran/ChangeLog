@@ -1,3 +1,8 @@
+2005-07-23  Jerry DeLisle  <jvdelisle@verizon.net>
+
+    * io/write.c (write_float): Revise output of IEEE exceptional
+    values to comply with F95 and F2003 standards.
+    
 2005-07-22 Jerry DeLisle <jvdelisle@verizon.net>
 
 	PR libfortran/22570
