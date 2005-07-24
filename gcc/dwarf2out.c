@@ -11531,6 +11531,25 @@ gen_variable_die (tree decl, dw_die_ref context_die)
 
   dw_die_ref old_die = lookup_decl_die (decl);
   int declaration = (DECL_EXTERNAL (decl)
+		     /* If DECL is COMDAT and has not actually been
+			emitted, we cannot take its address; there
+			might end up being no definition anywhere in
+			the program.  For example, consider the C++
+			test case:
+
+                          template <class T>
+                          struct S { static const int i = 7; };
+
+                          template <class T>
+                          const int S<T>::i;
+
+                          int f() { return S<int>::i; }
+			  
+			Here, S<int>::i is not DECL_EXTERNAL, but no
+			definition is required, so the compiler will
+			not emit a definition.  */  
+		     || (TREE_CODE (decl) == VAR_DECL
+			 && DECL_COMDAT (decl) && !TREE_ASM_WRITTEN (decl))
 		     || class_or_namespace_scope_p (context_die));
 
   if (origin != NULL)
