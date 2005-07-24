@@ -12,6 +12,14 @@
        neg_inf = -1.0/zero
        nan = zero/zero
 
+! check a field width = 0
+       fmt = '(F0.0)'
+       write(l,fmt=fmt)pos_inf
+       if (l.ne.'+Inf') call abort
+       write(l,fmt=fmt)neg_inf
+       if (l.ne.'-Inf') call abort
+       write(l,fmt=fmt)nan
+       if (l.ne.' NaN') call abort
 
 ! check a field width < 3
        fmt = '(F2.0)'
@@ -27,7 +35,7 @@
        write(l,fmt=fmt)pos_inf
        if (l.ne.'Inf') call abort
        write(l,fmt=fmt)neg_inf
-       if (l.ne.'Inf') call abort
+       if (l.ne.'***') call abort
        write(l,fmt=fmt)nan
        if (l.ne.'NaN') call abort
 
