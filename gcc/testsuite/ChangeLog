@@ -1,3 +1,19 @@
+2005-07-25  Ira Rosen  <irar@il.ibm.com>
+
+	* gcc.dg/vect/vect.exp: Change verbosity level to 4.
+	* gfortran.dg/vect/vect.exp, g++.dg/vect/vect.exp: Likewise.
+	* gcc.dg/vect/pr20122.c: Add vectorizable version of the loop.
+	* gcc.dg/vect/vect-100.c: New test.
+	* gcc.dg/vect/vect-101.c, gcc.dg/vect/vect-102.c,
+	gcc.dg/vect/vect-103.c, gcc.dg/vect/vect-104.c,
+	gcc.dg/vect/vect-105.c, gcc.dg/vect/vect-115.c: Likewise.
+	* gcc.dg/vect/vect-116.c: Renamed (from vect-100.c).
+	* gcc.dg/vect/vect-43.c: Add vectorizable version of the loop.
+	* gcc.dg/vect/vect-91.c: Now 3 loops are vectorizable.
+	* gfortran.dg/vect/vect-4.f90: Now vectorizable.
+	* gfortran.dg/vect/pr19049.f90: New testcase.
+	* g++.dg/vect/pr21218.cc, gcc.dg/tree-ssa/ltrans-8.c: Likewise.
+
 2005-07-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20050713-1.c: New test.

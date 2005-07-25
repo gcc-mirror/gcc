@@ -2219,6 +2219,40 @@ may_be_aliased (tree var)
 }
 
 
+/* Given two symbols return TRUE if one is in the alias set of the other.  */
+bool
+is_aliased_with (tree tag, tree sym)
+{
+  size_t i;
+  varray_type aliases;
+
+  if (var_ann (sym)->is_alias_tag)
+    {
+      aliases = var_ann (tag)->may_aliases;
+
+      if (aliases == NULL)
+	return false;
+
+      for (i = 0; i < VARRAY_ACTIVE_SIZE (aliases); i++)
+	if (VARRAY_TREE (aliases, i) == sym)
+	  return true;
+    }
+  else
+    {
+      aliases = var_ann (sym)->may_aliases;
+
+      if (aliases == NULL)
+	return false;
+
+      for (i = 0; i < VARRAY_ACTIVE_SIZE (aliases); i++)
+	if (VARRAY_TREE (aliases, i) == tag)
+	  return true;
+    }
+
+  return false;
+}
+
+
 /* Add VAR to the list of may-aliases of PTR's type tag.  If PTR
    doesn't already have a type tag, create one.  */
 

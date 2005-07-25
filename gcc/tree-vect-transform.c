@@ -189,8 +189,7 @@ vect_create_addr_base_for_vector_ref (tree stmt,
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
-  tree data_ref_base = 
-    unshare_expr (STMT_VINFO_VECT_DR_BASE_ADDRESS (stmt_info));
+  tree data_ref_base = unshare_expr (DR_BASE_ADDRESS (dr));
   tree base_name = build_fold_indirect_ref (data_ref_base);
   tree ref = DR_REF (dr);
   tree scalar_type = TREE_TYPE (ref);
@@ -199,9 +198,11 @@ vect_create_addr_base_for_vector_ref (tree stmt,
   tree new_temp;
   tree addr_base, addr_expr;
   tree dest, new_stmt;
-  tree base_offset = unshare_expr (STMT_VINFO_VECT_INIT_OFFSET (stmt_info));
+  tree base_offset = unshare_expr (DR_OFFSET (dr));
+  tree init = unshare_expr (DR_INIT (dr));
 
   /* Create base_offset */
+  base_offset = size_binop (PLUS_EXPR, base_offset, init);
   dest = create_tmp_var (TREE_TYPE (base_offset), "base_off");
   add_referenced_tmp_var (dest);
   base_offset = force_gimple_operand (base_offset, &new_stmt, false, dest);  
@@ -212,7 +213,7 @@ vect_create_addr_base_for_vector_ref (tree stmt,
       tree tmp = create_tmp_var (TREE_TYPE (base_offset), "offset");
       add_referenced_tmp_var (tmp);
       offset = fold_build2 (MULT_EXPR, TREE_TYPE (offset), offset,
-			    STMT_VINFO_VECT_STEP (stmt_info));
+			    DR_STEP (dr));
       base_offset = fold_build2 (PLUS_EXPR, TREE_TYPE (base_offset),
 				 base_offset, offset);
       base_offset = force_gimple_operand (base_offset, &new_stmt, false, tmp);  
@@ -328,9 +329,9 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
   tree ptr_update;
   tree data_ref_ptr;
   tree type, tmp, size;
+  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
 
-  base_name =  build_fold_indirect_ref (unshare_expr (
-		      STMT_VINFO_VECT_DR_BASE_ADDRESS (stmt_info)));
+  base_name =  build_fold_indirect_ref (unshare_expr (DR_BASE_ADDRESS (dr)));
 
   if (vect_print_dump_info (REPORT_DETAILS))
     {
@@ -357,9 +358,9 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
   
   
   /** (2) Add aliasing information to the new vector-pointer:
-          (The points-to info (SSA_NAME_PTR_INFO) may be defined later.)  **/
+          (The points-to info (DR_PTR_INFO) may be defined later.)  **/
   
-  tag = STMT_VINFO_MEMTAG (stmt_info);
+  tag = DR_MEMTAG (dr);
   gcc_assert (tag);
 
   /* If tag is a variable (and NOT_A_TAG) than a new type alias
@@ -369,7 +370,7 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
   else
     var_ann (vect_ptr)->type_mem_tag = tag;
 
-  var_ann (vect_ptr)->subvars = STMT_VINFO_SUBVARS (stmt_info);
+  var_ann (vect_ptr)->subvars = DR_SUBVARS (dr);
 
   /** (3) Calculate the initial address the vector-pointer, and set
           the vector-pointer to point to it before the loop:  **/
@@ -397,9 +398,8 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
   if (only_init) /* No update in loop is required.  */
     {
       /* Copy the points-to information if it exists. */
-      if (STMT_VINFO_PTR_INFO (stmt_info))
-        duplicate_ssa_name_ptr_info (vect_ptr_init,
-                                     STMT_VINFO_PTR_INFO (stmt_info));
+      if (DR_PTR_INFO (dr))
+        duplicate_ssa_name_ptr_info (vect_ptr_init, DR_PTR_INFO (dr));
       return vect_ptr_init;
     }
 
@@ -433,8 +433,8 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
   data_ref_ptr = TREE_OPERAND (vec_stmt, 0);
 
   /* Copy the points-to information if it exists. */
-  if (STMT_VINFO_PTR_INFO (stmt_info))
-    duplicate_ssa_name_ptr_info (data_ref_ptr, STMT_VINFO_PTR_INFO (stmt_info));
+  if (DR_PTR_INFO (dr))
+    duplicate_ssa_name_ptr_info (data_ref_ptr, DR_PTR_INFO (dr));
   return data_ref_ptr;
 }
 
@@ -2625,18 +2625,16 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
    NITERS iterations were peeled from LOOP.  DR represents a data reference
    in LOOP.  This function updates the information recorded in DR to
    account for the fact that the first NITERS iterations had already been 
-   executed.  Specifically, it updates the OFFSET field of stmt_info.  */
+   executed.  Specifically, it updates the OFFSET field of DR.  */
 
 static void
 vect_update_init_of_dr (struct data_reference *dr, tree niters)
 {
-  stmt_vec_info stmt_info = vinfo_for_stmt (DR_STMT (dr));
-  tree offset = STMT_VINFO_VECT_INIT_OFFSET (stmt_info);
+  tree offset = DR_OFFSET (dr);
       
-  niters = fold_build2 (MULT_EXPR, TREE_TYPE (niters), niters,
-			STMT_VINFO_VECT_STEP (stmt_info));
+  niters = fold_build2 (MULT_EXPR, TREE_TYPE (niters), niters, DR_STEP (dr));
   offset = fold_build2 (PLUS_EXPR, TREE_TYPE (offset), offset, niters);
-  STMT_VINFO_VECT_INIT_OFFSET (stmt_info) = offset;
+  DR_OFFSET (dr) = offset;
 }
 
 
@@ -2652,21 +2650,14 @@ static void
 vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters)
 {
   unsigned int i;
-  varray_type loop_write_datarefs = LOOP_VINFO_DATAREF_WRITES (loop_vinfo);
-  varray_type loop_read_datarefs = LOOP_VINFO_DATAREF_READS (loop_vinfo);
+  varray_type datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
 
   if (vect_dump && (dump_flags & TDF_DETAILS))
     fprintf (vect_dump, "=== vect_update_inits_of_dr ===");
 
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (loop_write_datarefs); i++)
+  for (i = 0; i < VARRAY_ACTIVE_SIZE (datarefs); i++)
     {
-      struct data_reference *dr = VARRAY_GENERIC_PTR (loop_write_datarefs, i);
-      vect_update_init_of_dr (dr, niters);
-    }
-
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (loop_read_datarefs); i++)
-    {
-      struct data_reference *dr = VARRAY_GENERIC_PTR (loop_read_datarefs, i);
+      struct data_reference *dr = VARRAY_GENERIC_PTR (datarefs, i);
       vect_update_init_of_dr (dr, niters);
     }
 }

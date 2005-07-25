@@ -40,7 +40,7 @@ set DEFAULT_VECTCFLAGS ""
 
 # These flags are used for all targets.
 lappend DEFAULT_VECTCFLAGS "-O2" "-ftree-vectorize" \
-  "-ftree-vectorizer-verbose=3" "-fdump-tree-vect-stats"
+  "-ftree-vectorizer-verbose=4" "-fdump-tree-vect-stats"
 
 # Skip these tests for targets that do not support generating vector
 # code.  Set additional target-dependent vector flags, which can be

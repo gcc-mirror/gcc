@@ -73,6 +73,7 @@ enum verbosity_levels {
   REPORT_VECTORIZED_LOOPS,
   REPORT_UNVECTORIZED_LOOPS,
   REPORT_ALIGNMENT,
+  REPORT_DR_DETAILS,
   REPORT_BAD_FORM_LOOPS,
   REPORT_OUTER_LOOPS,
   REPORT_DETAILS,
@@ -116,27 +117,29 @@ typedef struct _loop_vec_info {
                  unaligned_dr.  */
   int peeling_for_alignment;
 
-  /* All data references in the loop that are being written to.  */
-  varray_type data_ref_writes;
+  /* All data references in the loop.  */
+  varray_type datarefs;
 
-  /* All data references in the loop that are being read from.  */
-  varray_type data_ref_reads;
+  /* All data dependences in the loop.  */
+  varray_type ddrs;
 
+  /* The loop location in the source.  */
+  LOC loop_line_number;
 } *loop_vec_info;
 
-/* Access Functions.  */
-#define LOOP_VINFO_LOOP(L)           (L)->loop
-#define LOOP_VINFO_BBS(L)            (L)->bbs
-#define LOOP_VINFO_EXIT_COND(L)      (L)->exit_cond
-#define LOOP_VINFO_NITERS(L)         (L)->num_iters
-#define LOOP_VINFO_VECTORIZABLE_P(L) (L)->vectorizable
-#define LOOP_VINFO_VECT_FACTOR(L)    (L)->vectorization_factor
-#define LOOP_VINFO_DATAREF_WRITES(L) (L)->data_ref_writes
-#define LOOP_VINFO_DATAREF_READS(L)  (L)->data_ref_reads
-#define LOOP_VINFO_INT_NITERS(L) (TREE_INT_CST_LOW ((L)->num_iters))
+  /* Access Functions.  */
+#define LOOP_VINFO_LOOP(L)            (L)->loop
+#define LOOP_VINFO_BBS(L)             (L)->bbs
+#define LOOP_VINFO_EXIT_COND(L)       (L)->exit_cond
+#define LOOP_VINFO_NITERS(L)          (L)->num_iters
+#define LOOP_VINFO_VECTORIZABLE_P(L)  (L)->vectorizable
+#define LOOP_VINFO_VECT_FACTOR(L)     (L)->vectorization_factor
+#define LOOP_VINFO_DATAREFS(L)        (L)->datarefs
+#define LOOP_VINFO_DDRS(L)            (L)->ddrs
+#define LOOP_VINFO_INT_NITERS(L)      (TREE_INT_CST_LOW ((L)->num_iters))
 #define LOOP_PEELING_FOR_ALIGNMENT(L) (L)->peeling_for_alignment
-#define LOOP_VINFO_UNALIGNED_DR(L) (L)->unaligned_dr
-
+#define LOOP_VINFO_UNALIGNED_DR(L)    (L)->unaligned_dr
+#define LOOP_VINFO_LOC(L)             (L)->loop_line_number
 
 #define LOOP_VINFO_NITERS_KNOWN_P(L)                     \
 (host_integerp ((L)->num_iters,0)                        \
@@ -192,45 +195,6 @@ typedef struct _stmt_vec_info {
   /* Information about the data-ref (access function, etc).  */
   struct data_reference *data_ref_info;
 
-  /* Aliasing information.  This field represents the symbol that
-     should be aliased by a pointer holding the address of this data
-     reference.  If the original data reference was a pointer
-     dereference, then this field contains the memory tag that should
-     be used by the new vector-pointer.  */
-  tree memtag;
-  struct ptr_info_def *ptr_info;
-  subvar_t subvars;
-
-  /** The following fields are used to store the information about 
-      data-reference. {base_address + initial_offset} is the first location 
-      accessed by data-ref in the loop, and step is the stride of data-ref in 
-      the loop in bytes;
-      e.g.:
-    
-                       Example 1                      Example 2
-      data-ref         a[j].b[i][j]                   a + 4B (a is int*)
-      
-      base_address     &a                             a
-      initial_offset   j_0*D_j + i_0*D_i + C          4
-      step             D_j                            4
-
-      data-reference structure info:
-      base_name        a                              NULL
-      access_fn        <access_fns of indexes of b>   (0, +, 1)
-
-  **/
-  /* The above base_address, offset and step.  */
-  tree base_address;
-  tree initial_offset;
-  tree step;
-
-  /* Alignment information. Whether the base of the data-reference is aligned 
-     to vectype.  */
-  bool base_aligned_p;
-  /* Alignment information. The offset of the data-reference from its base 
-     in bytes.  */
-  tree misalignment;
-
   /* List of datarefs that are known to have the same alignment as the dataref
      of this stmt.  */
   VEC(dr_p,heap) *same_align_refs;
@@ -249,14 +213,6 @@ typedef struct _stmt_vec_info {
 #define STMT_VINFO_VECTYPE(S)             (S)->vectype
 #define STMT_VINFO_VEC_STMT(S)            (S)->vectorized_stmt
 #define STMT_VINFO_DATA_REF(S)            (S)->data_ref_info
-#define STMT_VINFO_MEMTAG(S)              (S)->memtag
-#define STMT_VINFO_PTR_INFO(S)            (S)->ptr_info
-#define STMT_VINFO_SUBVARS(S)             (S)->subvars
-#define STMT_VINFO_VECT_DR_BASE_ADDRESS(S)(S)->base_address
-#define STMT_VINFO_VECT_INIT_OFFSET(S)    (S)->initial_offset
-#define STMT_VINFO_VECT_STEP(S)           (S)->step
-#define STMT_VINFO_VECT_BASE_ALIGNED_P(S) (S)->base_aligned_p
-#define STMT_VINFO_VECT_MISALIGNMENT(S)   (S)->misalignment
 #define STMT_VINFO_SAME_ALIGN_REFS(S)     (S)->same_align_refs
 #define STMT_VINFO_DEF_TYPE(S)            (S)->def_type
 
