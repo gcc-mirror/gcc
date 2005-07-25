@@ -1,3 +1,9 @@
+2005-07-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/20063
+	* data.c (gfc_assign_data_value_range): Call
+	create_character_initializer if last_ts is a character type.
+
 2005-07-22 Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/16940
