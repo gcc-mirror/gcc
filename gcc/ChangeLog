@@ -1,3 +1,88 @@
+2005-07-25  Ira Rosen  <irar@il.ibm.com>
+
+	* expr.c (highest_pow2_factor): Make extern.
+	* tree-data-ref.c (ptr_decl_may_alias_p): New function.
+	(ptr_ptr_may_alias_p, may_alias_p, record_ptr_differ_p,
+	record_array_differ_p, array_ptr_differ_p): Likewise.
+	(base_object_differ_p): Rename (from array_base_name_differ_p). Support
+	additional cases. Call the above functions.
+	(base_addr_differ_p): Moved from tree-vect-analyze.c. Call
+	base_object_differ_p when there are two base objects. Otherwise, compare
+	base address and offset. Call may_alias_p.
+	(dump_data_reference): Use a correct field name.
+	(analyze_array): Make static. Initialize new data-ref fields.
+	(analyze_indirect_ref): New function.
+	(init_data_ref): Initialize new data-ref fields.   
+	(strip_conversion): Moved from tree-vect-analyze.c. 
+	(analyze_offset_expr, get_ptr_offset, address_analysis, object_analysis):
+	Likewise.
+	(analyze_offset): New function.
+ 	(create_data_ref): Likewise.
+	(initialize_data_dependence_relation): Call base_addr_differ_p. Compare
+	dimensions for ARRAY_REFs only.
+	(build_classic_dist_vector): Make static.
+	(access_functions_are_affine_or_constant_p): Call macro to get the
+	address of access functions.
+	(compute_all_dependences): Add new parameter
+	compute_self_and_read_read_dependences. Compute self and read-read  
+	dependences if it is true.
+	(find_data_references_in_loop): Call create_data_ref. Initialize new
+	data-ref fields.
+	(compute_data_dependences_for_loop): Add new parameter
+	compute_self_and_read_read_dependences. Remove parameter nb_loops,
+	compute nb_loops. Call compute_all_dependences, build_classic_dist_vector
+	and build_classic_dir_vector with correct parameters.
+	(analyze_all_data_dependences): Call compute_data_dependences_for_loop with
+	correct parameters. Compare dimensions for ARRAY_REFs only.
+	(free_data_refs): Call macro to free access functions.
+	* tree-data-ref.h (struct first_location_in_loop): New structure. Move
+	fields from stmt_vinfo.
+	(struct base_object_info): New structure.
+	(struct data_reference): Move fields to base_object_info. Add fields   
+	first_location and object_info for above structures. Move fields from
+	stmt_info: memtag, ptr_info, subvars, misalignment. Add new field aligned_to.
+	Add macros to access the new fields.
+	Update functions declarations.
+	* tree-flow.h (is_aliased_with): Declare.
+	* tree-loop-linear.c (linear_transform_loops): Call
+	compute_data_dependences_for_loop with correct parameters.
+	* tree-ssa-alias.c (is_aliased_with): New function.
+ 	* tree-vect-analyze.c (vect_get_ptr_offset): Remove.
+	(vect_analyze_offset_expr, vect_base_addr_differ_p): Likewise.
+	(vect_analyze_data_ref_dependence): Get ddr. Remove call to
+	vect_base_addr_differ_p, compute_subscript_distance and
+	build_classic_dist_vector. Add printings. Check absolute value of
+	distance.
+	(vect_analyze_data_ref_dependences): Go through ddrs instead of data-refs.
+	(vect_compute_data_ref_alignment): Get the fields of data-ref instead of
+	stmt. Check aligned_to. Check if the base is aligned. Remove conversion
+	to bytes. Add printing.
+	(vect_compute_data_refs_alignment): Go through loads and stores in one loop.
+	(vect_enhance_data_refs_alignment, vect_analyze_data_refs_alignment,
+	vect_analyze_data_ref_access): Likewise.
+	(vect_analyze_pointer_ref_access): Remove.
+	(vect_address_analysis, vect_object_analysis): Likewise.
+	(vect_analyze_data_refs): Call compute_data_dependences_for_loop to find
+	and analyze data-refs in the loop.
+	* tree-vect-transform.c (vect_create_addr_base_for_vector_ref): Get the  
+	fields of data-ref instead of stmt. Add init to the offset from the base.
+	(vect_create_data_ref_ptr): Get the fields of data-ref instead of stmt.
+	(vect_update_init_of_dr): Likewise.
+	(vect_update_inits_of_drs): Go through loads and stores in one loop.
+	* tree-vectorizer.c (new_stmt_vec_info): Remove initialization of removed
+	fields.
+	(new_loop_vec_info): Initialize new fields.
+	(destroy_loop_vec_info): Free new fields.
+	(vect_strip_conversion): Remove.
+	* tree-vectorizer.h (enum verbosity_levels): Add new verbosity level.
+	(struct _loop_vec_info): Unify data_ref_writes and data_ref_reads into
+	datarefs. Add new field ddrs. 
+	Add macros for the new fields access.
+	(struct _stmt_vec_info): Remove: base_address, initial_offset, step,
+	base_aligned_p, misalignment, memtag, ptr_info and subvars.
+	Remove their macros.
+	* tree.h (highest_pow2_factor): Declare.
+
 2005-07-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* calls.c (store_one_arg): Check for sibling call MEM arguments

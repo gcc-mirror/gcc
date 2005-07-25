@@ -295,7 +295,7 @@ linear_transform_loops (struct loops *loops)
 			       "dependence_relations");
       
   
-      compute_data_dependences_for_loop (depth, loop_nest,
+      compute_data_dependences_for_loop (loop_nest, true,
 					 &datarefs, &dependence_relations);
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{

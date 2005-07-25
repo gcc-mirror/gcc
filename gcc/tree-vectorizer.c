@@ -1347,14 +1347,6 @@ new_stmt_vec_info (tree stmt, loop_vec_info loop_vinfo)
     STMT_VINFO_DEF_TYPE (res) = vect_unknown_def_type;
   else
     STMT_VINFO_DEF_TYPE (res) = vect_loop_def;
-  STMT_VINFO_MEMTAG (res) = NULL;
-  STMT_VINFO_PTR_INFO (res) = NULL;
-  STMT_VINFO_SUBVARS (res) = NULL;
-  STMT_VINFO_VECT_DR_BASE_ADDRESS (res) = NULL;
-  STMT_VINFO_VECT_INIT_OFFSET (res) = NULL_TREE;
-  STMT_VINFO_VECT_STEP (res) = NULL_TREE;
-  STMT_VINFO_VECT_BASE_ALIGNED_P (res) = false;
-  STMT_VINFO_VECT_MISALIGNMENT (res) = NULL_TREE;
   STMT_VINFO_SAME_ALIGN_REFS (res) = VEC_alloc (dr_p, heap, 5);
 
   return res;
@@ -1407,10 +1399,8 @@ new_loop_vec_info (struct loop *loop)
   LOOP_VINFO_VECTORIZABLE_P (res) = 0;
   LOOP_PEELING_FOR_ALIGNMENT (res) = 0;
   LOOP_VINFO_VECT_FACTOR (res) = 0;
-  VARRAY_GENERIC_PTR_INIT (LOOP_VINFO_DATAREF_WRITES (res), 20,
-			   "loop_write_datarefs");
-  VARRAY_GENERIC_PTR_INIT (LOOP_VINFO_DATAREF_READS (res), 20,
-			   "loop_read_datarefs");
+  VARRAY_GENERIC_PTR_INIT (LOOP_VINFO_DATAREFS (res), 20, "loop_datarefs");
+  VARRAY_GENERIC_PTR_INIT (LOOP_VINFO_DDRS (res), 20, "loop_ddrs");
   LOOP_VINFO_UNALIGNED_DR (res) = NULL;
 
   return res;
@@ -1470,36 +1460,10 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo)
     }
 
   free (LOOP_VINFO_BBS (loop_vinfo));
-  varray_clear (LOOP_VINFO_DATAREF_WRITES (loop_vinfo));
-  varray_clear (LOOP_VINFO_DATAREF_READS (loop_vinfo));
+  varray_clear (LOOP_VINFO_DATAREFS (loop_vinfo));
+  varray_clear (LOOP_VINFO_DDRS (loop_vinfo));
 
   free (loop_vinfo);
-}
-
-
-/* Function vect_strip_conversions
-
-   Strip conversions that don't narrow the mode.  */
-
-tree 
-vect_strip_conversion (tree expr)
-{
-  tree to, ti, oprnd0;
-  
-  while (TREE_CODE (expr) == NOP_EXPR || TREE_CODE (expr) == CONVERT_EXPR)
-    {
-      to = TREE_TYPE (expr);
-      oprnd0 = TREE_OPERAND (expr, 0);
-      ti = TREE_TYPE (oprnd0);
- 
-      if (!INTEGRAL_TYPE_P (to) || !INTEGRAL_TYPE_P (ti))
-	return NULL_TREE;
-      if (GET_MODE_SIZE (TYPE_MODE (to)) < GET_MODE_SIZE (TYPE_MODE (ti)))
-	return NULL_TREE;
-      
-      expr = oprnd0;
-    }
-  return expr; 
 }
 
 

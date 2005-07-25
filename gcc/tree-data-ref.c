@@ -94,6 +94,180 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-scalar-evolution.h"
 #include "tree-pass.h"
 
+static tree object_analysis (tree, tree, bool, struct data_reference **, 
+			     tree *, tree *, tree *, tree *, tree *,
+			     struct ptr_info_def **, subvar_t *);
+static struct data_reference * init_data_ref (tree, tree, tree, tree, bool, 
+					      tree, tree, tree, tree, tree, 
+					      struct ptr_info_def *,
+					      enum  data_ref_type);
+
+/* Determine if PTR and DECL may alias, the result is put in ALIASED.
+   Return FALSE if there is no type memory tag for PTR.
+*/
+static bool
+ptr_decl_may_alias_p (tree ptr, tree decl, 
+		      struct data_reference *ptr_dr, 
+		      bool *aliased)
+{
+  tree tag;
+   
+  gcc_assert (TREE_CODE (ptr) == SSA_NAME && DECL_P (decl));
+
+  tag = get_var_ann (SSA_NAME_VAR (ptr))->type_mem_tag;
+  if (!tag)
+    tag = DR_MEMTAG (ptr_dr);
+  if (!tag)
+    return false;
+  
+  *aliased = is_aliased_with (tag, decl);      
+  return true;
+}
+
+
+/* Determine if two pointers may alias, the result is put in ALIASED.
+   Return FALSE if there is no type memory tag for one of the pointers.
+*/
+static bool
+ptr_ptr_may_alias_p (tree ptr_a, tree ptr_b, 
+		     struct data_reference *dra, 
+		     struct data_reference *drb, 
+		     bool *aliased)
+{  
+  tree tag_a, tag_b;
+
+  tag_a = get_var_ann (SSA_NAME_VAR (ptr_a))->type_mem_tag;
+  if (!tag_a)
+    tag_a = DR_MEMTAG (dra);
+  if (!tag_a)
+    return false;
+  tag_b = get_var_ann (SSA_NAME_VAR (ptr_b))->type_mem_tag;
+  if (!tag_b)
+    tag_b = DR_MEMTAG (drb);
+  if (!tag_b)
+    return false;
+  *aliased = (tag_a == tag_b);
+  return true;
+}
+
+
+/* Determine if BASE_A and BASE_B may alias, the result is put in ALIASED.
+   Return FALSE if there is no type memory tag for one of the symbols.
+*/
+static bool
+may_alias_p (tree base_a, tree base_b,
+	     struct data_reference *dra,
+	     struct data_reference *drb,
+	     bool *aliased)
+{
+  if (TREE_CODE (base_a) == ADDR_EXPR || TREE_CODE (base_b) == ADDR_EXPR)
+    {
+      if (TREE_CODE (base_a) == ADDR_EXPR && TREE_CODE (base_b) == ADDR_EXPR)
+	{
+	 *aliased = (TREE_OPERAND (base_a, 0) == TREE_OPERAND (base_b, 0));
+	 return true;
+	}
+      if (TREE_CODE (base_a) == ADDR_EXPR)
+	return ptr_decl_may_alias_p (base_b, TREE_OPERAND (base_a, 0), drb, 
+				     aliased);
+      else
+	return ptr_decl_may_alias_p (base_a, TREE_OPERAND (base_b, 0), dra, 
+				     aliased);
+    }
+
+  return ptr_ptr_may_alias_p (base_a, base_b, dra, drb, aliased);
+}
+
+
+/* Determine if a pointer (BASE_A) and a record/union access (BASE_B)
+   are not aliased. Return TRUE if they differ.  */
+static bool
+record_ptr_differ_p (struct data_reference *dra,
+		     struct data_reference *drb)
+{
+  bool aliased;
+  tree base_a = DR_BASE_OBJECT (dra);
+  tree base_b = DR_BASE_OBJECT (drb);
+
+  if (TREE_CODE (base_b) != COMPONENT_REF)
+    return false;
+
+  /* Peel COMPONENT_REFs to get to the base. Do not peel INDIRECT_REFs.
+     For a.b.c.d[i] we will get a, and for a.b->c.d[i] we will get a.b.  
+     Probably will be unnecessary with struct alias analysis.  */
+  while (TREE_CODE (base_b) == COMPONENT_REF)
+     base_b = TREE_OPERAND (base_b, 0);
+  /* Compare a record/union access (b.c[i] or p->c[i]) and a pointer
+     ((*q)[i]).  */
+  if (TREE_CODE (base_a) == INDIRECT_REF
+      && ((TREE_CODE (base_b) == VAR_DECL
+	   && (ptr_decl_may_alias_p (TREE_OPERAND (base_a, 0), base_b, dra, 
+				     &aliased)
+	       && !aliased))
+	  || (TREE_CODE (base_b) == INDIRECT_REF
+	      && (ptr_ptr_may_alias_p (TREE_OPERAND (base_a, 0), 
+				       TREE_OPERAND (base_b, 0), dra, drb, 
+				       &aliased)
+		  && !aliased))))
+    return true;
+  else
+    return false;
+}
+
+    
+/* Determine if an array access (BASE_A) and a record/union access (BASE_B)
+   are not aliased. Return TRUE if they differ.  */
+static bool
+record_array_differ_p (struct data_reference *dra,
+		       struct data_reference *drb)
+{  
+  bool aliased;
+  tree base_a = DR_BASE_OBJECT (dra);
+  tree base_b = DR_BASE_OBJECT (drb);
+
+  if (TREE_CODE (base_b) != COMPONENT_REF)
+    return false;
+
+  /* Peel COMPONENT_REFs to get to the base. Do not peel INDIRECT_REFs.
+     For a.b.c.d[i] we will get a, and for a.b->c.d[i] we will get a.b.  
+     Probably will be unnecessary with struct alias analysis.  */
+  while (TREE_CODE (base_b) == COMPONENT_REF)
+     base_b = TREE_OPERAND (base_b, 0);
+
+  /* Compare a record/union access (b.c[i] or p->c[i]) and an array access 
+     (a[i]). In case of p->c[i] use alias analysis to verify that p is not
+     pointing to a.  */
+  if (TREE_CODE (base_a) == VAR_DECL
+      && (TREE_CODE (base_b) == VAR_DECL
+	  || (TREE_CODE (base_b) == INDIRECT_REF
+	      && (ptr_decl_may_alias_p (TREE_OPERAND (base_b, 0), base_a, drb, 
+					&aliased)
+		  && !aliased))))
+    return true;
+  else
+    return false;
+}
+
+
+/* Determine if an array access (BASE_A) and a pointer (BASE_B)
+   are not aliased. Return TRUE if they differ.  */
+static bool
+array_ptr_differ_p (tree base_a, tree base_b, 	     
+		    struct data_reference *drb)
+{  
+  bool aliased;
+
+  /* In case one of the bases is a pointer (a[i] and (*p)[i]), we check with the
+     help of alias analysis that p is not pointing to a.  */
+  if (TREE_CODE (base_a) == VAR_DECL && TREE_CODE (base_b) == INDIRECT_REF 
+      && (ptr_decl_may_alias_p (TREE_OPERAND (base_b, 0), base_a, drb, &aliased)
+	  && !aliased))
+    return true;
+  else
+    return false;
+}
+
+
 /* This is the simplest data dependence test: determines whether the
    data references A and B access the same array/region.  Returns
    false when the property is not computable at compile time.
@@ -101,13 +275,14 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    utility will not be necessary when alias_sets_conflict_p will be
    less conservative.  */
 
-bool
-array_base_name_differ_p (struct data_reference *a,
-                          struct data_reference *b,
-                          bool *differ_p)
+static bool
+base_object_differ_p (struct data_reference *a,
+		      struct data_reference *b,
+		      bool *differ_p)
 {
-  tree base_a = DR_BASE_NAME (a);
-  tree base_b = DR_BASE_NAME (b);
+  tree base_a = DR_BASE_OBJECT (a);
+  tree base_b = DR_BASE_OBJECT (b);
+  bool aliased;
 
   if (!base_a || !base_b)
     return false;
@@ -152,6 +327,26 @@ array_base_name_differ_p (struct data_reference *a,
       return true;
     }
 
+  /* In case one of the bases is a pointer (a[i] and (*p)[i]), we check with the
+     help of alias analysis that p is not pointing to a.  */
+  if (array_ptr_differ_p (base_a, base_b, b) 
+      || array_ptr_differ_p (base_b, base_a, a))
+    {
+      *differ_p = true;
+      return true;
+    }
+
+  /* If the bases are pointers ((*q)[i] and (*p)[i]), we check with the
+     help of alias analysis they don't point to the same bases.  */
+  if (TREE_CODE (base_a) == INDIRECT_REF && TREE_CODE (base_b) == INDIRECT_REF 
+      && (may_alias_p (TREE_OPERAND (base_a, 0), TREE_OPERAND (base_b, 0), a, b, 
+		       &aliased)
+	  && !aliased))
+    {
+      *differ_p = true;
+      return true;
+    }
+
   /* Compare two record/union bases s.a and t.b: s != t or (a != b and
      s and t are not unions).  */
   if (TREE_CODE (base_a) == COMPONENT_REF && TREE_CODE (base_b) == COMPONENT_REF
@@ -166,13 +361,18 @@ array_base_name_differ_p (struct data_reference *a,
       return true;
     }
 
-  /* Compare a record/union access and an array access.  */ 
-  if ((TREE_CODE (base_a) == VAR_DECL
-       && (TREE_CODE (base_b) == COMPONENT_REF
-           && TREE_CODE (TREE_OPERAND (base_b, 0)) == VAR_DECL))
-      || (TREE_CODE (base_b) == VAR_DECL
-       && (TREE_CODE (base_a) == COMPONENT_REF
-           && TREE_CODE (TREE_OPERAND (base_a, 0)) == VAR_DECL)))
+  /* Compare a record/union access (b.c[i] or p->c[i]) and a pointer
+     ((*q)[i]).  */
+  if (record_ptr_differ_p (a, b) || record_ptr_differ_p (b, a))
+    {
+      *differ_p = true;
+      return true;
+    }
+
+  /* Compare a record/union access (b.c[i] or p->c[i]) and an array access 
+     (a[i]). In case of p->c[i] use alias analysis to verify that p is not
+     pointing to a.  */
+  if (record_array_differ_p (a, b) || record_array_differ_p (b, a))
     {
       *differ_p = true;
       return true;
@@ -180,6 +380,90 @@ array_base_name_differ_p (struct data_reference *a,
 
   return false;
 }
+
+/* Function base_addr_differ_p.
+
+   This is the simplest data dependence test: determines whether the
+   data references A and B access the same array/region.  Returns
+   false when the property is not computable at compile time.
+   Otherwise return true, and DIFFER_P will record the result. This
+   utility will not be necessary when alias_sets_conflict_p will be
+   less conservative.  */
+
+
+static bool
+base_addr_differ_p (struct data_reference *dra,
+		    struct data_reference *drb,
+		    bool *differ_p)
+{
+  tree addr_a = DR_BASE_ADDRESS (dra);
+  tree addr_b = DR_BASE_ADDRESS (drb);
+  tree type_a, type_b;
+  bool aliased;
+
+  if (!addr_a || !addr_b)
+    return false;
+
+  type_a = TREE_TYPE (addr_a);
+  type_b = TREE_TYPE (addr_b);
+
+  gcc_assert (POINTER_TYPE_P (type_a) &&  POINTER_TYPE_P (type_b));
+  
+  /* Compare base objects first if possible. If DR_BASE_OBJECT is NULL, it means
+     that the data-ref is of INDIRECT_REF, and alias analysis will be applied to 
+     reveal the dependence.  */
+  if (DR_BASE_OBJECT (dra) && DR_BASE_OBJECT (drb))
+    return base_object_differ_p (dra, drb, differ_p);
+
+  /* If base addresses are the same, we check the offsets, since the access of 
+     the data-ref is described by {base addr + offset} and its access function,
+     i.e., in order to decide whether the bases of data-refs are the same we 
+     compare both base addresses and offsets.  */
+  if (addr_a == addr_b 
+      || (TREE_CODE (addr_a) == ADDR_EXPR && TREE_CODE (addr_b) == ADDR_EXPR
+         && TREE_OPERAND (addr_a, 0) == TREE_OPERAND (addr_b, 0)))
+    {
+      /* Compare offsets.  */
+      tree offset_a = DR_OFFSET (dra); 
+      tree offset_b = DR_OFFSET (drb);
+      
+      gcc_assert (!DR_BASE_OBJECT (dra) && !DR_BASE_OBJECT (drb));
+
+      STRIP_NOPS (offset_a);
+      STRIP_NOPS (offset_b);
+
+      /* FORNOW: we only compare offsets that are MULT_EXPR, i.e., we don't handle
+	 PLUS_EXPR.  */
+      if ((offset_a == offset_b)
+	  || (TREE_CODE (offset_a) == MULT_EXPR 
+	      && TREE_CODE (offset_b) == MULT_EXPR
+	      && TREE_OPERAND (offset_a, 0) == TREE_OPERAND (offset_b, 0)
+	      && TREE_OPERAND (offset_a, 1) == TREE_OPERAND (offset_b, 1)))
+	{
+	  *differ_p = false;
+	  return true;
+	}
+    }
+
+  /* Apply alias analysis.  */
+  if (may_alias_p (addr_a, addr_b, dra, drb, &aliased) && !aliased)
+    {
+      *differ_p = true;
+      return true;
+    }
+  
+  /* An instruction writing through a restricted pointer is "independent" of any 
+     instruction reading or writing through a different pointer, in the same 
+     block/scope.  */
+  else if ((TYPE_RESTRICT (type_a) && !DR_IS_READ (dra))
+      || (TYPE_RESTRICT (type_b) && !DR_IS_READ (drb)))
+    {
+      *differ_p = true;
+      return true;
+    }
+  return false;
+}
+
 
 /* Returns true iff A divides B.  */
 
@@ -262,7 +546,7 @@ dump_data_reference (FILE *outf,
   fprintf (outf, "  ref: ");
   print_generic_stmt (outf, DR_REF (dr), 0);
   fprintf (outf, "  base_name: ");
-  print_generic_stmt (outf, DR_BASE_NAME (dr), 0);
+  print_generic_stmt (outf, DR_BASE_OBJECT (dr), 0);
   
   for (i = 0; i < DR_NUM_DIMENSIONS (dr); i++)
     {
@@ -546,10 +830,11 @@ analyze_array_indexes (struct loop *loop,
    set to true when REF is in the right hand side of an
    assignment.  */
 
-struct data_reference *
+static struct data_reference *
 analyze_array (tree stmt, tree ref, bool is_read)
 {
   struct data_reference *res;
+  VEC(tree,heap) *acc_fns;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -563,15 +848,94 @@ analyze_array (tree stmt, tree ref, bool is_read)
   
   DR_STMT (res) = stmt;
   DR_REF (res) = ref;
-  DR_ACCESS_FNS (res) = VEC_alloc (tree, heap, 3);
-  DR_BASE_NAME (res) = analyze_array_indexes 
-    (loop_containing_stmt (stmt), &(DR_ACCESS_FNS (res)), ref, stmt);
+  acc_fns = VEC_alloc (tree, heap, 3);
+  DR_BASE_OBJECT (res) = analyze_array_indexes 
+    (loop_containing_stmt (stmt), &acc_fns, ref, stmt);
+  DR_TYPE (res) = ARRAY_REF_TYPE;
+  DR_SET_ACCESS_FNS (res, acc_fns);
   DR_IS_READ (res) = is_read;
+  DR_BASE_ADDRESS (res) = NULL_TREE;
+  DR_OFFSET (res) = NULL_TREE;
+  DR_INIT (res) = NULL_TREE;
+  DR_STEP (res) = NULL_TREE;
+  DR_OFFSET_MISALIGNMENT (res) = NULL_TREE;
+  DR_MEMTAG (res) = NULL_TREE;
+  DR_PTR_INFO (res) = NULL;
   
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, ")\n");
   
   return res;
+}
+
+
+/* Analyze an indirect memory reference, REF, that comes from STMT.
+   IS_READ is true if this is an indirect load, and false if it is
+   an indirect store.
+   Return a new data reference structure representing the indirect_ref, or
+   NULL if we cannot describe the access function.  */
+  
+static struct data_reference *
+analyze_indirect_ref (tree stmt, tree ref, bool is_read) 
+{
+  struct loop *loop = loop_containing_stmt (stmt);
+  tree ptr_ref = TREE_OPERAND (ref, 0);
+  tree access_fn = analyze_scalar_evolution (loop, ptr_ref);
+  tree init = initial_condition_in_loop_num (access_fn, loop->num);
+  tree base_address = NULL_TREE, evolution, step = NULL_TREE;
+  struct ptr_info_def *ptr_info = NULL;
+
+  if (TREE_CODE (ptr_ref) == SSA_NAME)
+    ptr_info = SSA_NAME_PTR_INFO (ptr_ref);
+
+  STRIP_NOPS (init);   
+  if (access_fn == chrec_dont_know || !init || init == chrec_dont_know)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "\nBad access function of ptr: ");
+	  print_generic_expr (dump_file, ref, TDF_SLIM);
+	  fprintf (dump_file, "\n");
+	}
+      return NULL;
+    }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "\nAccess function of ptr: ");
+      print_generic_expr (dump_file, access_fn, TDF_SLIM);
+      fprintf (dump_file, "\n");
+    }
+
+  if (!expr_invariant_in_loop_p (loop, init))
+    {
+    if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "\ninitial condition is not loop invariant.\n");	
+    }
+  else
+    {
+      base_address = init;
+      evolution = evolution_part_in_loop_num (access_fn, loop->num);
+      if (evolution != chrec_dont_know)
+	{       
+	  if (!evolution)
+	    step = ssize_int (0);
+	  else  
+	    {
+	      if (TREE_CODE (evolution) == INTEGER_CST)
+		step = fold_convert (ssizetype, evolution);
+	      else
+		if (dump_file && (dump_flags & TDF_DETAILS))
+		  fprintf (dump_file, "\nnon constant step for ptr access.\n");	
+	    }
+	}
+      else
+	if (dump_file && (dump_flags & TDF_DETAILS))
+	  fprintf (dump_file, "\nunknown evolution of ptr.\n");	
+    }
+  return init_data_ref (stmt, ref, NULL_TREE, access_fn, is_read, base_address, 
+			NULL_TREE, step, NULL_TREE, NULL_TREE, 
+			ptr_info, POINTER_REF_TYPE);
 }
 
 /* For a data reference REF contained in the statement STMT, initialize
@@ -582,9 +946,17 @@ init_data_ref (tree stmt,
 	       tree ref,
 	       tree base,
 	       tree access_fn,
-	       bool is_read)
+	       bool is_read,
+	       tree base_address,
+	       tree init_offset,
+	       tree step,
+	       tree misalign,
+	       tree memtag,
+               struct ptr_info_def *ptr_info,
+	       enum data_ref_type type)
 {
   struct data_reference *res;
+  VEC(tree,heap) *acc_fns;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -598,10 +970,19 @@ init_data_ref (tree stmt,
   
   DR_STMT (res) = stmt;
   DR_REF (res) = ref;
-  DR_ACCESS_FNS (res) = VEC_alloc (tree, heap, 5);
-  DR_BASE_NAME (res) = base;
+  DR_BASE_OBJECT (res) = base;
+  DR_TYPE (res) = type;
+  acc_fns = VEC_alloc (tree, heap, 3);
+  DR_SET_ACCESS_FNS (res, acc_fns);
   VEC_quick_push (tree, DR_ACCESS_FNS (res), access_fn);
   DR_IS_READ (res) = is_read;
+  DR_BASE_ADDRESS (res) = base_address;
+  DR_OFFSET (res) = init_offset;
+  DR_INIT (res) = NULL_TREE;
+  DR_STEP (res) = step;
+  DR_OFFSET_MISALIGNMENT (res) = misalign;
+  DR_MEMTAG (res) = memtag;
+  DR_PTR_INFO (res) = ptr_info;
   
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, ")\n");
@@ -610,6 +991,869 @@ init_data_ref (tree stmt,
 }
 
 
+
+/* Function strip_conversions
+
+   Strip conversions that don't narrow the mode.  */
+
+static tree 
+strip_conversion (tree expr)
+{
+  tree to, ti, oprnd0;
+  
+  while (TREE_CODE (expr) == NOP_EXPR || TREE_CODE (expr) == CONVERT_EXPR)
+    {
+      to = TREE_TYPE (expr);
+      oprnd0 = TREE_OPERAND (expr, 0);
+      ti = TREE_TYPE (oprnd0);
+ 
+      if (!INTEGRAL_TYPE_P (to) || !INTEGRAL_TYPE_P (ti))
+	return NULL_TREE;
+      if (GET_MODE_SIZE (TYPE_MODE (to)) < GET_MODE_SIZE (TYPE_MODE (ti)))
+	return NULL_TREE;
+      
+      expr = oprnd0;
+    }
+  return expr; 
+}
+
+
+/* Function analyze_offset_expr
+
+   Given an offset expression EXPR received from get_inner_reference, analyze
+   it and create an expression for INITIAL_OFFSET by substituting the variables 
+   of EXPR with initial_condition of the corresponding access_fn in the loop. 
+   E.g., 
+      for i
+         for (j = 3; j < N; j++)
+            a[j].b[i][j] = 0;
+	 
+   For a[j].b[i][j], EXPR will be 'i * C_i + j * C_j + C'. 'i' cannot be 
+   substituted, since its access_fn in the inner loop is i. 'j' will be 
+   substituted with 3. An INITIAL_OFFSET will be 'i * C_i + C`', where
+   C` =  3 * C_j + C.
+
+   Compute MISALIGN (the misalignment of the data reference initial access from
+   its base). Misalignment can be calculated only if all the variables can be 
+   substituted with constants, otherwise, we record maximum possible alignment
+   in ALIGNED_TO. In the above example, since 'i' cannot be substituted, MISALIGN 
+   will be NULL_TREE, and the biggest divider of C_i (a power of 2) will be 
+   recorded in ALIGNED_TO.
+
+   STEP is an evolution of the data reference in this loop in bytes.
+   In the above example, STEP is C_j.
+
+   Return FALSE, if the analysis fails, e.g., there is no access_fn for a 
+   variable. In this case, all the outputs (INITIAL_OFFSET, MISALIGN, ALIGNED_TO
+   and STEP) are NULL_TREEs. Otherwise, return TRUE.
+
+*/
+
+static bool
+analyze_offset_expr (tree expr, 
+		     struct loop *loop, 
+		     tree *initial_offset,
+		     tree *misalign,
+		     tree *aligned_to,
+		     tree *step)
+{
+  tree oprnd0;
+  tree oprnd1;
+  tree left_offset = ssize_int (0);
+  tree right_offset = ssize_int (0);
+  tree left_misalign = ssize_int (0);
+  tree right_misalign = ssize_int (0);
+  tree left_step = ssize_int (0);
+  tree right_step = ssize_int (0);
+  enum tree_code code;
+  tree init, evolution;
+  tree left_aligned_to = NULL_TREE, right_aligned_to = NULL_TREE;
+
+  *step = NULL_TREE;
+  *misalign = NULL_TREE;
+  *aligned_to = NULL_TREE;  
+  *initial_offset = NULL_TREE;
+
+  /* Strip conversions that don't narrow the mode.  */
+  expr = strip_conversion (expr);
+  if (!expr)
+    return false;
+
+  /* Stop conditions:
+     1. Constant.  */
+  if (TREE_CODE (expr) == INTEGER_CST)
+    {
+      *initial_offset = fold_convert (ssizetype, expr);
+      *misalign = fold_convert (ssizetype, expr);      
+      *step = ssize_int (0);
+      return true;
+    }
+
+  /* 2. Variable. Try to substitute with initial_condition of the corresponding
+     access_fn in the current loop.  */
+  if (SSA_VAR_P (expr))
+    {
+      tree access_fn = analyze_scalar_evolution (loop, expr);
+
+      if (access_fn == chrec_dont_know)
+	/* No access_fn.  */
+	return false;
+
+      init = initial_condition_in_loop_num (access_fn, loop->num);
+      if (init == expr && !expr_invariant_in_loop_p (loop, init))
+	/* Not enough information: may be not loop invariant.  
+	   E.g., for a[b[i]], we get a[D], where D=b[i]. EXPR is D, its 
+	   initial_condition is D, but it depends on i - loop's induction
+	   variable.  */	  
+	return false;
+
+      evolution = evolution_part_in_loop_num (access_fn, loop->num);
+      if (evolution && TREE_CODE (evolution) != INTEGER_CST)
+	/* Evolution is not constant.  */
+	return false;
+
+      if (TREE_CODE (init) == INTEGER_CST)
+	*misalign = fold_convert (ssizetype, init);
+      else
+	/* Not constant, misalignment cannot be calculated.  */
+	*misalign = NULL_TREE;
+
+      *initial_offset = fold_convert (ssizetype, init); 
+
+      *step = evolution ? fold_convert (ssizetype, evolution) : ssize_int (0);
+      return true;      
+    }
+
+  /* Recursive computation.  */
+  if (!BINARY_CLASS_P (expr))
+    {
+      /* We expect to get binary expressions (PLUS/MINUS and MULT).  */
+      if (dump_file && (dump_flags & TDF_DETAILS))
+        {
+	  fprintf (dump_file, "\nNot binary expression ");
+          print_generic_expr (dump_file, expr, TDF_SLIM);
+	  fprintf (dump_file, "\n");
+	}
+      return false;
+    }
+  oprnd0 = TREE_OPERAND (expr, 0);
+  oprnd1 = TREE_OPERAND (expr, 1);
+
+  if (!analyze_offset_expr (oprnd0, loop, &left_offset, &left_misalign, 
+			    &left_aligned_to, &left_step)
+      || !analyze_offset_expr (oprnd1, loop, &right_offset, &right_misalign, 
+			       &right_aligned_to, &right_step))
+    return false;
+
+  /* The type of the operation: plus, minus or mult.  */
+  code = TREE_CODE (expr);
+  switch (code)
+    {
+    case MULT_EXPR:
+      if (TREE_CODE (right_offset) != INTEGER_CST)
+	/* RIGHT_OFFSET can be not constant. For example, for arrays of variable 
+	   sized types. 
+	   FORNOW: We don't support such cases.  */
+	return false;
+
+      /* Strip conversions that don't narrow the mode.  */
+      left_offset = strip_conversion (left_offset);      
+      if (!left_offset)
+	return false;      
+      /* Misalignment computation.  */
+      if (SSA_VAR_P (left_offset))
+	{
+	  /* If the left side contains variables that can't be substituted with 
+	     constants, the misalignment is unknown. However, if the right side 
+	     is a multiple of some alignment, we know that the expression is
+	     aligned to it. Therefore, we record such maximum possible value.
+	   */
+	  *misalign = NULL_TREE;
+	  *aligned_to = ssize_int (highest_pow2_factor (right_offset));
+	}
+      else 
+	{
+	  /* The left operand was successfully substituted with constant.  */	  
+	  if (left_misalign)
+	    {
+	      /* In case of EXPR '(i * C1 + j) * C2', LEFT_MISALIGN is 
+		 NULL_TREE.  */
+	      *misalign  = size_binop (code, left_misalign, right_misalign);
+	      if (left_aligned_to && right_aligned_to)
+		*aligned_to = size_binop (MIN_EXPR, left_aligned_to, 
+					  right_aligned_to);
+	      else 
+		*aligned_to = left_aligned_to ? 
+		  left_aligned_to : right_aligned_to;
+	    }
+	  else
+	    *misalign = NULL_TREE; 
+	}
+
+      /* Step calculation.  */
+      /* Multiply the step by the right operand.  */
+      *step  = size_binop (MULT_EXPR, left_step, right_offset);
+      break;
+   
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      /* Combine the recursive calculations for step and misalignment.  */
+      *step = size_binop (code, left_step, right_step);
+
+      /* Unknown alignment.  */
+      if ((!left_misalign && !left_aligned_to)
+	  || (!right_misalign && !right_aligned_to))
+	{
+	  *misalign = NULL_TREE;
+	  *aligned_to = NULL_TREE;
+	  break;
+	}
+
+      if (left_misalign && right_misalign)
+	*misalign = size_binop (code, left_misalign, right_misalign);
+      else
+	*misalign = left_misalign ? left_misalign : right_misalign;
+
+      if (left_aligned_to && right_aligned_to)
+	*aligned_to = size_binop (MIN_EXPR, left_aligned_to, right_aligned_to);
+      else 
+	*aligned_to = left_aligned_to ? left_aligned_to : right_aligned_to;
+
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  /* Compute offset.  */
+  *initial_offset = fold_convert (ssizetype, 
+				  fold_build2 (code, TREE_TYPE (left_offset), 
+					       left_offset, 
+					       right_offset));
+  return true;
+}
+
+/* Function address_analysis
+
+   Return the BASE of the address expression EXPR.
+   Also compute the OFFSET from BASE, MISALIGN and STEP.
+
+   Input:
+   EXPR - the address expression that is being analyzed
+   STMT - the statement that contains EXPR or its original memory reference
+   IS_READ - TRUE if STMT reads from EXPR, FALSE if writes to EXPR
+   DR - data_reference struct for the original memory reference
+
+   Output:
+   BASE (returned value) - the base of the data reference EXPR.
+   INITIAL_OFFSET - initial offset of EXPR from BASE (an expression)
+   MISALIGN - offset of EXPR from BASE in bytes (a constant) or NULL_TREE if the
+              computation is impossible 
+   ALIGNED_TO - maximum alignment of EXPR or NULL_TREE if MISALIGN can be 
+                calculated (doesn't depend on variables)
+   STEP - evolution of EXPR in the loop
+ 
+   If something unexpected is encountered (an unsupported form of data-ref),
+   then NULL_TREE is returned.  
+ */
+
+static tree
+address_analysis (tree expr, tree stmt, bool is_read, struct data_reference *dr, 
+		  tree *offset, tree *misalign, tree *aligned_to, tree *step)
+{
+  tree oprnd0, oprnd1, base_address, offset_expr, base_addr0, base_addr1;
+  tree address_offset = ssize_int (0), address_misalign = ssize_int (0);
+  tree dummy, address_aligned_to = NULL_TREE;
+  struct ptr_info_def *dummy1;
+  subvar_t dummy2;
+
+  switch (TREE_CODE (expr))
+    {
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      /* EXPR is of form {base +/- offset} (or {offset +/- base}).  */
+      oprnd0 = TREE_OPERAND (expr, 0);
+      oprnd1 = TREE_OPERAND (expr, 1);
+
+      STRIP_NOPS (oprnd0);
+      STRIP_NOPS (oprnd1);
+      
+      /* Recursively try to find the base of the address contained in EXPR.
+	 For offset, the returned base will be NULL.  */
+      base_addr0 = address_analysis (oprnd0, stmt, is_read, dr, &address_offset, 
+				     &address_misalign, &address_aligned_to, 
+				     step);
+
+      base_addr1 = address_analysis (oprnd1, stmt, is_read,  dr, &address_offset, 
+				     &address_misalign, &address_aligned_to, 
+				     step);
+
+      /* We support cases where only one of the operands contains an 
+	 address.  */
+      if ((base_addr0 && base_addr1) || (!base_addr0 && !base_addr1))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, 
+		    "\neither more than one address or no addresses in expr ");
+	      print_generic_expr (dump_file, expr, TDF_SLIM);
+	      fprintf (dump_file, "\n");
+	    }	
+	  return NULL_TREE;
+	}
+
+      /* To revert STRIP_NOPS.  */
+      oprnd0 = TREE_OPERAND (expr, 0);
+      oprnd1 = TREE_OPERAND (expr, 1);
+      
+      offset_expr = base_addr0 ? 
+	fold_convert (ssizetype, oprnd1) : fold_convert (ssizetype, oprnd0);
+
+      /* EXPR is of form {base +/- offset} (or {offset +/- base}). If offset is 
+	 a number, we can add it to the misalignment value calculated for base,
+	 otherwise, misalignment is NULL.  */
+      if (TREE_CODE (offset_expr) == INTEGER_CST && address_misalign)
+	{
+	  *misalign = size_binop (TREE_CODE (expr), address_misalign, 
+				  offset_expr);
+	  *aligned_to = address_aligned_to;
+	}
+      else
+	{
+	  *misalign = NULL_TREE;
+	  *aligned_to = NULL_TREE;
+	}
+
+      /* Combine offset (from EXPR {base + offset}) with the offset calculated
+	 for base.  */
+      *offset = size_binop (TREE_CODE (expr), address_offset, offset_expr);
+      return base_addr0 ? base_addr0 : base_addr1;
+
+    case ADDR_EXPR:
+      base_address = object_analysis (TREE_OPERAND (expr, 0), stmt, is_read, 
+				      &dr, offset, misalign, aligned_to, step, 
+				      &dummy, &dummy1, &dummy2);
+      return base_address;
+
+    case SSA_NAME:
+      if (!POINTER_TYPE_P (TREE_TYPE (expr)))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "\nnot pointer SSA_NAME ");
+	      print_generic_expr (dump_file, expr, TDF_SLIM);
+	      fprintf (dump_file, "\n");
+	    }	
+	  return NULL_TREE;
+	}
+      *aligned_to = ssize_int (TYPE_ALIGN_UNIT (TREE_TYPE (TREE_TYPE (expr))));
+      *misalign = ssize_int (0);
+      *offset = ssize_int (0);
+      *step = ssize_int (0);
+      return expr;
+      
+    default:
+      return NULL_TREE;
+    }
+}
+
+
+/* Function object_analysis
+
+   Create a data-reference structure DR for MEMREF.
+   Return the BASE of the data reference MEMREF if the analysis is possible.
+   Also compute the INITIAL_OFFSET from BASE, MISALIGN and STEP.
+   E.g., for EXPR a.b[i] + 4B, BASE is a, and OFFSET is the overall offset  
+   'a.b[i] + 4B' from a (can be an expression), MISALIGN is an OFFSET 
+   instantiated with initial_conditions of access_functions of variables, 
+   and STEP is the evolution of the DR_REF in this loop.
+   
+   Function get_inner_reference is used for the above in case of ARRAY_REF and
+   COMPONENT_REF.
+
+   The structure of the function is as follows:
+   Part 1:
+   Case 1. For handled_component_p refs 
+          1.1 build data-reference structure for MEMREF
+          1.2 call get_inner_reference
+            1.2.1 analyze offset expr received from get_inner_reference
+          (fall through with BASE)
+   Case 2. For declarations 
+          2.1 set MEMTAG
+   Case 3. For INDIRECT_REFs 
+          3.1 build data-reference structure for MEMREF
+	  3.2 analyze evolution and initial condition of MEMREF
+	  3.3 set data-reference structure for MEMREF
+          3.4 call address_analysis to analyze INIT of the access function
+	  3.5 extract memory tag
+
+   Part 2:
+   Combine the results of object and address analysis to calculate 
+   INITIAL_OFFSET, STEP and misalignment info.   
+
+   Input:
+   MEMREF - the memory reference that is being analyzed
+   STMT - the statement that contains MEMREF
+   IS_READ - TRUE if STMT reads from MEMREF, FALSE if writes to MEMREF
+   
+   Output:
+   BASE_ADDRESS (returned value) - the base address of the data reference MEMREF
+                                   E.g, if MEMREF is a.b[k].c[i][j] the returned
+			           base is &a.
+   DR - data_reference struct for MEMREF
+   INITIAL_OFFSET - initial offset of MEMREF from BASE (an expression)
+   MISALIGN - offset of MEMREF from BASE in bytes (a constant) modulo alignment of 
+              ALIGNMENT or NULL_TREE if the computation is impossible
+   ALIGNED_TO - maximum alignment of EXPR or NULL_TREE if MISALIGN can be 
+                calculated (doesn't depend on variables)
+   STEP - evolution of the DR_REF in the loop
+   MEMTAG - memory tag for aliasing purposes
+   PTR_INFO - NULL or points-to aliasing info from a pointer SSA_NAME
+   SUBVARS - Sub-variables of the variable
+
+   If the analysis of MEMREF evolution in the loop fails, NULL_TREE is returned, 
+   but DR can be created anyway.
+   
+*/
+ 
+static tree
+object_analysis (tree memref, tree stmt, bool is_read, 
+		 struct data_reference **dr, tree *offset, tree *misalign, 
+		 tree *aligned_to, tree *step, tree *memtag,
+		 struct ptr_info_def **ptr_info, subvar_t *subvars)
+{
+  tree base = NULL_TREE, base_address = NULL_TREE;
+  tree object_offset = ssize_int (0), object_misalign = ssize_int (0);
+  tree object_step = ssize_int (0), address_step = ssize_int (0);
+  tree address_offset = ssize_int (0), address_misalign = ssize_int (0);
+  HOST_WIDE_INT pbitsize, pbitpos;
+  tree poffset, bit_pos_in_bytes;
+  enum machine_mode pmode;
+  int punsignedp, pvolatilep;
+  tree ptr_step = ssize_int (0), ptr_init = NULL_TREE;
+  struct loop *loop = loop_containing_stmt (stmt);
+  struct data_reference *ptr_dr = NULL;
+  tree object_aligned_to = NULL_TREE, address_aligned_to = NULL_TREE;
+
+ *ptr_info = NULL;
+
+  /* Part 1:  */
+  /* Case 1. handled_component_p refs.  */
+  if (handled_component_p (memref))
+    {
+      /* 1.1 build data-reference structure for MEMREF.  */
+      /* TODO: handle COMPONENT_REFs.  */
+      if (!(*dr))
+	{ 
+	  if (TREE_CODE (memref) == ARRAY_REF)
+	    *dr = analyze_array (stmt, memref, is_read);	  
+	  else
+	    {
+	      /* FORNOW.  */
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "\ndata-ref of unsupported type ");
+		  print_generic_expr (dump_file, memref, TDF_SLIM);
+		  fprintf (dump_file, "\n");
+		}
+	      return NULL_TREE;
+	    }
+	}
+
+      /* 1.2 call get_inner_reference.  */
+      /* Find the base and the offset from it.  */
+      base = get_inner_reference (memref, &pbitsize, &pbitpos, &poffset,
+				  &pmode, &punsignedp, &pvolatilep, false);
+      if (!base)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "\nfailed to get inner ref for ");
+	      print_generic_expr (dump_file, memref, TDF_SLIM);
+	      fprintf (dump_file, "\n");
+	    }	  
+	  return NULL_TREE;
+	}
+
+      /* 1.2.1 analyze offset expr received from get_inner_reference.  */
+      if (poffset 
+	  && !analyze_offset_expr (poffset, loop, &object_offset, 
+				   &object_misalign, &object_aligned_to,
+				   &object_step))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "\nfailed to compute offset or step for ");
+	      print_generic_expr (dump_file, memref, TDF_SLIM);
+	      fprintf (dump_file, "\n");
+	    }
+	  return NULL_TREE;
+	}
+
+      /* Add bit position to OFFSET and MISALIGN.  */
+
+      bit_pos_in_bytes = ssize_int (pbitpos/BITS_PER_UNIT);
+      /* Check that there is no remainder in bits.  */
+      if (pbitpos%BITS_PER_UNIT)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "\nbit offset alignment.\n");
+	  return NULL_TREE;
+	}
+      object_offset = size_binop (PLUS_EXPR, bit_pos_in_bytes, object_offset);     
+      if (object_misalign) 
+	object_misalign = size_binop (PLUS_EXPR, object_misalign, 
+				      bit_pos_in_bytes); 
+      
+      memref = base; /* To continue analysis of BASE.  */
+      /* fall through  */
+    }
+  
+  /*  Part 1: Case 2. Declarations.  */ 
+  if (DECL_P (memref))
+    {
+      /* We expect to get a decl only if we already have a DR.  */
+      if (!(*dr))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "\nunhandled decl ");
+	      print_generic_expr (dump_file, memref, TDF_SLIM);
+	      fprintf (dump_file, "\n");
+	    }
+	  return NULL_TREE;
+	}
+
+      /* TODO: if during the analysis of INDIRECT_REF we get to an object, put 
+	 the object in BASE_OBJECT field if we can prove that this is O.K., 
+	 i.e., the data-ref access is bounded by the bounds of the BASE_OBJECT.
+	 (e.g., if the object is an array base 'a', where 'a[N]', we must prove
+	 that every access with 'p' (the original INDIRECT_REF based on '&a')
+	 in the loop is within the array boundaries - from a[0] to a[N-1]).
+	 Otherwise, our alias analysis can be incorrect.
+	 Even if an access function based on BASE_OBJECT can't be build, update
+	 BASE_OBJECT field to enable us to prove that two data-refs are 
+	 different (without access function, distance analysis is impossible).
+      */
+     if (SSA_VAR_P (memref) && var_can_have_subvars (memref))	
+	*subvars = get_subvars_for_var (memref);
+      base_address = build_fold_addr_expr (memref);
+      /* 2.1 set MEMTAG.  */
+      *memtag = memref;
+    }
+
+  /* Part 1:  Case 3. INDIRECT_REFs.  */
+  else if (TREE_CODE (memref) == INDIRECT_REF)
+    {
+      tree ptr_ref = TREE_OPERAND (memref, 0);
+      if (TREE_CODE (ptr_ref) == SSA_NAME)
+        *ptr_info = SSA_NAME_PTR_INFO (ptr_ref);
+
+      /* 3.1 build data-reference structure for MEMREF.  */
+      ptr_dr = analyze_indirect_ref (stmt, memref, is_read);
+      if (!ptr_dr)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "\nfailed to create dr for ");
+	      print_generic_expr (dump_file, memref, TDF_SLIM);
+	      fprintf (dump_file, "\n");
+	    }	
+	  return NULL_TREE;      
+	}
+
+      /* 3.2 analyze evolution and initial condition of MEMREF.  */
+      ptr_step = DR_STEP (ptr_dr);
+      ptr_init = DR_BASE_ADDRESS (ptr_dr);
+      if (!ptr_init || !ptr_step || !POINTER_TYPE_P (TREE_TYPE (ptr_init)))
+	{
+	  *dr = (*dr) ? *dr : ptr_dr;
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "\nbad pointer access ");
+	      print_generic_expr (dump_file, memref, TDF_SLIM);
+	      fprintf (dump_file, "\n");
+	    }
+	  return NULL_TREE;
+	}
+
+      if (integer_zerop (ptr_step) && !(*dr))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS)) 
+	    fprintf (dump_file, "\nptr is loop invariant.\n");	
+	  *dr = ptr_dr;
+	  return NULL_TREE;
+	
+	  /* If there exists DR for MEMREF, we are analyzing the base of
+	     handled component (PTR_INIT), which not necessary has evolution in 
+	     the loop.  */
+	}
+      object_step = size_binop (PLUS_EXPR, object_step, ptr_step);
+
+      /* 3.3 set data-reference structure for MEMREF.  */
+      if (!*dr)
+        *dr = ptr_dr;
+
+      /* 3.4 call address_analysis to analyze INIT of the access 
+	 function.  */
+      base_address = address_analysis (ptr_init, stmt, is_read, *dr, 
+				       &address_offset, &address_misalign, 
+				       &address_aligned_to, &address_step);
+      if (!base_address)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "\nfailed to analyze address ");
+	      print_generic_expr (dump_file, ptr_init, TDF_SLIM);
+	      fprintf (dump_file, "\n");
+	    }
+	  return NULL_TREE;
+	}
+
+      /* 3.5 extract memory tag.  */
+      switch (TREE_CODE (base_address))
+	{
+	case SSA_NAME:
+	  *memtag = get_var_ann (SSA_NAME_VAR (base_address))->type_mem_tag;
+	  if (!(*memtag) && TREE_CODE (TREE_OPERAND (memref, 0)) == SSA_NAME)
+	    *memtag = get_var_ann (
+		      SSA_NAME_VAR (TREE_OPERAND (memref, 0)))->type_mem_tag;
+	  break;
+	case ADDR_EXPR:
+	  *memtag = TREE_OPERAND (base_address, 0);
+	  break;
+	default:
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "\nno memtag for "); 
+	      print_generic_expr (dump_file, memref, TDF_SLIM);
+	      fprintf (dump_file, "\n");
+	    }
+	  *memtag = NULL_TREE;
+	  break;
+	}
+    }      
+    
+  if (!base_address)
+    {
+      /* MEMREF cannot be analyzed.  */
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "\ndata-ref of unsupported type ");
+	  print_generic_expr (dump_file, memref, TDF_SLIM);
+	  fprintf (dump_file, "\n");
+	}
+      return NULL_TREE;
+    }
+
+  if (SSA_VAR_P (*memtag) && var_can_have_subvars (*memtag))
+    *subvars = get_subvars_for_var (*memtag);
+	
+  /* Part 2: Combine the results of object and address analysis to calculate 
+     INITIAL_OFFSET, STEP and misalignment info.  */
+  *offset = size_binop (PLUS_EXPR, object_offset, address_offset);
+
+  if ((!object_misalign && !object_aligned_to)
+      || (!address_misalign && !address_aligned_to))
+    {
+      *misalign = NULL_TREE;
+      *aligned_to = NULL_TREE;
+    }  
+  else 
+    {
+      if (object_misalign && address_misalign)
+	*misalign = size_binop (PLUS_EXPR, object_misalign, address_misalign);
+      else
+	*misalign = object_misalign ? object_misalign : address_misalign;
+      if (object_aligned_to && address_aligned_to)
+	*aligned_to = size_binop (MIN_EXPR, object_aligned_to, 
+				  address_aligned_to);
+      else
+	*aligned_to = object_aligned_to ? 
+	  object_aligned_to : address_aligned_to; 
+    }
+  *step = size_binop (PLUS_EXPR, object_step, address_step); 
+
+  return base_address;
+}
+
+/* Function analyze_offset.
+   
+   Extract INVARIANT and CONSTANT parts from OFFSET. 
+
+*/
+static void 
+analyze_offset (tree offset, tree *invariant, tree *constant)
+{
+  tree op0, op1, constant_0, constant_1, invariant_0, invariant_1;
+  enum tree_code code = TREE_CODE (offset);
+
+  *invariant = NULL_TREE;
+  *constant = NULL_TREE;
+
+  /* Not PLUS/MINUS expression - recursion stop condition.  */
+  if (code != PLUS_EXPR && code != MINUS_EXPR)
+    {
+      if (TREE_CODE (offset) == INTEGER_CST)
+	*constant = offset;
+      else
+	*invariant = offset;
+      return;
+    }
+
+  op0 = TREE_OPERAND (offset, 0);
+  op1 = TREE_OPERAND (offset, 1);
+
+  /* Recursive call with the operands.  */
+  analyze_offset (op0, &invariant_0, &constant_0);
+  analyze_offset (op1, &invariant_1, &constant_1);
+
+  /* Combine the results.  */
+  *constant = constant_0 ? constant_0 : constant_1;
+  if (invariant_0 && invariant_1)
+    *invariant = 
+      fold (build (code, TREE_TYPE (invariant_0), invariant_0, invariant_1));
+  else
+    *invariant = invariant_0 ? invariant_0 : invariant_1;
+}
+
+
+/* Function create_data_ref.
+   
+   Create a data-reference structure for MEMREF. Set its DR_BASE_ADDRESS,
+   DR_OFFSET, DR_INIT, DR_STEP, DR_OFFSET_MISALIGNMENT, DR_ALIGNED_TO,
+   DR_MEMTAG, and DR_POINTSTO_INFO fields. 
+
+   Input:
+   MEMREF - the memory reference that is being analyzed
+   STMT - the statement that contains MEMREF
+   IS_READ - TRUE if STMT reads from MEMREF, FALSE if writes to MEMREF
+
+   Output:
+   DR (returned value) - data_reference struct for MEMREF
+*/
+
+static struct data_reference *
+create_data_ref (tree memref, tree stmt, bool is_read)
+{
+  struct data_reference *dr = NULL;
+  tree base_address, offset, step, misalign, memtag;
+  struct loop *loop = loop_containing_stmt (stmt);
+  tree invariant = NULL_TREE, constant = NULL_TREE;
+  tree type_size, init_cond;
+  struct ptr_info_def *ptr_info;
+  subvar_t subvars = NULL;
+  tree aligned_to;
+
+  if (!memref)
+    return NULL;
+
+  base_address = object_analysis (memref, stmt, is_read, &dr, &offset, 
+				  &misalign, &aligned_to, &step, &memtag, 
+				  &ptr_info, &subvars);
+  if (!dr || !base_address)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "\ncreate_data_ref: failed to create a dr for ");
+	  print_generic_expr (dump_file, memref, TDF_SLIM);
+	  fprintf (dump_file, "\n");
+	}
+      return NULL;
+    }
+
+  DR_BASE_ADDRESS (dr) = base_address;
+  DR_OFFSET (dr) = offset;
+  DR_INIT (dr) = ssize_int (0);
+  DR_STEP (dr) = step;
+  DR_OFFSET_MISALIGNMENT (dr) = misalign;
+  DR_ALIGNED_TO (dr) = aligned_to;
+  DR_MEMTAG (dr) = memtag;
+  DR_PTR_INFO (dr) = ptr_info;
+  DR_SUBVARS (dr) = subvars;
+  
+  type_size = fold_convert (ssizetype, TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr))));
+
+  /* Change the access function for INIDIRECT_REFs, according to 
+     DR_BASE_ADDRESS.  Analyze OFFSET calculated in object_analysis. OFFSET is 
+     an expression that can contain loop invariant expressions and constants.
+     We put the constant part in the initial condition of the access function
+     (for data dependence tests), and in DR_INIT of the data-ref. The loop
+     invariant part is put in DR_OFFSET. 
+     The evolution part of the access function is STEP calculated in
+     object_analysis divided by the size of data type.
+  */
+  if (!DR_BASE_OBJECT (dr))
+    {
+      tree access_fn;
+      tree new_step;
+
+      /* Extract CONSTANT and INVARIANT from OFFSET, and put them in DR_INIT and
+	 DR_OFFSET fields of DR.  */
+      analyze_offset (offset, &invariant, &constant); 
+      if (constant)
+	{
+	  DR_INIT (dr) = fold_convert (ssizetype, constant);
+	  init_cond = fold (build (TRUNC_DIV_EXPR, TREE_TYPE (constant), 
+				   constant, type_size));
+	}
+      else
+	DR_INIT (dr) = init_cond = ssize_int (0);;
+
+      if (invariant)
+	DR_OFFSET (dr) = invariant;
+      else
+	DR_OFFSET (dr) = ssize_int (0);
+
+      /* Update access function.  */
+      access_fn = DR_ACCESS_FN (dr, 0);
+      new_step = size_binop (TRUNC_DIV_EXPR,  
+			     fold_convert (ssizetype, step), type_size);
+
+      access_fn = chrec_replace_initial_condition (access_fn, init_cond);
+      access_fn = reset_evolution_in_loop (loop->num, access_fn, new_step);
+
+      VEC_replace (tree, DR_ACCESS_FNS (dr), 0, access_fn);
+    }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      struct ptr_info_def *pi = DR_PTR_INFO (dr);
+
+      fprintf (dump_file, "\nCreated dr for ");
+      print_generic_expr (dump_file, memref, TDF_SLIM);
+      fprintf (dump_file, "\n\tbase_address: ");
+      print_generic_expr (dump_file, DR_BASE_ADDRESS (dr), TDF_SLIM);
+      fprintf (dump_file, "\n\toffset from base address: ");
+      print_generic_expr (dump_file, DR_OFFSET (dr), TDF_SLIM);
+      fprintf (dump_file, "\n\tconstant offset from base address: ");
+      print_generic_expr (dump_file, DR_INIT (dr), TDF_SLIM);
+      fprintf (dump_file, "\n\tbase_object: ");
+      print_generic_expr (dump_file, DR_BASE_OBJECT (dr), TDF_SLIM);
+      fprintf (dump_file, "\n\tstep: ");
+      print_generic_expr (dump_file, DR_STEP (dr), TDF_SLIM);
+      fprintf (dump_file, "B\n\tmisalignment from base: ");
+      print_generic_expr (dump_file, DR_OFFSET_MISALIGNMENT (dr), TDF_SLIM);
+      if (DR_OFFSET_MISALIGNMENT (dr))
+	fprintf (dump_file, "B");
+      if (DR_ALIGNED_TO (dr))
+	{
+	  fprintf (dump_file, "\n\taligned to: ");
+	  print_generic_expr (dump_file, DR_ALIGNED_TO (dr), TDF_SLIM);
+	}
+      fprintf (dump_file, "\n\tmemtag: ");
+      print_generic_expr (dump_file, DR_MEMTAG (dr), TDF_SLIM);
+      fprintf (dump_file, "\n");
+      if (pi && pi->name_mem_tag)
+        {
+          fprintf (dump_file, "\n\tnametag: ");
+          print_generic_expr (dump_file, pi->name_mem_tag, TDF_SLIM);
+          fprintf (dump_file, "\n");
+        }
+    }  
+  return dr;  
+}
+
 
 /* Returns true when all the functions of a tree_vec CHREC are the
    same.  */
@@ -692,43 +1936,58 @@ initialize_data_dependence_relation (struct data_reference *a,
 {
   struct data_dependence_relation *res;
   bool differ_p;
+  unsigned int i;  
   
   res = xmalloc (sizeof (struct data_dependence_relation));
   DDR_A (res) = a;
   DDR_B (res) = b;
 
-  if (a == NULL || b == NULL 
-      || DR_BASE_NAME (a) == NULL_TREE
-      || DR_BASE_NAME (b) == NULL_TREE)
-    DDR_ARE_DEPENDENT (res) = chrec_dont_know;    
-
-  /* When the dimensions of A and B differ, we directly initialize
-     the relation to "there is no dependence": chrec_known.  */
-  else if (DR_NUM_DIMENSIONS (a) != DR_NUM_DIMENSIONS (b)
-	   || (array_base_name_differ_p (a, b, &differ_p) && differ_p))
-    DDR_ARE_DEPENDENT (res) = chrec_known;
-  
-  else
+  if (a == NULL || b == NULL)
     {
-      unsigned int i;
-      DDR_AFFINE_P (res) = true;
-      DDR_ARE_DEPENDENT (res) = NULL_TREE;
-      DDR_SUBSCRIPTS_VECTOR_INIT (res, DR_NUM_DIMENSIONS (a));
-      DDR_SIZE_VECT (res) = 0;
-      DDR_DIST_VECT (res) = NULL;
-      DDR_DIR_VECT (res) = NULL;
+      DDR_ARE_DEPENDENT (res) = chrec_dont_know;    
+      return res;
+    }   
+
+  /* When A and B are arrays and their dimensions differ, we directly
+     initialize the relation to "there is no dependence": chrec_known.  */
+  if (DR_BASE_OBJECT (a) && DR_BASE_OBJECT (b)
+      && DR_NUM_DIMENSIONS (a) != DR_NUM_DIMENSIONS (b))
+    {
+      DDR_ARE_DEPENDENT (res) = chrec_known;
+      return res;
+    }
+
+    /* Compare the bases of the data-refs.  */
+  if (!base_addr_differ_p (a, b, &differ_p))
+    {
+      /* Can't determine whether the data-refs access the same memory 
+	 region.  */
+      DDR_ARE_DEPENDENT (res) = chrec_dont_know;    
+      return res;
+    }
+  if (differ_p)
+    {
+      DDR_ARE_DEPENDENT (res) = chrec_known;    
+      return res;
+    }
+  
+  DDR_AFFINE_P (res) = true;
+  DDR_ARE_DEPENDENT (res) = NULL_TREE;
+  DDR_SUBSCRIPTS_VECTOR_INIT (res, DR_NUM_DIMENSIONS (a));
+  DDR_SIZE_VECT (res) = 0;
+  DDR_DIST_VECT (res) = NULL;
+  DDR_DIR_VECT (res) = NULL;
       
-      for (i = 0; i < DR_NUM_DIMENSIONS (a); i++)
-	{
-	  struct subscript *subscript;
+  for (i = 0; i < DR_NUM_DIMENSIONS (a); i++)
+    {
+      struct subscript *subscript;
 	  
-	  subscript = xmalloc (sizeof (struct subscript));
-	  SUB_CONFLICTS_IN_A (subscript) = chrec_dont_know;
-	  SUB_CONFLICTS_IN_B (subscript) = chrec_dont_know;
-	  SUB_LAST_CONFLICT (subscript) = chrec_dont_know;
-	  SUB_DISTANCE (subscript) = chrec_dont_know;
-	  VARRAY_PUSH_GENERIC_PTR (DDR_SUBSCRIPTS (res), subscript);
-	}
+      subscript = xmalloc (sizeof (struct subscript));
+      SUB_CONFLICTS_IN_A (subscript) = chrec_dont_know;
+      SUB_CONFLICTS_IN_B (subscript) = chrec_dont_know;
+      SUB_LAST_CONFLICT (subscript) = chrec_dont_know;
+      SUB_DISTANCE (subscript) = chrec_dont_know;
+      VARRAY_PUSH_GENERIC_PTR (DDR_SUBSCRIPTS (res), subscript);
     }
   
   return res;
@@ -1768,7 +3027,7 @@ subscript_dependence_tester (struct data_dependence_relation *ddr)
    starting at FIRST_LOOP_DEPTH. 
    Return TRUE otherwise.  */
 
-bool
+static bool
 build_classic_dist_vector (struct data_dependence_relation *ddr, 
 			   int nb_loops, int first_loop_depth)
 {
@@ -2123,7 +3382,7 @@ static bool
 access_functions_are_affine_or_constant_p (struct data_reference *a)
 {
   unsigned int i;
-  VEC(tree,heap) **fns = &DR_ACCESS_FNS (a);
+  VEC(tree,heap) **fns = DR_ACCESS_FNS_ADDR (a);
   tree t;
   
   for (i = 0; VEC_iterate (tree, *fns, i, t); i++)
@@ -2202,13 +3461,15 @@ DEF_VEC_P(ddr_p);
 DEF_VEC_ALLOC_P(ddr_p,heap);
 
 /* Compute a subset of the data dependence relation graph.  Don't
-   compute read-read relations, and avoid the computation of the
-   opposite relation, i.e. when AB has been computed, don't compute BA.
+   compute read-read and self relations if 
+   COMPUTE_SELF_AND_READ_READ_DEPENDENCES is FALSE, and avoid the computation 
+   of the opposite relation, i.e. when AB has been computed, don't compute BA.
    DATAREFS contains a list of data references, and the result is set
    in DEPENDENCE_RELATIONS.  */
 
 static void 
 compute_all_dependences (varray_type datarefs, 
+			 bool compute_self_and_read_read_dependences,
 			 VEC(ddr_p,heap) **dependence_relations)
 {
   unsigned int i, j, N;
@@ -2226,12 +3487,17 @@ compute_all_dependences (varray_type datarefs,
 
 	a = VARRAY_GENERIC_PTR (datarefs, i);
 	b = VARRAY_GENERIC_PTR (datarefs, j);
+	if (DR_IS_READ (a) && DR_IS_READ (b)
+            && !compute_self_and_read_read_dependences)
+	  continue;
 	ddr = initialize_data_dependence_relation (a, b);
 
 	VEC_safe_push (ddr_p, heap, *dependence_relations, ddr);
 	compute_affine_dependence (ddr);
 	compute_subscript_distance (ddr);
       }
+  if (!compute_self_and_read_read_dependences)
+    return;
 
   /* Compute self dependence relation of each dataref to itself.  */
 
@@ -2263,6 +3529,7 @@ find_data_references_in_loop (struct loop *loop, varray_type *datarefs)
   basic_block bb, *bbs;
   unsigned int i;
   block_stmt_iterator bsi;
+  struct data_reference *dr;
 
   bbs = get_loop_body (loop);
 
@@ -2289,33 +3556,55 @@ find_data_references_in_loop (struct loop *loop, varray_type *datarefs)
 	  switch (TREE_CODE (stmt))
 	    {
 	    case MODIFY_EXPR:
-	      if (TREE_CODE (TREE_OPERAND (stmt, 0)) == ARRAY_REF)
-		VARRAY_PUSH_GENERIC_PTR 
-		  (*datarefs, analyze_array (stmt, TREE_OPERAND (stmt, 0),
-					     false));
+	      {
+		bool one_inserted = false;
+		tree opnd0 = TREE_OPERAND (stmt, 0);
+		tree opnd1 = TREE_OPERAND (stmt, 1);
+		
+		if (TREE_CODE (opnd0) == ARRAY_REF 
+		    || TREE_CODE (opnd0) == INDIRECT_REF)
+		  {
+		    dr = create_data_ref (opnd0, stmt, false);
+		    if (dr) 
+		      {
+			VARRAY_PUSH_GENERIC_PTR (*datarefs, dr);
+			one_inserted = true;
+		      }
+		  }
 
-	      if (TREE_CODE (TREE_OPERAND (stmt, 1)) == ARRAY_REF)
-		VARRAY_PUSH_GENERIC_PTR 
-		  (*datarefs, analyze_array (stmt, TREE_OPERAND (stmt, 1),
-					     true));
+		if (TREE_CODE (opnd1) == ARRAY_REF 
+		    || TREE_CODE (opnd1) == INDIRECT_REF)
+		  {
+		    dr = create_data_ref (opnd1, stmt, true);
+		    if (dr) 
+		      {
+			VARRAY_PUSH_GENERIC_PTR (*datarefs, dr);
+			one_inserted = true;
+		      }
+		  }
 
-	      if (TREE_CODE (TREE_OPERAND (stmt, 0)) != ARRAY_REF
-		  && TREE_CODE (TREE_OPERAND (stmt, 1)) != ARRAY_REF)
-		goto insert_dont_know_node;
+		if (!one_inserted)
+		  goto insert_dont_know_node;
 
-	      break;
+		break;
+	      }
 
 	    case CALL_EXPR:
 	      {
 		tree args;
 		bool one_inserted = false;
 
-		for (args = TREE_OPERAND (stmt, 1); args; args = TREE_CHAIN (args))
-		  if (TREE_CODE (TREE_VALUE (args)) == ARRAY_REF)
+		for (args = TREE_OPERAND (stmt, 1); args; 
+		     args = TREE_CHAIN (args))
+		  if (TREE_CODE (TREE_VALUE (args)) == ARRAY_REF
+		      || TREE_CODE (TREE_VALUE (args)) == INDIRECT_REF)
 		    {
-		      VARRAY_PUSH_GENERIC_PTR 
-			(*datarefs, analyze_array (stmt, TREE_VALUE (args), true));
-		      one_inserted = true;
+		      dr = create_data_ref (TREE_VALUE (args), stmt, true);
+		      if (dr)
+			{
+			  VARRAY_PUSH_GENERIC_PTR (*datarefs, dr);
+			  one_inserted = true;
+			}
 		    }
 
 		if (!one_inserted)
@@ -2332,9 +3621,18 @@ find_data_references_in_loop (struct loop *loop, varray_type *datarefs)
 		  res = xmalloc (sizeof (struct data_reference));
 		  DR_STMT (res) = NULL_TREE;
 		  DR_REF (res) = NULL_TREE;
-		  DR_ACCESS_FNS (res) = NULL;
-		  DR_BASE_NAME (res) = NULL;
+		  DR_BASE_OBJECT (res) = NULL;
+		  DR_TYPE (res) = ARRAY_REF_TYPE;
+		  DR_SET_ACCESS_FNS (res, NULL);
+		  DR_BASE_OBJECT (res) = NULL;
 		  DR_IS_READ (res) = false;
+		  DR_BASE_ADDRESS (res) = NULL_TREE;
+		  DR_OFFSET (res) = NULL_TREE;
+		  DR_INIT (res) = NULL_TREE;
+		  DR_STEP (res) = NULL_TREE;
+		  DR_OFFSET_MISALIGNMENT (res) = NULL_TREE;
+		  DR_MEMTAG (res) = NULL_TREE;
+		  DR_PTR_INFO (res) = NULL;
 		  VARRAY_PUSH_GENERIC_PTR (*datarefs, res);
 
 		  free (bbs);
@@ -2362,17 +3660,25 @@ find_data_references_in_loop (struct loop *loop, varray_type *datarefs)
 
 /* Given a loop nest LOOP, the following vectors are returned:
    *DATAREFS is initialized to all the array elements contained in this loop, 
-   *DEPENDENCE_RELATIONS contains the relations between the data references.  */
+   *DEPENDENCE_RELATIONS contains the relations between the data references.  
+   Compute read-read and self relations if 
+   COMPUTE_SELF_AND_READ_READ_DEPENDENCES is TRUE.  */
 
 void
-compute_data_dependences_for_loop (unsigned nb_loops, 
-				   struct loop *loop,
+compute_data_dependences_for_loop (struct loop *loop, 
+				   bool compute_self_and_read_read_dependences,
 				   varray_type *datarefs,
 				   varray_type *dependence_relations)
 {
-  unsigned int i;
+  unsigned int i, nb_loops;
   VEC(ddr_p,heap) *allrelations;
   struct data_dependence_relation *ddr;
+  struct loop *loop_nest = loop;
+
+  while (loop_nest && loop_nest->outer && loop_nest->outer->outer)
+    loop_nest = loop_nest->outer;
+
+  nb_loops = loop_nest->level;
 
   /* If one of the data references is not computable, give up without
      spending time to compute other dependences.  */
@@ -2390,14 +3696,15 @@ compute_data_dependences_for_loop (unsigned nb_loops,
     }
 
   allrelations = NULL;
-  compute_all_dependences (*datarefs, &allrelations);
+  compute_all_dependences (*datarefs, compute_self_and_read_read_dependences,
+			   &allrelations);
 
   for (i = 0; VEC_iterate (ddr_p, allrelations, i, ddr); i++)
     {
-      if (build_classic_dist_vector (ddr, nb_loops, loop->depth))
+      if (build_classic_dist_vector (ddr, nb_loops, loop_nest->depth))
 	{
 	  VARRAY_PUSH_GENERIC_PTR (*dependence_relations, ddr);
-	  build_classic_dir_vector (ddr, nb_loops, loop->depth);
+	  build_classic_dir_vector (ddr, nb_loops, loop_nest->depth);
 	}
     }
 }
@@ -2438,7 +3745,7 @@ analyze_all_data_dependences (struct loops *loops)
 			   "dependence_relations");
 
   /* Compute DDs on the whole function.  */
-  compute_data_dependences_for_loop (loops->num, loops->parray[0], 
+  compute_data_dependences_for_loop (loops->parray[0], false,
 				     &datarefs, &dependence_relations);
 
   if (dump_file)
@@ -2470,8 +3777,10 @@ analyze_all_data_dependences (struct loops *loops)
 		  struct data_reference *b = DDR_B (ddr);
 		  bool differ_p;	
 	      
-		  if (DR_NUM_DIMENSIONS (a) != DR_NUM_DIMENSIONS (b)
-		      || (array_base_name_differ_p (a, b, &differ_p) && differ_p))
+		  if ((DR_BASE_OBJECT (a) && DR_BASE_OBJECT (b)
+		       && DR_NUM_DIMENSIONS (a) != DR_NUM_DIMENSIONS (b))
+		      || (base_object_differ_p (a, b, &differ_p) 
+			  && differ_p))
 		    nb_basename_differ++;
 		  else
 		    nb_bot_relations++;
@@ -2533,7 +3842,7 @@ free_data_refs (varray_type datarefs)
 	VARRAY_GENERIC_PTR (datarefs, i);
       if (dr)
 	{
-	  VEC_free (tree, heap, DR_ACCESS_FNS (dr));
+	  DR_FREE_ACCESS_FNS (dr);
 	  free (dr);
 	}
     }

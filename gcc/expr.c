@@ -145,7 +145,6 @@ static void store_constructor (tree, rtx, int, HOST_WIDE_INT);
 static rtx store_field (rtx, HOST_WIDE_INT, HOST_WIDE_INT, enum machine_mode,
 			tree, tree, int);
 
-static unsigned HOST_WIDE_INT highest_pow2_factor (tree);
 static unsigned HOST_WIDE_INT highest_pow2_factor_for_target (tree, tree);
 
 static int is_aligning_offset (tree, tree);
@@ -6047,7 +6046,7 @@ safe_from_p (rtx x, tree exp, int top_p)
 /* Return the highest power of two that EXP is known to be a multiple of.
    This is used in updating alignment of MEMs in array references.  */
 
-static unsigned HOST_WIDE_INT
+unsigned HOST_WIDE_INT
 highest_pow2_factor (tree exp)
 {
   unsigned HOST_WIDE_INT c0, c1;

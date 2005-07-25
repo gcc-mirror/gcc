@@ -24,6 +24,50 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 #include "lambda.h"
 
+/** {base_address + offset + init} is the first location accessed by data-ref 
+      in the loop, and step is the stride of data-ref in the loop in bytes;
+      e.g.:
+    
+                       Example 1                      Example 2
+      data-ref         a[j].b[i][j]                   a + x + 16B (a is int*)
+      
+First location info:
+      base_address     &a                             a
+      offset           j_0*D_j + i_0*D_i + C_a        x
+      init             C_b                            16
+      step             D_j                            4
+      access_fn        NULL                           {16, +, 1}
+
+Base object info:
+      base_object      a                              NULL
+      access_fn        <access_fns of indexes of b>   NULL
+
+  **/
+struct first_location_in_loop
+{
+  tree base_address;
+  tree offset;
+  tree init;
+  tree step;
+  /* Access function related to first location in the loop.  */
+  VEC(tree,heap) *access_fns;
+
+};
+
+struct base_object_info
+{
+  /* The object.  */
+  tree base_object;
+  
+  /* A list of chrecs.  Access functions related to BASE_OBJECT.  */
+  VEC(tree,heap) *access_fns;
+};
+
+enum data_ref_type {
+  ARRAY_REF_TYPE,
+  POINTER_REF_TYPE
+};
+
 struct data_reference
 {
   /* A pointer to the statement that contains this DR.  */
@@ -32,27 +76,74 @@ struct data_reference
   /* A pointer to the ARRAY_REF node.  */
   tree ref;
 
-  /* The name of the array.  */
-  tree base_name;
-  
-  /* A list of chrecs.  */
-  VEC(tree,heap) *access_fns;
-
   /* Auxiliary info specific to a pass.  */
   int aux;
 
   /* True when the data reference is in RHS of a stmt.  */
   bool is_read;
 
+  /* First location accessed by the data-ref in the loop.  */
+  struct first_location_in_loop first_location;
+
+  /* Base object related info.  */
+  struct base_object_info object_info;
+
+  /* Aliasing information.  This field represents the symbol that
+     should be aliased by a pointer holding the address of this data
+     reference.  If the original data reference was a pointer
+     dereference, then this field contains the memory tag that should
+     be used by the new vector-pointer.  */
+  tree memtag;
+  struct ptr_info_def *ptr_info;
+  subvar_t subvars;
+
+  /* Alignment information.  */ 
+  /* The offset of the data-reference from its base in bytes.  */
+  tree misalignment;
+  /* The maximum data-ref's alignment.  */
+  tree aligned_to;
+
+  /* The type of the data-ref.  */
+  enum data_ref_type type;
 };
 
-#define DR_STMT(DR) DR->stmt
-#define DR_REF(DR) DR->ref
-#define DR_BASE_NAME(DR) DR->base_name
-#define DR_ACCESS_FNS(DR) DR->access_fns
-#define DR_ACCESS_FN(DR, I) VEC_index (tree, DR_ACCESS_FNS (DR), I)
-#define DR_NUM_DIMENSIONS(DR) VEC_length (tree, DR_ACCESS_FNS (DR))
-#define DR_IS_READ(DR) DR->is_read
+#define DR_STMT(DR)                (DR)->stmt
+#define DR_REF(DR)                 (DR)->ref
+#define DR_BASE_OBJECT(DR)         (DR)->object_info.base_object
+#define DR_TYPE(DR)                (DR)->type
+#define DR_ACCESS_FNS(DR)\
+  (DR_TYPE(DR) == ARRAY_REF_TYPE ?  \
+   (DR)->object_info.access_fns : (DR)->first_location.access_fns)
+#define DR_ACCESS_FN(DR, I)        VEC_index (tree, DR_ACCESS_FNS (DR), I)
+#define DR_NUM_DIMENSIONS(DR)      VEC_length (tree, DR_ACCESS_FNS (DR))  
+#define DR_IS_READ(DR)             (DR)->is_read
+#define DR_BASE_ADDRESS(DR)        (DR)->first_location.base_address
+#define DR_OFFSET(DR)              (DR)->first_location.offset
+#define DR_INIT(DR)                (DR)->first_location.init
+#define DR_STEP(DR)                (DR)->first_location.step
+#define DR_MEMTAG(DR)              (DR)->memtag
+#define DR_ALIGNED_TO(DR)          (DR)->aligned_to
+#define DR_OFFSET_MISALIGNMENT(DR) (DR)->misalignment
+#define DR_PTR_INFO(DR)            (DR)->ptr_info
+#define DR_SUBVARS(DR)             (DR)->subvars
+
+#define DR_ACCESS_FNS_ADDR(DR)       \
+  (DR_TYPE(DR) == ARRAY_REF_TYPE ?   \
+   &((DR)->object_info.access_fns) : &((DR)->first_location.access_fns))
+#define DR_SET_ACCESS_FNS(DR, ACC_FNS)         \
+{                                              \
+  if (DR_TYPE(DR) == ARRAY_REF_TYPE)           \
+    (DR)->object_info.access_fns = ACC_FNS;    \
+  else                                         \
+    (DR)->first_location.access_fns = ACC_FNS; \
+}
+#define DR_FREE_ACCESS_FNS(DR)                              \
+{                                                           \
+  if (DR_TYPE(DR) == ARRAY_REF_TYPE)                        \
+    VEC_free (tree, heap, (DR)->object_info.access_fns);    \
+  else                                                      \
+    VEC_free (tree, heap, (DR)->first_location.access_fns); \
+}
 
 enum data_dependence_direction {
   dir_positive, 
@@ -156,10 +247,8 @@ extern struct data_dependence_relation *initialize_data_dependence_relation
 (struct data_reference *, struct data_reference *);
 extern void compute_affine_dependence (struct data_dependence_relation *);
 extern void analyze_all_data_dependences (struct loops *);
-extern void compute_data_dependences_for_loop (unsigned, struct loop *, 
+extern void compute_data_dependences_for_loop (struct loop *, bool,
 					       varray_type *, varray_type *);
-extern struct data_reference * init_data_ref (tree, tree, tree, tree, bool);
-extern struct data_reference *analyze_array (tree, tree, bool);
 
 extern void dump_subscript (FILE *, struct subscript *);
 extern void dump_ddrs (FILE *, varray_type);
@@ -171,13 +260,10 @@ extern void dump_data_dependence_relation (FILE *,
 extern void dump_data_dependence_relations (FILE *, varray_type);
 extern void dump_data_dependence_direction (FILE *, 
 					    enum data_dependence_direction);
-extern bool array_base_name_differ_p (struct data_reference *, 
-				      struct data_reference *, bool *);
 extern void free_dependence_relation (struct data_dependence_relation *);
 extern void free_dependence_relations (varray_type);
 extern void free_data_refs (varray_type);
 extern void compute_subscript_distance (struct data_dependence_relation *);
-extern bool build_classic_dist_vector (struct data_dependence_relation *, int, int);
 
 
 
