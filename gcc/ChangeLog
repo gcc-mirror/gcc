@@ -1,3 +1,9 @@
+2005-07-25  Richard Henderson  <rth@redhat.com>
+
+	PR 22626
+	* tree-complex.c (gate_no_optimization): True if errors.
+	* Makefile.in (tree-complex.o): Update dependencies.
+
 2005-07-25  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/frv/predicates.md (integer_register_operand): Use
