@@ -1,5 +1,10 @@
 2005-07-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR tree-opt/22484
+	* testsuite/g++.dg/opt/loop2.C: New test.
+
+2005-07-25  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	* gcc.dg/tree-ssa/reassoc-3.c: New test.
 	* gcc.dg/tree-ssa/reassoc-4.c: New test.
 

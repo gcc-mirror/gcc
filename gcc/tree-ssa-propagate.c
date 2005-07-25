@@ -604,6 +604,8 @@ set_rhs (tree *stmt_p, tree expr)
       break;
 
     case COND_EXPR:
+      if (!is_gimple_condexpr (expr))
+        return false;
       COND_EXPR_COND (stmt) = expr;
       break;
     case SWITCH_EXPR:
