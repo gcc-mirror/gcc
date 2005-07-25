@@ -1,4 +1,4 @@
-! { dg-do run}
+! { dg-do run }
 ! PR 21075:  Reshape with rank 7 used to segfault.
 program main
   integer :: a(256), b(2,2,2,2,2,2,2)
