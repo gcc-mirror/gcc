@@ -1075,7 +1075,7 @@ eliminate_partially_redundant_load (basic_block bb, rtx insn,
 	  else /* Its a dead move no need to generate.  */
 	    continue;
 	  occr = (struct unoccr *) obstack_alloc (&unoccr_obstack,
-						  sizeof (struct occr));
+						  sizeof (struct unoccr));
 	  occr->insn = avail_insn;
 	  occr->pred = pred;
 	  occr->next = avail_occrs;
