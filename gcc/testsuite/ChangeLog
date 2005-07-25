@@ -1,3 +1,8 @@
+2005-07-25  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/22624
+	* gcc.dg/tree-ssa/flatten-2.c: Fix label patterns.
+
 2005-07-25  Ira Rosen  <irar@il.ibm.com>
 
 	* gcc.dg/vect/vect.exp: Change verbosity level to 4.
