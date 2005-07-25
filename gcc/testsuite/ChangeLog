@@ -1,3 +1,8 @@
+2005-07-25  Adam Nemet  <anemet@lnxw.com>
+
+        * lib/profopt.exp (profopt-execute): Check for profiling data
+        files on the target.
+
 2005-07-25  Richard Guenther  <rguenther@gcc.gnu.org>
 
 	* gcc.dg/tree-ssa/flatten-1.c: Use longer function names
