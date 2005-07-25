@@ -1,3 +1,8 @@
+2005-07-25  Richard Guenther  <rguenther@gcc.gnu.org>
+
+	* gcc.dg/tree-ssa/flatten-1.c: Use longer function names
+	for matching of asm labels.
+
 2005-07-25  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/20050719-1.c: Add return 0;.
