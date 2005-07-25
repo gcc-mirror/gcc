@@ -1120,6 +1120,7 @@ static const struct option_map option_map[] =
    {"--static", "-static", 0},
    {"--std", "-std=", "aj"},
    {"--symbolic", "-symbolic", 0},
+   {"--sysroot", "--sysroot=", "aj"}, 
    {"--time", "-time", 0},
    {"--trace-includes", "-H", 0},
    {"--traditional", "-traditional", 0},
@@ -3064,6 +3065,9 @@ display_help (void)
   fputs (_("  -time                    Time the execution of each subprocess\n"), stdout);
   fputs (_("  -specs=<file>            Override built-in specs with the contents of <file>\n"), stdout);
   fputs (_("  -std=<standard>          Assume that the input sources are for <standard>\n"), stdout);
+  fputs (_("\
+  --sysroot=<directory>    Use <directory> as the root directory for headers\n\
+                           for headers and libraries\n"), stdout);
   fputs (_("  -B <directory>           Add <directory> to the compiler's search paths\n"), stdout);
   fputs (_("  -b <machine>             Run gcc for target <machine>, if installed\n"), stdout);
   fputs (_("  -V <version>             Run gcc version number <version>, if installed\n"), stdout);
@@ -3926,6 +3930,11 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	;
       else if (! strcmp (argv[i], "-fhelp"))
 	;
+      else if (! strncmp (argv[i], "--sysroot=", strlen ("--sysroot=")))
+	{
+	  target_system_root = argv[i] + strlen ("--sysroot=");
+	  target_system_root_changed = 1;
+	}
       else if (argv[i][0] == '+' && argv[i][1] == 'e')
 	{
 	  /* Compensate for the +e options to the C++ front-end;

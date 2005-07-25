@@ -325,7 +325,7 @@ GCC_FOR_TARGET = $(STAGE_CC_WRAPPER) ./xgcc -B./ -B$(build_tooldir)/bin/ -isyste
 # This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
 # It omits XCFLAGS, and specifies -B./.
 # It also specifies -isystem ./include to find, e.g., stddef.h.
-GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(LOOSE_WARN) -Wold-style-definition $($@-warn) -isystem ./include $(TCFLAGS)
+GCC_CFLAGS=$(CFLAGS_FOR_TARGET) $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(LOOSE_WARN) -Wold-style-definition $($@-warn) -isystem ./include $(TCFLAGS)
 
 # ---------------------------------------------------
 # Programs which produce files for the target machine
@@ -511,12 +511,20 @@ GGC_LIB=
 LIBGCC = libgcc.a
 INSTALL_LIBGCC = install-libgcc
 
+# "true" if the target C library headers are unavailable; "false"
+# otherwise.
+inhibit_libc = @inhibit_libc@
+ifeq ($(inhibit_libc),true)
+INHIBIT_LIBC_CFLAGS = -Dinhibit_libc
+endif
+
 # Options to use when compiling libgcc2.a.
 #
 LIBGCC2_DEBUG_CFLAGS = -g
 LIBGCC2_CFLAGS = -O2 $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) $(TARGET_LIBGCC2_CFLAGS) \
 		 $(LIBGCC2_DEBUG_CFLAGS) $(GTHREAD_FLAGS) \
-		 -DIN_LIBGCC2 -D__GCC_FLOAT_NOT_NEEDED @inhibit_libc@
+		 -DIN_LIBGCC2 -D__GCC_FLOAT_NOT_NEEDED \
+		 $(INHIBIT_LIBC_CFLAGS)
 
 # Additional options to use when compiling libgcc2.a.
 # Some targets override this to -isystem include
@@ -528,7 +536,8 @@ TARGET_LIBGCC2_CFLAGS =
 # Options to use when compiling crtbegin/end.
 CRTSTUFF_CFLAGS = -O2 $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
   -finhibit-size-directive -fno-inline-functions -fno-exceptions \
-  -fno-zero-initialized-in-bss -fno-unit-at-a-time
+  -fno-zero-initialized-in-bss -fno-unit-at-a-time \
+  $(INHIBIT_LIBC_CFLAGS)
 
 # Additional sources to handle exceptions; overridden by targets as needed.
 LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde.c \
@@ -1393,33 +1402,33 @@ stmp-multilib: $(LIBGCC_DEPS)
 $(T)crtbegin.o: crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
   gbl-ctors.h stmp-int-hdrs tsystem.h coretypes.h $(TM_H)
 	$(GCC_FOR_TARGET) $(CRTSTUFF_CFLAGS) $(CRTSTUFF_T_CFLAGS) \
-	  @inhibit_libc@ -c $(srcdir)/crtstuff.c -DCRT_BEGIN \
+	  -c $(srcdir)/crtstuff.c -DCRT_BEGIN \
 	  -o $(T)crtbegin$(objext)
 
 $(T)crtend.o: crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
   gbl-ctors.h stmp-int-hdrs tsystem.h coretypes.h $(TM_H)
 	$(GCC_FOR_TARGET) $(CRTSTUFF_CFLAGS) $(CRTSTUFF_T_CFLAGS) \
-	  @inhibit_libc@ -c $(srcdir)/crtstuff.c -DCRT_END \
+	  -c $(srcdir)/crtstuff.c -DCRT_END \
 	  -o $(T)crtend$(objext)
 
 # These are versions of crtbegin and crtend for shared libraries.
 $(T)crtbeginS.o: crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
   gbl-ctors.h stmp-int-hdrs tsystem.h coretypes.h $(TM_H)
 	$(GCC_FOR_TARGET) $(CRTSTUFF_CFLAGS) $(CRTSTUFF_T_CFLAGS_S) \
-	  @inhibit_libc@ -c $(srcdir)/crtstuff.c -DCRT_BEGIN -DCRTSTUFFS_O \
+	  -c $(srcdir)/crtstuff.c -DCRT_BEGIN -DCRTSTUFFS_O \
 	  -o $(T)crtbeginS$(objext)
 
 $(T)crtendS.o: crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
   gbl-ctors.h stmp-int-hdrs tsystem.h coretypes.h $(TM_H)
 	$(GCC_FOR_TARGET) $(CRTSTUFF_CFLAGS) $(CRTSTUFF_T_CFLAGS_S) \
-	  @inhibit_libc@ -c $(srcdir)/crtstuff.c -DCRT_END -DCRTSTUFFS_O \
+	  -c $(srcdir)/crtstuff.c -DCRT_END -DCRTSTUFFS_O \
 	  -o $(T)crtendS$(objext)
 
 # This is a version of crtbegin for -static links.
 $(T)crtbeginT.o: crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
   gbl-ctors.h stmp-int-hdrs tsystem.h coretypes.h $(TM_H)
 	$(GCC_FOR_TARGET) $(CRTSTUFF_CFLAGS) $(CRTSTUFF_T_CFLAGS) \
-	  @inhibit_libc@ -c $(srcdir)/crtstuff.c -DCRT_BEGIN -DCRTSTUFFT_O \
+	  -c $(srcdir)/crtstuff.c -DCRT_BEGIN -DCRTSTUFFT_O \
 	  -o $(T)crtbeginT$(objext)
 
 # Compile the start modules crt0.o and mcrt0.o that are linked with
@@ -3137,7 +3146,7 @@ s-macro_list : $(GCC_PASSES)
 stmp-fixinc: gsyslimits.h macro_list \
   $(build_objdir)/fixincludes/fixincl \
   $(build_objdir)/fixincludes/fixinc.sh
-	@if test ! -d ${SYSTEM_HEADER_DIR}; then \
+	@if ! $(inhibit_libc) && test ! -d ${SYSTEM_HEADER_DIR}; then \
 	  echo The directory that should contain system headers does not exist: >&2 ; \
 	  echo "  ${SYSTEM_HEADER_DIR}" >&2 ; \
 	  if test "x${SYSTEM_HEADER_DIR}" = "x${gcc_tooldir}/sys-include"; \

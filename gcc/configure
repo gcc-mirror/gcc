@@ -922,6 +922,8 @@ Optional Packages:
   --with-as               arrange to use the specified as (full pathname)
   --with-stabs            arrange to use stabs instead of host debug format
   --with-dwarf2           force the default debug format to be DWARF 2
+  --with-build-sysroot=sysroot
+                          use sysroot as the system root during the build
   --with-sysroot=DIR Search for usr/lib, usr/include, et al, within DIR.
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
@@ -6934,6 +6936,13 @@ fi;
 
 
 
+# Check whether --with-build-sysroot or --without-build-sysroot was given.
+if test "${with_build_sysroot+set}" = set; then
+  withval="$with_build_sysroot"
+
+fi;
+
+
 # Check whether --with-sysroot or --without-sysroot was given.
 if test "${with_sysroot+set}" = set; then
   withval="$with_sysroot"
@@ -6945,6 +6954,11 @@ if test "${with_sysroot+set}" = set; then
 
  TARGET_SYSTEM_ROOT_DEFINE='-DTARGET_SYSTEM_ROOT=\"$(TARGET_SYSTEM_ROOT)\"'
  CROSS_SYSTEM_HEADER_DIR='$(TARGET_SYSTEM_ROOT)$(NATIVE_SYSTEM_HEADER_DIR)'
+ if test "x$with_build_sysroot" != x; then
+   build_system_header_dir=$with_build_sysroot'$(NATIVE_SYSTEM_HEADER_DIR)'
+ else
+   build_system_header_dir='$(CROSS_SYSTEM_HEADER_DIR)'
+ fi
 
  if test "x$exec_prefix" = xNONE; then
   if test "x$prefix" = xNONE; then
@@ -7464,7 +7478,7 @@ if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
 else
     ac_prog_version=`$MAKEINFO --version 2>&1 |
                    sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
-  echo "configure:7467: version of makeinfo is $ac_prog_version" >&5
+  echo "configure:7481: version of makeinfo is $ac_prog_version" >&5
   case $ac_prog_version in
     '')     gcc_cv_prog_makeinfo_modern=no;;
     4.[2-9]*)
@@ -12737,7 +12751,7 @@ if test x$host != x$target
 then
 	CROSS="-DCROSS_COMPILE"
 	ALL=all.cross
-	SYSTEM_HEADER_DIR='$(CROSS_SYSTEM_HEADER_DIR)'
+	SYSTEM_HEADER_DIR=$build_system_header_dir
 	case "$host","$target" in
 	# Darwin crosses can use the host system's libraries and headers,
 	# because of the fat library support.  Of course, it must be the
@@ -12771,11 +12785,11 @@ fi
 # then define inhibit_libc in LIBGCC2_CFLAGS.
 # This prevents libgcc2 from containing any code which requires libc
 # support.
-inhibit_libc=
+inhibit_libc=false
 if { { test x$host != x$target && test "x$with_sysroot" = x ; } ||
        test x$with_newlib = xyes ; } &&
      { test "x$with_headers" = x || test "x$with_headers" = xno ; } ; then
-       inhibit_libc=-Dinhibit_libc
+       inhibit_libc=true
 fi
 
 
@@ -13059,7 +13073,7 @@ fi
 
   test -n "$gcc_cv_as" && break
 done
-test -n "$gcc_cv_as" || gcc_cv_as="$gcc_cv_tool_prefix/bin/$default_tool_name$build_exeext"
+test -n "$gcc_cv_as" || gcc_cv_as="$gcc_cv_tool_prefix/$default_tool_name$build_exeext"
 
 fi
 test "$silent" != yes && exec 6>&1
@@ -13237,7 +13251,7 @@ fi
 
   test -n "$gcc_cv_ld" && break
 done
-test -n "$gcc_cv_ld" || gcc_cv_ld="$gcc_cv_tool_prefix/bin/$default_tool_name$build_exeext"
+test -n "$gcc_cv_ld" || gcc_cv_ld="$gcc_cv_tool_prefix/$default_tool_name$build_exeext"
 
 fi
 test "$silent" != yes && exec 6>&1
@@ -13381,7 +13395,7 @@ fi
 
   test -n "$gcc_cv_nm" && break
 done
-test -n "$gcc_cv_nm" || gcc_cv_nm="$gcc_cv_tool_prefix/bin/$default_tool_name$build_exeext"
+test -n "$gcc_cv_nm" || gcc_cv_nm="$gcc_cv_tool_prefix/$default_tool_name$build_exeext"
 
 fi
 test "$silent" != yes && exec 6>&1

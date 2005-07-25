@@ -1228,6 +1228,16 @@ in case @option{--with-sysroot} is not given an argument, is
 subdirectory of @option{$@{exec_prefix@}}, then it will be found relative to
 the GCC binaries if the installation tree is moved.
 
+@item --with-build-sysroot
+@itemx --with-build-sysroot=@var{dir}
+Tells GCC to consider @var{dir} as the system root (see
+@option{--with-sysroot}) while building the compiler itself, instead of
+the directory specified with @option{--with-sysroot}.  This option is
+only useful when you are already using @option{--with-sysroot}.  You
+can use @option{--with-build-sysroot} when you are configure with
+@option{--prefix} set to a directory that is different from the one in
+which you are installing GCC and your target libraries.
+
 @item --with-headers
 @itemx --with-headers=@var{dir}
 Deprecated in favor of @option{--with-sysroot}.

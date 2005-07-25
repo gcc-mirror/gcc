@@ -1,3 +1,30 @@
+2005-07-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.c (option_map): Add --sysroot.
+	(process_command): Handle --sysroot.
+	(display_help): Document it.
+	* doc/cppopts.tex (-isysroot): Document.
+	* doc/invoke.texi (--sysroot): Document.
+	* doc/install.texi (--with-build-sysroot): Document.
+
+	* Makefile.in (inhibit_libc): New variable.
+	(INHIBIT_LIBC_CFLAGS): Likewise.
+	(LIBGCC2_CFLAGS): Include
+	$(INHIBIT_LIBC_CFLAGS).
+	(CRTSTUFF_CFLAGS): Include $(INHIBIT_LIBC_CFLAGS).
+	($(T)crtbegin.o): Do not use @inhibit_libc@.
+	($(T)crtend.o): Likewise.
+	($(T)crtbeginS.o): Do not use @inhibit_libc@.
+	($(T)crtendS.o): Likewise.
+	($(T)crtbeginT.o): Do not use @inhibit_libc@.
+	($(T)crtendT.o): Likewise.
+	(stmp-fixinc): Do not complain about missing headers if
+	inhibit_libc.
+	* configure.ac (inhibit_libc): Set it to true/false.
+	(--with-build-sysroot): New option.  Use it to set
+	SYSTEM_HEADER_DIR. 
+	* configure: Regenerated.
+
 2005-07-25  Manfred Hollstein  <mh@suse.com>
 
 	* calls.c (store_one_arg): Fix unsigned comparison warning.
