@@ -31,6 +31,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-iterator.h"
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
+#include "diagnostic.h"
 
 
 /* For each complex ssa name, a lattice value.  We're interested in finding
@@ -1566,7 +1567,9 @@ tree_lower_complex_O0 (void)
 static bool
 gate_no_optimization (void)
 {
-  return optimize == 0;
+  /* With errors, normal optimization passes are not run.  If we don't
+     lower complex operations at all, rtl expansion will abort.  */
+  return optimize == 0 || sorrycount || errorcount;
 }
 
 struct tree_opt_pass pass_lower_complex_O0 = 
