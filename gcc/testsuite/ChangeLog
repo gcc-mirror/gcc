@@ -1,7 +1,7 @@
 2005-07-25  Feng Wang  <fengwang@nudt.edu.cn>
 
-	* pr15332.f: Fix dejagnu command.
-	* reshape_rank7.f90: Ditto.
+	* gfortran.dg/pr15332.f: Fix dejagnu command.
+	* gfortran.dg/reshape_rank7.f90: Ditto.
 
 2005-07-23  Jerry DeLisle  <jvdelisle@verizon.net>
 
