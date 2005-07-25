@@ -1,6 +1,6 @@
 // Stream buffer classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -153,7 +153,16 @@ namespace std
       friend streamsize
       __copy_streambufs<>(__streambuf_type* __sbin,
 			  __streambuf_type* __sbout);
-
+      
+      template<typename _CharT2, typename _Traits2>
+        friend basic_istream<_CharT2, _Traits2>&
+        operator>>(basic_istream<_CharT2, _Traits2>&, _CharT2*);
+      
+      template<typename _CharT2, typename _Traits2, typename _Alloc>
+        friend basic_istream<_CharT2, _Traits2>&
+        operator>>(basic_istream<_CharT2, _Traits2>&,
+		   basic_string<_CharT2, _Traits2, _Alloc>&);
+      
       template<typename _CharT2, typename _Traits2, typename _Alloc>
         friend basic_istream<_CharT2, _Traits2>&
         getline(basic_istream<_CharT2, _Traits2>&,

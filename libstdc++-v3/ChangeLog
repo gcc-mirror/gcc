@@ -1,3 +1,18 @@
+2005-07-24  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/22515
+	* include/bits/basic_string.h: Declare the specialization
+	operator>>(basic_istream<char>&, basic_string<char>&).
+	* include/std/std_istream.h: Declate the specialization
+	operator>>(basic_istream<char>&, char*).
+	* include/std/std_streambuf.h (basic_streambuf): Add friend
+	declarations for the above.
+	* src/istream.cc: Define the above.
+	* testsuite/27_io/basic_istream/extractors_character/char/4.cc: New.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/4.cc:
+	Likewise.
+	* testsuite/performance/27_io/ifstream_extract_chars.cc: Likewise.
+
 2005-07-20  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/streambuf.tcc (xsgetn, xsputn): Use streamsize
