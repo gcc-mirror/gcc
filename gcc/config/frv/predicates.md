@@ -37,7 +37,7 @@
   if (GET_CODE (op) != REG)
     return FALSE;
 
-  return GPR_OR_PSEUDO_P (REGNO (op));
+  return GPR_AP_OR_PSEUDO_P (REGNO (op));
 })
 
 ;; Return 1 is OP is a memory operand, or will be turned into one by
