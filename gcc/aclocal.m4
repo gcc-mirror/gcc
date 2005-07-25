@@ -731,7 +731,7 @@ if test "x[$]$1" = x; then
 		default_tool_name=`echo $2 | sed "${program_transform_name}"`
 	fi
 	AC_PATH_PROGS($1, $default_tool_name,
-		$gcc_cv_tool_prefix/$default_tool_name$build_exeext)
+		$gcc_cv_tool_prefix/bin/$default_tool_name$build_exeext)
 fi
 test "$silent" != yes && exec AS_MESSAGE_FD([])>&1
 
