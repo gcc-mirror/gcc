@@ -1,5 +1,8 @@
 2005-07-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/20063
+	* gfortran.fortran-torture/execute/data_4.f90: New test.
+
 	PR middle-end/20303
 	* gcc.dg/visibility-d.c: New test.
 
