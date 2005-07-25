@@ -1,3 +1,8 @@
+2005-07-25  Feng Wang  <fengwang@nudt.edu.cn>
+
+	* pr15332.f: Fix dejagnu command.
+	* reshape_rank7.f90: Ditto.
+
 2005-07-23  Jerry DeLisle  <jvdelisle@verizon.net>
 
         * gfortran.fortran-torture/execute/nan_inf_fmt.f90: Revise test to
