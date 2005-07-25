@@ -4059,7 +4059,7 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
   if ((flags & ECF_SIBCALL) && MEM_P (arg->value))
     {
       int i = -1;
-      unsigned int k;
+      unsigned HOST_WIDE_INT k;
       rtx x = arg->value;
 
       if (XEXP (x, 0) == current_function_internal_arg_pointer)
@@ -4077,13 +4077,18 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 #ifdef ARGS_GROW_DOWNWARD
 	  i = -i - arg->locate.size.constant;
 #endif
-	  for (k = 0; k < arg->locate.size.constant; k++)
-	    if (i + k < stored_args_map->n_bits
-		&& TEST_BIT (stored_args_map, i + k))
-	      {
-		sibcall_failure = 1;
-		break;
-	      }
+	  if (arg->locate.size.constant > 0)
+	    {
+	      unsigned HOST_WIDE_INT sc = arg->locate.size.constant;
+
+	      for (k = 0; k < sc; k++)
+		if (i + k < stored_args_map->n_bits
+		    && TEST_BIT (stored_args_map, i + k))
+		  {
+		    sibcall_failure = 1;
+		    break;
+		  }
+	    }
 	}
     }
 

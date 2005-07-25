@@ -1,3 +1,7 @@
+2005-07-25  Manfred Hollstein  <mh@suse.com>
+
+	* calls.c (store_one_arg): Fix unsigned comparison warning.
+
 2005-07-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* calls.c (store_one_arg): Check for sibling call MEM arguments
