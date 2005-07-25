@@ -1,3 +1,9 @@
+2005-07-25  Serge Belyshev  <belyshev@depni.sinp.msu.ru>
+
+	PR other/22337
+	* ggc-zone.c (ggc_alloc_zone_stat): Do not use CHUNK_OVERHEAD.
+	(ggc_print_statistics): Initialize variable before use.
+
 2005-07-25  Richard Guenther  <rguenther@suse.de>
 
 	* tree-dfa.c (mark_new_vars_to_rename): Protect against
