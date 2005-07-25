@@ -459,12 +459,17 @@ gfc_assign_data_value_range (gfc_expr * lvalue, gfc_expr * rvalue,
       last_con = con;
     }
 
-  /* We should never be overwriting an existing initializer.  */
-  gcc_assert (!init);
+  if (last_ts->type == BT_CHARACTER)
+    expr = create_character_intializer (init, last_ts, NULL, rvalue);
+  else
+    {
+      /* We should never be overwriting an existing initializer.  */
+      gcc_assert (!init);
 
-  expr = gfc_copy_expr (rvalue);
-  if (!gfc_compare_types (&lvalue->ts, &expr->ts))
-    gfc_convert_type (expr, &lvalue->ts, 0);
+      expr = gfc_copy_expr (rvalue);
+      if (!gfc_compare_types (&lvalue->ts, &expr->ts))
+	gfc_convert_type (expr, &lvalue->ts, 0);
+    }
 
   if (last_con == NULL)
     symbol->value = expr;
