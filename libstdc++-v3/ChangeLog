@@ -1,4 +1,4 @@
-2005-07-24  Paolo Carlini  <pcarlini@suse.de>
+2005-07-25  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/22515
 	* include/bits/basic_string.h: Declare the specialization
