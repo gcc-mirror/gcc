@@ -1,5 +1,9 @@
 2005-07-25  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/tree-ssa/20050719-1.c: Add return 0;.
+
+2005-07-25  Richard Guenther  <rguenther@suse.de>
+
 	PR testsuite/22624
 	* gcc.dg/tree-ssa/flatten-2.c: Fix label patterns.
 

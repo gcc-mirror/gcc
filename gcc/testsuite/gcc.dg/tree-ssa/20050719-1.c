@@ -34,4 +34,5 @@ useboot (void *boot)
 main()
 {
   zap (0);
+  return 0;
 }
