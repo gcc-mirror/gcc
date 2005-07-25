@@ -1518,7 +1518,7 @@ overlap_subvar (unsigned HOST_WIDE_INT offset, unsigned HOST_WIDE_INT size,
     {
       return true;
     }
-  else if (offset < sv->offset && (offset + size > sv->offset))
+  else if (offset < sv->offset && (size > sv->offset - offset))
     {
       return true;
     }

@@ -708,6 +708,9 @@ mark_new_vars_to_rename (tree stmt)
   int v_may_defs_before, v_may_defs_after;
   int v_must_defs_before, v_must_defs_after;
 
+  if (TREE_CODE (stmt) == PHI_NODE)
+    return;
+
   vars_in_vops_to_rename = BITMAP_ALLOC (NULL);
 
   /* Before re-scanning the statement for operands, mark the existing
