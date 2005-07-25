@@ -1,3 +1,8 @@
+2005-07-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* calls.c (store_one_arg): Check for sibling call MEM arguments
+	from already clobbered incoming argument area.
+
 2005-07-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* dwarf2out.c (gen_variable_die): Treat un-emitted COMDAT

@@ -4055,6 +4055,38 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	stack_arg_under_construction--;
     }
 
+  /* Check for overlap with already clobbered argument area.  */
+  if ((flags & ECF_SIBCALL) && MEM_P (arg->value))
+    {
+      int i = -1;
+      unsigned int k;
+      rtx x = arg->value;
+
+      if (XEXP (x, 0) == current_function_internal_arg_pointer)
+	i = 0;
+      else if (GET_CODE (XEXP (x, 0)) == PLUS
+	       && XEXP (XEXP (x, 0), 0) ==
+		  current_function_internal_arg_pointer
+	       && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
+	i = INTVAL (XEXP (XEXP (x, 0), 1));
+      else
+	i = -1;
+
+      if (i >= 0)
+	{
+#ifdef ARGS_GROW_DOWNWARD
+	  i = -i - arg->locate.size.constant;
+#endif
+	  for (k = 0; k < arg->locate.size.constant; k++)
+	    if (i + k < stored_args_map->n_bits
+		&& TEST_BIT (stored_args_map, i + k))
+	      {
+		sibcall_failure = 1;
+		break;
+	      }
+	}
+    }
+
   /* Don't allow anything left on stack from computation
      of argument to alloca.  */
   if (flags & ECF_MAY_BE_ALLOCA)
