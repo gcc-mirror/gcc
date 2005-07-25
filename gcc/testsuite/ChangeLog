@@ -1,3 +1,8 @@
+2005-07-25  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* gcc.dg/tree-ssa/reassoc-3.c: New test.
+	* gcc.dg/tree-ssa/reassoc-4.c: New test.
+
 2005-07-25  Adam Nemet  <anemet@lnxw.com>
 
         * lib/profopt.exp (profopt-execute): Check for profiling data

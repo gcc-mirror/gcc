@@ -435,10 +435,13 @@ reassociate_expr (tree bexpr, block_stmt_iterator *currbsi)
   unsigned int lhsrank = get_rank (lhs);
   unsigned int rhsrank = get_rank (rhs);
 
-  /* I don't want to get into the business of floating point
-     reassociation.  */
-  if (!INTEGRAL_TYPE_P (TREE_TYPE (lhs))
-      || !INTEGRAL_TYPE_P (TREE_TYPE (rhs)))
+  /* If unsafe math optimizations we can do reassociation for non integal
+     types.  */
+  if ((!INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+       || !INTEGRAL_TYPE_P (TREE_TYPE (rhs)))
+      && (!SCALAR_FLOAT_TYPE_P (TREE_TYPE (rhs))
+	  || !SCALAR_FLOAT_TYPE_P (TREE_TYPE(lhs))
+	  || !flag_unsafe_math_optimizations))
     return false;
     
   /* We want the greater ranked operand to be our "LHS" for simplicity
