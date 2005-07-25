@@ -1,5 +1,12 @@
 2005-07-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR tree-opt/22484
+	* tree-ssa-ccp.c (fold_stmt_inplace): Strip useless type conversions
+	after fold.
+	* tree-ssa-propagate.c (set_rhs): Reject invalid conditional operands.
+
+2005-07-25  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	* tree-ssa-reassoc.c (reassociate_expr): Allow scaler floating point
 	types when flag_unsafe_math_optimizations is true.
 

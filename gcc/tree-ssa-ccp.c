@@ -2335,6 +2335,7 @@ fold_stmt_inplace (tree stmt)
     return changed;
 
   new_rhs = fold (rhs);
+  STRIP_USELESS_TYPE_CONVERSION (new_rhs);
   if (new_rhs == rhs)
     return changed;
 
