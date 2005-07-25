@@ -1229,7 +1229,7 @@ ggc_alloc_zone_stat (size_t orig_size, struct alloc_zone *zone
      information is used in deciding when to collect.  */
   zone->allocated += size;
   
-  timevar_ggc_mem_total += (size + CHUNK_OVERHEAD);
+  timevar_ggc_mem_total += size;
 
 #ifdef GATHER_STATISTICS
   ggc_record_overhead (orig_size, size - orig_size, result PASS_MEM_STAT);
@@ -2049,7 +2049,7 @@ ggc_print_statistics (void)
       pte_overhead += PAGE_L2_SIZE * sizeof (struct page_entry *);
 #else
   {
-    struct page_table_chain *table;
+    page_table table = G.lookup;
     pte_overhead = 0;
     while (table)
       {
