@@ -1,3 +1,8 @@
+2005-07-25  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/19208
+	* pt.c (tsubst): Use fold_non_dependent_expr to	fold array domains.
+
 2005-06-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21987

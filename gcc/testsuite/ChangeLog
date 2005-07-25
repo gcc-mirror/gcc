@@ -1,3 +1,8 @@
+2005-07-25  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/19208
+	* g++.dg/template/array11.C: New test.
+
 2005-07-21  Janis Johnson  <janis187@us.ibm.com>
 
 	PR target/20191

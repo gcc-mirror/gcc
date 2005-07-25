@@ -6720,8 +6720,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	/* The array dimension behaves like a non-type template arg,
 	   in that we want to fold it as much as possible.  */
 	max = tsubst_template_arg (omax, args, complain, in_decl);
-	if (!processing_template_decl)
-	  max = decl_constant_value (max);
+	max = fold_non_dependent_expr (max);
 
 	if (integer_zerop (omax))
 	  {
