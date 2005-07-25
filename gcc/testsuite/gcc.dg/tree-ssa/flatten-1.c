@@ -36,22 +36,20 @@ static int bar(int i)
 }
 
 
-static int g(int i)
+static int gloobar(int i)
 {
   return i*5+1;
 }
-static int f(int i)
+static int floobar(int i)
 {
-  return g(i);
+  return gloobar(i);
 }
 int __attribute__((flatten)) leaf3(int i)
 {
   int j;
-  j = f(i);
-  j += f(i);
+  j = floobar(i);
+  j += floobar(i);
   return j;
 }
 
-/* { dg-final { scan-assembler-not "g\[: \t\n\]" } } */
-/* { dg-final { scan-assembler-not "f\[: \t\n\]" } } */
 /* { dg-final { scan-assembler-not "bar\[: \t\n\]" } } */
