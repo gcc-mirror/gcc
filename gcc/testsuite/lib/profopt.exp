@@ -231,6 +231,8 @@ proc profopt-execute { src } {
     }
 
     set executable $tmpdir/[file tail [file rootname $src].x]
+    set basename [file tail $testcase]
+    set base [file rootname $basename]
 
     set count 0
     foreach option $prof_option_list {
@@ -245,7 +247,9 @@ proc profopt-execute { src } {
 	verbose "Testing $testcase, $option" 1
 
 	# Remove old profiling and performance data files.
-	profopt-cleanup $testcase $prof_ext
+	foreach ext $prof_ext {
+	    remote_file target delete $tmpdir/$base.$ext
+	}
 	if [info exists perf_ext] {
 	    profopt-cleanup $testcase $perf_ext
 	}
@@ -282,9 +286,8 @@ proc profopt-execute { src } {
 	set missing_file 0
 	# Make sure the profile data was generated, and fail if not.
 	if { $status == "pass" } {
-	    set basename [file tail $testcase]
-	    set base [file rootname $basename]
 	    foreach ext $prof_ext {
+		remote_upload target $tmpdir/$base.$ext
 		set files [glob -nocomplain $base.$ext]
 		if { $files == "" } {
 		    set status "fail"
@@ -335,7 +338,9 @@ proc profopt-execute { src } {
 	}
 
 	# Remove the profiling data files.
-	profopt-cleanup $testcase $prof_ext
+	foreach ext $prof_ext {
+	    remote_file target delete $tmpdir/$base.$ext
+	}
 
 	if { $status != "pass" } {
 	    continue
