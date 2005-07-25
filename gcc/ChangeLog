@@ -1,3 +1,11 @@
+2005-07-25  Richard Guenther  <rguenther@suse.de>
+
+	* tree-dfa.c (mark_new_vars_to_rename): Protect against
+	calling with a PHI_NODE argument.
+
+	* tree-flow-inline.h (overlap_subvar): Protect against
+	possible overflow.
+
 2005-07-25  Paolo Bonzini  <bonzini@gnu.org>
 
 	* aclocal.m4 (gcc_AC_CHECK_TOOL): Add /bin to default directory.
