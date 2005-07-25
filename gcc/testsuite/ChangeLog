@@ -1,5 +1,7 @@
 2005-07-25  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.c-torture/execute/20050713-1.c: New test.
+
 	PR fortran/20063
 	* gfortran.fortran-torture/execute/data_4.f90: New test.
 
