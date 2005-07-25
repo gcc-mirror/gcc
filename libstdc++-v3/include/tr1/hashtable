@@ -1055,14 +1055,14 @@ namespace tr1
         Insert_Return_Type;
 
       node*
-      find_node(node* p, const key_type& k, typename hashtable::hash_code_t c);
+      find_node(node* p, const key_type& k,
+		typename hashtable::hash_code_t c) const;
 
       std::pair<iterator, bool>
       insert(const value_type&, std::tr1::true_type);
   
       iterator
-      insert
-      (const value_type&, std::tr1::false_type);
+      insert(const value_type&, std::tr1::false_type);
 
     public:				// Insert and erase
       Insert_Return_Type
@@ -1464,7 +1464,8 @@ namespace tr1
 	   bool c, bool m, bool u>
     typename hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, m, u>::node* 
     hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, m, u>::
-    find_node(node* p, const key_type& k, typename hashtable::hash_code_t code)
+    find_node(node* p, const key_type& k,
+	      typename hashtable::hash_code_t code) const
     {
       for ( ; p ; p = p->m_next)
 	if (this->compare (k, code, p))
