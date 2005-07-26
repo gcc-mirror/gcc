@@ -7953,6 +7953,35 @@ static struct builtin_description bdesc_voidacc[] =
   { CODE_FOR_mdasaccs, "__MDASACCS", FRV_BUILTIN_MDASACCS, 0, 0 }
 };
 
+/* Intrinsics that load a value and then issue a MEMBAR.
+   The FLAGS field is the icode for the membar.  */
+
+static struct builtin_description bdesc_loads[] =
+{
+  { CODE_FOR_builtin_read_qi, "__builtin_read8", FRV_BUILTIN_READ8, 0,
+    CODE_FOR_optional_membar_qi },
+  { CODE_FOR_builtin_read_hi, "__builtin_read16", FRV_BUILTIN_READ16, 0,
+    CODE_FOR_optional_membar_hi },
+  { CODE_FOR_builtin_read_si, "__builtin_read32", FRV_BUILTIN_READ32, 0,
+    CODE_FOR_optional_membar_si },
+  { CODE_FOR_builtin_read_di, "__builtin_read64", FRV_BUILTIN_READ64, 0,
+    CODE_FOR_optional_membar_di }
+};
+
+/* Likewise stores.  */
+
+static struct builtin_description bdesc_stores[] =
+{
+  { CODE_FOR_builtin_write_qi, "__builtin_write8", FRV_BUILTIN_WRITE8, 0,
+    CODE_FOR_optional_membar_qi },
+  { CODE_FOR_builtin_write_hi, "__builtin_write16", FRV_BUILTIN_WRITE16, 0,
+    CODE_FOR_optional_membar_hi },
+  { CODE_FOR_builtin_write_si, "__builtin_write32", FRV_BUILTIN_WRITE32, 0,
+    CODE_FOR_optional_membar_si },
+  { CODE_FOR_builtin_write64, "__builtin_write64", FRV_BUILTIN_WRITE64, 0,
+    CODE_FOR_optional_membar_di }
+};
+
 /* Initialize media builtins.  */
 
 static void
@@ -7968,6 +7997,8 @@ frv_init_builtins (void)
   tree sword2 = long_long_integer_type_node;
   tree uword2 = long_long_unsigned_type_node;
   tree uword4 = build_pointer_type (uword1);
+  tree vptr   = build_pointer_type (build_type_variant (void_type_node, 0, 1));
+  tree ubyte  = unsigned_char_type_node;
   tree iacc   = integer_type_node;
 
 #define UNARY(RET, T1) \
@@ -8034,6 +8065,12 @@ frv_init_builtins (void)
   tree sw2_ftype_iacc      = UNARY (sword2, iacc);
   tree sw1_ftype_iacc      = UNARY (sword1, iacc);
   tree void_ftype_ptr      = UNARY (voidt, const_ptr_type_node);
+  tree uw1_ftype_vptr      = UNARY (uword1, vptr);
+  tree uw2_ftype_vptr      = UNARY (uword2, vptr);
+  tree void_ftype_vptr_ub  = BINARY (voidt, vptr, ubyte);
+  tree void_ftype_vptr_uh  = BINARY (voidt, vptr, uhalf);
+  tree void_ftype_vptr_uw1 = BINARY (voidt, vptr, uword1);
+  tree void_ftype_vptr_uw2 = BINARY (voidt, vptr, uword2);
 
   def_builtin ("__MAND", uw1_ftype_uw1_uw1, FRV_BUILTIN_MAND);
   def_builtin ("__MOR", uw1_ftype_uw1_uw1, FRV_BUILTIN_MOR);
@@ -8139,6 +8176,15 @@ frv_init_builtins (void)
   def_builtin ("__IACCsetl", void_ftype_iacc_sw1, FRV_BUILTIN_IACCsetl);
   def_builtin ("__data_prefetch0", void_ftype_ptr, FRV_BUILTIN_PREFETCH0);
   def_builtin ("__data_prefetch", void_ftype_ptr, FRV_BUILTIN_PREFETCH);
+  def_builtin ("__builtin_read8", uw1_ftype_vptr, FRV_BUILTIN_READ8);
+  def_builtin ("__builtin_read16", uw1_ftype_vptr, FRV_BUILTIN_READ16);
+  def_builtin ("__builtin_read32", uw1_ftype_vptr, FRV_BUILTIN_READ32);
+  def_builtin ("__builtin_read64", uw2_ftype_vptr, FRV_BUILTIN_READ64);
+
+  def_builtin ("__builtin_write8", void_ftype_vptr_ub, FRV_BUILTIN_WRITE8);
+  def_builtin ("__builtin_write16", void_ftype_vptr_uh, FRV_BUILTIN_WRITE16);
+  def_builtin ("__builtin_write32", void_ftype_vptr_uw1, FRV_BUILTIN_WRITE32);
+  def_builtin ("__builtin_write64", void_ftype_vptr_uw2, FRV_BUILTIN_WRITE64);
 
 #undef UNARY
 #undef BINARY
@@ -8362,6 +8408,18 @@ frv_legitimize_argument (enum insn_code icode, int opnum, rtx arg)
     return arg;
   else
     return copy_to_mode_reg (mode, arg);
+}
+
+/* Return a volatile memory reference of mode MODE whose address is ARG.  */
+
+static rtx
+frv_volatile_memref (enum machine_mode mode, rtx arg)
+{
+  rtx mem;
+
+  mem = gen_rtx_MEM (mode, memory_address (mode, arg));
+  MEM_VOLATILE_P (mem) = 1;
+  return mem;
 }
 
 /* Expand builtins that take a single, constant argument.  At the moment,
@@ -8609,6 +8667,39 @@ frv_expand_voidaccop_builtin (enum insn_code icode, tree arglist)
     return NULL_RTX;
 
   emit_insn (pat);
+  return NULL_RTX;
+}
+
+/* Expand a __builtin_read* function.  ICODE is the instruction code for
+   the load and MEMBAR_ICODE is the instruction code of the "membar".  */
+
+static rtx
+frv_expand_load_builtin (enum insn_code icode, enum insn_code membar_icode,
+			 tree arglist, rtx target)
+{
+  rtx op0 = frv_read_argument (& arglist);
+
+  target = frv_legitimize_target (icode, target);
+  op0 = frv_volatile_memref (insn_data[membar_icode].operand[0].mode, op0);
+  emit_insn (GEN_FCN (icode) (target, op0));
+  emit_insn (GEN_FCN (membar_icode) (copy_rtx (op0)));
+  return target;
+}
+
+/* Likewise __builtin_write* functions, with ICODE being the instruction
+   code of the store.  */
+
+static rtx
+frv_expand_store_builtin (enum insn_code icode, enum insn_code membar_icode,
+			  tree arglist)
+{
+  rtx op0 = frv_read_argument (& arglist);
+  rtx op1 = frv_read_argument (& arglist);
+
+  op0 = frv_volatile_memref (insn_data[membar_icode].operand[0].mode, op0);
+  op1 = frv_legitimize_argument (icode, 1, op1);
+  emit_insn (GEN_FCN (icode) (op0, op1));
+  emit_insn (GEN_FCN (membar_icode) (copy_rtx (op0)));
   return NULL_RTX;
 }
 
@@ -8955,6 +9046,14 @@ frv_expand_builtin (tree exp,
        i < ARRAY_SIZE (bdesc_prefetches); i++, d++)
     if (d->code == fcode)
       return frv_expand_prefetches (d->icode, arglist);
+
+  for (i = 0, d = bdesc_loads; i < ARRAY_SIZE (bdesc_loads); i++, d++)
+    if (d->code == fcode)
+      return frv_expand_load_builtin (d->icode, d->flag, arglist, target);
+
+  for (i = 0, d = bdesc_stores; i < ARRAY_SIZE (bdesc_stores); i++, d++)
+    if (d->code == fcode)
+      return frv_expand_store_builtin (d->icode, d->flag, arglist);
 
   return 0;
 }

@@ -1,3 +1,31 @@
+2005-07-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* doc/extend.texi (Raw read/write Functions): New section.
+	* testsuite/gcc.target/frv/all-builtin-read8.c: New.
+	* testsuite/gcc.target/frv/all-builtin-read16.c: New.
+	* testsuite/gcc.target/frv/all-builtin-read32.c: New.
+	* testsuite/gcc.target/frv/all-builtin-read64.c: New.
+	* testsuite/gcc.target/frv/all-builtin-write8.c: New.
+	* testsuite/gcc.target/frv/all-builtin-write16.c: New.
+	* testsuite/gcc.target/frv/all-builtin-write32.c: New.
+	* testsuite/gcc.target/frv/all-builtin-write64.c: New.
+	* config/frv/frv.c: Add bdesc_loads global.
+	Add bdesc_stores global.
+	(frv_init_builtins): Add support for __builtin_{read/write}*.
+	(frv_volatile_memref): New.
+	(frv_expand_load_builtin): New.
+	(frv_expand_store_builtin): New.
+	* config/frv/frv.h (frv_builtins): Add FRV_BUILTIN_SCAN,
+	FRV_BUILTIN_READ8, FRV_BUILTIN_READ16, FRV_BUILTIN_READ32,
+	FRV_BUILTIN_READ64, FRV_BUILTIN_WRITE8, FRV_BUILTIN_WRITE16,
+	FRV_BUILTIN_WRITE32, FRV_BUILTIN_WRITE64.
+	* config/frv/frv.md (unspecs): Add UNSPEC_BUILTIN_LOAD,
+	UNSPEC_BUILTIN_STORE, UNSPEC_OPTIONAL_MEMBAR.
+	(builtin_read_<mode>): New.
+	(builtin_write_<mode>): New.
+	(builtin_write64): New.
+	(optional_membar_<mode>): New.
+
 2005-07-26  J"orn Rennecke <joern.rennecke@st.com>
 
 	* emit-rtl.c (gen_lowpart_common): Compare size of MODE in bits

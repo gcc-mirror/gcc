@@ -41,6 +41,9 @@
    (UNSPEC_EH_RETURN_EPILOGUE	6)
    (UNSPEC_GOT			7)
    (UNSPEC_LDD			8)
+   (UNSPEC_BUILTIN_LOAD		9)
+   (UNSPEC_BUILTIN_STORE	10)
+   (UNSPEC_OPTIONAL_MEMBAR	11)
 
    (UNSPEC_GETTLSOFF			200)
    (UNSPEC_TLS_LOAD_GOTTLSOFF12		201)
@@ -86,7 +89,9 @@
    (FDPIC_REG			15)
    ])
 
-
+(define_mode_macro IMODE [QI HI SI DI])
+(define_mode_attr IMODEsuffix [(QI "b") (HI "h") (SI "") (DI "d")])
+(define_mode_attr BREADsuffix [(QI "ub") (HI "uh") (SI "") (DI "d")])
 
 ;; ::::::::::::::::::::
 ;; ::
@@ -2162,7 +2167,45 @@
   else
     FAIL;
 }")
+
+;; The load part of a __builtin_read* function.
+;; Use UNSPECs to distinguish these patterns from normal moves.
+(define_insn "builtin_read_<mode>"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(zero_extend:SI (unspec:IMODE
+			 [(match_operand:IMODE 1 "memory_operand" "m")]
+			 UNSPEC_BUILTIN_LOAD)))]
+  ""
+  "ld<BREADsuffix>%I1%U1 %M1,%0"
+  [(set_attr "length" "4")
+   (set_attr "type" "gload")])
 
+;; The store part of a __builtin_write* function.
+(define_insn "builtin_write_<mode>"
+  [(set (match_operand:IMODE 0 "memory_operand" "=m")
+	(unspec:IMODE [(match_operand:IMODE 1 "reg_or_0_operand" "dO")]
+		      UNSPEC_BUILTIN_STORE))]
+  ""
+  "st<IMODEsuffix>%I0%U0 %z1, %M0"
+  [(set_attr "length" "4")
+   (set_attr "type" "gstore")])
+
+;; This one has a different predicate for operand 1.
+(define_insn "builtin_write64"
+  [(set (match_operand:DI 0 "memory_operand" "=m")
+	(unspec:DI [(match_operand:DI 1 "register_operand" "d")]
+		   UNSPEC_BUILTIN_STORE))]
+  ""
+  "std%I0%U0 %z1, %M0"
+  [(set_attr "length" "4")
+   (set_attr "type" "gstore")])
+
+(define_insn "optional_membar_<mode>"
+  [(set (match_operand:IMODE 0 "memory_operand" "=m")
+	(unspec:IMODE [(const_int 0)] UNSPEC_OPTIONAL_MEMBAR))]
+  ""
+  "membar"
+  [(set_attr "length" "4")])
 
 ;; ::::::::::::::::::::
 ;; ::
