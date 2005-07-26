@@ -1,3 +1,15 @@
+2005-07-25  James E Wilson  <wilson@specifixinc.com>
+
+	* dwarf2out.c (add_call_src_coords_attributes): New.
+	(gen_inlined_subroutine_die): Call it.
+	(maybe_emit_file, init_file_table): Add comments.
+	(prune_unused_types_walk_attribs): Pass DW_AT_call_file through
+	maybe_emit_file.
+	* tree-inline.c (remap_block): Copy BLOCK_SOURCE_LOCATION.
+	(expand_call_inline): Set BLOCK_SOURCE_LOCATION.
+	* tree.h (BLOCK_SOURCE_LOCATION): New.
+	(struct tree_block): New field locus.
+
 2005-07-26  Andreas Schwab  <schwab@suse.de>
 
 	PR rtl-optimization/23043

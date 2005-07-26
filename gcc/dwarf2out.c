@@ -11757,6 +11757,20 @@ gen_label_die (tree decl, dw_die_ref context_die)
     }
 }
 
+/* A helper function for gen_inlined_subroutine_die.  Add source coordinate
+   attributes to the DIE for a block STMT, to describe where the inlined
+   function was called from.  This is similar to add_src_coords_attributes.  */
+
+static inline void
+add_call_src_coords_attributes (tree stmt, dw_die_ref die)
+{
+  expanded_location s = expand_location (BLOCK_SOURCE_LOCATION (stmt));
+  unsigned file_index = lookup_filename (s.file);
+
+  add_AT_unsigned (die, DW_AT_call_file, file_index);
+  add_AT_unsigned (die, DW_AT_call_line, s.line);
+}
+
 /* A helper function for gen_lexical_block_die and gen_inlined_subroutine_die.
    Add low_pc and high_pc attributes to the DIE for a block STMT.  */
 
@@ -11824,6 +11838,7 @@ gen_inlined_subroutine_die (tree stmt, dw_die_ref context_die, int depth)
 
       add_abstract_origin_attribute (subr_die, decl);
       add_high_low_attributes (stmt, subr_die);
+      add_call_src_coords_attributes (stmt, subr_die);
 
       decls_for_scope (stmt, subr_die, depth);
       current_function_has_inlines = 1;
@@ -13247,6 +13262,12 @@ lookup_filename (const char *file_name)
   return i;
 }
 
+/* If the assembler will construct the file table, then translate the compiler
+   internal file table number into the assembler file table number, and emit
+   a .file directive if we haven't already emitted one yet.  The file table
+   numbers are different because we prune debug info for unused variables and
+   types, which may include filenames.  */
+
 static int
 maybe_emit_file (int fileno)
 {
@@ -13266,6 +13287,8 @@ maybe_emit_file (int fileno)
   else
     return fileno;
 }
+
+/* Initialize the compiler internal file table.  */
 
 static void
 init_file_table (void)
@@ -13644,7 +13667,7 @@ prune_unused_types_walk_attribs (dw_die_ref die)
 	     Make sure that it will get emitted.  */
 	  prune_unused_types_mark (a->dw_attr_val.v.val_die_ref.die, 1);
 	}
-      else if (a->dw_attr == DW_AT_decl_file)
+      else if (a->dw_attr == DW_AT_decl_file || a->dw_attr == DW_AT_call_file)
 	{
 	  /* A reference to a file.  Make sure the file name is emitted.  */
 	  a->dw_attr_val.v.val_unsigned =
