@@ -844,7 +844,7 @@ expand_complex_addition (block_stmt_iterator *bsi, tree inner_type,
 
     case PAIR (VARYING, ONLY_IMAG):
       rr = ar;
-      ri = gimplify_build2 (bsi, MINUS_EXPR, inner_type, ai, bi);
+      ri = gimplify_build2 (bsi, code, inner_type, ai, bi);
       break;
 
     case PAIR (ONLY_REAL, VARYING):
@@ -858,7 +858,7 @@ expand_complex_addition (block_stmt_iterator *bsi, tree inner_type,
       if (code == MINUS_EXPR)
 	goto general;
       rr = br;
-      ri = gimplify_build2 (bsi, MINUS_EXPR, inner_type, ai, bi);
+      ri = gimplify_build2 (bsi, code, inner_type, ai, bi);
       break;
 
     case PAIR (VARYING, VARYING):
