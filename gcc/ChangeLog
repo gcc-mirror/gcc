@@ -1,3 +1,10 @@
+2005-07-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/22486
+	* fold-const.c (fold_unary): Fold away useless component
+	references of the form (T *)&T.x, if the address
+	doesn't change.
+
 2005-07-25  James E Wilson  <wilson@specifixinc.com>
 
 	* dwarf2out.c (add_call_src_coords_attributes): New.

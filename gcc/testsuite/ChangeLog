@@ -1,3 +1,8 @@
+2005-07-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/22486
+	* gcc.dg/tree-ssa/upcast-1.c: New testcase.
+
 2005-07-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/22484
