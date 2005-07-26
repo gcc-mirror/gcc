@@ -1405,6 +1405,15 @@ esac
 
 copy_dirs=
 
+AC_ARG_WITH([build-sysroot], 
+  [  --with-build-sysroot=sysroot
+                          use sysroot as the system root during the build],
+  [if test x"$withval" != x ; then
+     SYSROOT_CFLAGS_FOR_TARGET="--sysroot=$withval"
+   fi],
+  [SYSROOT_CFLAGS_FOR_TARGET=])
+AC_SUBST(SYSROOT_CFLAGS_FOR_TARGET)
+
 # Handle --with-headers=XXX.  If the value is not "yes", the contents of
 # the named directory are copied to $(tooldir)/sys-include.
 if test x"${with_headers}" != x && test x"${with_headers}" != xno ; then

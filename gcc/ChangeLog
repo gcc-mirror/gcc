@@ -1,3 +1,8 @@
+2005-07-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/install.texi (--with-build-sysroot): Fix grammatical error.
+	Clarify use of "build" in name.
+
 2005-07-26  Aldy Hernandez  <aldyh@redhat.com>
 
 	* doc/extend.texi (Raw read/write Functions): New section.
