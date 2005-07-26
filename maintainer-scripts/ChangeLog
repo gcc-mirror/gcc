@@ -1,3 +1,7 @@
+2005-07-26  Janis Johnson  <janis187@us.ibm.com>
+
+	* update_version (ADD_BRANCHES): Add dfp-branch.
+
 2005-05-21  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* crontab: Spread snapshot building more evenly throughout the
