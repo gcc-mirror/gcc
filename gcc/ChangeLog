@@ -1,3 +1,8 @@
+2005-07-26  Steve Ellcey  <sje@cup.hp.com>
+
+	PR rtl-optimization/22472
+	* config/pa/pa.h (HARD_REGNO_RENAME_OK): Define.
+
 2005-07-26  Steven Bosscher  <stevenb@suse.de>
 
 	PR tree-optimization/22504
