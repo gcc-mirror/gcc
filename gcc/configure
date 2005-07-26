@@ -13073,7 +13073,7 @@ fi
 
   test -n "$gcc_cv_as" && break
 done
-test -n "$gcc_cv_as" || gcc_cv_as="$gcc_cv_tool_prefix/$default_tool_name$build_exeext"
+test -n "$gcc_cv_as" || gcc_cv_as="$gcc_cv_tool_prefix/bin/$default_tool_name$build_exeext"
 
 fi
 test "$silent" != yes && exec 6>&1
@@ -13251,7 +13251,7 @@ fi
 
   test -n "$gcc_cv_ld" && break
 done
-test -n "$gcc_cv_ld" || gcc_cv_ld="$gcc_cv_tool_prefix/$default_tool_name$build_exeext"
+test -n "$gcc_cv_ld" || gcc_cv_ld="$gcc_cv_tool_prefix/bin/$default_tool_name$build_exeext"
 
 fi
 test "$silent" != yes && exec 6>&1
@@ -13395,7 +13395,7 @@ fi
 
   test -n "$gcc_cv_nm" && break
 done
-test -n "$gcc_cv_nm" || gcc_cv_nm="$gcc_cv_tool_prefix/$default_tool_name$build_exeext"
+test -n "$gcc_cv_nm" || gcc_cv_nm="$gcc_cv_tool_prefix/bin/$default_tool_name$build_exeext"
 
 fi
 test "$silent" != yes && exec 6>&1

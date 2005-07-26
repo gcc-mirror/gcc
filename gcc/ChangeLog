@@ -1,3 +1,7 @@
+2005-07-26  DJ Delorie  <dj@redhat.com>
+
+	* configure: Regenerate.
+
 2005-07-26  Dale Johannesen  <dalej@apple.com>
 
 	* postreload-gcse.c (alloc_mem):  Start CUID numbering at 1.
