@@ -1621,23 +1621,6 @@ may_alias_p (tree ptr, HOST_WIDE_INT mem_alias_set,
 
   alias_stats.tbaa_queries++;
 
-  /* If VAR is a pointer with the same alias set as PTR, then dereferencing
-     PTR can't possibly affect VAR.  Note, that we are specifically testing
-     for PTR's alias set here, not its pointed-to type.  We also can't
-     do this check with relaxed aliasing enabled.  */
-  if (POINTER_TYPE_P (TREE_TYPE (var))
-      && var_alias_set != 0
-      && mem_alias_set != 0)
-    {
-      HOST_WIDE_INT ptr_alias_set = get_alias_set (ptr);
-      if (ptr_alias_set == var_alias_set)
-	{
-	  alias_stats.alias_noalias++;
-	  alias_stats.tbaa_resolved++;
-	  return false;
-	}
-    }
-
   /* If the alias sets don't conflict then MEM cannot alias VAR.  */
   if (!alias_sets_conflict_p (mem_alias_set, var_alias_set))
     {

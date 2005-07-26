@@ -1,3 +1,9 @@
+2005-07-26  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 22591
+	* tree-ssa-alias.c (may_alias_p): Remove shortcut that tests
+	whether a pointer of type T * may point to objects of type T *.
+
 2005-07-26  Bernardo Innocenti  <bernie@develer.com>
 
 	Backport from mainline:

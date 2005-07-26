@@ -1,3 +1,9 @@
+2005-07-26  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 22591
+	* gcc.dg/tree-ssa/pr22591.c: New test.
+	* gcc.dg/tree-ssa/20030807-7.c: XFAIL everywhere.
+
 2005-07-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20050713-1.c: New test.
