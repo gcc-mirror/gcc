@@ -1118,7 +1118,8 @@ gen_lowpart_common (enum machine_mode mode, rtx x)
   /* Unfortunately, this routine doesn't take a parameter for the mode of X,
      so we have to make one up.  Yuk.  */
   innermode = GET_MODE (x);
-  if (GET_CODE (x) == CONST_INT && msize <= HOST_BITS_PER_WIDE_INT)
+  if (GET_CODE (x) == CONST_INT
+      && msize * BITS_PER_UNIT <= HOST_BITS_PER_WIDE_INT)
     innermode = mode_for_size (HOST_BITS_PER_WIDE_INT, MODE_INT, 0);
   else if (innermode == VOIDmode)
     innermode = mode_for_size (HOST_BITS_PER_WIDE_INT * 2, MODE_INT, 0);

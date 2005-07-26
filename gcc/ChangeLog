@@ -1,3 +1,8 @@
+2005-07-26  J"orn Rennecke <joern.rennecke@st.com>
+
+	* emit-rtl.c (gen_lowpart_common): Compare size of MODE in bits
+	(rather than units) against HOST_BITS_PER_WIDE_INT.
+
 2005-07-26  Kazu Hirata  <kazu@codesourcery.com>
 
 	* ipa-pure-const.c, ipa-reference.c, ipa-reference.h,
