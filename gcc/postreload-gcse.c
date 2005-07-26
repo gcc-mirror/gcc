@@ -225,7 +225,7 @@ alloc_mem (void)
 
   /* Find the largest UID and create a mapping from UIDs to CUIDs.  */
   uid_cuid = xcalloc (get_max_uid () + 1, sizeof (int));
-  i = 0;
+  i = 1;
   FOR_EACH_BB (bb)
     FOR_BB_INSNS (bb, insn)
       {
