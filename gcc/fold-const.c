@@ -6711,6 +6711,29 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	    return fold_build1 (code, type, TREE_OPERAND (op0, 0));
 	}
 
+      /* Handle (T *)&A.B.C for A being of type T and B and C
+	 living at offset zero.  This occours frequently in
+	 C++ upcasting and then accessing the base.  */
+      if (TREE_CODE (op0) == ADDR_EXPR
+	  && POINTER_TYPE_P (type)
+	  && handled_component_p (TREE_OPERAND (op0, 0)))
+        {
+	  HOST_WIDE_INT bitsize, bitpos;
+	  tree offset;
+	  enum machine_mode mode;
+	  int unsignedp, volatilep;
+          tree base = TREE_OPERAND (op0, 0);
+	  base = get_inner_reference (base, &bitsize, &bitpos, &offset,
+				      &mode, &unsignedp, &volatilep, false);
+	  /* If the reference was to a (constant) zero offset, we can use
+	     the address of the base if it has the same base type
+	     as the result type.  */
+	  if (! offset && bitpos == 0
+	      && TYPE_MAIN_VARIANT (TREE_TYPE (type))
+		  == TYPE_MAIN_VARIANT (TREE_TYPE (base)))
+	    return fold_convert (type, build_fold_addr_expr (base));
+        }
+
       if (TREE_CODE (op0) == MODIFY_EXPR
 	  && TREE_CONSTANT (TREE_OPERAND (op0, 1))
 	  /* Detect assigning a bitfield.  */
