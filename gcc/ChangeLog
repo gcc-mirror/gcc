@@ -1,3 +1,11 @@
+2005-07-26  Kazu Hirata  <kazu@codesourcery.com>
+
+	* ipa-pure-const.c, ipa-reference.c, ipa-reference.h,
+	ipa-type-escape.c, ipa-type-escape.h, ipa-utils.c,
+	ipa-utils.h, treestruct.def, config/crx/crx-protos.h,
+	config/crx/crx.c, config/crx/crx.h, config/crx/crx.md: Update
+	FSF address.
+
 2005-07-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/22486
