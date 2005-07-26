@@ -1,3 +1,12 @@
+2005-07-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.tpl (SYSROOT_CFLAGS_FOR_TARGET): New variable.
+	(CFLAGS_FOR_TARGET): Use it.
+	(CXXFLAGS_FOR_TARGET): Likewise.
+	* Makefile.in: Regenerated.
+	* configure.in (--with-build-sysroot): New option.
+	* configure: Regenerated.
+
 2005-07-24  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.tpl: Wrap install between unstage and stage
