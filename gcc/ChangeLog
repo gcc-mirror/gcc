@@ -1,3 +1,7 @@
+2005-07-26  Dale Johannesen  <dalej@apple.com>
+
+	* postreload-gcse.c (alloc_mem):  Start CUID numbering at 1.
+
 2005-07-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* doc/install.texi (--with-build-sysroot): Fix grammatical error.
