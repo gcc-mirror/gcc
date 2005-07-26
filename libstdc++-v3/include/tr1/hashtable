@@ -860,7 +860,8 @@ private:			// Insert and erase helper functions
   typedef typename Internal::IF<unique_keys, std::pair<iterator, bool>, iterator>::type
           Insert_Return_Type;
 
-  node* find_node (node* p, const key_type& k, typename hashtable::hash_code_t c);
+  node* find_node (node* p, const key_type& k,
+		   typename hashtable::hash_code_t c) const;
 
   std::pair<iterator, bool> insert (const value_type&, std::tr1::true_type);
   iterator insert (const value_type&, std::tr1::false_type);
@@ -1216,7 +1217,8 @@ template <typename K, typename V,
 	  bool c, bool m, bool u>
 typename hashtable<K,V,A,Ex,Eq,H1,H2,H,RP,c,m,u>::node* 
 hashtable<K,V,A,Ex,Eq,H1,H2,H,RP,c,m,u>
-::find_node (node* p, const key_type& k, typename hashtable::hash_code_t code)
+::find_node (node* p, const key_type& k,
+	     typename hashtable::hash_code_t code) const
 {
   for ( ; p ; p = p->m_next)
     if (this->compare (k, code, p))
