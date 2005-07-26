@@ -1,3 +1,9 @@
+2005-07-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config.gcc (cpu_type): Add frv case.
+	(with_cpu): Add frv400-*-*linux* and frv550-*-*linux* cases.
+	(supported_defaults): Add fr550 case.
+
 2005-07-26  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 22591

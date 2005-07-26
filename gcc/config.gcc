@@ -255,6 +255,8 @@ bfin*-*)
 ep9312*-*-*)
 	cpu_type=arm
 	;;
+frv*)	cpu_type=frv
+	;;
 xscale-*-*)
 	cpu_type=arm
 	extra_headers="mmintrin.h"
@@ -2379,8 +2381,11 @@ if test x$with_cpu = x ; then
     alphaev5*-*-*)
       with_cpu=ev5
       ;;
-    frv-*-*linux*)
+    frv-*-*linux* | frv400-*-*linux*)
       with_cpu=fr400
+      ;;
+    frv550-*-*linux*)
+      with_cpu=fr550
       ;;
     sparc*-*-*)
       with_cpu="`echo ${target} | sed 's/-.*$//'`"
@@ -2514,6 +2519,7 @@ case "${target}" in
 		supported_defaults=cpu
 		case "$with_cpu" in
 		fr400) ;;
+		fr550) ;;
 		*)
 			echo "Unknown cpu used in --with-cpu=$with_cpu" 1>&2
 			exit 1
