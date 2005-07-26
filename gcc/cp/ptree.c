@@ -149,9 +149,15 @@ cxx_print_binding (FILE *stream, cxx_binding *binding, const char *prefix)
 void
 cxx_print_identifier (FILE *file, tree node, int indent)
 {
-  indent_to (file, indent);
+  if (indent == 0)
+    fprintf (file, " ");
+  else
+    indent_to (file, indent);
   cxx_print_binding (file, IDENTIFIER_NAMESPACE_BINDINGS (node), "bindings");
-  indent_to (file, indent);
+  if (indent == 0)
+    fprintf (file, " ");
+  else
+    indent_to (file, indent);
   cxx_print_binding (file, IDENTIFIER_BINDING (node), "local bindings");
   print_node (file, "label", IDENTIFIER_LABEL_VALUE (node), indent + 4);
   print_node (file, "template", IDENTIFIER_TEMPLATE (node), indent + 4);

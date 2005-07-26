@@ -1,3 +1,8 @@
+2005-07-25  Ian Lance Taylor  <ian@airs.com>
+
+	* ptree.c (cxx_print_identifier): Print a leading space if the
+	indent level is 0.
+
 2005-07-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* call.c (convert_for_arg_passing): Check function pointers when
