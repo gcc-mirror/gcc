@@ -6044,6 +6044,7 @@ here in tabular form.
 * Argument Types::
 * Directly-mapped Integer Functions::
 * Directly-mapped Media Functions::
+* Raw read/write Functions::
 * Other Built-in Functions::
 @end menu
 
@@ -6397,6 +6398,27 @@ The functions listed below map directly to FR-V M-type instructions.
 @tab @code{@var{c} = __MXOR (@var{a}, @var{b})}
 @tab @code{MXOR @var{a},@var{b},@var{c}}
 @end multitable
+
+@node Raw read/write Functions
+@subsubsection Raw read/write Functions
+
+This sections describes built-in functions related to read and write
+instructions to access memory.  These functions generate
+@code{membar} instructions to flush the I/O load and stores where
+appropriate, as described in Fujitsu's manual described above.
+
+@table @code
+
+@item unsigned char __builtin_read8 (void *@var{data})
+@item unsigned short __builtin_read16 (void *@var{data})
+@item unsigned long __builtin_read32 (void *@var{data})
+@item unsigned long long __builtin_read64 (void *@var{data})
+
+@item void __builtin_write8 (void *@var{data}, unsigned char @var{datum})
+@item void __builtin_write16 (void *@var{data}, unsigned short @var{datum})
+@item void __builtin_write32 (void *@var{data}, unsigned long @var{datum})
+@item void __builtin_write64 (void *@var{data}, unsigned long long @var{datum})
+@end table
 
 @node Other Built-in Functions
 @subsubsection Other Built-in Functions
