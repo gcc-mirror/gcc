@@ -1,3 +1,9 @@
+2005-07-26  Steven Bosscher  <stevenb@suse.de>
+
+	PR tree-optimization/22504
+	* tree-complex.c (expand_complex_addition): Use 'code' instead
+	of MINUS_EXPR for (VARYING, ONLY_IMAG) and (ONLY_IMAG, VARYING).
+
 2005-07-26  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config.gcc (cpu_type): Add frv case.
@@ -187,7 +193,7 @@
 	(analyze_offset_expr, get_ptr_offset, address_analysis,
 	object_analysis): Likewise.
 	(analyze_offset): New function.
- 	(create_data_ref): Likewise.
+	(create_data_ref): Likewise.
 	(initialize_data_dependence_relation): Call base_addr_differ_p. Compare
 	dimensions for ARRAY_REFs only.
 	(build_classic_dist_vector): Make static.
@@ -218,7 +224,7 @@
 	* tree-loop-linear.c (linear_transform_loops): Call
 	compute_data_dependences_for_loop with correct parameters.
 	* tree-ssa-alias.c (is_aliased_with): New function.
- 	* tree-vect-analyze.c (vect_get_ptr_offset): Remove.
+	* tree-vect-analyze.c (vect_get_ptr_offset): Remove.
 	(vect_analyze_offset_expr, vect_base_addr_differ_p): Likewise.
 	(vect_analyze_data_ref_dependence): Get ddr. Remove call to
 	vect_base_addr_differ_p, compute_subscript_distance and
@@ -280,9 +286,9 @@
 
 2005-07-24  Ira Rosen  <irar@il.ibm.com>
 
-        PR tree-optimization/22526
-        * tree-vectorizer.c (slpeel_tree_peel_loop_to_edge): Match the type
-        of the zero node.
+	PR tree-optimization/22526
+	* tree-vectorizer.c (slpeel_tree_peel_loop_to_edge): Match the type
+	of the zero node.
 
 2005-07-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
@@ -474,11 +480,11 @@
 	(process_unification_queue): Likewise.
 
 2005-07-22  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
-            Laurent GUERBY  <laurent@guerby.net>
+	    Laurent GUERBY  <laurent@guerby.net>
 
-        PR tree-optimization/22336
-        * function.c (record_block_change): Check for 
-        cfun->ib_boundaries_block.
+	PR tree-optimization/22336
+	* function.c (record_block_change): Check for 
+	cfun->ib_boundaries_block.
 	
 2005-07-21  James A. Morrison  <phython@gcc.gnu.org>
 
@@ -517,8 +523,8 @@
 
 2005-07-21  Uros Bizjak  <uros@kss-loka.si>
 
-        PR target/21149
-        * config/i386/i386.md (sse_movhlps): Fix vec_select values.
+	PR target/21149
+	* config/i386/i386.md (sse_movhlps): Fix vec_select values.
 
 2005-07-21  Uros Bizjak  <uros@kss-loka.si>
 
@@ -557,13 +563,13 @@
 
 	* config/sh/symbian.c: Replace C++ style line comments with C
 	style line comments.
-        (symbian_add_attribute): Do not use a ? operator on the LHS of
+	(symbian_add_attribute): Do not use a ? operator on the LHS of
 	an assignment.
-        (sh_symbian_handle_dll_attribute): Change the type of the
+	(sh_symbian_handle_dll_attribute): Change the type of the
 	method vector to "VEC(tree,gc)*" and use vector accessor
 	macros to walk over the elements.
-        (symbian_export_vtable_and_rtti_p): Likewise.
-        (symbian_class_needs_attribute_p): Likewise.
+	(symbian_export_vtable_and_rtti_p): Likewise.
+	(symbian_class_needs_attribute_p): Likewise.
 
 2005-07-21  Paolo Bonzini  <bonzini@gnu.org>
 
@@ -578,7 +584,7 @@
 	* config/rs6000/darwin.h (REGISTER_TARGET_PRAGMAS): Likewise.
 
 2005-07-21  Paolo Bonzini  <bonzini@gnu.org>
-            Zdenek Dvorak  <dvorakz@suse.cz>
+	    Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/19210
 	* common.opt (Wunsafe-loop-optimizations, funsafe-loop-optimizations):
@@ -656,9 +662,9 @@
 
 	* config/sh/sh.md (UNSPEC_SP_SET, UNSPEC_SP_TEST): New constants.
 	(stack_protect_set, stack_protect_test): New expanders.
-        (stack_protect_set_si, stack_protect_set_si_media,
+	(stack_protect_set_si, stack_protect_set_si_media,
 	stack_protect_set_di_media, stack_protect_test_si,
-        stack_protect_test_si_media, stack_protect_test_di_media):
+	stack_protect_test_si_media, stack_protect_test_di_media):
 	New insns.
 
 2005-07-20  Andrew Pinski  <pinskia@physics.uc.edu>
@@ -674,7 +680,7 @@
 	against zero.
 	* tree-flow.h (expr_computes_nonzero): Remove.
 	* tree-vrp.c (expr_computes_nonzero): Remove.
- 	(vrp_expr_computes_nonzero): Use tree_expr_nonzero_p.
+	(vrp_expr_computes_nonzero): Use tree_expr_nonzero_p.
 	(extract_range_from_unary_expr): Likewise.
 	* tree-ssa-dom.c (record_equivalences_from_stmt): Use
 	tree_expr_nonzero_p.
@@ -1057,13 +1063,13 @@
 	nonlocal_referenced_p_1, nonlocal_referenced_p, nonlocal_set_p_1,
 	int nonlocal_set_p, mark_constant_function): Deleted.
 	(rest_of_handle_cfg): Removed call to mark_constant_function. 
-        (nonoverlapping_component_refs_p): Added calls to support
+	(nonoverlapping_component_refs_p): Added calls to support
 	type based aliasing.    
-        * tree-ssa-alias.c (may_alias_p,
+	* tree-ssa-alias.c (may_alias_p,
 	compute_flow_insensitive_aliasing): Ditto.
 	* calls.c (flags_from_decl_or_type): Removed reference to
 	cgraph_rtl_info. 
-      	* c-typeck.c (convert_arguments): Make builtins tolerant of having
+	* c-typeck.c (convert_arguments): Make builtins tolerant of having
 	too many arguments.  This is necessary for Spec 2000.
 	* cgraph.h (const_function, pure_function): Removed.
 	* common.opt: Added "fipa-pure-const", "fipa-reference",  
@@ -1212,7 +1218,7 @@
 	the computation of the four cross productions for "range op range".
 
 2005-07-14  Alexandre Oliva  <aoliva@redhat.com>
-            Ulrich Weigand  <uweigand@de.ibm.com>
+	    Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/20126
 	* loop.c (loop_givs_rescan): Do not ICE if unable to reduce an IV
@@ -1313,15 +1319,15 @@
 
 2005-07-13  Eric Christopher  <echristo@redhat.com>
 
-        * config.gcc (s390x-ibm-tpf*): Add extra_options. Remove
-        static extra parts.
-        * config/s390/s390.md: Include tpf.md. Move tpf specific
-        patterns...
-        * config/s390/tpf.md: To here.
-        * config/s390/s390.opt: Move tpf specific options...
-        * config/s390/tpf.opt: to here. Add mmain option.
-        * config/s390/tpf-unwind.h: Remove unnecessary defines.
-        * config/s390/tpf.h: Rewrite.
+	* config.gcc (s390x-ibm-tpf*): Add extra_options. Remove
+	static extra parts.
+	* config/s390/s390.md: Include tpf.md. Move tpf specific
+	patterns...
+	* config/s390/tpf.md: To here.
+	* config/s390/s390.opt: Move tpf specific options...
+	* config/s390/tpf.opt: to here. Add mmain option.
+	* config/s390/tpf-unwind.h: Remove unnecessary defines.
+	* config/s390/tpf.h: Rewrite.
 
 2005-07-13  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -2183,17 +2189,17 @@
 
 2005-07-06  Fariborz Jahanian <fjahanian@apple.com>
 
-        * doc/invoke.texi: Update -fforce-mem documentation.
-        * dojump.c (compare_from_rtx,do_compare_rtx_and_jump): Remove 
-        code for -fforce-mem.
-        * expmed.c: (store_bit_field,store_fixed_bit_field,
-        extract_bit_field): Ditto.
-        * expr.c: (convert_move): Ditto.
-        * optabs.c: (expand_binop,expand_twoval_unop,expand_twoval_binop,
-        expand_unop,emit_unop_insn,prepare_cmp_insn,emit_conditional_move,
-        emit_conditional_add,expand_float,expand_fix): Ditto.
-        * opts.c: (decode_options): Remove setting of flag_force_mem flag.
-        (common_handle_option): Issue warning when -fforce-mem specified.
+	* doc/invoke.texi: Update -fforce-mem documentation.
+	* dojump.c (compare_from_rtx,do_compare_rtx_and_jump): Remove 
+	code for -fforce-mem.
+	* expmed.c: (store_bit_field,store_fixed_bit_field,
+	extract_bit_field): Ditto.
+	* expr.c: (convert_move): Ditto.
+	* optabs.c: (expand_binop,expand_twoval_unop,expand_twoval_binop,
+	expand_unop,emit_unop_insn,prepare_cmp_insn,emit_conditional_move,
+	emit_conditional_add,expand_float,expand_fix): Ditto.
+	* opts.c: (decode_options): Remove setting of flag_force_mem flag.
+	(common_handle_option): Issue warning when -fforce-mem specified.
 
 2005-07-06  Paul Brook  <paul@codesourcery.com>
 
@@ -2657,7 +2663,7 @@
 	split_all_insns_noflow in PIC case if needed.
 
 2005-07-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
-            Christian Ehrhardt <ehrhardt@mathematik.uni-ulm.de>
+	    Christian Ehrhardt <ehrhardt@mathematik.uni-ulm.de>
 
 	PR c++/18279
 	* c-decl.c (c_write_global_declarations): Dump contents of
@@ -2737,7 +2743,7 @@
 	lowercase letter.
 
 2005-07-02  Zack Weinberg  <zack@codesourcery.com>
-            Joseph S. Myers  <joseph@codesourcery.com>
+	    Joseph S. Myers  <joseph@codesourcery.com>
 
 	* toplev.c (default_tree_printer): Handle setting location with
 	'+' flag.
