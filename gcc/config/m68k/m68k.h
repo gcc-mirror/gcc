@@ -555,17 +555,11 @@ extern int target_flags;
   m68k_hard_regno_rename_ok (OLD_REG, NEW_REG)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   On the 68000, the cpu registers can hold any mode but the 68881 registers
-   can hold only SFmode or DFmode.  */
+   On the 68000, the cpu registers can hold any mode except bytes in
+   address registers, the 68881 registers can hold only SFmode or DFmode.  */
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
-  (((REGNO) < 16					\
-    && !((REGNO) < 8 && (REGNO) + GET_MODE_SIZE (MODE) / 4 > 8))	\
-   || ((REGNO) >= 16 && (REGNO) < 24				        \
-       && (GET_MODE_CLASS (MODE) == MODE_FLOAT		\
-	   || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)		\
-       && GET_MODE_UNIT_SIZE (MODE) <= 12))
-
+  m68k_regno_mode_ok ((REGNO), (MODE))
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.

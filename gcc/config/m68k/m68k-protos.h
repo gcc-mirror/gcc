@@ -62,6 +62,7 @@ extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
 
 #endif /* RTX_CODE */
 
+extern bool m68k_regno_mode_ok (int, enum machine_mode);
 extern int flags_in_68881 (void);
 extern bool use_return_insn (void);
 extern void override_options (void);
