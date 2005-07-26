@@ -6712,7 +6712,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	}
 
       /* Handle (T *)&A.B.C for A being of type T and B and C
-	 living at offset zero.  This occours frequently in
+	 living at offset zero.  This occurs frequently in
 	 C++ upcasting and then accessing the base.  */
       if (TREE_CODE (op0) == ADDR_EXPR
 	  && POINTER_TYPE_P (type)

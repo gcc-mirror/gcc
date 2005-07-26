@@ -353,7 +353,7 @@ enum reg_class
 #define BASE_REG_CLASS A_REGS
 #define INDEX_REG_CLASS NO_REGS
 
-/* We primarily use the new "long" constraint names, with the intial
+/* We primarily use the new "long" constraint names, with the initial
    letter classifying the constraint type and following letters
    specifying which.  The types are:
 

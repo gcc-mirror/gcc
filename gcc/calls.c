@@ -3634,7 +3634,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 		use = plus_constant (argblock,
 				     argvec[argnum].locate.offset.constant);
 	      else
-		/* When arguemnts are pushed, trying to tell alias.c where
+		/* When arguments are pushed, trying to tell alias.c where
 		   exactly this argument is won't work, because the
 		   auto-increment causes confusion.  So we merely indicate
 		   that we access something with a known mode somewhere on

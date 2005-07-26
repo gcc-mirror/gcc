@@ -218,7 +218,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    VEC(T,A) *VEC_T_A_copy(VEC(T) *);
 
    Copy the live elements of a vector into a new vector.  The new and
-   old vectors need not be allocated by the same mechanim.  */
+   old vectors need not be allocated by the same mechanism.  */
 
 #define VEC_copy(T,A,V) (VEC_OP(T,A,copy)(VEC_BASE(V) MEM_STAT_INFO))
 

@@ -1978,7 +1978,7 @@ m32c_asm_integer (rtx x, unsigned int size, int aligned_p)
 
 /* Output of Assembler Instructions */
 
-/* We use a lookup table because the addressing modes are non-orthagonal.  */
+/* We use a lookup table because the addressing modes are non-orthogonal.  */
 
 static struct
 {

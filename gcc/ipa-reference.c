@@ -592,7 +592,7 @@ get_static_decl (int index)
 }
 
 /* Lookup the tree node for the static variable that has UID and
-   conver the name to a string for debugging.  */
+   convert the name to a string for debugging.  */
 
 static const char *
 get_static_name (int index)

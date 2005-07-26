@@ -2718,7 +2718,7 @@ update_alias_info (tree stmt, struct alias_info *ai)
    1- If the constraint for PTR is ADDRESSOF for a non-structure
       variable, then we can use it directly because adding or
       subtracting a constant may not alter the original ADDRESSOF
-      constraing (i.e., pointer arithmetic may not legally go outside
+      constraint (i.e., pointer arithmetic may not legally go outside
       an object's boundaries).
 
    2- If the constraint for PTR is ADDRESSOF for a structure variable,
@@ -3324,7 +3324,7 @@ find_what_p_points_to (tree p)
 	      if (vi->is_artificial_var)
 		{
 		  /* FIXME.  READONLY should be handled better so that
-		     flow insensitive aliasing can disregard writeable
+		     flow insensitive aliasing can disregard writable
 		     aliases.  */
 		  if (vi->id == nothing_id)
 		    pi->pt_null = 1;
