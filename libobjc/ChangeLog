@@ -1,3 +1,8 @@
+2005-07-26  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR libobjc/22606
+	* Makefile.in (ALL_CFLAGS): Add -fexceptions.
+
 2005-06-08  David Ayers  <d.ayers@inode.at>
 
 	* objc/NXConstStr.h, objc/Object.h, objc/Protocol.h,

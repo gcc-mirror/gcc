@@ -1,3 +1,8 @@
+2005-07-26  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR libobjc/22606
+	* objc.dg/try-catch-11.m: New test.
+
 2005-07-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/22486

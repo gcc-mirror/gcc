@@ -73,7 +73,7 @@ CC = @CC@
 CFLAGS = @CFLAGS@
 WARN_CFLAGS = -W -Wall -Wwrite-strings -Wstrict-prototypes
 ALL_CFLAGS = -I. -I$(srcdir) $(CPPFLAGS) $(DEFS) $(CFLAGS) $(WARN_CFLAGS) \
-	-DIN_GCC -DIN_TARGET_LIBS -fno-strict-aliasing
+	-DIN_GCC -DIN_TARGET_LIBS -fno-strict-aliasing -fexceptions
 
 # Libtool
 # The following strings describe the version of the obj-C library 
