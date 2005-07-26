@@ -1,3 +1,15 @@
+2005-07-26  Bernardo Innocenti  <bernie@develer.com>
+
+	Backport from mainline:
+	2005-07-12  Peter Barada  <peter@the-baradas.com>
+	PR middle-end/16719
+	PR middle-end/18421
+	* config/m68k/m68k.h (HARD_REGNO_MODE_OK): Disallow bytes
+	in address registers.
+	* config/m68k/m68k.c (hard_regno_mode_ok): Likewise.
+	* config/m68k/m68k.md: Replace 's' with 'i' in 4th
+	alternative of addsi3_5200.
+
 2005-07-25  Manfred Hollstein  <mh@suse.com>
 
 	* calls.c (store_one_arg): Fix unsigned comparison warning.
