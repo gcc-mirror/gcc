@@ -436,7 +436,7 @@ the compiler does not know whether such a goto statement exits the
 first sequence or not, so we assume that it doesn't).
 
 After the second sequence is executed, if it completes normally by
-falling off the end, execution continues whereever the first sequence
+falling off the end, execution continues wherever the first sequence
 would have continued, by falling off the end, or doing a goto, etc.
 
 @code{TRY_FINALLY_EXPR} complicates the flow graph, since the cleanup

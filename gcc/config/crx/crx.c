@@ -1409,7 +1409,7 @@ crx_prepare_push_pop_string (int push_or_pop)
       | | (alloca, variable    deallocated
   Stack | length arrays).
   grows +-------------------- Fp(x)
-  down| | Local vaiables of X
+  down| | Local variables of X
   ward| +--------------------
       | | Regs saved for X-1
       | +==================== Sp(x-1)=Ap(x)

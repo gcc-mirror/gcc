@@ -487,7 +487,7 @@ mark_type (tree type, enum escape_t escape_status)
       bitmap_set_bit (map, uid);
       if (escape_status == FULL_ESCAPE)
 	{
-	  /* Effeciency hack. When things are bad, do not mess around
+	  /* Efficiency hack. When things are bad, do not mess around
 	     with this type anymore.  */
 	  bitmap_set_bit (global_types_exposed_parameter, uid);
 	}      
@@ -1461,7 +1461,7 @@ close_type_seen (tree type)
     return;
   bitmap_set_bit (been_there_done_that, uid);
 
-  /* If we are doing a language with a type heirarchy, mark all of
+  /* If we are doing a language with a type hierarchy, mark all of
      the superclasses.  */
   if (TYPE_BINFO (type)) 
     for (binfo = TYPE_BINFO (type), i = 0;
@@ -1568,7 +1568,7 @@ close_type_full_escape (tree type)
 
   subtype_map = subtype_map_for_uid (uid, false);
 
-  /* If we are doing a language with a type heirarchy, mark all of
+  /* If we are doing a language with a type hierarchy, mark all of
      the superclasses.  */
   if (TYPE_BINFO (type)) 
     for (binfo = TYPE_BINFO (type), i = 0;

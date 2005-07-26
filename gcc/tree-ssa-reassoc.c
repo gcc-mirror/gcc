@@ -435,7 +435,7 @@ reassociate_expr (tree bexpr, block_stmt_iterator *currbsi)
   unsigned int lhsrank = get_rank (lhs);
   unsigned int rhsrank = get_rank (rhs);
 
-  /* If unsafe math optimizations we can do reassociation for non integal
+  /* If unsafe math optimizations we can do reassociation for non-integral
      types.  */
   if ((!INTEGRAL_TYPE_P (TREE_TYPE (lhs))
        || !INTEGRAL_TYPE_P (TREE_TYPE (rhs)))

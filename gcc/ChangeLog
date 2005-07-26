@@ -6,6 +6,12 @@
 	config/crx/crx.c, config/crx/crx.h, config/crx/crx.md: Update
 	FSF address.
 
+	* calls.c, fold-const.c, ipa-reference.c, ipa-type-escape.c,
+	tree-ssa-reassoc.c, tree-ssa-structalias.c, vec.h,
+	config/crx/crx.c, config/m32c/m32c.c, config/m32c/m32c.h: Fix
+	comment typos.
+	* doc/c-tree.texi, doc/tree-ssa.texi: Fix typos.
+
 2005-07-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/22486

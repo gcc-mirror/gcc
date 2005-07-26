@@ -1108,7 +1108,7 @@ For garbage collection and dynamic checking purposes, each @code{DECL}
 node structure type is required to have a unique enumerator value
 specified with it.
 For language specific @code{DECL} nodes, this new enumerator value
-should go in the approriate @file{.def} file.
+should go in the appropriate @file{.def} file.
 For @code{DECL} nodes that are part of the middle-end, the enumerator
 values are specified in @file{treestruct.def}.
 
@@ -1116,7 +1116,7 @@ values are specified in @file{treestruct.def}.
 In order to make your new structure type usable, it must be added to
 @code{union tree_node}.
 For language specific @code{DECL} nodes, a new entry should be added
-to the approriate @file{.h} file of the form
+to the appropriate @file{.h} file of the form
 @smallexample
   struct tree_foo_decl GTY ((tag ("TS_VAR_DECL"))) foo_decl;
 @end smallexample
@@ -1130,10 +1130,10 @@ contains one of the enumerated @code{DECL} node structures in the
 hierarchy, a simple lookup table is used.
 This lookup table needs to be kept up to date with the tree structure
 hierarchy, or else checking and containment macros will fail
-inapproriately.
+inappropriately.
 
 For language specific @code{DECL} nodes, their is an @code{init_ts}
-function in an approriate @file{.c} file, which initializes the lookup
+function in an appropriate @file{.c} file, which initializes the lookup
 table.
 Code setting up the table for new @code{DECL} nodes should be added
 there.
@@ -1155,7 +1155,7 @@ goes into @file{tree.c}.
 @item Add macros to access any new fields and flags
 
 Each added field or flag should have a macro that is used to access
-it, that performs approriate checking to ensure only the right type of
+it, that performs appropriate checking to ensure only the right type of
 @code{DECL} nodes access the field.
 
 These macros generally take the following form
