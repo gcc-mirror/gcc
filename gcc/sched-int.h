@@ -331,6 +331,7 @@ enum INSN_TRAP_CLASS
 extern void print_insn (char *, rtx, int);
 
 /* Functions in sched-deps.c.  */
+extern bool sched_insns_conditions_mutex_p (rtx, rtx);
 extern int add_dependence (rtx, rtx, enum reg_note);
 extern void sched_analyze (struct deps *, rtx, rtx);
 extern void init_deps (struct deps *);

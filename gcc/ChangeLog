@@ -1,3 +1,23 @@
+2005-07-27  Steven Bosscher  <stevenb@suse.de>
+
+	PR rtl-optimization/17808
+	* sched-deps.c (sched_get_condition): Enable #if 0'ed code.
+	(sched_insns_conditions_mutex_p): Split out from...
+	(add_dependence): ...here.  But don't call it from here.
+	(add_dependence_list): Check sched_insns_conditions_mutex_p
+	before calling add_dependence.
+	(add_dependence_list_and_free): Likewise.
+	(fixup_sched_groups): Likewise.
+	(sched_analyze_1): Likewise.
+	(sched_analyze_2): Likewise (and replace a "0" with REG_DEP_TRUE).
+	(sched_analyze): Likewise.
+	(sched_analyze_insn): Likewise.
+	* sched-ebb.c (add_deps_for_risky_insns): Likewise.
+	* sched-rgn.c (add_branch_dependences): Likewise.  Also, add
+	dependencies on all COND_EXEC insns to jumps ending basic blocks
+	when doing intrablock scheduling.
+	* sched-int.h (sched_insns_conditions_mutex_p): Add prototype.
+
 2005-07-27  Jeff Law  <law@redhat.com>
 
 	* tree-vrp.c (vrp_meet): Intersect the equivalency sets when

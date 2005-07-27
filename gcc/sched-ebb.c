@@ -454,7 +454,8 @@ add_deps_for_risky_insns (rtx head, rtx tail)
 	    /* We can not change the mode of the backward
 	       dependency because REG_DEP_ANTI has the lowest
 	       rank.  */
-	    if (add_dependence (insn, prev, REG_DEP_ANTI))
+	    if (! sched_insns_conditions_mutex_p (insn, prev)
+		&& add_dependence (insn, prev, REG_DEP_ANTI))
 	      add_forward_dependence (prev, insn, REG_DEP_ANTI);
             break;
 

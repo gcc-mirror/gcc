@@ -1883,6 +1883,8 @@ add_branch_dependences (rtx head, rtx tail)
      cc0 setters remain at the end because they can't be moved away from
      their cc0 user.
 
+     COND_EXEC insns cannot be moved past a branch (see e.g. PR17808).
+
      Insns setting CLASS_LIKELY_SPILLED_P registers (usually return values)
      are not moved before reload because we can wind up with register
      allocation failures.  */
@@ -1906,7 +1908,8 @@ add_branch_dependences (rtx head, rtx tail)
 	{
 	  if (last != 0 && !find_insn_list (insn, LOG_LINKS (last)))
 	    {
-	      add_dependence (last, insn, REG_DEP_ANTI);
+	      if (! sched_insns_conditions_mutex_p (last, insn))
+		add_dependence (last, insn, REG_DEP_ANTI);
 	      INSN_REF_COUNT (insn)++;
 	    }
 
@@ -1932,9 +1935,61 @@ add_branch_dependences (rtx head, rtx tail)
 	if (INSN_REF_COUNT (insn) != 0)
 	  continue;
 
-	add_dependence (last, insn, REG_DEP_ANTI);
+	if (! sched_insns_conditions_mutex_p (last, insn))
+	  add_dependence (last, insn, REG_DEP_ANTI);
 	INSN_REF_COUNT (insn) = 1;
       }
+
+#ifdef HAVE_conditional_execution
+  /* Finally, if the block ends in a jump, and we are doing intra-block
+     scheduling, make sure that the branch depends on any COND_EXEC insns
+     inside the block to avoid moving the COND_EXECs past the branch insn.
+
+     We only have to do this after reload, because (1) before reload there
+     are no COND_EXEC insns, and (2) the region scheduler is an intra-block
+     scheduler after reload.
+
+     FIXME: We could in some cases move COND_EXEC insns past the branch if
+     this scheduler would be a little smarter.  Consider this code:
+
+		T = [addr]
+	C  ?	addr += 4
+	!C  ?	X += 12
+	C  ?	T += 1
+	C ?	jump foo
+
+     On a target with a one cycle stall on a memory access the optimal
+     sequence would be:
+
+		T = [addr]
+	C  ?	addr += 4
+	C  ?	T += 1
+	C  ?	jump foo
+	!C ?	X += 12
+
+     We don't want to put the 'X += 12' before the branch because it just
+     wastes a cycle of execution time when the branch is taken.
+
+     Note that in the example "!C" will always be true.  That is another
+     possible improvement for handling COND_EXECs in this scheduler: it
+     could remove always-true predicates.  */
+
+  if (!reload_completed || ! JUMP_P (tail))
+    return;
+
+  insn = PREV_INSN (tail);
+  while (insn != head)
+    {
+      /* Note that we want to add this dependency even when
+	 sched_insns_conditions_mutex_p returns true.  The whole point
+	 is that we _want_ this dependency, even if these insns really
+	 are independent.  */
+      if (INSN_P (insn) && GET_CODE (PATTERN (insn)) == COND_EXEC)
+	add_dependence (tail, insn, REG_DEP_ANTI);
+
+      insn = PREV_INSN (insn);
+    }
+#endif
 }
 
 /* Data structures for the computation of data dependences in a regions.  We
