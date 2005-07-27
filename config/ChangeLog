@@ -1,3 +1,7 @@
+2005-07-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* mt-gnu (CXXFLAGS): Include SYSROOT_CFLAGS_FOR_TARGET.
+
 2005-07-16  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* all files: Update FSF address.
