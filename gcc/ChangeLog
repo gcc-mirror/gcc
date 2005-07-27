@@ -1,3 +1,10 @@
+2005-07-27  Bjoern Haase  <bjoern.m.haase@web.de>
+
+	PR target/19885
+	* config/avr/avr.c (TARGET_ASM_ALIGNED_SI_OP): Add.
+	(TARGET_ASM_UNALIGNED_HI_OP): Add.
+	(TARGET_ASM_UNALIGNED_SI_OP): Add.
+
 2005-07-26  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 22591
