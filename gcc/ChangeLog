@@ -1,5 +1,9 @@
 2005-07-27  Jan Hubicka  <jh@suse.cz>
 
+	PR tree-optimization/22574
+	* cgraph.c (cgraph_function_body_availability): Unanalyzed bodies are
+	not available.
+
 	* tree-tailcall.c (decrease_profile): New function.
 	(eliminate_tail_call): Use it.
 

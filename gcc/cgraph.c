@@ -979,7 +979,7 @@ cgraph_function_body_availability (struct cgraph_node *node)
 {
   enum availability avail;
   gcc_assert (cgraph_function_flags_ready);
-  if (!node->local.finalized)
+  if (!node->analyzed)
     avail = AVAIL_NOT_AVAILABLE;
   else if (node->local.local)
     avail = AVAIL_LOCAL;
