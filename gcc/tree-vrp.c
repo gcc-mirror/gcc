@@ -3297,6 +3297,8 @@ vrp_meet (value_range_t *vr0, value_range_t *vr1)
 	     the two sets.  */
 	  if (vr0->equiv && vr1->equiv && vr0->equiv != vr1->equiv)
 	    bitmap_and_into (vr0->equiv, vr1->equiv);
+	  else if (vr0->equiv && !vr1->equiv)
+	    bitmap_clear (vr0->equiv);
 
 	  set_value_range (vr0, vr0->type, min, max, vr0->equiv);
 	}
@@ -3314,6 +3316,8 @@ vrp_meet (value_range_t *vr0, value_range_t *vr1)
 	     the two sets.  */
 	  if (vr0->equiv && vr1->equiv && vr0->equiv != vr1->equiv)
 	    bitmap_and_into (vr0->equiv, vr1->equiv);
+	  else if (vr0->equiv && !vr1->equiv)
+	    bitmap_clear (vr0->equiv);
 	}
       else
 	goto no_meet;
@@ -3329,6 +3333,13 @@ vrp_meet (value_range_t *vr0, value_range_t *vr1)
 	{
 	  if (vr1->type == VR_ANTI_RANGE)
 	    copy_value_range (vr0, vr1);
+
+	  /* The resulting set of equivalences is the intersection of
+	     the two sets.  */
+	  if (vr0->equiv && vr1->equiv && vr0->equiv != vr1->equiv)
+	    bitmap_and_into (vr0->equiv, vr1->equiv);
+	  else if (vr0->equiv && !vr1->equiv)
+	    bitmap_clear (vr0->equiv);
 	}
       else
 	goto no_meet;
