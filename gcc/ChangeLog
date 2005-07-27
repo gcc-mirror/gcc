@@ -1,5 +1,16 @@
 2005-07-27  Zdenek Dvorak  <dvorakz@suse.cz>
 
+	PR tree-optimization/22325
+	* tree-flow.h (compute_phi_arg_on_exit, force_expr_to_var_cost):
+	Declare.
+	* tree-scalar-evolution.c (scev_const_prop): Add generic final
+	value replacement.
+	* tree-ssa-loop-ivopts.c (force_expr_to_var_cost): Split from ...
+	(force_var_cost): ... this function.
+	(compute_phi_arg_on_exit): Export.
+
+2005-07-27  Zdenek Dvorak  <dvorakz@suse.cz>
+
 	PR tree-optimization/20773
 	* tree-ssa-loop-ch.c (copy_loop_headers): Select the correct latch
 	edge.

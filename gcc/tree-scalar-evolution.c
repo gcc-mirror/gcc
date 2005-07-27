@@ -2608,8 +2608,8 @@ scev_finalize (void)
 }
 
 /* Replace ssa names for that scev can prove they are constant by the
-   appropriate constants.  Most importantly, this takes care of final
-   value replacement.
+   appropriate constants.  Also perform final value replacement in loops,
+   in case the replacement expressions are cheap.
    
    We only consider SSA names defined by phi nodes; rest is left to the
    ordinary constant propagation pass.  */
@@ -2618,9 +2618,10 @@ void
 scev_const_prop (void)
 {
   basic_block bb;
-  tree name, phi, type, ev;
-  struct loop *loop;
+  tree name, phi, next_phi, type, ev;
+  struct loop *loop, *ex_loop;
   bitmap ssa_names_to_remove = NULL;
+  unsigned i;
 
   if (!current_loops)
     return;
@@ -2674,5 +2675,57 @@ scev_const_prop (void)
 
       BITMAP_FREE (ssa_names_to_remove);
       scev_reset ();
+    }
+
+  /* Now the regular final value replacement.  */
+  for (i = current_loops->num - 1; i > 0; i--)
+    {
+      edge exit;
+      tree def, stmts;
+
+      loop = current_loops->parray[i];
+      if (!loop)
+	continue;
+
+      /* If we do not know exact number of iterations of the loop, we cannot
+	 replace the final value.  */
+      exit = loop->single_exit;
+      if (!exit
+	  || number_of_iterations_in_loop (loop) == chrec_dont_know)
+	continue;
+      ex_loop = exit->dest->loop_father;
+
+      for (phi = phi_nodes (exit->dest); phi; phi = next_phi)
+	{
+	  next_phi = PHI_CHAIN (phi);
+	  def = PHI_ARG_DEF_FROM_EDGE (phi, exit);
+	  if (!is_gimple_reg (def)
+	      || expr_invariant_in_loop_p (loop, def))
+	    continue;
+
+	  if (!POINTER_TYPE_P (TREE_TYPE (def))
+	      && !INTEGRAL_TYPE_P (TREE_TYPE (def)))
+	    continue;
+
+	  def = analyze_scalar_evolution_in_loop (ex_loop, ex_loop, def);
+	  if (!tree_does_not_contain_chrecs (def)
+	      || chrec_contains_symbols_defined_in_loop (def, loop->num))
+	    continue;
+
+	  /* If computing the expression is expensive, let it remain in
+	     loop.  TODO -- we should take the cost of computing the expression
+	     in loop into account.  */
+	  if (force_expr_to_var_cost (def) >= target_spill_cost)
+	    continue;
+
+	  if (is_gimple_val (def))
+	    stmts = NULL_TREE;
+	  else
+	    def = force_gimple_operand (def, &stmts, true,
+					SSA_NAME_VAR (PHI_RESULT (phi)));
+	  SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE (phi, exit), def);
+	  if (stmts)
+	    compute_phi_arg_on_exit (exit, stmts, def);
+	}
     }
 }
