@@ -1123,7 +1123,8 @@ cgraph_function_and_variable_visibility (void)
     {
       if (node->reachable
 	  && (DECL_COMDAT (node->decl)
-	      || (TREE_PUBLIC (node->decl) && !DECL_EXTERNAL (node->decl))))
+	      || (!flag_whole_program
+		  && TREE_PUBLIC (node->decl) && !DECL_EXTERNAL (node->decl))))
 	node->local.externally_visible = true;
       if (!node->local.externally_visible && node->analyzed
 	  && !DECL_EXTERNAL (node->decl))
@@ -1139,6 +1140,7 @@ cgraph_function_and_variable_visibility (void)
   for (vnode = cgraph_varpool_nodes_queue; vnode; vnode = vnode->next_needed)
     {
       if (vnode->needed
+	  && !flag_whole_program
 	  && (DECL_COMDAT (vnode->decl) || TREE_PUBLIC (vnode->decl)))
 	vnode->externally_visible = 1;
       if (!vnode->externally_visible)
