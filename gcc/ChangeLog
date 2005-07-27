@@ -1,5 +1,11 @@
 2005-07-27  Zdenek Dvorak  <dvorakz@suse.cz>
 
+	PR tree-optimize/22348
+	* tree-ssa-loop-niter.c (number_of_iterations_cond):
+	Fold the partial computation.
+
+2005-07-27  Zdenek Dvorak  <dvorakz@suse.cz>
+
 	PR tree-optimization/22325
 	* tree-flow.h (compute_phi_arg_on_exit, force_expr_to_var_cost):
 	Declare.
