@@ -1,3 +1,9 @@
+2005-07-27  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (push_fields_onto_fieldstack):
+	Avoid pushing again if current struct contains only
+	fields we decomposed.
+
 2005-07-27  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/22574
