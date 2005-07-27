@@ -1,3 +1,7 @@
+2005-07-27  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/salias-1.c: New testcase.
+
 2005-07-27  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR fortran/22503

@@ -2972,6 +2972,7 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
     if (TREE_CODE (field) == FIELD_DECL)
       {
 	bool push = false;
+	int pushed = 0;
 	
 	if (has_union 
 	    && (TREE_CODE (TREE_TYPE (field)) == QUAL_UNION_TYPE
@@ -2980,7 +2981,7 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 	
 	if (!var_can_have_subvars (field))
 	  push = true;
-	else if (!(push_fields_onto_fieldstack
+	else if (!(pushed = push_fields_onto_fieldstack
 		   (TREE_TYPE (field), fieldstack,
 		    offset + bitpos_of_field (field), has_union))
 		 && DECL_SIZE (field)
@@ -2999,6 +3000,8 @@ push_fields_onto_fieldstack (tree type, VEC(fieldoff_s,heap) **fieldstack,
 	    pair->offset = offset + bitpos_of_field (field);
 	    count++;
 	  }
+	else
+	  count += pushed;
       }
 
   return count;
