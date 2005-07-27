@@ -4716,10 +4716,6 @@ pushtag (tree name, tree type, tag_scope scope)
 	  if (d == error_mark_node)
 	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
 
-	  /* FIXME what if it gets a name from typedef?  */
-	  if (ANON_AGGRNAME_P (name))
-	    DECL_IGNORED_P (d) = 1;
-
 	  TYPE_CONTEXT (type) = DECL_CONTEXT (d);
 
 	  /* If this is a local class, keep track of it.  We need this
