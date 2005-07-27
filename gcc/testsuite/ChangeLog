@@ -1,3 +1,8 @@
+2005-07-27  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR fortran/22503
+	* gfortran.dg/logical_comp.f90: New test.
+
 2005-07-26  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 22591
