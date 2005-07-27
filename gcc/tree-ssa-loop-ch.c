@@ -197,7 +197,7 @@ copy_loop_headers (void)
       /* Ensure that the header will have just the latch as a predecessor
 	 inside the loop.  */
       if (!single_pred_p (exit->dest))
-	exit = single_succ_edge (loop_split_edge_with (exit, NULL));
+	exit = single_pred_edge (loop_split_edge_with (exit, NULL));
 
       entry = loop_preheader_edge (loop);
 

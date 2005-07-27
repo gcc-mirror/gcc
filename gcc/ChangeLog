@@ -1,3 +1,9 @@
+2005-07-27  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/20773
+	* tree-ssa-loop-ch.c (copy_loop_headers): Select the correct latch
+	edge.
+
 2005-07-27  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (push_fields_onto_fieldstack):
