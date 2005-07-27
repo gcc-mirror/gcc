@@ -1,3 +1,7 @@
+2005-07-27  Devang Patel  <dpatel@apple.com>
+
+	* name-lookup.c (pushtag): Do no set DECL_IGNORED_P bit.
+	
 2005-07-25  Ian Lance Taylor  <ian@airs.com>
 
 	* ptree.c (cxx_print_identifier): Print a leading space if the
