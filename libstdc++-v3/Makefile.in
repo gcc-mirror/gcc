@@ -2,7 +2,7 @@
 # @configure_input@
 
 # Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-# 2003, 2004  Free Software Foundation, Inc.
+# 2003, 2004, 2005  Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -129,14 +129,16 @@ ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
+ENABLE_SYMVERS_DARWIN_EXPORT_FALSE = @ENABLE_SYMVERS_DARWIN_EXPORT_FALSE@
+ENABLE_SYMVERS_DARWIN_EXPORT_TRUE = @ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@
+ENABLE_SYMVERS_GNU_FALSE = @ENABLE_SYMVERS_GNU_FALSE@
+ENABLE_SYMVERS_GNU_TRUE = @ENABLE_SYMVERS_GNU_TRUE@
 EXEEXT = @EXEEXT@
 EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
 GLIBCXX_BUILD_DEBUG_FALSE = @GLIBCXX_BUILD_DEBUG_FALSE@
 GLIBCXX_BUILD_DEBUG_TRUE = @GLIBCXX_BUILD_DEBUG_TRUE@
 GLIBCXX_BUILD_PCH_FALSE = @GLIBCXX_BUILD_PCH_FALSE@
 GLIBCXX_BUILD_PCH_TRUE = @GLIBCXX_BUILD_PCH_TRUE@
-GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE = @GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@
-GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE = @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@
 GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE = @GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE@
 GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE = @GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE@
 GLIBCXX_C_HEADERS_C_FALSE = @GLIBCXX_C_HEADERS_C_FALSE@
@@ -408,7 +410,13 @@ uninstall-info-am:
 #     (which will cause the Makefiles to be regenerated when you run `make');
 # (2) otherwise, pass the desired values on the `make' command line.
 $(RECURSIVE_TARGETS):
-	@set fnord $$MAKEFLAGS; amf=$$2; \
+	@failcom='exit 1'; \
+	for f in x $$MAKEFLAGS; do \
+	  case $$f in \
+	    *=* | --[!k]*);; \
+	    *k*) failcom='fail=yes';; \
+	  esac; \
+	done; \
 	dot_seen=no; \
 	target=`echo $@ | sed s/-recursive//`; \
 	list='$(SUBDIRS)'; for subdir in $$list; do \
@@ -420,7 +428,7 @@ $(RECURSIVE_TARGETS):
 	    local_target="$$target"; \
 	  fi; \
 	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
-	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	  || eval $$failcom; \
 	done; \
 	if test "$$dot_seen" = "no"; then \
 	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
@@ -428,7 +436,13 @@ $(RECURSIVE_TARGETS):
 
 mostlyclean-recursive clean-recursive distclean-recursive \
 maintainer-clean-recursive:
-	@set fnord $$MAKEFLAGS; amf=$$2; \
+	@failcom='exit 1'; \
+	for f in x $$MAKEFLAGS; do \
+	  case $$f in \
+	    *=* | --[!k]*);; \
+	    *k*) failcom='fail=yes';; \
+	  esac; \
+	done; \
 	dot_seen=no; \
 	case "$@" in \
 	  distclean-* | maintainer-clean-*) list='$(DIST_SUBDIRS)' ;; \
@@ -449,7 +463,7 @@ maintainer-clean-recursive:
 	    local_target="$$target"; \
 	  fi; \
 	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
-	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	  || eval $$failcom; \
 	done && test -z "$$fail"
 tags-recursive:
 	list='$(SUBDIRS)'; for subdir in $$list; do \

@@ -1,3 +1,18 @@
+2005-07-25  Geoffrey Keating  <geoffk@apple.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_SYMVERS): Handle darwin-export,
+	and make it the default for Darwin.
+	* scripts/make-exports.pl: New.
+	* src/Makefile.am: Update for changes to GLIBCXX_ENABLE_SYMVERS.
+	Handle darwin-export.
+	* configure: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libmath/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2005-07-25  Dave Odell  <evilalias@hotmail.com>
 
 	PR libstdc++/23053

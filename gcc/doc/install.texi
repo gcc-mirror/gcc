@@ -398,6 +398,8 @@ snapshots of the development sources are also available via FTP@.
 Necessary when regenerating @file{Makefile} dependencies in libiberty.
 Necessary when regenerating @file{libiberty/functions.texi}.
 Necessary when generating manpages from Texinfo manuals.
+Necessary when targetting Darwin, building libstdc++,
+and not using @option{--disable-symvers}.
 Used by various scripts to generate some files included in CVS (mainly
 Unicode-related and rarely changing) from source tables.
 
