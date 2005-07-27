@@ -1,3 +1,8 @@
+2005-07-27  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (cgraph_function_and_variable_visibility): Set
+	visibility flags correctly in whole program mode.
+
 2005-07-26  Steve Ellcey  <sje@cup.hp.com>
 
 	PR rtl-optimization/22472
