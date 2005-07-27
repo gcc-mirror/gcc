@@ -23,8 +23,7 @@ load_lib gcc-dg.exp
 set DEFAULT_VECTCFLAGS ""
 
 # These flags are used for all targets.
-lappend DEFAULT_VECTCFLAGS "-O2" "-ftree-vectorize" \
-  "-ftree-vectorizer-verbose=4" "-fdump-tree-vect-stats"
+lappend DEFAULT_VECTCFLAGS "-O2" "-ftree-vectorize"
 
 # If the target system supports vector instructions, the default action
 # for a test is 'run', otherwise it's 'compile'.  Save current default.
@@ -74,6 +73,12 @@ if [istarget "powerpc*-*-*"] {
 
 # Initialize `dg'.
 dg-init
+
+# Tests that should be run without generating dump info
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/nodump-*.\[cS\]]]  \
+	"" $DEFAULT_VECTCFLAGS
+
+lappend DEFAULT_VECTCFLAGS "-ftree-vectorizer-verbose=4" "-fdump-tree-vect-stats"
 
 # Main loop.
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/pr*.\[cS\]]]  \

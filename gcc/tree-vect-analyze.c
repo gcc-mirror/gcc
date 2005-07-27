@@ -1056,13 +1056,16 @@ vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo)
       supportable_dr_alignment = vect_supportable_dr_alignment (dr);
       if (!supportable_dr_alignment)
 	{
-            if (DR_IS_READ (dr))
-              fprintf (vect_dump,
-                       "not vectorized: unsupported unaligned load.");
-            else
-              fprintf (vect_dump,
-                       "not vectorized: unsupported unaligned store.");
- 	    return false;
+	  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+	    {
+	      if (DR_IS_READ (dr))
+		fprintf (vect_dump,
+			 "not vectorized: unsupported unaligned load.");
+	      else
+		fprintf (vect_dump,
+			 "not vectorized: unsupported unaligned store.");
+	    }
+	  return false;
 	}
       if (supportable_dr_alignment != dr_aligned 
 	  && (vect_print_dump_info (REPORT_ALIGNMENT)))

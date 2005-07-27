@@ -1,3 +1,9 @@
+2005-07-27  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/23073
+	* gcc.dg/vect/nodump-pr23073.c: New test.
+	* gcc.dg/vect/vect.exp: Allow running some tests without dump flags.
+
 2005-07-27  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimize/22348
