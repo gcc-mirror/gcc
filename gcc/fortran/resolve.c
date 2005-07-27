@@ -1514,9 +1514,14 @@ resolve_operator (gfc_expr * e)
 	  break;
 	}
 
-      sprintf (msg, "Operands of comparison operator '%s' at %%L are %s/%s",
-	       gfc_op2string (e->value.op.operator), gfc_typename (&op1->ts),
-	       gfc_typename (&op2->ts));
+      if (op1->ts.type == BT_LOGICAL && op2->ts.type == BT_LOGICAL)
+	sprintf (msg, "Logicals at %%L must be compared with %s instead of %s",
+		 e->value.op.operator == INTRINSIC_EQ ? ".EQV." : ".NEQV.",
+		 gfc_op2string (e->value.op.operator));
+      else
+	sprintf (msg, "Operands of comparison operator '%s' at %%L are %s/%s",
+		 gfc_op2string (e->value.op.operator), gfc_typename (&op1->ts),
+		 gfc_typename (&op2->ts));
 
       goto bad_op;
 

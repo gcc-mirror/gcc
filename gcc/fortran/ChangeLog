@@ -1,3 +1,9 @@
+2005-07-27  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR fortran/22503
+	* resolve.c (resolve_operator): Improve diagnostic for comparison
+	of logicals with invalid operator.
+
 2005-07-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/20063
