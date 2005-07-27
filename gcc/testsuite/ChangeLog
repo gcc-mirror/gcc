@@ -1,3 +1,9 @@
+2005-07-27  Jan Hubicka  <jh@suse.cz>
+
+	* inliner-1.c: Add cleanup of dumps.
+	* val-prof-*.c: Likewise.
+	* update-tailcall.c: New.
+
 2005-07-26  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 22591
