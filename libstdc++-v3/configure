@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libtool_VERSION multi_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar glibcxx_builddir glibcxx_srcdir toplevel_srcdir CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LN_S AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBTOOL CXXCPP CPPFLAGS enable_shared enable_static GLIBCXX_HOSTED_TRUE GLIBCXX_HOSTED_FALSE GLIBCXX_BUILD_PCH_TRUE GLIBCXX_BUILD_PCH_FALSE glibcxx_PCHFLAGS CSTDIO_H BASIC_FILE_H BASIC_FILE_CC CPP EGREP check_msgfmt glibcxx_MOFILES glibcxx_POFILES glibcxx_localedir USE_NLS CLOCALE_H CMESSAGES_H CCODECVT_CC CCOLLATE_CC CCTYPE_CC CMESSAGES_CC CMONEY_CC CNUMERIC_CC CTIME_H CTIME_CC CLOCALE_CC CLOCALE_INTERNAL_H ALLOCATOR_H ALLOCATOR_NAME C_INCLUDE_DIR GLIBCXX_C_HEADERS_C_TRUE GLIBCXX_C_HEADERS_C_FALSE GLIBCXX_C_HEADERS_C_STD_TRUE GLIBCXX_C_HEADERS_C_STD_FALSE GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE DEBUG_FLAGS GLIBCXX_BUILD_DEBUG_TRUE GLIBCXX_BUILD_DEBUG_FALSE EXTRA_CXX_FLAGS glibcxx_thread_h WERROR SECTION_FLAGS SECTION_LDFLAGS OPT_LDFLAGS LIBMATHOBJS LIBICONV SYMVER_MAP port_specific_symbol_files GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE baseline_dir ATOMICITY_SRCDIR ATOMIC_WORD_SRCDIR ABI_TWEAKS_SRCDIR OS_INC_SRCDIR glibcxx_prefixdir gxx_include_dir glibcxx_toolexecdir glibcxx_toolexeclibdir GLIBCXX_INCLUDES TOPLEVEL_INCLUDES OPTIMIZE_CXXFLAGS WARN_FLAGS LIBSUPCXX_PICFLAGS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libtool_VERSION multi_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar glibcxx_builddir glibcxx_srcdir toplevel_srcdir CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LN_S AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBTOOL CXXCPP CPPFLAGS enable_shared enable_static GLIBCXX_HOSTED_TRUE GLIBCXX_HOSTED_FALSE GLIBCXX_BUILD_PCH_TRUE GLIBCXX_BUILD_PCH_FALSE glibcxx_PCHFLAGS CSTDIO_H BASIC_FILE_H BASIC_FILE_CC CPP EGREP check_msgfmt glibcxx_MOFILES glibcxx_POFILES glibcxx_localedir USE_NLS CLOCALE_H CMESSAGES_H CCODECVT_CC CCOLLATE_CC CCTYPE_CC CMESSAGES_CC CMONEY_CC CNUMERIC_CC CTIME_H CTIME_CC CLOCALE_CC CLOCALE_INTERNAL_H ALLOCATOR_H ALLOCATOR_NAME C_INCLUDE_DIR GLIBCXX_C_HEADERS_C_TRUE GLIBCXX_C_HEADERS_C_FALSE GLIBCXX_C_HEADERS_C_STD_TRUE GLIBCXX_C_HEADERS_C_STD_FALSE GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE DEBUG_FLAGS GLIBCXX_BUILD_DEBUG_TRUE GLIBCXX_BUILD_DEBUG_FALSE EXTRA_CXX_FLAGS glibcxx_thread_h WERROR SECTION_FLAGS SECTION_LDFLAGS OPT_LDFLAGS LIBMATHOBJS LIBICONV SYMVER_MAP port_specific_symbol_files ENABLE_SYMVERS_GNU_TRUE ENABLE_SYMVERS_GNU_FALSE ENABLE_SYMVERS_DARWIN_EXPORT_TRUE ENABLE_SYMVERS_DARWIN_EXPORT_FALSE baseline_dir ATOMICITY_SRCDIR ATOMIC_WORD_SRCDIR ABI_TWEAKS_SRCDIR OS_INC_SRCDIR glibcxx_prefixdir gxx_include_dir glibcxx_toolexecdir glibcxx_toolexeclibdir GLIBCXX_INCLUDES TOPLEVEL_INCLUDES OPTIMIZE_CXXFLAGS WARN_FLAGS LIBSUPCXX_PICFLAGS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -87145,7 +87145,7 @@ if test "${enable_symvers+set}" = set; then
   enableval="$enable_symvers"
 
       case "$enableval" in
-       yes|no|gnu) ;;
+       yes|no|gnu|darwin-export) ;;
        *) { { echo "$as_me:$LINENO: error: Unknown argument to enable/disable symvers" >&5
 echo "$as_me: error: Unknown argument to enable/disable symvers" >&2;}
    { (exit 1); exit 1; }; } ;;
@@ -87159,11 +87159,28 @@ fi;
 # If we never went through the GLIBCXX_CHECK_LINKER_FEATURES macro, then we
 # don't know enough about $LD to do tricks...
 
-# FIXME  The following test is too strict, in theory.
-if test $enable_shared = no ||
-        test "x$LD" = x ||
-        test x$glibcxx_gnu_ld_version = x; then
-  enable_symvers=no
+
+# Turn a 'yes' into a suitable default.
+if test x$enable_symvers = xyes ; then
+  if test $enable_shared = no ||
+     test "x$LD" = x ; then
+    enable_symvers=no
+  elif test $with_gnu_ld == yes ; then
+    enable_symvers=gnu
+  else
+    case ${target_os} in
+      darwin*)
+	enable_symvers=darwin-export ;;
+      *)
+      { echo "$as_me:$LINENO: WARNING: === You have requested some kind of symbol versioning, but" >&5
+echo "$as_me: WARNING: === You have requested some kind of symbol versioning, but" >&2;}
+      { echo "$as_me:$LINENO: WARNING: === you are not using a supported linker." >&5
+echo "$as_me: WARNING: === you are not using a supported linker." >&2;}
+      { echo "$as_me:$LINENO: WARNING: === Symbol versioning will be disabled." >&5
+echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
+	enable_symvers=no ;;
+    esac
+  fi
 fi
 
 # Check to see if libgcc_s exists, indicating that shared libgcc is possible.
@@ -87292,48 +87309,44 @@ rm -f conftest.err conftest.$ac_objext \
 echo "${ECHO_T}$glibcxx_shared_libgcc" >&6
 fi
 
-# For GNU ld, we need at least this version.  The format is described in
-# GLIBCXX_CHECK_LINKER_FEATURES above.
-glibcxx_min_gnu_ld_version=21400
-
-# Check to see if unspecified "yes" value can win, given results above.
-# Change "yes" into either "no" or a style name.
-if test $enable_symvers = yes; then
-  if test $with_gnu_ld = yes &&
-     test $glibcxx_shared_libgcc = yes;
-  then
-    if test $glibcxx_gnu_ld_version -ge $glibcxx_min_gnu_ld_version ; then
-      enable_symvers=gnu
-    else
-      # The right tools, the right setup, but too old.  Fallbacks?
-      { echo "$as_me:$LINENO: WARNING: === Linker version $glibcxx_gnu_ld_version is too old for" >&5
-echo "$as_me: WARNING: === Linker version $glibcxx_gnu_ld_version is too old for" >&2;}
-      { echo "$as_me:$LINENO: WARNING: === full symbol versioning support in this release of GCC." >&5
-echo "$as_me: WARNING: === full symbol versioning support in this release of GCC." >&2;}
-      { echo "$as_me:$LINENO: WARNING: === You would need to upgrade your binutils to version" >&5
-echo "$as_me: WARNING: === You would need to upgrade your binutils to version" >&2;}
-      { echo "$as_me:$LINENO: WARNING: === $glibcxx_min_gnu_ld_version or later and rebuild GCC." >&5
-echo "$as_me: WARNING: === $glibcxx_min_gnu_ld_version or later and rebuild GCC." >&2;}
-      if test $glibcxx_gnu_ld_version -ge 21200 ; then
-        # Globbing fix is present, proper block support is not.
-        { echo "$as_me:$LINENO: WARNING: === Symbol versioning will be disabled." >&5
-echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
-        enable_symvers=no
-      else
-        # 2.11 or older.
-        { echo "$as_me:$LINENO: WARNING: === Symbol versioning will be disabled." >&5
-echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
-        enable_symvers=no
-      fi
-    fi
-  else
-    # just fail for now
+# If no shared libgcc, can't win.
+if test $glibcxx_shared_libgcc != yes &&
+   test $enable_symvers != no ; then
     { echo "$as_me:$LINENO: WARNING: === You have requested some kind of symbol versioning, but" >&5
 echo "$as_me: WARNING: === You have requested some kind of symbol versioning, but" >&2;}
-    { echo "$as_me:$LINENO: WARNING: === either you are not using a supported linker, or you are" >&5
-echo "$as_me: WARNING: === either you are not using a supported linker, or you are" >&2;}
-    { echo "$as_me:$LINENO: WARNING: === not building a shared libgcc_s (which is required)." >&5
-echo "$as_me: WARNING: === not building a shared libgcc_s (which is required)." >&2;}
+    { echo "$as_me:$LINENO: WARNING: === you are not building a shared libgcc_s." >&5
+echo "$as_me: WARNING: === you are not building a shared libgcc_s." >&2;}
+    { echo "$as_me:$LINENO: WARNING: === Symbol versioning will be disabled." >&5
+echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
+    enable_symvers=no
+  enable_symvers=no
+fi
+
+# Check to see if 'gnu' can win.
+if test $enable_symvers = gnu; then
+  # For GNU ld, we need at least this version.  The format is described in
+  # GLIBCXX_CHECK_LINKER_FEATURES above.
+  glibcxx_min_gnu_ld_version=21400
+
+  if test $with_gnu_ld != yes ; then
+    # just fail for now
+    { echo "$as_me:$LINENO: WARNING: === You have requested GNU symbol versioning, but" >&5
+echo "$as_me: WARNING: === You have requested GNU symbol versioning, but" >&2;}
+    { echo "$as_me:$LINENO: WARNING: === you are not using the GNU linker." >&5
+echo "$as_me: WARNING: === you are not using the GNU linker." >&2;}
+    { echo "$as_me:$LINENO: WARNING: === Symbol versioning will be disabled." >&5
+echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
+    enable_symvers=no
+  elif test $glibcxx_gnu_ld_version -lt $glibcxx_min_gnu_ld_version ; then
+    # The right tools, the right setup, but too old.  Fallbacks?
+    { echo "$as_me:$LINENO: WARNING: === Linker version $glibcxx_gnu_ld_version is too old for" >&5
+echo "$as_me: WARNING: === Linker version $glibcxx_gnu_ld_version is too old for" >&2;}
+    { echo "$as_me:$LINENO: WARNING: === full symbol versioning support in this release of GCC." >&5
+echo "$as_me: WARNING: === full symbol versioning support in this release of GCC." >&2;}
+    { echo "$as_me:$LINENO: WARNING: === You would need to upgrade your binutils to version" >&5
+echo "$as_me: WARNING: === You would need to upgrade your binutils to version" >&2;}
+    { echo "$as_me:$LINENO: WARNING: === $glibcxx_min_gnu_ld_version or later and rebuild GCC." >&5
+echo "$as_me: WARNING: === $glibcxx_min_gnu_ld_version or later and rebuild GCC." >&2;}
     { echo "$as_me:$LINENO: WARNING: === Symbol versioning will be disabled." >&5
 echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
     enable_symvers=no
@@ -87352,6 +87365,9 @@ cat >>confdefs.h <<\_ACEOF
 #define _GLIBCXX_SYMVER 1
 _ACEOF
 
+    ;;
+  darwin-export)
+    SYMVER_MAP=config/linker-map.gnu
     ;;
 esac
 
@@ -87477,6 +87493,7 @@ _ACEOF
 fi
 echo "$as_me:$LINENO: result: $glibcxx_ptrdiff_t_is_i" >&5
 echo "${ECHO_T}$glibcxx_ptrdiff_t_is_i" >&6
+
 
 
 
@@ -88290,12 +88307,23 @@ fi
 
 
 
-if test $enable_symvers != no; then
-  GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE=
-  GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE='#'
+if test $enable_symvers == gnu; then
+  ENABLE_SYMVERS_GNU_TRUE=
+  ENABLE_SYMVERS_GNU_FALSE='#'
 else
-  GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE='#'
-  GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE=
+  ENABLE_SYMVERS_GNU_TRUE='#'
+  ENABLE_SYMVERS_GNU_FALSE=
+fi
+
+
+
+
+if   test $enable_symvers == darwin-export; then
+  ENABLE_SYMVERS_DARWIN_EXPORT_TRUE=
+  ENABLE_SYMVERS_DARWIN_EXPORT_FALSE='#'
+else
+  ENABLE_SYMVERS_DARWIN_EXPORT_TRUE='#'
+  ENABLE_SYMVERS_DARWIN_EXPORT_FALSE=
 fi
 
 
@@ -88642,10 +88670,17 @@ echo "$as_me: error: conditional \"GLIBCXX_BUILD_DEBUG\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
-if test -z "${GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE}" && test -z "${GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE}"; then
-  { { echo "$as_me:$LINENO: error: conditional \"GLIBCXX_BUILD_VERSIONED_SHLIB\" was never defined.
+if test -z "${ENABLE_SYMVERS_GNU_TRUE}" && test -z "${ENABLE_SYMVERS_GNU_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"ENABLE_SYMVERS_GNU\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
-echo "$as_me: error: conditional \"GLIBCXX_BUILD_VERSIONED_SHLIB\" was never defined.
+echo "$as_me: error: conditional \"ENABLE_SYMVERS_GNU\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${ENABLE_SYMVERS_DARWIN_EXPORT_TRUE}" && test -z "${ENABLE_SYMVERS_DARWIN_EXPORT_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"ENABLE_SYMVERS_DARWIN_EXPORT\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"ENABLE_SYMVERS_DARWIN_EXPORT\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -89315,8 +89350,10 @@ s,@LIBMATHOBJS@,$LIBMATHOBJS,;t t
 s,@LIBICONV@,$LIBICONV,;t t
 s,@SYMVER_MAP@,$SYMVER_MAP,;t t
 s,@port_specific_symbol_files@,$port_specific_symbol_files,;t t
-s,@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@,$GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE,;t t
-s,@GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@,$GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE,;t t
+s,@ENABLE_SYMVERS_GNU_TRUE@,$ENABLE_SYMVERS_GNU_TRUE,;t t
+s,@ENABLE_SYMVERS_GNU_FALSE@,$ENABLE_SYMVERS_GNU_FALSE,;t t
+s,@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@,$ENABLE_SYMVERS_DARWIN_EXPORT_TRUE,;t t
+s,@ENABLE_SYMVERS_DARWIN_EXPORT_FALSE@,$ENABLE_SYMVERS_DARWIN_EXPORT_FALSE,;t t
 s,@baseline_dir@,$baseline_dir,;t t
 s,@ATOMICITY_SRCDIR@,$ATOMICITY_SRCDIR,;t t
 s,@ATOMIC_WORD_SRCDIR@,$ATOMIC_WORD_SRCDIR,;t t

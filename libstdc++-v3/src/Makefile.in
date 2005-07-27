@@ -2,7 +2,7 @@
 # @configure_input@
 
 # Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-# 2003, 2004  Free Software Foundation, Inc.
+# 2003, 2004, 2005  Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -133,14 +133,16 @@ ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
+ENABLE_SYMVERS_DARWIN_EXPORT_FALSE = @ENABLE_SYMVERS_DARWIN_EXPORT_FALSE@
+ENABLE_SYMVERS_DARWIN_EXPORT_TRUE = @ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@
+ENABLE_SYMVERS_GNU_FALSE = @ENABLE_SYMVERS_GNU_FALSE@
+ENABLE_SYMVERS_GNU_TRUE = @ENABLE_SYMVERS_GNU_TRUE@
 EXEEXT = @EXEEXT@
 EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
 GLIBCXX_BUILD_DEBUG_FALSE = @GLIBCXX_BUILD_DEBUG_FALSE@
 GLIBCXX_BUILD_DEBUG_TRUE = @GLIBCXX_BUILD_DEBUG_TRUE@
 GLIBCXX_BUILD_PCH_FALSE = @GLIBCXX_BUILD_PCH_FALSE@
 GLIBCXX_BUILD_PCH_TRUE = @GLIBCXX_BUILD_PCH_TRUE@
-GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE = @GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@
-GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE = @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@
 GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE = @GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE@
 GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE = @GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE@
 GLIBCXX_C_HEADERS_C_FALSE = @GLIBCXX_C_HEADERS_C_FALSE@
@@ -273,12 +275,14 @@ AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 
 # Cross compiler support.
 toolexeclib_LTLIBRARIES = libstdc++.la
-@GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@version_arg = 
+@ENABLE_SYMVERS_DARWIN_EXPORT_FALSE@@ENABLE_SYMVERS_GNU_FALSE@version_arg = 
+@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@version_arg = -Wl,-exported_symbols_list,libstdc++-symbol.explist
 
 # Symbol versioning for shared libraries.
-@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@version_arg = -Wl,--version-script=libstdc++-symbol.ver
-@GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@version_dep = 
-@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@version_dep = libstdc++-symbol.ver
+@ENABLE_SYMVERS_GNU_TRUE@version_arg = -Wl,--version-script=libstdc++-symbol.ver
+@ENABLE_SYMVERS_DARWIN_EXPORT_FALSE@@ENABLE_SYMVERS_GNU_FALSE@version_dep = 
+@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@version_dep = libstdc++-symbol.explist
+@ENABLE_SYMVERS_GNU_TRUE@version_dep = libstdc++-symbol.ver
 
 # Source files linked in via configuration/make substitution for a
 # particular host.
@@ -665,14 +669,23 @@ uninstall-am: uninstall-info-am uninstall-toolexeclibLTLIBRARIES
 	tags uninstall uninstall-am uninstall-info-am \
 	uninstall-toolexeclibLTLIBRARIES
 
-@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@libstdc++-symbol.ver:  ${glibcxx_srcdir}/$(SYMVER_MAP)
-@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	cp ${glibcxx_srcdir}/$(SYMVER_MAP) ./libstdc++-symbol.ver
-@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	if test "x$(port_specific_symbol_files)" != x; then \
-@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	  sed -n '1,/DO NOT DELETE/p' $@ > tmp.top; \
-@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	  sed -n '/DO NOT DELETE/,$$p' $@ > tmp.bottom; \
-@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	  cat tmp.top $(port_specific_symbol_files) tmp.bottom > $@; \
-@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	  rm tmp.top tmp.bottom; \
-@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@	fi
+@ENABLE_SYMVERS_GNU_TRUE@libstdc++-symbol.ver:  ${glibcxx_srcdir}/$(SYMVER_MAP)
+@ENABLE_SYMVERS_GNU_TRUE@	cp ${glibcxx_srcdir}/$(SYMVER_MAP) ./libstdc++-symbol.ver
+@ENABLE_SYMVERS_GNU_TRUE@	if test "x$(port_specific_symbol_files)" != x; then \
+@ENABLE_SYMVERS_GNU_TRUE@	  sed -n '1,/DO NOT DELETE/p' $@ > tmp.top; \
+@ENABLE_SYMVERS_GNU_TRUE@	  sed -n '/DO NOT DELETE/,$$p' $@ > tmp.bottom; \
+@ENABLE_SYMVERS_GNU_TRUE@	  cat tmp.top $(port_specific_symbol_files) tmp.bottom > $@; \
+@ENABLE_SYMVERS_GNU_TRUE@	  rm tmp.top tmp.bottom; \
+@ENABLE_SYMVERS_GNU_TRUE@	fi
+@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@libstdc++-symbol.explist : ${glibcxx_srcdir}/$(SYMVER_MAP) \
+@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@		${glibcxx_srcdir}/scripts/make_exports.pl \
+@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@		$(libstdc___la_OBJECTS) $(libstdc___la_LIBADD)
+@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@	perl ${glibcxx_srcdir}/scripts/make_exports.pl \
+@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@	  ${glibcxx_srcdir}/$(SYMVER_MAP) \
+@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@	  $(libstdc___la_OBJECTS:%.lo=.libs/%.o) \
+@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@	 `echo $(libstdc___la_LIBADD) | \
+@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
+@ENABLE_SYMVERS_DARWIN_EXPORT_TRUE@@ENABLE_SYMVERS_GNU_FALSE@	 > $@ || (rm -f $@ ; exit 1)
 
 codecvt_members.cc: ${glibcxx_srcdir}/$(CCODECVT_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CCODECVT_CC) . || true

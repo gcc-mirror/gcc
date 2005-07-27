@@ -1,3 +1,8 @@
+2005-07-25  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/install.texi (Prerequisites): Mention that perl is needed
+	to do export control in libstdc++ targetting Darwin.
+
 2005-07-27  Steven Bosscher  <stevenb@suse.de>
 
 	PR rtl-optimization/17808
