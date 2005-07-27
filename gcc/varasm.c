@@ -1274,11 +1274,13 @@ assemble_start_function (tree decl, const char *fnname)
       unlikely_text_section ();
       assemble_align (FUNCTION_BOUNDARY);
       ASM_OUTPUT_LABEL (asm_out_file, cfun->cold_section_label);
-      if (BB_PARTITION (ENTRY_BLOCK_PTR->next_bb) == BB_COLD_PARTITION)
+
+      /* When the function starts with a cold section, we need to explicitly
+	 align the hot section and write out the hot section label.
+	 But if the current function is a thunk, we do not have a CFG.  */
+      if (!current_function_is_thunk
+	  && BB_PARTITION (ENTRY_BLOCK_PTR->next_bb) == BB_COLD_PARTITION)
 	{
-	  /* Since the function starts with a cold section, we need to
-	     explicitly align the hot section and write out the hot
-	     section label.  */
 	  text_section ();
 	  assemble_align (FUNCTION_BOUNDARY);
 	  ASM_OUTPUT_LABEL (asm_out_file, cfun->hot_section_label);
@@ -1361,7 +1363,10 @@ assemble_start_function (tree decl, const char *fnname)
   ASM_OUTPUT_LABEL (asm_out_file, fnname);
 #endif /* ASM_DECLARE_FUNCTION_NAME */
 
-  insert_section_boundary_note ();
+  /* Add NOTE_INSN_SWITCH_TEXT_SECTIONS notes.  Don't do this if the current
+     function is a thunk, because we don't have a CFG in that case.  */
+  if (!current_function_is_thunk)
+    insert_section_boundary_note ();
 }
 
 /* Output assembler code associated with defining the size of the
