@@ -1,3 +1,8 @@
+2005-07-27  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimize/22348
+	* gcc.c-torture/execute/pr22348.c: New.
+
 2005-07-27  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/salias-1.c: New testcase.
