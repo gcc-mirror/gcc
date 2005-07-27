@@ -1,5 +1,8 @@
 2005-07-27  Jan Hubicka  <jh@suse.cz>
 
+	* tree-tailcall.c (decrease_profile): New function.
+	(eliminate_tail_call): Use it.
+
 	* cgraphunit.c (cgraph_function_and_variable_visibility): Set
 	visibility flags correctly in whole program mode.
 

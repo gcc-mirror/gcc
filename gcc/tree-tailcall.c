@@ -668,6 +668,29 @@ adjust_return_value (basic_block bb, tree m, tree a)
   update_stmt (ret_stmt);
 }
 
+/* Subtract COUNT and FREQUENCY from the basic block and it's
+   outgoing edge.  */
+static void
+decrease_profile (basic_block bb, gcov_type count, int frequency)
+{
+  edge e;
+  bb->count -= count;
+  if (bb->count < 0)
+    bb->count = 0;
+  bb->frequency -= frequency;
+  if (bb->frequency < 0)
+    bb->frequency = 0;
+  if (!single_succ_p (bb))
+    {
+      gcc_assert (!EDGE_COUNT (bb->succs));
+      return;
+    }
+  e = single_succ_edge (bb);
+  e->count -= count;
+  if (e->count < 0)
+    e->count = 0;
+}
+
 /* Eliminates tail call described by T.  TMP_VARS is a list of
    temporary variables used to copy the function arguments.  */
 
@@ -716,6 +739,13 @@ eliminate_tail_call (struct tailcall *t)
       bsi_remove (&bsi);
       release_defs (t);
     }
+
+  /* Number of executions of function has reduced by the tailcall.  */
+  e = single_succ_edge (t->call_block);
+  decrease_profile (EXIT_BLOCK_PTR, e->count, EDGE_FREQUENCY (e));
+  decrease_profile (ENTRY_BLOCK_PTR, e->count, EDGE_FREQUENCY (e));
+  if (e->dest != EXIT_BLOCK_PTR)
+    decrease_profile (e->dest, e->count, EDGE_FREQUENCY (e));
 
   /* Replace the call by a jump to the start of function.  */
   e = redirect_edge_and_branch (single_succ_edge (t->call_block), first);
