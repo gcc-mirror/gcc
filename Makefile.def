@@ -223,6 +223,7 @@ flags_to_pass = { flag= DLLTOOL_FOR_TARGET ; };
 flags_to_pass = { flag= GCJ_FOR_TARGET ; };
 flags_to_pass = { flag= GFORTRAN_FOR_TARGET ; };
 flags_to_pass = { flag= LD_FOR_TARGET ; };
+flags_to_pass = { flag= LDFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= LIBCFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= LIBCXXFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= NM_FOR_TARGET ; };

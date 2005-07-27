@@ -1,3 +1,9 @@
+2005-07-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.tpl (EXTRA_TARGET_FLAGS): Set LDFLAGS=LDFLAGS_FOR_TARGET.
+	* Makefile.def (flags_to_pass): Add LDFLAGS_FOR_TARGET. 
+	* Makefile.in: Regenerated.
+
 2005-07-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.tpl (SYSROOT_CFLAGS_FOR_TARGET): New variable.
