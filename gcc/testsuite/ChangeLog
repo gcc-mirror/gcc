@@ -1,3 +1,7 @@
+2005-07-28  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-prof/update-loopch.c: Fix thinkos.
+
 2005-07-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22545
