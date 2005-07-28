@@ -10133,6 +10133,7 @@ ix86_split_sse_movcc (rtx operands[])
 	     conditional move to a straight move.  Do so here, because 
 	     otherwise we'll generate incorrect code.  And since they're
 	     both already in the destination register, nothing to do.  */
+	  emit_note (NOTE_INSN_DELETED);
 	  return;
 	}
 
