@@ -406,6 +406,7 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
   if (bitmap_bit_p (updated_nodes, node->uid))
     return;
   bitmap_set_bit (updated_nodes, node->uid);
+  node->global.estimated_growth = INT_MIN;
 
   for (edge = node->callers; edge; edge = edge->next_caller)
     if (edge->inline_failed)
@@ -756,6 +757,7 @@ cgraph_decide_inlining_of_small_functions (void)
 	}
       else
 	{
+	  struct cgraph_node *callee;
 	  if (!cgraph_check_inline_limits (edge->caller, edge->callee,
 					   &edge->inline_failed))
 	    {
@@ -764,8 +766,9 @@ cgraph_decide_inlining_of_small_functions (void)
 			 cgraph_node_name (edge->caller), edge->inline_failed);
 	      continue;
 	    }
+	  callee = edge->callee;
 	  cgraph_mark_inline_edge (edge);
-         update_callee_keys (heap, edge->callee, updated_nodes);
+	  update_callee_keys (heap, callee, updated_nodes);
 	}
       where = edge->caller;
       if (where->global.inlined_to)

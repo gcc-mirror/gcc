@@ -1,5 +1,10 @@
 2005-07-28  Josh Conner  <jconner@apple.com>
 
+	* ipa-inline.c (update_caller_keys): Fix estimated_growth caching.
+	(cgraph_decide_inlining_of_small_functions): Likewise.
+
+2005-07-28  Josh Conner  <jconner@apple.com>
+
 	* ipa-inline.c (cgraph_edge_badness): Update comments.  Invert shift
 	direction of badness if negative.
 	(cgraph_default_inline_p): Add reason to parameters, and assign it
