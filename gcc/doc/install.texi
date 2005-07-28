@@ -1085,7 +1085,7 @@ specifying @var{list}; the categories of checks available are
 @samp{misc}, @samp{tree}, @samp{gc}, @samp{rtl}, @samp{rtlflag},
 @samp{fold}, @samp{gcac} and @samp{valgrind}.  The check @samp{valgrind}
 requires the external @command{valgrind} simulator, available from
-@uref{http://valgrind.kde.org/}.  The default when @var{list} is
+@uref{http://valgrind.org/}.  The default when @var{list} is
 not specified is @samp{misc,tree,gc,rtlflag}; the checks @samp{rtl},
 @samp{gcac} and @samp{valgrind} are very expensive.
 
