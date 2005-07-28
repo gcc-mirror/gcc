@@ -884,7 +884,7 @@ dom_opt_initialize_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 }
 
 /* Given an expression EXPR (a relational expression or a statement), 
-   initialize the hash table element pointed by by ELEMENT.  */
+   initialize the hash table element pointed to by ELEMENT.  */
 
 static void
 initialize_hash_element (tree expr, tree lhs, struct expr_hash_elt *element)
@@ -2851,7 +2851,7 @@ cprop_into_stmt (tree stmt)
 }
 
 
-/* Optimize the statement pointed by iterator SI.
+/* Optimize the statement pointed to by iterator SI.
    
    We try to perform some simplistic global redundancy elimination and
    constant propagation:
@@ -3061,7 +3061,7 @@ update_rhs_and_lookup_avail_expr (tree stmt, tree new_rhs, bool insert)
    NULL_TREE.
 
    Also, when an expression is first inserted in the AVAIL_EXPRS table, it
-   is also added to the stack pointed by BLOCK_AVAIL_EXPRS_P, so that they
+   is also added to the stack pointed to by BLOCK_AVAIL_EXPRS_P, so that they
    can be removed when we finish processing this block and its children.
 
    NOTE: This function assumes that STMT is a MODIFY_EXPR node that

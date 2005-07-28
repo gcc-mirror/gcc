@@ -267,7 +267,7 @@ replace_exp_1 (use_operand_p op_p, tree val,
 
 
 /* Propagate the value VAL (assumed to be a constant or another SSA_NAME)
-   into the operand pointed by OP_P.
+   into the operand pointed to by OP_P.
 
    Use this version for const/copy propagation as it will perform additional
    checks to ensure validity of the const/copy propagation.  */
@@ -280,7 +280,7 @@ propagate_value (use_operand_p op_p, tree val)
 
 
 /* Propagate the value VAL (assumed to be a constant or another SSA_NAME)
-   into the tree pointed by OP_P.
+   into the tree pointed to by OP_P.
 
    Use this version for const/copy propagation when SSA operands are not
    available.  It will perform the additional checks to ensure validity of

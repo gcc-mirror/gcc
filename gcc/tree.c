@@ -883,7 +883,7 @@ cst_and_fits_in_hwi (tree x)
 }
 
 /* Return a new VECTOR_CST node whose type is TYPE and whose values
-   are in a list pointed by VALS.  */
+   are in a list pointed to by VALS.  */
 
 tree
 build_vector (tree type, tree vals)
@@ -926,7 +926,7 @@ build_vector_from_ctor (tree type, VEC(constructor_elt,gc) *v)
 }
 
 /* Return a new CONSTRUCTOR node whose type is TYPE and whose values
-   are in the VEC pointed by VALS.  */
+   are in the VEC pointed to by VALS.  */
 tree
 build_constructor (tree type, VEC(constructor_elt,gc) *vals)
 {

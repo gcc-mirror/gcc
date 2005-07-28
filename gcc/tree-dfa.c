@@ -463,7 +463,7 @@ debug_dfa_stats (void)
 }
 
 
-/* Collect DFA statistics and store them in the structure pointed by
+/* Collect DFA statistics and store them in the structure pointed to by
    DFA_STATS_P.  */
 
 static void

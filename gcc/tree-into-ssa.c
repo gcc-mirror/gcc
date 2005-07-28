@@ -889,7 +889,7 @@ insert_phi_nodes (bitmap *dfs)
 
 /* Register DEF (an SSA_NAME) to be a new definition for its underlying
    variable (SSA_NAME_VAR (DEF)) and push VAR's current reaching definition
-   into the stack pointed by BLOCK_DEFS_P.  */
+   into the stack pointed to by BLOCK_DEFS_P.  */
 
 void
 register_new_def (tree def, VEC(tree,heap) **block_defs_p)
@@ -1486,7 +1486,7 @@ rewrite_update_stmt (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 }
 
 
-/* Replace the operand pointed by USE_P with USE's current reaching
+/* Replace the operand pointed to by USE_P with USE's current reaching
    definition.  */
 
 static inline void

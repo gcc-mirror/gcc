@@ -431,7 +431,7 @@ c_readstr (const char *str, enum machine_mode mode)
 }
 
 /* Cast a target constant CST to target CHAR and if that value fits into
-   host char type, return zero and put that value into variable pointed by
+   host char type, return zero and put that value into variable pointed to by
    P.  */
 
 static int

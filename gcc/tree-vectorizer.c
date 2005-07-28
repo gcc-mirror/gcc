@@ -91,7 +91,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
    To vectorize stmt S2, the vectorizer first finds the stmt that defines
    the operand 'b' (S1), and gets the relevant vector def 'vb' from the
-   vector stmt VS1 pointed by STMT_VINFO_VEC_STMT (stmt_info (S1)). The
+   vector stmt VS1 pointed to by STMT_VINFO_VEC_STMT (stmt_info (S1)). The
    resulting sequence would be:
 
    VS1: vb = px[i];

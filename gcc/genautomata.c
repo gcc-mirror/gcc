@@ -7632,7 +7632,7 @@ output_state_ainsn_table (state_ainsn_table_t tab, char *table_name,
 }
 
 /* The following function adds vector with length VECT_LENGTH and
-   elements pointed by VECT to table TAB as its line with number
+   elements pointed to by VECT to table TAB as its line with number
    VECT_NUM.  */
 static void
 add_vect (state_ainsn_table_t tab, int vect_num, vect_el_t *vect,
