@@ -1,3 +1,7 @@
+2005-07-28  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* df.c (df_uses_record): Handle SCRATCH.
+
 2005-07-28  Steven Bosscher  <stevenb@suse.de>
 
 	PR debug/20161
