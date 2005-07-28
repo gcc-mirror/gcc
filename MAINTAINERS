@@ -53,9 +53,7 @@ h8 port			Kazu Hirata		kazu@codesourcery.com
 hppa port		Jeff Law		law@redhat.com
 hppa port		Dave Anglin		dave.anglin@nrc.ca
 i386 port		Richard Henderson	rth@redhat.com
-i860 port		Jason Eckhardt		jle@rice.edu
 ia64 port		Jim Wilson		wilson@specifixinc.com
-ip2k port		Denis Chertykov		denisc@overta.ru
 iq2000 port		Nick Clifton		nickc@redhat.com
 m32c port		DJ Delorie		dj@redhat.com
 m32r port		Nick Clifton		nickc@redhat.com
@@ -69,7 +67,6 @@ mips port		Richard Sandiford	richard@codesourcery.com
 mmix port		Hans-Peter Nilsson	hp@bitrange.com
 mn10300 port		Jeff Law		law@redhat.com
 mn10300 port		Alexandre Oliva		aoliva@redhat.com
-ns32k port		Ian Dall		ian@beware.dropbear.id.au
 pdp11 port		Paul Koning		ni1d@arrl.net
 rs6000 port		Geoff Keating		geoffk@geoffk.org
 rs6000 port		David Edelsohn		dje@watson.ibm.com
@@ -227,6 +224,7 @@ Josh Conner					jconner@apple.com
 R. Kelley Cook					kcook@gcc.gnu.org
 Christian Cornelssen				ccorn@cs.tu-berlin.de
 François-Xavier Coudert				coudert@clipper.ens.fr
+Ian Dall					ian@beware.dropbear.id.au
 David Daney					ddaney@avtrex.com
 Bud Davis					bdavis9659@comcast.net
 Jerry DeLisle					jvdelisle@verizon.net
