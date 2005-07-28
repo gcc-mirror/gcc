@@ -1,3 +1,12 @@
+2005-07-27  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR rtl-optimization/22493
+	* gcc.c-torture/execute/pr22493-1.c: New test.
+	* gcc.c-torture/execute/pr22493-1.x: New.
+	* gcc.c-torture/execute/vrp-1.c: New test.
+	* gcc.c-torture/execute/vrp-2.c: New test.
+	* gcc.c-torture/execute/vrp-2.c: New test.
+
 2005-07-27  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gcc.target/frv/all-builtin-read8.c: Delete.

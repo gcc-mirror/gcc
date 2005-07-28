@@ -1,3 +1,9 @@
+2005-07-27  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR tree-optimization/22493
+	* tree-vrp.c (extract_range_from_unary_expr): Deal with -fwrapv and
+	VR_ANTI_RANGEs properly for NEGATE_EXPRs and ABS_EXPRs.
+
 2005-07-27  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/frv/frv.opt (moptimize-membar): New.
