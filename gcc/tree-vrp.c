@@ -1353,27 +1353,31 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
   if (code == NEGATE_EXPR
       && !TYPE_UNSIGNED (TREE_TYPE (expr)))
     {
-      /* Negating an anti-range doesn't really do anything to it.  The
-	 new range will also not take on the same range of values
-	 excluded by the original anti-range.  */
-      if (vr0.type == VR_ANTI_RANGE)
-	{
-	  copy_value_range (vr, &vr0);
-	  return;
-	}
-
       /* NEGATE_EXPR flips the range around.  */
-      min = (vr0.max == TYPE_MAX_VALUE (TREE_TYPE (expr)))
-	    ? TYPE_MIN_VALUE (TREE_TYPE (expr))
-	    : fold_unary_to_constant (code, TREE_TYPE (expr), vr0.max);
+      min = (vr0.max == TYPE_MAX_VALUE (TREE_TYPE (expr)) && !flag_wrapv)
+	     ? TYPE_MIN_VALUE (TREE_TYPE (expr))
+	     : fold_unary_to_constant (code, TREE_TYPE (expr), vr0.max);
 
-      max = (vr0.min == TYPE_MIN_VALUE (TREE_TYPE (expr)))
-	    ? TYPE_MAX_VALUE (TREE_TYPE (expr))
-	    : fold_unary_to_constant (code, TREE_TYPE (expr), vr0.min);
+      max = (vr0.min == TYPE_MIN_VALUE (TREE_TYPE (expr)) && !flag_wrapv)
+	     ? TYPE_MAX_VALUE (TREE_TYPE (expr))
+	     : fold_unary_to_constant (code, TREE_TYPE (expr), vr0.min);
     }
   else if (code == ABS_EXPR
            && !TYPE_UNSIGNED (TREE_TYPE (expr)))
     {
+      /* -TYPE_MIN_VALUE = TYPE_MIN_VALUE with flag_wrapv so we can't get a
+         useful range.  */
+      if (flag_wrapv
+	  && ((vr0.type == VR_RANGE
+	       && vr0.min == TYPE_MIN_VALUE (TREE_TYPE (expr)))
+	      || (vr0.type == VR_ANTI_RANGE
+	          && vr0.min != TYPE_MIN_VALUE (TREE_TYPE (expr))
+		  && !range_includes_zero_p (&vr0))))
+	{
+	  set_value_range_to_varying (vr);
+	  return;
+	}
+	
       /* ABS_EXPR may flip the range around, if the original range
 	 included negative values.  */
       min = (vr0.min == TYPE_MIN_VALUE (TREE_TYPE (expr)))
@@ -1382,12 +1386,58 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
 
       max = fold_unary_to_constant (code, TREE_TYPE (expr), vr0.max);
 
-      /* If the range was reversed, swap MIN and MAX.  */
-      if (compare_values (min, max) == 1)
+      cmp = compare_values (min, max);
+
+      /* If a VR_ANTI_RANGEs contains zero, then we have
+	 ~[-INF, min(MIN, MAX)].  */
+      if (vr0.type == VR_ANTI_RANGE)
+	{ 
+	  if (range_includes_zero_p (&vr0))
+	    {
+	      tree type_min_value = TYPE_MIN_VALUE (TREE_TYPE (expr));
+
+	      /* Take the lower of the two values.  */
+	      if (cmp != 1)
+		max = min;
+
+	      /* Create ~[-INF, min (abs(MIN), abs(MAX))]
+	         or ~[-INF + 1, min (abs(MIN), abs(MAX))] when
+		 flag_wrapv is set and the original anti-range doesn't include
+	         TYPE_MIN_VALUE, remember -TYPE_MIN_VALUE = TYPE_MIN_VALUE.  */
+	      min = (flag_wrapv && vr0.min != type_min_value
+		     ? int_const_binop (PLUS_EXPR,
+					type_min_value,
+					integer_one_node, 0)
+		     : type_min_value);
+	    }
+	  else
+	    {
+	      /* All else has failed, so create the range [0, INF], even for
+	         flag_wrapv since TYPE_MIN_VALUE is in the original
+	         anti-range.  */
+	      vr0.type = VR_RANGE;
+	      min = build_int_cst (TREE_TYPE (expr), 0);
+	      max = TYPE_MAX_VALUE (TREE_TYPE (expr));
+	    }
+	}
+
+      /* If the range contains zero then we know that the minimum value in the
+         range will be zero.  */
+      else if (range_includes_zero_p (&vr0))
 	{
-	  tree t = min;
-	  min = max;
-	  max = t;
+	  if (cmp == 1)
+	    max = min;
+	  min = build_int_cst (TREE_TYPE (expr), 0);
+	}
+      else
+	{
+          /* If the range was reversed, swap MIN and MAX.  */
+	  if (cmp == 1)
+	    {
+	      tree t = min;
+	      min = max;
+	      max = t;
+	    }
 	}
     }
   else
