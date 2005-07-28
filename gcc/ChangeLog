@@ -1,3 +1,43 @@
+2005-07-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/frv/frv.opt (moptimize-membar): New.
+
+	* doc/invoke.texi: Document -moptimize-membar and its inverse.
+
+	* config/frv/frv.h: Remove machine_function definition.
+
+        * config/frv/frv.c (struct frv_io): New.
+        (struct machine_function): Moved from frv.h.  Add has_membar_p.
+        (frv_same_doubleword_p, frv_io_fixed_order_p, frv_io_union)
+        (frv_extract_membar, frv_io_check_address, frv_io_handle_set)
+        (frv_io_handle_use_1, frv_io_handle_use, frv_optimize_membar_local)
+        (frv_optimize_membar_global, frv_optimize_membar): New functions.
+        (frv_reorg): Call frv_optimize_membar when appropriate.
+        (bdesc_loads, bdesc_stores): Use the membar code as the icode field.
+        (frv_expand_builtin): Adjust calls accordingly.
+        (frv_io_address_cookie): New function.
+        (frv_expand_load_builtin, frv_expand_store_builtin): Emit a normal
+        load or store rather than a special insn.  Add ccnstant address and
+        io-type operands to the membar.
+	(frv_ifcvt_modify_tests): Unsign regno.
+	(frv_ifcvt_modify_tests): Same.
+
+	* config/frv/frv.md: Remove UNSPEC_BUILTIN_{LOAD,STORE}.  Change
+	UNSPEC_OPTIONAL_MEMBAR constant.
+	(builtin_read_<mode>): Delete.
+	(builtin_write_<mode>): Delete.
+	("optional_membar_<mode>"): Add operand.
+
+	* testsuite/gcc.target/frv/all-builtin-read8.c: Delete.
+	* testsuite/gcc.target/frv/all-builtin-read16.c: Delete.
+	* testsuite/gcc.target/frv/all-builtin-read32.c: Delete.
+	* testsuite/gcc.target/frv/all-builtin-read64.c: Delete.
+	* testsuite/gcc.target/frv/all-builtin-write8.c: Delete.
+	* testsuite/gcc.target/frv/all-builtin-write16.c: Delete.
+	* testsuite/gcc.target/frv/all-builtin-write32.c: Delete.
+	* testsuite/gcc.target/frv/all-builtin-write64.c: Delete.
+	* testsuite/gcc.target/frv/all-read-write-1.c: New.
+
 2005-07-28  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* df.c (df_uses_record): Handle SCRATCH.

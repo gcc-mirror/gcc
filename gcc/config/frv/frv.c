@@ -109,6 +109,21 @@ static GTY(()) rtx frv_nops[NUM_NOP_PATTERNS];
 /* The number of nop instructions in frv_nops[].  */
 static unsigned int frv_num_nops;
 
+/* Information about one __builtin_read or __builtin_write access, or
+   the combination of several such accesses.  The most general value
+   is all-zeros (an unknown access to an unknown address).  */
+struct frv_io {
+  /* The type of access.  FRV_IO_UNKNOWN means the access can be either
+     a read or a write.  */
+  enum { FRV_IO_UNKNOWN, FRV_IO_READ, FRV_IO_WRITE } type;
+
+  /* The constant address being accessed, or zero if not known.  */
+  HOST_WIDE_INT const_address;
+
+  /* The run-time address, as used in operand 0 of the membar pattern.  */
+  rtx var_address;
+};
+
 /* Return true if instruction INSN should be packed with the following
    instruction.  */
 #define PACKING_FLAG_P(INSN) (GET_MODE (INSN) == TImode)
@@ -122,6 +137,16 @@ static unsigned int frv_num_nops;
   for (REG = REGNO (X);							\
        REG < REGNO (X) + HARD_REGNO_NREGS (REGNO (X), GET_MODE (X));	\
        REG++)
+
+/* This structure contains machine specific function data.  */
+struct machine_function GTY(())
+{
+  /* True if we have created an rtx that relies on the stack frame.  */
+  int frame_needed;
+
+  /* True if this function contains at least one __builtin_{read,write}*.  */
+  bool has_membar_p;
+};
 
 /* Temporary register allocation support structure.  */
 typedef struct frv_tmp_reg_struct
@@ -755,6 +780,9 @@ frv_override_options (void)
 
   if ((target_flags_explicit & MASK_LINKED_FP) == 0)
     target_flags |= MASK_LINKED_FP;
+
+  if ((target_flags_explicit & MASK_OPTIMIZE_MEMBAR) == 0)
+    target_flags |= MASK_OPTIMIZE_MEMBAR;
 
   for (i = 0; i < ARRAY_SIZE (frv_unit_names); i++)
     frv_unit_codes[i] = get_cpu_unit_code (frv_unit_names[i]);
@@ -5291,7 +5319,7 @@ frv_ifcvt_modify_tests (ce_if_block_t *ce_info, rtx *p_true, rtx *p_false)
 
   if (join_bb)
     {
-      int regno;
+      unsigned int regno;
 
       /* Remove anything live at the beginning of the join block from being
          available for allocation.  */
@@ -5328,7 +5356,7 @@ frv_ifcvt_modify_tests (ce_if_block_t *ce_info, rtx *p_true, rtx *p_false)
     {
       rtx last_insn = BB_END (bb[j]);
       rtx insn = BB_HEAD (bb[j]);
-      int regno;
+      unsigned int regno;
 
       if (dump_file)
 	fprintf (dump_file, "Scanning %s block %d, start %d, end %d\n",
@@ -7661,6 +7689,334 @@ frv_fill_unused_units (enum frv_insn_group group)
     frv_insert_nop_in_packet (packet_group->nop);
 }
 
+/* Return true if accesses IO1 and IO2 refer to the same doubleword.  */
+
+static bool
+frv_same_doubleword_p (const struct frv_io *io1, const struct frv_io *io2)
+{
+  if (io1->const_address != 0 && io2->const_address != 0)
+    return io1->const_address == io2->const_address;
+
+  if (io1->var_address != 0 && io2->var_address != 0)
+    return rtx_equal_p (io1->var_address, io2->var_address);
+
+  return false;
+}
+
+/* Return true if operations IO1 and IO2 are guaranteed to complete
+   in order.  */
+
+static bool
+frv_io_fixed_order_p (const struct frv_io *io1, const struct frv_io *io2)
+{
+  /* The order of writes is always preserved.  */
+  if (io1->type == FRV_IO_WRITE && io2->type == FRV_IO_WRITE)
+    return true;
+
+  /* The order of reads isn't preserved.  */
+  if (io1->type != FRV_IO_WRITE && io2->type != FRV_IO_WRITE)
+    return false;
+
+  /* One operation is a write and the other is (or could be) a read.
+     The order is only guaranteed if the accesses are to the same
+     doubleword.  */
+  return frv_same_doubleword_p (io1, io2);
+}
+
+/* Generalize I/O operation X so that it covers both X and Y. */
+
+static void
+frv_io_union (struct frv_io *x, const struct frv_io *y)
+{
+  if (x->type != y->type)
+    x->type = FRV_IO_UNKNOWN;
+  if (!frv_same_doubleword_p (x, y))
+    {
+      x->const_address = 0;
+      x->var_address = 0;
+    }
+}
+
+/* Fill IO with information about the load or store associated with
+   membar instruction INSN.  */
+
+static void
+frv_extract_membar (struct frv_io *io, rtx insn)
+{
+  extract_insn (insn);
+  io->type = INTVAL (recog_data.operand[2]);
+  io->const_address = INTVAL (recog_data.operand[1]);
+  io->var_address = XEXP (recog_data.operand[0], 0);
+}
+
+/* A note_stores callback for which DATA points to an rtx.  Nullify *DATA
+   if X is a register and *DATA depends on X.  */
+
+static void
+frv_io_check_address (rtx x, rtx pat ATTRIBUTE_UNUSED, void *data)
+{
+  rtx *other = data;
+
+  if (REG_P (x) && *other != 0 && reg_overlap_mentioned_p (x, *other))
+    *other = 0;
+}
+
+/* A note_stores callback for which DATA points to a HARD_REG_SET.
+   Remove every modified register from the set.  */
+
+static void
+frv_io_handle_set (rtx x, rtx pat ATTRIBUTE_UNUSED, void *data)
+{
+  HARD_REG_SET *set = data;
+  unsigned int regno;
+
+  if (REG_P (x))
+    FOR_EACH_REGNO (regno, x)
+      CLEAR_HARD_REG_BIT (*set, regno);
+}
+
+/* A for_each_rtx callback for which DATA points to a HARD_REG_SET.
+   Add every register in *X to the set.  */
+
+static int
+frv_io_handle_use_1 (rtx *x, void *data)
+{
+  HARD_REG_SET *set = data;
+  unsigned int regno;
+
+  if (REG_P (*x))
+    FOR_EACH_REGNO (regno, *x)
+      SET_HARD_REG_BIT (*set, regno);
+
+  return 0;
+}
+
+/* A note_stores callback that applies frv_io_handle_use_1 to an
+   entire rhs value.  */
+
+static void
+frv_io_handle_use (rtx *x, void *data)
+{
+  for_each_rtx (x, frv_io_handle_use_1, data);
+}
+
+/* Go through block BB looking for membars to remove.  There are two
+   cases where intra-block analysis is enough:
+
+   - a membar is redundant if it occurs between two consecutive I/O
+   operations and if those operations are guaranteed to complete
+   in order.
+
+   - a membar for a __builtin_read is redundant if the result is
+   used before the next I/O operation is issued.
+
+   If the last membar in the block could not be removed, and there
+   are guaranteed to be no I/O operations between that membar and
+   the end of the block, store the membar in *LAST_MEMBAR, otherwise
+   store null.
+
+   Describe the block's first I/O operation in *NEXT_IO.  Describe
+   an unknown operation if the block doesn't do any I/O.  */
+
+static void
+frv_optimize_membar_local (basic_block bb, struct frv_io *next_io,
+			   rtx *last_membar)
+{
+  HARD_REG_SET used_regs;
+  rtx next_membar, set, insn;
+  bool next_is_end_p;
+
+  /* NEXT_IO is the next I/O operation to be performed after the current
+     instruction.  It starts off as being an unknown operation.  */
+  memset (next_io, 0, sizeof (*next_io));
+
+  /* NEXT_IS_END_P is true if NEXT_IO describes the end of the block.  */
+  next_is_end_p = true;
+
+  /* If the current instruction is a __builtin_read or __builtin_write,
+     NEXT_MEMBAR is the membar instruction associated with it.  NEXT_MEMBAR
+     is null if the membar has already been deleted.
+
+     Note that the initialization here should only be needed to
+     supress warnings.  */
+  next_membar = 0;
+
+  /* USED_REGS is the set of registers that are used before the
+     next I/O instruction.  */
+  CLEAR_HARD_REG_SET (used_regs);
+
+  for (insn = BB_END (bb); insn != BB_HEAD (bb); insn = PREV_INSN (insn))
+    if (GET_CODE (insn) == CALL_INSN)
+      {
+	/* We can't predict what a call will do to volatile memory.  */
+	memset (next_io, 0, sizeof (struct frv_io));
+	next_is_end_p = false;
+	CLEAR_HARD_REG_SET (used_regs);
+      }
+    else if (INSN_P (insn))
+      switch (recog_memoized (insn))
+	{
+	case CODE_FOR_optional_membar_qi:
+	case CODE_FOR_optional_membar_hi:
+	case CODE_FOR_optional_membar_si:
+	case CODE_FOR_optional_membar_di:
+	  next_membar = insn;
+	  if (next_is_end_p)
+	    {
+	      /* Local information isn't enough to decide whether this
+		 membar is needed.  Stash it away for later.  */
+	      *last_membar = insn;
+	      frv_extract_membar (next_io, insn);
+	      next_is_end_p = false;
+	    }
+	  else
+	    {
+	      /* Check whether the I/O operation before INSN could be
+		 reordered with one described by NEXT_IO.  If it can't,
+		 INSN will not be needed.  */
+	      struct frv_io prev_io;
+
+	      frv_extract_membar (&prev_io, insn);
+	      if (frv_io_fixed_order_p (&prev_io, next_io))
+		{
+		  if (dump_file)
+		    fprintf (dump_file,
+			     ";; [Local] Removing membar %d since order"
+			     " of accesses is guaranteed\n",
+			     INSN_UID (next_membar));
+
+		  insn = NEXT_INSN (insn);
+		  delete_insn (next_membar);
+		  next_membar = 0;
+		}
+	      *next_io = prev_io;
+	    }
+	  break;
+
+	default:
+	  /* Invalidate NEXT_IO's address if it depends on something that
+	     is clobbered by INSN.  */
+	  if (next_io->var_address)
+	    note_stores (PATTERN (insn), frv_io_check_address,
+			 &next_io->var_address);
+
+	  /* If the next membar is associated with a __builtin_read,
+	     see if INSN reads from that address.  If it does, and if
+	     the destination register is used before the next I/O access,
+	     there is no need for the membar.  */
+	  set = PATTERN (insn);
+	  if (next_io->type == FRV_IO_READ
+	      && next_io->var_address != 0
+	      && next_membar != 0
+	      && GET_CODE (set) == SET
+	      && GET_CODE (SET_DEST (set)) == REG
+	      && TEST_HARD_REG_BIT (used_regs, REGNO (SET_DEST (set))))
+	    {
+	      rtx src;
+
+	      src = SET_SRC (set);
+	      if (GET_CODE (src) == ZERO_EXTEND)
+		src = XEXP (src, 0);
+
+	      if (GET_CODE (src) == MEM
+		  && rtx_equal_p (XEXP (src, 0), next_io->var_address))
+		{
+		  if (dump_file)
+		    fprintf (dump_file,
+			     ";; [Local] Removing membar %d since the target"
+			     " of %d is used before the I/O operation\n",
+			     INSN_UID (next_membar), INSN_UID (insn));
+
+		  if (next_membar == *last_membar)
+		    *last_membar = 0;
+
+		  delete_insn (next_membar);
+		  next_membar = 0;
+		}
+	    }
+
+	  /* If INSN has volatile references, forget about any registers
+	     that are used after it.  Otherwise forget about uses that
+	     are (or might be) defined by INSN.  */
+	  if (volatile_refs_p (PATTERN (insn)))
+	    CLEAR_HARD_REG_SET (used_regs);
+	  else
+	    note_stores (PATTERN (insn), frv_io_handle_set, &used_regs);
+
+	  note_uses (&PATTERN (insn), frv_io_handle_use, &used_regs);
+	  break;
+	}
+}
+
+/* See if MEMBAR, the last membar instruction in BB, can be removed.
+   FIRST_IO[X] describes the first operation performed by basic block X.  */
+
+static void
+frv_optimize_membar_global (basic_block bb, struct frv_io *first_io,
+			    rtx membar)
+{
+  struct frv_io this_io, next_io;
+  edge succ;
+  edge_iterator ei;
+
+  /* We need to keep the membar if there is an edge to the exit block.  */
+  FOR_EACH_EDGE (succ, ei, bb->succs)
+  /* for (succ = bb->succ; succ != 0; succ = succ->succ_next) */
+    if (succ->dest == EXIT_BLOCK_PTR)
+      return;
+
+  /* Work out the union of all successor blocks.  */
+  ei = ei_start (bb->succs);
+  ei_cond (ei, &succ);
+  /* next_io = first_io[bb->succ->dest->index]; */
+  next_io = first_io[succ->dest->index];
+  ei = ei_start (bb->succs);
+  if (ei_cond (ei, &succ))
+    {
+      for (ei_next (&ei); ei_cond (ei, &succ); ei_next (&ei))
+	/*for (succ = bb->succ->succ_next; succ != 0; succ = succ->succ_next)*/
+	frv_io_union (&next_io, &first_io[succ->dest->index]);
+    }
+  else
+    gcc_unreachable ();
+
+  frv_extract_membar (&this_io, membar);
+  if (frv_io_fixed_order_p (&this_io, &next_io))
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 ";; [Global] Removing membar %d since order of accesses"
+		 " is guaranteed\n", INSN_UID (membar));
+
+      delete_insn (membar);
+    }
+}
+
+/* Remove redundant membars from the current function.  */
+
+static void
+frv_optimize_membar (void)
+{
+  basic_block bb;
+  struct frv_io *first_io;
+  rtx *last_membar;
+
+  compute_bb_for_insn ();
+  first_io = xcalloc (last_basic_block, sizeof (struct frv_io));
+  last_membar = xcalloc (last_basic_block, sizeof (rtx));
+
+  FOR_EACH_BB (bb)
+    frv_optimize_membar_local (bb, &first_io[bb->index],
+			       &last_membar[bb->index]);
+
+  FOR_EACH_BB (bb)
+    if (last_membar[bb->index] != 0)
+      frv_optimize_membar_global (bb, first_io, last_membar[bb->index]);
+
+  free (first_io);
+  free (last_membar);
+}
+
 /* Used by frv_reorg to keep track of the current packet's address.  */
 static unsigned int frv_packet_address;
 
@@ -7773,6 +8129,9 @@ frv_register_nop (rtx nop)
 static void
 frv_reorg (void)
 {
+  if (optimize > 0 && TARGET_OPTIMIZE_MEMBAR && cfun->machine->has_membar_p)
+    frv_optimize_membar ();
+
   frv_num_nops = 0;
   frv_register_nop (gen_nop ());
   if (TARGET_MEDIA)
@@ -7953,33 +8312,33 @@ static struct builtin_description bdesc_voidacc[] =
   { CODE_FOR_mdasaccs, "__MDASACCS", FRV_BUILTIN_MDASACCS, 0, 0 }
 };
 
-/* Intrinsics that load a value and then issue a MEMBAR.
-   The FLAGS field is the icode for the membar.  */
+/* Intrinsics that load a value and then issue a MEMBAR.  The load is
+   a normal move and the ICODE is for the membar.  */
 
 static struct builtin_description bdesc_loads[] =
 {
-  { CODE_FOR_builtin_read_qi, "__builtin_read8", FRV_BUILTIN_READ8, 0,
-    CODE_FOR_optional_membar_qi },
-  { CODE_FOR_builtin_read_hi, "__builtin_read16", FRV_BUILTIN_READ16, 0,
-    CODE_FOR_optional_membar_hi },
-  { CODE_FOR_builtin_read_si, "__builtin_read32", FRV_BUILTIN_READ32, 0,
-    CODE_FOR_optional_membar_si },
-  { CODE_FOR_builtin_read_di, "__builtin_read64", FRV_BUILTIN_READ64, 0,
-    CODE_FOR_optional_membar_di }
+  { CODE_FOR_optional_membar_qi, "__builtin_read8",
+    FRV_BUILTIN_READ8, 0, 0 },
+  { CODE_FOR_optional_membar_hi, "__builtin_read16",
+    FRV_BUILTIN_READ16, 0, 0 },
+  { CODE_FOR_optional_membar_si, "__builtin_read32",
+    FRV_BUILTIN_READ32, 0, 0 },
+  { CODE_FOR_optional_membar_di, "__builtin_read64",
+    FRV_BUILTIN_READ64, 0, 0 }
 };
 
 /* Likewise stores.  */
 
 static struct builtin_description bdesc_stores[] =
 {
-  { CODE_FOR_builtin_write_qi, "__builtin_write8", FRV_BUILTIN_WRITE8, 0,
-    CODE_FOR_optional_membar_qi },
-  { CODE_FOR_builtin_write_hi, "__builtin_write16", FRV_BUILTIN_WRITE16, 0,
-    CODE_FOR_optional_membar_hi },
-  { CODE_FOR_builtin_write_si, "__builtin_write32", FRV_BUILTIN_WRITE32, 0,
-    CODE_FOR_optional_membar_si },
-  { CODE_FOR_builtin_write64, "__builtin_write64", FRV_BUILTIN_WRITE64, 0,
-    CODE_FOR_optional_membar_di }
+  { CODE_FOR_optional_membar_qi, "__builtin_write8",
+    FRV_BUILTIN_WRITE8, 0, 0 },
+  { CODE_FOR_optional_membar_hi, "__builtin_write16",
+    FRV_BUILTIN_WRITE16, 0, 0 },
+  { CODE_FOR_optional_membar_si, "__builtin_write32",
+    FRV_BUILTIN_WRITE32, 0, 0 },
+  { CODE_FOR_optional_membar_di, "__builtin_write64",
+    FRV_BUILTIN_WRITE64, 0, 0 },
 };
 
 /* Initialize media builtins.  */
@@ -8303,6 +8662,18 @@ frv_matching_accg_mode (enum machine_mode mode)
     default:
       gcc_unreachable ();
     }
+}
+
+/* Given that a __builtin_read or __builtin_write function is accessing
+   address ADDRESS, return the value that should be used as operand 1
+   of the membar.  */
+
+static rtx
+frv_io_address_cookie (rtx address)
+{
+  return (GET_CODE (address) == CONST_INT
+	  ? GEN_INT (INTVAL (address) / 8 * 8)
+	  : const0_rtx);
 }
 
 /* Return the accumulator guard that should be paired with accumulator
@@ -8670,36 +9041,38 @@ frv_expand_voidaccop_builtin (enum insn_code icode, tree arglist)
   return NULL_RTX;
 }
 
-/* Expand a __builtin_read* function.  ICODE is the instruction code for
-   the load and MEMBAR_ICODE is the instruction code of the "membar".  */
+/* Expand a __builtin_read* function.  ICODE is the instruction code for the
+   membar and TARGET_MODE is the mode that the loaded value should have.  */
 
 static rtx
-frv_expand_load_builtin (enum insn_code icode, enum insn_code membar_icode,
-			 tree arglist, rtx target)
+frv_expand_load_builtin (enum insn_code icode, enum machine_mode target_mode,
+                         tree arglist, rtx target)
 {
-  rtx op0 = frv_read_argument (& arglist);
+  rtx op0 = frv_read_argument (&arglist);
+  rtx cookie = frv_io_address_cookie (op0);
 
-  target = frv_legitimize_target (icode, target);
-  op0 = frv_volatile_memref (insn_data[membar_icode].operand[0].mode, op0);
-  emit_insn (GEN_FCN (icode) (target, op0));
-  emit_insn (GEN_FCN (membar_icode) (copy_rtx (op0)));
+  if (target == 0 || !REG_P (target))
+    target = gen_reg_rtx (target_mode);
+  op0 = frv_volatile_memref (insn_data[icode].operand[0].mode, op0);
+  convert_move (target, op0, 1);
+  emit_insn (GEN_FCN (icode) (copy_rtx (op0), cookie, GEN_INT (FRV_IO_READ)));
+  cfun->machine->has_membar_p = 1;
   return target;
 }
 
-/* Likewise __builtin_write* functions, with ICODE being the instruction
-   code of the store.  */
+/* Likewise __builtin_write* functions.  */
 
 static rtx
-frv_expand_store_builtin (enum insn_code icode, enum insn_code membar_icode,
-			  tree arglist)
+frv_expand_store_builtin (enum insn_code icode, tree arglist)
 {
-  rtx op0 = frv_read_argument (& arglist);
-  rtx op1 = frv_read_argument (& arglist);
+  rtx op0 = frv_read_argument (&arglist);
+  rtx op1 = frv_read_argument (&arglist);
+  rtx cookie = frv_io_address_cookie (op0);
 
-  op0 = frv_volatile_memref (insn_data[membar_icode].operand[0].mode, op0);
-  op1 = frv_legitimize_argument (icode, 1, op1);
-  emit_insn (GEN_FCN (icode) (op0, op1));
-  emit_insn (GEN_FCN (membar_icode) (copy_rtx (op0)));
+  op0 = frv_volatile_memref (insn_data[icode].operand[0].mode, op0);
+  convert_move (op0, force_reg (insn_data[icode].operand[0].mode, op1), 1);
+  emit_insn (GEN_FCN (icode) (copy_rtx (op0), cookie, GEN_INT (FRV_IO_WRITE)));
+  cfun->machine->has_membar_p = 1;
   return NULL_RTX;
 }
 
@@ -9049,11 +9422,12 @@ frv_expand_builtin (tree exp,
 
   for (i = 0, d = bdesc_loads; i < ARRAY_SIZE (bdesc_loads); i++, d++)
     if (d->code == fcode)
-      return frv_expand_load_builtin (d->icode, d->flag, arglist, target);
+      return frv_expand_load_builtin (d->icode, TYPE_MODE (TREE_TYPE (exp)),
+				      arglist, target);
 
   for (i = 0, d = bdesc_stores; i < ARRAY_SIZE (bdesc_stores); i++, d++)
     if (d->code == fcode)
-      return frv_expand_store_builtin (d->icode, d->flag, arglist);
+      return frv_expand_store_builtin (d->icode, arglist);
 
   return 0;
 }
