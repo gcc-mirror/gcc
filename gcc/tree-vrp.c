@@ -3616,6 +3616,66 @@ simplify_abs_using_ranges (tree stmt, tree rhs)
     }
 }
 
+/* We are comparing trees OP0 and OP1 using COND_CODE.  OP0 has
+   a known value range VR.
+
+   If there is one and only one value which will satisfy the
+   conditional, then return that value.  Else return NULL.  */
+
+static tree
+test_for_singularity (enum tree_code cond_code, tree op0,
+		      tree op1, value_range_t *vr)
+{
+  tree min = NULL;
+  tree max = NULL;
+
+  /* Extract minimum/maximum values which satisfy the
+     the conditional as it was written.  */
+  if (cond_code == LE_EXPR || cond_code == LT_EXPR)
+    {
+      min = TYPE_MIN_VALUE (TREE_TYPE (op0));
+
+      max = op1;
+      if (cond_code == LT_EXPR)
+	{
+	  tree one = build_int_cst (TREE_TYPE (op0), 1);
+	  max = fold (build (MINUS_EXPR, TREE_TYPE (op0), max, one));
+	}
+    }
+  else if (cond_code == GE_EXPR || cond_code == GT_EXPR)
+    {
+      max = TYPE_MAX_VALUE (TREE_TYPE (op0));
+
+      min = op1;
+      if (cond_code == GT_EXPR)
+	{
+	  tree one = build_int_cst (TREE_TYPE (op0), 1);
+	  max = fold (build (PLUS_EXPR, TREE_TYPE (op0), max, one));
+	}
+    }
+
+  /* Now refine the minimum and maximum values using any
+     value range information we have for op0.  */
+  if (min && max)
+    {
+      if (compare_values (vr->min, min) == -1)
+	min = min;
+      else
+	min = vr->min;
+      if (compare_values (vr->max, max) == 1)
+	max = max;
+      else
+	max = vr->max;
+
+      /* If the new min/max values have converged to a
+	 single value, then there is only one value which
+	 can satisfy the condition, return that value.  */
+      if (min == max && is_gimple_min_invariant (min))
+	return min;
+    }
+  return NULL;
+}
+
 /* Simplify a conditional using a relational operator to an equality
    test if the range information indicates only one value can satisfy
    the original conditional.  */
@@ -3640,58 +3700,56 @@ simplify_cond_using_ranges (tree stmt)
 	 able to simplify this conditional. */
       if (vr->type == VR_RANGE)
 	{
-	  tree min = NULL;
-	  tree max = NULL;
+	  tree new = test_for_singularity (cond_code, op0, op1, vr);
 
-	  /* Extract minimum/maximum values which satisfy the
-	     the conditional as it was written.  */
-	  if (cond_code == LE_EXPR || cond_code == LT_EXPR)
+	  if (new)
 	    {
-	      min = TYPE_MIN_VALUE (TREE_TYPE (op0));
-
-	      max = op1;
-	      if (cond_code == LT_EXPR)
+	      if (dump_file)
 		{
-		  tree one = build_int_cst (TREE_TYPE (op0), 1);
-		  max = fold (build (MINUS_EXPR, TREE_TYPE (op0), max, one));
+		  fprintf (dump_file, "Simplified relational ");
+		  print_generic_expr (dump_file, cond, 0);
+		  fprintf (dump_file, " into ");
 		}
-	    }
-	  else if (cond_code == GE_EXPR || cond_code == GT_EXPR)
-	    {
-	      max = TYPE_MAX_VALUE (TREE_TYPE (op0));
 
-	      min = op1;
-	      if (cond_code == GT_EXPR)
+	      COND_EXPR_COND (stmt)
+		= build (EQ_EXPR, boolean_type_node, op0, new);
+	      update_stmt (stmt);
+
+	      if (dump_file)
 		{
-		  tree one = build_int_cst (TREE_TYPE (op0), 1);
-		  max = fold (build (PLUS_EXPR, TREE_TYPE (op0), max, one));
+		  print_generic_expr (dump_file, COND_EXPR_COND (stmt), 0);
+		  fprintf (dump_file, "\n");
 		}
+	      return;
+
 	    }
 
-	  /* Now refine the minimum and maximum values using any
-	     value range information we have for op0.  */
-	  if (min && max)
-	    {
-	      if (compare_values (vr->min, min) == -1)
-		min = min;
-	      else
-		min = vr->min;
-	      if (compare_values (vr->max, max) == 1)
-		max = max;
-	      else
-		max = vr->max;
+	  /* Try again after inverting the condition.  We only deal
+	     with integral types here, so no need to worry about
+	     issues with inverting FP comparisons.  */
+	  cond_code = invert_tree_comparison (cond_code, false);
+	  new = test_for_singularity (cond_code, op0, op1, vr);
 
-	      /* If the new min/max values have converged to a
-		 single value, then there is only one value which
-		 can satisfy the condition.  Rewrite the condition
-		 to test for equality.  */
-	      if (min == max
-		  && is_gimple_min_invariant (min))
+	  if (new)
+	    {
+	      if (dump_file)
 		{
-		  COND_EXPR_COND (stmt)
-		    = build (EQ_EXPR, boolean_type_node, op0, min);
-		  update_stmt (stmt);
+		  fprintf (dump_file, "Simplified relational ");
+		  print_generic_expr (dump_file, cond, 0);
+		  fprintf (dump_file, " into ");
 		}
+
+	      COND_EXPR_COND (stmt)
+		= build (NE_EXPR, boolean_type_node, op0, new);
+	      update_stmt (stmt);
+
+	      if (dump_file)
+		{
+		  print_generic_expr (dump_file, COND_EXPR_COND (stmt), 0);
+		  fprintf (dump_file, "\n");
+		}
+	      return;
+
 	    }
 	}
     }
