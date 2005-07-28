@@ -1,3 +1,8 @@
+2005-07-28  Richard Sandiford  <richard@codesourcery.com>
+
+	PR c/20187
+	* gcc.c-torture/execute/pr20187-1.c: New test.
+
 2005-07-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/21149
