@@ -33,9 +33,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
      - A default value for the parameter.
 
-     - The minimun acceptable value for the parameter.
+     - The minimum acceptable value for the parameter.
 
-     - The maximun acceptable value for the parameter (if greater than
+     - The maximum acceptable value for the parameter (if greater than
      the minimum).
 
    Be sure to add an entry to invoke.texi summarizing the parameter.  */
