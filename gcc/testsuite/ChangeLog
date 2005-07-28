@@ -1,3 +1,7 @@
+2005-07-28  Jan Hubicka  <jh@suse.cz>
+	
+	* update-loopch.c: New testcase.
+
 2005-07-27  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR rtl-optimization/23047

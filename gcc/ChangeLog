@@ -1,4 +1,13 @@
-2005-07-28 Jan Beulich <jbeulich@novell.com>
+2005-07-28  Jan Hubicka  <jh@suse.cz>
+
+	* cfg.c (update_bb_profile_for_threading): Use RDIV.
+	(scale_bbs_frequencies_int): Likewise, assert for possible overflow.
+	(scale_bbs_frequencies_gcov_type): Be more curefull about overflows and
+	roundoff errors.
+	* tree-cfg.c (tree_duplicate_sese_region): Use counts for updating
+	profile when available.
+
+2005-07-28  Jan Beulich <jbeulich@novell.com>
 
 	* config/ia64/ia64.c (ia64_load_pair_ok): New.
 	(ia64_print_operand): Describe and handle 'X'.
