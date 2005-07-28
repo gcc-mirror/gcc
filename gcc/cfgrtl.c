@@ -539,6 +539,10 @@ rtl_merge_blocks (basic_block a, basic_block b)
   /* If there was a CODE_LABEL beginning B, delete it.  */
   if (LABEL_P (b_head))
     {
+      /* This might have been an EH label that no longer has incoming
+	 EH edges.  Update data structures to match.  */
+      maybe_remove_eh_handler (b_head);
+ 
       /* Detect basic blocks with nothing but a label.  This can happen
 	 in particular at the end of a function.  */
       if (b_head == b_end)
@@ -2733,7 +2737,13 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
 
   /* If there was a CODE_LABEL beginning B, delete it.  */
   if (LABEL_P (BB_HEAD (b)))
-    delete_insn (BB_HEAD (b));
+    {
+      /* This might have been an EH label that no longer has incoming
+	 EH edges.  Update data structures to match.  */
+      maybe_remove_eh_handler (BB_HEAD (b));
+ 
+      delete_insn (BB_HEAD (b));
+    }
 
   /* We should have fallthru edge in a, or we can do dummy redirection to get
      it cleaned up.  */
