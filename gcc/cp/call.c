@@ -1700,7 +1700,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 
 	  if (IS_AGGR_TYPE (c1) && DERIVED_FROM_P (c2, c1)
 	      && (TYPE_PTRMEMFUNC_P (type2)
-		  || is_complete (TREE_TYPE (TREE_TYPE (type2)))))
+		  || is_complete (TYPE_PTRMEM_POINTED_TO_TYPE (type2))))
 	    break;
 	}
       return;

@@ -1,3 +1,9 @@
+2005-07-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/22545
+	* call.c (add_builtin_candidate): Adjust for changes in
+	representation of pointer-to-member types.
+
 2005-07-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22263
