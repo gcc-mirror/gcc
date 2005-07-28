@@ -1,3 +1,11 @@
+2005-07-28  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* fortran/f95-lang.c (language_function): Remove
+	named_labels, shadowed_labels, returns_value, returns_abnormally,
+	warn_about_return_type, and extern_inline fields.
+	(named_labels): Remove variable.
+	(gfc_init_decl_processing): Remove setting of named_labels.
+
 2005-07-27  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR fortran/22503
