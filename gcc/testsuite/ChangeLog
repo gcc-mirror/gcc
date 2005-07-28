@@ -1,7 +1,7 @@
 2005-07-28  Richard Sandiford  <richard@codesourcery.com>
 
 	PR c/22589
-	* gcc.c-torture/compile/pr22589.c: New test.
+	* gcc.c-torture/compile/pr22589-1.c: New test.
 
 2005-07-25  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
