@@ -1,3 +1,8 @@
+2005-07-28  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/22506
+	* gcc.dg/vect/ps22506.c: New test.
+
 2005-07-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/21149

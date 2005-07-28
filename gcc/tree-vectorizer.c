@@ -640,6 +640,10 @@ slpeel_update_phi_nodes_for_guard2 (edge guard_edge, struct loop *loop,
     {
       orig_phi = update_phi;
       orig_def = PHI_ARG_DEF_FROM_EDGE (orig_phi, e);
+      /* This loop-closed-phi actually doesn't represent a use
+         out of the loop - the phi arg is a constant.  */ 
+      if (TREE_CODE (orig_def) != SSA_NAME)
+        continue;
       orig_def_new_name = get_current_def (orig_def);
       arg = NULL_TREE;
 
