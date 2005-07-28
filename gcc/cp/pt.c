@@ -2087,6 +2087,14 @@ check_explicit_specialization (tree declarator,
 	  TREE_PRIVATE (decl) = TREE_PRIVATE (gen_tmpl);
 	  TREE_PROTECTED (decl) = TREE_PROTECTED (gen_tmpl);
 
+	  /* The specialization has the same visibility as the
+	     template it specializes.  */
+	  if (DECL_VISIBILITY_SPECIFIED (gen_tmpl))
+	    {
+	      DECL_VISIBILITY_SPECIFIED (decl) = 1;
+	      DECL_VISIBILITY (decl) = DECL_VISIBILITY (gen_tmpl);
+	    }
+
 	  if (is_friend && !have_def)
 	    /* This is not really a declaration of a specialization.
 	       It's just the name of an instantiation.  But, it's not
@@ -4606,6 +4614,11 @@ lookup_template_class (tree d1,
 	= TREE_PROTECTED (TYPE_STUB_DECL (template_type));
       DECL_IN_SYSTEM_HEADER (type_decl)
 	= DECL_IN_SYSTEM_HEADER (template);
+      if (CLASSTYPE_VISIBILITY_SPECIFIED (template_type))
+	{
+	  DECL_VISIBILITY_SPECIFIED (type_decl) = 1;
+	  DECL_VISIBILITY (type_decl) = CLASSTYPE_VISIBILITY (template_type);
+	}
 
       /* Set up the template information.  We have to figure out which
 	 template is the immediate parent if this is a full
@@ -5525,6 +5538,11 @@ instantiate_class_template (tree type)
   TYPE_FOR_JAVA (type) = TYPE_FOR_JAVA (pattern); /* For libjava's JArray<T> */
   if (ANON_AGGR_TYPE_P (pattern))
     SET_ANON_AGGR_TYPE_P (type);
+  if (CLASSTYPE_VISIBILITY_SPECIFIED (pattern))
+    {
+      CLASSTYPE_VISIBILITY_SPECIFIED (type) = 1;
+      CLASSTYPE_VISIBILITY (type) = CLASSTYPE_VISIBILITY (pattern);
+    }
 
   pbinfo = TYPE_BINFO (pattern);
 
