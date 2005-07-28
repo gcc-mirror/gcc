@@ -1,3 +1,8 @@
+2005-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/21149
+	* gcc.target/i386/sse-3.c: New test.
+
 2005-07-28  Richard Sandiford  <richard@codesourcery.com>
 
 	* gcc.target/mips/mips32-dsp.c: Use -march=mips32 instead of -mips32.
