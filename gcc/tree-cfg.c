@@ -4246,7 +4246,8 @@ tree_duplicate_sese_region (edge entry, edge exit,
   edge exit_copy;
   basic_block *doms;
   edge redirected;
-  int total_freq, entry_freq;
+  int total_freq = 0, entry_freq = 0;
+  gcov_type total_count = 0, entry_count = 0;
 
   if (!can_copy_bbs_p (region, n_region))
     return false;
@@ -4300,19 +4301,42 @@ tree_duplicate_sese_region (edge entry, edge exit,
 
   n_doms = get_dominated_by_region (CDI_DOMINATORS, region, n_region, doms);
 
-  total_freq = entry->dest->frequency;
-  entry_freq = EDGE_FREQUENCY (entry);
-  /* Fix up corner cases, to avoid division by zero or creation of negative
-     frequencies.  */
-  if (total_freq == 0)
-    total_freq = 1;
-  else if (entry_freq > total_freq)
-    entry_freq = total_freq;
+  if (entry->dest->count)
+    {
+      total_count = entry->dest->count;
+      entry_count = entry->count;
+      /* Fix up corner cases, to avoid division by zero or creation of negative
+	 frequencies.  */
+      if (entry_count > total_count)
+	entry_count = total_count;
+    }
+  else
+    {
+      total_freq = entry->dest->frequency;
+      entry_freq = EDGE_FREQUENCY (entry);
+      /* Fix up corner cases, to avoid division by zero or creation of negative
+	 frequencies.  */
+      if (total_freq == 0)
+	total_freq = 1;
+      else if (entry_freq > total_freq)
+	entry_freq = total_freq;
+    }
 
   copy_bbs (region, n_region, region_copy, &exit, 1, &exit_copy, loop);
-  scale_bbs_frequencies_int (region, n_region, total_freq - entry_freq,
-			     total_freq);
-  scale_bbs_frequencies_int (region_copy, n_region, entry_freq, total_freq);
+  if (total_count)
+    {
+      scale_bbs_frequencies_gcov_type (region, n_region,
+				       total_count - entry_count,
+				       total_count);
+      scale_bbs_frequencies_gcov_type (region_copy, n_region, entry_count,
+	  			       total_count);
+    }
+  else
+    {
+      scale_bbs_frequencies_int (region, n_region, total_freq - entry_freq,
+				 total_freq);
+      scale_bbs_frequencies_int (region_copy, n_region, entry_freq, total_freq);
+    }
 
   if (copying_header)
     {
