@@ -248,7 +248,7 @@ decide_is_function_needed (struct cgraph_node *node, tree decl)
 	  /* When declared inline, defer even the uninlinable functions.
 	     This allows them to be eliminated when unused.  */
 	  && !DECL_DECLARED_INLINE_P (decl) 
-	  && (!node->local.inlinable || !cgraph_default_inline_p (node))))
+	  && (!node->local.inlinable || !cgraph_default_inline_p (node, NULL))))
     return true;
 
   return false;

@@ -287,5 +287,5 @@ int cgraph_postorder (struct cgraph_node **);
 bool cgraph_decide_inlining_incrementally (struct cgraph_node *, bool);
 void cgraph_clone_inlined_nodes (struct cgraph_edge *, bool);
 void cgraph_mark_inline_edge (struct cgraph_edge *);
-bool cgraph_default_inline_p (struct cgraph_node *);
+bool cgraph_default_inline_p (struct cgraph_node *, const char **);
 #endif  /* GCC_CGRAPH_H  */
