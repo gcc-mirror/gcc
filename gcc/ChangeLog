@@ -1,3 +1,19 @@
+2005-07-28  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR rtl-optimization/18992
+	Back out this patch:
+	  2003-10-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+	  PR optimization/12142
+	  * cse.c (count_reg_usage): In a SET with a REG SET_DEST, count the
+	  uses of the register in the SET_SRC.  Remove unnecessary argument.
+
+	Replace it with this:
+	* cse.c (count_reg_usage): In INSN, JUMP_INSN and CALL_INSN cases,
+	if flag_non_call_exceptions is set and the insn may trap, pass
+	pc_rtx as dest for recursion.
+	In SET_SRC part of SET case, if dest is already set, pass it down
+	unchanged.
+
 2005-07-28  Jan Hubicka  <jh@suse.cz>
 
 	* cfg.c (update_bb_profile_for_threading): Use RDIV.
