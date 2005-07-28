@@ -1,3 +1,7 @@
+2005-07-28  Ben Elliston  <bje@au.ibm.com>
+
+	* MAINTAINERS: Update for removed CPU targets.
+
 2005-07-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.tpl (EXTRA_TARGET_FLAGS): Set LDFLAGS=LDFLAGS_FOR_TARGET.
