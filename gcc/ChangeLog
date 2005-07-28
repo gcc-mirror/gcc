@@ -1,3 +1,20 @@
+2005-07-28  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_clone_edge): New UPDATE_ORIGINAL argument.
+	(cgraph_clone_node): Likewise.
+	* cgraph.h (cgraph_clone_edge): Update prototype.
+	(cgraph_clone_node): Likewise.
+	* ipa-inline.c (cgraph_clone_inlined_nodes): Update call of
+	cgraph_clone_node.
+	(lookup_recursive_calls): Consider profile.
+	(cgraph_decide_recursive_inlining): Fix updating; use new
+	probability argument; use profile.
+	* params.def (PARAM_MIN_INLINE_RECURSIVE_PROBABILITY): New.
+	* tree-inline.c (copy_bb): Update clal of clone_edge.
+	* tree-optimize.c (tree_rest_of_compilation): UPdate cal of clone_node.
+
+	* invoke.texi (min-inline-recursive-probability): Document.
+
 2005-07-28  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Configuration): Update Valgrind homepage.

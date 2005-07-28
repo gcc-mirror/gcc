@@ -5790,6 +5790,18 @@ happens only when @option{-finline-functions} (included in @option{-O3}) is
 enabled and @option{--param max-inline-recursive-depth-auto} is used.  The
 default value is 450.
 
+@item min-inline-recursive-probability
+Recursive inlining is profitable only for function having deep recursion
+in average and can hurt for function having little recursion depth by
+increasing the prologue size or complexity of function body to other
+optimizers.
+
+When profile feedback is available (see @option{-fprofile-generate}) the actual
+recursion depth can be guessed from probability that function will recurse via
+given call expression.  This parameter limits inlining only to call expression
+whose probability exceeds given threshold (in percents).  The default value is
+10.
+
 @item inline-call-cost
 Specify cost of call instruction relative to simple arithmetics operations
 (having cost of 1).  Increasing this cost disqualifies inlining of non-leaf

@@ -752,7 +752,7 @@ copy_bb (inline_data *id, basic_block bb, int frequency_scale, int count_scale)
 		  edge = cgraph_edge (id->current_node, orig_stmt);
 		  if (edge)
 		    cgraph_clone_edge (edge, id->node, stmt,
-				       REG_BR_PROB_BASE, 1);
+				       REG_BR_PROB_BASE, 1, true);
 		}
 	    }
 	  /* If you think we can abort here, you are wrong.
