@@ -30,5 +30,5 @@ struct C
 };
 int main()
 {
-  typedef B<C>::Template<void>::Type Type; // { dg-error "init-declarator|;" }
+  typedef B<C>::Template<void>::Type Type; // { dg-error "initializer" }
 }

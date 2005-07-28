@@ -9166,17 +9166,12 @@ type_unification_real (tree tparms,
 	  else
 	    type = arg;
 
-	  if (strict == DEDUCE_EXACT || strict == DEDUCE_ORDER)
-	    {
-	      if (same_type_p (parm, type))
-		continue;
-	    }
-	  else
-	    /* It might work; we shouldn't check now, because we might
-	       get into infinite recursion.  Overload resolution will
-	       handle it.  */
+	  if (same_type_p (parm, type))
 	    continue;
-
+	  if (strict != DEDUCE_EXACT
+	      && can_convert_arg (parm, type, TYPE_P (arg) ? NULL_TREE : arg))
+	    continue;
+	  
 	  return 1;
 	}
 	

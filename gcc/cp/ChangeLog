@@ -1,3 +1,33 @@
+2005-07-28  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	Backport:
+
+	2004-09-16  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/16002
+	* parser.c (cp_parser_simple_declaration): Commit to tentative
+	parses after seeing a decl-specifier.
+	(cp_parser_simple_declaration): Eliminate spurious message.
+	(cp_parser_init_declarator): Adjust error message.
+
+	2005-06-17  Geoffrey Keating  <geoffk@apple.com>	
+	PR c++/17413
+	* pt.c (type_unification_real): Apply template type deduction even
+	to procedure parameters that are not dependent on a template
+	parameter.
+
+	2004-11-02  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/18124
+	* parser.c (cp_parser_type_parameter): Robustify.
+	PR c++/18155
+	* parser.c (cp_parser_single_declaration): Disallow template
+	typedefs.
+	(cp_parser_typedef_p): New function.
+
+	2004-12-21  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/18378
+	* call.c (convert_like_real): Do not permit the use of a copy
+	constructor to copy a packed field.
+
 2005-07-25  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/19208

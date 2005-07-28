@@ -1,3 +1,27 @@
+2005-07-28  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	Backport:
+
+	2004-09-16  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/16002
+	* g++.dg/parse/error18.C: New test.
+	* g++.dg/parse/crash11.C: Adjust error markers.
+	
+	2005-06-17  Geoffrey Keating  <geoffk@apple.com>	
+	PR c++/17413
+	* g++.dg/template/local5.C: New.
+
+	2004-11-02  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/18124
+	* g++.dg/template/crash25.C: New test.
+	PR c++/18155
+	* g++.dg/template/typedef2.C: New test.
+	* g++.dg/parse/crash13.C: Adjust error markers.
+
+	2004-12-21  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/18378
+	* g++.dg/ext/packed8.C: New test.
+
 2005-07-28  Richard Sandiford  <richard@codesourcery.com>
 
 	PR c/22589

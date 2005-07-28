@@ -1672,6 +1672,8 @@ static bool cp_parser_declares_only_class_p
   (cp_parser *);
 static bool cp_parser_friend_p
   (tree);
+static bool cp_parser_typedef_p
+  (tree);
 static cp_token *cp_parser_require
   (cp_parser *, enum cpp_ttype, const char *);
 static cp_token *cp_parser_require_keyword
@@ -6523,6 +6525,13 @@ cp_parser_simple_declaration (cp_parser* parser,
       /* Give up.  */
       goto done;
     }
+  
+  /* If we have seen at least one decl-specifier, and the next token
+     is not a parenthesis, then we must be looking at a declaration.
+     (After "int (" we might be looking at a functional cast.)  */
+  if (decl_specifiers
+      && cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_PAREN))
+    cp_parser_commit_to_tentative_parse (parser);
 
   /* Keep going until we hit the `;' at the end of the simple
      declaration.  */
@@ -6576,7 +6585,12 @@ cp_parser_simple_declaration (cp_parser* parser,
       /* Anything else is an error.  */
       else
 	{
-	  cp_parser_error (parser, "expected `,' or `;'");
+	  /* If we have already issued an error message we don't need
+	     to issue another one.  */
+	  if (decl != error_mark_node
+	      || (cp_parser_parsing_tentatively (parser)
+		  && !cp_parser_committed_to_tentative_parse (parser)))
+	    cp_parser_error (parser, "expected `,' or `;'");
 	  /* Skip tokens until we reach the end of the statement.  */
 	  cp_parser_skip_to_end_of_statement (parser);
 	  /* If the next token is now a `;', consume it.  */
@@ -7802,9 +7816,15 @@ cp_parser_type_parameter (cp_parser* parser)
 	if (cp_lexer_next_token_is_not (parser->lexer, CPP_EQ)
 	    && cp_lexer_next_token_is_not (parser->lexer, CPP_GREATER)
 	    && cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA))
-	  identifier = cp_parser_identifier (parser);
+	  {
+	    identifier = cp_parser_identifier (parser);
+	    /* Treat invalid names as if the parameter were nameless. */
+	    if (identifier == error_mark_node)
+	      identifier = NULL_TREE;
+	  }
 	else
 	  identifier = NULL_TREE;
+
 	/* Create the template parameter.  */
 	parameter = finish_template_template_parm (class_type_node,
 						   identifier);
@@ -7846,15 +7866,13 @@ cp_parser_type_parameter (cp_parser* parser)
 
 	/* Create the combined representation of the parameter and the
 	   default argument.  */
-	parameter =  build_tree_list (default_argument, parameter);
+	parameter = build_tree_list (default_argument, parameter);
       }
       break;
 
     default:
-      /* Anything else is an error.  */
-      cp_parser_error (parser,
-		       "expected `class', `typename', or `template'");
-      parameter = error_mark_node;
+      abort ();
+      break;
     }
   
   return parameter;
@@ -10069,7 +10087,7 @@ cp_parser_init_declarator (cp_parser* parser,
       && token->type != CPP_COMMA
       && token->type != CPP_SEMICOLON)
     {
-      cp_parser_error (parser, "expected init-declarator");
+      cp_parser_error (parser, "expected initializer");
       return error_mark_node;
     }
 
@@ -14511,6 +14529,12 @@ cp_parser_single_declaration (cp_parser* parser,
   tree attributes;
   bool function_definition_p = false;
 
+  /* This function is only used when processing a template
+     declaration.  */
+  if (innermost_scope_kind () != sk_template_parms
+      && innermost_scope_kind () != sk_template_spec)
+    abort ();
+
   /* Defer access checks until we know what is being declared.  */
   push_deferring_access_checks (dk_deferred);
 
@@ -14523,6 +14547,14 @@ cp_parser_single_declaration (cp_parser* parser,
 				    &declares_class_or_enum);
   if (friend_p)
     *friend_p = cp_parser_friend_p (decl_specifiers);
+
+  /* There are no template typedefs.  */
+  if (cp_parser_typedef_p (decl_specifiers))
+    {
+      error ("template declaration of `typedef'");
+      decl = error_mark_node;
+    }
+
   /* Gather up the access checks that occurred the
      decl-specifier-seq.  */
   stop_deferring_access_checks ();
@@ -14539,8 +14571,6 @@ cp_parser_single_declaration (cp_parser* parser,
 	    decl = error_mark_node;
 	}
     }
-  else
-    decl = NULL_TREE;
   /* If it's not a template class, try for a template function.  If
      the next token is a `;', then this declaration does not declare
      anything.  But, if there were errors in the decl-specifiers, then
@@ -14566,7 +14596,8 @@ cp_parser_single_declaration (cp_parser* parser,
   parser->object_scope = NULL_TREE;
   /* Look for a trailing `;' after the declaration.  */
   if (!function_definition_p
-      && !cp_parser_require (parser, CPP_SEMICOLON, "`;'"))
+      && (decl == error_mark_node
+	  || !cp_parser_require (parser, CPP_SEMICOLON, "`;'")))
     cp_parser_skip_to_end_of_block_or_statement (parser);
 
   return decl;
@@ -15031,6 +15062,27 @@ cp_parser_friend_p (tree decl_specifiers)
 
   return false;
 }
+
+/* DECL_SPECIFIERS is the representation of a decl-specifier-seq.
+   Returns TRUE iff `typedef' appears among the DECL_SPECIFIERS.  */
+
+static bool
+cp_parser_typedef_p (tree decl_specifiers)
+{
+  while (decl_specifiers)
+    {
+      /* See if this decl-specifier is `typedef'.  */
+      if (TREE_CODE (TREE_VALUE (decl_specifiers)) == IDENTIFIER_NODE
+	  && C_RID_CODE (TREE_VALUE (decl_specifiers)) == RID_TYPEDEF)
+	return true;
+
+      /* Go on to the next decl-specifier.  */
+      decl_specifiers = TREE_CHAIN (decl_specifiers);
+    }
+
+  return false;
+}
+
 
 /* If the next token is of the indicated TYPE, consume it.  Otherwise,
    issue an error message indicating that TOKEN_DESC was expected.
