@@ -600,7 +600,7 @@ init_optimization_passes (void)
   NEXT_PASS (pass_loop_optimize);
   NEXT_PASS (pass_jump_bypass);
   NEXT_PASS (pass_cfg);
-  NEXT_PASS (pass_profiling);
+  NEXT_PASS (pass_branch_prob);
   NEXT_PASS (pass_rtl_ifcvt);
   NEXT_PASS (pass_tracer);
   /* Perform loop optimizations.  It might be better to do them a bit
@@ -622,12 +622,6 @@ init_optimization_passes (void)
   NEXT_PASS (pass_local_alloc);
   NEXT_PASS (pass_global_alloc);
   NEXT_PASS (pass_postreload);
-  *p = NULL;
-
-  p = &pass_profiling.sub;
-  NEXT_PASS (pass_branch_prob);
-  NEXT_PASS (pass_value_profile_transformations);
-  NEXT_PASS (pass_remove_death_notes);
   *p = NULL;
 
   p = &pass_postreload.sub;

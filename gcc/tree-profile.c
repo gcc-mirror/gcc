@@ -123,7 +123,7 @@ static tree
 prepare_instrumented_value (block_stmt_iterator *bsi,
 			    histogram_value value)
 {
-  tree val = value->hvalue.tree.value;
+  tree val = value->hvalue.value;
   return force_gimple_operand_bsi (bsi, fold_convert (gcov_type_node, val),
 				   true, NULL_TREE);
 }
@@ -135,7 +135,7 @@ prepare_instrumented_value (block_stmt_iterator *bsi,
 static void
 tree_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base)
 {
-  tree stmt = value->hvalue.tree.stmt;
+  tree stmt = value->hvalue.stmt;
   block_stmt_iterator bsi = bsi_for_stmt (stmt);
   tree ref = tree_coverage_counter_ref (tag, base), ref_ptr;
   tree args, call, val;
@@ -162,7 +162,7 @@ tree_gen_interval_profiler (histogram_value value, unsigned tag, unsigned base)
 static void
 tree_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
 {
-  tree stmt = value->hvalue.tree.stmt;
+  tree stmt = value->hvalue.stmt;
   block_stmt_iterator bsi = bsi_for_stmt (stmt);
   tree ref = tree_coverage_counter_ref (tag, base), ref_ptr;
   tree args, call, val;
@@ -185,7 +185,7 @@ tree_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
 static void
 tree_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned base)
 {
-  tree stmt = value->hvalue.tree.stmt;
+  tree stmt = value->hvalue.stmt;
   block_stmt_iterator bsi = bsi_for_stmt (stmt);
   tree ref = tree_coverage_counter_ref (tag, base), ref_ptr;
   tree args, call, val;
@@ -225,8 +225,7 @@ tree_gen_const_delta_profiler (histogram_value value ATTRIBUTE_UNUSED,
 static bool
 do_tree_profiling (void)
 {
-  if (flag_tree_based_profiling
-      && (profile_arc_flag || flag_test_coverage || flag_branch_probabilities))
+  if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
     {
       tree_register_profile_hooks ();
       tree_register_value_prof_hooks ();

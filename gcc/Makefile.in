@@ -966,7 +966,7 @@ OBJS-common = \
  targhooks.o timevar.o toplev.o tracer.o tree.o tree-dump.o		   \
  varasm.o varray.o vec.o version.o vmsdbgout.o xcoffout.o alloc-pool.o	   \
  et-forest.o cfghooks.o bt-load.o pretty-print.o $(GGC) web.o passes.o	   \
- rtl-profile.o tree-profile.o rtlhooks.o cfgexpand.o lambda-mat.o          \
+ tree-profile.o rtlhooks.o cfgexpand.o lambda-mat.o    			   \
  lambda-trans.o	lambda-code.o tree-loop-linear.o tree-ssa-sink.o 	   \
  tree-vrp.o tree-stdarg.o tree-cfgcleanup.o tree-ssa-reassoc.o		   \
  tree-ssa-structalias.o tree-object-size.o
@@ -2242,9 +2242,6 @@ tree-profile.o : tree-profile.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(RTL_H) $(TREE_H) $(FLAGS_H) output.h $(REGS_H) $(EXPR_H) \
    function.h toplev.h $(COVERAGE_H) $(TREE_H) value-prof.h $(TREE_DUMP_H) \
    tree-pass.h $(TREE_FLOW_H) $(TIMEVAR_H) $(GGC_H) gt-tree-profile.h
-rtl-profile.o : tree-profile.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TM_H) $(RTL_H) $(TREE_H) $(FLAGS_H) output.h $(REGS_H) $(EXPR_H) \
-   function.h toplev.h $(COVERAGE_H) value-prof.h $(GGC_H)
 value-prof.o : value-prof.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h value-prof.h $(EXPR_H) output.h $(FLAGS_H) \
    $(RECOG_H) insn-config.h $(OPTABS_H) $(REGS_H) $(GGC_H) $(DIAGNOSTIC_H) \
@@ -2732,7 +2729,7 @@ GTFILES = $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-iterator.c $(srcdir)/gimplify.c \
   $(srcdir)/tree-chrec.h $(srcdir)/tree-vect-generic.c \
   $(srcdir)/tree-ssa-operands.h $(srcdir)/tree-ssa-operands.c \
-  $(srcdir)/tree-profile.c $(srcdir)/rtl-profile.c $(srcdir)/tree-nested.c \
+  $(srcdir)/tree-profile.c $(srcdir)/tree-nested.c \
   $(srcdir)/ipa-reference.c \
   $(srcdir)/targhooks.c $(out_file) \
   @all_gtfiles@

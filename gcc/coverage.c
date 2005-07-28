@@ -410,32 +410,6 @@ coverage_counter_alloc (unsigned counter, unsigned num)
   return 1;
 }
 
-/* Generate a MEM rtl to access COUNTER NO.  */
-
-rtx
-rtl_coverage_counter_ref (unsigned counter, unsigned no)
-{
-  enum machine_mode mode = mode_for_size (GCOV_TYPE_SIZE, MODE_INT, 0);
-  rtx ref;
-
-  gcc_assert (no < fn_n_ctrs[counter] - fn_b_ctrs[counter]);
-  no += prg_n_ctrs[counter] + fn_b_ctrs[counter];
-  if (!ctr_labels[counter])
-      {
-        ctr_labels[counter] = gen_rtx_SYMBOL_REF (Pmode,
-			       ggc_strdup (IDENTIFIER_POINTER (DECL_NAME
-			       (tree_ctr_tables[counter]))));
-        SYMBOL_REF_FLAGS (ctr_labels[counter]) = SYMBOL_FLAG_LOCAL;
-      }
-  ref = plus_constant (ctr_labels[counter],
-		       GCOV_TYPE_SIZE / BITS_PER_UNIT * no);
-  ref = gen_rtx_MEM (mode, ref);
-  set_mem_alias_set (ref, new_alias_set ());
-  MEM_NOTRAP_P (ref) = 1;
-
-  return ref;
-}
-
 /* Generate a tree to access COUNTER NO.  */
 
 tree

@@ -38,8 +38,6 @@ extern int coverage_begin_output (void);
 /* Allocate some counters. Repeatable per function.  */
 extern int coverage_counter_alloc (unsigned /*counter*/, unsigned/*num*/);
 /* Use a counter from the most recent allocation.  */
-extern rtx rtl_coverage_counter_ref (unsigned /*counter*/, unsigned/*num*/);
-/* Use a counter from the most recent allocation.  */
 extern tree tree_coverage_counter_ref (unsigned /*counter*/, unsigned/*num*/);
 
 /* Get all the counters for the current function.  */

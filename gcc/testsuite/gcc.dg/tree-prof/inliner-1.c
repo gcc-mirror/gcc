@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-optimized -fdump-tree-all" } */
+/* { dg-options "-O2 -fdump-tree-optimized" } */
 int a;
 int b[100];
 void abort (void);

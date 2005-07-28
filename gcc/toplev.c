@@ -1562,17 +1562,6 @@ process_options (void)
   if (flag_value_profile_transformations)
     flag_profile_values = 1;
 
-  /* Speculative prefetching implies the value profiling.  We also switch off
-     the prefetching in the loop optimizer, so that we do not emit double
-     prefetches.  TODO -- we should teach these two to cooperate; the loop
-     based prefetching may sometimes do a better job, especially in connection
-     with reuse analysis.  */
-  if (flag_speculative_prefetching)
-    {
-      flag_profile_values = 1;
-      flag_prefetch_loop_arrays = 0;
-    }
-
   /* Warn about options that are not supported on this machine.  */
 #ifndef INSN_SCHEDULING
   if (flag_schedule_insns || flag_schedule_insns_after_reload)
@@ -1732,23 +1721,11 @@ process_options (void)
       warning (0, "-fprefetch-loop-arrays not supported for this target");
       flag_prefetch_loop_arrays = 0;
     }
-  if (flag_speculative_prefetching)
-    {
-      if (flag_speculative_prefetching_set)
-	warning (0, "-fspeculative-prefetching not supported for this target");
-      flag_speculative_prefetching = 0;
-    }
 #else
   if (flag_prefetch_loop_arrays && !HAVE_prefetch)
     {
       warning (0, "-fprefetch-loop-arrays not supported for this target (try -march switches)");
       flag_prefetch_loop_arrays = 0;
-    }
-  if (flag_speculative_prefetching && !HAVE_prefetch)
-    {
-      if (flag_speculative_prefetching_set)
-	warning (0, "-fspeculative-prefetching not supported for this target (try -march switches)");
-      flag_speculative_prefetching = 0;
     }
 #endif
 
