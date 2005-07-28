@@ -1,5 +1,9 @@
 2005-07-28  Dorit Nuzman  <dorit@il.ibm.com>
 
+	* gcc.dg/vect/vect-reduc-1char.c: Fix data to fit in char.
+
+2005-07-28  Dorit Nuzman  <dorit@il.ibm.com>
+
 	PR tree-optimization/22506
 	* gcc.dg/vect/ps22506.c: New test.
 
