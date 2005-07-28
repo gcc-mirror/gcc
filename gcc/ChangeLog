@@ -1,3 +1,7 @@
+2005-07-28  Gerald Pfeifer  <gerald@pfeifer.com>
+ 
+ 	* doc/install.texi (Configuration): Update Valgrind homepage.
+
 2005-07-28  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/21362

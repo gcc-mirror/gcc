@@ -1120,7 +1120,7 @@ specifying @var{list}; the categories of checks available are
 @samp{valgrind}.  The @samp{release} category enables only those checks
 suitable for release builds, currently this is just @samp{assert}.  The
 check @samp{valgrind} requires the external @command{valgrind}
-simulator, available from @uref{http://valgrind.kde.org/}.  The checks
+simulator, available from @uref{http://valgrind.org/}.  The checks
 @samp{rtl}, @samp{gcac} and @samp{valgrind} are very expensive.  The
 default when @var{list} is not specified is
 @samp{assert,misc,tree,gc,rtlflag}.  That is also the default for
