@@ -1,5 +1,11 @@
 2005-07-28  Richard Henderson  <rth@redhat.com>
 
+        * cfgrtl.c (rtl_merge_blocks): Call maybe_remove_eh_handler on
+        labels we want to delete.
+        (cfg_layout_merge_blocks): Likewise.
+
+2005-07-28  Richard Henderson  <rth@redhat.com>
+
         PR target/17692
         * config/i386/i386.c (ix86_split_sse_movcc): Emit DELETED note
         when expanding to nothing.
