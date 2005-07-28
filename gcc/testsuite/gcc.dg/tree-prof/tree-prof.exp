@@ -20,7 +20,7 @@
 load_lib target-supports.exp
 
 # Some targets don't support tree profiling.
-if { ![check_profiling_available "-ftree-based-profiling"] } {
+if { ![check_profiling_available ""] } {
     return
 }
 
@@ -41,8 +41,8 @@ load_lib profopt.exp
 # These are globals used by profopt-execute.  The first is options
 # needed to generate profile data, the second is options to use the
 # profile data.
-set profile_option "-ftree-based-profiling -fprofile-generate"
-set feedback_option "-ftree-based-profiling -fprofile-use"
+set profile_option "-fprofile-generate"
+set feedback_option "-fprofile-use"
 
 foreach src [lsort [glob -nocomplain $srcdir/$subdir/*.c]] {
     # If we're only testing specific files and this isn't one of them, skip it.

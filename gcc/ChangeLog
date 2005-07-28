@@ -1,5 +1,43 @@
 2005-07-28  Jan Hubicka  <jh@suse.cz>
 
+	* Makefile.in (rtl-profile.o): Kill all traces of it.
+	* common.opt (fspeculative-prefetching, ftree-based-profiling): Kill.
+	* coverage.h (rtl_coverage_counter_ref): Kill.
+	* opts.c (flag_speculative_prefetching_set): Kill.
+	(flag_loop_optimize_set): New.
+	(common_handle_option): Disable loop optimizer when profiling;
+	do not handle speculative prefetching.
+	* passes.c (init_optimization_passes): Replace pass_profiling combo
+	by branch_prob pass.
+	* profile.c (compute_value_histograms): Update for simplified value
+	profiles.
+	(rtl_register_profile_hooks): Kill.
+	(pass_profiling): Kill.
+	(rest_of_handle_branch_prob): Do not profile.
+	* toplev.c (process_options): Remove speculative prefetching.
+	* toplev.h (flag_tree_based_profiling): Kill.
+	* tree-profile.c (prepare_instrumented_value,
+	tree_gen_interval_profiler, tree_gen_pow2_profiler,
+	tree_gen_one_value_profiler, do_tree_profiling): Update for
+	simplified datastructures.
+	* value-prof.c: Add comment that speculative prefetching was dropped;
+	update rest of file for simplified datastructures.
+	(NOPREFETCH_RANGE_MIN, NOPREFETCH_RANGE_MAX,
+	rtl_divmod_values_to_profile, insn_prefetch_values_to_profile,
+	find_mem_reference_1, find_mem_reference_2, find_mem_reference,
+	rtl_values_to_profile, rtl_divmod_fixed_value, rtl_mod_pow2,
+	rtl_mod_subtract, gen_speculative_prefetch,
+	rtl_divmod_fixed_value_transform, rtl_mod_pow2_value_transform,
+	rtl_mod_subtract_transform, speculative_prefetching_transform): Kill.
+	(gate_handle_value_profile_transformations,
+	rest_of_handle_value_profile_transformations,
+	pass_value_profile_transformations): Kill.
+	* value-prof.h (histogram_value_t): Remove IL based unions.
+	(rtl_register_value_prof_hooks, rtl_register_profile_hooks,
+	rtl_profile_hooks): Remove hooks.
+
+	* invoke.texi (-ftree-based-profiling, -fspeculative-prefetching): Kill.
+
 	* cgraph.c (cgraph_clone_edge): New UPDATE_ORIGINAL argument.
 	(cgraph_clone_node): Likewise.
 	* cgraph.h (cgraph_clone_edge): Update prototype.

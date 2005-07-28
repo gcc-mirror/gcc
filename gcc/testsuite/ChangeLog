@@ -1,5 +1,9 @@
 2005-07-28  Jan Hubicka  <jh@suse.cz>
 
+	* inliner-1.c: Do not dump everything.
+	* tree-prof.exp: Do not pass -ftree-based-profiling.
+	* bprob.exp: Likewise.
+
 	* gcc.dg/tree-prof/update-loopch.c: Fix thinkos.
 
 2005-07-28  Mark Mitchell  <mark@codesourcery.com>

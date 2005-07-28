@@ -52,10 +52,6 @@ load_lib profopt.exp
 
 set profile_options "-fprofile-arcs"
 set feedback_options "-fbranch-probabilities"
-if {[check_profiling_available "-ftree-based-profiling"]} {
-    lappend profile_options "-ftree-based-profiling -fprofile-arcs"
-    lappend feedback_options "-ftree-based-profiling -fbranch-probabilities"
-}
 
 # Main loop.
 foreach profile_option $profile_options feedback_option $feedback_options {

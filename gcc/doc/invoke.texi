@@ -281,7 +281,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-vectorizer-verbose=@var{n} @gol
 -fdump-tree-storeccp@r{[}-@var{n}@r{]} @gol
 -feliminate-dwarf2-dups -feliminate-unused-debug-types @gol
--feliminate-unused-debug-symbols -fmem-report -fprofile-arcs -ftree-based-profiling @gol
+-feliminate-unused-debug-symbols -fmem-report -fprofile-arcs @gol
 -frandom-seed=@var{string} -fsched-verbose=@var{n} @gol
 -ftest-coverage  -ftime-report -fvar-tracking @gol
 -g  -g@var{level}  -gcoff -gdwarf-2 @gol
@@ -325,7 +325,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsched-stalled-insns=@var{n} -sched-stalled-insns-dep=@var{n} @gol
 -fsched2-use-superblocks @gol
 -fsched2-use-traces -freschedule-modulo-scheduled-loops @gol
--fsignaling-nans -fsingle-precision-constant  -fspeculative-prefetching @gol
+-fsignaling-nans -fsingle-precision-constant  @gol
 -fstrength-reduce  -fstrict-aliasing  -ftracer  -fthread-jumps @gol
 -funroll-all-loops  -funroll-loops  -fpeel-loops @gol
 -fsplit-ivs-in-unroller -funswitch-loops @gol
@@ -3580,17 +3580,6 @@ executed.  When an arc is the only exit or only entrance to a block, the
 instrumentation code can be added to the block; otherwise, a new basic
 block must be created to hold the instrumentation code.
 
-@item -ftree-based-profiling
-@opindex ftree-based-profiling
-This option is used in addition to @option{-fprofile-arcs} or
-@option{-fbranch-probabilities} to control whether those optimizations
-are performed on a tree-based or rtl-based internal representation.
-If you use this option when compiling with @option{-fprofile-arcs},
-you must also use it when compiling later with @option{-fbranch-probabilities}.
-Currently the tree-based optimization is in an early stage of
-development, and this option is recommended only for those people
-working on improving it.
-
 @need 2000
 @item -ftest-coverage
 @opindex ftest-coverage
@@ -5329,8 +5318,9 @@ The following options are enabled: @code{-fprofile-arcs}, @code{-fprofile-values
 Enable profile feedback directed optimizations, and optimizations
 generally profitable only with profile feedback available.
 
-The following options are enabled: @code{-fbranch-probabilities},
-@code{-fvpt}, @code{-funroll-loops}, @code{-fpeel-loops}, @code{-ftracer}.
+The following options are enabled: @code{-fbranch-probabilities}, @code{-fvpt},
+@code{-funroll-loops}, @code{-fpeel-loops}, @code{-ftracer},
+@code{-fno-loop-optimize}.
 
 @end table
 
@@ -5526,23 +5516,6 @@ With @option{-fbranch-probabilities}, it reads back the data gathered
 and actually performs the optimizations based on them.
 Currently the optimizations include specialization of division operation
 using the knowledge about the value of the denominator.
-
-@item -fspeculative-prefetching
-@opindex fspeculative-prefetching
-If combined with @option{-fprofile-arcs}, it instructs the compiler to add
-a code to gather information about addresses of memory references in the
-program.
-
-With @option{-fbranch-probabilities}, it reads back the data gathered
-and issues prefetch instructions according to them.  In addition to the opportunities
-noticed by @option{-fprefetch-loop-arrays}, it also notices more complicated
-memory access patterns---for example accesses to the data stored in linked
-list whose elements are usually allocated sequentially.
-
-In order to prevent issuing double prefetches, usage of
-@option{-fspeculative-prefetching} implies @option{-fno-prefetch-loop-arrays}.
-
-Enabled with @option{-fprofile-generate} and @option{-fprofile-use}.
 
 @item -frename-registers
 @opindex frename-registers

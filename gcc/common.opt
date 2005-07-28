@@ -779,10 +779,6 @@ fsingle-precision-constant
 Common Report Var(flag_single_precision_constant)
 Convert floating point constants to single precision constants
 
-fspeculative-prefetching
-Common Report Var(flag_speculative_prefetching)
-Use value profiling for speculative prefetching
-
 fsplit-ivs-in-unroller
 Common Report Var(flag_split_ivs_in_unroller) Init(1)
 Split lifetimes of induction variables when loops are unrolled
@@ -862,10 +858,6 @@ Assume floating-point operations can trap
 ftrapv
 Common Report Var(flag_trapv)
 Trap for signed overflow in addition, subtraction and multiplication
-
-ftree-based-profiling
-Common Report Var(flag_tree_based_profiling)
-Use tree-ssa based implementation of profiling
 
 ftree-ccp
 Common Report Var(flag_tree_ccp)
