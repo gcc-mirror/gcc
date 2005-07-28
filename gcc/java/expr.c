@@ -1321,7 +1321,7 @@ expand_load_internal (int index, tree type, int pc)
      value into it.  Then we push this new local on the stack.
      Hopefully this all gets optimized out.  */
   copy = build_decl (VAR_DECL, NULL_TREE, type);
-  if (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type)
+  if ((INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type))
       && TREE_TYPE (copy) != TREE_TYPE (var))
     var = convert (type, var);
   java_add_local_var (copy);
