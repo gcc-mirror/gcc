@@ -1,5 +1,12 @@
 2005-07-28  Joseph S. Myers  <joseph@codesourcery.com>
 
+	PR c/17188
+	PR c/21899
+	* gcc.dg/nested-redef-1.c, gcc.dg/pr17188-1.c: New tests.
+	* gcc.dg/decl-3.c: Adjust expected message.
+
+2005-07-28  Joseph S. Myers  <joseph@codesourcery.com>
+
 	PR c/21873
 	* gcc.dg/init-excess-1.c: New test.
 

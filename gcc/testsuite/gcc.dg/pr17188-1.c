@@ -7,19 +7,19 @@
 
 struct s0 { };
 struct s0;
-struct s0 { }; /* { dg-error "error: redefinition of 'struct s0'" } */
+struct s0 { }; /* { dg-error "error: redefinition of `struct s0'" } */
 
 struct s1 { };
-struct s1 { }; /* { dg-error "error: redefinition of 'struct s1'" } */
+struct s1 { }; /* { dg-error "error: redefinition of `struct s1'" } */
 
 struct s2 { int a : 1; };
-struct s2 { int a : 1; }; /* { dg-error "error: redefinition of 'struct s2'" } */
+struct s2 { int a : 1; }; /* { dg-error "error: redefinition of `struct s2'" } */
 
 struct s3 { };
-struct s3 { int a : 1; }; /* { dg-error "error: redefinition of 'struct s3'" } */
+struct s3 { int a : 1; }; /* { dg-error "error: redefinition of `struct s3'" } */
 
 struct s4 { int a : 1; };
-struct s4 { }; /* { dg-error "error: redefinition of 'struct s4'" } */
+struct s4 { }; /* { dg-error "error: redefinition of `struct s4'" } */
 
 struct s5 { int a : 1; };
 struct s5;

@@ -1,5 +1,16 @@
 2005-07-28  Joseph S. Myers  <joseph@codesourcery.com>
 
+	PR c/17188
+	PR c/21899
+	* c-decl.c (diagnose_mismatched_decls): Check for duplicate
+	declarations of enumerators.
+	(start_struct): Check TYPE_SIZE rather than TYPE_FIELDS to check
+	for redefinition.  Check for nested redefinition.
+	(finish_struct): Don't check for nested redefinition.
+	(start_enum): Check for nested redefinition.
+
+2005-07-28  Joseph S. Myers  <joseph@codesourcery.com>
+
 	PR c/21873
 	* c-typeck.c (push_init_level): Don't pop levels without braces if
 	implicit == 1.
