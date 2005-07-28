@@ -1,3 +1,9 @@
+2005-07-28  Steven Bosscher  <stevenb@suse.de>
+
+	PR debug/20161
+	* passes.c (rest_of_decl_compilation): If decl is a type and
+	we have encountered errors, don't emit debug information.
+
 2005-07-27  Bjoern Haase  <bjoern.m.haase@web.de>
 
 	PR target/19885

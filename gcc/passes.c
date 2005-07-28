@@ -245,7 +245,10 @@ rest_of_decl_compilation (tree decl,
 
       timevar_pop (TV_VARCONST);
     }
-  else if (TREE_CODE (decl) == TYPE_DECL)
+  else if (TREE_CODE (decl) == TYPE_DECL
+  	   /* Like in rest_of_type_compilation, avoid confusing the debug
+	      information machinery when there are errors.  */
+	   && !(sorrycount || errorcount))
     {
       timevar_push (TV_SYMOUT);
       debug_hooks->type_decl (decl, !top_level);
