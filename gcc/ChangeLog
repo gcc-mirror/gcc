@@ -1,3 +1,9 @@
+2005-07-28  Jeff Law  <law@redhat.com>
+
+        * tree-vrp.c (test_for_singularity): Extracted from  ...
+        (simplify_cond_using_ranges): Attempt to simplify a relational
+        test to NE_EXPR.  Dump information when a COND_EXPR is simplified.
+
 2005-07-28  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/22506

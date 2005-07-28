@@ -27,6 +27,6 @@ gimplify_for_stmt (tree stmt)
     abort ();
 }
 
-/* { dg-final { scan-tree-dump-times "== 3" 1 "vrp" } } */
+/* { dg-final { scan-tree-dump-times "Simplified relational" 1 "vrp" } } */
 /* { dg-final { cleanup-tree-dump "vrp" } } */
 
