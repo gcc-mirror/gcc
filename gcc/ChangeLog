@@ -1,3 +1,9 @@
+2005-07-28  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/22506
+	* tree-vectorizer.c (update_phi_nodes_for_guard2): Skip loop-closed
+	phis whose argument is constant.
+
 2005-07-28  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR rtl-optimization/18992
