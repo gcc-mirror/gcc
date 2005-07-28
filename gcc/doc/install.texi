@@ -1151,7 +1151,7 @@ Individual checks can be enabled with these flags @samp{assert},
 @samp{rtlflag}, @samp{runtime}, @samp{tree}, and @samp{valgrind}.
 
 The @samp{valgrind} check requires the external @command{valgrind}
-simulator, available from @uref{http://valgrind.kde.org/}.  The
+simulator, available from @uref{http://valgrind.org/}.  The
 @samp{rtl}, @samp{gcac} and @samp{valgrind} checks are very expensive.
 To disable all checking, @samp{--disable-checking} or
 @samp{--enable-checking=none} must be explicitly requested.  Disabling
