@@ -1,3 +1,9 @@
+2005-07-28  Mike Stump  <mrs@apple.com>
+
+	* pt.c (check_explicit_specialization): Add visibility logic.
+	(lookup_template_class): Likewise.
+	(instantiate_class_template): Likewise.
+
 2005-07-27  Devang Patel  <dpatel@apple.com>
 
 	* name-lookup.c (pushtag): Do no set DECL_IGNORED_P bit.
