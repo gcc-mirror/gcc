@@ -3236,7 +3236,9 @@ simplify_const_relational_operation (enum rtx_code code,
 
 	case LT:
 	  /* Optimize abs(x) < 0.0.  */
-	  if (trueop1 == CONST0_RTX (mode) && !HONOR_SNANS (mode))
+	  if (trueop1 == CONST0_RTX (mode)
+	      && !HONOR_SNANS (mode)
+	      && !(flag_wrapv && INTEGRAL_MODE_P (mode)))
 	    {
 	      tem = GET_CODE (trueop0) == FLOAT_EXTEND ? XEXP (trueop0, 0)
 						       : trueop0;
@@ -3247,7 +3249,9 @@ simplify_const_relational_operation (enum rtx_code code,
 
 	case GE:
 	  /* Optimize abs(x) >= 0.0.  */
-	  if (trueop1 == CONST0_RTX (mode) && !HONOR_NANS (mode))
+	  if (trueop1 == CONST0_RTX (mode)
+	      && !HONOR_NANS (mode)
+	      && !(flag_wrapv && INTEGRAL_MODE_P (mode)))
 	    {
 	      tem = GET_CODE (trueop0) == FLOAT_EXTEND ? XEXP (trueop0, 0)
 						       : trueop0;
