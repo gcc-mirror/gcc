@@ -1,3 +1,9 @@
+2005-07-28  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/21873
+	* c-typeck.c (push_init_level): Don't pop levels without braces if
+	implicit == 1.
+
 2005-07-28  Gerald Pfeifer  <gerald@pfeifer.com>
   
   	* doc/install.texi (Configuration): Update Valgrind homepage.
