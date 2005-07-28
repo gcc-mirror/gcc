@@ -22,7 +22,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 */
 
 /* This file contains definitions for language-independent
-   parameters.  The DEFPARAM macro takes 4 arguments:
+   parameters.  The DEFPARAM macro takes 6 arguments:
 
      - The enumeral corresponding to this parameter.
 
@@ -32,6 +32,11 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
      - A help string explaining how the parameter is used.
 
      - A default value for the parameter.
+
+     - The minimun acceptable value for the parameter.
+
+     - The maximun acceptable value for the parameter (if greater than
+     the minimum).
 
    Be sure to add an entry to invoke.texi summarizing the parameter.  */
 
