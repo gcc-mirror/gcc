@@ -1,3 +1,8 @@
+2005-07-28  Andrew Haley  <aph@redhat.com>
+
+        * except.c (expand_end_java_handler): Insert an empty ASM_EXPR at
+        the start of each catch block.
+
 2005-07-07  Release Manager
 
 	* GCC 4.0.1 released.

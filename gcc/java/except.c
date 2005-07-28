@@ -496,11 +496,21 @@ expand_end_java_handler (struct eh_range *range)
       type = prepare_eh_table_type (type);
 
       {
-	tree catch_expr = build2 (CATCH_EXPR, void_type_node, type,
-				  build1 (GOTO_EXPR, void_type_node,
-					  TREE_VALUE (handler)));
-	tree try_catch_expr = build2 (TRY_CATCH_EXPR, void_type_node,
-				      *get_stmts (), catch_expr);	
+	tree goto_expr = build1 (GOTO_EXPR, void_type_node,
+				 TREE_VALUE (handler));
+	/* Build an asm to prevent gcc from attempting to merge this
+	   handler with the next basic block; this is a workaround for
+	   a bug in cfgbuild.c.  */
+	tree asm_expr = build (ASM_EXPR, void_type_node,
+			       build_string (0, ""),
+			       NULL_TREE, NULL_TREE, NULL_TREE);
+	tree compound = build2 (COMPOUND_EXPR, void_type_node,
+				asm_expr, goto_expr);
+	tree try_catch_expr 
+	  = build2 (TRY_CATCH_EXPR, void_type_node,
+		    *get_stmts (), 
+		    build2 (CATCH_EXPR, void_type_node, type, 
+			    compound));
 	*get_stmts () = try_catch_expr;
       }
     }
