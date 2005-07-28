@@ -77,12 +77,6 @@ struct language_function
 GTY(())
 {
   /* struct gfc_language_function base; */
-  tree named_labels;
-  tree shadowed_labels;
-  int returns_value;
-  int returns_abnormally;
-  int warn_about_return_type;
-  int extern_inline;
   struct binding_level *binding_level;
 };
 
@@ -176,7 +170,6 @@ const char *const tree_code_name[] = {
 };
 #undef DEFTREECODE
 
-static tree named_labels;
 
 #define NULL_BINDING_LEVEL (struct binding_level *) NULL
 
@@ -561,7 +554,6 @@ static void
 gfc_init_decl_processing (void)
 {
   current_function_decl = NULL;
-  named_labels = NULL;
   current_binding_level = NULL_BINDING_LEVEL;
   free_binding_level = NULL_BINDING_LEVEL;
 
