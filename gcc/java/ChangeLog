@@ -1,3 +1,7 @@
+2005-07-15  Andrew Haley  <aph@redhat.com>
+
+	* expr.c (expand_load_internal): Convert to destination type.
+
 2005-07-22  Manfred Hollstein  <mh@suse.com>
 
 	* verify-impl.c (check_class_constant): Fix uninitialised warnings.
