@@ -2239,7 +2239,7 @@ register_new_assert_for (tree name,
 
 
 /* Try to register an edge assertion for SSA name NAME on edge E for
-   the conditional jump pointed by SI.  Return true if an assertion
+   the conditional jump pointed to by SI.  Return true if an assertion
    for NAME could be registered.  */
 
 static bool

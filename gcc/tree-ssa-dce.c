@@ -707,7 +707,7 @@ remove_dead_phis (basic_block bb)
     }
 }
 
-/* Remove dead statement pointed by iterator I.  Receives the basic block BB
+/* Remove dead statement pointed to by iterator I.  Receives the basic block BB
    containing I so that we don't have to look it up.  */
 
 static void

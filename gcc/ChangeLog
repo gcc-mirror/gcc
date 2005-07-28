@@ -1,3 +1,22 @@
+2005-07-28  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* builtins.c: Fix comment typo(s).
+	* genautomata.c: Likewise.
+	* gimplify.c: Likewise.
+	* tree-dfa.c: Likewise.
+	* tree-flow-inline.h: Likewise.
+	* tree-into-ssa.c: Likewise.
+	* tree-ssa-alias.c: Likewise.
+	* tree-ssa-ccp.c: Likewise.
+	* tree-ssa-copy.c: Likewise.
+	* tree-ssa-dce.c: Likewise.
+	* tree-ssa-dom.c: Likewise.
+	* tree-ssa-operands.c: Likewise.
+	* tree-tailcall.c: Likewise.
+	* tree-vectorizer.c: Likewise.
+	* tree-vrp.c: Likewise.
+	* tree.c: Likewise.
+
 2005-07-28  Jeff Law  <law@redhat.com>
 
         * tree-vrp.c (test_for_singularity): Extracted from  ...

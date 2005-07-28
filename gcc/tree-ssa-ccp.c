@@ -2232,7 +2232,7 @@ ccp_fold_builtin (tree stmt, tree fn)
 }
 
 
-/* Fold the statement pointed by STMT_P.  In some cases, this function may
+/* Fold the statement pointed to by STMT_P.  In some cases, this function may
    replace the whole statement with a new one.  Returns true iff folding
    makes any changes.  */
 

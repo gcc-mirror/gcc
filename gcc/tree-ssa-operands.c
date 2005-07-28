@@ -1207,9 +1207,9 @@ swap_tree_operands (tree stmt, tree *exp0, tree *exp1)
 }
 
 
-/* Recursively scan the expression pointed by EXPR_P in statement referred to
-   by INFO.  FLAGS is one of the OPF_* constants modifying how to interpret the
-   operands found.  */
+/* Recursively scan the expression pointed to by EXPR_P in statement referred
+   to by INFO.  FLAGS is one of the OPF_* constants modifying how to interpret
+   the operands found.  */
 
 static void
 get_expr_operands (tree stmt, tree *expr_p, int flags)

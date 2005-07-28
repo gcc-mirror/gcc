@@ -56,7 +56,7 @@ end_htab_p (htab_iterator *hti)
   return false;
 }
 
-/* Advance the hashtable iterator pointed by HTI to the next element of the
+/* Advance the hashtable iterator pointed to by HTI to the next element of the
    hashtable.  */
 
 static inline void *
@@ -321,7 +321,7 @@ link_imm_use (ssa_use_operand_t *linknode, tree def)
     }
 }
 
-/* Set the value of a use pointed by USE to VAL.  */
+/* Set the value of a use pointed to by USE to VAL.  */
 static inline void
 set_ssa_use_from_ptr (use_operand_p use, tree val)
 {

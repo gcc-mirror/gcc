@@ -2128,7 +2128,7 @@ dump_points_to_info (FILE *file)
 }
 
 
-/* Dump points-to info pointed by PTO into STDERR.  */
+/* Dump points-to info pointed to by PTO into STDERR.  */
 
 void
 debug_points_to_info (void)

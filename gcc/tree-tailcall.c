@@ -192,7 +192,7 @@ suitable_for_tail_call_opt_p (void)
 }
 
 /* Checks whether the expression EXPR in stmt AT is independent of the
-   statement pointed by BSI (in a sense that we already know EXPR's value
+   statement pointed to by BSI (in a sense that we already know EXPR's value
    at BSI).  We use the fact that we are only called from the chain of
    basic blocks that have only single successor.  Returns the expression
    containing the value of EXPR at BSI.  */
