@@ -690,6 +690,37 @@ ia64_move_ok (rtx dst, rtx src)
     return GET_CODE (src) == CONST_DOUBLE && CONST_DOUBLE_OK_FOR_G (src);
 }
 
+/* Return 1 if the operands are ok for a floating point load pair.  */
+
+int
+ia64_load_pair_ok (rtx dst, rtx src)
+{
+  if (GET_CODE (dst) != REG || !FP_REGNO_P (REGNO (dst)))
+    return 0;
+  if (GET_CODE (src) != MEM || MEM_VOLATILE_P (src))
+    return 0;
+  switch (GET_CODE (XEXP (src, 0)))
+    {
+    case REG:
+    case POST_INC:
+      break;
+    case POST_DEC:
+      return 0;
+    case POST_MODIFY:
+      {
+	rtx adjust = XEXP (XEXP (XEXP (src, 0), 1), 1);
+
+	if (GET_CODE (adjust) != CONST_INT
+	    || INTVAL (adjust) != GET_MODE_SIZE (GET_MODE (src)))
+	  return 0;
+      }
+      break;
+    default:
+      abort ();
+    }
+  return 1;
+}
+
 int
 addp4_optimize_ok (rtx op1, rtx op2)
 {
@@ -4305,6 +4336,7 @@ ia64_print_operand_address (FILE * stream ATTRIBUTE_UNUSED,
 	for Intel assembler.
    U	Print an 8-bit sign extended number (K) as a 64-bit unsigned number
 	for Intel assembler.
+   X	A pair of floating point registers.
    r	Print register name, or constant 0 as r0.  HP compatibility for
 	Linux kernel.
    v    Print vector constant value as an 8-byte integer value.  */
@@ -4452,6 +4484,13 @@ ia64_print_operand (FILE * file, rtx x, int code)
 	  return;
 	}
       break;
+
+    case 'X':
+      {
+	unsigned int regno = REGNO (x);
+	fprintf (file, "%s, %s", reg_names [regno], reg_names [regno + 1]);
+      }
+      return;
 
     case 'r':
       /* If this operand is the constant zero, write it as register zero.
@@ -4682,6 +4721,7 @@ ia64_register_move_cost (enum machine_mode mode, enum reg_class from,
 
     case GR_REGS:
     case FR_REGS:
+    case FP_REGS:
     case GR_AND_FR_REGS:
     case GR_AND_BR_REGS:
     case ALL_REGS:
@@ -4703,6 +4743,7 @@ ia64_preferred_reload_class (rtx x, enum reg_class class)
   switch (class)
     {
     case FR_REGS:
+    case FP_REGS:
       /* Don't allow volatile mem reloads into floating point registers.
 	 This is defined to force reload to choose the r/m case instead
 	 of the f/f case when reloading (set (reg fX) (mem/v)).  */
@@ -4768,6 +4809,7 @@ ia64_secondary_reload_class (enum reg_class class,
       break;
 
     case FR_REGS:
+    case FP_REGS:
       /* Need to go through general registers to get to other class regs.  */
       if (regno >= 0 && ! (FR_REGNO_P (regno) || GENERAL_REGNO_P (regno)))
 	return GR_REGS;
@@ -6113,16 +6155,19 @@ ia64_dependencies_evaluation_hook (rtx head, rtx tail)
       {
 	for (link = INSN_DEPEND (insn); link != 0; link = XEXP (link, 1))
 	  {
+	    enum attr_itanium_class c;
+
 	    if (REG_NOTE_KIND (link) != REG_DEP_TRUE)
 	      continue;
 	    next = XEXP (link, 0);
-	    if ((ia64_safe_itanium_class (next) == ITANIUM_CLASS_ST
-		 || ia64_safe_itanium_class (next) == ITANIUM_CLASS_STF)
+	    c = ia64_safe_itanium_class (next);
+	    if ((c == ITANIUM_CLASS_ST
+		 || c == ITANIUM_CLASS_STF)
 		&& ia64_st_address_bypass_p (insn, next))
 	      break;
-	    else if ((ia64_safe_itanium_class (next) == ITANIUM_CLASS_LD
-		      || ia64_safe_itanium_class (next)
-		      == ITANIUM_CLASS_FLD)
+	    else if ((c == ITANIUM_CLASS_LD
+		      || c == ITANIUM_CLASS_FLD
+		      || c == ITANIUM_CLASS_FLDP)
 		     && ia64_ld_address_bypass_p (insn, next))
 	      break;
 	  }
