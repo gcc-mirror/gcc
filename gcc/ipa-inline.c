@@ -131,7 +131,7 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate)
     }
    else if (duplicate)
     {
-      n = cgraph_clone_node (e->callee, e->count, e->loop_nest);
+      n = cgraph_clone_node (e->callee, e->count, e->loop_nest, true);
       cgraph_redirect_edge_callee (e, n);
     }
 
@@ -456,10 +456,13 @@ lookup_recursive_calls (struct cgraph_node *node, struct cgraph_node *where,
   for (e = where->callees; e; e = e->next_callee)
     if (e->callee == node)
       {
-	/* FIXME: Once counts and frequencies are available we should drive the
-	   order by these.  For now force the order to be simple queue since
-	   we get order dependent on recursion depth for free by this.  */
-        fibheap_insert (heap, priority++, e);
+	/* When profile feedback is available, prioritize by expected number
+	   of calls.  Without profile feedback we maintain simple queue
+	   to order candidates via recursive depths.  */
+        fibheap_insert (heap,
+			!max_count ? priority++
+		        : -(e->count / ((max_count + (1<<24) - 1) / (1<<24))),
+		        e);
       }
   for (e = where->callees; e; e = e->next_callee)
     if (!e->inline_failed)
@@ -533,6 +536,7 @@ cgraph_decide_recursive_inlining (struct cgraph_node *node)
 {
   int limit = PARAM_VALUE (PARAM_MAX_INLINE_INSNS_RECURSIVE_AUTO);
   int max_depth = PARAM_VALUE (PARAM_MAX_INLINE_RECURSIVE_DEPTH_AUTO);
+  int probability = PARAM_VALUE (PARAM_MIN_INLINE_RECURSIVE_PROBABILITY);
   fibheap_t heap;
   struct cgraph_edge *e;
   struct cgraph_node *master_clone;
@@ -563,7 +567,7 @@ cgraph_decide_recursive_inlining (struct cgraph_node *node)
 	     cgraph_node_name (node));
 
   /* We need original clone to copy around.  */
-  master_clone = cgraph_clone_node (node, 0, 1);
+  master_clone = cgraph_clone_node (node, node->count, 1, false);
   master_clone->needed = true;
   for (e = master_clone->callees; e; e = e->next_callee)
     if (!e->inline_failed)
@@ -571,27 +575,60 @@ cgraph_decide_recursive_inlining (struct cgraph_node *node)
 
   /* Do the inlining and update list of recursive call during process.  */
   while (!fibheap_empty (heap)
-	 && cgraph_estimate_size_after_inlining (1, node, master_clone) <= limit)
+	 && (cgraph_estimate_size_after_inlining (1, node, master_clone)
+	     <= limit))
     {
       struct cgraph_edge *curr = fibheap_extract_min (heap);
-      struct cgraph_node *node;
+      struct cgraph_node *cnode;
 
-      depth = 0;
-      for (node = curr->caller;
-	   node; node = node->global.inlined_to)
+      depth = 1;
+      for (cnode = curr->caller;
+	   cnode->global.inlined_to; cnode = cnode->callers->caller)
 	if (node->decl == curr->callee->decl)
 	  depth++;
       if (depth > max_depth)
-	continue;
+	{
+          if (dump_file)
+	    fprintf (dump_file, 
+		     "   maxmal depth reached\n");
+	  continue;
+	}
+
+      if (max_count)
+	{
+          if (!cgraph_maybe_hot_edge_p (curr))
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "   Not inlining cold call\n");
+	      continue;
+	    }
+          if (curr->count * 100 / node->count < probability)
+	    {
+	      if (dump_file)
+		fprintf (dump_file, 
+			 "   Probability of edge is too small\n");
+	      continue;
+	    }
+	}
 
       if (dump_file)
-	fprintf (dump_file, 
-		 "   Inlining call of depth %i\n", depth);
+	{
+	  fprintf (dump_file, 
+		   "   Inlining call of depth %i", depth);
+	  if (node->count)
+	    {
+	      fprintf (dump_file, " called approx. %.2f times per call",
+		       (double)curr->count / node->count);
+	    }
+	  fprintf (dump_file, "\n");
+	}
       cgraph_redirect_edge_callee (curr, master_clone);
       cgraph_mark_inline_edge (curr);
       lookup_recursive_calls (node, curr->callee, heap);
       n++;
     }
+  if (!fibheap_empty (heap) && dump_file)
+    fprintf (dump_file, "    Recursive inlining growth limit met.\n");
 
   fibheap_delete (heap);
   if (dump_file)
@@ -607,6 +644,10 @@ cgraph_decide_recursive_inlining (struct cgraph_node *node)
     if (node->global.inlined_to == master_clone)
       cgraph_remove_node (node);
   cgraph_remove_node (master_clone);
+  /* FIXME: Recursive inlining actually reduces number of calls of the
+     function.  At this place we should probably walk the function and
+     inline clones and compensate the counts accordingly.  This probably
+     doesn't matter much in practice.  */
   return true;
 }
 

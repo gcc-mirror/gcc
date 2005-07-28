@@ -116,6 +116,11 @@ DEFPARAM (PARAM_MAX_INLINE_RECURSIVE_DEPTH_AUTO,
 	  "The maximum depth of recursive inlining for non-inline functions",
 	  8, 0, 0)
 
+DEFPARAM (PARAM_MIN_INLINE_RECURSIVE_PROBABILITY,
+	  "min-inline-recursive-probability",
+	  "Inline recursively only when the probability of call being executed exceeds the parameter",
+	  10, 0, 0)
+
 /* Limit the number of expansions created by the variable expansion
    optimization to avoid register pressure.  */
 DEFPARAM (PARAM_MAX_VARIABLE_EXPANSIONS,
