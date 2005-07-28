@@ -529,6 +529,10 @@
   (and (and (eq_attr "cpu" "itanium")
             (eq_attr "itanium_class" "fld"))
        (eq (symbol_ref "bundling_p") (const_int 0))) "1_M")
+(define_insn_reservation "1_fldp"    9
+  (and (and (eq_attr "cpu" "itanium")
+            (eq_attr "itanium_class" "fldp"))
+       (eq (symbol_ref "bundling_p") (const_int 0))) "1_M")
 (define_insn_reservation "1_fmac"    5
   (and (and (eq_attr "cpu" "itanium")
             (eq_attr "itanium_class" "fmac"))
@@ -1406,6 +1410,10 @@
 (define_insn_reservation "1b_fld"     9
   (and (and (eq_attr "cpu" "itanium")
             (eq_attr "itanium_class" "fld"))
+       (ne (symbol_ref "bundling_p") (const_int 0))) "1b_M")
+(define_insn_reservation "1b_fldp"    9
+  (and (and (eq_attr "cpu" "itanium")
+            (eq_attr "itanium_class" "fldp"))
        (ne (symbol_ref "bundling_p") (const_int 0))) "1b_M")
 (define_insn_reservation "1b_fmac"    5
   (and (and (eq_attr "cpu" "itanium")

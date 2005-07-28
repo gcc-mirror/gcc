@@ -324,6 +324,7 @@ while (0)
 #define ADDL_REGNO_P(REGNO) ((unsigned HOST_WIDE_INT) (REGNO) <= 3)
 #define GR_REGNO_P(REGNO) ((unsigned HOST_WIDE_INT) (REGNO) <= 127)
 #define FR_REGNO_P(REGNO) ((REGNO) >= 128 && (REGNO) <= 255)
+#define FP_REGNO_P(REGNO) ((REGNO) >= 128 && (REGNO) <= 254 && (REGNO) != 159)
 #define PR_REGNO_P(REGNO) ((REGNO) >= 256 && (REGNO) <= 319)
 #define BR_REGNO_P(REGNO) ((REGNO) >= 320 && (REGNO) <= 327)
 #define GENERAL_REGNO_P(REGNO) \
@@ -651,7 +652,6 @@ while (0)
 #define HARD_REGNO_MODE_OK(REGNO, MODE)				\
   (FR_REGNO_P (REGNO) ?						\
      GET_MODE_CLASS (MODE) != MODE_CC &&			\
-     (MODE) != TImode &&					\
      (MODE) != BImode &&					\
      (MODE) != TFmode 						\
    : PR_REGNO_P (REGNO) ?					\
@@ -721,6 +721,7 @@ enum reg_class
   AR_I_REGS,
   ADDL_REGS,
   GR_REGS,
+  FP_REGS,
   FR_REGS,
   GR_AND_BR_REGS,
   GR_AND_FR_REGS,
@@ -737,7 +738,7 @@ enum reg_class
    constants.  These names are used in writing some of the debugging dumps.  */
 #define REG_CLASS_NAMES \
 { "NO_REGS", "PR_REGS", "BR_REGS", "AR_M_REGS", "AR_I_REGS", \
-  "ADDL_REGS", "GR_REGS", "FR_REGS", \
+  "ADDL_REGS", "GR_REGS", "FP_REGS", "FR_REGS", \
   "GR_AND_BR_REGS", "GR_AND_FR_REGS", "ALL_REGS" }
 
 /* An initializer containing the contents of the register classes, as integers
@@ -774,6 +775,10 @@ enum reg_class
   { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
     0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
     0x00000000, 0x00000000, 0x0100 },			\
+  /* FP_REGS.  */					\
+  { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
+    0x7FFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x7FFFFFFF,	\
+    0x00000000, 0x00000000, 0x0000 },			\
   /* FR_REGS.  */					\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
@@ -801,7 +806,8 @@ enum reg_class
 #define REGNO_REG_CLASS(REGNO) \
 (ADDL_REGNO_P (REGNO) ? ADDL_REGS	\
  : GENERAL_REGNO_P (REGNO) ? GR_REGS	\
- : FR_REGNO_P (REGNO) ? FR_REGS		\
+ : FR_REGNO_P (REGNO) ? (REGNO) != R_FR (31) \
+			&& (REGNO) != R_FR(127) ? FP_REGS : FR_REGS \
  : PR_REGNO_P (REGNO) ? PR_REGS		\
  : BR_REGNO_P (REGNO) ? BR_REGS		\
  : AR_M_REGNO_P (REGNO) ? AR_M_REGS	\
@@ -832,6 +838,7 @@ enum reg_class
  : (CHAR) == 'c' ? PR_REGS		\
  : (CHAR) == 'd' ? AR_M_REGS		\
  : (CHAR) == 'e' ? AR_I_REGS		\
+ : (CHAR) == 'x' ? FP_REGS		\
  : NO_REGS)
 
 /* A C expression which is nonzero if register number NUM is suitable for use
@@ -888,8 +895,8 @@ enum reg_class
 
 #define CLASS_MAX_NREGS(CLASS, MODE) \
   ((MODE) == BImode && (CLASS) == PR_REGS ? 2			\
-   : ((CLASS) == FR_REGS && (MODE) == XFmode) ? 1		\
-   : ((CLASS) == FR_REGS && (MODE) == XCmode) ? 2		\
+   : (((CLASS) == FR_REGS || (CLASS) == FP_REGS) && (MODE) == XFmode) ? 1 \
+   : (((CLASS) == FR_REGS || (CLASS) == FP_REGS) && (MODE) == XCmode) ? 2 \
    : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* In FP regs, we can't change FP values to integer values and vice versa,
@@ -1414,7 +1421,7 @@ do {									\
 /* A C expression for the cost of moving data of mode M between a
    register and memory.  */
 #define MEMORY_MOVE_COST(MODE,CLASS,IN) \
-  ((CLASS) == GENERAL_REGS || (CLASS) == FR_REGS \
+  ((CLASS) == GENERAL_REGS || (CLASS) == FR_REGS || (CLASS) == FP_REGS \
    || (CLASS) == GR_AND_FR_REGS ? 4 : 10)
 
 /* A C expression for the cost of a branch instruction.  A value of 1 is the

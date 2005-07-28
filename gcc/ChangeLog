@@ -1,3 +1,35 @@
+2005-07-28 Jan Beulich <jbeulich@novell.com>
+
+	* config/ia64/ia64.c (ia64_load_pair_ok): New.
+	(ia64_print_operand): Describe and handle 'X'.
+	(ia64_register_move_cost): Also handle FP_REGS.
+	(ia64_preferred_reload_class): Likewise.
+	(ia64_secondary_reload_class): Likewise.
+	(ia64_dependencies_evaluation_hook): New local variable c. Initialize
+	it. Also check for ITANIUM_CLASS_FLDP.
+	* config/ia64/ia64.h (FP_REGNO_P): New.
+	(HARD_REGNO_MODE_OK): Remove explusion of TImode.
+	(reg_class): Add FP_REGS.
+	(REG_CLASS_NAMES): Adjust for it.
+	(REG_CLASS_CONTENTS): Likewise.
+	(REGNO_REG_CLASS): Use FP_REGS where appropriate.
+	(REG_CLASS_FROM_LETTER): Handle 'x'.
+	(CLASS_MAX_NREGS): Handle FP_REGS.
+	(MEMORY_MOVE_COST): Likewise.
+	* config/ia64/ia64.md (itanium_class): Add fldp.
+	(type): Handle fldp.
+	(movti_internal): More allowable operand combinations. Use ldfp8 when
+	splitting unnecessary. Remove predicable attribute. Adjust
+	itanium_class attribute.
+	(smuldi3_highpart): Remove outdated comment.
+	(mulditi3, umulditi3, rotlti3): New expanders.
+	(addti3, subti3, mulditi3_internal, umulditi3_internal, negti2, rotlti3_internal): New insns.
+	(absti2): Disabled new insn for future reference.
+	Respective new splitters.
+	* config/ia64/itanium1.md (1_fldp, 1b_fldp): New insn reservations.
+	* config/ia64/itanium2.md (2_fldp, 2b_fldp): Likewise.
+	* config/ia64/ia64-protos.h (ia64_load_pair_ok): New.
+
 2005-07-25  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR rtl-optimization/23047
