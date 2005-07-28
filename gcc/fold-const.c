@@ -7500,6 +7500,8 @@ fold (tree expr)
       else if (TREE_CODE (TREE_TYPE (arg0)) == INTEGER_TYPE
 	       && TREE_CODE (arg0) == NOP_EXPR
 	       && (tem = get_unwidened (arg0, NULL_TREE)) != arg0
+	       && (TYPE_PRECISION (TREE_TYPE (tem))
+		   > TYPE_PRECISION (TREE_TYPE (arg0)))
 	       && (code == EQ_EXPR || code == NE_EXPR
 		   || TREE_UNSIGNED (TREE_TYPE (arg0))
 		      == TREE_UNSIGNED (TREE_TYPE (tem)))

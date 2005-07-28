@@ -1,5 +1,11 @@
 2005-07-28  Richard Sandiford  <richard@codesourcery.com>
 
+	PR c/20187
+	* fold-const.c (fold): When shortening comparisons of widened operands,
+	check whether the tree returned by get_unwidened really is wider.
+
+2005-07-28  Richard Sandiford  <richard@codesourcery.com>
+
 	PR c/22589
 	Backport from mainline:
 
