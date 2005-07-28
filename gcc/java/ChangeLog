@@ -1,3 +1,8 @@
+2005-07-28  Diego Novillo  <dnovillo@redhat.com>
+
+	* expr.c (expand_load_internal): Fix missing parens in
+	predicate.
+
 2005-07-28  Andrew Haley  <aph@redhat.com>
 
 	* expr.c (expand_load_internal): Convert to destination type.
