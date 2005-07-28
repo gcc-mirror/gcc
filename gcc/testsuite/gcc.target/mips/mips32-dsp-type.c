@@ -1,6 +1,6 @@
 /* Test MIPS32 DSP instructions */
 /* { dg-do compile } */
-/* { dg-mips-options "-mips32 -mdsp" } */
+/* { dg-mips-options "-march=mips32 -mdsp" } */
 /* { dg-final { scan-assembler "addq.ph" } } */
 /* { dg-final { scan-assembler "addu.qb" } } */
 /* { dg-final { scan-assembler "subq.ph" } } */
