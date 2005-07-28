@@ -1,3 +1,12 @@
+2005-07-28  Richard Sandiford  <richard@codesourcery.com>
+
+	PR c/22589
+	Backport from mainline:
+
+	2004-06-16  Alexandre Oliva  <aoliva@redhat.com>
+	* tree.c (get_narrower): Don't narrow integral types into
+	non-integral types.
+
 2005-07-26  Bernardo Innocenti  <bernie@develer.com>
 
 	Backport from mainline:

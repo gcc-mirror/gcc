@@ -4156,6 +4156,7 @@ get_narrower (tree op, int *unsignedp_ptr)
   int uns = 0;
   int first = 1;
   tree win = op;
+  bool integral_p = INTEGRAL_TYPE_P (TREE_TYPE (op));
 
   while (TREE_CODE (op) == NOP_EXPR)
     {
@@ -4192,6 +4193,10 @@ get_narrower (tree op, int *unsignedp_ptr)
 	    uns = TREE_UNSIGNED (TREE_TYPE (op));
 	  first = 0;
 	  op = TREE_OPERAND (op, 0);
+	  /* Keep trying to narrow, but don't assign op to win if it
+	     would turn an integral type into something else.  */
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (op)) != integral_p)
+	    continue;
 	}
 
       win = op;
