@@ -482,6 +482,7 @@ Objective-C and Objective-C++ Dialects}.
 -mlinked-fp  -mlong-calls  -malign-labels @gol
 -mlibrary-pic  -macc-4  -macc-8 @gol
 -mpack  -mno-pack  -mno-eflags  -mcond-move  -mno-cond-move @gol
+-moptimize-membar -mno-optimize-membar @gol
 -mscc  -mno-scc  -mcond-exec  -mno-cond-exec @gol
 -mvliw-branch  -mno-vliw-branch @gol
 -mmulti-cond-exec  -mno-multi-cond-exec  -mnested-cond-exec @gol
@@ -8525,6 +8526,18 @@ Disable nested conditional execution optimizations.
 
 This switch is mainly for debugging the compiler and will likely be removed
 in a future version.
+
+@item -moptimize-membar
+@opindex moptimize-membar
+
+This switch removes redundant @code{membar} instructions from the
+compiler generated code.  It is enabled by default.
+
+@item -mno-optimize-membar
+@opindex mno-optimize-membar
+
+This switch disables the automatic removal of redundant @code{membar}
+instructions from the generated code.
 
 @item -mtomcat-stats
 @opindex mtomcat-stats

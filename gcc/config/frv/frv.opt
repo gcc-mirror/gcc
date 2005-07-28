@@ -157,6 +157,10 @@ mno-eflags
 Target RejectNegative
 Do not mark ABI switches in e_flags
 
+moptimize-membar
+Target Report Mask(OPTIMIZE_MEMBAR)
+Remove redundant membars
+
 mpack
 Target Report Mask(PACK)
 Pack VLIW instructions

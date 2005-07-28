@@ -1492,13 +1492,6 @@ typedef struct frv_stack {
    address of other frames.  */
 #define RETURN_ADDR_RTX(COUNT, FRAMEADDR) frv_return_addr_rtx (COUNT, FRAMEADDR)
 
-/* This function contains machine specific function data.  */
-struct machine_function GTY(())
-{
-  /* True if we have created an rtx that relies on the stack frame.  */
-  int frame_needed;
-};
-
 #define RETURN_POINTER_REGNUM LR_REGNO
 
 /* A C expression whose value is RTL representing the location of the incoming
