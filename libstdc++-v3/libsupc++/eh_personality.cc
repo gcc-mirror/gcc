@@ -428,7 +428,7 @@ PERSONALITY_FUNCTION (int version,
 
   // Parse the LSDA header.
   p = parse_lsda_header (context, language_specific_data, &info);
-  info.ttype_base = 0;
+  info.ttype_base = base_of_encoded_value (info.ttype_encoding, context);
   ip = _Unwind_GetIP (context) - 1;
   landing_pad = 0;
   action_record = 0;
