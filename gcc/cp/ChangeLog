@@ -1,3 +1,7 @@
+2005-07-29  Kazu Hirata  <kazu@codesourcery.com>
+
+	* method.c: Fix a comment typo.
+
 2005-07-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22545
