@@ -282,7 +282,7 @@ __gnat_set_globals (int main_priority,
    as the faulting instruction address in the corresponding signal context
    pushed by the kernel. Leaving this address untouched may loose, because if
    the triggering instruction happens to be the very first of a region, the
-   later adjustements performed by the unwinder would yield an address outside
+   later adjustments performed by the unwinder would yield an address outside
    that region. We need to compensate for those adjustments at some point,
    which we currently do in the GCC unwinding fallback macro.
 
@@ -1137,7 +1137,7 @@ extern char *__gnat_error_prehandler_stack;   /* Alternate signal stack */
 
 /* Define macro symbols for the VMS conditions that become Ada exceptions.
    Most of these are also defined in the header file ssdef.h which has not
-   yet been converted to be recoginized by Gnu C. */
+   yet been converted to be recognized by Gnu C. */
 
 /* Defining these as macros, as opposed to external addresses, allows
    them to be used in a case statement (below */
@@ -1155,7 +1155,7 @@ extern int LIB$_ACTIMAGE;
 extern int MTH$_FLOOVEMAT;       /* Some ACVC_21 CXA tests */
 
 /* These codes are non standard, which is to say the author is
-   not sure if they are defined in the standar message libraries
+   not sure if they are defined in the standard message libraries
    so keep them as macros for now. */
 #define RDB$_STREAM_EOF 20480426
 #define FDL$_UNPRIKW 11829410
@@ -1315,7 +1315,7 @@ static const struct cond_except cond_except_table [] = {
    ??? This is not a perfect solution to deal with the possible
    interactions between the GNAT and the DECAda exception handling
    models and better (more general) schemes are studied.  This is so
-   just provided as a conveniency workaround in the meantime, and
+   just provided as a convenient workaround in the meantime, and
    should be use with caution since the implementation has been kept
    very simple.  */
 
@@ -1767,7 +1767,7 @@ __gnat_init_float (void)
   asm ("mtfsb0 26");
 #endif
 
-  /* Similarily for sparc64. Achieved by masking bits in the Trap Enable Mask
+  /* Similarly for sparc64. Achieved by masking bits in the Trap Enable Mask
      field of the Floating-point Status Register (see the Sparc Architecture
      Manual Version 9, p 48).  */
 #if defined (sparc64)

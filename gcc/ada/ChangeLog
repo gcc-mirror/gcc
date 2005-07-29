@@ -1,3 +1,7 @@
+2005-07-29  Kazu Hirata  <kazu@codesourcery.com>
+
+	* decl.c, init.c, initialize.c: Fix comment typos.
+
 2005-07-20  Giovanni Bajo  <giovannibajo@libero.it>
 
 	Make CONSTRUCTOR use VEC to store initializers.

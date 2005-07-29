@@ -123,7 +123,7 @@ __gnat_initialize (void *eh)
      constructor fashion, typically triggered by the VxWorks loader.  This is
      achieved by way of a special variable declaration in the crt object, the
      name of which has been deduced by analyzing the output of the "munching"
-     step documented for C++.  The de-registration is handled symetrically,
+     step documented for C++.  The de-registration is handled symmetrically,
      a-la C++ destructor fashion and typically triggered by the dynamic
      unloader.  Note that since the tables shall be registered against a
      common datastructure, libgcc should be one of the modules (vs beeing
