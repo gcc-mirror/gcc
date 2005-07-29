@@ -166,6 +166,7 @@ struct opt_stats_d
   long num_re;
   long num_const_prop;
   long num_copy_prop;
+  long num_iterations;
 };
 
 static struct opt_stats_d opt_stats;
@@ -524,6 +525,8 @@ tree_ssa_dominator_optimize (void)
 	  if (value && !is_gimple_min_invariant (value))
 	    SSA_NAME_VALUE (name) = NULL;
 	}
+
+      opt_stats.num_iterations++;
     }
   while (optimize > 1 && cfg_altered);
 
@@ -1355,6 +1358,9 @@ dump_dominator_optimization_stats (FILE *file)
 	   opt_stats.num_const_prop);
   fprintf (file, "    Copies propagated:                        %6ld\n",
 	   opt_stats.num_copy_prop);
+
+  fprintf (file, "\nTotal number of DOM iterations:             %6ld\n",
+	   opt_stats.num_iterations);
 
   fprintf (file, "\nHash table statistics:\n");
 

@@ -1,3 +1,9 @@
+2005-07-29  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-dom.c (struct opt_stats_d): Add field num_iterations.
+	(tree_ssa_dominator_optimize): Increment it.
+	(dump_dominator_optimization_stats): Print it.
+
 2005-07-29  Richard Earnshaw  <richard.earnshaw@arm.com>
 	    Steven Bosscher  <stevenb@suse.de>
 
