@@ -926,7 +926,7 @@ scale_bbs_frequencies_int (basic_block *bbs, int nbbs, int num, int den)
   if (num > den)
     return;
   /* Assume that the users are producing the fraction from frequencies
-     that never grow far enought to risk arithmetic overflow.  */
+     that never grow far enough to risk arithmetic overflow.  */
   gcc_assert (num < 65536);
   for (i = 0; i < nbbs; i++)
     {

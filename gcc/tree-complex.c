@@ -502,7 +502,7 @@ set_component_ssa_name (tree ssa_name, bool imag_p, tree value)
     ;
 
   /* If we've nothing assigned, and the value we're given is already stable,
-     then install that as the value for this SSA_NAME.  This pre-emptively
+     then install that as the value for this SSA_NAME.  This preemptively
      copy-propagates the value, which avoids unnecessary memory allocation.  */
   else if (is_gimple_min_invariant (value))
     {

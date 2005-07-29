@@ -17490,7 +17490,7 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
     }
 }
 
-/* Expand a vector reduction on V4SFmode for SSE1.  FN is the binar
+/* Expand a vector reduction on V4SFmode for SSE1.  FN is the binary
    pattern to reduce; DEST is the destination; IN is the input vector.  */
 
 void
