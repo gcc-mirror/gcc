@@ -1753,9 +1753,8 @@ compare_range_with_value (enum tree_code comp, value_range_t *vr, tree val)
 	  || comp == LE_EXPR)
 	return NULL_TREE;
 
-      /* ~[VAL, VAL] == VAL is always false.  */
-      if (compare_values (vr->min, val) == 0
-	  && compare_values (vr->max, val) == 0)
+      /* ~[VAL_1, VAL_2] OP VAL is known if VAL_1 <= VAL <= VAL_2.  */
+      if (value_inside_range (val, vr) == 1)
 	return (comp == NE_EXPR) ? boolean_true_node : boolean_false_node;
 
       return NULL_TREE;
