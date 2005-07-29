@@ -521,7 +521,7 @@ try_forward_edges (int mode, basic_block b)
 		    && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
 		  break;
 
-	      if (GET_CODE (insn) == NOTE)
+	      if (insn && GET_CODE (insn) == NOTE)
 		break;
 
 	      /* Do not clean up branches to just past the end of a loop
