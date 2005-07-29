@@ -5475,7 +5475,7 @@ expand_vec_cond_expr (tree vec_cond_expr, rtx target)
   if (icode == CODE_FOR_nothing)
     return 0;
 
-  if (!target)
+  if (!target || !insn_data[icode].operand[0].predicate (target, mode))
     target = gen_reg_rtx (mode);
 
   /* Get comparison rtx.  First expand both cond expr operands.  */

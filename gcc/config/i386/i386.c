@@ -8154,17 +8154,6 @@ ix86_fixup_binary_operands (enum rtx_code code, enum machine_mode mode,
       && GET_RTX_CLASS (code) != RTX_COMM_ARITH)
     src1 = force_reg (mode, src1);
 
-  /* If optimizing, copy to regs to improve CSE */
-  if (optimize && ! no_new_pseudos)
-    {
-      if (GET_CODE (dst) == MEM)
-	dst = gen_reg_rtx (mode);
-      if (GET_CODE (src1) == MEM)
-	src1 = force_reg (mode, src1);
-      if (GET_CODE (src2) == MEM)
-	src2 = force_reg (mode, src2);
-    }
-
   src1 = operands[1] = src1;
   src2 = operands[2] = src2;
   return dst;
@@ -8273,15 +8262,6 @@ ix86_expand_unary_operator (enum rtx_code code, enum machine_mode mode,
   /* When source operand is memory, destination must match.  */
   if (MEM_P (src) && !matching_memory)
     src = force_reg (mode, src);
-
-  /* If optimizing, copy to regs to improve CSE.  */
-  if (optimize && ! no_new_pseudos)
-    {
-      if (GET_CODE (dst) == MEM)
-	dst = gen_reg_rtx (mode);
-      if (GET_CODE (src) == MEM)
-	src = force_reg (mode, src);
-    }
 
   /* Emit the instruction.  */
 
@@ -8410,7 +8390,7 @@ ix86_expand_fp_absneg_operator (enum rtx_code code, enum machine_mode mode,
   matching_memory = false;
   if (MEM_P (dst))
     {
-      if (rtx_equal_p (dst, src) && (!optimize || no_new_pseudos))
+      if (rtx_equal_p (dst, src))
 	matching_memory = true;
       else
 	dst = gen_reg_rtx (mode);

@@ -1,3 +1,11 @@
+2005-07-30  Jan Hubicka  <jh@suse.cz>
+
+	* expr.c (expand_expr_real_1): Do not load mem targets into register.
+	* i386.c (ix86_fixup_binary_operands): Likewise.
+	(ix86_expand_unary_operator): Likewise.
+	(ix86_expand_fp_absneg_operator): Likewise.
+	* optabs.c (expand_vec_cond_expr): Validate dest.
+
 2005-07-29  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/21720
