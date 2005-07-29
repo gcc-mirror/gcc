@@ -1954,9 +1954,9 @@ add_branch_dependences (rtx head, rtx tail)
 
 		T = [addr]
 	C  ?	addr += 4
-	!C  ?	X += 12
+	!C ?	X += 12
 	C  ?	T += 1
-	C ?	jump foo
+	C  ?	jump foo
 
      On a target with a one cycle stall on a memory access the optimal
      sequence would be:
@@ -1977,17 +1977,17 @@ add_branch_dependences (rtx head, rtx tail)
   if (!reload_completed || ! JUMP_P (tail))
     return;
 
-  insn = PREV_INSN (tail);
+  insn = tail;
   while (insn != head)
     {
+      insn = PREV_INSN (insn);
+
       /* Note that we want to add this dependency even when
 	 sched_insns_conditions_mutex_p returns true.  The whole point
 	 is that we _want_ this dependency, even if these insns really
 	 are independent.  */
       if (INSN_P (insn) && GET_CODE (PATTERN (insn)) == COND_EXEC)
 	add_dependence (tail, insn, REG_DEP_ANTI);
-
-      insn = PREV_INSN (insn);
     }
 #endif
 }
