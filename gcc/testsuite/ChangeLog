@@ -1,3 +1,9 @@
+2005-07-29  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	* gfortran.dg/matmul_1.f90:  Correct LHS of matmul test (it
+	used to have the wrong bounds).
+
+
 2005-07-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22545

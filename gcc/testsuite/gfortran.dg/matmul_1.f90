@@ -33,7 +33,7 @@ Program matmul_1
 !                           array sections
 
   c = 0.0_T
-  c = matmul (a(7:9,3:N), b(3:N,3:4))
+  c(1:3,1:2) = matmul (a(7:9,3:N), b(3:N,3:4))
   if (sum (c) /= 576.0_T) call abort ()
 
 !                           uses a temp
