@@ -1891,13 +1891,7 @@ warn_if_shadowing (tree new_decl)
       /* No shadow warnings for internally generated vars.  */
       || DECL_IS_BUILTIN (new_decl)
       /* No shadow warnings for vars made for inlining.  */
-      || DECL_FROM_INLINE (new_decl)
-      /* Don't warn about the parm names in function declarator
-	 within a function declarator.  It would be nice to avoid
-	 warning in any function declarator in a declaration, as
-	 opposed to a definition, but there is no way to tell
-	 it's not a definition at this point.  */
-      || (TREE_CODE (new_decl) == PARM_DECL && current_scope->outer->parm_flag))
+      || DECL_FROM_INLINE (new_decl))
     return;
 
   /* Is anything being shadowed?  Invisible decls do not count.  */
@@ -2221,7 +2215,8 @@ pushdecl (tree x)
 	}
     }
 
-  warn_if_shadowing (x);
+  if (TREE_CODE (x) != PARM_DECL)
+    warn_if_shadowing (x);
 
  skip_external_and_shadow_checks:
   if (TREE_CODE (x) == TYPE_DECL)
@@ -4836,6 +4831,9 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
 			     parm, parmno);
 		}
 	    }
+
+	  if (DECL_NAME (parm) && TREE_USED (parm))
+	    warn_if_shadowing (parm);
 	}
       return arg_types;
     }
@@ -6106,8 +6104,12 @@ store_parm_decls_newstyle (tree fndecl, const struct c_arg_info *arg_info)
     {
       DECL_CONTEXT (decl) = current_function_decl;
       if (DECL_NAME (decl))
-	bind (DECL_NAME (decl), decl, current_scope,
-	      /*invisible=*/false, /*nested=*/false);
+	{
+	  bind (DECL_NAME (decl), decl, current_scope,
+		/*invisible=*/false, /*nested=*/false);
+	  if (!TREE_USED (decl))
+	    warn_if_shadowing (decl);
+	}
       else
 	error ("%Jparameter name omitted", decl);
     }
@@ -6181,6 +6183,7 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 	      DECL_ARG_TYPE (decl) = integer_type_node;
 	      layout_decl (decl, 0);
 	    }
+	  warn_if_shadowing (decl);
 	}
       /* If no declaration found, default to int.  */
       else
@@ -6189,6 +6192,7 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 	  DECL_ARG_TYPE (decl) = TREE_TYPE (decl);
 	  DECL_SOURCE_LOCATION (decl) = DECL_SOURCE_LOCATION (fndecl);
 	  pushdecl (decl);
+	  warn_if_shadowing (decl);
 
 	  if (flag_isoc99)
 	    pedwarn ("type of %q+D defaults to %<int%>", decl);

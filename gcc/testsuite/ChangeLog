@@ -1,3 +1,8 @@
+2005-07-29  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/529
+	* gcc.dg/Wshadow-3.c: New test.
+
 2005-07-29  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* gfortran.dg/matmul_1.f90:  Correct LHS of matmul test (it

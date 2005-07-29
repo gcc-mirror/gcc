@@ -1,3 +1,15 @@
+2005-07-29  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/529
+	* c-decl.c (warn_if_shadowing): Don't check for PARM_DECL in
+	nested function declarators.
+	(pushdecl): Don't call warn_if_shadowing for PARM_DECL.
+	(grokparms): Call warn_if_shadowing for parameters used within the
+	parameter list.
+	(store_parm_decls_newstyle): Call warn_if_shadowing for parameters
+	not used within the parameter list.
+	(store_parm_decls_oldstyle): Call warn_if_shadowing for parameters.
+
 2005-07-30  Jan Hubicka  <jh@suse.cz>
 
 	* expr.c (expand_expr_real_1): Do not load mem targets into register.
