@@ -7838,7 +7838,7 @@ frv_optimize_membar_local (basic_block bb, struct frv_io *next_io,
      is null if the membar has already been deleted.
 
      Note that the initialization here should only be needed to
-     supress warnings.  */
+     suppress warnings.  */
   next_membar = 0;
 
   /* USED_REGS is the set of registers that are used before the

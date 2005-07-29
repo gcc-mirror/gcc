@@ -1,3 +1,8 @@
+2005-07-29  Kazu Hirata  <kazu@codesourcery.com>
+
+	* cfg.c, tree-complex.c, config/frv/frv.c, config/i386/i386.c:
+	Fix comment typos.
+
 2005-07-29  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-dom.c (struct opt_stats_d): Add field num_iterations.
