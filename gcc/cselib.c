@@ -462,9 +462,18 @@ rtx_equal_for_cselib_p (rtx x, rtx y)
   if (GET_CODE (x) != GET_CODE (y) || GET_MODE (x) != GET_MODE (y))
     return 0;
 
-  /* This won't be handled correctly by the code below.  */
-  if (GET_CODE (x) == LABEL_REF)
-    return XEXP (x, 0) == XEXP (y, 0);
+  /* These won't be handled correctly by the code below.  */
+  switch (GET_CODE (x))
+    {
+    case CONST_DOUBLE:
+      return 0;
+
+    case LABEL_REF:
+      return XEXP (x, 0) == XEXP (y, 0);
+
+    default:
+      break;
+    }
 
   code = GET_CODE (x);
   fmt = GET_RTX_FORMAT (code);
