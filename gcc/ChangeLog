@@ -1,3 +1,8 @@
+2005-07-28  James E Wilson  <wilson@specifixinc.com>
+
+	PR c/23106
+	* doc/invoke.texi (Wstrict-aliasing=2): Fix misleading wording.
+
 2005-07-28  Gerald Pfeifer  <gerald@pfeifer.com>
  
  	* doc/install.texi (Configuration): Update Valgrind homepage.
