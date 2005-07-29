@@ -1,3 +1,9 @@
+2005-07-29  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/21720
+	* gcc.dg/hex-round-1.c: Test more cases.
+	* gcc.dg/hex-round-2.c: New test.
+
 2005-07-29  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 22550

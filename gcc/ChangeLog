@@ -1,3 +1,9 @@
+2005-07-29  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/21720
+	* real.c (real_from_string): Also set last bit if there is a
+	nonzero hex digit beyond GCC's internal precision after ".".
+
 2005-07-29  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/altivec.md: Convert UNSPEC numerical values to
