@@ -13384,7 +13384,7 @@ generate_set_vrsave (rtx reg, rs6000_stack_t *info, int epiloguep)
 		   vrsave,
 		   gen_rtx_UNSPEC_VOLATILE (SImode,
 					    gen_rtvec (2, reg, vrsave),
-					    30));
+					    UNSPECV_SET_VRSAVE));
 
   nclobs = 1;
 
