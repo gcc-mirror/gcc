@@ -1,3 +1,21 @@
+2005-07-29  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/altivec.md: Convert UNSPEC numerical values to
+	define_constants.  Change duplicate values to unassigned numbers.
+	Change UNSPEC_SUBS to UNSPEC_VSUBS.
+	(*altivec_vspltsf): New.
+	(altivec_vperm_v4sf): Delete.
+	(altivec_vperm_<mode>): Use mode macro V.
+	(altivec_vsldoi_<mode>): Convert to mode macro pattern.
+	(altivec_predicate_v4sf): Delete.
+	(altivec_predicate_<mode>): Use mode macro V.
+	(*altivec_lvesfx): New.
+	(*altivec_stvesfx): New.
+	(vec_realign_load_v4sf): Delete.
+	(vec_realign_load_<mode>): Use mode macro V.
+	* config/rs6000/rs6000.c (generate_set_vrsave): Use
+	UNSPECV_SET_VRSAVE.
+
 2005-07-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR bootstrap/23131
