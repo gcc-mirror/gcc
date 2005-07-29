@@ -1,3 +1,11 @@
+2005-07-29  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 22550
+	* tree-cfgcleanup.c (cleanup_tree_cfg_1): Extract from ...
+	(cleanup_tree_cfg): ... here.
+	Call cleanup_tree_cfg_1 until there are no more cleanups to
+	do.
+
 2005-07-29  James A. Morrison  <phython@gcc.gnu.org>
 
 	* tree-vrp.c (compare_range_with_value): Return true or false
