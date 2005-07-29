@@ -1,3 +1,10 @@
+2005-07-29  Mark Mitchell  <mark@codesourcery.com>
+
+	PR bootstrap/23131
+	* configure.ac (SYSTEM_HEADER_DIR): Avoid setting to empty
+	string. 
+	* configure: Regenerated.
+
 2005-07-29  Paul Brook  <paul@codesourcery.com>
 
 	* doc/install.texi: Add link to GFortran binaries wiki page.
