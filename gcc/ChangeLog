@@ -1,3 +1,7 @@
+2005-07-29  Paul Brook  <paul@codesourcery.com>
+
+	* doc/install.texi: Add link to GFortran binaries wiki page.
+
 2005-07-29  David Ung  <davidu@mips.com>
 
 	* config/mips/mips.c (mips_cpu_info_table): Add 5kf to the table.

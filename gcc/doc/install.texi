@@ -2169,6 +2169,10 @@ Solaris/SPARC 2.5.1, 2.6, 7, 8, and 9.
 @item
 @uref{http://www.openpkg.org/,,OpenPKG} offers binaries for quite a
 number of platforms.
+
+@item
+The @uref{http://gcc.gnu.org/wiki/GFortranBinaries,,GFortran Wiki} has
+links to gfortran binaries for several platforms.
 @end itemize
 
 In addition to those specific offerings, you can get a binary
