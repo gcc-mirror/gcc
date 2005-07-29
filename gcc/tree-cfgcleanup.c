@@ -489,14 +489,12 @@ cleanup_forwarder_blocks (void)
   return changed;
 }
 
-/* Remove unreachable blocks and other miscellaneous clean up work.  */
+/* Do one round of CFG cleanup.  */
 
-bool
-cleanup_tree_cfg (void)
+static bool
+cleanup_tree_cfg_1 (void)
 {
-  bool retval = false;
-
-  timevar_push (TV_TREE_CLEANUP_CFG);
+  bool retval;
 
   retval = cleanup_control_flow ();
   retval |= delete_unreachable_blocks ();
@@ -516,6 +514,28 @@ cleanup_tree_cfg (void)
       end_recording_case_labels ();
     }
 
+  /* Merging the blocks may create new opportunities for folding
+     conditional branches (due to the elimination of single-valued PHI
+     nodes).  */
+  retval |= merge_seq_blocks ();
+
+  return retval;
+}
+
+
+/* Remove unreachable blocks and other miscellaneous clean up work.  */
+
+bool
+cleanup_tree_cfg (void)
+{
+  bool retval;
+  int i;
+
+  timevar_push (TV_TREE_CLEANUP_CFG);
+
+  for (retval = true, i = 0; i < 5 && retval; i++)
+    retval = cleanup_tree_cfg_1 ();
+
 #ifdef ENABLE_CHECKING
   if (retval)
     {
@@ -526,16 +546,14 @@ cleanup_tree_cfg (void)
     }
 #endif
 
-  /* Merging the blocks creates no new opportunities for the other
-     optimizations, so do it here.  */
-  retval |= merge_seq_blocks ();
-
   compact_blocks ();
 
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
 #endif
+
   timevar_pop (TV_TREE_CLEANUP_CFG);
+
   return retval;
 }
 

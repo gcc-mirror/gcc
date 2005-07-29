@@ -1,3 +1,8 @@
+2005-07-29  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 22550
+	* g++.dg/tree-ssa/pr22550.C: New test.
+
 2005-07-29  James A. Morrison  <phython@gcc.gnu.org>
 
 	* gcc.dg/tree-ssa/vrp19.c: New test.
