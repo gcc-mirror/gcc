@@ -5168,7 +5168,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 
       /* Compute whether we should avoid the substitution.  */
       int reject =
-        /* There is no point subtituting if there is no change.  */
+        /* There is no point substituting if there is no change.  */
         (gnu_packable_type == gnu_field_type
          ||
          /* The size of an aliased field must be an exact multiple of the
