@@ -1,3 +1,9 @@
+2005-07-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libstdc++/22284
+	* libsupc++/eh_personality.cc (PERSONALITY_FUNCTION): Revert
+	the change to info.ttype_base.
+	
 2005-07-28  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* include/std/std_valarray.h: Fix grammar in comments.
