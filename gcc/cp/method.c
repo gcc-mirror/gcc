@@ -979,7 +979,7 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
   tree name;
   HOST_WIDE_INT saved_processing_template_decl;
 
-  /* Because we create declarations for implictly declared functions
+  /* Because we create declarations for implicitly declared functions
      lazily, we may be creating the declaration for a member of TYPE
      while in some completely different context.  However, TYPE will
      never be a dependent class (because we never want to do lookups
