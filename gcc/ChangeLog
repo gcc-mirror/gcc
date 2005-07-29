@@ -1,3 +1,7 @@
+2005-07-29  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/sysv4.h (TARGET_ASM_EXCEPTION_SECTION): Delete.
+
 2005-07-28  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/22619

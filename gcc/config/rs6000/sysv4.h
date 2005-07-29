@@ -1354,8 +1354,6 @@ ncrtn.o%s"
    ? (((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4) \
    : DW_EH_PE_absptr)
 
-#define TARGET_ASM_EXCEPTION_SECTION readonly_data_section
-
 #define DOUBLE_INT_ASM_OP "\t.quad\t"
 
 /* Generate entries in .fixup for relocatable addresses.  */
