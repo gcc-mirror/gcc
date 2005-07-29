@@ -1,3 +1,22 @@
+2005-07-28  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/21723
+	* pa.md: Remove fcpy alternative from movhi and movqi patterns.
+	* pa32-regs.h (HARD_REGNO_NREGS): Return two floating point registers
+	for complex modes when generating code for PA 1.0.
+	(VALID_FP_MODE_P): New macro.
+	(HARD_REGNO_MODE_OK): Use VALID_FP_MODE_P.  Use non-overlapping register
+	sets for all general and floating point modes.  Align wide floating
+	point modes to even register boundaries to comply with architectural
+	requirements.
+	(CLASS_MAX_NREGS): Update to align with change to HARD_REGNO_NREGS.
+	* pa64-regs.h (HARD_REGNO_NREGS): Update comment and formatting.
+	(VALID_FP_MODE_P): New macro.
+	(HARD_REGNO_MODE_OK): Use VALID_FP_MODE_P.  Use non-overlapping register
+	sets for all general and floating point modes.  Align wide floating
+	point modes to even register boundaries to comply with architectural
+	requirements.
+
 2005-07-29  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/sysv4.h (TARGET_ASM_EXCEPTION_SECTION): Delete.

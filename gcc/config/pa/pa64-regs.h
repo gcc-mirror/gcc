@@ -145,11 +145,19 @@ Boston, MA 02111-1307, USA.  */
    This is ordinarily the length in words of a value of mode MODE
    but can be less for certain modes in special long registers.
 
-   For PA64, GPRs and FPRs hold 64 bits worth (we ignore the 32bit
-   addressability of the FPRs).  i.e., we pretend each register holds
-   precisely WORD_SIZE bits.  */
+   For PA64, GPRs and FPRs hold 64 bits worth.  We ignore the 32-bit
+   addressability of the FPRs and pretend each register holds precisely
+   WORD_SIZE bits.  Note that SCmode values are placed in a single FPR.
+   Thus, any patterns defined to operate on these values would have to
+   use the 32-bit addressability of the FPR registers.  */
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
-   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+
+/* These are the valid FP modes.  */
+#define VALID_FP_MODE_P(MODE)						\
+  ((MODE) == SFmode || (MODE) == DFmode					\
+   || (MODE) == SCmode || (MODE) == DCmode				\
+   || (MODE) == SImode || (MODE) == DImode)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    On the HP-PA, the cpu registers can hold any mode.  We
@@ -158,8 +166,16 @@ Boston, MA 02111-1307, USA.  */
   ((REGNO) == 0								\
    ? (MODE) == CCmode || (MODE) == CCFPmode				\
    /* Make wide modes be in aligned registers.  */			\
+   : FP_REGNO_P (REGNO)							\
+     ? (VALID_FP_MODE_P (MODE)						\
+	&& (GET_MODE_SIZE (MODE) <= 8					\
+	    || (GET_MODE_SIZE (MODE) == 16 && ((REGNO) & 1) == 0)	\
+	    || (GET_MODE_SIZE (MODE) == 32 && ((REGNO) & 3) == 0)))	\
    : (GET_MODE_SIZE (MODE) <= UNITS_PER_WORD				\
-      || (GET_MODE_SIZE (MODE) <= 2 * UNITS_PER_WORD && ((REGNO) & 1) == 0)))
+      || (GET_MODE_SIZE (MODE) == 2 * UNITS_PER_WORD			\
+	  && ((((REGNO) & 1) == 1 && (REGNO) <= 25) || (REGNO) == 28))	\
+      || (GET_MODE_SIZE (MODE) == 4 * UNITS_PER_WORD			\
+	  && ((REGNO) & 3) == 3 && (REGNO) <= 23)))
 
 /* How to renumber registers for dbx and gdb.
 
