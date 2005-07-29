@@ -1,5 +1,11 @@
 2005-07-29  Joseph S. Myers  <joseph@codesourcery.com>
 
+	PR c/22240
+	* c-typeck.c (convert_for_assignment): Do not check
+	DECL_IN_SYSTEM_HEADER on NULL fundecl.
+
+2005-07-29  Joseph S. Myers  <joseph@codesourcery.com>
+
 	PR c/22192
 	* c-typeck.c (composite_type): Prefer constant size arrays to
 	VLAs.
