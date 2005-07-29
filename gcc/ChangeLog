@@ -1,3 +1,14 @@
+2005-07-29  David Ung  <davidu@mips.com>
+
+	* config/mips/mips.c (mips_cpu_info_table): Add 5kf to the table.
+	(mips_rtx_cost_data): Add costs for 5kc and 5kf.
+	* config/mips/mips.h (processor_type): Add PROCESSOR_5KF.
+	* config/mips/mips.md (cpu): Add 5kf name.
+	(includes): Includes 5k.md.
+	* config/mips/5k.md: New DFA pipeline for the 5kc/5kf.
+	* doc/invoke.texi (MIPS Options): Updated cpu name supported with
+	-march flag.	
+
 2005-07-29  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 22550
