@@ -6954,11 +6954,6 @@ if test "${with_sysroot+set}" = set; then
 
  TARGET_SYSTEM_ROOT_DEFINE='-DTARGET_SYSTEM_ROOT=\"$(TARGET_SYSTEM_ROOT)\"'
  CROSS_SYSTEM_HEADER_DIR='$(TARGET_SYSTEM_ROOT)$(NATIVE_SYSTEM_HEADER_DIR)'
- if test "x$with_build_sysroot" != x; then
-   build_system_header_dir=$with_build_sysroot'$(NATIVE_SYSTEM_HEADER_DIR)'
- else
-   build_system_header_dir='$(CROSS_SYSTEM_HEADER_DIR)'
- fi
 
  if test "x$exec_prefix" = xNONE; then
   if test "x$prefix" = xNONE; then
@@ -7478,7 +7473,7 @@ if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
 else
     ac_prog_version=`$MAKEINFO --version 2>&1 |
                    sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
-  echo "configure:7481: version of makeinfo is $ac_prog_version" >&5
+  echo "configure:7476: version of makeinfo is $ac_prog_version" >&5
   case $ac_prog_version in
     '')     gcc_cv_prog_makeinfo_modern=no;;
     4.[2-9]*)
@@ -12747,6 +12742,16 @@ done
 CROSS=
 ALL=all.internal
 SYSTEM_HEADER_DIR='$(NATIVE_SYSTEM_HEADER_DIR)'
+
+if test "x$with_build_sysroot" != x; then
+  build_system_header_dir=$with_build_sysroot'$(NATIVE_SYSTEM_HEADER_DIR)'
+else
+  # This value is used, even on a native system, because
+  # CROSS_SYSTEM_HEADER_DIR is just
+  # $(TARGET_SYSTEM_ROOT)$(NATIVE_SYSTEM_HEADER_DIR).
+  build_system_header_dir='$(CROSS_SYSTEM_HEADER_DIR)'
+fi
+
 if test x$host != x$target
 then
 	CROSS="-DCROSS_COMPILE"
@@ -12773,8 +12778,7 @@ then
 		CROSS="$CROSS -DNATIVE_CROSS" ;;
 	esac
 elif test "x$TARGET_SYSTEM_ROOT" != x; then
-        # This is just $(TARGET_SYSTEM_ROOT)$(NATIVE_SYSTEM_HEADER_DIR)
-        SYSTEM_HEADER_DIR='$(CROSS_SYSTEM_HEADER_DIR)'
+        SYSTEM_HEADER_DIR=$build_system_header_dir
 fi
 
 # If this is a cross-compiler that does not

@@ -695,12 +695,7 @@ AC_ARG_WITH(sysroot,
    
  TARGET_SYSTEM_ROOT_DEFINE='-DTARGET_SYSTEM_ROOT=\"$(TARGET_SYSTEM_ROOT)\"'
  CROSS_SYSTEM_HEADER_DIR='$(TARGET_SYSTEM_ROOT)$(NATIVE_SYSTEM_HEADER_DIR)'
- if test "x$with_build_sysroot" != x; then
-   build_system_header_dir=$with_build_sysroot'$(NATIVE_SYSTEM_HEADER_DIR)'
- else
-   build_system_header_dir='$(CROSS_SYSTEM_HEADER_DIR)'
- fi
- 
+	
  if test "x$exec_prefix" = xNONE; then
   if test "x$prefix" = xNONE; then
    test_prefix=/usr/local
@@ -1648,6 +1643,16 @@ done
 CROSS=						AC_SUBST(CROSS)
 ALL=all.internal				AC_SUBST(ALL)
 SYSTEM_HEADER_DIR='$(NATIVE_SYSTEM_HEADER_DIR)'	AC_SUBST(SYSTEM_HEADER_DIR)
+
+if test "x$with_build_sysroot" != x; then
+  build_system_header_dir=$with_build_sysroot'$(NATIVE_SYSTEM_HEADER_DIR)'
+else
+  # This value is used, even on a native system, because 
+  # CROSS_SYSTEM_HEADER_DIR is just 
+  # $(TARGET_SYSTEM_ROOT)$(NATIVE_SYSTEM_HEADER_DIR).
+  build_system_header_dir='$(CROSS_SYSTEM_HEADER_DIR)'
+fi
+
 if test x$host != x$target
 then
 	CROSS="-DCROSS_COMPILE"
@@ -1674,8 +1679,7 @@ then
 		CROSS="$CROSS -DNATIVE_CROSS" ;;
 	esac
 elif test "x$TARGET_SYSTEM_ROOT" != x; then
-        # This is just $(TARGET_SYSTEM_ROOT)$(NATIVE_SYSTEM_HEADER_DIR)
-        SYSTEM_HEADER_DIR='$(CROSS_SYSTEM_HEADER_DIR)'
+        SYSTEM_HEADER_DIR=$build_system_header_dir 
 fi
 
 # If this is a cross-compiler that does not
