@@ -1815,6 +1815,10 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
 		    |= (unsigned long) d << (pos % HOST_BITS_PER_LONG);
 		  pos -= 4;
 		}
+	      else if (d)
+		/* Ensure correct rounding by setting last bit if there is
+		   a subsequent nonzero digit.  */
+		r->sig[0] |= 1;
 	      str++;
 	    }
 	}
