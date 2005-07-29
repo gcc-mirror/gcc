@@ -1,3 +1,9 @@
+2005-07-29  James A. Morrison  <phython@gcc.gnu.org>
+
+	* tree-vrp.c (compare_range_with_value): Return true or false
+	for ~[VAL_1, VAL_2] OP VAL if VAL_1 <= VAL <= VAL_2 for NE_EXPR and
+	EQ_EXPR respectively.
+
 2005-07-29  Kazu Hirata  <kazu@codesourcery.com>
 
 	* cfg.c, tree-complex.c, config/frv/frv.c, config/i386/i386.c:
