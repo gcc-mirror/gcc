@@ -2057,14 +2057,26 @@ rtx_equal_for_loop_p (rtx x, rtx y, struct loop_movables *movables,
   if (GET_MODE (x) != GET_MODE (y))
     return 0;
 
-  /* These three types of rtx's can be compared nonrecursively.  */
-  if (code == REG)
-    return (REGNO (x) == REGNO (y) || regs_match_p (x, y, movables));
+  /* These types of rtx's can be compared nonrecursively.  */
+  switch (code)
+    {
+    case PC:
+    case CC0:
+    case CONST_INT:
+    case CONST_DOUBLE:
+      return 0;
 
-  if (code == LABEL_REF)
-    return XEXP (x, 0) == XEXP (y, 0);
-  if (code == SYMBOL_REF)
-    return XSTR (x, 0) == XSTR (y, 0);
+    case REG:
+      return (REGNO (x) == REGNO (y) || regs_match_p (x, y, movables));
+
+    case LABEL_REF:
+      return XEXP (x, 0) == XEXP (y, 0);
+    case SYMBOL_REF:
+      return XSTR (x, 0) == XSTR (y, 0);
+
+    default:
+      break;
+    }
 
   /* Compare the elements.  If any pair of corresponding elements
      fail to match, return 0 for the whole things.  */
@@ -3983,6 +3995,24 @@ rtx_equal_for_prefetch_p (rtx x, rtx y)
     return 1;
   if (code != GET_CODE (y))
     return 0;
+
+  if (GET_MODE (x) != GET_MODE (y))
+    return 0;
+
+  switch (code)
+    {
+    case PC:
+    case CC0:
+    case CONST_INT:
+    case CONST_DOUBLE:
+      return 0;
+
+    case LABEL_REF:
+      return XEXP (x, 0) == XEXP (y, 0);
+
+    default:
+      break;
+    }
 
   if (COMMUTATIVE_ARITH_P (x))
     {

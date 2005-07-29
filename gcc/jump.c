@@ -1879,6 +1879,7 @@ rtx_renumbered_equal_p (rtx x, rtx y)
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
     case CONST_INT:
+    case CONST_DOUBLE:
       return 0;
 
     case LABEL_REF:

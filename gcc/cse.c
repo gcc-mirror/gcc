@@ -2498,6 +2498,7 @@ exp_equiv_p (rtx x, rtx y, int validate, bool for_gcse)
     case PC:
     case CC0:
     case CONST_INT:
+    case CONST_DOUBLE:
       return x == y;
 
     case LABEL_REF:
