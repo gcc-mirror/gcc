@@ -41,10 +41,12 @@ enum
 };
 
 extern GTY(()) tree gfc_array_index_type;
+extern GTY(()) tree gfc_array_range_type;
 extern GTY(()) tree gfc_character1_type_node;
 extern GTY(()) tree ppvoid_type_node;
 extern GTY(()) tree pvoid_type_node;
 extern GTY(()) tree pchar_type_node;
+
 /* This is the type used to hold the lengths of character variables.
    It must be the same as the corresponding definition in gfortran.h.  */
 /* TODO: This is still hardcoded as kind=4 in some bits of the compiler

@@ -51,10 +51,11 @@ static tree gfc_get_derived_type (gfc_symbol * derived);
 
 tree gfc_array_index_type;
 tree gfc_array_range_type;
+tree gfc_character1_type_node;
 tree pvoid_type_node;
 tree ppvoid_type_node;
 tree pchar_type_node;
-tree gfc_character1_type_node;
+
 tree gfc_charlen_type_node;
 
 static GTY(()) tree gfc_desc_dim_type;

@@ -1,3 +1,7 @@
+2005-07-29  Steven Bosscher  <stevenb@suse.de>
+
+	* trans-types.h (gfc_array_range_type): Add missing GTY decl for this.
+
 2005-07-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* fortran/f95-lang.c (language_function): Remove
