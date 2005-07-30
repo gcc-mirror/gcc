@@ -1,3 +1,9 @@
+2005-07-30  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/23143
+	* gcc.dg/parm-forwdecl-1.c, gcc.dg/parm-forwdecl-2.c,
+	gcc.dg/parm-forwdecl-3.c, gcc.dg/parm-forwdecl-4.c: New tests.
+
 2005-07-29  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/529

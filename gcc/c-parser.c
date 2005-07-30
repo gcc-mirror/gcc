@@ -2463,6 +2463,7 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs)
 	{
 	  tree new_attrs;
 	  c_parser_consume_token (parser);
+	  mark_forward_parm_decls ();
 	  new_attrs = c_parser_attributes (parser);
 	  return c_parser_parms_list_declarator (parser, new_attrs);
 	}
