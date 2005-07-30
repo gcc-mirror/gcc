@@ -1,3 +1,8 @@
+2005-07-30 Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/22570 an related issues.
+	* gfortran.dg/x_slash_1.f: New test.
+
 2005-07-30  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/23143
