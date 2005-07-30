@@ -1,3 +1,11 @@
+2005-07-31  Jan Hubicka  <jh@suse.cz>
+
+	* tree-outof-ssa.c (coalesce_ssa_name): Use coalesce_cost.
+	(coalesce_vars): Likewise.
+	* tree-ssa-live.c (coalesce_cost): New.
+	(build_tree_conflict_graph): Use coalesce_cost.
+	* tree-ssa-live.h (coalesce_cost): Declare.
+
 2005-07-30  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* arm.md (all peepholes for post-increment operations): Delete.

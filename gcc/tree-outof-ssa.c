@@ -729,7 +729,13 @@ coalesce_ssa_name (var_map map, int flags)
 		continue;
 	      p2 = var_to_partition (map, PHI_ARG_DEF (phi, x));
 	      if (p2 != NO_PARTITION)
-		add_coalesce (cl, p, p2, 1);
+		{
+		  edge e = PHI_ARG_EDGE (phi, x);
+		  add_coalesce (cl, p, p2,
+				coalesce_cost (EDGE_FREQUENCY (e),
+					       maybe_hot_bb_p (bb),
+					       EDGE_CRITICAL_P (e)));
+		}
 	    }
 	}
     }
@@ -748,7 +754,10 @@ coalesce_ssa_name (var_map map, int flags)
 	      i = x;
 	    }
 	  else
-	    add_coalesce (cl, i, x, 1);
+	    add_coalesce (cl, i, x,
+			  coalesce_cost (EXIT_BLOCK_PTR->frequency,
+					 maybe_hot_bb_p (EXIT_BLOCK_PTR),
+					 false));
 	}
     }
 
@@ -1097,7 +1106,14 @@ coalesce_vars (var_map map, tree_live_info_p liveinfo)
 	      if (p2 == (unsigned)NO_PARTITION)
 		continue;
 	      if (p != p2)
-	        add_coalesce (cl, p, p2, 1);
+		{
+		  edge e = PHI_ARG_EDGE (phi, x);
+
+		  add_coalesce (cl, p, p2, 
+				coalesce_cost (EDGE_FREQUENCY (e),
+					       maybe_hot_bb_p (bb),
+					       EDGE_CRITICAL_P (e)));
+		}
 	    }
 	}
    }

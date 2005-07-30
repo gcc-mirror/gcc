@@ -700,6 +700,7 @@ typedef struct coalesce_list_d
 
 extern coalesce_list_p create_coalesce_list (var_map);
 extern void add_coalesce (coalesce_list_p, int, int, int);
+extern int coalesce_cost (int, bool, bool);
 extern void sort_coalesce_list (coalesce_list_p);
 extern void dump_coalesce_list (FILE *, coalesce_list_p);
 extern void delete_coalesce_list (coalesce_list_p);
