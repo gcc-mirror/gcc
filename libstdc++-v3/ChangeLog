@@ -1,3 +1,7 @@
+2005-07-30  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* scripts/make_exports.pl: Pass --strip-underscores to c++filt.
+
 2005-07-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libstdc++/22284
