@@ -1,3 +1,8 @@
+2005-07-29  Wolfgang Bangerth <bangerth@dealii.org>
+ 
+	PR target/22582
+	* doc/invoke.texi: Document -rdynamic.
+ 
 2005-07-30  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/23143

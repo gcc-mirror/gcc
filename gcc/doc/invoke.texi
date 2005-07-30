@@ -362,7 +362,7 @@ Objective-C and Objective-C++ Dialects}.
 @item Linker Options
 @xref{Link Options,,Options for Linking}.
 @gccoptlist{@var{object-file-name}  -l@var{library} @gol
--nostartfiles  -nodefaultlibs  -nostdlib -pie @gol
+-nostartfiles  -nodefaultlibs  -nostdlib -pie -rdynamic @gol
 -s  -static  -static-libgcc  -shared  -shared-libgcc  -symbolic @gol
 -Wl,@var{option}  -Xlinker @var{option} @gol
 -u @var{symbol}}
@@ -6175,6 +6175,14 @@ Produce a position independent executable on targets which support it.
 For predictable results, you must also specify the same set of options
 that were used to generate code (@option{-fpie}, @option{-fPIE},
 or model suboptions) when you specify this option.
+
+@item -rdynamic
+@opindex rdynamic
+Pass the flag @option{-export-dynamic} to the ELF linker, on targets
+that support it. This instructs the linker to add all symbols, not
+only used ones, to the dynamic symbol table. This option is needed
+for some uses of @code{dlopen} or to allow obtaining backtraces
+from within a program.
 
 @item -s
 @opindex s
