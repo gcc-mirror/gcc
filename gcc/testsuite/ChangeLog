@@ -1,5 +1,15 @@
 2005-07-30  Thomas Koenig  <Thomas.Koenig@online.de>
 
+	Backport from mainline:
+	PR libfortran/20074
+	PR libfortran/20436
+	PR libfortran/21108
+	* gfortran.dg/nested_reshape.f90:  Actually commit.
+	* gfortran.dg/reshape-alloc.f90:  Actually commit.
+	* gfortran.dg/reshape.f90:  Actually commit.
+
+2005-07-30  Thomas Koenig  <Thomas.Koenig@online.de>
+
 	* gfortran.dg/comma_format_extension_4.f:  Adjust length
 	of string for format.
 	* gfortran.dg/der_array_io_1.f:  Replace illegal internal
