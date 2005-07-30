@@ -1664,18 +1664,18 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	  && !C_DECL_BUILTIN_PROTOTYPE (olddecl)))
     DECL_SOURCE_LOCATION (newdecl) = DECL_SOURCE_LOCATION (olddecl);
 
-  /* Merge the unused-warning information.  */
-  if (DECL_IN_SYSTEM_HEADER (olddecl))
-    DECL_IN_SYSTEM_HEADER (newdecl) = 1;
-  else if (DECL_IN_SYSTEM_HEADER (newdecl))
-    DECL_IN_SYSTEM_HEADER (olddecl) = 1;
-
   /* Merge the initialization information.  */
    if (DECL_INITIAL (newdecl) == 0)
     DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
 
    if (CODE_CONTAINS_STRUCT (TREE_CODE (olddecl), TS_DECL_WITH_VIS))
      {
+       /* Merge the unused-warning information.  */
+       if (DECL_IN_SYSTEM_HEADER (olddecl))
+	 DECL_IN_SYSTEM_HEADER (newdecl) = 1;
+       else if (DECL_IN_SYSTEM_HEADER (newdecl))
+	 DECL_IN_SYSTEM_HEADER (olddecl) = 1;
+
        /* Merge the section attribute.
 	  We want to issue an error if the sections conflict but that must be
 	  done later in decl_attributes since we are called before attributes

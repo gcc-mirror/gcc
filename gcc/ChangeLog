@@ -1,3 +1,11 @@
+2005-07-30  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/23143
+	* c-parser.c (c_parser_parms_list_declarator): Call
+	mark_forward_parm_decls.
+	* c-decl.c (merge_decls): Only check DECL_IN_SYSTEM_HEADER for
+	decls with visibility structure.
+
 2005-07-30  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.c (arm_coproc_mem_operand): Fix inaccurate comment.
