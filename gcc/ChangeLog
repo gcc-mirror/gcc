@@ -1,3 +1,12 @@
+2005-07-30  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* arm.md (all peepholes for post-increment operations): Delete.
+	(strqi_preinc, strqi_predec, loadqi_preinc, loadqi_predec)
+	(loadqisi_preinc, loadqisi_predec, strsi_preinc, strsi_predec)
+	(loadsi_preinc, loadsi_predec, strqi_shiftpreinc, strqi_shiftpredec)
+	(loadqi_shiftpreinc, loadqi_shiftpredec, strsi_shiftpreinc)
+	(strsishift_predec, loadsi_shiftpreinc, loadsi_shiftpredec): Delete.
+
 2005-07-30  James A. Morrison  <phython@gcc.gnu.org>
 
 	* fold-const.c (tree_expr_nonnegative_p): Always return true for
