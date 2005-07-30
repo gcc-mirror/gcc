@@ -1292,7 +1292,8 @@ write_character (const char *source, int length)
 
 
 /* Output a real number with default format.
-   This is 1PG14.7E2 for REAL(4) and 1PG23.15E3 for REAL(8).  */
+   This is 1PG14.7E2 for REAL(4), 1PG23.15E3 for REAL(8),
+   1PG24.15E4 for REAL(10) and 1PG40.31E4 for REAL(16).  */
 
 static void
 write_real (const char *source, int length)
@@ -1301,17 +1302,31 @@ write_real (const char *source, int length)
   int org_scale = g.scale_factor;
   f.format = FMT_G;
   g.scale_factor = 1;
-  if (length < 8)
+  switch (length)
     {
+    case 4:
       f.u.real.w = 14;
       f.u.real.d = 7;
       f.u.real.e = 2;
-    }
-  else
-    {
+      break;
+    case 8:
       f.u.real.w = 23;
       f.u.real.d = 15;
       f.u.real.e = 3;
+      break;
+    case 10:
+      f.u.real.w = 24;
+      f.u.real.d = 15;
+      f.u.real.e = 4;
+      break;
+    case 16:
+      f.u.real.w = 40;
+      f.u.real.d = 31;
+      f.u.real.e = 4;
+      break;
+    default:
+      internal_error ("bad real kind");
+      break;
     }
   write_float (&f, source , length);
   g.scale_factor = org_scale;

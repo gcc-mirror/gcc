@@ -1,3 +1,9 @@
+2005-07-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/22436
+	* io/write.c (write_real): Add default formats for real(10) and
+	real(16).
+
 2005-07-30 Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/22570 and related issues.
