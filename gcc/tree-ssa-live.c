@@ -1145,11 +1145,30 @@ find_partition_pair (coalesce_list_p cl, int p1, int p2, bool create)
   return node;
 }
 
+/* Return cost of execution of copy instruction with FREQUENCY
+   possibly on CRITICAL edge and in HOT basic block.  */
+int
+coalesce_cost (int frequency, bool hot, bool critical)
+{
+  /* Base costs on BB frequencies bounded by 1.  */
+  int cost = frequency;
+
+  if (!cost)
+    cost = 1;
+  if (optimize_size || hot)
+    cost = 1;
+  /* Inserting copy on critical edge costs more
+     than inserting it elsewhere.  */
+  if (critical)
+    cost *= 2;
+  return cost;
+}
 
 /* Add a potential coalesce between P1 and P2 in CL with a cost of VALUE.  */
 
 void 
-add_coalesce (coalesce_list_p cl, int p1, int p2, int value)
+add_coalesce (coalesce_list_p cl, int p1, int p2,
+	      int value)
 {
   partition_pair_p node;
 
@@ -1383,7 +1402,9 @@ build_tree_conflict_graph (tree_live_info_p liveinfo, tpa_p tpa,
 		  if (bit)
 		    bitmap_set_bit (live, p2);
 		  if (cl)
-		    add_coalesce (cl, p1, p2, 1);
+		    add_coalesce (cl, p1, p2,
+				  coalesce_cost (bb->frequency,
+				                 maybe_hot_bb_p (bb), false));
 		  set_if_valid (map, live, rhs);
 		}
 	    }
