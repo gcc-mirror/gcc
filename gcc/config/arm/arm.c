@@ -4923,7 +4923,7 @@ cirrus_memory_offset (rtx op)
   return 0;
 }
 
-/* Return TRUE if OP is a valid VFP memory address pattern.
+/* Return TRUE if OP is a valid coprocessor memory address pattern.
    WB if true if writeback address modes are allowed.  */
 
 int

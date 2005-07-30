@@ -1,5 +1,9 @@
 2005-07-30  Paul Brook  <paul@codesourcery.com>
 
+	* config/arm/arm.c (arm_coproc_mem_operand): Fix inaccurate comment.
+
+2005-07-30  Paul Brook  <paul@codesourcery.com>
+
 	* config/arm/arm-protos.h (arm_canonicalize_comparison): Update
 	prototype.
 	* config/arm/arm.c (arm_canonicalize_comparison): Use correct limit
