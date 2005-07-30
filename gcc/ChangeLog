@@ -1,3 +1,8 @@
+2005-07-30  James A. Morrison  <phython@gcc.gnu.org>
+
+	* fold-const.c (tree_expr_nonnegative_p): Always return true for
+	non-integral types.
+
 2005-07-29  Wolfgang Bangerth <bangerth@dealii.org>
  
 	PR target/22582

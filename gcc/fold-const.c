@@ -10719,7 +10719,7 @@ tree_expr_nonnegative_p (tree t)
     case ABS_EXPR:
       /* We can't return 1 if flag_wrapv is set because
 	 ABS_EXPR<INT_MIN> = INT_MIN.  */
-      if (!flag_wrapv)
+      if (!(flag_wrapv && INTEGRAL_TYPE_P (TREE_TYPE (t))))
         return 1;
       break;
 
