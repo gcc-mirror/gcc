@@ -2328,9 +2328,12 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
    immediate value easier to load.  */
 
 enum rtx_code
-arm_canonicalize_comparison (enum rtx_code code, rtx * op1)
+arm_canonicalize_comparison (enum rtx_code code, enum machine_mode mode,
+			     rtx * op1)
 {
   unsigned HOST_WIDE_INT i = INTVAL (*op1);
+  unsigned HOST_WIDE_INT maxval;
+  maxval = (((unsigned HOST_WIDE_INT) 1) << (GET_MODE_BITSIZE(mode) - 1)) - 1;
 
   switch (code)
     {
@@ -2340,7 +2343,7 @@ arm_canonicalize_comparison (enum rtx_code code, rtx * op1)
 
     case GT:
     case LE:
-      if (i != ((((unsigned HOST_WIDE_INT) 1) << (HOST_BITS_PER_WIDE_INT - 1)) - 1)
+      if (i != maxval
 	  && (const_ok_for_arm (i + 1) || const_ok_for_arm (-(i + 1))))
 	{
 	  *op1 = GEN_INT (i + 1);
@@ -2350,7 +2353,7 @@ arm_canonicalize_comparison (enum rtx_code code, rtx * op1)
 
     case GE:
     case LT:
-      if (i != (((unsigned HOST_WIDE_INT) 1) << (HOST_BITS_PER_WIDE_INT - 1))
+      if (i != ~maxval
 	  && (const_ok_for_arm (i - 1) || const_ok_for_arm (-(i - 1))))
 	{
 	  *op1 = GEN_INT (i - 1);

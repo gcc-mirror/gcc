@@ -52,7 +52,8 @@ extern int arm_hard_regno_mode_ok (unsigned int, enum machine_mode);
 extern int const_ok_for_arm (HOST_WIDE_INT);
 extern int arm_split_constant (RTX_CODE, enum machine_mode, rtx,
 			       HOST_WIDE_INT, rtx, rtx, int);
-extern RTX_CODE arm_canonicalize_comparison (RTX_CODE, rtx *);
+extern RTX_CODE arm_canonicalize_comparison (RTX_CODE, enum machine_mode,
+					     rtx *);
 extern int legitimate_pic_operand_p (rtx);
 extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
 extern int arm_legitimate_address_p  (enum machine_mode, rtx, RTX_CODE, int);

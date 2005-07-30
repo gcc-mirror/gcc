@@ -2243,7 +2243,8 @@ extern int making_const_table;
 	        || (const_ok_for_arm (- INTVAL (OP1)))))		\
         {								\
           rtx const_op = OP1;						\
-          CODE = arm_canonicalize_comparison ((CODE), &const_op);	\
+          CODE = arm_canonicalize_comparison ((CODE), GET_MODE (OP0),	\
+					      &const_op);		\
           OP1 = const_op;						\
         }								\
     }									\
