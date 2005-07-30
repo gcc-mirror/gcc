@@ -482,15 +482,24 @@ formatted_transfer (bt type, void *p, int len)
       /* Now discharge T, TR and X movements to the right.  This is delayed
 	 until a data producing format to supress trailing spaces.  */
       t = f->format;
-      if (g.mode == WRITING && skips > 0
-	&&    (t == FMT_I || t == FMT_B || t == FMT_O || t == FMT_Z
-	    || t == FMT_F || t == FMT_E || t == FMT_EN || t == FMT_ES
-	    || t == FMT_G || t == FMT_L || t == FMT_A || t == FMT_D
+      if (g.mode == WRITING && skips != 0
+	&& ((n>0 && (  t == FMT_I  || t == FMT_B  || t == FMT_O
+		    || t == FMT_Z  || t == FMT_F  || t == FMT_E
+		    || t == FMT_EN || t == FMT_ES || t == FMT_G
+		    || t == FMT_L  || t == FMT_A  || t == FMT_D))
 	    || t == FMT_STRING))
 	{
-	  write_x (skips, pending_spaces);
-	  max_pos = (int)(current_unit->recl - current_unit->bytes_left);
-	  skips = pending_spaces = 0;
+	  if (skips > 0)
+	    {
+	      write_x (skips, pending_spaces);
+	      max_pos = (int)(current_unit->recl - current_unit->bytes_left);
+	    }
+	  if (skips < 0)
+	    {
+	      move_pos_offset (current_unit->s, skips);
+	      current_unit->bytes_left -= (gfc_offset)skips;
+	    }
+	skips = pending_spaces = 0;
 	}
 
       bytes_used = (int)(current_unit->recl - current_unit->bytes_left);
@@ -724,19 +733,19 @@ formatted_transfer (bt type, void *p, int len)
 
 	  /* Writes occur just before the switch on f->format, above, so that
 	     trailing blanks are suppressed.  */
-	  if (skips > 0)
+	  if (g.mode == READING)
 	    {
-	      if (g.mode == READING)
+	      if (skips > 0)
 		{
 		  f->u.n = skips;
 		  read_x (f);
 		}
-	    }
-	  if (skips < 0)
-	    {
-	      move_pos_offset (current_unit->s, skips);
-	      current_unit->bytes_left -= skips;
-	      skips = pending_spaces = 0;
+	      if (skips < 0)
+		{
+		  move_pos_offset (current_unit->s, skips);
+		  current_unit->bytes_left -= skips;
+		  skips = pending_spaces = 0;
+		}
 	    }
 
 	break;
@@ -779,7 +788,6 @@ formatted_transfer (bt type, void *p, int len)
 	case FMT_SLASH:
 	  consume_data_flag = 0 ;
 	  skips = pending_spaces = 0;
-	  current_unit->bytes_left = 0;
 	  next_record (0);
 	  break;
 
@@ -818,7 +826,7 @@ formatted_transfer (bt type, void *p, int len)
       if (g.mode == READING)
 	skips = 0;
 
-      pos = current_unit->recl - current_unit->bytes_left;
+      pos = (int)(current_unit->recl - current_unit->bytes_left);
       max_pos = (max_pos > pos) ? max_pos : pos;
 
     }

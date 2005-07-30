@@ -1,3 +1,8 @@
+2005-07-30 Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/22570 and related issues.
+	* gfortran.dg/x_slash_1.f: New test.
+
 2005-07-29  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* gfortran.dg/matmul_1.f90:  Correct LHS of matmul test (it

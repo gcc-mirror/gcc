@@ -1,3 +1,13 @@
+2005-07-30 Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/22570 and related issues.
+	* transfer.c (formatted_transfer): Make sure that there
+	really is data present before X- or T- editing. Move all
+	treatment of tabbing during writes to start of next data
+	producing format. Suppress incorrect zeroing of bytes_left
+	in slash formating. Insert int cast for assignment of a
+	difference of two gfc_offsets.
+
 2005-07-23  Jerry DeLisle  <jvdelisle@verizon.net>
 
     * io/write.c (write_float): Revise output of IEEE exceptional
