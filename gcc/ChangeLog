@@ -1,3 +1,11 @@
+2005-07-30  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm-protos.h (arm_canonicalize_comparison): Update
+	prototype.
+	* config/arm/arm.c (arm_canonicalize_comparison): Use correct limit
+	value for mode.
+	* config/arm/arm.h (CANONICALIZE_COMPARISON): Pass mode argument.
+
 2005-07-29  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/529
