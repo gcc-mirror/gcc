@@ -1,3 +1,12 @@
+2005-07-30  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	* gfortran.dg/comma_format_extension_4.f:  Adjust length
+	of string for format.
+	* gfortran.dg/der_array_io_1.f:  Replace illegal internal
+	print statement with internal write.
+	* gfortran.dg/der_array_io_2.f:  Likewise.
+	* gfortran.dg/der_array_io_3.f:  Likewise.
+
 2005-07-30 Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/22570 and related issues.
