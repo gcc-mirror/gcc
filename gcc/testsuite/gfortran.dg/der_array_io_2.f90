@@ -23,7 +23,7 @@ program main
   foo(2)%z = 50
   foo(2)%a = "HELLO WORLD"
 
-  print (buf1,*), foo
-  print (buf2,*), ((foo(i)%x(j),j=1,3), (foo(i)%y(j),j=1,4), (foo(i)%z(j),j=1,5), (foo(i)%a(j),j=1,3), i=1,2)
+  write (buf1,*)  foo
+  write (buf2,*) ((foo(i)%x(j),j=1,3), (foo(i)%y(j),j=1,4), (foo(i)%z(j),j=1,5), (foo(i)%a(j),j=1,3), i=1,2)
   if (buf1.ne.buf2) call abort
 end program main
