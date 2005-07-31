@@ -1,5 +1,11 @@
 2005-07-31  Jan Hubicka  <jh@suse.cz>
 
+	* pretty-print.h (pp_widest_integer): New macro.
+	* tree-pretty-print.c (dump_bb_header): Print BB frequencies and
+	counts.
+
+2005-07-31  Jan Hubicka  <jh@suse.cz>
+
 	* output.h (enum section_category): Export from varasm.c
 	(categorize_decl_for_section): Likewise.
 	* varasm.c (enum section_category): Kill.

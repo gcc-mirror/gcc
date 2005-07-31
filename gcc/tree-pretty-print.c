@@ -2247,6 +2247,16 @@ dump_bb_header (pretty_printer *buffer, basic_block bb, int indent, int flags)
       INDENT (indent);
       pp_string (buffer, "# BLOCK ");
       pp_decimal_int (buffer, bb->index);
+      if (bb->frequency)
+	{
+          pp_string (buffer, " freq:");
+          pp_decimal_int (buffer, bb->frequency);
+	}
+      if (bb->count)
+	{
+          pp_string (buffer, " count:");
+          pp_widest_integer (buffer, bb->count);
+	}
 
       if (flags & TDF_LINENO)
 	{
