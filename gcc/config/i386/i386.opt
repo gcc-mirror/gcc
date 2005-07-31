@@ -87,6 +87,10 @@ mbranch-cost=
 Target RejectNegative Joined Var(ix86_branch_cost_string)
 Branches are this expensive (1-5, arbitrary units)
 
+mlarge-data-threshold=
+Target RejectNegative Joined Var(ix86_section_threshold_string)
+Data greater than given threshold will go into .ldata section in x86-64 medium model
+
 mcmodel=
 Target RejectNegative Joined Var(ix86_cmodel_string)
 Use given x86-64 code model

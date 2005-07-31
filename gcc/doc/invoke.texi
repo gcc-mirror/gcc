@@ -521,7 +521,7 @@ Objective-C and Objective-C++ Dialects}.
 -m96bit-long-double  -mregparm=@var{num}  -msseregparm @gol
 -momit-leaf-frame-pointer  -mno-red-zone -mno-tls-direct-seg-refs @gol
 -mcmodel=@var{code-model} @gol
--m32  -m64}
+-m32  -m64 -mlarge-data-threshold=@var{num}}
 
 @emph{IA-64 Options}
 @gccoptlist{-mbig-endian  -mlittle-endian  -mgnu-as  -mgnu-ld  -mno-pic @gol
@@ -9046,6 +9046,11 @@ their size as well as function calling convention for function taking
 @code{long double} will be modified.  Hence they will not be binary
 compatible with arrays or structures in code compiled without that switch.
 
+@item -mmlarge-data-threshold=@var{number}
+@opindex mlarge-data-threshold=@var{number}
+When @option{-mcmodel=medium} is specified, the data greater than
+@var{threshold} are placed in large data section.  This value must be the
+same across all object linked into the binarry and defaults to 65535.
 
 @item -msvr3-shlib
 @itemx -mno-svr3-shlib

@@ -52,7 +52,11 @@ Boston, MA 02110-1301, USA.  */
  %{Wa,*:%*} %{m32:--32} %{m64:--64}"
 
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
-  asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
+  x86_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
+
+#undef  ASM_OUTPUT_ALIGNED_COMMON
+#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
+  x86_elf_aligned_common (FILE, NAME, SIZE, ALIGN);
 
 /* This is used to align code labels according to Intel recommendations.  */
 
@@ -75,3 +79,9 @@ Boston, MA 02110-1301, USA.  */
 
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+
+#undef TARGET_ASM_SELECT_SECTION
+#define TARGET_ASM_SELECT_SECTION  x86_64_elf_select_section
+
+#undef TARGET_ASM_UNIQUE_SECTION
+#define TARGET_ASM_UNIQUE_SECTION  x86_64_elf_unique_section
