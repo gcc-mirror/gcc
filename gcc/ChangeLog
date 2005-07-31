@@ -1,3 +1,10 @@
+2005-07-31  Steven Bosscher  <stevenb@suse.de>
+
+	PR target/23095
+	* common.opt (flag_gcse_after_reload): Don't initialize to 2.
+	(flag_rerun_cse_after_loop): Initialize this to 2 instead.
+	* postreload-gcse.c (hash_scan_set): Do not consider stack regs.
+
 2005-07-31  Jan Hubicka  <jh@suse.cz>
 
 	* pretty-print.h (pp_widest_integer): New macro.
