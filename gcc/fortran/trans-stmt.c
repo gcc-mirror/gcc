@@ -163,11 +163,11 @@ gfc_trans_goto (gfc_code * code)
   gfc_trans_runtime_check (tmp, assign_error, &se.pre);
 
   assigned_goto = GFC_DECL_ASSIGN_ADDR (se.expr);
-  target = build1 (GOTO_EXPR, void_type_node, assigned_goto);
 
   code = code->block;
   if (code == NULL)
     {
+      target = build1 (GOTO_EXPR, void_type_node, assigned_goto);
       gfc_add_expr_to_block (&se.pre, target);
       return gfc_finish_block (&se.pre);
     }
@@ -177,10 +177,12 @@ gfc_trans_goto (gfc_code * code)
 
   do
     {
-      tmp = gfc_get_label_decl (code->label);
-      tmp = gfc_build_addr_expr (pvoid_type_node, tmp);
+      target = gfc_get_label_decl (code->label);
+      tmp = gfc_build_addr_expr (pvoid_type_node, target);
       tmp = build2 (EQ_EXPR, boolean_type_node, tmp, assigned_goto);
-      tmp = build3_v (COND_EXPR, tmp, target, build_empty_stmt ());
+      tmp = build3_v (COND_EXPR, tmp,
+		      build1 (GOTO_EXPR, void_type_node, target),
+		      build_empty_stmt ());
       gfc_add_expr_to_block (&se.pre, tmp);
       code = code->block;
     }
