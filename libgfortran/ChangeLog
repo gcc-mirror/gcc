@@ -1,3 +1,9 @@
+2005-07-31  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/21787
+	* intrinsics/abort.c (abort): Close units before aborting.
+	Updated copyright years.
+
 2005-07-30  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/22436

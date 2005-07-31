@@ -1,5 +1,5 @@
 /* Implementation of the ABORT intrinsic.
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -35,5 +35,6 @@ export_proto_np(PREFIX(abort));
 
 void PREFIX(abort) (void)
 {
+  close_units ();
   abort ();
 }
