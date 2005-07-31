@@ -1,3 +1,8 @@
+2005-07-31  Steven Bosscher  <stevenb@suse.de>
+
+	* trans-stmt.c (gfc_trans_goto): Jump to the known label instead
+	of the assigned goto variable.
+
 2005-07-29  Steven Bosscher  <stevenb@suse.de>
 
 	* trans-types.h (gfc_array_range_type): Add missing GTY decl for this.
