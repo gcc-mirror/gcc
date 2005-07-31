@@ -1,3 +1,29 @@
+2005-07-31  Richard Sandiford  <richard@codesourcery.com>
+
+	PR target/20621
+	Backport from mainline:
+
+	2004-08-01  Richard Sandiford  <rsandifo@redhat.com>
+	* config/mips/mips.md (cprestore): Provide two alternatives, one for
+	an in-range offset and one for an out-of-range offset.  Wrap the latter
+	in .set macro/.set nomacro if it's inside a .set nomacro block.
+
+	2004-08-01  Richard Sandiford  <rsandifo@redhat.com>
+	* config/mips/mips-protos.h (mips_gp_save_slot): Remove.
+	(mips_restore_gp): Declare.
+	* config/mips/mips.c (mips_add_offset): Add a scratch register
+	argument.  Reimplement in rtl only, reusing MIPS16 logic from
+	mips_output_mi_thunk.
+	(mips_legitimize_address, mips_legitimize_const_move): Adjust calls
+	to mips_add_offset.
+	(mips_gp_save_slot): Delete.
+	(mips_restore_gp): New function.
+	(mips_set_return_address, mips_output_mi_thunk): Use mips_add_offset.
+	* config/mips/mips.md (exception_receiver): Turn into a
+	define_insn_and_split.  Use mips_restore_gp to do the split.
+	(call_internal, call_value_internal, call_value_multiple_internal): Use
+	mips_restore_gp to restore $gp.
+
 2005-07-29  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/sysv4.h (TARGET_ASM_EXCEPTION_SECTION): Delete.

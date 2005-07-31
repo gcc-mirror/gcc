@@ -206,7 +206,7 @@ static rtx mips_split_symbol (rtx, rtx);
 static rtx mips_unspec_address (rtx, enum mips_symbol_type);
 static rtx mips_unspec_offset_high (rtx, rtx, rtx, enum mips_symbol_type);
 static rtx mips_load_got (rtx, rtx, enum mips_symbol_type);
-static rtx mips_add_offset (rtx, HOST_WIDE_INT);
+static rtx mips_add_offset (rtx, rtx, HOST_WIDE_INT);
 static unsigned int mips_build_shift (struct mips_integer_op *, HOST_WIDE_INT);
 static unsigned int mips_build_lower (struct mips_integer_op *,
 				      unsigned HOST_WIDE_INT);
@@ -1787,18 +1787,33 @@ mips_load_got_global (rtx base, rtx addr)
 }
 
 
-/* Return a legitimate address for REG + OFFSET.  This function will
-   create a temporary register if OFFSET is not a SMALL_OPERAND.  */
+/* Return a legitimate address for REG + OFFSET.  TEMP is as for
+   mips_force_temporary; it is only needed when OFFSET is not a
+   SMALL_OPERAND.  */
 
 static rtx
-mips_add_offset (rtx reg, HOST_WIDE_INT offset)
+mips_add_offset (rtx temp, rtx reg, HOST_WIDE_INT offset)
 {
   if (!SMALL_OPERAND (offset))
-    reg = expand_simple_binop (GET_MODE (reg), PLUS,
-			       GEN_INT (CONST_HIGH_PART (offset)),
-			       reg, NULL, 0, OPTAB_WIDEN);
-
-  return plus_constant (reg, CONST_LOW_PART (offset));
+    {
+      rtx high;
+      if (TARGET_MIPS16)
+	{
+	  /* Load the full offset into a register so that we can use
+	     an unextended instruction for the address itself.  */
+	  high = GEN_INT (offset);
+	  offset = 0;
+	}
+      else
+	{
+	  /* Leave OFFSET as a 16-bit offset and put the excess in HIGH.  */
+	  high = GEN_INT (CONST_HIGH_PART (offset));
+	  offset = CONST_LOW_PART (offset);
+	}
+      high = mips_force_temporary (temp, high);
+      reg = mips_force_temporary (temp, gen_rtx_PLUS (Pmode, high, reg));
+    }
+  return plus_constant (reg, offset);
 }
 
 
@@ -1829,7 +1844,7 @@ mips_legitimize_address (rtx *xloc, enum machine_mode mode)
       reg = XEXP (*xloc, 0);
       if (!mips_valid_base_register_p (reg, mode, 0))
 	reg = copy_to_mode_reg (Pmode, reg);
-      *xloc = mips_add_offset (reg, INTVAL (XEXP (*xloc, 1)));
+      *xloc = mips_add_offset (0, reg, INTVAL (XEXP (*xloc, 1)));
       return true;
     }
 
@@ -2007,7 +2022,7 @@ mips_legitimize_const_move (enum machine_mode mode, rtx dest, rtx src)
       && (!no_new_pseudos || SMALL_OPERAND (offset)))
     {
       base = mips_force_temporary (dest, base);
-      emit_move_insn (dest, mips_add_offset (base, offset));
+      emit_move_insn (dest, mips_add_offset (0, base, offset));
       return;
     }
 
@@ -2772,25 +2787,28 @@ mips_output_move (rtx dest, rtx src)
   abort ();
 }
 
-/* Return an rtx for the gp save slot.  Valid only when using o32 or
+/* Restore $gp from its save slot.  Valid only when using o32 or
    o64 abicalls.  */
 
-rtx
-mips_gp_save_slot (void)
+void
+mips_restore_gp (void)
 {
-  rtx loc;
+  rtx address, slot;
 
   if (!TARGET_ABICALLS || TARGET_NEWABI)
     abort ();
 
-  if (frame_pointer_needed)
-    loc = hard_frame_pointer_rtx;
-  else
-    loc = stack_pointer_rtx;
-  loc = plus_constant (loc, current_function_outgoing_args_size);
-  loc = gen_rtx_MEM (Pmode, loc);
-  RTX_UNCHANGING_P (loc) = 1;
-  return loc;
+  address = mips_add_offset (pic_offset_table_rtx,
+			     frame_pointer_needed
+			     ? hard_frame_pointer_rtx
+			     : stack_pointer_rtx,
+			     current_function_outgoing_args_size);
+  slot = gen_rtx_MEM (Pmode, address);
+  RTX_UNCHANGING_P (slot) = 1;
+
+  emit_move_insn (pic_offset_table_rtx, slot);
+  if (!TARGET_EXPLICIT_RELOCS)
+    emit_insn (gen_blockage ());
 }
 
 /* Make normal rtx_code into something we can index from an array */
@@ -3403,26 +3421,15 @@ mips_emit_fcc_reload (rtx dest, rtx src, rtx scratch)
 void
 mips_set_return_address (rtx address, rtx scratch)
 {
-  HOST_WIDE_INT gp_offset;
+  rtx slot_address;
 
   compute_frame_size (get_frame_size ());
   if (((cfun->machine->frame.mask >> 31) & 1) == 0)
     abort ();
-  gp_offset = cfun->machine->frame.gp_sp_offset;
+  slot_address = mips_add_offset (scratch, stack_pointer_rtx,
+				  cfun->machine->frame.gp_sp_offset);
 
-  /* Reduce SP + GP_OFSET to a legitimate address and put it in SCRATCH.  */
-  if (gp_offset < 32768)
-    scratch = plus_constant (stack_pointer_rtx, gp_offset);
-  else
-    {
-      emit_move_insn (scratch, GEN_INT (gp_offset));
-      if (Pmode == DImode)
-	emit_insn (gen_adddi3 (scratch, scratch, stack_pointer_rtx));
-      else
-	emit_insn (gen_addsi3 (scratch, scratch, stack_pointer_rtx));
-    }
-
-  emit_move_insn (gen_rtx_MEM (GET_MODE (address), scratch), address);
+  emit_move_insn (gen_rtx_MEM (GET_MODE (address), slot_address), address);
 }
 
 /* Emit straight-line code to move LENGTH bytes from SRC to DEST.
@@ -7190,25 +7197,7 @@ mips_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
       emit_move_insn (temp1, gen_rtx_MEM (Pmode, this));
 
       /* Set ADDR to a legitimate address for *THIS + VCALL_OFFSET.  */
-      if (SMALL_OPERAND (vcall_offset))
-	addr = gen_rtx_PLUS (Pmode, temp1, GEN_INT (vcall_offset));
-      else if (TARGET_MIPS16)
-	{
-	  /* Load the full offset into a register so that we can use
-	     an unextended instruction for the load itself.  */
-	  emit_move_insn (temp2, GEN_INT (vcall_offset));
-	  emit_insn (gen_add3_insn (temp1, temp1, temp2));
-	  addr = temp1;
-	}
-      else
-	{
-	  /* Load the high part of the offset into a register and
-	     leave the low part for the address.  */
-	  emit_move_insn (temp2, GEN_INT (CONST_HIGH_PART (vcall_offset)));
-	  emit_insn (gen_add3_insn (temp1, temp1, temp2));
-	  addr = gen_rtx_PLUS (Pmode, temp1,
-			       GEN_INT (CONST_LOW_PART (vcall_offset)));
-	}
+      addr = mips_add_offset (temp2, temp1, vcall_offset);
 
       /* Load the offset and add it to THIS.  */
       emit_move_insn (temp1, gen_rtx_MEM (Pmode, addr));
