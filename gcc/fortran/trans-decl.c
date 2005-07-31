@@ -1874,14 +1874,17 @@ gfc_build_builtin_function_decls (void)
   tree gfc_logical4_type_node = gfc_get_logical_type (4);
   tree gfc_pint4_type_node = build_pointer_type (gfc_int4_type_node);
 
+  /* Treat these two internal malloc wrappers as malloc.  */
   gfor_fndecl_internal_malloc =
     gfc_build_library_function_decl (get_identifier (PREFIX("internal_malloc")),
 				     pvoid_type_node, 1, gfc_int4_type_node);
+  DECL_IS_MALLOC (gfor_fndecl_internal_malloc) = 1;
 
   gfor_fndecl_internal_malloc64 =
     gfc_build_library_function_decl (get_identifier
 				     (PREFIX("internal_malloc64")),
 				     pvoid_type_node, 1, gfc_int8_type_node);
+  DECL_IS_MALLOC (gfor_fndecl_internal_malloc64) = 1;
 
   gfor_fndecl_internal_free =
     gfc_build_library_function_decl (get_identifier (PREFIX("internal_free")),
@@ -1930,6 +1933,8 @@ gfc_build_builtin_function_decls (void)
 				     3,
 				     pchar_type_node, pchar_type_node,
 				     gfc_int4_type_node);
+  /* The runtime_error function does not return.  */
+  TREE_THIS_VOLATILE (gfor_fndecl_runtime_error) = 1;
 
   gfor_fndecl_in_pack = gfc_build_library_function_decl (
         get_identifier (PREFIX("internal_pack")),
