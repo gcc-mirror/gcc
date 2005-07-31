@@ -1,5 +1,11 @@
 2005-07-31  Steven Bosscher  <stevenb@suse.de>
 
+	* trans-decl.c (gfc_build_builtin_function_decls): Give the internal
+	malloc functions the 'malloc' attribute.  Give runtime_error the
+	'noreturn' attribute.
+
+2005-07-31  Steven Bosscher  <stevenb@suse.de>
+
 	* trans-stmt.c (gfc_trans_goto): Jump to the known label instead
 	of the assigned goto variable.
 
