@@ -1,3 +1,11 @@
+2005-07-31  Steven Bosscher  <stevenb@suse.de>
+
+	PR target/23095
+	* gfortran.dg/pr23095.f: New test.
+
+	PR c++/22003
+	* g++.dg/other/pr22003.C: New test.
+
 2005-07-31  Richard Sandiford  <richard@codesourcery.com>
 
 	PR target/20621
