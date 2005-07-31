@@ -1,3 +1,8 @@
+2005-07-31  Richard Sandiford  <richard@codesourcery.com>
+
+	PR target/20621
+	* gcc.c-torture/execute/pr20621-1.c: New test.
+
 2005-07-30  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	Backport from mainline:
