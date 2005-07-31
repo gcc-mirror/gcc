@@ -812,6 +812,11 @@ unsigned int ix86_preferred_stack_boundary;
 /* Values 1-5: see jump.c */
 int ix86_branch_cost;
 
+/* Variables which are this size or smaller are put in the data/bss
+   or ldata/lbss sections.  */
+
+int ix86_section_threshold = 65536;
+
 /* Prefix built by ASM_GENERATE_INTERNAL_LABEL.  */
 char internal_label_prefix[16];
 int internal_label_prefix_len;
@@ -945,6 +950,12 @@ static const char * const x86_64_reg_class_name[] = {
 static REAL_VALUE_TYPE ext_80387_constants_table [5];
 static bool ext_80387_constants_init = 0;
 static void init_ext_80387_constants (void);
+static bool ix86_in_large_data_p (tree);
+static void ix86_encode_section_info (tree, rtx, int);
+static void x86_64_elf_unique_section (tree decl, int reloc) ATTRIBUTE_UNUSED;
+static void x86_64_elf_select_section (tree decl, int reloc,
+				       unsigned HOST_WIDE_INT align)
+				      ATTRIBUTE_UNUSED;
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -964,6 +975,9 @@ static void init_ext_80387_constants (void);
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE ix86_output_function_epilogue
+
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO ix86_encode_section_info
 
 #undef TARGET_ASM_OPEN_PAREN
 #define TARGET_ASM_OPEN_PAREN ""
@@ -1291,14 +1305,14 @@ override_options (void)
     {
       if (!strcmp (ix86_cmodel_string, "small"))
 	ix86_cmodel = flag_pic ? CM_SMALL_PIC : CM_SMALL;
+      else if (!strcmp (ix86_cmodel_string, "medium"))
+	ix86_cmodel = flag_pic ? CM_MEDIUM_PIC : CM_MEDIUM;
       else if (flag_pic)
 	sorry ("code model %s not supported in PIC mode", ix86_cmodel_string);
       else if (!strcmp (ix86_cmodel_string, "32"))
 	ix86_cmodel = CM_32;
       else if (!strcmp (ix86_cmodel_string, "kernel") && !flag_pic)
 	ix86_cmodel = CM_KERNEL;
-      else if (!strcmp (ix86_cmodel_string, "medium") && !flag_pic)
-	ix86_cmodel = CM_MEDIUM;
       else if (!strcmp (ix86_cmodel_string, "large") && !flag_pic)
 	ix86_cmodel = CM_LARGE;
       else
@@ -1502,6 +1516,14 @@ override_options (void)
       else
 	ix86_branch_cost = i;
     }
+  if (ix86_section_threshold_string)
+    {
+      i = atoi (ix86_section_threshold_string);
+      if (i < 0)
+	error ("-mlarge-data-threshold=%d is negative", i);
+      else
+	ix86_section_threshold = i;
+    }
 
   if (ix86_tls_dialect_string)
     {
@@ -1639,6 +1661,175 @@ override_options (void)
      so it won't slow down the compilation and make x87 code slower.  */
   if (!TARGET_SCHEDULE)
     flag_schedule_insns_after_reload = flag_schedule_insns = 0;
+}
+
+/* switch to the appropriate section for output of DECL.
+   DECL is either a `VAR_DECL' node or a constant of some sort.
+   RELOC indicates whether forming the initial value of DECL requires
+   link-time relocations.  */
+
+static void
+x86_64_elf_select_section (tree decl, int reloc,
+		         unsigned HOST_WIDE_INT align)
+{
+  if ((ix86_cmodel == CM_MEDIUM || ix86_cmodel == CM_MEDIUM_PIC)
+      && ix86_in_large_data_p (decl))
+    {
+      const char *sname = NULL;
+      switch (categorize_decl_for_section (decl, reloc, flag_pic))
+	{
+	case SECCAT_DATA:
+	  sname = ".ldata";
+	  break;
+	case SECCAT_DATA_REL:
+	  sname = ".ldata.rel";
+	  break;
+	case SECCAT_DATA_REL_LOCAL:
+	  sname = ".ldata.rel.local";
+	  break;
+	case SECCAT_DATA_REL_RO:
+	  sname = ".ldata.rel.ro";
+	  break;
+	case SECCAT_DATA_REL_RO_LOCAL:
+	  sname = ".ldata.rel.ro.local";
+	  break;
+	case SECCAT_BSS:
+	  sname = ".lbss";
+	  break;
+	case SECCAT_RODATA:
+	case SECCAT_RODATA_MERGE_STR:
+	case SECCAT_RODATA_MERGE_STR_INIT:
+	case SECCAT_RODATA_MERGE_CONST:
+	  sname = ".lrodata";
+	  break;
+	case SECCAT_SRODATA:
+	case SECCAT_SDATA:
+	case SECCAT_SBSS:
+	  gcc_unreachable ();
+	case SECCAT_TEXT:
+	case SECCAT_TDATA:
+	case SECCAT_TBSS:
+	  /* We don't split these for medium model.  Place them into
+	     default sections and hope for best.  */
+	  break;
+	}
+      if (sname)
+	{
+          named_section (decl, sname, reloc);
+	  return;
+	}
+    }
+  default_elf_select_section (decl, reloc, align);
+}
+
+/* Build up a unique section name, expressed as a
+   STRING_CST node, and assign it to DECL_SECTION_NAME (decl).
+   RELOC indicates whether the initial value of EXP requires
+   link-time relocations.  */
+
+static void
+x86_64_elf_unique_section (tree decl, int reloc)
+{
+  if ((ix86_cmodel == CM_MEDIUM || ix86_cmodel == CM_MEDIUM_PIC)
+      && ix86_in_large_data_p (decl))
+    {
+      const char *prefix = NULL;
+      /* We only need to use .gnu.linkonce if we don't have COMDAT groups.  */
+      bool one_only = DECL_ONE_ONLY (decl) && !HAVE_COMDAT_GROUP;
+
+      switch (categorize_decl_for_section (decl, reloc, flag_pic))
+	{
+	case SECCAT_DATA:
+	case SECCAT_DATA_REL:
+	case SECCAT_DATA_REL_LOCAL:
+	case SECCAT_DATA_REL_RO:
+	case SECCAT_DATA_REL_RO_LOCAL:
+          prefix = one_only ? ".gnu.linkonce.ld." : ".ldata.";
+	  break;
+	case SECCAT_BSS:
+          prefix = one_only ? ".gnu.linkonce.lb." : ".lbss.";
+	  break;
+	case SECCAT_RODATA:
+	case SECCAT_RODATA_MERGE_STR:
+	case SECCAT_RODATA_MERGE_STR_INIT:
+	case SECCAT_RODATA_MERGE_CONST:
+          prefix = one_only ? ".gnu.linkonce.lr." : ".lrodata.";
+	  break;
+	case SECCAT_SRODATA:
+	case SECCAT_SDATA:
+	case SECCAT_SBSS:
+	  gcc_unreachable ();
+	case SECCAT_TEXT:
+	case SECCAT_TDATA:
+	case SECCAT_TBSS:
+	  /* We don't split these for medium model.  Place them into
+	     default sections and hope for best.  */
+	  break;
+	}
+      if (prefix)
+	{
+	  const char *name;
+	  size_t nlen, plen;
+	  char *string;
+	  plen = strlen (prefix);
+
+	  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+	  name = targetm.strip_name_encoding (name);
+	  nlen = strlen (name);
+
+	  string = alloca (nlen + plen + 1);
+	  memcpy (string, prefix, plen);
+	  memcpy (string + plen, name, nlen + 1);
+
+	  DECL_SECTION_NAME (decl) = build_string (nlen + plen, string);
+	  return;
+	}
+    }
+  default_unique_section (decl, reloc);
+}
+
+/* This says how to output assembler code to declare an
+   uninitialized external linkage data object.
+
+   For medim model x86-64 we need to use .largecomm opcode for
+   large objects.  */
+void
+x86_elf_aligned_common (FILE *file,
+			const char *name, unsigned HOST_WIDE_INT size,
+			int align)
+{
+  if ((ix86_cmodel == CM_MEDIUM || ix86_cmodel == CM_MEDIUM_PIC)
+      && size > (unsigned int)ix86_section_threshold)
+    fprintf (file, ".largecomm\t");
+  else
+    fprintf (file, "%s", COMMON_ASM_OP);
+  assemble_name (file, name);
+  fprintf (file, ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",
+	   size, align / BITS_PER_UNIT);
+}
+
+/* Utility function for targets to use in implementing
+   ASM_OUTPUT_ALIGNED_BSS.  */
+
+void
+x86_output_aligned_bss (FILE *file, tree decl ATTRIBUTE_UNUSED,
+			const char *name, unsigned HOST_WIDE_INT size,
+			int align)
+{
+  if ((ix86_cmodel == CM_MEDIUM || ix86_cmodel == CM_MEDIUM_PIC)
+      && size > (unsigned int)ix86_section_threshold)
+    named_section (decl, ".lbss", 0);
+  else
+    bss_section ();
+  ASM_OUTPUT_ALIGN (file, floor_log2 (align / BITS_PER_UNIT));
+#ifdef ASM_DECLARE_OBJECT_NAME
+  last_assemble_variable_decl = decl;
+  ASM_DECLARE_OBJECT_NAME (file, name, decl);
+#else
+  /* Standard thing is just output label for the object.  */
+  ASM_OUTPUT_LABEL (file, name);
+#endif /* ASM_DECLARE_OBJECT_NAME */
+  ASM_OUTPUT_SKIP (file, size ? size : 1);
 }
 
 void
@@ -4644,7 +4835,10 @@ ix86_expand_prologue (void)
 
   if (pic_reg_used)
     {
-      insn = emit_insn (gen_set_got (pic_offset_table_rtx));
+      if (TARGET_64BIT)
+        insn = emit_insn (gen_set_got_rex64 (pic_offset_table_rtx));
+      else
+        insn = emit_insn (gen_set_got (pic_offset_table_rtx));
 
       /* Even with accurate pre-reload life analysis, we can wind up
 	 deleting all references to the pic register after reload.
@@ -5173,6 +5367,8 @@ legitimate_constant_p (rtx x)
       if (GET_CODE (x) == UNSPEC)
 	switch (XINT (x, 1))
 	  {
+	  case UNSPEC_GOTOFF:
+	    return TARGET_64BIT;
 	  case UNSPEC_TPOFF:
 	  case UNSPEC_NTPOFF:
 	    return local_exec_symbolic_operand (XVECEXP (x, 0, 0), Pmode);
@@ -5232,11 +5428,16 @@ legitimate_pic_operand_p (rtx x)
     {
     case CONST:
       inner = XEXP (x, 0);
+      if (GET_CODE (inner) == PLUS
+	  && GET_CODE (XEXP (inner, 1)) == CONST_INT)
+	inner = XEXP (inner, 0);
 
       /* Only some unspecs are valid as "constants".  */
       if (GET_CODE (inner) == UNSPEC)
 	switch (XINT (inner, 1))
 	  {
+	  case UNSPEC_GOTOFF:
+	    return TARGET_64BIT;
 	  case UNSPEC_TPOFF:
 	    return local_exec_symbolic_operand (XVECEXP (inner, 0, 0), Pmode);
 	  default:
@@ -5269,7 +5470,7 @@ legitimate_pic_address_disp_p (rtx disp)
       if (tls_symbolic_operand (disp, GET_MODE (disp)))
 	return 0;
       if (GET_CODE (disp) == SYMBOL_REF
-	  && ix86_cmodel == CM_SMALL_PIC
+	  && !SYMBOL_REF_FAR_ADDR_P (disp)
 	  && SYMBOL_REF_LOCAL_P (disp))
 	return 1;
       if (GET_CODE (disp) == LABEL_REF)
@@ -5284,7 +5485,7 @@ legitimate_pic_address_disp_p (rtx disp)
 	  if (tls_symbolic_operand (op0, GET_MODE (op0)))
 	    return 0;
 	  if (((GET_CODE (op0) == SYMBOL_REF
-		&& ix86_cmodel == CM_SMALL_PIC
+		&& !SYMBOL_REF_FAR_ADDR_P (op0)
 		&& SYMBOL_REF_LOCAL_P (op0))
 	       || GET_CODE (op0) == LABEL_REF)
 	      && GET_CODE (op1) == CONST_INT
@@ -5302,7 +5503,8 @@ legitimate_pic_address_disp_p (rtx disp)
       /* We are unsafe to allow PLUS expressions.  This limit allowed distance
          of GOT tables.  We should not need these anyway.  */
       if (GET_CODE (disp) != UNSPEC
-	  || XINT (disp, 1) != UNSPEC_GOTPCREL)
+	  || (XINT (disp, 1) != UNSPEC_GOTPCREL
+	      && XINT (disp, 1) != UNSPEC_GOTOFF))
 	return 0;
 
       if (GET_CODE (XVECEXP (disp, 0, 0)) != SYMBOL_REF
@@ -5632,6 +5834,40 @@ legitimize_pic_address (rtx orig, rtx reg)
 
   if (TARGET_64BIT && legitimate_pic_address_disp_p (addr))
     new = addr;
+  else if (TARGET_64BIT
+	   && ix86_cmodel != CM_SMALL_PIC
+	   && local_symbolic_operand (addr, Pmode))
+    {
+      rtx tmpreg;
+      /* This symbol may be referenced via a displacement from the PIC
+	 base address (@GOTOFF).  */
+
+      if (reload_in_progress)
+	regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
+      if (GET_CODE (addr) == CONST)
+	addr = XEXP (addr, 0);
+      if (GET_CODE (addr) == PLUS)
+	  {
+            new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, XEXP (addr, 0)), UNSPEC_GOTOFF);
+	    new = gen_rtx_PLUS (Pmode, new, XEXP (addr, 1));
+	  }
+	else
+          new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTOFF);
+      new = gen_rtx_CONST (Pmode, new);
+      if (!reg)
+        tmpreg = gen_reg_rtx (Pmode);
+      else
+	tmpreg = reg;
+      emit_move_insn (tmpreg, new);
+
+      if (reg != 0)
+	{
+	  new = expand_simple_binop (Pmode, PLUS, reg, pic_offset_table_rtx,
+				     tmpreg, 1, OPTAB_DIRECT);
+	  new = reg;
+	}
+      else new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, tmpreg);
+    }
   else if (!TARGET_64BIT && local_symbolic_operand (addr, Pmode))
     {
       /* This symbol may be referenced via a displacement from the PIC
@@ -7884,7 +8120,7 @@ ix86_expand_move (enum machine_mode mode, rtx operands[])
 #else
       if (GET_CODE (op0) == MEM)
 	op1 = force_reg (Pmode, op1);
-      else
+      else 
 	op1 = legitimize_address (op1, op1, Pmode);
 #endif /* TARGET_MACHO */
     }
@@ -17523,6 +17759,49 @@ ix86_md_asm_clobbers (tree outputs ATTRIBUTE_UNUSED,
   clobbers = tree_cons (NULL_TREE, build_string (7, "dirflag"),
 			clobbers);
   return clobbers;
+}
+
+/* Return true if this goes in small data/bss.  */
+
+static bool
+ix86_in_large_data_p (tree exp)
+{
+  if (ix86_cmodel != CM_MEDIUM && ix86_cmodel != CM_MEDIUM_PIC)
+    return false;
+
+  /* Functions are never large data.  */
+  if (TREE_CODE (exp) == FUNCTION_DECL)
+    return false;
+
+  if (TREE_CODE (exp) == VAR_DECL && DECL_SECTION_NAME (exp))
+    {
+      const char *section = TREE_STRING_POINTER (DECL_SECTION_NAME (exp));
+      if (strcmp (section, ".ldata") == 0
+	  || strcmp (section, ".lbss") == 0)
+	return true;
+      return false;
+    }
+  else
+    {
+      HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (exp));
+
+      /* If this is an incomplete type with size 0, then we can't put it
+	 in data because it might be too big when completed.  */
+      if (!size || size > ix86_section_threshold)
+	return true;
+    }
+
+  return false;
+}
+static void
+ix86_encode_section_info (tree decl, rtx rtl, int first)
+{
+  default_encode_section_info (decl, rtl, first);
+
+  if (TREE_CODE (decl) == VAR_DECL
+      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl))
+      && ix86_in_large_data_p (decl))
+    SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= SYMBOL_FLAG_FAR_ADDR;
 }
 
 /* Worker function for REVERSE_CONDITION.  */

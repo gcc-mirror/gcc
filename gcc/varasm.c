@@ -5017,47 +5017,7 @@ default_select_section (tree decl, int reloc,
     data_section ();
 }
 
-/* A helper function for default_elf_select_section and
-   default_elf_unique_section.  Categorizes the DECL.  */
-
 enum section_category
-{
-  SECCAT_TEXT,
-
-  SECCAT_RODATA,
-  SECCAT_RODATA_MERGE_STR,
-  SECCAT_RODATA_MERGE_STR_INIT,
-  SECCAT_RODATA_MERGE_CONST,
-  SECCAT_SRODATA,
-
-  SECCAT_DATA,
-
-  /* To optimize loading of shared programs, define following subsections
-     of data section:
-	_REL	Contains data that has relocations, so they get grouped
-		together and dynamic linker will visit fewer pages in memory.
-	_RO	Contains data that is otherwise read-only.  This is useful
-		with prelinking as most relocations won't be dynamically
-		linked and thus stay read only.
-	_LOCAL	Marks data containing relocations only to local objects.
-		These relocations will get fully resolved by prelinking.  */
-  SECCAT_DATA_REL,
-  SECCAT_DATA_REL_LOCAL,
-  SECCAT_DATA_REL_RO,
-  SECCAT_DATA_REL_RO_LOCAL,
-
-  SECCAT_SDATA,
-  SECCAT_TDATA,
-
-  SECCAT_BSS,
-  SECCAT_SBSS,
-  SECCAT_TBSS
-};
-
-static enum section_category
-categorize_decl_for_section (tree, int, int);
-
-static enum section_category
 categorize_decl_for_section (tree decl, int reloc, int shlib)
 {
   enum section_category ret;

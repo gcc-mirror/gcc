@@ -1,5 +1,37 @@
 2005-07-31  Jan Hubicka  <jh@suse.cz>
 
+	* output.h (enum section_category): Export from varasm.c
+	(categorize_decl_for_section): Likewise.
+	* varasm.c (enum section_category): Kill.
+	(categorize_decl_for_section): Make global.
+	* i386-protos.h (x86_output_aligned_bss, x86_elf_aligned_common):
+	Declare.
+	* i386.c (ix86_section_threshold): New static variable.
+	(ix86_in_large_data_p, ix86_encode_section_info,
+	x86_64_elf_unique_section,
+	x86_64_elf_select_section): New functions.
+	(TARGET_ENCODE_SECTION_INFO): Define
+	(override_options): Enable medium model for PIC.
+	(ix86_expand_prologue): Expand gen_set_got_rex64.
+	(legitimate_constant_p): Handle new UNSPECs.
+	(legitimate_pic_address_disp_p): Likewise.
+	(legitimize_pic_address): Lower MEDIUM model addressing.
+	* i386.h (PIC_OFFSET_TABLE_REGNUM): Set for medium model PIC.
+	(enum cmodel): Add MEDIUM_PIC.
+	(SYMBOL_REF_FAR_ADDR_P): New macro.
+	(SYMBOL_FLAG_FAR_ADDR): New flag.
+	* i386.md (movdi): Support medium model.
+	(set_got_rex64): New pattern.
+	* i386.opt (mlarge-data-threshold): New flag.
+	* predicates.md (zext_operand/sext_operand): Deal with medium model.
+	* x86-64.h (ASM_OUTPUT_ALIGNED_BSS): Use x86_output_aligned_bss.
+	(ASM_OUTPUT_ALIGNED_COMMON, TARGET_ASM_SELECT_SECTION,
+	TARGET_ASM_UNIQUE_SECTION): New.
+
+	* invoke.texi (-mlarge_data_threshold): Document
+
+2005-07-31  Jan Hubicka  <jh@suse.cz>
+
 	* tree-outof-ssa.c (coalesce_ssa_name): Use coalesce_cost.
 	(coalesce_vars): Likewise.
 	* tree-ssa-live.c (coalesce_cost): New.
