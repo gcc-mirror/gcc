@@ -269,6 +269,8 @@ struct pretty_print_info
 #define pp_decimal_int(PP, I)  pp_scalar (PP, "%d", I)
 #define pp_wide_integer(PP, I) \
    pp_scalar (PP, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) I)
+#define pp_widest_integer(PP, I) \
+   pp_scalar (PP, HOST_WIDEST_INT_PRINT_DEC, (HOST_WIDEST_INT) I)
 #define pp_pointer(PP, P)      pp_scalar (PP, "%p", P)
 
 #define pp_identifier(PP, ID)  pp_string (PP, ID)
