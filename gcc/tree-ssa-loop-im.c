@@ -610,6 +610,7 @@ determine_invariantness_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
 	  && (rhs = TREE_OPERAND (stmt, 1)) != NULL
 	  && TREE_CODE (rhs) == RDIV_EXPR
 	  && flag_unsafe_math_optimizations
+	  && !flag_trapping_math
 	  && outermost_invariant_loop_expr (TREE_OPERAND (rhs, 1),
 					    loop_containing_stmt (stmt)) != NULL
 	  && outermost_invariant_loop_expr (rhs,

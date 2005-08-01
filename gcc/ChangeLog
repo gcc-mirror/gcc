@@ -1,3 +1,14 @@
+2005-08-01  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/23109
+	* tree-ssa-math-opts.c (execute_cse_reciprocals_1):
+	If trapping math is in effect, use post-dominator information
+	to check if we'd in any case reach a trapping point before
+	doing the reciprocal insertion.
+	(execute_cse_reciprocals): Compute post-dominators, if necessary.
+	* tree-ssa-loop-im.c (determine_invariantness_stmt): RDIV
+	expressions are invariant only if trapping math is not in effect.
+
 2005-08-01  Razya Ladelsky  <razya@il.ibm.com>
 
         * cgraph.h (update_call_expr, cgraph_copy_node_for_versioning,

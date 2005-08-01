@@ -69,6 +69,7 @@ execute_cse_reciprocals_1 (block_stmt_iterator *bsi, tree def, bool phi)
   imm_use_iterator use_iter;
   tree t, new_stmt, type;
   int count = 0;
+  bool ok = !flag_trapping_math;
 
   /* Find uses.  */
   FOR_EACH_IMM_USE_FAST (use_p, use_iter, def)
@@ -77,13 +78,18 @@ execute_cse_reciprocals_1 (block_stmt_iterator *bsi, tree def, bool phi)
       if (TREE_CODE (use_stmt) == MODIFY_EXPR
 	  && TREE_CODE (TREE_OPERAND (use_stmt, 1)) == RDIV_EXPR
 	  && TREE_OPERAND (TREE_OPERAND (use_stmt, 1), 1) == def)
-	{
-	  if (++count == 2)
-	    break;
-	}
+        {
+          ++count;
+          /* Check if this use post-dominates the insertion point.  */
+          if (ok || dominated_by_p (CDI_POST_DOMINATORS, bsi->bb,
+				    bb_for_stmt (use_stmt)))
+	    ok = true;
+        }
+      if (count >= 2 && ok)
+        break;
     }
 
-  if (count < 2)
+  if (count < 2 || !ok)
     return;
 
   /* Make a variable with the replacement and substitute it.  */
@@ -116,6 +122,10 @@ static void
 execute_cse_reciprocals (void)
 {
   basic_block bb;
+
+  if (flag_trapping_math)
+    calculate_dominance_info (CDI_POST_DOMINATORS);
+
   FOR_EACH_BB (bb)
     {
       block_stmt_iterator bsi;
@@ -143,6 +153,9 @@ execute_cse_reciprocals (void)
 	    execute_cse_reciprocals_1 (&bsi, def, false);
 	}
     }
+
+  if (flag_trapping_math)
+    free_dominance_info (CDI_POST_DOMINATORS);
 }
 
 struct tree_opt_pass pass_cse_reciprocals =
