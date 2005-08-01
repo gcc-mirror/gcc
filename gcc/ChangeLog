@@ -1,3 +1,12 @@
+2005-08-01  Kazu Hirata  <kazu@codesourcery.com>
+
+	* dwarf2out.c, fold-const.c, ipa-type-escape.c,
+	loop-invariant.c, predict.c, predict.def, reload1.c, reorg.c,
+	tree-sra.c, config/arm/arm.c, config/crx/crx.c,
+	config/i386/i386.c, config/mips/mips.h,
+	config/rs6000/rs6000.h, config/sh/sh.c,
+	config/stormy16/stormy16.c: Fix comment typos.
+
 2005-08-01  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/22311

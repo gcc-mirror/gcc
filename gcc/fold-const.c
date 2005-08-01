@@ -2029,7 +2029,7 @@ fold_convert (tree type, tree arg)
     }
 }
 
-/* Return false if expr can be assumed not to be an value, true
+/* Return false if expr can be assumed not to be an lvalue, true
    otherwise.  */
 
 static bool

@@ -80,7 +80,7 @@
   ((GET_CODE(X) == CONST_INT				\
     && SIGNED_INT_FITS_N_BITS(INTVAL(X),n)) ? 1 : 0)
 
-/* Nonzero if the rtx X is a unsigned const int of n bits */
+/* Nonzero if the rtx X is an unsigned const int of n bits.  */
 #define RTX_UNSIGNED_INT_FITS_N_BITS(X,n)		\
   ((GET_CODE(X) == CONST_INT				\
     && UNSIGNED_INT_FITS_N_BITS(INTVAL(X),n)) ? 1 : 0)

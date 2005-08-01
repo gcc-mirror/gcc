@@ -1934,7 +1934,7 @@ reorg_redirect_jump (rtx jump, rtx nlabel)
    that reference values used in INSN.  If we find one, then we move the
    REG_DEAD note to INSN.
 
-   This is needed to handle the case where an later insn (after INSN) has a
+   This is needed to handle the case where a later insn (after INSN) has a
    REG_DEAD note for a register used by INSN, and this later insn subsequently
    gets moved before a CODE_LABEL because it is a redundant insn.  In this
    case, mark_target_live_regs may be confused into thinking the register

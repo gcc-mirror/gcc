@@ -1755,7 +1755,7 @@ unspec_caller_rtx_p (rtx pat)
 }
 
 /* Indicate that INSN cannot be duplicated.  This is true for insn
-   that generates an unique label.  */
+   that generates a unique label.  */
 
 static bool
 sh_cannot_copy_insn_p (rtx insn)

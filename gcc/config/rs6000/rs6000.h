@@ -1109,7 +1109,7 @@ enum reg_class
    'T' is a constant that can be placed into a 32-bit mask operand
    'U' is for V.4 small data references.
    'W' is a vector constant that can be easily generated (no mem refs).
-   'Y' is a indexed or word-aligned displacement memory operand.
+   'Y' is an indexed or word-aligned displacement memory operand.
    'Z' is an indexed or indirect memory operand.
    't' is for AND masks that can be performed by two rldic{l,r} insns.  */
 

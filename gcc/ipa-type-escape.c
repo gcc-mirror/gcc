@@ -1622,7 +1622,7 @@ close_type_full_escape (tree type)
 }
 
 /* Transitively close the addressof bitmap for the type with UID.
-   This means that if we had a.b and b.c, a would have both b an c in
+   This means that if we had a.b and b.c, a would have both b and c in
    its maps.  */ 
 
 static bitmap
