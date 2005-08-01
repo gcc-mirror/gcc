@@ -515,6 +515,21 @@ rtl_check_failed_code2 (rtx r, enum rtx_code code1, enum rtx_code code2,
      func, trim_filename (file), line);
 }
 
+void
+rtl_check_failed_code_mode (rtx r, enum rtx_code code, enum machine_mode mode,
+			    bool not_mode, const char *file, int line,
+			    const char *func)
+{
+  internal_error ((not_mode
+		   ? ("RTL check: expected code '%s' and not mode '%s', "
+		      "have code '%s' and mode '%s' in %s, at %s:%d")
+		   : ("RTL check: expected code '%s' and mode '%s', "
+		      "have code '%s' and mode '%s' in %s, at %s:%d")),
+		  GET_RTX_NAME (code), GET_MODE_NAME (mode),
+		  GET_RTX_NAME (GET_CODE (r)), GET_MODE_NAME (GET_MODE (r)),
+		  func, trim_filename (file), line);
+}
+
 /* XXX Maybe print the vector?  */
 void
 rtvec_check_failed_bounds (rtvec r, int n, const char *file, int line,
