@@ -1,3 +1,8 @@
+2005-08-01  Ian Lance Taylor  <ian@airs.com>
+
+	* config/host-linux.c (linux_gt_pch_get_address): Add new name
+	randomize_va_space for virtual address randomization control.
+
 2005-08-01  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/22311
