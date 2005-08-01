@@ -495,6 +495,10 @@ finstrument-functions
 Common Report Var(flag_instrument_function_entry_exit)
 Instrument function entry and exit with profiling calls
 
+fipa-cp
+Common Report Var(flag_ipa_cp)
+Perform Interprocedural constant propagation
+
 fipa-pure-const
 Common Report Var(flag_ipa_pure_const) Init(0)
 Discover pure and const functions
@@ -506,10 +510,6 @@ Discover readonly and non addressable static variables
 fipa-type-escape
 Common Report Var(flag_ipa_type_escape) Init(0)
 Type based escape and alias analysis
-
-fipa-cp
-Common Report Var(flag_ipa_cp)
-Perform Interprocedural constant propagation
 
 fivopts
 Common Report Var(flag_ivopts) Init(1)

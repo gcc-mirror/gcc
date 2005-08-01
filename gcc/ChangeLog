@@ -1,3 +1,8 @@
+2005-08-01  Steven Bosscher  <stevenb@suse.de>
+
+	* common.opt (flag_ipa_cp): Put in right place to maintain
+	alphabetic sort.
+
 2005-08-01  Jan Hubicka  <jh@suse.cz>
 
 	* profile.c (compute_value_histograms): Fix thinko.
@@ -163,10 +168,10 @@
 	non-integral types.
 
 2005-07-29  Wolfgang Bangerth <bangerth@dealii.org>
- 
+
 	PR target/22582
 	* doc/invoke.texi: Document -rdynamic.
- 
+
 2005-07-30  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/23143
@@ -394,8 +399,8 @@
 2005-07-28  Richard Henderson  <rth@redhat.com>
 
 	PR target/17692
-        * config/i386/i386.c (ix86_split_sse_movcc): Emit DELETED note
-        when expanding to nothing.
+	* config/i386/i386.c (ix86_split_sse_movcc): Emit DELETED note
+	when expanding to nothing.
 
 2005-07-28  Josh Conner  <jconner@apple.com>
 
@@ -435,9 +440,9 @@
 
 2005-07-28  Jeff Law  <law@redhat.com>
 
-        * tree-vrp.c (test_for_singularity): Extracted from  ...
-        (simplify_cond_using_ranges): Attempt to simplify a relational
-        test to NE_EXPR.  Dump information when a COND_EXPR is simplified.
+	* tree-vrp.c (test_for_singularity): Extracted from  ...
+	(simplify_cond_using_ranges): Attempt to simplify a relational
+	test to NE_EXPR.  Dump information when a COND_EXPR is simplified.
 
 2005-07-28  Dorit Nuzman  <dorit@il.ibm.com>
 
@@ -522,19 +527,19 @@
 
 	* config/frv/frv.h: Remove machine_function definition.
 
-        * config/frv/frv.c (struct frv_io): New.
-        (struct machine_function): Moved from frv.h.  Add has_membar_p.
-        (frv_same_doubleword_p, frv_io_fixed_order_p, frv_io_union)
-        (frv_extract_membar, frv_io_check_address, frv_io_handle_set)
-        (frv_io_handle_use_1, frv_io_handle_use, frv_optimize_membar_local)
-        (frv_optimize_membar_global, frv_optimize_membar): New functions.
-        (frv_reorg): Call frv_optimize_membar when appropriate.
-        (bdesc_loads, bdesc_stores): Use the membar code as the icode field.
-        (frv_expand_builtin): Adjust calls accordingly.
-        (frv_io_address_cookie): New function.
-        (frv_expand_load_builtin, frv_expand_store_builtin): Emit a normal
-        load or store rather than a special insn.  Add ccnstant address and
-        io-type operands to the membar.
+	* config/frv/frv.c (struct frv_io): New.
+	(struct machine_function): Moved from frv.h.  Add has_membar_p.
+	(frv_same_doubleword_p, frv_io_fixed_order_p, frv_io_union)
+	(frv_extract_membar, frv_io_check_address, frv_io_handle_set)
+	(frv_io_handle_use_1, frv_io_handle_use, frv_optimize_membar_local)
+	(frv_optimize_membar_global, frv_optimize_membar): New functions.
+	(frv_reorg): Call frv_optimize_membar when appropriate.
+	(bdesc_loads, bdesc_stores): Use the membar code as the icode field.
+	(frv_expand_builtin): Adjust calls accordingly.
+	(frv_io_address_cookie): New function.
+	(frv_expand_load_builtin, frv_expand_store_builtin): Emit a normal
+	load or store rather than a special insn.  Add ccnstant address and
+	io-type operands to the membar.
 	(frv_ifcvt_modify_tests): Unsign regno.
 	(frv_ifcvt_modify_tests): Same.
 
