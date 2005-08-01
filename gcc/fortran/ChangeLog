@@ -1,3 +1,7 @@
+2005-07-31  Jerry DeLisle  <jvdelisle@verizon.net>
+
+        * intrinsic.texi: Backport from 4.1 branch.
+
 2005-07-27  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR fortran/22503
