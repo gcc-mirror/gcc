@@ -1,5 +1,8 @@
 2005-08-01  Richard Henderson  <rth@redhat.com>
 
+	* dwarf2out.c (mem_loc_descriptor): Use XEXP, not SUBREG_REG,
+	with auto-inc codes.
+
 	* config/alpha/predicates.md (and_operand): Test mode of CONST_DOUBLE.
 
 2005-08-01  Jan Hubicka  <jh@suse.cz>
