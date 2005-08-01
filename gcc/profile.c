@@ -651,14 +651,13 @@ compute_value_histograms (histogram_values values)
   gcov_type *histogram_counts[GCOV_N_VALUE_COUNTERS];
   gcov_type *act_count[GCOV_N_VALUE_COUNTERS];
   gcov_type *aact_count;
-  histogram_value hist = 0;
  
   for (t = 0; t < GCOV_N_VALUE_COUNTERS; t++)
     n_histogram_counters[t] = 0;
 
   for (i = 0; i < VEC_length (histogram_value, values); i++)
     {
-      hist = VEC_index (histogram_value, values, i);
+      histogram_value hist = VEC_index (histogram_value, values, i);
       n_histogram_counters[(int) hist->type] += hist->n_counters;
     }
 
@@ -683,10 +682,10 @@ compute_value_histograms (histogram_values values)
 
   for (i = 0; i < VEC_length (histogram_value, values); i++)
     {
+      histogram_value hist = VEC_index (histogram_value, values, i);
       tree stmt = hist->hvalue.stmt;
       stmt_ann_t ann = get_stmt_ann (stmt);
 
-      hist = VEC_index (histogram_value, values, i);
       t = (int) hist->type;
 
       aact_count = act_count[t];
