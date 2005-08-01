@@ -22,6 +22,7 @@ Boston, MA 02110-1301, USA.  */
 #ifndef GCC_TREE_INLINE_H
 #define GCC_TREE_INLINE_H
 
+#include "varray.h"
 /* Function prototypes.  */
 
 void optimize_inline_calls (tree);
@@ -33,6 +34,12 @@ int estimate_move_cost (tree type);
 void push_cfun (struct function *new_cfun);
 void pop_cfun (void);
 int estimate_num_insns (tree expr);
+bool tree_versionable_function_p (tree);
+void tree_function_versioning (tree, tree, varray_type);
+
+/* Copy a declaration when one function is substituted inline into
+   another.  It is used also for versioning.  */
+extern tree copy_decl_for_dup (tree, tree, tree, bool);
 
 /* 0 if we should not perform inlining.
    1 if we should expand functions calls inline at the tree level.
