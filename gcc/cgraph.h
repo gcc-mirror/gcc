@@ -281,6 +281,8 @@ void cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate);
 void cgraph_build_static_cdtor (char which, tree body, int priority);
 void cgraph_reset_static_var_maps (void);
 void init_cgraph (void);
+struct cgraph_node *cgraph_function_versioning (struct cgraph_node *,
+                                                varray_type, varray_type);
 
 /* In ipa.c  */
 bool cgraph_remove_unreachable_nodes (bool, FILE *);

@@ -507,6 +507,10 @@ fipa-type-escape
 Common Report Var(flag_ipa_type_escape) Init(0)
 Type based escape and alias analysis
 
+fipa-cp
+Common Report Var(flag_ipa_cp)
+Perform Interprocedural constant propagation
+
 fivopts
 Common Report Var(flag_ivopts) Init(1)
 Optimize induction variables on trees

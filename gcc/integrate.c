@@ -89,82 +89,6 @@ function_attribute_inlinable_p (tree fndecl)
   return true;
 }
 
-/* Copy NODE (which must be a DECL).  The DECL originally was in the FROM_FN,
-   but now it will be in the TO_FN.  */
-
-tree
-copy_decl_for_inlining (tree decl, tree from_fn, tree to_fn)
-{
-  tree copy;
-
-  /* Copy the declaration.  */
-  if (TREE_CODE (decl) == PARM_DECL || TREE_CODE (decl) == RESULT_DECL)
-    {
-      tree type = TREE_TYPE (decl);
-
-      /* For a parameter or result, we must make an equivalent VAR_DECL, not a
-	 new PARM_DECL.  */
-      copy = build_decl (VAR_DECL, DECL_NAME (decl), type);
-      TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (decl);
-      TREE_READONLY (copy) = TREE_READONLY (decl);
-      TREE_THIS_VOLATILE (copy) = TREE_THIS_VOLATILE (decl);
-      DECL_COMPLEX_GIMPLE_REG_P (copy) = DECL_COMPLEX_GIMPLE_REG_P (decl);
-    }
-  else
-    {
-      copy = copy_node (decl);
-      /* The COPY is not abstract; it will be generated in TO_FN.  */
-      DECL_ABSTRACT (copy) = 0;
-      lang_hooks.dup_lang_specific_decl (copy);
-
-      /* TREE_ADDRESSABLE isn't used to indicate that a label's
-	 address has been taken; it's for internal bookkeeping in
-	 expand_goto_internal.  */
-      if (TREE_CODE (copy) == LABEL_DECL)
-	{
-	  TREE_ADDRESSABLE (copy) = 0;
-          LABEL_DECL_UID (copy) = -1;
-	}
-    }
-
-  /* Don't generate debug information for the copy if we wouldn't have
-     generated it for the copy either.  */
-  DECL_ARTIFICIAL (copy) = DECL_ARTIFICIAL (decl);
-  DECL_IGNORED_P (copy) = DECL_IGNORED_P (decl);
-
-  /* Set the DECL_ABSTRACT_ORIGIN so the debugging routines know what
-     declaration inspired this copy.  */
-  DECL_ABSTRACT_ORIGIN (copy) = DECL_ORIGIN (decl);
-
-  /* The new variable/label has no RTL, yet.  */
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (copy), TS_DECL_WRTL) 
-      && !TREE_STATIC (copy) && !DECL_EXTERNAL (copy))
-    SET_DECL_RTL (copy, NULL_RTX);
-
-  /* These args would always appear unused, if not for this.  */
-  TREE_USED (copy) = 1;
-
-  /* Set the context for the new declaration.  */
-  if (!DECL_CONTEXT (decl))
-    /* Globals stay global.  */
-    ;
-  else if (DECL_CONTEXT (decl) != from_fn)
-    /* Things that weren't in the scope of the function we're inlining
-       from aren't in the scope we're inlining to, either.  */
-    ;
-  else if (TREE_STATIC (decl))
-    /* Function-scoped static variables should stay in the original
-       function.  */
-    ;
-  else
-    /* Ordinary automatic local variables are now in the scope of the
-       new function.  */
-    DECL_CONTEXT (copy) = to_fn;
-
-  return copy;
-}
-
-
 /* Given a pointer to some BLOCK node, if the BLOCK_ABSTRACT_ORIGIN for the
    given BLOCK node is NULL, set the BLOCK_ABSTRACT_ORIGIN for the node so
    that it points to the node itself, thus indicating that the node is its
