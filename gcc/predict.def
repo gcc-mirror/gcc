@@ -41,7 +41,7 @@ DEF_PREDICTOR (PRED_COMBINED, "combined", PROB_ALWAYS, 0)
 /* An outcome estimated by Dempster-Shaffer theory.  */
 DEF_PREDICTOR (PRED_DS_THEORY, "DS theory", PROB_ALWAYS, 0)
 
-/* An combined heuristics using probability determined by first
+/* A combined heuristics using probability determined by first
    matching heuristics from this list.  */
 DEF_PREDICTOR (PRED_FIRST_MATCH, "first match", PROB_ALWAYS, 0)
 

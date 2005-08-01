@@ -1663,7 +1663,7 @@ extern enum reg_class mips_char_to_class[256];
 
 #define REG_CLASS_FROM_LETTER(C) mips_char_to_class[(unsigned char)(C)]
 
-/* True if VALUE is a unsigned 6-bit number.  */
+/* True if VALUE is an unsigned 6-bit number.  */
 
 #define UIMM6_OPERAND(VALUE) \
   (((VALUE) & ~(unsigned HOST_WIDE_INT) 0x3f) == 0)

@@ -724,7 +724,7 @@ sra_walk_expr (tree *expr_p, block_stmt_iterator *bsi, bool is_output,
 	goto use_all;
 
       case ARRAY_RANGE_REF:
-	/* Similarly, an subrange reference is used to modify indexing.  Which
+	/* Similarly, a subrange reference is used to modify indexing.  Which
 	   means that the canonical element names that we have won't work.  */
 	goto use_all;
 

@@ -14738,7 +14738,7 @@ arm_unwind_emit_stm (FILE * asm_out_file, rtx p)
   if (reg < 16)
     {
       /* The function prologue may also push pc, but not annotate it as it is
-	 never restored.  We turn this into an stack pointer adjustment.  */
+	 never restored.  We turn this into a stack pointer adjustment.  */
       if (nregs * 4 == offset - 4)
 	{
 	  fprintf (asm_out_file, "\t.pad #4\n");

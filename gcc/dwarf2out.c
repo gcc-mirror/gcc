@@ -13078,7 +13078,7 @@ dwarf2out_decl (tree decl)
 	 declarations.  We have to check DECL_INITIAL instead. That's because
 	 the C front-end supports some weird semantics for "extern inline"
 	 function definitions.  These can get inlined within the current
-	 translation unit (an thus, we need to generate Dwarf info for their
+	 translation unit (and thus, we need to generate Dwarf info for their
 	 abstract instances so that the Dwarf info for the concrete inlined
 	 instances can have something to refer to) but the compiler never
 	 generates any out-of-lines instances of such things (despite the fact

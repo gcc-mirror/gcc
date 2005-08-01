@@ -1791,7 +1791,7 @@ x86_64_elf_unique_section (tree decl, int reloc)
 /* This says how to output assembler code to declare an
    uninitialized external linkage data object.
 
-   For medim model x86-64 we need to use .largecomm opcode for
+   For medium model x86-64 we need to use .largecomm opcode for
    large objects.  */
 void
 x86_elf_aligned_common (FILE *file,
@@ -5789,7 +5789,7 @@ legitimate_address_p (enum machine_mode mode, rtx addr, int strict)
   return FALSE;
 }
 
-/* Return an unique alias set for the GOT.  */
+/* Return a unique alias set for the GOT.  */
 
 static HOST_WIDE_INT
 ix86_GOT_alias_set (void)

@@ -2479,7 +2479,7 @@ combine_bnp (rtx insn)
 
   if (need_extend)
     {
-      /* LT and GE conditionals should have an sign extend before
+      /* LT and GE conditionals should have a sign extend before
 	 them.  */
       for (and = prev_real_insn (insn); and; and = prev_real_insn (and))
 	{

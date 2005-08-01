@@ -1042,7 +1042,7 @@ reload (rtx first, int global)
 	      /* If we already deleted the insn or if it may trap, we can't
 		 delete it.  The latter case shouldn't happen, but can
 		 if an insn has a variable address, gets a REG_EH_REGION
-		 note added to it, and then gets converted into an load
+		 note added to it, and then gets converted into a load
 		 from a constant address.  */
 	      if (NOTE_P (equiv_insn)
 		  || can_throw_internal (equiv_insn))

@@ -470,7 +470,7 @@ find_invariant_insn (rtx insn, bool always_reached, bool always_executed,
   create_new_invariant (def, insn, depends_on, always_executed);
 }
 
-/* Record registers used in INSN that have an unique invariant definition.
+/* Record registers used in INSN that have a unique invariant definition.
    DF is the dataflow object.  */
 
 static void
