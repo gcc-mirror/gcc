@@ -364,7 +364,7 @@ REAL_VALUE_TYPE real_value_from_int_cst (tree, tree);
 
 /* Given a CONST_DOUBLE in FROM, store into TO the value it represents.  */
 #define REAL_VALUE_FROM_CONST_DOUBLE(to, from) \
-  memcpy (&(to), &CONST_DOUBLE_LOW ((from)), sizeof (REAL_VALUE_TYPE))
+  ((to) = *CONST_DOUBLE_REAL_VALUE (from))
 
 /* Return a CONST_DOUBLE with value R and mode M.  */
 #define CONST_DOUBLE_FROM_REAL_VALUE(r, m) \

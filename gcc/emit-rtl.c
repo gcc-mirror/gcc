@@ -426,7 +426,7 @@ const_double_from_real_value (REAL_VALUE_TYPE value, enum machine_mode mode)
   rtx real = rtx_alloc (CONST_DOUBLE);
   PUT_MODE (real, mode);
 
-  memcpy (&CONST_DOUBLE_LOW (real), &value, sizeof (REAL_VALUE_TYPE));
+  real->u.rv = value;
 
   return lookup_const_double (real);
 }
