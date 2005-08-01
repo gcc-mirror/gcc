@@ -1,3 +1,7 @@
+2005-08-01  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/predicates.md (and_operand): Test mode of CONST_DOUBLE.
+
 2005-08-01  Jan Hubicka  <jh@suse.cz>
 
 	* i386-protos.h (asm_preferred_eh_data_format): Declare.
