@@ -406,6 +406,7 @@ static rtx mips_expand_builtin_compare (enum mips_builtin_type,
 					enum insn_code, enum mips_fp_condition,
 					rtx, tree);
 static rtx mips_expand_builtin_bposge (enum mips_builtin_type, rtx);
+static void mips_encode_section_info (tree, rtx, int);
 
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
@@ -689,6 +690,13 @@ const enum reg_class mips_regno_to_class[] =
 
 /* Map register constraint character to register class.  */
 enum reg_class mips_char_to_class[256];
+
+/* Table of machine dependent attributes.  */
+const struct attribute_spec mips_attribute_table[] =
+{
+  { "long_call",   0, 0, false, true,  true,  NULL },
+  { NULL,	   0, 0, false, false, false, NULL }
+};
 
 /* A table describing all the processors gcc knows about.  Names are
    matched in the order listed.  The first mention of an ISA level is
@@ -1145,6 +1153,12 @@ static struct mips_rtx_cost_data const mips_rtx_cost_data[PROCESSOR_MAX] =
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM mips_cannot_force_const_mem
+
+#undef TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO mips_encode_section_info
+
+#undef TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE mips_attribute_table
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -10717,6 +10731,22 @@ mips_expand_builtin_bposge (enum mips_builtin_type builtin_type, rtx target)
   emit_label (label2);
 
   return target;
+}
+
+/* Set SYMBOL_REF_FLAGS for the SYMBOL_REF inside RTL, which belongs to DECL.
+   FIRST is true if this is the first time handling this decl.  */
+
+static void
+mips_encode_section_info (tree decl, rtx rtl, int first)
+{
+  default_encode_section_info (decl, rtl, first);
+
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && lookup_attribute ("long_call", TYPE_ATTRIBUTES (TREE_TYPE (decl))))
+    {
+      rtx symbol = XEXP (rtl, 0);
+      SYMBOL_REF_FLAGS (symbol) |= SYMBOL_FLAG_LONG_CALL;
+    }
 }
 
 #include "gt-mips.h"

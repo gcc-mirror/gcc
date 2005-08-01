@@ -1942,6 +1942,14 @@ both the @option{-mlongcall} switch and, on the RS/6000 and PowerPC, the
 @xref{RS/6000 and PowerPC Options}, for more information on whether long
 calls are necessary.
 
+@item long_call
+@cindex indirect calls on MIPS
+This attribute specifies how a particular function is called on MIPS@.
+The attribute overrides the @option{-mlong-calls} (@pxref{MIPS Options})
+command line switch.  This attribute causes the compiler to always call
+the function by first loading its address into a register, and then using
+the contents of that register.
+
 @item malloc
 @cindex @code{malloc} attribute
 The @code{malloc} attribute is used to tell the compiler that a function

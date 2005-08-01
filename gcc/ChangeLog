@@ -1,3 +1,13 @@
+2005-08-01  James E Wilson  <wilson@specifix.com>
+
+	* config/mips/mips.c (mips_encode_section_info, mips_attribute_table,
+	TARGET_ENCODE_SECTION_INFO, TARGET_ATTRIBUTE_TABLE): New.
+	* config/mips/mips.h (SYMBOL_FLAG_LONG_CALL, SYMBOL_REF_LONG_CALL_P):
+	New.
+	* config/mips/predicates.md (const_call_insn_operand): Add check for
+	SYMBOL_REF_LONG_CALL_P.
+	* doc/extend.texi (long_call): Document the new attribute.
+
 2005-08-01  Ian Lance Taylor  <ian@airs.com>
 	    Richard Henderson  <rth@redhat.com>
 

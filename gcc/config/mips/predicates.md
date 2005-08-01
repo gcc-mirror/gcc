@@ -103,8 +103,10 @@
   switch (symbol_type)
     {
     case SYMBOL_GENERAL:
-      /* If -mlong-calls, force all calls to use register addressing.  */
-      return !TARGET_LONG_CALLS;
+      /* If -mlong-calls, force all calls to use register addressing.  Also,
+	 if this function has the long_call attribute, we must use register
+	 addressing.  */
+      return !TARGET_LONG_CALLS && !SYMBOL_REF_LONG_CALL_P (op);
 
     case SYMBOL_GOT_GLOBAL:
       /* Without explicit relocs, there is no special syntax for
