@@ -1,3 +1,8 @@
+2005-07-31  Jerry DeLisle  <jvdelisle@verizon.net>
+
+        * intrinsic.texi: Add documentation for exponent, floor, and fnum and
+        fix description of ceiling in index.
+
 2005-07-31  Steven Bosscher  <stevenb@suse.de>
 
 	* trans-decl.c (gfc_build_builtin_function_decls): Give the internal

@@ -83,7 +83,10 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{ERFC}:          ERFC,      Complementary error function
 * @code{ETIME}:         ETIME,     Execution time subroutine (or function)
 * @code{EXIT}:          EXIT,      Exit the program with status.
-* @code{EXP}:           EXP,       Cosine function
+* @code{EXP}:           EXP,       Exponential function
+* @code{EXPONENT}:      EXPONENT,  Exponent function
+* @code{FLOOR}:         FLOOR,     Integer floor function
+* @code{FNUM}:          FNUM,      File number function
 * @code{LOG}:           LOG,       Logarithm function
 * @code{LOG10}:         LOG10,     Base 10 logarithm function 
 * @code{SQRT}:          SQRT,      Square-root function
@@ -1322,7 +1325,7 @@ f95, gnu
 elemental function
 
 @item @emph{Syntax}:
-@code{X = CEILING(X[,KIND])}
+@code{I = CEILING(X[,KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .80
@@ -2593,6 +2596,128 @@ end program test_exp
 
 
 
+@node EXPONENT
+@section @code{EXPONENT} --- Exponent function 
+@findex @code{EXPONENT} intrinsic
+@cindex exponent function
+
+@table @asis
+@item @emph{Description}:
+@code{EXPONENT(X)} returns the value of the exponent part of @var{X}. If @var{X}
+is zero the value returned is zero. 
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{I = EXPONENT(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be @code{REAL(*)}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type default @code{INTEGER}.
+
+@item @emph{Example}:
+@smallexample
+program test_exponent
+  real :: x = 1.0
+  integer :: i
+  i = exponent(x)
+  print *, i
+  print *, exponent(0.0)
+end program test_exponent
+@end smallexample
+@end table
+
+
+
+@node FLOOR
+@section @code{FLOOR} --- Integer floor function
+@findex @code{FLOOR} intrinsic
+@cindex floor
+
+@table @asis
+@item @emph{Description}:
+@code{FLOOR(X)} returns the greatest integer less than or equal to @var{X}.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+elemental function
+
+@item @emph{Syntax}:
+@code{I = FLOOR(X[,KIND])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab The type shall be @code{REAL(*)}.
+@item @var{KIND} @tab Optional scaler integer initialization expression.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER(KIND)}
+
+@item @emph{Example}:
+@smallexample
+program test_floor
+    real :: x = 63.29
+    real :: y = -63.59
+    print *, floor(x) ! returns 63
+    print *, floor(y) ! returns -64
+end program test_floor
+@end smallexample
+@end table
+
+
+
+@node FNUM
+@section @code{FNUM} --- File number function
+@findex @code{FNUM} intrinsic
+@cindex fnum
+
+@table @asis
+@item @emph{Description}:
+@code{FNUM(UNIT)} returns the Posix file descriptor number coresponding to the
+open Fortran I/O unit @code{UNIT}.
+
+@item @emph{Option}:
+gnu
+
+@item @emph{Class}:
+non-elemental function
+
+@item @emph{Syntax}:
+@code{I = FNUM(UNIT)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{UNIT} @tab The type shall be @code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER}
+
+@item @emph{Example}:
+@smallexample
+program test_fnum
+  integer :: i
+  open (unit=10, status = "scratch")
+  i = fnum(10)
+  print *, i
+  close (10)
+end program test_fnum
+@end smallexample
+@end table
+
+
+
 @node LOG
 @section @code{LOG} --- Logarithm function
 @findex @code{LOG} intrinsic
@@ -2935,15 +3060,7 @@ end program test_tanh
 
 
 
-@comment sub   exit
-@comment 
-@comment gen   exponent
-@comment 
-@comment gen   floor
-@comment 
 @comment sub   flush
-@comment 
-@comment gen   fnum
 @comment 
 @comment gen   fraction
 @comment 
