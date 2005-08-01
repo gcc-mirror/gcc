@@ -1,3 +1,9 @@
+2005-08-01  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/23178
+	* intrinsics/flush.c (flush_i8): Add function flush_i8. Update
+	copyright years.
+
 2005-07-30 Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/22570 and related issues.

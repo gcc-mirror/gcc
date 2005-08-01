@@ -1,5 +1,5 @@
 /* Implementation of the FLUSH intrinsic.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
    Contributed by Steven G. Kargl <kargls@comcast.net>.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -59,6 +59,29 @@ export_proto(flush_i4);
 
 void
 flush_i4 (GFC_INTEGER_4 *unit)
+{
+  gfc_unit *us;
+
+  /* flush all streams */
+  if (unit == NULL)
+    {
+      us = g.unit_root;
+      recursive_flush(us);
+    }
+  else
+    {
+      us = find_unit(*unit);
+      if (us != NULL)
+        flush (us->s);
+    }
+}
+
+
+extern void flush_i8 (GFC_INTEGER_8 *);
+export_proto(flush_i8);
+
+void
+flush_i8 (GFC_INTEGER_8 *unit)
 {
   gfc_unit *us;
 
