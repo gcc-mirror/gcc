@@ -114,8 +114,13 @@ linux_gt_pch_get_address (size_t size, int fd)
   if (TRY_EMPTY_VM_SPACE && addr == (void *) TRY_EMPTY_VM_SPACE)
     return addr;
 
-  /* If we didn't, then we need to look to see if randomization is on.  */
-  f = fopen ("/proc/sys/kernel/exec-shield-randomize", "r");
+  /* If we didn't, then we need to look to see if virtual address
+     randomization is on.  That is recorded in
+     kernel.randomize_va_space.  An older implementation used
+     kernel.exec-shield-randomize.  */
+  f = fopen ("/proc/sys/kernel/randomize_va_space", "r");
+  if (f == NULL)
+    f = fopen ("/proc/sys/kernel/exec-shield-randomize", "r");
   randomize_on = false;
   if (f != NULL)
     {
