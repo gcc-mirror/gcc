@@ -42,6 +42,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "gcov-io.h"
 #include "timevar.h"
 #include "tree-pass.h"
+#include "toplev.h"
 
 static struct value_prof_hooks *value_prof_hooks;
 
@@ -84,6 +85,25 @@ static tree tree_mod_subtract (tree, tree, tree, tree, int, int, int,
 static bool tree_divmod_fixed_value_transform (tree);
 static bool tree_mod_pow2_value_transform (tree);
 static bool tree_mod_subtract_transform (tree);
+
+/* The overall number of invocations of the counter should match execution count
+   of basic block.  Report it as error rather than internal error as it might
+   mean that user has missused the profile somehow.  */
+static bool
+check_counter (tree stmt, const char * name, gcov_type all, gcov_type bb_count)
+{
+  if (all != bb_count)
+    {
+      location_t * locus;
+      locus = (stmt != NULL && EXPR_HAS_LOCATION (stmt)
+	       ? EXPR_LOCUS (stmt)
+	       : &DECL_SOURCE_LOCATION (current_function_decl));
+      error ("%HCorrupted value profile: %s profiler overall count (%d) does not match BB count (%d)",
+	     locus, name, (int)all, (int)bb_count);
+      return true;
+    }
+  return false;
+}
 
 /* Tree based transformations. */
 static bool
@@ -286,6 +306,9 @@ tree_divmod_fixed_value_transform (tree stmt)
   if (simple_cst_equal (op2, value) != 1 || 2 * count < all)
     return false;
 
+  if (check_counter (stmt, "value", all, bb_for_stmt (stmt)->count))
+    return false;
+
   /* Compute probability of taking the optimal path.  */
   prob = (count * REG_BR_PROB_BASE + all / 2) / all;
 
@@ -457,6 +480,9 @@ tree_mod_pow2_value_transform (tree stmt)
 
   /* Compute probability of taking the optimal path.  */
   all = count + wrong_values;
+  if (check_counter (stmt, "pow2", all, bb_for_stmt (stmt)->count))
+    return false;
+
   prob = (count * REG_BR_PROB_BASE + all / 2) / all;
 
   result = tree_mod_pow2 (stmt, op, op1, op2, prob, count, all);
@@ -630,6 +656,10 @@ tree_mod_subtract_transform (tree stmt)
   wrong_values += histogram->hvalue.counters[i];
   wrong_values += histogram->hvalue.counters[i+1];
   all += wrong_values;
+
+  /* Compute probability of taking the optimal path.  */
+  if (check_counter (stmt, "interval", all, bb_for_stmt (stmt)->count))
+    return false;
 
   /* We require that we use just subtractions in at least 50% of all
      evaluations.  */

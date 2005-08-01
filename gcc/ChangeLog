@@ -1,3 +1,11 @@
+2005-08-01  Jan Hubicka  <jh@suse.cz>
+
+	* profile.c (compute_value_histograms): Fix thinko.
+	* value-prof.c: Include toplev.h
+	(check_counter): New function.
+	(tree_divmod_fixed_value_transform, tree_mod_pow2_value_transform,
+	tree_mod_subtract_transform): Add sanity check.
+
 2005-08-01  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/23133
