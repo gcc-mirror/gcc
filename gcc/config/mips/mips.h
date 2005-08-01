@@ -2301,6 +2301,11 @@ typedef struct mips_args {
   else									\
     asm_fprintf ((FILE), "%U%s", (NAME))
 
+/* Flag to mark a function decl symbol that requires a long call.  */
+#define SYMBOL_FLAG_LONG_CALL	(SYMBOL_FLAG_MACH_DEP << 0)
+#define SYMBOL_REF_LONG_CALL_P(X)					\
+  ((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_LONG_CALL) != 0)
+
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.
    ??? Using HImode in mips16 mode can cause overflow.  */
