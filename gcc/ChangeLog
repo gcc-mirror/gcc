@@ -1,5 +1,12 @@
 2005-08-01  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/23133
+	* tree-ssa-math-opts.c (execute_cse_reciprocals): Walk
+	current functions parameter decls to find defs to cse
+	reciprocals of.
+
+2005-08-01  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/23109
 	* tree-ssa-math-opts.c (execute_cse_reciprocals_1):
 	If trapping math is in effect, use post-dominator information

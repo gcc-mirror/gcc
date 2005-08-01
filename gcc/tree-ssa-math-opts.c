@@ -122,9 +122,19 @@ static void
 execute_cse_reciprocals (void)
 {
   basic_block bb;
+  tree arg;
 
   if (flag_trapping_math)
     calculate_dominance_info (CDI_POST_DOMINATORS);
+
+  if (single_succ_p (ENTRY_BLOCK_PTR))
+    for (arg = DECL_ARGUMENTS (cfun->decl); arg; arg = TREE_CHAIN (arg))
+      if (default_def (arg))
+	{
+	  block_stmt_iterator bsi;
+	  bsi = bsi_start (single_succ (ENTRY_BLOCK_PTR));
+          execute_cse_reciprocals_1 (&bsi, default_def (arg), false);
+	}
 
   FOR_EACH_BB (bb)
     {
@@ -149,7 +159,7 @@ execute_cse_reciprocals (void)
 	  if (TREE_CODE (stmt) == MODIFY_EXPR
 	      && (def = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_DEF)) != NULL
 	      && FLOAT_TYPE_P (TREE_TYPE (def))
-	      && is_gimple_reg (def))
+	      && TREE_CODE (def) == SSA_NAME)
 	    execute_cse_reciprocals_1 (&bsi, def, false);
 	}
     }
