@@ -89,7 +89,8 @@
 		 || (unsigned HOST_WIDE_INT) ~ INTVAL (op) < 0x100
 		 || zap_mask (INTVAL (op))")
     (if_then_else (match_code "const_double")
-      (match_test "zap_mask (CONST_DOUBLE_LOW (op))
+      (match_test "GET_MODE (op) == VOIDmode
+		   && zap_mask (CONST_DOUBLE_LOW (op))
 		   && zap_mask (CONST_DOUBLE_HIGH (op))")
       (match_operand 0 "register_operand"))))
 
