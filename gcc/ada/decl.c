@@ -1100,7 +1100,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    SET_DECL_CONST_CORRESPONDING_VAR (gnu_decl, gnu_corr_var);
 	  }
 
-	/* If this is declared in a block that contains an block with an
+	/* If this is declared in a block that contains a block with an
 	   exception handler, we must force this variable in memory to
 	   suppress an invalid optimization.  */
 	if (Has_Nested_Block_With_Handler (Scope (gnat_entity))
