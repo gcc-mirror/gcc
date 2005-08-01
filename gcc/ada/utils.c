@@ -712,7 +712,7 @@ finish_record_type (tree record_type, tree fieldlist, bool has_rep,
       tree this_ada_size = DECL_SIZE (field);
 
       /* We need to make an XVE/XVU record if any field has variable size,
-	 whether or not the record does.  For example, if we have an union,
+	 whether or not the record does.  For example, if we have a union,
 	 it may be that all fields, rounded up to the alignment, have the
 	 same size, in which case we'll use that size.  But the debug
 	 output routines (except Dwarf2) won't be able to output the fields,
@@ -826,7 +826,7 @@ write_record_type_debug_info (tree record_type)
   for (field = fieldlist; field; field = TREE_CHAIN (field))
     {
       /* We need to make an XVE/XVU record if any field has variable size,
-	 whether or not the record does.  For example, if we have an union,
+	 whether or not the record does.  For example, if we have a union,
 	 it may be that all fields, rounded up to the alignment, have the
 	 same size, in which case we'll use that size.  But the debug
 	 output routines (except Dwarf2) won't be able to output the fields,
