@@ -1,3 +1,10 @@
+2005-08-01  Jan Hubicka  <jh@suse.cz>
+
+	* i386-protos.h (asm_preferred_eh_data_format): Declare.
+	* i386.c: Include dwarf2.h
+	(asm_preferred_eh_data_format): New.
+	* i386.h (ASM_PREFERRED_EH_DATA_FORMAT): Move offline.
+
 2005-08-01  Ian Lance Taylor  <ian@airs.com>
 
 	* config/host-linux.c (linux_gt_pch_get_address): Add new name

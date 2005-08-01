@@ -2023,9 +2023,7 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
    Whether or not a particular assembler allows us to enter such, I
    guess we'll have to see.  */
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL)       		\
-  (flag_pic								\
-    ? ((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4\
-   : DW_EH_PE_absptr)
+  asm_preferred_eh_data_format ((CODE), (GLOBAL))
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
