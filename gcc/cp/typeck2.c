@@ -945,7 +945,7 @@ process_init_constructor_record (tree type, tree init)
 }
 
 /* Subroutine of process_init_constructor, which will process a single
-   initializer INIT for an union of type TYPE. Returns the flags (PICFLAG_*)
+   initializer INIT for a union of type TYPE. Returns the flags (PICFLAG_*)
    which describe the initializer.  */
 
 static int

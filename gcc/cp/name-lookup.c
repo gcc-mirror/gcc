@@ -3966,7 +3966,7 @@ lookup_name (tree name, int prefer_type)
    Unlike lookup_name_real, we make sure that NAME is actually
    declared in the desired scope, not from inheritance, nor using
    directive.  For using declaration, there is DR138 still waiting
-   to be resolved.  Hidden name coming from earlier an friend
+   to be resolved.  Hidden name coming from an earlier friend
    declaration is also returned.
 
    A TYPE_DECL best matching the NAME is returned.  Catching error
