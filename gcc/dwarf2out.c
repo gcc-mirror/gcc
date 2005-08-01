@@ -8640,7 +8640,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode, bool can_use_fbreg)
 	 up an entire register.  For now, just assume that it is
 	 legitimate to make the Dwarf info refer to the whole register which
 	 contains the given subreg.  */
-      rtl = SUBREG_REG (rtl);
+      rtl = XEXP (rtl, 0);
 
       /* ... fall through ...  */
 
