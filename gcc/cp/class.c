@@ -5545,7 +5545,7 @@ pop_lang_context (void)
 
 /* Given an OVERLOAD and a TARGET_TYPE, return the function that
    matches the TARGET_TYPE.  If there is no satisfactory match, return
-   error_mark_node, and issue a error & warning messages under control
+   error_mark_node, and issue an error & warning messages under control
    of FLAGS.  Permit pointers to member function if FLAGS permits.  If
    TEMPLATE_ONLY, the name of the overloaded function was a
    template-id, and EXPLICIT_TARGS are the explicitly provided

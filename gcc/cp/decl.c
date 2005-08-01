@@ -2830,7 +2830,7 @@ record_unknown_type (tree type, const char* name)
   TYPE_MODE (type) = TYPE_MODE (void_type_node);
 }
 
-/* An string for which we should create an IDENTIFIER_NODE at
+/* A string for which we should create an IDENTIFIER_NODE at
    startup.  */
 
 typedef struct predefined_identifier

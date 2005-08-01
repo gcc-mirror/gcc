@@ -1,3 +1,8 @@
+2005-08-01  Kazu Hirata  <kazu@codesourcery.com>
+
+	* class.c, decl.c, name-lookup.c, pt.c, typeck.c, typeck2.c:
+	Fix comment typos.
+
 2005-07-29  Kazu Hirata  <kazu@codesourcery.com>
 
 	* method.c: Fix a comment typo.

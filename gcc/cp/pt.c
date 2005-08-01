@@ -642,7 +642,7 @@ end_explicit_instantiation (void)
   processing_explicit_instantiation = false;
 }
 
-/* A explicit specialization or partial specialization TMPL is being
+/* An explicit specialization or partial specialization TMPL is being
    declared.  Check that the namespace in which the specialization is
    occurring is permissible.  Returns false iff it is invalid to
    specialize TMPL in the current namespace.  */
