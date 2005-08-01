@@ -1,3 +1,8 @@
+2005-08-01  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/22311
+	* gcc.dg/pr22311-1.c : New test.
+
 2005-07-31  Richard Sandiford  <richard@codesourcery.com>
 
 	PR target/20621

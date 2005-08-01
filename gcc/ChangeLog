@@ -1,3 +1,10 @@
+2005-08-01  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/22311
+	* c-typeck.c (build_binary_op): Use common_type wrapper on
+	shortened types.
+	(common_type): Update comment.
+
 2005-07-28  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/21723
