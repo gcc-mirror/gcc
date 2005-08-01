@@ -48,6 +48,7 @@ Boston, MA 02110-1301, USA.  */
 #include "langhooks.h"
 #include "cgraph.h"
 #include "tree-gimple.h"
+#include "dwarf2.h"
 
 #ifndef CHECK_STACK_LIMIT
 #define CHECK_STACK_LIMIT (-1)
@@ -17945,6 +17946,32 @@ ix86_stack_protect_fail (void)
   return TARGET_64BIT
 	 ? default_external_stack_protect_fail ()
 	 : default_hidden_stack_protect_fail ();
+}
+
+/* Select a format to encode pointers in exception handling data.  CODE
+   is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
+   true if the symbol may be affected by dynamic relocations.
+
+   ??? All x86 object file formats are capable of representing this.
+   After all, the relocation needed is the same as for the call insn.
+   Whether or not a particular assembler allows us to enter such, I
+   guess we'll have to see.  */
+int
+asm_preferred_eh_data_format (int code, int global)
+{
+  if (flag_pic)
+    {
+int type = DW_EH_PE_sdata8;
+      if (!TARGET_64BIT
+	  || ix86_cmodel == CM_SMALL_PIC
+	  || (ix86_cmodel == CM_MEDIUM_PIC && (global || code)))
+	type = DW_EH_PE_sdata4;
+      return (global ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | type;
+    }
+  if (ix86_cmodel == CM_SMALL
+      || (ix86_cmodel == CM_MEDIUM && code))
+    return DW_EH_PE_udata4;
+  return DW_EH_PE_absptr;
 }
 
 #include "gt-i386.h"
