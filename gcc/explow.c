@@ -477,16 +477,10 @@ memory_address (enum machine_mode mode, rtx x)
     win2:
       x = oldx;
     win:
-      if (flag_force_addr && ! cse_not_expected && !REG_P (x)
-	  /* Don't copy an addr via a reg if it is one of our stack slots.  */
-	  && ! (GET_CODE (x) == PLUS
-		&& (XEXP (x, 0) == virtual_stack_vars_rtx
-		    || XEXP (x, 0) == virtual_incoming_args_rtx)))
+      if (flag_force_addr && ! cse_not_expected && !REG_P (x))
 	{
-	  if (general_operand (x, Pmode))
-	    x = force_reg (Pmode, x);
-	  else
-	    x = force_operand (x, NULL_RTX);
+	  x = force_operand (x, NULL_RTX);
+	  x = force_reg (Pmode, x);
 	}
     }
 
