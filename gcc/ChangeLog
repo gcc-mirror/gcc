@@ -1,3 +1,9 @@
+2005-08-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/23177
+	* tree-ssa-operands.c (get_tmr_operands): Use get_expr_operands
+	on TMR_TAG.
+
 2005-08-02  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR tree-optimization/23129

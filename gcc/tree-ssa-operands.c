@@ -1698,7 +1698,7 @@ get_tmr_operands (tree stmt, tree expr, int flags)
     }
 
   if (tag)
-    add_stmt_operand (&tag, stmt_ann (stmt), flags);
+    get_expr_operands (stmt, &tag, flags);
   else
     /* Something weird, so ensure that we will be careful.  */
     stmt_ann (stmt)->has_volatile_ops = true;
