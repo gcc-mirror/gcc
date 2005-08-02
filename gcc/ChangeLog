@@ -3,8 +3,8 @@
 	PR 23192
 	* tree-ssa-alias.c (add_pointed_to_var): If VALUE is of the
 	form &(*PTR), take points-to information from PTR.
-	Give up if VALUE by marking PTR as pointing anywhere if VALUE
-	is not recognized.
+	Give up by marking PTR as pointing anywhere if VALUE is
+	not recognized.
 
 2005-08-01  Ian Lance Taylor  <ian@airs.com>
 
