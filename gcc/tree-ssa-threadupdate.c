@@ -724,6 +724,8 @@ thread_block (basic_block bb)
       else
 	{
 	  edge e2 = e->aux;
+	  update_bb_profile_for_threading (e->dest, EDGE_FREQUENCY (e),
+					   e->count, e->aux);
 
 	  /* If we thread to a loop exit edge, then we will need to 
 	     rediscover the loop exit edges.  While it may seem that

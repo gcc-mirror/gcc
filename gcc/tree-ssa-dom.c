@@ -848,8 +848,6 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 	    {
 	      struct edge_info *edge_info;
 
-	      update_bb_profile_for_threading (e->dest, EDGE_FREQUENCY (e),
-					       e->count, taken_edge);
 	      if (e->aux)
 		edge_info = e->aux;
 	      else
