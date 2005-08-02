@@ -1,3 +1,8 @@
+2005-08-02  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (tree_expr_nonnegative_p): frexp(x, &e) is
+	positive if its first argument is positive.
+
 2005-08-02  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 23192
