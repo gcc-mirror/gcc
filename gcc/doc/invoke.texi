@@ -857,6 +857,11 @@ preprocessor (not included with GCC)@.
 @itemx @var{file}.f95
 Fortran 90/95 source code which should not be preprocessed.
 
+@item @var{file}.F90
+@itemx @var{file}.F95
+Fortran 90/95 source code which must be preprocessed (with the
+traditional preprocessor).
+
 @c FIXME: Descriptions of Java file types.
 @c @var{file}.java
 @c @var{file}.class
