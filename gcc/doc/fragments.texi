@@ -151,6 +151,12 @@ compiler.  In that case, set @code{MULTILIB_EXTRA_OPTS} to be the list
 of options to be used for all builds.  If you set this, you should
 probably set @code{CRTSTUFF_T_CFLAGS} to a dash followed by it.
 
+@findex NATIVE_SYSTEM_HEADER_DIR
+@item NATIVE_SYSTEM_HEADER_DIR
+If the default location for system headers is not @file{/usr/include},
+you must set this to the directory containing the headers.  This value
+should match the value of the @code{SYSTEM_INCLUDE_DIR} macro.
+
 @findex SPECS
 @item SPECS
 Unfortunately, setting @code{MULTILIB_EXTRA_OPTS} is not enough, since
