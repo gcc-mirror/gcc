@@ -1,5 +1,10 @@
 2005-08-02  Diego Novillo  <dnovillo@redhat.com>
 
+	PR 23164
+	* g++.dg/tree-ssa/pr23164.C: New test.
+
+2005-08-02  Diego Novillo  <dnovillo@redhat.com>
+
 	* gcc.dg/tree-ssa/pr23192.c: New test.
 
 2005-08-02  James A. Morrison  <phython@gcc.gnu.org>

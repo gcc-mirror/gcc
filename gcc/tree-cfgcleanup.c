@@ -529,22 +529,12 @@ bool
 cleanup_tree_cfg (void)
 {
   bool retval;
-  int i;
 
   timevar_push (TV_TREE_CLEANUP_CFG);
 
-  for (retval = true, i = 0; i < 5 && retval; i++)
+  do
     retval = cleanup_tree_cfg_1 ();
-
-#ifdef ENABLE_CHECKING
-  if (retval)
-    {
-      gcc_assert (!cleanup_control_flow ());
-      gcc_assert (!delete_unreachable_blocks ());
-      if (optimize > 0)
-	gcc_assert (!cleanup_forwarder_blocks ());
-    }
-#endif
+  while (retval);
 
   compact_blocks ();
 

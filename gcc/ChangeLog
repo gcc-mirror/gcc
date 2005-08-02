@@ -1,3 +1,9 @@
+2005-08-02  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 23164
+	* tree-cfgcleanup.c (cleanup_tree_cfg): Do not limit the
+	number of calls to cleanup_tree_cfg_1.
+
 2005-08-02  Martin Reinecke  <martin@mpa-garching.mpg.de>
 
 	* doc/invoke.texi: document file extensions .F90 and .F95
