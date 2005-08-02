@@ -428,6 +428,6 @@ c_common_no_more_pch (void)
   if (cpp_get_callbacks (parse_in)->valid_pch)
     {
       cpp_get_callbacks (parse_in)->valid_pch = NULL;
-      host_hooks.gt_pch_use_address (NULL, 0);
+      host_hooks.gt_pch_use_address (NULL, 0, -1, 0);
     }
 }

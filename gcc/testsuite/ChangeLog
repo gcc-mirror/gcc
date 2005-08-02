@@ -1,3 +1,12 @@
+2005-08-02  Ian Lance Taylor  <ian@airs.com>
+
+	PR pch/14400
+	Backport from mainline:
+
+	2004-04-07  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* gcc.dg/pch/pch.exp: Add largefile test.
+
 2005-07-31  Richard Sandiford  <richard@codesourcery.com>
 
 	PR target/20621

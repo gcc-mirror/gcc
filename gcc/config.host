@@ -113,6 +113,8 @@ case ${host} in
     ;;
   i[34567]86-*-solaris2*)
     host_xm_defines="SMALL_ARG_MAX"
+    out_host_hook_obj=host-solaris.o
+    host_xmake_file=x-solaris
     ;;
   i[34567]86-*-sysv4*) # Intel 80386's running System V Release 4
     host_xm_defines="SMALL_ARG_MAX"
@@ -151,5 +153,13 @@ case ${host} in
     # powerpc-darwin host support.
     out_host_hook_obj=host-darwin.o
     host_xmake_file=rs6000/x-darwin
+    ;;
+  *-*-solaris2*)
+    out_host_hook_obj=host-solaris.o
+    host_xmake_file=x-solaris
+    ;;
+  *-*-linux*)
+    out_host_hook_obj=host-linux.o
+    host_xmake_file=x-linux
     ;;
 esac

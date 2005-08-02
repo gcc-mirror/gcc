@@ -37,6 +37,21 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.c]] {
     dg-pch $subdir $test [concat [list {-O0 -g}] $torture_without_loops] ".h"
 }
 
+set test "largefile.c"
+set testh "largefile.hs"
+set f [open $test w]
+set v 0
+for { set v 0 } { $v < 10000 } { incr v } {
+    puts $f "#define MACRO_${v} \"1234567890\" \"$v\""
+}
+puts $f "#include \"largefile.h\""
+close $f
+set f [open $testh w]
+close $f
+dg-pch $subdir $test [concat [list {-O0 -g}] $torture_without_loops] ".h"    
+file delete $test
+file delete $testh
+
 set dg-do-what-default "$old_dg_do_what_default"
 
 # All done.

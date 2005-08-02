@@ -25,8 +25,16 @@ struct host_hooks
 {
   void (*extra_signals) (void);
 
-  void * (*gt_pch_get_address) (size_t);
-  bool (*gt_pch_use_address) (void *, size_t);
+  /* Identify an address that's likely to be free in a subsequent invocation
+     of the compiler.  The area should be able to hold SIZE bytes.  FD is an
+     open file descriptor if the host would like to probe with mmap.  */
+  void * (*gt_pch_get_address) (size_t size, int fd);
+
+  /* ADDR is an address returned by gt_pch_get_address.  Attempt to allocate
+     SIZE bytes at the same address and load it with the data from FD at 
+     OFFSET.  Return -1 if we couldn't allocate memory at ADDR, return 0
+     if the memory is allocated but the data not loaded, return 1 if done.  */
+  int (*gt_pch_use_address) (void *addr, size_t size, int fd, size_t offset);
 
   /* Whenever you add entries here, make sure you adjust hosthooks-def.h.  */
 };

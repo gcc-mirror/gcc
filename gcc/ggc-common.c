@@ -30,6 +30,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "params.h"
 #include "hosthooks.h"
+#include "hosthooks-def.h"
 
 #ifdef HAVE_SYS_RESOURCE_H
 # include <sys/resource.h>
@@ -458,21 +459,8 @@ gt_pch_save (FILE *f)
      and on the rest it's a lot of work to do better.  
      (The extra work goes in HOST_HOOKS_GT_PCH_GET_ADDRESS and
      HOST_HOOKS_GT_PCH_USE_ADDRESS.)  */
-  mmi.preferred_base = host_hooks.gt_pch_get_address (mmi.size);
+  mmi.preferred_base = host_hooks.gt_pch_get_address (mmi.size, fileno (f));
       
-#if HAVE_MMAP_FILE
-  if (mmi.preferred_base == NULL)
-    {
-      mmi.preferred_base = mmap (NULL, mmi.size,
-				 PROT_READ | PROT_WRITE, MAP_PRIVATE,
-				 fileno (state.f), 0);
-      if (mmi.preferred_base == (void *) MAP_FAILED)
-	mmi.preferred_base = NULL;
-      else
-	munmap (mmi.preferred_base, mmi.size);
-    }
-#endif /* HAVE_MMAP_FILE */
-
   ggc_pch_this_base (state.d, mmi.preferred_base);
 
   state.ptrs = xmalloc (state.count * sizeof (*state.ptrs));
@@ -526,7 +514,8 @@ gt_pch_save (FILE *f)
 				  state.ptrs[i]->note_ptr_cookie,
 				  relocate_ptrs, &state);
       ggc_pch_write_object (state.d, state.f, state.ptrs[i]->obj,
-			    state.ptrs[i]->new_addr, state.ptrs[i]->size, state.ptrs[i]->note_ptr_fn == gt_pch_p_S);
+			    state.ptrs[i]->new_addr, state.ptrs[i]->size,
+			    state.ptrs[i]->note_ptr_fn == gt_pch_p_S);
       if (state.ptrs[i]->note_ptr_fn != gt_pch_p_S)
 	memcpy (state.ptrs[i]->obj, this_object, state.ptrs[i]->size);
     }
@@ -546,8 +535,7 @@ gt_pch_restore (FILE *f)
   const struct ggc_root_tab *rti;
   size_t i;
   struct mmap_info mmi;
-  void *addr;
-  bool needs_read;
+  int result;
 
   /* Delete any deletable objects.  This makes ggc_pch_read much
      faster, as it can be sure that no GCable objects remain other
@@ -580,109 +568,94 @@ gt_pch_restore (FILE *f)
   if (fread (&mmi, sizeof (mmi), 1, f) != 1)
     fatal_error ("can't read PCH file: %m");
 
-  if (host_hooks.gt_pch_use_address (mmi.preferred_base, mmi.size))
-    {
-#if HAVE_MMAP_FILE
-      void *mmap_result;
-
-      mmap_result = mmap (mmi.preferred_base, mmi.size,
-			  PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED,
-			  fileno (f), mmi.offset);
-
-      /* The file might not be mmap-able.  */
-      needs_read = mmap_result == (void *) MAP_FAILED;
-
-      /* Sanity check for broken MAP_FIXED.  */
-      if (! needs_read && mmap_result != mmi.preferred_base)
-	abort ();
-#else
-      needs_read = true;
-#endif
-      addr = mmi.preferred_base;
-    }
-  else
-    {
-#if HAVE_MMAP_FILE
-      addr = mmap (mmi.preferred_base, mmi.size,
-		   PROT_READ | PROT_WRITE, MAP_PRIVATE,
-		   fileno (f), mmi.offset);
-      
-#if HAVE_MINCORE
-      if (addr != mmi.preferred_base)
-	{
-	  size_t page_size = getpagesize();
-	  char one_byte;
-	  
-	  if (addr != (void *) MAP_FAILED)
-	    munmap (addr, mmi.size);
-	  
-	  /* We really want to be mapped at mmi.preferred_base
-	     so we're going to resort to MAP_FIXED.  But before,
-	     make sure that we can do so without destroying a
-	     previously mapped area, by looping over all pages
-	     that would be affected by the fixed mapping.  */
-	  errno = 0;
-	  
-	  for (i = 0; i < mmi.size; i+= page_size)
-	    if (mincore ((char *)mmi.preferred_base + i, page_size, 
-			 (void *)&one_byte) == -1
-		&& errno == ENOMEM)
-	      continue; /* The page is not mapped.  */
-	    else
-	      break;
-	  
-	  if (i >= mmi.size)
-	    addr = mmap (mmi.preferred_base, mmi.size, 
-			 PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_FIXED,
-			 fileno (f), mmi.offset);
-	}
-#endif /* HAVE_MINCORE */
-      
-      needs_read = addr == (void *) MAP_FAILED;
-
-#else /* HAVE_MMAP_FILE */
-      needs_read = true;
-#endif /* HAVE_MMAP_FILE */
-      if (needs_read)
-	addr = xmalloc (mmi.size);
-    }
-
-  if (needs_read)
+  result = host_hooks.gt_pch_use_address (mmi.preferred_base, mmi.size,
+					  fileno (f), mmi.offset);
+  if (result < 0)
+    fatal_error ("had to relocate PCH");
+  if (result == 0)
     {
       if (fseek (f, mmi.offset, SEEK_SET) != 0
-	  || fread (&mmi, mmi.size, 1, f) != 1)
+	  || fread (mmi.preferred_base, mmi.size, 1, f) != 1)
 	fatal_error ("can't read PCH file: %m");
     }
   else if (fseek (f, mmi.offset + mmi.size, SEEK_SET) != 0)
     fatal_error ("can't read PCH file: %m");
 
-  ggc_pch_read (f, addr);
-
-  if (addr != mmi.preferred_base)
-    {
-      for (rt = gt_ggc_rtab; *rt; rt++)
-	for (rti = *rt; rti->base != NULL; rti++)
-	  for (i = 0; i < rti->nelt; i++)
-	    {
-	      char **ptr = (char **)((char *)rti->base + rti->stride * i);
-	      if (*ptr != NULL)
-		*ptr += (size_t)addr - (size_t)mmi.preferred_base;
-	    }
-
-      for (rt = gt_pch_cache_rtab; *rt; rt++)
-	for (rti = *rt; rti->base != NULL; rti++)
-	  for (i = 0; i < rti->nelt; i++)
-	    {
-	      char **ptr = (char **)((char *)rti->base + rti->stride * i);
-	      if (*ptr != NULL)
-		*ptr += (size_t)addr - (size_t)mmi.preferred_base;
-	    }
-
-      sorry ("had to relocate PCH");
-    }
+  ggc_pch_read (f, mmi.preferred_base);
 
   gt_pch_restore_stringpool ();
 }
+
+/* Default version of HOST_HOOKS_GT_PCH_GET_ADDRESS when mmap is not present.
+   Select no address whatsoever, and let gt_pch_save choose what it will with
+   malloc, presumably.  */
+
+void *
+default_gt_pch_get_address (size_t size ATTRIBUTE_UNUSED,
+			    int fd ATTRIBUTE_UNUSED)
+{
+  return NULL;
+}
+
+/* Default version of HOST_HOOKS_GT_PCH_USE_ADDRESS when mmap is not present.
+   Allocate SIZE bytes with malloc.  Return 0 if the address we got is the
+   same as base, indicating that the memory has been allocated but needs to
+   be read in from the file.  Return -1 if the address differs, to relocation
+   of the PCH file would be required.  */
+
+int
+default_gt_pch_use_address (void *base, size_t size, int fd ATTRIBUTE_UNUSED,
+			    size_t offset ATTRIBUTE_UNUSED)
+{
+  void *addr = xmalloc (size);
+  return (addr == base) - 1;
+}
+
+#if HAVE_MMAP_FILE
+/* Default version of HOST_HOOKS_GT_PCH_GET_ADDRESS when mmap is present.
+   We temporarily allocate SIZE bytes, and let the kernel place the data
+   whereever it will.  If it worked, that's our spot, if not we're likely
+   to be in trouble.  */
+ 
+void *
+mmap_gt_pch_get_address (size_t size, int fd)
+{
+  void *ret;
+ 
+  ret = mmap (NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+  if (ret == (void *) MAP_FAILED)
+    ret = NULL;
+  else
+    munmap (ret, size);
+ 
+  return ret;
+}
+
+/* Default version of HOST_HOOKS_GT_PCH_USE_ADDRESS when mmap is present.
+   Map SIZE bytes of FD+OFFSET at BASE.  Return 1 if we succeeded at 
+   mapping the data at BASE, -1 if we couldn't.
+ 
+   This version assumes that the kernel honors the START operand of mmap
+   even without MAP_FIXED if START through START+SIZE are not currently
+   mapped with something.  */
+ 
+int
+mmap_gt_pch_use_address (void *base, size_t size, int fd, size_t offset)
+{
+  void *addr;
+ 
+  /* We're called with size == 0 if we're not planning to load a PCH
+     file at all.  This allows the hook to free any static space that
+     we might have allocated at link time.  */
+  if (size == 0)
+    return -1;
+ 
+  addr = mmap (base, size, PROT_READ | PROT_WRITE, MAP_PRIVATE,
+	       fd, offset);
+
+  return addr == base ? 1 : -1;
+ }
+#endif /* HAVE_MMAP_FILE */
 
 /* Modify the bound based on rlimits.  Keep the smallest number found.  */
 static double

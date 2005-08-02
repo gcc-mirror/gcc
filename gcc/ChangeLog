@@ -1,3 +1,78 @@
+2005-08-02  Ian Lance Taylor  <ian@airs.com>
+
+	PR pch/14400
+	Backport from mainline:
+
+	2005-08-01  Ian Lance Taylor  <ian@airs.com>
+
+	* config/host-linux.c (linux_gt_pch_get_address): Add new name
+	randomize_va_space for virtual address randomization control.
+
+	2005-02-15  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR pch/14940
+	PR target/19300
+	* config/host-linux.c (linux_gt_pch_use_address): Copy from
+	config/pa/pa-host.c:pa_gt_pch_use_address.
+
+	2004-11-09  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR pch/14940
+	* config/host-linux.c (TRY_EMPTY_VM_SPACE): Add __sparc__
+	definitions.
+
+	2004-10-15  Jon Grimm <jgrimm2@us.ibm.com>
+
+	* config/host-linux.c (TRY_EMPTY_VM_SPACE): Add __powerpc__
+	definition.
+
+	2004-04-24  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/host-linux.c (TRY_EMPTY_VM_SPACE): Define for __s390__
+	and __s390x__ hosts.
+
+	2004-04-08  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* config/rs6000/host-darwin.c (darwin_rs6000_gt_pch_use_address):
+	Return 1 if file was successfully mapped.
+
+	2004-03-15  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* config/rs6000/host-darwin.c (darwin_rs6000_gt_pch_use_address):
+	Fix the check for abort and only do the mmap if we can.
+
+	2004-03-12  Andrew Pinski  <apinski@apple.com>
+
+	* config/rs6000/host-darwin.c (darwin_rs6000_gt_pch_use_address):
+	Use ret instead of result. Use addr instead of base.
+
+	2004-03-10  Richard Henderson  <rth@redhat.com>
+
+	* c-pch.c (c_common_no_more_pch): Update for gt_pch_use_address
+	extra arguments.
+	* config.host (*-*-solaris2*, *-*-linux*): Add out_host_hook_obj
+	and host_xmake_file fragments.
+	* ggc-common.c (gt_pch_save): Update for gt_pch_get_address change.
+	(gt_pch_restore): Similarly for gt_pch_use_address.
+	(default_gt_pch_get_address): New.
+	(mmap_gt_pch_get_address): Split out of gt_pch_save.
+	(default_gt_pch_use_address): Split out of gt_pch_restore.
+	(mmap_gt_pch_use_address): Likewise.
+	* hooks.c (hook_voidp_size_t_null): Remove.
+	(hook_bool_voidp_size_t_false): Remove.
+	* hooks.h: Likewise.
+	* hosthooks-def.h (HOST_HOOKS_GT_PCH_GET_ADDRESS): Use one of the
+	default_ or mmap_ definitions.
+	(HOST_HOOKS_GT_PCH_USE_ADDRESS): Likewise.
+	* hosthooks.h (struct host_hooks): Update gt_pch_get_address
+	and gt_pch_use_address.
+	* config/host-linux.c, config/host-solaris.c: New files.
+	* config/x-linux, config/x-solaris: New files.
+	* config/rs6000/host-darwin.c darwin_rs6000_gt_pch_get_address): 
+	Update for changed definition.
+	(darwin_rs6000_gt_pch_use_address): Likewise.
+	* doc/hostconfig.texi: Update docs.
+
 2005-07-31  Richard Sandiford  <richard@codesourcery.com>
 
 	PR target/20621

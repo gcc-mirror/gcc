@@ -24,8 +24,18 @@ Boston, MA 02111-1307, USA.  */
 #include "hooks.h"
 
 #define HOST_HOOKS_EXTRA_SIGNALS hook_void_void
-#define HOST_HOOKS_GT_PCH_GET_ADDRESS hook_voidp_size_t_null
-#define HOST_HOOKS_GT_PCH_USE_ADDRESS hook_bool_voidp_size_t_false
+#if HAVE_MMAP_FILE
+#define HOST_HOOKS_GT_PCH_GET_ADDRESS mmap_gt_pch_get_address
+#define HOST_HOOKS_GT_PCH_USE_ADDRESS mmap_gt_pch_use_address
+#else
+#define HOST_HOOKS_GT_PCH_GET_ADDRESS default_gt_pch_get_address
+#define HOST_HOOKS_GT_PCH_USE_ADDRESS default_gt_pch_use_address
+#endif
+
+extern void* default_gt_pch_get_address (size_t, int);
+extern int default_gt_pch_use_address (void *, size_t, int, size_t);
+extern void* mmap_gt_pch_get_address (size_t, int);
+extern int mmap_gt_pch_use_address (void *, size_t, int, size_t);
 
 /* The structure is defined in hosthooks.h.  */
 #define HOST_HOOKS_INITIALIZER {		\
