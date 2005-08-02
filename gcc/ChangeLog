@@ -1,5 +1,10 @@
 2005-08-02  Richard Guenther  <rguenther@suse.de>
 
+	* fold-const.c (tree_expr_nonnegative_p): frexp(x, &e) is
+	positive if its first argument is positive.
+
+2005-08-02  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/23177
 	* tree-ssa-operands.c (get_tmr_operands): Use get_expr_operands
 	on TMR_TAG.
