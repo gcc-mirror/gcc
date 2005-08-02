@@ -1,3 +1,9 @@
+2005-08-02  Richard Henderson  <rth@redhat.com>
+
+	PR 23196
+	* explow.c (memory_address): Remove special-case for 
+	virtual_stack_vars_rtx and virtual_incoming_args_rtx.
+
 2005-08-02  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 23164
