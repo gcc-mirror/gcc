@@ -1,3 +1,8 @@
+2005-08-02  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-dom.c (thread_across_edge): Remove updating here.
+	* tree-ssa-threadupdate.c (thread_block): Add it here.
+
 2005-08-01  James E Wilson  <wilson@specifix.com>
 
 	* config/mips/mips.c (mips_encode_section_info, mips_attribute_table,

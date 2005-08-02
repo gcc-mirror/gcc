@@ -1,3 +1,7 @@
+2005-08-02  Jan Hubicka  <jh@suse.cz>
+
+	* update-threading.c: New test.
+
 2005-08-01  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc.c-torture/compile/20050801-1.c: New test.
