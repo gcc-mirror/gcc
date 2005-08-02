@@ -1,3 +1,9 @@
+2005-08-02  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR tree-optimization/23129
+	* tree-vrp.c (extract_range_from_binary_expr): Set value range to
+	varying for divisions with anti-ranges.
+
 2005-08-02  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-dom.c (thread_across_edge): Remove updating here.

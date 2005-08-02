@@ -1136,7 +1136,8 @@ extract_range_from_binary_expr (value_range_t *vr, tree expr)
 	 the new range.  */
 
       /* Divisions by zero result in a VARYING value.  */
-      if (code != MULT_EXPR && range_includes_zero_p (&vr1))
+      if (code != MULT_EXPR
+	  && (vr0.type == VR_ANTI_RANGE || range_includes_zero_p (&vr1)))
 	{
 	  set_value_range_to_varying (vr);
 	  return;
