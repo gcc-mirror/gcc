@@ -1887,7 +1887,11 @@ add_pointed_to_var (struct alias_info *ai, tree ptr, tree value)
   if (REFERENCE_CLASS_P (pt_var))
     pt_var = get_base_address (pt_var);
 
-  if (pt_var && SSA_VAR_P (pt_var))
+  if (pt_var == NULL)
+    {
+      pi->pt_anything = 1;
+    }
+  else if (SSA_VAR_P (pt_var))
     {
       uid = var_ann (pt_var)->uid;
       bitmap_set_bit (ai->addresses_needed, uid);
@@ -1900,6 +1904,18 @@ add_pointed_to_var (struct alias_info *ai, tree ptr, tree value)
 	 global memory (which will make its tag a global variable).  */
       if (is_global_var (pt_var))
 	pi->pt_global_mem = 1;
+    }
+  else if (TREE_CODE (pt_var) == INDIRECT_REF
+           && TREE_CODE (TREE_OPERAND (pt_var, 0)) == SSA_NAME)
+    {
+      /* If VALUE is of the form &(*P_j), then PTR will have the same
+	 points-to information as P_j.  */
+      add_pointed_to_expr (ai, ptr, TREE_OPERAND (pt_var, 0));
+    }
+  else
+    {
+      /* Give up.  PTR points anywhere.  */
+      set_pt_anything (ptr);
     }
 }
 
