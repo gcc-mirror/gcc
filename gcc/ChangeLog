@@ -1,3 +1,7 @@
+2005-08-02  Martin Reinecke  <martin@mpa-garching.mpg.de>
+
+	* doc/invoke.texi: document file extensions .F90 and .F95
+
 2005-08-02  Richard Guenther  <rguenther@suse.de>
 
 	* fold-const.c (tree_expr_nonnegative_p): frexp(x, &e) is
@@ -96,58 +100,58 @@
 
 2005-08-01  Razya Ladelsky  <razya@il.ibm.com>
 
-        * cgraph.h (update_call_expr, cgraph_copy_node_for_versioning,
-        cgraph_function_versioning): New declarations.
-        * cgraphunit.c: Add include to ipa-prop.h.
-        (update_call_expr, cgraph_copy_node_for_versioning,
-        cgraph_function_versioning): New functions.
-        * integrate.c (copy_decl_for_inlining): Remove.
-        * ipa-prop.h (ipa_replace_map): New struct.
-        (struct ipa_node): Add ipcp_orig_node, count_scale, new fields.
-        * ipa-cp.c (ipcp_method_orig_node, ipcp_method_is_cloned,
-        ipcp_method_set_orig_node, ipcp_cloned_create, ipcp_method_get_scale,
-        ipcp_method_set_scale, ipcp_method_compute_scale, ipcp_after_propagate,
-        ipcp_iterate_stage, ipcp_method_scale_print,
-        ipcp_profile_mt_count_print, ipcp_profile_cs_count_print,
-        ipcp_profile_edge_print, ipcp_profile_bb_print , ipcp_profile_print,
-        ipcp_replace_map_create, ipcp_redirect, ipcp_update_callgraph,
-        ipcp_update_bb_counts, ipcp_update_profiling,
-        ipcp_update_edges_counts): New functions.
-        (ipcp_method_cval_init): Remove restriction regarding local methods.
-        (ipcp_init_stage): Add ipcp_method_compute_scale.
-        (ipcp_insert_stage): Add versioning.
-        (ipcp_structures_print): Add ipcp_method_scale_print.
-        (ipcp_driver): Dump profiling info.
-        * Makefile.in: Remove integrate.h dependency from tree-inline.o.
-        Add ipa-prop.h dependency to tree-inline.o and cgraphunit.o.
-        * tree-inline.c: Remove include to integrate.h, Add include ipa-prop.h.
-        (struct inline_data): Add versioning_p, ipa_info, new fields.
-        (remap_decl, mark_local_for_remap_r, setup_one_parameter,
-        declare_return_variable): Replace calls to copy_decl_for_inlining with
-        copy_decl_for_dup.
-        (copy_body_r, copy_bb, copy_cfg_body, copy_tree_r, inlining_p): Add
-        versioning support.
-        (copy_decl_for_dup): Rename from copy_decl_for_inlining.
-        Add argument VERSIONING.
-        (copy_arguments_for_versioning, copy_static_chain,
-        function_versionable_p, tree_versionable_function_p,
-        tree_function_versioning, replace_ref_tree): New functions.
-        * tree-inline.h: Include varray.h.
-        (tree_versionable_function_p,  tree_function_versioning,
-        tree copy_decl_for_dup): New declarations.
+	* cgraph.h (update_call_expr, cgraph_copy_node_for_versioning,
+	cgraph_function_versioning): New declarations.
+	* cgraphunit.c: Add include to ipa-prop.h.
+	(update_call_expr, cgraph_copy_node_for_versioning,
+	cgraph_function_versioning): New functions.
+	* integrate.c (copy_decl_for_inlining): Remove.
+	* ipa-prop.h (ipa_replace_map): New struct.
+	(struct ipa_node): Add ipcp_orig_node, count_scale, new fields.
+	* ipa-cp.c (ipcp_method_orig_node, ipcp_method_is_cloned,
+	ipcp_method_set_orig_node, ipcp_cloned_create, ipcp_method_get_scale,
+	ipcp_method_set_scale, ipcp_method_compute_scale, ipcp_after_propagate,
+	ipcp_iterate_stage, ipcp_method_scale_print,
+	ipcp_profile_mt_count_print, ipcp_profile_cs_count_print,
+	ipcp_profile_edge_print, ipcp_profile_bb_print , ipcp_profile_print,
+	ipcp_replace_map_create, ipcp_redirect, ipcp_update_callgraph,
+	ipcp_update_bb_counts, ipcp_update_profiling,
+	ipcp_update_edges_counts): New functions.
+	(ipcp_method_cval_init): Remove restriction regarding local methods.
+	(ipcp_init_stage): Add ipcp_method_compute_scale.
+	(ipcp_insert_stage): Add versioning.
+	(ipcp_structures_print): Add ipcp_method_scale_print.
+	(ipcp_driver): Dump profiling info.
+	* Makefile.in: Remove integrate.h dependency from tree-inline.o.
+	Add ipa-prop.h dependency to tree-inline.o and cgraphunit.o.
+	* tree-inline.c: Remove include to integrate.h, Add include ipa-prop.h.
+	(struct inline_data): Add versioning_p, ipa_info, new fields.
+	(remap_decl, mark_local_for_remap_r, setup_one_parameter,
+	declare_return_variable): Replace calls to copy_decl_for_inlining with
+	copy_decl_for_dup.
+	(copy_body_r, copy_bb, copy_cfg_body, copy_tree_r, inlining_p): Add
+	versioning support.
+	(copy_decl_for_dup): Rename from copy_decl_for_inlining.
+	Add argument VERSIONING.
+	(copy_arguments_for_versioning, copy_static_chain,
+	function_versionable_p, tree_versionable_function_p,
+	tree_function_versioning, replace_ref_tree): New functions.
+	* tree-inline.h: Include varray.h.
+	(tree_versionable_function_p,  tree_function_versioning,
+	tree copy_decl_for_dup): New declarations.
 
 2005-08-01  Razya Ladelsky  <razya@il.ibm.com>
 
-        * ipa-cp.c: New file. Contains IPCP specific functionality.
-        * ipa-prop.h: New file. Contains structures/definitions that can be
-        used by several interprocedural data flow optimizations (and also IPCP).
-        * ipa-prop.c: New file.
-        * Makefile.in: Add ipa-cp.c, ipa-prop.h, ipa-prop.c.
-        * common.opt: Add ipa-cp flag.
-        * timevar.def: Add IPCP optimization.
-        * tree-optimize.c (init_tree_optimization_passes): Schedule
-        pass_ipa_cp.
-        * tree-pass.h (pass_ipa_cp): Declare.
+	* ipa-cp.c: New file. Contains IPCP specific functionality.
+	* ipa-prop.h: New file. Contains structures/definitions that can be
+	used by several interprocedural data flow optimizations (and also IPCP).
+	* ipa-prop.c: New file.
+	* Makefile.in: Add ipa-cp.c, ipa-prop.h, ipa-prop.c.
+	* common.opt: Add ipa-cp flag.
+	* timevar.def: Add IPCP optimization.
+	* tree-optimize.c (init_tree_optimization_passes): Schedule
+	pass_ipa_cp.
+	* tree-pass.h (pass_ipa_cp): Declare.
 
 2005-08-01  Kazu Hirata  <kazu@codesourcery.com>
 
