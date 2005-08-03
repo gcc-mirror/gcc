@@ -1,3 +1,8 @@
+2005-08-03  Paul Brook  <paul@codesourcery.com>
+
+	* combine.c (can_change_dest_mode): New function.
+	(try_combine, simplify_set): Use it.
+
 2005-08-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/ia64/hpux.h (MEMBER_TYPE_FORCES_BLK): Only force
