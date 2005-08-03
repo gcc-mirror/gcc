@@ -155,32 +155,69 @@
    This is ordinarily the length in words of a value of mode MODE
    but can be less for certain modes in special long registers.
 
-   On the HP-PA, ordinary registers hold 32 bits worth;
-   The floating point registers are 64 bits wide. Snake fp regs are 32
-   bits wide */
+   On the HP-PA, general registers are 32 bits wide.  The floating
+   point registers are 64 bits wide.  Snake fp regs are treated as
+   32 bits wide since the left and right parts are independently
+   accessible.  */
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
   (FP_REGNO_P (REGNO)							\
-   ? (!TARGET_PA_11 ? 1 : (GET_MODE_SIZE (MODE) + 4 - 1) / 4)		\
-   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
+   ? (!TARGET_PA_11							\
+      ? COMPLEX_MODE_P (MODE) ? 2 : 1					\
+      : (GET_MODE_SIZE (MODE) + 4 - 1) / 4) 	                        \
+   : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+
+/* There are no instructions that use DImode in PA 1.0, so we only
+   allow it in PA 1.1 and later.  */
+#define VALID_FP_MODE_P(MODE)						\
+  ((MODE) == SFmode || (MODE) == DFmode					\
+   || (MODE) == SCmode || (MODE) == DCmode				\
+   || (MODE) == SImode || (TARGET_PA_11 && (MODE) == DImode))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   On the HP-PA, the cpu registers can hold any mode.  For DImode, we
-   choose a set of general register that includes the incoming arguments
-   and the return value.  We specify a set with no overlaps so that we don't
-   have to specify that the destination register in patterns using this mode
-   is an early clobber.  */
+
+   On the HP-PA, the cpu registers can hold any mode that fits in 32 bits.
+   For the 64-bit modes, we choose a set of non-overlapping general registers
+   that includes the incoming arguments and the return value.  We specify a
+   set with no overlaps so that we don't have to specify that the destination
+   register is an early clobber in patterns using this mode.  Except for the
+   return value, the starting registers are odd.  For 128 and 256 bit modes,
+   we similarly specify non-overlapping sets of cpu registers.  However,
+   there aren't any patterns defined for modes larger than 64 bits at the
+   moment.
+
+   We limit the modes allowed in the floating point registers to the
+   set of modes used in the machine definition.  In addition, we allow
+   the complex modes SCmode and DCmode.  The real and imaginary parts
+   of complex modes are allocated to separate registers.  This might
+   allow patterns to be defined in the future to operate on these values.
+
+   The PA 2.0 architecture specifies that quad-precision floating-point
+   values should start on an even floating point register.  Thus, we
+   choose non-overlapping sets of registers starting on even register
+   boundaries for large modes.  However, there is currently no support
+   in the machine definition for modes larger than 64 bits.  TFmode is
+   supported under HP-UX using libcalls.  Since TFmode values are passed
+   by reference, they never need to be loaded into the floating-point
+   registers.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   ((REGNO) == 0 ? (MODE) == CCmode || (MODE) == CCFPmode		\
-   /* On 1.0 machines, don't allow wide non-fp modes in fp regs.  */	\
    : !TARGET_PA_11 && FP_REGNO_P (REGNO)				\
-     ? GET_MODE_SIZE (MODE) <= 4 || GET_MODE_CLASS (MODE) == MODE_FLOAT	\
+     ? (VALID_FP_MODE_P (MODE)						\
+	&& (GET_MODE_SIZE (MODE) <= 8					\
+	    || (GET_MODE_SIZE (MODE) == 16 && ((REGNO) & 3) == 0)))	\
    : FP_REGNO_P (REGNO)							\
-     ? GET_MODE_SIZE (MODE) <= 4 || ((REGNO) & 1) == 0			\
+     ? (VALID_FP_MODE_P (MODE)						\
+	&& (GET_MODE_SIZE (MODE) <= 4					\
+	    || (GET_MODE_SIZE (MODE) == 8 && ((REGNO) & 1) == 0)	\
+	    || (GET_MODE_SIZE (MODE) == 16 && ((REGNO) & 3) == 0)	\
+	    || (GET_MODE_SIZE (MODE) == 32 && ((REGNO) & 7) == 0)))	\
    : (GET_MODE_SIZE (MODE) <= UNITS_PER_WORD				\
       || (GET_MODE_SIZE (MODE) == 2 * UNITS_PER_WORD			\
 	  && ((((REGNO) & 1) == 1 && (REGNO) <= 25) || (REGNO) == 28))	\
       || (GET_MODE_SIZE (MODE) == 4 * UNITS_PER_WORD			\
-	  && (((REGNO) & 3) == 3 && (REGNO) <= 23))))
+	  && ((REGNO) & 3) == 3 && (REGNO) <= 23)			\
+      || (GET_MODE_SIZE (MODE) == 8 * UNITS_PER_WORD			\
+	  && ((REGNO) & 7) == 3 && (REGNO) <= 19)))
 
 /* How to renumber registers for dbx and gdb.
 
@@ -275,7 +312,9 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FPUPPER_REGS, FP_REGS,
    needed to represent mode MODE in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)					\
   ((CLASS) == FP_REGS || (CLASS) == FPUPPER_REGS			\
-   ? (!TARGET_PA_11 ? 1 : (GET_MODE_SIZE (MODE) + 4 - 1) / 4)		\
+   ? (!TARGET_PA_11							\
+      ? COMPLEX_MODE_P (MODE) ? 2 : 1					\
+      : (GET_MODE_SIZE (MODE) + 4 - 1) / 4)				\
    : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 /* 1 if N is a possible register number for function argument passing.  */
