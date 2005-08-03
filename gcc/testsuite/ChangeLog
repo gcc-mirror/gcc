@@ -1,3 +1,8 @@
+2005-08-04  Jan Hubicka  <jh@suse.cz>
+
+	* gcov-1.C: Fix switch counts.
+	* gcov-4b.c: Likewise.
+
 2005-08-03  Jeff Law  <law@redhat.com>
 
 	* g++.dg/tree-ssa/pr14814.C: xfail test for &this count.

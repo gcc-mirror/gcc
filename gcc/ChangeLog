@@ -1,3 +1,9 @@
+2005-08-04  Jan Hubicka  <jh@suse.cz>
+
+	* profile.c (branch_prob): Split edges with goto locus on them
+	to get proper line counts.
+	* tree-cfg.c (make_cond_expr_edges): Record user goto locuses, if any.
+
 2005-08-03  Paul Brook  <paul@codesourcery.com>
 
 	* function.c (assign_parms): Round current_function_args_size
