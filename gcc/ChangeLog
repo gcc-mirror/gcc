@@ -1,3 +1,10 @@
+2005-08-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (function_value): Handle small aggregates on 32-bit targets.
+	(function_arg): Pass small aggregates in general registers on 32-bit
+	targets.
+	* som.h (MEMBER_TYPE_FORCES_BLK): Delete define.
+
 2005-08-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR tree-optimization/19899
