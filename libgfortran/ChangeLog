@@ -1,3 +1,9 @@
+2005-08-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* libgfortran.h: When isfinite is not provided by the system,
+	define it as a macro, so that it can accept any floating point
+	type.
+
 2005-08-01  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/23178

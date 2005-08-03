@@ -179,17 +179,11 @@ typedef off_t gfc_offset;
    alternatives, or bail out.  */
 #if (!defined(isfinite) || defined(__CYGWIN__))
 #undef isfinite
-static inline int
-isfinite (double x)
-{
 #if defined(fpclassify)
-  return (fpclassify(x) != FP_NAN && fpclassify(x) != FP_INFINITE);
-#elif defined(HAVE_FINITE)
-  return finite (x);
+#define isfinite(x) (fpclassify(x) != FP_NAN && fpclassify(x) != FP_INFINITE)
 #else
-#error "libgfortran needs isfinite, fpclassify, or finite"
+#define isfinite(x) ((x) - (x) == 0)
 #endif
-}
 #endif /* !defined(isfinite)  */
 
 /* TODO: find the C99 version of these an move into above ifdef.  */
