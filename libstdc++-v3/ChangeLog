@@ -1,5 +1,11 @@
 2005-08-03  Geoffrey Keating  <geoffk@apple.com>
 
+	* configure.ac: Don't use GCC_NO_EXECUTABLES or clear
+	GLIBCXX_IS_NATIVE on Darwin crosses.
+	* acinclude.m4 (GLIBCXX_CONFIGURE_TESTSUITE): Don't skip configuring
+	the testsuite just because there's no symbol versioning.
+	* configure: Regenerate.
+
 	* acinclude.m4 (GLIBCXX_CHECK_SETRLIMIT_ancilliary): Print
 	status messages.
 	(GLIBCXX_CHECK_S_ISREG_OR_S_IFREG): Likewise.

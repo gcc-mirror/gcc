@@ -41,7 +41,24 @@ target_alias=${target_alias-$host_alias}
 if test "$build" != "$host"; then
   # We are being configured with some form of cross compiler.
   GLIBCXX_IS_NATIVE=false
-  GCC_NO_EXECUTABLES
+  case "$host","$target" in
+    # Darwin crosses can use the host system's libraries and headers,
+    # because of the fat library support.  Of course, it must be the
+    # same version of Darwin on both sides.  Allow the user to
+    # just say --target=foo-darwin without a version number to mean
+    # "the version on this system".
+      *-*-darwin*,*-*-darwin*)
+	hostos=`echo $host | sed 's/.*-darwin/darwin/'`
+	targetos=`echo $target | sed 's/.*-darwin/darwin/'`
+	if test $hostos = $targetos -o $targetos = darwin ; then
+	  GLIBCXX_IS_NATIVE=true
+	fi
+	;;
+
+      *)
+	GCC_NO_EXECUTABLES
+	;;
+  esac
 else
   GLIBCXX_IS_NATIVE=true
 fi
