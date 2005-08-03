@@ -1,3 +1,8 @@
+2005-08-03  Paul Brook  <paul@codesourcery.com>
+
+	* function.c (assign_parms): Round current_function_args_size
+	to PARM_BOUNDARY, not STACK_BOUNDARY.
+
 2005-08-03  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/i386/i386.c (x86_elf_aligned_common)
