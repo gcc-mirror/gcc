@@ -1,3 +1,8 @@
+2005-08-03  Jan Hubicka  <jh@suse.cz>
+
+	* update-conroll.c: New testcase.
+	* update-conroll-2.c: New testcase.
+
 2005-08-02  David Edelsohn  <edelsohn@gnu.org>
 
 	* gfortran.dg/constant_substring.f: New test.

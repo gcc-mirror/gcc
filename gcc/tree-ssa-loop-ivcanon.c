@@ -223,20 +223,35 @@ try_unroll_loop_completely (struct loops *loops ATTRIBUTE_UNUSED,
     
   if (n_unroll)
     {
+      sbitmap wont_exit;
+      edge *edges_to_remove = xmalloc (sizeof (edge *) * n_unroll);
+      unsigned int n_to_remove = 0;
+
       old_cond = COND_EXPR_COND (cond);
       COND_EXPR_COND (cond) = dont_exit;
       update_stmt (cond);
       initialize_original_copy_tables ();
 
+      wont_exit = sbitmap_alloc (n_unroll + 1);
+      sbitmap_ones (wont_exit);
+      RESET_BIT (wont_exit, 0);
+
       if (!tree_duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-					       loops, n_unroll, NULL,
-					       NULL, NULL, NULL, 0))
+					       loops, n_unroll, wont_exit,
+					       exit, edges_to_remove,
+					       &n_to_remove,
+					       DLTHE_FLAG_UPDATE_FREQ
+					       | DLTHE_FLAG_COMPLETTE_PEEL))
 	{
 	  COND_EXPR_COND (cond) = old_cond;
 	  update_stmt (cond);
           free_original_copy_tables ();
+	  free (wont_exit);
+	  free (edges_to_remove);
 	  return false;
 	}
+      free (wont_exit);
+      free (edges_to_remove);
       free_original_copy_tables ();
     }
   
@@ -350,7 +365,7 @@ tree_unroll_loops_completely (struct loops *loops, bool may_increase_size)
   unsigned i;
   struct loop *loop;
   bool changed = false;
-  enum unroll_level ul = may_increase_size ? UL_ALL : UL_NO_GROWTH;
+  enum unroll_level ul;
 
   for (i = 1; i < loops->num; i++)
     {
@@ -359,6 +374,10 @@ tree_unroll_loops_completely (struct loops *loops, bool may_increase_size)
       if (!loop)
 	continue;
 
+      if (may_increase_size && maybe_hot_bb_p (loop->header))
+	ul = UL_ALL;
+      else
+	ul = UL_NO_GROWTH;
       changed |= canonicalize_loop_induction_variables (loops, loop,
 							false, ul,
 							!flag_tree_loop_ivcanon);
