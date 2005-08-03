@@ -1,3 +1,8 @@
+2005-08-03  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/i386/i386.c (x86_elf_aligned_common)
+	(x86_output_aligned_bss): Don't try to use symbols that aren't defined.
+
 2005-08-03  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/23157
