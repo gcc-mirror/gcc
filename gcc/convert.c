@@ -454,7 +454,7 @@ convert_to_integer (tree type, tree expr)
 	  else
 	    code = NOP_EXPR;
 
-	  return build1 (code, type, expr);
+	  return fold_build1 (code, type, expr);
 	}
 
       /* If TYPE is an enumeral type or a type with a precision less
