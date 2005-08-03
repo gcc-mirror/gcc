@@ -1,3 +1,9 @@
+2005-08-03  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/23157
+	* tree-scalar-evolution.c (scev_const_prop): Unshare trees
+	before emitting them.
+
 2005-08-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR tree-optimization/19899
