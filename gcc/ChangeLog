@@ -1,3 +1,9 @@
+2005-08-03  Richard Sandiford  <richard@codesourcery.com>
+
+	PR target/18582
+	* config/i386/i386.c (ix86_expand_unop_builtin): Force the target
+	to be a register if do_load is true.
+
 2005-08-02  Ian Lance Taylor  <ian@airs.com>
 
 	PR pch/14400
