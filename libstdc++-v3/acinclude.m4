@@ -333,6 +333,7 @@ dnl  _GLIBCXX_RES_LIMITS if we can set artificial resource limits
 dnl  various HAVE_LIMIT_* for individual limit names
 dnl
 AC_DEFUN([GLIBCXX_CHECK_SETRLIMIT_ancilliary], [
+  AC_MSG_CHECKING([for RLIMIT_$1])
   AC_TRY_COMPILE(
     [#include <unistd.h>
      #include <sys/time.h>
@@ -342,6 +343,8 @@ AC_DEFUN([GLIBCXX_CHECK_SETRLIMIT_ancilliary], [
     [glibcxx_mresult=1], [glibcxx_mresult=0])
   AC_DEFINE_UNQUOTED(HAVE_LIMIT_$1, $glibcxx_mresult,
                      [Only used in build directory testsuite_hooks.h.])
+  if test $glibcxx_mresult = 1 ; then res=yes ; else res=no ; fi
+  AC_MSG_RESULT($res)
 ])
 
 AC_DEFUN([GLIBCXX_CHECK_SETRLIMIT], [
@@ -390,6 +393,7 @@ dnl Check whether S_ISREG (Posix) or S_IFREG is available in <sys/stat.h>.
 dnl Define HAVE_S_ISREG / HAVE_S_IFREG appropriately.
 dnl
 AC_DEFUN([GLIBCXX_CHECK_S_ISREG_OR_S_IFREG], [
+  AC_MSG_CHECKING([for S_ISREG or S_IFREG])
   AC_CACHE_VAL(glibcxx_cv_S_ISREG, [
     AC_TRY_LINK(
       [#include <sys/stat.h>],
@@ -408,13 +412,17 @@ AC_DEFUN([GLIBCXX_CHECK_S_ISREG_OR_S_IFREG], [
       [glibcxx_cv_S_IFREG=yes],
       [glibcxx_cv_S_IFREG=no])
   ])
+  res=no
   if test $glibcxx_cv_S_ISREG = yes; then
     AC_DEFINE(HAVE_S_ISREG, 1, 
               [Define if S_IFREG is available in <sys/stat.h>.])
+    res=S_ISREG
   elif test $glibcxx_cv_S_IFREG = yes; then
     AC_DEFINE(HAVE_S_IFREG, 1,
               [Define if S_IFREG is available in <sys/stat.h>.])
+    res=S_IFREG
   fi
+  AC_MSG_RESULT($res)
 ])
 
 
@@ -422,6 +430,7 @@ dnl
 dnl Check whether poll is available in <poll.h>, and define HAVE_POLL.
 dnl
 AC_DEFUN([GLIBCXX_CHECK_POLL], [
+  AC_MSG_CHECKING([for poll])
   AC_CACHE_VAL(glibcxx_cv_POLL, [
     AC_TRY_LINK(
       [#include <poll.h>],
@@ -434,6 +443,7 @@ AC_DEFUN([GLIBCXX_CHECK_POLL], [
   if test $glibcxx_cv_POLL = yes; then
     AC_DEFINE(HAVE_POLL, 1, [Define if poll is available in <poll.h>.])
   fi
+  AC_MSG_RESULT($glibcxx_cv_POLL)
 ])
 
 
@@ -441,6 +451,7 @@ dnl
 dnl Check whether writev is available in <sys/uio.h>, and define HAVE_WRITEV.
 dnl
 AC_DEFUN([GLIBCXX_CHECK_WRITEV], [
+  AC_MSG_CHECKING([for writev])
   AC_CACHE_VAL(glibcxx_cv_WRITEV, [
     AC_TRY_LINK(
       [#include <sys/uio.h>],
@@ -452,6 +463,7 @@ AC_DEFUN([GLIBCXX_CHECK_WRITEV], [
   if test $glibcxx_cv_WRITEV = yes; then
     AC_DEFINE(HAVE_WRITEV, 1, [Define if writev is available in <sys/uio.h>.])
   fi
+  AC_MSG_RESULT($glibcxx_cv_WRITEV)
 ])
 
 
@@ -459,6 +471,7 @@ dnl
 dnl Check whether int64_t is available in <stdint.h>, and define HAVE_INT64_T.
 dnl
 AC_DEFUN([GLIBCXX_CHECK_INT64_T], [
+  AC_MSG_CHECKING([for int64_t])
   AC_CACHE_VAL(glibcxx_cv_INT64_T, [
     AC_TRY_COMPILE(
       [#include <stdint.h>],
@@ -469,6 +482,7 @@ AC_DEFUN([GLIBCXX_CHECK_INT64_T], [
   if test $glibcxx_cv_INT64_T = yes; then
     AC_DEFINE(HAVE_INT64_T, 1, [Define if int64_t is available in <stdint.h>.])
   fi
+  AC_MSG_RESULT($glibcxx_cv_INT64_T)
 ])
 
 
@@ -480,6 +494,7 @@ AC_DEFUN([GLIBCXX_CHECK_LFS], [
   AC_LANG_CPLUSPLUS
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -fno-exceptions"	
+  AC_MSG_CHECKING([for LFS support])
   AC_CACHE_VAL(glibcxx_cv_LFS, [
     AC_TRY_LINK(
       [#include <unistd.h>
@@ -499,6 +514,7 @@ AC_DEFUN([GLIBCXX_CHECK_LFS], [
   if test $glibcxx_cv_LFS = yes; then
     AC_DEFINE(_GLIBCXX_USE_LFS, 1, [Define if LFS support is available.])
   fi
+  AC_MSG_RESULT($glibcxx_cv_LFS)
   CXXFLAGS="$ac_save_CXXFLAGS"
   AC_LANG_RESTORE
 ])
