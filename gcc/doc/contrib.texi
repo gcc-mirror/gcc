@@ -962,6 +962,9 @@ problems in various places that nobody else wanted to work on, strength
 reduction and other loop optimizations.
 
 @item
+Paul Woegerer and Tal Agmon for the CRX port.
+
+@item
 Carlo Wood for various fixes.
 
 @item

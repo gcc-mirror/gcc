@@ -431,6 +431,9 @@ Objective-C and Objective-C++ Dialects}.
 -melf  -maout  -melinux  -mlinux  -sim  -sim2 @gol
 -mmul-bug-workaround  -mno-mul-bug-workaround}
 
+@emph{CRX Options}
+@gccoptlist{-mmac -mpush-args}
+
 @emph{Darwin Options}
 @gccoptlist{-all_load  -allowable_client  -arch  -arch_errors_fatal @gol
 -arch_only  -bind_at_load  -bundle  -bundle_loader @gol
@@ -6986,6 +6989,7 @@ platform.
 * AVR Options::
 * Blackfin Options::
 * CRIS Options::
+* CRX Options::
 * Darwin Options::
 * DEC Alpha Options::
 * DEC Alpha/VMS Options::
@@ -7655,6 +7659,24 @@ initialized data and zero-initialized data are allocated consecutively.
 @opindex sim2
 Like @option{-sim}, but pass linker options to locate initialized data at
 0x40000000 and zero-initialized data at 0x80000000.
+@end table
+
+@node CRX Options
+@subsection CRX Options
+@cindex CRX Options
+
+These options are defined specifically for the CRX ports.
+
+@table @gcctabopt
+
+@item -mmac
+@opindex mmac
+Enable the use of multiply-accumulate instructions. Disabled by default.
+
+@item -mpush-args
+@opindex mpush-args
+Push instructions will be used to pass outgoing arguments when functions
+are called. Enabled by default.
 @end table
 
 @node Darwin Options

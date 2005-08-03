@@ -1746,6 +1746,37 @@ Constant integer 1
 A floating point constant 0.0
 @end table
 
+@item CRX Architecture---@file{crx.h}
+@table @code
+
+@item b
+Registers from r0 to r14 (registers without stack pointer)
+
+@item l
+Register r16 (64-bit accumulator lo register)
+
+@item h
+Register r17 (64-bit accumulator hi register)
+
+@item k
+Register pair r16-r17. (64-bit accumulator lo-hi pair)
+
+@item I
+Constant that fits in 3 bits
+
+@item J
+Constant that fits in 4 bits
+
+@item K
+Constant that fits in 5 bits
+
+@item L
+Constant that is one of -1, 4, -4, 7, 8, 12, 16, 20, 32, 48
+
+@item G
+Floating point constant that is legal for store immediate
+@end table
+
 @item PowerPC and IBM RS6000---@file{rs6000.h}
 @table @code
 @item b

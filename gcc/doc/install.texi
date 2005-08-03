@@ -2629,6 +2629,32 @@ information about this platform is available at
 @html
 <hr />
 @end html
+@heading @anchor{crx}CRX
+
+The CRX CompactRISC architecture is a low-power 32-bit architecture with
+fast context switching and architectural extensibility features.
+
+@ifnothtml
+@xref{CRX Options,, CRX Options, gcc, Using and Porting the GNU Compiler
+Collection (GCC)},
+@end ifnothtml
+
+@ifhtml
+See ``CRX Options'' in the main manual for a list of CRX-specific options.
+@end ifhtml
+
+Use @samp{configure --target=crx-elf --enable-languages=c,c++} to configure
+GCC@ for building a CRX cross-compiler. The option @samp{--target=crx-elf}
+is also used to build the @samp{newlib} C library for CRX.
+
+It is also possible to build libstdc++-v3 for the CRX architecture. This
+needs to be done in a sepearate step with the following configure settings:
+@samp{gcc/libstdc++-v3/configure --host=crx-elf --with-newlib
+--enable-sjlj-exceptions --enable-cxx-flags='-fexceptions -frtti'}
+
+@html
+<hr />
+@end html
 @heading @anchor{dos}DOS
 
 Please have a look at the @uref{binaries.html,,binaries page}.
