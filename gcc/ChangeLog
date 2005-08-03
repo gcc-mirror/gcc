@@ -1,3 +1,8 @@
+2005-08-02  Richard Henderson  <rth@redhat.com>
+
+	* combine.c (combine_instructions): Don't use reg_equal/equiv
+	results if the mode doesn't match.
+
 2005-08-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/i386/t-mingw32 (NATIVE_SYSTEM_HEADER_DIR): Set it.
