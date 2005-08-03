@@ -554,24 +554,22 @@ dnl Substs:
 dnl  baseline_dir
 dnl
 AC_DEFUN([GLIBCXX_CONFIGURE_TESTSUITE], [
-  if $GLIBCXX_IS_NATIVE && test $is_hosted = yes && 
-			test $enable_symvers != no; then
+  if $GLIBCXX_IS_NATIVE ; then
     # Do checks for resource limit functions.
     GLIBCXX_CHECK_SETRLIMIT
 
     # Look for setenv, so that extended locale tests can be performed.
     GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_3(setenv)
+  fi
 
-    if test $enable_symvers = no; then
-      enable_abi_check=no
-    else
-      case "$host" in
-        *-*-cygwin*)
-          enable_abi_check=no ;;
-        *)
-          enable_abi_check=yes ;;
-      esac
-    fi
+  if $GLIBCXX_IS_NATIVE && test $is_hosted = yes &&
+     test $enable_symvers != no; then
+    case "$host" in
+      *-*-cygwin*)
+        enable_abi_check=no ;;
+      *)
+        enable_abi_check=yes ;;
+    esac
   else
     # Only build this as native, since automake does not understand
     # CXX_FOR_BUILD.

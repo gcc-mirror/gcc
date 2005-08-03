@@ -1542,7 +1542,24 @@ target_alias=${target_alias-$host_alias}
 if test "$build" != "$host"; then
   # We are being configured with some form of cross compiler.
   GLIBCXX_IS_NATIVE=false
+  case "$host","$target" in
+    # Darwin crosses can use the host system's libraries and headers,
+    # because of the fat library support.  Of course, it must be the
+    # same version of Darwin on both sides.  Allow the user to
+    # just say --target=foo-darwin without a version number to mean
+    # "the version on this system".
+      *-*-darwin*,*-*-darwin*)
+	hostos=`echo $host | sed 's/.*-darwin/darwin/'`
+	targetos=`echo $target | sed 's/.*-darwin/darwin/'`
+	if test $hostos = $targetos -o $targetos = darwin ; then
+	  GLIBCXX_IS_NATIVE=true
+	fi
+	;;
 
+      *)
+
+	;;
+  esac
 else
   GLIBCXX_IS_NATIVE=true
 fi
@@ -4439,7 +4456,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4442 "configure"' > conftest.$ac_ext
+  echo '#line 4459 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -5059,7 +5076,7 @@ fi;
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 5062 "configure"
+#line 5079 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -87579,8 +87596,7 @@ echo "$as_me: versioning on shared library symbols is $enable_symvers" >&6;}
 
 # This depends on GLIBCXX_ENABLE_SYMVERS and GLIBCXX_IS_NATIVE.
 
-  if $GLIBCXX_IS_NATIVE && test $is_hosted = yes &&
-			test $enable_symvers != no; then
+  if $GLIBCXX_IS_NATIVE ; then
     # Do checks for resource limit functions.
 
   setrlimit_have_headers=yes
@@ -88302,17 +88318,16 @@ done
 
   fi
 
+  fi
 
-    if test $enable_symvers = no; then
-      enable_abi_check=no
-    else
-      case "$host" in
-        *-*-cygwin*)
-          enable_abi_check=no ;;
-        *)
-          enable_abi_check=yes ;;
-      esac
-    fi
+  if $GLIBCXX_IS_NATIVE && test $is_hosted = yes &&
+     test $enable_symvers != no; then
+    case "$host" in
+      *-*-cygwin*)
+        enable_abi_check=no ;;
+      *)
+        enable_abi_check=yes ;;
+    esac
   else
     # Only build this as native, since automake does not understand
     # CXX_FOR_BUILD.
