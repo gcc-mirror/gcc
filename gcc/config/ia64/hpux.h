@@ -106,14 +106,8 @@ do {							\
 #define TARGET_DEFAULT \
   (MASK_DWARF2_ASM | MASK_BIG_ENDIAN | MASK_ILP32)
 
-/* This needs to be set to force structure arguments with a single
-   integer field to be treated as structures and not as the type of
-   their field.  Without this a structure with a single char will be
-   returned just like a char variable, instead of being returned at the
-   top of the register as specified for big-endian IA64.  */
-
-#define MEMBER_TYPE_FORCES_BLK(FIELD, MODE) \
-  (!FLOAT_MODE_P (MODE) || (MODE) == TFmode)
+/* ??? Might not be needed anymore.  */
+#define MEMBER_TYPE_FORCES_BLK(FIELD, MODE) ((MODE) == TFmode)
 
 /* ASM_OUTPUT_EXTERNAL_LIBCALL defaults to just a globalize_label call,
    but that doesn't put out the @function type information which causes
