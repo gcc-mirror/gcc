@@ -1759,7 +1759,7 @@ tree-browser.o : tree-browser.c tree-browser.def $(CONFIG_H) $(SYSTEM_H) \
 tree-chrec.o: tree-chrec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    errors.h $(GGC_H) $(TREE_H) tree-chrec.h tree-pass.h
 tree-scalar-evolution.o: tree-scalar-evolution.c $(CONFIG_H) $(SYSTEM_H) \
-   coretypes.h $(TM_H) errors.h $(GGC_H) $(TREE_H) $(RTL_H) \
+   coretypes.h $(TM_H) errors.h $(GGC_H) $(TREE_H) real.h $(RTL_H) \
    $(BASIC_BLOCK_H) diagnostic.h $(TREE_FLOW_H) $(TREE_DUMP_H) \
    $(TIMEVAR_H) cfgloop.h $(SCEV_H) tree-pass.h $(FLAGS_H)
 tree-data-ref.o: tree-data-ref.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \

@@ -1,3 +1,9 @@
+2005-08-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR tree-optimization/19899
+	* gcc.dg/tree-ssa/scev-1.c: New test.
+	* gcc.dg/tree-ssa/scev-2.c: New test.
+
 2005-08-03  Richard Sandiford  <richard@codesourcery.com>
 
 	PR target/18582

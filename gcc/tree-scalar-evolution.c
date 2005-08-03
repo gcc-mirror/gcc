@@ -238,6 +238,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "errors.h"
 #include "ggc.h"
 #include "tree.h"
+#include "real.h"
 
 /* These RTL headers are needed for basic-block.h.  */
 #include "rtl.h"
@@ -894,8 +895,9 @@ add_to_evolution (unsigned loop_nb,
     }
 
   if (code == MINUS_EXPR)
-    to_add = chrec_fold_multiply (type, to_add, 
-				  build_int_cst_type (type, -1));
+    to_add = chrec_fold_multiply (type, to_add, SCALAR_FLOAT_TYPE_P (type)
+				  ? build_real (type, dconstm1)
+				  : build_int_cst_type (type, -1));
 
   res = add_to_evolution_1 (loop_nb, chrec_before, to_add);
 

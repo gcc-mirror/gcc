@@ -1,3 +1,10 @@
+2005-08-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR tree-optimization/19899
+	* Makefile.in (tree-scalar-evolution.o): Add real.h.
+	* tree-scalar-evolution.c: Include real.h.
+	(add_to_evolution): Build constant -1 of correct type.
+
 2005-08-03  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific): Adjust link to openavr.org.
