@@ -1,3 +1,20 @@
+2005-08-03  Randolph Chung  <tausq@debian.org>
+
+	* src/pa/ffi.c (ffi_struct_type): Rename FFI_TYPE_SMALL_STRUCT1
+	as FFI_TYPE_SMALL_STRUCT3.  Break out handling for 5-7 byte
+	structures.  Kill compilation warnings.
+	(ffi_closure_inner_LINUX): Print return values as hex in debug
+	message.  Rename FFI_TYPE_SMALL_STRUCT1 as FFI_TYPE_SMALL_STRUCT3.
+	Properly handle 5-7 byte structure returns.
+	* src/pa/ffitarget.h (FFI_TYPE_SMALL_STRUCT1)
+	(FFI_TYPE_SMALL_STRUCT2): Remove.
+	(FFI_TYPE_SMALL_STRUCT3, FFI_TYPE_SMALL_STRUCT5)
+	(FFI_TYPE_SMALL_STRUCT6, FFI_TYPE_SMALL_STRUCT7): Define.
+	* src/pa/linux.S: Mark source file as using PA1.1 assembly.
+	(checksmst1, checksmst2): Remove.
+	(checksmst3): Optimize handling of 3-byte struct returns.
+	(checksmst567): Properly handle 5-7 byte struct returns.
+
 2005-07-07  Release Manager
 
 	* GCC 4.0.1 released.
