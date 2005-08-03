@@ -1068,7 +1068,8 @@ simplify_parameter_variable (gfc_expr * p, int type)
   try t;
 
   e = gfc_copy_expr (p->symtree->n.sym->value);
-  if (p->ref)
+  /* Do not copy subobject refs for constant.  */
+  if (e->expr_type != EXPR_CONSTANT && p->ref != NULL)
     e->ref = copy_ref (p->ref);
   t = gfc_simplify_expr (e, type);
 
@@ -1130,7 +1131,28 @@ gfc_simplify_expr (gfc_expr * p, int type)
       if (simplify_ref_chain (p->ref, type) == FAILURE)
 	return FAILURE;
 
-      /* TODO: evaluate constant substrings.  */
+      if (gfc_is_constant_expr (p))
+	{
+	  char *s;
+	  int start, end;
+
+	  gfc_extract_int (p->ref->u.ss.start, &start);
+	  start--;  /* Convert from one-based to zero-based.  */
+	  gfc_extract_int (p->ref->u.ss.end, &end);
+	  s = gfc_getmem (end - start + 1);
+	  memcpy (s, p->value.character.string + start, end - start);
+	  s[end] = '\0';  /* TODO: C-style string for debugging.  */
+	  gfc_free (p->value.character.string);
+	  p->value.character.string = s;
+	  p->value.character.length = end - start;
+	  p->ts.cl = gfc_get_charlen ();
+	  p->ts.cl->next = gfc_current_ns->cl_list;
+	  gfc_current_ns->cl_list = p->ts.cl;
+	  p->ts.cl->length = gfc_int_expr (p->value.character.length);
+	  gfc_free_ref_list (p->ref);
+	  p->ref = NULL;
+	  p->expr_type = EXPR_CONSTANT;
+	}
       break;
 
     case EXPR_OP:
