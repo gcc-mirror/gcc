@@ -2082,7 +2082,7 @@ Development Tools for the Renesas H8/300[HS] Series}.
 HP-UX:
 @itemize
 @item
-@uref{http://hpux.cae.wisc.edu/,,HP-UX Porting Center};
+@uref{http://hpux.cs.utah.edu/,,HP-UX Porting Center};
 
 @item
 @uref{ftp://sunsite.informatik.rwth-aachen.de/pub/packages/gcc_hpux/,,Binaries for HP-UX 11.00 at Aachen University of Technology}.
@@ -2131,7 +2131,7 @@ number of platforms.
 
 In addition to those specific offerings, you can get a binary
 distribution CD-ROM from the
-@uref{http://www.fsf.org/order/order.html,,Free Software Foundation}.
+@uref{http://www.gnu.org/order/order.html,,Free Software Foundation}.
 It contains binaries for a number of platforms, and
 includes not only GCC, but other stuff as well.  The current CD does
 not contain the latest version of GCC, but it should allow
@@ -2479,7 +2479,7 @@ can also be obtained from:
 
 @itemize @bullet
 @item
-@uref{http://www.openavr.org,,http://www.openavr.org}
+@uref{http://www.nongnu.org/avr/,,http://www.nongnu.org/avr/}
 @item
 @uref{http://home.overta.ru/users/denisc/,,http://home.overta.ru/users/denisc/}
 @item
@@ -3882,10 +3882,6 @@ with Microsoft's C++ compiler and there are no plans to make it do so.
 GCC does not currently support OS/2.  However, Andrew Zabolotny has been
 working on a generic OS/2 port with pgcc.  The current code can be found
 at @uref{http://www.goof.com/pcg/os2/,,http://www.goof.com/pcg/os2/}.
-
-An older copy of GCC 2.8.1 is included with the EMX tools available at
-@uref{ftp://ftp.leo.org/pub/comp/os/os2/leo/devtools/emx+gcc/,,
-ftp://ftp.leo.org/pub/comp/os/os2/leo/devtools/emx+gcc/}.
 
 @html
 <hr />
