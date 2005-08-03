@@ -2719,6 +2719,7 @@ scev_const_prop (void)
 	     in loop into account.  */
 	  if (force_expr_to_var_cost (def) >= target_spill_cost)
 	    continue;
+	  def = unshare_expr (def);
 
 	  if (is_gimple_val (def))
 	    stmts = NULL_TREE;
