@@ -860,16 +860,19 @@ combine_instructions (rtx f, unsigned int nregs)
 		  rtx temp = XEXP (links, 0);
 		  if ((set = single_set (temp)) != 0
 		      && (note = find_reg_equal_equiv_note (temp)) != 0
-		      && GET_CODE (XEXP (note, 0)) != EXPR_LIST
+		      && (note = XEXP (note, 0), GET_CODE (note)) != EXPR_LIST
 		      /* Avoid using a register that may already been marked
 			 dead by an earlier instruction.  */
-		      && ! unmentioned_reg_p (XEXP (note, 0), SET_SRC (set)))
+		      && ! unmentioned_reg_p (note, SET_SRC (set))
+		      && (GET_MODE (note) == VOIDmode
+			  ? SCALAR_INT_MODE_P (GET_MODE (SET_DEST (set)))
+			  : GET_MODE (SET_DEST (set)) == GET_MODE (note)))
 		    {
 		      /* Temporarily replace the set's source with the
 			 contents of the REG_EQUAL note.  The insn will
 			 be deleted or recognized by try_combine.  */
 		      rtx orig = SET_SRC (set);
-		      SET_SRC (set) = XEXP (note, 0);
+		      SET_SRC (set) = note;
 		      next = try_combine (insn, temp, NULL_RTX,
 					  &new_direct_jump_p);
 		      if (next)
