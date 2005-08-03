@@ -1,3 +1,7 @@
+2005-08-03  Jeff Law  <law@redhat.com>
+
+	* g++.dg/tree-ssa/pr14814.C: xfail test for &this count.
+
 2005-08-03  J"orn Rennecke <joern.rennecke@st.com>
 
 	* gcc.c-torture/execute/pr23135.c: New test.
@@ -2275,8 +2279,8 @@
 
 2005-05-17  Jeff Law  <law@redhat.com>
 
-	* g++.dg/tree-ssa/pr18414.C: New test.
-	* gcc.dg/tree-ssa/pr18414.C: New test.
+	* g++.dg/tree-ssa/pr14814.C: New test.
+	* gcc.dg/tree-ssa/pr14814.C: New test.
 	* gcc.dg/tree-ssa/pr17141-1.C: New test.
 	* gcc.dg/tree-ssa/pr17141-2.C: New test.
 
