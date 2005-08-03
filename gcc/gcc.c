@@ -602,7 +602,7 @@ proper position among the other output files.  */
 }} %{fmudflap|fmudflapth: --wrap=main}"
 #endif
 #ifndef MFLIB_SPEC
-#define MFLIB_SPEC "%{fmudflap|fmudflapth: -export-dynamic}" 
+#define MFLIB_SPEC "%{fmudflap|fmudflapth: -export-dynamic}"
 #endif
 
 /* config.h can define LIBGCC_SPEC to override how and when libgcc.a is
@@ -674,7 +674,7 @@ proper position among the other output files.  */
 #ifdef TARGET_LIBC_PROVIDES_SSP
 #define LINK_SSP_SPEC "%{fstack-protector:}"
 #else
-#define LINK_SSP_SPEC "%{fstack-protector:-lssp_nonshared -lssp }"
+#define LINK_SSP_SPEC "%{fstack-protector|fstack-protector-all:-lssp_nonshared -lssp }"
 #endif
 #endif
 
@@ -920,16 +920,16 @@ static const struct compiler default_compilers[] =
   {".m",  "#Objective-C", 0, 0, 0}, {".mi",  "#Objective-C", 0, 0, 0},
   {".mm", "#Objective-C++", 0, 0, 0}, {".M", "#Objective-C++", 0, 0, 0},
   {".mii", "#Objective-C++", 0, 0, 0},
-  {".cc", "#C++", 0, 0, 0}, {".cxx", "#C++", 0, 0, 0}, 
-  {".cpp", "#C++", 0, 0, 0}, {".cp", "#C++", 0, 0, 0}, 
+  {".cc", "#C++", 0, 0, 0}, {".cxx", "#C++", 0, 0, 0},
+  {".cpp", "#C++", 0, 0, 0}, {".cp", "#C++", 0, 0, 0},
   {".c++", "#C++", 0, 0, 0}, {".C", "#C++", 0, 0, 0},
   {".CPP", "#C++", 0, 0, 0}, {".ii", "#C++", 0, 0, 0},
   {".ads", "#Ada", 0, 0, 0}, {".adb", "#Ada", 0, 0, 0},
-  {".f", "#Fortran", 0, 0, 0}, {".for", "#Fortran", 0, 0, 0}, 
+  {".f", "#Fortran", 0, 0, 0}, {".for", "#Fortran", 0, 0, 0},
   {".F", "#Fortran", 0, 0, 0}, {".FOR", "#Fortran", 0, 0, 0},
   {".FPP", "#Fortran", 0, 0, 0},
   {".f90", "#Fortran 95", 0, 0, 0}, {".f95", "#Fortran 95", 0, 0, 0},
-  {".fpp", "#Fortran", 0, 0, 0}, {".F", "#Fortran", 0, 0, 0}, 
+  {".fpp", "#Fortran", 0, 0, 0}, {".F", "#Fortran", 0, 0, 0},
   {".FOR", "#Fortran", 0, 0, 0}, {".FPP", "#Fortran", 0, 0, 0},
   {".r", "#Ratfor", 0, 0, 0},
   {".p", "#Pascal", 0, 0, 0}, {".pas", "#Pascal", 0, 0, 0},
@@ -1120,7 +1120,7 @@ static const struct option_map option_map[] =
    {"--static", "-static", 0},
    {"--std", "-std=", "aj"},
    {"--symbolic", "-symbolic", 0},
-   {"--sysroot", "--sysroot=", "aj"}, 
+   {"--sysroot", "--sysroot=", "aj"},
    {"--time", "-time", 0},
    {"--trace-includes", "-H", 0},
    {"--traditional", "-traditional", 0},
@@ -1441,7 +1441,7 @@ static const char *gcc_libexec_prefix;
 #ifndef STANDARD_STARTFILE_PREFIX_2
 #define STANDARD_STARTFILE_PREFIX_2 "/usr/lib/"
 #endif
- 
+
 #ifdef CROSS_COMPILE  /* Don't use these prefixes for a cross compiler.  */
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
@@ -3239,7 +3239,7 @@ process_command (int argc, const char **argv)
     {
       gcc_exec_prefix = make_relative_prefix (argv[0], standard_bindir_prefix,
 					      standard_exec_prefix);
-      gcc_libexec_prefix = make_relative_prefix (argv[0], 
+      gcc_libexec_prefix = make_relative_prefix (argv[0],
 						 standard_bindir_prefix,
 						 standard_libexec_prefix);
       if (gcc_exec_prefix)
@@ -4797,7 +4797,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 			bool files_differ = strcmp (input_realname, temp_realname);
 			free (input_realname);
 			free (temp_realname);
-			if (files_differ) 	
+			if (files_differ)
 #endif
 			  {
 			    temp_filename = save_string (temp_filename,
@@ -5656,10 +5656,10 @@ handle_braces (const char *p)
   while (*p++ != '}');
 
   return p;
-  
+
  invalid:
   fatal ("braced spec '%s' is invalid at '%c'", orig, *p);
-  
+
 #undef SKIP_WHITE
 }
 
@@ -6425,13 +6425,13 @@ main (int argc, const char **argv)
   for (i = 0; (int) i < n_infiles; i++)
     {
       const char *name = infiles[i].name;
-      struct compiler *compiler = lookup_compiler (name, 
-						   strlen (name), 
+      struct compiler *compiler = lookup_compiler (name,
+						   strlen (name),
 						   infiles[i].language);
-      
+
       if (compiler && !(compiler->combinable))
 	combine_inputs = false;
-      
+
       if (lang_n_infiles > 0 && compiler != input_file_compiler
 	  && infiles[i].language && infiles[i].language[0] != '*')
 	infiles[i].incompiler = compiler;
@@ -6451,7 +6451,7 @@ main (int argc, const char **argv)
       infiles[i].compiled = false;
       infiles[i].preprocessed = false;
     }
-  
+
   if (combine_flag && save_temps_flag)
     {
       bool save_combine_inputs = combine_inputs;
@@ -6462,7 +6462,7 @@ main (int argc, const char **argv)
       for (i = 0; (int) i < n_infiles; i++)
 	{
 	  int this_file_error = 0;
-	  
+
 	  input_file_number = i;
 	  set_input (infiles[i].name);
 	  if (infiles[i].incompiler
@@ -6571,7 +6571,7 @@ main (int argc, const char **argv)
 
   /* Reset the input file name to the first compile/object file name, for use
      with %b in LINK_SPEC. We use the first input file that we can find
-     a compiler to compile it instead of using infiles.language since for 
+     a compiler to compile it instead of using infiles.language since for
      languages other than C we use aliases that we then lookup later.  */
   if (n_infiles > 0)
     {
@@ -7342,7 +7342,7 @@ print_multilib_info (void)
 	    invalid_select:
 	      fatal ("multilib select '%s' is invalid", multilib_select);
 	    }
-	  
+
 	  ++p;
 	}
 
@@ -7613,7 +7613,7 @@ replace_outfile_spec_function (int argc, const char **argv)
   /* Must have exactly two arguments.  */
   if (argc != 2)
     abort ();
-  
+
   for (i = 0; i < n_infiles; i++)
     {
       if (outfiles[i] && !strcmp (outfiles[i], argv[0]))
@@ -7622,7 +7622,7 @@ replace_outfile_spec_function (int argc, const char **argv)
   return NULL;
 }
 
-/* Given two version numbers, compares the two numbers.  
+/* Given two version numbers, compares the two numbers.
    A version number must match the regular expression
    ([1-9][0-9]*|0)(\.([1-9][0-9]*|0))*
 */
@@ -7631,7 +7631,7 @@ compare_version_strings (const char *v1, const char *v2)
 {
   int rresult;
   regex_t r;
-  
+
   if (regcomp (&r, "^([1-9][0-9]*|0)(\\.([1-9][0-9]*|0))*$",
 	       REG_EXTENDED | REG_NOSUB) != 0)
     abort ();
@@ -7660,7 +7660,7 @@ compare_version_strings (const char *v1, const char *v2)
    and nothing if it doesn't.
 
    The supported <comparison-op> values are:
-   
+
    >=  true if switch is a later (or same) version than arg1
    !>  opposite of >=
    <   true if switch is an earlier version than arg1
@@ -7730,7 +7730,7 @@ version_compare_spec_function (int argc, const char **argv)
     case '<' << 8 | '>':
       result = comp1 < 0 || comp2 >= 0;
       break;
-      
+
     default:
       abort ();
     }

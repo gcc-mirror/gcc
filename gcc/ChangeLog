@@ -1,3 +1,9 @@
+2005-08-03  Eric Christopher  <echristo@apple.com>
+
+	* gcc.c (LINK_SSP_SPEC): Add fstack-protector-all.
+	* config/darwin.h (LINK_COMMAND_SPEC): Add link_ssp
+	spec.
+
 2005-08-04  Jan Hubicka  <jh@suse.cz>
 
 	* profile.c (branch_prob): Split edges with goto locus on them
@@ -73,7 +79,7 @@
 2005-08-02  Richard Henderson  <rth@redhat.com>
 
 	PR 23196
-	* explow.c (memory_address): Remove special-case for 
+	* explow.c (memory_address): Remove special-case for
 	virtual_stack_vars_rtx and virtual_incoming_args_rtx.
 
 2005-08-02  Diego Novillo  <dnovillo@redhat.com>
@@ -393,7 +399,7 @@
 
 	PR bootstrap/23131
 	* configure.ac (SYSTEM_HEADER_DIR): Avoid setting to empty
-	string. 
+	string.
 	* configure: Regenerated.
 
 2005-07-29  Paul Brook  <paul@codesourcery.com>
@@ -409,7 +415,7 @@
 	(includes): Includes 5k.md.
 	* config/mips/5k.md: New DFA pipeline for the 5kc/5kf.
 	* doc/invoke.texi (MIPS Options): Updated cpu name supported with
-	-march flag.	
+	-march flag.
 
 2005-07-29  Diego Novillo  <dnovillo@redhat.com>
 
@@ -725,7 +731,7 @@
 2005-07-27  Kenneth Zadeck <zadeck@naturalbridge.com>
 
 	* params.def: Fixed comment.
-	
+
 2005-07-27  Bjoern Haase  <bjoern.m.haase@web.de>
 
 	PR target/19885
@@ -774,7 +780,7 @@
 2005-07-27  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/23073
-	* tree-vect-analyze.c (vect_analyze_data_refs_alignment): Call 
+	* tree-vect-analyze.c (vect_analyze_data_refs_alignment): Call
 	vect_print_dump_info before fprintf.
 
 2005-07-27  Zdenek Dvorak  <dvorakz@suse.cz>
@@ -973,7 +979,7 @@
 	inhibit_libc.
 	* configure.ac (inhibit_libc): Set it to true/false.
 	(--with-build-sysroot): New option.  Use it to set
-	SYSTEM_HEADER_DIR. 
+	SYSTEM_HEADER_DIR.
 	* configure: Regenerated.
 
 2005-07-25  Manfred Hollstein  <mh@suse.com>
@@ -1013,8 +1019,8 @@
 	(dump_data_reference): Use a correct field name.
 	(analyze_array): Make static. Initialize new data-ref fields.
 	(analyze_indirect_ref): New function.
-	(init_data_ref): Initialize new data-ref fields.   
-	(strip_conversion): Moved from tree-vect-analyze.c. 
+	(init_data_ref): Initialize new data-ref fields.
+	(strip_conversion): Moved from tree-vect-analyze.c.
 	(analyze_offset_expr, get_ptr_offset, address_analysis,
 	object_analysis): Likewise.
 	(analyze_offset): New function.
@@ -1025,7 +1031,7 @@
 	(access_functions_are_affine_or_constant_p): Call macro to get the
 	address of access functions.
 	(compute_all_dependences): Add new parameter
-	compute_self_and_read_read_dependences. Compute self and read-read  
+	compute_self_and_read_read_dependences. Compute self and read-read
 	dependences if it is true.
 	(find_data_references_in_loop): Call create_data_ref. Initialize new
 	data-ref fields.
@@ -1040,7 +1046,7 @@
 	* tree-data-ref.h (struct first_location_in_loop): New structure. Move
 	fields from stmt_vinfo.
 	(struct base_object_info): New structure.
-	(struct data_reference): Move fields to base_object_info. Add fields   
+	(struct data_reference): Move fields to base_object_info. Add fields
 	first_location and object_info for above structures. Move fields from
 	stmt_info: memtag, ptr_info, subvars, misalignment. Add new field
 	aligned_to.  Add macros to access the new fields.
@@ -1081,7 +1087,7 @@
 	(vect_strip_conversion): Remove.
 	* tree-vectorizer.h (enum verbosity_levels): Add new verbosity level.
 	(struct _loop_vec_info): Unify data_ref_writes and data_ref_reads into
-	datarefs. Add new field ddrs. 
+	datarefs. Add new field ddrs.
 	Add macros for the new fields access.
 	(struct _stmt_vec_info): Remove: base_address, initial_offset, step,
 	base_aligned_p, misalignment, memtag, ptr_info and subvars.
@@ -1125,7 +1131,7 @@
 
 	* Makefile.in (STRICT2_WARN): Add -Wmissing-format-attribute.
 	* configure.ac: Check for -Wmissing-format-attribute.
-	
+
 	* configure: Regenerate.
 
 2005-07-23  Richard Henderson  <rth@redhat.com>
@@ -1295,7 +1301,7 @@
 	* config/crx/crx.md: New file.
 	* config/crx/crx.opt: New file.
 	* config/crx/t-crx: New file.
-	
+
 2005-07-22  Manfred Hollstein  <mh@suse.com>
 
 	* tree-ssa-structalias.c (merge_graph_nodes): Fix uninitialised
@@ -1308,9 +1314,9 @@
 	    Laurent GUERBY  <laurent@guerby.net>
 
 	PR tree-optimization/22336
-	* function.c (record_block_change): Check for 
+	* function.c (record_block_change): Check for
 	cfun->ib_boundaries_block.
-	
+
 2005-07-21  James A. Morrison  <phython@gcc.gnu.org>
 
 	* fold-const.c (fold_unary): Don't strip signed nops from ABS_EXPRs.
@@ -1342,7 +1348,7 @@
 	and complex_ssa_name_components here.
 
 2005-07-20  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	* alias.c (nonoverlapping_component_refs_p): Use TYPE_MAIN_VARIANT,
 	revert to returning false.
 
@@ -1365,7 +1371,7 @@
 
 	PR middle-end/21180
 	* fold-const.c (fold_build1): Add checksum for the operands.
-	(fold_build2): Likewise.	
+	(fold_build2): Likewise.
 	(fold_build3): Likewise.
 
 2005-07-21  Andrew Pinski  <pinskia@physics.uc.edu>
@@ -1661,7 +1667,7 @@
 2005-07-19  Devang Patel  <dpatel@apple.com>
 
 	* dbxout.c (dbxout_type): Check Objective-C++ lang.
-	
+
 2005-07-19  Richard Henderson  <rth@redhat.com>
 
 	PR tree-opt/22278
@@ -1677,7 +1683,7 @@
 
 	* c.opt (Wpragmas): New.
 	* doc/invoke.texi: Document it.
-	
+
 	* function.c (do_warn_unused_parameter): Add warning control to
 	warning call.
 	* c-decl.c (warn_if_shadowing): Likewise.
@@ -1692,7 +1698,7 @@
 	(handle_pragma_extern_prefix): Likewise.
 	(maybe_apply_renaming_pragma): Likewise.
 	(handle_pragma_visibility): Likewise.
-	
+
 	* config/c4x/c4x-c.c (BAD): Likewise.
 	(c4x_parse_pragma): Likewise.
 	* config/ia64/ia64-c.c (ia64_hpux_handle_builtin_pragma): Likewise.
@@ -1716,7 +1722,7 @@
 	* tree-promote-statics.c: Removed.
 	* common.opt: Removed flag-promote-statics.
 	* opts.c: Ditto.
-	* passes.c: Removed tree-promote-statics pass. 
+	* passes.c: Removed tree-promote-statics pass.
 	* tree-pass.h: Ditto.
 	* timevar.def: Removed TV_PROMOTE_STATICS.
 
@@ -1726,7 +1732,7 @@
 	* config.gcc: Add support for *-*-freebsd7, *-*-freebsd8,
 	and *-*-freebsd9.
 	* config/freebsd-spec.h (FBSD_TARGET_OS_CPP_BUILTINS): Ditto.
-	
+
 2005-07-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR c/22476
@@ -1781,7 +1787,7 @@
 2005-07-18  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/22483
-	
+
 	* tree-complex.c (create_components): Use
 	safe_referenced_var_iterator and FOR_EACH_REFERENCED_VAR_SAFE.
 	* tree-flow-inline.h (fill_referenced_var_vec): New function.
@@ -1830,7 +1836,7 @@
 	in 64-bit mode the same as DImode in 32-bit mode.
 	(ix86_expand_ashl_const, ix86_split_ashl, ix86_split_ashr,
 	ix86_split_lshr): Likewise. Rename to no longer refer to a specific
-	mode. Add new mode parameter. 
+	mode. Add new mode parameter.
 	* config/i386/i386.h (CONST_OK_FOR_LETTER_P): Describe and handle 'O'.
 	* config/i386/i386.md (cmpti, addti3, subti3, negti2, ashlti3, ashrti3,
 	x86_64_shift_adj): New expanders.
@@ -1869,8 +1875,8 @@
 	* tree-ssa-pre.c (is_copy_stmt): New function.
 	(follow_copies_till_vuse): Ditto.
 	(do_eustores): Ditto.
-	(gate_eustores): Ditto.	
-	
+	(gate_eustores): Ditto.
+
 2005-07-16  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c (MFWRAP_SPEC): Don't wrap pthread_join or pthread_exit.
@@ -1882,29 +1888,29 @@
 	ipa-reference.h, ipa-utils.c, ipa-utils.h, ipa-type-escape.c,
 	ipa-type-escape.h, tree-promote-statics.c
 	* ipa-pure-const.c, ipa-reference.c, ipa-reference.h, ipa-utils.c,
-	ipa-utils.h, ipa-type-escape.c, ipa-type-escape.h, 
+	ipa-utils.h, ipa-type-escape.c, ipa-type-escape.h,
 	tree-promote-statics.c: new files.
 	* alias.c: (nonlocal_mentioned_p_1, nonlocal_mentioned_p,
 	nonlocal_referenced_p_1, nonlocal_referenced_p, nonlocal_set_p_1,
 	int nonlocal_set_p, mark_constant_function): Deleted.
-	(rest_of_handle_cfg): Removed call to mark_constant_function. 
+	(rest_of_handle_cfg): Removed call to mark_constant_function.
 	(nonoverlapping_component_refs_p): Added calls to support
-	type based aliasing.    
+	type based aliasing.
 	* tree-ssa-alias.c (may_alias_p,
 	compute_flow_insensitive_aliasing): Ditto.
 	* calls.c (flags_from_decl_or_type): Removed reference to
-	cgraph_rtl_info. 
+	cgraph_rtl_info.
 	* c-typeck.c (convert_arguments): Make builtins tolerant of having
 	too many arguments.  This is necessary for Spec 2000.
 	* cgraph.h (const_function, pure_function): Removed.
-	* common.opt: Added "fipa-pure-const", "fipa-reference",  
+	* common.opt: Added "fipa-pure-const", "fipa-reference",
 	"fipa-type-escape", and "ftree-promote-static".
 	* opts.c: Ditto.
-	* passes.c: Added ipa and tree-promote-statics passes. 
+	* passes.c: Added ipa and tree-promote-statics passes.
 	* timevar.def: Added TV_IPA_PURE_CONST, TV_IPA_REFERENCE,
 	TV_IPA_TYPE_ESCAPE, and TV_PROMOTE_STATICS.
 	* tree-dfa.c (referenced_var_lookup_if_exists): New function.
-	* tree-flow.h: Added exposed sra calls and addition of 
+	* tree-flow.h: Added exposed sra calls and addition of
 	reference_vars_info field for FUNCTION_DECLS.
 	* tree-pass.h: Added passes.
 	* tree-sra.c: (sra_init_cache): New function.
@@ -1966,7 +1972,7 @@
 	special var here.
 	(need_to_solve): New function.
 	(compute_points_to_sets): Use it.
-	
+
 2005-07-15  Jan Hubicka  <jh@suse.cz>
 
 	* cfg.c (update_bb_profile_for_threading): More diagnostic.
@@ -2225,8 +2231,8 @@
 	if *rhs_p is not a SSA_NAME.
 
 2005-07-12  Daniel Berlin  <dberlin@dberlin.org>
-	
-	Fix PR tree-optimization/22422 
+
+	Fix PR tree-optimization/22422
 	* tree-ssa-structalias.c (struct variable_info): Add flag for
 	special vars.
 	(get_varinfo): Now a static function.
@@ -2239,7 +2245,7 @@
 	(do_sd_constraint): Ditto.
 	(do_structure_copy): Check for special variable.
 	(find_func_aliases): Ditto.
-	(init_base_vars): Set special vars properly.	
+	(init_base_vars): Set special vars properly.
 
 2005-07-13  Jan Hubicka  <jh@suse.cz>
 
@@ -2372,12 +2378,12 @@
 	(GIMPLE Exception Handling): Clarify TRY_CATCH_EXPR cases.
 
 2005-07-11  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	* print-tree.c (print_node): Use DECL_ARGUMENT_FLD.
 	* tree.h (DECL_ARGUMENT_FLD): New macro.
 
 2005-07-11  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	Fix PR tree-optimization/22404
 
 	* tree-ssa-structalias.c (create_variable_info_for): Use
@@ -2469,7 +2475,7 @@
 
 	* tree-ssa-structalias.c (update_alias_info): Change counting of
 	references to not include vdefs.
-	
+
 2005-07-10  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-alias.c (free_used_part_map): Add missing free.
@@ -2687,13 +2693,13 @@
 	visibility on regular DECL's.
 	(merge_decls): Fix the copying of decl nodes of various types for
 	the new structures.  Don't update RTL, section name, weak status,
-	etc, on DECL's without RTL.	
+	etc, on DECL's without RTL.
 	(grokdeclarator): DECL_ARG_TYPE_AS_WRITTEN is gone.
 	Don't check volatile on non-variable types.
 	(store_parm_decls_oldstyle): Use pointer_set instead of DECL_WEAK
 	to check whether we have seen arguments.
 	* c-objc-common.c (c_tree_printer): Reverse order of tests so that
-	flag is checked before field (flag is common, field is not).	
+	flag is checked before field (flag is common, field is not).
 	* dwarf2out.c (decl_ultimate_origin):  Only DECL's with
 	TS_DECL_COMMON could have an origin.
 	(add_location_or_const_value_attribute): Don't check section name
@@ -2774,7 +2780,7 @@
 	(struct tree_result_decl): Ditto.
 	(union tree_node): Add new structures.
 	* var-tracking.c (track_expr_p): Reverse order of tests.
-	
+
 	* doc/c-tree.texi: Add documentation on DECL node internal structure.
 
 2005-07-08  Kazu Hirata  <kazu@codesourcery.com>
@@ -2949,7 +2955,7 @@
 
 	* config/s390/s390-protos.h (s390_expand_clrmem): Delete.
 	(s390_expand_setmem): New.
-	* config/s390/s390.c: Likewise. 
+	* config/s390/s390.c: Likewise.
 	(print_shift_count_operand): Truncate to 12 bits instead of 6.
 	Adapt comments.
 	* config/s390/s390.md: ("setmem<mode>"): Accept character as
@@ -2958,7 +2964,7 @@
 	("setmem_long", "*setmem_long"): ... this.
 
 2005-07-07  Adrian Straetling  <straetling@de.ibm.com>
-	
+
 	* config/s390/s390.c: (optimization_options): Enable
 	TARGET_MVCLE at -Os.
 	* doc/invoke.texi: Document changes in default behaviour.
@@ -3015,7 +3021,7 @@
 2005-07-06  Fariborz Jahanian <fjahanian@apple.com>
 
 	* doc/invoke.texi: Update -fforce-mem documentation.
-	* dojump.c (compare_from_rtx,do_compare_rtx_and_jump): Remove 
+	* dojump.c (compare_from_rtx,do_compare_rtx_and_jump): Remove
 	code for -fforce-mem.
 	* expmed.c: (store_bit_field,store_fixed_bit_field,
 	extract_bit_field): Ditto.
@@ -3046,7 +3052,7 @@
 	variable sized types.
 	Use correct type for intermediate structure on *a = *b structure
 	copies.
-		
+
 2005-07-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.h (RS6000_VARARGS_AREA, RS6000_VARARGS_SIZE):
@@ -3116,7 +3122,7 @@
 	(vect_print_dump_info): Use vect_loop_location.
 	(new_loop_vec_info): Do not set LOOP_VINFO_LOC.
 	(vectorize_loops): Set vect_loop_location.
-	* tree-vect-analyze.c (vect_analyze_offset_expr, 
+	* tree-vect-analyze.c (vect_analyze_offset_expr,
 	vect_determin_vectorization_factor, vect_analyze_operations,
 	vect_analyze_scalar_cycles, vect_analyze_data_ref_dependence,
 	vect_analyze_data_ref_dependences, vect_compute_data_ref_alignment,
@@ -3128,8 +3134,8 @@
 	vect_analyze_loop): Adjust vect_print_dump_info API.
 	* tree-vect-transform.c (vect_create_addr_base_for_vector_ref,
 	vect_create_data_ref_ptr, vect_init_vector, vect_get_vec_def_for_operand,
-	vect_finish_stmt_generation, vectorizable_assignment, 
-	vectorizable_operation, vectorizable_store, vectorizable_load, 
+	vect_finish_stmt_generation, vectorizable_assignment,
+	vectorizable_operation, vectorizable_store, vectorizable_load,
 	vectorizable_live_operation, vectorizable_condition, vect_transform_stmt,
 	vect_update_ivs_after_vectorizer, vect_do_peeling_for_loop_bound,
 	vect_gen_ninters_for_prolog_loop, vect_do_peeling_for_alignment,
@@ -3151,14 +3157,14 @@
 	(pa_tls_symbol_ref_1, pa_tls_referenced_p): New.
 	(TARGET_CANNOT_FORCE_CONST_MEM): Define.
 	(emit_move_sequence): Handle TLS addresses.
-	(pa_encode_section_info): Call default handler to handle common 
+	(pa_encode_section_info): Call default handler to handle common
 	sections.
 	* config/pa/pa.h (PA_SYMBOL_REF_TLS_P): New.
 	(CONSTANT_ADDRESS_P): Reject TLS operands.
 	(TARGET_HAVE_TLS) [HAVE_AS_TLS]: Define.
 	* config/pa/pa.md (UNSPEC_TP, UNSPEC_TLSGD, UNSPEC_TLSLDM)
 	(UNSPEC_TLSLDO, UNSPEC_TLSLDBASE, UNSPEC_TLSIE)
-	(UNSPEC_TLSLE): Define new constants. 
+	(UNSPEC_TLSLE): Define new constants.
 	(tgd_load, tld_load, tld_offset_load, tp_load, tie_load, tle_load): New.
 	* config/pa/predicates.md (symbolic_operand): Reject TLS operands.
 	(tls_symbolic_operand, tgd_symbolic_operand, tld_symbolic_operand)
@@ -3269,7 +3275,7 @@
 	pass_postreload_cse): New.
 	* profile.c (gate_handle_profiling, pass_profiling,
 	rest_of_handle_branch_prob, pass_branch_prob): New.
-	* recog.c (pass pass_split_for_shorten_branches, gate_do_final_split, 
+	* recog.c (pass pass_split_for_shorten_branches, gate_do_final_split,
 	pass_split_before_regstack, gate_handle_split_before_regstack,
 	gate_handle_peephole2, rest_of_handle_peephole2, pass_peephole2,
 	rest_of_handle_split_all_insns, pass_split_all_insns): New.
@@ -3343,7 +3349,7 @@
 	dump_enabled_p, dump_initialized_p, dump_begin, dump_end, dump_node,
 	dump_switch_p, dump_flag_name): Moved to tree-pass.h.
 	(dump_info_p, dump_flag): Moved to tree-dump.h.
-	
+
 	* Makefile.in: Adjust dependencies for tree-pretty-print.c,
 	cgraph.c, opts.c.
 	* passes.c (finish_optimization_passes): Use dump_begin
@@ -3362,7 +3368,7 @@
 	pass_init_datastructures, pass_fixup_cfg): Make non-static.
 	* tree-pretty-print.c: Include tree-pass.h.
 	* cgraph.c: Include tree-dump.h.
-	
+
 2005-07-04  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-structalias.c (get_constraint_exp_from_ssa_var):
@@ -3420,10 +3426,10 @@
 2005-07-04  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/22279
-	
+
 	* tree-ssa-structalias.c (offset_overlaps_with_access): Use
 	correct operator.
-	
+
 2005-07-04  J"orn Rennecke <joern.rennecke@st.com>
 
 	* sh.c (output_ieee_ccmpeq): Replace "\\;" with "\n\t".
@@ -3498,7 +3504,7 @@
 	<GOTO_EXPR>, <SWITCH_EXPR>: Add.
 	(dump_enabled_p): Return TRUE if PHASE is TDI_all and any dump
 	is enabled.
-	
+
 2005-07-03  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-common.h (GCC_DIAG_STYLE): Define.
