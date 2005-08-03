@@ -577,6 +577,7 @@ make_cond_expr_edges (basic_block bb)
   tree entry = last_stmt (bb);
   basic_block then_bb, else_bb;
   tree then_label, else_label;
+  edge e;
 
   gcc_assert (entry);
   gcc_assert (TREE_CODE (entry) == COND_EXPR);
@@ -587,8 +588,21 @@ make_cond_expr_edges (basic_block bb)
   then_bb = label_to_block (then_label);
   else_bb = label_to_block (else_label);
 
-  make_edge (bb, then_bb, EDGE_TRUE_VALUE);
-  make_edge (bb, else_bb, EDGE_FALSE_VALUE);
+  e = make_edge (bb, then_bb, EDGE_TRUE_VALUE);
+#ifdef USE_MAPPED_LOCATION
+  e->goto_locus = EXPR_LOCATION (COND_EXPR_THEN (entry));
+#else
+  e->goto_locus = EXPR_LOCUS (COND_EXPR_THEN (entry));
+#endif
+  e = make_edge (bb, else_bb, EDGE_FALSE_VALUE);
+  if (e)
+    {
+#ifdef USE_MAPPED_LOCATION
+      e->goto_locus = EXPR_LOCATION (COND_EXPR_ELSE (entry));
+#else
+      e->goto_locus = EXPR_LOCUS (COND_EXPR_ELSE (entry));
+#endif
+    }
 }
 
 /* Hashing routine for EDGE_TO_CASES.  */

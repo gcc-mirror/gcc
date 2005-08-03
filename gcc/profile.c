@@ -806,6 +806,27 @@ branch_prob (void)
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
+	  tree last = last_stmt (bb);
+	  /* Edge with goto locus might get wrong coverage info unless
+	     it is the only edge out of BB.   
+	     Don't do that when the locuses match, so 
+	     if (blah) goto something;
+	     is not computed twice.  */
+	  if (e->goto_locus && !single_succ_p (bb)
+#ifdef USE_MAPPED_LOCATION
+	      && (LOCATION_FILE (e->goto_locus)
+	          != LOCATION_FILE (EXPR_LOCATION  (last))
+		  || (LOCATION_LINE (e->goto_locus)
+		      != LOCATION_LINE (EXPR_LOCATION  (last)))))
+#else
+	      && (e->goto_locus->file != EXPR_LOCUS (last)->file
+		  || (e->goto_locus->line
+		      != EXPR_LOCUS (last)->line)))
+#endif
+	    {
+	      basic_block new = split_edge (e);
+	      single_succ_edge (new)->goto_locus = e->goto_locus;
+	    }
 	  if ((e->flags & (EDGE_ABNORMAL | EDGE_ABNORMAL_CALL))
 	       && e->dest != EXIT_BLOCK_PTR)
 	    need_exit_edge = 1;

@@ -253,7 +253,7 @@ test_switch (int i, int j)
 {
   int result = 0;			/* count(5) */
 
-					/* branch(80 25) */
+					/* branch(20 0 60 20) */
   switch (i)				/* count(5) */
 					/* branch(end) */
     {
