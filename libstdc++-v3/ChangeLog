@@ -1,3 +1,14 @@
+2005-08-03  Geoffrey Keating  <geoffk@apple.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_SETRLIMIT_ancilliary): Print
+	status messages.
+	(GLIBCXX_CHECK_S_ISREG_OR_S_IFREG): Likewise.
+	(GLIBCXX_CHECK_POLL): Likewise.
+	(GLIBCXX_CHECK_WRITEV): Likewise.
+	(GLIBCXX_CHECK_INT64_T): Likewise.
+	(GLIBCXX_CHECK_LFS): Likewise.
+	* configure: Regenerate.
+
 2005-07-30  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* scripts/make_exports.pl: Pass --strip-underscores to c++filt.

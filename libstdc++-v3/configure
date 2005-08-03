@@ -29307,6 +29307,8 @@ fi
 done
 
 
+  echo "$as_me:$LINENO: checking for poll" >&5
+echo $ECHO_N "checking for poll... $ECHO_C" >&6
   if test "${glibcxx_cv_POLL+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -29374,8 +29376,12 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
   fi
+  echo "$as_me:$LINENO: result: $glibcxx_cv_POLL" >&5
+echo "${ECHO_T}$glibcxx_cv_POLL" >&6
 
 
+  echo "$as_me:$LINENO: checking for S_ISREG or S_IFREG" >&5
+echo $ECHO_N "checking for S_ISREG or S_IFREG... $ECHO_C" >&6
   if test "${glibcxx_cv_S_ISREG+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -29496,19 +29502,24 @@ rm -f conftest.err conftest.$ac_objext \
 
 fi
 
+  res=no
   if test $glibcxx_cv_S_ISREG = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_S_ISREG 1
 _ACEOF
 
+    res=S_ISREG
   elif test $glibcxx_cv_S_IFREG = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_S_IFREG 1
 _ACEOF
 
+    res=S_IFREG
   fi
+  echo "$as_me:$LINENO: result: $res" >&5
+echo "${ECHO_T}$res" >&6
 
 
   # For xsputn_2().
@@ -29663,6 +29674,8 @@ fi
 done
 
 
+  echo "$as_me:$LINENO: checking for writev" >&5
+echo $ECHO_N "checking for writev... $ECHO_C" >&6
   if test "${glibcxx_cv_WRITEV+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -29729,10 +29742,14 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
   fi
+  echo "$as_me:$LINENO: result: $glibcxx_cv_WRITEV" >&5
+echo "${ECHO_T}$glibcxx_cv_WRITEV" >&6
 
 
   # For the __streamoff_base_type typedef.
 
+  echo "$as_me:$LINENO: checking for int64_t" >&5
+echo $ECHO_N "checking for int64_t... $ECHO_C" >&6
   if test "${glibcxx_cv_INT64_T+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -29792,6 +29809,8 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
   fi
+  echo "$as_me:$LINENO: result: $glibcxx_cv_INT64_T" >&5
+echo "${ECHO_T}$glibcxx_cv_INT64_T" >&6
 
 
   # For LFS support.
@@ -29806,6 +29825,8 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -fno-exceptions"
+  echo "$as_me:$LINENO: checking for LFS support" >&5
+echo $ECHO_N "checking for LFS support... $ECHO_C" >&6
   if test "${glibcxx_cv_LFS+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -29880,6 +29901,8 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
   fi
+  echo "$as_me:$LINENO: result: $glibcxx_cv_LFS" >&5
+echo "${ECHO_T}$glibcxx_cv_LFS" >&6
   CXXFLAGS="$ac_save_CXXFLAGS"
   ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -52060,6 +52083,8 @@ fi
 done
 
 
+  echo "$as_me:$LINENO: checking for poll" >&5
+echo $ECHO_N "checking for poll... $ECHO_C" >&6
   if test "${glibcxx_cv_POLL+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -52127,8 +52152,12 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
   fi
+  echo "$as_me:$LINENO: result: $glibcxx_cv_POLL" >&5
+echo "${ECHO_T}$glibcxx_cv_POLL" >&6
 
 
+  echo "$as_me:$LINENO: checking for S_ISREG or S_IFREG" >&5
+echo $ECHO_N "checking for S_ISREG or S_IFREG... $ECHO_C" >&6
   if test "${glibcxx_cv_S_ISREG+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -52249,19 +52278,24 @@ rm -f conftest.err conftest.$ac_objext \
 
 fi
 
+  res=no
   if test $glibcxx_cv_S_ISREG = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_S_ISREG 1
 _ACEOF
 
+    res=S_ISREG
   elif test $glibcxx_cv_S_IFREG = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_S_IFREG 1
 _ACEOF
 
+    res=S_IFREG
   fi
+  echo "$as_me:$LINENO: result: $res" >&5
+echo "${ECHO_T}$res" >&6
 
 
     # For xsputn_2().
@@ -52416,6 +52450,8 @@ fi
 done
 
 
+  echo "$as_me:$LINENO: checking for writev" >&5
+echo $ECHO_N "checking for writev... $ECHO_C" >&6
   if test "${glibcxx_cv_WRITEV+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -52482,6 +52518,8 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
   fi
+  echo "$as_me:$LINENO: result: $glibcxx_cv_WRITEV" >&5
+echo "${ECHO_T}$glibcxx_cv_WRITEV" >&6
 
 
     cat >>confdefs.h <<\_ACEOF
@@ -73811,6 +73849,8 @@ done
   CXXFLAGS="$ac_save_CXXFLAGS"
 
 
+  echo "$as_me:$LINENO: checking for S_ISREG or S_IFREG" >&5
+echo $ECHO_N "checking for S_ISREG or S_IFREG... $ECHO_C" >&6
   if test "${glibcxx_cv_S_ISREG+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -73931,19 +73971,24 @@ rm -f conftest.err conftest.$ac_objext \
 
 fi
 
+  res=no
   if test $glibcxx_cv_S_ISREG = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_S_ISREG 1
 _ACEOF
 
+    res=S_ISREG
   elif test $glibcxx_cv_S_IFREG = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_S_IFREG 1
 _ACEOF
 
+    res=S_IFREG
   fi
+  echo "$as_me:$LINENO: result: $res" >&5
+echo "${ECHO_T}$res" >&6
 
     cat >>confdefs.h <<\_ACEOF
 #define HAVE_WRITEV 1
@@ -78270,6 +78315,8 @@ fi
 done
 
 
+  echo "$as_me:$LINENO: checking for poll" >&5
+echo $ECHO_N "checking for poll... $ECHO_C" >&6
   if test "${glibcxx_cv_POLL+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -78337,8 +78384,12 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
   fi
+  echo "$as_me:$LINENO: result: $glibcxx_cv_POLL" >&5
+echo "${ECHO_T}$glibcxx_cv_POLL" >&6
 
 
+  echo "$as_me:$LINENO: checking for S_ISREG or S_IFREG" >&5
+echo $ECHO_N "checking for S_ISREG or S_IFREG... $ECHO_C" >&6
   if test "${glibcxx_cv_S_ISREG+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -78459,19 +78510,24 @@ rm -f conftest.err conftest.$ac_objext \
 
 fi
 
+  res=no
   if test $glibcxx_cv_S_ISREG = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_S_ISREG 1
 _ACEOF
 
+    res=S_ISREG
   elif test $glibcxx_cv_S_IFREG = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_S_IFREG 1
 _ACEOF
 
+    res=S_IFREG
   fi
+  echo "$as_me:$LINENO: result: $res" >&5
+echo "${ECHO_T}$res" >&6
 
 
     # For xsputn_2().
@@ -78626,6 +78682,8 @@ fi
 done
 
 
+  echo "$as_me:$LINENO: checking for writev" >&5
+echo $ECHO_N "checking for writev... $ECHO_C" >&6
   if test "${glibcxx_cv_WRITEV+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -78692,6 +78750,8 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
   fi
+  echo "$as_me:$LINENO: result: $glibcxx_cv_WRITEV" >&5
+echo "${ECHO_T}$glibcxx_cv_WRITEV" >&6
 
 
     cat >>confdefs.h <<\_ACEOF
@@ -83049,6 +83109,8 @@ fi
 done
 
 
+  echo "$as_me:$LINENO: checking for poll" >&5
+echo $ECHO_N "checking for poll... $ECHO_C" >&6
   if test "${glibcxx_cv_POLL+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -83116,8 +83178,12 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
   fi
+  echo "$as_me:$LINENO: result: $glibcxx_cv_POLL" >&5
+echo "${ECHO_T}$glibcxx_cv_POLL" >&6
 
 
+  echo "$as_me:$LINENO: checking for S_ISREG or S_IFREG" >&5
+echo $ECHO_N "checking for S_ISREG or S_IFREG... $ECHO_C" >&6
   if test "${glibcxx_cv_S_ISREG+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -83238,19 +83304,24 @@ rm -f conftest.err conftest.$ac_objext \
 
 fi
 
+  res=no
   if test $glibcxx_cv_S_ISREG = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_S_ISREG 1
 _ACEOF
 
+    res=S_ISREG
   elif test $glibcxx_cv_S_IFREG = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_S_IFREG 1
 _ACEOF
 
+    res=S_IFREG
   fi
+  echo "$as_me:$LINENO: result: $res" >&5
+echo "${ECHO_T}$res" >&6
 
 
     # For xsputn_2().
@@ -83405,6 +83476,8 @@ fi
 done
 
 
+  echo "$as_me:$LINENO: checking for writev" >&5
+echo $ECHO_N "checking for writev... $ECHO_C" >&6
   if test "${glibcxx_cv_WRITEV+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
@@ -83471,6 +83544,8 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
   fi
+  echo "$as_me:$LINENO: result: $glibcxx_cv_WRITEV" >&5
+echo "${ECHO_T}$glibcxx_cv_WRITEV" >&6
 
     ;;
   *-qnx6.1* | *-qnx6.2*)
@@ -87668,6 +87743,8 @@ done
   if test $setrlimit_have_headers = yes; then
     # Can't do these in a loop, else the resulting syntax is wrong.
 
+  echo "$as_me:$LINENO: checking for RLIMIT_DATA" >&5
+echo $ECHO_N "checking for RLIMIT_DATA... $ECHO_C" >&6
   cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -87721,8 +87798,13 @@ cat >>confdefs.h <<_ACEOF
 #define HAVE_LIMIT_DATA $glibcxx_mresult
 _ACEOF
 
+  if test $glibcxx_mresult = 1 ; then res=yes ; else res=no ; fi
+  echo "$as_me:$LINENO: result: $res" >&5
+echo "${ECHO_T}$res" >&6
 
 
+  echo "$as_me:$LINENO: checking for RLIMIT_RSS" >&5
+echo $ECHO_N "checking for RLIMIT_RSS... $ECHO_C" >&6
   cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -87776,8 +87858,13 @@ cat >>confdefs.h <<_ACEOF
 #define HAVE_LIMIT_RSS $glibcxx_mresult
 _ACEOF
 
+  if test $glibcxx_mresult = 1 ; then res=yes ; else res=no ; fi
+  echo "$as_me:$LINENO: result: $res" >&5
+echo "${ECHO_T}$res" >&6
 
 
+  echo "$as_me:$LINENO: checking for RLIMIT_VMEM" >&5
+echo $ECHO_N "checking for RLIMIT_VMEM... $ECHO_C" >&6
   cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -87831,8 +87918,13 @@ cat >>confdefs.h <<_ACEOF
 #define HAVE_LIMIT_VMEM $glibcxx_mresult
 _ACEOF
 
+  if test $glibcxx_mresult = 1 ; then res=yes ; else res=no ; fi
+  echo "$as_me:$LINENO: result: $res" >&5
+echo "${ECHO_T}$res" >&6
 
 
+  echo "$as_me:$LINENO: checking for RLIMIT_AS" >&5
+echo $ECHO_N "checking for RLIMIT_AS... $ECHO_C" >&6
   cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -87886,8 +87978,13 @@ cat >>confdefs.h <<_ACEOF
 #define HAVE_LIMIT_AS $glibcxx_mresult
 _ACEOF
 
+  if test $glibcxx_mresult = 1 ; then res=yes ; else res=no ; fi
+  echo "$as_me:$LINENO: result: $res" >&5
+echo "${ECHO_T}$res" >&6
 
 
+  echo "$as_me:$LINENO: checking for RLIMIT_FSIZE" >&5
+echo $ECHO_N "checking for RLIMIT_FSIZE... $ECHO_C" >&6
   cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -87941,6 +88038,9 @@ cat >>confdefs.h <<_ACEOF
 #define HAVE_LIMIT_FSIZE $glibcxx_mresult
 _ACEOF
 
+  if test $glibcxx_mresult = 1 ; then res=yes ; else res=no ; fi
+  echo "$as_me:$LINENO: result: $res" >&5
+echo "${ECHO_T}$res" >&6
 
 
     # Check for rlimit, setrlimit.
