@@ -913,7 +913,28 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
 				? prob_pass_wont_exit
 				: prob_pass_thru;
 
-      if (is_latch)
+      /* Complette peeling is special as the probability of exit in last
+         copy becomes 1.  */
+      if (flags & DLTHE_FLAG_COMPLETTE_PEEL)
+	{
+	  int wanted_freq = EDGE_FREQUENCY (e);
+
+	  if (wanted_freq > freq_in)
+	    wanted_freq = freq_in;
+
+	  gcc_assert (!is_latch);
+	  /* First copy has frequency of incomming edge.  Each subseqeuent
+	     frequency should be reduced by prob_pass_wont_exit.  Caller
+	     should've managed the flags so all except for original loop
+	     has won't exist set.  */
+	  scale_act = RDIV (wanted_freq * REG_BR_PROB_BASE, freq_in);
+	  /* Now simulate the duplication adjustments and compute header
+	     frequency of the last copy.  */
+	  for (i = 0; i < ndupl; i++)
+            wanted_freq = RDIV (wanted_freq * scale_step[i], REG_BR_PROB_BASE);
+	  scale_main = RDIV (wanted_freq * REG_BR_PROB_BASE, freq_in);
+	}
+      else if (is_latch)
 	{
 	  prob_pass_main = TEST_BIT (wont_exit, 0)
 				? prob_pass_wont_exit

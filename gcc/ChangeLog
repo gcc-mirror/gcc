@@ -1,3 +1,13 @@
+2005-08-03  Jan Hubicka  <jh@suse.cz>
+
+	* cfgloop.h (DLTHE_FLAG_COMPLETTE_PEEL): New flag.
+	* cfgloopmanip.c (duplicate_loop_to_header_edge): Special case
+	profile updating for complette unrolling.
+	* loop-unroll.c (peel_loop_completely): Use it.
+	* tree-ssa-loop-ivcanon.c (try_unroll_loop_completely): Likewise.
+	(tree_unroll_loops_completely): Disable code growing unrolling of cold
+	loops.
+
 2005-08-03  Paul Brook  <paul@codesourcery.com>
 
 	* combine.c (can_change_dest_mode): New function.

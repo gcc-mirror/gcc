@@ -520,6 +520,7 @@ peel_loop_completely (struct loops *loops, struct loop *loop)
 					  wont_exit, desc->out_edge,
 					  remove_edges, &n_remove_edges,
 					  DLTHE_FLAG_UPDATE_FREQ
+					  | DLTHE_FLAG_COMPLETTE_PEEL
 					  | (opt_info
 					     ? DLTHE_RECORD_COPY_NUMBER : 0));
       gcc_assert (ok);
