@@ -1,3 +1,7 @@
+2005-08-03  J"orn Rennecke <joern.rennecke@st.com>
+
+	* gcc.c-torture/execute/pr23135.c: New test.
+
 2005-08-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR tree-optimization/19899
