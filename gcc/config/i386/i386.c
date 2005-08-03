@@ -1789,6 +1789,7 @@ x86_64_elf_unique_section (tree decl, int reloc)
   default_unique_section (decl, reloc);
 }
 
+#ifdef COMMON_ASM_OP
 /* This says how to output assembler code to declare an
    uninitialized external linkage data object.
 
@@ -1832,6 +1833,7 @@ x86_output_aligned_bss (FILE *file, tree decl ATTRIBUTE_UNUSED,
 #endif /* ASM_DECLARE_OBJECT_NAME */
   ASM_OUTPUT_SKIP (file, size ? size : 1);
 }
+#endif
 
 void
 optimization_options (int level, int size ATTRIBUTE_UNUSED)
