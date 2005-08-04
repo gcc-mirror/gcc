@@ -3908,6 +3908,7 @@ extern void dump_tree_statistics (void);
 extern void expand_function_end (void);
 extern void expand_function_start (tree);
 extern void stack_protect_prologue (void);
+extern void stack_protect_epilogue (void);
 extern void recompute_tree_invarant_for_addr_expr (tree);
 extern bool is_global_var (tree t);
 extern bool needs_to_live_in_memory (tree);

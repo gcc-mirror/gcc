@@ -2247,6 +2247,9 @@ expand_call (tree exp, rtx target, int ignore)
       if (pass && (flags & (ECF_LIBCALL_BLOCK | ECF_MALLOC)))
 	start_sequence ();
 
+      if (pass == 0 && cfun->stack_protect_guard)
+	stack_protect_epilogue ();
+
       adjusted_args_size = args_size;
       /* Compute the actual size of the argument block required.  The variable
 	 and constant sizes must be combined, the size may have to be rounded,
