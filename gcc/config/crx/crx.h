@@ -37,6 +37,9 @@
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend.o%s crtn.o%s"
 
+#undef MATH_LIBRARY
+#define MATH_LIBRARY ""
+
 /*****************************************************************************/
 /* RUN-TIME TARGET SPECIFICATION					     */
 /*****************************************************************************/
