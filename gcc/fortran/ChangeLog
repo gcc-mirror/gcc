@@ -1,6 +1,13 @@
+2005-08-04  Paul Brook  <paul@codesourcery.com>
+
+	* trans-expr.c (gfc_conv_expr, gfc_conv_expr_type): Update comments.
+	(gfc_conv_expr_lhs): Fix assertion.
+	(gfc_conv_expr_val): Merge post block.  Set se.expr to new value.
+	* trans.h: Move and update comments.
+
 2005-07-31  Jerry DeLisle  <jvdelisle@verizon.net>
 
-        * intrinsic.texi: Backport from 4.1 branch.
+	* intrinsic.texi: Backport from 4.1 branch.
 
 2005-07-27  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 

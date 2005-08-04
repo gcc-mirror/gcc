@@ -275,20 +275,15 @@ tree gfc_chainon_list (tree, tree);
    when a POST chain may be created, and what the retured expression may be
    used for.  Note that character strings have special handling.  This
    should not be a problem as most statements/operations only deal with
-   numeric/logical types.  */
+   numeric/logical types.  See the implementations in trans-expr.c
+   for details of the individual functions.  */
 
-/* Entry point for expression translation.  */
 void gfc_conv_expr (gfc_se * se, gfc_expr * expr);
-/* Like gfc_conv_expr, but the POST block is guaranteed to be empty for
-   numeric expressions.  */
 void gfc_conv_expr_val (gfc_se * se, gfc_expr * expr);
-/* Like gfc_conv_expr_val, but the value is also suitable for use in the lhs of
-   an assignment.  */
 void gfc_conv_expr_lhs (gfc_se * se, gfc_expr * expr);
-/* Converts an expression so that it can be passed be reference.  */
 void gfc_conv_expr_reference (gfc_se * se, gfc_expr *);
-/* Equivalent to convert(type, gfc_conv_expr_val(se, expr)).  */
 void gfc_conv_expr_type (gfc_se * se, gfc_expr *, tree);
+
 /* Find the decl containing the auxiliary variables for assigned variables.  */
 void gfc_conv_label_variable (gfc_se * se, gfc_expr * expr);
 /* If the value is not constant, Create a temporary and copy the value.  */
