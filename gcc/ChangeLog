@@ -1,3 +1,8 @@
+2005-08-04  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Binaries): Remove broken link to
+	Sinix/Reliant Unix binaries.
+
 2005-08-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (function_value): Handle small aggregates on 32-bit targets.
@@ -18,7 +23,6 @@
 	(Specific): Remove broken reference to GCC 2.8.1 for OS/2.
 	(Binaries): Adjust HP-UX Porting Center link.
 	(Binaries): Adjust Free Software Foundation ordering link.
-	(Binaries): Remove broken link to Sinix/Reliant Unix binaries.
 
 2005-08-02  Richard Guenther  <rguenther@suse.de>
 

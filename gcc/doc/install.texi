@@ -2097,9 +2097,6 @@ Development Tools for the Motorola 68HC11/68HC12}.
 OpenServer/Unixware}.
 
 @item
-Sinix/Reliant Unix---@uref{ftp://ftp.fujitsu-siemens.com/pub/pd/gnu/gcc/,,Siemens}.
-
-@item
 Solaris 2 (SPARC, Intel)---@uref{http://www.sunfreeware.com/,,Sunfreeware}.
 
 @item
