@@ -1,3 +1,8 @@
+2005-08-04  David Edelsohn  <edelsohn@gnu.org>
+
+	* function.c (assign_stack_local_1): Do not correct stack slot
+	address if allocation size is smaller than mode size.
+
 2005-08-04  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 22037
