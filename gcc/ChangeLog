@@ -1,3 +1,10 @@
+2005-08-03  Richard Henderson  <rth@redhat.com>
+
+	PR 23221
+	* function.c (stack_protect_epilogue): Export.
+	* tree.h (stack_protect_epilogue): Declare.
+	* calls.c (expand_call): Call it.
+
 2005-08-03  Eric Christopher  <echristo@apple.com>
 
 	* gcc.c (LINK_SSP_SPEC): Add fstack-protector-all.

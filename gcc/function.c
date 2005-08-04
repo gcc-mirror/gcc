@@ -4013,7 +4013,7 @@ stack_protect_prologue (void)
 # define gen_stack_protect_test(x, y, z)	(gcc_unreachable (), NULL_RTX)
 #endif
 
-static void
+void
 stack_protect_epilogue (void)
 {
   tree guard_decl = targetm.stack_protect_guard ();
