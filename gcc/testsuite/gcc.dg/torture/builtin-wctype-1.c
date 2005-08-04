@@ -1,4 +1,4 @@
-/* Copyright (C) 2004  Free Software Foundation.
+/* Copyright (C) 2004, 2005  Free Software Foundation.
 
    Verify that built-in wctype function attributes are correctly set
    by the compiler.
@@ -7,32 +7,47 @@
 
 /* { dg-do link } */
 
+/* Use the target type definitions if we can.  */ 
+#ifndef __WINT_TYPE__
+#define __WINT_TYPE__ int
+#endif
+
+#ifndef __WCHAR_TYPE__
+#define __WCHAR_TYPE__ int
+#endif
 
 void test(int i)
 {
   /* All of these ctype functions should be const/pure and thus
      eliminated.  */
-#define TEST_CTYPE(FN) \
-  extern int FN(int); \
+#define TEST_IS_WCTYPE(FN) \
+  extern int FN(__WINT_TYPE__); \
   extern void link_failure_##FN(void); \
   if (FN(i) != FN(i)) \
     link_failure_##FN()
+
+#define TEST_TO_WCTYPE(FN) \
+  extern __WCHAR_TYPE__ FN(__WCHAR_TYPE__); \
+  extern void link_failure_##FN(void); \
+  if (FN(i) != FN(i)) \
+    link_failure_##FN()
+
   
 #ifdef __OPTIMIZE__
-  TEST_CTYPE(iswalnum);
-  TEST_CTYPE(iswalpha);
-  TEST_CTYPE(iswblank);
-  TEST_CTYPE(iswcntrl);
-  TEST_CTYPE(iswdigit);
-  TEST_CTYPE(iswgraph);
-  TEST_CTYPE(iswlower);
-  TEST_CTYPE(iswprint);
-  TEST_CTYPE(iswpunct);
-  TEST_CTYPE(iswspace);
-  TEST_CTYPE(iswupper);
-  TEST_CTYPE(iswxdigit);
-  TEST_CTYPE(towlower);
-  TEST_CTYPE(towupper);
+  TEST_IS_WCTYPE(iswalnum);
+  TEST_IS_WCTYPE(iswalpha);
+  TEST_IS_WCTYPE(iswblank);
+  TEST_IS_WCTYPE(iswcntrl);
+  TEST_IS_WCTYPE(iswdigit);
+  TEST_IS_WCTYPE(iswgraph);
+  TEST_IS_WCTYPE(iswlower);
+  TEST_IS_WCTYPE(iswprint);
+  TEST_IS_WCTYPE(iswpunct);
+  TEST_IS_WCTYPE(iswspace);
+  TEST_IS_WCTYPE(iswupper);
+  TEST_IS_WCTYPE(iswxdigit);
+  TEST_TO_WCTYPE(towlower);
+  TEST_TO_WCTYPE(towupper);
 #endif /* __OPTIMIZE__ */
 }
 
