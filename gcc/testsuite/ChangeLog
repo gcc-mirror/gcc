@@ -1,3 +1,8 @@
+2005-08-04  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 22037
+	* g++.dg/tree-ssa/pr22037.C:
+
 2005-08-04  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/tree-ssa/update-cunroll.c: Fix mistakes in
