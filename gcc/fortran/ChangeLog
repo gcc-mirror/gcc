@@ -1,3 +1,9 @@
+2005-08-04  Paul Brook  <paul@codesourcery.com>
+
+	* trans-expr.c (gfc_conv_expr, gfc_conv_expr_type): Update comments.
+	(gfc_conv_expr_lhs): Fix assertion.
+	(gfc_conv_expr_val): Merge post block.  Set se.expr to new value.
+
 2005-08-02  David Edelsohn  <edelsohn@gnu.org>
 
 	PR fortran/22491
