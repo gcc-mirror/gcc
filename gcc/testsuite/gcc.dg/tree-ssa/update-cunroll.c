@@ -9,5 +9,5 @@ int t()
 			break;
 	return i;
 }
-/* { dg-final { scan-tree-dump-times ".optimized" 0 "Invalid sum"} } */
+/* { dg-final { scan-tree-dump-times "Invalid sum" 0 "optimized"} } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

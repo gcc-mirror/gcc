@@ -1,3 +1,8 @@
+2005-08-04  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/tree-ssa/update-cunroll.c: Fix mistakes in
+	scan-tree-dump-times directive.
+
 2005-08-04  Jan Hubicka  <jh@suse.cz>
 
 	* gcov-1.C: Fix switch counts.
