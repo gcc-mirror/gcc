@@ -1,3 +1,8 @@
+2005-08-04  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Binaries): Remove broken link to
+	Sinix/Reliant Unix binaries.
+
 2005-08-03  Richard Henderson  <rth@redhat.com>
 
 	PR 23221
@@ -66,7 +71,6 @@
 	(Specific): Remove broken reference to GCC 2.8.1 for OS/2.
 	(Binaries): Adjust HP-UX Porting Center link.
 	(Binaries): Adjust Free Software Foundation ordering link.
-	(Binaries): Remove broken link to Sinix/Reliant Unix binaries.
 
 2005-08-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
