@@ -17,6 +17,7 @@
 	through to build3_stat.
 
 2005-08-04  David Edelsohn  <edelsohn@gnu.org>
+	    Ian Lance Taylor  <ian@airs.com>
 
 	* function.c (assign_stack_local_1): Do not correct stack slot
 	address if allocation size is smaller than mode size.
