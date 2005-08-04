@@ -1,3 +1,21 @@
+2005-08-04  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree.h (fold_build1): Change to macro and call fold_build1_stat.
+	(fold_build2): Likewise.
+	(fold_build3): Likewise.
+	(fold_build1_stat): New function prototype.
+	(fold_build2_stat): Likewise.
+	(fold_build3_stat): Likewise.
+	* fold-const.c (fold_build1): Rename to ..
+	(fold_build1_stat): this.  Add MEM_STAT_DECL.  Pass the mem stats
+	through to build1_stat.
+	(fold_build2): Rename to ..
+	(fold_build2_stat): this.  Add MEM_STAT_DECL.  Pass the mem stats
+	through to build2_stat.
+	(fold_build3): Rename to ..
+	(fold_build3_stat): this.  Add MEM_STAT_DECL.  Pass the mem stats
+	through to build3_stat.
+
 2005-08-04  David Edelsohn  <edelsohn@gnu.org>
 
 	* function.c (assign_stack_local_1): Do not correct stack slot

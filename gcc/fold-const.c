@@ -10414,7 +10414,7 @@ recursive_label:
    operand OP0.  */
 
 tree
-fold_build1 (enum tree_code code, tree type, tree op0)
+fold_build1_stat (enum tree_code code, tree type, tree op0 MEM_STAT_DECL)
 {
   tree tem;
 #ifdef ENABLE_FOLD_CHECKING
@@ -10431,7 +10431,7 @@ fold_build1 (enum tree_code code, tree type, tree op0)
   
   tem = fold_unary (code, type, op0);
   if (!tem)
-    tem = build1 (code, type, op0);
+    tem = build1_stat (code, type, op0 PASS_MEM_STAT);
   
 #ifdef ENABLE_FOLD_CHECKING
   md5_init_ctx (&ctx);
@@ -10451,7 +10451,8 @@ fold_build1 (enum tree_code code, tree type, tree op0)
    with operands OP0 and OP1.  */
 
 tree
-fold_build2 (enum tree_code code, tree type, tree op0, tree op1)
+fold_build2_stat (enum tree_code code, tree type, tree op0, tree op1
+		  MEM_STAT_DECL)
 {
   tree tem;
 #ifdef ENABLE_FOLD_CHECKING
@@ -10476,7 +10477,7 @@ fold_build2 (enum tree_code code, tree type, tree op0, tree op1)
 
   tem = fold_binary (code, type, op0, op1);
   if (!tem)
-    tem = build2 (code, type, op0, op1);
+    tem = build2_stat (code, type, op0, op1 PASS_MEM_STAT);
   
 #ifdef ENABLE_FOLD_CHECKING
   md5_init_ctx (&ctx);
@@ -10504,8 +10505,10 @@ fold_build2 (enum tree_code code, tree type, tree op0, tree op1)
    type TYPE with operands OP0, OP1, and OP2.  */
 
 tree
-fold_build3 (enum tree_code code, tree type, tree op0, tree op1, tree op2)
-{  tree tem;
+fold_build3_stat (enum tree_code code, tree type, tree op0, tree op1, tree op2
+	     MEM_STAT_DECL)
+{
+  tree tem;
 #ifdef ENABLE_FOLD_CHECKING
   unsigned char checksum_before_op0[16],
                 checksum_before_op1[16],
@@ -10535,7 +10538,7 @@ fold_build3 (enum tree_code code, tree type, tree op0, tree op1, tree op2)
   
   tem = fold_ternary (code, type, op0, op1, op2);
   if (!tem)
-    tem =  build3 (code, type, op0, op1, op2);
+    tem =  build3_stat (code, type, op0, op1, op2 PASS_MEM_STAT);
       
 #ifdef ENABLE_FOLD_CHECKING
   md5_init_ctx (&ctx);
