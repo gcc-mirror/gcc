@@ -1,3 +1,7 @@
+2005-08-04  Paul Brook  <paul@codesourcery.com>
+
+	* read-rtl.c (read_quoted_string): Break if EOF.
+
 2005-08-04  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* tree.h (fold_build1): Change to macro and call fold_build1_stat.
