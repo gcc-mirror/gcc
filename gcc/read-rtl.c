@@ -991,7 +991,7 @@ read_quoted_string (FILE *infile)
 	  read_escape (infile);
 	  continue;
 	}
-      else if (c == '"')
+      else if (c == '"' || c == EOF)
 	break;
 
       obstack_1grow (&string_obstack, c);
