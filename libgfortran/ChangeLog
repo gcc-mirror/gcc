@@ -1,3 +1,9 @@
+2005-08-04 Paul Thomas  <pault@gcc.gnu.org>
+
+	* transfer.c (data_transfer_init): Truncate file in
+	sequential WRITE when last_record == 0, rather than
+	current_record.  Cures problem on RH9.
+
 2005-08-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* libgfortran.h: When isfinite is not provided by the system,
