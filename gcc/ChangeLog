@@ -1,3 +1,13 @@
+2005-08-04  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 22037
+	* tree-cfg.c (replace_uses_by): Call mark_new_vars_to_rename.
+	(tree_merge_blocks): Propagate anything allowed by
+	may_propagate_copy.
+	Clarify documentation.
+	* passes.c (execute_todo): If cleanup_tree_cfg invalidated the
+	SSA form, schedule an update if necessary.
+
 2005-08-04  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Binaries): Remove broken link to

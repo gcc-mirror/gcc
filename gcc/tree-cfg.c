@@ -1273,7 +1273,7 @@ replace_uses_by (tree name, tree val)
       if (TREE_CODE (rhs) == ADDR_EXPR)
 	recompute_tree_invarant_for_addr_expr (rhs);
 
-      update_stmt (stmt);
+      mark_new_vars_to_rename (stmt);
     }
 
   VEC_free (tree, heap, stmts);
@@ -1304,18 +1304,15 @@ tree_merge_blocks (basic_block a, basic_block b)
   if (dump_file)
     fprintf (dump_file, "Merging blocks %d and %d\n", a->index, b->index);
 
-  /* Remove the phi nodes.  */
+  /* Remove all single-valued PHI nodes from block B of the form
+     V_i = PHI <V_j> by propagating V_j to all the uses of V_i.  */
   bsi = bsi_last (a);
   for (phi = phi_nodes (b); phi; phi = phi_nodes (b))
     {
       tree def = PHI_RESULT (phi), use = PHI_ARG_DEF (phi, 0);
       tree copy;
       
-      if (!may_propagate_copy (def, use)
-	  /* Propagating pointers might cause the set of vops for statements
-	     to be changed, and thus require ssa form update.  */
-	  || (is_gimple_reg (def)
-	      && POINTER_TYPE_P (TREE_TYPE (def))))
+      if (!may_propagate_copy (def, use))
 	{
 	  gcc_assert (is_gimple_reg (def));
 
@@ -1330,6 +1327,7 @@ tree_merge_blocks (basic_block a, basic_block b)
 	}
       else
 	replace_uses_by (def, use);
+
       remove_phi_node (phi, NULL);
     }
 

@@ -684,6 +684,15 @@ execute_todo (struct tree_opt_pass *pass, unsigned int flags, bool use_required)
 	cleanup_tree_cfg_loop ();
       else
 	cleanup_tree_cfg ();
+
+      /* When cleanup_tree_cfg merges consecutive blocks, it may
+	 perform some simplistic propagation when removing single
+	 valued PHI nodes.  This propagation may, in turn, cause the
+	 SSA form to become out-of-date (see PR 22037).  So, even
+	 if the parent pass had not scheduled an SSA update, we may
+	 still need to do one.  */
+      if (!(flags & TODO_update_ssa_any) && need_ssa_update_p ())
+	flags |= TODO_update_ssa;
     }
 
   if (flags & TODO_update_ssa_any)
