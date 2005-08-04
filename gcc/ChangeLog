@@ -1,3 +1,8 @@
+2005-08-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (Optimize Options): Document that -funswitch-loops
+	is enabled at -O3.
+
 2005-08-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/21723
