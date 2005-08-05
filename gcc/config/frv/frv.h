@@ -187,7 +187,7 @@
 #undef	LINK_SPEC
 #define LINK_SPEC "\
 %{h*} %{v:-V} \
-%{b} %{Wl,*:%*} \
+%{b} \
 %{mfdpic:-melf32frvfd -z text} \
 %{static:-dn -Bstatic} \
 %{shared:-Bdynamic} \

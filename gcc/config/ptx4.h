@@ -137,7 +137,7 @@ Boston, MA 02110-1301, USA.
 
 #undef	LINK_SPEC
 #define LINK_SPEC "%{h*} %{v:-V} \
-		   %{b} %{Wl,*:%*} \
+		   %{b} \
 		   %{static:-dn -Bstatic} \
 		   %{shared:-G -dy -z text} \
 		   %{symbolic:-Bsymbolic -G -dy -z text} \

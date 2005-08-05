@@ -1002,7 +1002,6 @@ extern int fixuplabelno;
 
 #define LINK_OS_FREEBSD_SPEC "\
   %{p:%nconsider using `-pg' instead of `-p' with gprof(1)} \
-  %{Wl,*:%*} \
   %{v:-V} \
   %{assert*} %{R*} %{rpath*} %{defsym*} \
   %{shared:-Bshareable %{h*} %{soname*}} \

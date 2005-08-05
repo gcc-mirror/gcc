@@ -32,8 +32,7 @@ Boston, MA 02110-1301, USA.  */
 
 #define LINK_SPEC "%(link_arch)						\
   %{!mno-relax:%{!r:-relax}}						\
-  %{p:%nconsider using `-pg' instead of `-p' with gprof(1)}				\
-  %{Wl,*:%*}								\
+  %{p:%nconsider using `-pg' instead of `-p' with gprof(1)}		\
   %{assert*} %{R*} %{rpath*} %{defsym*}					\
   %{shared:-Bshareable %{h*} %{soname*}}				\
   %{symbolic:-Bsymbolic}						\

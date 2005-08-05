@@ -83,7 +83,7 @@
 
 #undef  LINK_SPEC
 #define LINK_SPEC "%{h*} %{version:-v} \
-   %{b} %{Wl,*:%*} \
+   %{b} \
    %{static:-Bstatic} \
    %{shared:-shared} \
    %{symbolic:-Bsymbolic} \

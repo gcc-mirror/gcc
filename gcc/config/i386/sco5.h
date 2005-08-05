@@ -258,7 +258,7 @@ Boston, MA 02110-1301, USA.  */
 #undef LINK_SPEC
 #define LINK_SPEC \
  "%{!shared:%{!symbolic:%{!G:-E%{Xa:a}%{!Xa:%{Xc:c}%{!Xc:%{Xk:k}%{!Xk:%{Xt:t}%{!Xt:a}}}},%{ansi:ansi}%{!ansi:%{posix:posix}%{!posix:%{Xpg4:xpg4}%{!Xpg4:%{Xpg4plus:XPG4PLUS}%{!Xpg4plus:%{Xods30:ods30}%{!Xods30:XPG4PLUS}}}}},ELF}}} \
-  %{Wl,*:%*} %{YP,*} %{YL,*} %{YU,*} \
+  %{YP,*} %{YL,*} %{YU,*} \
   %{!YP,*:%{p:-YP,/usr/ccs/libp:/lib/libp:/usr/lib/libp:/usr/ccs/lib:/lib:/usr/lib} \
    %{!p:-YP,/usr/ccs/lib:/lib:/usr/lib}} \
   %{h*} %{static:-dn -Bstatic %{G:%e-G and -static are mutually exclusive}} \
