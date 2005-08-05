@@ -41,14 +41,25 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    itself.  */
 DEFPARAM (PARAM_SRA_MAX_STRUCTURE_SIZE,
 	  "sra-max-structure-size",
-	  "The maximum structure size (in bytes) at which GCC will do block copies",
+	  "The maximum structure size (in bytes) for which GCC will "
+	  "use by-element copies",
+	  0, 0, 0)
+
+/* The maximum number of structure fields which the SRA pass will
+   instantiate to avoid block copies.  The default value, 0, implies
+   that GCC will select the appropriate value itself.  */
+DEFPARAM (PARAM_SRA_MAX_STRUCTURE_COUNT,
+	  "sra-max-structure-count",
+	  "The maximum number of structure fields for which GCC will "
+	  "use by-element copies",
 	  0, 0, 0)
 
 /* The ratio between instantiated fields and the complete structure
    size.  We say that if the ratio of the number of bytes in
    instantiated fields to the number of bytes in the complete
-   structure exceeds this parameter, then block copies are not used.
-   The default is 75%.  */
+   structure exceeds this parameter, or if the number of instantiated
+   fields to the total number of fields exceeds this parameter, then
+   block copies are not used.  The default is 75%.  */
 DEFPARAM (PARAM_SRA_FIELD_STRUCTURE_RATIO,
 	  "sra-field-structure-ratio",
 	  "The threshold ratio between instantiated fields and the total structure size",

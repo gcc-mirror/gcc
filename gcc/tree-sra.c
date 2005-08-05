@@ -1328,8 +1328,7 @@ decide_block_copy (struct sra_elt *elt)
       else if (host_integerp (size_tree, 1))
 	{
 	  unsigned HOST_WIDE_INT full_size, inst_size = 0;
-	  unsigned int inst_count;
-	  unsigned int max_size;
+ 	  unsigned int max_size, max_count, inst_count, full_count;
 
 	  /* If the sra-max-structure-size parameter is 0, then the
 	     user has not overridden the parameter and we can choose a
@@ -1337,8 +1336,13 @@ decide_block_copy (struct sra_elt *elt)
 	  max_size = SRA_MAX_STRUCTURE_SIZE
 	    ? SRA_MAX_STRUCTURE_SIZE
 	    : MOVE_RATIO * UNITS_PER_WORD;
+	  max_count = SRA_MAX_STRUCTURE_COUNT
+	    ? SRA_MAX_STRUCTURE_COUNT
+	    : MOVE_RATIO;
 
 	  full_size = tree_low_cst (size_tree, 1);
+	  full_count = count_type_elements (elt->type);
+	  inst_count = sum_instantiated_sizes (elt, &inst_size);
 
 	  /* ??? What to do here.  If there are two fields, and we've only
 	     instantiated one, then instantiating the other is clearly a win.
@@ -1348,15 +1352,12 @@ decide_block_copy (struct sra_elt *elt)
 	  /* If the structure is small, and we've made copies, go ahead
 	     and instantiate, hoping that the copies will go away.  */
 	  if (full_size <= max_size
+	      && (full_count - inst_count) <= max_count
 	      && elt->n_copies > elt->n_uses)
 	    use_block_copy = false;
-	  else
-	    {
-	      inst_count = sum_instantiated_sizes (elt, &inst_size);
-
-	      if (inst_size * 100 >= full_size * SRA_FIELD_STRUCTURE_RATIO)
-		use_block_copy = false;
-	    }
+	  else if (inst_count * 100 >= full_count * SRA_FIELD_STRUCTURE_RATIO
+		   && inst_size * 100 >= full_size * SRA_FIELD_STRUCTURE_RATIO)
+	    use_block_copy = false;
 
 	  /* In order to avoid block copy, we have to be able to instantiate
 	     all elements of the type.  See if this is possible.  */

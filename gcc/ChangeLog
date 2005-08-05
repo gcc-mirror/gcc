@@ -1,5 +1,13 @@
 2005-08-04  Richard Henderson  <rth@redhat.com>
 
+        PR 21529
+        * params.def (PARAM_SRA_MAX_STRUCTURE_COUNT): New.
+        * params.h (SRA_MAX_STRUCTURE_COUNT): New.
+        * tree-sra.c (decide_block_copy): Use it.  Disable element copy
+        if we'd have to instantiate too many members.
+
+2005-08-04  Richard Henderson  <rth@redhat.com>
+
 	PR 21291
 	* tree-outof-ssa.c (coalesce_asm_operands): New.
 	(coalesce_ssa_name): Use it.  Split out ...
