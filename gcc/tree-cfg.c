@@ -2038,11 +2038,23 @@ remove_bb (basic_block bb)
     {
       tree stmt = bsi_stmt (i);
       if (TREE_CODE (stmt) == LABEL_EXPR
-          && FORCED_LABEL (LABEL_EXPR_LABEL (stmt)))
+          && (FORCED_LABEL (LABEL_EXPR_LABEL (stmt))
+	      || DECL_NONLOCAL (LABEL_EXPR_LABEL (stmt))))
 	{
-	  basic_block new_bb = bb->prev_bb;
-	  block_stmt_iterator new_bsi = bsi_start (new_bb);
+	  basic_block new_bb;
+	  block_stmt_iterator new_bsi;
+
+	  /* A non-reachable non-local label may still be referenced.
+	     But it no longer needs to carry the extra semantics of
+	     non-locality.  */
+	  if (DECL_NONLOCAL (LABEL_EXPR_LABEL (stmt)))
+	    {
+	      DECL_NONLOCAL (LABEL_EXPR_LABEL (stmt)) = 0;
+	      FORCED_LABEL (LABEL_EXPR_LABEL (stmt)) = 1;
+	    }
 	  	  
+	  new_bb = bb->prev_bb;
+	  new_bsi = bsi_start (new_bb);
 	  bsi_remove (&i);
 	  bsi_insert_before (&new_bsi, stmt, BSI_NEW_STMT);
 	}
