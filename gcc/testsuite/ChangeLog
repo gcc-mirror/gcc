@@ -1,3 +1,9 @@
+2005-08-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/22010
+	* gfortran.dg/namelist_use.f90: New.
+	* gfortran.dg/namelist_use_only.f90: New.
+
 2005-08-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR tree-optimization/19899

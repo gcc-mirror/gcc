@@ -1,3 +1,13 @@
+2005-08-05  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/22010
+	Port from g95.
+	* module.c (mio_namelist): New function. Correct to set
+	namelist_tail and to give error on renaming namelist by use
+	association.
+	(mio_symbol): Call mio_namelist.
+
 2005-08-04  Paul Brook  <paul@codesourcery.com>
 
 	* trans-expr.c (gfc_conv_expr, gfc_conv_expr_type): Update comments.
