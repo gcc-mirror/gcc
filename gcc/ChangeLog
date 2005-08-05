@@ -1,3 +1,9 @@
+2005-08-05  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR middle-end/23135
+	* reload.c (find_reloads_subreg_address): Pass down TYPE
+	unchanged.  Change all callers except find_reloads_toplev.
+
 2005-08-05  Michael Matz  <matz@suse.de>
 
 	* genattrtab.c (current_alternative_string): Remove.
