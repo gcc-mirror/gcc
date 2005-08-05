@@ -312,10 +312,6 @@ do {						\
    cannot be moved after installation using a symlink.  */
 #define ALWAYS_STRIP_DOTDOT 1
 
-/* Aggregates with a single float or double field should be passed and
-   returned in the general registers.  */
-#define MEMBER_TYPE_FORCES_BLK(FIELD, MODE) (MODE==SFmode || MODE==DFmode)
-
 /* If GAS supports weak, we can support weak when we have working linker
    support for secondary definitions and are generating code for GAS.  */
 #ifdef HAVE_GAS_WEAK

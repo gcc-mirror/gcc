@@ -8800,24 +8800,40 @@ function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
 {
   enum machine_mode valmode;
 
-  /* Aggregates with a size less than or equal to 128 bits are returned
-     in GR 28(-29).  They are left justified.  The pad bits are undefined.
-     Larger aggregates are returned in memory.  */
-  if (TARGET_64BIT && AGGREGATE_TYPE_P (valtype))
+  if (AGGREGATE_TYPE_P (valtype))
     {
-      rtx loc[2];
-      int i, offset = 0;
-      int ub = int_size_in_bytes (valtype) <= UNITS_PER_WORD ? 1 : 2;
-
-      for (i = 0; i < ub; i++)
+      if (TARGET_64BIT)
 	{
-	  loc[i] = gen_rtx_EXPR_LIST (VOIDmode,
-				      gen_rtx_REG (DImode, 28 + i),
-				      GEN_INT (offset));
-	  offset += 8;
-	}
+          /* Aggregates with a size less than or equal to 128 bits are
+	     returned in GR 28(-29).  They are left justified.  The pad
+	     bits are undefined.  Larger aggregates are returned in
+	     memory.  */
+	  rtx loc[2];
+	  int i, offset = 0;
+	  int ub = int_size_in_bytes (valtype) <= UNITS_PER_WORD ? 1 : 2;
 
-      return gen_rtx_PARALLEL (BLKmode, gen_rtvec_v (ub, loc));
+	  for (i = 0; i < ub; i++)
+	    {
+	      loc[i] = gen_rtx_EXPR_LIST (VOIDmode,
+					  gen_rtx_REG (DImode, 28 + i),
+					  GEN_INT (offset));
+	      offset += 8;
+	    }
+
+	  return gen_rtx_PARALLEL (BLKmode, gen_rtvec_v (ub, loc));
+	}
+      else if (int_size_in_bytes (valtype) > UNITS_PER_WORD)
+	{
+	  /* Aggregates 5 to 8 bytes in size are returned in general
+	     registers r28-r29 in the same manner as other non
+	     floating-point objects.  The data is right-justified and
+	     zero-extended to 64 bits.  This is opposite to the normal
+	     justification used on big endian targets and requires
+	     special treatment.  */
+	  rtx loc = gen_rtx_EXPR_LIST (VOIDmode,
+				       gen_rtx_REG (DImode, 28), const0_rtx);
+	  return gen_rtx_PARALLEL (BLKmode, gen_rtvec (1, loc));
+	}
     }
 
   if ((INTEGRAL_TYPE_P (valtype)
@@ -8828,6 +8844,7 @@ function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
     valmode = TYPE_MODE (valtype);
 
   if (TREE_CODE (valtype) == REAL_TYPE
+      && !AGGREGATE_TYPE_P (valtype)
       && TYPE_MODE (valtype) != TFmode
       && !TARGET_SOFT_FLOAT)
     return gen_rtx_REG (valmode, 32);
@@ -8965,12 +8982,12 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
 	     justification of BLKmode data when it has a size greater
 	     than one word.  Splitting the operation into two SImode loads
 	     or returning a DImode REG results in left justified data.  */
-	  if (mode == BLKmode)
+	  if (mode == BLKmode (type && AGGREGATE_TYPE_P (type)))
 	    {
 	      rtx loc = gen_rtx_EXPR_LIST (VOIDmode,
 					   gen_rtx_REG (DImode, gpr_reg_base),
 					   const0_rtx);
-	      return gen_rtx_PARALLEL (mode, gen_rtvec (1, loc));
+	      return gen_rtx_PARALLEL (BLKmode, gen_rtvec (1, loc));
 	    }
 	}
       else
@@ -9031,7 +9048,9 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
 	      && cum->indirect)
 	  /* If the parameter is not a floating point parameter, then
 	     it belongs in GPRs.  */
-	  || !FLOAT_MODE_P (mode))
+	  || !FLOAT_MODE_P (mode)
+	  /* Structure with single SFmode field belongs in GPR.  */
+	  || (type && AGGREGATE_TYPE_P (type)))
 	retval = gen_rtx_REG (mode, gpr_reg_base);
       else
 	retval = gen_rtx_REG (mode, fpr_reg_base);
