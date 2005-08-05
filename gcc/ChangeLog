@@ -1,5 +1,7 @@
 2005-08-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* pa.c (function_arg): Fix typo in last change.
+
 	* pa.c (function_value): Handle small aggregates on 32-bit targets.
 	(function_arg): Pass small aggregates in general registers on 32-bit
 	targets.

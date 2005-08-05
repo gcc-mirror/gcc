@@ -8982,7 +8982,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
 	     justification of BLKmode data when it has a size greater
 	     than one word.  Splitting the operation into two SImode loads
 	     or returning a DImode REG results in left justified data.  */
-	  if (mode == BLKmode (type && AGGREGATE_TYPE_P (type)))
+	  if (mode == BLKmode || (type && AGGREGATE_TYPE_P (type)))
 	    {
 	      rtx loc = gen_rtx_EXPR_LIST (VOIDmode,
 					   gen_rtx_REG (DImode, gpr_reg_base),
