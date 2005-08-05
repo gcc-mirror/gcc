@@ -4713,9 +4713,6 @@ pushtag (tree name, tree type, tag_scope scope)
 	  else if (b->kind != sk_template_parms)
 	    d = pushdecl_with_scope (d, b);
 
-	  if (d == error_mark_node)
-	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
-
 	  TYPE_CONTEXT (type) = DECL_CONTEXT (d);
 
 	  /* If this is a local class, keep track of it.  We need this
