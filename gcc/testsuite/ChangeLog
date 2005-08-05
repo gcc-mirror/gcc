@@ -6306,7 +6306,7 @@
 	PR c++/18378
 	* g++.dg/ext/packed8.C: New test.
 
-	PR c++/13268
+	PR c++/19063
 	* g++.dg/template/crash31.C: New test.
 
 	PR c++/19034
