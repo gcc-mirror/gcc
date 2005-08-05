@@ -1,3 +1,8 @@
+2005-08-05  David Edelsohn  <edelsohn@gnu.org>
+
+	* gcc.dg/torture/builtin-wctype-1.c: Use __WINT_TYPE__ for
+	TEST_TO_WCTYPE.
+
 2005-08-04  Danny Smith  <dannysmith@users.sourceforge.net>
 	
 	* gcc.dg/torture/builtin-wctype-1.c: Use __WCHAR_TYPE__ and
