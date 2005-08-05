@@ -1,3 +1,10 @@
+2005-08-05  J"orn Rennecke <joern.rennecke@st.com>
+
+	* gcc.dg/intmax_t-1.c: Extend dg-error to cover sh*-*-elf targets.
+
+	* gcc.dg/tree-ssa/loop-1.c: For sh*-*-*, look for function calls
+	instead of constant loads / pool entries.
+
 2005-08-05  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.dg/torture/builtin-wctype-1.c: Use __WINT_TYPE__ for
