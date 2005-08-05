@@ -1,3 +1,13 @@
+2005-08-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* name-lookup.c (pushtag): Remove accidental commit from:
+	2004-12-21  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/19063
+	* decl.c (grokdeclarator): Return error_mark_node, not
+	void_type_node, to indicate errors.
+	* parser.c (cp_parser_template_parameter_list): Robustify.
+	(cp_parser_template_parameter): Likewise.
+
 2005-08-01  Kazu Hirata  <kazu@codesourcery.com>
 
 	* class.c, decl.c, name-lookup.c, pt.c, typeck.c, typeck2.c:
