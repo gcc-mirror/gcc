@@ -1,3 +1,10 @@
+2005-08-04  Richard Henderson  <rth@redhat.com>
+
+	PR 21291
+	* tree-outof-ssa.c (coalesce_asm_operands): New.
+	(coalesce_ssa_name): Use it.  Split out ...
+	(coalesce_phi_operands, coalesce_result_decls): ... these.
+
 2005-08-04  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Binaries): Remove broken link to

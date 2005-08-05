@@ -673,47 +673,25 @@ coalesce_abnormal_edges (var_map map, conflict_graph graph, root_var_p rv)
 }
 
 
-/* Reduce the number of live ranges in MAP.  Live range information is 
-   returned if FLAGS indicates that we are combining temporaries, otherwise 
-   NULL is returned.  The only partitions which are associated with actual 
-   variables at this point are those which are forced to be coalesced for 
-   various reason. (live on entry, live across abnormal edges, etc.).  */
-
-static tree_live_info_p
-coalesce_ssa_name (var_map map, int flags)
+/* Coalesce potential copies via PHI arguments.  */
+  
+static void
+coalesce_phi_operands (var_map map, coalesce_list_p cl)
 {
-  unsigned num, x, i;
-  sbitmap live;
-  tree var, phi;
-  root_var_p rv;
-  tree_live_info_p liveinfo;
-  var_ann_t ann;
-  conflict_graph graph;
   basic_block bb;
-  coalesce_list_p cl = NULL;
+  tree phi;
 
-  if (num_var_partitions (map) <= 1)
-    return NULL;
-
-  liveinfo = calculate_live_on_entry (map);
-  calculate_live_on_exit (liveinfo);
-  rv = root_var_init (map);
-
-  /* Remove single element variable from the list.  */
-  root_var_compact (rv);
-
-  cl = create_coalesce_list (map);
-
-  /* Add all potential copies via PHI arguments to the list.  */
   FOR_EACH_BB (bb)
     {
       for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	{
 	  tree res = PHI_RESULT (phi);
 	  int p = var_to_partition (map, res);
+	  int x;
+
 	  if (p == NO_PARTITION)
 	    continue;
-	  for (x = 0; x < (unsigned)PHI_NUM_ARGS (phi); x++)
+	  for (x = 0; x < PHI_NUM_ARGS (phi); x++)
 	    {
 	      tree arg = PHI_ARG_DEF (phi, x);
 	      int p2;
@@ -728,14 +706,20 @@ coalesce_ssa_name (var_map map, int flags)
 	    }
 	}
     }
+}
 
-  /* Coalesce all the result decls together.  */
-  var = NULL_TREE;
-  i = 0;
-  for (x = 0; x < num_var_partitions (map); x++)
+/* Coalesce all the result decls together.  */
+
+static void
+coalesce_result_decls (var_map map, coalesce_list_p cl)
+{
+  unsigned int i, x;
+  tree var = NULL;
+
+  for (i = x = 0; x < num_var_partitions (map); x++)
     {
       tree p = partition_to_var (map, x);
-      if (TREE_CODE (SSA_NAME_VAR(p)) == RESULT_DECL)
+      if (TREE_CODE (SSA_NAME_VAR (p)) == RESULT_DECL)
 	{
 	  if (var == NULL_TREE)
 	    {
@@ -746,6 +730,97 @@ coalesce_ssa_name (var_map map, int flags)
 	    add_coalesce (cl, i, x, 1);
 	}
     }
+}
+
+/* Coalesce matching constraints in asms.  */
+
+static void
+coalesce_asm_operands (var_map map, coalesce_list_p cl)
+{
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    {
+      block_stmt_iterator bsi;
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	{
+	  tree stmt = bsi_stmt (bsi);
+	  unsigned long noutputs, i;
+	  tree *outputs, link;
+
+	  if (TREE_CODE (stmt) != ASM_EXPR)
+	    continue;
+
+	  noutputs = list_length (ASM_OUTPUTS (stmt));
+	  outputs = (tree *) alloca (noutputs * sizeof (tree));
+	  for (i = 0, link = ASM_OUTPUTS (stmt); link;
+	       ++i, link = TREE_CHAIN (link))
+	    outputs[i] = TREE_VALUE (link);
+
+	  for (link = ASM_INPUTS (stmt); link; link = TREE_CHAIN (link))
+	    {
+	      const char *constraint
+		= TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
+	      tree input = TREE_VALUE (link);
+	      char *end;
+	      unsigned long match;
+	      int p1, p2;
+
+	      if (TREE_CODE (input) != SSA_NAME && !DECL_P (input))
+		continue;
+
+	      match = strtoul (constraint, &end, 10);
+	      if (match >= noutputs || end == constraint)
+		continue;
+
+	      if (TREE_CODE (outputs[match]) != SSA_NAME
+		  && !DECL_P (outputs[match]))
+		continue;
+
+	      p1 = var_to_partition (map, outputs[match]);
+	      if (p1 == NO_PARTITION)
+		continue;
+	      p2 = var_to_partition (map, input);
+	      if (p2 == NO_PARTITION)
+		continue;
+
+	      add_coalesce (cl, p1, p2, 1);
+	    }
+	}
+    }
+}
+
+/* Reduce the number of live ranges in MAP.  Live range information is 
+   returned if FLAGS indicates that we are combining temporaries, otherwise 
+   NULL is returned.  The only partitions which are associated with actual 
+   variables at this point are those which are forced to be coalesced for 
+   various reason. (live on entry, live across abnormal edges, etc.).  */
+
+static tree_live_info_p
+coalesce_ssa_name (var_map map, int flags)
+{
+  unsigned num, x;
+  sbitmap live;
+  root_var_p rv;
+  tree_live_info_p liveinfo;
+  conflict_graph graph;
+  coalesce_list_p cl = NULL;
+
+  if (num_var_partitions (map) <= 1)
+    return NULL;
+
+  liveinfo = calculate_live_on_entry (map);
+  calculate_live_on_exit (liveinfo);
+  rv = root_var_init (map);
+
+  /* Remove single element variable from the list.  */
+  root_var_compact (rv);
+
+  cl = create_coalesce_list (map);
+
+  coalesce_phi_operands (map, cl);
+  coalesce_result_decls (map, cl);
+  coalesce_asm_operands (map, cl);
 
   /* Build a conflict graph.  */
   graph = build_tree_conflict_graph (liveinfo, rv, cl);
@@ -773,14 +848,14 @@ coalesce_ssa_name (var_map map, int flags)
   /* First, coalesce all live on entry variables to their root variable. 
      This will ensure the first use is coming from the correct location.  */
 
-  live = sbitmap_alloc (num_var_partitions (map));
+  num = num_var_partitions (map);
+  live = sbitmap_alloc (num);
   sbitmap_zero (live);
 
   /* Set 'live' vector to indicate live on entry partitions.  */
-  num = num_var_partitions (map);
   for (x = 0 ; x < num; x++)
     {
-      var = partition_to_var (map, x);
+      tree var = partition_to_var (map, x);
       if (default_def (SSA_NAME_VAR (var)) == var)
 	SET_BIT (live, x);
     }
@@ -795,8 +870,8 @@ coalesce_ssa_name (var_map map, int flags)
      partition.  */
   EXECUTE_IF_SET_IN_SBITMAP (live, 0, x, 
     {
-      var = root_var (rv, root_var_find (rv, x));
-      ann = var_ann (var);
+      tree var = root_var (rv, root_var_find (rv, x));
+      var_ann_t ann = var_ann (var);
       /* If these aren't already coalesced...  */
       if (partition_to_var (map, x) != var)
 	{
