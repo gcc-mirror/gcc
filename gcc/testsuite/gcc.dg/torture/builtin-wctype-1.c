@@ -27,7 +27,7 @@ void test(int i)
     link_failure_##FN()
 
 #define TEST_TO_WCTYPE(FN) \
-  extern __WCHAR_TYPE__ FN(__WCHAR_TYPE__); \
+  extern __WINT_TYPE__ FN(__WINT_TYPE__); \
   extern void link_failure_##FN(void); \
   if (FN(i) != FN(i)) \
     link_failure_##FN()
