@@ -1909,10 +1909,15 @@ gfc_build_builtin_function_decls (void)
     gfc_build_library_function_decl (get_identifier (PREFIX("stop_numeric")),
 				     void_type_node, 1, gfc_int4_type_node);
 
+  /* Stop doesn't return.  */
+  TREE_THIS_VOLATILE (gfor_fndecl_stop_numeric) = 1;
+
   gfor_fndecl_stop_string =
     gfc_build_library_function_decl (get_identifier (PREFIX("stop_string")),
 				     void_type_node, 2, pchar_type_node,
                                      gfc_int4_type_node);
+  /* Stop doesn't return.  */
+  TREE_THIS_VOLATILE (gfor_fndecl_stop_string) = 1;
 
   gfor_fndecl_pause_numeric =
     gfc_build_library_function_decl (get_identifier (PREFIX("pause_numeric")),

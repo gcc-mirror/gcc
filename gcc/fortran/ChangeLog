@@ -1,3 +1,8 @@
+2005-08-05  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	* trans-expr.c  (gfc_build_builtin_function_decls):  Mark
+	stop_numeric and stop_string as non-returning.
+
 2005-08-04  Paul Brook  <paul@codesourcery.com>
 
 	* trans-expr.c (gfc_conv_expr, gfc_conv_expr_type): Update comments.
