@@ -228,19 +228,13 @@ static int *insn_n_alternatives;
 
 static int *insn_alternatives;
 
-/* If nonzero, assume that the `alternative' attr has this value.
-   This is the hashed, unique string for the numeral
-   whose value is chosen alternative.  */
-
-static const char *current_alternative_string;
-
 /* Used to simplify expressions.  */
 
 static rtx true_rtx, false_rtx;
 
 /* Used to reduce calls to `strcmp' */
 
-static char *alternative_name;
+static const char *alternative_name;
 static const char *length_str;
 static const char *delay_type_str;
 static const char *delay_1_0_str;
@@ -261,15 +255,6 @@ int optimize = 0;
 #define SIMPLIFY_TEST_EXP(EXP,INSN_CODE,INSN_INDEX)	\
   (ATTR_IND_SIMPLIFIED_P (EXP) || ATTR_CURR_SIMPLIFIED_P (EXP) ? (EXP)	\
    : simplify_test_exp (EXP, INSN_CODE, INSN_INDEX))
-
-/* Simplify (eq_attr ("alternative") ...)
-   when we are working with a particular alternative.  */
-#define SIMPLIFY_ALTERNATIVE(EXP)				\
-  if (current_alternative_string				\
-      && GET_CODE ((EXP)) == EQ_ATTR				\
-      && XSTR ((EXP), 0) == alternative_name)			\
-    (EXP) = (XSTR ((EXP), 1) == current_alternative_string	\
-	    ? true_rtx : false_rtx);
 
 #define DEF_ATTR_STRING(S) (attr_string ((S), strlen (S)))
 
@@ -352,7 +337,6 @@ static bool attr_alt_subset_of_compl_p (rtx, rtx);
 static rtx attr_alt_intersection (rtx, rtx);
 static rtx attr_alt_union (rtx, rtx);
 static rtx attr_alt_complement (rtx);
-static bool attr_alt_bit_p (rtx, int);
 static rtx mk_attr_alt (int);
 
 #define oballoc(size) obstack_alloc (hash_obstack, size)
@@ -1106,7 +1090,7 @@ check_attr_value (rtx exp, struct attr_desc *attr)
 }
 
 /* Given an SET_ATTR_ALTERNATIVE expression, convert to the canonical SET.
-   It becomes a COND with each test being (eq_attr "alternative "n") */
+   It becomes a COND with each test being (eq_attr "alternative" "n") */
 
 static rtx
 convert_set_attr_alternative (rtx exp, struct insn_def *id)
@@ -2035,15 +2019,10 @@ evaluate_eq_attr (rtx exp, rtx value, int insn_code, int insn_index)
       orexp = false_rtx;
       andexp = true_rtx;
 
-      if (current_alternative_string)
-	clear_struct_flag (value);
-
       for (i = 0; i < XVECLEN (value, 0); i += 2)
 	{
 	  rtx this = simplify_test_exp_in_temp (XVECEXP (value, 0, i),
 						insn_code, insn_index);
-
-	  SIMPLIFY_ALTERNATIVE (this);
 
 	  right = insert_right_side (AND, andexp, this,
 				     insn_code, insn_index);
@@ -2082,7 +2061,6 @@ evaluate_eq_attr (rtx exp, rtx value, int insn_code, int insn_index)
 
   if (address_used)
     {
-      /* This had `&& current_alternative_string', which seems to be wrong.  */
       if (! ATTR_IND_SIMPLIFIED_P (exp))
 	return copy_rtx_unchanging (exp);
       return exp;
@@ -2490,14 +2468,6 @@ attr_alt_complement (rtx s)
   return result;
 }
 
-/* Tests whether a bit B belongs to the set represented by S.  */
-
-static bool
-attr_alt_bit_p (rtx s, int b)
-{
-  return XINT (s, 1) ^ ((XINT (s, 0) >> b) & 1);
-}
-
 /* Return EQ_ATTR_ALT expression representing set containing elements set
    in E.  */
 
@@ -2540,12 +2510,10 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
     {
     case AND:
       left = SIMPLIFY_TEST_EXP (XEXP (exp, 0), insn_code, insn_index);
-      SIMPLIFY_ALTERNATIVE (left);
       if (left == false_rtx)
 	return false_rtx;
       right = SIMPLIFY_TEST_EXP (XEXP (exp, 1), insn_code, insn_index);
-      SIMPLIFY_ALTERNATIVE (right);
-      if (left == false_rtx)
+      if (right == false_rtx)
 	return false_rtx;
 
       if (GET_CODE (left) == EQ_ATTR_ALT
@@ -2646,11 +2614,9 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
 
     case IOR:
       left = SIMPLIFY_TEST_EXP (XEXP (exp, 0), insn_code, insn_index);
-      SIMPLIFY_ALTERNATIVE (left);
       if (left == true_rtx)
 	return true_rtx;
       right = SIMPLIFY_TEST_EXP (XEXP (exp, 1), insn_code, insn_index);
-      SIMPLIFY_ALTERNATIVE (right);
       if (right == true_rtx)
 	return true_rtx;
 
@@ -2744,12 +2710,10 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
 	{
 	  left = SIMPLIFY_TEST_EXP (XEXP (XEXP (exp, 0), 0),
 				    insn_code, insn_index);
-	  SIMPLIFY_ALTERNATIVE (left);
 	  return left;
 	}
 
       left = SIMPLIFY_TEST_EXP (XEXP (exp, 0), insn_code, insn_index);
-      SIMPLIFY_ALTERNATIVE (left);
       if (GET_CODE (left) == NOT)
 	return XEXP (left, 0);
 
@@ -2788,18 +2752,11 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
       break;
 
     case EQ_ATTR_ALT:
-      if (current_alternative_string)
-	return attr_alt_bit_p (exp, atoi (current_alternative_string)) ? true_rtx : false_rtx;
-
       if (!XINT (exp, 0))
 	return XINT (exp, 1) ? true_rtx : false_rtx;
       break;
 
     case EQ_ATTR:
-      if (current_alternative_string && XSTR (exp, 0) == alternative_name)
-	return (XSTR (exp, 1) == current_alternative_string
-		? true_rtx : false_rtx);
-
       if (XSTR (exp, 0) == alternative_name)
 	{
 	  newexp = mk_attr_alt (1 << atoi (XSTR (exp, 1)));
@@ -2809,7 +2766,7 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
       /* Look at the value for this insn code in the specified attribute.
 	 We normally can replace this comparison with the condition that
 	 would give this insn the values being tested for.  */
-      if (XSTR (exp, 0) != alternative_name
+      if (insn_code >= 0
 	  && (attr = find_attr (&XSTR (exp, 0), 0)) != NULL)
 	for (av = attr->first_value; av; av = av->next)
 	  for (ie = av->first_insn; ie; ie = ie->next)
@@ -2830,7 +2787,7 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
   /* We have already simplified this expression.  Simplifying it again
      won't buy anything unless we weren't given a valid insn code
      to process (i.e., we are canonicalizing something.).  */
-  if (insn_code != -2 /* Seems wrong: && current_alternative_string.  */
+  if (insn_code != -2
       && ! ATTR_IND_SIMPLIFIED_P (newexp))
     return copy_rtx_unchanging (newexp);
 

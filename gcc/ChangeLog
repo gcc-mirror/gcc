@@ -1,3 +1,14 @@
+2005-08-05  Michael Matz  <matz@suse.de>
+
+	* genattrtab.c (current_alternative_string): Remove.
+	(SIMPLIFY_ALTERNATIVE): Ditto.
+	(attr_alt_bit_p): Ditto.
+	(alternative_name): Make const char *.
+	(evaluate_eq_attr): Remove use of above things.
+	(simplify_test_exp): Ditto.
+	(simplify_test_exp <EQ_ATTR>): Guard for insn_code < 0 .
+	(simplify_test_exp <AND>): Correct typo (test 'right' not 'left').
+
 2005-08-04  James E Wilson  <wilson@specifix.com>
 
 	* config/ptx4.h, config/sol2.h, config/arm/freebsd.h,
