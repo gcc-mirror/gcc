@@ -1,3 +1,11 @@
+2005-08-04  James E Wilson  <wilson@specifix.com>
+
+	* config/ptx4.h, config/sol2.h, config/arm/freebsd.h,
+	config/arm/linux-elf.h, config/frv/frv.h, config/i386/freebsd.h,
+	config/i386/freebsd64.h, config/i386/netware.h, config/i386/sco5.h,
+	config/ia64/freebsd.h, config/rs6000/sysv4.h, config/sparc/freebsd.h
+	(LINK_SPEC): Delete useless %{Wl,*:%*} item.
+
 2005-08-04  Richard Henderson  <rth@redhat.com>
 
 	PR 21529

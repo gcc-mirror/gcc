@@ -32,7 +32,7 @@ Boston, MA 02110-1301, USA.  */
 /* Kinda useless, but what the hell */
 #undef	LINK_SPEC
 #define LINK_SPEC "%{h*} %{V} %{v:%{!V:-V}} \
-		   %{b} %{Wl,*:%*} \
+		   %{b} \
 		   %{Qy:} %{!Qn:-Qy}"
 
 #undef	STARTFILE_SPEC

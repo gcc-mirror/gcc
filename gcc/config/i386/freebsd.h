@@ -102,7 +102,6 @@ Boston, MA 02110-1301, USA.  */
 #undef	LINK_SPEC
 #define LINK_SPEC "\
   %{p:%nconsider using `-pg' instead of `-p' with gprof(1)} \
-  %{Wl,*:%*} \
   %{v:-V} \
   %{assert*} %{R*} %{rpath*} %{defsym*} \
   %{shared:-Bshareable %{h*} %{soname*}} \
