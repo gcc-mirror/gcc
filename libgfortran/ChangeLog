@@ -1,3 +1,9 @@
+2005-08-07  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* io/io.h: Change DEFAULT_TEMPDIR to /tmp instead of /var/tmp.
+	* io/unix.c (tempfile): Look at the TEMP environment variable
+	to find the temporary files directory.
+
 2005-08-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* io/unix.c: Add O_RDWR to open() call.

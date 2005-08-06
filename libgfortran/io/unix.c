@@ -981,6 +981,8 @@ tempfile (void)
   if (tempdir == NULL)
     tempdir = getenv ("TMP");
   if (tempdir == NULL)
+    tempdir = getenv ("TEMP");
+  if (tempdir == NULL)
     tempdir = DEFAULT_TEMPDIR;
 
   template = get_mem (strlen (tempdir) + 20);
