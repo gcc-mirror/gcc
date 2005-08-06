@@ -1,3 +1,12 @@
+2005-08-06  Christian Joensson  <christian.joensson@gmail.com>
+
+	PR target/20673
+	Backport from mainline:
+
+	2005-04-15  David S. Miller  <davem@davemloft.net>
+
+	* config/sparc/sparc.h (sparc_hard_reg_printed): Mark as GTY(()).
+
 2005-08-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (function_arg): Fix typo in last change.
