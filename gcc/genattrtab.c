@@ -3677,10 +3677,13 @@ write_attr_get (struct attr_desc *attr)
       printf ("{\n");
 
       for (av = attr->first_value; av; av = av->next)
-	if (av->num_insns != 0)
+	if (av->num_insns == 1)
 	  write_attr_set (attr, 2, av->value, "return", ";",
 			  true_rtx, av->first_insn->def->insn_code,
 			  av->first_insn->def->insn_index);
+	else if (av->num_insns != 0)
+	  write_attr_set (attr, 2, av->value, "return", ";",
+			  true_rtx, -2, 0);
 
       printf ("}\n\n");
       return;
@@ -3882,9 +3885,13 @@ write_attr_case (struct attr_desc *attr, struct attr_value *av,
       printf ("extract_insn_cached (insn);\n");
     }
 
-  write_attr_set (attr, indent + 2, av->value, prefix, suffix,
-		  known_true, av->first_insn->def->insn_code,
-		  av->first_insn->def->insn_index);
+  if (av->num_insns == 1)
+    write_attr_set (attr, indent + 2, av->value, prefix, suffix,
+		    known_true, av->first_insn->def->insn_code,
+		    av->first_insn->def->insn_index);
+  else
+    write_attr_set (attr, indent + 2, av->value, prefix, suffix,
+		    known_true, -2, 0);
 
   if (strncmp (prefix, "return", 6))
     {
