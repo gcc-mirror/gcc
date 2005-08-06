@@ -7315,7 +7315,13 @@ c_finish_stmt_expr (tree body)
   if (last == error_mark_node
       || (last == BIND_EXPR_BODY (body)
 	  && BIND_EXPR_VARS (body) == NULL))
-    return last;
+    {
+      /* Do not warn if the return value of a statement expression is
+	 unused.  */
+      if (EXPR_P (last))
+	TREE_NO_WARNING (last) = 1;
+      return last;
+    }
 
   /* Extract the type of said expression.  */
   type = TREE_TYPE (last);

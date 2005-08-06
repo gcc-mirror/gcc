@@ -1373,7 +1373,7 @@ int
 warn_if_unused_value (tree exp, location_t locus)
 {
  restart:
-  if (TREE_USED (exp))
+  if (TREE_USED (exp) || TREE_NO_WARNING (exp))
     return 0;
 
   /* Don't warn about void constructs.  This includes casting to void,
@@ -1416,8 +1416,6 @@ warn_if_unused_value (tree exp, location_t locus)
       goto restart;
 
     case COMPOUND_EXPR:
-      if (TREE_NO_WARNING (exp))
-	return 0;
       if (warn_if_unused_value (TREE_OPERAND (exp, 0), locus))
 	return 1;
       /* Let people do `(foo (), 0)' without a warning.  */
@@ -1426,27 +1424,12 @@ warn_if_unused_value (tree exp, location_t locus)
       exp = TREE_OPERAND (exp, 1);
       goto restart;
 
-    case NOP_EXPR:
-    case CONVERT_EXPR:
-    case NON_LVALUE_EXPR:
-      /* Don't warn about conversions not explicit in the user's program.  */
-      if (TREE_NO_WARNING (exp))
+    case COND_EXPR:
+      /* If this is an expression with side effects, don't warn; this
+	 case commonly appears in macro expansions.  */
+      if (TREE_SIDE_EFFECTS (exp))
 	return 0;
-      /* Assignment to a cast usually results in a cast of a modify.
-	 Don't complain about that.  There can be an arbitrary number of
-	 casts before the modify, so we must loop until we find the first
-	 non-cast expression and then test to see if that is a modify.  */
-      {
-	tree tem = TREE_OPERAND (exp, 0);
-
-	while (TREE_CODE (tem) == CONVERT_EXPR || TREE_CODE (tem) == NOP_EXPR)
-	  tem = TREE_OPERAND (tem, 0);
-
-	if (TREE_CODE (tem) == MODIFY_EXPR || TREE_CODE (tem) == INIT_EXPR
-	    || TREE_CODE (tem) == CALL_EXPR)
-	  return 0;
-      }
-      goto maybe_warn;
+      goto warn;
 
     case INDIRECT_REF:
       /* Don't warn about automatic dereferencing of references, since
@@ -1470,11 +1453,7 @@ warn_if_unused_value (tree exp, location_t locus)
       if (EXPRESSION_CLASS_P (exp) && TREE_CODE_LENGTH (TREE_CODE (exp)) == 0)
 	return 0;
 
-    maybe_warn:
-      /* If this is an expression with side effects, don't warn.  */
-      if (TREE_SIDE_EFFECTS (exp))
-	return 0;
-
+    warn:
       warning (0, "%Hvalue computed is not used", &locus);
       return 1;
     }
