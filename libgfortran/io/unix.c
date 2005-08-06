@@ -984,6 +984,8 @@ tempfile (void)
   if (tempdir == NULL)
     tempdir = getenv ("TMP");
   if (tempdir == NULL)
+    tempdir = getenv ("TEMP");
+  if (tempdir == NULL)
     tempdir = DEFAULT_TEMPDIR;
 
   template = get_mem (strlen (tempdir) + 20);
@@ -998,7 +1000,7 @@ tempfile (void)
 
   if (mktemp (template))
     do
-      fd = open (template, O_RDWR |O_CREAT | O_EXCL, S_IREAD | S_IWRITE);
+      fd = open (template, O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE);
     while (!(fd == -1 && errno == EEXIST) && mktemp (template));
   else
     fd = -1;

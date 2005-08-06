@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #include <setjmp.h>
 #include "libgfortran.h"
 
-#define DEFAULT_TEMPDIR "/var/tmp"
+#define DEFAULT_TEMPDIR "/tmp"
 
 /* Basic types used in data transfers.  */
 
