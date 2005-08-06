@@ -915,12 +915,25 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2)
      on -INF and +INF.  */
   res = int_const_binop (code, val1, val2, 0);
 
+  if (TYPE_UNSIGNED (TREE_TYPE (val1)))
+    {
+      int checkz = compare_values (res, val1);
+
+      /* Ensure that res = val1 + val2 >= val1
+         or that res = val1 - val2 <= val1.  */
+      if ((code == PLUS_EXPR && !(checkz == 1 || checkz == 0))
+          || (code == MINUS_EXPR && !(checkz == 0 || checkz == -1)))
+	{
+	  res = copy_node (res);
+	  TREE_OVERFLOW (res) = 1;
+	}
+    }
   /* If the operation overflowed but neither VAL1 nor VAL2 are
      overflown, return -INF or +INF depending on the operation
      and the combination of signs of the operands.  */
-  if (TREE_OVERFLOW (res)
-      && !TREE_OVERFLOW (val1)
-      && !TREE_OVERFLOW (val2))
+  else if (TREE_OVERFLOW (res)
+	   && !TREE_OVERFLOW (val1)
+	   && !TREE_OVERFLOW (val2))
     {
       int sgn1 = tree_int_cst_sgn (val1);
       int sgn2 = tree_int_cst_sgn (val2);
