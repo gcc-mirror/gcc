@@ -6224,6 +6224,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	  : DECL_TI_ARGS (DECL_TEMPLATE_RESULT (t));
 	full_args = tsubst_template_args (tmpl_args, args,
 					  complain, in_decl);
+	if (full_args == error_mark_node)
+	  return error_mark_node;
 
 	/* tsubst_template_args doesn't copy the vector if
 	   nothing changed.  But, *something* should have
