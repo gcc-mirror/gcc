@@ -1,3 +1,8 @@
+2005-08-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/19498
+	* g++.dg/template/instantiate7.C: New test.
+
 2005-08-06  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/23113

@@ -1,3 +1,9 @@
+2005-08-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/19498
+	* pt.c (tsubst_decl) <case TEMPLATE_DECL>: Return ERROR_MARK_NODE
+	if substitution of template args did not succeed.
+
 2005-08-06  Michael Matz  <matz@suse.de>
 
 	* method.c (use_thunk): Call init_insn_lengths.
