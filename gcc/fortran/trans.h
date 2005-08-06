@@ -357,7 +357,7 @@ tree gfc_build_indirect_ref (tree);
 /* Build an ARRAY_REF.  */
 tree gfc_build_array_ref (tree, tree);
 
-/* Creates an label.  Decl is artificial if label_id == NULL_TREE.  */
+/* Creates a label.  Decl is artificial if label_id == NULL_TREE.  */
 tree gfc_build_label_decl (tree);
 
 /* Return the decl used to hold the function return value.
@@ -420,7 +420,7 @@ void gfc_trans_runtime_check (tree, tree, stmtblock_t *);
 /* Generate code for an assignment, includes scalarization.  */
 tree gfc_trans_assignment (gfc_expr *, gfc_expr *);
 
-/* Generate code for an pointer assignment.  */
+/* Generate code for a pointer assignment.  */
 tree gfc_trans_pointer_assignment (gfc_expr *, gfc_expr *);
 
 /* Initialize function decls for library functions.  */

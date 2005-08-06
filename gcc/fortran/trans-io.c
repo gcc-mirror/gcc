@@ -327,7 +327,7 @@ gfc_build_io_library_fndecls (void)
 }
 
 
-/* Generate code to store an non-string I/O parameter into the
+/* Generate code to store a non-string I/O parameter into the
    ioparm structure.  This is a pass by value.  */
 
 static void
@@ -345,7 +345,7 @@ set_parameter_value (stmtblock_t * block, tree var, gfc_expr * e)
 }
 
 
-/* Generate code to store an non-string I/O parameter into the
+/* Generate code to store a non-string I/O parameter into the
    ioparm structure.  This is pass by reference.  */
 
 static void

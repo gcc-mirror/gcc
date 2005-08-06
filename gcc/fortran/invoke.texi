@@ -179,7 +179,7 @@ that the compiler accepts:
 @cindex Fortran 90, features
 @item -ffree-form
 @item -ffixed-form
-Specify the layout used by the the source file. The free form layout
+Specify the layout used by the source file.  The free form layout
 was introduced in Fortran 90.  Fixed form was traditionally used in
 older Fortran programs.
 

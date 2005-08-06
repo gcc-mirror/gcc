@@ -3229,7 +3229,7 @@ syntax:
 
 /* Match a module procedure statement.  Note that we have to modify
    symbols in the parent's namespace because the current one was there
-   to receive symbols that are in a interface's formal argument list.  */
+   to receive symbols that are in an interface's formal argument list.  */
 
 match
 gfc_match_modproc (void)

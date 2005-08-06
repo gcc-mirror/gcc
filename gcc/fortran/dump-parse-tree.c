@@ -122,7 +122,7 @@ gfc_show_actual_arglist (gfc_actual_arglist * a)
 }
 
 
-/* Show an gfc_array_spec array specification structure.  */
+/* Show a gfc_array_spec array specification structure.  */
 
 static void
 gfc_show_array_spec (gfc_array_spec * as)
@@ -165,7 +165,7 @@ gfc_show_array_spec (gfc_array_spec * as)
 }
 
 
-/* Show an gfc_array_ref array reference structure.  */
+/* Show a gfc_array_ref array reference structure.  */
 
 static void
 gfc_show_array_ref (gfc_array_ref * ar)

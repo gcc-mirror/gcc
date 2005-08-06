@@ -798,7 +798,7 @@ As a GNU extension for backwards compatibility with other compilers,
 and vice versa.  When converting from a LOGICAL to an INTEGER, the numeric
 value of @code{.FALSE.} is zero, and that of @code{.TRUE.} is one.  When
 converting from INTEGER to LOGICAL, the value zero is interpreted as
-@code{.FALSE.} and any non-zero value is interpreted as @code{.TRUE.}.
+@code{.FALSE.} and any nonzero value is interpreted as @code{.TRUE.}.
 
 @smallexample
        INTEGER*4 i

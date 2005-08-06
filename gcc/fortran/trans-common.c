@@ -105,7 +105,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "trans-const.h"
 
 
-/* Holds a single variable in a equivalence set.  */
+/* Holds a single variable in an equivalence set.  */
 typedef struct segment_info
 {
   gfc_symbol *sym;

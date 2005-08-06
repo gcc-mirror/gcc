@@ -1074,7 +1074,7 @@ gfc_conv_function_val (gfc_se * se, gfc_symbol * sym)
 
 /* Generate code for a procedure call.  Note can return se->post != NULL.
    If se->direct_byref is set then se->expr contains the return parameter.
-   Return non-zero, if the call has alternate specifiers.  */
+   Return nonzero, if the call has alternate specifiers.  */
 
 int
 gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
