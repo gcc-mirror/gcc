@@ -4757,7 +4757,7 @@ resolve_equivalence_derived (gfc_symbol *derived, gfc_symbol *sym, gfc_expr *e)
    sequence derived type containing a pointer at any level of component
    selection, an automatic object, a function name, an entry name, a result
    name, a named constant, a structure component, or a subobject of any of
-   the preceding objects.  */
+   the preceding objects.  A substring shall not have length zero.  */
 
 static void
 resolve_equivalence (gfc_equiv *eq)
@@ -4770,6 +4770,69 @@ resolve_equivalence (gfc_equiv *eq)
   for (; eq; eq = eq->eq)
     {
       e = eq->expr;
+
+      e->ts = e->symtree->n.sym->ts;
+      /* match_varspec might not know yet if it is seeing
+	 array reference or substring reference, as it doesn't
+	 know the types.  */
+      if (e->ref && e->ref->type == REF_ARRAY)
+	{
+	  gfc_ref *ref = e->ref;
+	  sym = e->symtree->n.sym;
+
+	  if (sym->attr.dimension)
+	    {
+	      ref->u.ar.as = sym->as;
+	      ref = ref->next;
+	    }
+
+	  /* For substrings, convert REF_ARRAY into REF_SUBSTRING.  */
+	  if (e->ts.type == BT_CHARACTER
+	      && ref
+	      && ref->type == REF_ARRAY
+	      && ref->u.ar.dimen == 1
+	      && ref->u.ar.dimen_type[0] == DIMEN_RANGE
+	      && ref->u.ar.stride[0] == NULL)
+	    {
+	      gfc_expr *start = ref->u.ar.start[0];
+	      gfc_expr *end = ref->u.ar.end[0];
+	      void *mem = NULL;
+
+	      /* Optimize away the (:) reference.  */
+	      if (start == NULL && end == NULL)
+		{
+		  if (e->ref == ref)
+		    e->ref = ref->next;
+		  else
+		    e->ref->next = ref->next;
+		  mem = ref;
+		}
+	      else
+		{
+		  ref->type = REF_SUBSTRING;
+		  if (start == NULL)
+		    start = gfc_int_expr (1);
+		  ref->u.ss.start = start;
+		  if (end == NULL && e->ts.cl)
+		    end = gfc_copy_expr (e->ts.cl->length);
+		  ref->u.ss.end = end;
+		  ref->u.ss.length = e->ts.cl;
+		  e->ts.cl = NULL;
+		}
+	      ref = ref->next;
+	      gfc_free (mem);
+	    }
+
+	  /* Any further ref is an error.  */
+	  if (ref)
+	    {
+	      gcc_assert (ref->type == REF_ARRAY);
+	      gfc_error ("Syntax error in EQUIVALENCE statement at %L",
+			 &ref->u.ar.where);
+	      continue;
+	    }
+	}
+
       if (gfc_resolve_expr (e) == FAILURE)
         continue;
 
@@ -4832,19 +4895,30 @@ resolve_equivalence (gfc_equiv *eq)
           continue;
         }
 
-      /* Shall not be a structure component.  */
       r = e->ref;
       while (r)
         {
-          if (r->type == REF_COMPONENT)
-            {
-              gfc_error ("Structure component '%s' at %L cannot be an "
-                         "EQUIVALENCE object",
-                         r->u.c.component->name, &e->where);
-              break;
-            }
-          r = r->next;
-        }
+	  /* Shall not be a structure component.  */
+	  if (r->type == REF_COMPONENT)
+	    {
+	      gfc_error ("Structure component '%s' at %L cannot be an "
+			 "EQUIVALENCE object",
+			 r->u.c.component->name, &e->where);
+	      break;
+	    }
+
+	  /* A substring shall not have length zero.  */
+	  if (r->type == REF_SUBSTRING)
+	    {
+	      if (compare_bound (r->u.ss.start, r->u.ss.end) == CMP_GT)
+		{
+		  gfc_error ("Substring at %L has length zero",
+			     &r->u.ss.start->where);
+		  break;
+		}
+	    }
+	  r = r->next;
+	}
     }    
 }      
 
