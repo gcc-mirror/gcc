@@ -1,3 +1,14 @@
+2005-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/18833
+	PR fortran/20850
+	* primary.c (match_varspec): If equiv_flag, don't look at sym's
+	attributes, call gfc_match_array_ref up to twice and don't do any
+	substring or component processing.
+	* resolve.c (resolve_equivalence): Transform REF_ARRAY into
+	REF_SUBSTRING or nothing if needed.  Check that substrings
+	don't have zero length.
+
 2005-08-05  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 	    Paul Thomas  <pault@gcc.gnu.org>
 
