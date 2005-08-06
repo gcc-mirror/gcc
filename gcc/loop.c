@@ -1881,19 +1881,7 @@ combine_movables (struct loop_movables *movables, struct loop_regs *regs)
 	      && !m1->partial
 	      && (matched_regs[m1->regno]
 		  ||
-		  (
-		   /* Can combine regs with different modes loaded from the
-		      same constant only if the modes are the same or
-		      if both are integer modes with M wider or the same
-		      width as M1.  The check for integer is redundant, but
-		      safe, since the only case of differing destination
-		      modes with equal sources is when both sources are
-		      VOIDmode, i.e., CONST_INT.  */
-		   (GET_MODE (m->set_dest) == GET_MODE (m1->set_dest)
-		    || (GET_MODE_CLASS (GET_MODE (m->set_dest)) == MODE_INT
-			&& GET_MODE_CLASS (GET_MODE (m1->set_dest)) == MODE_INT
-			&& (GET_MODE_BITSIZE (GET_MODE (m->set_dest))
-			    >= GET_MODE_BITSIZE (GET_MODE (m1->set_dest)))))
+		  (GET_MODE (m->set_dest) == GET_MODE (m1->set_dest)
 		   /* See if the source of M1 says it matches M.  */
 		   && ((REG_P (m1->set_src)
 			&& matched_regs[REGNO (m1->set_src)])
@@ -2657,23 +2645,7 @@ move_movables (struct loop *loop, struct loop_movables *movables,
 		    {
 		      rtx temp;
 
-		      /* Schedule the reg loaded by M1
-			 for replacement so that shares the reg of M.
-			 If the modes differ (only possible in restricted
-			 circumstances, make a SUBREG.
-
-			 Note this assumes that the target dependent files
-			 treat REG and SUBREG equally, including within
-			 GO_IF_LEGITIMATE_ADDRESS and in all the
-			 predicates since we never verify that replacing the
-			 original register with a SUBREG results in a
-			 recognizable insn.  */
-		      if (GET_MODE (m->set_dest) == GET_MODE (m1->set_dest))
-			reg_map[m1->regno] = m->set_dest;
-		      else
-			reg_map[m1->regno]
-			  = gen_lowpart_common (GET_MODE (m1->set_dest),
-						m->set_dest);
+		      reg_map[m1->regno] = m->set_dest;
 
 		      /* Get rid of the matching insn
 			 and prevent further processing of it.  */

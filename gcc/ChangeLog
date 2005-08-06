@@ -1,3 +1,10 @@
+2005-08-06  Richard Sandiford  <richard@codesourcery.com>
+
+	PR rtl-optimization/23233
+	* loop.c (combine_movables): Require the modes to be the same.
+	(move_movables): Remove handling of cases where the replacement
+	had a different mode to the original.
+
 2005-08-05  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR tree-optimization/23128
