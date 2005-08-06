@@ -1,5 +1,10 @@
 2005-08-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/23191
+	* g++.dg/template/eh2.C: New test.
+
+2005-08-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	PR c++/19498
 	* g++.dg/template/instantiate7.C: New test.
 
