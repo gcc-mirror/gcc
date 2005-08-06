@@ -88,7 +88,7 @@ static bool tree_mod_subtract_transform (tree);
 
 /* The overall number of invocations of the counter should match execution count
    of basic block.  Report it as error rather than internal error as it might
-   mean that user has missused the profile somehow.  */
+   mean that user has misused the profile somehow.  */
 static bool
 check_counter (tree stmt, const char * name, gcov_type all, gcov_type bb_count)
 {

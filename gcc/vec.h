@@ -151,7 +151,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 /* Check if vector is empty
    int VEC_T_empty(const VEC(T) *v);
 
-   Return non-zero if V is an empty vector (or V is NULL), zero otherwise. */
+   Return nonzero if V is an empty vector (or V is NULL), zero otherwise.  */
 
 #define VEC_empty(T,V)	(VEC_length (T,V) == 0)
 

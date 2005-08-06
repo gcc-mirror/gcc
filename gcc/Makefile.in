@@ -3141,7 +3141,7 @@ s-macro_list : $(GCC_PASSES)
 # working directory in object files (-g absent, or -fno-working-dir
 # present), and build and host are the same, fixincl for the host will
 # build after fixincl for the build machine, getting a cache hit,
-# thereby updating the timestamp of fixincl.o in the the host tree.
+# thereby updating the timestamp of fixincl.o in the host tree.
 # Because of CCACHE_HARDLINK, this will also update the timestamp in
 # the build tree, and so fixincl in the build tree will appear to be
 # out of date.  Yuck.

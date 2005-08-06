@@ -808,8 +808,8 @@ stack_protect_classify_type (tree type)
   return ret;
 }
 
-/* Return non-zero if DECL should be segregated into the "vulnerable" upper
-   part of the local stack frame.  Remember if we ever return non-zero for
+/* Return nonzero if DECL should be segregated into the "vulnerable" upper
+   part of the local stack frame.  Remember if we ever return nonzero for
    any variable in this function.  The return value is the phase number in
    which the variable should be allocated.  */
 

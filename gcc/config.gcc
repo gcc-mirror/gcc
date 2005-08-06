@@ -2847,7 +2847,7 @@ case ${target} in
 			;;
 		esac
 
-		# The Sparc port checks this value at compile-time.
+		# The SPARC port checks this value at compile-time.
 		target_cpu_default2="TARGET_CPU_$with_cpu"
 		;;
 	v850*-*-*)

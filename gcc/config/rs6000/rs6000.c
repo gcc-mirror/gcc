@@ -4674,7 +4674,7 @@ rs6000_darwin64_record_arg_recurse (CUMULATIVE_ARGS *cum, tree type,
    This code is also used for function return values.  RETVAL indicates
    whether this is the case.
 
-   Much of this is taken from the Sparc V9 port, which has a similar
+   Much of this is taken from the SPARC V9 port, which has a similar
    calling convention.  */
 
 static rtx

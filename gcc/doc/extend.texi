@@ -4775,7 +4775,7 @@ returns @code{(size_t) -1} for @var{type} 0 or 1 and @code{(size_t) 0}
 for @var{type} 2 or 3.  If there are multiple objects @var{ptr} can
 point to and all of them are known at compile time, the returned number
 is the maximum of remaining byte counts in those objects if @var{type} & 2 is
-0 and minimum if non-zero.  If it is not possible to determine which objects
+0 and minimum if nonzero.  If it is not possible to determine which objects
 @var{ptr} points to at compile time, @code{__builtin_object_size} should
 return @code{(size_t) -1} for @var{type} 0 or 1 and @code{(size_t) 0}
 for @var{type} 2 or 3.
@@ -4861,7 +4861,7 @@ additional security measures the checking function might take, such as
 handling @code{%n} differently.
 
 The @var{os} argument is the object size @var{s} points to, like in the
-other built-in functions.  There is a small difference in the behaviour
+other built-in functions.  There is a small difference in the behavior
 though, if @var{os} is @code{(size_t) -1}, the built-in functions are
 optimized into the non-checking functions only if @var{flag} is 0, otherwise
 the checking function is called with @var{os} argument set to

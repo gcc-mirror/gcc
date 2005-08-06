@@ -705,7 +705,7 @@ LSYM(Ldv_s):
 	beq	LSYM(Lml_z)		@ <anything> / INF -> 0
 	mov	r0, r1
 	b	LSYM(Lml_n)		@ <anything> / NAN -> NAN
-2:	@ If both are non-zero, we need to normalize and resume above.
+2:	@ If both are nonzero, we need to normalize and resume above.
 	bics	ip, r0, #0x80000000
 	bicnes	ip, r1, #0x80000000
 	bne	LSYM(Ldv_d)

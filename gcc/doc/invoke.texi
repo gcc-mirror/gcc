@@ -9077,7 +9077,7 @@ compatible with arrays or structures in code compiled without that switch.
 @opindex mlarge-data-threshold=@var{number}
 When @option{-mcmodel=medium} is specified, the data greater than
 @var{threshold} are placed in large data section.  This value must be the
-same across all object linked into the binarry and defaults to 65535.
+same across all object linked into the binary and defaults to 65535.
 
 @item -msvr3-shlib
 @itemx -mno-svr3-shlib

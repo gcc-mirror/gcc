@@ -1594,7 +1594,7 @@ perform_var_substitution (constraint_graph_t graph)
 	  unsigned int w;
 	  weight = get_graph_weights (graph, *ce);
 	
-	  /* We can't eliminate variables that have non-zero weighted
+	  /* We can't eliminate variables that have nonzero weighted
 	     edges between them.  */
 	  if (bitmap_other_than_zero_bit_set (weight))
 	    {

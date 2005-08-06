@@ -2770,7 +2770,7 @@ better_edge (edge e1, edge e2)
   if (EDGE_CRITICAL_P (e1) != EDGE_CRITICAL_P (e2))
     return EDGE_CRITICAL_P (e1) ? e1 : e2;
 
-  /* Avoid non-deterministic behaviour.  */
+  /* Avoid non-deterministic behavior.  */
   return (e1->src->index < e2->src->index) ? e1 : e2;
 }
 

@@ -6184,7 +6184,7 @@ mips_save_reg_p (unsigned int regno)
 /* Return the bytes needed to compute the frame pointer from the current
    stack pointer.  SIZE is the size (in bytes) of the local variables.
 
-   Mips stack frames look like:
+   MIPS stack frames look like:
 
              Before call		        After call
         +-----------------------+	+-----------------------+

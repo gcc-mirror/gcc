@@ -1,4 +1,4 @@
-/* Configuration for  a Mips ABI32 OpenBSD target.
+/* Configuration for  a MIPS ABI32 OpenBSD target.
    Copyright (C) 1999, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.

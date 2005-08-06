@@ -1,3 +1,27 @@
+2005-08-06  Kazu Hirata  <kazu@codesourcery.com>
+
+	* Makefile.in, cfgexpand.c, cfgloop.h, cfgloopmanip.c,
+	config.gcc, ipa-cp.c, ipa-prop.c, ipa-prop.h, reg-stack.c,
+	tree-ssa-structalias.c, tree-vrp.c, value-prof.c, vec.h,
+	config/linux.h, config/alpha/alpha.h, config/alpha/linux.h,
+	config/alpha/predicates.md, config/arc/arc.h,
+	config/arm/arm.h, config/arm/ieee754-df.S,
+	config/arm/ieee754-sf.S, config/bfin/bfin.c,
+	config/bfin/bfin.h, config/c4x/c4x.h, config/crx/crx.c,
+	config/fr30/fr30.h, config/frv/frv.h, config/h8300/h8300.h,
+	config/i386/i386.h, config/ia64/ia64.c, config/ia64/ia64.h,
+	config/m68hc11/m68hc11.h, config/mips/mips.c,
+	config/mips/mips.h, config/mips/openbsd.h,
+	config/mn10300/mn10300.h, config/pa/pa.c, config/pa/pa.h,
+	config/pdp11/pdp11.h, config/rs6000/linux-unwind.h,
+	config/rs6000/rs6000.c, config/rs6000/rs6000.h,
+	config/s390/s390.c, config/sh/sh.c, config/sh/sh.h,
+	config/sparc/linux.h, config/sparc/linux64.h,
+	config/sparc/sparc.h, config/v850/v850.h, config/vax/vax.h,
+	doc/extend.texi, doc/gcov.texi, doc/install.texi,
+	doc/invoke.texi, doc/rtl.texi, doc/tm.texi: Fix comment/doc
+	typos.  Follow spelling conventions.
+
 2005-08-06  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/23113

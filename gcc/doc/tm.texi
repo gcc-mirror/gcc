@@ -2753,7 +2753,7 @@ which is often wrong.
 @end defmac
 
 @defmac FRAME_GROWS_DOWNWARD
-Define this macro to non-zero value if the addresses of local variable slots
+Define this macro to nonzero value if the addresses of local variable slots
 are at negative offsets from the frame pointer.
 @end defmac
 
@@ -8955,7 +8955,7 @@ this macro.
 @end defmac
 
 @defmac VECTOR_STORE_FLAG_VALUE (@var{mode})
-A C expression that gives a rtx representing the non-zero true element
+A C expression that gives a rtx representing the nonzero true element
 for vector comparisons.  The returned rtx should be valid for the inner
 mode of @var{mode} which is guaranteed to be a vector mode.  Define
 this macro on machines that have vector comparison operations that

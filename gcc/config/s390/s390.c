@@ -6207,7 +6207,7 @@ save_gprs (rtx base, int offset, int first, int last)
      However, we must not emit DWARF records for registers 2..5
      if they are stored for use by variable arguments ...
 
-     ??? Unfortunately, it is not enough to simply not the the
+     ??? Unfortunately, it is not enough to simply not the
      FRAME_RELATED flags for those SETs, because the first SET
      of the PARALLEL is always treated as if it had the flag
      set, even if it does not.  Therefore we emit a new pattern

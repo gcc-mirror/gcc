@@ -166,7 +166,7 @@ ipcp_method_set_orig_node (struct cgraph_node *node,
   IPA_NODE_REF (node)->ipcp_orig_node = orig_node;
 }
 
-/* Create ipa_node and its data strutures for NEW_NODE.
+/* Create ipa_node and its data structures for NEW_NODE.
    Set ORIG_NODE as the orig_node field in ipa_node.  */
 static void
 ipcp_cloned_create (struct cgraph_node *orig_node,
@@ -434,7 +434,7 @@ ipcp_method_cval_init (struct cgraph_node *mt)
 }
 
 /* Create a new assignment statment and make
-   it the first statemant in the function FN
+   it the first statement in the function FN
    tree.
    PARM1 is the lhs of the assignment and
    VAL is the rhs. */
@@ -706,7 +706,7 @@ ipcp_profile_mt_count_print (FILE * f)
     }
 }
 
-/* Print counts of all cgraph edgess.  */
+/* Print counts of all cgraph edges.  */
 static void
 ipcp_profile_cs_count_print (FILE * f)
 {

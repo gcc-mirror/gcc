@@ -276,7 +276,7 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
   if (hwcap == 0)
     {
       hwcap = ppc_linux_aux_vector (16);
-      /* These will already be set if we found AT_HWCAP.  A non-zero
+      /* These will already be set if we found AT_HWCAP.  A nonzero
 	 value stops us looking again if for some reason we couldn't
 	 find AT_HWCAP.  */
 #ifdef __powerpc64__

@@ -1289,7 +1289,7 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
   /* Refuse to operate on varying and symbolic ranges.  Also, if the
      operand is neither a pointer nor an integral type, set the
      resulting range to VARYING.  TODO, in some cases we may be able
-     to derive anti-ranges (like non-zero values).  */
+     to derive anti-ranges (like nonzero values).  */
   if (vr0.type == VR_VARYING
       || (!INTEGRAL_TYPE_P (TREE_TYPE (op0))
 	  && !POINTER_TYPE_P (TREE_TYPE (op0)))

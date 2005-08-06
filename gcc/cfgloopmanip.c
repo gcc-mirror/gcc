@@ -913,7 +913,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
 				? prob_pass_wont_exit
 				: prob_pass_thru;
 
-      /* Complette peeling is special as the probability of exit in last
+      /* Complete peeling is special as the probability of exit in last
          copy becomes 1.  */
       if (flags & DLTHE_FLAG_COMPLETTE_PEEL)
 	{
@@ -923,7 +923,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
 	    wanted_freq = freq_in;
 
 	  gcc_assert (!is_latch);
-	  /* First copy has frequency of incomming edge.  Each subseqeuent
+	  /* First copy has frequency of incoming edge.  Each subsequent
 	     frequency should be reduced by prob_pass_wont_exit.  Caller
 	     should've managed the flags so all except for original loop
 	     has won't exist set.  */
