@@ -1,3 +1,7 @@
+2005-08-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* primary.c (match_hollerith_constant): Fix typo.
+
 2005-08-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/18833

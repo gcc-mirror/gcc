@@ -247,7 +247,7 @@ match_hollerith_constant (gfc_expr ** result)
 	&& gfc_match_char ('h') == MATCH_YES)
     {
       if (gfc_notify_std (GFC_STD_LEGACY,
-		"Extention: Hollerith constant at %C")
+		"Extension: Hollerith constant at %C")
 		== FAILURE)
 	goto cleanup;
 
