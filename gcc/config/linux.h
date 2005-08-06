@@ -99,7 +99,7 @@ Boston, MA 02110-1301, USA.  */
 #define USE_LD_AS_NEEDED 1
 #endif
 
-/* Determine whether the the entire c99 runtime
+/* Determine whether the entire c99 runtime
    is present in the runtime library.  */
 #define TARGET_C99_FUNCTIONS 1
 

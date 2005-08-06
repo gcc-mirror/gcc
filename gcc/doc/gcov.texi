@@ -570,4 +570,4 @@ setting will name the data file @file{/target/run/build/foo.gcda}.
 
 You must move the data files to the expected directory tree in order to
 use them for profile directed optimizations (@option{--use-profile}), or to
-use the the @command{gcov} tool.
+use the @command{gcov} tool.

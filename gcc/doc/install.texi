@@ -2645,7 +2645,7 @@ GCC@ for building a CRX cross-compiler. The option @samp{--target=crx-elf}
 is also used to build the @samp{newlib} C library for CRX.
 
 It is also possible to build libstdc++-v3 for the CRX architecture. This
-needs to be done in a sepearate step with the following configure settings:
+needs to be done in a separate step with the following configure settings:
 @samp{gcc/libstdc++-v3/configure --host=crx-elf --with-newlib
 --enable-sjlj-exceptions --enable-cxx-flags='-fexceptions -frtti'}
 
@@ -3336,10 +3336,10 @@ the use of break, use the @option{--with-divide=breaks}
 @command{configure} option when configuring GCC@.  The default is to
 use traps on systems that support them.
 
-Cross-compilers for the Mips as target using the Mips assembler
+Cross-compilers for the MIPS as target using the MIPS assembler
 currently do not work, because the auxiliary programs
 @file{mips-tdump.c} and @file{mips-tfile.c} can't be compiled on
-anything but a Mips.  It does work to cross compile for a Mips
+anything but a MIPS.  It does work to cross compile for a MIPS
 if you use the GNU assembler and linker.
 
 @html

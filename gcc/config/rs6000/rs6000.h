@@ -1227,7 +1227,7 @@ extern enum rs6000_abi rs6000_current_abi;	/* available for use by subtarget */
 /* Offsets recorded in opcodes are a multiple of this alignment factor.  */
 #define DWARF_CIE_DATA_ALIGNMENT (-((int) (TARGET_32BIT ? 4 : 8)))
 
-/* Define this to non-zero if the nominal address of the stack frame
+/* Define this to nonzero if the nominal address of the stack frame
    is at the high-address end of the local variables;
    that is, each additional local variable allocated
    goes at a more negative offset in the frame.

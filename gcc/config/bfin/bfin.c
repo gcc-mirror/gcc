@@ -435,7 +435,7 @@ bfin_frame_pointer_required (void)
   if (fkind != SUBROUTINE)
     return 1;
 
-  /* We turn on on -fomit-frame-pointer if -momit-leaf-frame-pointer is used,
+  /* We turn on -fomit-frame-pointer if -momit-leaf-frame-pointer is used,
      so we have to override it for non-leaf functions.  */
   if (TARGET_OMIT_LEAF_FRAME_POINTER && ! current_function_is_leaf)
     return 1;

@@ -67,7 +67,7 @@ Boston, MA 02110-1301, USA.  */
 /* Define this so that all GNU/Linux targets handle the same pragmas.  */
 #define HANDLE_PRAGMA_PACK_PUSH_POP
 
-/* Determine whether the the entire c99 runtime is present in the
+/* Determine whether the entire c99 runtime is present in the
    runtime library.  */
 #define TARGET_C99_FUNCTIONS 1
 

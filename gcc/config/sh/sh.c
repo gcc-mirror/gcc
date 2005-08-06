@@ -10459,7 +10459,7 @@ sh_contains_memref_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
   return (GET_CODE (*loc) == MEM);
 }
 
-/* Return non-zero iff INSN contains a MEM.  */
+/* Return nonzero iff INSN contains a MEM.  */
 int
 sh_contains_memref_p (rtx insn)
 {

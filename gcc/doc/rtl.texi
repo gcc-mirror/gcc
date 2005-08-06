@@ -1505,7 +1505,7 @@ value of @code{FIRST_PARM_OFFSET}.
 @findex VIRTUAL_STACK_VARS_REGNUM
 @cindex @code{FRAME_GROWS_DOWNWARD} and virtual registers
 @item VIRTUAL_STACK_VARS_REGNUM
-If @code{FRAME_GROWS_DOWNWARD} is defined to a non-zero value, this points
+If @code{FRAME_GROWS_DOWNWARD} is defined to a nonzero value, this points
 to immediately above the first variable on the stack.  Otherwise, it points
 to the first variable on the stack.
 

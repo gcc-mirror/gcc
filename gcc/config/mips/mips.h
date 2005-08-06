@@ -1746,7 +1746,7 @@ extern enum reg_class mips_char_to_class[256];
 /* Similar, but for floating constants, and defining letters G and H.
    Here VALUE is the CONST_DOUBLE rtx itself.  */
 
-/* For Mips
+/* For MIPS
 
   'G'	: Floating point 0 */
 

@@ -3504,7 +3504,7 @@ pa_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
   /* The SAVE_SP flag is used to indicate that register %r3 is stored
      at the beginning of the frame and that it is used as the frame
      pointer for the frame.  We do this because our current frame
-     layout doesn't conform to that specified in the the HP runtime
+     layout doesn't conform to that specified in the HP runtime
      documentation and we need a way to indicate to programs such as
      GDB where %r3 is saved.  The SAVE_SP flag was chosen because it
      isn't used by HP compilers but is supported by the assembler.

@@ -492,7 +492,7 @@ ipa_callsite_compute_param (struct cgraph_edge *cs)
 	}
       /* This is for the case of Fortran. If the address of a const_decl 
          was passed as argument then we store 
-         CONST_IPATYPE_REF/CONST_IPATYPE_REF and the costant 
+         CONST_IPATYPE_REF/CONST_IPATYPE_REF and the constant 
          value as the jump function corresponding to this argument.  */
       else if (TREE_CODE (TREE_VALUE (arg)) == ADDR_EXPR
 	       && TREE_CODE (TREE_OPERAND (TREE_VALUE (arg), 0)) ==

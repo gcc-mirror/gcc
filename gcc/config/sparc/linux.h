@@ -204,7 +204,7 @@ do {									\
 #undef CTORS_SECTION_ASM_OP
 #undef DTORS_SECTION_ASM_OP
 
-/* Determine whether the the entire c99 runtime is present in the
+/* Determine whether the entire c99 runtime is present in the
    runtime library.  */
 #define TARGET_C99_FUNCTIONS 1
 

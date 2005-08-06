@@ -994,7 +994,7 @@ LSYM(Ldv_s):
 	mov	xl, yl
 	mov	xh, yh
 	b	LSYM(Lml_n)		@ <anything> / NAN -> NAN
-2:	@ If both are non-zero, we need to normalize and resume above.
+2:	@ If both are nonzero, we need to normalize and resume above.
 	orrs	r6, xl, xh, lsl #1
 	orrnes	r6, yl, yh, lsl #1
 	bne	LSYM(Lml_d)

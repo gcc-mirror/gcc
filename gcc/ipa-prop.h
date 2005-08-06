@@ -157,7 +157,7 @@ struct ipa_methodlist
   struct ipa_methodlist *next_method;
 };
 
-/* A pointer to a methodlist elemement.  */
+/* A pointer to a methodlist element.  */
 typedef struct ipa_methodlist *ipa_methodlist_p;
 
 /* ipa_methodlist interface.  */

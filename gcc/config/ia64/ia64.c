@@ -7439,7 +7439,7 @@ final_emit_insn_group_barriers (FILE *dump ATTRIBUTE_UNUSED)
 
 
 
-/* If the following function returns TRUE, we will use the the DFA
+/* If the following function returns TRUE, we will use the DFA
    insn scheduler.  */
 
 static int
