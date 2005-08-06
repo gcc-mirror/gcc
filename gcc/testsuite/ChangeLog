@@ -1,3 +1,8 @@
+2005-08-06  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/23113
+	* gcc.dg/Wunused-value-1.c: New test.
+
 2005-08-06  Richard Sandiford  <richard@codesourcery.com>
 
 	PR rtl-optimization/23233

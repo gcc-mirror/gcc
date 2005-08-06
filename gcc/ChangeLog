@@ -1,3 +1,12 @@
+2005-08-06  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/23113
+	* stmt.c (warn_if_unused_value): Check TREE_NO_WARNING at start.
+	Don't handle NOP_EXPR, CONVERT_EXPR and NON_LVALUE_EXPR
+	specially.  Check for side effects only for COND_EXPR.
+	* c-typeck.c (c_finish_stmt_expr): Mark statement expression
+	return with TREE_NO_WARNING.
+
 2005-08-06  Richard Sandiford  <richard@codesourcery.com>
 
 	PR rtl-optimization/23233
