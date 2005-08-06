@@ -1,3 +1,7 @@
+2005-08-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* io/unix.c: Add O_RDWR to open() call.
+
 2005-08-04 Paul Thomas  <pault@gcc.gnu.org>
 
 	* transfer.c (data_transfer_init): Truncate file in
