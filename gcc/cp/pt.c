@@ -7284,6 +7284,8 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	/* Substitute the exception specification.  */
 	specs = tsubst_exception_specification (t, args, complain, 
 						in_decl);
+	if (specs == error_mark_node)
+	  return error_mark_node;
 	if (specs)
 	  fntype = build_exception_variant (fntype, specs);
 	return fntype;

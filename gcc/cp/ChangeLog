@@ -1,3 +1,9 @@
+2005-08-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/23191
+	* pt.c (tsubst) <case METHOD_TYPE>: Check for error_mark_node
+	before calling build_exception_variant.
+
 2005-07-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22545
