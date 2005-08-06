@@ -286,7 +286,7 @@ gfc_conv_descriptor_ubound (tree desc, tree dim)
 }
 
 
-/* Build an null array descriptor constructor.  */
+/* Build a null array descriptor constructor.  */
 
 tree
 gfc_build_null_descriptor (tree type)

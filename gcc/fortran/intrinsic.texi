@@ -2684,7 +2684,7 @@ end program test_floor
 
 @table @asis
 @item @emph{Description}:
-@code{FNUM(UNIT)} returns the Posix file descriptor number coresponding to the
+@code{FNUM(UNIT)} returns the Posix file descriptor number corresponding to the
 open Fortran I/O unit @code{UNIT}.
 
 @item @emph{Option}:

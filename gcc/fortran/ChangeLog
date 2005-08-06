@@ -1,3 +1,10 @@
+2005-08-06  Kazu Hirata  <kazu@codesourcery.com>
+
+	* decl.c, dump-parse-tree.c, gfortran.texi, intrinsic.texi,
+	invoke.texi, resolve.c, trans-array.c, trans-array.h,
+	trans-common.c, trans-expr.c, trans-io.c, trans.h: Fix
+	comment/doc typos.  Follow spelling conventions.
+
 2005-08-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/18833

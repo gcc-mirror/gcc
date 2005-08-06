@@ -404,7 +404,7 @@ resolve_entries (gfc_namespace * ns)
 	}
       else
 	{
-	  /* Otherwise the result will be passed through an union by
+	  /* Otherwise the result will be passed through a union by
 	     reference.  */
 	  proc->attr.mixed_entry_master = 1;
 	  for (el = ns->entries; el; el = el->next)

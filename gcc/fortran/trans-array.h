@@ -72,7 +72,7 @@ void gfc_trans_scalarized_loop_boundary (gfc_loopinfo *, stmtblock_t *);
 void gfc_conv_loop_setup (gfc_loopinfo *);
 /* Resolve array assignment dependencies.  */
 void gfc_conv_resolve_dependencies (gfc_loopinfo *, gfc_ss *, gfc_ss *);
-/* Build an null array descriptor constructor.  */
+/* Build a null array descriptor constructor.  */
 tree gfc_build_null_descriptor (tree);
 
 /* Get a single array element.  */
