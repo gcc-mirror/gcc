@@ -1,3 +1,22 @@
+2005-08-06  Nick Clifton  <nickc@redhat.com>
+
+	* config/stormy16/stormy16.h (SYMBOL_FLAG_XSTORMY16_BELOW100):
+	New define.
+        (ASM_OUTPUT_LABELREF): Delete - it is no longer needed.
+	* config/stormy16/stormy16.c (xstormy16_below100_symbol):
+	Check symbol flags instead of symbol name mangling.
+        (xstormy16_asm_output_aligned_common): Likewise.  Also
+	simplify code since the bss100_section cass is the only case
+	where the below100 code will be triggered.
+        (xstormy16_encode_section_info): Encode below100 attribute
+	using the SYMBOL_FLAG_XSTORMY16_BELOW100 instead of mangling
+	the name.
+        (xstormy16_strip_name_encoding): Delete - this function is no
+	longer needed.
+        (TARGET_STRIP_NAME_ENCODING): Undefine.
+	* config/stormy16/stormy16-protos.h: Delete prototype for
+	xstormy16_strip_name_encoding.
+
 2005-08-06  Kazu Hirata  <kazu@codesourcery.com>
 
 	* Makefile.in, cfgexpand.c, cfgloop.h, cfgloopmanip.c,

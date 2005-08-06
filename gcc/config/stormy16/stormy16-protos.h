@@ -29,7 +29,6 @@ extern int direct_return (void);
 extern int xstormy16_interrupt_function_p (void);
 extern int xstormy16_epilogue_uses (int);
 extern void xstormy16_function_profiler (void);
-extern const char *xstormy16_strip_name_encoding (const char *name);
 extern void bss100_section (void);
 
 #if defined (TREE_CODE)
