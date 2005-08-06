@@ -1,8 +1,19 @@
-2005-07-23  James A. Morrrison  <phython@gcc.gnu.org>
+2005-08-06  James A. Morrison  <phython@gcc.gnu.org>
+
+	* treetests.exp: Remove.
+	* a01gcco01runpgm: Move to...
+	* output/output-1.out: here.
+	* a01gcci01.c: Move to...
+	* output/output-1.c: here.
+	* a01gcci01.tree: Move to...
+	* output/output-1.tree: here.
+	* output/output.exp: New.
+
+2005-07-23  James A. Morrison  <phython@gcc.gnu.org>
 
 	* compile/var_defs.tree: Remove extra lines.
 
-2005-07-19  James A. Morrrison  <phython@gcc.gnu.org>
+2005-07-19  James A. Morrison  <phython@gcc.gnu.org>
 
 	* compile/var_defs.tree: Remove duplicate variable.
 	* compile/var_defs-2.tree: Add duplicate variable test.
