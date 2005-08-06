@@ -1,3 +1,9 @@
+2005-08-05  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR tree-optimization/23128
+	* tree-vrp.c (vrp_int_const_binop): Check if unsigned addition or
+	subtraction wrap, and set TREE_OVERFLOW if they do.
+
 2005-08-05  Richard Henderson  <rth@redhat.com>
 
 	PR 21728
