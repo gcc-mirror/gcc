@@ -1517,27 +1517,41 @@ match_varspec (gfc_expr * primary, int equiv_flag)
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_ref *substring, *tail;
   gfc_component *component;
-  gfc_symbol *sym;
+  gfc_symbol *sym = primary->symtree->n.sym;
   match m;
 
   tail = NULL;
 
-  if (primary->symtree->n.sym->attr.dimension
-      || (equiv_flag
-	  && gfc_peek_char () == '('))
+  if ((equiv_flag && gfc_peek_char () == '(')
+      || sym->attr.dimension)
     {
-
+      /* In EQUIVALENCE, we don't know yet whether we are seeing
+	 an array, character variable or array of character
+	 variables.  We'll leave the decision till resolve
+	 time.  */
       tail = extend_ref (primary, tail);
       tail->type = REF_ARRAY;
 
-      m = gfc_match_array_ref (&tail->u.ar, primary->symtree->n.sym->as,
-                               equiv_flag);
+      m = gfc_match_array_ref (&tail->u.ar, equiv_flag ? NULL : sym->as,
+			       equiv_flag);
       if (m != MATCH_YES)
 	return m;
+
+      if (equiv_flag && gfc_peek_char () == '(')
+	{
+	  tail = extend_ref (primary, tail);
+	  tail->type = REF_ARRAY;
+
+	  m = gfc_match_array_ref (&tail->u.ar, NULL, equiv_flag);
+	  if (m != MATCH_YES)
+	    return m;
+	}
     }
 
-  sym = primary->symtree->n.sym;
   primary->ts = sym->ts;
+
+  if (equiv_flag)
+    return MATCH_YES;
 
   if (sym->ts.type != BT_DERIVED || gfc_match_char ('%') != MATCH_YES)
     goto check_substring;
