@@ -1,3 +1,7 @@
+2005-08-04  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* io/unix.c: Add O_RDWR to open() call.
+
 2005-08-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* libgfortran.h: When isfinite is not provided by the system,
