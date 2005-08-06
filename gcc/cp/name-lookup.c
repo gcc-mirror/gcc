@@ -4949,6 +4949,10 @@ pop_everything (void)
 void
 cp_emit_debug_info_for_using (tree t, tree context)
 {
+  /* Don't try to emit any debug information if we have errors.  */
+  if (sorrycount || errorcount)
+    return;
+
   /* Ignore this FUNCTION_DECL if it refers to a builtin declaration
      of a builtin function.  */
   if (TREE_CODE (t) == FUNCTION_DECL

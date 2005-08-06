@@ -1,3 +1,7 @@
+2005-08-05  James A. Morrison  <phython@gcc.gnu.org>
+
+	* g++.dg/parse/pr22514.C: New test.
+
 2005-08-05  J"orn Rennecke <joern.rennecke@st.com>
 
 	* gcc.dg/intmax_t-1.c: Extend dg-error to cover sh*-*-elf targets.
