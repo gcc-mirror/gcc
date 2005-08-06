@@ -1462,6 +1462,11 @@
 	* config/ia64/ia64.c (rtx_needs_barrier): Recurse instead of
 	falling through from SUBREG case to REG.
 
+2005-04-15  David S. Miller  <davem@davemloft.net>
+
+	PR target/20673
+	* config/sparc/sparc.h (sparc_hard_reg_printed): Mark as GTY(()).
+
 2005-04-15  Dave Korn <dave.korn@artimi.com>
 
 	* gcc.c (default_compilers): Clarify obscure error message when
