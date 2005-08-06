@@ -529,12 +529,10 @@ xstormy16_below100_symbol (rtx x,
   if (GET_CODE (x) == PLUS
       && GET_CODE (XEXP (x, 1)) == CONST_INT)
     x = XEXP (x, 0);
+
   if (GET_CODE (x) == SYMBOL_REF)
-    {
-      const char *n = XSTR (x, 0);
-      if (n[0] == '@' && n[1] == 'b' && n[2] == '.')
-	return 1;
-    }
+    return (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_XSTORMY16_BELOW100) != 0;
+
   if (GET_CODE (x) == CONST_INT)
     {
       HOST_WIDE_INT i = INTVAL (x);
@@ -1578,42 +1576,40 @@ xstormy16_asm_output_mi_thunk (FILE *file,
    than uninitialized.  */
 void
 xstormy16_asm_output_aligned_common (FILE *stream,
-				     tree decl ATTRIBUTE_UNUSED,
+				     tree decl,
 				     const char *name,
 				     int size,
 				     int align,
 				     int global)
 {
-  if (name[0] == '@' && name[2] == '.')
+  rtx mem = DECL_RTL (decl);
+  rtx symbol;
+    
+  if (mem != NULL_RTX
+      && GET_CODE (mem) == MEM
+      && GET_CODE (symbol = XEXP (mem, 0)) == SYMBOL_REF
+      && SYMBOL_REF_FLAGS (symbol) & SYMBOL_FLAG_XSTORMY16_BELOW100)
     {
-      const char *op = 0;
-      switch (name[1])
-	{
-	case 'b':
-	  bss100_section();
-	  op = "space";
-	  break;
-	}
-      if (op)
-	{
-	  const char *name2;
-	  int p2align = 0;
+      const char *name2;
+      int p2align = 0;
 
-	  while (align > 8)
-	    {
-	      align /= 2;
-	      p2align ++;
-	    }
-	  name2 = xstormy16_strip_name_encoding (name);
-	  if (global)
-	    fprintf (stream, "\t.globl\t%s\n", name2);
-	  if (p2align)
-	    fprintf (stream, "\t.p2align %d\n", p2align);
-	  fprintf (stream, "\t.type\t%s, @object\n", name2);
-	  fprintf (stream, "\t.size\t%s, %d\n", name2, size);
-	  fprintf (stream, "%s:\n\t.%s\t%d\n", name2, op, size);
-	  return;
+      bss100_section ();
+
+      while (align > 8)
+	{
+	  align /= 2;
+	  p2align ++;
 	}
+
+      name2 = default_strip_name_encoding (name);
+      if (global)
+	fprintf (stream, "\t.globl\t%s\n", name2);
+      if (p2align)
+	fprintf (stream, "\t.p2align %d\n", p2align);
+      fprintf (stream, "\t.type\t%s, @object\n", name2);
+      fprintf (stream, "\t.size\t%s, %d\n", name2, size);
+      fprintf (stream, "%s:\n\t.space\t%d\n", name2, size);
+      return;
     }
 
   if (!global)
@@ -1631,52 +1627,16 @@ xstormy16_asm_output_aligned_common (FILE *stream,
    special addressing modes for them.  */
 
 static void
-xstormy16_encode_section_info (tree decl,
-			       rtx r,
-			       int first ATTRIBUTE_UNUSED)
+xstormy16_encode_section_info (tree decl, rtx r, int first)
 {
-  if (TREE_CODE (decl) == VAR_DECL
+   if (TREE_CODE (decl) == VAR_DECL
       && (lookup_attribute ("below100", DECL_ATTRIBUTES (decl))
 	  || lookup_attribute ("BELOW100", DECL_ATTRIBUTES (decl))))
     {
-      const char *newsection = 0;
-      char *newname;
-      tree idp;
-      rtx rtlname, rtl;
-      const char *oldname;
-
-      rtl = r;
-      rtlname = XEXP (rtl, 0);
-      if (GET_CODE (rtlname) == MEM)
-	rtlname = XEXP (rtlname, 0);
-      gcc_assert (GET_CODE (rtlname) == SYMBOL_REF);
-      oldname = XSTR (rtlname, 0);
-
-      if (DECL_INITIAL (decl))
-	{
-	  newsection = ".data_below100";
-	  DECL_SECTION_NAME (decl) = build_string (strlen (newsection),
-						   newsection);
-	}
-
-      newname = alloca (strlen (oldname) + 4);
-      sprintf (newname, "@b.%s", oldname);
-      idp = get_identifier (newname);
-      XEXP (rtl, 0) = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (idp));
-    }
-}
-
-const char *
-xstormy16_strip_name_encoding (const char *name)
-{
-  while (1)
-    {
-      if (name[0] == '@' && name[2] == '.')
-	name += 3;
-      else if (name[0] == '*')
-	name ++;
-      else
-	return name;
+      rtx symbol = XEXP (r, 0);
+      
+      gcc_assert (GET_CODE (symbol) == SYMBOL_REF);
+      SYMBOL_REF_FLAGS (symbol) |= SYMBOL_FLAG_XSTORMY16_BELOW100;
     }
 }
 
@@ -2676,8 +2636,6 @@ xstormy16_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 #define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO xstormy16_encode_section_info
-#undef TARGET_STRIP_NAME_ENCODING
-#define TARGET_STRIP_NAME_ENCODING xstormy16_strip_name_encoding
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK xstormy16_asm_output_mi_thunk

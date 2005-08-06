@@ -655,18 +655,17 @@ do {							\
 #define IS_ASM_LOGICAL_LINE_SEPARATOR(C) ((C) == '|')
 
 #define ASM_OUTPUT_ALIGNED_DECL_COMMON(STREAM, DECL, NAME, SIZE, ALIGNMENT) \
-  xstormy16_asm_output_aligned_common(STREAM, DECL, NAME, SIZE, ALIGNMENT, 1)
+  xstormy16_asm_output_aligned_common (STREAM, DECL, NAME, SIZE, ALIGNMENT, 1)
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(STREAM, DECL, NAME, SIZE, ALIGNMENT) \
-  xstormy16_asm_output_aligned_common(STREAM, DECL, NAME, SIZE, ALIGNMENT, 0)
+  xstormy16_asm_output_aligned_common (STREAM, DECL, NAME, SIZE, ALIGNMENT, 0)
 
 
 /* Output and Generation of Labels.  */
+#define SYMBOL_FLAG_XSTORMY16_BELOW100	(SYMBOL_FLAG_MACH_DEP << 0)
 
 #define ASM_OUTPUT_SYMBOL_REF(STREAM, SYMBOL)				\
   do {									\
     const char *rn = XSTR (SYMBOL, 0);					\
-    if (rn[0] == '@' && rn[2] == '.')					\
-      rn += 3;								\
     if (SYMBOL_REF_FUNCTION_P (SYMBOL))					\
       ASM_OUTPUT_LABEL_REF ((STREAM), rn);				\
     else								\
@@ -679,9 +678,6 @@ do  {						\
   assemble_name (STREAM, NAME);			\
   fputc (')', STREAM);				\
 } while (0)
-
-#define ASM_OUTPUT_LABELREF(STREAM, NAME)	\
-  asm_fprintf ((STREAM), "%U%s", xstormy16_strip_name_encoding (NAME));
 
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.globl "
