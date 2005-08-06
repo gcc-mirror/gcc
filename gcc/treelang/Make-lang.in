@@ -295,7 +295,6 @@ treelang.check: $(TESTSUITEDIR)/site.exp
 # these three files are empty and it seems diff has trouble generating
 # patch files for new empty files as required for cvs.
 # STAMP does not cut it here as I need an empty file.
-	touch $(srcdir)/testsuite/treelang/{a01gcco01runpgmerr,a01gcc.out01,a01gcc.out01err}
 	-rootme=`${PWD_COMMAND}`; export rootme; \
 	srcdir=`cd ${srcdir}; ${PWD_COMMAND}` ; export srcdir ; \
 	cd testsuite; \
@@ -307,7 +306,6 @@ treelang.check: $(TESTSUITEDIR)/site.exp
 	PATH=`cd ..;${PWD_COMMAND}`:$$PATH; export PATH; \
 	gcc_extras="-B`cd ..;${PWD_COMMAND}` -B`cd ..;${PWD_COMMAND}`/treelang"; export gcc_extras; \
 	$(RUNTEST) --tool treelang $(RUNTESTFLAGS)
-	rm $(srcdir)/testsuite/treelang/{a01gcco01runpgmerr,a01gcc.out01,a01gcc.out01err}
 
 # copy the output files from the current test to source ie say the new results are OK
 treelang.check.fix: force
