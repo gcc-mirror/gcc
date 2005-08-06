@@ -441,6 +441,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 				       fixed_offset, virtual_value, alias);
 
       assemble_end_function (thunk_fndecl, fnname);
+      init_insn_lengths ();
       current_function_decl = 0;
       cfun = 0;
       TREE_ASM_WRITTEN (thunk_fndecl) = 1;
