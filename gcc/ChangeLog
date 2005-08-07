@@ -1,3 +1,12 @@
+2005-08-07  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/cygming.h (SUBTARGET_ENCODE_SECTION_INFO): Define.
+	(COMMON_ASM_OP) Define.
+	* config/i386/i386.c (ix86_in_large_data_p): Add ATTRIBUTE_UNUSED
+	(ix86_encode_section_info): Likewise.
+	(TARGET_ENCODE_SECTION_INFO): Conditionally define as
+	SUBTARGET_ENCODE_SECTION_INFO.
+
 2005-08-06  Richard Henderson  <rth@redhat.com>
 
 	PR 21894

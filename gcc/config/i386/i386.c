@@ -951,8 +951,8 @@ static const char * const x86_64_reg_class_name[] = {
 static REAL_VALUE_TYPE ext_80387_constants_table [5];
 static bool ext_80387_constants_init = 0;
 static void init_ext_80387_constants (void);
-static bool ix86_in_large_data_p (tree);
-static void ix86_encode_section_info (tree, rtx, int);
+static bool ix86_in_large_data_p (tree) ATTRIBUTE_UNUSED;
+static void ix86_encode_section_info (tree, rtx, int) ATTRIBUTE_UNUSED;
 static void x86_64_elf_unique_section (tree decl, int reloc) ATTRIBUTE_UNUSED;
 static void x86_64_elf_select_section (tree decl, int reloc,
 				       unsigned HOST_WIDE_INT align)
@@ -978,7 +978,11 @@ static void x86_64_elf_select_section (tree decl, int reloc,
 #define TARGET_ASM_FUNCTION_EPILOGUE ix86_output_function_epilogue
 
 #undef TARGET_ENCODE_SECTION_INFO
+#ifndef SUBTARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO ix86_encode_section_info
+#else
+#define TARGET_ENCODE_SECTION_INFO SUBTARGET_ENCODE_SECTION_INFO
+#endif
 
 #undef TARGET_ASM_OPEN_PAREN
 #define TARGET_ASM_OPEN_PAREN ""
