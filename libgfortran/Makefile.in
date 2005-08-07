@@ -127,9 +127,9 @@ am__objects_31 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
 	$(am__objects_23) $(am__objects_24) $(am__objects_25) \
 	$(am__objects_26) $(am__objects_27) $(am__objects_28) \
 	$(am__objects_29) $(am__objects_30)
-am__objects_32 = backspace.lo close.lo endfile.lo format.lo inquire.lo \
-	list_read.lo lock.lo open.lo read.lo rewind.lo transfer.lo \
-	unit.lo unix.lo write.lo
+am__objects_32 = close.lo file_pos.lo format.lo inquire.lo \
+	list_read.lo lock.lo open.lo read.lo transfer.lo unit.lo \
+	unix.lo write.lo
 am__objects_33 = associated.lo abort.lo args.lo bessel.lo \
 	c99_functions.lo chdir.lo cpu_time.lo cshift0.lo \
 	date_and_time.lo env.lo erf.lo eoshift0.lo eoshift2.lo \
@@ -315,16 +315,14 @@ libgfortranbegin_la_LDFLAGS = -static
 AM_CPPFLAGS = -iquote$(srcdir)/io
 libgfortranincludedir = $(includedir)/gforio
 gfor_io_src = \
-io/backspace.c \
 io/close.c \
-io/endfile.c \
+io/file_pos.c \
 io/format.c \
 io/inquire.c \
 io/list_read.c \
 io/lock.c \
 io/open.c \
 io/read.c \
-io/rewind.c \
 io/transfer.c \
 io/unit.c \
 io/unix.c \
@@ -1216,14 +1214,11 @@ pow_c4_i8.lo: generated/pow_c4_i8.c
 pow_c8_i8.lo: generated/pow_c8_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_c8_i8.lo `test -f 'generated/pow_c8_i8.c' || echo '$(srcdir)/'`generated/pow_c8_i8.c
 
-backspace.lo: io/backspace.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o backspace.lo `test -f 'io/backspace.c' || echo '$(srcdir)/'`io/backspace.c
-
 close.lo: io/close.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o close.lo `test -f 'io/close.c' || echo '$(srcdir)/'`io/close.c
 
-endfile.lo: io/endfile.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o endfile.lo `test -f 'io/endfile.c' || echo '$(srcdir)/'`io/endfile.c
+file_pos.lo: io/file_pos.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o file_pos.lo `test -f 'io/file_pos.c' || echo '$(srcdir)/'`io/file_pos.c
 
 format.lo: io/format.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o format.lo `test -f 'io/format.c' || echo '$(srcdir)/'`io/format.c
@@ -1242,9 +1237,6 @@ open.lo: io/open.c
 
 read.lo: io/read.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o read.lo `test -f 'io/read.c' || echo '$(srcdir)/'`io/read.c
-
-rewind.lo: io/rewind.c
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o rewind.lo `test -f 'io/rewind.c' || echo '$(srcdir)/'`io/rewind.c
 
 transfer.lo: io/transfer.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o transfer.lo `test -f 'io/transfer.c' || echo '$(srcdir)/'`io/transfer.c

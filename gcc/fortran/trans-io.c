@@ -125,6 +125,7 @@ static GTY(()) tree iocall_iolength_done;
 static GTY(()) tree iocall_rewind;
 static GTY(()) tree iocall_backspace;
 static GTY(()) tree iocall_endfile;
+static GTY(()) tree iocall_flush;
 static GTY(()) tree iocall_set_nml_val;
 static GTY(()) tree iocall_set_nml_val_dim;
 
@@ -297,6 +298,11 @@ gfc_build_io_library_fndecls (void)
   iocall_endfile =
     gfc_build_library_function_decl (get_identifier (PREFIX("st_endfile")),
 				     gfc_int4_type_node, 0);
+
+  iocall_flush =
+    gfc_build_library_function_decl (get_identifier (PREFIX("st_flush")),
+				     gfc_int4_type_node, 0);
+
   /* Library helpers */
 
   iocall_read_done =
@@ -755,6 +761,16 @@ gfc_trans_rewind (gfc_code * code)
 }
 
 
+/* Translate a FLUSH statement.  */
+
+tree
+gfc_trans_flush (gfc_code * code)
+{
+
+  return build_filepos (iocall_flush, code);
+}
+
+
 /* Translate the non-IOLENGTH form of an INQUIRE statement.  */
 
 tree
@@ -769,6 +785,10 @@ gfc_trans_inquire (gfc_code * code)
 
   set_error_locus (&block, &code->loc);
   p = code->ext.inquire;
+
+  /* Sanity check.  */
+  if (p->unit && p->file)
+    gfc_error ("INQUIRE statement at %L cannot contain both FILE and UNIT specifiers.", &code->loc);
 
   if (p->unit)
     set_parameter_value (&block, ioparm_unit, p->unit);

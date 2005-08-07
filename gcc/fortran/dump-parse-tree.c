@@ -1177,6 +1177,10 @@ gfc_show_code_node (int level, gfc_code * c)
 
     case EXEC_REWIND:
       gfc_status ("REWIND");
+      goto show_filepos;
+
+    case EXEC_FLUSH:
+      gfc_status ("FLUSH");
 
     show_filepos:
       fp = c->ext.filepos;

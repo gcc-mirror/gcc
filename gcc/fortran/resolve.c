@@ -3953,6 +3953,7 @@ resolve_code (gfc_code * code, gfc_namespace * ns)
 	case EXEC_BACKSPACE:
 	case EXEC_ENDFILE:
 	case EXEC_REWIND:
+	case EXEC_FLUSH:
 	  if (gfc_resolve_filepos (code->ext.filepos) == FAILURE)
 	    break;
 

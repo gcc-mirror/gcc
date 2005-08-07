@@ -154,6 +154,7 @@ match gfc_match_close (void);
 match gfc_match_endfile (void);
 match gfc_match_backspace (void);
 match gfc_match_rewind (void);
+match gfc_match_flush (void);
 match gfc_match_inquire (void);
 match gfc_match_read (void);
 match gfc_match_write (void);

@@ -1340,7 +1340,7 @@ gfc_free_filepos (gfc_filepos * fp)
 }
 
 
-/* Match elements of a REWIND, BACKSPACE or ENDFILE statement.  */
+/* Match elements of a REWIND, BACKSPACE, ENDFILE, or FLUSH statement.  */
 
 static match
 match_file_element (gfc_filepos * fp)
@@ -1362,7 +1362,7 @@ match_file_element (gfc_filepos * fp)
 
 
 /* Match the second half of the file-positioning statements, REWIND,
-   BACKSPACE or ENDFILE.  */
+   BACKSPACE, ENDFILE, or the FLUSH statement.  */
 
 static match
 match_filepos (gfc_statement st, gfc_exec_op op)
@@ -1446,8 +1446,8 @@ gfc_resolve_filepos (gfc_filepos * fp)
 }
 
 
-/* Match the file positioning statements: ENDFILE, BACKSPACE or
-   REWIND.  */
+/* Match the file positioning statements: ENDFILE, BACKSPACE, REWIND,
+   and the FLUSH statement.  */
 
 match
 gfc_match_endfile (void)
@@ -1470,6 +1470,14 @@ gfc_match_rewind (void)
   return match_filepos (ST_REWIND, EXEC_REWIND);
 }
 
+match
+gfc_match_flush (void)
+{
+  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: FLUSH statement at %C") == FAILURE)
+    return MATCH_ERROR;
+
+  return match_filepos (ST_FLUSH, EXEC_FLUSH);
+}
 
 /******************** Data Transfer Statements *********************/
 

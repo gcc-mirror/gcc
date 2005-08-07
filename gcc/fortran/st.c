@@ -139,6 +139,7 @@ gfc_free_statement (gfc_code * p)
     case EXEC_BACKSPACE:
     case EXEC_ENDFILE:
     case EXEC_REWIND:
+    case EXEC_FLUSH:
       gfc_free_filepos (p->ext.filepos);
       break;
 

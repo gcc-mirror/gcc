@@ -557,6 +557,10 @@ gfc_trans_code (gfc_code * code)
 	  res = gfc_trans_select (code);
 	  break;
 
+	case EXEC_FLUSH:
+	  res = gfc_trans_flush (code);
+	  break;
+
 	case EXEC_FORALL:
 	  res = gfc_trans_forall (code);
 	  break;
