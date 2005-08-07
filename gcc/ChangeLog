@@ -1,3 +1,9 @@
+2005-08-06  Peter O'Gorman  <peter@pogma.com>
+
+	PR 21366
+	* gcc.c (process_command): Check the argument to -b has a dash.
+	* doc/invoke.texi: Update -b and -V docs.
+
 2005-08-06  James E Wilson  <wilson@specifix.com>
 
 	* config/mips/cross64.h, config/mips/t-cross64: Delete.

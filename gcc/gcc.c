@@ -3175,9 +3175,12 @@ process_command (int argc, const char **argv)
     }
 
   /* If there is a -V or -b option (or both), process it now, before
-     trying to interpret the rest of the command line.  */
+     trying to interpret the rest of the command line. 
+     Use heuristic that all configuration names must have at least
+     one dash '-'. This allows us to pass options starting with -b.  */
   if (argc > 1 && argv[1][0] == '-'
-      && (argv[1][1] == 'V' || argv[1][1] == 'b'))
+      && (argv[1][1] == 'V' || 
+	 ((argv[1][1] == 'b') && (NULL != strchr(argv[1] + 2,'-')))))
     {
       const char *new_version = DEFAULT_TARGET_VERSION;
       const char *new_machine = DEFAULT_TARGET_MACHINE;
@@ -3187,7 +3190,8 @@ process_command (int argc, const char **argv)
       int baselen;
 
       while (argc > 1 && argv[1][0] == '-'
-	     && (argv[1][1] == 'V' || argv[1][1] == 'b'))
+	     && (argv[1][1] == 'V' ||
+		((argv[1][1] == 'b') && ( NULL != strchr(argv[1] + 2,'-')))))
 	{
 	  char opt = argv[1][1];
 	  const char *arg;
@@ -3608,6 +3612,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	  switch (c)
 	    {
 	    case 'b':
+	      if (NULL == strchr(argv[i] + 2, '-')) break;
 	    case 'V':
 	      fatal ("'-%c' must come at the start of the command line", c);
 	      break;
