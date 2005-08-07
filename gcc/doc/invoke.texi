@@ -6943,14 +6943,16 @@ The argument @var{machine} specifies the target machine for compilation.
 The value to use for @var{machine} is the same as was specified as the
 machine type when configuring GCC as a cross-compiler.  For
 example, if a cross-compiler was configured with @samp{configure
-i386v}, meaning to compile for an 80386 running System V, then you
-would specify @option{-b i386v} to run that cross compiler.
+arm-elf}, meaning to compile for an arm processor with elf binaries,
+then you would specify @option{-b arm-elf} to run that cross compiler.
+Because there are other options beginning with @option{-b}, the
+configuration must contain a hyphen. 
 
 @item -V @var{version}
 @opindex V
 The argument @var{version} specifies which version of GCC to run.
 This is useful when multiple versions are installed.  For example,
-@var{version} might be @samp{2.0}, meaning to run GCC version 2.0.
+@var{version} might be @samp{4.0}, meaning to run GCC version 4.0.
 @end table
 
 The @option{-V} and @option{-b} options work by running the
