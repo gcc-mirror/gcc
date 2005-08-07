@@ -1,3 +1,9 @@
+2005-08-06  Richard Henderson  <rth@redhat.com>
+
+	PR 21894
+	* tree-nested.c (convert_local_reference): Save and restore val_only
+	around component_ref and friends.  Clear walk_subtrees by default.
+
 2005-08-06  Peter O'Gorman  <peter@pogma.com>
 
 	PR 21366
