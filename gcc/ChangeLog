@@ -1,3 +1,7 @@
+2005-08-06  James E Wilson  <wilson@specifix.com>
+
+	* config/mips/cross64.h, config/mips/t-cross64: Delete.
+
 2005-08-06  Michael Matz  <matz@suse.de>
 
 	* genattrtab.c (write_attr_get, write_attr_case): Use insn_code
