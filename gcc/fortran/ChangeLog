@@ -1,3 +1,22 @@
+2005-08-07   Janne Blomqvist <jblomqvi@cc.hut.fi>
+
+	PR fortran/22390 
+	* dump-parse-tree.c (gfc_show_code_node): Add case for FLUSH.
+	* gfortran.h: Add enums for FLUSH.
+	* io.c (gfc_free_filepos,match_file_element,match_filepos): Modify
+	comment appropriately.  (gfc_match_flush): New function.
+	* match.c (gfc_match_if): Add match for flush.
+	* match.h: Add prototype.
+	* parse.c (decode_statement): Add flush to 'f' case.
+	(next_statement): Add case for flush. (gfc_ascii_statement): Likewise.
+	* resolve.c (resolve_code): Add flush case.
+	* st.c (gfc_free_statement): Add flush case.
+	* trans-io.c: Add prototype for flush.
+	(gfc_build_io_library_fndecls): Build fndecl for flush.
+	(gfc_trans_flush): New function.
+	* trans-stmt.h: Add prototype.
+	* trans.c (gfc_trans_code): Add case for flush.
+
 2005-08-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* primary.c (match_hollerith_constant): Fix typo.

@@ -1,3 +1,13 @@
+2005-08-07  Janne Blomqvist  <jblomqvi@cc.hut.fi>
+
+	PR fortran/22390
+	* io/backspace.c: File removed, contents moved to ...
+	* io/endfile.c: Ditto.
+	* io/rewind.c: Ditto.
+	* io/file_pos.c: New file, ... here.
+	* Makefile.am: Add file_pos.c to list, remove obsolete files.
+	* Makefile.in: Regenerated.
+
 2005-08-07  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* io/io.h: Change DEFAULT_TEMPDIR to /tmp instead of /var/tmp.

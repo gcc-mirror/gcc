@@ -212,6 +212,7 @@ decode_statement (void)
       break;
 
     case 'f':
+      match ("flush", gfc_match_flush, ST_FLUSH);
       match ("format", gfc_match_format, ST_FORMAT);
       break;
 
@@ -526,7 +527,8 @@ next_statement (void)
   case ST_READ: case ST_RETURN: case ST_REWIND: case ST_SIMPLE_IF: \
   case ST_PAUSE: case ST_STOP: case ST_WRITE: case ST_ASSIGNMENT: \
   case ST_POINTER_ASSIGNMENT: case ST_EXIT: case ST_CYCLE: \
-  case ST_ARITHMETIC_IF: case ST_WHERE: case ST_FORALL: case ST_LABEL_ASSIGNMENT
+  case ST_ARITHMETIC_IF: case ST_WHERE: case ST_FORALL: \
+  case ST_LABEL_ASSIGNMENT: case ST_FLUSH
 
 /* Statements that mark other executable statements.  */
 
@@ -832,6 +834,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_EXIT:
       p = "EXIT";
+      break;
+    case ST_FLUSH:
+      p = "FLUSH";
       break;
     case ST_FORALL_BLOCK:	/* Fall through */
     case ST_FORALL:

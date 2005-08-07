@@ -21,16 +21,14 @@ AM_CPPFLAGS = -iquote$(srcdir)/io
 libgfortranincludedir = $(includedir)/gforio
 
 gfor_io_src= \
-io/backspace.c \
 io/close.c \
-io/endfile.c \
+io/file_pos.c \
 io/format.c \
 io/inquire.c \
 io/list_read.c \
 io/lock.c \
 io/open.c \
 io/read.c \
-io/rewind.c \
 io/transfer.c \
 io/unit.c \
 io/unix.c \
