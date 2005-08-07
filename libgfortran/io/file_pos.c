@@ -1,7 +1,7 @@
-/* Copyright (C) 2002-2003 Free Software Foundation, Inc.
-   Contributed by Andy Vaught
+/* Copyright (C) 2002-2003, 2005 Free Software Foundation, Inc.
+   Contributed by Andy Vaught and Janne Blomqvist
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -32,12 +32,14 @@ Boston, MA 02111-1307, USA.  */
 #include "libgfortran.h"
 #include "io.h"
 
-/* backspace.c -- Implement the BACKSPACE statement */
+/* file_pos.c-- Implement the file positioning statements, i.e. BACKSPACE,
+   ENDFILE, and REWIND as well as the FLUSH statement.  */
+
 
 /* formatted_backspace(void)-- Move the file back one line.  The
- * current position is after the newline that terminates the previous
- * record, and we have to sift backwards to find the newline before
- * that or the start of the file, whichever comes first. */
+   current position is after the newline that terminates the previous
+   record, and we have to sift backwards to find the newline before
+   that or the start of the file, whichever comes first.  */
 
 #define READ_CHUNK 4096
 
@@ -59,12 +61,12 @@ formatted_backspace (void)
       if (p == NULL)
 	goto io_error;
 
-      /* Because we've moved backwords from the current position, it
-       * should not be possible to get a short read.  Because it isn't
-       * clear what to do about such thing, we ignore the possibility. */
+      /* We have moved backwards from the current position, it should
+         not be possible to get a short read.  Because it is not
+         clear what to do about such thing, we ignore the possibility.  */
 
       /* There is no memrchr() in the C library, so we have to do it
-       * ourselves. */
+         ourselves.  */
 
       n--;
       while (n >= 0)
@@ -74,14 +76,13 @@ formatted_backspace (void)
 	      base += n + 1;
 	      goto done;
 	    }
-
 	  n--;
 	}
 
     }
   while (base != 0);
 
-  /* base is the new pointer.  Seek to it exactly */
+  /* base is the new pointer.  Seek to it exactly.  */
  done:
   if (sseek (current_unit->s, base) == FAILURE)
     goto io_error;
@@ -95,9 +96,9 @@ formatted_backspace (void)
 }
 
 
-/* unformatted_backspace()-- Move the file backwards for an
- * unformatted sequential file.  We are guaranteed to be between
- * records on entry and we have to shift to the previous record.  */
+/* unformatted_backspace() -- Move the file backwards for an unformatted
+   sequential file.  We are guaranteed to be between records on entry and 
+   we have to shift to the previous record.  */
 
 static void
 unformatted_backspace (void)
@@ -145,14 +146,14 @@ st_backspace (void)
 
   current_unit = u;
 
-  /* Ignore direct access.  Non-advancing I/O is only allowed for
-   * formatted sequential I/O and the next direct access transfer
-   * repositions the file anyway. */
+  /* Ignore direct access.  Non-advancing I/O is only allowed for formatted
+     sequential I/O and the next direct access transfer repositions the file 
+     anyway.  */
 
   if (u->flags.access == ACCESS_DIRECT)
     goto done;
 
-  /* Check for special cases involving the ENDFILE record first */
+  /* Check for special cases involving the ENDFILE record first.  */
 
   if (u->endfile == AFTER_ENDFILE)
     u->endfile = AT_ENDFILE;
@@ -162,11 +163,11 @@ st_backspace (void)
 	goto done;		/* Common special case */
 
       if (u->mode == WRITING)
-      {
-	flush (u->s);
-	struncate (u->s);
-	u->mode = READING;
-      }
+	{
+	  flush (u->s);
+	  struncate (u->s);
+	  u->mode = READING;
+        }
 
       if (u->flags.form == FORM_FORMATTED)
 	formatted_backspace ();
@@ -178,5 +179,96 @@ st_backspace (void)
     }
 
  done:
+  library_end ();
+}
+
+
+extern void st_endfile (void);
+export_proto(st_endfile);
+
+void
+st_endfile (void)
+{
+  gfc_unit *u;
+
+  library_start ();
+
+  u = get_unit (0);
+  if (u != NULL)
+    {
+      current_unit = u;		/* next_record() needs this set.  */
+      if (u->current_record)
+	next_record (1);
+
+      flush(u->s);
+      struncate (u->s);
+      u->endfile = AFTER_ENDFILE;
+    }
+
+  library_end ();
+}
+
+
+extern void st_rewind (void);
+export_proto(st_rewind);
+
+void
+st_rewind (void)
+{
+  gfc_unit *u;
+
+  library_start ();
+
+  u = find_unit (ioparm.unit);
+  if (u != NULL)
+    {
+      if (u->flags.access != ACCESS_SEQUENTIAL)
+	generate_error (ERROR_BAD_OPTION,
+			"Cannot REWIND a file opened for DIRECT access");
+      else
+	{
+	  /* If we have been writing to the file, the last written record
+	     is the last record in the file, so truncate the file now.
+	     Reset to read mode so two consecutive rewind statements do not
+	     delete the file contents.  Flush buffer when switching mode.  */
+          if (u->mode == WRITING)
+	    {
+	      flush (u->s);
+	      struncate (u->s);
+	    }
+	  u->mode = READING;
+	  u->last_record = 0;
+	  if (sseek (u->s, 0) == FAILURE)
+	    generate_error (ERROR_OS, NULL);
+
+	  u->endfile = NO_ENDFILE;
+	  u->current_record = 0;
+	  test_endfile (u);
+	}
+      /* Update position for INQUIRE.  */
+      u->flags.position = POSITION_REWIND;
+    }
+
+  library_end ();
+}
+
+
+extern void st_flush (void);
+export_proto(st_flush);
+
+void
+st_flush (void)
+{
+  gfc_unit *u;
+
+  library_start ();
+
+  u = get_unit (0);
+  if (u != NULL)
+    {
+      current_unit = u;  /* Just to be sure.  */
+      flush(u->s);
+    }
+
   library_end ();
 }
