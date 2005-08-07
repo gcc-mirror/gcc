@@ -1,3 +1,12 @@
+2005-08-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR pch/14940
+	Backport from mainline:
+
+	* config.host (hppa*-*-hpux*, hppa*-*-linux): Define out_host_hook_obj
+	and host_xmake_file using new host configuration files.
+	* config/pa/pa-host.c, config/pa/x-hpux, config/pa/x-linux: New files.
+
 2005-08-06  Christian Joensson  <christian.joensson@gmail.com>
 
 	PR target/20673
