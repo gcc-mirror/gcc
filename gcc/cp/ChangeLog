@@ -1,3 +1,8 @@
+2005-08-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/22508
+	* init.c (build_new_1): Check for empty candidate list.
+
 2005-08-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/23191
