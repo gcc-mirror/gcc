@@ -12382,26 +12382,30 @@ java_complete_lhs (tree node)
 
     case COMPONENT_REF:
       /* The first step in the re-write of qualified name handling.  FIXME.
-	 So far, this is only to support PRIMTYPE.class -> PRIMCLASS.TYPE. */
-      TREE_OPERAND (node, 0) = java_complete_tree (TREE_OPERAND (node, 0));
-      if (TREE_CODE (TREE_OPERAND (node, 0)) == RECORD_TYPE)
-	{
-	  tree name = TREE_OPERAND (node, 1);
-	  tree field = lookup_field_wrapper (TREE_OPERAND (node, 0), name);
-	  if (field == NULL_TREE)
-	    {
-	      error ("missing static field %qs", IDENTIFIER_POINTER (name));
-	      return error_mark_node;
-	    }
-	  if (! FIELD_STATIC (field))
-	    {
-	      error ("not a static field %qs", IDENTIFIER_POINTER (name));
-	      return error_mark_node;
-	    }
-	  return field;
-	}
-      else
-	abort ();
+	 So far, this is only to support PRIMTYPE.class ->
+	 PRIMCLASS.TYPE. */
+      {
+	tree prim_class = TREE_OPERAND (node, 0);
+	tree name = TREE_OPERAND (node, 1);
+	tree field;
+	
+	gcc_assert (TREE_CODE (prim_class) == NOP_EXPR);
+	prim_class = java_complete_tree (TREE_TYPE (prim_class));
+	gcc_assert (TREE_CODE (prim_class) == RECORD_TYPE);
+	field = lookup_field_wrapper (prim_class, name);
+	
+	if (field == NULL_TREE)
+	  {
+	    error ("missing static field %qs", IDENTIFIER_POINTER (name));
+	    return error_mark_node;
+	  }
+	if (! FIELD_STATIC (field))
+	  {
+	    error ("not a static field %qs", IDENTIFIER_POINTER (name));
+	    return error_mark_node;
+	  }
+	return field;
+      }
       break;
 
     case THIS_EXPR:

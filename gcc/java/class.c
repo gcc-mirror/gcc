@@ -1011,6 +1011,11 @@ build_class_ref (tree type)
 		abort ();
 
 	      prim_class = lookup_class (get_identifier (prim_class_name));
+	      /* We wrap the class in a NOP_EXPR, because it is a
+	         type.  We can't hold it in the COMPONENT_REF itself,
+	         as that type must remain NULL.  */
+	      prim_class = build1 (NOP_EXPR, prim_class, NULL_TREE);
+	      
 	      return build3 (COMPONENT_REF, NULL_TREE,
 			     prim_class, TYPE_identifier_node, NULL_TREE);
 	    }
