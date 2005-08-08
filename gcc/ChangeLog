@@ -1,3 +1,9 @@
+2005-08-08  Richard Sandiford  <richard@codesourcery.com>
+
+	PR c/22458
+	* c-decl.c (c_begin_compound_stmt): Set the initial body to
+	error_mark_node, not NULL.
+
 2005-08-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa64-regs.h (CONDITIONAL_REGISTER_USAGE): Fix loop upper bound.

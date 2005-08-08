@@ -6410,7 +6410,7 @@ c_begin_compound_stmt (void)
   tree stmt;
 
   /* Create the COMPOUND_STMT.  */
-  stmt = add_stmt (build_stmt (COMPOUND_STMT, NULL_TREE));
+  stmt = add_stmt (build_stmt (COMPOUND_STMT, error_mark_node));
 
   return stmt;
 }
