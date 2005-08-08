@@ -684,6 +684,10 @@ static rtx altivec_expand_predicate_builtin (enum insn_code,
 					     const char *, tree, rtx);
 static rtx altivec_expand_lv_builtin (enum insn_code, tree, rtx);
 static rtx altivec_expand_stv_builtin (enum insn_code, tree);
+static rtx altivec_expand_vec_init_builtin (tree, tree, rtx);
+static rtx altivec_expand_vec_set_builtin (tree);
+static rtx altivec_expand_vec_ext_builtin (tree, rtx);
+static int get_element_number (tree, tree);
 static bool rs6000_handle_option (size_t, const char *, int);
 static void rs6000_parse_tls_size_option (void);
 static void rs6000_parse_yes_no_option (const char *, const char *, int *);
@@ -2179,6 +2183,170 @@ output_vec_const_move (rtx *operands)
     return "li %0,%1\n\tevmergelo %0,%0,%0\n\tli %0,%2";
 }
 
+/* Initialize vector TARGET to VALS.  */
+
+void
+rs6000_expand_vector_init (rtx target, rtx vals)
+{
+  enum machine_mode mode = GET_MODE (target);
+  enum machine_mode inner_mode = GET_MODE_INNER (mode);
+  int n_elts = GET_MODE_NUNITS (mode);
+  int n_var = 0, one_var = -1;
+  bool all_same = true, all_const_zero = true;
+  rtx x, mem;
+  int i;
+
+  for (i = 0; i < n_elts; ++i)
+    {
+      x = XVECEXP (vals, 0, i);
+      if (!CONSTANT_P (x))
+	++n_var, one_var = i;
+      else if (x != CONST0_RTX (inner_mode))
+	all_const_zero = false;
+
+      if (i > 0 && !rtx_equal_p (x, XVECEXP (vals, 0, 0)))
+	all_same = false;
+    }
+
+  if (n_var == 0)
+    {
+      if (mode != V4SFmode && all_const_zero)
+	{
+	  /* Zero register.  */
+	  emit_insn (gen_rtx_SET (VOIDmode, target,
+				  gen_rtx_XOR (mode, target, target)));
+	  return;
+	}
+      else if (mode != V4SFmode && easy_vector_same (vals, mode))
+	{
+	  /* Splat immediate.  */
+	  x = gen_rtx_VEC_DUPLICATE (mode, CONST_VECTOR_ELT (vals, 0));
+	  emit_insn (gen_rtx_SET (VOIDmode, target, x));
+	  return;
+	}
+      else if (all_same)
+	;	/* Splat vector element.  */
+      else
+	{
+	  /* Load from constant pool.  */
+	  emit_move_insn (target, gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0)));
+	  return;
+	}
+    }
+
+  /* Store value to stack temp.  Load vector element.  Splat.  */
+  if (all_same)
+    {
+      mem = assign_stack_temp (mode, GET_MODE_SIZE (inner_mode), 0);
+      emit_move_insn (adjust_address_nv (mem, inner_mode, 0),
+		      XVECEXP (vals, 0, 0));
+      x = gen_rtx_UNSPEC (VOIDmode,
+			  gen_rtvec (1, const0_rtx), UNSPEC_LVE);
+      emit_insn (gen_rtx_PARALLEL (VOIDmode,
+				   gen_rtvec (2,
+					      gen_rtx_SET (VOIDmode,
+							   target, mem),
+					      x)));
+      x = gen_rtx_VEC_SELECT (inner_mode, target,
+			      gen_rtx_PARALLEL (VOIDmode,
+						gen_rtvec (1, const0_rtx)));
+      emit_insn (gen_rtx_SET (VOIDmode, target,
+			      gen_rtx_VEC_DUPLICATE (mode, x)));
+      return;
+    }
+
+  /* One field is non-constant.  Load constant then overwrite
+     varying field.  */
+  if (n_var == 1)
+    {
+      rtx copy = copy_rtx (vals);
+
+      /* Load constant part of vector, substititute neighboring value for
+	 varying element.  */
+      XVECEXP (copy, 0, one_var) = XVECEXP (vals, 0, (one_var + 1) % n_elts);
+      rs6000_expand_vector_init (target, copy);
+
+      /* Insert variable.  */
+      rs6000_expand_vector_set (target, XVECEXP (vals, 0, one_var), one_var);
+      return;
+    }
+
+  /* Construct the vector in memory one field at a time
+     and load the whole vector.  */
+  mem = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
+  for (i = 0; i < n_elts; i++)
+    emit_move_insn (adjust_address_nv (mem, inner_mode,
+				    i * GET_MODE_SIZE (inner_mode)),
+		    XVECEXP (vals, 0, i));
+  emit_move_insn (target, mem);
+}
+
+/* Set field ELT of TARGET to VAL.  */
+
+void
+rs6000_expand_vector_set (rtx target, rtx val, int elt)
+{
+  enum machine_mode mode = GET_MODE (target);
+  enum machine_mode inner_mode = GET_MODE_INNER (mode);
+  rtx reg = gen_reg_rtx (mode);
+  rtx mask, mem, x;
+  int width = GET_MODE_SIZE (inner_mode);
+  int i;
+
+  /* Load single variable value.  */
+  mem = assign_stack_temp (mode, GET_MODE_SIZE (inner_mode), 0);
+  emit_move_insn (adjust_address_nv (mem, inner_mode, 0), val);
+  x = gen_rtx_UNSPEC (VOIDmode,
+		      gen_rtvec (1, const0_rtx), UNSPEC_LVE);
+  emit_insn (gen_rtx_PARALLEL (VOIDmode,
+			       gen_rtvec (2,
+					  gen_rtx_SET (VOIDmode,
+						       reg, mem),
+					  x)));
+
+  /* Linear sequence.  */
+  mask = gen_rtx_PARALLEL (V16QImode, rtvec_alloc (16));
+  for (i = 0; i < 16; ++i)
+    XVECEXP (mask, 0, i) = GEN_INT (i);
+
+  /* Set permute mask to insert element into target.  */
+  for (i = 0; i < width; ++i)
+    XVECEXP (mask, 0, elt*width + i)
+      = GEN_INT (i + 0x10);
+  x = gen_rtx_CONST_VECTOR (V16QImode, XVEC (mask, 0));
+  x = gen_rtx_UNSPEC (mode,
+		      gen_rtvec (3, target, reg,
+				 force_reg (V16QImode, x)),
+		      UNSPEC_VPERM);
+  emit_insn (gen_rtx_SET (VOIDmode, target, x));
+}
+
+/* Extract field ELT from VEC into TARGET.  */
+
+void
+rs6000_expand_vector_extract (rtx target, rtx vec, int elt)
+{
+  enum machine_mode mode = GET_MODE (vec);
+  enum machine_mode inner_mode = GET_MODE_INNER (mode);
+  rtx mem, x;
+
+  /* Allocate mode-sized buffer.  */
+  mem = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
+
+  /* Add offset to field within buffer matching vector element.  */
+  mem = adjust_address_nv (mem, mode, elt * GET_MODE_SIZE (inner_mode));
+
+  /* Store single field into mode-sized buffer.  */
+  x = gen_rtx_UNSPEC (VOIDmode,
+		      gen_rtvec (1, const0_rtx), UNSPEC_STVE);
+  emit_insn (gen_rtx_PARALLEL (VOIDmode,
+			       gen_rtvec (2,
+					  gen_rtx_SET (VOIDmode,
+						       mem, vec),
+					  x)));
+  emit_move_insn (target, adjust_address_nv (mem, inner_mode, 0));
+}
+
 int
 mask64_1or2_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED,
 		       bool allow_one)
@@ -2499,10 +2667,10 @@ rs6000_legitimate_offset_address_p (enum machine_mode mode, rtx x, int strict)
     case V8HImode:
     case V4SFmode:
     case V4SImode:
-      /* AltiVec vector modes.  Only reg+reg addressing is valid here,
-	 which leaves the only valid constant offset of zero, which by
-	 canonicalization rules is also invalid.  */
-      return false;
+      /* AltiVec vector modes.  Only reg+reg addressing is valid and
+	 constant offset zero should not occur due to canonicalization.
+	 Allow any offset when not strict before reload.  */
+      return !strict;
 
     case V4HImode:
     case V2SImode:
@@ -6883,6 +7051,111 @@ altivec_expand_dst_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
   return NULL_RTX;
 }
 
+/* Expand vec_init builtin.  */
+static rtx
+altivec_expand_vec_init_builtin (tree type, tree arglist, rtx target)
+{
+  enum machine_mode tmode = TYPE_MODE (type);
+  enum machine_mode inner_mode = GET_MODE_INNER (tmode);
+  int i, n_elt = GET_MODE_NUNITS (tmode);
+  rtvec v = rtvec_alloc (n_elt);
+
+  gcc_assert (VECTOR_MODE_P (tmode));
+
+  for (i = 0; i < n_elt; ++i, arglist = TREE_CHAIN (arglist))
+    {
+      rtx x = expand_expr (TREE_VALUE (arglist), NULL_RTX, VOIDmode, 0);
+      RTVEC_ELT (v, i) = gen_lowpart (inner_mode, x);
+    }
+
+  gcc_assert (arglist == NULL);
+
+  if (!target || !register_operand (target, tmode))
+    target = gen_reg_rtx (tmode);
+
+  rs6000_expand_vector_init (target, gen_rtx_PARALLEL (tmode, v));
+  return target;
+}
+
+/* Return the integer constant in ARG.  Constrain it to be in the range
+   of the subparts of VEC_TYPE; issue an error if not.  */
+
+static int
+get_element_number (tree vec_type, tree arg)
+{
+  unsigned HOST_WIDE_INT elt, max = TYPE_VECTOR_SUBPARTS (vec_type) - 1;
+
+  if (!host_integerp (arg, 1)
+      || (elt = tree_low_cst (arg, 1), elt > max))
+    {
+      error ("selector must be an integer constant in the range 0..%wi", max);
+      return 0;
+    }
+
+  return elt;
+}
+
+/* Expand vec_set builtin.  */
+static rtx
+altivec_expand_vec_set_builtin (tree arglist)
+{
+  enum machine_mode tmode, mode1;
+  tree arg0, arg1, arg2;
+  int elt;
+  rtx op0, op1;
+
+  arg0 = TREE_VALUE (arglist);
+  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+  arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+
+  tmode = TYPE_MODE (TREE_TYPE (arg0));
+  mode1 = TYPE_MODE (TREE_TYPE (TREE_TYPE (arg0)));
+  gcc_assert (VECTOR_MODE_P (tmode));
+
+  op0 = expand_expr (arg0, NULL_RTX, tmode, 0);
+  op1 = expand_expr (arg1, NULL_RTX, mode1, 0);
+  elt = get_element_number (TREE_TYPE (arg0), arg2);
+
+  if (GET_MODE (op1) != mode1 && GET_MODE (op1) != VOIDmode)
+    op1 = convert_modes (mode1, GET_MODE (op1), op1, true);
+
+  op0 = force_reg (tmode, op0);
+  op1 = force_reg (mode1, op1);
+
+  rs6000_expand_vector_set (op0, op1, elt);
+
+  return op0;
+}
+
+/* Expand vec_ext builtin.  */
+static rtx
+altivec_expand_vec_ext_builtin (tree arglist, rtx target)
+{
+  enum machine_mode tmode, mode0;
+  tree arg0, arg1;
+  int elt;
+  rtx op0;
+
+  arg0 = TREE_VALUE (arglist);
+  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+
+  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+  elt = get_element_number (TREE_TYPE (arg0), arg1);
+
+  tmode = TYPE_MODE (TREE_TYPE (TREE_TYPE (arg0)));
+  mode0 = TYPE_MODE (TREE_TYPE (arg0));
+  gcc_assert (VECTOR_MODE_P (mode0));
+
+  op0 = force_reg (mode0, op0);
+
+  if (optimize || !target || !register_operand (target, tmode))
+    target = gen_reg_rtx (tmode);
+
+  rs6000_expand_vector_extract (target, op0, elt);
+
+  return target;
+}
+
 /* Expand the builtin in EXP and store the result in TARGET.  Store
    true in *EXPANDEDP if we found a builtin to expand.  */
 static rtx
@@ -6994,6 +7267,28 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
 
       emit_insn (gen_altivec_dss (op0));
       return NULL_RTX;
+
+    case ALTIVEC_BUILTIN_VEC_INIT_V4SI:
+    case ALTIVEC_BUILTIN_VEC_INIT_V8HI:
+    case ALTIVEC_BUILTIN_VEC_INIT_V16QI:
+    case ALTIVEC_BUILTIN_VEC_INIT_V4SF:
+      return altivec_expand_vec_init_builtin (TREE_TYPE (exp), arglist, target);
+
+    case ALTIVEC_BUILTIN_VEC_SET_V4SI:
+    case ALTIVEC_BUILTIN_VEC_SET_V8HI:
+    case ALTIVEC_BUILTIN_VEC_SET_V16QI:
+    case ALTIVEC_BUILTIN_VEC_SET_V4SF:
+      return altivec_expand_vec_set_builtin (arglist);
+
+    case ALTIVEC_BUILTIN_VEC_EXT_V4SI:
+    case ALTIVEC_BUILTIN_VEC_EXT_V8HI:
+    case ALTIVEC_BUILTIN_VEC_EXT_V16QI:
+    case ALTIVEC_BUILTIN_VEC_EXT_V4SF:
+      return altivec_expand_vec_ext_builtin (arglist, target);
+
+    default:
+      break;
+      /* Fall through.  */
     }
 
   /* Expand abs* operations.  */
@@ -7827,6 +8122,8 @@ altivec_init_builtins (void)
   struct builtin_description *d;
   struct builtin_description_predicates *dp;
   size_t i;
+  tree ftype;
+
   tree pfloat_type_node = build_pointer_type (float_type_node);
   tree pint_type_node = build_pointer_type (integer_type_node);
   tree pshort_type_node = build_pointer_type (short_integer_type_node);
@@ -8092,6 +8389,88 @@ altivec_init_builtins (void)
       /* Record the decl. Will be used by rs6000_builtin_mask_for_load.  */
       altivec_builtin_mask_for_load = decl;
     }
+
+  /* Access to the vec_init patterns.  */
+  ftype = build_function_type_list (V4SI_type_node, integer_type_node,
+				    integer_type_node, integer_type_node,
+				    integer_type_node, NULL_TREE);
+  def_builtin (MASK_ALTIVEC, "__builtin_vec_init_v4si", ftype,
+	       ALTIVEC_BUILTIN_VEC_INIT_V4SI);
+
+  ftype = build_function_type_list (V8HI_type_node, short_integer_type_node,
+				    short_integer_type_node,
+				    short_integer_type_node,
+				    short_integer_type_node,
+				    short_integer_type_node,
+				    short_integer_type_node,
+				    short_integer_type_node,
+				    short_integer_type_node, NULL_TREE);
+  def_builtin (MASK_ALTIVEC, "__builtin_vec_init_v8hi", ftype,
+	       ALTIVEC_BUILTIN_VEC_INIT_V8HI);
+
+  ftype = build_function_type_list (V16QI_type_node, char_type_node,
+				    char_type_node, char_type_node,
+				    char_type_node, char_type_node,
+				    char_type_node, char_type_node,
+				    char_type_node, char_type_node,
+				    char_type_node, char_type_node,
+				    char_type_node, char_type_node,
+				    char_type_node, char_type_node,
+				    char_type_node, NULL_TREE);
+  def_builtin (MASK_ALTIVEC, "__builtin_vec_init_v16qi", ftype,
+	       ALTIVEC_BUILTIN_VEC_INIT_V16QI);
+
+  ftype = build_function_type_list (V4SF_type_node, float_type_node,
+				    float_type_node, float_type_node,
+				    float_type_node, NULL_TREE);
+  def_builtin (MASK_ALTIVEC, "__builtin_vec_init_v4sf", ftype,
+	       ALTIVEC_BUILTIN_VEC_INIT_V4SF);
+
+  /* Access to the vec_set patterns.  */
+  ftype = build_function_type_list (V4SI_type_node, V4SI_type_node,
+				    intSI_type_node,
+				    integer_type_node, NULL_TREE);
+  def_builtin (MASK_ALTIVEC, "__builtin_vec_set_v4si", ftype,
+	       ALTIVEC_BUILTIN_VEC_SET_V4SI);
+
+  ftype = build_function_type_list (V8HI_type_node, V8HI_type_node,
+				    intHI_type_node,
+				    integer_type_node, NULL_TREE);
+  def_builtin (MASK_ALTIVEC, "__builtin_vec_set_v8hi", ftype,
+	       ALTIVEC_BUILTIN_VEC_SET_V8HI);
+
+  ftype = build_function_type_list (V8HI_type_node, V16QI_type_node,
+				    intQI_type_node,
+				    integer_type_node, NULL_TREE);
+  def_builtin (MASK_ALTIVEC, "__builtin_vec_set_v16qi", ftype,
+	       ALTIVEC_BUILTIN_VEC_SET_V16QI);
+
+  ftype = build_function_type_list (V4SF_type_node, V4SF_type_node,
+				    float_type_node,
+				    integer_type_node, NULL_TREE);
+  def_builtin (MASK_ALTIVEC, "__builtin_vec_set_v4sf", ftype,
+	       ALTIVEC_BUILTIN_VEC_SET_V4SF);
+
+  /* Access to the vec_extract patterns.  */
+  ftype = build_function_type_list (intSI_type_node, V4SI_type_node,
+				    integer_type_node, NULL_TREE);
+  def_builtin (MASK_ALTIVEC, "__builtin_vec_ext_v4si", ftype,
+	       ALTIVEC_BUILTIN_VEC_EXT_V4SI);
+
+  ftype = build_function_type_list (intHI_type_node, V8HI_type_node,
+				    integer_type_node, NULL_TREE);
+  def_builtin (MASK_ALTIVEC, "__builtin_vec_ext_v8hi", ftype,
+	       ALTIVEC_BUILTIN_VEC_EXT_V8HI);
+
+  ftype = build_function_type_list (intQI_type_node, V16QI_type_node,
+				    integer_type_node, NULL_TREE);
+  def_builtin (MASK_ALTIVEC, "__builtin_vec_ext_v16qi", ftype,
+	       ALTIVEC_BUILTIN_VEC_EXT_V16QI);
+
+  ftype = build_function_type_list (float_type_node, V4SF_type_node,
+				    integer_type_node, NULL_TREE);
+  def_builtin (MASK_ALTIVEC, "__builtin_vec_ext_v4sf", ftype,
+	       ALTIVEC_BUILTIN_VEC_EXT_V4SF);
 }
 
 static void

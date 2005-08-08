@@ -1840,7 +1840,7 @@
 (define_insn "altivec_lve<VI_char>x"
   [(parallel
     [(set (match_operand:VI 0 "register_operand" "=v")
-	  (match_operand:VI 1 "memory_operand" "m"))
+	  (match_operand:VI 1 "memory_operand" "Z"))
      (unspec [(const_int 0)] UNSPEC_LVE)])]
   "TARGET_ALTIVEC"
   "lve<VI_char>x %0,%y1"
@@ -1849,7 +1849,7 @@
 (define_insn "*altivec_lvesfx"
   [(parallel
     [(set (match_operand:V4SF 0 "register_operand" "=v")
-	  (match_operand:V4SF 1 "memory_operand" "m"))
+	  (match_operand:V4SF 1 "memory_operand" "Z"))
      (unspec [(const_int 0)] UNSPEC_LVE)])]
   "TARGET_ALTIVEC"
   "lvewx %0,%y1"
@@ -1906,6 +1906,95 @@
   "TARGET_ALTIVEC"
   "stvewx %1,%y0"
   [(set_attr "type" "vecstore")])
+
+(define_expand "vec_init<mode>"
+  [(match_operand:V 0 "register_operand" "")
+   (match_operand 1 "" "")]
+  "TARGET_ALTIVEC"
+{
+  rs6000_expand_vector_init (operands[0], operands[1]);
+  DONE;
+})
+
+(define_expand "vec_setv4si"
+  [(match_operand:V4SI 0 "register_operand" "")
+   (match_operand:SI 1 "register_operand" "")
+   (match_operand 2 "const_int_operand" "")]
+  "TARGET_ALTIVEC"
+{
+  rs6000_expand_vector_set (operands[0], operands[1], INTVAL (operands[2]));
+  DONE;
+})
+
+(define_expand "vec_setv8hi"
+  [(match_operand:V8HI 0 "register_operand" "")
+   (match_operand:HI 1 "register_operand" "")
+   (match_operand 2 "const_int_operand" "")]
+  "TARGET_ALTIVEC"
+{
+  rs6000_expand_vector_set (operands[0], operands[1], INTVAL (operands[2]));
+  DONE;
+})
+
+(define_expand "vec_setv16qi"
+  [(match_operand:V16QI 0 "register_operand" "")
+   (match_operand:QI 1 "register_operand" "")
+   (match_operand 2 "const_int_operand" "")]
+  "TARGET_ALTIVEC"
+{
+  rs6000_expand_vector_set (operands[0], operands[1], INTVAL (operands[2]));
+  DONE;
+})
+
+(define_expand "vec_setv4sf"
+  [(match_operand:V4SF 0 "register_operand" "")
+   (match_operand:SF 1 "register_operand" "")
+   (match_operand 2 "const_int_operand" "")]
+  "TARGET_ALTIVEC"
+{
+  rs6000_expand_vector_set (operands[0], operands[1], INTVAL (operands[2]));
+  DONE;
+})
+
+(define_expand "vec_extractv4si"
+  [(match_operand:SI 0 "register_operand" "")
+   (match_operand:V4SI 1 "register_operand" "")
+   (match_operand 2 "const_int_operand" "")]
+  "TARGET_ALTIVEC"
+{
+  rs6000_expand_vector_extract (operands[0], operands[1], INTVAL (operands[2]));
+  DONE;
+})
+
+(define_expand "vec_extractv8hi"
+  [(match_operand:HI 0 "register_operand" "")
+   (match_operand:V8HI 1 "register_operand" "")
+   (match_operand 2 "const_int_operand" "")]
+  "TARGET_ALTIVEC"
+{
+  rs6000_expand_vector_extract (operands[0], operands[1], INTVAL (operands[2]));
+  DONE;
+})
+
+(define_expand "vec_extractv16qi"
+  [(match_operand:QI 0 "register_operand" "")
+   (match_operand:V16QI 1 "register_operand" "")
+   (match_operand 2 "const_int_operand" "")]
+  "TARGET_ALTIVEC"
+{
+  rs6000_expand_vector_extract (operands[0], operands[1], INTVAL (operands[2]));
+  DONE;
+})
+
+(define_expand "vec_extractv4sf"
+  [(match_operand:SF 0 "register_operand" "")
+   (match_operand:V4SF 1 "register_operand" "")
+   (match_operand 2 "const_int_operand" "")]
+  "TARGET_ALTIVEC"
+{
+  rs6000_expand_vector_extract (operands[0], operands[1], INTVAL (operands[2]));
+  DONE;
+})
 
 ;; Generate
 ;;    vspltis? SCRATCH0,0
