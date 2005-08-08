@@ -2669,9 +2669,12 @@ write_complex_part (rtx cplx, rtx val, bool imag_p)
      adjust_address_nv.  Instead of preparing fallback support for an
      invalid address, we call adjust_address_nv directly.  */
   if (MEM_P (cplx))
-    emit_move_insn (adjust_address_nv (cplx, imode,
-				       imag_p ? GET_MODE_SIZE (imode) : 0),
-		    val);
+    {
+      emit_move_insn (adjust_address_nv (cplx, imode,
+					 imag_p ? GET_MODE_SIZE (imode) : 0),
+		      val);
+      return;
+    }
 
   /* If the sub-object is at least word sized, then we know that subregging
      will work.  This special case is important, since store_bit_field
