@@ -1,3 +1,9 @@
+2005-08-08  Josh Conner  <jconner@apple.com>
+
+	PR rtl-optimization/23241
+	* combine.c (simplify_comparison): Fix error in determining
+	whether to lift a subreg from comparison.
+
 2005-08-08  Richard Sandiford  <richard@codesourcery.com>
 
 	PR middle-end/21964

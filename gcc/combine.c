@@ -10739,7 +10739,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 		      /* (A - C1) always sign-extends, like C2.  */
 		      && num_sign_bit_copies (a, inner_mode)
 			 > (unsigned int) (GET_MODE_BITSIZE (inner_mode)
-					   - mode_width - 1)))
+					   - (mode_width - 1))))
 		{
 		  op0 = SUBREG_REG (op0);
 		  continue;
