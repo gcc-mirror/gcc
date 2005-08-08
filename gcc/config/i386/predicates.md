@@ -318,6 +318,28 @@
 	      (match_operand 0 "x86_64_zext_immediate_operand")))
     (match_operand 0 "nonmemory_operand")))
 
+;; Return true when operand is PIC expression that can be computed by lea
+;; operation.
+(define_predicate "pic_32bit_operand"
+  (match_code "const,symbol_ref,label_ref")
+{
+  if (!flag_pic)
+    return 0;
+  /* Rule out relocations that translate into 64bit constants.  */
+  if (TARGET_64BIT && GET_CODE (op) == CONST)
+    {
+      op = XEXP (op, 0);
+      if (GET_CODE (op) == PLUS && GET_CODE (XEXP (op, 1)) == CONST_INT)
+	op = XEXP (op, 0);
+      if (GET_CODE (op) == UNSPEC
+	  && (XINT (op, 1) == UNSPEC_GOTOFF
+	      || XINT (op, 1) == UNSPEC_GOT))
+	return 0;
+    }
+  return symbolic_operand (op, mode);
+})
+
+
 ;; Return nonzero if OP is nonmemory operand acceptable by movabs patterns.
 (define_predicate "x86_64_movabs_operand"
   (if_then_else (match_test "!TARGET_64BIT || !flag_pic")

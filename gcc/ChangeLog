@@ -1,3 +1,10 @@
+2005-08-08  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (legitimate_pic_address_disp_p): Refuse GOTOFF in 64bit mode.
+	(legitimate_address_p): Refuse GOT and GOTOFF in 64bit mode.
+	* i386.md (movdi*): Use pic_32bit_operand.
+	* predicates.md (pic_32bit_operand): New.
+
 2005-08-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/21166
