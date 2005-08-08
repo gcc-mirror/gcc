@@ -1,3 +1,8 @@
+2005-08-07  James A. Morrison  <phython@gcc.gnu.org>
+
+	* tree-vrp.c (simplify_div_or_mod_using_range): Use build2.
+	(test_for_singularity): Use fold_build2.
+
 2005-08-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa64-regs.h (CONDITIONAL_REGISTER_USAGE): Fix loop upper bound.
