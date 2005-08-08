@@ -1,3 +1,24 @@
+2005-08-08  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.in (CC_FOR_TARGET, CXX_FOR_TARGET, GCJ_FOR_TARGET,
+	GCC_FOR_TARGET, RAW_CXX_FOR_TARGET, GFORTRAN_FOR_TARGET): Find
+	them with NCN_STRICT_CHECK_TARGET_TOOL, like the other target
+	tools; remove code to manually set them.
+	(Target tools): Look in the environment for them.
+	* Makefile.tpl (CC_FOR_TARGET, CXX_FOR_TARGET, GCJ_FOR_TARGET,
+	GCC_FOR_TARGET, RAW_CXX_FOR_TARGET, GFORTRAN_FOR_TARGET): Redefine.
+	(AS_FOR_TARGET, LD_FOR_TARGET, NM_FOR_TARGET): Look into gcc
+	build directory.
+	(CONFIGURED_CC_FOR_TARGET, CONFIGURED_CXX_FOR_TARGET,
+	CONFIGURED_GCJ_FOR_TARGET, CONFIGURED_GCC_FOR_TARGET,
+	CONFIGURED_GFORTRAN_FOR_TARGET, USUAL_CC_FOR_TARGET,
+	USUAL_CXX_FOR_TARGET, USUAL_GCJ_FOR_TARGET, USUAL_GCC_FOR_TARGET,
+	USUAL_RAW_CXX_FOR_TARGET, USUAL_GFORTRAN_FOR_TARGET): New.
+	(CXX_FOR_TARGET_FOR_RECURSIVE_MAKE,
+	RAW_CXX_FOR_TARGET_FOR_RECURSIVE_MAKE, RECURSE_FLAGS): Delete.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2005-07-28  Ben Elliston  <bje@au.ibm.com>
 
 	* MAINTAINERS: Update for removed CPU targets.
