@@ -3353,6 +3353,12 @@ tail_recursion_args (tree actuals, tree formals)
 	argvec[i] = copy_to_reg (argvec[i]);
     }
 
+  /* Insert the pre-call sequence point.  This is important in cases
+     where the actual values post-modify the formals: we want the final
+     values of the formals to be the ones that we assign below, not the
+     result of the post-modification.  */
+  emit_queue ();
+
   /* Store the values of the actuals into the formals.  */
 
   for (f = formals, a = actuals, i = 0; f;

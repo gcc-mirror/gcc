@@ -1,5 +1,10 @@
 2005-08-08  Richard Sandiford  <richard@codesourcery.com>
 
+	PR middle-end/21964
+	* stmt.c (tail_recursion_args): Insert a call to emit_queue.
+
+2005-08-08  Richard Sandiford  <richard@codesourcery.com>
+
 	PR c/22458
 	* c-decl.c (c_begin_compound_stmt): Set the initial body to
 	error_mark_node, not NULL.
