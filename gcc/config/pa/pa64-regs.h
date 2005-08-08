@@ -106,7 +106,7 @@ Boston, MA 02110-1301, USA.  */
   int i;					\
   if (TARGET_DISABLE_FPREGS || TARGET_SOFT_FLOAT)\
     {						\
-      for (i = FP_REG_FIRST; i < FP_REG_LAST; i++)\
+      for (i = FP_REG_FIRST; i <= FP_REG_LAST; i++)\
 	fixed_regs[i] = call_used_regs[i] = 1; 	\
     }						\
   if (flag_pic)					\
