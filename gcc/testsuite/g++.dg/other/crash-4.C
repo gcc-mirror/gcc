@@ -6,10 +6,12 @@
 
 struct a
 {
+  int m;
   a(const a&);
 };
 struct b
 { // { dg-error "cannot bind packed field" }
+  char c;
   a aa __attribute__((packed));
 };
 struct c
