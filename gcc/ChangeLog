@@ -1,3 +1,7 @@
+2005-08-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa64-regs.h (CONDITIONAL_REGISTER_USAGE): Fix loop upper bound.
+
 2005-08-07  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/cygming.h (SUBTARGET_ENCODE_SECTION_INFO): Define.
