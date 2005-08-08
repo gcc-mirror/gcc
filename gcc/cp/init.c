@@ -1917,6 +1917,11 @@ build_new_1 (tree exp)
 	  args = tree_cons (NULL_TREE, size, placement);
 	  /* Do name-lookup to find the appropriate operator.  */
 	  fns = lookup_fnfields (elt_type, fnname, /*protect=*/2);
+	  if (fns == NULL_TREE)
+	    {
+	      error ("no suitable %qD found in class %qT", fnname, elt_type);
+	      return error_mark_node;
+	    }
 	  if (TREE_CODE (fns) == TREE_LIST)
 	    {
 	      error ("request for member %qD is ambiguous", fnname);
