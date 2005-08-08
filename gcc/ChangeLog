@@ -1,3 +1,8 @@
+2005-08-08  Richard Henderson  <rth@redhat.com>
+
+	PR 22439
+	* gimplify.c (gimplify_one_sizepos): Preserve the original type.
+
 2005-08-08  Bob Wilson  <bob.wilson@acm.org>
 
 	* expr.c (write_complex_part): Return after handling MEM.
