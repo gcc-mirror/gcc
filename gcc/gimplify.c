@@ -4435,18 +4435,44 @@ gimplify_type_sizes (tree type, tree *list_p)
 void
 gimplify_one_sizepos (tree *expr_p, tree *stmt_p)
 {
+  tree type, expr = *expr_p;
+
   /* We don't do anything if the value isn't there, is constant, or contains
      A PLACEHOLDER_EXPR.  We also don't want to do anything if it's already
-     a VAR_DECL.  If it's a VAR_DECL from another function, the gimplfier
+     a VAR_DECL.  If it's a VAR_DECL from another function, the gimplifier
      will want to replace it with a new variable, but that will cause problems
      if this type is from outside the function.  It's OK to have that here.  */
-  if (*expr_p == NULL_TREE || TREE_CONSTANT (*expr_p)
-      || TREE_CODE (*expr_p) == VAR_DECL
-      || CONTAINS_PLACEHOLDER_P (*expr_p))
+  if (expr == NULL_TREE || TREE_CONSTANT (expr)
+      || TREE_CODE (expr) == VAR_DECL
+      || CONTAINS_PLACEHOLDER_P (expr))
     return;
 
-  *expr_p = unshare_expr (*expr_p);
+  type = TREE_TYPE (expr);
+  *expr_p = unshare_expr (expr);
+
   gimplify_expr (expr_p, stmt_p, NULL, is_gimple_val, fb_rvalue);
+  expr = *expr_p;
+
+  /* Verify that we've an exact type match with the original expression.
+     In particular, we do not wish to drop a "sizetype" in favour of a
+     type of similar dimensions.  We don't want to pollute the generic
+     type-stripping code with this knowledge because it doesn't matter
+     for the bulk of GENERIC/GIMPLE.  It only matters that TYPE_SIZE_UNIT
+     and friends retain their "sizetype-ness".  */
+  if (TREE_TYPE (expr) != type && TYPE_IS_SIZETYPE (type))
+    {
+      tree tmp;
+
+      *expr_p = create_tmp_var (type, NULL);
+      tmp = build1 (NOP_EXPR, type, expr);
+      tmp = build2 (MODIFY_EXPR, type, *expr_p, expr);
+      if (EXPR_HAS_LOCATION (expr))
+	SET_EXPR_LOCUS (tmp, EXPR_LOCUS (expr));
+      else
+	SET_EXPR_LOCATION (tmp, input_location);
+
+      gimplify_and_add (tmp, stmt_p);
+    }
 }
 
 #ifdef ENABLE_CHECKING
