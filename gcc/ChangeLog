@@ -1,3 +1,7 @@
+2005-08-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa64-regs.h (CONDITIONAL_REGISTER_USAGE): Fix loop upper bound.
+
 2005-08-05  Richard Henderson  <rth@redhat.com>
 
         PR 21728
