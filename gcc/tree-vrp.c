@@ -3566,7 +3566,7 @@ simplify_div_or_mod_using_ranges (tree stmt, tree rhs, enum tree_code rhs_code)
       if (rhs_code == TRUNC_DIV_EXPR)
 	{
 	  t = build_int_cst (NULL_TREE, tree_log2 (op1));
-	  t = build (RSHIFT_EXPR, TREE_TYPE (op0), op0, t);
+	  t = build2 (RSHIFT_EXPR, TREE_TYPE (op0), op0, t);
 	}
       else
 	{
@@ -3652,7 +3652,7 @@ test_for_singularity (enum tree_code cond_code, tree op0,
       if (cond_code == LT_EXPR)
 	{
 	  tree one = build_int_cst (TREE_TYPE (op0), 1);
-	  max = fold (build (MINUS_EXPR, TREE_TYPE (op0), max, one));
+	  max = fold_build2 (MINUS_EXPR, TREE_TYPE (op0), max, one);
 	}
     }
   else if (cond_code == GE_EXPR || cond_code == GT_EXPR)
@@ -3663,7 +3663,7 @@ test_for_singularity (enum tree_code cond_code, tree op0,
       if (cond_code == GT_EXPR)
 	{
 	  tree one = build_int_cst (TREE_TYPE (op0), 1);
-	  max = fold (build (PLUS_EXPR, TREE_TYPE (op0), max, one));
+	  max = fold_build2 (PLUS_EXPR, TREE_TYPE (op0), max, one);
 	}
     }
 
