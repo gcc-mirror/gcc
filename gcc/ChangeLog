@@ -1,3 +1,27 @@
+2005-08-08  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/18506
+	* config/rs6000/altivec.md (vec_init<mode>): New.
+	(vec_set<mode>): New.
+	(vec_extract<mode>): New.
+	* config/rs6000/rs6000.c (rs6000_expand_vector_init): New.
+	(rs6000_expand_vector_set): New.
+	(rs6000_expand_vector_extract): New.
+	(rs6000_legitimate_offset_address_p): Offset addresses are valid
+	for Altivec modes before reload.
+	(altivec_expand_vec_init_builtin): New.
+	(get_element_number): New.
+	(altivec_expand_vec_set_builtin): New.
+	(altivec_expand_vec_ext_builtin): New.
+	(altivec_expand_builtin): Expand vec_init, vec_set, and vec_ext
+	builtins.
+	(altivec_init_builtins): Init vec_init, vec_set, and vec_ext
+	builtins.
+	* config/rs6000/rs6000.h (rs6000_builtins): Add
+	ALTIVEC_BUILTIN_VEC_INIT_<mode>, ALTIVEC_BUILTIN_VEC_SET_<mode>,
+	ALTIVEC_BUILTIN_VEC_EXT_<mode>.
+	* config/rs6000/rs6000-protos.h: Declare new functions.
+
 2005-08-08  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (legitimate_pic_address_disp_p): Refuse GOTOFF in 64bit mode.
