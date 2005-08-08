@@ -1,3 +1,9 @@
+2005-08-08  Richard Henderson  <rth@redhat.com>
+
+        PR 21894
+        * tree-nested.c (convert_local_reference): Save and restore val_only
+        around component_ref and friends.  Clear walk_subtrees by default.
+
 2005-08-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa64-regs.h (CONDITIONAL_REGISTER_USAGE): Fix loop upper bound.

@@ -931,7 +931,9 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
   struct walk_stmt_info *wi = data;
   struct nesting_info *info = wi->info;
   tree t = *tp, field, x;
+  bool save_val_only;
 
+  *walk_subtrees = 0;
   switch (TREE_CODE (t))
     {
     case VAR_DECL:
@@ -970,29 +972,31 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
       break;
 
     case ADDR_EXPR:
-      {
-	bool save_val_only = wi->val_only;
+      save_val_only = wi->val_only;
+      wi->val_only = false;
+      wi->is_lhs = false;
+      wi->changed = false;
+      walk_tree (&TREE_OPERAND (t, 0), convert_local_reference, wi, NULL);
+      wi->val_only = save_val_only;
 
-	wi->val_only = false;
-	wi->is_lhs = false;
-	wi->changed = false;
-	walk_tree (&TREE_OPERAND (t, 0), convert_local_reference, wi, NULL);
-	wi->val_only = save_val_only;
+      /* If we converted anything ... */
+      if (wi->changed)
+	{
+	  tree save_context;
 
-	/* If we converted anything ... */
-	if (wi->changed)
-	  {
-	    /* Then the frame decl is now addressable.  */
-	    TREE_ADDRESSABLE (info->frame_decl) = 1;
-	    
-	    recompute_tree_invarant_for_addr_expr (t);
+	  /* Then the frame decl is now addressable.  */
+	  TREE_ADDRESSABLE (info->frame_decl) = 1;
 
-	    /* If we are in a context where we only accept values, then
-	       compute the address into a temporary.  */
-	    if (save_val_only)
-	      *tp = tsi_gimplify_val (wi->info, t, &wi->tsi);
-	  }
-      }
+	  save_context = current_function_decl;
+	  current_function_decl = info->context;
+	  recompute_tree_invarant_for_addr_expr (t);
+	  current_function_decl = save_context;
+
+	  /* If we are in a context where we only accept values, then
+	     compute the address into a temporary.  */
+	  if (save_val_only)
+	    *tp = tsi_gimplify_val (wi->info, t, &wi->tsi);
+	}
       break;
 
     case REALPART_EXPR:
@@ -1004,6 +1008,7 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
       /* Go down this entire nest and just look at the final prefix and
 	 anything that describes the references.  Otherwise, we lose track
 	 of whether a NOP_EXPR or VIEW_CONVERT_EXPR needs a simple value.  */
+      save_val_only = wi->val_only;
       wi->val_only = true;
       wi->is_lhs = false;
       for (; handled_component_p (t); tp = &TREE_OPERAND (t, 0), t = *tp)
@@ -1031,6 +1036,7 @@ convert_local_reference (tree *tp, int *walk_subtrees, void *data)
 	}
       wi->val_only = false;
       walk_tree (tp, convert_local_reference, wi, NULL);
+      wi->val_only = save_val_only;
       break;
 
     default:
