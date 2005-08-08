@@ -1,3 +1,8 @@
+2005-08-08  Josh Conner  <jconner@apple.com>
+
+	PR rtl-optimization/23241
+	* gcc.dg/char-compare.c: New test.
+
 2005-08-08  Richard Sandiford  <richard@codesourcery.com>
 
 	PR middle-end/21964
