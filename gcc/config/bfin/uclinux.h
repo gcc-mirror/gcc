@@ -8,3 +8,5 @@
 
 #undef  LIB_SPEC
 #define LIB_SPEC "%{pthread:-lpthread} -lc"
+
+#define NO_IMPLICIT_EXTERN_C

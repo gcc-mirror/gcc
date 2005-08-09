@@ -1406,14 +1406,8 @@ bfin_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 int
 bfin_return_in_memory (tree type)
 {
-  int size;
-  enum machine_mode mode = TYPE_MODE (type);
-
-  if (mode == BLKmode)
-    return 1;
-  size = int_size_in_bytes (type);	
-
-  return size > 8;
+  int size = int_size_in_bytes (type);
+  return size > 2 * UNITS_PER_WORD || size == -1;
 }
 
 /* Register in which address to store a structure value
