@@ -1,3 +1,8 @@
+2005-08-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* testsuite/26_numerics/cmath/c99_classification_macros_c.cc:
+	xfail on *-*-darwin*.
+
 2005-08-03  Geoffrey Keating  <geoffk@apple.com>
 
 	* configure.ac: Don't use GCC_NO_EXECUTABLES or clear
