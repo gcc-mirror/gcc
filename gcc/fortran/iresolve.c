@@ -689,6 +689,26 @@ gfc_resolve_int (gfc_expr * f, gfc_expr * a, gfc_expr * kind)
 
 
 void
+gfc_resolve_isatty (gfc_expr * f, gfc_expr * u)
+{
+  gfc_typespec ts;
+  
+  f->ts.type = BT_LOGICAL;
+  f->ts.kind = gfc_default_integer_kind;
+  if (u->ts.kind != gfc_c_int_kind)
+    {
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_c_int_kind;
+      ts.derived = NULL;
+      ts.cl = NULL;
+      gfc_convert_type (u, &ts, 2);
+    }
+
+  f->value.function.name = gfc_get_string (PREFIX("isatty_l%d"), f->ts.kind);
+}
+
+
+void
 gfc_resolve_ishft (gfc_expr * f, gfc_expr * i, gfc_expr * shift)
 {
   f->ts = i->ts;
@@ -1915,6 +1935,25 @@ gfc_resolve_fstat_sub (gfc_code * c)
   name = gfc_get_string (PREFIX("fstat_i%d_sub"), ts->kind);
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
+
+
+void
+gfc_resolve_ttynam_sub (gfc_code * c)
+{
+  gfc_typespec ts;
+  
+  if (c->ext.actual->expr->ts.kind != gfc_c_int_kind)
+    {
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_c_int_kind;
+      ts.derived = NULL;
+      ts.cl = NULL;
+      gfc_convert_type (c->ext.actual->expr, &ts, 2);
+    }
+
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (PREFIX("ttynam_sub"));
+}
+
 
 /* Resolve the UMASK intrinsic subroutine.  */
 

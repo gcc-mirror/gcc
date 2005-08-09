@@ -1,9 +1,19 @@
+2005-08-07  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+	* Makefile.am: Add file intrinsics/tty.c to Makefile process.
+	* Makefile.in: Regenerate.
+	* io/io.h: Prototypes for new functions stream_isatty and
+	stream_ttyname.
+	* io/unix (stream_isatty, stream_ttyname): New functions to call
+	isatty() and ttyname() on a given unit.
+	* intrinsics/tty.c: New file to implement g77 intrinsics TTYNAM
+	and ISATTY.
+
 2005-08-08  Jerry DeLisle  <jvdelisle@verizon.net>
 
-        PR libfortran/23154
-        * io/transfer.c (data_transfer_init): Initialize
-        current_unit->bytes_left for a read.
-			
+	PR libfortran/23154
+	* io/transfer.c (data_transfer_init): Initialize
+	current_unit->bytes_left for a read.
+
 2005-08-07  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* io/io.h: Change DEFAULT_TEMPDIR to /tmp instead of /var/tmp.
@@ -38,8 +48,8 @@
 
 2005-07-23  Jerry DeLisle  <jvdelisle@verizon.net>
 
-    * io/write.c (write_float): Revise output of IEEE exceptional
-    values to comply with F95 and F2003 standards.
+	* io/write.c (write_float): Revise output of IEEE exceptional
+	values to comply with F95 and F2003 standards.
 
 2005-07-22  Jerry DeLisle  <jvdelisle@verizon.net>
 
@@ -155,7 +165,7 @@
 	by size since it's a char pointer).
 	* m4/eoshift3.m4:  Likewise.
 	* m4/cshift1.m4: Remove const from argument ret.
-        Populate return array descriptor if ret->data is NULL.
+	Populate return array descriptor if ret->data is NULL.
 	* m4/eoshift1.m4: Likewise.
 	* generated/eoshift1_4.c:  Regenerated.
 	* generated/eoshift1_8.c:  Regenerated.

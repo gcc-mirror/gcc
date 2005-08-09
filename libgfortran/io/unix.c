@@ -1533,6 +1533,18 @@ flush (stream *s)
   return fd_flush( (unix_stream *) s);
 }
 
+int
+stream_isatty (stream *s)
+{
+  return isatty (((unix_stream *) s)->fd);
+}
+
+char *
+stream_ttyname (stream *s)
+{
+  return ttyname (((unix_stream *) s)->fd);
+}
+
 
 /* How files are stored:  This is an operating-system specific issue,
    and therefore belongs here.  There are three cases to consider.

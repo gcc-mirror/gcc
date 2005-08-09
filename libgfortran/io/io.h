@@ -496,6 +496,12 @@ internal_proto(empty_internal_buffer);
 extern try flush (stream *);
 internal_proto(flush);
 
+extern int stream_isatty (stream *);
+internal_proto(stream_isatty);
+
+extern char * stream_ttyname (stream *);
+internal_proto(stream_ttyname);
+
 extern int unit_to_fd (int);
 internal_proto(unit_to_fd);
 

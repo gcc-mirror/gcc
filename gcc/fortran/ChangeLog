@@ -1,3 +1,16 @@
+2005-08-07  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* check.c (gfc_check_ttynam_sub, gfc_check_isatty): Add check
+	functions for new intrinsics TTYNAM and ISATTY.
+	* intrinsic.c (add_functions, add_subroutines): Add new
+	intrinsics.
+	* intrinsic.h: Add prototypes for new check and resolve
+	functions.
+	* iresolve.c (gfc_resolve_isatty, gfc_resolve_ttynam_sub): New
+	resolve functions for intrinsics TTYNAM and ISATTY.
+	* gfortran.h (gfc_generic_isym_id): Add symbol for ISATTY.
+	* trans-intrinsic.c: Add case for GFC_ISYM_ISATTY.
+
 2005-08-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* scanner.c (preprocessor_line): Don't write beyond the end of flag

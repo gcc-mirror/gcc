@@ -2574,6 +2574,38 @@ gfc_check_hostnm_sub (gfc_expr * name, gfc_expr * status)
 
 
 try
+gfc_check_ttynam_sub (gfc_expr * unit, gfc_expr * name)
+{
+  if (scalar_check (unit, 0) == FAILURE)
+    return FAILURE;
+
+  if (type_check (unit, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (type_check (name, 1, BT_CHARACTER) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+try
+gfc_check_isatty (gfc_expr * unit)
+{
+  if (unit == NULL)
+    return FAILURE;
+
+  if (type_check (unit, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (scalar_check (unit, 0) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+try
 gfc_check_perror (gfc_expr * string)
 {
   if (type_check (string, 0, BT_CHARACTER) == FAILURE)
