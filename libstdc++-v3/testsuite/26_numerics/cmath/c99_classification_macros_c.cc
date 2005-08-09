@@ -27,8 +27,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-// { dg-do compile { xfail *-*-linux-gnu } }
-// { dg-excess-errors "" { target *-*-linux-gnu } }
+// { dg-do compile { xfail *-*-linux-gnu *-*-darwin* } }
+// { dg-excess-errors "" { target *-*-linux-gnu *-*-darwin* } }
 
 #include <math.h>
 
