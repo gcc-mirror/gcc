@@ -1,3 +1,10 @@
+2005-08-09  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR c/23161
+	PR c/23165
+	* c-typeck.c (c_finish_if_stmt): Look into STATEMENT_LISTs to see
+	if the if is really empty.
+
 2005-08-09  Steven Bosscher  <stevenb@suse.de>
 
 	PR tree-optimization/23234
