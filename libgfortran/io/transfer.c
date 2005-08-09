@@ -1028,7 +1028,9 @@ data_transfer_init (int read_flag)
     {
       current_unit->recl = file_length(current_unit->s);
       if (g.mode==WRITING)
-	empty_internal_buffer (current_unit->s);
+        empty_internal_buffer (current_unit->s);
+      else
+        current_unit->bytes_left = current_unit->recl;	
     }
 
   /* Check the action.  */

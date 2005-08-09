@@ -1,3 +1,9 @@
+2005-08-08  Jerry DeLisle  <jvdelisle@verizon.net>
+
+        PR libfortran/23154
+        * io/transfer.c (data_transfer_init): Initialize
+        current_unit->bytes_left for a read.
+        
 2005-08-07  Janne Blomqvist  <jblomqvi@cc.hut.fi>
 
 	PR fortran/22390
