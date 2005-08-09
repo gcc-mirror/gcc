@@ -191,9 +191,9 @@ END(ffi_call_SYSV)
       .uleb128  0x08
       .byte     0x4      /*  DW_CFA_advance_loc4 */
       .4byte    .LCFI5-.LCFI0
-      .byte     0x2f     /*  DW_CFA_GNU_negative_offset_extended */
+      .byte     0x11     /*  DW_CFA_offset_extended_sf */
       .uleb128  0x41
-      .uleb128  0x1
+      .sleb128  -1
       .byte     0x9f     /*  DW_CFA_offset, column 0x1f */
       .uleb128  0x1
       .byte     0x9e     /*  DW_CFA_offset, column 0x1e */
