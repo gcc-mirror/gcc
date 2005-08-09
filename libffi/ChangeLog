@@ -1,3 +1,10 @@
+2005-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* src/powerpc/ppc_closure.S (ffi_closure_SYSV): Use
+	DW_CFA_offset_extended_sf rather than
+	DW_CFA_GNU_negative_offset_extended.
+	* src/powerpc/sysv.S (ffi_call_SYSV): Likewise.
+
 2005-07-22  SUGIOKA Toshinobu  <sugioka@itonet.co.jp>
 
 	* src/sh/sysv.S (ffi_call_SYSV): Stop argument popping correctly

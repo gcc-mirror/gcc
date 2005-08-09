@@ -319,9 +319,9 @@ END(ffi_closure_SYSV)
 	.uleb128 144
 	.byte	0x4	 # DW_CFA_advance_loc4
 	.4byte	.LCFI1-.LCFI0
-	.byte	0x2f	 # DW_CFA_GNU_negative_offset_extended
+	.byte	0x11	 # DW_CFA_offset_extended_sf
 	.uleb128 0x41
-	.uleb128 0x1
+	.sleb128 -1
 	.align 2
 .LEFDE1:
 
