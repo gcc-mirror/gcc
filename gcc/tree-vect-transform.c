@@ -1021,9 +1021,12 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
 	     && (integer_zerop (scalar_initial_def) 
 		 || real_zerop (scalar_initial_def)))
 	    {
-	      epilog_stmt = build2 (MODIFY_EXPR, scalar_type, new_scalar_dest,
-                                build3 (BIT_FIELD_REF, scalar_type,
-                                	vec_temp, bitsize, bitsize_zero_node));
+	      tree rhs = build3 (BIT_FIELD_REF, scalar_type, vec_temp, bitsize,
+				 bitsize_zero_node);
+
+	      BIT_FIELD_REF_UNSIGNED (rhs) = TYPE_UNSIGNED (scalar_type);
+	      epilog_stmt = build2 (MODIFY_EXPR, scalar_type, new_scalar_dest, 
+				    rhs);
               new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
               TREE_OPERAND (epilog_stmt, 0) = new_temp;
               bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
@@ -1043,10 +1046,12 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
 	       bit_offset += element_bitsize)
 	    { 
 	      tree bitpos = bitsize_int (bit_offset);
-
+	      tree rhs = build3 (BIT_FIELD_REF, scalar_type, vec_temp, bitsize,
+				 bitpos);
+		
+	      BIT_FIELD_REF_UNSIGNED (rhs) = TYPE_UNSIGNED (scalar_type);
 	      epilog_stmt = build2 (MODIFY_EXPR, scalar_type, new_scalar_dest,
-				build3 (BIT_FIELD_REF, scalar_type,
-					vec_temp, bitsize, bitpos));
+				    rhs);	
 	      new_name = make_ssa_name (new_scalar_dest, epilog_stmt);
 	      TREE_OPERAND (epilog_stmt, 0) = new_name;
 	      bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
@@ -1074,6 +1079,8 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
   
   if (extract_scalar_result)
     {
+      tree rhs;
+
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "extract scalar result");
 
@@ -1085,9 +1092,9 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
       else
 	bitpos = bitsize_zero_node;
 
-      epilog_stmt = build2 (MODIFY_EXPR, scalar_type, new_scalar_dest,
-		     build3 (BIT_FIELD_REF, scalar_type,
-			     new_temp, bitsize, bitpos));
+      rhs = build3 (BIT_FIELD_REF, scalar_type, new_temp, bitsize, bitpos);
+      BIT_FIELD_REF_UNSIGNED (rhs) = TYPE_UNSIGNED (scalar_type);
+      epilog_stmt = build2 (MODIFY_EXPR, scalar_type, new_scalar_dest, rhs);
       new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
       TREE_OPERAND (epilog_stmt, 0) = new_temp; 
       bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
