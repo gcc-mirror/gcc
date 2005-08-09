@@ -1,3 +1,9 @@
+2005-08-09  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR rtl-optimization/17860
+	* loop.c (check_dbra_loop): Do not try to use an end condition
+	like "i != 0" in the reversed loop.
+
 2005-08-08  Josh Conner  <jconner@apple.com>
 
 	PR rtl-optimization/23241

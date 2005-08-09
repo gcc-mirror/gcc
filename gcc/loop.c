@@ -8396,17 +8396,6 @@ check_dbra_loop (struct loop *loop, int insn_count)
 
 	      /* First check if we can do a vanilla loop reversal.  */
 	      if (initial_value == const0_rtx
-		  /* If we have a decrement_and_branch_on_count,
-		     prefer the NE test, since this will allow that
-		     instruction to be generated.  Note that we must
-		     use a vanilla loop reversal if the biv is used to
-		     calculate a giv or has a non-counting use.  */
-#if ! defined (HAVE_decrement_and_branch_until_zero) \
-&& defined (HAVE_decrement_and_branch_on_count)
-		  && (! (add_val == 1 && loop->vtop
-		         && (bl->biv_count == 0
-			     || no_use_except_counting)))
-#endif
 		  && GET_CODE (comparison_value) == CONST_INT
 		     /* Now do postponed overflow checks on COMPARISON_VAL.  */
 		  && ! (((comparison_val - add_val) ^ INTVAL (comparison_value))
@@ -8417,13 +8406,6 @@ check_dbra_loop (struct loop *loop, int insn_count)
 		  add_adjust = add_val;
 		  nonneg = 1;
 		  cmp_code = GE;
-		}
-	      else if (add_val == 1 && loop->vtop
-		       && (bl->biv_count == 0
-			   || no_use_except_counting))
-		{
-		  add_adjust = 0;
-		  cmp_code = NE;
 		}
 	      else
 		return 0;
