@@ -1,3 +1,7 @@
+2005-08-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* objc.dg/try-catch-8.m: Enable for all targets.
+
 2005-08-09  James A. Morrison  <phython@gcc.gnu.org>
 
 	* gcc.dg/pr23165.c: New test.
