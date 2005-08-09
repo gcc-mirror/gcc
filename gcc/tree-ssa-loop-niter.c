@@ -778,13 +778,13 @@ tree_simplify_using_condition_1 (tree cond, tree expr)
 
   /* Check whether COND ==> EXPR.  */
   notcond = invert_truthvalue (cond);
-  e = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, notcond, te);
+  e = fold_binary (TRUTH_OR_EXPR, boolean_type_node, notcond, te);
   if (nonzero_p (e))
     return e;
 
   /* Check whether COND ==> not EXPR.  */
-  e = fold_build2 (TRUTH_AND_EXPR, boolean_type_node, cond, te);
-  if (zero_p (e))
+  e = fold_binary (TRUTH_AND_EXPR, boolean_type_node, cond, te);
+  if (e && zero_p (e))
     return e;
 
   return expr;
@@ -1296,8 +1296,8 @@ loop_niter_by_eval (struct loop *loop, edge exit)
       for (j = 0; j < 2; j++)
 	aval[j] = get_val_for (op[j], val[j]);
 
-      acnd = fold_build2 (cmp, boolean_type_node, aval[0], aval[1]);
-      if (zero_p (acnd))
+      acnd = fold_binary (cmp, boolean_type_node, aval[0], aval[1]);
+      if (acnd && zero_p (acnd))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file,
@@ -1462,11 +1462,11 @@ compare_trees (tree a, tree b)
   a = fold_convert (type, a);
   b = fold_convert (type, b);
 
-  if (nonzero_p (fold_build2 (EQ_EXPR, boolean_type_node, a, b)))
+  if (nonzero_p (fold_binary (EQ_EXPR, boolean_type_node, a, b)))
     return 0;
-  if (nonzero_p (fold_build2 (LT_EXPR, boolean_type_node, a, b)))
+  if (nonzero_p (fold_binary (LT_EXPR, boolean_type_node, a, b)))
     return 1;
-  if (nonzero_p (fold_build2 (GT_EXPR, boolean_type_node, a, b)))
+  if (nonzero_p (fold_binary (GT_EXPR, boolean_type_node, a, b)))
     return -1;
 
   return 2;
@@ -1530,6 +1530,7 @@ proved_non_wrapping_p (tree at_stmt,
 {
   tree cond;
   tree bound = niter_bound->bound;
+  enum tree_code cmp;
 
   if (TYPE_PRECISION (new_type) > TYPE_PRECISION (TREE_TYPE (bound)))
     bound = fold_convert (unsigned_type_for (new_type), bound);
@@ -1539,18 +1540,19 @@ proved_non_wrapping_p (tree at_stmt,
   /* After the statement niter_bound->at_stmt we know that anything is
      executed at most BOUND times.  */
   if (at_stmt && stmt_dominates_stmt_p (niter_bound->at_stmt, at_stmt))
-    cond = fold_build2 (GE_EXPR, boolean_type_node, valid_niter, bound);
-
+    cmp = GE_EXPR;
   /* Before the statement niter_bound->at_stmt we know that anything
      is executed at most BOUND + 1 times.  */
   else
-    cond = fold_build2 (GT_EXPR, boolean_type_node, valid_niter, bound);
+    cmp = GT_EXPR;
 
+  cond = fold_binary (cmp, boolean_type_node, valid_niter, bound);
   if (nonzero_p (cond))
     return true;
 
+  cond = build2 (cmp, boolean_type_node, valid_niter, bound);
   /* Try taking additional conditions into account.  */
-  cond = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
+  cond = fold_binary (TRUTH_OR_EXPR, boolean_type_node,
 		      invert_truthvalue (niter_bound->additional),
 		      cond);
 
