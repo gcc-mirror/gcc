@@ -2494,12 +2494,12 @@ c_common_truthvalue_conversion (tree expr)
   return build_binary_op (NE_EXPR, expr, integer_zero_node, 1);
 }
 
-static tree builtin_function_2 (const char *builtin_name, const char *name,
-				tree builtin_type, tree type,
-				enum built_in_function function_code,
-				enum built_in_class cl, int library_name_p,
-				bool nonansi_p,
-				tree attrs);
+static void def_builtin_1  (enum built_in_function fncode,
+			    const char *name,
+			    enum built_in_class fnclass,
+			    tree fntype, tree libtype,
+			    bool both_p, bool fallback_p, bool nonansi_p,
+			    tree fnattrs, bool implicit_p);
 
 /* Make a variant type in the proper way for C/C++, propagating qualifiers
    down to the element type of an array.  */
@@ -3317,36 +3317,11 @@ c_common_nodes_and_builtins (void)
 #define DEF_BUILTIN(ENUM, NAME, CLASS, TYPE, LIBTYPE, BOTH_P, FALLBACK_P, \
 		    NONANSI_P, ATTRS, IMPLICIT, COND)			\
   if (NAME && COND)							\
-    {									\
-      tree decl;							\
-									\
-      gcc_assert ((!BOTH_P && !FALLBACK_P)				\
-		  || !strncmp (NAME, "__builtin_",			\
-			       strlen ("__builtin_")));			\
-									\
-      if (!BOTH_P)							\
-	decl = lang_hooks.builtin_function (NAME, builtin_types[TYPE],	\
-				 ENUM,					\
-				 CLASS,					\
-				 (FALLBACK_P				\
-				  ? (NAME + strlen ("__builtin_"))	\
-				  : NULL),				\
-				 built_in_attributes[(int) ATTRS]);	\
-      else								\
-	decl = builtin_function_2 (NAME,				\
-				   NAME + strlen ("__builtin_"),	\
-				   builtin_types[TYPE],			\
-				   builtin_types[LIBTYPE],		\
-				   ENUM,				\
-				   CLASS,				\
-				   FALLBACK_P,				\
-				   NONANSI_P,				\
-				   built_in_attributes[(int) ATTRS]);	\
-									\
-      built_in_decls[(int) ENUM] = decl;				\
-      if (IMPLICIT)							\
-	implicit_built_in_decls[(int) ENUM] = decl;			\
-    }
+    def_builtin_1 (ENUM, NAME, CLASS,                                   \
+                   builtin_types[(int) TYPE],                           \
+                   builtin_types[(int) LIBTYPE],                        \
+                   BOTH_P, FALLBACK_P, NONANSI_P,                       \
+                   built_in_attributes[(int) ATTRS], IMPLICIT);
 #include "builtins.def"
 #undef DEF_BUILTIN
 
@@ -3436,42 +3411,39 @@ builtin_function_disabled_p (const char *name)
 }
 
 
-/* Possibly define a builtin function with one or two names.  BUILTIN_NAME
-   is an __builtin_-prefixed name; NAME is the ordinary name; one or both
-   of these may be NULL (though both being NULL is useless).
-   BUILTIN_TYPE is the type of the __builtin_-prefixed function;
-   TYPE is the type of the function with the ordinary name.  These
-   may differ if the ordinary name is declared with a looser type to avoid
-   conflicts with headers.  FUNCTION_CODE and CL are as for
-   builtin_function.  If LIBRARY_NAME_P is nonzero, NAME is passed as
-   the LIBRARY_NAME parameter to builtin_function when declaring BUILTIN_NAME.
-   If NONANSI_P is true, the name NAME is treated as a non-ANSI name;
-   ATTRS is the tree list representing the builtin's function attributes.
-   Returns the declaration of BUILTIN_NAME, if any, otherwise
-   the declaration of NAME.  Does not declare NAME if flag_no_builtin,
-   or if NONANSI_P and flag_no_nonansi_builtin.  */
+/* Worker for DEF_BUILTIN.
+   Possibly define a builtin function with one or two names.
+   Does not declare a non-__builtin_ function if flag_no_builtin, or if
+   nonansi_p and flag_no_nonansi_builtin.  */
 
-static tree
-builtin_function_2 (const char *builtin_name, const char *name,
-		    tree builtin_type, tree type,
-		    enum built_in_function function_code,
-		    enum built_in_class cl, int library_name_p,
-		    bool nonansi_p, tree attrs)
+static void
+def_builtin_1 (enum built_in_function fncode,
+	       const char *name,
+	       enum built_in_class fnclass,
+	       tree fntype, tree libtype,
+	       bool both_p, bool fallback_p, bool nonansi_p,
+	       tree fnattrs, bool implicit_p)
 {
-  tree bdecl = NULL_TREE;
-  tree decl = NULL_TREE;
+  tree decl;
+  const char *libname;
 
-  if (builtin_name != 0)
-    bdecl = lang_hooks.builtin_function (builtin_name, builtin_type,
-					 function_code, cl,
-					 library_name_p ? name : NULL, attrs);
+  gcc_assert ((!both_p && !fallback_p)
+	      || !strncmp (name, "__builtin_",
+			   strlen ("__builtin_")));
 
-  if (name != 0 && !flag_no_builtin && !builtin_function_disabled_p (name)
+  libname = name + strlen ("__builtin_");
+  decl = lang_hooks.builtin_function (name, fntype, fncode, fnclass,
+				      (fallback_p ? libname : NULL),
+				      fnattrs);
+  if (both_p
+      && !flag_no_builtin && !builtin_function_disabled_p (libname)
       && !(nonansi_p && flag_no_nonansi_builtin))
-    decl = lang_hooks.builtin_function (name, type, function_code, cl,
-					NULL, attrs);
+    lang_hooks.builtin_function (libname, libtype, fncode, fnclass,
+				 NULL, fnattrs);
 
-  return (bdecl != 0 ? bdecl : decl);
+  built_in_decls[(int) fncode] = decl;
+  if (implicit_p)
+    implicit_built_in_decls[(int) fncode] = decl;
 }
 
 /* Nonzero if the type T promotes to int.  This is (nearly) the

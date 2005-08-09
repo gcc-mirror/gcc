@@ -1,3 +1,10 @@
+2005-08-09  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.c (builtin_function_2): Remove.
+	(def_builtin_1): New function.
+	(c_common_nodes_and_builtins): Use def_builtin_1 to
+	build builtin functions.
+
 2005-08-09  Jie Zhang  <jie.zhang@analog.com>
 
 	* config/bfin/uclinux.h (NO_IMPLICIT_EXTERN_C): Define.
