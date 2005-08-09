@@ -14,3 +14,5 @@
 
 #undef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX "_"
+
+#define NO_IMPLICIT_EXTERN_C
