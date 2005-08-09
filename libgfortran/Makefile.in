@@ -140,7 +140,7 @@ am__objects_33 = associated.lo abort.lo args.lo bessel.lo \
 	rand.lo random.lo rename.lo reshape_generic.lo \
 	reshape_packed.lo selected_int_kind.lo selected_real_kind.lo \
 	stat.lo symlnk.lo system_clock.lo time.lo transpose_generic.lo \
-	umask.lo unlink.lo unpack_generic.lo in_pack_generic.lo \
+	tty.lo umask.lo unlink.lo unpack_generic.lo in_pack_generic.lo \
 	in_unpack_generic.lo normalize.lo
 am__objects_34 =
 am__objects_35 = _abs_c4.lo _abs_c8.lo _abs_i4.lo _abs_i8.lo \
@@ -379,6 +379,7 @@ intrinsics/symlnk.c \
 intrinsics/system_clock.c \
 intrinsics/time.c \
 intrinsics/transpose_generic.c \
+intrinsics/tty.c \
 intrinsics/umask.c \
 intrinsics/unlink.c \
 intrinsics/unpack_generic.c \
@@ -1384,6 +1385,9 @@ time.lo: intrinsics/time.c
 
 transpose_generic.lo: intrinsics/transpose_generic.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o transpose_generic.lo `test -f 'intrinsics/transpose_generic.c' || echo '$(srcdir)/'`intrinsics/transpose_generic.c
+
+tty.lo: intrinsics/tty.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tty.lo `test -f 'intrinsics/tty.c' || echo '$(srcdir)/'`intrinsics/tty.c
 
 umask.lo: intrinsics/umask.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o umask.lo `test -f 'intrinsics/umask.c' || echo '$(srcdir)/'`intrinsics/umask.c
