@@ -1,3 +1,8 @@
+2005-08-09  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* gcc.dg/vect/vect-reduc-1char.c: Reverse last change - change
+	input data back to what it was originally.
+
 2005-08-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* objc.dg/try-catch-8.m: Enable for all targets.
