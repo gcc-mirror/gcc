@@ -3,11 +3,12 @@
 ! the character agruments.
       program foo
       character*1 a1, a2, b
+      logical LSAME, x
       a1='A'
       a2='A'
       b='B'
       x = LSAME(a1,a2)
-      if ( x.ne.1 ) then
+      if ( .not. x ) then
         call abort  ();
       endif
       end
