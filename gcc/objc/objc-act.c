@@ -9303,6 +9303,8 @@ handle_class_ref (tree chain)
   DECL_INITIAL (decl) = exp;
   TREE_STATIC (decl) = 1;
   TREE_USED (decl) = 1;
+  /* Force the output of the decl as this forces the reference of the class.  */
+  mark_decl_referenced (decl);
 
   pushdecl (decl);
   rest_of_decl_compilation (decl, 0, 0);

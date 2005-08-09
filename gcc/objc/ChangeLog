@@ -1,3 +1,8 @@
+2005-08-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	part of PR objc/21992
+	* objc-act.c (handle_class_ref): The ref decl is always referenced.
+
 2005-07-20  Giovanni Bajo  <giovannibajo@libero.it>
 
 	Make CONSTRUCTOR use VEC to store initializers.
