@@ -1,4 +1,4 @@
-/* The Blackfin code generation auxilary output file.
+/* The Blackfin code generation auxiliary output file.
    Copyright (C) 2005  Free Software Foundation, Inc.
    Contributed by Analog Devices.
 
@@ -16,8 +16,8 @@
 
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING.  If not, write to
-   the Free Software Foundation, 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  */
+   the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+   Boston, MA 02110-1301, USA.  */
 
 #include "config.h"
 #include "system.h"
@@ -1273,24 +1273,8 @@ bfin_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 int
 bfin_return_in_memory (tree type)
 {
-  int size;
-  enum machine_mode mode = TYPE_MODE (type);
-
-  if (mode == BLKmode)
-    return 1;
-  size = int_size_in_bytes (type);	
-  if (VECTOR_MODE_P (mode) || mode == TImode)
-    {
-      /* User-created vectors small enough to fit in REG.  */
-      if (size < 8)
-        return 0;
-      if (size == 8 || size == 16)
-	return 1;
-    }
-
-  if (size > 12)
-    return 1;
-  return 0;
+  int size = int_size_in_bytes (type);
+  return size > 2 * UNITS_PER_WORD || size == -1;
 }
 
 /* Register in which address to store a structure value

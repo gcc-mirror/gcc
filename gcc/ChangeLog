@@ -1,3 +1,22 @@
+2005-08-09  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	Mostly from Jie Zhang (jie.zhang@analog.com)
+	* config.gcc: Add bfin-uclinux.
+	* config/bfin/uclinux.h: New file.
+	* config/bfin/bfin-modes.def: Update FSF address.
+	* config/bfin/bfin-protos.h: Likewise.
+	* config/bfin/bfin.md: Likewise.
+	* config/bfin/bfin.opt: Likewise.
+	* config/bfin/crti.s: Likewise.
+	* config/bfin/crtn.s: Likewise.
+	* config/bfin/lib1funcs.asm: Likewise.
+	* config/bfin/predicates.md: Likewise.
+	* config/bfin/bfin.c: Likewise.
+	(bfin_return_in_memory): Update to match Visual DSP compiler.
+	* config/bfin/bfin.h: Update FSF address.
+	(ASM_OUTPUT_ALIGN): Write alignment in bytes, not log thereof.
+	* config/bfin/elf.h (NO_IMPLICIT_EXTERN_C): Define.
+
 2005-08-08  Richard Henderson  <rth@redhat.com>
 
 	PR 22439

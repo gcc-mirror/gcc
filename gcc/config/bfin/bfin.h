@@ -16,8 +16,8 @@
 
    You should have received a copy of the GNU General Public License
    along with GCC; see the file COPYING.  If not, write to
-   the Free Software Foundation, 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  */
+   the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+   Boston, MA 02110-1301, USA.  */
 
 #ifndef _BFIN_CONFIG
 #define _BFIN_CONFIG
@@ -1167,8 +1167,9 @@ do { char __buf[256];					\
     } while (0)
 
 #define ASM_OUTPUT_ALIGN(FILE,LOG) 				\
-    do {		 					\
-	fprintf (FILE, ".align %d\n", LOG);			\
+    do {							\
+      if ((LOG) != 0)						\
+	fprintf (FILE, "\t.align %d\n", 1 << (LOG));		\
     } while (0)
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)		\

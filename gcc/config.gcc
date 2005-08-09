@@ -739,12 +739,17 @@ bfin*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h"
         tmake_file=bfin/t-bfin-elf
         use_collect2=no
-        ;;  
+        ;;
+bfin*-uclinux*)
+	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h bfin/uclinux.h"
+        tmake_file=bfin/t-bfin-elf
+        use_collect2=no
+        ;;
 bfin*-*)
 	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h"
         tmake_file=bfin/t-bfin
         use_collect2=no
-        ;;  
+        ;;
 c4x-*-rtems* | tic4x-*-rtems*)
 	tmake_file="c4x/t-c4x t-rtems c4x/t-rtems"
 	tm_file="c4x/c4x.h c4x/rtems.h rtems.h"
