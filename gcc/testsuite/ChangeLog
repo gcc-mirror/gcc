@@ -1,3 +1,8 @@
+2005-08-09  Thomas Koenig  <Thomas.Koenig@online.de>
+
+        * gfortran/fortran.torture/execute/character_passing.f90:
+        Fix types for LSAME.
+
 2005-08-08  Josh Conner  <jconner@apple.com>
 
 	PR rtl-optimization/23241
