@@ -1,3 +1,13 @@
+2005-08-09  Steven Bosscher  <stevenb@suse.de>
+
+	PR tree-optimization/23234
+	* tree-ssa-math-opts.c (place_reciprocal): New enum.
+	(execute_cse_reciprocals_1): Replace the 'phi' argument with an
+	argument of the new enum.
+	(execute_cse_reciprocals): Add reciprocals for function arguments
+	on the unique successor edge of the entry block.  Update other calls
+	to execute_cse_reciprocals_1.
+
 2005-08-08  Richard Henderson  <rth@redhat.com>
 
 	PR 22439

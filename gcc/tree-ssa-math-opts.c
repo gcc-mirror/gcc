@@ -54,16 +54,25 @@ gate_cse_reciprocals (void)
   return optimize && !optimize_size && flag_unsafe_math_optimizations;
 }
 
+/* Where to put the statement computing a reciprocal.  */
+enum place_reciprocal
+{
+  PR_BEFORE_BSI,	/* Put it using bsi_insert_before.  */
+  PR_AFTER_BSI,		/* Put it using bsi_insert_after.  */
+  PR_ON_ENTRY_EDGE	/* Put it on the edge between the entry
+			   and the first basic block.  */
+};
+
 /* Check if DEF's uses include more than one floating-point division,
-   and if so replace them by multiplications with the reciprocal.  If
-   PHI is true, insert the reciprocal calculation before BSI, otherwise
-   insert it after and move BSI to the new statement.
+   and if so replace them by multiplications with the reciprocal.  Add
+   the statement computing the reciprocal according to WHERE.
 
    Does not check the type of DEF, nor that DEF is a GIMPLE register.
    This is done in the caller for speed, because otherwise this routine
    would be called for every definition and phi node.  */
 static void
-execute_cse_reciprocals_1 (block_stmt_iterator *bsi, tree def, bool phi)
+execute_cse_reciprocals_1 (block_stmt_iterator *bsi, tree def,
+			   enum place_reciprocal where)
 {
   use_operand_p use_p;
   imm_use_iterator use_iter;
@@ -99,10 +108,14 @@ execute_cse_reciprocals_1 (block_stmt_iterator *bsi, tree def, bool phi)
 		     fold_build2 (RDIV_EXPR, type, build_real (type, dconst1),
 				  def));
 
-  if (phi)
+  if (where == PR_BEFORE_BSI)
     bsi_insert_before (bsi, new_stmt, BSI_SAME_STMT);
-  else
+  else if (where == PR_AFTER_BSI)
     bsi_insert_after (bsi, new_stmt, BSI_NEW_STMT);
+  else if (where == PR_ON_ENTRY_EDGE)
+    bsi_insert_on_edge (single_succ_edge (ENTRY_BLOCK_PTR), new_stmt);
+  else
+    gcc_unreachable ();
 
   FOR_EACH_IMM_USE_SAFE (use_p, use_iter, def)
     {
@@ -133,7 +146,8 @@ execute_cse_reciprocals (void)
 	{
 	  block_stmt_iterator bsi;
 	  bsi = bsi_start (single_succ (ENTRY_BLOCK_PTR));
-          execute_cse_reciprocals_1 (&bsi, default_def (arg), false);
+	  execute_cse_reciprocals_1 (&bsi, default_def (arg),
+				     PR_ON_ENTRY_EDGE);
 	}
 
   FOR_EACH_BB (bb)
@@ -150,7 +164,7 @@ execute_cse_reciprocals (void)
 	  def = PHI_RESULT (phi);
 	  if (FLOAT_TYPE_P (TREE_TYPE (def))
 	      && is_gimple_reg (def))
-	    execute_cse_reciprocals_1 (&bsi, def, true);
+	    execute_cse_reciprocals_1 (&bsi, def, PR_BEFORE_BSI);
 	}
 
       for (; !bsi_end_p (bsi); bsi_next (&bsi))
@@ -160,12 +174,15 @@ execute_cse_reciprocals (void)
 	      && (def = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_DEF)) != NULL
 	      && FLOAT_TYPE_P (TREE_TYPE (def))
 	      && TREE_CODE (def) == SSA_NAME)
-	    execute_cse_reciprocals_1 (&bsi, def, false);
+	    execute_cse_reciprocals_1 (&bsi, def, PR_AFTER_BSI);
 	}
     }
 
   if (flag_trapping_math)
     free_dominance_info (CDI_POST_DOMINATORS);
+  
+  if (single_succ_p (ENTRY_BLOCK_PTR))
+    bsi_commit_one_edge_insert (single_succ_edge (ENTRY_BLOCK_PTR), NULL);
 }
 
 struct tree_opt_pass pass_cse_reciprocals =
