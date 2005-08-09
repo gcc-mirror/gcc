@@ -1,3 +1,8 @@
+2005-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* scanner.c (preprocessor_line): Don't write beyond the end of flag
+	buffer.
+
 2005-08-06  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* primary.c (match_hollerith_constant): Fix typo.

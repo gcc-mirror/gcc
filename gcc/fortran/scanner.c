@@ -882,7 +882,7 @@ preprocessor_line (char *c)
 
   /* Get flags.  */
 
-  flag[1] = flag[2] = flag[3] = flag[4] = flag[5] = false;
+  flag[1] = flag[2] = flag[3] = flag[4] = false;
 
   for (;;)
     {
