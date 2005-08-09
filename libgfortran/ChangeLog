@@ -1,9 +1,19 @@
+2005-08-09  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+	* Makefile.am: Add file intrinsics/tty.c to Makefile process.
+	* Makefile.in: Regenerate.
+	* io/io.h: Prototypes for new functions stream_isatty and
+	stream_ttyname.
+	* io/unix (stream_isatty, stream_ttyname): New functions to call
+	isatty() and ttyname() on a given unit.
+	* intrinsics/tty.c: New file to implement g77 intrinsics TTYNAM
+	and ISATTY.
+
 2005-08-08  Jerry DeLisle  <jvdelisle@verizon.net>
 
-        PR libfortran/23154
-        * io/transfer.c (data_transfer_init): Initialize
-        current_unit->bytes_left for a read.
-        
+	PR libfortran/23154
+	* io/transfer.c (data_transfer_init): Initialize
+	current_unit->bytes_left for a read.
+
 2005-08-07  Janne Blomqvist  <jblomqvi@cc.hut.fi>
 
 	PR fortran/22390

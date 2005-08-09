@@ -85,6 +85,7 @@ intrinsics/symlnk.c \
 intrinsics/system_clock.c \
 intrinsics/time.c \
 intrinsics/transpose_generic.c \
+intrinsics/tty.c \
 intrinsics/umask.c \
 intrinsics/unlink.c \
 intrinsics/unpack_generic.c \
