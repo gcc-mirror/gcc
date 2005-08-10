@@ -1665,7 +1665,7 @@ instantiate_virtual_regs (void)
 
 struct tree_opt_pass pass_instantiate_virtual_regs =
 {
-  NULL,                                 /* name */
+  "vregs",                              /* name */
   NULL,                                 /* gate */
   instantiate_virtual_regs,             /* execute */
   NULL,                                 /* sub */
@@ -1676,7 +1676,7 @@ struct tree_opt_pass pass_instantiate_virtual_regs =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
+  TODO_dump_func,                       /* todo_flags_finish */
   0                                     /* letter */
 };
 

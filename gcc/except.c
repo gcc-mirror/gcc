@@ -3241,7 +3241,7 @@ convert_to_eh_region_ranges (void)
 
 struct tree_opt_pass pass_convert_to_eh_region_ranges =
 {
-  NULL,                                 /* name */
+  "eh-ranges",                          /* name */
   NULL,                                 /* gate */
   convert_to_eh_region_ranges,          /* execute */
   NULL,                                 /* sub */
@@ -3252,7 +3252,7 @@ struct tree_opt_pass pass_convert_to_eh_region_ranges =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
+  TODO_dump_func,			/* todo_flags_finish */
   0                                     /* letter */
 };
 

@@ -4356,11 +4356,14 @@ recompute_reg_usage (void)
      in sched1 to die.  To solve this update the DEATH_NOTES
      here.  */
   update_life_info (NULL, UPDATE_LIFE_LOCAL, PROP_REG_INFO | PROP_DEATH_NOTES);
+
+  if (dump_file)
+    dump_flow_info (dump_file);
 }
 
 struct tree_opt_pass pass_recompute_reg_usage =
 {
-  NULL,                                 /* name */
+  "life2",                              /* name */
   NULL,                                 /* gate */
   recompute_reg_usage,                  /* execute */
   NULL,                                 /* sub */
@@ -4371,8 +4374,8 @@ struct tree_opt_pass pass_recompute_reg_usage =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
-  0                                     /* letter */
+  TODO_dump_func,                       /* todo_flags_finish */
+  'f'                                   /* letter */
 };
 
 /* Optionally removes all the REG_DEAD and REG_UNUSED notes from a set of
@@ -4538,7 +4541,7 @@ rest_of_handle_remove_death_notes (void)
 
 struct tree_opt_pass pass_remove_death_notes =
 {
-  NULL,                                 /* name */
+  "ednotes",                            /* name */
   gate_remove_death_notes,              /* gate */
   rest_of_handle_remove_death_notes,    /* execute */
   NULL,                                 /* sub */
@@ -4587,7 +4590,7 @@ rest_of_handle_life (void)
 
 struct tree_opt_pass pass_life =
 {
-  "life",                               /* name */
+  "life1",                              /* name */
   NULL,                                 /* gate */
   rest_of_handle_life,                  /* execute */
   NULL,                                 /* sub */
@@ -4606,11 +4609,6 @@ struct tree_opt_pass pass_life =
 static void
 rest_of_handle_flow2 (void)
 {
-  /* Re-create the death notes which were deleted during reload.  */
-#ifdef ENABLE_CHECKING
-  verify_flow_info ();
-#endif
-
   /* If optimizing, then go ahead and split insns now.  */
 #ifndef STACK_REGS
   if (optimize > 0)

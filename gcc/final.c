@@ -3974,7 +3974,7 @@ rest_of_handle_shorten_branches (void)
  
 struct tree_opt_pass pass_shorten_branches =
 {
-  NULL,                                 /* name */
+  "shorten",                            /* name */
   NULL,                                 /* gate */
   rest_of_handle_shorten_branches,      /* execute */
   NULL,                                 /* sub */
@@ -3985,7 +3985,7 @@ struct tree_opt_pass pass_shorten_branches =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
+  TODO_dump_func,                       /* todo_flags_finish */
   0                                     /* letter */
 };
 

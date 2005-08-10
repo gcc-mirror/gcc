@@ -171,7 +171,7 @@ rtl_loop_init (void)
 
 struct tree_opt_pass pass_rtl_loop_init =
 {
-  "loopinit",                           /* name */
+  "loop2_init",                           /* name */
   NULL,                                 /* gate */
   rtl_loop_init,                        /* execute */
   NULL,                                 /* sub */
@@ -215,7 +215,7 @@ rtl_loop_done (void)
 
 struct tree_opt_pass pass_rtl_loop_done =
 {
-  "loopdone",                           /* name */
+  "loop2_done",                          /* name */
   NULL,                                 /* gate */
   rtl_loop_done,                        /* execute */
   NULL,                                 /* sub */
@@ -232,17 +232,23 @@ struct tree_opt_pass pass_rtl_loop_done =
 
 
 /* Loop invariant code motion.  */
+static bool
+gate_rtl_move_loop_invariants (void)
+{
+  return flag_move_loop_invariants;
+}
+
 static void
 rtl_move_loop_invariants (void)
 {
-  if (current_loops && flag_move_loop_invariants)
+  if (current_loops)
     move_loop_invariants (current_loops);
 }
 
 struct tree_opt_pass pass_rtl_move_loop_invariants =
 {
-  "loop_invariant",                     /* name */
-  NULL,                                 /* gate */
+  "loop2_invariant",                     /* name */
+  gate_rtl_move_loop_invariants,        /* gate */
   rtl_move_loop_invariants,             /* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
@@ -258,17 +264,23 @@ struct tree_opt_pass pass_rtl_move_loop_invariants =
 
 
 /* Loop unswitching for RTL.  */
+static bool
+gate_rtl_unswitch (void)
+{
+  return flag_unswitch_loops;
+}
+
 static void
 rtl_unswitch (void)
 {
-  if (current_loops && flag_unswitch_loops)
+  if (current_loops)
     unswitch_loops (current_loops);
 }
 
 struct tree_opt_pass pass_rtl_unswitch =
 {
-  "loop_unswitch",                      /* name */
-  NULL,                                 /* gate */
+  "loop2_unswitch",                      /* name */
+  gate_rtl_unswitch,                    /* gate */
   rtl_unswitch,                         /* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
@@ -284,11 +296,16 @@ struct tree_opt_pass pass_rtl_unswitch =
 
 
 /* Loop unswitching for RTL.  */
+static bool
+gate_rtl_unroll_and_peel_loops (void)
+{
+  return (flag_peel_loops || flag_unroll_loops || flag_unroll_all_loops);
+}
+
 static void
 rtl_unroll_and_peel_loops (void)
 {
-  if (current_loops
-      && (flag_peel_loops || flag_unroll_loops || flag_unroll_all_loops))
+  if (current_loops)
     {
       int flags = 0;
 
@@ -305,8 +322,8 @@ rtl_unroll_and_peel_loops (void)
 
 struct tree_opt_pass pass_rtl_unroll_and_peel_loops =
 {
-  "loop_unroll",                        /* name */
-  NULL,                                 /* gate */
+  "loop2_unroll",                        /* name */
+  gate_rtl_unroll_and_peel_loops,       /* gate */
   rtl_unroll_and_peel_loops,            /* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
@@ -322,20 +339,29 @@ struct tree_opt_pass pass_rtl_unroll_and_peel_loops =
 
 
 /* The doloop optimization.  */
+static bool
+gate_rtl_doloop (void)
+{
+#ifdef HAVE_doloop_end
+  return (flag_branch_on_count_reg && HAVE_doloop_end);
+#else
+  return 0;
+#endif
+}
+
 static void
 rtl_doloop (void)
 {
 #ifdef HAVE_doloop_end
-  if (current_loops
-      && (flag_branch_on_count_reg && HAVE_doloop_end))
+  if (current_loops)
     doloop_optimize_loops (current_loops);
 #endif
 }
 
 struct tree_opt_pass pass_rtl_doloop =
 {
-  "loop_doloop",                        /* name */
-  NULL,                                 /* gate */
+  "loop2_doloop",                        /* name */
+  gate_rtl_doloop,                      /* gate */
   rtl_doloop,                           /* execute */
   NULL,                                 /* sub */
   NULL,                                 /* next */
