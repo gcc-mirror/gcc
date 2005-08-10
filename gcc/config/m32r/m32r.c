@@ -1340,7 +1340,7 @@ m32r_reload_lr (rtx sp, int size)
 
   if (size == 0)
     emit_insn (gen_movsi (lr, gen_rtx_MEM (Pmode, sp)));
-  else if (size <= 32768)
+  else if (size < 32768)
     emit_insn (gen_movsi (lr, gen_rtx_MEM (Pmode,
 					   gen_rtx_PLUS (Pmode, sp,
 							 GEN_INT (size)))));
