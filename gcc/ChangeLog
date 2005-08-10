@@ -6,6 +6,7 @@
 
 2005-08-10  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR target/21887
 	* config/darwin.c (machopic_indirect_data_reference): Use a new register
 	for the high part when generating dynamic-no-pic code.
 
