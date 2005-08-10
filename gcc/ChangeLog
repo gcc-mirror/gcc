@@ -1,3 +1,9 @@
+2005-08-10  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
+
+	PR 23309
+	* config/m32r/m32r.c (m32r_reload_lr): Fix off by one error when
+	deciding which instruction sequence to use.
+
 2005-08-09  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	Mostly from Jie Zhang (jie.zhang@analog.com)
