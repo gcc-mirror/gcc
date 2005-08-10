@@ -1,3 +1,8 @@
+2005-08-10  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/20646
+	* decl.c (grokdeclarator): Reset storage_class after error.
+
 2005-08-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/22508
