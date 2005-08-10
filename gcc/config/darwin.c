@@ -419,8 +419,10 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
       if (defined && MACHO_DYNAMIC_NO_PIC_P)
 	{
 #if defined (TARGET_TOC)
- 	  emit_insn (gen_macho_high (reg, orig));
- 	  emit_insn (gen_macho_low (reg, reg, orig));
+	  /* Create a new register for CSE opportunities.  */
+	  rtx hi_reg = (no_new_pseudos ? reg : gen_reg_rtx (Pmode));
+ 	  emit_insn (gen_macho_high (hi_reg, orig));
+ 	  emit_insn (gen_macho_low (reg, hi_reg, orig));
 #else
 	   /* some other cpu -- writeme!  */
 	   gcc_unreachable ();

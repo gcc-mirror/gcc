@@ -1,3 +1,8 @@
+2005-08-10  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/darwin.c (machopic_indirect_data_reference): Use a new register
+	for the high part when generating dynamic-no-pic code.
+
 2005-08-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config.gcc (i[34567]86-*-linux*): Add i386/t-crtfm to tm-file.
