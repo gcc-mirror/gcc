@@ -129,7 +129,7 @@ gfc_resolve_all (gfc_expr * f, gfc_expr * mask, gfc_expr * dim)
 
   if (dim != NULL)
     {
-      gfc_resolve_index (dim, 1);
+      gfc_resolve_dim_arg (dim);
       f->rank = mask->rank - 1;
       f->shape = gfc_copy_shape_excluding (mask->shape, mask->rank, dim);
     }
@@ -167,7 +167,7 @@ gfc_resolve_any (gfc_expr * f, gfc_expr * mask, gfc_expr * dim)
 
   if (dim != NULL)
     {
-      gfc_resolve_index (dim, 1);
+      gfc_resolve_dim_arg (dim);
       f->rank = mask->rank - 1;
       f->shape = gfc_copy_shape_excluding (mask->shape, mask->rank, dim);
     }
@@ -359,7 +359,7 @@ gfc_resolve_count (gfc_expr * f, gfc_expr * mask, gfc_expr * dim)
   if (dim != NULL)
     {
       f->rank = mask->rank - 1;
-      gfc_resolve_index (dim, 1);
+      gfc_resolve_dim_arg (dim);
       f->shape = gfc_copy_shape_excluding (mask->shape, mask->rank, dim);
     }
 
@@ -385,9 +385,19 @@ gfc_resolve_cshift (gfc_expr * f, gfc_expr * array,
   else
     n = 0;
 
+  /* Convert shift to at least gfc_default_integer_kind, so we don't need
+     kind=1 and kind=2 versions of the library functions.  */
+  if (shift->ts.kind < gfc_default_integer_kind)
+    {
+      gfc_typespec ts;
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_default_integer_kind;
+      gfc_convert_type_warn (shift, &ts, 2, 0);
+    }
+
   if (dim != NULL)
     {
-      gfc_resolve_index (dim, 1);
+      gfc_resolve_dim_arg (dim);
       /* Convert dim to shift's kind, so we don't need so many variations.  */
       if (dim->ts.kind != shift->ts.kind)
 	gfc_convert_type_warn (dim, &shift->ts, 2, 0);
@@ -474,10 +484,23 @@ gfc_resolve_eoshift (gfc_expr * f, gfc_expr * array,
   if (boundary && boundary->rank > 0)
     n = n | 2;
 
-  /* Convert dim to the same type as shift, so we don't need quite so many
-     variations.  */
-  if (dim != NULL && dim->ts.kind != shift->ts.kind)
-    gfc_convert_type_warn (dim, &shift->ts, 2, 0);
+  /* Convert shift to at least gfc_default_integer_kind, so we don't need
+     kind=1 and kind=2 versions of the library functions.  */
+  if (shift->ts.kind < gfc_default_integer_kind)
+    {
+      gfc_typespec ts;
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_default_integer_kind;
+      gfc_convert_type_warn (shift, &ts, 2, 0);
+    }
+
+  if (dim != NULL)
+    {
+      gfc_resolve_dim_arg (dim);
+      /* Convert dim to shift's kind, so we don't need so many variations.  */
+      if (dim->ts.kind != shift->ts.kind)
+	gfc_convert_type_warn (dim, &shift->ts, 2, 0);
+    }
 
   f->value.function.name =
     gfc_get_string (PREFIX("eoshift%d_%d"), n, shift->ts.kind);
@@ -921,7 +944,7 @@ gfc_resolve_maxloc (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
   else
     {
       f->rank = array->rank - 1;
-      gfc_resolve_index (dim, 1);
+      gfc_resolve_dim_arg (dim);
     }
 
   name = mask ? "mmaxloc" : "maxloc";
@@ -940,7 +963,7 @@ gfc_resolve_maxval (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
   if (dim != NULL)
     {
       f->rank = array->rank - 1;
-      gfc_resolve_index (dim, 1);
+      gfc_resolve_dim_arg (dim);
     }
 
   f->value.function.name =
@@ -982,7 +1005,7 @@ gfc_resolve_minloc (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
   else
     {
       f->rank = array->rank - 1;
-      gfc_resolve_index (dim, 1);
+      gfc_resolve_dim_arg (dim);
     }
 
   name = mask ? "mminloc" : "minloc";
@@ -1001,7 +1024,7 @@ gfc_resolve_minval (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
   if (dim != NULL)
     {
       f->rank = array->rank - 1;
-      gfc_resolve_index (dim, 1);
+      gfc_resolve_dim_arg (dim);
     }
 
   f->value.function.name =
@@ -1098,7 +1121,7 @@ gfc_resolve_product (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
   if (dim != NULL)
     {
       f->rank = array->rank - 1;
-      gfc_resolve_index (dim, 1);
+      gfc_resolve_dim_arg (dim);
     }
 
   f->value.function.name =
@@ -1341,7 +1364,7 @@ gfc_resolve_spread (gfc_expr * f, gfc_expr * source,
   f->rank = source->rank + 1;
   f->value.function.name = PREFIX("spread");
 
-  gfc_resolve_index (dim, 1);
+  gfc_resolve_dim_arg (dim);
   gfc_resolve_index (ncopies, 1);
 }
 
@@ -1388,7 +1411,7 @@ gfc_resolve_sum (gfc_expr * f, gfc_expr * array, gfc_expr * dim,
   if (dim != NULL)
     {
       f->rank = array->rank - 1;
-      gfc_resolve_index (dim, 1);
+      gfc_resolve_dim_arg (dim);
     }
 
   f->value.function.name =
