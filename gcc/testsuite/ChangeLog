@@ -1,3 +1,8 @@
+2005-08-10  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/22143
+	gfortran.dg/shift-kind.f90:  New testcase.
+
 2005-08-10  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/20646

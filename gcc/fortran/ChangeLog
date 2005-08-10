@@ -1,3 +1,22 @@
+2005-08-10  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/22143
+	gfortran.h:  Declare new function gfc_resolve_dim_arg.
+	resolve.c:  New function gfc_resolve_dim_arg.
+	iresolve.c (gfc_resolve_all):  Use gfc_resolve_dim_arg.
+	(gfc_resolve_any):  Likewise.
+	(gfc_resolve_count):  Likewise.
+	(gfc_resolve_cshift):  Likewise.  If the kind of shift is less
+	gfc_default_integer_kind, convert it to default integer type.
+	(gfc_resolve_eoshift):  Likewise.
+	(gfc_resolve_maxloc):  Use gfc_resolve_dim_arg.
+	(gfc_resolve_maxval):  Likewise.
+	(gfc_resolve_minloc):  Likewise.
+	(gfc_resolve_minval):  Likewise.
+	(gfc_resolve_product):  Likewise.
+	(gfc_resolve_spread):  Likewise.
+	(gfc_resolve_sum):  Likewise.
+
 2005-08-07  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* check.c (gfc_check_ttynam_sub, gfc_check_isatty): Add check
