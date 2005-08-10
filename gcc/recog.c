@@ -3460,7 +3460,7 @@ rest_of_handle_split_all_insns (void)
 
 struct tree_opt_pass pass_split_all_insns =
 {
-  NULL,                                 /* name */
+  "split1",                             /* name */
   NULL,                                 /* gate */
   rest_of_handle_split_all_insns,       /* execute */
   NULL,                                 /* sub */
@@ -3471,7 +3471,7 @@ struct tree_opt_pass pass_split_all_insns =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
+  TODO_dump_func,                       /* todo_flags_finish */
   0                                     /* letter */
 };
 
@@ -3489,7 +3489,7 @@ gate_do_final_split (void)
 
 struct tree_opt_pass pass_split_for_shorten_branches =
 {
-  NULL,                                 /* name */
+  "split3",                             /* name */
   gate_do_final_split,                  /* gate */
   split_all_insns_noflow,               /* execute */
   NULL,                                 /* sub */
@@ -3500,7 +3500,7 @@ struct tree_opt_pass pass_split_for_shorten_branches =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
+  TODO_dump_func,                       /* todo_flags_finish */
   0                                     /* letter */
 };
 
@@ -3525,7 +3525,7 @@ gate_handle_split_before_regstack (void)
 
 struct tree_opt_pass pass_split_before_regstack =
 {
-  NULL,                                 /* name */
+  "split2",                             /* name */
   gate_handle_split_before_regstack,    /* gate */
   rest_of_handle_split_all_insns,       /* execute */
   NULL,                                 /* sub */
@@ -3536,6 +3536,6 @@ struct tree_opt_pass pass_split_before_regstack =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
+  TODO_dump_func,                       /* todo_flags_finish */
   0                                     /* letter */
 };

@@ -333,7 +333,7 @@ insn_locators_initialize (void)
 
 struct tree_opt_pass pass_insn_locators_initialize =
 {
-  NULL,                                 /* name */
+  "locators",                           /* name */
   NULL,                                 /* gate */   
   insn_locators_initialize,             /* execute */       
   NULL,                                 /* sub */
@@ -344,7 +344,7 @@ struct tree_opt_pass pass_insn_locators_initialize =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
+  TODO_dump_func,                       /* todo_flags_finish */
   0                                     /* letter */
 };
 

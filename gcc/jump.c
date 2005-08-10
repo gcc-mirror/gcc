@@ -124,7 +124,7 @@ cleanup_barriers (void)
 
 struct tree_opt_pass pass_cleanup_barriers =
 {
-  NULL,                                 /* name */
+  "barriers",                           /* name */
   NULL,                                 /* gate */
   cleanup_barriers,                     /* execute */
   NULL,                                 /* sub */
@@ -135,7 +135,7 @@ struct tree_opt_pass pass_cleanup_barriers =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
+  TODO_dump_func,                       /* todo_flags_finish */
   0                                     /* letter */
 };
 
@@ -179,7 +179,7 @@ purge_line_number_notes (void)
 
 struct tree_opt_pass pass_purge_lineno_notes =
 {
-  NULL,                                 /* name */
+  "elnotes",                            /* name */
   NULL,                                 /* gate */
   purge_line_number_notes,              /* execute */
   NULL,                                 /* sub */
@@ -190,7 +190,7 @@ struct tree_opt_pass pass_purge_lineno_notes =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
+  TODO_dump_func,                       /* todo_flags_finish */
   0                                     /* letter */
 };
 

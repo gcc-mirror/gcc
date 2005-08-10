@@ -2524,7 +2524,7 @@ rest_of_handle_stack_adjustments (void)
 
 struct tree_opt_pass pass_stack_adjustments =
 {
-  NULL,                                 /* name */
+  "csa",                                /* name */
   gate_handle_stack_adjustments,        /* gate */
   rest_of_handle_stack_adjustments,     /* execute */
   NULL,                                 /* sub */

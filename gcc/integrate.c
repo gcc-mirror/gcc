@@ -299,7 +299,7 @@ emit_initial_value_sets (void)
 
 struct tree_opt_pass pass_initial_value_sets =
 {
-  NULL,                                 /* name */
+  "initvals",                           /* name */
   NULL,                                 /* gate */
   emit_initial_value_sets,              /* execute */
   NULL,                                 /* sub */
@@ -310,7 +310,7 @@ struct tree_opt_pass pass_initial_value_sets =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
+  TODO_dump_func,                       /* todo_flags_finish */
   0                                     /* letter */
 };
 

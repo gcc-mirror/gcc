@@ -2086,7 +2086,7 @@ done:
 
 struct tree_opt_pass pass_duplicate_computed_gotos =
 {
-  NULL,                                 /* name */
+  "compgotos",                          /* name */
   gate_duplicate_computed_gotos,        /* gate */
   duplicate_computed_gotos,             /* execute */
   NULL,                                 /* sub */
@@ -2097,7 +2097,7 @@ struct tree_opt_pass pass_duplicate_computed_gotos =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
+  TODO_dump_func,                       /* todo_flags_finish */
   0                                     /* letter */
 };
 
@@ -2276,7 +2276,7 @@ rest_of_handle_partition_blocks (void)
 
 struct tree_opt_pass pass_partition_blocks =
 {
-  NULL,                                 /* name */
+  "bbpart",                             /* name */
   gate_handle_partition_blocks,         /* gate */
   rest_of_handle_partition_blocks,      /* execute */
   NULL,                                 /* sub */
@@ -2287,7 +2287,7 @@ struct tree_opt_pass pass_partition_blocks =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,		                        /* todo_flags_finish */
+  TODO_dump_func,                       /* todo_flags_finish */
   0                                     /* letter */
 };
 

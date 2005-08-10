@@ -2139,7 +2139,7 @@ unshare_all_rtl (void)
 
 struct tree_opt_pass pass_unshare_all_rtl =
 {
-  NULL,                                 /* name */
+  "unshare",                            /* name */
   NULL,                                 /* gate */
   unshare_all_rtl,                      /* execute */
   NULL,                                 /* sub */
@@ -2150,7 +2150,7 @@ struct tree_opt_pass pass_unshare_all_rtl =
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
+  TODO_dump_func,                       /* todo_flags_finish */
   0                                     /* letter */
 };
 
@@ -3727,7 +3727,7 @@ remove_unnecessary_notes (void)
 
 struct tree_opt_pass pass_remove_unnecessary_notes =
 {
-  NULL,                                 /* name */ 
+  "eunotes",                            /* name */ 
   NULL,					/* gate */
   remove_unnecessary_notes,             /* execute */
   NULL,                                 /* sub */
@@ -3738,7 +3738,7 @@ struct tree_opt_pass pass_remove_unnecessary_notes =
   0,                                    /* properties_provided */
   0,					/* properties_destroyed */
   0,                                    /* todo_flags_start */
-  0,					/* todo_flags_finish */
+  TODO_dump_func,			/* todo_flags_finish */
   0                                     /* letter */ 
 };
 

@@ -258,7 +258,7 @@ execute_fixup_cfg (void)
 
 struct tree_opt_pass pass_fixup_cfg =
 {
-  NULL,					/* name */
+  "fixupcfg",				/* name */
   NULL,					/* gate */
   execute_fixup_cfg,			/* execute */
   NULL,					/* sub */
@@ -269,7 +269,7 @@ struct tree_opt_pass pass_fixup_cfg =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  0,					/* todo_flags_finish */
+  TODO_dump_func,			/* todo_flags_finish */
   0					/* letter */
 };
 

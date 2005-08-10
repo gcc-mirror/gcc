@@ -1,3 +1,31 @@
+2005-08-09  Paolo Bonzini  <bonzini@gnu.org>
+
+	* bb-reorder.c (pass_duplicate_computed_gotos, pass_partition_blocks):
+	Add dump.
+	* cfglayout.c (pass_insn_locators_initialize): Add dump.
+	* emit-rtl.c (pass_unshare_all_rtl, pass_remove_unnecessary_notes):
+	Add dump.
+	* except.c (pass_convert_to_eh_region_ranges): Add dump.
+	* final.c (pass_shorten_branches): Add dump.
+	* flow.c (pass_recompute_reg_usage, pass_remove_death_notes): Add dump.
+	(pass_life): Rename dump.
+	(rest_of_handle_flow2): Remove initial verify_flow_info.
+	* function.c (pass_instantiate_virtual_regs): Add dump.
+	* integrate.c (pass_initial_value_sets): Add dump.
+	* jump.c (pass_cleanup_barriers, pass_purge_lineno_notes): Add dump.
+	* loop-init.c (pass_rtl_loop_init, pass_rtl_loop_done): Rename dump.
+	(pass_rtl_move_loop_invariants, pass_rtl_unswitch, pass_rtl_doloop,
+	pass_rtl_unroll_and_peel_loops): Rename dump and add gate.
+	(gate_rtl_move_loop_invariants, gate_rtl_unswitch, gate_rtl_doloop,
+	gate_rtl_unrool_and_peel_loops): New.
+	(rtl_move_loop_invariants, rtl_unswitch, rtl_unrool_and_peel_loops,
+	rtl_doloop): Do not look at flags.
+	* mode-switching.c (pass_mode_switching): Add dump.
+	* recog.c (pass_split_all_insns, pass_split_for_shorten_branches,
+	pass_split_before_regstack): Add dump.
+	* regmove.c (pass_stack_adjustments): Add dump.
+	* tree-optimize.c (pass_fixup_cfg): Add dump.
+
 2005-08-10  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
 
 	PR 23309
