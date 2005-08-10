@@ -3039,6 +3039,43 @@ Signed minimum and maximum operations.  When used with floating point,
 if both operands are zeros, or if either operand is @code{NaN}, then
 it is unspecified which of the two operands is returned as the result.
 
+@cindex @code{reduc_smin_@var{m}} instruction pattern
+@cindex @code{reduc_smax_@var{m}} instruction pattern
+@item @samp{reduc_smin_@var{m}}, @samp{reduc_smax_@var{m}}
+Find the signed minimum/maximum of the elements of a vector. The vector is
+operand 1, and the scalar result is stored in the least significant bits of 
+operand 0 (also a vector). The output and input vector should have the same 
+modes.
+
+@cindex @code{reduc_umin_@var{m}} instruction pattern
+@cindex @code{reduc_umax_@var{m}} instruction pattern
+@item @samp{reduc_umin_@var{m}}, @samp{reduc_umax_@var{m}}
+Find the unsigned minimum/maximum of the elements of a vector. The vector is
+operand 1, and the scalar result is stored in the least significant bits of 
+operand 0 (also a vector). The output and input vector should have the same 
+modes.
+
+@cindex @code{reduc_splus_@var{m}} instruction pattern
+@item @samp{reduc_splus_@var{m}}
+Compute the sum of the signed elements of a vector. The vector is opernad 1, 
+and the scalar result is stored in the least significant bits of opernad 0 
+(also a vector). The output and input vector should have the same modes.
+
+@cindex @code{reduc_uplus_@var{m}} instruction pattern
+@item @samp{reduc_uplus_@var{m}}
+Compute the sum of the unsigned elements of a vector. The vector is opernad 1, 
+and the scalar result is stored in the least significant bits of opernad 0 
+(also a vector). The output and input vector should have the same modes.
+
+@cindex @code{vec_shl_@var{m}} instruction pattern
+@cindex @code{vec_shr_@var{m}} instruction pattern
+@item @samp{vec_shl_@var{m}}, @samp{vec_shr_@var{m}}
+Whole vector left/right shift in bits.
+Operand 1 is a vector to be shifted.
+Operand 2 is an integer shift amount in bits. 
+Operand 0 is where the resulting shifted vector is stored.
+The output and input vectors should have the same modes.
+
 @cindex @code{mulhisi3} instruction pattern
 @item @samp{mulhisi3}
 Multiply operands 1 and 2, which have mode @code{HImode}, and store
