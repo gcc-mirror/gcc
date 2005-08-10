@@ -1828,6 +1828,40 @@ gfc_resolve_index (gfc_expr * index, int check_scalar)
   return SUCCESS;
 }
 
+/* Resolve a dim argument to an intrinsic function.  */
+
+try
+gfc_resolve_dim_arg (gfc_expr *dim)
+{
+  if (dim == NULL)
+    return SUCCESS;
+
+  if (gfc_resolve_expr (dim) == FAILURE)
+    return FAILURE;
+
+  if (dim->rank != 0)
+    {
+      gfc_error ("Argument dim at %L must be scalar", &dim->where);
+      return FAILURE;
+  
+    }
+  if (dim->ts.type != BT_INTEGER)
+    {
+      gfc_error ("Argument dim at %L must be of INTEGER type", &dim->where);
+      return FAILURE;
+    }
+  if (dim->ts.kind != gfc_index_integer_kind)
+    {
+      gfc_typespec ts;
+
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_index_integer_kind;
+
+      gfc_convert_type_warn (dim, &ts, 2, 0);
+    }
+
+  return SUCCESS;
+}
 
 /* Given an expression that contains array references, update those array
    references to point to the right array specifications.  While this is
