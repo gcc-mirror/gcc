@@ -6947,7 +6947,10 @@ grokdeclarator (const cp_declarator *declarator,
   /* Warn about storage classes that are invalid for certain
      kinds of declarations (parameters, typenames, etc.).  */
   if (declspecs->multiple_storage_classes_p)
-    error ("multiple storage classes in declaration of %qs", name);
+    {
+      error ("multiple storage classes in declaration of %qs", name);
+      storage_class = sc_none;
+    }
   else if (thread_p
 	   && ((storage_class
 		&& storage_class != sc_extern
