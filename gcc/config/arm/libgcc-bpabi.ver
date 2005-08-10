@@ -42,6 +42,7 @@ GCC_3.5 {
   __aeabi_fsub
   __aeabi_i2d
   __aeabi_i2f
+  __aeabi_idiv
   __aeabi_idiv0
   __aeabi_idivmod
   __aeabi_l2d
@@ -55,11 +56,16 @@ GCC_3.5 {
   __aeabi_lmul
   __aeabi_ui2d
   __aeabi_ui2f
+  __aeabi_uidiv
   __aeabi_uidivmod
   __aeabi_uldivmod
   __aeabi_ulcmp
   __aeabi_ul2d
   __aeabi_ul2f
+  __aeabi_uread4
+  __aeabi_uread8
+  __aeabi_uwrite4
+  __aeabi_uwrite8
 
   # Exception-Handling
   # \S 7.5

@@ -1,3 +1,8 @@
+2005-08-10  Richard Sandiford  <richard@codesourcery.com>
+
+	* gcc.dg/arm-eabi1.c: Test aeabi_idiv, __aeabi_uidiv, __aeabi_uread4,
+	__aeabi_uread8, __aeabi_uwrite4 and __aeabi_uwrite8.
+
 2005-08-10  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/20646
