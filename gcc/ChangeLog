@@ -1,3 +1,9 @@
+2005-08-10  Eric Christopher  <echristo@apple.com>
+
+	* config/rs6000/rs6000.c (mems_ok_for_quad_peep): Rewrite.
+	* config/rs6000/rs6000.md (*lfq_power2, *stfq_power2): Use
+	V2DFmode.
+
 2005-08-10  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/darwin.c (machopic_indirect_data_reference): Use a new register
@@ -74,7 +80,7 @@
 
 2005-08-09  Dorit Nuzman  <dorit@il.ibm.com>
 
-	* tree-vect-transform.c (vect_create_epilog_for_reduction): Set 
+	* tree-vect-transform.c (vect_create_epilog_for_reduction): Set
 	BIT_FIELD_REF_UNSIGNED for newly created BIT_FIELD_REFs.
 
 2005-08-09  Richard Guenther  <rguenther@suse.de>
