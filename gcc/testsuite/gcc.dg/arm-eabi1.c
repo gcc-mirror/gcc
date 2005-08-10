@@ -23,9 +23,8 @@
    require the use of inline assembly to test.  It would be good to
    add such tests, but they have not yet been implemented.  
 
-   There are also no tests for the "division by zero", "unaligned
-   memory access", "memory copying, clearing, and setting"
-   functions.  */
+   There are also no tests for the "division by zero", "memory copying,
+   clearing, and setting" functions.  */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -74,6 +73,12 @@ extern long long __aeabi_llsr (long long, int);
 extern long long __aeabi_lasr (long long, int);
 extern int __aeabi_lcmp (long long, long long);
 extern int __aeabi_ulcmp (unsigned long long, unsigned long long);
+extern int __aeabi_idiv (int, int);
+extern unsigned int __aeabi_uidiv (unsigned int, unsigned int);
+extern int __eabi_uread4 (void *);
+extern int __eabi_uwrite4 (int, void *);
+extern long long __eabi_uread8 (void *);
+extern long long __eabi_uwrite8 (long long, void *);
 
 #define eq(a, b, type, abs, epsilon, format)			\
   {								\
@@ -99,6 +104,9 @@ extern int __aeabi_ulcmp (unsigned long long, unsigned long long);
 #define deq(a, b) eq (a, b, double, fabs, depsilon, "%g")
 
 int main () {
+  unsigned char bytes[256];
+  int i;
+
   /* Table 2.  Double-precision floating-point arithmetic.  */
   deq (__aeabi_dadd (dzero, done), done);
   deq (__aeabi_dadd (done, done), dtwo);
@@ -232,4 +240,30 @@ int main () {
   ieq (__aeabi_ulcmp (0LL, 1LL), -1);
   ieq (__aeabi_ulcmp (0LL, 0LL), 0);
   ieq (__aeabi_ulcmp (1LL, 0LL), 1);
+
+  ieq (__aeabi_idiv (-550, 11), -50);
+  ueq (__aeabi_uidiv (4000000000U, 1000000U), 4000U);
+
+  for (i = 0; i < 256; i++)
+    bytes[i] = i;
+
+#ifdef __ARMEB__
+  ieq (__aeabi_uread4 (bytes + 1), 0x01020304U);
+  leq (__aeabi_uread8 (bytes + 3), 0x030405060708090aLL);
+  ieq (__aeabi_uwrite4 (0x66778899U, bytes + 5), 0x66778899U);
+  leq (__aeabi_uwrite8 (0x2030405060708090LL, bytes + 15),
+       0x2030405060708090LL);
+#else
+  ieq (__aeabi_uread4 (bytes + 1), 0x04030201U);
+  leq (__aeabi_uread8 (bytes + 3), 0x0a09080706050403LL);
+  ieq (__aeabi_uwrite4 (0x99887766U, bytes + 5), 0x99887766U);
+  leq (__aeabi_uwrite8 (0x9080706050403020LL, bytes + 15),
+       0x9080706050403020LL);
+#endif
+
+  for (i = 0; i < 4; i++)
+    ieq (bytes[5 + i], (6 + i) * 0x11);
+
+  for (i = 0; i < 8; i++)
+    ieq (bytes[15 + i], (2 + i) * 0x10);
 }
