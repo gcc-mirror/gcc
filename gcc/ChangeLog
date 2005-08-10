@@ -1,3 +1,9 @@
+2005-08-10  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* doc/md.texi: (reduc_smin, reduc_umin, reduc_splus, reduc_uplus):
+	(vec_shl, vec_shr): Document new operations.
+	* tree.def (VEC_RSHIFT_EXPR, VEC_LSHIFT_EXPR): Fix comment.
+
 2005-08-10  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/predicates.md (indexed_or_indirect_address): New.

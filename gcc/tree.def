@@ -957,7 +957,7 @@ DEFTREECODE (REDUC_MAX_EXPR, "reduc_max_expr", tcc_unary, 1)
 DEFTREECODE (REDUC_MIN_EXPR, "reduc_min_expr", tcc_unary, 1)
 DEFTREECODE (REDUC_PLUS_EXPR, "reduc_plus_expr", tcc_unary, 1)
 
-/* Whole vector left/right shift in bytes.
+/* Whole vector left/right shift in bits.
    Operand 0 is a vector to be shifted.
    Operand 1 is an integer shift amount in bits.  */
 DEFTREECODE (VEC_LSHIFT_EXPR, "vec_lshift_expr", tcc_binary, 2)
