@@ -1,3 +1,17 @@
+2005-08-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.gcc (i[34567]86-*-linux*): Add i386/t-crtfm to tm-file.
+	(x86_64-*-linux*): Likewise.
+
+	* config/i386/crtfastmath.c: New file.
+	* config/i386/t-crtfm: Likewise.
+
+	* config/i386/linux.h (ENDFILE_SPEC): New.
+	* config/i386/linux64.h (ENDFILE_SPEC): Likewise.
+
+	* config/i386/t-linux64 (EXTRA_MULTILIB_PARTS): Add
+	crtfastmath.o.
+
 2005-08-10  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* doc/md.texi: (reduc_smin, reduc_umin, reduc_splus, reduc_uplus):
