@@ -121,6 +121,12 @@ Boston, MA 02110-1301, USA.  */
 	%{!dynamic-linker:-dynamic-linker %(dynamic_linker)}} \
 	%{static:-static}}}"
 
+/* Similar to standard Linux, but adding -ffast-math support.  */
+#undef  ENDFILE_SPEC
+#define ENDFILE_SPEC \
+  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
+   %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
+
 /* A C statement (sans semicolon) to output to the stdio stream
    FILE the assembler definition of uninitialized global DECL named
    NAME whose size is SIZE bytes and alignment is ALIGN bytes.

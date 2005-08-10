@@ -64,6 +64,12 @@ Boston, MA 02110-1301, USA.  */
       %{!m32:%{!dynamic-linker:-dynamic-linker /lib64/ld-linux-x86-64.so.2}}} \
     %{static:-static}}"
 
+/* Similar to standard Linux, but adding -ffast-math support.  */
+#undef  ENDFILE_SPEC
+#define ENDFILE_SPEC \
+  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
+   %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
+
 #define MULTILIB_DEFAULTS { "m64" }
 
 #undef NEED_INDICATE_EXEC_STACK
