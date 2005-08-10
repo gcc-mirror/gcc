@@ -1,3 +1,9 @@
+2005-08-10  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/predicates.md (indexed_or_indirect_address): New.
+	* config/rs6000/rs6000.md (prefetch): Remove operand 0 mode and
+	change predicate to indexed_or_indirect_address.
+
 2005-08-10  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/arm/lib1funcs.asm (__aeabi_uidiv, __aeabi_idiv): New aliases.

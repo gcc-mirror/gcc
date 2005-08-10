@@ -369,6 +369,14 @@
 		    || GET_CODE (XEXP (XEXP (op, 0), 1)) != CONST_INT
 		    || INTVAL (XEXP (XEXP (op, 0), 1)) % 4 == 0")))
 
+;; Return 1 if the operand is an indexed or indirect address.
+(define_predicate "indexed_or_indirect_address"
+  (and (match_operand 0 "address_operand")
+       (match_test "REG_P (op)
+		    || (GET_CODE (op) == PLUS
+			&& REG_P (XEXP (op, 0)) 
+			&& REG_P (XEXP (op, 1)))")))
+
 ;; Used for the destination of the fix_truncdfsi2 expander.
 ;; If stfiwx will be used, the result goes to memory; otherwise,
 ;; we're going to emit a store and a load of a subreg, so the dest is a
