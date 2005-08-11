@@ -1,3 +1,11 @@
+2005-08-10  James E Wilson  <wilson@specifix.com>
+
+	* defaults.h, config/alpha/alpha.h, config/ia64/ia64.h
+	(ASM_OUTPUT_ADDR_VEC_ELT): Delete.
+
+	* config/alpha/alpha.c (alpha_arg_partial_bytes): Change "(CUM)." to
+	"cum->".
+
 2005-08-10  Eric Christopher  <echristo@apple.com>
 
 	* config/rs6000/rs6000.c (mems_ok_for_quad_peep): Rewrite.
