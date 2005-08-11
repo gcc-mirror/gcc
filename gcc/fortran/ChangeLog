@@ -1,3 +1,15 @@
+2005-09-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+	    Steven Bosscher  <stevenb@suse.de>
+
+	PR libfortran/20006
+	* gfortran.h: Add is_main_program member to symbol_attribute.
+	* trans-decl: Add a gfor_fndecl_set_std tree.
+	(gfc_build_builtin_function_decls): Create it.
+	(gfc_generate_function_code): Add this call at the beginning of
+	the main program.
+	* trans.c (gfc_generate_code): Move main_program and attr.
+	* trans.h: Add declaration for gfor_fndecl_set_std.
+
 2005-08-10  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/22143
