@@ -1,3 +1,9 @@
+2005-08-11  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	PR target/23250
+	* arm.c (arm_override_options): If the user has selected callee-super-
+	interworking, then enable normal interworking.
+
 2005-08-10  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
 
 	PR 23309
