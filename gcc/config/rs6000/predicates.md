@@ -355,11 +355,22 @@
 
 ;; Return 1 if the operand is an indexed or indirect memory operand.
 (define_predicate "indexed_or_indirect_operand"
-  (and (match_operand 0 "memory_operand")
-       (match_test "REG_P (XEXP (op, 0))
-		    || (GET_CODE (XEXP (op, 0)) == PLUS
-			&& REG_P (XEXP (XEXP (op, 0), 0)) 
-			&& REG_P (XEXP (XEXP (op, 0), 1)))")))
+  (match_operand 0 "memory_operand")
+{
+  rtx tmp = XEXP (op, 0);
+
+  if (TARGET_ALTIVEC
+      && ALTIVEC_VECTOR_MODE (mode)
+      && GET_CODE (tmp) == AND
+      && GET_CODE (XEXP (tmp, 1)) == CONST_INT
+      && INTVAL (XEXP (tmp, 1)) == -16)
+    tmp = XEXP (tmp, 0);
+
+    return REG_P (tmp)
+		  || (GET_CODE (tmp) == PLUS
+		      && REG_P (XEXP (tmp, 0)) 
+		      && REG_P (XEXP (tmp, 1)));
+})
 
 ;; Return 1 if the operand is a memory operand with an address divisible by 4
 (define_predicate "word_offset_memref_operand"
