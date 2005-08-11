@@ -67,8 +67,8 @@ am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 toolexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
-am__objects_1 = environ.lo error.lo main.lo memory.lo pause.lo stop.lo \
-	string.lo select.lo
+am__objects_1 = compile_options.lo environ.lo error.lo main.lo \
+	memory.lo pause.lo stop.lo string.lo select.lo
 am__objects_2 = all_l4.lo all_l8.lo
 am__objects_3 = any_l4.lo any_l8.lo
 am__objects_4 = count_4_l4.lo count_8_l4.lo count_4_l8.lo \
@@ -388,6 +388,7 @@ runtime/in_unpack_generic.c \
 runtime/normalize.c
 
 gfor_src = \
+runtime/compile_options.c \
 runtime/environ.c \
 runtime/error.c \
 runtime/main.c \
@@ -830,6 +831,9 @@ f2c_specifics.lo: intrinsics/f2c_specifics.F90
 
 .c.lo:
 	$(LTCOMPILE) -c -o $@ $<
+
+compile_options.lo: runtime/compile_options.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o compile_options.lo `test -f 'runtime/compile_options.c' || echo '$(srcdir)/'`runtime/compile_options.c
 
 environ.lo: runtime/environ.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o environ.lo `test -f 'runtime/environ.c' || echo '$(srcdir)/'`runtime/environ.c

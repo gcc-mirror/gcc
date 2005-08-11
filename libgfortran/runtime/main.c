@@ -96,6 +96,7 @@ init (void)
   init_variables ();
 
   init_units ();
+  init_compile_options ();
 
 #ifdef DEBUG
   /* Check for special command lines.  */
