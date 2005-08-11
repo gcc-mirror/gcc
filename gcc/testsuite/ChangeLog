@@ -1,3 +1,8 @@
+2005-08-11  Richard Guenther  <rguenther@suse.de>
+
+	PR target/23289
+	* gcc.target/i386/tailcall-1.c: New testcase.
+
 2005-08-10  James A. Morrison  <phython@gc.gnu.org>
 
 	* gcc.dg/vect/vect-67.c: Un-xfail.

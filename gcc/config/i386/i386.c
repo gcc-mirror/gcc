@@ -1907,6 +1907,7 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
 {
   tree func;
   rtx a, b;
+  bool one_void, one_reg;
 
   /* If we are generating position-independent code, we cannot sibcall
      optimize any indirect call, or a direct call to a global function,
@@ -1929,11 +1930,18 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
      function that does or, conversely, from a function that does return
      a float to a function that doesn't; the necessary stack adjustment
      would not be executed.  This is also the place we notice
-     differences in the return value ABI.  */
+     differences in the return value ABI.  Note that it is ok for one
+     of the functions to have void return type as long as the return
+     value of the other is passed in a register.  */
   a = ix86_function_value (TREE_TYPE (exp), func, false);
   b = ix86_function_value (TREE_TYPE (DECL_RESULT (cfun->decl)),
 			   cfun->decl, false);
-  if (! rtx_equal_p (a, b))
+  one_void = (VOID_TYPE_P (TREE_TYPE (exp))
+	      || VOID_TYPE_P (TREE_TYPE (DECL_RESULT (cfun->decl))));
+  one_reg = ((REG_P (a) && !STACK_REG_P (a))
+	     || (REG_P (b) && !STACK_REG_P (b)));
+  if (!(one_void && one_reg)
+      && !rtx_equal_p (a, b))
     return false;
 
   /* If this call is indirect, we'll need to be able to use a call-clobbered
