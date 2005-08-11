@@ -3332,6 +3332,23 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
     }
 #endif
 
+  /* Reload an offset address wrapped by an AND that represents the
+     masking of the lower bits.  Strip the outer AND and let reload
+     convert the offset address into an indirect address.  */
+  if (TARGET_ALTIVEC
+      && ALTIVEC_VECTOR_MODE (mode)
+      && GET_CODE (x) == AND
+      && GET_CODE (XEXP (x, 0)) == PLUS
+      && GET_CODE (XEXP (XEXP (x, 0), 0)) == REG
+      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+      && GET_CODE (XEXP (x, 1)) == CONST_INT
+      && INTVAL (XEXP (x, 1)) == -16)
+    {
+      x = XEXP (x, 0);
+      *win = 1;
+      return x;
+    }
+
   if (TARGET_TOC
       && constant_pool_expr_p (x)
       && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (x), mode))

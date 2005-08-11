@@ -149,14 +149,14 @@
 ;; Generic LVX load instruction.
 (define_insn "altivec_lvx_<mode>"
   [(set (match_operand:V 0 "altivec_register_operand" "=v")
-	(match_operand:V 1 "memory_operand" "m"))]
+	(match_operand:V 1 "memory_operand" "Z"))]
   "TARGET_ALTIVEC"
   "lvx %0,%y1"
   [(set_attr "type" "vecload")])
 
 ;; Generic STVX store instruction.
 (define_insn "altivec_stvx_<mode>"
-  [(set (match_operand:V 0 "memory_operand" "=m")
+  [(set (match_operand:V 0 "memory_operand" "=Z")
 	(match_operand:V 1 "altivec_register_operand" "v"))]
   "TARGET_ALTIVEC"
   "stvx %1,%y0"
@@ -173,8 +173,8 @@
 })
 
 (define_insn "*mov<mode>_internal"
-  [(set (match_operand:V 0 "nonimmediate_operand" "=m,v,v,o,r,r,v")
-	(match_operand:V 1 "input_operand" "v,m,v,r,o,r,W"))]
+  [(set (match_operand:V 0 "nonimmediate_operand" "=Z,v,v,o,r,r,v")
+	(match_operand:V 1 "input_operand" "v,Z,v,r,o,r,W"))]
   "TARGET_ALTIVEC 
    && (register_operand (operands[0], <MODE>mode) 
        || register_operand (operands[1], <MODE>mode))"
@@ -1802,21 +1802,21 @@
 
 (define_insn "altivec_lvsl"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
-	(unspec:V16QI [(match_operand 1 "memory_operand" "m")] UNSPEC_LVSL))]
+	(unspec:V16QI [(match_operand 1 "memory_operand" "Z")] UNSPEC_LVSL))]
   "TARGET_ALTIVEC"
   "lvsl %0,%y1"
   [(set_attr "type" "vecload")])
 
 (define_insn "altivec_lvsr"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
-	(unspec:V16QI [(match_operand 1 "memory_operand" "m")] UNSPEC_LVSR))]
+	(unspec:V16QI [(match_operand 1 "memory_operand" "Z")] UNSPEC_LVSR))]
   "TARGET_ALTIVEC"
   "lvsr %0,%y1"
   [(set_attr "type" "vecload")])
 
 (define_expand "build_vector_mask_for_load"
-  [(set (match_operand:V16QI 0 "register_operand" "=v")
-	(unspec:V16QI [(match_operand 1 "memory_operand" "m")] UNSPEC_LVSR))]
+  [(set (match_operand:V16QI 0 "register_operand" "")
+	(unspec:V16QI [(match_operand 1 "memory_operand" "")] UNSPEC_LVSR))]
   "TARGET_ALTIVEC"
   "
 { 
@@ -1858,7 +1858,7 @@
 (define_insn "altivec_lvxl"
   [(parallel
     [(set (match_operand:V4SI 0 "register_operand" "=v")
-	  (match_operand:V4SI 1 "memory_operand" "m"))
+	  (match_operand:V4SI 1 "memory_operand" "Z"))
      (unspec [(const_int 0)] UNSPEC_SET_VSCR)])]
   "TARGET_ALTIVEC"
   "lvxl %0,%y1"
@@ -1866,14 +1866,14 @@
 
 (define_insn "altivec_lvx"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
-	(match_operand:V4SI 1 "memory_operand" "m"))]
+	(match_operand:V4SI 1 "memory_operand" "Z"))]
   "TARGET_ALTIVEC"
   "lvx %0,%y1"
   [(set_attr "type" "vecload")])
 
 (define_insn "altivec_stvx"
   [(parallel
-    [(set (match_operand:V4SI 0 "memory_operand" "=m")
+    [(set (match_operand:V4SI 0 "memory_operand" "=Z")
 	  (match_operand:V4SI 1 "register_operand" "v"))
      (unspec [(const_int 0)] UNSPEC_STVX)])]
   "TARGET_ALTIVEC"
@@ -1882,7 +1882,7 @@
 
 (define_insn "altivec_stvxl"
   [(parallel
-    [(set (match_operand:V4SI 0 "memory_operand" "=m")
+    [(set (match_operand:V4SI 0 "memory_operand" "=Z")
 	  (match_operand:V4SI 1 "register_operand" "v"))
      (unspec [(const_int 0)] UNSPEC_STVXL)])]
   "TARGET_ALTIVEC"
@@ -1891,7 +1891,7 @@
 
 (define_insn "altivec_stve<VI_char>x"
   [(parallel
-    [(set (match_operand:VI 0 "memory_operand" "=m")
+    [(set (match_operand:VI 0 "memory_operand" "=Z")
 	  (match_operand:VI 1 "register_operand" "v"))
      (unspec [(const_int 0)] UNSPEC_STVE)])]
   "TARGET_ALTIVEC"
@@ -1900,7 +1900,7 @@
 
 (define_insn "*altivec_stvesfx"
   [(parallel
-    [(set (match_operand:V4SF 0 "memory_operand" "=m")
+    [(set (match_operand:V4SF 0 "memory_operand" "=Z")
 	  (match_operand:V4SF 1 "register_operand" "v"))
      (unspec [(const_int 0)] UNSPEC_STVE)])]
   "TARGET_ALTIVEC"

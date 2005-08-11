@@ -1,3 +1,11 @@
+2005-08-11  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/altivec.md: Change constraint "m" to "Z".
+	* config/rs6000/predicates.md (indexed_or_indirect_operand):
+	Accept address wrapped in AND for Altivec.
+	* config/rs6000/rs6000.c (rs6000_legitimize_reload_address):
+	Strip AND wrapping offset address for Altivec.
+
 2005-08-11  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/23312
