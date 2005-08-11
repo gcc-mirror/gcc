@@ -1,3 +1,8 @@
+2005-08-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/i386/x86-64.h (ASM_OUTPUT_ALIGNED_BSS): Undef before
+	redefinition.
+
 2005-08-11  Wu Zhou  <woodzltc@cn.ibm.com>
 
 	* doc/rtl.texi: Fix two typos.
