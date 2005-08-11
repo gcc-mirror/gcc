@@ -4459,7 +4459,9 @@ gimplify_one_sizepos (tree *expr_p, tree *stmt_p)
      type-stripping code with this knowledge because it doesn't matter
      for the bulk of GENERIC/GIMPLE.  It only matters that TYPE_SIZE_UNIT
      and friends retain their "sizetype-ness".  */
-  if (TREE_TYPE (expr) != type && TYPE_IS_SIZETYPE (type))
+  if (TREE_TYPE (expr) != type
+      && TREE_CODE (type) == INTEGER_TYPE
+      && TYPE_IS_SIZETYPE (type))
     {
       tree tmp;
 

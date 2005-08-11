@@ -1,3 +1,9 @@
+2005-08-11  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/23312
+	* gimplify.c (gimplify_one_sizepos): Check for INTEGER_TYPE
+	before using TYPE_IS_SIZETYPE.
+
 2005-08-11  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	PR target/23250
