@@ -5684,7 +5684,7 @@ alpha_arg_partial_bytes (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 #if TARGET_ABI_OPEN_VMS
   if (cum->num_args < 6
       && 6 < cum->num_args + ALPHA_ARG_SIZE (mode, type, named))
-    words = 6 - (CUM).num_args;
+    words = 6 - cum->num_args;
 #elif TARGET_ABI_UNICOSMK
   /* Never any split arguments.  */
 #elif TARGET_ABI_OSF

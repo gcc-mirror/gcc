@@ -1772,11 +1772,6 @@ do {									\
     fprintf (STREAM, "\tdata8 @pcrel(.L%d)\n", VALUE);		\
   } while (0)
 
-/* This is how to output an element of a case-vector that is absolute.
-   (Ia64 does not use such vectors, but we must define this macro anyway.)  */
-
-#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE) gcc_unreachable ()
-
 /* Jump tables only need 8 byte alignment.  */
 
 #define ADDR_VEC_ALIGN(ADDR_VEC) 3
