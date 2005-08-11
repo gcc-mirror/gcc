@@ -1,3 +1,8 @@
+2005-08-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* lib/split-for-gcj.sh: Don't use unportable %{parameter%word}.
+	Don't use unportable !.
+
 2005-07-15  Tom Tromey  <tromey@redhat.com>
 
 	* ChangeLog.gcj, Makefile.in, aclocal.m4, config.guess,
