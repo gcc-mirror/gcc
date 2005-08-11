@@ -138,7 +138,7 @@ wanted.  The written form of this is @code{(nil)}.
 The various expression codes are divided into several @dfn{classes},
 which are represented by single characters.  You can determine the class
 of an RTX code with the macro @code{GET_RTX_CLASS (@var{code})}.
-Currently, @file{rtx.def} defines these classes:
+Currently, @file{rtl.def} defines these classes:
 
 @table @code
 @item RTX_OBJ
@@ -3105,7 +3105,7 @@ becomes another virtual start of the loop when considering loop
 invariants.
 
 @findex NOTE_INSN_FUNCTION_BEG
-@item NOTE_INSN_FUNCTION_END
+@item NOTE_INSN_FUNCTION_BEG
 Appears at the start of the function body, after the function
 prologue.
 

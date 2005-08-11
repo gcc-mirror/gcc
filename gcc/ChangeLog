@@ -1,3 +1,7 @@
+2005-08-11  Wu Zhou  <woodzltc@cn.ibm.com>
+
+	* doc/rtl.texi: Fix two typos.
+
 2005-08-11  Richard Guenther  <rguenther@suse.de>
 
 	PR target/23289
