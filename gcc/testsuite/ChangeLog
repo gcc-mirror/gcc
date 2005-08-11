@@ -1,4 +1,9 @@
-2005-09-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+2005-08-11  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/23266
+	* g++.dg/inherit/pure1.C: New test.
+
+2005-08-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 	    Steven Bosscher  <stevenb@suse.de>
 
 	* gfortran.dg/runtime_warning_1.f90: New test.

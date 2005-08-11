@@ -1,3 +1,9 @@
+2005-08-11  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/23266
+	* decl2.c (grokfield): Check that method is not static before
+	marking it as pure.
+
 2005-08-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/23219
