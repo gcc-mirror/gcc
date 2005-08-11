@@ -1,5 +1,9 @@
 2005-08-11  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (add_location_or_const_value_attribute): Prefer
+	locations gathered by var-tracking in single entry loc_list
+	over loc_descriptor_from_tree.
+
 	* dwarf2out.c (concat_loc_descriptor): Add can_use_fbreg argument,
 	pass it down to loc_descriptor.
 	(loc_descriptor): Pass can_use_fbreg to concat_loc_descriptor.
