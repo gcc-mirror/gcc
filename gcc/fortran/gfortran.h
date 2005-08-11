@@ -429,9 +429,11 @@ typedef struct
      don't have any code associated, and the backend will turn them into
      thunks to the master function.  */
   unsigned entry:1;
+
   /* Set if this is the master function for a procedure with multiple
      entry points.  */
   unsigned entry_master:1;
+
   /* Set if this is the master function for a function with multiple
      entry points where characteristics of the entry points differ.  */
   unsigned mixed_entry_master:1;
@@ -442,6 +444,11 @@ typedef struct
   /* Set if the symbol has been referenced in an expression.  No further
      modification of type or type parameters is permitted.  */
   unsigned referenced:1;
+
+  /* Set if the is the symbol for the main program.  This is the least
+     cumbersome way to communicate this function property without
+     strcmp'ing with __MAIN everywhere.  */
+  unsigned is_main_program:1;
 
   /* Mutually exclusive multibit attributes.  */
   gfc_access access:2;

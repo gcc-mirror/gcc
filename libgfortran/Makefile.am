@@ -92,6 +92,7 @@ runtime/in_unpack_generic.c \
 runtime/normalize.c
 
 gfor_src= \
+runtime/compile_options.c \
 runtime/environ.c \
 runtime/error.c \
 runtime/main.c \

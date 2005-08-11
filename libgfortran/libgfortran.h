@@ -308,9 +308,23 @@ typedef struct
 }
 options_t;
 
-
 extern options_t options;
 internal_proto(options);
+
+
+/* Compile-time options that will influence the library.  */
+
+typedef struct
+{
+  int warn_std;
+  int allow_std;
+}
+compile_options_t;
+
+extern compile_options_t compile_options;
+internal_proto(compile_options);
+
+
 
 
 /* Structure for statement options.  */
@@ -345,6 +359,18 @@ typedef enum
   ERROR_LAST			/* Not a real error, the last error # + 1.  */
 }
 error_codes;
+
+
+/* Flags to specify which standard/extension contains a feature.
+   Keep them in sync with their counterparts in gcc/fortran/gfortran.h.  */
+#define GFC_STD_LEGACY          (1<<6) /* Backward compatibility.  */
+#define GFC_STD_GNU             (1<<5)    /* GNU Fortran extension.  */
+#define GFC_STD_F2003           (1<<4)    /* New in F2003.  */
+/* Note that no features were obsoleted nor deleted in F2003.  */
+#define GFC_STD_F95             (1<<3)    /* New in F95.  */
+#define GFC_STD_F95_DEL         (1<<2)    /* Deleted in F95.  */
+#define GFC_STD_F95_OBS         (1<<1)    /* Obsoleted in F95.  */
+#define GFC_STD_F77             (1<<0)    /* Up to and including F77.  */
 
 
 /* The filename and line number don't go inside the globals structure.

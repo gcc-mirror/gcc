@@ -488,3 +488,29 @@ generate_error (int family, const char *message)
 
   runtime_error (message);
 }
+
+
+
+/* Possibly issue a warning/error about use of a nonstandard (or deleted)
+   feature.  An error/warning will be issued if the currently selected
+   standard does not contain the requested bits.  */
+
+try
+notify_std (int std, const char * message)
+{
+  int warning;
+
+  warning = compile_options.warn_std & std;
+  if ((compile_options.allow_std & std) != 0 && !warning)
+    return SUCCESS;
+
+  show_locus ();
+  if (!warning)
+    {
+      st_printf ("Fortran runtime error: %s\n", message);
+      sys_exit (2);
+    }
+  else
+    st_printf ("Fortran runtime warning: %s\n", message);
+  return FAILURE;
+}

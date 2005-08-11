@@ -1,3 +1,18 @@
+2005-09-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+	    Steven Bosscher  <stevenb@suse.de>
+
+	PR libfortran/20006
+	* Makefile.am: Add file runtime/compile_options.c.
+	* Makefile.in: Regenerate.
+	* libgfortran.h: Create structure compile_options_t. Define the
+	compile_options variable and GFC_STD_ macros.
+	* runtime/compile_options.c: New file.
+	* runtime/error.c (notify_std): New function.
+	* runtime/main.c (init): Call init_compile_options during
+	initialization.
+	* io/format.c: Use the new notify_std function for the $
+	descriptor extension.
+
 2005-08-07  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 	* Makefile.am: Add file intrinsics/tty.c to Makefile process.
 	* Makefile.in: Regenerate.
