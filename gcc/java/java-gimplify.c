@@ -208,17 +208,16 @@ java_gimplify_exit_block_expr (tree expr)
   return build1 (GOTO_EXPR, void_type_node, label);
 }
 
-/* This is specific to the bytecode compiler.  If a variable has
-   LOCAL_SLOT_P set, replace an assignment to it with an assignment to
-   the corresponding variable that holds all its aliases.  */
-
 static tree
 java_gimplify_modify_expr (tree modify_expr)
 {
   tree lhs = TREE_OPERAND (modify_expr, 0);
   tree rhs = TREE_OPERAND (modify_expr, 1);
   tree lhs_type = TREE_TYPE (lhs);
-  
+
+  /* This is specific to the bytecode compiler.  If a variable has
+     LOCAL_SLOT_P set, replace an assignment to it with an assignment
+     to the corresponding variable that holds all its aliases.  */
   if (TREE_CODE (lhs) == VAR_DECL
       && DECL_LANG_SPECIFIC (lhs)
       && LOCAL_SLOT_P (lhs)
@@ -230,7 +229,12 @@ java_gimplify_modify_expr (tree modify_expr)
 			    new_lhs, new_rhs);
       modify_expr = build1 (NOP_EXPR, lhs_type, modify_expr);
     }
-  
+  else if (lhs_type != TREE_TYPE (rhs))
+    /* Fix up type mismatches to make legal GIMPLE.  These are
+       generated in several places, in particular null pointer
+       assignment and subclass assignment.  */
+    TREE_OPERAND (modify_expr, 1) = convert (lhs_type, rhs);
+
   return modify_expr;
 }
 
