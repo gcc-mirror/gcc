@@ -1,3 +1,7 @@
+2005-08-10  James A. Morrison  <phython@gc.gnu.org>
+
+	* gcc.dg/vect/vect-67.c: Un-xfail.
+
 2005-08-10  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR c++/23225
