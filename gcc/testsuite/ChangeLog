@@ -1,4 +1,11 @@
-2005-09-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+2005-08-11  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/23266
+	* g++.dg/inherit/pure1.C: New test.
+
+	* ChangeLog: Fix typos.
+
+2005-08-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 	    Steven Bosscher  <stevenb@suse.de>
 
 	* gfortran.dg/runtime_warning_1.f90: New test.
@@ -13,7 +20,7 @@
 	PR target/23289
 	* gcc.target/i386/tailcall-1.c: New testcase.
 
-2005-08-10  James A. Morrison  <phython@gc.gnu.org>
+2005-08-10  James A. Morrison  <phython@gcc.gnu.org>
 
 	* gcc.dg/vect/vect-67.c: Un-xfail.
 
