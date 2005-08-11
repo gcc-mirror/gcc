@@ -1,3 +1,9 @@
+2005-08-10  Robin Green <greenrd@greenrd.org>
+
+        PR java/23230:
+        * parse.y (maybe_use_access_method): Generalize check from
+        java.lang.Object to any superclass of current_class
+
 2005-07-28  Andrew Haley  <aph@redhat.com>
 
         * except.c (expand_end_java_handler): Insert an empty ASM_EXPR at

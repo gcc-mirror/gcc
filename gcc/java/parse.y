@@ -10891,7 +10891,8 @@ maybe_use_access_method (int is_super_init, tree *mdecl, tree *this_arg)
      invoking a static method. Note that if MD's type is unrelated to
      CURRENT_CLASS, then the current this can be used. */
 
-  if (non_static_context && DECL_CONTEXT (md) != object_type_node)
+  if (non_static_context 
+      && !inherits_from_p (current_class, DECL_CONTEXT (md)))
     {
       ctx = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (current_class)));
       if (inherits_from_p (ctx, DECL_CONTEXT (md)))
