@@ -1,3 +1,10 @@
+2005-08-11  Richard Henderson  <rth@redhat.com>
+
+	PR target/22225
+	* config/alpha/alpha.c (alphaev4_insn_pipe): Add take pipes for
+	insn types not present on ev4.
+	(alphaev5_insn_pipe): Similarly.
+
 2005-08-11  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	PR target/23250
