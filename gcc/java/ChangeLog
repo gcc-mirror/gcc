@@ -1,3 +1,14 @@
+2005-08-10  Andrew Haley  <aph@redhat.com>
+
+	* java-gimplify.c (java_gimplify_modify_expr): Fix any pointer
+	type mismatches to make legal GIMPLE.
+
+2005-08-10  Robin Green <greenrd@greenrd.org>
+
+	PR java/23230:
+	* parse.y (maybe_use_access_method): Generalize check from
+	java.lang.Object to any superclass of current_class
+
 2005-08-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (build_class_ref): Wrap the primary class type in a
