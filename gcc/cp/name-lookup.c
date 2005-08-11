@@ -4626,6 +4626,7 @@ tree
 pushtag (tree name, tree type, tag_scope scope)
 {
   struct cp_binding_level *b;
+  tree decl;
 
   timevar_push (TV_NAME_LOOKUP);
   b = current_binding_level;
@@ -4647,114 +4648,103 @@ pushtag (tree name, tree type, tag_scope scope)
 		 || COMPLETE_TYPE_P (b->this_entity))))
     b = b->level_chain;
 
-  if (name)
+  gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
+  
+  /* Do C++ gratuitous typedefing.  */
+  if (IDENTIFIER_TYPE_VALUE (name) != type)
     {
-      /* Do C++ gratuitous typedefing.  */
-      if (IDENTIFIER_TYPE_VALUE (name) != type)
+      tree tdef;
+      int in_class = 0;
+      tree context = TYPE_CONTEXT (type);
+
+      if (! context)
 	{
-	  tree d = NULL_TREE;
-	  int in_class = 0;
-	  tree context = TYPE_CONTEXT (type);
-
-	  if (! context)
-	    {
-	      tree cs = current_scope ();
-
-	      if (scope == ts_current)
-		context = cs;
-	      else if (cs != NULL_TREE && TYPE_P (cs))
-		/* When declaring a friend class of a local class, we want
-		   to inject the newly named class into the scope
-		   containing the local class, not the namespace scope.  */
-		context = decl_function_context (get_type_decl (cs));
-	    }
-	  if (!context)
-	    context = current_namespace;
-
-	  if (b->kind == sk_class
-	      || (b->kind == sk_template_parms
-		  && b->level_chain->kind == sk_class))
-	    in_class = 1;
-
-	  if (current_lang_name == lang_name_java)
-	    TYPE_FOR_JAVA (type) = 1;
-
-	  d = create_implicit_typedef (name, type);
-	  DECL_CONTEXT (d) = FROB_CONTEXT (context);
-	  if (scope == ts_within_enclosing_non_class)
-	    {
-	      /* This is a friend.  Make this TYPE_DECL node hidden from
-		 ordinary name lookup.  Its corresponding TEMPLATE_DECL
-		 will be marked in push_template_decl_real.  */
-	      retrofit_lang_decl (d);
-	      DECL_ANTICIPATED (d) = 1;
-	      DECL_FRIEND_P (d) = 1;
-	    }
-
-	  if (! in_class)
-	    set_identifier_type_value_with_scope (name, d, b);
-
-	  d = maybe_process_template_type_declaration
-		(type, scope == ts_within_enclosing_non_class, b);
-	  if (d == error_mark_node)
-	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
-
-	  if (b->kind == sk_class)
-	    {
-	      if (!PROCESSING_REAL_TEMPLATE_DECL_P ())
-		/* Put this TYPE_DECL on the TYPE_FIELDS list for the
-		   class.  But if it's a member template class, we
-		   want the TEMPLATE_DECL, not the TYPE_DECL, so this
-		   is done later.  */
-		finish_member_declaration (d);
-	      else
-		pushdecl_class_level (d);
-	    }
-	  else if (b->kind != sk_template_parms)
-	    d = pushdecl_with_scope (d, b);
-
-	  TYPE_CONTEXT (type) = DECL_CONTEXT (d);
-
-	  /* If this is a local class, keep track of it.  We need this
-	     information for name-mangling, and so that it is possible to find
-	     all function definitions in a translation unit in a convenient
-	     way.  (It's otherwise tricky to find a member function definition
-	     it's only pointed to from within a local class.)  */
-	  if (TYPE_CONTEXT (type)
-	      && TREE_CODE (TYPE_CONTEXT (type)) == FUNCTION_DECL)
-	    VEC_safe_push (tree, gc, local_classes, type);
+	  tree cs = current_scope ();
+	  
+	  if (scope == ts_current)
+	    context = cs;
+	  else if (cs != NULL_TREE && TYPE_P (cs))
+	    /* When declaring a friend class of a local class, we want
+	       to inject the newly named class into the scope
+	       containing the local class, not the namespace
+	       scope.  */
+	    context = decl_function_context (get_type_decl (cs));
 	}
+      if (!context)
+	context = current_namespace;
+
       if (b->kind == sk_class
-	  && !COMPLETE_TYPE_P (current_class_type))
+	  || (b->kind == sk_template_parms
+	      && b->level_chain->kind == sk_class))
+	in_class = 1;
+
+      if (current_lang_name == lang_name_java)
+	TYPE_FOR_JAVA (type) = 1;
+
+      tdef = create_implicit_typedef (name, type);
+      DECL_CONTEXT (tdef) = FROB_CONTEXT (context);
+      if (scope == ts_within_enclosing_non_class)
 	{
-	  maybe_add_class_template_decl_list (current_class_type,
-					      type, /*friend_p=*/0);
-
-	  if (CLASSTYPE_NESTED_UTDS (current_class_type) == NULL)
-	    CLASSTYPE_NESTED_UTDS (current_class_type)
-	      = binding_table_new (SCOPE_DEFAULT_HT_SIZE);
-
-	  binding_table_insert
-	    (CLASSTYPE_NESTED_UTDS (current_class_type), name, type);
+	  /* This is a friend.  Make this TYPE_DECL node hidden from
+	     ordinary name lookup.  Its corresponding TEMPLATE_DECL
+	     will be marked in push_template_decl_real.  */
+	  retrofit_lang_decl (tdef);
+	  DECL_ANTICIPATED (tdef) = 1;
+	  DECL_FRIEND_P (tdef) = 1;
 	}
-    }
 
-  if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL)
-    /* Use the canonical TYPE_DECL for this node.  */
-    TYPE_STUB_DECL (type) = TYPE_NAME (type);
-  else
+      decl = maybe_process_template_type_declaration
+	(type, scope == ts_within_enclosing_non_class, b);
+      if (decl == error_mark_node)
+	POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, decl);
+	  
+      if (! in_class)
+	set_identifier_type_value_with_scope (name, tdef, b);
+
+      if (b->kind == sk_class)
+	{
+	  if (!PROCESSING_REAL_TEMPLATE_DECL_P ())
+	    /* Put this TYPE_DECL on the TYPE_FIELDS list for the
+	       class.  But if it's a member template class, we want
+	       the TEMPLATE_DECL, not the TYPE_DECL, so this is done
+	       later.  */
+	    finish_member_declaration (decl);
+	  else
+	    pushdecl_class_level (decl);
+	}
+      else if (b->kind != sk_template_parms)
+	decl = pushdecl_with_scope (decl, b);
+
+      TYPE_CONTEXT (type) = DECL_CONTEXT (decl);
+
+      /* If this is a local class, keep track of it.  We need this
+	 information for name-mangling, and so that it is possible to
+	 find all function definitions in a translation unit in a
+	 convenient way.  (It's otherwise tricky to find a member
+	 function definition it's only pointed to from within a local
+	 class.)  */
+      if (TYPE_CONTEXT (type)
+	  && TREE_CODE (TYPE_CONTEXT (type)) == FUNCTION_DECL)
+	VEC_safe_push (tree, gc, local_classes, type);
+    }
+  if (b->kind == sk_class
+      && !COMPLETE_TYPE_P (current_class_type))
     {
-      /* Create a fake NULL-named TYPE_DECL node whose TREE_TYPE
-	 will be the tagged type we just added to the current
-	 binding level.  This fake NULL-named TYPE_DECL node helps
-	 dwarfout.c to know when it needs to output a
-	 representation of a tagged type, and it also gives us a
-	 convenient place to record the "scope start" address for
-	 the tagged type.  */
-
-      tree d = build_decl (TYPE_DECL, NULL_TREE, type);
-      TYPE_STUB_DECL (type) = pushdecl_with_scope (d, b);
+      maybe_add_class_template_decl_list (current_class_type,
+					  type, /*friend_p=*/0);
+      
+      if (CLASSTYPE_NESTED_UTDS (current_class_type) == NULL)
+	CLASSTYPE_NESTED_UTDS (current_class_type)
+	  = binding_table_new (SCOPE_DEFAULT_HT_SIZE);
+      
+      binding_table_insert
+	(CLASSTYPE_NESTED_UTDS (current_class_type), name, type);
     }
+
+  decl = TYPE_NAME (type);
+  gcc_assert (TREE_CODE (decl) == TYPE_DECL);
+  TYPE_STUB_DECL (type) = decl;
+
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, type);
 }
 
