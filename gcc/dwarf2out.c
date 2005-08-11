@@ -10235,16 +10235,7 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
       return;
     }
   
-  /* We couldn't get any rtl, and we had no >1 element location list, so try
-     directly generating the location description from the tree.  */
-  descr = loc_descriptor_from_tree (decl);
-  if (descr)
-    {
-      add_AT_location_description (die, attr, descr);
-      return;
-    }
-  
-  /* Lastly, if we have tried to generate the location otherwise, and it
+  /* If we have tried to generate the location otherwise, and it
      didn't work out (we wouldn't be here if we did), and we have a one entry
      location list, try generating a location from that.  */
   if (loc_list && loc_list->first)
@@ -10253,7 +10244,19 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl,
       descr = loc_descriptor (NOTE_VAR_LOCATION (node->var_loc_note), 
 			      can_use_fb);
       if (descr)
-	add_AT_location_description (die, attr, descr);
+	{
+	  add_AT_location_description (die, attr, descr);
+	  return;
+	}
+    }
+
+  /* We couldn't get any rtl, so try directly generating the location
+     description from the tree.  */
+  descr = loc_descriptor_from_tree (decl);
+  if (descr)
+    {
+      add_AT_location_description (die, attr, descr);
+      return;
     }
 }
 
