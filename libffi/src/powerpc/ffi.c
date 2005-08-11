@@ -29,15 +29,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ > 1)
-# define hidden __attribute__ ((visibility ("hidden")))
-#else
-# define hidden
-#endif
-
 
 extern void ffi_closure_SYSV(void);
-extern void hidden ffi_closure_LINUX64(void);
+extern void FFI_HIDDEN ffi_closure_LINUX64(void);
 
 enum {
   /* The assembly depends on these exact flags.  */
@@ -301,7 +295,7 @@ enum { ASM_NEEDS_REGISTERS64 = 4 };
 */
 
 /*@-exportheader@*/
-void hidden ffi_prep_args64(extended_cif *ecif, unsigned long *const stack)
+void FFI_HIDDEN ffi_prep_args64(extended_cif *ecif, unsigned long *const stack)
 /*@=exportheader@*/
 {
   const unsigned long bytes = ecif->cif->bytes;
@@ -697,10 +691,10 @@ extern void ffi_call_SYSV(/*@out@*/ extended_cif *,
 			  unsigned, unsigned,
 			  /*@out@*/ unsigned *,
 			  void (*fn)());
-extern void hidden ffi_call_LINUX64(/*@out@*/ extended_cif *,
-				    unsigned long, unsigned long,
-				    /*@out@*/ unsigned long *,
-				    void (*fn)());
+extern void FFI_HIDDEN ffi_call_LINUX64(/*@out@*/ extended_cif *,
+					unsigned long, unsigned long,
+					/*@out@*/ unsigned long *,
+					void (*fn)());
 /*@=declundef@*/
 /*@=exportheader@*/
 
@@ -1020,10 +1014,10 @@ ffi_closure_helper_SYSV (ffi_closure* closure, void * rvalue,
 
 }
 
-int hidden ffi_closure_helper_LINUX64 (ffi_closure*, void*, unsigned long*,
-				       ffi_dblfl*);
+int FFI_HIDDEN ffi_closure_helper_LINUX64 (ffi_closure*, void*, unsigned long*,
+					   ffi_dblfl*);
 
-int hidden
+int FFI_HIDDEN
 ffi_closure_helper_LINUX64 (ffi_closure *closure, void *rvalue,
 			    unsigned long *pst, ffi_dblfl *pfr)
 {

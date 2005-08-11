@@ -34,6 +34,9 @@
    */
 #undef HAVE_AS_SPARC_UA_PCREL
 
+/* Define if __attribute__((visibility("hidden"))) is supported. */
+#undef HAVE_HIDDEN_VISIBILITY_ATTRIBUTE
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
@@ -133,3 +136,19 @@
 /* Define to 1 if your processor stores words with the most significant byte
    first (like Motorola and SPARC, unlike Intel and VAX). */
 #undef WORDS_BIGENDIAN
+
+
+#ifdef HAVE_HIDDEN_VISIBILITY_ATTRIBUTE
+#ifdef LIBFFI_ASM
+#define FFI_HIDDEN(name) .hidden name
+#else
+#define FFI_HIDDEN __attribute__ ((visibility ("hidden")))
+#endif
+#else
+#ifdef LIBFFI_ASM
+#define FFI_HIDDEN(name)
+#else
+#define FFI_HIDDEN
+#endif
+#endif
+

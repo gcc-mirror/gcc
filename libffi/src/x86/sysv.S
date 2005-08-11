@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   sysv.S - Copyright (c) 1996, 1998, 2001, 2002, 2003  Red Hat, Inc.
+   sysv.S - Copyright (c) 1996, 1998, 2001, 2002, 2003, 2005  Red Hat, Inc.
    
    X86 Foreign Function Interface 
 
@@ -130,6 +130,135 @@ epilogue:
 .ffi_call_SYSV_end:
         .size    ffi_call_SYSV,.ffi_call_SYSV_end-ffi_call_SYSV
 
+	.align	4
+FFI_HIDDEN (ffi_closure_SYSV)
+.globl ffi_closure_SYSV
+	.type	ffi_closure_SYSV, @function
+
+ffi_closure_SYSV:
+.LFB2:
+	pushl	%ebp
+.LCFI2:
+	movl	%esp, %ebp
+.LCFI3:
+	subl	$40, %esp
+	leal	-24(%ebp), %edx
+	movl	%edx, -12(%ebp)	/* resp */
+	leal	8(%ebp), %edx
+	movl	%edx, 4(%esp)	/* args = __builtin_dwarf_cfa () */
+	leal	-12(%ebp), %edx
+	movl	%edx, (%esp)	/* &resp */
+#if defined HAVE_HIDDEN_VISIBILITY_ATTRIBUTE || !defined __PIC__
+	call	ffi_closure_SYSV_inner
+#else
+	movl	%ebx, 8(%esp)
+.LCFI7:
+	call	1f
+1:	popl	%ebx
+	addl	$_GLOBAL_OFFSET_TABLE_+[.-1b], %ebx
+	call	ffi_closure_SYSV_inner@PLT
+	movl	8(%esp), %ebx
+#endif
+	movl	-12(%ebp), %ecx
+	cmpl	$FFI_TYPE_INT, %eax
+	je	.Lcls_retint
+	cmpl	$FFI_TYPE_FLOAT, %eax
+	je	.Lcls_retfloat
+	cmpl	$FFI_TYPE_DOUBLE, %eax
+	je	.Lcls_retdouble
+	cmpl	$FFI_TYPE_LONGDOUBLE, %eax
+	je	.Lcls_retldouble
+	cmpl	$FFI_TYPE_SINT64, %eax
+	je	.Lcls_retllong
+.Lcls_epilogue:
+	movl	%ebp, %esp
+	popl	%ebp
+	ret
+.Lcls_retint:
+	movl	(%ecx), %eax
+	jmp	.Lcls_epilogue
+.Lcls_retfloat:
+	flds	(%ecx)
+	jmp	.Lcls_epilogue
+.Lcls_retdouble:
+	fldl	(%ecx)
+	jmp	.Lcls_epilogue
+.Lcls_retldouble:
+	fldt	(%ecx)
+	jmp	.Lcls_epilogue
+.Lcls_retllong:
+	movl	(%ecx), %eax
+	movl	4(%ecx), %edx
+	jmp	.Lcls_epilogue
+.LFE2:
+	.size	ffi_closure_SYSV, .-ffi_closure_SYSV
+
+#if !FFI_NO_RAW_API
+
+#define RAW_CLOSURE_CIF_OFFSET ((FFI_TRAMPOLINE_SIZE + 3) & ~3)
+#define RAW_CLOSURE_FUN_OFFSET (RAW_CLOSURE_CIF_OFFSET + 4)
+#define RAW_CLOSURE_USER_DATA_OFFSET (RAW_CLOSURE_FUN_OFFSET + 4)
+#define CIF_FLAGS_OFFSET 20
+
+	.align	4
+FFI_HIDDEN (ffi_closure_raw_SYSV)
+.globl ffi_closure_raw_SYSV
+	.type	ffi_closure_raw_SYSV, @function
+
+ffi_closure_raw_SYSV:
+.LFB3:
+	pushl	%ebp
+.LCFI4:
+	movl	%esp, %ebp
+.LCFI5:
+	pushl	%esi
+.LCFI6:
+	subl	$36, %esp
+	movl	RAW_CLOSURE_CIF_OFFSET(%eax), %esi	 /* closure->cif */
+	movl	RAW_CLOSURE_USER_DATA_OFFSET(%eax), %edx /* closure->user_data */
+	movl	%edx, 12(%esp)	/* user_data */
+	leal	8(%ebp), %edx	/* __builtin_dwarf_cfa () */
+	movl	%edx, 8(%esp)	/* raw_args */
+	leal	-24(%ebp), %edx
+	movl	%edx, 4(%esp)	/* &res */
+	movl	%esi, (%esp)	/* cif */
+	call	*RAW_CLOSURE_FUN_OFFSET(%eax)		 /* closure->fun */
+	movl	CIF_FLAGS_OFFSET(%esi), %eax		 /* rtype */
+	cmpl	$FFI_TYPE_INT, %eax
+	je	.Lrcls_retint
+	cmpl	$FFI_TYPE_FLOAT, %eax
+	je	.Lrcls_retfloat
+	cmpl	$FFI_TYPE_DOUBLE, %eax
+	je	.Lrcls_retdouble
+	cmpl	$FFI_TYPE_LONGDOUBLE, %eax
+	je	.Lrcls_retldouble
+	cmpl	$FFI_TYPE_SINT64, %eax
+	je	.Lrcls_retllong
+.Lrcls_epilogue:
+	addl	$36, %esp
+	popl	%esi
+	popl	%ebp
+	ret
+.Lrcls_retint:
+	movl	-24(%ebp), %eax
+	jmp	.Lrcls_epilogue
+.Lrcls_retfloat:
+	flds	-24(%ebp)
+	jmp	.Lrcls_epilogue
+.Lrcls_retdouble:
+	fldl	-24(%ebp)
+	jmp	.Lrcls_epilogue
+.Lrcls_retldouble:
+	fldt	-24(%ebp)
+	jmp	.Lrcls_epilogue
+.Lrcls_retllong:
+	movl	-24(%ebp), %eax
+	movl	-20(%ebp), %edx
+	jmp	.Lrcls_epilogue
+.LFE3:
+	.size	ffi_closure_raw_SYSV, .-ffi_closure_raw_SYSV
+#endif
+
 	.section	.eh_frame,EH_FRAME_FLAGS,@progbits
 .Lframe1:
 	.long	.LECIE1-.LSCIE1	/* Length of Common Information Entry */
@@ -180,5 +309,70 @@ epilogue:
 	.byte	0x5	/* .uleb128 0x5 */
 	.align 4
 .LEFDE1:
+.LSFDE2:
+	.long	.LEFDE2-.LASFDE2	/* FDE Length */
+.LASFDE2:
+	.long	.LASFDE2-.Lframe1	/* FDE CIE offset */
+#ifdef __PIC__
+	.long	.LFB2-.	/* FDE initial location */
+#else
+	.long	.LFB2
+#endif
+	.long	.LFE2-.LFB2	/* FDE address range */
+#ifdef __PIC__
+	.byte	0x0	/* .uleb128 0x0; Augmentation size */
+#endif
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.long	.LCFI2-.LFB2
+	.byte	0xe	/* DW_CFA_def_cfa_offset */
+	.byte	0x8	/* .uleb128 0x8 */
+	.byte	0x85	/* DW_CFA_offset, column 0x5 */
+	.byte	0x2	/* .uleb128 0x2 */
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.long	.LCFI3-.LCFI2
+	.byte	0xd	/* DW_CFA_def_cfa_register */
+	.byte	0x5	/* .uleb128 0x5 */
+#if !defined HAVE_HIDDEN_VISIBILITY_ATTRIBUTE && defined __PIC__
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.long	.LCFI7-.LCFI3
+	.byte	0x83	/* DW_CFA_offset, column 0x3 */
+	.byte	0xa	/* .uleb128 0xa */
+#endif
+	.align 4
+.LEFDE2:
+
+#if !FFI_NO_RAW_API
+
+.LSFDE3:
+	.long	.LEFDE3-.LASFDE3	/* FDE Length */
+.LASFDE3:
+	.long	.LASFDE3-.Lframe1	/* FDE CIE offset */
+#ifdef __PIC__
+	.long	.LFB3-.	/* FDE initial location */
+#else
+	.long	.LFB3
+#endif
+	.long	.LFE3-.LFB3	/* FDE address range */
+#ifdef __PIC__
+	.byte	0x0	/* .uleb128 0x0; Augmentation size */
+#endif
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.long	.LCFI4-.LFB3
+	.byte	0xe	/* DW_CFA_def_cfa_offset */
+	.byte	0x8	/* .uleb128 0x8 */
+	.byte	0x85	/* DW_CFA_offset, column 0x5 */
+	.byte	0x2	/* .uleb128 0x2 */
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.long	.LCFI5-.LCFI4
+	.byte	0xd	/* DW_CFA_def_cfa_register */
+	.byte	0x5	/* .uleb128 0x5 */
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.long	.LCFI6-.LCFI5
+	.byte	0x86	/* DW_CFA_offset, column 0x6 */
+	.byte	0x3	/* .uleb128 0x3 */
+	.align 4
+.LEFDE3:
+
+#endif
 
 #endif /* ifndef __x86_64__ */

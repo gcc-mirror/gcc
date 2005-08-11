@@ -1,3 +1,20 @@
+2005-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac (HAVE_HIDDEN_VISIBILITY_ATTRIBUTE): New test.
+	(AH_BOTTOM): Add FFI_HIDDEN definition.
+	* configure: Rebuilt.
+	* fficonfig.h.in: Rebuilt.
+	* src/powerpc/ffi.c (hidden): Remove.
+	(ffi_closure_LINUX64, ffi_prep_args64, ffi_call_LINUX64,
+	ffi_closure_helper_LINUX64): Use FFI_HIDDEN instead of hidden.
+	* src/powerpc/linux64_closure.S (ffi_closure_LINUX64,
+	.ffi_closure_LINUX64): Use FFI_HIDDEN instead of .hidden.
+	* src/x86/ffi.c (ffi_closure_SYSV, ffi_closure_raw_SYSV): Remove,
+	add FFI_HIDDEN to its prototype.
+	(ffi_closure_SYSV_inner): New.
+	* src/x86/sysv.S (ffi_closure_SYSV, ffi_closure_raw_SYSV): New.
+	* src/x86/win32.S (ffi_closure_SYSV, ffi_closure_raw_SYSV): New.
+
 2005-08-10  Alfred M. Szmidt  <ams@gnu.org>
 
 	PR libffi/21819:

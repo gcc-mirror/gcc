@@ -192,6 +192,38 @@ else
 	      [Define to the flags needed for the .section .eh_frame directive.])
 fi
 
+AC_CACHE_CHECK([for __attribute__((visibility("hidden")))],
+    libffi_cv_hidden_visibility_attribute, [
+	echo 'int __attribute__ ((visibility ("hidden"))) foo (void) { return 1; }' > conftest.c
+	libffi_cv_hidden_visibility_attribute=no
+	if AC_TRY_COMMAND(${CC-cc} -Werror -S conftest.c -o conftest.s 1>&AS_MESSAGE_LOG_FD); then
+	    if grep '\.hidden.*foo' conftest.s >/dev/null; then
+		libffi_cv_hidden_visibility_attribute=yes
+	    fi
+	fi
+	rm -f conftest.*
+    ])
+if test $libffi_cv_hidden_visibility_attribute = yes; then
+    AC_DEFINE(HAVE_HIDDEN_VISIBILITY_ATTRIBUTE, 1,
+	      [Define if __attribute__((visibility("hidden"))) is supported.])
+fi
+
+AH_BOTTOM([
+#ifdef HAVE_HIDDEN_VISIBILITY_ATTRIBUTE
+#ifdef LIBFFI_ASM
+#define FFI_HIDDEN(name) .hidden name
+#else
+#define FFI_HIDDEN __attribute__ ((visibility ("hidden")))
+#endif
+#else
+#ifdef LIBFFI_ASM
+#define FFI_HIDDEN(name)
+#else
+#define FFI_HIDDEN
+#endif
+#endif
+])
+
 AC_SUBST(TARGET)
 AC_SUBST(TARGETDIR)
 

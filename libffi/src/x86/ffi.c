@@ -241,26 +241,24 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
 
 static void ffi_prep_incoming_args_SYSV (char *stack, void **ret,
 					 void** args, ffi_cif* cif);
-static void ffi_closure_SYSV (ffi_closure *)
+void FFI_HIDDEN ffi_closure_SYSV (ffi_closure *)
      __attribute__ ((regparm(1)));
-static void ffi_closure_raw_SYSV (ffi_raw_closure *)
+unsigned int FFI_HIDDEN ffi_closure_SYSV_inner (ffi_closure *, void **, void *)
+     __attribute__ ((regparm(1)));
+void FFI_HIDDEN ffi_closure_raw_SYSV (ffi_raw_closure *)
      __attribute__ ((regparm(1)));
 
 /* This function is jumped to by the trampoline */
 
-static void
-ffi_closure_SYSV (closure)
+unsigned int FFI_HIDDEN
+ffi_closure_SYSV_inner (closure, respp, args)
      ffi_closure *closure;
+     void **respp;
+     void *args;
 {
-  // this is our return value storage
-  long double    res;
-
   // our various things...
   ffi_cif       *cif;
   void         **arg_area;
-  unsigned short rtype;
-  void          *resp = (void*)&res;
-  void *args = __builtin_dwarf_cfa ();
 
   cif         = closure->cif;
   arg_area    = (void**) alloca (cif->nargs * sizeof (void*));  
@@ -271,46 +269,11 @@ ffi_closure_SYSV (closure)
    * a structure, it will re-set RESP to point to the
    * structure return address.  */
 
-  ffi_prep_incoming_args_SYSV(args, (void**)&resp, arg_area, cif);
-  
-  (closure->fun) (cif, resp, arg_area, closure->user_data);
+  ffi_prep_incoming_args_SYSV(args, respp, arg_area, cif);
 
-  rtype = cif->flags;
+  (closure->fun) (cif, *respp, arg_area, closure->user_data);
 
-  /* now, do a generic return based on the value of rtype */
-  if (rtype == FFI_TYPE_INT)
-    {
-      asm ("movl (%0),%%eax" : : "r" (resp) : "eax");
-    }
-  else if (rtype == FFI_TYPE_FLOAT)
-    {
-      asm ("flds (%0)" : : "r" (resp) : "st" );
-    }
-  else if (rtype == FFI_TYPE_DOUBLE)
-    {
-      asm ("fldl (%0)" : : "r" (resp) : "st", "st(1)" );
-    }
-  else if (rtype == FFI_TYPE_LONGDOUBLE)
-    {
-      asm ("fldt (%0)" : : "r" (resp) : "st", "st(1)" );
-    }
-  else if (rtype == FFI_TYPE_SINT64)
-    {
-      asm ("movl 0(%0),%%eax;"
-	   "movl 4(%0),%%edx" 
-	   : : "r"(resp)
-	   : "eax", "edx");
-    }
-#ifdef X86_WIN32
-  else if (rtype == FFI_TYPE_SINT8) /* 1-byte struct  */
-    {
-      asm ("movsbl (%0),%%eax" : : "r" (resp) : "eax");
-    }
-  else if (rtype == FFI_TYPE_SINT16) /* 2-bytes struct */
-    {
-      asm ("movswl (%0),%%eax" : : "r" (resp) : "eax");
-    }
-#endif
+  return cif->flags;
 }
 
 /*@-exportheader@*/
@@ -393,57 +356,6 @@ ffi_prep_closure (ffi_closure* closure,
 /* ------- Native raw API support -------------------------------- */
 
 #if !FFI_NO_RAW_API
-
-static void
-ffi_closure_raw_SYSV (closure)
-     ffi_raw_closure *closure;
-{
-  // this is our return value storage
-  long double    res;
-
-  // our various things...
-  ffi_raw         *raw_args;
-  ffi_cif         *cif;
-  unsigned short   rtype;
-  void            *resp = (void*)&res;
-
-  /* get the cif */
-  cif = closure->cif;
-
-  /* the SYSV/X86 abi matches the RAW API exactly, well.. almost */
-  raw_args = (ffi_raw*) __builtin_dwarf_cfa ();
-
-  (closure->fun) (cif, resp, raw_args, closure->user_data);
-
-  rtype = cif->flags;
-
-  /* now, do a generic return based on the value of rtype */
-  if (rtype == FFI_TYPE_INT)
-    {
-      asm ("movl (%0),%%eax" : : "r" (resp) : "eax");
-    }
-  else if (rtype == FFI_TYPE_FLOAT)
-    {
-      asm ("flds (%0)" : : "r" (resp) : "st" );
-    }
-  else if (rtype == FFI_TYPE_DOUBLE)
-    {
-      asm ("fldl (%0)" : : "r" (resp) : "st", "st(1)" );
-    }
-  else if (rtype == FFI_TYPE_LONGDOUBLE)
-    {
-      asm ("fldt (%0)" : : "r" (resp) : "st", "st(1)" );
-    }
-  else if (rtype == FFI_TYPE_SINT64)
-    {
-      asm ("movl 0(%0),%%eax; movl 4(%0),%%edx" 
-	   : : "r"(resp)
-	   : "eax", "edx");
-    }
-}
-
- 
-
 
 ffi_status
 ffi_prep_raw_closure (ffi_raw_closure* closure,
