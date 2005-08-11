@@ -8731,6 +8731,11 @@ alpha_handle_trap_shadows (void)
 
 /* Alpha can only issue instruction groups simultaneously if they are
    suitably aligned.  This is very processor-specific.  */
+/* There are a number of entries in alphaev4_insn_pipe and alphaev5_insn_pipe
+   that are marked "fake".  These instructions do not exist on that target,
+   but it is possible to see these insns with deranged combinations of 
+   command-line options, such as "-mtune=ev4 -mmax".  Instead of aborting,
+   choose a result at random.  */
 
 enum alphaev4_pipe {
   EV4_STOP = 0,
@@ -8774,6 +8779,7 @@ alphaev4_insn_pipe (rtx insn)
     case TYPE_SHIFT:
     case TYPE_IMUL:
     case TYPE_FBR:
+    case TYPE_MVI:		/* fake */
       return EV4_IB0;
 
     case TYPE_IST:
@@ -8788,6 +8794,9 @@ alphaev4_insn_pipe (rtx insn)
     case TYPE_FMUL:
     case TYPE_ST_C:
     case TYPE_MB:
+    case TYPE_FSQRT:		/* fake */
+    case TYPE_FTOI:		/* fake */
+    case TYPE_ITOF:		/* fake */
       return EV4_IB1;
 
     default:
@@ -8823,6 +8832,8 @@ alphaev5_insn_pipe (rtx insn)
     case TYPE_LD_L:
     case TYPE_ST_C:
     case TYPE_MB:
+    case TYPE_FTOI:		/* fake */
+    case TYPE_ITOF:		/* fake */
       return EV5_E0;
 
     case TYPE_IBR:
@@ -8837,6 +8848,7 @@ alphaev5_insn_pipe (rtx insn)
     case TYPE_FCMOV:
     case TYPE_FADD:
     case TYPE_FDIV:
+    case TYPE_FSQRT:		/* fake */
       return EV5_FA;
 
     case TYPE_FMUL:
