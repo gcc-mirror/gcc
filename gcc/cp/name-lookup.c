@@ -4614,7 +4614,7 @@ pushtag (tree name, tree type, tag_scope scope)
       /* Do C++ gratuitous typedefing.  */
       if (IDENTIFIER_TYPE_VALUE (name) != type)
         {
-          tree d = NULL_TREE;
+          tree decl, tdef;
 	  int in_class = 0;
 	  tree context = TYPE_CONTEXT (type);
 
@@ -4641,25 +4641,25 @@ pushtag (tree name, tree type, tag_scope scope)
 	  if (current_lang_name == lang_name_java)
 	    TYPE_FOR_JAVA (type) = 1;
 
-	  d = create_implicit_typedef (name, type);
-	  DECL_CONTEXT (d) = FROB_CONTEXT (context);
+	  tdef = create_implicit_typedef (name, type);
+	  DECL_CONTEXT (tdef) = FROB_CONTEXT (context);
 	  if (scope == ts_within_enclosing_non_class)
 	    {
 	      /* This is a friend.  Make this TYPE_DECL node hidden from
 		 ordinary name lookup.  Its corresponding TEMPLATE_DECL
 		 will be marked in push_template_decl_real.  */
-	      retrofit_lang_decl (d);
-	      DECL_ANTICIPATED (d) = 1;
-	      DECL_FRIEND_P (d) = 1;
+	      retrofit_lang_decl (tdef);
+	      DECL_ANTICIPATED (tdef) = 1;
+	      DECL_FRIEND_P (tdef) = 1;
 	    }
 
-	  if (! in_class)
-	    set_identifier_type_value_with_scope (name, d, b);
-
-	  d = maybe_process_template_type_declaration
+	  decl = maybe_process_template_type_declaration
 		(type, scope == ts_within_enclosing_non_class, b);
-	  if (d == error_mark_node)
-	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
+	  if (decl == error_mark_node)
+	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, decl);
+	  
+	  if (! in_class)
+	    set_identifier_type_value_with_scope (name, tdef, b);
 
 	  if (b->kind == sk_class)
 	    {
@@ -4668,18 +4668,18 @@ pushtag (tree name, tree type, tag_scope scope)
 		   class.  But if it's a member template class, we
 		   want the TEMPLATE_DECL, not the TYPE_DECL, so this
 		   is done later.  */
-		finish_member_declaration (d);
+		finish_member_declaration (decl);
 	      else
-		pushdecl_class_level (d);
+		pushdecl_class_level (decl);
 	    }
 	  else
-	    d = pushdecl_with_scope (d, b);
+	    decl = pushdecl_with_scope (decl, b);
 
 	  /* FIXME what if it gets a name from typedef?  */
 	  if (ANON_AGGRNAME_P (name))
-	    DECL_IGNORED_P (d) = 1;
+	    DECL_IGNORED_P (decl) = 1;
 
-	  TYPE_CONTEXT (type) = DECL_CONTEXT (d);
+	  TYPE_CONTEXT (type) = DECL_CONTEXT (decl);
 
 	  /* If this is a local class, keep track of it.  We need this
 	     information for name-mangling, and so that it is possible to find

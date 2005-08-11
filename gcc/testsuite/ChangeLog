@@ -1,7 +1,12 @@
+2005-08-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/23219
+	* g++.dg/parse/crash28.C: New.
+
 2005-08-10  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/22143
-	gfortran.dg/shift-kind.f90:  New testcase.
+	* gfortran.dg/shift-kind.f90:  New testcase.
 
 2005-08-10  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 

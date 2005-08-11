@@ -1,3 +1,9 @@
+2005-08-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/23219
+	* name-lookup.c (pushtag): Process the template type before
+	altering the identifier lookup fields.
+
 2005-08-10  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/20646
