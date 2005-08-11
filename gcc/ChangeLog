@@ -1,3 +1,12 @@
+2005-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (concat_loc_descriptor): Add can_use_fbreg argument,
+	pass it down to loc_descriptor.
+	(loc_descriptor): Pass can_use_fbreg to concat_loc_descriptor.
+	(containing_function_has_frame_base): Move earlier in the file.
+	(loc_descriptor_from_tree_1): Use containing_function_has_frame_base
+	instead of always assuming fbreg can't be used.
+
 2005-08-11  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/altivec.md: Change constraint "m" to "Z".
