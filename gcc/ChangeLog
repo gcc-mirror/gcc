@@ -1,5 +1,11 @@
 2005-08-11  Richard Henderson  <rth@redhat.com>
 
+	PR middle-end/23312
+	* gimplify.c (gimplify_one_sizepos): Check for INTEGER_TYPE
+	before using TYPE_IS_SIZETYPE.
+
+2005-08-11  Richard Henderson  <rth@redhat.com>
+
 	PR target/22225
 	* config/alpha/alpha.c (alphaev4_insn_pipe): Add take pipes for
 	insn types not present on ev4.
