@@ -1,3 +1,8 @@
+2005-08-12  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* gcc.c (LINK_SSP_SPEC): Remove space before a trailing }.
+	(LINK_COMMAND_SPEC): Add space after %(link_ssp).
+
 2005-08-11  James E. Wilson  <wilson@specifix.com>
 
 	* config/ia64/ia64.h (EXTRA_MEMORY_CONSTRAINT): New.
