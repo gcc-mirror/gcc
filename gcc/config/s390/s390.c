@@ -3758,6 +3758,17 @@ print_shift_count_operand (FILE *file, rtx op)
 {
   HOST_WIDE_INT offset = 0;
 
+  /* Shift count operands are always truncated to the 6 least significant bits and
+     the setmem padding byte to the least 8 significant bits.  Hence we can drop
+     pointless ANDs.  */
+  if (GET_CODE (op) == AND && GET_CODE (XEXP (op, 1)) == CONST_INT)
+    {
+      if ((INTVAL (XEXP (op, 1)) & 63) != 63)
+	gcc_unreachable ();
+
+      op = XEXP (op, 0);
+    }
+
   /* We can have an integer constant, an address register,
      or a sum of the two.  */
   if (GET_CODE (op) == CONST_INT)
