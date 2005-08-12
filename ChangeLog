@@ -1,3 +1,10 @@
+2005-08-12  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.in: Replace NCN_STRICT_CHECK_TOOL with
+	NCN_STRICT_CHECK_TOOLS, and likewise for NCN_STRICT_CHECK_TARGET_TOOLS.
+	Look for alternate names of the target cc and c++
+	* configure: Regenerate.
+
 2005-08-08  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.in (CC_FOR_TARGET, CXX_FOR_TARGET, GCJ_FOR_TARGET,
