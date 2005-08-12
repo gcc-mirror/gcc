@@ -1,3 +1,7 @@
+2005-08-12  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/lib1funcs.asm: Error if __ARM_ARCH__ not set.
+
 2005-08-12  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/predicates.md (setmem_operand): New predicate.

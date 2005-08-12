@@ -87,6 +87,10 @@ Boston, MA 02110-1301, USA.  */
 # define __ARM_ARCH__ 6
 #endif
 
+#ifndef __ARM_ARCH__
+#error Unable to determine architecture.
+#endif
+
 /* How to return from a function call depends on the architecture variant.  */
 
 #if (__ARM_ARCH__ > 4) || defined(__ARM_ARCH_4T__)
