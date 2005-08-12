@@ -1,5 +1,15 @@
 2005-08-12  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	* config/s390/predicates.md (setmem_operand): New predicate.
+	(shift_count_operand): Accept ANDs with special constants as
+	operand.
+	* config/s390/s390.c (print_shift_count_operand): Skip ANDs
+	with special constants.
+	* config/s390/s390.md ("setmem_long", "*setmem_long"): Replaced
+	shift_count_operand with setmem_operand.
+
+2005-08-12  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* config/s390/s390.c (s390_extract_part, s390_single_part):
 	Type cast added.
 	(s390_const_ok_for_constraint_p): Added SImode to the N constraint.
