@@ -1,3 +1,8 @@
+2005-08-11  James A. Morrison  <phython@gcc.gnu.org>
+
+	* g++.dg/parse/pr22514.C: Move to...
+	* g++.dg/debug/pr22514.C: here.
+
 2005-08-11  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/23266
