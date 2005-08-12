@@ -1,4 +1,8 @@
-005-08-12  Thomas Koenig  <Thomas.Koenig@online.de>
+2005-08-12  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	* gfortran.dg/eoshift.f90:  Correct format.
+
+2005-08-12  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* gfortran.fortran-torture/execute/character_passing.f90:
 	Fix comment typo.
