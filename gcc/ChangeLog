@@ -1,3 +1,12 @@
+2005-08-12  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (s390_extract_part, s390_single_part):
+	Type cast added.
+	(s390_const_ok_for_constraint_p): Added SImode to the N constraint.
+	(s390_output_mi_thunk): Don't use lg on 31 bit.
+	* config/s390/s390.md ("*movdi_31", "*movdf_31"): Added lmy and stmy.
+	("*llgt_sisi" and splitter): Replaced TARGET_64BIT with TARGET_ZARCH.
+
 2005-08-11  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/23312

@@ -1137,7 +1137,8 @@ s390_extract_part (rtx op, enum machine_mode mode, int def)
   unsigned HOST_WIDE_INT value = 0;
   int max_parts = HOST_BITS_PER_WIDE_INT / GET_MODE_BITSIZE (mode);
   int part_bits = GET_MODE_BITSIZE (mode);
-  unsigned HOST_WIDE_INT part_mask = (1 << part_bits) - 1;
+  unsigned HOST_WIDE_INT part_mask
+    = ((unsigned HOST_WIDE_INT)1 << part_bits) - 1;
   int i;
 
   for (i = 0; i < max_parts; i++)
@@ -1166,7 +1167,8 @@ s390_single_part (rtx op,
 {
   unsigned HOST_WIDE_INT value = 0;
   int n_parts = GET_MODE_SIZE (mode) / GET_MODE_SIZE (part_mode);
-  unsigned HOST_WIDE_INT part_mask = (1 << GET_MODE_BITSIZE (part_mode)) - 1;
+  unsigned HOST_WIDE_INT part_mask
+    = ((unsigned HOST_WIDE_INT)1 << GET_MODE_BITSIZE (part_mode)) - 1;
   int i, part = -1;
 
   if (GET_CODE (op) != CONST_INT)
@@ -1867,8 +1869,9 @@ s390_const_ok_for_constraint_p (HOST_WIDE_INT value,
 
       switch (str[2])
 	{
-	case 'H': part_mode = HImode; break;
-	case 'Q': part_mode = QImode; break;
+  	case 'Q': part_mode = QImode; break;
+ 	case 'H': part_mode = HImode; break;
+ 	case 'S': part_mode = SImode; break;
 	default:  return 0;
 	}
 
@@ -8392,12 +8395,12 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
         {
 	  if (CONST_OK_FOR_CONSTRAINT_P (vcall_offset, 'J', "J"))
 	    {
-	      output_asm_insn ("lg\t%4,0(%1)", op);
+	      output_asm_insn ("l\t%4,0(%1)", op);
 	      output_asm_insn ("a\t%1,%3(%4)", op);
 	    }
 	  else if (DISP_IN_RANGE (vcall_offset))
 	    {
-	      output_asm_insn ("lg\t%4,0(%1)", op);
+	      output_asm_insn ("l\t%4,0(%1)", op);
 	      output_asm_insn ("ay\t%1,%3(%4)", op);
 	    }
 	  else if (CONST_OK_FOR_CONSTRAINT_P (vcall_offset, 'K', "K"))
