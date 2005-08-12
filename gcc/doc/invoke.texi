@@ -1800,9 +1800,9 @@ but disables the helpful warning.
 @item -Wold-style-cast @r{(C++ only)}
 @opindex Wold-style-cast
 Warn if an old-style (C-style) cast to a non-void type is used within
-a C++ program.  The new-style casts (@samp{static_cast},
-@samp{reinterpret_cast}, and @samp{const_cast}) are less vulnerable to
-unintended effects and much easier to search for.
+a C++ program.  The new-style casts (@samp{dynamic_cast},
+@samp{static_cast}, @samp{reinterpret_cast}, and @samp{const_cast}) are
+less vulnerable to unintended effects and much easier to search for.
 
 @item -Woverloaded-virtual @r{(C++ only)}
 @opindex Woverloaded-virtual

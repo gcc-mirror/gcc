@@ -1,3 +1,8 @@
+2005-08-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (C++ Dialect Options): Add dynamic_cast to 
+	description of -Wold-style-casts.
+
 2005-08-12  Andreas Krebbel  <krebbel1@de.ibm.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
