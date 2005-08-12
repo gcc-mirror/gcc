@@ -1,3 +1,8 @@
+2005-08-12  Giovanni Bajo  <giovannibajo@libero.it>
+
+	PR c++/8271
+	* g++.dg/template/unify10.C: New.
+
 2005-08-11  James A. Morrison  <phython@gcc.gnu.org>
 
 	* g++.dg/parse/pr22514.C: Move to...
