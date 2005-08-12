@@ -1,4 +1,4 @@
-2005-09-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+2005-08-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 	    Steven Bosscher  <stevenb@suse.de>
 
 	PR libfortran/20006
@@ -236,7 +236,7 @@
 2005-07-10  Jerry DeLisle  <jvdelisle@verizon.net>
 
 	PR libfortran/21875  (FM111.f)
-	* io/read.c (next_char): Return a ' ' character when BLANK_ZERO or 
+	* io/read.c (next_char): Return a ' ' character when BLANK_ZERO or
 	BLANK_NULL are active.
 	(read_decimal): Interpret ' ' character correctly for BZ or BN.
 	(read_radix): Interpret ' ' character correctly for BZ or BN.
@@ -427,7 +427,7 @@
 	Change second, independent use of variable dim to srank.
 
 2005-05-23  Thomas Koenig  <Thomas.Koenig@online.de>
-	
+
 	Backport from mainline:
 	PR libfortran/21354
 	PR libfortran/21075
