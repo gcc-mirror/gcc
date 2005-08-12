@@ -267,6 +267,12 @@ struct machine_function GTY(())
 #define GP_ARG_NUM_REG 5
 #define FP_ARG_NUM_REG (TARGET_64BIT? 4 : 2)
 
+/* A couple of shortcuts.  */
+#define CONST_OK_FOR_J(x) \
+	CONST_OK_FOR_CONSTRAINT_P((x), 'J', "J")
+#define CONST_OK_FOR_K(x) \
+	CONST_OK_FOR_CONSTRAINT_P((x), 'K', "K")
+
 /* Set the has_landing_pad_p flag in struct machine_function to VALUE.  */
 
 void
@@ -446,7 +452,7 @@ s390_select_ccmode (enum rtx_code code, rtx op0, rtx op1)
 	    && GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT)
 	  return CCAPmode;
 	if (GET_CODE (op0) == PLUS && GET_CODE (XEXP (op0, 1)) == CONST_INT
-	    && CONST_OK_FOR_CONSTRAINT_P (INTVAL (XEXP (op0, 1)), 'K', "K"))
+	    && CONST_OK_FOR_K (INTVAL (XEXP (op0, 1))))
 	  return CCAPmode;
 	if ((GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS
 	     || GET_CODE (op1) == NEG)
@@ -495,7 +501,7 @@ s390_select_ccmode (enum rtx_code code, rtx op0, rtx op1)
  	     int a, b; if ((b = a + c) > 0)  
  	   with c as a constant value: c < 0 -> CCAN and c >= 0 -> CCAP  */
 	if (GET_CODE (op0) == PLUS && GET_CODE (XEXP (op0, 1)) == CONST_INT
-	    && CONST_OK_FOR_CONSTRAINT_P (INTVAL (XEXP (op0, 1)), 'K', "K"))
+	    && CONST_OK_FOR_K (INTVAL (XEXP (op0, 1))))
 	  {
 	    if (INTVAL (XEXP((op0), 1)) < 0)
 	      return CCANmode;
@@ -1928,7 +1934,7 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total)
 	    rtx left = XEXP (x, 0);
 	    rtx right = XEXP (x, 1);
 	    if (GET_CODE (right) == CONST_INT
-		&& CONST_OK_FOR_CONSTRAINT_P (INTVAL (right), 'K', "K"))
+		&& CONST_OK_FOR_K (INTVAL (right)))
 	      *total = s390_cost->mhi;
 	    else if (GET_CODE (left) == SIGN_EXTEND)
 	      *total = s390_cost->mh;
@@ -1943,7 +1949,7 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total)
 	    if (TARGET_64BIT)
 	      {
 		if (GET_CODE (right) == CONST_INT
-		    && CONST_OK_FOR_CONSTRAINT_P (INTVAL (right), 'K', "K"))
+		    && CONST_OK_FOR_K (INTVAL (right)))
 		  *total = s390_cost->mghi;
 		else if (GET_CODE (left) == SIGN_EXTEND)
 		  *total = s390_cost->msgf;
@@ -2290,7 +2296,7 @@ legitimate_reload_constant_p (rtx op)
 
   /* Accept l(g)hi operands.  */
   if (GET_CODE (op) == CONST_INT
-      && CONST_OK_FOR_CONSTRAINT_P (INTVAL (op), 'K', "K"))
+      && CONST_OK_FOR_K (INTVAL (op)))
     return true;
 
   /* Accept lliXX operands.  */
@@ -6039,7 +6045,7 @@ s390_init_frame_layout (void)
       base_used = cfun->machine->split_branches_pending_p
 		  || current_function_uses_const_pool
 		  || (!DISP_IN_RANGE (-frame_size)
-		      && !CONST_OK_FOR_CONSTRAINT_P (-frame_size, 'K', "K"));
+		      && !CONST_OK_FOR_K (-frame_size));
 
       /* Decide which register to use as literal pool base.  In small
 	 leaf functions, try to use an unused call-clobbered register
@@ -6467,7 +6473,7 @@ s390_emit_prologue (void)
 	}
       else
 	{
-	  if (!CONST_OK_FOR_CONSTRAINT_P (INTVAL (frame_off), 'K', "K"))
+	  if (!CONST_OK_FOR_K (INTVAL (frame_off)))
 	    frame_off = force_const_mem (Pmode, frame_off);
 
           insn = emit_insn (gen_add2_insn (stack_pointer_rtx, frame_off));
@@ -6634,7 +6640,7 @@ s390_emit_epilogue (bool sibcall)
 	}
       else
 	{
-	  if (!CONST_OK_FOR_CONSTRAINT_P (INTVAL (frame_off), 'K', "K"))
+	  if (!CONST_OK_FOR_K (INTVAL (frame_off)))
 	    frame_off = force_const_mem (Pmode, frame_off);
 
 	  insn = emit_insn (gen_add2_insn (frame_pointer, frame_off));
@@ -7668,9 +7674,9 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
     {
       /* Setup literal pool pointer if required.  */
       if ((!DISP_IN_RANGE (delta)
-	   && !CONST_OK_FOR_CONSTRAINT_P (delta, 'K', "K"))
+	   && !CONST_OK_FOR_K (delta))
 	  || (!DISP_IN_RANGE (vcall_offset)
-	      && !CONST_OK_FOR_CONSTRAINT_P (vcall_offset, 'K', "K")))
+	      && !CONST_OK_FOR_K (vcall_offset)))
 	{
 	  op[5] = gen_label_rtx ();
 	  output_asm_insn ("larl\t%4,%5", op);
@@ -7679,11 +7685,11 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       /* Add DELTA to this pointer.  */
       if (delta)
 	{
-	  if (CONST_OK_FOR_CONSTRAINT_P (delta, 'J', "J"))
+	  if (CONST_OK_FOR_J (delta))
 	    output_asm_insn ("la\t%1,%2(%1)", op);
 	  else if (DISP_IN_RANGE (delta))
 	    output_asm_insn ("lay\t%1,%2(%1)", op);
-	  else if (CONST_OK_FOR_CONSTRAINT_P (delta, 'K', "K"))
+	  else if (CONST_OK_FOR_K (delta))
 	    output_asm_insn ("aghi\t%1,%2", op);
 	  else
 	    {
@@ -7700,7 +7706,7 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	      output_asm_insn ("lg\t%4,0(%1)", op);
 	      output_asm_insn ("ag\t%1,%3(%4)", op);
 	    }
-	  else if (CONST_OK_FOR_CONSTRAINT_P (vcall_offset, 'K', "K"))
+	  else if (CONST_OK_FOR_K (vcall_offset))
 	    {
 	      output_asm_insn ("lghi\t%4,%3", op);
 	      output_asm_insn ("ag\t%4,0(%1)", op);
@@ -7743,9 +7749,9 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       /* Setup base pointer if required.  */
       if (!vcall_offset
 	  || (!DISP_IN_RANGE (delta)
-              && !CONST_OK_FOR_CONSTRAINT_P (delta, 'K', "K"))
+              && !CONST_OK_FOR_K (delta))
 	  || (!DISP_IN_RANGE (delta)
-              && !CONST_OK_FOR_CONSTRAINT_P (vcall_offset, 'K', "K")))
+              && !CONST_OK_FOR_K (vcall_offset)))
 	{
 	  op[5] = gen_label_rtx ();
 	  output_asm_insn ("basr\t%4,0", op);
@@ -7756,11 +7762,11 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       /* Add DELTA to this pointer.  */
       if (delta)
 	{
-	  if (CONST_OK_FOR_CONSTRAINT_P (delta, 'J', "J"))
+	  if (CONST_OK_FOR_J (delta))
 	    output_asm_insn ("la\t%1,%2(%1)", op);
 	  else if (DISP_IN_RANGE (delta))
 	    output_asm_insn ("lay\t%1,%2(%1)", op);
-	  else if (CONST_OK_FOR_CONSTRAINT_P (delta, 'K', "K"))
+	  else if (CONST_OK_FOR_K (delta))
 	    output_asm_insn ("ahi\t%1,%2", op);
 	  else
 	    {
@@ -7772,7 +7778,7 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       /* Perform vcall adjustment.  */
       if (vcall_offset)
         {
-	  if (CONST_OK_FOR_CONSTRAINT_P (vcall_offset, 'J', "J"))
+	  if (CONST_OK_FOR_J (vcall_offset))
 	    {
 	      output_asm_insn ("lg\t%4,0(%1)", op);
 	      output_asm_insn ("a\t%1,%3(%4)", op);
@@ -7782,7 +7788,7 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	      output_asm_insn ("lg\t%4,0(%1)", op);
 	      output_asm_insn ("ay\t%1,%3(%4)", op);
 	    }
-	  else if (CONST_OK_FOR_CONSTRAINT_P (vcall_offset, 'K', "K"))
+	  else if (CONST_OK_FOR_K (vcall_offset))
 	    {
 	      output_asm_insn ("lhi\t%4,%3", op);
 	      output_asm_insn ("a\t%4,0(%1)", op);
