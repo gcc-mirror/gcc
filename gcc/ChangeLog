@@ -1,3 +1,10 @@
+2005-08-12  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (s390_split_branches, s390_init_frame_layout): 
+	Don't set save_return_addr_p.
+	(s390_register_info): Make clobbered_regs not depending on
+	save_return_addr_p.
+
 2005-08-12  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* gcc.c (LINK_SSP_SPEC): Remove space before a trailing }.
