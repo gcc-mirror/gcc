@@ -1,6 +1,6 @@
 // natObject.cc - Implementation of the Object class.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -104,6 +104,11 @@ java::lang::Object::clone (void)
     }
 
   memcpy ((void *) r, (void *) this, size);
+#ifndef JV_HASH_SYNCHRONIZATION
+  // Guarantee that the locks associated to the two objects are
+  // distinct.
+  r->sync_info = NULL;
+#endif
   return r;
 }
 
