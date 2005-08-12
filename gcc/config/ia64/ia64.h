@@ -949,6 +949,13 @@ enum reg_class
 
 #define EXTRA_CONSTRAINT(VALUE, C) \
   ia64_extra_constraint (VALUE, C)
+
+/* Document the constraints that can accept reloaded memory operands.  This is
+   needed by the extended asm support, and by reload.  'Q' accepts mem, but
+   only non-volatile mem.  Since we can't reload a volatile mem into a
+   non-volatile mem, it can not be listed here.  */
+
+#define EXTRA_MEMORY_CONSTRAINT(C, STR)  ((C) == 'S')
 
 /* Basic Stack Layout */
 

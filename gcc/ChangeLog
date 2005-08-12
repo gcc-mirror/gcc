@@ -1,3 +1,7 @@
+2005-08-11  James E. Wilson  <wilson@specifix.com>
+
+	* config/ia64/ia64.h (EXTRA_MEMORY_CONSTRAINT): New.
+
 2005-08-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (add_location_or_const_value_attribute): Prefer
