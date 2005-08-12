@@ -1,4 +1,4 @@
-2005-09-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+2005-08-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 	    Steven Bosscher  <stevenb@suse.de>
 
 	PR libfortran/20006
@@ -116,7 +116,7 @@
 	x-editing during formatted input.
 	* transfer.c (formatted_transfer): Cast offset difference
 	as int, clean-up arithmetic with new variable, bytes_used,
-	zero counters for FMT_SLASH, 
+	zero counters for FMT_SLASH,
 	(data_transfer_init) Zero X- and T-editing counters
 	unconditionally.
 	(next_record_w) Zero X- and T-editing counters.
@@ -166,7 +166,7 @@
 2005-07-09  Jerry DeLisle  <jvdelisle@verizon.net>
 
 	PR libfortran/21875  (FM111.f)
-	* io/read.c (next_char): Return a ' ' character when BLANK_ZERO or 
+	* io/read.c (next_char): Return a ' ' character when BLANK_ZERO or
 	BLANK_NULL are active.
 	(read_decimal): Interpret ' ' character correctly for BZ or BN.
 	(read_radix): Interpret ' ' character correctly for BZ or BN.
