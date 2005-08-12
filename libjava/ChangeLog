@@ -1,3 +1,8 @@
+2005-08-12  Morgan Deters  <mdeters@morgandeters.com>
+
+	PR libgcj/23353:
+	* java/lang/natObject.cc (clone): Clear sync_info.
+
 2005-07-13  Andrew Haley  <aph@redhat.com>
 
 	* gnu/java/net/protocol/file/Connection.java (unquote): New
