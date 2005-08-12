@@ -1,3 +1,8 @@
+2005-08-12  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	* gfortran.fortran-torture/execute/character_passing.f90:
+	Fix comment typo.
+
 2005-08-12  Giovanni Bajo  <giovannibajo@libero.it>
 
 	PR c++/8271
