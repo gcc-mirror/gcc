@@ -1,5 +1,13 @@
 2005-08-12  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	* config/s390/s390.c (CONST_OK_FOR_J, CONST_OK_FOR_K): New macros.
+	(s390_select_ccmode, s390_rtx_costs, legitimate_reload_constant_p,
+	s390_init_frame_layout, s390_emit_prologue, s390_emit_epilogue,
+	s390_output_mi_thunk): Replaced uses of CONST_OK_FOR_CONSTRAINT_P
+	with one of the new macros.
+
+2005-08-12  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* config/s390/s390.c (s390_split_branches, s390_init_frame_layout): 
 	Don't set save_return_addr_p.
 	(s390_register_info): Make clobbered_regs not depending on
