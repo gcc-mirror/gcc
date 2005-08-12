@@ -1,5 +1,10 @@
 2005-08-12  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	* config/s390/s390.md ("*movdf_31"): Fix copy-and-paste bug in
+	previous change.
+
+2005-08-12  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* config/s390/s390.c (s390_extract_part, s390_single_part):
 	Type cast added.
 	(s390_const_ok_for_constraint_p): Added SImode to the N constraint.
