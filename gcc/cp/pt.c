@@ -10246,6 +10246,17 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
       if (TREE_CODE (arg) != TREE_CODE (parm))
 	return 1;
 
+      /* CV qualifications for methods can never be deduced, they must
+  	 match exactly.  We need to check them explicitly here,
+  	 because type_unification_real treats them as any other
+  	 cvqualified parameter.  */
+      if (TREE_CODE (parm) == METHOD_TYPE
+	  && (!check_cv_quals_for_unify
+	      (UNIFY_ALLOW_NONE,
+	       TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (arg))),
+	       TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (parm))))))
+	return 1;
+
       if (unify (tparms, targs, TREE_TYPE (parm),
 		 TREE_TYPE (arg), UNIFY_ALLOW_NONE))
 	return 1;
