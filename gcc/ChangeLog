@@ -1,4 +1,19 @@
 2005-08-12  Andreas Krebbel  <krebbel1@de.ibm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* config/s390/linux.h (TARGET_THREAD_SSP_OFFSET): Define.
+	* config/s390/s390-protos.h (s390_get_thread_pointer): Prototype added.
+	* config/s390/s390.c (print_operand): New output modifier 'G' added.
+	(get_thread_pointer): Renamed to s390_get_thread_pointer.
+	* config/s390/s390.md (stack_protect_set, stack_protect_test): If
+	TARGET_THREAD_SSP_OFFSET is defined, change operands[1] to
+	(MEM:P (PLUS:P (tp, TARGET_THREAD_SSP_OFFSET))).
+	(UNSPEC_SP_SET, UNSPEC_SP_TEST): New constants.
+	("stack_protect_set", "stack_protect_test"): New expanders.
+	("stack_protect_setsi", "stack_protect_setdi", "stack_protect_testsi",
+	"stack_protect_testdi"): New insn definitions.
+
+2005-08-12  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md ("*movdf_31"): Changed constraint from P to K.
 

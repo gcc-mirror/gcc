@@ -2832,8 +2832,8 @@ legitimize_pic_address (rtx orig, rtx reg)
 
 /* Load the thread pointer into a register.  */
 
-static rtx
-get_thread_pointer (void)
+rtx
+s390_get_thread_pointer (void)
 {
   rtx tp = gen_reg_rtx (Pmode);
 
@@ -2893,7 +2893,7 @@ legitimize_tls_address (rtx addr, rtx reg)
 	temp = gen_reg_rtx (Pmode);
 	emit_libcall_block (insn, temp, r2, new);
 
-	new = gen_rtx_PLUS (Pmode, get_thread_pointer (), temp);
+	new = gen_rtx_PLUS (Pmode, s390_get_thread_pointer (), temp);
 	if (reg != 0)
 	  {
 	    s390_load_address (reg, new);
@@ -2916,7 +2916,7 @@ legitimize_tls_address (rtx addr, rtx reg)
 	temp = gen_reg_rtx (Pmode);
 	emit_libcall_block (insn, temp, r2, new);
 
-	new = gen_rtx_PLUS (Pmode, get_thread_pointer (), temp);
+	new = gen_rtx_PLUS (Pmode, s390_get_thread_pointer (), temp);
 	base = gen_reg_rtx (Pmode);
 	s390_load_address (base, new);
 
@@ -3003,7 +3003,7 @@ legitimize_tls_address (rtx addr, rtx reg)
 	    emit_insn (gen_rtx_SET (Pmode, temp, new));
 	  }
 
-	new = gen_rtx_PLUS (Pmode, get_thread_pointer (), temp);
+	new = gen_rtx_PLUS (Pmode, s390_get_thread_pointer (), temp);
 	if (reg != 0)
 	  {
 	    s390_load_address (reg, new);
@@ -3018,7 +3018,7 @@ legitimize_tls_address (rtx addr, rtx reg)
         temp = gen_reg_rtx (Pmode);
 	emit_move_insn (temp, new);
 
-	new = gen_rtx_PLUS (Pmode, get_thread_pointer (), temp);
+	new = gen_rtx_PLUS (Pmode, s390_get_thread_pointer (), temp);
 	if (reg != 0)
 	  {
 	    s390_load_address (reg, new);
@@ -3931,6 +3931,7 @@ print_operand_address (FILE *file, rtx addr)
     'C': print opcode suffix for branch condition.
     'D': print opcode suffix for inverse branch condition.
     'J': print tls_load/tls_gdcall/tls_ldcall suffix
+    'G': print the size of the operand in bytes.
     'O': print only the displacement of a memory reference.
     'R': print only the base register of a memory reference.
     'S': print S-type memory reference (base+displacement).
@@ -3975,6 +3976,10 @@ print_operand (FILE *file, rtx x, int code)
 	}
       else
 	gcc_unreachable ();
+      return;
+
+    case 'G':
+      fprintf (file, "%u", GET_MODE_SIZE (GET_MODE (x)));
       return;
 
     case 'O':
