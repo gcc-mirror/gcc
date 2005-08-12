@@ -91,6 +91,7 @@ extern void s390_initialize_trampoline (rtx, rtx, rtx);
 extern rtx s390_gen_rtx_const_DI (int, int);
 extern int s390_agen_dep_p (rtx, rtx);
 extern rtx s390_load_got (void);
+extern rtx s390_get_thread_pointer (void);
 extern void s390_emit_tpf_eh_return (rtx);
 extern bool s390_legitimate_address_without_index_p (rtx);
 extern int s390_branch_condition_mask (rtx);
