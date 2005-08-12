@@ -224,7 +224,10 @@ struct s390_frame_layout GTY (())
   /* Number of floating point registers f8-f15 which must be saved.  */
   int high_fprs;
 
-  /* Set if return address needs to be saved.  */
+  /* Set if return address needs to be saved.
+     This flag is set by s390_return_addr_rtx if it could not use
+     the initial value of r14 and therefore depends on r14 saved
+     to the stack.  */
   bool save_return_addr_p;
 
   /* Size of stack frame.  */
@@ -4405,10 +4408,6 @@ s390_split_branches (void)
       if (get_attr_length (insn) <= 4)
 	continue;
 
-      /* We are going to use the return register as scratch register,
-	 make sure it will be saved/restored by the prologue/epilogue.  */
-      cfun_frame_layout.save_return_addr_p = 1;
-
       if (!flag_pic)
 	{
 	  new_literal = 1;
@@ -5818,8 +5817,12 @@ s390_register_info (int clobbered_regs[])
       && REGNO (cfun->machine->base_reg) == BASE_REGNUM;
 
   clobbered_regs[RETURN_REGNUM]
-    = cfun->machine->split_branches_pending_p
-      || cfun_frame_layout.save_return_addr_p;
+    |= (cfun->machine->split_branches_pending_p
+	|| cfun_frame_layout.save_return_addr_p
+	|| TARGET_TPF_PROFILING
+	|| !current_function_is_leaf
+	|| current_function_stdarg
+	|| current_function_calls_eh_return);
 
   clobbered_regs[STACK_POINTER_REGNUM]
     = !current_function_is_leaf
@@ -6020,13 +6023,6 @@ s390_init_frame_layout (void)
 
   /* If return address register is explicitly used, we need to save it.  */
   s390_regs_ever_clobbered (clobbered_regs);
-
-  if (clobbered_regs[RETURN_REGNUM]
-      || !current_function_is_leaf
-      || TARGET_TPF_PROFILING
-      || current_function_stdarg
-      || current_function_calls_eh_return)
-    cfun_frame_layout.save_return_addr_p = true;
 
   /* On S/390 machines, we may need to perform branch splitting, which
      will require both base and return address register.  We have no
