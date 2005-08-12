@@ -1,3 +1,9 @@
+2005-08-12  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	PR target/23250
+	* arm.c (arm_override_options): Use ARM_FLAG_INTERWORK, not
+	MASK_INTERWORK.
+
 2005-08-12  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md ("*movdf_31"): Fix copy-and-paste bug in

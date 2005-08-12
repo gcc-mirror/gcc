@@ -947,7 +947,7 @@ arm_override_options (void)
   /* Callee super interworking implies thumb interworking.  Adding
      this to the flags here simplifies the logic elsewhere.  */
   if (TARGET_THUMB && TARGET_CALLEE_INTERWORKING)
-      target_flags |= MASK_INTERWORK;
+      target_flags |= ARM_FLAG_INTERWORK;
 
   /* TARGET_BACKTRACE calls leaf_function_p, which causes a crash if done
      from here where no function is being compiled currently.  */
