@@ -1,3 +1,7 @@
+2005-08-12  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.md ("*movdf_31"): Changed constraint from P to K.
+
 2005-08-12  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/lib1funcs.asm: Error if __ARM_ARCH__ not set.
