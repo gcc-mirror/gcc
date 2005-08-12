@@ -946,7 +946,7 @@ check-[+module+]:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
+	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS) [+ 
 	  extra_make_flags+] check)
 [+ ENDIF no_check +]
 @endif [+module+]
@@ -963,7 +963,7 @@ install-[+module+]: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
+	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS) [+ 
 	  extra_make_flags+] install)
 [+ ENDIF no_install +]
 @endif [+module+]

@@ -2674,7 +2674,7 @@ check-ash:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd ash && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd ash && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif ash
 
@@ -2688,7 +2688,7 @@ install-ash: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd ash && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd ash && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif ash
 
@@ -3004,7 +3004,7 @@ check-autoconf:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd autoconf && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd autoconf && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif autoconf
 
@@ -3018,7 +3018,7 @@ install-autoconf: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd autoconf && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd autoconf && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif autoconf
 
@@ -3334,7 +3334,7 @@ check-automake:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd automake && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd automake && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif automake
 
@@ -3348,7 +3348,7 @@ install-automake: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd automake && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd automake && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif automake
 
@@ -3664,7 +3664,7 @@ check-bash:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd bash && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd bash && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif bash
 
@@ -3678,7 +3678,7 @@ install-bash: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd bash && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd bash && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif bash
 
@@ -3996,7 +3996,7 @@ check-bfd:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd bfd && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd bfd && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif bfd
 
@@ -4010,7 +4010,7 @@ install-bfd: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd bfd && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd bfd && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif bfd
 
@@ -4328,7 +4328,7 @@ check-opcodes:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd opcodes && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd opcodes && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif opcodes
 
@@ -4342,7 +4342,7 @@ install-opcodes: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd opcodes && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd opcodes && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif opcodes
 
@@ -4660,7 +4660,7 @@ check-binutils:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd binutils && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd binutils && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif binutils
 
@@ -4674,7 +4674,7 @@ install-binutils: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd binutils && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd binutils && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif binutils
 
@@ -5007,7 +5007,7 @@ install-bison: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd bison && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd bison && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif bison
 
@@ -5340,7 +5340,7 @@ install-byacc: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd byacc && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd byacc && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif byacc
 
@@ -5656,7 +5656,7 @@ check-bzip2:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd bzip2 && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd bzip2 && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif bzip2
 
@@ -5670,7 +5670,7 @@ install-bzip2: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd bzip2 && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd bzip2 && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif bzip2
 
@@ -5986,7 +5986,7 @@ check-dejagnu:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd dejagnu && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd dejagnu && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif dejagnu
 
@@ -6000,7 +6000,7 @@ install-dejagnu: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd dejagnu && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd dejagnu && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif dejagnu
 
@@ -6316,7 +6316,7 @@ check-diff:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd diff && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd diff && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif diff
 
@@ -6330,7 +6330,7 @@ install-diff: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd diff && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd diff && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif diff
 
@@ -6655,7 +6655,7 @@ install-dosutils: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd dosutils && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd dosutils && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif dosutils
 
@@ -6971,7 +6971,7 @@ check-etc:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd etc && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd etc && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif etc
 
@@ -6985,7 +6985,7 @@ install-etc: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd etc && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd etc && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif etc
 
@@ -7318,7 +7318,7 @@ install-fastjar: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd fastjar && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd fastjar && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif fastjar
 
@@ -7634,7 +7634,7 @@ check-fileutils:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd fileutils && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd fileutils && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif fileutils
 
@@ -7648,7 +7648,7 @@ install-fileutils: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd fileutils && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd fileutils && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif fileutils
 
@@ -7964,7 +7964,7 @@ check-findutils:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd findutils && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd findutils && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif findutils
 
@@ -7978,7 +7978,7 @@ install-findutils: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd findutils && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd findutils && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif findutils
 
@@ -8294,7 +8294,7 @@ check-find:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd find && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd find && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif find
 
@@ -8308,7 +8308,7 @@ install-find: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd find && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd find && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif find
 
@@ -8624,7 +8624,7 @@ check-fixincludes:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd fixincludes && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd fixincludes && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif fixincludes
 
@@ -8638,7 +8638,7 @@ install-fixincludes: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd fixincludes && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd fixincludes && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif fixincludes
 
@@ -8890,7 +8890,7 @@ install-flex: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd flex && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd flex && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif flex
 
@@ -9208,7 +9208,7 @@ check-gas:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd gas && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd gas && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif gas
 
@@ -9222,7 +9222,7 @@ install-gas: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd gas && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd gas && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif gas
 
@@ -9540,7 +9540,7 @@ check-gcc:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd gcc && $(MAKE) $(FLAGS_TO_PASS)$(EXTRA_GCC_FLAGS) check)
+	(cd gcc && $(MAKE) $(FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) check)
 
 @endif gcc
 
@@ -9554,7 +9554,7 @@ install-gcc: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd gcc && $(MAKE) $(FLAGS_TO_PASS)$(EXTRA_GCC_FLAGS) install)
+	(cd gcc && $(MAKE) $(FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS) install)
 
 @endif gcc
 
@@ -9870,7 +9870,7 @@ check-gawk:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd gawk && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd gawk && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif gawk
 
@@ -9884,7 +9884,7 @@ install-gawk: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd gawk && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd gawk && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif gawk
 
@@ -10200,7 +10200,7 @@ check-gettext:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd gettext && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd gettext && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif gettext
 
@@ -10214,7 +10214,7 @@ install-gettext: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd gettext && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd gettext && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif gettext
 
@@ -10530,7 +10530,7 @@ check-gnuserv:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd gnuserv && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd gnuserv && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif gnuserv
 
@@ -10544,7 +10544,7 @@ install-gnuserv: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd gnuserv && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd gnuserv && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif gnuserv
 
@@ -10860,7 +10860,7 @@ check-gprof:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd gprof && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd gprof && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif gprof
 
@@ -10874,7 +10874,7 @@ install-gprof: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd gprof && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd gprof && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif gprof
 
@@ -11190,7 +11190,7 @@ check-gzip:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd gzip && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd gzip && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif gzip
 
@@ -11204,7 +11204,7 @@ install-gzip: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd gzip && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd gzip && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif gzip
 
@@ -11520,7 +11520,7 @@ check-hello:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd hello && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd hello && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif hello
 
@@ -11534,7 +11534,7 @@ install-hello: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd hello && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd hello && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif hello
 
@@ -11850,7 +11850,7 @@ check-indent:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd indent && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd indent && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif indent
 
@@ -11864,7 +11864,7 @@ install-indent: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd indent && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd indent && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif indent
 
@@ -12182,7 +12182,7 @@ check-intl:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd intl && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd intl && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif intl
 
@@ -12196,7 +12196,7 @@ install-intl: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd intl && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd intl && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif intl
 
@@ -12512,7 +12512,7 @@ check-tcl:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd tcl && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd tcl && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif tcl
 
@@ -12526,7 +12526,7 @@ install-tcl: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd tcl && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd tcl && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif tcl
 
@@ -12827,7 +12827,7 @@ check-itcl:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd itcl && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd itcl && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif itcl
 
@@ -12841,7 +12841,7 @@ install-itcl: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd itcl && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd itcl && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif itcl
 
@@ -13159,7 +13159,7 @@ check-ld:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd ld && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd ld && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif ld
 
@@ -13173,7 +13173,7 @@ install-ld: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd ld && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd ld && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif ld
 
@@ -13491,7 +13491,7 @@ check-libcpp:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd libcpp && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd libcpp && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif libcpp
 
@@ -13505,7 +13505,7 @@ install-libcpp: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd libcpp && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd libcpp && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif libcpp
 
@@ -13821,7 +13821,7 @@ check-libgui:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd libgui && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd libgui && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif libgui
 
@@ -13835,7 +13835,7 @@ install-libgui: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd libgui && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd libgui && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif libgui
 
@@ -14153,7 +14153,7 @@ check-libiberty:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd libiberty && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd libiberty && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif libiberty
 
@@ -14167,7 +14167,7 @@ install-libiberty: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd libiberty && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd libiberty && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif libiberty
 
@@ -14483,7 +14483,7 @@ check-libtool:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd libtool && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd libtool && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif libtool
 
@@ -14497,7 +14497,7 @@ install-libtool: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd libtool && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd libtool && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif libtool
 
@@ -14813,7 +14813,7 @@ check-m4:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd m4 && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd m4 && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif m4
 
@@ -14827,7 +14827,7 @@ install-m4: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd m4 && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd m4 && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif m4
 
@@ -15143,7 +15143,7 @@ check-make:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd make && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd make && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif make
 
@@ -15157,7 +15157,7 @@ install-make: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd make && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd make && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif make
 
@@ -15482,7 +15482,7 @@ install-mmalloc: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd mmalloc && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd mmalloc && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif mmalloc
 
@@ -15798,7 +15798,7 @@ check-patch:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd patch && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd patch && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif patch
 
@@ -15812,7 +15812,7 @@ install-patch: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd patch && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd patch && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif patch
 
@@ -16128,7 +16128,7 @@ check-perl:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd perl && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd perl && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif perl
 
@@ -16142,7 +16142,7 @@ install-perl: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd perl && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd perl && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif perl
 
@@ -16458,7 +16458,7 @@ check-prms:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd prms && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd prms && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif prms
 
@@ -16472,7 +16472,7 @@ install-prms: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd prms && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd prms && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif prms
 
@@ -16788,7 +16788,7 @@ check-rcs:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd rcs && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd rcs && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif rcs
 
@@ -16802,7 +16802,7 @@ install-rcs: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd rcs && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd rcs && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif rcs
 
@@ -17118,7 +17118,7 @@ check-readline:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd readline && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd readline && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif readline
 
@@ -17132,7 +17132,7 @@ install-readline: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd readline && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd readline && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif readline
 
@@ -17768,7 +17768,7 @@ check-recode:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd recode && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd recode && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif recode
 
@@ -17782,7 +17782,7 @@ install-recode: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd recode && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd recode && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif recode
 
@@ -18098,7 +18098,7 @@ check-sed:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd sed && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd sed && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif sed
 
@@ -18112,7 +18112,7 @@ install-sed: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd sed && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd sed && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif sed
 
@@ -18428,7 +18428,7 @@ check-send-pr:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd send-pr && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd send-pr && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif send-pr
 
@@ -18442,7 +18442,7 @@ install-send-pr: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd send-pr && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd send-pr && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif send-pr
 
@@ -18758,7 +18758,7 @@ check-shellutils:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd shellutils && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd shellutils && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif shellutils
 
@@ -18772,7 +18772,7 @@ install-shellutils: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd shellutils && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd shellutils && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif shellutils
 
@@ -19088,7 +19088,7 @@ check-sid:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd sid && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd sid && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif sid
 
@@ -19102,7 +19102,7 @@ install-sid: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd sid && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd sid && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif sid
 
@@ -19418,7 +19418,7 @@ check-sim:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd sim && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd sim && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif sim
 
@@ -19432,7 +19432,7 @@ install-sim: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd sim && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd sim && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif sim
 
@@ -19748,7 +19748,7 @@ check-tar:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd tar && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd tar && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif tar
 
@@ -19762,7 +19762,7 @@ install-tar: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd tar && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd tar && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif tar
 
@@ -20078,7 +20078,7 @@ check-texinfo:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd texinfo && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd texinfo && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif texinfo
 
@@ -20403,7 +20403,7 @@ check-textutils:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd textutils && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd textutils && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif textutils
 
@@ -20417,7 +20417,7 @@ install-textutils: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd textutils && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd textutils && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif textutils
 
@@ -20733,7 +20733,7 @@ check-time:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd time && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd time && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif time
 
@@ -20747,7 +20747,7 @@ install-time: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd time && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd time && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif time
 
@@ -21063,7 +21063,7 @@ check-uudecode:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd uudecode && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd uudecode && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif uudecode
 
@@ -21077,7 +21077,7 @@ install-uudecode: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd uudecode && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd uudecode && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif uudecode
 
@@ -21393,7 +21393,7 @@ check-wdiff:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd wdiff && $(MAKE) $(FLAGS_TO_PASS) check)
+	(cd wdiff && $(MAKE) $(FLAGS_TO_PASS)  check)
 
 @endif wdiff
 
@@ -21407,7 +21407,7 @@ install-wdiff: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd wdiff && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd wdiff && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif wdiff
 
@@ -21740,7 +21740,7 @@ install-zip: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd zip && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd zip && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif zip
 
@@ -22378,7 +22378,7 @@ check-gdb:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd gdb && $(MAKE) $(FLAGS_TO_PASS)$(X11_FLAGS_TO_PASS) check)
+	(cd gdb && $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) check)
 
 @endif gdb
 
@@ -22392,7 +22392,7 @@ install-gdb: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd gdb && $(MAKE) $(FLAGS_TO_PASS)$(X11_FLAGS_TO_PASS) install)
+	(cd gdb && $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) install)
 
 @endif gdb
 
@@ -22708,7 +22708,7 @@ check-expect:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd expect && $(MAKE) $(FLAGS_TO_PASS)$(X11_FLAGS_TO_PASS) check)
+	(cd expect && $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) check)
 
 @endif expect
 
@@ -22722,7 +22722,7 @@ install-expect: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd expect && $(MAKE) $(FLAGS_TO_PASS)$(X11_FLAGS_TO_PASS) install)
+	(cd expect && $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) install)
 
 @endif expect
 
@@ -23038,7 +23038,7 @@ check-guile:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd guile && $(MAKE) $(FLAGS_TO_PASS)$(X11_FLAGS_TO_PASS) check)
+	(cd guile && $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) check)
 
 @endif guile
 
@@ -23052,7 +23052,7 @@ install-guile: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd guile && $(MAKE) $(FLAGS_TO_PASS)$(X11_FLAGS_TO_PASS) install)
+	(cd guile && $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) install)
 
 @endif guile
 
@@ -23368,7 +23368,7 @@ check-tk:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd tk && $(MAKE) $(FLAGS_TO_PASS)$(X11_FLAGS_TO_PASS) check)
+	(cd tk && $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) check)
 
 @endif tk
 
@@ -23382,7 +23382,7 @@ install-tk: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd tk && $(MAKE) $(FLAGS_TO_PASS)$(X11_FLAGS_TO_PASS) install)
+	(cd tk && $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) install)
 
 @endif tk
 
@@ -23707,7 +23707,7 @@ install-libtermcap: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd libtermcap && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd libtermcap && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif libtermcap
 
@@ -23972,7 +23972,7 @@ install-utils: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd utils && $(MAKE) $(FLAGS_TO_PASS) install)
+	(cd utils && $(MAKE) $(FLAGS_TO_PASS)  install)
 
 @endif utils
 
