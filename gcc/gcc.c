@@ -674,7 +674,7 @@ proper position among the other output files.  */
 #ifdef TARGET_LIBC_PROVIDES_SSP
 #define LINK_SSP_SPEC "%{fstack-protector:}"
 #else
-#define LINK_SSP_SPEC "%{fstack-protector|fstack-protector-all:-lssp_nonshared -lssp }"
+#define LINK_SSP_SPEC "%{fstack-protector|fstack-protector-all:-lssp_nonshared -lssp}"
 #endif
 #endif
 
@@ -699,7 +699,7 @@ proper position among the other output files.  */
     %{s} %{t} %{u*} %{x} %{z} %{Z} %{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
     %{static:} %{L*} %(mfwrap) %(link_libgcc) %o %(mflib)\
     %{fprofile-arcs|fprofile-generate|coverage:-lgcov}\
-    %{!nostdlib:%{!nodefaultlibs:%(link_ssp)%(link_gcc_c_sequence)}}\
+    %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}\
     %{!A:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} }}}}}}"
 #endif
 
