@@ -1,3 +1,19 @@
+2005-08-12  Giovanni Bajo  <giovannibajo@libero.it>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21799
+	PR c++/8271
+        * pt.c (unify) <METHOD_TYPE>: Check this-pointer cv-qualifiers
+	explicitly.
+	
+2005-08-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21799
+	Revert my 2005-07-08 patch
+	* pt.c (type_unification_real): Remove is_method_argument and
+	assoicated checks.
+	(fn_type_unification, unify): Adjust type_unification_real calls.
+
 2005-08-11  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/23266

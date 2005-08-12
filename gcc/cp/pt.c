@@ -109,7 +109,7 @@ static tree add_outermost_template_args (tree, tree);
 static bool check_instantiated_args (tree, tree, tsubst_flags_t);
 static int maybe_adjust_types_for_deduction (unification_kind_t, tree*, tree*);
 static int  type_unification_real (tree, tree, tree, tree,
-				   int, unification_kind_t, int);
+				   int, unification_kind_t);
 static void note_template_header (int);
 static tree convert_nontype_argument_function (tree, tree);
 static tree convert_nontype_argument (tree, tree);
@@ -9197,7 +9197,7 @@ fn_type_unification (tree fn,
      event.  */
   result = type_unification_real (DECL_INNERMOST_TEMPLATE_PARMS (fn),
 				  targs, parms, args, /*subr=*/0,
-				  strict, 0);
+				  strict);
 
   if (result == 0)
     /* All is well so far.  Now, check:
@@ -9305,9 +9305,7 @@ maybe_adjust_types_for_deduction (unification_kind_t strict,
 
    If SUBR is 1, we're being called recursively (to unify the
    arguments of a function or method parameter of a function
-   template).  If IS_METHOD is true, XPARMS are the parms of a
-   member function, and special rules apply to cv qualification
-   deduction on the this parameter.  */
+   template). */
 
 static int
 type_unification_real (tree tparms,
@@ -9315,8 +9313,7 @@ type_unification_real (tree tparms,
 		       tree xparms,
 		       tree xargs,
 		       int subr,
-		       unification_kind_t strict,
-		       int is_method)
+		       unification_kind_t strict)
 {
   tree parm, arg;
   int i;
@@ -9368,26 +9365,6 @@ type_unification_real (tree tparms,
 	   template args from other function args.  */
 	continue;
 
-      if (is_method)
-	{
-	  /* The cv qualifiers on the this pointer argument must match
- 	     exactly.  We cannot deduce a T as const X against a const
- 	     member function for instance.  */
-	  gcc_assert (TREE_CODE (parm) == POINTER_TYPE);
-	  gcc_assert (TREE_CODE (arg) == POINTER_TYPE);
-	  /* The restrict qualifier will be on the pointer.  */
-	  if (cp_type_quals (parm) != cp_type_quals (arg))
-	    return 1;
-	  parm = TREE_TYPE (parm);
-	  arg = TREE_TYPE (arg);
-	  if (cp_type_quals (parm) != cp_type_quals (arg))
-	    return 1;
-	  
-	  parm = TYPE_MAIN_VARIANT (parm);
-	  arg = TYPE_MAIN_VARIANT (arg);
-	  is_method = 0;
-	}
-      
       /* Conversions will be performed on a function argument that
 	 corresponds with a function parameter that contains only
 	 non-deducible template parameters and explicitly specified
@@ -10288,12 +10265,22 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
       if (TREE_CODE (arg) != TREE_CODE (parm))
 	return 1;
 
+      /* CV qualifications for methods can never be deduced, they must
+  	 match exactly.  We need to check them explicitly here,
+  	 because type_unification_real treats them as any other
+  	 cvqualified parameter.  */
+      if (TREE_CODE (parm) == METHOD_TYPE
+	  && (!check_cv_quals_for_unify
+	      (UNIFY_ALLOW_NONE,
+	       TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (arg))),
+	       TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (parm))))))
+	return 1;
+
       if (unify (tparms, targs, TREE_TYPE (parm),
 		 TREE_TYPE (arg), UNIFY_ALLOW_NONE))
 	return 1;
       return type_unification_real (tparms, targs, TYPE_ARG_TYPES (parm),
-				    TYPE_ARG_TYPES (arg), 1, DEDUCE_EXACT,
-				    TREE_CODE (parm) == METHOD_TYPE);
+				    TYPE_ARG_TYPES (arg), 1, DEDUCE_EXACT);
 
     case OFFSET_TYPE:
       /* Unify a pointer to member with a pointer to member function, which
