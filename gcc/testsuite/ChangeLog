@@ -1,3 +1,10 @@
+2005-08-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	part of PR testsuite/23348
+	* lib/objc-torture.exp: Add -fgnu-runtime and/or -fnext-runtime to each
+	of the torture options.
+	* objc/compile/trivial.m: New test.
+
 2005-08-12  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* gfortran.dg/eoshift.f90:  Correct format.

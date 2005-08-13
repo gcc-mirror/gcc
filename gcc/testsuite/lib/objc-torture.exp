@@ -21,6 +21,24 @@ load_lib file-format.exp
 # The default option list can be overridden by
 # TORTURE_OPTIONS="{ { list1 } ... { listN } }"
 
+if ![info exists OBJC_RUNTIME_OPTIONS] {
+  set OBJC_RUNTIME_OPTIONS ""
+  foreach type {-fgnu-runtime -fnext-runtime} {
+    global srcdir subdir
+
+    set comp_output [objc_target_compile \
+    "$srcdir/$subdir/trivial.m" "trivial.exe" executable "additional_flags=$type"]
+
+    # If we get any error, then we failed
+    if ![string match "" $comp_output] then {
+      continue;
+    }
+    lappend OBJC_RUNTIME_OPTIONS $type
+  }
+}
+verbose -log "Using the following runtimes: $OBJC_RUNTIME_OPTIONS"
+
+
 if ![info exists TORTURE_OPTIONS] {
     # It is theoretically beneficial to group all of the O2/O3 options together,
     # as in many cases the compiler will generate identical executables for
@@ -30,27 +48,32 @@ if ![info exists TORTURE_OPTIONS] {
     # items below, even though -O3 is also specified, because some ports may
     # choose to disable inlining functions by default, even when optimizing.
     set TORTURE_OPTIONS [list \
-	{ -O0 } \
-	{ -O1 } \
-	{ -O2 } \
-	{ -O3 -fomit-frame-pointer } \
-	{ -O3 -fomit-frame-pointer -funroll-loops } \
-	{ -O3 -fomit-frame-pointer -funroll-all-loops -finline-functions } \
-	{ -O3 -g } \
-	{ -Os } ]
+	" -O0 " \
+	" -O1 " \
+	" -O2 " \
+	" -O3 -fomit-frame-pointer " \
+	" -O3 -fomit-frame-pointer -funroll-loops " \
+	" -O3 -fomit-frame-pointer -funroll-all-loops -finline-functions " \
+	" -O3 -g " \
+	" -Os " ]
 }
 
 
 # Split TORTURE_OPTIONS into two choices: one for testcases with loops and
-# one for testcases without loops.
+# one for testcases without loops. Add in the objc runtime options also.
 
-set torture_with_loops $TORTURE_OPTIONS
+set torture_with_loops ""
 set torture_without_loops ""
-foreach option $TORTURE_OPTIONS {
+foreach objc_option $OBJC_RUNTIME_OPTIONS {
+  foreach option $TORTURE_OPTIONS {
+  
     if ![string match "*loop*" $option] {
-	lappend torture_without_loops $option
+	lappend torture_without_loops "$option $objc_option"
     }
+    lappend torture_with_loops "$option $objc_option"
+  }
 }
+
 
 #
 # objc-torture-compile -- runs the Tege OBJC-torture test
