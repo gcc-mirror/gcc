@@ -1,3 +1,13 @@
+2005-08-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* Makefile.in (extra_ldflags_libobjc): New.
+	(libobjc$(libext).la): Add extra_ldflags_libobjc to the link line.
+	(libobjc_gc$(libext).la): Likewise.
+	* configure.ac (extra_ldflags_libgfortran): Set for *-darwin* to
+	"-Wl,-single_module".
+	* configure: Regenerate.
+	* linking.m (_objcInit): Remove.
+
 2005-07-26  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR libobjc/22606

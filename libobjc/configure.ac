@@ -178,6 +178,15 @@ m4_define([_AC_ARG_VAR_PRECIOUS],[])
 AC_PROG_CC
 m4_rename([real_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
 
+# extra LD Flags which are required for targets
+case "${host}" in
+  *-darwin*)
+    # Darwin needs -single_module when linking libobjc
+    extra_ldflags_libobjc=-Wl,-single_module
+    ;;
+esac
+AC_SUBST(extra_ldflags_libobjc)
+
 AC_SUBST(CFLAGS)
 
 AC_CHECK_TOOL(AS, as)
