@@ -1,3 +1,7 @@
+2005-08-14  Andreas Schwab  <schwab@suse.de>
+
+	* doc/md.texi (Machine Constraints): Fix misplaced @end table.
+
 2005-08-13  James E Wilson  <wilson@specifix.com>
 
 	* doc/cpp.texi (__SSP__, __SSP_ALL__): Document.
