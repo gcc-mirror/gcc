@@ -1111,6 +1111,7 @@ enum reg_class
    'W' is a vector constant that can be easily generated (no mem refs).
    'Y' is an indexed or word-aligned displacement memory operand.
    'Z' is an indexed or indirect memory operand.
+   'a'  is an indexed or indirect address operand.
    't' is for AND masks that can be performed by two rldic{l,r} insns.  */
 
 #define EXTRA_CONSTRAINT(OP, C)						\
@@ -1127,6 +1128,7 @@ enum reg_class
    : (C) == 'W' ? (easy_vector_constant (OP, GET_MODE (OP)))		\
    : (C) == 'Y' ? (word_offset_memref_operand (OP, GET_MODE (OP)))      \
    : (C) == 'Z' ? (indexed_or_indirect_operand (OP, GET_MODE (OP)))	\
+   : (C) == 'a' ? (indexed_or_indirect_address (OP, GET_MODE (OP)))	\
    : 0)
 
 /* Define which constraints are memory constraints.  Tell reload
@@ -1135,6 +1137,12 @@ enum reg_class
 
 #define EXTRA_MEMORY_CONSTRAINT(C, STR)				\
   ((C) == 'Q' || (C) == 'Y' || (C) == 'Z')
+
+/* Define which constraints should be treated like address constraints
+   by the reload pass.  */
+
+#define EXTRA_ADDRESS_CONSTRAINT(C, STR)			\
+  ((C) == 'a')
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.

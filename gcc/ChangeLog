@@ -1,3 +1,10 @@
+2005-08-13  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.h (EXTRA_CONSTRAINT): Add 'a' for indexed
+	or indirect address operand.
+	(EXTRA_ADDRESS_CONSTRAINT): New.
+	* config/rs6000/rs6000.md (prefetch): Change constraint "p" to "a".
+
 2005-08-13  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	PR tree-optimization/22236
