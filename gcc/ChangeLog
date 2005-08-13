@@ -1,3 +1,10 @@
+2005-08-13  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_split_branches): Revert 2005-08-12 change.
+	(s390_register_info): Ignore clobbered_regs information for fixed
+	registers, and only fixed registers.
+	(s390_init_frame_layout): Remove redundant call.
+
 2005-08-12  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/invoke.texi (C++ Dialect Options): Add dynamic_cast to 
