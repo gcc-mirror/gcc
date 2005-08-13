@@ -2117,6 +2117,15 @@ macro to determine which runtime (NeXT or GNU) is being used.
 These macros are defined, with value 1, if (and only if) the compilation
 is for a target where @code{long int} and pointer both use 64-bits and
 @code{int} uses 32-bit.
+
+@item __SSP__
+This macro is defined, with value 1, when @option{-fstack-protector} is in
+use.
+
+@item __SSP_ALL__
+This macro is defined, with value 2, when @option{-fstack-protector-all} is
+in use.
+
 @end table
 
 @node System-specific Predefined Macros

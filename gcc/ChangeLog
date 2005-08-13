@@ -1,3 +1,11 @@
+2005-08-13  James E Wilson  <wilson@specifix.com>
+
+	* doc/cpp.texi (__SSP__, __SSP_ALL__): Document.
+	* doc/invoke.texi (-Wstack-protector, -fstack-protector,
+	-fstack-protector-all, --param ssp-buffer-size): Document.
+	(-Wvariadic-macros): Alphabetize.
+	(-fsched-stalled-insns-dep): Add missing 'f'.
+
 2005-08-13  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.h (EXTRA_CONSTRAINT): Add 'a' for indexed

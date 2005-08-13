@@ -238,13 +238,14 @@ Objective-C and Objective-C++ Dialects}.
 -Wparentheses  -Wpointer-arith  -Wno-pointer-to-int-cast @gol
 -Wredundant-decls @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
--Wsign-compare  -Wstrict-aliasing -Wstrict-aliasing=2 @gol
+-Wsign-compare  -Wstack-protector @gol
+-Wstrict-aliasing -Wstrict-aliasing=2 @gol
 -Wswitch  -Wswitch-default  -Wswitch-enum @gol
 -Wsystem-headers  -Wtrigraphs  -Wundef  -Wuninitialized @gol
 -Wunknown-pragmas  -Wno-pragmas -Wunreachable-code @gol
 -Wunused  -Wunused-function  -Wunused-label  -Wunused-parameter @gol
--Wunused-value  -Wunused-variable  -Wwrite-strings @gol
--Wvariadic-macros}
+-Wunused-value  -Wunused-variable  -Wvariadic-macros @gol
+-Wwrite-strings}
 
 @item C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations @gol
@@ -322,10 +323,11 @@ Objective-C and Objective-C++ Dialects}.
 -frounding-math -fschedule-insns  -fschedule-insns2 @gol
 -fno-sched-interblock  -fno-sched-spec  -fsched-spec-load @gol
 -fsched-spec-load-dangerous  @gol
--fsched-stalled-insns=@var{n} -sched-stalled-insns-dep=@var{n} @gol
+-fsched-stalled-insns=@var{n} -fsched-stalled-insns-dep=@var{n} @gol
 -fsched2-use-superblocks @gol
 -fsched2-use-traces -freschedule-modulo-scheduled-loops @gol
 -fsignaling-nans -fsingle-precision-constant  @gol
+-fstack-protector  -fstack-protector-all @gol
 -fstrength-reduce  -fstrict-aliasing  -ftracer  -fthread-jumps @gol
 -funroll-all-loops  -funroll-loops  -fpeel-loops @gol
 -fsplit-ivs-in-unroller -funswitch-loops @gol
@@ -3362,6 +3364,11 @@ This option is only supported for C and Objective-C@.
 @item -Werror
 @opindex Werror
 Make all warnings into errors.
+
+@item -Wstack-protector
+This option is only active when @option{-fstack-protector} is active.  It
+warns about functions that will not be protected against stack smashing.
+
 @end table
 
 @node Debugging Options
@@ -5628,6 +5635,17 @@ threading.
 When performing branch target register load optimization, don't reuse
 branch target registers in within any basic block.
 
+@item -fstack-protector
+Emit extra code to check for buffer overflows, such as stack smashing
+attacks.  This is done by adding a guard variable to functions with
+vulnerable objects.  This includes functions that call alloca, and
+functions with buffers larger than 8 bytes.  The guards are initialized
+when a function is entered and then checked when the function exits.
+If a guard check fails, an error message is printed and the program exits.
+
+@item -fstack-protector-all
+Like @option{-fstack-protector} except that all functions are protected.
+
 @item --param @var{name}=@var{value}
 @opindex param
 In some places, GCC uses various constants to control the amount of
@@ -6002,6 +6020,10 @@ If the number of virtual mappings is virtual-mappings-ratio bigger
 than the number of virtual symbols to be updated, then the incremental
 SSA updater switches to a full update for those symbols.  The default
 ratio is 3.
+
+@item ssp-buffer-size
+The minimum size of buffers (i.e. arrays) that will receive stack smashing
+protection when @option{-fstack-protection} is used.
 
 @end table
 @end table
