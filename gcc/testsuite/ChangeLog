@@ -1,5 +1,11 @@
 2005-08-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* lib/objc.exp (objc_target_compile): Check for -fgnu-runtime
+	in ${options} instead of [target_info name].
+	* lib/obj-c++.exp (objc_target_compile): Likewise.
+
+2005-08-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	* objc.dg/stubify-2.m: Correct the name of the rtl dump file.
 
 2005-08-13  Andrew Pinski  <pinskia@physics.uc.edu>
