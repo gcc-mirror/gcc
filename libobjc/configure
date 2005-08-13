@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os build_subdir host_subdir target_subdir VERSION OBJC_BOEHM_GC toplevel_srcdir host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical glibcpp_srcdir toolexecdir toolexeclibdir includedirname libext CC ac_ct_CC EXEEXT OBJEXT CFLAGS AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LN_S STRIP ac_ct_STRIP LIBTOOL SET_MAKE CPP CPPFLAGS EGREP LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os build_subdir host_subdir target_subdir VERSION OBJC_BOEHM_GC toplevel_srcdir host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical glibcpp_srcdir toolexecdir toolexeclibdir includedirname libext CC ac_ct_CC EXEEXT OBJEXT extra_ldflags_libobjc CFLAGS AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LN_S STRIP ac_ct_STRIP LIBTOOL SET_MAKE CPP CPPFLAGS EGREP LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -2612,6 +2612,15 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+# extra LD Flags which are required for targets
+case "${host}" in
+  *-darwin*)
+    # Darwin needs -single_module when linking libobjc
+    extra_ldflags_libobjc=-Wl,-single_module
+    ;;
+esac
+
+
 
 
 if test -n "$ac_tool_prefix"; then
@@ -3756,7 +3765,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 3759 "configure"' > conftest.$ac_ext
+  echo '#line 3768 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -5184,7 +5193,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then
   :
 else
   cat > conftest.$ac_ext << EOF
-#line 5187 "configure"
+#line 5196 "configure"
 @interface Frob
 @end
 @implementation Frob
@@ -5916,6 +5925,7 @@ s,@CC@,$CC,;t t
 s,@ac_ct_CC@,$ac_ct_CC,;t t
 s,@EXEEXT@,$EXEEXT,;t t
 s,@OBJEXT@,$OBJEXT,;t t
+s,@extra_ldflags_libobjc@,$extra_ldflags_libobjc,;t t
 s,@CFLAGS@,$CFLAGS,;t t
 s,@AS@,$AS,;t t
 s,@ac_ct_AS@,$ac_ct_AS,;t t

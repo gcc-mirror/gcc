@@ -44,6 +44,8 @@ toolexeclibdir = @toolexeclibdir@
 includedirname = @includedirname@
 libext = @libext@
 
+extra_ldflags_libobjc = @extra_ldflags_libobjc@
+
 top_builddir = .
 
 libdir = $(exec_prefix)/lib
@@ -271,12 +273,12 @@ doc: info dvi html
 libobjc$(libext).la: $(OBJS)
 	$(LIBTOOL_LINK) $(CC) -o $@ $(OBJS) \
 		-rpath $(toolexeclibdir) \
-		-version-info $(LIBOBJC_VERSION)
+		-version-info $(LIBOBJC_VERSION) $(extra_ldflags_libobjc)
 
 libobjc_gc$(libext).la: $(OBJS_GC)
 	$(LIBTOOL_LINK) $(CC) -o $@ $(OBJS_GC) \
 		-rpath $(toolexeclibdir) \
-		-version-info $(LIBOBJC_GC_VERSION)
+		-version-info $(LIBOBJC_GC_VERSION) $(extra_ldflags_libobjc)
 
 #
 # FIXME -- The following part does not fit in the libtool context. 
