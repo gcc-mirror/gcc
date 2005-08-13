@@ -6,6 +6,9 @@
 	(-Wvariadic-macros): Alphabetize.
 	(-fsched-stalled-insns-dep): Add missing 'f'.
 
+	* c-cppbuiltin.c (c_cpp_builtins): Add comment for flag_stack_protect
+	macros.
+
 2005-08-13  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.h (EXTRA_CONSTRAINT): Add 'a' for indexed
