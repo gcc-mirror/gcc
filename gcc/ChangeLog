@@ -1,3 +1,35 @@
+2005-08-13  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	PR tree-optimization/22236
+	* tree-cfg.c (print_pred_bbs, print_succ_bbs): Correctly print
+	successors and predecessors.
+	* tree-chrec.c (chrec_convert): Before converting, check that
+	sequences don't wrap.
+	* tree-data-ref.c (compute_estimated_nb_iterations): Moved ...
+	(analyze_array): Extern.
+	(find_data_references_in_loop): Remove call to
+	compute_estimated_nb_iterations.
+	* tree-data-ref.h (analyze_array): Declared.
+	* tree-flow-inline.h (single_ssa_tree_operand, single_ssa_use_operand,
+	single_ssa_def_operand, zero_ssa_operands): Fix documentation.
+	* tree-flow.h (scev_probably_wraps_p): Declare with an extra parameter.
+	* tree-scalar-evolution.c (instantiate_parameters_1): Factor entry 
+	condition.
+	* tree-ssa-loop-ivcanon.c: Fix documentation.
+	* tree-ssa-loop-ivopts.c (idx_find_step): Add a fixme note.
+	* tree-ssa-loop-niter.c (compute_estimated_nb_iterations): ... here.
+	(infer_loop_bounds_from_undefined): New.
+	(estimate_numbers_of_iterations_loop): Use
+	infer_loop_bounds_from_undefined.
+	(used_in_pointer_arithmetic_p): New.
+	(scev_probably_wraps_p): Pass an extra parameter.  Call
+	used_in_pointer_arithmetic_p.  Check that AT_STMT is not null.
+	(convert_step): Fix documentation.
+	* tree-vrp.c (adjust_range_with_scev): Call instantiate_parameters.
+	Use initial_condition_in_loop_num and evolution_part_in_loop_num
+	instead of CHREC_LEFT and CHREC_RIGHT.  Adjust the call to
+	scev_probably_wraps_p.
+
 2005-08-13  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_split_branches): Revert 2005-08-12 change.

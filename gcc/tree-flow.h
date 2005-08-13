@@ -728,7 +728,8 @@ tree find_loop_niter (struct loop *, edge *);
 tree loop_niter_by_eval (struct loop *, edge);
 tree find_loop_niter_by_eval (struct loop *, edge *);
 void estimate_numbers_of_iterations (struct loops *);
-bool scev_probably_wraps_p (tree, tree, tree, tree, struct loop *, bool *);
+bool scev_probably_wraps_p (tree, tree, tree, tree, struct loop *, bool *,
+			    bool *);
 tree convert_step (struct loop *, tree, tree, tree, tree);
 void free_numbers_of_iterations_estimates (struct loops *);
 void rewrite_into_loop_closed_ssa (bitmap, unsigned);

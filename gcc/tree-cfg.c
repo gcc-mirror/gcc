@@ -4502,7 +4502,7 @@ static void print_pred_bbs (FILE *, basic_block bb);
 static void print_succ_bbs (FILE *, basic_block bb);
 
 
-/* Print the predecessors indexes of edge E on FILE.  */
+/* Print on FILE the indexes for the predecessors of basic_block BB.  */
 
 static void
 print_pred_bbs (FILE *file, basic_block bb)
@@ -4511,11 +4511,11 @@ print_pred_bbs (FILE *file, basic_block bb)
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, bb->preds)
-    fprintf (file, "bb_%d", e->src->index);
+    fprintf (file, "bb_%d ", e->src->index);
 }
 
 
-/* Print the successors indexes of edge E on FILE.  */
+/* Print on FILE the indexes for the successors of basic_block BB.  */
 
 static void
 print_succ_bbs (FILE *file, basic_block bb)
@@ -4524,7 +4524,7 @@ print_succ_bbs (FILE *file, basic_block bb)
   edge_iterator ei;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
-    fprintf (file, "bb_%d", e->src->index);
+    fprintf (file, "bb_%d ", e->dest->index);
 }
 
 

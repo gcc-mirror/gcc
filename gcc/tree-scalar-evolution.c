@@ -1939,11 +1939,8 @@ instantiate_parameters_1 (struct loop *loop, tree chrec,
   basic_block def_bb;
   struct loop *def_loop;
  
-  if (chrec == NULL_TREE
-      || automatically_generated_chrec_p (chrec))
-    return chrec;
- 
-  if (is_gimple_min_invariant (chrec))
+  if (automatically_generated_chrec_p (chrec)
+      || is_gimple_min_invariant (chrec))
     return chrec;
 
   switch (TREE_CODE (chrec))

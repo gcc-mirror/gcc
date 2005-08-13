@@ -1534,29 +1534,31 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop, tree stmt,
 			tree var)
 {
   tree init, step, chrec;
-  bool init_is_max;
+  bool init_is_max, unknown_max;
 
   /* TODO.  Don't adjust anti-ranges.  An anti-range may provide
      better opportunities than a regular range, but I'm not sure.  */
   if (vr->type == VR_ANTI_RANGE)
     return;
 
-  chrec = analyze_scalar_evolution (loop, var);
+  chrec = instantiate_parameters (loop, analyze_scalar_evolution (loop, var));
   if (TREE_CODE (chrec) != POLYNOMIAL_CHREC)
     return;
 
-  init = CHREC_LEFT (chrec);
-  step = CHREC_RIGHT (chrec);
+  init = initial_condition_in_loop_num (chrec, loop->num);
+  step = evolution_part_in_loop_num (chrec, loop->num);
 
   /* If STEP is symbolic, we can't know whether INIT will be the
      minimum or maximum value in the range.  */
-  if (!is_gimple_min_invariant (step))
+  if (step == NULL_TREE
+      || !is_gimple_min_invariant (step))
     return;
 
   /* Do not adjust ranges when chrec may wrap.  */
   if (scev_probably_wraps_p (chrec_type (chrec), init, step, stmt,
 			     cfg_loops->parray[CHREC_VARIABLE (chrec)],
-			     &init_is_max))
+			     &init_is_max, &unknown_max)
+      || unknown_max)
     return;
 
   if (!POINTER_TYPE_P (TREE_TYPE (init))

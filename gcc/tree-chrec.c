@@ -1110,9 +1110,24 @@ chrec_convert (tree type, tree chrec, tree at_stmt)
 
   if (evolution_function_is_affine_p (chrec))
     {
-      tree step = convert_step (current_loops->parray[CHREC_VARIABLE (chrec)],
- 				type, CHREC_LEFT (chrec), CHREC_RIGHT (chrec),
- 				at_stmt);
+      tree step;
+      bool dummy;
+
+      /* Avoid conversion of (signed char) {(uchar)1, +, (uchar)1}_x
+	 when it is not possible to prove that the scev does not wrap.
+	 See PR22236, where a sequence 1, 2, ..., 255 has to be
+	 converted to signed char, but this would wrap: 
+	 1, 2, ..., 127, -128, ...  The result should not be
+	 {(schar)1, +, (schar)1}_x, but instead, we should keep the
+	 conversion: (schar) {(uchar)1, +, (uchar)1}_x.  */
+      if (scev_probably_wraps_p (type, CHREC_LEFT (chrec), CHREC_RIGHT (chrec),
+				 at_stmt,
+				 current_loops->parray[CHREC_VARIABLE (chrec)],
+				 &dummy, &dummy))
+	return fold_convert (type, chrec);
+
+      step = convert_step (current_loops->parray[CHREC_VARIABLE (chrec)], type,
+			   CHREC_LEFT (chrec), CHREC_RIGHT (chrec), at_stmt);
       if (!step)
  	return fold_convert (type, chrec);
 
