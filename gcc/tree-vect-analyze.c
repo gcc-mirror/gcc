@@ -1173,7 +1173,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
       if (!dr || !DR_REF (dr))
         {
           if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
-              fprintf (vect_dump, "not vectorized: unhandled data-ref ");
+	    fprintf (vect_dump, "not vectorized: unhandled data-ref ");
           return false;
         }
  

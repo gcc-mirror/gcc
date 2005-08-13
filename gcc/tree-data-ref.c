@@ -731,23 +731,6 @@ dump_ddrs (FILE *file, varray_type ddrs)
 
 
 
-/* Initialize LOOP->ESTIMATED_NB_ITERATIONS with the lowest safe
-   approximation of the number of iterations for LOOP.  */
-
-static void
-compute_estimated_nb_iterations (struct loop *loop)
-{
-  struct nb_iter_bound *bound;
-  
-  for (bound = loop->bounds; bound; bound = bound->next)
-    if (TREE_CODE (bound->bound) == INTEGER_CST
-	/* Update only when there is no previous estimation.  */
-	&& (chrec_contains_undetermined (loop->estimated_nb_iterations)
-	    /* Or when the current estimation is smaller.  */
-	    || tree_int_cst_lt (bound->bound, loop->estimated_nb_iterations)))
-      loop->estimated_nb_iterations = bound->bound;
-}
-
 /* Estimate the number of iterations from the size of the data and the
    access functions.  */
 
@@ -830,7 +813,7 @@ analyze_array_indexes (struct loop *loop,
    set to true when REF is in the right hand side of an
    assignment.  */
 
-static struct data_reference *
+struct data_reference *
 analyze_array (tree stmt, tree ref, bool is_read)
 {
   struct data_reference *res;
@@ -3644,9 +3627,6 @@ find_data_references_in_loop (struct loop *loop, varray_type *datarefs)
 	  if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_VIRTUAL_DEFS))
 	    loop->parallel_p = false;
 	}
-
-      if (chrec_contains_undetermined (loop->estimated_nb_iterations))
-	compute_estimated_nb_iterations (loop);
     }
 
   free (bbs);

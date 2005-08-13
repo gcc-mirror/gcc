@@ -1381,6 +1381,128 @@ record_estimate (struct loop *loop, tree bound, tree additional, tree at_stmt)
   loop->bounds = elt;
 }
 
+/* Initialize LOOP->ESTIMATED_NB_ITERATIONS with the lowest safe
+   approximation of the number of iterations for LOOP.  */
+
+static void
+compute_estimated_nb_iterations (struct loop *loop)
+{
+  struct nb_iter_bound *bound;
+  
+  for (bound = loop->bounds; bound; bound = bound->next)
+    if (TREE_CODE (bound->bound) == INTEGER_CST
+	/* Update only when there is no previous estimation.  */
+	&& (chrec_contains_undetermined (loop->estimated_nb_iterations)
+	    /* Or when the current estimation is smaller.  */
+	    || tree_int_cst_lt (bound->bound, loop->estimated_nb_iterations)))
+      loop->estimated_nb_iterations = bound->bound;
+}
+
+/* The following analyzers are extracting informations on the bounds
+   of LOOP from the following undefined behaviors:
+
+   - data references should not access elements over the statically
+     allocated size,
+
+   - signed variables should not overflow when flag_wrapv is not set.
+*/
+
+static void
+infer_loop_bounds_from_undefined (struct loop *loop)
+{
+  unsigned i;
+  basic_block bb, *bbs;
+  block_stmt_iterator bsi;
+  
+  bbs = get_loop_body (loop);
+
+  for (i = 0; i < loop->num_nodes; i++)
+    {
+      bb = bbs[i];
+
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+        {
+	  tree stmt = bsi_stmt (bsi);
+
+	  switch (TREE_CODE (stmt))
+	    {
+	    case MODIFY_EXPR:
+	      {
+		tree op0 = TREE_OPERAND (stmt, 0);
+		tree op1 = TREE_OPERAND (stmt, 1);
+
+		/* For each array access, analyze its access function
+		   and record a bound on the loop iteration domain.  */
+		if (TREE_CODE (op1) == ARRAY_REF)
+		  analyze_array (stmt, op1, true);
+
+		if (TREE_CODE (op0) == ARRAY_REF)
+		  analyze_array (stmt, op0, false);
+
+		/* For each signed type variable in LOOP, analyze its
+		   scalar evolution and record a bound of the loop
+		   based on the type's ranges.  */
+		else if (!flag_wrapv && TREE_CODE (op0) == SSA_NAME)
+		  {
+		    tree init, step, diff, estimation;
+		    tree scev = instantiate_parameters 
+		      (loop, analyze_scalar_evolution (loop, op0));
+		    tree type = chrec_type (scev);
+		    tree utype;
+
+		    if (chrec_contains_undetermined (scev)
+			|| TYPE_UNSIGNED (type))
+		      break;
+
+		    init = initial_condition_in_loop_num (scev, loop->num);
+		    step = evolution_part_in_loop_num (scev, loop->num);
+
+		    if (init == NULL_TREE
+			|| step == NULL_TREE
+			|| TREE_CODE (init) != INTEGER_CST
+			|| TREE_CODE (step) != INTEGER_CST)
+		      break;
+
+		    utype = unsigned_type_for (type);
+		    if (tree_int_cst_lt (step, integer_zero_node))
+		      diff = fold (build2 (MINUS_EXPR, utype, init,
+					   TYPE_MIN_VALUE (type)));
+		    else
+		      diff = fold (build2 (MINUS_EXPR, utype,
+					   TYPE_MAX_VALUE (type), init));
+
+		    estimation = fold (build2 (CEIL_DIV_EXPR, utype, diff,
+					       step));
+		    record_estimate (loop, estimation, boolean_true_node, stmt);
+		  }
+
+		break;
+	      }
+
+	    case CALL_EXPR:
+	      {
+		tree args;
+
+		for (args = TREE_OPERAND (stmt, 1); args;
+		     args = TREE_CHAIN (args))
+		  if (TREE_CODE (TREE_VALUE (args)) == ARRAY_REF)
+		    analyze_array (stmt, TREE_VALUE (args), true);
+
+		break;
+	      }
+
+	    default:
+	      break;
+	    }
+	}
+
+      if (chrec_contains_undetermined (loop->estimated_nb_iterations))
+	compute_estimated_nb_iterations (loop);
+    }
+
+  free (bbs);
+}
+
 /* Records estimates on numbers of iterations of LOOP.  */
 
 static void
@@ -1419,14 +1541,8 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
     }
   free (exits);
   
-  /* Analyzes the bounds of arrays accessed in the loop.  */
   if (chrec_contains_undetermined (loop->estimated_nb_iterations))
-    {
-      varray_type datarefs;
-      VARRAY_GENERIC_PTR_INIT (datarefs, 3, "datarefs");
-      find_data_references_in_loop (loop, &datarefs);
-      free_data_refs (datarefs);
-    }
+    infer_loop_bounds_from_undefined (loop);
 }
 
 /* Records estimates on numbers of iterations of LOOPS.  */
@@ -1645,6 +1761,43 @@ convert_step_widening (struct loop *loop, tree new_type, tree base, tree step,
   return NULL_TREE;
 }
 
+/* Returns true when VAR is used in pointer arithmetics.  DEPTH is
+   used for limiting the search.  */
+
+static bool
+used_in_pointer_arithmetic_p (tree var, int depth)
+{
+  use_operand_p use_p;
+  imm_use_iterator iter;
+
+  if (depth == 0
+      || TREE_CODE (var) != SSA_NAME
+      || !has_single_use (var))
+    return false;
+
+  FOR_EACH_IMM_USE_FAST (use_p, iter, var)
+    {
+      tree stmt = USE_STMT (use_p);
+
+      if (stmt && TREE_CODE (stmt) == MODIFY_EXPR)
+	{
+	  tree rhs = TREE_OPERAND (stmt, 1);
+
+	  if (TREE_CODE (rhs) == NOP_EXPR
+	      || TREE_CODE (rhs) == CONVERT_EXPR)
+	    {
+	      if (POINTER_TYPE_P (TREE_TYPE (rhs)))
+		return true;
+	      return false;
+	    }
+	  else
+	    return used_in_pointer_arithmetic_p (TREE_OPERAND (stmt, 0),
+						 depth - 1);
+	}
+    }
+  return false;
+}
+
 /* Return false only when the induction variable BASE + STEP * I is
    known to not overflow: i.e. when the number of iterations is small
    enough with respect to the step and initial condition in order to
@@ -1652,19 +1805,60 @@ convert_step_widening (struct loop *loop, tree new_type, tree base, tree step,
    iv is known to overflow or when the property is not computable.
 
    Initialize INIT_IS_MAX to true when the evolution goes from
-   INIT_IS_MAX to LOWER_BOUND_IN_TYPE, false in the contrary case, not
-   defined when the function returns true.  */
+   INIT_IS_MAX to LOWER_BOUND_IN_TYPE, false in the contrary case.
+   When this property cannot be determined, UNKNOWN_MAX is set to
+   true.  */
 
 bool
 scev_probably_wraps_p (tree type, tree base, tree step, 
 		       tree at_stmt, struct loop *loop,
-		       bool *init_is_max)
+		       bool *init_is_max, bool *unknown_max)
 {
   struct nb_iter_bound *bound;
   tree delta, step_abs;
   tree unsigned_type, valid_niter;
-  tree base_plus_step = fold_build2 (PLUS_EXPR, type, base, step);
+  tree base_plus_step;
 
+  /* FIXME: The following code will not be used anymore once
+     http://gcc.gnu.org/ml/gcc-patches/2005-06/msg02025.html is
+     committed.
+
+     If AT_STMT is a cast to unsigned that is later used for
+     referencing a memory location, it is followed by a pointer
+     conversion just after.  Because pointers do not wrap, the
+     sequences that reference the memory do not wrap either.  In the
+     following example, sequences corresponding to D_13 and to D_14
+     can be proved to not wrap because they are used for computing a
+     memory access:
+	 
+       D.1621_13 = (long unsigned intD.4) D.1620_12;
+       D.1622_14 = D.1621_13 * 8;
+       D.1623_15 = (doubleD.29 *) D.1622_14;
+  */
+  if (at_stmt && TREE_CODE (at_stmt) == MODIFY_EXPR)
+    {
+      tree op0 = TREE_OPERAND (at_stmt, 0);
+      tree op1 = TREE_OPERAND (at_stmt, 1);
+      tree type_op1 = TREE_TYPE (op1);
+
+      if ((TYPE_UNSIGNED (type_op1)
+	   && used_in_pointer_arithmetic_p (op0, 2))
+	  || POINTER_TYPE_P (type_op1))
+	{
+	  *unknown_max = true;
+	  return false;
+	}
+    }
+
+  if (TREE_CODE (base) == REAL_CST
+      || TREE_CODE (step) == REAL_CST)
+    {
+      *unknown_max = true;
+      return true;
+    }
+
+  *unknown_max = false;
+  base_plus_step = fold_build2 (PLUS_EXPR, type, base, step);
   switch (compare_trees (base_plus_step, base))
     {
     case -1:
@@ -1691,6 +1885,7 @@ scev_probably_wraps_p (tree type, tree base, tree step,
 	 don't know as in the default case.  */
 
     default:
+      *unknown_max = true;
       return true;
     }
 
@@ -1709,7 +1904,7 @@ scev_probably_wraps_p (tree type, tree base, tree step,
      i_2 to wrap around, but not i.0_6, because it is of a signed
      type.  This causes VRP to erroneously fold the predicate above
      because it thinks that i.0_6 cannot be negative.  */
-  if (TREE_CODE (at_stmt) == MODIFY_EXPR)
+  if (at_stmt && TREE_CODE (at_stmt) == MODIFY_EXPR)
     {
       tree rhs = TREE_OPERAND (at_stmt, 1);
       tree outer_t = TREE_TYPE (rhs);
@@ -1725,7 +1920,10 @@ scev_probably_wraps_p (tree type, tree base, tree step,
 	  if (TYPE_UNSIGNED (inner_t)
 	      && (TYPE_SIZE (inner_t) <= TYPE_SIZE (outer_t)
 		  || TYPE_PRECISION (inner_t) <= TYPE_PRECISION (outer_t)))
-	    return true;
+	    {
+	      *unknown_max = true;
+	      return true;
+	    }
 	}
     }
 
@@ -1746,11 +1944,13 @@ scev_probably_wraps_p (tree type, tree base, tree step,
 
   /* At this point we still don't have a proof that the iv does not
      overflow: give up.  */
+  *unknown_max = true;
   return true;
 }
 
 /* Return the conversion to NEW_TYPE of the STEP of an induction
-   variable BASE + STEP * I at AT_STMT.  */
+   variable BASE + STEP * I at AT_STMT.  When it fails, return
+   NULL_TREE.  */
 
 tree
 convert_step (struct loop *loop, tree new_type, tree base, tree step,

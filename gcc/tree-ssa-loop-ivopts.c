@@ -1443,6 +1443,8 @@ idx_find_step (tree base, tree *idx, void *data)
     /* The step for pointer arithmetics already is 1 byte.  */
     step = build_int_cst (sizetype, 1);
 
+  /* FIXME: convert_step should not be used outside chrec_convert: fix
+     this by calling chrec_convert.  */
   iv_step = convert_step (dta->ivopts_data->current_loop,
 			  sizetype, iv->base, iv->step, dta->stmt);
 
