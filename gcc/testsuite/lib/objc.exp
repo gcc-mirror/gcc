@@ -159,8 +159,8 @@ proc objc_target_compile { source dest type options } {
 
     set libobjc_dir [lookfor_file ${objcpath} libobjc/.libs/libobjc.a]
     if { $libobjc_dir == ""} {
-      verbose "see if we have -fgnu-runtime in [target_info name]"
-      if [regexp ".*-fgnu-runtime.*" [target_info name]] {
+      verbose "see if we have -fgnu-runtime in options"
+      if [regexp ".*-fgnu-runtime.*" "${options}"] {
         set libobjc_dir [lookfor_file ${objcpath} libobjc/.libs/libobjc-gnu.a]
       }
     }
