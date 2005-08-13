@@ -4433,6 +4433,10 @@ s390_split_branches (void)
       if (get_attr_length (insn) <= 4)
 	continue;
 
+      /* We are going to use the return register as scratch register,
+	 make sure it will be saved/restored by the prologue/epilogue.  */
+      cfun_frame_layout.save_return_addr_p = 1;
+
       if (!flag_pic)
 	{
 	  new_literal = 1;
@@ -5828,34 +5832,34 @@ s390_register_info (int clobbered_regs[])
   s390_regs_ever_clobbered (clobbered_regs);
 
   for (i = 0; i < 16; i++)
-    clobbered_regs[i] = clobbered_regs[i] && !global_regs[i];
+    clobbered_regs[i] = clobbered_regs[i] && !global_regs[i] && !fixed_regs[i];
 
   if (frame_pointer_needed)
     clobbered_regs[HARD_FRAME_POINTER_REGNUM] = 1;
 
   if (flag_pic)
     clobbered_regs[PIC_OFFSET_TABLE_REGNUM] 
-    = regs_ever_live[PIC_OFFSET_TABLE_REGNUM];
+      |= regs_ever_live[PIC_OFFSET_TABLE_REGNUM];
 
   clobbered_regs[BASE_REGNUM] 
-    = cfun->machine->base_reg
-      && REGNO (cfun->machine->base_reg) == BASE_REGNUM;
+    |= (cfun->machine->base_reg
+        && REGNO (cfun->machine->base_reg) == BASE_REGNUM);
 
   clobbered_regs[RETURN_REGNUM]
-    |= (cfun->machine->split_branches_pending_p
-	|| cfun_frame_layout.save_return_addr_p
+    |= (!current_function_is_leaf
 	|| TARGET_TPF_PROFILING
-	|| !current_function_is_leaf
-	|| current_function_stdarg
-	|| current_function_calls_eh_return);
+	|| cfun->machine->split_branches_pending_p
+	|| cfun_frame_layout.save_return_addr_p
+	|| current_function_calls_eh_return
+	|| current_function_stdarg);
 
   clobbered_regs[STACK_POINTER_REGNUM]
-    = !current_function_is_leaf
-      || TARGET_TPF_PROFILING
-      || cfun_save_high_fprs_p
-      || get_frame_size () > 0
-      || current_function_calls_alloca
-      || current_function_stdarg;
+    |= (!current_function_is_leaf
+	|| TARGET_TPF_PROFILING
+	|| cfun_save_high_fprs_p
+	|| get_frame_size () > 0
+	|| current_function_calls_alloca
+	|| current_function_stdarg);
 
   for (i = 6; i < 16; i++)
     if (clobbered_regs[i])
@@ -6045,9 +6049,6 @@ s390_init_frame_layout (void)
   HOST_WIDE_INT frame_size;
   int base_used;
   int clobbered_regs[16];
-
-  /* If return address register is explicitly used, we need to save it.  */
-  s390_regs_ever_clobbered (clobbered_regs);
 
   /* On S/390 machines, we may need to perform branch splitting, which
      will require both base and return address register.  We have no
