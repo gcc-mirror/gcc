@@ -1672,7 +1672,6 @@ An item in the constant pool
 
 @item S
 A symbol in the text segment of the current file
-@end table
 
 @item Uv
 A memory reference suitable for VFP load/store insns (reg+constant offset)
@@ -1682,6 +1681,7 @@ A memory reference suitable for iWMMXt load/store instructions.
 
 @item Uq
 A memory reference suitable for the ARMv4 ldrsb instruction.
+@end table
 
 @item AVR family---@file{avr.h}
 @table @code
