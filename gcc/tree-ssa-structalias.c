@@ -612,6 +612,8 @@ solution_set_add (bitmap set, unsigned HOST_WIDE_INT offset)
 	{
 	  unsigned HOST_WIDE_INT fieldoffset = get_varinfo (i)->offset + offset;
 	  varinfo_t v = first_vi_for_offset (get_varinfo (i), fieldoffset);
+	  if (!v)
+	    continue;
 	  bitmap_set_bit (result, v->id);
 	}
       else if (get_varinfo (i)->is_artificial_var 
@@ -997,7 +999,7 @@ build_constraint_graph (void)
 	  /* x = &y */
 	  bitmap_set_bit (get_varinfo (lhs.var)->solution, rhs.var);
 	}
-      else if (rhs.var > anything_id && lhs.var > anything_id)
+      else if (lhs.var > anything_id)
 	{
 	  /* Ignore 0 weighted self edges, as they can't possibly contribute
 	     anything */
@@ -1332,6 +1334,8 @@ do_da_constraint (constraint_graph_t graph ATTRIBUTE_UNUSED,
 	  unsigned HOST_WIDE_INT fieldoffset = get_varinfo (j)->offset + offset;
 
 	  v = first_vi_for_offset (get_varinfo (j), fieldoffset);
+	  if (!v)
+	    continue;
 	  t = v->node;
 	  sol = get_varinfo (t)->solution;
 	  if (!bitmap_bit_p (sol, rhs))
@@ -1375,6 +1379,8 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
 	  unsigned int t;
 
 	  v = first_vi_for_offset (get_varinfo (j), fieldoffset);	  
+	  if (!v)
+	    continue;
 	  t = v->node;
 	  if (int_add_graph_edge (graph, lhs, t, 0))
 	    flag |= bitmap_ior_into (sol, get_varinfo (t)->solution);	  
@@ -1419,6 +1425,8 @@ do_ds_constraint (constraint_graph_t graph, constraint_t c, bitmap delta)
 	  unsigned HOST_WIDE_INT fieldoffset = get_varinfo (j)->offset + loff;
 
 	  v = first_vi_for_offset (get_varinfo (j), fieldoffset);
+	  if (!v)
+	    continue;
 	  t = v->node;
 	  if (int_add_graph_edge (graph, t, rhs, roff))
 	    {
@@ -2878,7 +2886,7 @@ find_func_aliases (tree t, struct alias_info *ai)
    OFFSET.
    Effectively, walk the chain of fields for the variable START to find the
    first field that overlaps with OFFSET.
-   Abort if we can't find one.  */
+   Return NULL if we can't find one.  */
 
 static varinfo_t 
 first_vi_for_offset (varinfo_t start, unsigned HOST_WIDE_INT offset)
@@ -2894,8 +2902,7 @@ first_vi_for_offset (varinfo_t start, unsigned HOST_WIDE_INT offset)
 	return curr;
       curr = curr->next;
     }
-
-  gcc_unreachable ();
+  return NULL;
 }
 
 
