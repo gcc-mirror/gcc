@@ -1,3 +1,17 @@
+2005-08-14  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/22615
+	
+	* tree-ssa-structalias.c (solution_set_add): Handle
+	first_vi_for_offset returning NULL. 
+	(do_da_constraint): Ditto.
+	(do_sd_constraint): Ditto.
+	(do_ds_constraint): Ditto
+	(find_func_aliases): Ditto.
+	(build_constraint_graph): RHS is allowed be ANYTHING.
+	(first_vi_for_offset): Return NULL if we couldn't find anything at
+	the offset.
+	
 2005-08-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_canonicalize_comparison): Prefer register
