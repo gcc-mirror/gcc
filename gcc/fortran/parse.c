@@ -75,13 +75,16 @@ match_word (const char *str, match (*subr) (void), locus * old_locus)
 
 
 /* Figure out what the next statement is, (mostly) regardless of
-   proper ordering.  */
+   proper ordering.  The do...while(0) is there to prevent if/else
+   ambiguity.  */
 
 #define match(keyword, subr, st)				\
-    if (match_word(keyword, subr, &old_locus) == MATCH_YES)	\
-      return st;						\
-    else							\
-      undo_new_statement ();
+    do {                                                        \
+      if (match_word(keyword, subr, &old_locus) == MATCH_YES)	\
+        return st;						\
+      else							\
+        undo_new_statement ();                                  \
+    } while (0);
 
 static gfc_statement
 decode_statement (void)
