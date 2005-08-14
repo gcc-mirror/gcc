@@ -673,6 +673,13 @@ s390_canonicalize_comparison (enum rtx_code *code, rtx *op0, rtx *op1)
 	*code = NE;
       *op0 = XEXP (*op0, 0);
     }
+
+  /* Prefer register over memory as first operand.  */
+  if (MEM_P (*op0) && REG_P (*op1))
+    {
+      rtx tem = *op0; *op0 = *op1; *op1 = tem;
+      *code = swap_condition (*code);
+    }
 }
 
 /* Emit a compare instruction suitable to implement the comparison

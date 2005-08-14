@@ -1,3 +1,8 @@
+2005-08-14  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_canonicalize_comparison): Prefer register
+	over memory as first operand.
+
 2005-08-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/23360
