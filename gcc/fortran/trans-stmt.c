@@ -461,6 +461,14 @@ gfc_trans_if (gfc_code * code)
       }
     else // cond > 0
       goto label3;
+
+   An optimized version can be generated in case of equal labels.
+   E.g., if label1 is equal to label2, we can translate it to
+
+    if (cond <= 0)
+      goto label1;
+    else
+      goto label3;
 */
 
 tree
@@ -482,18 +490,31 @@ gfc_trans_arithmetic_if (gfc_code * code)
   /* Build something to compare with.  */
   zero = gfc_build_const (TREE_TYPE (se.expr), integer_zero_node);
 
-  /* If (cond < 0) take branch1 else take branch2.
-     First build jumps to the COND .LT. 0 and the COND .EQ. 0 cases.  */
-  branch1 = build1_v (GOTO_EXPR, gfc_get_label_decl (code->label));
-  branch2 = build1_v (GOTO_EXPR, gfc_get_label_decl (code->label2));
+  if (code->label->value != code->label2->value)
+    {
+      /* If (cond < 0) take branch1 else take branch2.
+         First build jumps to the COND .LT. 0 and the COND .EQ. 0 cases.  */
+      branch1 = build1_v (GOTO_EXPR, gfc_get_label_decl (code->label));
+      branch2 = build1_v (GOTO_EXPR, gfc_get_label_decl (code->label2));
 
-  tmp = build2 (LT_EXPR, boolean_type_node, se.expr, zero);
-  branch1 = build3_v (COND_EXPR, tmp, branch1, branch2);
+      if (code->label->value != code->label3->value)
+        tmp = build2 (LT_EXPR, boolean_type_node, se.expr, zero);
+      else
+        tmp = build2 (NE_EXPR, boolean_type_node, se.expr, zero);
 
-  /* if (cond <= 0) take branch1 else take branch2.  */
-  branch2 = build1_v (GOTO_EXPR, gfc_get_label_decl (code->label3));
-  tmp = build2 (LE_EXPR, boolean_type_node, se.expr, zero);
-  branch1 = build3_v (COND_EXPR, tmp, branch1, branch2);
+      branch1 = build3_v (COND_EXPR, tmp, branch1, branch2);
+    }
+  else
+    branch1 = build1_v (GOTO_EXPR, gfc_get_label_decl (code->label));
+
+  if (code->label->value != code->label3->value
+      && code->label2->value != code->label3->value)
+    {
+      /* if (cond <= 0) take branch1 else take branch2.  */
+      branch2 = build1_v (GOTO_EXPR, gfc_get_label_decl (code->label3));
+      tmp = build2 (LE_EXPR, boolean_type_node, se.expr, zero);
+      branch1 = build3_v (COND_EXPR, tmp, branch1, branch2);
+    }
 
   /* Append the COND_EXPR to the evaluation of COND, and return.  */
   gfc_add_expr_to_block (&se.pre, branch1);
