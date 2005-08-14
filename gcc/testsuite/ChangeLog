@@ -1,3 +1,11 @@
+2005-08-14 Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/21432.
+	* gfortran.dg/namelist_print_1.f: New test of functionality of
+	PRINT namelist.
+	* gfortran.dg/namelist_print_2.f: New test to check that PRINT
+	namelist generates error with -std=f95.
+
 2005-08-12  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* gfortran.dg/eoshift.f90:  Correct format.

@@ -2125,6 +2125,30 @@ match_io (io_kind k)
 
   if (gfc_match_char ('(') == MATCH_NO)
     {
+      /* Treat the non-standard case of PRINT namelist.  */
+      if (k == M_PRINT && (gfc_match_name (name) == MATCH_YES)
+	    && !gfc_find_symbol (name, NULL, 1, &sym)
+	    && (sym->attr.flavor == FL_NAMELIST))
+	{
+	  if (gfc_notify_std (GFC_STD_GNU, "PRINT namelist at "
+			      "%C is an extension") == FAILURE)
+	    {
+ 	      m = MATCH_ERROR;
+	      goto cleanup;
+	    }
+	  if (gfc_match_eos () == MATCH_NO)
+	    {
+	      gfc_error ("Namelist followed by I/O list at %C");
+	      m = MATCH_ERROR;
+	      goto cleanup;
+	    }
+
+	  dt->io_unit = default_unit (k);
+	  dt->namelist = sym;
+	  goto get_io_list;
+	}
+
+
       if (k == M_WRITE)
 	goto syntax;
 
