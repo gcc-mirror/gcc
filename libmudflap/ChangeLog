@@ -1,3 +1,14 @@
+2005-08-14  Ulrich Weigand  <weigand@informatik.uni-erlangen.de>
+
+	* mf-runtime.c (__mf_state_1): Initialize to reentrant.
+	(__mf_init): Set thread state active.
+	* mf-hooks3.c (__mf_pthread_spawner): Always set thread
+	state active.
+	(pthread_create wrapper): Always use thread spawner.
+
+	* testsuite/libmudflap.cth/pass37-frag.c: Increase timeout.
+	* testsuite/libmudflap.cth/pass39-frag.c: Likewise.
+
 2005-07-16  Richard Henderson  <rth@redhat.com>
 
 	* acinclude.m4: New file.
