@@ -1,3 +1,8 @@
+2005-08-14  Ira Rosen  <irar@il.ibm.com>   
+
+	PR tree-optimization/23119
+	* gcc.dg/vect/vect-105.c: Add xfail for no_align targets. 
+
 2005-08-13  Marcin Koziej  <creep@desk.pl>
             Andrew Pinski  <pinskia@physics.uc.edu>
 
