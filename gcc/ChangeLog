@@ -1,3 +1,7 @@
+2005-08-14  James A. Morrison  <phython@gcc.gnu.org>
+
+	* fold-const (fold_binary): Call fold_build2 instead of fold (build.
+
 2005-08-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_const_ok_for_constraint_p): Add 'P'

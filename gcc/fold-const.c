@@ -9310,10 +9310,9 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		    tree st0, st1;
 		    st0 = lang_hooks.types.signed_type (TREE_TYPE (arg0));
 		    st1 = lang_hooks.types.signed_type (TREE_TYPE (arg1));
-		    return fold
-		      (build2 (code == LE_EXPR ? GE_EXPR: LT_EXPR,
-			       type, fold_convert (st0, arg0),
-			       fold_convert (st1, integer_zero_node)));
+		    return fold_build2 (code == LE_EXPR ? GE_EXPR: LT_EXPR,
+			       		type, fold_convert (st0, arg0),
+			       		build_int_cst (st1, 0));
 		  }
 	      }
 	  }
