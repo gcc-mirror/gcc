@@ -1,3 +1,11 @@
+2005-08-14  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/23320
+	* tree-data-ref.c (base_addr_differ_p): Add comment. Check 
+	data-refs' types instead of base object nullness. Add check for 
+	pointer type data-refs before first location comparison. Remove 
+	assert.
+
 2005-08-14  Andreas Schwab  <schwab@suse.de>
 
 	* doc/md.texi (Machine Constraints): Fix misplaced @end table.

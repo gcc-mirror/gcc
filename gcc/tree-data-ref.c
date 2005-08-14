@@ -384,11 +384,18 @@ base_object_differ_p (struct data_reference *a,
 /* Function base_addr_differ_p.
 
    This is the simplest data dependence test: determines whether the
-   data references A and B access the same array/region.  Returns
+   data references DRA and DRB access the same array/region.  Returns
    false when the property is not computable at compile time.
-   Otherwise return true, and DIFFER_P will record the result. This
-   utility will not be necessary when alias_sets_conflict_p will be
-   less conservative.  */
+   Otherwise return true, and DIFFER_P will record the result.
+
+   The algorithm:   
+   1. if (both DRA and DRB are represented as arrays)
+          compare DRA.BASE_OBJECT and DRB.BASE_OBJECT
+   2. else if (both DRA and DRB are represented as pointers)
+          try to prove that DRA.FIRST_LOCATION == DRB.FIRST_LOCATION
+   3. else if (DRA and DRB are represented differently or 2. fails)
+          only try to prove that the bases are surely different
+*/
 
 
 static bool
@@ -409,26 +416,27 @@ base_addr_differ_p (struct data_reference *dra,
 
   gcc_assert (POINTER_TYPE_P (type_a) &&  POINTER_TYPE_P (type_b));
   
-  /* Compare base objects first if possible. If DR_BASE_OBJECT is NULL, it means
-     that the data-ref is of INDIRECT_REF, and alias analysis will be applied to 
-     reveal the dependence.  */
-  if (DR_BASE_OBJECT (dra) && DR_BASE_OBJECT (drb))
+  /* 1. if (both DRA and DRB are represented as arrays)
+            compare DRA.BASE_OBJECT and DRB.BASE_OBJECT.  */
+  if (DR_TYPE (dra) == ARRAY_REF_TYPE && DR_TYPE (drb) == ARRAY_REF_TYPE)
     return base_object_differ_p (dra, drb, differ_p);
 
+
+  /* 2. else if (both DRA and DRB are represented as pointers)
+	    try to prove that DRA.FIRST_LOCATION == DRB.FIRST_LOCATION.  */
   /* If base addresses are the same, we check the offsets, since the access of 
      the data-ref is described by {base addr + offset} and its access function,
      i.e., in order to decide whether the bases of data-refs are the same we 
      compare both base addresses and offsets.  */
-  if (addr_a == addr_b 
-      || (TREE_CODE (addr_a) == ADDR_EXPR && TREE_CODE (addr_b) == ADDR_EXPR
-         && TREE_OPERAND (addr_a, 0) == TREE_OPERAND (addr_b, 0)))
+  if (DR_TYPE (dra) == POINTER_REF_TYPE && DR_TYPE (drb) == POINTER_REF_TYPE
+      && (addr_a == addr_b 
+	  || (TREE_CODE (addr_a) == ADDR_EXPR && TREE_CODE (addr_b) == ADDR_EXPR
+	      && TREE_OPERAND (addr_a, 0) == TREE_OPERAND (addr_b, 0))))
     {
       /* Compare offsets.  */
       tree offset_a = DR_OFFSET (dra); 
       tree offset_b = DR_OFFSET (drb);
       
-      gcc_assert (!DR_BASE_OBJECT (dra) && !DR_BASE_OBJECT (drb));
-
       STRIP_NOPS (offset_a);
       STRIP_NOPS (offset_b);
 
@@ -444,6 +452,9 @@ base_addr_differ_p (struct data_reference *dra,
 	  return true;
 	}
     }
+
+  /*  3. else if (DRA and DRB are represented differently or 2. fails) 
+              only try to prove that the bases are surely different.  */
 
   /* Apply alias analysis.  */
   if (may_alias_p (addr_a, addr_b, dra, drb, &aliased) && !aliased)
