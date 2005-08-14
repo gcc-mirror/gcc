@@ -245,9 +245,7 @@ __mf_pthread_spawner (void *arg)
 {
   void *result = NULL;
 
-#ifndef HAVE_TLS
   __mf_set_state (active);
-#endif
 
   /* NB: We could use __MF_TYPE_STATIC here, but we guess that the thread
      errno is coming out of some dynamically allocated pool that we already
@@ -291,31 +289,15 @@ __mf_0fn_pthread_create (pthread_t *thr, const pthread_attr_t *attr,
 WRAPPER(int, pthread_create, pthread_t *thr, const pthread_attr_t *attr,
 	 void * (*start) (void *), void *arg)
 {
-  int result, need_wrapper = 0;
+  struct mf_thread_start_info *si;
 
   TRACE ("pthread_create\n");
 
-#ifndef HAVE_TLS
-  need_wrapper = 1;
-#endif
-  need_wrapper |= __mf_opts.heur_std_data != 0;
+  /* Fill in startup-control fields.  */
+  si = CALL_REAL (malloc, sizeof (*si));
+  si->user_fn = start;
+  si->user_arg = arg;
 
-  if (need_wrapper)
-    {
-      struct mf_thread_start_info *si = CALL_REAL (malloc, sizeof (*si));
-
-      /* Fill in startup-control fields.  */
-      si->user_fn = start;
-      si->user_arg = arg;
-
-      /* Actually create the thread.  */
-      result = CALL_REAL (pthread_create, thr, attr, __mf_pthread_spawner, si);
-    }
-  else
-    {
-      /* If we're not handling heur_std_data, nothing special to do.  */
-      result = CALL_REAL (pthread_create, thr, attr, start, arg);
-    }
-
-  return result;
+  /* Actually create the thread.  */
+  return CALL_REAL (pthread_create, thr, attr, __mf_pthread_spawner, si);
 }

@@ -178,10 +178,10 @@ int __mf_starting_p = 1;
 
 #ifdef LIBMUDFLAPTH
 #ifdef HAVE_TLS
-__thread enum __mf_state_enum __mf_state_1 = active;
+__thread enum __mf_state_enum __mf_state_1 = reentrant;
 #endif
 #else
-enum __mf_state_enum __mf_state_1 = active;
+enum __mf_state_enum __mf_state_1 = reentrant;
 #endif
 
 #ifdef LIBMUDFLAPTH
@@ -696,6 +696,8 @@ __mf_init ()
   __mf_resolve_dynamics ();
 #endif
   __mf_starting_p = 0;
+
+  __mf_set_state (active);
 
   __mf_set_default_options ();
 
