@@ -1,3 +1,9 @@
+2005-08-13  Marcin Koziej  <creep@desk.pl>
+            Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR libobjc/22492
+	* execute/exceptions/finally-1.m: New test.
+
 2005-08-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* objc.dg/nested-func-1.m: Move to ...
