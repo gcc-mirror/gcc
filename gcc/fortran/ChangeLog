@@ -1,3 +1,8 @@
+2005-08-14  Canqun Yang  <canqun@nudt.edu.cn>
+
+	* trans-stmt.c (gfc_trans_arithmetic_if): Optimized in case of equal
+	labels.
+
 2005-09-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 	    Steven Bosscher  <stevenb@suse.de>
 
