@@ -1,5 +1,10 @@
 2005-08-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* objc.dg/nested-func-1.m: Move to ...
+	* objc/execute/nested-func-1.m: Here.
+
+2005-08-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	* lib/objc.exp (objc_target_compile): Check for -fgnu-runtime
 	in ${options} instead of [target_info name].
 	* lib/obj-c++.exp (objc_target_compile): Likewise.
