@@ -19,6 +19,18 @@
 
 2005-08-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* objc/execute/exceptions/exceptions.exp: New exp for the exceptions
+	testsuite.
+	* objc/execute/exceptions/trivial.m: New test.
+	* objc.dg/try-catch-11.m: Move to ...
+	* objc/execute/exceptions/foward-1.m: Here.
+	* objc.dg/try-catch-2.m: Move to ...
+	* objc/execute/exceptions/catchall-1.m: Here.
+	* objc.dg/try-catch-8.m: Move to ...
+	* objc/execute/exceptions/local-variables-1.m: Here.
+
+2005-08-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	* objc.dg/nested-func-1.m: Move to ...
 	* objc/execute/nested-func-1.m: Here.
 
