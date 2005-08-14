@@ -1,9 +1,13 @@
-2005-08-14 Paul Thomas  <pault@gcc.gnu.org>
+2005-08-14  Asher Langton  <langton2@llnl.gov>
+
+	* parse.c (match): Enclosed macro in do...while(0) and braces.
+
+2005-08-14  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/21432.
 	* gfortran.texi: Document PRINT namelist.
 
-2005-08-14 Paul Thomas  <pault@gcc.gnu.org>
+2005-08-14  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/21432.
 	* io.c (match_io): Add code to implement PRINT namelist.
@@ -178,7 +182,7 @@
 	* trans-stmt.c (gfc_trans_character_select): Use
 	build_constructor_from_list instead of build_constructor.
 
-2005-07-19 Paul Thomas  <pault@gcc.gnu.org>
+2005-07-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/16940
 	* resolve.c (resolve_symbol): A symbol with FL_UNKNOWN
@@ -918,7 +922,7 @@
 	* resolve.c (resolve_variable): If e->symtree is not set, this
 	ought to be a FAILURE, and not a segfault.
 
-2005-04-17 Paul Thomas <pault@gcc.gnu.org>
+2005-04-17  Paul Thomas <pault@gcc.gnu.org>
 
 	PR fortran/17472
 	PR fortran/18209
