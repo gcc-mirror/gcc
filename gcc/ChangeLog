@@ -1,3 +1,9 @@
+2005-08-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/23360
+	* config/i386/crtfastmath.c (set_fast_math): Check if DAZ is
+	available for setting it.
+
 2005-08-14  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/23320
