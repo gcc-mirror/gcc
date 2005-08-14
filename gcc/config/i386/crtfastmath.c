@@ -34,11 +34,15 @@
 #define MXCSR_DAZ (1 << 6)	/* Enable denormals are zero mode */
 #define MXCSR_FTZ (1 << 15)	/* Enable flush to zero mode */
 
+#define FXSAVE	(1 << 24)
+#define SSE	(1 << 25)
+
 static void __attribute__((constructor))
 set_fast_math (void)
 {
 #ifndef __x86_64__
-  /* SSE is the part of 64bit. Only need to check it for 32bit.  */
+  /* All 64-bit targets have SSE and DAZ; only check them explicitly
+     for 32-bit ones. */
   unsigned int eax, ebx, ecx, edx;
 
   /* See if we can use cpuid.  */
@@ -62,11 +66,45 @@ set_fast_math (void)
 		: "=a" (eax), "=r" (ebx), "=c" (ecx), "=d" (edx)
 		: "0" (1));
 
-  if (edx & (1 << 25))
-#endif
+  if (edx & SSE)
     {
       unsigned int mxcsr = __builtin_ia32_stmxcsr ();
-      mxcsr |= MXCSR_DAZ | MXCSR_FTZ;
+  
+      mxcsr |= MXCSR_FTZ;
+
+      if (edx & FXSAVE)
+	{
+	  /* Check if DAZ is available.  */
+	  struct
+	    {
+	      unsigned short int cwd;
+	      unsigned short int swd;
+	      unsigned short int twd;
+	      unsigned short int fop;
+	      long int fip;
+	      long int fcs;
+	      long int foo;
+	      long int fos;
+	      long int mxcsr;
+	      long int mxcsr_mask;
+	      long int st_space[32];
+	      long int xmm_space[32];
+	      long int padding[56];
+	    } __attribute__ ((aligned (16))) fxsave;
+
+	  __builtin_memset (&fxsave, 0, sizeof (fxsave));
+
+	  asm volatile ("fxsave %0" : : "m" (fxsave));
+
+	  if (fxsave.mxcsr_mask & MXCSR_DAZ)
+	    mxcsr |= MXCSR_DAZ;
+	}
+
       __builtin_ia32_ldmxcsr (mxcsr);
     }
+#else
+  unsigned int mxcsr = __builtin_ia32_stmxcsr ();
+  mxcsr |= MXCSR_DAZ | MXCSR_FTZ;
+  __builtin_ia32_ldmxcsr (mxcsr);
+#endif
 }
