@@ -1,3 +1,9 @@
+2005-08-13  Marcin Koziej  <creep@desk.pl>
+            Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR libobjc/22492
+	* exception.c (PERSONALITY_FUNCTION): Fix the PC with finally.
+
 2005-08-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* Makefile.in (extra_ldflags_libobjc): New.

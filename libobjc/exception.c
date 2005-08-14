@@ -165,7 +165,8 @@ PERSONALITY_FUNCTION (int version,
   const unsigned char *p;
   _Unwind_Ptr landing_pad, ip;
   int handler_switch_value;
-  int saw_cleanup, saw_handler;
+  int saw_cleanup = 0, saw_handler;
+  void *return_object;
 
   /* Interface version check.  */
   if (version != 1)
@@ -334,8 +335,15 @@ PERSONALITY_FUNCTION (int version,
     }
 
  install_context:
+  if (saw_cleanup == 0)
+    {
+      return_object = xh->value;
+      if (!(actions & _UA_SEARCH_PHASE))
+	_Unwind_DeleteException(&xh->base);
+    }
+  
   _Unwind_SetGR (context, __builtin_eh_return_data_regno (0),
-		 __builtin_extend_pointer (xh->value));
+		 __builtin_extend_pointer (saw_cleanup ? xh : return_object));
   _Unwind_SetGR (context, __builtin_eh_return_data_regno (1),
 		 handler_switch_value);
   _Unwind_SetIP (context, landing_pad);
