@@ -1,6 +1,11 @@
 2005-08-14 Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/21432.
+	* gfortran.texi: Document PRINT namelist.
+
+2005-08-14 Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/21432.
 	* io.c (match_io): Add code to implement PRINT namelist.
 
 2005-08-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>

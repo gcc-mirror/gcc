@@ -734,6 +734,15 @@ had been called:
 To aid this dialog, when input is from stdin, errors produce send their
 messages to stderr and execution continues, even if IOSTAT is set.
 
+PRINT namelist is permitted.  This causes an error if -std=f95 is used.
+@smallexample
+PROGRAM test_print
+  REAL, dimension (4)  ::  x = (/1.0, 2.0, 3.0, 4.0/)
+  NAMELIST /mynml/ x
+  PRINT mynml
+END PROGRAM test_print
+@end smallexample
+
 @node Implicitly interconvert LOGICAL and INTEGER
 @section Implicitly interconvert LOGICAL and INTEGER
 @cindex Implicitly interconvert LOGICAL and INTEGER
