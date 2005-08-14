@@ -2,9 +2,6 @@
    exceptions.  */
 /* Developed by Ziemowit Laski <zlaski@apple.com>.  */
 
-/* { dg-options "-fobjc-exceptions" } */
-/* { dg-do run } */
-
 #include <objc/Object.h>
 #include <stdio.h>
 
