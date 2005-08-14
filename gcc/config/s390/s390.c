@@ -1876,6 +1876,9 @@ s390_const_ok_for_constraint_p (HOST_WIDE_INT value,
 
       break;
 
+    case 'P':
+      return legitimate_reload_constant_p (GEN_INT (value));
+
     default:
       return 0;
     }
@@ -2311,7 +2314,9 @@ legitimate_reload_constant_p (rtx op)
 
   /* Accept lliXX operands.  */
   if (TARGET_ZARCH
-      && s390_single_part (op, DImode, HImode, 0) >= 0)
+      && GET_CODE (op) == CONST_INT
+      && trunc_int_for_mode (INTVAL (op), word_mode) == INTVAL (op)
+      && s390_single_part (op, word_mode, HImode, 0) >= 0)
   return true;
 
   /* Accept larl operands.  */
@@ -2323,6 +2328,17 @@ legitimate_reload_constant_p (rtx op)
   if (GET_CODE (op) == CONST_DOUBLE
       && CONST_DOUBLE_OK_FOR_CONSTRAINT_P (op, 'G', "G"))
     return true;
+
+  /* Accept double-word operands that can be split.  */
+  if (GET_CODE (op) == CONST_INT
+      && trunc_int_for_mode (INTVAL (op), word_mode) != INTVAL (op))
+    {
+      enum machine_mode dword_mode = word_mode == SImode ? DImode : TImode;
+      rtx hi = operand_subword (op, 0, 0, dword_mode);
+      rtx lo = operand_subword (op, 1, 0, dword_mode);
+      return legitimate_reload_constant_p (hi)
+	     && legitimate_reload_constant_p (lo);
+    }
 
   /* Everything else cannot be handled without reload.  */
   return false;
