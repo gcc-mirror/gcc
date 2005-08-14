@@ -1,3 +1,12 @@
+2005-08-14  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_const_ok_for_constraint_p): Add 'P'
+	constraint.
+	(legitimate_reload_constant_p): Fix handling of lliXX operands.
+	Accept double-word constants that can be split.
+	* config/s390/s390.md ("movti"): Use 'P' constraint.
+	("*movdi_31", "*movdf_31"): Likewise.
+
 2005-08-14  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/22615
