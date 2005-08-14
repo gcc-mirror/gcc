@@ -1,9 +1,6 @@
 /* Check that throwing an exception from a -forward:: works.  */
 /* Developed by Marcin Koziej <creep@desk.pl>.  */
 
-/* { dg-do run } */
-/* { dg-options "-fobjc-exceptions -w" } */
-
 #import <objc/Object.h>
 #import <objc/objc-api.h>
 #include <stdlib.h>

@@ -2,9 +2,6 @@
    block survive until the @catch block is reached.  */
 /* Developed by Ziemowit Laski <zlaski@apple.com>.  */
 
-/* { dg-options "-fobjc-exceptions -O2" } */
-/* { dg-do run } */
-
 #include <objc/Object.h>
 #include <stdlib.h>
 #include <stdio.h>
