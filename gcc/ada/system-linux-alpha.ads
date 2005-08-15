@@ -5,7 +5,7 @@
 --                               S Y S T E M                                --
 --                                                                          --
 --                                 S p e c                                  --
---                         (GNU-Linux/ia64 Version)                         --
+--                        (GNU-Linux/alpha Version)                         --
 --                                                                          --
 --          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --

@@ -1,3 +1,7 @@
+2005-08-15  James E. Wilson  <wilson@specifix.com>
+
+	* system-linux-alpha.ads: Change ia64 to alpha.
+
 2005-08-01  Kazu Hirata  <kazu@codesourcery.com>
 
 	* decl.c, utils.c: Fix comment typos.
