@@ -1,45 +1,59 @@
 #include <objc/Object.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+static int made_try = 0;
 
 int
 thrower_try_body()
 {
-        printf("Thrower try body\n");
-        return (0);
+  made_try++;
+  return (0);
 }
+
+static int made_finally = 0;
 
 int
 finally_body()
 {
-        printf("Finally body\n");
-        return (0);
+  made_finally++;
+  return (0);
 }
 
 int
 thrower()
 {
-        @try
-        {
-                thrower_try_body();
-                @throw [Object new];
-        }
-        @finally
-        {
-                finally_body();
-        }       // <----- program aborts here.
-        return 0;
+  @try
+  {
+    thrower_try_body();
+    @throw [Object new];
+  }
+  @finally
+  {
+    finally_body();
+  }     
+  return 0;
 }
 
+static int made_catch = 0;
 
 int 
 main(int ac, char *av[])
 {
-        @try
-        {
-                thrower();
-        }
-        @catch (id exc)
-        {
-                printf("Got exception of class %s\n", [[exc class] name]);
-                [exc free];
-        }
+  @try
+  {
+    thrower();
+  }
+  @catch (id exc)
+  {
+    made_catch++;
+    [exc free];
+  }
+  if (made_try != 1)
+    abort ();
+  if (made_finally != 1)
+    abort ();
+  if (made_catch != 1)
+    abort ();
+  return 0;
 }
