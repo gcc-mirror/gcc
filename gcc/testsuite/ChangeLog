@@ -1,3 +1,7 @@
+2005-08-15  Fariborz Jahanian <fjahanian@apple.com>
+
+	* g++.dg/template/local6.C: New test.
+
 2005-08-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* execute/exceptions/finally-1.m: Check that the catch and finally are

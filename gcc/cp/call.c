@@ -2203,7 +2203,7 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
 
   i = fn_type_unification (tmpl, explicit_targs, targs,
 			   args_without_in_chrg,
-			   return_type, strict);
+			   return_type, strict, flags);
 
   if (i != 0)
     return NULL;
@@ -6286,13 +6286,13 @@ tourney (struct z_candidate *candidates)
 bool
 can_convert (tree to, tree from)
 {
-  return can_convert_arg (to, from, NULL_TREE);
+  return can_convert_arg (to, from, NULL_TREE, LOOKUP_NORMAL);
 }
 
 /* Returns nonzero if ARG (of type FROM) can be converted to TO.  */
 
 bool
-can_convert_arg (tree to, tree from, tree arg)
+can_convert_arg (tree to, tree from, tree arg, int flags)
 {
   conversion *t;
   void *p;
@@ -6302,7 +6302,7 @@ can_convert_arg (tree to, tree from, tree arg)
   p = conversion_obstack_alloc (0);
 
   t  = implicit_conversion (to, from, arg, /*c_cast_p=*/false, 
-			    LOOKUP_NORMAL);
+			    flags);
   ok_p = (t && !t->bad_p);
 
   /* Free all the conversions we allocated.  */

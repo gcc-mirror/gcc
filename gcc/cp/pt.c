@@ -109,7 +109,7 @@ static tree add_outermost_template_args (tree, tree);
 static bool check_instantiated_args (tree, tree, tsubst_flags_t);
 static int maybe_adjust_types_for_deduction (unification_kind_t, tree*, tree*);
 static int  type_unification_real (tree, tree, tree, tree,
-				   int, unification_kind_t);
+				   int, unification_kind_t, int);
 static void note_template_header (int);
 static tree convert_nontype_argument_function (tree, tree);
 static tree convert_nontype_argument (tree, tree);
@@ -9119,7 +9119,8 @@ fn_type_unification (tree fn,
 		     tree targs,
 		     tree args,
 		     tree return_type,
-		     unification_kind_t strict)
+		     unification_kind_t strict,
+		     int flags)
 {
   tree parms;
   tree fntype;
@@ -9197,7 +9198,7 @@ fn_type_unification (tree fn,
      event.  */
   result = type_unification_real (DECL_INNERMOST_TEMPLATE_PARMS (fn),
 				  targs, parms, args, /*subr=*/0,
-				  strict);
+				  strict, flags);
 
   if (result == 0)
     /* All is well so far.  Now, check:
@@ -9313,7 +9314,8 @@ type_unification_real (tree tparms,
 		       tree xparms,
 		       tree xargs,
 		       int subr,
-		       unification_kind_t strict)
+		       unification_kind_t strict,
+		       int flags)
 {
   tree parm, arg;
   int i;
@@ -9381,7 +9383,8 @@ type_unification_real (tree tparms,
 	  if (same_type_p (parm, type))
 	    continue;
 	  if (strict != DEDUCE_EXACT
-	      && can_convert_arg (parm, type, TYPE_P (arg) ? NULL_TREE : arg))
+	      && can_convert_arg (parm, type, TYPE_P (arg) ? NULL_TREE : arg, 
+				  flags))
 	    continue;
 	  
 	  return 1;
@@ -10280,7 +10283,8 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 		 TREE_TYPE (arg), UNIFY_ALLOW_NONE))
 	return 1;
       return type_unification_real (tparms, targs, TYPE_ARG_TYPES (parm),
-				    TYPE_ARG_TYPES (arg), 1, DEDUCE_EXACT);
+				    TYPE_ARG_TYPES (arg), 1, DEDUCE_EXACT,
+				    LOOKUP_NORMAL);
 
     case OFFSET_TYPE:
       /* Unify a pointer to member with a pointer to member function, which
@@ -10665,7 +10669,7 @@ get_bindings (tree fn, tree decl, tree explicit_args, bool check_rettype)
 			   decl_arg_types,
 			   (check_rettype || DECL_CONV_FN_P (fn)
 			    ? TREE_TYPE (decl_type) : NULL_TREE),
-			   DEDUCE_EXACT))
+			   DEDUCE_EXACT, LOOKUP_NORMAL))
     return NULL_TREE;
 
   return targs;

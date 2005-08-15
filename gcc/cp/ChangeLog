@@ -1,3 +1,20 @@
+2005-08-15 Fariborz Jahanian <fjahanian@apple.com>
+
+        * cp-tree.h (can_convert_arg, fn_type_unification): New argument.
+        * call.c (add_template_candidate_real): Pass down 'flags' to
+        fn_type_unification.
+        (can_convert_arg): New 'flags' argument. Pass it to call to
+        implicit_conversion instead of LOOKUP_NORMAL.
+	(can_convert): Add LOOKUP_NORMAL to call to can_convert_arg.
+        * class.c (resolve_address_of_overloaded_function): Ditto.
+        (resolve_address_of_overloaded_function): Ditto.
+        * decl.c (reshape_init, check_default_argument): Ditto.
+        * typeck.c (build_ptrmemfunc): Ditto.
+        * pt.c (type_unification_real): Add 'flags' argument.
+        (fn_type_unification): Pass 'flags' to type_unification_real.
+        (type_unification_real): Pass new 'flags' argument to call to
+        can_convert_arg.
+
 2005-08-12  Giovanni Bajo  <giovannibajo@libero.it>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 
