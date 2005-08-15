@@ -1,3 +1,9 @@
+2005-08-15  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	PR 23386
+	* tree-data-ref.c (estimate_niter_from_size_of_data): When
+	step is negative compute the estimation from init downwards to zero.
+	
 2005-08-14  James A. Morrison  <phython@gcc.gnu.org>
 
 	* fold-const (fold_binary): Call fold_build2 instead of fold (build.

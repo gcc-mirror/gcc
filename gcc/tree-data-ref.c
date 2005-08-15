@@ -751,7 +751,7 @@ estimate_niter_from_size_of_data (struct loop *loop,
 				  tree access_fn, 
 				  tree stmt)
 {
-  tree estimation;
+  tree estimation = NULL_TREE;
   tree array_size, data_size, element_size;
   tree init, step;
 
@@ -773,11 +773,28 @@ estimate_niter_from_size_of_data (struct loop *loop,
       && TREE_CODE (init) == INTEGER_CST
       && TREE_CODE (step) == INTEGER_CST)
     {
-      estimation = fold_build2 (CEIL_DIV_EXPR, integer_type_node,
-				fold_build2 (MINUS_EXPR, integer_type_node,
-					     data_size, init), step);
+      tree i_plus_s = fold_build2 (PLUS_EXPR, integer_type_node, init, step);
+      tree sign = fold_build2 (GT_EXPR, boolean_type_node, i_plus_s, init);
 
-      record_estimate (loop, estimation, boolean_true_node, stmt);
+      if (sign == boolean_true_node)
+	estimation = fold_build2 (CEIL_DIV_EXPR, integer_type_node,
+				  fold_build2 (MINUS_EXPR, integer_type_node,
+					       data_size, init), step);
+
+      /* When the step is negative, as in PR23386: (init = 3, step =
+	 0ffffffff, data_size = 100), we have to compute the
+	 estimation as ceil_div (init, 0 - step) + 1.  */
+      else if (sign == boolean_false_node)
+	estimation = 
+	  fold_build2 (PLUS_EXPR, integer_type_node,
+		       fold_build2 (CEIL_DIV_EXPR, integer_type_node,
+				    init,
+				    fold_build2 (MINUS_EXPR, unsigned_type_node,
+						 integer_zero_node, step)),
+		       integer_one_node);
+
+      if (estimation)
+	record_estimate (loop, estimation, boolean_true_node, stmt);
     }
 }
 
