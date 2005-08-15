@@ -43,7 +43,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 
 extern char _end;
-extern char _start;
+extern char ENTRY_POINT;
 
 
 /* Run some quick validation of the given region.
@@ -164,10 +164,11 @@ __mf_heuristic_check (uintptr_t ptr, uintptr_t ptr_high)
     }
 
 
-  /* The third heuristic is to approve all accesses between _start and _end,
-     which should include all text and initialized data.  */
+  /* The third heuristic is to approve all accesses between _start (or its
+     equivalent for the given target) and _end, which should include all
+     text and initialized data.  */
   if (__mf_opts.heur_start_end)
-    if (ptr >= (uintptr_t) & _start && ptr_high <= (uintptr_t) & _end)
+    if (ptr >= (uintptr_t) & ENTRY_POINT && ptr_high <= (uintptr_t) & _end)
       return 1; /* uncacheable */
 
   return 0; /* unknown */

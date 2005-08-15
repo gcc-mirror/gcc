@@ -1,3 +1,11 @@
+2005-08-15  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* configure.ac: Test for the name of the symbol used for the entry
+	point; define ENTRY_POINT to the result.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* mf-heuristics.c: Replace _start with ENTRY_POINT throughout.
+
 2005-08-14  Ulrich Weigand  <weigand@informatik.uni-erlangen.de>
 
 	* mf-runtime.c (__mf_state_1): Initialize to reentrant.

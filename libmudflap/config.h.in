@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to the name of the symbol used for the entry point. */
+#undef ENTRY_POINT
+
 /* Define to 1 if you have the `addmntent' function. */
 #undef HAVE_ADDMNTENT
 
