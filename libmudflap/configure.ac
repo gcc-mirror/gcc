@@ -223,6 +223,21 @@ AC_MSG_RESULT($ac_fdsections)
 AC_SUBST(SECTION_FLAGS)
 
 
+# Check for the name of the symbol used for the entry point.
+AC_CACHE_CHECK([for the name of the symbol used for the entry point],
+  [mudflap_cv_entry_point], [
+for name in _start __start unknown; do
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([extern char $name;], [$name = 0;])],
+		 [break])
+done
+mudflap_cv_entry_point="$name"])
+if test "$mudflap_cv_entry_point" = unknown; then
+  AC_MSG_ERROR([none of the known symbol names works])
+fi
+AC_DEFINE_UNQUOTED([ENTRY_POINT], [$mudflap_cv_entry_point],
+  [Define to the name of the symbol used for the entry point.])
+
+
 if test ${multilib} = yes; then
   multilib_arg="--enable-multilib"
 else

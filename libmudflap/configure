@@ -6894,6 +6894,76 @@ echo "${ECHO_T}$ac_fdsections" >&6
 
 
 
+# Check for the name of the symbol used for the entry point.
+echo "$as_me:$LINENO: checking for the name of the symbol used for the entry point" >&5
+echo $ECHO_N "checking for the name of the symbol used for the entry point... $ECHO_C" >&6
+if test "${mudflap_cv_entry_point+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+for name in _start __start unknown; do
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+extern char $name;
+int
+main ()
+{
+$name = 0;
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  break
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+done
+mudflap_cv_entry_point="$name"
+fi
+echo "$as_me:$LINENO: result: $mudflap_cv_entry_point" >&5
+echo "${ECHO_T}$mudflap_cv_entry_point" >&6
+if test "$mudflap_cv_entry_point" = unknown; then
+  { { echo "$as_me:$LINENO: error: none of the known symbol names works" >&5
+echo "$as_me: error: none of the known symbol names works" >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define ENTRY_POINT $mudflap_cv_entry_point
+_ACEOF
+
+
+
 if test ${multilib} = yes; then
   multilib_arg="--enable-multilib"
 else
