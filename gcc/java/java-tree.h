@@ -219,9 +219,6 @@ extern int flag_indirect_dispatch;
 /* When zero, don't generate runtime array store checks. */
 extern int flag_store_check;
 
-/* When nonzero, use the new bytecode verifier.  */
-extern int flag_new_verifier;
-
 /* Encoding used for source files.  */
 extern const char *current_encoding;
 
@@ -1328,7 +1325,6 @@ extern void init_class_processing (void);
 extern void add_type_assertion (tree, int, tree, tree);
 extern int can_widen_reference_to (tree, tree);
 extern int class_depth (tree);
-extern int verify_jvm_instructions (struct JCF *, const unsigned char *, long);
 extern int verify_jvm_instructions_new (struct JCF *, const unsigned char *,
 					long);
 extern void maybe_pushlevels (int);
