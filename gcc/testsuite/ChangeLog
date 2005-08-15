@@ -1,3 +1,8 @@
+2005-08-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* execute/exceptions/finally-1.m: Check that the catch and finally are
+	being called.  Also add a "return 0;" at the end of main.
+
 2005-08-14 Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/21432.
