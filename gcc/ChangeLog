@@ -1,3 +1,9 @@
+2005-08-15  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/21841
+	* doc/invoke.texi (-mgnu-ld): Update description.
+	(-mhp-ld): Ditto.
+
 2005-08-15  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	PR 23391
