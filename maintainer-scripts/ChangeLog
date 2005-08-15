@@ -1,3 +1,7 @@
+2005-08-14  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* gcc_release: Update with FSF address.
+
 2005-07-26  Janis Johnson  <janis187@us.ibm.com>
 
 	* update_version (ADD_BRANCHES): Add dfp-branch.
