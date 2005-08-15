@@ -5656,7 +5656,7 @@ resolve_address_of_overloaded_function (tree target_type,
 	  else if (!is_reference)
 	    fntype = build_pointer_type (fntype);
 
-	  if (can_convert_arg (target_type, fntype, fn))
+	  if (can_convert_arg (target_type, fntype, fn, LOOKUP_NORMAL))
 	    matches = tree_cons (fn, NULL_TREE, matches);
 	}
     }
@@ -5704,7 +5704,7 @@ resolve_address_of_overloaded_function (tree target_type,
 	  targs = make_tree_vec (DECL_NTPARMS (fn));
 	  if (fn_type_unification (fn, explicit_targs, targs,
 				   target_arg_types, target_ret_type,
-				   DEDUCE_EXACT))
+				   DEDUCE_EXACT, LOOKUP_NORMAL))
 	    /* Argument deduction failed.  */
 	    continue;
 
@@ -5721,7 +5721,8 @@ resolve_address_of_overloaded_function (tree target_type,
 	      build_ptrmemfunc_type (build_pointer_type (instantiation_type));
 	  else if (!is_reference)
 	    instantiation_type = build_pointer_type (instantiation_type);
-	  if (can_convert_arg (target_type, instantiation_type, instantiation))
+	  if (can_convert_arg (target_type, instantiation_type, instantiation, 
+			       LOOKUP_NORMAL))
 	    matches = tree_cons (instantiation, fn, matches);
 	}
 
