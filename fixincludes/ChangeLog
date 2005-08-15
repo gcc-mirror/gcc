@@ -1,3 +1,7 @@
+2005-08-14  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* All files: Update with new FSF address.
+
 2005-07-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (WARN_CFLAGS): New.
