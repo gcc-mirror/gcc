@@ -1,3 +1,10 @@
+2005-08-15  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (QHSI): New mode macro.
+	(wd): Extend mode attr for QImode and HImode
+	(dbits): New mode attr.
+	(zero_extend<mode>di2): Convert to mode macro.
+
 2005-08-15  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/21841
