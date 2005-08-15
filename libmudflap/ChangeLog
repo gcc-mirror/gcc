@@ -1,3 +1,8 @@
+2005-08-15  Ulrich Weigand  <weigand@informatik.uni-erlangen.de>
+
+	* mf-hooks3.c (main_seen_p): Remove.
+	(__mf_get_state): Remove attempt to recognize the main thread.
+
 2005-08-15  Maciej W. Rozycki  <macro@linux-mips.org>
 
 	* configure.ac: Test for the name of the symbol used for the entry

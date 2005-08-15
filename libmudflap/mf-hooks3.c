@@ -104,11 +104,6 @@ struct mf_thread_data
 static struct mf_thread_data mf_thread_data[LIBMUDFLAPTH_THREADS_MAX];
 static pthread_mutex_t mf_thread_data_lock = PTHREAD_MUTEX_INITIALIZER;
 
-/* Try to identify the main thread when filling in mf_thread_data.  We
-   should always be called at least once from the main thread before 
-   any new threads are spawned.  */
-static int main_seen_p;
-
 #define PTHREAD_HASH(p) ((unsigned long) (p) % LIBMUDFLAPTH_THREADS_MAX)
 
 static struct mf_thread_data *
@@ -176,11 +171,9 @@ __mf_get_state (void)
   if (data)
     return data->state;
 
-  /* The main thread needs to default to active state, so that the global
-     constructors are processed in the active state.  Child threads should
-     be considered to be in the reentrant state, so that we don't wind up
-     doing Screwy Things inside the thread library; it'll get reset to 
-     active state in __mf_pthread_spawner before user code is invoked.
+  /* If we've never seen this thread before, consider it to be in the
+     reentrant state.  The state gets reset to active for the main thread
+     in __mf_init, and for child threads in __mf_pthread_spawner.
 
      The trickiest bit here is that the LinuxThreads pthread_manager thread
      should *always* be considered to be reentrant, so that none of our 
@@ -189,15 +182,7 @@ __mf_get_state (void)
      stuff isn't initialized, leading to SEGV very quickly.  Even calling
      pthread_self is a bit suspect, but it happens to work.  */
 
-  if (main_seen_p)
-    return reentrant;
-  else
-    {
-      main_seen_p = 1;
-      data = __mf_find_threadinfo (1);
-      data->state = active;
-      return active;
-    }
+  return reentrant;
 }
 
 void
