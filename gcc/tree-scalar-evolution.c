@@ -676,7 +676,9 @@ add_to_evolution_1 (unsigned loop_nb,
 	    {
 	      var = loop_nb;
 	      left = chrec_before;
-	      right = build_int_cst (type, 0);
+	      right = SCALAR_FLOAT_TYPE_P (type)
+		? build_real (type, dconst0)
+		: build_int_cst (type, 0);
 	    }
 	  else
 	    {
@@ -1680,7 +1682,9 @@ interpret_rhs_modify_expr (struct loop *loop, tree at_stmt,
       opnd10 = TREE_OPERAND (opnd1, 0);
       chrec10 = analyze_scalar_evolution (loop, opnd10);
       chrec10 = chrec_convert (type, chrec10, at_stmt);
-      res = chrec_fold_minus (type, build_int_cst (type, 0), chrec10);
+      res = chrec_fold_multiply (type, chrec10, SCALAR_FLOAT_TYPE_P (type)
+				  ? build_real (type, dconstm1)
+				  : build_int_cst_type (type, -1));
       break;
 
     case MULT_EXPR:

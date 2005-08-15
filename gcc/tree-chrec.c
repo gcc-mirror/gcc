@@ -30,6 +30,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tm.h"
 #include "ggc.h"
 #include "tree.h"
+#include "real.h"
 #include "diagnostic.h"
 #include "varray.h"
 #include "cfgloop.h"
@@ -119,7 +120,9 @@ chrec_fold_plus_poly_poly (enum tree_code code,
 	  (CHREC_VARIABLE (poly1), 
 	   chrec_fold_minus (type, poly0, CHREC_LEFT (poly1)),
 	   chrec_fold_multiply (type, CHREC_RIGHT (poly1), 
-				build_int_cst_type (type, -1)));
+				SCALAR_FLOAT_TYPE_P (type)
+				? build_real (type, dconstm1)
+				: build_int_cst_type (type, -1)));
     }
   
   if (CHREC_VARIABLE (poly0) > CHREC_VARIABLE (poly1))
@@ -208,7 +211,9 @@ chrec_fold_multiply_poly_poly (tree type,
 						       CHREC_RIGHT (poly1)));
   /* "2*b*d".  */
   t2 = chrec_fold_multiply (type, CHREC_RIGHT (poly0), CHREC_RIGHT (poly1));
-  t2 = chrec_fold_multiply (type, build_int_cst_type (type, 2), t2);
+  t2 = chrec_fold_multiply (type, SCALAR_FLOAT_TYPE_P (type)
+			    ? build_real (type, dconst2)
+			    : build_int_cst_type (type, 2), t2);
 
   var = CHREC_VARIABLE (poly0);
   return build_polynomial_chrec (var, t0,
@@ -284,8 +289,10 @@ chrec_fold_plus_1 (enum tree_code code,
 	    return build_polynomial_chrec 
 	      (CHREC_VARIABLE (op1), 
 	       chrec_fold_minus (type, op0, CHREC_LEFT (op1)),
-	       chrec_fold_multiply (type, CHREC_RIGHT (op1),
-				    build_int_cst_type (type, -1)));
+	       chrec_fold_multiply (type, CHREC_RIGHT (op1), 
+				    SCALAR_FLOAT_TYPE_P (type)
+				    ? build_real (type, dconstm1)
+				    : build_int_cst_type (type, -1)));
 
 	default:
 	  {
