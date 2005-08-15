@@ -1,6 +1,7 @@
-/* { dg-do run } */
+/* { dg-do run { xfail { hppa*-*-hpux* && { ! hppa*64*-*-* } } } } */
 /* { dg-require-weak "" } */
 /* { dg-additional-sources weak-1a.c } */
+/* See PR target/23387 for hppa xfail details.  */
 
 #include <stdlib.h>
 
