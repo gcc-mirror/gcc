@@ -1,3 +1,20 @@
+2005-08-15  Tom Tromey  <tromey@redhat.com>
+
+	* Make-lang.in (JAVA_OBJS): Removed verify.o
+	(java/verify.o): Removed.
+	* verify.c: Removed.
+	* lang.c (flag_new_verifier): Removed.
+	(java_post_options): Updated.
+	* java-tree.h (flag_new_verifier): Removed.
+	(verify_jvm_instructions): Removed.
+	* expr.c (pop_type_0): Assume flag_new_verifier is true.
+	(build_java_check_indexed_type): Likewise.
+	(expand_java_arraystore): Likewise.
+	(expand_java_arrayload): Likewise.
+	(pop_arguments): Likewise.
+	(expand_byte_code): Likewise.
+	(process_jvm_instruction): Likewise.
+
 2005-08-10  Andrew Haley  <aph@redhat.com>
 
 	* java-gimplify.c (java_gimplify_modify_expr): Fix any pointer

@@ -102,7 +102,7 @@ gt-java-builtins.h gtype-java.h gt-java-resource.h : s-gtype ; @true
 
 # Executables built by this Makefile:
 JAVA_OBJS = java/parse.o java/class.o java/decl.o java/expr.o \
-  java/constants.o java/lang.o java/typeck.o java/except.o java/verify.o \
+  java/constants.o java/lang.o java/typeck.o java/except.o \
   java/verify-glue.o java/verify-impl.o \
   java/zextract.o java/jcf-io.o java/win32-host.o java/jcf-parse.o java/mangle.o \
   java/mangle_name.o java/builtins.o java/resource.o \
@@ -349,9 +349,6 @@ java/resource.o: java/resource.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 java/typeck.o: java/typeck.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
   java/convert.h toplev.h $(SYSTEM_H) coretypes.h $(TM_H) $(GGC_H) real.h
 java/win32-host.o: java/win32-host.c $(CONFIG_H) $(SYSTEM_H) coretypes.h java/jcf.h
-java/verify.o: java/verify.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
-  java/javaop.h java/java-opcodes.h java/java-except.h toplev.h $(SYSTEM_H) \
-  coretypes.h $(TM_H)
 java/verify-glue.o: java/verify-glue.c $(CONFIG_H) $(SYSTEM_H) $(JAVA_TREE_H) \
   coretypes.h $(TM_H) java/verify.h toplev.h
 java/verify-impl.o: java/verify-impl.c $(CONFIG_H) java/verify.h $(SYSTEM_H) \
