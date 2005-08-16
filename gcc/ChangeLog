@@ -1,3 +1,10 @@
+2005-08-16  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* builtins.c (expand_builtin_strcat): Remove superfluous call to fold.
+	(fold_builtin_isdigit): Use fold_buildN.
+	(build_function_call_expr): Likewise.
+	* c-typeck.c (c_finish_loop): Likewise.
+
 2005-08-16  J"orn Rennecke <joern.rennecke@st.com>
             Richard Shann <rshann@superh.com>
 

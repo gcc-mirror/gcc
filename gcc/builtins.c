@@ -3860,9 +3860,8 @@ expand_builtin_strcat (tree arglist, tree type, rtx target, enum machine_mode mo
 
 	      /* Create strlen (dst).  */
 	      newdst =
-		fold (build_function_call_expr (strlen_fn,
-						build_tree_list (NULL_TREE,
-								 dst)));
+		build_function_call_expr (strlen_fn,
+					  build_tree_list (NULL_TREE, dst));
 	      /* Create (dst + (cast) strlen (dst)).  */
 	      newdst = fold_convert (TREE_TYPE (dst), newdst);
 	      newdst = fold_build2 (PLUS_EXPR, TREE_TYPE (dst), dst, newdst);
@@ -8291,9 +8290,8 @@ fold_builtin_isdigit (tree arglist)
       arg = fold_convert (unsigned_type_node, TREE_VALUE (arglist));
       arg = build2 (MINUS_EXPR, unsigned_type_node, arg,
 		    build_int_cst (unsigned_type_node, target_digit0));
-      arg = build2 (LE_EXPR, integer_type_node, arg,
-		    build_int_cst (unsigned_type_node, 9));
-      arg = fold (arg);
+      arg = fold_build2 (LE_EXPR, integer_type_node, arg,
+			 build_int_cst (unsigned_type_node, 9));
       if (in_gimple_form && !TREE_CONSTANT (arg))
         return NULL_TREE;
       else
@@ -8929,9 +8927,8 @@ build_function_call_expr (tree fn, tree arglist)
   tree call_expr;
 
   call_expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
-  call_expr = build3 (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+  return fold_build3 (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
 		      call_expr, arglist, NULL_TREE);
-  return fold (call_expr);
 }
 
 /* This function validates the types of a function call argument list
