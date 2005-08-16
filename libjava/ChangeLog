@@ -1,3 +1,7 @@
+2005-08-16  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/xml/xpath/XPathParser.y: Removed.
+
 2005-08-12  Morgan Deters  <mdeters@morgandeters.com>
 
 	PR libgcj/23353:
