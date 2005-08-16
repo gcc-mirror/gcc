@@ -1,3 +1,8 @@
+2005-08-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/23299
+	* g++.dg/opt/pr23299.C: New test.
+
 2005-08-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* gcc.dg/special/weak-1.c: xfail 32-bit hppa*-*-hpux*.
