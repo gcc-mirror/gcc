@@ -1,3 +1,9 @@
+2005-08-16  Steven Bosscher  <stevenb@suse.de>
+
+	PR target/23376
+	* loop-unroll.c (analyze_insn_to_expand_var): Make sure that
+	force_operand will work later on using have_insn_for.
+
 2005-08-16  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* fold-const.c (tree_expr_nonnegative_p): Regroup cases.

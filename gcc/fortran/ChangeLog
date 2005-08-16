@@ -22,7 +22,7 @@
 	* trans-stmt.c (gfc_trans_arithmetic_if): Optimized in case of equal
 	labels.
 
-2005-09-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+2005-08-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 	    Steven Bosscher  <stevenb@suse.de>
 
 	PR libfortran/20006
