@@ -1,3 +1,7 @@
+2005-08-15  Ian Lance Taylor  <ian@airs.com>
+
+	* tree.c (build_string): Mark tree CONSTANT and INVARIANT.
+
 2005-08-15  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/mov.md (movqi_op): Immediates can't be moved to
@@ -17,7 +21,6 @@
 	Delete HOST_PTR_PRINTF.
 
 	* configure, config.in: Regenerate.
-
 
 2005-08-15  David Edelsohn  <edelsohn@gnu.org>
 
