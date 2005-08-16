@@ -1,3 +1,9 @@
+2005-08-16  James E Wilson  <wilson@specifix.com>
+
+	PR tree-optimization/21105
+	* c-decl.c (grokdeclarator): Use TYPE_SIZE_UNIT not TYPE_SIZE in
+	TREE_OVERFLOW check.
+
 2005-08-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/23299
