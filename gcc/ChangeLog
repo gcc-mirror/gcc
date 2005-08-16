@@ -1,3 +1,12 @@
+2005-08-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/23299
+	Backport from mainline
+	2005-03-16 Dale Johannesen  <dalej@apple.com>
+	* rtlanal.c (find_first_parameter_load):  Rewrite to
+	return actual first param load or the call if none,
+	instead of first in block, when not all loads exist.
+
 2005-08-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/23369
