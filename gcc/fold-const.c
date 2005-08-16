@@ -10782,6 +10782,15 @@ tree_expr_nonnegative_p (tree t)
 	}
       return 0;
 
+    case BIT_AND_EXPR:
+    case MAX_EXPR:
+      return tree_expr_nonnegative_p (TREE_OPERAND (t, 0))
+	     || tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
+
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+    case MIN_EXPR:
+    case RDIV_EXPR:
     case TRUNC_DIV_EXPR:
     case CEIL_DIV_EXPR:
     case FLOOR_DIV_EXPR:
@@ -10793,19 +10802,21 @@ tree_expr_nonnegative_p (tree t)
     case CEIL_MOD_EXPR:
     case FLOOR_MOD_EXPR:
     case ROUND_MOD_EXPR:
+    case SAVE_EXPR:
+    case NON_LVALUE_EXPR:
+    case FLOAT_EXPR:
       return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
 
-    case RDIV_EXPR:
-      return tree_expr_nonnegative_p (TREE_OPERAND (t, 0))
-	     && tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
+    case COMPOUND_EXPR:
+    case MODIFY_EXPR:
+      return tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
 
-    case BIT_AND_EXPR:
+    case BIND_EXPR:
+      return tree_expr_nonnegative_p (expr_last (TREE_OPERAND (t, 1)));
+
+    case COND_EXPR:
       return tree_expr_nonnegative_p (TREE_OPERAND (t, 1))
-	     || tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
-    case BIT_IOR_EXPR:
-    case BIT_XOR_EXPR:
-      return tree_expr_nonnegative_p (TREE_OPERAND (t, 0))
-	     && tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
+	     && tree_expr_nonnegative_p (TREE_OPERAND (t, 2));
 
     case NOP_EXPR:
       {
@@ -10833,28 +10844,6 @@ tree_expr_nonnegative_p (tree t)
 	  }
       }
       break;
-
-    case COND_EXPR:
-      return tree_expr_nonnegative_p (TREE_OPERAND (t, 1))
-	&& tree_expr_nonnegative_p (TREE_OPERAND (t, 2));
-    case COMPOUND_EXPR:
-      return tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
-    case MIN_EXPR:
-      return tree_expr_nonnegative_p (TREE_OPERAND (t, 0))
-	&& tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
-    case MAX_EXPR:
-      return tree_expr_nonnegative_p (TREE_OPERAND (t, 0))
-	|| tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
-    case MODIFY_EXPR:
-      return tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
-    case BIND_EXPR:
-      return tree_expr_nonnegative_p (expr_last (TREE_OPERAND (t, 1)));
-    case SAVE_EXPR:
-      return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
-    case NON_LVALUE_EXPR:
-      return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
-    case FLOAT_EXPR:
-      return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
 
     case TARGET_EXPR:
       {

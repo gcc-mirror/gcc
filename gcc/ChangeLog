@@ -1,3 +1,7 @@
+2005-08-16  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* fold-const.c (tree_expr_nonnegative_p): Regroup cases.
+
 2005-08-16  Ian Lance Taylor  <ian@airs.com>
 
 	PR c++/23337
