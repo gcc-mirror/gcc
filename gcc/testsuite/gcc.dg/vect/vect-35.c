@@ -3,24 +3,24 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-typedef char achar __attribute__ ((__aligned__(16)));
-
 #define N 16
-achar x[N];
  
 int main1 ()
 {  
   union {
-    achar a[N];
-    achar b[N];
+    char a[N] __attribute__ ((__aligned__(16)));
+    char b[N] __attribute__ ((__aligned__(16)));
   } s;
   int i;
 
+  /* Initialization.  */
   for (i = 0; i < N; i++)
     {
       s.b[i] = 3*i;
     }
 
+  /* Can't vectorize - dependence analysis fails cause s.a and s.b may
+     overlap.  */
   for (i = 0; i < N; i++)
     {
       s.a[i] = s.b[i] + 1;
@@ -29,7 +29,7 @@ int main1 ()
   /* check results:  */
   for (i = 0; i < N; i++)
     {
-      if (s.a[i] != s.b[i])
+      if (s.a[i] != 3*i + 1)
 	abort ();
     }
 
@@ -44,6 +44,6 @@ int main (void)
 } 
 
 
-/* { dg-final { scan-tree-dump-times "vectorized 0 loops" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "can't determine dependence between" 1 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
