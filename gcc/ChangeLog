@@ -1,3 +1,10 @@
+2005-08-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/23369
+	* fold-const.c (build_range_check): Disable optimization for function
+	pointer expressions on targets that require function pointer
+	canonicalization.
+
 2005-08-15  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* simplify-rtx.c (simplify_const_relational_operation): When
