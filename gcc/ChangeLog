@@ -1,3 +1,10 @@
+2005-08-16  Ian Lance Taylor  <ian@airs.com>
+
+	PR c++/23337
+	* gimplify.c (gimplify_init_ctor_eval): If we see an element of
+	vector type, don't try to construct it element by element.  Add an
+	assertion that we use a FIELD_DECL when building a COMPONENT_REF.
+
 2005-07-20  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/21841

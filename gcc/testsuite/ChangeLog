@@ -1,3 +1,8 @@
+2005-08-16  Ian Lance Taylor  <ian@airs.com>
+
+	PR c++/23337
+	* g++.dg/ext/vector2.C: New.
+
 2005-08-16  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/23428
