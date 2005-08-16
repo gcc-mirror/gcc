@@ -1,3 +1,8 @@
+2004-08-16  Huang Chun  <chunhuang73@hotmail.com>
+
+	* trans-expr.c (gfc_conv_power_op): Evaluate the expression before
+	expand.
+
 2005-08-14 Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/21432.
