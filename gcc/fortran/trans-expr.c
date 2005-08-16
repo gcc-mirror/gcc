@@ -654,6 +654,7 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
 
   gfc_init_se (&lse, se);
   gfc_conv_expr_val (&lse, expr->value.op.op1);
+  lse.expr = gfc_evaluate_now (lse.expr, &lse.pre);
   gfc_add_block_to_block (&se->pre, &lse.pre);
 
   gfc_init_se (&rse, se);

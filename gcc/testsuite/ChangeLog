@@ -1,3 +1,7 @@
+2005-08-16  Feng Wang  <fengwang@nudt.edu.cn>
+
+	* gfortran.dg/power.f90: New test.
+
 2005-08-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/23299
