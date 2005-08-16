@@ -3852,6 +3852,15 @@ build_range_check (tree type, tree exp, int in_p, tree low, tree high)
   tree etype = TREE_TYPE (exp);
   tree value;
 
+#ifdef HAVE_canonicalize_funcptr_for_compare
+  /* Disable this optimization for function pointer expressions
+     on targets that require function pointer canonicalization.  */
+  if (HAVE_canonicalize_funcptr_for_compare
+      && TREE_CODE (etype) == POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (etype)) == FUNCTION_TYPE)
+    return NULL_TREE;
+#endif
+
   if (! in_p)
     {
       value = build_range_check (type, exp, 1, low, high);

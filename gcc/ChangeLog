@@ -1,3 +1,10 @@
+2005-08-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/23369
+	* fold-const.c (build_range_check): Disable optimization for function
+	pointer expressions on targets that require function pointer
+	canonicalization.
+
 2005-08-15  Ian Lance Taylor  <ian@airs.com>
 
 	* tree.c (build_string): Mark tree CONSTANT and INVARIANT.
