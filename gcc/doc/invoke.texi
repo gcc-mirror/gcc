@@ -13185,9 +13185,9 @@ which options are safe to change and which are not; the safest choice
 is to use exactly the same options when generating and using the
 precompiled header.  The following are known to be safe:
 
-@gccoptlist{-fpreprocessed
+@gccoptlist{-fmessage-length= -fpreprocessed
 -fsched-interblock -fsched-spec -fsched-spec-load -fsched-spec-load-dangerous
--fsched-verbose=<number> -fschedule-insns
+-fsched-verbose=<number> -fschedule-insns -fvisibility=
 -pedantic-errors}
 
 @end itemize
