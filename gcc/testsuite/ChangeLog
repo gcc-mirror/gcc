@@ -1,3 +1,8 @@
+2005-08-16  Steven Bosscher  <stevenb@suse.de>
+
+	PR target/23376
+	* gcc.target/x86_64/pr23376.c: New test.
+
 2005-08-16  Ian Lance Taylor  <ian@airs.com>
 
 	PR c++/23337

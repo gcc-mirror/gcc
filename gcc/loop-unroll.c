@@ -1574,7 +1574,19 @@ analyze_insn_to_expand_var (struct loop *loop, rtx insn)
       && GET_CODE (src) != MINUS
       && GET_CODE (src) != MULT)
     return NULL;
-  
+
+  /* Hmm, this is a bit paradoxical.  We know that INSN is a valid insn
+     in MD.  But if there is no optab to generate the insn, we can not
+     perform the variable expansion.  This can happen if an MD provides
+     an insn but not a named pattern to generate it, for example to avoid
+     producing code that needs additional mode switches like for x87/mmx.
+
+     So we check have_insn_for which looks for an optab for the operation
+     in SRC.  If it doesn't exist, we can't perform the expansion even
+     though INSN is valid.  */
+  if (!have_insn_for (GET_CODE (src), GET_MODE (src)))
+    return NULL;
+
   if (!XEXP (src, 0))
     return NULL;
   
