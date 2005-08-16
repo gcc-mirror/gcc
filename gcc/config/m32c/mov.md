@@ -33,9 +33,9 @@
 ;; e.g. stdlib/efgcvt.c.
 (define_insn "movqi_op"
   [(set (match_operand:QI 0 "mra_qi_operand"
-			  "=Rqi*Rmm, <,          RqiSd*Rmm, SdSs,     Rqi*Rmm, Sd")
+			  "=Rqi*Rmm, <,          RqiSd*Rmm, SdSs,    Rqi*Rmm, Sd")
 	(match_operand:QI 1 "mrai_qi_operand"
-			  "iRqi*Rmm, iRqiSd*Rmm, >,         iRqi*Rmm, SdSs,    i"))]
+			  "iRqi*Rmm, iRqiSd*Rmm, >,         Rqi*Rmm, SdSs,    i"))]
   "m32c_mov_ok (operands, QImode)"
   "@
     mov.b\t%1,%0
@@ -168,8 +168,8 @@
 
 ; All SI moves are split if TARGET_A16
 (define_insn_and_split "movsi_splittable"
-  [(set (match_operand:SI 0 "mras_operand" "=Rsi<*Rmm,RsiSd*Rmm")
-	(match_operand:SI 1 "mrasi_operand" "iRsiSd*Rmm,iRsi>*Rmm"))]
+  [(set (match_operand:SI 0 "mras_operand" "=Rsi<*Rmm,RsiSd*Rmm,Ss")
+	(match_operand:SI 1 "mrasi_operand" "iRsiSd*Rmm,iRsi>*Rmm,Rsi*Rmm"))]
   "TARGET_A16"
   "#"
   "TARGET_A16 && reload_completed"

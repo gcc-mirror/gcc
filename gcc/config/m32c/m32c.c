@@ -2663,6 +2663,13 @@ m32c_split_move (rtx * operands, enum machine_mode mode, int split_all)
   debug_rtx (operands[1]);
 #endif
 
+  /* Note that split_all is not used to select the api after this
+     point, so it's safe to set it to 3 even with define_insn.  */
+  /* None of the chips can move SI operands to sp-relative addresses,
+     so we always split those.  */
+  if (m32c_extra_constraint_p (operands[0], 'S', "Ss"))
+    split_all = 3;
+
   /* We don't need to split these.  */
   if (TARGET_A24
       && split_all != 3
