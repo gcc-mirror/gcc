@@ -1,3 +1,12 @@
+2005-08-16  Ranjit Mathew  <rmathew@hotmail.com>
+
+	More testsuite adjustments for PR java/19870.
+	* testsuite/libjava.lang/PR19870_2.java: New testcase.
+	* testsuite/libjava.lang/PR19870_2.out: Expected output for the
+	new testcase.
+	* testsuite/libjava.jacks/jacks.xfail: Remove
+	8.5.2-non-static-member-usage-2 and add 15.12.3-explicit-constructor-9.
+
 2005-08-16  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/xml/xpath/XPathParser.y: Removed.
