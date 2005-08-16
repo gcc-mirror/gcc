@@ -5,7 +5,6 @@
 
 #define N 3001
 
-typedef float afloat __attribute__ ((__aligned__(16)));
 
 int
 main1 (float *pa)
@@ -42,8 +41,8 @@ main1 (float *pa)
 int main (void)
 {
   int i;
-  afloat a[N];
-  afloat b[N];
+  float a[N] __attribute__ ((__aligned__(16)));
+  float b[N] __attribute__ ((__aligned__(16)));
 
   check_vect ();
 

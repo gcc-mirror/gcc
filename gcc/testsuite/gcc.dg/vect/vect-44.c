@@ -5,8 +5,6 @@
 
 #define N 256
 
-typedef float afloat __attribute__ ((__aligned__(16)));
-
 void bar (float *pa, float *pb, float *pc) 
 {
   int i;
@@ -20,7 +18,6 @@ void bar (float *pa, float *pb, float *pc)
 
   return;
 }
-
 
 int
 main1 (float * __restrict__ pa, float * __restrict__ pb, float * __restrict__ pc)
@@ -40,9 +37,9 @@ main1 (float * __restrict__ pa, float * __restrict__ pb, float * __restrict__ pc
 int main (void)
 {
   int i;
-  afloat a[N+4];
-  afloat b[N+4] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57,60,63,66,69};
-  afloat c[N+4] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
+  float a[N+4] __attribute__ ((__aligned__(16)));
+  float b[N+4] __attribute__ ((__aligned__(16))) = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57,60,63,66,69};
+  float c[N+4] __attribute__ ((__aligned__(16))) = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
 
   check_vect ();
 
