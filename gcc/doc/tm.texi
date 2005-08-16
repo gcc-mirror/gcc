@@ -6576,7 +6576,7 @@ definition of this macro is provided which is correct for most systems.
 
 @findex assemble_name_raw
 @defmac ASM_OUTPUT_INTERNAL_LABEL (@var{stream}, @var{name})
-Identical to @code{ASM_OUTPUT_lABEL}, except that @var{name} is known
+Identical to @code{ASM_OUTPUT_LABEL}, except that @var{name} is known
 to refer to a compiler-generated label.  The default definition uses
 @code{assemble_name_raw}, which is like @code{assemble_name} except
 that it is more efficient.
