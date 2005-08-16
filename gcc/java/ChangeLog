@@ -1,3 +1,19 @@
+2005-08-16  Ranjit Mathew  <rmathew@hotmail.com>
+
+	PR java/19870
+	* parse.y (nested_field_access_p): Rename to nested_member_access_p
+	and expand to handle method accesses across nested classes.
+	(build_outer_method_access_method): Rename to
+	build_nested_method_access_method.  Minor adjustments to comments.
+	(resolve_expression_name): Use the newly-renamed
+	nested_member_access_p method.
+	(resolve_qualified_expression_name): Likewise.
+	(patch_method_invocation): Also consider static methods for access
+	method generation.  Minor adjustments to comments.
+	(maybe_use_access_method): Use the more general
+	nested_memeber_access_p to determine access across nested class
+	boundaries.  Allow THIS_ARG to be NULL (for static methods).
+
 2005-08-15  Tom Tromey  <tromey@redhat.com>
 
 	PR java/23300.
