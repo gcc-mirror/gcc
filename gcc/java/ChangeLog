@@ -1,5 +1,19 @@
 2005-08-15  Tom Tromey  <tromey@redhat.com>
 
+	* java-tree.h (LABEL_IN_SUBR): Removed.
+	(LABEL_IN_SUBR): Likewise.
+	(LABEL_IS_SUBR_START): Likewise.
+	(LABEL_SUBR_START): Likewise.
+	(LABEL_SUBR_CONTEXT): Likewise.
+	(LABEL_CHANGED): Likewise.
+	(LABEL_RETURN_LABEL): Likewise.
+	(LABEL_RETURN_TYPE_STATE): Likewise.
+	(LABEL_RETURN_LABELS): Likewise.
+	(RETURN_MAP_ADJUSTED): Likewise.
+	(LABEL_PENDING_CHAIN): Likewise.
+
+2005-08-15  Tom Tromey  <tromey@redhat.com>
+
 	* Make-lang.in (JAVA_OBJS): Removed verify.o
 	(java/verify.o): Removed.
 	* verify.c: Removed.

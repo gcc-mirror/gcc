@@ -52,8 +52,7 @@ struct JCF;
       COMPOUND_ASSIGN_P (in EXPR (binop_*))
       LOCAL_CLASS_P (in RECORD_TYPE)
       BLOCK_IS_IMPLICIT (in BLOCK)
-   2: RETURN_MAP_ADJUSTED (in TREE_VEC).
-      QUALIFIED_P (in IDENTIFIER_NODE)
+   2: QUALIFIED_P (in IDENTIFIER_NODE)
       PRIMARY_P (in EXPR_WITH_FILE_LOCATION)
       MODIFY_EXPR_FROM_INITIALIZATION_P (in MODIFY_EXPR)
       CLASS_METHOD_CHECKED_P (in RECORD_TYPE) 
@@ -98,15 +97,12 @@ struct JCF;
       CLASS_FINAL (in TYPE_DECL)
       DECL_FINAL (in any decl)
    4: METHOD_SYNCHRONIZED (in FUNCTION_DECL).
-      LABEL_IN_SUBR (in LABEL_DECL)
       CLASS_INTERFACE (in TYPE_DECL)
       FIELD_VOLATILE (int FIELD_DECL)
    5: METHOD_ABSTRACT (in FUNCTION_DECL).
-      LABEL_IS_SUBR_START (in LABEL_DECL)
       CLASS_ABSTRACT (in TYPE_DECL)
       FIELD_TRANSIENT (in FIELD_DECL)
-   6: LABEL_CHANGED (in LABEL_DECL)
-      CLASS_SUPER (in TYPE_DECL, ACC_SUPER flag)
+   6: CLASS_SUPER (in TYPE_DECL, ACC_SUPER flag)
       FIELD_LOCAL_ALIAS (in FIELD_DECL)
    7: DECL_CONSTRUCTOR_P (in FUNCTION_DECL).
       CLASS_STATIC (in TYPE_DECL)
@@ -849,51 +845,12 @@ union lang_tree_node
 /* In a LABEL_DECL, a TREE_VEC that saves the type_map at that point. */
 #define LABEL_TYPE_STATE(NODE) (LABEL_DECL_CHECK (NODE)->label_decl.java_field_1)
 
-/* In the label of a subroutine, a dummy label that records the
-   state following a merge of all the ret instructions in this subroutine. */
-#define LABEL_RETURN_LABEL(DECL) (LABEL_DECL_CHECK (DECL)->label_decl.java_field_2)
-
-/* In the label of a sub-routine, records the type state at return.
-   A local may be TYPE_UNUSED, which means that the local is not
-   used (stored to or loaded from) in this subroutine - at least for
-   code that we have verified so far. */
-#define LABEL_RETURN_TYPE_STATE(NODE) \
-  LABEL_TYPE_STATE (LABEL_RETURN_LABEL (NODE))
-
-/* In a TREE_VEC for a LABEL_RETURN_TYPE_STATE, notes that
-   TREE_VEC_LENGTH has been adjusted to the correct stack size. */
-#define RETURN_MAP_ADJUSTED(NODE) TREE_LANG_FLAG_2 (TREE_VEC_CHECK (NODE))
-
-/* In the label of a sub-routine, a chain of the return location labels. */
-#define LABEL_RETURN_LABELS(node) \
-  (LABEL_DECL_CHECK (LABEL_RETURN_LABEL (node))->label_decl.java_field_3)
-
-/* In a LABEL_DECL, the next pending label.
-   See pending_blocks in expr.c. */
-#define LABEL_PENDING_CHAIN(NODE) (LABEL_DECL_CHECK (NODE)->label_decl.java_field_3)
-
 /* In a LABEL_DECL, the corresponding bytecode program counter. */
 #define LABEL_PC(NODE) (LABEL_DECL_CHECK (NODE)->label_decl.java_field_4)
-
-/* Used during verification to mark the label has "changed". (See JVM Spec). */
-#define LABEL_CHANGED(NODE) DECL_LANG_FLAG_6 (LABEL_DECL_CHECK (NODE))
 
 /* In a LABEL_DECL, true if we have verified instructions starting here. */
 #define LABEL_VERIFIED(NODE) \
   (instruction_bits[LABEL_PC (NODE)] & BCODE_VERIFIED)
-
-/* True if this code is within a subroutine (target of a jsr). */
-#define LABEL_IN_SUBR(NODE) DECL_LANG_FLAG_4 (LABEL_DECL_CHECK (NODE))
-/* True if this code is the start of a subroutine (target of a jsr). */
-#define LABEL_IS_SUBR_START(NODE) DECL_LANG_FLAG_5 (LABEL_DECL_CHECK (NODE))
-
-/* In a LABEL_DECL, if LABEL_IN_SUBR(NODE), points to start of subroutine. */
-#define LABEL_SUBR_START(NODE) DECL_ABSTRACT_ORIGIN (LABEL_DECL_CHECK (NODE))
-
-/* In a LABEL_DECL that has LABEL_IS_SUBR_START, this points to the start
-   of surrounding subroutine in the case of a nested subroutine,
-   and NULL_TREE otherwise. */
-#define LABEL_SUBR_CONTEXT(NODE) DECL_CONTEXT (LABEL_RETURN_LABEL (NODE))
 
 /* The slot number for this local variable. */
 #define DECL_LOCAL_SLOT_NUMBER(NODE) \
