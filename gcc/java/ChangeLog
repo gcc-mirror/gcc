@@ -1,5 +1,13 @@
 2005-08-15  Tom Tromey  <tromey@redhat.com>
 
+	PR java/23300.
+	* expr.c (build_field_ref): Don't generate otable reference when
+	DECL_FIELD_OFFSET is 0.
+	* class.c (maybe_layout_super_class): Pass outer class to
+	do_resolve_class.
+
+2005-08-15  Tom Tromey  <tromey@redhat.com>
+
 	* java-tree.h (LABEL_IN_SUBR): Removed.
 	(LABEL_IN_SUBR): Likewise.
 	(LABEL_IS_SUBR_START): Likewise.

@@ -1688,13 +1688,7 @@ build_field_ref (tree self_value, tree self_class, tree name)
       tree base_type = promote_type (base_class);
       if (base_type != TREE_TYPE (self_value))
 	self_value = fold (build1 (NOP_EXPR, base_type, self_value));
-      if (! flag_syntax_only
-	  && (flag_indirect_dispatch
-	      /* DECL_FIELD_OFFSET == 0 if we have no reference for
-		 the field, perhaps because we couldn't find the class
-		 in which the field is defined.  
-		 FIXME: We should investigate this.  */
-	      || DECL_FIELD_OFFSET (field_decl) == 0))
+      if (! flag_syntax_only && flag_indirect_dispatch)
 	{
 	  tree otable_index
 	    = build_int_cst (NULL_TREE, get_symbol_table_index 
