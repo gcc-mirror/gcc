@@ -1044,7 +1044,6 @@ else
 fi
 AC_SUBST(TARGET_GETGROUPS_T)
 
-gcc_AC_FUNC_PRINTF_PTR
 gcc_AC_FUNC_MMAP_BLACKLIST
 
 case "${host}" in

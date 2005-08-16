@@ -89,27 +89,6 @@ make_compare_target=$gcc_cv_prog_cmp_skip
 AC_SUBST(make_compare_target)
 ])
 
-dnl See if the printf functions in libc support %p in format strings.
-AC_DEFUN([gcc_AC_FUNC_PRINTF_PTR],
-[AC_CACHE_CHECK(whether the printf functions support %p,
-  gcc_cv_func_printf_ptr,
-[AC_RUN_IFELSE([AC_LANG_SOURCE([[#include <stdio.h>
-
-int main()
-{
-  char buf[64];
-  char *p = buf, *q = NULL;
-  sprintf(buf, "%p", p);
-  sscanf(buf, "%p", &q);
-  return (p != q);
-}]])], gcc_cv_func_printf_ptr=yes, gcc_cv_func_printf_ptr=no,
-	gcc_cv_func_printf_ptr=no)
-rm -f core core.* *.core])
-if test $gcc_cv_func_printf_ptr = yes ; then
-  AC_DEFINE(HAVE_PRINTF_PTR, 1, [Define if printf supports "%p".])
-fi
-])
-
 dnl See if symbolic links work and if not, try to substitute either hard links or simple copy.
 AC_DEFUN([gcc_AC_PROG_LN_S],
 [AC_MSG_CHECKING(whether ln -s works)

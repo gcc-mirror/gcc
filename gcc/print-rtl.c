@@ -287,7 +287,7 @@ print_rtx (rtx in_rtx)
 		if (flag_dump_unnumbered)
 		  fprintf (outfile, "#");
 		else
-		  fprintf (outfile, HOST_PTR_PRINTF,
+		  fprintf (outfile, "%p",
 			   (char *) NOTE_BLOCK (in_rtx));
 		sawclose = 1;
 		break;
@@ -539,7 +539,7 @@ print_rtx (rtx in_rtx)
 	break;
 
       case 't':
-	fprintf (outfile, " " HOST_PTR_PRINTF, (void *) XTREE (in_rtx, i));
+	fprintf (outfile, " %p", (void *) XTREE (in_rtx, i));
 	break;
 
       case '*':

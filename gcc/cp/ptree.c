@@ -46,15 +46,15 @@ cxx_print_decl (FILE *file, tree node, int indent)
   indent_to (file, indent + 3);
   if (TREE_CODE (node) == FUNCTION_DECL
       && DECL_PENDING_INLINE_INFO (node))
-    fprintf (file, " pending-inline-info " HOST_PTR_PRINTF,
+    fprintf (file, " pending-inline-info %p",
 	     (void *) DECL_PENDING_INLINE_INFO (node));
   if (TREE_CODE (node) == TYPE_DECL
       && DECL_SORTED_FIELDS (node))
-    fprintf (file, " sorted-fields " HOST_PTR_PRINTF,
+    fprintf (file, " sorted-fields %p",
 	     (void *) DECL_SORTED_FIELDS (node));
   if ((TREE_CODE (node) == FUNCTION_DECL || TREE_CODE (node) == VAR_DECL)
       && DECL_TEMPLATE_INFO (node))
-    fprintf (file, " template-info " HOST_PTR_PRINTF,
+    fprintf (file, " template-info %p",
 	     (void *) DECL_TEMPLATE_INFO (node));
 }
 
@@ -142,7 +142,7 @@ cxx_print_type (FILE *file, tree node, int indent)
 static void
 cxx_print_binding (FILE *stream, cxx_binding *binding, const char *prefix)
 {
-  fprintf (stream, "%s <" HOST_PTR_PRINTF ">",
+  fprintf (stream, "%s <%p>",
 	   prefix, (void *) binding);
 }
 

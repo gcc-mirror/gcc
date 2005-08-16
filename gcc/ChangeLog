@@ -1,3 +1,16 @@
+2005-08-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* aclocal.m4 (gcc_AC_FUNC_PRINTF_PTR): Delete.
+	* configure.ac: Don't call gcc_AC_FUNC_PRINTF_PTR.
+	* system.h (HOST_PTR_PRINTF): Don't define, poison it.
+	
+	* bitmap.c, c-decl.c, config/i386/i386-interix.h,
+	config/iq2000/iq2000.c, mips-tfile.c, print-rtl.c, print-tree.c:
+	Delete HOST_PTR_PRINTF.
+
+	* configure, config.in: Regenerate.
+
+
 2005-08-15  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (QHSI): New mode macro.

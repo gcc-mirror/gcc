@@ -1484,7 +1484,7 @@ print_binding_level (struct cp_binding_level* lvl)
 {
   tree t;
   int i = 0, len;
-  fprintf (stderr, " blocks=" HOST_PTR_PRINTF, (void *) lvl->blocks);
+  fprintf (stderr, " blocks=%p", (void *) lvl->blocks);
   if (lvl->more_cleanups_ok)
     fprintf (stderr, " more-cleanups-ok");
   if (lvl->have_cleanups)
@@ -1549,7 +1549,7 @@ print_other_binding_stack (struct cp_binding_level *stack)
   struct cp_binding_level *level;
   for (level = stack; !global_scope_p (level); level = level->level_chain)
     {
-      fprintf (stderr, "binding level " HOST_PTR_PRINTF "\n", (void *) level);
+      fprintf (stderr, "binding level %p\n", (void *) level);
       print_binding_level (level);
     }
 }
@@ -1558,9 +1558,9 @@ void
 print_binding_stack (void)
 {
   struct cp_binding_level *b;
-  fprintf (stderr, "current_binding_level=" HOST_PTR_PRINTF
-	   "\nclass_binding_level=" HOST_PTR_PRINTF
-	   "\nNAMESPACE_LEVEL (global_namespace)=" HOST_PTR_PRINTF "\n",
+  fprintf (stderr, "current_binding_level=%p\n"
+	   "class_binding_level=%p\n"
+	   "NAMESPACE_LEVEL (global_namespace)=%p\n",
 	   (void *) current_binding_level, (void *) class_binding_level,
 	   (void *) NAMESPACE_LEVEL (global_namespace));
   if (class_binding_level)

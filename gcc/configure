@@ -9489,65 +9489,6 @@ else
 fi
 
 
-echo "$as_me:$LINENO: checking whether the printf functions support %p" >&5
-echo $ECHO_N "checking whether the printf functions support %p... $ECHO_C" >&6
-if test "${gcc_cv_func_printf_ptr+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  if test "$cross_compiling" = yes; then
-  gcc_cv_func_printf_ptr=no
-else
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <stdio.h>
-
-int main()
-{
-  char buf[64];
-  char *p = buf, *q = NULL;
-  sprintf(buf, "%p", p);
-  sscanf(buf, "%p", &q);
-  return (p != q);
-}
-_ACEOF
-rm -f conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  gcc_cv_func_printf_ptr=yes
-else
-  echo "$as_me: program exited with status $ac_status" >&5
-echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-( exit $ac_status )
-gcc_cv_func_printf_ptr=no
-fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
-fi
-rm -f core core.* *.core
-fi
-echo "$as_me:$LINENO: result: $gcc_cv_func_printf_ptr" >&5
-echo "${ECHO_T}$gcc_cv_func_printf_ptr" >&6
-if test $gcc_cv_func_printf_ptr = yes ; then
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_PRINTF_PTR 1
-_ACEOF
-
-fi
-
 
 echo "$as_me:$LINENO: checking for sys/mman.h" >&5
 echo $ECHO_N "checking for sys/mman.h... $ECHO_C" >&6
