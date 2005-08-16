@@ -1,3 +1,8 @@
+2005-08-16  James E Wilson  <wilson@specifix.com>
+
+	PR tree-optimization/21105
+	* gcc.dg/large-size-array.c: New.
+
 2005-08-16  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* gcc.dg/vect/vect-40: Use aligned arrays instead of arrays to aligned
