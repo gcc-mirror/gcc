@@ -7086,8 +7086,7 @@ c_finish_loop (location_t start_locus, tree cond, tree incr, tree body,
             }
  
 	  t = build_and_jump (&blab);
-          exit = build3 (COND_EXPR, void_type_node, cond, exit, t);
-          exit = fold (exit);
+          exit = fold_build3 (COND_EXPR, void_type_node, cond, exit, t);
 	  if (cond_is_first)
             SET_EXPR_LOCATION (exit, start_locus);
 	  else
