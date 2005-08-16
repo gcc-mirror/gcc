@@ -1,3 +1,9 @@
+2005-08-16  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/23428
+	* io/transfer.c (iolength_transfer):  Return correct length
+	for inquire(iolength=) for complex variables.
+
 2005-08-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 	    Steven Bosscher  <stevenb@suse.de>
 

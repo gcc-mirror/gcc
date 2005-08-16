@@ -1532,7 +1532,12 @@ static void
 iolength_transfer (bt type, void *dest, int len)
 {
   if (ioparm.iolength != NULL)
-    *ioparm.iolength += len;
+    {
+      if (type == BT_COMPLEX)
+	*ioparm.iolength += 2*len;
+      else
+	*ioparm.iolength += len;
+    }
 }
 
 
