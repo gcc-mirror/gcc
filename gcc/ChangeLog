@@ -1,3 +1,11 @@
+2005-08-15  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/mov.md (movqi_op): Immediates can't be moved to
+	the stack.
+	(movsi_splittable): Allow, but split, moves to the stack.
+	* config/m32c/m32c.c (m32c_split_move): Always split moves to the
+	stack.
+
 2005-08-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* aclocal.m4 (gcc_AC_FUNC_PRINTF_PTR): Delete.
