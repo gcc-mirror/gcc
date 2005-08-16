@@ -1,3 +1,10 @@
+2005-08-15  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	PR target/23355
+	* arm.c (thumb_compute_save_reg_mask): Use similar logic to 
+	arm_compure_save_reg0_reg12_mask to determine when the PIC register
+	must be saved.
+
 2005-08-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/23369
