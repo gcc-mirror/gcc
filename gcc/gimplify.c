@@ -2593,10 +2593,14 @@ gimplify_init_ctor_eval (tree object, VEC(constructor_elt,gc) *elts,
 			purpose, NULL_TREE, NULL_TREE);
 	}
       else
-	cref = build (COMPONENT_REF, TREE_TYPE (purpose),
-		      unshare_expr (object), purpose, NULL_TREE);
+	{
+	  gcc_assert (TREE_CODE (purpose) == FIELD_DECL);
+	  cref = build (COMPONENT_REF, TREE_TYPE (purpose),
+			unshare_expr (object), purpose, NULL_TREE);
+	}
 
-      if (TREE_CODE (value) == CONSTRUCTOR)
+      if (TREE_CODE (value) == CONSTRUCTOR
+	  && TREE_CODE (TREE_TYPE (value)) != VECTOR_TYPE)
 	gimplify_init_ctor_eval (cref, CONSTRUCTOR_ELTS (value),
 				 pre_p, cleared);
       else
