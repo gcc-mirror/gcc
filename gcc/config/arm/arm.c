@@ -8935,11 +8935,10 @@ thumb_compute_save_reg_mask (void)
     if (regs_ever_live[reg] && !call_used_regs[reg])
       mask |= 1 << reg;
 
-  if (flag_pic && !TARGET_SINGLE_PIC_BASE)
-    mask |= (1 << PIC_OFFSET_TABLE_REGNUM);
-
-  if (TARGET_SINGLE_PIC_BASE)
-    mask &= ~(1 << arm_pic_register);
+  if (flag_pic
+      && !TARGET_SINGLE_PIC_BASE
+      && current_function_uses_pic_offset_table)
+    mask |= 1 << PIC_OFFSET_TABLE_REGNUM;
 
   /* See if we might need r11 for calls to _interwork_r11_call_via_rN().  */
   if (!frame_pointer_needed && CALLER_INTERWORKING_SLOT_SIZE > 0)
