@@ -1,3 +1,10 @@
+2005-08-16  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (ltu<mode>): Convert to mode macro.
+	(neg_ltu<mode>): Same.
+	(gtu<mode>): Same.
+	(neg_gtu<mode>): Same.
+
 2005-08-16  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* builtins.c (expand_builtin_strcat): Remove superfluous call to fold.
