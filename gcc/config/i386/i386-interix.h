@@ -286,7 +286,6 @@ do									\
     }									\
 while (0)
 
-#define HOST_PTR_PRINTF "%p"
 #define HOST_PTR_AS_INT unsigned long
 
 #define PCC_BITFIELD_TYPE_MATTERS 1

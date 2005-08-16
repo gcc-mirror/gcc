@@ -1124,7 +1124,7 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
 	       "function_adv({gp reg found = %d, arg # = %2d, words = %2d}, %4s, ",
 	       cum->gp_reg_found, cum->arg_number, cum->arg_words,
 	       GET_MODE_NAME (mode));
-      fprintf (stderr, HOST_PTR_PRINTF, (const PTR) type);
+      fprintf (stderr, "%p", (void *) type);
       fprintf (stderr, ", %d )\n\n", named);
     }
 
@@ -1197,7 +1197,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
 	       "function_arg( {gp reg found = %d, arg # = %2d, words = %2d}, %4s, ",
 	       cum->gp_reg_found, cum->arg_number, cum->arg_words,
 	       GET_MODE_NAME (mode));
-      fprintf (stderr, HOST_PTR_PRINTF, (const PTR) type);
+      fprintf (stderr, "%p", (void *) type);
       fprintf (stderr, ", %d ) = ", named);
     }
 

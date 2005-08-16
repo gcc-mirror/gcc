@@ -1,3 +1,7 @@
+2005-08-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* name-lookup.c, ptree.c: Delete HOST_PTR_PRINTF.
+
 2005-08-15 Fariborz Jahanian <fjahanian@apple.com>
 
         * cp-tree.h (can_convert_arg, fn_type_unification): New argument.
