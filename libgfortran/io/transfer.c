@@ -1536,12 +1536,16 @@ finalize_transfer (void)
    data transfer, it just updates the length counter.  */
 
 static void
-iolength_transfer (bt type   __attribute__ ((unused)),
-		   void *dest __attribute__ ((unused)),
+iolength_transfer (bt type , void *dest __attribute__ ((unused)),
 		   int len)
 {
   if (ioparm.iolength != NULL)
-    *ioparm.iolength += len;
+    {
+      if (type == BT_COMPLEX)
+	*ioparm.iolength += 2*len;
+      else
+	*ioparm.iolength += len;
+    }
 }
 
 
