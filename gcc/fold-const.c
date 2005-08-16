@@ -10115,13 +10115,7 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
       if (TREE_CODE (op0) == ADDR_EXPR
 	  && TREE_CODE (TREE_OPERAND (op0, 0)) == FUNCTION_DECL
 	  && DECL_BUILT_IN (TREE_OPERAND (op0, 0)))
-	{
-	  tree fndecl = TREE_OPERAND (op0, 0);
-	  tree arglist = op1;
-	  tree tmp = fold_builtin (fndecl, arglist, false);
-	  if (tmp)
-	    return tmp;
-	}
+	return fold_builtin (TREE_OPERAND (op0, 0), op1, false);
       return NULL_TREE;
 
     case BIT_FIELD_REF:
