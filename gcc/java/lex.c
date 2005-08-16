@@ -965,7 +965,9 @@ do_java_lex (YYSTYPE *java_lval)
       int parts[TOTAL_PARTS];
       HOST_WIDE_INT high, low;
       /* End borrowed section.  */
-      char literal_token [256];
+
+#define MAX_TOKEN_LEN 256
+      char literal_token [MAX_TOKEN_LEN + 1];
       int  literal_index = 0, radix = 10, long_suffix = 0, overflow = 0, bytes;
       int  found_hex_digits = 0, found_non_octal_digits = -1;
       int  i;
@@ -1020,9 +1022,14 @@ do_java_lex (YYSTYPE *java_lval)
 		}
 	    }
 	}
+
+      /* Terminate LITERAL_TOKEN in case we bail out on large tokens.  */
+      literal_token [MAX_TOKEN_LEN] = '\0';
+
       /* Parse the first part of the literal, until we find something
 	 which is not a number.  */
-      while (radix == 16 ? JAVA_ASCII_HEXDIGIT (c) : JAVA_ASCII_DIGIT (c))
+      while ((radix == 16 ? JAVA_ASCII_HEXDIGIT (c) : JAVA_ASCII_DIGIT (c))
+             && literal_index < MAX_TOKEN_LEN)
 	{
 	  /* We store in a string (in case it turns out to be a FP) and in
 	     PARTS if we have to process a integer literal.  */
@@ -1078,7 +1085,7 @@ do_java_lex (YYSTYPE *java_lval)
 	    java_lex_error ("Can't express non-decimal FP literal", 0);
 	  radix = 10;
 
-	  for (;;)
+	  for (; literal_index < MAX_TOKEN_LEN;)
 	    {
 	      if (c == '.')
 		{
@@ -1095,7 +1102,7 @@ do_java_lex (YYSTYPE *java_lval)
 		    java_lex_error ("Invalid character in FP literal", 0);
 		}
 
-	      if (c == 'e' || c == 'E')
+	      if ((c == 'e' || c == 'E') && literal_index < MAX_TOKEN_LEN)
 		{
 		  if (stage < 2)
 		    {
@@ -1119,7 +1126,8 @@ do_java_lex (YYSTYPE *java_lval)
 		  stage = 4;	/* So we fall through.  */
 		}
 
-	      if ((c=='-' || c =='+') && stage == 2)
+	      if ((c=='-' || c =='+') && stage == 2
+                  && literal_index < MAX_TOKEN_LEN)
 		{
 		  stage = 3;
 		  literal_token [literal_index++] = c;
@@ -1127,10 +1135,11 @@ do_java_lex (YYSTYPE *java_lval)
 		  c = java_peek_unicode ();
 		}
 
-	      if ((stage == 0 && JAVA_ASCII_FPCHAR (c)) ||
-		  (stage == 1 && JAVA_ASCII_FPCHAR (c) && !(c == '.')) ||
-		  (stage == 2 && (JAVA_ASCII_DIGIT (c) || JAVA_FP_PM (c))) ||
-		  (stage == 3 && JAVA_ASCII_DIGIT (c)))
+              if (((stage == 0 && JAVA_ASCII_FPCHAR (c))
+                   || (stage == 1 && JAVA_ASCII_FPCHAR (c) && !(c == '.'))
+                   || (stage == 2 && (JAVA_ASCII_DIGIT (c) || JAVA_FP_PM (c)))
+                   || (stage == 3 && JAVA_ASCII_DIGIT (c)))
+                  && literal_index < MAX_TOKEN_LEN)
 		{
 		  if (JAVA_ASCII_DIGIT (c))
 		    seen_digit = 1;
@@ -1140,7 +1149,7 @@ do_java_lex (YYSTYPE *java_lval)
 		  java_next_unicode ();
 		  c = java_peek_unicode ();
 		}
-	      else
+	      else if (literal_index < MAX_TOKEN_LEN)
 		{
 		  if (stage == 4) /* Don't push back fF/dD.  */
 		    java_next_unicode ();

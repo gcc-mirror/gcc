@@ -1,5 +1,11 @@
 2005-08-16  Ranjit Mathew  <rmathew@hotmail.com>
 
+	PR java/22113
+	* lex.c (do_java_lex): Define MAX_TOKEN_LEN. Avoid overflowing
+	`literal_token' for large numeric input tokens.
+
+2005-08-16  Ranjit Mathew  <rmathew@hotmail.com>
+
 	PR java/19870
 	* parse.y (nested_field_access_p): Rename to nested_member_access_p
 	and expand to handle method accesses across nested classes.
