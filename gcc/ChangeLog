@@ -1,3 +1,9 @@
+2005-08-16  J"orn Rennecke <joern.rennecke@st.com>
+            Richard Shann <rshann@superh.com>
+
+	PR middle-end/20396:
+	* optabs.c (expand_binop): Take TRULY_NOOP_TRUNCATION into account.
+
 2005-08-16  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* tree-ssa-loop-niter.c (scev_probably_wraps_p): Reword a comment.
