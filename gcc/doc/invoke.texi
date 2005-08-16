@@ -8692,7 +8692,8 @@ have any affect on which ld is called, it only changes what parameters
 are passed to that ld.  The ld that is called is determined by the
 @option{--with-ld} configure option, GCC's program search path, and
 finally by the user's @env{PATH}.  The linker used by GCC can be printed
-using @samp{which `gcc -print-prog-name=ld`}.
+using @samp{which `gcc -print-prog-name=ld`}.  This option is only available
+on the 64 bit HP-UX GCC, i.e. configured with @samp{hppa*64*-*-hpux*}.
 
 @item -mhp-ld
 @opindex hp-ld
@@ -8704,7 +8705,8 @@ which ld is called, it only changes what parameters are passed to that
 ld.  The ld that is called is determined by the @option{--with-ld}
 configure option, GCC's program search path, and finally by the user's
 @env{PATH}.  The linker used by GCC can be printed using @samp{which
-`gcc -print-prog-name=ld`}.
+`gcc -print-prog-name=ld`}.  This option is only available on the 64 bit
+HP-UX GCC, i.e. configured with @samp{hppa*64*-*-hpux*}.
 
 @item -mlong-calls
 @opindex mno-long-calls

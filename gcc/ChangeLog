@@ -1,3 +1,9 @@
+2005-07-20  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/21841
+	* doc/invoke.texi (-mgnu-ld): Update description.
+	(-mhp-ld): Ditto.
+
 2005-08-09  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR rtl-optimization/17860
