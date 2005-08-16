@@ -1,3 +1,7 @@
+2005-08-16  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* tree-ssa-loop-niter.c (scev_probably_wraps_p): Reword a comment.
+
 2005-08-15  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	PR target/23355

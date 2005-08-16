@@ -1891,19 +1891,24 @@ scev_probably_wraps_p (tree type, tree base, tree step,
 
   /* If AT_STMT represents a cast operation, we may not be able to
      take advantage of the undefinedness of signed type evolutions.
+
+     implement-c.texi states: "For conversion to a type of width
+     N, the value is reduced modulo 2^N to be within range of the
+     type;"
+
      See PR 21959 for a test case.  Essentially, given a cast
      operation
-     		unsigned char i;
-		signed char i.0;
+     		unsigned char uc;
+		signed char sc;
 		...
-     		i.0_6 = (signed char) i_2;
-		if (i.0_6 < 0)
+     		sc = (signed char) uc;
+		if (sc < 0)
 		  ...
 
-     where i_2 and i.0_6 have the scev {0, +, 1}, we would consider
-     i_2 to wrap around, but not i.0_6, because it is of a signed
-     type.  This causes VRP to erroneously fold the predicate above
-     because it thinks that i.0_6 cannot be negative.  */
+     where uc and sc have the scev {0, +, 1}, we would consider uc to
+     wrap around, but not sc, because it is of a signed type.  This
+     causes VRP to erroneously fold the predicate above because it
+     thinks that sc cannot be negative.  */
   if (at_stmt && TREE_CODE (at_stmt) == MODIFY_EXPR)
     {
       tree rhs = TREE_OPERAND (at_stmt, 1);
