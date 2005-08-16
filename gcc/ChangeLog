@@ -1,3 +1,7 @@
+2005-08-15  Ian Lance Taylor  <ian@airs.com>
+
+	* tree.c (build_string): Mark tree CONSTANT and INVARIANT.
+
 2005-08-14  Andreas Schwab  <schwab@suse.de>
 
 	* doc/md.texi (Machine Constraints): Fix misplaced @end table.

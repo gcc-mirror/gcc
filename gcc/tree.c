@@ -874,6 +874,8 @@ build_string (int len, const char *str)
 
   memset (s, 0, sizeof (struct tree_common));
   TREE_SET_CODE (s, STRING_CST);
+  TREE_CONSTANT (s) = 1;
+  TREE_INVARIANT (s) = 1;
   TREE_STRING_LENGTH (s) = len;
   memcpy ((char *) TREE_STRING_POINTER (s), str, len);
   ((char *) TREE_STRING_POINTER (s))[len] = '\0';
