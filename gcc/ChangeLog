@@ -1,3 +1,7 @@
+2005-08-16  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* fold-const.c (fold_ternary): Simplify folding of a CALL_EXPR.
+
 2005-08-16  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/invoke.texi (Precompiled Headers): Document some more options
