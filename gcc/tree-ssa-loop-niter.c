@@ -117,10 +117,10 @@ inverse (tree x, tree mask)
       rslt = build_int_cst_type (type, 1);
       for (; ctr; ctr--)
 	{
-	  rslt = fold_binary_to_constant (MULT_EXPR, type, rslt, x);
-	  x = fold_binary_to_constant (MULT_EXPR, type, x, x);
+	  rslt = int_const_binop (MULT_EXPR, rslt, x, 0);
+	  x = int_const_binop (MULT_EXPR, x, x, 0);
 	}
-      rslt = fold_binary_to_constant (BIT_AND_EXPR, type, rslt, mask);
+      rslt = int_const_binop (BIT_AND_EXPR, rslt, mask, 0);
     }
 
   return rslt;
@@ -1465,14 +1465,14 @@ infer_loop_bounds_from_undefined (struct loop *loop)
 
 		    utype = unsigned_type_for (type);
 		    if (tree_int_cst_lt (step, integer_zero_node))
-		      diff = fold (build2 (MINUS_EXPR, utype, init,
-					   TYPE_MIN_VALUE (type)));
+		      diff = fold_build2 (MINUS_EXPR, utype, init,
+					  TYPE_MIN_VALUE (type));
 		    else
-		      diff = fold (build2 (MINUS_EXPR, utype,
-					   TYPE_MAX_VALUE (type), init));
+		      diff = fold_build2 (MINUS_EXPR, utype,
+					  TYPE_MAX_VALUE (type), init);
 
-		    estimation = fold (build2 (CEIL_DIV_EXPR, utype, diff,
-					       step));
+		    estimation = fold_build2 (CEIL_DIV_EXPR, utype, diff,
+					      step);
 		    record_estimate (loop, estimation, boolean_true_node, stmt);
 		  }
 

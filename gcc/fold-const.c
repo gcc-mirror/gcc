@@ -3340,11 +3340,11 @@ optimize_bit_field_compare (enum tree_code code, tree compare_type,
       TREE_THIS_VOLATILE (lhs) = 1;
     }
 
-  rhs = fold (const_binop (BIT_AND_EXPR,
-			   const_binop (LSHIFT_EXPR,
-					fold_convert (unsigned_type, rhs),
-					size_int (lbitpos), 0),
-			   mask, 0));
+  rhs = const_binop (BIT_AND_EXPR,
+		     const_binop (LSHIFT_EXPR,
+				  fold_convert (unsigned_type, rhs),
+				  size_int (lbitpos), 0),
+		     mask, 0);
 
   return build2 (code, compare_type,
 		 build2 (BIT_AND_EXPR, unsigned_type, lhs, mask),
@@ -6468,7 +6468,7 @@ try_move_mult_to_index (enum tree_code code, tree addr, tree op1)
 						     TREE_OPERAND (pos, 1)),
 				       fold_convert (itype, delta));
 
-  return build1 (ADDR_EXPR, TREE_TYPE (addr), ret);
+  return fold_build1 (ADDR_EXPR, TREE_TYPE (addr), ret);
 }
 
 
@@ -7305,13 +7305,13 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	    {
 	      tem = try_move_mult_to_index (PLUS_EXPR, arg0, arg1);
 	      if (tem)
-		return fold_convert (type, fold (tem));
+		return fold_convert (type, tem);
 	    }
 	  else if (TREE_CODE (arg1) == ADDR_EXPR)
 	    {
 	      tem = try_move_mult_to_index (PLUS_EXPR, arg1, arg0);
 	      if (tem)
-		return fold_convert (type, fold (tem));
+		return fold_convert (type, tem);
 	    }
 	}
       else
@@ -7730,7 +7730,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	{
 	  tem = try_move_mult_to_index (MINUS_EXPR, arg0, arg1);
 	  if (tem)
-	    return fold_convert (type, fold (tem));
+	    return fold_convert (type, tem);
 	}
 
       if (flag_unsafe_math_optimizations
