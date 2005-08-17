@@ -1,3 +1,9 @@
+2005-08-17  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/23268
+	* config/i386/i386.md ("*fist<mode>2_1"): New pattern.
+	("lrint<mode>2"): Change expander to use "*fist<mode>2_1" pattern.
+
 2005-08-17  J"orn Rennecke <joern.rennecke@st.com>
 
 	* varasm.c (decode_reg_name): Skip empty aqdditional register names.
