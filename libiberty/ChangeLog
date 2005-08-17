@@ -1,3 +1,10 @@
+2005-08-17  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* strverscmp.c: Update FSF address.
+	* testsuite/Makefile.in: Likewise.
+	* testsuite/test-demangle.c: Likewise.
+	* testsuite/test-pexecute.c: Likewise.
+
 2005-07-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* getopt.c: Include ansidecl.h before system headers.
