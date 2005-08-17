@@ -1,3 +1,21 @@
+2005-08-17  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (leu<mode>): Convert to mode macro.
+	(leu<mode>_compare): Same.
+	(plus_leu<mode>): Same.
+	(neg_leu<mode>): Same.
+	(and_neg_leu<mode): Same.
+	(ltu<mode>_compare): Same.
+	(plus_ltu<mode>): Same.
+	(geu<mode>): Same.
+	(geu<mode>_compare): Same.
+	(plus_geu<mode>): Same.
+	(neg_geu<mode>): Same.
+	(and_neg_geu<mode>): Same.
+	(plus_gt<mode>): Same.
+	(gtu<mode>_compare): Same.
+	(plus_gtu<mode>): Same.
+
 2005-08-17  Erik Christiansen  <erik@dd.nec.com.au>
 	
 	* config/v850/lib1funcs.asm (callt_save_interrupt): Fix comment typos.
@@ -18,7 +36,7 @@
 
 2005-08-17  J"orn Rennecke <joern.rennecke@st.com>
 
-	* varasm.c (decode_reg_name): Skip empty aqdditional register names.
+	* varasm.c (decode_reg_name): Skip empty additional register names.
 
 2005-08-16  Zdenek Dvorak  <dvorakz@suse.cz>
 
