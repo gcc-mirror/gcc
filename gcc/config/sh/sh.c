@@ -6684,7 +6684,15 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 	  && (TREE_CODE (TREE_TYPE (TYPE_FIELDS (type))) == REAL_TYPE
 	      || TREE_CODE (TREE_TYPE (TYPE_FIELDS (type))) == COMPLEX_TYPE)
           && TREE_CHAIN (TYPE_FIELDS (type)) == NULL_TREE)
-	type = TREE_TYPE (TYPE_FIELDS (type));
+	{
+	  tree field_type = TREE_TYPE (TYPE_FIELDS (type));
+
+	  if (TYPE_MODE (type) == TYPE_MODE (field_type))
+	    type = field_type;
+	  else
+	    gcc_assert (TYPE_ALIGN (type)
+			< GET_MODE_ALIGNMENT (TYPE_MODE (field_type)));
+	}
 
       if (TARGET_SH4)
 	{
