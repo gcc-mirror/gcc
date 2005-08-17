@@ -114,7 +114,6 @@ static int find_in_imports_on_demand (tree, tree);
 static void find_in_imports (tree, tree);
 static void check_inner_class_access (tree, tree, tree);
 static int check_pkg_class_access (tree, tree, bool, tree);
-static void register_package (tree);
 static tree resolve_package (tree, tree *, tree *);
 static tree resolve_class (tree, tree, tree, tree);
 static void declare_local_variables (int, tree, tree);
@@ -364,6 +363,7 @@ struct parser_ctxt *ctxp;
 
 /* List of things that were analyzed for which code will be generated */
 struct parser_ctxt *ctxp_for_generation = NULL;
+struct parser_ctxt *ctxp_for_generation_last = NULL;
 
 /* binop_lookup maps token to tree_code. It is used where binary
    operations are involved and required by the parser. RDIV_EXPR
@@ -409,9 +409,6 @@ static GTY(()) tree current_static_block;
 
 /* The generated `write_parm_value$' identifier.  */
 static GTY(()) tree wpv_id;
-
-/* The list of all packages we've seen so far */
-static GTY(()) tree package_list;
 
 /* Hold THIS for the scope of the current method decl.  */
 static GTY(()) tree current_this;
@@ -740,7 +737,6 @@ package_declaration:
 	PACKAGE_TK name SC_TK
 		{
 		  ctxp->package = EXPR_WFL_NODE ($2);
-		  register_package (ctxp->package);
 		}
 |	PACKAGE_TK error
 		{yyerror ("Missing name"); RECOVER;}
@@ -2777,8 +2773,12 @@ java_pop_parser_context (int generate)
      do is to just update a list of class names.  */
   if (generate)
     {
-      ctxp->next = ctxp_for_generation;
-      ctxp_for_generation = ctxp;
+      if (ctxp_for_generation_last == NULL)
+        ctxp_for_generation = ctxp;
+      else
+        ctxp_for_generation_last->next = ctxp;
+      ctxp->next = NULL;
+      ctxp_for_generation_last = ctxp;
     }
 
   /* And restore those of the previous context */
@@ -3718,7 +3718,7 @@ resolve_inner_class (htab_t circularity_hash, tree cl, tree *enclosing,
         break;
 
       if (TREE_CODE (local_super) == POINTER_TYPE)
-        local_super = do_resolve_class (NULL, local_super, NULL, NULL);
+        local_super = do_resolve_class (NULL, NULL, local_super, NULL, NULL);
       else
 	local_super = TYPE_NAME (local_super);
 
@@ -3780,7 +3780,7 @@ find_as_inner_class (tree enclosing, tree name, tree cl)
 	  acc = merge_qualified_name (acc,
 				      EXPR_WFL_NODE (TREE_PURPOSE (qual)));
 	  BUILD_PTR_FROM_NAME (ptr, acc);
-	  decl = do_resolve_class (NULL_TREE, ptr, NULL_TREE, cl);
+	  decl = do_resolve_class (NULL_TREE, NULL_TREE, ptr, NULL_TREE, cl);
 	}
 
       /* A NULL qual and a decl means that the search ended
@@ -4192,6 +4192,12 @@ create_class (int flags, tree id, tree super, tree interfaces)
      virtual function tables.  In gcj, every class has a common base
      virtual function table in java.lang.object.  */
   TYPE_VFIELD (TREE_TYPE (decl)) = TYPE_VFIELD (object_type_node);
+
+  /* We keep the compilation unit imports in the class so that
+     they can be used later to resolve type dependencies that
+     aren't necessary to solve now. */
+  TYPE_IMPORT_LIST (TREE_TYPE (decl)) = ctxp->import_list;
+  TYPE_IMPORT_DEMAND_LIST (TREE_TYPE (decl)) = ctxp->import_demand_list;
 
   /* Add the private this$<n> field, Replicate final locals still in
      scope as private final fields mangled like val$<local_name>.
@@ -5719,12 +5725,6 @@ java_complete_class (void)
     {
       jdep *dep;
 
-      /* We keep the compilation unit imports in the class so that
-	 they can be used later to resolve type dependencies that
-	 aren't necessary to solve now. */
-      TYPE_IMPORT_LIST (TREE_TYPE (cclass)) = ctxp->import_list;
-      TYPE_IMPORT_DEMAND_LIST (TREE_TYPE (cclass)) = ctxp->import_demand_list;
-
       for (dep = CLASSD_FIRST (cclassd); dep; dep = JDEP_CHAIN (dep))
 	{
 	  tree decl;
@@ -5875,7 +5875,7 @@ resolve_class (tree enclosing, tree class_type, tree decl, tree cl)
     WFL_STRIP_BRACKET (cl, cl);
 
   /* 2- Resolve the bare type */
-  if (!(resolved_type_decl = do_resolve_class (enclosing, class_type,
+  if (!(resolved_type_decl = do_resolve_class (enclosing, NULL_TREE, class_type,
 					       decl, cl)))
     return NULL_TREE;
   resolved_type = TREE_TYPE (resolved_type_decl);
@@ -5898,7 +5898,8 @@ resolve_class (tree enclosing, tree class_type, tree decl, tree cl)
    and (but it doesn't really matter) qualify_and_find.  */
 
 tree
-do_resolve_class (tree enclosing, tree class_type, tree decl, tree cl)
+do_resolve_class (tree enclosing, tree import_type, tree class_type, tree decl,
+		  tree cl)
 {
   tree new_class_decl = NULL_TREE, super = NULL_TREE;
   tree saved_enclosing_type = enclosing ? TREE_TYPE (enclosing) : NULL_TREE;
@@ -5915,7 +5916,7 @@ do_resolve_class (tree enclosing, tree class_type, tree decl, tree cl)
       if (split_qualified_name (&left, &right, TYPE_NAME (class_type)) == 0)
 	{
 	  BUILD_PTR_FROM_NAME (left_type, left);
-	  q = do_resolve_class (enclosing, left_type, decl, cl);
+	  q = do_resolve_class (enclosing, import_type, left_type, decl, cl);
 	  if (q)
 	    {
 	      enclosing = q;
@@ -5960,8 +5961,11 @@ do_resolve_class (tree enclosing, tree class_type, tree decl, tree cl)
 	return new_class_decl;
     }
 
-  /* 1- Check for the type in single imports. This will change
-     TYPE_NAME() if something relevant is found */
+  /* 1- Check for the type in single imports.  Look at enclosing classes and,
+     if we're laying out a superclass, at the import list for the subclass.
+     This will change TYPE_NAME() if something relevant is found. */
+  if (import_type && TYPE_IMPORT_LIST (import_type))
+    find_in_imports (import_type, class_type);
   find_in_imports (saved_enclosing_type, class_type);
 
   /* 2- And check for the type in the current compilation unit */
@@ -5983,29 +5987,19 @@ do_resolve_class (tree enclosing, tree class_type, tree decl, tree cl)
   /* 4- Check the import on demands. Don't allow bar.baz to be
      imported from foo.* */
   if (!QUALIFIED_P (TYPE_NAME (class_type)))
-    if (find_in_imports_on_demand (saved_enclosing_type, class_type))
-      return NULL_TREE;
+    {
+      if (import_type
+	  && TYPE_IMPORT_DEMAND_LIST (import_type)
+	  && find_in_imports_on_demand (import_type, class_type))
+        return NULL_TREE;
+      if (find_in_imports_on_demand (saved_enclosing_type, class_type))
+        return NULL_TREE;
+    }
 
   /* If found in find_in_imports_on_demand, the type has already been
      loaded. */
   if ((new_class_decl = IDENTIFIER_CLASS_VALUE (TYPE_NAME (class_type))))
     return new_class_decl;
-
-  /* 5- Try with a name qualified with the package name we've seen so far */
-  if (!QUALIFIED_P (TYPE_NAME (class_type)))
-    {
-      tree package;
-
-      /* If there is a current package (ctxp->package), it's the first
-	 element of package_list and we can skip it. */
-      for (package = (ctxp->package ?
-		      TREE_CHAIN (package_list) : package_list);
-	   package; package = TREE_CHAIN (package))
-	if ((new_class_decl = qualify_and_find (class_type,
-					       TREE_PURPOSE (package),
-					       TYPE_NAME (class_type))))
-	  return new_class_decl;
-    }
 
   /* 5- Check another compilation unit that bears the name of type */
   load_class (TYPE_NAME (class_type), 0);
@@ -7010,8 +7004,12 @@ process_imports (void)
 static void
 find_in_imports (tree enclosing_type, tree class_type)
 {
-  tree import = (enclosing_type ? TYPE_IMPORT_LIST (enclosing_type) :
-		 ctxp->import_list);
+  tree import;
+  if (enclosing_type && TYPE_IMPORT_LIST (enclosing_type))
+    import = TYPE_IMPORT_LIST (enclosing_type);
+  else
+    import = ctxp->import_list;
+
   while (import)
     {
       if (TREE_VALUE (import) == TYPE_NAME (class_type))
@@ -7169,12 +7167,16 @@ static int
 find_in_imports_on_demand (tree enclosing_type, tree class_type)
 {
   tree class_type_name = TYPE_NAME (class_type);
-  tree import = (enclosing_type ? TYPE_IMPORT_DEMAND_LIST (enclosing_type) :
-		  ctxp->import_demand_list);
   tree cl = NULL_TREE;
   int seen_once = -1;	/* -1 when not set, 1 if seen once, >1 otherwise. */
   int to_return = -1;	/* -1 when not set, 0 or 1 otherwise */
   tree node;
+  tree import;
+
+  if (enclosing_type && TYPE_IMPORT_DEMAND_LIST (enclosing_type))
+    import = TYPE_IMPORT_DEMAND_LIST (enclosing_type);
+  else
+    import = ctxp->import_demand_list;
 
   for (; import; import = TREE_CHAIN (import))
     {
@@ -7262,27 +7264,6 @@ find_in_imports_on_demand (tree enclosing_type, tree class_type)
     return to_return;
   else
     return (seen_once < 0 ? 0 : seen_once); /* It's ok not to have found */
-}
-
-/* Add package NAME to the list of packages encountered so far. To
-   speed up class lookup in do_resolve_class, we make sure a
-   particular package is added only once.  */
-
-static void
-register_package (tree name)
-{
-  static htab_t pht;
-  void **e;
-
-  if (pht == NULL)
-    pht = htab_create (50, htab_hash_pointer, htab_eq_pointer, NULL);
-
-  e = htab_find_slot (pht, name, INSERT);
-  if (*e == NULL)
-    {
-      package_list = chainon (package_list, build_tree_list (name, NULL));
-      *e = name;
-    }
 }
 
 static tree

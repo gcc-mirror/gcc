@@ -1,13 +1,43 @@
+2005-08-17  Paolo Bonzini  <bonzini@gnu.org>
+
+	Backport from mainline:
+
+	2005-05-19  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR java/17845
+
+	* parse.y (register_package, package_list): Remove.
+	(package_declaration): Do not call register_package.
+	(do_resolve_class): Do not use package_list.
+
+	2005-05-10  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR java/21436
+	* class.c (maybe_layout_super_class): Look for imports in this_class.
+	* parse.h (ctxp_for_generation_last): New.
+	(do_resolve_class): Add a parameter.
+	* parse.y (ctxp_for_generation_last): New.
+	(java_pop_parser_context): Add at end of list.
+	(find_in_imports, find_in_imports_on_demand): Look in ctxp
+	if the TYPE_IMPORT_LIST or respectively the TYPE_IMPORT_DEMAND_LIST of
+	the given type are NULL.
+	(do_resolve_class): Look into the imports of the new second parameter.
+	Adjust recursive calls.
+	(resolve_class, resolve_inner_class, find_as_inner_class): Adjust
+	calls to do_resolve_class.
+	(create_class): Set the TYPE_IMPORT_LIST and TYPE_IMPORT_DEMAND_LIST.
+	(java_complete_class): Do not do that here.
+
 2005-08-10  Robin Green <greenrd@greenrd.org>
 
-        PR java/23230:
-        * parse.y (maybe_use_access_method): Generalize check from
-        java.lang.Object to any superclass of current_class
+	PR java/23230:
+	* parse.y (maybe_use_access_method): Generalize check from
+	java.lang.Object to any superclass of current_class
 
 2005-07-28  Andrew Haley  <aph@redhat.com>
 
-        * except.c (expand_end_java_handler): Insert an empty ASM_EXPR at
-        the start of each catch block.
+	* except.c (expand_end_java_handler): Insert an empty ASM_EXPR at
+	the start of each catch block.
 
 2005-07-07  Release Manager
 

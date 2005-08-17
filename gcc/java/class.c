@@ -2080,7 +2080,7 @@ maybe_layout_super_class (tree super_class, tree this_class)
 					  DECL_SOURCE_LINE (this_decl), 0);
 #endif
 	    }
-	  super_class = do_resolve_class (NULL_TREE, /* FIXME? */
+	  super_class = do_resolve_class (NULL_TREE, this_class,
 					  super_class, NULL_TREE, this_wrap);
 	  if (!super_class)
 	    return NULL_TREE;	/* FIXME, NULL_TREE not checked by caller. */
