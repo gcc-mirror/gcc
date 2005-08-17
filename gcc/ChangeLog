@@ -1,3 +1,47 @@
+2005-08-16  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+	    Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config.gcc: Added z9-109 switch.
+	* config/s390/2084.md ("x_int", "x_agen", "x_lr", "x_la", "x_larl",
+	"x_load", "x_store", "x_branch", "x_call", "x_mul_hi", "x_mul_sidi",
+	"x_div", "x_sem", "x_cs", "x_vs", "x_stm", "x_lm", "x_other", 
+	"x_fsimpdf", "x_fsimpsf", "x_fdivdf", "x_fdivsf", "x_floaddf", 
+	"x_floadsf", "x_fstore_df", "x_fstoresf", "x_ftoi", "x_itof"): Enable
+	for "z9_109" cpu attribute.
+	* config/s390/s390.c (z9_109_cost): New processor cost structure.
+	(CONST_OK_FOR_Os, CONST_OK_FOR_Op, CONST_OK_FOR_On): New macros.
+	(s390_handle_arch_option): Added z9-109 switch.
+	(override_options): Set respective cost function for z9-109.
+	(s390_const_ok_for_constraint_p): New constraints Os, Op, On.
+	(legitimate_reload_constant_p): Accept extended immediates.
+	(print_operand): Three new output modifiers added: k, m and o.
+	(s390_adjust_priority, s390_issue_rate): Handle Z9_109 like Z990.
+	(s390_output_mi_thunk): Use extended immediate when possible.
+	* config/s390/s390.h (processor_flags): Added PF_EXTIMM.
+	(TARGET_CPU_EXTIMM, TARGET_EXTIMM): New macros.
+	(CONSTRAINT_LEN): Added length of O constraint.
+	(CLZ_DEFINED_VALUE_AT_ZERO): Definition added.
+	* config/s390/s390.md ("cpu"): New value z9_109 added.
+	("*tstdi_extimm", "*tstdi_ccconly_extimm", "*tstsi_extimm", 
+	"*tstsi_cconly_extimm", "*movdi_64extimm", "*extendhidi2_extimm",
+	"*extendqidi2_extimm", "*extendhisi2_extimm", "*extendqisi2_extimm",
+	"*zero_extend<mode>si2_extimm", "*anddi3_extimm", "*iordi3_extimm",
+	"*xordi3_extimm", "clzdi2", "clztidi2"): New patterns.
+	("*tstdi", "*tstsi", "*movdi_64", "*extendhisi2", "*extendqisi2",
+	"*zero_extend<mode>si2_64", "zero_extendqihi2", "*zero_extendqihi2_64",
+	"*anddi3", "*iordi3", "*xordi3"): Disable for TARGET_EXTIMM.
+	("*cmpdi_cct", "*cmpsi_cct", "*cmpdi_ccs", "*cmpsi_ccs", "*cmpdi_ccu",
+	"*cmpsi_ccu", "*movsi_zarch", "*adddi3_imm_cc", "*adddi3_carry1_cc",
+	"*adddi3_carry2_cc", "*adddi3_cc", "*adddi3_64", "*addsi3_imm_cc",
+	"*addsi3_carry1_cc", "*addsi3_carry2_cc", "*addsi3_cc", "addsi3",
+	"*andsi3_cc", "*andsi3_cconly", "*andsi3_zarch", "*iorsi3_cc",
+	"*iorsi3_cconly", "*iorsi3_zarch", "*xorsi3_cc", "*xorsi3_cconly",
+	"*xorsi3", "*xorhi3", "*xorqi3"): Added instruction using extended 
+	immediates.
+	("extend<mode>di2", "extend<mode>si2", "zero_extend<mode>di2",
+	"zero_extend<mode>si2"): Allow memory operands and don't manually emit
+	insns for TARGET_EXTIMM.
+
 2005-08-17  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* testsuite/gcc.dg/20020926-1.c: Added "-mesa" to dg-options.
