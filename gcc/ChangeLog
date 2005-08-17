@@ -1,3 +1,20 @@
+2005-08-16  James A. Morrison  <phython@gcc.gnu.org>
+
+	* fold-const.c (optimize_bit_field_compare): Remove extra fold call.
+	(try_move_mult_to_index): Call fold_build2 instead of build2.
+	(fold_binary): Don't call fold after calls to try_move_mult_to_index.
+	* tree-ssa-loop-niter.c (inverse): Call int_const_binop instead of
+	fold_binary_to_constant.
+	(infer_loop_bounds_from_undefined): Call fold_build2 instead of
+	fold (build.
+	* tree-data-ref.c (tree_fold_divides_p): Use tree_int_cst_equal to
+	check if A == gcd (A, B).  Remove TYPE argument.
+	(analyze_offset) Use fold_build2 instead of fold (build.
+	(create_data_ref): Likewise.
+	(analyze_siv_subscript_cst_affine): Update calls to tree_fold_divides_p.
+	* tree-ssa-ccp.c (widen_bitfield): Call fold_build2 instead of build2
+	then fold.
+
 2005-08-17  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* config/arm/unaligned-funcs.c,config/i386/crtfastmath.c,

@@ -479,13 +479,11 @@ base_addr_differ_p (struct data_reference *dra,
 /* Returns true iff A divides B.  */
 
 static inline bool 
-tree_fold_divides_p (tree type, 
-		     tree a, 
+tree_fold_divides_p (tree a, 
 		     tree b)
 {
   /* Determines whether (A == gcd (A, B)).  */
-  return integer_zerop 
-    (fold_build2 (MINUS_EXPR, type, a, tree_fold_gcd (a, b)));
+  return tree_int_cst_equal (a, tree_fold_gcd (a, b));
 }
 
 /* Compute the greatest common denominator of two numbers using
@@ -1723,7 +1721,7 @@ analyze_offset (tree offset, tree *invariant, tree *constant)
   *constant = constant_0 ? constant_0 : constant_1;
   if (invariant_0 && invariant_1)
     *invariant = 
-      fold (build (code, TREE_TYPE (invariant_0), invariant_0, invariant_1));
+      fold_build2 (code, TREE_TYPE (invariant_0), invariant_0, invariant_1);
   else
     *invariant = invariant_0 ? invariant_0 : invariant_1;
 }
@@ -1805,8 +1803,8 @@ create_data_ref (tree memref, tree stmt, bool is_read)
       if (constant)
 	{
 	  DR_INIT (dr) = fold_convert (ssizetype, constant);
-	  init_cond = fold (build (TRUNC_DIV_EXPR, TREE_TYPE (constant), 
-				   constant, type_size));
+	  init_cond = fold_build2 (TRUNC_DIV_EXPR, TREE_TYPE (constant), 
+				   constant, type_size);
 	}
       else
 	DR_INIT (dr) = init_cond = ssize_int (0);;
@@ -2186,8 +2184,7 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 		     chrec_b = {10, +, 1}
 		  */
 		  
-		  if (tree_fold_divides_p 
-		      (integer_type_node, CHREC_RIGHT (chrec_b), difference))
+		  if (tree_fold_divides_p (CHREC_RIGHT (chrec_b), difference))
 		    {
 		      *overlaps_a = integer_zero_node;
 		      *overlaps_b = fold_build2 (EXACT_DIV_EXPR, integer_type_node,
@@ -2199,7 +2196,7 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 		      return;
 		    }
 		  
-		  /* When the step does not divides the difference, there are
+		  /* When the step does not divide the difference, there are
 		     no overlaps.  */
 		  else
 		    {
@@ -2241,13 +2238,12 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 		     chrec_a = 3
 		     chrec_b = {10, +, -1}
 		  */
-		  if (tree_fold_divides_p 
-		      (integer_type_node, CHREC_RIGHT (chrec_b), difference))
+		  if (tree_fold_divides_p (CHREC_RIGHT (chrec_b), difference))
 		    {
 		      *overlaps_a = integer_zero_node;
-		      *overlaps_b = fold 
-			(build (EXACT_DIV_EXPR, integer_type_node, difference, 
-				CHREC_RIGHT (chrec_b)));
+		      *overlaps_b = fold_build2 (EXACT_DIV_EXPR,
+				      		 integer_type_node, difference, 
+						 CHREC_RIGHT (chrec_b));
 		      *last_conflicts = integer_one_node;
 		      return;
 		    }
@@ -2816,7 +2812,7 @@ chrec_steps_divide_constant_p (tree chrec,
   switch (TREE_CODE (chrec))
     {
     case POLYNOMIAL_CHREC:
-      return (tree_fold_divides_p (integer_type_node, CHREC_RIGHT (chrec), cst)
+      return (tree_fold_divides_p (CHREC_RIGHT (chrec), cst)
 	      && chrec_steps_divide_constant_p (CHREC_LEFT (chrec), cst));
       
     default:
