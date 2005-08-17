@@ -4,7 +4,7 @@
 #ifdef __LP64__
 #define DIM UINT_MAX>>1
 #else
-#define DIM USHORT_MAX>>1
+#define DIM USHRT_MAX>>1
 #endif
 
 int
