@@ -1,3 +1,7 @@
+2005-08-17  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* All files: Update FSF address.
+
 2005-08-15  Ulrich Weigand  <weigand@informatik.uni-erlangen.de>
 
 	* mf-hooks3.c (main_seen_p): Remove.
