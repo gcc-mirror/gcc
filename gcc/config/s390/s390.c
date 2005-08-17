@@ -153,6 +153,36 @@ struct processor_costs z990_cost =
   COSTS_N_INSNS (31),    /* DSGR */
 };
 
+static const
+struct processor_costs z9_109_cost = 
+{
+  COSTS_N_INSNS (4),     /* M     */
+  COSTS_N_INSNS (2),     /* MGHI  */
+  COSTS_N_INSNS (2),     /* MH    */
+  COSTS_N_INSNS (2),     /* MHI   */
+  COSTS_N_INSNS (4),     /* ML    */
+  COSTS_N_INSNS (4),     /* MR    */
+  COSTS_N_INSNS (5),     /* MS    */
+  COSTS_N_INSNS (6),     /* MSG   */
+  COSTS_N_INSNS (4),     /* MSGF  */
+  COSTS_N_INSNS (4),     /* MSGFR */
+  COSTS_N_INSNS (4),     /* MSGR  */
+  COSTS_N_INSNS (4),     /* MSR   */
+  COSTS_N_INSNS (1),     /* multiplication in DFmode */
+  COSTS_N_INSNS (66),    /* SQDBR */
+  COSTS_N_INSNS (38),    /* SQEBR */
+  COSTS_N_INSNS (1),     /* MADBR */
+  COSTS_N_INSNS (1),     /* MAEBR */
+  COSTS_N_INSNS (40),    /* DDBR */
+  COSTS_N_INSNS (37),    /* DDR  */
+  COSTS_N_INSNS (26),    /* DDBR */
+  COSTS_N_INSNS (28),    /* DER  */
+  COSTS_N_INSNS (30),    /* DLGR */
+  COSTS_N_INSNS (23),    /* DLR */
+  COSTS_N_INSNS (23),    /* DR */
+  COSTS_N_INSNS (24),    /* DSGFR */
+  COSTS_N_INSNS (24),    /* DSGR */
+};
 
 extern int reload_completed;
 
@@ -272,6 +302,12 @@ struct machine_function GTY(())
 	CONST_OK_FOR_CONSTRAINT_P((x), 'J', "J")
 #define CONST_OK_FOR_K(x) \
 	CONST_OK_FOR_CONSTRAINT_P((x), 'K', "K")
+#define CONST_OK_FOR_Os(x) \
+        CONST_OK_FOR_CONSTRAINT_P((x), 'O', "Os")
+#define CONST_OK_FOR_Op(x) \
+        CONST_OK_FOR_CONSTRAINT_P((x), 'O', "Op")
+#define CONST_OK_FOR_On(x) \
+        CONST_OK_FOR_CONSTRAINT_P((x), 'O', "On")
 
 /* Set the has_landing_pad_p flag in struct machine_function to VALUE.  */
 
@@ -1207,6 +1243,8 @@ s390_handle_arch_option (const char *arg,
       {"z900", PROCESSOR_2064_Z900, PF_IEEE_FLOAT | PF_ZARCH},
       {"z990", PROCESSOR_2084_Z990, PF_IEEE_FLOAT | PF_ZARCH
 				    | PF_LONG_DISPLACEMENT},
+      {"z9-109", PROCESSOR_2094_Z9_109, PF_IEEE_FLOAT | PF_ZARCH
+                                       | PF_LONG_DISPLACEMENT | PF_EXTIMM},
     };
   size_t i;
 
@@ -1293,14 +1331,14 @@ override_options (void)
   if (TARGET_64BIT && !TARGET_ZARCH)
     error ("64-bit ABI not supported in ESA/390 mode");
 
-
   /* Set processor cost function.  */
-  if (s390_tune == PROCESSOR_2084_Z990) 
+  if (s390_tune == PROCESSOR_2094_Z9_109)
+    s390_cost = &z9_109_cost;
+  else if (s390_tune == PROCESSOR_2084_Z990)
     s390_cost = &z990_cost;
   else
     s390_cost = &z900_cost;
-
-
+  
   if (TARGET_BACKCHAIN && TARGET_PACKED_STACK && TARGET_HARD_FLOAT)
     error ("-mbackchain -mpacked-stack -mhard-float are not supported "
 	   "in combination");
@@ -1876,6 +1914,28 @@ s390_const_ok_for_constraint_p (HOST_WIDE_INT value,
 
       break;
 
+    case 'O':
+      if (!TARGET_EXTIMM)
+	return 0;
+      
+      switch (str[1])
+	{
+	case 's':
+	  return trunc_int_for_mode (value, SImode) == value;
+	  
+	case 'p':
+	  return value == 0
+	    || s390_single_part (GEN_INT (value), DImode, SImode, 0) == 1;
+	  
+	case 'n':
+	  return value == -1
+	    || s390_single_part (GEN_INT (value), DImode, SImode, -1) == 1;
+	  
+	default:
+	  gcc_unreachable ();
+	}
+      break;
+
     case 'P':
       return legitimate_reload_constant_p (GEN_INT (value));
 
@@ -2307,9 +2367,9 @@ legitimate_reload_constant_p (rtx op)
       && DISP_IN_RANGE (INTVAL (op)))
     return true;
 
-  /* Accept l(g)hi operands.  */
+  /* Accept l(g)hi/l(g)fi operands.  */
   if (GET_CODE (op) == CONST_INT
-      && CONST_OK_FOR_K (INTVAL (op)))
+      && (CONST_OK_FOR_K (INTVAL (op)) || CONST_OK_FOR_Os (INTVAL (op))))
     return true;
 
   /* Accept lliXX operands.  */
@@ -2318,6 +2378,12 @@ legitimate_reload_constant_p (rtx op)
       && trunc_int_for_mode (INTVAL (op), word_mode) == INTVAL (op)
       && s390_single_part (op, word_mode, HImode, 0) >= 0)
   return true;
+
+  if (TARGET_EXTIMM
+      && GET_CODE (op) == CONST_INT
+      && trunc_int_for_mode (INTVAL (op), word_mode) == INTVAL (op)
+      && s390_single_part (op, word_mode, SImode, 0) >= 0)
+    return true;
 
   /* Accept larl operands.  */
   if (TARGET_CPU_ZARCH
@@ -4115,6 +4181,14 @@ print_operand (FILE *file, rtx x, int code)
       else if (code == 'j')
 	fprintf (file, HOST_WIDE_INT_PRINT_DEC,
 		 s390_extract_part (x, HImode, -1));
+      else if (code == 'k')
+ 	fprintf (file, HOST_WIDE_INT_PRINT_DEC,
+ 		 s390_extract_part (x, SImode, 0));
+      else if (code == 'm')
+ 	fprintf (file, HOST_WIDE_INT_PRINT_DEC,
+ 		 s390_extract_part (x, SImode, -1));
+      else if (code == 'o')
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) & 0xffffffff);
       else
         fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
       break;
@@ -4270,7 +4344,8 @@ s390_adjust_priority (rtx insn ATTRIBUTE_UNUSED, int priority)
   if (! INSN_P (insn))
     return priority;
 
-  if (s390_tune != PROCESSOR_2084_Z990)
+  if (s390_tune != PROCESSOR_2084_Z990
+      && s390_tune != PROCESSOR_2094_Z9_109)
     return priority;
 
   switch (s390_safe_attr_type (insn))
@@ -4294,7 +4369,8 @@ s390_adjust_priority (rtx insn ATTRIBUTE_UNUSED, int priority)
 static int
 s390_issue_rate (void)
 {
-  if (s390_tune == PROCESSOR_2084_Z990)
+  if (s390_tune == PROCESSOR_2084_Z990
+      || s390_tune == PROCESSOR_2094_Z9_109)
     return 3;
   return 1;
 }
@@ -7717,9 +7793,11 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
     {
       /* Setup literal pool pointer if required.  */
       if ((!DISP_IN_RANGE (delta)
-	   && !CONST_OK_FOR_K (delta))
+	   && !CONST_OK_FOR_K (delta)
+	   && !CONST_OK_FOR_Os (delta))
 	  || (!DISP_IN_RANGE (vcall_offset)
-	      && !CONST_OK_FOR_K (vcall_offset)))
+	      && !CONST_OK_FOR_K (vcall_offset)
+	      && !CONST_OK_FOR_Os (vcall_offset)))
 	{
 	  op[5] = gen_label_rtx ();
 	  output_asm_insn ("larl\t%4,%5", op);
@@ -7734,6 +7812,8 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	    output_asm_insn ("lay\t%1,%2(%1)", op);
 	  else if (CONST_OK_FOR_K (delta))
 	    output_asm_insn ("aghi\t%1,%2", op);
+ 	  else if (CONST_OK_FOR_Os (delta))
+ 	    output_asm_insn ("agfi\t%1,%2", op);
 	  else
 	    {
 	      op[6] = gen_label_rtx ();
@@ -7755,6 +7835,12 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	      output_asm_insn ("ag\t%4,0(%1)", op);
 	      output_asm_insn ("ag\t%1,0(%4)", op);
 	    }
+ 	  else if (CONST_OK_FOR_Os (vcall_offset))
+ 	    {
+ 	      output_asm_insn ("lgfi\t%4,%3", op);
+ 	      output_asm_insn ("ag\t%4,0(%1)", op);
+ 	      output_asm_insn ("ag\t%1,0(%4)", op);
+ 	    }
 	  else
 	    {
 	      op[7] = gen_label_rtx ();
@@ -7792,9 +7878,11 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
       /* Setup base pointer if required.  */
       if (!vcall_offset
 	  || (!DISP_IN_RANGE (delta)
-              && !CONST_OK_FOR_K (delta))
+              && !CONST_OK_FOR_K (delta)
+	      && !CONST_OK_FOR_Os (delta))
 	  || (!DISP_IN_RANGE (delta)
-              && !CONST_OK_FOR_K (vcall_offset)))
+              && !CONST_OK_FOR_K (vcall_offset)
+	      && !CONST_OK_FOR_Os (vcall_offset)))
 	{
 	  op[5] = gen_label_rtx ();
 	  output_asm_insn ("basr\t%4,0", op);
@@ -7811,6 +7899,8 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	    output_asm_insn ("lay\t%1,%2(%1)", op);
 	  else if (CONST_OK_FOR_K (delta))
 	    output_asm_insn ("ahi\t%1,%2", op);
+	  else if (CONST_OK_FOR_Os (delta))
+ 	    output_asm_insn ("afi\t%1,%2", op);
 	  else
 	    {
 	      op[6] = gen_label_rtx ();
@@ -7837,6 +7927,12 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	      output_asm_insn ("a\t%4,0(%1)", op);
 	      output_asm_insn ("a\t%1,0(%4)", op);
 	    }
+	  else if (CONST_OK_FOR_Os (vcall_offset))
+ 	    {
+ 	      output_asm_insn ("iilf\t%4,%3", op);
+ 	      output_asm_insn ("a\t%4,0(%1)", op);
+ 	      output_asm_insn ("a\t%1,0(%4)", op);
+ 	    }
 	  else
 	    {
 	      op[7] = gen_label_rtx ();

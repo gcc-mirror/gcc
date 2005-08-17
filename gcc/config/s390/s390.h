@@ -40,6 +40,7 @@ enum processor_type
   PROCESSOR_9672_G6,
   PROCESSOR_2064_Z900,
   PROCESSOR_2084_Z990,
+  PROCESSOR_2094_Z9_109,
   PROCESSOR_max
 };
 
@@ -49,7 +50,8 @@ enum processor_flags
 {
   PF_IEEE_FLOAT = 1,
   PF_ZARCH = 2,
-  PF_LONG_DISPLACEMENT = 4
+  PF_LONG_DISPLACEMENT = 4,
+  PF_EXTIMM = 8
 };
 
 extern enum processor_type s390_tune;
@@ -64,10 +66,13 @@ extern enum processor_flags s390_arch_flags;
 	(s390_arch_flags & PF_ZARCH)
 #define TARGET_CPU_LONG_DISPLACEMENT \
 	(s390_arch_flags & PF_LONG_DISPLACEMENT)
+#define TARGET_CPU_EXTIMM \
+ 	(s390_arch_flags & PF_EXTIMM)
 
 #define TARGET_LONG_DISPLACEMENT \
        (TARGET_ZARCH && TARGET_CPU_LONG_DISPLACEMENT)
-
+#define TARGET_EXTIMM \
+       (TARGET_ZARCH && TARGET_CPU_EXTIMM)
 
 /* Run-time target specification.  */
 
@@ -501,7 +506,8 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
   ((C) == 'U' || (C) == 'W' || (C) == 'Y')
 
 #define CONSTRAINT_LEN(C, STR)                                  	\
-  ((C) == 'N' ? 5 : 							\
+  ((C) == 'N' ? 5 : 	                                                \
+   (C) == 'O' ? 2 :							\
    (C) == 'A' ? 2 :							\
    (C) == 'B' ? 2 : DEFAULT_CONSTRAINT_LEN ((C), (STR)))
 
@@ -979,6 +985,9 @@ do {									\
 /* A function address in a call instruction is a byte address (for
    indexing purposes) so give the MEM rtx a byte's mode.  */
 #define FUNCTION_MODE QImode
+
+/* Specify the value which is used when clz operand is zero.  */
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 64, 1)
 
 /* Machine-specific symbol_ref flags.  */
 #define SYMBOL_FLAG_ALIGN1	(SYMBOL_FLAG_MACH_DEP << 0)
