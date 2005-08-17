@@ -621,4 +621,13 @@ _Jv_IsInterpretedClass (jclass c)
   return (c->accflags & java::lang::reflect::Modifier::INTERPRETED) != 0;
 }
 
+// Return true if the class was compiled with the BC ABI.
+extern inline jboolean
+_Jv_IsBinaryCompatibilityABI (jclass c)
+{
+  // There isn't really a better test for the ABI type at this point,
+  // that will work once the class has been registered.
+  return c->otable_syms || c->atable_syms || c->itable_syms;
+}
+
 #endif /* __JAVA_JVM_H__ */
