@@ -365,7 +365,7 @@ CC_FOR_TARGET=$(STAGE_CC_WRAPPER) @CC_FOR_TARGET@ $(FLAGS_FOR_TARGET)
 CONFIGURED_CC_FOR_TARGET=@CONFIGURED_CC_FOR_TARGET@
 USUAL_CC_FOR_TARGET = ` \
   if [ -f $$r/$(HOST_SUBDIR)/gcc/xgcc ] ; then \
-    echo $$r/$(HOST_SUBDIR)/gcc/xgcc -B$$r/$(HOST_SUBDIR)/gcc ; \
+    echo $$r/$(HOST_SUBDIR)/gcc/xgcc -B$$r/$(HOST_SUBDIR)/gcc/ ; \
   else \
     if [ '$(host)' = '$(target)' ] ; then \
       echo $(CC); \
