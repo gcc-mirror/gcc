@@ -1,3 +1,9 @@
+2005-08-16  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/23402
+	* gcc.c-torture/compile/zero-strct-3.c: New test.
+	* gcc.c-torture/compile/zero-strct-4.c: New test.
+
 2005-08-16  Steven Bosscher  <stevenb@suse.de>
 
 	PR target/23376

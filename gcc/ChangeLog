@@ -1,3 +1,10 @@
+2005-08-16  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/23402
+	* gimplify.c (zero_sized_type): New function.
+	(gimplify_modify_expr_rhs): If we have a zero sized type,
+	replace the statement with an empty statement.
+
 2005-08-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/crtfastmath.c (set_fast_math): Add "=m" for

@@ -2533,6 +2533,17 @@ zero_sized_field_decl (tree fdecl)
   return false;
 }
 
+/* Return true if TYPE is zero sized.  */
+   
+static bool
+zero_sized_type (tree type)
+{
+  if (AGGREGATE_TYPE_P (type) && TYPE_SIZE (type)
+      && integer_zerop (TYPE_SIZE (type)))
+    return true;
+  return false;
+}
+
 /* A subroutine of gimplify_init_constructor.  Generate individual
    MODIFY_EXPRs for a CONSTRUCTOR.  OBJECT is the LHS against which the
    assignments should happen.  ELTS is the CONSTRUCTOR_ELTS of the
@@ -2949,6 +2960,12 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
 			  tree *post_p, bool want_value)
 {
   enum gimplify_status ret = GS_OK;
+  tree type = TREE_TYPE (*from_p);
+  if (zero_sized_type (type))
+    {
+      *expr_p = NULL_TREE;
+      return GS_ALL_DONE;
+    }
 
   while (ret != GS_UNHANDLED)
     switch (TREE_CODE (*from_p))
