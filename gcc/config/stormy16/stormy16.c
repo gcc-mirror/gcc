@@ -1629,6 +1629,8 @@ xstormy16_asm_output_aligned_common (FILE *stream,
 static void
 xstormy16_encode_section_info (tree decl, rtx r, int first)
 {
+  default_encode_section_info (decl, r, first);
+
    if (TREE_CODE (decl) == VAR_DECL
       && (lookup_attribute ("below100", DECL_ATTRIBUTES (decl))
 	  || lookup_attribute ("BELOW100", DECL_ATTRIBUTES (decl))))
