@@ -1,3 +1,12 @@
+2005-08-17  Steven Bosscher  <stevenb@suse.de>
+
+	PR tree-optimization/21574
+	* tree-ssa-ccp.c (likely_value): If the right hand side is a
+	constant, return CONSTANT.
+	(ccp_lattice_meet): Use operand_equal_p instead of simple_cst_equal.
+	(ccp_fold, visit_assignment): Likewise.
+	(evaluate_stmt): Handle UNDEFINED and UNKNOWN_VAL the same way.
+
 2005-08-16  James A. Morrison  <phython@gcc.gnu.org>
 
 	* c-typeck.c (build_function_call): Call fold_buildN_initializer or
