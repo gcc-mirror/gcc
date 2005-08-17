@@ -1,3 +1,8 @@
+2005-08-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/crtfastmath.c (set_fast_math): Add "=m" for
+	fxsave.
+
 2005-08-16  Ian Lance Taylor  <ian@airs.com>
 
 	* doc/tm.texi (Label Output): Correct typo.
