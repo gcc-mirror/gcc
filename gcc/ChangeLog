@@ -1,5 +1,20 @@
 2005-08-16  James A. Morrison  <phython@gcc.gnu.org>
 
+	* c-typeck.c (build_function_call): Call fold_buildN_initializer or
+	fold_buildN instead of buildN then fold_initializer or fold.
+	(build_unary_op): Likewise.
+	(build_binary_op): Likewise.
+	* fold-const.c (fold_initializer): Remove.
+	(fold_build1_initializer): New function.
+	(fold_build2_initializer): New function.
+	(fold_build3_initializer): New function.
+	* tree.h (fold_initializer): Remove.
+	(fold_build1_initializer): New function.
+	(fold_build2_initializer): New function.
+	(fold_build3_initializer): New function.
+
+2005-08-16  James A. Morrison  <phython@gcc.gnu.org>
+
 	* fold-const.c (optimize_bit_field_compare): Remove extra fold call.
 	(try_move_mult_to_index): Call fold_build2 instead of build2.
 	(fold_binary): Don't call fold after calls to try_move_mult_to_index.

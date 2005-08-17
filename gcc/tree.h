@@ -3795,7 +3795,9 @@ extern tree fold_build2_stat (enum tree_code, tree, tree, tree MEM_STAT_DECL);
 #define fold_build2(c,t1,t2,t3) fold_build2_stat (c, t1, t2, t3 MEM_STAT_INFO)
 extern tree fold_build3_stat (enum tree_code, tree, tree, tree, tree MEM_STAT_DECL);
 #define fold_build3(c,t1,t2,t3,t4) fold_build3_stat (c, t1, t2, t3, t4 MEM_STAT_INFO)
-extern tree fold_initializer (tree);
+extern tree fold_build1_initializer (enum tree_code, tree, tree);
+extern tree fold_build2_initializer (enum tree_code, tree, tree, tree);
+extern tree fold_build3_initializer (enum tree_code, tree, tree, tree, tree);
 extern tree fold_convert (tree, tree);
 extern tree fold_single_bit_test (enum tree_code, tree, tree, tree);
 extern tree fold_ignored_result (tree);
