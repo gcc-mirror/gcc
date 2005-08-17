@@ -1,5 +1,6 @@
 /* IEEE floating point support declarations, for GDB, the GNU Debugger.
-   Copyright 1991, 1994, 1995, 1997, 2000, 2003 Free Software Foundation, Inc.
+   Copyright 1991, 1994, 1995, 1997, 2000, 2003, 2005
+   Free Software Foundation, Inc.
 
 This file is part of GDB.
 
@@ -82,7 +83,7 @@ struct floatformat
   const char *name;
 
   /* Validator method.  */
-  int (*is_valid) (const struct floatformat *fmt, const char *from);
+  int (*is_valid) (const struct floatformat *fmt, const void *from);
 };
 
 /* floatformats for IEEE single and double, big and little endian.  */
@@ -116,17 +117,17 @@ extern const struct floatformat floatformat_ia64_quad_little;
    Store the double in *TO.  */
 
 extern void
-floatformat_to_double (const struct floatformat *, const char *, double *);
+floatformat_to_double (const struct floatformat *, const void *, double *);
 
 /* The converse: convert the double *FROM to FMT
    and store where TO points.  */
 
 extern void
-floatformat_from_double (const struct floatformat *, const double *, char *);
+floatformat_from_double (const struct floatformat *, const double *, void *);
 
 /* Return non-zero iff the data at FROM is a valid number in format FMT.  */
 
 extern int
-floatformat_is_valid (const struct floatformat *fmt, const char *from);
+floatformat_is_valid (const struct floatformat *fmt, const void *from);
 
 #endif	/* defined (FLOATFORMAT_H) */

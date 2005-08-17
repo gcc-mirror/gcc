@@ -1,3 +1,16 @@
+2005-08-17  Mark Kettenis  <kettenis@gnu.org>
+
+	* floatformat.c (floatformat_always_valid): Change type of last
+	argument to `void *'.
+	(floatformat_i387_ext_is_valid): Likewise.
+	(floatformat_to_double): Change type of second argument to `const
+	void *'.
+	(floatformat_from_double): Change type of last argument to `void
+	*'.
+	(floatformat_is_valid): Change type of last argument to `const
+	void *'.
+	(ieee_test): Remove redundant casts.
+
 2005-08-17  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* strverscmp.c: Update FSF address.
