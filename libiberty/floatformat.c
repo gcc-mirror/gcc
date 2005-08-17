@@ -1,5 +1,6 @@
 /* IEEE floating point support routines, for GDB, the GNU Debugger.
-   Copyright (C) 1991, 1994, 1999, 2000, 2003 Free Software Foundation, Inc.
+   Copyright 1991, 1994, 1999, 2000, 2003, 2005
+   Free Software Foundation, Inc.
 
 This file is part of GDB.
 
@@ -52,11 +53,11 @@ static unsigned long get_field (const unsigned char *,
                                 unsigned int,
                                 unsigned int);
 static int floatformat_always_valid (const struct floatformat *fmt,
-                                     const char *from);
+                                     const void *from);
 
 static int
 floatformat_always_valid (const struct floatformat *fmt ATTRIBUTE_UNUSED,
-                          const char *from ATTRIBUTE_UNUSED)
+                          const void *from ATTRIBUTE_UNUSED)
 {
   return 1;
 }
@@ -107,23 +108,24 @@ const struct floatformat floatformat_ieee_double_littlebyte_bigword =
   floatformat_always_valid
 };
 
-static int floatformat_i387_ext_is_valid (const struct floatformat *fmt, const char *from);
+static int floatformat_i387_ext_is_valid (const struct floatformat *fmt,
+					  const void *from);
 
 static int
-floatformat_i387_ext_is_valid (const struct floatformat *fmt, const char *from)
+floatformat_i387_ext_is_valid (const struct floatformat *fmt, const void *from)
 {
   /* In the i387 double-extended format, if the exponent is all ones,
      then the integer bit must be set.  If the exponent is neither 0
      nor ~0, the intbit must also be set.  Only if the exponent is
      zero can it be zero, and then it must be zero.  */
   unsigned long exponent, int_bit;
-  const unsigned char *ufrom = (const unsigned char *) from;
-  
+  const unsigned char *ufrom = from;
+
   exponent = get_field (ufrom, fmt->byteorder, fmt->totalsize,
 			fmt->exp_start, fmt->exp_len);
   int_bit = get_field (ufrom, fmt->byteorder, fmt->totalsize,
 		       fmt->man_start, 1);
-  
+
   if ((exponent == 0) != (int_bit == 0))
     return 0;
   else
@@ -267,9 +269,9 @@ get_field (const unsigned char *data, enum floatformat_byteorders order,
 
 void
 floatformat_to_double (const struct floatformat *fmt,
-                       const char *from, double *to)
+                       const void *from, double *to)
 {
-  const unsigned char *ufrom = (const unsigned char *)from;
+  const unsigned char *ufrom = from;
   double dto;
   long exponent;
   unsigned long mant;
@@ -438,14 +440,14 @@ put_field (unsigned char *data, enum floatformat_byteorders order,
 
 void
 floatformat_from_double (const struct floatformat *fmt,
-                         const double *from, char *to)
+                         const double *from, void *to)
 {
   double dfrom;
   int exponent;
   double mant;
   unsigned int mant_bits, mant_off;
   int mant_bits_left;
-  unsigned char *uto = (unsigned char *)to;
+  unsigned char *uto = to;
 
   dfrom = *from;
   memset (uto, 0, fmt->totalsize / FLOATFORMAT_CHAR_BIT);
@@ -533,7 +535,7 @@ floatformat_from_double (const struct floatformat *fmt,
 /* Return non-zero iff the data at FROM is a valid number in format FMT.  */
 
 int
-floatformat_is_valid (const struct floatformat *fmt, const char *from)
+floatformat_is_valid (const struct floatformat *fmt, const void *from)
 {
   return fmt->is_valid (fmt, from);
 }
@@ -550,15 +552,13 @@ ieee_test (double n)
 {
   double result;
 
-  floatformat_to_double (&floatformat_ieee_double_little, (char *) &n,
-			 &result);
+  floatformat_to_double (&floatformat_ieee_double_little, &n, &result);
   if ((n != result && (! isnan (n) || ! isnan (result)))
       || (n < 0 && result >= 0)
       || (n >= 0 && result < 0))
     printf ("Differ(to): %.20g -> %.20g\n", n, result);
 
-  floatformat_from_double (&floatformat_ieee_double_little, &n,
-			   (char *) &result);
+  floatformat_from_double (&floatformat_ieee_double_little, &n, &result);
   if ((n != result && (! isnan (n) || ! isnan (result)))
       || (n < 0 && result >= 0)
       || (n >= 0 && result < 0))
