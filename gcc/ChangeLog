@@ -1,3 +1,7 @@
+2005-08-17  J"orn Rennecke <joern.rennecke@st.com>
+
+	* varasm.c (decode_reg_name): Skip empty aqdditional register names.
+
 2005-08-16  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-ssa-loop-im.c (MAX_LSM_NAME_LENGTH, lsm_tmp_name,
