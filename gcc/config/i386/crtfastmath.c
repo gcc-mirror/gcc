@@ -94,7 +94,7 @@ set_fast_math (void)
 
 	  __builtin_memset (&fxsave, 0, sizeof (fxsave));
 
-	  asm volatile ("fxsave %0" : : "m" (fxsave));
+	  asm volatile ("fxsave %0" : "=m" (fxsave) : "m" (fxsave));
 
 	  if (fxsave.mxcsr_mask & MXCSR_DAZ)
 	    mxcsr |= MXCSR_DAZ;
