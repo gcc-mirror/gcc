@@ -2166,7 +2166,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	    assumption = simplify_gen_relational (EQ, SImode, mode, tmp,
 						  mode_mmax);
 	    if (assumption == const_true_rtx)
-	      goto zero_iter;
+	      goto zero_iter_simplify;
 	    iv0.base = simplify_gen_binary (PLUS, comp_mode,
 					    iv0.base, const1_rtx);
 	  }
@@ -2176,7 +2176,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	    assumption = simplify_gen_relational (EQ, SImode, mode, tmp,
 						  mode_mmin);
 	    if (assumption == const_true_rtx)
-	      goto zero_iter;
+	      goto zero_iter_simplify;
 	    iv1.base = simplify_gen_binary (PLUS, comp_mode,
 					    iv1.base, constm1_rtx);
 	  }
@@ -2203,7 +2203,8 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	    {
 	      desc->infinite =
 		      alloc_EXPR_LIST (0, const_true_rtx, NULL_RTX);
-	      return;
+              /* Fill in the remaining fields somehow.  */
+              goto zero_iter_simplify;
 	    }
 	}
       else
@@ -2213,7 +2214,8 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	    {
 	      desc->infinite =
 		      alloc_EXPR_LIST (0, const_true_rtx, NULL_RTX);
-	      return;
+              /* Fill in the remaining fields somehow.  */
+              goto zero_iter_simplify;
 	    }
 	}
     }
@@ -2324,7 +2326,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	  assumption = simplify_gen_relational (reverse_condition (cond),
 						SImode, mode, tmp0, tmp1);
 	  if (assumption == const_true_rtx)
-	    goto zero_iter;
+	    goto zero_iter_simplify;
 	  else if (assumption != const0_rtx)
 	    desc->noloop_assumptions =
 		    alloc_EXPR_LIST (0, assumption, desc->noloop_assumptions);
@@ -2468,7 +2470,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	  delta = simplify_gen_binary (MINUS, mode, tmp1, delta);
 	}
       if (assumption == const_true_rtx)
-	goto zero_iter;
+	goto zero_iter_simplify;
       else if (assumption != const0_rtx)
 	desc->noloop_assumptions =
 		alloc_EXPR_LIST (0, assumption, desc->noloop_assumptions);
@@ -2536,15 +2538,24 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 
   return;
 
-fail:
-  desc->simple_p = false;
-  return;
-
+zero_iter_simplify:
+  /* Simplify the assumptions.  */
+  simplify_using_initial_values (loop, AND, &desc->assumptions);
+  if (desc->assumptions
+      && XEXP (desc->assumptions, 0) == const0_rtx)
+    goto fail;
+  simplify_using_initial_values (loop, IOR, &desc->infinite);
+  
+  /* Fallthru.  */
 zero_iter:
   desc->const_iter = true;
   desc->niter = 0;
   desc->niter_max = 0;
   desc->niter_expr = const0_rtx;
+  return;
+  
+fail:
+  desc->simple_p = false;
   return;
 }
 
@@ -2625,9 +2636,19 @@ find_simple_exit (struct loop *loop, struct niter_desc *desc)
 	  /* Prefer constant iterations; the less the better.  */
 	  if (!any)
 	    any = true;
-	  else if (!act.const_iter
-		   || (desc->const_iter && act.niter >= desc->niter))
-	    continue;
+          else
+            {
+              /* Prefer constant iterations; the less the better.  */
+              if (!act.const_iter
+                  || (desc->const_iter && act.niter >= desc->niter))
+                continue;
+              
+              /* Also if the actual exit may be infinite, while the old one
+                 not, prefer the old one.  */
+              if (act.infinite && !desc->infinite)
+                continue;
+            }
+          
 	  *desc = act;
 	}
     }
