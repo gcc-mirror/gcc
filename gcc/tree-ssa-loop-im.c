@@ -927,6 +927,109 @@ rewrite_mem_refs (tree tmp_var, struct mem_ref_loc *mem_refs)
     }
 }
 
+/* The name and the length of the currently generated variable
+   for lsm.  */
+#define MAX_LSM_NAME_LENGTH 40
+static char lsm_tmp_name[MAX_LSM_NAME_LENGTH + 1];
+static int lsm_tmp_name_length;
+
+/* Adds S to lsm_tmp_name.  */
+
+static void
+lsm_tmp_name_add (const char *s)
+{
+  int l = strlen (s) + lsm_tmp_name_length;
+  if (l > MAX_LSM_NAME_LENGTH)
+    return;
+
+  strcpy (lsm_tmp_name + lsm_tmp_name_length, s);
+  lsm_tmp_name_length = l;
+}
+
+/* Stores the name for temporary variable that replaces REF to
+   lsm_tmp_name.  */
+
+static void
+gen_lsm_tmp_name (tree ref)
+{
+  const char *name;
+
+  switch (TREE_CODE (ref))
+    {
+    case MISALIGNED_INDIRECT_REF:
+    case ALIGN_INDIRECT_REF:
+    case INDIRECT_REF:
+      gen_lsm_tmp_name (TREE_OPERAND (ref, 0));
+      lsm_tmp_name_add ("_");
+      break;
+
+    case BIT_FIELD_REF:
+    case VIEW_CONVERT_EXPR:
+    case ARRAY_RANGE_REF:
+      gen_lsm_tmp_name (TREE_OPERAND (ref, 0));
+      break;
+
+    case REALPART_EXPR:
+      gen_lsm_tmp_name (TREE_OPERAND (ref, 0));
+      lsm_tmp_name_add ("_RE");
+      break;
+      
+    case IMAGPART_EXPR:
+      gen_lsm_tmp_name (TREE_OPERAND (ref, 0));
+      lsm_tmp_name_add ("_IM");
+      break;
+
+    case COMPONENT_REF:
+      gen_lsm_tmp_name (TREE_OPERAND (ref, 0));
+      lsm_tmp_name_add ("_");
+      name = get_name (TREE_OPERAND (ref, 1));
+      if (!name)
+	name = "F";
+      lsm_tmp_name_add ("_");
+      lsm_tmp_name_add (name);
+
+    case ARRAY_REF:
+      gen_lsm_tmp_name (TREE_OPERAND (ref, 0));
+      lsm_tmp_name_add ("_I");
+      break;
+
+    case SSA_NAME:
+      ref = SSA_NAME_VAR (ref);
+      /* Fallthru.  */
+
+    case VAR_DECL:
+    case PARM_DECL:
+      name = get_name (ref);
+      if (!name)
+	name = "D";
+      lsm_tmp_name_add (name);
+      break;
+
+    case STRING_CST:
+      lsm_tmp_name_add ("S");
+      break;
+
+    case RESULT_DECL:
+      lsm_tmp_name_add ("R");
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Determines name for temporary variable that replaces REF.
+   The name is accumulated into the lsm_tmp_name variable.  */
+
+static char *
+get_lsm_tmp_name (tree ref)
+{
+  lsm_tmp_name_length = 0;
+  gen_lsm_tmp_name (ref);
+  lsm_tmp_name_add ("_lsm");
+  return lsm_tmp_name;
+}
+
 /* Records request for store motion of memory reference REF from LOOP.
    MEM_REFS is the list of occurrences of the reference REF inside LOOP;
    these references are rewritten by a new temporary variable.
@@ -952,7 +1055,8 @@ schedule_sm (struct loop *loop, edge *exits, unsigned n_exits, tree ref,
       fprintf (dump_file, " from loop %d\n", loop->num);
     }
 
-  tmp_var = make_rename_temp (TREE_TYPE (ref), "lsm_tmp");
+  tmp_var = make_rename_temp (TREE_TYPE (ref),
+			      get_lsm_tmp_name (ref));
 
   fmt_data.loop = loop;
   fmt_data.orig_loop = loop;
