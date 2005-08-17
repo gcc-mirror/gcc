@@ -1428,7 +1428,7 @@ __callt_save_r6_r9:	.short ctoff(.L_save_r6_r9)
 
 	
 #ifdef	L_callt_save_interrupt
-	/* Put this functions into the call table area */
+	/* Put these functions into the call table area.  */
 	.call_table_text
 	
 	/* Save registers r1, ep, gp, r10 on stack and load up with expected values.  */
@@ -1440,23 +1440,14 @@ __callt_save_r6_r9:	.short ctoff(.L_save_r6_r9)
         st.w    ep,  0[sp]
         st.w    gp,  4[sp]
         st.w    r1,  8[sp]
-        /* R10 has alread been saved bofore callt ctoff(_save_interrupt).  */
+        /* R10 has already been saved before callt ctoff(_save_interrupt).  */
         /* st.w    r10, 12[sp]  */
 	mov	hilo(__ep),ep
 	mov	hilo(__gp),gp
 	ctret
 
-        /* Place the offsets of the start of the routine into the call table.  */
-        .call_table_data
-        .global __callt_save_interrupt
-        .type   __callt_save_interrupt,@function
-__callt_save_interrupt: .short ctoff(.L_save_interrupt)
-
-        .call_table_text
-
 	/* Restore saved registers, deallocate stack and return from the interrupt.  */
-        /* Called via:  callt ctoff(__callt_restore_itnerrupt).  */
-	.text
+        /* Called via:  callt ctoff(__callt_restore_interrupt).  */
 	.align	2
 	.globl	__return_interrupt
 	.type	__return_interrupt,@function
@@ -1472,8 +1463,12 @@ __callt_save_interrupt: .short ctoff(.L_save_interrupt)
         addi    24, sp, sp
         reti
 
-	/* Place the offsets of the start of the routine into the call table.  */
+	/* Place the offsets of the start of these routines into the call table.  */
 	.call_table_data
+
+        .global __callt_save_interrupt
+        .type   __callt_save_interrupt,@function
+__callt_save_interrupt:         .short ctoff(.L_save_interrupt)
 
         .global __callt_return_interrupt
         .type   __callt_return_interrupt,@function
@@ -1482,7 +1477,7 @@ __callt_return_interrupt:       .short ctoff(.L_return_interrupt)
 #endif /* L_callt_save_interrupt */
 
 #ifdef L_callt_save_all_interrupt
-	/* Put this functions into the call table area.  */
+	/* Put these functions into the call table area.  */
 	.call_table_text
 	
 	/* Save all registers except for those saved in __save_interrupt.  */
