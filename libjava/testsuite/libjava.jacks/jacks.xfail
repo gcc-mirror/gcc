@@ -249,9 +249,6 @@
 15.18.1-float-9
 15.18.1-valid-1
 15.20-2-runtime-1
-15.21-assoc-7
-15.21-assoc-8
-15.21-equal-3
 15.25-runtime-1
 15.26.2-add-12
 15.26.2-and-10
@@ -291,7 +288,6 @@
 15.28-simple-namestr-2
 15.28-simple-namestr-3
 15.28-simple-namestr-4
-15.28-string-11
 15.28-string-15
 15.28-string-17
 15.28-string-18

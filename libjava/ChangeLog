@@ -1,3 +1,8 @@
+2005-08-17  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/libjava.jacks/jacks.xfail: Remove 15.21-assoc-7,
+	15.21-assoc-8, 15.21-equal-3, 15.28-string-11.
+
 2005-08-16  Ranjit Mathew  <rmathew@hotmail.com>
 
 	More testsuite adjustments for PR java/19870.
