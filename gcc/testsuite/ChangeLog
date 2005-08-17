@@ -1,3 +1,7 @@
+2005-08-16  James E Wilson  <wilson@specifix.com>
+
+	* gcc.dg/large-size-array.c (DIM): Use USHRT_MAX not USHORT_MAX.
+
 2005-08-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/23402
