@@ -1,3 +1,8 @@
+2005-08-17  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* config/arm/unaligned-funcs.c,config/i386/crtfastmath.c,
+	ipa-cp.c,ipa-prop.c,ipa-prop.h: Update FSF address.
+
 2005-08-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/23402
