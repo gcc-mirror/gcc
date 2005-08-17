@@ -473,6 +473,9 @@ likely_value (tree stmt)
       && TREE_CODE (stmt) != SWITCH_EXPR)
     return VARYING;
 
+  if (is_gimple_min_invariant (get_rhs (stmt)))
+    return CONSTANT;
+
   found_constant = false;
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE|SSA_OP_VUSE)
     {
@@ -658,7 +661,8 @@ ccp_lattice_meet (prop_value_t *val1, prop_value_t *val2)
 	   && val2->lattice_val == CONSTANT
 	   && simple_cst_equal (val1->value, val2->value) == 1
 	   && (!do_store_ccp
-	       || simple_cst_equal (val1->mem_ref, val2->mem_ref) == 1))
+	       || (val1->mem_ref && val2->mem_ref
+		   && operand_equal_p (val1->mem_ref, val2->mem_ref, 0))))
     {
       /* Ci M Cj = Ci		if (i == j)
 	 Ci M Cj = VARYING	if (i != j)
@@ -826,7 +830,8 @@ ccp_fold (tree stmt)
       /* If the RHS is a memory load, see if the VUSEs associated with
 	 it are a valid constant for that memory load.  */
       prop_value_t *val = get_value_loaded_by (stmt, const_val);
-      if (val && simple_cst_equal (val->mem_ref, rhs) == 1)
+      if (val && val->mem_ref
+	  && operand_equal_p (val->mem_ref, rhs, 0))
 	return val->value;
       else
 	return NULL_TREE;
@@ -1085,7 +1090,11 @@ evaluate_stmt (tree stmt)
       /* The statement produced a nonconstant value.  If the statement
 	 had UNDEFINED operands, then the result of the statement
 	 should be UNDEFINED.  Otherwise, the statement is VARYING.  */
-      val.lattice_val = (likelyvalue == UNDEFINED) ? UNDEFINED : VARYING;
+      if (likelyvalue == UNDEFINED || likelyvalue == UNKNOWN_VAL)
+	val.lattice_val = likelyvalue;
+      else
+	val.lattice_val = VARYING;
+
       val.value = NULL_TREE;
     }
 
@@ -1122,7 +1131,8 @@ visit_assignment (tree stmt, tree *output_p)
 	 we can propagate the value on the RHS.  */
       prop_value_t *nval = get_value_loaded_by (stmt, const_val);
 
-      if (nval && simple_cst_equal (nval->mem_ref, rhs) == 1)
+      if (nval && nval->mem_ref
+	  && operand_equal_p (nval->mem_ref, rhs, 0))
 	val = *nval;
       else
 	val = evaluate_stmt (stmt);
