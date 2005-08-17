@@ -236,6 +236,7 @@ jboolean _Jv_CheckAccess (jclass self_klass, jclass other_klass,
 jclass _Jv_GetArrayClass (jclass klass, java::lang::ClassLoader *loader);
 
 jboolean _Jv_IsInterpretedClass (jclass);
+jboolean _Jv_IsBinaryCompatibilityABI (jclass);
 
 #ifdef INTERPRETER
 void _Jv_InitField (jobject, jclass, int);
@@ -469,6 +470,7 @@ private:
 				       java::lang::ClassLoader *loader);
 
   friend jboolean (::_Jv_IsInterpretedClass) (jclass);
+  friend jboolean (::_Jv_IsBinaryCompatibilityABI) (jclass);
 
 #ifdef INTERPRETER
   friend void ::_Jv_InitField (jobject, jclass, int);

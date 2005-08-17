@@ -1852,13 +1852,9 @@ make_class_data (tree type)
   PUSH_FIELD_VALUE (cons, "loader", null_pointer_node);
   PUSH_FIELD_VALUE (cons, "interface_count",
 		    build_int_cst (NULL_TREE, interface_len));
-  PUSH_FIELD_VALUE 
-    (cons, "state",
-     convert (byte_type_node,
-	      build_int_cst (NULL_TREE,
-			     flag_indirect_dispatch
-			     ? JV_STATE_PRELOADING
-			     : JV_STATE_COMPILED)));
+  PUSH_FIELD_VALUE (cons, "state",
+		    convert (byte_type_node,
+			     build_int_cst (NULL_TREE, JV_STATE_PRELOADING)));
 
   PUSH_FIELD_VALUE (cons, "thread", null_pointer_node);
   PUSH_FIELD_VALUE (cons, "depth", integer_zero_node);

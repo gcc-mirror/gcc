@@ -1653,11 +1653,10 @@ _Jv_Linker::print_class_loaded (jclass klass)
   if (codesource == NULL)
     codesource = "<no code source>";
 
-  // We use a somewhat bogus test for the ABI here.
   char *abi;
   if (_Jv_IsInterpretedClass (klass))
     abi = "bytecode";
-  else if (klass->state == JV_STATE_PRELOADING)
+  else if (_Jv_IsBinaryCompatibilityABI (klass))
     abi = "BC-compiled";
   else
     abi = "pre-compiled";

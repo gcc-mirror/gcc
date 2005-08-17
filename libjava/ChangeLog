@@ -1,3 +1,13 @@
+2005-08-17  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Class.h (_Jv_IsBinaryCompatibilityABI): Declare as
+	friend.
+	* include/jvm.h (_Jv_IsBinaryCompatibilityABI): New function.
+	* testsuite/libjava.lang/bclink.java: New file.
+	* testsuite/libjava.lang/bclink.out: New file.
+	* link.cc (print_class_loaded): Changed ABI test to look at
+	various _syms fields.
+
 2005-08-17  Paolo Bonzini  <bonzini@gnu.org>
 
 	Backport from mainline:
