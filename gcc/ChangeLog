@@ -1,5 +1,9 @@
 2005-08-18  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	* tree-data-ref.c (analyze_siv_subscript_cst_affine): Fix comment typo.
+
+2005-08-18  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	* c-typeck.c (designator_errorneous): Rename to designator_erroneous.
 
 2005-08-18  Andrew Pinski  <pinskia@physics.uc.edu>
