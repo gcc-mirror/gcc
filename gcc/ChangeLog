@@ -1,3 +1,8 @@
+2005-08-18  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/16045
+	* builtins.c (fold_builtin): Create a new NOP_EXPR all the time.
+
 2005-08-17  James E Wilson  <wilson@specifix.com>
 
 	* c-decl.c (grokdeclarator): Use TYPE_SIZE_UNIT not TYPE_SIZE in

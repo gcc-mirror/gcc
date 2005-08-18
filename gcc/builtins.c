@@ -8910,9 +8910,7 @@ fold_builtin (tree fndecl, tree arglist, bool ignore)
   tree exp = fold_builtin_1 (fndecl, arglist, ignore);
   if (exp)
     {
-      /* ??? Don't clobber shared nodes such as integer_zero_node.  */
-      if (CONSTANT_CLASS_P (exp))
-	exp = build1 (NOP_EXPR, TREE_TYPE (exp), exp);
+      exp = build1 (NOP_EXPR, TREE_TYPE (exp), exp);
       TREE_NO_WARNING (exp) = 1;
     }
 
