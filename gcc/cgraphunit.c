@@ -814,7 +814,10 @@ cgraph_varpool_assemble_pending_decls (void)
 	  assemble_variable (decl, 0, 1, 0);
 	  /* Local static variables are never seen by check_global_declarations
 	     so we need to output debug info by hand.  */
-	  if (decl_function_context (decl) && errorcount == 0 && sorrycount == 0)
+	  if (DECL_CONTEXT (decl) 
+	      && (TREE_CODE (DECL_CONTEXT (decl)) == BLOCK
+	          || TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL)
+	      && errorcount == 0 && sorrycount == 0)
 	    {
 	      timevar_push (TV_SYMOUT);
 	      (*debug_hooks->global_decl) (decl);
