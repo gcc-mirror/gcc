@@ -1,5 +1,9 @@
 2005-08-18  Paolo Bonzini  <bonzini@gnu.org>
 
+	PR c/21562
+	* cfgexpand.c (construct_init_block): Deal properly with the case
+	of entry edge not pointing to very first basic block.
+
 	* loop-iv.c (iv_number_of_iterations): Match the patch that was
 	applied to mainline for the previous checkin.
 

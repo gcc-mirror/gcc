@@ -1,3 +1,8 @@
+2005-08-18  Paolo Bonzini  <bonzini@gcc.gnu.org>
+
+	PR c/21562
+	* gcc.c-torture/compile/pr21562.c: New.
+
 2005-08-16  Ian Lance Taylor  <ian@airs.com>
 
 	PR c++/23337
