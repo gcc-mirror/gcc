@@ -1,3 +1,7 @@
+2005-08-18  Ian Lance Taylor  <ian@airs.com>
+
+	* MAINTAINERS: Add myself as middle-end maintainer.
+
 2005-08-17  Christian Groessler  <chris@groessler.org>
 
 	* Makefile.tpl: (USUAL_CC_FOR_TARGET): Add missing trailing slash.
