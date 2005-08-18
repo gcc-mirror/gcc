@@ -2203,8 +2203,8 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	    {
 	      desc->infinite =
 		      alloc_EXPR_LIST (0, const_true_rtx, NULL_RTX);
-              /* Fill in the remaining fields somehow.  */
-              goto zero_iter_simplify;
+	      /* Fill in the remaining fields somehow.  */
+	      goto zero_iter_simplify;
 	    }
 	}
       else
@@ -2214,8 +2214,8 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	    {
 	      desc->infinite =
 		      alloc_EXPR_LIST (0, const_true_rtx, NULL_RTX);
-              /* Fill in the remaining fields somehow.  */
-              goto zero_iter_simplify;
+	      /* Fill in the remaining fields somehow.  */
+	      goto zero_iter_simplify;
 	    }
 	}
     }
@@ -2545,15 +2545,16 @@ zero_iter_simplify:
       && XEXP (desc->assumptions, 0) == const0_rtx)
     goto fail;
   simplify_using_initial_values (loop, IOR, &desc->infinite);
-  
+
   /* Fallthru.  */
 zero_iter:
   desc->const_iter = true;
   desc->niter = 0;
   desc->niter_max = 0;
+  desc->noloop_assumptions = NULL_RTX;
   desc->niter_expr = const0_rtx;
   return;
-  
+
 fail:
   desc->simple_p = false;
   return;
@@ -2633,22 +2634,21 @@ find_simple_exit (struct loop *loop, struct niter_desc *desc)
 	  if (!act.simple_p)
 	    continue;
 
-	  /* Prefer constant iterations; the less the better.  */
 	  if (!any)
 	    any = true;
-          else
-            {
-              /* Prefer constant iterations; the less the better.  */
-              if (!act.const_iter
-                  || (desc->const_iter && act.niter >= desc->niter))
-                continue;
-              
-              /* Also if the actual exit may be infinite, while the old one
-                 not, prefer the old one.  */
-              if (act.infinite && !desc->infinite)
-                continue;
-            }
-          
+	  else
+	    {
+	      /* Prefer constant iterations; the less the better.  */
+	      if (!act.const_iter
+		  || (desc->const_iter && act.niter >= desc->niter))
+		continue;
+
+	      /* Also if the actual exit may be infinite, while the old one
+		 not, prefer the old one.  */
+	      if (act.infinite && !desc->infinite)
+		continue;
+	    }
+	  
 	  *desc = act;
 	}
     }
