@@ -6678,20 +6678,24 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
       /* Structures with a single member with a distinct mode are passed
 	 like their member.  This is relevant if the latter has a REAL_TYPE
 	 or COMPLEX_TYPE type.  */
-      if (TREE_CODE (type) == RECORD_TYPE
-	  && TYPE_FIELDS (type)
-	  && TREE_CODE (TYPE_FIELDS (type)) == FIELD_DECL
-	  && (TREE_CODE (TREE_TYPE (TYPE_FIELDS (type))) == REAL_TYPE
-	      || TREE_CODE (TREE_TYPE (TYPE_FIELDS (type))) == COMPLEX_TYPE)
-          && TREE_CHAIN (TYPE_FIELDS (type)) == NULL_TREE)
+      while (TREE_CODE (type) == RECORD_TYPE
+	     && TYPE_FIELDS (type)
+	     && TREE_CODE (TYPE_FIELDS (type)) == FIELD_DECL
+	     && (TREE_CODE (TREE_TYPE (TYPE_FIELDS (type))) == REAL_TYPE
+		 || TREE_CODE (TREE_TYPE (TYPE_FIELDS (type))) == COMPLEX_TYPE
+		 || TREE_CODE (TREE_TYPE (TYPE_FIELDS (type))) == RECORD_TYPE)
+             && TREE_CHAIN (TYPE_FIELDS (type)) == NULL_TREE)
 	{
 	  tree field_type = TREE_TYPE (TYPE_FIELDS (type));
 
 	  if (TYPE_MODE (type) == TYPE_MODE (field_type))
 	    type = field_type;
 	  else
-	    gcc_assert (TYPE_ALIGN (type)
-			< GET_MODE_ALIGNMENT (TYPE_MODE (field_type)));
+	    {
+	      gcc_assert (TYPE_ALIGN (type)
+			  < GET_MODE_ALIGNMENT (TYPE_MODE (field_type)));
+	    break;
+	    }
 	}
 
       if (TARGET_SH4)
