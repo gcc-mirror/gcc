@@ -94,9 +94,17 @@ extern int __mf_heuristic_check (uintptr_t, uintptr_t);
 /* Type definitions. */
 /* ------------------------------------------------------------------------ */
 
-/* The mf_state type codes describe recursion and initialization order. */
+/* The mf_state type codes describe recursion and initialization order.
 
-enum __mf_state_enum { active, reentrant };
+   reentrant means we are inside a mf-runtime support routine, such as
+   __mf_register, and thus there should be no calls to any wrapped functions,
+   such as the wrapped malloc.  This indicates a bug if it occurs.
+   in_malloc means we are inside a real malloc call inside a wrapped malloc
+   call, and thus there should be no calls to any wrapped functions like the
+   wrapped mmap.  This happens on some systems due to how the system libraries
+   are constructed.  */
+
+enum __mf_state_enum { active, reentrant, in_malloc }; 
 
 /* The __mf_options structure records optional or tunable aspects of the
  mudflap library's behavior. There is a single global instance of this
@@ -379,11 +387,23 @@ ret __mfwrap_ ## fname (__VA_ARGS__)
     __mf_reentrancy ++; \
     return CALL_REAL(fname, __VA_ARGS__);   \
   }                                         \
+  else if (UNLIKELY (__mf_get_state () == in_malloc))   \
+  {                                         \
+    return CALL_REAL(fname, __VA_ARGS__);   \
+  }                                         \
   else                                      \
   {                                         \
     TRACE ("%s\n", __PRETTY_FUNCTION__); \
   }
 
+/* There is an assumption here that these will only be called in routines
+   that call BEGIN_PROTECT at the start, and hence the state must always
+   be active when BEGIN_MALLOC_PROTECT is called.  */
+#define BEGIN_MALLOC_PROTECT() \
+  __mf_set_state (in_malloc)
+
+#define END_MALLOC_PROTECT() \
+  __mf_set_state (active)
 
 /* Unlocked variants of main entry points from mf-runtime.h.  */
 extern void __mfu_check (void *ptr, size_t sz, int type, const char *location);

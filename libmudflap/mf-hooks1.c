@@ -108,7 +108,9 @@ WRAPPER(void *, malloc, size_t c)
   size_with_crumple_zones =
     CLAMPADD(c,CLAMPADD(__mf_opts.crumple_zone,
 			__mf_opts.crumple_zone));
+  BEGIN_MALLOC_PROTECT ();
   result = (char *) CALL_REAL (malloc, size_with_crumple_zones);
+  END_MALLOC_PROTECT ();
 
   if (LIKELY(result))
     {
@@ -145,7 +147,9 @@ WRAPPER(void *, calloc, size_t c, size_t n)
     CLAMPADD((c * n), /* XXX: CLAMPMUL */
 	     CLAMPADD(__mf_opts.crumple_zone,
 		      __mf_opts.crumple_zone));
+  BEGIN_MALLOC_PROTECT ();
   result = (char *) CALL_REAL (malloc, size_with_crumple_zones);
+  END_MALLOC_PROTECT ();
 
   if (LIKELY(result))
     memset (result, 0, size_with_crumple_zones);
@@ -187,7 +191,9 @@ WRAPPER(void *, realloc, void *buf, size_t c)
   size_with_crumple_zones =
     CLAMPADD(c, CLAMPADD(__mf_opts.crumple_zone,
 			 __mf_opts.crumple_zone));
+  BEGIN_MALLOC_PROTECT ();
   result = (char *) CALL_REAL (realloc, base, size_with_crumple_zones);
+  END_MALLOC_PROTECT ();
 
   /* Ensure heap wiping doesn't occur during this peculiar
      unregister/reregister pair.  */
@@ -272,7 +278,9 @@ WRAPPER(void, free, void *buf)
 			     (void *) freeme,
 			     __mf_opts.crumple_zone);
 	    }
+	  BEGIN_MALLOC_PROTECT ();
 	  CALL_REAL (free, freeme);
+	  END_MALLOC_PROTECT ();
 	}
     }
   else
@@ -287,7 +295,9 @@ WRAPPER(void, free, void *buf)
 			 (void *) buf,
 			 __mf_opts.crumple_zone);
 	}
+      BEGIN_MALLOC_PROTECT ();
       CALL_REAL (free, base);
+      END_MALLOC_PROTECT ();
     }
 }
 
@@ -420,8 +430,10 @@ __mf_wrap_alloca_indirect (size_t c)
     {
       struct alloca_tracking *next = alloca_history->next;
       __mf_unregister (alloca_history->ptr, 0, __MF_TYPE_HEAP);
+      BEGIN_MALLOC_PROTECT ();
       CALL_REAL (free, alloca_history->ptr);
       CALL_REAL (free, alloca_history);
+      END_MALLOC_PROTECT ();
       alloca_history = next;
     }
 
@@ -429,14 +441,20 @@ __mf_wrap_alloca_indirect (size_t c)
   result = NULL;
   if (LIKELY (c > 0)) /* alloca(0) causes no allocation.  */
     {
+      BEGIN_MALLOC_PROTECT ();
       track = (struct alloca_tracking *) CALL_REAL (malloc,
 						    sizeof (struct alloca_tracking));
+      END_MALLOC_PROTECT ();
       if (LIKELY (track != NULL))
 	{
+	  BEGIN_MALLOC_PROTECT ();
 	  result = CALL_REAL (malloc, c);
+	  END_MALLOC_PROTECT ();
 	  if (UNLIKELY (result == NULL))
 	    {
+	      BEGIN_MALLOC_PROTECT ();
 	      CALL_REAL (free, track);
+	      END_MALLOC_PROTECT ();
 	      /* Too bad.  XXX: What about errno?  */
 	    }
 	  else

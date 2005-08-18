@@ -1,3 +1,13 @@
+2005-08-17  Jim Wilson  <wilson@specifix.com>
+
+	* mf-hooks1.c (malloc, calloc, realloc, free,
+	__mf_wrap_alloca_indirect): Call BEGIN_MALLOC_PROTECT before calling
+	the real routines, and END_MALLOC_PROTECT afterwards.
+	* mf-impl.h (enum __mf_state_enum): Expand comment.  Add in_malloc.
+	(BEGIN_PROTECT): Handle in_malloc state.
+	(BEGIN_MALLOC_PROTECT, END_MALLOC_PROTECT): New.
+	* testsuite/libmudflap.c/hook2-allocstuff.c: New.
+
 2005-08-17  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* All files: Update FSF address.
