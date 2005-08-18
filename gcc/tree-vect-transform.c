@@ -2735,9 +2735,15 @@ vect_transform_loop (loop_vec_info loop_vinfo,
   int i;
   tree ratio = NULL;
   int vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  bitmap_iterator bi;
+  unsigned int j;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vec_transform_loop ===");
+
+  /* CHECKME: we wouldn't need this if we calles update_ssa once
+     for all loops.  */
+  bitmap_zero (vect_vnames_to_rename);
 
   /* Peel the loop if there are data refs with unknown alignment.
      Only one data ref with unknown store is allowed.  */
@@ -2823,6 +2829,9 @@ vect_transform_loop (loop_vec_info loop_vinfo,
     }				/* BBs in loop */
 
   slpeel_make_loop_iterate_ntimes (loop, ratio);
+
+  EXECUTE_IF_SET_IN_BITMAP (vect_vnames_to_rename, 0, j, bi)
+    mark_sym_for_renaming (SSA_NAME_VAR (ssa_name (j)));
 
   /* The memory tags and pointers in vectorized statements need to
      have their SSA forms updated.  FIXME, why can't this be delayed

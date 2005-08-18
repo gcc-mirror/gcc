@@ -212,7 +212,7 @@ struct tree_opt_pass pass_vectorize =
   PROP_cfg | PROP_ssa,                  /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
+  TODO_verify_loops,			/* todo_flags_start */
   TODO_dump_func | TODO_update_ssa,	/* todo_flags_finish */
   0					/* letter */
 };
