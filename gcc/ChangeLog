@@ -1,7 +1,16 @@
+2005-08-18  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (ltu<mode>_compare): Convert to
+	define_insn_and_split.
+	(plus_ltu<mode>_compare): Same.
+	(gtu<mode>_compare): Same.
+	(plus_gtu<mode>_compare): Same.
+
 2005-08-18  Dorit Nuzman  <dorit@il.ibm.com>
 
 	PR tree-optimization/22228
-	* tree-ssa-loop (pass_vectorize): Add TODO_verify_loops to todo_flags_start.
+	* tree-ssa-loop (pass_vectorize): Add TODO_verify_loops to
+	todo_flags_start.
 	* tree-vect-transform.c (vect_transform_loop): Mark the variables that
 	are recorded in vect_vnames_to_rename for renaming.
 	* tree-vectorizer.c (vect_vnames_to_rename): New global bitmap.
