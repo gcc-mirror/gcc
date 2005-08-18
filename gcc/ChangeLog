@@ -1,3 +1,9 @@
+2005-08-18  Jan Hubicka  <jh@suse.cz>
+
+	PR c++/22034
+	* cgraphunit.c (cgraph_varpool_assemble_pending_decls): Emit debug
+	info only for local statics, not for member variables.
+
 2005-08-18  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* tree-data-ref.c (analyze_siv_subscript_cst_affine): Fix comment typo.
