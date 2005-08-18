@@ -1,3 +1,8 @@
+2005-08-18  J"orn Rennecke <joern.rennecke@st.com>
+
+	* sh.c (sh_gimplify_va_arg_expr): Loop to substitute a RECORD_TYPE
+	record with the type of its only member.
+
 2005-08-18  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (ltu<mode>_compare): Convert to
@@ -80,6 +85,9 @@
 	("lrint<mode>2"): Change expander to use "*fist<mode>2_1" pattern.
 
 2005-08-17  J"orn Rennecke <joern.rennecke@st.com>
+
+	* sh.c (sh_gimplify_va_arg_expr): Don't substitute a RECORD_TYPE
+	record with the type of its only member if the modes don't match.
 
 	* varasm.c (decode_reg_name): Skip empty additional register names.
 
