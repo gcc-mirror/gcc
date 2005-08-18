@@ -2248,7 +2248,7 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 		      return;
 		    }
 		  
-		  /* When the step does not divides the difference, there
+		  /* When the step does not divide the difference, there
 		     are no overlaps.  */
 		  else
 		    {
