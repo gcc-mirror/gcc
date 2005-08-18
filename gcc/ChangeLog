@@ -1,3 +1,7 @@
+2005-08-18  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* c-typeck.c (designator_errorneous): Rename to designator_erroneous.
+
 2005-08-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/16045

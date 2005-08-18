@@ -4642,7 +4642,7 @@ static int constructor_designated;
 static int designator_depth;
 
 /* Nonzero if there were diagnosed errors in this designator list.  */
-static int designator_errorneous;
+static int designator_erroneous;
 
 
 /* This stack has a level for each implicit or explicit level of
@@ -4856,7 +4856,7 @@ really_start_incremental_init (tree type)
   constructor_incremental = 1;
   constructor_designated = 0;
   designator_depth = 0;
-  designator_errorneous = 0;
+  designator_erroneous = 0;
 
   if (TREE_CODE (constructor_type) == RECORD_TYPE
       || TREE_CODE (constructor_type) == UNION_TYPE)
@@ -5000,7 +5000,7 @@ push_init_level (int implicit)
       p->range_stack = constructor_range_stack;
       constructor_range_stack = 0;
       designator_depth = 0;
-      designator_errorneous = 0;
+      designator_erroneous = 0;
     }
 
   /* Don't die if an entire brace-pair level is superfluous
@@ -5294,7 +5294,7 @@ set_designator (int array)
 
   /* If there were errors in this designator list already, bail out
      silently.  */
-  if (designator_errorneous)
+  if (designator_erroneous)
     return 1;
 
   if (!designator_depth)
@@ -5373,7 +5373,7 @@ set_init_index (tree first, tree last)
   if (set_designator (1))
     return;
 
-  designator_errorneous = 1;
+  designator_erroneous = 1;
 
   if (!INTEGRAL_TYPE_P (TREE_TYPE (first))
       || (last && !INTEGRAL_TYPE_P (TREE_TYPE (last))))
@@ -5419,7 +5419,7 @@ set_init_index (tree first, tree last)
 	}
 
       designator_depth++;
-      designator_errorneous = 0;
+      designator_erroneous = 0;
       if (constructor_range_stack || last)
 	push_range_stack (last);
     }
@@ -5435,7 +5435,7 @@ set_init_label (tree fieldname)
   if (set_designator (0))
     return;
 
-  designator_errorneous = 1;
+  designator_erroneous = 1;
 
   if (TREE_CODE (constructor_type) != RECORD_TYPE
       && TREE_CODE (constructor_type) != UNION_TYPE)
@@ -5457,7 +5457,7 @@ set_init_label (tree fieldname)
     {
       constructor_fields = tail;
       designator_depth++;
-      designator_errorneous = 0;
+      designator_erroneous = 0;
       if (constructor_range_stack)
 	push_range_stack (NULL_TREE);
     }
@@ -6177,7 +6177,7 @@ process_init_element (struct c_expr value)
   bool strict_string = value.original_code == STRING_CST;
 
   designator_depth = 0;
-  designator_errorneous = 0;
+  designator_erroneous = 0;
 
   /* Handle superfluous braces around string cst as in
      char x[] = {"foo"}; */
