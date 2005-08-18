@@ -1,3 +1,8 @@
+2005-08-17  James E Wilson  <wilson@specifix.com>
+
+	* c-decl.c (grokdeclarator): Use TYPE_SIZE_UNIT not TYPE_SIZE in
+	array size check.
+
 2005-08-17  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (leu<mode>): Convert to mode macro.
