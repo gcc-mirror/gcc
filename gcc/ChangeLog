@@ -1,3 +1,15 @@
+2005-08-18  Dorit Nuzman  <dorit@il.ibm.com>
+
+	PR tree-optimization/22228
+	* tree-ssa-loop (pass_vectorize): Add TODO_verify_loops to todo_flags_start.
+	* tree-vect-transform.c (vect_transform_loop): Mark the variables that
+	are recorded in vect_vnames_to_rename for renaming.
+	* tree-vectorizer.c (vect_vnames_to_rename): New global bitmap.
+	(slpeel_update_phi_nodes_for_guard1): Record virtual vars for renaming
+	in vect_vnames_to_rename.
+	(vectorize_loops): Allocate and free the vect_vnames_to_rename bitmap.
+	* tree-vectorizer.h (vect_vnames_to_rename): New extern variable.
+
 2005-08-18  Jan Hubicka  <jh@suse.cz>
 
 	PR c++/22034
