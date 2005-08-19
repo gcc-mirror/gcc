@@ -1,3 +1,10 @@
+2005-08-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* collect2.c (dup2): Delete.
+	* configure.ac: Don't check for dup2.
+
+	* config.in, configure: Regenerate.
+
 2005-08-18  J"orn Rennecke <joern.rennecke@st.com>
 
 	* sh.c (sh_gimplify_va_arg_expr): Loop to substitute a RECORD_TYPE

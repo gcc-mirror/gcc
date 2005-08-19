@@ -271,26 +271,6 @@ static char *resolve_lib_name (const char *);
 #endif
 static char *extract_string (const char **);
 
-#ifndef HAVE_DUP2
-static int
-dup2 (int oldfd, int newfd)
-{
-  int fdtmp[256];
-  int fdx = 0;
-  int fd;
-
-  if (oldfd == newfd)
-    return oldfd;
-  close (newfd);
-  while ((fd = dup (oldfd)) != newfd && fd >= 0) /* good enough for low fd's */
-    fdtmp[fdx++] = fd;
-  while (fdx > 0)
-    close (fdtmp[--fdx]);
-
-  return fd;
-}
-#endif /* ! HAVE_DUP2 */
-
 /* Delete tempfiles and exit function.  */
 
 void

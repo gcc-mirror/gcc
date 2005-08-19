@@ -9116,8 +9116,7 @@ fi
 
 
 
-
-for ac_func in times clock dup2 kill getrlimit setrlimit atoll atoq \
+for ac_func in times clock kill getrlimit setrlimit atoll atoq \
 	sysconf strsignal getrusage nl_langinfo scandir alphasort \
 	gettimeofday mbstowcs wcswidth mmap mincore setlocale \
 	clearerr_unlocked feof_unlocked   ferror_unlocked fflush_unlocked fgetc_unlocked fgets_unlocked   fileno_unlocked fprintf_unlocked fputc_unlocked fputs_unlocked   fread_unlocked fwrite_unlocked getchar_unlocked getc_unlocked   putchar_unlocked putc_unlocked
