@@ -223,7 +223,6 @@ enum reg_class
    || (reg_renumber && (unsigned)reg_renumber[REGNO] < 16))
 
 #define REGNO_OK_FOR_INDEX_P(REGNO)	   REGNO_OK_FOR_BASE_P(REGNO)
-#define REGNO_OK_FOR_INDEXED_BASE_P(REGNO) REGNO_OK_FOR_BASE_P(REGNO)
 
 #define PREFERRED_RELOAD_CLASS(X,CLASS) CLASS
 
@@ -329,7 +328,7 @@ struct cumulative_args
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED) \
   crx_function_arg_advance(&(CUM), (MODE), (TYPE), (NAMED))
 
-#define FUNCTION_ARG_REGNO_P(REGNO)  crx_function_arg_regno_p((REGNO))
+#define FUNCTION_ARG_REGNO_P(REGNO)  crx_function_arg_regno_p(REGNO)
 
 /*****************************************************************************/
 /* RETURNING FUNCTION VALUE						     */
@@ -384,22 +383,12 @@ struct cumulative_args
 #define HAVE_POST_MODIFY_DISP 1
 #define HAVE_POST_MODIFY_REG 0
 
-#define STRICT_REG_OK_FOR_BASE_P(X)	    REGNO_OK_FOR_BASE_P (REGNO (X))
-#define STRICT_REG_OK_FOR_INDEX_P(X)	    REGNO_OK_FOR_INDEX_P(REGNO(X))
-#define STRICT_REG_OK_FOR_INDEXED_BASE_P(X) REGNO_OK_FOR_INDEXED_BASE_P(REGNO(X))
-
-#define NONSTRICT_REG_OK_FOR_BASE_P(X)		1
-#define NONSTRICT_REG_OK_FOR_INDEX_P(X)		1
-#define NONSTRICT_REG_OK_FOR_INDEXED_BASE_P(X)	1
-
 #ifdef REG_OK_STRICT
-#define REG_OK_FOR_BASE_P(X)		STRICT_REG_OK_FOR_BASE_P(X)
-#define REG_OK_FOR_INDEX_P(X)		STRICT_REG_OK_FOR_INDEX_P(X)
-#define REG_OK_FOR_INDEXED_BASE_P(X)	STRICT_REG_OK_FOR_INDEXED_BASE_P(X)
+#define REG_OK_FOR_BASE_P(X)	REGNO_OK_FOR_BASE_P (REGNO (X))
+#define REG_OK_FOR_INDEX_P(X)	REGNO_OK_FOR_INDEX_P (REGNO (X))
 #else
-#define REG_OK_FOR_BASE_P(X)		NONSTRICT_REG_OK_FOR_BASE_P(X)
-#define REG_OK_FOR_INDEX_P(X)		NONSTRICT_REG_OK_FOR_INDEX_P(X)
-#define REG_OK_FOR_INDEXED_BASE_P(X)	NONSTRICT_REG_OK_FOR_INDEXED_BASE_P(X)
+#define REG_OK_FOR_BASE_P(X)	1
+#define REG_OK_FOR_INDEX_P(X)	1
 #endif /* REG_OK_STRICT */
 
 #ifdef REG_OK_STRICT
@@ -414,9 +403,7 @@ struct cumulative_args
   if (crx_legitimate_address_p (MODE, X, 0))				\
       goto LABEL;							\
 }
-#endif
-
-#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)	{}
+#endif /* REG_OK_STRICT */
 
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)			\
 {									\

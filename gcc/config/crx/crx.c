@@ -65,32 +65,29 @@
 
 /* Predicate is true if the current function is a 'noreturn' function, i.e. it
  * is qualified as volatile.  */
-#define FUNC_IS_NORETURN_P(decl)  (TREE_THIS_VOLATILE (decl))
+#define FUNC_IS_NORETURN_P(decl) (TREE_THIS_VOLATILE (decl))
 
-/* The following 3 macros are used in crx_legitimate_address_p() */
+/* The following macros are used in crx_decompose_address () */
 
-/* Returns 1 if the scale factor of an index address is valid.  */
-#define SCALE_FOR_INDEX_P(X)					\
-  (GET_CODE (X) == CONST_INT					\
-   && (INTVAL (X) == 1 || INTVAL (X) == 2			\
-       || INTVAL(X) == 4 || INTVAL (X) == 8))
+/* Returns the factor of a scaled index address or -1 if invalid. */
+#define SCALE_FOR_INDEX_P(X)	\
+ (GET_CODE (X) == CONST_INT ?	\
+  (INTVAL (X) == 1 ? 1 :	\
+   INTVAL (X) == 2 ? 2 :	\
+   INTVAL (X) == 4 ? 4 :	\
+   INTVAL (X) == 8 ? 8 :	\
+   -1) :			\
+  -1)
 
 /* Nonzero if the rtx X is a signed const int of n bits */
 #define RTX_SIGNED_INT_FITS_N_BITS(X,n)			\
-  ((GET_CODE(X) == CONST_INT				\
-    && SIGNED_INT_FITS_N_BITS(INTVAL(X),n)) ? 1 : 0)
+ ((GET_CODE (X) == CONST_INT				\
+   && SIGNED_INT_FITS_N_BITS (INTVAL (X), n)) ? 1 : 0)
 
 /* Nonzero if the rtx X is an unsigned const int of n bits.  */
-#define RTX_UNSIGNED_INT_FITS_N_BITS(X,n)		\
-  ((GET_CODE(X) == CONST_INT				\
-    && UNSIGNED_INT_FITS_N_BITS(INTVAL(X),n)) ? 1 : 0)
-
-
-/* Register relative legal displacement */
-#define CRX_REGISTER_RELATIVE_DISP_P(X)				\
- (CONSTANT_ADDRESS_P(X)						\
-  && (GET_CODE (X) != CONST_INT					\
-      || RTX_SIGNED_INT_FITS_N_BITS(X, GET_MODE_BITSIZE (Pmode))))
+#define RTX_UNSIGNED_INT_FITS_N_BITS(X, n)		\
+ ((GET_CODE (X) == CONST_INT				\
+   && UNSIGNED_INT_FITS_N_BITS (INTVAL (X), n)) ? 1 : 0)
 
 /*****************************************************************************/
 /* STATIC VARIABLES							     */
@@ -114,7 +111,7 @@ static int sum_regs = 0;
 static int local_vars_size;
 
 /* The sum of 2 sizes: locals vars and padding byte for saving the registers.
- * Used in expand_prologue() and expand_epilogue().  */
+ * Used in expand_prologue () and expand_epilogue ().  */
 static int size_for_adjusting_sp;
 
 /* In case of a POST_INC or POST_DEC memory reference, we must report the mode
@@ -140,6 +137,7 @@ static bool crx_fixed_condition_code_regs (unsigned int *, unsigned int *);
 static rtx crx_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 				 int incoming ATTRIBUTE_UNUSED);
 static bool crx_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED);
+static int crx_address_cost (rtx);
 
 /*****************************************************************************/
 /* STACK LAYOUT AND CALLING CONVENTIONS					     */
@@ -153,6 +151,13 @@ static bool crx_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED);
 
 #undef	TARGET_RETURN_IN_MEMORY
 #define	TARGET_RETURN_IN_MEMORY		crx_return_in_memory
+
+/*****************************************************************************/
+/* RELATIVE COSTS OF OPERATIONS						     */
+/*****************************************************************************/
+
+#undef	TARGET_ADDRESS_COST
+#define	TARGET_ADDRESS_COST		crx_address_cost
 
 /*****************************************************************************/
 /* TARGET-SPECIFIC USES OF `__attribute__'				     */
@@ -260,7 +265,7 @@ crx_compute_save_regs (void)
 	}
 
       /* If this reg is used and not call-used (except RA), save it. */
-      if (crx_interrupt_function_p())
+      if (crx_interrupt_function_p ())
 	{
 	  if (!current_function_is_leaf && call_used_regs[regno])
 	    /* this is a volatile reg in a non-leaf interrupt routine - save it
@@ -353,10 +358,13 @@ crx_regno_reg_class (int regno)
   if (regno >= 0 && regno < SP_REGNUM)
     return NOSP_REGS;
 
-  if (regno == SP_REGNUM) return GENERAL_REGS;
+  if (regno == SP_REGNUM)
+    return GENERAL_REGS;
 
-  if (regno == LO_REGNUM) return LO_REGS;
-  if (regno == HI_REGNUM) return HI_REGS;
+  if (regno == LO_REGNUM)
+    return LO_REGS;
+  if (regno == HI_REGNUM)
+    return HI_REGS;
 
   return NO_REGS;
 }
@@ -429,7 +437,7 @@ crx_function_arg (CUMULATIVE_ARGS * cum, enum machine_mode mode, tree type,
 {
   last_parm_in_reg = 0;
 
-  /* Function_arg() is called with this type just after all the args have had
+  /* Function_arg () is called with this type just after all the args have had
    * their registers assigned. The rtx that function_arg returns from this type
    * is supposed to pass to 'gen_call' but currently it is not implemented (see
    * macro GEN_CALL).  */
@@ -535,7 +543,7 @@ crx_function_arg_regno_p (int n)
 /* ---------------- */
 
 /* Implements the macro GO_IF_LEGITIMATE_ADDRESS defined in crx.h.
- * The legitimate addressing modes for the CRX are:
+ * The following addressing modes are supported on CRX:
  *
  * Relocations		--> const | symbol_ref | label_ref
  * Absolute address	--> 32 bit absolute
@@ -545,124 +553,282 @@ crx_function_arg_regno_p (int n)
  * Scaled index		--> reg + reg | 22 bit disp. + reg + reg |
  *			    22 disp. + reg + reg + (2 | 4 | 8) */
 
+static int crx_addr_reg_p (rtx addr_reg)
+{
+  rtx reg;
+
+  if (REG_P (addr_reg))
+    {
+      reg = addr_reg;
+    }
+  else if ((GET_CODE (addr_reg) == SUBREG
+	   && REG_P (SUBREG_REG (addr_reg))
+	   && GET_MODE_SIZE (GET_MODE (SUBREG_REG (addr_reg)))
+	   <= UNITS_PER_WORD))
+    {
+      reg = SUBREG_REG (addr_reg);
+    }
+  else
+    return FALSE;
+
+  if (GET_MODE (addr_reg) != Pmode)
+    {
+      return FALSE;
+    }
+
+  return TRUE;
+}
+
+enum crx_addrtype
+crx_decompose_address (rtx addr, struct crx_address *out)
+{
+  rtx base = NULL_RTX, index = NULL_RTX, disp = NULL_RTX;
+  rtx scale_rtx = NULL_RTX, side_effect = NULL_RTX;
+  int scale = -1;
+  
+  enum crx_addrtype retval = CRX_INVALID;
+
+  switch (GET_CODE (addr))
+    {
+    case CONST_INT:
+      /* Absolute address (known at compile time) */
+      retval = CRX_ABSOLUTE;
+      disp = addr;
+      if (!UNSIGNED_INT_FITS_N_BITS (INTVAL (disp), GET_MODE_BITSIZE (Pmode)))
+	return CRX_INVALID;
+      break;
+      
+    case CONST:
+    case SYMBOL_REF:
+    case LABEL_REF:
+      /* Absolute address (known at link time) */
+      retval = CRX_ABSOLUTE;
+      disp = addr;
+      break;
+
+    case REG:
+    case SUBREG:
+      /* Register relative address */
+      retval = CRX_REG_REL;
+      base = addr;
+      break;
+
+    case PLUS:
+      switch (GET_CODE (XEXP (addr, 0)))
+	{
+	case REG:
+	case SUBREG:
+	  if (REG_P (XEXP (addr, 1)))
+	    {
+	      /* Scaled index with scale = 1 and disp. = 0 */
+	      retval = CRX_SCALED_INDX;
+	      base = XEXP (addr, 1);
+	      index = XEXP (addr, 0); 
+	      scale = 1;
+	    }
+	  else if (RTX_SIGNED_INT_FITS_N_BITS (XEXP (addr, 1), 28))
+	    {
+	      /* Register relative address and <= 28-bit disp. */
+	      retval = CRX_REG_REL;
+	      base = XEXP (addr, 0);
+	      disp = XEXP (addr, 1);
+	    }
+	  else
+	    return CRX_INVALID;
+	  break;
+
+	case PLUS:
+	  /* Scaled index and <= 22-bit disp. */
+	  retval = CRX_SCALED_INDX;
+	  base = XEXP (XEXP (addr, 0), 1); 
+	  disp = XEXP (addr, 1);
+	  if (!RTX_SIGNED_INT_FITS_N_BITS (disp, 22))
+	    return CRX_INVALID;
+	  switch (GET_CODE (XEXP (XEXP (addr, 0), 0)))
+	    {
+	    case REG:
+	      /* Scaled index with scale = 0 and <= 22-bit disp. */
+	      index = XEXP (XEXP (addr, 0), 0); 
+	      scale = 1;
+	      break;
+	      
+	    case MULT:
+	      /* Scaled index with scale >= 0 and <= 22-bit disp. */
+	      index = XEXP (XEXP (XEXP (addr, 0), 0), 0); 
+	      scale_rtx = XEXP (XEXP (XEXP (addr, 0), 0), 1); 
+	      if ((scale = SCALE_FOR_INDEX_P (scale_rtx)) == -1)
+		return CRX_INVALID;
+	      break;
+
+	    default:
+	      return CRX_INVALID;
+	    }
+	  break;
+	  
+	case MULT:
+	  /* Scaled index with scale >= 0 */
+	  retval = CRX_SCALED_INDX;
+	  base = XEXP (addr, 1); 
+	  index = XEXP (XEXP (addr, 0), 0); 
+	  scale_rtx = XEXP (XEXP (addr, 0), 1); 
+	  /* Scaled index with scale >= 0 and <= 22-bit disp. */
+	  if ((scale = SCALE_FOR_INDEX_P (scale_rtx)) == -1)
+	    return CRX_INVALID;
+	  break;
+
+	default:
+	  return CRX_INVALID;
+	}
+      break;
+
+    case POST_INC:
+    case POST_DEC:
+      /* Simple post-increment */
+      retval = CRX_POST_INC;
+      base = XEXP (addr, 0);
+      side_effect = addr;
+      break;
+
+    case POST_MODIFY:
+      /* Generic post-increment with <= 12-bit disp. */
+      retval = CRX_POST_INC;
+      base = XEXP (addr, 0);
+      side_effect = XEXP (addr, 1);
+      if (base != XEXP (side_effect, 0))
+	return CRX_INVALID;
+      switch (GET_CODE (side_effect))
+	{
+	case PLUS:
+	case MINUS:
+	  disp = XEXP (side_effect, 1);
+	  if (!RTX_SIGNED_INT_FITS_N_BITS (disp, 12))
+	    return CRX_INVALID;
+	  break;
+
+	default:
+	  /* CRX only supports PLUS and MINUS */
+	  return CRX_INVALID;
+	}
+      break;
+
+    default:
+      return CRX_INVALID;
+    }
+
+  if (base && !crx_addr_reg_p (base)) return CRX_INVALID;
+  if (index && !crx_addr_reg_p (index)) return CRX_INVALID;
+  
+  out->base = base;
+  out->index = index;
+  out->disp = disp;
+  out->scale = scale;
+  out->side_effect = side_effect;
+
+  return retval;
+}
+
 int
 crx_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
-			  rtx x, int strict)
+			  rtx addr, int strict)
 {
-  /* Absolute address */
-  if (RTX_UNSIGNED_INT_FITS_N_BITS(x, GET_MODE_BITSIZE(Pmode)))
-    return 1;
-
-  /* Label */
-  if (GET_CODE (x) == CONST
-      || GET_CODE (x) == SYMBOL_REF
-      || GET_CODE (x) == LABEL_REF
-      || (GET_CODE (x) == REG && (strict ? STRICT_REG_OK_FOR_BASE_P (x)
-				  : NONSTRICT_REG_OK_FOR_BASE_P (x))))
-    return 1;
-
-  /* Post increment - The first argument is a register and the second is
-   * 12-bit long int. */
-  if (GET_CODE (x) == POST_INC || GET_CODE (x) == POST_DEC)
+  enum crx_addrtype addrtype;
+  struct crx_address address;
+						 
+  if (TARGET_DEBUG_ADDR)
     {
-      /* Don't allow modes to be referenced through post autoinc/dec that
-       * cannot be loaded/stored with a single instruction */
-      if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
-	return 0;
-
-      if((GET_CODE (XEXP (x, 0)) == REG)
-	 && (strict ? STRICT_REG_OK_FOR_BASE_P (XEXP (x, 0))
-	     : NONSTRICT_REG_OK_FOR_BASE_P (XEXP (x, 0))))
-	return 1;
+      fprintf (stderr,
+               "\n======\nGO_IF_LEGITIMATE_ADDRESS, mode = %s, strict = %d\n",
+               GET_MODE_NAME (mode), strict);
+      debug_rtx (addr);
     }
+  
+  addrtype = crx_decompose_address (addr, &address);
 
-  /* Post modify */
-  if (GET_CODE (x) == POST_MODIFY)
+  if (addrtype == CRX_POST_INC && GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+    return FALSE;
+
+  if (TARGET_DEBUG_ADDR)
     {
-      /* Don't allow modes to be referenced through post autoinc/dec that
-       * cannot be loaded/stored with a single instruction */
-      if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
-	return 0;
-
-      if (!(GET_CODE (XEXP (x, 0)) == REG
-	  && (strict ? STRICT_REG_OK_FOR_BASE_P (XEXP (x, 0))
-	      : NONSTRICT_REG_OK_FOR_BASE_P (XEXP (x, 0)))
-	  && RTX_SIGNED_INT_FITS_N_BITS(XEXP (XEXP (x, 1), 1), 12)))
-	return 0;
-
-      if(!(GET_CODE (XEXP (x, 1)) == PLUS || GET_CODE (XEXP (x, 1)) == MINUS))
-	return 0;
-
-      if(!rtx_equal_p(XEXP (x, 0), XEXP (XEXP (x, 1), 0)))
-	return 0;
-
-      return 1;
-    }
-
-  if (GET_CODE (x) == PLUS)
-    {
-      /* Register relative */
-      if (GET_CODE (XEXP (x, 0)) == REG
-	  && (strict ? STRICT_REG_OK_FOR_BASE_P (XEXP (x, 0))
-	      : NONSTRICT_REG_OK_FOR_BASE_P (XEXP (x, 0)))
-	  && (CRX_REGISTER_RELATIVE_DISP_P (XEXP (x, 1))))
-	return 1;
-
-      /* Scaled index with factor 1 */
-      /* 1a. reg + reg */
-      if (GET_CODE (XEXP (x, 0)) == REG
-	  && (strict ? STRICT_REG_OK_FOR_BASE_P (XEXP (x, 0))
-	      : REG_OK_FOR_INDEX_P (XEXP (x, 0)))
-	  && GET_CODE (XEXP (x, 1)) == REG
-	  && (strict ? STRICT_REG_OK_FOR_BASE_P (XEXP (x, 1))
-	      : REG_OK_FOR_INDEXED_BASE_P (XEXP (x, 1))))
-	return 1;
-
-      /* Scaled index with different factor */
-      /* 1b. reg * scale + reg */
-      if (GET_CODE (XEXP (x, 0)) == MULT
-	  && GET_CODE (XEXP( XEXP (x, 0), 0)) == REG
-	  && (strict ? STRICT_REG_OK_FOR_INDEX_P (XEXP( XEXP (x, 0), 0))
-	      : NONSTRICT_REG_OK_FOR_INDEX_P (XEXP( XEXP (x, 0), 0)))
-	  && (SCALE_FOR_INDEX_P (XEXP( XEXP (x, 0), 1)))
-	  && GET_CODE (XEXP (x, 1)) == REG
-	  && (strict ? STRICT_REG_OK_FOR_BASE_P (XEXP (x, 1))
-	      : NONSTRICT_REG_OK_FOR_BASE_P (XEXP (x, 1))))
-	return 1;
-
-      if (GET_CODE (XEXP (x, 0)) == PLUS)
+      const char *typestr;
+      switch (addrtype)
 	{
-	  /* 2. reg + reg + 22 bit disp.  */
-	  if (GET_CODE (XEXP (XEXP (x, 0), 0)) == REG
-	      && (strict ? STRICT_REG_OK_FOR_BASE_P (XEXP (XEXP (x, 0), 0))
-		  : REG_OK_FOR_INDEX_P (XEXP (XEXP (x, 0), 0)))
-	      && GET_CODE (XEXP (XEXP (x, 0), 1)) == REG
-	      && (strict ? STRICT_REG_OK_FOR_BASE_P (XEXP (XEXP (x, 0), 1))
-		  : REG_OK_FOR_INDEXED_BASE_P (XEXP (XEXP (x, 0), 1)))
-	      && (RTX_SIGNED_INT_FITS_N_BITS(XEXP (x, 1), 22)))
-	    return 1;
+	case CRX_INVALID:
+	  typestr = "Invalid";
+	  break;
+	case CRX_REG_REL:
+	  typestr = "Register relative";
+	  break;
+	case CRX_POST_INC:
+	  typestr = "Post-increment";
+	  break;
+	case CRX_SCALED_INDX:
+	  typestr = "Scaled index";
+	  break;
+	case CRX_ABSOLUTE:
+	  typestr = "Absolute";
+	  break;
+	default:
+	  abort ();
+	}
+      fprintf (stderr, "CRX Address type: %s\n", typestr);
+    }
+  
+  if (addrtype == CRX_INVALID)
+    return FALSE;
 
-	  /* 3. reg * scale + reg + 22 bit disp. */
-	  if ((GET_CODE (XEXP (XEXP (x, 0), 0)) == MULT)
-	      && (GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == REG)
-	      && (strict ?
-		  STRICT_REG_OK_FOR_BASE_P (XEXP (XEXP (XEXP (x, 0), 0), 0))
-		  :
-		  REG_OK_FOR_INDEXED_BASE_P (XEXP (XEXP (XEXP (x, 0), 0), 0)))
-	      && (SCALE_FOR_INDEX_P (XEXP (XEXP (XEXP (x, 0), 0), 1)))
-	      && (GET_CODE (XEXP (XEXP (x, 0), 1)) == REG)
-	      && (strict ? STRICT_REG_OK_FOR_BASE_P (XEXP (XEXP (x, 0), 1)) :
-		  REG_OK_FOR_INDEX_P (XEXP (XEXP (x, 0), 1)))
-	      && (RTX_SIGNED_INT_FITS_N_BITS(XEXP (x, 1), 22)))
-	    return 1;
+  if (strict)
+    {
+      if (address.base && !REGNO_OK_FOR_BASE_P (REGNO (address.base)))
+	{
+	  if (TARGET_DEBUG_ADDR)
+	    fprintf (stderr, "Base register not strict\n");
+	  return FALSE;
+	}
+      if (address.index && !REGNO_OK_FOR_INDEX_P (REGNO (address.index)))
+	{
+	  if (TARGET_DEBUG_ADDR)
+	    fprintf (stderr, "Index register not strict\n");
+	  return FALSE;
 	}
     }
 
-  return 0;
+  return TRUE;
 }
 
 /* ROUTINES TO COMPUTE COSTS */
 /* ------------------------- */
+
+/* Return cost of the memory address x. */
+
+static int
+crx_address_cost (rtx addr)
+{
+  enum crx_addrtype addrtype;
+  struct crx_address address;
+						 
+  int cost = 2;
+  
+  addrtype = crx_decompose_address (addr, &address);
+  
+  gcc_assert (addrtype != CRX_INVALID);
+
+  /* An absolute address causes a 3-word instruction */
+  if (addrtype == CRX_ABSOLUTE)
+    cost+=2;
+  
+  /* Post-modifying addresses are more powerfull. */
+  if (addrtype == CRX_POST_INC)
+    cost-=2;
+
+  /* Attempt to minimize number of registers in the address. */
+  if (address.base)
+    cost++;
+  
+  if (address.index && address.scale == 1)
+    cost+=5;
+
+  return cost;
+}
 
 /* Return the cost of moving data of mode MODE between a register of class
  * CLASS and memory; IN is zero if the value is to be written to memory,
@@ -677,105 +843,31 @@ crx_memory_move_cost (enum machine_mode mode,
   /* One LD or ST takes twice the time of a simple reg-reg move */
   if (reg_classes_intersect_p (class, GENERAL_REGS))
     {
-      /* printf("GENERAL_REGS LD/ST = %d\n", 4 * HARD_REGNO_NREGS (0, mode));*/
+      /* printf ("GENERAL_REGS LD/ST = %d\n", 4 * HARD_REGNO_NREGS (0, mode));*/
       return 4 * HARD_REGNO_NREGS (0, mode);
     }	
   else if (reg_classes_intersect_p (class, HILO_REGS))
     {
       /* HILO to memory and vice versa */
-      /* printf("HILO_REGS %s = %d\n",in ? "LD" : "ST",
-	     (REGISTER_MOVE_COST(mode,
+      /* printf ("HILO_REGS %s = %d\n", in ? "LD" : "ST",
+	     (REGISTER_MOVE_COST (mode,
 				 in ? GENERAL_REGS : HILO_REGS,
 				 in ? HILO_REGS : GENERAL_REGS) + 4)
 	* HARD_REGNO_NREGS (0, mode)); */
-      return (REGISTER_MOVE_COST(mode,
+      return (REGISTER_MOVE_COST (mode,
 				 in ? GENERAL_REGS : HILO_REGS,
 				 in ? HILO_REGS : GENERAL_REGS) + 4)
 	* HARD_REGNO_NREGS (0, mode);
     }
   else /* default (like in i386) */
     {
-      /* printf("ANYREGS = 100\n"); */
+      /* printf ("ANYREGS = 100\n"); */
       return 100;
     }
 }
 
 /* INSTRUCTION OUTPUT */
 /* ------------------ */
-
-/* Print to FILE addr expression of the form post_inc/dec (in this case
- * post_offset is zero) or post_inc/dec + post_offset */
-
-static void
-print_post_operand_address (FILE * file, rtx addr, int post_offset)
-{
-  int displmnt;
-
-  if (GET_CODE (addr) == POST_MODIFY)
-    {
-      displmnt = INTVAL(XEXP( XEXP (addr, 1), 1));
-      if (GET_CODE (XEXP (addr, 1)) == MINUS) displmnt = (-1) * displmnt;
-    }
-  else
-    {
-      displmnt = GET_MODE_SIZE (output_memory_reference_mode);
-      /* Make the displacement negative for POST_DEC */
-      if (GET_CODE (addr) == POST_DEC) displmnt = (-1) * displmnt;
-    }
-
-  if (GET_CODE (XEXP (addr, 0)) != REG)
-    abort ();
-
-  displmnt += post_offset;
-
-  fprintf (file, "%d(%s)+", displmnt, reg_names[REGNO (XEXP (addr, 0))]);
-}
-
-/* Check if constant rtx contains label_ref.  */
-
-static rtx
-const_and_contains_label_ref (rtx x)
-{
-  if (!x)
-    return NULL_RTX;
-
-  if (GET_CODE (x) == LABEL_REF)
-    return x;
-
-  /* Check within enclosing const.  */
-  if (GET_CODE (x) == CONST)
-    x = XEXP (x, 0);
-
-  if ((GET_CODE (x) == PLUS || GET_CODE (x) == MINUS)
-      && GET_CODE (XEXP (x, 1)) == CONST_INT
-      && GET_CODE (XEXP (x, 0)) == LABEL_REF)
-    return XEXP (x, 0);
-
-  return NULL_RTX;
-}
-
-/* Check if rtx contains symbol_ref. */
-
-static rtx
-const_and_contains_symbol_ref (rtx x)
-{
-  if (!x)
-    return NULL_RTX;
-
-  if (GET_CODE (x) == SYMBOL_REF)
-    return x;
-
-  /* Check within enclosing const.  */
-  if (GET_CODE (x) == CONST)
-    x = XEXP (x, 0);
-
-  if ((GET_CODE (x) == PLUS || GET_CODE (x) == MINUS)
-      && GET_CODE (XEXP (x, 1)) == CONST_INT
-      && GET_CODE (XEXP (x, 0)) == SYMBOL_REF)
-    return XEXP (x, 0);
-
-  return NULL_RTX;
-}
 
 /* Check if a const_double is ok for crx store-immediate instructions */
 
@@ -788,8 +880,8 @@ crx_const_double_ok (rtx op)
     long l[2];
     REAL_VALUE_FROM_CONST_DOUBLE (r, op);
     REAL_VALUE_TO_TARGET_DOUBLE (r, l);
-    return (UNSIGNED_INT_FITS_N_BITS(l[0], 4) &&
-	    UNSIGNED_INT_FITS_N_BITS(l[1], 4)) ? 1 : 0;
+    return (UNSIGNED_INT_FITS_N_BITS (l[0], 4) &&
+	    UNSIGNED_INT_FITS_N_BITS (l[1], 4)) ? 1 : 0;
   }
 
   if (GET_MODE (op) == SFmode)
@@ -798,7 +890,7 @@ crx_const_double_ok (rtx op)
     long l;
     REAL_VALUE_FROM_CONST_DOUBLE (r, op);
     REAL_VALUE_TO_TARGET_SINGLE (r, l);
-    return UNSIGNED_INT_FITS_N_BITS(l, 4) ? 1 : 0;
+    return UNSIGNED_INT_FITS_N_BITS (l, 4) ? 1 : 0;
   }
 
   return (UNSIGNED_INT_FITS_N_BITS (CONST_DOUBLE_LOW (op), 4) &&
@@ -833,7 +925,7 @@ crx_print_operand (FILE * file, rtx x, int code)
 	{
 	  const char *crx_cmp_str;
 	  switch (GET_CODE (x))
-	    { /* MD: compare(reg, reg or imm) but CRX: cmp(reg or imm, reg)
+	    { /* MD: compare (reg, reg or imm) but CRX: cmp (reg or imm, reg)
 	       * -> swap all non symmetric ops */
 	    case EQ  : crx_cmp_str = "eq"; break;
 	    case NE  : crx_cmp_str = "ne"; break;
@@ -945,7 +1037,7 @@ crx_print_operand (FILE * file, rtx x, int code)
 	}
 
     case 0 : /* default */
-      switch (GET_CODE(x))
+      switch (GET_CODE (x))
 	{
 	case REG:
 	  fprintf (file, "%s", reg_names[REGNO (x)]);
@@ -962,7 +1054,7 @@ crx_print_operand (FILE * file, rtx x, int code)
 	      long l;
 
 	      /* Always use H and L for double precision - see above */
-	      gcc_assert(GET_MODE (x) == SFmode);
+	      gcc_assert (GET_MODE (x) == SFmode);
 
 	      REAL_VALUE_FROM_CONST_DOUBLE (r, x);
 	      REAL_VALUE_TO_TARGET_SINGLE (r, l);
@@ -989,172 +1081,56 @@ crx_print_operand (FILE * file, rtx x, int code)
 void
 crx_print_operand_address (FILE * file, rtx addr)
 {
-  rtx breg = 0, ireg = 0;
-  rtx offset = 0;
-  rtx post_offset = 0;
-  rtx scale = 0;
-  int mem = 0;
+  enum crx_addrtype addrtype;
+  struct crx_address address;
 
-retry:
-  switch (GET_CODE (addr))
+  int offset;
+  
+  addrtype = crx_decompose_address (addr, &address);
+  
+  if (address.disp)
+    offset = INTVAL (address.disp);
+  else
+    offset = 0;
+
+  switch (addrtype)
     {
-    case MEM:
-      fprintf (file, "0(");
-      addr = XEXP (addr, 0);
-      mem = 1;
-      goto retry;
-    case REG:
-      fprintf (file, "0(%s)", reg_names[REGNO (addr)]);
-      break;
-    case MULT:
-      abort ();
-      break;
-    case PLUS:
-      switch (GET_CODE (XEXP (addr, 0)))
+    case CRX_REG_REL:
+      fprintf (file, "%d(%s)", offset, reg_names[REGNO (address.base)]);
+      return;
+      
+    case CRX_POST_INC:
+      switch (GET_CODE (address.side_effect))
 	{
-	case REG:
-	  if (GET_CODE (XEXP (addr, 1)) == REG)
-	    {
-	      ireg = XEXP (addr, 0);
-	      breg = XEXP (addr, 1);
-	    }
-	  else if (CONSTANT_ADDRESS_P (XEXP (addr, 1)))
-	    {
-	      if (REG_OK_FOR_BASE_P (XEXP (addr, 0))
-		  && ((GET_CODE (XEXP (addr, 1)) == CONST_INT)
-		      || (const_and_contains_symbol_ref (XEXP (addr, 1)))
-		      || (const_and_contains_label_ref (XEXP (addr, 1)))))
-		ireg = XEXP (addr, 0);
-	      else
-		breg = XEXP (addr, 0);
-
-	      offset = XEXP (addr, 1);
-	    }
-	  else
-	    abort ();
-	  break;
-	case MULT:
-	  ireg = XEXP (XEXP (addr, 0), 0);
-	  scale = XEXP (XEXP (addr, 0), 1);
-	  breg = XEXP (addr, 1);
-	  break;
 	case PLUS:
-	  if ((GET_CODE (XEXP (XEXP (addr, 0), 0)) == MULT)
-	      && (GET_CODE (XEXP (XEXP (XEXP (addr, 0), 0), 0)) == REG)
-	      && (SCALE_FOR_INDEX_P (XEXP (XEXP (XEXP (addr, 0), 0), 1)))
-	      && (GET_CODE (XEXP (XEXP (addr, 0), 1)) == REG)
-	      && (GET_CODE (XEXP (addr, 1)) == CONST_INT))
-	    {
-	      ireg = XEXP (XEXP (XEXP (addr, 0), 0), 0);
-	      breg = XEXP (XEXP (addr, 0), 1);
-	      scale = (XEXP (XEXP (XEXP (addr, 0), 0), 1));
-	      offset = XEXP (addr, 1);
-	    }
-	  else if (GET_CODE (XEXP (XEXP (addr, 0), 0)) == REG
-		   && GET_CODE (XEXP (XEXP (addr, 0), 1)) == REG
-		   && CONSTANT_ADDRESS_P (XEXP (addr, 1)))
-	    {
-	      ireg = XEXP (XEXP (addr, 0), 0);
-	      breg = XEXP (XEXP (addr, 0), 1);
-	      offset = XEXP (addr, 1);
-	    }
-	  else if (GET_CODE (XEXP (XEXP (addr, 0), 0)) == REG
-		   && GET_CODE (XEXP (addr, 1)) == REG
-		   && CONSTANT_ADDRESS_P (XEXP (XEXP (addr, 0), 1)))
-	    {
-	      ireg = XEXP (XEXP (addr, 0), 0);
-	      breg = XEXP (addr, 1);
-	      offset = XEXP (XEXP (addr, 0), 1);
-	    }
-	  else
-	    abort ();
+	  break;
+	case MINUS:
+	  offset = -offset;
+	  break;
+	case POST_INC:
+	  offset = GET_MODE_SIZE (output_memory_reference_mode);
+	  break;
+	case POST_DEC:
+	  offset = -GET_MODE_SIZE (output_memory_reference_mode);
 	  break;
 	default:
-	  if (CONSTANT_ADDRESS_P (XEXP (addr, 1)))
-	    {
-	      if (CONSTANT_ADDRESS_P (XEXP (addr, 0)))
-		offset = addr;
-	      else if (GET_CODE (XEXP (addr, 0)) == POST_INC
-		       || GET_CODE (XEXP (addr, 0)) == POST_DEC)
-		post_offset = XEXP (addr, 1);
-	      else
-		abort ();
-	    }
-
-	  break;
+	  abort ();
 	}
-
-      if (scale)
-	{
-	  fprintf (file, "%ld(%s,%s,%ld)", offset ? INTVAL (offset) : 0,
-		   reg_names[REGNO (breg)], reg_names[REGNO (ireg)],
-		   INTVAL (scale));
-	}
-      else
-	{
-	  /* If this is (POST_DEC/INC expression + post_offset) make addr =
-	   * POST_DEC/INC expression  */
-	  if (post_offset != 0)
-	    {
-	      addr = XEXP (addr, 0);
-	      print_post_operand_address (file, addr, INTVAL (post_offset));
-	      break;
-	    }
-
-	  if (ireg != 0)
-	    {
-	      if (offset != 0)
-		{
-		  output_addr_const (file, offset);
-		  /* Print modifier if relevant.  */
-		}
-	      else
-		{
-		  fprintf (file, "0");
-		}
-	      /* Print address string */
-	      if (breg != 0)
-		{
-		  fprintf (file, "(%s,%s)", reg_names[REGNO (breg)],
-			   reg_names[REGNO (ireg)]);
-		}
-	      else
-		fprintf (file, "(%s)", reg_names[REGNO (ireg)]);
-	    }
-	  else
-	    {
-	      if (offset != 0)
-		{
-		  output_addr_const (file, offset);
-		}
-	      else
-		{
-		  fprintf (file, "0");
-		}
-
-	      if (breg != 0)
-		{
-		  if (offset == 0)
-		    fprintf (file, "0");
-		  fprintf (file, "(%s)", reg_names[REGNO (breg)]);
-		}
-	    }
-	}
-      break;
-
-    case POST_DEC:
-    case POST_INC:
-    case POST_MODIFY:
-      print_post_operand_address (file, addr, 0);
-      break;
-
+	fprintf (file, "%d(%s)+", offset, reg_names[REGNO (address.base)]);
+      return;
+      
+    case CRX_SCALED_INDX:
+      fprintf (file, "%d(%s, %s, %d)", offset, reg_names[REGNO (address.base)],
+	       reg_names[REGNO (address.index)], address.scale);
+      return;
+      
+    case CRX_ABSOLUTE:
+      output_addr_const (file, address.disp);
+      return;
+      
     default:
-
-      output_addr_const (file, addr);
+      abort ();
     }
-
-  if (mem)
-    fprintf (file, ")");
 }
 
 
@@ -1193,16 +1169,18 @@ crx_expand_movmem (rtx dstbase, rtx srcbase, rtx count_exp, rtx align_exp)
   if (GET_CODE (align_exp) == CONST_INT)
     { /* Only if aligned */
       align = INTVAL (align_exp);
-      if (align & 3) return 0;
+      if (align & 3)
+	return 0;
     }
 
   if (GET_CODE (count_exp) == CONST_INT)
     { /* No more than 16 SImode moves */
       count = INTVAL (count_exp);
-      if (count > 64) return 0;
+      if (count > 64)
+	return 0;
     }
 
-  tmp_reg = gen_reg_rtx(SImode);
+  tmp_reg = gen_reg_rtx (SImode);
 
   /* Create psrs for the src and dest pointers */
   dst = copy_to_mode_reg (Pmode, XEXP (dstbase, 0));
@@ -1271,7 +1249,7 @@ crx_expand_scond (enum rtx_code code, rtx dest)
 static void
 mpushpop_str (char *stringbuffer, const char *mnemonic, char *mask)
 {
-  if(strlen(mask) > 2 || crx_interrupt_function_p ()) /* needs 2-word instr. */
+  if (strlen (mask) > 2 || crx_interrupt_function_p ()) /* needs 2-word instr. */
     sprintf (stringbuffer, "\n\t%s\tsp, {%s}", mnemonic, mask);
   else /* single word instruction */
     sprintf (stringbuffer, "\n\t%s\t%s", mnemonic, mask);
@@ -1346,7 +1324,7 @@ crx_prepare_push_pop_string (int push_or_pop)
 	    }
 	}
 
-      if (strlen(mask_str) == 0) continue;
+      if (strlen (mask_str) == 0) continue;
        	
       if (push_or_pop == 1)
 	{
@@ -1438,7 +1416,7 @@ crx_expand_prologue (void)
 
   if (size_for_adjusting_sp > 0)
     emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
-			   GEN_INT (-(size_for_adjusting_sp))));
+			   GEN_INT (-size_for_adjusting_sp)));
 
   if (frame_pointer_needed)
     /* Initialize the frame pointer with the value of the stack pointer
