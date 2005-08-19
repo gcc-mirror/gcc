@@ -1,3 +1,14 @@
+2005-08-19  James E Wilson  <wilson@specifix.com>
+
+	* builtins.c (expand_builtin_return_addr): Set
+	current_function_accesses_prior_frames when count != 0.  Use
+	frame_pointer_rtx when count == 0.
+	* function.h (struct function): Add accesses_prior_frames field.
+	(current_function_accesses_prior_frames): Define.
+	* reload1.c (init_elim_table): Check
+	current_function_accesses_prior_frames.
+	* doc/tm.texi (INITIAL_FRAME_ADDRESS_RTX): Update docs.
+
 2005-08-19  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-cfgcleanup.c (cleanup_tree_cfg): Fix flowgraph change

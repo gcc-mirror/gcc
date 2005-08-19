@@ -2812,14 +2812,11 @@ machines.  See @file{function.c} for details.
 
 @defmac INITIAL_FRAME_ADDRESS_RTX
 A C expression whose value is RTL representing the address of the initial
- stack frame. This address is passed to @code{RETURN_ADDR_RTX} and 
-@code{DYNAMIC_CHAIN_ADDRESS}.
-If you don't define this macro, the default is to return 
-@code{hard_frame_pointer_rtx}.
-This default is usually correct unless @code{-fomit-frame-pointer} is in 
-effect.
-Define this macro in order to make @code{__builtin_frame_address (0)} and 
-@code{__builtin_return_address (0)} work even in absence of a hard frame pointer.
+stack frame. This address is passed to @code{RETURN_ADDR_RTX} and 
+@code{DYNAMIC_CHAIN_ADDRESS}.  If you don't define this macro, a reasonable
+default value will be used.  Define this macro in order to make frame pointer
+elimination work in the presence of @code{__builtin_frame_address (count)} and 
+@code{__builtin_return_address (count)} for @code{count} not equal to zero.
 @end defmac
 
 @defmac DYNAMIC_CHAIN_ADDRESS (@var{frameaddr})
