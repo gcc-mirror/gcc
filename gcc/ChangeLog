@@ -1,3 +1,12 @@
+2005-08-19  Devang Patel  <dpatel@apple.com>
+
+	PR tree-optimization/23048
+	* tree-if-conv.c (if_convertible_bb_p): Supply basic_block as
+	third parameter. Check whether latch is dominated by exit
+	block or not.
+	(if_convertible_loop_p): Supply exit block itself to
+	if_convertible_bb_p.
+	
 2005-08-19  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	PR target/23473

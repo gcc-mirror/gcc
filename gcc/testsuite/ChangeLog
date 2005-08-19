@@ -1,3 +1,8 @@
+2005-08-19  Devang Patel  <dpatel@apple.com>
+
+	PR tree-optimization/23048
+	* gcc.dg/tree-ssa/pr23048.c: New test.
+	
 2005-08-19  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/20624
