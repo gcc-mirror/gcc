@@ -1,3 +1,11 @@
+2005-08-19  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/23065
+	* gfortran.h: Remove PATH_MAX definition.
+	* module.c (write_module, gfc_dump_module): Use alloca to allocate
+	buffers.
+	* scanner.c (gfc_release_include_path, form_from_filename): Ditto.
+
 2004-08-16  Huang Chun  <chunhuang73@hotmail.com>
 
 	* trans-expr.c (gfc_conv_power_op): Evaluate the expression before

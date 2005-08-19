@@ -506,13 +506,6 @@ typedef struct
 } locus;
 
 
-#include <limits.h>
-#ifndef PATH_MAX
-# include <sys/param.h>
-# define PATH_MAX MAXPATHLEN
-#endif
-
-
 extern int gfc_suppress_error;
 
 
