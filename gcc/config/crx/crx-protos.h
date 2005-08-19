@@ -42,6 +42,18 @@ extern rtx crx_function_arg (struct cumulative_args *, enum machine_mode, tree, 
 
 #ifdef RTX_CODE
 /* Addressing Modes.  */
+struct crx_address
+{
+  rtx base, index, disp, side_effect;
+  int scale;
+};
+
+enum crx_addrtype
+{
+  CRX_INVALID, CRX_REG_REL, CRX_POST_INC, CRX_SCALED_INDX, CRX_ABSOLUTE
+};
+
+extern enum crx_addrtype crx_decompose_address (rtx addr, struct crx_address *out);
 extern int crx_legitimate_address_p (enum machine_mode, rtx, int);
 
 extern int crx_const_double_ok (rtx op);

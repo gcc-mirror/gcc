@@ -26,3 +26,6 @@ Support multiply accumulate instructions
 mno-push-args
 Target Report RejectNegative Mask(NO_PUSH_ARGS)
 Do not use push to store function arguments
+
+mdebug-addr
+Target RejectNegative Var(TARGET_DEBUG_ADDR) Undocumented
