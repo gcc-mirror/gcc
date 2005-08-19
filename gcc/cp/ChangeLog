@@ -1,3 +1,8 @@
+2005-08-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* parser.c (cp_parser_nth_token_starts_template_argument_list_p):
+	Fix typo in leading comment.
+
 2005-08-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* name-lookup.c, ptree.c: Delete HOST_PTR_PRINTF.
