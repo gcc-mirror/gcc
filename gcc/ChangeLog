@@ -1,3 +1,9 @@
+2005-08-19  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/20624
+	* gimple-low.c (block_may_fallthru): Handle CLEANUP_POINT_EXPR by
+	looking past it.
+
 2005-08-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* collect2.c (dup2): Delete.

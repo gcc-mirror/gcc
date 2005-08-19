@@ -368,6 +368,9 @@ block_may_fallthru (tree block)
     case CALL_EXPR:
       /* Functions that do not return do not fall through.  */
       return (call_expr_flags (stmt) & ECF_NORETURN) == 0;
+    
+    case CLEANUP_POINT_EXPR:
+      return block_may_fallthru (TREE_OPERAND (stmt, 0));
 
     default:
       return true;
