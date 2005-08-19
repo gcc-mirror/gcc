@@ -523,17 +523,24 @@ cleanup_tree_cfg_1 (void)
 }
 
 
-/* Remove unreachable blocks and other miscellaneous clean up work.  */
+/* Remove unreachable blocks and other miscellaneous clean up work.
+   Return true if the flowgraph was modified, false otherwise.  */
 
 bool
 cleanup_tree_cfg (void)
 {
-  bool retval;
+  bool retval, changed;
 
   timevar_push (TV_TREE_CLEANUP_CFG);
 
+  /* Iterate until there are no more cleanups left to do.  If any
+     iteration changed the flowgraph, set CHANGED to true.  */
+  changed = false;
   do
-    retval = cleanup_tree_cfg_1 ();
+    {
+      retval = cleanup_tree_cfg_1 ();
+      changed |= retval;
+    }
   while (retval);
 
   compact_blocks ();
@@ -544,7 +551,7 @@ cleanup_tree_cfg (void)
 
   timevar_pop (TV_TREE_CLEANUP_CFG);
 
-  return retval;
+  return changed;
 }
 
 /* Cleanup cfg and repair loop structures.  */
