@@ -1,5 +1,11 @@
 2005-08-19  Diego Novillo  <dnovillo@redhat.com>
 
+	PR 23476
+	* tree-cfgcleanup.c (cleanup_control_expr_graph): Fold the
+	conditional expression before testing its value.
+
+2005-08-19  Diego Novillo  <dnovillo@redhat.com>
+
 	* doc/invoke.texi: Fix documentation for -ftree-dominator-opts.
 
 2005-08-19  Devang Patel  <dpatel@apple.com>
