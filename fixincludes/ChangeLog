@@ -1,3 +1,12 @@
+2005-08-18  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR libfortran/15266
+	* inclhack.def (broken_cabs): Mention IRIX 5/6 problem.
+	Use double quotes in select so \t matches tabs.
+	Add IRIX testcase.
+	* fixincl.x: Regenerate.
+	* tests/base/math.h [BROKEN_CABS_CHECK]: Adapt for new testcase.
+
 2005-07-07  Release Manager
 
 	* GCC 4.0.1 released.

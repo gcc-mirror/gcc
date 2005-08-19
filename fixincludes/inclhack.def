@@ -907,6 +907,8 @@ fix = {
 /*
  *  Remove `extern double cabs' declarations from math.h.
  *  This conflicts with C99.  Discovered on AIX.
+ *  IRIX 5 and IRIX 6 before 6.5.18 (where C99 support was introduced)
+ *  declares cabs() to take a struct __cabs_s argument.
  *  SunOS4 has its cabs() declaration followed by a comment which
  *  terminates on the following line.
  *  Darwin hides its broken cabs in architecture-specific subdirs.
@@ -916,7 +918,7 @@ fix = {
     files    = "math.h";
     files    = "architecture/ppc/math.h";
     files    = "architecture/i386/math.h";
-    select   = '^extern[ \t]+double[ \t]+cabs';
+    select   = "^extern[ \t]+double[ \t]+cabs";
 
     c_fix     = format;
     c_fix_arg = "";
@@ -929,7 +931,8 @@ fix = {
                 "#endif\n"
                 "extern double cabs ( _Complex z );\n"
                 "extern double cabs(); /* This is a comment\n"
-                "                         and it ends here. */";
+                "                         and it ends here. */\n"
+		"extern double	cabs(struct __cabs_s);";
 };
 
 
