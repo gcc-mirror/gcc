@@ -15965,7 +15965,7 @@ cp_parser_next_token_ends_template_argument_p (cp_parser *parser)
   return (token->type == CPP_COMMA || token->type == CPP_GREATER);
 }
 
-/* Returns TRUE iff the n-th token is a ">", or the n-th is a "[" and the
+/* Returns TRUE iff the n-th token is a "<", or the n-th is a "[" and the
    (n+1)-th is a ":" (which is a possible digraph typo for "< ::").  */
 
 static bool
