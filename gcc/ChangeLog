@@ -1,3 +1,15 @@
+2005-08-19  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	PR target/23473
+	* arm.md (arm_load_pic_register): Change argument to the mask of
+	saved registers.  Call thumb_find_work_register if we need a 
+	scratch register on Thumb.
+	(arm_expand_prologue): Pass empty register set to 
+	arm_load_pic_register.
+	(thumb_expand_prologue): Pass live_regs_mask directly to
+	arm_load_pic_register.
+	* arm-protos.h (arm_load_pic_register): Update prototype.
+
 2005-08-19  J"orn Rennecke <joern.rennecke@st.com>
 
 	* sh.c (find_sole_member): New function.

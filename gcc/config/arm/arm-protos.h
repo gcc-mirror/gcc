@@ -27,7 +27,7 @@
 extern void arm_override_options (void);
 extern int use_return_insn (int, rtx);
 extern int arm_regno_class (int);
-extern void arm_load_pic_register (unsigned int);
+extern void arm_load_pic_register (unsigned long);
 extern int arm_volatile_func (void);
 extern const char *arm_output_epilogue (rtx);
 extern void arm_expand_prologue (void);

@@ -3285,7 +3285,7 @@ thumb_find_work_register (unsigned long pushed_regs_mask)
    low register.  */
 
 void
-arm_load_pic_register (unsigned int scratch)
+arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
 {
 #ifndef AOF_ASSEMBLER
   rtx l1, pic_tmp, pic_tmp2, pic_rtx;
@@ -3319,9 +3319,10 @@ arm_load_pic_register (unsigned int scratch)
     {
       if (REGNO (pic_offset_table_rtx) > LAST_LO_REGNUM)
 	{
-	  /* We will have pushed the pic register, so should always be
+	  /* We will have pushed the pic register, so we should always be
 	     able to find a work register.  */
-	  pic_tmp = gen_rtx_REG (SImode, scratch);
+	  pic_tmp = gen_rtx_REG (SImode,
+				 thumb_find_work_register (saved_regs));
 	  emit_insn (gen_pic_load_addr_thumb (pic_tmp, pic_rtx));
 	  emit_insn (gen_movsi (pic_offset_table_rtx, pic_tmp));
 	}
@@ -10509,7 +10510,7 @@ arm_expand_prologue (void)
 
 
   if (flag_pic)
-    arm_load_pic_register (INVALID_REGNUM);
+    arm_load_pic_register (0UL);
 
   /* If we are profiling, make sure no instructions are scheduled before
      the call to mcount.  Similarly if the user has requested no
@@ -13236,7 +13237,7 @@ thumb_expand_prologue (void)
   /* Load the pic register before setting the frame pointer,
      so we can use r7 as a temporary work register.  */
   if (flag_pic)
-    arm_load_pic_register (thumb_find_work_register (live_regs_mask));
+    arm_load_pic_register (live_regs_mask);
 
   offsets = arm_get_frame_offsets ();
 
