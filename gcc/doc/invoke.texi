@@ -4705,8 +4705,11 @@ Perform dead code elimination (DCE) on trees.  This flag is enabled by
 default at @option{-O} and higher.
 
 @item -ftree-dominator-opts
-Perform dead code elimination (DCE) on trees.  This flag is enabled by
-default at @option{-O} and higher.
+Perform a variety of simple scalar cleanups (constant/copy
+propagation, redundancy elimination, range propagation and expression
+simplification) based on a dominator tree traversal.  This also
+performs jump threading (to reduce jumps to jumps). This flag is
+enabled by default at @option{-O} and higher.
 
 @item -ftree-ch
 Perform loop header copying on trees.  This is beneficial since it increases

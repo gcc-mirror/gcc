@@ -1,3 +1,7 @@
+2005-08-19  Diego Novillo  <dnovillo@redhat.com>
+
+	* doc/invoke.texi: Fix documentation for -ftree-dominator-opts.
+
 2005-08-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/i386/x86-64.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Guard with
