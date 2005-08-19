@@ -1,3 +1,11 @@
+2005-08-19  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/23065
+	* gfortran.h: Remove PATH_MAX definition.
+	* module.c (write_module, gfc_dump_module): Use alloca to allocate
+	buffers.
+	* scanner.s (gfc_release_include_path, form_from_filename): Ditto.
+
 2004-08-16  Huang Chun  <chunhuang73@hotmail.com>
 
 	* trans-expr.c (gfc_conv_power_op): Evaluate the expression before
@@ -5,7 +13,7 @@
 
 2005-08-14  Asher Langton  <langton2@llnl.gov>
 
-	* parse.c (match): Enclosed macro in do...while(0) and braces.
+	* parse.c (match): Enclose macro in do...while(0) and braces.
 
 2005-08-14  Paul Thomas  <pault@gcc.gnu.org>
 

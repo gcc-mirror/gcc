@@ -164,7 +164,7 @@ gfc_release_include_path (void)
 FILE *
 gfc_open_included_file (const char *name)
 {
-  char fullname[PATH_MAX];
+  char *fullname;
   gfc_directorylist *p;
   FILE *f;
 
@@ -174,9 +174,7 @@ gfc_open_included_file (const char *name)
 
   for (p = include_dirs; p; p = p->next)
     {
-      if (strlen (p->path) + strlen (name) + 1 > PATH_MAX)
-	continue;
-
+      fullname = (char *) alloca(strlen (p->path) + strlen (name) + 1);
       strcpy (fullname, p->path);
       strcat (fullname, name);
 
@@ -1133,14 +1131,11 @@ form_from_filename (const char *filename)
   const char *fileext;
   int i;
 
-  /* Find end of file name.  */
+  /* Find end of file name.  Note, filename is either a NULL pointer or
+     a NUL terminated string.  */
   i = 0;
-  while ((i < PATH_MAX) && (filename[i] != '\0'))
+  while (filename[i] != '\0')
     i++;
-
-  /* Improperly terminated or too-long filename.  */
-  if (i == PATH_MAX)
-    return FORM_UNKNOWN;
 
   /* Find last period.  */
   while (i >= 0 && (filename[i] != '.'))

@@ -3479,14 +3479,22 @@ write_module (void)
 void
 gfc_dump_module (const char *name, int dump_flag)
 {
-  char filename[PATH_MAX], *p;
+  int n;
+  char *filename, *p;
   time_t now;
 
-  filename[0] = '\0';
+  n = strlen (name) + strlen (MODULE_EXTENSION) + 1;
   if (gfc_option.module_dir != NULL)
-    strcpy (filename, gfc_option.module_dir);
-
-  strcat (filename, name);
+    {
+      filename = (char *) alloca (n + strlen (gfc_option.module_dir));
+      strcpy (filename, gfc_option.module_dir);
+      strcat (filename, name);
+    }
+  else
+    {
+      filename = (char *) alloca (n);
+      strcpy (filename, name);
+    }
   strcat (filename, MODULE_EXTENSION);
 
   if (!dump_flag)
@@ -3532,10 +3540,12 @@ gfc_dump_module (const char *name, int dump_flag)
 void
 gfc_use_module (void)
 {
-  char filename[GFC_MAX_SYMBOL_LEN + 5];
+  char *filename;
   gfc_state_data *p;
   int c, line;
 
+  filename = (char *) alloca(strlen(module_name) + strlen(MODULE_EXTENSION)
+			     + 1);
   strcpy (filename, module_name);
   strcat (filename, MODULE_EXTENSION);
 
