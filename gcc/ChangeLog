@@ -1,3 +1,8 @@
+2005-08-19  Eric Christopher  <echristo@apple.com>
+
+	* optabs.h: Change CTI_ to COI_.
+	* optabs.c: Ditto.
+
 2005-08-19  James E Wilson  <wilson@specifix.com>
 
 	* builtins.c (expand_builtin_return_addr): Set
@@ -33,14 +38,14 @@
 	block or not.
 	(if_convertible_loop_p): Supply exit block itself to
 	if_convertible_bb_p.
-	
+
 2005-08-19  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	PR target/23473
 	* arm.md (arm_load_pic_register): Change argument to the mask of
-	saved registers.  Call thumb_find_work_register if we need a 
+	saved registers.  Call thumb_find_work_register if we need a
 	scratch register on Thumb.
-	(arm_expand_prologue): Pass empty register set to 
+	(arm_expand_prologue): Pass empty register set to
 	arm_load_pic_register.
 	(thumb_expand_prologue): Pass live_regs_mask directly to
 	arm_load_pic_register.
@@ -151,7 +156,7 @@
 	(plus_gtu<mode>): Same.
 
 2005-08-17  Erik Christiansen  <erik@dd.nec.com.au>
-	
+
 	* config/v850/lib1funcs.asm (callt_save_interrupt): Fix comment typos.
 	Move call_table_data to end.  Delete spurious .text.
 	(callt_save_all_interrupt): Fix comment typo.
@@ -188,8 +193,8 @@
 	* config.gcc: Added z9-109 switch.
 	* config/s390/2084.md ("x_int", "x_agen", "x_lr", "x_la", "x_larl",
 	"x_load", "x_store", "x_branch", "x_call", "x_mul_hi", "x_mul_sidi",
-	"x_div", "x_sem", "x_cs", "x_vs", "x_stm", "x_lm", "x_other", 
-	"x_fsimpdf", "x_fsimpsf", "x_fdivdf", "x_fdivsf", "x_floaddf", 
+	"x_div", "x_sem", "x_cs", "x_vs", "x_stm", "x_lm", "x_other",
+	"x_fsimpdf", "x_fsimpsf", "x_fdivdf", "x_fdivsf", "x_floaddf",
 	"x_floadsf", "x_fstore_df", "x_fstoresf", "x_ftoi", "x_itof"): Enable
 	for "z9_109" cpu attribute.
 	* config/s390/s390.c (z9_109_cost): New processor cost structure.
@@ -206,7 +211,7 @@
 	(CONSTRAINT_LEN): Added length of O constraint.
 	(CLZ_DEFINED_VALUE_AT_ZERO): Definition added.
 	* config/s390/s390.md ("cpu"): New value z9_109 added.
-	("*tstdi_extimm", "*tstdi_ccconly_extimm", "*tstsi_extimm", 
+	("*tstdi_extimm", "*tstdi_ccconly_extimm", "*tstsi_extimm",
 	"*tstsi_cconly_extimm", "*movdi_64extimm", "*extendhidi2_extimm",
 	"*extendqidi2_extimm", "*extendhisi2_extimm", "*extendqisi2_extimm",
 	"*zero_extend<mode>si2_extimm", "*anddi3_extimm", "*iordi3_extimm",
@@ -220,7 +225,7 @@
 	"*addsi3_carry1_cc", "*addsi3_carry2_cc", "*addsi3_cc", "addsi3",
 	"*andsi3_cc", "*andsi3_cconly", "*andsi3_zarch", "*iorsi3_cc",
 	"*iorsi3_cconly", "*iorsi3_zarch", "*xorsi3_cc", "*xorsi3_cconly",
-	"*xorsi3", "*xorhi3", "*xorqi3"): Added instruction using extended 
+	"*xorsi3", "*xorhi3", "*xorqi3"): Added instruction using extended
 	immediates.
 	("extend<mode>di2", "extend<mode>si2", "zero_extend<mode>di2",
 	"zero_extend<mode>si2"): Allow memory operands and don't manually emit
@@ -356,7 +361,7 @@
 2005-08-15  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	PR target/23355
-	* arm.c (thumb_compute_save_reg_mask): Use similar logic to 
+	* arm.c (thumb_compute_save_reg_mask): Use similar logic to
 	arm_compure_save_reg0_reg12_mask to determine when the PIC register
 	must be saved.
 
@@ -389,7 +394,7 @@
 	* aclocal.m4 (gcc_AC_FUNC_PRINTF_PTR): Delete.
 	* configure.ac: Don't call gcc_AC_FUNC_PRINTF_PTR.
 	* system.h (HOST_PTR_PRINTF): Don't define, poison it.
-	
+
 	* bitmap.c, c-decl.c, config/i386/i386-interix.h,
 	config/iq2000/iq2000.c, mips-tfile.c, print-rtl.c, print-tree.c:
 	Delete HOST_PTR_PRINTF.
@@ -424,7 +429,7 @@
 	PR 23386
 	* tree-data-ref.c (estimate_niter_from_size_of_data): When
 	step is negative compute the estimation from init downwards to zero.
-	
+
 2005-08-14  James A. Morrison  <phython@gcc.gnu.org>
 
 	* fold-const (fold_binary): Call fold_build2 instead of fold (build.
@@ -441,9 +446,9 @@
 2005-08-14  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/22615
-	
+
 	* tree-ssa-structalias.c (solution_set_add): Handle
-	first_vi_for_offset returning NULL. 
+	first_vi_for_offset returning NULL.
 	(do_da_constraint): Ditto.
 	(do_sd_constraint): Ditto.
 	(do_ds_constraint): Ditto
@@ -451,7 +456,7 @@
 	(build_constraint_graph): RHS is allowed be ANYTHING.
 	(first_vi_for_offset): Return NULL if we couldn't find anything at
 	the offset.
-	
+
 2005-08-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_canonicalize_comparison): Prefer register
@@ -466,9 +471,9 @@
 2005-08-14  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/23320
-	* tree-data-ref.c (base_addr_differ_p): Add comment. Check 
-	data-refs' types instead of base object nullness. Add check for 
-	pointer type data-refs before first location comparison. Remove 
+	* tree-data-ref.c (base_addr_differ_p): Add comment. Check
+	data-refs' types instead of base object nullness. Add check for
+	pointer type data-refs before first location comparison. Remove
 	assert.
 
 2005-08-14  Andreas Schwab  <schwab@suse.de>
@@ -508,7 +513,7 @@
 	* tree-flow-inline.h (single_ssa_tree_operand, single_ssa_use_operand,
 	single_ssa_def_operand, zero_ssa_operands): Fix documentation.
 	* tree-flow.h (scev_probably_wraps_p): Declare with an extra parameter.
-	* tree-scalar-evolution.c (instantiate_parameters_1): Factor entry 
+	* tree-scalar-evolution.c (instantiate_parameters_1): Factor entry
 	condition.
 	* tree-ssa-loop-ivcanon.c: Fix documentation.
 	* tree-ssa-loop-ivopts.c (idx_find_step): Add a fixme note.
@@ -534,7 +539,7 @@
 
 2005-08-12  Gerald Pfeifer  <gerald@pfeifer.com>
 
-	* doc/invoke.texi (C++ Dialect Options): Add dynamic_cast to 
+	* doc/invoke.texi (C++ Dialect Options): Add dynamic_cast to
 	description of -Wold-style-casts.
 
 2005-08-12  Andreas Krebbel  <krebbel1@de.ibm.com>
@@ -589,7 +594,7 @@
 
 2005-08-12  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	* config/s390/s390.c (s390_split_branches, s390_init_frame_layout): 
+	* config/s390/s390.c (s390_split_branches, s390_init_frame_layout):
 	Don't set save_return_addr_p.
 	(s390_register_info): Make clobbered_regs not depending on
 	save_return_addr_p.

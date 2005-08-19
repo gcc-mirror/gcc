@@ -377,33 +377,33 @@ extern GTY(()) optab optab_table[OTI_MAX];
 /* Conversion optabs have their own table and indexes.  */
 enum convert_optab_index
 {
-  CTI_sext,
-  CTI_zext,
-  CTI_trunc,
+  COI_sext,
+  COI_zext,
+  COI_trunc,
 
-  CTI_sfix,
-  CTI_ufix,
+  COI_sfix,
+  COI_ufix,
 
-  CTI_sfixtrunc,
-  CTI_ufixtrunc,
+  COI_sfixtrunc,
+  COI_ufixtrunc,
 
-  CTI_sfloat,
-  CTI_ufloat,
+  COI_sfloat,
+  COI_ufloat,
 
-  CTI_MAX
+  COI_MAX
 };
 
-extern GTY(()) convert_optab convert_optab_table[CTI_MAX];
+extern GTY(()) convert_optab convert_optab_table[COI_MAX];
 
-#define sext_optab (convert_optab_table[CTI_sext])
-#define zext_optab (convert_optab_table[CTI_zext])
-#define trunc_optab (convert_optab_table[CTI_trunc])
-#define sfix_optab (convert_optab_table[CTI_sfix])
-#define ufix_optab (convert_optab_table[CTI_ufix])
-#define sfixtrunc_optab (convert_optab_table[CTI_sfixtrunc])
-#define ufixtrunc_optab (convert_optab_table[CTI_ufixtrunc])
-#define sfloat_optab (convert_optab_table[CTI_sfloat])
-#define ufloat_optab (convert_optab_table[CTI_ufloat])
+#define sext_optab (convert_optab_table[COI_sext])
+#define zext_optab (convert_optab_table[COI_zext])
+#define trunc_optab (convert_optab_table[COI_trunc])
+#define sfix_optab (convert_optab_table[COI_sfix])
+#define ufix_optab (convert_optab_table[COI_ufix])
+#define sfixtrunc_optab (convert_optab_table[COI_sfixtrunc])
+#define ufixtrunc_optab (convert_optab_table[COI_ufixtrunc])
+#define sfloat_optab (convert_optab_table[COI_sfloat])
+#define ufloat_optab (convert_optab_table[COI_ufloat])
 
 /* These arrays record the insn_code of insns that may be needed to
    perform input and output reloads of special objects.  They provide a
@@ -492,8 +492,8 @@ extern enum insn_code sync_lock_release[NUM_MACHINE_MODES];
 
 /* Define functions given in optabs.c.  */
 
-extern rtx expand_ternary_op (enum machine_mode mode, optab ternary_optab, 
-			      rtx op0, rtx op1, rtx op2, rtx target, 
+extern rtx expand_ternary_op (enum machine_mode mode, optab ternary_optab,
+			      rtx op0, rtx op1, rtx op2, rtx target,
 			      int unsignedp);
 
 /* Expand a binary operation given optab and rtx operands.  */
