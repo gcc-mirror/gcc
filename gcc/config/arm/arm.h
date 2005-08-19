@@ -1282,23 +1282,15 @@ enum reg_class
 /* We could probably achieve better results by defining PROMOTE_MODE to help
    cope with the variances between the Thumb's signed and unsigned byte and
    halfword load instructions.  */
-#define THUMB_LEGITIMIZE_RELOAD_ADDRESS(X, MODE, OPNUM, TYPE, IND_LEVELS, WIN)	\
-{									\
-  if (GET_CODE (X) == PLUS						\
-      && GET_MODE_SIZE (MODE) < 4					\
-      && GET_CODE (XEXP (X, 0)) == REG					\
-      && XEXP (X, 0) == stack_pointer_rtx				\
-      && GET_CODE (XEXP (X, 1)) == CONST_INT				\
-      && ! thumb_legitimate_offset_p (MODE, INTVAL (XEXP (X, 1))))	\
-    {									\
-      rtx orig_X = X;							\
-      X = copy_rtx (X);							\
-      push_reload (orig_X, NULL_RTX, &X, NULL,				\
-		   MODE_BASE_REG_CLASS (MODE),				\
-		   Pmode, VOIDmode, 0, 0, OPNUM, TYPE);			\
-      goto WIN;								\
-    }									\
-}
+#define THUMB_LEGITIMIZE_RELOAD_ADDRESS(X, MODE, OPNUM, TYPE, IND_L, WIN)     \
+do {									      \
+  rtx new_x = thumb_legitimize_reload_address (&X, MODE, OPNUM, TYPE, IND_L); \
+  if (new_x)								      \
+    {									      \
+      X = new_x;							      \
+      goto WIN;								      \
+    }									      \
+} while (0)
 
 #define LEGITIMIZE_RELOAD_ADDRESS(X, MODE, OPNUM, TYPE, IND_LEVELS, WIN)   \
   if (TARGET_ARM)							   \
