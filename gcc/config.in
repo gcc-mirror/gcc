@@ -611,12 +611,6 @@
 #endif
 
 
-/* Define to 1 if you have the `dup2' function. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_DUP2
-#endif
-
-
 /* Define to 1 if you have the <fcntl.h> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_FCNTL_H
