@@ -1,3 +1,8 @@
+2005-08-19  J"orn Rennecke <joern.rennecke@st.com>
+
+	* config/cpu/sh/atomicity.h: Replace broken generic code with current
+	copy of generic/atomicity.h .
+
 2005-08-17  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* All files: Update FSF address.
