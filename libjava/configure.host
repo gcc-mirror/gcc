@@ -224,6 +224,10 @@ EOF
 	  rm -f conftest conftest.c
 	fi
 	;;
+  i[34567]86-*-solaris2.1[0-9]* )
+	sysdeps_dir=x86-64
+	DIVIDESPEC=-f%{m32:no-}%{!m32:%{!m64:no-}}%{m64:}use-divide-subroutine
+	;;
   mips*-*-linux* )
   	sysdeps_dir=mips
   	can_unwind_signal=yes
