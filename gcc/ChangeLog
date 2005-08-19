@@ -1,3 +1,13 @@
+2005-08-19  Paul Woegerer  <paul.woegerer@nsc.com>
+
+	* config/crx/crx.c: Implement crx_decompose_address. Reject
+	symbolic displacements since CRX register relative adressing
+	mode can't handle unsigned 32-bit values as displacements.
+	* config/crx/crx.h: Simplify definitions, remove redundant
+	parenthesis and obsolete macros.
+	* config/crx/crx.opt: Add new switch for debugging addresses.
+	* config/crx/crx-protos.h: Add new declarations for above.
+
 2005-08-19  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/20624
