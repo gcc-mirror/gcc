@@ -1,5 +1,11 @@
 2005-08-19  Diego Novillo  <dnovillo@redhat.com>
 
+	* tree-cfgcleanup.c (cleanup_tree_cfg): Fix flowgraph change
+	indicator.  Return true if the flowgraph changed during
+	cleanup.
+
+2005-08-19  Diego Novillo  <dnovillo@redhat.com>
+
 	PR 23476
 	* tree-cfgcleanup.c (cleanup_control_expr_graph): Fold the
 	conditional expression before testing its value.
