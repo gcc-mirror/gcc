@@ -1,3 +1,9 @@
+2005-08-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/i386/x86-64.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Guard with
+	HAVE_GAS_MAX_SKIP_P2ALIGN.
+	(HAVE_AS_DWARF2_DEBUG_LINE): Remove.
+
 2005-08-18  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c/21562
