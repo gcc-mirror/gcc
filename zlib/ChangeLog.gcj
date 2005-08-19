@@ -1,3 +1,7 @@
+2005-08-18  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* zconf.h (NO_vsnprintf): Define on Tru64 UNIX V4.0.
+
 2004-11-24  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure: Regenerate for libtool change.
