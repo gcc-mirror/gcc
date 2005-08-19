@@ -6632,6 +6632,27 @@ sh_va_start (tree valist, rtx nextarg)
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 }
 
+/* TYPE is a RECORD_TYPE.  If there is only a single non-zero-sized
+   member, return it.  */
+static tree
+find_sole_member (tree type)
+{
+  tree field, member = NULL_TREE;
+
+  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+    {
+      if (TREE_CODE (field) != FIELD_DECL)
+	continue;
+      if (!DECL_SIZE (field))
+	return NULL_TREE;
+      if (integer_zerop (DECL_SIZE (field)))
+	continue;
+      if (member)
+	return NULL_TREE;
+      member = field;
+    }
+  return member;
+}
 /* Implement `va_arg'.  */
 
 static tree
@@ -6657,6 +6678,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
       tree next_o, next_o_limit, next_fp, next_fp_limit, next_stack;
       int pass_as_float;
       tree lab_false;
+      tree member;
 
       f_next_o = TYPE_FIELDS (va_list_type_node);
       f_next_o_limit = TREE_CHAIN (f_next_o);
@@ -6679,22 +6701,22 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 	 like their member.  This is relevant if the latter has a REAL_TYPE
 	 or COMPLEX_TYPE type.  */
       while (TREE_CODE (type) == RECORD_TYPE
-	     && TYPE_FIELDS (type)
-	     && TREE_CODE (TYPE_FIELDS (type)) == FIELD_DECL
-	     && (TREE_CODE (TREE_TYPE (TYPE_FIELDS (type))) == REAL_TYPE
-		 || TREE_CODE (TREE_TYPE (TYPE_FIELDS (type))) == COMPLEX_TYPE
-		 || TREE_CODE (TREE_TYPE (TYPE_FIELDS (type))) == RECORD_TYPE)
-             && TREE_CHAIN (TYPE_FIELDS (type)) == NULL_TREE)
+	     && (member = find_sole_member (type))
+	     && (TREE_CODE (TREE_TYPE (member)) == REAL_TYPE
+		 || TREE_CODE (TREE_TYPE (member)) == COMPLEX_TYPE
+		 || TREE_CODE (TREE_TYPE (member)) == RECORD_TYPE))
 	{
-	  tree field_type = TREE_TYPE (TYPE_FIELDS (type));
+	  tree field_type = TREE_TYPE (member);
 
 	  if (TYPE_MODE (type) == TYPE_MODE (field_type))
 	    type = field_type;
 	  else
 	    {
-	      gcc_assert (TYPE_ALIGN (type)
-			  < GET_MODE_ALIGNMENT (TYPE_MODE (field_type)));
-	    break;
+	      gcc_assert ((TYPE_ALIGN (type)
+			   < GET_MODE_ALIGNMENT (TYPE_MODE (field_type)))
+			  || (TYPE_ALIGN (type)
+			      > GET_MODE_BITSIZE (TYPE_MODE (field_type))));
+	      break;
 	    }
 	}
 
