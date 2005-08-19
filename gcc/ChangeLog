@@ -1,3 +1,9 @@
+2005-08-19  J"orn Rennecke <joern.rennecke@st.com>
+
+	* sh.c (find_sole_member): New function.
+	(sh_gimplify_va_arg_expr): Use it. Allow RECORD_TYPE mode mismatch
+	if the record's alignment is larger than the size of its only member.
+
 2005-08-19  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	PR target/23436
