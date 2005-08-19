@@ -3492,6 +3492,7 @@ init_elim_table (void)
 			     sp-adjusting insns for this case.  */
 			  || (current_function_calls_alloca
 			      && EXIT_IGNORE_STACK)
+			  || current_function_accesses_prior_frames
 			  || FRAME_POINTER_REQUIRED);
 
   num_eliminable = 0;

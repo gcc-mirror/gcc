@@ -394,6 +394,10 @@ struct function GTY(())
      either as a subroutine or builtin.  */
   unsigned int calls_alloca : 1;
 
+  /* Nonzero if function being compiled called builtin_return_addr or
+     builtin_frame_address with non-zero count.  */
+  unsigned int accesses_prior_frames : 1;
+
   /* Nonzero if the function calls __builtin_eh_return.  */
   unsigned int calls_eh_return : 1;
 
@@ -483,6 +487,7 @@ extern int trampolines_created;
 #define current_function_returns_pointer (cfun->returns_pointer)
 #define current_function_calls_setjmp (cfun->calls_setjmp)
 #define current_function_calls_alloca (cfun->calls_alloca)
+#define current_function_accesses_prior_frames (cfun->accesses_prior_frames)
 #define current_function_calls_eh_return (cfun->calls_eh_return)
 #define current_function_is_thunk (cfun->is_thunk)
 #define current_function_args_info (cfun->args_info)
