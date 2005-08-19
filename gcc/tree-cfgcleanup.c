@@ -81,11 +81,11 @@ cleanup_control_expr_graph (basic_block bb, block_stmt_iterator bsi)
       switch (TREE_CODE (expr))
 	{
 	case COND_EXPR:
-	  val = COND_EXPR_COND (expr);
+	  val = fold (COND_EXPR_COND (expr));
 	  break;
 
 	case SWITCH_EXPR:
-	  val = SWITCH_COND (expr);
+	  val = fold (SWITCH_COND (expr));
 	  if (TREE_CODE (val) != INTEGER_CST)
 	    return false;
 	  break;
