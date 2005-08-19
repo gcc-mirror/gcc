@@ -1,3 +1,9 @@
+2005-08-18  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	PR libgcj/21943
+	* src/mips/n32.S: Enforce PIC code.
+	* src/mips/o32.S: Likewise.
+
 2005-08-10  Alfred M. Szmidt  <ams@gnu.org>
 
 	PR libffi/21819:
