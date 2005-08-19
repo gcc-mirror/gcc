@@ -1,3 +1,17 @@
+2005-08-19  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* Makefile.am (extra_ldflags_libjava): New variable to
+	substitute in.
+	(LIBLINK): Add extra_ldflags_libjava to it.
+	* configure.ac (extra_ldflags_libjava): Set for *-darwin* to
+	"-Wl,-single_module".
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* gcj/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2005-08-17  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/Class.h (_Jv_IsBinaryCompatibilityABI): Declare as

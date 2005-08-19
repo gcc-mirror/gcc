@@ -668,6 +668,15 @@ AC_SUBST(PANGOFT2_CFLAGS)
 # FIXME: this should be _libs on some hosts.
 libsubdir=.libs
 
+# extra LD Flags which are required for targets
+case "${host}" in
+  *-darwin*)
+    # on Darwin -single_module speeds up loading of the dynamic libraries.
+    extra_ldflags_libjava=-Wl,-single_module
+    ;;
+esac
+AC_SUBST(extra_ldflags_libjava)
+
 # Allow the GC to be disabled.  Can be useful when debugging.
 AC_MSG_CHECKING([for garbage collector to use])
 AC_ARG_ENABLE(java-gc,
