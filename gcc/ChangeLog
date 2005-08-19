@@ -1,3 +1,10 @@
+2005-08-19  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	PR target/23436
+	* arm.c (thumb_legitimize_reload_address): New function.
+	* arm-protos.h (thumb_legitimize_reload_address): Add prototype.
+	* arm.h (THUMB_LEGITIMIZE_RELOAD_ADDRESS): Call it.
+
 2005-08-19  Paul Woegerer  <paul.woegerer@nsc.com>
 
 	* config/crx/crx.c: Implement crx_decompose_address. Reject

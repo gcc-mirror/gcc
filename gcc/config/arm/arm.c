@@ -3839,6 +3839,49 @@ thumb_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
   return x;
 }
 
+rtx
+thumb_legitimize_reload_address(rtx *x_p,
+				enum machine_mode mode,
+				int opnum, int type,
+				int ind_levels ATTRIBUTE_UNUSED)
+{
+  rtx x = *x_p;
+  
+  if (GET_CODE (x) == PLUS
+      && GET_MODE_SIZE (mode) < 4
+      && REG_P (XEXP (x, 0))
+      && XEXP (x, 0) == stack_pointer_rtx
+      && GET_CODE (XEXP (x, 1)) == CONST_INT
+      && !thumb_legitimate_offset_p (mode, INTVAL (XEXP (x, 1))))
+    {
+      rtx orig_x = x;
+
+      x = copy_rtx (x);
+      push_reload (orig_x, NULL_RTX, x_p, NULL, MODE_BASE_REG_CLASS (mode),
+		   Pmode, VOIDmode, 0, 0, opnum, type);
+      return x;
+    }
+
+  /* If both registers are hi-regs, then it's better to reload the
+     entire expression rather than each register individually.  That
+     only requires one reload register rather than two.  */
+  if (GET_CODE (x) == PLUS
+      && REG_P (XEXP (x, 0))
+      && REG_P (XEXP (x, 1))
+      && !REG_MODE_OK_FOR_REG_BASE_P (XEXP (x, 0), mode)
+      && !REG_MODE_OK_FOR_REG_BASE_P (XEXP (x, 1), mode))
+    {
+      rtx orig_x = x;
+
+      x = copy_rtx (x);
+      push_reload (orig_x, NULL_RTX, x_p, NULL, MODE_BASE_REG_CLASS (mode),
+		   Pmode, VOIDmode, 0, 0, opnum, type);
+      return x;
+    }
+
+  return NULL;
+}
+
 
 
 #define REG_OR_SUBREG_REG(X)						\
