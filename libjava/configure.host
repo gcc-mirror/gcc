@@ -278,8 +278,12 @@ case "${host}" in
 esac
 
 case "${host}" in
-  ia64-* | hppa*-*)
+  ia64-*)
 	descriptor_h=sysdep/descriptor-y.h
+	;;
+
+  hppa*-*)
+	descriptor_h=sysdep/pa/descriptor.h
 	;;
 
   rs6000-* | powerpc*-*)
