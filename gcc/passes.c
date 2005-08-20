@@ -237,12 +237,12 @@ finish_optimization_passes (void)
   if (graph_dump_format != no_graph)
     for (i = TDI_end; (dfi = get_dump_file_info (i)) != NULL; ++i)
       if (dump_initialized_p (i)
-	  && (dfi->flags & TDF_RTL) != 0
+	  && (dfi->flags & TDF_GRAPH) != 0
 	  && (name = get_dump_file_name (i)) != NULL)
-        {
-          finish_graph_dump_file (name);
-          free (name);
-        }
+	{
+	  finish_graph_dump_file (name);
+	  free (name);
+	}
 
   timevar_pop (TV_DUMP);
 }
@@ -708,7 +708,13 @@ execute_todo (struct tree_opt_pass *pass, unsigned int flags, bool use_required)
         dump_function_to_file (current_function_decl,
                                dump_file, dump_flags);
       else if (properties & PROP_cfg)
-        print_rtl_with_bb (dump_file, get_insns ());
+	{
+	  print_rtl_with_bb (dump_file, get_insns ());
+
+	  if (graph_dump_format != no_graph
+	      && (dump_flags & TDF_GRAPH))
+	    print_rtl_graph_with_bb (dump_file_name, get_insns ());
+	}
       else
         print_rtl (dump_file, get_insns ());
 
@@ -782,10 +788,15 @@ execute_one_pass (struct tree_opt_pass *pass)
 	}
 
       if (initializing_dump
-          && graph_dump_format != no_graph
+	  && dump_file
+	  && graph_dump_format != no_graph
 	  && (pass->properties_provided & (PROP_cfg | PROP_rtl))
 	      == (PROP_cfg | PROP_rtl))
-        clean_graph_dump_file (dump_file_name);
+	{
+	  get_dump_file_info (pass->static_pass_number)->flags |= TDF_GRAPH;
+	  dump_flags |= TDF_GRAPH;
+	  clean_graph_dump_file (dump_file_name);
+	}
     }
 
   /* If a timevar is present, start it.  */

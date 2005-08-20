@@ -1,3 +1,13 @@
+2005-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-pass.h (TDF_GRAPH): Define.
+	* tree-dump.c (dump_options): Don't set TDF_GRAPH in "all".
+	* passes.c (finish_optimization_passes): Only call
+	finish_graph_dump_file if TDF_GRAPH is set.
+	(execute_one_pass): Only call clean_graph_dump_file if dump_file !=
+	NULL.  Set TDF_GRAPH bit.
+	(execute_todo): Call print_rtl_graph_with_bb if TDF_GRAPH is set.
+
 2005-08-20  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* arm.h (arm_stack_offsets): Add locals_base field.
