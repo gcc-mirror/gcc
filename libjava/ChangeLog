@@ -1,3 +1,9 @@
+2005-08-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR libgcj/21692
+	* sysdep/pa/descriptor.h: New file.
+	* configure.host: Use sysdep/pa/descriptor.h on hppa*-*.
+
 2005-08-19  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* Makefile.am (extra_ldflags_libjava): New variable to
