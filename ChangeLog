@@ -1,3 +1,8 @@
+2005-08-20  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* Makefile.def (libssp): Add to lang_env_dependencies.
+	* Makefile.in: Regenerate.
+
 2005-08-18  Ian Lance Taylor  <ian@airs.com>
 
 	* MAINTAINERS: Add myself as middle-end maintainer.
