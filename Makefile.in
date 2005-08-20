@@ -35028,6 +35028,8 @@ configure-target-libjava: maybe-all-target-libstdc++-v3
 
 configure-target-libobjc: maybe-all-target-newlib maybe-all-target-libgloss
 
+configure-target-libssp: maybe-all-target-newlib maybe-all-target-libgloss
+
 configure-target-libstdc++-v3: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-zlib: maybe-all-target-newlib maybe-all-target-libgloss
