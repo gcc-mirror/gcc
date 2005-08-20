@@ -11,7 +11,7 @@ main()
 			a[i]/=b;
 	return 0;
 }
-/* { dg-final-use { scan-tree-dump "Div.mod by constant b..=997 transformation on insn" "tree_profile"} } */
+/* { dg-final-use { scan-tree-dump "Div.mod by constant b.*=997 transformation on insn" "tree_profile"} } */
 /* { dg-final-use { scan-tree-dump-not "Invalid sum" "optimized"} } */
 /* { dg-final-use { cleanup-tree-dump "optimized" } } */
 /* { dg-final-use { cleanup-tree-dump "tree_profile" } } */

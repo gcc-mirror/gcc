@@ -1,3 +1,8 @@
+2005-08-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR testsuite/23239
+	* gcc.dg/tree-prof/val-prof-5.c: Fix scan-tree-dump regexp.
+
 2005-08-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20050811-1.c: New test.
