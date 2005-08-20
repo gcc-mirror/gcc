@@ -1,3 +1,9 @@
+2005-08-20  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/20624
+	* gimple-low.c (block_may_fallthru): Handle CLEANUP_POINT_EXPR
+	by looking past it.
+
 2005-08-19  Diego Novillo  <dnovillo@redhat.com>
 
 	* doc/invoke.texi: Fix documentation for -ftree-dominator-opts.
