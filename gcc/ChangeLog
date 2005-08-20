@@ -1,3 +1,15 @@
+2005-08-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/23485
+	* config/ia64/lib1funcs.asm (__divdi3): Check divide by zero.
+	(__moddi3): Likewise.
+	(__udivdi3): Likewise.
+	(__umoddi3): Likewise.
+	(__divsi3): Likewise.
+	(__modsi3): Likewise.
+	(__udivsi3): Likewise.
+	(__umodsi3): Likewise.
+
 2005-08-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-pass.h (TDF_GRAPH): Define.
