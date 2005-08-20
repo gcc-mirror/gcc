@@ -9992,7 +9992,7 @@ thumb_force_lr_save (void)
                             |    | \
                             |    |   local
                             |    |   variables
-                            |    | /
+     locals base pointer -> |    | /
                               --
                             |    | \
                             |    |   outgoing
@@ -10109,8 +10109,9 @@ arm_get_frame_offsets (void)
       && (offsets->soft_frame & 7))
     offsets->soft_frame += 4;
 
-  offsets->outgoing_args = offsets->soft_frame + frame_size
-			   + current_function_outgoing_args_size;
+  offsets->locals_base = offsets->soft_frame + frame_size;
+  offsets->outgoing_args = (offsets->locals_base
+			    + current_function_outgoing_args_size);
 
   if (ARM_DOUBLEWORD_ALIGN)
     {
@@ -13158,8 +13159,10 @@ arm_init_expanders (void)
 }
 
 
-/* Like arm_compute_initial_elimination offset.  Simpler because
-   THUMB_HARD_FRAME_POINTER isn't actually the ABI specified frame pointer.  */
+/* Like arm_compute_initial_elimination offset.  Simpler because there
+   isn't an ABI specified frame pointer for Thumb.  Instead, we set it
+   to point at the base of the local variables after static stack
+   space for a function has been allocated.  */
 
 HOST_WIDE_INT
 thumb_compute_initial_elimination_offset (unsigned int from, unsigned int to)
@@ -13179,9 +13182,11 @@ thumb_compute_initial_elimination_offset (unsigned int from, unsigned int to)
 	case FRAME_POINTER_REGNUM:
 	  return offsets->soft_frame - offsets->saved_args;
 
-	case THUMB_HARD_FRAME_POINTER_REGNUM:
 	case ARM_HARD_FRAME_POINTER_REGNUM:
 	  return offsets->saved_regs - offsets->saved_args;
+
+	case THUMB_HARD_FRAME_POINTER_REGNUM:
+	  return offsets->locals_base - offsets->saved_args;
 
 	default:
 	  gcc_unreachable ();
@@ -13194,9 +13199,11 @@ thumb_compute_initial_elimination_offset (unsigned int from, unsigned int to)
 	case STACK_POINTER_REGNUM:
 	  return offsets->outgoing_args - offsets->soft_frame;
 
-	case THUMB_HARD_FRAME_POINTER_REGNUM:
 	case ARM_HARD_FRAME_POINTER_REGNUM:
 	  return offsets->saved_regs - offsets->soft_frame;
+
+	case THUMB_HARD_FRAME_POINTER_REGNUM:
+	  return offsets->locals_base - offsets->soft_frame;
 
 	default:
 	  gcc_unreachable ();
@@ -13239,18 +13246,11 @@ thumb_expand_prologue (void)
   if (flag_pic)
     arm_load_pic_register (live_regs_mask);
 
-  offsets = arm_get_frame_offsets ();
-
-  if (frame_pointer_needed)
-    {
-      insn = emit_insn (gen_movsi (hard_frame_pointer_rtx,
-				   stack_pointer_rtx));
-      RTX_FRAME_RELATED_P (insn) = 1;
-    }
-  else if (CALLER_INTERWORKING_SLOT_SIZE > 0)
+  if (!frame_pointer_needed && CALLER_INTERWORKING_SLOT_SIZE > 0)
     emit_move_insn (gen_rtx_REG (Pmode, ARM_HARD_FRAME_POINTER_REGNUM),
 		    stack_pointer_rtx);
 
+  offsets = arm_get_frame_offsets ();
   amount = offsets->outgoing_args - offsets->saved_regs;
   if (amount)
     {
@@ -13336,12 +13336,29 @@ thumb_expand_prologue (void)
 				     REG_NOTES (insn));
 	    }
 	}
-      /* If the frame pointer is needed, emit a special barrier that
-	 will prevent the scheduler from moving stores to the frame
-	 before the stack adjustment.  */
-      if (frame_pointer_needed)
-	emit_insn (gen_stack_tie (stack_pointer_rtx,
-				  hard_frame_pointer_rtx));
+    }
+
+  if (frame_pointer_needed)
+    {
+      amount = offsets->outgoing_args - offsets->locals_base;
+      
+      if (amount < 1024)
+	insn = emit_insn (gen_addsi3 (hard_frame_pointer_rtx,
+				      stack_pointer_rtx, GEN_INT (amount)));
+      else
+	{
+	  emit_insn (gen_movsi (hard_frame_pointer_rtx, GEN_INT (amount)));
+	  insn = emit_insn (gen_addsi3 (hard_frame_pointer_rtx,
+					hard_frame_pointer_rtx,
+					stack_pointer_rtx));
+	  dwarf = gen_rtx_SET (SImode, hard_frame_pointer_rtx,
+			       plus_constant (stack_pointer_rtx, amount));
+	  RTX_FRAME_RELATED_P (dwarf) = 1;
+	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, dwarf,
+						REG_NOTES (insn));
+	}
+
+      RTX_FRAME_RELATED_P (insn) = 1;
     }
 
   if (current_function_profile || !TARGET_SCHED_PROLOG)
@@ -13373,8 +13390,12 @@ thumb_expand_epilogue (void)
   amount = offsets->outgoing_args - offsets->saved_regs;
 
   if (frame_pointer_needed)
-    emit_insn (gen_movsi (stack_pointer_rtx, hard_frame_pointer_rtx));
-  else if (amount)
+    {
+      emit_insn (gen_movsi (stack_pointer_rtx, hard_frame_pointer_rtx));
+      amount = offsets->locals_base - offsets->saved_regs;
+    }
+  
+  if (amount)
     {
       if (amount < 512)
 	emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,

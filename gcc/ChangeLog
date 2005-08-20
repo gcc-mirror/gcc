@@ -1,3 +1,16 @@
+2005-08-20  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* arm.h (arm_stack_offsets): Add locals_base field.
+	* arm.c (arm_get_frame_offsets): Compute it.
+	(thumb_compute_initial_elimination offset): Make the Thumb frame
+	pointer point to the base of the local variables.
+	(thumb_expand_prologue): Update accordingly.
+	(thumb_expand_epilogue): Likewise.
+
+	* arm.md (thumb_movhi_clobber): Make this insn a define_expand.  Change
+	mode of clobbered scratch to DImode.  Handle a case that's known to
+	need this.
+
 2005-08-19  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (gt0<mode>): Delete.

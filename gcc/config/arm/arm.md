@@ -4951,13 +4951,21 @@
   [(set_attr "predicable" "yes")]
 )
 
-(define_insn "thumb_movhi_clobber"
-  [(set (match_operand:HI     0 "memory_operand"   "=m")
-	(match_operand:HI     1 "register_operand" "l"))
-   (clobber (match_operand:SI 2 "register_operand" "=&l"))]
+(define_expand "thumb_movhi_clobber"
+  [(set (match_operand:HI     0 "memory_operand"   "")
+	(match_operand:HI     1 "register_operand" ""))
+   (clobber (match_operand:DI 2 "register_operand" ""))]
   "TARGET_THUMB"
-  "*
-  gcc_unreachable ();"
+  "
+  if (strict_memory_address_p (HImode, XEXP (operands[0], 0))
+      && REGNO (operands[1]) <= LAST_LO_REGNUM)
+    {
+      emit_insn (gen_movhi (operands[0], operands[1]));
+      DONE;
+    }
+  /* XXX Fixme, need to handle other cases here as well.  */
+  gcc_unreachable ();
+  "
 )
 	
 ;; We use a DImode scratch because we may occasionally need an additional
