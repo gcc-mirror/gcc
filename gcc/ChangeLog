@@ -1,3 +1,9 @@
+2005-08-19  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (gt0<mode>): Delete.
+	(gt0<mode>_compare): Delete.
+	(neg_gt0<mode>): Delete.
+
 2005-08-19  Eric Christopher  <echristo@apple.com>
 
 	* optabs.h: Change CTI_ to COI_.
