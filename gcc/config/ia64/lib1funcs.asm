@@ -139,10 +139,13 @@ __divdi3:
 	// Transfer inputs to FP registers.
 	setf.sig f8 = in0
 	setf.sig f9 = in1
+	// Check divide by zero.
+	cmp.ne.unc p0,p7=0,in1
 	;;
 	// Convert the inputs to FP, so that they won't be treated as unsigned.
 	fcvt.xf f8 = f8
 	fcvt.xf f9 = f9
+(p7)	break 1
 	;;
 	// Compute the reciprocal approximation.
 	frcpa.s1 f10, p6 = f8, f9
@@ -189,10 +192,13 @@ __moddi3:
 	// Transfer inputs to FP registers.
 	setf.sig f14 = in0
 	setf.sig f9 = in1
+	// Check divide by zero.
+	cmp.ne.unc p0,p7=0,in1
 	;;
 	// Convert the inputs to FP, so that they won't be treated as unsigned.
 	fcvt.xf f8 = f14
 	fcvt.xf f9 = f9
+(p7)	break 1
 	;;
 	// Compute the reciprocal approximation.
 	frcpa.s1 f10, p6 = f8, f9
@@ -243,10 +249,13 @@ __udivdi3:
 	// Transfer inputs to FP registers.
 	setf.sig f8 = in0
 	setf.sig f9 = in1
+	// Check divide by zero.
+	cmp.ne.unc p0,p7=0,in1
 	;;
 	// Convert the inputs to FP, to avoid FP software-assist faults.
 	fcvt.xuf.s1 f8 = f8
 	fcvt.xuf.s1 f9 = f9
+(p7)	break 1
 	;;
 	// Compute the reciprocal approximation.
 	frcpa.s1 f10, p6 = f8, f9
@@ -293,10 +302,13 @@ __umoddi3:
 	// Transfer inputs to FP registers.
 	setf.sig f14 = in0
 	setf.sig f9 = in1
+	// Check divide by zero.
+	cmp.ne.unc p0,p7=0,in1
 	;;
 	// Convert the inputs to FP, to avoid FP software assist faults.
 	fcvt.xuf.s1 f8 = f14
 	fcvt.xuf.s1 f9 = f9
+(p7)	break 1;
 	;;
 	// Compute the reciprocal approximation.
 	frcpa.s1 f10, p6 = f8, f9
@@ -345,11 +357,14 @@ __umoddi3:
 	.proc __divsi3
 __divsi3:
 	.regstk 2,0,0,0
+	// Check divide by zero.
+	cmp.ne.unc p0,p7=0,in1
 	sxt4 in0 = in0
 	sxt4 in1 = in1
 	;;
 	setf.sig f8 = in0
 	setf.sig f9 = in1
+(p7)	break 1
 	;;
 	mov r2 = 0x0ffdd
 	fcvt.xf f8 = f8
@@ -394,6 +409,8 @@ __modsi3:
 	;;
 	setf.sig f13 = r32
 	setf.sig f9 = r33
+	// Check divide by zero.
+	cmp.ne.unc p0,p7=0,in1
 	;;
 	sub in1 = r0, in1
 	fcvt.xf f8 = f13
@@ -401,6 +418,7 @@ __modsi3:
 	;;
 	setf.exp f11 = r2
 	frcpa.s1 f10, p6 = f8, f9
+(p7)	break 1
 	;;
 (p6)	fmpy.s1 f12 = f8, f10
 (p6)	fnma.s1 f10 = f9, f10, f1
@@ -441,9 +459,12 @@ __udivsi3:
 	;;
 	setf.sig f8 = in0
 	setf.sig f9 = in1
+	// Check divide by zero.
+	cmp.ne.unc p0,p7=0,in1
 	;;
 	fcvt.xf f8 = f8
 	fcvt.xf f9 = f9
+(p7)	break 1
 	;;
 	setf.exp f11 = r2
 	frcpa.s1 f10, p6 = f8, f9
@@ -484,6 +505,8 @@ __umodsi3:
 	;;
 	setf.sig f13 = in0
 	setf.sig f9 = in1
+	// Check divide by zero.
+	cmp.ne.unc p0,p7=0,in1
 	;;
 	sub in1 = r0, in1
 	fcvt.xf f8 = f13
@@ -491,6 +514,7 @@ __umodsi3:
 	;;
 	setf.exp f11 = r2
 	frcpa.s1 f10, p6 = f8, f9
+(p7)	break 1;
 	;;
 (p6)	fmpy.s1 f12 = f8, f10
 (p6)	fnma.s1 f10 = f9, f10, f1
