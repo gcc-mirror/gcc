@@ -266,4 +266,6 @@ int main () {
 
   for (i = 0; i < 8; i++)
     ieq (bytes[15 + i], (2 + i) * 0x10);
+
+  exit (0);		
 }
