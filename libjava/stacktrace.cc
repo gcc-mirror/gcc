@@ -102,7 +102,7 @@ _Jv_StackTrace::UnwindTraceFn (struct _Unwind_Context *context, void *state_ptr)
   // Check if the trace buffer needs to be extended.
   if (pos == state->length)
     {
-      int newLength = state->length *= 2;
+      int newLength = state->length * 2;
       void *newFrames = _Jv_AllocBytes (newLength * sizeof(_Jv_StackFrame));
       memcpy (newFrames, state->frames, state->length * sizeof(_Jv_StackFrame));      
       state->frames = (_Jv_StackFrame *) newFrames;
@@ -117,7 +117,7 @@ _Jv_StackTrace::UnwindTraceFn (struct _Unwind_Context *context, void *state_ptr)
   // correspondance between call frames in the interpreted stack and occurances
   // of _Jv_InterpMethod::run() on the native stack.
 #ifdef INTERPRETER
-  if (func_addr == (_Unwind_Ptr) &_Jv_InterpMethod::run)
+  if ((void (*)(void)) func_addr == (void (*)(void)) &_Jv_InterpMethod::run)
     {
       state->frames[pos].type = frame_interpreter;
       state->frames[pos].interp.meth = state->interp_frame->self;
