@@ -1,3 +1,7 @@
+2005-08-21  Tom Tromey  <tromey@redhat.com>
+
+	* HACKING: Updated for hacking classpath in libgcj.
+
 2005-08-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR libgcj/21692
