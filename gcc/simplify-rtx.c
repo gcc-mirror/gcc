@@ -3564,7 +3564,7 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 		}
 	      /* It shouldn't matter what's done here, so fill it with
 		 zero.  */
-	      for (; i < max_bitsize; i += value_bit)
+	      for (; i < elem_bitsize; i += value_bit)
 		*vp++ = 0;
 	    }
 	  else
