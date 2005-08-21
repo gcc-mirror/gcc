@@ -1,3 +1,15 @@
+2005-08-21  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* tree-vect-transform.c (get_initial_def_for_reduction): Set
+	need_epilog_adjust back to false for MIN/MAX case. Set *scalar_def to
+	NULL if need_epilog_adjust is false.
+	(vect_create_epilog_for_reduction): Variable adjust_in_epilog removed.
+	Case 3 always peels first itration, not just for PLUS case, and no need
+	to use scalar_initial_def here. Create an epilog adjustment only if
+	scalar_initial_def is not NULL.
+
+	(vectorizable_reduction): Remove assert. 
+
 2005-08-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/23485

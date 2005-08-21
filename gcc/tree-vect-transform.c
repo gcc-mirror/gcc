@@ -751,7 +751,7 @@ get_initial_def_for_reduction (tree stmt, tree init_val, tree *scalar_def)
   case MAX_EXPR:
     def = init_val;
     nelements = nunits;
-    need_epilog_adjust = true;
+    need_epilog_adjust = false;
     break;
 
   default:
@@ -775,13 +775,9 @@ get_initial_def_for_reduction (tree stmt, tree init_val, tree *scalar_def)
     vec = build_constructor_from_list (vectype, t);
     
   if (!need_epilog_adjust)
-    {
-      if (INTEGRAL_TYPE_P (type))
-	init_val = build_int_cst (type, 0);
-      else
-	init_val = build_real (type, dconst0);
-    }
-  *scalar_def = init_val;
+    *scalar_def = NULL_TREE;
+  else
+    *scalar_def = init_val;
 
   return vect_init_vector (stmt, vec);
 }
@@ -862,7 +858,6 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
   imm_use_iterator imm_iter;
   use_operand_p use_p;
   bool extract_scalar_result;
-  bool adjust_in_epilog;
   
   /*** 1. Create the reduction def-use cycle  ***/
   
@@ -921,7 +916,6 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
       bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
 
       extract_scalar_result = true;
-      adjust_in_epilog = true;
     }
   else
     {
@@ -997,13 +991,15 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
 	    }
 
 	  extract_scalar_result = true;
-	  adjust_in_epilog = true;
 	}
       else
         {
+	  tree rhs;
+
 	  /*** Case 3:
-	     Create:  s = init; 
-	     for (offset=0; offset<vector_size; offset+=element_size;)
+	     Create:  
+	     s = extract_field <v_out2, 0>
+	     for (offset=element_size; offset<vector_size; offset+=element_size;)
 	       {
 	         Create:  s' = extract_field <v_out2, offset>
 	         Create:  s = op <s, s'>
@@ -1015,33 +1011,19 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
 	  vec_temp = PHI_RESULT (new_phi);
 	  vec_size_in_bits = tree_low_cst (TYPE_SIZE (vectype), 1);
 
-	  /* first iteration is peeled out when possible to minimize
-	     the number of operations we generate:  */
-	  if (code == PLUS_EXPR 
-	     && (integer_zerop (scalar_initial_def) 
-		 || real_zerop (scalar_initial_def)))
-	    {
-	      tree rhs = build3 (BIT_FIELD_REF, scalar_type, vec_temp, bitsize,
-				 bitsize_zero_node);
+	  rhs = build3 (BIT_FIELD_REF, scalar_type, vec_temp, bitsize,
+			 bitsize_zero_node);
 
-	      BIT_FIELD_REF_UNSIGNED (rhs) = TYPE_UNSIGNED (scalar_type);
-	      epilog_stmt = build2 (MODIFY_EXPR, scalar_type, new_scalar_dest, 
-				    rhs);
-              new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
-              TREE_OPERAND (epilog_stmt, 0) = new_temp;
-              bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
-              if (vect_print_dump_info (REPORT_DETAILS))
-                print_generic_expr (vect_dump, epilog_stmt, TDF_SLIM);
+	  BIT_FIELD_REF_UNSIGNED (rhs) = TYPE_UNSIGNED (scalar_type);
+	  epilog_stmt = build2 (MODIFY_EXPR, scalar_type, new_scalar_dest, 
+			        rhs);
+	  new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
+	  TREE_OPERAND (epilog_stmt, 0) = new_temp;
+	  bsi_insert_after (&exit_bsi, epilog_stmt, BSI_NEW_STMT);
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    print_generic_expr (vect_dump, epilog_stmt, TDF_SLIM);
 	      
-	      bit_offset = element_bitsize;
-	    }
-	  else
-	    {
-	      new_temp = scalar_initial_def;
-	      bit_offset = 0;
-	    }
-
-	  for (;
+	  for (bit_offset = element_bitsize;
 	       bit_offset < vec_size_in_bits;
 	       bit_offset += element_bitsize)
 	    { 
@@ -1069,7 +1051,6 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
 	    }
 
 	  extract_scalar_result = false;
-	  adjust_in_epilog = false;
 	}
     }
 
@@ -1110,7 +1091,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
 	 Create: 
 	 s_out = scalar_expr <s_out, scalar_initial_def>  */
   
-  if (adjust_in_epilog)
+  if (scalar_initial_def)
     {
       epilog_stmt = build2 (MODIFY_EXPR, scalar_type, new_scalar_dest,
                       build2 (code, scalar_type, new_temp, scalar_initial_def));
@@ -1291,8 +1272,6 @@ vectorizable_reduction (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 
   /* Prepare the operand that is defined inside the loop body  */
   loop_vec_def = vect_get_vec_def_for_operand (op0, stmt, NULL);
-  gcc_assert (VECTOR_MODE_P (TYPE_MODE (TREE_TYPE (loop_vec_def))));
-
 
   /* Create the vectorized operation that computes the partial results  */
   *vec_stmt = build2 (MODIFY_EXPR, vectype, vec_dest,
