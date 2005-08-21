@@ -28,7 +28,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    will expand to an array constructor without iterators.
    Constructors larger than this will remain in the iterator form.  */
 
-#define GFC_MAX_AC_EXPAND 100
+#define GFC_MAX_AC_EXPAND 65535
 
 
 /**************** Array reference matching subroutines *****************/
