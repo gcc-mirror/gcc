@@ -271,7 +271,7 @@ static bool
 gfc_init (void)
 {
 #ifdef USE_MAPPED_LOCATION
-  linemap_add (&line_table, LC_ENTER, false, gfc_option.source, 1);
+  linemap_add (&line_table, LC_ENTER, false, gfc_source_file, 1);
   linemap_add (&line_table, LC_RENAME, false, "<built-in>", 0);
 #endif
 
@@ -282,8 +282,8 @@ gfc_init (void)
   /* Then the frontend.  */
   gfc_init_1 ();
 
-  if (gfc_new_file (gfc_option.source, gfc_option.source_form) != SUCCESS)
-    fatal_error ("can't open input file: %s", gfc_option.source);
+  if (gfc_new_file () != SUCCESS)
+    fatal_error ("can't open input file: %s", gfc_source_file);
   return true;
 }
 

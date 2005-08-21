@@ -65,7 +65,7 @@ gfc_source_form gfc_current_form;
 static gfc_linebuf *line_head, *line_tail;
        
 locus gfc_current_locus;
-char *gfc_source_file;
+const char *gfc_source_file;
       
 
 /* Main scanner initialization.  */
@@ -355,7 +355,8 @@ skip_free_comments (void)
 
 /* Skip comment lines in fixed source mode.  We have the same rules as
    in skip_free_comment(), except that we can have a 'c', 'C' or '*'
-   in column 1, and a '!' cannot be in column 6.  */
+   in column 1, and a '!' cannot be in column 6.  Also, we deal with
+   lines with 'd' or 'D' in column 1, if the user requested this.  */
 
 static void
 skip_fixed_comments (void)
@@ -383,13 +384,24 @@ skip_fixed_comments (void)
 	  continue;
 	}
 
+      if (gfc_option.flag_d_lines != -1 && (c == 'd' || c == 'D'))
+	{
+	  if (gfc_option.flag_d_lines == 0)
+	    {
+	      skip_comment_line ();
+	      continue;
+	    }
+	  else
+	    *start.nextc = c = ' ';
+	}
+
       col = 1;
-      do
+
+      while (gfc_is_whitespace (c))
 	{
 	  c = next_char ();
 	  col++;
 	}
-      while (gfc_is_whitespace (c));
 
       if (c == '\n')
 	{
@@ -796,7 +808,7 @@ load_line (FILE * input, char **pbuf, int *pbuflen)
    the file stack.  */
 
 static gfc_file *
-get_file (char *name, enum lc_reason reason ATTRIBUTE_UNUSED)
+get_file (const char *name, enum lc_reason reason ATTRIBUTE_UNUSED)
 {
   gfc_file *f;
 
@@ -938,7 +950,7 @@ preprocessor_line (char *c)
 }
 
 
-static try load_file (char *, bool);
+static try load_file (const char *, bool);
 
 /* include_line()-- Checks a line buffer to see if it is an include
    line.  If so, we call load_file() recursively to load the included
@@ -996,7 +1008,7 @@ include_line (char *line)
 /* Load a file into memory by calling load_line until the file ends.  */
 
 static try
-load_file (char *filename, bool initial)
+load_file (const char *filename, bool initial)
 {
   char *line;
   gfc_linebuf *b;
@@ -1097,107 +1109,15 @@ load_file (char *filename, bool initial)
 }
 
 
-/* Determine the source form from the filename extension.  We assume
-   case insensitivity.  */
-
-static gfc_source_form
-form_from_filename (const char *filename)
-{
-
-  static const struct
-  {
-    const char *extension;
-    gfc_source_form form;
-  }
-  exttype[] =
-  {
-    {
-    ".f90", FORM_FREE}
-    ,
-    {
-    ".f95", FORM_FREE}
-    ,
-    {
-    ".f", FORM_FIXED}
-    ,
-    {
-    ".for", FORM_FIXED}
-    ,
-    {
-    "", FORM_UNKNOWN}
-  };		/* sentinel value */
-
-  gfc_source_form f_form;
-  const char *fileext;
-  int i;
-
-  /* Find end of file name.  Note, filename is either a NULL pointer or
-     a NUL terminated string.  */
-  i = 0;
-  while (filename[i] != '\0')
-    i++;
-
-  /* Find last period.  */
-  while (i >= 0 && (filename[i] != '.'))
-    i--;
-
-  /* Did we see a file extension?  */
-  if (i < 0)
-    return FORM_UNKNOWN; /* Nope  */
-
-  /* Get file extension and compare it to others.  */
-  fileext = &(filename[i]);
-
-  i = -1;
-  f_form = FORM_UNKNOWN;
-  do
-    {
-      i++;
-      if (strcasecmp (fileext, exttype[i].extension) == 0)
-	{
-	  f_form = exttype[i].form;
-	  break;
-	}
-    }
-  while (exttype[i].form != FORM_UNKNOWN);
-
-  return f_form;
-}
-
-
 /* Open a new file and start scanning from that file. Returns SUCCESS
    if everything went OK, FAILURE otherwise.  If form == FORM_UKNOWN
    it tries to determine the source form from the filename, defaulting
    to free form.  */
 
 try
-gfc_new_file (const char *filename, gfc_source_form form)
+gfc_new_file (void)
 {
   try result;
-
-  if (filename != NULL)
-    {
-      gfc_source_file = gfc_getmem (strlen (filename) + 1);
-      strcpy (gfc_source_file, filename);
-    }
-  else
-    gfc_source_file = NULL;
-
-  /* Decide which form the file will be read in as.  */
-
-  if (form != FORM_UNKNOWN)
-    gfc_current_form = form;
-  else
-    {
-      gfc_current_form = form_from_filename (filename);
-
-      if (gfc_current_form == FORM_UNKNOWN)
-	{
-	  gfc_current_form = FORM_FREE;
-	  gfc_warning_now ("Reading file '%s' as free form.", 
-			   (filename[0] == '\0') ? "<stdin>" : filename); 
-	}
-    }
 
   result = load_file (gfc_source_file, true);
 
