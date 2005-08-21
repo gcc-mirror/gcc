@@ -1,3 +1,8 @@
+2005-08-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* simplify-rtx.c (simplify_immed_subreg) <case CONST_DOUBLE>: Only clear
+	up to elem_bitsize bits, not max_bitsize.
+
 2005-07-20  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/21841
