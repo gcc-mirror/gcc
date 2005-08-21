@@ -1,3 +1,7 @@
+2005-08-21  Steven G. Kargl  <kargls@comcast.net>
+
+	* array.c: Bump GFC_MAX_AC_EXPAND from 100 to 65535.
+
 2005-08-21  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.h (gfc_option_t): Remove source field.  Add
