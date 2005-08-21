@@ -1653,6 +1653,10 @@ proved_non_wrapping_p (tree at_stmt,
   else
     valid_niter = fold_convert (TREE_TYPE (bound), valid_niter);
 
+  /* Give up if BOUND was not folded to an INTEGER_CST, as in PR23434.  */
+  if (TREE_CODE (bound) != INTEGER_CST)
+    return false;
+
   /* After the statement niter_bound->at_stmt we know that anything is
      executed at most BOUND times.  */
   if (at_stmt && stmt_dominates_stmt_p (niter_bound->at_stmt, at_stmt))
