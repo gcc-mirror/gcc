@@ -539,6 +539,9 @@ chrec_apply (unsigned var,
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "(chrec_apply \n");
 
+  if (TREE_CODE (x) == INTEGER_CST && SCALAR_FLOAT_TYPE_P (type))
+    x = build_real_from_int_cst (type, x);
+
   if (evolution_function_is_affine_p (chrec))
     {
       /* "{a, +, b} (x)"  ->  "a + b*x".  */
