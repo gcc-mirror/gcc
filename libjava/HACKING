@@ -60,6 +60,30 @@ However, there are two (known) exceptions to this rule:
 
 --
 
+You can develop in a GCC tree using a CVS checkout of Classpath, most
+of the time.  (The exceptions are when an incompatible change has been
+made in Classpath and some core part of libgcj has not yet been
+updated.)
+
+The way to set this up is very similar to importing a new version of
+Classpath into the libgcj tree.  In your working tree:
+
+* cd gcc/libjava; rm -rf classpath
+* cvs co classpath
+* cd classpath
+  Now run the auto tools as specified in the import process; then
+  cd ..
+* Run 'scripts/makemake.tcl > sources.am' in the source tree
+* Run automake for libgcj
+
+Now you should be ready to go.
+
+If you are working in a tree like this, you must remember to run
+makemake.tcl and automake whenever you update your embedded classpath
+tree.
+
+--
+
 If you add a class to java.lang, java.io, or java.util
 (including sub-packages, like java.lang.ref).
 
