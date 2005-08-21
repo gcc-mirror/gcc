@@ -1,3 +1,8 @@
+2005-08-21  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+	
+	* d_lines_1.f, d_lines_2.f, d_lines_3.f, d_lines_4.f,
+	d_lines_5.f: New.
+
 2005-08-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/sse-4.c: New test.

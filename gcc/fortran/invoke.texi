@@ -117,7 +117,7 @@ by type.  Explanations are in the following sections.
 @gccoptlist{
 -ffree-form  -fno-fixed-form @gol
 -fdollar-ok  -fimplicit-none  -fmax-identifier-length @gol
--std=@var{std}
+-std=@var{std} -fd-lines-as-code -fd-lines-as-comments @gol
 -ffixed-line-length-@var{n}  -ffixed-line-length-none @gol
 -fdefault-double-8  -fdefault-integer-8  -fdefault-real-8 }
 
@@ -182,6 +182,18 @@ that the compiler accepts:
 Specify the layout used by the source file.  The free form layout
 was introduced in Fortran 90.  Fixed form was traditionally used in
 older Fortran programs.
+
+@cindex option, -fd-lines-as-code
+@cindex -fd-lines-as-code, option
+@cindex option, -fd-lines-as-comments
+@cindex -fd-lines-as-comments, option
+@item -fd-lines-as-code
+@item -fd-lines-as-comment
+Enables special treating for lines with @samp{d} or @samp{D} in fixed
+form sources.  If the @option{-fd-lines-as-code} option is given
+they are treated as if the first column contained a blank.  If the
+@option{-fd-lines-as-comments} option is given, they are treated as
+comment lines.
 
 @cindex option, -fdefault-double-8
 @cindex -fdefault-double-8, option

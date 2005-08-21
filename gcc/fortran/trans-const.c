@@ -163,7 +163,7 @@ gfc_init_constants (void)
     gfc_build_cstring_const ("Incorrect function return value");
 
   gfc_strconst_current_filename =
-    gfc_build_cstring_const (gfc_option.source);
+    gfc_build_cstring_const (gfc_source_file);
 }
 
 /* Converts a GMP integer into a backend tree node.  */

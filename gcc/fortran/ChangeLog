@@ -1,3 +1,30 @@
+2005-08-21  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.h (gfc_option_t): Remove source field.  Add
+	flag_d_lines field.
+	(gfc_new_file): Remove arguments in prototype.
+	(gfc_source_file): Make 'const char *'.
+	* f95-lang.c (gfc_init): Use gfc_source_file instead of
+	gfc_option.source.  Call gfc_new_file without arguments.
+	* invoke.texi: Document new options '-fd-lines-as-code' and
+	'-fd-lines-as-comment'.
+	* lang.opt: Add new options.  Alphabetize.
+	* options.c (gfc_init_options): Initialize gfc_source_file instead
+	of gfc_option.source.  Initialize gfc_option.flag_d_lines.
+	(form_from_filename): Move here from scanner.c.  Make
+	'filename' argument 'const'.
+	(gfc_post_options): Set gfc_source_file.  Determine source form.
+	Warn if 'd-lines*' are used in free form.
+	* scanner.c (gfc_source_file): Constify.
+	(skip_fixed_comments): Deal with d-lines.
+	(get_file): Constify argument 'name'.
+	(load_file): Constify argument 'filename'.
+	(form_from_filename): Moved to options.c.
+	(gfc_new_file): Remove arguments.  Don't initialize
+	gfc_source_file, don't determine source form.
+	* trans-const.c (gfc_init_constants): Use gfc_source_file instead
+	of gfc_option.source.
+
 2005-08-19  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/23065

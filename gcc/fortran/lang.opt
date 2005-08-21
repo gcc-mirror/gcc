@@ -69,6 +69,10 @@ Wunused-labels
 F95
 Warn when a label is unused
 
+fbackslash
+F95
+Specify that backslash in string introduces an escape character
+
 fdefault-double-8
 F95
 Set the default double precision kind to an 8 byte wide type
@@ -81,13 +85,17 @@ fdefault-real-8
 F95
 Set the default real kind to an 8 byte wide type
 
+fd-lines-as-code
+F95 RejectNegative
+Ignore 'D' in column one in fixed form
+
+fd-lines-as-comments
+F95 RejectNegative
+Treat lines with 'D' in column one as comments
+
 fdollar-ok
 F95
 Allow dollar signs in entity names
-
-fbackslash
-F95
-Specify that backslash in string introduces an escape character
 
 fdump-parse-tree
 F95
