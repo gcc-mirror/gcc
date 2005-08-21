@@ -1,3 +1,9 @@
+2005-08-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR libgcj/23507
+	* stacktrace.cc (_Jv_StackTrace::UnwindTraceFn): Fix typo in newLength
+	assignment.  Cast operands of compare to function pointer type.
+
 2005-08-21  Tom Tromey  <tromey@redhat.com>
 
 	* HACKING: Updated for hacking classpath in libgcj.
