@@ -32,7 +32,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 
 static int old_char_selector;
 
-/* When variables aquire types and attributes from a declaration
+/* When variables acquire types and attributes from a declaration
    statement, they get them from the following static variables.  The
    first part of a declaration sets these variables and the second
    part copies these into symbol structures.  */
