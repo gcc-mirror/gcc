@@ -610,6 +610,10 @@ Objective-C and Objective-C++ Dialects}.
 -mam33-2  -mno-am33-2 @gol
 -mno-crt0  -mrelax}
 
+@emph{MS1 Options}
+@gccoptlist{-mno-crt0 -mmul -mbacc -msim @gol
+-march=@var{cpu-type} }
+
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
 -mbcopy  -mbcopy-builtin  -mint32  -mno-int16 @gol
@@ -7033,6 +7037,7 @@ platform.
 * MIPS Options::
 * MMIX Options::
 * MN10300 Options::
+* MS1 Options::
 * PDP-11 Options::
 * PowerPC Options::
 * RS/6000 and PowerPC Options::
@@ -10547,6 +10552,52 @@ to shorten branches, calls and absolute memory addresses.  This option only
 has an effect when used on the command line for the final link step.
 
 This option makes symbolic debugging impossible.
+@end table
+
+@node MS1 Options
+@subsection MS1 Options
+@cindex MS1 options
+
+These @option{-m} options are defined for Morpho MS1 architectures:
+
+@table @gcctabopt
+
+@item -march=@var{cpu-type}
+@opindex march
+Generate code that will run on @var{cpu-type}, which is the name of a system
+representing a certain processor type.  Possible values for
+@var{cpu-type} are @samp{MS1-64-001}, @samp{MS1-16-002}, and
+@samp{MS1-16-003}.
+
+When this option is not used, the default is @option{-march=MS1-16-003}.
+
+@item -mmul
+@opindex mmul
+Generate multiply instructions.
+
+@item -mno-mul
+@opindex mno-mul
+Do not generate multiply instructions.
+
+@item -mbacc
+@opindex mbacc
+Use byte loads and stores when generating code.
+
+@item -mno-bacc
+@opindex mno-bacc
+Do not use byte loads and stores when generating code.
+
+@item -msim
+@opindex msim
+Use simulator runtime
+
+@item -mno-crt0
+@opindex mno-crt0
+Do not link in the C run-time initialization object file
+@file{crti.o}.  Other run-time initialisation and termination files
+such as @file{startup.o} and @file{exit.o} are still included on the
+linker command line.
+
 @end table
 
 @node PDP-11 Options
