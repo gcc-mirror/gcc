@@ -1,3 +1,10 @@
+2005-08-22  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/22622:
+	* configure: Rebuilt.
+	* configure.ac: Correctly create Configuration.java (for
+	temporary use).
+
 2005-08-22  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.am (ACLOCAL_AMFLAGS): Also include "..".
