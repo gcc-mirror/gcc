@@ -1,3 +1,8 @@
+2005-08-22  Ira Rosen  <irar@il.ibm.com>   
+
+	* gcc.dg/vect/vect-22.c: Add test for float. All four loops
+	are vectorizable.
+
 2005-08-21  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 	
 	* d_lines_1.f, d_lines_2.f, d_lines_3.f, d_lines_4.f,

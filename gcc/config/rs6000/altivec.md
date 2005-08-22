@@ -1039,6 +1039,14 @@
   "vxor %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
+(define_insn "xorv4sf3"
+  [(set (match_operand:V4SF 0 "register_operand" "=v")
+        (xor:V4SF (match_operand:V4SF 1 "register_operand" "v")
+                  (match_operand:V4SF 2 "register_operand" "v")))]
+  "TARGET_ALTIVEC"
+  "vxor %0,%1,%2" 
+  [(set_attr "type" "vecsimple")])
+
 (define_insn "one_cmpl<mode>2"
   [(set (match_operand:VI 0 "register_operand" "=v")
         (not:VI (match_operand:VI 1 "register_operand" "v")))]
@@ -2161,3 +2169,37 @@
   "TARGET_ALTIVEC"
   "vperm %0,%1,%2,%3"
   [(set_attr "type" "vecperm")])
+
+(define_expand "neg<mode>2"
+  [(use (match_operand:VI 0 "register_operand" ""))
+   (use (match_operand:VI 1 "register_operand" ""))]
+  "TARGET_ALTIVEC"
+  "
+{
+  rtx vzero;
+
+  vzero = gen_reg_rtx (GET_MODE (operands[0]));
+  emit_insn (gen_altivec_vspltis<VI_char> (vzero, const0_rtx));
+  emit_insn (gen_sub<mode>3 (operands[0], vzero, operands[1])); 
+  
+  DONE;
+}")
+
+(define_expand "negv4sf2"
+  [(use (match_operand:V4SF 0 "register_operand" ""))
+   (use (match_operand:V4SF 1 "register_operand" ""))]
+  "TARGET_ALTIVEC"
+  "
+{
+  rtx neg0;
+
+  /* Generate [-0.0, -0.0, -0.0, -0.0].  */
+  neg0 = gen_reg_rtx (V4SFmode);
+  emit_insn (gen_altivec_vspltisw_v4sf (neg0, constm1_rtx));
+  emit_insn (gen_altivec_vslw_v4sf (neg0, neg0, neg0));
+
+  /* XOR */
+  emit_insn (gen_xorv4sf3 (operands[0], neg0, operands[1])); 
+    
+  DONE;
+}")
