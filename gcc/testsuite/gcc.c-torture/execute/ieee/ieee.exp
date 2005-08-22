@@ -19,10 +19,11 @@
 # Written by Jeffrey Wheat (cassidy@cygnus.com)
 #
 
-#
+# Load support procs.
+load_lib gcc-dg.exp
+
 # These tests come from Torbjorn Granlund's (tege@cygnus.com)
 # C torture test suite, and other contributors.
-#
 
 # Disable tests on machines with no hardware support for IEEE arithmetic.
 if { [istarget "vax-*-*"] || [ istarget "powerpc-*-*spe"] } { return }

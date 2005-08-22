@@ -1,3 +1,7 @@
+2005-08-23  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc.c-torture/execute/ieee/ieee.exp: Load gcc-dg.exp library.
+
 2005-08-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/23478
