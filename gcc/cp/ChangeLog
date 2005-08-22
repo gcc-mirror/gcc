@@ -1,3 +1,9 @@
+2005-08-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/23089
+	* decl.c (require_complete_types_for_parms): Mark incomplete types
+	as invalid.
+
 2005-08-19  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* parser.c (cp_parser_nth_token_starts_template_argument_list_p):
