@@ -255,6 +255,7 @@ vm_classes = @vm_classes@
 # lib first, to compile .class files before native code, last examples
 SUBDIRS = lib doc external include native resource scripts $(EXAMPLESDIR)
 DIST_SUBDIRS = lib doc external include native resource scripts examples
+ACLOCAL_AMFLAGS = -I m4 -I ../..
 EXTRA_DIST = HACKING BUGS THANKYOU mauve-classpath LICENSE \
              ChangeLog-2003 ChangeLog-2004 \
              ChangeLog.gnujaxp.1 ChangeLog.gnujaxp.2 ChangeLog.libxmlj
