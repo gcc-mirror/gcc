@@ -1855,6 +1855,35 @@ Constant suitable as a 32-bit mask operand
 System V Release 4 small data area reference
 @end table
 
+@item MorphoRISC family---@file{ms1.h}
+@table @code
+@item I
+Constant for an arithmetic insn (16-bit signed integer).
+
+@item J
+The constant 0.
+
+@item K
+Constant for a logical insn (16-bit zero-extended integer).
+
+@item L
+A constant that can be loaded with @code{lui} (i.e.@: the bottom 16
+bits are zero).
+
+@item M
+A constant that takes two words to load (i.e.@: not matched by
+@code{I}, @code{K}, or @code{L}).
+
+@item N
+Negative 16-bit constants other than -65536.
+
+@item O
+A 15-bit signed integer constant.
+
+@item P
+A positive 16-bit constant.
+@end table
+
 @item Intel 386---@file{i386.h}
 @table @code
 @item q

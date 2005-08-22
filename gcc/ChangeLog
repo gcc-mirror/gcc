@@ -1,3 +1,20 @@
+2005-08-22  Aldy Hernandez  <aldyh@redhat.com>
+
+	* doc/invoke.texi (Option Summary): Add ms1 options.
+	* doc/extend.texi: Document interrupt handler attribute for ms1.
+	* doc/md.texi: Document ms1 constraints.
+	* config.gcc: Add ms1-*-elf.
+	* config/ms1/ms1.h: New.
+	* config/ms1/ms1.c: New.
+	* config/ms1/ms1.md: New.
+	* config/ms1/ms1-protos.h: New.
+	* config/ms1/ABI.txt: New.
+	* config/ms1/crti.asm: New.
+	* config/ms1/crtn.asm: New.
+	* config/ms1/lib2extra-funcs.c: New.
+	* config/ms1/t-ms1: New.
+	* config/ms1/ms1.opt: New.
+
 2005-08-22 Ira Rosen <irar@il.ibm.com>
 
 	* config/rs6000/altivec.md (xorv4sf3): New.

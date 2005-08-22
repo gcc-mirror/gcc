@@ -1553,6 +1553,20 @@ mn10300-*-*)
 	use_collect2=no
 	use_fixproto=yes
 	;;
+ms1-*-elf)
+        tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
+        tmake_file="${tmake_file} ms1/t-ms1"
+        ;;
+ns32k-*-netbsdelf*)
+	echo "GCC does not yet support the ${target} target"; exit 1
+	;;
+ns32k-*-netbsd*)
+	tm_file="${tm_file} netbsd.h netbsd-aout.h ns32k/netbsd.h"
+	# On NetBSD, the headers are already okay, except for math.h.
+	tmake_file="t-netbsd ns32k/t-ns32k"
+	extra_parts=""
+	use_collect2=yes
+	;;
 pdp11-*-bsd)
 	tm_file="${tm_file} pdp11/2bsd.h"
 	use_fixproto=yes
