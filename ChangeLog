@@ -1,3 +1,7 @@
+2005-08-22  Aldy Hernandez  <aldyh@redhat.com>
+
+	* MAINTAINERS: Add self as ms1 maintainer.
+
 2005-08-20  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* Makefile.def (libssp): Add to lang_env_dependencies.
