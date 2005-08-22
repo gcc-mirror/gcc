@@ -13442,14 +13442,21 @@ CPPFLAGS="$CPPFLAGS -I`${PWDCMD-pwd}` -I`cd $srcdir && ${PWDCMD-pwd}`"
 if test ! -f gnu/classpath/Configuration.java; then
   test -d gnu || mkdir gnu
   test -d gnu/classpath || mkdir gnu/classpath
-  sed -e "s,@LIBGCJDEBUG@,$LIBGCJDEBUG," \
-      -e "s,@TOOLKIT@,$TOOLKIT," \
-	< $srcdir/gnu/classpath/Configuration.java.in \
+  # Note that it is not crucial that all the values here be correct.
+  sed -e "s,@prefix@,$prefix," \
+      -e "s,@VERSION@,$VERSION," \
+      -e "s,@LIBDEBUG@,false," \
+      -e "s,@INIT_LOAD_LIBRARY@,false," \
+      -e "s,@@,$LIBGCJDEBUG," \
+      -e "s,@default_toolkit@,$TOOLKIT," \
+      -e "s,@JAVA_LANG_SYSTEM_EXPLICIT_INITIALIZATION@,false," \
+      -e "s,@GTK_CAIRO_ENABLED@,false," \
+	< $srcdir/classpath/gnu/classpath/Configuration.java.in \
 	> gnu/classpath/Configuration.java
   # We do not want to redirect the output of the grep below to /dev/null,
   # but we add /dev/null to the input list so that grep will print the
   # filename of Configuration.java in case it finds any matches.
-  if grep @ gnu/classpath/Configuration.java /dev/null; then
+  if grep '@.*@' gnu/classpath/Configuration.java /dev/null; then
     { { echo "$as_me:$LINENO: error: configure.ac is missing the substitutions above" >&5
 echo "$as_me: error: configure.ac is missing the substitutions above" >&2;}
    { (exit 1); exit 1; }; }
