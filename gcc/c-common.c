@@ -3756,7 +3756,32 @@ c_do_switch_warnings (splay_tree cases, tree switch_stmt)
 	{
 	  splay_tree_node node
 	    = splay_tree_lookup (cases, (splay_tree_key) TREE_VALUE (chain));
-
+	  if (!node)
+	    {
+	      tree low_value = TREE_VALUE (chain);
+	      splay_tree_node low_bound;
+	      splay_tree_node high_bound;
+	      /* Even though there wasn't an exact match, there might be a
+		 case range which includes the enumator's value.  */
+	      low_bound = splay_tree_predecessor (cases,
+						  (splay_tree_key) low_value);
+	      high_bound = splay_tree_successor (cases,
+						 (splay_tree_key) low_value);
+	      
+	      /* It is smaller than the LOW_VALUE, so there is no need to check
+	         unless the LOW_BOUND is in fact itself a case range.  */
+	      if (low_bound
+		  && CASE_HIGH ((tree) low_bound->value)
+		  && tree_int_cst_compare (CASE_HIGH ((tree) low_bound->value),
+					    low_value) >= 0)
+		node = low_bound;
+	      /* The low end of that range is bigger than the current value. */
+	      else if (high_bound
+		       && (tree_int_cst_compare ((tree) high_bound->key,
+						 low_value)
+			   <= 0))
+		node = high_bound;
+	    }
 	  if (node)
 	    {
 	      /* Mark the CASE_LOW part of the case entry as seen, so

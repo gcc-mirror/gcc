@@ -1,3 +1,8 @@
+2005-08-22  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/18715
+	* gcc.dg/switch-warn-3.c: New test.
+
 2005-08-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/22233

@@ -1,3 +1,9 @@
+2005-08-22  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/18715
+	* c-common.c (c_do_switch_warnings): Look for a node where the enum's
+	value is inbetween the range if we did not find an exact match.
+
 2005-08-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* simplify-rtx.c (simplify_immed_subreg) <case CONST_DOUBLE>: Only clear
