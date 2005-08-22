@@ -1,3 +1,11 @@
+2005-08-22  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.am (ACLOCAL_AMFLAGS): Also include "..".
+	* acinclude.m4: Delete.  Extract CHECK_FOR_BROKEN_MINGW_LD to ...
+	* mingwld.m4: ... this new file.
+	* aclocal.m4, Makefile.in, gcj/Makefile.in: Regenerate. 
+	* include/Makefile.in, testsuite/Makfile.in: Regenerate.
+
 2005-08-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR libgcj/23507

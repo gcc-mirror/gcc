@@ -2,7 +2,7 @@
 
 AUTOMAKE_OPTIONS = foreign subdir-objects
 
-ACLOCAL_AMFLAGS = -I . -I ../config
+ACLOCAL_AMFLAGS = -I . -I .. -I ../config
 
 # May be used by various substitution variables.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
