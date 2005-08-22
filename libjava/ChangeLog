@@ -1,3 +1,9 @@
+2005-06-15  Goffredo Baroncelli  <kreijack@inwind.it>
+
+	PR libgcj/21074:
+	* gnu/java/net/protocol/http/HTTPURLConnection.java
+	(getHeaderFieldKey): Check index.
+
 2005-08-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.host: Handle Solaris 10/x86.
