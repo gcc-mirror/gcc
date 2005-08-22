@@ -80,10 +80,10 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/lib-ld.m4 \
 	$(top_srcdir)/../config/lib-link.m4 \
-	$(top_srcdir)/../config/lib-prefix.m4 $(top_srcdir)/pkg.m4 \
-	$(top_srcdir)/acinclude.m4 \
+	$(top_srcdir)/../config/lib-prefix.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
-	$(top_srcdir)/../libtool.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/../libtool.m4 $(top_srcdir)/mingwld.m4 \
+	$(top_srcdir)/pkg.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -610,7 +610,7 @@ toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
 toolexecmainlibdir = @toolexecmainlibdir@
 AUTOMAKE_OPTIONS = foreign subdir-objects
-ACLOCAL_AMFLAGS = -I . -I ../config
+ACLOCAL_AMFLAGS = -I . -I .. -I ../config
 
 # May be used by various substitution variables.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
