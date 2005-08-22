@@ -1,6 +1,6 @@
 2005-08-22  James E Wilson  <wilson@specifix.com>
 
-	PR tree-optimization/21105
+	PR tree-optimization/23426
 	* decl.c (grokdeclarator): Use TYPE_SIZE_UNIT not TYPE_SIZE for
 	array size check.
 
