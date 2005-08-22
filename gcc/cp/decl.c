@@ -8187,14 +8187,16 @@ require_complete_types_for_parms (tree parms)
     {
       if (dependent_type_p (TREE_TYPE (parms)))
 	continue;
-      if (VOID_TYPE_P (TREE_TYPE (parms)))
-        /* grokparms will have already issued an error.  */
-        TREE_TYPE (parms) = error_mark_node;
-      else if (complete_type_or_else (TREE_TYPE (parms), parms))
+      if (!VOID_TYPE_P (TREE_TYPE (parms))
+	  && complete_type_or_else (TREE_TYPE (parms), parms))
 	{
 	  layout_decl (parms, 0);
 	  DECL_ARG_TYPE (parms) = type_passed_as (TREE_TYPE (parms));
 	}
+      else
+	/* grokparms or complete_type_or_else will have already issued
+	   an error.  */
+	TREE_TYPE (parms) = error_mark_node;
     }
 }
 

@@ -1,3 +1,8 @@
+2005-08-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/23089
+	* g++.dg/other/incomplete1.C: New test.
+
 2005-08-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/sse-4.c: New test.
