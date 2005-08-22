@@ -1,3 +1,11 @@
+2005-08-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/23485
+	* config/ia64/ia64.md (divsi3): Check divide by zero.
+	(udivsi3): Likewise.
+	(divdi3): Likewise.
+	(udivdi3): Likewise.
+
 2005-08-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* simplify-rtx.c (simplify_immed_subreg) <case CONST_DOUBLE>: Only clear
@@ -6,14 +14,14 @@
 2005-08-21  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	PR tree-optimization/23433
-        * tree-chrec.c (chrec_apply): Translate INTEGER_CST to a
-        REAL_CST when the type is SCALAR_FLOAT_TYPE_P.
+	* tree-chrec.c (chrec_apply): Translate INTEGER_CST to a
+	REAL_CST when the type is SCALAR_FLOAT_TYPE_P.
 
 2005-08-21  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	PR tree-optimization/23434
-        * tree-ssa-loop-niter.c (proved_non_wrapping_p): Give up when
-        the iteration bound is not an INTEGER_CST.
+	* tree-ssa-loop-niter.c (proved_non_wrapping_p): Give up when
+	the iteration bound is not an INTEGER_CST.
 
 2005-08-21  Dorit Nuzman  <dorit@il.ibm.com>
 
@@ -419,7 +427,7 @@
 	* c-typeck.c (c_finish_loop): Likewise.
 
 2005-08-16  J"orn Rennecke <joern.rennecke@st.com>
-            Richard Shann <rshann@superh.com>
+	    Richard Shann <rshann@superh.com>
 
 	PR middle-end/20396:
 	* optabs.c (expand_binop): Take TRULY_NOOP_TRUNCATION into account.
