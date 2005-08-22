@@ -1,5 +1,11 @@
 2005-08-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/22233
+	* pt.c (push_template_decl_real): Return error_mark_node if the
+	number of template parameters does not match previous definition.
+
+2005-08-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	PR c++/23089
 	* decl.c (require_complete_types_for_parms): Mark incomplete types
 	as invalid.

@@ -1,5 +1,10 @@
 2005-08-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/22233
+	* g++.dg/template/param1.C: New test.
+
+2005-08-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	PR c++/23089
 	* g++.dg/other/incomplete1.C: New test.
 
