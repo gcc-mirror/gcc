@@ -465,7 +465,9 @@ global_alloc (FILE *file)
 	/* Don't allocate pseudos that cross calls,
 	   if this function receives a nonlocal goto.  */
 	&& (! current_function_has_nonlocal_label
-	    || REG_N_CALLS_CROSSED (i) == 0))
+	    || REG_N_CALLS_CROSSED (i) == 0)
+	/* Don't allocate pseudos that cross calls that may throw.  */
+	&& REG_N_THROWING_CALLS_CROSSED (i) == 0)
       {
 	if (reg_renumber[i] < 0
 	    && reg_may_share[i] && reg_allocno[reg_may_share[i]] >= 0)
