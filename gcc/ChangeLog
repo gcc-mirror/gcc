@@ -1,3 +1,8 @@
+2005-08-22 Ira Rosen <irar@il.ibm.com>
+
+	* config/rs6000/altivec.md (xorv4sf3): New.
+	(negv4sf2, neg<mode>2): Likewise.
+
 2005-08-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/23485
