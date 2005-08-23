@@ -1,3 +1,11 @@
+2005-08-23  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (eq<mode>): Use output operand instead
+	of scratch intermediates.
+	(eq<mode>_compare): Same.
+	(neg_eq0<mode>): New.
+	(neg_eq<mode>): Convert to define_insn_and_split.
+
 2005-08-23  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/23070
