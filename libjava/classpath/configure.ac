@@ -74,7 +74,7 @@ dnl -----------------------------------------------------------
 AC_ARG_ENABLE(default-toolkit,
   AS_HELP_STRING([--enable-default-toolkit],
                  [fully qualified class name of default AWT toolkit]))
-default_toolkit=$enable_default_tookit
+default_toolkit=$enable_default_toolkit
 if test "$default_toolkit" = ""; then
    default_toolkit=gnu.java.awt.peer.gtk.GtkToolkit
 fi

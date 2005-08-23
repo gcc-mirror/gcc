@@ -2047,7 +2047,7 @@ if test "${enable_default_toolkit+set}" = set; then
   enableval="$enable_default_toolkit"
 
 fi;
-default_toolkit=$enable_default_tookit
+default_toolkit=$enable_default_toolkit
 if test "$default_toolkit" = ""; then
    default_toolkit=gnu.java.awt.peer.gtk.GtkToolkit
 fi
