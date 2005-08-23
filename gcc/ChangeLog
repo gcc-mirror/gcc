@@ -1,5 +1,12 @@
 2005-08-23  Sebastian Pop  <pop@cri.ensmp.fr>
 
+	* lambda-code.c (lambda_vector_lexico_pos): Moved...
+	* lambda.h (lambda_vector_lexico_pos): ... here.
+	* tree-data-ref.c (build_classic_dist_vector): Return false when
+	the distance vector is lexicographically negative.
+
+2005-08-23  Sebastian Pop  <pop@cri.ensmp.fr>
+
 	PR tree-optimization/23511
 	* tree-ssa-loop-niter.c (infer_loop_bounds_from_undefined): Don't 
 	handle cases where TYPE_MIN_VALUE or TYPE_MAX_VALUE are NULL_TREE.

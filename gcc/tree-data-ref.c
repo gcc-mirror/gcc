@@ -3030,8 +3030,8 @@ subscript_dependence_tester (struct data_dependence_relation *ddr)
    NB_LOOPS is the total number of loops we are considering.
    FIRST_LOOP_DEPTH is the loop->depth of the first loop in the analyzed
    loop nest.  
-   Return FALSE if the dependence relation is outside of the loop nest
-   starting at FIRST_LOOP_DEPTH. 
+   Return FALSE when fail to represent the data dependence as a distance
+   vector.
    Return TRUE otherwise.  */
 
 static bool
@@ -3196,6 +3196,23 @@ build_classic_dist_vector (struct data_dependence_relation *ddr,
   
   DDR_DIST_VECT (ddr) = dist_v;
   DDR_SIZE_VECT (ddr) = nb_loops;
+
+  /* Verify a basic constraint: classic distance vectors should always
+     be lexicographically positive.  */
+  if (!lambda_vector_lexico_pos (DDR_DIST_VECT (ddr),
+				 DDR_SIZE_VECT (ddr)))
+    {
+      if (DDR_SIZE_VECT (ddr) == 1)
+	/* This one is simple to fix, and can be fixed.
+	   Multidimensional arrays cannot be fixed that simply.  */
+	lambda_vector_negate (DDR_DIST_VECT (ddr), DDR_DIST_VECT (ddr),
+			      DDR_SIZE_VECT (ddr));
+      else
+	/* This is not valid: we need the delta test for properly
+	   fixing all this.  */
+	return false;
+    }
+
   return true;
 }
 
