@@ -1,3 +1,8 @@
+2005-08-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/23044
+	* g++.dg/template/instantiate8.C: New.
+
 2005-08-22  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/18715
