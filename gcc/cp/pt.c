@@ -7680,7 +7680,8 @@ tsubst_qualified_id (tree qualified_id, tree args,
       expr = finish_qualified_id_expr (scope, expr, done, address_p);
     }
 
-  expr = convert_from_reference (expr);
+  if (TREE_CODE (expr) != SCOPE_REF)
+    expr = convert_from_reference (expr);
 
   return expr;
 }
