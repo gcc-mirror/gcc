@@ -1,3 +1,13 @@
+2005-08-23  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/21571
+	* config/rs6000/rs6000.c (rs6000_legitimate_small_data_p): Rename
+	from legitimate_small_data_p, and make global.  Update use.
+	Remove forward declaration.
+	* config/rs6000/rs6000-protos.h (rs6000_legitimate_small_data_p):
+	Declare.
+	* config/rs6000/rs6000.md (movdf_hardfloat32): Allow small data mems.
+
 2005-08-23  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (eq<mode>): Use output operand instead
