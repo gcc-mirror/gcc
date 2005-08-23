@@ -6441,8 +6441,18 @@ sh_builtin_saveregs (void)
       emit_insn (gen_iorsi3 (addr, addr, GEN_INT (UNITS_PER_WORD)));
       regbuf = change_address (regbuf, BLKmode, addr);
     }
+  else if (STACK_BOUNDARY < 64 && TARGET_FPU_DOUBLE && n_floatregs)
+    {
+      rtx addr, mask;
+
+      regbuf = assign_stack_local (BLKmode, bufsize + UNITS_PER_WORD, 0);
+      addr = copy_to_mode_reg (Pmode, plus_constant (XEXP (regbuf, 0), 4));
+      mask = copy_to_mode_reg (Pmode, GEN_INT (-8));
+      emit_insn (gen_andsi3 (addr, addr, mask));
+      regbuf = change_address (regbuf, BLKmode, addr);
+    }
   else
-    regbuf = assign_stack_local (BLKmode, bufsize, 0);
+    regbuf = assign_stack_local (BLKmode, bufsize, TARGET_FPU_DOUBLE ? 64 : 0);
   alias_set = get_varargs_alias_set ();
   set_mem_alias_set (regbuf, alias_set);
 
@@ -6740,30 +6750,37 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 
       if (pass_as_float)
 	{
-	  int first_floatreg
-	    = current_function_args_info.arg_count[(int) SH_ARG_FLOAT];
-	  int n_floatregs = MAX (0, NPARM_REGS (SFmode) - first_floatreg);
-
-	  tmp = build (GE_EXPR, boolean_type_node, next_fp, next_fp_limit);
-	  tmp = build (COND_EXPR, void_type_node, tmp,
-		       build (GOTO_EXPR, void_type_node, lab_false),
-		       NULL);
-	  gimplify_and_add (tmp, pre_p);
-
-	  if (TYPE_ALIGN (type) > BITS_PER_WORD
-	      || (((TREE_CODE (type) == REAL_TYPE && size == 8) || size == 16)
-		  && (n_floatregs & 1)))
-	    {
-	      tmp = fold_convert (ptr_type_node, size_int (UNITS_PER_WORD));
-	      tmp = build (BIT_AND_EXPR, ptr_type_node, next_fp, tmp);
-	      tmp = build (PLUS_EXPR, ptr_type_node, next_fp, tmp);
-	      tmp = build (MODIFY_EXPR, ptr_type_node, next_fp, tmp);
-	      gimplify_and_add (tmp, pre_p);
-	    }
+	  tree next_fp_tmp = create_tmp_var (TREE_TYPE (f_next_fp), NULL);
+	  tree cmp;
+	  bool is_double = size == 8 && TREE_CODE (type) == REAL_TYPE;
 
 	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_fp);
-	  tmp = build (MODIFY_EXPR, void_type_node, addr, tmp);
+	  tmp = build2 (MODIFY_EXPR, void_type_node, addr, tmp);
 	  gimplify_and_add (tmp, pre_p);
+
+	  tmp = build2 (MODIFY_EXPR, ptr_type_node, next_fp_tmp, valist);
+	  gimplify_and_add (tmp, pre_p);
+	  tmp = next_fp_limit;
+	  if (size > 4 && !is_double)
+	    tmp = build2 (PLUS_EXPR, TREE_TYPE (tmp), tmp,
+			  fold_convert (TREE_TYPE (tmp), size_int (4 - size)));
+	  tmp = build (GE_EXPR, boolean_type_node, next_fp_tmp, tmp);
+	  cmp = build (COND_EXPR, void_type_node, tmp,
+		       build (GOTO_EXPR, void_type_node, lab_false),
+		       NULL);
+	  if (!is_double)
+	    gimplify_and_add (cmp, pre_p);
+
+	  if (TYPE_ALIGN (type) > BITS_PER_WORD || (is_double || size == 16))
+	    {
+	      tmp = fold_convert (ptr_type_node, size_int (UNITS_PER_WORD));
+	      tmp = build (BIT_AND_EXPR, ptr_type_node, next_fp_tmp, tmp);
+	      tmp = build (PLUS_EXPR, ptr_type_node, next_fp_tmp, tmp);
+	      tmp = build (MODIFY_EXPR, ptr_type_node, next_fp_tmp, tmp);
+	      gimplify_and_add (tmp, pre_p);
+	    }
+	  if (is_double)
+	    gimplify_and_add (cmp, pre_p);
 
 #ifdef FUNCTION_ARG_SCmode_WART
 	  if (TYPE_MODE (type) == SCmode && TARGET_SH4 && TARGET_LITTLE_ENDIAN)
@@ -6771,10 +6788,12 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 	      tree subtype = TREE_TYPE (type);
 	      tree real, imag;
 
-	      imag = std_gimplify_va_arg_expr (valist, subtype, pre_p, NULL);
+	      imag
+		= std_gimplify_va_arg_expr (next_fp_tmp, subtype, pre_p, NULL);
 	      imag = get_initialized_tmp_var (imag, pre_p, NULL);
 
-	      real = std_gimplify_va_arg_expr (valist, subtype, pre_p, NULL);
+	      real
+		= std_gimplify_va_arg_expr (next_fp_tmp, subtype, pre_p, NULL);
 	      real = get_initialized_tmp_var (real, pre_p, NULL);
 
 	      result = build (COMPLEX_EXPR, type, real, imag);
@@ -6791,6 +6810,12 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
 	  tmp = build1 (ADDR_EXPR, pptr_type_node, next_stack);
 	  tmp = build (MODIFY_EXPR, void_type_node, addr, tmp);
 	  gimplify_and_add (tmp, pre_p);
+	  tmp = build2 (MODIFY_EXPR, ptr_type_node, next_fp_tmp, valist);
+	  gimplify_and_add (tmp, pre_p);
+
+	  tmp = build2 (MODIFY_EXPR, ptr_type_node, valist, next_fp_tmp);
+	  gimplify_and_add (tmp, post_p);
+	  valist = next_fp_tmp;
 	}
       else
 	{
@@ -7541,6 +7566,8 @@ sh_attr_renesas_p (tree td)
     return 0;
   if (DECL_P (td))
     td = TREE_TYPE (td);
+  if (td == error_mark_node)
+    return 0;
   return (lookup_attribute ("renesas", TYPE_ATTRIBUTES (td))
 	  != NULL_TREE);
 }
