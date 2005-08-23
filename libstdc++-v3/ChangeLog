@@ -1,3 +1,8 @@
+2005-08-23  Kelley Cook  <kcook@gcc.gnu.org>
+
+	PR libstdc++/23462
+	* testsuite/data/sgetn.txt: Revert to previous FSF address.
+
 2005-08-23  Thomas Kho  <tkho@ucla.edu>
 
 	PR libstdc++/23358
