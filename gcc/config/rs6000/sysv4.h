@@ -123,8 +123,10 @@ extern const char *rs6000_tls_size_string; /* For -mtls-size= */
   { "no-toc",		 0, N_("no description yet") },			\
   { "toc",		 MASK_MINIMAL_TOC, N_("no description yet") },	\
   { "full-toc",		 MASK_MINIMAL_TOC, N_("no description yet") },	\
-  { "prototype",	 MASK_PROTOTYPE, N_("no description yet") },	\
-  { "no-prototype",	-MASK_PROTOTYPE, N_("no description yet") },	\
+  { "prototype",	 MASK_PROTOTYPE,				\
+    N_("Assume all variable arg functions are prototyped") },		\
+  { "no-prototype",	-MASK_PROTOTYPE,				\
+    N_("Non-prototyped functions might take a variable number of args") }, \
   { "no-traceback",	 0, N_("no description yet") },			\
   { "eabi",		 MASK_EABI, N_("Use EABI") },			\
   { "no-eabi",		-MASK_EABI, N_("Don't use EABI") },		\
