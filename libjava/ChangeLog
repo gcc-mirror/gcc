@@ -1,3 +1,10 @@
+2005-08-23  Tom Tromey  <tromey@redhat.com>
+
+	* aclocal.m4, Makefile.in: Rebuilt.
+	* Makefile.am (property_files): Added META-INF files.
+	(propertyo_files): Changed definition.
+	($(propertyo_files)): Updated patterns.
+
 2005-08-22  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/22622:

@@ -298,11 +298,15 @@ classpath/resource/java/util/iso4217.properties	\
 classpath/resource/gnu/java/awt/peer/gtk/font.properties \
 classpath/resource/gnu/regexp/MessagesBundle_it.properties \
 classpath/resource/gnu/regexp/MessagesBundle_fr.properties \
-classpath/resource/gnu/regexp/MessagesBundle.properties
+classpath/resource/gnu/regexp/MessagesBundle.properties	\
+classpath/resource/META-INF/services/org.xml.sax.driver	\
+classpath/resource/META-INF/services/javax.xml.parsers.SAXParserFactory	\
+classpath/resource/META-INF/services/javax.xml.parsers.DocumentBuilderFactory \
+classpath/resource/META-INF/services/javax.xml.parsers.TransformerFactory
 
-propertyo_files = $(patsubst classpath/resource/%,%,$(property_files:.properties=.properties.lo))
+propertyo_files = $(patsubst classpath/resource/%,%,$(addsuffix .lo,$(property_files)))
 
-$(propertyo_files): %.properties.lo: classpath/resource/%.properties
+$(propertyo_files): %.lo: classpath/resource/%
 	$(mkinstalldirs) `dirname $@`; \
 	$(LTGCJCOMPILE) -o $@ -c $< -Wc,--resource,$(@:.lo=)
 
