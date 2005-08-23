@@ -1,3 +1,8 @@
+2005-08-23  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR middle-end/23467
+	* gcc.c-torture/execute/pr23467.c: New test.
+
 2005-08-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/22043
