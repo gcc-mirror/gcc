@@ -1,3 +1,8 @@
+2005-08-22  Geoffrey Keating  <geoffk@apple.com>
+
+	* testsuite/23_containers/vector/resize/1.cc: XFAIL on darwin8.
+	* testsuite/27_io/ios_base/storage/2.cc: Likewise.
+
 2005-08-19  J"orn Rennecke <joern.rennecke@st.com>
 
 	* config/cpu/sh/atomicity.h: Replace broken generic code with current

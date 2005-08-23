@@ -25,6 +25,9 @@
 // XXX for very large allocations.  However -lmalloc seems to work.
 // See http://gcc.gnu.org/ml/libstdc++/2002-12/msg00131.html
 // { dg-options "-lmalloc" { target mips*-*-irix6* } }
+// This fails on Darwin 8 because malloc doesn't return NULL even
+// if an allocation fails (filed as Radar 3884894).
+// { dg-do run { xfail *-*-darwin8* } }
 
 #include <vector>
 #include <stdexcept>
