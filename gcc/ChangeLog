@@ -1,3 +1,9 @@
+2005-08-23  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	PR tree-optimization/23511
+	* tree-ssa-loop-niter.c (infer_loop_bounds_from_undefined): Don't 
+	handle cases where TYPE_MIN_VALUE or TYPE_MAX_VALUE are NULL_TREE.
+
 2005-08-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/22043
