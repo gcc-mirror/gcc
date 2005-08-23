@@ -2019,7 +2019,7 @@ fold_convert (tree type, tree arg)
       gcc_assert (tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (orig)));
       gcc_assert (INTEGRAL_TYPE_P (orig) || POINTER_TYPE_P (orig)
 		  || TREE_CODE (orig) == VECTOR_TYPE);
-      return fold_build1 (NOP_EXPR, type, arg);
+      return fold_build1 (VIEW_CONVERT_EXPR, type, arg);
 
     case VOID_TYPE:
       return fold_build1 (CONVERT_EXPR, type, fold_ignored_result (arg));

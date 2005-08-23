@@ -106,13 +106,8 @@ tree_vec_extract (block_stmt_iterator *bsi, tree type,
 {
   if (bitpos)
     return gimplify_build3 (bsi, BIT_FIELD_REF, type, t, bitsize, bitpos);
-
-  /* Build a conversion; VIEW_CONVERT_EXPR is very expensive unless T will
-     anyway be stored in memory, so prefer NOP_EXPR.  */
-  else if (TYPE_MODE (type) == BLKmode)
-    return gimplify_build1 (bsi, VIEW_CONVERT_EXPR, type, t);
   else
-    return gimplify_build1 (bsi, NOP_EXPR, type, t);
+    return gimplify_build1 (bsi, VIEW_CONVERT_EXPR, type, t);
 }
 
 static tree
@@ -455,16 +450,7 @@ expand_vector_operations_1 (block_stmt_iterator *bsi)
   if (lang_hooks.types_compatible_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
     *p_rhs = rhs;
   else
-    {
-      /* Build a conversion; VIEW_CONVERT_EXPR is very expensive unless T will
-         be stored in memory anyway, so prefer NOP_EXPR.  We should also try
-	 performing the VIEW_CONVERT_EXPR on the left side of the
-	 assignment.  */
-      if (TYPE_MODE (TREE_TYPE (rhs)) == BLKmode)
-        *p_rhs = gimplify_build1 (bsi, VIEW_CONVERT_EXPR, TREE_TYPE (lhs), rhs);
-      else
-	*p_rhs = gimplify_build1 (bsi, NOP_EXPR, TREE_TYPE (lhs), rhs);
-    }
+    *p_rhs = gimplify_build1 (bsi, VIEW_CONVERT_EXPR, TREE_TYPE (lhs), rhs);
 
   mark_stmt_modified (bsi_stmt (*bsi));
 }
