@@ -1,3 +1,7 @@
+2005-08-23  Ben Elliston  <bje@au.ibm.com>
+
+	* gcc_update: Update dependencies for libjava/aclocal.m4.
+
 2005-08-14  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* All files: Update with new FSF address.
