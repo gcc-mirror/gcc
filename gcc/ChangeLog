@@ -1,3 +1,7 @@
+2005-08-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* hwint.h (HOST_WIDE_INT_PRINT): Use HOST_LONG_LONG_FORMAT.
+
 2005-08-23  J"orn Rennecke <joern.rennecke@st.com>
 
 	* sh.c (sh_builtin_saveregs): If the number of to-be-saved fp
