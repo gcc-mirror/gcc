@@ -80,7 +80,7 @@ extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
 #  define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%lx%08lx"
 # endif
 #else
-# define HOST_WIDE_INT_PRINT "ll"
+# define HOST_WIDE_INT_PRINT HOST_LONG_LONG_FORMAT
 # define HOST_WIDE_INT_PRINT_C "LL"
   /* We can assume that 'long long' is at least 64 bits.  */
 # define HOST_WIDE_INT_PRINT_DOUBLE_HEX \
