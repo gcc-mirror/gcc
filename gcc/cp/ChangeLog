@@ -1,3 +1,8 @@
+2005-08-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/23044
+	* pt.c (tsubst_qualified_id): A SCOPE_REF can still remain.
+
 2005-08-22  James E Wilson  <wilson@specifix.com>
 
 	PR tree-optimization/23426
