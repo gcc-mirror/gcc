@@ -159,7 +159,10 @@ close_dump_file (enum tree_dump_index index,
     {
       /* If we've not initialized the files, do so now.  */
       if (initializing_dump)
-	clean_graph_dump_file (dump_file_name);
+	{
+	  clean_graph_dump_file (dump_file_name);
+	  get_dump_file_info (index)->flags |= TDF_GRAPH;
+	}
 
       print_rtl_graph_with_bb (dump_file_name, insns);
     }
@@ -1785,7 +1788,7 @@ finish_optimization_passes (void)
   if (graph_dump_format != no_graph)
     for (i = DFI_MIN; (dfi = get_dump_file_info (i)) != NULL; ++i)
       if (dump_initialized_p (i)
-	  && (dfi->flags & TDF_RTL) != 0
+	  && (dfi->flags & TDF_GRAPH) != 0
 	  && (name = get_dump_file_name (i)) != NULL)
         {
           finish_graph_dump_file (name);

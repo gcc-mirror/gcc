@@ -500,7 +500,6 @@ execute_one_pass (struct tree_opt_pass *pass)
   /* If a dump file name is present, open it if enabled.  */
   if (pass->static_pass_number != -1)
     {
-      bool initializing_dump = !dump_initialized_p (pass->static_pass_number);
       dump_file_name = get_dump_file_name (pass->static_pass_number);
       dump_file = dump_begin (pass->static_pass_number, &dump_flags);
       if (dump_file)
@@ -516,12 +515,6 @@ execute_one_pass (struct tree_opt_pass *pass)
              ? " (unlikely executed)"
              : "");
 	}
-
-      if (initializing_dump
-          && graph_dump_format != no_graph
-	  && (pass->properties_provided & (PROP_cfg | PROP_rtl))
-	      == (PROP_cfg | PROP_rtl))
-        clean_graph_dump_file (dump_file_name);
     }
 
   /* If a timevar is present, start it.  */

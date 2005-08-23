@@ -3885,6 +3885,8 @@ enum tree_dump_index
 #define TDF_RTL		(1 << 10)	/* is a RTL dump */
 #define TDF_IPA		(1 << 11)	/* is an IPA dump */
 
+#define TDF_GRAPH	(1 << 12)	/* a graph dump is being emitted */
+
 typedef struct dump_info *dump_info_p;
 
 extern char *get_dump_file_name (enum tree_dump_index);

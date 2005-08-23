@@ -1,3 +1,13 @@
+2005-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-pass.h (TDF_GRAPH): Define.
+	* tree-dump.c (dump_options): Don't set TDF_GRAPH in "all".
+	* passes.c (close_dump_file): Set TDF_GRAPH bit.
+	(finish_optimization_passes): Only call finish_graph_dump_file
+	if TDF_GRAPH is set.
+	* tree-optimize.c (execute_one_pass): Don't call
+	clean_graph_dump_file here.
+
 2005-08-23  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/21571
