@@ -1,3 +1,10 @@
+2005-08-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR middle-end/23517
+	* fold-const.c (fold_convert): Use VIEW_CONVERT_EXPR to convert
+	between vectors.
+	* convert.c (convert_to_integer, convert_to_vector): Likewise.
+
 2005-08-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-pass.h (TDF_GRAPH): Define.
