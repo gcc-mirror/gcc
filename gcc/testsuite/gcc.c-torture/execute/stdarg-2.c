@@ -143,8 +143,8 @@ f12 (int i, ...)
 int
 main (void)
 {
-  f1 (1, 79);
-  if (x != 79)
+  f1 (1, 79L);
+  if (x != 79L)
     abort ();
   f2 (0x4002, 13, -14.0);
   if (bar_arg != 0x4002)
