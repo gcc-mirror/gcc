@@ -1,3 +1,12 @@
+2005-08-23  Roman Kennke  <roman@kennke.org>
+
+	* java/lang/Character.java
+	(toChars(int)): New JDK1.5 method.
+	(toChars(int, char[], int)): New JDK1.5 method.
+	(charCount): New JDK1.5 method.
+	(isSupplementaryCodePoint): New JDK1.5 method.
+	(isValidCodePoint): New JDK1.5 method.
+
 2005-08-23  Tom Tromey  <tromey@redhat.com>
 
 	* aclocal.m4, Makefile.in: Rebuilt.
