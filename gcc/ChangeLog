@@ -1,5 +1,14 @@
 2005-08-23  J"orn Rennecke <joern.rennecke@st.com>
 
+	* sh.c (sh_builtin_saveregs): If the number of to-be-saved fp
+	registers is even, and we have a hardware double precision fp,
+	align the buffer.
+	(sh_gimplify_va_arg_expr): For floating point arguments, consider
+	size of current argument when checking if argument was passed in
+	registers.
+
+	* sh.c (sh_attr_renesas_p): Handle error_mark_node.
+
 	PR middle-end/23467
 	* stor-layout.c (finalize_type_size): Dont override
 	existing alignment with a smaller alignment from the mode.
