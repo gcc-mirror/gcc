@@ -1407,8 +1407,15 @@ finalize_type_size (tree type)
 	      && TREE_CODE (type) != QUAL_UNION_TYPE
 	      && TREE_CODE (type) != ARRAY_TYPE)))
     {
-      TYPE_ALIGN (type) = GET_MODE_ALIGNMENT (TYPE_MODE (type));
-      TYPE_USER_ALIGN (type) = 0;
+      unsigned mode_align = GET_MODE_ALIGNMENT (TYPE_MODE (type));
+
+      /* Don't override a larger alignment requirement coming from a user
+	 alignment of one of the fields.  */
+      if (mode_align >= TYPE_ALIGN (type))
+	{
+	  TYPE_ALIGN (type) = mode_align;
+	  TYPE_USER_ALIGN (type) = 0;
+	}
     }
 
   /* Do machine-dependent extra alignment.  */
