@@ -4504,7 +4504,7 @@ categorize_ctor_elements_1 (tree ctor, HOST_WIDE_INT *p_nz_elts,
 	      /* And now we have to find out if the element itself is fully
 		 constructed.  E.g. for union { struct { int a, b; } s; } u
 		 = { .s = { .a = 1 } }.  */
-	      if (elt_count == count_type_elements (init_sub_type))
+	      if (elt_count == count_type_elements (init_sub_type, false))
 		clear_this = false;
 	    }
 	}
@@ -4532,10 +4532,11 @@ categorize_ctor_elements (tree ctor, HOST_WIDE_INT *p_nz_elts,
 }
 
 /* Count the number of scalars in TYPE.  Return -1 on overflow or
-   variable-sized.  */
+   variable-sized.  If ALLOW_FLEXARR is true, don't count flexible
+   array member at the end of the structure.  */
 
 HOST_WIDE_INT
-count_type_elements (tree type)
+count_type_elements (tree type, bool allow_flexarr)
 {
   const HOST_WIDE_INT max = ~((HOST_WIDE_INT)1 << (HOST_BITS_PER_WIDE_INT-1));
   switch (TREE_CODE (type))
@@ -4546,7 +4547,7 @@ count_type_elements (tree type)
 	if (telts && host_integerp (telts, 1))
 	  {
 	    HOST_WIDE_INT n = tree_low_cst (telts, 1) + 1;
-	    HOST_WIDE_INT m = count_type_elements (TREE_TYPE (type));
+	    HOST_WIDE_INT m = count_type_elements (TREE_TYPE (type), false);
 	    if (n == 0)
 	      return 0;
 	    else if (max / n > m)
@@ -4563,9 +4564,23 @@ count_type_elements (tree type)
 	for (f = TYPE_FIELDS (type); f ; f = TREE_CHAIN (f))
 	  if (TREE_CODE (f) == FIELD_DECL)
 	    {
-	      t = count_type_elements (TREE_TYPE (f));
+	      t = count_type_elements (TREE_TYPE (f), false);
 	      if (t < 0)
-		return -1;
+		{
+		  /* Check for structures with flexible array member.  */
+		  tree tf = TREE_TYPE (f);
+		  if (allow_flexarr
+		      && TREE_CHAIN (f) == NULL
+		      && TREE_CODE (tf) == ARRAY_TYPE
+		      && TYPE_DOMAIN (tf)
+		      && TYPE_MIN_VALUE (TYPE_DOMAIN (tf))
+		      && integer_zerop (TYPE_MIN_VALUE (TYPE_DOMAIN (tf)))
+		      && !TYPE_MAX_VALUE (TYPE_DOMAIN (tf))
+		      && int_size_in_bytes (type) >= 0)
+		    break;
+
+		  return -1;
+		}
 	      n += t;
 	    }
 
@@ -4623,7 +4638,7 @@ mostly_zeros_p (tree exp)
       if (must_clear)
 	return 1;
 
-      elts = count_type_elements (TREE_TYPE (exp));
+      elts = count_type_elements (TREE_TYPE (exp), false);
 
       return nz_elts < elts / 4;
     }
