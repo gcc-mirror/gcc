@@ -1460,7 +1460,9 @@ infer_loop_bounds_from_undefined (struct loop *loop)
 		    if (init == NULL_TREE
 			|| step == NULL_TREE
 			|| TREE_CODE (init) != INTEGER_CST
-			|| TREE_CODE (step) != INTEGER_CST)
+			|| TREE_CODE (step) != INTEGER_CST
+			|| TYPE_MIN_VALUE (type) == NULL_TREE
+			|| TYPE_MAX_VALUE (type) == NULL_TREE)
 		      break;
 
 		    utype = unsigned_type_for (type);
