@@ -76,7 +76,7 @@ no description yet
 
 mprototype
 Target Mask(PROTOTYPE)
-no description yet
+Assume all variable arg functions are prototyped
 
 ;; FIXME: Does nothing.
 mno-traceback
