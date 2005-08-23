@@ -544,8 +544,14 @@ WRAPPER2(struct tm*, gmtime, const time_t *timep)
 /* The following indicate if the result of the corresponding function
  * should be explicitly un/registered by the wrapper
 */
+
+#ifdef __FreeBSD__
+#define MF_REGISTER_fopen		__MF_TYPE_STATIC
+#else
 #undef  MF_REGISTER_fopen
+#endif
 #define MF_RESULT_SIZE_fopen		(sizeof (FILE))
+
 #undef  MF_REGISTER_opendir
 #define MF_RESULT_SIZE_opendir		0	/* (sizeof (DIR)) */
 #undef  MF_REGISTER_readdir
