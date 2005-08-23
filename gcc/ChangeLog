@@ -1,5 +1,14 @@
 2005-08-23  Paolo Bonzini  <bonzini@gnu.org>
 
+	PR middle-end/23517
+	* fold-const.c (fold_convert): Use VIEW_CONVERT_EXPR to convert
+	between vectors.
+	* convert.c (convert_to_integer, convert_to_vector): Likewise.
+	* tree-vect-generic.c (tree_vec_extract, expand_vector_operations_1):
+	Likewise.
+
+2005-08-23  Paolo Bonzini  <bonzini@gnu.org>
+
 	* config/rs6000/predicates.md (equality_operator): New.
 	* config/rs6000/rs6000.md: Rewrite as a peephole2 the split for
 	comparison with a large constant.
