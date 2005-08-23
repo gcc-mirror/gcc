@@ -1338,7 +1338,7 @@ decide_block_copy (struct sra_elt *elt)
 	    : MOVE_RATIO;
 
 	  full_size = tree_low_cst (size_tree, 1);
-	  full_count = count_type_elements (elt->type);
+	  full_count = count_type_elements (elt->type, false);
 	  inst_count = sum_instantiated_sizes (elt, &inst_size);
 
 	  /* ??? What to do here.  If there are two fields, and we've only

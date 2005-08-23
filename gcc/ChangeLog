@@ -1,3 +1,17 @@
+2005-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/22043
+	* tree.h (count_type_elements): Add ALLOW_FLEXARR argument.
+	* expr.c (count_type_elements): Add ALLOW_FLEXARR argument.
+	If ALLOW_FLEXARR, handle types ending with flexible array member.
+	Pass false as second argument to recursive count_type_elements calls.
+	(categorize_ctor_elements_1, mostly_zeros_p): Pass false as second
+	argument to count_type_elements call.
+	* tree-sra.c (decide_block_copy): Likewise.
+	* gimplify.c (gimplify_init_constructor): If num_type_elements < 0
+	for a constant-sized object, set cleared as well.  Pass true as
+	second argument to count_type_elements call.
+
 2005-08-23  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/21571
