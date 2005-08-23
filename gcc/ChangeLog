@@ -1,3 +1,9 @@
+2005-08-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/rs6000/predicates.md (equality_operator): New.
+	* config/rs6000/rs6000.md: Rewrite as a peephole2 the split for
+	comparison with a large constant.
+
 2005-08-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* hwint.h (HOST_WIDE_INT_PRINT): Use HOST_LONG_LONG_FORMAT.

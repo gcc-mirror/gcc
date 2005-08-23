@@ -710,6 +710,10 @@
 (define_predicate "boolean_or_operator"
   (match_code "ior,xor"))
 
+;; Return true if operand is an equality operator.
+(define_special_predicate "equality_operator"
+  (match_code "eq,ne"))
+
 ;; Return true if operand is MIN or MAX operator.
 (define_predicate "min_max_operator"
   (match_code "smin,smax,umin,umax"))
