@@ -174,7 +174,7 @@ namespace std
 	__alloc.destroy(&*__first);
     }
 
-  template<typename _ForwardIterator, typename _Allocator, typename _Tp>
+  template<typename _ForwardIterator, typename _Tp>
     inline void
     _Destroy(_ForwardIterator __first, _ForwardIterator __last,
 	     allocator<_Tp>)

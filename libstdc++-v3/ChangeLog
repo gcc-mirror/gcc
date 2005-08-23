@@ -1,3 +1,9 @@
+2005-08-23  Thomas Kho  <tkho@ucla.edu>
+
+	PR libstdc++/23358
+	* include/bits/stl_construct.h (_Destroy(_ForwardIterator,
+	_ForwardIterator, allocator<_Tp>)): Removed unused template parameter.
+
 2005-08-22  Geoffrey Keating  <geoffk@apple.com>
 
 	* testsuite/23_containers/vector/resize/1.cc: XFAIL on darwin8.
