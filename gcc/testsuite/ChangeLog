@@ -1,3 +1,8 @@
+2005-08-23  DJ Delorie  <dj@redhat.com>
+
+	* gcc.c-torture/execute/stdarg-2.c (main): Make sure long
+	constants have the L suffix.
+
 2005-08-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/23044
