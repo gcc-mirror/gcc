@@ -146,6 +146,7 @@ extern rtx rs6000_return_addr (int, rtx);
 extern void rs6000_output_symbol_ref (FILE*, rtx);
 extern HOST_WIDE_INT rs6000_initial_elimination_offset (int, int);
 extern bool rs6000_legitimate_offset_address_p (enum machine_mode, rtx, int);
+extern bool rs6000_legitimate_small_data_p (enum machine_mode, rtx);
 
 extern rtx rs6000_machopic_legitimize_pic_address (rtx orig,
 						   enum machine_mode mode,

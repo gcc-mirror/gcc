@@ -621,7 +621,6 @@ static int toc_hash_eq (const void *, const void *);
 static int constant_pool_expr_1 (rtx, int *, int *);
 static bool constant_pool_expr_p (rtx);
 static bool toc_relative_expr_p (rtx);
-static bool legitimate_small_data_p (enum machine_mode, rtx);
 static bool legitimate_indexed_address_p (rtx, int);
 static bool legitimate_indirect_address_p (rtx, int);
 static bool macho_lo_sum_memory_operand (rtx x, enum machine_mode mode);
@@ -3255,8 +3254,8 @@ legitimate_constant_pool_address_p (rtx x)
 	  && constant_pool_expr_p (XEXP (x, 1)));
 }
 
-static bool
-legitimate_small_data_p (enum machine_mode mode, rtx x)
+bool
+rs6000_legitimate_small_data_p (enum machine_mode mode, rtx x)
 {
   return (DEFAULT_ABI == ABI_V4
 	  && !flag_pic && !TARGET_TOC
@@ -4017,7 +4016,7 @@ rs6000_legitimate_address (enum machine_mode mode, rtx x, int reg_ok_strict)
       && TARGET_UPDATE
       && legitimate_indirect_address_p (XEXP (x, 0), reg_ok_strict))
     return 1;
-  if (legitimate_small_data_p (mode, x))
+  if (rs6000_legitimate_small_data_p (mode, x))
     return 1;
   if (legitimate_constant_pool_address_p (x))
     return 1;
