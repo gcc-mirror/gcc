@@ -1,3 +1,13 @@
+2005-08-22  James E Wilson  <wilson@specifix.com>
+
+	PR tree-optimization/23426
+	* decl.c (grokdeclarator): Use TYPE_SIZE_UNIT not TYPE_SIZE for
+	array size check.
+
+	Backport from mainline
+	2005-06-14  Roger Sayle  <roger@eyesopen.com>
+	* decl.c (grokdeclarator): Only check TREE_OVERFLOW on INTEGER_CST.
+	
 2005-08-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/22233
