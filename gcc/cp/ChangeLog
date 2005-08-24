@@ -1,3 +1,8 @@
+2005-08-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/22454
+	* parser.c (cp_lexer_peek_nth_token): Relax assert.
+
 2005-08-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/23044
