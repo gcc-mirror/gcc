@@ -1,4 +1,4 @@
-/* Copyright (C) 2002 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Zack Weinberg <zack@codesourcery.com>
 
 This file is part of GCC.
@@ -18,9 +18,6 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 02110-1301, USA.  */
 
-/* Threads compatibility routines for libgcc2 for VxWorks.
-   These are out-of-line routines called from gthr-vxworks.h.  */
-
 /* As a special exception, if you link this library with other files,
    some of which are compiled with GCC, to produce an executable,
    this library does not by itself cause the resulting executable
@@ -28,14 +25,24 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
+/* Threads compatibility routines for libgcc2 for VxWorks.
+   These are out-of-line routines called from gthr-vxworks.h.  */
+
 #include "tconfig.h"
 #include "tsystem.h"
 #include "gthr.h"
 
+#if defined(__GTHREADS)
 #include <vxWorks.h>
+#ifndef __RTP__
 #include <vxLib.h>
+#endif
 #include <taskLib.h>
+#ifndef __RTP__
 #include <taskHookLib.h>
+#else
+# include <errno.h>
+#endif
 
 /* Init-once operation.
 
@@ -57,8 +64,12 @@ __gthread_once (__gthread_once_t *guard, void (*func)(void))
   if (guard->done)
     return 0;
 
+#ifdef __RTP__
+  __gthread_lock_library ();
+#else
   while (!vxTas ((void *)&guard->busy))
     taskDelay (1);
+#endif
 
   /* Only one thread at a time gets here.  Check ->done again, then
      go ahead and call func() if no one has done it yet.  */
@@ -68,28 +79,36 @@ __gthread_once (__gthread_once_t *guard, void (*func)(void))
       guard->done = 1;
     }
 
+#ifdef __RTP__
+  __gthread_unlock_library ();
+#else
   guard->busy = 0;
+#endif
   return 0;
 }
 
-/* Thread-specific data.
+/* Thread-local storage.
 
    We reserve a field in the TCB to point to a dynamically allocated
-   array which is used to store TSD values.  A TSD key is simply an
+   array which is used to store TLS values.  A TLS key is simply an
    offset in this array.  The exact location of the TCB field is not
    known to this code nor to vxlib.c -- all access to it indirects
-   through the routines __gthread_get_tsd_data and
-   __gthread_set_tsd_data, which are provided by the VxWorks kernel.
+   through the routines __gthread_get_tls_data and
+   __gthread_set_tls_data, which are provided by the VxWorks kernel.
 
    There is also a global array which records which keys are valid and
    which have destructors.
 
    A task delete hook is installed to execute key destructors.  The
-   routines __gthread_enter_tsd_dtor_context and
-   __gthread_leave_tsd_dtor_context, which are also provided by the
+   routines __gthread_enter_tls_dtor_context and
+   __gthread_leave_tls_dtor_context, which are also provided by the
    kernel, ensure that it is safe to call free() on memory allocated
    by the task being deleted.  (This is a no-op on VxWorks 5, but
    a major undertaking on AE.)
+
+   The task delete hook is only installed when at least one thread
+   has TLS data.  This is a necessary precaution, to allow this module
+   to be unloaded - a module with a hook can not be removed.
 
    Since this interface is used to allocate only a small number of
    keys, the table size is small and static, which simplifies the
@@ -98,23 +117,29 @@ __gthread_once (__gthread_once_t *guard, void (*func)(void))
 #define MAX_KEYS 4
 
 /* This is the structure pointed to by the pointer returned
-   by __gthread_get_tsd_data.  */
-struct tsd_data
+   by __gthread_get_tls_data.  */
+struct tls_data
 {
+  int *owner;
   void *values[MAX_KEYS];
   unsigned int generation[MAX_KEYS];
 };
 
+/* To make sure we only delete TLS data associated with this object,
+   include a pointer to a local variable in the TLS data object.  */
+static int self_owner;
+
+/* The number of threads for this module which have active TLS data.
+   This is protected by tls_lock.  */
+static int active_tls_threads;
 
 /* kernel provided routines */
-extern void *__gthread_get_tsd_data (WIND_TCB *tcb);
-extern void __gthread_set_tsd_data (WIND_TCB *tcb, void *data);
+extern void *__gthread_get_tls_data (void);
+extern void __gthread_set_tls_data (void *data);
 
-extern void __gthread_enter_tsd_dtor_context (WIND_TCB *tcb);
-extern void __gthread_leave_tsd_dtor_context (WIND_TCB *tcb);
+extern void __gthread_enter_tls_dtor_context (void);
+extern void __gthread_leave_tls_dtor_context (void);
 
-typedef void (*fet_callback_t) (WIND_TCB *, unsigned int);
-extern void __gthread_for_all_tasks (fet_callback_t fun, unsigned int number);
 
 /* This is a global structure which records all of the active keys.
 
@@ -128,89 +153,118 @@ extern void __gthread_for_all_tasks (fet_callback_t fun, unsigned int number);
    stored in this structure is equal to the generation count stored in
    T's specific-value structure.  */
 
-typedef void (*tsd_dtor) (void *);
+typedef void (*tls_dtor) (void *);
 
-struct tsd_keys
+struct tls_keys
 {
-  tsd_dtor dtor[MAX_KEYS];
+  tls_dtor dtor[MAX_KEYS];
   unsigned int generation[MAX_KEYS];
 };
 
-#define KEY_VALID_P(key) !(tsd_keys.generation[key] & 1)
+#define KEY_VALID_P(key) !(tls_keys.generation[key] & 1)
 
 /* Note: if MAX_KEYS is increased, this initializer must be updated
    to match.  All the generation counts begin at 1, which means no
    key is valid.  */
-static struct tsd_keys tsd_keys =
+static struct tls_keys tls_keys =
 {
   { 0, 0, 0, 0 },
   { 1, 1, 1, 1 }
 };
 
-/* This lock protects the tsd_keys structure.  */
-static __gthread_mutex_t tsd_lock;
+/* This lock protects the tls_keys structure.  */
+static __gthread_mutex_t tls_lock;
 
-static __gthread_once_t tsd_init_guard = __GTHREAD_ONCE_INIT;
+static __gthread_once_t tls_init_guard = __GTHREAD_ONCE_INIT;
 
 /* Internal routines.  */
 
 /* The task TCB has just been deleted.  Call the destructor
-   function for each TSD key that has both a destructor and
+   function for each TLS key that has both a destructor and
    a non-NULL specific value in this thread.
 
-   This routine does not need to take tsd_lock; the generation
+   This routine does not need to take tls_lock; the generation
    count protects us from calling a stale destructor.  It does
-   need to read tsd_keys.dtor[key] atomically.  */
+   need to read tls_keys.dtor[key] atomically.  */
 
 static void
-tsd_delete_hook (WIND_TCB *tcb)
+tls_delete_hook (void *tcb ATTRIBUTE_UNUSED)
 {
-  struct tsd_data *data = __gthread_get_tsd_data (tcb);
+  struct tls_data *data = __gthread_get_tls_data ();
   __gthread_key_t key;
 
-  if (data)
+  if (data && data->owner == &self_owner)
     {
-      __gthread_enter_tsd_dtor_context (tcb);
+      __gthread_enter_tls_dtor_context ();
       for (key = 0; key < MAX_KEYS; key++)
 	{
-	  if (data->generation[key] == tsd_keys.generation[key])
+	  if (data->generation[key] == tls_keys.generation[key])
 	    {
-	      tsd_dtor dtor = tsd_keys.dtor[key];
+	      tls_dtor dtor = tls_keys.dtor[key];
 
 	      if (dtor)
 		dtor (data->values[key]);
 	    }
 	}
       free (data);
-      __gthread_set_tsd_data (tcb, 0);
-      __gthread_leave_tsd_dtor_context (tcb);
+
+      /* We can't handle an error here, so just leave the thread
+	 marked as loaded if one occurs.  */
+      if (__gthread_mutex_lock (&tls_lock) != ERROR)
+	{
+	  active_tls_threads--;
+	  if (active_tls_threads == 0)
+	    taskDeleteHookDelete ((FUNCPTR)tls_delete_hook);
+	  __gthread_mutex_unlock (&tls_lock);
+	}
+
+      __gthread_set_tls_data (0);
+      __gthread_leave_tls_dtor_context ();
     }
 } 
 
-/* Initialize global data used by the TSD system.  */
+/* Initialize global data used by the TLS system.  */
 static void
-tsd_init (void)
+tls_init (void)
 {
-  taskDeleteHookAdd ((FUNCPTR)tsd_delete_hook);
-  __GTHREAD_MUTEX_INIT_FUNCTION (&tsd_lock);
+  __GTHREAD_MUTEX_INIT_FUNCTION (&tls_lock);
+}
+
+static void tls_destructor (void) __attribute__ ((destructor));
+static void
+tls_destructor (void)
+{
+#ifdef __RTP__
+  /* All threads but this one should have exited by now.  */
+  tls_delete_hook (NULL);
+#else
+  /* Unregister the hook forcibly.  The counter of active threads may
+     be incorrect, because constructors (like the C++ library's) and
+     destructors (like this one) run in the context of the shell rather
+     than in a task spawned from this module.  */
+  taskDeleteHookDelete ((FUNCPTR)tls_delete_hook);
+#endif
+
+  if (tls_init_guard.done && __gthread_mutex_lock (&tls_lock) != ERROR)
+    semDelete (tls_lock);
 }
 
 /* External interface */
 
 /* Store in KEYP a value which can be passed to __gthread_setspecific/
-   __gthread_getspecific to store and retrieve a value which is
+   __gthread_getspecific to store and retrive a value which is
    specific to each calling thread.  If DTOR is not NULL, it will be
    called when a thread terminates with a non-NULL specific value for
    this key, with the value as its sole argument.  */
 
 int
-__gthread_key_create (__gthread_key_t *keyp, tsd_dtor dtor)
+__gthread_key_create (__gthread_key_t *keyp, tls_dtor dtor)
 {
   __gthread_key_t key;
 
-  __gthread_once (&tsd_init_guard, tsd_init);
+  __gthread_once (&tls_init_guard, tls_init);
 
-  if (__gthread_mutex_lock (&tsd_lock) == ERROR)
+  if (__gthread_mutex_lock (&tls_lock) == ERROR)
     return errno;
 
   for (key = 0; key < MAX_KEYS; key++)
@@ -218,14 +272,14 @@ __gthread_key_create (__gthread_key_t *keyp, tsd_dtor dtor)
       goto found_slot;
 
   /* no room */
-  __gthread_mutex_unlock (&tsd_lock);
+  __gthread_mutex_unlock (&tls_lock);
   return EAGAIN;
 
  found_slot:
-  tsd_keys.generation[key]++;  /* making it even */
-  tsd_keys.dtor[key] = dtor;
+  tls_keys.generation[key]++;  /* making it even */
+  tls_keys.dtor[key] = dtor;
   *keyp = key;
-  __gthread_mutex_unlock (&tsd_lock);
+  __gthread_mutex_unlock (&tls_lock);
   return 0;
 }
 
@@ -238,21 +292,21 @@ __gthread_key_delete (__gthread_key_t key)
   if (key >= MAX_KEYS)
     return EINVAL;
 
-  __gthread_once (&tsd_init_guard, tsd_init);
+  __gthread_once (&tls_init_guard, tls_init);
 
-  if (__gthread_mutex_lock (&tsd_lock) == ERROR)
+  if (__gthread_mutex_lock (&tls_lock) == ERROR)
     return errno;
 
   if (!KEY_VALID_P (key))
     {
-      __gthread_mutex_unlock (&tsd_lock);
+      __gthread_mutex_unlock (&tls_lock);
       return EINVAL;
     }
 
-  tsd_keys.generation[key]++;  /* making it odd */
-  tsd_keys.dtor[key] = 0;
+  tls_keys.generation[key]++;  /* making it odd */
+  tls_keys.dtor[key] = 0;
 
-  __gthread_mutex_unlock (&tsd_lock);
+  __gthread_mutex_unlock (&tls_lock);
   return 0;
 }
 
@@ -266,17 +320,17 @@ __gthread_key_delete (__gthread_key_t key)
 void *
 __gthread_getspecific (__gthread_key_t key)
 {
-  struct tsd_data *data;
+  struct tls_data *data;
 
   if (key >= MAX_KEYS)
     return 0;
 
-  data = __gthread_get_tsd_data (taskTcb (taskIdSelf ()));
+  data = __gthread_get_tls_data ();
 
   if (!data)
     return 0;
 
-  if (data->generation[key] != tsd_keys.generation[key])
+  if (data->generation[key] != tls_keys.generation[key])
     return 0;
 
   return data->values[key];
@@ -289,31 +343,37 @@ __gthread_getspecific (__gthread_key_t key)
    key_create/key_delete; the worst thing that can happen is that a
    value is successfully stored into a dead generation (and then
    immediately becomes invalid).  However, we do have to make sure
-   to read tsd_keys.generation[key] atomically.  */
+   to read tls_keys.generation[key] atomically.  */
 
 int
 __gthread_setspecific (__gthread_key_t key, void *value)
 {
-  struct tsd_data *data;
-  WIND_TCB *tcb;
+  struct tls_data *data;
   unsigned int generation;
 
   if (key >= MAX_KEYS)
     return EINVAL;
 
-  tcb = taskTcb (taskIdSelf ());
-  data = __gthread_get_tsd_data (tcb);
+  data = __gthread_get_tls_data ();
   if (!data)
     {
-      data = malloc (sizeof (struct tsd_data));
+      if (__gthread_mutex_lock (&tls_lock) == ERROR)
+	return ENOMEM;
+      if (active_tls_threads == 0)
+	taskDeleteHookAdd ((FUNCPTR)tls_delete_hook);
+      active_tls_threads++;
+      __gthread_mutex_unlock (&tls_lock);
+
+      data = malloc (sizeof (struct tls_data));
       if (!data)
 	return ENOMEM;
 
-      memset (data, 0, sizeof (struct tsd_data));
-      __gthread_set_tsd_data (tcb, data);
+      memset (data, 0, sizeof (struct tls_data));
+      data->owner = &self_owner;
+      __gthread_set_tls_data (data);
     }
 
-  generation = tsd_keys.generation[key];
+  generation = tls_keys.generation[key];
 
   if (generation & 1)
     return EINVAL;
@@ -323,3 +383,4 @@ __gthread_setspecific (__gthread_key_t key, void *value)
 
   return 0;
 }
+#endif /* __GTHREADS */

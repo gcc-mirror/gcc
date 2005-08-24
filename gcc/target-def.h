@@ -126,12 +126,14 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #define TARGET_ASM_OUTPUT_MI_THUNK NULL
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_false
 
-#if defined(TARGET_ASM_CONSTRUCTOR) && defined(TARGET_ASM_DESTRUCTOR)
-#define TARGET_HAVE_CTORS_DTORS true
-#else
-#define TARGET_HAVE_CTORS_DTORS false
-#define TARGET_ASM_CONSTRUCTOR NULL
-#define TARGET_ASM_DESTRUCTOR NULL
+#if !defined(TARGET_HAVE_CTORS_DTORS)
+# if defined(TARGET_ASM_CONSTRUCTOR) && defined(TARGET_ASM_DESTRUCTOR)
+# define TARGET_HAVE_CTORS_DTORS true
+# else
+# define TARGET_HAVE_CTORS_DTORS false
+# define TARGET_ASM_CONSTRUCTOR NULL
+# define TARGET_ASM_DESTRUCTOR NULL
+# endif
 #endif
 
 #ifdef TARGET_ASM_NAMED_SECTION

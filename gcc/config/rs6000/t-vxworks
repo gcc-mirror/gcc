@@ -1,10 +1,11 @@
 # Multilibs for VxWorks.
 
-MULTILIB_OPTIONS  = t403/t405/t440/t603/t604/t860
-MULTILIB_DIRNAMES = PPC403gnu PPC405gnu PPC440gnu \
-		    PPC603gnu PPC604gnu PPC860gnu
+# The base multilib is -mhard-float.
+MULTILIB_OPTIONS = mrtp fPIC msoft-float
+MULTILIB_DIRNAMES =
+MULTILIB_MATCHES = fPIC=fpic
+MULTILIB_EXCEPTIONS = fPIC*
 
-MULTILIB_MATCHES  = t604=
-
-# Put vxlib.c back in LIB2FUNCS_EXTRA (t-ppccomm clobbers it).
-LIB2FUNCS_EXTRA += $(srcdir)/config/vxlib.c
+# Restore some variables from t-vxworks clobbered by t-ppccomm.
+EXTRA_MULTILIB_PARTS = 
+LIB2FUNCS_EXTRA = $(srcdir)/config/vxlib.c
