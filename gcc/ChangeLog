@@ -1,3 +1,8 @@
+2005-08-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/rs6000/rs6000.md: Fix thinko in the peephole2 I added
+	yesterday.
+
 2005-08-24  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* bb-reorder.c (copy_bb, duplicate_computed_gotos): Add argument
