@@ -1,3 +1,10 @@
+2005-08-23  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/20799
+	* config/darwin.c (machopic_select_section): Remove the hack to
+	mark "::operator new" and "::operator delete" for coalescing
+	even though they are not weak.
+
 2005-08-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR middle-end/23517
