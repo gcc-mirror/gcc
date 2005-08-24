@@ -670,7 +670,9 @@ libsubdir=.libs
 
 # extra LD Flags which are required for targets
 case "${host}" in
-  *-darwin*)
+*-*-darwin[0-7].*)
+    # For now we have to disable it on darwin[8-9] because it slows down
+    # the linking phase. A possible bug in ld?
     # on Darwin -single_module speeds up loading of the dynamic libraries.
     extra_ldflags_libjava=-Wl,-single_module
     ;;

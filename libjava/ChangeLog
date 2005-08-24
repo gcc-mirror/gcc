@@ -1,3 +1,9 @@
+2005-08-24  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* configure.ac (extra_ldflags_libjava): Enable -single_module only for
+	darwin < 8.
+	* configure: Regenerate.
+
 2005-08-23  Roman Kennke  <roman@kennke.org>
 
 	* java/lang/Character.java
