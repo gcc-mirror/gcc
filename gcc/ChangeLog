@@ -1,3 +1,8 @@
+2005-08-23  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/23486
+	* tree-ssa-loop.c (pass_scev_cprop): Add TODO_update_ssa_only_virtuals.
+
 2005-08-23  Phil Edwards  <phil@codesourcery.com>
 
 	* config.gcc (*-*-vxworks*):  Update tm_file, add extra_options,
