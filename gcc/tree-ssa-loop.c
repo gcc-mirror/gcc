@@ -307,7 +307,8 @@ struct tree_opt_pass pass_scev_cprop =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_dump_func,			/* todo_flags_finish */
+  TODO_dump_func | TODO_update_ssa_only_virtuals,
+					/* todo_flags_finish */
   0					/* letter */
 };
 
