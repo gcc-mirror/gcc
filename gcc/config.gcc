@@ -533,14 +533,14 @@ case ${target} in
   ;;
 *-*-vxworks*)
   tmake_file=t-vxworks
-  tm_file="${tm_file} elfos.h svr4.h vxworks.h"
+  tm_file="${tm_file} elfos.h svr4.h"
+  xm_defines=POSIX
+  extra_options="${extra_options} vxworks.opt"
   case ${enable_threads} in
     no) ;;
     "" | yes | vxworks) thread_file='vxworks' ;;
     *) echo 'Unknown thread configuration for VxWorks'; exit 1 ;;
   esac
-  use_collect2=yes
-  xm_defines=POSIX
   ;;
 esac
 
@@ -1722,22 +1722,30 @@ powerpc-*-gnu*)
 		thread_file='posix'
 	fi
 	;;
-powerpc-wrs-vxworks*)
+powerpc-wrs-vxworks|powerpc-wrs-vxworksae)
 	# We want vxworks.h after rs6000/sysv4.h, which unfortunately
 	# means we have to redo the tm_file list from scratch.
 	tm_file="rs6000/rs6000.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h"
-	tm_file="${tm_file} vxworks.h rs6000/vxworks.h"
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-ppccomm rs6000/t-vxworks"
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	extra_headers=ppc-asm.h
+	case ${target} in
+	  *-vxworksae*)
+	    tm_file="${tm_file} vx-common.h vxworksae.h rs6000/vxworks.h rs6000/vxworksae.h"
+	    tmake_file="${tmake_file} rs6000/t-vxworksae"
+	    ;;
+	  *-vxworks*)
+	    tm_file="${tm_file} vx-common.h vxworks.h rs6000/vxworks.h"
+	    ;;
+	esac
 	;;
-powerpc-wrs-windiss*)	# Instruction-level simulator for VxWorks.
+powerpc-wrs-windiss*)  # Instruction-level simulator for VxWorks.
 	tm_file="${tm_file} elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/windiss.h"
-        tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
+	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
 	extra_options="${extra_options} rs6000/sysv4.opt"
-        thread_file=""
+	thread_file=""
 	use_fixproto=yes
-        ;;
+	;;
 powerpc-*-lynxos*)
 	xm_defines=POSIX
 	tm_file="${tm_file} dbxelf.h elfos.h rs6000/sysv4.h rs6000/lynx.h lynx.h"

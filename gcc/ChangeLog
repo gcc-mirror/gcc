@@ -1,3 +1,27 @@
+2005-08-23  Phil Edwards  <phil@codesourcery.com>
+
+	* config.gcc (*-*-vxworks*):  Update tm_file, add extra_options,
+	remove use_collect2.
+	(powerpc-wrs-vxworks):  Update, split out *-*-vxworksae target.
+
+	* target-def.h (TARGET_HAVE_CTORS_DTORS):  Allow target
+	configuration files to override the default value.
+
+	* config/t-vxworks:  Remove INSTALL_ASSERT_H.  Define STMP_FIXPROTO,
+	EXTRA_HEADERS, and EXTRA_MULTILIB_PARTS.
+	* config/vx-common.h:  New file, split out from...
+	* config/vxworks.h:  here.  Update for VxWorks 6.x and RTP mode.
+	* config/vxworksae.h:  New file, for VxWorks AE.
+	* config/vxworks.opt:  New file.
+	* config/vxlib.c:  Update for VxWorks 6.
+
+	* config/rs6000/t-vxworks (MULTILIB_OPTIONS):  New list.  Adjust
+	other MULTILIB_* variables appropriately.
+	(LIB2FUNCS_EXTRA, EXTRA_MULTILIB_PARTS):  Correct from t-ppccomm.
+	* config/rs6000/t-vxworksae:  New file, adjust multilibs for AE.
+	* config/rs6000/vxworks.h:  Update for VxWorks 6.
+	* config/rs6000/vxworksae.h:  New file, mostly placeholder for now.
+
 2005-08-23  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/20799
