@@ -476,14 +476,15 @@ cp_lexer_peek_nth_token (cp_lexer* lexer, size_t n)
   cp_token *token;
 
   /* N is 1-based, not zero-based.  */
-  gcc_assert (n > 0 && lexer->next_token != &eof_token);
-
+  gcc_assert (n > 0);
+  
   if (cp_lexer_debugging_p (lexer))
     fprintf (cp_lexer_debug_stream,
 	     "cp_lexer: peeking ahead %ld at token: ", (long)n);
 
   --n;
   token = lexer->next_token;
+  gcc_assert (!n || token != &eof_token);
   while (n != 0)
     {
       ++token;

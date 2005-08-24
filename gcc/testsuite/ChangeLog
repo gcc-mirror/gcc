@@ -1,3 +1,8 @@
+2005-08-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/22454
+	* g++.dg/parse/crash29.C: New.
+
 2005-08-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/23044
