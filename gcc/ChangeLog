@@ -1,3 +1,9 @@
+2005-08-24  Fariborz Jahanian <fjahanian@apple.com>
+
+	* config/darwin.h: define __PIC__
+	* config/rs6000/darwin.h: Add SUBTARGET_OS_CPP_BUILTINS to
+	TARGET_OS_CPP_BUILTINS macro.
+
 2005-08-24  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config/rs6000/rs6000.md: Fix thinko in the peephole2 I added
