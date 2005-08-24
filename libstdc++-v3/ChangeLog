@@ -1,3 +1,13 @@
+2005-08-24  Lawrence Lim  <llim@redhat.com>
+            Jakub Jelinek  <jakub@redhat.com>
+	    Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/23550
+	* testsuite/21_strings/char_traits/requirements/char/1.cc
+	(test01): Simplify counting.
+	* testsuite/21_strings/char_traits/requirements/wchar_t/1.cc
+	(test02): Same.
+
 2005-07-18  Paolo Carlini  <pcarlini@suse.de>
 	    Nathan Myers  <ncm@cantrip.org>
 
