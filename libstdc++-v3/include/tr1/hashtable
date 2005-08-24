@@ -631,9 +631,9 @@ namespace Internal
       void
       m_swap(hash_code_base& x)
       {
-	m_extract.m_swap(x);
-	m_eq.m_swap(x);
-	m_ranged_hash.m_swap(x);
+	std::swap(m_extract, x.m_extract);
+	std::swap(m_eq, x.m_eq);
+	std::swap(m_ranged_hash, x.m_ranged_hash);
       }
 
     protected:
@@ -703,10 +703,10 @@ namespace Internal
       void
       m_swap(hash_code_base& x)
       {
-	m_extract.m_swap(x);
-	m_eq.m_swap(x);
-	m_h1.m_swap(x);
-	m_h2.m_swap(x);
+	std::swap(m_extract, x.m_extract);
+	std::swap(m_eq, x.m_eq);
+	std::swap(m_h1, x.m_h1);
+	std::swap(m_h2, x.m_h2);
       }
 
     protected:
@@ -762,10 +762,10 @@ namespace Internal
       void
       m_swap(hash_code_base& x)
       {
-	m_extract.m_swap(x);
-	m_eq.m_swap(x);
-	m_h1.m_swap(x);
-	m_h2.m_swap(x);
+	std::swap(m_extract, x.m_extract);
+	std::swap(m_eq, x.m_eq);
+	std::swap(m_h1, x.m_h1);
+	std::swap(m_h2, x.m_h2);
       }
       
     protected:
@@ -1271,8 +1271,8 @@ namespace tr1
 	      node** tail = m_buckets + i;
 	      while (n)
 		{
-		  *tail = m_allocate_node(n);
-		  (*tail).copy_code_from(n);
+		  *tail = m_allocate_node(n->m_v);
+		  this->copy_code(*tail, n);
 		  tail = &((*tail)->m_next);
 		  n = n->m_next;
 		}
