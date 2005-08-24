@@ -6005,6 +6005,10 @@ interblock scheduling.  The default value is 10.
 The maximum number of insns in a region to be considered for
 interblock scheduling.  The default value is 100.
 
+@item min-sched-prob
+The minimum probability of reaching a source block for interblock
+speculative scheduling.  The default value is 40.
+
 @item max-last-value-rtl
 
 The maximum size measured as number of RTLs that can be recorded in an expression

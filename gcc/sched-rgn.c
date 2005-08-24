@@ -251,10 +251,6 @@ static void compute_dom_prob_ps (int);
 #define IS_SPECULATIVE_INSN(INSN) (IS_SPECULATIVE (BLOCK_TO_BB (BLOCK_NUM (INSN))))
 #define INSN_BB(INSN) (BLOCK_TO_BB (BLOCK_NUM (INSN)))
 
-/* Parameters affecting the decision of rank_for_schedule().
-   ??? Nope.  But MIN_PROBABILITY is used in compute_trg_info.  */
-#define MIN_PROBABILITY 40
-
 /* Speculative scheduling functions.  */
 static int check_live_1 (int, rtx);
 static void update_live_1 (int, rtx);
@@ -1013,7 +1009,7 @@ compute_trg_info (int trg)
       if (sp->is_valid)
 	{
 	  sp->src_prob = GET_SRC_PROB (i, trg);
-	  sp->is_valid = (sp->src_prob >= MIN_PROBABILITY);
+	  sp->is_valid = (sp->src_prob >= PARAM_VALUE (PARAM_MIN_SPEC_PROB));
 	}
 
       if (sp->is_valid)
