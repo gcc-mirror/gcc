@@ -691,10 +691,11 @@ can_duplicate_block_p (basic_block bb)
 }
 
 /* Duplicates basic block BB and redirects edge E to it.  Returns the
-   new basic block.  */
+   new basic block.  The new basic block is placed after the basic block
+   AFTER.  */
 
 basic_block
-duplicate_block (basic_block bb, edge e)
+duplicate_block (basic_block bb, edge e, basic_block after)
 {
   edge s, n;
   basic_block new_bb;
@@ -713,6 +714,8 @@ duplicate_block (basic_block bb, edge e)
 #endif
 
   new_bb = cfg_hooks->duplicate_block (bb);
+  if (after)
+    move_block_after (new_bb, after);
 
   new_bb->loop_depth = bb->loop_depth;
   new_bb->flags = bb->flags;

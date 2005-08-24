@@ -758,7 +758,7 @@ copy_bb (basic_block old_bb, edge e, basic_block bb, int trace)
 {
   basic_block new_bb;
 
-  new_bb = duplicate_block (old_bb, e);
+  new_bb = duplicate_block (old_bb, e, bb);
   BB_COPY_PARTITION (new_bb, old_bb);
 
   gcc_assert (e->dest == new_bb);
@@ -2072,7 +2072,7 @@ duplicate_computed_gotos (void)
       if (!bitmap_bit_p (candidates, single_succ (bb)->index))
 	continue;
 
-      new_bb = duplicate_block (single_succ (bb), single_succ_edge (bb));
+      new_bb = duplicate_block (single_succ (bb), single_succ_edge (bb), bb);
       new_bb->aux = bb->aux;
       bb->aux = new_bb;
       new_bb->il.rtl->visited = 1;

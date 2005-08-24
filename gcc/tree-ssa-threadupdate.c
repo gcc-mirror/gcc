@@ -199,7 +199,7 @@ create_block_for_threading (basic_block bb, struct redirection_data *rd)
 {
   /* We can use the generic block duplication code and simply remove
      the stuff we do not need.  */
-  rd->dup_block = duplicate_block (bb, NULL);
+  rd->dup_block = duplicate_block (bb, NULL, NULL);
 
   /* Zero out the profile, since the block is unreachable for now.  */
   rd->dup_block->frequency = 0;

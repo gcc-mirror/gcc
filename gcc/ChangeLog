@@ -1,5 +1,34 @@
 2005-08-24  Zdenek Dvorak  <dvorakz@suse.cz>
 
+	* bb-reorder.c (copy_bb, duplicate_computed_gotos): Add argument
+	to duplicate_block.
+	* cfghooks.c (duplicate_block): Added position where to place
+	new block as argument.
+	* cfghooks.h (duplicate_block): Declaration changed.
+	* cfglayout.c (copy_bbs): Add argument after.  Pass it to
+	duplicate_block.
+	* cfglayout.h (copy_bbs): Declaration changed.
+	* cfgloop.h (loop_version): Declaration changed.
+	* cfgloopmanip.c (duplicate_loop_to_header_edge): Pass
+	position to copy_bbs.
+	(loop_version): Pass position to duplicate_loop_to_header_edge.
+	Add place_after argument and position new blocks according to
+	it.
+	* modulo-sched.c (sms_schedule): Pass place_after argument
+	to loop_version.
+	* tracer.c (tail_duplicate): Pass argument to duplicate_block.
+	* tree-cfg.c (split_edge_bb_loc): New function.
+	(tree_split_edge, tree_duplicate_sese_region): Use split_edge_bb_loc
+	to determine position of new blocks.
+	* tree-ssa-loop-unswitch.c (tree_unswitch_loop): Pass argument
+	to loop_version.
+	* tree-ssa-threadupdate.c (create_block_for_threading): Pass
+	argument to duplicate_block.
+	* tree-vectorizer.c (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Pass position to copy_bbs.
+
+2005-08-24  Zdenek Dvorak  <dvorakz@suse.cz>
+
 	* fold-const.c (ptr_difference_const): Use
 	cst_and_fits_in_hwi instead of host_integerp.
 

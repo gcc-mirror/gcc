@@ -281,7 +281,7 @@ tail_duplicate (void)
 	      e = find_edge (bb, bb2);
 
 	      nduplicated += counts [bb2->index];
-	      bb2 = duplicate_block (bb2, e);
+	      bb2 = duplicate_block (bb2, e, bb);
 
 	      /* Reconsider the original copy of block we've duplicated.
 	         Removing the most common predecessor may make it to be
