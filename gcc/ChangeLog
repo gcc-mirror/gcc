@@ -1,3 +1,8 @@
+2005-08-24  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* fold-const.c (ptr_difference_const): Use
+	cst_and_fits_in_hwi instead of host_integerp.
+
 2005-08-24  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config/darwin.c (gen_pic_offset): New.
