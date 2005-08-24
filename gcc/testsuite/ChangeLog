@@ -1,3 +1,8 @@
+2005-08-24  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/17758
+	gfortran.dg/nonreturning_statements.f90: New test.
+
 2005-08-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/22454
@@ -119,6 +124,10 @@
 
 	PR c++/23337
 	* g++.dg/ext/vector2.C: New.
+
+2005-08-16  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	* gfortran.dg/inquire-complex.f90:  Correct mangled testcase.
 
 2005-08-16  Thomas Koenig  <Thomas.Koenig@online.de>
 
