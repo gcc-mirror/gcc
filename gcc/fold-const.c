@@ -11759,10 +11759,10 @@ ptr_difference_const (tree e1, tree e2, HOST_WIDE_INT *diff)
 	toffset2 = fold_convert (type, toffset2);
 
       tdiff = fold_build2 (MINUS_EXPR, type, toffset1, toffset2);
-      if (!host_integerp (tdiff, 0))
+      if (!cst_and_fits_in_hwi (tdiff))
 	return false;
 
-      *diff = tree_low_cst (tdiff, 0);
+      *diff = int_cst_value (tdiff);
     }
   else if (toffset1 || toffset2)
     {
