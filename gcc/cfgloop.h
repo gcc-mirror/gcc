@@ -309,7 +309,7 @@ extern bool duplicate_loop_to_header_edge (struct loop *, edge, struct loops *,
 extern struct loop *loopify (struct loops *, edge, edge,
 			     basic_block, edge, edge, bool);
 struct loop * loop_version (struct loops *, struct loop *, void *,
-			    basic_block *);			     
+			    basic_block *, bool);
 extern bool remove_path (struct loops *, edge);
 extern edge split_loop_bb (basic_block, void *);
 

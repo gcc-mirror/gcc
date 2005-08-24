@@ -862,7 +862,8 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, struct loops *loops,
   new_bbs = xmalloc (sizeof (basic_block) * loop->num_nodes);
 
   copy_bbs (bbs, loop->num_nodes, new_bbs,
-	    &loop->single_exit, 1, &new_loop->single_exit, NULL);
+	    &loop->single_exit, 1, &new_loop->single_exit, NULL,
+	    e->src);
 
   /* Duplicating phi args at exit bbs as coming 
      also from exit of duplicated loop.  */

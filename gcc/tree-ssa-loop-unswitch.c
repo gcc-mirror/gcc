@@ -282,5 +282,5 @@ tree_unswitch_loop (struct loops *loops, struct loop *loop,
   gcc_assert (loop->inner == NULL);
 
   return loop_version (loops, loop, unshare_expr (cond), 
-		       &condition_bb);
+		       &condition_bb, false);
 }

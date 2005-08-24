@@ -31,7 +31,8 @@ extern void insn_locators_initialize (void);
 extern void reemit_insn_block_notes (void);
 extern bool can_copy_bbs_p (basic_block *, unsigned);
 extern void copy_bbs (basic_block *, unsigned, basic_block *,
-		      edge *, unsigned, edge *, struct loop *);
+		      edge *, unsigned, edge *, struct loop *,
+		      basic_block);
 extern rtx duplicate_insn_chain (rtx, rtx);
 
 #endif /* GCC_CFGLAYOUT_H */

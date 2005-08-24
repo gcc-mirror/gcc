@@ -157,7 +157,7 @@ extern void tidy_fallthru_edges (void);
 extern void predict_edge (edge e, enum br_predictor predictor, int probability);
 extern bool predicted_by_p (basic_block bb, enum br_predictor predictor);
 extern bool can_duplicate_block_p (basic_block);
-extern basic_block duplicate_block (basic_block, edge);
+extern basic_block duplicate_block (basic_block, edge, basic_block);
 extern bool block_ends_with_call_p (basic_block bb);
 extern bool block_ends_with_condjump_p (basic_block bb);
 extern int flow_call_edges_add (sbitmap);
