@@ -1,3 +1,10 @@
+2005-08-24  Pete Steinmetz  <steinmtz@us.ibm.com>
+
+	* params.def (PARAM_MIN_SPEC_PROB): New.
+	* sched-rgn.c (MIN_PROBABILITY): Delete.
+	(compute_trg_info): Convert to PARAM_VALUE.
+	* doc/invoke.texi (param): Document min-spec-prob.
+
 2005-08-24  Fariborz Jahanian <fjahanian@apple.com>
 
 	* config/darwin.h: define __PIC__
