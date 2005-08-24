@@ -428,6 +428,10 @@ typedef struct
   unsigned sequence:1, elemental:1, pure:1, recursive:1;
   unsigned unmaskable:1, masked:1, contained:1;
 
+  /* This is set if the subroutine doesn't return.  Currently, this
+     is only possible for intrinsic subroutines.  */
+  unsigned noreturn:1;
+
   /* Set if this procedure is an alternate entry point.  These procedures
      don't have any code associated, and the backend will turn them into
      thunks to the master function.  */
@@ -1032,7 +1036,7 @@ typedef struct gfc_intrinsic_sym
   const char *name, *lib_name;
   gfc_intrinsic_arg *formal;
   gfc_typespec ts;
-  int elemental, pure, generic, specific, actual_ok, standard;
+  int elemental, pure, generic, specific, actual_ok, standard, noreturn;
 
   gfc_simplify_f simplify;
   gfc_check_f check;

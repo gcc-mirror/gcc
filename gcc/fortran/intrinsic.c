@@ -843,6 +843,14 @@ make_alias (const char *name, int standard)
     }
 }
 
+/* Make the current subroutine noreturn.  */
+
+static void
+make_noreturn(void)
+{
+  if (sizing == SZ_NOTHING)
+      next_sym[-1].noreturn = 1;
+}
 
 /* Add intrinsic functions.  */
 
@@ -2108,6 +2116,8 @@ add_subroutines (void)
 
   add_sym_0s ("abort", 1, GFC_STD_GNU, NULL);
 
+  make_noreturn();
+
   add_sym_1s ("cpu_time", 0, 1, BT_UNKNOWN, 0, GFC_STD_F95,
 	      gfc_check_cpu_time, NULL, gfc_resolve_cpu_time,
 	      tm, BT_REAL, dr, REQUIRED);
@@ -2198,6 +2208,8 @@ add_subroutines (void)
   add_sym_1s ("exit", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
              gfc_check_exit, NULL, gfc_resolve_exit,
 	      c, BT_INTEGER, di, OPTIONAL);
+
+  make_noreturn();
 
   add_sym_1s ("flush", 0, 1, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_flush, NULL, gfc_resolve_flush,
@@ -3161,6 +3173,7 @@ gfc_intrinsic_sub_interface (gfc_code * c, int error_flag)
       return MATCH_ERROR;
     }
 
+  c->resolved_sym->attr.noreturn = isym->noreturn;
   check_intrinsic_standard (name, isym->standard, &c->loc);
 
   return MATCH_YES;

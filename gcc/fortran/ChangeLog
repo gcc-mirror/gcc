@@ -1,3 +1,15 @@
+2005-08-24  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/17758
+	* gfortran.h (symbol_attribute):  Add noreturn to the structure.
+	(gfc_intrinsic_sym):  Add noreturn to the structure.
+	* intrinsic.c (make_noreturn):  New function.
+	(add_subroutines):  Mark subroutines abort and exit as noreturn.
+	(gfc_intrinsic_sub_interface):  Copy noreturn attribute from
+	isym to the resolved symbol.
+	* trans-decl.c (gfc_get_extern_function_decl): Set function
+	as VOLATILE (== noreturn) if the noreturn attribute is set.
+
 2005-08-21  Steven G. Kargl  <kargls@comcast.net>
 
 	* decl.c: Typo in comment.

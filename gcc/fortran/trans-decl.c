@@ -1001,6 +1001,10 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
       TREE_SIDE_EFFECTS (fndecl) = 0;
     }
 
+  /* Mark non-returning functions.  */
+  if (sym->attr.noreturn)
+      TREE_THIS_VOLATILE(fndecl) = 1;
+
   sym->backend_decl = fndecl;
 
   if (DECL_CONTEXT (fndecl) == NULL_TREE)
