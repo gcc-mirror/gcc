@@ -2962,8 +2962,8 @@ if test x"$gcc_cv_ld_as_needed" = xyes; then
 [Define if your linker supports --as-needed and --no-as-needed options.])
 fi
 
-case "$target" in
-  powerpc64*-*-linux*)
+case "$target:$tm_file" in
+  powerpc64*-*-linux* | powerpc*-*-linux*rs6000/biarch64.h*)
     AC_CACHE_CHECK(linker support for omitting dot symbols,
     gcc_cv_ld_no_dot_syms,
     [gcc_cv_ld_no_dot_syms=no

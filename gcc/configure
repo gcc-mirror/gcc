@@ -15025,8 +15025,8 @@ _ACEOF
 
 fi
 
-case "$target" in
-  powerpc64*-*-linux*)
+case "$target:$tm_file" in
+  powerpc64*-*-linux* | powerpc*-*-linux*rs6000/biarch64.h*)
     echo "$as_me:$LINENO: checking linker support for omitting dot symbols" >&5
 echo $ECHO_N "checking linker support for omitting dot symbols... $ECHO_C" >&6
 if test "${gcc_cv_ld_no_dot_syms+set}" = set; then

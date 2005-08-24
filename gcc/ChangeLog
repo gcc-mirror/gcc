@@ -1,3 +1,8 @@
+2005-08-24  Alan Modra  <amodra@bigpond.net.au>
+
+	* configure.ac (HAVE_LD_NO_DOT_SYMS): Set for powerpc-linux biarch.
+	* configure: Regenerate.
+
 2005-08-23  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/20799
