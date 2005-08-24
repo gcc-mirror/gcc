@@ -232,6 +232,17 @@ machopic_function_base_sym (void)
   return sym_ref;
 }
 
+/* Return either ORIG or (const:P (minus:P ORIG PIC_BASE)), depending
+   on whether pic_base is NULL or not.  */
+static inline rtx
+gen_pic_offset (rtx orig, rtx pic_base)
+{
+  if (!pic_base)
+    return orig;
+  else
+    return gen_rtx_CONST (Pmode, gen_rtx_MINUS (Pmode, orig, pic_base));
+}
+
 static GTY(()) const char * function_base_func_name;
 static GTY(()) int current_pic_label_num;
 
@@ -440,8 +451,7 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
 	{
 #if defined (TARGET_TOC) || defined (HAVE_lo_sum)
 	  rtx pic_base = machopic_function_base_sym ();
-	  rtx offset = gen_rtx_CONST (Pmode,
-				      gen_rtx_MINUS (Pmode, orig, pic_base));
+	  rtx offset = gen_pic_offset (orig, pic_base);
 #endif
 
 #if defined (TARGET_TOC) /* i.e., PowerPC */
@@ -599,9 +609,9 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	  return reg;
 	}
 
-      /* if dynamic-no-pic then use 0 as the pic base  */
+      /* if dynamic-no-pic we don't have a pic base  */
       if (MACHO_DYNAMIC_NO_PIC_P)
-	pic_base = CONST0_RTX (Pmode);
+	pic_base = NULL;
       else
 	pic_base = machopic_function_base_sym ();
 
@@ -639,10 +649,7 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	  if (GET_CODE (XEXP (orig, 0)) == SYMBOL_REF
 	      || GET_CODE (XEXP (orig, 0)) == LABEL_REF)
 	    {
-	      rtx offset = gen_rtx_CONST (Pmode,
-					  gen_rtx_MINUS (Pmode,
-							 XEXP (orig, 0),
-							 pic_base));
+	      rtx offset = gen_pic_offset (XEXP (orig, 0), pic_base);
 #if defined (TARGET_TOC) /* i.e., PowerPC */
 	      /* Generating a new reg may expose opportunities for
 		 common subexpression elimination.  */
@@ -696,12 +703,9 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 						   PIC_OFFSET_TABLE_REGNUM)));
 #endif
 
-	      pic_ref = gen_rtx_PLUS (Pmode,
-				      pic,
-				      gen_rtx_CONST (Pmode,
-					  gen_rtx_MINUS (Pmode,
-							 XEXP (orig, 0),
-							 pic_base)));
+	      pic_ref = gen_rtx_PLUS (Pmode, pic,
+				      gen_pic_offset (XEXP (orig, 0),
+						      pic_base));
 	    }
 
 #if !defined (TARGET_TOC)
@@ -716,9 +720,7 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	  if (GET_CODE (orig) == SYMBOL_REF
 	      || GET_CODE (orig) == LABEL_REF)
 	    {
-	      rtx offset = gen_rtx_CONST (Pmode,
-					  gen_rtx_MINUS (Pmode, 
-							 orig, pic_base));
+	      rtx offset = gen_pic_offset (orig, pic_base);
 #if defined (TARGET_TOC) /* i.e., PowerPC */
               rtx hi_sum_reg;
 
@@ -774,9 +776,7 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 #endif
 		  pic_ref = gen_rtx_PLUS (Pmode,
 					  pic,
-					  gen_rtx_CONST (Pmode,
-					      gen_rtx_MINUS (Pmode,
-							     orig, pic_base)));
+					  gen_pic_offset (orig, pic_base));
 		}
 	    }
 	}
