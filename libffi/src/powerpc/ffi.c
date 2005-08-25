@@ -162,7 +162,8 @@ void ffi_prep_args_SYSV(extended_cif *ecif, unsigned *const stack)
 
 	  if (fparg_count >= NUM_FPR_ARG_REGISTERS)
 	    {
-	      if (intarg_count%2 != 0)
+	      if (intarg_count >= NUM_GPR_ARG_REGISTERS
+		  && intarg_count % 2 != 0)
 		{
 		  intarg_count++;
 		  next_arg++;
@@ -564,7 +565,8 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 	    /* If this FP arg is going on the stack, it must be
 	       8-byte-aligned.  */
 	    if (fparg_count > NUM_FPR_ARG_REGISTERS
-		&& intarg_count%2 != 0)
+		&& intarg_count >= NUM_GPR_ARG_REGISTERS
+		&& intarg_count % 2 != 0)
 	      intarg_count++;
 	    break;
 
