@@ -1,3 +1,8 @@
+2005-08-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/23546
+	* gcc.dg/tree-ssa/pr23546.c: New.
+
 2005-08-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/22454

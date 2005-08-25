@@ -1,4 +1,10 @@
 2005-08-24  Paolo Bonzini  <bonzini@gnu.org>
+	
+	PR tree-optimization/23546
+	* tree-ssa-loop-im.c (for_each_index): Handle INTEGER_CST
+	and REAL_CST nodes.
+
+2005-08-24  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config/darwin.c (gen_pic_offset): New.
 	(machopic_indirect_data_reference,  machopic_legitimize_pic_address):
