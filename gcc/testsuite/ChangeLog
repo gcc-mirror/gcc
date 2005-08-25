@@ -1,3 +1,9 @@
+2005-08-25  Alan Modra  <amodra@bigpond.net.au>
+
+	* gcc.dg/20020103-1.c: Scan for LC[0-9], not LC.
+	* gcc.dg/altivec-22.c: Rename from..
+	* gcc.dg/altivec-nomfcr.c: ..this.
+
 2005-08-24  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/23546
