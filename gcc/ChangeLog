@@ -1,3 +1,9 @@
+2005-08-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/23546
+	* tree-ssa-loop-im.c (for_each_index): Handle INTEGER_CST
+	and REAL_CST nodes.
+
 2005-08-24  Pete Steinmetz  <steinmtz@us.ibm.com>
 
 	* params.def (PARAM_MIN_SPEC_PROB): New.
