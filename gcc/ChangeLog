@@ -1,4 +1,9 @@
 2005-08-24  Paolo Bonzini  <bonzini@gnu.org>
+	    Jan Hubicka  <jh@suse.cz>
+
+	* regmove.c (reg_is_remote_constant_p): Reorganize to not use log links.
+
+2005-08-24  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/23546
 	* tree-ssa-loop-im.c (for_each_index): Handle INTEGER_CST

@@ -859,13 +859,13 @@ reg_is_remote_constant_p (rtx reg, rtx insn, rtx first)
     return 0;
 
   /* Look for the set.  */
-  for (p = LOG_LINKS (insn); p; p = XEXP (p, 1))
+  for (p = BB_HEAD (BLOCK_FOR_INSN (insn)); p != insn; p = NEXT_INSN (p))
     {
       rtx s;
 
-      if (REG_NOTE_KIND (p) != 0)
+      if (!INSN_P (p))
 	continue;
-      s = single_set (XEXP (p, 0));
+      s = single_set (p);
       if (s != 0
 	  && REG_P (SET_DEST (s))
 	  && REGNO (SET_DEST (s)) == REGNO (reg))
