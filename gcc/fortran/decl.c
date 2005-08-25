@@ -530,29 +530,34 @@ syntax:
 }
 
 
-/* Special subroutine for finding a symbol.  If we're compiling a
-   function or subroutine and the parent compilation unit is an
-   interface, then check to see if the name we've been given is the
-   name of the interface (located in another namespace).  If so,
-   return that symbol.  If not, use gfc_get_symbol().  */
+/* Special subroutine for finding a symbol.  Check if the name is found
+   in the current name space.  If not, and we're compiling a function or
+   subroutine and the parent compilation unit is an interface, then check
+   to see if the name we've been given is the name of the interface
+   (located in another namespace).  */
 
 static int
 find_special (const char *name, gfc_symbol ** result)
 {
   gfc_state_data *s;
+  int i;
 
+  i = gfc_get_symbol (name, NULL, result);
+  if (i==0) 
+    goto end;
+  
   if (gfc_current_state () != COMP_SUBROUTINE
       && gfc_current_state () != COMP_FUNCTION)
-    goto normal;
+    goto end;
 
   s = gfc_state_stack->previous;
   if (s == NULL)
-    goto normal;
+    goto end;
 
   if (s->state != COMP_INTERFACE)
-    goto normal;
+    goto end;
   if (s->sym == NULL)
-    goto normal;		/* Nameless interface */
+    goto end;                  /* Nameless interface */
 
   if (strcmp (name, s->sym->name) == 0)
     {
@@ -560,8 +565,8 @@ find_special (const char *name, gfc_symbol ** result)
       return 0;
     }
 
-normal:
-  return gfc_get_symbol (name, NULL, result);
+end:
+  return i;
 }
 
 
@@ -616,7 +621,8 @@ build_sym (const char *name, gfc_charlen * cl,
   symbol_attribute attr;
   gfc_symbol *sym;
 
-  if (find_special (name, &sym))
+  /* if (find_special (name, &sym)) */
+  if (gfc_get_symbol (name, NULL, &sym))
     return FAILURE;
 
   /* Start updating the symbol table.  Add basic type attribute
