@@ -1,3 +1,8 @@
+2005-08-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/20817
+	* g++.old-deja/g++.benjamin/13908.C: Robustify expected error.
+
 2005-08-25  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.dg/vect/vect-52.c: Increase b[] and c[] size by one.
