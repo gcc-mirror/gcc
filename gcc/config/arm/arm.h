@@ -1319,7 +1319,9 @@ enum reg_class
    'Uq' is an address valid for ldrsb.  */
 
 #define EXTRA_CONSTRAINT_STR_ARM(OP, C, STR)				\
-  (((C) == 'D') ? (GET_CODE (OP) == CONST_DOUBLE			\
+  (((C) == 'D') ? ((GET_CODE (OP) == CONST_DOUBLE			\
+		    || GET_CODE (OP) == CONST_INT			\
+		    || GET_CODE (OP) == CONST_VECTOR)			\
 		   && (((STR)[1] == 'a'					\
 			&& arm_const_double_inline_cost (OP) == 2)	\
 		       || ((STR)[1] == 'b'				\

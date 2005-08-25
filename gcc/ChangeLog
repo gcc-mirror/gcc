@@ -1,3 +1,29 @@
+2005-08-25  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* arm.c (arm_const_double_inline_cost): Handle any constant by
+	using gen_lowpart and gen_highpart_mode.
+	(note_invalid_constants): All constants in an RTX with a constraint
+	that permits memory are now pushed to the constant pool.
+	(output_move_double): Delete code to handle reg to reg and
+	constant to reg moves.
+	(const_double_needs_minipool, output_mov_immediate): Delete.
+	* arm.h (EXTRA_CONSTRAINT_STR_ARM): All 'D' variants now handle
+	CONST_INT and CONST_VECTOR.
+	* arm.md (ANY64): New mode macro.
+	(arm_movdi): Split reg-reg and const-reg moves.  Simplify constraints.
+	(movdf_soft_insn): Split reg-reg and const-reg moves.
+	(split patterns for 64-bit constant and register moves): New.
+	* cirrus.md (cirrus_arm_movdi): Split reg-reg and const-reg moves.
+	(cirrus_movdf_hard_insn): Likewise.
+	* fpa.md (movdf_fpa): Likewise.
+	* iwmmxt.md (iwmmxt_arm_movdi): Likewise.
+	(movv8qi_internal, movv4hi_internal, movv2si_internal): Fix
+	constraints.
+	(movv2si_internal_2): Likewise.
+	* vfp.md (arm_movdi_vfp): Split reg-reg and const-reg moves.
+	(movdf_vfp): Likewise.
+	* arm-protos.h (output_mov_immediate): Delete prototype.
+
 2005-08-24  Paolo Bonzini  <bonzini@gnu.org>
 	
 	PR tree-optimization/23546

@@ -289,6 +289,18 @@
 ;; distant label.  Only applicable to Thumb code.
 (define_attr "far_jump" "yes,no" (const_string "no"))
 
+
+;;---------------------------------------------------------------------------
+;; Mode macros
+
+; A list of modes that are exactly 64 bits in size.  We use this to expand
+; some splits that are the same for all modes when operating on ARM 
+; registers.
+(define_mode_macro ANY64 [DI DF V8QI V4HI V2SI V2SF])
+
+;;---------------------------------------------------------------------------
+;; Predicates
+
 (include "predicates.md")
 
 ;;---------------------------------------------------------------------------
@@ -4159,18 +4171,73 @@
 )
 
 (define_insn "*arm_movdi"
-  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r,   r, r, r, m")
-	(match_operand:DI 1 "di_operand"              "rIKDa,Db,Dc,mi,r"))]
+  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r, r, r, m")
+	(match_operand:DI 1 "di_operand"              "rDa,Db,Dc,mi,r"))]
   "TARGET_ARM
   && !(TARGET_HARD_FLOAT && (TARGET_MAVERICK || TARGET_VFP))
   && !TARGET_IWMMXT"
   "*
-  return (output_move_double (operands));
+  switch (which_alternative)
+    {
+    case 0:
+    case 1:
+    case 2:
+      return \"#\";
+    default:
+      return output_move_double (operands);
+    }
   "
   [(set_attr "length" "8,12,16,8,8")
    (set_attr "type" "*,*,*,load2,store2")
    (set_attr "pool_range" "*,*,*,1020,*")
    (set_attr "neg_pool_range" "*,*,*,1008,*")]
+)
+
+(define_split
+  [(set (match_operand:ANY64 0 "arm_general_register_operand" "")
+	(match_operand:ANY64 1 "const_double_operand" ""))]
+  "TARGET_ARM
+   && reload_completed
+   && (arm_const_double_inline_cost (operands[1])
+       <= ((optimize_size || arm_ld_sched) ? 3 : 4))"
+  [(const_int 0)]
+  "
+  arm_split_constant (SET, SImode, curr_insn,
+		      INTVAL (gen_lowpart (SImode, operands[1])),
+		      gen_lowpart (SImode, operands[0]), NULL_RTX, 0);
+  arm_split_constant (SET, SImode, curr_insn,
+		      INTVAL (gen_highpart_mode (SImode,
+						 GET_MODE (operands[0]),
+						 operands[1])),
+		      gen_highpart (SImode, operands[0]), NULL_RTX, 0);
+  DONE;
+  "
+)
+
+(define_split
+  [(set (match_operand:ANY64 0 "arm_general_register_operand" "")
+	(match_operand:ANY64 1 "arm_general_register_operand" ""))]
+  "TARGET_EITHER && reload_completed"
+  [(set (match_dup 0) (match_dup 1))
+   (set (match_dup 2) (match_dup 3))]
+  "
+  operands[2] = gen_highpart (SImode, operands[0]);
+  operands[3] = gen_highpart (SImode, operands[1]);
+  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[1] = gen_lowpart (SImode, operands[1]);
+
+  /* Handle a partial overlap.  */
+  if (rtx_equal_p (operands[0], operands[3]))
+    {
+      rtx tmp0 = operands[0];
+      rtx tmp1 = operands[1];
+
+      operands[0] = operands[2];
+      operands[1] = operands[3];
+      operands[2] = tmp0;
+      operands[3] = tmp1;
+    }
+  "
 )
 
 ;; We can't actually do base+index doubleword loads if the index and
@@ -5172,7 +5239,17 @@
 	(match_operand:DF 1 "soft_df_operand" "rDa,Db,Dc,mF,r"))]
   "TARGET_ARM && TARGET_SOFT_FLOAT
   "
-  "* return output_move_double (operands);"
+  "*
+  switch (which_alternative)
+    {
+    case 0:
+    case 1:
+    case 2:
+      return \"#\";
+    default:
+      return output_move_double (operands);
+    }
+  "
   [(set_attr "length" "8,12,16,8,8")
    (set_attr "type" "*,*,*,load2,store2")
    (set_attr "pool_range" "1020")
