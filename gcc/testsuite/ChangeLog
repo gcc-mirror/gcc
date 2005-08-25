@@ -1,7 +1,12 @@
+2005-08-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/23546
+	* gcc.dg/tree-ssa/pr23546.c: New test.
+
 2005-08-24  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/17758
-	gfortran.dg/nonreturning_statements.f90: New test.
+	* gfortran.dg/nonreturning_statements.f90: New test.
 
 2005-08-24  Nathan Sidwell  <nathan@codesourcery.com>
 
