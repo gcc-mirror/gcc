@@ -1,3 +1,8 @@
+2005-08-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/20817
+	* g++.old-deja/g++.benjamin/13908.C: Robustify expected error.
+
 2005-08-24  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/23546

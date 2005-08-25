@@ -1,3 +1,9 @@
+2005-08-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/20817
+	* typeck.c (build_x_unary_op): Make sure OFFSET_REF is not for a
+	->*.
+
 2005-08-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/22454

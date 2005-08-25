@@ -3613,11 +3613,13 @@ build_x_unary_op (enum tree_code code, tree xarg)
       if (!flag_ms_extensions && TREE_CODE (TREE_TYPE (xarg)) == METHOD_TYPE
 	  && (TREE_CODE (xarg) != OFFSET_REF || !PTRMEM_OK_P (xarg)))
 	{
-	  if (TREE_CODE (xarg) != OFFSET_REF)
+	  if (TREE_CODE (xarg) != OFFSET_REF
+	      || !TYPE_P (TREE_OPERAND (xarg, 0)))
 	    {
-	      error ("invalid use of %qE to form a pointer-to-member-function."
-                     "  Use a qualified-id.",
+	      error ("invalid use of %qE to form a pointer-to-member-function",
 		     xarg);
+	      if (TREE_CODE (xarg) != OFFSET_REF)
+		inform ("  a qualified-id is required");
 	      return error_mark_node;
 	    }
 	  else
