@@ -17,5 +17,5 @@ void bar (chile* pobj, pmf pmethod)
 {
   //-edg: expected member name
   //-g++: taking address of bound pointer-to-member expression
-  foo = (void*) &(pobj->*pmethod);  // { dg-error "" } 
+  foo = (void*) &(pobj->*pmethod);  // { dg-error "invalid use" } 
 }
