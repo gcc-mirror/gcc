@@ -1,5 +1,9 @@
 2005-08-25  Alan Modra  <amodra@bigpond.net.au>
 
+	* gcc.dg/vect/vect-52.c: Increase b[] and c[] size by one.
+
+2005-08-25  Alan Modra  <amodra@bigpond.net.au>
+
 	* gcc.dg/20020103-1.c: Scan for LC[0-9], not LC.
 	* gcc.dg/altivec-22.c: Rename from..
 	* gcc.dg/altivec-nomfcr.c: ..this.
