@@ -541,9 +541,9 @@ protected:
   void copy_code (hash_node<Value, false>*, const hash_node<Value, false>*) const { }
 
   void m_swap(hash_code_base& x) {
-    m_extract.m_swap(x);
-    m_eq.m_swap(x);
-    m_ranged_hash.m_swap(x);
+    std::swap(m_extract, x.m_extract);
+    std::swap(m_eq, x.m_eq);
+    std::swap(m_ranged_hash, x.m_ranged_hash);
   }
 
 protected:
@@ -598,10 +598,10 @@ protected:
   void copy_code (hash_node<Value, false>*, const hash_node<Value, false>*) const { }
 
   void m_swap(hash_code_base& x) {
-    m_extract.m_swap(x);
-    m_eq.m_swap(x);
-    m_h1.m_swap(x);
-    m_h2.m_swap(x);
+    std::swap(m_extract, x.m_extract);
+    std::swap(m_eq, x.m_eq);
+    std::swap(m_h1, x.m_h1);
+    std::swap(m_h2, x.m_h2);
   }
 
 protected:
@@ -643,10 +643,10 @@ protected:
     { to->hash_code = from->hash_code; }
 
   void m_swap(hash_code_base& x) {
-    m_extract.m_swap(x);
-    m_eq.m_swap(x);
-    m_h1.m_swap(x);
-    m_h2.m_swap(x);
+    std::swap(m_extract, x.m_extract);
+    std::swap(m_eq, x.m_eq);
+    std::swap(m_h1, x.m_h1);
+    std::swap(m_h2, x.m_h2);
   }
 
 protected:
@@ -1043,8 +1043,8 @@ hashtable<K,V,A,Ex,Eq,H1,H2,H,RP,c,m,u>
       node* n = ht.m_buckets[i];
       node** tail = m_buckets + i;
       while (n) {
-	*tail = m_allocate_node (n);
-	(*tail).copy_code_from (n);
+	*tail = m_allocate_node(n->m_v);
+	this->copy_code(*tail, n);
 	tail = &((*tail)->m_next);
 	n = n->m_next;
       }

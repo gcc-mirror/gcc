@@ -1,3 +1,13 @@
+2005-08-25  Paolo Carlini  <pcarlini@suse.de>
+	    Chris Jefferson  <chris@bubblescope.net>
+
+	PR libstdc++/23465
+	* include/tr1/hashtable (hash_code_base::m_swap): Use
+	std::swap.
+	(hashtable<>::hashtable(const hashtable&)): Use copy_code;
+	fix m_allocate_node call.
+	* testsuite/tr1/6_containers/unordered/hashtable/23465.cc: New.
+
 2005-08-24  Lawrence Lim  <llim@redhat.com>
             Jakub Jelinek  <jakub@redhat.com>
 	    Benjamin Kosnik  <bkoz@redhat.com>
