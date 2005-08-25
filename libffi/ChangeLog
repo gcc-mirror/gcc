@@ -1,3 +1,10 @@
+2005-08-25  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/23404
+	* src/powerpc/ffi.c (ffi_prep_args_SYSV): Correct placement of stack
+	homed fp args.
+	(ffi_status ffi_prep_cif_machdep): Correct stack sizing for same.
+
 2005-08-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac (HAVE_HIDDEN_VISIBILITY_ATTRIBUTE): New test.
