@@ -1,3 +1,10 @@
+2005-08-25  Erik Edelmann  <eedelman@acclab.helsinki.fi>
+
+	PR fortran/20363
+	* symbol.c (find_special): Remove.
+	(build_sym, add_init_expr, attr_decl1): Remove calls to
+	find_special in favor of calls to gfc_get_symbol.
+
 2005-08-19  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/23065

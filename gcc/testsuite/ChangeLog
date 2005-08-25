@@ -1,3 +1,8 @@
+2005-08-25  Erik Edelmann  <eedelman@acclab.helsinki.fi>
+
+	PR fortran/20363
+	* gfortran.dg/named_interface.f90: New.
+
 2005-08-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20817
