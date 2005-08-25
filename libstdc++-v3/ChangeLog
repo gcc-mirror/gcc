@@ -1,4 +1,9 @@
 2005-08-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/hashtable: Use __throw_exception_again,
+	not naked throw, in the catch clauses.
+
+2005-08-25  Paolo Carlini  <pcarlini@suse.de>
 	    Chris Jefferson  <chris@bubblescope.net>
 
 	PR libstdc++/23465

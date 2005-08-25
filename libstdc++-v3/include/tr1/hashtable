@@ -59,6 +59,7 @@
 #include <cstddef>
 #include <cstdlib>
 #include <cmath>
+#include <bits/functexcept.h>
 #include <tr1/type_traits>	// For true_type and false_type
 
 //----------------------------------------------------------------------
@@ -906,7 +907,7 @@ hashtable<K,V,A,Ex,Eq,H1,H2,H,RP,c,m,u>::m_allocate_node (const value_type& v)
   }
   catch(...) {
     m_node_allocator.deallocate(n, 1);
-    throw;
+    __throw_exception_again;
   }
 }
 
@@ -1019,7 +1020,7 @@ hashtable<K,V,A,Ex,Eq,H1,H2,H,RP,c,m,u>
   catch(...) {
     clear();
     m_deallocate_buckets (m_buckets, m_bucket_count);
-    throw;
+    __throw_exception_again;
   }
 }
 
@@ -1053,7 +1054,7 @@ hashtable<K,V,A,Ex,Eq,H1,H2,H,RP,c,m,u>
   catch (...) {
     clear();
     m_deallocate_buckets (m_buckets, m_bucket_count);
-    throw;
+    __throw_exception_again;
   }
 }
 
@@ -1262,7 +1263,7 @@ hashtable<K,V,A,Ex,Eq,H1,H2,H,RP,c,m,u>
   }
   catch (...) {
     m_deallocate_node (new_node);
-    throw;
+    __throw_exception_again;
   }
 }
 
@@ -1423,7 +1424,7 @@ hashtable<K,V,A,Ex,Eq,H1,H2,H,RP,c,m,u>::m_rehash (size_type N)
     m_deallocate_buckets (new_array, N);
     m_deallocate_nodes (m_buckets, m_bucket_count);
     m_element_count = 0;
-    throw;
+    __throw_exception_again;
   }
 }
 
