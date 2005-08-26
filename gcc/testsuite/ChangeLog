@@ -1,3 +1,14 @@
+2005-08-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19004
+	* g++.dg/template/nontype13.C: New test.
+	
+	PR c++/23491
+	* g++.dg/init/new14.C: New test.
+	* g++.dg/expr/anew1.C: Do not XFAIL.
+	* g++.dg/expr/anew2.C: Likewise.
+	* g++.dg/expr/anew3.C: Likewise.
+
 2005-08-26  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/22439

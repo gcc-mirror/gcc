@@ -1,3 +1,19 @@
+2005-08-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19004
+	* pt.c (uses_template_parms): Handle IDENTIFIER_NODE.
+	(type_dependent_expression_p): Allow BASELINKs whose associated
+	functions are simply a FUNCTION_DECL.
+
+	PR c++/23491
+	* cp-tree.h (build_vec_init): Adjust prototype.
+	* init.c (perform_member_init): Adjust call to build_vec_init.
+	(build_aggr_init): Likewise.
+	(build_new_1): Do not call build_default_init for array types.
+	(build_vec_init): Add explicit_default_init_p parameter.  Perform
+	default initialization of vector elements when set.
+	* typeck.c (build_modify_expr): Adjust call to build_vec_init.
+
 2005-08-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20817

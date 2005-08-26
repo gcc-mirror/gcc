@@ -4949,6 +4949,7 @@ uses_template_parms (tree t)
 	   || TREE_CODE (t) == TEMPLATE_PARM_INDEX
 	   || TREE_CODE (t) == OVERLOAD
 	   || TREE_CODE (t) == BASELINK
+	   || TREE_CODE (t) == IDENTIFIER_NODE
 	   || CONSTANT_CLASS_P (t))
     dependent_p = (type_dependent_expression_p (t)
 		   || value_dependent_expression_p (t));
@@ -12345,7 +12346,8 @@ type_dependent_expression_p (tree expression)
 	    return true;
 	  expression = TREE_OPERAND (expression, 0);
 	}
-      gcc_assert (TREE_CODE (expression) == OVERLOAD);
+      gcc_assert (TREE_CODE (expression) == OVERLOAD
+		  || TREE_CODE (expression) == FUNCTION_DECL);
       
       while (expression)
 	{
