@@ -1,3 +1,8 @@
+2005-08-26  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/22439
+	* gcc.dg/vla-3.c: New test.
+
 2005-08-25  Erik Edelmann  <eedelman@acclab.helsinki.fi>
 
 	PR fortran/20363
