@@ -1,3 +1,9 @@
+2005-08-26  J"orn Rennecke <joern.rennecke@st.com>
+
+	* stor-layout.c (finalize_type_size): Restore behaviour for
+	non-aggregate types to the status quo ante of the patch for
+	pr 23467.  Document why it matters.
+
 2005-08-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/23506
