@@ -1,3 +1,17 @@
+2005-08-26  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/23081
+	* include/tr1/array: Implement members back(), front(), data(),
+	and the tuple interface; tidy.
+	* testsuite/tr1/6_containers/array/element_access/back.cc: New.
+	* testsuite/tr1/6_containers/array/element_access/data.cc: Likewise.
+	* testsuite/tr1/6_containers/array/element_access/front.cc: Likewise.
+	* testsuite/tr1/6_containers/array/tuple_interface/get.cc: Likewise.
+	* testsuite/tr1/6_containers/array/tuple_interface/tuple_element.cc:
+	Likewise.
+	* testsuite/tr1/6_containers/array/tuple_interface/tuple_size.cc:
+	Likewise.
+
 2005-08-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/hashtable: Use __throw_exception_again,
