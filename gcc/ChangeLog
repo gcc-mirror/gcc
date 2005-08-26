@@ -1,3 +1,10 @@
+2005-08-25  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/23560
+        * loop.c (biased_biv_may_wrap_p): New.
+        (maybe_eliminate_biv_1): Use it to suppress non-equality
+        comparison transformations.  Delete disabled code.
+
 2005-08-25  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* arm.c (arm_const_double_inline_cost): Handle any constant by
