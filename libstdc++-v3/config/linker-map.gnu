@@ -566,7 +566,6 @@ GLIBCXX_3.4.6 {
     _ZNSt8ios_base17_M_call_callbacksENS_5eventE;
     _ZNSt8ios_base20_M_dispose_callbacksEv;
     _ZNSt6locale5facet13_S_get_c_nameEv;
-    _ZN11__gnu_debug13__fancy_abortEPKciS1_S1_;
 
     _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE9showmanycEv;
 

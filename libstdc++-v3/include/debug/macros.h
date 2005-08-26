@@ -40,16 +40,6 @@
  * the user error and where the error is reported.
  *
  */
-namespace __gnu_debug
-{ void __fancy_abort(const char*, int, const char*, const char*); }
-#define _GLIBCXX_DEBUG_ABORT(_Condition)                                \
-  do {                                                                  \
-    if (! (_Condition))                                                 \
-      ::__gnu_debug::__fancy_abort(__FILE__, __LINE__,                  \
-				   __PRETTY_FUNCTION__,                 \
-				   #_Condition);                        \
-  } while (false)
-
 #define _GLIBCXX_DEBUG_VERIFY(_Condition,_ErrorMessage)		        \
   do {									\
     if (! (_Condition))							\
