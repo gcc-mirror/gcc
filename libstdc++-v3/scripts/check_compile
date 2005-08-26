@@ -32,17 +32,21 @@ CXX="$COMPILER $INCLUDES $PCH_FLAGS $FLAGS $TEST_FLAGS"
 
 TESTS_FILE="testsuite_files"
 
+#mkdir binaries
+UNIQUE_ID=0
+
 for NAME in `cat $TESTS_FILE`
 do
   if $RUN; then
     echo $NAME
-    FILE_NAME="`basename $NAME`"
-    OUTPUT_NAME="`echo $FILE_NAME | sed 's/cc$/s/'`"
+    OUTPUT_NAME=$UNIQUE_ID
     $CXX $SRC_DIR/testsuite/$NAME -o $OUTPUT_NAME
     if [ -f $OUTPUT_NAME ]; then
+#	mv $OUTPUT_NAME binaries
 	rm $OUTPUT_NAME
     fi
     echo ""
+    let UNIQUE_ID+=1 
   fi
 done
 
