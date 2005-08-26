@@ -1,3 +1,9 @@
+2005-08-26  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/predicates.md ("shift_count_operand", "setmem_operand"):
+	Reject operands containing eliminable registers.
+	* testsuite/gcc.dg/20050825-1.c: New testcase.
+
 2005-08-24  Paolo Bonzini  <bonzini@gnu.org>
 	    Jan Hubicka  <jh@suse.cz>
 
