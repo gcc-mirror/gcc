@@ -1,3 +1,8 @@
+2005-08-26  Adrian Straetling  <straetling@de.ibm.com>
+
+	* config/s390/s390.md: ("movstr", "*movstr"): Add patterns.
+	(UNSPEC_MVST): New constant.
+
 2005-08-26  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/predicates.md ("shift_count_operand", "setmem_operand"):
