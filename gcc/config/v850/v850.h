@@ -81,6 +81,8 @@
   builtin_define( "__v850" );			\
   builtin_assert( "machine=v850" );		\
   builtin_assert( "cpu=v850" );			\
+  if (TARGET_EP)				\
+    builtin_define ("__EP__");			\
 } while(0)
 
 #define MASK_CPU (MASK_V850 | MASK_V850E)
@@ -131,7 +133,13 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
 {									\
   target_flags |= MASK_STRICT_ALIGN;					\
   if (LEVEL)								\
-    target_flags |= (MASK_EP | MASK_PROLOG_FUNCTION);			\
+    /* Note - we no longer enable MASK_EP when optimizing.  This is	\
+       because of a hardware bug which stops the SLD and SST instructions\
+       from correctly detecting some hazards.  If the user is sure that \
+       their hardware is fixed or that their program will not encounter \
+       the conditions that trigger the bug then they can enable -mep by \
+       hand.  */							\
+    target_flags |= MASK_PROLOG_FUNCTION;				\
 }
 
 
@@ -758,11 +766,11 @@ struct cum_arg { int nbytes; int anonymous_args; };
    register class that does not include r0 on the output.  */
 
 #define EXTRA_CONSTRAINT(OP, C)						\
- ((C) == 'Q'   ? ep_memory_operand (OP, GET_MODE (OP), 0)		\
+ ((C) == 'Q'   ? ep_memory_operand (OP, GET_MODE (OP), FALSE)		\
   : (C) == 'R' ? special_symbolref_operand (OP, VOIDmode)		\
   : (C) == 'S' ? (GET_CODE (OP) == SYMBOL_REF				\
 		  && !SYMBOL_REF_ZDA_P (OP))				\
-  : (C) == 'T' ? ep_memory_operand(OP,GET_MODE(OP),TRUE)		\
+  : (C) == 'T' ? ep_memory_operand (OP, GET_MODE (OP), TRUE)		\
   : (C) == 'U' ? ((GET_CODE (OP) == SYMBOL_REF				\
 		   && SYMBOL_REF_ZDA_P (OP))				\
 		  || (GET_CODE (OP) == CONST				\
