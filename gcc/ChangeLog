@@ -1,3 +1,10 @@
+2005-08-26  David Ung  <davidu@mips.com>
+
+	* config/mips/mips.c (mips_expand_prologue): Handle case when
+	generating for MIPS16 and the outgoing argument area is more than
+	SMALL_OPERAND. Use the frame pointer as temporary to generate the
+	add instruction.
+
 2005-08-26  Paul Woegerer  <paul.woegerer@nsc.com>
 
 	* config/crx/crx.md: Make doloop_end pattern usage controllable
