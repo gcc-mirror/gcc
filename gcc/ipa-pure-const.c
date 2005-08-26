@@ -182,13 +182,14 @@ check_tree (funct_state local, tree t, bool checking_write)
       
       /* Any indirect reference that occurs on the lhs
 	 disqualifies the function from being pure or const. Any
-	 indirect reference that occurs on the rhs disqualifies
-	 the function from being const.  */
-      if (checking_write) 
+	 indirect reference to a volatile disqualifies the
+	 function from being pure or const.  Any indirect
+	 reference that occurs on the rhs disqualifies the
+	 function from being const.  */
+      if (checking_write || TREE_THIS_VOLATILE (t)) 
 	local->pure_const_state = IPA_NEITHER;
-      else 
-	if (local->pure_const_state == IPA_CONST)
-	  local->pure_const_state = IPA_PURE;
+      else if (local->pure_const_state == IPA_CONST)
+	local->pure_const_state = IPA_PURE;
     }
 
   if (SSA_VAR_P (t))
