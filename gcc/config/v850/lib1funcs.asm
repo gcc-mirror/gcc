@@ -1,5 +1,5 @@
 /* libgcc routines for NEC V850.
-   Copyright (C) 1996, 1997, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 2002, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -268,6 +268,7 @@ ___modsi3:
 	/* Allocate space and save registers 2, 20 .. 29 on the stack */
 	/* Called via:	jalr __save_r2_r29,r10 */
 __save_r2_r29:
+#ifdef __EP__
 	mov	ep,r1
 	addi	-44,sp,sp
 	mov	sp,ep
@@ -283,6 +284,20 @@ __save_r2_r29:
 	sst.w	r20,36[ep]
 	sst.w	r2,40[ep]
 	mov	r1,ep
+#else
+	addi	-44,sp,sp
+	st.w	r29,0[sp]
+	st.w	r28,4[sp]
+	st.w	r27,8[sp]
+	st.w	r26,12[sp]
+	st.w	r25,16[sp]
+	st.w	r24,20[sp]
+	st.w	r23,24[sp]
+	st.w	r22,28[sp]
+	st.w	r21,32[sp]
+	st.w	r20,36[sp]
+	st.w	r2,40[sp]
+#endif
 	jmp	[r10]
 	.size	__save_r2_r29,.-__save_r2_r29
 
@@ -292,6 +307,7 @@ __save_r2_r29:
 	.globl	__return_r2_r29
 	.type	__return_r2_r29,@function
 __return_r2_r29:
+#ifdef __EP__
 	mov	ep,r1
 	mov	sp,ep
 	sld.w	0[ep],r29
@@ -307,6 +323,20 @@ __return_r2_r29:
 	sld.w	40[ep],r2
 	addi	44,sp,sp
 	mov	r1,ep
+#else
+	ld.w	0[sp],r29
+	ld.w	4[sp],r28
+	ld.w	8[sp],r27
+	ld.w	12[sp],r26
+	ld.w	16[sp],r25
+	ld.w	20[sp],r24
+	ld.w	24[sp],r23
+	ld.w	28[sp],r22
+	ld.w	32[sp],r21
+	ld.w	36[sp],r20
+	ld.w	40[sp],r2
+	addi	44,sp,sp
+#endif
 	jmp	[r31]
 	.size	__return_r2_r29,.-__return_r2_r29
 #endif /* L_save_2 */
@@ -319,6 +349,7 @@ __return_r2_r29:
 	/* Allocate space and save registers 20 .. 29 on the stack */
 	/* Called via:	jalr __save_r20_r29,r10 */
 __save_r20_r29:
+#ifdef __EP__
 	mov	ep,r1
 	addi	-40,sp,sp
 	mov	sp,ep
@@ -333,6 +364,19 @@ __save_r20_r29:
 	sst.w	r21,32[ep]
 	sst.w	r20,36[ep]
 	mov	r1,ep
+#else
+	addi	-40,sp,sp
+	st.w	r29,0[sp]
+	st.w	r28,4[sp]
+	st.w	r27,8[sp]
+	st.w	r26,12[sp]
+	st.w	r25,16[sp]
+	st.w	r24,20[sp]
+	st.w	r23,24[sp]
+	st.w	r22,28[sp]
+	st.w	r21,32[sp]
+	st.w	r20,36[sp]
+#endif
 	jmp	[r10]
 	.size	__save_r20_r29,.-__save_r20_r29
 
@@ -342,6 +386,7 @@ __save_r20_r29:
 	.globl	__return_r20_r29
 	.type	__return_r20_r29,@function
 __return_r20_r29:
+#ifdef __EP__
 	mov	ep,r1
 	mov	sp,ep
 	sld.w	0[ep],r29
@@ -356,6 +401,19 @@ __return_r20_r29:
 	sld.w	36[ep],r20
 	addi	40,sp,sp
 	mov	r1,ep
+#else
+	ld.w	0[sp],r29
+	ld.w	4[sp],r28
+	ld.w	8[sp],r27
+	ld.w	12[sp],r26
+	ld.w	16[sp],r25
+	ld.w	20[sp],r24
+	ld.w	24[sp],r23
+	ld.w	28[sp],r22
+	ld.w	32[sp],r21
+	ld.w	36[sp],r20
+	addi	40,sp,sp
+#endif
 	jmp	[r31]
 	.size	__return_r20_r29,.-__return_r20_r29
 #endif /* L_save_20 */
@@ -368,6 +426,7 @@ __return_r20_r29:
 	/* Allocate space and save registers 21 .. 29 on the stack */
 	/* Called via:	jalr __save_r21_r29,r10 */
 __save_r21_r29:
+#ifdef __EP__
 	mov	ep,r1
 	addi	-36,sp,sp
 	mov	sp,ep
@@ -381,6 +440,18 @@ __save_r21_r29:
 	sst.w	r22,28[ep]
 	sst.w	r21,32[ep]
 	mov	r1,ep
+#else
+	addi	-36,sp,sp
+	st.w	r29,0[sp]
+	st.w	r28,4[sp]
+	st.w	r27,8[sp]
+	st.w	r26,12[sp]
+	st.w	r25,16[sp]
+	st.w	r24,20[sp]
+	st.w	r23,24[sp]
+	st.w	r22,28[sp]
+	st.w	r21,32[sp]
+#endif
 	jmp	[r10]
 	.size	__save_r21_r29,.-__save_r21_r29
 
@@ -390,6 +461,7 @@ __save_r21_r29:
 	.globl	__return_r21_r29
 	.type	__return_r21_r29,@function
 __return_r21_r29:
+#ifdef __EP__
 	mov	ep,r1
 	mov	sp,ep
 	sld.w	0[ep],r29
@@ -403,6 +475,18 @@ __return_r21_r29:
 	sld.w	32[ep],r21
 	addi	36,sp,sp
 	mov	r1,ep
+#else
+	ld.w	0[sp],r29
+	ld.w	4[sp],r28
+	ld.w	8[sp],r27
+	ld.w	12[sp],r26
+	ld.w	16[sp],r25
+	ld.w	20[sp],r24
+	ld.w	24[sp],r23
+	ld.w	28[sp],r22
+	ld.w	32[sp],r21
+	addi	36,sp,sp
+#endif
 	jmp	[r31]
 	.size	__return_r21_r29,.-__return_r21_r29
 #endif /* L_save_21 */
@@ -415,6 +499,7 @@ __return_r21_r29:
 	/* Allocate space and save registers 22 .. 29 on the stack */
 	/* Called via:	jalr __save_r22_r29,r10 */
 __save_r22_r29:
+#ifdef __EP__
 	mov	ep,r1
 	addi	-32,sp,sp
 	mov	sp,ep
@@ -427,6 +512,17 @@ __save_r22_r29:
 	sst.w	r23,24[ep]
 	sst.w	r22,28[ep]
 	mov	r1,ep
+#else
+	addi	-32,sp,sp
+	st.w	r29,0[sp]
+	st.w	r28,4[sp]
+	st.w	r27,8[sp]
+	st.w	r26,12[sp]
+	st.w	r25,16[sp]
+	st.w	r24,20[sp]
+	st.w	r23,24[sp]
+	st.w	r22,28[sp]
+#endif
 	jmp	[r10]
 	.size	__save_r22_r29,.-__save_r22_r29
 
@@ -436,6 +532,7 @@ __save_r22_r29:
 	.globl	__return_r22_r29
 	.type	__return_r22_r29,@function
 __return_r22_r29:
+#ifdef __EP__
 	mov	ep,r1
 	mov	sp,ep
 	sld.w	0[ep],r29
@@ -448,6 +545,17 @@ __return_r22_r29:
 	sld.w	28[ep],r22
 	addi	32,sp,sp
 	mov	r1,ep
+#else
+	ld.w	0[sp],r29
+	ld.w	4[sp],r28
+	ld.w	8[sp],r27
+	ld.w	12[sp],r26
+	ld.w	16[sp],r25
+	ld.w	20[sp],r24
+	ld.w	24[sp],r23
+	ld.w	28[sp],r22
+	addi	32,sp,sp
+#endif
 	jmp	[r31]
 	.size	__return_r22_r29,.-__return_r22_r29
 #endif /* L_save_22 */
@@ -460,6 +568,7 @@ __return_r22_r29:
 	/* Allocate space and save registers 23 .. 29 on the stack */
 	/* Called via:	jalr __save_r23_r29,r10 */
 __save_r23_r29:
+#ifdef __EP__
 	mov	ep,r1
 	addi	-28,sp,sp
 	mov	sp,ep
@@ -471,6 +580,16 @@ __save_r23_r29:
 	sst.w	r24,20[ep]
 	sst.w	r23,24[ep]
 	mov	r1,ep
+#else
+	addi	-28,sp,sp
+	st.w	r29,0[sp]
+	st.w	r28,4[sp]
+	st.w	r27,8[sp]
+	st.w	r26,12[sp]
+	st.w	r25,16[sp]
+	st.w	r24,20[sp]
+	st.w	r23,24[sp]
+#endif
 	jmp	[r10]
 	.size	__save_r23_r29,.-__save_r23_r29
 
@@ -480,6 +599,7 @@ __save_r23_r29:
 	.globl	__return_r23_r29
 	.type	__return_r23_r29,@function
 __return_r23_r29:
+#ifdef __EP__
 	mov	ep,r1
 	mov	sp,ep
 	sld.w	0[ep],r29
@@ -491,6 +611,16 @@ __return_r23_r29:
 	sld.w	24[ep],r23
 	addi	28,sp,sp
 	mov	r1,ep
+#else
+	ld.w	0[sp],r29
+	ld.w	4[sp],r28
+	ld.w	8[sp],r27
+	ld.w	12[sp],r26
+	ld.w	16[sp],r25
+	ld.w	20[sp],r24
+	ld.w	24[sp],r23
+	addi	28,sp,sp
+#endif
 	jmp	[r31]
 	.size	__return_r23_r29,.-__return_r23_r29
 #endif /* L_save_23 */
@@ -503,6 +633,7 @@ __return_r23_r29:
 	/* Allocate space and save registers 24 .. 29 on the stack */
 	/* Called via:	jalr __save_r24_r29,r10 */
 __save_r24_r29:
+#ifdef __EP__
 	mov	ep,r1
 	addi	-24,sp,sp
 	mov	sp,ep
@@ -513,6 +644,15 @@ __save_r24_r29:
 	sst.w	r25,16[ep]
 	sst.w	r24,20[ep]
 	mov	r1,ep
+#else
+	addi	-24,sp,sp
+	st.w	r29,0[sp]
+	st.w	r28,4[sp]
+	st.w	r27,8[sp]
+	st.w	r26,12[sp]
+	st.w	r25,16[sp]
+	st.w	r24,20[sp]
+#endif
 	jmp	[r10]
 	.size	__save_r24_r29,.-__save_r24_r29
 
@@ -522,6 +662,7 @@ __save_r24_r29:
 	.globl	__return_r24_r29
 	.type	__return_r24_r29,@function
 __return_r24_r29:
+#ifdef __EP__
 	mov	ep,r1
 	mov	sp,ep
 	sld.w	0[ep],r29
@@ -532,6 +673,15 @@ __return_r24_r29:
 	sld.w	20[ep],r24
 	addi	24,sp,sp
 	mov	r1,ep
+#else
+	ld.w	0[sp],r29
+	ld.w	4[sp],r28
+	ld.w	8[sp],r27
+	ld.w	12[sp],r26
+	ld.w	16[sp],r25
+	ld.w	20[sp],r24
+	addi	24,sp,sp
+#endif
 	jmp	[r31]
 	.size	__return_r24_r29,.-__return_r24_r29
 #endif /* L_save_24 */
@@ -544,6 +694,7 @@ __return_r24_r29:
 	/* Allocate space and save registers 25 .. 29 on the stack */
 	/* Called via:	jalr __save_r25_r29,r10 */
 __save_r25_r29:
+#ifdef __EP__
 	mov	ep,r1
 	addi	-20,sp,sp
 	mov	sp,ep
@@ -553,6 +704,14 @@ __save_r25_r29:
 	sst.w	r26,12[ep]
 	sst.w	r25,16[ep]
 	mov	r1,ep
+#else
+	addi	-20,sp,sp
+	st.w	r29,0[sp]
+	st.w	r28,4[sp]
+	st.w	r27,8[sp]
+	st.w	r26,12[sp]
+	st.w	r25,16[sp]
+#endif
 	jmp	[r10]
 	.size	__save_r25_r29,.-__save_r25_r29
 
@@ -562,6 +721,7 @@ __save_r25_r29:
 	.globl	__return_r25_r29
 	.type	__return_r25_r29,@function
 __return_r25_r29:
+#ifdef __EP__
 	mov	ep,r1
 	mov	sp,ep
 	sld.w	0[ep],r29
@@ -571,6 +731,14 @@ __return_r25_r29:
 	sld.w	16[ep],r25
 	addi	20,sp,sp
 	mov	r1,ep
+#else
+	ld.w	0[ep],r29
+	ld.w	4[ep],r28
+	ld.w	8[ep],r27
+	ld.w	12[ep],r26
+	ld.w	16[ep],r25
+	addi	20,sp,sp
+#endif
 	jmp	[r31]
 	.size	__return_r25_r29,.-__return_r25_r29
 #endif /* L_save_25 */
@@ -583,6 +751,7 @@ __return_r25_r29:
 	/* Allocate space and save registers 26 .. 29 on the stack */
 	/* Called via:	jalr __save_r26_r29,r10 */
 __save_r26_r29:
+#ifdef __EP__
 	mov	ep,r1
 	add	-16,sp
 	mov	sp,ep
@@ -591,6 +760,13 @@ __save_r26_r29:
 	sst.w	r27,8[ep]
 	sst.w	r26,12[ep]
 	mov	r1,ep
+#else
+	add	-16,sp
+	st.w	r29,0[sp]
+	st.w	r28,4[sp]
+	st.w	r27,8[sp]
+	st.w	r26,12[sp]
+#endif
 	jmp	[r10]
 	.size	__save_r26_r29,.-__save_r26_r29
 
@@ -600,6 +776,7 @@ __save_r26_r29:
 	.globl	__return_r26_r29
 	.type	__return_r26_r29,@function
 __return_r26_r29:
+#ifdef __EP__
 	mov	ep,r1
 	mov	sp,ep
 	sld.w	0[ep],r29
@@ -608,6 +785,13 @@ __return_r26_r29:
 	sld.w	12[ep],r26
 	addi	16,sp,sp
 	mov	r1,ep
+#else
+	ld.w	0[sp],r29
+	ld.w	4[sp],r28
+	ld.w	8[sp],r27
+	ld.w	12[sp],r26
+	addi	16,sp,sp
+#endif
 	jmp	[r31]
 	.size	__return_r26_r29,.-__return_r26_r29
 #endif /* L_save_26 */
@@ -698,10 +882,11 @@ __return_r29:
 	.align	2
 	.globl	__save_r2_r31
 	.type	__save_r2_r31,@function
-	/* Allocate space and save registers 20 .. 29, 31 on the stack */
-	/* Also allocate space for the argument save area */
-	/* Called via:	jalr __save_r2_r31,r10 */
+	/* Allocate space and save registers 20 .. 29, 31 on the stack.  */
+	/* Also allocate space for the argument save area.  */
+	/* Called via:	jalr __save_r2_r31,r10.  */
 __save_r2_r31:
+#ifdef __EP__
 	mov	ep,r1
 	addi	-64,sp,sp
 	mov	sp,ep
@@ -718,6 +903,21 @@ __save_r2_r31:
 	sst.w	r2,56[ep]
 	sst.w	r31,60[ep]
 	mov	r1,ep
+#else
+	addi	-64,sp,sp
+	st.w	r29,16[sp]
+	st.w	r28,20[sp]
+	st.w	r27,24[sp]
+	st.w	r26,28[sp]
+	st.w	r25,32[sp]
+	st.w	r24,36[sp]
+	st.w	r23,40[sp]
+	st.w	r22,44[sp]
+	st.w	r21,48[sp]
+	st.w	r20,52[sp]
+	st.w	r2,56[sp]
+	st.w	r31,60[sp]
+#endif
 	jmp	[r10]
 	.size	__save_r2_r31,.-__save_r2_r31
 
@@ -727,6 +927,7 @@ __save_r2_r31:
 	.globl	__return_r2_r31
 	.type	__return_r2_r31,@function
 __return_r2_r31:
+#ifdef __EP__
 	mov	ep,r1
 	mov	sp,ep
 	sld.w	16[ep],r29
@@ -743,6 +944,21 @@ __return_r2_r31:
 	sld.w	60[ep],r31
 	addi	64,sp,sp
 	mov	r1,ep
+#else
+	ld.w	16[sp],r29
+	ld.w	20[sp],r28
+	ld.w	24[sp],r27
+	ld.w	28[sp],r26
+	ld.w	32[sp],r25
+	ld.w	36[sp],r24
+	ld.w	40[sp],r23
+	ld.w	44[sp],r22
+	ld.w	48[sp],r21
+	ld.w	52[sp],r20
+	ld.w	56[sp],r2
+	ld.w	60[sp],r31
+	addi	64,sp,sp
+#endif
 	jmp	[r31]
 	.size	__return_r2_r31,.-__return_r2_r31
 #endif /* L_save_2c */
@@ -756,6 +972,7 @@ __return_r2_r31:
 	/* Also allocate space for the argument save area */
 	/* Called via:	jalr __save_r20_r31,r10 */
 __save_r20_r31:
+#ifdef __EP__
 	mov	ep,r1
 	addi	-60,sp,sp
 	mov	sp,ep
@@ -771,6 +988,20 @@ __save_r20_r31:
 	sst.w	r20,52[ep]
 	sst.w	r31,56[ep]
 	mov	r1,ep
+#else
+	addi	-60,sp,sp
+	st.w	r29,16[sp]
+	st.w	r28,20[sp]
+	st.w	r27,24[sp]
+	st.w	r26,28[sp]
+	st.w	r25,32[sp]
+	st.w	r24,36[sp]
+	st.w	r23,40[sp]
+	st.w	r22,44[sp]
+	st.w	r21,48[sp]
+	st.w	r20,52[sp]
+	st.w	r31,56[sp]
+#endif
 	jmp	[r10]
 	.size	__save_r20_r31,.-__save_r20_r31
 
@@ -780,6 +1011,7 @@ __save_r20_r31:
 	.globl	__return_r20_r31
 	.type	__return_r20_r31,@function
 __return_r20_r31:
+#ifdef __EP__
 	mov	ep,r1
 	mov	sp,ep
 	sld.w	16[ep],r29
@@ -795,6 +1027,20 @@ __return_r20_r31:
 	sld.w	56[ep],r31
 	addi	60,sp,sp
 	mov	r1,ep
+#else
+	ld.w	16[sp],r29
+	ld.w	20[sp],r28
+	ld.w	24[sp],r27
+	ld.w	28[sp],r26
+	ld.w	32[sp],r25
+	ld.w	36[sp],r24
+	ld.w	40[sp],r23
+	ld.w	44[sp],r22
+	ld.w	48[sp],r21
+	ld.w	52[sp],r20
+	ld.w	56[sp],r31
+	addi	60,sp,sp
+#endif
 	jmp	[r31]
 	.size	__return_r20_r31,.-__return_r20_r31
 #endif /* L_save_20c */
@@ -808,6 +1054,7 @@ __return_r20_r31:
 	/* Also allocate space for the argument save area */
 	/* Called via:	jalr __save_r21_r31,r10 */
 __save_r21_r31:
+#ifdef __EP__
 	mov	ep,r1
 	addi	-56,sp,sp
 	mov	sp,ep
@@ -822,6 +1069,19 @@ __save_r21_r31:
 	sst.w	r21,48[ep]
 	sst.w	r31,52[ep]
 	mov	r1,ep
+#else
+	addi	-56,sp,sp
+	st.w	r29,16[sp]
+	st.w	r28,20[sp]
+	st.w	r27,24[sp]
+	st.w	r26,28[sp]
+	st.w	r25,32[sp]
+	st.w	r24,36[sp]
+	st.w	r23,40[sp]
+	st.w	r22,44[sp]
+	st.w	r21,48[sp]
+	st.w	r31,52[sp]
+#endif
 	jmp	[r10]
 	.size	__save_r21_r31,.-__save_r21_r31
 
@@ -831,6 +1091,7 @@ __save_r21_r31:
 	.globl	__return_r21_r31
 	.type	__return_r21_r31,@function
 __return_r21_r31:
+#ifdef __EP__
 	mov	ep,r1
 	mov	sp,ep
 	sld.w	16[ep],r29
@@ -845,6 +1106,19 @@ __return_r21_r31:
 	sld.w	52[ep],r31
 	addi	56,sp,sp
 	mov	r1,ep
+#else
+	ld.w	16[sp],r29
+	ld.w	20[sp],r28
+	ld.w	24[sp],r27
+	ld.w	28[sp],r26
+	ld.w	32[sp],r25
+	ld.w	36[sp],r24
+	ld.w	40[sp],r23
+	ld.w	44[sp],r22
+	ld.w	48[sp],r21
+	ld.w	52[sp],r31
+	addi	56,sp,sp
+#endif
 	jmp	[r31]
 	.size	__return_r21_r31,.-__return_r21_r31
 #endif /* L_save_21c */
@@ -858,6 +1132,7 @@ __return_r21_r31:
 	/* Also allocate space for the argument save area */
 	/* Called via:	jalr __save_r22_r31,r10 */
 __save_r22_r31:
+#ifdef __EP__
 	mov	ep,r1
 	addi	-52,sp,sp
 	mov	sp,ep
@@ -871,6 +1146,18 @@ __save_r22_r31:
 	sst.w	r22,44[ep]
 	sst.w	r31,48[ep]
 	mov	r1,ep
+#else
+	addi	-52,sp,sp
+	st.w	r29,16[sp]
+	st.w	r28,20[sp]
+	st.w	r27,24[sp]
+	st.w	r26,28[sp]
+	st.w	r25,32[sp]
+	st.w	r24,36[sp]
+	st.w	r23,40[sp]
+	st.w	r22,44[sp]
+	st.w	r31,48[sp]
+#endif
 	jmp	[r10]
 	.size	__save_r22_r31,.-__save_r22_r31
 
@@ -880,6 +1167,7 @@ __save_r22_r31:
 	.globl	__return_r22_r31
 	.type	__return_r22_r31,@function
 __return_r22_r31:
+#ifdef __EP__
 	mov	ep,r1
 	mov	sp,ep
 	sld.w	16[ep],r29
@@ -893,6 +1181,18 @@ __return_r22_r31:
 	sld.w	48[ep],r31
 	addi	52,sp,sp
 	mov	r1,ep
+#else
+	ld.w	16[sp],r29
+	ld.w	20[sp],r28
+	ld.w	24[sp],r27
+	ld.w	28[sp],r26
+	ld.w	32[sp],r25
+	ld.w	36[sp],r24
+	ld.w	40[sp],r23
+	ld.w	44[sp],r22
+	ld.w	48[sp],r31
+	addi	52,sp,sp
+#endif
 	jmp	[r31]
 	.size	__return_r22_r31,.-__return_r22_r31
 #endif /* L_save_22c */
@@ -906,6 +1206,7 @@ __return_r22_r31:
 	/* Also allocate space for the argument save area */
 	/* Called via:	jalr __save_r23_r31,r10 */
 __save_r23_r31:
+#ifdef __EP__
 	mov	ep,r1
 	addi	-48,sp,sp
 	mov	sp,ep
@@ -918,6 +1219,17 @@ __save_r23_r31:
 	sst.w	r23,40[ep]
 	sst.w	r31,44[ep]
 	mov	r1,ep
+#else
+	addi	-48,sp,sp
+	st.w	r29,16[sp]
+	st.w	r28,20[sp]
+	st.w	r27,24[sp]
+	st.w	r26,28[sp]
+	st.w	r25,32[sp]
+	st.w	r24,36[sp]
+	st.w	r23,40[sp]
+	st.w	r31,44[sp]
+#endif
 	jmp	[r10]
 	.size	__save_r23_r31,.-__save_r23_r31
 
@@ -927,6 +1239,7 @@ __save_r23_r31:
 	.globl	__return_r23_r31
 	.type	__return_r23_r31,@function
 __return_r23_r31:
+#ifdef __EP__
 	mov	ep,r1
 	mov	sp,ep
 	sld.w	16[ep],r29
@@ -939,6 +1252,17 @@ __return_r23_r31:
 	sld.w	44[ep],r31
 	addi	48,sp,sp
 	mov	r1,ep
+#else
+	ld.w	16[sp],r29
+	ld.w	20[sp],r28
+	ld.w	24[sp],r27
+	ld.w	28[sp],r26
+	ld.w	32[sp],r25
+	ld.w	36[sp],r24
+	ld.w	40[sp],r23
+	ld.w	44[sp],r31
+	addi	48,sp,sp
+#endif
 	jmp	[r31]
 	.size	__return_r23_r31,.-__return_r23_r31
 #endif /* L_save_23c */
@@ -952,6 +1276,7 @@ __return_r23_r31:
 	/* Also allocate space for the argument save area */
 	/* Called via:	jalr __save_r24_r31,r10 */
 __save_r24_r31:
+#ifdef __EP__
 	mov	ep,r1
 	addi	-44,sp,sp
 	mov	sp,ep
@@ -963,6 +1288,16 @@ __save_r24_r31:
 	sst.w	r24,36[ep]
 	sst.w	r31,40[ep]
 	mov	r1,ep
+#else
+	addi	-44,sp,sp
+	st.w	r29,16[sp]
+	st.w	r28,20[sp]
+	st.w	r27,24[sp]
+	st.w	r26,28[sp]
+	st.w	r25,32[sp]
+	st.w	r24,36[sp]
+	st.w	r31,40[sp]
+#endif
 	jmp	[r10]
 	.size	__save_r24_r31,.-__save_r24_r31
 
@@ -972,6 +1307,7 @@ __save_r24_r31:
 	.globl	__return_r24_r31
 	.type	__return_r24_r31,@function
 __return_r24_r31:
+#ifdef __EP__
 	mov	ep,r1
 	mov	sp,ep
 	sld.w	16[ep],r29
@@ -983,6 +1319,16 @@ __return_r24_r31:
 	sld.w	40[ep],r31
 	addi	44,sp,sp
 	mov	r1,ep
+#else
+	ld.w	16[sp],r29
+	ld.w	20[sp],r28
+	ld.w	24[sp],r27
+	ld.w	28[sp],r26
+	ld.w	32[sp],r25
+	ld.w	36[sp],r24
+	ld.w	40[sp],r31
+	addi	44,sp,sp
+#endif
 	jmp	[r31]
 	.size	__return_r24_r31,.-__return_r24_r31
 #endif /* L_save_24c */
@@ -996,6 +1342,7 @@ __return_r24_r31:
 	/* Also allocate space for the argument save area */
 	/* Called via:	jalr __save_r25_r31,r10 */
 __save_r25_r31:
+#ifdef __EP__
 	mov	ep,r1
 	addi	-40,sp,sp
 	mov	sp,ep
@@ -1006,6 +1353,15 @@ __save_r25_r31:
 	sst.w	r25,32[ep]
 	sst.w	r31,36[ep]
 	mov	r1,ep
+#else
+	addi	-40,sp,sp
+	st.w	r29,16[sp]
+	st.w	r28,20[sp]
+	st.w	r27,24[sp]
+	st.w	r26,28[sp]
+	st.w	r25,32[sp]
+	st.w	r31,36[sp]
+#endif
 	jmp	[r10]
 	.size	__save_r25_r31,.-__save_r25_r31
 
@@ -1015,6 +1371,7 @@ __save_r25_r31:
 	.globl	__return_r25_r31
 	.type	__return_r25_r31,@function
 __return_r25_r31:
+#ifdef __EP__
 	mov	ep,r1
 	mov	sp,ep
 	sld.w	16[ep],r29
@@ -1025,6 +1382,15 @@ __return_r25_r31:
 	sld.w	36[ep],r31
 	addi	40,sp,sp
 	mov	r1,ep
+#else
+	ld.w	16[sp],r29
+	ld.w	20[sp],r28
+	ld.w	24[sp],r27
+	ld.w	28[sp],r26
+	ld.w	32[sp],r25
+	ld.w	36[sp],r31
+	addi	40,sp,sp
+#endif
 	jmp	[r31]
 	.size	__return_r25_r31,.-__return_r25_r31
 #endif /* L_save_25c */
@@ -1038,6 +1404,7 @@ __return_r25_r31:
 	/* Also allocate space for the argument save area */
 	/* Called via:	jalr __save_r26_r31,r10 */
 __save_r26_r31:
+#ifdef __EP__
 	mov	ep,r1
 	addi	-36,sp,sp
 	mov	sp,ep
@@ -1047,6 +1414,14 @@ __save_r26_r31:
 	sst.w	r26,28[ep]
 	sst.w	r31,32[ep]
 	mov	r1,ep
+#else
+	addi	-36,sp,sp
+	st.w	r29,16[sp]
+	st.w	r28,20[sp]
+	st.w	r27,24[sp]
+	st.w	r26,28[sp]
+	st.w	r31,32[sp]
+#endif
 	jmp	[r10]
 	.size	__save_r26_r31,.-__save_r26_r31
 
@@ -1056,6 +1431,7 @@ __save_r26_r31:
 	.globl	__return_r26_r31
 	.type	__return_r26_r31,@function
 __return_r26_r31:
+#ifdef __EP__
 	mov	ep,r1
 	mov	sp,ep
 	sld.w	16[ep],r29
@@ -1065,6 +1441,14 @@ __return_r26_r31:
 	sld.w	32[ep],r31
 	addi	36,sp,sp
 	mov	r1,ep
+#else
+	ld.w	16[sp],r29
+	ld.w	20[sp],r28
+	ld.w	24[sp],r27
+	ld.w	28[sp],r26
+	ld.w	32[sp],r31
+	addi	36,sp,sp
+#endif
 	jmp	[r31]
 	.size	__return_r26_r31,.-__return_r26_r31
 #endif /* L_save_26c */
@@ -1078,6 +1462,7 @@ __return_r26_r31:
 	/* Also allocate space for the argument save area */
 	/* Called via:	jalr __save_r27_r31,r10 */
 __save_r27_r31:
+#ifdef __EP__
 	mov	ep,r1
 	addi	-32,sp,sp
 	mov	sp,ep
@@ -1086,6 +1471,13 @@ __save_r27_r31:
 	sst.w	r27,24[ep]
 	sst.w	r31,28[ep]
 	mov	r1,ep
+#else
+	addi	-32,sp,sp
+	st.w	r29,16[sp]
+	st.w	r28,20[sp]
+	st.w	r27,24[sp]
+	st.w	r31,28[sp]
+#endif
 	jmp	[r10]
 	.size	__save_r27_r31,.-__save_r27_r31
 
@@ -1095,6 +1487,7 @@ __save_r27_r31:
 	.globl	__return_r27_r31
 	.type	__return_r27_r31,@function
 __return_r27_r31:
+#ifdef __EP__
 	mov	ep,r1
 	mov	sp,ep
 	sld.w	16[ep],r29
@@ -1103,6 +1496,13 @@ __return_r27_r31:
 	sld.w	28[ep],r31
 	addi	32,sp,sp
 	mov	r1,ep
+#else
+	ld.w	16[sp],r29
+	ld.w	20[sp],r28
+	ld.w	24[sp],r27
+	ld.w	28[sp],r31
+	addi	32,sp,sp
+#endif
 	jmp	[r31]
 	.size	__return_r27_r31,.-__return_r27_r31
 #endif /* L_save_27c */
@@ -1199,6 +1599,7 @@ __return_r31:
 	/* Save registers 6 .. 9 on the stack for variable argument functions.  */
 	/* Called via:	jalr __save_r6_r9,r10 */
 __save_r6_r9:
+#ifdef __EP__
 	mov	ep,r1
 	mov	sp,ep
 	sst.w	r6,0[ep]
@@ -1206,6 +1607,12 @@ __save_r6_r9:
 	sst.w	r8,8[ep]
 	sst.w	r9,12[ep]
 	mov	r1,ep
+#else
+	st.w	r6,0[sp]
+	st.w	r7,4[sp]
+	st.w	r8,8[sp]
+	st.w	r9,12[sp]
+#endif
 	jmp	[r10]
 	.size	__save_r6_r9,.-__save_r6_r9
 #endif /* L_save_varargs */
@@ -1254,6 +1661,7 @@ __return_interrupt:
 	/* Called via:	jalr __save_all_interrupt,r10 */
 __save_all_interrupt:
 	addi	-120,sp,sp
+#ifdef __EP__
 	mov	ep,r1
 	mov	sp,ep
 	sst.w	r31,116[ep]
@@ -1283,6 +1691,34 @@ __save_all_interrupt:
 	sst.w	r28,20[ep]
 	sst.w	r29,16[ep]
 	mov	r1,ep
+#else
+	st.w	r31,116[sp]
+	st.w	r2,112[sp]
+	st.w	gp,108[sp]
+	st.w	r6,104[sp]
+	st.w	r7,100[sp]
+	st.w	r8,96[sp]
+	st.w	r9,92[sp]
+	st.w	r11,88[sp]
+	st.w	r12,84[sp]
+	st.w	r13,80[sp]
+	st.w	r14,76[sp]
+	st.w	r15,72[sp]
+	st.w	r16,68[sp]
+	st.w	r17,64[sp]
+	st.w	r18,60[sp]
+	st.w	r19,56[sp]
+	st.w	r20,52[sp]
+	st.w	r21,48[sp]
+	st.w	r22,44[sp]
+	st.w	r23,40[sp]
+	st.w	r24,36[sp]
+	st.w	r25,32[sp]
+	st.w	r26,28[sp]
+	st.w	r27,24[sp]
+	st.w	r28,20[sp]
+	st.w	r29,16[sp]
+#endif
 	jmp	[r10]
 	.size	__save_all_interrupt,.-__save_all_interrupt
 
@@ -1292,6 +1728,7 @@ __save_all_interrupt:
 	   deallocate the stack space.  */
 	/* Called via:	jalr __restore_all_interrupt,r10 */
 __restore_all_interrupt:
+#ifdef __EP__
 	mov	ep,r1
 	mov	sp,ep
 	sld.w	116[ep],r31
@@ -1321,7 +1758,35 @@ __restore_all_interrupt:
 	sld.w	20[ep],r28
 	sld.w	16[ep],r29
 	mov	r1,ep
-	addi	120,sp,sp
+#else
+	ld.w	116[sp],r31
+	ld.w	112[sp],r2
+	ld.w	108[sp],gp
+	ld.w	104[sp],r6
+	ld.w	100[sp],r7
+	ld.w	96[sp],r8
+	ld.w	92[sp],r9
+	ld.w	88[sp],r11
+	ld.w	84[sp],r12
+	ld.w	80[sp],r13
+	ld.w	76[sp],r14
+	ld.w	72[sp],r15
+	ld.w	68[sp],r16
+	ld.w	64[sp],r17
+	ld.w	60[sp],r18
+	ld.w	56[sp],r19
+	ld.w	52[sp],r20
+	ld.w	48[sp],r21
+	ld.w	44[sp],r22
+	ld.w	40[sp],r23
+	ld.w	36[sp],r24
+	ld.w	32[sp],r25
+	ld.w	28[sp],r26
+	ld.w	24[sp],r27
+	ld.w	20[sp],r28
+	ld.w	16[sp],r29
+#endif
+	addi	120,sp,sp	
 	jmp	[r10]
 	.size	__restore_all_interrupt,.-__restore_all_interrupt
 #endif /* L_save_all_interrupt */
@@ -1409,6 +1874,7 @@ __callt_return_r2_r31:	.short ctoff(.L_return_r2_r31)
 	   Called via:	callt ctoff(__callt_save_r6_r9).  */
 	.align	2
 .L_save_r6_r9:
+#ifdef __EP__
 	mov	ep,r1
 	mov	sp,ep
 	sst.w	r6,0[ep]
@@ -1416,6 +1882,12 @@ __callt_return_r2_r31:	.short ctoff(.L_return_r2_r31)
 	sst.w	r8,8[ep]
 	sst.w	r9,12[ep]
 	mov	r1,ep
+#else
+	st.w	r6,0[sp]
+	st.w	r7,4[sp]
+	st.w	r8,8[sp]
+	st.w	r9,12[sp]
+#endif
 	ctret
 
 	/* Place the offsets of the start of this routines into the call table.  */
@@ -1486,6 +1958,7 @@ __callt_return_interrupt:       .short ctoff(.L_return_interrupt)
 	.align	2
 .L_save_all_interrupt:
 	addi	-60, sp, sp
+#ifdef __EP__
 	mov	ep,  r1
 	mov	sp,  ep
 	sst.w	r2,  56[ep]
@@ -1504,7 +1977,23 @@ __callt_return_interrupt:       .short ctoff(.L_return_interrupt)
 	sst.w	r18, 4[ep]
 	sst.w	r19, 0[ep]
 	mov	r1,  ep
-
+#else
+	st.w	r2,  56[sp]
+	st.w	r5,  52[sp]
+	st.w	r6,  48[sp]
+	st.w	r7,  44[sp]
+	st.w	r8,  40[sp]
+	st.w	r9,  36[sp]
+	st.w	r11, 32[sp]
+	st.w	r12, 28[sp]
+	st.w	r13, 24[sp]
+	st.w	r14, 20[sp]
+	st.w	r15, 16[sp]
+	st.w	r16, 12[sp]
+	st.w	r17, 8[sp]
+	st.w	r18, 4[sp]
+	st.w	r19, 0[sp]
+#endif
 	prepare {r20 - r29, r31}, 4
 	ctret	
 
@@ -1514,7 +2003,7 @@ __callt_return_interrupt:       .short ctoff(.L_return_interrupt)
 	.align 2
 .L_restore_all_interrupt:
 	dispose 4, {r20 - r29, r31}
-	
+#ifdef __EP__	
 	mov	ep, r1
 	mov	sp, ep
 	sld.w	0 [ep], r19
@@ -1533,6 +2022,23 @@ __callt_return_interrupt:       .short ctoff(.L_return_interrupt)
 	sld.w	52[ep], r5
 	sld.w	56[ep], r2
 	mov	r1, ep
+#else
+	ld.w	0 [sp], r19
+	ld.w	4 [sp], r18
+	ld.w	8 [sp], r17
+	ld.w	12[sp], r16
+	ld.w	16[sp], r15
+	ld.w	20[sp], r14
+	ld.w	24[sp], r13
+	ld.w	28[sp], r12
+	ld.w	32[sp], r11
+	ld.w	36[sp], r9
+	ld.w	40[sp], r8
+	ld.w	44[sp], r7
+	ld.w	48[sp], r6
+	ld.w	52[sp], r5
+	ld.w	56[sp], r2
+#endif
 	addi	60, sp, sp
 	ctret
 
