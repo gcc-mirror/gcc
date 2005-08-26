@@ -1043,7 +1043,7 @@ do {									\
 		   ASM_INPUT)->volatil)
 
 /* 1 if RTX is a mem that refers to an aggregate, either to the
-   aggregate itself of to a field of the aggregate.  If zero, RTX may
+   aggregate itself or to a field of the aggregate.  If zero, RTX may
    or may not be such a reference.  */
 #define MEM_IN_STRUCT_P(RTX)						\
   (RTL_FLAG_CHECK1("MEM_IN_STRUCT_P", (RTX), MEM)->in_struct)
