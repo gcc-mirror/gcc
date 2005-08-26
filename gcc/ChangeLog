@@ -1,3 +1,9 @@
+2005-08-26  Josh Conner  <jconner@apple.com>
+
+	PR middle-end/23584
+	* ipa-pure-const.c (check_tree): Check for volatile-ness
+	when considering a dereference.
+
 2005-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* rtl.h (MEM_IN_STRUCT_P): Fix comment typo.
