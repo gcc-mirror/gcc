@@ -17,7 +17,7 @@
 ##
 ## You should have received a copy of the GNU General Public License along
 ## with this library; see the file COPYING.  If not, write to the Free
-## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+## Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 ## USA.
 
 GLIBCXX_3.4 {
@@ -48,7 +48,7 @@ GLIBCXX_3.4 {
       std::basic_[p-r]*;
       std::basic_streambuf*;
 #     std::basic_string
-      std::basic_stringbuf*;
+#     std::basic_stringbuf
       std::basic_stringstream*;
       std::basic_[t-z]*;
       std::ba[t-z]*;
@@ -206,6 +206,20 @@ GLIBCXX_3.4 {
     _ZNKSbIwSt11char_traitsIwESaIwEE8_M_limit*;
     _ZNKSbIwSt11char_traitsIwESaIwEE9_M_ibeginEv;
     _ZStplIwSt11char_traitsIwESaIwEESbIT_T0_T1_E*;
+
+    # std::basic_stringbuf
+    _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[CD]*;
+    _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[0-9][a-r]*;
+    _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[0-9]seek*;
+    _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[0-9]set*;
+    _ZNKSt15basic_stringbufIcSt11char_traitsIcESaIcEE3strEv;
+    _ZNKSt15basic_stringbufIwSt11char_traitsIwESaIwEE3strEv;
+    _ZNSt15basic_stringbufIcSt11char_traitsIcESaIcEE3strERKSs;
+    _ZNSt15basic_stringbufIwSt11char_traitsIwESaIwEE3strERKSbIwS1_S2_E;
+    _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[0-9][t-z]*;
+    _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[0-9]_M_[a-z]*;
+    _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE[0-9][0-9]_M_[a-z]*;
+
 
     # std::basic_iostream constructors, destructors
     _ZNSdC*;
@@ -501,8 +515,8 @@ GLIBCXX_3.4.3 {
 } GLIBCXX_3.4.2;
 
 GLIBCXX_3.4.4 {
-
-    _ZN9__gnu_cxx6__poolILb0EE13_M_initializeEv;
+ 
+   _ZN9__gnu_cxx6__poolILb0EE13_M_initializeEv;
     _ZN9__gnu_cxx6__poolILb1EE13_M_initializeEPFvPvE;
     _ZN9__gnu_cxx6__poolILb1EE21_M_destroy_thread_keyEPv;
     _ZN9__gnu_cxx6__poolILb1EE16_M_get_thread_idEv;
@@ -545,6 +559,19 @@ GLIBCXX_3.4.5 {
     _ZNSt19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEppEv;
 
 } GLIBCXX_3.4.4;
+
+GLIBCXX_3.4.6 {
+
+    _ZSt17__copy_streambufsI[cw]St11char_traitsI[cw]EEiPSt15basic_streambuf*;
+    _ZNSt8ios_base17_M_call_callbacksENS_5eventE;
+    _ZNSt8ios_base20_M_dispose_callbacksEv;
+    _ZNSt6locale5facet13_S_get_c_nameEv;
+
+    _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE9showmanycEv;
+
+    _ZNKSt15basic_stringbufIwSt11char_traitsIwESaIwEE3strEv;
+
+} GLIBCXX_3.4.5;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {

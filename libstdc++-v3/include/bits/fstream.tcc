@@ -203,8 +203,7 @@ namespace std
 	    return traits_type::to_int_type(*this->gptr());
 
 	  // Get and convert input sequence.
-	  const size_t __buflen = _M_buf_size > 1
-	                          ? _M_buf_size - 1 : 1;
+	  const size_t __buflen = _M_buf_size > 1 ? _M_buf_size - 1 : 1;
 
 	  // Will be set to true if ::read() returns 0 indicating EOF.
 	  bool __got_eof = false;
