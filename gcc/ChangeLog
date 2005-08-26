@@ -1,3 +1,7 @@
+2005-08-26  Ian Lance Taylor  <ian@airs.com>
+
+	* combine.c (make_extraction): Avoid reference outside object.
+
 2005-08-26  J"orn Rennecke <joern.rennecke@st.com>
 
 	* stor-layout.c (finalize_type_size): Restore behaviour for
