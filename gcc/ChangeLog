@@ -1,3 +1,16 @@
+2005-08-26  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (eq<mode>_compare): Only enable when
+	optimizing for size.
+	(plus_eqsi): Same.
+	(compare_plus_eqsi): Same.
+	(plus_eqsi_compare): Same.
+	(neg_eq0<mode>): Same.
+	(neg_eq<mode>): Same.
+
+	* config/rs6000/aix52.h (PROCESSOR_DEFAULT): Change to
+	PROCESSOR_POWER4.
+
 2005-08-26  Nick Clifton  <nickc@redhat.com>
 
 	* config/v850/v850.c (ep_memory_operand): Return FALSE if
