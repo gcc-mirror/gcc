@@ -107,6 +107,10 @@
   if (op && GET_CODE (op) != REG)
     return false;
 
+  if (op && REGNO (op) < FIRST_PSEUDO_REGISTER
+      && !GENERAL_REGNO_P (REGNO (op)))
+    return false;
+
   /* Unfortunately we have to reject constants that are invalid
      for an address, or else reload will get confused.  */
   if (!DISP_IN_RANGE (offset))
@@ -145,6 +149,10 @@
   while (op && GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
   if (op && GET_CODE (op) != REG)
+    return false;
+
+  if (op && REGNO (op) < FIRST_PSEUDO_REGISTER
+      && !GENERAL_REGNO_P (REGNO (op)))
     return false;
 
   /* Unfortunately we have to reject constants that are invalid
