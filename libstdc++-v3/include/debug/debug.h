@@ -40,11 +40,35 @@
 */
 
 #ifdef _GLIBCXX_DEBUG
-#  include <debug/macros.h>
-#  define _GLIBCXX_DEBUG_ASSERT(_Condition) _GLIBCXX_DEBUG_ABORT(_Condition)
+
+# include <debug/macros.h>
+# include <cstdlib>
+# include <cstdio>
+
+// Avoid the use of assert, because we're trying to keep the <cassert>
+// include out of the mix.
+namespace __gnu_debug
+{ 
+  inline void
+  __replacement_assert(const char* __file, int __line, const char* __function,
+		       const char* __condition)
+  {
+    std::printf("%s:%d: %s: Assertion '%s' failed.\n", __file, __line,
+		__function, __condition);
+    std::abort();
+  }
+}
+
+#define _GLIBCXX_DEBUG_ASSERT(_Condition)                               \
+  do {                                                                  \
+    if (! (_Condition))                                                 \
+      ::__gnu_debug::__replacement_assert(__FILE__, __LINE__,           \
+				   __PRETTY_FUNCTION__,                 \
+				   #_Condition);                        \
+  } while (false)
 
 #  ifdef _GLIBCXX_DEBUG_PEDANTIC
-#    define _GLIBCXX_DEBUG_PEDASSERT(_Condition) _GLIBCXX_DEBUG_ABORT(_Condition)
+#    define _GLIBCXX_DEBUG_PEDASSERT(_Condition) _GLIBCXX_DEBUG_ASSERT(_Condition)
 #  else
 #    define _GLIBCXX_DEBUG_PEDASSERT(_Condition)
 #  endif

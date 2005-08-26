@@ -32,10 +32,8 @@
 #include <debug/safe_sequence.h>
 #include <debug/safe_iterator.h>
 #include <algorithm>
-#include <cstdlib>
 #include <cassert>
 #include <cstring>
-#include <cstdio>
 #include <cctype>
 #include <bits/concurrence.h>
 
@@ -48,15 +46,6 @@ namespace __gnu_internal
 
 namespace __gnu_debug
 {
-  void
-  __fancy_abort(const char* __file, int __line, const char* __function,
-		const char* __condition)
-  {
-    printf("%s:%d: %s: Assertion '%s' failed.\n", __file, __line,
-	   __function, __condition);
-    abort();
-  }
-
   const char* _S_debug_messages[] = 
   {
     "function requires a valid iterator range [%1.name;, %2.name;)",

@@ -1,5 +1,16 @@
 2005-08-26  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/20534 (contd)
+	* src/debug.cc (__gnu_debug): Remove __fancy_abort definition.
+	Remove cstdio and cstdlib includes.
+	* include/debug/debug.h: Define inline here. Remove
+	_GLIBCXX_DEBUG_ABORT.
+	* include/debug/macros.h: Remove __fancy_abort declaration,
+	_GLIBXX_DEBUG_ABORT definition.
+	* config/linker-map.gnu: Remove export.
+	
+2005-08-26  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* scripts/check_compile (UNIQUE_ID): New. Use to name output files.
 
 2005-08-26  Paolo Carlini  <pcarlini@suse.de>
