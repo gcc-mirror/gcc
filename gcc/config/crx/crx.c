@@ -54,7 +54,7 @@
 /*****************************************************************************/
 
 /* Maximum number of register used for passing parameters.  */
-#define MAX_REG_FOR_PASSING_ARGS 5
+#define MAX_REG_FOR_PASSING_ARGS 6
 
 /* Minimum number register used for passing parameters.  */
 #define MIN_REG_FOR_PASSING_ARGS 2
@@ -827,6 +827,15 @@ crx_address_cost (rtx addr)
   if (address.index && address.scale == 1)
     cost+=5;
 
+  if (address.disp && !INT_CST4 (INTVAL (address.disp)))
+    cost+=2;
+
+  if (TARGET_DEBUG_ADDR)
+    {
+      fprintf (stderr, "\n======\nTARGET_ADDRESS_COST = %d\n", cost);
+      debug_rtx (addr);
+    }
+  
   return cost;
 }
 

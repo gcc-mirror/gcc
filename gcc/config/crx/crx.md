@@ -31,7 +31,7 @@
   ]
 )
 
-(define_attr "length" "" ( const_int 6 ) )
+(define_attr "length" "" ( const_int 6 ))
 
 (define_asm_attributes
   [(set_attr "length" "6")]
@@ -118,7 +118,7 @@
 		 (match_operand:DI 2 "nonmemory_operand" "r,i")))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "addd\\t%L2, %L1\;addcd\\t%H2, %H1"
+  "addd\t%L2, %L1\;addcd\t%H2, %H1"
   [(set_attr "length" "4,12")]
 )
 
@@ -128,7 +128,7 @@
 		    (match_operand:CRXIM 2 "nonmemory_operand" "r,i")))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "add<tIsa>\\t%2, %0"
+  "add<tIsa>\t%2, %0"
   [(set_attr "length" "2,<lImmArith>")]
 )
 
@@ -140,7 +140,7 @@
 		  (match_operand:DI 2 "nonmemory_operand" "r,i")))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "subd\\t%L2, %L1\;subcd\\t%H2, %H1"
+  "subd\t%L2, %L1\;subcd\t%H2, %H1"
   [(set_attr "length" "4,12")]
 )
 
@@ -150,7 +150,7 @@
 		     (match_operand:CRXIM 2 "nonmemory_operand" "r,i")))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "sub<tIsa>\\t%2, %0"
+  "sub<tIsa>\t%2, %0"
   [(set_attr "length" "2,<lImmArith>")]
 )
 
@@ -162,7 +162,7 @@
 		    (match_operand:CRXIM 2 "nonmemory_operand" "r,i")))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "mul<tIsa>\\t%2, %0"
+  "mul<tIsa>\t%2, %0"
   [(set_attr "length" "2,<lImmArith>")]
 )
 
@@ -174,7 +174,7 @@
 		 (sz_xtnd:DI (match_operand:SI 2 "register_operand" "r"))))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "mull<sPat>d\\t%2, %1"
+  "mull<sPat>d\t%2, %1"
   [(set_attr "length" "4")]
 )
 
@@ -184,7 +184,7 @@
 		 (sz_xtnd:SI (match_operand:HI 2 "register_operand" "r"))))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "mul<sPat>wd\\t%2, %0"
+  "mul<sPat>wd\t%2, %0"
   [(set_attr "length" "4")]
 )
 
@@ -194,7 +194,7 @@
 		 (sz_xtnd:HI (match_operand:QI 2 "register_operand" "r"))))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "mul<sPat>bw\\t%2, %0"
+  "mul<sPat>bw\t%2, %0"
   [(set_attr "length" "4")]
 )
 
@@ -206,7 +206,7 @@
 		   (match_operand:CRXIM 2 "nonmemory_operand" "r,i")))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "and<tIsa>\\t%2, %0"
+  "and<tIsa>\t%2, %0"
   [(set_attr "length" "2,<lImmArith>")]
 )
 
@@ -218,7 +218,7 @@
 		   (match_operand:CRXIM 2 "nonmemory_operand" "r,i")))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "or<tIsa>\\t%2, %0"
+  "or<tIsa>\t%2, %0"
   [(set_attr "length" "2,<lImmArith>")]
 )
 
@@ -230,7 +230,7 @@
 		   (match_operand:CRXIM 2 "nonmemory_operand" "r,i")))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "xor<tIsa>\\t%2, %0"
+  "xor<tIsa>\t%2, %0"
   [(set_attr "length" "2,<lImmArith>")]
 )
 
@@ -241,7 +241,7 @@
 	(sz_xtnd:SI (match_operand:HI 1 "register_operand" "r")))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "<szIsa>extwd\\t%1, %0"
+  "<szIsa>extwd\t%1, %0"
   [(set_attr "length" "4")]
 )
 
@@ -250,7 +250,7 @@
 	(sz_xtnd:SI (match_operand:QI 1 "register_operand" "r")))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "<szIsa>extbd\\t%1, %0"
+  "<szIsa>extbd\t%1, %0"
   [(set_attr "length" "4")]
 )
 
@@ -259,7 +259,7 @@
 	(sz_xtnd:HI (match_operand:QI 1 "register_operand" "r")))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "<szIsa>extbw\\t%1, %0"
+  "<szIsa>extbw\t%1, %0"
   [(set_attr "length" "4")]
 )
 
@@ -270,7 +270,7 @@
 	(neg:CRXIM (match_operand:CRXIM 1 "register_operand" "r")))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "neg<tIsa>\\t%1, %0"
+  "neg<tIsa>\t%1, %0"
   [(set_attr "length" "4")]
 )
 
@@ -281,7 +281,7 @@
 	(abs:CRXIM (match_operand:CRXIM 1 "register_operand" "r")))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "abs<tIsa>\\t%1, %0"
+  "abs<tIsa>\t%1, %0"
   [(set_attr "length" "4")]
 )
 
@@ -292,7 +292,7 @@
 	(mima_oprnd:CRXIM (match_operand:CRXIM 1 "register_operand"  "%0")
 			  (match_operand:CRXIM 2 "register_operand"  "r")))]
   ""
-  "<mimaIsa><tIsa>\\t%2, %0"
+  "<mimaIsa><tIsa>\t%2, %0"
   [(set_attr "length" "4")]
 )
 
@@ -303,7 +303,7 @@
 	(not:CRXIM (match_operand:CRXIM 1 "register_operand" "0")))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "xor<tIsa>\\t$-1, %0"
+  "xor<tIsa>\t$-1, %0"
   [(set_attr "length" "2")]
 )
 
@@ -316,8 +316,8 @@
    (clobber (reg:CC CC_REGNUM))]
   ""
   "@
-  rotl<tIsa>\\t%2, %0
-  rot<tIsa>\\t%2, %0"
+  rotl<tIsa>\t%2, %0
+  rot<tIsa>\t%2, %0"
   [(set_attr "length" "4,<lImmRotl>")]
 )
 
@@ -327,7 +327,7 @@
 			(match_operand:CRXIM 2 "register_operand" "r")))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "rotr<tIsa>\\t%2, %0"
+  "rotr<tIsa>\t%2, %0"
   [(set_attr "length" "4")]
 )
 
@@ -339,7 +339,7 @@
 			(match_operand:QI 2 "nonmemory_operand" "r,<IJK>")))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "s<shIsa><tIsa>\\t%2, %0"
+  "s<shIsa><tIsa>\t%2, %0"
   [(set_attr "length" "2,2")]
 )
 
@@ -433,10 +433,10 @@
 	(match_operand:SISFM 1 "nonmemory_operand" "r, <iF>, k, r"))]
   ""
   "@
-  movd\\t%1, %0
-  movd\\t%1, %0
-  mfpr\\t%1, %0
-  mtpr\\t%1, %0"
+  movd\t%1, %0
+  movd\t%1, %0
+  mfpr\t%1, %0
+  mtpr\t%1, %0"
   [(set_attr "length" "2,6,4,4")]
 )
 
@@ -464,7 +464,7 @@
   [(set (match_operand:SHORT 0 "register_operand" "=r, r")
 	(match_operand:SHORT 1 "nonmemory_operand" "r, i"))]
   ""
-  "mov<tIsa>\\t%1, %0"
+  "mov<tIsa>\t%1, %0"
   [(set_attr "length" "2,<lImmArith>")]
 )
 
@@ -472,7 +472,7 @@
   [(set (match_operand:CRXMM 0 "register_operand" "=r")
 	(match_operand:CRXMM 1 "memory_operand" "m"))]
   ""
-  "load<tIsa>\\t%1, %0"
+  "load<tIsa>\t%1, %0"
   [(set_attr "length" "6")]
 )
 
@@ -493,7 +493,7 @@
   [(set (match_operand:CRXMM 0 "store_operand" "=m, m")
 	(match_operand:CRXMM 1 "reg_or_u4bits_operand" "r, <JG>"))]
   ""
-  "stor<tIsa>\\t%1, %0"
+  "stor<tIsa>\t%1, %0"
   [(set_attr "length" "6")]
 )
 
@@ -531,7 +531,7 @@
 		      (label_ref (match_operand 3 "" ""))
 		      (pc)))]
   ""
-  "cmpb%d0<tIsa>\\t%2, %1, %l3"
+  "cmpb%d0<tIsa>\t%2, %1, %l3"
   [(set_attr "length" "6")]
 )
 
@@ -554,7 +554,7 @@
 	(compare:CC (match_operand:CRXIM 0 "register_operand" "r,r")
 		    (match_operand:CRXIM 1 "nonmemory_operand" "r,i")))]
   ""
-  "cmp<tIsa>\\t%1, %0"
+  "cmp<tIsa>\t%1, %0"
   [(set_attr "length" "2,<lImmArith>")]
 )
 
@@ -581,7 +581,7 @@
 		      (label_ref (match_operand 1 ""))
 		      (pc)))]
   ""
-  "b%d0\\t%l1"
+  "b%d0\t%l1"
   [(set_attr "length" "6")]
 )
 
@@ -602,7 +602,7 @@
 	(match_operator:SI 1 "comparison_operator"
 	  [(reg:CC CC_REGNUM) (const_int 0)]))]
   ""
-  "s%d1\\t%0"
+  "s%d1\t%0"
   [(set_attr "length" "2")]
 )
 
@@ -615,7 +615,7 @@
      (return)])
   ]
   "reload_completed"
-  "jump\\tra"
+  "jump\tra"
   [(set_attr "length" "2")]
 )
 
@@ -624,8 +624,8 @@
 	(match_operand:SI 0 "reg_or_sym_operand" "r,i"))]
   ""
   "@
-  jump\\t%0
-  br\\t%a0"
+  jump\t%0
+  br\t%a0"
   [(set_attr "length" "2,6")]
 )
 
@@ -644,7 +644,7 @@
   [(set (pc)
 	(match_operand 0 "immediate_operand" "i"))]
   ""
-  "br\\t%c0"
+  "br\t%c0"
   [(set_attr "length" "6")]
 )
 
@@ -652,7 +652,7 @@
   [(set (pc)
 	(label_ref (match_operand 0 "" "")))]
   ""
-  "br\\t%l0"
+  "br\t%l0"
   [(set_attr "length" "6")]
 )
 
@@ -709,7 +709,7 @@
      (return)])
   ]
   "reload_completed"
-  "popret\\tra"
+  "popret\tra"
   [(set_attr "length" "2")]
 )
 
@@ -720,7 +720,7 @@
 	(match_operand:SI 0 "register_operand" "r"))
 	(use (label_ref:SI (match_operand 1 "" "" )))]
   ""
-  "jump\\t%0"
+  "jump\t%0"
   [(set_attr "length" "2")]
 )
 
@@ -750,7 +750,7 @@
 	 (match_operand 1 "" ""))
    (clobber (match_operand:SI 2 "register_operand" "+r"))]
   ""
-  "bal\\tra, %a0"
+  "bal\tra, %a0"
   [(set_attr "length" "6")]
 )
 
@@ -759,7 +759,7 @@
 	 (match_operand 1 "" ""))
    (clobber (match_operand:SI 2 "register_operand" "+r"))]
   ""
-  "jal\\t%0"
+  "jal\t%0"
   [(set_attr "length" "2")]
 )
 
@@ -770,7 +770,7 @@
 	 (match_operand 2 "" ""))
    (clobber (match_operand:SI 3 "register_operand" "+r"))]
   ""
-  "jalid\\t%0, %1"
+  "jalid\t%0, %1"
   [(set_attr "length" "4")]
 )
 
@@ -803,7 +803,7 @@
 	      (match_operand 2 "" "")))
    (clobber (match_operand:SI 3 "register_operand" "+r"))]
   ""
-  "bal\\tra, %a1"
+  "bal\tra, %a1"
   [(set_attr "length" "6")]
 )
 
@@ -813,7 +813,7 @@
 	      (match_operand 2 "" "")))
    (clobber (match_operand:SI 3 "register_operand" "+r"))]
   ""
-  "jal\\t%1"
+  "jal\t%1"
   [(set_attr "length" "2")]
 )
 
@@ -825,7 +825,7 @@
 	      (match_operand 3 "" "")))
    (clobber (match_operand:SI 4 "register_operand" "+r"))]
   ""
-  "jalid\\t%0, %1"
+  "jalid\t%0, %1"
   [(set_attr "length" "4")]
 )
 
@@ -847,7 +847,7 @@
 	  (match_dup 0)))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_MAC"
-  "mac<sPat>d\\t%2, %1"
+  "mac<sPat>d\t%2, %1"
   [(set_attr "length" "4")]
 )
 
@@ -859,7 +859,7 @@
 	  (match_dup 0)))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_MAC"
-  "mac<sPat>w\\t%2, %1"
+  "mac<sPat>w\t%2, %1"
   [(set_attr "length" "4")]
 )
 
@@ -871,7 +871,7 @@
 	  (match_dup 0)))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_MAC"
-  "mac<sPat>b\\t%2, %1"
+  "mac<sPat>b\t%2, %1"
   [(set_attr "length" "4")]
 )
 
@@ -885,16 +885,18 @@
    (use (match_operand 4 "" ""))]       ; label
   ""
   {
+    if (INTVAL (operands[3]) > crx_loop_nesting)
+      FAIL;
     switch (GET_MODE (operands[0]))
       {
       case SImode:
-	emit_jump_insn (gen_doloop_end_si (operands[4], operands[0], operands[0]));
+	emit_jump_insn (gen_doloop_end_si (operands[4], operands[0]));
 	break;
       case HImode:
-	emit_jump_insn (gen_doloop_end_hi (operands[4], operands[0], operands[0]));
+	emit_jump_insn (gen_doloop_end_hi (operands[4], operands[0]));
 	break;
       case QImode:
-	emit_jump_insn (gen_doloop_end_qi (operands[4], operands[0], operands[0]));
+	emit_jump_insn (gen_doloop_end_qi (operands[4], operands[0]));
 	break;
       default:
 	FAIL;
@@ -903,18 +905,20 @@
   }
 )
 
+;   CRX dbnz[bwd] used explicitly (see above) but also by the combiner.
+
 (define_insn "doloop_end_<mode>"
   [(set (pc)
-	(if_then_else (ne (match_operand:CRXIM 1 "register_operand" "r,m")
+	(if_then_else (ne (match_operand:CRXIM 1 "register_operand" "+r,!m")
 			  (const_int 1))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))
-   (set (match_operand:CRXIM 2 "register_operand" "=r,m") (plus:CRXIM (match_dup 1) (const_int -1)))
-   (clobber (match_scratch:CRXIM 3 "=X,r"))
+   (set (match_dup 1) (plus:CRXIM (match_dup 1) (const_int -1)))
+   (clobber (match_scratch:CRXIM 2 "=X,r"))
    (clobber (reg:CC CC_REGNUM))]
   ""
   "@
-  dbnz<tIsa>\\t%1, %l0
-  load<tIsa>\\t%1, %3\;add<tIsa>\\t$-1, %3\;stor<tIsa>\\t%3, %1\;bne\\t%l0"
+  dbnz<tIsa>\t%1, %l0
+  load<tIsa>\t%1, %2\;add<tIsa>\t$-1, %2\;stor<tIsa>\t%2, %1\;bne\t%l0"
   [(set_attr "length" "6, 12")]
 )

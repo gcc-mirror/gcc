@@ -27,5 +27,9 @@ mno-push-args
 Target Report RejectNegative Mask(NO_PUSH_ARGS)
 Do not use push to store function arguments
 
+mloop-nesting=
+Common RejectNegative Joined UInteger Var(crx_loop_nesting) Init(12)
+Restrict doloop to the given nesting level
+
 mdebug-addr
 Target RejectNegative Var(TARGET_DEBUG_ADDR) Undocumented

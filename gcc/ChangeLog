@@ -1,3 +1,12 @@
+2005-08-26  Paul Woegerer  <paul.woegerer@nsc.com>
+
+	* config/crx/crx.md: Make doloop_end pattern usage controllable
+	via mloop-nesting=<max-nesting> command line switch. Make sure
+	the combiner cannot use doloop_end_<mode> in an illegal way.
+	* config/crx/crx.c: Use regs up to r6 for argument passing.
+	Refine crx_address_cost (non cst4 displacements are expensive).
+	* config/crx/crx.opt: Add switch for mloop-nesting=.
+
 2005-08-26  Adrian Straetling  <straetling@de.ibm.com>
 
 	* config/s390/s390.md: ("movstr", "*movstr"): Add patterns.
