@@ -1,3 +1,9 @@
+2005-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/23506
+	* c-common.c (c_common_nodes_and_builtins): Increase builtin_types
+	array by one element, initialize the BT_LAST element with NULL.
+
 2005-08-26  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (eq<mode>_compare): Only enable when
