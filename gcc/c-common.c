@@ -2951,7 +2951,7 @@ c_common_nodes_and_builtins (void)
 
   typedef enum builtin_type builtin_type;
 
-  tree builtin_types[(int) BT_LAST];
+  tree builtin_types[(int) BT_LAST + 1];
   int wchar_type_size;
   tree array_domain_type;
   tree va_list_ref_type_node;
@@ -3311,6 +3311,7 @@ c_common_nodes_and_builtins (void)
 #undef DEF_FUNCTION_TYPE_VAR_4
 #undef DEF_FUNCTION_TYPE_VAR_5
 #undef DEF_POINTER_TYPE
+  builtin_types[(int) BT_LAST] = NULL_TREE;
 
   c_init_attributes ();
 
