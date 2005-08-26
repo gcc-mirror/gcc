@@ -597,7 +597,7 @@ print_operand (FILE * file, rtx x, int code)
       break;
     case 'S':
       {
-        /* if it's a reference to a TDA variable, use sst/sld vs. st/ld */
+        /* If it's a reference to a TDA variable, use sst/sld vs. st/ld.  */
         if (GET_CODE (x) == MEM && ep_memory_operand (x, GET_MODE (x), FALSE))
           fputs ("s", file);
 
@@ -1036,6 +1036,13 @@ ep_memory_operand (rtx op, enum machine_mode mode, int unsigned_load)
   rtx addr, op0, op1;
   int max_offset;
   int mask;
+
+  /* If we are not using the EP register on a per-function basis
+     then do not allow this optimisation at all.  This is to
+     prevent the use of the SLD/SST instructions which cannot be
+     guaranteed to work properly due to a hardware bug.  */
+  if (!TARGET_EP)
+    return FALSE;
 
   if (GET_CODE (op) != MEM)
     return FALSE;

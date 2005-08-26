@@ -1,3 +1,16 @@
+2005-08-26  Nick Clifton  <nickc@redhat.com>
+
+	* config/v850/v850.c (ep_memory_operand): Return FALSE if
+	TARGET_EP is not defined.
+	* config/v850/c850.h (TARGET_CPU_CPP_BUILTINS): Define __EP__ if
+	TARGET_EP is enabled.
+	(OPTIMIZATION_OPTIONS): Do not define MASK_EP when optimizing.
+	* config/v850/v850.md (save_all_interrupt): Only use the EP
+	register if TARGET_EP is defined.
+	(restore_all_interrupt): Likewise.
+	* config/v850/lib1funcs.asm: Update functions so that the EP
+	register is only used if __EP__ is defined.
+
 2005-08-25  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/23560
