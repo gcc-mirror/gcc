@@ -6736,10 +6736,23 @@ mips_expand_prologue (void)
       if (TARGET_MIPS16 && cfun->machine->frame.args_size != 0)
 	{
 	  rtx offset = GEN_INT (cfun->machine->frame.args_size);
-	  RTX_FRAME_RELATED_P
-	    (emit_insn (gen_add3_insn (hard_frame_pointer_rtx,
-				       stack_pointer_rtx,
-				       offset))) = 1;
+	  if (SMALL_OPERAND (cfun->machine->frame.args_size))
+	    RTX_FRAME_RELATED_P 
+	      (emit_insn (gen_add3_insn (hard_frame_pointer_rtx,
+					 stack_pointer_rtx,
+					 offset))) = 1;
+	  else
+	    {
+	      emit_move_insn (MIPS_PROLOGUE_TEMP (Pmode), offset);
+	      emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
+	      emit_insn (gen_add3_insn (hard_frame_pointer_rtx,
+					hard_frame_pointer_rtx,
+					MIPS_PROLOGUE_TEMP (Pmode)));
+	      mips_set_frame_expr
+		(gen_rtx_SET (VOIDmode, hard_frame_pointer_rtx,
+			      plus_constant (stack_pointer_rtx, 
+					     cfun->machine->frame.args_size)));
+	    }
 	}
       else
 	RTX_FRAME_RELATED_P (emit_move_insn (hard_frame_pointer_rtx,
