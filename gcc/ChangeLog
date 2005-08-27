@@ -1,3 +1,18 @@
+2005-08-27  Paul Brook  <paul@codesourcery.com>
+
+	* genrecog.c (enum decision_type): Add DT_num_insns.
+	(struct decision_test): Add u.num_insns.
+	(add_to_sequence): Add DT_num_insns test.
+	(maybe_both_true_2, nodes_identical_1): Handle DT_num_insns.
+	(write_cond, debug_decision_2): Ditto.
+	(change_state): Assume peep2_next_insn never fails.
+	Remove "afterward" argument.
+	(write afterward, write_tree): Update to match.
+	* recog.c (peep2_current_count): New variable.
+	(peep2_next_insn): Check it.
+	(peephole2_optimize): Set peep2_current_count.
+	* recog.h (peep2_current_count): Declare.
+
 2005-08-26  Josh Conner  <jconner@apple.com>
 
 	PR middle-end/23584

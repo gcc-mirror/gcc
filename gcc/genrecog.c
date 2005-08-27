@@ -87,6 +87,7 @@ struct decision_test
   /* These types are roughly in the order in which we'd like to test them.  */
   enum decision_type
     {
+      DT_num_insns,
       DT_mode, DT_code, DT_veclen,
       DT_elt_zero_int, DT_elt_one_int, DT_elt_zero_wide, DT_elt_zero_wide_safe,
       DT_const_int,
@@ -96,6 +97,7 @@ struct decision_test
 
   union
   {
+    int num_insns;		/* Number if insn in a define_peephole2.  */
     enum machine_mode mode;	/* Machine mode of node.  */
     RTX_CODE code;		/* Code to test.  */
 
@@ -439,7 +441,7 @@ static void find_afterward
   (struct decision_head *, struct decision *);
 
 static void change_state
-  (const char *, const char *, struct decision *, const char *);
+  (const char *, const char *, const char *);
 static void print_code
   (enum rtx_code);
 static void write_afterward
@@ -923,8 +925,22 @@ add_to_sequence (rtx pattern, struct decision_head *last, const char *position,
       /* Toplevel peephole pattern.  */
       if (insn_type == PEEPHOLE2 && top)
 	{
-	  /* We don't need the node we just created -- unlink it.  */
-	  last->first = last->last = NULL;
+	  int num_insns;
+
+	  /* Check we have sufficient insns.  This avoids complications
+	     because we then know peep2_next_insn never fails.  */
+	  num_insns = XVECLEN (pattern, 0);
+	  if (num_insns > 1)
+	    {
+	      test = new_decision_test (DT_num_insns, &place);
+	      test->u.num_insns = num_insns;
+	      last = &sub->success;
+	    }
+	  else
+	    {
+	      /* We don't need the node we just created -- unlink it.  */
+	      last->first = last->last = NULL;
+	    }
 
 	  for (i = 0; i < (size_t) XVECLEN (pattern, 0); i++)
 	    {
@@ -1174,6 +1190,12 @@ maybe_both_true_2 (struct decision_test *d1, struct decision_test *d2)
     {
       switch (d1->type)
 	{
+	case DT_num_insns:
+	  if (d1->u.num_insns == d2->u.num_insns)
+	    return 1;
+	  else
+	    return -1;
+
 	case DT_mode:
 	  return d1->u.mode == d2->u.mode;
 
@@ -1372,6 +1394,9 @@ nodes_identical_1 (struct decision_test *d1, struct decision_test *d2)
 {
   switch (d1->type)
     {
+    case DT_num_insns:
+      return d1->u.num_insns == d2->u.num_insns;
+
     case DT_mode:
       return d1->u.mode == d2->u.mode;
 
@@ -1767,8 +1792,7 @@ find_afterward (struct decision_head *head, struct decision *real_afterward)
    match multiple insns and we try to step past the end of the stream.  */
 
 static void
-change_state (const char *oldpos, const char *newpos,
-	      struct decision *afterward, const char *indent)
+change_state (const char *oldpos, const char *newpos, const char *indent)
 {
   int odepth = strlen (oldpos);
   int ndepth = strlen (newpos);
@@ -1793,22 +1817,8 @@ change_state (const char *oldpos, const char *newpos,
       /* It's a different insn from the first one.  */
       if (ISUPPER (newpos[depth]))
 	{
-	  /* We can only fail if we're moving down the tree.  */
-	  if (old_has_insn >= 0 && oldpos[old_has_insn] >= newpos[depth])
-	    {
-	      printf ("%stem = peep2_next_insn (%d);\n",
-		      indent, newpos[depth] - 'A');
-	    }
-	  else
-	    {
-	      printf ("%stem = peep2_next_insn (%d);\n",
-		      indent, newpos[depth] - 'A');
-	      printf ("%sif (tem == NULL_RTX)\n", indent);
-	      if (afterward)
-		printf ("%s  goto L%d;\n", indent, afterward->number);
-	      else
-		printf ("%s  goto ret0;\n", indent);
-	    }
+	  printf ("%stem = peep2_next_insn (%d);\n",
+		  indent, newpos[depth] - 'A');
 	  printf ("%sx%d = PATTERN (tem);\n", indent, depth + 1);
 	}
       else if (ISLOWER (newpos[depth]))
@@ -1842,7 +1852,7 @@ write_afterward (struct decision *start, struct decision *afterward,
     printf("%sgoto ret0;\n", indent);
   else
     {
-      change_state (start->position, afterward->position, NULL, indent);
+      change_state (start->position, afterward->position, indent);
       printf ("%sgoto L%d;\n", indent, afterward->number);
     }
 }
@@ -2067,6 +2077,10 @@ write_cond (struct decision_test *p, int depth,
 {
   switch (p->type)
     {
+    case DT_num_insns:
+      printf ("peep2_current_count >= %d", p->u.num_insns);
+      break;
+
     case DT_mode:
       printf ("GET_MODE (x%d) == %smode", depth, GET_MODE_NAME (p->u.mode));
       break;
@@ -2363,7 +2377,7 @@ write_tree (struct decision_head *head, const char *prevpos,
 	  else
 	    printf ("  if (tem >= 0)\n    return tem;\n");
 
-	  change_state (p->position, p->afterward->position, NULL, "  ");
+	  change_state (p->position, p->afterward->position, "  ");
 	  printf ("  goto L%d;\n", p->afterward->number);
 	}
       else
@@ -2376,7 +2390,7 @@ write_tree (struct decision_head *head, const char *prevpos,
     {
       int depth = strlen (p->position);
 
-      change_state (prevpos, p->position, head->last->afterward, "  ");
+      change_state (prevpos, p->position, "  ");
       write_tree_1 (head, depth, type);
 
       for (p = head->first; p; p = p->next)
@@ -2830,6 +2844,9 @@ debug_decision_2 (struct decision_test *test)
 {
   switch (test->type)
     {
+    case DT_num_insns:
+      fprintf (stderr, "num_insns=%d", test->u.num_insns);
+      break;
     case DT_mode:
       fprintf (stderr, "mode=%s", GET_MODE_NAME (test->u.mode));
       break;
