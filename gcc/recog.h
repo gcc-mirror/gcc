@@ -265,3 +265,4 @@ struct insn_data
 };
 
 extern const struct insn_data insn_data[];
+extern int peep2_current_count;
