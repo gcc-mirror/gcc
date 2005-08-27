@@ -30,6 +30,7 @@ Boston, MA 02110-1301, USA.  */
 #include "config.h"
 #include "libgfortran.h"
 #include "io.h"
+#include <limits.h>
 
 typedef enum
 { CLOSE_DELETE, CLOSE_KEEP, CLOSE_UNSPECIFIED }
@@ -50,6 +51,11 @@ st_close (void)
 {
   close_status status;
   gfc_unit *u;
+#if !HAVE_UNLINK_OPEN_FILE
+  char * path;
+
+  path = NULL;
+#endif
 
   library_start ();
 
@@ -68,14 +74,30 @@ st_close (void)
 	  if (status == CLOSE_KEEP)
 	    generate_error (ERROR_BAD_OPTION,
 			    "Can't KEEP a scratch file on CLOSE");
+#if !HAVE_UNLINK_OPEN_FILE
+	  path = (char *) gfc_alloca (u->file_len + 1);
+          unpack_filename (path, u->file, u->file_len);
+#endif
 	}
       else
 	{
 	  if (status == CLOSE_DELETE)
-	    delete_file (u);
+            {
+#if HAVE_UNLINK_OPEN_FILE
+	      delete_file (u);
+#else
+	      path = (char *) gfc_alloca (u->file_len + 1);
+              unpack_filename (path, u->file, u->file_len);
+#endif
+            }
 	}
 
       close_unit (u);
+
+#if !HAVE_UNLINK_OPEN_FILE
+      if (path != NULL)
+        unlink (path);
+#endif
     }
 
   library_end ();
