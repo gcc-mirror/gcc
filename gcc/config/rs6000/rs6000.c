@@ -9149,7 +9149,7 @@ expand_block_clear (rtx operands[])
 	  clear_bytes = 4;
 	  mode = SImode;
 	}
-      else if (bytes == 2 && (align >= 16 || !STRICT_ALIGNMENT))
+      else if (bytes >= 2 && (align >= 16 || !STRICT_ALIGNMENT))
 	{			/* move 2 bytes */
 	  clear_bytes = 2;
 	  mode = HImode;
@@ -9286,7 +9286,7 @@ expand_block_move (rtx operands[])
 	  mode = SImode;
 	  gen_func.mov = gen_movsi;
 	}
-      else if (bytes == 2 && (align >= 16 || !STRICT_ALIGNMENT))
+      else if (bytes >= 2 && (align >= 16 || !STRICT_ALIGNMENT))
 	{			/* move 2 bytes */
 	  move_bytes = 2;
 	  mode = HImode;

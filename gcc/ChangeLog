@@ -1,3 +1,10 @@
+2005-08-27  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/23539
+	* config/rs6000/rs6000.c (expand_block_clear): Use HImode when
+	bytes >= 2 not bytes == 2.
+	(expand_block_move): Same.
+
 2005-08-27  Ian Lance Taylor  <ian@airs.com>
 
 	* combine.c (make_extraction): Avoid reference outside object.
