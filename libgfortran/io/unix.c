@@ -949,7 +949,7 @@ unit_to_fd(int unit)
  * buffer that is PATH_MAX characters, convert the fortran string to a
  * C string in the buffer.  Returns nonzero if this is not possible.  */
 
-static int
+int
 unpack_filename (char *cstring, const char *fstring, int len)
 {
   len = fstrlen (fstring, len);
@@ -1133,8 +1133,11 @@ open_external (unit_flags *flags)
       fd = tempfile ();
       if (flags->action == ACTION_UNSPECIFIED)
         flags->action = ACTION_READWRITE;
+
+#if HAVE_UNLINK_OPEN_FILE
       /* We can unlink scratch files now and it will go away when closed. */
       unlink (ioparm.file);
+#endif
     }
   else
     {

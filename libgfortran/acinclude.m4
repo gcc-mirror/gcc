@@ -148,3 +148,38 @@ extern void bar(void) __attribute__((alias(ULP "foo")));],
     AC_DEFINE(HAVE_ATTRIBUTE_ALIAS, 1,
       [Define to 1 if the target supports __attribute__((alias(...))).])
   fi])
+
+dnl Check whether target can unlink a file still open.
+AC_DEFUN([LIBGFOR_CHECK_UNLINK_OPEN_FILE], [
+  AC_CACHE_CHECK([whether the target can unlink an open file],
+                  have_unlink_open_file, [
+  AC_TRY_RUN([
+#include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+
+int main ()
+{
+  int fd;
+
+  fd = open ("testfile", O_RDWR | O_CREAT, S_IWRITE | S_IREAD);
+  if (fd <= 0)
+    return 0;
+  if (unlink ("testfile") == -1)
+    return 1;
+  write (fd, "This is a test\n", 15);
+  close (fd);
+
+  if (open ("testfile", O_RDONLY, S_IWRITE | S_IREAD) == -1 && errno == ENOENT)
+    return 0;
+  else
+    return 1;
+}], have_unlink_open_file=yes, have_unlink_open_file=no, [
+case "${target}" in
+  *mingw*) have_unlink_open_file=no ;;
+  *) have_unlink_open_file=yes;;
+esac])])
+if test x"$have_unlink_open_file" = xyes; then
+  AC_DEFINE(HAVE_UNLINK_OPEN_FILE, 1, [Define if target can unlink open files.])
+fi])

@@ -1,3 +1,18 @@
+2005-08-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* acinclude.m4 (LIBGFOR_CHECK_UNLINK_OPEN_FILE): Add check to see
+	if target can unlink open files.
+	* configure.ac: Use this new test.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* aclocal.ac: Regenerate.
+	* io/io.h: Add prototype for unpack_filename.
+	* io/close.c (st_close): Delete file after closing unit if
+	HAVE_UNLINK_OPEN_FILE is not defined. 
+	* io/unix.c (unpack_filename): Unlink scratch file after opening
+	it only if HAVE_UNLINK_OPEN_FILE is defined.
+
 2005-08-16  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/23428
