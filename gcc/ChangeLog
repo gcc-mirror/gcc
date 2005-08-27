@@ -1,3 +1,11 @@
+2005-08-27  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/23463
+	* gimplify.c (gimplify_modify_expr_rhs): Remove check for zero sized
+	types.
+	(gimplify_modify_expr): Check for zero sized types and gimplify the
+	rhs and lhs as statements.
+
 2005-08-27  John David Anglin  <dave.anflin@nrc-cnrc.gc.ca>
 
 	PR libgcj/23508

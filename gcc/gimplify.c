@@ -2965,12 +2965,6 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
 			  tree *post_p, bool want_value)
 {
   enum gimplify_status ret = GS_OK;
-  tree type = TREE_TYPE (*from_p);
-  if (zero_sized_type (type))
-    {
-      *expr_p = NULL_TREE;
-      return GS_ALL_DONE;
-    }
 
   while (ret != GS_UNHANDLED)
     switch (TREE_CODE (*from_p))
@@ -3164,6 +3158,18 @@ gimplify_modify_expr (tree *expr_p, tree *pre_p, tree *post_p, bool want_value)
   /* The distinction between MODIFY_EXPR and INIT_EXPR is no longer useful.  */
   if (TREE_CODE (*expr_p) == INIT_EXPR)
     TREE_SET_CODE (*expr_p, MODIFY_EXPR);
+  
+  /* For zero sized types only gimplify the left hand side and right hand side
+     as statements and throw away the assignment.  */
+  if (zero_sized_type (TREE_TYPE (*from_p)))
+    {
+      gimplify_stmt (from_p);
+      gimplify_stmt (to_p);
+      append_to_statement_list (*from_p, pre_p);
+      append_to_statement_list (*to_p, pre_p);
+      *expr_p = NULL_TREE;
+      return GS_ALL_DONE;
+    }
 
   /* See if any simplifications can be done based on what the RHS is.  */
   ret = gimplify_modify_expr_rhs (expr_p, from_p, to_p, pre_p, post_p,
