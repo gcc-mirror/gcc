@@ -1,3 +1,8 @@
+2005-08-27  Dale Johannesen  <dalej@apple.com>
+
+	* gcc.dg/20030711-1.c:  Modify to work on Darwin.
+	* gcc.dg/20050826-1.c:  New.
+
 2005-08-27  Richard Guenther  <rguenther@suse.de>
 
 	PR target/23575
