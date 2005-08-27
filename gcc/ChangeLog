@@ -1,3 +1,13 @@
+2005-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/23561
+	* builtins.c (get_memory_rtx): Add LEN argument.  If MEM_EXPR is
+	a COMPONENT_REF, remove all COMPONENT_REF from MEM_EXPR unless
+	at most LEN bytes long memory fits into the field.
+	(expand_builtin_memcpy, expand_builtin_mempcpy, expand_movstr,
+	expand_builtin_strncpy, expand_builtin_memset, expand_builtin_memcmp,
+	expand_builtin_strcmp, expand_builtin_strncmp): Adjust callers.
+
 2005-08-26  Nick Clifton  <nickc@redhat.com>
 
 	* config/v850/v850.c (ep_memory_operand): Return FALSE if

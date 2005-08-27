@@ -78,7 +78,7 @@ static int get_pointer_alignment (tree, unsigned int);
 static const char *c_getstr (tree);
 static rtx c_readstr (const char *, enum machine_mode);
 static int target_char_cast (tree, char *);
-static rtx get_memory_rtx (tree);
+static rtx get_memory_rtx (tree, tree);
 static tree build_string_literal (int, const char *);
 static int apply_args_size (void);
 static int apply_result_size (void);
@@ -973,10 +973,12 @@ expand_builtin_prefetch (tree arglist)
 }
 
 /* Get a MEM rtx for expression EXP which is the address of an operand
-   to be used to be used in a string instruction (cmpstrsi, movmemsi, ..).  */
+   to be used in a string instruction (cmpstrsi, movmemsi, ..).  LEN is
+   the maximum length of the block of memory that might be accessed or
+   NULL if unknown.  */
 
 static rtx
-get_memory_rtx (tree exp)
+get_memory_rtx (tree exp, tree len)
 {
   rtx addr = expand_expr (exp, NULL_RTX, ptr_mode, EXPAND_NORMAL);
   rtx mem = gen_rtx_MEM (BLKmode, memory_address (BLKmode, addr));
@@ -1002,6 +1004,87 @@ get_memory_rtx (tree exp)
   if (exp)
     {
       set_mem_attributes (mem, exp, 0);
+
+      /* Allow the string and memory builtins to overflow from one
+	 field into another, see http://gcc.gnu.org/PR23561.
+	 Thus avoid COMPONENT_REFs in MEM_EXPR unless we know the whole
+	 memory accessed by the string or memory builtin will fit
+	 within the field.  */
+      if (MEM_EXPR (mem) && TREE_CODE (MEM_EXPR (mem)) == COMPONENT_REF)
+	{
+	  tree mem_expr = MEM_EXPR (mem);
+	  HOST_WIDE_INT offset = -1, length = -1;
+	  tree inner = exp;
+
+	  while (TREE_CODE (inner) == ARRAY_REF
+		 || TREE_CODE (inner) == NOP_EXPR
+		 || TREE_CODE (inner) == CONVERT_EXPR
+		 || TREE_CODE (inner) == NON_LVALUE_EXPR
+		 || TREE_CODE (inner) == VIEW_CONVERT_EXPR
+		 || TREE_CODE (inner) == SAVE_EXPR)
+	    inner = TREE_OPERAND (inner, 0);
+
+	  gcc_assert (TREE_CODE (inner) == COMPONENT_REF);
+
+	  if (MEM_OFFSET (mem)
+	      && GET_CODE (MEM_OFFSET (mem)) == CONST_INT)
+	    offset = INTVAL (MEM_OFFSET (mem));
+
+	  if (offset >= 0 && len && host_integerp (len, 0))
+	    length = tree_low_cst (len, 0);
+
+	  while (TREE_CODE (inner) == COMPONENT_REF)
+	    {
+	      tree field = TREE_OPERAND (inner, 1);
+	      gcc_assert (! DECL_BIT_FIELD (field));
+	      gcc_assert (TREE_CODE (mem_expr) == COMPONENT_REF);
+	      gcc_assert (field == TREE_OPERAND (mem_expr, 1));
+
+	      if (length >= 0
+		  && TYPE_SIZE_UNIT (TREE_TYPE (inner))
+		  && host_integerp (TYPE_SIZE_UNIT (TREE_TYPE (inner)), 0))
+		{
+		  HOST_WIDE_INT size
+		    = tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (inner)), 0);
+		  /* If we can prove the memory starting at XEXP (mem, 0)
+		     and ending at XEXP (mem, 0) + LENGTH will fit into
+		     this field, we can keep that COMPONENT_REF in MEM_EXPR.  */
+		  if (offset <= size
+		      && length <= size
+		      && offset + length <= size)
+		    break;
+		}
+
+	      if (offset >= 0
+		  && host_integerp (DECL_FIELD_OFFSET (field), 0))
+		offset += tree_low_cst (DECL_FIELD_OFFSET (field), 0)
+			  + tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
+			    / BITS_PER_UNIT;
+	      else
+		{
+		  offset = -1;
+		  length = -1;
+		}
+
+	      mem_expr = TREE_OPERAND (mem_expr, 0);
+	      inner = TREE_OPERAND (inner, 0);
+
+	      while (TREE_CODE (inner) == NOP_EXPR
+		     || TREE_CODE (inner) == CONVERT_EXPR
+		     || TREE_CODE (inner) == NON_LVALUE_EXPR
+		     || TREE_CODE (inner) == VIEW_CONVERT_EXPR
+		     || TREE_CODE (inner) == SAVE_EXPR)
+		inner = TREE_OPERAND (inner, 0);
+	    }
+
+	  if (mem_expr == NULL)
+	    offset = -1;
+	  if (mem_expr != MEM_EXPR (mem))
+	    {
+	      set_mem_expr (mem, mem_expr);
+	      set_mem_offset (mem, offset >= 0 ? GEN_INT (offset) : NULL_RTX);
+	    }
+	}
       set_mem_alias_set (mem, 0);
       set_mem_size (mem, NULL_RTX);
     }
@@ -2648,7 +2731,7 @@ expand_builtin_memcpy (tree exp, rtx target, enum machine_mode mode)
       if (src_align == 0)
 	return 0;
 
-      dest_mem = get_memory_rtx (dest);
+      dest_mem = get_memory_rtx (dest, len);
       set_mem_align (dest_mem, dest_align);
       len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
       src_str = c_getstr (src);
@@ -2670,7 +2753,7 @@ expand_builtin_memcpy (tree exp, rtx target, enum machine_mode mode)
 	  return dest_mem;
 	}
 
-      src_mem = get_memory_rtx (src);
+      src_mem = get_memory_rtx (src, len);
       set_mem_align (src_mem, src_align);
 
       /* Copy word part most expediently.  */
@@ -2749,7 +2832,7 @@ expand_builtin_mempcpy (tree arglist, tree type, rtx target, enum machine_mode m
 	  && can_store_by_pieces (INTVAL (len_rtx), builtin_memcpy_read_str,
 				  (void *) src_str, dest_align))
 	{
-	  dest_mem = get_memory_rtx (dest);
+	  dest_mem = get_memory_rtx (dest, len);
 	  set_mem_align (dest_mem, dest_align);
 	  dest_mem = store_by_pieces (dest_mem, INTVAL (len_rtx),
 				      builtin_memcpy_read_str,
@@ -2763,9 +2846,9 @@ expand_builtin_mempcpy (tree arglist, tree type, rtx target, enum machine_mode m
 	  && can_move_by_pieces (INTVAL (len_rtx),
 				 MIN (dest_align, src_align)))
 	{
-	  dest_mem = get_memory_rtx (dest);
+	  dest_mem = get_memory_rtx (dest, len);
 	  set_mem_align (dest_mem, dest_align);
-	  src_mem = get_memory_rtx (src);
+	  src_mem = get_memory_rtx (src, len);
 	  set_mem_align (src_mem, src_align);
 	  dest_mem = move_by_pieces (dest_mem, src_mem, INTVAL (len_rtx),
 				     MIN (dest_align, src_align), endp);
@@ -2893,8 +2976,8 @@ expand_movstr (tree dest, tree src, rtx target, int endp)
   if (!HAVE_movstr)
     return 0;
 
-  dest_mem = get_memory_rtx (dest);
-  src_mem = get_memory_rtx (src);
+  dest_mem = get_memory_rtx (dest, NULL);
+  src_mem = get_memory_rtx (src, NULL);
   if (!endp)
     {
       target = force_reg (Pmode, XEXP (dest_mem, 0));
@@ -3098,7 +3181,7 @@ expand_builtin_strncpy (tree exp, rtx target, enum machine_mode mode)
 				       (void *) p, dest_align))
 	    return 0;
 
-	  dest_mem = get_memory_rtx (dest);
+	  dest_mem = get_memory_rtx (dest, len);
 	  store_by_pieces (dest_mem, tree_low_cst (len, 1),
 			   builtin_strncpy_read_str,
 			   (void *) p, dest_align, 0);
@@ -3211,7 +3294,7 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode,
 	  val_rtx = expand_expr (val, NULL_RTX, VOIDmode, 0);
 	  val_rtx = force_reg (TYPE_MODE (unsigned_char_type_node),
 			       val_rtx);
-	  dest_mem = get_memory_rtx (dest);
+	  dest_mem = get_memory_rtx (dest, len);
 	  store_by_pieces (dest_mem, tree_low_cst (len, 1),
 			   builtin_memset_gen_str,
 			   val_rtx, dest_align, 0);
@@ -3232,7 +3315,7 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode,
 				    dest_align))
 	    return 0;
 
-	  dest_mem = get_memory_rtx (dest);
+	  dest_mem = get_memory_rtx (dest, len);
 	  store_by_pieces (dest_mem, tree_low_cst (len, 1),
 			   builtin_memset_read_str,
 			   &c, dest_align, 0);
@@ -3243,7 +3326,7 @@ expand_builtin_memset (tree arglist, rtx target, enum machine_mode mode,
 
       len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
 
-      dest_mem = get_memory_rtx (dest);
+      dest_mem = get_memory_rtx (dest, len);
       set_mem_align (dest_mem, dest_align);
       dest_addr = clear_storage (dest_mem, len_rtx,
 				 CALL_EXPR_TAILCALL (orig_exp)
@@ -3343,8 +3426,8 @@ expand_builtin_memcmp (tree exp ATTRIBUTE_UNUSED, tree arglist, rtx target,
 	   && REGNO (result) >= FIRST_PSEUDO_REGISTER))
       result = gen_reg_rtx (insn_mode);
 
-    arg1_rtx = get_memory_rtx (arg1);
-    arg2_rtx = get_memory_rtx (arg2);
+    arg1_rtx = get_memory_rtx (arg1, len);
+    arg2_rtx = get_memory_rtx (arg2, len);
     arg3_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
 
     /* Set MEM_SIZE as appropriate.  */
@@ -3482,8 +3565,8 @@ expand_builtin_strcmp (tree exp, rtx target, enum machine_mode mode)
     arg1 = builtin_save_expr (arg1);
     arg2 = builtin_save_expr (arg2);
 
-    arg1_rtx = get_memory_rtx (arg1);
-    arg2_rtx = get_memory_rtx (arg2);
+    arg1_rtx = get_memory_rtx (arg1, NULL);
+    arg2_rtx = get_memory_rtx (arg2, NULL);
     arg3_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
     insn = gen_cmpstrsi (result, arg1_rtx, arg2_rtx, arg3_rtx,
 			 GEN_INT (MIN (arg1_align, arg2_align)));
@@ -3611,8 +3694,8 @@ expand_builtin_strncmp (tree exp, rtx target, enum machine_mode mode)
     arg2 = builtin_save_expr (arg2);
     len = builtin_save_expr (len);
 
-    arg1_rtx = get_memory_rtx (arg1);
-    arg2_rtx = get_memory_rtx (arg2);
+    arg1_rtx = get_memory_rtx (arg1, len);
+    arg2_rtx = get_memory_rtx (arg2, len);
     arg3_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
     insn = gen_cmpstrsi (result, arg1_rtx, arg2_rtx, arg3_rtx,
 			 GEN_INT (MIN (arg1_align, arg2_align)));
