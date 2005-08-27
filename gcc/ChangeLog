@@ -1,3 +1,7 @@
+2005-08-27  Ian Lance Taylor  <ian@airs.com>
+
+	* combine.c (make_extraction): Avoid reference outside object.
+
 2005-08-27  Richard Guenther  <rguenther@suse.de>
 
 	PR target/23575
