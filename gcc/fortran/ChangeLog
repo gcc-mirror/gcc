@@ -1,3 +1,12 @@
+2005-08-27  Erik Edelmann  <erik.edelmann@iki.fi>
+
+	* trans-array.c (gfc_trans_deferred_array): Fix comments.
+
+2005-08-27  Erik Schnetter  <schnetter@aei.mpg.de>
+
+	* primary.c (match_charkind_name): Fix typo in comment leading to
+	function.
+
 2005-08-25  Erik Edelmann  <eedelman@acclab.helsinki.fi>
 
 	PR fortran/20363
