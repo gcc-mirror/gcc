@@ -131,8 +131,8 @@ pa32_fallback_frame_state (struct _Unwind_Context *context,
     }
   fs->regs.reg[88].how = REG_SAVED_OFFSET;
   fs->regs.reg[88].loc.offset = (long) &sc->sc_sar - new_cfa;
-  fs->regs.reg[2].how = REG_SAVED_OFFSET;
-  fs->regs.reg[2].loc.offset = (long) &sc->sc_iaoq[0] - new_cfa;
-  fs->retaddr_column = 2;
+  fs->regs.reg[0].how = REG_SAVED_OFFSET;
+  fs->regs.reg[0].loc.offset = (long) &sc->sc_iaoq[0] - new_cfa;
+  fs->retaddr_column = 0;
   return _URC_NO_REASON;
 }
