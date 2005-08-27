@@ -1,3 +1,8 @@
+2005-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-opt/23560
+	* gcc.c-torture/execute/20050826-2.c: New test.
+
 2005-08-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19004
