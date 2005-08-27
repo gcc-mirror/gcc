@@ -760,7 +760,7 @@ next_string_char (char delimiter)
 
 /* Special case of gfc_match_name() that matches a parameter kind name
    before a string constant.  This takes case of the weird but legal
-   case of: weird case of:
+   case of:
 
      kind_____'string'
 
