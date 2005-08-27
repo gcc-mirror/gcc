@@ -1,3 +1,9 @@
+2005-08-27  Richard Guenther  <rguenther@suse.de>
+
+	PR target/23575
+	* config/i386/sse.md (sse2_movsd): Add missing closing
+	braces.
+
 2005-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/23561

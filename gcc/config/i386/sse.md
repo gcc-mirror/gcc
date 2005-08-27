@@ -2111,8 +2111,8 @@
    movlpd\t{%2, %0|%0, %2}
    movlpd\t{%2, %0|%0, %2}
    shufpd\t{$2, %2, %0|%0, %2, 2}
-   movhps\t{%H1, %0|%0, %H1
-   movhps\t{%1, %H0|%H0, %1"
+   movhps\t{%H1, %0|%0, %H1}
+   movhps\t{%1, %H0|%H0, %1}"
   [(set_attr "type" "ssemov,ssemov,ssemov,sselog,ssemov,ssemov")
    (set_attr "mode" "DF,V1DF,V1DF,V2DF,V1DF,V1DF")])
 
