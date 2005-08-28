@@ -1,3 +1,9 @@
+2005-08-28  Richard Henderson  <rth@redhat.com>
+
+	* stor-layout.c (finalize_type_size): Revert workaround from 08-26.
+	* tree.c (make_node_stat): Use BITS_PER_UNIT instead of alignment
+	of char_type_node.
+
 2005-08-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ada/23593
