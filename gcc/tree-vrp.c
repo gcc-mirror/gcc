@@ -2812,9 +2812,7 @@ stmt_interesting_for_vrp (tree stmt)
 }
 
 
-/* Initialize local data structures for VRP.  Return true if VRP
-   is worth running (i.e. if we found any statements that could
-   benefit from range information).  */
+/* Initialize local data structures for VRP.  */
 
 static void
 vrp_initialize (void)

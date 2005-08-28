@@ -1,3 +1,7 @@
+2005-08-28  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree-vrp.c: Remove obsolete comment in front of vrp_initialize.
+
 2005-08-28  Richard Henderson  <rth@redhat.com>
 
 	* stor-layout.c (finalize_type_size): Revert workaround from 08-26.
