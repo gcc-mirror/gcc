@@ -1,3 +1,7 @@
+2005-08-28  Dale Johannesen  <dalej@apple.com>
+
+	* config/i386/i386.c (nocona_cost):  Increase MOVE_RATIO.
+
 2005-08-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* tree-vrp.c: Remove obsolete comment in front of vrp_initialize.
