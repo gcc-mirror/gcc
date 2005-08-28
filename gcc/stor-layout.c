@@ -1399,23 +1399,23 @@ finalize_type_size (tree type)
   /* Normally, use the alignment corresponding to the mode chosen.
      However, where strict alignment is not required, avoid
      over-aligning structures, since most compilers do not do this
-     alignment.  Also, we must avoid overriding a larger alignment
-     requirement coming from a user alignment of one of the fields.  */
-  /* ??? The non-aggregate code is also needed to reduce the alignment
-     of java types with alignment less than 16 bits.  The problem stems
-     from java/decl.c using char_type_node for the 16 bit character type,
-     while tree.c:make_node uses it as the type of the smallest addressable
-     unit to initialize the alignment of all types.  */
-  unsigned mode_align = GET_MODE_ALIGNMENT (TYPE_MODE (type));
+     alignment.  */
 
   if (TYPE_MODE (type) != BLKmode && TYPE_MODE (type) != VOIDmode
-      && ((STRICT_ALIGNMENT && mode_align >= TYPE_ALIGN (type))
+      && (STRICT_ALIGNMENT
 	  || (TREE_CODE (type) != RECORD_TYPE && TREE_CODE (type) != UNION_TYPE
 	      && TREE_CODE (type) != QUAL_UNION_TYPE
 	      && TREE_CODE (type) != ARRAY_TYPE)))
     {
-      TYPE_ALIGN (type) = mode_align;
-      TYPE_USER_ALIGN (type) = 0;
+      unsigned mode_align = GET_MODE_ALIGNMENT (TYPE_MODE (type));
+
+      /* Don't override a larger alignment requirement coming from a user
+	 alignment of one of the fields.  */
+      if (mode_align >= TYPE_ALIGN (type))
+	{
+	  TYPE_ALIGN (type) = mode_align;
+	  TYPE_USER_ALIGN (type) = 0;
+	}
     }
 
   /* Do machine-dependent extra alignment.  */
