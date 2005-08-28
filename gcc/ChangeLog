@@ -1,3 +1,9 @@
+2005-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ada/23593
+	* builtins.c (get_memory_rtx): Don't strip nops
+	in between COMPONENT_REFs.
+
 2005-08-27  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/23539

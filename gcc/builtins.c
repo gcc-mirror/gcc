@@ -1068,13 +1068,6 @@ get_memory_rtx (tree exp, tree len)
 
 	      mem_expr = TREE_OPERAND (mem_expr, 0);
 	      inner = TREE_OPERAND (inner, 0);
-
-	      while (TREE_CODE (inner) == NOP_EXPR
-		     || TREE_CODE (inner) == CONVERT_EXPR
-		     || TREE_CODE (inner) == NON_LVALUE_EXPR
-		     || TREE_CODE (inner) == VIEW_CONVERT_EXPR
-		     || TREE_CODE (inner) == SAVE_EXPR)
-		inner = TREE_OPERAND (inner, 0);
 	    }
 
 	  if (mem_expr == NULL)
