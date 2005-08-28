@@ -1,3 +1,9 @@
+2005-08-28  John David Anglin  <dave.anflin@nrc-cnrc.gc.ca>
+
+	PR libgcj/23508
+	* pa/linux-unwind.h (pa32_fallback_frame_state): Use r0 slot in frame
+	state for return address column of signal frames.
+
 2005-08-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ada/23593
