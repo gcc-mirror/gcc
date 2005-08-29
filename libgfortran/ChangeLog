@@ -1,3 +1,9 @@
+2005-08-29  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/23598
+	* io/lock.c(library_start):  If ioparm.iostat is present, clear
+	it unconditionally.
+
 2005-08-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* acinclude.m4 (LIBGFOR_CHECK_UNLINK_OPEN_FILE): Add check to see
