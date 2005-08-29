@@ -234,7 +234,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
 #endif
 
   /* If we are using the GCC exception mechanism, let GCC know.  */
-  if (Exception_Mechanism == GCC_ZCX)
+  if (Exception_Mechanism == Back_End_Exceptions)
     gnat_init_gcc_eh ();
 
   gcc_assert (Nkind (gnat_root) == N_Compilation_Unit);
@@ -285,8 +285,6 @@ gnat_init_stmt_group ()
   /* Enable GNAT stack checking method if needed */
   if (!Stack_Check_Probes_On_Target)
     set_stack_check_libfunc (gen_rtx_SYMBOL_REF (Pmode, "_gnat_stack_check"));
-
-  gcc_assert (Exception_Mechanism != Front_End_ZCX);
 }
 
 /* Subroutine of gnat_to_gnu to translate gnat_node, an N_Identifier,
@@ -2020,7 +2018,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
   /* If just annotating, ignore all EH and cleanups.  */
   bool gcc_zcx = (!type_annotate_only
 		  && Present (Exception_Handlers (gnat_node))
-		  && Exception_Mechanism == GCC_ZCX);
+		  && Exception_Mechanism == Back_End_Exceptions);
   bool setjmp_longjmp
     = (!type_annotate_only && Present (Exception_Handlers (gnat_node))
        && Exception_Mechanism == Setjmp_Longjmp);
@@ -3119,7 +3117,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	  if (align != 0 && align < oalign && !TYPE_ALIGN_OK (gnu_obj_type))
 	    post_error_ne_tree_2
-	      ("?source alignment (^) < alignment of & (^)",
+	      ("?source alignment (^) '< alignment of & (^)",
 	       gnat_node, Designated_Type (Etype (gnat_node)),
 	       size_int (align / BITS_PER_UNIT), oalign / BITS_PER_UNIT);
 	}
@@ -3800,7 +3798,7 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Exception_Handler:
       if (Exception_Mechanism == Setjmp_Longjmp)
 	gnu_result = Exception_Handler_to_gnu_sjlj (gnat_node);
-      else if (Exception_Mechanism == GCC_ZCX)
+      else if (Exception_Mechanism == Back_End_Exceptions)
 	gnu_result = Exception_Handler_to_gnu_zcx (gnat_node);
       else
 	gcc_unreachable ();
@@ -5342,9 +5340,8 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
 }
 
 /* Return 1 if GNU_EXPR can be directly addressed.  This is the case unless
-   it is an expression involving computation or if it involves a bitfield
-   reference.  This returns the same as gnat_mark_addressable in most
-   cases.  */
+   it is an expression involving computation or if it involves a reference
+   to a bitfield or to a field not sufficiently aligned for its type.  */
 
 static bool
 addressable_p (tree gnu_expr)
@@ -5368,8 +5365,15 @@ addressable_p (tree gnu_expr)
 
     case COMPONENT_REF:
       return (!DECL_BIT_FIELD (TREE_OPERAND (gnu_expr, 1))
-	      && !(STRICT_ALIGNMENT
-		   && DECL_NONADDRESSABLE_P (TREE_OPERAND (gnu_expr, 1)))
+	      && (!STRICT_ALIGNMENT
+	          /* If the field was marked as "semantically" addressable
+		     in create_field_decl, we are guaranteed that it can
+		     be directly addressed.  */
+		  || !DECL_NONADDRESSABLE_P (TREE_OPERAND (gnu_expr, 1))
+		  /* Otherwise it can nevertheless be directly addressed
+		     if it has been sufficiently aligned in the record.  */
+		  || DECL_ALIGN (TREE_OPERAND (gnu_expr, 1))
+		       >= TYPE_ALIGN (TREE_TYPE (gnu_expr)))
 	      && addressable_p (TREE_OPERAND (gnu_expr, 0)));
 
     case ARRAY_REF:  case ARRAY_RANGE_REF:
