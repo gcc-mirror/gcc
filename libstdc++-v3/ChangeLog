@@ -1,10 +1,10 @@
 2005-08-29  Paolo Carlini  <pcarlini@suse.de>
 
+        PR libstdc++/23528
         Port from HEAD/4_0-branch:
 	2004-07-28  Matt Austern  <austern@apple.com>
 	* include/ext/hashtable.h: Use rebind so that allocator_type
 	has correct type for a container's allocator.
-
 	* testsuite/ext/23528.cc: New.
 
 2005-08-24  Lawrence Lim  <llim@redhat.com>
