@@ -752,8 +752,10 @@ INTERNAL_CFLAGS = -DIN_GCC @CROSS@
 ALL_CFLAGS = $(X_CFLAGS) $(T_CFLAGS) \
   $(CFLAGS) $(INTERNAL_CFLAGS) $(COVERAGE_FLAGS) $(WARN_CFLAGS) $(XCFLAGS) @DEFS@
 
-# Likewise.
-ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
+# Likewise.  Put INCLUDES at the beginning: this way, if some autoconf macro
+# puts -I options in CPPFLAGS, our include files in the srcdir will always
+# win against random include files in /usr/include.
+ALL_CPPFLAGS = $(INCLUDES) $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
 
 # Build and host support libraries.
 LIBIBERTY = ../libiberty/libiberty.a
@@ -801,7 +803,7 @@ INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 	   $(CPPINC) $(GMPINC)
 
 .c.o:
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $< $(OUTPUT_OPTION)
 
 #
 # Support for additional languages (other than C).
@@ -1415,7 +1417,7 @@ collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 
 collect2.o : collect2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) gstab.h intl.h \
 	$(OBSTACK_H) $(DEMANGLE_H) collect2.h version.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES)  \
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS)  \
 	-DTARGET_MACHINE=\"$(target_noncanonical)\" \
 	-c $(srcdir)/collect2.c $(OUTPUT_OPTION)
 
@@ -1440,7 +1442,7 @@ c-opts.o : c-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)		\
         $(TREE_H) $(C_PRAGMA_H) $(FLAGS_H) toplev.h langhooks.h		\
         tree-inline.h $(DIAGNOSTIC_H) intl.h debug.h $(C_COMMON_H)	\
         opts.h options.h $(PARAMS_H) $(MKDEPS_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 		$< $(OUTPUT_OPTION) @TARGET_SYSTEM_ROOT_DEFINE@
 
 c-cppbuiltin.o : c-cppbuiltin.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
@@ -1466,7 +1468,7 @@ c-dump.o : c-dump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 c-pch.o : c-pch.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(CPPLIB_H) $(TREE_H) \
 	$(C_COMMON_H) output.h toplev.h $(C_PRAGMA_H) $(GGC_H) debug.h \
 	langhooks.h $(FLAGS_H) hosthooks.h version.h $(TARGET_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 	  -DHOST_MACHINE=\"$(host)\" -DTARGET_MACHINE=\"$(target)\" \
 	  $< $(OUTPUT_OPTION)
 
@@ -1489,14 +1491,14 @@ gcc.o: gcc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h multilib.h \
     Makefile $(lang_specs_files) specs.h prefix.h $(GCC_H)
 	(SHLIB_LINK='$(SHLIB_LINK)' \
 	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
   $(DRIVER_DEFINES) \
   -c $(srcdir)/gcc.c $(OUTPUT_OPTION))
 
 gccspec.o: gccspec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H)
 	(SHLIB_LINK='$(SHLIB_LINK)' \
 	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
   $(DRIVER_DEFINES) \
   -c $(srcdir)/gccspec.c $(OUTPUT_OPTION))
 
@@ -1573,7 +1575,7 @@ stringpool.o: stringpool.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	$(TREE_H) $(GGC_H) gt-stringpool.h
 
 prefix.o: prefix.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) Makefile prefix.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 	-DPREFIX=\"$(prefix)\" \
 	  -c $(srcdir)/prefix.c $(OUTPUT_OPTION)
 
@@ -1815,7 +1817,7 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) versio
    $(PARAMS_H) $(TM_P_H) reload.h dwarf2asm.h $(TARGET_H) \
    langhooks.h insn-flags.h $(CFGLAYOUT_H) real.h $(CFGLOOP_H) \
    hosthooks.h $(LANGHOOKS_DEF_H) $(CGRAPH_H) $(COVERAGE_H) alloc-pool.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 	  -DTARGET_NAME=\"$(target_noncanonical)\" \
 	  -c $(srcdir)/toplev.c $(OUTPUT_OPTION)
 
@@ -2183,7 +2185,7 @@ $(out_object_file): $(out_file) $(CONFIG_H) coretypes.h $(TM_H) $(TREE_H) $(GGC_
    output.h $(INSN_ATTR_H) $(SYSTEM_H) toplev.h $(TARGET_H) libfuncs.h \
    $(TARGET_DEF_H) function.h $(SCHED_INT_H) $(TM_P_H) $(EXPR_H) $(OPTABS_H) \
    langhooks.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 		$(out_file) $(OUTPUT_OPTION)
 
 # Build auxiliary files that support ecoff format.
@@ -2201,7 +2203,7 @@ mips-tdump.o : mips-tdump.c $(CONFIG_H) $(RTL_H) $(SYSTEM_H) coretypes.h $(TM_H)
 libbackend.o : $(OBJS-common:.o=.c) $(out_file) \
   insn-config.h insn-flags.h insn-codes.h insn-constants.h \
   insn-attr.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 	  -DTARGET_NAME=\"$(target_noncanonical)\" \
 	  -DLOCALEDIR=\"$(localedir)\" \
 	  -c $(filter %.c,$^) -o $@ -combine
@@ -2284,7 +2286,7 @@ s-constants : $(MD_DEPS) build/genconstants$(build_exeext)
 insn-emit.o : insn-emit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(EXPR_H) real.h output.h insn-config.h $(OPTABS_H) reload.h \
   $(RECOG_H) toplev.h function.h $(FLAGS_H) hard-reg-set.h $(RESOURCE_H) $(TM_P_H)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-emit.c \
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) -c insn-emit.c \
 	  $(OUTPUT_OPTION)
 
 insn-emit.c: s-emit ; @true
@@ -2296,7 +2298,7 @@ s-emit : $(MD_DEPS) build/genemit$(build_exeext)
 insn-recog.o : insn-recog.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) insn-config.h $(RECOG_H) real.h output.h $(FLAGS_H)  function.h \
   hard-reg-set.h $(RESOURCE_H) $(TM_P_H) toplev.h reload.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-recog.c \
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) -c insn-recog.c \
 	  $(OUTPUT_OPTION)
 
 insn-recog.c: s-recog ; @true
@@ -2307,7 +2309,7 @@ s-recog : $(MD_DEPS) build/genrecog$(build_exeext)
 
 insn-opinit.o : insn-opinit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) insn-config.h $(FLAGS_H) $(RECOG_H) $(EXPR_H) $(OPTABS_H) reload.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-opinit.c \
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) -c insn-opinit.c \
 	  $(OUTPUT_OPTION)
 
 insn-opinit.c: s-opinit ; @true
@@ -2318,7 +2320,7 @@ s-opinit : $(MD_DEPS) build/genopinit$(build_exeext)
 
 insn-extract.o : insn-extract.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) toplev.h insn-config.h $(RECOG_H)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-extract.c \
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) -c insn-extract.c \
 	  $(OUTPUT_OPTION)
 
 insn-extract.c: s-extract ; @true
@@ -2330,7 +2332,7 @@ s-extract : $(MD_DEPS) build/genextract$(build_exeext)
 insn-peep.o : insn-peep.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(REGS_H) output.h real.h insn-config.h $(RECOG_H) except.h \
   function.h $(TM_P_H)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-peep.c \
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) -c insn-peep.c \
 	  $(OUTPUT_OPTION)
 
 insn-peep.c: s-peep ; @true
@@ -2342,7 +2344,7 @@ s-peep : $(MD_DEPS) build/genpeep$(build_exeext)
 insn-attrtab.o : insn-attrtab.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(REGS_H) real.h output.h $(INSN_ATTR_H) insn-config.h toplev.h \
   $(RECOG_H) $(TM_P_H) $(FLAGS_H)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-attrtab.c \
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) -c insn-attrtab.c \
 	  $(OUTPUT_OPTION)
 
 insn-attr.h: s-attr ; @true
@@ -2361,7 +2363,7 @@ insn-output.o : insn-output.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(GGC_H) $(REGS_H) real.h conditions.h hard-reg-set.h \
   insn-config.h $(INSN_ATTR_H) $(EXPR_H) output.h $(RECOG_H) function.h \
   toplev.h $(FLAGS_H) insn-codes.h $(TM_P_H) $(TARGET_H)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-output.c \
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) -c insn-output.c \
 	  $(OUTPUT_OPTION)
 
 insn-output.c: s-output ; @true
@@ -2528,8 +2530,7 @@ $(genprogs): %$(build_exeext): %.o  $(BUILD_RTL) $(BUILD_SUPPORT) \
 		$(BUILD_ERRORS) $(BUILD_LIBS)
 
 $(genobjs): %.o :  # dependencies provided by explicit rule later
-	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) \
-	 -o $@ $<
+	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) -o $@ $<
 
 build/read-rtl.o: read-rtl.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) \
   $(RTL_BASE_H) $(OBSTACK_H) $(HASHTAB_H)
@@ -2666,7 +2667,7 @@ build/varray.o: varray.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H) \
 #
 # Remake internationalization support.
 intl.o: intl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h Makefile
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 	  -DLOCALEDIR=\"$(localedir)\" \
 	  -c $(srcdir)/intl.c $(OUTPUT_OPTION)
 
@@ -2685,7 +2686,7 @@ PREPROCESSOR_DEFINES = \
 
 cppdefault.o: cppdefault.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	cppdefault.h Makefile
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 	  $(PREPROCESSOR_DEFINES) \
 	  -c $(srcdir)/cppdefault.c $(OUTPUT_OPTION)
 
@@ -2706,7 +2707,7 @@ protoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) Makefile version.h
 	(SHLIB_LINK='$(SHLIB_LINK)' \
 	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 	  $(DRIVER_DEFINES) \
 	  $(srcdir)/protoize.c $(OUTPUT_OPTION))
 
@@ -2714,7 +2715,7 @@ unprotoize.o: protoize.c $(srcdir)/../include/getopt.h \
    $(CONFIG_H) $(SYSTEM_H) Makefile version.h
 	(SHLIB_LINK='$(SHLIB_LINK)' \
 	SHLIB_MULTILIB='$(SHLIB_MULTILIB)'; \
-	$(CC) -c -DUNPROTOIZE $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(CC) -c -DUNPROTOIZE $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 	  $(DRIVER_DEFINES) \
 	  $(srcdir)/protoize.c $(OUTPUT_OPTION))
 
@@ -2724,7 +2725,7 @@ SYSCALLS.c.X: $(srcdir)/sys-types.h $(srcdir)/sys-protos.h $(GCC_PASSES) \
 	-rm -f SYSCALLS.c tmp-SYSCALLS.s
 	sed -e s/TARGET_GETGROUPS_T/$(TARGET_GETGROUPS_T)/ \
 	  $(srcdir)/sys-types.h $(srcdir)/sys-protos.h > SYSCALLS.c
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) \
 	  -aux-info $@ -S -o tmp-SYSCALLS.s SYSCALLS.c
 	-rm -f SYSCALLS.c tmp-SYSCALLS.s
 
@@ -3633,7 +3634,7 @@ qmtest-gui: ${QMTEST_DIR}/context
 
 paranoia.o: $(srcdir)/../contrib/paranoia.cc $(CONFIG_H) $(SYSTEM_H) \
   real.h $(TREE_H)
-	g++ -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
+	g++ -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $< $(OUTPUT_OPTION)
 
 paranoia: paranoia.o real.o $(LIBIBERTY)
 	g++ -o $@ paranoia.o real.o $(LIBIBERTY)

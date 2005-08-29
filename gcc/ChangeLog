@@ -1,3 +1,10 @@
+2005-08-29  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/21268
+	* Makefile.in (ALL_CPPFLAGS): Include $(INCLUDES) at the
+	beginning.  Remove $(INCLUDES) from all the rules, if following
+	$(ALL_CPPFLAGS) or $(BUILD_CPPFLAGS).
+
 2005-08-28  John David Anglin  <dave.anflin@nrc-cnrc.gc.ca>
 
 	PR libgcj/23508
