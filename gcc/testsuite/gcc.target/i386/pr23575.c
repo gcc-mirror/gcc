@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=pentium4 -O2" } */
-/* { dg-require-effective-target ilp32 } */
+/* { dg-options "-msse2 -O2" } */
 
 /* We used to ICE because of a bogous pattern.  */
 
