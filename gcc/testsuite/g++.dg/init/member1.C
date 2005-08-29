@@ -11,8 +11,11 @@ template<int> struct B {};
 template<typename T> struct C
 {
   static const int i = A<T>::i;  // { dg-error "incomplete" }
-  static const int j = i;      // { dg-error "initialized by a non-const" }
+  static const int j = i;
   B<j> b;  // { dg-error "not a valid template arg" }
 };
 
 C<int> c;
+
+int i = C<int>::i;
+int j = C<int>::j;

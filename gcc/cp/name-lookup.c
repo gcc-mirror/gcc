@@ -4872,12 +4872,14 @@ push_to_top_level (void)
   s->bindings = b;
   s->need_pop_function_context = need_pop;
   s->function_decl = current_function_decl;
+  s->skip_evaluation = skip_evaluation;
 
   scope_chain = s;
   current_function_decl = NULL_TREE;
   current_lang_base = VEC_alloc (tree, gc, 10);
   current_lang_name = lang_name_cplusplus;
   current_namespace = global_namespace;
+  skip_evaluation = 0;
   timevar_pop (TV_NAME_LOOKUP);
 }
 
@@ -4909,6 +4911,7 @@ pop_from_top_level (void)
   if (s->need_pop_function_context)
     pop_function_context_from (NULL_TREE);
   current_function_decl = s->function_decl;
+  skip_evaluation = s->skip_evaluation;
   timevar_pop (TV_NAME_LOOKUP);
 }
 

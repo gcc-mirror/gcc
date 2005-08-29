@@ -5699,17 +5699,22 @@ instantiate_class_template (tree type)
 		    --processing_template_decl;
 		  if (TREE_CODE (r) == VAR_DECL)
 		    {
-		      tree init;
+		      /* In [temp.inst]:
 
-		      if (DECL_INITIALIZED_IN_CLASS_P (r))
-			init = tsubst_expr (DECL_INITIAL (t), args,
-					    tf_error | tf_warning, NULL_TREE);
-		      else
-			init = NULL_TREE;
+			   [t]he initialization (and any associated
+			   side-effects) of a static data member does
+			   not occur unless the static data member is
+			   itself used in a way that requires the
+			   definition of the static data member to
+			   exist.  
 
-		      finish_static_data_member_decl
-			(r, init, /*asmspec_tree=*/NULL_TREE, /*flags=*/0);
-
+			 Therefore, we do not substitute into the
+		         initialized for the static data member here.  */
+		      finish_static_data_member_decl 
+			(r, 
+			 /*init=*/NULL_TREE, 
+			 /*asmspec_tree=*/NULL_TREE, 
+			 /*flags=*/0);
 		      if (DECL_INITIALIZED_IN_CLASS_P (r))
 			check_static_variable_definition (r, TREE_TYPE (r));
 		    }
@@ -11278,13 +11283,9 @@ regenerate_decl_from_template (tree decl, tree tmpl)
 	DECL_INLINE (decl) = 1;
     }
   else if (TREE_CODE (decl) == VAR_DECL)
-    {
-      if (!DECL_INITIALIZED_IN_CLASS_P (decl)
-	  && DECL_INITIAL (code_pattern))
-	DECL_INITIAL (decl) =
-	  tsubst_expr (DECL_INITIAL (code_pattern), args,
-		       tf_error, DECL_TI_TEMPLATE (decl));
-    }
+    DECL_INITIAL (decl) =
+      tsubst_expr (DECL_INITIAL (code_pattern), args,
+		   tf_error, DECL_TI_TEMPLATE (decl));
   else
     gcc_unreachable ();
 
@@ -11367,7 +11368,7 @@ instantiate_decl (tree d, int defer_ok,
   tree code_pattern;
   tree spec;
   tree gen_tmpl;
-  int pattern_defined;
+  bool pattern_defined;
   int need_push;
   location_t saved_loc = input_location;
 
@@ -11415,9 +11416,6 @@ instantiate_decl (tree d, int defer_ok,
 
   timevar_push (TV_PARSE);
 
-  /* We may be in the middle of deferred access check.  Disable it now.  */
-  push_deferring_access_checks (dk_no_deferred);
-
   /* Set TD to the template whose DECL_TEMPLATE_RESULT is the pattern
      for the instantiation.  */
   td = template_for_substitution (d);
@@ -11437,6 +11435,10 @@ instantiate_decl (tree d, int defer_ok,
     pattern_defined = (DECL_SAVED_TREE (code_pattern) != NULL_TREE);
   else
     pattern_defined = ! DECL_IN_AGGR_P (code_pattern);
+
+  /* We may be in the middle of deferred access check.  Disable it now.  */
+  push_deferring_access_checks (dk_no_deferred);
+
   /* Unless an explicit instantiation directive has already determined
      the linkage of D, remember that a definition is available for
      this entity.  */
@@ -11486,12 +11488,6 @@ instantiate_decl (tree d, int defer_ok,
       pop_access_scope (d);
     }
 
-  /* We should have set up DECL_INITIAL in instantiate_class_template
-     for in-class definitions of static data members.  */
-  gcc_assert (!(TREE_CODE (d) == VAR_DECL
-		&& DECL_INITIALIZED_IN_CLASS_P (d)
-		&& DECL_INITIAL (d) == NULL_TREE));
-
   /* Do not instantiate templates that we know will be defined
      elsewhere.  */
   if (DECL_INTERFACE_KNOWN (d)
@@ -11504,6 +11500,20 @@ instantiate_decl (tree d, int defer_ok,
      because it's used by add_pending_template.  */
   else if (! pattern_defined || defer_ok)
     {
+      /* The definition of the static data member is now required so
+	 we must substitute the initializer.  */
+      if (TREE_CODE (d) == VAR_DECL
+	  && !DECL_INITIAL (d) 
+	  && DECL_INITIAL (code_pattern))
+	{
+	  push_nested_class (DECL_CONTEXT (d));
+	  DECL_INITIAL (d)
+	    = tsubst_expr (DECL_INITIAL (code_pattern), 
+			   args,
+			   tf_error | tf_warning, NULL_TREE);
+	  pop_nested_class ();
+	}
+
       input_location = saved_loc;
 
       if (at_eof && !pattern_defined
@@ -11570,10 +11580,7 @@ instantiate_decl (tree d, int defer_ok,
 
       /* Enter the scope of D so that access-checking works correctly.  */
       push_nested_class (DECL_CONTEXT (d));
-      cp_finish_decl (d,
-		      (!DECL_INITIALIZED_IN_CLASS_P (d)
-		       ? DECL_INITIAL (d) : NULL_TREE),
-		      NULL_TREE, 0);
+      cp_finish_decl (d, DECL_INITIAL (d), NULL_TREE, 0);
       pop_nested_class ();
     }
   else if (TREE_CODE (d) == FUNCTION_DECL)
