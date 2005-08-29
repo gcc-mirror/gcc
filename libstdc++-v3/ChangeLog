@@ -1,3 +1,16 @@
+2005-08-29  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/23578 (DR 464 [Ready])
+	* include/bits/stl_map.h (class map): Add at(const key_type&)
+	member functions.
+	* include/bits/stl_vector.h (class vector): Add data() member
+	functions.
+	* include/debug/map.h (class map): Adjust consistently.
+	* include/debug/vector (class vector): Likewise.
+	* testsuite/23_containers/map/element_access/1.cc: New.
+	* testsuite/23_containers/vector/data_access/1.cc: Likewise.
+	* docs/html/ext/howto.html: Add an entry for DR 464.
+
 2005-08-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/20534 (contd)

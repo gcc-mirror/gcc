@@ -142,6 +142,10 @@ namespace __gnu_debug_def
       // 23.3.1.2 element access:
       using _Base::operator[];
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 464. Suggestion for new member functions in standard containers.
+      using _Base::at;
+
       // modifiers:
       std::pair<iterator, bool>
       insert(const value_type& __x)
