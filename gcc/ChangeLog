@@ -1,3 +1,9 @@
+2005-08-29  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/23475
+	* tree-ssa-loop-ivcanon.c (remove_empty_loop): Update frequencies
+	and counts.
+
 2005-08-28  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR middle-end/22455
