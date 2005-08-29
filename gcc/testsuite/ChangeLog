@@ -1,3 +1,7 @@
+2005-08-29  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.target/i386/pr23575.c: Run only on 32-bit x86.
+
 2005-08-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20050316-2.c: New test.
