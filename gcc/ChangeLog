@@ -1,3 +1,10 @@
+2005-08-28  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR middle-end/22455
+
+	* fold-const.c (fold_checksum_tree): Adjust for now-largest tree size.
+	Checksum only the parts of the tree that exist for the tree code.
+
 2005-08-28  Dale Johannesen  <dalej@apple.com>
 
 	* config/i386/i386.c (nocona_cost):  Increase MOVE_RATIO.
