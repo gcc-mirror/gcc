@@ -1073,7 +1073,6 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node, bool early)
       node->local.self_insns = node->global.insns;
       current_function_decl = NULL;
       pop_cfun ();
-      ggc_collect ();
     }
   return inlined;
 }

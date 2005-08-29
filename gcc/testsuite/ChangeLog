@@ -1,3 +1,8 @@
+2005-08-28  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/23408
+	* gcc.dg/pr23408.c: New test.
+
 2005-08-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23099

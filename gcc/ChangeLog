@@ -1,3 +1,9 @@
+2005-08-18  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/23408
+	* ipa-inline.c (cgraph_decide_inlining_incrementally): Remove the
+	call to ggc_collect.
+
 2005-08-18  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/21268
