@@ -1,5 +1,6 @@
 2005-08-29  Andreas Jaeger  <aj@suse.de>
 
+	PR testsuite/23607
 	* gcc.target/i386/pr23575.c: Run only on 32-bit x86.
 
 2005-08-28  Jakub Jelinek  <jakub@redhat.com>
@@ -35,7 +36,7 @@
 
 	PR c++/19004
 	* g++.dg/template/nontype13.C: New test.
-	
+
 	PR c++/23491
 	* g++.dg/init/new14.C: New test.
 	* g++.dg/expr/anew1.C: Do not XFAIL.
@@ -130,13 +131,13 @@
 	PR c++/23089
 	* g++.dg/other/incomplete1.C: New test.
 
-2005-08-22  Ira Rosen  <irar@il.ibm.com>   
+2005-08-22  Ira Rosen  <irar@il.ibm.com>
 
 	* gcc.dg/vect/vect-22.c: Add test for float. All four loops
 	are vectorizable.
 
 2005-08-21  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
-	
+
 	* d_lines_1.f, d_lines_2.f, d_lines_3.f, d_lines_4.f,
 	d_lines_5.f: New.
 
@@ -167,7 +168,7 @@
 
 	PR tree-optimization/23048
 	* gcc.dg/tree-ssa/pr23048.c: New test.
-	
+
 2005-08-19  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/20624
@@ -250,7 +251,7 @@
 	* gcc.dg/vect/vect-80: Likewise.
 	* gcc.dg/vect/vect-35: Likewise, and also check that the test wasn't
         vectorized for the expected reason, rather than checking how alignment
-        was handled. 
+        was handled.
 	* gcc.dg/vect/vect-92.c: Use aligned arrays instead of arrays to aligned
         type and also instead of aligned pointers. Added documentation.
 
@@ -284,10 +285,10 @@
 	* gfortran.dg/namelist_print_2.f: New test to check that PRINT
 	namelist generates error with -std=f95.
 
-2005-08-14  Ira Rosen  <irar@il.ibm.com>   
+2005-08-14  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/23119
-	* gcc.dg/vect/vect-105.c: Add xfail for no_align targets. 
+	* gcc.dg/vect/vect-105.c: Add xfail for no_align targets.
 
 2005-08-13  Marcin Koziej  <creep@desk.pl>
             Andrew Pinski  <pinskia@physics.uc.edu>
@@ -451,7 +452,7 @@
 2005-08-07  Janne Blomqvist <jblomqvi@cc.hut.fi>
             Steven G. Kargl <kargls@comcast.net>
 
-	PR fortran/22390 
+	PR fortran/22390
 	* gfortran.dg/flush_1.f90: New test.
 
 2005-08-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
@@ -507,7 +508,7 @@
 	TEST_TO_WCTYPE.
 
 2005-08-04  Danny Smith  <dannysmith@users.sourceforge.net>
-	
+
 	* gcc.dg/torture/builtin-wctype-1.c: Use __WCHAR_TYPE__ and
 	__WINT_TYPE__ in generated prototypes if possible.
 
@@ -720,7 +721,7 @@
 	* gcc.c-torture/compile/pr22589-1.c: New test.
 
 2005-07-28  Jan Hubicka  <jh@suse.cz>
-	
+
 	* update-loopch.c: New testcase.
 
 2005-07-27  James A. Morrison  <phython@gcc.gnu.org>
@@ -865,7 +866,7 @@
 2005-07-23  Jerry DeLisle  <jvdelisle@verizon.net>
 
         * gfortran.fortran-torture/execute/nan_inf_fmt.f90: Revise test to
-        include case of field width of zero. 
+        include case of field width of zero.
 
 2005-07-23  Jerry DeLisle  <jvdelisle@verizon.net>
 
@@ -934,7 +935,7 @@
 
 	PR c++/2922
 	* g++.dg/lookup/two-stage5.C: New test from bug comments.
-	
+
 2005-07-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/15938
@@ -976,14 +977,14 @@
 	* g++.dg/lookup/two-stage4.C: New. Illustrates how we have not yet
 	fixed two-stage name lookup for operators.
 	* g++.dg/template/call3.C: Compiler now produces an appropriate
-	error message. 
+	error message.
 	* g++.dg/template/crash37.C: Compiler now describes bla() on line
-	14 as a candidate. 
+	14 as a candidate.
 	* g++.dg/template/ptrmem4.C: Compiler produces different error
 	message.
 	* g++.old-deja/g++.other/pmf3.C: Compiler now describes
 	connect_to_method as a candidate.
-	
+
 2005-07-20  James A. Morrison  <phython@gcc.gnu.org>
 
 	* gcc.dg/fold-alloc-1.c: New test.
@@ -1042,7 +1043,7 @@
 
 	* gfortran.fortran-torture/execute/nan_inf_fmt.f90: Change case of field
 	width of 8 to +Inf and -Inf.
-    
+
 2005-07-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22139
@@ -1420,7 +1421,7 @@
 
 2005-05-29  Richard Henderson  <rth@redhat.com>
 
-	* lib/target-supports.exp (check_effective_target_vect_no_max): 
+	* lib/target-supports.exp (check_effective_target_vect_no_max):
 	Remove i386 and x86_64.
 
 2005-06-29  Steve Ellcey  <sje@cup.hp.com>
@@ -1442,7 +1443,7 @@
 	* gcc.dg/inline3.c: Ditto.
 	* gcc.dg/inline4.c: Ditto.
 	* gcc.dg/inline5.c: Ditto.
-	
+
 2005-06-28  Thomas Koenig  <Thomas.Koenig@online.de>
 
         PR libfortran/22142
@@ -1649,7 +1650,7 @@
 
 	* gfortran.dg/f2c_4.f90:  Add tests for complex functions
 	* gfortran.dg/f2c_4.c: Likewise
-	
+
 2005-06-22 Paul Brook  <paul@codesourcery.com>
 
 	PR fortran/21034
@@ -1700,7 +1701,7 @@
 
 2005-06-21  Dorit Nuzman  <dorit@il.ibm.com>
 
-	* lib/target-supports.exp (check_effective_target_vect_reduction): 
+	* lib/target-supports.exp (check_effective_target_vect_reduction):
 	Remove.
 	* gcc.dg/vect/vect.exp: Run tests with additional flags separately.
 	* gcc.dg/vect/vect-reduc-1.c: Vectorizable on all relevant platforms -
@@ -1721,7 +1722,7 @@
 
 	* gfortran.dg/func_derived_2.f90, gfortran.dg/func_derived_3.f90:
 	New tests.
-	
+
 2005-06-20  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* gfortran.dg/backslash_1.f90: New test.
