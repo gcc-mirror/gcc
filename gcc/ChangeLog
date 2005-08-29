@@ -1,5 +1,11 @@
 2005-08-29  Paolo Bonzini  <bonzini@gnu.org>
 
+	PR rtl-optimization/15248
+	* reload1.c (reload): Ignore equivalences between pseudos and
+	read only memory.
+
+2005-08-29  Paolo Bonzini  <bonzini@gnu.org>
+
 	PR bootstrap/21268
 	* Makefile.in (ALL_CPPFLAGS): Include $(INCLUDES) at the
 	beginning.  Remove $(INCLUDES) from all the rules, if following
