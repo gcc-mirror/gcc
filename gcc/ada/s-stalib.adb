@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1995-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1995-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,12 +36,12 @@
 --  of System.Standard_Library, since this would cause order of elaboration
 --  problems (Elaborate_Body would have the same problem).
 
-pragma Warnings (Off);
---  Kill warnings from unused withs
-
 pragma Polling (Off);
 --  We must turn polling off for this unit, because otherwise we get
 --  elaboration circularities with Ada.Exceptions if polling is on.
+
+pragma Warnings (Off);
+--  Kill warnings from unused withs
 
 with System.Soft_Links;
 --  Referenced directly from generated code using external symbols so it
@@ -56,16 +56,13 @@ with System.Memory;
 --  must always be present in a build, even if no unit has a direct with
 --  of this unit.
 
+pragma Warnings (On);
+
 package body System.Standard_Library is
 
    Runtime_Finalized : Boolean := False;
    --  Set to True when adafinal is called. Used to ensure that subsequent
    --  calls to adafinal after the first have no effect.
-
-   Inside_Elab_Final_Code : Integer := 0;
-   pragma Export (C, Inside_Elab_Final_Code, "__gnat_inside_elab_final_code");
-   --  ???This variable is obsolete since 2001-08-29 but cannot be removed
-   --  ???right away due to the bootstrap problems
 
    --------------------------
    -- Abort_Undefer_Direct --
