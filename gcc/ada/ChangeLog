@@ -1,3 +1,50 @@
+2005-08-29  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/23187
+	* adaint.c
+	(GNAT_MAXPATH_LEN): Use default value if MAXPATHLEN is undefined. 
+
+2005-08-29  Arnaud Charlet  <charlet@adacore.com>
+	    Doug Rupp  <rupp@adacore.com>
+
+	* s-stalib.adb: Add missing pragma Warnings (On) to reenable Warnings
+	when needed.
+	(Inside_Elab_Final_Code): Moved to init.c to avoid having to keep
+	this code in the GNAT run-time.
+
+	* decl.c, fe.h: Replace GCC_ZCX by Back_End_Exceptions.
+
+	PR ada/21053
+	* init.c (__gnat_error_handler [many]): Mark "msg" as const
+	(__gnat_error_handler [HPUX]): Mark siginfo parameter as unused
+
+	(__gnat_inside_elab_final_code): Moved here from
+	Standard_Library and only defined for the compiler.
+	__gnat_error_handler [VMS]: Adjust sigargs to account for PC & PSL.
+	(__gnat_inum_to_ivec): Do not define this function on VxWorks when
+	using RTPs because directly vectored Interrupt routines are not
+	supported on this configuration.
+	(getpid): Do not redefine this function on VxWorks when using RTPs
+	because this primitive is well supported by the RTP libraries.
+	(copy_msg): Correct the code that checks for buffer overflow.
+	Discovered during code reading.
+
+2005-08-29  Olivier Hainque  <hainque@adacore.com>
+
+	* decl.c (gnat_to_gnu_entity) <E_Variable>: When allocating storage for
+	a library level mutable variable with an initializer, tell
+	build_allocator to ignore the initializer's size. It may not be large
+	enough for all the values that might be assigned to the variable later
+	on.
+
+2005-08-29  Arnaud Charlet  <charlet@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* trans.c: Protect < in error msg with quote
+	Replace GCC_ZCX by Back_End_Exceptions.
+	(addressable_p) <COMPONENT_REF>: Also return 1 if the field
+	has been sufficiently aligned in the record.
+
 2005-08-15  James E. Wilson  <wilson@specifix.com>
 
 	* system-linux-alpha.ads: Change ia64 to alpha.
