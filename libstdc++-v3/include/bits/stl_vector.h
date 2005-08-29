@@ -568,6 +568,21 @@ namespace _GLIBCXX_STD
       back() const
       { return *(end() - 1); }
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 464. Suggestion for new member functions in standard containers.
+      // data access
+      /**
+       *   Returns a pointer such that [data(), data() + size()) is a valid
+       *   range.  For a non-empty %vector, data() == &front().
+       */
+      pointer
+      data()
+      { return pointer(this->_M_impl._M_start); }
+
+      const_pointer
+      data() const
+      { return const_pointer(this->_M_impl._M_start); }
+
       // [23.2.4.3] modifiers
       /**
        *  @brief  Add data to the end of the %vector.

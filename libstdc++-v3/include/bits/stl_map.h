@@ -61,6 +61,7 @@
 #ifndef _MAP_H
 #define _MAP_H 1
 
+#include <bits/functexcept.h>
 #include <bits/concept_check.h>
 
 namespace _GLIBCXX_STD
@@ -345,6 +346,33 @@ namespace _GLIBCXX_STD
 	// __i->first is greater than or equivalent to __k.
 	if (__i == end() || key_comp()(__k, (*__i).first))
           __i = insert(__i, value_type(__k, mapped_type()));
+	return (*__i).second;
+      }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 464. Suggestion for new member functions in standard containers.
+      /**
+       *  @brief  Access to %map data.
+       *  @param  k  The key for which data should be retrieved.
+       *  @return  A reference to the data whose key is equivalent to k, if
+       *           such a data is present in the map.
+       *  @throw  std::out_of_range  If no such data is present.
+       */
+      mapped_type&
+      at(const key_type& __k)
+      {
+	iterator __i = lower_bound(__k);
+	if (__i == end() || key_comp()(__k, (*__i).first))
+	  __throw_out_of_range(__N("map::at"));
+	return (*__i).second;
+      }
+
+      const mapped_type&
+      at(const key_type& __k) const
+      {
+	const_iterator __i = lower_bound(__k);
+	if (__i == end() || key_comp()(__k, (*__i).first))
+	  __throw_out_of_range(__N("map::at"));
 	return (*__i).second;
       }
 

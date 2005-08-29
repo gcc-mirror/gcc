@@ -230,6 +230,10 @@ namespace __gnu_debug_def
 	return _Base::back();
       }
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // DR 464. Suggestion for new member functions in standard containers.
+      using _Base::data;
+
       // 23.2.4.3 modifiers:
       void
       push_back(const _Tp& __x)
