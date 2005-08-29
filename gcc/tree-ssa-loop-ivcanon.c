@@ -491,9 +491,16 @@ empty_loop_p (struct loop *loop)
 static void
 remove_empty_loop (struct loop *loop)
 {
-  edge exit = single_dom_exit (loop);
+  edge exit = single_dom_exit (loop), non_exit;
   tree cond_stmt = last_stmt (exit->src);
   tree do_exit;
+  basic_block *body;
+  unsigned n_before, freq_in, freq_h;
+  gcov_type exit_count = exit->count;
+
+  non_exit = EDGE_SUCC (exit->src, 0);
+  if (non_exit == exit)
+    non_exit = EDGE_SUCC (exit->src, 1);
 
   if (exit->flags & EDGE_TRUE_VALUE)
     do_exit = boolean_true_node;
@@ -502,6 +509,34 @@ remove_empty_loop (struct loop *loop)
 
   COND_EXPR_COND (cond_stmt) = do_exit;
   update_stmt (cond_stmt);
+
+  /* Let us set the probabilities of the edges coming from the exit block.  */
+  exit->probability = REG_BR_PROB_BASE;
+  non_exit->probability = 0;
+  non_exit->count = 0;
+
+  /* Update frequencies and counts.  Everything before
+     the exit needs to be scaled FREQ_IN/FREQ_H times,
+     where FREQ_IN is the frequency of the entry edge
+     and FREQ_H is the frequency of the loop header.
+     Everything after the exit has zero frequency.  */
+  freq_h = loop->header->frequency;
+  freq_in = EDGE_FREQUENCY (loop_preheader_edge (loop));
+  if (freq_h != 0)
+    {
+      body = get_loop_body_in_dom_order (loop);
+      for (n_before = 1; n_before <= loop->num_nodes; n_before++)
+	if (body[n_before - 1] == exit->src)
+	  break;
+      scale_bbs_frequencies_int (body, n_before, freq_in, freq_h);
+      scale_bbs_frequencies_int (body + n_before, loop->num_nodes - n_before,
+				 0, 1);
+      free (body);
+    }
+
+  /* Number of executions of exit is not changed, thus we need to restore
+     the original value.  */
+  exit->count = exit_count;
 }
 
 /* Removes LOOP if it is empty.  Returns true if LOOP is removed.  CHANGED
