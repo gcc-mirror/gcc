@@ -263,7 +263,11 @@ const int __gnat_vmsp = 0;
 #include <sys/param.h>
 #endif
 
+#ifdef MAXPATHLEN
 #define GNAT_MAX_PATH_LEN MAXPATHLEN
+#else
+#define GNAT_MAX_PATH_LEN 256
+#endif
 
 #endif
 
