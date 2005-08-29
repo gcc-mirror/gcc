@@ -1,3 +1,11 @@
+2005-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/23484
+	* builtins.c (fold_builtin_memory_chk, fold_builtin_stxcpy_chk,
+	fold_builtin_strncpy_chk, fold_builtin_snprintf_chk): If len is
+	not constant, but maxlen is, don't set len to maxlen, rather
+	set maxlen to len if len is a constant.
+
 2005-08-29  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/23475

@@ -1,3 +1,9 @@
+2005-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/23484
+	* gcc.c-torture/execute/builtins/pr23484-chk.c: New test.
+	* gcc.c-torture/execute/builtins/pr23484-chk-lib.c: New file.
+
 2005-08-29  Andreas Jaeger  <aj@suse.de>
 
 	PR testsuite/23607
