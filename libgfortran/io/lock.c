@@ -54,7 +54,7 @@ library_start (void)
      stay within the library. */
   g.in_library = 1;
 
-  if (ioparm.iostat != NULL && ioparm.library_return == LIBRARY_OK)
+  if (ioparm.iostat != NULL)
     *ioparm.iostat = ERROR_OK;
 
   ioparm.library_return = LIBRARY_OK;

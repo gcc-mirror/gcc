@@ -1,3 +1,8 @@
+2005-02-29  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/23598
+	* gfortran.dg/iostat_1.f90:  New test.
+
 2005-08-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23099
