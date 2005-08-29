@@ -1,5 +1,9 @@
 2005-08-29  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/stl_map.h (class map): ... and a missing @a.
+
+2005-08-29  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/stl_map.h (class map): Add missing % in comment.
 
 2005-08-29  Paolo Carlini  <pcarlini@suse.de>
