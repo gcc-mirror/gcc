@@ -354,7 +354,7 @@ namespace _GLIBCXX_STD
       /**
        *  @brief  Access to %map data.
        *  @param  k  The key for which data should be retrieved.
-       *  @return  A reference to the data whose key is equivalent to k, if
+       *  @return  A reference to the data whose key is equivalent to @a k, if
        *           such a data is present in the %map.
        *  @throw  std::out_of_range  If no such data is present.
        */
