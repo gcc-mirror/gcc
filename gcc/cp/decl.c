@@ -3691,7 +3691,8 @@ start_decl (const cp_declarator *declarator,
 		 declaration will have DECL_EXTERNAL set, but will have an
 		 initialization.  Thus, duplicate_decls won't warn
 		 about this situation, and so we check here.  */
-	      if (DECL_INITIAL (decl) && DECL_INITIAL (field))
+	      if (DECL_INITIAL (decl) 
+		  && DECL_INITIALIZED_IN_CLASS_P (field))
 		error ("duplicate initialization of %qD", decl);
 	      if (duplicate_decls (decl, field))
 		decl = field;
@@ -4833,10 +4834,20 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 		     "initialized", decl);
 	      init = NULL_TREE;
 	    }
+
+	  /* Check that the initializer for a static data member was a
+	     constant.  Althouh we check in the parser that the
+	     initializer is an integral constant expression, we do not
+	     simplify division-by-zero at the point at which it
+	     occurs.  Therefore, in:
+
+	       struct S { static const int i = 7 / 0; };
+	       
+	     we issue an error at this point.  It would
+	     probably be better to forbid division by zero in
+	     integral constant expressions.  */
 	  if (DECL_EXTERNAL (decl) && init)
 	    {
-	      /* The static data member cannot be initialized by a
-		 non-constant when being declared.  */
 	      error ("%qD cannot be initialized by a non-constant expression"
 		     " when being declared", decl);
 	      DECL_INITIALIZED_IN_CLASS_P (decl) = 0;

@@ -1,3 +1,22 @@
+2005-08-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/23099
+	* cp-tree.h (saved_scope): Add skip_evaluation.
+	* decl.c (start_decl): Use DECL_INITIALIZED_IN_CLASS_P, not
+	DECL_INITIAL, to determine whether or not a static data member was
+	initialized in the class-specifier.
+	(cp_finish_decl): Add comment.
+	* init.c (integral_constant_value): Subtitute into the
+	initializers for static data members in	templates.
+	* name-lookup.c (push_to_top_level): Save skip_evaluation.
+	(pop_from_top_level): Restore it.
+	* pt.c (instantiate_class_template): Do not substitute into the
+	intializers of static data members when instantiating a class.
+	(regenerate_decl_from_template): Simplify.
+	(instantiate_decl): Tidy.  Substitute into the initializer for a
+	static data member even when the definition of the data member is
+	not available.
+
 2005-08-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19004

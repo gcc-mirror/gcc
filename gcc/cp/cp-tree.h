@@ -664,6 +664,7 @@ struct saved_scope GTY(())
   int x_processing_specialization;
   bool x_processing_explicit_instantiation;
   int need_pop_function_context;
+  bool skip_evaluation;
 
   struct stmt_tree_s x_stmt_tree;
 

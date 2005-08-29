@@ -1571,12 +1571,25 @@ integral_constant_value (tree decl)
 	      /* And so are variables with a 'const' type -- unless they
 		 are also 'volatile'.  */
 	      && CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (decl))
-	      && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl)))
-	 && DECL_INITIAL (decl)
-	 && DECL_INITIAL (decl) != error_mark_node
-	 && TREE_TYPE (DECL_INITIAL (decl))
-	 && INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (DECL_INITIAL (decl))))
-    decl = DECL_INITIAL (decl);
+	      && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl))))
+    {
+      tree init;
+      /* If DECL is a static data member in a template class, we must
+	 instantiate it here.  The initializer for the static data
+	 member is not processed until needed; we need it now.  */ 
+      mark_used (decl);
+      init = DECL_INITIAL (decl);
+      /* If we are currently processing a template, the
+	 initializer for a static data member may not be dependent,
+	 but it is not folded until instantiation time.  */
+      if (init)
+	init = fold_non_dependent_expr (init);
+      if (!(init || init == error_mark_node)
+	  || !TREE_TYPE (init)
+	  || !INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (init)))
+	break;
+      decl = init;
+    }
   return decl;
 }
 
