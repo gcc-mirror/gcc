@@ -80,10 +80,6 @@ extern void (*Lock_Task) (void);
 #define Unlock_Task system__soft_links__unlock_task
 extern void (*Unlock_Task) (void);
 
-#define Get_Machine_State_Addr \
-                      system__soft_links__get_machine_state_addr
-extern struct Machine_State *(*Get_Machine_State_Addr) (void);
-
 #define Check_Abort_Status     \
                       system__soft_links__check_abort_status
 extern int (*Check_Abort_Status) (void);
@@ -91,12 +87,6 @@ extern int (*Check_Abort_Status) (void);
 #define Raise_From_Signal_Handler \
                       ada__exceptions__raise_from_signal_handler
 extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *);
-
-#define Propagate_Signal_Exception \
-                      __gnat_propagate_sig_exc
-extern void Propagate_Signal_Exception (struct Machine_State *,
-                                        struct Exception_Data *,
-                                        const char *);
 
 /* Copies of global values computed by the binder */
 int   __gl_main_priority            = -1;
@@ -116,6 +106,12 @@ int   __gl_detect_blocking          = 0;
 /* Indication of whether synchronous signal handler has already been
    installed by a previous call to adainit */
 int  __gnat_handler_installed      = 0;
+
+#ifndef IN_RTS
+int __gnat_inside_elab_final_code = 0;
+/* ??? This variable is obsolete since 2001-08-29 but is kept to allow
+   bootstrap from old GNAT versions (< 3.15). */
+#endif
 
 /* HAVE_GNAT_INIT_FLOAT must be set on every targets where a __gnat_init_float
    is defined. If this is not set them a void implementation will be defined
@@ -405,18 +401,14 @@ __gnat_install_handler (void)
 static void __gnat_error_handler (int, siginfo_t *, struct sigcontext *);
 extern char *__gnat_get_code_loc (struct sigcontext *);
 extern void __gnat_set_code_loc (struct sigcontext *, char *);
-extern void __gnat_enter_handler (struct sigcontext *, char *);
 extern size_t __gnat_machine_state_length (void);
 
-extern long exc_lookup_gp (char *);
-extern void exc_resume (struct sigcontext *);
-
 static void
-__gnat_error_handler (int sig, siginfo_t *sip, struct sigcontext *context)
+__gnat_error_handler
+  (int sig, siginfo_t *sip, struct sigcontext *context ATTRIBUTE_UNUSED)
 {
   struct Exception_Data *exception;
   static int recurse = 0;
-  struct sigcontext *mstate;
   const char *msg;
 
   /* If this was an explicit signal from a "kill", just resignal it.  */
@@ -474,10 +466,6 @@ __gnat_error_handler (int sig, siginfo_t *sip, struct sigcontext *context)
     }
 
   recurse = 0;
-  mstate = (struct sigcontext *) (*Get_Machine_State_Addr) ();
-  if (mstate != 0)
-    *mstate = *context;
-
   Raise_From_Signal_Handler (exception, (char *) msg);
 }
 
@@ -526,14 +514,6 @@ __gnat_set_code_loc (struct sigcontext *context, char *pc)
 }
 
 
-void
-__gnat_enter_handler (struct sigcontext *context, char *pc)
-{
-  context->sc_pc = (long) pc;
-  context->sc_regs[SC_GP] = exc_lookup_gp (pc);
-  exc_resume (context);
-}
-
 size_t
 __gnat_machine_state_length (void)
 {
@@ -569,10 +549,11 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 }
 
 static void
-__gnat_error_handler (int sig, siginfo_t *siginfo, void *ucontext)
+__gnat_error_handler
+  (int sig, siginfo_t *siginfo ATTRIBUTE_UNUSED, void *ucontext)
 {
   struct Exception_Data *exception;
-  char *msg;
+  const char *msg;
 
   switch (sig)
     {
@@ -800,7 +781,7 @@ static void
 __gnat_error_handler (int sig)
 {
   struct Exception_Data *exception;
-  char *msg;
+  const char *msg;
 
   switch (sig)
     {
@@ -870,11 +851,6 @@ __gnat_install_handler (void)
 #define SIGNAL_STACK_SIZE 4096
 #define SIGNAL_STACK_ALIGNMENT 64
 
-struct Machine_State
-{
-  sigcontext_t context;
-};
-
 static void __gnat_error_handler (int, int, sigcontext_t *);
 
 /* We are not setting the SA_SIGINFO bit in the sigaction flags when
@@ -890,9 +866,8 @@ static void __gnat_error_handler (int, int, sigcontext_t *);
 */
 
 static void
-__gnat_error_handler (int sig, int code, sigcontext_t *sc)
+__gnat_error_handler (int sig, int code, sigcontext_t *sc ATTRIBUTE_UNUSED)
 {
-  struct Machine_State  *mstate;
   struct Exception_Data *exception;
   const char *msg;
 
@@ -966,10 +941,6 @@ __gnat_error_handler (int sig, int code, sigcontext_t *sc)
       exception = &program_error;
       msg = "unhandled signal";
     }
-
-  mstate = (*Get_Machine_State_Addr) ();
-  if (mstate != 0)
-    memcpy ((void *) mstate, (const void *) sc, sizeof (sigcontext_t));
 
   Raise_From_Signal_Handler (exception, msg);
 }
@@ -1389,7 +1360,7 @@ copy_msg (msgdesc, message)
   /* Check for buffer overflow and truncate if necessary */
   copy_len = (len + msgdesc->len <= Default_Exception_Msg_Max_Length - 1 ?
 	      msgdesc->len :
-	      len + msgdesc->len - Default_Exception_Msg_Max_Length);
+	      Default_Exception_Msg_Max_Length - 1 - len);
   strncpy (&message [len], msgdesc->adr, copy_len);
   message [len + copy_len] = 0;
 
@@ -1404,10 +1375,9 @@ __gnat_error_handler (int *sigargs, void *mechargs)
   struct descriptor_s gnat_facility = {4,0,"GNAT"};
   char message [Default_Exception_Msg_Max_Length];
 
-  char *msg = "";
+  const char *msg = "";
   char curr_icb[544];
   long curr_invo_handle;
-  long *mstate;
 
   /* Check for conditions to resignal which aren't effected by pragma
      Import_Exception.  */
@@ -1423,7 +1393,11 @@ __gnat_error_handler (int *sigargs, void *mechargs)
   if (exception)
     {
       message [0] = 0;
+
+      /* Subtract PC & PSL fields which messes with PUTMSG */
+      sigargs [0] -= 2;
       SYS$PUTMSG (sigargs, copy_msg, &gnat_facility, message);
+      sigargs [0] += 2;
       msg = message;
 
       exception->Name_Length = 19;
@@ -1470,24 +1444,20 @@ __gnat_error_handler (int *sigargs, void *mechargs)
 	{
 	  int i;
 
-	  /* Scan the DEC Ada exception condition table for a match and fetch the
-	     associated GNAT exception pointer */
+	  /* Scan the DEC Ada exception condition table for a match and fetch
+	     the associated GNAT exception pointer */
 	  for (i = 0;
 	       dec_ada_cond_except_table [i].cond &&
-	       !LIB$MATCH_COND (&sigargs [1], &dec_ada_cond_except_table [i].cond);
+	       !LIB$MATCH_COND (&sigargs [1],
+			        &dec_ada_cond_except_table [i].cond);
 	       i++);
-	  exception = (struct Exception_Data *) dec_ada_cond_except_table [i].except;
+	  exception = (struct Exception_Data *)
+	    dec_ada_cond_except_table [i].except;
 
-	  if (exception)
-	    /* DEC Ada exceptions never have a PC and PSL appended, but LIB$STOP
-	       (which is how we got here from Bliss code)
-	       allows slots for them and the result is 2 words of garbage on the
-	       end, so the count must be decremented. */
-	    sigargs [0] -= 2;
-	  else
+	  if (!exception)
 	    {
-	      /* Scan the VMS standard condition table for a match and fetch the
-		 associated GNAT exception pointer */
+	      /* Scan the VMS standard condition table for a match and fetch
+		 the associated GNAT exception pointer */
 	      for (i = 0;
 		   cond_except_table [i].cond &&
 		   !LIB$MATCH_COND (&sigargs [1], &cond_except_table [i].cond);
@@ -1504,20 +1474,14 @@ __gnat_error_handler (int *sigargs, void *mechargs)
 	exception = &program_error;
 #endif
 	message [0] = 0;
+	/* Subtract PC & PSL fields which messes with PUTMSG */
+	sigargs [0] -= 2;
 	SYS$PUTMSG (sigargs, copy_msg, &gnat_facility, message);
+	sigargs [0] += 2;
 	msg = message;
 	break;
       }
 
-  mstate = (long *) (*Get_Machine_State_Addr) ();
-  if (mstate != 0)
-    {
-      lib_get_curr_invo_context (&curr_icb);
-      lib_get_prev_invo_context (&curr_icb);
-      lib_get_prev_invo_context (&curr_icb);
-      curr_invo_handle = lib_get_invo_handle (&curr_icb);
-      *mstate = curr_invo_handle;
-    }
   Raise_From_Signal_Handler (exception, msg);
 }
 
@@ -1618,21 +1582,37 @@ __gnat_install_handler ()
 
 #include <signal.h>
 #include <taskLib.h>
+
+#ifndef __RTP__
 #include <intLib.h>
 #include <iv.h>
+#endif
 
 #ifdef VTHREADS
 #include "private/vThreadsP.h"
 #endif
 
-extern int __gnat_inum_to_ivec (int);
 static void __gnat_error_handler (int, int, struct sigcontext *);
 void __gnat_map_signal (int);
 
-#ifndef __alpha_vxworks
+#ifndef __RTP__
+
+/* Directly vectored Interrupt routines are not supported when using RTPs */
+
+extern int __gnat_inum_to_ivec (int);
+
+/* This is needed by the GNAT run time to handle Vxworks interrupts */
+int
+__gnat_inum_to_ivec (int num)
+{
+  return INUM_TO_IVEC (num);
+}
+#endif
+
+#if !defined(__alpha_vxworks) && (_WRS_VXWORKS_MAJOR != 6) && !defined(__RTP__)
 
 /* getpid is used by s-parint.adb, but is not defined by VxWorks, except
-   on Alpha VxWorks */
+   on Alpha VxWorks and VxWorks 6.x (including RTPs). */
 
 extern long getpid (void);
 
@@ -1642,13 +1622,6 @@ getpid (void)
   return taskIdSelf ();
 }
 #endif
-
-/* This is needed by the GNAT run time to handle Vxworks interrupts */
-int
-__gnat_inum_to_ivec (int num)
-{
-  return INUM_TO_IVEC (num);
-}
 
 /* VxWorks expects the field excCnt to be zeroed when a signal is handled.
    The VxWorks version of longjmp does this; gcc's builtin_longjmp does not */
@@ -1662,13 +1635,13 @@ __gnat_clear_exception_count (void)
 #endif
 }
 
-/* Exported to 5zintman.adb in order to handle different signal
+/* Exported to s-intman-vxworks.adb in order to handle different signal
    to exception mappings in different VxWorks versions */
 void
 __gnat_map_signal (int sig)
 {
   struct Exception_Data *exception;
-  char *msg;
+  const char *msg;
 
   switch (sig)
     {

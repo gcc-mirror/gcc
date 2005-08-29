@@ -497,6 +497,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		 || Present (Renamed_Object (gnat_entity))));
 	bool inner_const_flag = const_flag;
 	bool static_p = Is_Statically_Allocated (gnat_entity);
+	bool mutable_p = false;
 	tree gnu_ext_name = NULL_TREE;
 	tree renamed_obj = NULL_TREE;
 
@@ -594,7 +595,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			     (Etype
 			      (Expression (Declaration_Node (gnat_entity)))));
 	    else
-	      gnu_size = max_size (TYPE_SIZE (gnu_type), true);
+	      {
+		gnu_size = max_size (TYPE_SIZE (gnu_type), true);
+		mutable_p = true;
+	      }
 	  }
 
 	/* If the size is zero bytes, make it one byte since some linkers have
@@ -928,7 +932,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       If we have a template initializer only (that we made above),
 	       pretend there is none and rely on what build_allocator creates
 	       again anyway.  Otherwise (if we have a full initializer), get
-	       the data part and feed that to build_allocator.  */
+	       the data part and feed that to build_allocator.
+
+	       If we are elaborating a mutable object, tell build_allocator to
+	       ignore a possibly simpler size from the initializer, if any, as
+	       we must allocate the maximum possible size in this case.  */
 
 	    if (definition)
 	      {
@@ -959,7 +967,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			      gnat_entity);
 
 		gnu_expr = build_allocator (gnu_alloc_type, gnu_expr, gnu_type,
-					    0, 0, gnat_entity, false);
+					    0, 0, gnat_entity, mutable_p);
 	      }
 	    else
 	      {
@@ -1104,7 +1112,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   exception handler, we must force this variable in memory to
 	   suppress an invalid optimization.  */
 	if (Has_Nested_Block_With_Handler (Scope (gnat_entity))
-	    && Exception_Mechanism != GCC_ZCX)
+	    && Exception_Mechanism != Back_End_Exceptions)
 	  TREE_ADDRESSABLE (gnu_decl) = 1;
 
 	/* Back-annotate the Alignment of the object if not already in the
