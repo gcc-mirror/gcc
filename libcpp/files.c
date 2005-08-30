@@ -416,21 +416,6 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool f
   /* Try each path in the include chain.  */
   for (; !fake ;)
     {
-      if (file->dir == pfile->quote_include
-	  || file->dir == pfile->bracket_include)
-	{
-	  entry = search_cache (*hash_slot, file->dir);
-	  if (entry)
-	    {
-	      /* Found the same file again.  Record it as reachable
-		 from this position, too.  */
-	      free ((char *) file->name);
-	      free (file);
-	      file = entry->u.file;
-	      goto found;
-	    }
-	}
-
       if (find_file_in_dir (pfile, file, &invalid_pch))
 	break;
 
@@ -459,40 +444,33 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool f
 	    }
 	  break;
 	}
+
+      /* Only check the cache for the starting location (done above)
+	 and the quote and bracket chain heads because there are no
+	 other possible starting points for searches.  */
+      if (file->dir != pfile->bracket_include
+	  && file->dir != pfile->quote_include)
+	continue;
+
+      entry = search_cache (*hash_slot, file->dir);
+      if (entry)
+	break;
     }
 
-  /* This is a new file; put it in the list.  */
-  file->next_file = pfile->all_files;
-  pfile->all_files = file;
-
-  /* If this file was found in the directory-of-the-current-file,
-     check whether that directory is reachable via one of the normal
-     search paths.  If so, we must record this entry as being
-     reachable that way, otherwise we will mistakenly reprocess this
-     file if it is included later from the normal search path.  */
-  if (file->dir && start_dir->next == pfile->quote_include)
+  if (entry)
     {
-      cpp_dir *d;
-      cpp_dir *proper_start_dir = pfile->quote_include;
-
-      for (d = proper_start_dir;; d = d->next)
-	{
-	  if (d == pfile->bracket_include)
-	    proper_start_dir = d;
-	  if (d == 0)
-	    {
-	      proper_start_dir = 0;
-	      break;
-	    }
-	  /* file->dir->name will have a trailing slash.  */
-	  if (!strncmp (d->name, file->dir->name, file->dir->len - 1))
-	    break;
-	}
-      if (proper_start_dir)
-	start_dir = proper_start_dir;
+      /* Cache for START_DIR too, sharing the _cpp_file structure.  */
+      free ((char *) file->name);
+      free (file);
+      file = entry->u.file;
+    }
+  else
+    {
+      /* This is a new file; put it in the list.  */
+      file->next_file = pfile->all_files;
+      pfile->all_files = file;
     }
 
- found:
   /* Store this new result in the hash table.  */
   entry = new_file_hash_entry (pfile);
   entry->next = *hash_slot;
@@ -880,14 +858,10 @@ open_file_failed (cpp_reader *pfile, _cpp_file *file)
 static struct file_hash_entry *
 search_cache (struct file_hash_entry *head, const cpp_dir *start_dir)
 {
-  struct file_hash_entry *p;
+  while (head && head->start_dir != start_dir)
+    head = head->next;
 
-  /* Look for a file that was found from a search starting at the
-     given location.  */
-  for (p = head; p; p = p->next)
-    if (p->start_dir == start_dir)
-      return p;
-  return 0;
+  return head;
 }
 
 /* Allocate a new _cpp_file structure.  */
