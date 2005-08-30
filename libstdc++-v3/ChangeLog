@@ -1,5 +1,11 @@
 2005-08-30  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/23578 (cont)
+	* include/bits/stl_bvector.h (class vector<bool>): Add
+	a dummy data() to avoid problems in debug-mode.
+
+2005-08-30  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/ext/hash_map/23528.cc: New.
 
 2005-08-29  Paolo Carlini  <pcarlini@suse.de>

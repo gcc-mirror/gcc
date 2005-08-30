@@ -808,6 +808,14 @@ template<typename _Alloc>
     back() const
     { return *(end() - 1); }
 
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // DR 464. Suggestion for new member functions in standard containers.
+    // N.B. DR 464 says nothing about vector<bool> but we need something
+    // here due to the way we are implementing DR 464 in the debug-mode
+    // vector class.
+    void
+    data() { }
+
     void
     push_back(bool __x)
     {
