@@ -1,3 +1,11 @@
+2005-08-30  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/23586
+	* parser.c (cp_parser_namespace_name): Move diagnostic for
+	invalid namespace-name to here from ...
+	* name-lookup.c (do_namespace_alias): ... here and ...
+	(do_using_directive): ... here.  Remove dead code.
+
 2005-08-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23099
