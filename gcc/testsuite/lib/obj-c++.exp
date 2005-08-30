@@ -23,6 +23,7 @@
 #
 load_lib prune.exp
 load_lib gcc-defs.exp
+load_lib target-libpath.exp
 
 #
 # OBJCXX_UNDER_TEST is the compiler under test.
@@ -127,6 +128,18 @@ proc obj-c++_link_flags { paths } {
       if [file exists "${gccpath}/librx/librx.a"] {
           append flags "-L${gccpath}/librx "
       }
+
+      set objcpath "[get_multilibs]"
+      set libobjc_dir [lookfor_file ${objcpath} libobjc/.libs/libobjc.a]
+      if { $libobjc_dir == ""} {
+	  set libobjc_dir [lookfor_file ${objcpath} libobjc/.libs/libobjc-gnu.a]
+      }
+      if { $libobjc_dir != "" } {
+	  set libobjc_dir [file dirname ${libobjc_dir}]
+	  append flags "-L${libobjc_dir}"
+	  append ld_library_path ":${libobjc_dir}"
+      }
+    
       append ld_library_path ":${rootme}"
       set compiler [lindex $OBJCXX_UNDER_TEST 0]
       if { [is_remote host] == 0 && [which $compiler] != 0 } {
@@ -165,36 +178,7 @@ proc obj-c++_link_flags { paths } {
       }
     }
 
-    # On IRIX 6, we have to set variables akin to LD_LIBRARY_PATH, but
-    # called LD_LIBRARYN32_PATH (for the N32 ABI) and LD_LIBRARY64_PATH
-    # (for the 64-bit ABI).  The right way to do this would be to modify
-    # unix.exp -- but that's not an option since it's part of DejaGNU
-    # proper, so we do it here.
-    # The same applies to Darwin (DYLD_LIBRARY_PATH), Solaris 32 bit
-    # (LD_LIBRARY_PATH_32), Solaris 64 bit (LD_LIBRARY_PATH_64), and HP-UX
-    # (SHLIB_PATH).
-    # Doing this does cause trouble when testing cross-compilers.
-    if {![is_remote target]} {
-	global env;
-	if [info exists env(LD_LIBRARY_PATH)] {
-	    # If we've already added these directories once, keep the
-	    # existing path.
-	    if {$ld_library_path == $env(LD_LIBRARY_PATH)
-		|| [string first $ld_library_path: \
-				 $env(LD_LIBRARY_PATH)] == 0} {
-		set ld_library_path $env(LD_LIBRARY_PATH)
-	    } elseif { $env(LD_LIBRARY_PATH) != "" } {
-		append ld_library_path ":$env(LD_LIBRARY_PATH)"
-	    }
-	}
-	setenv  LD_LIBRARY_PATH     $ld_library_path
-	setenv  SHLIB_PATH          $ld_library_path
-	setenv  LD_LIBRARYN32_PATH  $ld_library_path
-	setenv  LD_LIBRARY64_PATH   $ld_library_path
-	setenv  LD_LIBRARY_PATH_32  $ld_library_path
-	setenv  LD_LIBRARY_PATH_64  $ld_library_path
-	setenv  DYLD_LIBRARY_PATH   $ld_library_path
-    }
+    set_ld_library_path_env_vars
 
     return "$flags"
 }
@@ -314,10 +298,6 @@ proc obj-c++_target_compile { source dest type options } {
     if { $libobjc_dir != "" } {
 	set objc_include_dir "${srcdir}/../../libobjc"
 	lappend options "additional_flags=-I${objc_include_dir}"
-	set libobjc_dir [file dirname ${libobjc_dir}]
-	set objc_link_flags "-L${libobjc_dir}"
-	lappend options "additional_flags=${objc_link_flags}"
-	append ld_library_path ":${libobjc_dir}"
     }
 
     lappend options "additional_flags=[libio_include_flags]"

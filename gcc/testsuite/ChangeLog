@@ -1,3 +1,15 @@
+2005-08-30  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR testsuite/23609
+	* lib/obj-c++.exp: Include target-libpath.exp.
+	(obj-c++_link_flags): Look for the GNU libobjc library
+	and set the library path to include it.
+	Don't manually set LD_LIBRARY_PATH (etc.) but call
+	set_ld_library_path_env_vars instead.
+	(obj-c++_target_compile): Don't set library path or
+	linker flags because they are already set correctly
+	in obj-c++_link_flags.
+
 2005-08-30  Josh Conner  <jconner@apple.com>
 
 	* gcc.dg/builtin-stringop-chk-1.c: Add -mstructure-size-boundary=8
