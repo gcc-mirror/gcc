@@ -1,3 +1,9 @@
+2005-08-29  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	PR libgcj/23549
+	* gij.cc (main): Don't expect arguments to -enableassertions, -ea,
+	-disableassertions and -da.
+
 2005-08-29  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* configure.ac: Replace "*-*-darwin[0-7].*" with
