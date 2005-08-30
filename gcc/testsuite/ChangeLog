@@ -1,3 +1,16 @@
+2005-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/20348
+	PR preprocessor/20356
+	* gcc.dg/cpp/pr20348.c: New test.
+	* gcc.dg/cpp/pr20348.h: New file.
+	* gcc.dg/cpp/inc/pr20348.h: New file.
+	* gcc.dg/cpp/inc/pr20348-aux.h: New file.
+	* gcc.dg/cpp/pr20356.c: New test.
+	* gcc.dg/cpp/pr20356.h: New file.
+	* gcc.dg/cpp/inc/pr20356.h: New file.
+	* gcc.dg/cpp/inc/pr20356-aux.h: New file.
+
 2005-08-29  Jerry DeLisle  <jvdelisle@verizon.net>
 
 	* gfortran.fortran-torture/execute/intrinsic_count.f90:

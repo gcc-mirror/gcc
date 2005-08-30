@@ -1,3 +1,10 @@
+2005-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/20348
+	PR preprocessor/20356
+	* files.c (_cpp_find_file, search_cache): Revert 2004-06-26 and
+	2004-06-05 changes.
+
 2005-07-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.ac (ACX_PROG_CC_WARNING_OPTS): add
