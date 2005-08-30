@@ -1,4 +1,9 @@
-2005-02-29  Thomas Koenig  <Thomas.Koenig@online.de>
+2005-08-29  Jerry DeLisle  <jvdelisle@verizon.net>
+
+	* gfortran.fortran-torture/execute/intrinsic_count.f90:
+	Fix array dimension to avoid correct end-of-file error. 
+
+2005-08-29  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/23598
 	* gfortran.dg/iostat_1.f90:  New test.

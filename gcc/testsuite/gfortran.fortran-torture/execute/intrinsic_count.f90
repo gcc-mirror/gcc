@@ -2,7 +2,7 @@
 program intrinsic_count
    implicit none
    logical(kind=4), dimension (3, 5) :: a
-   integer(kind=4), dimension (5) :: b
+   integer(kind=4), dimension (3) :: b
    integer i
    character(len=10) line
 
