@@ -1,3 +1,9 @@
+2005-08-29  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* configure.ac: Replace "*-*-darwin[0-7].*" with
+	"*-*-darwin[[0-7]].*"
+	* configure: Regenerate.
+
 2005-08-24  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* configure.ac (extra_ldflags_libjava): Enable -single_module only for
