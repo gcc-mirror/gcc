@@ -1,3 +1,7 @@
+2005-08-30  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++.dg/other/i386-1.C: New.
+
 2005-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/20348
