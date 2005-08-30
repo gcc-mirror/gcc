@@ -1,3 +1,8 @@
+2005-08-30  Josh Conner  <jconner@apple.com>
+
+	* gcc.dg/builtin-stringop-chk-1.c: Add -mstructure-size-boundary=8
+	to command-line options for arm-*-* targets.
+
 2005-08-30  Geoffrey Keating  <geoffk@apple.com>
 
 	* g++.dg/other/i386-1.C: New.

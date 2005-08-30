@@ -2,6 +2,7 @@
    are emitted properly.  */
 /* { dg-do compile } */
 /* { dg-options "-O2 -std=gnu99" } */
+/* { dg-options "-mstructure-size-boundary=8 -O2 -std=gnu99" { target arm-*-* } } */
 
 extern void abort (void);
 
