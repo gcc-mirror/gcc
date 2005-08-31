@@ -1438,6 +1438,7 @@ typedef struct
   int flag_pack_derived;
   int flag_repack_arrays;
   int flag_f2c;
+  int flag_automatic;
   int flag_backslash;
   int flag_d_lines;
 
