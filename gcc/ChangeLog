@@ -1,3 +1,9 @@
+2005-08-30  Richard Henderson  <rth@redhat.com>
+
+	PR target/23630
+	* expr.c (expand_expr_real_1) <VIEW_CONVERT_EXPR>: Use gen_lowpart
+	whenever the mode sizes match.
+
 2005-08-31  Alan Modra  <amodra@bigpond.net.au>
 
 	* calls.c (load_register_parameters): Fix comment typo.
@@ -84,8 +90,8 @@
 2005-08-27  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/23539
-        * config/rs6000/rs6000.c (expand_block_clear): Use HImode when
-        bytes >= 2 not bytes == 2.
+	* config/rs6000/rs6000.c (expand_block_clear): Use HImode when
+	bytes >= 2 not bytes == 2.
 	(expand_block_move): Same.
 
 2005-08-27  Richard Guenther  <rguenther@suse.de>
