@@ -49,20 +49,35 @@ set_integer (void *dest, GFC_INTEGER_LARGEST value, int length)
     {
 #ifdef HAVE_GFC_INTEGER_16
     case 16:
-      *((GFC_INTEGER_16 *) dest) = value;
+      {
+	GFC_INTEGER_16 tmp = value;
+	memcpy (dest, (void *) &tmp, length);
+      }
       break;
 #endif
     case 8:
-      *((GFC_INTEGER_8 *) dest) = value;
+      {
+	GFC_INTEGER_8 tmp = value;
+	memcpy (dest, (void *) &tmp, length);
+      }
       break;
     case 4:
-      *((GFC_INTEGER_4 *) dest) = value;
+      {
+	GFC_INTEGER_4 tmp = value;
+	memcpy (dest, (void *) &tmp, length);
+      }
       break;
     case 2:
-      *((GFC_INTEGER_2 *) dest) = value;
+      {
+	GFC_INTEGER_2 tmp = value;
+	memcpy (dest, (void *) &tmp, length);
+      }
       break;
     case 1:
-      *((GFC_INTEGER_1 *) dest) = value;
+      {
+	GFC_INTEGER_1 tmp = value;
+	memcpy (dest, (void *) &tmp, length);
+      }
       break;
     default:
       internal_error ("Bad integer kind");
