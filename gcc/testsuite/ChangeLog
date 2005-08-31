@@ -1,5 +1,12 @@
 2005-08-31  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/13377
+	* g++.dg/lookup/ambig4.C: New test.
+	* g++.dg/lookup/ambig5.C: New test.
+	* g++.dg/tc1/dr101.C: Adjust error markers.
+
+2005-08-31  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	PR c++/23639
 	* g++.dg/template/ttp5.C: Adjust error markers.
 
