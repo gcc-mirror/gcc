@@ -85,6 +85,10 @@ fdollar-ok
 F95
 Allow dollar signs in entity names
 
+fautomatic
+F95
+Do not treat local variables and COMMON blocks as if they were named in SAVE statements
+
 fbackslash
 F95
 Specify that backslash in string introduces an escape character

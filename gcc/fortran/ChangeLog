@@ -1,3 +1,14 @@
+2005-08-31  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/20592
+	* gfortran.h (gfc_option_t): Add flag_automatic.
+	* invoke.texi: Document the -fno-automatic option.
+	* lang.opt: Add a -fautomatic option.
+	* options.c (gfc_init_options): Default for -fautomatic is on.
+	(gfc_handle_option): Add handling of -fautomatic option.
+	* resolve.c (gfc_resolve): When -fno-automatic is used, mark
+	needed variables as SAVE.
+
 2005-08-25  Erik Edelmann  <eedelman@acclab.helsinki.fi>
 
 	PR fortran/20363

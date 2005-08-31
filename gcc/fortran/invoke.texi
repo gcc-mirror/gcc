@@ -156,7 +156,7 @@ by type.  Explanations are in the following sections.
 @item Code Generation Options
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
 @gccoptlist{
--ff2c -fno-underscoring  -fsecond-underscore @gol
+-fno-automatic -ff2c -fno-underscoring  -fsecond-underscore @gol
 -fbounds-check  -fmax-stack-var-size=@var{n} @gol
 -fpackderived  -frepack-arrays}
 @end table
@@ -528,8 +528,17 @@ one of the forms is listed---the one which is not the default.  You
 can figure out the other form by either removing @option{no-} or adding
 it.
 
-
 @table @gcctabopt
+@cindex @option{-fno-automatic} option
+@cindex options, @option{-fno-automatic}
+@item -fno-automatic
+@cindex SAVE statement
+@cindex statements, SAVE
+Treat each program unit as if the @code{SAVE} statement was specified for
+every local variable and array referenced in it. Does not affect common
+blocks. (Some Fortran compilers provide this option under the name
+@option{-static}.)
+
 @cindex @option{-ff2c} option
 @cindex options, @option{-ff2c}
 @item -ff2c
