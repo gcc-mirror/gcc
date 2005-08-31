@@ -32,13 +32,13 @@
 	* config/i386/i386.c (ix86_expand_vector_init_one_var): Don't modify
 	parts of 'vals'.
 
-2005-08-18  Andrew Pinski  <pinskia@physics.uc.edu>
+2005-08-29  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/23408
 	* ipa-inline.c (cgraph_decide_inlining_incrementally): Remove the
 	call to ggc_collect.
 
-2005-08-18  Paolo Bonzini  <bonzini@gnu.org>
+2005-08-29  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/21268
 	* Makefile.in (ALL_CPPFLAGS): Include $(INCLUDES) at the
