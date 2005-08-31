@@ -1,3 +1,11 @@
+2005-08-31  Paolo Carlini  <pcarlini@suse.de>
+	    Kaspar Fischer <fischerk@inf.ethz.ch> 
+
+	PR libstdc++/23632
+	* include/bits/stl_bvector.h (_Bit_iterator::operator[],
+	_Bit_const_iterator::operator[]): Const-ify.
+	* testsuite/23_containers/vector/bool/23632.cc: New.
+
 2005-08-30  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/23578 (cont)
