@@ -124,24 +124,36 @@ convert_real (void *dest, const char *buffer, int length)
   switch (length)
     {
     case 4:
-      *((GFC_REAL_4 *) dest) =
+      {
+	GFC_REAL_4 tmp =
 #if defined(HAVE_STRTOF)
-	strtof (buffer, NULL);
+	  strtof (buffer, NULL);
 #else
-	(GFC_REAL_4) strtod (buffer, NULL);
+	  (GFC_REAL_4) strtod (buffer, NULL);
 #endif
+	memcpy (dest, (void *) &tmp, length);
+      }
       break;
     case 8:
-      *((GFC_REAL_8 *) dest) = strtod (buffer, NULL);
+      {
+	GFC_REAL_8 tmp = strtod (buffer, NULL);
+	memcpy (dest, (void *) &tmp, length);
+      }
       break;
 #if defined(HAVE_GFC_REAL_10) && defined (HAVE_STRTOLD)
     case 10:
-      *((GFC_REAL_10 *) dest) = strtold (buffer, NULL);
+      {
+	GFC_REAL_10 tmp = strtold (buffer, NULL);
+	memcpy (dest, (void *) &tmp, length);
+      }
       break;
 #endif
 #if defined(HAVE_GFC_REAL_16) && defined (HAVE_STRTOLD)
     case 16:
-      *((GFC_REAL_16 *) dest) = strtold (buffer, NULL);
+      {
+	GFC_REAL_16 tmp = strtold (buffer, NULL);
+	memcpy (dest, (void *) &tmp, length);
+      }
       break;
 #endif
     default:
