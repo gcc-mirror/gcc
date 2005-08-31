@@ -1,3 +1,10 @@
+2005-08-31  Josh Conner  <jconner@apple.com>
+
+	* g++.dg/ext/packed8.C: Add -mstructure-size-boundary=8 to
+	command-line options for arm-*-* targets.
+	* g++.dg/init/array16.C: Likewise.
+	* g++.dg/other/crash-4.C: Likewise.
+
 2005-08-31  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR obj-c++/23640

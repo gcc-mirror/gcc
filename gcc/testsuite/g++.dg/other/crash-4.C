@@ -4,6 +4,11 @@
 // PR 20678: ICE on error message
 // Origin:  Andrew Pinski pinskia@gcc.gnu.org
 
+// NOTE: This test assumes packed structure layout differs from unpacked
+//       structure layout.  This isn't true, e.g., with the default
+//       arm-none-elf options.
+// { dg-options "-mstructure-size-boundary=8" { target arm-*-* } }
+
 struct a
 {
   int m;
