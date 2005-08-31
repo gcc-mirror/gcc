@@ -3727,6 +3727,7 @@ next_sjlj_build_try_catch_finally (void)
     {
       tree caught_decl = objc_build_exc_ptr ();
       catch_seq = build_stmt (BIND_EXPR, caught_decl, NULL, NULL);
+      TREE_SIDE_EFFECTS (catch_seq) = 1;
 
       t = next_sjlj_build_exc_extract (caught_decl);
       append_to_statement_list (t, &BIND_EXPR_BODY (catch_seq));
