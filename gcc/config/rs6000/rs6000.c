@@ -7856,7 +7856,7 @@ expand_block_move (rtx operands[])
 	  mode = SImode;
 	  gen_func.mov = gen_movsi;
 	}
-      else if (bytes == 2 && (align >= 2 || ! STRICT_ALIGNMENT))
+      else if (bytes >= 2 && (align >= 2 || ! STRICT_ALIGNMENT))
 	{			/* move 2 bytes */
 	  move_bytes = 2;
 	  mode = HImode;
