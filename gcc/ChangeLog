@@ -1,3 +1,9 @@
+2005-08-31  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR target/21255
+	* sh.c (print_operand, %R and %S): Add handling of floating point
+	registers, memory, constants and invalid operands.
+
 2005-08-31  Daniel Berlin  <dberlin@dberlin.org>
 
 	* ipa-pure-const.c: Change dump name.
