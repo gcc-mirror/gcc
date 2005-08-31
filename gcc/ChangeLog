@@ -1,3 +1,10 @@
+2005-08-31 Uros Bizjak <uros@kss-loka.si>
+
+	PR target/23570
+	* config/i386/sse.md (*sse_concatv2sf): Change operand 2 constraint
+	to "reg_or_0_operand".
+	(sse2_loadld): Change operand 1 constraint to "reg_or_0_operand".
+
 2005-08-31  Dale Johannesen  <dalej@apple.com>
 
 	* loop-iv.c (iv_number_of_iterations):  Fix overflow check for
