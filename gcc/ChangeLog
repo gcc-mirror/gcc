@@ -1,5 +1,17 @@
 2005-08-31  Richard Henderson  <rth@redhat.com>
 
+	PR rtl-opt/23601
+	* reload1.c (reload): Set MEM_NOTRAP_P in spill slots.
+	(fixup_eh_region_note): New.
+	(reload_as_needed): Call it.
+	(fixup_abnormal_edges): Allow all throwing insns to be deleted;
+	don't call find_many_sub_basic_blocks; call verify_flow_info.
+	* function.c (assign_stack_local_1): Set MEM_NOTRAP_P.
+	(keep_stack_depressed): Likewise.
+	(assign_stack_temp_for_type): Likewise; use adjust_address_nv.
+
+2005-08-31  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/i386.c (ix86_function_ok_for_sibcall): Fix test for
 	fp return matching.
 
