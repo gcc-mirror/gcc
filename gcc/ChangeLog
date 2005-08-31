@@ -1,6 +1,6 @@
 2005-08-31  Richard Henderson  <rth@redhat.com>
 
-	PR rtl-opt/23601
+	PR rtl-opt/23602
 	* reload1.c (reload): Set MEM_NOTRAP_P in spill slots.
 	(fixup_eh_region_note): New.
 	(reload_as_needed): Call it.
