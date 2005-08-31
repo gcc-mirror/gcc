@@ -3615,7 +3615,7 @@ emit_push_insn (rtx x, enum machine_mode mode, tree type, rtx size,
 	offset = 0;
 
       /* Now NOT_STACK gets the number of words that we don't need to
-	 allocate on the stack. Convert OFFSET to words too. */
+	 allocate on the stack.  Convert OFFSET to words too.  */
       not_stack = (partial - offset) / UNITS_PER_WORD;
       offset /= UNITS_PER_WORD;
 
