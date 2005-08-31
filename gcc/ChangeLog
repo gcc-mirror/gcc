@@ -1,3 +1,8 @@
+2005-08-31  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_function_ok_for_sibcall): Fix test for
+	fp return matching.
+
 2005-08-31  Fariborz Jahanian <fjahanian@apple.com>
 
 	* expr.c (expand_expr_real_1): Compare size of address 

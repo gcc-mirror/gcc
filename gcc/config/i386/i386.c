@@ -1907,7 +1907,6 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
 {
   tree func;
   rtx a, b;
-  bool one_void, one_reg;
 
   /* If we are generating position-independent code, we cannot sibcall
      optimize any indirect call, or a direct call to a global function,
@@ -1936,12 +1935,14 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
   a = ix86_function_value (TREE_TYPE (exp), func, false);
   b = ix86_function_value (TREE_TYPE (DECL_RESULT (cfun->decl)),
 			   cfun->decl, false);
-  one_void = (VOID_TYPE_P (TREE_TYPE (exp))
-	      || VOID_TYPE_P (TREE_TYPE (DECL_RESULT (cfun->decl))));
-  one_reg = ((REG_P (a) && !STACK_REG_P (a))
-	     || (REG_P (b) && !STACK_REG_P (b)));
-  if (!(one_void && one_reg)
-      && !rtx_equal_p (a, b))
+  if (STACK_REG_P (a) || STACK_REG_P (b))
+    {
+      if (!rtx_equal_p (a, b))
+	return false;
+    }
+  else if (VOID_TYPE_P (TREE_TYPE (DECL_RESULT (cfun->decl))))
+    ;
+  else if (!rtx_equal_p (a, b))
     return false;
 
   /* If this call is indirect, we'll need to be able to use a call-clobbered
