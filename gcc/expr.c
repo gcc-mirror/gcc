@@ -7673,7 +7673,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    }
 
 	  else if (TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST
-		   && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_INT
+		   && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
 		   && TREE_CONSTANT (TREE_OPERAND (exp, 0)))
 	    {
 	      rtx constant_part;
