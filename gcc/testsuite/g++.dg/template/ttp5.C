@@ -16,5 +16,5 @@ template <template <int> class F> struct C {
 };
 
 template <int n> struct D {
-  enum { v = C<A<n>::B>::v }; // { dg-error "mismatch|class template|not a member" }
+  enum { v = C<A<n>::B>::v }; // { dg-error "mismatch|class template" }
 };
