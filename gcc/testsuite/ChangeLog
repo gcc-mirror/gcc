@@ -1,3 +1,12 @@
+2005-08-31  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR target/21255
+	* gcc.dg/pr21255-1.c: New test.
+	* gcc.dg/pr21255-2-mb.c: Likewise.
+	* gcc.dg/pr21255-2-ml.c: Likewise.
+	* gcc.dg/pr21255-3.c: Likewise.
+	* gcc.dg/pr21255-4.c: Likewise.
+
 2005-08-31  Dale Johannesen  <dalej@apple.com>
 
 	* gcc.dg/20050830-1.c:  New.

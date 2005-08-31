@@ -734,11 +734,66 @@ print_operand (FILE *stream, rtx x, int code)
       x = mark_constant_pool_use (x);
       output_addr_const (stream, x);
       break;
+    /* N.B.: %R / %S / %T adjust memory addresses by four.
+       For SHMEDIA, that means they can be used to access the first and
+       second 32 bit part of a 64 bit (or larger) value that
+       might be held in floating point registers or memory.
+       While they can be used to access 64 bit parts of a larger value
+       held in general purpose registers, that won't work with memory -
+       neither for fp registers, since the frxx names are used.  */
     case 'R':
-      fputs (reg_names[REGNO (x) + LSW], (stream));
+      if (REG_P (x) || GET_CODE (x) == SUBREG)
+	{
+	  regno = true_regnum (x);
+	  regno += FP_REGISTER_P (regno) ? 1 : LSW;
+	  fputs (reg_names[regno], (stream));
+	}
+      else if (MEM_P (x))
+	{
+	  x = adjust_address (x, SImode, 4 * LSW);
+	  print_operand_address (stream, XEXP (x, 0));
+	}
+      else
+	{
+	  rtx sub = NULL_RTX;
+
+	  mode = GET_MODE (x);
+	  if (mode == VOIDmode)
+	    mode = DImode;
+	  if (GET_MODE_SIZE (mode) >= 8)
+	    sub = simplify_subreg (SImode, x, mode, 4 * LSW);
+	  if (sub)
+	    print_operand (stream, sub, 0);
+	  else
+	    output_operand_lossage ("invalid operand to %%R");
+	}
       break;
     case 'S':
-      fputs (reg_names[REGNO (x) + MSW], (stream));
+      if (REG_P (x) || GET_CODE (x) == SUBREG)
+	{
+	  regno = true_regnum (x);
+	  regno += FP_REGISTER_P (regno) ? 0 : MSW;
+	  fputs (reg_names[regno], (stream));
+	}
+      else if (MEM_P (x))
+	{
+	  x = adjust_address (x, SImode, 4 * MSW);
+	  print_operand_address (stream, XEXP (x, 0));
+	}
+      else
+	{
+	  rtx sub = NULL_RTX;
+
+	  mode = GET_MODE (x);
+	  if (mode == VOIDmode)
+	    mode = DImode;
+	  if (GET_MODE_SIZE (mode) >= 8)
+	    sub = simplify_subreg (SImode, x, mode, 4 * MSW);
+	  if (sub)
+	    print_operand (stream, sub, 0);
+	  else
+	    output_operand_lossage ("invalid operand to %%S");
+	}
       break;
     case 'T':
       /* Next word of a double.  */
