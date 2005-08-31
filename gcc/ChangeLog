@@ -1,3 +1,9 @@
+2005-08-31  Adrian Straetling  <straetling@de.ibm.com>
+
+	* builtins.c: (expand_builtin_strcpy, expand_builtin_strcat): Change
+	arguments, adjust all callers.
+	(expand_builtin_strcat): Rewrite to call strcpy instead of mempcpy.
+
 2005-08-30  Richard Henderson  <rth@redhat.com>
 
 	PR target/23630

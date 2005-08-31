@@ -113,7 +113,7 @@ static rtx expand_builtin_memcpy (tree, rtx, enum machine_mode);
 static rtx expand_builtin_mempcpy (tree, tree, rtx, enum machine_mode, int);
 static rtx expand_builtin_memmove (tree, tree, rtx, enum machine_mode, tree);
 static rtx expand_builtin_bcopy (tree);
-static rtx expand_builtin_strcpy (tree, rtx, enum machine_mode);
+static rtx expand_builtin_strcpy (tree, tree, rtx, enum machine_mode);
 static rtx expand_builtin_stpcpy (tree, rtx, enum machine_mode);
 static rtx builtin_strncpy_read_str (void *, HOST_WIDE_INT, enum machine_mode);
 static rtx expand_builtin_strncpy (tree, rtx, enum machine_mode);
@@ -3178,10 +3178,8 @@ expand_movstr (tree dest, tree src, rtx target, int endp)
    convenient).  */
 
 static rtx
-expand_builtin_strcpy (tree exp, rtx target, enum machine_mode mode)
+expand_builtin_strcpy (tree fndecl, tree arglist, rtx target, enum machine_mode mode)
 {
-  tree fndecl = get_callee_fndecl (exp);
-  tree arglist = TREE_OPERAND (exp, 1);
   if (validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     {
       tree result = fold_builtin_strcpy (fndecl, arglist, 0);
@@ -3250,7 +3248,8 @@ expand_builtin_stpcpy (tree exp, rtx target, enum machine_mode mode)
 
 	  if (GET_CODE (len_rtx) == CONST_INT)
 	    {
-	      ret = expand_builtin_strcpy (exp, target, mode);
+	      ret = expand_builtin_strcpy (get_callee_fndecl (exp), 
+					   arglist, target, mode);
 
 	      if (ret)
 		{
@@ -3916,61 +3915,61 @@ expand_builtin_strncmp (tree exp, rtx target, enum machine_mode mode)
    otherwise try to get the result in TARGET, if convenient.  */
 
 static rtx
-expand_builtin_strcat (tree arglist, tree type, rtx target, enum machine_mode mode)
+expand_builtin_strcat (tree fndecl, tree arglist, rtx target, enum machine_mode mode)
 {
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
   else
     {
       tree dst = TREE_VALUE (arglist),
-	src = TREE_VALUE (TREE_CHAIN (arglist));
+      src = TREE_VALUE (TREE_CHAIN (arglist));
       const char *p = c_getstr (src);
 
-      if (p)
+      /* If the string length is zero, return the dst parameter.  */
+      if (p && *p == '\0')	  
+	return expand_expr (dst, target, mode, EXPAND_NORMAL);
+      
+      if (!optimize_size)
 	{
-	  /* If the string length is zero, return the dst parameter.  */
-	  if (*p == '\0')
-	    return expand_expr (dst, target, mode, EXPAND_NORMAL);
-	  else if (!optimize_size)
+	  /* See if we can store by pieces into (dst + strlen(dst)).  */
+	  tree newsrc, newdst,
+	    strlen_fn = implicit_built_in_decls[BUILT_IN_STRLEN];
+	  rtx insns;
+
+	  /* Stabilize the argument list.  */
+	  newsrc = builtin_save_expr (src);
+	  if (newsrc != src)
+	    arglist = build_tree_list (NULL_TREE, newsrc);
+	  else 
+	    arglist = TREE_CHAIN (arglist); /* Reusing arglist if safe.  */
+
+	  dst = builtin_save_expr (dst);
+
+	  start_sequence ();
+
+	  /* Create strlen (dst).  */
+	  newdst =
+	    build_function_call_expr (strlen_fn,
+				      build_tree_list (NULL_TREE, dst));
+	  /* Create (dst + (cast) strlen (dst)).  */
+	  newdst = fold_convert (TREE_TYPE (dst), newdst);
+	  newdst = fold_build2 (PLUS_EXPR, TREE_TYPE (dst), dst, newdst);
+
+	  newdst = builtin_save_expr (newdst);
+	  arglist = tree_cons (NULL_TREE, newdst, arglist);
+
+	  if (!expand_builtin_strcpy (fndecl, arglist, target, mode))
 	    {
-	      /* Otherwise if !optimize_size, see if we can store by
-                 pieces into (dst + strlen(dst)).  */
-	      tree newdst, arglist,
-		strlen_fn = implicit_built_in_decls[BUILT_IN_STRLEN];
-
-	      /* This is the length argument.  */
-	      arglist = build_tree_list (NULL_TREE,
-					 fold (size_binop (PLUS_EXPR,
-							   c_strlen (src, 0),
-							   ssize_int (1))));
-	      /* Prepend src argument.  */
-	      arglist = tree_cons (NULL_TREE, src, arglist);
-
-	      /* We're going to use dst more than once.  */
-	      dst = builtin_save_expr (dst);
-
-	      /* Create strlen (dst).  */
-	      newdst =
-		build_function_call_expr (strlen_fn,
-					  build_tree_list (NULL_TREE, dst));
-	      /* Create (dst + (cast) strlen (dst)).  */
-	      newdst = fold_convert (TREE_TYPE (dst), newdst);
-	      newdst = fold_build2 (PLUS_EXPR, TREE_TYPE (dst), dst, newdst);
-
-	      /* Prepend the new dst argument.  */
-	      arglist = tree_cons (NULL_TREE, newdst, arglist);
-
-	      /* We don't want to get turned into a memcpy if the
-                 target is const0_rtx, i.e. when the return value
-                 isn't used.  That would produce pessimized code so
-                 pass in a target of zero, it should never actually be
-                 used.  If this was successful return the original
-                 dst, not the result of mempcpy.  */
-	      if (expand_builtin_mempcpy (arglist, type, /*target=*/0, mode, /*endp=*/0))
-		return expand_expr (dst, target, mode, EXPAND_NORMAL);
-	      else
-		return 0;
+	      end_sequence (); /* Stop sequence.  */
+	      return 0;
 	    }
+	  
+	  /* Output the entire sequence.  */
+	  insns = get_insns ();
+	  end_sequence ();
+	  emit_insn (insns);
+	  
+	  return expand_expr (dst, target, mode, EXPAND_NORMAL);
 	}
 
       return 0;
@@ -5919,7 +5918,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       break;
 
     case BUILT_IN_STRCPY:
-      target = expand_builtin_strcpy (exp, target, mode);
+      target = expand_builtin_strcpy (fndecl, arglist, target, mode);
       if (target)
 	return target;
       break;
@@ -5937,7 +5936,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       break;
 
     case BUILT_IN_STRCAT:
-      target = expand_builtin_strcat (arglist, TREE_TYPE (exp), target, mode);
+      target = expand_builtin_strcat (fndecl, arglist, target, mode);
       if (target)
 	return target;
       break;
