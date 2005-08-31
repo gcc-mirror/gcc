@@ -712,7 +712,7 @@ gate_pure_const (void)
 
 struct tree_opt_pass pass_ipa_pure_const =
 {
-  "ipa-pure-const",		        /* name */
+  "pure-const",		                /* name */
   gate_pure_const,			/* gate */
   static_execute,			/* execute */
   NULL,					/* sub */
