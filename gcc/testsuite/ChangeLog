@@ -1,3 +1,7 @@
+2005-08-31  Dale Johannesen  <dalej@apple.com>
+
+	* gcc.dg/20050830-1.c:  New.
+
 2005-08-31  Josh Conner  <jconner@apple.com>
 
 	* g++.dg/ext/packed8.C: Add -mstructure-size-boundary=8 to
