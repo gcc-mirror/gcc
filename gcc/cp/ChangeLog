@@ -1,3 +1,9 @@
+2005-08-31  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/23639
+	* semantics.c (qualified_name_lookup_error): Do not complain again
+	on invalid scope.
+
 2005-08-30  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/23586

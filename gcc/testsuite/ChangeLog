@@ -1,3 +1,8 @@
+2005-08-31  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/23639
+	* g++.dg/template/ttp5.C: Adjust error markers.
+
 2005-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/20348
