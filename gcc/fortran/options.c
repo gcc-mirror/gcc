@@ -70,6 +70,7 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.flag_no_backend = 0;
   gfc_option.flag_pack_derived = 0;
   gfc_option.flag_repack_arrays = 0;
+  gfc_option.flag_automatic = 1;
   gfc_option.flag_backslash = 1;
   gfc_option.flag_d_lines = -1;
 
@@ -329,6 +330,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_fdollar_ok:
       gfc_option.flag_dollar_ok = value;
+      break;
+
+    case OPT_fautomatic:
+      gfc_option.flag_automatic = value;
       break;
 
     case OPT_fbackslash:

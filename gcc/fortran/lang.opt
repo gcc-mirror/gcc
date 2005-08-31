@@ -69,6 +69,10 @@ Wunused-labels
 F95
 Warn when a label is unused
 
+fautomatic
+F95
+Do not treat local variables and COMMON blocks as if they were named in SAVE statements
+
 fbackslash
 F95
 Specify that backslash in string introduces an escape character
