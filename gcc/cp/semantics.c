@@ -2295,7 +2295,9 @@ check_multiple_declarators (void)
 void
 qualified_name_lookup_error (tree scope, tree name)
 {
-  if (TYPE_P (scope))
+  if (scope == error_mark_node)
+    ; /* We already complained.  */
+  else if (TYPE_P (scope))
     {
       if (!COMPLETE_TYPE_P (scope))
 	error ("incomplete type `%T' used in nested name specifier", scope);
