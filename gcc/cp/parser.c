@@ -9532,6 +9532,9 @@ cp_parser_namespace_name (cp_parser* parser)
   if (namespace_decl == error_mark_node
       || TREE_CODE (namespace_decl) != NAMESPACE_DECL)
     {
+      if (!cp_parser_parsing_tentatively (parser)
+	  || cp_parser_committed_to_tentative_parse (parser))
+	error ("`%D' is not a namespace-name", identifier);
       cp_parser_error (parser, "expected namespace-name");
       namespace_decl = error_mark_node;
     }

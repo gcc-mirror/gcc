@@ -3199,12 +3199,10 @@ namespace_ancestor (tree ns1, tree ns2)
 void
 do_namespace_alias (tree alias, tree namespace)
 {
-  if (TREE_CODE (namespace) != NAMESPACE_DECL)
-    {
-      /* The parser did not find it, so it's not there.  */
-      error ("unknown namespace `%D'", namespace);
-      return;
-    }
+  if (namespace == error_mark_node)
+    return;
+
+  my_friendly_assert (TREE_CODE (namespace) == NAMESPACE_DECL, 20050830);
 
   namespace = ORIGINAL_NAMESPACE (namespace);
 
@@ -3345,26 +3343,15 @@ do_toplevel_using_decl (tree decl, tree scope, tree name)
 void
 do_using_directive (tree namespace)
 {
+  if (namespace == error_mark_node)
+    return;
+
+  my_friendly_assert (TREE_CODE (namespace) == NAMESPACE_DECL, 20050830);
+
   if (building_stmt_tree ())
     add_stmt (build_stmt (USING_STMT, namespace));
-  
-  /* using namespace A::B::C; */
-  if (TREE_CODE (namespace) == SCOPE_REF)
-      namespace = TREE_OPERAND (namespace, 1);
-  if (TREE_CODE (namespace) == IDENTIFIER_NODE)
-    {
-      /* Lookup in lexer did not find a namespace.  */
-      if (!processing_template_decl)
-	error ("namespace `%T' undeclared", namespace);
-      return;
-    }
-  if (TREE_CODE (namespace) != NAMESPACE_DECL)
-    {
-      if (!processing_template_decl)
-	error ("`%T' is not a namespace", namespace);
-      return;
-    }
   namespace = ORIGINAL_NAMESPACE (namespace);
+
   if (!toplevel_bindings_p ())
     push_using_directive (namespace);
   else
