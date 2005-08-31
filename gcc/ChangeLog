@@ -1,3 +1,8 @@
+2005-08-31  Alan Modra  <amodra@bigpond.net.au>
+
+	* calls.c (load_register_parameters): Fix comment typo.
+	* expr.c (emit_push_insn): Comment formatting.
+
 2005-08-30  Ian Lance Taylor  <ian@airs.com>
 
 	* config/i386/x-cygwin (host-cygwin): Change dependency from

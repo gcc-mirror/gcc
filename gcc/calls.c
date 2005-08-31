@@ -1444,7 +1444,7 @@ rtx_for_function_call (tree fndecl, tree addr)
    Mark all register-parms as living through the call, putting these USE
    insns in the CALL_INSN_FUNCTION_USAGE field.
 
-   When IS_SIBCALL, perform the check_sibcall_overlap_argument_overlap
+   When IS_SIBCALL, perform the check_sibcall_argument_overlap
    checking, setting *SIBCALL_FAILURE if appropriate.  */
 
 static void
