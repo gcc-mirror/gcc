@@ -1,3 +1,10 @@
+2005-08-31  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/install.texi (Specific): Update cctools version required
+	for full functionality.
+	* config/darwin.h (LINK_SPEC): Pass -mmacosx-version-min to the
+	linkers as -macosx_version_min.
+
 2005-08-31  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR target/21255
