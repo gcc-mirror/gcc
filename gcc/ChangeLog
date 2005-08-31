@@ -1,3 +1,8 @@
+2005-08-31  Dale Johannesen  <dalej@apple.com>
+
+	* loop-iv.c (iv_number_of_iterations):  Fix overflow check for
+	loops that count down.
+
 2005-08-31  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/23601

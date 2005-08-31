@@ -2417,7 +2417,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	  tmp0 = lowpart_subreg (mode, iv0.base, comp_mode);
 	  tmp1 = lowpart_subreg (mode, iv1.base, comp_mode);
 
-	  bound = simplify_gen_binary (MINUS, mode, mode_mmin,
+	  bound = simplify_gen_binary (PLUS, mode, mode_mmin,
 				       lowpart_subreg (mode, step, comp_mode));
 	  if (step_is_pow2)
 	    {
