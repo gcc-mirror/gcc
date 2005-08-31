@@ -259,7 +259,7 @@ namespace _GLIBCXX_STD
     }
 
     reference
-    operator[](difference_type __i)
+    operator[](difference_type __i) const
     { return *(*this + __i); }
   };
 
@@ -345,7 +345,7 @@ namespace _GLIBCXX_STD
     }
 
     const_reference
-    operator[](difference_type __i)
+    operator[](difference_type __i) const
     { return *(*this + __i); }
   };
 
