@@ -1,3 +1,9 @@
+2005-08-31  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR objc/23381
+	* objc-act.c (next_sjlj_build_try_catch_finally): Set
+	TREE_SIDE_EFFECTS on catch_seq after building it.
+
 2005-08-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	part of PR objc/21992
