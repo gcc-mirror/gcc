@@ -3078,8 +3078,9 @@ cp_finish_file (void)
 			/*data=*/&locus);
   else
     {
-
-      if (static_ctors)
+      /* If we have a ctor or this is obj-c++ and we need a static init,
+         call generate_ctor_or_dtor_function.  */
+      if (static_ctors || (c_dialect_objc () && objc_static_init_needed_p ()))
 	generate_ctor_or_dtor_function (/*constructor_p=*/true,
 					DEFAULT_INIT_PRIORITY, &locus);
       if (static_dtors)

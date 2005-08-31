@@ -1,3 +1,8 @@
+2005-08-31  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR obj-c++/23640
+	* obj-c++.dg/gnu-runtime-3.mm: New test.
+
 2005-08-31  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/13377

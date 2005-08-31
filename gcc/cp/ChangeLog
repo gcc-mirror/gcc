@@ -1,3 +1,9 @@
+2005-08-31  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR obj-c++/23640
+	* decl2.c (cp_finish_file): If this is obj-c++ and we need a static
+	init, call generate_ctor_or_dtor_function.
+
 2005-08-31  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/13377
