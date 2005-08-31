@@ -1,3 +1,10 @@
+2005-08-31  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/23477
+	* expr.c (all_zeros_p): New function.
+	(expand_expr_real_1): Handle the case of an all-zero
+	non-addressable constructor separately.
+
 2005-08-31  Adrian Straetling  <straetling@de.ibm.com>
 
 	* builtins.c: (expand_builtin_strcpy, expand_builtin_strcat): Change

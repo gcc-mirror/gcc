@@ -4645,6 +4645,24 @@ mostly_zeros_p (tree exp)
 
   return initializer_zerop (exp);
 }
+
+/* Return 1 if EXP contains all zeros.  */
+
+static int
+all_zeros_p (tree exp)
+{
+  if (TREE_CODE (exp) == CONSTRUCTOR)
+
+    {
+      HOST_WIDE_INT nz_elts, nc_elts, count;
+      bool must_clear;
+
+      categorize_ctor_elements (exp, &nz_elts, &nc_elts, &count, &must_clear);
+      return nz_elts == 0;
+    }
+
+  return initializer_zerop (exp);
+}
 
 /* Helper function for store_constructor.
    TARGET, BITSIZE, BITPOS, MODE, EXP are as for store_field.
@@ -6841,6 +6859,19 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    expand_expr (value, const0_rtx, VOIDmode, 0);
 
 	  return const0_rtx;
+	}
+
+      /* Try to avoid creating a temporary at all.  This is possible
+	 if all of the initializer is zero.
+	 FIXME: try to handle all [0..255] initializers we can handle
+	 with memset.  */
+      else if (TREE_STATIC (exp)
+	       && !TREE_ADDRESSABLE (exp)
+	       && target != 0 && mode == BLKmode
+	       && all_zeros_p (exp))
+	{
+	  clear_storage (target, expr_size (exp), BLOCK_OP_NORMAL);
+	  return target;
 	}
 
       /* All elts simple constants => refer to a constant in memory.  But
