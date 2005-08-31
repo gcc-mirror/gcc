@@ -474,6 +474,7 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size, int align,
     function->x_frame_offset += size;
 
   x = gen_rtx_MEM (mode, addr);
+  MEM_NOTRAP_P (x) = 1;
 
   function->x_stack_slot_list
     = gen_rtx_EXPR_LIST (VOIDmode, x, function->x_stack_slot_list);
@@ -649,9 +650,7 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
 	      p->size = best_p->size - rounded_size;
 	      p->base_offset = best_p->base_offset + rounded_size;
 	      p->full_size = best_p->full_size - rounded_size;
-	      p->slot = gen_rtx_MEM (BLKmode,
-				     plus_constant (XEXP (best_p->slot, 0),
-						    rounded_size));
+	      p->slot = adjust_address_nv (best_p->slot, BLKmode, rounded_size);
 	      p->align = best_p->align;
 	      p->address = 0;
 	      p->type = best_p->type;
@@ -743,6 +742,7 @@ assign_stack_temp_for_type (enum machine_mode mode, HOST_WIDE_INT size,
       MEM_VOLATILE_P (slot) = TYPE_VOLATILE (type);
       MEM_SET_IN_STRUCT_P (slot, AGGREGATE_TYPE_P (type));
     }
+  MEM_NOTRAP_P (slot) = 1;
 
   return slot;
 }
@@ -4822,6 +4822,7 @@ keep_stack_depressed (rtx insns)
 							   info.sp_offset));
 
 	  retaddr = gen_rtx_MEM (Pmode, retaddr);
+	  MEM_NOTRAP_P (retaddr) = 1;
 
 	  /* If there is a pending load to the equivalent register for SP
 	     and we reference that register, we must load our address into

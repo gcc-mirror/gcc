@@ -1125,6 +1125,7 @@ reload (rtx first, int global)
 		  MEM_IN_STRUCT_P (reg) = MEM_SCALAR_P (reg) = 0;
 		  MEM_ATTRS (reg) = 0;
 		}
+	      MEM_NOTRAP_P (reg) = 1;
 	    }
 	  else if (reg_equiv_mem[i])
 	    XEXP (reg_equiv_mem[i], 0) = addr;
@@ -3758,6 +3759,55 @@ scan_paradoxical_subregs (rtx x)
     }
 }
 
+/* A subroutine of reload_as_needed.  If INSN has a REG_EH_REGION note,
+   examine all of the reload insns between PREV and NEXT exclusive, and
+   annotate all that may trap.  */
+
+static void
+fixup_eh_region_note (rtx insn, rtx prev, rtx next)
+{
+  rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
+  unsigned int trap_count;
+  rtx i;
+
+  if (note == NULL)
+    return;
+
+  if (may_trap_p (PATTERN (insn)))
+    trap_count = 1;
+  else
+    {
+      remove_note (insn, note);
+      trap_count = 0;
+    }
+
+  for (i = NEXT_INSN (prev); i != next; i = NEXT_INSN (i))
+    if (INSN_P (i) && i != insn && may_trap_p (PATTERN (i)))
+      {
+	trap_count++;
+	REG_NOTES (i)
+	  = gen_rtx_EXPR_LIST (REG_EH_REGION, XEXP (note, 0), REG_NOTES (i));
+      }
+
+  /* ??? Since we entered with one eh insn, we should exit with one eh insn;
+     otherwise we're unsure that we're not losing an exception.  Except that
+     the instruction stream incoming to reload doesn't pass the "if 
+     reg_eh_region is present, may_trap_p is true" smoke test.
+
+     Worse, even if it did, rtx_addr_can_trap_p returns false for some forms
+     of address that include constants regardless of the actual value of the
+     constant.  If we decide that "int a[3]; a[100000]" should be considered
+     non-trapping, we should get that story straight across more of the
+     compiler.  If we decide that it should trap, then we cannot decide
+     may_trap_p on the basis of rtx_addr_can_trap_p at all.  Which may not
+     be such a big thing -- it doesn't seem hard to get MEM_NOTRAP_P set
+     correctly in the first place.
+
+     Fixing all that is not in the cards for gcc 4.2, so for the nonce we
+     allow all eh insns to evaporate.  */
+  gcc_assert (trap_count <= 1);
+}
+
 /* Reload pseudo-registers into hard regs around each insn as needed.
    Additional register load insns are output before the insn that needs it
    and perhaps store insns after insns that modify the reloaded pseudo reg.
@@ -3875,10 +3925,13 @@ reload_as_needed (int live_known)
 		 and that we moved the structure into).  */
 	      subst_reloads (insn);
 
+	      /* Adjust the exception region notes for loads and stores.  */
+	      if (flag_non_call_exceptions)
+		fixup_eh_region_note (insn, prev, next);
+
 	      /* If this was an ASM, make sure that all the reload insns
 		 we have generated are valid.  If not, give an error
 		 and delete them.  */
-
 	      if (asm_noperands (PATTERN (insn)) >= 0)
 		for (p = NEXT_INSN (prev); p != next; p = NEXT_INSN (p))
 		  if (p != insn && INSN_P (p)
@@ -8080,55 +8133,71 @@ fixup_abnormal_edges (void)
       if (e && !CALL_P (BB_END (bb))
 	  && !can_throw_internal (BB_END (bb)))
 	{
-	  rtx insn = BB_END (bb), stop = NEXT_INSN (BB_END (bb));
-	  rtx next;
-	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    if (e->flags & EDGE_FALLTHRU)
-	      break;
-	  /* Get past the new insns generated. Allow notes, as the insns may
-	     be already deleted.  */
+	  rtx insn;
+
+	  /* Get past the new insns generated.  Allow notes, as the insns
+	     may be already deleted.  */
+	  insn = BB_END (bb);
 	  while ((NONJUMP_INSN_P (insn) || NOTE_P (insn))
 		 && !can_throw_internal (insn)
 		 && insn != BB_HEAD (bb))
 	    insn = PREV_INSN (insn);
-	  gcc_assert (CALL_P (insn) || can_throw_internal (insn));
-	  BB_END (bb) = insn;
-	  inserted = true;
-	  insn = NEXT_INSN (insn);
-	  while (insn && insn != stop)
+
+	  if (CALL_P (insn) || can_throw_internal (insn))
 	    {
-	      next = NEXT_INSN (insn);
-	      if (INSN_P (insn))
+	      rtx stop, next;
+
+	      stop = NEXT_INSN (BB_END (bb));
+	      BB_END (bb) = insn;
+	      insn = NEXT_INSN (insn);
+
+	      FOR_EACH_EDGE (e, ei, bb->succs)
+		if (e->flags & EDGE_FALLTHRU)
+		  break;
+
+	      while (insn && insn != stop)
 		{
-	          delete_insn (insn);
-
-		  /* Sometimes there's still the return value USE.
-		     If it's placed after a trapping call (i.e. that
-		     call is the last insn anyway), we have no fallthru
-		     edge.  Simply delete this use and don't try to insert
-		     on the non-existent edge.  */
-		  if (GET_CODE (PATTERN (insn)) != USE)
+		  next = NEXT_INSN (insn);
+		  if (INSN_P (insn))
 		    {
-		      /* We're not deleting it, we're moving it.  */
-		      INSN_DELETED_P (insn) = 0;
-		      PREV_INSN (insn) = NULL_RTX;
-		      NEXT_INSN (insn) = NULL_RTX;
+	              delete_insn (insn);
 
-		      insert_insn_on_edge (insn, e);
+		      /* Sometimes there's still the return value USE.
+			 If it's placed after a trapping call (i.e. that
+			 call is the last insn anyway), we have no fallthru
+			 edge.  Simply delete this use and don't try to insert
+			 on the non-existent edge.  */
+		      if (GET_CODE (PATTERN (insn)) != USE)
+			{
+			  /* We're not deleting it, we're moving it.  */
+			  INSN_DELETED_P (insn) = 0;
+			  PREV_INSN (insn) = NULL_RTX;
+			  NEXT_INSN (insn) = NULL_RTX;
+
+			  insert_insn_on_edge (insn, e);
+			  inserted = true;
+			}
 		    }
+		  insn = next;
 		}
-	      insn = next;
 	    }
+
+	  /* It may be that we don't find any such trapping insn.  In this
+	     case we discovered quite late that the insn that had been 
+	     marked as can_throw_internal in fact couldn't trap at all.
+	     So we should in fact delete the EH edges out of the block.  */
+	  else
+	    purge_dead_edges (bb);
 	}
     }
-  /* We've possibly turned single trapping insn into multiple ones.  */
-  if (flag_non_call_exceptions)
-    {
-      sbitmap blocks;
-      blocks = sbitmap_alloc (last_basic_block);
-      sbitmap_ones (blocks);
-      find_many_sub_basic_blocks (blocks);
-    }
+
   if (inserted)
     commit_edge_insertions ();
+
+#ifdef ENABLE_CHECKING
+  /* Verify that we didn't turn one trapping insn into many, and that
+     we found and corrected all of the problems wrt fixups on the
+     fallthru edge.  */
+  verify_flow_info ();
+#endif
 }
