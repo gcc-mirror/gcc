@@ -1,4 +1,4 @@
-/* { dg-do compile */
+/* { dg-do compile } */
 /* { dg-options "-O2 -gdwarf-2 -dA" } */
 /* { dg-final { scan-assembler "DW_TAG_variable" } } */
 /* PR debug/21828 */

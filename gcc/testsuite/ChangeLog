@@ -1,3 +1,19 @@
+2005-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/7241
+	* gcc.dg/debug/dwarf2/dwarf-char1.c: New test.
+	* gcc.dg/debug/dwarf2/dwarf-char2.c: New test.
+	* gcc.dg/debug/dwarf2/dwarf-char3.c: New test.
+
+	* gcc.dg/debug/dwarf2/dwarf-die1.c: Fix a typo.
+	* gcc.dg/debug/dwarf2/dwarf-die2.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-die3.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-die5.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-die6.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-die7.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-uninit.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf2-macro.c: Likewise.
+
 2005-08-31  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR objc/23306
