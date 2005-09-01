@@ -3847,12 +3847,46 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
   if (size == 0 || flag_syntax_only)
     return;
 
+  /* See if we're trying to intialize a pointer in a non-default mode
+     to the address of some declaration somewhere.  If the target says
+     the mode is valid for pointers, assume the target has a way of
+     resolving it.  */
+  if (TREE_CODE (exp) == NOP_EXPR
+      && POINTER_TYPE_P (TREE_TYPE (exp))
+      && targetm.valid_pointer_mode (TYPE_MODE (TREE_TYPE (exp))))
+    {
+      tree saved_type = TREE_TYPE (exp);
+
+      /* Peel off any intermediate conversions-to-pointer for valid
+	 pointer modes.  */
+      while (TREE_CODE (exp) == NOP_EXPR
+	     && POINTER_TYPE_P (TREE_TYPE (exp))
+	     && targetm.valid_pointer_mode (TYPE_MODE (TREE_TYPE (exp))))
+	exp = TREE_OPERAND (exp, 0);
+
+      /* If what we're left with is the address of something, we can
+	 convert the address to the final type and output it that
+	 way.  */
+      if (TREE_CODE (exp) == ADDR_EXPR)
+	exp = build1 (ADDR_EXPR, saved_type, TREE_OPERAND (exp, 0));
+    }
+
   /* Eliminate any conversions since we'll be outputting the underlying
      constant.  */
   while (TREE_CODE (exp) == NOP_EXPR || TREE_CODE (exp) == CONVERT_EXPR
 	 || TREE_CODE (exp) == NON_LVALUE_EXPR
 	 || TREE_CODE (exp) == VIEW_CONVERT_EXPR)
-    exp = TREE_OPERAND (exp, 0);
+    {
+      HOST_WIDE_INT type_size = int_size_in_bytes (TREE_TYPE (exp));
+      HOST_WIDE_INT op_size = int_size_in_bytes (TREE_TYPE (TREE_OPERAND (exp, 0)));
+
+      /* Make sure eliminating the conversion is really a no-op.  */
+      if (type_size != op_size)
+	internal_error ("no-op convert from %wd to %wd bytes in initializer",
+			op_size, type_size);
+
+      exp = TREE_OPERAND (exp, 0);
+    }
 
   code = TREE_CODE (TREE_TYPE (exp));
   thissize = int_size_in_bytes (TREE_TYPE (exp));
