@@ -1503,6 +1503,23 @@ m32c_function_arg_regno_p (int r)
   return (r == R1_REGNO || r == R2_REGNO);
 }
 
+/* HImode and PSImode are the two "native" modes as far as GCC is
+   concerned, but the chips also support a 32 bit mode which is used
+   for some opcodes in R8C/M16C and for reset vectors and such.  */
+#undef TARGET_VALID_POINTER_MODE
+#define TARGET_VALID_POINTER_MODE m32c_valid_pointer_mode
+bool
+m32c_valid_pointer_mode (enum machine_mode mode)
+{
+  fprintf(stderr, "valid_pointer_mode: %s\n", mode_name[mode]);
+  if (mode == HImode
+      || mode == PSImode
+      || mode == SImode
+      )
+    return 1;
+  return 0;
+}
+
 /* How Scalar Function Values Are Returned */
 
 /* Implements LIBCALL_VALUE.  Most values are returned in $r0, or some
@@ -1972,6 +1989,15 @@ m32c_asm_integer (rtx x, unsigned int size, int aligned_p)
       output_addr_const (asm_out_file, x);
       fputc ('\n', asm_out_file);
       return true;
+    case 4:
+      if (GET_CODE (x) == SYMBOL_REF)
+	{
+	  fprintf (asm_out_file, "\t.long\t");
+	  output_addr_const (asm_out_file, x);
+	  fputc ('\n', asm_out_file);
+	  return true;
+	}
+      break;
     }
   return default_assemble_integer (x, size, aligned_p);
 }
