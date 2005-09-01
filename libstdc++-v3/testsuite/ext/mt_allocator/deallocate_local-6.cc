@@ -1,4 +1,5 @@
-//
+// { dg-require-cxa-atexit "" }
+
 // Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -19,7 +20,6 @@
 
 // 20.4.1.1 allocator members
 
-#include <list>
 #include <string>
 #include <stdexcept>
 #include <ext/mt_allocator.h>
@@ -31,12 +31,11 @@ struct count_check
   count_check() { }
   ~count_check()
   {
-    // NB: __mt_allocator doesn't clean itself up. Thus, this will not
-    // be zero.
+    // NB: Using a pool that attempts to clean up resource use.
     if (count != 0)
       {
-	//throw std::runtime_error("allocation/deallocation count isn't zero");
 	printf("allocation/deallocation count is %zu \n", count);
+	throw std::runtime_error("allocation/deallocation count isn't zero");
       }
   }
 };
@@ -61,18 +60,27 @@ void operator delete(void* p) throw()
   count--;
 }
 
-typedef std::string value_type;
-using __gnu_cxx::__pool;
-using __gnu_cxx::__per_type_pool_policy;
-typedef __per_type_pool_policy<value_type, __pool, true> policy_type;
-typedef __gnu_cxx::__mt_alloc<value_type, policy_type> allocator_type;
-typedef std::char_traits<value_type> traits_type;
-typedef std::list<value_type, allocator_type> list_type;
+template<bool _Thread>
+  struct cleanup_pool : public __gnu_cxx::__pool<false>
+  {
+    cleanup_pool() : __gnu_cxx::__pool<false>() { }
 
-list_type l;
+    cleanup_pool(const __gnu_cxx::__pool_base::_Tune& t) 
+    : __gnu_cxx::__pool<false>(t) { }
+
+    ~cleanup_pool() throw() { this->_M_destroy(); }
+  };
+
+
+typedef char value_type;
+typedef std::char_traits<value_type> traits_type;
+typedef __gnu_cxx::__common_pool_policy<cleanup_pool, false> policy_type;
+typedef __gnu_cxx::__mt_alloc<value_type, policy_type> allocator_type;
+typedef std::basic_string<value_type, traits_type, allocator_type> string_type;
 
 int main()
 {
-  l.push_back("bayou bend");
+  string_type s;
+  s += "bayou bend";
   return 0;
 }

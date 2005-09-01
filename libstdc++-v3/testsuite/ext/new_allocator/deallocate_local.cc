@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,18 +20,30 @@
 // 20.4.1.1 allocator members
 
 #include <string>
+#include <stdexcept>
 #include <ext/new_allocator.h>
-#include <testsuite_hooks.h>
 
-static size_t alloc_cnt;
+static size_t count;
+
+struct count_check
+{
+  count_check() { }
+  ~count_check()
+  {
+    if (count != 0)
+      throw std::runtime_error("allocation/deallocation count isn't zero");
+  }
+};
  
+static count_check check;
+
 void* operator new(size_t size) throw(std::bad_alloc)
 {
   printf("operator new is called \n");
   void* p = malloc(size);
   if (p == NULL)
     throw std::bad_alloc();
-  alloc_cnt++;
+  count++;
   return p;
 }
  
@@ -40,12 +52,7 @@ void operator delete(void* p) throw()
   printf("operator delete is called \n");
   if (p == NULL)
     return;
-  alloc_cnt--;
-  if (alloc_cnt == 0)
-    printf("All memory released \n");
-  else
-    printf("%u allocations to be released \n", alloc_cnt);
-  free(p);
+  count--;
 }
 
 typedef char char_t;
@@ -55,11 +62,7 @@ typedef std::basic_string<char_t, traits_t, allocator_t> string_t;
 
 int main()
 {
-  bool test __attribute__((unused)) = true;
-  {
-    string_t s;
-    s += "bayou bend";
-  }
-  VERIFY( alloc_cnt == 0 );
+  string_t s;
+  s += "bayou bend";
   return 0;
 }

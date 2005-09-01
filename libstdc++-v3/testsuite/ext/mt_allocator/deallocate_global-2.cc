@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -23,24 +23,24 @@
 #include <string>
 #include <stdexcept>
 #include <ext/mt_allocator.h>
-#include <testsuite_hooks.h>
 
 static size_t count;
 
 struct count_check
 {
-  count_check() {}
+  count_check() { }
   ~count_check()
   {
+    // NB: __mt_allocator doesn't clean itself up. Thus, this will not
+    // be zero.
     if (count != 0)
       {
-	// NB: __mt_allocator doesn't clean itself up. Thus, this will
-	// not be zero.
+	//throw std::runtime_error("allocation/deallocation count isn't zero");
+	printf("allocation/deallocation count is %zu \n", count);
       }
   }
 };
  
-// First.
 static count_check check;
 
 void* operator new(size_t size) throw(std::bad_alloc)
@@ -59,11 +59,6 @@ void operator delete(void* p) throw()
   if (p == NULL)
     return;
   count--;
-  if (count == 0)
-    printf("All memory released \n");
-  else
-    printf("%u allocations to be released \n", count);
-  free(p);
 }
 
 typedef std::string value_type;
@@ -74,7 +69,6 @@ typedef __gnu_cxx::__mt_alloc<value_type, policy_type> allocator_type;
 typedef std::char_traits<value_type> traits_type;
 typedef std::list<value_type, allocator_type> list_type;
 
-// Second.
 list_type l;
 
 int main()
