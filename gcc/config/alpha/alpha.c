@@ -6090,6 +6090,7 @@ alpha_setup_incoming_varargs (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
 	  tmp = gen_rtx_MEM (BLKmode,
 			     plus_constant (virtual_incoming_args_rtx,
 					    (cum + 6) * UNITS_PER_WORD));
+	  MEM_NOTRAP_P (tmp) = 1;
 	  set_mem_alias_set (tmp, set);
 	  move_block_from_reg (16 + cum, tmp, count);
 	}
@@ -6099,6 +6100,7 @@ alpha_setup_incoming_varargs (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
 	  tmp = gen_rtx_MEM (BLKmode,
 			     plus_constant (virtual_incoming_args_rtx,
 					    cum * UNITS_PER_WORD));
+	  MEM_NOTRAP_P (tmp) = 1;
 	  set_mem_alias_set (tmp, set);
 	  move_block_from_reg (16 + cum + TARGET_FPREGS*32, tmp, count);
 	}

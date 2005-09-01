@@ -1,5 +1,13 @@
 2005-08-31  Richard Henderson  <rth@redhat.com>
 
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Look through
+	component-like references for setting MEM_NOTRAP_P.
+
+	* config/i386/i386.c (ix86_setup_incoming_varargs): Set MEM_NOTRAP_P.
+	* config/alpha/alpha.c (alpha_setup_incoming_varargs): Likewise.
+
+2005-08-31  Richard Henderson  <rth@redhat.com>
+
 	* expr.c (expand_expr_real_1) <VIEW_CONVERT_EXPR>: Force subregs
 	into a pseudo before applying gen_lowpart.
 
