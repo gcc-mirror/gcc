@@ -1,3 +1,8 @@
+2005-08-31  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.c (m32c_valid_pointer_mode): New.
+	(m32c_asm_integer): Add support for 32 bit pointers.
+
 2005-08-31  Richard Henderson  <rth@redhat.com>
 
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Look through
