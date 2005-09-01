@@ -13713,6 +13713,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 		       bool is_type, bool is_template, bool is_namespace,
 		       bool check_dependency)
 {
+  int flags = 0;
   tree decl;
   tree object_type = parser->context->object_type;
 
@@ -13723,6 +13724,10 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 
   if (name == error_mark_node)
     return error_mark_node;
+
+  if (!cp_parser_parsing_tentatively (parser)
+      || cp_parser_committed_to_tentative_parse (parser))
+    flags |= LOOKUP_COMPLAIN;
 
   /* A template-id has already been resolved; there is no lookup to
      do.  */
@@ -13837,8 +13842,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 				     /*protect=*/0, is_type);
       /* Look it up in the enclosing context, too.  */
       decl = lookup_name_real (name, is_type, /*nonclass=*/0, 
-			       is_namespace,
-			       /*flags=*/0);
+			       is_namespace, flags);
       parser->object_scope = object_type;
       parser->qualifying_scope = NULL_TREE;
       if (object_decl)
@@ -13847,8 +13851,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
   else
     {
       decl = lookup_name_real (name, is_type, /*nonclass=*/0, 
-			       is_namespace,
-			       /*flags=*/0);
+			       is_namespace, flags);
       parser->qualifying_scope = NULL_TREE;
       parser->object_scope = NULL_TREE;
     }

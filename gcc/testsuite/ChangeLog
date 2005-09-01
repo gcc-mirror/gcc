@@ -1,3 +1,9 @@
+2005-09-01  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/13377
+	* g++.dg/lookup/ambig4.C: New test.
+	* g++.dg/lookup/ambig5.C: New test.
+
 2005-08-31  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/23639
