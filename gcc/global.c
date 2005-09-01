@@ -95,6 +95,9 @@ struct allocno
   /* Number of calls crossed by each allocno.  */
   int calls_crossed;
 
+  /* Number of calls that might throw crossed by each allocno.  */
+  int throwing_calls_crossed;
+
   /* Number of refs to each allocno.  */
   int n_refs;
 
@@ -484,6 +487,8 @@ global_alloc (FILE *file)
 	allocno[num].reg = i;
 	allocno[num].size = PSEUDO_REGNO_SIZE (i);
 	allocno[num].calls_crossed += REG_N_CALLS_CROSSED (i);
+	allocno[num].throwing_calls_crossed
+	  += REG_N_THROWING_CALLS_CROSSED (i);
 	allocno[num].n_refs += REG_N_REFS (i);
 	allocno[num].freq += REG_FREQ (i);
 	if (allocno[num].live_length < REG_LIVE_LENGTH (i))
@@ -1203,9 +1208,11 @@ find_reg (int num, HARD_REG_SET losers, int alt_regs_p, int accept_call_clobbere
     {
       /* Did not find a register.  If it would be profitable to
 	 allocate a call-clobbered register and save and restore it
-	 around calls, do that.  */
+	 around calls, do that.  Don't do this if it crosses any calls
+	 that might throw.  */
       if (! accept_call_clobbered
 	  && allocno[num].calls_crossed != 0
+	  && allocno[num].throwing_calls_crossed == 0
 	  && CALLER_SAVE_PROFITABLE (allocno[num].n_refs,
 				     allocno[num].calls_crossed))
 	{
