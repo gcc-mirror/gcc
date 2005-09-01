@@ -34,7 +34,6 @@ extern void rs6000_va_start (tree, rtx);
 
 extern int easy_vector_same (rtx, enum machine_mode);
 extern int easy_vector_splat_const (int, enum machine_mode);
-extern int mask64_1or2_operand (rtx, enum machine_mode, bool);
 extern bool macho_lo_sum_memory_operand (rtx, enum machine_mode);
 extern int num_insns_constant (rtx, enum machine_mode);
 extern int num_insns_constant_wide (HOST_WIDE_INT);
