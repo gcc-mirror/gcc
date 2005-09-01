@@ -1,5 +1,19 @@
 2005-09-01  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	Backport:
+
+	2005-02-22  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/20153
+	* decl2.c (build_anon_union_vars): Add type parameter.
+	(finish_anon_union): Pass it.
+
+	2005-07-28  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/22545
+	* call.c (add_builtin_candidate): Adjust for changes in
+	representation of pointer-to-member types.
+
+2005-09-01  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	PR c++/13377
 	* parser.c (cp_parser_lookup_name): Pass LOOKUP_COMPLAIN to
 	lookup_name_real on final parse.
