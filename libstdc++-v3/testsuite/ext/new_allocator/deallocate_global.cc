@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,17 +22,16 @@
 #include <string>
 #include <stdexcept>
 #include <ext/new_allocator.h>
-#include <testsuite_hooks.h>
 
 static size_t count;
 
 struct count_check
 {
-  count_check() {}
+  count_check() { }
   ~count_check()
   {
     if (count != 0)
-      throw std::runtime_error("count isn't zero");
+      throw std::runtime_error("allocation/deallocation count isn't zero");
   }
 };
  
@@ -54,11 +53,6 @@ void operator delete(void* p) throw()
   if (p == NULL)
     return;
   count--;
-  if (count == 0)
-    printf("All memory released \n");
-  else
-    printf("%u allocations to be released \n", count);
-  free(p);
 }
 
 typedef char char_t;

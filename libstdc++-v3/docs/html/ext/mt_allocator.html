@@ -40,8 +40,8 @@
 allocator"] is a fixed size (power of two) allocator that was
 initially developed specifically to suit the needs of multi threaded
 applications [hereinafter referred to as an MT application]. Over time
-the allocator has evolved and been improved in many ways, one of the
-being that it now also does a good job in single threaded applications
+the allocator has evolved and been improved in many ways, in
+particular it now also does a good job in single threaded applications
 [hereinafter referred to as a ST application]. (Note: In this
 document, when referring to single threaded applications this also
 includes applications that are compiled with gcc without thread
@@ -67,13 +67,14 @@ the actual allocator.
 </p>
 
 <p>The datum describing pools characteristics is 
-<pre>
-  template&lt;bool _Thread&gt;
-    class __pool
-</pre>
+ <pre>
+   template&lt;bool _Thread&gt;
+     class __pool
+ </pre>
 This class is parametrized on thread support, and is explicitly
 specialized for both multiple threads (with <code>bool==true</code>)
-and single threads (via <code>bool==false</code>.)
+and single threads (via <code>bool==false</code>.) It is possible to
+use a custom pool datum instead of the default class that is provided.
 </p>
 
 <p> There are two distinct policy classes, each of which can be used
@@ -280,9 +281,10 @@ release memory. Because of this, memory debugging programs like
 valgrind or purify may notice leaks: sorry about this
 inconvenience. Operating systems will reclaim allocated memory at
 program termination anyway. If sidestepping this kind of noise is
-desired, there are two options: use an allocator, like
-<code>new_allocator</code> that releases memory while debugging, or
-use GLIBCXX_FORCE_NEW to bypass the allocator's internal pools.</p>
+desired, there are three options: use an allocator, like
+<code>new_allocator</code> that releases memory while debugging, use
+GLIBCXX_FORCE_NEW to bypass the allocator's internal pools, or use a
+custom pool datum that releases resources on destruction.</p>
 
 <p>On systems with the function <code>__cxa_atexit</code>, the
 allocator can be forced to free all memory allocated before program
@@ -297,7 +299,10 @@ practice, forcing deallocation can be tricky, as it requires the
 that uses it is fully constructed. For most (but not all) STL
 containers, this works, as an instance of the allocator is constructed
 as part of a container's constructor. However, this assumption is
-implementation-specific, and subject to change.
+implementation-specific, and subject to change. For an example of a
+pool that frees memory, see the following
+    <a href="http://gcc.gnu.org/cgi-bin/cvsweb.cgi/gcc/libstdc%2b%2b-v3/testsuite/ext/mt_allocator/deallocate_local-6.cc"> 
+    example.</a>
 </p>
 
 <h3 class="left">

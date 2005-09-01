@@ -229,7 +229,6 @@ namespace __gnu_test
 	}
       throw;
     }
-
 }; // namespace __gnu_test
 
 #endif // _GLIBCXX_TESTSUITE_ALLOCATOR_H

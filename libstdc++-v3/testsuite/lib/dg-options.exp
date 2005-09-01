@@ -35,3 +35,12 @@ proc dg-require-namedlocale { args } {
     }
     return
 }
+
+proc dg-require-cxa-atexit { args } {
+    if { ![ check_v3_target_cxa_atexit ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
+}
