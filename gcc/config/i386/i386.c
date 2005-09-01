@@ -3682,6 +3682,7 @@ ix86_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     {
       mem = gen_rtx_MEM (Pmode,
 			 plus_constant (save_area, i * UNITS_PER_WORD));
+      MEM_NOTRAP_P (mem) = 1;
       set_mem_alias_set (mem, set);
       emit_move_insn (mem, gen_rtx_REG (Pmode,
 					x86_64_int_parameter_registers[i]));
@@ -3724,6 +3725,7 @@ ix86_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 			      plus_constant (save_area,
 					     8 * REGPARM_MAX + 127)));
       mem = gen_rtx_MEM (BLKmode, plus_constant (tmp_reg, -127));
+      MEM_NOTRAP_P (mem) = 1;
       set_mem_alias_set (mem, set);
       set_mem_align (mem, BITS_PER_WORD);
 

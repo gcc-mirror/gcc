@@ -1469,7 +1469,6 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
   MEM_VOLATILE_P (ref) |= TYPE_VOLATILE (type);
   MEM_IN_STRUCT_P (ref) = AGGREGATE_TYPE_P (type);
   MEM_POINTER (ref) = POINTER_TYPE_P (type);
-  MEM_NOTRAP_P (ref) = TREE_THIS_NOTRAP (t);
 
   /* If we are making an object of this type, or if this is a DECL, we know
      that it is a scalar if the type is not an aggregate.  */
@@ -1500,16 +1499,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
      the expression.  */
   if (! TYPE_P (t))
     {
-      tree base = get_base_address (t);
-      if (base && DECL_P (base)
-	  && TREE_READONLY (base)
-	  && (TREE_STATIC (base) || DECL_EXTERNAL (base)))
-	{
-	  tree base_type = TREE_TYPE (base);
-	  gcc_assert (!(base_type && TYPE_NEEDS_CONSTRUCTING (base_type))
-		      || DECL_ARTIFICIAL (base));
-	  MEM_READONLY_P (ref) = 1;
-	}
+      tree base;
 
       if (TREE_THIS_VOLATILE (t))
 	MEM_VOLATILE_P (ref) = 1;
@@ -1521,6 +1511,36 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	     || TREE_CODE (t) == VIEW_CONVERT_EXPR
 	     || TREE_CODE (t) == SAVE_EXPR)
 	t = TREE_OPERAND (t, 0);
+
+      /* We may look through structure-like accesses for the purposes of
+	 examining TREE_THIS_NOTRAP, but not array-like accesses.  */
+      base = t;
+      while (TREE_CODE (base) == COMPONENT_REF
+	     || TREE_CODE (base) == REALPART_EXPR
+	     || TREE_CODE (base) == IMAGPART_EXPR
+	     || TREE_CODE (base) == BIT_FIELD_REF)
+	base = TREE_OPERAND (base, 0);
+
+      if (DECL_P (base))
+	{
+	  if (CODE_CONTAINS_STRUCT (TREE_CODE (base), TS_DECL_WITH_VIS))
+	    MEM_NOTRAP_P (ref) = !DECL_WEAK (base);
+	  else
+	    MEM_NOTRAP_P (ref) = 1;
+	}
+      else
+	MEM_NOTRAP_P (ref) = TREE_THIS_NOTRAP (base);
+
+      base = get_base_address (base);
+      if (base && DECL_P (base)
+	  && TREE_READONLY (base)
+	  && (TREE_STATIC (base) || DECL_EXTERNAL (base)))
+	{
+	  tree base_type = TREE_TYPE (base);
+	  gcc_assert (!(base_type && TYPE_NEEDS_CONSTRUCTING (base_type))
+		      || DECL_ARTIFICIAL (base));
+	  MEM_READONLY_P (ref) = 1;
+	}
 
       /* If this expression uses it's parent's alias set, mark it such
 	 that we won't change it.  */
