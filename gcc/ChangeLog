@@ -1,3 +1,9 @@
+2005-09-01  Nicolas Pitre <nico@cam.org>
+
+	* config/arm/arm.c (arm_legitimize_address): Split absolute addresses
+	to alow matching ARM pre-indexed addressing mode.
+	(arm_override_options): Remove now irrelevant comment.
+
 2005-09-01  Phil Edwards  <phil@codesourcery.com>
 
 	* config.gcc (i*86-wrs-vxworks):  Update.  Split out vxworksae target.

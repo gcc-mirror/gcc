@@ -1234,10 +1234,6 @@ arm_override_options (void)
 
   if (optimize_size)
     {
-      /* There's some dispute as to whether this should be 1 or 2.  However,
-	 experiments seem to show that in pathological cases a setting of
-	 1 degrades less severely than a setting of 2.  This could change if
-	 other parts of the compiler change their behavior.  */
       arm_constant_limit = 1;
 
       /* If optimizing for size, bump the number of instructions that we
@@ -3757,6 +3753,34 @@ arm_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
 
       if (xop0 != XEXP (x, 0) || xop1 != XEXP (x, 1))
 	x = gen_rtx_MINUS (SImode, xop0, xop1);
+    }
+
+  /* Make sure to take full advantage of the pre-indexed addressing mode
+     with absolute addresses which often allows for the base register to
+     be factorized for multiple adjacent memory references, and it might
+     even allows for the mini pool to be avoided entirely. */
+  else if (GET_CODE (x) == CONST_INT && optimize > 0)
+    {
+      unsigned int bits;
+      HOST_WIDE_INT mask, base, index;
+      rtx base_reg;
+
+      /* ldr and ldrb can use a 12 bit index, ldrsb and the rest can only
+         use a 8 bit index. So let's use a 12 bit index for SImode only and
+         hope that arm_gen_constant will enable ldrb to use more bits. */
+      bits = (mode == SImode) ? 12 : 8;
+      mask = (1 << bits) - 1;
+      base = INTVAL (x) & ~mask;
+      index = INTVAL (x) & mask;
+      if (bit_count (base) > (32 - bits)/2)
+        {
+	  /* It'll most probably be more efficient to generate the base
+	     with more bits set and use a negative index instead. */
+	  base |= mask;
+	  index -= mask;
+	}
+      base_reg = force_reg (SImode, GEN_INT (base));
+      x = gen_rtx_PLUS (SImode, base_reg, GEN_INT (index));
     }
 
   if (flag_pic)
