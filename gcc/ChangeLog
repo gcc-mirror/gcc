@@ -1,3 +1,10 @@
+2005-09-01  Richard Henderson  <rth@redhat.com>
+
+	PR 23676
+	* reload1.c (reload_as_needed): Check !CALL_P before calling
+	fixup_eh_region_note.
+	* rtlanal.c (may_trap_p): SUBREG by itself cannot trap.
+
 2005-09-01  DJ Delorie  <dj@redhat.com>
 
 	* varasm.c (output_constant): Let the target resolve
