@@ -444,57 +444,57 @@ namespace std
 namespace __gnu_cxx
 {
   template<typename _Tp>
-    int
+    inline int
     __capture_fpclassify(_Tp __f) { return fpclassify(__f); }
 
   template<typename _Tp>
-    int
+    inline int
     __capture_isfinite(_Tp __f) { return isfinite(__f); }
 
   template<typename _Tp>
-    int
+    inline int
     __capture_isinf(_Tp __f) { return isinf(__f); }
 
   template<typename _Tp>
-    int
+    inline int
     __capture_isnan(_Tp __f) { return isnan(__f); }
 
   template<typename _Tp>
-    int
+    inline int
     __capture_isnormal(_Tp __f) { return isnormal(__f); }
 
   template<typename _Tp>
-    int
+    inline int
     __capture_signbit(_Tp __f) { return signbit(__f); }
 
   template<typename _Tp>
-    int
+    inline int
     __capture_isgreater(_Tp __f1, _Tp __f2)
     { return isgreater(__f1, __f2); }
 
   template<typename _Tp>
-     int
-     __capture_isgreaterequal(_Tp __f1, _Tp __f2)
-     { return isgreaterequal(__f1, __f2); }
+    inline int
+    __capture_isgreaterequal(_Tp __f1, _Tp __f2)
+    { return isgreaterequal(__f1, __f2); }
 
   template<typename _Tp>
-     int
-     __capture_isless(_Tp __f1, _Tp __f2) { return isless(__f1, __f2); }
+    inline int
+    __capture_isless(_Tp __f1, _Tp __f2) { return isless(__f1, __f2); }
 
   template<typename _Tp>
-     int
-     __capture_islessequal(_Tp __f1, _Tp __f2)
-     { return islessequal(__f1, __f2); }
+    inline int
+    __capture_islessequal(_Tp __f1, _Tp __f2)
+    { return islessequal(__f1, __f2); }
 
   template<typename _Tp>
-     int
-     __capture_islessgreater(_Tp __f1, _Tp __f2)
-     { return islessgreater(__f1, __f2); }
+    inline int
+    __capture_islessgreater(_Tp __f1, _Tp __f2)
+    { return islessgreater(__f1, __f2); }
 
   template<typename _Tp>
-     int
-     __capture_isunordered(_Tp __f1, _Tp __f2)
-     { return isunordered(__f1, __f2); }
+    inline int
+    __capture_isunordered(_Tp __f1, _Tp __f2)
+    { return isunordered(__f1, __f2); }
 }
 
 // Only undefine the C99 FP macros, if actually captured for namespace movement
@@ -518,54 +518,54 @@ namespace __gnu_cxx
 namespace __gnu_cxx
 {
   template<typename _Tp>
-    int
+    inline int
     fpclassify(_Tp __f) { return __capture_fpclassify(__f); }
 
   template<typename _Tp>
-    int
+    inline int
     isfinite(_Tp __f) { return __capture_isfinite(__f); }
 
   template<typename _Tp>
-    int
+    inline int
     isinf(_Tp __f) { return __capture_isinf(__f); }
 
   template<typename _Tp>
-    int
+    inline int
     isnan(_Tp __f) { return __capture_isnan(__f); }
 
   template<typename _Tp>
-    int
+    inline int
     isnormal(_Tp __f) { return __capture_isnormal(__f); }
 
   template<typename _Tp>
-    int
+    inline int
     signbit(_Tp __f) { return __capture_signbit(__f); }
 
   template<typename _Tp>
-    int
+    inline int
     isgreater(_Tp __f1, _Tp __f2) { return __capture_isgreater(__f1, __f2); }
 
   template<typename _Tp>
-    int
+    inline int
     isgreaterequal(_Tp __f1, _Tp __f2)
     { return __capture_isgreaterequal(__f1, __f2); }
 
   template<typename _Tp>
-    int
+    inline int
     isless(_Tp __f1, _Tp __f2) { return __capture_isless(__f1, __f2); }
 
   template<typename _Tp>
-    int
+    inline int
     islessequal(_Tp __f1, _Tp __f2)
     { return __capture_islessequal(__f1, __f2); }
 
   template<typename _Tp>
-    int
+    inline int
     islessgreater(_Tp __f1, _Tp __f2)
     { return __capture_islessgreater(__f1, __f2); }
 
   template<typename _Tp>
-    int
+    inline int
     isunordered(_Tp __f1, _Tp __f2)
     { return __capture_isunordered(__f1, __f2); }
 }
