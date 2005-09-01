@@ -1,3 +1,11 @@
+2005-09-01  Phil Edwards  <phil@codesourcery.com>
+
+	* config.gcc (i*86-wrs-vxworks):  Update.  Split out vxworksae target.
+	* config/i386/t-vxworks:  Update multilibs for VxWorks 6 and RTP mode.
+	* config/i386/vxworks.h:  Likewise.
+	* config/i386/t-vxworksae:  New file, for VxWorks AE.
+	* config/i386/vxworksae.h:  Likewise.
+
 2005-09-01  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	PR tree-optimization/23410

@@ -1169,9 +1169,18 @@ i[34567]86-*-sysv4*)		# Intel 80386's running system V.4
 	extra_parts="crtbegin.o crtend.o"
 	use_fixproto=yes
 	;;
-i[4567]86-wrs-vxworks)
-	tm_file="${tm_file} i386/sysv4.h i386/unix.h i386/vxworks.h"
-	tmake_file="${tmake_file} i386/t-vxworks"
+i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae)
+	tm_file="${tm_file} i386/sysv4.h i386/unix.h i386/att.h vx-common.h"
+	case ${target} in
+	  *-vxworksae*)
+	    tm_file="${tm_file} vxworksae.h i386/vxworksae.h"
+	    tmake_file="${tmake_file} i386/t-vxworks i386/t-vxworksae"
+	    ;;
+	  *)
+	    tm_file="${tm_file} vxworks.h i386/vxworks.h"
+	    tmake_file="${tmake_file} i386/t-vxworks"
+	    ;;
+	esac
 	;;
 i[34567]86-*-pe | i[34567]86-*-cygwin*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h i386/cygwin.h"
