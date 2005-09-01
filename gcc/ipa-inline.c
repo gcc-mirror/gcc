@@ -944,9 +944,11 @@ cgraph_decide_inlining (void)
     }
 
   if (!flag_really_no_inline)
-    {
-      cgraph_decide_inlining_of_small_functions ();
+    cgraph_decide_inlining_of_small_functions ();
 
+  if (!flag_really_no_inline
+      && flag_inline_functions_called_once)
+    {
       if (dump_file)
 	fprintf (dump_file, "\nDeciding on functions called once:\n");
 
