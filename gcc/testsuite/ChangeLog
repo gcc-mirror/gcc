@@ -2,6 +2,14 @@
 
 	Backport:
 
+	2004-11-27  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/18512
+	* g++.dg/template/crash29.C: New test.
+
+2005-09-01  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	Backport:
+
 	2004-11-25  Mark Mitchell  <mark@codesourcery.com>
 	PR c++/18545
 	* g++.dg/expr/return1.C: New test. 

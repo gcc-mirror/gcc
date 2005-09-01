@@ -2,6 +2,14 @@
 
 	Backport:
 
+	2004-11-27  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/18512
+	* parser.c (cp_parser_postfix_expression): Robustify.
+
+2005-09-01  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	Backport:
+
 	2004-11-25  Mark Mitchell  <mark@codesourcery.com>
 	PR c++/18545
 	* typeck.c (check_return_expr): Robustify.

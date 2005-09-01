@@ -3966,20 +3966,29 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 		if (parser->scope)
 		  idk = CP_ID_KIND_QUALIFIED;
 
-		if (name != error_mark_node 
-		    && !BASELINK_P (name)
-		    && parser->scope)
+		/* If the name is a template-id that names a type, we will
+		   get a TYPE_DECL here.  That is invalid code.  */
+		if (TREE_CODE (name) == TYPE_DECL)
 		  {
-		    name = build_nt (SCOPE_REF, parser->scope, name);
-		    parser->scope = NULL_TREE;
-		    parser->qualifying_scope = NULL_TREE;
-		    parser->object_scope = NULL_TREE;
+		    error ("invalid use of `%D'", name);
+		    postfix_expression = error_mark_node;
 		  }
-		if (scope && name && BASELINK_P (name))
-		  adjust_result_of_qualified_name_lookup 
-		    (name, BINFO_TYPE (BASELINK_BINFO (name)), scope);
-		postfix_expression 
-		  = finish_class_member_access_expr (postfix_expression, name);
+		else
+		  {
+		    if (name != error_mark_node && !BASELINK_P (name)
+			&& parser->scope)
+		      {
+			name = build_nt (SCOPE_REF, parser->scope, name);
+			parser->scope = NULL_TREE;
+			parser->qualifying_scope = NULL_TREE;
+			parser->object_scope = NULL_TREE;
+		      }
+		    if (scope && name && BASELINK_P (name))
+		      adjust_result_of_qualified_name_lookup
+			(name, BINFO_TYPE (BASELINK_BINFO (name)), scope);
+		    postfix_expression = finish_class_member_access_expr
+					   (postfix_expression, name);
+		  }
 	      }
 
 	    /* We no longer need to look up names in the scope of the
