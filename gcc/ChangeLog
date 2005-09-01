@@ -1,3 +1,12 @@
+2005-09-01  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	PR rtl-optimization/17810
+	Backport
+	2004-11-04  Richard Sandiford  <rsandifo@redhat.com>
+	PR target/15342
+	* regrename.c (scan_rtx): Treat the destinations of SETs and CLOBBERs
+	as OP_INOUT if the instruction is predicated.
+
 2005-08-31  David Edelsohn  <edelsohn@gnu.org>
 
         PR target/23539
@@ -9,8 +18,8 @@
 
 2005-08-21  Jakub Jelinek  <jakub@redhat.com>
 
-	* simplify-rtx.c (simplify_immed_subreg) <case CONST_DOUBLE>: Only clear
-	up to elem_bitsize bits, not max_bitsize.
+	* simplify-rtx.c (simplify_immed_subreg) <case CONST_DOUBLE>: Only
+	clear up to elem_bitsize bits, not max_bitsize.
 
 2005-07-20  Steve Ellcey  <sje@cup.hp.com>
 
