@@ -35,4 +35,4 @@ extern void abort(void);
 }
 @end
 
-/* { dg-final { scan-assembler "\t.section __OBJC, __image_info.*\n\t.align.*\nL_OBJC_IMAGE_INFO.*:\n\t.long\t0\n\t.long\t1\n\t.objc_module_info\n" } } */
+/* { dg-final { scan-assembler "\t.section __OBJC, __image_info.*\n\t.align.*\nL_OBJC_IMAGE_INFO.*:\n\t.long\t0\n\t.long\t1" } } */

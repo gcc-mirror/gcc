@@ -1,5 +1,13 @@
 2005-08-31  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR objc/23306
+	* objc-act.c (generate_strings): Remove and move code to
+	finish decl to ...
+	(add_objc_string): here when creating a new string decl.
+	(finish_objc): Don't call generate_strings.
+
+2005-08-31  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR objc/23381
 	* objc-act.c (next_sjlj_build_try_catch_finally): Set
 	TREE_SIDE_EFFECTS on catch_seq after building it.
