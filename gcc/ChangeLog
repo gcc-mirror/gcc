@@ -1,3 +1,8 @@
+2005-08-31  Richard Henderson  <rth@redhat.com>
+
+	* expr.c (expand_expr_real_1) <VIEW_CONVERT_EXPR>: Force subregs
+	into a pseudo before applying gen_lowpart.
+
 2005-08-31  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/install.texi (Specific): Update cctools version required
