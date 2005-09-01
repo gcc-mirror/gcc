@@ -1,5 +1,10 @@
 2005-09-01  Benjamin Kosnik  <bkoz@redhat.com>
-	     Paolo Carlini  <pcarlini@suse.de>
+
+	* include/c_std/std_cmath.h: Declare C99 functions and helper
+	functions as inline.
+
+2005-09-01  Benjamin Kosnik  <bkoz@redhat.com>
+	    Paolo Carlini  <pcarlini@suse.de>
 	
 	* testsuite/lib/libstdc++.exp (check_v3_target_cxa_atexit): Fix
 	comment.
