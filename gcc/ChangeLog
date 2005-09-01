@@ -1,5 +1,9 @@
 2005-09-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/7241
+	* dwarf2out.c (base_type_die): Compare char_type_node with
+	TYPE_MAIN_VARIANT (type), not type.
+
 	PR rtl-optimization/23478
         * regs.h (reg_info): Add throw_calls_crossed.
         (REG_N_THROWING_CALLS_CROSSED): Define.

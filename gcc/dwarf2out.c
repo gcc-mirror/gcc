@@ -7946,7 +7946,7 @@ base_type_die (tree type)
 	 that contain spaces; other names might occur by coincidence in other
 	 languages.  */
       if (! (TYPE_PRECISION (type) == CHAR_TYPE_SIZE
-	     && (type == char_type_node
+	     && (TYPE_MAIN_VARIANT (type) == char_type_node
 		 || ! strcmp (type_name, "signed char")
 		 || ! strcmp (type_name, "unsigned char"))))
 	{
