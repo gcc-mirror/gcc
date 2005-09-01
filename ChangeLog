@@ -1,3 +1,8 @@
+2005-08-30  Phil Edwards  <phil@codesourcery.com>
+
+	* configure.in (*-*-vxworks*):  Add target-libstdc++-v3 to noconfigdirs.
+	* configure:  Regenerated.
+
 2005-08-22  Aldy Hernandez  <aldyh@redhat.com>
 
 	* MAINTAINERS: Add self as ms1 maintainer.
