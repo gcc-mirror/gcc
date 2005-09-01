@@ -1,3 +1,33 @@
+2005-09-01  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/23649
+	* config/rs6000/predicates.md (mask_operand): Only handle rlwinm masks.
+	(mask64_operand): Reinstate code prior to 2005-06-11 change.
+	(mask64_2_operand): Reinstate code prior to 2004-11-11 change.
+	(and64_2_operand): Tweak to use predicate.
+	(and_operand): Adjust for mask_operand changes.
+	* config/rs6000/rs6000.c (num_insns_constant): Revert 2005-06-11.
+	(print_operand): Likewise.
+	(rs6000_rtx_costs): Pass mode to mask_operand and use mask64_operand.
+	(mask64_1or2_operand): Delete.
+	* rs6000/rs6000-protos.h (mask64_1or2_operand): Delete.
+	* config/rs6000/rs6000.h (EXTRA_CONSTRAINT <S>): Revert 2005-06-11.
+	(EXTRA_CONSTRAINT <T>): Pass operand mode to predicate.
+	(EXTRA_CONSTRAINT <t>): Disallow mask64_operand matches.
+	* config/rs6000/rs6000.md (andsi3_internal3 split): Revert 2005-06-11.
+	(rotldi3_internal4): Likewise.
+	(rotldi3_internal5, rotldi3_internal5 split): Likewise.
+	(rotldi3_internal6, rotldi3_internal6 split): Likewise.
+	(ashldi3_internal7): Likewise.
+	(ashldi3_internal8, ashldi3_internal8 split): Likewise.
+	(ashldi3_internal, ashldi3_internal9 split): Likewise.
+	(anddi3 split): Don't match mask64_operand.
+	(anddi3_internal2): Add rlwinm.  Modify 't' splitter predicate.
+	(anddi3_internal3): Add rlwinm.  Use and64_2_operand in non-cr0
+	splitter and match TARGET_64BIT not TARGET_POWERPC64.  Modify
+	't' splitter predicate.
+	(movdi_internal64 + 2): Revert 2005-06-11 change.
+
 2005-08-31  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c.c (m32c_valid_pointer_mode): New.

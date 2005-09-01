@@ -1105,26 +1105,28 @@ enum reg_class
 
    'Q' means that is a memory operand that is just an offset from a reg.
    'R' is for AIX TOC entries.
-   'S' is a constant that can be placed into a 64-bit mask operand
-   'T' is a constant that can be placed into a 32-bit mask operand
+   'S' is a constant that can be placed into a 64-bit mask operand.
+   'T' is a constant that can be placed into a 32-bit mask operand.
    'U' is for V.4 small data references.
    'W' is a vector constant that can be easily generated (no mem refs).
    'Y' is an indexed or word-aligned displacement memory operand.
    'Z' is an indexed or indirect memory operand.
    'a'  is an indexed or indirect address operand.
-   't' is for AND masks that can be performed by two rldic{l,r} insns.  */
+   't' is for AND masks that can be performed by two rldic{l,r} insns
+       (but excluding those that could match other constraints of anddi3.)  */
 
 #define EXTRA_CONSTRAINT(OP, C)						\
   ((C) == 'Q' ? GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == REG	\
    : (C) == 'R' ? legitimate_constant_pool_address_p (OP)		\
-   : (C) == 'S' ? mask_operand (OP, DImode)				\
-   : (C) == 'T' ? mask_operand (OP, SImode)				\
+   : (C) == 'S' ? mask64_operand (OP, DImode)				\
+   : (C) == 'T' ? mask_operand (OP, GET_MODE (OP))			\
    : (C) == 'U' ? (DEFAULT_ABI == ABI_V4				\
 		   && small_data_operand (OP, GET_MODE (OP)))		\
    : (C) == 't' ? (mask64_2_operand (OP, DImode)			\
 		   && (fixed_regs[CR0_REGNO]				\
 		       || !logical_operand (OP, DImode))		\
-		   && !mask_operand (OP, DImode))			\
+		   && !mask_operand (OP, DImode)			\
+		   && !mask64_operand (OP, DImode))			\
    : (C) == 'W' ? (easy_vector_constant (OP, GET_MODE (OP)))		\
    : (C) == 'Y' ? (word_offset_memref_operand (OP, GET_MODE (OP)))      \
    : (C) == 'Z' ? (indexed_or_indirect_operand (OP, GET_MODE (OP)))	\

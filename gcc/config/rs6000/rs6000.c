@@ -1980,7 +1980,7 @@ num_insns_constant (rtx op, enum machine_mode mode)
     case CONST_INT:
 #if HOST_BITS_PER_WIDE_INT == 64
       if ((INTVAL (op) >> 31) != 0 && (INTVAL (op) >> 31) != -1
-	  && mask_operand (op, mode))
+	  && mask64_operand (op, mode))
 	return 2;
       else
 #endif
@@ -2022,7 +2022,7 @@ num_insns_constant (rtx op, enum machine_mode mode)
 		|| (high == -1 && low < 0))
 	      return num_insns_constant_wide (low);
 
-	    else if (mask_operand (op, mode))
+	    else if (mask64_operand (op, mode))
 	      return 2;
 
 	    else if (low == 0)
@@ -2344,61 +2344,6 @@ rs6000_expand_vector_extract (rtx target, rtx vec, int elt)
 						       mem, vec),
 					  x)));
   emit_move_insn (target, adjust_address_nv (mem, inner_mode, 0));
-}
-
-int
-mask64_1or2_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED,
-		       bool allow_one)
-{
-  if (GET_CODE (op) == CONST_INT)
-    {
-      HOST_WIDE_INT c, lsb;
-      bool one_ok;
-
-      c = INTVAL (op);
-
-      /* Disallow all zeros.  */
-      if (c == 0)
-	return 0;
-
-      /* We can use a single rlwinm insn if no upper bits of C are set
-         AND there are zero, one or two transitions in the _whole_ of
-         C.  */
-      one_ok = !(c & ~(HOST_WIDE_INT)0xffffffff);
-
-      /* We don't change the number of transitions by inverting,
-	 so make sure we start with the LS bit zero.  */
-      if (c & 1)
-	c = ~c;
-
-      /* Find the first transition.  */
-      lsb = c & -c;
-
-      /* Invert to look for a second transition.  */
-      c = ~c;
-
-      /* Erase first transition.  */
-      c &= -lsb;
-
-      /* Find the second transition.  */
-      lsb = c & -c;
-
-      /* Invert to look for a third transition.  */
-      c = ~c;
-
-      /* Erase second transition.  */
-      c &= -lsb;
-
-      if (one_ok && !(allow_one || c))
-	return 0;
-
-      /* Find the third transition (if any).  */
-      lsb = c & -c;
-
-      /* Match if all the bits above are 1's (or c is zero).  */
-      return c == -lsb;
-    }
-  return 0;
 }
 
 /* Generates shifts and masks for a pair of rldicl or rldicr insns to
@@ -10379,7 +10324,7 @@ print_operand (FILE *file, rtx x, int code)
       /* PowerPC64 mask position.  All 0's is excluded.
 	 CONST_INT 32-bit mask is considered sign-extended so any
 	 transition must occur within the CONST_INT, not on the boundary.  */
-      if (! mask_operand (x, DImode))
+      if (! mask64_operand (x, DImode))
 	output_operand_lossage ("invalid %%S value");
 
       uval = INT_LOWPART (x);
@@ -18235,7 +18180,9 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total)
 	      && (CONST_OK_FOR_LETTER_P (INTVAL (x), 'K')
 		  || (CONST_OK_FOR_LETTER_P (INTVAL (x),
 					     mode == SImode ? 'L' : 'J'))
-		  || mask_operand (x, VOIDmode)))
+		  || mask_operand (x, mode)
+		  || (mode == DImode
+		      && mask64_operand (x, DImode))))
 	  || ((outer_code == IOR || outer_code == XOR)
 	      && (CONST_OK_FOR_LETTER_P (INTVAL (x), 'K')
 		  || (CONST_OK_FOR_LETTER_P (INTVAL (x),
@@ -18287,7 +18234,8 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total)
 	  && ((outer_code == AND
 	       && (CONST_OK_FOR_LETTER_P (INTVAL (x), 'K')
 		   || CONST_OK_FOR_LETTER_P (INTVAL (x), 'L')
-		   || mask_operand (x, DImode)))
+		   || mask_operand (x, DImode)
+		   || mask64_operand (x, DImode)))
 	      || ((outer_code == IOR || outer_code == XOR)
 		  && CONST_DOUBLE_HIGH (x) == 0
 		  && (CONST_DOUBLE_LOW (x)
