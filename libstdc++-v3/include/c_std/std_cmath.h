@@ -478,7 +478,7 @@ namespace __gnu_cxx
     { return isgreaterequal(__f1, __f2); }
 
   template<typename _Tp>
-    int
+    inline int
     __capture_isless(_Tp __f1, _Tp __f2) { return isless(__f1, __f2); }
 
   template<typename _Tp>
