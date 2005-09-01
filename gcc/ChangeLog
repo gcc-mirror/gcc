@@ -1,3 +1,9 @@
+2005-09-01  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	PR tree-optimization/23410
+	* tree-ssa-loop-niter.c (scev_probably_wraps_p): Check that the
+	sequence is not wrapping during the first step.
+
 2005-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/7241

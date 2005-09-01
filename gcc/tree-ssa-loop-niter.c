@@ -1823,7 +1823,8 @@ scev_probably_wraps_p (tree type, tree base, tree step,
   struct nb_iter_bound *bound;
   tree delta, step_abs;
   tree unsigned_type, valid_niter;
-  tree base_plus_step;
+  tree base_plus_step, bpsps;
+  int cps, cpsps;
 
   /* FIXME: The following code will not be used anymore once
      http://gcc.gnu.org/ml/gcc-patches/2005-06/msg02025.html is
@@ -1865,7 +1866,17 @@ scev_probably_wraps_p (tree type, tree base, tree step,
 
   *unknown_max = false;
   base_plus_step = fold_build2 (PLUS_EXPR, type, base, step);
-  switch (compare_trees (base_plus_step, base))
+  bpsps = fold_build2 (PLUS_EXPR, type, base_plus_step, step);
+  cps = compare_trees (base_plus_step, base);
+  cpsps = compare_trees (bpsps, base_plus_step);
+
+  /* Check that the sequence is not wrapping in the first step: it
+     should have the same monotonicity for the first two steps.  See
+     PR23410.  */
+  if (cps != cpsps)
+    return true;
+
+  switch (cps)
     {
     case -1:
       {
