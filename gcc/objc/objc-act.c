@@ -2448,60 +2448,6 @@ generate_static_references (void)
   finish_var_decl (static_instances_decl, expr);
 }
 
-/* Output all strings.  */
-
-static void
-generate_strings (void)
-{
-  tree chain, string_expr;
-  tree string, decl, type;
-
-  for (chain = class_names_chain; chain; chain = TREE_CHAIN (chain))
-    {
-      string = TREE_VALUE (chain);
-      decl = TREE_PURPOSE (chain);
-      type = build_array_type
-	     (char_type_node,
-	      build_index_type
-	      (build_int_cst (NULL_TREE, 
-			      IDENTIFIER_LENGTH (string))));
-      decl = start_var_decl (type, IDENTIFIER_POINTER (DECL_NAME (decl)));
-      string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
-				     IDENTIFIER_POINTER (string));
-      finish_var_decl (decl, string_expr);
-    }
-
-  for (chain = meth_var_names_chain; chain; chain = TREE_CHAIN (chain))
-    {
-      string = TREE_VALUE (chain);
-      decl = TREE_PURPOSE (chain);
-      type = build_array_type
-	     (char_type_node,
-	      build_index_type
-	      (build_int_cst (NULL_TREE,
-			      IDENTIFIER_LENGTH (string))));
-      decl = start_var_decl (type, IDENTIFIER_POINTER (DECL_NAME (decl)));
-      string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
-				     IDENTIFIER_POINTER (string));
-      finish_var_decl (decl, string_expr);
-    }
-
-  for (chain = meth_var_types_chain; chain; chain = TREE_CHAIN (chain))
-    {
-      string = TREE_VALUE (chain);
-      decl = TREE_PURPOSE (chain);
-      type = build_array_type
-	     (char_type_node,
-	      build_index_type
-	      (build_int_cst (NULL_TREE,
-			      IDENTIFIER_LENGTH (string))));
-      decl = start_var_decl (type, IDENTIFIER_POINTER (DECL_NAME (decl)));
-      string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
-				     IDENTIFIER_POINTER (string));
-      finish_var_decl (decl, string_expr);
-    }
-}
-
 static GTY(()) int selector_reference_idx;
 
 static tree
@@ -2820,7 +2766,7 @@ objc_get_class_reference (tree ident)
 static tree
 add_objc_string (tree ident, enum string_section section)
 {
-  tree *chain, decl;
+  tree *chain, decl, type, string_expr;
 
   if (section == class_names)
     chain = &class_names_chain;
@@ -2841,6 +2787,16 @@ add_objc_string (tree ident, enum string_section section)
     }
 
   decl = build_objc_string_decl (section);
+  
+  type = build_array_type
+	 (char_type_node,
+	  build_index_type
+	  (build_int_cst (NULL_TREE, 
+			  IDENTIFIER_LENGTH (ident))));
+  decl = start_var_decl (type, IDENTIFIER_POINTER (DECL_NAME (decl)));
+  string_expr = my_build_string (IDENTIFIER_LENGTH (ident) + 1,
+				 IDENTIFIER_POINTER (ident));
+  finish_var_decl (decl, string_expr);
 
   *chain = tree_cons (decl, ident, NULL_TREE);
 
@@ -9225,10 +9181,6 @@ finish_objc (void)
 
   for (impent = imp_list; impent; impent = impent->next)
     handle_impent (impent);
-
-  /* Dump the string table last.  */
-
-  generate_strings ();
 
   if (warn_selector)
     {

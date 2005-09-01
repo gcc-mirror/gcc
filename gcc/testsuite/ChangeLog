@@ -1,3 +1,9 @@
+2005-08-31  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR objc/23306
+	* objc.dg/image-info.m: Remove "objc_module_info" check part of the
+	scan-assmbler.
+
 2005-08-31  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR target/21255
