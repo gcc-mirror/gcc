@@ -1,3 +1,8 @@
+2005-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/23478
+	* g++.dg/opt/pr23478.C: New test.
+
 2005-09-01  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	Backport:

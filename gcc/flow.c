@@ -104,7 +104,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    life_analysis fills in certain vectors containing information about
    register usage: REG_N_REFS, REG_N_DEATHS, REG_N_SETS, REG_LIVE_LENGTH,
-   REG_N_CALLS_CROSSED and REG_BASIC_BLOCK.
+   REG_N_CALLS_CROSSED, REG_N_THROWING_CALLS_CROSSED and REG_BASIC_BLOCK.
 
    life_analysis sets current_function_sp_is_unchanging if the function
    doesn't modify the stack pointer.  */
@@ -1470,6 +1470,7 @@ allocate_reg_life_data (void)
       REG_N_REFS (i) = 0;
       REG_N_DEATHS (i) = 0;
       REG_N_CALLS_CROSSED (i) = 0;
+      REG_N_THROWING_CALLS_CROSSED (i) = 0;
       REG_LIVE_LENGTH (i) = 0;
       REG_FREQ (i) = 0;
       REG_BASIC_BLOCK (i) = REG_BLOCK_UNKNOWN;
@@ -1688,8 +1689,13 @@ propagate_one_insn (struct propagate_block_info *pbi, rtx insn)
 	 record this for them.  */
 
       if (GET_CODE (insn) == CALL_INSN && (flags & PROP_REG_INFO))
-	EXECUTE_IF_SET_IN_REG_SET (pbi->reg_live, 0, i,
-				   { REG_N_CALLS_CROSSED (i)++; });
+	{
+	  EXECUTE_IF_SET_IN_REG_SET (pbi->reg_live, 0, i,
+				     { REG_N_CALLS_CROSSED (i)++; });
+	  if (can_throw_internal (insn))
+	    EXECUTE_IF_SET_IN_REG_SET (pbi->reg_live, 0, i,
+				     { REG_N_THROWING_CALLS_CROSSED (i)++; });
+	}
 
       /* Record sets.  Do this even for dead instructions, since they
 	 would have killed the values if they hadn't been deleted.  */
@@ -3365,7 +3371,11 @@ attempt_auto_inc (struct propagate_block_info *pbi, rtx inc, rtx insn,
 	 that REGNO now crosses them.  */
       for (temp = insn; temp != incr; temp = NEXT_INSN (temp))
 	if (GET_CODE (temp) == CALL_INSN)
-	  REG_N_CALLS_CROSSED (regno)++;
+	  {
+	    REG_N_CALLS_CROSSED (regno)++;
+	    if (can_throw_internal (temp))
+	      REG_N_THROWING_CALLS_CROSSED (regno)++;
+	  }
 
       /* Invalidate alias info for Q since we just changed its value.  */
       clear_reg_alias_info (q);

@@ -59,6 +59,7 @@ typedef struct reg_info_def
   int deaths;			/* # of times (REG n) dies */
   int live_length;		/* # of instructions (REG n) is live */
   int calls_crossed;		/* # of calls (REG n) is live across */
+  int throw_calls_crossed;	/* # of calls that may throw (REG n) is live across */
   int basic_block;		/* # of basic blocks (REG n) is used in */
   char changes_mode;		/* whether (SUBREG (REG n)) exists and
 				   is illegal.  */
@@ -124,6 +125,12 @@ extern varray_type reg_n_info;
 /* Indexed by N, gives number of CALL_INSNS across which (REG n) is live.  */
 
 #define REG_N_CALLS_CROSSED(N) (VARRAY_REG (reg_n_info, N)->calls_crossed)
+
+/* Indexed by N, gives number of CALL_INSNS that may throw, across which
+   (REG n) is live.  */
+
+#define REG_N_THROWING_CALLS_CROSSED(N) \
+  (VARRAY_REG (reg_n_info, N)->throw_calls_crossed)
 
 /* Total number of instructions at which (REG n) is live.
    The larger this is, the less priority (REG n) gets for

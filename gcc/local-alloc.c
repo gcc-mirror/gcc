@@ -120,6 +120,11 @@ struct qty
 
   int n_calls_crossed;
 
+  /* Number of times a reg tied to given qty lives across a CALL_INSN
+     that might throw.  */
+
+  int n_throwing_calls_crossed;
+
   /* The register number of one pseudo register whose reg_qty value is Q.
      This register should be the head of the chain
      maintained in reg_next_in_qty.  */
@@ -317,6 +322,7 @@ alloc_qty (int regno, enum machine_mode mode, int size, int birth)
   qty[qtyno].mode = mode;
   qty[qtyno].birth = birth;
   qty[qtyno].n_calls_crossed = REG_N_CALLS_CROSSED (regno);
+  qty[qtyno].n_throwing_calls_crossed = REG_N_THROWING_CALLS_CROSSED (regno);
   qty[qtyno].min_class = reg_preferred_class (regno);
   qty[qtyno].alternate_class = reg_alternate_class (regno);
   qty[qtyno].n_refs = REG_N_REFS (regno);
@@ -1119,6 +1125,7 @@ update_equiv_regs (void)
 
 		      REG_BASIC_BLOCK (regno) = bb->index;
 		      REG_N_CALLS_CROSSED (regno) = 0;
+		      REG_N_THROWING_CALLS_CROSSED (regno) = 0;
 		      REG_LIVE_LENGTH (regno) = 2;
 
 		      if (insn == BB_HEAD (bb))
@@ -1946,6 +1953,8 @@ combine_regs (rtx usedreg, rtx setreg, int may_save_copy, int insn_number,
 
       /* Update info about quantity SQTY.  */
       qty[sqty].n_calls_crossed += REG_N_CALLS_CROSSED (sreg);
+      qty[sqty].n_throwing_calls_crossed
+	+= REG_N_THROWING_CALLS_CROSSED (sreg);
       qty[sqty].n_refs += REG_N_REFS (sreg);
       qty[sqty].freq += REG_FREQ (sreg);
       if (usize < ssize)
@@ -2251,12 +2260,14 @@ find_free_reg (enum reg_class class, enum machine_mode mode, int qtyno,
 
   /* We need not check to see if the current function has nonlocal
      labels because we don't put any pseudos that are live over calls in
-     registers in that case.  */
+     registers in that case.  Avoid putting pseudos crossing calls that
+     might throw into call used registers.  */
 
   if (! accept_call_clobbered
       && flag_caller_saves
       && ! just_try_suggested
       && qty[qtyno].n_calls_crossed != 0
+      && qty[qtyno].n_throwing_calls_crossed == 0
       && CALLER_SAVE_PROFITABLE (qty[qtyno].n_refs,
 				 qty[qtyno].n_calls_crossed))
     {
