@@ -1,5 +1,9 @@
 2005-09-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/23506
+	* c-common.c (c_common_nodes_and_builtins): Increase builtin_types
+	array by one element, initialize the BT_LAST element with NULL.
+
 	PR debug/7241
 	* dwarf2out.c (base_type_die): Compare char_type_node with
 	TYPE_MAIN_VARIANT (type), not type.
