@@ -7400,7 +7400,11 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       else if (TYPE_MODE (type) != BLKmode && GET_MODE (op0) != BLKmode
 	       && GET_MODE_SIZE (TYPE_MODE (type))
 		   == GET_MODE_SIZE (GET_MODE (op0)))
-	op0 = gen_lowpart (TYPE_MODE (type), op0);
+	{
+	  if (GET_CODE (op0) == SUBREG)
+	    op0 = force_reg (GET_MODE (op0), op0);
+	  op0 = gen_lowpart (TYPE_MODE (type), op0);
+	}
       /* If both modes are integral, then we can convert from one to the
 	 other.  */
       else if (SCALAR_INT_MODE_P (GET_MODE (op0))
