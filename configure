@@ -1213,7 +1213,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-newlib target-libgloss target-rda ${libgcj}"
     ;;
   *-*-vxworks*)
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss target-libiberty ${libgcj}"
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss target-libiberty target-libstdc++-v3 ${libgcj}"
     ;;
   m32c-*-*)
     noconfigdirs="$noconfigdirs target-libstdc++-v3"
