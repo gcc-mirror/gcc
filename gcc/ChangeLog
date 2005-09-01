@@ -1,3 +1,18 @@
+2005-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/23478
+	* local-alloc.c (struct qty): Add n_throwing_calls_crossed field.
+	(alloc_qty): Initialize it.
+	(update_equiv_regs): Clear REG_N_THROWING_CALLS_CROSSED.
+	(combine_regs): Combine also n_throwing_calls_crossed fields.
+	(find_free_reg): Don't attempt to caller-save pseudos crossing
+	calls that might throw.
+	* global.c (struct allocno): Add throwing_calls_crossed field.
+	(global_alloc): Revert 2005-08-22 change.  Initialize
+	throwing_calls_crossed.
+	(find_reg): Don't attempt to caller-save pseudos crossing calls that
+	might throw.
+
 2005-09-01  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/23649
