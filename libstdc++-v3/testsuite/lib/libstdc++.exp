@@ -480,8 +480,9 @@ proc check_v3_target_cxa_atexit { } {
     } else {
 	set et_cxa_atexit 0
 
-	# Set up, compile, and execute a C++ test program that tries to use
-	# all the required named locales.
+	# Set up, compile, and execute a C++ test program that depends
+	# on correct ordering of static object destructors. This is
+	# indicative of the presence and use of __cxa_atexit.
 	set src cxaatexit[pid].cc
 	set exe cxaatexit[pid].x
 
