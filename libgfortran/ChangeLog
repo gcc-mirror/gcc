@@ -1,3 +1,9 @@
+2005-09-01  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/23556
+	* io/read.c (convert_real): Use memcpy to fill buffer.
+	(set_integer): Use memcpy to fill buffer.
+
 2005-08-29  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/23598
