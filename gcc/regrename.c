@@ -38,6 +38,10 @@
 #include "toplev.h"
 #include "obstack.h"
 
+#ifndef REG_MODE_OK_FOR_BASE_P
+#define REG_MODE_OK_FOR_BASE_P(REGNO, MODE) REG_OK_FOR_BASE_P (REGNO)
+#endif
+
 static const char *const reg_class_names[] = REG_CLASS_NAMES;
 
 struct du_chain
@@ -528,7 +532,6 @@ scan_rtx_address (rtx insn, rtx *loc, enum reg_class class,
 	rtx op1 = orig_op1;
 	rtx *locI = NULL;
 	rtx *locB = NULL;
-	rtx *locB_reg = NULL;
 
 	if (GET_CODE (op0) == SUBREG)
 	  {
@@ -565,14 +568,14 @@ scan_rtx_address (rtx insn, rtx *loc, enum reg_class class,
 	    int index_op;
 
 	    if (REG_OK_FOR_INDEX_P (op0)
-		&& REG_MODE_OK_FOR_REG_BASE_P (op1, mode))
+		&& REG_MODE_OK_FOR_BASE_P (op1, mode))
 	      index_op = 0;
 	    else if (REG_OK_FOR_INDEX_P (op1)
-		     && REG_MODE_OK_FOR_REG_BASE_P (op0, mode))
+		     && REG_MODE_OK_FOR_BASE_P (op0, mode))
 	      index_op = 1;
-	    else if (REG_MODE_OK_FOR_REG_BASE_P (op1, mode))
+	    else if (REG_MODE_OK_FOR_BASE_P (op1, mode))
 	      index_op = 0;
-	    else if (REG_MODE_OK_FOR_REG_BASE_P (op0, mode))
+	    else if (REG_MODE_OK_FOR_BASE_P (op0, mode))
 	      index_op = 1;
 	    else if (REG_OK_FOR_INDEX_P (op1))
 	      index_op = 1;
@@ -580,7 +583,7 @@ scan_rtx_address (rtx insn, rtx *loc, enum reg_class class,
 	      index_op = 0;
 
 	    locI = &XEXP (x, index_op);
-	    locB_reg = &XEXP (x, !index_op);
+	    locB = &XEXP (x, !index_op);
 	  }
 	else if (code0 == REG)
 	  {
@@ -597,9 +600,6 @@ scan_rtx_address (rtx insn, rtx *loc, enum reg_class class,
 	  scan_rtx_address (insn, locI, INDEX_REG_CLASS, action, mode);
 	if (locB)
 	  scan_rtx_address (insn, locB, MODE_BASE_REG_CLASS (mode), action, mode);
-	if (locB_reg)
-	  scan_rtx_address (insn, locB_reg, MODE_BASE_REG_REG_CLASS (mode),
-			    action, mode);
 	return;
       }
 
@@ -1410,7 +1410,6 @@ replace_oldest_value_addr (rtx *loc, enum reg_class class,
 	rtx op1 = orig_op1;
 	rtx *locI = NULL;
 	rtx *locB = NULL;
-	rtx *locB_reg = NULL;
 
 	if (GET_CODE (op0) == SUBREG)
 	  {
@@ -1447,14 +1446,14 @@ replace_oldest_value_addr (rtx *loc, enum reg_class class,
 	    int index_op;
 
 	    if (REG_OK_FOR_INDEX_P (op0)
-		&& REG_MODE_OK_FOR_REG_BASE_P (op1, mode))
+		&& REG_MODE_OK_FOR_BASE_P (op1, mode))
 	      index_op = 0;
 	    else if (REG_OK_FOR_INDEX_P (op1)
-		     && REG_MODE_OK_FOR_REG_BASE_P (op0, mode))
+		     && REG_MODE_OK_FOR_BASE_P (op0, mode))
 	      index_op = 1;
-	    else if (REG_MODE_OK_FOR_REG_BASE_P (op1, mode))
+	    else if (REG_MODE_OK_FOR_BASE_P (op1, mode))
 	      index_op = 0;
-	    else if (REG_MODE_OK_FOR_REG_BASE_P (op0, mode))
+	    else if (REG_MODE_OK_FOR_BASE_P (op0, mode))
 	      index_op = 1;
 	    else if (REG_OK_FOR_INDEX_P (op1))
 	      index_op = 1;
@@ -1462,7 +1461,7 @@ replace_oldest_value_addr (rtx *loc, enum reg_class class,
 	      index_op = 0;
 
 	    locI = &XEXP (x, index_op);
-	    locB_reg = &XEXP (x, !index_op);
+	    locB = &XEXP (x, !index_op);
 	  }
 	else if (code0 == REG)
 	  {
@@ -1481,10 +1480,6 @@ replace_oldest_value_addr (rtx *loc, enum reg_class class,
 	if (locB)
 	  changed |= replace_oldest_value_addr (locB,
 						MODE_BASE_REG_CLASS (mode),
-						mode, insn, vd);
-	if (locB_reg)
-	  changed |= replace_oldest_value_addr (locB_reg,
-						MODE_BASE_REG_REG_CLASS (mode),
 						mode, insn, vd);
 	return changed;
       }

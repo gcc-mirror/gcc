@@ -1,5 +1,10 @@
 2005-09-01  Richard Earnshaw  <richard.earnshaw@arm.com>
 
+	PR rtl-optimization/17810 target/15342
+	* regrename.c: Fix polluted patch in previous change.
+
+2005-09-01  Richard Earnshaw  <richard.earnshaw@arm.com>
+
 	PR rtl-optimization/17810
 	Backport
 	2004-11-04  Richard Sandiford  <rsandifo@redhat.com>
