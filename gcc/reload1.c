@@ -3926,7 +3926,7 @@ reload_as_needed (int live_known)
 	      subst_reloads (insn);
 
 	      /* Adjust the exception region notes for loads and stores.  */
-	      if (flag_non_call_exceptions)
+	      if (flag_non_call_exceptions && !CALL_P (insn))
 		fixup_eh_region_note (insn, prev, next);
 
 	      /* If this was an ASM, make sure that all the reload insns
