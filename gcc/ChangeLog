@@ -1,3 +1,8 @@
+2005-09-02  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/23626
+	* tree-cfg.c (replace_uses_by): Clean up eh info.
+
 2005-09-01  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c.c (m32c_valid_pointer_mode): Remove stray debug
