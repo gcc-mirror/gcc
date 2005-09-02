@@ -1,3 +1,11 @@
+2005-09-02  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR rtl-optimization/20365
+	* simplify-rtx.c (simplify_plus_minus_op_data): Change type of neg
+	to short.  New member ix.
+	(simplify_plus_minus_op_data_cmp): Break ties using ix member.
+	(simplify_plus_minus): Initialize ix members before calling qsort.
+
 2005-09-02  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/23626
