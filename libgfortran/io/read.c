@@ -128,6 +128,7 @@ convert_real (void *dest, const char *buffer, int length)
 	  (float) strtod (buffer, NULL);
 #endif
 	memcpy (dest, (void *) &tmp, length);
+      }
       break;
     case 8:
       {

@@ -1,3 +1,8 @@
+2005-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/23556
+	* io/read.c (convert_real): Fix a typo from last change.
+
 2005-09-01  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/23556
