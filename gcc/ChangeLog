@@ -1,3 +1,14 @@
+2005-09-02  Richard Sandiford  <richard@codesourcery.com>
+
+	PR c/22061
+	* c-decl.c (push_parm_decl): Push and pop x_dont_save_pending_sizes_p
+	around the call to grokdeclarator.  Call grokdeclarator with the
+	field set to 0.
+	(store_parm_decls): Always store the pending_sizes in cfun.
+	(c_expand_body_1): Call put_pending_sizes.
+	* c-objc-common.c (c_cannot_inline_tree_fn): Always check
+	pending_sizes.
+
 2005-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/23478

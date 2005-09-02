@@ -2960,11 +2960,20 @@ void
 push_parm_decl (tree parm)
 {
   tree decl;
+  int old_dont_save_pending_sizes_p = 0;
 
   /* Don't attempt to expand sizes while parsing this decl.
      (We can get here with i_s_e 1 somehow from Objective-C.)  */
   int save_immediate_size_expand = immediate_size_expand;
   immediate_size_expand = 0;
+
+  /* If this is a nested function, we do want to keep SAVE_EXPRs for
+     the argument sizes, regardless of the parent's setting.  */
+  if (cfun)
+    {
+      old_dont_save_pending_sizes_p = cfun->x_dont_save_pending_sizes_p;
+      cfun->x_dont_save_pending_sizes_p = 0;
+    }
 
   decl = grokdeclarator (TREE_VALUE (TREE_PURPOSE (parm)),
 			 TREE_PURPOSE (TREE_PURPOSE (parm)),
@@ -2975,6 +2984,8 @@ push_parm_decl (tree parm)
 
   finish_decl (decl, NULL_TREE, NULL_TREE);
 
+  if (cfun)
+    cfun->x_dont_save_pending_sizes_p = old_dont_save_pending_sizes_p;
   immediate_size_expand = save_immediate_size_expand;
 }
 
@@ -5990,9 +6001,6 @@ store_parm_decls (void)
 {
   tree fndecl = current_function_decl;
 
-  /* The function containing FNDECL, if any.  */
-  tree context = decl_function_context (fndecl);
-
   /* True if this definition is written with a prototype.  */
   bool prototype = (current_function_parms
 		    && TREE_CODE (current_function_parms) != TREE_LIST);
@@ -6017,20 +6025,9 @@ store_parm_decls (void)
   /* Begin the statement tree for this function.  */
   begin_stmt_tree (&DECL_SAVED_TREE (fndecl));
 
-  /* If this is a nested function, save away the sizes of any
-     variable-size types so that we can expand them when generating
-     RTL.  */
-  if (context)
-    {
-      tree t;
-
-      DECL_LANG_SPECIFIC (fndecl)->pending_sizes
-	= nreverse (get_pending_sizes ());
-      for (t = DECL_LANG_SPECIFIC (fndecl)->pending_sizes;
-	   t;
-	   t = TREE_CHAIN (t))
-	SAVE_EXPR_CONTEXT (TREE_VALUE (t)) = context;
-    }
+  /* Save away the sizes of any variable-size types so that we can
+     expand them when generating RTL.  */
+  DECL_LANG_SPECIFIC (fndecl)->pending_sizes = get_pending_sizes ();
 
   /* This function is being processed in whole-function mode.  */
   cfun->x_whole_function_mode_p = 1;
@@ -6181,15 +6178,12 @@ static void
 c_expand_body_1 (tree fndecl, int nested_p)
 {
   if (nested_p)
-    {
-      /* Make sure that we will evaluate variable-sized types involved
-	 in our function's type.  */
-      expand_pending_sizes (DECL_LANG_SPECIFIC (fndecl)->pending_sizes);
-
-      /* Squirrel away our current state.  */
-      push_function_context ();
-    }
+    /* Squirrel away our current state.  */
+    push_function_context ();
     
+  /* Make sure that we will evaluate variable-sized types involved
+     in our function's type.  */
+  put_pending_sizes (DECL_LANG_SPECIFIC (fndecl)->pending_sizes);
   tree_rest_of_compilation (fndecl, nested_p);
 
   if (nested_p)

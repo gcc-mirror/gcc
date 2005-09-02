@@ -118,17 +118,12 @@ c_cannot_inline_tree_fn (tree *fnp)
 	}
     }
 
-  if (! DECL_FILE_SCOPE_P (fn))
+  if (DECL_LANG_SPECIFIC (fn)->pending_sizes)
     {
-      /* If a nested function has pending sizes, we may have already
-         saved them.  */
-      if (DECL_LANG_SPECIFIC (fn)->pending_sizes)
-	{
-	  if (do_warning)
-	    warning ("%Jnested function '%F' can never be inlined because it "
-		     "has possibly saved pending sizes", fn, fn);
-	  goto cannot_inline;
-	}
+      if (do_warning)
+	warning ("%Jfunction '%F' can never be inlined because it has "
+		 "pending sizes", fn, fn);
+      goto cannot_inline;
     }
 
   return 0;
