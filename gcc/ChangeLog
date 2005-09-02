@@ -1,5 +1,11 @@
 2005-09-01  Richard Henderson  <rth@redhat.com>
 
+	PR 23668
+	* config/i386/i386.c (ix86_expand_vector_init_one_var): Restore
+	conversion to CONST_VECTOR.
+
+2005-09-01  Richard Henderson  <rth@redhat.com>
+
 	PR 23676
 	* reload1.c (reload_as_needed): Check !CALL_P before calling
 	fixup_eh_region_note.
