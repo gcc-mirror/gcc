@@ -1,3 +1,11 @@
+2005-09-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	Backport:
+
+	2004-11-25  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/18445
+	* g++.dg/template/crash28.C: New test.
+
 2005-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/23478

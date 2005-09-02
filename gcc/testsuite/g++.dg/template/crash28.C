@@ -9,5 +9,5 @@ template<class T>
 void f()
 {
   a ex;
-  g(ex.what); // { dg-error "" }
+  g(ex.what); // { dg-error "not enough type information" }
 }
