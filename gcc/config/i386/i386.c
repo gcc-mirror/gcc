@@ -17206,6 +17206,7 @@ ix86_expand_vector_init_one_var (bool mmx_ok, enum machine_mode mode,
 
   const_vec = copy_rtx (vals);
   XVECEXP (const_vec, 0, one_var) = CONST0_RTX (GET_MODE_INNER (mode));
+  const_vec = gen_rtx_CONST_VECTOR (mode, XVEC (const_vec, 0));
 
   switch (mode)
     {
