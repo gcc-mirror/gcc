@@ -1,3 +1,9 @@
+2005-09-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21687
+	* parser.c (cp_parser_class_specifier): Push/pop GC contexts
+	around functions in local classes.
+
 2005-08-31  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR obj-c++/23640
