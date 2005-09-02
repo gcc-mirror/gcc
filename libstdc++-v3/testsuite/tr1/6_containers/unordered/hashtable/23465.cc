@@ -26,8 +26,8 @@ void test01()
 {
   bool test __attribute__((unused)) = true;
 
-  for (float lf = 0.1; lf < 1001.0; lf *= 10.0)
-    for (int size = 1; size <= 19683; size *= 3)
+  for (float lf = 0.1; lf < 101.0; lf *= 10.0)
+    for (int size = 1; size <= 6561; size *= 3)
       {
 	std::tr1::unordered_set<int> us1, us2;
 	typedef std::tr1::unordered_set<int>::local_iterator local_iterator;
