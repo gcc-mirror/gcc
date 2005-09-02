@@ -1,3 +1,8 @@
+2005-08-31  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/23167
+	* g++.dg/expr/volatile1.C: New test.
+
 2005-09-02  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/23547

@@ -1,3 +1,9 @@
+2005-08-31  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/23167
+	* gimplify.c (gimplify_expr): Handle TREE_ADDRESSABLE types when
+	generating synthetic loads from volatile lvalues.
+
 005-09-02  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/stormy16-lib2.c (__popcounthi2, __parityhi2,
