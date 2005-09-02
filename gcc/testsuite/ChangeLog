@@ -1,3 +1,11 @@
+2005-09-02  Richard Sandiford  <richard@codesourcery.com>
+
+	PR c/22061
+	* gcc.c-torture/execute/pr22061-1.c,
+	* gcc.c-torture/execute/pr22061-2.c,
+	* gcc.c-torture/execute/pr22061-3.c,
+	* gcc.c-torture/execute/pr22061-4.c: New tests.
+
 2005-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/7241
