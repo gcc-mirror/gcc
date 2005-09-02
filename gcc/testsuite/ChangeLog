@@ -1,3 +1,8 @@
+2005-09-02  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/execute/frame-address.c (check_fa_mid): Avoid
+	tail call to check_fa_work.
+
 2005-09-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21687
