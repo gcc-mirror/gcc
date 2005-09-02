@@ -292,7 +292,8 @@ Objective-C and Objective-C++ Dialects}.
 -fforce-addr  -fforce-mem  -ffunction-sections @gol
 -fgcse  -fgcse-lm  -fgcse-sm  -fgcse-las  -fgcse-after-reload @gol
 -floop-optimize -fcrossjumping  -fif-conversion  -fif-conversion2 @gol
--finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions @gol
+-finline-functions  -finline-functions-called-once @gol
+-finline-limit=@var{n}  -fkeep-inline-functions @gol
 -fkeep-static-consts  -fmerge-constants  -fmerge-all-constants @gol
 -fmodulo-sched -fno-branch-count-reg @gol
 -fno-default-inline  -fno-defer-pop -floop-optimize2 -fmove-loop-invariants @gol
@@ -4265,6 +4266,15 @@ declared @code{static}, then the function is normally not output as
 assembler code in its own right.
 
 Enabled at level @option{-O3}.
+
+@item -finline-functions-called-once
+@opindex finline-functions-called-once
+Consider all @code{static} functions called once for inlining into their
+caller even if they are not marked @code{inline}.  If a call to a given
+function is integrated, then the function is not output as assembler code
+in its own right.
+
+Enabled if @option{-funit-at-a-time} is enabled.
 
 @item -finline-limit=@var{n}
 @opindex finline-limit

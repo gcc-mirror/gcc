@@ -465,6 +465,10 @@ finline-functions
 Common Report Var(flag_inline_functions)
 Integrate simple functions into their callers
 
+finline-functions-called-once
+Common Report Var(flag_inline_functions_called_once) Init(1)
+Integrate functions called once into their callers
+
 finline-limit-
 Common RejectNegative Joined UInteger
 

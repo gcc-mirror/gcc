@@ -1,3 +1,11 @@
+2005-09-02  Richard Guenther  <rguenther@suse.de>
+
+        PR tree-optimization/15366
+        * common.opt: Add -finline-functions-called-once.
+        * doc/invoke.texi: Document new option.
+        * cgraphunit.c (cgraph_decide_inlining): Honour
+        flag_inline_functions_called_once.
+
 2005-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/23506
