@@ -1,3 +1,8 @@
+2005-09-02  Nicolas Pitre <nico@cam.org>
+
+	* config/arm/arm.c (arm_legitimize_address): Limit the value passed
+	to bit_count to 32 bits.
+
 2005-08-31  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23167
