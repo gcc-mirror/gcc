@@ -5459,7 +5459,8 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
       mem = gen_rtx_MEM (BLKmode,
 			 plus_constant (save_area,
-					first_reg_offset * reg_size)),
+					first_reg_offset * reg_size));
+      MEM_NOTRAP_P (mem) = 1;
       set_mem_alias_set (mem, set);
       set_mem_align (mem, BITS_PER_WORD);
 
@@ -5494,6 +5495,7 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	   fregno++, off += UNITS_PER_FP_WORD, nregs++)
 	{
 	  mem = gen_rtx_MEM (DFmode, plus_constant (save_area, off));
+	  MEM_NOTRAP_P (mem) = 1;
 	  set_mem_alias_set (mem, set);
 	  set_mem_align (mem, GET_MODE_ALIGNMENT (DFmode));
 	  emit_move_insn (mem, gen_rtx_REG (DFmode, fregno));
@@ -12249,16 +12251,14 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	      emit_insn (TARGET_32BIT
 			 ? gen_addsi3 (breg, breg, delta_rtx)
 			 : gen_adddi3 (breg, breg, delta_rtx));
-	      src = gen_rtx_MEM (mode, breg);
+	      src = replace_equiv_address (src, breg);
 	    }
 	  else if (! offsettable_memref_p (src))
 	    {
-	      rtx newsrc, basereg;
+	      rtx basereg;
 	      basereg = gen_rtx_REG (Pmode, reg);
 	      emit_insn (gen_rtx_SET (VOIDmode, basereg, XEXP (src, 0)));
-	      newsrc = gen_rtx_MEM (GET_MODE (src), basereg);
-	      MEM_COPY_ATTRIBUTES (newsrc, src);
-	      src = newsrc;
+	      src = replace_equiv_address (src, basereg);
 	    }
 
 	  breg = XEXP (src, 0);
@@ -12303,7 +12303,7 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 		emit_insn (TARGET_32BIT
 			   ? gen_addsi3 (breg, breg, delta_rtx)
 			   : gen_adddi3 (breg, breg, delta_rtx));
-	      dst = gen_rtx_MEM (mode, breg);
+	      dst = replace_equiv_address (dst, breg);
 	    }
 	  else
 	    gcc_assert (offsettable_memref_p (dst));
