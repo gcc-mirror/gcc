@@ -1,5 +1,13 @@
 2005-09-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/22233
+	* pt.c (push_template_decl_real): Return error_mark_node if the
+	number of template parameters does not match previous definition.
+	* decl.c (start_function): Handle error_mark_node returned by
+	push_template_decl.
+
+2005-09-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	Backport:
 
 	2004-11-25  Mark Mitchell  <mark@codesourcery.com>

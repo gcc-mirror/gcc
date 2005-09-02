@@ -2978,6 +2978,7 @@ push_template_decl_real (tree decl, int is_friend)
 		  error ("got %d template parameters for `%#T'",
 			    TREE_VEC_LENGTH (a), current);
 		error ("  but %d required", TREE_VEC_LENGTH (t));
+		return error_mark_node;
 	      }
 
 	    /* Perhaps we should also check that the parms are used in the
