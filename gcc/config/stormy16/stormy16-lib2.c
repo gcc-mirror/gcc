@@ -140,3 +140,52 @@ __lshrsi3 (USItype a, USItype b)
     a >>= 1;
   return a;
 }
+
+static const unsigned char __popcount_tab[] =
+{
+  0,1,1,2,1,2,2,3,1,2,2,3,2,3,3,4,1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,
+  1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
+  1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
+  2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,
+  1,2,2,3,2,3,3,4,2,3,3,4,3,4,4,5,2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,
+  2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,
+  2,3,3,4,3,4,4,5,3,4,4,5,4,5,5,6,3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,
+  3,4,4,5,4,5,5,6,4,5,5,6,5,6,6,7,4,5,5,6,5,6,6,7,5,6,6,7,6,7,7,8,
+};
+
+int
+__popcounthi2 (unsigned int x)
+{
+  unsigned int ret;
+
+  ret = __popcount_tab [x & 0xff];
+  ret += __popcount_tab [(x >> 8) & 0xff];
+
+  return ret;
+}
+
+int
+__parityhi2 (unsigned int x)
+{
+  x ^= x >> 8;
+  x ^= x >> 4;
+  x &= 0xf;
+  return (0x6996 >> x) & 1;
+}
+
+int
+__ctzhi2 (unsigned int x)
+{
+  extern int __ctzsi2 (unsigned long);
+  unsigned long y = x;
+
+  return __ctzsi2 (y << 16) - 16;
+}
+
+int
+__clzhi2 (unsigned int x)
+{
+  extern int __clzsi2 (unsigned long);
+
+  return __clzsi2 (x) - 16;
+}

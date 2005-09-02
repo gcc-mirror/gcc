@@ -1,3 +1,8 @@
+005-09-02  Nick Clifton  <nickc@redhat.com>
+
+	* config/stormy16/stormy16-lib2.c (__popcounthi2, __parityhi2,
+	__ctzhi2, __clzhi2): New functions.
+
 2005-09-02  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/23547
