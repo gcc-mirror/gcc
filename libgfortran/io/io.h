@@ -656,4 +656,8 @@ internal_proto(write_z);
 extern void list_formatted_write (bt, void *, int);
 internal_proto(list_formatted_write);
 
+/* error.c */
+extern try notify_std (int, const char *);
+internal_proto(notify_std);
+
 #endif

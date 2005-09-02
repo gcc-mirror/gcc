@@ -1,3 +1,9 @@
+2005-09-02  Andreas Jaeger  <aj@suse.de>
+
+	* libgfortran.h: Add prototype for init_compile_options.
+
+	* io/io.h: Add prototype for notify_std.
+
 2005-08-31  Steve Ellcey  <sje@cup.hp.com>
 
 	* io/read.c (set_integer): Use memcpy to fill buffer.
@@ -24,7 +30,7 @@
 	* aclocal.ac: Regenerate.
 	* io/io.h: Add prototype for unpack_filename.
 	* io/close.c (st_close): Delete file after closing unit if
-	HAVE_UNLINK_OPEN_FILE is not defined. 
+	HAVE_UNLINK_OPEN_FILE is not defined.
 	* io/unix.c (unpack_filename): Unlink scratch file after opening
 	it only if HAVE_UNLINK_OPEN_FILE is defined.
 

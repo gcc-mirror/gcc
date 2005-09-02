@@ -1,5 +1,5 @@
 /* Common declarations for all of libgfor.
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>, and
    Andy Vaught <andy@xena.eas.asu.edu>
 
@@ -311,7 +311,8 @@ compile_options_t;
 extern compile_options_t compile_options;
 internal_proto(compile_options);
 
-
+extern void init_compile_options (void);
+internal_proto(init_compile_options);
 
 
 /* Structure for statement options.  */
