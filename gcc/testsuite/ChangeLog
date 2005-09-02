@@ -1,3 +1,8 @@
+2005-08-31  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* gcc.dg/20030711-1.c: Include stddef.h and stdio.h.
+	* gcc.dg/20050826-1.c: Likewise.
+
 2005-08-31  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23167
