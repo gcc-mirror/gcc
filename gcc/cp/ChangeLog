@@ -3,6 +3,17 @@
 	Backport:
 
 	2004-11-25  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/18466
+	* decl.c (grokvardecl): Keep track of whether or not a there was
+	explicit qualification.
+	* name-lookup.c (set_decl_namespace): Complain about explicit
+	qualification of a name within its own namespace.
+
+2005-09-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	Backport:
+
+	2004-11-25  Mark Mitchell  <mark@codesourcery.com>
 	PR c++/18445
 	* class.c (instantiate_type): Treat NON_DEPENDENT_EXPRs with
 	unknown_type as non matching.

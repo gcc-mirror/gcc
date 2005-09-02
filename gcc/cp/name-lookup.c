@@ -3021,7 +3021,13 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
 	  return;
     }
   else
-    return;
+    {
+      /* Writing "int N::i" to declare a variable within "N" is invalid.  */
+      if (at_namespace_scope_p ())
+       error ("explicit qualification in declaration of `%D'", decl);
+      return;
+    }
+
  complain:
   error ("`%D' should have been declared inside `%D'",
 	    decl, scope);

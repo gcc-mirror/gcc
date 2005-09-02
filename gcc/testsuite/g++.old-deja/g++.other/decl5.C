@@ -52,8 +52,8 @@ namespace N {
 
 namespace NMS
 {
-  void NMS::fn();     // { dg-warning "" "" { xfail *-*-* } } extra qualification
-  int NMS::i;         // { dg-warning "" "" { xfail *-*-* } } extra qualification
+  void NMS::fn();     // { dg-warning "" "" } extra qualification
+  int NMS::i;         // { dg-warning "" "" } extra qualification
   struct NMS::D {     // { dg-warning "" } extra qualification
     int i;
   };

@@ -5903,6 +5903,7 @@ grokvardecl (tree type,
              tree scope)
 {
   tree decl;
+  tree explicit_scope;
   RID_BIT_TYPE specbits;
 
   my_friendly_assert (!name || TREE_CODE (name) == IDENTIFIER_NODE, 
@@ -5910,7 +5911,9 @@ grokvardecl (tree type,
 
   specbits = *specbits_in;
 
-  /* Compute the scope in which to place the variable.  */
+  /* Compute the scope in which to place the variable, but remember
+     whether or not that scope was explicitly specified by the user.  */
+  explicit_scope = scope;
   if (!scope)
     {
       /* An explicit "extern" specifier indicates a namespace-scope
@@ -5939,8 +5942,8 @@ grokvardecl (tree type,
   else
     decl = build_decl (VAR_DECL, name, type);
 
-  if (scope && TREE_CODE (scope) == NAMESPACE_DECL)
-    set_decl_namespace (decl, scope, 0);
+  if (explicit_scope && TREE_CODE (explicit_scope) == NAMESPACE_DECL)
+    set_decl_namespace (decl, explicit_scope, 0);
   else
     DECL_CONTEXT (decl) = scope;
 

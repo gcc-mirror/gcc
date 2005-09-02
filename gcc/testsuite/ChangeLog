@@ -3,6 +3,18 @@
 	Backport:
 
 	2004-11-25  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/18466
+	* g++.dg/parse/qualified3.C: New test.
+	* g++.old-deja/g++.other/friend7.C: Remove bogus qualification.
+
+	2004-11-29  Ben Elliston  <bje@au.ibm.com>
+	* g++.old-deja/g++.other/decl5.C: Remove remaining XFAILs.
+
+2005-09-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	Backport:
+
+	2004-11-25  Mark Mitchell  <mark@codesourcery.com>
 	PR c++/18445
 	* g++.dg/template/crash28.C: New test.
 
