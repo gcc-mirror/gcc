@@ -3772,7 +3772,7 @@ arm_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
       mask = (1 << bits) - 1;
       base = INTVAL (x) & ~mask;
       index = INTVAL (x) & mask;
-      if (bit_count (base) > (32 - bits)/2)
+      if (bit_count (base & 0xffffffff) > (32 - bits)/2)
         {
 	  /* It'll most probably be more efficient to generate the base
 	     with more bits set and use a negative index instead. */
