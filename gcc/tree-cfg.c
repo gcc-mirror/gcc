@@ -1273,6 +1273,10 @@ replace_uses_by (tree name, tree val)
       if (TREE_CODE (rhs) == ADDR_EXPR)
 	recompute_tree_invarant_for_addr_expr (rhs);
 
+      /* If the statement could throw and now cannot, we need to prune cfg.  */
+      if (maybe_clean_or_replace_eh_stmt (stmt, stmt))
+	tree_purge_dead_eh_edges (bb_for_stmt (stmt));
+
       mark_new_vars_to_rename (stmt);
     }
 
