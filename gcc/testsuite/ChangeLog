@@ -1,3 +1,9 @@
+2005-09-01  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	* gcc.dg/Wredundant-decls-2.c: New test to check that
+	-Wredundant-decls does not issue warning for a variable 
+	definition following a declaration.
+
 2005-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/7241
