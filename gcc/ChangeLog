@@ -1,3 +1,9 @@
+2005-09-01  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (setup_incoming_varargs): Set MEM_NOTRAP_P.
+	(rs6000_split_multireg_move): Use replace_equiv_address instead of
+	gen_rtx_MEM.
+
 2005-09-01  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	* c-decl.c (diagnose_mismatched_decls):  With -Wredundant-decls,
