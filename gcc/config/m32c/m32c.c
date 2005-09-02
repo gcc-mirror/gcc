@@ -1511,7 +1511,6 @@ m32c_function_arg_regno_p (int r)
 bool
 m32c_valid_pointer_mode (enum machine_mode mode)
 {
-  fprintf(stderr, "valid_pointer_mode: %s\n", mode_name[mode]);
   if (mode == HImode
       || mode == PSImode
       || mode == SImode

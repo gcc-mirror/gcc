@@ -1,3 +1,8 @@
+2005-09-01  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.c (m32c_valid_pointer_mode): Remove stray debug
+	fprintf.
+
 2005-09-01  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (setup_incoming_varargs): Set MEM_NOTRAP_P.
