@@ -1,3 +1,19 @@
+2005-09-02  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/23547
+	* tree-nested.c (struct var_map_elt): Mark with GTY.
+	(struct nesting_info): Mark with GTY.  Mark var_map's param is struct
+	var_map_elt.
+	(lookup_field_for_decl): Allocate new element in GC memory.
+	(lookup_tramp_for_decl): Likewise.
+	(convert_nl_goto_reference): Likewise
+	(create_nesting_tree): Allocate info in GC memory. Likewise for
+	info->var_map.
+	(free_nesting_tree): Free with ggc_free instead of free.
+	(root): New static variable.
+	(lower_nested_functions): Remove root as local variable.  And zero out
+	root at the end of the function.
+
 2005-09-02  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR rtl-optimization/20365
