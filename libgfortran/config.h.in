@@ -273,6 +273,9 @@
 /* libm includes truncf */
 #undef HAVE_TRUNCF
 
+/* Define to 1 if you have the `ttyname' function. */
+#undef HAVE_TTYNAME
+
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 

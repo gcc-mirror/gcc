@@ -1,3 +1,11 @@
+2005-09-02  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* io/unix.c (stream_ttyname): Protect use of ttyname by
+	HAVE_TTYNAME macro.
+	* configure.ac: Add check for ttyname.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
 2005-09-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/23556

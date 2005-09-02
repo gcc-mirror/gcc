@@ -173,7 +173,7 @@ AC_CHECK_LIB([m],[csin],[need_math="no"],[need_math="yes"])
 # Check for library functions.
 AC_CHECK_FUNCS(getrusage times mkstemp strtof snprintf ftruncate chsize)
 AC_CHECK_FUNCS(chdir strerror getlogin gethostname kill link symlink perror)
-AC_CHECK_FUNCS(sleep time)
+AC_CHECK_FUNCS(sleep time ttyname)
 
 # Check libc for getgid, getpid, getuid
 AC_CHECK_LIB([c],[getgid],[AC_DEFINE([HAVE_GETGID],[1],[libc includes getgid])])

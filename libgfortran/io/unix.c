@@ -1545,7 +1545,11 @@ stream_isatty (stream *s)
 char *
 stream_ttyname (stream *s)
 {
+#ifdef HAVE_TTYNAME
   return ttyname (((unix_stream *) s)->fd);
+#else
+  return NULL;
+#endif
 }
 
 
