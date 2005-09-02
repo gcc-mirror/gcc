@@ -1,3 +1,9 @@
+2005-09-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/23167
+	* gimplify.c (gimplify_expr): Handle TREE_ADDRESSABLE types when
+	generating synthetic loads from volatile lvalues.
+
 2005-09-02  Richard Guenther  <rguenther@suse.de>
 
         PR tree-optimization/15366

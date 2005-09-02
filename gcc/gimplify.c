@@ -4251,7 +4251,15 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  /* Historically, the compiler has treated a bare
 	     reference to a volatile lvalue as forcing a load.  */
 	  tree type = TYPE_MAIN_VARIANT (TREE_TYPE (*expr_p));
-	  tree tmp = create_tmp_var (type, "vol");
+	  /* Normally, we do want to create a temporary for a
+	     TREE_ADDRESSABLE type because such a type should not be
+	     copied by bitwise-assignment.  However, we make an
+	     exception here, as all we are doing here is ensuring that
+	     we read the bytes that make up the type.  We use
+	     create_tmp_var_raw because create_tmp_var will abort when
+	     given a TREE_ADDRESSSABLE type.  */
+	  tree tmp = create_tmp_var_raw (type, "vol");
+	  gimple_add_tmp_var (tmp);
 	  *expr_p = build (MODIFY_EXPR, type, tmp, *expr_p);
 	}
       else
