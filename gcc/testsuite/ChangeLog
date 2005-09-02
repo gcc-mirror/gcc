@@ -1,3 +1,8 @@
+2005-09-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21687
+	* g++.dg/other/gc3.C: New test.
+
 2005-08-31  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc.dg/20030711-1.c: Include stddef.h and stdio.h.
