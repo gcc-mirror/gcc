@@ -1,5 +1,10 @@
 2005-09-02  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/21687
+	* g++.dg/other/gc3.C: New test.
+
+2005-09-02  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/23167
 	* g++.dg/expr/volatile1.C: New test.
 
