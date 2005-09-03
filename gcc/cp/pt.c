@@ -11374,6 +11374,7 @@ instantiate_decl (tree d, int defer_ok, int undefined_ok)
   int pattern_defined;
   int need_push;
   location_t saved_loc = input_location;
+  bool external_p;
   
   /* This function should only be used to instantiate templates for
      functions and static member variables.  */
@@ -11487,17 +11488,32 @@ instantiate_decl (tree d, int defer_ok, int undefined_ok)
       pop_access_scope (d);
     }
   
-  /* Do not instantiate templates that we know will be defined
-     elsewhere.  */
-  if (DECL_INTERFACE_KNOWN (d)
-      && DECL_REALLY_EXTERN (d)
-      && ! (TREE_CODE (d) == FUNCTION_DECL 
-	    && DECL_INLINE (d)))
+  /* Check to see whether we know that this template will be
+     instantiated in some other file, as with "extern template"
+     extension.  */
+  external_p = (DECL_INTERFACE_KNOWN (d) && DECL_REALLY_EXTERN (d));
+  /* In general, we do not instantiate such templates...  */
+  if (external_p
+      /* ... but we instantiate inline functions so that we can inline
+	 them and ... */
+      && ! (TREE_CODE (d) == FUNCTION_DECL && DECL_INLINE (d))
+      /* ... we instantiate static data members whose values are
+	 needed in integral constant expressions.  */
+      && ! (TREE_CODE (d) == VAR_DECL 
+	    && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (d)))
     goto out;
   /* Defer all other templates, unless we have been explicitly
-     forbidden from doing so.  We restore the source position here
-     because it's used by add_pending_template.  */
-  else if (! pattern_defined || defer_ok)
+     forbidden from doing so.  */
+  if (/* If there is no definition, we cannot instantiate the
+	 template.  */
+      ! pattern_defined 
+      /* If it's OK to postpone instantiation, do so.  */
+      || defer_ok
+      /* If this is a static data member that will be defined
+	 elsewhere, we don't want to instantiate the entire data
+	 member, but we do want to instantiate the initializer so that
+	 we can substitute that elsewhere.  */
+      || (external_p && TREE_CODE (d) == VAR_DECL))
     {
       /* The definition of the static data member is now required so
 	 we must substitute the initializer.  */
@@ -11513,6 +11529,8 @@ instantiate_decl (tree d, int defer_ok, int undefined_ok)
 	  pop_nested_class ();
 	}
 
+      /* We restore the source position here because it's used by
+	 add_pending_template.  */
       input_location = saved_loc;
 
       if (at_eof && !pattern_defined 
@@ -11527,7 +11545,10 @@ instantiate_decl (tree d, int defer_ok, int undefined_ok)
 	pedwarn
 	  ("explicit instantiation of %qD but no definition available", d);
 
-      add_pending_template (d);
+      /* ??? Historically, we have instantiated inline functions, even
+	 when marked as "extern template".  */
+      if (!(external_p && TREE_CODE (d) == VAR_DECL))
+	add_pending_template (d);
       goto out;
     }
   /* Tell the repository that D is available in this translation unit

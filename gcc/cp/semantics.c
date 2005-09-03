@@ -3017,8 +3017,11 @@ expand_or_defer_fn (tree fn)
       /* Normally, collection only occurs in rest_of_compilation.  So,
 	 if we don't collect here, we never collect junk generated
 	 during the processing of templates until we hit a
-	 non-template function.  */
-      ggc_collect ();
+	 non-template function.  It's not safe to do this inside a
+	 nested class, though, as the parser may have local state that
+	 is not a GC root.  */
+      if (!function_depth)
+	ggc_collect ();
       return;
     }
 

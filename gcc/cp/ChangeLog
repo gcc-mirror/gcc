@@ -1,3 +1,19 @@
+2005-09-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/23699
+	* decl2.c (mark_used): Always instantiate static data members
+	initialized by constant expressions.
+	* pt.c (instantiate_decl): Instantiate the initializers for static
+	data members initialized by constant expressions.
+
+	PR c++/21687
+	* semantics.c (expand_or_defer_fn): Do not call ggc_collect when
+	finishing processing for a template function in a local class.
+	Revert:
+	2005-09-02  Mark Mitchell  <mark@codesourcery.com>
+	* parser.c (cp_parser_class_specifier): Push/pop GC contexts
+	around functions in local classes.
+
 2005-08-31  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/13377
