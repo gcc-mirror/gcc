@@ -1,3 +1,10 @@
+2005-09-03  Richard Henderson  <rth@redhat.com>
+	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR middle-end/23671
+	pa.c (emit_move_sequence): Use replace_equiv_address instead of
+	gen_rtx_MEM.
+
 2005-09-02  Nicolas Pitre <nico@cam.org>
 
 	* config/arm/arm.c (arm_legitimize_address): Limit the value passed
