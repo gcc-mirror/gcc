@@ -425,6 +425,12 @@ substitute_single_use_vars (varray_type *cond_worklist,
 	      /* TEST_VAR was set from a TRUTH_NOT_EXPR or a NOP_EXPR.  */
 	      if (def_rhs_code == TRUTH_NOT_EXPR)
 		invert = true;
+      
+	      /* If we don't have <NE_EXPR/EQ_EXPR x INT_CST>, then we cannot
+	         optimize this case.  */
+	      if ((cond_code == NE_EXPR || cond_code == EQ_EXPR)
+	          && TREE_CODE (TREE_OPERAND (cond, 1)) != INTEGER_CST)
+		continue;
 		
 	      if (cond_code == SSA_NAME
 		  || (cond_code == NE_EXPR
