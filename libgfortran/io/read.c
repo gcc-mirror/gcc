@@ -831,12 +831,8 @@ read_f (fnode * f, char *dest, int length)
  * and never look at it. */
 
 void
-read_x (fnode * f)
+read_x (int n)
 {
-  int n;
-
-  n = f->u.n;
-
   if ((current_unit->flags.pad == PAD_NO || is_internal_unit ())
       && current_unit->bytes_left < n)
     n = current_unit->bytes_left;
