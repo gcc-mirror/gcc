@@ -1,3 +1,13 @@
+2005-09-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	Backport:
+
+	2005-08-26  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/19004
+	* pt.c (uses_template_parms): Handle IDENTIFIER_NODE.
+	(type_dependent_expression_p): Allow BASELINKs whose associated
+	functions are simply a FUNCTION_DECL.
+
 2005-09-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/22233
