@@ -3120,10 +3120,11 @@ relax_delay_slots (rtx first)
 	  if (target_label && target_label != JUMP_LABEL (insn))
 	    reorg_redirect_jump (insn, target_label);
 
-	  /* See if this jump branches around an unconditional jump.
-	     If so, invert this jump and point it to the target of the
+	  /* See if this jump conditionally branches around an unconditional
+	     jump.  If so, invert this jump and point it to the target of the
 	     second jump.  */
 	  if (next && JUMP_P (next)
+	      && any_condjump_p (insn)
 	      && (simplejump_p (next) || GET_CODE (PATTERN (next)) == RETURN)
 	      && target_label
 	      && next_active_insn (target_label) == next_active_insn (next)
@@ -3169,7 +3170,7 @@ relax_delay_slots (rtx first)
       if (JUMP_P (insn)
 	  && (simplejump_p (insn) || GET_CODE (PATTERN (insn)) == RETURN)
 	  && (other = prev_active_insn (insn)) != 0
-	  && (condjump_p (other) || condjump_in_parallel_p (other))
+	  && any_condjump_p (other)
 	  && no_labels_between_p (other, insn)
 	  && 0 > mostly_true_jump (other,
 				   get_branch_condition (other,

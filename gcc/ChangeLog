@@ -1,3 +1,9 @@
+2005-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/23454
+	* reorg.c (relax_delay_slots): Only call invert_jump if any_condjump_p
+	is true.
+
 2005-09-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23167
