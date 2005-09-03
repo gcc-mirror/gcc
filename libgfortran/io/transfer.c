@@ -705,7 +705,7 @@ formatted_transfer (bt type, void *p, int len)
 	  /* Writes occur just before the switch on f->format, above, so that
 	     trailing blanks are suppressed.  */
 	  if (g.mode == READING)
-	    read_x (f);
+	    read_x (f->u.n);
 
 	  break;
 
@@ -736,10 +736,7 @@ formatted_transfer (bt type, void *p, int len)
 	  if (g.mode == READING)
 	    {
 	      if (skips > 0)
-		{
-		  f->u.n = skips;
-		  read_x (f);
-		}
+		read_x (skips);
 	      if (skips < 0)
 		{
 		  move_pos_offset (current_unit->s, skips);

@@ -589,7 +589,7 @@ internal_proto(read_f);
 extern void read_l (fnode *, char *, int);
 internal_proto(read_l);
 
-extern void read_x (fnode *);
+extern void read_x (int);
 internal_proto(read_x);
 
 extern void read_radix (fnode *, char *, int, int);

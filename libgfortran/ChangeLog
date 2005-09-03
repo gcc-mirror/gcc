@@ -1,3 +1,11 @@
+2005-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* io/read.c (read_x): Take int argument instead of fnode * and
+	digging the N from F->u.n.
+	* io/io.h (read_x): Adjust prototype.
+	* io/transfer.c (formatted_transfer): Adjust callers.  Don't clobber
+	f->u.n for FMT_T.
+
 2005-09-02  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* io/unix.c (stream_ttyname): Protect use of ttyname by
