@@ -12673,9 +12673,6 @@ cp_parser_class_specifier (cp_parser* parser)
       tree fn;
       tree class_type = NULL_TREE;
       tree pushed_scope = NULL_TREE;
-      /* True if we have called ggc_push_context, and therefore need
-	 to make a matching call to ggc_pop_context.  */
-      bool need_ggc_pop_context;
  
       /* In a first pass, parse default arguments to the functions.
 	 Then, in a second pass, parse the bodies of the functions.
@@ -12712,7 +12709,6 @@ cp_parser_class_specifier (cp_parser* parser)
 	}
       if (pushed_scope)
 	pop_scope (pushed_scope);
-      need_ggc_pop_context = false;
       /* Now parse the body of the functions.  */
       for (TREE_VALUE (parser->unparsed_functions_queues)
 	     = nreverse (TREE_VALUE (parser->unparsed_functions_queues));
@@ -12722,21 +12718,9 @@ cp_parser_class_specifier (cp_parser* parser)
 	{
 	  /* Figure out which function we need to process.  */
 	  fn = TREE_VALUE (queue_entry);
-	  /* We call ggc_collect after processing a function body in
-	     order to clean up garbage generated.  If we're processing
-	     a local class, however, then we must not clean up stuff
-	     from the function containing the class, so we have to
-	     push a new garbage-collection context.  */
-	  if (function_depth && !need_ggc_pop_context)
-	    {
-	      need_ggc_pop_context = true;
-	      ggc_push_context ();
-	    }
 	  /* Parse the function.  */
 	  cp_parser_late_parsing_for_member (parser, fn);
 	}
-      if (need_ggc_pop_context)
-	ggc_pop_context ();
     }
 
   /* Put back any saved access checks.  */
