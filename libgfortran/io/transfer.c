@@ -1160,10 +1160,23 @@ data_transfer_init (int read_flag)
       if (g.mode == READING && current_unit->mode  == WRITING)
 	 flush(current_unit->s);
 
+      /* Check whether the record exists to be read.  Only
+	 a partial record needs to exist.  */
+
+      if (g.mode == READING && (ioparm.rec -1)
+	  * current_unit->recl >= file_length (current_unit->s))
+	{
+	  generate_error (ERROR_BAD_OPTION, "Non-existing record number");
+	  return;
+	}
+
       /* Position the file.  */
       if (sseek (current_unit->s,
 	       (ioparm.rec - 1) * current_unit->recl) == FAILURE)
-	generate_error (ERROR_OS, NULL);
+	{
+	  generate_error (ERROR_OS, NULL);
+	  return;
+	}
     }
 
   current_unit->mode = g.mode;
