@@ -4,15 +4,17 @@
 # Clytie Siddall <clytie@riverland.net.au>, 2005.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.0.1-b20050607\n"
+"Project-Id-Version: cpplib 4.0.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2005-06-06 21:32+0200\n"
-"PO-Revision-Date: 2005-06-16 14:36+0930\n"
+"POT-Creation-Date: 2005-07-07 10:59-0700\n"
+"PO-Revision-Date: 2005-07-12 14:30+0930\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <gnomevi-list@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0\n"
+"X-Generator: LocFactoryEditor 1.2.2\n"
 
 #: charset.c:655
 #, c-format
@@ -59,7 +61,7 @@ msgstr "tên ký tự chung  «%.*s» chưa hoàn thành"
 #: charset.c:906
 #, c-format
 msgid "%.*s is not a valid universal character"
-msgstr " «%.*s» không là ký tự chung hợp lệ"
+msgstr "«%.*s» không là ký tự chung hợp lệ"
 
 #: charset.c:916
 #, c-format
