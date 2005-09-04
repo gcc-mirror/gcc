@@ -1,3 +1,8 @@
+2005-09-04  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/23721
+	* pa.c (emit_move_sequence): Fix typo in last change.
+
 2005-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/23454

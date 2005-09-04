@@ -1757,7 +1757,7 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 		       && flag_pic)
 		{
 		  rtx const_mem = force_const_mem (mode, operand1);
-		  operands[1] = legitimize_pic_address (XEXP (operands[1], 0),
+		  operands[1] = legitimize_pic_address (XEXP (const_mem, 0),
 							mode, temp);
 		  operands[1] = replace_equiv_address (const_mem, operands[1]);
 		  emit_move_sequence (operands, mode, temp);
