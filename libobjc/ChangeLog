@@ -1,3 +1,10 @@
+2005-09-04  Andrew Pinski  <pinskia@physics.uc.edu>
+            Rasmus Hahn  <rassahah@neofonie.de>
+
+	PR libobjc/23108
+	* archive.c (objc_write_type): Correct the element offset.
+	(objc_read_type): Likewise.
+
 2005-07-07  Release Manager
 
 	* GCC 4.0.1 released.

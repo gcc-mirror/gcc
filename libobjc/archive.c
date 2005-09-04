@@ -1069,7 +1069,7 @@ objc_write_type (TypedStream *stream, const char *type, const void *data)
       while (*type != _C_STRUCT_E)
 	{
 	  align = objc_alignof_type (type);       /* padd to alignment */
-	  acc_size += ROUND (acc_size, align);
+	  acc_size = ROUND (acc_size, align);
 	  objc_write_type (stream, type, ((char *) data) + acc_size);
 	  acc_size += objc_sizeof_type (type);   /* add component size */
 	  type = objc_skip_typespec (type);	 /* skip component */
@@ -1165,7 +1165,7 @@ objc_read_type(TypedStream *stream, const char *type, void *data)
       while (*type != _C_STRUCT_E)
 	{
 	  align = objc_alignof_type (type);       /* padd to alignment */
-	  acc_size += ROUND (acc_size, align);
+	  acc_size = ROUND (acc_size, align);
 	  objc_read_type (stream, type, ((char*)data)+acc_size);
 	  acc_size += objc_sizeof_type (type);   /* add component size */
 	  type = objc_skip_typespec (type);	 /* skip component */
