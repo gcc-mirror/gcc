@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2005-06-06 21:32+0200\n"
+"POT-Creation-Date: 2005-07-07 10:51-0700\n"
 "PO-Revision-Date: 2001-12-05 22:47+0900\n"
 "Last-Translator: Daisuke Yamashita <yamad@mb.infoweb.ne.jp>\n"
 "Language-Team: Japanese <ja@li.org>\n"
@@ -347,44 +347,33 @@ msgstr "<コマンドライン>"
 #. between diagnostics with "syntax error" in them, and diagnostics
 #. with "parse error" in them.  It's okay to give them both the same
 #. translation.
-#: c-parse.y:54 c-parse.c:5359 c-parse.y:2955 gengtype-yacc.c:1580
-#: java/parse-scan.c:3081 java/parse-scan.y:1370 java/parse.c:6185
-#: java/parse.y:16419 objc/objc-parse.y:53 objc/objc-parse.c:6438
-#: objc/objc-parse.y:3545
+#: c-parse.y:54 c-parse.c:5385 c-parse.y:2955 gengtype-yacc.c:1606
 msgid "syntax error"
 msgstr "文法エラー"
 
-#: c-parse.c:2161 c-parse.y:2959 gengtype-yacc.c:564 java/parse-scan.c:1938
-#: java/parse-scan.y:1374 java/parse.c:2938 java/parse.y:16423
-#: objc/objc-parse.c:2682 objc/objc-parse.y:3549
+#: c-parse.c:2157 c-parse.y:2959 gengtype-yacc.c:560
 msgid "syntax error: cannot back up"
 msgstr "文法エラー: 追随できません"
 
-#: c-parse.c:5355 c-parse.y:2957 gengtype-yacc.c:1576 java/parse-scan.c:3077
-#: java/parse-scan.y:1372 java/parse.c:6181 java/parse.y:16421
-#: objc/objc-parse.c:6434 objc/objc-parse.y:3547
+#: c-parse.c:5381 c-parse.y:2957 gengtype-yacc.c:1602
 #, fuzzy
 msgid "syntax error; also virtual memory exhausted"
 msgstr "構文解析エラー -- さらに仮想メモリを超過しました"
 
-#: c-parse.c:5477 gengtype-yacc.c:1698 java/parse-scan.c:3199
-#: java/parse.c:6303 objc/objc-parse.c:6556
+#: c-parse.c:5506 gengtype-yacc.c:1727
 msgid "parser stack overflow"
 msgstr "構文解析器のスタックが溢れました"
 
-#: c-parse.y:2956 java/parse-scan.y:1371 java/parse.y:16420
-#: objc/objc-parse.y:3546
+#: c-parse.y:2956
 msgid "parse error"
 msgstr "構文解析エラー"
 
-#: c-parse.y:2958 java/parse-scan.y:1373 java/parse.y:16422
-#: objc/objc-parse.y:3548
+#: c-parse.y:2958
 #, fuzzy
 msgid "parse error; also virtual memory exhausted"
 msgstr "構文解析エラー -- さらに仮想メモリを超過しました"
 
-#: c-parse.y:2960 java/parse-scan.y:1375 java/parse.y:16424
-#: objc/objc-parse.y:3550
+#: c-parse.y:2960
 #, fuzzy
 msgid "parse error: cannot back up"
 msgstr "文法エラー: 追随できません"
@@ -3340,8 +3329,8 @@ msgstr "コードが生成される CPU を選択する"
 #. characters in the message.
 #: config/cris/cris.c:578 c-typeck.c:4105 c-typeck.c:4120 c-typeck.c:4135
 #: final.c:2862 final.c:2864 gcc.c:4639 rtl-error.c:113 toplev.c:610
-#: cp/parser.c:1894 cp/typeck.c:4167 java/expr.c:409 java/parse.y:5020
-#: java/verify.c:1539 java/verify.c:1540 java/verify.c:1559
+#: cp/parser.c:1894 cp/typeck.c:4167 java/expr.c:409 java/verify.c:1539
+#: java/verify.c:1540 java/verify.c:1559
 #, gcc-internal-format
 msgid "%s"
 msgstr "%s"
@@ -6819,2103 +6808,1754 @@ msgstr "@FILE での複数ファイルの使用は実装されていません"
 msgid "cannot specify 'main' class when not linking"
 msgstr "リンク時以外には `main' クラスを指定できません"
 
-#: java/parse-scan.y:878 java/parse.y:974 java/parse.y:1315 java/parse.y:1376
-#: java/parse.y:1587 java/parse.y:1810 java/parse.y:1819 java/parse.y:1830
-#: java/parse.y:1841 java/parse.y:1853 java/parse.y:1868 java/parse.y:1885
-#: java/parse.y:1887 java/parse.y:1968 java/parse.y:2145 java/parse.y:2214
-#: java/parse.y:2378 java/parse.y:2391 java/parse.y:2398 java/parse.y:2405
-#: java/parse.y:2416 java/parse.y:2418 java/parse.y:2456 java/parse.y:2458
-#: java/parse.y:2460 java/parse.y:2481 java/parse.y:2483 java/parse.y:2485
-#: java/parse.y:2501 java/parse.y:2503 java/parse.y:2524 java/parse.y:2526
-#: java/parse.y:2528 java/parse.y:2556 java/parse.y:2558 java/parse.y:2560
-#: java/parse.y:2562 java/parse.y:2580 java/parse.y:2582 java/parse.y:2593
-#: java/parse.y:2604 java/parse.y:2615 java/parse.y:2626 java/parse.y:2637
-#: java/parse.y:2650 java/parse.y:2654 java/parse.y:2656 java/parse.y:2669
-msgid "Missing term"
-msgstr "項を欠いています"
-
-#: java/parse-scan.y:880 java/parse.y:748 java/parse.y:786 java/parse.y:811
-#: java/parse.y:995 java/parse.y:1350 java/parse.y:1563 java/parse.y:1565
-#: java/parse.y:1795 java/parse.y:1821 java/parse.y:1832 java/parse.y:1843
-#: java/parse.y:1855 java/parse.y:1870
-msgid "';' expected"
-msgstr "';' が必要です"
-
-#: java/parse.y:746 java/parse.y:784
-msgid "Missing name"
-msgstr "名前を欠いています"
-
-#: java/parse.y:809
-msgid "'*' expected"
-msgstr "'*' が必要です"
-
-#: java/parse.y:823
-msgid "Class or interface declaration expected"
-msgstr "クラスやインターフェイス宣言が必要です"
-
-#: java/parse.y:860 java/parse.y:862
-msgid "Missing class name"
-msgstr "クラス名を欠いています"
-
-#: java/parse.y:865 java/parse.y:869 java/parse.y:877 java/parse.y:1035
-#: java/parse.y:1296 java/parse.y:1298 java/parse.y:1630 java/parse.y:1881
-#: java/parse.y:1913 java/parse.y:1975
-msgid "'{' expected"
-msgstr "'{' が必要です"
-
-#: java/parse.y:879
-msgid "Missing super class name"
-msgstr "スーパークラス名を欠いています"
-
-#: java/parse.y:889 java/parse.y:905
-msgid "Missing interface name"
-msgstr "インターフェイス名を欠いています"
-
-#: java/parse.y:989
-msgid "Missing variable initializer"
-msgstr "変数初期化子を欠いています"
-
-#: java/parse.y:1006
-msgid "Invalid declaration"
-msgstr "無効な宣言です"
-
-#: java/parse.y:1009 java/parse.y:1094 java/parse.y:2160 java/parse.y:2189
-#: java/parse.y:2211 java/parse.y:2215 java/parse.y:2250 java/parse.y:2329
-#: java/parse.y:2339 java/parse.y:2349
-msgid "']' expected"
-msgstr "']' が必要です"
-
-#: java/parse.y:1013
-msgid "Unbalanced ']'"
-msgstr "対応のない ']' です"
-
-#: java/parse.y:1049
-msgid "Invalid method declaration, method name required"
-msgstr "無効なメソッド宣言です。メソッド名が必要です"
-
-#: java/parse.y:1054 java/parse.y:1059 java/parse.y:1064 java/parse.y:2063
-msgid "Identifier expected"
-msgstr "識別子が必要です"
-
-#: java/parse.y:1069 java/parse.y:4741
-#, gcc-internal-format
-msgid "Invalid method declaration, return type required"
-msgstr "無効なメソッド宣言です。メソッド名が必要です"
-
-#: java/parse.y:1092 java/parse.y:1543 java/parse.y:1550 java/parse.y:1559
-#: java/parse.y:1561 java/parse.y:1589 java/parse.y:1698 java/parse.y:2005
-#: java/parse.y:2058
-msgid "')' expected"
-msgstr "')' が必要です"
-
-#: java/parse.y:1108
-msgid "Missing formal parameter term"
-msgstr "正式な仮引数項を欠いています"
-
-#: java/parse.y:1123 java/parse.y:1128
-msgid "Missing identifier"
-msgstr "識別子を欠いています"
-
-#: java/parse.y:1148 java/parse.y:1157
-msgid "Missing class type term"
-msgstr "クラスタイプ項を欠いています"
-
-#: java/parse.y:1313
-msgid "Invalid interface type"
-msgstr "インターフェイス型が無効です"
-
-#: java/parse.y:1503 java/parse.y:1677 java/parse.y:1679
-msgid "':' expected"
-msgstr "':' が必要です"
-
-#: java/parse.y:1529 java/parse.y:1534 java/parse.y:1539
-msgid "Invalid expression statement"
-msgstr "式文が無効です"
-
-#: java/parse.y:1557 java/parse.y:1585 java/parse.y:1626 java/parse.y:1694
-#: java/parse.y:1762 java/parse.y:1883 java/parse.y:1961 java/parse.y:2052
-#: java/parse.y:2054 java/parse.y:2067 java/parse.y:2310 java/parse.y:2312
-msgid "'(' expected"
-msgstr "'(' が必要です"
-
-#: java/parse.y:1628
-msgid "Missing term or ')'"
-msgstr "項または ')' を欠いています"
-
-#: java/parse.y:1675
-msgid "Missing or invalid constant expression"
-msgstr "定数式が欠けているか無効です"
-
-#: java/parse.y:1696
-msgid "Missing term and ')' expected"
-msgstr "項と必須の ')' を欠いています"
-
-#: java/parse.y:1735
-msgid "Invalid control expression"
-msgstr "無効な制御式です"
-
-#: java/parse.y:1737 java/parse.y:1739
-msgid "Invalid update expression"
-msgstr "無効な更新式です"
-
-#: java/parse.y:1764
-msgid "Invalid init statement"
-msgstr "無効な初期化式です"
-
-#: java/parse.y:1964
-msgid "Missing term or ')' expected"
-msgstr "項または必須の ')' を欠いています"
-
-#: java/parse.y:2007
-msgid "'class' or 'this' expected"
-msgstr "'class' または 'this' が必要です"
-
-#: java/parse.y:2009 java/parse.y:2011
-msgid "'class' expected"
-msgstr "'class' が必要です"
-
-#: java/parse.y:2056
-msgid "')' or term expected"
-msgstr "')' または項が必要です"
-
-#: java/parse.y:2158 java/parse.y:2187
-msgid "'[' expected"
-msgstr "'[' が必要です"
-
-#: java/parse.y:2265
-msgid "Field expected"
-msgstr "フィールドが必要です"
-
-#: java/parse.y:2324 java/parse.y:2334 java/parse.y:2344
-msgid "Missing term and ']' expected"
-msgstr "項と必須の ']' を欠いています"
-
-#: java/parse.y:2449
-msgid "']' expected, invalid type expression"
-msgstr "']' が必要で、無効な型表現です"
-
-#: java/parse.y:2452
-msgid "Invalid type expression"
-msgstr "無効な型表現です"
-
-#: java/parse.y:2564
-msgid "Invalid reference type"
-msgstr "無効な参照型です"
-
-#: java/parse.y:3031
-msgid "Constructor invocation must be first thing in a constructor"
-msgstr "コンストラクタの起動はコンストラクタ内で最初に行なわなければなりません"
-
-#: java/parse.y:3033
-msgid "Only constructors can invoke constructors"
-msgstr "コンストラクタだけがコンストラクタを起動できます"
-
-#: options.c:943
+#: options.c:881
 #, fuzzy
 msgid "Display this information"
 msgstr "  --help                  この情報を表示する\n"
 
-#: options.c:949
+#: options.c:887
 msgid "--param <param>=<value>\tSet parameter <param> to value.  See below for a complete list of parameters"
 msgstr ""
 
-#: options.c:958
+#: options.c:896
 msgid "-A<question>=<answer>\tAssert the <answer> to <question>.  Putting '-' before <question> disables the <answer> to <question>"
 msgstr ""
 
-#: options.c:961
+#: options.c:899
 #, fuzzy
 msgid "Do not discard comments"
 msgstr "終端されていないコメント"
 
-#: options.c:964
+#: options.c:902
 #, fuzzy
 msgid "Do not discard comments in macro expansions"
 msgstr "ビット演算での即値サイズを調停しない"
 
-#: options.c:967
+#: options.c:905
 msgid "-D<macro>[=<val>]\tDefine a <macro> with <val> as its value.  If just <macro> is given, <val> is taken to be 1"
 msgstr ""
 
-#: options.c:973
+#: options.c:911
 msgid "-F <dir>\tAdd <dir> to the end of the main framework include path"
 msgstr ""
 
-#: options.c:976
+#: options.c:914
 #, fuzzy
 msgid "-G<number>\tPut global and static data smaller than <number> bytes into a special section (on some targets)"
 msgstr ""
 "  -G <number>             <number> バイトより小さな大域および静的データを\n"
 "                          特別なセクションに置く (ターゲット次第)\n"
 
-#: options.c:979
+#: options.c:917
 #, fuzzy
 msgid "Print the name of header files as they are used"
 msgstr "コンパイルされたプログラム単位の名前を表示する"
 
-#: options.c:985
-msgid "-J<directory>\tPut MODULE files in 'directory'"
+#: options.c:920
+msgid "-I <dir>\tAdd <dir> to the end of the main include path"
 msgstr ""
 
-#: options.c:991
+#: options.c:923
+#, fuzzy
+msgid "Generate make dependencies"
+msgstr "動的依存関係。\n"
+
+#: options.c:926
 #, fuzzy
 msgid "Generate make dependencies and compile"
 msgstr "リトルエンディアンのコードを生成"
 
-#: options.c:1000
+#: options.c:929
+msgid "-MF <file>\tWrite dependency output to the given file"
+msgstr ""
+
+#: options.c:932
 msgid "Treat missing header files as generated files"
 msgstr ""
 
-#: options.c:1006
+#: options.c:935
+msgid "Like -M but ignore system header files"
+msgstr ""
+
+#: options.c:938
 msgid "Like -MD but ignore system header files"
 msgstr ""
 
-#: options.c:1015
+#: options.c:941
+#, fuzzy
+msgid "Generate phony targets for all headers"
+msgstr "Intel as 用のコードを生成する"
+
+#: options.c:944
 msgid "-MQ <target>\tAdd a MAKE-quoted target"
 msgstr ""
 
-#: options.c:1021
+#: options.c:947
+msgid "-MT <target>\tAdd an unquoted target"
+msgstr ""
+
+#: options.c:950
 #, fuzzy
 msgid "-O<number>\tSet optimization level to <number>"
 msgstr "  -O[number]              最適化レベルを [number] に設定する\n"
 
-#: options.c:1024
+#: options.c:953
 #, fuzzy
 msgid "Optimize for space rather than speed"
 msgstr "  -Os                     速度よりもサイズの最適化を行なう\n"
 
-#: options.c:1027
+#: options.c:956
 #, fuzzy
 msgid "Do not generate #line directives"
 msgstr ".size 疑似命令を生成しない"
 
-#: options.c:1030
+#: options.c:959
 msgid "-U<macro>\tUndefine <macro>"
 msgstr ""
 
-#: options.c:1033
+#: options.c:962
 msgid "This switch is deprecated; use -Wextra instead"
 msgstr ""
 
-#: options.c:1036
+#: options.c:965
 msgid "Warn about things that will change when compiling with an ABI-compliant compiler"
 msgstr ""
 
-#: options.c:1039
+#: options.c:968
 msgid "Warn about returning structures, unions or arrays"
 msgstr "構造体、共用体又は配列を返すものに関して警告する"
 
-#: options.c:1042
-#, fuzzy
-msgid "Warn about possible aliasing of dummy arguments"
-msgstr "括弧を欠いている可能性がある場合に警告する"
+#: options.c:971
+msgid "Enable most warning messages"
+msgstr "殆んどの警告メッセージを有効にする"
 
-#: options.c:1048
+#: options.c:974
 msgid "Warn about casting functions to incompatible types"
 msgstr "型に互換性のない関数のキャストに関して警告する"
 
-#: options.c:1051
+#: options.c:977
 msgid "Warn about pointer casts which increase alignment"
 msgstr "ポインタのキャストでアラインメントが増加するものに関して警告する"
 
-#: options.c:1054
+#: options.c:980
 msgid "Warn about casts which discard qualifiers"
 msgstr "修飾子を取り去るキャストについて警告する"
 
-#: options.c:1057
+#: options.c:983
 #, fuzzy
 msgid "Warn about subscripts whose type is \"char\""
 msgstr "添字の型が 'char' であれば警告する"
 
-#: options.c:1060
+#: options.c:986
 msgid "Warn about possibly nested block comments, and C++ comments spanning more than one physical line"
 msgstr ""
 
-#: options.c:1063
+#: options.c:989
 msgid "Synonym for -Wcomment"
 msgstr ""
 
-#: options.c:1066
-#, fuzzy
-msgid "Warn about implicit conversion"
-msgstr "暗黙の関数宣言に関して警告する"
+#: options.c:992
+msgid "Warn about possibly confusing type conversions"
+msgstr "型変換が混乱する可能性に関して警告する"
 
-#: options.c:1069
+#: options.c:995
 #, fuzzy
 msgid "Warn when all constructors and destructors are private"
 msgstr "全てのコンストラクタ/デストラクタが private でも警告しない"
 
-#: options.c:1072
+#: options.c:998
 #, fuzzy
 msgid "Warn when a declaration is found after a statement"
 msgstr "宣言が型を指定していない場合に警告する"
 
-#: options.c:1075
-msgid "Warn if a deprecated compiler feature, class, method, or field is used"
-msgstr ""
+#: options.c:1001
+#, fuzzy
+msgid "Warn about deprecated compiler features"
+msgstr "推奨されないコンパイラの機能を告知しない"
 
-#: options.c:1078
+#: options.c:1004
 msgid "Warn about uses of __attribute__((deprecated)) declarations"
 msgstr ""
 
-#: options.c:1081
+#: options.c:1007
 msgid "Warn when an optimization pass is disabled"
 msgstr "最適化過程が無効化された場合に警告する"
 
-#: options.c:1084
+#: options.c:1010
 #, fuzzy
 msgid "Warn about compile-time integer division by zero"
 msgstr "整数のゼロ除算をトラップする"
 
-#: options.c:1087
+#: options.c:1013
 msgid "Warn about violations of Effective C++ style rules"
 msgstr "Effective C++ 式の指針からはずれるものについて警告する"
 
-#: options.c:1090
+#: options.c:1016
 msgid "Warn about stray tokens after #elif and #endif"
 msgstr ""
 
-#: options.c:1093
+#: options.c:1019
 msgid "Treat all warnings as errors"
 msgstr "全ての警告をエラーとして取り扱う"
 
-#: options.c:1096
+#: options.c:1022
 #, fuzzy
 msgid "Make implicit function declarations an error"
 msgstr "暗黙の関数宣言に関して警告する"
 
-#: options.c:1099
+#: options.c:1025
 msgid "Print extra (possibly unwanted) warnings"
 msgstr ""
 
-#: options.c:1102
-msgid "Warn if deprecated empty statements are found"
-msgstr "推奨されない空文が見つかれば警告する"
-
-#: options.c:1105
+#: options.c:1028
 msgid "Exit on the first error occurred"
 msgstr ""
 
-#: options.c:1108
+#: options.c:1031
 #, fuzzy
 msgid "Warn if testing floating point numbers for equality"
 msgstr "浮動小数点数の等価テストに関して警告する"
 
-#: options.c:1111
+#: options.c:1034
 #, fuzzy
 msgid "Warn about printf/scanf/strftime/strfmon format string anomalies"
 msgstr "printf/scanf/strftime/strfmon 形式の変則的なものに関して警告する"
 
-#: options.c:1114
+#: options.c:1037
 #, fuzzy
 msgid "Warn if passing too many arguments to a function for its format string"
 msgstr "`va_start' に対する引数が多すぎます"
 
-#: options.c:1117
+#: options.c:1040
 #, fuzzy
 msgid "Warn about format strings that are not literals"
 msgstr "複数文字リテラルの使用に関して警告する"
 
-#: options.c:1120
+#: options.c:1043
 msgid "Warn about possible security problems with format functions"
 msgstr "セキュリティ的な問題となりうる format 関数に関して警告する"
 
-#: options.c:1123
+#: options.c:1046
 #, fuzzy
 msgid "Warn about strftime formats yielding 2-digit years"
 msgstr "strftime 形式が二桁で年を表している時の警告しない"
 
-#: options.c:1126
+#: options.c:1049
 #, fuzzy
 msgid "Warn about zero-length formats"
 msgstr "長さ 0 のフォーマット文字列"
 
-#: options.c:1135
+#: options.c:1058
 msgid "Warn about implicit function declarations"
 msgstr "暗黙の関数宣言に関して警告する"
 
-#: options.c:1138
+#: options.c:1061
 msgid "Warn when a declaration does not specify a type"
 msgstr "宣言が型を指定していない場合に警告する"
 
-#: options.c:1141
-#, fuzzy
-msgid "Warn about calls with implicit interface"
-msgstr "複数文字リテラルの使用に関して警告する"
-
-#: options.c:1144
+#: options.c:1064
 msgid "Deprecated.  This switch has no effect."
 msgstr ""
 
-#: options.c:1147
+#: options.c:1067
 msgid "Warn about variables which are initialized to themselves."
 msgstr ""
 
-#: options.c:1150
+#: options.c:1070
 msgid "Warn when an inlined function cannot be inlined"
 msgstr "インライン関数をインライン化できない場合に警告する"
 
-#: options.c:1153
+#: options.c:1073
 #, fuzzy
 msgid "Warn about invalid uses of the \"offsetof\" macro"
 msgstr "#import ディレクティブの利用に関して警告する"
 
-#: options.c:1156
+#: options.c:1076
 msgid "Warn about PCH files that are found but not used"
 msgstr ""
 
-#: options.c:1159
+#: options.c:1079
 #, fuzzy
 msgid "-Wlarger-than-<number>\tWarn if an object is larger than <number> bytes"
 msgstr "  -Wlarger-than-<number>  オブジェクトが <number> バイトより大きければ警告する\n"
 
-#: options.c:1162
-#, fuzzy
-msgid "Warn about truncated source lines"
-msgstr "複数文字リテラルの使用に関して警告する"
-
-#: options.c:1165
+#: options.c:1082
 #, fuzzy
 msgid "Do not warn about using \"long long\" when -pedantic"
 msgstr "-pedantic 指定時でも 'long long' の使用については警告しない"
 
-#: options.c:1168
+#: options.c:1085
 #, fuzzy
 msgid "Warn about suspicious declarations of \"main\""
 msgstr "疑わしい main の宣言に関して警告する"
 
-#: options.c:1171
+#: options.c:1088
 #, fuzzy
 msgid "Warn about possibly missing braces around initializers"
 msgstr "初期化子の周りにブレースを欠いている様であれば警告する"
 
-#: options.c:1174
+#: options.c:1091
 #, fuzzy
 msgid "Warn about global functions without previous declarations"
 msgstr "事前の宣言なしの大域関数に関して警告する"
 
-#: options.c:1177
+#: options.c:1094
 #, fuzzy
 msgid "Warn about missing fields in struct initializers"
 msgstr "初期化子の周りにブレースを欠いている様であれば警告する"
 
-#: options.c:1180
+#: options.c:1097
 msgid "Warn about functions which might be candidates for format attributes"
 msgstr "format 属性をの候補となりそうな関数について警告する"
 
-#: options.c:1183
+#: options.c:1100
 msgid "Warn about user-specified include directories that do not exist"
 msgstr ""
 
-#: options.c:1186
+#: options.c:1103
 #, fuzzy
 msgid "Warn about functions which might be candidates for __attribute__((noreturn))"
 msgstr "noreturn 属性の候補となりそうな関数に関して警告する"
 
-#: options.c:1189
+#: options.c:1106
 #, fuzzy
 msgid "Warn about global functions without prototypes"
 msgstr "プロトタイプなしの大域関数に関して警告する"
 
-#: options.c:1192
+#: options.c:1109
 #, fuzzy
 msgid "Warn about use of multi-character character constants"
 msgstr "複数文字リテラルの使用に関して警告する"
 
-#: options.c:1195
+#: options.c:1112
 #, fuzzy
 msgid "Warn about \"extern\" declarations not at file scope"
 msgstr "ファイルスコープレベルでない extern に関して警告する"
 
-#: options.c:1198
+#: options.c:1115
 #, fuzzy
 msgid "Warn when non-templatized friend functions are declared within a template"
 msgstr "template 内で非 template の friend 関数が宣言された場合でも警告しない"
 
-#: options.c:1201
+#: options.c:1118
 #, fuzzy
 msgid "Warn about non-virtual destructors"
 msgstr "非仮想デストラクタについて警告する"
 
-#: options.c:1204
+#: options.c:1121
 msgid "Warn about NULL being passed to argument slots marked as requiring non-NULL"
 msgstr ""
 
-#: options.c:1207
-#, fuzzy
-msgid "Warn about usage of non-standard intrinsics"
-msgstr "複数文字リテラルの使用に関して警告する"
-
-#: options.c:1210
+#: options.c:1124
 #, fuzzy
 msgid "Warn if a C-style cast is used in a program"
 msgstr "C 式のキャストがプログラムで使われたら警告する"
 
-#: options.c:1213
+#: options.c:1127
 #, fuzzy
 msgid "Warn if an old-style parameter definition is used"
 msgstr "関数の仮引数が使われないときに警告する"
 
-#: options.c:1216
-msgid "Warn if .class files are out of date"
-msgstr ".class ファイルがソースファイルより古ければ警告する"
-
-#: options.c:1219
+#: options.c:1130
 msgid "Warn about overloaded virtual function names"
 msgstr "オーバーロードされた仮想関数名について警告する"
 
-#: options.c:1222
+#: options.c:1133
 msgid "Warn when the packed attribute has no effect on struct layout"
 msgstr "packed 属性が構造体配置に影響しない場合に警告する"
 
-#: options.c:1225
+#: options.c:1136
 #, fuzzy
 msgid "Warn when padding is required to align structure members"
 msgstr "構造体メンバのアラインで、パディングを要する場合に警告する"
 
-#: options.c:1228
+#: options.c:1139
 #, fuzzy
 msgid "Warn about possibly missing parentheses"
 msgstr "括弧を欠いている可能性がある場合に警告する"
 
-#: options.c:1231
+#: options.c:1142
 #, fuzzy
 msgid "Warn when converting the type of pointers to member functions"
 msgstr "ポインタからメンバ関数への型変換の場合でも警告しない"
 
-#: options.c:1234
+#: options.c:1145
 msgid "Warn about function pointer arithmetic"
 msgstr "関数ポインタの計算に関して警告する"
 
-#: options.c:1237
+#: options.c:1148
 #, fuzzy
 msgid "Warn when a pointer differs in signedness in an assignment."
 msgstr "オーバーロードが符合無しから符合付きに格上げとなる場合に警告する"
 
-#: options.c:1240
+#: options.c:1151
 #, fuzzy
 msgid "Warn if inherited methods are unimplemented"
 msgstr "派生メソッドが未実装の場合でも警告しない"
 
-#: options.c:1243
+#: options.c:1154
 msgid "Warn about multiple declarations of the same object"
 msgstr "同一オブジェクトの宣言が複数あれば警告する"
 
-#: options.c:1246
-msgid "Warn if modifiers are specified when not necessary"
-msgstr "指定された修飾子が不要なものであれば警告する"
-
-#: options.c:1249
+#: options.c:1157
 msgid "Warn when the compiler reorders code"
 msgstr "コンパイラがコードを並べ替えるときに警告する"
 
-#: options.c:1252
+#: options.c:1160
 msgid "Warn whenever a function's return type defaults to \"int\" (C), or about inconsistent return types (C++)"
 msgstr ""
 
-#: options.c:1255
+#: options.c:1163
 msgid "Warn if a selector has multiple methods"
 msgstr "セレクタが複数のメソッドを持っていれば警告する"
 
-#: options.c:1258
+#: options.c:1166
 msgid "Warn about possible violations of sequence point rules"
 msgstr "副作用完了点規則を破る可能性がある場合に警告する"
 
-#: options.c:1261
+#: options.c:1169
 msgid "Warn when one local variable shadows another"
 msgstr "あるローカル変数が他のものを覆い隠すときに警告する"
 
-#: options.c:1264
+#: options.c:1172
 #, fuzzy
 msgid "Warn about signed-unsigned comparisons"
 msgstr "符合付き/符合無しの比較に関して警告する"
 
-#: options.c:1267
+#: options.c:1175
 msgid "Warn when overload promotes from unsigned to signed"
 msgstr "オーバーロードが符合無しから符合付きに格上げとなる場合に警告する"
 
-#: options.c:1270 options.c:1273
+#: options.c:1178 options.c:1181
 #, fuzzy
 msgid "Warn about code which might break strict aliasing rules"
 msgstr "format 属性をの候補となりそうな関数について警告する"
 
-#: options.c:1276
+#: options.c:1184
 msgid "Warn about uncasted NULL used as sentinel"
 msgstr ""
 
-#: options.c:1279
+#: options.c:1187
 #, fuzzy
 msgid "Warn about unprototyped function declarations"
 msgstr "プロトタイプされていない関数宣言に関して警告する"
 
-#: options.c:1282
-#, fuzzy
-msgid "Warn about \"suspicious\" constructs"
-msgstr "疑わしい main の宣言に関して警告する"
-
-#: options.c:1285
+#: options.c:1190
 #, fuzzy
 msgid "Warn about enumerated switches, with no default, missing a case"
 msgstr "列挙定数の switch で case 指定が欠けているものに関して警告する"
 
-#: options.c:1288
+#: options.c:1193
 #, fuzzy
 msgid "Warn about enumerated switches missing a \"default:\" statement"
 msgstr "列挙定数の switch で case 指定が欠けているものに関して警告する"
 
-#: options.c:1291
+#: options.c:1196
 #, fuzzy
 msgid "Warn about all enumerated switches missing a specific case"
 msgstr "列挙定数の switch で case 指定が欠けているものに関して警告する"
 
-#: options.c:1294
+#: options.c:1199
 #, fuzzy
 msgid "Warn when synthesis behavior differs from Cfront"
 msgstr "合成の振る舞いが Cfront と異なる場合に警告する"
 
-#: options.c:1297
+#: options.c:1202
 msgid "Do not suppress warnings from system headers"
 msgstr "システムヘッダからの警告を抑制しない"
 
-#: options.c:1300
+#: options.c:1205
 #, fuzzy
 msgid "Warn about features not present in traditional C"
 msgstr "古い C では #elif を使わない方がいいです"
 
-#: options.c:1303
+#: options.c:1208
 msgid "Warn if trigraphs are encountered that might affect the meaning of the program"
 msgstr ""
 
-#: options.c:1306
+#: options.c:1211
 #, fuzzy
 msgid "Warn about @selector()s without previously declared methods"
 msgstr "事前の宣言なしの大域関数に関して警告する"
 
-#: options.c:1309
+#: options.c:1214
 #, fuzzy
 msgid "Warn if an undefined macro is used in an #if directive"
 msgstr "未定義又は不正な # ディレクティブです"
 
-#: options.c:1312
-#, fuzzy
-msgid "Warn about underflow of numerical constant expressions"
-msgstr "定数式がオーバーフローしました"
-
-#: options.c:1315
+#: options.c:1217
 #, fuzzy
 msgid "Warn about uninitialized automatic variables"
 msgstr "初期化されない自動変数に関して警告する"
 
-#: options.c:1318
+#: options.c:1220
 msgid "Warn about unrecognized pragmas"
 msgstr "認識できない pragma に関して警告する"
 
-#: options.c:1321
+#: options.c:1223
 msgid "Warn about code that will never be executed"
 msgstr "実行されることがないコードに関して警告する"
 
-#: options.c:1324
+#: options.c:1226
 msgid "Enable all -Wunused- warnings"
 msgstr ""
 
-#: options.c:1327
+#: options.c:1229
 msgid "Warn when a function is unused"
 msgstr "関数が使われないときに警告する"
 
-#: options.c:1330 options.c:1333
+#: options.c:1232
 msgid "Warn when a label is unused"
 msgstr "ラベルが使われないときに警告する"
 
-#: options.c:1336
+#: options.c:1235
 msgid "Warn about macros defined in the main file that are not used"
 msgstr ""
 
-#: options.c:1339
+#: options.c:1238
 msgid "Warn when a function parameter is unused"
 msgstr "関数の仮引数が使われないときに警告する"
 
-#: options.c:1342
+#: options.c:1241
 msgid "Warn when an expression value is unused"
 msgstr "式の値が使われないときに警告する"
 
-#: options.c:1345
+#: options.c:1244
 msgid "Warn when a variable is unused"
 msgstr "変数が使われないときに警告する"
 
-#: options.c:1348
+#: options.c:1247
 #, fuzzy
 msgid "Do not warn about using variadic macros when -pedantic"
 msgstr "-pedantic 指定時でも 'long long' の使用については警告しない"
 
-#: options.c:1351
+#: options.c:1250
 msgid "Give strings the type \"array of char\""
 msgstr ""
 
-#: options.c:1354
+#: options.c:1253
 msgid "A synonym for -std=c89 (for C) or -std=c++98 (for C++)."
 msgstr ""
 
-#: options.c:1357
+#: options.c:1256
 #, fuzzy
 msgid "-aux-info <file>\tEmit declaration information into <file>"
 msgstr "  -aux-info <file>        宣言情報を <file> へ発行する\n"
 
-#: options.c:1369
+#: options.c:1268
 #, fuzzy
 msgid "-d<letters>\tEnable dumps from specific passes of the compiler"
 msgstr "  -d[letters]             コンパイラの過程からのダンプを有効にする\n"
 
-#: options.c:1372
+#: options.c:1271
 #, fuzzy
 msgid "-dumpbase <file>\tSet the file basename to be used for dumps"
 msgstr "  -dumpbase <file>        過程からのダンプに使われる名前のベースとする\n"
 
-#: options.c:1375
-msgid "--CLASSPATH\tDeprecated; use --classpath instead"
-msgstr ""
-
-#: options.c:1378
+#: options.c:1274
 #, fuzzy
 msgid "Generate position-independent code if possible (large mode)"
 msgstr "可能であれば位置独立コードを生成する"
 
-#: options.c:1381
+#: options.c:1277
 #, fuzzy
 msgid "Generate position-independent code for executables if possible (large mode)"
 msgstr "可能であれば位置独立コードを生成する"
 
-#: options.c:1387
+#: options.c:1283
 #, fuzzy
 msgid "Enforce class member access control semantics"
 msgstr "アクセス制御の意味に従わない"
 
-#: options.c:1390
+#: options.c:1286
 msgid "Align the start of functions"
 msgstr "関数の開始をアラインする"
 
-#: options.c:1396
+#: options.c:1292
 msgid "Align labels which are only reached by jumping"
 msgstr "ラベルのうちジャンプ到達先となるものだけをアラインする"
 
-#: options.c:1402
+#: options.c:1298
 msgid "Align all labels"
 msgstr "全てのラベルをアラインする"
 
-#: options.c:1408
+#: options.c:1304
 msgid "Align the start of loops"
 msgstr "ループの開始をアラインする"
 
-#: options.c:1417
+#: options.c:1313
 msgid "Change when template instances are emitted"
 msgstr "テンプレートインスタンスが送出された時に変更する"
 
-#: options.c:1420
+#: options.c:1316
 #, fuzzy
 msgid "Specify that arguments may alias each other and globals"
 msgstr "引数と大域データや他の引数と別名になりうる事を指定する"
 
-#: options.c:1423
+#: options.c:1319
 msgid "Assume arguments may alias globals but not each other"
 msgstr "引数と大域データは別名になりうるが他の引数とは別名ではないとみなす"
 
-#: options.c:1426
+#: options.c:1322
 #, fuzzy
 msgid "Assume arguments alias neither each other nor globals"
 msgstr "引数が大域データや他の引数と別名にはならないとみなす"
 
-#: options.c:1429
+#: options.c:1325
 #, fuzzy
 msgid "Recognize the \"asm\" keyword"
 msgstr "'asm' 予約語を認識させない"
 
-#: options.c:1432
-msgid "Permit the use of the assert keyword"
-msgstr ""
-
-#: options.c:1441
+#: options.c:1328
 #, fuzzy
 msgid "Generate unwind tables that are exact at each instruction boundary"
 msgstr "巻き戻しを行なう例外補足用テーブルを生成する"
 
-#: options.c:1444
-#, fuzzy
-msgid "--bootclasspath=<path>\tReplace system path"
-msgstr "クラスパスを設定してシステムパスを隠す"
-
-#: options.c:1447
+#: options.c:1331
 #, fuzzy
 msgid "Generate code to check bounds before indexing arrays"
 msgstr "配列の添字と添字境界を検査するコードを生成する"
 
-#: options.c:1450
+#: options.c:1334
 #, fuzzy
 msgid "Replace add, compare, branch with branch on count register"
 msgstr "加算、比較ブランチの代わりにカウントレジスタのブランチを使う"
 
-#: options.c:1453
+#: options.c:1337
 msgid "Use profiling information for branch probabilities"
 msgstr "分岐経路推測用のプロファイル情報を利用する"
 
-#: options.c:1456
+#: options.c:1340
 msgid "Perform branch target load optimization before prologue / epilogue threading"
 msgstr ""
 
-#: options.c:1459
+#: options.c:1343
 msgid "Perform branch target load optimization after prologue / epilogue threading"
 msgstr ""
 
-#: options.c:1462
+#: options.c:1346
 msgid "Restrict target load migration not to re-use registers in any basic block"
 msgstr ""
 
-#: options.c:1465
+#: options.c:1349
 #, fuzzy
 msgid "Recognize built-in functions"
 msgstr "いくつかの組み込み関数を認識させない"
 
-#: options.c:1471
+#: options.c:1355
 #, fuzzy
 msgid "-fcall-saved-<register>\tMark <register> as being preserved across functions"
 msgstr "  -fcall-saved-<register> <register> が関数を通じて保持されるとマークする\n"
 
-#: options.c:1474
+#: options.c:1358
 #, fuzzy
 msgid "-fcall-used-<register>\tMark <register> as being corrupted by function calls"
 msgstr "  -fcall-used-<register>  関数呼び出しで破壊される <register> としてマークする\n"
 
-#: options.c:1477
+#: options.c:1361
 #, fuzzy
 msgid "Save registers around function calls"
 msgstr "関数呼び出しの前後でレジスタの保存を有効にする"
 
-#: options.c:1480
+#: options.c:1364
 msgid "Check the return value of new"
 msgstr "new の戻り値を検査する"
 
-#: options.c:1483
-#, fuzzy
-msgid "Generate checks for references to NULL"
-msgstr "DLL 用のコードを生成する"
-
-#: options.c:1486
-msgid "--classpath=<path>\tSet class path"
-msgstr ""
-
-#: options.c:1489
+#: options.c:1367
 #, fuzzy
 msgid "Do not put uninitialized globals in the common section"
 msgstr "大域変数等を初期化されないコモンセクションに置かない"
 
-#: options.c:1495
+#: options.c:1370
 msgid "Allow the arguments of the '?' operator to have different types"
 msgstr ""
 
-#: options.c:1498
+#: options.c:1373
 #, fuzzy
 msgid "Reduce the size of object files"
 msgstr "オブジェクトファイルのサイズを小さくする"
 
-#: options.c:1501
+#: options.c:1376
 #, fuzzy
 msgid "Make string literals \"const char[]\" not \"char[]\""
 msgstr "文字列リテラルを `const char[]' の代わりに `char[]' とする"
 
-#: options.c:1504
+#: options.c:1379
 msgid "-fconst-string-class=<name>\tUse class <name> for constant strings"
 msgstr ""
 
-#: options.c:1507
+#: options.c:1382
 #, fuzzy
 msgid "Perform a register copy-propagation optimization pass"
 msgstr "最適化過程のレジスタつけ変えを行なう"
 
-#: options.c:1510
+#: options.c:1385
 #, fuzzy
 msgid "Perform cross-jumping optimization"
 msgstr "ジャンプ分岐最適化を行なう"
 
-#: options.c:1513
+#: options.c:1388
 msgid "When running CSE, follow jumps to their targets"
 msgstr "CSE で動作するとき、それらのターゲットへのジャンプに追随する"
 
-#: options.c:1516
+#: options.c:1391
 msgid "When running CSE, follow conditional jumps"
 msgstr "CSE で動作するとき、条件ジャンプに追随する"
 
-#: options.c:1519
+#: options.c:1394
 msgid "Omit range reduction step when performing complex division"
 msgstr ""
 
-#: options.c:1522
+#: options.c:1397
 #, fuzzy
 msgid "Place data items into their own section"
 msgstr "データ項目をそれら自身のセクションに配置する"
 
-#: options.c:1525
-msgid "Set the default double precision kind to an 8 byte wide type"
-msgstr ""
-
-#: options.c:1528
+#: options.c:1400
 #, fuzzy
 msgid "Inline member functions by default"
 msgstr "メンバ関数をデフォルトでインラインとしない"
 
-#: options.c:1531
-msgid "Set the default integer kind to an 8 byte wide type"
-msgstr ""
-
-#: options.c:1534
-msgid "Set the default real kind to an 8 byte wide type"
-msgstr ""
-
-#: options.c:1537
+#: options.c:1403
 msgid "Defer popping functions args from stack until later"
 msgstr "関数引数をスタックから pop するのを呼び出し後まで遅らせる"
 
-#: options.c:1540
+#: options.c:1406
 msgid "Attempt to fill delay slots of branch instructions"
 msgstr "分岐命令の遅延スロットを使うことを試みる"
 
-#: options.c:1543
+#: options.c:1409
 msgid "Delete useless null pointer checks"
 msgstr "無意味な null ポインタ検査を削除する"
 
-#: options.c:1546
+#: options.c:1412
 #, fuzzy
 msgid "-fdiagnostics-show-location=[once|every-line]\tHow often to emit source location at the beginning of line-wrapped diagnostics"
 msgstr ""
 "  -fdiagnostics-show-location=[once | every-line]  診断メッセージの改行の際に,\n"
 " ソース位置情報が行の最初に表示される頻度を指定する\n"
 
-#: options.c:1555
-msgid "Allow dollar signs in entity names"
-msgstr ""
-
-#: options.c:1558
+#: options.c:1415
 #, fuzzy
 msgid "Permit '$' as an identifier character"
 msgstr "フォーマットがワイド文字列です"
 
-#: options.c:1561
+#: options.c:1418
 msgid "-fdump-<type>\tDump various compiler internals to a file"
 msgstr ""
 
-#: options.c:1564
-msgid "Display the code tree after parsing."
-msgstr ""
-
-#: options.c:1567
+#: options.c:1421
 msgid "Suppress output of instruction numbers and line number notes in debugging dumps"
 msgstr "デバッグダンプで命令番号と行番号ノートの出力を抑制する"
 
-#: options.c:1573
+#: options.c:1427
 #, fuzzy
 msgid "Perform DWARF2 duplicate elimination"
 msgstr "末尾呼び出し最適化を行う"
 
-#: options.c:1576 options.c:1579
+#: options.c:1430 options.c:1433
 msgid "Perform unused type elimination in debug info"
 msgstr ""
 
-#: options.c:1582
-msgid "Output a class file"
-msgstr ""
-
-#: options.c:1585
-msgid "Alias for -femit-class-file"
-msgstr ""
-
-#: options.c:1594
-msgid "--encoding=<encoding>\tChoose input encoding (defaults from your locale)"
-msgstr ""
-
-#: options.c:1597
+#: options.c:1436
 #, fuzzy
 msgid "Generate code to check exception specifications"
 msgstr "例外仕様の検査をするコードを生成しない"
 
-#: options.c:1603
+#: options.c:1442
 msgid "Enable exception handling"
 msgstr "例外捕捉を有効にする"
 
-#: options.c:1606
+#: options.c:1445
 msgid "-fexec-charset=<cset>\tConvert all strings and character constants to character set <cset>"
 msgstr ""
 
-#: options.c:1609
+#: options.c:1448
 #, fuzzy
 msgid "Perform a number of minor, expensive optimizations"
 msgstr "目立たない、コストのかかる最適化を行なう"
 
-#: options.c:1612
-msgid "--extdirs=<path>\tSet the extension directory path"
-msgstr ""
-
-#: options.c:1618
-#, fuzzy
-msgid "Use f2c calling convention."
-msgstr "普通の呼び出し規約を使う"
-
-#: options.c:1624
-#, fuzzy
-msgid "Input file is a file with a list of filenames to compile"
-msgstr "入力ファイルをコンパイルするファイル名のリストとする"
-
-#: options.c:1627
+#: options.c:1457
 msgid "Assume no NaNs or infinities are generated"
 msgstr ""
 
-#: options.c:1630
+#: options.c:1460
 #, fuzzy
 msgid "-ffixed-<register>\tMark <register> as being unavailable to the compiler"
 msgstr "  -ffixed-<register>      コンパイラに対し <register> を使用不可とマークする\n"
 
-#: options.c:1633
-#, fuzzy
-msgid "Assume that the source file is fixed form"
-msgstr "ポインタは別名にならないとみなす"
-
-#: options.c:1636
-msgid "-ffixed-line-length-<n>\t\tUse n as character line width in fixed mode"
-msgstr ""
-
-#: options.c:1639
-msgid "Allow arbitrary character line width in fixed mode"
-msgstr ""
-
-#: options.c:1642
+#: options.c:1469
 #, fuzzy
 msgid "Don't allocate floats and doubles in extended-precision registers"
 msgstr "整数レジスタの確保順を制御する"
 
-#: options.c:1645
+#: options.c:1472
 #, fuzzy
 msgid "Scope of for-init-statement variables is local to the loop"
 msgstr "for 初期化文の変数をスコープ外に拡大する"
 
-#: options.c:1648
+#: options.c:1475
 #, fuzzy
 msgid "Copy memory address constants into registers before use"
 msgstr "メモリアドレス定数を利用する前にレジスタへコピーする"
 
-#: options.c:1651
-msgid "Always check for non gcj generated classes archives"
-msgstr "gcj が生成していないクラスアーカイブを常に検査する"
-
-#: options.c:1654
+#: options.c:1478
 #, fuzzy
 msgid "Copy memory operands into registers before use"
 msgstr "メモリオペランドを利用する前にレジスタへコピーする"
 
-#: options.c:1657
-msgid "Assume that the source file is free form"
-msgstr ""
-
-#: options.c:1660
+#: options.c:1481
 #, fuzzy
 msgid "Do not assume that standard C libraries and \"main\" exist"
 msgstr "標準ライブラリや main が存在しない可能性があるものとする"
 
-#: options.c:1663
+#: options.c:1484
 msgid "Allow function addresses to be held in registers"
 msgstr "関数アドレスをレジスタに持たせる事を許可する"
 
-#: options.c:1666
+#: options.c:1487
 #, fuzzy
 msgid "Place each function into its own section"
 msgstr "各々の関数をそれ自身のセクションに配置する"
 
-#: options.c:1669
+#: options.c:1490
 #, fuzzy
 msgid "Perform global common subexpression elimination"
 msgstr "グローバル共通部分式を除去する"
 
-#: options.c:1672
+#: options.c:1493
 #, fuzzy
 msgid "Perform global common subexpression elimination after register allocation"
 msgstr "グローバル共通部分式を除去する"
 
-#: options.c:1675
+#: options.c:1496
 msgid "Perform redundant load after store elimination in global common subexpression"
 msgstr ""
 
-#: options.c:1678
+#: options.c:1499
 #, fuzzy
 msgid "Perform enhanced load motion during global common subexpression elimination"
 msgstr "グローバル共通部分式を除去する"
 
-#: options.c:1681
+#: options.c:1502
 #, fuzzy
 msgid "Perform store motion after global common subexpression elimination"
 msgstr "グローバル共通部分式を除去する"
 
-#: options.c:1684
+#: options.c:1505
 #, fuzzy
 msgid "Recognize GNU-defined keywords"
 msgstr "GNU 定義の予約語を認識させない"
 
-#: options.c:1687
+#: options.c:1508
 msgid "Generate code for GNU runtime environment"
 msgstr "GNU 実行環境用のコードを生成する"
 
-#: options.c:1690
+#: options.c:1511
 #, fuzzy
 msgid "Enable guessing of branch probabilities"
 msgstr "分岐経路推測を有効にする"
 
-#: options.c:1699
-msgid "Assume the runtime uses a hash table to map an object to its synchronization structure"
-msgstr ""
-
-#: options.c:1705
+#: options.c:1523
 msgid "Assume normal C execution environment"
 msgstr "通常の C 実行環境を前提とする"
 
-#: options.c:1708
+#: options.c:1526
 msgid "Enable support for huge objects"
 msgstr "大きなオブジェクトのサポート"
 
-#: options.c:1711
+#: options.c:1529
 msgid "Process #ident directives"
 msgstr "#ident ディレクティブを処理する"
 
-#: options.c:1714
+#: options.c:1532
 msgid "Perform conversion of conditional jumps to branchless equivalents"
 msgstr ""
 
-#: options.c:1717
+#: options.c:1535
 #, fuzzy
 msgid "Perform conversion of conditional jumps to conditional execution"
 msgstr "条件的な実行への変更のための閾値を変更する"
 
-#: options.c:1720
+#: options.c:1538
 msgid "Export functions even if they can be inlined"
 msgstr "インラインにできる関数でも export する"
 
-#: options.c:1723
+#: options.c:1541
 #, fuzzy
 msgid "Emit implicit instantiations of inline templates"
 msgstr "インラインテンプレートの明示的な実体化のみを生成する"
 
-#: options.c:1726
-msgid "Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements"
-msgstr ""
-
-#: options.c:1729
+#: options.c:1544
 #, fuzzy
 msgid "Emit implicit instantiations of templates"
 msgstr "インラインテンプレートの明示的な実体化のみを生成する"
 
-#: options.c:1732
-msgid "Use offset tables for virtual method calls"
-msgstr ""
-
-#: options.c:1735
+#: options.c:1547
 msgid "Do not generate .size directives"
 msgstr ".size 疑似命令を生成しない"
 
-#: options.c:1738
+#: options.c:1550
 #, fuzzy
 msgid "Pay attention to the \"inline\" keyword"
 msgstr "'inline' キーワードに注意を払う"
 
-#: options.c:1747
+#: options.c:1553
+msgid "Integrate simple functions into their callers"
+msgstr "単純な関数を呼び出し側に統合する"
+
+#: options.c:1559
 #, fuzzy
 msgid "-finline-limit=<number>\tLimit the size of inlined functions to <number>"
 msgstr "  -finline-limit=<number> インライン関数のサイズを <number> に制限する\n"
 
-#: options.c:1750
+#: options.c:1562
 msgid "-finput-charset=<cset>\tSpecify the default character set for source files."
 msgstr ""
 
-#: options.c:1753
+#: options.c:1565
 #, fuzzy
 msgid "Instrument function entry and exit with profiling calls"
 msgstr "関数の入り口/出口でプロファイル呼び出しを生成する"
 
-#: options.c:1756
+#: options.c:1568
 msgid "Optimize induction variables on trees"
 msgstr ""
 
-#: options.c:1759
-msgid "Assume native functions are implemented using JNI"
-msgstr "native 関数が JNI を利用して実装しているものとみなす"
-
-#: options.c:1762
+#: options.c:1571
 #, fuzzy
 msgid "Generate code for functions even if they are fully inlined"
 msgstr "全てインラインとされたとしても関数のコードを生成する"
 
-#: options.c:1765
+#: options.c:1574
 msgid "Emit static const variables even if they are not used"
 msgstr "使用されない静的定数変数であっても出力する"
 
-#: options.c:1771
+#: options.c:1580
 #, fuzzy
 msgid "Give external symbols a leading underscore"
 msgstr "外部シンボルに頭文字アンダースコアを持たせる"
 
-#: options.c:1774
+#: options.c:1583
 #, fuzzy
 msgid "Perform loop optimizations"
 msgstr "末尾呼び出し最適化を行う"
 
-#: options.c:1777
+#: options.c:1586
 msgid "Perform loop optimizations using the new loop optimizer"
 msgstr ""
 
-#: options.c:1780
+#: options.c:1589
 msgid "Set errno after built-in math functions"
 msgstr "組み込み数学関数の後に errno をセットする"
 
-#: options.c:1783
-msgid "-fmax-identifier-length=<n>\tMaximum identifier length."
-msgstr ""
-
-#: options.c:1786
-msgid "-fmax-stack-var-size=<n>\tSize in bytes of the largest array that will be put on the stack"
-msgstr ""
-
-#: options.c:1789
+#: options.c:1592
 #, fuzzy
 msgid "Report on permanent memory allocation"
 msgstr "実行終了時に永続的に確保されたメモリを報告する"
 
-#: options.c:1792
+#: options.c:1595
 msgid "Attempt to merge identical constants and constant variables"
 msgstr ""
 
-#: options.c:1795
+#: options.c:1598
 msgid "Attempt to merge identical constants across compilation units"
 msgstr ""
 
-#: options.c:1798
+#: options.c:1601
 #, fuzzy
 msgid "-fmessage-length=<number>\tLimit diagnostics to <number> characters per line.  0 suppresses line-wrapping"
 msgstr "  -fmessage-length=<number> 診断メッセージの長さを一行辺り <number> 文字に制限する。 0 だと改行を抑制する\n"
 
-#: options.c:1801
-msgid "Set default accessibility of module entities to PRIVATE"
-msgstr ""
-
-#: options.c:1804
+#: options.c:1604
 msgid "Perform SMS based modulo scheduling before the first scheduling pass"
 msgstr ""
 
-#: options.c:1807
+#: options.c:1607
 #, fuzzy
 msgid "Move loop invariant computations out of loops"
 msgstr "ループ中に不変な計算をループの外に移動する"
 
-#: options.c:1810
+#: options.c:1610
 #, fuzzy
 msgid "Don't warn about uses of Microsoft extensions"
 msgstr "Microsoft 拡張の利用に関して pedantic 警告を行わない"
 
-#: options.c:1813
+#: options.c:1613
 msgid "Add mudflap bounds-checking instrumentation for single-threaded program."
 msgstr ""
 
-#: options.c:1816
+#: options.c:1616
 msgid "Ignore read operations when inserting mudflap instrumentation."
 msgstr ""
 
-#: options.c:1819
+#: options.c:1619
 msgid "Add mudflap bounds-checking instrumentation for multi-threaded program."
 msgstr ""
 
-#: options.c:1828
+#: options.c:1628
 #, fuzzy
 msgid "Generate code for NeXT (Apple Mac OS X) runtime environment"
 msgstr "NeXT 実行環境用のコードを生成する"
 
-#: options.c:1831
+#: options.c:1631
 msgid "Assume that receivers of Objective-C messages may be nil"
 msgstr ""
 
-#: options.c:1834
-msgid "Don't generate code, just do syntax and semantics checking"
-msgstr ""
-
-#: options.c:1837
+#: options.c:1634
 msgid "Support synchronous non-call exceptions"
 msgstr "同期非呼び出し例外をサポートする"
 
-#: options.c:1846
+#: options.c:1643
 msgid "Enable Objective-C exception and synchronization syntax"
 msgstr ""
 
-#: options.c:1849
+#: options.c:1646
 #, fuzzy
 msgid "Enable Objective-C setjmp exception handling runtime"
 msgstr "例外捕捉を有効にする"
 
-#: options.c:1852
+#: options.c:1649
 msgid "When possible do not generate stack frames"
 msgstr "可能な場合、スタックフレームを生成しない"
 
-#: options.c:1855
+#: options.c:1652
 msgid "Recognize C++ kewords like \"compl\" and \"xor\""
 msgstr ""
 
-#: options.c:1858
+#: options.c:1655
 #, fuzzy
 msgid "Do the full register move optimization pass"
 msgstr "最適化過程で最大限の regmove を行なう"
 
-#: options.c:1861
+#: options.c:1658
 msgid "Optimize sibling and tail recursive calls"
 msgstr "sibling 呼び出しや末尾再帰呼び出しを最適化する"
 
-#: options.c:1864
-#, fuzzy
-msgid "Enable optimization of static class initialization code"
-msgstr "(クラス外での初期化を必要とします)"
-
-#: options.c:1867
+#: options.c:1661
 #, fuzzy
 msgid "Enable optional diagnostics"
 msgstr "オプションの診断メッセージを表示しない"
 
-#: options.c:1873
-msgid "Try to layout derived types as compact as possible"
-msgstr ""
-
-#: options.c:1876
+#: options.c:1664
 msgid "Pack structure members together without holes"
 msgstr "構造体メンバを穴が開かないようにパックする"
 
-#: options.c:1879
+#: options.c:1667
 msgid "-fpack-struct=<number>\tSet initial maximum structure member alignment"
 msgstr ""
 
-#: options.c:1882
+#: options.c:1670
 #, fuzzy
 msgid "Return small aggregates in memory, not registers"
 msgstr "'小さな' 集合体をレジスタではなくメモリに格納して返す"
 
-#: options.c:1888
+#: options.c:1676
 msgid "Look for and use PCH files even when preprocessing"
 msgstr ""
 
-#: options.c:1891
+#: options.c:1679
 #, fuzzy
 msgid "Perform loop peeling"
 msgstr "全てのループでループ展開を行なう"
 
-#: options.c:1894
+#: options.c:1682
 #, fuzzy
 msgid "Enable machine specific peephole optimizations"
 msgstr "機種固有の覗き穴最適化を有効にする"
 
-#: options.c:1897
+#: options.c:1685
 #, fuzzy
 msgid "Enable an RTL peephole pass before sched2"
 msgstr "第二命令配置の前で rtl 覗き穴過程を有効にする"
 
-#: options.c:1900
+#: options.c:1688
 msgid "Downgrade conformance errors to warnings"
 msgstr "規格適合性エラーを警告に格下げする"
 
-#: options.c:1903
+#: options.c:1691
 #, fuzzy
 msgid "Generate position-independent code if possible (small mode)"
 msgstr "可能であれば位置独立コードを生成する"
 
-#: options.c:1906
+#: options.c:1694
 #, fuzzy
 msgid "Generate position-independent code for executables if possible (small mode)"
 msgstr "可能であれば位置独立コードを生成する"
 
-#: options.c:1909
+#: options.c:1697
 msgid "Generate prefetch instructions, if available, for arrays in loops"
 msgstr ""
 
-#: options.c:1912
+#: options.c:1700
 msgid "Treat the input file as already preprocessed"
 msgstr ""
 
-#: options.c:1915
+#: options.c:1703
 #, fuzzy
 msgid "Enable basic program profiling code"
 msgstr "プログラムがコードプロファイルする元になる弧を挿入する"
 
-#: options.c:1918
+#: options.c:1706
 #, fuzzy
 msgid "Insert arc-based program profiling code"
 msgstr "プログラムがコードプロファイルする元になる弧を挿入する"
 
-#: options.c:1921
+#: options.c:1709
 msgid "Enable common options for generating profile info for profile feedback directed optimizations"
 msgstr ""
 
-#: options.c:1924
+#: options.c:1712
 msgid "Enable common options for performing profile feedback directed optimizations"
 msgstr ""
 
-#: options.c:1927
+#: options.c:1715
 msgid "Insert code to profile values of expressions"
 msgstr ""
 
-#: options.c:1933
+#: options.c:1721
 msgid "-frandom-seed=<string>\tMake compile reproducible using <string>"
 msgstr ""
 
-#: options.c:1936
+#: options.c:1724
 #, fuzzy
 msgid "Return small aggregates in registers"
 msgstr "'小さな' 集合体をレジスタに格納して返す"
 
-#: options.c:1939
+#: options.c:1727
 #, fuzzy
 msgid "Enables a register move optimization"
 msgstr "移動命令最適化レジスタを有効にする"
 
-#: options.c:1942
+#: options.c:1730
 #, fuzzy
 msgid "Perform a register renaming optimization pass"
 msgstr "最適化過程のレジスタつけ変えを行なう"
 
-#: options.c:1945
+#: options.c:1733
 msgid "Reorder basic blocks to improve code placement"
 msgstr "コード配置を改善するために基本ブロックを再整理する"
 
-#: options.c:1948
+#: options.c:1736
 #, fuzzy
 msgid "Reorder basic blocks and partition into hot and cold sections"
 msgstr "コード配置を改善するために基本ブロックを再整理する"
 
-#: options.c:1951
+#: options.c:1739
 #, fuzzy
 msgid "Reorder functions to improve code placement"
 msgstr "コード配置を改善するために基本ブロックを再整理する"
 
-#: options.c:1954
-msgid "Copy array sections into a contiguous block on procedure entry"
-msgstr ""
-
-#: options.c:1957
+#: options.c:1742
 msgid "Used in Fix-and-Continue mode to indicate that object files may be swapped in at runtime"
 msgstr ""
 
-#: options.c:1960
+#: options.c:1745
 msgid "Enable automatic template instantiation"
 msgstr "自動テンプレート実体化を有効にする"
 
-#: options.c:1963
+#: options.c:1748
 #, fuzzy
 msgid "Add a common subexpression elimination pass after loop optimizations"
 msgstr "ループ最適化後に共通部分式除去過程を実行"
 
-#: options.c:1966
+#: options.c:1751
 #, fuzzy
 msgid "Run the loop optimizer twice"
 msgstr "ループ最適化を二回実行する"
 
-#: options.c:1969
+#: options.c:1754
 msgid "Enable/Disable the traditional scheduling in loops that already passed modulo scheduling"
 msgstr ""
 
-#: options.c:1972
+#: options.c:1757
 msgid "Disable optimizations that assume default FP rounding behavior"
 msgstr ""
 
-#: options.c:1975
+#: options.c:1760
 #, fuzzy
 msgid "Generate run time type descriptor information"
 msgstr "実行時型記述情報を生成しない"
 
-#: options.c:1978
+#: options.c:1763
 msgid "Enable scheduling across basic blocks"
 msgstr "基本ブロックを跨ぐ命令配置を有効にする"
 
-#: options.c:1981
+#: options.c:1766
 msgid "Allow speculative motion of non-loads"
 msgstr "非ロードでの不確実な動作を許可する"
 
-#: options.c:1984
+#: options.c:1769
 msgid "Allow speculative motion of some loads"
 msgstr "いくつかのロードでの不確実な動作を許可する"
 
-#: options.c:1987
+#: options.c:1772
 msgid "Allow speculative motion of more loads"
 msgstr "より多くのロードでの不確実な動作を許可する"
 
-#: options.c:1990
+#: options.c:1775
 msgid "Allow premature scheduling of queued insns"
 msgstr ""
 
-#: options.c:1993
+#: options.c:1778
 msgid "Set dependence distance checking in premature scheduling of queued insns"
 msgstr ""
 
-#: options.c:1996
+#: options.c:1781
 msgid "-fsched-stalled-insns-dep=<number>\tSet dependence distance checking in premature scheduling of queued insns"
 msgstr ""
 
-#: options.c:1999
+#: options.c:1784
 msgid "-fsched-stalled-insns=<number>\tSet number of queued insns that can be prematurely scheduled"
 msgstr ""
 
-#: options.c:2002
+#: options.c:1787
 #, fuzzy
 msgid "-fsched-verbose=<number>\tSet the verbosity level of the scheduler"
 msgstr "  -fsched-verbose=<number> スケジューラの饒舌レベルを設定する\n"
 
-#: options.c:2005
+#: options.c:1790
 msgid "If scheduling post reload, do superblock scheduling"
 msgstr ""
 
-#: options.c:2008
+#: options.c:1793
 msgid "If scheduling post reload, do trace scheduling"
 msgstr ""
 
-#: options.c:2011
+#: options.c:1796
 msgid "Reschedule instructions before register allocation"
 msgstr "レジスタ確保の前に命令を並べ直す"
 
-#: options.c:2014
+#: options.c:1799
 msgid "Reschedule instructions after register allocation"
 msgstr "レジスタ確保の後で命令を並べ直す"
 
-#: options.c:2017
-msgid "Append a second underscore if the name already contains an underscore"
-msgstr ""
-
-#: options.c:2020
+#: options.c:1802
 msgid "Mark data as shared rather than private"
 msgstr "データをプライベートではなく共有されるようマークする"
 
-#: options.c:2023
+#: options.c:1805
 msgid "Use the same size for double as for float"
 msgstr "double のサイズを float と同じとして使用する"
 
-#: options.c:2026
+#: options.c:1808
 msgid "Use the narrowest integer type possible for enumeration types"
 msgstr ""
 
-#: options.c:2029
+#: options.c:1811
 #, fuzzy
 msgid "Force the underlying type for \"wchar_t\" to be \"unsigned short\""
 msgstr "wchar_t の根本的な型を `unsigned short' と覆す"
 
-#: options.c:2035
+#: options.c:1817
 msgid "Disable optimizations observable by IEEE signaling NaNs"
 msgstr ""
 
-#: options.c:2038
+#: options.c:1820
 msgid "When \"signed\" or \"unsigned\" is not given make the bitfield signed"
 msgstr ""
 
-#: options.c:2041
+#: options.c:1823
 #, fuzzy
 msgid "Make \"char\" signed by default"
 msgstr "'char' をデフォルトで符合付きとする"
 
-#: options.c:2044
+#: options.c:1826
 #, fuzzy
 msgid "Convert floating point constants to single precision constants"
 msgstr "浮動小数点定数を単精度定数に変換する"
 
-#: options.c:2047
+#: options.c:1829
 msgid "Use value profiling for speculative prefetching"
 msgstr ""
 
-#: options.c:2050
+#: options.c:1832
 msgid "Split lifetimes of induction variables when loops are unrolled."
 msgstr ""
 
-#: options.c:2056
+#: options.c:1838
 msgid "Insert stack checking code into the program"
 msgstr "プログラムにスタック境界検出コードを挿入する"
 
-#: options.c:2062
+#: options.c:1844
 msgid "-fstack-limit-register=<register>\tTrap if the stack goes past <register>"
 msgstr ""
 
-#: options.c:2065
+#: options.c:1847
 msgid "-fstack-limit-symbol=<name>\tTrap if the stack goes past symbol <name>"
 msgstr ""
 
-#: options.c:2068
+#: options.c:1850
 msgid "Display statistics accumulated during compilation"
 msgstr "コンパイル中に蓄積された統計情報を表示する"
 
-#: options.c:2071
-msgid "Enable assignability checks for stores into object arrays"
-msgstr ""
-
-#: options.c:2074
+#: options.c:1853
 #, fuzzy
 msgid "Perform strength reduction optimizations"
 msgstr "強度削減最適化を行なう"
 
-#: options.c:2077
+#: options.c:1856
 msgid "Assume strict aliasing rules apply"
 msgstr "厳密な別名規則に適合するとみなす"
 
-#: options.c:2083
+#: options.c:1862
 msgid "Check for syntax errors, then stop"
 msgstr "文法エラーを検出して、そこで停止する"
 
-#: options.c:2086
+#: options.c:1865
 msgid "-ftabstop=<number>\tDistance between tab stops for column reporting"
 msgstr ""
 
-#: options.c:2089
+#: options.c:1868
 #, fuzzy
 msgid "-ftemplate-depth-<number>\tSpecify maximum template instantiation depth"
 msgstr "テンプレート実体化の深さの最大値を指定する"
 
-#: options.c:2092
+#: options.c:1871
 #, fuzzy
 msgid "Create data files needed by \"gcov\""
 msgstr "gcov が必要とするデータファイルを作成する"
 
-#: options.c:2098
+#: options.c:1877
 #, fuzzy
 msgid "Perform jump threading optimizations"
 msgstr "ジャンプ分岐最適化を行なう"
 
-#: options.c:2101
+#: options.c:1880
 msgid "-fno-threadsafe-statics\tDo not generate thread-safe code for initializing local statics."
 msgstr ""
 
-#: options.c:2104
+#: options.c:1883
 #, fuzzy
 msgid "Report the time taken by each compiler pass"
 msgstr "実行終了時にコンパイラの各過程に要した時間を報告する"
 
-#: options.c:2107
+#: options.c:1886
 msgid "-ftls-model=[global-dynamic|local-dynamic|initial-exec|local-exec]\tSet the default thread-local storage code generation model"
 msgstr ""
 
-#: options.c:2110
+#: options.c:1889
 msgid "Perform superblock formation via tail duplication"
 msgstr ""
 
-#: options.c:2113
+#: options.c:1892
 msgid "Assume floating-point operations can trap"
 msgstr ""
 
-#: options.c:2116
+#: options.c:1895
 #, fuzzy
 msgid "Trap for signed overflow in addition, subtraction and multiplication"
 msgstr "符合付きの加算/減算/乗算での桁あふれをトラップする"
 
-#: options.c:2119
+#: options.c:1898
 msgid "Use tree-ssa based implementation of profiling"
 msgstr ""
 
-#: options.c:2122
+#: options.c:1901
 #, fuzzy
 msgid "Enable SSA-CCP optimization on trees"
 msgstr "SSA 最適化を有効にする"
 
-#: options.c:2125
+#: options.c:1904
 msgid "Enable loop header copying on trees"
 msgstr ""
 
-#: options.c:2128
+#: options.c:1907
 msgid "Coalesce memory temporaries in the SSA->normal pass"
 msgstr ""
 
-#: options.c:2131
+#: options.c:1910
 msgid "Replace SSA temporaries with better names in copies."
 msgstr ""
 
-#: options.c:2134
+#: options.c:1913
 #, fuzzy
 msgid "Enable SSA dead code elimination optimization on trees"
 msgstr "デッドコードの除去を行なう"
 
-#: options.c:2137
+#: options.c:1916
 #, fuzzy
 msgid "Enable dominator optimizations"
 msgstr "SSA 最適化を有効にする"
 
-#: options.c:2140
+#: options.c:1919
 #, fuzzy
 msgid "Enable dead store elimination"
 msgstr "デッドコードの除去を行なう"
 
-#: options.c:2143
+#: options.c:1922
 msgid "Enable Full Redundancy Elimination (FRE) on trees"
 msgstr ""
 
-#: options.c:2146
+#: options.c:1925
 #, fuzzy
 msgid "Enable loop invariant motion on trees"
 msgstr "ループ中に不変な計算をループの外に移動する"
 
-#: options.c:2149
+#: options.c:1928
 #, fuzzy
 msgid "Create canonical induction variables in loops"
 msgstr "ループの中の全ての一般誘導変数を強度削減する"
 
-#: options.c:2152
+#: options.c:1931
 msgid "Enable linear loop transforms on trees"
 msgstr ""
 
-#: options.c:2155
+#: options.c:1934
 #, fuzzy
 msgid "Enable loop optimizations on tree level"
 msgstr "SSA 最適化を有効にする"
 
-#: options.c:2158
+#: options.c:1937
 msgid "Perform live range splitting during the SSA->normal pass."
 msgstr ""
 
-#: options.c:2161
+#: options.c:1940
 #, fuzzy
 msgid "Enable SSA-PRE optimization on trees"
 msgstr "SSA 最適化を有効にする"
 
-#: options.c:2164
+#: options.c:1943
 msgid "Perform scalar replacement of aggregates"
 msgstr ""
 
-#: options.c:2167
+#: options.c:1946
 msgid "Replace temporary expressions in the SSA->normal pass"
 msgstr ""
 
-#: options.c:2170
+#: options.c:1949
 #, fuzzy
 msgid "Enable loop vectorization on trees"
 msgstr "SSA 最適化を有効にする"
 
-#: options.c:2173
+#: options.c:1952
 #, fuzzy
 msgid "-ftree-vectorizer-verbose=<number>\tSet the verbosity level of the vectorizer"
 msgstr "  -fsched-verbose=<number> スケジューラの饒舌レベルを設定する\n"
 
-#: options.c:2176
-#, fuzzy
-msgid "Append underscores to externally visible names"
-msgstr "外部変数に二つ目のアンダースコアを付け足さない"
-
-#: options.c:2179
+#: options.c:1955
 #, fuzzy
 msgid "Compile whole compilation unit at a time"
 msgstr "翻訳単位全体をファイルにダンプする"
 
-#: options.c:2182
+#: options.c:1958
 msgid "Perform loop unrolling for all loops"
 msgstr "全てのループでループ展開を行なう"
 
-#: options.c:2185
+#: options.c:1961
 msgid "Perform loop unrolling when iteration count is known"
 msgstr "反復回数が既知のとき、ループ展開を行なう"
 
-#: options.c:2188
+#: options.c:1964
 msgid "Allow math optimizations that may violate IEEE or ISO standards"
 msgstr ""
 
-#: options.c:2191
+#: options.c:1967
 msgid "When \"signed\" or \"unsigned\" is not given make the bitfield unsigned"
 msgstr ""
 
-#: options.c:2194
+#: options.c:1970
 #, fuzzy
 msgid "Make \"char\" unsigned by default"
 msgstr "'char' をデフォルトで符合無しとする"
 
-#: options.c:2197
+#: options.c:1973
 #, fuzzy
 msgid "Perform loop unswitching"
 msgstr "全てのループでループ展開を行なう"
 
-#: options.c:2200
+#: options.c:1976
 msgid "Just generate unwind tables for exception handling"
 msgstr "巻き戻しを行なう例外補足用テーブルを生成する"
 
-#: options.c:2203
-#, fuzzy
-msgid "Generate code for the Boehm GC"
-msgstr "Boehm GC 用のコードを生成する"
-
-#: options.c:2206
+#: options.c:1979
 #, fuzzy
 msgid "Use __cxa_atexit to register destructors"
 msgstr "デストラクタの登録に __cxa_atexit を利用する"
 
-#: options.c:2209
-msgid "Call a library routine to do integer divisions"
-msgstr ""
-
-#: options.c:2212
+#: options.c:1982
 #, fuzzy
 msgid "Perform variable tracking"
 msgstr "末尾呼び出し最適化を行う"
 
-#: options.c:2215
+#: options.c:1985
 msgid "Apply variable expansion when loops are unrolled."
 msgstr ""
 
-#: options.c:2218
+#: options.c:1988
 #, fuzzy
 msgid "Add extra commentary to assembler output"
 msgstr "余分なコメントをアセンブラ出力に追加する"
 
-#: options.c:2221
+#: options.c:1991
 msgid "Marks all inlined methods as having hidden visibility"
 msgstr ""
 
-#: options.c:2224
+#: options.c:1994
 msgid "-fvisibility=[default|internal|hidden|protected]\tSet the default symbol visibility"
 msgstr ""
 
-#: options.c:2227
+#: options.c:1997
 msgid "Use expression value profiles in optimizations"
 msgstr ""
 
-#: options.c:2230
+#: options.c:2000
 msgid "Discard unused virtual functions"
 msgstr "使われない仮想関数を切り捨てる"
 
-#: options.c:2233
+#: options.c:2003
 msgid "Implement vtables using thunks"
 msgstr "thunk を使って vtable を実装する"
 
-#: options.c:2236
+#: options.c:2006
 msgid "Emit common-like symbols as weak symbols"
 msgstr "コモンシンボルをウィークシンボルの様に生成する"
 
-#: options.c:2239
+#: options.c:2009
 msgid "Construct webs and split unrelated uses of single variable"
 msgstr ""
 
-#: options.c:2242
+#: options.c:2012
 msgid "-fwide-exec-charset=<cset>\tConvert all wide strings and character constants to character set <cset>"
 msgstr ""
 
-#: options.c:2245
+#: options.c:2015
 msgid "Generate a #line directive pointing at the current working directory"
 msgstr ""
 
-#: options.c:2248
+#: options.c:2018
 msgid "Assume signed arithmetic overflow wraps around"
 msgstr ""
 
-#: options.c:2251
+#: options.c:2021
 msgid "Emit cross referencing information"
 msgstr "相互参照情報を生成する"
 
-#: options.c:2254
+#: options.c:2024
 #, fuzzy
 msgid "Put zero initialized data in the bss section"
 msgstr "大域変数等を初期化されないコモンセクションに置かない"
 
-#: options.c:2257
+#: options.c:2027
 msgid "Generate lazy class lookup (via objc_getClass()) for use in Zero-Link mode"
 msgstr ""
 
-#: options.c:2260
+#: options.c:2030
 #, fuzzy
 msgid "Generate debug information in default format"
 msgstr "デフォルト形式のデバッグ情報を生成する"
 
-#: options.c:2263
+#: options.c:2033
 #, fuzzy
 msgid "Generate debug information in COFF format"
 msgstr "デフォルト形式のデバッグ情報を生成する"
 
-#: options.c:2266
+#: options.c:2036
 #, fuzzy
 msgid "Generate debug information in DWARF v2 format"
 msgstr "デフォルト形式のデバッグ情報を生成する"
 
-#: options.c:2269
+#: options.c:2039
 #, fuzzy
 msgid "Dump declarations to a .decl file"
 msgstr "宣言を .decl ファイルにダンプする"
 
-#: options.c:2272
+#: options.c:2042
 #, fuzzy
 msgid "Generate debug information in default extended format"
 msgstr "デフォルト拡張形式のデバッグ情報を生成する"
 
-#: options.c:2275
+#: options.c:2045
 #, fuzzy
 msgid "Generate debug information in STABS format"
 msgstr "デフォルト形式のデバッグ情報を生成する"
 
-#: options.c:2278
+#: options.c:2048
 #, fuzzy
 msgid "Generate debug information in extended STABS format"
 msgstr "デフォルト拡張形式のデバッグ情報を生成する"
 
-#: options.c:2281
+#: options.c:2051
 #, fuzzy
 msgid "Generate debug information in VMS format"
 msgstr "デフォルト形式のデバッグ情報を生成する"
 
-#: options.c:2284
+#: options.c:2054
 #, fuzzy
 msgid "Generate debug information in XCOFF format"
 msgstr "デフォルト形式のデバッグ情報を生成する"
 
-#: options.c:2287
+#: options.c:2057
 #, fuzzy
 msgid "Generate debug information in extended XCOFF format"
 msgstr "デフォルト拡張形式のデバッグ情報を生成する"
 
-#: options.c:2290
+#: options.c:2060
 msgid "-idirafter <dir>\tAdd <dir> to the end of the system include path"
 msgstr ""
 
-#: options.c:2293
+#: options.c:2063
 msgid "-imacros <file>\tAccept definition of macros in <file>"
 msgstr ""
 
-#: options.c:2296
+#: options.c:2066
 msgid "-include <file>\tInclude the contents of <file> before other files"
 msgstr ""
 
-#: options.c:2299
+#: options.c:2069
 msgid "-iprefix <path>\tSpecify <path> as a prefix for next two options"
 msgstr ""
 
-#: options.c:2302
+#: options.c:2072
 msgid "-iquote <dir>\tAdd <dir> to the end of the quote include path"
 msgstr ""
 
-#: options.c:2305
+#: options.c:2075
 msgid "-isysroot <dir>\tSet <dir> to be the system root directory"
 msgstr ""
 
-#: options.c:2308
+#: options.c:2078
 msgid "-isystem <dir>\tAdd <dir> to the start of the system include path"
 msgstr ""
 
-#: options.c:2311
+#: options.c:2081
 msgid "-iwithprefix <dir>\tAdd <dir> to the end of the system include path"
 msgstr ""
 
-#: options.c:2314
+#: options.c:2084
 msgid "-iwithprefixbefore <dir>\tAdd <dir> to the end of the main include path"
 msgstr ""
 
-#: options.c:2326
+#: options.c:2096
 msgid "Do not search standard system include directories (those specified with -isystem will still be used)"
 msgstr ""
 
-#: options.c:2329
+#: options.c:2099
 msgid "Do not search standard system include directories for C++"
 msgstr ""
 
-#: options.c:2332
+#: options.c:2102
 #, fuzzy
 msgid "-o <file>\tPlace output into <file>"
 msgstr "  -o <file>               出力を <file> に書き込む\n"
 
-#: options.c:2335
+#: options.c:2105
 #, fuzzy
 msgid "Enable function profiling"
 msgstr "mips16 関数プロファイル"
 
-#: options.c:2338
+#: options.c:2108
 #, fuzzy
 msgid "Issue warnings needed for strict compliance to the standard"
 msgstr "  -pedantic               厳密な ISO C への適合に要する警告を発する\n"
 
-#: options.c:2341
+#: options.c:2111
 msgid "Like -pedantic but issue them as errors"
 msgstr ""
 
-#: options.c:2344
+#: options.c:2114
 #, fuzzy
 msgid "Generate C header of platform-specific features"
 msgstr "プラットフォーム固有の機能の C ヘッダを生成する"
 
-#: options.c:2347
-msgid "-qkind=<n>\tSet the kind for a real with the 'q' exponent to 'n'"
-msgstr ""
-
-#: options.c:2350
+#: options.c:2117
 #, fuzzy
 msgid "Do not display functions compiled or elapsed time"
 msgstr "  -quiet                  コンパイルされた関数や経過時間を表示しない\n"
 
-#: options.c:2353
+#: options.c:2120
 #, fuzzy
 msgid "Remap file names when including files"
 msgstr "#%s でのファイル名が空です"
 
-#: options.c:2356
+#: options.c:2123
 msgid "Conform to the ISO 1998 C++ standard"
 msgstr ""
 
-#: options.c:2359 options.c:2389
+#: options.c:2126 options.c:2147
 msgid "Conform to the ISO 1990 C standard"
 msgstr ""
 
-#: options.c:2362 options.c:2395
+#: options.c:2129 options.c:2153
 msgid "Conform to the ISO 1999 C standard"
 msgstr ""
 
-#: options.c:2365
+#: options.c:2132
 msgid "Deprecated in favor of -std=c99"
 msgstr ""
 
-#: options.c:2368
-msgid "Conform to the ISO Fortran 2003 standard."
-msgstr ""
-
-#: options.c:2371
-msgid "Conform to the ISO Fortran 95 standard."
-msgstr ""
-
-#: options.c:2374
-msgid "Conform nothing in particular."
-msgstr ""
-
-#: options.c:2377
+#: options.c:2135
 msgid "Conform to the ISO 1998 C++ standard with GNU extensions"
 msgstr ""
 
-#: options.c:2380
+#: options.c:2138
 msgid "Conform to the ISO 1990 C standard with GNU extensions"
 msgstr ""
 
-#: options.c:2383
+#: options.c:2141
 msgid "Conform to the ISO 1999 C standard with GNU extensions"
 msgstr ""
 
-#: options.c:2386
+#: options.c:2144
 msgid "Deprecated in favor of -std=gnu99"
 msgstr ""
 
-#: options.c:2392
+#: options.c:2150
 msgid "Conform to the ISO 1990 C standard as amended in 1994"
 msgstr ""
 
-#: options.c:2398
+#: options.c:2156
 msgid "Deprecated in favor of -std=iso9899:1999"
 msgstr ""
 
-#: options.c:2401
+#: options.c:2159
 #, fuzzy
 msgid "Enable traditional preprocessing"
 msgstr "スタック探索を有効にする"
 
-#: options.c:2404
+#: options.c:2162
 msgid "-trigraphs\tSupport ISO C trigraphs"
 msgstr ""
 
-#: options.c:2407
+#: options.c:2165
 msgid "Do not predefine system-specific and GCC-specific macros"
 msgstr ""
 
-#: options.c:2410
+#: options.c:2168
 #, fuzzy
 msgid "Enable verbose output"
 msgstr "デバッグ出力を有効にする"
 
-#: options.c:2416
+#: options.c:2171
+#, fuzzy
+msgid "Display the compiler's version"
+msgstr "  -version                コンパイラのバージョンを表示する\n"
+
+#: options.c:2174
 #, fuzzy
 msgid "Suppress warnings"
 msgstr "%s: 警告: "
+
+#: config/vax/vax.h:50 config/vax/vax.h:51
+msgid "profiling not supported with -mg\n"
+msgstr "-mg でのプロファイルは提供されません\n"
+
+#: config/i386/nwld.h:34
+#, fuzzy
+msgid "Static linking is not supported.\n"
+msgstr "スタック制限式を受け付けません"
+
+#: config/arm/arm.h:153
+msgid "-msoft-float and -mhard_float may not be used together"
+msgstr "-msoft-float と -mhard_float は同時に使えません"
+
+#: config/arm/arm.h:155
+msgid "-mbig-endian and -mlittle-endian may not be used together"
+msgstr "-mbig-endian と -mlittle-endian は同時に使えません"
+
+#: java/jvspec.c:80 gcc.c:790 ada/lang-specs.h:34
+msgid "-pg and -fomit-frame-pointer are incompatible"
+msgstr "-pg と -fomit-frame-pointer は共存できません"
 
 #: config/rs6000/darwin.h:130
 msgid " conflicting code gen style switches are used"
@@ -8925,6 +8565,10 @@ msgstr ""
 #, fuzzy
 msgid "-pg or -p and -fomit-frame-pointer are incompatible"
 msgstr "-pg と -fomit-frame-pointer は共存できません"
+
+#: config/mcore/mcore.h:57
+msgid "the m210 does not have little endian support"
+msgstr "m210 はリトルエンディアンサポートを行なえません"
 
 #: config/mips/mips.h:1140 config/arc/arc.h:63
 msgid "may not use both -EB and -EL"
@@ -8940,10 +8584,6 @@ msgstr "-mhard-float は実装されていません."
 msgid "-msingle-float and -msoft-float cannot both be specified"
 msgstr "-msingle-float と -msoft-float を一度に指定することはできません。"
 
-#: config/i386/mingw32.h:58 config/i386/cygwin.h:70
-msgid "shared and mdll are not compatible"
-msgstr "shared と mdll とは共存できません"
-
 #: config/sparc/sol2-bi.h:167 config/sparc/sol2-bi.h:172
 #: config/sparc/sol2-gld-bi.h:17 config/sparc/sol2-gld-bi.h:22
 #, fuzzy
@@ -8957,47 +8597,28 @@ msgstr "%s は %s を受け付けません"
 msgid "may not use both -m32 and -m64"
 msgstr "-mfp64 と -m4650 の両方を使うことはできません"
 
-#: ada/lang-specs.h:34 gcc.c:790 java/jvspec.c:80
-msgid "-pg and -fomit-frame-pointer are incompatible"
-msgstr "-pg と -fomit-frame-pointer は共存できません"
-
-#: ada/lang-specs.h:35
-msgid "-c or -S required for Ada"
-msgstr ""
-
-#: config/sh/sh.h:685
+#: gcc.c:763
 #, fuzzy
-msgid "SH2a does not support little-endian"
-msgstr "ターゲット CPU は interworking をサポートしません"
+msgid "GCC does not support -C or -CC without -E"
+msgstr "GNU C は -E を伴わない -C を実装していません"
 
-#: config/lynx.h:71
-msgid "Cannot use mthreads and mlegacy-threads together."
-msgstr ""
-
-#: config/lynx.h:96
-msgid "Cannot use mshared and static together."
-msgstr ""
-
-#: config/i386/nwld.h:34
+#: gcc.c:957
 #, fuzzy
-msgid "Static linking is not supported.\n"
-msgstr "スタック制限式を受け付けません"
+msgid "-E or -x required when input is from standard input"
+msgstr "入力が標準入力の場合は -E が必要です"
 
-#: java/lang-specs.h:34
-msgid "-fjni and -femit-class-files are incompatible"
-msgstr "-fjni と -femit-class-files は共存できません"
+#: config/i386/cygwin.h:29
+msgid "mno-cygwin and mno-win32 are not compatible"
+msgstr "mno-cygwin と mno-win32 は共存できません"
 
-#: java/lang-specs.h:35
-msgid "-fjni and -femit-class-file are incompatible"
-msgstr "-fjini と -femit-class-file は共存できません"
+#: config/i386/cygwin.h:70 config/i386/mingw32.h:58
+msgid "shared and mdll are not compatible"
+msgstr "shared と mdll とは共存できません"
 
-#: java/lang-specs.h:36 java/lang-specs.h:37
-msgid "-femit-class-file should used along with -fsyntax-only"
-msgstr ""
-
-#: config/mcore/mcore.h:57
-msgid "the m210 does not have little endian support"
-msgstr "m210 はリトルエンディアンサポートを行なえません"
+#: config/vax/netbsd-elf.h:42
+#, fuzzy
+msgid "The -shared option is not currently supported for VAX ELF."
+msgstr "組み込み関数 `%s' は現在サポートされていません"
 
 #: config/i386/sco5.h:189
 #, fuzzy
@@ -9014,24 +8635,26 @@ msgstr "-I- が二回指定されました"
 msgid "-G and -static are mutually exclusive"
 msgstr "-pedantic と -traditional とは相互排他的です"
 
-#: config/i386/cygwin.h:29
-msgid "mno-cygwin and mno-win32 are not compatible"
-msgstr "mno-cygwin と mno-win32 は共存できません"
+#: java/lang-specs.h:34
+msgid "-fjni and -femit-class-files are incompatible"
+msgstr "-fjni と -femit-class-files は共存できません"
 
-#: config/vax/netbsd-elf.h:42
-#, fuzzy
-msgid "The -shared option is not currently supported for VAX ELF."
-msgstr "組み込み関数 `%s' は現在サポートされていません"
+#: java/lang-specs.h:35
+msgid "-fjni and -femit-class-file are incompatible"
+msgstr "-fjini と -femit-class-file は共存できません"
 
-#: gcc.c:763
-#, fuzzy
-msgid "GCC does not support -C or -CC without -E"
-msgstr "GNU C は -E を伴わない -C を実装していません"
+#: java/lang-specs.h:36 java/lang-specs.h:37
+msgid "-femit-class-file should used along with -fsyntax-only"
+msgstr ""
 
-#: gcc.c:957
+#: ada/lang-specs.h:35
+msgid "-c or -S required for Ada"
+msgstr ""
+
+#: config/sh/sh.h:685
 #, fuzzy
-msgid "-E or -x required when input is from standard input"
-msgstr "入力が標準入力の場合は -E が必要です"
+msgid "SH2a does not support little-endian"
+msgstr "ターゲット CPU は interworking をサポートしません"
 
 #: config/darwin.h:251
 msgid "-current_version only allowed with -dynamiclib"
@@ -9069,17 +8692,13 @@ msgstr ""
 msgid "-private_bundle not allowed with -dynamiclib"
 msgstr "-m64 指定モードでは -mlong-double-64 は許可されません"
 
-#: config/arm/arm.h:153
-msgid "-msoft-float and -mhard_float may not be used together"
-msgstr "-msoft-float と -mhard_float は同時に使えません"
+#: config/lynx.h:71
+msgid "Cannot use mthreads and mlegacy-threads together."
+msgstr ""
 
-#: config/arm/arm.h:155
-msgid "-mbig-endian and -mlittle-endian may not be used together"
-msgstr "-mbig-endian と -mlittle-endian は同時に使えません"
-
-#: config/vax/vax.h:50 config/vax/vax.h:51
-msgid "profiling not supported with -mg\n"
-msgstr "-mg でのプロファイルは提供されません\n"
+#: config/lynx.h:96
+msgid "Cannot use mshared and static together."
+msgstr ""
 
 #: attribs.c:175
 #, fuzzy, gcc-internal-format
@@ -10122,8 +9741,7 @@ msgstr "空の宣言の中に、無意味なキーワード又は型名があります"
 msgid "useless type qualifier in empty declaration"
 msgstr "空の宣言の中に、無意味なキーワード又は型名があります"
 
-#: c-decl.c:2949 c-parse.y:781 c-parse.y:783 objc/objc-parse.y:818
-#: objc/objc-parse.y:820
+#: c-decl.c:2949 c-parse.y:781 c-parse.y:783
 #, gcc-internal-format
 msgid "empty declaration"
 msgstr "空の宣言です"
@@ -11617,17 +11235,17 @@ msgstr "-M か -MM のいずれかを追加的に指定しなければなりません"
 msgid "too late for # directive to set debug directory"
 msgstr ""
 
-#: c-parse.y:343 objc/objc-parse.y:365
+#: c-parse.y:343
 #, gcc-internal-format
 msgid "ISO C forbids an empty source file"
 msgstr "ISO C は空のソースファイルを禁じます"
 
-#: c-parse.y:376 objc/objc-parse.y:399
+#: c-parse.y:376
 #, gcc-internal-format
 msgid "data definition has no type or storage class"
 msgstr "データ定義が型や記憶クラスを持っていません"
 
-#: c-parse.y:388 objc/objc-parse.y:411
+#: c-parse.y:388
 #, fuzzy, gcc-internal-format
 msgid "ISO C does not allow extra %<;%> outside of a function"
 msgstr "ISO C では関数外での余分な `;' を許しません"
@@ -11637,132 +11255,132 @@ msgstr "ISO C では関数外での余分な `;' を許しません"
 msgid "traditional C rejects the unary plus operator"
 msgstr "古い C では単項プラス演算子を拒否します"
 
-#: c-parse.y:498 objc/objc-parse.y:520
+#: c-parse.y:498
 #, fuzzy, gcc-internal-format
 msgid "%<sizeof%> applied to a bit-field"
 msgstr "sizeof がビットフィールドに適用されました"
 
-#: c-parse.y:595 objc/objc-parse.y:617
+#: c-parse.y:595
 #, gcc-internal-format
 msgid "ISO C forbids omitting the middle term of a ?: expression"
 msgstr "ISO C は中間項が省略された ?: 式を禁じます"
 
-#: c-parse.y:636 objc/objc-parse.y:658
+#: c-parse.y:636
 #, gcc-internal-format
 msgid "compound literal has variable size"
 msgstr ""
 
-#: c-parse.y:648 objc/objc-parse.y:670
+#: c-parse.y:648
 #, fuzzy, gcc-internal-format
 msgid "ISO C90 forbids compound literals"
 msgstr "ISO C89 は複合リテラルを禁じます"
 
-#: c-parse.y:661 objc/objc-parse.y:683
+#: c-parse.y:661
 #, gcc-internal-format
 msgid "ISO C forbids braced-groups within expressions"
 msgstr "ISO C はブレースでまとめられた式を禁じます"
 
-#: c-parse.y:697 objc/objc-parse.y:719
+#: c-parse.y:697
 #, fuzzy, gcc-internal-format
 msgid "first argument to %<__builtin_choose_expr%> not a constant"
 msgstr "`__builtin_eh_return_regno' の引数は定数でなければなりません"
 
-#: c-parse.y:1224 objc/objc-parse.y:1273
+#: c-parse.y:1224
 #, fuzzy, gcc-internal-format
 msgid "%<typeof%> applied to a bit-field"
 msgstr "sizeof がビットフィールドに適用されました"
 
-#: c-parse.y:1372 objc/objc-parse.y:1421
+#: c-parse.y:1372
 #, gcc-internal-format
 msgid "ISO C forbids empty initializer braces"
 msgstr "ISO C では空の初期化用ブレースを禁じます"
 
-#: c-parse.y:1386 objc/objc-parse.y:1435
+#: c-parse.y:1386
 #, fuzzy, gcc-internal-format
 msgid "ISO C90 forbids specifying subobject to initialize"
 msgstr "ISO C89 は初期化用の副オブジェクト指定を禁じます"
 
-#: c-parse.y:1389 objc/objc-parse.y:1438
+#: c-parse.y:1389
 #, fuzzy, gcc-internal-format
 msgid "obsolete use of designated initializer without %<=%>"
 msgstr "`=' のないメンバ指名初期化子は廃れました"
 
-#: c-parse.y:1393 objc/objc-parse.y:1442
+#: c-parse.y:1393
 #, fuzzy, gcc-internal-format
 msgid "obsolete use of designated initializer with %<:%>"
 msgstr "`:' をつけるメンバ指名初期化子は廃れました"
 
-#: c-parse.y:1424 objc/objc-parse.y:1473
+#: c-parse.y:1424
 #, gcc-internal-format
 msgid "ISO C forbids specifying range of elements to initialize"
 msgstr "ISO C は初期化用の要素範囲指定を禁じます"
 
-#: c-parse.y:1432 c-parse.y:1462 objc/objc-parse.y:1481 objc/objc-parse.y:1511
+#: c-parse.y:1432 c-parse.y:1462
 #, gcc-internal-format
 msgid "ISO C forbids nested functions"
 msgstr "ISO C は ネストされた関数を禁じます"
 
-#: c-parse.y:1637 objc/objc-parse.y:1686
+#: c-parse.y:1637
 #, fuzzy, gcc-internal-format
 msgid "ISO C forbids forward references to %<enum%> types"
 msgstr "ISO C は `enum' 型の前方参照を禁じます"
 
-#: c-parse.y:1649 cp/parser.c:10039 objc/objc-parse.y:1698
+#: c-parse.y:1649 cp/parser.c:10039
 #, gcc-internal-format
 msgid "comma at end of enumerator list"
 msgstr "列挙子リストの最後にカンマがあります"
 
-#: c-parse.y:1669 objc/objc-parse.y:1718
+#: c-parse.y:1669
 #, gcc-internal-format
 msgid "no semicolon at end of struct or union"
 msgstr "struct や union の最後にセミコロンがありません"
 
-#: c-parse.y:1678 objc/objc-parse.y:1727 objc/objc-parse.y:2727
+#: c-parse.y:1678
 #, gcc-internal-format
 msgid "extra semicolon in struct or union specified"
 msgstr "struct や union の中で余分なセミコロンが指定されました"
 
-#: c-parse.y:1698 objc/objc-parse.y:1750
+#: c-parse.y:1698
 #, gcc-internal-format
 msgid "ISO C forbids member declarations with no members"
 msgstr "ISO C はメンバのないメンバ宣言を禁じます"
 
-#: c-parse.y:1864 objc/objc-parse.y:1916
+#: c-parse.y:1864
 #, fuzzy, gcc-internal-format
 msgid "label at end of compound statement"
 msgstr "複合文の終りでラベルを使うことは推奨されません"
 
-#: c-parse.y:1883 objc/objc-parse.y:1935
+#: c-parse.y:1883
 #, fuzzy, gcc-internal-format
 msgid "ISO C90 forbids mixed declarations and code"
 msgstr "ISO C89 は宣言とコードとの混合を禁じます"
 
-#: c-parse.y:1923 objc/objc-parse.y:1975
+#: c-parse.y:1923
 #, gcc-internal-format
 msgid "ISO C forbids label declarations"
 msgstr "ISO C はラベル宣言を禁じます"
 
-#: c-parse.y:1967 objc/objc-parse.y:2019
+#: c-parse.y:1967
 #, gcc-internal-format
 msgid "braced-group within expression allowed only inside a function"
 msgstr "ブレースでまとめられた式は関数の内側でのみ許されます"
 
-#: c-parse.y:2263 objc/objc-parse.y:2358
+#: c-parse.y:2263
 #, fuzzy, gcc-internal-format
 msgid "%E qualifier ignored on asm"
 msgstr "asm では %s 修飾子が無視されます"
 
-#: c-parse.y:2309 objc/objc-parse.y:2404
+#: c-parse.y:2309
 #, fuzzy, gcc-internal-format
 msgid "wide string literal in %<asm%>"
 msgstr "文字列リテラルが無効です、最後の '\\' を無視します"
 
-#: c-parse.y:2371 objc/objc-parse.y:2466
+#: c-parse.y:2371
 #, fuzzy, gcc-internal-format
 msgid "ISO C requires a named argument before %<...%>"
 msgstr "ISO C は `...' の前に名前をつけられた引数を要求します"
 
-#: c-parse.y:2877 objc/objc-parse.y:3467
+#: c-parse.y:2877
 #, fuzzy, gcc-internal-format
 msgid "syntax error at %qs token"
 msgstr "'%s' トークンの所で文法エラー"
@@ -13666,17 +13284,17 @@ msgstr "%s へ書き込めません"
 msgid "unexpected node"
 msgstr "予期されるメモリレイテンシを調整する"
 
-#: gimplify.c:3340
+#: gimplify.c:3345
 #, fuzzy, gcc-internal-format
 msgid "invalid lvalue in asm output %d"
 msgstr "asm 文の中に無効な左辺値"
 
-#: gimplify.c:3452
+#: gimplify.c:3457
 #, fuzzy, gcc-internal-format
 msgid "memory input %d is not directly addressable"
 msgstr "出力番号 %d は直接アドレス指定できません"
 
-#: gimplify.c:4326
+#: gimplify.c:4331
 #, gcc-internal-format
 msgid "gimplification failed"
 msgstr ""
@@ -14666,7 +14284,7 @@ msgstr ""
 msgid "unimplemented functionality"
 msgstr ""
 
-#: tree-ssa-operands.c:1273
+#: tree-ssa-operands.c:1277
 #, gcc-internal-format
 msgid "internal error"
 msgstr "内部エラー"
@@ -14856,37 +14474,37 @@ msgstr "関数の配列は意味がありません"
 msgid "function return type cannot be function"
 msgstr "関数の返す型が関数であってはなりません"
 
-#: tree.c:5405
+#: tree.c:5412
 #, gcc-internal-format
 msgid "invalid initializer for bit string"
 msgstr "無効なビット列初期化子です"
 
-#: tree.c:5489
+#: tree.c:5496
 #, fuzzy, gcc-internal-format
 msgid "tree check: %s, have %s in %s, at %s:%d"
 msgstr "Tree 検査: %s があるべき所に %s があります(%s 内, %s:%d)"
 
-#: tree.c:5526
+#: tree.c:5533
 #, fuzzy, gcc-internal-format
 msgid "tree check: expected none of %s, have %s in %s, at %s:%d"
 msgstr "Tree 検査: %s があるべき所に %s があります(%s 内, %s:%d)"
 
-#: tree.c:5539
+#: tree.c:5546
 #, fuzzy, gcc-internal-format
 msgid "tree check: expected class %qs, have %qs (%s) in %s, at %s:%d"
 msgstr "Tree 検査: クラス '%c' のはずが '%c' (%s) です(%s 内, %s:%d)"
 
-#: tree.c:5553
+#: tree.c:5560
 #, fuzzy, gcc-internal-format
 msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
 msgstr "RTL check: ベクトルの elt %d を最後の elt %d (%s 中)と一緒にアクセスします (%s:%d)"
 
-#: tree.c:5565
+#: tree.c:5572
 #, fuzzy, gcc-internal-format
 msgid "tree check: accessed elt %d of phi_node with %d elts in %s, at %s:%d"
 msgstr "RTL check: ベクトルの elt %d を最後の elt %d (%s 中)と一緒にアクセスします (%s:%d)"
 
-#: tree.c:5577
+#: tree.c:5584
 #, fuzzy, gcc-internal-format
 msgid "tree check: accessed operand %d of %s with %d operands in %s, at %s:%d"
 msgstr "RTL 検査: elt %d(%s) が最後の elt %d(%s 中) と一緒にアクセスします (%s:%d)"
@@ -23008,747 +22626,6 @@ msgstr "%s の名前変換(mangle) できません"
 msgid "internal error - invalid Utf8 name"
 msgstr "内部エラー - 無効な Utf8 名です"
 
-#: java/parse.y:774
-#, fuzzy, gcc-internal-format
-msgid "Ambiguous class: %qs and %qs"
-msgstr "あいまいな省略 %s です"
-
-#: java/parse.y:840
-#, fuzzy, gcc-internal-format
-msgid "Modifier %qs declared twice"
-msgstr "領域 `%s' は関数として宣言されています"
-
-#: java/parse.y:1089
-#, gcc-internal-format
-msgid "Discouraged form of returned type specification"
-msgstr ""
-
-#: java/parse.y:1184
-#, gcc-internal-format
-msgid "Can't define static initializer in class %qs. Static initializer can only be defined in top-level classes"
-msgstr ""
-
-#: java/parse.y:1482
-#, gcc-internal-format
-msgid "An empty declaration is a deprecated feature that should not be used"
-msgstr ""
-
-#: java/parse.y:3041
-#, fuzzy, gcc-internal-format
-msgid ": %qs JDK1.1(TM) feature"
-msgstr ": `%s' は JDK1.1(TM) の機能です"
-
-#: java/parse.y:3121 java/parse.y:3123
-#, gcc-internal-format
-msgid ""
-"%s.\n"
-"%s"
-msgstr ""
-"%s.\n"
-"%s"
-
-#: java/parse.y:3282
-#, fuzzy, gcc-internal-format
-msgid "Missing return statement"
-msgstr "名前を欠いています"
-
-#: java/parse.y:3304 java/parse.y:11940 java/parse.y:11944
-#, fuzzy, gcc-internal-format
-msgid "Unreachable statement"
-msgstr "無効な初期化式です"
-
-#: java/parse.y:3314
-#, gcc-internal-format
-msgid "Can't access %s field %<%s.%s%> from %qs"
-msgstr ""
-
-#: java/parse.y:3383
-#, gcc-internal-format
-msgid "%s %qs already defined in %s:%d"
-msgstr ""
-
-#: java/parse.y:3401
-#, gcc-internal-format
-msgid "Variable %qs is already defined in this method and was declared %<%s %s%> at line %d"
-msgstr ""
-
-#: java/parse.y:3512
-#, gcc-internal-format
-msgid "Interface %qs repeated"
-msgstr ""
-
-#: java/parse.y:3542
-#, gcc-internal-format
-msgid "%s name %qs clashes with imported type %qs"
-msgstr ""
-
-#: java/parse.y:3574
-#, gcc-internal-format
-msgid "Public %s %qs must be defined in a file called %<%s.java%>"
-msgstr ""
-
-#: java/parse.y:3589
-#, gcc-internal-format
-msgid "Inner class %qs can't be static. Static classes can only occur in interfaces and top-level classes"
-msgstr ""
-
-#: java/parse.y:3670
-#, gcc-internal-format
-msgid "The class name %qs is already defined in this scope. An inner class may not have the same simple name as any of its enclosing classes"
-msgstr ""
-
-#: java/parse.y:3712
-#, gcc-internal-format
-msgid "Qualifier must be a reference"
-msgstr ""
-
-#: java/parse.y:3733
-#, gcc-internal-format
-msgid "Cyclic inheritance involving %s"
-msgstr ""
-
-#: java/parse.y:3997
-#, gcc-internal-format
-msgid "Redundant use of %<abstract%> modifier. Interface %qs is implicitly abstract"
-msgstr ""
-
-#: java/parse.y:4152
-#, gcc-internal-format
-msgid "Class %qs can't be declared both abstract and final"
-msgstr ""
-
-#: java/parse.y:4164
-#, gcc-internal-format
-msgid "%<java.lang.Object%> can't extend anything"
-msgstr ""
-
-#: java/parse.y:4406
-#, gcc-internal-format
-msgid "Duplicate variable declaration: %<%s %s%> was %<%s %s%> (%s:%d)"
-msgstr ""
-
-#: java/parse.y:4470
-#, gcc-internal-format
-msgid "Field %qs can't be static in inner class %qs unless it is final"
-msgstr ""
-
-#: java/parse.y:4716
-#, gcc-internal-format
-msgid "Class %qs must be declared abstract to define abstract method %qs"
-msgstr ""
-
-#: java/parse.y:4723
-#, gcc-internal-format
-msgid "native method %qs can't be strictfp"
-msgstr ""
-
-#: java/parse.y:4727
-#, gcc-internal-format
-msgid "method %qs can't be transient"
-msgstr ""
-
-#: java/parse.y:4730
-#, gcc-internal-format
-msgid "method %qs can't be volatile"
-msgstr ""
-
-#: java/parse.y:4780 java/parse.y:6533
-#, gcc-internal-format
-msgid "Method %qs can't be static in inner class %qs. Only members of interfaces and top-level classes can be static"
-msgstr ""
-
-#: java/parse.y:4946
-#, gcc-internal-format
-msgid "%s method %qs can't have a body defined"
-msgstr ""
-
-#: java/parse.y:4957
-#, gcc-internal-format
-msgid "Non native and non abstract method %qs must have a body defined"
-msgstr ""
-
-#: java/parse.y:5028
-#, fuzzy, gcc-internal-format
-msgid "%s: recursive invocation of constructor %qs"
-msgstr "コンストラクタの関数本体を欠いています"
-
-#: java/parse.y:5058
-#, gcc-internal-format
-msgid "Inconsistent member declaration.  At most one of %<public%>, %<private%>, or %<protected%> may be specified"
-msgstr ""
-
-#: java/parse.y:5066
-#, gcc-internal-format
-msgid "Inconsistent member declaration.  At most one of %<final%> or %<volatile%> may be specified"
-msgstr ""
-
-#: java/parse.y:5156
-#, gcc-internal-format
-msgid "Variable %qs is used more than once in the argument list of method %qs"
-msgstr ""
-
-#: java/parse.y:5240
-#, gcc-internal-format
-msgid "%s %qs can't implement/extend %s %qs"
-msgstr ""
-
-#: java/parse.y:5274
-#, gcc-internal-format
-msgid "Class %qs can't subclass %s %qs"
-msgstr ""
-
-#: java/parse.y:5283
-#, fuzzy, gcc-internal-format
-msgid "Can't subclass final classes: %s"
-msgstr "クラス `%s' が見つかりません"
-
-#: java/parse.y:5469
-#, gcc-internal-format
-msgid "Cyclic class inheritance%s"
-msgstr ""
-
-#: java/parse.y:6184
-#, gcc-internal-format
-msgid "Superclass %qs of class %qs not found"
-msgstr ""
-
-#: java/parse.y:6190
-#, fuzzy, gcc-internal-format
-msgid "Type %qs not found in declaration of field %qs"
-msgstr "`%s' の宣言で型がデフォルトの `int' とされました"
-
-#: java/parse.y:6196
-#, gcc-internal-format
-msgid "Type %qs not found in the declaration of the argument %qs of method %qs"
-msgstr ""
-
-#: java/parse.y:6203
-#, gcc-internal-format
-msgid "Type %qs not found in the declaration of the return type of method %qs"
-msgstr ""
-
-#: java/parse.y:6209
-#, gcc-internal-format
-msgid "Superinterface %qs of %s %qs not found"
-msgstr ""
-
-#: java/parse.y:6216
-#, gcc-internal-format
-msgid "Type %qs not found in the declaration of the local variable %qs"
-msgstr ""
-
-#: java/parse.y:6223
-#, fuzzy, gcc-internal-format
-msgid "Class %qs not found in %<throws%>"
-msgstr "フィールド '%s' がクラス内に見つかりません"
-
-#: java/parse.y:6280
-#, fuzzy, gcc-internal-format
-msgid "Duplicate %s declaration %qs"
-msgstr "ラベルの宣言 `%s' が重複しています"
-
-#: java/parse.y:6354
-#, gcc-internal-format
-msgid "Class %qs doesn't define the abstract method %<%s %s%> from %s %<%s%>. This method must be defined or %s %qs must be declared abstract"
-msgstr ""
-
-#: java/parse.y:6510
-#, gcc-internal-format
-msgid "Class %qs in %<throws%> clause must be a subclass of class %<java.lang.Throwable%>"
-msgstr ""
-
-#: java/parse.y:6554
-#, gcc-internal-format
-msgid "Class %qs must override %qs with a public method in order to implement interface %qs"
-msgstr ""
-
-#: java/parse.y:6568 java/parse.y:6795
-#, gcc-internal-format
-msgid "Method %qs was defined with return type %qs in class %qs"
-msgstr ""
-
-#: java/parse.y:6585
-#, gcc-internal-format
-msgid "%s methods can't be overridden. Method %qs is %s in class %qs"
-msgstr ""
-
-#: java/parse.y:6599
-#, gcc-internal-format
-msgid "Instance methods can't be overridden by a static method. Method %qs is an instance method in class %qs"
-msgstr ""
-
-#: java/parse.y:6622
-#, gcc-internal-format
-msgid "Methods can't be overridden to be more private. Method %qs is not %s in class %qs"
-msgstr ""
-
-#: java/parse.y:6763
-#, gcc-internal-format
-msgid "Invalid checked exception class %qs in %<throws%> clause.  The exception must be a subclass of an exception thrown by %qs from class %qs"
-msgstr ""
-
-#: java/parse.y:6820
-#, gcc-internal-format
-msgid "Interface %qs inherits method %qs from interface %qs. This method is redefined with a different return type in interface %qs"
-msgstr ""
-
-#: java/parse.y:6995
-#, fuzzy, gcc-internal-format
-msgid "Class or interface %qs not found in import"
-msgstr "クラスやインターフェイス宣言が必要です"
-
-#: java/parse.y:7080
-#, gcc-internal-format
-msgid "malformed .zip archive in CLASSPATH: %s"
-msgstr "CLASSPATH 内に変な .zip アーカイブがあります: %s"
-
-#: java/parse.y:7151
-#, fuzzy, gcc-internal-format
-msgid "Can't find default package %qs. Check the CLASSPATH environment variable and the access to the archives"
-msgstr "デフォルトパッケージ `%s' が見つかりません。CLASSPATH 環境変数とアーカイブへのアクセスを確かめてください。"
-
-#: java/parse.y:7156
-#, fuzzy, gcc-internal-format
-msgid "Package %qs not found in import"
-msgstr "フィールド '%s' がクラス内に見つかりません"
-
-#: java/parse.y:7253
-#, gcc-internal-format
-msgid "Type %qs also potentially defined in package %qs"
-msgstr ""
-
-#: java/parse.y:7398
-#, gcc-internal-format
-msgid "Nested %s %s is %s; cannot be accessed from here"
-msgstr ""
-
-#: java/parse.y:7436
-#, gcc-internal-format
-msgid "Can't access %s %qs. Only public classes and interfaces in other packages can be accessed"
-msgstr ""
-
-#: java/parse.y:7474
-#, gcc-internal-format
-msgid "Only %<final%> is allowed as a local variables modifier"
-msgstr ""
-
-#: java/parse.y:9028
-#, gcc-internal-format
-msgid "No constructor matching %qs found in class %qs"
-msgstr ""
-
-#: java/parse.y:9528
-#, gcc-internal-format
-msgid "Can't reference %qs before the superclass constructor has been called"
-msgstr ""
-
-#: java/parse.y:9582
-#, gcc-internal-format
-msgid "Local variable %qs can't be accessed from within the inner class %qs unless it is declared final"
-msgstr ""
-
-#: java/parse.y:9587 java/parse.y:10050
-#, fuzzy, gcc-internal-format
-msgid "Undefined variable %qs"
-msgstr "変数 `%s' は使われませんでした"
-
-#: java/parse.y:9598
-#, gcc-internal-format
-msgid "Can't make a static reference to nonstatic variable %qs in class %qs"
-msgstr ""
-
-#: java/parse.y:9804 java/parse.y:10659
-#, gcc-internal-format
-msgid "No enclosing instance for inner class %qs is in scope%s"
-msgstr ""
-
-#: java/parse.y:9923 java/parse.y:12372
-#, gcc-internal-format
-msgid "Keyword %<this%> used outside allowed context"
-msgstr ""
-
-#: java/parse.y:9929 java/parse.y:10813
-#, gcc-internal-format
-msgid "Can't reference %<this%> before the superclass constructor has been called"
-msgstr ""
-
-#: java/parse.y:9945
-#, gcc-internal-format
-msgid "Can't use variable %<%s.this%>: type %qs isn't an outer type of type %qs"
-msgstr ""
-
-#: java/parse.y:9978
-#, gcc-internal-format
-msgid "Keyword %<super%> used outside allowed context"
-msgstr ""
-
-#: java/parse.y:10027
-#, fuzzy, gcc-internal-format
-msgid "No variable %qs defined in class %qs"
-msgstr "インスタンス変数 `%s' がクラスメソッドからアクセスされました"
-
-#: java/parse.y:10032
-#, fuzzy, gcc-internal-format
-msgid "Undefined variable or class name: %qs"
-msgstr "クラス %s 用のファイルを見つけられません。"
-
-#: java/parse.y:10103
-#, fuzzy, gcc-internal-format
-msgid "Can't use type %qs as a qualifier"
-msgstr "'%s' を %s のレジスタとして使うことができません"
-
-#: java/parse.y:10122
-#, gcc-internal-format
-msgid "Attempt to reference field %qs in %<%s %s%>"
-msgstr ""
-
-#: java/parse.y:10153
-#, fuzzy, gcc-internal-format
-msgid "No variable %qs defined in type %qs"
-msgstr "変数 `%s' が `inline' と宣言されました"
-
-#: java/parse.y:10237
-#, gcc-internal-format
-msgid "Attempt to reference field %<new%> in a %qs"
-msgstr ""
-
-#: java/parse.y:10374
-#, gcc-internal-format
-msgid "The class %qs has been deprecated"
-msgstr ""
-
-#: java/parse.y:10384
-#, gcc-internal-format
-msgid "The %s %qs in class %qs has been deprecated"
-msgstr ""
-
-#: java/parse.y:10501
-#, gcc-internal-format
-msgid "Can't invoke a method on primitive type %qs"
-msgstr ""
-
-#: java/parse.y:10516
-#, gcc-internal-format
-msgid "Can't make static reference to method %qs in interface %qs"
-msgstr ""
-
-#: java/parse.y:10526 java/parse.y:10860
-#, gcc-internal-format
-msgid "Can't make static reference to method %<%s %s%> in class %qs"
-msgstr ""
-
-#: java/parse.y:10566
-#, gcc-internal-format
-msgid "Can't invoke super constructor on java.lang.Object"
-msgstr ""
-
-#: java/parse.y:10579 java/parse.y:14437
-#, fuzzy, gcc-internal-format
-msgid "Class %qs not found in type declaration"
-msgstr "`%s' に対するインタフェース宣言が見つかりません"
-
-#: java/parse.y:10591
-#, gcc-internal-format
-msgid "Class %qs is an abstract class. It can't be instantiated"
-msgstr ""
-
-#: java/parse.y:10621
-#, gcc-internal-format
-msgid "No method named %qs in scope"
-msgstr ""
-
-#: java/parse.y:10732
-#, gcc-internal-format
-msgid "Can't access %s %s %<%s.%s%> from %qs"
-msgstr ""
-
-#: java/parse.y:11206
-#, gcc-internal-format
-msgid "Can't find %s %<%s(%s)%> in type %qs%s"
-msgstr ""
-
-#: java/parse.y:11786
-#, fuzzy, gcc-internal-format
-msgid "Constant expression required"
-msgstr "定数式がオーバーフローしました"
-
-#: java/parse.y:11799
-#, fuzzy, gcc-internal-format
-msgid "Incompatible type for case. Can't convert %qs to %<int%>"
-msgstr "%d 番目の引数が `%s' の型と互換性がありません"
-
-#: java/parse.y:11833
-#, fuzzy, gcc-internal-format
-msgid "Duplicate case label: %<default%>"
-msgstr "重複した case の値"
-
-#: java/parse.y:12181
-#, gcc-internal-format
-msgid "Incompatible type for %<+=%>. Can't convert %qs to %<java.lang.String%>"
-msgstr ""
-
-#: java/parse.y:12352
-#, fuzzy, gcc-internal-format
-msgid "missing static field %qs"
-msgstr "static フィールド `%s' を欠いています"
-
-#: java/parse.y:12357
-#, fuzzy, gcc-internal-format
-msgid "not a static field %qs"
-msgstr "static フィールド `%s' ではありません"
-
-#: java/parse.y:12380
-#, gcc-internal-format
-msgid "Can't reference %<this%> or %<super%> before the superclass constructor has been called"
-msgstr ""
-
-#: java/parse.y:12400
-#, gcc-internal-format
-msgid "No case for %s"
-msgstr "%s のための case がありません"
-
-#: java/parse.y:12830
-#, fuzzy, gcc-internal-format
-msgid "Invalid left hand side of assignment"
-msgstr "代入として無効な左辺値です"
-
-#: java/parse.y:12881
-#, fuzzy, gcc-internal-format
-msgid "Incompatible type for %s. Can't convert %qs to %qs"
-msgstr "%d 番目の引数が `%s' の型と互換性がありません"
-
-#: java/parse.y:12884
-#, gcc-internal-format
-msgid "Incompatible type for %s. Explicit cast needed to convert %qs to %qs"
-msgstr ""
-
-#: java/parse.y:13057
-#, gcc-internal-format
-msgid "Constant expression %qs too wide for narrowing primitive conversion to %qs"
-msgstr ""
-
-#: java/parse.y:13348
-#, gcc-internal-format
-msgid "unregistered operator %s"
-msgstr "登録されていない演算子 %s です"
-
-#: java/parse.y:13497
-#, gcc-internal-format
-msgid "Evaluating this expression will result in an arithmetic exception being thrown"
-msgstr ""
-
-#: java/parse.y:13579
-#, gcc-internal-format
-msgid "Incompatible type for %qs. Explicit cast needed to convert shift distance from %qs to integral"
-msgstr ""
-
-#: java/parse.y:13584
-#, gcc-internal-format
-msgid "Incompatible type for %qs. Can't convert shift distance from %qs to integral"
-msgstr ""
-
-#: java/parse.y:13660
-#, gcc-internal-format
-msgid "Invalid argument %qs for %<instanceof%>"
-msgstr ""
-
-#: java/parse.y:13687
-#, gcc-internal-format
-msgid "Impossible for %qs to be instance of %qs"
-msgstr ""
-
-#: java/parse.y:13818
-#, fuzzy, gcc-internal-format
-msgid "Incompatible type for %qs. Can't convert %qs to %qs"
-msgstr "%d 番目の引数が `%s' の型と互換性がありません"
-
-#: java/parse.y:14298
-#, fuzzy, gcc-internal-format
-msgid "Invalid argument type %qs to %qs"
-msgstr "`%s' の引数として無効な型"
-
-#: java/parse.y:14528
-#, fuzzy, gcc-internal-format
-msgid "Invalid cast from %qs to %qs"
-msgstr "無効なオプション %s"
-
-#: java/parse.y:14575
-#, gcc-internal-format
-msgid "%<[]%> can only be applied to arrays. It can't be applied to %qs"
-msgstr ""
-
-#: java/parse.y:14588
-#, gcc-internal-format
-msgid "Incompatible type for %<[]%>. Explicit cast needed to convert %qs to %<int%>"
-msgstr ""
-
-#: java/parse.y:14592
-#, fuzzy, gcc-internal-format
-msgid "Incompatible type for %<[]%>. Can't convert %qs to %<int%>"
-msgstr "%d 番目の引数が `%s' の型と互換性がありません"
-
-#: java/parse.y:14663
-#, gcc-internal-format
-msgid "Incompatible type for dimension in array creation expression. %s convert %qs to %<int%>"
-msgstr ""
-
-#: java/parse.y:14779
-#, fuzzy, gcc-internal-format
-msgid "Invalid array initializer for non-array type %qs"
-msgstr "非定数配列式から配列が初期化されました"
-
-#: java/parse.y:14866
-#, fuzzy, gcc-internal-format
-msgid "Incompatible type for array. %s convert %qs to %qs"
-msgstr "%d 番目の引数が `%s' の型と互換性がありません"
-
-#: java/parse.y:14935
-#, fuzzy, gcc-internal-format
-msgid "%<return%> inside instance initializer"
-msgstr "初期化子内に空の範囲インデックスがあります"
-
-#: java/parse.y:14939
-#, fuzzy, gcc-internal-format
-msgid "%<return%> inside static initializer"
-msgstr "初期化子内に空の範囲インデックスがあります"
-
-#: java/parse.y:14945
-#, gcc-internal-format
-msgid "%<return%> with%s value from %<%s %s%>"
-msgstr ""
-
-#: java/parse.y:14952
-#, fuzzy, gcc-internal-format
-msgid "%<return%> with value from constructor %qs"
-msgstr "コンストラクタから値を返そうとしています"
-
-#: java/parse.y:15017
-#, gcc-internal-format
-msgid "Incompatible type for %<if%>. Can't convert %qs to %<boolean%>"
-msgstr ""
-
-#: java/parse.y:15050
-#, fuzzy, gcc-internal-format
-msgid "Declaration of %qs shadows a previous label declaration"
-msgstr "`%s' の宣言はグローバル宣言を覆い隠します"
-
-#: java/parse.y:15055
-#, fuzzy, gcc-internal-format
-msgid "This is the location of the previous declaration of label %qs"
-msgstr "ここが以前の宣言がある位置です"
-
-#: java/parse.y:15302
-#, fuzzy, gcc-internal-format
-msgid "No label definition found for %qs"
-msgstr "`%s' が再定義されました"
-
-#: java/parse.y:15315
-#, fuzzy, gcc-internal-format
-msgid "%<continue%> must be in loop"
-msgstr "continue 文が loop の中にありません"
-
-#: java/parse.y:15318
-#, fuzzy, gcc-internal-format
-msgid "continue label %qs does not name a loop"
-msgstr "continue 文が loop の中にありません"
-
-#: java/parse.y:15339
-#, fuzzy, gcc-internal-format
-msgid "%<break%> must be in loop or switch"
-msgstr "break 文が loop または switch の中にありません"
-
-#: java/parse.y:15380
-#, gcc-internal-format
-msgid "Incompatible type for loop conditional. Can't convert %qs to %<boolean%>"
-msgstr ""
-
-#: java/parse.y:15418
-#, gcc-internal-format
-msgid "Incompatible type for %<switch%>. Can't convert %qs to %<int%>"
-msgstr ""
-
-#. The case_label_list is in reverse order, so print the
-#. outer label first.
-#: java/parse.y:15449
-#, fuzzy, gcc-internal-format
-msgid "duplicate case label: %<"
-msgstr "重複した case の値"
-
-#: java/parse.y:15450
-#, gcc-internal-format
-msgid "%>"
-msgstr ""
-
-#: java/parse.y:15453
-#, fuzzy, gcc-internal-format
-msgid "original label is here"
-msgstr "全てのラベルをアラインする"
-
-#: java/parse.y:15670
-#, gcc-internal-format
-msgid "Can't catch class %qs. Catch clause parameter type must be a subclass of class %<java.lang.Throwable%>"
-msgstr ""
-
-#: java/parse.y:15694
-#, gcc-internal-format
-msgid "%<catch%> not reached because of the catch clause at line %d"
-msgstr ""
-
-#: java/parse.y:15761
-#, gcc-internal-format
-msgid "Incompatible type for %<synchronized%>. Can't convert %qs to %<java.lang.Object%>"
-msgstr ""
-
-#: java/parse.y:15820
-#, gcc-internal-format
-msgid "Can't throw %qs; it must be a subclass of class %<java.lang.Throwable%>"
-msgstr ""
-
-#: java/parse.y:15849
-#, gcc-internal-format
-msgid "Checked exception %qs can't be thrown in instance initializer (not all declared constructor are declaring it in their %<throws%> clause)"
-msgstr ""
-
-#: java/parse.y:15870
-#, gcc-internal-format
-msgid "Checked exception %qs can't be caught by any of the catch clause(s) of the surrounding %<try%> block"
-msgstr ""
-
-#: java/parse.y:15883
-#, gcc-internal-format
-msgid "Checked exception %qs can't be thrown in initializer"
-msgstr ""
-
-#: java/parse.y:15887
-#, gcc-internal-format
-msgid "Checked exception %qs isn't thrown from a %<try%> block"
-msgstr ""
-
-#: java/parse.y:15893
-#, gcc-internal-format
-msgid "Checked exception %qs doesn't match any of current method's %<throws%> declaration(s)"
-msgstr ""
-
-#: java/parse.y:15948
-#, fuzzy, gcc-internal-format
-msgid "Exception %qs can't be thrown in initializer"
-msgstr "初期化子内に空の範囲インデックスがあります"
-
-#: java/parse.y:15953
-#, gcc-internal-format
-msgid "Exception %qs must be caught, or it must be declared in the %<throws%> clause of %qs"
-msgstr ""
-
-#: java/parse.y:16066
-#, gcc-internal-format
-msgid "Incompatible type for %<?:%>. Can't convert %qs to %<boolean%>"
-msgstr ""
-
-#: java/parse.y:16134
-#, fuzzy, gcc-internal-format
-msgid "Incompatible type for %<?:%>. Can't convert %qs to %qs"
-msgstr "%d 番目の引数が `%s' の型と互換性がありません"
-
 #: java/typeck.c:533
 #, gcc-internal-format
 msgid "junk at end of signature string"
@@ -23788,18 +22665,6 @@ msgstr ""
 #, fuzzy, gcc-internal-format
 msgid "Constructor can't be %s"
 msgstr "コンストラクタは virtual 宣言できません"
-
-#. Pedantic warning on obsolete modifiers. Note: when cl is NULL,
-#. flags was set artificially, such as for a interface method
-#: java/parse.h:161
-#, fuzzy, gcc-internal-format
-msgid "Discouraged redundant use of %qs modifier in declaration of %s"
-msgstr "`%s' の宣言において複数の保存クラス"
-
-#: java/parse.h:168
-#, gcc-internal-format
-msgid "Discouraged redundant use of %qs modifier in declaration of %s %qs"
-msgstr ""
 
 #. Standard error messages
 #: java/parse.h:352
@@ -24174,11 +23039,6 @@ msgstr "[super ...] はメソッドコンテキストに現れなければなりません"
 #, fuzzy, gcc-internal-format
 msgid "local declaration of %qs hides instance variable"
 msgstr "`%s' のローカル宣言で、インスタンス変数が隠されます"
-
-#: objc/objc-parse.y:2748
-#, fuzzy, gcc-internal-format
-msgid "extra semicolon in method definition specified"
-msgstr "struct や union の中で余分なセミコロンが指定されました"
 
 #: treelang/tree1.c:278
 #, fuzzy, gcc-internal-format
@@ -24615,9 +23475,6 @@ msgstr "register 変数 `%s' のアドレスが要求されました"
 
 #~ msgid "bad magic number in file '%s'"
 #~ msgstr "ファイル '%s' に不正なマジックナンバ"
-
-#~ msgid "dynamic dependencies.\n"
-#~ msgstr "動的依存関係。\n"
 
 #~ msgid "open %s"
 #~ msgstr "open %s"
@@ -25382,9 +24239,6 @@ msgstr "register 変数 `%s' のアドレスが要求されました"
 #~ msgid "Warn when a function is declared extern, then inline"
 #~ msgstr "関数が extern 宣言された後、inline とされた場合に警告する"
 
-#~ msgid "Don't announce deprecation of compiler features"
-#~ msgstr "推奨されないコンパイラの機能を告知しない"
-
 #~ msgid "type name expected before `*'"
 #~ msgstr "`*' の前に型の名前があるべきです"
 
@@ -25477,6 +24331,9 @@ msgstr "register 変数 `%s' のアドレスが要求されました"
 
 #~ msgid "parse error in method specification"
 #~ msgstr "メソッド仕様内での構文解析エラー"
+
+#~ msgid "function body for constructor missing"
+#~ msgstr "コンストラクタの関数本体を欠いています"
 
 #~ msgid "%s before `%s'"
 #~ msgstr "%s が `%s' の前にあります"
@@ -26034,6 +24891,9 @@ msgstr "register 変数 `%s' のアドレスが要求されました"
 #~ msgid "\"%s\" redefined"
 #~ msgstr "\"%s\" が再定義されました"
 
+#~ msgid "this is the location of the previous definition"
+#~ msgstr "ここが以前の宣言がある位置です"
+
 #~ msgid "macro argument \"%s\" would be stringified with -traditional."
 #~ msgstr "マクロ引数 \"%s\" は -traditional をつけると文字列化された事でしょう"
 
@@ -26191,6 +25051,9 @@ msgstr "register 変数 `%s' のアドレスが要求されました"
 
 #~ msgid "Disable the appending of underscores to externals"
 #~ msgstr "外部変数にアンダースコアを付け足さない"
+
+#~ msgid "Never append a second underscore to externals"
+#~ msgstr "外部変数に二つ目のアンダースコアを付け足さない"
 
 #~ msgid "Intrinsics spelled as e.g. SqRt"
 #~ msgstr "intrinsic が例えば SqRt の用に綴られる"
@@ -26534,8 +25397,20 @@ msgstr "register 変数 `%s' のアドレスが要求されました"
 #~ msgid "Dump class files to <name>.class"
 #~ msgstr "クラスを <name>.class ファイルへダンプする"
 
+#~ msgid "input file is list of file names to compile"
+#~ msgstr "入力ファイルをコンパイルするファイル名のリストとする"
+
+#~ msgid "Generate code for Boehm GC"
+#~ msgstr "Boehm GC 用のコードを生成する"
+
 #~ msgid "Don't put synchronization structure in each object"
 #~ msgstr "同期構造体を各オブジェクトに組み入れない"
+
+#~ msgid "Assume native functions are implemented using JNI"
+#~ msgstr "native 関数が JNI を利用して実装しているものとみなす"
+
+#~ msgid "Set class path and suppress system path"
+#~ msgstr "クラスパスを設定してシステムパスを隠す"
 
 #~ msgid "Set class path"
 #~ msgstr "クラスパスを設定する"
@@ -26552,11 +25427,138 @@ msgstr "register 変数 `%s' のアドレスが要求されました"
 #~ msgid "Directory where class files should be written"
 #~ msgstr "クラスファイルが書き込まれるディレクトリ"
 
+#~ msgid "Warn if modifiers are specified when not necessary"
+#~ msgstr "指定された修飾子が不要なものであれば警告する"
+
+#~ msgid "Warn if deprecated empty statements are found"
+#~ msgstr "推奨されない空文が見つかれば警告する"
+
+#~ msgid "Warn if .class files are out of date"
+#~ msgstr ".class ファイルがソースファイルより古ければ警告する"
+
+#~ msgid "Always check for non gcj generated classes archives"
+#~ msgstr "gcj が生成していないクラスアーカイブを常に検査する"
+
+#~ msgid "';' expected"
+#~ msgstr "';' が必要です"
+
+#~ msgid "'*' expected"
+#~ msgstr "'*' が必要です"
+
+#~ msgid "Class or interface declaration expected"
+#~ msgstr "クラスやインターフェイス宣言が必要です"
+
+#~ msgid "'{' expected"
+#~ msgstr "'{' が必要です"
+
+#~ msgid "Missing super class name"
+#~ msgstr "スーパークラス名を欠いています"
+
+#~ msgid "Missing interface name"
+#~ msgstr "インターフェイス名を欠いています"
+
 #~ msgid "Can't specify array dimension in a declaration"
 #~ msgstr "配列の次元を宣言で指定することはできません"
 
+#~ msgid "']' expected"
+#~ msgstr "']' が必要です"
+
+#~ msgid "Unbalanced ']'"
+#~ msgstr "対応のない ']' です"
+
+#~ msgid "Invalid method declaration, method name required"
+#~ msgstr "無効なメソッド宣言です。メソッド名が必要です"
+
+#~ msgid "Identifier expected"
+#~ msgstr "識別子が必要です"
+
+#~ msgid "')' expected"
+#~ msgstr "')' が必要です"
+
+#~ msgid "Missing class type term"
+#~ msgstr "クラスタイプ項を欠いています"
+
+#~ msgid "Invalid interface type"
+#~ msgstr "インターフェイス型が無効です"
+
+#~ msgid "':' expected"
+#~ msgstr "':' が必要です"
+
+#~ msgid "Invalid expression statement"
+#~ msgstr "式文が無効です"
+
+#~ msgid "'(' expected"
+#~ msgstr "'(' が必要です"
+
+#~ msgid "Missing term or ')'"
+#~ msgstr "項または ')' を欠いています"
+
+#~ msgid "Missing term and ')' expected"
+#~ msgstr "項と必須の ')' を欠いています"
+
+#~ msgid "Invalid control expression"
+#~ msgstr "無効な制御式です"
+
+#~ msgid "Invalid update expression"
+#~ msgstr "無効な更新式です"
+
+#~ msgid "Missing term or ')' expected"
+#~ msgstr "項または必須の ')' を欠いています"
+
+#~ msgid "'class' or 'this' expected"
+#~ msgstr "'class' または 'this' が必要です"
+
+#~ msgid "'class' expected"
+#~ msgstr "'class' が必要です"
+
+#~ msgid "')' or term expected"
+#~ msgstr "')' または項が必要です"
+
+#~ msgid "'[' expected"
+#~ msgstr "'[' が必要です"
+
+#~ msgid "Field expected"
+#~ msgstr "フィールドが必要です"
+
+#~ msgid "Missing term and ']' expected"
+#~ msgstr "項と必須の ']' を欠いています"
+
+#~ msgid "']' expected, invalid type expression"
+#~ msgstr "']' が必要で、無効な型表現です"
+
+#~ msgid "Invalid type expression"
+#~ msgstr "無効な型表現です"
+
+#~ msgid "Constructor invocation must be first thing in a constructor"
+#~ msgstr "コンストラクタの起動はコンストラクタ内で最初に行なわなければなりません"
+
+#~ msgid "Only constructors can invoke constructors"
+#~ msgstr "コンストラクタだけがコンストラクタを起動できます"
+
+#~ msgid ": `%s' JDK1.1(TM) feature"
+#~ msgstr ": `%s' は JDK1.1(TM) の機能です"
+
+#~ msgid ""
+#~ "%s.\n"
+#~ "%s"
+#~ msgstr ""
+#~ "%s.\n"
+#~ "%s"
+
 #~ msgid "Can't use '$' as a separator for inner classes"
 #~ msgstr "'$' は内部クラスの区切り子として使用できません"
+
+#~ msgid "malformed .zip archive in CLASSPATH: %s"
+#~ msgstr "CLASSPATH 内に変な .zip アーカイブがあります: %s"
+
+#~ msgid "Can't find default package `%s'. Check the CLASSPATH environment variable and the access to the archives."
+#~ msgstr "デフォルトパッケージ `%s' が見つかりません。CLASSPATH 環境変数とアーカイブへのアクセスを確かめてください。"
+
+#~ msgid "not a static field `%s'"
+#~ msgstr "static フィールド `%s' ではありません"
+
+#~ msgid "No case for %s"
+#~ msgstr "%s のための case がありません"
 
 #~ msgid "internal error - use of undefined type"
 #~ msgstr "内部エラー - 未定義型の使用です"
@@ -26702,9 +25704,6 @@ msgstr "register 変数 `%s' のアドレスが要求されました"
 #~ msgid "Consider all mem refs to static data to be volatile"
 #~ msgstr "静的データへのメモリ参照を全て volatile とみなす"
 
-#~ msgid "Integrate simple functions into their callers"
-#~ msgstr "単純な関数を呼び出し側に統合する"
-
 #~ msgid "Pretend that host and target use the same FP format"
 #~ msgstr "ホストとターゲットが同じ浮動小数形式を使う振る舞いをさせる"
 
@@ -26744,14 +25743,8 @@ msgstr "register 変数 `%s' のアドレスが要求されました"
 #~ msgid "Use the smallest fitting integer to hold enums"
 #~ msgstr "列挙型が保持できる最小の整数型を使用する"
 
-#~ msgid "Enable most warning messages"
-#~ msgstr "殆んどの警告メッセージを有効にする"
-
 #~ msgid "Warn if nested comments are detected"
 #~ msgstr "入れ子になったコメントを検出したときに警告する"
-
-#~ msgid "Warn about possibly confusing type conversions"
-#~ msgstr "型変換が混乱する可能性に関して警告する"
 
 #~ msgid "Don't warn about too many arguments to format functions"
 #~ msgstr "format 関数への多すぎる引数に関する警告しない"
@@ -26797,9 +25790,6 @@ msgstr "register 変数 `%s' のアドレスが要求されました"
 
 #~ msgid "  -ax                     Enable jump profiling \n"
 #~ msgstr "  -ax                     ジャンププロファイルを有効にする\n"
-
-#~ msgid "  -version                Display the compiler's version\n"
-#~ msgstr "  -version                コンパイラのバージョンを表示する\n"
 
 #~ msgid ""
 #~ "\n"

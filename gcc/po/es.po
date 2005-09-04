@@ -1,13 +1,13 @@
-# Mensajes en español para gcc-4.0.1-b20050607
+# Mensajes en español para gcc-4.0.1
 # Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 # Cristian Othón Martínez Vera <cfuga@itam.mx>, 2001, 2002, 2003, 2004, 2005.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 4.0.1-b20050607\n"
+"Project-Id-Version: gcc 4.0.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2005-06-06 21:32+0200\n"
-"PO-Revision-Date: 2005-06-16 17:03-0500\n"
+"POT-Creation-Date: 2005-07-07 10:51-0700\n"
+"PO-Revision-Date: 2005-07-11 14:01-0500\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@itam.mx>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -303,42 +303,31 @@ msgstr "<línea de orden>"
 #. between diagnostics with "syntax error" in them, and diagnostics
 #. with "parse error" in them.  It's okay to give them both the same
 #. translation.
-#: c-parse.y:54 c-parse.c:5359 c-parse.y:2955 gengtype-yacc.c:1580
-#: java/parse-scan.c:3081 java/parse-scan.y:1370 java/parse.c:6185
-#: java/parse.y:16419 objc/objc-parse.y:53 objc/objc-parse.c:6438
-#: objc/objc-parse.y:3545
+#: c-parse.y:54 c-parse.c:5385 c-parse.y:2955 gengtype-yacc.c:1606
 msgid "syntax error"
 msgstr "error sintáctico"
 
-#: c-parse.c:2161 c-parse.y:2959 gengtype-yacc.c:564 java/parse-scan.c:1938
-#: java/parse-scan.y:1374 java/parse.c:2938 java/parse.y:16423
-#: objc/objc-parse.c:2682 objc/objc-parse.y:3549
+#: c-parse.c:2157 c-parse.y:2959 gengtype-yacc.c:560
 msgid "syntax error: cannot back up"
 msgstr "error sintáctico: no se puede regresar"
 
-#: c-parse.c:5355 c-parse.y:2957 gengtype-yacc.c:1576 java/parse-scan.c:3077
-#: java/parse-scan.y:1372 java/parse.c:6181 java/parse.y:16421
-#: objc/objc-parse.c:6434 objc/objc-parse.y:3547
+#: c-parse.c:5381 c-parse.y:2957 gengtype-yacc.c:1602
 msgid "syntax error; also virtual memory exhausted"
 msgstr "error sintáctico; también se agotó la memoria"
 
-#: c-parse.c:5477 gengtype-yacc.c:1698 java/parse-scan.c:3199
-#: java/parse.c:6303 objc/objc-parse.c:6556
+#: c-parse.c:5506 gengtype-yacc.c:1727
 msgid "parser stack overflow"
 msgstr "desbordamiento de la pila del decodificador"
 
-#: c-parse.y:2956 java/parse-scan.y:1371 java/parse.y:16420
-#: objc/objc-parse.y:3546
+#: c-parse.y:2956
 msgid "parse error"
 msgstr "error de decodificación"
 
-#: c-parse.y:2958 java/parse-scan.y:1373 java/parse.y:16422
-#: objc/objc-parse.y:3548
+#: c-parse.y:2958
 msgid "parse error; also virtual memory exhausted"
 msgstr "error de decodificación; también se agotó la memoria"
 
-#: c-parse.y:2960 java/parse-scan.y:1375 java/parse.y:16424
-#: objc/objc-parse.y:3550
+#: c-parse.y:2960
 msgid "parse error: cannot back up"
 msgstr "error de decodificación: no se puede regresar"
 
@@ -3258,8 +3247,8 @@ msgstr "Selecciona el CPU para el cual se genera código"
 #. characters in the message.
 #: config/cris/cris.c:578 c-typeck.c:4105 c-typeck.c:4120 c-typeck.c:4135
 #: final.c:2862 final.c:2864 gcc.c:4639 rtl-error.c:113 toplev.c:610
-#: cp/parser.c:1894 cp/typeck.c:4167 java/expr.c:409 java/parse.y:5020
-#: java/verify.c:1539 java/verify.c:1540 java/verify.c:1559
+#: cp/parser.c:1894 cp/typeck.c:4167 java/expr.c:409 java/verify.c:1539
+#: java/verify.c:1540 java/verify.c:1559
 #, gcc-internal-format
 msgid "%s"
 msgstr "%s"
@@ -6553,1915 +6542,1574 @@ msgstr "no está implementado usar ambos @FILE con ficheros múltiples"
 msgid "cannot specify 'main' class when not linking"
 msgstr "no se puede especificar la clase 'main' cuando no se está enlazando"
 
-#: java/parse-scan.y:878 java/parse.y:974 java/parse.y:1315 java/parse.y:1376
-#: java/parse.y:1587 java/parse.y:1810 java/parse.y:1819 java/parse.y:1830
-#: java/parse.y:1841 java/parse.y:1853 java/parse.y:1868 java/parse.y:1885
-#: java/parse.y:1887 java/parse.y:1968 java/parse.y:2145 java/parse.y:2214
-#: java/parse.y:2378 java/parse.y:2391 java/parse.y:2398 java/parse.y:2405
-#: java/parse.y:2416 java/parse.y:2418 java/parse.y:2456 java/parse.y:2458
-#: java/parse.y:2460 java/parse.y:2481 java/parse.y:2483 java/parse.y:2485
-#: java/parse.y:2501 java/parse.y:2503 java/parse.y:2524 java/parse.y:2526
-#: java/parse.y:2528 java/parse.y:2556 java/parse.y:2558 java/parse.y:2560
-#: java/parse.y:2562 java/parse.y:2580 java/parse.y:2582 java/parse.y:2593
-#: java/parse.y:2604 java/parse.y:2615 java/parse.y:2626 java/parse.y:2637
-#: java/parse.y:2650 java/parse.y:2654 java/parse.y:2656 java/parse.y:2669
-msgid "Missing term"
-msgstr "Falta el término"
-
-#: java/parse-scan.y:880 java/parse.y:748 java/parse.y:786 java/parse.y:811
-#: java/parse.y:995 java/parse.y:1350 java/parse.y:1563 java/parse.y:1565
-#: java/parse.y:1795 java/parse.y:1821 java/parse.y:1832 java/parse.y:1843
-#: java/parse.y:1855 java/parse.y:1870
-msgid "';' expected"
-msgstr "se esperaba ';'"
-
-#: java/parse.y:746 java/parse.y:784
-msgid "Missing name"
-msgstr "Falta el nombre"
-
-#: java/parse.y:809
-msgid "'*' expected"
-msgstr "se esperaba '*'"
-
-#: java/parse.y:823
-msgid "Class or interface declaration expected"
-msgstr "se esperaba una declaración de clase o interfaz"
-
-#: java/parse.y:860 java/parse.y:862
-msgid "Missing class name"
-msgstr "Falta el nombre de la clase"
-
-#: java/parse.y:865 java/parse.y:869 java/parse.y:877 java/parse.y:1035
-#: java/parse.y:1296 java/parse.y:1298 java/parse.y:1630 java/parse.y:1881
-#: java/parse.y:1913 java/parse.y:1975
-msgid "'{' expected"
-msgstr "Se esperaba '{'"
-
-#: java/parse.y:879
-msgid "Missing super class name"
-msgstr "No se encuentra el nombre de la super clase"
-
-#: java/parse.y:889 java/parse.y:905
-msgid "Missing interface name"
-msgstr "No se encuentra el nombre de la interfaz"
-
-#: java/parse.y:989
-msgid "Missing variable initializer"
-msgstr "Falta el inicializador de la variable"
-
-#: java/parse.y:1006
-msgid "Invalid declaration"
-msgstr "Declaración inválida"
-
-#: java/parse.y:1009 java/parse.y:1094 java/parse.y:2160 java/parse.y:2189
-#: java/parse.y:2211 java/parse.y:2215 java/parse.y:2250 java/parse.y:2329
-#: java/parse.y:2339 java/parse.y:2349
-msgid "']' expected"
-msgstr "Se esperaba ']'"
-
-#: java/parse.y:1013
-msgid "Unbalanced ']'"
-msgstr "']' desbalanceado"
-
-#: java/parse.y:1049
-msgid "Invalid method declaration, method name required"
-msgstr "Declaración de método inválida, se requiere un nombre de método"
-
-#: java/parse.y:1054 java/parse.y:1059 java/parse.y:1064 java/parse.y:2063
-msgid "Identifier expected"
-msgstr "Se esperaba un identificador"
-
-#: java/parse.y:1069 java/parse.y:4741
-#, gcc-internal-format
-msgid "Invalid method declaration, return type required"
-msgstr "Declaración de método inválida, se requiere un tipo de devolución"
-
-#: java/parse.y:1092 java/parse.y:1543 java/parse.y:1550 java/parse.y:1559
-#: java/parse.y:1561 java/parse.y:1589 java/parse.y:1698 java/parse.y:2005
-#: java/parse.y:2058
-msgid "')' expected"
-msgstr "Se esperaba ')'"
-
-#: java/parse.y:1108
-msgid "Missing formal parameter term"
-msgstr "Falta el término de parámetro formal"
-
-#: java/parse.y:1123 java/parse.y:1128
-msgid "Missing identifier"
-msgstr "Falta el identificador"
-
-#: java/parse.y:1148 java/parse.y:1157
-msgid "Missing class type term"
-msgstr "Falta el término de tipo de clase"
-
-#: java/parse.y:1313
-msgid "Invalid interface type"
-msgstr "Tipo de interfaz inválido"
-
-#: java/parse.y:1503 java/parse.y:1677 java/parse.y:1679
-msgid "':' expected"
-msgstr "Se esperaba ':'"
-
-#: java/parse.y:1529 java/parse.y:1534 java/parse.y:1539
-msgid "Invalid expression statement"
-msgstr "Declaración de expresión inválida"
-
-#: java/parse.y:1557 java/parse.y:1585 java/parse.y:1626 java/parse.y:1694
-#: java/parse.y:1762 java/parse.y:1883 java/parse.y:1961 java/parse.y:2052
-#: java/parse.y:2054 java/parse.y:2067 java/parse.y:2310 java/parse.y:2312
-msgid "'(' expected"
-msgstr "Se esperaba '('"
-
-#: java/parse.y:1628
-msgid "Missing term or ')'"
-msgstr "Falta término o ')'"
-
-#: java/parse.y:1675
-msgid "Missing or invalid constant expression"
-msgstr "Expresión constante faltante o inválida"
-
-#: java/parse.y:1696
-msgid "Missing term and ')' expected"
-msgstr "Faltan término y ')' esperados"
-
-#: java/parse.y:1735
-msgid "Invalid control expression"
-msgstr "Expresión de control inválida"
-
-#: java/parse.y:1737 java/parse.y:1739
-msgid "Invalid update expression"
-msgstr "Expresión de actualización inválida"
-
-#: java/parse.y:1764
-msgid "Invalid init statement"
-msgstr "Declaración de inicio inválida"
-
-#: java/parse.y:1964
-msgid "Missing term or ')' expected"
-msgstr "Faltan término o ')' esperados"
-
-#: java/parse.y:2007
-msgid "'class' or 'this' expected"
-msgstr "Se esperaba 'class' o 'this'"
-
-#: java/parse.y:2009 java/parse.y:2011
-msgid "'class' expected"
-msgstr "Se esperaba 'class'"
-
-#: java/parse.y:2056
-msgid "')' or term expected"
-msgstr "Se esperaba ')' o término"
-
-#: java/parse.y:2158 java/parse.y:2187
-msgid "'[' expected"
-msgstr "Se esperaba '['"
-
-#: java/parse.y:2265
-msgid "Field expected"
-msgstr "Se esperaba un campo"
-
-#: java/parse.y:2324 java/parse.y:2334 java/parse.y:2344
-msgid "Missing term and ']' expected"
-msgstr "Faltan término y ']' esperados"
-
-#: java/parse.y:2449
-msgid "']' expected, invalid type expression"
-msgstr "Se esperaba ']', expresión de tipo inválida"
-
-#: java/parse.y:2452
-msgid "Invalid type expression"
-msgstr "Expresión de tipo inválida"
-
-#: java/parse.y:2564
-msgid "Invalid reference type"
-msgstr "Tipo de referencia inválido"
-
-#: java/parse.y:3031
-msgid "Constructor invocation must be first thing in a constructor"
-msgstr "La invocación del constructor debe ser el primer elemento en un constructor"
-
-#: java/parse.y:3033
-msgid "Only constructors can invoke constructors"
-msgstr "Solamente los constructores pueden invocar constructores"
-
-#: options.c:943
+#: options.c:881
 msgid "Display this information"
 msgstr "Muestra esta información"
 
-#: options.c:949
+#: options.c:887
 msgid "--param <param>=<value>\tSet parameter <param> to value.  See below for a complete list of parameters"
 msgstr "--param <param>=<valor>\tEstablece el parámetro <param> al valor.  Vea a continuación para una lista completa de parámetros"
 
-#: options.c:958
+#: options.c:896
 msgid "-A<question>=<answer>\tAssert the <answer> to <question>.  Putting '-' before <question> disables the <answer> to <question>"
 msgstr "-A<pregunta>=<resp>\tRelaciona la <resp>uesta a la <pregunta>.  Al colocar '-' antes de la <pregunta> desactiva la <resp>uesta a la <pregunta>"
 
-#: options.c:961
+#: options.c:899
 msgid "Do not discard comments"
 msgstr "No descarta comentarios"
 
-#: options.c:964
+#: options.c:902
 msgid "Do not discard comments in macro expansions"
 msgstr "No descarta comentarios en expansiones de macro"
 
-#: options.c:967
+#: options.c:905
 msgid "-D<macro>[=<val>]\tDefine a <macro> with <val> as its value.  If just <macro> is given, <val> is taken to be 1"
 msgstr "-D<macro>[=<val>]\tDefine una <macro> con <val> como su valor.  Si sólo se da la <macro>, <val> se toma como 1"
 
-#: options.c:973
+#: options.c:911
 msgid "-F <dir>\tAdd <dir> to the end of the main framework include path"
 msgstr "-F <dir>\tAgrega el <dir>ectorio al final de la ruta de inclusión del marco de trabajo principal"
 
-#: options.c:976
+#: options.c:914
 msgid "-G<number>\tPut global and static data smaller than <number> bytes into a special section (on some targets)"
 msgstr "-G<número>\tColoca los datos globales y estáticos más pequeños que <número> bytes en una sección especial (en algunos objetivos)"
 
-#: options.c:979
+#: options.c:917
 msgid "Print the name of header files as they are used"
 msgstr "Muestra los nombres de los ficheros de encabezado mientras se utilizan"
 
-#: options.c:985
-msgid "-J<directory>\tPut MODULE files in 'directory'"
-msgstr "-J<directorio>\tColoca los ficheros MODULE en el 'directorio'"
+#: options.c:920
+msgid "-I <dir>\tAdd <dir> to the end of the main include path"
+msgstr "-I <dir>\tAgrega el <dir>ectorio al final de la ruta de inclusión principal"
 
-#: options.c:991
+#: options.c:923
+msgid "Generate make dependencies"
+msgstr "Generar dependencias de make"
+
+#: options.c:926
 msgid "Generate make dependencies and compile"
 msgstr "Genera dependencias de make y compilar"
 
-#: options.c:1000
+#: options.c:929
+msgid "-MF <file>\tWrite dependency output to the given file"
+msgstr "-MF <fichero>\tEscribir la salida de dependencias al fichero dado"
+
+#: options.c:932
 msgid "Treat missing header files as generated files"
 msgstr "Trata los ficheros de encabezado faltantes como ficheros generados"
 
-#: options.c:1006
+#: options.c:935
+msgid "Like -M but ignore system header files"
+msgstr "Como -M pero ignora los ficheros de encabezado del sistema"
+
+#: options.c:938
 msgid "Like -MD but ignore system header files"
 msgstr "Como -MD pero ignora los ficheros de encabezado del sistema"
 
-#: options.c:1015
+#: options.c:941
+msgid "Generate phony targets for all headers"
+msgstr "Generar objetivos de prueba para todos los encabezados"
+
+#: options.c:944
 msgid "-MQ <target>\tAdd a MAKE-quoted target"
 msgstr "-MQ <objetivo>\tAgrega un objetivo tipo-MAKE"
 
-#: options.c:1021
+#: options.c:947
+msgid "-MT <target>\tAdd an unquoted target"
+msgstr "-MT <objetivo>\tAgregar un objetivo no citado"
+
+#: options.c:950
 msgid "-O<number>\tSet optimization level to <number>"
 msgstr "-O<número>\tEstablece el nivel de optimización a <número>"
 
-#: options.c:1024
+#: options.c:953
 msgid "Optimize for space rather than speed"
 msgstr "Optimiza para espacio en lugar de velocidad"
 
-#: options.c:1027
+#: options.c:956
 msgid "Do not generate #line directives"
 msgstr "No genera directivas #line"
 
-#: options.c:1030
+#: options.c:959
 msgid "-U<macro>\tUndefine <macro>"
 msgstr "-U<macro>\tIndefine la <macro>"
 
-#: options.c:1033
+#: options.c:962
 msgid "This switch is deprecated; use -Wextra instead"
 msgstr "Esta opción es obsoleta; utilice en su lugar -Wextra"
 
-#: options.c:1036
+#: options.c:965
 msgid "Warn about things that will change when compiling with an ABI-compliant compiler"
 msgstr "Avisa sobre cosas que cambiarán cuando se compile con un compilador que cumpla con la ABI"
 
-#: options.c:1039
+#: options.c:968
 msgid "Warn about returning structures, unions or arrays"
 msgstr "Avisa sobre la devolución de estructuras, unions o matrices"
 
-#: options.c:1042
-msgid "Warn about possible aliasing of dummy arguments"
-msgstr "Avisar sobre posibles aliases de argumentos de relleno"
+#: options.c:971
+msgid "Enable most warning messages"
+msgstr "Activar casi todos los mensajes de aviso"
 
-#: options.c:1048
+#: options.c:974
 msgid "Warn about casting functions to incompatible types"
 msgstr "Avisa por funciones de conversión a tipos incompatibles"
 
-#: options.c:1051
+#: options.c:977
 msgid "Warn about pointer casts which increase alignment"
 msgstr "Avisa sobre conversión de punteros que incremente la alineación"
 
-#: options.c:1054
+#: options.c:980
 msgid "Warn about casts which discard qualifiers"
 msgstr "Avisa sobre conversiones que descartan calificadores"
 
-#: options.c:1057
+#: options.c:983
 msgid "Warn about subscripts whose type is \"char\""
 msgstr "Avisa sobre subíndices cuyo tipo es \"char\""
 
-#: options.c:1060
+#: options.c:986
 msgid "Warn about possibly nested block comments, and C++ comments spanning more than one physical line"
 msgstr "Avisa sobre la posibilidad de bloques de comentarios anidados, y comentarios de C++ que abarquen más de una línea física"
 
-#: options.c:1063
+#: options.c:989
 msgid "Synonym for -Wcomment"
 msgstr "Sinónimo de -Wcomment"
 
-#: options.c:1066
-msgid "Warn about implicit conversion"
-msgstr "Avisar sobre conversiones implícitas"
+#: options.c:992
+msgid "Warn about possibly confusing type conversions"
+msgstr "Avisa sobre la posibilidad de conversión de tipos confusas"
 
-#: options.c:1069
+#: options.c:995
 msgid "Warn when all constructors and destructors are private"
 msgstr "Avisa cuando todos los constructores y destructores son privados"
 
-#: options.c:1072
+#: options.c:998
 msgid "Warn when a declaration is found after a statement"
 msgstr "Avisa cuando se encuentra una declaración después de una declaración"
 
-#: options.c:1075
-msgid "Warn if a deprecated compiler feature, class, method, or field is used"
-msgstr "Avisa si se usan opciones de compilador, clases, métodos o campos obsoletos"
+#: options.c:1001
+msgid "Warn about deprecated compiler features"
+msgstr "Avisa si se usan opciones de compilador obsoletas"
 
-#: options.c:1078
+#: options.c:1004
 msgid "Warn about uses of __attribute__((deprecated)) declarations"
 msgstr "Avisa sobre usos de declaraciones __attribute__((obsoleto))"
 
-#: options.c:1081
+#: options.c:1007
 msgid "Warn when an optimization pass is disabled"
 msgstr "Avisa cuando se desactivó un paso de optimización"
 
-#: options.c:1084
+#: options.c:1010
 msgid "Warn about compile-time integer division by zero"
 msgstr "Avisa sobre la división entera por cero en tiempo de compilación"
 
-#: options.c:1087
+#: options.c:1013
 msgid "Warn about violations of Effective C++ style rules"
 msgstr "Avisa violaciones de reglas de estilo de Effective C++"
 
-#: options.c:1090
+#: options.c:1016
 msgid "Warn about stray tokens after #elif and #endif"
 msgstr "Avisa sobre elementos sobrantes después de #elif y #endif"
 
-#: options.c:1093
+#: options.c:1019
 msgid "Treat all warnings as errors"
 msgstr "Trata todos los avisos como errores"
 
-#: options.c:1096
+#: options.c:1022
 msgid "Make implicit function declarations an error"
 msgstr "Hace que la declaración implícita de funciones sea un error"
 
-#: options.c:1099
+#: options.c:1025
 msgid "Print extra (possibly unwanted) warnings"
 msgstr "Muestra avisos extra (posiblemente no deseados)"
 
-#: options.c:1102
-msgid "Warn if deprecated empty statements are found"
-msgstr "Avisa si se encuentran declaraciones vacías obsoletas"
-
-#: options.c:1105
+#: options.c:1028
 msgid "Exit on the first error occurred"
 msgstr "Termina cuando suceda el primer error"
 
-#: options.c:1108
+#: options.c:1031
 msgid "Warn if testing floating point numbers for equality"
 msgstr "Avisa si se prueban números de coma flotante para equidad"
 
-#: options.c:1111
+#: options.c:1034
 msgid "Warn about printf/scanf/strftime/strfmon format string anomalies"
 msgstr "Avisa sobre anomalías de cadena de formato de printf/scanf/strftime/strfmon"
 
-#: options.c:1114
+#: options.c:1037
 msgid "Warn if passing too many arguments to a function for its format string"
 msgstr "Avisa si se pasan demasiados argumentos a una función para su cadena de formato"
 
-#: options.c:1117
+#: options.c:1040
 msgid "Warn about format strings that are not literals"
 msgstr "Avisa sobre el uso de cadenas de formato que no son literales"
 
-#: options.c:1120
+#: options.c:1043
 msgid "Warn about possible security problems with format functions"
 msgstr "Avisa sobre posibles problemas de seguridad con funciones de formato"
 
-#: options.c:1123
+#: options.c:1046
 msgid "Warn about strftime formats yielding 2-digit years"
 msgstr "Avisa sobre formatos de strftime que producen dos dígitos para el año"
 
-#: options.c:1126
+#: options.c:1049
 msgid "Warn about zero-length formats"
 msgstr "Avisa sobre formatos de longitud cero"
 
-#: options.c:1135
+#: options.c:1058
 msgid "Warn about implicit function declarations"
 msgstr "Avisa sobre la declaración implícita de funciones"
 
-#: options.c:1138
+#: options.c:1061
 msgid "Warn when a declaration does not specify a type"
 msgstr "Avisa cuando una declaración no especifique un tipo"
 
-#: options.c:1141
-msgid "Warn about calls with implicit interface"
-msgstr "Avisar sobre llamadas con interfaz implícita"
-
-#: options.c:1144
+#: options.c:1064
 msgid "Deprecated.  This switch has no effect."
 msgstr "Obsoleto.  Esta opción no tiene efecto."
 
-#: options.c:1147
+#: options.c:1067
 msgid "Warn about variables which are initialized to themselves."
 msgstr "Avisa sobre variables que se inicialicen ellas mismas."
 
-#: options.c:1150
+#: options.c:1070
 msgid "Warn when an inlined function cannot be inlined"
 msgstr "Avisa cuando una función inline no puede ser inline"
 
-#: options.c:1153
+#: options.c:1073
 msgid "Warn about invalid uses of the \"offsetof\" macro"
 msgstr "Avisa sobre usos inválidos de la macro \"offsetof\""
 
-#: options.c:1156
+#: options.c:1076
 msgid "Warn about PCH files that are found but not used"
 msgstr "Avisa sobre ficheros PCH que se encuentran pero no se usan"
 
-#: options.c:1159
+#: options.c:1079
 msgid "-Wlarger-than-<number>\tWarn if an object is larger than <number> bytes"
 msgstr "-Wlarger-than-<número>\tAvisa si un objeto es más grande que <número> bytes"
 
-#: options.c:1162
-msgid "Warn about truncated source lines"
-msgstr "Avisar sobre líneas de código truncadas"
-
-#: options.c:1165
+#: options.c:1082
 msgid "Do not warn about using \"long long\" when -pedantic"
 msgstr "No avisa sobre el uso de \"long long\" cuando se use -pedantic"
 
-#: options.c:1168
+#: options.c:1085
 msgid "Warn about suspicious declarations of \"main\""
 msgstr "Avisa sobre declaraciones sospechosas de \"main\""
 
-#: options.c:1171
+#: options.c:1088
 msgid "Warn about possibly missing braces around initializers"
 msgstr "Avisa sobre posibles llaves faltantes alrededor de los inicializadores"
 
-#: options.c:1174
+#: options.c:1091
 msgid "Warn about global functions without previous declarations"
 msgstr "Avisa sobre funciones globales sin declaraciones previas"
 
-#: options.c:1177
+#: options.c:1094
 msgid "Warn about missing fields in struct initializers"
 msgstr "Avisa sobre campos faltantes en los inicializadores de struct"
 
-#: options.c:1180
+#: options.c:1097
 msgid "Warn about functions which might be candidates for format attributes"
 msgstr "Avisa por funciones que pueden ser candidatas para atributos de formato"
 
-#: options.c:1183
+#: options.c:1100
 msgid "Warn about user-specified include directories that do not exist"
 msgstr "Avisa sobre directorios de inclusión definidos por el usuario que no existen"
 
-#: options.c:1186
+#: options.c:1103
 msgid "Warn about functions which might be candidates for __attribute__((noreturn))"
 msgstr "Avisa sobre funciones que pueden ser candidatas para __attribute((noreturn))"
 
-#: options.c:1189
+#: options.c:1106
 msgid "Warn about global functions without prototypes"
 msgstr "Avisa sobre funciones globales sin prototipos"
 
-#: options.c:1192
+#: options.c:1109
 msgid "Warn about use of multi-character character constants"
 msgstr "Avisa sobre el uso de constantes de carácter multicaracteres"
 
-#: options.c:1195
+#: options.c:1112
 msgid "Warn about \"extern\" declarations not at file scope"
 msgstr "Avisa sobre declaraciones \"extern\" que no están en el ámbito del fichero"
 
-#: options.c:1198
+#: options.c:1115
 msgid "Warn when non-templatized friend functions are declared within a template"
 msgstr "Avisa cuando las funciones friend sin plantillas se declaran dentro de una plantilla"
 
-#: options.c:1201
+#: options.c:1118
 msgid "Warn about non-virtual destructors"
 msgstr "Avisa sobre destructores no virtuales"
 
-#: options.c:1204
+#: options.c:1121
 msgid "Warn about NULL being passed to argument slots marked as requiring non-NULL"
 msgstr "Avisa sobre el paso de NULL a ranuras de argumento marcadas que requieren no-NULL"
 
-#: options.c:1207
-msgid "Warn about usage of non-standard intrinsics"
-msgstr "Avisar sobre el uso de intrínsecos no estándar"
-
-#: options.c:1210
+#: options.c:1124
 msgid "Warn if a C-style cast is used in a program"
 msgstr "Avisa si se usa una conversión de estilo C en un programa"
 
-#: options.c:1213
+#: options.c:1127
 msgid "Warn if an old-style parameter definition is used"
 msgstr "Avisa si se usa un parámetro de estilo antiguo en una definición"
 
-#: options.c:1216
-msgid "Warn if .class files are out of date"
-msgstr "Avisa si los ficheros .class están desactualizados"
-
-#: options.c:1219
+#: options.c:1130
 msgid "Warn about overloaded virtual function names"
 msgstr "Avisa sobre nombres de funciones virtual sobrecargadas"
 
-#: options.c:1222
+#: options.c:1133
 msgid "Warn when the packed attribute has no effect on struct layout"
 msgstr "Avisa cuando el atributo packed no tiene efecto en la disposición de un struct"
 
-#: options.c:1225
+#: options.c:1136
 msgid "Warn when padding is required to align structure members"
 msgstr "Avisa cuando se requiere relleno para alinear a los miembros de una estructura"
 
-#: options.c:1228
+#: options.c:1139
 msgid "Warn about possibly missing parentheses"
 msgstr "Avisa sobre posibles paréntesis faltantes"
 
-#: options.c:1231
+#: options.c:1142
 msgid "Warn when converting the type of pointers to member functions"
 msgstr "Avisa cuando se convierte el tipo de punteros sobre punteros a funciones miembro"
 
-#: options.c:1234
+#: options.c:1145
 msgid "Warn about function pointer arithmetic"
 msgstr "Avisa sobre la aritmética de punteros de funciones"
 
-#: options.c:1237
+#: options.c:1148
 msgid "Warn when a pointer differs in signedness in an assignment."
 msgstr "Avisa cuando un puntero difiere en signo en una asignación."
 
-#: options.c:1240
+#: options.c:1151
 msgid "Warn if inherited methods are unimplemented"
 msgstr "Avisa si los métodos heredados no están implementados"
 
-#: options.c:1243
+#: options.c:1154
 msgid "Warn about multiple declarations of the same object"
 msgstr "Avisa sobre declaraciones múltiples del mismo objeto"
 
-#: options.c:1246
-msgid "Warn if modifiers are specified when not necessary"
-msgstr "Avisa si se especifican modificadores cuando no son necesarios"
-
-#: options.c:1249
+#: options.c:1157
 msgid "Warn when the compiler reorders code"
 msgstr "Avisa cuando el compilador reordene código"
 
-#: options.c:1252
+#: options.c:1160
 msgid "Warn whenever a function's return type defaults to \"int\" (C), or about inconsistent return types (C++)"
 msgstr "Avisa cuando el tipo de devolución por defecto de una función cambia a \"int\" (C), o sobre tipos de devolución inconsistentes (C++)"
 
-#: options.c:1255
+#: options.c:1163
 msgid "Warn if a selector has multiple methods"
 msgstr "Avisa si un selector tiene métodos múltiples"
 
-#: options.c:1258
+#: options.c:1166
 msgid "Warn about possible violations of sequence point rules"
 msgstr "Avisa sobre posibles violaciones a las reglas de secuencia de punto"
 
-#: options.c:1261
+#: options.c:1169
 msgid "Warn when one local variable shadows another"
 msgstr "Avisa cuando una variable local oscurece otra"
 
-#: options.c:1264
+#: options.c:1172
 msgid "Warn about signed-unsigned comparisons"
 msgstr "Avisa sobre comparaciones signed-unsigned"
 
-#: options.c:1267
+#: options.c:1175
 msgid "Warn when overload promotes from unsigned to signed"
 msgstr "Avisa cuando la sobrecarga promueva de unsigned a signed"
 
-#: options.c:1270 options.c:1273
+#: options.c:1178 options.c:1181
 msgid "Warn about code which might break strict aliasing rules"
 msgstr "Avisa sobre código que pueda romper las reglas estrictas de aliases"
 
-#: options.c:1276
+#: options.c:1184
 msgid "Warn about uncasted NULL used as sentinel"
 msgstr "Avisa sobre NULL sin conversión usado como sentinela"
 
-#: options.c:1279
+#: options.c:1187
 msgid "Warn about unprototyped function declarations"
 msgstr "Avisa sobre declaraciones de función sin prototipo"
 
-#: options.c:1282
-msgid "Warn about \"suspicious\" constructs"
-msgstr "Avisar sobre construcciones \"sospechosas\" "
-
-#: options.c:1285
+#: options.c:1190
 msgid "Warn about enumerated switches, with no default, missing a case"
 msgstr "Avisa sobre switches enumerados, sin valor por defecto, que carezcan de un case"
 
-#: options.c:1288
+#: options.c:1193
 msgid "Warn about enumerated switches missing a \"default:\" statement"
 msgstr "Avisa sobre switches enumerados que carezcan de una declaración \"default:\""
 
-#: options.c:1291
+#: options.c:1196
 msgid "Warn about all enumerated switches missing a specific case"
 msgstr "Avisa sobre todos los switches enumerados que carezcan de un case específico"
 
-#: options.c:1294
+#: options.c:1199
 msgid "Warn when synthesis behavior differs from Cfront"
 msgstr "Avisa cuando el comportamiento de síntesis difiera de Cfront"
 
-#: options.c:1297
+#: options.c:1202
 msgid "Do not suppress warnings from system headers"
 msgstr "No suprime los avisos de los encabezados del sistema"
 
-#: options.c:1300
+#: options.c:1205
 msgid "Warn about features not present in traditional C"
 msgstr "Avisa sobre características no presentes en C tradicional"
 
-#: options.c:1303
+#: options.c:1208
 msgid "Warn if trigraphs are encountered that might affect the meaning of the program"
 msgstr "Avisa si se encuentran trigrafos que puedan afectar el significado del programa"
 
-#: options.c:1306
+#: options.c:1211
 msgid "Warn about @selector()s without previously declared methods"
 msgstr "Avisa sobre @selector()es sin métodos declarados previamente"
 
-#: options.c:1309
+#: options.c:1214
 msgid "Warn if an undefined macro is used in an #if directive"
 msgstr "Avisa si se usa una macro indefinida en una directiva #if"
 
-#: options.c:1312
-msgid "Warn about underflow of numerical constant expressions"
-msgstr "Avisar sobre desbordamiento por debajo de expresiones numéricas constantes"
-
-#: options.c:1315
+#: options.c:1217
 msgid "Warn about uninitialized automatic variables"
 msgstr "Avisa sobre variables automáticas sin inicializar"
 
-#: options.c:1318
+#: options.c:1220
 msgid "Warn about unrecognized pragmas"
 msgstr "Avisa sobre pragmas no reconocidos"
 
-#: options.c:1321
+#: options.c:1223
 msgid "Warn about code that will never be executed"
 msgstr "Avisa sobre código que nunca se ejecutará"
 
-#: options.c:1324
+#: options.c:1226
 msgid "Enable all -Wunused- warnings"
 msgstr "Activa todos los avisos -Wunused-"
 
-#: options.c:1327
+#: options.c:1229
 msgid "Warn when a function is unused"
 msgstr "Avisa cuando no se use una función"
 
-#: options.c:1330 options.c:1333
+#: options.c:1232
 msgid "Warn when a label is unused"
 msgstr "Avisa cuando no se use una etiqueta"
 
-#: options.c:1336
+#: options.c:1235
 msgid "Warn about macros defined in the main file that are not used"
 msgstr "Avisa sobre macros definidas en el fichero principal que no se usan"
 
-#: options.c:1339
+#: options.c:1238
 msgid "Warn when a function parameter is unused"
 msgstr "Avisa cuando no se use un parámetro de una función"
 
-#: options.c:1342
+#: options.c:1241
 msgid "Warn when an expression value is unused"
 msgstr "Avisa cuando no se use un valor de una expresión"
 
-#: options.c:1345
+#: options.c:1244
 msgid "Warn when a variable is unused"
 msgstr "Avisa cuando no se use una variable"
 
-#: options.c:1348
+#: options.c:1247
 msgid "Do not warn about using variadic macros when -pedantic"
 msgstr "No avisa sobre el uso de macros variadic cuando se use -pedantic"
 
-#: options.c:1351
+#: options.c:1250
 msgid "Give strings the type \"array of char\""
 msgstr "Da a las cadenas el tipo \"matriz de char\""
 
-#: options.c:1354
+#: options.c:1253
 msgid "A synonym for -std=c89 (for C) or -std=c++98 (for C++)."
 msgstr "Un sinónimo para -std=c89 (para C) o -std=c++98 (para C++)."
 
-#: options.c:1357
+#: options.c:1256
 msgid "-aux-info <file>\tEmit declaration information into <file>"
 msgstr "-aux-info <fichero>\tEmite la información de declaraciones en el <fichero>"
 
-#: options.c:1369
+#: options.c:1268
 msgid "-d<letters>\tEnable dumps from specific passes of the compiler"
 msgstr "-d<letras>\tActiva los volcados de pasos específicos del compilador"
 
-#: options.c:1372
+#: options.c:1271
 msgid "-dumpbase <file>\tSet the file basename to be used for dumps"
 msgstr "-dumpbase <fichero>\tEstablece el nombre base a usar para los volcados"
 
-#: options.c:1375
-msgid "--CLASSPATH\tDeprecated; use --classpath instead"
-msgstr "--CLASSPATH\tObsoleto; utilice en su lugar --classpath"
-
-#: options.c:1378
+#: options.c:1274
 msgid "Generate position-independent code if possible (large mode)"
 msgstr "Genera código independiente de posición si es posible (modo large)"
 
-#: options.c:1381
+#: options.c:1277
 msgid "Generate position-independent code for executables if possible (large mode)"
 msgstr "Genera código independiente de posición para ejecutables si es posible (modo large)"
 
-#: options.c:1387
+#: options.c:1283
 msgid "Enforce class member access control semantics"
 msgstr "Cumple las semánticas de control de acceso de miembros de clase"
 
-#: options.c:1390
+#: options.c:1286
 msgid "Align the start of functions"
 msgstr "Alínea el inicio de las funciones"
 
-#: options.c:1396
+#: options.c:1292
 msgid "Align labels which are only reached by jumping"
 msgstr "Alínea las etiquetas que solamente se alcanzan saltando"
 
-#: options.c:1402
+#: options.c:1298
 msgid "Align all labels"
 msgstr "Alínea todas las etiquetas"
 
-#: options.c:1408
+#: options.c:1304
 msgid "Align the start of loops"
 msgstr "Alínea el inicio de los ciclos"
 
-#: options.c:1417
+#: options.c:1313
 msgid "Change when template instances are emitted"
 msgstr "Cambia cuando se emitan las instancias de la plantilla"
 
-#: options.c:1420
+#: options.c:1316
 msgid "Specify that arguments may alias each other and globals"
 msgstr "Especifica que los argumentos pueden ser alias de cada otro y de los globales"
 
-#: options.c:1423
+#: options.c:1319
 msgid "Assume arguments may alias globals but not each other"
 msgstr "Asume que los argumentos pueden ser alias de globales pero no de cada otro"
 
-#: options.c:1426
+#: options.c:1322
 msgid "Assume arguments alias neither each other nor globals"
 msgstr "Asume que los argumentos no pueden ser alias de globales o de cada otro"
 
-#: options.c:1429
+#: options.c:1325
 msgid "Recognize the \"asm\" keyword"
 msgstr "Reconoce la palabra clave \"asm\""
 
-#: options.c:1432
-msgid "Permit the use of the assert keyword"
-msgstr "Permite el uso de la palabra clave assert"
-
-#: options.c:1441
+#: options.c:1328
 msgid "Generate unwind tables that are exact at each instruction boundary"
 msgstr "Genera tablas de desenredo que sean exactas en cada límite de instrucción"
 
-#: options.c:1444
-msgid "--bootclasspath=<path>\tReplace system path"
-msgstr "--bootclasspath=<ruta>\tReemplaza la ruta del sistema"
-
-#: options.c:1447
+#: options.c:1331
 msgid "Generate code to check bounds before indexing arrays"
 msgstr "Genera código para revisar los límites antes de indizar matrices"
 
-#: options.c:1450
+#: options.c:1334
 msgid "Replace add, compare, branch with branch on count register"
 msgstr "Reemplaza add, compare, branch con branch en la cuenta de registros"
 
-#: options.c:1453
+#: options.c:1337
 msgid "Use profiling information for branch probabilities"
 msgstr "Usa la información de análisis de perfil para las probabilidades de ramificación"
 
-#: options.c:1456
+#: options.c:1340
 msgid "Perform branch target load optimization before prologue / epilogue threading"
 msgstr "Realiza optimización de carga de ramificación objetivo antes del hilo prólogo / epílogo"
 
-#: options.c:1459
+#: options.c:1343
 msgid "Perform branch target load optimization after prologue / epilogue threading"
 msgstr "Realiza optimización de carga de ramificación objetivo después del hilo prólogo / epílogo"
 
-#: options.c:1462
+#: options.c:1346
 msgid "Restrict target load migration not to re-use registers in any basic block"
 msgstr "Restringe que la migración de carga de objetivos no reuse registros en ningún bloque básico"
 
-#: options.c:1465
+#: options.c:1349
 msgid "Recognize built-in functions"
 msgstr "Reconoce funciones internas"
 
-#: options.c:1471
+#: options.c:1355
 msgid "-fcall-saved-<register>\tMark <register> as being preserved across functions"
 msgstr "-fcall-saved-<registro>\tMarca el <registro> como preservado entre funciones"
 
-#: options.c:1474
+#: options.c:1358
 msgid "-fcall-used-<register>\tMark <register> as being corrupted by function calls"
 msgstr "-fcall-used-<registro>\tMarca el <registro> como corrupto para llamadas de función"
 
-#: options.c:1477
+#: options.c:1361
 msgid "Save registers around function calls"
 msgstr "Guarda registros alrededor de llamadas de función"
 
-#: options.c:1480
+#: options.c:1364
 msgid "Check the return value of new"
 msgstr "Revisa el valor de devolución de new"
 
-#: options.c:1483
-msgid "Generate checks for references to NULL"
-msgstr "Genera revisiones para referencias a NULL"
-
-#: options.c:1486
-msgid "--classpath=<path>\tSet class path"
-msgstr "--classpath=<ruta>\tEstablece la ruta de clases"
-
-#: options.c:1489
+#: options.c:1367
 msgid "Do not put uninitialized globals in the common section"
 msgstr "No pone globales sin inicializar en la sección común"
 
-#: options.c:1495
+#: options.c:1370
 msgid "Allow the arguments of the '?' operator to have different types"
 msgstr "Permite que los argumentos del operador '?' tengan tipos diferentes"
 
-#: options.c:1498
+#: options.c:1373
 msgid "Reduce the size of object files"
 msgstr "Reduce el tamaño de los ficheros objeto"
 
-#: options.c:1501
+#: options.c:1376
 msgid "Make string literals \"const char[]\" not \"char[]\""
 msgstr "Hace que las cadenas literales sean \"const char[]\" en lugar de \"char[]\""
 
-#: options.c:1504
+#: options.c:1379
 msgid "-fconst-string-class=<name>\tUse class <name> for constant strings"
 msgstr "-fconst-string-class=<nombre>\tUsa la clase <nombre> para cadenas constantes"
 
-#: options.c:1507
+#: options.c:1382
 msgid "Perform a register copy-propagation optimization pass"
 msgstr "Realiza el paso de optimización de copia-propagación de registros"
 
-#: options.c:1510
+#: options.c:1385
 msgid "Perform cross-jumping optimization"
 msgstr "Realiza optimizaciones de saltos cruzados"
 
-#: options.c:1513
+#: options.c:1388
 msgid "When running CSE, follow jumps to their targets"
 msgstr "Cuando se esté ejecutando CSE, sigue a los saltos a sus objetivos"
 
-#: options.c:1516
+#: options.c:1391
 msgid "When running CSE, follow conditional jumps"
 msgstr "Cuando se esté ejecutando CSE, sigue a los saltos condicionales"
 
-#: options.c:1519
+#: options.c:1394
 msgid "Omit range reduction step when performing complex division"
 msgstr "Omite el paso de reducción de rango al realizar divisiones complejas"
 
-#: options.c:1522
+#: options.c:1397
 msgid "Place data items into their own section"
 msgstr "Coloca los elementos de datos en su propia sección"
 
-#: options.c:1525
-msgid "Set the default double precision kind to an 8 byte wide type"
-msgstr "Establece el tipo de doble precisión por defecto a un tipo de 8 bytes de anchura"
-
-#: options.c:1528
+#: options.c:1400
 msgid "Inline member functions by default"
 msgstr "Hace inline por defecto a las funciones miembro"
 
-#: options.c:1531
-msgid "Set the default integer kind to an 8 byte wide type"
-msgstr "Establece el tipo entero por defecto a un tipo de 8 bytes de anchura"
-
-#: options.c:1534
-msgid "Set the default real kind to an 8 byte wide type"
-msgstr "Establece el tipo real por defecto a un tipo de 8 bytes de anchura"
-
-#: options.c:1537
+#: options.c:1403
 msgid "Defer popping functions args from stack until later"
 msgstr "Posterga la extracción de argumentos de funciones de la pila hasta más tarde"
 
-#: options.c:1540
+#: options.c:1406
 msgid "Attempt to fill delay slots of branch instructions"
 msgstr "Intenta rellenar las ranuras de retraso de las instrucciones de ramificación"
 
-#: options.c:1543
+#: options.c:1409
 msgid "Delete useless null pointer checks"
 msgstr "Borra las revisiones de punteros nulos sin uso"
 
-#: options.c:1546
+#: options.c:1412
 msgid "-fdiagnostics-show-location=[once|every-line]\tHow often to emit source location at the beginning of line-wrapped diagnostics"
 msgstr "-fdiagnostics-show-location=[once|every-line]\tIndica que tan seguido se debe emitir la ubicación del código al inicio de los diagnósticos con corte de línea"
 
-#: options.c:1555
-msgid "Allow dollar signs in entity names"
-msgstr "Permitir signos de dólar en nombres de entidades"
-
-#: options.c:1558
+#: options.c:1415
 msgid "Permit '$' as an identifier character"
 msgstr "Permite '$' como un identificador de carácter"
 
-#: options.c:1561
+#: options.c:1418
 msgid "-fdump-<type>\tDump various compiler internals to a file"
 msgstr "-fdump-<tipo>\tVuelca varios internos del compilador a un fichero"
 
-#: options.c:1564
-msgid "Display the code tree after parsing."
-msgstr "Muestra el árbol de código después de decodificar."
-
-#: options.c:1567
+#: options.c:1421
 msgid "Suppress output of instruction numbers and line number notes in debugging dumps"
 msgstr "Suprime la salida de notas de números de instrucción y números de linea en los volcados de depuración"
 
-#: options.c:1573
+#: options.c:1427
 msgid "Perform DWARF2 duplicate elimination"
 msgstr "Realiza la eliminación de DWARF2 duplicados"
 
-#: options.c:1576 options.c:1579
+#: options.c:1430 options.c:1433
 msgid "Perform unused type elimination in debug info"
 msgstr "Realiza eliminación de tipos sin uso en la información de depuración"
 
-#: options.c:1582
-msgid "Output a class file"
-msgstr "Genera un fichero clase como salida"
-
-#: options.c:1585
-msgid "Alias for -femit-class-file"
-msgstr "Alias para -femit-class-file"
-
-#: options.c:1594
-msgid "--encoding=<encoding>\tChoose input encoding (defaults from your locale)"
-msgstr "--encoding=<codificación>\tEscoge la codificación de entrada (por defecto viene del local)"
-
-#: options.c:1597
+#: options.c:1436
 msgid "Generate code to check exception specifications"
 msgstr "Genera código para revisar excepciones de especificaciones"
 
-#: options.c:1603
+#: options.c:1442
 msgid "Enable exception handling"
 msgstr "Activa el manejo de excepciones"
 
-#: options.c:1606
+#: options.c:1445
 msgid "-fexec-charset=<cset>\tConvert all strings and character constants to character set <cset>"
 msgstr "-fexec-charset=<cset>\tConvierte todas las constantes de cadenas y carácter al conjunto de caracteres <cset>"
 
-#: options.c:1609
+#: options.c:1448
 msgid "Perform a number of minor, expensive optimizations"
 msgstr "Realiza un número de optimizaciones menores y costosas"
 
-#: options.c:1612
-msgid "--extdirs=<path>\tSet the extension directory path"
-msgstr "--extdirs=<ruta>\tEstablece la ruta del directorio de extensiones"
-
-#: options.c:1618
-msgid "Use f2c calling convention."
-msgstr "Usa convención de llamada f2c."
-
-#: options.c:1624
-msgid "Input file is a file with a list of filenames to compile"
-msgstr "El fichero de entrada es un fichero con la lista de nombres de fichero a compilar"
-
-#: options.c:1627
+#: options.c:1457
 msgid "Assume no NaNs or infinities are generated"
 msgstr "Asume que no se generan NaNs o infinitos"
 
-#: options.c:1630
+#: options.c:1460
 msgid "-ffixed-<register>\tMark <register> as being unavailable to the compiler"
 msgstr "-ffixed-<registro>\tMarca el <registro> como no disponible para el compilador"
 
-#: options.c:1633
-msgid "Assume that the source file is fixed form"
-msgstr "Asumir que el fichero fuente es de forma fija"
-
-#: options.c:1636
-msgid "-ffixed-line-length-<n>\t\tUse n as character line width in fixed mode"
-msgstr "-ffixed-line-length-<n>\t\tUsa n como ancho de línea de carácter en modo fijo"
-
-#: options.c:1639
-msgid "Allow arbitrary character line width in fixed mode"
-msgstr "Permitir ancho de línea de carácter arbitrario en modo fijo"
-
-#: options.c:1642
+#: options.c:1469
 msgid "Don't allocate floats and doubles in extended-precision registers"
 msgstr "No aloja floats y doubles en registros de precisión extendida"
 
-#: options.c:1645
+#: options.c:1472
 msgid "Scope of for-init-statement variables is local to the loop"
 msgstr "El ámbito de las variables de la declaración de inicio-de-for es local para el ciclo"
 
-#: options.c:1648
+#: options.c:1475
 msgid "Copy memory address constants into registers before use"
 msgstr "Copia las constantes de direcciones de memoria en registros antes de usarlos"
 
-#: options.c:1651
-msgid "Always check for non gcj generated classes archives"
-msgstr "Revisa siempre por archivos de clases no generados por gcj"
-
-#: options.c:1654
+#: options.c:1478
 msgid "Copy memory operands into registers before use"
 msgstr "Copia los operandos de memoria en registros antes de usarlos"
 
-#: options.c:1657
-msgid "Assume that the source file is free form"
-msgstr "Asumir que el fichero fuente es de forma libre"
-
-#: options.c:1660
+#: options.c:1481
 msgid "Do not assume that standard C libraries and \"main\" exist"
 msgstr "No asume que existen las bibliotecas C estándard y \"main\""
 
-#: options.c:1663
+#: options.c:1484
 msgid "Allow function addresses to be held in registers"
 msgstr "Permite que las direcciones de las funciones se conservern en registros"
 
-#: options.c:1666
+#: options.c:1487
 msgid "Place each function into its own section"
 msgstr "Coloca cada función en su propia sección"
 
-#: options.c:1669
+#: options.c:1490
 msgid "Perform global common subexpression elimination"
 msgstr "Realiza la eliminación de subexpresiones comunes globales"
 
-#: options.c:1672
+#: options.c:1493
 msgid "Perform global common subexpression elimination after register allocation"
 msgstr "Realiza la eliminación de subexpresiones comunes globales despúes del alojamiento de registros"
 
-#: options.c:1675
+#: options.c:1496
 msgid "Perform redundant load after store elimination in global common subexpression"
 msgstr "Realiza la carga redundante después de la eliminación de almacenamiento en las subexpresiones comunes globales"
 
-#: options.c:1678
+#: options.c:1499
 msgid "Perform enhanced load motion during global common subexpression elimination"
 msgstr "Realiza el movimiento de la carga mejorada durante la eliminación de subexpresiones comunes globales"
 
-#: options.c:1681
+#: options.c:1502
 msgid "Perform store motion after global common subexpression elimination"
 msgstr "Realiza el movimiento de guardado después de la eliminación de subexpresiones comunes globales"
 
-#: options.c:1684
+#: options.c:1505
 msgid "Recognize GNU-defined keywords"
 msgstr "Reconoce las palabras claves definidas por GNU"
 
-#: options.c:1687
+#: options.c:1508
 msgid "Generate code for GNU runtime environment"
 msgstr "Genera código para el ambiente de tiempo de ejecución GNU"
 
-#: options.c:1690
+#: options.c:1511
 msgid "Enable guessing of branch probabilities"
 msgstr "Activa la predicción de probabilidades de ramificación"
 
-#: options.c:1699
-msgid "Assume the runtime uses a hash table to map an object to its synchronization structure"
-msgstr "Asume que el tiempo de ejecución usa una tabla hash para mapear un objeto a su estructura de sincronización"
-
-#: options.c:1705
+#: options.c:1523
 msgid "Assume normal C execution environment"
 msgstr "Asume el ambiente normal de ejecución C"
 
-#: options.c:1708
+#: options.c:1526
 msgid "Enable support for huge objects"
 msgstr "Activa el soporte para objetos enormes"
 
-#: options.c:1711
+#: options.c:1529
 msgid "Process #ident directives"
 msgstr "Procesa directivas #ident"
 
-#: options.c:1714
+#: options.c:1532
 msgid "Perform conversion of conditional jumps to branchless equivalents"
 msgstr "Realiza la conversión de saltos condicionales a equivalentes sin ramificación"
 
-#: options.c:1717
+#: options.c:1535
 msgid "Perform conversion of conditional jumps to conditional execution"
 msgstr "Realiza la conversión de saltos condicionales a ejecución condicional"
 
-#: options.c:1720
+#: options.c:1538
 msgid "Export functions even if they can be inlined"
 msgstr "Exporta funciones aún si pueden ser inline"
 
-#: options.c:1723
+#: options.c:1541
 msgid "Emit implicit instantiations of inline templates"
 msgstr "Emite instanciaciones implícitas de plantillas inline"
 
-#: options.c:1726
-msgid "Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements"
-msgstr "Especificar que no se permite tipos implícitos, a menos que se sobreescriban con sentencias IMPLICIT explícitas"
-
-#: options.c:1729
+#: options.c:1544
 msgid "Emit implicit instantiations of templates"
 msgstr "Emite instanciaciones implícitas de plantillas"
 
-#: options.c:1732
-msgid "Use offset tables for virtual method calls"
-msgstr "Utiliza tablas de desplazamiento para llamadas a métodos virtuales"
-
-#: options.c:1735
+#: options.c:1547
 msgid "Do not generate .size directives"
 msgstr "No genera directivas .size"
 
-#: options.c:1738
+#: options.c:1550
 msgid "Pay attention to the \"inline\" keyword"
 msgstr "Pone atención a la palabra clave \"inline\""
 
-#: options.c:1747
+#: options.c:1553
+msgid "Integrate simple functions into their callers"
+msgstr "Integrar las funciones simples en sus invocadores"
+
+#: options.c:1559
 msgid "-finline-limit=<number>\tLimit the size of inlined functions to <number>"
 msgstr "-finline-limit=<número>\tLimita el tamaño de las funciones inline a <número>"
 
-#: options.c:1750
+#: options.c:1562
 msgid "-finput-charset=<cset>\tSpecify the default character set for source files."
 msgstr "-finput-charset=<cset>\tEspecifica el conjunto de caracteres por defecto para los ficheros fuente."
 
-#: options.c:1753
+#: options.c:1565
 msgid "Instrument function entry and exit with profiling calls"
 msgstr "Instrumenta funciones de entrada y salida con llamadas de análisis de perfil"
 
-#: options.c:1756
+#: options.c:1568
 msgid "Optimize induction variables on trees"
 msgstr "Optimiza la inducción de variables en los árboles"
 
-#: options.c:1759
-msgid "Assume native functions are implemented using JNI"
-msgstr "Asume que las funciones nativas se implementan usando JNI"
-
-#: options.c:1762
+#: options.c:1571
 msgid "Generate code for functions even if they are fully inlined"
 msgstr "Genera código para las funciones aún si están completamente inline"
 
-#: options.c:1765
+#: options.c:1574
 msgid "Emit static const variables even if they are not used"
 msgstr "Emite variables static const aún si no se usan"
 
-#: options.c:1771
+#: options.c:1580
 msgid "Give external symbols a leading underscore"
 msgstr "Da a los símbolos externos un subrayado inicial"
 
-#: options.c:1774
+#: options.c:1583
 msgid "Perform loop optimizations"
 msgstr "Realiza optimizaciones de ciclo"
 
-#: options.c:1777
+#: options.c:1586
 msgid "Perform loop optimizations using the new loop optimizer"
 msgstr "Realiza optimizaciones de ciclo usando el nuevo optimizador de ciclo"
 
-#: options.c:1780
+#: options.c:1589
 msgid "Set errno after built-in math functions"
 msgstr "Establece errno después de las funciones matemáticas internas"
 
-#: options.c:1783
-msgid "-fmax-identifier-length=<n>\tMaximum identifier length."
-msgstr ""
-"-fmax-identifier-length=<n>\n"
-"Máxima longitud de identificador."
-
-#: options.c:1786
-msgid "-fmax-stack-var-size=<n>\tSize in bytes of the largest array that will be put on the stack"
-msgstr "-fmax-stack-var-size=<n>\tTamaño en bytes de la matriz más grande que se colocará en la pila"
-
-#: options.c:1789
+#: options.c:1592
 msgid "Report on permanent memory allocation"
 msgstr "Reporta el alojamiento en memoria permanente"
 
-#: options.c:1792
+#: options.c:1595
 msgid "Attempt to merge identical constants and constant variables"
 msgstr "Intenta mezclar constantes idénticas y variables constantes"
 
-#: options.c:1795
+#: options.c:1598
 msgid "Attempt to merge identical constants across compilation units"
 msgstr "Intentar mezclar constantes idénticas a través de las unidades de compilación"
 
-#: options.c:1798
+#: options.c:1601
 msgid "-fmessage-length=<number>\tLimit diagnostics to <number> characters per line.  0 suppresses line-wrapping"
 msgstr "-fmessage-length=<número>\tLimita los diagnósticos a <número> caracteres por línea.  0 suprime el corte de línea"
 
-#: options.c:1801
-msgid "Set default accessibility of module entities to PRIVATE"
-msgstr "Establecer la accesibilidad por defecto de las entidades de módulo en PRIVATE"
-
-#: options.c:1804
+#: options.c:1604
 msgid "Perform SMS based modulo scheduling before the first scheduling pass"
 msgstr "Realiza calendarización SMS basada en módulo antes del primer paso de calendarización"
 
-#: options.c:1807
+#: options.c:1607
 msgid "Move loop invariant computations out of loops"
 msgstr "Mueve las computaciones invariantes de ciclo fuera de los ciclos"
 
-#: options.c:1810
+#: options.c:1610
 msgid "Don't warn about uses of Microsoft extensions"
 msgstr "No avisa sobre los usos de extensiones Microsoft"
 
-#: options.c:1813
+#: options.c:1613
 msgid "Add mudflap bounds-checking instrumentation for single-threaded program."
 msgstr "Agrega instrumentación mudflap de revisión de límites para programas de un solo hilo."
 
-#: options.c:1816
+#: options.c:1616
 msgid "Ignore read operations when inserting mudflap instrumentation."
 msgstr "Ignora operaciones de lectura al insertar instrumentación mudflap."
 
-#: options.c:1819
+#: options.c:1619
 msgid "Add mudflap bounds-checking instrumentation for multi-threaded program."
 msgstr "Agrega instrumentación mudflap de revisión de límites para programas multi-hilo."
 
-#: options.c:1828
+#: options.c:1628
 msgid "Generate code for NeXT (Apple Mac OS X) runtime environment"
 msgstr "Genera código para el ambiente de tiempo de ejecución NeXT (Apple Mac OS X)"
 
-#: options.c:1831
+#: options.c:1631
 msgid "Assume that receivers of Objective-C messages may be nil"
 msgstr "Asume que los receptores de mensajes de Objective-C pueden ser nil"
 
-#: options.c:1834
-msgid "Don't generate code, just do syntax and semantics checking"
-msgstr "No generar código, sólo revisar sintaxis y semántica"
-
-#: options.c:1837
+#: options.c:1634
 msgid "Support synchronous non-call exceptions"
 msgstr "Soporte para excepciones síncronas no de llamadas"
 
-#: options.c:1846
+#: options.c:1643
 msgid "Enable Objective-C exception and synchronization syntax"
 msgstr "Activa la sintaxis de excepción y sincronización de Objective-C"
 
-#: options.c:1849
+#: options.c:1646
 msgid "Enable Objective-C setjmp exception handling runtime"
 msgstr "Activa el manejo de excepciones setjmp en tiempo de ejecución de Objective-C"
 
-#: options.c:1852
+#: options.c:1649
 msgid "When possible do not generate stack frames"
 msgstr "Cuando sea posible no genera marcos de pila"
 
-#: options.c:1855
+#: options.c:1652
 msgid "Recognize C++ kewords like \"compl\" and \"xor\""
 msgstr "Reconoce palabras clave de C++ como \"compl\" y \"xor\""
 
-#: options.c:1858
+#: options.c:1655
 msgid "Do the full register move optimization pass"
 msgstr "Hacer el paso completo de optimización de movimiento de registros"
 
-#: options.c:1861
+#: options.c:1658
 msgid "Optimize sibling and tail recursive calls"
 msgstr "Optimiza las llamadas recursivas hermanadas y de extremo"
 
-#: options.c:1864
-msgid "Enable optimization of static class initialization code"
-msgstr "Activa la optimización del código de inicialización de las clases static"
-
-#: options.c:1867
+#: options.c:1661
 msgid "Enable optional diagnostics"
 msgstr "Activa los diagnósticos opcionales"
 
-#: options.c:1873
-msgid "Try to layout derived types as compact as possible"
-msgstr "Tratar de acomodar los tipos derivados tan compactos como sea posible"
-
-#: options.c:1876
+#: options.c:1664
 msgid "Pack structure members together without holes"
 msgstr "Empaqueta juntos a los miembros de la estructura sin agujeros"
 
-#: options.c:1879
+#: options.c:1667
 msgid "-fpack-struct=<number>\tSet initial maximum structure member alignment"
 msgstr "-fpack-struct=<número>\tEstablece la alineación inicial máxima de estructuras miembro"
 
-#: options.c:1882
+#: options.c:1670
 msgid "Return small aggregates in memory, not registers"
 msgstr "Devuelve los agregados small en memoria, no en registros"
 
-#: options.c:1888
+#: options.c:1676
 msgid "Look for and use PCH files even when preprocessing"
 msgstr "Busca y utiliza ficheros PCH aún cuando se esté preprocesando"
 
-#: options.c:1891
+#: options.c:1679
 msgid "Perform loop peeling"
 msgstr "Realiza el pelado de ciclos"
 
-#: options.c:1894
+#: options.c:1682
 msgid "Enable machine specific peephole optimizations"
 msgstr "Activa las optimizaciones de mirilla específicas de la máquina"
 
-#: options.c:1897
+#: options.c:1685
 msgid "Enable an RTL peephole pass before sched2"
 msgstr "Activa un paso de mirilla RTL antes de sched2"
 
-#: options.c:1900
+#: options.c:1688
 msgid "Downgrade conformance errors to warnings"
 msgstr "Degrada los errores de concordancia a advertencias"
 
-#: options.c:1903
+#: options.c:1691
 msgid "Generate position-independent code if possible (small mode)"
 msgstr "Genera código independiente de posición si es posible (modo small)"
 
-#: options.c:1906
+#: options.c:1694
 msgid "Generate position-independent code for executables if possible (small mode)"
 msgstr "Genera código independiente de posición para ejecutables si es posible (modo small)"
 
-#: options.c:1909
+#: options.c:1697
 msgid "Generate prefetch instructions, if available, for arrays in loops"
 msgstr "Genera instrucciones de precargado, si están disponibles, para matrices en ciclos"
 
-#: options.c:1912
+#: options.c:1700
 msgid "Treat the input file as already preprocessed"
 msgstr "Trata al fichero de entrada como previamente preprocesado"
 
-#: options.c:1915
+#: options.c:1703
 msgid "Enable basic program profiling code"
 msgstr "Activa el código básico de análisis de perfil del programa"
 
-#: options.c:1918
+#: options.c:1706
 msgid "Insert arc-based program profiling code"
 msgstr "Inserta código de análisis de perfil de programa basado en arc"
 
-#: options.c:1921
+#: options.c:1709
 msgid "Enable common options for generating profile info for profile feedback directed optimizations"
 msgstr "Activa las opciones comunes para generar información de análisis de perfil para optimizaciones dirigidas por retroalimentación de perfil"
 
-#: options.c:1924
+#: options.c:1712
 msgid "Enable common options for performing profile feedback directed optimizations"
 msgstr "Activa las opciones comunes para realizar optimizaciones dirigidas por retroalimentación de perfil"
 
-#: options.c:1927
+#: options.c:1715
 msgid "Insert code to profile values of expressions"
 msgstr "Inserta código para perfilar valores de expresiones"
 
-#: options.c:1933
+#: options.c:1721
 msgid "-frandom-seed=<string>\tMake compile reproducible using <string>"
 msgstr "-frandom-seed=<cadena>\tHace que se pueda reproducir la compilación utilizando la <cadena>"
 
-#: options.c:1936
+#: options.c:1724
 msgid "Return small aggregates in registers"
 msgstr "Devuelve agregados small en registros"
 
-#: options.c:1939
+#: options.c:1727
 msgid "Enables a register move optimization"
 msgstr "Permite una optimización de movimiento de registros"
 
-#: options.c:1942
+#: options.c:1730
 msgid "Perform a register renaming optimization pass"
 msgstr "Realiza el paso de optimización de renombrado de registros"
 
-#: options.c:1945
+#: options.c:1733
 msgid "Reorder basic blocks to improve code placement"
 msgstr "Reordenar los bloques básicos para mejorar la ubicación del código"
 
-#: options.c:1948
+#: options.c:1736
 msgid "Reorder basic blocks and partition into hot and cold sections"
 msgstr "Reordena los bloques básicos y particionar en secciones caliente y fría"
 
-#: options.c:1951
+#: options.c:1739
 msgid "Reorder functions to improve code placement"
 msgstr "Reordena las funciones para mejorar la ubicación del código"
 
-#: options.c:1954
-msgid "Copy array sections into a contiguous block on procedure entry"
-msgstr "Copiar secciones de matriz en un bloque contiguo en la entrada de procedimiento"
-
-#: options.c:1957
+#: options.c:1742
 msgid "Used in Fix-and-Continue mode to indicate that object files may be swapped in at runtime"
 msgstr "Usa el modo Fix-and-Continue para indicar que los ficheros objeto se pueden intercambiar en tiempo de ejecución"
 
-#: options.c:1960
+#: options.c:1745
 msgid "Enable automatic template instantiation"
 msgstr "Activa la instanciación automática de plantillas"
 
-#: options.c:1963
+#: options.c:1748
 msgid "Add a common subexpression elimination pass after loop optimizations"
 msgstr "Ejecuta un paso de eliminación de subexpresión común después de las optimizaciones de ciclos"
 
-#: options.c:1966
+#: options.c:1751
 msgid "Run the loop optimizer twice"
 msgstr "Ejecuta el optimizador de ciclos dos veces"
 
-#: options.c:1969
+#: options.c:1754
 msgid "Enable/Disable the traditional scheduling in loops that already passed modulo scheduling"
 msgstr "Activa/Desactiva la calendarización tradicional en ciclos que ya pasaron la calendarización módulo"
 
-#: options.c:1972
+#: options.c:1757
 msgid "Disable optimizations that assume default FP rounding behavior"
 msgstr "Desactiva las optimizaciones que asumen la conducta de un FP que redondea por defecto"
 
-#: options.c:1975
+#: options.c:1760
 msgid "Generate run time type descriptor information"
 msgstr "Genera información de descriptor de tipo en tiempo de ejecución"
 
-#: options.c:1978
+#: options.c:1763
 msgid "Enable scheduling across basic blocks"
 msgstr "Activa la calendarización entre bloques básicos"
 
-#: options.c:1981
+#: options.c:1766
 msgid "Allow speculative motion of non-loads"
 msgstr "Permite el movimiento especulativo de ninguna carga"
 
-#: options.c:1984
+#: options.c:1769
 msgid "Allow speculative motion of some loads"
 msgstr "Permite el movimiento especulativo de algunas cargas"
 
-#: options.c:1987
+#: options.c:1772
 msgid "Allow speculative motion of more loads"
 msgstr "Permite el movimiento especulativo de más cargas"
 
-#: options.c:1990
+#: options.c:1775
 msgid "Allow premature scheduling of queued insns"
 msgstr "Permite la calendarización prematura de insns encoladas"
 
-#: options.c:1993
+#: options.c:1778
 msgid "Set dependence distance checking in premature scheduling of queued insns"
 msgstr "Establece la revisión de distancia de dependencias en la calendarización prematura de insns encoladas"
 
-#: options.c:1996
+#: options.c:1781
 msgid "-fsched-stalled-insns-dep=<number>\tSet dependence distance checking in premature scheduling of queued insns"
 msgstr "-fsched-stalled-insns-dep=<número>\tEstablece la revisión de distancia de dependencias en la calendarización prematura de insns encoladas"
 
-#: options.c:1999
+#: options.c:1784
 msgid "-fsched-stalled-insns=<number>\tSet number of queued insns that can be prematurely scheduled"
 msgstr "-fsched-stalled-insns=<número>\tEstablece el número de insns encoladas que se pueden calendarizar prematuramente"
 
-#: options.c:2002
+#: options.c:1787
 msgid "-fsched-verbose=<number>\tSet the verbosity level of the scheduler"
 msgstr "-fsched-verbose=<número>\tEstablece el nivel de detalle del calendarizador"
 
-#: options.c:2005
+#: options.c:1790
 msgid "If scheduling post reload, do superblock scheduling"
 msgstr "Si se calendariza después de la recarga, hace calendarización de superbloque"
 
-#: options.c:2008
+#: options.c:1793
 msgid "If scheduling post reload, do trace scheduling"
 msgstr "Si se calendariza después de la recarga, hace trazado de calendarización"
 
-#: options.c:2011
+#: options.c:1796
 msgid "Reschedule instructions before register allocation"
 msgstr "Recalendariza las instrucciones antes del alojamiento de registros"
 
-#: options.c:2014
+#: options.c:1799
 msgid "Reschedule instructions after register allocation"
 msgstr "Recalendariza las instrucciones después del alojamiento de registros"
 
-#: options.c:2017
-msgid "Append a second underscore if the name already contains an underscore"
-msgstr "Agregar un segundo guión bajo si el nombre ya tiene un guión bajo"
-
-#: options.c:2020
+#: options.c:1802
 msgid "Mark data as shared rather than private"
 msgstr "Marca datos como compartidos en lugar de privados"
 
-#: options.c:2023
+#: options.c:1805
 msgid "Use the same size for double as for float"
 msgstr "Usa el mismo tamaño para double que para float"
 
-#: options.c:2026
+#: options.c:1808
 msgid "Use the narrowest integer type possible for enumeration types"
 msgstr "Usa el tipo entero más estrecho posible para tipos de enumeración"
 
-#: options.c:2029
+#: options.c:1811
 msgid "Force the underlying type for \"wchar_t\" to be \"unsigned short\""
 msgstr "Fuerza que el tipo debajo de \"wchar_t\" sea \"unsigned short\""
 
-#: options.c:2035
+#: options.c:1817
 msgid "Disable optimizations observable by IEEE signaling NaNs"
 msgstr "Desactiva optimizaciones observables con IEEE señalando NaNs"
 
-#: options.c:2038
+#: options.c:1820
 msgid "When \"signed\" or \"unsigned\" is not given make the bitfield signed"
 msgstr "Cuando no se proporciona \"signed\" o \"unsigned\" hace signed el campo de bits"
 
-#: options.c:2041
+#: options.c:1823
 msgid "Make \"char\" signed by default"
 msgstr "Hace que \"char\" sea signed por defecto"
 
-#: options.c:2044
+#: options.c:1826
 msgid "Convert floating point constants to single precision constants"
 msgstr "Convierte constantes de coma flotante a constantes de precisión simple"
 
-#: options.c:2047
+#: options.c:1829
 msgid "Use value profiling for speculative prefetching"
 msgstr "Usa valores de perfilado para precargado especulativo"
 
-#: options.c:2050
+#: options.c:1832
 msgid "Split lifetimes of induction variables when loops are unrolled."
 msgstr "Divide tiempos de vida de las variables de inducción cuando se desenrollen los ciclos."
 
-#: options.c:2056
+#: options.c:1838
 msgid "Insert stack checking code into the program"
 msgstr "Inserta código de revisión de la pila en el programa"
 
-#: options.c:2062
+#: options.c:1844
 msgid "-fstack-limit-register=<register>\tTrap if the stack goes past <register>"
 msgstr "-fstack-limit-register=<registro>\tCaptura si la pila pasa del <registro>"
 
-#: options.c:2065
+#: options.c:1847
 msgid "-fstack-limit-symbol=<name>\tTrap if the stack goes past symbol <name>"
 msgstr "-fstack-limit-symbol=<name>\tCaptura si la pila pasa del símbolo <nombre>"
 
-#: options.c:2068
+#: options.c:1850
 msgid "Display statistics accumulated during compilation"
 msgstr "Muestra las estadísticas acumuladas durante la compilación"
 
-#: options.c:2071
-msgid "Enable assignability checks for stores into object arrays"
-msgstr "Activa revisiones de asignabilidad para almacenamientos en matrices de objetos"
-
-#: options.c:2074
+#: options.c:1853
 msgid "Perform strength reduction optimizations"
 msgstr "Realiza optimizaciones de reducción de fuerza"
 
-#: options.c:2077
+#: options.c:1856
 msgid "Assume strict aliasing rules apply"
 msgstr "Asume que se aplican las reglas estrictas de alias"
 
-#: options.c:2083
+#: options.c:1862
 msgid "Check for syntax errors, then stop"
 msgstr "Busca errores de sintaxis, y entonces detenerse"
 
-#: options.c:2086
+#: options.c:1865
 msgid "-ftabstop=<number>\tDistance between tab stops for column reporting"
 msgstr "-ftabstop=<número>\tDistancia entre topes de tabulador para reportes en columnas"
 
-#: options.c:2089
+#: options.c:1868
 msgid "-ftemplate-depth-<number>\tSpecify maximum template instantiation depth"
 msgstr "-ftemplate-depth-<número>\tEspecifica la profundidad máxima de instanciación"
 
-#: options.c:2092
+#: options.c:1871
 msgid "Create data files needed by \"gcov\""
 msgstr "Crea ficheros de datos necesarios para \"gcov\""
 
-#: options.c:2098
+#: options.c:1877
 msgid "Perform jump threading optimizations"
 msgstr "Realiza optimizaciones de hilado de saltos"
 
-#: options.c:2101
+#: options.c:1880
 msgid "-fno-threadsafe-statics\tDo not generate thread-safe code for initializing local statics."
 msgstr "-fno-threadsafe-statics\tNo genera código seguro en hilos para inicializar statics locales."
 
-#: options.c:2104
+#: options.c:1883
 msgid "Report the time taken by each compiler pass"
 msgstr "Reporta el tiempo tomado por cada paso del compilador"
 
-#: options.c:2107
+#: options.c:1886
 msgid "-ftls-model=[global-dynamic|local-dynamic|initial-exec|local-exec]\tSet the default thread-local storage code generation model"
 msgstr "-ftls-model=[global-dynamic|local-dynamic|initial-exec|local-exec]\tIndica el modelo de generación de código por defecto para almacenamiento thread-local"
 
-#: options.c:2110
+#: options.c:1889
 msgid "Perform superblock formation via tail duplication"
 msgstr "Realiza la formación de superbloques a través de la duplicación de colas"
 
-#: options.c:2113
+#: options.c:1892
 msgid "Assume floating-point operations can trap"
 msgstr "Asume que las operaciones de coma flotante pueden capturar"
 
-#: options.c:2116
+#: options.c:1895
 msgid "Trap for signed overflow in addition, subtraction and multiplication"
 msgstr "Atrapa desbordamientos signed en adición, sustracción y multiplicación"
 
-#: options.c:2119
+#: options.c:1898
 msgid "Use tree-ssa based implementation of profiling"
 msgstr "Usa la implementación basada en tree-ssa de perfilado"
 
-#: options.c:2122
+#: options.c:1901
 msgid "Enable SSA-CCP optimization on trees"
 msgstr "Activa las optimizaciones SSA-CCP en árboles"
 
-#: options.c:2125
+#: options.c:1904
 msgid "Enable loop header copying on trees"
 msgstr "Activa la copia de encabezado de ciclo en árboles"
 
-#: options.c:2128
+#: options.c:1907
 msgid "Coalesce memory temporaries in the SSA->normal pass"
 msgstr "Coalesce temporales de memoria en el paso SSA->normal"
 
-#: options.c:2131
+#: options.c:1910
 msgid "Replace SSA temporaries with better names in copies."
 msgstr "Reemplaza temporales SSA con mejores nombres en las copias."
 
-#: options.c:2134
+#: options.c:1913
 msgid "Enable SSA dead code elimination optimization on trees"
 msgstr "Activa la optimización de eliminación de código muerto SSA en árboles"
 
-#: options.c:2137
+#: options.c:1916
 msgid "Enable dominator optimizations"
 msgstr "Activa las optimizaciones dominadoras"
 
-#: options.c:2140
+#: options.c:1919
 msgid "Enable dead store elimination"
 msgstr "Activa la eliminación de almacenamiento muerto"
 
-#: options.c:2143
+#: options.c:1922
 msgid "Enable Full Redundancy Elimination (FRE) on trees"
 msgstr "Activa la Eliminación de Redundancia Completa en árboles"
 
-#: options.c:2146
+#: options.c:1925
 msgid "Enable loop invariant motion on trees"
 msgstr "Permite movimiento invariante de ciclo en árboles"
 
-#: options.c:2149
+#: options.c:1928
 msgid "Create canonical induction variables in loops"
 msgstr "Crea variables de inducción canónica en los ciclos"
 
-#: options.c:2152
+#: options.c:1931
 msgid "Enable linear loop transforms on trees"
 msgstr "Activa las transformaciones lineales de ciclos en árboles"
 
-#: options.c:2155
+#: options.c:1934
 msgid "Enable loop optimizations on tree level"
 msgstr "Activa las optimizaciones de ciclo a nivel de árbol"
 
-#: options.c:2158
+#: options.c:1937
 msgid "Perform live range splitting during the SSA->normal pass."
 msgstr "Realiza división de rango vivo durante el paso SSA->normal."
 
-#: options.c:2161
+#: options.c:1940
 msgid "Enable SSA-PRE optimization on trees"
 msgstr "Activa las optimizaciones SSA-PRE en árboles"
 
-#: options.c:2164
+#: options.c:1943
 msgid "Perform scalar replacement of aggregates"
 msgstr "Realiza reemplazo escalar de agregados"
 
-#: options.c:2167
+#: options.c:1946
 msgid "Replace temporary expressions in the SSA->normal pass"
 msgstr "Reemplaza expresiones temporales en el paso SSA->normal"
 
-#: options.c:2170
+#: options.c:1949
 msgid "Enable loop vectorization on trees"
 msgstr "Activa la vectorización de ciclos en árboles"
 
-#: options.c:2173
+#: options.c:1952
 msgid "-ftree-vectorizer-verbose=<number>\tSet the verbosity level of the vectorizer"
 msgstr "-ftree-vectorizer-verbose=<número>\tEstablece el nivel de detalle del vectorizador"
 
-#: options.c:2176
-msgid "Append underscores to externally visible names"
-msgstr "Agregar subrayado a los nombres visibles externamente"
-
-#: options.c:2179
+#: options.c:1955
 msgid "Compile whole compilation unit at a time"
 msgstr "Compila la unidad de compilación completa a la vez"
 
-#: options.c:2182
+#: options.c:1958
 msgid "Perform loop unrolling for all loops"
 msgstr "Realiza el desenrollamiento del ciclo para todos los ciclos"
 
-#: options.c:2185
+#: options.c:1961
 msgid "Perform loop unrolling when iteration count is known"
 msgstr "Realiza el desenrollamiento del ciclo cuando se conoce la cuenta de iteración"
 
-#: options.c:2188
+#: options.c:1964
 msgid "Allow math optimizations that may violate IEEE or ISO standards"
 msgstr "Permite optimizaciones matemáticas que pueden violar los estándares IEEE ó ISO"
 
-#: options.c:2191
+#: options.c:1967
 msgid "When \"signed\" or \"unsigned\" is not given make the bitfield unsigned"
 msgstr "Cuando no se proporciona \"signed\" o \"unsigned\" hacer unsigned el campo de bits"
 
-#: options.c:2194
+#: options.c:1970
 msgid "Make \"char\" unsigned by default"
 msgstr "Hace que \"char\" sea unsigned por defecto"
 
-#: options.c:2197
+#: options.c:1973
 msgid "Perform loop unswitching"
 msgstr "Realiza la eliminación de opciones del ciclo"
 
-#: options.c:2200
+#: options.c:1976
 msgid "Just generate unwind tables for exception handling"
 msgstr "Sólo genera tablas de desenredo para manejo de excepciones"
 
-#: options.c:2203
-msgid "Generate code for the Boehm GC"
-msgstr "Genera código para el GC de Boehm"
-
-#: options.c:2206
+#: options.c:1979
 msgid "Use __cxa_atexit to register destructors"
 msgstr "Usa __cxa_atexit para registrar destructores"
 
-#: options.c:2209
-msgid "Call a library routine to do integer divisions"
-msgstr "Llama a una rutina de biblioteca para hacer divisiones enteras"
-
-#: options.c:2212
+#: options.c:1982
 msgid "Perform variable tracking"
 msgstr "Realiza seguimiento de variables"
 
-#: options.c:2215
+#: options.c:1985
 msgid "Apply variable expansion when loops are unrolled."
 msgstr "Aplica la expansión de variables cuando se desenrollan los ciclos."
 
-#: options.c:2218
+#: options.c:1988
 msgid "Add extra commentary to assembler output"
 msgstr "Agrega comentarios extra a la salida de ensamblador"
 
-#: options.c:2221
+#: options.c:1991
 msgid "Marks all inlined methods as having hidden visibility"
 msgstr "Marca todos los métodos inlined como que tienen visibilidad hidden"
 
-#: options.c:2224
+#: options.c:1994
 msgid "-fvisibility=[default|internal|hidden|protected]\tSet the default symbol visibility"
 msgstr "-fvisibility=[default|internal|hidden|protected]\tEstablece la visibilidad de símbolos por defecto"
 
-#: options.c:2227
+#: options.c:1997
 msgid "Use expression value profiles in optimizations"
 msgstr "Usa perfiles de valor de expresión en las optimizaciones"
 
-#: options.c:2230
+#: options.c:2000
 msgid "Discard unused virtual functions"
 msgstr "Descarta funciones virtual sin usar"
 
-#: options.c:2233
+#: options.c:2003
 msgid "Implement vtables using thunks"
 msgstr "Implementa vtables usando thunks"
 
-#: options.c:2236
+#: options.c:2006
 msgid "Emit common-like symbols as weak symbols"
 msgstr "Emite símbolos comunes como símbolos débiles"
 
-#: options.c:2239
+#: options.c:2009
 msgid "Construct webs and split unrelated uses of single variable"
 msgstr "Construye redes y dividir usos no relacionados de una sola variable"
 
-#: options.c:2242
+#: options.c:2012
 msgid "-fwide-exec-charset=<cset>\tConvert all wide strings and character constants to character set <cset>"
 msgstr "-fwide-exec-charset=<cset>\tConvierte todas las cadenas anchas y constantes de cáracter al conjunto de caracteres <cset>"
 
-#: options.c:2245
+#: options.c:2015
 msgid "Generate a #line directive pointing at the current working directory"
 msgstr "Genera una directiva #line que apunte al directorio de trabajo actual"
 
 # wraps around? No entiendo bien. cfuga
-#: options.c:2248
+#: options.c:2018
 msgid "Assume signed arithmetic overflow wraps around"
 msgstr "Asume que el desbordamiento aritmético con signo se envuelve"
 
-#: options.c:2251
+#: options.c:2021
 msgid "Emit cross referencing information"
 msgstr "Emite información de referencia cruzada"
 
-#: options.c:2254
+#: options.c:2024
 msgid "Put zero initialized data in the bss section"
 msgstr "Pone datos inicializados a cero en la sección bss"
 
-#: options.c:2257
+#: options.c:2027
 msgid "Generate lazy class lookup (via objc_getClass()) for use in Zero-Link mode"
 msgstr "Genera la búsqueda no estricta de clases (a través de objc_getClass()) para usarlas en el modo Zero-Link"
 
-#: options.c:2260
+#: options.c:2030
 msgid "Generate debug information in default format"
 msgstr "Genera información de depuración en el formato por defecto"
 
-#: options.c:2263
+#: options.c:2033
 msgid "Generate debug information in COFF format"
 msgstr "Genera información de depuración en el formato COFF"
 
-#: options.c:2266
+#: options.c:2036
 msgid "Generate debug information in DWARF v2 format"
 msgstr "Genera información de depuración en el formato DWARF v2"
 
-#: options.c:2269
+#: options.c:2039
 msgid "Dump declarations to a .decl file"
 msgstr "Vuelca declaraciones a un fichero .decl"
 
-#: options.c:2272
+#: options.c:2042
 msgid "Generate debug information in default extended format"
 msgstr "Genera información de depuración en el formato extendido por defecto"
 
-#: options.c:2275
+#: options.c:2045
 msgid "Generate debug information in STABS format"
 msgstr "Genera información de depuración en el formato STABS"
 
-#: options.c:2278
+#: options.c:2048
 msgid "Generate debug information in extended STABS format"
 msgstr "Genera información de depuración en el formato STABS extendido"
 
-#: options.c:2281
+#: options.c:2051
 msgid "Generate debug information in VMS format"
 msgstr "Genera información de depuración en el formato VMS"
 
-#: options.c:2284
+#: options.c:2054
 msgid "Generate debug information in XCOFF format"
 msgstr "Genera información de depuración en el formato XCOFF"
 
-#: options.c:2287
+#: options.c:2057
 msgid "Generate debug information in extended XCOFF format"
 msgstr "Genera información de depuración en el formato XCOFF extendido"
 
-#: options.c:2290
+#: options.c:2060
 msgid "-idirafter <dir>\tAdd <dir> to the end of the system include path"
 msgstr "-idirafter <dir>\tAgrega el <dir>ectorio al final de la ruta de inclusión del sistema"
 
-#: options.c:2293
+#: options.c:2063
 msgid "-imacros <file>\tAccept definition of macros in <file>"
 msgstr "-imacros <fich>\tAcepta la definición de macros en el <fich>ero"
 
-#: options.c:2296
+#: options.c:2066
 msgid "-include <file>\tInclude the contents of <file> before other files"
 msgstr "-include <fich>\tIncluye los contenidos del <fichero> antes de otros ficheros"
 
-#: options.c:2299
+#: options.c:2069
 msgid "-iprefix <path>\tSpecify <path> as a prefix for next two options"
 msgstr "-iprefix <ruta>\tEspecifica la <ruta> como un prefijo para las siguientes dos opciones"
 
-#: options.c:2302
+#: options.c:2072
 msgid "-iquote <dir>\tAdd <dir> to the end of the quote include path"
 msgstr "-iquote <dir>\tAgrega el <dir>ectorio al final de la ruta de inclusión de citas"
 
-#: options.c:2305
+#: options.c:2075
 msgid "-isysroot <dir>\tSet <dir> to be the system root directory"
 msgstr "-isysroot <dir>\tEstablece el <dir>ectorio como el directorio raíz del sistema"
 
-#: options.c:2308
+#: options.c:2078
 msgid "-isystem <dir>\tAdd <dir> to the start of the system include path"
 msgstr "-isystem <dir>\tAgrega el <dir>ectorio al inicio de la ruta de inclusión del sistema"
 
-#: options.c:2311
+#: options.c:2081
 msgid "-iwithprefix <dir>\tAdd <dir> to the end of the system include path"
 msgstr "-iwithprefix <dir>\tAgrega el <dir>ectorio al final de la ruta de inclusión del sistema"
 
-#: options.c:2314
+#: options.c:2084
 msgid "-iwithprefixbefore <dir>\tAdd <dir> to the end of the main include path"
 msgstr "-iwithprefixbefore <dir>\tAgrega el <dir>ectorio al final de la ruta de inclusión principal"
 
-#: options.c:2326
+#: options.c:2096
 msgid "Do not search standard system include directories (those specified with -isystem will still be used)"
 msgstr "No busca directorios de inclusión del sistema por defecto (aquellos especificados con -isystem aún serán utilizados)"
 
-#: options.c:2329
+#: options.c:2099
 msgid "Do not search standard system include directories for C++"
 msgstr "No busca directorios de inclusión del sistema por defecto para C++"
 
-#: options.c:2332
+#: options.c:2102
 msgid "-o <file>\tPlace output into <file>"
 msgstr "-o <fichero>\tColoca la salida en el <fichero>"
 
-#: options.c:2335
+#: options.c:2105
 msgid "Enable function profiling"
 msgstr "Activa el análisis de perfil de las funciones"
 
-#: options.c:2338
+#: options.c:2108
 msgid "Issue warnings needed for strict compliance to the standard"
 msgstr "Activa los avisos necesarios para cumplir estrictamente con el estándard"
 
-#: options.c:2341
+#: options.c:2111
 msgid "Like -pedantic but issue them as errors"
 msgstr "Como -pedantic pero los muestra como errores"
 
-#: options.c:2344
+#: options.c:2114
 msgid "Generate C header of platform-specific features"
 msgstr "Genera encabezado C de características específicas de la plataforma"
 
-#: options.c:2347
-msgid "-qkind=<n>\tSet the kind for a real with the 'q' exponent to 'n'"
-msgstr "-qkind=<n>\tEstablece el tipo para un real con el exponente 'q' a la 'n'"
-
-#: options.c:2350
+#: options.c:2117
 msgid "Do not display functions compiled or elapsed time"
 msgstr "No muestra las funciones compiladas o el tiempo transcurrido"
 
-#: options.c:2353
+#: options.c:2120
 msgid "Remap file names when including files"
 msgstr "Remapea nombres de fichero cuando incluyen ficheros"
 
-#: options.c:2356
+#: options.c:2123
 msgid "Conform to the ISO 1998 C++ standard"
 msgstr "Conforme al estándard ISO 1998 C++"
 
-#: options.c:2359 options.c:2389
+#: options.c:2126 options.c:2147
 msgid "Conform to the ISO 1990 C standard"
 msgstr "Conforme al estándard ISO 1990 C"
 
-#: options.c:2362 options.c:2395
+#: options.c:2129 options.c:2153
 msgid "Conform to the ISO 1999 C standard"
 msgstr "Conforme al estándard ISO 1999 C"
 
-#: options.c:2365
+#: options.c:2132
 msgid "Deprecated in favor of -std=c99"
 msgstr "Obsoleto en favor de -std=c99"
 
-#: options.c:2368
-msgid "Conform to the ISO Fortran 2003 standard."
-msgstr "Conforme al estándard ISO Fortran 2003"
-
-#: options.c:2371
-msgid "Conform to the ISO Fortran 95 standard."
-msgstr "Conforme al estándard ISO Fortran 95"
-
-#: options.c:2374
-msgid "Conform nothing in particular."
-msgstr "Conforme a nada en particular."
-
-#: options.c:2377
+#: options.c:2135
 msgid "Conform to the ISO 1998 C++ standard with GNU extensions"
 msgstr "Conforme al estándard ISO 1998 C++ con extensiones GNU"
 
-#: options.c:2380
+#: options.c:2138
 msgid "Conform to the ISO 1990 C standard with GNU extensions"
 msgstr "Conforme al estándard ISO 1990 C con extensiones GNU"
 
-#: options.c:2383
+#: options.c:2141
 msgid "Conform to the ISO 1999 C standard with GNU extensions"
 msgstr "Conforme al estándard ISO 1999 C con extensiones GNU"
 
-#: options.c:2386
+#: options.c:2144
 msgid "Deprecated in favor of -std=gnu99"
 msgstr "Obsoleto en favor de -std=gnu99"
 
-#: options.c:2392
+#: options.c:2150
 msgid "Conform to the ISO 1990 C standard as amended in 1994"
 msgstr "Conforme al estándard ISO 1990 C como se enmendó en 1994"
 
-#: options.c:2398
+#: options.c:2156
 msgid "Deprecated in favor of -std=iso9899:1999"
 msgstr "Obsoleto en favor de -std=iso9899:1999"
 
-#: options.c:2401
+#: options.c:2159
 msgid "Enable traditional preprocessing"
 msgstr "Habilita el preprocesamiento tradicional"
 
-#: options.c:2404
+#: options.c:2162
 msgid "-trigraphs\tSupport ISO C trigraphs"
 msgstr "-trigraphs\tSoporte para los trigrafos de ISO C"
 
-#: options.c:2407
+#: options.c:2165
 msgid "Do not predefine system-specific and GCC-specific macros"
 msgstr "No predefine macros específicas del sistema y específica de GCC"
 
-#: options.c:2410
+#: options.c:2168
 msgid "Enable verbose output"
 msgstr "Activa la salida detallada"
 
-#: options.c:2416
+#: options.c:2171
+msgid "Display the compiler's version"
+msgstr "Muestra la versión del compilador"
+
+#: options.c:2174
 msgid "Suppress warnings"
 msgstr "Suprime avisos"
+
+#: config/vax/vax.h:50 config/vax/vax.h:51
+msgid "profiling not supported with -mg\n"
+msgstr "la creación de perfil no tiene soporte con -mg\n"
+
+#: config/i386/nwld.h:34
+msgid "Static linking is not supported.\n"
+msgstr "No se da soporte al enlazado estático.\n"
+
+#: config/arm/arm.h:153
+msgid "-msoft-float and -mhard_float may not be used together"
+msgstr "no se pueden usar juntos -msoft-float y -mhard_float"
+
+#: config/arm/arm.h:155
+msgid "-mbig-endian and -mlittle-endian may not be used together"
+msgstr "no se pueden usar juntos -mbig-endian y -mlittle-endian"
+
+#: java/jvspec.c:80 gcc.c:790 ada/lang-specs.h:34
+msgid "-pg and -fomit-frame-pointer are incompatible"
+msgstr "-pg y -fomit-frame-pointer son incompatibles"
 
 #: config/rs6000/darwin.h:130
 msgid " conflicting code gen style switches are used"
@@ -8470,6 +8118,10 @@ msgstr " se usan interruptores de estilo de generación de código en conflicto"
 #: treelang/lang-specs.h:53
 msgid "-pg or -p and -fomit-frame-pointer are incompatible"
 msgstr "-pg ó -p y -fomit-frame-pointer son incompatibles"
+
+#: config/mcore/mcore.h:57
+msgid "the m210 does not have little endian support"
+msgstr "el m210 no tiene soporte para little endian"
 
 #: config/mips/mips.h:1140 config/arc/arc.h:63
 msgid "may not use both -EB and -EL"
@@ -8483,10 +8135,6 @@ msgstr "-mhard-float no tiene soporte"
 msgid "-msingle-float and -msoft-float cannot both be specified"
 msgstr "no se pueden especificar -msingle-float y -msoft-float al mismo tiempo"
 
-#: config/i386/mingw32.h:58 config/i386/cygwin.h:70
-msgid "shared and mdll are not compatible"
-msgstr "shared y mdll no son compatibles."
-
 #: config/sparc/sol2-bi.h:167 config/sparc/sol2-bi.h:172
 #: config/sparc/sol2-gld-bi.h:17 config/sparc/sol2-gld-bi.h:22
 msgid "does not support multilib"
@@ -8498,45 +8146,25 @@ msgstr "no tiene soporte para multilib"
 msgid "may not use both -m32 and -m64"
 msgstr "no se pueden usar -m32 y -m64 al mismo tiempo"
 
-#: ada/lang-specs.h:34 gcc.c:790 java/jvspec.c:80
-msgid "-pg and -fomit-frame-pointer are incompatible"
-msgstr "-pg y -fomit-frame-pointer son incompatibles"
+#: gcc.c:763
+msgid "GCC does not support -C or -CC without -E"
+msgstr "GCC no da soporte a -C o -CC sin usar -E"
 
-#: ada/lang-specs.h:35
-msgid "-c or -S required for Ada"
-msgstr "se requiere -c o -S para Ada"
+#: gcc.c:957
+msgid "-E or -x required when input is from standard input"
+msgstr "se requiere -E ó -x cuando la entrada es de entrada estándar"
 
-#: config/sh/sh.h:685
-msgid "SH2a does not support little-endian"
-msgstr "SH2a no tiene soporte para little-endian"
+#: config/i386/cygwin.h:29
+msgid "mno-cygwin and mno-win32 are not compatible"
+msgstr "-mno-cygwin y -mno-win32 no son compatibles"
 
-#: config/lynx.h:71
-msgid "Cannot use mthreads and mlegacy-threads together."
-msgstr "No se pueden usar mthreads y mlegacy-threads juntos."
+#: config/i386/cygwin.h:70 config/i386/mingw32.h:58
+msgid "shared and mdll are not compatible"
+msgstr "shared y mdll no son compatibles."
 
-#: config/lynx.h:96
-msgid "Cannot use mshared and static together."
-msgstr "No se pueden usar mshared y static juntos."
-
-#: config/i386/nwld.h:34
-msgid "Static linking is not supported.\n"
-msgstr "No se da soporte al enlazado estático.\n"
-
-#: java/lang-specs.h:34
-msgid "-fjni and -femit-class-files are incompatible"
-msgstr "-fjni y -femit-class-files son incompatibles"
-
-#: java/lang-specs.h:35
-msgid "-fjni and -femit-class-file are incompatible"
-msgstr "-fjni y -femit-class-file son incompatibles"
-
-#: java/lang-specs.h:36 java/lang-specs.h:37
-msgid "-femit-class-file should used along with -fsyntax-only"
-msgstr "-femit-class-file se debe usar junto con -fsyntax-only"
-
-#: config/mcore/mcore.h:57
-msgid "the m210 does not have little endian support"
-msgstr "el m210 no tiene soporte para little endian"
+#: config/vax/netbsd-elf.h:42
+msgid "The -shared option is not currently supported for VAX ELF."
+msgstr "La opción -shared no se soporta actualmente para ELF de VAX."
 
 #: config/i386/sco5.h:189
 msgid "-pg not supported on this platform"
@@ -8550,21 +8178,25 @@ msgstr "se especificó -p y -pp - se tomó uno"
 msgid "-G and -static are mutually exclusive"
 msgstr "-G y -static son mutuamente exclusivos"
 
-#: config/i386/cygwin.h:29
-msgid "mno-cygwin and mno-win32 are not compatible"
-msgstr "-mno-cygwin y -mno-win32 no son compatibles"
+#: java/lang-specs.h:34
+msgid "-fjni and -femit-class-files are incompatible"
+msgstr "-fjni y -femit-class-files son incompatibles"
 
-#: config/vax/netbsd-elf.h:42
-msgid "The -shared option is not currently supported for VAX ELF."
-msgstr "La opción -shared no se soporta actualmente para ELF de VAX."
+#: java/lang-specs.h:35
+msgid "-fjni and -femit-class-file are incompatible"
+msgstr "-fjni y -femit-class-file son incompatibles"
 
-#: gcc.c:763
-msgid "GCC does not support -C or -CC without -E"
-msgstr "GCC no da soporte a -C o -CC sin usar -E"
+#: java/lang-specs.h:36 java/lang-specs.h:37
+msgid "-femit-class-file should used along with -fsyntax-only"
+msgstr "-femit-class-file se debe usar junto con -fsyntax-only"
 
-#: gcc.c:957
-msgid "-E or -x required when input is from standard input"
-msgstr "se requiere -E ó -x cuando la entrada es de entrada estándar"
+#: ada/lang-specs.h:35
+msgid "-c or -S required for Ada"
+msgstr "se requiere -c o -S para Ada"
+
+#: config/sh/sh.h:685
+msgid "SH2a does not support little-endian"
+msgstr "SH2a no tiene soporte para little-endian"
 
 #: config/darwin.h:251
 msgid "-current_version only allowed with -dynamiclib"
@@ -8598,17 +8230,13 @@ msgstr "no se permite keep_private_externs con -dynamiclib"
 msgid "-private_bundle not allowed with -dynamiclib"
 msgstr "no se permite -private_bundle con -dynamiclib"
 
-#: config/arm/arm.h:153
-msgid "-msoft-float and -mhard_float may not be used together"
-msgstr "no se pueden usar juntos -msoft-float y -mhard_float"
+#: config/lynx.h:71
+msgid "Cannot use mthreads and mlegacy-threads together."
+msgstr "No se pueden usar mthreads y mlegacy-threads juntos."
 
-#: config/arm/arm.h:155
-msgid "-mbig-endian and -mlittle-endian may not be used together"
-msgstr "no se pueden usar juntos -mbig-endian y -mlittle-endian"
-
-#: config/vax/vax.h:50 config/vax/vax.h:51
-msgid "profiling not supported with -mg\n"
-msgstr "la creación de perfil no tiene soporte con -mg\n"
+#: config/lynx.h:96
+msgid "Cannot use mshared and static together."
+msgstr "No se pueden usar mshared y static juntos."
 
 #: attribs.c:175
 #, gcc-internal-format
@@ -9651,8 +9279,7 @@ msgstr "%<__thread%> inútil en la declaración vacía"
 msgid "useless type qualifier in empty declaration"
 msgstr "calificador de tipo inútil en una declaración vacía"
 
-#: c-decl.c:2949 c-parse.y:781 c-parse.y:783 objc/objc-parse.y:818
-#: objc/objc-parse.y:820
+#: c-decl.c:2949 c-parse.y:781 c-parse.y:783
 #, gcc-internal-format
 msgid "empty declaration"
 msgstr "declaración vacía"
@@ -11146,17 +10773,17 @@ msgstr "para generar dependencias debe especificar -M ó -MM"
 msgid "too late for # directive to set debug directory"
 msgstr "demasiado tarde para que la directiva # establezca el directorio de depuración"
 
-#: c-parse.y:343 objc/objc-parse.y:365
+#: c-parse.y:343
 #, gcc-internal-format
 msgid "ISO C forbids an empty source file"
 msgstr "ISO C prohíbe un fichero fuente vacío"
 
-#: c-parse.y:376 objc/objc-parse.y:399
+#: c-parse.y:376
 #, gcc-internal-format
 msgid "data definition has no type or storage class"
 msgstr "la definición de datos no tiene tipo o clase de almacenamiento"
 
-#: c-parse.y:388 objc/objc-parse.y:411
+#: c-parse.y:388
 #, gcc-internal-format
 msgid "ISO C does not allow extra %<;%> outside of a function"
 msgstr "ISO C no permite %<;%> extra fuera de una función"
@@ -11166,132 +10793,132 @@ msgstr "ISO C no permite %<;%> extra fuera de una función"
 msgid "traditional C rejects the unary plus operator"
 msgstr "C tradicional rechaza el operador unario mas"
 
-#: c-parse.y:498 objc/objc-parse.y:520
+#: c-parse.y:498
 #, gcc-internal-format
 msgid "%<sizeof%> applied to a bit-field"
 msgstr "%<sizeof%> aplicado a un campo de bits"
 
-#: c-parse.y:595 objc/objc-parse.y:617
+#: c-parse.y:595
 #, gcc-internal-format
 msgid "ISO C forbids omitting the middle term of a ?: expression"
 msgstr "ISO C prohíbe la omisión del término medio de una expresión ?:"
 
-#: c-parse.y:636 objc/objc-parse.y:658
+#: c-parse.y:636
 #, gcc-internal-format
 msgid "compound literal has variable size"
 msgstr "la literal compuesta tiene tamaño variable"
 
-#: c-parse.y:648 objc/objc-parse.y:670
+#: c-parse.y:648
 #, gcc-internal-format
 msgid "ISO C90 forbids compound literals"
 msgstr "ISO C90 prohíbe las literales compuestas"
 
-#: c-parse.y:661 objc/objc-parse.y:683
+#: c-parse.y:661
 #, gcc-internal-format
 msgid "ISO C forbids braced-groups within expressions"
 msgstr "ISO C prohíbe grupos de llaves dentro de expresiones"
 
-#: c-parse.y:697 objc/objc-parse.y:719
+#: c-parse.y:697
 #, gcc-internal-format
 msgid "first argument to %<__builtin_choose_expr%> not a constant"
 msgstr "el primer argumento de %<__builtin_choose_expr%> no es una constante"
 
-#: c-parse.y:1224 objc/objc-parse.y:1273
+#: c-parse.y:1224
 #, gcc-internal-format
 msgid "%<typeof%> applied to a bit-field"
 msgstr "%<typeof%> aplicado a un campo de bits"
 
-#: c-parse.y:1372 objc/objc-parse.y:1421
+#: c-parse.y:1372
 #, gcc-internal-format
 msgid "ISO C forbids empty initializer braces"
 msgstr "ISO C prohíbe las llaves de inicializador vacías"
 
-#: c-parse.y:1386 objc/objc-parse.y:1435
+#: c-parse.y:1386
 #, gcc-internal-format
 msgid "ISO C90 forbids specifying subobject to initialize"
 msgstr "ISO C90 prohíbe la especificación de subobjetos a inicializar"
 
-#: c-parse.y:1389 objc/objc-parse.y:1438
+#: c-parse.y:1389
 #, gcc-internal-format
 msgid "obsolete use of designated initializer without %<=%>"
 msgstr "uso obsoleto del inicializador designado sin %<=%>"
 
-#: c-parse.y:1393 objc/objc-parse.y:1442
+#: c-parse.y:1393
 #, gcc-internal-format
 msgid "obsolete use of designated initializer with %<:%>"
 msgstr "uso obsoleto del inicializador asignado con %<:%>"
 
-#: c-parse.y:1424 objc/objc-parse.y:1473
+#: c-parse.y:1424
 #, gcc-internal-format
 msgid "ISO C forbids specifying range of elements to initialize"
 msgstr "ISO C prohíbe la especificación de rangos de elementos a inicializar"
 
-#: c-parse.y:1432 c-parse.y:1462 objc/objc-parse.y:1481 objc/objc-parse.y:1511
+#: c-parse.y:1432 c-parse.y:1462
 #, gcc-internal-format
 msgid "ISO C forbids nested functions"
 msgstr "ISO C prohíbe las funciones anidadas"
 
-#: c-parse.y:1637 objc/objc-parse.y:1686
+#: c-parse.y:1637
 #, gcc-internal-format
 msgid "ISO C forbids forward references to %<enum%> types"
 msgstr "ISO C prohíbe las declaraciones posteriores para tipos %<enum%>"
 
-#: c-parse.y:1649 cp/parser.c:10039 objc/objc-parse.y:1698
+#: c-parse.y:1649 cp/parser.c:10039
 #, gcc-internal-format
 msgid "comma at end of enumerator list"
 msgstr "coma al final de la lista de enumeradores"
 
-#: c-parse.y:1669 objc/objc-parse.y:1718
+#: c-parse.y:1669
 #, gcc-internal-format
 msgid "no semicolon at end of struct or union"
 msgstr "no hay punto y coma al final del struct o union"
 
-#: c-parse.y:1678 objc/objc-parse.y:1727 objc/objc-parse.y:2727
+#: c-parse.y:1678
 #, gcc-internal-format
 msgid "extra semicolon in struct or union specified"
 msgstr "se especificó un punto y coma extra en un struct o union"
 
-#: c-parse.y:1698 objc/objc-parse.y:1750
+#: c-parse.y:1698
 #, gcc-internal-format
 msgid "ISO C forbids member declarations with no members"
 msgstr "ISO C prohíbe declaraciones de miembros con no miembros"
 
-#: c-parse.y:1864 objc/objc-parse.y:1916
+#: c-parse.y:1864
 #, gcc-internal-format
 msgid "label at end of compound statement"
 msgstr "la etiqueta al final de una declaración compuesta"
 
-#: c-parse.y:1883 objc/objc-parse.y:1935
+#: c-parse.y:1883
 #, gcc-internal-format
 msgid "ISO C90 forbids mixed declarations and code"
 msgstr "ISO C90 prohíbe las declaraciones mezcladas y código"
 
-#: c-parse.y:1923 objc/objc-parse.y:1975
+#: c-parse.y:1923
 #, gcc-internal-format
 msgid "ISO C forbids label declarations"
 msgstr "ISO C prohíbe las declaraciones etiquetadas"
 
-#: c-parse.y:1967 objc/objc-parse.y:2019
+#: c-parse.y:1967
 #, gcc-internal-format
 msgid "braced-group within expression allowed only inside a function"
 msgstr "un grupo de llaves dentro de una expresión sólo se permite dentro de una función"
 
-#: c-parse.y:2263 objc/objc-parse.y:2358
+#: c-parse.y:2263
 #, gcc-internal-format
 msgid "%E qualifier ignored on asm"
 msgstr "se ignora el calificador %E en asm"
 
-#: c-parse.y:2309 objc/objc-parse.y:2404
+#: c-parse.y:2309
 #, gcc-internal-format
 msgid "wide string literal in %<asm%>"
 msgstr "literal de cadena ancha en %<asm%>"
 
-#: c-parse.y:2371 objc/objc-parse.y:2466
+#: c-parse.y:2371
 #, gcc-internal-format
 msgid "ISO C requires a named argument before %<...%>"
 msgstr "ISO C requiere un argumento con nombre antes de %<...%>"
 
-#: c-parse.y:2877 objc/objc-parse.y:3467
+#: c-parse.y:2877
 #, gcc-internal-format
 msgid "syntax error at %qs token"
 msgstr "error sintáctico en el elemento %qs"
@@ -13195,17 +12822,17 @@ msgstr "no se puede escribir el fichero PCH"
 msgid "unexpected node"
 msgstr "nodo inesperado"
 
-#: gimplify.c:3340
+#: gimplify.c:3345
 #, gcc-internal-format
 msgid "invalid lvalue in asm output %d"
 msgstr "l-valor inválido en la salida asm %d"
 
-#: gimplify.c:3452
+#: gimplify.c:3457
 #, gcc-internal-format
 msgid "memory input %d is not directly addressable"
 msgstr "la entrada de memoria %d no es directamente direccionable"
 
-#: gimplify.c:4326
+#: gimplify.c:4331
 #, gcc-internal-format
 msgid "gimplification failed"
 msgstr "falló la gimplificación"
@@ -14200,7 +13827,7 @@ msgstr " No se ejecutaron los stmts pendientes en el borde EXIT (%d, %d)\n"
 msgid "unimplemented functionality"
 msgstr "funcionalidad sin implementar"
 
-#: tree-ssa-operands.c:1273
+#: tree-ssa-operands.c:1277
 #, gcc-internal-format
 msgid "internal error"
 msgstr "error interno"
@@ -14390,37 +14017,37 @@ msgstr "las matrices de funciones no tienen significado"
 msgid "function return type cannot be function"
 msgstr "el tipo de devolución de función no puede ser función"
 
-#: tree.c:5405
+#: tree.c:5412
 #, gcc-internal-format
 msgid "invalid initializer for bit string"
 msgstr "inicializador inválido para la cadena de bits"
 
-#: tree.c:5489
+#: tree.c:5496
 #, gcc-internal-format
 msgid "tree check: %s, have %s in %s, at %s:%d"
 msgstr "revisión de árbol: %s, se tiene %s en %s, en %s:%d"
 
-#: tree.c:5526
+#: tree.c:5533
 #, gcc-internal-format
 msgid "tree check: expected none of %s, have %s in %s, at %s:%d"
 msgstr "revisión de árbol: se no esperaba nada de %s, se tiene %s en %s, en %s:%d"
 
-#: tree.c:5539
+#: tree.c:5546
 #, gcc-internal-format
 msgid "tree check: expected class %qs, have %qs (%s) in %s, at %s:%d"
 msgstr "revisión de árbol: se esperaba la clase %qs, se tiene %qs (%s) en %s, en %s:%d"
 
-#: tree.c:5553
+#: tree.c:5560
 #, gcc-internal-format
 msgid "tree check: accessed elt %d of tree_vec with %d elts in %s, at %s:%d"
 msgstr "revisión de árbol: acceso de elt %d de tree_vec con %d elts en %s, en %s:%d"
 
-#: tree.c:5565
+#: tree.c:5572
 #, gcc-internal-format
 msgid "tree check: accessed elt %d of phi_node with %d elts in %s, at %s:%d"
 msgstr "revisión de árbol: acceso de elt %d de phi_node con %d elts en %s, en %s:%d"
 
-#: tree.c:5577
+#: tree.c:5584
 #, gcc-internal-format
 msgid "tree check: accessed operand %d of %s with %d operands in %s, at %s:%d"
 msgstr "revisión de árbol: acceso del operando %d de %s con %d operandos en %s, en %s:%d"
@@ -22545,747 +22172,6 @@ msgstr "no se puede deshacer %s"
 msgid "internal error - invalid Utf8 name"
 msgstr "error interno - nombre Utf8 inválido"
 
-#: java/parse.y:774
-#, gcc-internal-format
-msgid "Ambiguous class: %qs and %qs"
-msgstr "Clase ambigua: %qs y %qs"
-
-#: java/parse.y:840
-#, gcc-internal-format
-msgid "Modifier %qs declared twice"
-msgstr "Modificador %qs declarado dos veces"
-
-#: java/parse.y:1089
-#, gcc-internal-format
-msgid "Discouraged form of returned type specification"
-msgstr "Forma no recomendada para especificación de tipo devuelto"
-
-#: java/parse.y:1184
-#, gcc-internal-format
-msgid "Can't define static initializer in class %qs. Static initializer can only be defined in top-level classes"
-msgstr "No se puede definir un inicializador estático en la clase %qs. Un inicializador estático sólo se puede definir en clases de alto nivel"
-
-#: java/parse.y:1482
-#, gcc-internal-format
-msgid "An empty declaration is a deprecated feature that should not be used"
-msgstr "Una declaración vacía es una característica obsoleta que no se debe usar"
-
-#: java/parse.y:3041
-#, gcc-internal-format
-msgid ": %qs JDK1.1(TM) feature"
-msgstr ": %qs es una característica de JDK1.1(MR)"
-
-#: java/parse.y:3121 java/parse.y:3123
-#, gcc-internal-format
-msgid ""
-"%s.\n"
-"%s"
-msgstr ""
-"%s.\n"
-"%s"
-
-#: java/parse.y:3282
-#, gcc-internal-format
-msgid "Missing return statement"
-msgstr "Falta la declaración de devolución"
-
-#: java/parse.y:3304 java/parse.y:11940 java/parse.y:11944
-#, gcc-internal-format
-msgid "Unreachable statement"
-msgstr "Declaración inalcanzable"
-
-#: java/parse.y:3314
-#, gcc-internal-format
-msgid "Can't access %s field %<%s.%s%> from %qs"
-msgstr "No se puede accesar %s al campo %<%s.%s%> desde %qs"
-
-#: java/parse.y:3383
-#, gcc-internal-format
-msgid "%s %qs already defined in %s:%d"
-msgstr "%s %qs ya está definido en %s:%d"
-
-#: java/parse.y:3401
-#, gcc-internal-format
-msgid "Variable %qs is already defined in this method and was declared %<%s %s%> at line %d"
-msgstr "La variable %qs ya está definida en este método y se declaró %<%s %s%> en la línea %d"
-
-#: java/parse.y:3512
-#, gcc-internal-format
-msgid "Interface %qs repeated"
-msgstr "Interfaz %qs repetida"
-
-#: java/parse.y:3542
-#, gcc-internal-format
-msgid "%s name %qs clashes with imported type %qs"
-msgstr "%s el nombre %qs choca con el tipo importado %qs"
-
-#: java/parse.y:3574
-#, gcc-internal-format
-msgid "Public %s %qs must be defined in a file called %<%s.java%>"
-msgstr "El %s %qs público se debe definir en un fichero llamado %<%s.java%>"
-
-#: java/parse.y:3589
-#, gcc-internal-format
-msgid "Inner class %qs can't be static. Static classes can only occur in interfaces and top-level classes"
-msgstr "La clase interna %qs no puede ser estática. Las clases estáticas sólo pueden suceder en interfaces y en clases de alto nivel"
-
-#: java/parse.y:3670
-#, gcc-internal-format
-msgid "The class name %qs is already defined in this scope. An inner class may not have the same simple name as any of its enclosing classes"
-msgstr "El nombre de clase %qs ya está definido en este ámbito. Una clase interna no puede tener el mismo nombre simple que cualquiera de sus clases contenidas"
-
-#: java/parse.y:3712
-#, gcc-internal-format
-msgid "Qualifier must be a reference"
-msgstr "El calificador debe ser una referencia"
-
-#: java/parse.y:3733
-#, gcc-internal-format
-msgid "Cyclic inheritance involving %s"
-msgstr "Herencia cíclica que involucra a %s"
-
-#: java/parse.y:3997
-#, gcc-internal-format
-msgid "Redundant use of %<abstract%> modifier. Interface %qs is implicitly abstract"
-msgstr "Uso redundante del modificador %<abstract%>. La interfaz %qs es implícitamente abstracta"
-
-#: java/parse.y:4152
-#, gcc-internal-format
-msgid "Class %qs can't be declared both abstract and final"
-msgstr "La clase %qs no se puede declarar como abstract y final al mismo tiempo"
-
-#: java/parse.y:4164
-#, gcc-internal-format
-msgid "%<java.lang.Object%> can't extend anything"
-msgstr "%<java.lang.Object%> no puede extender nada"
-
-#: java/parse.y:4406
-#, gcc-internal-format
-msgid "Duplicate variable declaration: %<%s %s%> was %<%s %s%> (%s:%d)"
-msgstr "Declaración de variable duplicada: %<%s %s%> era %<%s %s%> (%s:%d)"
-
-#: java/parse.y:4470
-#, gcc-internal-format
-msgid "Field %qs can't be static in inner class %qs unless it is final"
-msgstr "El campo %qs no puede ser estático en la clase interna %qs a menos que sea final"
-
-#: java/parse.y:4716
-#, gcc-internal-format
-msgid "Class %qs must be declared abstract to define abstract method %qs"
-msgstr "La clase %qs se debe declarar abstracta para definir el método abstracto %qs"
-
-#: java/parse.y:4723
-#, gcc-internal-format
-msgid "native method %qs can't be strictfp"
-msgstr "el método nativo %qs no puede ser strictfp"
-
-#: java/parse.y:4727
-#, gcc-internal-format
-msgid "method %qs can't be transient"
-msgstr "el método %qs no puede ser transient"
-
-#: java/parse.y:4730
-#, gcc-internal-format
-msgid "method %qs can't be volatile"
-msgstr "el método %qs no puede ser volatile"
-
-#: java/parse.y:4780 java/parse.y:6533
-#, gcc-internal-format
-msgid "Method %qs can't be static in inner class %qs. Only members of interfaces and top-level classes can be static"
-msgstr "El método %qs no puede ser estático en la clase interna %qs. Sólo los miembros de interfaces y de clases de alto nivel pueden ser estáticos"
-
-#: java/parse.y:4946
-#, gcc-internal-format
-msgid "%s method %qs can't have a body defined"
-msgstr "%s el método %qs no puede tener un cuerpo definido"
-
-#: java/parse.y:4957
-#, gcc-internal-format
-msgid "Non native and non abstract method %qs must have a body defined"
-msgstr "El método %qs que no es nativo ni abstracto debe tener un cuerpo definido"
-
-#: java/parse.y:5028
-#, gcc-internal-format
-msgid "%s: recursive invocation of constructor %qs"
-msgstr "%s: invocación recursiva del constructor %qs"
-
-#: java/parse.y:5058
-#, gcc-internal-format
-msgid "Inconsistent member declaration.  At most one of %<public%>, %<private%>, or %<protected%> may be specified"
-msgstr "Declaración inconsistente de miembro.  Se debe especificar por lo menos uno de %<public%>, %<private%>, o %<protected%>"
-
-#: java/parse.y:5066
-#, gcc-internal-format
-msgid "Inconsistent member declaration.  At most one of %<final%> or %<volatile%> may be specified"
-msgstr "Declaración inconsistente de miembro.  Se debe especificar por lo menos uno de %<final%> o %<volatile%>"
-
-#: java/parse.y:5156
-#, gcc-internal-format
-msgid "Variable %qs is used more than once in the argument list of method %qs"
-msgstr "La variable %qs se usa más de una vez en la lista de argumentos del método %qs"
-
-#: java/parse.y:5240
-#, gcc-internal-format
-msgid "%s %qs can't implement/extend %s %qs"
-msgstr "%s %qs no puede implementar/extender %s %qs"
-
-#: java/parse.y:5274
-#, gcc-internal-format
-msgid "Class %qs can't subclass %s %qs"
-msgstr "La clase %qs no puede hacer subclase a %s %qs"
-
-#: java/parse.y:5283
-#, gcc-internal-format
-msgid "Can't subclass final classes: %s"
-msgstr "No se puede hacer subclase de clases finales: %s"
-
-#: java/parse.y:5469
-#, gcc-internal-format
-msgid "Cyclic class inheritance%s"
-msgstr "Herencia%s con ciclo de clase"
-
-#: java/parse.y:6184
-#, gcc-internal-format
-msgid "Superclass %qs of class %qs not found"
-msgstr "No se encontró la superclase %qs de la clase %qs"
-
-#: java/parse.y:6190
-#, gcc-internal-format
-msgid "Type %qs not found in declaration of field %qs"
-msgstr "No se encontró el tipo %qs en la declaración del campo %qs"
-
-#: java/parse.y:6196
-#, gcc-internal-format
-msgid "Type %qs not found in the declaration of the argument %qs of method %qs"
-msgstr "No se encontró el tipo %qs en la declaración del argumento %qs del método %qs"
-
-#: java/parse.y:6203
-#, gcc-internal-format
-msgid "Type %qs not found in the declaration of the return type of method %qs"
-msgstr "No se encontró el tipo %qs en la declaración del tipo de devolución del método %qs"
-
-#: java/parse.y:6209
-#, gcc-internal-format
-msgid "Superinterface %qs of %s %qs not found"
-msgstr "No se encontró la superinterfaz %qs de %s %qs"
-
-#: java/parse.y:6216
-#, gcc-internal-format
-msgid "Type %qs not found in the declaration of the local variable %qs"
-msgstr "No se encontró el tipo %qs en la declaración de la variable local %qs"
-
-#: java/parse.y:6223
-#, gcc-internal-format
-msgid "Class %qs not found in %<throws%>"
-msgstr "No se encuentró la clase %qs en %<throws%>"
-
-#: java/parse.y:6280
-#, gcc-internal-format
-msgid "Duplicate %s declaration %qs"
-msgstr "Declaración %s %qs duplicada"
-
-#: java/parse.y:6354
-#, gcc-internal-format
-msgid "Class %qs doesn't define the abstract method %<%s %s%> from %s %<%s%>. This method must be defined or %s %qs must be declared abstract"
-msgstr "La clase %qs no define el método abstracto %<%s %s%> de %s %<%s%>. Se debe definir este método o se debe declarar a %s %qs como abstracta"
-
-#: java/parse.y:6510
-#, gcc-internal-format
-msgid "Class %qs in %<throws%> clause must be a subclass of class %<java.lang.Throwable%>"
-msgstr "La clase %qs en la cláusula %<throws%> debe ser una subclase de la clase %<java.lang.Throwable%>"
-
-#: java/parse.y:6554
-#, gcc-internal-format
-msgid "Class %qs must override %qs with a public method in order to implement interface %qs"
-msgstr "La clase %qs debe sobreescribir a %qs con un método público para implementar la interfaz %qs"
-
-#: java/parse.y:6568 java/parse.y:6795
-#, gcc-internal-format
-msgid "Method %qs was defined with return type %qs in class %qs"
-msgstr "Se definió el método %qs con tipo de devolución %qs en la clase %qs"
-
-#: java/parse.y:6585
-#, gcc-internal-format
-msgid "%s methods can't be overridden. Method %qs is %s in class %qs"
-msgstr "Los métodos %s no se pueden sobreescribir. El método %qs es %s en la clase %qs"
-
-#: java/parse.y:6599
-#, gcc-internal-format
-msgid "Instance methods can't be overridden by a static method. Method %qs is an instance method in class %qs"
-msgstr "Los métodos de instancia no se pueden sobreescribir con un método estático. El método %qs es un método de instancia en la clase %qs"
-
-#: java/parse.y:6622
-#, gcc-internal-format
-msgid "Methods can't be overridden to be more private. Method %qs is not %s in class %qs"
-msgstr "Los métodos no se pueden sobreescribir para hacerlos más privados. El método %qs no es %s en la clase %qs"
-
-#: java/parse.y:6763
-#, gcc-internal-format
-msgid "Invalid checked exception class %qs in %<throws%> clause.  The exception must be a subclass of an exception thrown by %qs from class %qs"
-msgstr "Clase de excepción revisada %qs inválida en la cláusula %<throws%>.  La excepción debe ser una subclase de una excepción arrojada por %qs de la clase %qs"
-
-#: java/parse.y:6820
-#, gcc-internal-format
-msgid "Interface %qs inherits method %qs from interface %qs. This method is redefined with a different return type in interface %qs"
-msgstr "La interfaz %qs hereda el método %qs de la interfaz %qs. Este método se redefine con un tipo de devolución diferente en la interfaz %qs"
-
-#: java/parse.y:6995
-#, gcc-internal-format
-msgid "Class or interface %qs not found in import"
-msgstr "No se encuentra la clase o interfaz %qs en la importación"
-
-#: java/parse.y:7080
-#, gcc-internal-format
-msgid "malformed .zip archive in CLASSPATH: %s"
-msgstr "archivo .zip malformado en CLASSPATH: %s"
-
-#: java/parse.y:7151
-#, gcc-internal-format
-msgid "Can't find default package %qs. Check the CLASSPATH environment variable and the access to the archives"
-msgstr "No se puede encontrar el paquete por defecto %qs. Revise la variable de ambiente CLASSPATH y el acceso a los archivos"
-
-#: java/parse.y:7156
-#, gcc-internal-format
-msgid "Package %qs not found in import"
-msgstr "No se encuentra el paquete %qs en la importación"
-
-#: java/parse.y:7253
-#, gcc-internal-format
-msgid "Type %qs also potentially defined in package %qs"
-msgstr "El tipo %qs también está potencialmente definido en el paquete %qs"
-
-#: java/parse.y:7398
-#, gcc-internal-format
-msgid "Nested %s %s is %s; cannot be accessed from here"
-msgstr "El %s %s anidado es %s; no se puede accesar desde aquí"
-
-#: java/parse.y:7436
-#, gcc-internal-format
-msgid "Can't access %s %qs. Only public classes and interfaces in other packages can be accessed"
-msgstr "No se puede accesar %s %qs. Sólo se pueden accesar las clases públicas y las interfaces en otros paquetes"
-
-#: java/parse.y:7474
-#, gcc-internal-format
-msgid "Only %<final%> is allowed as a local variables modifier"
-msgstr "Sólo se permite %<final%> como un modificador de variables local"
-
-#: java/parse.y:9028
-#, gcc-internal-format
-msgid "No constructor matching %qs found in class %qs"
-msgstr "No se encontró un constructor que coincida con %qs en la clase %qs"
-
-#: java/parse.y:9528
-#, gcc-internal-format
-msgid "Can't reference %qs before the superclass constructor has been called"
-msgstr "No se puede referenciar a %qs antes que se llame el constructor de la superclase"
-
-#: java/parse.y:9582
-#, gcc-internal-format
-msgid "Local variable %qs can't be accessed from within the inner class %qs unless it is declared final"
-msgstr "No se puede accesar la variable local %qs desde la clase interna %qs a menos que se declare final"
-
-#: java/parse.y:9587 java/parse.y:10050
-#, gcc-internal-format
-msgid "Undefined variable %qs"
-msgstr "No se definió la variable %qs"
-
-#: java/parse.y:9598
-#, gcc-internal-format
-msgid "Can't make a static reference to nonstatic variable %qs in class %qs"
-msgstr "No se puede hacer una referencia estática a la variable %qs que no es estática en la clase %qs"
-
-#: java/parse.y:9804 java/parse.y:10659
-#, gcc-internal-format
-msgid "No enclosing instance for inner class %qs is in scope%s"
-msgstr "No se encontró una instancia terminal para la clase interna %qs que está en ámbito%s"
-
-#: java/parse.y:9923 java/parse.y:12372
-#, gcc-internal-format
-msgid "Keyword %<this%> used outside allowed context"
-msgstr "Se usó la palabra clave %<this%> fuera del contexto permitido"
-
-#: java/parse.y:9929 java/parse.y:10813
-#, gcc-internal-format
-msgid "Can't reference %<this%> before the superclass constructor has been called"
-msgstr "No se puede referenciar %<this%> antes de que se llame al constructor de la superclase"
-
-#: java/parse.y:9945
-#, gcc-internal-format
-msgid "Can't use variable %<%s.this%>: type %qs isn't an outer type of type %qs"
-msgstr "No se puede usar la variable %<%s.this%>: el tipo %qs no es un tipo externo del tipo %qs"
-
-#: java/parse.y:9978
-#, gcc-internal-format
-msgid "Keyword %<super%> used outside allowed context"
-msgstr "Se usó la palabra clave %<super%> fuera del contexto permitido"
-
-#: java/parse.y:10027
-#, gcc-internal-format
-msgid "No variable %qs defined in class %qs"
-msgstr "No se definió la variable %qs en la clase %qs"
-
-#: java/parse.y:10032
-#, gcc-internal-format
-msgid "Undefined variable or class name: %qs"
-msgstr "Variable o nombre de clase sin definir: %qs"
-
-#: java/parse.y:10103
-#, gcc-internal-format
-msgid "Can't use type %qs as a qualifier"
-msgstr "No se puede usar %qs como un calificador"
-
-#: java/parse.y:10122
-#, gcc-internal-format
-msgid "Attempt to reference field %qs in %<%s %s%>"
-msgstr "Se intentó referenciar el campo %qs en %<%s %s%>"
-
-#: java/parse.y:10153
-#, gcc-internal-format
-msgid "No variable %qs defined in type %qs"
-msgstr "No se definió la variable %qs en el tipo %qs"
-
-#: java/parse.y:10237
-#, gcc-internal-format
-msgid "Attempt to reference field %<new%> in a %qs"
-msgstr "Se intentó referenciar el campo %<new%> en un %qs"
-
-#: java/parse.y:10374
-#, gcc-internal-format
-msgid "The class %qs has been deprecated"
-msgstr "La clase %qs es obsoleta"
-
-#: java/parse.y:10384
-#, gcc-internal-format
-msgid "The %s %qs in class %qs has been deprecated"
-msgstr "El %s %qs en la clase %qs es obsoleto"
-
-#: java/parse.y:10501
-#, gcc-internal-format
-msgid "Can't invoke a method on primitive type %qs"
-msgstr "No se puede invocar un método en el tipo primitivo %qs"
-
-#: java/parse.y:10516
-#, gcc-internal-format
-msgid "Can't make static reference to method %qs in interface %qs"
-msgstr "No se puede hacer una referencia estática al método %qs en la interfaz %qs"
-
-#: java/parse.y:10526 java/parse.y:10860
-#, gcc-internal-format
-msgid "Can't make static reference to method %<%s %s%> in class %qs"
-msgstr "No se puede hacer una referencia al método %<%s %s%> en la clase %qs"
-
-#: java/parse.y:10566
-#, gcc-internal-format
-msgid "Can't invoke super constructor on java.lang.Object"
-msgstr "No se puede invocar al super constructor en java.lang.Object"
-
-#: java/parse.y:10579 java/parse.y:14437
-#, gcc-internal-format
-msgid "Class %qs not found in type declaration"
-msgstr "No se encontró la clase %qs en la declaración de tipo"
-
-#: java/parse.y:10591
-#, gcc-internal-format
-msgid "Class %qs is an abstract class. It can't be instantiated"
-msgstr "La clase %qs es una clase abstracta. No se puede instanciar"
-
-#: java/parse.y:10621
-#, gcc-internal-format
-msgid "No method named %qs in scope"
-msgstr "No hay un método llamado %qs en el ámbito"
-
-#: java/parse.y:10732
-#, gcc-internal-format
-msgid "Can't access %s %s %<%s.%s%> from %qs"
-msgstr "No se puede accesar %s %s %<%s.%s%> desde %qs"
-
-#: java/parse.y:11206
-#, gcc-internal-format
-msgid "Can't find %s %<%s(%s)%> in type %qs%s"
-msgstr "No se puede encontrar %s %<%s(%s)%> en el tipo %qs%s"
-
-#: java/parse.y:11786
-#, gcc-internal-format
-msgid "Constant expression required"
-msgstr "Se requiere una expresión constante"
-
-#: java/parse.y:11799
-#, gcc-internal-format
-msgid "Incompatible type for case. Can't convert %qs to %<int%>"
-msgstr "Tipo incompatible para el case. No se puede convertir %qs a %<int%>"
-
-#: java/parse.y:11833
-#, gcc-internal-format
-msgid "Duplicate case label: %<default%>"
-msgstr "Valor de case duplicado: %<default%>"
-
-#: java/parse.y:12181
-#, gcc-internal-format
-msgid "Incompatible type for %<+=%>. Can't convert %qs to %<java.lang.String%>"
-msgstr "Tipo incompatible para %<+=%>. No se puede convertir %qs a %<java.lang.String%>"
-
-#: java/parse.y:12352
-#, gcc-internal-format
-msgid "missing static field %qs"
-msgstr "falta el campo static %qs"
-
-#: java/parse.y:12357
-#, gcc-internal-format
-msgid "not a static field %qs"
-msgstr "%qs no es un campo static"
-
-#: java/parse.y:12380
-#, gcc-internal-format
-msgid "Can't reference %<this%> or %<super%> before the superclass constructor has been called"
-msgstr "No se puede referenciar %<this%> o %<super%> antes que se llame al constructor de la superclase"
-
-#: java/parse.y:12400
-#, gcc-internal-format
-msgid "No case for %s"
-msgstr "No hay case para %s"
-
-#: java/parse.y:12830
-#, gcc-internal-format
-msgid "Invalid left hand side of assignment"
-msgstr "La parte izquierda de la asignación es inválida"
-
-#: java/parse.y:12881
-#, gcc-internal-format
-msgid "Incompatible type for %s. Can't convert %qs to %qs"
-msgstr "Tipo incompatible para el argumento %s. No se puede convertir %qs a %qs"
-
-#: java/parse.y:12884
-#, gcc-internal-format
-msgid "Incompatible type for %s. Explicit cast needed to convert %qs to %qs"
-msgstr "Tipo incompatible para %s. Se necesita una conversión explícita para convertir %qs a %qs"
-
-#: java/parse.y:13057
-#, gcc-internal-format
-msgid "Constant expression %qs too wide for narrowing primitive conversion to %qs"
-msgstr "La expresión constante %qs es demasiado ancha para la conversión primitiva que estrecha a %qs"
-
-#: java/parse.y:13348
-#, gcc-internal-format
-msgid "unregistered operator %s"
-msgstr "operador %s sin registrar"
-
-#: java/parse.y:13497
-#, gcc-internal-format
-msgid "Evaluating this expression will result in an arithmetic exception being thrown"
-msgstr "La evaluación de esta expresión resultará en que se arroje una excepción aritmética"
-
-#: java/parse.y:13579
-#, gcc-internal-format
-msgid "Incompatible type for %qs. Explicit cast needed to convert shift distance from %qs to integral"
-msgstr "Tipo incompatible para %qs. Se requiere una conversión explícita para convertir la distancia de desplazamiento de %qs a integral"
-
-#: java/parse.y:13584
-#, gcc-internal-format
-msgid "Incompatible type for %qs. Can't convert shift distance from %qs to integral"
-msgstr "Tipo incompatible para %qs. No se puede convertir la distancia de desplazamiento de %qs a integral"
-
-#: java/parse.y:13660
-#, gcc-internal-format
-msgid "Invalid argument %qs for %<instanceof%>"
-msgstr "Argumento %qs inválido para %<instanceof%>"
-
-#: java/parse.y:13687
-#, gcc-internal-format
-msgid "Impossible for %qs to be instance of %qs"
-msgstr "Es imposible para %qs que sea instancia de %qs"
-
-#: java/parse.y:13818
-#, gcc-internal-format
-msgid "Incompatible type for %qs. Can't convert %qs to %qs"
-msgstr "Tipo incompatible para %qs. No se puede convertir %qs a %qs"
-
-#: java/parse.y:14298
-#, gcc-internal-format
-msgid "Invalid argument type %qs to %qs"
-msgstr "Tipo de argumento %qs a %qs inválido"
-
-#: java/parse.y:14528
-#, gcc-internal-format
-msgid "Invalid cast from %qs to %qs"
-msgstr "Conversión inválida de %qs a %qs"
-
-#: java/parse.y:14575
-#, gcc-internal-format
-msgid "%<[]%> can only be applied to arrays. It can't be applied to %qs"
-msgstr "%<[]%> sólo se puede aplicar a matrices. No se puede aplicar a %qs"
-
-#: java/parse.y:14588
-#, gcc-internal-format
-msgid "Incompatible type for %<[]%>. Explicit cast needed to convert %qs to %<int%>"
-msgstr "Tipo incompatible para %<[]%>. Se necesita una conversión explícita para convertir %qs a %<int%>"
-
-#: java/parse.y:14592
-#, gcc-internal-format
-msgid "Incompatible type for %<[]%>. Can't convert %qs to %<int%>"
-msgstr "Tipo incompatible para %<[]%>. No se puede convertir %qs a %<int%>"
-
-#: java/parse.y:14663
-#, gcc-internal-format
-msgid "Incompatible type for dimension in array creation expression. %s convert %qs to %<int%>"
-msgstr "Tipo incompatible para la dimensión en la expresión de creación de matriz. %s convierte %qs a %<int%>"
-
-#: java/parse.y:14779
-#, gcc-internal-format
-msgid "Invalid array initializer for non-array type %qs"
-msgstr "Inicializador de matriz inválido para el tipo %qs que no es matriz"
-
-#: java/parse.y:14866
-#, gcc-internal-format
-msgid "Incompatible type for array. %s convert %qs to %qs"
-msgstr "Tipo incompatible para matriz. %s convierte %qs a %qs"
-
-#: java/parse.y:14935
-#, gcc-internal-format
-msgid "%<return%> inside instance initializer"
-msgstr "%<return%> dentro de un inicializador de instancia"
-
-#: java/parse.y:14939
-#, gcc-internal-format
-msgid "%<return%> inside static initializer"
-msgstr "%<return%> dentro de un inicializador estático"
-
-#: java/parse.y:14945
-#, gcc-internal-format
-msgid "%<return%> with%s value from %<%s %s%>"
-msgstr "%<return%> con%s valor de %<%s %s%>"
-
-#: java/parse.y:14952
-#, gcc-internal-format
-msgid "%<return%> with value from constructor %qs"
-msgstr "%<return%> con valor del constructor %qs"
-
-#: java/parse.y:15017
-#, gcc-internal-format
-msgid "Incompatible type for %<if%>. Can't convert %qs to %<boolean%>"
-msgstr "Tipo incompatible para %<if%>. No se puede convertir %qs a %<boolean%>"
-
-#: java/parse.y:15050
-#, gcc-internal-format
-msgid "Declaration of %qs shadows a previous label declaration"
-msgstr "La declaración de %qs oscurece a una declaración de etiqueta previa"
-
-#: java/parse.y:15055
-#, gcc-internal-format
-msgid "This is the location of the previous declaration of label %qs"
-msgstr "Esta es la ubicación de la declaración previa de la etiqueta %qs"
-
-#: java/parse.y:15302
-#, gcc-internal-format
-msgid "No label definition found for %qs"
-msgstr "No se encontró una definición de etiqueta para %qs"
-
-#: java/parse.y:15315
-#, gcc-internal-format
-msgid "%<continue%> must be in loop"
-msgstr "%<continue%> debe estar dentro de un ciclo"
-
-#: java/parse.y:15318
-#, gcc-internal-format
-msgid "continue label %qs does not name a loop"
-msgstr "la etiqueta continue %qs no nombra un ciclo"
-
-#: java/parse.y:15339
-#, gcc-internal-format
-msgid "%<break%> must be in loop or switch"
-msgstr "%<break%> debe estar dentro de un ciclo o switch"
-
-#: java/parse.y:15380
-#, gcc-internal-format
-msgid "Incompatible type for loop conditional. Can't convert %qs to %<boolean%>"
-msgstr "Tipo incompatible para condicional de ciclo. No se puede convertir %qs a %<boolean%>"
-
-#: java/parse.y:15418
-#, gcc-internal-format
-msgid "Incompatible type for %<switch%>. Can't convert %qs to %<int%>"
-msgstr "Tipo incompatible para %<switch%>. No se puede convertir %qs a %<int%>"
-
-#. The case_label_list is in reverse order, so print the
-#. outer label first.
-#: java/parse.y:15449
-#, gcc-internal-format
-msgid "duplicate case label: %<"
-msgstr "etiqueta de case duplicada: %<"
-
-#: java/parse.y:15450
-#, gcc-internal-format
-msgid "%>"
-msgstr "%>"
-
-#: java/parse.y:15453
-#, gcc-internal-format
-msgid "original label is here"
-msgstr "la etiqueta original está aquí"
-
-#: java/parse.y:15670
-#, gcc-internal-format
-msgid "Can't catch class %qs. Catch clause parameter type must be a subclass of class %<java.lang.Throwable%>"
-msgstr "No se puede capturar la clase %qs. El tipo del parámetro de la cláusula catch debe ser una subclase de la clase %<java.lang.Throwable%>"
-
-#: java/parse.y:15694
-#, gcc-internal-format
-msgid "%<catch%> not reached because of the catch clause at line %d"
-msgstr "No se alcanzó %<catch%> por la cláusula catch en la línea %d"
-
-#: java/parse.y:15761
-#, gcc-internal-format
-msgid "Incompatible type for %<synchronized%>. Can't convert %qs to %<java.lang.Object%>"
-msgstr "Tipo incompatible para %<synchronized%>. No se puede convertir %qs a %<java.lang.Object%>"
-
-#: java/parse.y:15820
-#, gcc-internal-format
-msgid "Can't throw %qs; it must be a subclass of class %<java.lang.Throwable%>"
-msgstr "No se puede arrojar %qs; debe ser una subclase de la clase %<java.lang.Throwable%>"
-
-#: java/parse.y:15849
-#, gcc-internal-format
-msgid "Checked exception %qs can't be thrown in instance initializer (not all declared constructor are declaring it in their %<throws%> clause)"
-msgstr "La excepción revisada %qs no se puede arrojar en el inicializador de instancia (no todos los constructores declarados la están declarando en su cláusula %<throws%>)"
-
-#: java/parse.y:15870
-#, gcc-internal-format
-msgid "Checked exception %qs can't be caught by any of the catch clause(s) of the surrounding %<try%> block"
-msgstr "La excepción revisada %qs no puede ser capturada por ninguna de la(s) cláusula(s) catch del bloque %<try%> que las contiene"
-
-#: java/parse.y:15883
-#, gcc-internal-format
-msgid "Checked exception %qs can't be thrown in initializer"
-msgstr "La excepción revisada %qs no se puede arrojar en el inicializador"
-
-#: java/parse.y:15887
-#, gcc-internal-format
-msgid "Checked exception %qs isn't thrown from a %<try%> block"
-msgstr "La excepción revisada %qs no se arroja desde un bloque %<try%>"
-
-#: java/parse.y:15893
-#, gcc-internal-format
-msgid "Checked exception %qs doesn't match any of current method's %<throws%> declaration(s)"
-msgstr "La excepción revisada %qs no coincide con ninguno de los métodos actuales de la(s) declaración(es) %<throws%>"
-
-#: java/parse.y:15948
-#, gcc-internal-format
-msgid "Exception %qs can't be thrown in initializer"
-msgstr "La excepción %qs no se puede arrojar en el inicializador"
-
-#: java/parse.y:15953
-#, gcc-internal-format
-msgid "Exception %qs must be caught, or it must be declared in the %<throws%> clause of %qs"
-msgstr "La excepción %qs se debe capturar, o se debe declarar en la cláusula %<throws%> de %qs"
-
-#: java/parse.y:16066
-#, gcc-internal-format
-msgid "Incompatible type for %<?:%>. Can't convert %qs to %<boolean%>"
-msgstr "Tipo incompatible para %<?:%>. No se puede convertir %qs a %<boolean%>"
-
-#: java/parse.y:16134
-#, gcc-internal-format
-msgid "Incompatible type for %<?:%>. Can't convert %qs to %qs"
-msgstr "Tipo incompatible para %<?:%>. No se puede convertir %qs a %qs"
-
 #: java/typeck.c:533
 #, gcc-internal-format
 msgid "junk at end of signature string"
@@ -23325,18 +22211,6 @@ msgstr "el método %s no puede ser abstracto"
 #, gcc-internal-format
 msgid "Constructor can't be %s"
 msgstr "El constructor no puede ser %s"
-
-#. Pedantic warning on obsolete modifiers. Note: when cl is NULL,
-#. flags was set artificially, such as for a interface method
-#: java/parse.h:161
-#, gcc-internal-format
-msgid "Discouraged redundant use of %qs modifier in declaration of %s"
-msgstr "Uso redundante no recomendado del modificador %qs en la declaración de %s"
-
-#: java/parse.h:168
-#, gcc-internal-format
-msgid "Discouraged redundant use of %qs modifier in declaration of %s %qs"
-msgstr "Uso redundante no recomendado del modificador %qs en la declaración de %s %qs"
 
 #. Standard error messages
 #: java/parse.h:352
@@ -23712,11 +22586,6 @@ msgstr "[super ...] debe aparecer en el contexto de un método"
 msgid "local declaration of %qs hides instance variable"
 msgstr "la declaración local de %qs oculta la variable de instancia"
 
-#: objc/objc-parse.y:2748
-#, gcc-internal-format
-msgid "extra semicolon in method definition specified"
-msgstr "se especificó un punto y coma extra en la definición del método especificado"
-
 #: treelang/tree1.c:278
 #, gcc-internal-format
 msgid "%HDuplicate name %q.*s."
@@ -23742,6 +22611,741 @@ msgstr "Se solicitó la dirección de la variable de registro global %qD."
 msgid "Address of register variable %qD requested."
 msgstr "Se solicitó la dirección de la variable de registro %qD."
 
+#~ msgid "Missing term"
+#~ msgstr "Falta el término"
+
+#~ msgid "';' expected"
+#~ msgstr "se esperaba ';'"
+
+#~ msgid "Missing name"
+#~ msgstr "Falta el nombre"
+
+#~ msgid "'*' expected"
+#~ msgstr "se esperaba '*'"
+
+#~ msgid "Class or interface declaration expected"
+#~ msgstr "se esperaba una declaración de clase o interfaz"
+
+#~ msgid "Missing class name"
+#~ msgstr "Falta el nombre de la clase"
+
+#~ msgid "'{' expected"
+#~ msgstr "Se esperaba '{'"
+
+#~ msgid "Missing super class name"
+#~ msgstr "No se encuentra el nombre de la super clase"
+
+#~ msgid "Missing interface name"
+#~ msgstr "No se encuentra el nombre de la interfaz"
+
+#~ msgid "Missing variable initializer"
+#~ msgstr "Falta el inicializador de la variable"
+
+#~ msgid "Invalid declaration"
+#~ msgstr "Declaración inválida"
+
+#~ msgid "']' expected"
+#~ msgstr "Se esperaba ']'"
+
+#~ msgid "Unbalanced ']'"
+#~ msgstr "']' desbalanceado"
+
+#~ msgid "Invalid method declaration, method name required"
+#~ msgstr "Declaración de método inválida, se requiere un nombre de método"
+
+#~ msgid "Identifier expected"
+#~ msgstr "Se esperaba un identificador"
+
+#~ msgid "Invalid method declaration, return type required"
+#~ msgstr "Declaración de método inválida, se requiere un tipo de devolución"
+
+#~ msgid "')' expected"
+#~ msgstr "Se esperaba ')'"
+
+#~ msgid "Missing formal parameter term"
+#~ msgstr "Falta el término de parámetro formal"
+
+#~ msgid "Missing identifier"
+#~ msgstr "Falta el identificador"
+
+#~ msgid "Missing class type term"
+#~ msgstr "Falta el término de tipo de clase"
+
+#~ msgid "Invalid interface type"
+#~ msgstr "Tipo de interfaz inválido"
+
+#~ msgid "':' expected"
+#~ msgstr "Se esperaba ':'"
+
+#~ msgid "Invalid expression statement"
+#~ msgstr "Declaración de expresión inválida"
+
+#~ msgid "'(' expected"
+#~ msgstr "Se esperaba '('"
+
+#~ msgid "Missing term or ')'"
+#~ msgstr "Falta término o ')'"
+
+#~ msgid "Missing or invalid constant expression"
+#~ msgstr "Expresión constante faltante o inválida"
+
+#~ msgid "Missing term and ')' expected"
+#~ msgstr "Faltan término y ')' esperados"
+
+#~ msgid "Invalid control expression"
+#~ msgstr "Expresión de control inválida"
+
+#~ msgid "Invalid update expression"
+#~ msgstr "Expresión de actualización inválida"
+
+#~ msgid "Invalid init statement"
+#~ msgstr "Declaración de inicio inválida"
+
+#~ msgid "Missing term or ')' expected"
+#~ msgstr "Faltan término o ')' esperados"
+
+#~ msgid "'class' or 'this' expected"
+#~ msgstr "Se esperaba 'class' o 'this'"
+
+#~ msgid "'class' expected"
+#~ msgstr "Se esperaba 'class'"
+
+#~ msgid "')' or term expected"
+#~ msgstr "Se esperaba ')' o término"
+
+#~ msgid "'[' expected"
+#~ msgstr "Se esperaba '['"
+
+#~ msgid "Field expected"
+#~ msgstr "Se esperaba un campo"
+
+#~ msgid "Missing term and ']' expected"
+#~ msgstr "Faltan término y ']' esperados"
+
+#~ msgid "']' expected, invalid type expression"
+#~ msgstr "Se esperaba ']', expresión de tipo inválida"
+
+#~ msgid "Invalid type expression"
+#~ msgstr "Expresión de tipo inválida"
+
+#~ msgid "Invalid reference type"
+#~ msgstr "Tipo de referencia inválido"
+
+#~ msgid "Constructor invocation must be first thing in a constructor"
+#~ msgstr "La invocación del constructor debe ser el primer elemento en un constructor"
+
+#~ msgid "Only constructors can invoke constructors"
+#~ msgstr "Solamente los constructores pueden invocar constructores"
+
+#~ msgid "-J<directory>\tPut MODULE files in 'directory'"
+#~ msgstr "-J<directorio>\tColoca los ficheros MODULE en el 'directorio'"
+
+#~ msgid "Warn about possible aliasing of dummy arguments"
+#~ msgstr "Avisar sobre posibles aliases de argumentos de relleno"
+
+#~ msgid "Warn about implicit conversion"
+#~ msgstr "Avisar sobre conversiones implícitas"
+
+#~ msgid "Warn if deprecated empty statements are found"
+#~ msgstr "Avisa si se encuentran declaraciones vacías obsoletas"
+
+#~ msgid "Warn about calls with implicit interface"
+#~ msgstr "Avisar sobre llamadas con interfaz implícita"
+
+#~ msgid "Warn about truncated source lines"
+#~ msgstr "Avisar sobre líneas de código truncadas"
+
+#~ msgid "Warn about usage of non-standard intrinsics"
+#~ msgstr "Avisar sobre el uso de intrínsecos no estándar"
+
+#~ msgid "Warn if .class files are out of date"
+#~ msgstr "Avisa si los ficheros .class están desactualizados"
+
+#~ msgid "Warn if modifiers are specified when not necessary"
+#~ msgstr "Avisa si se especifican modificadores cuando no son necesarios"
+
+#~ msgid "Warn about \"suspicious\" constructs"
+#~ msgstr "Avisar sobre construcciones \"sospechosas\" "
+
+#~ msgid "Warn about underflow of numerical constant expressions"
+#~ msgstr "Avisar sobre desbordamiento por debajo de expresiones numéricas constantes"
+
+#~ msgid "--CLASSPATH\tDeprecated; use --classpath instead"
+#~ msgstr "--CLASSPATH\tObsoleto; utilice en su lugar --classpath"
+
+#~ msgid "Permit the use of the assert keyword"
+#~ msgstr "Permite el uso de la palabra clave assert"
+
+#~ msgid "--bootclasspath=<path>\tReplace system path"
+#~ msgstr "--bootclasspath=<ruta>\tReemplaza la ruta del sistema"
+
+#~ msgid "Generate checks for references to NULL"
+#~ msgstr "Genera revisiones para referencias a NULL"
+
+#~ msgid "--classpath=<path>\tSet class path"
+#~ msgstr "--classpath=<ruta>\tEstablece la ruta de clases"
+
+#~ msgid "Set the default double precision kind to an 8 byte wide type"
+#~ msgstr "Establece el tipo de doble precisión por defecto a un tipo de 8 bytes de anchura"
+
+#~ msgid "Set the default integer kind to an 8 byte wide type"
+#~ msgstr "Establece el tipo entero por defecto a un tipo de 8 bytes de anchura"
+
+#~ msgid "Set the default real kind to an 8 byte wide type"
+#~ msgstr "Establece el tipo real por defecto a un tipo de 8 bytes de anchura"
+
+#~ msgid "Allow dollar signs in entity names"
+#~ msgstr "Permitir signos de dólar en nombres de entidades"
+
+#~ msgid "Output a class file"
+#~ msgstr "Genera un fichero clase como salida"
+
+#~ msgid "Alias for -femit-class-file"
+#~ msgstr "Alias para -femit-class-file"
+
+#~ msgid "--encoding=<encoding>\tChoose input encoding (defaults from your locale)"
+#~ msgstr "--encoding=<codificación>\tEscoge la codificación de entrada (por defecto viene del local)"
+
+#~ msgid "--extdirs=<path>\tSet the extension directory path"
+#~ msgstr "--extdirs=<ruta>\tEstablece la ruta del directorio de extensiones"
+
+#~ msgid "Use f2c calling convention."
+#~ msgstr "Usa convención de llamada f2c."
+
+#~ msgid "Input file is a file with a list of filenames to compile"
+#~ msgstr "El fichero de entrada es un fichero con la lista de nombres de fichero a compilar"
+
+#~ msgid "Assume that the source file is fixed form"
+#~ msgstr "Asumir que el fichero fuente es de forma fija"
+
+#~ msgid "-ffixed-line-length-<n>\t\tUse n as character line width in fixed mode"
+#~ msgstr "-ffixed-line-length-<n>\t\tUsa n como ancho de línea de carácter en modo fijo"
+
+#~ msgid "Allow arbitrary character line width in fixed mode"
+#~ msgstr "Permitir ancho de línea de carácter arbitrario en modo fijo"
+
+#~ msgid "Always check for non gcj generated classes archives"
+#~ msgstr "Revisa siempre por archivos de clases no generados por gcj"
+
+#~ msgid "Assume that the source file is free form"
+#~ msgstr "Asumir que el fichero fuente es de forma libre"
+
+#~ msgid "Assume the runtime uses a hash table to map an object to its synchronization structure"
+#~ msgstr "Asume que el tiempo de ejecución usa una tabla hash para mapear un objeto a su estructura de sincronización"
+
+#~ msgid "Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements"
+#~ msgstr "Especificar que no se permite tipos implícitos, a menos que se sobreescriban con sentencias IMPLICIT explícitas"
+
+#~ msgid "Use offset tables for virtual method calls"
+#~ msgstr "Utiliza tablas de desplazamiento para llamadas a métodos virtuales"
+
+#~ msgid "Assume native functions are implemented using JNI"
+#~ msgstr "Asume que las funciones nativas se implementan usando JNI"
+
+#~ msgid "-fmax-identifier-length=<n>\tMaximum identifier length."
+#~ msgstr ""
+#~ "-fmax-identifier-length=<n>\n"
+#~ "Máxima longitud de identificador."
+
+#~ msgid "-fmax-stack-var-size=<n>\tSize in bytes of the largest array that will be put on the stack"
+#~ msgstr "-fmax-stack-var-size=<n>\tTamaño en bytes de la matriz más grande que se colocará en la pila"
+
+#~ msgid "Set default accessibility of module entities to PRIVATE"
+#~ msgstr "Establecer la accesibilidad por defecto de las entidades de módulo en PRIVATE"
+
+#~ msgid "Don't generate code, just do syntax and semantics checking"
+#~ msgstr "No generar código, sólo revisar sintaxis y semántica"
+
+#~ msgid "Enable optimization of static class initialization code"
+#~ msgstr "Activa la optimización del código de inicialización de las clases static"
+
+#~ msgid "Try to layout derived types as compact as possible"
+#~ msgstr "Tratar de acomodar los tipos derivados tan compactos como sea posible"
+
+#~ msgid "Copy array sections into a contiguous block on procedure entry"
+#~ msgstr "Copiar secciones de matriz en un bloque contiguo en la entrada de procedimiento"
+
+#~ msgid "Append a second underscore if the name already contains an underscore"
+#~ msgstr "Agregar un segundo guión bajo si el nombre ya tiene un guión bajo"
+
+#~ msgid "Enable assignability checks for stores into object arrays"
+#~ msgstr "Activa revisiones de asignabilidad para almacenamientos en matrices de objetos"
+
+#~ msgid "Append underscores to externally visible names"
+#~ msgstr "Agregar subrayado a los nombres visibles externamente"
+
+#~ msgid "Generate code for the Boehm GC"
+#~ msgstr "Genera código para el GC de Boehm"
+
+#~ msgid "Call a library routine to do integer divisions"
+#~ msgstr "Llama a una rutina de biblioteca para hacer divisiones enteras"
+
+#~ msgid "-qkind=<n>\tSet the kind for a real with the 'q' exponent to 'n'"
+#~ msgstr "-qkind=<n>\tEstablece el tipo para un real con el exponente 'q' a la 'n'"
+
+#~ msgid "Conform to the ISO Fortran 2003 standard."
+#~ msgstr "Conforme al estándard ISO Fortran 2003"
+
+#~ msgid "Conform to the ISO Fortran 95 standard."
+#~ msgstr "Conforme al estándard ISO Fortran 95"
+
+#~ msgid "Conform nothing in particular."
+#~ msgstr "Conforme a nada en particular."
+
+#~ msgid "Ambiguous class: %qs and %qs"
+#~ msgstr "Clase ambigua: %qs y %qs"
+
+#~ msgid "Modifier %qs declared twice"
+#~ msgstr "Modificador %qs declarado dos veces"
+
+#~ msgid "Discouraged form of returned type specification"
+#~ msgstr "Forma no recomendada para especificación de tipo devuelto"
+
+#~ msgid "Can't define static initializer in class %qs. Static initializer can only be defined in top-level classes"
+#~ msgstr "No se puede definir un inicializador estático en la clase %qs. Un inicializador estático sólo se puede definir en clases de alto nivel"
+
+#~ msgid "An empty declaration is a deprecated feature that should not be used"
+#~ msgstr "Una declaración vacía es una característica obsoleta que no se debe usar"
+
+#~ msgid ": %qs JDK1.1(TM) feature"
+#~ msgstr ": %qs es una característica de JDK1.1(MR)"
+
+#~ msgid ""
+#~ "%s.\n"
+#~ "%s"
+#~ msgstr ""
+#~ "%s.\n"
+#~ "%s"
+
+#~ msgid "Missing return statement"
+#~ msgstr "Falta la declaración de devolución"
+
+#~ msgid "Unreachable statement"
+#~ msgstr "Declaración inalcanzable"
+
+#~ msgid "Can't access %s field %<%s.%s%> from %qs"
+#~ msgstr "No se puede accesar %s al campo %<%s.%s%> desde %qs"
+
+#~ msgid "%s %qs already defined in %s:%d"
+#~ msgstr "%s %qs ya está definido en %s:%d"
+
+#~ msgid "Variable %qs is already defined in this method and was declared %<%s %s%> at line %d"
+#~ msgstr "La variable %qs ya está definida en este método y se declaró %<%s %s%> en la línea %d"
+
+#~ msgid "Interface %qs repeated"
+#~ msgstr "Interfaz %qs repetida"
+
+#~ msgid "%s name %qs clashes with imported type %qs"
+#~ msgstr "%s el nombre %qs choca con el tipo importado %qs"
+
+#~ msgid "Public %s %qs must be defined in a file called %<%s.java%>"
+#~ msgstr "El %s %qs público se debe definir en un fichero llamado %<%s.java%>"
+
+#~ msgid "Inner class %qs can't be static. Static classes can only occur in interfaces and top-level classes"
+#~ msgstr "La clase interna %qs no puede ser estática. Las clases estáticas sólo pueden suceder en interfaces y en clases de alto nivel"
+
+#~ msgid "The class name %qs is already defined in this scope. An inner class may not have the same simple name as any of its enclosing classes"
+#~ msgstr "El nombre de clase %qs ya está definido en este ámbito. Una clase interna no puede tener el mismo nombre simple que cualquiera de sus clases contenidas"
+
+#~ msgid "Qualifier must be a reference"
+#~ msgstr "El calificador debe ser una referencia"
+
+#~ msgid "Cyclic inheritance involving %s"
+#~ msgstr "Herencia cíclica que involucra a %s"
+
+#~ msgid "Redundant use of %<abstract%> modifier. Interface %qs is implicitly abstract"
+#~ msgstr "Uso redundante del modificador %<abstract%>. La interfaz %qs es implícitamente abstracta"
+
+#~ msgid "Class %qs can't be declared both abstract and final"
+#~ msgstr "La clase %qs no se puede declarar como abstract y final al mismo tiempo"
+
+#~ msgid "%<java.lang.Object%> can't extend anything"
+#~ msgstr "%<java.lang.Object%> no puede extender nada"
+
+#~ msgid "Duplicate variable declaration: %<%s %s%> was %<%s %s%> (%s:%d)"
+#~ msgstr "Declaración de variable duplicada: %<%s %s%> era %<%s %s%> (%s:%d)"
+
+#~ msgid "Field %qs can't be static in inner class %qs unless it is final"
+#~ msgstr "El campo %qs no puede ser estático en la clase interna %qs a menos que sea final"
+
+#~ msgid "Class %qs must be declared abstract to define abstract method %qs"
+#~ msgstr "La clase %qs se debe declarar abstracta para definir el método abstracto %qs"
+
+#~ msgid "native method %qs can't be strictfp"
+#~ msgstr "el método nativo %qs no puede ser strictfp"
+
+#~ msgid "method %qs can't be transient"
+#~ msgstr "el método %qs no puede ser transient"
+
+#~ msgid "method %qs can't be volatile"
+#~ msgstr "el método %qs no puede ser volatile"
+
+#~ msgid "Method %qs can't be static in inner class %qs. Only members of interfaces and top-level classes can be static"
+#~ msgstr "El método %qs no puede ser estático en la clase interna %qs. Sólo los miembros de interfaces y de clases de alto nivel pueden ser estáticos"
+
+#~ msgid "%s method %qs can't have a body defined"
+#~ msgstr "%s el método %qs no puede tener un cuerpo definido"
+
+#~ msgid "Non native and non abstract method %qs must have a body defined"
+#~ msgstr "El método %qs que no es nativo ni abstracto debe tener un cuerpo definido"
+
+#~ msgid "%s: recursive invocation of constructor %qs"
+#~ msgstr "%s: invocación recursiva del constructor %qs"
+
+#~ msgid "Inconsistent member declaration.  At most one of %<public%>, %<private%>, or %<protected%> may be specified"
+#~ msgstr "Declaración inconsistente de miembro.  Se debe especificar por lo menos uno de %<public%>, %<private%>, o %<protected%>"
+
+#~ msgid "Inconsistent member declaration.  At most one of %<final%> or %<volatile%> may be specified"
+#~ msgstr "Declaración inconsistente de miembro.  Se debe especificar por lo menos uno de %<final%> o %<volatile%>"
+
+#~ msgid "Variable %qs is used more than once in the argument list of method %qs"
+#~ msgstr "La variable %qs se usa más de una vez en la lista de argumentos del método %qs"
+
+#~ msgid "%s %qs can't implement/extend %s %qs"
+#~ msgstr "%s %qs no puede implementar/extender %s %qs"
+
+#~ msgid "Class %qs can't subclass %s %qs"
+#~ msgstr "La clase %qs no puede hacer subclase a %s %qs"
+
+#~ msgid "Can't subclass final classes: %s"
+#~ msgstr "No se puede hacer subclase de clases finales: %s"
+
+#~ msgid "Cyclic class inheritance%s"
+#~ msgstr "Herencia%s con ciclo de clase"
+
+#~ msgid "Superclass %qs of class %qs not found"
+#~ msgstr "No se encontró la superclase %qs de la clase %qs"
+
+#~ msgid "Type %qs not found in declaration of field %qs"
+#~ msgstr "No se encontró el tipo %qs en la declaración del campo %qs"
+
+#~ msgid "Type %qs not found in the declaration of the argument %qs of method %qs"
+#~ msgstr "No se encontró el tipo %qs en la declaración del argumento %qs del método %qs"
+
+#~ msgid "Type %qs not found in the declaration of the return type of method %qs"
+#~ msgstr "No se encontró el tipo %qs en la declaración del tipo de devolución del método %qs"
+
+#~ msgid "Superinterface %qs of %s %qs not found"
+#~ msgstr "No se encontró la superinterfaz %qs de %s %qs"
+
+#~ msgid "Type %qs not found in the declaration of the local variable %qs"
+#~ msgstr "No se encontró el tipo %qs en la declaración de la variable local %qs"
+
+#~ msgid "Class %qs not found in %<throws%>"
+#~ msgstr "No se encuentró la clase %qs en %<throws%>"
+
+#~ msgid "Duplicate %s declaration %qs"
+#~ msgstr "Declaración %s %qs duplicada"
+
+#~ msgid "Class %qs doesn't define the abstract method %<%s %s%> from %s %<%s%>. This method must be defined or %s %qs must be declared abstract"
+#~ msgstr "La clase %qs no define el método abstracto %<%s %s%> de %s %<%s%>. Se debe definir este método o se debe declarar a %s %qs como abstracta"
+
+#~ msgid "Class %qs in %<throws%> clause must be a subclass of class %<java.lang.Throwable%>"
+#~ msgstr "La clase %qs en la cláusula %<throws%> debe ser una subclase de la clase %<java.lang.Throwable%>"
+
+#~ msgid "Class %qs must override %qs with a public method in order to implement interface %qs"
+#~ msgstr "La clase %qs debe sobreescribir a %qs con un método público para implementar la interfaz %qs"
+
+#~ msgid "Method %qs was defined with return type %qs in class %qs"
+#~ msgstr "Se definió el método %qs con tipo de devolución %qs en la clase %qs"
+
+#~ msgid "%s methods can't be overridden. Method %qs is %s in class %qs"
+#~ msgstr "Los métodos %s no se pueden sobreescribir. El método %qs es %s en la clase %qs"
+
+#~ msgid "Instance methods can't be overridden by a static method. Method %qs is an instance method in class %qs"
+#~ msgstr "Los métodos de instancia no se pueden sobreescribir con un método estático. El método %qs es un método de instancia en la clase %qs"
+
+#~ msgid "Methods can't be overridden to be more private. Method %qs is not %s in class %qs"
+#~ msgstr "Los métodos no se pueden sobreescribir para hacerlos más privados. El método %qs no es %s en la clase %qs"
+
+#~ msgid "Invalid checked exception class %qs in %<throws%> clause.  The exception must be a subclass of an exception thrown by %qs from class %qs"
+#~ msgstr "Clase de excepción revisada %qs inválida en la cláusula %<throws%>.  La excepción debe ser una subclase de una excepción arrojada por %qs de la clase %qs"
+
+#~ msgid "Interface %qs inherits method %qs from interface %qs. This method is redefined with a different return type in interface %qs"
+#~ msgstr "La interfaz %qs hereda el método %qs de la interfaz %qs. Este método se redefine con un tipo de devolución diferente en la interfaz %qs"
+
+#~ msgid "Class or interface %qs not found in import"
+#~ msgstr "No se encuentra la clase o interfaz %qs en la importación"
+
+#~ msgid "malformed .zip archive in CLASSPATH: %s"
+#~ msgstr "archivo .zip malformado en CLASSPATH: %s"
+
+#~ msgid "Can't find default package %qs. Check the CLASSPATH environment variable and the access to the archives"
+#~ msgstr "No se puede encontrar el paquete por defecto %qs. Revise la variable de ambiente CLASSPATH y el acceso a los archivos"
+
+#~ msgid "Package %qs not found in import"
+#~ msgstr "No se encuentra el paquete %qs en la importación"
+
+#~ msgid "Type %qs also potentially defined in package %qs"
+#~ msgstr "El tipo %qs también está potencialmente definido en el paquete %qs"
+
+#~ msgid "Nested %s %s is %s; cannot be accessed from here"
+#~ msgstr "El %s %s anidado es %s; no se puede accesar desde aquí"
+
+#~ msgid "Can't access %s %qs. Only public classes and interfaces in other packages can be accessed"
+#~ msgstr "No se puede accesar %s %qs. Sólo se pueden accesar las clases públicas y las interfaces en otros paquetes"
+
+#~ msgid "Only %<final%> is allowed as a local variables modifier"
+#~ msgstr "Sólo se permite %<final%> como un modificador de variables local"
+
+#~ msgid "No constructor matching %qs found in class %qs"
+#~ msgstr "No se encontró un constructor que coincida con %qs en la clase %qs"
+
+#~ msgid "Can't reference %qs before the superclass constructor has been called"
+#~ msgstr "No se puede referenciar a %qs antes que se llame el constructor de la superclase"
+
+#~ msgid "Local variable %qs can't be accessed from within the inner class %qs unless it is declared final"
+#~ msgstr "No se puede accesar la variable local %qs desde la clase interna %qs a menos que se declare final"
+
+#~ msgid "Undefined variable %qs"
+#~ msgstr "No se definió la variable %qs"
+
+#~ msgid "Can't make a static reference to nonstatic variable %qs in class %qs"
+#~ msgstr "No se puede hacer una referencia estática a la variable %qs que no es estática en la clase %qs"
+
+#~ msgid "No enclosing instance for inner class %qs is in scope%s"
+#~ msgstr "No se encontró una instancia terminal para la clase interna %qs que está en ámbito%s"
+
+#~ msgid "Keyword %<this%> used outside allowed context"
+#~ msgstr "Se usó la palabra clave %<this%> fuera del contexto permitido"
+
+#~ msgid "Can't reference %<this%> before the superclass constructor has been called"
+#~ msgstr "No se puede referenciar %<this%> antes de que se llame al constructor de la superclase"
+
+#~ msgid "Can't use variable %<%s.this%>: type %qs isn't an outer type of type %qs"
+#~ msgstr "No se puede usar la variable %<%s.this%>: el tipo %qs no es un tipo externo del tipo %qs"
+
+#~ msgid "Keyword %<super%> used outside allowed context"
+#~ msgstr "Se usó la palabra clave %<super%> fuera del contexto permitido"
+
+#~ msgid "No variable %qs defined in class %qs"
+#~ msgstr "No se definió la variable %qs en la clase %qs"
+
+#~ msgid "Undefined variable or class name: %qs"
+#~ msgstr "Variable o nombre de clase sin definir: %qs"
+
+#~ msgid "Can't use type %qs as a qualifier"
+#~ msgstr "No se puede usar %qs como un calificador"
+
+#~ msgid "Attempt to reference field %qs in %<%s %s%>"
+#~ msgstr "Se intentó referenciar el campo %qs en %<%s %s%>"
+
+#~ msgid "No variable %qs defined in type %qs"
+#~ msgstr "No se definió la variable %qs en el tipo %qs"
+
+#~ msgid "Attempt to reference field %<new%> in a %qs"
+#~ msgstr "Se intentó referenciar el campo %<new%> en un %qs"
+
+#~ msgid "The class %qs has been deprecated"
+#~ msgstr "La clase %qs es obsoleta"
+
+#~ msgid "The %s %qs in class %qs has been deprecated"
+#~ msgstr "El %s %qs en la clase %qs es obsoleto"
+
+#~ msgid "Can't invoke a method on primitive type %qs"
+#~ msgstr "No se puede invocar un método en el tipo primitivo %qs"
+
+#~ msgid "Can't make static reference to method %qs in interface %qs"
+#~ msgstr "No se puede hacer una referencia estática al método %qs en la interfaz %qs"
+
+#~ msgid "Can't make static reference to method %<%s %s%> in class %qs"
+#~ msgstr "No se puede hacer una referencia al método %<%s %s%> en la clase %qs"
+
+#~ msgid "Can't invoke super constructor on java.lang.Object"
+#~ msgstr "No se puede invocar al super constructor en java.lang.Object"
+
+#~ msgid "Class %qs not found in type declaration"
+#~ msgstr "No se encontró la clase %qs en la declaración de tipo"
+
+#~ msgid "Class %qs is an abstract class. It can't be instantiated"
+#~ msgstr "La clase %qs es una clase abstracta. No se puede instanciar"
+
+#~ msgid "No method named %qs in scope"
+#~ msgstr "No hay un método llamado %qs en el ámbito"
+
+#~ msgid "Can't access %s %s %<%s.%s%> from %qs"
+#~ msgstr "No se puede accesar %s %s %<%s.%s%> desde %qs"
+
+#~ msgid "Can't find %s %<%s(%s)%> in type %qs%s"
+#~ msgstr "No se puede encontrar %s %<%s(%s)%> en el tipo %qs%s"
+
+#~ msgid "Constant expression required"
+#~ msgstr "Se requiere una expresión constante"
+
+#~ msgid "Incompatible type for case. Can't convert %qs to %<int%>"
+#~ msgstr "Tipo incompatible para el case. No se puede convertir %qs a %<int%>"
+
+#~ msgid "Duplicate case label: %<default%>"
+#~ msgstr "Valor de case duplicado: %<default%>"
+
+#~ msgid "Incompatible type for %<+=%>. Can't convert %qs to %<java.lang.String%>"
+#~ msgstr "Tipo incompatible para %<+=%>. No se puede convertir %qs a %<java.lang.String%>"
+
+#~ msgid "missing static field %qs"
+#~ msgstr "falta el campo static %qs"
+
+#~ msgid "not a static field %qs"
+#~ msgstr "%qs no es un campo static"
+
+#~ msgid "Can't reference %<this%> or %<super%> before the superclass constructor has been called"
+#~ msgstr "No se puede referenciar %<this%> o %<super%> antes que se llame al constructor de la superclase"
+
+#~ msgid "No case for %s"
+#~ msgstr "No hay case para %s"
+
+#~ msgid "Invalid left hand side of assignment"
+#~ msgstr "La parte izquierda de la asignación es inválida"
+
+#~ msgid "Incompatible type for %s. Can't convert %qs to %qs"
+#~ msgstr "Tipo incompatible para el argumento %s. No se puede convertir %qs a %qs"
+
+#~ msgid "Incompatible type for %s. Explicit cast needed to convert %qs to %qs"
+#~ msgstr "Tipo incompatible para %s. Se necesita una conversión explícita para convertir %qs a %qs"
+
+#~ msgid "Constant expression %qs too wide for narrowing primitive conversion to %qs"
+#~ msgstr "La expresión constante %qs es demasiado ancha para la conversión primitiva que estrecha a %qs"
+
+#~ msgid "unregistered operator %s"
+#~ msgstr "operador %s sin registrar"
+
+#~ msgid "Evaluating this expression will result in an arithmetic exception being thrown"
+#~ msgstr "La evaluación de esta expresión resultará en que se arroje una excepción aritmética"
+
+#~ msgid "Incompatible type for %qs. Explicit cast needed to convert shift distance from %qs to integral"
+#~ msgstr "Tipo incompatible para %qs. Se requiere una conversión explícita para convertir la distancia de desplazamiento de %qs a integral"
+
+#~ msgid "Incompatible type for %qs. Can't convert shift distance from %qs to integral"
+#~ msgstr "Tipo incompatible para %qs. No se puede convertir la distancia de desplazamiento de %qs a integral"
+
+#~ msgid "Invalid argument %qs for %<instanceof%>"
+#~ msgstr "Argumento %qs inválido para %<instanceof%>"
+
+#~ msgid "Impossible for %qs to be instance of %qs"
+#~ msgstr "Es imposible para %qs que sea instancia de %qs"
+
+#~ msgid "Incompatible type for %qs. Can't convert %qs to %qs"
+#~ msgstr "Tipo incompatible para %qs. No se puede convertir %qs a %qs"
+
+#~ msgid "Invalid argument type %qs to %qs"
+#~ msgstr "Tipo de argumento %qs a %qs inválido"
+
+#~ msgid "Invalid cast from %qs to %qs"
+#~ msgstr "Conversión inválida de %qs a %qs"
+
+#~ msgid "%<[]%> can only be applied to arrays. It can't be applied to %qs"
+#~ msgstr "%<[]%> sólo se puede aplicar a matrices. No se puede aplicar a %qs"
+
+#~ msgid "Incompatible type for %<[]%>. Explicit cast needed to convert %qs to %<int%>"
+#~ msgstr "Tipo incompatible para %<[]%>. Se necesita una conversión explícita para convertir %qs a %<int%>"
+
+#~ msgid "Incompatible type for %<[]%>. Can't convert %qs to %<int%>"
+#~ msgstr "Tipo incompatible para %<[]%>. No se puede convertir %qs a %<int%>"
+
+#~ msgid "Incompatible type for dimension in array creation expression. %s convert %qs to %<int%>"
+#~ msgstr "Tipo incompatible para la dimensión en la expresión de creación de matriz. %s convierte %qs a %<int%>"
+
+#~ msgid "Invalid array initializer for non-array type %qs"
+#~ msgstr "Inicializador de matriz inválido para el tipo %qs que no es matriz"
+
+#~ msgid "Incompatible type for array. %s convert %qs to %qs"
+#~ msgstr "Tipo incompatible para matriz. %s convierte %qs a %qs"
+
+#~ msgid "%<return%> inside instance initializer"
+#~ msgstr "%<return%> dentro de un inicializador de instancia"
+
+#~ msgid "%<return%> inside static initializer"
+#~ msgstr "%<return%> dentro de un inicializador estático"
+
+#~ msgid "%<return%> with%s value from %<%s %s%>"
+#~ msgstr "%<return%> con%s valor de %<%s %s%>"
+
+#~ msgid "%<return%> with value from constructor %qs"
+#~ msgstr "%<return%> con valor del constructor %qs"
+
+#~ msgid "Incompatible type for %<if%>. Can't convert %qs to %<boolean%>"
+#~ msgstr "Tipo incompatible para %<if%>. No se puede convertir %qs a %<boolean%>"
+
+#~ msgid "Declaration of %qs shadows a previous label declaration"
+#~ msgstr "La declaración de %qs oscurece a una declaración de etiqueta previa"
+
+#~ msgid "This is the location of the previous declaration of label %qs"
+#~ msgstr "Esta es la ubicación de la declaración previa de la etiqueta %qs"
+
+#~ msgid "No label definition found for %qs"
+#~ msgstr "No se encontró una definición de etiqueta para %qs"
+
+#~ msgid "%<continue%> must be in loop"
+#~ msgstr "%<continue%> debe estar dentro de un ciclo"
+
+#~ msgid "continue label %qs does not name a loop"
+#~ msgstr "la etiqueta continue %qs no nombra un ciclo"
+
+#~ msgid "%<break%> must be in loop or switch"
+#~ msgstr "%<break%> debe estar dentro de un ciclo o switch"
+
+#~ msgid "Incompatible type for loop conditional. Can't convert %qs to %<boolean%>"
+#~ msgstr "Tipo incompatible para condicional de ciclo. No se puede convertir %qs a %<boolean%>"
+
+#~ msgid "Incompatible type for %<switch%>. Can't convert %qs to %<int%>"
+#~ msgstr "Tipo incompatible para %<switch%>. No se puede convertir %qs a %<int%>"
+
+#~ msgid "duplicate case label: %<"
+#~ msgstr "etiqueta de case duplicada: %<"
+
+#~ msgid "%>"
+#~ msgstr "%>"
+
+#~ msgid "original label is here"
+#~ msgstr "la etiqueta original está aquí"
+
+#~ msgid "Can't catch class %qs. Catch clause parameter type must be a subclass of class %<java.lang.Throwable%>"
+#~ msgstr "No se puede capturar la clase %qs. El tipo del parámetro de la cláusula catch debe ser una subclase de la clase %<java.lang.Throwable%>"
+
+#~ msgid "%<catch%> not reached because of the catch clause at line %d"
+#~ msgstr "No se alcanzó %<catch%> por la cláusula catch en la línea %d"
+
+#~ msgid "Incompatible type for %<synchronized%>. Can't convert %qs to %<java.lang.Object%>"
+#~ msgstr "Tipo incompatible para %<synchronized%>. No se puede convertir %qs a %<java.lang.Object%>"
+
+#~ msgid "Can't throw %qs; it must be a subclass of class %<java.lang.Throwable%>"
+#~ msgstr "No se puede arrojar %qs; debe ser una subclase de la clase %<java.lang.Throwable%>"
+
+#~ msgid "Checked exception %qs can't be thrown in instance initializer (not all declared constructor are declaring it in their %<throws%> clause)"
+#~ msgstr "La excepción revisada %qs no se puede arrojar en el inicializador de instancia (no todos los constructores declarados la están declarando en su cláusula %<throws%>)"
+
+#~ msgid "Checked exception %qs can't be caught by any of the catch clause(s) of the surrounding %<try%> block"
+#~ msgstr "La excepción revisada %qs no puede ser capturada por ninguna de la(s) cláusula(s) catch del bloque %<try%> que las contiene"
+
+#~ msgid "Checked exception %qs can't be thrown in initializer"
+#~ msgstr "La excepción revisada %qs no se puede arrojar en el inicializador"
+
+#~ msgid "Checked exception %qs isn't thrown from a %<try%> block"
+#~ msgstr "La excepción revisada %qs no se arroja desde un bloque %<try%>"
+
+#~ msgid "Checked exception %qs doesn't match any of current method's %<throws%> declaration(s)"
+#~ msgstr "La excepción revisada %qs no coincide con ninguno de los métodos actuales de la(s) declaración(es) %<throws%>"
+
+#~ msgid "Exception %qs can't be thrown in initializer"
+#~ msgstr "La excepción %qs no se puede arrojar en el inicializador"
+
+#~ msgid "Exception %qs must be caught, or it must be declared in the %<throws%> clause of %qs"
+#~ msgstr "La excepción %qs se debe capturar, o se debe declarar en la cláusula %<throws%> de %qs"
+
+#~ msgid "Incompatible type for %<?:%>. Can't convert %qs to %<boolean%>"
+#~ msgstr "Tipo incompatible para %<?:%>. No se puede convertir %qs a %<boolean%>"
+
+#~ msgid "Incompatible type for %<?:%>. Can't convert %qs to %qs"
+#~ msgstr "Tipo incompatible para %<?:%>. No se puede convertir %qs a %qs"
+
+#~ msgid "Discouraged redundant use of %qs modifier in declaration of %s"
+#~ msgstr "Uso redundante no recomendado del modificador %qs en la declaración de %s"
+
+#~ msgid "Discouraged redundant use of %qs modifier in declaration of %s %qs"
+#~ msgstr "Uso redundante no recomendado del modificador %qs en la declaración de %s %qs"
+
+#~ msgid "extra semicolon in method definition specified"
+#~ msgstr "se especificó un punto y coma extra en la definición del método especificado"
+
 #~ msgid "Bad namelist IO basetype (%d)"
 #~ msgstr "Lista de nombres de tipo base ES errónea (%d)"
 
@@ -23750,9 +23354,6 @@ msgstr "Se solicitó la dirección de la variable de registro %qD."
 
 #~ msgid "field '%s' not found in class"
 #~ msgstr "no se encuentra el campo '%s' en la clase"
-
-#~ msgid "Warn about possibly confusing type conversions"
-#~ msgstr "Avisa sobre la posibilidad de conversión de tipos confusas"
 
 #~ msgid "using synthesized %q#D for copy assignment"
 #~ msgstr "usando %q#D sintetizado para asignación de copia"
@@ -26090,29 +25691,8 @@ msgstr "Se solicitó la dirección de la variable de registro %qD."
 #~ msgid "-I <dir>\tAdd <dir> to the end of the main include path.  -I- gives more include path control; see info documentation"
 #~ msgstr "-I <dir>\tAgregar el <dir>ectorio al final de la ruta de inclusión principal.  -I- da más control de ruta de inclusión; vea la documentación en formato info"
 
-#~ msgid "Generate make dependencies"
-#~ msgstr "Generar dependencias de make"
-
-#~ msgid "-MF <file>\tWrite dependency output to the given file"
-#~ msgstr "-MF <fichero>\tEscribir la salida de dependencias al fichero dado"
-
-#~ msgid "Like -M but ignore system header files"
-#~ msgstr "Como -M pero ignora los ficheros de encabezado del sistema"
-
-#~ msgid "Generate phony targets for all headers"
-#~ msgstr "Generar objetivos de prueba para todos los encabezados"
-
-#~ msgid "-MT <target>\tAdd an unquoted target"
-#~ msgstr "-MT <objetivo>\tAgregar un objetivo no citado"
-
-#~ msgid "Enable most warning messages"
-#~ msgstr "Activar casi todos los mensajes de aviso"
-
 #~ msgid "Do not store floats in registers"
 #~ msgstr "No guardar floats en registros"
-
-#~ msgid "Integrate simple functions into their callers"
-#~ msgstr "Integrar las funciones simples en sus invocadores"
 
 #~ msgid "Store strings in writable data section"
 #~ msgstr "Guardar las cadenas en la sección de datos modificables"
