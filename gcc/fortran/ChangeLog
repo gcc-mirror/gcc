@@ -1,3 +1,10 @@
+2005-09-04  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/23661
+	* io.c (match_io): Correctly backup if PRINT followed by
+	symbol which is not a namelist.  Force blank between PRINT
+	and namelist in free form.
+
 2005-08-31  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/20592
