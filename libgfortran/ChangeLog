@@ -1,3 +1,9 @@
+2005-09-04  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR libfortran/23321
+	* io/transfer.c(data_transfer_init):  Check for a too-large
+	record number.  Return if sseek failed.
+
 2005-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* io/read.c (read_x): Take int argument instead of fnode * and
