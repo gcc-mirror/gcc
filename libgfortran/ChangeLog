@@ -1,3 +1,8 @@
+2005-09-05  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	* io/list_read.c:  Adjust size of of value to 32 (to hold
+	kind=16 complex values).
+
 2005-09-04  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/23321
