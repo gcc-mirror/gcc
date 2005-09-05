@@ -3,6 +3,8 @@
 	* gcc.dg/pr21255-1.c: Match different pattern for sh64.
 
 	* gcc.dg/debug/dwarf2/dwarf-char1.c: Allow '!' comment character.
+	* gcc.dg/debug/dwarf2/dwarf-char2.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-char3.c: Likewise.
 
 2005-09-04  Thomas Koenig  <Thomas.Koenig@online.de>
 
