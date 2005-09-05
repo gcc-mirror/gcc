@@ -56,7 +56,6 @@ with Sem_Util; use Sem_Util;
 with Stand;    use Stand;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
-with Snames;   use Snames;
 with Stand;
 with Stringt;  use Stringt;
 with Targparm; use Targparm;
@@ -3500,7 +3499,8 @@ package body Sem_Attr is
             Check_Object_Reference (P);
 
          elsif Is_Entity_Name (P)
-           and then Is_Type (Entity (P))
+           and then (Is_Type (Entity (P))
+                       or else Ekind (Entity (P)) = E_Enumeration_Literal)
          then
             null;
 
@@ -4175,6 +4175,10 @@ package body Sem_Attr is
       --  used for First and Last of scalar types. Static is reset to False
       --  if the type or index type is not statically constrained.
 
+      function Statically_Denotes_Entity (N : Node_Id) return Boolean;
+      --  Verify that the prefix of a potentially static array attribute
+      --  satisfies the conditions of 4.9 (14).
+
       ---------------
       -- Aft_Value --
       ---------------
@@ -4532,6 +4536,25 @@ package body Sem_Attr is
          end if;
       end Set_Bounds;
 
+      -------------------------------
+      -- Statically_Denotes_Entity --
+      -------------------------------
+
+      function Statically_Denotes_Entity (N : Node_Id) return Boolean is
+         E : Entity_Id;
+
+      begin
+         if not Is_Entity_Name (N) then
+            return False;
+         else
+            E := Entity (N);
+         end if;
+
+         return
+           Nkind (Parent (E)) /= N_Object_Renaming_Declaration
+             or else Statically_Denotes_Entity (Renamed_Object (E));
+      end Statically_Denotes_Entity;
+
    --  Start of processing for Eval_Attribute
 
    begin
@@ -4790,12 +4813,15 @@ package body Sem_Attr is
       --  Array case. We enforce the constrained requirement of (RM 4.9(7-8))
       --  since we can't do anything with unconstrained arrays. In addition,
       --  only the First, Last and Length attributes are possibly static.
-      --  In addition Component_Size is possibly foldable, even though it
-      --  can never be static.
 
       --  Definite, Has_Access_Values, Has_Discriminants, Type_Class, and
       --  Unconstrained_Array are again exceptions, because they apply as
       --  well to unconstrained types.
+
+      --  In addition Component_Size is an exception since it is possibly
+      --  foldable, even though it is never static, and it does apply to
+      --  unconstrained arrays. Furthermore, it is essential to fold this
+      --  in the packed case, since otherwise the value will be incorrect.
 
       elsif Id = Attribute_Definite
               or else
@@ -4806,14 +4832,15 @@ package body Sem_Attr is
             Id = Attribute_Type_Class
               or else
             Id = Attribute_Unconstrained_Array
+              or else
+            Id = Attribute_Component_Size
       then
          Static := False;
 
       else
          if not Is_Constrained (P_Type)
-           or else (Id /= Attribute_Component_Size and then
-                    Id /= Attribute_First          and then
-                    Id /= Attribute_Last           and then
+           or else (Id /= Attribute_First and then
+                    Id /= Attribute_Last  and then
                     Id /= Attribute_Length)
          then
             Check_Expressions;
@@ -4829,7 +4856,8 @@ package body Sem_Attr is
          --  Again we compute the variable Static for easy reference later
          --  (note that no array attributes are static in Ada 83).
 
-         Static := Ada_Version >= Ada_95;
+         Static := Ada_Version >= Ada_95
+                     and then Statically_Denotes_Entity (P);
 
          declare
             N : Node_Id;
@@ -7217,7 +7245,7 @@ package body Sem_Attr is
                Note_Possible_Modification (P);
             end if;
 
-            if Nkind (P) in  N_Subexpr
+            if Nkind (P) in N_Subexpr
               and then Is_Overloaded (P)
             then
                Get_First_Interp (P, Index, It);
@@ -7226,7 +7254,7 @@ package body Sem_Attr is
                if Present (It.Nam) then
                   Error_Msg_Name_1 := Aname;
                   Error_Msg_N
-                    ("prefix of % attribute cannot be overloaded", N);
+                    ("prefix of % attribute cannot be overloaded", P);
                   return;
                end if;
             end if;
