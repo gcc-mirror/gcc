@@ -26,7 +26,6 @@
 
 with Atree;    use Atree;
 with Einfo;    use Einfo;
-with Exp_Tss;  use Exp_Tss;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -594,19 +593,25 @@ package body Exp_Strm is
       --  to the actual type of the prefix. If the target is a discriminant,
       --  and we are in the body of the default implementation of a 'Read
       --  attribute, set target type to force a constraint check (13.13.2(35)).
+      --  If the type of the discriminant is currently private, add another
+      --  unchecked conversion from the full view.
 
       if Nkind (Targ) = N_Identifier
         and then Is_Internal_Name (Chars (Targ))
         and then Is_TSS (Scope (Entity (Targ)), TSS_Stream_Read)
       then
          Res :=
-           Unchecked_Convert_To (Base_Type (P_Type),
+           Unchecked_Convert_To (Base_Type (U_Type),
              Make_Function_Call (Loc,
                Name => New_Occurrence_Of (RTE (Lib_RE), Loc),
                Parameter_Associations => New_List (
                  Relocate_Node (Strm))));
 
          Set_Do_Range_Check (Res);
+         if Base_Type (P_Type) /= Base_Type (U_Type) then
+            Res := Unchecked_Convert_To (Base_Type (P_Type), Res);
+         end if;
+
          return Res;
 
       else
@@ -1327,7 +1332,7 @@ package body Exp_Strm is
          return
            Make_Attribute_Reference (Loc,
              Prefix =>
-               New_Occurrence_Of (Stream_Base_Type (Etype (C)), Loc),
+               New_Occurrence_Of (Field_Typ, Loc),
              Attribute_Name => Nam,
              Expressions => New_List (
                Make_Identifier (Loc, Name_S),
@@ -1490,7 +1495,7 @@ package body Exp_Strm is
                   Subtype_Mark => New_Reference_To (
                     Class_Wide_Type (RTE (RE_Root_Stream_Type)), Loc)))),
 
-          Subtype_Mark => New_Occurrence_Of (Typ, Loc));
+          Result_Definition => New_Occurrence_Of (Typ, Loc));
 
       Decl :=
         Make_Subprogram_Body (Loc,

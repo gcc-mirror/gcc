@@ -98,11 +98,11 @@ package Sem_Ch3  is
    --  declaration.
 
    procedure Derive_Subprogram
-     (New_Subp       : in out Entity_Id;
-      Parent_Subp    : Entity_Id;
-      Derived_Type   : Entity_Id;
-      Parent_Type    : Entity_Id;
-      Actual_Subp    : Entity_Id := Empty);
+     (New_Subp     : in out Entity_Id;
+      Parent_Subp  : Entity_Id;
+      Derived_Type : Entity_Id;
+      Parent_Type  : Entity_Id;
+      Actual_Subp  : Entity_Id := Empty);
    --  Derive the subprogram Parent_Subp from Parent_Type, and replace the
    --  subsidiary subtypes with the derived type to build the specification
    --  of the inherited subprogram (returned in New_Subp). For tagged types,
@@ -111,17 +111,25 @@ package Sem_Ch3  is
    --  subprogram of the parent type.
 
    procedure Derive_Subprograms
-     (Parent_Type             : Entity_Id;
-      Derived_Type            : Entity_Id;
-      Generic_Actual          : Entity_Id := Empty;
-      Is_Interface_Derivation : Boolean   := False);
+     (Parent_Type           : Entity_Id;
+      Derived_Type          : Entity_Id;
+      Generic_Actual        : Entity_Id := Empty;
+      No_Predefined_Prims   : Boolean   := False;
+      Predefined_Prims_Only : Boolean   := False);
    --  To complete type derivation, collect/retrieve the primitive operations
    --  of the parent type, and replace the subsidiary subtypes with the derived
    --  type, to build the specs of the inherited ops. For generic actuals, the
    --  mapping of the primitive operations to those of the parent type is also
    --  done by rederiving the operations within the instance. For tagged types,
    --  the derived subprograms are aliased to those of the actual, not those of
-   --  the ancestor.
+   --  the ancestor. The last two params are used in case of derivation from
+   --  abstract interface types: No_Predefined_Prims is used to avoid the
+   --  derivation of predefined primitives from the interface, and Predefined
+   --  Prims_Only is used to complete the derivation predefined primitives
+   --  in case of private tagged types implementing interfaces.
+   --
+   --  Note: one might expect this to be private to the package body, but
+   --  there is one rather unusual usage in package Exp_Dist.
 
    function Find_Type_Of_Subtype_Indic (S : Node_Id) return Entity_Id;
    --  Given a subtype indication S (which is really an N_Subtype_Indication
