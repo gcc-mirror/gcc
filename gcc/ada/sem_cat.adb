@@ -118,9 +118,17 @@ package body Sem_Cat is
    is
       N : constant Node_Id := Info_Node;
 
+      --  Here we define an enumeration type to represent categorization
+      --  types, ordered so that a unit with a given categorization can
+      --  only WITH units with lower or equal categorization type.
+
       type Categorization is
-         (Pure, Shared_Passive, Remote_Types,
-           Remote_Call_Interface, Pre_Elaborated, Normal);
+        (Pure,
+         Shared_Passive,
+         Remote_Types,
+         Remote_Call_Interface,
+         Preelaborated,
+         Normal);
 
       Unit_Category : Categorization;
       With_Category : Categorization;
@@ -136,7 +144,7 @@ package body Sem_Cat is
       function Get_Categorization (E : Entity_Id) return Categorization is
       begin
          if Is_Preelaborated (E) then
-            return Pre_Elaborated;
+            return Preelaborated;
          elsif Is_Pure (E) then
             return Pure;
          elsif Is_Shared_Passive (E) then
@@ -163,43 +171,57 @@ package body Sem_Cat is
       Unit_Category := Get_Categorization (Unit_Entity);
       With_Category := Get_Categorization (Depended_Entity);
 
+      --  These messages are wanings in GNAT mode, to allow it to be
+      --  judiciously turned off. Otherwise it is a real error.
+
+      Error_Msg_Warn := GNAT_Mode;
+
+      --  Check for possible error
+
       if With_Category > Unit_Category then
+
+         --  Special case: Remote_Types and Remote_Call_Interface are allowed
+         --  to be with'ed in package body.
+
          if (Unit_Category = Remote_Types
                or else Unit_Category = Remote_Call_Interface)
            and then In_Package_Body (Unit_Entity)
          then
             null;
 
-         --  Subunit error case. In GNAT mode, this is only a warning to allow
-         --  it to be judiciously turned off. Otherwise it is a real error.
-
-         elsif Is_Subunit then
-            if GNAT_Mode then
-               Error_Msg_NE
-                 ("?subunit cannot depend on& " &
-                  "(parent has wrong categorization)", N, Depended_Entity);
-            else
-               Error_Msg_NE
-                 ("subunit cannot depend on& " &
-                  "(parent has wrong categorization)", N, Depended_Entity);
-            end if;
-
-         --  Normal error case. In GNAT mode, this is only a warning to allow
-         --  it to be judiciously turned off. Otherwise it is a real error.
+         --  Here we have an error
 
          else
-            if GNAT_Mode then
+            if Is_Subunit then
                Error_Msg_NE
-                 ("?current unit cannot depend on& " &
-                  "(wrong categorization)", N, Depended_Entity);
+                 ("<subunit cannot depend on& " &
+                  "(parent has wrong categorization)", N, Depended_Entity);
+
             else
                Error_Msg_NE
-                 ("current unit cannot depend on& " &
+                 ("<cannot depend on& " &
                   "(wrong categorization)", N, Depended_Entity);
             end if;
+
+            --  Add further explanation for common cases
+
+            case Unit_Category is
+               when Pure =>
+                  Error_Msg_NE
+                    ("\<pure unit cannot depend on non-pure unit",
+                    N, Depended_Entity);
+
+               when Preelaborated =>
+                  Error_Msg_NE
+                    ("\<preelaborated unit cannot depend on " &
+                     "non-preelaborated unit",
+                     N, Depended_Entity);
+
+               when others =>
+                  null;
+            end case;
          end if;
       end if;
-
    end Check_Categorization_Dependencies;
 
    -----------------------------------
@@ -332,7 +354,7 @@ package body Sem_Cat is
                       Nkind (Unit (Cunit (Current_Sem_Unit)));
 
    begin
-      --  There are no restrictions on the body of a Remote Types unit.
+      --  There are no restrictions on the body of a Remote Types unit
 
       return Is_Remote_Types (Unit_Entity)
         and then (Ekind (Unit_Entity) = E_Package
@@ -785,7 +807,7 @@ package body Sem_Cat is
          return;
       end if;
 
-      --  Body of RCI unit does not need validation.
+      --  Body of RCI unit does not need validation
 
       if Is_Remote_Call_Interface (E)
         and then (Nkind (N) = N_Package_Body
@@ -817,10 +839,10 @@ package body Sem_Cat is
          end loop;
       end;
 
-      --  Child depends on parent; therefore parent should also
-      --  be categorized and satify the dependency hierarchy.
+      --  Child depends on parent; therefore parent should also be categorized
+      --  and satify the dependency hierarchy.
 
-      --  Check if N is a child spec.
+      --  Check if N is a child spec
 
       if (K in N_Generic_Declaration              or else
           K in N_Generic_Instantiation            or else
@@ -833,8 +855,8 @@ package body Sem_Cat is
       then
          Check_Categorization_Dependencies (E, Scope (E), N, False);
 
-         --  Verify that public child of an RCI library unit
-         --  must also be an RCI library unit (RM E.2.3(15)).
+         --  Verify that public child of an RCI library unit must also be an
+         --  RCI library unit (RM E.2.3(15)).
 
          if Is_Remote_Call_Interface (Scope (E))
            and then not Private_Present (P)
@@ -896,13 +918,9 @@ package body Sem_Cat is
                --  In GNAT mode, this is a warning, allowing the run-time
                --  to judiciously bypass this error condition.
 
-               if GNAT_Mode then
-                  Error_Msg_N
-                    ("?statements not allowed in preelaborated unit", Item);
-               else
-                  Error_Msg_N
-                    ("statements not allowed in preelaborated unit", Item);
-               end if;
+               Error_Msg_Warn := GNAT_Mode;
+               Error_Msg_N
+                 ("<statements not allowed in preelaborated unit", Item);
 
                exit;
             end if;
@@ -1217,7 +1235,7 @@ package body Sem_Cat is
                   Error_Node := Param_Spec;
                end if;
 
-               --  Report error only if declaration is in source program.
+               --  Report error only if declaration is in source program
 
                if Comes_From_Source
                  (Defining_Entity (Specification (N)))
@@ -1724,7 +1742,7 @@ package body Sem_Cat is
       E : Entity_Id;
 
       function Is_Primary (N : Node_Id) return Boolean;
-      --  Determine whether node is syntactically a primary in an expression.
+      --  Determine whether node is syntactically a primary in an expression
 
       ----------------
       -- Is_Primary --
@@ -1782,7 +1800,7 @@ package body Sem_Cat is
       --  discriminant specification, or actual in a record type initialization
       --  call.
 
-      --  Initialization call of internal types.
+      --  Initialization call of internal types
 
       elsif Nkind (Parent (N)) = N_Procedure_Call_Statement then
 
