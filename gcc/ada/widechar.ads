@@ -40,6 +40,13 @@ with Types; use Types;
 
 package Widechar is
 
+   Wide_Char_Byte_Count : Nat := 0;
+   --  This value is incremented whenever Scan_Wide or Skip_Wide is called.
+   --  The amount added is the length of the wide character sequence minus
+   --  one. This means that the count that accululates here represents the
+   --  difference between the length in characters and the length in bytes.
+   --  This is used for checking the line length in characters.
+
    function Length_Wide return Nat;
    --  Returns the maximum length in characters for the escape sequence that
    --  is used to encode wide character literals outside the ASCII range. Used
