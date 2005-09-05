@@ -99,11 +99,11 @@ package body Sem_Case is
       Msg_Sloc       : Source_Ptr)
    is
       function Lt_Choice (C1, C2 : Natural) return Boolean;
-      --  Comparison routine for comparing Choice_Table entries.
-      --  Use the lower bound of each Choice as the key.
+      --  Comparison routine for comparing Choice_Table entries. Use the lower
+      --  bound of each Choice as the key.
 
       procedure Move_Choice (From : Natural; To : Natural);
-      --  Move routine for sorting the Choice_Table.
+      --  Move routine for sorting the Choice_Table
 
       procedure Issue_Msg (Value1 : Node_Id; Value2 : Node_Id);
       procedure Issue_Msg (Value1 : Node_Id; Value2 : Uint);
@@ -578,7 +578,7 @@ package body Sem_Case is
 
          Bounds_Lo : Uint;
          Bounds_Hi : Uint;
-         --  The actual bounds of the above type.
+         --  The actual bounds of the above type
 
          Expected_Type : Entity_Id;
          --  The expected type of each choice. Equal to Choice_Type, except
