@@ -1047,6 +1047,11 @@ package body Sem_Ch8 is
             Check_Subtype_Conformant (New_S, Old_S, N);
             Generate_Reference (New_S, Defining_Entity (N), 'b');
             Style.Check_Identifier (Defining_Entity (N), New_S);
+
+         else
+            --  Only mode conformance required for a renaming_as_declaration.
+
+            Check_Mode_Conformant (New_S, Old_S, N);
          end if;
 
          Inherit_Renamed_Profile (New_S, Old_S);
@@ -1735,6 +1740,19 @@ package body Sem_Ch8 is
          end;
       end if;
 
+      --  A useful warning, suggested by Ada Bug Finder (Ada-Europe 2005)
+
+      if Comes_From_Source (N)
+        and then Present (Old_S)
+        and then Nkind (Old_S) = N_Defining_Operator_Symbol
+        and then Nkind (New_S) = N_Defining_Operator_Symbol
+        and then Chars (Old_S) /= Chars (New_S)
+      then
+         Error_Msg_NE
+           ("?& is being renamed as a different operator",
+             New_S, Old_S);
+      end if;
+
       Ada_Version := Save_AV;
       Ada_Version_Explicit := Save_AV_Exp;
    end Analyze_Subprogram_Renaming;
@@ -2067,9 +2085,10 @@ package body Sem_Ch8 is
             return;
          end if;
 
-         Find_Type (Subtype_Mark (Spec));
-         Rewrite (Subtype_Mark (Spec),
-             New_Reference_To (Base_Type (Entity (Subtype_Mark (Spec))), Loc));
+         Find_Type (Result_Definition (Spec));
+         Rewrite (Result_Definition (Spec),
+             New_Reference_To (
+               Base_Type (Entity (Result_Definition (Spec))), Loc));
 
          Body_Node :=
            Make_Subprogram_Body (Loc,
