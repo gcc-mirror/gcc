@@ -208,6 +208,16 @@ package body ALI is
       function Nextc return Character;
       --  Return current character without modifying pointer P
 
+      procedure Get_Typeref
+        (Current_File_Num : Sdep_Id;
+         Ref             : out Tref_Kind;
+         File_Num        : out Sdep_Id;
+         Line            : out Nat;
+         Ref_Type        : out Character;
+         Col             : out Nat;
+         Standard_Entity : out Name_Id);
+      --  Parse the definition of a typeref (<...>, {...} or (...))
+
       procedure Skip_Eol;
       --  Skip past spaces, then skip past end of line (fatal error if not
       --  at end of line). Also skips past any following blank lines.
@@ -536,6 +546,94 @@ package body ALI is
       begin
          return T (P);
       end Nextc;
+
+      -----------------
+      -- Get_Typeref --
+      -----------------
+
+      procedure Get_Typeref
+        (Current_File_Num : Sdep_Id;
+         Ref              : out Tref_Kind;
+         File_Num         : out Sdep_Id;
+         Line             : out Nat;
+         Ref_Type         : out Character;
+         Col              : out Nat;
+         Standard_Entity  : out Name_Id)
+      is
+         N : Nat;
+      begin
+         case Nextc is
+            when '<'    => Ref := Tref_Derived;
+            when '('    => Ref := Tref_Access;
+            when '{'    => Ref := Tref_Type;
+            when others => Ref := Tref_None;
+         end case;
+
+         --  Case of typeref field present
+
+         if Ref /= Tref_None then
+            P := P + 1; -- skip opening bracket
+
+            if Nextc in 'a' .. 'z' then
+               File_Num        := No_Sdep_Id;
+               Line            := 0;
+               Ref_Type        := ' ';
+               Col             := 0;
+               Standard_Entity := Get_Name (Ignore_Spaces => True);
+            else
+               N := Get_Nat;
+
+               if Nextc = '|' then
+                  File_Num := Sdep_Id (N + Nat (First_Sdep_Entry) - 1);
+                  P := P + 1;
+                  N := Get_Nat;
+               else
+                  File_Num := Current_File_Num;
+               end if;
+
+               Line            := N;
+               Ref_Type        := Getc;
+               Col             := Get_Nat;
+               Standard_Entity := No_Name;
+            end if;
+
+            --  ??? Temporary workaround for nested generics case:
+            --     4i4 Directories{1|4I9[4|6[3|3]]}
+            --  See C918-002
+
+            declare
+               Nested_Brackets : Natural := 0;
+
+            begin
+               loop
+                  case Nextc is
+                     when '['   =>
+                        Nested_Brackets := Nested_Brackets + 1;
+                     when ']' =>
+                        Nested_Brackets := Nested_Brackets - 1;
+                     when others =>
+                        if Nested_Brackets = 0 then
+                           exit;
+                        end if;
+                  end case;
+
+                  Skipc;
+               end loop;
+            end;
+
+            P := P + 1; -- skip closing bracket
+            Skip_Space;
+
+         --  No typeref entry present
+
+         else
+            File_Num        := No_Sdep_Id;
+            Line            := 0;
+            Ref_Type        := ' ';
+            Col             := 0;
+            Standard_Entity := No_Name;
+         end if;
+      end Get_Typeref;
 
       --------------
       -- Skip_Eol --
@@ -1937,80 +2035,30 @@ package body ALI is
 
                   --  See if type reference present
 
-                  case Nextc is
-                     when '<'    => XE.Tref := Tref_Derived;
-                     when '('    => XE.Tref := Tref_Access;
-                     when '{'    => XE.Tref := Tref_Type;
-                     when others => XE.Tref := Tref_None;
-                  end case;
+                  Get_Typeref
+                    (Current_File_Num, XE.Tref, XE.Tref_File_Num, XE.Tref_Line,
+                     XE.Tref_Type, XE.Tref_Col, XE.Tref_Standard_Entity);
 
-                  --  Case of typeref field present
-
-                  if XE.Tref /= Tref_None then
-                     P := P + 1; -- skip opening bracket
-
-                     if Nextc in 'a' .. 'z' then
-                        XE.Tref_File_Num        := No_Sdep_Id;
-                        XE.Tref_Line            := 0;
-                        XE.Tref_Type            := ' ';
-                        XE.Tref_Col             := 0;
-                        XE.Tref_Standard_Entity :=
-                          Get_Name (Ignore_Spaces => True);
-
-                     else
-                        N := Get_Nat;
-
-                        if Nextc = '|' then
-                           XE.Tref_File_Num :=
-                             Sdep_Id (N + Nat (First_Sdep_Entry) - 1);
-                           P := P + 1;
-                           N := Get_Nat;
-
-                        else
-                           XE.Tref_File_Num := Current_File_Num;
-                        end if;
-
-                        XE.Tref_Line            := N;
-                        XE.Tref_Type            := Getc;
-                        XE.Tref_Col             := Get_Nat;
-                        XE.Tref_Standard_Entity := No_Name;
-                     end if;
-
-                     --  ??? Temporary workaround for nested generics case:
-                     --     4i4 Directories{1|4I9[4|6[3|3]]}
-                     --  See C918-002
-
-                     declare
-                        Nested_Brackets : Natural := 0;
-
-                     begin
-                        loop
-                           case Nextc is
-                              when '['   =>
-                                 Nested_Brackets := Nested_Brackets + 1;
-                              when ']' =>
-                                 Nested_Brackets := Nested_Brackets - 1;
-                              when others =>
-                                 if Nested_Brackets = 0 then
-                                    exit;
-                                 end if;
-                           end case;
-
-                           Skipc;
-                        end loop;
-                     end;
-
-                     P := P + 1; -- skip closing bracket
-                     Skip_Space;
-
-                  --  No typeref entry present
-
+                  --  Do we have an overriding procedure, instead ?
+                  if XE.Tref_Type = 'p' then
+                     XE.Oref_File_Num := XE.Tref_File_Num;
+                     XE.Oref_Line     := XE.Tref_Line;
+                     XE.Oref_Col      := XE.Tref_Col;
+                     XE.Tref_File_Num := No_Sdep_Id;
+                     XE.Tref          := Tref_None;
                   else
-                     XE.Tref_File_Num        := No_Sdep_Id;
-                     XE.Tref_Line            := 0;
-                     XE.Tref_Type            := ' ';
-                     XE.Tref_Col             := 0;
-                     XE.Tref_Standard_Entity := No_Name;
+                     --  We might have additional information about the
+                     --  overloaded subprograms
+                     declare
+                        Ref : Tref_Kind;
+                        Typ : Character;
+                        Standard_Entity : Name_Id;
+                     begin
+                        Get_Typeref
+                          (Current_File_Num,
+                           Ref, XE.Oref_File_Num,
+                           XE.Oref_Line, Typ, XE.Oref_Col, Standard_Entity);
+                     end;
                   end if;
 
                   XE.First_Xref := Xref.Last + 1;
