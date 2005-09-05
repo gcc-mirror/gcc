@@ -1560,19 +1560,6 @@ package body Exp_Ch7 is
       end if;
 
       Set_Elaboration_Flag (N, Corresponding_Spec (N));
-
-      --  Generate a subprogram descriptor for the elaboration routine of
-      --  a package body if the package body has no pending instantiations
-      --  and it has generated at least one exception handler
-
-      if Present (Handler_Records (Body_Entity (Ent)))
-        and then Is_Compilation_Unit (Ent)
-        and then not Delay_Subprogram_Descriptors (Body_Entity (Ent))
-      then
-         Generate_Subprogram_Descriptor_For_Package
-           (N, Body_Entity (Ent));
-      end if;
-
       Set_In_Package_Body (Ent, False);
 
       --  Set to encode entity names in package body before gigi is called
@@ -2220,6 +2207,8 @@ package body Exp_Ch7 is
               or else Has_Interrupt_Handler (Pid)
               or else (Has_Attach_Handler (Pid)
                          and then not Restricted_Profile)
+              or else (Ada_Version >= Ada_05
+                         and then Present (Interface_List (Parent (Pid))))
             then
                if Abort_Allowed
                  or else Restriction_Active (No_Entry_Queue) = False

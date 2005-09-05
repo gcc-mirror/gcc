@@ -410,6 +410,12 @@ package Exp_Util is
    --  chain, counting only entries in the curren scope. If an entity is not
    --  overloaded, the returned number will be one.
 
+   function Implements_Limited_Interface (Typ : Entity_Id) return Boolean;
+   --  Ada 2005 (AI-345): Determine whether Typ implements some limited
+   --  interface. The interface may be of limited, protected, synchronized
+   --  or taks kind. Typ may also be derived from a type that implements a
+   --  limited interface.
+
    function Inside_Init_Proc return Boolean;
    --  Returns True if current scope is within an init proc
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,6 +29,13 @@
 with Types; use Types;
 
 package Exp_Ch9 is
+
+   type Subprogram_Protection_Mode is
+     (Dispatching_Mode,
+      Protected_Mode,
+      Unprotected_Mode);
+   --  This type is used to distinguish the different protection modes of a
+   --  protected subprogram.
 
    procedure Add_Discriminal_Declarations
      (Decls : List_Id;
@@ -102,10 +109,9 @@ package Exp_Ch9 is
    --  declarative part.
 
    function Build_Protected_Sub_Specification
-     (N           : Node_Id;
-      Prottyp     : Entity_Id;
-      Unprotected : Boolean := False)
-      return        Node_Id;
+     (N       : Node_Id;
+      Prottyp : Entity_Id;
+      Mode    : Subprogram_Protection_Mode) return Node_Id;
    --  Build specification for protected subprogram. This is called when
    --  expanding a protected type, and also when expanding the declaration for
    --  an Access_To_Protected_Subprogram type. In the latter case, Prottyp is
@@ -214,7 +220,7 @@ package Exp_Ch9 is
    --  routine to make sure Complete_Master is called on exit).
 
    procedure Expand_Access_Protected_Subprogram_Type (N : Node_Id);
-   --  Build Equivalent_Type for an Access_to_protected_Subprogram.
+   --  Build Equivalent_Type for an Access_to_protected_Subprogram
 
    procedure Expand_Accept_Declarations (N : Node_Id; Ent : Entity_Id);
    --  Expand declarations required for accept statement. See bodies of

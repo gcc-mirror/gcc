@@ -30,14 +30,26 @@
 with Types; use Types;
 package Exp_Disp is
 
+   --  Number of predefined primitive operations added by the Expander
+   --  for a tagged type. If more predefined primitive operations are
+   --  added, the following items must be changed:
+
+   --    Ada.Tags.Defailt_Prim_Op_Count    - indirect use
+   --    Exp_Disp.Default_Prim_Op_Position - indirect use
+   --    Exp_Disp.Set_All_DT_Position      - direct   use
+
+   Default_Prim_Op_Count : constant Int := 14;
+
    type DT_Access_Action is
       (CW_Membership,
        IW_Membership,
        DT_Entry_Size,
        DT_Prologue_Size,
        Get_Access_Level,
+       Get_Entry_Index,
        Get_External_Tag,
        Get_Prim_Op_Address,
+       Get_Prim_Op_Kind,
        Get_RC_Offset,
        Get_Remotely_Callable,
        Inherit_DT,
@@ -45,14 +57,41 @@ package Exp_Disp is
        Register_Interface_Tag,
        Register_Tag,
        Set_Access_Level,
+       Set_Entry_Index,
        Set_Expanded_Name,
        Set_External_Tag,
        Set_Prim_Op_Address,
+       Set_Prim_Op_Kind,
        Set_RC_Offset,
        Set_Remotely_Callable,
        Set_TSD,
        TSD_Entry_Size,
        TSD_Prologue_Size);
+
+   procedure Expand_Dispatching_Call (Call_Node : Node_Id);
+   --  Expand the call to the operation through the dispatch table and perform
+   --  the required tag checks when appropriate. For CPP types the call is
+   --  done through the Vtable (tag checks are not relevant)
+
+   procedure Expand_Interface_Actuals    (Call_Node : Node_Id);
+   --  Ada 2005 (AI-251): Displace all the actuals corresponding to class-wide
+   --  interfaces to reference the interface tag of the actual object
+
+   procedure Expand_Interface_Conversion (N : Node_Id);
+   --  Ada 2005 (AI-251): N is a type-conversion node. Reference the base of
+   --  the object to give access to the interface tag associated with the
+   --  secondary dispatch table
+
+   function Expand_Interface_Thunk
+     (N           : Node_Id;
+      Thunk_Alias : Node_Id;
+      Thunk_Id    : Entity_Id;
+      Thunk_Tag   : Entity_Id) return Node_Id;
+   --  Ada 2005 (AI-251): When a tagged type implements abstract interfaces we
+   --  generate additional subprograms (thunks) to have a layout compatible
+   --  with the C++ ABI. The thunk modifies the value of the first actual of
+   --  the call (that is, the pointer to the object) before transferring
+   --  control to the target function.
 
    function Fill_DT_Entry
      (Loc          : Source_Ptr;
@@ -68,6 +107,15 @@ package Exp_Disp is
    --  (Ada 2005): Generate the code necessary to fill the appropriate entry of
    --  the secondary dispatch table of Prim's controlling type with Thunk_Id's
    --  address.
+
+   function Get_Remotely_Callable (Obj : Node_Id) return Node_Id;
+   --  Return an expression that holds True if the object can be transmitted
+   --  onto another partition according to E.4 (18)
+
+   function Init_Predefined_Interface_Primitives
+     (Typ : Entity_Id) return List_Id;
+   --  Ada 2005 (AI-251): Initialize the entries associated with predefined
+   --  primitives in all the secondary dispatch tables of Typ.
 
    procedure Make_Abstract_Interface_DT
      (AI_Tag          : Entity_Id;
@@ -90,44 +138,64 @@ package Exp_Disp is
    --  Expand the declarations for the Dispatch Table (or the Vtable in
    --  the case of type whose ancestor is a CPP_Class)
 
+   function Make_Disp_Asynchronous_Select_Body
+     (Typ : Entity_Id) return Node_Id;
+   --  Ada 2005 (AI-345): Generate the body of the primitive operation of type
+   --  Typ used for dispatching in asynchronous selects.
+
+   function Make_Disp_Asynchronous_Select_Spec
+     (Typ : Entity_Id) return Node_Id;
+   --  Ada 2005 (AI-345): Generate the specification of the primitive operation
+   --  of type Typ used for dispatching in asynchronous selects.
+
+   function Make_Disp_Conditional_Select_Body
+     (Typ : Entity_Id) return Node_Id;
+   --  Ada 2005 (AI-345): Generate the body of the primitive operation of type
+   --  Typ used for dispatching in conditional selects.
+
+   function Make_Disp_Conditional_Select_Spec
+     (Typ : Entity_Id) return Node_Id;
+   --  Ada 2005 (AI-345): Generate the specification of the primitive operation
+   --  of type Typ used for dispatching in conditional selects.
+
+   function Make_Disp_Get_Prim_Op_Kind_Body
+     (Typ : Entity_Id) return Node_Id;
+   --  Ada 2005 (AI-345): Generate the body of the primitive operation of type
+   --  Typ used for retrieving the callable entity kind during dispatching in
+   --  asynchronous selects.
+
+   function Make_Disp_Get_Prim_Op_Kind_Spec
+     (Typ : Entity_Id) return Node_Id;
+   --  Ada 2005 (AI-345): Generate the specification of the primitive operation
+   --  of the type Typ use for retrieving the callable entity kind during
+   --  dispatching in asynchronous selects.
+
+   function Make_Disp_Select_Tables
+     (Typ : Entity_Id) return List_Id;
+   --  Ada 2005 (AI-345): Populate the two auxiliary tables in the TSD of Typ
+   --  used for dispatching in asynchronous, conditional and timed selects.
+   --  Generate code to set the primitive operation kinds and entry indices
+   --  of primitive operations and primitive wrappers.
+
+   function Make_Disp_Timed_Select_Body
+     (Typ : Entity_Id) return Node_Id;
+   --  Ada 2005 (AI-345): Generate the body of the primitive operation of type
+   --  Typ used for dispatching in timed selects.
+
+   function Make_Disp_Timed_Select_Spec
+     (Typ : Entity_Id) return Node_Id;
+   --  Ada 2005 (AI-345): Generate the specification of the primitive operation
+   --  of type Typ used for dispatching in timed selects.
+
    procedure Set_All_DT_Position (Typ : Entity_Id);
    --  Set the DT_Position field for each primitive operation. In the CPP
    --  Class case check that no pragma CPP_Virtual is missing and that the
    --  DT_Position are coherent
 
-   procedure Expand_Dispatching_Call (Call_Node : Node_Id);
-   --  Expand the call to the operation through the dispatch table and perform
-   --  the required tag checks when appropriate. For CPP types the call is
-   --  done through the Vtable (tag checks are not relevant)
-
-   procedure Expand_Interface_Actuals    (Call_Node : Node_Id);
-   --  Ada 2005 (AI-251): Displace all the actuals corresponding to class-wide
-   --  interfaces to reference the interface tag of the actual object
-
-   procedure Expand_Interface_Conversion (N : Node_Id);
-   --  Ada 2005 (AI-251): N is a type-conversion node. Reference the base of
-   --  the object to give access to the interface tag associated with the
-   --  secondary dispatch table
-
-   function Expand_Interface_Thunk
-     (N           : Node_Id;
-      Thunk_Alias : Node_Id;
-      Thunk_Id    : Entity_Id;
-      Iface_Tag   : Entity_Id) return Node_Id;
-   --  Ada 2005 (AI-251): When a tagged type implements abstract interfaces we
-   --  generate additional subprograms (thunks) to have a layout compatible
-   --  with the C++ ABI. The thunk modifies the value of the first actual of
-   --  the call (that is, the pointer to the object) before transferring
-   --  control to the target function.
-
    procedure Set_Default_Constructor (Typ : Entity_Id);
    --  Typ is a CPP_Class type. Create the Init procedure of that type to
    --  be the default constructor (i.e. the function returning this type,
    --  having a pragma CPP_Constructor and no parameter)
-
-   function Get_Remotely_Callable (Obj : Node_Id) return Node_Id;
-   --  Return an expression that holds True if the object can be transmitted
-   --  onto another partition according to E.4 (18)
 
    procedure Write_DT (Typ : Entity_Id);
    pragma Export (Ada, Write_DT);

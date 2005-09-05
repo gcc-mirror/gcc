@@ -215,9 +215,9 @@ package body Einfo is
 
    --    Abstract_Interface_Alias        Node25
 
-   --    (unused)                        Node26
+   --    Overridden_Operation            Node26
 
-   --    (unused)                        Node27
+   --    Wrapped_Entity                  Node27
 
    ---------------------------------------------
    -- Usage of Flags in Defining Entity Nodes --
@@ -442,9 +442,9 @@ package body Einfo is
    --    Has_Specified_Stream_Read      Flag192
    --    Has_Specified_Stream_Write     Flag193
    --    Is_Local_Anonymous_Access      Flag194
+   --    Is_Primitive_Wrapper           Flag195
+   --    Was_Hidden                     Flag196
 
-   --    (unused)                       Flag195
-   --    (unused)                       Flag196
    --    (unused)                       Flag197
    --    (unused)                       Flag198
    --    (unused)                       Flag199
@@ -512,8 +512,7 @@ package body Einfo is
 
    function Abstract_Interface_Alias (Id : E) return E is
    begin
-      pragma Assert
-        (Ekind (Id) = E_Procedure or Ekind (Id) = E_Function);
+      pragma Assert (Is_Subprogram (Id));
       return Node25 (Id);
    end Abstract_Interface_Alias;
 
@@ -1734,6 +1733,12 @@ package body Einfo is
       return Flag59 (Id);
    end Is_Preelaborated;
 
+   function Is_Primitive_Wrapper (Id : E) return B is
+   begin
+      pragma Assert (Ekind (Id) = E_Procedure);
+      return Flag195 (Id);
+   end Is_Primitive_Wrapper;
+
    function Is_Private_Composite (Id : E) return B is
    begin
       pragma Assert (Is_Type (Id));
@@ -2038,6 +2043,11 @@ package body Einfo is
       return Node22 (Id);
    end Original_Record_Component;
 
+   function Overridden_Operation (Id : E) return E is
+   begin
+      return Node26 (Id);
+   end Overridden_Operation;
+
    function Packed_Array_Type (Id : E) return E is
    begin
       pragma Assert (Is_Array_Type (Id));
@@ -2324,6 +2334,18 @@ package body Einfo is
    begin
       return Flag96 (Id);
    end Warnings_Off;
+
+   function Wrapped_Entity (Id : E) return E is
+   begin
+      pragma Assert (Ekind (Id) = E_Procedure
+                       and then Is_Primitive_Wrapper (Id));
+      return Node27 (Id);
+   end Wrapped_Entity;
+
+   function Was_Hidden (Id : E) return B is
+   begin
+      return Flag196 (Id);
+   end Was_Hidden;
 
    ------------------------------
    -- Classification Functions --
@@ -3799,6 +3821,12 @@ package body Einfo is
       Set_Flag59 (Id, V);
    end Set_Is_Preelaborated;
 
+   procedure Set_Is_Primitive_Wrapper (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Procedure);
+      Set_Flag195 (Id, V);
+   end Set_Is_Primitive_Wrapper;
+
    procedure Set_Is_Private_Composite (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Type (Id));
@@ -4107,6 +4135,11 @@ package body Einfo is
       Set_Node22 (Id, V);
    end Set_Original_Record_Component;
 
+   procedure Set_Overridden_Operation (Id : E; V : E) is
+   begin
+      Set_Node26 (Id, V);
+   end Set_Overridden_Operation;
+
    procedure Set_Packed_Array_Type (Id : E; V : E) is
    begin
       pragma Assert (Is_Array_Type (Id));
@@ -4399,6 +4432,18 @@ package body Einfo is
    begin
       Set_Flag96 (Id, V);
    end Set_Warnings_Off;
+
+   procedure Set_Was_Hidden (Id : E; V : B := True) is
+   begin
+      Set_Flag196 (Id, V);
+   end Set_Was_Hidden;
+
+   procedure Set_Wrapped_Entity (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind (Id) = E_Procedure
+                       and then Is_Primitive_Wrapper (Id));
+      Set_Node27 (Id, V);
+   end Set_Wrapped_Entity;
 
    -----------------------------------
    -- Field Initialization Routines --
@@ -6328,6 +6373,15 @@ package body Einfo is
                return Underlying_Type (Full_View (Id));
             end if;
 
+         --  If we have an incomplete entity that comes from the limited
+         --  view then we return the Underlying_Type of its non-limited
+         --  view.
+
+         elsif From_With_Type (Id)
+           and then Present (Non_Limited_View (Id))
+         then
+            return Underlying_Type (Non_Limited_View (Id));
+
          --  Otherwise check for the case where we have a derived type or
          --  subtype, and if so get the Underlying_Type of the parent type.
 
@@ -6538,6 +6592,7 @@ package body Einfo is
       W ("Is_Packed_Array_Type",          Flag138 (Id));
       W ("Is_Potentially_Use_Visible",    Flag9   (Id));
       W ("Is_Preelaborated",              Flag59  (Id));
+      W ("Is_Primitive_Wrapper",          Flag195 (Id));
       W ("Is_Private_Composite",          Flag107 (Id));
       W ("Is_Private_Descendant",         Flag53  (Id));
       W ("Is_Public",                     Flag10  (Id));
@@ -6589,6 +6644,7 @@ package body Einfo is
       W ("Uses_Sec_Stack",                Flag95  (Id));
       W ("Vax_Float",                     Flag151 (Id));
       W ("Warnings_Off",                  Flag96  (Id));
+      W ("Was_Hidden",                    Flag196 (Id));
    end Write_Entity_Flags;
 
    -----------------------
@@ -7504,6 +7560,10 @@ package body Einfo is
    procedure Write_Field26_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when E_Procedure                                |
+              E_Function                                 =>
+            Write_Str ("Overridden_Operation");
+
          when others                                     =>
             Write_Str ("Field26??");
       end case;
@@ -7516,6 +7576,9 @@ package body Einfo is
    procedure Write_Field27_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when E_Procedure                                =>
+            Write_Str ("Wrapped_Entity");
+
          when others                                     =>
             Write_Str ("Field27??");
       end case;

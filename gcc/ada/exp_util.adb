@@ -31,8 +31,6 @@ with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Aggr; use Exp_Aggr;
 with Exp_Ch7;  use Exp_Ch7;
-with Exp_Ch11; use Exp_Ch11;
-with Exp_Tss;  use Exp_Tss;
 with Hostparm; use Hostparm;
 with Inline;   use Inline;
 with Itypes;   use Itypes;
@@ -49,7 +47,6 @@ with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
@@ -685,7 +682,7 @@ package body Exp_Util is
       Spec := Make_Function_Specification (Loc,
         Defining_Unit_Name =>
           Make_Defining_Identifier (Loc, New_Internal_Name ('F')),
-        Subtype_Mark => New_Occurrence_Of (Standard_String, Loc));
+        Result_Definition => New_Occurrence_Of (Standard_String, Loc));
 
       --  Calls to 'Image use the secondary stack, which must be cleaned
       --  up after the task name is built.
@@ -1278,6 +1275,13 @@ package body Exp_Util is
       then
          null;
 
+      --  Nothing to be done if the type of the expression is limited, because
+      --  in this case the expression cannot be copied, and its use can only
+      --  be by reference and there is no need for the actual subtype.
+
+      elsif Is_Limited_Type (Exp_Typ) then
+         null;
+
       else
          Remove_Side_Effects (Exp);
          Rewrite (Subtype_Indic,
@@ -1409,7 +1413,7 @@ package body Exp_Util is
            and then Present (Abstract_Interfaces (Typ))
            and then not (Is_Empty_Elmt_List (Abstract_Interfaces (Typ)))
          then
-            --  Skip the tag associated with the primary table.
+            --  Skip the tag associated with the primary table
 
             pragma Assert (Etype (First_Tag_Component (Typ)) = RTE (RE_Tag));
             AI_Tag := Next_Tag_Component (First_Tag_Component (Typ));
@@ -1449,10 +1453,19 @@ package body Exp_Util is
 
       --  Handle task and protected types implementing interfaces
 
-      if Ekind (Typ) = E_Protected_Type
-        or else Ekind (Typ) = E_Task_Type
-      then
+      if Is_Concurrent_Type (Typ) then
          Typ := Corresponding_Record_Type (Typ);
+      end if;
+
+      if Is_Class_Wide_Type (Typ) then
+         Typ := Etype (Typ);
+      end if;
+
+      --  Handle entities from the limited view
+
+      if Ekind (Typ) = E_Incomplete_Type then
+         pragma Assert (Present (Non_Limited_View (Typ)));
+         Typ := Non_Limited_View (Typ);
       end if;
 
       Find_Tag (Typ);
@@ -1728,6 +1741,68 @@ package body Exp_Util is
 
       return Count;
    end Homonym_Number;
+
+   ----------------------------------
+   -- Implements_Limited_Interface --
+   ----------------------------------
+
+   function Implements_Limited_Interface (Typ : Entity_Id) return Boolean is
+      function Contains_Limited_Interface
+        (Ifaces : Elist_Id) return Boolean;
+      --  Given a list of interfaces, determine whether one of them is limited
+
+      --------------------------------
+      -- Contains_Limited_Interface --
+      --------------------------------
+
+      function Contains_Limited_Interface
+        (Ifaces : Elist_Id) return Boolean
+      is
+         Iface_Elmt : Elmt_Id;
+
+      begin
+         if not Present (Ifaces) then
+            return False;
+         end if;
+
+         Iface_Elmt := First_Elmt (Ifaces);
+
+         while Present (Iface_Elmt) loop
+            if Is_Limited_Record (Node (Iface_Elmt)) then
+               return True;
+            end if;
+
+            Iface_Elmt := Next_Elmt (Iface_Elmt);
+         end loop;
+
+         return False;
+      end Contains_Limited_Interface;
+
+   --  Start of processing for Implements_Limited_Interface
+
+   begin
+      --  Typ is a derived type and may implement a limited interface
+      --  through its parent subtype. Check the parent subtype as well
+      --  as any interfaces explicitly implemented at this level.
+
+      if Ekind (Typ) = E_Record_Type
+        and then Present (Parent_Subtype (Typ))
+      then
+         return Contains_Limited_Interface (Abstract_Interfaces (Typ))
+           or else Implements_Limited_Interface (Parent_Subtype (Typ));
+
+      --  Typ is an abstract type derived from some interface
+
+      elsif Is_Abstract (Typ) then
+         return Is_Interface (Etype (Typ))
+           and then Is_Limited_Record (Etype (Typ));
+
+      --  Typ may directly implement some interface
+
+      else
+         return Contains_Limited_Interface (Abstract_Interfaces (Typ));
+      end if;
+   end Implements_Limited_Interface;
 
    ------------------------------
    -- In_Unconditional_Context --
@@ -2515,6 +2590,10 @@ package body Exp_Util is
            or else Chars (E) = Name_uAssign
            or else TSS_Name  = TSS_Deep_Adjust
            or else TSS_Name  = TSS_Deep_Finalize
+           or else Chars (E) = Name_uDisp_Asynchronous_Select
+           or else Chars (E) = Name_uDisp_Conditional_Select
+           or else Chars (E) = Name_uDisp_Get_Prim_Op_Kind
+           or else Chars (E) = Name_uDisp_Timed_Select
          then
             return True;
          end if;
@@ -2919,7 +2998,6 @@ package body Exp_Util is
    procedure Kill_Dead_Code (N : Node_Id) is
    begin
       if Present (N) then
-         Remove_Handler_Entries (N);
          Remove_Warning_Messages (N);
 
          --  Recurse into block statements and bodies to process declarations

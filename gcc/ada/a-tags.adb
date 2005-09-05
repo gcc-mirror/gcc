@@ -65,27 +65,44 @@ package body Ada.Tags is
 --                                          |      tags         |
 --                                          +-------------------+
 --                                          | table of          |
---                                          |   interface       |
+--                                          :   interface       :
 --                                          |      tags         |
+--                                          +-------------------+
+--                                          | table of          |
+--                                          :   primitive op    :
+--                                          |     kinds         |
+--                                          +-------------------+
+--                                          | table of          |
+--                                          :   entry           :
+--                                          |     indices       |
 --                                          +-------------------+
 
    subtype Cstring is String (Positive);
    type Cstring_Ptr is access all Cstring;
 
-   type Tag_Table is array (Natural range <>) of Tag;
-   pragma Suppress_Initialization (Tag_Table);
-   pragma Suppress (Index_Check, On => Tag_Table);
    --  We suppress index checks because the declared size in the record below
    --  is a dummy size of one (see below).
 
+   type Tag_Table is array (Natural range <>) of Tag;
+   pragma Suppress_Initialization (Tag_Table);
+   pragma Suppress (Index_Check, On => Tag_Table);
+
+   type Prim_Op_Kind_Table is array (Natural range <>) of Prim_Op_Kind;
+   pragma Suppress_Initialization (Prim_Op_Kind_Table);
+   pragma Suppress (Index_Check, On => Prim_Op_Kind_Table);
+
+   type Entry_Index_Table is array (Natural range <>) of Positive;
+   pragma Suppress_Initialization (Entry_Index_Table);
+   pragma Suppress (Index_Check, On => Entry_Index_Table);
+
    type Type_Specific_Data is record
-      Idepth            : Natural;
+      Idepth : Natural;
       --  Inheritance Depth Level: Used to implement the membership test
       --  associated with single inheritance of tagged types in constant-time.
       --  In addition it also indicates the size of the first table stored in
       --  the Tags_Table component (see comment below).
 
-      Access_Level      : Natural;
+      Access_Level : Natural;
       --  Accessibility level required to give support to Ada 2005 nested type
       --  extensions. This feature allows safe nested type extensions by
       --  shifting the accessibility checks to certain operations, rather than
@@ -94,20 +111,20 @@ package body Ada.Tags is
       --  function return, and class-wide stream I/O, the danger of objects
       --  outliving their type declaration can be eliminated (Ada 2005: AI-344)
 
-      Expanded_Name     : Cstring_Ptr;
-      External_Tag      : Cstring_Ptr;
-      HT_Link           : Tag;
+      Expanded_Name : Cstring_Ptr;
+      External_Tag  : Cstring_Ptr;
+      HT_Link       : Tag;
       --  Components used to give support to the Ada.Tags subprograms described
       --  in ARM 3.9
 
       Remotely_Callable : Boolean;
       --  Used to check ARM E.4 (18)
 
-      RC_Offset         : SSE.Storage_Offset;
+      RC_Offset : SSE.Storage_Offset;
       --  Controller Offset: Used to give support to tagged controlled objects
       --  (see Get_Deep_Controller at s-finimp)
 
-      Num_Interfaces    : Natural;
+      Num_Interfaces : Natural;
       --  Number of abstract interface types implemented by the tagged type.
       --  The value Idepth+Num_Interfaces indicates the end of the second table
       --  stored in the Tags_Table component. It is used to implement the
@@ -121,6 +138,16 @@ package body Ada.Tags is
       --  purpose we are using the same mechanism as for the Prims_Ptr array in
       --  the Dispatch_Table record. See comments below on Prims_Ptr for
       --  further details.
+
+      POK_Table       : Prim_Op_Kind_Table (1 .. 1);
+      Ent_Index_Table : Entry_Index_Table  (1 .. 1);
+      --  Two auxiliary tables used for dispatching in asynchronous,
+      --  conditional and timed selects. Their size depends on the number
+      --  of primitive operations. Indexing in these two tables is performed
+      --  by subtracting the number of predefined primitive operations from
+      --  the given index value. POK_Table contains the callable entity kinds
+      --  of all non-predefined primitive operations. Ent_Index_Table contains
+      --  the entry index of primitive entry wrappers.
    end record;
 
    type Dispatch_Table is record
@@ -175,7 +202,7 @@ package body Ada.Tags is
    type Storage_Offset_Ptr is access System.Storage_Elements.Storage_Offset;
 
    function To_Storage_Offset_Ptr is
-      new Unchecked_Conversion (System.Address, Storage_Offset_Ptr);
+     new Unchecked_Conversion (System.Address, Storage_Offset_Ptr);
 
    -----------------------
    -- Local Subprograms --
@@ -242,15 +269,12 @@ package body Ada.Tags is
          Str1 : constant Cstring_Ptr := To_Cstring_Ptr (A);
          Str2 : constant Cstring_Ptr := To_Cstring_Ptr (B);
          J    : Integer := 1;
-
       begin
          loop
             if Str1 (J) /= Str2 (J) then
                return False;
-
             elsif Str1 (J) = ASCII.NUL then
                return True;
-
             else
                J := J + 1;
             end if;
@@ -330,22 +354,27 @@ package body Ada.Tags is
    --  that are contained in the dispatch table referenced by Obj'Tag.
 
    function IW_Membership
-     (This      : System.Address;
-      Iface_Tag : Tag) return Boolean
+     (This : System.Address;
+      T    : Tag) return Boolean
    is
-      T        : constant Tag := To_Tag_Ptr (This).all;
-      Obj_Base : constant System.Address := This - Offset_To_Top (T);
-      T_Base   : constant Tag := To_Tag_Ptr (Obj_Base).all;
+      Curr_DT  : constant Tag := To_Tag_Ptr (This).all;
+      Obj_Base : constant System.Address := This - Offset_To_Top (Curr_DT);
+      Obj_DT   : constant Tag := To_Tag_Ptr (Obj_Base).all;
 
-      Obj_TSD  : constant Type_Specific_Data_Ptr := TSD (T_Base);
-      Last_Id  : constant Natural := Obj_TSD.Idepth + Obj_TSD.Num_Interfaces;
-      Id       : Natural;
+      Obj_TSD : constant Type_Specific_Data_Ptr := TSD (Obj_DT);
+      Last_Id : constant Natural := Obj_TSD.Idepth + Obj_TSD.Num_Interfaces;
+      Id      : Natural;
 
    begin
       if Obj_TSD.Num_Interfaces > 0 then
-         Id := Obj_TSD.Idepth + 1;
+
+         --  Traverse the ancestor tags table plus the interface tags table.
+         --  The former part is required to give support to:
+         --     Iface_CW in Typ'Class
+
+         Id := 0;
          loop
-            if Obj_TSD.Tags_Table (Id) = Iface_Tag then
+            if Obj_TSD.Tags_Table (Id) = T then
                return True;
             end if;
 
@@ -413,6 +442,17 @@ package body Ada.Tags is
       return TSD (T).Access_Level;
    end Get_Access_Level;
 
+   ---------------------
+   -- Get_Entry_Index --
+   ---------------------
+
+   function Get_Entry_Index
+     (T        : Tag;
+      Position : Positive) return Positive is
+   begin
+      return TSD (T).Ent_Index_Table (Position - Default_Prim_Op_Count);
+   end Get_Entry_Index;
+
    ----------------------
    -- Get_External_Tag --
    ----------------------
@@ -432,6 +472,17 @@ package body Ada.Tags is
    begin
       return T.Prims_Ptr (Position);
    end Get_Prim_Op_Address;
+
+   ----------------------
+   -- Get_Prim_Op_Kind --
+   ----------------------
+
+   function Get_Prim_Op_Kind
+     (T        : Tag;
+      Position : Positive) return Prim_Op_Kind is
+   begin
+      return TSD (T).POK_Table (Position - Default_Prim_Op_Count);
+   end Get_Prim_Op_Kind;
 
    -------------------
    -- Get_RC_Offset --
@@ -485,9 +536,9 @@ package body Ada.Tags is
          --  of the parent
 
          New_TSD_Ptr.Tags_Table
-           (1 .. New_TSD_Ptr.Idepth + New_TSD_Ptr.Num_Interfaces)
-           := Old_TSD_Ptr.Tags_Table
-                (0 .. Old_TSD_Ptr.Idepth + Old_TSD_Ptr.Num_Interfaces);
+           (1 .. New_TSD_Ptr.Idepth + New_TSD_Ptr.Num_Interfaces) :=
+             Old_TSD_Ptr.Tags_Table
+               (0 .. Old_TSD_Ptr.Idepth + Old_TSD_Ptr.Num_Interfaces);
       else
          New_TSD_Ptr.Idepth         := 0;
          New_TSD_Ptr.Num_Interfaces := 0;
@@ -588,8 +639,8 @@ package body Ada.Tags is
       --  The tag of the parent type through the dispatch table
 
       F : constant Acc_Size := To_Acc_Size (Parent_Tag.Prims_Ptr (1));
-      --  Access to the _size primitive of the parent. We assume that
-      --  it is always in the first slot of the dispatch table
+      --  Access to the _size primitive of the parent. We assume that it is
+      --  always in the first slot of the dispatch table
 
    begin
       --  Here we compute the size of the _parent field of the object
@@ -672,6 +723,18 @@ package body Ada.Tags is
       TSD (T).Access_Level := Value;
    end Set_Access_Level;
 
+   ---------------------
+   -- Set_Entry_Index --
+   ---------------------
+
+   procedure Set_Entry_Index
+     (T        : Tag;
+      Position : Positive;
+      Value    : Positive) is
+   begin
+      TSD (T).Ent_Index_Table (Position - Default_Prim_Op_Count) := Value;
+   end Set_Entry_Index;
+
    -----------------------
    -- Set_Expanded_Name --
    -----------------------
@@ -717,6 +780,18 @@ package body Ada.Tags is
    begin
       T.Prims_Ptr (Position) := Value;
    end Set_Prim_Op_Address;
+
+   ----------------------
+   -- Set_Prim_Op_Kind --
+   ----------------------
+
+   procedure Set_Prim_Op_Kind
+     (T        : Tag;
+      Position : Positive;
+      Value    : Prim_Op_Kind) is
+   begin
+      TSD (T).POK_Table (Position - Default_Prim_Op_Count) := Value;
+   end Set_Prim_Op_Kind;
 
    -------------------
    -- Set_RC_Offset --

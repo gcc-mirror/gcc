@@ -1924,8 +1924,25 @@ package body Sem_Ch9 is
         and then Nkind (Trigger) /= N_Delay_Relative_Statement
         and then Nkind (Trigger) /= N_Entry_Call_Statement
       then
-         Error_Msg_N
-          ("triggering statement must be delay or entry call", Trigger);
+         if Ada_Version < Ada_05 then
+            Error_Msg_N
+             ("triggering statement must be delay or entry call", Trigger);
+
+         --  Ada 2005 (AI-345): If a procedure_call_statement is used
+         --  for a procedure_or_entry_call, the procedure_name or pro-
+         --  cedure_prefix of the procedure_call_statement shall denote
+         --  an entry renamed by a procedure, or (a view of) a primitive
+         --  subprogram of a limited interface whose first parameter is
+         --  a controlling parameter.
+
+         elsif Nkind (Trigger) = N_Procedure_Call_Statement
+           and then not Is_Renamed_Entry (Entity (Name (Trigger)))
+           and then not Is_Controlling_Limited_Procedure
+                          (Entity (Name (Trigger)))
+         then
+            Error_Msg_N ("triggering statement must be delay, procedure " &
+                         "or entry call", Trigger);
+         end if;
       end if;
 
       if Is_Non_Empty_List (Statements (N)) then
@@ -2211,8 +2228,8 @@ package body Sem_Ch9 is
                     and then Matches_Prefixed_View_Profile (Ifaces,
                                Parameter_Specifications (Spec),
                                Parameter_Specifications (Parent (Hom)))
-                    and then Etype (Subtype_Mark (Spec)) =
-                             Etype (Subtype_Mark (Parent (Hom)))
+                    and then Etype (Result_Definition (Spec)) =
+                             Etype (Result_Definition (Parent (Hom)))
                   then
                      Overrides := True;
                      exit;
