@@ -4667,7 +4667,7 @@ sh_reorg (void)
 			}
 		      last_float_move = scan;
 		      last_float = src;
-		      newsrc = gen_rtx_MEM (mode,
+		      newsrc = gen_const_mem (mode,
 					(((TARGET_SH4 && ! TARGET_FMOVD)
 					  || REGNO (dst) == FPUL_REG)
 					 ? r0_inc_rtx
@@ -5199,20 +5199,20 @@ output_stack_adjust (int size, rtx reg, int epilogue_p,
 
 	      adj_reg = gen_rtx_REG (GET_MODE (reg), 4);
 	      tmp_reg = gen_rtx_REG (GET_MODE (reg), 5);
-	      emit_move_insn (gen_rtx_MEM (Pmode, reg), adj_reg);
+	      emit_move_insn (gen_tmp_stack_mem (Pmode, reg), adj_reg);
 	      emit_insn (GEN_MOV (adj_reg, GEN_INT (size)));
 	      emit_insn (GEN_ADD3 (adj_reg, adj_reg, reg));
-	      mem = gen_rtx_MEM (Pmode, gen_rtx_PRE_DEC (Pmode, adj_reg));
+	      mem = gen_tmp_stack_mem (Pmode, gen_rtx_PRE_DEC (Pmode, adj_reg));
 	      emit_move_insn (mem, tmp_reg);
-	      	emit_move_insn (tmp_reg, gen_rtx_MEM (Pmode, reg));
-		mem = gen_rtx_MEM (Pmode, gen_rtx_PRE_DEC (Pmode, adj_reg));
-		emit_move_insn (mem, tmp_reg);
-		emit_move_insn (reg, adj_reg);
-		mem = gen_rtx_MEM (Pmode, gen_rtx_POST_INC (Pmode, reg));
-		emit_move_insn (adj_reg, mem);
-		mem = gen_rtx_MEM (Pmode, gen_rtx_POST_INC (Pmode, reg));
-		emit_move_insn (tmp_reg, mem);
-		return;
+	      emit_move_insn (tmp_reg, gen_tmp_stack_mem (Pmode, reg));
+	      mem = gen_tmp_stack_mem (Pmode, gen_rtx_PRE_DEC (Pmode, adj_reg));
+	      emit_move_insn (mem, tmp_reg);
+	      emit_move_insn (reg, adj_reg);
+	      mem = gen_tmp_stack_mem (Pmode, gen_rtx_POST_INC (Pmode, reg));
+	      emit_move_insn (adj_reg, mem);
+	      mem = gen_tmp_stack_mem (Pmode, gen_rtx_POST_INC (Pmode, reg));
+	      emit_move_insn (tmp_reg, mem);
+	      return;
 	    }
 	  const_reg = gen_rtx_REG (GET_MODE (reg), temp);
 
@@ -5861,10 +5861,10 @@ sh_expand_prologue (void)
 
 	  reg_rtx = gen_rtx_REG (mode, reg);
 
-	  mem_rtx = gen_rtx_MEM (mode,
-				 gen_rtx_PLUS (Pmode,
-					       stack_pointer_rtx,
-					       GEN_INT (offset)));
+	  mem_rtx = gen_frame_mem (mode,
+				   gen_rtx_PLUS (Pmode,
+						 stack_pointer_rtx,
+						 GEN_INT (offset)));
 
 	  GO_IF_LEGITIMATE_ADDRESS (mode, XEXP (mem_rtx, 0), try_pre_dec);
 
@@ -5878,8 +5878,7 @@ sh_expand_prologue (void)
 		    || mem_rtx == NULL_RTX
 		    || reg == PR_REG || SPECIAL_REGISTER_P (reg)))
 	      {
-		pre_dec = gen_rtx_MEM (mode,
-				       gen_rtx_PRE_DEC (Pmode, r0));
+		pre_dec = gen_frame_mem (mode, gen_rtx_PRE_DEC (Pmode, r0));
 
 		GO_IF_LEGITIMATE_ADDRESS (mode, XEXP (pre_dec, 0),
 					  pre_dec_ok);
@@ -5927,12 +5926,12 @@ sh_expand_prologue (void)
 	      mem_rtx = pre_dec;
 	    }
 	  else if (sp_in_r0)
-	    mem_rtx = gen_rtx_MEM (mode, r0);
+	    mem_rtx = gen_frame_mem (mode, r0);
 	  else
-	    mem_rtx = gen_rtx_MEM (mode,
-				   gen_rtx_PLUS (Pmode,
-						 stack_pointer_rtx,
-						 r0));
+	    mem_rtx = gen_frame_mem (mode,
+				     gen_rtx_PLUS (Pmode,
+						   stack_pointer_rtx,
+						   r0));
 
 	  /* We must not use an r0-based address for target-branch
 	     registers or for special registers without pre-dec
@@ -5992,10 +5991,10 @@ sh_expand_prologue (void)
 	      {
 		rtx reg_rtx = gen_rtx_REG (mode, reg);
 		rtx set, note_rtx;
-		rtx mem_rtx = gen_rtx_MEM (mode,
-					   gen_rtx_PLUS (Pmode,
-							 stack_pointer_rtx,
-							 GEN_INT (offset)));
+		rtx mem_rtx = gen_frame_mem (mode,
+					     gen_rtx_PLUS (Pmode,
+							   stack_pointer_rtx,
+							   GEN_INT (offset)));
 
 		set = gen_rtx_SET (VOIDmode, mem_rtx, reg_rtx);
 		note_rtx = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, set,
@@ -6179,10 +6178,10 @@ sh_expand_epilogue (bool sibcall_p)
 	  offset = offset_base + entry->offset;
 	  reg_rtx = gen_rtx_REG (mode, reg);
 
-	  mem_rtx = gen_rtx_MEM (mode,
-				 gen_rtx_PLUS (Pmode,
-					       stack_pointer_rtx,
-					       GEN_INT (offset)));
+	  mem_rtx = gen_frame_mem (mode,
+				   gen_rtx_PLUS (Pmode,
+						 stack_pointer_rtx,
+						 GEN_INT (offset)));
 
 	  GO_IF_LEGITIMATE_ADDRESS (mode, XEXP (mem_rtx, 0), try_post_inc);
 
@@ -6196,8 +6195,7 @@ sh_expand_epilogue (bool sibcall_p)
 			&& mem_rtx == NULL_RTX)
 		    || reg == PR_REG || SPECIAL_REGISTER_P (reg)))
 	      {
-		post_inc = gen_rtx_MEM (mode,
-					gen_rtx_POST_INC (Pmode, r0));
+		post_inc = gen_frame_mem (mode, gen_rtx_POST_INC (Pmode, r0));
 
 		GO_IF_LEGITIMATE_ADDRESS (mode, XEXP (post_inc, 0),
 					  post_inc_ok);
@@ -6243,12 +6241,12 @@ sh_expand_epilogue (bool sibcall_p)
 	      offset_in_r0 += GET_MODE_SIZE (mode);
 	    }
 	  else if (sp_in_r0)
-	    mem_rtx = gen_rtx_MEM (mode, r0);
+	    mem_rtx = gen_frame_mem (mode, r0);
 	  else
-	    mem_rtx = gen_rtx_MEM (mode,
-				   gen_rtx_PLUS (Pmode,
-						 stack_pointer_rtx,
-						 r0));
+	    mem_rtx = gen_frame_mem (mode,
+				     gen_rtx_PLUS (Pmode,
+						   stack_pointer_rtx,
+						   r0));
 
 	  gcc_assert ((reg != PR_REG && !SPECIAL_REGISTER_P (reg))
 		      || mem_rtx == post_inc);
@@ -6408,7 +6406,7 @@ sh_set_return_address (rtx ra, rtx tmp)
   emit_insn (GEN_MOV (tmp, GEN_INT (pr_offset)));
   emit_insn (GEN_ADD3 (tmp, tmp, hard_frame_pointer_rtx));
 
-  tmp = gen_rtx_MEM (Pmode, tmp);
+  tmp = gen_frame_mem (Pmode, tmp);
   emit_insn (GEN_MOV (tmp, ra));
 }
 
@@ -6485,8 +6483,7 @@ sh_builtin_saveregs (void)
   bufsize = (n_intregs * UNITS_PER_WORD) + (n_floatregs * UNITS_PER_WORD);
 
   if (TARGET_SHMEDIA)
-    regbuf = gen_rtx_MEM (BLKmode,
-			  gen_rtx_REG (Pmode, ARG_POINTER_REGNUM));
+    regbuf = gen_frame_mem (BLKmode, gen_rtx_REG (Pmode, ARG_POINTER_REGNUM));
   else if (n_floatregs & 1)
     {
       rtx addr;
@@ -6542,8 +6539,7 @@ sh_builtin_saveregs (void)
 	{
 	  emit_insn (gen_addsi3 (fpregs, fpregs,
 				 GEN_INT (-2 * UNITS_PER_WORD)));
-	  mem = gen_rtx_MEM (DFmode, fpregs);
-	  set_mem_alias_set (mem, alias_set);
+	  mem = change_address (regbuf, DFmode, fpregs);
 	  emit_move_insn (mem,
 			  gen_rtx_REG (DFmode, BASE_ARG_REG (DFmode) + regno));
 	}
@@ -6551,8 +6547,7 @@ sh_builtin_saveregs (void)
       if (regno & 1)
 	{
 	  emit_insn (gen_addsi3 (fpregs, fpregs, GEN_INT (-UNITS_PER_WORD)));
-	  mem = gen_rtx_MEM (SFmode, fpregs);
-	  set_mem_alias_set (mem, alias_set);
+	  mem = change_address (regbuf, SFmode, fpregs);
 	  emit_move_insn (mem,
 			  gen_rtx_REG (SFmode, BASE_ARG_REG (SFmode) + regno
 						- (TARGET_LITTLE_ENDIAN != 0)));
@@ -6564,8 +6559,7 @@ sh_builtin_saveregs (void)
         rtx mem;
 
 	emit_insn (gen_addsi3 (fpregs, fpregs, GEN_INT (-UNITS_PER_WORD)));
-	mem = gen_rtx_MEM (SFmode, fpregs);
-	set_mem_alias_set (mem, alias_set);
+	mem = change_address (regbuf, SFmode, fpregs);
 	emit_move_insn (mem,
 			gen_rtx_REG (SFmode, BASE_ARG_REG (SFmode) + regno));
       }
@@ -8502,7 +8496,7 @@ sh_allocate_initial_value (rtx hard_reg)
 		    || current_function_has_nonlocal_label)))
 	x = hard_reg;
       else
-	x = gen_rtx_MEM (Pmode, return_address_pointer_rtx);
+	x = gen_frame_mem (Pmode, return_address_pointer_rtx);
     }
   else
     x = NULL_RTX;
@@ -8896,6 +8890,8 @@ sh_ms_bitfield_layout_p (tree record_type ATTRIBUTE_UNUSED)
 void
 sh_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
 {
+  rtx tramp_mem = gen_frame_mem (BLKmode, tramp);
+
   if (TARGET_SHMEDIA64)
     {
       rtx tramp_templ;
@@ -8924,34 +8920,32 @@ sh_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
 	  insn = gen_rtx_IOR (DImode, insn, gen_int_mode (0xec000010, SImode));
 	  insn = force_operand (insn, NULL_RTX);
 	  insn = gen_lowpart (SImode, insn);
-	  emit_move_insn (gen_rtx_MEM (SImode, tramp), insn);
+	  emit_move_insn (change_address (tramp_mem, SImode, NULL_RTX), insn);
 	  insn = gen_rtx_LSHIFTRT (DImode, fnaddr, GEN_INT (38));
 	  insn = gen_rtx_AND (DImode, insn, mask);
 	  insn = force_operand (gen_rtx_IOR (DImode, movi1, insn), NULL_RTX);
 	  insn = gen_lowpart (SImode, insn);
-	  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 4)), insn);
+	  emit_move_insn (adjust_address (tramp_mem, SImode, 4), insn);
 	  insn = gen_rtx_LSHIFTRT (DImode, fnaddr, GEN_INT (22));
 	  insn = gen_rtx_AND (DImode, insn, mask);
 	  insn = force_operand (gen_rtx_IOR (DImode, shori1, insn), NULL_RTX);
 	  insn = gen_lowpart (SImode, insn);
-	  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 8)), insn);
+	  emit_move_insn (adjust_address (tramp_mem, SImode, 8), insn);
 	  insn = gen_rtx_LSHIFTRT (DImode, fnaddr, GEN_INT (6));
 	  insn = gen_rtx_AND (DImode, insn, mask);
 	  insn = force_operand (gen_rtx_IOR (DImode, shori1, insn), NULL_RTX);
 	  insn = gen_lowpart (SImode, insn);
-	  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 12)),
-			  insn);
+	  emit_move_insn (adjust_address (tramp_mem, SImode, 12), insn);
 	  insn = gen_rtx_ASHIFT (DImode, fnaddr, GEN_INT (10));
 	  insn = gen_rtx_AND (DImode, insn, mask);
 	  insn = force_operand (gen_rtx_IOR (DImode, shori1, insn), NULL_RTX);
 	  insn = gen_lowpart (SImode, insn);
-	  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 16)),
-			  insn);
-	  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 20)),
+	  emit_move_insn (adjust_address (tramp_mem, SImode, 16), insn);
+	  emit_move_insn (adjust_address (tramp_mem, SImode, 20),
 			  GEN_INT (0x6bf10600));
-	  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 24)),
+	  emit_move_insn (adjust_address (tramp_mem, SImode, 24),
 			  GEN_INT (0x4415fc10));
-	  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 28)),
+	  emit_move_insn (adjust_address (tramp_mem, SImode, 28),
 			  GEN_INT (0x4401fff0));
 	  emit_insn (gen_ic_invalidate_line (tramp));
 	  return;
@@ -8960,18 +8954,15 @@ sh_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
       fixed_len = TRAMPOLINE_SIZE - 2 * GET_MODE_SIZE (Pmode);
 
       tramp_templ = gen_datalabel_ref (tramp_templ);
-      dst = gen_rtx_MEM (BLKmode, tramp);
-      src = gen_rtx_MEM (BLKmode, tramp_templ);
+      dst = tramp_mem;
+      src = gen_const_mem (BLKmode, tramp_templ);
       set_mem_align (dst, 256);
       set_mem_align (src, 64);
       emit_block_move (dst, src, GEN_INT (fixed_len), BLOCK_OP_NORMAL);
 
-      emit_move_insn (gen_rtx_MEM (Pmode, plus_constant (tramp,	fixed_len)),
-		      fnaddr);
-      emit_move_insn (gen_rtx_MEM (Pmode,
-				   plus_constant (tramp,
-						  fixed_len
-						  + GET_MODE_SIZE (Pmode))),
+      emit_move_insn (adjust_address (tramp_mem, Pmode, fixed_len), fnaddr);
+      emit_move_insn (adjust_address (tramp_mem, Pmode,
+				      fixed_len + GET_MODE_SIZE (Pmode)),
 		      cxt);
       emit_insn (gen_ic_invalidate_line (tramp));
       return;
@@ -8999,7 +8990,7 @@ sh_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
       emit_insn (gen_rotrdi3_mextr (quad0, quad0,
 				    GEN_INT (TARGET_LITTLE_ENDIAN ? 24 : 56)));
       emit_insn (gen_ashldi3_media (quad0, quad0, const2_rtx));
-      emit_move_insn (gen_rtx_MEM (DImode, tramp), quad0);
+      emit_move_insn (change_address (tramp_mem, DImode, NULL_RTX), quad0);
       emit_insn (gen_mshflo_w_x (gen_rtx_SUBREG (V4HImode, cxtload, 0),
 				 gen_rtx_SUBREG (V2HImode, cxt, 0),
 				 movishori));
@@ -9016,8 +9007,8 @@ sh_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
 	  emit_insn (gen_mextr4 (quad1, cxtload, ptabs));
 	  emit_insn (gen_mshflo_l_di (quad2, blink, cxtload));
 	}
-      emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, 8)), quad1);
-      emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, 16)), quad2);
+      emit_move_insn (adjust_address (tramp_mem, DImode, 8), quad1);
+      emit_move_insn (adjust_address (tramp_mem, DImode, 16), quad2);
       emit_insn (gen_ic_invalidate_line (tramp));
       return;
     }
@@ -9026,16 +9017,14 @@ sh_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
       emit_insn (gen_initialize_trampoline (tramp, cxt, fnaddr));
       return;
     }
-  emit_move_insn (gen_rtx_MEM (SImode, tramp),
+  emit_move_insn (change_address (tramp_mem, SImode, NULL_RTX),
 		  gen_int_mode (TARGET_LITTLE_ENDIAN ? 0xd301d202 : 0xd202d301,
 				SImode));
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 4)),
+  emit_move_insn (adjust_address (tramp_mem, SImode, 4),
 		  gen_int_mode (TARGET_LITTLE_ENDIAN ? 0x0009422b : 0x422b0009,
 				SImode));
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 8)),
-		  cxt);
-  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 12)),
-		  fnaddr);
+  emit_move_insn (adjust_address (tramp_mem, SImode, 8), cxt);
+  emit_move_insn (adjust_address (tramp_mem, SImode, 12), fnaddr);
   if (TARGET_HARVARD)
     {
       if (TARGET_USERMODE)
@@ -9557,7 +9546,7 @@ static rtx emit_load_ptr (rtx, rtx);
 static rtx
 emit_load_ptr (rtx reg, rtx addr)
 {
-  rtx mem = gen_rtx_MEM (ptr_mode, addr);
+  rtx mem = gen_const_mem (ptr_mode, addr);
 
   if (Pmode != ptr_mode)
     mem = gen_rtx_SIGN_EXTEND (Pmode, mem);
@@ -9864,7 +9853,7 @@ sh_get_pr_initial_val (void)
       && ((current_function_args_info.call_cookie
 	   & ~ CALL_COOKIE_RET_TRAMP (1))
 	  || current_function_has_nonlocal_label))
-    return gen_rtx_MEM (SImode, return_address_pointer_rtx);
+    return gen_frame_mem (SImode, return_address_pointer_rtx);
 
   /* If we haven't finished rtl generation, there might be a nonlocal label
      that we haven't seen yet.

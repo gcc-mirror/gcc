@@ -1,3 +1,21 @@
+2005-09-05  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR target/23683
+	* sh.c (sh_reorg, emit_load_ptr): Use gen_const_mem.
+	(output_stack_adjust): Use gen_tmp_stack_mem.
+	(sh_expand_prologue, sh_expand_epilogue): Use gen_frame_mem.
+	(sh_set_return_address, sh_allocate_initial_value): Likewise.
+	(sh_get_pr_initial_val): Likewise.
+	(sh_builtin_saveregs): Use gen_frame_mem and change_address.
+	(sh_initialize_trampoline): Likewise.  Also use adjust_address.
+	* sh.md (divsi_inv_m0): Use gen_const_mem.
+	(push_fpscr, pop_fpscr, load_ra): Use gen_frame_mem.
+	(movdf_i4+1): Use gen_tmp_stack_mem.
+	(reload_outdf+3, reload_outdf+4, fpu_switch+1): Use change_address.
+	(fpu_switch+2): Likewise.
+	(movv4sf_i, movv16sf_i): Use adjust_address.
+	(symGOT_load): Set MEM_NOTRAP_P bit.
+
 2005-09-04  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/23721
