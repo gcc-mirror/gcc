@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 2000-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -148,16 +148,25 @@ package GNAT.Sockets.Constants is
    --------------------
 
    TCP_NODELAY        : constant :=           1; --  Do not coalesce packets
-   SO_SNDBUF          : constant :=        4097; --  Set/get send buffer size
-   SO_RCVBUF          : constant :=        4098; --  Set/get recv buffer size
    SO_REUSEADDR       : constant :=           4; --  Bind reuse local address
    SO_KEEPALIVE       : constant :=           8; --  Enable keep-alive msgs
    SO_LINGER          : constant :=         128; --  Defer close to flush data
-   SO_ERROR           : constant :=        4103; --  Get/clear error status
    SO_BROADCAST       : constant :=          32; --  Can send broadcast msgs
-   IP_ADD_MEMBERSHIP  : constant :=          12; --  Join a multicast group
-   IP_DROP_MEMBERSHIP : constant :=          13; --  Leave a multicast group
+   SO_SNDBUF          : constant :=        4097; --  Set/get send buffer size
+   SO_RCVBUF          : constant :=        4098; --  Set/get recv buffer size
+   SO_SNDTIMEO        : constant :=        4101; --  Emission timeout
+   SO_RCVTIMEO        : constant :=        4102; --  Reception timeout
+   SO_ERROR           : constant :=        4103; --  Get/clear error status
+   IP_MULTICAST_IF    : constant :=           9; --  Set/get mcast interface
    IP_MULTICAST_TTL   : constant :=          10; --  Set/get multicast TTL
    IP_MULTICAST_LOOP  : constant :=          11; --  Set/get mcast loopback
+   IP_ADD_MEMBERSHIP  : constant :=          12; --  Join a multicast group
+   IP_DROP_MEMBERSHIP : constant :=          13; --  Leave a multicast group
+
+   -------------------
+   -- System limits --
+   -------------------
+
+   IOV_MAX            : constant :=  2147483647; --  Maximum writev iovcnt
 
 end GNAT.Sockets.Constants;

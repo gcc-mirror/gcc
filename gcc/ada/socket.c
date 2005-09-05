@@ -33,7 +33,11 @@
 /*  This file provides a portable binding to the sockets API                */
 
 #include "gsocket.h"
+/* Include all the necessary system-specific headers and define the
+   necessary macros (shared with gen-soccon). */
+
 #include "raise.h"
+/* Required for __gnat_malloc() */
 
 extern void __gnat_disable_sigpipe (int fd);
 extern void __gnat_free_socket_set (fd_set *);
