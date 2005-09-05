@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -109,5 +109,33 @@ package Itypes is
    --
    --  The Scope_Id parameter specifies the scope of the created type, and
    --  is normally the Current_Scope as shown, but can be set otherwise.
+
+   ---------------------------------
+   -- Create_Null_Excluding_Itype --
+   ---------------------------------
+
+   function Create_Null_Excluding_Itype
+      (T           : Entity_Id;
+       Related_Nod : Node_Id;
+       Scope_Id    : Entity_Id := Current_Scope) return Entity_Id;
+   --  Ada 2005 (AI-231): T is an access type and this subprogram creates and
+   --  returns an internal access-subtype declaration of T that has the null
+   --  exclusion attribute set to True.
+   --
+   --  Usage of null-excluding itypes
+   --  ------------------------------
+   --
+   --      type T1 is access ...
+   --      type T2 is not null T1;
+   --
+   --      type Rec is record
+   --         Comp : not null T1;
+   --      end record;
+   --
+   --      type Arr is array (...) of not null T1;
+   --
+   --  Instead of associating the not-null attribute with the defining ids of
+   --  these declarations, we generate an internal subtype declaration of T1
+   --  that has the null exclusion attribute set to true.
 
 end Itypes;

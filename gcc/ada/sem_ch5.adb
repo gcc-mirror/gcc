@@ -375,9 +375,7 @@ package body Sem_Ch5 is
 
       T2 := Etype (Rhs);
 
-      if Covers (T1, T2) then
-         null;
-      else
+      if not Covers (T1, T2) then
          Wrong_Type (Rhs, Etype (Lhs));
          return;
       end if;
@@ -448,17 +446,21 @@ package body Sem_Ch5 is
       --  Ada 2005 (AI-231)
 
       if Ada_Version >= Ada_05
-        and then Nkind (Rhs) = N_Null
-        and then Is_Access_Type (T1)
+        and then Can_Never_Be_Null (T1)
         and then not Assignment_OK (Lhs)
-        and then ((Is_Entity_Name (Lhs)
-                     and then Can_Never_Be_Null (Entity (Lhs)))
-                   or else Can_Never_Be_Null (Etype (Lhs)))
       then
-         Apply_Compile_Time_Constraint_Error
-           (N      => Lhs,
-            Msg    => "(Ada 2005) NULL not allowed in null-excluding objects?",
-            Reason => CE_Null_Not_Allowed);
+         if Nkind (Rhs) = N_Null then
+            Apply_Compile_Time_Constraint_Error
+              (N   => Rhs,
+               Msg => "(Ada 2005) NULL not allowed in null-excluding objects?",
+               Reason => CE_Null_Not_Allowed);
+            return;
+
+         elsif not Can_Never_Be_Null (T2) then
+            Rewrite (Rhs,
+              Convert_To (T1, Relocate_Node (Rhs)));
+            Analyze_And_Resolve (Rhs, T1);
+         end if;
       end if;
 
       if Is_Scalar_Type (T1) then
@@ -550,7 +552,7 @@ package body Sem_Ch5 is
 
       Ent := Entity (Lhs);
 
-      --  Capture value if save to do so
+      --  Capture value if safe to do so
 
       if Safe_To_Capture_Value (N, Ent) then
          Set_Current_Value (Ent, Rhs);
@@ -1274,7 +1276,7 @@ package body Sem_Ch5 is
       --  Start of processing for Process_Bounds
 
       begin
-         --  Determine expected type of range by analyzing separate copy.
+         --  Determine expected type of range by analyzing separate copy
 
          Set_Parent (R_Copy, Parent (R));
          Pre_Analyze_And_Resolve (R_Copy);

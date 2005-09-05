@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,10 +25,8 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
-with Einfo;    use Einfo;
 with Opt;      use Opt;
 with Sem;      use Sem;
-with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
 
@@ -73,5 +71,41 @@ package body Itypes is
 
       return Typ;
    end Create_Itype;
+
+   ---------------------------------
+   -- Create_Null_Excluding_Itype --
+   ---------------------------------
+
+   function Create_Null_Excluding_Itype
+      (T           : Entity_Id;
+       Related_Nod : Node_Id;
+       Scope_Id    : Entity_Id := Current_Scope) return Entity_Id
+   is
+      I_Typ        : Entity_Id;
+
+   begin
+      pragma Assert (Is_Access_Type (T));
+
+      I_Typ := Create_Itype (Ekind       => E_Access_Subtype,
+                             Related_Nod => Related_Nod,
+                             Scope_Id    => Scope_Id);
+
+      Set_Directly_Designated_Type (I_Typ,
+         Directly_Designated_Type (T));
+      Set_Etype              (I_Typ, T);
+      Init_Size_Align        (I_Typ);
+      Set_Depends_On_Private (I_Typ, Depends_On_Private (T));
+      Set_Is_Public          (I_Typ, Is_Public (T));
+      Set_From_With_Type     (I_Typ, From_With_Type (T));
+      Set_Is_Access_Constant (I_Typ, Is_Access_Constant (T));
+      Set_Is_Generic_Type    (I_Typ, Is_Generic_Type (T));
+      Set_Is_Volatile        (I_Typ, Is_Volatile (T));
+      Set_Treat_As_Volatile  (I_Typ, Treat_As_Volatile (T));
+      Set_Is_Atomic          (I_Typ, Is_Atomic (T));
+      Set_Is_Ada_2005        (I_Typ, Is_Ada_2005 (T));
+      Set_Can_Never_Be_Null  (I_Typ);
+
+      return I_Typ;
+   end Create_Null_Excluding_Itype;
 
 end Itypes;
