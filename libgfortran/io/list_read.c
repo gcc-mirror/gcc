@@ -71,7 +71,7 @@ static int nml_read_error;
 /* Storage area for values except for strings.  Must be large enough
    to hold a complex value (two reals) of the largest kind.  */
 
-static char value[20];
+static char value[32];
 
 #define CASE_DIGITS   case '0': case '1': case '2': case '3': case '4': \
                       case '5': case '6': case '7': case '8': case '9'
