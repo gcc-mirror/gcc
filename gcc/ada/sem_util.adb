@@ -2206,16 +2206,21 @@ package body Sem_Util is
 
       while Present (Comp_Item) loop
 
-         --  Skip the tag of a tagged record, as well as all items
-         --  that are not user components (anonymous types, rep clauses,
-         --  Parent field, controller field).
+         --  Skip the tag of a tagged record, the interface tags, as well
+         --  as all items that are not user components (anonymous types,
+         --  rep clauses, Parent field, controller field).
 
-         if Nkind (Comp_Item) = N_Component_Declaration
-           and then Chars (Defining_Identifier (Comp_Item)) /= Name_uTag
-           and then Chars (Defining_Identifier (Comp_Item)) /= Name_uParent
-           and then Chars (Defining_Identifier (Comp_Item)) /= Name_uController
-         then
-            Append_Elmt (Defining_Identifier (Comp_Item), Into);
+         if Nkind (Comp_Item) = N_Component_Declaration then
+            declare
+               Comp : constant Entity_Id := Defining_Identifier (Comp_Item);
+            begin
+               if not Is_Tag (Comp)
+                 and then Chars (Comp) /= Name_uParent
+                 and then Chars (Comp) /= Name_uController
+               then
+                  Append_Elmt (Comp, Into);
+               end if;
+            end;
          end if;
 
          Next (Comp_Item);
@@ -3438,6 +3443,41 @@ package body Sem_Util is
       end if;
    end Is_Atomic_Object;
 
+   --------------------------------------
+   -- Is_Controlling_Limited_Procedure --
+   --------------------------------------
+
+   function Is_Controlling_Limited_Procedure
+     (Proc_Nam : Entity_Id) return Boolean
+   is
+      Param_Typ : Entity_Id;
+
+   begin
+      --  Proc_Nam was found to be a primitive operation of a limited interface
+
+      if Ekind (Proc_Nam) = E_Procedure then
+         Param_Typ := Etype (Parameter_Type (First (Parameter_Specifications (
+           Parent (Proc_Nam)))));
+         return
+           Is_Interface (Param_Typ)
+             and then Is_Limited_Record (Param_Typ);
+
+      --  In this case where an Itype was created, the procedure call has been
+      --  rewritten.
+
+      elsif Present (Associated_Node_For_Itype (Proc_Nam))
+        and then Present (Original_Node (Associated_Node_For_Itype (Proc_Nam)))
+      then
+         Param_Typ := Etype (First (Parameter_Associations (
+           Associated_Node_For_Itype (Proc_Nam))));
+         return
+           Is_Interface (Param_Typ)
+             and then Is_Limited_Record (Param_Typ);
+      end if;
+
+      return False;
+   end Is_Controlling_Limited_Procedure;
+
    ----------------------------------------------
    -- Is_Dependent_Component_Of_Mutable_Object --
    ----------------------------------------------
@@ -4078,10 +4118,11 @@ package body Sem_Util is
                  Is_Object_Reference (Prefix (N))
                    or else Is_Access_Type (Etype (Prefix (N)));
 
-            --  In Ada95, a function call is a constant object
+            --  In Ada95, a function call is a constant object; a procedure
+            --  call is not.
 
             when N_Function_Call =>
-               return True;
+               return Etype (N) /= Standard_Void_Type;
 
             --  A reference to the stream attribute Input is a function call
 
@@ -4537,6 +4578,58 @@ package body Sem_Util is
 
       return False;
    end Is_Remote_Call;
+
+   ----------------------
+   -- Is_Renamed_Entry --
+   ----------------------
+
+   function Is_Renamed_Entry (Proc_Nam : Entity_Id) return Boolean is
+      Orig_Node : Node_Id := Empty;
+      Subp_Decl : Node_Id := Parent (Parent (Proc_Nam));
+
+      function Is_Entry (Nam : Node_Id) return Boolean;
+      --  Determine whether Nam is an entry. Traverse selectors
+      --  if there are nested selected components.
+
+      --------------
+      -- Is_Entry --
+      --------------
+
+      function Is_Entry (Nam : Node_Id) return Boolean is
+      begin
+         if Nkind (Nam) = N_Selected_Component then
+            return Is_Entry (Selector_Name (Nam));
+         end if;
+
+         return Ekind (Entity (Nam)) = E_Entry;
+      end Is_Entry;
+
+   --  Start of processing for Is_Renamed_Entry
+
+   begin
+      if Present (Alias (Proc_Nam)) then
+         Subp_Decl := Parent (Parent (Alias (Proc_Nam)));
+      end if;
+
+      --  Look for a rewritten subprogram renaming declaration
+
+      if Nkind (Subp_Decl) = N_Subprogram_Declaration
+        and then Present (Original_Node (Subp_Decl))
+      then
+         Orig_Node := Original_Node (Subp_Decl);
+      end if;
+
+      --  The rewritten subprogram is actually an entry
+
+      if Present (Orig_Node)
+        and then Nkind (Orig_Node) = N_Subprogram_Renaming_Declaration
+        and then Is_Entry (Name (Orig_Node))
+      then
+         return True;
+      end if;
+
+      return False;
+   end Is_Renamed_Entry;
 
    ----------------------
    -- Is_Selector_Name --
@@ -6096,8 +6189,14 @@ package body Sem_Util is
 
       --  Skip volatile and aliased variables, since funny things might
       --  be going on in these cases which we cannot necessarily track.
+      --  Also skip any variable for which an address clause is given.
 
-      if Treat_As_Volatile (Ent) or else Is_Aliased (Ent) then
+      --  Should we have a flag Has_Address_Clause ???
+
+      if Treat_As_Volatile (Ent)
+        or else Is_Aliased (Ent)
+        or else Present (Address_Clause (Ent))
+      then
          return False;
       end if;
 
@@ -6130,28 +6229,27 @@ package body Sem_Util is
       --  or an exception handler).
 
       declare
-         P : Node_Id;
+         Desc : Node_Id;
+         P    : Node_Id;
 
       begin
-         P := Parent (N);
+         Desc := N;
+         P    := Parent (N);
          while Present (P) loop
             if Nkind (P) = N_If_Statement
-                 or else
-               Nkind (P) = N_Case_Statement
-                 or else
-               Nkind (P) = N_Exception_Handler
-                 or else
-               Nkind (P) = N_Selective_Accept
-                 or else
-               Nkind (P) = N_Conditional_Entry_Call
-                 or else
-               Nkind (P) = N_Timed_Entry_Call
-                 or else
-               Nkind (P) = N_Asynchronous_Select
+              or else  Nkind (P) = N_Case_Statement
+              or else (Nkind (P) = N_And_Then and then Desc = Right_Opnd (P))
+              or else (Nkind (P) = N_Or_Else and then Desc = Right_Opnd (P))
+              or else  Nkind (P) = N_Exception_Handler
+              or else  Nkind (P) = N_Selective_Accept
+              or else  Nkind (P) = N_Conditional_Entry_Call
+              or else  Nkind (P) = N_Timed_Entry_Call
+              or else  Nkind (P) = N_Asynchronous_Select
             then
                return False;
             else
-               P := Parent (P);
+               Desc := P;
+               P    := Parent (P);
             end if;
          end loop;
       end;
@@ -6298,12 +6396,11 @@ package body Sem_Util is
             return;
          end if;
 
-         Val_Actual := Val;
-
          --  A special situation arises for derived operations, where we want
          --  to do the check against the parent (since the Sloc of the derived
          --  operation points to the derived type declaration itself).
 
+         Val_Actual := Val;
          while not Comes_From_Source (Val_Actual)
            and then Nkind (Val_Actual) in N_Entity
            and then (Ekind (Val_Actual) = E_Enumeration_Literal
@@ -6489,7 +6586,7 @@ package body Sem_Util is
    -----------------------
 
    procedure Transfer_Entities (From : Entity_Id; To : Entity_Id) is
-      Ent      : Entity_Id := First_Entity (From);
+      Ent : Entity_Id := First_Entity (From);
 
    begin
       if No (Ent) then
@@ -6522,7 +6619,6 @@ package body Sem_Util is
 
                begin
                   Comp := First_Entity (Ent);
-
                   while Present (Comp) loop
                      Set_Is_Public (Comp);
                      Next_Entity (Comp);
@@ -6635,9 +6731,7 @@ package body Sem_Util is
 
       else
          Get_First_Interp (Opnd, Index, It);
-
          while Present (It.Typ) loop
-
             if It.Typ = Universal_Integer
               or else It.Typ = Universal_Real
             then
