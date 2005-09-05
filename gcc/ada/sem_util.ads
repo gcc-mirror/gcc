@@ -456,6 +456,11 @@ package Sem_Util is
    --  Determines if the given node denotes an atomic object in the sense
    --  of the legality checks described in RM C.6(12).
 
+   function Is_Controlling_Limited_Procedure
+     (Proc_Nam : Entity_Id) return Boolean;
+   --  Ada 2005 (AI-345): Determine whether Proc_Nam is a primitive procedure
+   --  of a limited interface with a controlling first parameter.
+
    function Is_Dependent_Component_Of_Mutable_Object
      (Object : Node_Id) return Boolean;
    --  Returns True if Object is the name of a subcomponent that
@@ -559,6 +564,9 @@ package Sem_Util is
 
    function Is_Remote_Call (N : Node_Id) return Boolean;
    --  Return True if N denotes a potentially remote call
+
+   function Is_Renamed_Entry (Proc_Nam : Entity_Id) return Boolean;
+   --  Return True if Proc_Nam is a procedure renaming of an entry
 
    function Is_Selector_Name (N : Node_Id) return Boolean;
    --  Given an N_Identifier node N, determines if it is a Selector_Name.
@@ -735,8 +743,7 @@ package Sem_Util is
 
    function Safe_To_Capture_Value
      (N    : Node_Id;
-      Ent  : Entity_Id)
-      return Boolean;
+      Ent  : Entity_Id) return Boolean;
    --  The caller is interested in capturing a value (either the current
    --  value, or an indication that the value is non-null) for the given
    --  entity Ent. This value can only be captured if sequential execution
