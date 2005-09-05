@@ -69,6 +69,9 @@ package body GNAT.Expect is
    procedure Free is new Unchecked_Deallocation
      (Pattern_Matcher, Pattern_Matcher_Access);
 
+   procedure Free is new Unchecked_Deallocation
+     (Filter_List_Elem, Filter_List);
+
    procedure Call_Filters
      (Pid       : Process_Descriptor'Class;
       Str       : String;
@@ -204,6 +207,9 @@ package body GNAT.Expect is
      (Descriptor : in out Process_Descriptor;
       Status     : out Integer)
    is
+      Current_Filter : Filter_List;
+      Next_Filter    : Filter_List;
+
    begin
       Close (Descriptor.Input_Fd);
 
@@ -214,11 +220,21 @@ package body GNAT.Expect is
       Close (Descriptor.Output_Fd);
 
       --  ??? Should have timeouts for different signals
+
       Kill (Descriptor.Pid, 9);
 
       GNAT.OS_Lib.Free (Descriptor.Buffer);
       Descriptor.Buffer_Size := 0;
 
+      Current_Filter := Descriptor.Filters;
+
+      while Current_Filter /= null loop
+         Next_Filter := Current_Filter.Next;
+         Free (Current_Filter);
+         Current_Filter := Next_Filter;
+      end loop;
+
+      Descriptor.Filters := null;
       Status := Waitpid (Descriptor.Pid);
    end Close;
 
@@ -1001,6 +1017,10 @@ package body GNAT.Expect is
       if Buffer_Size /= 0 then
          Descriptor.Buffer := new String (1 .. Positive (Buffer_Size));
       end if;
+
+      --  Initialize the filters
+
+      Descriptor.Filters := null;
    end Non_Blocking_Spawn;
 
    -------------------------
