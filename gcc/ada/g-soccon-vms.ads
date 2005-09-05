@@ -35,7 +35,7 @@
 --  by the GNAT.Sockets package (g-socket.ads). This package should not be
 --  directly with'ed by an applications program.
 
---  This is the version for sparc-sun-solaris2.8
+--  This is the version for OpenVMS
 --  This file is generated automatically, do not modify it by hand! Instead,
 --  make changes to gen-soccon.c and re-run it on each target.
 
@@ -52,51 +52,51 @@ package GNAT.Sockets.Constants is
    -- Modes --
    -----------
 
-   SOCK_STREAM        : constant :=           2; --  Stream socket
-   SOCK_DGRAM         : constant :=           1; --  Datagram socket
+   SOCK_STREAM        : constant :=           1; --  Stream socket
+   SOCK_DGRAM         : constant :=           2; --  Datagram socket
 
    -------------------
    -- Socket errors --
    -------------------
 
    EACCES             : constant :=          13; --  Permission denied
-   EADDRINUSE         : constant :=         125; --  Address already in use
-   EADDRNOTAVAIL      : constant :=         126; --  Cannot assign address
-   EAFNOSUPPORT       : constant :=         124; --  Addr family not supported
-   EALREADY           : constant :=         149; --  Operation in progress
+   EADDRINUSE         : constant :=          48; --  Address already in use
+   EADDRNOTAVAIL      : constant :=          49; --  Cannot assign address
+   EAFNOSUPPORT       : constant :=          47; --  Addr family not supported
+   EALREADY           : constant :=          37; --  Operation in progress
    EBADF              : constant :=           9; --  Bad file descriptor
-   ECONNABORTED       : constant :=         130; --  Connection aborted
-   ECONNREFUSED       : constant :=         146; --  Connection refused
-   ECONNRESET         : constant :=         131; --  Connection reset by peer
-   EDESTADDRREQ       : constant :=          96; --  Destination addr required
+   ECONNABORTED       : constant :=          53; --  Connection aborted
+   ECONNREFUSED       : constant :=          61; --  Connection refused
+   ECONNRESET         : constant :=          54; --  Connection reset by peer
+   EDESTADDRREQ       : constant :=          39; --  Destination addr required
    EFAULT             : constant :=          14; --  Bad address
-   EHOSTDOWN          : constant :=         147; --  Host is down
-   EHOSTUNREACH       : constant :=         148; --  No route to host
-   EINPROGRESS        : constant :=         150; --  Operation now in progress
+   EHOSTDOWN          : constant :=          64; --  Host is down
+   EHOSTUNREACH       : constant :=          65; --  No route to host
+   EINPROGRESS        : constant :=          36; --  Operation now in progress
    EINTR              : constant :=           4; --  Interrupted system call
    EINVAL             : constant :=          22; --  Invalid argument
    EIO                : constant :=           5; --  Input output error
-   EISCONN            : constant :=         133; --  Socket already connected
-   ELOOP              : constant :=          90; --  Too many symbolic lynks
+   EISCONN            : constant :=          56; --  Socket already connected
+   ELOOP              : constant :=          62; --  Too many symbolic lynks
    EMFILE             : constant :=          24; --  Too many open files
-   EMSGSIZE           : constant :=          97; --  Message too long
-   ENAMETOOLONG       : constant :=          78; --  Name too long
-   ENETDOWN           : constant :=         127; --  Network is down
-   ENETRESET          : constant :=         129; --  Disconn. on network reset
-   ENETUNREACH        : constant :=         128; --  Network is unreachable
-   ENOBUFS            : constant :=         132; --  No buffer space available
-   ENOPROTOOPT        : constant :=          99; --  Protocol not available
-   ENOTCONN           : constant :=         134; --  Socket not connected
-   ENOTSOCK           : constant :=          95; --  Operation on non socket
-   EOPNOTSUPP         : constant :=         122; --  Operation not supported
-   EPFNOSUPPORT       : constant :=         123; --  Unknown protocol family
-   EPROTONOSUPPORT    : constant :=         120; --  Unknown protocol
-   EPROTOTYPE         : constant :=          98; --  Unknown protocol type
-   ESHUTDOWN          : constant :=         143; --  Cannot send once shutdown
-   ESOCKTNOSUPPORT    : constant :=         121; --  Socket type not supported
-   ETIMEDOUT          : constant :=         145; --  Connection timed out
-   ETOOMANYREFS       : constant :=         144; --  Too many references
-   EWOULDBLOCK        : constant :=          11; --  Operation would block
+   EMSGSIZE           : constant :=          40; --  Message too long
+   ENAMETOOLONG       : constant :=          63; --  Name too long
+   ENETDOWN           : constant :=          50; --  Network is down
+   ENETRESET          : constant :=          52; --  Disconn. on network reset
+   ENETUNREACH        : constant :=          51; --  Network is unreachable
+   ENOBUFS            : constant :=          55; --  No buffer space available
+   ENOPROTOOPT        : constant :=          42; --  Protocol not available
+   ENOTCONN           : constant :=          57; --  Socket not connected
+   ENOTSOCK           : constant :=          38; --  Operation on non socket
+   EOPNOTSUPP         : constant :=          45; --  Operation not supported
+   EPFNOSUPPORT       : constant :=          46; --  Unknown protocol family
+   EPROTONOSUPPORT    : constant :=          43; --  Unknown protocol
+   EPROTOTYPE         : constant :=          41; --  Unknown protocol type
+   ESHUTDOWN          : constant :=          58; --  Cannot send once shutdown
+   ESOCKTNOSUPPORT    : constant :=          44; --  Socket type not supported
+   ETIMEDOUT          : constant :=          60; --  Connection timed out
+   ETOOMANYREFS       : constant :=          59; --  Too many references
+   EWOULDBLOCK        : constant :=          35; --  Operation would block
 
    -----------------
    -- Host errors --
@@ -157,16 +157,16 @@ package GNAT.Sockets.Constants is
    SO_SNDTIMEO        : constant :=        4101; --  Emission timeout
    SO_RCVTIMEO        : constant :=        4102; --  Reception timeout
    SO_ERROR           : constant :=        4103; --  Get/clear error status
-   IP_MULTICAST_IF    : constant :=          16; --  Set/get mcast interface
-   IP_MULTICAST_TTL   : constant :=          17; --  Set/get multicast TTL
-   IP_MULTICAST_LOOP  : constant :=          18; --  Set/get mcast loopback
-   IP_ADD_MEMBERSHIP  : constant :=          19; --  Join a multicast group
-   IP_DROP_MEMBERSHIP : constant :=          20; --  Leave a multicast group
+   IP_MULTICAST_IF    : constant :=           9; --  Set/get mcast interface
+   IP_MULTICAST_TTL   : constant :=          10; --  Set/get multicast TTL
+   IP_MULTICAST_LOOP  : constant :=          11; --  Set/get mcast loopback
+   IP_ADD_MEMBERSHIP  : constant :=          12; --  Join a multicast group
+   IP_DROP_MEMBERSHIP : constant :=          13; --  Leave a multicast group
 
    -------------------
    -- System limits --
    -------------------
 
-   IOV_MAX            : constant :=          16; --  Maximum writev iovcnt
+   IOV_MAX            : constant :=        1024; --  Maximum writev iovcnt
 
 end GNAT.Sockets.Constants;

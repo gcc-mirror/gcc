@@ -24,19 +24,21 @@
 
 /* This program generates g-soccon.ads */
 
+/* To build using DEC C:
+  CC/DEFINE="TARGET=OpenVMS" gen-soccon
+  LINK gen-soccon
+  RUN gen-soccon
+*/
+
+#ifndef TARGET
+# error Please define TARGET
+#endif
+
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "gsocket.h"
-
-#ifdef __MINGW32__
-#include <winsock2.h>
-#else
-#include <netinet/in.h>
-#include <netinet/tcp.h>
-#include <sys/ioctl.h>
-#include <netdb.h>
-#endif
 
 struct line {
   char *text;
@@ -64,6 +66,9 @@ struct line *first = NULL, *last = NULL;
 
 #define CN_(name,comment) add_line(#name, name, comment);
 /* Constant (generic) */
+
+#define STR(p) STR1(p)
+#define STR1(p) #p
 
 void output (void);
 /* Generate output spec */
@@ -113,7 +118,7 @@ TXT("--  This package provides target dependent definitions of constant for use"
 TXT("--  by the GNAT.Sockets package (g-socket.ads). This package should not be")
 TXT("--  directly with'ed by an applications program.")
 _NL
-TXT("--  This is the version for " TARGET)
+TXT("--  This is the version for " STR (TARGET))
 TXT("--  This file is generated automatically, do not modify it by hand! Instead,")
 TXT("--  make changes to gen-soccon.c and re-run it on each target.")
 _NL
@@ -377,12 +382,12 @@ _NL
 #ifndef FIONBIO
 #define FIONBIO -1
 #endif
-CNX(FIONBIO, "Set/clear non-blocking io")
+CND(FIONBIO, "Set/clear non-blocking io")
 
 #ifndef FIONREAD
 #define FIONREAD -1
 #endif
-CNX(FIONREAD, "How many bytes to read")
+CND(FIONREAD, "How many bytes to read")
 _NL
 TXT("   --------------------")
 TXT("   -- Shutdown modes --")
@@ -549,6 +554,17 @@ CND(IP_ADD_MEMBERSHIP, "Join a multicast group")
 CND(IP_DROP_MEMBERSHIP, "Leave a multicast group")
 
 _NL
+TXT("   -------------------")
+TXT("   -- System limits --")
+TXT("   -------------------")
+_NL
+
+#ifndef IOV_MAX
+#define IOV_MAX INT_MAX
+#endif
+CND(IOV_MAX, "Maximum writev iovcnt")
+
+_NL
 TXT("end GNAT.Sockets.Constants;")
 
   output ();
@@ -587,9 +603,12 @@ output (void) {
 
 char *
 f_itoa (char *fmt, int n) {
-  char buf[32];
+  char buf[32], *ret;
   sprintf (buf, fmt, n);
-  return strdup (buf);
+  ret = malloc (strlen (buf) + 1);
+  if (ret != NULL)
+    strcpy (ret, buf);
+  return ret;
 }
 
 void

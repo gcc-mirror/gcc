@@ -2,7 +2,7 @@
  *                                                                          *
  *                         GNAT COMPILER COMPONENTS                         *
  *                                                                          *
- *                               S O C K E T                                *
+ *                              G S O C K E T                               *
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
@@ -30,38 +30,115 @@
  *                                                                          *
  ****************************************************************************/
 
-#ifdef __vxworks
-#include "vxWorks.h"
+#ifndef _XOPEN_SOURCE_EXTENDED
+#define _XOPEN_SOURCE_EXTENDED 1
+/* For HP-UX */
 #endif
 
-#ifdef IN_RTS
-#include "tconfig.h"
-#include "tsystem.h"
+#ifndef BSD_COMP
+#define BSD_COMP 1
+/* For Solaris */
+#endif
 
-#if defined (WINNT)
+#ifndef _ALL_SOURCE
+#define _ALL_SOURCE 1
+/* For AIX */
+#endif
+
+#ifndef _OSF_SOURCE
+#define _OSF_SOURCE 1
+/* For Tru64 */
+#endif
+
+#include <limits.h>
+
+#if defined(__vxworks)
+#include <vxWorks.h>
+#include <ioLib.h>
+#define SHUT_RD		0
+#define SHUT_WR		1
+#define SHUT_RDWR	2
+
+#elif defined (WINNT)
 #define FD_SETSIZE 1024
 #include <windows.h>
 
 #ifdef __MINGW32__
-#include "mingw32.h"
-#if STD_MINGW
-#include <winsock.h>
-#else
-#include <windows32/sockets.h>
-#endif
-#endif
+#include <winsock2.h>
+#include <ws2tcpip.h>
+
+#define EACCES		WSAEACCES
+#define EADDRINUSE	WSAEADDRINUSE
+#define EADDRNOTAVAIL	WSAEADDRNOTAVAIL
+#define EAFNOSUPPORT	WSAEAFNOSUPPORT
+#define EALREADY	WSAEALREADY
+#define EBADF		WSAEBADF
+#define ECONNABORTED	WSAECONNABORTED
+#define ECONNREFUSED	WSAECONNREFUSED
+#define ECONNRESET	WSAECONNRESET
+#define EDESTADDRREQ	WSAEDESTADDRREQ
+#define EFAULT		WSAEFAULT
+#define EHOSTDOWN	WSAEHOSTDOWN
+#define EHOSTUNREACH	WSAEHOSTUNREACH
+#define EINPROGRESS	WSAEINPROGRESS
+#define EINTR		WSAEINTR
+#define EINVAL		WSAEINVAL
+#define EIO		WSAEDISCON
+#define EISCONN		WSAEISCONN
+#define ELOOP		WSAELOOP
+#define EMFILE		WSAEMFILE
+#define EMSGSIZE	WSAEMSGSIZE
+#define ENAMETOOLONG	WSAENAMETOOLONG
+#define ENETDOWN	WSAENETDOWN
+#define ENETRESET	WSAENETRESET
+#define ENETUNREACH	WSAENETUNREACH
+#define ENOBUFS		WSAENOBUFS
+#define ENOPROTOOPT	WSAENOPROTOOPT
+#define ENOTCONN	WSAENOTCONN
+#define ENOTSOCK	WSAENOTSOCK
+#define EOPNOTSUPP	WSAEOPNOTSUPP
+#define EPFNOSUPPORT	WSAEPFNOSUPPORT
+#define EPROTONOSUPPORT	WSAEPROTONOSUPPORT
+#define ENOTSOCK	WSAENOTSOCK
+#define EOPNOTSUPP	WSAEOPNOTSUPP
+#define EPFNOSUPPORT	WSAEPFNOSUPPORT
+#define EPROTONOSUPPORT	WSAEPROTONOSUPPORT
+#define EPROTOTYPE	WSAEPROTOTYPE
+#define ESHUTDOWN	WSAESHUTDOWN
+#define ESOCKTNOSUPPORT	WSAESOCKTNOSUPPORT
+#define ETIMEDOUT	WSAETIMEDOUT
+#define ETOOMANYREFS	WSAETOOMANYREFS
+#define EWOULDBLOCK	WSAEWOULDBLOCK
+#define SHUT_RD		SD_RECEIVE
+#define SHUT_WR		SD_SEND
+#define SHUT_RDWR	SD_BOTH
+
 #endif
 
-#if defined (VMS)
+#elif defined(VMS)
 #define FD_SETSIZE 4096
+#ifndef IN_RTS
+/* These DEC C headers are not available when building with GCC */
+#include <in.h>
+#include <tcp.h>
+#include <ioctl.h>
+#include <netdb.h>
+#endif
+
+#endif
+
+#ifndef __MINGW32__
+#include <errno.h>
+#endif
+
+#ifndef __vxworks
 #include <sys/time.h>
 #endif
 
-#else
-#include "config.h"
-#include "system.h"
-#endif
-
 #if !(defined (VMS) || defined (__MINGW32__) || defined(__rtems__))
-# include <sys/socket.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <sys/ioctl.h>
+#include <netdb.h>
 #endif

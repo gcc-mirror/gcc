@@ -149,7 +149,9 @@ package body GNAT.Sockets is
    --  Return true when Name is an IP address in standard dot notation
 
    function To_In_Addr (Addr : Inet_Addr_Type) return Thin.In_Addr;
-   function To_Inet_Addr (Addr : In_Addr) return Inet_Addr_Type;
+   procedure To_Inet_Addr
+     (Addr   : In_Addr;
+      Result : out Inet_Addr_Type);
    --  Conversion functions
 
    function To_Host_Entry (E : Hostent) return Host_Entry_Type;
@@ -258,7 +260,7 @@ package body GNAT.Sockets is
 
       Socket := Socket_Type (Res);
 
-      Address.Addr := To_Inet_Addr (Sin.Sin_Addr);
+      To_Inet_Addr (Sin.Sin_Addr, Address.Addr);
       Address.Port := Port_Type (Network_To_Short (Sin.Sin_Port));
    end Accept_Socket;
 
@@ -911,7 +913,7 @@ package body GNAT.Sockets is
          Raise_Socket_Error (Socket_Errno);
       end if;
 
-      Res.Addr := To_Inet_Addr (Sin.Sin_Addr);
+      To_Inet_Addr (Sin.Sin_Addr, Res.Addr);
       Res.Port := Port_Type (Network_To_Short (Sin.Sin_Port));
 
       return Res;
@@ -1004,7 +1006,7 @@ package body GNAT.Sockets is
    begin
       Res := C_Getsockname (C.int (Socket), Sin'Address, Len'Access);
       if Res /= Failure then
-         Addr.Addr := To_Inet_Addr (Sin.Sin_Addr);
+         To_Inet_Addr (Sin.Sin_Addr, Addr.Addr);
          Addr.Port := Port_Type (Network_To_Short (Sin.Sin_Port));
       end if;
 
@@ -1086,8 +1088,8 @@ package body GNAT.Sockets is
 
          when Add_Membership  |
               Drop_Membership =>
-            Opt.Multicast_Address := To_Inet_Addr (To_In_Addr (V8 (V8'First)));
-            Opt.Local_Interface   := To_Inet_Addr (To_In_Addr (V8 (V8'Last)));
+            To_Inet_Addr (To_In_Addr (V8 (V8'First)), Opt.Multicast_Address);
+            To_Inet_Addr (To_In_Addr (V8 (V8'Last)), Opt.Local_Interface);
 
          when Multicast_TTL   =>
             Opt.Time_To_Live := Integer (V1);
@@ -1226,8 +1228,9 @@ package body GNAT.Sockets is
    function Inet_Addr (Image : String) return Inet_Addr_Type is
       use Interfaces.C.Strings;
 
-      Img : chars_ptr;
-      Res : C.int;
+      Img    : chars_ptr;
+      Res    : C.int;
+      Result : Inet_Addr_Type;
 
    begin
       --  Special case for the all-ones broadcast address: this address
@@ -1252,7 +1255,8 @@ package body GNAT.Sockets is
          Raise_Socket_Error (Constants.EINVAL);
       end if;
 
-      return To_Inet_Addr (To_In_Addr (Res));
+      To_Inet_Addr (To_In_Addr (Res), Result);
+      return Result;
    end Inet_Addr;
 
    ----------------
@@ -1551,7 +1555,7 @@ package body GNAT.Sockets is
 
       Last := Item'First + Ada.Streams.Stream_Element_Offset (Res - 1);
 
-      From.Addr := To_Inet_Addr (Sin.Sin_Addr);
+      To_Inet_Addr (Sin.Sin_Addr, From.Addr);
       From.Port := Port_Type (Network_To_Short (Sin.Sin_Port));
    end Receive_Socket;
 
@@ -1772,20 +1776,39 @@ package body GNAT.Sockets is
       Vector : Vector_Type;
       Count  : out Ada.Streams.Stream_Element_Count)
    is
-      Res : C.int;
+      Res            : C.int;
+      Iov_Count      : C.int;
+      This_Iov_Count : C.int;
 
    begin
-      Res :=
-        C_Writev
-          (C.int (Socket),
-           Vector (Vector'First)'Address,
-           Vector'Length);
+      Count := 0;
+      Iov_Count := 0;
+      while Iov_Count < Vector'Length loop
 
-      if Res = Failure then
-         Raise_Socket_Error (Socket_Errno);
-      end if;
+         pragma Warnings (Off);
+         --  Following test may be compile time known on some targets
 
-      Count := Ada.Streams.Stream_Element_Count (Res);
+         if Vector'Length - Iov_Count > Constants.IOV_MAX then
+            This_Iov_Count := Constants.IOV_MAX;
+         else
+            This_Iov_Count := Vector'Length - Iov_Count;
+         end if;
+
+         pragma Warnings (On);
+
+         Res :=
+           C_Writev
+             (C.int (Socket),
+              Vector (Vector'First + Integer (Iov_Count))'Address,
+              This_Iov_Count);
+
+         if Res = Failure then
+            Raise_Socket_Error (Socket_Errno);
+         end if;
+
+         Count := Count + Ada.Streams.Stream_Element_Count (Res);
+         Iov_Count := Iov_Count + This_Iov_Count;
+      end loop;
    end Send_Vector;
 
    ---------
@@ -2022,8 +2045,7 @@ package body GNAT.Sockets is
       Source := Addresses'First;
       Target := Result.Addresses'First;
       while Target <= Result.Addresses_Length loop
-         Result.Addresses (Target) :=
-           To_Inet_Addr (Addresses (Source).all);
+         To_Inet_Addr (Addresses (Source).all, Result.Addresses (Target));
          Source := Source + 1;
          Target := Target + 1;
       end loop;
@@ -2051,16 +2073,14 @@ package body GNAT.Sockets is
    -- To_Inet_Addr --
    ------------------
 
-   function To_Inet_Addr
-     (Addr : In_Addr) return Inet_Addr_Type
-   is
-      Result : Inet_Addr_Type;
+   procedure To_Inet_Addr
+     (Addr   : In_Addr;
+      Result : out Inet_Addr_Type) is
    begin
       Result.Sin_V4 (1) := Inet_Addr_Comp_Type (Addr.S_B1);
       Result.Sin_V4 (2) := Inet_Addr_Comp_Type (Addr.S_B2);
       Result.Sin_V4 (3) := Inet_Addr_Comp_Type (Addr.S_B3);
       Result.Sin_V4 (4) := Inet_Addr_Comp_Type (Addr.S_B4);
-      return Result;
    end To_Inet_Addr;
 
    ------------
