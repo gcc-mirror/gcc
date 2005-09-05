@@ -118,6 +118,7 @@ Implementation Defined Pragmas
 * Pragma CPP_Virtual::
 * Pragma CPP_Vtable::
 * Pragma Debug::
+* Pragma Debug_Policy::
 * Pragma Detect_Blocking::
 * Pragma Elaboration_Checks::
 * Pragma Eliminate::
@@ -156,6 +157,7 @@ Implementation Defined Pragmas
 * Pragma Machine_Attribute::
 * Pragma Main_Storage::
 * Pragma No_Return::
+* Pragma No_Strict_Aliasing ::
 * Pragma Normalize_Scalars::
 * Pragma Obsolescent::
 * Pragma Passive::
@@ -649,6 +651,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma CPP_Virtual::
 * Pragma CPP_Vtable::
 * Pragma Debug::
+* Pragma Debug_Policy::
 * Pragma Detect_Blocking::
 * Pragma Elaboration_Checks::
 * Pragma Eliminate::
@@ -687,6 +690,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Machine_Attribute::
 * Pragma Main_Storage::
 * Pragma No_Return::
+* Pragma No_Strict_Aliasing::
 * Pragma Normalize_Scalars::
 * Pragma Obsolescent::
 * Pragma Passive::
@@ -1362,12 +1366,45 @@ PROCEDURE_CALL_WITHOUT_SEMICOLON ::=
 The argument has the syntactic form of an expression, meeting the
 syntactic requirements for pragmas.
 
-If assertions are not enabled on the command line, this pragma has no
-effect.  If asserts are enabled, the semantics of the pragma is exactly
+If debug pragmas are not enabled, this pragma has no
+effect.  If debug pragmas are enabled, the semantics of the pragma is exactly
 equivalent to the procedure call statement corresponding to the argument
 with a terminating semicolon.  Pragmas are permitted in sequences of
 declarations, so you can use pragma @code{Debug} to intersperse calls to
-debug procedures in the middle of declarations.
+debug procedures in the middle of declarations.  Debug pragmas can be
+enabled either by use of the command line switch @code{-gnata} or by use
+of the configuration pragma @code{Debug_Policy}.
+
+
+@node Pragma Debug_Policy
+@unnumberedsec Pragma Debug_Policy
+@findex Debug_Policy
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Debug_Policy (CHECK | IGNORE);
+@end smallexample
+
+@noindent
+If the argument is @code{CHECK}, then pragma @code{DEBUG} is enabled.
+If the argument is @code{IGNORE}, then pragma @code{DEBUG} is ignored.
+This pragma overrides the effect of the @code{-gnata} switch on the
+command line.
+
+If debug pragmas are not enabled, this pragma has no
+effect.  If debug pragmas are enabled, the semantics of the pragma is exactly
+equivalent to the procedure call statement corresponding to the argument
+with a terminating semicolon.  Pragmas are permitted in sequences of
+declarations, so you can use pragma @code{Debug} to intersperse calls to
+debug procedures in the middle of declarations.  Debug pragmas can be
+enabled either by use of the command line switch @code{-gnata} or by use
+of the configuration pragma @code{Debug_Policy}.
+
+
+
+
+
 
 @node Pragma Detect_Blocking
 @unnumberedsec Pragma Detect_Blocking
@@ -1981,13 +2018,13 @@ execution, hence the name.
 Syntax:
 
 @smallexample @c ada
-pragma Float_Representation (FLOAT_REP);
+pragma Float_Representation (FLOAT_REP[, float_type_LOCAL_NAME]);
 
 FLOAT_REP ::= VAX_Float | IEEE_Float
 @end smallexample
 
 @noindent
-This pragma
+In the one argument form, this pragma is a configuration pragma which
 allows control over the internal representation chosen for the predefined
 floating point types declared in the packages @code{Standard} and
 @code{System}. On all systems other than OpenVMS, the argument must
@@ -1997,6 +2034,24 @@ format for the floating-point types in Standard. This requires that
 the standard runtime libraries be recompiled. See the
 description of the @code{GNAT LIBRARY} command in the OpenVMS version
 of the GNAT Users Guide for details on the use of this command.
+
+The two argument form specifies the representation to be used for
+the specified floating-poin type. On all systems other than OpenVMS,
+the argument must
+be @code{IEEE_Float} and the pragma has no effect. On OpenVMS, the
+argument may be @code{VAX_Float} to specify the use of the VAX float
+format, as follows:
+
+@itemize @bullet
+@item
+For digits values up to 6, F float format will be used.
+@item
+For digits values from 7 to 9, G float format will be used.
+@item
+For digits values from 10 to 15, F float format will be used.
+@item
+Digits values above 15 are not allowed.
+@end itemize
 
 @node Pragma Ident
 @unnumberedsec Pragma Ident
@@ -2670,7 +2725,7 @@ package p is
 
   new_name_for_i : Integer;
   pragma Linker_Alias (new_name_for_i, "i");
-end p; 
+end p;
 @end smallexample
 
 @node Pragma Linker_Constructor
@@ -2864,6 +2919,26 @@ procedures whose only purpose is to raise an exception.
 Another use of this pragma is to suppress incorrect warnings about
 missing returns in functions, where the last statement of a function
 statement sequence is a call to such a procedure.
+
+@node Pragma No_Strict_Aliasing
+@unnumberedsec Pragma No_Strict_Aliasing
+@findex No_Strict_Aliasing
+@noindent
+Syntax:
+
+@smallexample @c ada
+ppragma No_Strict_Aliasing [([Entity =>] type_LOCAL_NAME)];
+@end smallexample
+
+@noindent
+@var{type_LOCAL_NAME} must refer to an access type
+declaration in the current declarative part.  The effect is to inhibit
+strict aliasing optimization for the given type.  The form with no
+arguments is a configuration pragma which applies to all access types
+declared in units to which the pragma applies. For a detailed
+description of the strict aliasing optimization, and the situations
+in which it must be suppressed, see section "Optimization and Strict Aliasing"
+in the @value{EDITION} User's Guide.
 
 @node Pragma Normalize_Scalars
 @unnumberedsec Pragma Normalize_Scalars
@@ -4033,7 +4108,7 @@ Note that if a warning is desired for all calls to a given subprogram,
 regardless of whether they occur in the same unit as the subprogram
 declaration, then this pragma should not be used (calls from another
 unit would not be flagged); pragma Obsolescent can be used instead
-for this purpose (@xref{Pragma Obsolescent}).
+for this purpose, see @xref{Pragma Obsolescent}.
 
 @node Pragma Unreserve_All_Interrupts
 @unnumberedsec Pragma Unreserve_All_Interrupts
@@ -4245,7 +4320,7 @@ Address of such an entity, for example to guard potential references,
 as shown in the example below.
 
 Some file formats do not support weak symbols so not all target machines
-support this pragma. 
+support this pragma.
 
 @smallexample @c ada
 --  Example of the use of pragma Weak_External
@@ -9167,7 +9242,7 @@ Only @code{Size} may be specified for such types.
 @cindex Component_Size Clause
 
 @noindent
-Normally, the value specified in a component clause must be consistent
+Normally, the value specified in a component size clause must be consistent
 with the subtype of the array component with regard to size and alignment.
 In other words, the value specified must be at least equal to the size
 of this subtype, and must be a multiple of the alignment value.
@@ -9188,6 +9263,10 @@ for r'Component_Size use 31;
 then the resulting array has a length of 31 bytes (248 bits = 8 * 31).
 Of course access to the components of such an array is considerably
 less efficient than if the natural component size of 32 is used.
+
+Note that there is no point in giving both a component size clause
+and a pragma Pack for the same array type. if such duplicate
+clauses are given, the pragma Pack will be ignored.
 
 @node Bit_Order Clauses
 @section Bit_Order Clauses

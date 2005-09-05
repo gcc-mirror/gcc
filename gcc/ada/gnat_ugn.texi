@@ -331,6 +331,7 @@ Performance Considerations
 * Optimization Levels::
 * Debugging Optimized Code::
 * Inlining of Subprograms::
+* Other Optimization Switches::
 * Optimization and Strict Aliasing::
 @ifset vms
 * Coverage Analysis::
@@ -3752,7 +3753,8 @@ Allow full Ada 2005 features.
 @item -gnata
 @cindex @option{-gnata} (@command{gcc})
 Assertions enabled. @code{Pragma Assert} and @code{pragma Debug} to be
-activated.
+activated. Note that these pragmas can also be controlled using the
+configuration pragmas @code{Assertion_Policy} and @code{Debug_Policy}.
 
 @item -gnatA
 @cindex @option{-gnatA} (@command{gcc})
@@ -3864,11 +3866,6 @@ Limit file names to @var{n} (1-999) characters ^(@code{k} = krunch)^^.
 @item -gnatl
 @cindex @option{-gnatl} (@command{gcc})
 Output full source listing with embedded error messages.
-
-@item -gnatL
-@cindex @option{-gnatL} (@command{gcc})
-This switch is deprecated. You can use @option{--RTS=sjlj} instead to enable
-@code{setjmp/longjmp} exception mechanism.
 
 @item -gnatm=@var{n}
 @cindex @option{-gnatm} (@command{gcc})
@@ -3996,10 +3993,6 @@ Distribution stub generation and compilation
 to be generated and compiled).
 @end ifset
 
-@item -gnatZ
-This switch is deprecated. When zero cost exception handling is not the
-default and this is supported, you can use @option{--RTS=zcx} instead.
-
 @item ^-I^/SEARCH=^@var{dir}
 @cindex @option{^-I^/SEARCH^} (@command{gcc})
 @cindex RTL
@@ -4054,16 +4047,13 @@ No optimization, the default setting if no @option{-O} appears
 
 @item n = 1
 Normal optimization, the default if you specify @option{-O} without
-an operand.
+an operand. A good compromise between code quality and compilation
+time.
 
 @item n = 2
-Extensive optimization
+Extensive optimization, may improve execution time, possibly at the cost of
+substantially increased compilation time.
 
-@item n = 3
-Extensive optimization with automatic inlining of subprograms not
-specified by pragma @code{Inline}. This applies only to
-inlining within a unit. For details on control of inlining
-see @ref{Subprogram Inlining Control}.
 @end table
 @end ifclear
 
@@ -4093,11 +4083,6 @@ Perform some optimizations, but omit ones that are costly.
 
 @item   DEVELOPMENT
 Same as @code{SOME}.
-
-@item   INLINING
-Full optimization, and also attempt automatic inlining of small
-subprograms within a unit even when pragma @code{Inline}
-is not specified (@pxref{Inlining of Subprograms}).
 
 @item   UNROLL_LOOPS
 Try to unroll loops. This keyword may be specified together with
@@ -5537,10 +5522,10 @@ If the ^letter m^word LINE_LENGTH^ appears in the string after @option{-gnaty}
 then the length of source lines must not exceed 79 characters, including
 any trailing blanks. The value of 79 allows convenient display on an
 80 character wide device or window, allowing for possible special
-treatment of 80 character lines. Note that this count is of raw
+treatment of 80 character lines. Note that this count is of
 characters in the source text. This means that a tab character counts
-as one character in this count and a wide character sequence counts as
-several characters (however many are needed in the encoding).
+as one character in this count but a wide character sequence counts as
+a single character (however many bytes are needed in the encoding).
 
 @item ^Mnnn^MAX_LENGTH=nnn^
 @emph{Set maximum line length.}
@@ -8911,7 +8896,9 @@ some guidelines on debugging optimized code.
 * Optimization Levels::
 * Debugging Optimized Code::
 * Inlining of Subprograms::
+* Other Optimization Switches::
 * Optimization and Strict Aliasing::
+
 @ifset vms
 * Coverage Analysis::
 @end ifset
@@ -9019,8 +9006,16 @@ No optimization (the default);
 generates unoptimized code but has
 the fastest compilation time.
 
+Note that many other compilers do fairly extensive optimization
+even if "no optimization" is specified. When using gcc, it is
+very unusual to use ^-O0^/OPTIMIZE=NONE^ for production if
+execution time is of any concern, since ^-O0^/OPTIMIZE=NONE^
+really does mean no optimization at all. This difference between
+gcc and other compilers should be kept in mind when doing
+performance comparisons.
+
 @item ^-O1^/OPTIMIZE=SOME^
-Medium level optimization;
+Moderate optimization;
 optimizes reasonably well but does not
 degrade compilation time significantly.
 
@@ -9308,6 +9303,20 @@ cache pressure from the increased code size. So the bottom line here is
 that you should not automatically assume that @option{-O3} is better than
 @option{-O2}, and indeed you should use @option{-O3} only if tests show that
 it actually improves performance.
+
+@node Other Optimization Switches
+@subsection Other Optimization Switches
+@cindex Optimization Switches
+
+Since @code{GNAT} uses the @code{gcc} back end, all the specialized
+@code{gcc} optimization switches are potentially usable. These switches
+have not been extensively tested with GNAT but can generally be expected
+to work. Examples of switches in this category are
+@option{-funroll-loops} and
+the various target-specific @option{-m} options (in particular, it has been
+observed that @option{-march=pentium4} can significantly improve performance
+on appropriate machines. For full details of these switches, see the
+@code{gcc} manual.
 
 @node Optimization and Strict Aliasing
 @subsection Optimization and Strict Aliasing
