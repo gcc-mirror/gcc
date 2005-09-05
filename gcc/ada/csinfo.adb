@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -149,7 +149,6 @@ procedure CSinfo is
 
    procedure Sort (A : in out VStringA) is
       Temp : VString;
-
    begin
       <<Sort>>
          for J in 1 .. A'Length - 1 loop
@@ -189,34 +188,35 @@ begin
    Set (Flags, "18", V ("R"));
 
    --  Special fields table. The following fields are not recorded or checked
-   --  by Csinfo, since they are specially handled. This means that he both
-   --  the field definitions, and the corresponding subprograms are ignored.
+   --  by Csinfo, since they are specially handled. This means that both the
+   --  field definitions, and the corresponding subprograms are ignored.
 
-   Set (Special, "Analyzed",                 True);
-   Set (Special, "Assignment_OK",            True);
-   Set (Special, "Associated_Node",          True);
-   Set (Special, "Cannot_Be_Constant",       True);
-   Set (Special, "Chars",                    True);
-   Set (Special, "Comes_From_Source",        True);
-   Set (Special, "Do_Overflow_Check",        True);
-   Set (Special, "Do_Range_Check",           True);
-   Set (Special, "Entity",                   True);
-   Set (Special, "Error_Posted",             True);
-   Set (Special, "Etype",                    True);
-   Set (Special, "Evaluate_Once",            True);
-   Set (Special, "First_Itype",              True);
-   Set (Special, "Has_Dynamic_Itype",        True);
-   Set (Special, "Has_Dynamic_Range_Check",  True);
-   Set (Special, "Has_Dynamic_Length_Check", True);
-   Set (Special, "Has_Private_View",         True);
-   Set (Special, "Is_Controlling_Actual",    True);
-   Set (Special, "Is_Overloaded",            True);
-   Set (Special, "Is_Static_Expression",     True);
-   Set (Special, "Left_Opnd",                True);
-   Set (Special, "Must_Not_Freeze",          True);
-   Set (Special, "Parens",                   True);
-   Set (Special, "Raises_Constraint_Error",  True);
-   Set (Special, "Right_Opnd",               True);
+   Set (Special, "Analyzed",                  True);
+   Set (Special, "Assignment_OK",             True);
+   Set (Special, "Associated_Node",           True);
+   Set (Special, "Cannot_Be_Constant",        True);
+   Set (Special, "Chars",                     True);
+   Set (Special, "Comes_From_Source",         True);
+   Set (Special, "Do_Overflow_Check",         True);
+   Set (Special, "Do_Range_Check",            True);
+   Set (Special, "Entity",                    True);
+   Set (Special, "Entity_Or_Associated_Node", True);
+   Set (Special, "Error_Posted",              True);
+   Set (Special, "Etype",                     True);
+   Set (Special, "Evaluate_Once",             True);
+   Set (Special, "First_Itype",               True);
+   Set (Special, "Has_Dynamic_Itype",         True);
+   Set (Special, "Has_Dynamic_Range_Check",   True);
+   Set (Special, "Has_Dynamic_Length_Check",  True);
+   Set (Special, "Has_Private_View",          True);
+   Set (Special, "Is_Controlling_Actual",     True);
+   Set (Special, "Is_Overloaded",             True);
+   Set (Special, "Is_Static_Expression",      True);
+   Set (Special, "Left_Opnd",                 True);
+   Set (Special, "Must_Not_Freeze",           True);
+   Set (Special, "Parens",                    True);
+   Set (Special, "Raises_Constraint_Error",   True);
+   Set (Special, "Right_Opnd",                True);
 
    --  Loop to acquire information from node definitions in sinfo.ads,
    --  checking for consistency in Op/Flag assignments to each synonym
@@ -256,7 +256,6 @@ begin
          Match (Field, Break_Field);
 
          if not Present (Special, Synonym) then
-
             if Present (Fields, Synonym) then
                if Field /= Get (Fields, Synonym) then
                   Put_Line
