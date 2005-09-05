@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                             (ASCII Version)                              --
 --                                                                          --
---          Copyright (C) 1993-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1993-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -386,12 +386,10 @@ package Interfaces.COBOL is
 
       function Valid
         (Item   : Numeric;
-         Format : Display_Format)
-         return   Boolean;
+         Format : Display_Format) return Boolean;
 
       function Length
-        (Format : Display_Format)
-         return   Natural;
+        (Format : Display_Format) return Natural;
 
       function To_Decimal
         (Item   : Numeric;
@@ -400,36 +398,30 @@ package Interfaces.COBOL is
 
       function To_Display
         (Item   : Num;
-         Format : Display_Format)
-         return   Numeric;
+         Format : Display_Format) return Numeric;
 
       --  Packed Formats: data values are represented as Packed_Decimal
 
       function Valid
         (Item   : Packed_Decimal;
-         Format : Packed_Format)
-         return   Boolean;
+         Format : Packed_Format) return Boolean;
 
       function Length
-        (Format : Packed_Format)
-         return   Natural;
+        (Format : Packed_Format) return Natural;
 
       function To_Decimal
         (Item   : Packed_Decimal;
-         Format : Packed_Format)
-         return   Num;
+         Format : Packed_Format) return Num;
 
       function To_Packed
         (Item   : Num;
-         Format : Packed_Format)
-         return   Packed_Decimal;
+         Format : Packed_Format) return Packed_Decimal;
 
       --  Binary Formats: external data values are represented as Byte_Array
 
       function Valid
         (Item   : Byte_Array;
-         Format : Binary_Format)
-         return   Boolean;
+         Format : Binary_Format) return Boolean;
 
       function Length
         (Format : Binary_Format)
@@ -441,8 +433,7 @@ package Interfaces.COBOL is
 
       function To_Binary
         (Item   : Num;
-         Format : Binary_Format)
-         return   Byte_Array;
+         Format : Binary_Format) return Byte_Array;
 
       --  Internal Binary formats: data values are of type Binary/Long_Binary
 
@@ -517,14 +508,14 @@ private
 
    type Packed_Format is (U, S);
 
-   Packed_Unsigned   : constant Packed_Format := U;
-   Packed_Signed     : constant Packed_Format := S;
+   Packed_Unsigned : constant Packed_Format := U;
+   Packed_Signed   : constant Packed_Format := S;
 
    type Packed_Representation_Type is (IBM);
    --  Indicator for format used for packed decimal
 
    Packed_Representation : constant Packed_Representation_Type := IBM;
-   --  This version of the spec uses IBM internal format, as described above.
+   --  This version of the spec uses IBM internal format, as described above
 
    -----------------------------
    -- Display Decimal Formats --

@@ -105,11 +105,11 @@ package body GNAT.Directory_Operations is
             Cut_Start := Cut_Start + 1;
          end if;
 
-         --  Cut_End point to the last basename character.
+         --  Cut_End point to the last basename character
 
          Cut_End := Path'Last;
 
-         --  If basename ends with Suffix, adjust Cut_End.
+         --  If basename ends with Suffix, adjust Cut_End
 
          if Suffix /= ""
            and then Path (Path'Last - Suffix'Length + 1 .. Cut_End) = Suffix
@@ -279,8 +279,7 @@ package body GNAT.Directory_Operations is
 
       procedure Double_Result_Size is
          New_Result : constant OS_Lib.String_Access :=
-           new String (1 .. 2 * Result'Last);
-
+                        new String (1 .. 2 * Result'Last);
       begin
          New_Result (1 .. Result_Last) := Result (1 .. Result_Last);
          OS_Lib.Free (Result);
@@ -306,6 +305,7 @@ package body GNAT.Directory_Operations is
 
       procedure Read (K : in out Positive) is
          P : Character;
+
       begin
          For_All_Characters : loop
             if Is_Var_Prefix (Path (K)) then
@@ -314,7 +314,6 @@ package body GNAT.Directory_Operations is
                --  Could be a variable
 
                if K < Path'Last then
-
                   if Path (K + 1) = P then
 
                      --  Not a variable after all, this is a double $ or %,
@@ -566,7 +565,6 @@ package body GNAT.Directory_Operations is
    function Get_Current_Dir return Dir_Name_Str is
       Current_Dir : String (1 .. Max_Path + 1);
       Last        : Natural;
-
    begin
       Get_Current_Dir (Current_Dir, Last);
       return Current_Dir (1 .. Last);
@@ -708,11 +706,9 @@ package body GNAT.Directory_Operations is
    -------------------------
 
    function Read_Is_Thread_Safe return Boolean is
-
       function readdir_is_thread_safe return Integer;
       pragma Import
         (C, readdir_is_thread_safe, "__gnat_readdir_is_thread_safe");
-
    begin
       return (readdir_is_thread_safe /= 0);
    end Read_Is_Thread_Safe;

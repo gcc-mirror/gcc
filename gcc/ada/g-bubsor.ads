@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1995-2005 AdaCore                      --
+--                     Copyright (C) 1995-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,7 @@
 --  has the advantage of being Pure, while this unit can only be Preelaborate.
 
 package GNAT.Bubble_Sort is
-pragma Preelaborate (Bubble_Sort);
+   pragma Preelaborate;
 
    --  The data to be sorted is assumed to be indexed by integer values from
    --  1 to N, where N is the number of items to be sorted.

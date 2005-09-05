@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the Alpha/VMS version.
+--  This is the Alpha/VMS version
 
 with Unchecked_Conversion;
 package body Interfaces.C_Streams is
@@ -87,8 +87,8 @@ package body Interfaces.C_Streams is
       Ch : int;
 
    begin
-      --  This Fread goes with the Fwrite below.
-      --  The C library fread sometimes can't read fputc generated files.
+      --  This Fread goes with the Fwrite below. The C library fread sometimes
+      --  can't read fputc generated files.
 
       for C in 1 .. count loop
          for S in 1 .. size loop
@@ -125,8 +125,8 @@ package body Interfaces.C_Streams is
       Ch : int;
 
    begin
-      --  This Fread goes with the Fwrite below.
-      --  The C library fread sometimes can't read fputc generated files.
+      --  This Fread goes with the Fwrite below. The C library fread sometimes
+      --  can't read fputc generated files.
 
       for C in 1 + index .. count + index loop
          for S in 1 .. size loop

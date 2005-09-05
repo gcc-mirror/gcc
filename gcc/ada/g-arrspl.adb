@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2002-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,8 +43,7 @@ package body GNAT.Array_Split is
 
    function Count
      (Source  : Element_Sequence;
-      Pattern : Element_Set)
-      return    Natural;
+      Pattern : Element_Set) return Natural;
    --  Returns the number of occurences of Pattern elements in Source, 0 is
    --  returned if no occurence is found in Source.
 
@@ -92,8 +91,7 @@ package body GNAT.Array_Split is
 
    function Count
      (Source  : Element_Sequence;
-      Pattern : Element_Set)
-      return    Natural
+      Pattern : Element_Set) return Natural
    is
       C : Natural := 0;
    begin
@@ -144,8 +142,7 @@ package body GNAT.Array_Split is
 
    function Separators
      (S     : Slice_Set;
-      Index : Slice_Number)
-      return  Slice_Separators
+      Index : Slice_Number) return Slice_Separators
    is
    begin
       if Index > S.N_Slice then
@@ -154,7 +151,7 @@ package body GNAT.Array_Split is
       elsif Index = 0
         or else (Index = 1 and then S.N_Slice = 1)
       then
-         --  Whole string, or no separator used.
+         --  Whole string, or no separator used
 
          return (Before => Array_End,
                  After  => Array_End);
@@ -238,8 +235,10 @@ package body GNAT.Array_Split is
 
          loop
             if K > Count_Sep then
-               --  No more separator, last slice end at the end of the source
+
+               --  No more separators, last slice ends at the end of the source
                --  string.
+
                Stop := S.Source'Last;
             else
                Stop := S.Indexes (K) - 1;
@@ -255,13 +254,17 @@ package body GNAT.Array_Split is
             case Mode is
 
                when Single =>
+
                   --  In this mode just set start to character next to the
                   --  current separator, advance the separator index.
+
                   Start := S.Indexes (K) + 1;
                   K := K + 1;
 
                when Multiple =>
-                  --  In this mode skip separators following each others
+
+                  --  In this mode skip separators following each other
+
                   loop
                      Start := S.Indexes (K) + 1;
                      K := K + 1;
@@ -282,8 +285,7 @@ package body GNAT.Array_Split is
 
    function Slice
      (S     : Slice_Set;
-      Index : Slice_Number)
-      return Element_Sequence
+      Index : Slice_Number) return Element_Sequence
    is
    begin
       if Index = 0 then

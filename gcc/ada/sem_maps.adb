@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,7 +48,7 @@ package body Sem_Maps is
 
    procedure Write_Map (E : Entity_Id);
    pragma Warnings (Off, Write_Map);
-   --  For debugging purposes.
+   --  For debugging purposes
 
    ---------------------
    -- Add_Association --
@@ -72,7 +72,7 @@ package body Sem_Maps is
 
       if Headers_Table.Table (Offh + J) /= No_Assoc then
 
-         --  Place new association at head of chain.
+         --  Place new association at head of chain
 
          Associations_Table.Table (K).Next := Headers_Table.Table (Offh + J);
       end if;

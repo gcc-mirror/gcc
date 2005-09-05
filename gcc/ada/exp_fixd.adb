@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -965,7 +965,7 @@ package body Exp_Fixd is
                New_Occurrence_Of (Rnd, Loc))));
       end if;
 
-      --  Set type of result, for use in caller.
+      --  Set type of result, for use in caller
 
       Set_Etype (Qnn, QR_Typ);
    end Build_Scaled_Divide_Code;
@@ -1095,7 +1095,7 @@ package body Exp_Fixd is
    --  is an integer or the reciprocal of an integer, and for
    --  implementation efficiency we need the smallest such K.
 
-   --  First we reduce the left fraction to lowest terms.
+   --  First we reduce the left fraction to lowest terms
 
    --    If numerator = 1, then for K = 1, the small ratio is the reciprocal
    --    of an integer, and this is clearly the minimum K case, so set K = 1,
@@ -1213,7 +1213,7 @@ package body Exp_Fixd is
    --  is an integer or the reciprocal of an integer, and for
    --  implementation efficiency we need the smallest such K.
 
-   --  First we reduce the left fraction to lowest terms.
+   --  First we reduce the left fraction to lowest terms
 
    --    If denominator = 1, then for K = 1, the small ratio is an integer
    --    (the numerator) and this is clearly the minimum K case, so set K = 1,
@@ -1415,15 +1415,16 @@ package body Exp_Fixd is
    --  is an integer or the reciprocal of an integer, and for
    --  implementation efficiency we need the smallest such K.
 
-   --  First we reduce the left fraction to lowest terms.
+   --  First we reduce the left fraction to lowest terms
 
-   --    If denominator = 1, then for K = 1, the small ratio is an
-   --    integer, and this is clearly the minimum K case, so set
-   --    K = 1, Right_Small = Lit_Value.
+   --    If denominator = 1, then for K = 1, the small ratio is an integer, and
+   --    this is clearly the minimum K case, so set
 
-   --    If denominator > 1, then set K to the numerator of the
-   --    fraction, so that the resulting small ratio is the
-   --    reciprocal of the integer (the denominator value).
+   --      K = 1, Right_Small = Lit_Value.
+
+   --    If denominator > 1, then set K to the numerator of the fraction, so
+   --    that the resulting small ratio is the reciprocal of the integer (the
+   --    denominator value).
 
    procedure Do_Multiply_Fixed_Universal
      (N           : Node_Id;

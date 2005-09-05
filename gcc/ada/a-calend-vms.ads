@@ -35,7 +35,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the Alpha/VMS version.
+--  This is the Alpha/VMS version
 
 with System.OS_Primitives;
 package Ada.Calendar is

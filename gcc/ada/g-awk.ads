@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 2000-2003 Ada Core Technologies, Inc.            --
+--           Copyright (C) 2000-2005 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -187,31 +187,30 @@ with GNAT.Regpat;
 package GNAT.AWK is
 
    Session_Error : exception;
-   --  Raised when a Session is reused but is not closed.
+   --  Raised when a Session is reused but is not closed
 
    File_Error : exception;
-   --  Raised when there is a file problem (see below).
+   --  Raised when there is a file problem (see below)
 
    End_Error : exception;
    --  Raised when an attempt is made to read beyond the end of the last
    --  file of a session.
 
    Field_Error : exception;
-   --  Raised when accessing a field value which does not exist.
+   --  Raised when accessing a field value which does not exist
 
    Data_Error : exception;
-   --  Raised when it is not possible to convert a field value to a specific
-   --  type.
+   --  Raised when it is impossible to convert a field value to a specific type
 
    type Count is new Natural;
 
    type Widths_Set is array (Positive range <>) of Positive;
-   --  Used to store a set of columns widths.
+   --  Used to store a set of columns widths
 
    Default_Separators : constant String := " " & ASCII.HT;
 
    Use_Current : constant String := "";
-   --  Value used when no separator or filename is specified in iterators.
+   --  Value used when no separator or filename is specified in iterators
 
    type Session_Type is limited private;
    --  This is the main exported type. A session is used to keep the state of
@@ -256,7 +255,7 @@ package GNAT.AWK is
      (Separators : String       := Default_Separators;
       Session    : Session_Type := Current_Session)
      renames Set_Field_Separators;
-   --  FS is the AWK abbreviation for above service.
+   --  FS is the AWK abbreviation for above service
 
    procedure Set_Field_Widths
      (Field_Widths : Widths_Set;
@@ -294,54 +293,44 @@ package GNAT.AWK is
    -------------------------------------
 
    function Number_Of_Fields
-     (Session : Session_Type := Current_Session)
-      return    Count;
+     (Session : Session_Type := Current_Session) return Count;
    pragma Inline (Number_Of_Fields);
    --  Returns the number of fields in the current record. It returns 0 when
    --  no file is being processed.
 
    function NF
-     (Session : Session_Type := Current_Session)
-      return    Count
+     (Session : Session_Type := Current_Session) return Count
      renames Number_Of_Fields;
-   --  AWK abbreviation for above service.
+   --  AWK abbreviation for above service
 
    function Number_Of_File_Lines
-     (Session : Session_Type := Current_Session)
-      return    Count;
+     (Session : Session_Type := Current_Session) return Count;
    pragma Inline (Number_Of_File_Lines);
    --  Returns the current line number in the processed file. It returns 0 when
    --  no file is being processed.
 
-   function FNR
-     (Session : Session_Type := Current_Session)
-      return    Count renames Number_Of_File_Lines;
-   --  AWK abbreviation for above service.
+   function FNR (Session : Session_Type := Current_Session) return Count
+     renames Number_Of_File_Lines;
+   --  AWK abbreviation for above service
 
    function Number_Of_Lines
-     (Session : Session_Type := Current_Session)
-      return    Count;
+     (Session : Session_Type := Current_Session) return Count;
    pragma Inline (Number_Of_Lines);
    --  Returns the number of line processed until now. This is equal to number
    --  of line in each already processed file plus FNR. It returns 0 when
    --  no file is being processed.
 
-   function NR
-     (Session : Session_Type := Current_Session)
-      return    Count
+   function NR (Session : Session_Type := Current_Session) return Count
      renames Number_Of_Lines;
-   --  AWK abbreviation for above service.
+   --  AWK abbreviation for above service
 
    function Number_Of_Files
-     (Session : Session_Type := Current_Session)
-      return    Natural;
+     (Session : Session_Type := Current_Session) return Natural;
    pragma Inline (Number_Of_Files);
    --  Returns the number of files associated with Session. This is the total
    --  number of files added with Add_File and Add_Files services.
 
-   function File
-     (Session : Session_Type := Current_Session)
-      return    String;
+   function File (Session : Session_Type := Current_Session) return String;
    --  Returns the name of the file being processed. It returns the empty
    --  string when no file is being processed.
 
@@ -351,24 +340,21 @@ package GNAT.AWK is
 
    function Field
      (Rank    : Count;
-      Session : Session_Type := Current_Session)
-      return    String;
+      Session : Session_Type := Current_Session) return String;
    --  Returns field number Rank value of the current record. If Rank = 0 it
    --  returns the current record (i.e. the line as read in the file). It
    --  raises Field_Error if Rank > NF or if Session is not open.
 
    function Field
      (Rank    : Count;
-      Session : Session_Type := Current_Session)
-      return    Integer;
+      Session : Session_Type := Current_Session) return Integer;
    --  Returns field number Rank value of the current record as an integer. It
    --  raises Field_Error if Rank > NF or if Session is not open. It
    --  raises Data_Error if the field value cannot be converted to an integer.
 
    function Field
      (Rank    : Count;
-      Session : Session_Type := Current_Session)
-      return    Float;
+      Session : Session_Type := Current_Session) return Float;
    --  Returns field number Rank value of the current record as a float. It
    --  raises Field_Error if Rank > NF or if Session is not open. It
    --  raises Data_Error if the field value cannot be converted to a float.
@@ -377,8 +363,7 @@ package GNAT.AWK is
       type Discrete is (<>);
    function Discrete_Field
      (Rank    : Count;
-      Session : Session_Type := Current_Session)
-      return    Discrete;
+      Session : Session_Type := Current_Session) return Discrete;
    --  Returns field number Rank value of the current record as a type
    --  Discrete. It raises Field_Error if Rank > NF. It raises Data_Error if
    --  the field value cannot be converted to type Discrete.
@@ -527,16 +512,14 @@ package GNAT.AWK is
    --  or by an instantiation of For_Every_Line (see below).
 
    function End_Of_Data
-     (Session : Session_Type := Current_Session)
-      return    Boolean;
+     (Session : Session_Type := Current_Session) return Boolean;
    pragma Inline (End_Of_Data);
    --  Returns True if there is no more data to be processed in Session. It
    --  means that the latest session's file is being processed and that
    --  there is no more data to be read in this file (End_Of_File is True).
 
    function End_Of_File
-     (Session : Session_Type := Current_Session)
-      return    Boolean;
+     (Session : Session_Type := Current_Session) return Boolean;
    pragma Inline (End_Of_File);
    --  Returns True when there is no more data to be processed on the current
    --  session's file.

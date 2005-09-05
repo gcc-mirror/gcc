@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package implements Calendar.Time delays using protected objects.
+--  This package implements Calendar.Time delays using protected objects
 
 --  Note: the compiler generates direct calls to this interface, in the
 --  processing of time types.

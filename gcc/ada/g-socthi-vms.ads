@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2002-2004 Ada Core Technologies, Inc.           --
+--            Copyright (C) 2002-2005 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@
 --  layer for use by the GNAT.Sockets package (g-socket.ads). This package
 --  should not be directly with'ed by an applications program.
 
---  This is the Alpha/VMS version.
+--  This is the Alpha/VMS version
 
 with Interfaces.C.Pointers;
 
@@ -58,7 +58,7 @@ package GNAT.Sockets.Thin is
    Failure : constant C.int := -1;
 
    function Socket_Errno return Integer renames GNAT.OS_Lib.Errno;
-   --  Returns last socket error number.
+   --  Returns last socket error number
 
    function Socket_Error_Message (Errno : Integer) return C.Strings.chars_ptr;
    --  Returns the error message string for the error number Errno. If
@@ -354,7 +354,7 @@ package GNAT.Sockets.Thin is
 
    procedure Free_Socket_Set
      (Set    : Fd_Set_Access);
-   --  Free system-dependent socket set.
+   --  Free system-dependent socket set
 
    procedure Get_Socket_From_Set
      (Set    : Fd_Set_Access;
@@ -369,7 +369,7 @@ package GNAT.Sockets.Thin is
    procedure Insert_Socket_In_Set
      (Set    : Fd_Set_Access;
       Socket : C.int);
-   --  Insert socket in the socket set.
+   --  Insert socket in the socket set
 
    function  Is_Socket_In_Set
      (Set    : Fd_Set_Access;
@@ -396,7 +396,7 @@ package GNAT.Sockets.Thin is
    procedure Remove_Socket_From_Set
      (Set    : Fd_Set_Access;
       Socket : C.int);
-   --  Remove socket from the socket set.
+   --  Remove socket from the socket set
 
    procedure Finalize;
    procedure Initialize (Process_Blocking_IO : Boolean);

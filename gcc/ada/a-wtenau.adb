@@ -46,10 +46,10 @@ package body Ada.Wide_Text_IO.Enumeration_Aux is
    -----------------------
 
    procedure Store_Char
-     (WC   : Wide_Character;
-      Buf  : out Wide_String;
-      Ptr  : in out Integer);
-   --  Store a single character in buffer, checking for overflow.
+     (WC  : Wide_Character;
+      Buf : out Wide_String;
+      Ptr : in out Integer);
+   --  Store a single character in buffer, checking for overflow
 
    --  These definitions replace the ones in Ada.Characters.Handling, which
    --  do not seem to work for some strange not understood reason ??? at
@@ -324,9 +324,9 @@ package body Ada.Wide_Text_IO.Enumeration_Aux is
    ----------------
 
    procedure Store_Char
-     (WC   : Wide_Character;
-      Buf  : out Wide_String;
-      Ptr  : in out Integer)
+     (WC  : Wide_Character;
+      Buf : out Wide_String;
+      Ptr : in out Integer)
    is
    begin
       if Ptr = Buf'Last then

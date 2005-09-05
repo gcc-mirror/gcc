@@ -32,7 +32,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a HP-UX version of this package.
+--  This is a HP-UX version of this package
 
 --  The following signals are reserved by the run time:
 

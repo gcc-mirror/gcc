@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---              Copyright (C) 2003 Ada Core Technologies, Inc.              --
+--                     Copyright (C) 2003-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,7 @@ with System;
 package GNAT.Semaphores is
 
    Default_Ceiling : constant System.Priority := System.Default_Priority;
-   --  A convenient value for the priority discriminants that follow.
+   --  A convenient value for the priority discriminants that follow
 
    ------------------------
    -- Counting_Semaphore --
@@ -52,19 +52,18 @@ package GNAT.Semaphores is
       --  value of this counter is set by clients via the discriminant.
 
       Ceiling : System.Priority)
-      --  Users must specify the ceiling priority for the object.
-      --  If the Real-Time Systems Annex is not in use this value
-      --  is not important.
+      --  Users must specify the ceiling priority for the object. If the
+      --  Real-Time Systems Annex is not in use this value is not important.
    is
       pragma Priority (Ceiling);
 
       entry Seize;
-      --  Blocks caller until/unless the semaphore's internal counter
-      --  is greater than zero.
-      --  Decrements the semaphore's internal counter when executed.
+      --  Blocks caller until/unless the semaphore's internal counter is
+      --  greater than zero. Decrements the semaphore's internal counter when
+      --  executed.
 
       procedure Release;
-      --  Increments the semaphore's internal counter.
+      --  Increments the semaphore's internal counter
 
    private
       Count : Natural := Initial_Value;
@@ -75,23 +74,23 @@ package GNAT.Semaphores is
    ----------------------
 
    protected type Binary_Semaphore
-      (Initially_Available : Boolean;
-      --  Binary semaphores are either available or not; there is no
-      --  internal count involved.  The discriminant value determines
-      --  whether the individual object is initially available.
+     (Initially_Available : Boolean;
+      --  Binary semaphores are either available or not; there is no internal
+      --  count involved. The discriminant value determines whether the
+      --  individual object is initially available.
+
       Ceiling : System.Priority)
-      --  Users must specify the ceiling priority for the object.
-      --  If the Real-Time Systems Annex is not in use
-      --  this value is not important.
+      --  Users must specify the ceiling priority for the object. If the
+      --  Real-Time Systems Annex is not in use this value is not important.
    is
       pragma Priority (Ceiling);
 
       entry Seize;
-      --  Blocks the caller unless/until semaphore is available.
-      --  After execution the semaphore is no longer available.
+      --  Blocks the caller unless/until semaphore is available. After
+      --  execution the semaphore is no longer available.
 
       procedure Release;
-      --  Makes the semaphore available.
+      --  Makes the semaphore available
 
    private
       Available : Boolean := Initially_Available;

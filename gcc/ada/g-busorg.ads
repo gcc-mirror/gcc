@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1995-2005 AdaCore                      --
+--                     Copyright (C) 1995-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,7 +63,7 @@ generic
    --  item is greater than or equal to the Op1 item.
 
 package GNAT.Bubble_Sort_G is
-pragma Pure (Bubble_Sort_G);
+   pragma Pure;
 
    procedure Sort (N : Natural);
    --  This procedures sorts items in the range from 1 to N into ascending

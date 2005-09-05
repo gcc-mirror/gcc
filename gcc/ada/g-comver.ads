@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                 Copyright (C) 2002 Ada Core Technologies                 --
+--                     Copyright (C) 2002-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@
 --  GNAT compiler used to compile the program. It relies on the generated
 --  constant in the binder generated package that records this information.
 
---  Note: to use this package you must first instantiate it, e.g.
+--  Note: to use this package you must first instantiate it, for example:
 
 --    package CVer is new GNAT.Compiler_Version;
 
@@ -44,13 +44,12 @@
 --  to import the necessary variable from the binder file causes trouble when
 --  building a shared library, since the symbol is not available.
 
---  Note: this unit is only useable if the main program is written
---  in Ada. It cannot be used if the main program is written in a
---  foreign language.
+--  Note: this unit is only useable if the main program is written in Ada.
+--  It cannot be used if the main program is written in foreign language.
 
 generic
 package GNAT.Compiler_Version is
-pragma Pure (Compiler_Version);
+   pragma Pure;
 
    function Version return String;
    --  This function returns the version in the form "v.vvx (yyyyddmm)".

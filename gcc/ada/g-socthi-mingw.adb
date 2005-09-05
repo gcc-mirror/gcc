@@ -35,7 +35,7 @@
 --  layer for use by the GNAT.Sockets package (g-socket.ads). This package
 --  should not be directly with'ed by an applications program.
 
---  This version is for NT.
+--  This version is for NT
 
 with GNAT.Sockets.Constants; use GNAT.Sockets.Constants;
 with Interfaces.C.Strings;   use Interfaces.C.Strings;

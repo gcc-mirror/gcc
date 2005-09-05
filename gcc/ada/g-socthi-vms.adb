@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2001-2004 Ada Core Technologies, Inc.         --
+--              Copyright (C) 2001-2005 Ada Core Technologies, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Temporary version for Alpha/VMS.
+--  Temporary version for Alpha/VMS
 
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 with GNAT.Task_Lock;

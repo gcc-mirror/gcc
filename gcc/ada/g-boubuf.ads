@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2003 Ada Core Technologies, Inc.               --
+--                     Copyright (C) 2003-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,35 +44,34 @@ with System;
 generic
    type Element is private;
    --  The type of the values contained within buffer objects
+
 package GNAT.Bounded_Buffers is
    pragma Pure;
 
    type Content is array (Positive range <>) of Element;
-   --  Content is an internal artefact that cannot be hidden
-   --  because protected types cannot contain type declarations.
+   --  Content is an internal artefact that cannot be hidden because protected
+   --  types cannot contain type declarations.
 
    Default_Ceiling : constant System.Priority := System.Default_Priority;
-   --  A convenience value for the Ceiling discriminant.
+   --  A convenience value for the Ceiling discriminant
 
    protected type Bounded_Buffer
       (Capacity : Positive;
-      --  Objects of type Bounded_Buffer specify the maximum
-      --  number of Element values they can hold via the
-      --  discriminant Capacity.
+      --  Objects of type Bounded_Buffer specify the maximum number of Element
+      --  values they can hold via the discriminant Capacity.
+
       Ceiling : System.Priority)
-      --  Users must specify the ceiling priority for the object.
-      --  If the Real-Time Systems Annex is not in use this value
-      --  is not important.
+      --  Users must specify the ceiling priority for the object. If the
+      --  Real-Time Systems Annex is not in use this value is not important.
    is
       pragma Priority (Ceiling);
 
       entry Insert (Item : in Element);
-      --  Insert Item into the buffer. Blocks caller
-      --  until space is available.
+      --  Insert Item into the buffer, blocks caller until space is available
 
       entry Remove (Item : out Element);
-      --  Remove next available Element from buffer.
-      --  Blocks caller until an Element is available.
+      --  Remove next available Element from buffer. Blocks caller until an
+      --  Element is available.
 
       function Empty return Boolean;
       --  Returns whether the instance contains any Elements.
@@ -89,13 +88,16 @@ package GNAT.Bounded_Buffers is
 
    private
       Values   : Content (1 .. Capacity);
-      --  The container for the values held by the buffer instance.
+      --  The container for the values held by the buffer instance
+
       Next_In  : Positive := 1;
-      --  The index of the next Element inserted. Wraps around.
+      --  The index of the next Element inserted. Wraps around
+
       Next_Out : Positive := 1;
-      --  The index of the next Element removed. Wraps around.
+      --  The index of the next Element removed. Wraps around
+
       Count    : Natural  := 0;
-      --  The number of Elements currently held.
+      --  The number of Elements currently held
    end Bounded_Buffer;
 
 end GNAT.Bounded_Buffers;

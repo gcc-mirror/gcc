@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---              Copyright (C) 2000 Ada Core Technologies, Inc.              --
+--                     Copyright (C) 2000-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,9 +36,9 @@
 
 package GNAT.CGI.Debug is
 
-   --  Both functions below output all possible CGI parameters set. These
-   --  are the form field and all CGI environment variables which make the
-   --  CGI environment at runtime.
+   --  Both functions below output all possible CGI parameters set. These are
+   --  the form field and all CGI environment variables which make the CGI
+   --  environment at runtime.
 
    function Text_Output return String;
    --  Returns a plain text version of the CGI runtime environment

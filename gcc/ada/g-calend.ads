@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,7 +65,7 @@ package GNAT.Calendar is
    --  Second_Duration precision depends on the target clock precision.
 
    function Day_Of_Week (Date : Ada.Calendar.Time) return Day_Name;
-   --  Return the day name.
+   --  Return the day name
 
    function Day_In_Year (Date : Ada.Calendar.Time) return Day_In_Year_Number;
    --  Returns the day number in the year. (1st January is day 1 and 31st
@@ -93,9 +93,8 @@ package GNAT.Calendar is
       Hour       : Hour_Number;
       Minute     : Minute_Number;
       Second     : Second_Number;
-      Sub_Second : Second_Duration := 0.0)
-      return Ada.Calendar.Time;
-   --  Returns an Ada.Calendar.Time data built from the date and time values.
+      Sub_Second : Second_Duration := 0.0) return Ada.Calendar.Time;
+   --  Returns an Ada.Calendar.Time data built from the date and time values
 
    --  C timeval conversion
 
@@ -119,11 +118,11 @@ private
    function Julian_Day
      (Year  : Ada.Calendar.Year_Number;
       Month : Ada.Calendar.Month_Number;
-      Day   : Ada.Calendar.Day_Number)
-      return  Integer;
-   --  Compute Julian day number.
+      Day   : Ada.Calendar.Day_Number) return Integer;
+   --  Compute Julian day number
    --
-   --  The code of this function is a modified version of algorithm
-   --  199 from the Collected Algorithms of the ACM.
-   --  The author of algorithm 199 is Robert G. Tantzen.
+   --  The code of this function is a modified version of algorithm 199 from
+   --  the Collected Algorithms of the ACM. The author of algorithm 199 is
+   --  Robert G. Tantzen.
+
 end GNAT.Calendar;

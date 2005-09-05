@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1995-2005 AdaCore                      --
+--                     Copyright (C) 1995-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,7 @@
 with System;
 
 package GNAT.Debug_Utilities is
-pragma Pure (Debug_Utilities);
+   pragma Pure;
 
    Address_64 : constant Boolean := Standard'Address_Size = 64;
    --  Set true if 64 bit addresses (assumes only 32 and 64 are possible)

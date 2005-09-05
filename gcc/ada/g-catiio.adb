@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1999-2003 Ada Core Technologies, Inc.           --
+--            Copyright (C) 1999-2005 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -63,10 +63,10 @@ package body GNAT.Calendar.Time_IO is
    -----------------------
 
    function Am_Pm (H : Natural) return String;
-   --  return AM or PM depending on the hour H
+   --  Return AM or PM depending on the hour H
 
    function Hour_12 (H : Natural) return Positive;
-   --  Convert a 1-24h format to a 0-12 hour format.
+   --  Convert a 1-24h format to a 0-12 hour format
 
    function Image (Str : String; Length : Natural := 0) return String;
    --  Return Str capitalized and cut to length number of characters. If
@@ -75,18 +75,15 @@ package body GNAT.Calendar.Time_IO is
    function Image
      (N       : Long_Integer;
       Padding : Padding_Mode := Zero;
-      Length  : Natural := 0)
-      return    String;
-   --  Return image of N. This number is eventually padded with zeros or
-   --  spaces depending of the length required. If length is 0 then no padding
-   --  occurs.
+      Length  : Natural := 0) return String;
+   --  Return image of N. This number is eventually padded with zeros or spaces
+   --  depending of the length required. If length is 0 then no padding occurs.
 
    function Image
      (N       : Integer;
       Padding : Padding_Mode := Zero;
-      Length  : Natural := 0)
-      return    String;
-   --  As above with N provided in Integer format.
+      Length  : Natural := 0) return String;
+   --  As above with N provided in Integer format
 
    -----------
    -- Am_Pm --
@@ -122,8 +119,7 @@ package body GNAT.Calendar.Time_IO is
 
    function Image
      (Str    : String;
-      Length : Natural := 0)
-      return   String
+      Length : Natural := 0) return String
    is
       use Ada.Characters.Handling;
       Local : constant String :=
@@ -144,8 +140,7 @@ package body GNAT.Calendar.Time_IO is
    function Image
      (N       : Integer;
       Padding : Padding_Mode := Zero;
-      Length  : Natural := 0)
-      return    String
+      Length  : Natural := 0) return String
    is
    begin
       return Image (Long_Integer (N), Padding, Length);
@@ -154,8 +149,7 @@ package body GNAT.Calendar.Time_IO is
    function Image
      (N       : Long_Integer;
       Padding : Padding_Mode := Zero;
-      Length  : Natural := 0)
-      return    String
+      Length  : Natural := 0) return String
    is
       function Pad_Char return String;
 
@@ -192,13 +186,12 @@ package body GNAT.Calendar.Time_IO is
 
    function Image
      (Date    : Ada.Calendar.Time;
-      Picture : Picture_String)
-      return    String
+      Picture : Picture_String) return String
    is
-      Padding    : Padding_Mode := Zero;
+      Padding : Padding_Mode := Zero;
       --  Padding is set for one directive
 
-      Result     : Unbounded_String;
+      Result : Unbounded_String;
 
       Year       : Year_Number;
       Month      : Month_Number;

@@ -177,7 +177,7 @@ package Ada.Interrupts.Names is
    SIGUME : constant Interrupt_ID :=
      System.OS_Interface.SIGUME;      --  Uncorrectable memory error
 
-   --  Signals defined for Posix 1003.1c.
+   --  Signals defined for Posix 1003.1c
 
    SIGPTINTR : constant Interrupt_ID :=
      System.OS_Interface.SIGPTINTR;    --  Pthread Interrupt Signal

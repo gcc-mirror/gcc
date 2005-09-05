@@ -31,10 +31,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  The body of Interfaces.COBOL is implementation independent (i.e. the
---  same version is used with all versions of GNAT). The specialization
---  to a particular COBOL format is completely contained in the private
---  part ot the spec.
+--  The body of Interfaces.COBOL is implementation independent (i.e. the same
+--  version is used with all versions of GNAT). The specialization to a
+--  particular COBOL format is completely contained in the private part of
+--  the spec.
 
 with Interfaces; use Interfaces;
 with System;     use System;
@@ -76,8 +76,7 @@ package body Interfaces.COBOL is
 
    function Binary_To_Decimal
      (Item   : Byte_Array;
-      Format : Binary_Format)
-      return   Integer_64;
+      Format : Binary_Format) return Integer_64;
    --  This function converts a numeric value in the given format to its
    --  corresponding integer value. This is the non-generic implementation
    --  of Decimal_Conversions.To_Decimal. The generic routine does the
@@ -85,8 +84,7 @@ package body Interfaces.COBOL is
 
    function Numeric_To_Decimal
      (Item   : Numeric;
-      Format : Display_Format)
-      return   Integer_64;
+      Format : Display_Format) return Integer_64;
    --  This function converts a numeric value in the given format to its
    --  corresponding integer value. This is the non-generic implementation
    --  of Decimal_Conversions.To_Decimal. The generic routine does the
@@ -94,8 +92,7 @@ package body Interfaces.COBOL is
 
    function Packed_To_Decimal
      (Item   : Packed_Decimal;
-      Format : Packed_Format)
-      return   Integer_64;
+      Format : Packed_Format) return Integer_64;
    --  This function converts a packed value in the given format to its
    --  corresponding integer value. This is the non-generic implementation
    --  of Decimal_Conversions.To_Decimal. The generic routine does the
@@ -207,7 +204,7 @@ package body Interfaces.COBOL is
    -- Numeric_To_Decimal --
    ------------------------
 
-   --  The following assumptions are made in the coding of this routine
+   --  The following assumptions are made in the coding of this routine:
 
    --    The range of COBOL_Digits is compact and the ten values
    --    represent the digits 0-9 in sequence
@@ -220,7 +217,7 @@ package body Interfaces.COBOL is
 
    --    The COBOL_Minus_Digits set is disjoint from COBOL_Digits
 
-   --  These assumptions are true for all COBOL representations we know of.
+   --  These assumptions are true for all COBOL representations we know of
 
    function Numeric_To_Decimal
      (Item   : Numeric;
@@ -708,7 +705,7 @@ package body Interfaces.COBOL is
       --  Note that the tests here are all compile time tests
 
       function Length (Format : Binary_Format) return Natural is
-         pragma Warnings (Off, Format);
+         pragma Unreferenced (Format);
       begin
          if Num'Digits <= 2 then
             return 1;
@@ -743,8 +740,7 @@ package body Interfaces.COBOL is
       function Length
         (Format : Packed_Format) return Natural
       is
-         pragma Warnings (Off, Format);
-
+         pragma Unreferenced (Format);
       begin
          case Packed_Representation is
             when IBM =>
@@ -847,14 +843,12 @@ package body Interfaces.COBOL is
 
       function To_Decimal
         (Item   : Numeric;
-         Format : Display_Format)
-         return   Num
+         Format : Display_Format) return Num
       is
          pragma Unsuppress (Range_Check);
 
       begin
          return Num'Fixed_Value (Numeric_To_Decimal (Item, Format));
-
       exception
          when Constraint_Error =>
             raise Conversion_Error;

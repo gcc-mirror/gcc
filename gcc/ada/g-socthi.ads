@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---              Copyright (C) 2001-2004 Ada Core Technologies, Inc.         --
+--              Copyright (C) 2001-2005 Ada Core Technologies, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,11 +59,11 @@ package GNAT.Sockets.Thin is
    Failure : constant C.int := -1;
 
    function Socket_Errno return Integer renames GNAT.OS_Lib.Errno;
-   --  Returns last socket error number.
+   --  Returns last socket error number
 
    function Socket_Error_Message (Errno : Integer) return C.Strings.chars_ptr;
-   --  Returns the error message string for the error number Errno. If
-   --  Errno is not known it returns "Unknown system error".
+   --  Returns the error message string for the error number Errno. If Errno is
+   --  not known it returns "Unknown system error".
 
    subtype Fd_Set_Access is System.Address;
    No_Fd_Set : constant Fd_Set_Access := System.Null_Address;
@@ -357,17 +357,17 @@ package GNAT.Sockets.Thin is
    procedure Last_Socket_In_Set
      (Set    : Fd_Set_Access;
       Last   : Int_Access);
-   --  Find the largest socket in the socket set. This is needed for
-   --  select(). When Last_Socket_In_Set is called, parameter Last is
-   --  a maximum value of the largest socket. This hint is used to
-   --  avoid scanning very large socket sets. After the call, Last is
-   --  set back to the real largest socket in the socket set.
+   --  Find the largest socket in the socket set. This is needed for select().
+   --  When Last_Socket_In_Set is called, parameter Last is a maximum value of
+   --  the largest socket. This hint is used to avoid scanning very large
+   --  socket sets. After the call, Last is set back to the real largest socket
+   --  in the socket set.
 
    function  New_Socket_Set
      (Set : Fd_Set_Access) return Fd_Set_Access;
-   --  Allocate a new socket set which is a system-dependent structure
-   --  and initialize by copying Set if it is non-null, by making it
-   --  empty otherwise.
+   --  Allocate a new socket set which is a system-dependent structure and
+   --  initialize by copying Set if it is non-null, by making it empty
+   --  otherwise.
 
    procedure Remove_Socket_From_Set
      (Set    : Fd_Set_Access;
