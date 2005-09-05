@@ -607,6 +607,31 @@ gen_const_mem (enum machine_mode mode, rtx addr)
   return mem;
 }
 
+/* Generate a MEM referring to fixed portions of the frame, e.g., register
+   save areas.  */
+
+rtx
+gen_frame_mem (enum machine_mode mode, rtx addr)
+{
+  rtx mem = gen_rtx_MEM (mode, addr);
+  MEM_NOTRAP_P (mem) = 1;
+  set_mem_alias_set (mem, get_frame_alias_set ());
+  return mem;
+}
+
+/* Generate a MEM referring to a temporary use of the stack, not part
+    of the fixed stack frame.  For example, something which is pushed
+    by a target splitter.  */
+rtx
+gen_tmp_stack_mem (enum machine_mode mode, rtx addr)
+{
+  rtx mem = gen_rtx_MEM (mode, addr);
+  MEM_NOTRAP_P (mem) = 1;
+  if (!current_function_calls_alloca)
+    set_mem_alias_set (mem, get_frame_alias_set ());
+  return mem;
+}
+
 /* We want to create (subreg:OMODE (obj:IMODE) OFFSET).  Return true if
    this construct would be valid, and false otherwise.  */
 

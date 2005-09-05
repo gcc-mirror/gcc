@@ -1964,6 +1964,8 @@ extern rtx delete_insn_and_edges (rtx);
 extern void delete_insn_chain_and_edges (rtx, rtx);
 extern rtx gen_lowpart_SUBREG (enum machine_mode, rtx);
 extern rtx gen_const_mem (enum machine_mode, rtx);
+extern rtx gen_frame_mem (enum machine_mode, rtx);
+extern rtx gen_tmp_stack_mem (enum machine_mode, rtx);
 extern bool validate_subreg (enum machine_mode, enum machine_mode,
 			     rtx, unsigned int);
 
