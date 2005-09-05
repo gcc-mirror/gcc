@@ -29,7 +29,6 @@
 --  routines to save and restore a project scan context.
 
 with Scans; use Scans;
-with Types; use Types;
 
 package Sinput.P is
 

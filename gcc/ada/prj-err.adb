@@ -26,7 +26,6 @@
 
 with Namet;   use Namet;
 with Output;  use Output;
-with Scans;   use Scans;
 with Stringt; use Stringt;
 
 package body Prj.Err is

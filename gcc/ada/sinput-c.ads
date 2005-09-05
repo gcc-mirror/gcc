@@ -29,8 +29,6 @@
 --  It is used by Sinput.P to load project files, and by GPrep to load
 --  preprocessor definition files and input files.
 
-with Types; use Types;
-
 package Sinput.C is
 
    function Load_File (Path : String) return Source_File_Index;

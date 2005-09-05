@@ -26,10 +26,6 @@
 
 --  Utilities for use in processing project files
 
-with Types; use Types;
-
-with GNAT.OS_Lib; use GNAT.OS_Lib;
-
 package Prj.Util is
 
    function Executable_Of

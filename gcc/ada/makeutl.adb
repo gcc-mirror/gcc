@@ -26,12 +26,10 @@
 
 with Namet;    use Namet;
 with Osint;    use Osint;
-with Prj;      use Prj;
 with Prj.Ext;
 with Prj.Util;
 with Snames;   use Snames;
 with Table;
-with Types;    use Types;
 
 with System.HTable;
 

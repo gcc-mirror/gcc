@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,6 @@
 --  routines to create virtual entries for instantiations. This is separated
 --  off into a child package to avoid a dependence of Sinput on Osint which
 --  would cause trouble in the tree read/write routines.
-
-with Types; use Types;
 
 package Sinput.L is
 

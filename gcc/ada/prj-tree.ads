@@ -30,7 +30,6 @@ with GNAT.Dynamic_HTables;
 with GNAT.Dynamic_Tables;
 
 with Prj.Attr; use Prj.Attr;
-with Types;    use Types;
 
 package Prj.Tree is
 

@@ -37,7 +37,6 @@
 --  we use the one stack approach developed in the SPITBOL implementation.
 
 with Ada.Exceptions;            use Ada.Exceptions;
-with Ada.Strings.Maps;          use Ada.Strings.Maps;
 with Ada.Strings.Unbounded.Aux; use Ada.Strings.Unbounded.Aux;
 
 with GNAT.Debug_Utilities;      use GNAT.Debug_Utilities;
@@ -218,7 +217,7 @@ package body GNAT.Spitbol.Patterns is
    type PE (Pcode : Pattern_Code) is record
 
       Index : IndexT;
-      --  Serial index number of pattern element within pattern.
+      --  Serial index number of pattern element within pattern
 
       Pthen : PE_Ptr;
       --  Successor element, to be matched after this one
@@ -734,7 +733,7 @@ package body GNAT.Spitbol.Patterns is
       --  pointer to Y node, which is the PC_Arb_Y node that matches one
       --  extra character and restacks itself.
 
-      --  The PC_Arb_X node is numbered 2, and the PC_Arb_Y node is 1.
+      --  The PC_Arb_X node is numbered 2, and the PC_Arb_Y node is 1
 
       -------------------------
       -- Arbno (simple case) --
@@ -1239,7 +1238,7 @@ package body GNAT.Spitbol.Patterns is
 
    function Is_In (C : Character; Str : String) return Boolean;
    pragma Inline (Is_In);
-   --  Determines if the character C is in string Str.
+   --  Determines if the character C is in string Str
 
    procedure Logic_Error;
    --  Called to raise Program_Error with an appropriate message if an
@@ -1670,7 +1669,7 @@ package body GNAT.Spitbol.Patterns is
    --    | Y |---->
    --    +---+
 
-   --  The PC_Arb_X element is numbered 2, and the PC_Arb_Y element is 1.
+   --  The PC_Arb_X element is numbered 2, and the PC_Arb_Y element is 1
 
    function Arb return Pattern is
       Y : constant PE_Ptr := new PE'(PC_Arb_Y, 1, EOP);
@@ -2028,7 +2027,7 @@ package body GNAT.Spitbol.Patterns is
             --  References to elements in P, indexed by Index field
 
             Copy : Ref_Array (1 .. P.Index);
-            --  Holds copies of elements of P, indexed by Index field.
+            --  Holds copies of elements of P, indexed by Index field
 
             E : PE_Ptr;
 
@@ -2090,7 +2089,7 @@ package body GNAT.Spitbol.Patterns is
       E : PE_Ptr;
 
       procedure Write_Node_Id (E : PE_Ptr);
-      --  Writes out a string identifying the given pattern element.
+      --  Writes out a string identifying the given pattern element
 
       procedure Write_Node_Id (E : PE_Ptr) is
       begin
@@ -2428,7 +2427,7 @@ package body GNAT.Spitbol.Patterns is
             when PC_Alt => Alt : declare
 
                Elmts_In_L : constant IndexT := E.Pthen.Index - E.Alt.Index;
-               --  Number of elements in left pattern of alternation.
+               --  Number of elements in left pattern of alternation
 
                Lowest_In_L : constant IndexT := E.Index - Elmts_In_L;
                --  Number of lowest index in elements of left pattern
@@ -3679,7 +3678,7 @@ package body GNAT.Spitbol.Patterns is
       --  failure and popping a "real" cursor value from the stack.
 
       PE_Unanchored : aliased PE := (PC_Unanchored, 0, Pat_P);
-      --  Dummy pattern element used in the unanchored case.
+      --  Dummy pattern element used in the unanchored case
 
       Stack : Stack_Type;
       --  The pattern matching failure stack for this call to Match
@@ -4061,7 +4060,7 @@ package body GNAT.Spitbol.Patterns is
          when PC_Assign =>
             goto Fail;
 
-         --  Assign immediate. This node performs the actual assignment.
+         --  Assign immediate. This node performs the actual assignment
 
          when PC_Assign_Imm =>
             Set_String
@@ -4976,7 +4975,7 @@ package body GNAT.Spitbol.Patterns is
       --  failure and popping a "real" cursor value from the stack.
 
       PE_Unanchored : aliased PE := (PC_Unanchored, 0, Pat_P);
-      --  Dummy pattern element used in the unanchored case.
+      --  Dummy pattern element used in the unanchored case
 
       Region_Level : Natural := 0;
       --  Keeps track of recursive region level. This is used only for
@@ -5006,7 +5005,7 @@ package body GNAT.Spitbol.Patterns is
       --  successful match.
 
       procedure Dout (Str : String);
-      --  Output string to standard error with bars indicating region level.
+      --  Output string to standard error with bars indicating region level
 
       procedure Dout (Str : String; A : Character);
       --  Calls Dout with the string S ('A')
@@ -5477,7 +5476,7 @@ package body GNAT.Spitbol.Patterns is
             Dout (Img (Node) & "deferred assign/write cancelled");
             goto Fail;
 
-         --  Assign immediate. This node performs the actual assignment.
+         --  Assign immediate. This node performs the actual assignment
 
          when PC_Assign_Imm =>
             Dout

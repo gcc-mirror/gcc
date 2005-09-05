@@ -65,12 +65,11 @@
 --       language is modeled on context free grammars, with context sensitive
 --       extensions that provide full (type 0) computational capabilities.
 
-with Ada.Finalization; use Ada.Finalization;
 with Ada.Strings.Maps; use Ada.Strings.Maps;
 with Ada.Text_IO;      use Ada.Text_IO;
 
 package GNAT.Spitbol.Patterns is
-pragma Elaborate_Body (Patterns);
+   pragma Elaborate_Body;
 
    -------------------------------
    -- Pattern Matching Tutorial --
@@ -631,7 +630,7 @@ pragma Elaborate_Body (Patterns);
    --          Abort        Cancel
    --          Rem          Rest
 
-   --    where we have clashes with Ada reserved names.
+   --    where we have clashes with Ada reserved names
 
    --    Ada requires the use of 'Access to refer to functions used in the
    --    pattern match, and often the use of 'Unrestricted_Access may be
@@ -704,7 +703,7 @@ pragma Elaborate_Body (Patterns);
    function "&"  (L : PChar;   R : Pattern) return Pattern;
    function "&"  (L : Pattern; R : PChar)   return Pattern;
 
-   --  Pattern concatenation. Matches L followed by R.
+   --  Pattern concatenation. Matches L followed by R
 
    function "or" (L : Pattern; R : Pattern) return Pattern;
    function "or" (L : PString; R : Pattern) return Pattern;
@@ -820,7 +819,7 @@ pragma Elaborate_Body (Patterns);
    --  Constructs a pattern that immediately aborts the entire match
 
    function Fail                                            return Pattern;
-   --  Constructs a pattern that always fails.
+   --  Constructs a pattern that always fails
 
    function Fence                                           return Pattern;
    --  Constructs a pattern that matches null on the first attempt, and then
@@ -1095,12 +1094,11 @@ pragma Elaborate_Body (Patterns);
    --  except that instead of setting the value of a variable, the matched
    --  substring is written to the appropriate file. This can be useful in
    --  following the progress of a match without generating the full amount
-
    --  of information obtained by setting Debug_Mode to True.
 
    Terminal : constant File_Access := Standard_Error;
    Output   : constant File_Access := Standard_Output;
-   --  Two handy synonyms for use with the above pattern write operations.
+   --  Two handy synonyms for use with the above pattern write operations
 
    --  Finally we have some routines that are useful for determining what
    --  patterns are in use, particularly if they are constructed dynamically.
@@ -1149,7 +1147,7 @@ private
       --  Maximum number of stack entries required for matching this
       --  pattern. See description of pattern history stack in body.
 
-      P   : PE_Ptr := null;
+      P : PE_Ptr := null;
       --  Pointer to initial pattern element for pattern
    end record;
 
@@ -1159,19 +1157,19 @@ private
    --  Adjust routine used to copy pattern objects
 
    procedure Finalize (Object : in out Pattern);
-   --  Finalization routine used to release storage allocated for a pattern.
+   --  Finalization routine used to release storage allocated for a pattern
 
    type VString_Ptr is access all VString;
 
    type Match_Result is record
-      Var   : VString_Ptr;
-      --  Pointer to subject string. Set to null if match failed.
+      Var : VString_Ptr;
+      --  Pointer to subject string. Set to null if match failed
 
       Start : Natural := 1;
       --  Starting index position (1's origin) of matched section of
       --  subject string. Only valid if Var is non-null.
 
-      Stop  : Natural := 0;
+      Stop : Natural := 0;
       --  Ending index position (1's origin) of matched section of
       --  subject string. Only valid if Var is non-null.
 

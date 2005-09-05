@@ -32,12 +32,10 @@ with Osint;    use Osint;
 with Prj.Attr;
 with Prj.Env;
 with Prj.Err;  use Prj.Err;
-with Scans;    use Scans;
 with Snames;   use Snames;
 with Uintp;    use Uintp;
 
 with GNAT.Case_Util; use GNAT.Case_Util;
-with GNAT.OS_Lib;    use GNAT.OS_Lib;
 
 package body Prj is
 

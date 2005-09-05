@@ -37,7 +37,6 @@ with System.Case_Util; use System.Case_Util;
 
 with Unchecked_Conversion;
 
-with GNAT.OS_Lib; use GNAT.OS_Lib;
 with GNAT.HTable;
 
 package body Osint is

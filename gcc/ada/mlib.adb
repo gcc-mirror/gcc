@@ -35,7 +35,6 @@ with Namet;  use Namet;
 with MLib.Utl; use MLib.Utl;
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
-with GNAT.OS_Lib;               use GNAT.OS_Lib;
 
 package body MLib is
 
@@ -50,8 +49,6 @@ package body MLib is
       Output_Dir  : String)
    is
       pragma Warnings (Off, Afiles);
-
-      use GNAT.OS_Lib;
 
    begin
       if not Opt.Quiet_Output then

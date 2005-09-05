@@ -28,7 +28,6 @@ pragma Style_Checks (All_Checks);
 --  Turn off subprogram body ordering check. Subprograms are in order
 --  by RM section rather than alphabetical
 
-with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Uname;    use Uname;
 
