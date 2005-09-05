@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,7 +49,8 @@ with Stringt;  use Stringt;
 with Tbuild;   use Tbuild;
 with Uname;    use Uname;
 
-with System.WCh_Con; use System.WCh_Con;
+with System.Case_Util; use System.Case_Util;
+with System.WCh_Con;   use System.WCh_Con;
 
 package body Lib.Writ is
 
@@ -684,11 +685,29 @@ package body Lib.Writ is
                  or else (Ada_Version = Ada_83
                            and then Full_Source_Name (Body_Fname) /= No_File)
                then
+                  --  Ensure that on platforms where the file names are not
+                  --  case sensitive, the recorded file name is in lower case.
+
+                  if not File_Names_Case_Sensitive then
+                     Get_Name_String (Body_Fname);
+                     To_Lower (Name_Buffer (1 .. Name_Len));
+                     Body_Fname := Name_Find;
+                  end if;
+
                   Write_Info_Name (Body_Fname);
                   Write_Info_Tab (49);
                   Write_Info_Name
                     (Lib_File_Name (Body_Fname, Body_Index));
                else
+                  --  Ensure that on platforms where the file names are not
+                  --  case sensitive, the recorded file name is in lower case.
+
+                  if not File_Names_Case_Sensitive then
+                     Get_Name_String (Fname);
+                     To_Lower (Name_Buffer (1 .. Name_Len));
+                     Fname := Name_Find;
+                  end if;
+
                   Write_Info_Name (Fname);
                   Write_Info_Tab (49);
                   Write_Info_Name
@@ -830,7 +849,7 @@ package body Lib.Writ is
                      Nam : Node_Id := Defining_Unit_Name (S);
 
                   begin
-                     --  If it is a child unit, get its simple name.
+                     --  If it is a child unit, get its simple name
 
                      if Nkind (Nam) = N_Defining_Program_Unit_Name then
                         Nam := Defining_Identifier (Nam);
@@ -922,11 +941,7 @@ package body Lib.Writ is
          Write_Info_Str (" UA");
       end if;
 
-      if Exception_Mechanism /= Front_End_Setjmp_Longjmp_Exceptions then
-         if Unit_Exception_Table_Present then
-            Write_Info_Str (" UX");
-         end if;
-
+      if Exception_Mechanism = Back_End_Exceptions then
          Write_Info_Str (" ZX");
       end if;
 
@@ -1059,6 +1074,8 @@ package body Lib.Writ is
          Sind : Source_File_Index;
          --  Index of corresponding source file
 
+         Fname : File_Name_Type;
+
       begin
          for J in 1 .. Num_Sdep loop
             Unum := Sdep_Table (J);
@@ -1071,7 +1088,18 @@ package body Lib.Writ is
             --  Normal case of a unit entry with a source index
 
             if Sind /= No_Source_File then
-               Write_Info_Name (File_Name (Sind));
+               Fname := File_Name (Sind);
+
+               --  Ensure that on platforms where the file names are not
+               --  case sensitive, the recorded file name is in lower case.
+
+               if not File_Names_Case_Sensitive then
+                  Get_Name_String (Fname);
+                  To_Lower (Name_Buffer (1 .. Name_Len));
+                  Fname := Name_Find;
+               end if;
+
+               Write_Info_Name (Fname);
                Write_Info_Tab (25);
                Write_Info_Str (String (Time_Stamp (Sind)));
                Write_Info_Char (' ');
