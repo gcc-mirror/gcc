@@ -43,10 +43,6 @@ pragma Polling (Off);
 with Ada.Exceptions;
 --  Used for Exception_Occurrence_Access
 
-with System.Tasking;
-pragma Elaborate_All (System.Tasking);
---  Ensure that the first step initializations have been performed
-
 with System.Task_Primitives;
 --  Used for Lock
 
@@ -94,6 +90,12 @@ package body System.Tasking.Initialization is
    -- Tasking versions of some services needed by non-tasking programs --
    ----------------------------------------------------------------------
 
+   procedure Abort_Defer;
+   --  NON-INLINE versions without Self_ID for soft links
+
+   procedure Abort_Undefer;
+   --  NON-INLINE versions without Self_ID for soft links
+
    procedure Task_Lock;
    --  Locks out other tasks. Preceding a section of code by Task_Lock and
    --  following it by Task_Unlock creates a critical region. This is used
@@ -106,13 +108,6 @@ package body System.Tasking.Initialization is
    --  Releases lock previously set by call to Task_Lock. In the nested case,
    --  all nested locks must be released before other tasks competing for the
    --  tasking lock are released.
-
-   function  Get_Exc_Stack_Addr return Address;
-   --  Get the exception stack for the current task
-
-   procedure Set_Exc_Stack_Addr (Self_ID : Address; Addr : Address);
-   --  Self_ID is the Task_Id of the task that gets the exception stack.
-   --  For Self_ID = Null_Address, the current task gets the exception stack.
 
    function Get_Stack_Info return Stack_Checking.Stack_Access;
    --  Get access to the current task's Stack_Info
@@ -237,13 +232,12 @@ package body System.Tasking.Initialization is
       Self_ID.Deferral_Level := Self_ID.Deferral_Level + 1;
    end Defer_Abort_Nestable;
 
-   --------------------
-   -- Defer_Abortion --
-   --------------------
+   -----------------
+   -- Abort_Defer --
+   -----------------
 
-   procedure Defer_Abortion is
+   procedure Abort_Defer is
       Self_ID : Task_Id;
-
    begin
       if No_Abort and then not Dynamic_Priority_Support then
          return;
@@ -251,7 +245,7 @@ package body System.Tasking.Initialization is
 
       Self_ID := STPO.Self;
       Self_ID.Deferral_Level := Self_ID.Deferral_Level + 1;
-   end Defer_Abortion;
+   end Abort_Defer;
 
    -----------------------
    -- Do_Pending_Action --
@@ -346,8 +340,9 @@ package body System.Tasking.Initialization is
 
    procedure Init_RTS is
       Self_Id : Task_Id;
-
    begin
+      Tasking.Initialize;
+
       --  Terminate run time (regular vs restricted) specific initialization
       --  of the environment task.
 
@@ -381,20 +376,16 @@ package body System.Tasking.Initialization is
       --  the tasking version of the soft links can be used.
 
       if not No_Abort or else Dynamic_Priority_Support then
-         SSL.Abort_Defer   := Defer_Abortion'Access;
-         SSL.Abort_Undefer := Undefer_Abortion'Access;
+         SSL.Abort_Defer   := Abort_Defer'Access;
+         SSL.Abort_Undefer := Abort_Undefer'Access;
       end if;
 
       SSL.Update_Exception   := Update_Exception'Access;
       SSL.Lock_Task          := Task_Lock'Access;
       SSL.Unlock_Task        := Task_Unlock'Access;
-      SSL.Get_Exc_Stack_Addr := Get_Exc_Stack_Addr'Access;
-      SSL.Set_Exc_Stack_Addr := Set_Exc_Stack_Addr'Access;
       SSL.Check_Abort_Status := Check_Abort_Status'Access;
       SSL.Get_Stack_Info     := Get_Stack_Info'Access;
       SSL.Task_Name          := Task_Name'Access;
-
-      SSL.Set_Exc_Stack_Addr (Null_Address, SSL.Get_Exc_Stack_Addr_NT);
 
       --  Initialize the tasking soft links (if not done yet) that are common
       --  to the full and the restricted run times.
@@ -757,16 +748,12 @@ package body System.Tasking.Initialization is
       end if;
    end Undefer_Abort_Nestable;
 
-   ----------------------
-   -- Undefer_Abortion --
-   ----------------------
+   -------------------
+   -- Abort_Undefer --
+   -------------------
 
-   --  Phase out RTS-internal use of Undefer_Abortion to reduce overhead due
-   --  to multiple calls to Self.
-
-   procedure Undefer_Abortion is
+   procedure Abort_Undefer is
       Self_ID : Task_Id;
-
    begin
       if No_Abort and then not Dynamic_Priority_Support then
          return;
@@ -800,7 +787,7 @@ package body System.Tasking.Initialization is
             Do_Pending_Action (Self_ID);
          end if;
       end if;
-   end Undefer_Abortion;
+   end Abort_Undefer;
 
    ----------------------
    -- Update_Exception --
@@ -908,25 +895,10 @@ package body System.Tasking.Initialization is
    -- Soft-Link Bodies --
    ----------------------
 
-   function Get_Exc_Stack_Addr return Address is
-   begin
-      return STPO.Self.Common.Compiler_Data.Exc_Stack_Addr;
-   end Get_Exc_Stack_Addr;
-
    function Get_Stack_Info return Stack_Checking.Stack_Access is
    begin
       return STPO.Self.Common.Compiler_Data.Pri_Stack_Info'Access;
    end Get_Stack_Info;
-
-   procedure Set_Exc_Stack_Addr (Self_ID : Address; Addr : Address) is
-      Me : Task_Id := To_Task_Id (Self_ID);
-   begin
-      if Me = Null_Task then
-         Me := STPO.Self;
-      end if;
-
-      Me.Common.Compiler_Data.Exc_Stack_Addr := Addr;
-   end Set_Exc_Stack_Addr;
 
    -----------------------
    -- Soft-Link Dummies --
