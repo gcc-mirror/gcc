@@ -42,14 +42,6 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
    procedure Free is
      new Ada.Unchecked_Deallocation (Buckets_Type, Buckets_Access);
 
-   -----------------------
-   -- Local Subprograms --
-   -----------------------
-
-   procedure Rehash
-     (HT   : in out Hash_Table_Type;
-      Size : Hash_Type);
-
    ------------
    -- Adjust --
    ------------
@@ -405,27 +397,33 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
    begin
       Clear (HT);
 
-      declare
-         B : Buckets_Access := HT.Buckets;
-      begin
-         HT.Buckets := null;
-         HT.Length := 0;
-         Free (B); -- can this fail???
-      end;
-
       Hash_Type'Read (Stream, Last);
-
-      --  TODO: don't immediately deallocate the buckets array we
-      --  already have. Instead, allocate a new buckets array only
-      --  if it needs to expanded because of the value of Last.
-
-      if Last /= 0 then
-         HT.Buckets := new Buckets_Type (0 .. Last);
-      end if;
 
       Count_Type'Base'Read (Stream, N);
       pragma Assert (N >= 0);
-      while N > 0 loop
+
+      if N = 0 then
+         return;
+      end if;
+
+      if HT.Buckets = null
+        or else HT.Buckets'Last /= Last
+      then
+         Free (HT.Buckets);
+         HT.Buckets := new Buckets_Type (0 .. Last);
+      end if;
+
+      --  TODO: should we rewrite this algorithm so that it doesn't
+      --  depend on preserving the exactly length of the hash table
+      --  array?  We would prefer to not have to (re)allocate a
+      --  buckets array (the array that HT already has might be large
+      --  enough), and to not have to stream the count of the number
+      --  of nodes in each bucket.  The algorithm below is vestigial,
+      --  as it was written prior to the meeting in Palma, when the
+      --  semantics of equality were changed (and which obviated the
+      --  need to preserve the hash table length).
+
+      loop
          Hash_Type'Read (Stream, I);
          pragma Assert (I in HT.Buckets'Range);
          pragma Assert (HT.Buckets (I) = null);
@@ -454,6 +452,8 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
          end loop;
 
          N := N - M;
+
+         exit when N = 0;
       end loop;
    end Generic_Read;
 
@@ -480,6 +480,8 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       if HT.Length = 0 then
          return;
       end if;
+
+      --  TODO: see note in Generic_Read???
 
       for Indx in HT.Buckets'Range loop
          X := HT.Buckets (Indx);
@@ -577,104 +579,6 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       return null;
    end Next;
 
-   ------------
-   -- Rehash --
-   ------------
-
-   procedure Rehash
-     (HT   : in out Hash_Table_Type;
-      Size : Hash_Type)
-   is
-      subtype Buckets_Range is Hash_Type range 0 .. Size - 1;
-
-      Dst_Buckets : Buckets_Access := new Buckets_Type (Buckets_Range);
-      Src_Buckets : Buckets_Access := HT.Buckets;
-
-      L  : Count_Type renames HT.Length;
-      LL : constant Count_Type := L;
-
-   begin
-      if Src_Buckets = null then
-         pragma Assert (L = 0);
-         HT.Buckets := Dst_Buckets;
-         return;
-      end if;
-
-      if L = 0 then
-         HT.Buckets := Dst_Buckets;
-         Free (Src_Buckets);
-         return;
-      end if;
-
-      --  We might want to change this to iter from 1 .. L instead ???
-
-      for Src_Index in Src_Buckets'Range loop
-
-         declare
-            Src_Bucket : Node_Access renames Src_Buckets (Src_Index);
-         begin
-            while Src_Bucket /= null loop
-               declare
-                  Src_Node   : constant Node_Access := Src_Bucket;
-                  Dst_Index  : constant Hash_Type :=
-                                 Index (Dst_Buckets.all, Src_Node);
-                  Dst_Bucket : Node_Access renames Dst_Buckets (Dst_Index);
-               begin
-                  Src_Bucket := Next (Src_Node);
-                  Set_Next (Src_Node, Dst_Bucket);
-                  Dst_Bucket := Src_Node;
-               end;
-
-               pragma Assert (L > 0);
-               L := L - 1;
-
-            end loop;
-
-         exception
-            when others =>
-
-               --  NOTE: see todo below.
-               --  Not clear that we can deallocate the nodes,
-               --  because they may be designated by outstanding
-               --  iterators.  Which means they're now lost... ???
-
-               --                 for J in NB'Range loop
-               --                    declare
-               --                       Dst : Node_Access renames NB (J);
-               --                       X   : Node_Access;
-               --                    begin
-               --                       while Dst /= null loop
-               --                          X := Dst;
-               --                          Dst := Succ (Dst);
-               --                          Free (X);
-               --                       end loop;
-               --                    end;
-               --                 end loop;
-
-               --  TODO: 17 Apr 2005
-               --  What I should do instead is go ahead and deallocate the
-               --  nodes, since when assertions are enabled, we vet the
-               --  cursors, and we modify the state of a node enough when
-               --  it is deallocated in order to detect mischief.
-               --  END TODO.
-
-               Free (Dst_Buckets);
-               raise;  --  TODO: raise Program_Error instead
-         end;
-
-         --  exit when L = 0;
-         --  need to bother???
-
-      end loop;
-
-      pragma Assert (L = 0);
-
-      HT.Buckets := Dst_Buckets;
-      HT.Length := LL;
-
-      Free (Src_Buckets);
-   end Rehash;
-
    ----------------------
    -- Reserve_Capacity --
    ----------------------
@@ -686,74 +590,142 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       NN : Hash_Type;
 
    begin
-      if N = 0 then
-         if HT.Length = 0 then
-            Free (HT.Buckets);
-
-         elsif HT.Length < HT.Buckets'Length then
-            NN := Prime_Numbers.To_Prime (HT.Length);
-
-            --  ASSERT: NN >= HT.Length
-
-            if NN < HT.Buckets'Length then
-               if HT.Busy > 0 then
-                  raise Program_Error;
-               end if;
-
-               Rehash (HT, Size => NN);
-            end if;
+      if HT.Buckets = null then
+         if N > 0 then
+            NN := Prime_Numbers.To_Prime (N);
+            HT.Buckets := new Buckets_Type (0 .. NN - 1);
          end if;
 
          return;
       end if;
 
-      if HT.Buckets = null then
+      if HT.Length = 0 then
+         if N = 0 then
+            Free (HT.Buckets);
+            return;
+         end if;
+
+         if N = HT.Buckets'Length then
+            return;
+         end if;
+
          NN := Prime_Numbers.To_Prime (N);
 
-         --  ASSERT: NN >= N
+         if NN = HT.Buckets'Length then
+            return;
+         end if;
 
-         Rehash (HT, Size => NN);
+         declare
+            X : Buckets_Access := HT.Buckets;
+         begin
+            HT.Buckets := new Buckets_Type (0 .. NN - 1);
+            Free (X);
+         end;
+
          return;
       end if;
 
-      if N <= HT.Length then
+      if N = HT.Buckets'Length then
+         return;
+      end if;
+
+      if N < HT.Buckets'Length then
          if HT.Length >= HT.Buckets'Length then
             return;
          end if;
 
          NN := Prime_Numbers.To_Prime (HT.Length);
 
-         --  ASSERT: NN >= HT.Length
-
-         if NN < HT.Buckets'Length then
-            if HT.Busy > 0 then
-               raise Program_Error;
-            end if;
-
-            Rehash (HT, Size => NN);
+         if NN >= HT.Buckets'Length then
+            return;
          end if;
 
-         return;
-      end if;
+      else
+         NN := Prime_Numbers.To_Prime (Count_Type'Max (N, HT.Length));
 
-      --  ASSERT: N > HT.Length
-
-      if N = HT.Buckets'Length then
-         return;
-      end if;
-
-      NN := Prime_Numbers.To_Prime (N);
-
-      --  ASSERT: NN >= N
-      --  ASSERT: NN > HT.Length
-
-      if NN /= HT.Buckets'Length then
-         if HT.Busy > 0 then
-            raise Program_Error;
+         if NN = HT.Buckets'Length then -- can't expand any more
+            return;
          end if;
-
-         Rehash (HT, Size => NN);
       end if;
+
+      if HT.Busy > 0 then
+         raise Program_Error;
+      end if;
+
+      Rehash : declare
+         Dst_Buckets : Buckets_Access := new Buckets_Type (0 .. NN - 1);
+         Src_Buckets : Buckets_Access := HT.Buckets;
+
+         L : Count_Type renames HT.Length;
+         LL : constant Count_Type := L;
+
+         Src_Index : Hash_Type := Src_Buckets'First;
+
+      begin
+         while L > 0 loop
+            declare
+               Src_Bucket : Node_Access renames Src_Buckets (Src_Index);
+
+            begin
+               while Src_Bucket /= null loop
+                  declare
+                     Src_Node : constant Node_Access := Src_Bucket;
+
+                     Dst_Index : constant Hash_Type :=
+                       Index (Dst_Buckets.all, Src_Node);
+
+                     Dst_Bucket : Node_Access renames Dst_Buckets (Dst_Index);
+
+                  begin
+                     Src_Bucket := Next (Src_Node);
+
+                     Set_Next (Src_Node, Dst_Bucket);
+
+                     Dst_Bucket := Src_Node;
+                  end;
+
+                  pragma Assert (L > 0);
+                  L := L - 1;
+               end loop;
+            exception
+               when others =>
+                  --  If there's an error computing a hash value during a
+                  --  rehash, then AI-302 says the nodes "become lost."  The
+                  --  issue is whether to actually deallocate these lost nodes,
+                  --  since they might be designated by extant cursors.  Here
+                  --  we decide to deallocate the nodes, since it's better to
+                  --  solve real problems (storage consumption) rather than
+                  --  imaginary ones (the user might, or might not, dereference
+                  --  a cursor designating a node that has been deallocated),
+                  --  and because we have a way to vet a dangling cursor
+                  --  reference anyway, and hence can actually detect the
+                  --  problem.
+
+                  for Dst_Index in Dst_Buckets'Range loop
+                     declare
+                        B : Node_Access renames Dst_Buckets (Dst_Index);
+                        X : Node_Access;
+                     begin
+                        while B /= null loop
+                           X := B;
+                           B := Next (X);
+                           Free (X);
+                        end loop;
+                     end;
+                  end loop;
+
+                  Free (Dst_Buckets);
+                  raise Program_Error;
+            end;
+
+            Src_Index := Src_Index + 1;
+         end loop;
+
+         HT.Buckets := Dst_Buckets;
+         HT.Length := LL;
+
+         Free (Src_Buckets);
+      end Rehash;
    end Reserve_Capacity;
 
 end Ada.Containers.Hash_Tables.Generic_Operations;
