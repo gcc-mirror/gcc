@@ -529,8 +529,7 @@ expand_builtin_return_addr (enum built_in_function fndecl_code, int count)
       tem = DYNAMIC_CHAIN_ADDRESS (tem);
 #endif
       tem = memory_address (Pmode, tem);
-      tem = gen_rtx_MEM (Pmode, tem);
-      set_mem_alias_set (tem, get_frame_alias_set ());
+      tem = gen_frame_mem (Pmode, tem);
       tem = copy_to_reg (tem);
     }
 
@@ -545,8 +544,7 @@ expand_builtin_return_addr (enum built_in_function fndecl_code, int count)
 #else
   tem = memory_address (Pmode,
 			plus_constant (tem, GET_MODE_SIZE (Pmode)));
-  tem = gen_rtx_MEM (Pmode, tem);
-  set_mem_alias_set (tem, get_frame_alias_set ());
+  tem = gen_frame_mem (Pmode, tem);
 #endif
   return tem;
 }
