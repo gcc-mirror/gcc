@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,9 +43,9 @@ package body System.Exception_Table is
    procedure Set_HT_Link (T : Exception_Data_Ptr; Next : Exception_Data_Ptr);
    function  Get_HT_Link (T : Exception_Data_Ptr) return Exception_Data_Ptr;
 
-   function Hash (F : Big_String_Ptr) return HTable_Headers;
-   function Equal (A, B : Big_String_Ptr) return Boolean;
-   function Get_Key (T : Exception_Data_Ptr) return Big_String_Ptr;
+   function Hash (F : System.Address) return HTable_Headers;
+   function Equal (A, B : System.Address) return Boolean;
+   function Get_Key (T : Exception_Data_Ptr) return System.Address;
 
    package Exception_HTable is new System.HTable.Static_HTable (
      Header_Num => HTable_Headers,
@@ -54,7 +54,7 @@ package body System.Exception_Table is
      Null_Ptr   => null,
      Set_Next   => Set_HT_Link,
      Next       => Get_HT_Link,
-     Key        => Big_String_Ptr,
+     Key        => System.Address,
      Get_Key    => Get_Key,
      Hash       => Hash,
      Equal      => Equal);
@@ -63,15 +63,17 @@ package body System.Exception_Table is
    -- Equal --
    -----------
 
-   function Equal (A, B : Big_String_Ptr) return Boolean is
-      J    : Integer := 1;
+   function Equal (A, B : System.Address) return Boolean is
+      S1 : constant Big_String_Ptr := To_Ptr (A);
+      S2 : constant Big_String_Ptr := To_Ptr (B);
+      J : Integer := 1;
 
    begin
       loop
-         if A (J) /= B (J) then
+         if S1 (J) /= S2 (J) then
             return False;
 
-         elsif A (J) = ASCII.NUL then
+         elsif S1 (J) = ASCII.NUL then
             return True;
 
          else
@@ -93,7 +95,7 @@ package body System.Exception_Table is
    -- Get_Key --
    -------------
 
-   function Get_Key (T : Exception_Data_Ptr) return Big_String_Ptr is
+   function Get_Key (T : Exception_Data_Ptr) return System.Address is
    begin
       return T.Full_Name;
    end Get_Key;
@@ -125,9 +127,10 @@ package body System.Exception_Table is
    -- Hash --
    ----------
 
-   function Hash (F : Big_String_Ptr) return HTable_Headers is
+   function Hash (F : System.Address) return HTable_Headers is
       type S is mod 2**8;
 
+      Str  : constant Big_String_Ptr := To_Ptr (F);
       Size : constant S := S (HTable_Headers'Last - HTable_Headers'First + 1);
       Tmp  : S := 0;
       J    : Positive;
@@ -135,10 +138,10 @@ package body System.Exception_Table is
    begin
       J := 1;
       loop
-         if F (J) = ASCII.NUL then
+         if Str (J) = ASCII.NUL then
             return HTable_Headers'First + HTable_Headers'Base (Tmp mod Size);
          else
-            Tmp := Tmp xor S (Character'Pos (F (J)));
+            Tmp := Tmp xor S (Character'Pos (Str (J)));
          end if;
          J := J + 1;
       end loop;
@@ -161,7 +164,7 @@ package body System.Exception_Table is
    begin
       Copy (X'Range) := X;
       Copy (Copy'Last) := ASCII.NUL;
-      Res := Exception_HTable.Get (To_Ptr (Copy'Address));
+      Res := Exception_HTable.Get (Copy'Address);
 
       --  If unknown exception, create it on the heap. This is a legitimate
       --  situation in the distributed case when an exception is defined only
@@ -175,7 +178,7 @@ package body System.Exception_Table is
              (Not_Handled_By_Others => False,
               Lang                  => 'A',
               Name_Length           => Copy'Length,
-              Full_Name             => To_Ptr (Dyn_Copy.all'Address),
+              Full_Name             => Dyn_Copy.all'Address,
               HTable_Ptr            => null,
               Import_Code           => 0,
               Raise_Hook            => null);

@@ -49,28 +49,19 @@ with System.Task_Info;
 with System.Tasking.Debug;
 --  used for Known_Tasks
 
-with System.IO;
---  used for Put_Line
-
 with System.Interrupt_Management;
 --  used for Keep_Unmasked
 --           Abort_Task_Interrupt
 --           Interrupt_ID
 
+with System.OS_Primitives;
+--  used for Delay_Modes
+
+with System.IO;
+--  used for Put_Line
+
 with System.Parameters;
 --  used for Size_Type
-
-with System.Tasking;
---  used for Ada_Task_Control_Block
---           Task_Id
-
-with System.Soft_Links;
---  used for Defer/Undefer_Abort
-
---  Note that we do not use System.Tasking.Initialization directly since
---  this is a higher level package that we shouldn't depend on. For example
---  when using the restricted run time, it is replaced by
---  System.Tasking.Restricted.Stages.
 
 with System.Program_Info;
 --  used for Default_Task_Stack
@@ -81,9 +72,6 @@ with System.Program_Info;
 
 with System.OS_Interface;
 --  used for various type, constant, and operations
-
-with System.OS_Primitives;
---  used for Delay_Modes
 
 with Unchecked_Conversion;
 with Unchecked_Deallocation;
@@ -96,8 +84,6 @@ package body System.Task_Primitives.Operations is
    use System.OS_Interface;
    use System.OS_Primitives;
    use System.Parameters;
-
-   package SSL renames System.Soft_Links;
 
    ----------------
    -- Local Data --
@@ -515,12 +501,6 @@ package body System.Task_Primitives.Operations is
       Result     : Interfaces.C.int;
 
    begin
-      --  The little window between deferring abort and locking Self_ID is
-      --  the only reason we need to check for pending abort and priority
-      --  change below!
-
-      SSL.Abort_Defer.all;
-
       if Single_Lock then
          Lock_RTS;
       end if;
@@ -565,7 +545,6 @@ package body System.Task_Primitives.Operations is
       end if;
 
       Yield;
-      SSL.Abort_Undefer.all;
    end Timed_Delay;
 
    ---------------------
@@ -1243,6 +1222,8 @@ package body System.Task_Primitives.Operations is
    begin
       Environment_Task_Id := Environment_Task;
 
+      Interrupt_Management.Initialize;
+
       --  Initialize the lock used to synchronize chain of all ATCBs.
 
       Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
@@ -1250,6 +1231,18 @@ package body System.Task_Primitives.Operations is
       Specific.Initialize (Environment_Task);
 
       Enter_Task (Environment_Task);
+
+      --  Prepare the set of signals that should unblocked in all tasks
+
+      Result := sigemptyset (Unblocked_Signal_Mask'Access);
+      pragma Assert (Result = 0);
+
+      for J in Interrupt_Management.Interrupt_ID loop
+         if System.Interrupt_Management.Keep_Unmasked (J) then
+            Result := sigaddset (Unblocked_Signal_Mask'Access, Signal (J));
+            pragma Assert (Result = 0);
+         end if;
+      end loop;
 
       --  Install the abort-signal handler
 
@@ -1272,30 +1265,4 @@ package body System.Task_Primitives.Operations is
       end if;
    end Initialize;
 
-begin
-   declare
-      Result : Interfaces.C.int;
-   begin
-      --  Prepare the set of signals that should unblocked in all tasks
-
-      Result := sigemptyset (Unblocked_Signal_Mask'Access);
-      pragma Assert (Result = 0);
-
-      for J in Interrupt_Management.Interrupt_ID loop
-         if System.Interrupt_Management.Keep_Unmasked (J) then
-            Result := sigaddset (Unblocked_Signal_Mask'Access, Signal (J));
-            pragma Assert (Result = 0);
-         end if;
-      end loop;
-
-      --  Pick the highest resolution Clock for Clock_Realtime
-
-      --  ??? This code currently doesn't work (see c94007[ab] for example)
-
-      --  if syssgi (SGI_CYCLECNTR_SIZE) = 64 then
-      --     Real_Time_Clock_Id := CLOCK_SGI_CYCLE;
-      --  else
-      --     Real_Time_Clock_Id := CLOCK_REALTIME;
-      --  end if;
-   end;
 end System.Task_Primitives.Operations;

@@ -33,12 +33,6 @@
 
 --  This is the POSIX threads version of this package
 
---  PLEASE DO NOT add any dependences on other packages. ??? why not ???
---  This package is designed to work with or without tasking support.
-
---  See the other warnings in the package specification before making
---  any modifications to this file.
-
 --  Make a careful study of all signals available under the OS, to see which
 --  need to be reserved, kept always unmasked, or kept always unmasked. Be on
 --  the lookout for special signals that may be used by the thread library.
@@ -87,6 +81,21 @@ package body System.Interrupt_Management is
    -----------------------
    -- Local Subprograms --
    -----------------------
+
+   function State (Int : Interrupt_ID) return Character;
+   pragma Import (C, State, "__gnat_get_interrupt_state");
+   --  Get interrupt state. Defined in init.c
+   --  The input argument is the interrupt number,
+   --  and the result is one of the following:
+
+   User    : constant Character := 'u';
+   Runtime : constant Character := 'r';
+   Default : constant Character := 's';
+   --    'n'   this interrupt not set by any Interrupt_State pragma
+   --    'u'   Interrupt_State pragma set state to User
+   --    'r'   Interrupt_State pragma set state to Runtime
+   --    's'   Interrupt_State pragma set state to System (use "default"
+   --           system handler)
 
    procedure Notify_Exception
      (signo    : Signal;
@@ -154,32 +163,24 @@ package body System.Interrupt_Management is
       end case;
    end Notify_Exception;
 
--------------------------
--- Package Elaboration --
--------------------------
+   ----------------
+   -- Initialize --
+   ----------------
 
-begin
-   declare
+   Initialized : Boolean := False;
+
+   procedure Initialize is
       act     : aliased struct_sigaction;
       old_act : aliased struct_sigaction;
       Result  : System.OS_Interface.int;
 
-      function State (Int : Interrupt_ID) return Character;
-      pragma Import (C, State, "__gnat_get_interrupt_state");
-      --  Get interrupt state. Defined in a-init.c
-      --  The input argument is the interrupt number,
-      --  and the result is one of the following:
-
-      User    : constant Character := 'u';
-      Runtime : constant Character := 'r';
-      Default : constant Character := 's';
-      --    'n'   this interrupt not set by any Interrupt_State pragma
-      --    'u'   Interrupt_State pragma set state to User
-      --    'r'   Interrupt_State pragma set state to Runtime
-      --    's'   Interrupt_State pragma set state to System (use "default"
-      --           system handler)
-
    begin
+      if Initialized then
+         return;
+      end if;
+
+      Initialized := True;
+
       --  Need to call pthread_init very early because it is doing signal
       --  initializations.
 
@@ -295,5 +296,6 @@ begin
       --  mark it as reserved.
 
       Reserve (0) := True;
-   end;
+   end Initialize;
+
 end System.Interrupt_Management;

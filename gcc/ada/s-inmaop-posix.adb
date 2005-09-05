@@ -286,13 +286,14 @@ package body System.Interrupt_Management.Operations is
    end Setup_Interrupt_Mask;
 
 begin
-
    declare
       mask    : aliased sigset_t;
       allmask : aliased sigset_t;
       Result  : Interfaces.C.int;
 
    begin
+      Interrupt_Management.Initialize;
+
       for Sig in 1 .. Signal'Last loop
          Result := sigaction
            (Sig, null, Initial_Action (Sig)'Unchecked_Access);

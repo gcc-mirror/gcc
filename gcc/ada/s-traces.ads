@@ -55,6 +55,7 @@
 --  To add a new target, just adapt System.Traces.Send to your own purpose.
 
 package System.Traces is
+   pragma Preelaborate;
 
    type Trace_T is
      (

@@ -167,6 +167,18 @@ package body System.OS_Primitives is
       end if;
    end Timed_Delay;
 
-begin
-   Set_Epoch_Offset;
+   ----------------
+   -- Initialize --
+   ----------------
+
+   Initialized : Boolean := False;
+
+   procedure Initialize is
+   begin
+      if not Initialized then
+         Initialized := True;
+         Set_Epoch_Offset;
+      end if;
+   end Initialize;
+
 end System.OS_Primitives;

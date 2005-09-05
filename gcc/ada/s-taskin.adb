@@ -48,6 +48,21 @@ package body System.Tasking is
 
    package STPO renames System.Task_Primitives.Operations;
 
+   ---------------------
+   -- Detect_Blocking --
+   ---------------------
+
+   function Detect_Blocking return Boolean is
+      GL_Detect_Blocking : Integer;
+      pragma Import (C, GL_Detect_Blocking, "__gl_detect_blocking");
+      --  Global variable exported by the binder generated file.
+      --  A value equal to 1 indicates that pragma Detect_Blocking is active,
+      --  while 0 is used for the pragma not being present.
+
+   begin
+      return GL_Detect_Blocking = 1;
+   end Detect_Blocking;
+
    ----------
    -- Self --
    ----------
@@ -116,8 +131,12 @@ package body System.Tasking is
       All_Tasks_List := T;
    end Initialize_ATCB;
 
+   ----------------
+   -- Initialize --
+   ----------------
+
    Main_Task_Image : constant String := "main_task";
-   --  Image of environment task.
+   --  Image of environment task
 
    Main_Priority : Integer;
    pragma Import (C, Main_Priority, "__gl_main_priority");
@@ -125,26 +144,21 @@ package body System.Tasking is
    --  Priority, because we use the value -1 to indicate the default
    --  main priority, and that is of course not in Priority'range.
 
-   ----------------------------
-   -- Tasking Initialization --
-   ----------------------------
+   Initialized : Boolean := False;
+   --  Used to prevent multiple calls to Initialize
 
-   --  This block constitutes the first part of the initialization of the
-   --  GNARL. This includes creating data structures to make the initial thread
-   --  into the environment task. The last part of the initialization is done
-   --  in System.Tasking.Initialization or System.Tasking.Restricted.Stages.
-   --  All the initializations used to be in Tasking.Initialization, but this
-   --  is no longer possible with the run time simplification (including
-   --  optimized PO and the restricted run time) since one cannot rely on
-   --  System.Tasking.Initialization being present, as was done before.
-
-begin
-   declare
+   procedure Initialize is
       T             : Task_Id;
       Success       : Boolean;
       Base_Priority : Any_Priority;
 
    begin
+      if Initialized then
+         return;
+      end if;
+
+      Initialized := True;
+
       --  Initialize Environment Task
 
       if Main_Priority = Unspecified_Priority then
@@ -170,5 +184,6 @@ begin
       --  in ravenscar mode. Rest of the initialization is done in Init_RTS.
 
       T.Entry_Calls (1).Self := T;
-   end;
+   end Initialize;
+
 end System.Tasking;

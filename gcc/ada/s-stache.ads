@@ -40,7 +40,7 @@
 with System.Storage_Elements;
 
 package System.Stack_Checking is
-
+   pragma Preelaborate;
    pragma Elaborate_Body;
    --  This unit has a junk null body. The reason is that historically we
    --  used to have a real body, and it causes bootstrapping path problems

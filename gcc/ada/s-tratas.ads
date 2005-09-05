@@ -41,6 +41,7 @@
 with System.Tasking;
 
 package System.Traces.Tasking is
+   pragma Preelaborate;
 
    package ST renames System.Tasking;
 

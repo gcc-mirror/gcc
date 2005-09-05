@@ -42,9 +42,10 @@ package body Specific is
    ----------------
 
    procedure Initialize (Environment_Task : Task_Id) is
+      pragma Unreferenced (Environment_Task);
       Result : Interfaces.C.int;
    begin
-      Result := thr_setspecific (ATCB_Key, To_Address (Environment_Task));
+      Result := thr_keycreate (ATCB_Key'Access, System.Null_Address);
       pragma Assert (Result = 0);
    end Initialize;
 

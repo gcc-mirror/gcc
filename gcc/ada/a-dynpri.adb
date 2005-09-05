@@ -31,11 +31,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Warnings (Off);
---  Allow withing of non-Preelaborated units in Ada 2005 mode where this
---  package will be categorized as Preelaborate. See AI-362 for details.
---  It is safe in the context of the run-time to violate the rules!
-
 with Ada.Task_Identification;
 --  used for Task_Id
 --           Current_Task
@@ -52,26 +47,22 @@ with System.Task_Primitives.Operations;
 with System.Tasking;
 --  used for Task_Id
 
-with Ada.Exceptions;
---  used for Raise_Exception
-
-with System.Tasking.Initialization;
---  used for Defer/Undefer_Abort
-
 with System.Parameters;
 --  used for Single_Lock
 
-with Unchecked_Conversion;
+with System.Soft_Links;
+--  use for Abort_Defer
+--          Abort_Undefer
 
-pragma Warnings (On);
+with Unchecked_Conversion;
 
 package body Ada.Dynamic_Priorities is
 
    package STPO renames System.Task_Primitives.Operations;
+   package SSL renames System.Soft_Links;
 
    use System.Parameters;
    use System.Tasking;
-   use Ada.Exceptions;
 
    function Convert_Ids is new
      Unchecked_Conversion
@@ -92,13 +83,11 @@ package body Ada.Dynamic_Priorities is
 
    begin
       if Target = Convert_Ids (Ada.Task_Identification.Null_Task_Id) then
-         Raise_Exception (Program_Error'Identity,
-           Error_Message & "null task");
+         raise Program_Error with Error_Message & "null task";
       end if;
 
       if Task_Identification.Is_Terminated (T) then
-         Raise_Exception (Tasking_Error'Identity,
-           Error_Message & "null task");
+         raise Tasking_Error with Error_Message & "null task";
       end if;
 
       return Target.Common.Base_Priority;
@@ -121,16 +110,14 @@ package body Ada.Dynamic_Priorities is
 
    begin
       if Target = Convert_Ids (Ada.Task_Identification.Null_Task_Id) then
-         Raise_Exception (Program_Error'Identity,
-           Error_Message & "null task");
+         raise Program_Error with Error_Message & "null task";
       end if;
 
       if Task_Identification.Is_Terminated (T) then
-         Raise_Exception (Tasking_Error'Identity,
-           Error_Message & "terminated task");
+         raise Tasking_Error with Error_Message & "terminated task";
       end if;
 
-      Initialization.Defer_Abort (Self_ID);
+      SSL.Abort_Defer.all;
 
       if Single_Lock then
          STPO.Lock_RTS;
@@ -148,7 +135,7 @@ package body Ada.Dynamic_Priorities is
             STPO.Unlock_RTS;
          end if;
 
-         --  Yield is needed to enforce FIFO task dispatching.
+         --  Yield is needed to enforce FIFO task dispatching
 
          --  LL Set_Priority is made while holding the RTS lock so that it
          --  is inheriting high priority until it release all the RTS locks.
@@ -175,7 +162,7 @@ package body Ada.Dynamic_Priorities is
          end if;
       end if;
 
-      Initialization.Undefer_Abort (Self_ID);
+      SSL.Abort_Undefer.all;
    end Set_Priority;
 
 end Ada.Dynamic_Priorities;

@@ -43,36 +43,22 @@ pragma Polling (Off);
 with System.Tasking.Debug;
 --  used for Known_Tasks
 
+with System.OS_Primitives;
+--  used for Delay_Modes
+--           Clock
+
+with Interfaces.OS2Lib.Errors;
+with Interfaces.OS2Lib.Threads;
+with Interfaces.OS2Lib.Synchronization;
+
 with Interfaces.C;
 --  used for size_t
 
 with Interfaces.C.Strings;
 --  used for Null_Ptr
 
-with Interfaces.OS2Lib.Errors;
-with Interfaces.OS2Lib.Threads;
-with Interfaces.OS2Lib.Synchronization;
-
 with System.Parameters;
 --  used for Size_Type
-
-with System.Tasking;
---  used for Task_Id
-
-with System.Parameters;
---  used for Size_Type
-
-with System.Soft_Links;
---  used for Defer/Undefer_Abort
-
---  Note that we do not use System.Tasking.Initialization directly since
---  this is a higher level package that we shouldn't depend on. For example
---  when using the restricted run time, it is replaced by
---  System.Tasking.Restricted.Stages.
-
-with System.OS_Primitives;
---  used for Delay_Modes
---           Clock
 
 with Unchecked_Conversion;
 with Unchecked_Deallocation;
@@ -82,7 +68,6 @@ package body System.Task_Primitives.Operations is
    package IC  renames Interfaces.C;
    package ICS renames Interfaces.C.Strings;
    package OSP renames System.OS_Primitives;
-   package SSL renames System.Soft_Links;
 
    use Interfaces.OS2Lib;
    use Interfaces.OS2Lib.Errors;
@@ -599,12 +584,6 @@ package body System.Task_Primitives.Operations is
       Count      : aliased ULONG;  --  Used to store dummy result
 
    begin
-      --  Only the little window between deferring abort and
-      --  locking Self_ID is the reason we need to
-      --  check for pending abort and priority change below! :(
-
-      SSL.Abort_Defer.all;
-
       if Single_Lock then
          Lock_RTS;
       else
@@ -672,7 +651,6 @@ package body System.Task_Primitives.Operations is
       end if;
 
       System.OS_Interface.Yield;
-      SSL.Abort_Undefer.all;
    end Timed_Delay;
 
    ------------
@@ -1244,6 +1222,20 @@ package body System.Task_Primitives.Operations is
    begin
       Environment_Task_Id := Environment_Task;
 
+      OS_Primitives.Initialize;
+
+      --  Initialize pointer to task local data.
+      --  This is done once, for all tasks.
+
+      Must_Not_Fail (DosAllocThreadLocalMemory
+         ((Thread_Local_Data'Size + 31) / 32,  --  nr of 32-bit words
+          To_PPVOID (Thread_Local_Data_Ptr'Access)));
+
+      --  Initialize thread local data for main thread
+
+      Thread_Local_Data_Ptr.Self_ID := null;
+      Thread_Local_Data_Ptr.Lock_Prio_Level := 0;
+
       Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
       --  Initialize the lock used to synchronize chain of all ATCBs
 
@@ -1279,16 +1271,4 @@ package body System.Task_Primitives.Operations is
       --  initialization needed for the environment task.
    end Initialize;
 
-begin
-   --  Initialize pointer to task local data.
-   --  This is done once, for all tasks.
-
-   Must_Not_Fail (DosAllocThreadLocalMemory
-      ((Thread_Local_Data'Size + 31) / 32,  --  nr of 32-bit words
-       To_PPVOID (Thread_Local_Data_Ptr'Access)));
-
-   --  Initialize thread local data for main thread
-
-   Thread_Local_Data_Ptr.Self_ID := null;
-   Thread_Local_Data_Ptr.Lock_Prio_Level := 0;
 end System.Task_Primitives.Operations;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1996-2003 Free Software Foundation, Inc.        --
+--            Copyright (C) 1996-2005 Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,6 +35,7 @@
 --  to the run-time system at program startup.
 
 package System.Program_Info is
+   pragma Preelaborate;
 
    function Default_Task_Stack return Integer;
    --  The default stack size for each created thread.  This default value

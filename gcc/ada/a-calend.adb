@@ -476,4 +476,6 @@ package body Ada.Calendar is
       return DY;
    end Year;
 
+begin
+   System.OS_Primitives.Initialize;
 end Ada.Calendar;

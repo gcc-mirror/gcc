@@ -35,4 +35,13 @@
 
 package body System.Interrupt_Management is
 
+   ----------------
+   -- Initialize --
+   ----------------
+
+   procedure Initialize is
+   begin
+      null;
+   end Initialize;
+
 end System.Interrupt_Management;

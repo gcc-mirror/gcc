@@ -33,7 +33,6 @@
 
 --  This is the NT version of this package
 
-with Ada.Exceptions;
 with Interfaces.C;
 
 package body System.OS_Primitives is
@@ -267,20 +266,35 @@ package body System.OS_Primitives is
       end if;
    end Timed_Delay;
 
---  Package elaboration, get starting time as base
+   ----------------
+   -- Initialize --
+   ----------------
 
-begin
-   if not QueryPerformanceFrequency (Tick_Frequency'Access) then
-      Ada.Exceptions.Raise_Exception
-        (Program_Error'Identity,
-         "cannot get high performance counter frequency");
-   end if;
+   Initialized : Boolean := False;
 
-   Get_Base_Time;
+   procedure Initialize is
+   begin
+      if Initialized then
+         return;
+      end if;
 
-   --  Keep base clock and ticks for the monotonic clock. These values should
-   --  never be changed to ensure proper behavior of the monotonic clock.
+      Initialized := True;
 
-   Base_Monotonic_Clock := Base_Clock;
-   Base_Monotonic_Ticks := Base_Ticks;
+      --  Get starting time as base
+
+      if not QueryPerformanceFrequency (Tick_Frequency'Access) then
+         raise Program_Error
+           with "cannot get high performance counter frequency";
+      end if;
+
+      Get_Base_Time;
+
+      --  Keep base clock and ticks for the monotonic clock. These values
+      --  should never be changed to ensure proper behavior of the monotonic
+      --  clock.
+
+      Base_Monotonic_Clock := Base_Clock;
+      Base_Monotonic_Ticks := Base_Ticks;
+   end Initialize;
+
 end System.OS_Primitives;

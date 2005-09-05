@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1995-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,6 +36,7 @@
 with Unchecked_Deallocation;
 
 package GNAT.Strings is
+   pragma Preelaborate;
 
    type String_Access is access all String;
    --  General purpose string access type. Note that the caller is

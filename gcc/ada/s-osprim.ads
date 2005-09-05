@@ -35,11 +35,12 @@
 --  delays in non tasking applications.
 
 --  The choice of the real clock/delay implementation (depending on whether
---  tasking is involved or not) is done via soft links (see s-tasoli.ads)
+--  tasking is involved or not) is done via soft links (see s-soflin.ads)
 
 --  NEVER add any dependency to tasking packages here
 
 package System.OS_Primitives is
+   pragma Preelaborate;
 
    Max_Sensible_Delay : constant Duration :=
                           Duration'Min (183 * 24 * 60 * 60.0,
@@ -52,6 +53,11 @@ package System.OS_Primitives is
    --  primitives used). In the case where half a year is too long (which
    --  occurs in high integrity mode with 32-bit words, and possibly on
    --  some specific ports of GNAT), Duration'Last is used instead.
+
+   procedure Initialize;
+   --  Initialize global settings related to this package.
+   --  This procedure should be called before any other subprograms in
+   --  this package. Note that this procedure can be called several times.
 
    function Clock return Duration;
    pragma Inline (Clock);

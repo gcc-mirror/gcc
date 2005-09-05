@@ -44,8 +44,8 @@ with System.OS_Interface;
 --  used for Thread_Id
 
 package System.Task_Primitives.Operations is
+   pragma Preelaborate;
 
-   pragma Elaborate_Body;
    package ST renames System.Tasking;
    package OSI renames System.OS_Interface;
 
@@ -356,8 +356,8 @@ package System.Task_Primitives.Operations is
      (Self_ID : ST.Task_Id;
       Time    : Duration;
       Mode    : ST.Delay_Modes);
-   --  Implement the semantics of the delay statement. It is assumed that
-   --  the caller is not abort-deferred and does not hold any locks.
+   --  Implement the semantics of the delay statement.
+   --  The caller should be abort-deferred and should not hold any locks.
 
    procedure Wakeup
      (T      : ST.Task_Id;

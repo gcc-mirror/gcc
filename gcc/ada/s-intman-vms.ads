@@ -39,16 +39,6 @@
 
 --  PLEASE DO NOT add any with-clauses to this package
 
---  This is designed to work for both tasking and non-tasking systems, without
---  pulling in any of the tasking support.
-
---  PLEASE DO NOT remove the Elaborate_Body pragma from this package.
---  Elaboration of this package should happen early, as most other
-
---  Forcing immediate elaboration of the body also helps to enforce the design
---  assumption that this is a second-level package, just one level above
---  System.OS_Interface, with no cross-dependences.
-
 --  PLEASE DO NOT put any subprogram declarations with arguments of type
 --  Interrupt_ID into the visible part of this package.
 
@@ -62,8 +52,7 @@ with System.OS_Interface;
 --           sigset_t
 
 package System.Interrupt_Management is
-
-   pragma Elaborate_Body;
+   pragma Preelaborate;
 
    type Interrupt_Mask is limited private;
 
@@ -109,6 +98,11 @@ package System.Interrupt_Management is
    --  be any interrupts in this class, depending on the environment. For
    --  example, if interrupts are OS signals and signal masking is per-task,
    --  use of the sigwait operation requires the signal be masked in all tasks.
+
+   procedure Initialize;
+   --  Initialize the various variables defined in this package.
+   --  This procedure must be called before accessing any object from this
+   --  package and can be called multiple times.
 
 private
    use type System.OS_Interface.unsigned_long;

@@ -38,20 +38,29 @@ with System.OS_Interface;
 
 package body System.Interrupt_Management is
 
-   use System.OS_Interface;
-   use type unsigned_long;
+   ----------------
+   -- Initialize --
+   ----------------
 
-begin
-   Abort_Task_Interrupt := Interrupt_ID_0;
-   --  Unused
+   Initialized : Boolean := False;
 
-   Reserve := Reserve or Keep_Unmasked or Keep_Masked;
-
-   Reserve (Interrupt_ID_0) := True;
-
-   declare
+   procedure Initialize is
+      use System.OS_Interface;
+      use type unsigned_long;
       Status : Cond_Value_Type;
+
    begin
+      if Initialized then
+         return;
+      end if;
+
+      Initialized := True;
+      Abort_Task_Interrupt := Interrupt_ID_0;
+      --  Unused
+
+      Reserve := Reserve or Keep_Unmasked or Keep_Masked;
+      Reserve (Interrupt_ID_0) := True;
+
       Sys_Crembx
         (Status => Status,
          Prmflg => False,
@@ -60,7 +69,6 @@ begin
          Bufquo => Interrupt_Bufquo,
          Lognam => "GNAT_Interrupt_Mailbox",
          Flags  => CMB_M_READONLY);
-
       pragma Assert ((Status and 1) = 1);
 
       Sys_Assign
@@ -68,7 +76,7 @@ begin
          Devnam => "GNAT_Interrupt_Mailbox",
          Chan   => Snd_Interrupt_Chan,
          Flags  => AGN_M_WRITEONLY);
-
       pragma Assert ((Status and 1) = 1);
-   end;
+   end Initialize;
+
 end System.Interrupt_Management;
