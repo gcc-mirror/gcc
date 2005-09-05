@@ -31,7 +31,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Gnatvsn; use Gnatvsn;
 with System;  use System;
 with Tree_IO; use Tree_IO;
 
@@ -52,6 +51,7 @@ package body Opt is
       Ada_Version_Config                    := Ada_Version;
       Ada_Version_Explicit_Config           := Ada_Version_Explicit;
       Assertions_Enabled_Config             := Assertions_Enabled;
+      Debug_Pragmas_Enabled_Config          := Debug_Pragmas_Enabled;
       Dynamic_Elaboration_Checks_Config     := Dynamic_Elaboration_Checks;
       Exception_Locations_Suppressed_Config := Exception_Locations_Suppressed;
       Extensions_Allowed_Config             := Extensions_Allowed;
@@ -71,6 +71,7 @@ package body Opt is
       Ada_Version                    := Save.Ada_Version;
       Ada_Version_Explicit           := Save.Ada_Version_Explicit;
       Assertions_Enabled             := Save.Assertions_Enabled;
+      Debug_Pragmas_Enabled          := Save.Debug_Pragmas_Enabled;
       Dynamic_Elaboration_Checks     := Save.Dynamic_Elaboration_Checks;
       Exception_Locations_Suppressed := Save.Exception_Locations_Suppressed;
       Extensions_Allowed             := Save.Extensions_Allowed;
@@ -90,6 +91,7 @@ package body Opt is
       Save.Ada_Version                    := Ada_Version;
       Save.Ada_Version_Explicit           := Ada_Version_Explicit;
       Save.Assertions_Enabled             := Assertions_Enabled;
+      Save.Debug_Pragmas_Enabled          := Debug_Pragmas_Enabled;
       Save.Dynamic_Elaboration_Checks     := Dynamic_Elaboration_Checks;
       Save.Exception_Locations_Suppressed := Exception_Locations_Suppressed;
       Save.Extensions_Allowed             := Extensions_Allowed;
@@ -104,11 +106,15 @@ package body Opt is
    -- Set_Opt_Config_Switches --
    -----------------------------
 
-   procedure Set_Opt_Config_Switches (Internal_Unit : Boolean) is
+   procedure Set_Opt_Config_Switches
+     (Internal_Unit : Boolean;
+      Main_Unit     : Boolean)
+   is
    begin
+      --  Case of internal unit
+
       if Internal_Unit then
          Ada_Version                := Ada_Version_Runtime;
-         Assertions_Enabled         := False;
          Dynamic_Elaboration_Checks := False;
          Extensions_Allowed         := True;
          External_Name_Exp_Casing   := As_Is;
@@ -116,9 +122,23 @@ package body Opt is
          Persistent_BSS_Mode        := False;
          Use_VADS_Size              := False;
 
+         --  For an internal unit, assertions/debug pragmas are off unless this
+         --  is the main unit and they were explicitly enabled.
+
+         if Main_Unit then
+            Assertions_Enabled := Assertions_Enabled_Config;
+            Debug_Pragmas_Enabled := Debug_Pragmas_Enabled_Config;
+         else
+            Assertions_Enabled := False;
+            Debug_Pragmas_Enabled := False;
+         end if;
+
+      --  Case of non-internal unit
+
       else
          Ada_Version                := Ada_Version_Config;
          Assertions_Enabled         := Assertions_Enabled_Config;
+         Debug_Pragmas_Enabled      := Debug_Pragmas_Enabled_Config;
          Dynamic_Elaboration_Checks := Dynamic_Elaboration_Checks_Config;
          Extensions_Allowed         := Extensions_Allowed_Config;
          External_Name_Exp_Casing   := External_Name_Exp_Casing_Config;
@@ -158,6 +178,7 @@ package body Opt is
       Tree_Read_Int  (Assertions_Enabled_Config_Val);
       Tree_Read_Bool (All_Errors_Mode);
       Tree_Read_Bool (Assertions_Enabled);
+      Tree_Read_Bool (Debug_Pragmas_Enabled);
       Tree_Read_Bool (Enable_Overflow_Checks);
       Tree_Read_Bool (Full_List);
 
@@ -226,6 +247,7 @@ package body Opt is
       Tree_Write_Int  (Boolean'Pos (Assertions_Enabled_Config));
       Tree_Write_Bool (All_Errors_Mode);
       Tree_Write_Bool (Assertions_Enabled);
+      Tree_Write_Bool (Debug_Pragmas_Enabled);
       Tree_Write_Bool (Enable_Overflow_Checks);
       Tree_Write_Bool (Full_List);
       Tree_Write_Int  (Int (Version_String'Length));

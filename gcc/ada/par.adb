@@ -1275,7 +1275,8 @@ begin
 
       for Ucount in Pos loop
          Set_Opt_Config_Switches
-           (Is_Internal_File_Name (File_Name (Current_Source_File)));
+           (Is_Internal_File_Name (File_Name (Current_Source_File)),
+            Current_Source_Unit = Main_Unit);
 
          --  Initialize scope table and other parser control variables
 

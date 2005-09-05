@@ -1011,6 +1011,7 @@ begin
            Pragma_Component_Alignment          |
            Pragma_Controlled                   |
            Pragma_Convention                   |
+           Pragma_Debug_Policy                 |
            Pragma_Detect_Blocking              |
            Pragma_Discard_Names                |
            Pragma_Eliminate                    |

@@ -27,7 +27,6 @@
 with Atree;    use Atree;
 with Debug;    use Debug;
 with Debug_A;  use Debug_A;
-with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Expander; use Expander;
 with Fname;    use Fname;
@@ -35,7 +34,6 @@ with HLO;      use HLO;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
 with Nlists;   use Nlists;
-with Opt;      use Opt;
 with Sem_Attr; use Sem_Attr;
 with Sem_Ch2;  use Sem_Ch2;
 with Sem_Ch3;  use Sem_Ch3;
@@ -1299,7 +1297,8 @@ package body Sem is
       Set_Comes_From_Source_Default (False);
       Save_Opt_Config_Switches (Save_Config_Switches);
       Set_Opt_Config_Switches
-        (Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit)));
+        (Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit)),
+         Current_Sem_Unit = Main_Unit);
 
       --  Only do analysis of unit that has not already been analyzed
 
