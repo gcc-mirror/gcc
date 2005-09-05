@@ -490,6 +490,61 @@ package body Exp_Intr is
       Loc : constant Source_Ptr := Sloc (N);
       Ent : Entity_Id;
 
+      procedure Write_Entity_Name (E : Entity_Id);
+      --  Recursive procedure to construct string for qualified name of
+      --  enclosing program unit. The qualification stops at an enclosing
+      --  scope has no source name (block or loop). If entity is a subprogram
+      --  instance, skip enclosing wrapper package.
+
+      -----------------------
+      -- Write_Entity_Name --
+      -----------------------
+
+      procedure Write_Entity_Name (E : Entity_Id) is
+         SDef : Source_Ptr;
+         TDef : constant Source_Buffer_Ptr :=
+                  Source_Text (Get_Source_File_Index (Sloc (E)));
+
+      begin
+         --  Nothing to do if at outer level
+
+         if Scope (E) = Standard_Standard then
+            null;
+
+         --  If scope comes from source, write its name
+
+         elsif Comes_From_Source (Scope (E)) then
+            Write_Entity_Name (Scope (E));
+            Add_Char_To_Name_Buffer ('.');
+
+         --  If in wrapper package skip past it
+
+         elsif Is_Wrapper_Package (Scope (E)) then
+            Write_Entity_Name (Scope (Scope (E)));
+            Add_Char_To_Name_Buffer ('.');
+
+         --  Otherwise nothing to output (happens in unnamed block statements)
+
+         else
+            null;
+         end if;
+
+         --  Loop to output the name
+
+         --  is this right wrt wide char encodings ??? (no!)
+
+         SDef := Sloc (E);
+         while TDef (SDef) in '0' .. '9'
+           or else TDef (SDef) >= 'A'
+           or else TDef (SDef) = ASCII.ESC
+         loop
+            Add_Char_To_Name_Buffer (TDef (SDef));
+            SDef := SDef + 1;
+         end loop;
+      end Write_Entity_Name;
+
+   --  Start of processing for Expand_Source_Info
+
    begin
       --  Integer cases
 
@@ -515,7 +570,7 @@ package body Exp_Intr is
 
                Ent := Current_Scope;
 
-               --  Skip enclosing blocks to reach enclosing unit.
+               --  Skip enclosing blocks to reach enclosing unit
 
                while Present (Ent) loop
                   exit when Ekind (Ent) /= E_Block
@@ -525,22 +580,8 @@ package body Exp_Intr is
 
                --  Ent now points to the relevant defining entity
 
-               declare
-                  SDef : Source_Ptr := Sloc (Ent);
-                  TDef : Source_Buffer_Ptr;
-
-               begin
-                  TDef := Source_Text (Get_Source_File_Index (SDef));
-                  Name_Len := 0;
-
-                  while TDef (SDef) in '0' .. '9'
-                    or else TDef (SDef) >= 'A'
-                    or else TDef (SDef) = ASCII.ESC
-                  loop
-                     Add_Char_To_Name_Buffer (TDef (SDef));
-                     SDef := SDef + 1;
-                  end loop;
-               end;
+               Name_Len := 0;
+               Write_Entity_Name (Ent);
 
             when others =>
                raise Program_Error;

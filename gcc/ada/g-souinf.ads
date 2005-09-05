@@ -39,15 +39,15 @@
 --  the name of the source file in which the exception is handled.
 
 package GNAT.Source_Info is
-pragma Pure (Source_Info);
+   pragma Pure;
 
    function File return String;
    --  Return the name of the current file, not including the path information.
    --  The result is considered to be a static string constant.
 
    function Line return Positive;
-   --  Return the current input line number. The result is considered
-   --  to be a static expression.
+   --  Return the current input line number. The result is considered to be a
+   --  static expression.
 
    function Source_Location return String;
    --  Return a string literal of the form "name:line", where name is the
@@ -61,12 +61,14 @@ pragma Pure (Source_Info);
    --  Return the name of the current subprogram, package, task, entry or
    --  protected subprogram. The string is in exactly the form used for the
    --  declaration of the entity (casing and encoding conventions), and is
-   --  considered to be a static string constant.
+   --  considered to be a static string constant. The name is fully qualified
+   --  using periods where possible (this is not always possible, notably in
+   --  the case of entities appearing in unnamed block statements.)
    --
-   --  Note: if this function is used at the outer level of a generic
-   --  package, the string returned will be the name of the instance,
-   --  not the generic package itself. This is useful in identifying
-   --  and logging information from within generic templates.
+   --  Note: if this function is used at the outer level of a generic package,
+   --  the string returned will be the name of the instance, not the generic
+   --  package itself. This is useful in identifying and logging information
+   --  from within generic templates.
 
 private
    pragma Import (Intrinsic, File);
