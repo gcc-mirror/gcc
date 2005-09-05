@@ -562,12 +562,6 @@ package body Exp_Dbug is
       elsif Is_Discrete_Type (E)
         and then not Bounds_Match_Size (E)
       then
-         if Has_Biased_Representation (E) then
-            Get_External_Name_With_Suffix (E, "XB");
-         else
-            Get_External_Name_With_Suffix (E, "XD");
-         end if;
-
          declare
             Lo : constant Node_Id := Type_Low_Bound (E);
             Hi : constant Node_Id := Type_High_Bound (E);
@@ -588,16 +582,28 @@ package body Exp_Dbug is
             Lo_Encode : constant Boolean := Lo_Con or Lo_Discr;
             Hi_Encode : constant Boolean := Hi_Con or Hi_Discr;
 
+            Biased : constant Boolean := Has_Biased_Representation (E);
+
          begin
+            if Biased then
+               Get_External_Name_With_Suffix (E, "XB");
+            else
+               Get_External_Name_With_Suffix (E, "XD");
+            end if;
+
             if Lo_Encode or Hi_Encode then
-               if Lo_Encode then
-                  if Hi_Encode then
-                     Add_Str_To_Name_Buffer ("LU_");
-                  else
-                     Add_Str_To_Name_Buffer ("L_");
-                  end if;
+               if Biased then
+                  Add_Str_To_Name_Buffer ("_");
                else
-                  Add_Str_To_Name_Buffer ("U_");
+                  if Lo_Encode then
+                     if Hi_Encode then
+                        Add_Str_To_Name_Buffer ("LU_");
+                     else
+                        Add_Str_To_Name_Buffer ("L_");
+                     end if;
+                  else
+                     Add_Str_To_Name_Buffer ("U_");
+                  end if;
                end if;
 
                if Lo_Con then
