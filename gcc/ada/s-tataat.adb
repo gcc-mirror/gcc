@@ -61,9 +61,10 @@ package body System.Tasking.Task_Attributes is
 
    procedure Finalize (X : in out Instance) is
       Q, To_Be_Freed : Access_Node;
+      Self_Id        : constant Task_Id := Self;
 
    begin
-      Defer_Abortion;
+      Defer_Abort (Self_Id);
       Lock_RTS;
 
       --  Remove this instantiation from the list of all instantiations.
@@ -142,7 +143,7 @@ package body System.Tasking.Task_Attributes is
          X.Deallocate.all (Q);
       end loop;
 
-      Undefer_Abortion;
+      Undefer_Abort (Self_Id);
 
    exception
       when others =>
@@ -186,10 +187,11 @@ package body System.Tasking.Task_Attributes is
    --  This is to be called by System.Tasking.Stages.Create_Task
 
    procedure Initialize_Attributes (T : Task_Id) is
-      P : Access_Instance;
+      P       : Access_Instance;
+      Self_Id : constant Task_Id := Self;
 
    begin
-      Defer_Abortion;
+      Defer_Abort (Self_Id);
       Lock_RTS;
 
       --  Initialize all the direct-access attributes of this task
@@ -207,7 +209,7 @@ package body System.Tasking.Task_Attributes is
       end loop;
 
       Unlock_RTS;
-      Undefer_Abortion;
+      Undefer_Abort (Self_Id);
 
    exception
       when others =>
