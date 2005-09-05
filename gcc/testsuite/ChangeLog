@@ -1,3 +1,7 @@
+2005-09-05  J"orn Rennecke <joern.rennecke@st.com>
+
+	* gcc.dg/pr21255-1.c: Match different pattern for sh64.
+
 2005-09-04  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/23321
