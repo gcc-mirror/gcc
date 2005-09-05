@@ -115,6 +115,15 @@ package body Sem_Disp is
             if Ctrl_Type = Typ then
                Set_Is_Controlling_Formal (Formal);
 
+               --  Ada 2005 (AI-231):Anonymous access types used in controlling
+               --  parameters exclude null because it is necessary to read the
+               --  tag to dispatch, and null has no tag.
+
+               if Ekind (Etype (Formal)) = E_Anonymous_Access_Type then
+                  Set_Can_Never_Be_Null (Etype (Formal));
+                  Set_Is_Known_Non_Null (Etype (Formal));
+               end if;
+
                --  Check that the parameter's nominal subtype statically
                --  matches the first subtype.
 
@@ -784,14 +793,7 @@ package body Sem_Disp is
                   then
                      Old_Spec := Corresponding_Spec (Old_Bod);
                      Set_Has_Completion             (Old_Spec, False);
-
-                     if Exception_Mechanism = Front_End_ZCX_Exceptions then
-                        Set_Has_Subprogram_Descriptor (Old_Spec, False);
-                        Set_Handler_Records           (Old_Spec, No_List);
-                        Set_Is_Eliminated             (Old_Spec);
-                     end if;
                   end if;
-
                end if;
             end loop;
 
@@ -1212,10 +1214,12 @@ package body Sem_Disp is
          return;
       end if;
 
-      --  Ada 2005 (AI-251): Do not replace subprograms corresponding to
+      --  Ada 2005 (AI-251): Do not replace subprograms inherited from
       --  abstract interfaces. They will be used later to generate the
       --  corresponding thunks to initialize the Vtable (see subprogram
-      --  Freeze_Subprogram)
+      --  Freeze_Subprogram). The inherited operation itself must also
+      --  become hidden, to avoid spurious ambiguities;  name resolution
+      --  must pick up only the operation that implements it,
 
       if Is_Interface_Subprogram (Prev_Op) then
          Set_DT_Position              (Prev_Op, DT_Position (Alias (Prev_Op)));
@@ -1224,6 +1228,7 @@ package body Sem_Disp is
          Set_Abstract_Interface_Alias (Prev_Op, Alias (Prev_Op));
          Set_Alias                    (Prev_Op, New_Op);
          Set_Is_Internal              (Prev_Op);
+         Set_Is_Hidden                (Prev_Op);
 
          --  Override predefined primitive operations
 
