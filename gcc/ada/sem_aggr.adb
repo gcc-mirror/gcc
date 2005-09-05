@@ -77,7 +77,7 @@ package body Sem_Aggr is
    --  statement of variant part will usually be small and probably in near
    --  sorted order.
 
-   procedure Check_Can_Never_Be_Null (N : Node_Id; Expr : Node_Id);
+   procedure Check_Can_Never_Be_Null (Typ : Node_Id; Expr : Node_Id);
    --  Ada 2005 (AI-231): Check bad usage of the null-exclusion issue
 
    ------------------------------------------------------
@@ -477,7 +477,7 @@ package body Sem_Aggr is
       elsif Is_Access_Type (Check_Typ)
         and then ((Is_Local_Anonymous_Access (Check_Typ))
                     or else (Can_Never_Be_Null (Check_Typ)
-                              and then not Can_Never_Be_Null (Exp_Typ)))
+                               and then not Can_Never_Be_Null (Exp_Typ)))
       then
          Rewrite (Exp, Convert_To (Check_Typ, Relocate_Node (Exp)));
          Analyze_And_Resolve (Exp, Check_Typ);
@@ -495,14 +495,14 @@ package body Sem_Aggr is
       return Entity_Id
    is
       Aggr_Dimension : constant Pos := Number_Dimensions (Typ);
-      --  Number of aggregate index dimensions.
+      --  Number of aggregate index dimensions
 
       Aggr_Range : array (1 .. Aggr_Dimension) of Node_Id := (others => Empty);
-      --  Constrained N_Range of each index dimension in our aggregate itype.
+      --  Constrained N_Range of each index dimension in our aggregate itype
 
       Aggr_Low   : array (1 .. Aggr_Dimension) of Node_Id := (others => Empty);
       Aggr_High  : array (1 .. Aggr_Dimension) of Node_Id := (others => Empty);
-      --  Low and High bounds for each index dimension in our aggregate itype.
+      --  Low and High bounds for each index dimension in our aggregate itype
 
       Is_Fully_Positional : Boolean := True;
 
@@ -511,6 +511,7 @@ package body Sem_Aggr is
       --  (sub-)aggregate N. This procedure collects the constrained N_Range
       --  nodes corresponding to each index dimension of our aggregate itype.
       --  These N_Range nodes are collected in Aggr_Range above.
+      --
       --  Likewise collect in Aggr_Low & Aggr_High above the low and high
       --  bounds of each index dimension. If, when collecting, two bounds
       --  corresponding to the same dimension are static and found to differ,
@@ -522,11 +523,11 @@ package body Sem_Aggr is
 
       procedure Collect_Aggr_Bounds (N : Node_Id; Dim : Pos) is
          This_Range : constant Node_Id := Aggregate_Bounds (N);
-         --  The aggregate range node of this specific sub-aggregate.
+         --  The aggregate range node of this specific sub-aggregate
 
          This_Low  : constant Node_Id := Low_Bound (Aggregate_Bounds (N));
          This_High : constant Node_Id := High_Bound (Aggregate_Bounds (N));
-         --  The aggregate bounds of this specific sub-aggregate.
+         --  The aggregate bounds of this specific sub-aggregate
 
          Assoc : Node_Id;
          Expr  : Node_Id;
@@ -601,7 +602,7 @@ package body Sem_Aggr is
       --  the final itype of the overall aggregate
 
       Index_Constraints : constant List_Id := New_List;
-      --  The list of index constraints of the aggregate itype.
+      --  The list of index constraints of the aggregate itype
 
    --  Start of processing for Array_Aggr_Subtype
 
@@ -612,7 +613,7 @@ package body Sem_Aggr is
       Set_Parent (Index_Constraints, N);
       Collect_Aggr_Bounds (N, 1);
 
-      --  Build the list of constrained indices of our aggregate itype.
+      --  Build the list of constrained indices of our aggregate itype
 
       for J in 1 .. Aggr_Dimension loop
          Create_Index : declare
@@ -816,7 +817,7 @@ package body Sem_Aggr is
          Next_Component (Comp);
       end loop;
 
-      --  On exit, all components have statically known sizes.
+      --  On exit, all components have statically known sizes
 
       Set_Size_Known_At_Compile_Time (T);
    end Check_Static_Discriminated_Subtype;
@@ -987,13 +988,6 @@ package body Sem_Aggr is
 
             Set_Etype (N, Aggr_Typ);  --  may be overridden later on
 
-            --  Ada 2005 (AI-231): Propagate the null_exclusion attribute to
-            --  the components of the array aggregate
-
-            if Ada_Version >= Ada_05 then
-               Set_Can_Never_Be_Null (Aggr_Typ, Can_Never_Be_Null (Typ));
-            end if;
-
             if Is_Constrained (Typ) and then
               (Pkind = N_Assignment_Statement      or else
                Pkind = N_Parameter_Association     or else
@@ -1106,7 +1100,7 @@ package body Sem_Aggr is
       --  warning if not and sets the Raises_Constraint_Error Flag in N.
 
       function Dynamic_Or_Null_Range (L, H : Node_Id) return Boolean;
-      --  Returns True if range L .. H is dynamic or null.
+      --  Returns True if range L .. H is dynamic or null
 
       procedure Get (Value : out Uint; From : Node_Id; OK : out Boolean);
       --  Given expression node From, this routine sets OK to False if it
@@ -1368,10 +1362,10 @@ package body Sem_Aggr is
       is
          Nxt_Ind        : constant Node_Id := Next_Index (Index);
          Nxt_Ind_Constr : constant Node_Id := Next_Index (Index_Constr);
-         --  Index is the current index corresponding to the expresion.
+         --  Index is the current index corresponding to the expresion
 
          Resolution_OK : Boolean := True;
-         --  Set to False if resolution of the expression failed.
+         --  Set to False if resolution of the expression failed
 
       begin
          --  If the array type against which we are resolving the aggregate
@@ -1584,7 +1578,7 @@ package body Sem_Aggr is
             --  in the current association.
 
          begin
-            --  STEP 2 (A): Check discrete choices validity.
+            --  STEP 2 (A): Check discrete choices validity
 
             Assoc := First (Component_Associations (N));
             while Present (Assoc) loop
@@ -1637,7 +1631,7 @@ package body Sem_Aggr is
                   if Etype (Choice) = Any_Type then
                      return Failure;
 
-                  --  If the discrete choice raises CE get its original bounds.
+                  --  If the discrete choice raises CE get its original bounds
 
                   elsif Nkind (Choice) = N_Raise_Constraint_Error then
                      Set_Raises_Constraint_Error (N);
@@ -1681,7 +1675,9 @@ package body Sem_Aggr is
 
                --  Ada 2005 (AI-231)
 
-               if Ada_Version >= Ada_05 then
+               if Ada_Version >= Ada_05
+                 and then Nkind (Expression (Assoc)) = N_Null
+               then
                   Check_Can_Never_Be_Null (Etype (N), Expression (Assoc));
                end if;
 
@@ -1811,7 +1807,9 @@ package body Sem_Aggr is
 
             --  Ada 2005 (AI-231)
 
-            if Ada_Version >= Ada_05 then
+            if Ada_Version >= Ada_05
+              and then Nkind (Expr) = N_Null
+            then
                Check_Can_Never_Be_Null (Etype (N), Expr);
             end if;
 
@@ -1827,7 +1825,9 @@ package body Sem_Aggr is
 
             --  Ada 2005 (AI-231)
 
-            if Ada_Version >= Ada_05 then
+            if Ada_Version >= Ada_05
+              and then Nkind (Expression (Assoc)) = N_Null
+            then
                Check_Can_Never_Be_Null
                  (Etype (N), Expression (Assoc));
             end if;
@@ -2231,18 +2231,19 @@ package body Sem_Aggr is
             return True;
          end if;
 
-         --  Now look to see if Discr was specified in the ancestor part.
-
-         Orig_Discr := Original_Record_Component (Discr);
-         D          := First_Discriminant (Ancestor_Typ);
+         --  Now look to see if Discr was specified in the ancestor part
 
          if Ancestor_Is_Subtyp then
             D_Val := First_Elmt (Discriminant_Constraint (Entity (Ancestor)));
          end if;
 
+         Orig_Discr := Original_Record_Component (Discr);
+
+         D := First_Discriminant (Ancestor_Typ);
          while Present (D) loop
-            --  If Ancestor has already specified Disc value than
-            --  insert its value in the final aggregate.
+
+            --  If Ancestor has already specified Disc value than insert its
+            --  value in the final aggregate.
 
             if Original_Record_Component (D) = Orig_Discr then
                if Ancestor_Is_Subtyp then
@@ -2506,16 +2507,16 @@ package body Sem_Aggr is
 
             --  For each range in an array type where a discriminant has been
             --  replaced with the constraint, check that this range is within
-            --  the range of the base type. This checks is done in the
-            --  init proc for regular objects, but has to be done here for
+            --  the range of the base type. This checks is done in the init
+            --  proc for regular objects, but has to be done here for
             --  aggregates since no init proc is called for them.
 
             if Is_Array_Type (Expr_Type) then
                declare
-                  Index          : Node_Id := First_Index (Expr_Type);
-                  --  Range of the current constrained index in the array.
+                  Index : Node_Id := First_Index (Expr_Type);
+                  --  Range of the current constrained index in the array
 
-                  Orig_Index     : Node_Id := First_Index (Etype (Component));
+                  Orig_Index : Node_Id := First_Index (Etype (Component));
                   --  Range corresponding to the range Index above in the
                   --  original unconstrained record type. The bounds of this
                   --  range may be governed by discriminants.
@@ -2697,7 +2698,9 @@ package body Sem_Aggr is
 
                --  Ada 2005 (AI-231)
 
-               if Ada_Version >= Ada_05 then
+               if Ada_Version >= Ada_05
+                 and then Nkind (Positional_Expr) = N_Null
+               then
                   Check_Can_Never_Be_Null (Discrim, Positional_Expr);
                end if;
 
@@ -2790,7 +2793,7 @@ package body Sem_Aggr is
                 Subtype_Indication  => Indic);
             Set_Parent (Subtyp_Decl, Parent (N));
 
-            --  Itypes must be analyzed with checks off (see itypes.ads).
+            --  Itypes must be analyzed with checks off (see itypes.ads)
 
             Analyze (Subtyp_Decl, Suppress => All_Checks);
 
@@ -2884,7 +2887,7 @@ package body Sem_Aggr is
                end if;
             end loop;
 
-            --  Now collect components from all other ancestors.
+            --  Now collect components from all other ancestors
 
             Parent_Elmt := First_Elmt (Parent_Typ_List);
             while Present (Parent_Elmt) loop
@@ -2934,7 +2937,9 @@ package body Sem_Aggr is
 
          --  Ada 2005 (AI-231)
 
-         if Ada_Version >= Ada_05 then
+         if Ada_Version >= Ada_05
+           and then Nkind (Positional_Expr) = N_Null
+         then
             Check_Can_Never_Be_Null (Component, Positional_Expr);
          end if;
 
@@ -3087,19 +3092,38 @@ package body Sem_Aggr is
    -- Check_Can_Never_Be_Null --
    -----------------------------
 
-   procedure Check_Can_Never_Be_Null (N : Node_Id; Expr : Node_Id) is
-   begin
-      pragma Assert (Ada_Version >= Ada_05);
+   procedure Check_Can_Never_Be_Null (Typ : Node_Id; Expr : Node_Id) is
+      Comp_Typ : Entity_Id;
 
-      if Nkind (Expr) = N_Null
-        and then Can_Never_Be_Null (N)
+   begin
+      pragma Assert (Ada_Version >= Ada_05
+        and then Present (Expr)
+        and then Nkind (Expr) = N_Null);
+
+      case Ekind (Typ) is
+         when E_Array_Type  =>
+            Comp_Typ := Component_Type (Typ);
+
+         when E_Component    |
+              E_Discriminant =>
+            Comp_Typ := Etype (Typ);
+
+         when others =>
+            return;
+      end case;
+
+      if Present (Expr)
+        and then Can_Never_Be_Null (Comp_Typ)
       then
-         Apply_Compile_Time_Constraint_Error
-           (N      => Expr,
-            Msg    => "(Ada 2005) NULL not allowed in"
-                       & " null-excluding components?",
-            Reason => CE_Null_Not_Allowed,
-            Rep    => False);
+         Error_Msg_N
+           ("(Ada 2005) NULL not allowed in null-excluding components?", Expr);
+         Error_Msg_NEL
+           ("\& will be raised at run time!?",
+            Expr, Standard_Constraint_Error, Sloc (Expr));
+
+         Set_Etype                    (Expr, Comp_Typ);
+         Set_Analyzed                 (Expr);
+         Install_Null_Excluding_Check (Expr);
       end if;
    end Check_Can_Never_Be_Null;
 
