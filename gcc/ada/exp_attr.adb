@@ -35,6 +35,7 @@ with Exp_Pakd; use Exp_Pakd;
 with Exp_Strm; use Exp_Strm;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
+with Exp_VFpt; use Exp_VFpt;
 with Gnatvsn;  use Gnatvsn;
 with Hostparm; use Hostparm;
 with Lib;      use Lib;
@@ -3826,13 +3827,20 @@ package body Exp_Attr is
                Rtp : constant Entity_Id := Root_Type (Etype (Pref));
 
             begin
+               --  For vax fpt types, call appropriate routine in special vax
+               --  floating point unit. We do not have to worry about loads in
+               --  this case, since these types have no signalling NaN's.
+
+               if Vax_Float (Rtp) then
+                  Expand_Vax_Valid (N);
+
                --  If the floating-point object might be unaligned, we need
                --  to call the special routine Unaligned_Valid, which makes
                --  the needed copy, being careful not to load the value into
                --  any floating-point register. The argument in this case is
                --  obj'Address (see Unchecked_Valid routine in s-fatgen.ads).
 
-               if Is_Possibly_Unaligned_Object (Pref) then
+               elsif Is_Possibly_Unaligned_Object (Pref) then
                   Set_Attribute_Name (N, Name_Unaligned_Valid);
                   Expand_Fpt_Attribute
                     (N, Rtp, Name_Unaligned_Valid,
@@ -3842,7 +3850,7 @@ package body Exp_Attr is
                          Attribute_Name => Name_Address)));
 
                --  In the normal case where we are sure the object is aligned,
-               --  we generate a caqll to Valid, and the argument in this case
+               --  we generate a call to Valid, and the argument in this case
                --  is obj'Unrestricted_Access (after converting obj to the
                --  right floating-point type).
 

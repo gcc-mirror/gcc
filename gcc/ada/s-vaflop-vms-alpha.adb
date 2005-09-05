@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2005 Free Software Foundation, Inc.          --
 --                       (Version for Alpha OpenVMS)                        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
@@ -617,5 +617,44 @@ package body System.Vax_Float_Operations is
       Asm ("stg %1,%0", G'Asm_Output ("=m", R1), T'Asm_Input ("f", R));
       return R1;
    end Sub_G;
+
+   -------------
+   -- Valid_D --
+   -------------
+
+   --  For now, convert to IEEE and do Valid test on result. This is not quite
+   --  accurate, but is good enough in practice.
+
+   function Valid_D (Arg : D) return Boolean is
+      Val : T := G_To_T (D_To_G (Arg));
+   begin
+      return Val'Valid;
+   end Valid_D;
+
+   -------------
+   -- Valid_F --
+   -------------
+
+   --  For now, convert to IEEE and do Valid test on result. This is not quite
+   --  accurate, but is good enough in practice.
+
+   function Valid_F (Arg : F) return Boolean is
+      Val : S := F_To_S (Arg);
+   begin
+      return Val'Valid;
+   end Valid_F;
+
+   -------------
+   -- Valid_G --
+   -------------
+
+   --  For now, convert to IEEE and do Valid test on result. This is not quite
+   --  accurate, but is good enough in practice.
+
+   function Valid_G (Arg : G) return Boolean is
+      Val : T := G_To_T (Arg);
+   begin
+      return Val'Valid;
+   end Valid_G;
 
 end System.Vax_Float_Operations;
