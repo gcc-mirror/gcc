@@ -2169,11 +2169,11 @@ norm32: r25
   rtx scratch1 = operands[5];
   rtx mem;
 
-  mem = gen_rtx_MEM (QImode, gen_rtx_PLUS (DImode, tab_base, tab_ix));
+  mem = gen_const_mem (QImode, gen_rtx_PLUS (DImode, tab_base, tab_ix));
   emit_insn (gen_zero_extendqidi2 (scratch0, mem));
   emit_insn (gen_ashldi3_media (scratch1, tab_ix, GEN_INT (1)));
   emit_insn (gen_mulsidi3_media (scratch0, norm32, scratch0_si));
-  mem = gen_rtx_MEM (HImode, gen_rtx_PLUS (DImode, tab_base, scratch1));
+  mem = gen_const_mem (HImode, gen_rtx_PLUS (DImode, tab_base, scratch1));
   emit_insn (gen_extendhidi2 (scratch1, mem));
   emit_insn (gen_ashrdi3_media (scratch0, scratch0, GEN_INT (24)));
   emit_insn (gen_subdisi3_media (inv0, scratch1, scratch0));
@@ -4697,7 +4697,7 @@ label:
   "TARGET_SH2E"
   "
 {
-  rtx insn = emit_insn (gen_fpu_switch (gen_rtx_MEM (PSImode,
+  rtx insn = emit_insn (gen_fpu_switch (gen_frame_mem (PSImode,
 						 gen_rtx_PRE_DEC (Pmode,
 							  stack_pointer_rtx)),
 					get_fpscr_rtx ()));
@@ -4711,7 +4711,7 @@ label:
   "
 {
   rtx insn = emit_insn (gen_fpu_switch (get_fpscr_rtx (),
-					gen_rtx_MEM (PSImode,
+					gen_frame_mem (PSImode,
 						 gen_rtx_POST_INC (Pmode,
 							  stack_pointer_rtx))));
   REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC, stack_pointer_rtx, NULL_RTX);
@@ -4834,7 +4834,7 @@ label:
   "
 {
   if (TARGET_SHCOMPACT && current_function_has_nonlocal_label)
-    operands[1] = gen_rtx_MEM (SImode, return_address_pointer_rtx);
+    operands[1] = gen_frame_mem (SImode, return_address_pointer_rtx);
 }")
 
 ;; The '?'s in the following constraints may not reflect the time taken
@@ -5736,17 +5736,19 @@ label:
     {
       emit_move_insn (stack_pointer_rtx,
 		      plus_constant (stack_pointer_rtx, -8));
-      tos = gen_rtx_MEM (DFmode, stack_pointer_rtx);
+      tos = gen_tmp_stack_mem (DFmode, stack_pointer_rtx);
     }
   else
-    tos = gen_rtx_MEM (DFmode, gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx));
+    tos = gen_tmp_stack_mem (DFmode,
+			     gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx));
   insn = emit_insn (gen_movdf_i4 (tos, operands[1], operands[2]));
   if (! (TARGET_SH5 && true_regnum (operands[1]) < 16))
     REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC, stack_pointer_rtx, NULL_RTX);
   if (TARGET_SH5 && true_regnum (operands[0]) < 16)
-    tos = gen_rtx_MEM (DFmode, stack_pointer_rtx);
+    tos = gen_tmp_stack_mem (DFmode, stack_pointer_rtx);
   else
-    tos = gen_rtx_MEM (DFmode, gen_rtx_POST_INC (Pmode, stack_pointer_rtx));
+    tos = gen_tmp_stack_mem (DFmode,
+			     gen_rtx_POST_INC (Pmode, stack_pointer_rtx));
   insn = emit_insn (gen_movdf_i4 (operands[0], tos, operands[2]));
   if (TARGET_SH5 && true_regnum (operands[0]) < 16)
     emit_move_insn (stack_pointer_rtx, plus_constant (stack_pointer_rtx, 8));
@@ -5902,15 +5904,16 @@ label:
 {
   int regno = true_regnum (operands[0]);
   rtx insn;
-  rtx mem2 = gen_rtx_MEM (SFmode, gen_rtx_POST_INC (Pmode, operands[1]));
-
+  rtx mem = SET_SRC (XVECEXP (PATTERN (curr_insn), 0, 0));
+  rtx mem2
+    = change_address (mem, SFmode, gen_rtx_POST_INC (Pmode, operands[1]));
   insn = emit_insn (gen_movsf_ie (gen_rtx_REG (SFmode,
 					   regno + !! TARGET_LITTLE_ENDIAN),
 				  mem2, operands[2]));
   REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC, operands[1], NULL_RTX);
   insn = emit_insn (gen_movsf_ie (gen_rtx_REG (SFmode,
-					   regno + ! TARGET_LITTLE_ENDIAN),
-				  gen_rtx_MEM (SFmode, operands[1]),
+					       regno + ! TARGET_LITTLE_ENDIAN),
+				  change_address (mem, SFmode, NULL_RTX),
 				  operands[2]));
   DONE;
 }")
@@ -5927,11 +5930,10 @@ label:
 {
   int regno = true_regnum (operands[0]);
   rtx addr, insn, adjust = NULL_RTX;
-  rtx mem2 = copy_rtx (operands[1]);
+  rtx mem2 = change_address (operands[1], SFmode, NULL_RTX);
   rtx reg0 = gen_rtx_REG (SFmode, regno + !! TARGET_LITTLE_ENDIAN);
   rtx reg1 = gen_rtx_REG (SFmode, regno + ! TARGET_LITTLE_ENDIAN);
 
-  PUT_MODE (mem2, SFmode);
   operands[1] = copy_rtx (mem2);
   addr = XEXP (mem2, 0);
   if (GET_CODE (addr) != POST_INC)
@@ -6226,16 +6228,14 @@ label:
       rtx x, y;
 
       if (GET_CODE (operands[0]) == MEM)
-	x = gen_rtx_MEM (V2SFmode,
-			 plus_constant (XEXP (operands[0], 0),
-					i * GET_MODE_SIZE (V2SFmode)));
+	x = adjust_address (operands[0], V2SFmode,
+			    i * GET_MODE_SIZE (V2SFmode));
       else
 	x = simplify_gen_subreg (V2SFmode, operands[0], V4SFmode, i * 8);
 
       if (GET_CODE (operands[1]) == MEM)
-	y = gen_rtx_MEM (V2SFmode,
-			 plus_constant (XEXP (operands[1], 0),
-					i * GET_MODE_SIZE (V2SFmode)));
+	y = adjust_address (operands[1], V2SFmode,
+			    i * GET_MODE_SIZE (V2SFmode));
       else
 	y = simplify_gen_subreg (V2SFmode, operands[1], V4SFmode, i * 8);
 
@@ -6272,9 +6272,8 @@ label:
       rtx x,y;
 
       if (GET_CODE (operands[0]) == MEM)
-	x = gen_rtx_MEM (V2SFmode,
-			 plus_constant (XEXP (operands[0], 0),
-					i * GET_MODE_SIZE (V2SFmode)));
+	x = adjust_address (operands[0], V2SFmode,
+			    i * GET_MODE_SIZE (V2SFmode));
       else
 	{
 	  x = gen_rtx_SUBREG (V2SFmode, operands[0], i * 8);
@@ -6282,9 +6281,8 @@ label:
 	}
 
       if (GET_CODE (operands[1]) == MEM)
-	y = gen_rtx_MEM (V2SFmode,
-			 plus_constant (XEXP (operands[1], 0),
-					i * GET_MODE_SIZE (V2SFmode)));
+	y = adjust_address (operands[1], V2SFmode,
+			    i * GET_MODE_SIZE (V2SFmode));
       else
 	{
 	  y = gen_rtx_SUBREG (V2SFmode, operands[1], i * 8);
@@ -8252,7 +8250,7 @@ label:
   ""
   "
 {
-  rtx insn;
+  rtx insn, mem;
 
   operands[2] = no_new_pseudos ? operands[0] : gen_reg_rtx (Pmode);
   operands[3] = no_new_pseudos ? operands[0] : gen_reg_rtx (Pmode);
@@ -8283,7 +8281,11 @@ label:
 					     operands[2],
 					     gen_rtx_REG (Pmode, PIC_REG)));
 
-  insn = emit_move_insn (operands[0], gen_rtx_MEM (Pmode, operands[3]));
+  /* N.B. This is not constant for a GOTPLT relocation.  */
+  mem = gen_rtx_MEM (Pmode, operands[3]);
+  MEM_NOTRAP_P (mem) = 1;
+  /* ??? Should we have a special alias set for the GOT?  */
+  insn = emit_move_insn (operands[0], mem);
 
   REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, XVECEXP (XEXP (operands[1],
 								  0), 0, 0),
@@ -9827,10 +9829,11 @@ mov.l\\t1f,r0\\n\\
   [(set (match_dup 0) (match_dup 0))]
   "
 {
-  rtx insn = emit_insn (gen_fpu_switch (get_fpscr_rtx (),
-					gen_rtx_MEM (PSImode,
-						 gen_rtx_POST_INC (Pmode,
-							  operands[0]))));
+  rtx mem, insn;
+
+  mem = SET_SRC (PATTERN (curr_insn));
+  mem = change_address (mem, PSImode, gen_rtx_POST_INC (Pmode, operands[0]));
+  insn = emit_insn (gen_fpu_switch (get_fpscr_rtx (), mem));
   REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC, operands[0], NULL_RTX);
 }")
 
@@ -9841,10 +9844,11 @@ mov.l\\t1f,r0\\n\\
   [(set (match_dup 0) (plus:SI (match_dup 0) (const_int -4)))]
   "
 {
-  rtx insn = emit_insn (gen_fpu_switch (get_fpscr_rtx (),
-					gen_rtx_MEM (PSImode,
-						 gen_rtx_POST_INC (Pmode,
-							  operands[0]))));
+  rtx mem, insn;
+
+  mem = SET_SRC (PATTERN (curr_insn));
+  mem = change_address (mem, PSImode, gen_rtx_POST_INC (Pmode, operands[0]));
+  insn = emit_insn (gen_fpu_switch (get_fpscr_rtx (), mem));
   REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC, operands[0], NULL_RTX);
 }")
 
