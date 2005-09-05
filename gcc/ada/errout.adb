@@ -49,7 +49,6 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Style;
-with Uintp;    use Uintp;
 with Uname;    use Uname;
 
 with Unchecked_Conversion;
@@ -322,14 +321,13 @@ package body Errout is
          return;
       end if;
 
-      --  The idea at this stage is that we have two kinds of messages.
+      --  The idea at this stage is that we have two kinds of messages
 
-      --  First, we have those that are to be placed as requested at
-      --  Flag_Location. This includes messages that have nothing to
-      --  do with generics, and also messages placed on generic templates
-      --  that reflect an error in the template itself. For such messages
-      --  we simply call Error_Msg_Internal to place the message in the
-      --  requested location.
+      --  First, we have those messages that are to be placed as requested at
+      --  Flag_Location. This includes messages that have nothing to do with
+      --  generics, and also messages placed on generic templates that reflect
+      --  an error in the template itself. For such messages we simply call
+      --  Error_Msg_Internal to place the message in the requested location.
 
       if Instantiation (Sindex) = No_Location then
          Error_Msg_Internal (Msg, Flag_Location, Flag_Location, False);
@@ -606,7 +604,7 @@ package body Errout is
 
    procedure Error_Msg_F (Msg : String; N : Node_Id) is
    begin
-      Error_Msg_NEL (Msg, N, N, First_Sloc (N));
+      Error_Msg_NEL (Msg, N, N, Sloc (First_Node (N)));
    end Error_Msg_F;
 
    ------------------
@@ -1613,7 +1611,7 @@ package body Errout is
    procedure Remove_Warning_Messages (N : Node_Id) is
 
       function Check_For_Warning (N : Node_Id) return Traverse_Result;
-      --  This function checks one node for a possible warning message.
+      --  This function checks one node for a possible warning message
 
       function Check_All_Warnings is new
         Traverse_Func (Check_For_Warning);
@@ -2251,6 +2249,9 @@ package body Errout is
                Is_Unconditional_Msg := True;
 
             when '?' =>
+               null; -- already dealt with
+
+            when '<' =>
                null; -- already dealt with
 
             when '|' =>
