@@ -27,7 +27,6 @@
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
-with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Aggr; use Exp_Aggr;
 with Exp_Ch4;  use Exp_Ch4;
@@ -867,8 +866,8 @@ package body Exp_Ch3 is
          Parameter_List := Build_Discriminant_Formals (Rec_Id, False);
 
          Set_Parameter_Specifications (Spec_Node, Parameter_List);
-         Set_Subtype_Mark (Spec_Node,
-                           New_Reference_To (Standard_Boolean,  Loc));
+         Set_Result_Definition (Spec_Node,
+                                New_Reference_To (Standard_Boolean,  Loc));
          Set_Specification (Body_Node, Spec_Node);
          Set_Declarations (Body_Node, New_List);
 
@@ -1482,16 +1481,21 @@ package body Exp_Ch3 is
                 Attribute_Name => Name_Unrestricted_Access);
          end if;
 
-         --  Ada 2005 (AI-231): Generate conversion to the null-excluding
-         --  type to force the corresponding run-time check.
+         --  Ada 2005 (AI-231): Add the run-time check if required
 
          if Ada_Version >= Ada_05
-           and then Can_Never_Be_Null (Etype (Id))  -- Lhs
-           and then Present (Etype (Exp))
-           and then not Can_Never_Be_Null (Etype (Exp))
+           and then Can_Never_Be_Null (Etype (Id))            -- Lhs
          then
-            Rewrite (Exp, Convert_To (Etype (Id), Relocate_Node (Exp)));
-            Analyze_And_Resolve (Exp, Etype (Id));
+            if Nkind (Exp) = N_Null then
+               return New_List (
+                 Make_Raise_Constraint_Error (Sloc (Exp),
+                   Reason => CE_Null_Not_Allowed));
+
+            elsif Present (Etype (Exp))
+              and then not Can_Never_Be_Null (Etype (Exp))
+            then
+               Install_Null_Excluding_Check (Exp);
+            end if;
          end if;
 
          --  Take a copy of Exp to ensure that later copies of this
@@ -3017,7 +3021,7 @@ package body Exp_Ch3 is
             Make_Function_Specification (Loc,
               Defining_Unit_Name       => F,
               Parameter_Specifications => Pspecs,
-              Subtype_Mark => New_Reference_To (Standard_Boolean, Loc)),
+              Result_Definition => New_Reference_To (Standard_Boolean, Loc)),
           Declarations               => New_List,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
@@ -3698,19 +3702,6 @@ package body Exp_Ch3 is
 
             elsif Is_Access_Type (Typ) then
 
-               --  Ada 2005 (AI-231): Generate conversion to the null-excluding
-               --  type to force the corresponding run-time check
-
-               if Ada_Version >= Ada_05
-                 and then (Can_Never_Be_Null (Def_Id)
-                             or else Can_Never_Be_Null (Typ))
-               then
-                  Rewrite
-                    (Expr_Q,
-                     Convert_To (Etype (Def_Id), Relocate_Node (Expr_Q)));
-                  Analyze_And_Resolve (Expr_Q, Etype (Def_Id));
-               end if;
-
                --  For access types set the Is_Known_Non_Null flag if the
                --  initializing value is known to be non-null. We can also set
                --  Can_Never_Be_Null if this is a constant.
@@ -4362,7 +4353,7 @@ package body Exp_Ch3 is
                     Make_Defining_Identifier (Loc, Name_uF),
                   Parameter_Type => New_Reference_To (Standard_Boolean, Loc))),
 
-              Subtype_Mark => New_Reference_To (Standard_Integer, Loc)),
+              Result_Definition => New_Reference_To (Standard_Integer, Loc)),
 
             Declarations => Empty_List,
 
@@ -4392,10 +4383,10 @@ package body Exp_Ch3 is
    ------------------------
 
    procedure Freeze_Record_Type (N : Node_Id) is
-      Def_Id      : constant Node_Id := Entity (N);
       Comp        : Entity_Id;
-      Type_Decl   : constant Node_Id := Parent (Def_Id);
+      Def_Id      : constant Node_Id := Entity (N);
       Predef_List : List_Id;
+      Type_Decl   : constant Node_Id := Parent (Def_Id);
 
       Renamed_Eq  : Node_Id := Empty;
       --  Could use some comments ???
@@ -4534,6 +4525,7 @@ package body Exp_Ch3 is
             Make_Predefined_Primitive_Specs
               (Def_Id, Predef_List, Renamed_Eq);
             Insert_List_Before_And_Analyze (N, Predef_List);
+
             Set_Is_Frozen (Def_Id, True);
             Set_All_DT_Position (Def_Id);
 
@@ -4623,6 +4615,8 @@ package body Exp_Ch3 is
 
             Append_Freeze_Actions
               (Def_Id, Predefined_Primitive_Freeze (Def_Id));
+            Append_Freeze_Actions
+              (Def_Id, Init_Predefined_Interface_Primitives (Def_Id));
          end if;
 
       --  In the non-tagged case, an equality function is provided only for
@@ -4696,8 +4690,20 @@ package body Exp_Ch3 is
       if Is_Tagged_Type (Def_Id) then
          Predef_List := Predefined_Primitive_Bodies (Def_Id, Renamed_Eq);
          Append_Freeze_Actions (Def_Id, Predef_List);
-      end if;
 
+         --  Populate the two auxiliary tables used for dispatching
+         --  asynchronous, conditional and timed selects for tagged
+         --  types that implement a limited interface.
+
+         if Ada_Version >= Ada_05
+           and then not Is_Interface  (Def_Id)
+           and then not Is_Abstract   (Def_Id)
+           and then not Is_Controlled (Def_Id)
+           and then Implements_Limited_Interface (Def_Id)
+         then
+            Append_Freeze_Actions (Def_Id, Make_Disp_Select_Tables (Def_Id));
+         end if;
+      end if;
    end Freeze_Record_Type;
 
    ------------------------------
@@ -5887,6 +5893,67 @@ package body Exp_Ch3 is
                Parameter_Type      => New_Reference_To (Tag_Typ, Loc)))));
       end if;
 
+      --  Generate the declarations for the following primitive operations:
+      --    disp_asynchronous_select
+      --    disp_conditional_select
+      --    disp_get_prim_op_kind
+      --    disp_timed_select
+      --  for limited interfaces and tagged types that implement a limited
+      --  interface.
+
+      if Ada_Version >= Ada_05
+        and then
+            ((Is_Interface (Tag_Typ)
+                and then Is_Limited_Record (Tag_Typ))
+          or else
+             (not Is_Abstract (Tag_Typ)
+                and then not Is_Controlled (Tag_Typ)
+                and then Implements_Limited_Interface (Tag_Typ)))
+      then
+         if Is_Interface (Tag_Typ) then
+            Append_To (Res,
+              Make_Abstract_Subprogram_Declaration (Loc,
+                Specification =>
+                  Make_Disp_Asynchronous_Select_Spec (Tag_Typ)));
+
+            Append_To (Res,
+              Make_Abstract_Subprogram_Declaration (Loc,
+                Specification =>
+                  Make_Disp_Conditional_Select_Spec (Tag_Typ)));
+
+            Append_To (Res,
+              Make_Abstract_Subprogram_Declaration (Loc,
+                Specification =>
+                  Make_Disp_Get_Prim_Op_Kind_Spec (Tag_Typ)));
+
+            Append_To (Res,
+              Make_Abstract_Subprogram_Declaration (Loc,
+                Specification =>
+                  Make_Disp_Timed_Select_Spec (Tag_Typ)));
+
+         else
+            Append_To (Res,
+              Make_Subprogram_Declaration (Loc,
+                Specification =>
+                  Make_Disp_Asynchronous_Select_Spec (Tag_Typ)));
+
+            Append_To (Res,
+              Make_Subprogram_Declaration (Loc,
+                Specification =>
+                  Make_Disp_Conditional_Select_Spec (Tag_Typ)));
+
+            Append_To (Res,
+              Make_Subprogram_Declaration (Loc,
+                Specification =>
+                  Make_Disp_Get_Prim_Op_Kind_Spec (Tag_Typ)));
+
+            Append_To (Res,
+              Make_Subprogram_Declaration (Loc,
+                Specification =>
+                  Make_Disp_Timed_Select_Spec (Tag_Typ)));
+         end if;
+      end if;
+
       --  Specs for finalization actions that may be required in case a
       --  future extension contain a controlled element. We generate those
       --  only for root tagged types where they will get dummy bodies or
@@ -6059,7 +6126,7 @@ package body Exp_Ch3 is
            Make_Function_Specification (Loc,
              Defining_Unit_Name       => Id,
              Parameter_Specifications => Profile,
-             Subtype_Mark             =>
+             Result_Definition        =>
                New_Reference_To (Ret_Type, Loc));
       end if;
 
@@ -6240,6 +6307,29 @@ package body Exp_Ch3 is
               (Loc, Tag_Typ, Decl, Ent);
             Append_To (Res, Decl);
          end if;
+      end if;
+
+      --  Generate the bodies for the following primitive operations:
+      --    disp_asynchronous_select
+      --    disp_conditional_select
+      --    disp_get_prim_op_kind
+      --    disp_timed_select
+      --  for tagged types that implement a limited interface.
+
+      if Ada_Version >= Ada_05
+        and then not Is_Interface  (Tag_Typ)
+        and then not Is_Abstract   (Tag_Typ)
+        and then not Is_Controlled (Tag_Typ)
+        and then Implements_Limited_Interface (Tag_Typ)
+      then
+         Append_To (Res,
+           Make_Disp_Asynchronous_Select_Body (Tag_Typ));
+         Append_To (Res,
+           Make_Disp_Conditional_Select_Body  (Tag_Typ));
+         Append_To (Res,
+           Make_Disp_Get_Prim_Op_Kind_Body    (Tag_Typ));
+         Append_To (Res,
+           Make_Disp_Timed_Select_Body        (Tag_Typ));
       end if;
 
       if not Is_Limited_Type (Tag_Typ) then

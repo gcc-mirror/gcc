@@ -40,11 +40,8 @@ with System.Storage_Elements;
 with Unchecked_Conversion;
 
 package Ada.Tags is
-pragma Preelaborate_05 (Tags);
---  In accordance with Ada 2005 AI-362
-
-   pragma Elaborate_Body;
-   --  We need a dummy body to solve bootstrap path issues (why ???)
+   pragma Preelaborate_05;
+   --  In accordance with Ada 2005 AI-362
 
    type Tag is private;
 
@@ -101,6 +98,29 @@ private
    type Type_Specific_Data;
    type Type_Specific_Data_Ptr is access all Type_Specific_Data;
 
+   --  Primitive operation kinds. These values differentiate the kinds of
+   --  callable entities stored in the dispatch table. Certain kinds may
+   --  not be used, but are added for completeness.
+
+   type Prim_Op_Kind is
+     (POK_Function,
+      POK_Procedure,
+      POK_Protected_Entry,
+      POK_Protected_Function,
+      POK_Protected_Procedure,
+      POK_Task_Entry,
+      POK_Task_Procedure);
+
+   --  Number of predefined primitive operations added by the Expander
+   --  for a tagged type. It is utilized for indexing in the two auxiliary
+   --  tables used for dispatching asynchronous, conditional and timed
+   --  selects. In order to be space efficien, indexing is performed by
+   --  subtracting this constant value from the provided position in the
+   --  auxiliary tables.
+   --  This value is mirrored from Exp_Disp.ads.
+
+   Default_Prim_Op_Count : constant Positive := 14;
+
    package SSE renames System.Storage_Elements;
 
    function CW_Membership (Obj_Tag : Tag; Typ_Tag : Tag) return Boolean;
@@ -108,14 +128,30 @@ private
    --  true if Obj is in Typ'Class.
 
    function IW_Membership
-     (This      : System.Address;
-      Iface_Tag : Tag) return Boolean;
-   --  Ada 2005 (AI-251): Given the tag of an object and the tag associated
-   --  with an interface, return true if Obj is in Iface'Class.
+     (This : System.Address;
+      T    : Tag) return Boolean;
+   --  Ada 2005 (AI-251): General routine that checks if a given object
+   --  implements a tagged type. Its common usage is to check if Obj is in
+   --  Iface'Class, but it is also used to check if a class-wide interface
+   --  implements a given type (Iface_CW_Typ in T'Class). For example:
+   --
+   --      type I is interface;
+   --      type T is tagged ...
+   --
+   --      function Test (O : in I'Class) is
+   --      begin
+   --         return O in T'Class.
+   --      end Test;
 
    function Get_Access_Level (T : Tag) return Natural;
    --  Given the tag associated with a type, returns the accessibility level
    --  of the type.
+
+   function Get_Entry_Index
+     (T        : Tag;
+      Position : Positive) return Positive;
+   --  Return a primitive operation's entry index (if entry) given a dispatch
+   --  table T and a position of a primitive operation in T.
 
    function Get_External_Tag (T : Tag) return System.Address;
    --  Retrieve the address of a null terminated string containing
@@ -124,9 +160,15 @@ private
    function Get_Prim_Op_Address
      (T        : Tag;
       Position : Positive) return System.Address;
-   --  Given a pointer to a dispatch Table (T) and a position in the DT
+   --  Given a pointer to a dispatch table (T) and a position in the DT
    --  this function returns the address of the virtual function stored
    --  in it (used for dispatching calls)
+
+   function Get_Prim_Op_Kind
+     (T        : Tag;
+      Position : Positive) return Prim_Op_Kind;
+   --  Return a primitive operation's kind given a dispatch table T and a
+   --  position of a primitive operation in T.
 
    function Get_RC_Offset (T : Tag) return SSE.Storage_Offset;
    --  Return the Offset of the implicit record controller when the object
@@ -173,6 +215,13 @@ private
    --  Insert the Tag and its associated external_tag in a table for the
    --  sake of Internal_Tag
 
+   procedure Set_Entry_Index
+     (T        : Tag;
+      Position : Positive;
+      Value    : Positive);
+   --  Set the entry index of a primitive operation in T's TSD table indexed
+   --  by Position.
+
    procedure Set_Offset_To_Top
      (T     : Tag;
       Value : System.Storage_Elements.Storage_Offset);
@@ -185,13 +234,20 @@ private
      (T        : Tag;
       Position : Positive;
       Value    : System.Address);
-   --  Given a pointer to a dispatch Table (T) and a position in the
-   --  dispatch Table put the address of the virtual function in it
-   --  (used for overriding)
+   --  Given a pointer to a dispatch Table (T) and a position in the dispatch
+   --  Table put the address of the virtual function in it (used for
+   --  overriding).
+
+   procedure Set_Prim_Op_Kind
+     (T        : Tag;
+      Position : Positive;
+      Value    : Prim_Op_Kind);
+   --  Set the kind of a primitive operation in T's TSD table indexed by
+   --  Position.
 
    procedure Set_TSD (T : Tag; Value : System.Address);
    --  Given a pointer T to a dispatch Table, stores the address of the record
-   --  containing the Type Specific Data generated by GNAT
+   --  containing the Type Specific Data generated by GNAT.
 
    procedure Set_Access_Level (T : Tag; Value : Natural);
    --  Sets the accessibility level of the tagged type associated with T
@@ -199,11 +255,11 @@ private
 
    procedure Set_Expanded_Name (T : Tag; Value : System.Address);
    --  Set the address of the string containing the expanded name
-   --  in the Dispatch table
+   --  in the Dispatch table.
 
    procedure Set_External_Tag (T : Tag; Value : System.Address);
    --  Set the address of the string containing the external tag
-   --  in the Dispatch table
+   --  in the Dispatch table.
 
    procedure Set_RC_Offset (T : Tag; Value : SSE.Storage_Offset);
    --  Sets the Offset of the implicit record controller when the object
