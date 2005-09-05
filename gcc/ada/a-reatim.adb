@@ -198,7 +198,7 @@ package body Ada.Real_Time is
          T_Val := abs (T);
       end if;
 
-      --  Extract the integer part of T, truncating towards zero.
+      --  Extract the integer part of T, truncating towards zero
 
       if T_Val < 0.5 then
          SC := 0;

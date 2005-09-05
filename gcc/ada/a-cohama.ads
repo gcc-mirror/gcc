@@ -49,7 +49,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Hashed_Maps is
-pragma Preelaborate (Hashed_Maps);
+   pragma Preelaborate;
 
    type Map is tagged private;
 

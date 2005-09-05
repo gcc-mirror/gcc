@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---   Copyright (C) 1992,1993,1994,1995,1996 Free Software Foundation, Inc.  --
+--            Copyright (C) 1992-2005 Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,7 @@
 --  Decimal_IO, and the Value attribute for such decimal types.
 
 package System.Val_Dec is
-pragma Pure (Val_Dec);
+   pragma Pure;
 
    function Scan_Decimal
      (Str   : String;

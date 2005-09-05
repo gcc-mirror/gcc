@@ -37,7 +37,7 @@
 --  other layered utilities.
 
 package Ada.Strings.Wide_Wide_Unbounded.Aux is
-pragma Preelaborate (Aux);
+   pragma Preelaborate;
 
    procedure Get_Wide_Wide_String
      (U : Unbounded_Wide_Wide_String;

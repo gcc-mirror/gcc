@@ -34,7 +34,7 @@
 --  Integer exponentiation (checks on)
 
 package System.Exp_Int is
-pragma Pure (Exp_Int);
+   pragma Pure;
 
    function Exp_Integer
      (Left  : Integer;

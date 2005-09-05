@@ -39,7 +39,7 @@
 with System.Unsigned_Types;
 
 package System.Exp_Uns is
-pragma Pure (Exp_Uns);
+   pragma Pure;
 
    function Exp_Unsigned
      (Left  : System.Unsigned_Types.Unsigned;

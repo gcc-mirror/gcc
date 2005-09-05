@@ -14,7 +14,7 @@
 ------------------------------------------------------------------------------
 
 package Ada.Containers.Prime_Numbers is
-pragma Pure (Prime_Numbers);
+   pragma Pure;
 
    type Primes_Type is array (Positive range <>) of Hash_Type;
 

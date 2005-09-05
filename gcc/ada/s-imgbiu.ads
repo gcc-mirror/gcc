@@ -38,7 +38,7 @@
 with System.Unsigned_Types;
 
 package System.Img_BIU is
-pragma Pure (Img_BIU);
+   pragma Pure;
 
    procedure Set_Image_Based_Integer
      (V : Integer;

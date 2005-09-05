@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,7 @@
 with Types; use Types;
 
 package Output is
-pragma Elaborate_Body (Output);
+   pragma Elaborate_Body;
 
    type Output_Proc is access procedure (S : String);
    --  This type is used for the Set_Special_Output procedure. If this

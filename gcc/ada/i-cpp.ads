@@ -34,9 +34,10 @@
 --  Missing package comment ???
 
 with Ada.Tags;
+
 package Interfaces.CPP is
-pragma Elaborate_Body;
---  We have a dummy body to deal with bootstrap path issues
+   pragma Elaborate_Body;
+   --  We have a dummy body to deal with bootstrap path issues
 
    subtype Vtable_Ptr is Ada.Tags.Tag;
 

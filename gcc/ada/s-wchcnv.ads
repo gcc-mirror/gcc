@@ -37,7 +37,7 @@
 with System.WCh_Con;
 
 package System.WCh_Cnv is
-   pragma Pure (WCh_Cnv);
+   pragma Pure;
 
    type UTF_32_Code is range 0 .. 16#7FFF_FFFF#;
    for UTF_32_Code'Size use 32;

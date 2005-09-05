@@ -40,7 +40,7 @@
 --  complete control over allocation.
 
 package System.HTable is
-pragma Preelaborate (HTable);
+   pragma Preelaborate;
 
    -------------------
    -- Simple_HTable --

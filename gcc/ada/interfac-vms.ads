@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2002-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -43,7 +43,7 @@
 --  floating-point formats are available.
 
 package Interfaces is
-pragma Pure (Interfaces);
+   pragma Pure;
 
    type Integer_8  is range -2 **  7 .. 2 **  7 - 1;
    for Integer_8'Size use  8;
@@ -71,103 +71,83 @@ pragma Pure (Interfaces);
 
    function Shift_Left
      (Value  : Unsigned_8;
-      Amount : Natural)
-     return    Unsigned_8;
+      Amount : Natural) return Unsigned_8;
 
    function Shift_Right
      (Value  : Unsigned_8;
-      Amount : Natural)
-      return   Unsigned_8;
+      Amount : Natural) return Unsigned_8;
 
    function Shift_Right_Arithmetic
      (Value  : Unsigned_8;
-      Amount : Natural)
-      return   Unsigned_8;
+      Amount : Natural) return Unsigned_8;
 
    function Rotate_Left
      (Value  : Unsigned_8;
-      Amount : Natural)
-      return   Unsigned_8;
+      Amount : Natural) return Unsigned_8;
 
    function Rotate_Right
      (Value  : Unsigned_8;
-      Amount : Natural)
-      return   Unsigned_8;
+      Amount : Natural) return Unsigned_8;
 
    function Shift_Left
      (Value  : Unsigned_16;
-      Amount : Natural)
-     return    Unsigned_16;
+      Amount : Natural) return Unsigned_16;
 
    function Shift_Right
      (Value  : Unsigned_16;
-      Amount : Natural)
-      return   Unsigned_16;
+      Amount : Natural) return Unsigned_16;
 
    function Shift_Right_Arithmetic
      (Value  : Unsigned_16;
-      Amount : Natural)
-      return   Unsigned_16;
+      Amount : Natural) return Unsigned_16;
 
    function Rotate_Left
      (Value  : Unsigned_16;
-      Amount : Natural)
-      return   Unsigned_16;
+      Amount : Natural) return Unsigned_16;
 
    function Rotate_Right
      (Value  : Unsigned_16;
-      Amount : Natural)
-      return   Unsigned_16;
+      Amount : Natural) return Unsigned_16;
 
    function Shift_Left
      (Value  : Unsigned_32;
-      Amount : Natural)
-     return    Unsigned_32;
+      Amount : Natural) return Unsigned_32;
 
    function Shift_Right
      (Value  : Unsigned_32;
-      Amount : Natural)
-      return   Unsigned_32;
+      Amount : Natural) return Unsigned_32;
 
    function Shift_Right_Arithmetic
      (Value  : Unsigned_32;
-      Amount : Natural)
-      return   Unsigned_32;
+      Amount : Natural) return Unsigned_32;
 
    function Rotate_Left
      (Value  : Unsigned_32;
-      Amount : Natural)
-      return   Unsigned_32;
+      Amount : Natural) return Unsigned_32;
 
    function Rotate_Right
      (Value  : Unsigned_32;
-      Amount : Natural)
-      return   Unsigned_32;
+      Amount : Natural) return Unsigned_32;
 
    function Shift_Left
      (Value  : Unsigned_64;
-      Amount : Natural)
-     return    Unsigned_64;
+      Amount : Natural) return Unsigned_64;
 
    function Shift_Right
      (Value  : Unsigned_64;
-      Amount : Natural)
-      return   Unsigned_64;
+      Amount : Natural) return Unsigned_64;
 
    function Shift_Right_Arithmetic
      (Value  : Unsigned_64;
-      Amount : Natural)
-      return   Unsigned_64;
+      Amount : Natural) return Unsigned_64;
 
    function Rotate_Left
      (Value  : Unsigned_64;
-      Amount : Natural)
-      return   Unsigned_64;
+      Amount : Natural) return Unsigned_64;
 
    function Rotate_Right
      (Value  : Unsigned_64;
-      Amount : Natural)
-      return   Unsigned_64;
+      Amount : Natural) return Unsigned_64;
 
    pragma Import (Intrinsic, Shift_Left);
    pragma Import (Intrinsic, Shift_Right);
@@ -178,6 +158,7 @@ pragma Pure (Interfaces);
    --  Floating point types. We use the digits value to define the IEEE
    --  forms, otherwise a configuration pragma specifying VAX float can
    --  default the digits to an illegal value for IEEE.
+
    --  Note: it is harmless, and explicitly permitted, to include additional
    --  types in interfaces, so it is not wrong to have IEEE_Extended_Float
    --  defined even if the extended format is not available.

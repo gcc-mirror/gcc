@@ -6,11 +6,11 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 2002-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
--- apply solely to the implementation dependent additions to thie file.     --
+-- apply solely to the implementation dependent sections of this file.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,10 +38,10 @@
 --  Assumes integer sizes of 8, 16, 32 and 64 are available, and that the
 --  floating-point formats are IEEE compatible.
 
---  Note: There is a specialized version of this package for OpenVMS.
+--  Note: There is a specialized version of this package for OpenVMS
 
 package Interfaces is
-pragma Pure (Interfaces);
+   pragma Pure;
 
    type Integer_8  is range -2 **  7 .. 2 **  7 - 1;
    for Integer_8'Size use  8;
@@ -89,7 +89,7 @@ pragma Pure (Interfaces);
 
    function Shift_Left
      (Value  : Unsigned_16;
-      Amount : Natural) return    Unsigned_16;
+      Amount : Natural) return Unsigned_16;
 
    function Shift_Right
      (Value  : Unsigned_16;
@@ -157,6 +157,7 @@ pragma Pure (Interfaces);
    --  that the types Short_Float and Long_Float in Standard refer to the
    --  32-bit short and 64-bit long IEEE forms. Furthermore, if there is
    --  an extended float, we assume that it is available as Long_Long_Float.
+
    --  Note: it is harmless, and explicitly permitted, to include additional
    --  types in interfaces, so it is not wrong to have IEEE_Extended_Float
    --  defined even if the extended format is not available.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1997-2005 Ada Core Technologies, Inc.            --
+--                     Copyright (C) 1997-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,7 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Interfaces;            use Interfaces;
 
 package GNAT.Spitbol is
-pragma Preelaborate (Spitbol);
+   pragma Preelaborate;
 
    --  The Spitbol package relies heavily on the Unbounded_String package,
    --  using the synonym VString for variable length string. The following
@@ -231,7 +231,7 @@ pragma Preelaborate (Spitbol);
       --  Any non-limited type can be used as the value type in the table
 
       Null_Value : Value_Type;
-      --  Value used to represent a value that is not present in the table.
+      --  Value used to represent a value that is not present in the table
 
       with function Img (A : Value_Type) return String;
       --  Used to provide image of value in Dump procedure

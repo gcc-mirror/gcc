@@ -35,7 +35,7 @@
 --  fixed-point type with non-static bounds.
 
 package System.Mantissa is
-pragma Pure (Mantissa);
+   pragma Pure;
 
    function Mantissa_Value (First, Last : Integer) return Natural;
    --  Compute Mantissa value from the given arguments, which are the First

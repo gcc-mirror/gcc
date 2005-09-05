@@ -50,7 +50,7 @@ generic
    with procedure Set_Color (Node : Node_Access; Color : Color_Type) is <>;
 
 package Ada.Containers.Red_Black_Trees.Generic_Operations is
-pragma Pure;
+   pragma Pure;
 
    function Min (Node : Node_Access) return Node_Access;
 

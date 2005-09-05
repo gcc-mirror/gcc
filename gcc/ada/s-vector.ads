@@ -41,7 +41,7 @@
 --  direct processor support for them.
 
 package System.Vectors is
-pragma Pure (Vectors);
+   pragma Pure;
 
    type Vector is mod 2**System.Word_Size;
    for Vector'Alignment use Integer'Min

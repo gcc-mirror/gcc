@@ -39,7 +39,7 @@ with Ada.Strings.Maps;
 with Ada.Finalization;
 
 package Ada.Strings.Unbounded is
-pragma Preelaborate (Unbounded);
+   pragma Preelaborate;
 
    type Unbounded_String is private;
 

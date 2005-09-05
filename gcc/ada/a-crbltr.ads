@@ -34,7 +34,7 @@
 ------------------------------------------------------------------------------
 
 package Ada.Containers.Red_Black_Trees is
-pragma Pure (Red_Black_Trees);
+   pragma Pure;
 
    type Color_Type is (Red, Black);
 

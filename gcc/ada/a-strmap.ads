@@ -38,9 +38,9 @@
 with Ada.Characters.Latin_1;
 
 package Ada.Strings.Maps is
-pragma Preelaborate (Maps);
-pragma Pure_05 (Maps);
---  In accordance with Ada 2005 AI-362
+   pragma Preelaborate;
+   pragma Pure_05;
+   --  In accordance with Ada 2005 AI-362
 
    --------------------------------
    -- Character Set Declarations --

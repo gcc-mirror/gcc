@@ -14,7 +14,7 @@
 ------------------------------------------------------------------------------
 
 package Ada.Characters.Latin_1 is
-pragma Pure (Latin_1);
+   pragma Pure;
 
    ------------------------
    -- Control Characters --

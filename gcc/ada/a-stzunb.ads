@@ -39,7 +39,8 @@ with Ada.Strings.Wide_Wide_Maps;
 with Ada.Finalization;
 
 package Ada.Strings.Wide_Wide_Unbounded is
-pragma Preelaborate (Wide_Wide_Unbounded);
+   pragma Preelaborate;
+
    type Unbounded_Wide_Wide_String is private;
 
    Null_Unbounded_Wide_Wide_String : constant Unbounded_Wide_Wide_String;

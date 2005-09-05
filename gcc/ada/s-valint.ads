@@ -35,7 +35,7 @@
 --  in Text_IO.Integer_IO, and the Value attribute.
 
 package System.Val_Int is
-pragma Pure (Val_Int);
+   pragma Pure;
 
    function Scan_Integer
      (Str  : String;

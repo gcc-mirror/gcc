@@ -37,7 +37,7 @@
 --  utilities (such as GNAT.SPITBOL.Patterns).
 
 package Ada.Strings.Unbounded.Aux is
-pragma Preelaborate (Aux);
+   pragma Preelaborate;
 
    procedure Get_String
      (U : Unbounded_String;

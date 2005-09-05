@@ -35,7 +35,7 @@
 --  (other than runtime comparison, found in s-strcom.ads).
 
 package System.String_Ops is
-pragma Pure (String_Ops);
+   pragma Pure;
 
    function Str_Concat (X, Y : String) return String;
    --  Concatenate two strings and return resulting string

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 1996-2004 Ada Core Technologies, Inc.              --
+--         Copyright (C) 1996-2005 Ada Core Technologies, Inc.              --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,7 +44,7 @@
 --  from an exception handler.
 
 package GNAT.Current_Exception is
-pragma Pure (Current_Exception);
+   pragma Pure;
 
    -----------------
    -- Subprograms --

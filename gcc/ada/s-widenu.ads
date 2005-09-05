@@ -34,7 +34,7 @@
 --  This package contains the routine used for Enumeration_Type'Width
 
 package System.Wid_Enum is
-pragma Pure (Wid_Enum);
+   pragma Pure;
 
    function Width_Enumeration_8
      (Names   : String;

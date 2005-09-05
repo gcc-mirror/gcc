@@ -36,5 +36,5 @@
 --  the bind. It is also a convenient parent for all DEC IO child packages.
 
 package DEC is
-pragma Pure (DEC);
+   pragma Pure;
 end DEC;

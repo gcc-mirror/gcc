@@ -38,7 +38,7 @@
 with System.Unsigned_Types;
 
 package System.Img_LLU is
-pragma Pure (Img_LLU);
+   pragma Pure;
 
    function Image_Long_Long_Unsigned
      (V :    System.Unsigned_Types.Long_Long_Unsigned)

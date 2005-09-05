@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---        Copyright (C) 1993,1994,1995 Free Software Foundation, Inc.       --
+--           Copyright (C) 1993-2005 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,7 @@
 --  Definition of values for OS/2 error returns
 
 package Interfaces.OS2Lib.Errors is
-pragma Preelaborate (Errors);
+   pragma Preelaborate;
 
    NO_ERROR                        : constant :=     0;
    ERROR_INVALID_FUNCTION          : constant :=     1;

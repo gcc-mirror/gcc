@@ -36,11 +36,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides definitions for Latin-9 (ISO-8859-9) analogous to
+--  This package provides definitions for Latin-9 (ISO-8859-15) analogous to
 --  those defined in the standard package Ada.Characters.Latin_1 for Latin-1.
 
 package Ada.Characters.Latin_9 is
-pragma Pure (Latin_9);
+   pragma Pure;
 
    ------------------------
    -- Control Characters --

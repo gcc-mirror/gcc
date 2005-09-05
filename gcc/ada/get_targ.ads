@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,7 @@
 with Types; use Types;
 
 package Get_Targ is
-pragma Preelaborate (Get_Targ);
+   pragma Preelaborate;
 
    function Get_Bits_Per_Unit return Pos;
    pragma Import (C, Get_Bits_Per_Unit, "get_target_bits_per_unit");

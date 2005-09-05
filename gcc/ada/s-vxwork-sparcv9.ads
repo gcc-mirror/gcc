@@ -36,7 +36,7 @@
 with Interfaces;
 
 package System.VxWorks is
-   pragma Preelaborate (System.VxWorks);
+   pragma Preelaborate;
 
    --  Floating point context record. SPARCV9 version
 

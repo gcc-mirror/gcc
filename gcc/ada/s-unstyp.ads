@@ -38,7 +38,7 @@
 --  used by the compiler in connection with packed array types.
 
 package System.Unsigned_Types is
-pragma Pure (Unsigned_Types);
+   pragma Pure;
 
    type Short_Short_Unsigned is mod 2 ** Short_Short_Integer'Size;
    type Short_Unsigned       is mod 2 ** Short_Integer'Size;

@@ -36,7 +36,7 @@
 --  operations required in Text_IO.Integer_IO for such types.
 
 package System.Img_LLI is
-pragma Preelaborate (Img_LLI);
+   pragma Preelaborate;
 
    function Image_Long_Long_Integer (V : Long_Long_Integer) return String;
    --  Computes Long_Long_Integer'Image (V) and returns the result.

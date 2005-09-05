@@ -37,7 +37,7 @@
 --  is in accordance with the implementation permission in RM (A.3.3(27)).
 
 package Ada.Characters.Wide_Wide_Latin_9 is
-pragma Pure (Wide_Wide_Latin_9);
+   pragma Pure;
 
    ------------------------
    -- Control Characters --

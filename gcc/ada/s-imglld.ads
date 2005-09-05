@@ -35,7 +35,7 @@
 --  type does exceeds Integer'Size (also used for Text_IO.Decimal_IO output)
 
 package System.Img_LLD is
-pragma Preelaborate (Img_LLD);
+   pragma Preelaborate;
 
    function Image_Long_Long_Decimal
      (V     : Long_Long_Integer;

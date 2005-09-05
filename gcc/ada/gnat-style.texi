@@ -7,7 +7,7 @@
 @c                                                                            o
 @c                      G N A T   C O D I N G   S T Y L E                     o
 @c                                                                            o
-@c          Copyright (C) 1992-2004 Ada Core Technologies, Inc.               o
+@c          Copyright (C) 1992-2005 Ada Core Technologies, Inc.               o
 @c                                                                            o
 @c  GNAT is free software;  you can  redistribute it  and/or modify it under  o
 @c  terms of the  GNU General Public License as published  by the Free Soft-  o
@@ -52,7 +52,7 @@
 @page
 @vskip 0pt plus 1filll
 
-Copyright @copyright{} 1995-2003, Free Software Foundation
+Copyright @copyright{} 1995-2005, Free Software Foundation
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1
@@ -814,6 +814,20 @@ unique, to prevent name clashes when the packages are @code{use}d.
 @item
 After the file header comment, the context clause and unit specification
 should be the first thing in a @syntax{program_unit}.
+
+@item
+Preelaborate, Pure and Elaborate_Body pragmas should be added right after the
+package name, indented an extra level and using the parameterless form:
+
+@smallexample @c adanocomment
+@group
+      package Preelaborate_Package is
+         pragma Preelaborate;
+         ...
+      end Preelaborate_Package;
+@end group
+@end smallexample
+
 @end itemize
 
 @c  -------------------------------------------------------------------------

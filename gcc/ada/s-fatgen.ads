@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,7 +41,7 @@ generic
     type T is digits <>;
 
 package System.Fat_Gen is
-pragma Pure (Fat_Gen);
+   pragma Pure;
 
    subtype UI is Integer;
    --  The runtime representation of universal integer for the purposes of

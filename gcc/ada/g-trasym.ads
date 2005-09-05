@@ -62,7 +62,7 @@
 with Ada.Exceptions; use Ada.Exceptions;
 
 package GNAT.Traceback.Symbolic is
-pragma Elaborate_Body (Traceback.Symbolic);
+   pragma Elaborate_Body;
 
    ------------------------
    -- Symbolic_Traceback --

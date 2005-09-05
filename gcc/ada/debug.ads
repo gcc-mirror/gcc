@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,12 +31,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package Debug is
-pragma Preelaborate (Debug);
-
 --  This package contains global flags used to control the inclusion
 --  of debugging code in various phases of the compiler. Some of these
 --  flags are also used by the binder and gnatmake.
+
+package Debug is
+   pragma Preelaborate;
 
    -------------------------
    -- Dynamic Debug Flags --

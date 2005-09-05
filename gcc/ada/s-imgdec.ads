@@ -35,7 +35,7 @@
 --  type does not exceed Integer'Size (also used for Text_IO.Decimal_IO output)
 
 package System.Img_Dec is
-pragma Preelaborate (Img_Dec);
+   pragma Preelaborate;
 
    function Image_Decimal
      (V     : Integer;

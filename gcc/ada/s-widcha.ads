@@ -34,7 +34,7 @@
 --  This package contains the routine used for Character'Width
 
 package System.Wid_Char is
-pragma Pure (Wid_Char);
+   pragma Pure;
 
    function Width_Character (Lo, Hi : Character) return Natural;
    --  Compute Width attribute for non-static type derived from Character.

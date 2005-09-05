@@ -49,7 +49,7 @@
 --  otherwise the relinking and rebinding capability would be deactivated.
 
 package System.Parameters is
-pragma Pure (Parameters);
+   pragma Pure;
 
    ---------------------------------------
    -- Task And Stack Allocation Control --

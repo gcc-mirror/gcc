@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1993-1998 Free Software Foundation, Inc.          --
+--          Copyright (C) 1993-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,7 @@
 with Interfaces.OS2Lib.Threads;
 
 package Interfaces.OS2Lib.Synchronization is
-pragma Preelaborate (Synchronization);
+   pragma Preelaborate;
 
    package IC  renames Interfaces.C;
    package IOT renames Interfaces.OS2Lib.Threads;

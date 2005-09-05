@@ -38,8 +38,7 @@
 with System.Unsigned_Types;
 
 package System.Version_Control is
-
-   pragma Pure (Version_Control);
+   pragma Pure;
 
    subtype Version_String is String (1 .. 8);
    --  Eight character string returned by Get_version_String;

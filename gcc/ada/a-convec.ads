@@ -42,7 +42,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Vectors is
-pragma Preelaborate (Vectors);
+   pragma Preelaborate;
 
    subtype Extended_Index is Index_Type'Base
      range Index_Type'First - 1 ..

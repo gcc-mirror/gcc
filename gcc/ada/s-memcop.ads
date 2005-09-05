@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -46,7 +46,7 @@ with System.CRTL;
 --  The above with is contrary to the intent ???
 
 package System.Memory_Copy is
-pragma Preelaborate;
+   pragma Preelaborate;
 
    procedure memcpy (S1 : Address; S2 : Address; N : System.CRTL.size_t)
      renames System.CRTL.memcpy;

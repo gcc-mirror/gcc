@@ -38,9 +38,9 @@
 with Ada.Characters.Latin_1;
 
 package Ada.Strings.Maps.Constants is
-pragma Preelaborate (Constants);
-pragma Pure_05 (Constants);
---  In accordance with Ada 2005 AI-362
+   pragma Preelaborate;
+   pragma Pure_05;
+   --  In accordance with Ada 2005 AI-362
 
    Control_Set           : constant Character_Set;
    Graphic_Set           : constant Character_Set;

@@ -305,7 +305,7 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
       Result : Complex;
 
    begin
-      --  For very small argument, sin (x) = x.
+      --  For very small argument, sin (x) = x
 
       if abs Re (X) < Square_Root_Epsilon and then
          abs Im (X) < Square_Root_Epsilon
@@ -642,7 +642,7 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
          end if;
       end if;
 
-      if Im (X) < 0.0 then                 -- halve angle, Sqrt of magnitude
+      if Im (X) < 0.0 then -- halve angle, Sqrt of magnitude
          R_Y := -R_Y;
       end if;
       return Compose_From_Cartesian (R_X, R_Y);
@@ -650,7 +650,7 @@ package body Ada.Numerics.Generic_Complex_Elementary_Functions is
    exception
       when Constraint_Error =>
 
-         --  Rescale and try again.
+         --  Rescale and try again
 
          R := Modulus (Compose_From_Cartesian (Re (X / 4.0), Im (X / 4.0)));
          R_X := 2.0 * Sqrt (0.5 * R + 0.5 * Re (X / 4.0));

@@ -34,7 +34,7 @@
 --  Long_Long_Float exponentiation (checks off)
 
 package System.Exn_LLF is
-pragma Pure (Exn_LLF);
+   pragma Pure;
 
    function Exn_Long_Long_Float
      (Left  : Long_Long_Float;

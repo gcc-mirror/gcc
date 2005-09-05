@@ -16,7 +16,7 @@
 with System.Parameters;
 
 package Interfaces.C is
-pragma Pure (C);
+   pragma Pure;
 
    --  Declaration's based on C's <limits.h>
 

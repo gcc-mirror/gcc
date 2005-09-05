@@ -39,7 +39,6 @@ with Ada.Finalization;
 with Ada.Streams;
 
 generic
-
    type Key_Type (<>) is private;
 
    type Element_Type (<>) is private;
@@ -49,7 +48,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Indefinite_Ordered_Maps is
-pragma Preelaborate (Indefinite_Ordered_Maps);
+   pragma Preelaborate;
 
    type Map is tagged private;
 

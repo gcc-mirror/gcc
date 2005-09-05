@@ -34,7 +34,7 @@
 --  Wide_[Wide_]Character'Image
 
 package System.Img_WChar is
-pragma Pure (Img_WChar);
+   pragma Pure;
 
    function Image_Wide_Character (V : Wide_Character) return String;
    --  Computes Wide_Character'Image (V) and returns the computed result

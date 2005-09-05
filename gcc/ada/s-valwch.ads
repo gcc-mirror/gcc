@@ -34,7 +34,7 @@
 --  Processing for Wide_[Wide_]Value attribute
 
 package System.Val_WChar is
-pragma Pure (Val_WChar);
+   pragma Pure;
 
    function Value_Wide_Character
       (Str : String) return Wide_Character;

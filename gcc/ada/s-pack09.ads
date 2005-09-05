@@ -34,7 +34,7 @@
 --  Handling of packed arrays with Component_Size = 9
 
 package System.Pack_09 is
-pragma Preelaborate (Pack_09);
+   pragma Preelaborate;
 
    Bits : constant := 9;
 

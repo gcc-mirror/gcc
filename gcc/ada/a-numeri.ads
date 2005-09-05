@@ -14,7 +14,7 @@
 ------------------------------------------------------------------------------
 
 package Ada.Numerics is
-pragma Pure (Numerics);
+   pragma Pure;
 
    Argument_Error : exception;
 

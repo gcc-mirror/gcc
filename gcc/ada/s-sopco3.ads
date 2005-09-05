@@ -34,7 +34,7 @@
 --  This package contains the function for concatenating three strings
 
 package System.String_Ops_Concat_3 is
-pragma Pure (String_Ops_Concat_3);
+   pragma Pure;
 
    function Str_Concat_3 (S1, S2, S3 : String) return String;
    --  Concatenate three strings and return resulting string

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1998-2002 Ada Core Technologies, Inc.           --
+--            Copyright (C) 1998-2005 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,7 @@
 --  they have no effect (they do NOT cause the tasking runtime to be loaded).
 
 package GNAT.Task_Lock is
-pragma Elaborate_Body (Task_Lock);
+   pragma Elaborate_Body;
 
    procedure Lock;
    pragma Inline (Lock);

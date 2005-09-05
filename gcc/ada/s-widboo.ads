@@ -34,7 +34,7 @@
 --  This package contains the routine used for Boolean'Width
 
 package System.Wid_Bool is
-pragma Pure (Wid_Bool);
+   pragma Pure;
 
    function Width_Boolean (Lo, Hi : Boolean) return Natural;
    --  Compute Width attribute for non-static type derived from Boolean.

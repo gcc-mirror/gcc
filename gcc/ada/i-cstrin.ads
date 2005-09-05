@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1993-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1993-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -36,7 +36,7 @@
 ------------------------------------------------------------------------------
 
 package Interfaces.C.Strings is
-pragma Preelaborate (Strings);
+   pragma Preelaborate;
 
    type char_array_access is access all char_array;
 

@@ -51,7 +51,7 @@ package body Ada.Numerics.Generic_Complex_Types is
       X := Left.Re * Right.Re - Left.Im * Right.Im;
       Y := Left.Re * Right.Im + Left.Im * Right.Re;
 
-      --  If either component overflows, try to scale.
+      --  If either component overflows, try to scale
 
       if abs (X) > R'Last then
          X := R'(4.0) * (R'(Left.Re / 2.0)  * R'(Right.Re / 2.0)
@@ -626,7 +626,7 @@ package body Ada.Numerics.Generic_Complex_Types is
       elsif Im2 = 0.0 then
          return abs (X.Re);
 
-         --  in all other cases, the naive computation will do.
+      --  In all other cases, the naive computation will do
 
       else
          return R (Sqrt (Double (Re2 + Im2)));

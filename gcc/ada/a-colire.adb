@@ -38,7 +38,7 @@ package body Ada.Command_Line.Remove is
    -----------------------
 
    procedure Initialize;
-   --  Initialize the Remove_Count and Remove_Args variables.
+   --  Initialize the Remove_Count and Remove_Args variables
 
    ----------------
    -- Initialize --

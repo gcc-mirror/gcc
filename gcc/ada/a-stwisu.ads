@@ -42,7 +42,7 @@
 with Ada.Strings.Wide_Maps;
 
 package Ada.Strings.Wide_Superbounded is
-pragma Preelaborate (Wide_Superbounded);
+   pragma Preelaborate;
 
    Wide_NUL : constant Wide_Character := Wide_Character'Val (0);
 

@@ -35,8 +35,9 @@
 --  on non-VMS systems.
 
 with System.Parameters;
+
 package System.CRTL is
-pragma Preelaborate (CRTL);
+   pragma Preelaborate;
 
    subtype chars is System.Address;
    --  Pointer to null-terminated array of characters

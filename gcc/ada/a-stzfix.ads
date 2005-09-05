@@ -16,7 +16,7 @@
 with Ada.Strings.Wide_Wide_Maps;
 
 package Ada.Strings.Wide_Wide_Fixed is
-pragma Preelaborate (Wide_Wide_Fixed);
+   pragma Preelaborate;
 
    ------------------------------------------------------------------------
    -- Copy Procedure for Wide_Wide_Strings of Possibly Different Lengths --

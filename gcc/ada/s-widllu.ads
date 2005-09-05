@@ -31,14 +31,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routine used for WIdth attribute for all
+--  This package contains the routine used for Width attribute for all
 --  non-static unsigned integer (modular integer) subtypes. Note we only
 --  have one routine, since this seems a fairly marginal function.
 
 with System.Unsigned_Types;
 
 package System.Wid_LLU is
-pragma Pure (Wid_LLU);
+   pragma Pure;
 
    function Width_Long_Long_Unsigned
      (Lo, Hi : System.Unsigned_Types.Long_Long_Unsigned)

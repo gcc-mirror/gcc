@@ -14,7 +14,7 @@
 ------------------------------------------------------------------------------
 
 package Ada.IO_Exceptions is
-pragma Pure (IO_Exceptions);
+   pragma Pure;
 
    Status_Error : exception;
    Mode_Error   : exception;

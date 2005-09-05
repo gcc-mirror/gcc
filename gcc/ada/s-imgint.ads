@@ -36,7 +36,7 @@
 --  operations required in Text_IO.Integer_IO for such types.
 
 package System.Img_Int is
-pragma Pure (Img_Int);
+   pragma Pure;
 
    function Image_Integer (V : Integer) return String;
    --  Computes Integer'Image (V) and returns the result

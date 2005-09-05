@@ -20,7 +20,7 @@ generic
    type Element_Type is private;
 
 package Ada.Storage_IO is
-pragma Preelaborate (Storage_IO);
+   pragma Preelaborate;
 
    Buffer_Size : constant System.Storage_Elements.Storage_Count :=
                    System.Storage_Elements.Storage_Count

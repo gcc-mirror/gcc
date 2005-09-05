@@ -40,16 +40,16 @@
 --  It is a good idea to avoid use clauses for this package!
 
 package System.Storage_Elements is
-pragma Pure (Storage_Elements);
---  Note that we take advantage of the implementation permission to make
---  this unit Pure instead of Preelaborable; see RM 13.7.1(15). In Ada 2005,
---  this is Pure in any case (AI-362).
+   pragma Pure;
+   --  Note that we take advantage of the implementation permission to make
+   --  this unit Pure instead of Preelaborable; see RM 13.7.1(15). In Ada 2005,
+   --  this is Pure in any case (AI-362).
 
---  We also add the pragma Pure_Function to the operations in this package,
---  because otherwise functions with parameters derived from Address are
---  treated as non-pure by the back-end (see exp_ch6.adb). This is because
---  in many cases such a parameter is used to hide read/out access to objects,
---  and it would be unsafe to treat such functions as pure.
+   --  We also add the pragma Pure_Function to the operations in this package,
+   --  because otherwise functions with parameters derived from Address are
+   --  treated as non-pure by the back-end (see exp_ch6.adb). This is because
+   --  in many cases such a parameter is used to hide read/out access to
+   --  objects, and it would be unsafe to treat such functions as pure.
 
    type Storage_Offset is range
      -(2 ** (Integer'(Standard'Address_Size) - 1)) ..

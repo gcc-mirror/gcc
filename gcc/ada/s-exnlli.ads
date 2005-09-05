@@ -34,7 +34,7 @@
 --  Long_Long_Integer exponentiation (checks off)
 
 package System.Exn_LLI is
-pragma Pure (Exn_LLI);
+   pragma Pure;
 
    function Exn_Long_Long_Integer
      (Left  : Long_Long_Integer;

@@ -34,7 +34,7 @@
 --  Character'Image
 
 package System.Img_Char is
-pragma Pure (Img_Char);
+   pragma Pure;
 
    function Image_Character (V : Character) return String;
    --  Computes Character'Image (V) and returns the result
