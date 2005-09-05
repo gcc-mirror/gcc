@@ -390,7 +390,6 @@ ifeq ($(strip $(filter-out %86 os2 OS2 os2_emx,$(arch) $(osys))),)
   s-inmaop.adb<s-inmaop-dummy.adb \
   s-interr.adb<s-interr-dummy.adb \
   s-intman.adb<s-intman-dummy.adb \
-  s-mastop.adb<s-mastop-x86.adb \
   s-osinte.adb<s-osinte-os2.adb \
   s-osinte.ads<s-osinte-os2.ads \
   s-osprim.adb<s-osprim-os2.adb \
@@ -415,7 +414,6 @@ ifeq ($(strip $(filter-out %86 interix%,$(arch) $(osys))),)
   g-soccon.ads<g-soccon-interix.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
-  s-mastop.adb<s-mastop-x86.adb \
   s-osinte.adb<s-osinte-fsu.adb \
   s-osinte.ads<s-osinte-interix.ads \
   s-osprim.adb<s-osprim-unix.adb \
@@ -437,7 +435,6 @@ ifeq ($(strip $(filter-out %86 sysv5uw%,$(arch) $(osys))),)
   a-numaux.ads<a-numaux-x86.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
-  s-mastop.adb<s-mastop-x86.adb \
   s-osinte.ads<s-osinte-unixware.ads \
   s-osinte.adb<s-osinte-unixware.adb \
   s-osprim.adb<s-osprim-unix.adb \
@@ -622,7 +619,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworks,$(targ))),)
   EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
 endif
 
-ifeq ($(strip $(filter-out xscale% coff wrs vx%,$(targ))),)
+ifeq ($(strip $(filter-out arm% coff wrs vx%,$(targ))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
@@ -638,11 +635,11 @@ ifeq ($(strip $(filter-out xscale% coff wrs vx%,$(targ))),)
   s-taprop.adb<s-taprop-vxworks.adb \
   s-taspri.ads<s-taspri-vxworks.ads \
   s-tpopsp.adb<s-tpopsp-vxworks.adb \
-  s-vxwork.ads<s-vxwork-xscale.ads \
+  s-vxwork.ads<s-vxwork-arm.ads \
   g-soccon.ads<g-soccon-vxworks.ads \
   g-socthi.ads<g-socthi-vxworks.ads \
   g-socthi.adb<g-socthi-vxworks.adb \
-  system.ads<system-elf-sparc.ads
+  system.ads<system-vxworks-arm.ads
 
   TOOLS_TARGET_PAIRS=mlib-tgt.adb<mlib-tgt-vxworks.adb
 
@@ -769,7 +766,6 @@ ifeq ($(strip $(filter-out %86 solaris2%,$(arch) $(osys))),)
   a-intnam.ads<a-intnam-solaris.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-solaris.adb \
-  s-mastop.adb<s-mastop-x86.adb \
   s-osinte.adb<s-osinte-solaris.adb \
   s-osinte.ads<s-osinte-solaris.ads \
   s-osprim.adb<s-osprim-solaris.adb \
@@ -801,12 +797,11 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
   a-numaux.ads<a-numaux-x86.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
-  s-mastop.adb<s-mastop-x86.adb \
   s-osinte.adb<s-osinte-posix.adb \
   s-osinte.ads<s-osinte-linux.ads \
   s-osprim.adb<s-osprim-posix.adb \
   s-taprop.adb<s-taprop-linux.adb \
-  s-taspri.ads<s-taspri-linux.ads \
+  s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   s-parame.adb<s-parame-linux.adb \
   system.ads<system-linux-x86.ads
@@ -828,7 +823,6 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
     a-numaux.ads<a-numaux-x86.ads \
     s-inmaop.adb<s-inmaop-posix.adb \
     s-intman.adb<s-intman-posix.adb \
-    s-mastop.adb<s-mastop-x86.adb \
     s-osinte.adb<s-osinte-fsu.adb \
     s-osinte.ads<s-osinte-linux-fsu.ads \
     s-osprim.adb<s-osprim-posix.adb \
@@ -849,7 +843,6 @@ ifeq ($(strip $(filter-out %86 freebsd%,$(arch) $(osys))),)
   g-soccon.ads<g-soccon-freebsd.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
-  s-mastop.adb<s-mastop-x86.adb \
   s-osinte.adb<s-osinte-freebsd.adb \
   s-osinte.ads<s-osinte-freebsd.ads \
   s-osprim.adb<s-osprim-posix.adb \
@@ -878,7 +871,7 @@ ifeq ($(strip $(filter-out s390% linux%,$(arch) $(osys))),)
     s-osinte.ads<s-osinte-linux.ads \
     s-osprim.adb<s-osprim-posix.adb \
     s-taprop.adb<s-taprop-linux.adb \
-    s-taspri.ads<s-taspri-linux.ads \
+    s-taspri.ads<s-taspri-posix.ads \
     s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
     s-parame.adb<s-parame-linux.adb \
     system.ads<system-linux-s390x.ads
@@ -891,7 +884,7 @@ ifeq ($(strip $(filter-out s390% linux%,$(arch) $(osys))),)
     s-osinte.ads<s-osinte-linux.ads \
     s-osprim.adb<s-osprim-posix.adb \
     s-taprop.adb<s-taprop-linux.adb \
-    s-taspri.ads<s-taspri-linux.ads \
+    s-taspri.ads<s-taspri-posix.ads \
     s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
     s-parame.adb<s-parame-linux.adb \
     system.ads<system-linux-s390.ads
@@ -1076,7 +1069,6 @@ ifeq ($(strip $(filter-out lynxos,$(osys))),)
     a-numaux.adb<a-numaux-x86.adb \
     a-numaux.ads<a-numaux-x86.ads \
     a-intnam.ads<a-intnam-lynxos.ads \
-    s-mastop.adb<s-mastop-x86.adb \
     s-inmaop.adb<s-inmaop-posix.adb \
     s-intman.adb<s-intman-posix.adb \
     s-osinte.adb<s-osinte-lynxos.adb \
@@ -1213,7 +1205,7 @@ endif
   a-intnam.ads<a-intnam-vms.ads \
   a-numaux.ads<a-numaux-vms.ads \
   g-expect.adb<g-expect-vms.adb \
-  g-soccon.ads<g-soccon-vms.adb \
+  g-soccon.ads<g-soccon-vms.ads \
   g-socthi.ads<g-socthi-vms.ads \
   g-socthi.adb<g-socthi-vms.adb \
   g-trasym.adb<g-trasym-vms.adb \
@@ -1277,7 +1269,6 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
   s-inmaop.adb<s-inmaop-dummy.adb \
   s-interr.adb<s-interr-sigaction.adb \
   s-intman.adb<s-intman-mingw.adb \
-  s-mastop.adb<s-mastop-x86.adb \
   s-memory.adb<s-memory-mingw.adb \
   s-osinte.ads<s-osinte-mingw.ads \
   s-osprim.adb<s-osprim-mingw.adb \
@@ -1316,7 +1307,7 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(arch) $(osys))),)
   s-osinte.ads<s-osinte-linux.ads \
   s-osprim.adb<s-osprim-posix.adb \
   s-taprop.adb<s-taprop-linux.adb \
-  s-taspri.ads<s-taspri-linux.ads \
+  s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   s-parame.adb<s-parame-linux.adb \
   system.ads<system-linux-ppc.ads
@@ -1341,7 +1332,7 @@ ifeq ($(strip $(filter-out sparc% linux%,$(arch) $(osys))),)
   s-osinte.ads<s-osinte-linux.ads \
   s-osprim.adb<s-osprim-posix.adb \
   s-taprop.adb<s-taprop-linux.adb \
-  s-taspri.ads<s-taspri-linux.ads \
+  s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   s-parame.adb<s-parame-linux.adb \
   system.ads<system-linux-sparc.ads
@@ -1366,7 +1357,7 @@ ifeq ($(strip $(filter-out hppa% linux%,$(arch) $(osys))),)
   s-osinte.ads<s-osinte-linux-hppa.ads \
   s-osprim.adb<s-osprim-posix.adb \
   s-taprop.adb<s-taprop-linux.adb \
-  s-taspri.ads<s-taspri-linux.ads \
+  s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   s-parame.adb<s-parame-linux.adb \
   system.ads<system-linux-hppa.ads
@@ -1393,7 +1384,7 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(arch) $(osys))),)
   s-osprim.adb<s-osprim-posix.adb \
   s-taprop.adb<s-taprop-linux.adb \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
-  s-taspri.ads<s-taspri-linux.ads \
+  s-taspri.ads<s-taspri-posix.ads \
   system.ads<system-linux-ia64.ads
 
   TOOLS_TARGET_PAIRS =  \
@@ -1418,7 +1409,7 @@ ifeq ($(strip $(filter-out alpha% linux%,$(arch) $(osys))),)
   s-osprim.adb<s-osprim-posix.adb \
   s-taprop.adb<s-taprop-linux.adb \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
-  s-taspri.ads<s-taspri-linux.ads \
+  s-taspri.ads<s-taspri-posix.ads \
   system.ads<system-linux-alpha.ads
 
   TOOLS_TARGET_PAIRS =  \
@@ -1444,7 +1435,7 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
   s-osprim.adb<s-osprim-posix.adb \
   s-taprop.adb<s-taprop-linux.adb \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
-  s-taspri.ads<s-taspri-linux.ads \
+  s-taspri.ads<s-taspri-posix.ads \
   system.ads<system-linux-x86_64.ads
 
   TOOLS_TARGET_PAIRS =  \
