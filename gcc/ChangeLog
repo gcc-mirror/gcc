@@ -21,6 +21,12 @@
 	* config/arm/arm.c (arm_legitimize_address): Limit the value passed
 	to bit_count to 32 bits.
 
+2005-09-02  J"orn Rennecke <joern.rennecke@st.com>
+
+	* rtl.h (gen_frame_mem, gen_tmp_stack_mem): Declare.
+	* emit-rtl.c (gen_frame_mem, gen_tmp_stack_mem): New functions.
+	* builtins.c (expand_builtin_return_addr): Use gen_frame_mem.
+
 2005-08-31  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23167
