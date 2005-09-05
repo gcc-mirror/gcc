@@ -1648,7 +1648,14 @@ package body Sem_Warn is
                end if;
 
                if True_Branch then
-                  Error_Msg_N ("condition is always True?", Cond);
+                  if Is_Entity_Name (Original_Node (C))
+                    and then Nkind (Cond) /= N_Op_Not
+                  then
+                     Error_Msg_NE
+                      ("object & is always True?", Cond, Original_Node (C));
+                  else
+                     Error_Msg_N ("condition is always True?", Cond);
+                  end if;
                else
                   Error_Msg_N ("condition is always False?", Cond);
                end if;
