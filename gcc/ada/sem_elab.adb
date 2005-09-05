@@ -296,17 +296,17 @@ package body Sem_Elab is
    --  convention Stubbed.
 
    procedure Supply_Bodies (L : List_Id);
-   --  Calls Supply_Bodies for all elements of the given list L.
+   --  Calls Supply_Bodies for all elements of the given list L
 
    function Within (E1, E2 : Entity_Id) return Boolean;
-   --  Given two scopes E1 and E2, returns True if E1 is equal to E2, or
-   --  is one of its contained scopes, False otherwise.
+   --  Given two scopes E1 and E2, returns True if E1 is equal to E2, or is one
+   --  of its contained scopes, False otherwise.
 
    function Within_Elaborate_All (E : Entity_Id) return Boolean;
    --  Before emitting a warning on a scope E for a missing elaborate_all,
-   --  check whether E may be in the context of a directly visible unit
-   --  U to which the pragma applies. This prevents spurious warnings when
-   --  the called entity is renamed within U.
+   --  check whether E may be in the context of a directly visible unit U to
+   --  which the pragma applies. This prevents spurious warnings when the
+   --  called entity is renamed within U.
 
    ------------------
    -- Check_A_Call --
@@ -963,7 +963,7 @@ package body Sem_Elab is
       then
          return;
 
-      --  Nothing to do if this is a call already rewritten for elab checking.
+      --  Nothing to do if this is a call already rewritten for elab checking
 
       elsif Nkind (Parent (N)) = N_Conditional_Expression then
          return;
@@ -1051,35 +1051,29 @@ package body Sem_Elab is
               and then In_Preelaborated_Unit
               and then not In_Inlined_Body
             then
-               --  This is a warning in -gnatg mode allowing such calls to
-               --  be used in the predefined library with appropriate care.
+               --  This is a warning in GNAT mode allowing such calls to be
+               --  used in the predefined library with appropriate care.
 
-               if GNAT_Mode then
-                  Error_Msg_N
-                    ("?non-static call not allowed in preelaborated unit", N);
-               else
-                  Error_Msg_N
-                    ("non-static call not allowed in preelaborated unit", N);
-               end if;
-
+               Error_Msg_Warn := GNAT_Mode;
+               Error_Msg_N
+                 ("<non-static call not allowed in preelaborated unit", N);
                return;
             end if;
 
-         --  Second case, we are inside a subprogram or concurrent unit
-         --  i.e, we are not in elaboration code.
+         --  Second case, we are inside a subprogram or concurrent unit, which
+         --  means we are not in elaboration code.
 
          else
             --  In this case, the issue is whether we are inside the
-            --  declarative part of the unit in which we live, or inside
-            --  its statements. In the latter case, there is no issue of
-            --  ABE calls at this level (a call from outside to the unit
-            --  in which we live might cause an ABE, but that will be
-            --  detected when we analyze that outer level call, as it
-            --  recurses into the called unit).
+            --  declarative part of the unit in which we live, or inside its
+            --  statements. In the latter case, there is no issue of ABE calls
+            --  at this level (a call from outside to the unit in which we live
+            --  might cause an ABE, but that will be detected when we analyze
+            --  that outer level call, as it recurses into the called unit).
 
-            --  Climb up the tree, doing this test, and also testing
-            --  for being inside a default expression, which, as
-            --  discussed above, is not checked at this stage.
+            --  Climb up the tree, doing this test, and also testing for being
+            --  inside a default expression, which, as discussed above, is not
+            --  checked at this stage.
 
             declare
                P : Node_Id;
@@ -1088,9 +1082,9 @@ package body Sem_Elab is
             begin
                P := N;
                loop
-                  --  If we find a parentless subtree, it seems safe to
-                  --  assume that we are not in a declarative part and
-                  --  that no checking is required.
+                  --  If we find a parentless subtree, it seems safe to assume
+                  --  that we are not in a declarative part and that no
+                  --  checking is required.
 
                   if No (P) then
                      return;
@@ -1106,8 +1100,8 @@ package body Sem_Elab is
 
                   exit when Nkind (P) = N_Subunit;
 
-                  --  Filter out case of default expressions, where
-                  --  we do not do the check at this stage.
+                  --  Filter out case of default expressions, where we do not
+                  --  do the check at this stage.
 
                   if Nkind (P) = N_Parameter_Specification
                        or else
@@ -1136,11 +1130,11 @@ package body Sem_Elab is
                      elsif Dynamic_Elaboration_Checks then
 
                         --  This is a rather new check, going into version
-                        --  3.14a1 for the first time (V1.80 of this unit),
-                        --  so we provide a debug flag to enable it. That
-                        --  way we have an easy work around for regressions
-                        --  that are caused by this new check. This debug
-                        --  flag can be removed later.
+                        --  3.14a1 for the first time (V1.80 of this unit), so
+                        --  we provide a debug flag to enable it. That way we
+                        --  have an easy work around for regressions that are
+                        --  caused by this new check. This debug flag can be
+                        --  removed later.
 
                         if Debug_Flag_DD then
                            return;
@@ -1381,7 +1375,7 @@ package body Sem_Elab is
          return;
       end if;
 
-      --  Nothing to do if the instantiation is not in the main unit.
+      --  Nothing to do if the instantiation is not in the main unit
 
       if not In_Extended_Main_Code_Unit (N) then
          return;
@@ -1882,7 +1876,7 @@ package body Sem_Elab is
             else
                Elmt := First_Elmt (Inter_Procs);
 
-               --  No need for multiple entries of the same type.
+               --  No need for multiple entries of the same type
 
                while Present (Elmt) loop
                   if Node (Elmt) = Proc then
@@ -1946,7 +1940,7 @@ package body Sem_Elab is
    begin
       Enclosing := Outer_Unit (Current_Scope);
 
-      --  Find all tasks declared in the current unit.
+      --  Find all tasks declared in the current unit
 
       if Nkind (N) = N_Package_Body then
          P := Unit_Declaration_Node (Corresponding_Spec (N));

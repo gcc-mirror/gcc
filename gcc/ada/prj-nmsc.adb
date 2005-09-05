@@ -38,7 +38,6 @@ with Prj.Util; use Prj.Util;
 with Sinput.P;
 with Snames;   use Snames;
 with Table;    use Table;
-with Types;    use Types;
 
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
 with Ada.Strings;                use Ada.Strings;
@@ -47,7 +46,6 @@ with Ada.Strings.Maps.Constants; use Ada.Strings.Maps.Constants;
 
 with GNAT.Case_Util;             use GNAT.Case_Util;
 with GNAT.Directory_Operations;  use GNAT.Directory_Operations;
-with GNAT.OS_Lib;                use GNAT.OS_Lib;
 with GNAT.HTable;
 
 package body Prj.Nmsc is
@@ -876,7 +874,6 @@ package body Prj.Nmsc is
 
             while Source_Id /= No_Other_Source loop
                Source := In_Tree.Other_Sources.Table (Source_Id);
-               Source_Id := Source.Next;
 
                if Source.File_Name = File_Id then
 
@@ -939,6 +936,8 @@ package body Prj.Nmsc is
                         Real_Location);
                      return;
                end if;
+
+               Source_Id := Source.Next;
             end loop;
 
             if Current_Verbosity = High then
@@ -2368,7 +2367,7 @@ package body Prj.Nmsc is
             end if;
 
          else
-            --  Library_Symbol_File is defined. Check that the file exists.
+            --  Library_Symbol_File is defined. Check that the file exists
 
             Data.Symbol_Data.Symbol_File := Lib_Symbol_File.Value;
 
@@ -2461,34 +2460,29 @@ package body Prj.Nmsc is
                then
                   Error_Msg_Name_1 := Lib_Ref_Symbol_File.Value;
 
-                  --  For controlled symbol policy, it is an error
-                  --  if the reference symbol file does not exist.
+                  --  For controlled symbol policy, it is an error if the
+                  --  reference symbol file does not exist. For other symbol
+                  --  policies, this is just a warning
 
-                  if Data.Symbol_Data.Symbol_Policy = Controlled then
-                     Error_Msg
-                       (Project, In_Tree,
-                        "library reference symbol file { does not exist",
-                        Lib_Ref_Symbol_File.Location);
+                  Error_Msg_Warn :=
+                    Data.Symbol_Data.Symbol_Policy /= Controlled;
 
-                  else
-                     --  For other symbol policies, this is just a warning
+                  Error_Msg
+                    (Project, In_Tree,
+                     "<library reference symbol file { does not exist",
+                     Lib_Ref_Symbol_File.Location);
 
-                     Error_Msg
-                       (Project, In_Tree,
-                        "?library reference symbol file { does not exist",
-                        Lib_Ref_Symbol_File.Location);
+                  --  In addition in the non-controlled case, if symbol policy
+                  --  is Compliant, it is changed to Autonomous, because there
+                  --  is no reference to check against, and we don't want to
+                  --  fail in this case.
 
-                     --  In addition, if symbol policy is Compliant, it is
-                     --  changed to Autonomous, because there is no reference
-                     --  to check against, and we don't want to fail in this
-                     --  case.
-
+                  if Data.Symbol_Data.Symbol_Policy /= Controlled then
                      if Data.Symbol_Data.Symbol_Policy = Compliant then
                         Data.Symbol_Data.Symbol_Policy := Autonomous;
                      end if;
                   end if;
                end if;
-
             end if;
          end if;
       end if;
@@ -2588,11 +2582,19 @@ package body Prj.Nmsc is
       if Msg (First) = '\' then
          First := First + 1;
 
-      --  Warniung character is always the first one in this package
+         --  Warniung character is always the first one in this package
+         --  this is an undoocumented kludge!!!
 
       elsif Msg (First) = '?' then
          First := First + 1;
          Add ("Warning: ");
+
+      elsif Msg (First) = '<' then
+         First := First + 1;
+
+         if Err_Vars.Error_Msg_Warn then
+            Add ("Warning: ");
+         end if;
       end if;
 
       for Index in First .. Msg'Last loop

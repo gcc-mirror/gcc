@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,6 @@ with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Targparm; use Targparm;
 with Table;
-with Types;    use Types;
 with Uintp;    use Uintp;
 
 package body Erroutc is
@@ -982,6 +981,11 @@ package body Erroutc is
            and then (J = Msg'First or else Msg (J - 1) /= ''')
          then
             Is_Warning_Msg := True;
+
+         elsif Msg (J) = '<'
+           and then (J = Msg'First or else Msg (J - 1) /= ''')
+         then
+            Is_Warning_Msg := Error_Msg_Warn;
 
          elsif Msg (J) = '|'
            and then (J = Msg'First or else Msg (J - 1) /= ''')
