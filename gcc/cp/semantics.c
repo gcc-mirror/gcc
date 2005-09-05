@@ -1540,67 +1540,85 @@ begin_stmt_expr (void)
 }
 
 /* Process the final expression of a statement expression. EXPR can be
-   NULL, if the final expression is empty.  Build up a TARGET_EXPR so
-   that the result value can be safely returned to the enclosing
-   expression.  */
+   NULL, if the final expression is empty.  Return a STATEMENT_LIST
+   containing all the statements in the statement-expression, or
+   ERROR_MARK_NODE if there was an error.  */
 
 tree
 finish_stmt_expr_expr (tree expr, tree stmt_expr)
 {
-  tree result = NULL_TREE;
-
   if (error_operand_p (expr))
     return error_mark_node;
 
+  /* If the last statement does not have "void" type, then the value
+     of the last statement is the value of the entire expression.  */ 
   if (expr)
     {
-      if (!processing_template_decl && !VOID_TYPE_P (TREE_TYPE (expr)))
+      tree type;
+      type = TREE_TYPE (expr);
+      if (!dependent_type_p (type) && !VOID_TYPE_P (type))
 	{
-	  tree type = TREE_TYPE (expr);
-
-	  if (TREE_CODE (type) == ARRAY_TYPE
-	      || TREE_CODE (type) == FUNCTION_TYPE)
-	    expr = decay_conversion (expr);
-
-	  expr = require_complete_type (expr);
-
+	  expr = decay_conversion (expr);
+	  if (error_operand_p (expr))
+	    return error_mark_node;
 	  type = TREE_TYPE (expr);
+	}
+      /* The type of the statement-expression is the type of the last
+	 expression.  */
+      TREE_TYPE (stmt_expr) = type;
+      /* We must take particular care if TYPE is a class type.  In
+	 paticular if EXPR creates a temporary of class type, then it
+	 must be destroyed at the semicolon terminating the last
+	 statement -- but we must make a copy before that happens.
 
-	  /* Build a TARGET_EXPR for this aggregate.  finish_stmt_expr
-	     will then pull it apart so the lifetime of the target is
-	     within the scope of the expression containing this statement
-	     expression.  */
-	  if (TREE_CODE (expr) == TARGET_EXPR)
-	    ;
-	  else if (!IS_AGGR_TYPE (type) || TYPE_HAS_TRIVIAL_INIT_REF (type))
-	    expr = build_target_expr_with_type (expr, type);
+	 This problem is solved by using a TARGET_EXPR to initialize a
+	 new temporary variable.  The TARGET_EXPR itself is placed
+	 outside the statement-expression.  However, the last
+	 statement in the statement-expression is transformed from
+	 EXPR to (approximately) T = EXPR, where T is the new
+	 temporary variable.  Thus, the lifetime of the new temporary
+	 extends to the full-expression surrounding the
+	 statement-expression.  */
+      if (!processing_template_decl && !VOID_TYPE_P (type))
+	{
+	  tree target_expr; 
+	  if (CLASS_TYPE_P (type) 
+	      && !TYPE_HAS_TRIVIAL_INIT_REF (type)) 
+	    {
+	      target_expr = build_target_expr_with_type (expr, type);
+	      expr = TARGET_EXPR_INITIAL (target_expr);
+	    }
 	  else
 	    {
-	      /* Copy construct.  */
-	      expr = build_special_member_call
-		(NULL_TREE, complete_ctor_identifier,
-		 build_tree_list (NULL_TREE, expr),
-		 type, LOOKUP_NORMAL);
-	      expr = build_cplus_new (type, expr);
-	      gcc_assert (TREE_CODE (expr) == TARGET_EXPR);
+	      /* Normally, build_target_expr will not create a
+		 TARGET_EXPR for scalars.  However, we need the
+		 temporary here, in order to solve the scoping
+		 problem described above.  */
+	      target_expr = force_target_expr (type, expr);
+	      expr = TARGET_EXPR_INITIAL (target_expr);
+	      expr = build2 (INIT_EXPR, 
+			     type,
+			     TARGET_EXPR_SLOT (target_expr),
+			     expr);
 	    }
-	}
-
-      if (expr != error_mark_node)
-	{
-	  result = build_stmt (EXPR_STMT, expr);
-	  EXPR_STMT_STMT_EXPR_RESULT (result) = 1;
-	  add_stmt (result);
+	  TARGET_EXPR_INITIAL (target_expr) = NULL_TREE;
+	  /* Save away the TARGET_EXPR in the TREE_TYPE field of the
+	     STATEMENT_EXPR.  We will retrieve it in
+	     finish_stmt_expr.  */
+	  TREE_TYPE (stmt_expr) = target_expr;
 	}
     }
 
-  finish_stmt ();
+  /* Having modified EXPR to reflect the extra initialization, we now
+     treat it just like an ordinary statement.  */
+  expr = finish_expr_stmt (expr);
 
-  /* Remember the last expression so that finish_stmt_expr
-     can pull it apart.  */
-  TREE_TYPE (stmt_expr) = result;
+  /* Mark the last statement so that we can recognize it as such at
+     template-instantiation time.  */
+  if (expr && processing_template_decl)
+    EXPR_STMT_STMT_EXPR_RESULT (expr) = 1;
 
-  return result;
+  return stmt_expr;
 }
 
 /* Finish a statement-expression.  EXPR should be the value returned
@@ -1610,49 +1628,16 @@ finish_stmt_expr_expr (tree expr, tree stmt_expr)
 tree
 finish_stmt_expr (tree stmt_expr, bool has_no_scope)
 {
-  tree result, result_stmt, type;
-  tree *result_stmt_p = NULL;
+  tree type;
+  tree result;
 
-  result_stmt = TREE_TYPE (stmt_expr);
-  TREE_TYPE (stmt_expr) = void_type_node;
+  if (error_operand_p (stmt_expr))
+    return error_mark_node;
+
+  gcc_assert (TREE_CODE (stmt_expr) == STATEMENT_LIST);
+
+  type = TREE_TYPE (stmt_expr);
   result = pop_stmt_list (stmt_expr);
-
-  if (!result_stmt || VOID_TYPE_P (result_stmt))
-    type = void_type_node;
-  else
-    {
-      /* We need to search the statement expression for the result_stmt,
-	 since we'll need to replace it entirely.  */
-      tree t;
-      result_stmt_p = &result;
-      while (1)
-	{
-	  t = *result_stmt_p;
-	  if (t == result_stmt)
-	    break;
-
-	  switch (TREE_CODE (t))
-	    {
-	    case STATEMENT_LIST:
-	      {
-		tree_stmt_iterator i = tsi_last (t);
-		result_stmt_p = tsi_stmt_ptr (i);
-		break;
-	      }
-	    case BIND_EXPR:
-	      result_stmt_p = &BIND_EXPR_BODY (t);
-	      break;
-	    case TRY_FINALLY_EXPR:
-	    case TRY_CATCH_EXPR:
-	    case CLEANUP_STMT:
-	      result_stmt_p = &TREE_OPERAND (t, 0);
-	      break;
-	    default:
-	      gcc_unreachable ();
-	    }
-	}
-      type = TREE_TYPE (EXPR_STMT_EXPR (result_stmt));
-    }
 
   if (processing_template_decl)
     {
@@ -1660,43 +1645,12 @@ finish_stmt_expr (tree stmt_expr, bool has_no_scope)
       TREE_SIDE_EFFECTS (result) = 1;
       STMT_EXPR_NO_SCOPE (result) = has_no_scope;
     }
-  else if (!VOID_TYPE_P (type))
+  else if (!TYPE_P (type))
     {
-      /* Pull out the TARGET_EXPR that is the final expression. Put
-	 the target's init_expr as the final expression and then put
-	 the statement expression itself as the target's init
-	 expr. Finally, return the target expression.  */
-      tree init, target_expr = EXPR_STMT_EXPR (result_stmt);
-      gcc_assert (TREE_CODE (target_expr) == TARGET_EXPR);
-
-      /* The initializer will be void if the initialization is done by
-	 AGGR_INIT_EXPR; propagate that out to the statement-expression as
-	 a whole.  */
-      init = TREE_OPERAND (target_expr, 1);
-      type = TREE_TYPE (init);
-
-      init = maybe_cleanup_point_expr (init);
-      *result_stmt_p = init;
-
-      if (VOID_TYPE_P (type))
-	/* No frobbing needed.  */;
-      else if (TREE_CODE (result) == BIND_EXPR)
-	{
-	  /* The BIND_EXPR created in finish_compound_stmt is void; if we're
-	     returning a value directly, give it the appropriate type.  */
-	  if (VOID_TYPE_P (TREE_TYPE (result)))
-	    TREE_TYPE (result) = type;
-	  else
-	    gcc_assert (same_type_p (TREE_TYPE (result), type));
-	}
-      else if (TREE_CODE (result) == STATEMENT_LIST)
-	/* We need to wrap a STATEMENT_LIST in a BIND_EXPR so it can have a
-	   type other than void.  FIXME why can't we just return a value
-	   from STATEMENT_LIST?  */
-	result = build3 (BIND_EXPR, type, NULL, result, NULL);
-
-      TREE_OPERAND (target_expr, 1) = result;
-      result = target_expr;
+      gcc_assert (TREE_CODE (type) == TARGET_EXPR);
+      TARGET_EXPR_INITIAL (type) = result;
+      TREE_TYPE (result) = void_type_node;
+      result = type;
     }
 
   return result;
