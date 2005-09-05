@@ -2,6 +2,8 @@
 
 	* gcc.dg/pr21255-1.c: Match different pattern for sh64.
 
+	* gcc.dg/debug/dwarf2/dwarf-char1.c: Allow '!' comment character.
+
 2005-09-04  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR libfortran/23321
