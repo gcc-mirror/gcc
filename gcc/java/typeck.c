@@ -842,6 +842,7 @@ lookup_do (tree searched_class, int flags, tree method_name,
 	   tree signature, tree (*signature_builder) (tree))
 {
   tree method;
+  tree orig_class = searched_class;
     
   if (searched_class == NULL_TREE)
     return NULL_TREE;
@@ -868,7 +869,7 @@ lookup_do (tree searched_class, int flags, tree method_name,
   
   /* If that doesn't work, look in our interfaces.  */
   if (flags & SEARCH_INTERFACE)
-    method = find_method_in_interfaces (searched_class, flags, method_name, 
+    method = find_method_in_interfaces (orig_class, flags, method_name, 
 					signature, signature_builder);
   
   return method;
