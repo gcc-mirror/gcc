@@ -1688,7 +1688,6 @@ package body Makegpr is
 
          declare
             Archive : Ada.Text_IO.File_Type;
-            use Ada.Text_IO;
          begin
             Create (Archive, Out_File, Archive_Name);
             Close (Archive);
@@ -2754,7 +2753,6 @@ package body Makegpr is
       Source_Id : Other_Source_Id := First_Source;
       Source    : Other_Source;
       Dep_File  : Ada.Text_IO.File_Type;
-      use Ada.Text_IO;
 
    begin
       --  Create the file in Append mode, to avoid automatic insertion of
@@ -2786,8 +2784,6 @@ package body Makegpr is
       Source_Id : Other_Source_Id;
       Source    : Other_Source;
       Dep_File  : Ada.Text_IO.File_Type;
-
-      use Ada.Text_IO;
 
    begin
       --  Create the file in Append mode, to avoid automatic insertion of

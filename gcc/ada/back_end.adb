@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,6 @@ with Elists;    use Elists;
 with Lib;       use Lib;
 with Osint;     use Osint;
 with Opt;       use Opt;
-with Osint;     use Osint;
 with Osint.C;   use Osint.C;
 with Namet;     use Namet;
 with Nlists;    use Nlists;

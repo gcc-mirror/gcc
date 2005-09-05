@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,8 +27,6 @@
 --  This generic package, instantiated in package Style, contains routines
 --  used by the compiler for style checking. These routines are in a separate
 --  package because they depend on the GNAT tree (Atree, Sinfo, ...).
-
-with Types;  use Types;
 
 generic
    with procedure Error_Msg_N (Msg : String; N : Node_Or_Entity_Id);

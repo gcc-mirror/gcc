@@ -40,7 +40,6 @@ with Table;    use Table;
 
 with Ada.Characters.Handling;   use Ada.Characters.Handling;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
-with GNAT.OS_Lib;               use GNAT.OS_Lib;
 with GNAT.Regexp;               use GNAT.Regexp;
 
 with System.Case_Util;          use System.Case_Util;

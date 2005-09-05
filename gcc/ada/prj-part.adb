@@ -33,22 +33,17 @@ with Prj.Com;  use Prj.Com;
 with Prj.Dect;
 with Prj.Err;  use Prj.Err;
 with Prj.Ext;  use Prj.Ext;
-with Scans;    use Scans;
 with Sinput;   use Sinput;
 with Sinput.P; use Sinput.P;
 with Snames;
 with Table;
-with Types;    use Types;
 
 with Ada.Characters.Handling;    use Ada.Characters.Handling;
 with Ada.Exceptions;             use Ada.Exceptions;
 
 with GNAT.Directory_Operations;  use GNAT.Directory_Operations;
-with GNAT.OS_Lib;                use GNAT.OS_Lib;
 
 with System.HTable;              use System.HTable;
-
-pragma Elaborate_All (GNAT.OS_Lib);
 
 package body Prj.Part is
 

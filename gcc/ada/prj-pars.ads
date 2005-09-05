@@ -26,8 +26,6 @@
 
 --  Implements the parsing of project files
 
-with GNAT.OS_Lib; use GNAT.OS_Lib;
-
 package Prj.Pars is
 
    procedure Set_Verbosity (To : Verbosity);

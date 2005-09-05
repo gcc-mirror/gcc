@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -556,8 +556,6 @@ package body Xr_Tabls is
    -------------------------
 
    procedure Create_Project_File (Name : String) is
-      use Ada.Strings.Unbounded;
-
       Obj_Dir     : Unbounded_String := Null_Unbounded_String;
       Src_Dir     : Unbounded_String := Null_Unbounded_String;
       Build_Dir   : GNAT.OS_Lib.String_Access := new String'("");

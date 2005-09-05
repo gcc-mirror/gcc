@@ -35,7 +35,6 @@ with Snames;   use Snames;
 with Sinput;
 with Stringt;  use Stringt;
 with Table;
-with Types;    use Types;
 
 with GNAT.Heap_Sort_G;
 

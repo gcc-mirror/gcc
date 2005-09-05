@@ -30,7 +30,6 @@ with Fname.UF; use Fname.UF;
 with SFN_Scan; use SFN_Scan;
 with Namet;    use Namet;
 with Osint;    use Osint;
-with Types;    use Types;
 
 with Unchecked_Conversion;
 

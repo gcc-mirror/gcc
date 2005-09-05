@@ -28,11 +28,8 @@ with Err_Vars;  use Err_Vars;
 with Namet;     use Namet;
 with Prj.Attr;  use Prj.Attr;
 with Prj.Err;   use Prj.Err;
-with Prj.Tree;  use Prj.Tree;
-with Scans;     use Scans;
 with Snames;
 with Table;
-with Types;     use Types;
 with Uintp;     use Uintp;
 
 package body Prj.Strt is

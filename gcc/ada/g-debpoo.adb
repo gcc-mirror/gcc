@@ -46,8 +46,6 @@ with GNAT.Traceback; use GNAT.Traceback;
 with Ada.Unchecked_Conversion;
 
 package body GNAT.Debug_Pools is
-   use System;
-   use System.Storage_Elements;
 
    Default_Alignment : constant Storage_Offset := Standard'Maximum_Alignment;
    --  Alignment used for the memory chunks returned by Allocate. Using this
@@ -1289,7 +1287,6 @@ package body GNAT.Debug_Pools is
       Display_Slots : Boolean := False;
       Display_Leaks : Boolean := False)
    is
-      use System.Storage_Elements;
 
       package Backtrace_Htable_Cumulate is new GNAT.HTable.Static_HTable
         (Header_Num => Header,

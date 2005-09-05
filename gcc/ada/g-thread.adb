@@ -163,7 +163,6 @@ package body GNAT.Threads is
    ----------------
 
    procedure Get_Thread (Id : Address; Thread : Address) is
-      use System.OS_Interface;
       Thr : constant Thread_Id_Ptr := To_Thread (Thread);
    begin
       Thr.all := Task_Primitives.Operations.Get_Thread_Id (To_Id (Id));

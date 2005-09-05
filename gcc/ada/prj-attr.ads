@@ -29,7 +29,6 @@
 --  It is also possible to define new packages with their attributes.
 
 with Table;
-with Types; use Types;
 
 package Prj.Attr is
 

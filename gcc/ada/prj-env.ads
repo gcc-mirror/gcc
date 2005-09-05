@@ -27,8 +27,6 @@
 --  This package implements services for Project-aware tools, mostly related
 --  to the environment (configuration pragma files, path files, mapping files).
 
-with GNAT.OS_Lib; use GNAT.OS_Lib;
-
 package Prj.Env is
 
    procedure Initialize;

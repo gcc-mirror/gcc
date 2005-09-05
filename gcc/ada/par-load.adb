@@ -30,13 +30,9 @@
 --  and parents of subunits. All these units are loaded and pointers installed
 --  in the tree as described in the spec of package Lib.
 
-with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Lib.Load; use Lib.Load;
 with Uname;    use Uname;
-with Namet;    use Namet;
-with Casing;   use Casing;
-with Opt;      use Opt;
 with Osint;    use Osint;
 with Sinput.L; use Sinput.L;
 with Stylesw;  use Stylesw;
@@ -300,11 +296,10 @@ begin
          return;
       end if;
 
-   --  If current unit is a child unit spec, load its parent
-   --  If the child unit is loaded through a limited with, the parent
-   --  must be as well.
+   --  If current unit is a child unit spec, load its parent. If the child unit
+   --  is loaded through a limited with, the parent must be as well.
 
-   elsif Nkind (Unit (Curunit)) = N_Package_Declaration
+   elsif     Nkind (Unit (Curunit)) = N_Package_Declaration
      or else Nkind (Unit (Curunit)) =  N_Subprogram_Declaration
      or else Nkind (Unit (Curunit)) in N_Generic_Declaration
      or else Nkind (Unit (Curunit)) in N_Generic_Instantiation
@@ -322,10 +317,10 @@ begin
       if Spec_Name /= No_Name then
          Unum :=
            Load_Unit
-             (Load_Name  => Spec_Name,
-              Required   => True,
-              Subunit    => False,
-              Error_Node => Curunit,
+             (Load_Name         => Spec_Name,
+              Required          => True,
+              Subunit           => False,
+              Error_Node        => Curunit,
               From_Limited_With => From_Limited_With);
 
          if Unum /= No_Unit then

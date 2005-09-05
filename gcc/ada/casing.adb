@@ -34,7 +34,6 @@
 with Csets;    use Csets;
 with Namet;    use Namet;
 with Opt;      use Opt;
-with Types;    use Types;
 with Widechar; use Widechar;
 
 package body Casing is

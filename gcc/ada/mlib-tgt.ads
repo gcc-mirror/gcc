@@ -32,7 +32,6 @@
 --  In the default version, libraries are not supported, so function
 --  Support_For_Libraries return None.
 
-with GNAT.OS_Lib; use GNAT.OS_Lib;
 with Prj;         use Prj;
 
 package MLib.Tgt is
