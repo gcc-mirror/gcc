@@ -53,7 +53,11 @@ __gnat_duration_to_timeval (long sec, long usec, void *t)
 #else
 
 #if defined (__vxworks)
+#ifdef __RTP__
+#include <time.h>
+#else
 #include <sys/times.h>
+#endif
 #else
 #include <sys/time.h>
 #endif

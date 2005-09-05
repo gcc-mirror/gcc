@@ -89,6 +89,8 @@
 #if OLD_MINGW
 #include <sys/wait.h>
 #endif
+#elif defined (__vxworks) && defined (__RTP__)
+#include <wait.h>
 #else
 #include <sys/wait.h>
 #endif
@@ -1332,6 +1334,9 @@ __gnat_set_env_value (char *name, char *value)
       LIB$SIGNAL (status);
   }
 
+#elif defined (__vxworks) && defined (__RTP__)
+  setenv (name, value, 1);
+
 #else
   int size = strlen (name) + strlen (value) + 2;
   char *expression;
@@ -1638,11 +1643,12 @@ __gnat_portable_spawn (char *args[])
 int
 __gnat_dup (int oldfd)
 {
-#if defined (__vxworks)
-   /* Not supported on VxWorks.  */
-   return -1;
+#if defined (__vxworks) && !defined (__RTP__)
+  /* Not supported on VxWorks 5.x, but supported on VxWorks 6.0 when using
+     RTPs. */
+  return -1;
 #else
-   return dup (oldfd);
+  return dup (oldfd);
 #endif
 }
 
@@ -1652,8 +1658,9 @@ __gnat_dup (int oldfd)
 int
 __gnat_dup2 (int oldfd, int newfd)
 {
-#if defined (__vxworks)
-  /* Not supported on VxWorks.  */
+#if defined (__vxworks) && !defined (__RTP__)
+  /* Not supported on VxWorks 5.x, but supported on VxWorks 6.0 when using
+     RTPs.  */
   return -1;
 #else
   return dup2 (oldfd, newfd);

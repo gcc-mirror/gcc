@@ -40,6 +40,11 @@ pragma Polling (Off);
 --  Turn off polling, we do not want ATC polling to take place during
 --  tasking operations. It causes infinite loops and other problems.
 
+with System.Tasking;
+--  used for Ada_Task_Control_Block
+--           Task_Id
+--           ATCB components and types
+
 with System.Tasking.Debug;
 --  used for Known_Tasks
 
@@ -49,24 +54,11 @@ with System.Interrupt_Management;
 --           Signal_ID
 --           Initialize_Interrupts
 
-with System.Soft_Links;
---  used for Defer/Undefer_Abort
-
---  Note that we do not use System.Tasking.Initialization directly since
---  this is a higher level package that we shouldn't depend on. For example
---  when using the restricted run time, it is replaced by
---  System.Tasking.Restricted.Stages.
-
 with System.OS_Interface;
 --  used for various type, constant, and operations
 
 with System.Parameters;
 --  used for Size_Type
-
-with System.Tasking;
---  used for Ada_Task_Control_Block
---           Task_Id
---           ATCB components and types
 
 with Interfaces.C;
 
@@ -80,8 +72,6 @@ package body System.Task_Primitives.Operations is
    use System.OS_Interface;
    use System.Parameters;
    use type Interfaces.C.int;
-
-   package SSL renames System.Soft_Links;
 
    subtype int is System.OS_Interface.int;
 
@@ -98,15 +88,6 @@ package body System.Task_Primitives.Operations is
    --  This is a lock to allow only one thread of control in the RTS at a
    --  time; it is used to execute in mutual exclusion from all other tasks.
    --  Used mainly in Single_Lock mode, but also to protect All_Tasks_List
-
-   ATCB_Key : aliased System.Address := System.Null_Address;
-   --  Key used to find the Ada Task_Id associated with a thread
-
-   ATCB_Key_Addr : System.Address := ATCB_Key'Address;
-   pragma Export (Ada, ATCB_Key_Addr, "__gnat_ATCB_key_addr");
-   --  Exported to support the temporary AE653 task registration
-   --  implementation. This mechanism is used to minimize impact on other
-   --  targets.
 
    Environment_Task_Id : Task_Id;
    --  A variable to hold Task_Id for the environment task
@@ -125,9 +106,6 @@ package body System.Task_Primitives.Operations is
    Dispatching_Policy : Character;
    pragma Import (C, Dispatching_Policy, "__gl_task_dispatching_policy");
 
-   FIFO_Within_Priorities : constant Boolean := Dispatching_Policy = 'F';
-   --  Indicates whether FIFO_Within_Priorities is set
-
    Mutex_Protocol : Priority_Type;
 
    Foreign_Task_Elaborated : aliased Boolean := True;
@@ -139,6 +117,10 @@ package body System.Task_Primitives.Operations is
 
    package Specific is
 
+      procedure Initialize;
+      pragma Inline (Initialize);
+      --  Initialize task specific data
+
       function Is_Valid_Task return Boolean;
       pragma Inline (Is_Valid_Task);
       --  Does executing thread have a TCB?
@@ -146,6 +128,10 @@ package body System.Task_Primitives.Operations is
       procedure Set (Self_Id : Task_Id);
       pragma Inline (Set);
       --  Set the self id for the current task
+
+      procedure Delete;
+      pragma Inline (Delete);
+      --  Delete the task specific data associated with the current task
 
       function Self return Task_Id;
       pragma Inline (Self);
@@ -298,7 +284,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Finalize_Lock (L : access Lock) is
       Result : int;
-
    begin
       Result := semDelete (L.Mutex);
       pragma Assert (Result = 0);
@@ -306,7 +291,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Finalize_Lock (L : access RTS_Lock) is
       Result : int;
-
    begin
       Result := semDelete (L.Mutex);
       pragma Assert (Result = 0);
@@ -318,7 +302,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Write_Lock (L : access Lock; Ceiling_Violation : out Boolean) is
       Result : int;
-
    begin
       if L.Protocol = Prio_Protect
         and then int (Self.Common.Current_Priority) > L.Prio_Ceiling
@@ -338,7 +321,6 @@ package body System.Task_Primitives.Operations is
       Global_Lock : Boolean := False)
    is
       Result : int;
-
    begin
       if not Single_Lock or else Global_Lock then
          Result := semTake (L.Mutex, WAIT_FOREVER);
@@ -348,7 +330,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Write_Lock (T : Task_Id) is
       Result : int;
-
    begin
       if not Single_Lock then
          Result := semTake (T.Common.LL.L.Mutex, WAIT_FOREVER);
@@ -370,8 +351,7 @@ package body System.Task_Primitives.Operations is
    ------------
 
    procedure Unlock (L : access Lock) is
-      Result  : int;
-
+      Result : int;
    begin
       Result := semGive (L.Mutex);
       pragma Assert (Result = 0);
@@ -379,7 +359,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (L : access RTS_Lock; Global_Lock : Boolean := False) is
       Result : int;
-
    begin
       if not Single_Lock or else Global_Lock then
          Result := semGive (L.Mutex);
@@ -389,7 +368,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (T : Task_Id) is
       Result : int;
-
    begin
       if not Single_Lock then
          Result := semGive (T.Common.LL.L.Mutex);
@@ -568,9 +546,9 @@ package body System.Task_Primitives.Operations is
    --  caller is holding no locks.
 
    procedure Timed_Delay
-     (Self_ID  : Task_Id;
-      Time     : Duration;
-      Mode     : ST.Delay_Modes)
+     (Self_ID : Task_Id;
+      Time    : Duration;
+      Mode    : ST.Delay_Modes)
    is
       Orig     : constant Duration := Monotonic_Clock;
       Absolute : Duration;
@@ -580,8 +558,6 @@ package body System.Task_Primitives.Operations is
       Aborted  : Boolean := False;
 
    begin
-      SSL.Abort_Defer.all;
-
       if Mode = Relative then
          Absolute := Orig + Time;
          Ticks    := To_Clock_Ticks (Time);
@@ -654,7 +630,7 @@ package body System.Task_Primitives.Operations is
             end if;
 
             --  Take back the lock after having slept, to protect further
-            --  access to Self_ID
+            --  access to Self_ID.
 
             if Single_Lock then
                Result := semTake (Single_RTS_Lock.Mutex, WAIT_FOREVER);
@@ -678,8 +654,6 @@ package body System.Task_Primitives.Operations is
       else
          taskDelay (0);
       end if;
-
-      SSL.Abort_Undefer.all;
    end Timed_Delay;
 
    ---------------------
@@ -754,7 +728,7 @@ package body System.Task_Primitives.Operations is
           (T.Common.LL.Thread, To_VxWorks_Priority (int (Prio)));
       pragma Assert (Result = 0);
 
-      if FIFO_Within_Priorities then
+      if Dispatching_Policy = 'F' then
 
          --  Annex D requirement [RM D.2.2 par. 9]:
 
@@ -905,15 +879,15 @@ package body System.Task_Primitives.Operations is
       --  Ask for four extra bytes of stack space so that the ATCB pointer can
       --  be stored below the stack limit, plus extra space for the frame of
       --  Task_Wrapper. This is so the user gets the amount of stack requested
-      --  exclusive of the needs
-      --
+      --  exclusive of the needs.
+
       --  We also have to allocate n more bytes for the task name storage and
       --  enough space for the Wind Task Control Block which is around 0x778
       --  bytes. VxWorks also seems to carve out additional space, so use 2048
       --  as a nice round number. We might want to increment to the nearest
       --  page size in case we ever support VxVMI.
-      --
-      --  XXX - we should come back and visit this so we can set the task name
+
+      --  ??? - we should come back and visit this so we can set the task name
       --        to something appropriate.
 
       Adjusted_Stack_Size := Adjusted_Stack_Size + 2048;
@@ -990,8 +964,7 @@ package body System.Task_Primitives.Operations is
       Free (Tmp);
 
       if Is_Self then
-         Result := taskVarDelete (taskIdSelf, ATCB_Key'Access);
-         pragma Assert (Result /= ERROR);
+         Specific.Delete;
       end if;
    end Finalize_TCB;
 
@@ -1249,8 +1222,12 @@ package body System.Task_Primitives.Operations is
 
    procedure Initialize (Environment_Task : Task_Id) is
       Result : int;
-
    begin
+      Environment_Task_Id := Environment_Task;
+
+      Interrupt_Management.Initialize;
+      Specific.Initialize;
+
       if Locking_Policy = 'C' then
          Mutex_Protocol := Prio_Protect;
       elsif Locking_Policy = 'I' then
@@ -1260,7 +1237,7 @@ package body System.Task_Primitives.Operations is
       end if;
 
       if Time_Slice_Val > 0 then
-         Result := kernelTimeSlice
+         Result := Set_Time_Slice
            (To_Clock_Ticks
              (Duration (Time_Slice_Val) / Duration (1_000_000.0)));
       end if;
@@ -1274,8 +1251,6 @@ package body System.Task_Primitives.Operations is
             pragma Assert (Result = 0);
          end if;
       end loop;
-
-      Environment_Task_Id := Environment_Task;
 
       --  Initialize the lock used to synchronize chain of all ATCBs
 

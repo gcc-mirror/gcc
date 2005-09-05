@@ -47,6 +47,28 @@ package body System.OS_Interface is
    Low_Priority : constant := 255;
    --  VxWorks native (default) lowest scheduling priority.
 
+   ----------
+   -- kill --
+   ----------
+
+   function kill (pid : t_id; sig : Signal) return int is
+      function c_kill (pid : t_id; sig : Signal) return int;
+      pragma Import (C, c_kill, "kill");
+   begin
+      return c_kill (pid, sig);
+   end kill;
+
+   --------------------
+   -- Set_Time_Slice --
+   --------------------
+
+   function Set_Time_Slice (ticks : int) return int is
+      function kernelTimeSlice (ticks : int) return int;
+      pragma Import (C, kernelTimeSlice, "kernelTimeSlice");
+   begin
+      return kernelTimeSlice (ticks);
+   end Set_Time_Slice;
+
    -------------
    -- sigwait --
    -------------
@@ -160,5 +182,14 @@ package body System.OS_Interface is
 
       return int (Ticks);
    end To_Clock_Ticks;
+
+   ----------------
+   -- VX_FP_TASK --
+   ----------------
+
+   function VX_FP_TASK return int is
+   begin
+      return 16#0008#;
+   end VX_FP_TASK;
 
 end System.OS_Interface;
