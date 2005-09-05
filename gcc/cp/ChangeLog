@@ -1,5 +1,11 @@
 2005-09-05  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/23667
+	* pt.c (tsubst_decl): Clear DECL_TEMPLATE_INSTANTIATED when
+	copying a VAR_DECL.
+
+2005-09-05  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/21440
 	* semantics.c (finish_stmt_expr_expr): Add an explicit
 	initialization to the last statement in the statement-expression.
