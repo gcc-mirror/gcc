@@ -1120,6 +1120,11 @@ package Sinfo is
    --    suppress any warnings that would otherwise be issued inside the
    --    loop since they are probably not useful.
 
+   --  Is_Overloaded (Flag5-Sem)
+   --    A flag present in all expression nodes. Used temporarily during
+   --    overloading determination. The setting of this flag is not
+   --    relevant once overloading analysis is complete.
+
    --  Is_Power_Of_2_For_Shift (Flag13-Sem)
    --    A flag present only in N_Op_Expon nodes. It is set when the
    --    exponentiation is of the forma 2 ** N, where the type of N is
@@ -2052,10 +2057,11 @@ package Sinfo is
       ----------------------------------
 
       --  DERIVED_TYPE_DEFINITION ::=
-      --    [abstract] new [NULL_EXCLUSION] parent_SUBTYPE_INDICATION
+      --    [abstract] [limited] new [NULL_EXCLUSION] parent_SUBTYPE_INDICATION
       --    [[and INTERFACE_LIST] RECORD_EXTENSION_PART]
 
-      --  Note: ABSTRACT, record extension part not permitted in Ada 83 mode
+   --  Note: ABSTRACT, LIMITED and record extension part are not permitted
+   --  in Ada 83 mode
 
       --  Note: a record extension part is required if ABSTRACT is present
 
@@ -2065,17 +2071,16 @@ package Sinfo is
       --  Null_Exclusion_Present (Flag11) (set to False if not present)
       --  Subtype_Indication (Node5)
       --  Record_Extension_Part (Node3) (set to Empty if not present)
-      --  Limited_Present (Flag17) set in interfaces
+      --  Limited_Present (Flag17)
       --  Task_Present (Flag5) set in task interfaces
       --  Protected_Present (Flag6) set in protected interfaces
       --  Synchronized_Present (Flag7) set in interfaces
       --  Interface_List (List2) (set to No_List if none)
       --  Interface_Present (Flag16) set in abstract interfaces
 
-      --  Note: The attributes Limited_Present, Task_Present, Protected_Present
-      --        Synchronized_Present, Interface_List and Interface_Present are
-      --        used for abstract interfaces (see comment in the definition
-      --        of INTERFACE_TYPE_DEFINITION)
+   --  Note: Task_Present, Protected_Present, Synchronized_Present,
+   --        Interface_List, and Interface_Present are used for abstract
+   --        interfaces (see comments for INTERFACE_TYPE_DEFINITION).
 
       ---------------------------
       -- 3.5  Range Constraint --
@@ -2531,10 +2536,9 @@ package Sinfo is
       --  Interface_Present (Flag16) set in abstract interfaces
       --  Interface_List (List2) (set to No_List if none)
 
-      --  Note: The attributes Task_Present, Protected_Present, Synchronized
-      --        _Present, Interface_List and Interface_Present are
-      --        used for abstract interfaces (see comment in the definition
-      --        of INTERFACE_TYPE_DEFINITION)
+      --  Note: Task_Present, Protected_Present, Synchronized _Present,
+      --        Interface_List and Interface_Present are used for abstract
+      --        interfaces (see comments for INTERFACE_TYPE_DEFINITION).
 
       -------------------------
       -- 3.8  Component List --
@@ -2731,7 +2735,7 @@ package Sinfo is
       --  Null_Exclusion_Present (Flag11)
       --  Protected_Present (Flag6)
       --  Parameter_Specifications (List3) (set to No_List if no formal part)
-      --  Subtype_Mark (Node4) result subtype
+      --  Result_Definition (Node4) result subtype (subtype mark or access def)
 
       --  N_Access_Procedure_Definition
       --  Sloc points to ACCESS
@@ -3913,7 +3917,8 @@ package Sinfo is
       --  Defining_Unit_Name (Node1) (the designator)
       --  Elaboration_Boolean (Node2-Sem)
       --  Parameter_Specifications (List3) (set to No_List if no formal part)
-      --  Subtype_Mark (Node4) for return type
+      --  Null_Exclusion_Present (Flag11)
+      --  Result_Definition (Node4) for result subtype
       --  Generic_Parent (Node5-Sem)
       --  Must_Override (Flag14) set if overriding indicator present
       --  Must_Not_Override (Flag15) set if not_overriding indicator present
@@ -4041,7 +4046,9 @@ package Sinfo is
       -- 6.1  Parameter and Result Profile --
       ---------------------------------------
 
-      --  PARAMETER_AND_RESULT_PROFILE ::= [FORMAL_PART] return SUBTYPE_MARK
+      --  PARAMETER_AND_RESULT_PROFILE ::=
+      --    [FORMAL_PART] return [NULL_EXCLUSION] SUBTYPE_MARK
+      --  | [FORMAL_PART] return ACCESS_DEFINITION
 
       --  There is no explicit node in the tree for a parameter and result
       --  profile. Instead the information appears directly in the parent.
@@ -4315,10 +4322,11 @@ package Sinfo is
 
       --  PRIVATE_EXTENSION_DECLARATION ::=
       --    type DEFINING_IDENTIFIER [DISCRIMINANT_PART] is
-      --      [abstract] new ancestor_SUBTYPE_INDICATION
+      --      [abstract] [limited] new ancestor_SUBTYPE_INDICATION
       --      [and INTERFACE_LIST] with private;
 
-      --  Note: private extension declarations are not allowed in Ada 83 mode
+   --  Note: LIMITED, and private extension declarations are not allowed
+   --        in Ada 83 mode.
 
       --  N_Private_Extension_Declaration
       --  Sloc points to TYPE
@@ -4327,6 +4335,7 @@ package Sinfo is
       --   discriminant part)
       --  Unknown_Discriminants_Present (Flag13) set if (<>) discriminant
       --  Abstract_Present (Flag4)
+      --  Limited_Present (Flag17)
       --  Subtype_Indication (Node5)
       --  Interface_List (List2) (set to No_List if none)
 
@@ -4956,7 +4965,10 @@ package Sinfo is
       -----------------------------------
 
       --  ENTRY_CALL_ALTERNATIVE ::=
-      --    ENTRY_CALL_STATEMENT [SEQUENCE_OF_STATEMENTS]
+      --    PROCEDURE_OR_ENTRY_CALL [SEQUENCE_OF_STATEMENTS]
+
+      --  PROCEDURE_OR_ENTRY_CALL ::=
+      --    PROCEDURE_CALL_STATEMENT | ENTRY_CALL_STATEMENT
 
       --  Gigi restriction: This node never appears
 
@@ -5023,7 +5035,7 @@ package Sinfo is
       -- 9.7.4  Triggering Statement --
       ---------------------------------
 
-      --  TRIGGERING_STATEMENT ::= ENTRY_CALL_STATEMENT | DELAY_STATEMENT
+      --  TRIGGERING_STATEMENT ::= PROCEDURE_OR_ENTRY_CALL | DELAY_STATEMENT
 
       ---------------------------
       -- 9.7.4  Abortable Part --
@@ -7742,6 +7754,9 @@ package Sinfo is
    function Redundant_Use
      (N : Node_Id) return Boolean;    -- Flag13
 
+   function Result_Definition
+     (N : Node_Id) return Node_Id;    -- Node4
+
    function Return_Type
      (N : Node_Id) return Node_Id;    -- Node2
 
@@ -8549,6 +8564,9 @@ package Sinfo is
    procedure Set_Redundant_Use
      (N : Node_Id; Val : Boolean := True);    -- Flag13
 
+   procedure Set_Result_Definition
+     (N : Node_Id; Val : Node_Id);            -- Node4
+
    procedure Set_Return_Type
      (N : Node_Id; Val : Node_Id);            -- Node2
 
@@ -8921,6 +8939,7 @@ package Sinfo is
    pragma Inline (Reason);
    pragma Inline (Record_Extension_Part);
    pragma Inline (Redundant_Use);
+   pragma Inline (Result_Definition);
    pragma Inline (Return_Type);
    pragma Inline (Reverse_Present);
    pragma Inline (Right_Opnd);
@@ -9186,6 +9205,7 @@ package Sinfo is
    pragma Inline (Set_Reason);
    pragma Inline (Set_Record_Extension_Part);
    pragma Inline (Set_Redundant_Use);
+   pragma Inline (Set_Result_Definition);
    pragma Inline (Set_Return_Type);
    pragma Inline (Set_Reverse_Present);
    pragma Inline (Set_Right_Opnd);

@@ -749,7 +749,7 @@ package body Sprint is
             Write_Str_With_Col_Check ("function");
             Write_Param_Specs (Node);
             Write_Str_With_Col_Check (" return ");
-            Sprint_Node (Subtype_Mark (Node));
+            Sprint_Node (Result_Definition (Node));
 
          when N_Access_Procedure_Definition =>
 
@@ -1546,7 +1546,16 @@ package body Sprint is
             Sprint_Node (Defining_Unit_Name (Node));
             Write_Param_Specs (Node);
             Write_Str_With_Col_Check (" return ");
-            Sprint_Node (Subtype_Mark (Node));
+
+            --  Ada 2005 (AI-231)
+
+            if Nkind (Result_Definition (Node)) /= N_Access_Definition
+              and then Null_Exclusion_Present (Node)
+            then
+               Write_Str (" not null ");
+            end if;
+
+            Sprint_Node (Result_Definition (Node));
 
          when N_Generic_Association =>
             Set_Debug_Sloc;
