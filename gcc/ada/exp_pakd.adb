@@ -27,6 +27,7 @@
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
+with Errout;   use Errout;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Util; use Exp_Util;
 with Nlists;   use Nlists;
@@ -1084,7 +1085,7 @@ package body Exp_Pakd is
          --  discriminants, so we treat it as a default/per-object expression.
 
          Set_Parent (Len_Expr, Typ);
-         Analyze_Per_Use_Expression (Len_Expr, Standard_Integer);
+         Analyze_Per_Use_Expression (Len_Expr, Standard_Long_Long_Integer);
 
          --  Use a modular type if possible. We can do this if we have
          --  static bounds, and the length is small enough, and the length
@@ -1094,6 +1095,27 @@ package body Exp_Pakd is
 
          if Compile_Time_Known_Value (Len_Expr) then
             Len_Bits := Expr_Value (Len_Expr) * Csize;
+
+            --  Check for size known to be too large
+
+            if Len_Bits >
+              Uint_2 ** (Standard_Integer_Size - 1) * System_Storage_Unit
+            then
+               if System_Storage_Unit = 8 then
+                  Error_Msg_N
+                    ("packed array size cannot exceed " &
+                     "Integer''Last bytes", Typ);
+               else
+                  Error_Msg_N
+                    ("packed array size cannot exceed " &
+                     "Integer''Last storage units", Typ);
+               end if;
+
+               --  Reset length to arbitrary not too high value to continue
+
+               Len_Expr := Make_Integer_Literal (Loc, 65535);
+               Analyze_And_Resolve (Len_Expr, Standard_Long_Long_Integer);
+            end if;
 
             --  We normally consider small enough to mean no larger than the
             --  value of System_Max_Binary_Modulus_Power, checking that in the
@@ -1207,13 +1229,13 @@ package body Exp_Pakd is
                  Make_Subtype_Indication (Loc,
                    Subtype_Mark => New_Occurrence_Of (PB_Type, Loc),
                    Constraint =>
-
                      Make_Index_Or_Discriminant_Constraint (Loc,
                        Constraints => New_List (
                          Make_Range (Loc,
                            Low_Bound =>
                              Make_Integer_Literal (Loc, 0),
-                           High_Bound => PAT_High)))));
+                           High_Bound =>
+                             Convert_To (Standard_Integer, PAT_High))))));
 
          Install_PAT;
 
