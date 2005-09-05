@@ -24,14 +24,15 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Binderr; use Binderr;
-with Butil;   use Butil;
-with Debug;   use Debug;
-with Fname;   use Fname;
-with Lib;     use Lib;
-with Namet;   use Namet;
-with Opt;     use Opt;
-with Output;  use Output;
+with Binderr;  use Binderr;
+with Butil;    use Butil;
+with Debug;    use Debug;
+with Fname;    use Fname;
+with Lib;      use Lib;
+with Namet;    use Namet;
+with Opt;      use Opt;
+with Output;   use Output;
+with Targparm; use Targparm;
 
 package body Binde is
 
@@ -269,7 +270,7 @@ package body Binde is
      (Unam : Unit_Name_Type;
       Link : Elab_All_Id)
       return Elab_All_Id;
-   --  Make an Elab_All_Entries table entry with the given Unam and Link.
+   --  Make an Elab_All_Entries table entry with the given Unam and Link
 
    function Unit_Id_Of (Uname : Unit_Name_Type) return Unit_Id;
    --  This function uses the Info field set in the names table to obtain
@@ -480,7 +481,6 @@ package body Binde is
       --  if it becomes zero, then add to no predecessor list.
 
       S := UNR.Table (Chosen).Successors;
-
       while S /= No_Successor loop
          U := Succ.Table (S).After;
          UNR.Table (U).Num_Pred := UNR.Table (U).Num_Pred - 1;
@@ -738,7 +738,6 @@ package body Binde is
       --  and we should have found and eliminated at least one bad path.
 
       raise Program_Error;
-
    end Diagnose_Elaboration_Problem;
 
    --------------------
@@ -898,6 +897,20 @@ package body Binde is
          UNR.Table (UNR.Last).Elab_Position := 0;
       end loop;
 
+      --  Output warning if -p used with no -gnatE units
+
+      if Pessimistic_Elab_Order
+        and not Dynamic_Elaboration_Checks_Specified
+      then
+         if OpenVMS_On_Target then
+            Error_Msg ("?use of /PESSIMISTIC_ELABORATION questionable");
+         else
+            Error_Msg ("?use of -p switch questionable");
+         end if;
+
+         Error_Msg ("?since all units compiled with static elaboration model");
+      end if;
+
       --  Gather dependencies and output them if option set
 
       Gather_Dependencies;
@@ -924,6 +937,7 @@ package body Binde is
       --  nodes have been chosen.
 
       Outer : loop
+
          --  If there are no nodes with predecessors, then either we are
          --  done, as indicated by Num_Left being set to zero, or we have
          --  a circularity. In the latter case, diagnose the circularity,
