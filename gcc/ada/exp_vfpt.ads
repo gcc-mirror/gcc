@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 1997 Free Software Foundation, Inc.            --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,7 @@
 
 --  This package contains specialized routines for handling the expansion
 --  of arithmetic and conversion operations involving Vax format floating-
---  point formats as used on the Vax and the Alpha.
+--  point formats as used on the Vax and the Alpha and the ia64.
 
 with Types; use Types;
 
@@ -34,21 +34,26 @@ package Exp_VFpt is
 
    procedure Expand_Vax_Arith (N : Node_Id);
    --  The node N is an arithmetic node (N_Op_Abs, N_Op_Add, N_Op_Sub,
-   --  N_Op_Div, N_Op_Mul, N_Op_Minus where the operands are in Vax
-   --  float format. This procedure expands the necessary call.
+   --  N_Op_Div, N_Op_Mul, N_Op_Minus where the operands are in Vax float
+   --  format. This procedure expands the necessary call.
 
    procedure Expand_Vax_Comparison (N : Node_Id);
-   --  The node N is an arithmetic comparison node where the types to
-   --  be compared are in Vax float format. This procedure expands the
-   --  necessary call.
+   --  The node N is an arithmetic comparison node where the types to be
+   --  compared are in Vax float format. This procedure expands the necessary
+   --  call.
 
    procedure Expand_Vax_Conversion (N : Node_Id);
-   --  The node N is a type conversion node where either the source or
-   --  the target type, or both, are Vax floating-point type.
+   --  The node N is a type conversion node where either the source or the
+   --  target type, or both, are Vax floating-point type.
 
    procedure Expand_Vax_Real_Literal (N : Node_Id);
-   --  The node N is a real literal node where the type is a Vax
-   --  floating-point type. This procedure rewrites the node to eliminate
-   --  the occurrence of such constants.
+   --  The node N is a real literal node where the type is a Vax floating-point
+   --  type. This procedure rewrites the node to eliminate the occurrence of
+   --  such constants.
+
+   procedure Expand_Vax_Valid (N : Node_Id);
+   --  The node N is an attribute reference node for the Valid attribute where
+   --  the prefix is of a Vax floating-point type. This procedure expands the
+   --  necessary call for the validity test.
 
 end Exp_VFpt;

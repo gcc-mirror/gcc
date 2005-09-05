@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -353,7 +353,7 @@ package body Exp_VFpt is
                      Make_Real_Literal (Loc,
                        Realval => Ureal_1 / Small_Value (T_Typ))))));
 
-      --  All other cases.
+      --  All other cases
 
       else
          --  Compute types for call
@@ -498,5 +498,39 @@ package body Exp_VFpt is
          Set_Is_Static_Expression (N, Stat);
       end if;
    end Expand_Vax_Real_Literal;
+
+   ----------------------
+   -- Expand_Vax_Valid --
+   ----------------------
+
+   procedure Expand_Vax_Valid (N : Node_Id) is
+      Loc  : constant Source_Ptr := Sloc (N);
+      Pref : constant Node_Id    := Prefix (N);
+      Ptyp : constant Entity_Id  := Root_Type (Etype (Pref));
+      Rtyp : constant Entity_Id  := Etype (N);
+      Vtyp : RE_Id;
+      Func : RE_Id;
+
+   begin
+      if Digits_Value (Ptyp) = VAXFF_Digits then
+         Func := RE_Valid_F;
+         Vtyp := RE_F;
+      elsif Digits_Value (Ptyp) = VAXDF_Digits then
+         Func := RE_Valid_D;
+         Vtyp := RE_D;
+      else pragma Assert (Digits_Value (Ptyp) = VAXGF_Digits);
+         Func := RE_Valid_G;
+         Vtyp := RE_G;
+      end if;
+
+      Rewrite (N,
+        Convert_To (Rtyp,
+          Make_Function_Call (Loc,
+            Name                   => New_Occurrence_Of (RTE (Func), Loc),
+            Parameter_Associations => New_List (
+              Convert_To (RTE (Vtyp), Pref)))));
+
+      Analyze_And_Resolve (N);
+   end Expand_Vax_Valid;
 
 end Exp_VFpt;
