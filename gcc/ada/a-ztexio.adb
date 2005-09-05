@@ -988,7 +988,7 @@ package body Ada.Wide_Wide_Text_IO is
       --  explicit test is that we don't want junk values around, even if
       --  checks are off in the caller.
 
-      if Spacing not in Positive_Count then
+      if not Spacing'Valid then
          raise Constraint_Error;
       end if;
 
@@ -1348,7 +1348,7 @@ package body Ada.Wide_Wide_Text_IO is
       --  explicit test is that we don't want junk values around, even if
       --  checks are off in the caller.
 
-      if To not in Positive_Count then
+      if not To'Valid then
          raise Constraint_Error;
       end if;
 
@@ -1436,7 +1436,7 @@ package body Ada.Wide_Wide_Text_IO is
       --  explicit test is that we don't want junk values around, even if
       --  checks are off in the caller.
 
-      if To not in Positive_Count then
+      if not To'Valid then
          raise Constraint_Error;
       end if;
 
@@ -1481,7 +1481,7 @@ package body Ada.Wide_Wide_Text_IO is
       --  explicit test is that we don't want junk values around, even if
       --  checks are off in the caller.
 
-      if To not in Count then
+      if not To'Valid then
          raise Constraint_Error;
       end if;
 
@@ -1514,7 +1514,7 @@ package body Ada.Wide_Wide_Text_IO is
       --  explicit test is that we don't want junk values around, even if
       --  checks are off in the caller.
 
-      if To not in Count then
+      if not To'Valid then
          raise Constraint_Error;
       end if;
 
@@ -1572,7 +1572,7 @@ package body Ada.Wide_Wide_Text_IO is
       --  explicit test is that we don't want junk values around, even if
       --  checks are off in the caller.
 
-      if Spacing not in Positive_Count then
+      if not Spacing'Valid then
          raise Constraint_Error;
       end if;
 
