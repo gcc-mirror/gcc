@@ -6518,7 +6518,7 @@ java_check_regular_methods (tree class_decl)
 	  tree found_decl = TYPE_NAME (DECL_CONTEXT (found));
 	  parse_error_context (method_wfl, "Class %qs must override %qs with a public method in order to implement interface %qs",
 			       IDENTIFIER_POINTER (DECL_NAME (class_decl)),
-			       lang_printable_name (method, 2),
+			       lang_printable_name (found, 0),
 			       IDENTIFIER_POINTER (DECL_NAME (found_decl)));
 	}
 

@@ -1,3 +1,11 @@
+2005-09-05  Ranjit Mathew  <rmathew@hotmail.com>
+
+	PR java/23431
+	* typeck.c (lookup_do): Look up interfaces for the original class,
+	not the base class.
+	* parse.y (java_check_regular_methods): Fix diagnostic message for
+	more restrictive overriding of a method from an interface.
+
 2005-08-16  Tom Tromey  <tromey@redhat.com>
 
 	* class.c (make_class_data): Always emit JV_STATE_PRELOADING for
