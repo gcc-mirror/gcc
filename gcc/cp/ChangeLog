@@ -642,7 +642,6 @@
 	* typeck.c (build_binary_op): Handle vectors.
 	(common_type): Same.
 	(type_after_usual_arithmetic_conversions): Same.
-	* testsuite/g++.dg/conversion/simd2.C: New.
 
 2005-06-08  Nathan Sidwell  <nathan@codesourcery.com>
 
