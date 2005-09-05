@@ -32,7 +32,6 @@ with MLib.Tgt; use MLib.Tgt;
 with MLib.Utl; use MLib.Utl;
 with Namet;    use Namet;
 with Opt;
-with Osint;    use Osint;
 with Output;   use Output;
 with Prj.Com;  use Prj.Com;
 with Prj.Env;  use Prj.Env;
@@ -41,13 +40,11 @@ with Sinput.P;
 with Snames;   use Snames;
 with Switch;   use Switch;
 with Table;
-with Types;    use Types;
 
 with Ada.Characters.Handling;
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.HTable;
-with GNAT.OS_Lib;               use GNAT.OS_Lib;
 with Interfaces.C_Streams;      use Interfaces.C_Streams;
 with System;                    use System;
 with System.Case_Util;          use System.Case_Util;
@@ -940,7 +937,6 @@ package body MLib.Prj is
 
             if First_ALI /= No_Name then
                declare
-                  use Types;
                   T : Text_Buffer_Ptr;
                   A : ALI_Id;
 
@@ -1040,7 +1036,6 @@ package body MLib.Prj is
 
             if First_ALI /= No_Name then
                declare
-                  use Types;
                   T : Text_Buffer_Ptr;
                   A : ALI_Id;
 
@@ -1731,8 +1726,11 @@ package body MLib.Prj is
       Interfaces  : Argument_List;
       To_Dir      : Name_Id)
    is
-      Current  : constant Dir_Name_Str := Get_Current_Dir;
-      Target   : constant Dir_Name_Str := Get_Name_String (To_Dir);
+      Current : constant Dir_Name_Str := Get_Current_Dir;
+      --  The current directory, where to return to at the end
+
+      Target : constant Dir_Name_Str := Get_Name_String (To_Dir);
+      --  The directory where to copy sources
 
       Text     : Text_Buffer_Ptr;
       The_ALI  : ALI.ALI_Id;
@@ -1744,9 +1742,17 @@ package body MLib.Prj is
       Data : Unit_Data;
 
       Copy_Subunits : Boolean := False;
+      --  When True, indicates that subunits, if any, need to be copied too
 
       procedure Copy (File_Name : Name_Id);
       --  Copy one source of the project to the target directory
+
+      function Is_Same_Or_Extension
+        (Extending : Project_Id;
+         Extended  : Project_Id)
+         return Boolean;
+      --  Return True if project Extending is equal to or extends project
+      --  Extended.
 
       ----------
       -- Copy --
@@ -1762,8 +1768,11 @@ package body MLib.Prj is
          loop
             Data := In_Tree.Units.Table (Index);
 
+            --  Find and copy the immediate or inherited source
+
             for J in Data.File_Names'Range loop
-               if Data.File_Names (J).Project = For_Project
+               if Is_Same_Or_Extension
+                    (For_Project, Data.File_Names (J).Project)
                  and then Data.File_Names (J).Name = File_Name
                then
                   Copy_File
@@ -1778,7 +1787,28 @@ package body MLib.Prj is
          end loop Unit_Loop;
       end Copy;
 
-      use ALI;
+      --------------------------
+      -- Is_Same_Or_Extension --
+      --------------------------
+
+      function Is_Same_Or_Extension
+        (Extending : Project_Id;
+         Extended  : Project_Id)
+         return Boolean
+      is
+         Ext : Project_Id := Extending;
+
+      begin
+         while Ext /= No_Project loop
+            if Ext = Extended then
+               return True;
+            end if;
+
+            Ext := In_Tree.Projects.Table (Ext).Extends;
+         end loop;
+
+         return False;
+      end Is_Same_Or_Extension;
 
    --  Start of processing for Copy_Interface_Sources
 
@@ -1875,7 +1905,7 @@ package body MLib.Prj is
       Fd : FILEs;
       --  Binder file's descriptor
 
-      Read_Mode  : constant String := "r" & ASCII.Nul;
+      Read_Mode : constant String := "r" & ASCII.Nul;
       --  For fopen
 
       Status : Interfaces.C_Streams.int;
@@ -2013,7 +2043,9 @@ package body MLib.Prj is
       end if;
 
       Status := fclose (Fd);
+
       --  Is it really right to ignore any close error ???
+
    end Process_Binder_File;
 
    ------------------
