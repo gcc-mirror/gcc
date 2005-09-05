@@ -1,5 +1,10 @@
 2005-09-05  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/23667
+	* g++.dg/template/static15.C: New test.
+
+2005-09-05  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/21440
 	* g++.dg/ext/stmtexpr5.C: New test.
 	* g++.dg/ext/stmtexpr6.C: Likewise.

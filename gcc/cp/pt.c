@@ -6616,6 +6616,11 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	r = copy_decl (t);
 	if (TREE_CODE (r) == VAR_DECL)
 	  {
+	    /* Even if the original location is out of scope, the
+	       newly substituted one is not.  */
+	    DECL_DEAD_FOR_LOCAL (r) = 0;
+	    DECL_INITIALIZED_P (r) = 0;
+	    DECL_TEMPLATE_INSTANTIATED (r) = 0;
 	    type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	    if (type == error_mark_node)
 	      return error_mark_node;
@@ -6632,20 +6637,11 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	/* Clear out the mangled name and RTL for the instantiation.  */
 	SET_DECL_ASSEMBLER_NAME (r, NULL_TREE);
 	SET_DECL_RTL (r, NULL_RTX);
-
-	/* Don't try to expand the initializer until someone tries to use
-	   this variable; otherwise we run into circular dependencies.  */
+	/* The initializer must not be expanded until it is required;
+	   see [temp.inst].  */
 	DECL_INITIAL (r) = NULL_TREE;
 	SET_DECL_RTL (r, NULL_RTX);
 	DECL_SIZE (r) = DECL_SIZE_UNIT (r) = 0;
-
-	/* Even if the original location is out of scope, the newly
-	   substituted one is not.  */
-	if (TREE_CODE (r) == VAR_DECL)
-	  {
-	    DECL_DEAD_FOR_LOCAL (r) = 0;
-	    DECL_INITIALIZED_P (r) = 0;
-	  }
 
 	if (!local_p)
 	  {
