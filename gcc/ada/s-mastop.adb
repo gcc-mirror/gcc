@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                             (Dummy version)                              --
 --                                                                          --
---          Copyright (C) 1999-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,8 +41,6 @@ package body System.Machine_State_Operations is
 
    pragma Warnings (Off);
 
-   use System.Exceptions;
-
    ----------------------------
    -- Allocate_Machine_State --
    ----------------------------
@@ -51,15 +49,6 @@ package body System.Machine_State_Operations is
    begin
       return Machine_State (Null_Address);
    end Allocate_Machine_State;
-
-   -------------------
-   -- Enter_Handler --
-   -------------------
-
-   procedure Enter_Handler (M : Machine_State; Handler : Handler_Loc) is
-   begin
-      null;
-   end Enter_Handler;
 
    ----------------
    -- Fetch_Code --
@@ -102,9 +91,7 @@ package body System.Machine_State_Operations is
    -- Pop_Frame --
    ---------------
 
-   procedure Pop_Frame
-     (M    : Machine_State;
-      Info : Subprogram_Info_Type) is
+   procedure Pop_Frame (M : Machine_State) is
    begin
       null;
    end Pop_Frame;
@@ -117,17 +104,5 @@ package body System.Machine_State_Operations is
    begin
       null;
    end Set_Machine_State;
-
-   ------------------------------
-   -- Set_Signal_Machine_State --
-   ------------------------------
-
-   procedure Set_Signal_Machine_State
-     (M       : Machine_State;
-      Context : System.Address)
-   is
-   begin
-      null;
-   end Set_Signal_Machine_State;
 
 end System.Machine_State_Operations;

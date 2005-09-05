@@ -39,8 +39,6 @@ with System.Memory;
 
 package body System.Machine_State_Operations is
 
-   use System.Exceptions;
-
    pragma Linker_Options ("-lexc");
    --  Needed for definitions of exc_capture_context and exc_virtual_unwind
 
@@ -58,18 +56,6 @@ package body System.Machine_State_Operations is
       return Machine_State
         (Memory.Alloc (Memory.size_t (c_machine_state_length)));
    end Allocate_Machine_State;
-
-   -------------------
-   -- Enter_Handler --
-   -------------------
-
-   procedure Enter_Handler (M : Machine_State; Handler : Handler_Loc) is
-      procedure c_enter_handler (M : Machine_State; Handler : Handler_Loc);
-      pragma Import (C, c_enter_handler, "__gnat_enter_handler");
-
-   begin
-      c_enter_handler (M, Handler);
-   end Enter_Handler;
 
    ----------------
    -- Fetch_Code --
@@ -135,12 +121,7 @@ package body System.Machine_State_Operations is
    -- Pop_Frame --
    ---------------
 
-   procedure Pop_Frame
-     (M    : Machine_State;
-      Info : Subprogram_Info_Type)
-   is
-      pragma Warnings (Off, Info);
-
+   procedure Pop_Frame (M : Machine_State) is
       procedure exc_virtual_unwind (Fcn : System.Address; M : Machine_State);
       pragma Import (C, exc_virtual_unwind, "exc_virtual_unwind");
 
@@ -178,21 +159,7 @@ package body System.Machine_State_Operations is
       pragma Import (C, c_capture_context, "exc_capture_context");
    begin
       c_capture_context (M);
-      Pop_Frame (M, System.Null_Address);
+      Pop_Frame (M);
    end Set_Machine_State;
-
-   ------------------------------
-   -- Set_Signal_Machine_State --
-   ------------------------------
-
-   procedure Set_Signal_Machine_State
-     (M       : Machine_State;
-      Context : System.Address)
-   is
-      pragma Warnings (Off, M);
-      pragma Warnings (Off, Context);
-   begin
-      null;
-   end Set_Signal_Machine_State;
 
 end System.Machine_State_Operations;

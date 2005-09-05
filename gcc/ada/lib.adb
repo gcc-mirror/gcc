@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,6 @@ pragma Style_Checks (All_Checks);
 with Atree;   use Atree;
 with Einfo;   use Einfo;
 with Fname;   use Fname;
-with Namet;   use Namet;
 with Namet;   use Namet;
 with Output;  use Output;
 with Sinfo;   use Sinfo;
@@ -827,7 +826,6 @@ package body Lib is
       Linker_Option_Lines.Init;
       Load_Stack.Init;
       Units.Init;
-      Unit_Exception_Table_Present := False;
       Compilation_Switches.Init;
    end Initialize;
 

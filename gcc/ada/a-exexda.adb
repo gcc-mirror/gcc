@@ -476,7 +476,7 @@ package body Exception_Data is
 
       declare
          Len  : constant Natural := Exception_Name_Length (Id);
-         Name : constant String (1 .. Len) := Id.Full_Name (1 .. Len);
+         Name : constant String (1 .. Len) := To_Ptr (Id.Full_Name) (1 .. Len);
       begin
          Append_Info_String (Name, Info, Ptr);
       end;
@@ -556,9 +556,9 @@ package body Exception_Data is
 
    procedure Set_Exception_C_Msg
      (Id   : Exception_Id;
-      Msg1 : Big_String_Ptr;
+      Msg1 : System.Address;
       Line : Integer        := 0;
-      Msg2 : Big_String_Ptr := null)
+      Msg2 : System.Address := System.Null_Address)
    is
       Excep  : constant EOA := Get_Current_Excep.all;
       Val    : Integer := Line;
@@ -575,11 +575,11 @@ package body Exception_Data is
       Excep.Msg_Length       := 0;
       Excep.Cleanup_Flag     := False;
 
-      while Msg1 (Excep.Msg_Length + 1) /= ASCII.NUL
+      while To_Ptr (Msg1) (Excep.Msg_Length + 1) /= ASCII.NUL
         and then Excep.Msg_Length < Exception_Msg_Max_Length
       loop
          Excep.Msg_Length := Excep.Msg_Length + 1;
-         Excep.Msg (Excep.Msg_Length) := Msg1 (Excep.Msg_Length);
+         Excep.Msg (Excep.Msg_Length) := To_Ptr (Msg1) (Excep.Msg_Length);
       end loop;
 
       --  Append line number if present
@@ -613,18 +613,18 @@ package body Exception_Data is
 
       --  Append second message if present
 
-      if Msg2 /= null
+      if Msg2 /= System.Null_Address
         and then Excep.Msg_Length + 1 < Exception_Msg_Max_Length
       then
          Excep.Msg_Length := Excep.Msg_Length + 1;
          Excep.Msg (Excep.Msg_Length) := ' ';
 
          Ptr := 1;
-         while Msg2 (Ptr) /= ASCII.NUL
+         while To_Ptr (Msg2) (Ptr) /= ASCII.NUL
            and then Excep.Msg_Length < Exception_Msg_Max_Length
          loop
             Excep.Msg_Length := Excep.Msg_Length + 1;
-            Excep.Msg (Excep.Msg_Length) := Msg2 (Ptr);
+            Excep.Msg (Excep.Msg_Length) := To_Ptr (Msg2) (Ptr);
             Ptr := Ptr + 1;
          end loop;
       end if;

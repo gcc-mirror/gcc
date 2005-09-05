@@ -126,14 +126,6 @@ package body Switch.B is
                end if;
             end loop;
 
-            --  Make sure Zero_Cost_Exceptions is set if gnatdX set. This
-            --  is for backwards compatibility with old versions and usage.
-
-            if Debug_Flag_XX then
-               Zero_Cost_Exceptions_Set := True;
-               Zero_Cost_Exceptions_Val := True;
-            end if;
-
             return;
 
          --  Processing for D switch

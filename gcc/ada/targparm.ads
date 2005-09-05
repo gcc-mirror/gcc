@@ -278,50 +278,24 @@ package Targparm is
 
    --    Controlling the selection of methods
 
-   --      The Front-End Longjmp/Setjmp approach is always available in
-   --      all implementations. If it is not the default method, then it
-   --      may be explicitly specified by the use of -gnatL. Note however
-   --      that there is a requirement that all Ada units in a partition
-   --      be compiled with this overriding option if it is not the default.
-
-   --      On some, but not all, implementations of GNAT, one of the two
-   --      ZCX approaches (but not both) is implemented. If this is the
-   --      case, and ZCX is not the default mechanism, then ZCX handling
-   --      (front-end or back-end according to the implementation) may be
-   --      specified by use of the -gnatZ switch. Again, this switch must
-   --      be used to compile all Ada units in a partition. The use of
-   --      the -gnatZ switch will cause termination with a fatal error.
-
-   --      Finally the debug option -gnatdX can be used to force the
-   --      compiler to operate in front-end ZCX exception mode and force
-   --      the front end to generate exception tables. This is only useful
-   --      for debugging purposes for implementations which do not provide
-   --      the possibility of front-end ZCX mode. The resulting object file
-   --      is unusable, but this debug switch may still be useful (e.g. in
-   --      conjunction with -gnatG) for front-end debugging purposes.
+   --      On most implementations, back-end zero-cost exceptions are used.
+   --      Otherwise, Front-End Longjmp/Setjmp approach is used.
+   --      Note that there is a requirement that all Ada units in a partition
+   --      be compiled with the same exception model.
 
    --    Control of Available Methods and Defaults
 
-   --      The following switches specify which of the two ZCX methods
-   --      (if any) is available in an implementation, and which method
-   --      is the default method.
+   --      The following switches specify whether ZCX is available, and
+   --      whether it is enabled by default.
 
    ZCX_By_Default_On_Target : Boolean := False;
    --  Indicates if zero cost exceptions are active by default. If this
    --  variable is False, then the only possible exception method is the
    --  front-end setjmp/longjmp approach, and this is the default. If
-   --  this variable is True, then one of the following two flags must
-   --  be True, and represents the method to be used by default.
+   --  this variable is True, then GCC ZCX is used.
 
    GCC_ZCX_Support_On_Target  : Boolean := False;
-   --  Indicates that when ZCX is active, the mechanism to be used is the
-   --  back-end ZCX exception approach. If this variable is set to True,
-   --  then Front_End_ZCX_Support_On_Target must be False.
-
-   Front_End_ZCX_Support_On_Target : Boolean := False;
-   --  Indicates that when ZCX is active, the mechanism to be used is the
-   --  front-end ZCX exception approach. If this variable is set to True,
-   --  then GCC_ZCX_Support_On_Target must be False.
+   --  Indicates that the target supports GCC Exceptions.
 
    ------------------------------------
    -- Run-Time Library Configuration --
@@ -366,9 +340,6 @@ package Targparm is
    --    The generation of global variables in the bind file is suppressed,
    --    with the exception of the priority of the environment task, which
    --    is needed by the Ravenscar run-time.
-   --
-   --    The generation of exception tables is suppressed for front end
-   --    ZCX exception handling (since we assume no exception handling).
    --
    --    The calls to __gnat_initialize and __gnat_finalize are omitted
    --

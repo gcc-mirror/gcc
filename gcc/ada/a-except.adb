@@ -35,14 +35,9 @@ pragma Polling (Off);
 --  We must turn polling off for this unit, because otherwise we get
 --  elaboration circularities with System.Exception_Tables.
 
-pragma Warnings (Off);
---  Since several constructs give warnings in 3.14a1, including unreferenced
---  variables and pragma Unreferenced itself.
-
 with System;                  use System;
 with System.Standard_Library; use System.Standard_Library;
 with System.Soft_Links;       use System.Soft_Links;
-with System.Machine_State_Operations; use System.Machine_State_Operations;
 
 package body Ada.Exceptions is
 
@@ -71,11 +66,11 @@ package body Ada.Exceptions is
    --  from C clients using the given external name, even though they are not
    --  technically visible in the Ada sense.
 
-   procedure AAA;
-   procedure ZZZ;
-   --  Mark start and end of procedures in this package
+   function Code_Address_For_AAA return System.Address;
+   function Code_Address_For_ZZZ return System.Address;
+   --  Return start and end of procedures in this package
    --
-   --  The AAA and ZZZ procedures are used to provide exclusion bounds in
+   --  These procedures are used to provide exclusion bounds in
    --  calls to Call_Chain at exception raise points from this unit. The
    --  purpose is to arrange for the exception tracebacks not to include
    --  frames from routines involved in the raise process, as these are
@@ -83,26 +78,17 @@ package body Ada.Exceptions is
    --
    --  For these bounds to be meaningful, we need to ensure that the object
    --  code for the routines involved in processing a raise is located after
-   --  the object code for AAA and before the object code for ZZZ. This will
-   --  indeed be the case as long as the following rules are respected:
+   --  the object code Code_Address_For_AAA and before the object code
+   --  Code_Address_For_ZZZ. This will indeed be the case as long as the
+   --  following rules are respected:
    --
    --  1) The bodies of the subprograms involved in processing a raise
-   --     are located after the body of AAA and before the body of ZZZ.
+   --     are located after the body of Code_Address_For_AAA and before the
+   --     body of Code_Address_For_ZZZ.
    --
    --  2) No pragma Inline applies to any of these subprograms, as this
    --     could delay the corresponding assembly output until the end of
    --     the unit.
-
-   Code_Address_For_AAA, Code_Address_For_ZZZ : System.Address;
-   --  Used to represent addresses really inside the code range for AAA and
-   --  ZZZ, initialized to the address of a label inside the corresponding
-   --  procedure. This is initialization takes place inside the procedures
-   --  themselves, which are called as part of the elaboration code.
-   --
-   --  We are doing this instead of merely using Proc'Address because on some
-   --  platforms the latter does not yield the address we want, but the
-   --  address of a stub or of a descriptor instead. This is the case at least
-   --  on Alpha-VMS and PA-HPUX.
 
    procedure Call_Chain (Excep : EOA);
    --  Store up to Max_Tracebacks in Excep, corresponding to the current
@@ -139,9 +125,9 @@ package body Ada.Exceptions is
 
       procedure Set_Exception_C_Msg
         (Id   : Exception_Id;
-         Msg1 : Big_String_Ptr;
+         Msg1 : System.Address;
          Line : Integer        := 0;
-         Msg2 : Big_String_Ptr := null);
+         Msg2 : System.Address := System.Null_Address);
       --  This routine is called to setup the exception referenced by the
       --  Current_Excep field in the TSD to contain the indicated Id value
       --  and message. Msg1 is a null terminated string which is generated
@@ -210,7 +196,7 @@ package body Ada.Exceptions is
       pragma Export
         (Ada, Tailored_Exception_Information,
            "__gnat_tailored_exception_information");
-      --  This is currently used by System.Tasking.Stages.
+      --  This is currently used by System.Tasking.Stages
 
    end Exception_Data;
 
@@ -329,9 +315,9 @@ package body Ada.Exceptions is
 
    procedure Raise_With_Location_And_Msg
      (E : Exception_Id;
-      F : Big_String_Ptr;
+      F : System.Address;
       L : Integer;
-      M : Big_String_Ptr := null);
+      M : System.Address := System.Null_Address);
    pragma No_Return (Raise_With_Location_And_Msg);
    --  Raise an exception with given exception id value. A filename and line
    --  number is associated with the raise and is stored in the exception
@@ -339,7 +325,7 @@ package body Ada.Exceptions is
    --  this (if M is not null).
 
    procedure Raise_Constraint_Error
-     (File : Big_String_Ptr;
+     (File : System.Address;
       Line : Integer);
    pragma No_Return (Raise_Constraint_Error);
    pragma Export
@@ -347,16 +333,16 @@ package body Ada.Exceptions is
    --  Raise constraint error with file:line information
 
    procedure Raise_Constraint_Error_Msg
-     (File : Big_String_Ptr;
+     (File : System.Address;
       Line : Integer;
-      Msg  : Big_String_Ptr);
+      Msg  : System.Address);
    pragma No_Return (Raise_Constraint_Error_Msg);
    pragma Export
      (C, Raise_Constraint_Error_Msg, "__gnat_raise_constraint_error_msg");
    --  Raise constraint error with file:line + msg information
 
    procedure Raise_Program_Error
-     (File : Big_String_Ptr;
+     (File : System.Address;
       Line : Integer);
    pragma No_Return (Raise_Program_Error);
    pragma Export
@@ -364,16 +350,16 @@ package body Ada.Exceptions is
    --  Raise program error with file:line information
 
    procedure Raise_Program_Error_Msg
-     (File : Big_String_Ptr;
+     (File : System.Address;
       Line : Integer;
-      Msg  : Big_String_Ptr);
+      Msg  : System.Address);
    pragma No_Return (Raise_Program_Error_Msg);
    pragma Export
      (C, Raise_Program_Error_Msg, "__gnat_raise_program_error_msg");
    --  Raise program error with file:line + msg information
 
    procedure Raise_Storage_Error
-     (File : Big_String_Ptr;
+     (File : System.Address;
       Line : Integer);
    pragma No_Return (Raise_Storage_Error);
    pragma Export
@@ -381,9 +367,9 @@ package body Ada.Exceptions is
    --  Raise storage error with file:line information
 
    procedure Raise_Storage_Error_Msg
-     (File : Big_String_Ptr;
+     (File : System.Address;
       Line : Integer;
-      Msg  : Big_String_Ptr);
+      Msg  : System.Address);
    pragma No_Return (Raise_Storage_Error_Msg);
    pragma Export
      (C, Raise_Storage_Error_Msg, "__gnat_raise_storage_error_msg");
@@ -454,37 +440,37 @@ package body Ada.Exceptions is
    --  to the codes defined in Types.ads and a-types.h (for example,
    --  the name Rcheck_05 refers to the Reason whose Pos code is 5).
 
-   procedure Rcheck_00 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_01 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_02 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_03 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_04 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_05 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_06 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_07 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_08 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_09 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_10 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_11 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_12 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_13 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_14 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_15 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_16 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_17 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_18 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_19 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_20 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_21 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_22 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_23 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_24 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_25 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_26 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_27 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_28 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_29 (File : Big_String_Ptr; Line : Integer);
-   procedure Rcheck_30 (File : Big_String_Ptr; Line : Integer);
+   procedure Rcheck_00 (File : System.Address; Line : Integer);
+   procedure Rcheck_01 (File : System.Address; Line : Integer);
+   procedure Rcheck_02 (File : System.Address; Line : Integer);
+   procedure Rcheck_03 (File : System.Address; Line : Integer);
+   procedure Rcheck_04 (File : System.Address; Line : Integer);
+   procedure Rcheck_05 (File : System.Address; Line : Integer);
+   procedure Rcheck_06 (File : System.Address; Line : Integer);
+   procedure Rcheck_07 (File : System.Address; Line : Integer);
+   procedure Rcheck_08 (File : System.Address; Line : Integer);
+   procedure Rcheck_09 (File : System.Address; Line : Integer);
+   procedure Rcheck_10 (File : System.Address; Line : Integer);
+   procedure Rcheck_11 (File : System.Address; Line : Integer);
+   procedure Rcheck_12 (File : System.Address; Line : Integer);
+   procedure Rcheck_13 (File : System.Address; Line : Integer);
+   procedure Rcheck_14 (File : System.Address; Line : Integer);
+   procedure Rcheck_15 (File : System.Address; Line : Integer);
+   procedure Rcheck_16 (File : System.Address; Line : Integer);
+   procedure Rcheck_17 (File : System.Address; Line : Integer);
+   procedure Rcheck_18 (File : System.Address; Line : Integer);
+   procedure Rcheck_19 (File : System.Address; Line : Integer);
+   procedure Rcheck_20 (File : System.Address; Line : Integer);
+   procedure Rcheck_21 (File : System.Address; Line : Integer);
+   procedure Rcheck_22 (File : System.Address; Line : Integer);
+   procedure Rcheck_23 (File : System.Address; Line : Integer);
+   procedure Rcheck_24 (File : System.Address; Line : Integer);
+   procedure Rcheck_25 (File : System.Address; Line : Integer);
+   procedure Rcheck_26 (File : System.Address; Line : Integer);
+   procedure Rcheck_27 (File : System.Address; Line : Integer);
+   procedure Rcheck_28 (File : System.Address; Line : Integer);
+   procedure Rcheck_29 (File : System.Address; Line : Integer);
+   procedure Rcheck_30 (File : System.Address; Line : Integer);
 
    pragma Export (C, Rcheck_00, "__gnat_rcheck_00");
    pragma Export (C, Rcheck_01, "__gnat_rcheck_01");
@@ -611,19 +597,25 @@ package body Ada.Exceptions is
    --  The actual polling routine is separate, so that it can easily
    --  be replaced with a target dependent version.
 
-   ---------
-   -- AAA --
-   ---------
+   --------------------------
+   -- Code_Address_For_AAA --
+   --------------------------
 
-   --  This dummy procedure gives us the start of the PC range for addresses
+   --  This function gives us the start of the PC range for addresses
    --  within the exception unit itself. We hope that gigi/gcc keep all the
    --  procedures in their original order!
 
-   procedure AAA is
+   function Code_Address_For_AAA return System.Address is
    begin
+      --  We are using a label instead of merely using
+      --  Code_Address_For_AAA'Address because on some platforms the latter
+      --  does not yield the address we want, but the address of a stub or of
+      --  a descriptor instead. This is the case at least on Alpha-VMS and
+      --  PA-HPUX.
+
       <<Start_Of_AAA>>
-      Code_Address_For_AAA := Start_Of_AAA'Address;
-   end AAA;
+      return Start_Of_AAA'Address;
+   end Code_Address_For_AAA;
 
    ----------------
    -- Call_Chain --
@@ -714,7 +706,7 @@ package body Ada.Exceptions is
          raise Constraint_Error;
       end if;
 
-      return Id.Full_Name.all (1 .. Id.Name_Length - 1);
+      return To_Ptr (Id.Full_Name) (1 .. Id.Name_Length - 1);
    end Exception_Name;
 
    function Exception_Name (X : Exception_Occurrence) return String is
@@ -793,7 +785,7 @@ package body Ada.Exceptions is
       --  This is so the debugger can reliably inspect the parameter
 
       Jumpbuf_Ptr : constant Address := Get_Jmpbuf_Address.all;
-      Excep       : EOA := Get_Current_Excep.all;
+      Excep       : constant EOA := Get_Current_Excep.all;
 
    begin
       --  WARNING : There should be no exception handler for this body
@@ -803,43 +795,44 @@ package body Ada.Exceptions is
       --  we are handling, which would completely break the whole design
       --  of this procedure.
 
-      --  Processing varies between zero cost and setjmp/lonjmp processing.
+      --  Processing varies between zero cost and setjmp/lonjmp processing
 
       if Zero_Cost_Exceptions /= 0 then
 
-         --  Use the front-end tables to propagate if we have them, otherwise
-         --  resort to the GCC back-end alternative. Backtrace computation is
-         --  performed, if required, by the underlying routine. Notifications
-         --  for the debugger are also not performed here, because we do not
-         --  yet know if the exception is handled.
+         --  Use the GCC back-end to propagate the exception. Backtrace
+         --  computation is performed, if required, by the underlying routine.
+         --  Notifications for the debugger are also not performed here,
+         --  because we do not yet know if the exception is handled.
 
          Exception_Propagation.Propagate_Exception (From_Signal_Handler);
 
       else
-         --  Compute the backtrace for this occurrence if the corresponding
-         --  binder option has been set. Call_Chain takes care of the reraise
-         --  case.
+         --  Compute the backtrace for this occurrence if corresponding binder
+         --  option has been set. Call_Chain takes care of the reraise case.
 
          Call_Chain (Excep);
+
+         --  Note on above call to Call_Chain:
+
          --  We used to only do this if From_Signal_Handler was not set,
          --  based on the assumption that backtracing from a signal handler
          --  would not work due to stack layout oddities. However, since
-         --
+
          --   1. The flag is never set in tasking programs (Notify_Exception
          --      performs regular raise statements), and
-         --
+
          --   2. No problem has shown up in tasking programs around here so
          --      far, this turned out to be too strong an assumption.
-         --
+
          --  As, in addition, the test was
-         --
+
          --   1. preventing the production of backtraces in non-tasking
          --      programs, and
-         --
+
          --   2. introducing a behavior inconsistency between
          --      the tasking and non-tasking cases,
-         --
-         --  we have simply removed it.
+
+         --  we have simply removed it
 
          --  If the jump buffer pointer is non-null, transfer control using
          --  it. Otherwise announce an unhandled exception (note that this
@@ -872,7 +865,7 @@ package body Ada.Exceptions is
    ----------------------------
 
    procedure Raise_Constraint_Error
-     (File : Big_String_Ptr;
+     (File : System.Address;
       Line : Integer)
    is
    begin
@@ -885,9 +878,9 @@ package body Ada.Exceptions is
    --------------------------------
 
    procedure Raise_Constraint_Error_Msg
-     (File : Big_String_Ptr;
+     (File : System.Address;
       Line : Integer;
-      Msg  : Big_String_Ptr)
+      Msg  : System.Address)
    is
    begin
       Raise_With_Location_And_Msg
@@ -941,7 +934,7 @@ package body Ada.Exceptions is
 
    procedure Raise_From_Signal_Handler
      (E : Exception_Id;
-      M : Big_String_Ptr)
+      M : System.Address)
    is
    begin
       Exception_Data.Set_Exception_C_Msg (E, M);
@@ -954,7 +947,7 @@ package body Ada.Exceptions is
    -------------------------
 
    procedure Raise_Program_Error
-     (File : Big_String_Ptr;
+     (File : System.Address;
       Line : Integer)
    is
    begin
@@ -967,9 +960,9 @@ package body Ada.Exceptions is
    -----------------------------
 
    procedure Raise_Program_Error_Msg
-     (File : Big_String_Ptr;
+     (File : System.Address;
       Line : Integer;
-      Msg  : Big_String_Ptr)
+      Msg  : System.Address)
    is
    begin
       Raise_With_Location_And_Msg
@@ -981,7 +974,7 @@ package body Ada.Exceptions is
    -------------------------
 
    procedure Raise_Storage_Error
-     (File : Big_String_Ptr;
+     (File : System.Address;
       Line : Integer)
    is
    begin
@@ -994,9 +987,9 @@ package body Ada.Exceptions is
    -----------------------------
 
    procedure Raise_Storage_Error_Msg
-     (File : Big_String_Ptr;
+     (File : System.Address;
       Line : Integer;
-      Msg  : Big_String_Ptr)
+      Msg  : System.Address)
    is
    begin
       Raise_With_Location_And_Msg
@@ -1009,9 +1002,9 @@ package body Ada.Exceptions is
 
    procedure Raise_With_Location_And_Msg
      (E : Exception_Id;
-      F : Big_String_Ptr;
+      F : System.Address;
       L : Integer;
-      M : Big_String_Ptr := null)
+      M : System.Address := System.Null_Address)
    is
    begin
       Exception_Data.Set_Exception_C_Msg (E, F, L, M);
@@ -1042,159 +1035,159 @@ package body Ada.Exceptions is
    -- Calls to Run-Time Check Routines --
    --------------------------------------
 
-   procedure Rcheck_00 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_00 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_00'Address));
+      Raise_Constraint_Error_Msg (File, Line, Rmsg_00'Address);
    end Rcheck_00;
 
-   procedure Rcheck_01 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_01 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_01'Address));
+      Raise_Constraint_Error_Msg (File, Line, Rmsg_01'Address);
    end Rcheck_01;
 
-   procedure Rcheck_02 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_02 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_02'Address));
+      Raise_Constraint_Error_Msg (File, Line, Rmsg_02'Address);
    end Rcheck_02;
 
-   procedure Rcheck_03 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_03 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_03'Address));
+      Raise_Constraint_Error_Msg (File, Line, Rmsg_03'Address);
    end Rcheck_03;
 
-   procedure Rcheck_04 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_04 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_04'Address));
+      Raise_Constraint_Error_Msg (File, Line, Rmsg_04'Address);
    end Rcheck_04;
 
-   procedure Rcheck_05 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_05 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_05'Address));
+      Raise_Constraint_Error_Msg (File, Line, Rmsg_05'Address);
    end Rcheck_05;
 
-   procedure Rcheck_06 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_06 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_06'Address));
+      Raise_Constraint_Error_Msg (File, Line, Rmsg_06'Address);
    end Rcheck_06;
 
-   procedure Rcheck_07 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_07 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_07'Address));
+      Raise_Constraint_Error_Msg (File, Line, Rmsg_07'Address);
    end Rcheck_07;
 
-   procedure Rcheck_08 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_08 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_08'Address));
+      Raise_Constraint_Error_Msg (File, Line, Rmsg_08'Address);
    end Rcheck_08;
 
-   procedure Rcheck_09 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_09 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_09'Address));
+      Raise_Constraint_Error_Msg (File, Line, Rmsg_09'Address);
    end Rcheck_09;
 
-   procedure Rcheck_10 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_10 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_10'Address));
+      Raise_Constraint_Error_Msg (File, Line, Rmsg_10'Address);
    end Rcheck_10;
 
-   procedure Rcheck_11 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_11 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_11'Address));
+      Raise_Constraint_Error_Msg (File, Line, Rmsg_11'Address);
    end Rcheck_11;
 
-   procedure Rcheck_12 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_12 (File : System.Address; Line : Integer) is
    begin
-      Raise_Constraint_Error_Msg (File, Line, To_Ptr (Rmsg_12'Address));
+      Raise_Constraint_Error_Msg (File, Line, Rmsg_12'Address);
    end Rcheck_12;
 
-   procedure Rcheck_13 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_13 (File : System.Address; Line : Integer) is
    begin
-      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_13'Address));
+      Raise_Program_Error_Msg (File, Line, Rmsg_13'Address);
    end Rcheck_13;
 
-   procedure Rcheck_14 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_14 (File : System.Address; Line : Integer) is
    begin
-      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_14'Address));
+      Raise_Program_Error_Msg (File, Line, Rmsg_14'Address);
    end Rcheck_14;
 
-   procedure Rcheck_15 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_15 (File : System.Address; Line : Integer) is
    begin
-      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_15'Address));
+      Raise_Program_Error_Msg (File, Line, Rmsg_15'Address);
    end Rcheck_15;
 
-   procedure Rcheck_16 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_16 (File : System.Address; Line : Integer) is
    begin
-      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_16'Address));
+      Raise_Program_Error_Msg (File, Line, Rmsg_16'Address);
    end Rcheck_16;
 
-   procedure Rcheck_17 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_17 (File : System.Address; Line : Integer) is
    begin
-      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_17'Address));
+      Raise_Program_Error_Msg (File, Line, Rmsg_17'Address);
    end Rcheck_17;
 
-   procedure Rcheck_18 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_18 (File : System.Address; Line : Integer) is
    begin
-      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_18'Address));
+      Raise_Program_Error_Msg (File, Line, Rmsg_18'Address);
    end Rcheck_18;
 
-   procedure Rcheck_19 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_19 (File : System.Address; Line : Integer) is
    begin
-      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_19'Address));
+      Raise_Program_Error_Msg (File, Line, Rmsg_19'Address);
    end Rcheck_19;
 
-   procedure Rcheck_20 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_20 (File : System.Address; Line : Integer) is
    begin
-      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_20'Address));
+      Raise_Program_Error_Msg (File, Line, Rmsg_20'Address);
    end Rcheck_20;
 
-   procedure Rcheck_21 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_21 (File : System.Address; Line : Integer) is
    begin
-      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_21'Address));
+      Raise_Program_Error_Msg (File, Line, Rmsg_21'Address);
    end Rcheck_21;
 
-   procedure Rcheck_22 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_22 (File : System.Address; Line : Integer) is
    begin
-      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_22'Address));
+      Raise_Program_Error_Msg (File, Line, Rmsg_22'Address);
    end Rcheck_22;
 
-   procedure Rcheck_23 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_23 (File : System.Address; Line : Integer) is
    begin
-      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_23'Address));
+      Raise_Program_Error_Msg (File, Line, Rmsg_23'Address);
    end Rcheck_23;
 
-   procedure Rcheck_24 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_24 (File : System.Address; Line : Integer) is
    begin
-      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_24'Address));
+      Raise_Program_Error_Msg (File, Line, Rmsg_24'Address);
    end Rcheck_24;
 
-   procedure Rcheck_25 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_25 (File : System.Address; Line : Integer) is
    begin
-      Raise_Program_Error_Msg (File, Line, To_Ptr (Rmsg_25'Address));
+      Raise_Program_Error_Msg (File, Line, Rmsg_25'Address);
    end Rcheck_25;
 
-   procedure Rcheck_26 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_26 (File : System.Address; Line : Integer) is
    begin
-      Raise_Storage_Error_Msg (File, Line, To_Ptr (Rmsg_26'Address));
+      Raise_Storage_Error_Msg (File, Line, Rmsg_26'Address);
    end Rcheck_26;
 
-   procedure Rcheck_27 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_27 (File : System.Address; Line : Integer) is
    begin
-      Raise_Storage_Error_Msg (File, Line, To_Ptr (Rmsg_27'Address));
+      Raise_Storage_Error_Msg (File, Line, Rmsg_27'Address);
    end Rcheck_27;
 
-   procedure Rcheck_28 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_28 (File : System.Address; Line : Integer) is
    begin
-      Raise_Storage_Error_Msg (File, Line, To_Ptr (Rmsg_28'Address));
+      Raise_Storage_Error_Msg (File, Line, Rmsg_28'Address);
    end Rcheck_28;
 
-   procedure Rcheck_29 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_29 (File : System.Address; Line : Integer) is
    begin
-      Raise_Storage_Error_Msg (File, Line, To_Ptr (Rmsg_29'Address));
+      Raise_Storage_Error_Msg (File, Line, Rmsg_29'Address);
    end Rcheck_29;
 
-   procedure Rcheck_30 (File : Big_String_Ptr; Line : Integer) is
+   procedure Rcheck_30 (File : System.Address; Line : Integer) is
    begin
-      Raise_Storage_Error_Msg (File, Line, To_Ptr (Rmsg_30'Address));
+      Raise_Storage_Error_Msg (File, Line, Rmsg_30'Address);
    end Rcheck_30;
 
    -------------
@@ -1263,7 +1256,7 @@ package body Ada.Exceptions is
    end Save_Occurrence;
 
    function Save_Occurrence (Source : Exception_Occurrence) return EOA is
-      Target : EOA := new Exception_Occurrence;
+      Target : constant EOA := new Exception_Occurrence;
    begin
       Save_Occurrence (Target.all, Source);
       return Target;
@@ -1348,8 +1341,7 @@ package body Ada.Exceptions is
    begin
       Exception_Data.Set_Exception_Msg (E, Message);
 
-      --  DO NOT CALL Abort_Defer.all; !!!!
-      --  why not??? would be nice to have more comments here
+      --  Do not call Abort_Defer.all, as specified by the spec
 
       Raise_Current_Excep (E);
    end Raise_Exception_No_Defer;
@@ -1378,35 +1370,18 @@ package body Ada.Exceptions is
       end loop;
    end To_Stderr;
 
-   ---------
-   -- ZZZ --
-   ---------
+   --------------------------
+   -- Code_Address_For_ZZZ --
+   --------------------------
 
-   --  This dummy procedure gives us the end of the PC range for addresses
+   --  This function gives us the end of the PC range for addresses
    --  within the exception unit itself. We hope that gigi/gcc keeps all the
    --  procedures in their original order!
 
-   procedure ZZZ is
+   function Code_Address_For_ZZZ return System.Address is
    begin
       <<Start_Of_ZZZ>>
-      Code_Address_For_ZZZ := Start_Of_ZZZ'Address;
-   end ZZZ;
+      return Start_Of_ZZZ'Address;
+   end Code_Address_For_ZZZ;
 
-begin
-   pragma Warnings (Off);
-   --  Allow calls to non-static subprograms in Ada 2005 mode where this
-   --  package will be implicitly categorized as Preelaborate. See AI-362 for
-   --  details. It is safe in the context of the run-time to violate the rules!
-
-   --  Allocate the Non-Tasking Machine_State
-
-   Set_Machine_State_Addr_NT (System.Address (Allocate_Machine_State));
-
-   --  Call the AAA/ZZZ routines to setup the code addresses for the
-   --  bounds of this unit.
-
-   AAA;
-   ZZZ;
-
-   pragma Warnings (On);
 end Ada.Exceptions;

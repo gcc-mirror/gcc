@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1999-2003 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1999-2005 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,8 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This version assumes that System.Machine_State_Operations.Pop_Frame can
---  work with the Info parameter being null.
+--  This version uses System.Machine_State_Operations routines
 
 with System.Machine_State_Operations;
 
@@ -73,7 +72,7 @@ package body System.Traceback is
          Code := Get_Code_Loc (M);
          exit when Code = Null_Address or else N_Skips = Skip_Frames;
 
-         Pop_Frame (M, System.Null_Address);
+         Pop_Frame (M);
          N_Skips := N_Skips + 1;
       end loop;
 
@@ -90,7 +89,7 @@ package body System.Traceback is
             Trace (Len) := Code;
          end if;
 
-         Pop_Frame (M, System.Null_Address);
+         Pop_Frame (M);
       end loop;
 
       Free_Machine_State (M);

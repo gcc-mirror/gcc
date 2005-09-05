@@ -375,7 +375,6 @@ GNATRTL_NONTASKING_OBJS= \
   s-crc32$(objext)  \
   s-direio$(objext) \
   s-errrep$(objext) \
-  s-except$(objext) \
   s-exctab$(objext) \
   s-exnint$(objext) \
   s-exnllf$(objext) \
