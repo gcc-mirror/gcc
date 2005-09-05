@@ -592,7 +592,7 @@ package body Ada.Containers.Indefinite_Vectors is
          Index_As_Int    : constant Int := Int (Index);
          Old_Last_As_Int : constant Int := Int (Container.Last);
 
-         --  TODO: somewhat vestigial...fix.
+         --  TODO: somewhat vestigial...fix ???
          Count1 : constant Int'Base := Int (Count);
          Count2 : constant Int'Base := Old_Last_As_Int - Index_As_Int + 1;
          N      : constant Int'Base := Int'Min (Count1, Count2);

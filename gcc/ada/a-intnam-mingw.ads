@@ -31,10 +31,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a NT (native) version of this package.
+--  This is a NT (native) version of this package
 
---  This target-dependent package spec contains names of interrupts
---  supported by the local system.
+--  This target-dependent package spec contains names of interrupts supported
+--  by the local system.
 
 with System.OS_Interface;
 --  used for names of interrupts

@@ -49,16 +49,16 @@ package GNAT.Sockets.Thin is
    package C renames Interfaces.C;
 
    use type C.int;
-   --  So that we can declare the Failure constant below.
+   --  So that we can declare the Failure constant below
 
    Success : constant C.int :=  0;
    Failure : constant C.int := -1;
 
    function Socket_Errno return Integer;
-   --  Returns last socket error number.
+   --  Returns last socket error number
 
    procedure Set_Socket_Errno (Errno : Integer);
-   --  Set last socket error number.
+   --  Set last socket error number
 
    function Socket_Error_Message
      (Errno : Integer)
@@ -335,7 +335,7 @@ package GNAT.Sockets.Thin is
 
    procedure Free_Socket_Set
      (Set : Fd_Set_Access);
-   --  Free system-dependent socket set.
+   --  Free system-dependent socket set
 
    procedure Get_Socket_From_Set
      (Set    : Fd_Set_Access;

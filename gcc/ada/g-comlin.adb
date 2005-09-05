@@ -49,23 +49,22 @@ package body GNAT.Command_Line is
    The_Parameter : Parameter_Type;
    The_Switch    : Parameter_Type;
    --  This type and this variable are provided to store the current switch
-   --  and parameter
+   --  and parameter.
 
    type Is_Switch_Type is array (1 .. CL.Argument_Count) of Boolean;
    pragma Pack (Is_Switch_Type);
 
    Is_Switch : Is_Switch_Type := (others => False);
    --  Indicates wich arguments on the command line are considered not be
-   --  switches or parameters to switches (this leaves e.g. the filenames...)
+   --  switches or parameters to switches (this leaves e.g. the filenames...).
 
    type Section_Type is array (1 .. CL.Argument_Count + 1) of Section_Number;
    pragma Pack (Section_Type);
    Section : Section_Type := (others => 1);
-   --  Contains the number of the section associated with the current
-   --  switch.  If this number is 0, then it is a section delimiter, which
-   --  is never returns by GetOpt.
-   --  The last element of this array is set to 0 to avoid the need to test for
-   --  if we have reached the end of the command line in loops.
+   --  Contains the number of the section associated with the current switch.
+   --  If this number is 0, then it is a section delimiter, which is never
+   --  returns by GetOpt. The last element of this array is set to 0 to avoid
+   --  the need to test for reaching the end of the command line in loops.
 
    Current_Argument : Natural := 1;
    --  Number of the current argument parsed on the command line
@@ -82,8 +81,8 @@ package body GNAT.Command_Line is
    --  True if we are expanding a file
 
    Switch_Character : Character := '-';
-   --  The character at the beginning of the command line arguments,
-   --  indicating the beginning of a switch
+   --  The character at the beginning of the command line arguments, indicating
+   --  the beginning of a switch.
 
    Stop_At_First : Boolean := False;
    --  If it is True then Getopt stops at the first non-switch argument
@@ -97,24 +96,25 @@ package body GNAT.Command_Line is
    --  Set the parameter that will be returned by Parameter below
 
    function Goto_Next_Argument_In_Section return Boolean;
-   --  Go to the next argument on the command line. If we are at the end
-   --  of the current section, we want to make sure there is no other
-   --  identical section on the command line (there might be multiple
-   --  instances of -largs). Returns True iff there is another argument.
+   --  Go to the next argument on the command line. If we are at the end of the
+   --  current section, we want to make sure there is no other identical
+   --  section on the command line (there might be multiple instances of
+   --  -largs). Returns True iff there is another argument.
 
    function Get_File_Names_Case_Sensitive return Integer;
    pragma Import (C, Get_File_Names_Case_Sensitive,
                   "__gnat_get_file_names_case_sensitive");
+
    File_Names_Case_Sensitive : constant Boolean :=
                                  Get_File_Names_Case_Sensitive /= 0;
 
    procedure Canonical_Case_File_Name (S : in out String);
-   --  Given a file name, converts it to canonical case form. For systems
-   --  where file names are case sensitive, this procedure has no effect.
-   --  If file names are not case sensitive (i.e. for example if you have
-   --  the file "xyz.adb", you can refer to it as XYZ.adb or XyZ.AdB), then
-   --  this call converts the given string to canonical all lower case form,
-   --  so that two file names compare equal if they refer to the same file.
+   --  Given a file name, converts it to canonical case form. For systems where
+   --  file names are case sensitive, this procedure has no effect. If file
+   --  names are not case sensitive (i.e. for example if you have the file
+   --  "xyz.adb", you can refer to it as XYZ.adb or XyZ.AdB), then this call
+   --  converts the given string to canonical all lower case form, so that two
+   --  file names compare equal if they refer to the same file.
 
    ------------------------------
    -- Canonical_Case_File_Name --
@@ -150,8 +150,8 @@ package body GNAT.Command_Line is
       NL      : Positive;
 
    begin
-      --  It is assumed that a directory is opened at the current level;
-      --  otherwise, GNAT.Directory_Operations.Directory_Error will be raised
+      --  It is assumed that a directory is opened at the current level.
+      --  Otherwise GNAT.Directory_Operations.Directory_Error will be raised
       --  at the first call to Read.
 
       loop
@@ -162,7 +162,7 @@ package body GNAT.Command_Line is
          if Last = 0 then
             Close (It.Levels (Current).Dir);
 
-            --  If we are at level 1, we are finished; return an empty string.
+            --  If we are at level 1, we are finished; return an empty string
 
             if Current = 1 then
                return String'(1 .. 0 => ' ');

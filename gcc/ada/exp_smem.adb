@@ -60,7 +60,7 @@ package body Exp_Smem is
    procedure Build_Full_Name
      (E : in  Entity_Id;
       N : out String_Id);
-   --  Build the fully qualified string name of a shared variable.
+   --  Build the fully qualified string name of a shared variable
 
    function On_Lhs_Of_Assignment (N : Node_Id) return Boolean;
    --  Determines if N is on the left hand of the assignment. This means

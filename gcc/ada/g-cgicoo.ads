@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2000-2001 Ada Core Technologies, Inc.           --
+--                     Copyright (C) 2000-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,9 +38,9 @@
 --  The complete CGI Cookie specification can be found in the RFC2109 at:
 --     http://www.ics.uci.edu/pub/ietf/http/rfc2109.txt
 
---  This package builds up data tables whose memory is not released.
---  A CGI program is expected to be a short lived program and so it
---  is adequate to have the underlying OS free the program on exit.
+--  This package builds up data tables whose memory is not released. A CGI
+--  program is expected to be a short lived program and so it is adequate to
+--  have the underlying OS free the program on exit.
 
 package GNAT.CGI.Cookie is
 
@@ -50,7 +50,7 @@ package GNAT.CGI.Cookie is
    --  will be raised when calling any services below (except for Ok).
 
    Cookie_Not_Found : exception;
-   --  This exception is raised when a specific parameter is not found.
+   --  This exception is raised when a specific parameter is not found
 
    procedure Put_Header
      (Header : String  := Default_Header;
@@ -67,33 +67,32 @@ package GNAT.CGI.Cookie is
    --     max_age=<max_age>; path=<path>[; secured]
 
    function Ok return Boolean;
-   --  Returns True if the CGI cookie environment is valid and False
-   --  otherwise. Every service used when the CGI environment is not valid
-   --  will raise the exception Data_Error.
+   --  Returns True if the CGI cookie environment is valid and False otherwise.
+   --  Every service used when the CGI environment is not valid will raise the
+   --  exception Data_Error.
 
    function Count return Natural;
-   --  Returns the number of cookies received by the CGI.
+   --  Returns the number of cookies received by the CGI
 
    function Value
      (Key      : String;
-      Required : Boolean := False)
-      return     String;
-   --  Returns the cookie value associated with the cookie named Key. If
-   --  cookie does not exist, returns an empty string if Required is
-   --  False and raises the exception Cookie_Not_Found otherwise.
+      Required : Boolean := False) return String;
+   --  Returns the cookie value associated with the cookie named Key. If cookie
+   --  does not exist, returns an empty string if Required is False and raises
+   --  the exception Cookie_Not_Found otherwise.
 
    function Value (Position : Positive) return String;
-   --  Returns the value associated with the cookie number Position
-   --  of the CGI. It raises Cookie_Not_Found if there is no such
-   --  cookie (i.e. Position > Count)
+   --  Returns the value associated with the cookie number Position of the CGI.
+   --  It raises Cookie_Not_Found if there is no such cookie (i.e. Position >
+   --  Count)
 
    function Exists (Key : String) return Boolean;
-   --  Returns True if the cookie named Key exist and False otherwise.
+   --  Returns True if the cookie named Key exist and False otherwise
 
    function Key (Position : Positive) return String;
-   --  Returns the key associated with the cookie number Position of
-   --  the CGI. It raises Cookie_Not_Found if there is no such cookie
-   --  (i.e. Position > Count)
+   --  Returns the key associated with the cookie number Position of the CGI.
+   --  It raises Cookie_Not_Found if there is no such cookie (i.e. Position >
+   --  Count)
 
    procedure Set
      (Key     : String;
@@ -103,8 +102,8 @@ package GNAT.CGI.Cookie is
       Max_Age : Natural := Natural'Last;
       Path    : String  := "/";
       Secure  : Boolean := False);
-   --  Add a cookie to the list of cookies. This will be sent back
-   --  to the server by the Put_Header service above.
+   --  Add a cookie to the list of cookies. This will be sent back to the
+   --  server by the Put_Header service above.
 
    generic
       with procedure

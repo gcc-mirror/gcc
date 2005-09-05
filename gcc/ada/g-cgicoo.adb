@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2000-2003 Ada Core Technologies, Inc.           --
+--                     Copyright (C) 2000-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,12 +43,12 @@ package body GNAT.CGI.Cookie is
    use Ada;
 
    Valid_Environment : Boolean := False;
-   --  This boolean will be set to True if the initialization was fine.
+   --  This boolean will be set to True if the initialization was fine
 
    Header_Sent : Boolean := False;
-   --  Will be set to True when the header will be sent.
+   --  Will be set to True when the header will be sent
 
-   --  Cookie data that have been added.
+   --  Cookie data that has been added
 
    type String_Access is access String;
 
@@ -67,14 +67,14 @@ package body GNAT.CGI.Cookie is
    end record;
 
    package Cookie_Table is new Table (Cookie_Data, Positive, 1, 5, 50);
-   --  This is the table to keep all cookies to be sent back to the server.
+   --  This is the table to keep all cookies to be sent back to the server
 
    package Key_Value_Table is new Table (Key_Value, Positive, 1, 1, 50);
-   --  This is the table to keep all cookies received from the server.
+   --  This is the table to keep all cookies received from the server
 
    procedure Check_Environment;
    pragma Inline (Check_Environment);
-   --  This procedure will raise Data_Error if Valid_Environment is False.
+   --  This procedure will raise Data_Error if Valid_Environment is False
 
    procedure Initialize;
    --  Initialize CGI package by reading the runtime environment. This
@@ -149,7 +149,7 @@ package body GNAT.CGI.Cookie is
       HTTP_COOKIE : constant String := Metavariable (CGI.HTTP_Cookie);
 
       procedure Set_Parameter_Table (Data : String);
-      --  Parse Data and insert information in Key_Value_Table.
+      --  Parse Data and insert information in Key_Value_Table
 
       -------------------------
       -- Set_Parameter_Table --
@@ -161,8 +161,8 @@ package body GNAT.CGI.Cookie is
          --  Add a single parameter into the table at index K. The parameter
          --  format is "key=value".
 
-         Count : constant Positive
-           := 1 + Strings.Fixed.Count (Data, Strings.Maps.To_Set (";"));
+         Count : constant Positive :=
+                   1 + Strings.Fixed.Count (Data, Strings.Maps.To_Set (";"));
          --  Count is the number of parameters in the string. Parameters are
          --  separated by ampersand character.
 
@@ -185,6 +185,8 @@ package body GNAT.CGI.Cookie is
             end if;
          end Add_Parameter;
 
+      --  Start of processing for Set_Parameter_Table
+
       begin
          Key_Value_Table.Set_Last (Count);
 
@@ -196,10 +198,12 @@ package body GNAT.CGI.Cookie is
             Index := Sep + 2;
          end loop;
 
-         --  add last parameter
+         --  Add last parameter
 
          Add_Parameter (Count, Data (Index .. Data'Last));
       end Set_Parameter_Table;
+
+   --  Start of processing for Initialize
 
    begin
       if HTTP_COOKIE /= "" then
@@ -245,7 +249,6 @@ package body GNAT.CGI.Cookie is
      (Header : String  := Default_Header;
       Force  : Boolean := False)
    is
-
       procedure Output_Cookies;
       --  Iterate through the list of cookies to be sent to the server
       --  and output them.
@@ -264,7 +267,7 @@ package body GNAT.CGI.Cookie is
             Max_Age : Natural;
             Path    : String;
             Secure  : Boolean);
-         --  Output one cookie in the CGI header.
+         --  Output one cookie in the CGI header
 
          -----------------------
          -- Output_One_Cookie --
@@ -344,7 +347,8 @@ package body GNAT.CGI.Cookie is
       Domain  : String   := "";
       Max_Age : Natural  := Natural'Last;
       Path    : String   := "/";
-      Secure  : Boolean  := False) is
+      Secure  : Boolean  := False)
+   is
    begin
       Cookie_Table.Increment_Last;
 
@@ -364,8 +368,7 @@ package body GNAT.CGI.Cookie is
 
    function Value
      (Key      : String;
-      Required : Boolean := False)
-      return     String
+      Required : Boolean := False) return String
    is
    begin
       Check_Environment;

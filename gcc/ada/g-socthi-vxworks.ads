@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2002-2004 Ada Core Technologies, Inc.           --
+--            Copyright (C) 2002-2005 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,11 +57,11 @@ package GNAT.Sockets.Thin is
    Failure : constant C.int := -1;
 
    function Socket_Errno return Integer renames GNAT.OS_Lib.Errno;
-   --  Returns last socket error number.
+   --  Returns last socket error number
 
    function Socket_Error_Message (Errno : Integer) return C.Strings.chars_ptr;
-   --  Returns the error message string for the error number Errno. If
-   --  Errno is not known it returns "Unknown system error".
+   --  Returns the error message string for the error number Errno. If Errno is
+   --  not known it returns "Unknown system error".
 
    subtype Fd_Set_Access is System.Address;
    No_Fd_Set : constant Fd_Set_Access := System.Null_Address;
@@ -145,25 +145,25 @@ package GNAT.Sockets.Thin is
      (Sin : Sockaddr_In_Access;
       Len : C.int);
    pragma Inline (Set_Length);
-   --  Set Sin.Sin_Length to Len.
+   --  Set Sin.Sin_Length to Len
 
    procedure Set_Family
      (Sin     : Sockaddr_In_Access;
       Family  : C.int);
    pragma Inline (Set_Family);
-   --  Set Sin.Sin_Family to Family.
+   --  Set Sin.Sin_Family to Family
 
    procedure Set_Port
      (Sin     : Sockaddr_In_Access;
       Port    : C.unsigned_short);
    pragma Inline (Set_Port);
-   --  Set Sin.Sin_Port to Port.
+   --  Set Sin.Sin_Port to Port
 
    procedure Set_Address
      (Sin        : Sockaddr_In_Access;
       Address    : In_Addr);
    pragma Inline (Set_Address);
-   --  Set Sin.Sin_Addr to Address.
+   --  Set Sin.Sin_Addr to Address
 
    type Hostent is record
       H_Name      : C.Strings.chars_ptr;

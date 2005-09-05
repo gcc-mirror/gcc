@@ -1939,7 +1939,7 @@ package body Sem_Ch7 is
                Next_Elmt (Priv_Elmt);
             end loop;
 
-            --  Now restore the type itself to its private view.
+            --  Now restore the type itself to its private view
 
             Exchange_Declarations (Id);
 

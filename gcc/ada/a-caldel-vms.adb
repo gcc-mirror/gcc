@@ -32,7 +32,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the Alpha/VMS version.
+--  This is the Alpha/VMS version
 
 with System.OS_Primitives;
 --  Used for Max_Sensible_Delay

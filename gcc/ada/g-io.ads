@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                      Copyright (C) 1995-2005 AdaCore                     --
+--                     Copyright (C) 1995-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,7 +41,7 @@
 --  If such checks are needed then the regular Text_IO package must be used.
 
 package GNAT.IO is
-pragma Preelaborate (IO);
+   pragma Preelaborate;
 
    type File_Type is limited private;
    --  Specifies file to be used (the only possibilities are Standard_Output

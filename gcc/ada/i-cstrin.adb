@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,11 +38,10 @@ with Unchecked_Conversion;
 
 package body Interfaces.C.Strings is
 
-   --  Note that the type chars_ptr has a pragma No_Strict_Aliasing in
-   --  the spec, to prevent any assumptions about aliasing for values
-   --  of this type, since arbitrary addresses can be converted, and it
-   --  is quite likely that this type will in fact be used for aliasing
-   --  values of other types.
+   --  Note that the type chars_ptr has a pragma No_Strict_Aliasing in the
+   --  spec, to prevent any assumptions about aliasing for values of this type,
+   --  since arbitrary addresses can be converted, and it is quite likely that
+   --  this type will in fact be used for aliasing values of other types.
 
    function To_chars_ptr is
       new Unchecked_Conversion (Address, chars_ptr);
@@ -116,7 +115,7 @@ package body Interfaces.C.Strings is
       Index := Position_Of_Nul (Into => Chars);
       Pointer := Memory_Alloc ((Index - Chars'First + 1));
 
-      --  If nul is present, transfer string up to and including it.
+      --  If nul is present, transfer string up to and including nul
 
       if Index <= Chars'Last then
          Update (Item   => Pointer,
@@ -322,8 +321,9 @@ package body Interfaces.C.Strings is
       Result : char_array (0 .. Length);
 
    begin
-      --  As per AI-00177, this is equivalent to
-      --          To_Ada (Value (Item, Length) & nul);
+      --  As per AI-00177, this is equivalent to:
+
+      --    To_Ada (Value (Item, Length) & nul);
 
       if Item = Null_Ptr then
          raise Dereference_Error;

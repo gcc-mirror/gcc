@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1999-2003 Ada Core Technologies, Inc.           --
+--                     Copyright (C) 1999-2005, AdaCore                     --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -116,16 +116,15 @@ package GNAT.Calendar.Time_IO is
 
    function Image
      (Date    : Ada.Calendar.Time;
-      Picture : Picture_String)
-      return    String;
-   --  Return Date as a string with format Picture.
-   --  raise Picture_Error if picture string is wrong
+      Picture : Picture_String) return String;
+   --  Return Date as a string with format Picture. Raise Picture_Error if
+   --  picture string is wrong.
 
    procedure Put_Time
      (Date    : Ada.Calendar.Time;
       Picture : Picture_String);
-   --  Put Date with format Picture.
-   --  raise Picture_Error if picture string is wrong
+   --  Put Date with format Picture. Raise Picture_Error if picture string is
+   --  wrong
 
 private
    ISO_Date      : constant Picture_String := "%Y-%m-%d";

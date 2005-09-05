@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1995-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -123,16 +123,14 @@ package Interfaces.C_Streams is
      (buffer : voids;
       size   : size_t;
       count  : size_t;
-      stream : FILEs)
-      return   size_t;
+      stream : FILEs) return size_t;
 
    function fread
      (buffer : voids;
       index  : size_t;
       size   : size_t;
       count  : size_t;
-      stream : FILEs)
-      return   size_t;
+      stream : FILEs) return size_t;
    --  Same as normal fread, but has a parameter 'index' that indicates
    --  the starting index for the read within 'buffer' (which must be the
    --  address of the beginning of a whole array object with an assumed
@@ -198,11 +196,11 @@ package Interfaces.C_Streams is
    --  functions.
 
    function file_exists (name : chars) return int;
-   --  Tests if given name corresponds to an existing file.
+   --  Tests if given name corresponds to an existing file
 
    function is_regular_file (handle : int) return int;
-   --  Tests if given handle is for a regular file (result 1) or for
-   --  a non-regular file (pipe or device, result 0).
+   --  Tests if given handle is for a regular file (result 1) or for a
+   --  non-regular file (pipe or device, result 0).
 
    ---------------------------------
    -- Control of Text/Binary Mode --

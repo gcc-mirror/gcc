@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1995-2005 AdaCore                      --
+--                     Copyright (C) 1995-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,7 +48,7 @@
 --  the body for exact details of the algorithm used.
 
 package GNAT.Heap_Sort is
-pragma Preelaborate (Heap_Sort);
+   pragma Preelaborate;
 
    --  The data to be sorted is assumed to be indexed by integer values
    --  from 1 to N, where N is the number of items to be sorted.

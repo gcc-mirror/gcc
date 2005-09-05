@@ -96,8 +96,7 @@ package body GNAT.Calendar is
    function Julian_Day
      (Year  : Year_Number;
       Month : Month_Number;
-      Day   : Day_Number)
-      return  Integer
+      Day   : Day_Number) return Integer
    is
       Internal_Year  : Integer;
       Internal_Month : Integer;
@@ -227,8 +226,7 @@ package body GNAT.Calendar is
       Hour       : Hour_Number;
       Minute     : Minute_Number;
       Second     : Second_Number;
-      Sub_Second : Second_Duration := 0.0)
-      return Time
+      Sub_Second : Second_Duration := 0.0) return Time
    is
       Dsecs : constant Day_Duration :=
                 Day_Duration (Hour * 3600 + Minute * 60 + Second) +
@@ -291,8 +289,7 @@ package body GNAT.Calendar is
    ------------------
 
    function Week_In_Year
-     (Date : Ada.Calendar.Time)
-      return Week_In_Year_Number
+     (Date : Ada.Calendar.Time) return Week_In_Year_Number
    is
       Year       : Year_Number;
       Month      : Month_Number;
@@ -306,7 +303,7 @@ package body GNAT.Calendar is
    begin
       Split (Date, Year, Month, Day, Hour, Minute, Second, Sub_Second);
 
-      --  Day offset number for the first week of the year.
+      --  Day offset number for the first week of the year
 
       Offset := Julian_Day (Year, 1, 1) mod 7;
 

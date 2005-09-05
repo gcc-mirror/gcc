@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                            (Windows Version)                             --
 --                                                                          --
---          Copyright (C) 2004 Free Software Foundation, Inc.               --
+--          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -147,7 +147,7 @@ package body Ada.Directories.Validity is
             end if;
          end loop;
 
-         --  If no invalid chars, and not all spaces, file name is valid.
+         --  If no invalid chars, and not all spaces, file name is valid
 
          return not Only_Spaces;
       end if;

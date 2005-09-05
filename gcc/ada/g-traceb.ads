@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1999-2004 Ada Core Technologies, Inc.            --
+--                     Copyright (C) 1999-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,7 +78,7 @@ package GNAT.Traceback is
    --  Code location used in building tracebacks
 
    subtype Tracebacks_Array is Ada.Exceptions.Traceback.Tracebacks_Array;
-   --  Traceback array used to hold a generated traceback list.
+   --  Traceback array used to hold a generated traceback list
 
    ----------------
    -- Call_Chain --

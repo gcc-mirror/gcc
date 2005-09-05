@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2002-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,7 @@ generic
    --  Element of the array, this must be a discrete type
 
    type Element_Sequence is array (Positive range <>) of Element;
-   --  The array which is a sequence of element.
+   --  The array which is a sequence of element
 
    type Element_Set is private;
    --  This type represent a set of elements. This set does not defined a
@@ -120,8 +120,7 @@ package GNAT.Array_Split is
 
    function Slice
      (S     : Slice_Set;
-      Index : Slice_Number)
-      return  Element_Sequence;
+      Index : Slice_Number) return Element_Sequence;
    pragma Inline (Slice);
    --  Returns the slice at position Index. First slice is 1. If Index is 0
    --  the whole array is returned including the separators (this is the
@@ -138,8 +137,7 @@ package GNAT.Array_Split is
 
    function Separators
      (S     : Slice_Set;
-      Index : Slice_Number)
-      return  Slice_Separators;
+      Index : Slice_Number) return Slice_Separators;
    --  Returns the separators used to slice (front and back) the slice at
    --  position Index. For slices at start and end of the original array, the
    --  Array_End value is returned for the corresponding outer bound. In
@@ -165,7 +163,7 @@ private
       Start : Positive;
       Stop  : Natural;
    end record;
-   --  Starting/Ending position of a slice. This does not include separators.
+   --  Starting/Ending position of a slice. This does not include separators
 
    type Slices_Indexes is array (Slice_Number range <>) of Slice_Info;
    type Slices_Access is access Slices_Indexes;

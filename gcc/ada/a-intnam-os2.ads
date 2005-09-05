@@ -32,7 +32,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is an OS/2 version of this package.
+--  This is an OS/2 version of this package
 
 --  This target-dependent package spec contains names of interrupts
 --  supported by the local system.

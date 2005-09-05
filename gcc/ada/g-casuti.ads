@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1995-2005 AdaCore                      --
+--                     Copyright (C) 1995-2005, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,13 +43,12 @@
 with System.Case_Util;
 
 package GNAT.Case_Util is
-pragma Pure (Case_Util);
-
-pragma Elaborate_Body;
---  The elaborate body is because we have a dummy body to deal with bootstrap
---  path problems (we used to have a real body, and now we don't need it any
---  more, but the bootstrap requires that we have a dummy body, since otherwise
---  the old body gets picked up.
+   pragma Pure;
+   pragma Elaborate_Body;
+   --  The elaborate body is because we have a dummy body to deal with
+   --  bootstrap path problems (we used to have a real body, and now we don't
+   --  need it any more, but the bootstrap requires that we have a dummy body,
+   --  since otherwise the old body gets picked up.
 
    --  Note: all the following functions handle the full Latin-1 set
 

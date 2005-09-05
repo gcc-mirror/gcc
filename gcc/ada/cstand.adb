@@ -114,7 +114,7 @@ package body CStand is
    --  Make an entry in the names table for Nam, and set as Chars field of Id
 
    function New_Operator (Op : Name_Id; Typ : Entity_Id) return Entity_Id;
-   --  Build entity for standard operator with given name and type.
+   --  Build entity for standard operator with given name and type
 
    function New_Standard_Entity
      (New_Node_Kind : Node_Kind := N_Defining_Identifier) return Entity_Id;
@@ -537,7 +537,7 @@ package body CStand is
       Set_Is_Known_Valid             (Standard_Character);
       Set_Size_Known_At_Compile_Time (Standard_Character);
 
-      --  Create the bounds for type Character.
+      --  Create the bounds for type Character
 
       R_Node := New_Node (N_Range, Stloc);
 
@@ -582,7 +582,7 @@ package body CStand is
       Set_Is_Known_Valid             (Standard_Wide_Character);
       Set_Size_Known_At_Compile_Time (Standard_Wide_Character);
 
-      --  Create the bounds for type Wide_Character.
+      --  Create the bounds for type Wide_Character
 
       R_Node := New_Node (N_Range, Stloc);
 
@@ -1259,20 +1259,22 @@ package body CStand is
                       (Standard_Exception_Type, True);
       Make_Name       (Standard_Exception_Type, "exception");
 
-      Make_Component  (Standard_Exception_Type, Standard_Boolean,
-                                                 "Not_Handled_By_Others");
-      Make_Component  (Standard_Exception_Type, Standard_Character, "Lang");
-      Make_Component  (Standard_Exception_Type, Standard_Natural,
-                                                           "Name_Length");
-      Make_Component  (Standard_Exception_Type, Standard_A_Char,
-                                                             "Full_Name");
-      Make_Component  (Standard_Exception_Type, Standard_A_Char,
-                                                            "HTable_Ptr");
-      Make_Component  (Standard_Exception_Type, Standard_Unsigned,
-                                                          "Import_Code");
-      Make_Component  (Standard_Exception_Type, Standard_A_Char,
-                                                            "Raise_Hook");
-      --  Build tree for record declaration, for use by the back-end.
+      Make_Component
+        (Standard_Exception_Type, Standard_Boolean,   "Not_Handled_By_Others");
+      Make_Component
+        (Standard_Exception_Type, Standard_Character, "Lang");
+      Make_Component
+        (Standard_Exception_Type, Standard_Natural,   "Name_Length");
+      Make_Component
+        (Standard_Exception_Type, Standard_A_Char,    "Full_Name");
+      Make_Component
+        (Standard_Exception_Type, Standard_A_Char,    "HTable_Ptr");
+      Make_Component
+        (Standard_Exception_Type, Standard_Unsigned,  "Import_Code");
+      Make_Component
+        (Standard_Exception_Type, Standard_A_Char,    "Raise_Hook");
+
+      --  Build tree for record declaration, for use by the back-end
 
       declare
          Comp_List : List_Id;

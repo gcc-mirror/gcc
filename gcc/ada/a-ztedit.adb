@@ -267,7 +267,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
 
                Result_Index := Result_Index + Count - 1;
 
-               --  Last was a ')' throw it away too.
+               --  Last was a ')' throw it away too
 
                Picture_Index := Last + 1;
 
@@ -314,10 +314,10 @@ package body Ada.Wide_Wide_Text_IO.Editing is
       Currency_Pos  : Integer := Pic.Start_Currency;
 
       Dollar : Boolean := False;
-      --  Overridden immediately if necessary.
+      --  Overridden immediately if necessary
 
       Zero : Boolean := True;
-      --  Set to False when a non-zero digit is output.
+      --  Set to False when a non-zero digit is output
 
    begin
 
@@ -857,11 +857,11 @@ package body Ada.Wide_Wide_Text_IO.Editing is
          end case;
       end loop;
 
-      --  Now get rid of Blank_when_Zero and complete Star fill.
+      --  Now get rid of Blank_when_Zero and complete Star fill
 
       if Zero and Pic.Blank_When_Zero then
 
-         --  Value is zero, and blank it.
+         --  Value is zero, and blank it
 
          Last := Answer'Last;
 
@@ -1065,7 +1065,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
                   raise Picture_Error;
                end if;
 
-               --  Two decimal points is a no-no.
+               --  Two decimal points is a no-no
 
                Answer.Has_Fraction    := True;
                Answer.End_Of_Fraction := J;
@@ -1085,7 +1085,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
          Answer.Start_Of_Int := Answer.End_Of_Int + 1;
       end if;
 
-      --  No significant (intger) digits needs a null range.
+      --  No significant (intger) digits needs a null range
 
       return Answer;
    end Parse_Number_String;
@@ -1118,7 +1118,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
 
       type Legality is  (Okay, Reject);
       State : Legality := Reject;
-      --  Start in reject, which will reject null strings.
+      --  Start in reject, which will reject null strings
 
       Index : Pic_Index := Pic.Picture.Expanded'First;
 
@@ -1418,9 +1418,8 @@ package body Ada.Wide_Wide_Text_IO.Editing is
       -- Leading_Dollar --
       --------------------
 
-      --  Note that Leading_Dollar can be called in either State.
-      --  It will set state to Okay only if a 9 or (second) $
-      --  is encountered.
+      --  Note that Leading_Dollar can be called in either State. It will set
+      --  state to Okay only if a 9 or (second) is encountered.
 
       --  Also notice the tricky bit with State and Zero_Suppression.
       --  Zero_Suppression is Picture_Error if a '$' or a '9' has been
@@ -1428,7 +1427,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
 
       procedure Leading_Dollar is
       begin
-         --  Treat as a floating dollar, and unwind otherwise.
+         --  Treat as a floating dollar, and unwind otherwise
 
          Pic.Floater := '$';
          Pic.Start_Currency := Index;
@@ -1497,7 +1496,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
                      Pic.End_Float := Invalid_Position;
                   end if;
 
-                  --  A single dollar does not a floating make.
+                  --  A single dollar does not a floating make
 
                   Number_Completion;
                   return;
@@ -1509,8 +1508,8 @@ package body Ada.Wide_Wide_Text_IO.Editing is
                      Pic.End_Float := Invalid_Position;
                   end if;
 
-                  --  Only one dollar before the sign is okay,
-                  --  but doesn't float.
+                  --  Only one dollar before the sign is okay, but doesn't
+                  --  float.
 
                   Pic.Radix_Position := Index;
                   Skip;
@@ -1533,8 +1532,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
       --  this procedure.  Also note that Leading_Pound can be called in
       --  either State.
 
-      --  It will set state to Okay only if a 9 or  (second) # is
-      --  encountered.
+      --  It will set state to Okay only if a 9 or (second) # is encountered
 
       --  One Last note:  In ambiguous cases, the currency is treated as
       --  floating unless there is only one '#'.
@@ -1545,7 +1543,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
          --  Set to True if a '_', '0', '/', 'B', or 'b' is encountered
 
          Must_Float : Boolean := False;
-         --  Set to true if a '#' occurs after an insert.
+         --  Set to true if a '#' occurs after an insert
 
       begin
          --  Treat as a floating currency. If it isn't, this will be
@@ -1621,7 +1619,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
                when '9' =>
                   if State /= Okay then
 
-                     --  A single '#' doesn't float.
+                     --  A single '#' doesn't float
 
                      Pic.Floater := '!';
                      Pic.Start_Float := Invalid_Position;
@@ -1638,8 +1636,8 @@ package body Ada.Wide_Wide_Text_IO.Editing is
                      Pic.End_Float := Invalid_Position;
                   end if;
 
-                  --  Only one pound before the sign is okay,
-                  --  but doesn't float.
+                  --  Only one pound before the sign is okay, but doesn't
+                  --  float.
 
                   Pic.Radix_Position := Index;
                   Skip;
@@ -1702,7 +1700,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
                return;
             end if;
 
-            --  Will return in Okay state if a '9' was seen.
+            --  Will return in Okay state if a '9' was seen
 
          end loop;
       end Number;
@@ -2132,7 +2130,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
       -- Picture --
       -------------
 
-      --  Note that Picture can be called in either State.
+      --  Note that Picture can be called in either State
 
       --  It will set state to Valid only if a 9 is encountered or floating
       --  currency is called.
@@ -2190,7 +2188,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
          Pic.Sign_Position := Index;
          Pic.Sign_Position := Index;
 
-         --  Treat as a floating sign, and unwind otherwise.
+         --  Treat as a floating sign, and unwind otherwise
 
          Pic.Floater := '<';
          Pic.Start_Float := Index;
@@ -2260,7 +2258,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
       begin
          Pic.Sign_Position := Index;
 
-         --  Treat as a floating sign, and unwind otherwise.
+         --  Treat as a floating sign, and unwind otherwise
 
          Pic.Floater := '-';
          Pic.Start_Float := Index;
@@ -2305,7 +2303,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
 
                when 'Z' | 'z' =>
 
-                  --  Can't have Z and a floating sign.
+                  --  Can't have Z and a floating sign
 
                   if State = Okay then
                      Set_State (Reject);
@@ -2324,7 +2322,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
                      Pic.End_Float := Invalid_Position;
                   end if;
 
-                  --  Don't assume that state is okay, haven't seen a digit.
+                  --  Don't assume that state is okay, haven't seen a digit
 
                   Picture;
                   return;
@@ -2344,7 +2342,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
       begin
          Pic.Sign_Position := Index;
 
-         --  Treat as a floating sign, and unwind otherwise.
+         --  Treat as a floating sign, and unwind otherwise
 
          Pic.Floater := '+';
          Pic.Start_Float := Index;
@@ -2371,7 +2369,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
                   Pic.Max_Leading_Digits := Pic.Max_Leading_Digits + 1;
                   Pic.End_Float := Index;
                   Skip;
-                  Set_State (Okay);  --  "++" is enough.
+                  Set_State (Okay);  --  "++" is enough
                   Floating_Plus;
                   Trailing_Currency;
                   return;
@@ -2392,7 +2390,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
                      Set_State (Reject);
                   end if;
 
-                  --  Can't have Z and a floating sign.
+                  --  Can't have Z and a floating sign
 
                   Pic.Picture.Expanded (Index) := 'Z'; -- consistency
 
@@ -2412,7 +2410,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
                      Pic.End_Float := Invalid_Position;
                   end if;
 
-                  --  Don't assume that state is okay, haven't seen a digit.
+                  --  Don't assume that state is okay, haven't seen a digit
 
                   Picture;
                   return;
@@ -2476,7 +2474,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
          Pic.Blank_When_Zero :=
            (Computed_BWZ or Pic.Blank_When_Zero) and not Pic.Star_Fill;
 
-         --  Star fill if '*' and no '9'.
+         --  Star fill if '*' and no '9'
 
          Pic.Star_Fill := Pic.Star_Fill and Computed_BWZ;
 
@@ -2695,7 +2693,7 @@ package body Ada.Wide_Wide_Text_IO.Editing is
 
       when Constraint_Error =>
 
-         --  To deal with special cases like null strings.
+         --  To deal with special cases like null strings
 
       raise Picture_Error;
 

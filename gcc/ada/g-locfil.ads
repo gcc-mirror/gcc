@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1995-2001 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1995-2005 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,7 +35,7 @@
 --  purpose of providing realiable system wide locking capability.
 
 package GNAT.Lock_Files is
-pragma Preelaborate;
+   pragma Preelaborate;
 
    Lock_Error : exception;
    --  Exception raised if file cannot be locked
@@ -62,7 +62,7 @@ pragma Preelaborate;
      (Lock_File_Name : Path_Name;
       Wait           : Duration := 1.0;
       Retries        : Natural  := Natural'Last);
-   --  See above. The full lock file path is given as one string.
+   --  See above. The full lock file path is given as one string
 
    procedure Unlock_File (Directory : Path_Name; Lock_File_Name : Path_Name);
    --  Unlock a file. Directory can optionally terminate with a directory

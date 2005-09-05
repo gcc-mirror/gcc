@@ -183,7 +183,7 @@ package body Ada.Text_IO.Fixed_IO is
 
    --    Fore + Aft + Exp + Extra_Layout_Space
 
-   --  is always long enough for formatting any fixed point number.
+   --  is always long enough for formatting any fixed point number
 
    --  Implementation of Put routines
 
@@ -247,7 +247,7 @@ package body Ada.Text_IO.Fixed_IO is
    --  least 20 in order to print T'First, which is at most -2.0**63.
    --  This means D < 0, so use
 
-   --    (1)   Y = -S and Z = -10**(-D).
+   --    (1)   Y = -S and Z = -10**(-D)
 
    --  If 1.0 / S is an integer greater than one, use
 

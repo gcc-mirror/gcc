@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2001 Ada Core Technologies, Inc.              --
+--                      Copyright (C) 2001-2005, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,10 +50,10 @@ package body GNAT.CGI is
    --  services exported by this unit.
 
    Current_Method : Method_Type;
-   --  This is the current method used to pass CGI parameters.
+   --  This is the current method used to pass CGI parameters
 
    Header_Sent : Boolean := False;
-   --  Will be set to True when the header will be sent.
+   --  Will be set to True when the header will be sent
 
    --  Key/Value table declaration
 
@@ -72,7 +72,7 @@ package body GNAT.CGI is
 
    procedure Check_Environment;
    pragma Inline (Check_Environment);
-   --  This procedure will raise Data_Error if Valid_Environment is False.
+   --  This procedure will raise Data_Error if Valid_Environment is False
 
    procedure Initialize;
    --  Initialize CGI package by reading the runtime environment. This
@@ -178,7 +178,7 @@ package body GNAT.CGI is
       --  for the data is passed in CONTENT_LENGTH environment variable.
 
       procedure Set_Parameter_Table (Data : String);
-      --  Parse the parameter data and set the parameter table.
+      --  Parse the parameter data and set the parameter table
 
       --------------------
       -- Initialize_GET --
@@ -328,7 +328,7 @@ package body GNAT.CGI is
       Required : Boolean := False) return String
    is
       function Get_Environment (Variable_Name : String) return String;
-      --  Returns the environment variable content.
+      --  Returns the environment variable content
 
       ---------------------
       -- Get_Environment --
