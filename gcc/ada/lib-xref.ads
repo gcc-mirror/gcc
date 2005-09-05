@@ -28,7 +28,6 @@
 --  information.
 
 with Einfo; use Einfo;
-with Types; use Types;
 
 package Lib.Xref is
 
@@ -54,7 +53,7 @@ package Lib.Xref is
 
    --  The lines following the header look like
 
-   --     line type col level entity renameref instref typeref ref  ref  ref
+   --  line type col level entity renameref instref typeref overref ref  ref
 
    --        line is the line number of the referenced entity. The name of
    --        the entity starts in column col. Columns are numbered from one,
@@ -129,6 +128,17 @@ package Lib.Xref is
    --          specify the location of the relevant type declaration in the
    --          referenced file. For the standard entity form, the name between
    --          the brackets is the normal name of the entity in lower case.
+
+   --        overref is present for overriding operations (procedures and
+   --        functions), and provides information on the operation that it
+   --        overrides. This information has the format:
+
+   --        '<' file | line 'o' col '>'
+
+   --           file is the dependency number of the file containing the
+   --           declaration of the overridden operation. It and the following
+   --           vertical bar are omitted if the file is the same as that of
+   --           the overriding operation.
 
    --     There may be zero or more ref entries on each line
 

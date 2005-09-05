@@ -590,7 +590,7 @@ package ALI is
 
    type No_Dep_Record is record
       ALI_File : ALI_Id;
-      --  ALI File containing tne entry
+      --  ALI File containing the entry
 
       No_Dep_Unit : Name_Id;
       --  Id for names table entry including entire name, including periods
@@ -781,6 +781,16 @@ package ALI is
       --  package Standard. If there is a typeref that references an
       --  entity in package Standard, then this field is a Name_Id
       --  reference for the entity name.
+
+      Oref_File_Num : Sdep_Id;
+      --  This field is set to No_Sdep_Id is the entity doesn't override any
+      --  other entity, or to the dependency reference for the overriden
+      --  entity.
+
+      Oref_Line : Nat;
+      Oref_Col  : Nat;
+      --  These two fields are set to the line and column of the overriden
+      --  entity.
 
       First_Xref : Nat;
       --  Index into Xref table of first cross-reference
