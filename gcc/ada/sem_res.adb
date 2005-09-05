@@ -244,14 +244,10 @@ package body Sem_Res is
            ("\possible interpretations: Character, Wide_Character!", C);
 
          E := Current_Entity (C);
-
-         if Present (E) then
-
-            while Present (E) loop
-               Error_Msg_NE ("\possible interpretation:}!", C, Etype (E));
-               E := Homonym (E);
-            end loop;
-         end if;
+         while Present (E) loop
+            Error_Msg_NE ("\possible interpretation:}!", C, Etype (E));
+            E := Homonym (E);
+         end loop;
       end if;
    end Ambiguous_Character;
 
@@ -557,7 +553,6 @@ package body Sem_Res is
       else
          D := PN;
          P := Parent (PN);
-
          while Nkind (P) /= N_Component_Declaration
            and then Nkind (P) /= N_Subtype_Indication
            and then Nkind (P) /= N_Entry_Declaration
@@ -742,9 +737,7 @@ package body Sem_Res is
 
          elsif Is_Record_Type (T) then
             Comp := First_Component (T);
-
             while Present (Comp) loop
-
                if Ekind (Comp) = E_Component
                  and then Nkind (Parent (Comp)) = N_Component_Declaration
                then
@@ -996,9 +989,7 @@ package body Sem_Res is
 
          else
             Get_First_Interp (Nod, I, It);
-
             while Present (It.Typ) loop
-
                if Scope (Base_Type (It.Typ)) = S then
                   return True;
                end if;
@@ -1066,9 +1057,7 @@ package body Sem_Res is
 
          else
             E := First_Entity (Pack);
-
             while Present (E) loop
-
                if Test (E)
                  and then not In_Decl
                then
@@ -1672,10 +1661,9 @@ package body Sem_Res is
       --  is compatible with the context (i.e. the type passed to Resolve)
 
       else
-         Get_First_Interp (N, I, It);
-
          --  Loop through possible interpretations
 
+         Get_First_Interp (N, I, It);
          Interp_Loop : while Present (It.Typ) loop
 
             --  We are only interested in interpretations that are compatible
@@ -1726,10 +1714,11 @@ package body Sem_Res is
                        or else Nkind (N) = N_Procedure_Call_Statement
                      then
                         declare
-                           A : Node_Id := First_Actual (N);
+                           A : Node_Id;
                            E : Node_Id;
 
                         begin
+                           A := First_Actual (N);
                            while Present (A) loop
                               E := A;
 
@@ -2076,10 +2065,9 @@ package body Sem_Res is
 
                      begin
                         Error_Msg_N ("\possible interpretations:", N);
+
                         Get_First_Interp (Name (N), Index, It);
-
                         while Present (It.Nam) loop
-
                               Error_Msg_Sloc := Sloc (It.Nam);
                               Error_Msg_Node_2 := It.Typ;
                               Error_Msg_NE ("\&  declared#, type&",
@@ -2769,16 +2757,14 @@ package body Sem_Res is
 
                if Ada_Version >= Ada_05
                  and then Is_Access_Type (F_Typ)
-                 and then (Can_Never_Be_Null (F)
-                           or else Can_Never_Be_Null (F_Typ))
+                 and then Can_Never_Be_Null (F_Typ)
+                 and then Nkind (A) = N_Null
                then
-                  if Nkind (A) = N_Null then
-                     Apply_Compile_Time_Constraint_Error
-                       (N      => A,
-                        Msg    => "(Ada 2005) NULL not allowed in "
-                                   & "null-excluding formal?",
-                        Reason => CE_Null_Not_Allowed);
-                  end if;
+                  Apply_Compile_Time_Constraint_Error
+                    (N      => A,
+                     Msg    => "(Ada 2005) NULL not allowed in "
+                               & "null-excluding formal?",
+                     Reason => CE_Null_Not_Allowed);
                end if;
             end if;
 
@@ -3013,7 +2999,6 @@ package body Sem_Res is
             if Has_Discriminants (Subtyp) then
                Discrim := First_Discriminant (Base_Type (Subtyp));
                Constr := First (Constraints (Constraint (Original_Node (E))));
-
                while Present (Discrim) and then Present (Constr) loop
                   if Ekind (Etype (Discrim)) = E_Anonymous_Access_Type then
                      if Nkind (Constr) = N_Discriminant_Association then
@@ -3104,7 +3089,6 @@ package body Sem_Res is
       if No_Pool_Assigned (Typ) then
          declare
             Loc : constant Source_Ptr := Sloc (N);
-
          begin
             Error_Msg_N ("?allocation from empty storage pool!", N);
             Error_Msg_N ("?Storage_Error will be raised at run time!", N);
@@ -3112,6 +3096,17 @@ package body Sem_Res is
               Make_Raise_Storage_Error (Loc,
                 Reason => SE_Empty_Storage_Pool));
          end;
+
+      --  If the context is an unchecked conversion, as may happen within
+      --  an inlined subprogram, the allocator is being resolved with its
+      --  own anonymous type. In that case, if the target type has a specific
+      --  storage pool, it must be inherited explicitly by the allocator type.
+
+      elsif Nkind (Parent (N)) = N_Unchecked_Type_Conversion
+        and then No (Associated_Storage_Pool (Typ))
+      then
+         Set_Associated_Storage_Pool
+           (Typ, Associated_Storage_Pool (Etype (Parent (N))));
       end if;
    end Resolve_Allocator;
 
@@ -3161,9 +3156,7 @@ package body Sem_Res is
               or else T = Universal_Real;
          else
             Get_First_Interp (N, Index, It);
-
             while Present (It.Typ) loop
-
                if Base_Type (It.Typ) = Base_Type (Standard_Integer)
                  or else It.Typ = Universal_Integer
                  or else It.Typ = Universal_Real
@@ -3251,7 +3244,6 @@ package body Sem_Res is
             --  interpretation or an integer interpretation, but not both.
 
             Get_First_Interp (N, Index, It);
-
             while Present (It.Typ) loop
                if Base_Type (It.Typ) = Base_Type (Standard_Integer) then
 
@@ -3548,9 +3540,9 @@ package body Sem_Res is
             --  return type that is compatible with the context. Analysis of
             --  the node has established that one exists.
 
-            Get_First_Interp (Subp,  I, It);
             Nam := Empty;
 
+            Get_First_Interp (Subp,  I, It);
             while Present (It.Typ) loop
                if Covers (Typ, Etype (It.Typ)) then
                   Nam := It.Typ;
@@ -3609,10 +3601,9 @@ package body Sem_Res is
 
       else
          pragma Assert (Is_Overloaded (Subp));
-         Nam := Empty;  --  We know that it will be assigned in loop below.
+         Nam := Empty;  --  We know that it will be assigned in loop below
 
          Get_First_Interp (Subp,  I, It);
-
          while Present (It.Typ) loop
             if Covers (Typ, It.Typ) then
                Nam := It.Nam;
@@ -3714,7 +3705,23 @@ package body Sem_Res is
         and then Nkind (N) /= N_Entry_Call_Statement
         and then Entry_Call_Statement (Parent (N)) = N
       then
-         Error_Msg_N ("entry call required in select statement", N);
+         if Ada_Version < Ada_05 then
+            Error_Msg_N ("entry call required in select statement", N);
+
+         --  Ada 2005 (AI-345): If a procedure_call_statement is used
+         --  for a procedure_or_entry_call, the procedure_name or pro-
+         --  cedure_prefix of the procedure_call_statement shall denote
+         --  an entry renamed by a procedure, or (a view of) a primitive
+         --  subprogram of a limited interface whose first parameter is
+         --  a controlling parameter.
+
+         elsif Nkind (N) = N_Procedure_Call_Statement
+           and then not Is_Renamed_Entry (Nam)
+           and then not Is_Controlling_Limited_Procedure (Nam)
+         then
+            Error_Msg_N
+              ("procedure or entry call required in select statement", N);
+         end if;
       end if;
 
       --  Check that this is not a call to a protected procedure or
@@ -4050,7 +4057,6 @@ package body Sem_Res is
 
       else
          C := Current_Entity (N);
-
          while Present (C) loop
             if Etype (C) = B_Typ then
                Set_Entity_With_Style_Check (N, C);
@@ -4092,6 +4098,7 @@ package body Sem_Res is
 
       if Scope (Entity (N)) /= Standard_Standard then
          T := Etype (First_Entity (Entity (N)));
+
       else
          T := Find_Unique_Type (L, R);
 
@@ -4475,7 +4482,6 @@ package body Sem_Res is
                --  the type in the same declarative part.
 
                Tsk := Next_Entity (S);
-
                while Etype (Tsk) /= S loop
                   Next_Entity (Tsk);
                end loop;
@@ -4515,9 +4521,7 @@ package body Sem_Res is
 
          begin
             Get_First_Interp (Pref, I, It);
-
             while Present (It.Typ) loop
-
                if Scope (Ent) = It.Typ then
                   Set_Etype (Pref, It.Typ);
                   exit;
@@ -4586,9 +4590,7 @@ package body Sem_Res is
 
          begin
             Get_First_Interp (Selector_Name (Entry_Name), I, It);
-
             while Present (It.Typ) loop
-
                if Covers (Typ, It.Typ) then
                   Set_Entity (Selector_Name (Entry_Name), It.Nam);
                   Set_Etype  (Entry_Name, It.Typ);
@@ -4740,7 +4742,7 @@ package body Sem_Res is
          Set_Analyzed (N, True);
 
       --  Protected functions can return on the secondary stack, in which
-      --  case we must trigger the transient scope mechanism
+      --  case we must trigger the transient scope mechanism.
 
       elsif Expander_Active
         and then Requires_Transient_Scope (Etype (Nam))
@@ -4780,7 +4782,7 @@ package body Sem_Res is
       function Find_Unique_Access_Type return Entity_Id is
          Acc : Entity_Id;
          E   : Entity_Id;
-         S   : Entity_Id := Current_Scope;
+         S   : Entity_Id;
 
       begin
          if Ekind (Etype (R)) =  E_Allocator_Type then
@@ -4793,11 +4795,10 @@ package body Sem_Res is
             return Empty;
          end if;
 
+         S := Current_Scope;
          while S /= Standard_Standard loop
             E := First_Entity (S);
-
             while Present (E) loop
-
                if Is_Type (E)
                  and then Is_Access_Type (E)
                  and then Ekind (E) /= E_Allocator_Type
@@ -4826,12 +4827,10 @@ package body Sem_Res is
       end if;
 
       if T /= Any_Type then
-
          if T = Any_String
            or else T = Any_Composite
            or else T = Any_Character
          then
-
             if T = Any_Character then
                Ambiguous_Character (L);
             else
@@ -4936,7 +4935,6 @@ package body Sem_Res is
         and then Is_Tagged_Type (Directly_Designated_Type (Etype (Prefix (N))))
       then
          null;
-
       else
          Check_Fully_Declared (Typ, N);
       end if;
@@ -4950,7 +4948,6 @@ package body Sem_Res is
          while Present (It.Typ) loop
             exit when Is_Access_Type (It.Typ)
               and then Covers (Typ, Designated_Type (It.Typ));
-
             Get_Next_Interp (I, It);
          end loop;
 
@@ -5044,12 +5041,7 @@ package body Sem_Res is
 
          begin
             Get_First_Interp (P, I, It);
-
-      --  the task has access discriminants, the designated type may be
-      --  incomplete at the point the expression is resolved. This resolution
-      --  takes place within the body of the initialization proc
             while Present (It.Typ) loop
-
                if (Is_Array_Type (It.Typ)
                      and then Covers (Typ, Component_Type (It.Typ)))
                  or else (Is_Access_Type (It.Typ)
@@ -5153,7 +5145,6 @@ package body Sem_Res is
 
    begin
       Op := Entity (N);
-
       while Scope (Op) /= Standard_Standard loop
          Op := Homonym (Op);
          pragma Assert (Present (Op));
@@ -5231,7 +5222,6 @@ package body Sem_Res is
 
    begin
       Op := Entity (N);
-
       while Scope (Op) /= Standard_Standard loop
          Op := Homonym (Op);
          pragma Assert (Present (Op));
@@ -5334,6 +5324,28 @@ package body Sem_Res is
         and then Is_Overloaded (L)
       then
          T := Etype (R);
+
+      --  Ada 2005 (AI-251): Give support to the following case:
+
+      --      type I is interface;
+      --      type T is tagged ...
+
+      --      function Test (O : in I'Class) is
+      --      begin
+      --         return O in T'Class.
+      --      end Test;
+
+      --  In this case we have nothing else to do; the membership test will be
+      --  done at run-time.
+
+      elsif Ada_Version >= Ada_05
+        and then Is_Class_Wide_Type (Etype (L))
+        and then Is_Interface (Etype (L))
+        and then Is_Class_Wide_Type (Etype (R))
+        and then not Is_Interface (Etype (R))
+      then
+         return;
+
       else
          T := Intersect_Types (L, R);
       end if;
@@ -5465,9 +5477,7 @@ package body Sem_Res is
 
                   begin
                      Get_First_Interp (Arg, I, It);
-
                      while Present (It.Nam) loop
-
                         if Base_Type (Etype (It.Nam)) = Base_Type (Typ)
                           or else Base_Type (Etype (It.Nam)) =
                             Base_Type (Component_Type (Typ))
@@ -5725,9 +5735,16 @@ package body Sem_Res is
       Resolve (Expr, Target_Typ);
 
       --  A qualified expression requires an exact match of the type,
-      --  class-wide matching is not allowed.
+      --  class-wide matching is not allowed. However, if the qualifying
+      --  type is specific and the expression has a class-wide type, it
+      --  may still be okay, since it can be the result of the expansion
+      --  of a call to a dispatching function, so we also have to check
+      --  class-wideness of the type of the expression's original node.
 
-      if Is_Class_Wide_Type (Target_Typ)
+      if (Is_Class_Wide_Type (Target_Typ)
+           or else
+             (Is_Class_Wide_Type (Etype (Expr))
+               and then Is_Class_Wide_Type (Etype (Original_Node (Expr)))))
         and then Base_Type (Etype (Expr)) /= Base_Type (Target_Typ)
       then
          Wrong_Type (Expr, Target_Typ);
@@ -5944,9 +5961,7 @@ package body Sem_Res is
 
             if Is_Record_Type (T) then
                Comp := First_Entity (T);
-
                while Present (Comp) loop
-
                   if Chars (Comp) = Chars (S)
                     and then Covers (Etype (Comp), Typ)
                   then
@@ -5974,7 +5989,6 @@ package body Sem_Res is
                               --  Find the component with the right name.
 
                               Comp1 := First_Entity (It1.Typ);
-
                               while Present (Comp1)
                                 and then Chars (Comp1) /= Chars (S)
                               loop
@@ -6118,9 +6132,7 @@ package body Sem_Res is
 
          begin
             Get_First_Interp (P, I,  It);
-
             while Present (It.Typ) loop
-
                if (Is_Array_Type (It.Typ)
                     and then Covers (Typ,  It.Typ))
                  or else (Is_Access_Type (It.Typ)
@@ -6630,6 +6642,10 @@ package body Sem_Res is
          end if;
 
          if Is_Interface (Target_Type) then
+            if Is_Access_Type (Opnd_Type) then
+               Opnd_Type := Directly_Designated_Type (Opnd_Type);
+            end if;
+
             if Is_Class_Wide_Type (Opnd_Type) then
                Opnd_Type := Etype (Opnd_Type);
             end if;
@@ -6638,19 +6654,25 @@ package body Sem_Res is
                      (Typ   => Opnd_Type,
                       Iface => Target_Type)
             then
-               if Nkind (Operand) = N_Attribute_Reference then
-                  Error_Msg_Name_1 := Chars (Prefix (Operand));
-               else
-                  Error_Msg_Name_1 := Chars (Operand);
-               end if;
-
-               Error_Msg_Name_2 := Chars (Target_Type);
                Error_Msg_NE
-                 ("(Ada 2005) % does not implement interface %",
+                 ("(Ada 2005) does not implement interface }",
                   Operand, Target_Type);
 
             else
-               Expand_Interface_Conversion (N);
+               --  If a conversion to an interface type appears as an actual in
+               --  a source call, it will be expanded when the enclosing call
+               --  itself is examined in Expand_Interface_Formals. Otherwise,
+               --  generate the proper conversion code now, using the tag of
+               --  the interface.
+
+               if (Nkind (Parent (N)) = N_Procedure_Call_Statement
+                     or else Nkind (Parent (N)) = N_Function_Call)
+                 and then Comes_From_Source (N)
+               then
+                  null;
+               else
+                  Expand_Interface_Conversion (N);
+               end if;
             end if;
          end if;
       end if;
@@ -7000,7 +7022,6 @@ package body Sem_Res is
       Scop := Current_Scope;
       while Scop /= Standard_Standard loop
          T2 := First_Entity (Scop);
-
          while Present (T2) loop
             if Is_Fixed_Point_Type (T2)
               and then Current_Entity (T2) = T2
@@ -7027,7 +7048,6 @@ package body Sem_Res is
          if Nkind (Item) = N_With_Clause then
             Scop := Entity (Name (Item));
             T2 := First_Entity (Scop);
-
             while Present (T2) loop
                if Is_Fixed_Point_Type (T2)
                  and then Scope (Base_Type (T2)) = Scop
@@ -7160,11 +7180,23 @@ package body Sem_Res is
             --  in this context, but which cannot be removed by type checking,
             --  because the context does not impose a type.
 
+            --  When compiling for VMS, spurious ambiguities can be produced
+            --  when arithmetic operations have a literal operand and return
+            --  System.Address or a descendant of it. These ambiguities are
+            --  otherwise resolved by the context, but for conversions there
+            --  is no context type and the removal of the spurious operations
+            --  must be done explicitly here.
+
             Get_First_Interp (Operand, I, It);
 
             while Present (It.Typ) loop
-
                if It.Typ = Standard_Void_Type then
+                  Remove_Interp (I);
+               end if;
+
+               if Present (System_Aux_Id)
+                 and then Is_Descendent_Of_Address (It.Typ)
+               then
                   Remove_Interp (I);
                end if;
 
@@ -7557,10 +7589,10 @@ package body Sem_Res is
                O_Gen : constant Node_Id :=
                          Enclosing_Generic_Body (Opnd_Type);
 
-               T_Gen : Node_Id :=
-                         Enclosing_Generic_Body (Target_Type);
+               T_Gen : Node_Id;
 
             begin
+               T_Gen := Enclosing_Generic_Body (Target_Type);
                while Present (T_Gen) and then T_Gen /= O_Gen loop
                   T_Gen := Enclosing_Generic_Body (T_Gen);
                end loop;
