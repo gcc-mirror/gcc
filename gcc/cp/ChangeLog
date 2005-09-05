@@ -1,3 +1,10 @@
+2005-09-05  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21440
+	* semantics.c (finish_stmt_expr_expr): Add an explicit
+	initialization to the last statement in the statement-expression.
+	* (finish_stmt_expr): Adjust accordingly.
+
 2005-09-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23699
