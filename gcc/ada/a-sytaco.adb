@@ -31,11 +31,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Warnings (Off);
---  Allow withing of non-Preelaborated units in Ada 2005 mode where this
---  package will be categorized as Preelaborate. See AI-362 for details.
---  It is safe in the context of the run-time to violate the rules!
-
 with System.Tasking;
 --  Used for Detect_Blocking
 --           Self
@@ -50,8 +45,6 @@ with System.Task_Primitives.Operations;
 --           Set_False
 --           Set_True
 --           Suspend_Until_True
-
-pragma Warnings (On);
 
 package body Ada.Synchronous_Task_Control is
 

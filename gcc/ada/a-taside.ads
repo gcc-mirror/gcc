@@ -35,25 +35,18 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Warnings (Off);
---  Allow withing of non-Preelaborated units in Ada 2005 mode where this
---  package will be categorized as Preelaborate. See AI-362 for details.
---  It is safe in the context of the run-time to violate the rules!
-
 with System;
 with System.Tasking;
 
-pragma Warnings (On);
-
 package Ada.Task_Identification is
-pragma Preelaborate_05 (Task_Identification);
---  In accordance with Ada 2005 AI-362
+   pragma Preelaborate_05;
+   --  In accordance with Ada 2005 AI-362
 
    type Task_Id is private;
 
    Null_Task_Id : constant Task_Id;
 
-   function  "=" (Left, Right : Task_Id) return Boolean;
+   function "=" (Left, Right : Task_Id) return Boolean;
    pragma Inline ("=");
 
    function Image (T : Task_Id) return String;
@@ -63,7 +56,7 @@ pragma Preelaborate_05 (Task_Identification);
 
    procedure Abort_Task (T : Task_Id);
    pragma Inline (Abort_Task);
-   --  Note: parameter is mode IN, not IN OUT, per AI-00101.
+   --  Note: parameter is mode IN, not IN OUT, per AI-00101
 
    function Is_Terminated (T : Task_Id) return Boolean;
    pragma Inline (Is_Terminated);
@@ -75,13 +68,6 @@ private
 
    type Task_Id is new System.Tasking.Task_Id;
 
-   pragma Warnings (Off);
-   --  Allow non-static constant in Ada 2005 mode where this package will be
-   --  categorized as Preelaborate. See AI-362 for details. It is safe in the
-   --  context of the run-time to violate the rules!
-
-   Null_Task_Id : constant Task_Id := Task_Id (System.Tasking.Null_Task);
-
-   pragma Warnings (On);
+   Null_Task_Id : constant Task_Id := null;
 
 end Ada.Task_Identification;

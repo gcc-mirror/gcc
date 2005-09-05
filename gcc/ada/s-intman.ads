@@ -38,13 +38,6 @@
 --  Unlike the original design, System.Interrupt_Management can only be used
 --  for tasking systems.
 
---  PLEASE DO NOT remove the Elaborate_Body pragma from this package.
---  Elaboration of this package should happen early, as most other
---  initializations depend on it. Forcing immediate elaboration of the body
---  also helps to enforce the design assumption that this is a second-level
---  package, just one level above System.OS_Interface with no
---  cross-dependencies.
-
 --  PLEASE DO NOT put any subprogram declarations with arguments of type
 --  Interrupt_ID into the visible part of this package. The type Interrupt_ID
 --  is used to derive the type in Ada.Interrupts, and adding more operations
@@ -59,8 +52,7 @@ with Interfaces.C;
 --  used for int
 
 package System.Interrupt_Management is
-
-   pragma Elaborate_Body;
+   pragma Preelaborate;
 
    type Interrupt_Mask is limited private;
 
@@ -102,6 +94,11 @@ package System.Interrupt_Management is
    --  to be attached to a user handler. The possible reasons are many. For
    --  example, it may be mapped to an exception used to implement task abort,
    --  or used to implement time delays.
+
+   procedure Initialize;
+   --  Initialize the various variables defined in this package.
+   --  This procedure must be called before accessing any object from this
+   --  package, and can be called multiple times.
 
 private
    type Interrupt_Mask is new System.OS_Interface.sigset_t;

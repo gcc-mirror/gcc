@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2004, Free Software Foundation, Inc.           --
+--          Copyright (C) 2004-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,9 +47,6 @@ with System.Task_Primitives.Operations;
 with System.Tasking;
 --  Used for Task_Id
 
-with Ada.Exceptions;
---  Used for Raise_Exception
-
 package body System.Soft_Links.Tasking is
 
    package STPO renames System.Task_Primitives.Operations;
@@ -75,10 +72,6 @@ package body System.Soft_Links.Tasking is
    procedure Set_Sec_Stack_Addr (Addr : Address);
    --  Get/Set location of current task's secondary stack
 
-   function  Get_Machine_State_Addr return Address;
-   procedure Set_Machine_State_Addr (Addr : Address);
-   --  Get/Set the address for storing the current task's machine state
-
    function Get_Current_Excep return SSL.EOA;
    --  Task-safe version of SSL.Get_Current_Excep
 
@@ -99,11 +92,6 @@ package body System.Soft_Links.Tasking is
       return STPO.Self.Common.Compiler_Data.Jmpbuf_Address;
    end Get_Jmpbuf_Address;
 
-   function Get_Machine_State_Addr return Address is
-   begin
-      return STPO.Self.Common.Compiler_Data.Machine_State_Addr;
-   end Get_Machine_State_Addr;
-
    function Get_Sec_Stack_Addr return  Address is
    begin
       return STPO.Self.Common.Compiler_Data.Sec_Stack_Addr;
@@ -117,11 +105,6 @@ package body System.Soft_Links.Tasking is
    begin
       STPO.Self.Common.Compiler_Data.Jmpbuf_Address := Addr;
    end Set_Jmpbuf_Address;
-
-   procedure Set_Machine_State_Addr (Addr : Address) is
-   begin
-      STPO.Self.Common.Compiler_Data.Machine_State_Addr := Addr;
-   end Set_Machine_State_Addr;
 
    procedure Set_Sec_Stack_Addr (Addr : Address) is
    begin
@@ -143,12 +126,12 @@ package body System.Soft_Links.Tasking is
       if System.Tasking.Detect_Blocking
         and then Self_Id.Common.Protected_Action_Nesting > 0
       then
-         Ada.Exceptions.Raise_Exception
-           (Program_Error'Identity, "potentially blocking operation");
+         raise Program_Error with "potentially blocking operation";
       else
+         Abort_Defer.all;
          STPO.Timed_Delay (Self_Id, Time, Mode);
+         Abort_Undefer.all;
       end if;
-
    end Timed_Delay_T;
 
    -----------------------------
@@ -172,8 +155,6 @@ package body System.Soft_Links.Tasking is
          SSL.Set_Jmpbuf_Address     := Set_Jmpbuf_Address'Access;
          SSL.Get_Sec_Stack_Addr     := Get_Sec_Stack_Addr'Access;
          SSL.Set_Sec_Stack_Addr     := Set_Sec_Stack_Addr'Access;
-         SSL.Get_Machine_State_Addr := Get_Machine_State_Addr'Access;
-         SSL.Set_Machine_State_Addr := Set_Machine_State_Addr'Access;
          SSL.Get_Current_Excep      := Get_Current_Excep'Access;
          SSL.Timed_Delay            := Timed_Delay_T'Access;
 
@@ -182,7 +163,6 @@ package body System.Soft_Links.Tasking is
 
          SSL.Set_Sec_Stack_Addr     (SSL.Get_Sec_Stack_Addr_NT);
          SSL.Set_Jmpbuf_Address     (SSL.Get_Jmpbuf_Address_NT);
-         SSL.Set_Machine_State_Addr (SSL.Get_Machine_State_Addr_NT);
       end if;
    end Init_Tasking_Soft_Links;
 

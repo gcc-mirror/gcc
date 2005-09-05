@@ -505,6 +505,8 @@ package body System.Tasking.Restricted.Stages is
 
    procedure Init_RTS is
    begin
+      Tasking.Initialize;
+
       --  Initialize lock used to implement mutual exclusion between all tasks
 
       STPO.Initialize_Lock (Global_Task_Lock'Access, STPO.Global_Task_Level);

@@ -45,13 +45,21 @@ package body System.OS_Primitives is
    pragma Import (C, Get_GMToff, "get_gmtoff");
    --  Get the offset from GMT for this timezone
 
-   VMS_Epoch_Offset : constant Long_Integer :=
-                        10_000_000 *
-                          (3_506_716_800 + Long_Integer (Get_GMToff));
+   function VMS_Epoch_Offset return Long_Integer;
+   pragma Inline (VMS_Epoch_Offset);
    --  The offset between the Unix Epoch and the VMS Epoch
 
    subtype Cond_Value_Type is System.Aux_DEC.Unsigned_Longword;
    --  Condition Value return type
+
+   ----------------------
+   -- VMS_Epoch_Offset --
+   ----------------------
+
+   function VMS_Epoch_Offset return Long_Integer is
+   begin
+      return 10_000_000 * (3_506_716_800 + Long_Integer (Get_GMToff));
+   end VMS_Epoch_Offset;
 
    ----------------
    -- Sys_Schdwk --

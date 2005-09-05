@@ -40,10 +40,6 @@ pragma Polling (Off);
 --  Turn off polling, we do not want ATC polling to take place during
 --  tasking operations. It causes infinite loops and other problems.
 
-with System.Tasking;
---  used for Ada_Task_Control_Block
---           Task_Id
-
 with System.Error_Reporting;
 --  used for Shutdown
 
@@ -54,9 +50,6 @@ package body System.Task_Primitives.Operations is
 
    pragma Warnings (Off);
    --  Turn off warnings since so many unreferenced parameters
-
-   No_Tasking : Boolean;
-   --  Comment required here ???
 
    ----------------
    -- Abort_Task --
@@ -193,8 +186,11 @@ package body System.Task_Primitives.Operations is
    ----------------
 
    procedure Initialize (Environment_Task : Task_Id) is
+      No_Tasking : Boolean;
    begin
-      null;
+      No_Tasking :=
+        System.Error_Reporting.Shutdown
+          ("Tasking not implemented on this configuration");
    end Initialize;
 
    procedure Initialize (S : in out Suspension_Object) is
@@ -479,11 +475,4 @@ package body System.Task_Primitives.Operations is
       null;
    end Yield;
 
-begin
-   --  Can't raise an exception because target independent packages try to
-   --  do an Abort_Defer, which gets a memory fault.
-
-   No_Tasking :=
-     System.Error_Reporting.Shutdown
-       ("Tasking not implemented on this configuration");
 end System.Task_Primitives.Operations;

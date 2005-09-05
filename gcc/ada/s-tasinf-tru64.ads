@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                           (Compiler Interface)                           --
 --                                                                          --
---         Copyright (C) 1998-2003 Free Software Foundation, Inc.           --
+--         Copyright (C) 1998-2005 Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,6 +45,7 @@
 --  This is a DEC Unix 4.0d version of this package.
 
 package System.Task_Info is
+   pragma Preelaborate;
    pragma Elaborate_Body;
    --  To ensure that a body is allowed
 

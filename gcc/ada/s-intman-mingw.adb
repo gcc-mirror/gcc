@@ -33,34 +33,29 @@
 
 --  This is the NT version of this package
 
---  This file performs the system-dependent translation between machine
---  exceptions and the Ada exceptions, if any, that should be raised when they
---  occur.
-
---  PLEASE DO NOT add any dependences on other packages.
---  This package is designed to work with or without tasking support.
-
---  See the other warnings in the package specification before making any
---  modifications to this file.
-
---  Make a careful study of all signals available under the OS, to see which
---  need to be reserved, kept always unmasked, or kept always unmasked. Be on
---  the lookout for special signals that may be used by the thread library.
-
 with System.OS_Interface; use System.OS_Interface;
 
 package body System.Interrupt_Management is
-begin
-   --  "Reserve" all the interrupts, except those that are explicitely defined
 
-   for J in Interrupt_ID'Range loop
-      Reserve (J) := True;
-   end loop;
+   ----------------
+   -- Initialize --
+   ----------------
 
-   Reserve (SIGINT)  := False;
-   Reserve (SIGILL)  := False;
-   Reserve (SIGABRT) := False;
-   Reserve (SIGFPE)  := False;
-   Reserve (SIGSEGV) := False;
-   Reserve (SIGTERM) := False;
+   procedure Initialize is
+   begin
+      --  "Reserve" all the interrupts, except those that are explicitely
+      --  defined.
+
+      for J in Interrupt_ID'Range loop
+         Reserve (J) := True;
+      end loop;
+
+      Reserve (SIGINT)  := False;
+      Reserve (SIGILL)  := False;
+      Reserve (SIGABRT) := False;
+      Reserve (SIGFPE)  := False;
+      Reserve (SIGSEGV) := False;
+      Reserve (SIGTERM) := False;
+   end Initialize;
+
 end System.Interrupt_Management;

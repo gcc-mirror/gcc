@@ -846,8 +846,6 @@ package body System.Tasking.Stages is
       SSL.Set_Jmpbuf_Address := SSL.Set_Jmpbuf_Address_NT'Access;
       SSL.Get_Sec_Stack_Addr := SSL.Get_Sec_Stack_Addr_NT'Access;
       SSL.Set_Sec_Stack_Addr := SSL.Set_Sec_Stack_Addr_NT'Access;
-      SSL.Get_Exc_Stack_Addr := SSL.Get_Exc_Stack_Addr_NT'Access;
-      SSL.Set_Exc_Stack_Addr := SSL.Set_Exc_Stack_Addr_NT'Access;
       SSL.Check_Abort_Status := SSL.Check_Abort_Status_NT'Access;
       SSL.Get_Stack_Info     := SSL.Get_Stack_Info_NT'Access;
 
@@ -1135,7 +1133,6 @@ package body System.Tasking.Stages is
       procedure To_Stderr (S : String);
       pragma Import (Ada, To_Stderr, "__gnat_to_stderr");
 
-      use System.Task_Info;
       use System.Soft_Links;
       use System.Standard_Library;
 

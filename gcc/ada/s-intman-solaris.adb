@@ -33,9 +33,6 @@
 
 --  This is a Solaris version of this package.
 
---  PLEASE DO NOT add any dependences on other packages.
---  This package is designed to work with or without tasking support.
-
 --  Make a careful study of all signals available under the OS,
 --  to see which need to be reserved, kept always unmasked,
 --  or kept always unmasked.
@@ -63,6 +60,21 @@ package body System.Interrupt_Management is
    pragma Import
      (C, Unreserve_All_Interrupts, "__gl_unreserve_all_interrupts");
 
+   function State (Int : Interrupt_ID) return Character;
+   pragma Import (C, State, "__gnat_get_interrupt_state");
+   --  Get interrupt state.  Defined in init.c
+   --  The input argument is the interrupt number,
+   --  and the result is one of the following:
+
+   User    : constant Character := 'u';
+   Runtime : constant Character := 'r';
+   Default : constant Character := 's';
+   --    'n'   this interrupt not set by any Interrupt_State pragma
+   --    'u'   Interrupt_State pragma set state to User
+   --    'r'   Interrupt_State pragma set state to Runtime
+   --    's'   Interrupt_State pragma set state to System (use "default"
+   --           system handler)
+
    ----------------------
    -- Notify_Exception --
    ----------------------
@@ -86,8 +98,7 @@ package body System.Interrupt_Management is
       info    : access siginfo_t;
       context : access ucontext_t)
    is
-      pragma Warnings (Off, context);
-
+      pragma Unreferenced (context);
    begin
       --  Check that treatment of exception propagation here
       --  is consistent with treatment of the abort signal in
@@ -121,33 +132,25 @@ package body System.Interrupt_Management is
       end case;
    end Notify_Exception;
 
-----------------------------
--- Package Initialization --
-----------------------------
+   ----------------
+   -- Initialize --
+   ----------------
 
-begin
-   declare
+   Initialized : Boolean := False;
+
+   procedure Initialize is
       act     : aliased struct_sigaction;
       old_act : aliased struct_sigaction;
       mask    : aliased sigset_t;
       Result  : Interfaces.C.int;
 
-      function State (Int : Interrupt_ID) return Character;
-      pragma Import (C, State, "__gnat_get_interrupt_state");
-      --  Get interrupt state.  Defined in a-init.c
-      --  The input argument is the interrupt number,
-      --  and the result is one of the following:
-      --
-      User    : constant Character := 'u';
-      Runtime : constant Character := 'r';
-      Default : constant Character := 's';
-      --    'n'   this interrupt not set by any Interrupt_State pragma
-      --    'u'   Interrupt_State pragma set state to User
-      --    'r'   Interrupt_State pragma set state to Runtime
-      --    's'   Interrupt_State pragma set state to System (use "default"
-      --           system handler)
-
    begin
+      if Initialized then
+         return;
+      end if;
+
+      Initialized := True;
+
       --  Need to call pthread_init very early because it is doing signal
       --  initializations.
 
@@ -248,5 +251,6 @@ begin
       --  mark it as reserved.
 
       Reserve (0) := True;
-   end;
+   end Initialize;
+
 end System.Interrupt_Management;

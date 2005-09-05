@@ -158,4 +158,13 @@ package body System.OS_Primitives is
       end if;
    end Timed_Delay;
 
+   ----------------
+   -- Initialize --
+   ----------------
+
+   procedure Initialize is
+   begin
+      null;
+   end Initialize;
+
 end System.OS_Primitives;

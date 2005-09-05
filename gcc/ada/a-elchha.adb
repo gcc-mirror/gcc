@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2003-2004 Free Software Foundation, Inc.         --
+--           Copyright (C) 2003-2005 Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -36,6 +36,8 @@
 ------------------------------------------------------------------------------
 
 --  Default version for most targets
+
+with System.Standard_Library; use System.Standard_Library;
 
 procedure Ada.Exceptions.Last_Chance_Handler
   (Except : Exception_Occurrence)
@@ -88,7 +90,7 @@ begin
    --  really an exception at all. We recognize this by the fact that
    --  it is the only exception whose name starts with underscore.
 
-   if Except.Id.Full_Name.all (1) = '_' then
+   if To_Ptr (Except.Id.Full_Name) (1) = '_' then
       To_Stderr (Nline);
       To_Stderr ("Execution terminated by abort of environment task");
       To_Stderr (Nline);
@@ -100,7 +102,8 @@ begin
    elsif Except.Num_Tracebacks = 0 then
       To_Stderr (Nline);
       To_Stderr ("raised ");
-      To_Stderr (Except.Id.Full_Name.all (1 .. Except.Id.Name_Length - 1));
+      To_Stderr
+        (To_Ptr (Except.Id.Full_Name) (1 .. Except.Id.Name_Length - 1));
 
       if Exception_Message_Length (Except) /= 0 then
          To_Stderr (" : ");

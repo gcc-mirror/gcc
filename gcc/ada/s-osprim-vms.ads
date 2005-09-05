@@ -35,11 +35,12 @@
 --  delays in non tasking applications on Alpha/VMS
 
 --  The choice of the real clock/delay implementation (depending on whether
---  tasking is involved or not) is done via soft links (see s-tasoli.ads)
+--  tasking is involved or not) is done via soft links (see s-soflin.ads)
 
 --  NEVER add any dependency to tasking packages here
 
 package System.OS_Primitives is
+   pragma Preelaborate;
 
    subtype OS_Time is Long_Integer;
    --  System time on VMS is used for performance reasons.

@@ -34,9 +34,6 @@
 
 --  This is a SGI Pthread version of this package.
 
---  PLEASE DO NOT add any dependences on other packages.
---  This package is designed to work with or without tasking support.
-
 --  Make a careful study of all signals available under the OS,
 --  to see which need to be reserved, kept always unmasked,
 --  or kept always unmasked.
@@ -63,27 +60,36 @@ package body System.Interrupt_Management is
    pragma Import
      (C, Unreserve_All_Interrupts, "__gl_unreserve_all_interrupts");
 
-   use type Interfaces.C.int;
+   function State (Int : Interrupt_ID) return Character;
+   pragma Import (C, State, "__gnat_get_interrupt_state");
 
-begin
-   declare
-      function State (Int : Interrupt_ID) return Character;
-      pragma Import (C, State, "__gnat_get_interrupt_state");
+   --  Get interrupt state.  Defined in a-init.c
+   --  The input argument is the interrupt number,
+   --  and the result is one of the following:
 
-      --  Get interrupt state.  Defined in a-init.c
-      --  The input argument is the interrupt number,
-      --  and the result is one of the following:
+   User    : constant Character := 'u';
+   Runtime : constant Character := 'r';
+   Default : constant Character := 's';
+   --    'n'   this interrupt not set by any Interrupt_State pragma
+   --    'u'   Interrupt_State pragma set state to User
+   --    'r'   Interrupt_State pragma set state to Runtime
+   --    's'   Interrupt_State pragma set state to System (use "default"
+   --           system handler)
 
-      User    : constant Character := 'u';
-      Runtime : constant Character := 'r';
-      Default : constant Character := 's';
-      --    'n'   this interrupt not set by any Interrupt_State pragma
-      --    'u'   Interrupt_State pragma set state to User
-      --    'r'   Interrupt_State pragma set state to Runtime
-      --    's'   Interrupt_State pragma set state to System (use "default"
-      --           system handler)
+   ----------------
+   -- Initialize --
+   ----------------
 
+   Initialized : Boolean := False;
+
+   procedure Initialize is
+      use type Interfaces.C.int;
    begin
+      if Initialized then
+         return;
+      end if;
+
+      Initialized := True;
       Abort_Task_Interrupt := SIGABRT;
 
       --  Change this if you want to use another signal for task abort.
@@ -137,5 +143,6 @@ begin
       --  mark it as reserved.
 
       Reserve (0) := True;
-   end;
+   end Initialize;
+
 end System.Interrupt_Management;

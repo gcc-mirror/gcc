@@ -241,7 +241,9 @@ package body System.Tasking.Protected_Objects is
    end Unlock;
 
 begin
-   --  Ensure that tasking soft links are set when using protected objects
+   --  Ensure that tasking is initialized, as well as tasking soft links
+   --  when using protected objects.
 
+   Tasking.Initialize;
    System.Soft_Links.Tasking.Init_Tasking_Soft_Links;
 end System.Tasking.Protected_Objects;

@@ -32,7 +32,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a LynxOS version of this package, derived from 7staspri.ads
+--  This is a LynxOS version of this package, derived from s-taspri-posix.ads
 
 pragma Polling (Off);
 --  Turn off polling, we do not want ATC polling to take place during
@@ -44,6 +44,7 @@ with System.OS_Interface;
 --           pthread_t
 
 package System.Task_Primitives is
+   pragma Preelaborate;
 
    type Lock is limited private;
    --  Should be used for implementation of protected objects

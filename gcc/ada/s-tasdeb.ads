@@ -38,6 +38,7 @@ with System.Tasking;
 with System.OS_Interface;
 
 package System.Tasking.Debug is
+   pragma Preelaborate;
 
    ------------------------------------------
    -- Application-level debugging routines --
@@ -66,7 +67,7 @@ package System.Tasking.Debug is
    -- General GDB support --
    -------------------------
 
-   Known_Tasks : array (0 .. 999) of Task_Id;
+   Known_Tasks : array (0 .. 999) of Task_Id := (others => null);
    --  Global array of tasks read by gdb, and updated by
    --  Create_Task and Finalize_TCB
 

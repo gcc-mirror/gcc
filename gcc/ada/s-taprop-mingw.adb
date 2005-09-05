@@ -43,6 +43,9 @@ pragma Polling (Off);
 with System.Tasking.Debug;
 --  used for Known_Tasks
 
+with System.OS_Primitives;
+--  used for Delay_Modes
+
 with Interfaces.C;
 --  used for int
 --           size_t
@@ -55,22 +58,6 @@ with System.OS_Interface;
 
 with System.Parameters;
 --  used for Size_Type
-
-with System.Tasking;
---  used for Ada_Task_Control_Block
---           Task_Id
-
-with System.Soft_Links;
---  used for Defer/Undefer_Abort
---       to initialize TSD for a C thread, in function Self
-
---  Note that we do not use System.Tasking.Initialization directly since
---  this is a higher level package that we shouldn't depend on. For example
---  when using the restricted run time, it is replaced by
---  System.Tasking.Restricted.Stages.
-
-with System.OS_Primitives;
---  used for Delay_Modes
 
 with System.Task_Info;
 --  used for Unspecified_Task_Info
@@ -92,8 +79,6 @@ package body System.Task_Primitives.Operations is
    --  permit to have more than 30 tasks running at the same time. Note that
    --  we set the stack size for non tasking programs on System unit.
 
-   package SSL renames System.Soft_Links;
-
    ----------------
    -- Local Data --
    ----------------
@@ -111,9 +96,6 @@ package body System.Task_Primitives.Operations is
 
    Dispatching_Policy : Character;
    pragma Import (C, Dispatching_Policy, "__gl_task_dispatching_policy");
-
-   FIFO_Within_Priorities : constant Boolean := Dispatching_Policy = 'F';
-   --  Indicates whether FIFO_Within_Priorities is set
 
    Foreign_Task_Elaborated : aliased Boolean := True;
    --  Used to identified fake tasks (i.e., non-Ada Threads)
@@ -595,12 +577,6 @@ package body System.Task_Primitives.Operations is
       Timedout   : Boolean;
 
    begin
-      --  Only the little window between deferring abort and
-      --  locking Self_ID is the reason we need to
-      --  check for pending abort and priority change below!
-
-      SSL.Abort_Defer.all;
-
       if Single_Lock then
          Lock_RTS;
       end if;
@@ -651,7 +627,6 @@ package body System.Task_Primitives.Operations is
       end if;
 
       Yield;
-      SSL.Abort_Undefer.all;
    end Timed_Delay;
 
    ------------
@@ -702,7 +677,7 @@ package body System.Task_Primitives.Operations is
         (T.Common.LL.Thread, Interfaces.C.int (Underlying_Priorities (Prio)));
       pragma Assert (Res = True);
 
-      if FIFO_Within_Priorities then
+      if Dispatching_Policy = 'F' then
 
          --  Annex D requirement [RM D.2.2 par. 9]:
          --    If the task drops its priority due to the loss of inherited
@@ -883,7 +858,7 @@ package body System.Task_Primitives.Operations is
 
       Set_Priority (T, Priority);
 
-      if Time_Slice_Val = 0 or else FIFO_Within_Priorities then
+      if Time_Slice_Val = 0 or else Dispatching_Policy = 'F' then
          --  Here we need Annex E semantics so we disable the NT priority
          --  boost. A priority boost is temporarily given by the system to a
          --  thread when it is taken out of a wait state.
@@ -997,10 +972,11 @@ package body System.Task_Primitives.Operations is
 
    begin
       Environment_Task_Id := Environment_Task;
+      OS_Primitives.Initialize;
 
-      if Time_Slice_Val = 0 or else FIFO_Within_Priorities then
+      if Time_Slice_Val = 0 or else Dispatching_Policy = 'F' then
 
-         --  Here we need Annex E semantics, switch the current process to the
+         --  Here we need Annex D semantics, switch the current process to the
          --  High_Priority_Class.
 
          Discard :=

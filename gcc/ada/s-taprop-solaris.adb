@@ -43,43 +43,29 @@ pragma Polling (Off);
 with System.Tasking.Debug;
 --  used for Known_Tasks
 
-with Ada.Exceptions;
---  used for Raise_Exception
-
-with GNAT.OS_Lib;
---  used for String_Access, Getenv
-
-with Interfaces.C;
---  used for int
---           size_t
-
 with System.Interrupt_Management;
 --  used for Keep_Unmasked
 --           Abort_Task_Interrupt
 --           Interrupt_ID
 
+with System.OS_Primitives;
+--  used for Delay_Modes
+
+pragma Warnings (Off);
+with GNAT.OS_Lib;
+--  used for String_Access, Getenv
+
+pragma Warnings (On);
+
+with Interfaces.C;
+--  used for int
+--           size_t
+
 with System.Parameters;
 --  used for Size_Type
 
-with System.Tasking;
---  used for Ada_Task_Control_Block
---           Task_Id
---           ATCB components and types
-
 with System.Task_Info;
 --  to initialize Task_Info for a C thread, in function Self
-
-with System.Soft_Links;
---  used for Defer/Undefer_Abort
---       to initialize TSD for a C thread, in function Self
-
---  Note that we do not use System.Tasking.Initialization directly since
---  this is a higher level package that we shouldn't depend on. For example
---  when using the restricted run time, it is replaced by
---  System.Tasking.Restricted.Stages.
-
-with System.OS_Primitives;
---  used for Delay_Modes
 
 with Unchecked_Deallocation;
 
@@ -90,10 +76,7 @@ package body System.Task_Primitives.Operations is
    use Interfaces.C;
    use System.OS_Interface;
    use System.Parameters;
-   use Ada.Exceptions;
    use System.OS_Primitives;
-
-   package SSL renames System.Soft_Links;
 
    ----------------
    -- Local Data --
@@ -280,7 +263,6 @@ package body System.Task_Primitives.Operations is
       Old_Set : aliased sigset_t;
 
       Result : Interfaces.C.int;
-      pragma Unreferenced (Result);
 
    begin
       --  It is not safe to raise an exception when using ZCX and the GCC
@@ -425,11 +407,73 @@ package body System.Task_Primitives.Operations is
    begin
       Environment_Task_Id := Environment_Task;
 
-      --  This is done in Enter_Task, but this is too late for the
+      Interrupt_Management.Initialize;
+
+      --  Prepare the set of signals that should unblocked in all tasks
+
+      Result := sigemptyset (Unblocked_Signal_Mask'Access);
+      pragma Assert (Result = 0);
+
+      for J in Interrupt_Management.Interrupt_ID loop
+         if System.Interrupt_Management.Keep_Unmasked (J) then
+            Result := sigaddset (Unblocked_Signal_Mask'Access, Signal (J));
+            pragma Assert (Result = 0);
+         end if;
+      end loop;
+
+      if Dispatching_Policy = 'F' then
+         declare
+            Result      : Interfaces.C.long;
+            Class_Info  : aliased struct_pcinfo;
+            Secs, Nsecs : Interfaces.C.long;
+
+         begin
+            --  If a pragma Time_Slice is specified, takes the value in account
+
+            if Time_Slice_Val > 0 then
+               --  Convert Time_Slice_Val (microseconds) into seconds and
+               --  nanoseconds
+
+               Secs := Time_Slice_Val / 1_000_000;
+               Nsecs := (Time_Slice_Val rem 1_000_000) * 1_000;
+
+            --  Otherwise, default to no time slicing (i.e run until blocked)
+
+            else
+               Secs := RT_TQINF;
+               Nsecs := RT_TQINF;
+            end if;
+
+            --  Get the real time class id.
+
+            Class_Info.pc_clname (1) := 'R';
+            Class_Info.pc_clname (2) := 'T';
+            Class_Info.pc_clname (3) := ASCII.NUL;
+
+            Result := priocntl (PC_VERSION, P_LWPID, P_MYID, PC_GETCID,
+              Class_Info'Address);
+
+            --  Request the real time class
+
+            Prio_Param.pc_cid := Class_Info.pc_cid;
+            Prio_Param.rt_pri := pri_t (Class_Info.rt_maxpri);
+            Prio_Param.rt_tqsecs := Secs;
+            Prio_Param.rt_tqnsecs := Nsecs;
+
+            Result := priocntl (PC_VERSION, P_LWPID, P_MYID, PC_SETPARMS,
+              Prio_Param'Address);
+
+            Using_Real_Time_Class := Result /= -1;
+         end;
+      end if;
+
+      Specific.Initialize (Environment_Task);
+
+      --  The following is done in Enter_Task, but this is too late for the
       --  Environment Task, since we need to call Self in Check_Locks when
       --  the run time is compiled with assertions on.
 
-      Specific.Initialize (Environment_Task);
+      Specific.Set (Environment_Task);
 
       --  Initialize the lock used to synchronize chain of all ATCBs.
 
@@ -496,7 +540,7 @@ package body System.Task_Primitives.Operations is
       pragma Assert (Result = 0 or else Result = ENOMEM);
 
       if Result = ENOMEM then
-         Raise_Exception (Storage_Error'Identity, "Failed to allocate a lock");
+         raise Storage_Error with "Failed to allocate a lock";
       end if;
    end Initialize_Lock;
 
@@ -513,7 +557,7 @@ package body System.Task_Primitives.Operations is
       pragma Assert (Result = 0 or else Result = ENOMEM);
 
       if Result = ENOMEM then
-         Raise_Exception (Storage_Error'Identity, "Failed to allocate a lock");
+         raise Storage_Error with "Failed to allocate a lock";
       end if;
    end Initialize_Lock;
 
@@ -1244,12 +1288,6 @@ package body System.Task_Primitives.Operations is
       Yielded    : Boolean := False;
 
    begin
-      --  Only the little window between deferring abort and
-      --  locking Self_ID is the reason we need to
-      --  check for pending abort and priority change below!
-
-      SSL.Abort_Defer.all;
-
       if Single_Lock then
          Lock_RTS;
       end if;
@@ -1310,8 +1348,6 @@ package body System.Task_Primitives.Operations is
       if not Yielded then
          thr_yield;
       end if;
-
-      SSL.Abort_Undefer.all;
    end Timed_Delay;
 
    ------------
@@ -1643,7 +1679,7 @@ package body System.Task_Primitives.Operations is
       pragma Assert (Result = 0 or else Result = ENOMEM);
 
       if Result = ENOMEM then
-         Raise_Exception (Storage_Error'Identity, "Failed to allocate a lock");
+         raise Storage_Error with "Failed to allocate a lock";
       end if;
 
       --  Initialize internal condition variable
@@ -1872,75 +1908,4 @@ package body System.Task_Primitives.Operations is
       end if;
    end Resume_Task;
 
---  Package elaboration
-
-begin
-   declare
-      Result : Interfaces.C.int;
-   begin
-      --  Prepare the set of signals that should unblocked in all tasks
-
-      Result := sigemptyset (Unblocked_Signal_Mask'Access);
-      pragma Assert (Result = 0);
-
-      for J in Interrupt_Management.Interrupt_ID loop
-         if System.Interrupt_Management.Keep_Unmasked (J) then
-            Result := sigaddset (Unblocked_Signal_Mask'Access, Signal (J));
-            pragma Assert (Result = 0);
-         end if;
-      end loop;
-
-      --  We need the following code to support automatic creation of fake
-      --  ATCB's for C threads that call the Ada run-time system, even if
-      --  we use a faster way of getting Self for real Ada tasks.
-
-      Result := thr_keycreate (ATCB_Key'Access, System.Null_Address);
-      pragma Assert (Result = 0);
-   end;
-
-   if Dispatching_Policy = 'F' then
-      declare
-         Result      : Interfaces.C.long;
-         Class_Info  : aliased struct_pcinfo;
-         Secs, Nsecs : Interfaces.C.long;
-
-      begin
-         --  If a pragma Time_Slice is specified, takes the value in account.
-
-         if Time_Slice_Val > 0 then
-            --  Convert Time_Slice_Val (microseconds) into seconds and
-            --  nanoseconds
-
-            Secs := Time_Slice_Val / 1_000_000;
-            Nsecs := (Time_Slice_Val rem 1_000_000) * 1_000;
-
-         --  Otherwise, default to no time slicing (i.e run until blocked)
-
-         else
-            Secs := RT_TQINF;
-            Nsecs := RT_TQINF;
-         end if;
-
-         --  Get the real time class id.
-
-         Class_Info.pc_clname (1) := 'R';
-         Class_Info.pc_clname (2) := 'T';
-         Class_Info.pc_clname (3) := ASCII.NUL;
-
-         Result := priocntl (PC_VERSION, P_LWPID, P_MYID, PC_GETCID,
-           Class_Info'Address);
-
-         --  Request the real time class
-
-         Prio_Param.pc_cid := Class_Info.pc_cid;
-         Prio_Param.rt_pri := pri_t (Class_Info.rt_maxpri);
-         Prio_Param.rt_tqsecs := Secs;
-         Prio_Param.rt_tqnsecs := Nsecs;
-
-         Result := priocntl (PC_VERSION, P_LWPID, P_MYID, PC_SETPARMS,
-           Prio_Param'Address);
-
-         Using_Real_Time_Class := Result /= -1;
-      end;
-   end if;
 end System.Task_Primitives.Operations;

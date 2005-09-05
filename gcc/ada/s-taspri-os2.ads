@@ -44,15 +44,12 @@ with Interfaces.OS2Lib.Threads;
 with Interfaces.OS2Lib.Synchronization;
 
 package System.Task_Primitives is
-
    pragma Preelaborate;
 
-   --  Why are these commented out ???
-
---   type Lock is limited private;
+   type Lock is limited private;
    --  Should be used for implementation of protected objects.
 
---   type RTS_Lock is limited private;
+   type RTS_Lock is limited private;
    --  Should be used inside the runtime system.
    --  The difference between Lock and the RTS_Lock is that the later
    --  one serves only as a semaphore so that do not check for
@@ -62,12 +59,12 @@ package System.Task_Primitives is
    --  Pointer to the task body's entry point (or possibly a wrapper
    --  declared local to the GNARL).
 
---   type Private_Data is limited private;
+   type Private_Data is limited private;
    --  Any information that the GNULLI needs maintained on a per-task
    --  basis.  A component of this type is guaranteed to be included
    --  in the Ada_Task_Control_Block.
 
---  private (why commented out???)
+private
 
    type Lock is record
       Mutex          : aliased Interfaces.OS2Lib.Synchronization.HMTX;

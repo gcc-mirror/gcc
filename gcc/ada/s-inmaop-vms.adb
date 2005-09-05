@@ -295,6 +295,7 @@ package body System.Interrupt_Management.Operations is
    end Setup_Interrupt_Mask;
 
 begin
+   Interrupt_Management.Initialize;
    Environment_Mask := (others => False);
    All_Tasks_Mask := (others => True);
 

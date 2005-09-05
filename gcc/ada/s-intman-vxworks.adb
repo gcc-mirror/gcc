@@ -33,15 +33,6 @@
 
 --  This is the VxWorks version of this package.
 
---  It is likely to need tailoring to fit each operating system
---  and machine architecture.
-
---  PLEASE DO NOT add any dependences on other packages.
---  This package is designed to work with or without tasking support.
-
---  See the other warnings in the package specification before making
---  any modifications to this file.
-
 --  Make a careful study of all signals available under the OS,
 --  to see which need to be reserved, kept always unmasked,
 --  or kept always unmasked.
@@ -73,6 +64,20 @@ package body System.Interrupt_Management is
    -----------------------
    -- Local Subprograms --
    -----------------------
+
+   function State (Int : Interrupt_ID) return Character;
+   pragma Import (C, State, "__gnat_get_interrupt_state");
+   --  Get interrupt state.  Defined in init.c
+   --  The input argument is the interrupt number,
+   --  and the result is one of the following:
+
+   Runtime : constant Character := 'r';
+   Default : constant Character := 's';
+   --    'n'   this interrupt not set by any Interrupt_State pragma
+   --    'u'   Interrupt_State pragma set state to User
+   --    'r'   Interrupt_State pragma set state to Runtime
+   --    's'   Interrupt_State pragma set state to System (use "default"
+   --           system handler)
 
    procedure Notify_Exception (signo : Signal);
    --  Identify the Ada exception to be raised using
@@ -116,27 +121,21 @@ package body System.Interrupt_Management is
       end loop;
    end Initialize_Interrupts;
 
-begin
-   declare
+   ----------------
+   -- Initialize --
+   ----------------
+
+   Initialized : Boolean := False;
+
+   procedure Initialize is
       mask   : aliased sigset_t;
       Result : int;
-
-      function State (Int : Interrupt_ID) return Character;
-      pragma Import (C, State, "__gnat_get_interrupt_state");
-      --  Get interrupt state.  Defined in a-init.c
-      --  The input argument is the interrupt number,
-      --  and the result is one of the following:
-
-      Runtime : constant Character := 'r';
-      Default : constant Character := 's';
-      --    'n'   this interrupt not set by any Interrupt_State pragma
-      --    'u'   Interrupt_State pragma set state to User
-      --    'r'   Interrupt_State pragma set state to Runtime
-      --    's'   Interrupt_State pragma set state to System (use "default"
-      --           system handler)
-
    begin
-      --  Initialize signal handling
+      if Initialized then
+         return;
+      end if;
+
+      Initialized := True;
 
       --  Change this if you want to use another signal for task abort.
       --  SIGTERM might be a good one.
@@ -176,5 +175,6 @@ begin
       --  The abort signal must also be unmasked
 
       Keep_Unmasked (Abort_Task_Signal) := True;
-   end;
+   end Initialize;
+
 end System.Interrupt_Management;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,11 +41,12 @@
 --  This unit may be used directly from an application program by providing
 --  an appropriate WITH, and the interface can be expected to remain stable.
 
---  This is the SGI (libathread) specific version of this module.
+--  This is the SGI (libathread) specific version of this module
 
 with System.OS_Interface;
 
 package System.Task_Info is
+   pragma Preelaborate;
    pragma Elaborate_Body;
    --  To ensure that a body is allowed
 
@@ -147,7 +148,7 @@ package System.Task_Info is
    ANY_CPU : constant CPU_Number := CPU_Number'First;
 
    type Non_Degrading_Priority is range 0 .. 255;
-   --  Specification of IRIX Non Degrading Priorities.
+   --  Specification of IRIX Non Degrading Priorities
    --
    --  WARNING: IRIX priorities have the reverse meaning of Ada priorities.
    --           The lower the priority value, the greater the greater the
@@ -203,8 +204,7 @@ package System.Task_Info is
       CPU             : CPU_Number             := ANY_CPU;
       Resident        : Page_Locking           := NOLOCK;
       NDPRI           : Non_Degrading_Priority := NDP_NONE) return sproc_t;
-   --  Allocates a sproc_t control structure and creates the
-   --  corresponding sproc.
+   --  Allocates a sproc_t control structure and creates corresponding sproc
 
    Invalid_CPU_Number : exception;
    Permission_Error   : exception;

@@ -43,6 +43,9 @@ pragma Polling (Off);
 with System.Tasking.Debug;
 --  used for Known_Tasks
 
+with System.OS_Primitives;
+--  used for Delay_Modes
+
 with Interfaces.C;
 --  used for int
 --           size_t
@@ -50,21 +53,8 @@ with Interfaces.C;
 with System.Parameters;
 --  used for Size_Type
 
-with System.Tasking;
---  used for Ada_Task_Control_Block
---           Task_Id
-
 with System.Soft_Links;
---  used for Defer/Undefer_Abort
---           Set_Exc_Stack_Addr
-
---  Note that we do not use System.Tasking.Initialization directly since
---  this is a higher level package that we shouldn't depend on. For example
---  when using the restricted run time, it is replaced by
---  System.Tasking.Restricted.Stages.
-
-with System.OS_Primitives;
---  used for Delay_Modes
+--  used for Get_Exc_Stack_Addr
 
 with Unchecked_Conversion;
 with Unchecked_Deallocation;
@@ -104,9 +94,6 @@ package body System.Task_Primitives.Operations is
 
    Dispatching_Policy : Character;
    pragma Import (C, Dispatching_Policy, "__gl_task_dispatching_policy");
-
-   FIFO_Within_Priorities : constant Boolean := Dispatching_Policy = 'F';
-   --  Indicates whether FIFO_Within_Priorities is set.
 
    Foreign_Task_Elaborated : aliased Boolean := True;
    --  Used to identified fake tasks (i.e., non-Ada Threads).
@@ -155,6 +142,9 @@ package body System.Task_Primitives.Operations is
    function To_Task_Id is new Unchecked_Conversion (System.Address, Task_Id);
 
    function To_Address is new Unchecked_Conversion (Task_Id, System.Address);
+
+   function Get_Exc_Stack_Addr return Address;
+   --  Replace System.Soft_Links.Get_Exc_Stack_Addr_NT
 
    procedure Timer_Sleep_AST (ID : Address);
    --  Signal the condition variable when AST fires.
@@ -492,17 +482,12 @@ package body System.Task_Primitives.Operations is
       Yielded    : Boolean := False;
 
    begin
-      --  Only the little window between deferring abort and
-      --  locking Self_ID is the reason we need to
-      --  check for pending abort and priority change below!
-
       if Single_Lock then
          Lock_RTS;
       end if;
 
       --  More comments required in body below ???
 
-      SSL.Abort_Defer.all;
       Write_Lock (Self_ID);
 
       if Time /= 0.0 or else Mode /= Relative then
@@ -562,8 +547,6 @@ package body System.Task_Primitives.Operations is
          Result := sched_yield;
          pragma Assert (Result = 0);
       end if;
-
-      SSL.Abort_Undefer.all;
    end Timed_Delay;
 
    ---------------------
@@ -629,7 +612,7 @@ package body System.Task_Primitives.Operations is
          Result := pthread_setschedparam
            (T.Common.LL.Thread, SCHED_RR, Param'Access);
 
-      elsif FIFO_Within_Priorities or else Time_Slice_Val = 0 then
+      elsif Dispatching_Policy = 'F' or else Time_Slice_Val = 0 then
          Result := pthread_setschedparam
            (T.Common.LL.Thread, SCHED_FIFO, Param'Access);
 
@@ -749,9 +732,6 @@ package body System.Task_Primitives.Operations is
       if Result = 0 then
          Succeeded := True;
          Self_ID.Common.LL.Exc_Stack_Ptr := new Exc_Stack_T;
-         SSL.Set_Exc_Stack_Addr
-           (To_Address (Self_ID),
-            Self_ID.Common.LL.Exc_Stack_Ptr (Exc_Stack_T'Last)'Address);
 
       else
          if not Single_Lock then
@@ -765,6 +745,15 @@ package body System.Task_Primitives.Operations is
       Result := pthread_condattr_destroy (Cond_Attr'Access);
       pragma Assert (Result = 0);
    end Initialize_TCB;
+
+   ------------------------
+   -- Get_Exc_Stack_Addr --
+   ------------------------
+
+   function Get_Exc_Stack_Addr return Address is
+   begin
+      return Self.Common.LL.Exc_Stack_Ptr (Exc_Stack_T'Last)'Address;
+   end Get_Exc_Stack_Addr;
 
    -----------------
    -- Create_Task --
@@ -1168,6 +1157,8 @@ package body System.Task_Primitives.Operations is
    procedure Initialize (Environment_Task : Task_Id) is
    begin
       Environment_Task_Id := Environment_Task;
+
+      SSL.Get_Exc_Stack_Addr := Get_Exc_Stack_Addr'Access;
 
       --  Initialize the lock used to synchronize chain of all ATCBs
 

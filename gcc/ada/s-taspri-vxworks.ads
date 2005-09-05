@@ -40,6 +40,7 @@ pragma Polling (Off);
 with System.OS_Interface;
 
 package System.Task_Primitives is
+   pragma Preelaborate;
 
    type Lock is limited private;
    --  Should be used for implementation of protected objects

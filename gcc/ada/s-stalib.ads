@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,11 +54,9 @@ with System;
 with Unchecked_Conversion;
 
 package System.Standard_Library is
-
-   pragma Suppress (All_Checks);
-   --  Suppress explicitely all the checks to work around the Solaris linker
-   --  bug when using gnatmake -f -a (but without -gnatp). This is not needed
-   --  with Solaris 2.6, so eventually can be removed ???
+   pragma Warnings (Off);
+   pragma Preelaborate_05;
+   pragma Warnings (On);
 
    type Big_String_Ptr is access all String (Positive);
    --  A non-fat pointer type for null terminated strings
@@ -137,8 +135,9 @@ package System.Standard_Library is
       Name_Length : Natural;
       --  Length of fully expanded name of exception
 
-      Full_Name : Big_String_Ptr;
+      Full_Name : System.Address;
       --  Fully expanded name of exception, null terminated
+      --  You can use To_Ptr to convert this to a string.
 
       HTable_Ptr : Exception_Data_Ptr;
       --  Hash table pointer used to link entries together in the hash table
@@ -157,7 +156,6 @@ package System.Standard_Library is
       --  whenever the exception is raised. This call occurs immediately,
       --  before any other actions taken by the raise (and in particular
       --  before any unwinding of the stack occurs).
-
    end record;
 
    --  Definitions for standard predefined exceptions defined in Standard,
@@ -179,7 +177,7 @@ package System.Standard_Library is
      (Not_Handled_By_Others => False,
       Lang                  => 'A',
       Name_Length           => Constraint_Error_Name'Length,
-      Full_Name             => To_Ptr (Constraint_Error_Name'Address),
+      Full_Name             => Constraint_Error_Name'Address,
       HTable_Ptr            => null,
       Import_Code           => 0,
       Raise_Hook            => null);
@@ -188,7 +186,7 @@ package System.Standard_Library is
      (Not_Handled_By_Others => False,
       Lang                  => 'A',
       Name_Length           => Numeric_Error_Name'Length,
-      Full_Name             => To_Ptr (Numeric_Error_Name'Address),
+      Full_Name             => Numeric_Error_Name'Address,
       HTable_Ptr            => null,
       Import_Code           => 0,
       Raise_Hook            => null);
@@ -197,7 +195,7 @@ package System.Standard_Library is
      (Not_Handled_By_Others => False,
       Lang                  => 'A',
       Name_Length           => Program_Error_Name'Length,
-      Full_Name             => To_Ptr (Program_Error_Name'Address),
+      Full_Name             => Program_Error_Name'Address,
       HTable_Ptr            => null,
       Import_Code           => 0,
       Raise_Hook            => null);
@@ -206,7 +204,7 @@ package System.Standard_Library is
      (Not_Handled_By_Others => False,
       Lang                  => 'A',
       Name_Length           => Storage_Error_Name'Length,
-      Full_Name             => To_Ptr (Storage_Error_Name'Address),
+      Full_Name             => Storage_Error_Name'Address,
       HTable_Ptr            => null,
       Import_Code           => 0,
       Raise_Hook            => null);
@@ -215,7 +213,7 @@ package System.Standard_Library is
      (Not_Handled_By_Others => False,
       Lang                  => 'A',
       Name_Length           => Tasking_Error_Name'Length,
-      Full_Name             => To_Ptr (Tasking_Error_Name'Address),
+      Full_Name             => Tasking_Error_Name'Address,
       HTable_Ptr            => null,
       Import_Code           => 0,
       Raise_Hook            => null);
@@ -224,7 +222,7 @@ package System.Standard_Library is
      (Not_Handled_By_Others => True,
       Lang                  => 'A',
       Name_Length           => Abort_Signal_Name'Length,
-      Full_Name             => To_Ptr (Abort_Signal_Name'Address),
+      Full_Name             => Abort_Signal_Name'Address,
       HTable_Ptr            => null,
       Import_Code           => 0,
       Raise_Hook            => null);

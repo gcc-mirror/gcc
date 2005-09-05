@@ -47,19 +47,18 @@ with Interfaces.C;
 with System.Tasking.Debug;
 --  used for Known_Tasks
 
-with System.Task_Info;
-
 with System.Interrupt_Management;
 --  used for Keep_Unmasked
 --           Abort_Task_Interrupt
 --           Interrupt_ID
 
+with System.OS_Primitives;
+--  used for Delay_Modes
+
+with System.Task_Info;
+
 with System.Parameters;
 --  used for Size_Type
-
-with System.Tasking;
---  used for Ada_Task_Control_Block
---           Task_Id
 
 with System.Program_Info;
 --  used for Default_Task_Stack
@@ -67,17 +66,6 @@ with System.Program_Info;
 --           Stack_Guard_Pages
 --           Pthread_Sched_Signal
 --           Pthread_Arena_Size
-
-with System.Soft_Links;
---  used for Defer/Undefer_Abort
-
---  Note that we do not use System.Tasking.Initialization directly since
---  this is a higher level package that we shouldn't depend on. For example
---  when using the restricted run time, it is replaced by
---  System.Tasking.Restricted.Stages.
-
-with System.OS_Primitives;
---  used for Delay_Modes
 
 with System.Storage_Elements;
 --  used for To_Address
@@ -93,8 +81,6 @@ package body System.Task_Primitives.Operations is
    use System.OS_Interface;
    use System.Parameters;
    use System.OS_Primitives;
-
-   package SSL renames System.Soft_Links;
 
    -----------------
    -- Local Data  --
@@ -433,12 +419,6 @@ package body System.Task_Primitives.Operations is
       Result     : Interfaces.C.int;
 
    begin
-      --  Only the little window between deferring abort and
-      --  locking Self_ID is the reason we need to
-      --  check for pending abort and priority change below!
-
-      SSL.Abort_Defer.all;
-
       if Single_Lock then
          Lock_RTS;
       end if;
@@ -490,7 +470,6 @@ package body System.Task_Primitives.Operations is
       end if;
 
       pthread_yield;
-      SSL.Abort_Undefer.all;
    end Timed_Delay;
 
    ---------------------
@@ -819,7 +798,7 @@ package body System.Task_Primitives.Operations is
       pragma Assert (Result = 0);
    end Abort_Task;
 
-      ----------------
+   ----------------
    -- Initialize --
    ----------------
 
@@ -1087,7 +1066,9 @@ package body System.Task_Primitives.Operations is
 
    procedure Initialize (Environment_Task : Task_Id) is
    begin
+      Initialize_Athread_Library;
       Environment_Task_Id := Environment_Task;
+      Interrupt_Management.Initialize;
 
       Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
       --  Initialize the lock used to synchronize chain of all ATCBs.
@@ -1126,8 +1107,4 @@ package body System.Task_Primitives.Operations is
       end if;
    end Initialize_Athread_Library;
 
---  Package initialization
-
-begin
-   Initialize_Athread_Library;
 end System.Task_Primitives.Operations;

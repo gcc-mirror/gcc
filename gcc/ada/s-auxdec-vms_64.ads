@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,7 @@
 with Unchecked_Conversion;
 
 package System.Aux_DEC is
-pragma Elaborate_Body (Aux_DEC);
+   pragma Preelaborate;
 
    subtype Short_Address is Address
      range -2 ** (32 - 1) .. +2 ** (32 - 1) - 1;

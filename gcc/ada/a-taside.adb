@@ -31,32 +31,28 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with System.Address_Image;
+with System.Parameters;
+with System.Soft_Links;
+with System.Task_Primitives.Operations;
+with System.Tasking;
+
+with Unchecked_Conversion;
+
 pragma Warnings (Off);
 --  Allow withing of non-Preelaborated units in Ada 2005 mode where this
 --  package will be categorized as Preelaborate. See AI-362 for details.
 --  It is safe in the context of the run-time to violate the rules!
 
-with System.Address_Image;
---  used for the function itself
-
-with System.Tasking;
---  used for Task_List
-
 with System.Tasking.Stages;
---  used for Terminated
---           Abort_Tasks
 
-with System.Tasking.Rendezvous;
---  used for Callable
-
-with System.Task_Primitives.Operations;
---  used for Self
-
-with Unchecked_Conversion;
-
-pragma Warnings (Off);
+pragma Warnings (On);
 
 package body Ada.Task_Identification is
+
+   use System.Parameters;
+
+   package STPO renames System.Task_Primitives.Operations;
 
    -----------------------
    -- Local Subprograms --
@@ -71,7 +67,7 @@ package body Ada.Task_Identification is
    -- "=" --
    ---------
 
-   function  "=" (Left, Right : Task_Id) return Boolean is
+   function "=" (Left, Right : Task_Id) return Boolean is
    begin
       return System.Tasking."=" (Convert_Ids (Left), Convert_Ids (Right));
    end "=";
@@ -139,11 +135,28 @@ package body Ada.Task_Identification is
    -----------------
 
    function Is_Callable (T : Task_Id) return Boolean is
+      Result : Boolean;
+      Id     : constant System.Tasking.Task_Id := Convert_Ids (T);
    begin
       if T = Null_Task_Id then
          raise Program_Error;
       else
-         return System.Tasking.Rendezvous.Callable (Convert_Ids (T));
+         System.Soft_Links.Abort_Defer.all;
+
+         if Single_Lock then
+            STPO.Lock_RTS;
+         end if;
+
+         STPO.Write_Lock (Id);
+         Result := Id.Callable;
+         STPO.Unlock (Id);
+
+         if Single_Lock then
+            STPO.Unlock_RTS;
+         end if;
+
+         System.Soft_Links.Abort_Undefer.all;
+         return Result;
       end if;
    end Is_Callable;
 
@@ -152,11 +165,31 @@ package body Ada.Task_Identification is
    -------------------
 
    function Is_Terminated (T : Task_Id) return Boolean is
+      Result : Boolean;
+      Id     : constant System.Tasking.Task_Id := Convert_Ids (T);
+
+      use System.Tasking;
+
    begin
       if T = Null_Task_Id then
          raise Program_Error;
       else
-         return System.Tasking.Stages.Terminated (Convert_Ids (T));
+         System.Soft_Links.Abort_Defer.all;
+
+         if Single_Lock then
+            STPO.Lock_RTS;
+         end if;
+
+         STPO.Write_Lock (Id);
+         Result := Id.Common.State = Terminated;
+         STPO.Unlock (Id);
+
+         if Single_Lock then
+            STPO.Unlock_RTS;
+         end if;
+
+         System.Soft_Links.Abort_Undefer.all;
+         return Result;
       end if;
    end Is_Terminated;
 

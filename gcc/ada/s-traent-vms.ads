@@ -38,6 +38,7 @@
 --  This is the Alpha/OpenVMS version of this package
 
 package System.Traceback_Entries is
+   pragma Preelaborate;
 
    type Traceback_Entry is record
       PC : System.Address;
