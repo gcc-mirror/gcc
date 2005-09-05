@@ -38,14 +38,13 @@ with Ada.Finalization;
 with Ada.Streams;
 
 generic
-
    type Element_Type (<>) is private;
 
    with function "=" (Left, Right : Element_Type)
       return Boolean is <>;
 
 package Ada.Containers.Indefinite_Doubly_Linked_Lists is
-   pragma Preelaborate (Indefinite_Doubly_Linked_Lists);
+   pragma Preelaborate;
 
    type List is tagged private;
 

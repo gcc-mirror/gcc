@@ -39,7 +39,7 @@
 --  an appropriate WITH, and the interface can be expected to remain stable.
 
 package System.WCh_Con is
-pragma Pure (WCh_Con);
+   pragma Pure;
 
    -------------------------------------
    -- Wide_Character Encoding Methods --

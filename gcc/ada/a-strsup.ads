@@ -41,7 +41,7 @@
 with Ada.Strings.Maps;
 
 package Ada.Strings.Superbounded is
-pragma Preelaborate (Superbounded);
+   pragma Preelaborate;
 
    type Super_String (Max_Length : Positive) is record
       Current_Length : Natural := 0;

@@ -32,7 +32,7 @@ generic
       R : Node_Access) return Boolean;
 
 package Ada.Containers.Red_Black_Trees.Generic_Keys is
-pragma Pure (Generic_Keys);
+   pragma Pure;
 
    generic
       with function New_Node return Node_Access;

@@ -41,7 +41,7 @@
 --  argument, Argument_Count will be 2, and Argument (2) will return C.
 
 package Ada.Command_Line.Remove is
-pragma Preelaborate (Remove);
+   pragma Preelaborate;
 
    procedure Remove_Argument (Number : in Positive);
    --  Removes the argument identified by Number, which must be in the

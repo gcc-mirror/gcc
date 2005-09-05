@@ -38,7 +38,7 @@
 with System.Unsigned_Types;
 
 package System.Img_WIU is
-pragma Pure (Img_WIU);
+   pragma Pure;
 
    procedure Set_Image_Width_Integer
      (V : Integer;

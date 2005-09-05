@@ -35,8 +35,10 @@
 
 with System.Generic_Vector_Operations;
 with System.Vectors.Boolean_Operations;
+
 package System.Boolean_Array_Operations is
-pragma Pure (Boolean_Array_Operations);
+   pragma Pure;
+
    type Boolean_Array is array (Integer range <>) of Boolean;
 
    package Boolean_Operations renames System.Vectors.Boolean_Operations;

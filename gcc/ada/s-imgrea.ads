@@ -34,7 +34,7 @@
 --  Image for fixed and float types (also used for Float_IO/Fixed_IO output)
 
 package System.Img_Real is
-pragma Preelaborate (Img_Real);
+   pragma Preelaborate;
 
    function Image_Ordinary_Fixed_Point
      (V    : Long_Long_Float;

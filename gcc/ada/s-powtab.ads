@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1999 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,7 @@
 --  This package provides a powers of ten table used for real conversions
 
 package System.Powten_Table is
-pragma Pure (Powten_Table);
+   pragma Pure;
 
    Maxpow : constant := 22;
    --  The number of entries in this table is chosen to include powers of ten

@@ -38,7 +38,7 @@
 with Ada.Characters.Wide_Latin_1;
 
 package Ada.Strings.Wide_Maps.Wide_Constants is
-pragma Preelaborate (Wide_Constants);
+   pragma Preelaborate;
 
    Control_Set           : constant Wide_Maps.Wide_Character_Set;
    Graphic_Set           : constant Wide_Maps.Wide_Character_Set;

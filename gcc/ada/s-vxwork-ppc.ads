@@ -36,7 +36,7 @@
 with Interfaces.C;
 
 package System.VxWorks is
-   pragma Preelaborate (System.VxWorks);
+   pragma Preelaborate;
 
    package IC renames Interfaces.C;
 

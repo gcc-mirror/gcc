@@ -14,5 +14,5 @@
 ------------------------------------------------------------------------------
 
 package Ada.Wide_Wide_Characters is
-pragma Pure (Wide_Wide_Characters);
+   pragma Pure;
 end Ada.Wide_Wide_Characters;

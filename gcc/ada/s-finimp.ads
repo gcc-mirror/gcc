@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,7 @@
 with System.Finalization_Root;
 
 package System.Finalization_Implementation is
-pragma Elaborate_Body (Finalization_Implementation);
+   pragma Elaborate_Body;
 
    package SFR renames System.Finalization_Root;
 

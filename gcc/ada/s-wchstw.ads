@@ -37,7 +37,7 @@
 with System.WCh_Con;
 
 package System.WCh_StW is
-pragma Pure (WCh_StW);
+   pragma Pure;
 
    function String_To_Wide_String
      (S  : String;

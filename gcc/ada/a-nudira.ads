@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -35,14 +35,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Note: the implementation used in this package was contributed by
---  Robert Eachus. It is based on the work of L. Blum, M. Blum, and
---  M. Shub, SIAM Journal of Computing, Vol 15. No 2, May 1986. The
---  particular choices for P and Q chosen here guarantee a period of
---  562,085,314,430,582 (about 2**49), and the generated sequence has
---  excellent randomness properties. For further details, see the
---  paper "Fast Generation of Trustworthy Random Numbers", by Robert
---  Eachus, which describes both the algorithm and the efficient
+--  Note: the implementation used in this package was contributed by Robert
+--  Eachus. It is based on the work of L. Blum, M. Blum, and M. Shub, SIAM
+--  Journal of Computing, Vol 15. No 2, May 1986. The particular choices for P
+--  and Q chosen here guarantee a period of 562,085,314,430,582 (about 2**49),
+--  and the generated sequence has excellent randomness properties. For further
+--  details, see the paper "Fast Generation of Trustworthy Random Numbers", by
+--  Robert Eachus, which describes both the algorithm and the efficient
 --  implementation approach used here.
 
 with Interfaces;
@@ -52,16 +51,16 @@ generic
 
 package Ada.Numerics.Discrete_Random is
 
-   --  The algorithm used here is reliable from a required statistical point
-   --  of view only up to 48 bits. We try to behave reasonably in the case
-   --  of larger types, but we can't guarantee the required properties.
-   --  So generate a warning for these (slightly) dubious cases.
+   --  The algorithm used here is reliable from a required statistical point of
+   --  view only up to 48 bits. We try to behave reasonably in the case of
+   --  larger types, but we can't guarantee the required properties. So
+   --  generate a warning for these (slightly) dubious cases.
 
    pragma Compile_Time_Warning
      (Result_Subtype'Size > 48,
       "statistical properties not guaranteed for size '> 48");
 
-   --  Basic facilities.
+   --  Basic facilities
 
    type Generator is limited private;
 
@@ -70,7 +69,7 @@ package Ada.Numerics.Discrete_Random is
    procedure Reset (Gen : Generator);
    procedure Reset (Gen : Generator; Initiator : Integer);
 
-   --  Advanced facilities.
+   --  Advanced facilities
 
    type State is private;
 

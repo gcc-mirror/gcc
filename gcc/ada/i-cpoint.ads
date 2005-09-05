@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1993-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1993-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -42,7 +42,7 @@ generic
    Default_Terminator : Element;
 
 package Interfaces.C.Pointers is
-pragma Preelaborate (Pointers);
+   pragma Preelaborate;
 
    type Pointer is access all Element;
 

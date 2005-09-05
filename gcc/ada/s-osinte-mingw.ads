@@ -45,7 +45,7 @@ with Interfaces.C.Strings;
 with Unchecked_Conversion;
 
 package System.OS_Interface is
-pragma Preelaborate;
+   pragma Preelaborate;
 
    pragma Linker_Options ("-mthreads");
 

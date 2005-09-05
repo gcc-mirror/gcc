@@ -36,7 +36,7 @@
 ------------------------------------------------------------------------------
 
 with System.Interrupts;
---  used for Ada_Interrupt_ID.
+--  used for Ada_Interrupt_ID
 
 package Ada.Interrupts is
 

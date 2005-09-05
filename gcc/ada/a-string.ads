@@ -14,7 +14,7 @@
 ------------------------------------------------------------------------------
 
 package Ada.Strings is
-pragma Pure (Strings);
+   pragma Pure;
 
    Space           : constant Character           := ' ';
    Wide_Space      : constant Wide_Character      := ' ';

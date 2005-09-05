@@ -32,7 +32,7 @@
 ------------------------------------------------------------------------------
 
 package System.Val_Real is
-pragma Pure (Val_Real);
+   pragma Pure;
 
    function Scan_Real
      (Str  : String;

@@ -39,7 +39,7 @@ with Ada.Strings.Maps;
 with Ada.Strings.Superbounded;
 
 package Ada.Strings.Bounded is
-pragma Preelaborate (Bounded);
+   pragma Preelaborate;
 
    generic
       Max : Positive;

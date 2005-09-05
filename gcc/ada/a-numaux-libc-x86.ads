@@ -44,7 +44,7 @@
 --  double (see file a-numaux.ads).
 
 package Ada.Numerics.Aux is
-pragma Pure (Aux);
+   pragma Pure;
 
    pragma Linker_Options ("-lm");
 

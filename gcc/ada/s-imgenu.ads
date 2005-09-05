@@ -37,7 +37,7 @@
 --  Special routines exist for the enumeration routines in these packages.
 
 package System.Img_Enum is
-pragma Pure (Img_Enum);
+   pragma Pure;
 
    function Image_Enumeration_8
      (Pos     : Natural;

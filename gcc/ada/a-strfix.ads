@@ -16,7 +16,7 @@
 with Ada.Strings.Maps;
 
 package Ada.Strings.Fixed is
-pragma Preelaborate (Fixed);
+   pragma Preelaborate;
 
    --------------------------------------------------------------
    -- Copy Procedure for Strings of Possibly Different Lengths --

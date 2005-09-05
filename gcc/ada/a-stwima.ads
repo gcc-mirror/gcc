@@ -38,7 +38,7 @@
 with Ada.Finalization;
 
 package Ada.Strings.Wide_Maps is
-   pragma Preelaborate (Wide_Maps);
+   pragma Preelaborate;
 
    -------------------------------------
    -- Wide Character Set Declarations --

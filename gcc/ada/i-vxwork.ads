@@ -48,7 +48,7 @@
 with System.VxWorks;
 
 package Interfaces.VxWorks is
-   pragma Preelaborate (VxWorks);
+   pragma Preelaborate;
 
    ------------------------------------------------------------------------
    --  Here is a complete example that shows how to handle the Interrupt 0x14

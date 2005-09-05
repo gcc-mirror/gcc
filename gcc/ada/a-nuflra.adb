@@ -164,7 +164,7 @@ package body Ada.Numerics.Float_Random is
       X1 := 2 + Int (Initiator) mod (K1 - 3);
       X2 := 2 + Int (Initiator) mod (K2 - 3);
 
-      --  Eliminate effects of small Initiators.
+      --  Eliminate effects of small initiators
 
       for J in 1 .. 5 loop
          X1 := Square_Mod_N (X1, K1);
@@ -299,7 +299,7 @@ package body Ada.Numerics.Float_Random is
       Outs.X   := Euclid (Outs.P, Outs.Q);
       Outs.Scl := 1.0 / (Flt (Outs.P) * Flt (Outs.Q));
 
-      --  Now do *some* sanity checks.
+      --  Now do *some* sanity checks
 
       if Outs.Q < 31 or else Outs.P < 31
         or else Outs.X1 not in 2 .. Outs.P - 1

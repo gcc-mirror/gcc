@@ -41,7 +41,7 @@
 with Ada.Strings.Maps;
 
 private package Ada.Strings.Search is
-pragma Preelaborate (Search);
+   pragma Preelaborate;
 
    function Index
      (Source  : String;

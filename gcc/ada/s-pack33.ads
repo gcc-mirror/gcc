@@ -34,7 +34,7 @@
 --  Handling of packed arrays with Component_Size = 33
 
 package System.Pack_33 is
-pragma Preelaborate (Pack_33);
+   pragma Preelaborate;
 
    Bits : constant := 33;
 

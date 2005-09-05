@@ -19,7 +19,7 @@ generic
    use Complex_Types;
 
 package Ada.Numerics.Generic_Complex_Elementary_Functions is
-   pragma Pure (Ada.Numerics.Generic_Complex_Elementary_Functions);
+   pragma Pure;
 
    function Sqrt (X : Complex)   return Complex;
 

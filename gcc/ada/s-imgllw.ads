@@ -38,7 +38,7 @@
 with System.Unsigned_Types;
 
 package System.Img_LLW is
-pragma Pure (Img_LLW);
+   pragma Pure;
 
    procedure Set_Image_Width_Long_Long_Integer
      (V : Long_Long_Integer;

@@ -36,7 +36,7 @@
 ------------------------------------------------------------------------------
 
 package Ada.Characters.Conversions is
-pragma Pure (Conversions);
+   pragma Pure;
 
    function Is_Character (Item : Wide_Character)      return Boolean;
    function Is_String    (Item : Wide_String)         return Boolean;

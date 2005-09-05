@@ -36,7 +36,7 @@
 --  accounting for the modulus value which is passed as the second argument.
 
 package System.Exp_Mod is
-pragma Pure (Exp_Mod);
+   pragma Pure;
 
    function Exp_Modular
      (Left    : Integer;

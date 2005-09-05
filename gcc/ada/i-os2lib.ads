@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1993-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1993-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,7 +49,7 @@ with Interfaces.C.Strings;
 with System;
 
 package Interfaces.OS2Lib is
-pragma Preelaborate (OS2Lib);
+   pragma Preelaborate;
 
    package IC  renames Interfaces.C;
    package ICS renames Interfaces.C.Strings;
@@ -76,7 +76,7 @@ pragma Preelaborate (OS2Lib);
    type ULONG   is new IC.unsigned_long;
    type PULONG  is access all ULONG;
 
-   --  Coprocessor stack register element.
+   --  Coprocessor stack register element
 
    type FPREG is record
       losig             : ULONG;        --  Low 32-bits of the mantissa

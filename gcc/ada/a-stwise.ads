@@ -41,7 +41,7 @@
 with Ada.Strings.Wide_Maps;
 
 private package Ada.Strings.Wide_Search is
-pragma Preelaborate (Wide_Search);
+   pragma Preelaborate;
 
    function Index
      (Source  : Wide_String;

@@ -43,12 +43,14 @@
 
 with System.Vectors;
 with System.Storage_Elements;
+
 generic
    type Element is (<>);
    type Index is (<>);
    type Element_Array is array (Index range <>) of Element;
+
 package System.Generic_Vector_Operations is
-pragma Pure (Generic_Vector_Operations);
+   pragma Pure;
 
    generic
       with function Element_Op (X, Y : Element) return Element;

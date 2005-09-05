@@ -44,7 +44,7 @@
 --  long double (see file 4onumaux.ads).
 
 package Ada.Numerics.Aux is
-pragma Pure (Aux);
+   pragma Pure;
 
    --  This version omits the pragma linker_options ("-lm") since there is
    --  no libm.a library for VxWorks.

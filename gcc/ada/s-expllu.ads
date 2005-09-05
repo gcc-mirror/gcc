@@ -39,7 +39,7 @@
 with System.Unsigned_Types;
 
 package System.Exp_LLU is
-pragma Pure (Exp_LLU);
+   pragma Pure;
 
    function Exp_Long_Long_Unsigned
      (Left  : System.Unsigned_Types.Long_Long_Unsigned;

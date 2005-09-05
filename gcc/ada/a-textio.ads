@@ -47,7 +47,7 @@ with System;
 with System.File_Control_Block;
 
 package Ada.Text_IO is
-pragma Elaborate_Body (Text_IO);
+   pragma Elaborate_Body;
 
    type File_Type is limited private;
    type File_Mode is (In_File, Out_File, Append_File);

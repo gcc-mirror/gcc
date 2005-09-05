@@ -39,13 +39,12 @@ generic
    type Object (<>) is limited private;
 
 package System.Address_To_Access_Conversions is
-pragma Preelaborate (Address_To_Access_Conversions);
-
-pragma Elaborate_Body;
---  This pragma Elaborate_Body is there to ensure the requirement of what is
---  at the moment a dummy null body. The reason this null body is there is
---  that we used to have a real body, and it causes bootstrap problems with
---  old compilers if we try to remove the corresponding file.
+   pragma Preelaborate;
+   pragma Elaborate_Body;
+   --  This pragma Elaborate_Body is there to ensure the requirement of what is
+   --  at the moment a dummy null body. The reason this null body is there is
+   --  that we used to have a real body, and it causes bootstrap problems with
+   --  old compilers if we try to remove the corresponding file.
 
    pragma Compile_Time_Warning
      (Object'Unconstrained_Array,

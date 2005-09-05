@@ -34,7 +34,7 @@
 --  Integer exponentiation (checks off)
 
 package System.Exn_Int is
-pragma Pure (Exn_Int);
+   pragma Pure;
 
    function Exn_Integer (Left : Integer; Right : Natural) return Integer;
 

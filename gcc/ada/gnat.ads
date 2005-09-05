@@ -34,6 +34,6 @@
 --  This is the parent package for a library of useful units provided with GNAT
 
 package GNAT is
-pragma Pure (GNAT);
+   pragma Pure;
 
 end GNAT;

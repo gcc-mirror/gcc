@@ -36,7 +36,7 @@
 with System.WCh_Con;
 
 package System.WWd_Enum is
-pragma Pure (WWd_Enum);
+   pragma Pure;
 
    function Wide_Width_Enumeration_8
      (Names   : String;

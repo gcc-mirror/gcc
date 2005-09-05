@@ -36,7 +36,7 @@
 --  This package provides a utility routine for checking for bad spellings
 
 package GNAT.Spelling_Checker is
-pragma Pure (Spelling_Checker);
+   pragma Pure;
 
    function Is_Bad_Spelling_Of
      (Found  : String;

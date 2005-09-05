@@ -34,7 +34,7 @@
 --  Boolean'Image
 
 package System.Img_Bool is
-pragma Pure (Img_Bool);
+   pragma Pure;
 
    function Image_Boolean (V : Boolean) return String;
    --  Computes Boolean'Image (V) and returns the result.

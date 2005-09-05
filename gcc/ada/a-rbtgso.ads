@@ -37,7 +37,7 @@ generic
    with procedure Free (X : in out Node_Access);
 
 package Ada.Containers.Red_Black_Trees.Generic_Set_Operations is
-pragma Pure (Generic_Set_Operations);
+   pragma Pure;
 
    procedure Union (Target : in out Tree_Type; Source : Tree_Type);
 

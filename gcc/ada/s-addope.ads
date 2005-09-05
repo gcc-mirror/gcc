@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2004 Free Software Foundation, Inc.            --
+--           Copyright (C) 2004-2005 Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -47,7 +47,7 @@
 --  operations may not be available if type Address is a signed integer.
 
 package System.Address_Operations is
-pragma Pure (Address_Operations);
+   pragma Pure;
 
    --  The semantics of the arithmetic operations are those that apply to
    --  a modular type with the same length as Address, i.e. they provide

@@ -31,11 +31,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Unchecked_Deallocation;
-
-package Types is
-pragma Preelaborate (Types);
-
 --  This package contains host independent type definitions which are used
 --  in more than one unit in the compiler. They are gathered here for easy
 --  reference, though in some cases the full description is found in the
@@ -45,12 +40,17 @@ pragma Preelaborate (Types);
 --  dependencies would have to be dealt with.
 
 --  WARNING: There is a C version of this package. Any changes to this
---  source file must be properly reflected in the C header file a-types.h
+--  source file must be properly reflected in the C header file types.h
 
 --  Note: the declarations in this package reflect an expectation that the
 --  host machine has an efficient integer base type with a range at least
 --  32 bits 2s-complement. If there are any machines for which this is not
 --  a correct assumption, a significant number of changes will be required!
+
+with Unchecked_Deallocation;
+
+package Types is
+   pragma Preelaborate;
 
    -------------------------------
    -- General Use Integer Types --

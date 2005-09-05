@@ -34,7 +34,7 @@
 --  This package contains the routine used for the 'Fore attribute
 
 package System.Fore is
-pragma Pure (Fore);
+   pragma Pure;
 
    function Fore (Lo, Hi : Long_Long_Float) return Natural;
    --  Compute Fore attribute value for a fixed-point type. The parameters

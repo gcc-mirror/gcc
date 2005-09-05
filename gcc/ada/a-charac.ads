@@ -14,6 +14,6 @@
 ------------------------------------------------------------------------------
 
 package Ada.Characters is
-pragma Pure (Characters);
+   pragma Pure;
 
 end Ada.Characters;

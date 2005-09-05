@@ -261,7 +261,7 @@ package body Ada.Numerics.Discrete_Random is
       Outs.FP  := Flt (Outs.P);
       Outs.Scl := (RstL - RstF + 1.0) / (Flt (Outs.P) * Flt (Outs.Q));
 
-      --  Now do *some* sanity checks.
+      --  Now do *some* sanity checks
 
       if Outs.Q < 31
         or else Outs.X1 not in 2 .. Outs.P - 1

@@ -43,7 +43,7 @@ generic
       return Boolean is <>;
 
 package Ada.Containers.Doubly_Linked_Lists is
-   pragma Preelaborate (Doubly_Linked_Lists);
+   pragma Preelaborate;
 
    type List is tagged private;
 

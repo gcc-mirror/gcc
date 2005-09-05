@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 2000-2002 Ada Core Technologies, Inc.            --
+--           Copyright (C) 2000-2005 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,7 @@
 --  is for internal use only, it is not generally available to applications.
 
 package System.Pure_Exceptions is
-pragma Pure (Pure_Exceptions);
+   pragma Pure;
 
    type Exception_Type is limited null record;
    --  Type used to specify which exception to raise

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -38,7 +38,7 @@
 with System.Finalization_Root;
 
 package Ada.Finalization is
-pragma Preelaborate (Finalization);
+   pragma Preelaborate;
 
    type Controlled is abstract tagged private;
 

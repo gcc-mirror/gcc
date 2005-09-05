@@ -17,7 +17,7 @@ with Ada.Numerics.Generic_Complex_Types;
 pragma Elaborate_All (Ada.Numerics.Generic_Complex_Types);
 
 package Interfaces.Fortran is
-pragma Pure (Fortran);
+   pragma Pure;
 
    type Fortran_Integer  is new Integer;
    type Real             is new Float;

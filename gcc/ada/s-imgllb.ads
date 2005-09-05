@@ -38,7 +38,7 @@
 with System.Unsigned_Types;
 
 package System.Img_LLB is
-pragma Preelaborate (Img_LLB);
+   pragma Preelaborate;
 
    procedure Set_Image_Based_Long_Long_Integer
      (V : Long_Long_Integer;

@@ -34,7 +34,7 @@
 --  This package contains the function for concatenating four strings
 
 package System.String_Ops_Concat_4 is
-pragma Pure (String_Ops_Concat_4);
+   pragma Pure;
 
    function Str_Concat_4 (S1, S2, S3, S4 : String) return String;
    --  Concatenate four strings and return resulting string

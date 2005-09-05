@@ -34,7 +34,7 @@
 --  This package contains the function for concatenating five strings
 
 package System.String_Ops_Concat_5 is
-pragma Pure (String_Ops_Concat_5);
+   pragma Pure;
 
    function Str_Concat_5 (S1, S2, S3, S4, S5 : String) return String;
    --  Concatenate five strings and return resulting string

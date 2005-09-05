@@ -34,7 +34,7 @@
 ------------------------------------------------------------------------------
 
 package Ada.Containers.Hash_Tables is
-pragma Preelaborate;
+   pragma Preelaborate;
 
    generic
       type Node_Type (<>) is limited private;

@@ -44,7 +44,7 @@ with System.Unsigned_Types;
 with Ada.Streams;
 
 package System.Stream_Attributes is
-pragma Preelaborate (Stream_Attributes);
+   pragma Preelaborate;
 
    pragma Suppress (Accessibility_Check, Stream_Attributes);
    --  No need to check accessibility on arguments of subprograms

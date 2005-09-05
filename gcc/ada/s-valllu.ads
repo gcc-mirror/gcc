@@ -37,7 +37,7 @@
 with System.Unsigned_Types;
 
 package System.Val_LLU is
-pragma Pure (Val_LLU);
+   pragma Pure;
 
    function Scan_Long_Long_Unsigned
      (Str  : String;

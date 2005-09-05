@@ -45,7 +45,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Indefinite_Ordered_Multisets is
-pragma Preelaborate (Indefinite_Ordered_Multisets);
+   pragma Preelaborate;
 
    type Set is tagged private;
 

@@ -39,7 +39,7 @@
 with System.WCh_Con;
 
 package System.WCh_WtS is
-pragma Pure (WCh_WtS);
+   pragma Pure;
 
    function Wide_String_To_String
      (S  : Wide_String;

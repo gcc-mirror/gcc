@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -36,7 +36,7 @@
 ------------------------------------------------------------------------------
 
 package Ada.Decimal is
-pragma Pure (Decimal);
+   pragma Pure;
 
    --  The compiler makes a number of assumptions based on the following five
    --  constants (e.g. there is an assumption that decimal values can always

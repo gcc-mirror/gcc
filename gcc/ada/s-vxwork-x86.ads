@@ -34,7 +34,7 @@
 --  This is the x86 VxWorks version of this package
 
 package System.VxWorks is
-   pragma Preelaborate (System.VxWorks);
+   pragma Preelaborate;
 
    --  Floating point context record. x86 version
 

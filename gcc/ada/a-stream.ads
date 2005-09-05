@@ -36,7 +36,7 @@
 ------------------------------------------------------------------------------
 
 package Ada.Streams is
-pragma Pure (Streams);
+   pragma Pure;
 
    type Root_Stream_Type is abstract tagged limited private;
 

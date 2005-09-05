@@ -34,7 +34,7 @@
 with Interfaces.C;
 
 package Interfaces.OS2Lib.Threads is
-pragma Preelaborate (Threads);
+   pragma Preelaborate;
 
    package IC renames Interfaces.C;
 

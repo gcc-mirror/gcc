@@ -34,7 +34,7 @@
 --  This package contains functions for runtime operations on boolean vectors
 
 package System.Vectors.Boolean_Operations is
-pragma Pure (Boolean_Operations);
+   pragma Pure;
 
    --  Although in general the boolean operations on arrays of booleans are
    --  identical to operations on arrays of unsigned words of the same size,

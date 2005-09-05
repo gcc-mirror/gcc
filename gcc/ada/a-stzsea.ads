@@ -42,7 +42,7 @@
 with Ada.Strings.Wide_Wide_Maps;
 
 private package Ada.Strings.Wide_Wide_Search is
-pragma Preelaborate (Wide_Wide_Search);
+   pragma Preelaborate;
 
    function Index
      (Source  : Wide_Wide_String;

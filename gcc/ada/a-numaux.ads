@@ -46,7 +46,7 @@
 --  routines that take 80-bit arguments).
 
 package Ada.Numerics.Aux is
-pragma Pure (Aux);
+   pragma Pure;
 
    pragma Linker_Options ("-lm");
 

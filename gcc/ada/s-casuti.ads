@@ -40,7 +40,7 @@
 --  via GNAT.Case_Util, which imports all the entities from this package.
 
 package System.Case_Util is
-pragma Pure (Case_Util);
+   pragma Pure;
 
    --  Note: all the following functions handle the full Latin-1 set
 

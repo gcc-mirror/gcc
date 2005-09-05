@@ -36,9 +36,9 @@
 ------------------------------------------------------------------------------
 
 package Ada.Characters.Handling is
-pragma Preelaborate (Handling);
-pragma Pure_05 (Handling);
---  In accordance with Ada 2005 AI-362
+   pragma Preelaborate;
+   pragma Pure_05;
+   --  In accordance with Ada 2005 AI-362
 
    ----------------------------------------
    -- Character Classification Functions --

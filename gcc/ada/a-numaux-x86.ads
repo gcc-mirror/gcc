@@ -42,7 +42,7 @@
 --  routines directly.
 
 package Ada.Numerics.Aux is
-pragma Pure (Aux);
+   pragma Pure;
 
    type Double is new Long_Long_Float;
 

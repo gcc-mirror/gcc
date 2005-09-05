@@ -34,7 +34,7 @@
 --  This package contains the routines used for Wide_[Wide_]Character'Width
 
 package System.Wid_WChar is
-pragma Pure (Wid_WChar);
+   pragma Pure;
 
    function Width_Wide_Character
      (Lo, Hi : Wide_Character) return Natural;

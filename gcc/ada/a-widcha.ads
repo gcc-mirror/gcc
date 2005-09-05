@@ -17,5 +17,5 @@
 --  available in Ada 95 mode, since it deals only with wide characters.
 
 package Ada.Wide_Characters is
-pragma Pure (Wide_Characters);
+   pragma Pure;
 end Ada.Wide_Characters;

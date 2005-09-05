@@ -31,12 +31,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routine used for WIdth attribute for all
+--  This package contains the routine used for Width attribute for all
 --  non-static signed integer subtypes. Note we only have one routine,
 --  since this seems a fairly marginal function.
 
 package System.Wid_LLI is
-pragma Pure (Wid_LLI);
+   pragma Pure;
 
    function Width_Long_Long_Integer
      (Lo, Hi : Long_Long_Integer)
