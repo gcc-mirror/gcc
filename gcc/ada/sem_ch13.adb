@@ -1488,6 +1488,14 @@ package body Sem_Ch13 is
          Error_Msg_N ("enumeration rep clause not allowed for this type", N);
          return;
 
+      --  Check that the expression is a proper aggregate (no parentheses)
+
+      elsif Paren_Count (Aggr) /= 0 then
+         Error_Msg
+           ("extra parentheses surrounding aggregate not allowed",
+            First_Sloc (Aggr));
+         return;
+
       --  All tests passed, so set rep clause in place
 
       else
@@ -1499,10 +1507,6 @@ package body Sem_Ch13 is
       --  aggregate code for this purpose, because we don't want any of the
       --  normal expansion activities, and a number of special semantic
       --  rules apply (including the component type being any integer type)
-
-      --  Badent signals that we found some incorrect entries processing
-      --  the list. The final checks for completeness and ordering are
-      --  skipped in this case.
 
       Elit := First_Literal (Enumtype);
 
@@ -1518,9 +1522,12 @@ package body Sem_Ch13 is
 
             Val := Static_Integer (Expr);
 
+            --  Err signals that we found some incorrect entries processing
+            --  the list. The final checks for completeness and ordering are
+            --  skipped in this case.
+
             if Val = No_Uint then
                Err := True;
-
             elsif Val < Lo or else Hi < Val then
                Error_Msg_N ("value outside permitted range", Expr);
                Err := True;
@@ -3124,7 +3131,7 @@ package body Sem_Ch13 is
                          New_Reference_To (
                            Designated_Type (Etype (F)), Loc)))),
 
-             Subtype_Mark =>
+             Result_Definition =>
                New_Reference_To (Etyp, Loc));
       end Build_Spec;
 
