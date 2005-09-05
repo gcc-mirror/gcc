@@ -1542,7 +1542,7 @@ package body Exp_Ch5 is
       --  create dereferences but are not semantic aliasings.
 
       elsif Is_Private_Type (Etype (Lhs))
-        and then  Has_Discriminants (Typ)
+        and then Has_Discriminants (Typ)
         and then Nkind (Lhs) = N_Explicit_Dereference
         and then Comes_From_Source (Lhs)
       then
@@ -1621,17 +1621,13 @@ package body Exp_Ch5 is
            (Expression (Rhs), Designated_Type (Etype (Lhs)));
       end if;
 
-      --  Ada 2005 (AI-231): Generate conversion to the null-excluding
-      --  type to force the corresponding run-time check
+      --  Ada 2005 (AI-231): Generate the run-time check
 
       if Is_Access_Type (Typ)
-        and then
-          ((Is_Entity_Name (Lhs) and then Can_Never_Be_Null (Entity (Lhs)))
-             or else Can_Never_Be_Null (Etype (Lhs)))
+        and then Can_Never_Be_Null (Etype (Lhs))
+        and then not Can_Never_Be_Null (Etype (Rhs))
       then
-         Rewrite (Rhs, Convert_To (Etype (Lhs),
-                                   Relocate_Node (Rhs)));
-         Analyze_And_Resolve (Rhs, Etype (Lhs));
+         Apply_Constraint_Check (Rhs, Etype (Lhs));
       end if;
 
       --  If we are assigning an access type and the left side is an
@@ -2833,9 +2829,23 @@ package body Exp_Ch5 is
       --  Ada 2005 (AI-344): If the result type is class-wide, then insert
       --  a check that the level of the return expression's underlying type
       --  is not deeper than the level of the master enclosing the function.
+      --  Always generate the check when the type of the return expression
+      --  is class-wide, when it's a type conversion, or when it's a formal
+      --  parameter. Otherwise, suppress the check in the case where the
+      --  return expression has a specific type whose level is known not to
+      --  be statically deeper than the function's result type.
 
       elsif Ada_Version >= Ada_05
         and then Is_Class_Wide_Type (Return_Type)
+        and then not Scope_Suppress (Accessibility_Check)
+        and then
+          (Is_Class_Wide_Type (Etype (Exp))
+            or else Nkind (Exp) = N_Type_Conversion
+            or else Nkind (Exp) = N_Unchecked_Type_Conversion
+            or else (Is_Entity_Name (Exp)
+                       and then Ekind (Entity (Exp)) in Formal_Kind)
+            or else Scope_Depth (Enclosing_Dynamic_Scope (Etype (Exp))) >
+                      Scope_Depth (Enclosing_Dynamic_Scope (Scope_Id)))
       then
          Insert_Action (Exp,
            Make_Raise_Program_Error (Loc,
