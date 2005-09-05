@@ -5571,11 +5571,23 @@ package body Sem_Prag is
 
             Rewrite (N, Make_Implicit_If_Statement (N,
               Condition => New_Occurrence_Of (Boolean_Literals (
-                Assertions_Enabled and Expander_Active), Loc),
+                Debug_Pragmas_Enabled and Expander_Active), Loc),
               Then_Statements => New_List (
                 Relocate_Node (Debug_Statement (N)))));
             Analyze (N);
          end Debug;
+
+         ------------------
+         -- Debug_Policy --
+         ------------------
+
+         --  pragma Debug_Policy (Check | Ignore)
+
+         when Pragma_Debug_Policy =>
+            GNAT_Pragma;
+            Check_Arg_Count (1);
+            Check_Arg_Is_One_Of (Arg1, Name_Check, Name_Ignore);
+            Debug_Pragmas_Enabled := Chars (Expression (Arg1)) = Name_Check;
 
          ---------------------
          -- Detect_Blocking --
@@ -6519,7 +6531,9 @@ package body Sem_Prag is
          -- Float_Representation --
          --------------------------
 
-         --  pragma Float_Representation (VAX_Float | IEEE_Float);
+         --  pragma Float_Representation (FLOAT_REP[, float_type_LOCAL_NAME]);
+
+         --  FLOAT_REP ::= VAX_Float | IEEE_Float
 
          when Pragma_Float_Representation => Float_Representation : declare
             Argx : Node_Id;
@@ -6552,9 +6566,7 @@ package body Sem_Prag is
             --  One argument case
 
             if Arg_Count = 1 then
-
                if Chars (Expression (Arg1)) = Name_VAX_Float then
-
                   if Opt.Float_Format = 'I' then
                      Error_Pragma ("'I'E'E'E format previously specified");
                   end if;
@@ -6590,7 +6602,6 @@ package body Sem_Prag is
                --  Two arguments, VAX_Float case
 
                if Chars (Expression (Arg1)) = Name_VAX_Float then
-
                   case Digs is
                      when  6 => Set_F_Float (Ent);
                      when  9 => Set_D_Float (Ent);
@@ -8091,6 +8102,8 @@ package body Sem_Prag is
          -- No_Strict_Aliasing --
          ------------------------
 
+         --  pragma No_Strict_Aliasing [([Entity =>] type_LOCAL_NAME)];
+
          when Pragma_No_Strict_Aliasing => No_Strict_Alias : declare
             E_Id : Entity_Id;
 
@@ -8324,15 +8337,12 @@ package body Sem_Prag is
             if Has_Pragma_Pack (Typ) then
                Error_Pragma ("duplicate pragma%, only one allowed");
 
-            --  Array type. We set the Has_Pragma_Pack flag, and Is_Packed,
-            --  but not Has_Non_Standard_Rep, because we don't actually know
-            --  till freeze time if the array can have packed representation.
-            --  That's because in the general case we do not know enough about
-            --  the component type until it in turn is frozen, which certainly
-            --  happens before the array type is frozen, but not necessarily
-            --  till that point (i.e. right now it may be unfrozen).
+            --  Array type
 
             elsif Is_Array_Type (Typ) then
+
+               --  Pack not allowed for aliased or atomic components
+
                if Has_Aliased_Components (Base_Type (Typ)) then
                   Error_Pragma
                     ("pragma% ignored, cannot pack aliased components?");
@@ -8341,15 +8351,36 @@ package body Sem_Prag is
                  or else Is_Atomic (Component_Type (Typ))
                then
                   Error_Pragma
-                    ("?pragma% ignored, cannot pack atomic components");
-
-               elsif not Rep_Item_Too_Late (Typ, N) then
-                  Set_Is_Packed            (Base_Type (Typ));
-                  Set_Has_Pragma_Pack      (Base_Type (Typ));
-                  Set_Has_Non_Standard_Rep (Base_Type (Typ));
+                       ("?pragma% ignored, cannot pack atomic components");
                end if;
 
-            --  Record type. For record types, the pack is always effective
+               --  If we had an explicit component size given, then we do not
+               --  let Pack override this given size. We also give a warning
+               --  that Pack is being ignored unless we can tell for sure that
+               --  the Pack would not have had any effect anyway.
+
+               if Has_Component_Size_Clause (Typ) then
+                  if Known_Static_RM_Size (Component_Type (Typ))
+                    and then
+                      RM_Size (Component_Type (Typ)) = Component_Size (Typ)
+                  then
+                     null;
+                  else
+                     Error_Pragma
+                       ("?pragma% ignored, explicit component size given");
+                  end if;
+
+               --  If no prior array component size given, Pack is effective
+
+               else
+                  if not Rep_Item_Too_Late (Typ, N) then
+                     Set_Is_Packed            (Base_Type (Typ));
+                     Set_Has_Pragma_Pack      (Base_Type (Typ));
+                     Set_Has_Non_Standard_Rep (Base_Type (Typ));
+                  end if;
+               end if;
+
+            --  For record types, the pack is always effective
 
             else pragma Assert (Is_Record_Type (Typ));
                if not Rep_Item_Too_Late (Typ, N) then
@@ -10563,6 +10594,7 @@ package body Sem_Prag is
       Pragma_Convention                   =>  0,
       Pragma_Convention_Identifier        =>  0,
       Pragma_Debug                        => -1,
+      Pragma_Debug_Policy                 =>  0,
       Pragma_Detect_Blocking              => -1,
       Pragma_Discard_Names                =>  0,
       Pragma_Elaborate                    => -1,

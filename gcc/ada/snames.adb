@@ -89,6 +89,10 @@ package body Snames is
      "_task_info#" &
      "_task_name#" &
      "_trace_sp#" &
+     "_disp_asynchronous_select#" &
+     "_disp_conditional_select#" &
+     "_disp_get_prim_op_kind#" &
+     "_disp_timed_select#" &
      "initialize#" &
      "adjust#" &
      "finalize#" &
@@ -174,6 +178,7 @@ package body Snames is
      "compile_time_warning#" &
      "component_alignment#" &
      "convention_identifier#" &
+     "debug_policy#" &
      "detect_blocking#" &
      "discard_names#" &
      "elaboration_checks#" &

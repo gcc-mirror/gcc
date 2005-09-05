@@ -31,7 +31,6 @@ with Lib;      use Lib;
 with Osint;    use Osint;
 with Opt;      use Opt;
 with Prepcomp; use Prepcomp;
-with Types;    use Types;
 with Validsw;  use Validsw;
 with Stylesw;  use Stylesw;
 
@@ -192,6 +191,7 @@ package body Switch.C is
             when 'a' =>
                Ptr := Ptr + 1;
                Assertions_Enabled := True;
+               Debug_Pragmas_Enabled := True;
 
             --  Processing for A switch
 
@@ -264,14 +264,6 @@ package body Switch.C is
                      raise Bad_Switch;
                   end if;
                end loop;
-
-               --  Make sure Zero_Cost_Exceptions is set if gnatdX set. This
-               --  is for backwards compatibility with old versions and usage.
-
-               if Debug_Flag_XX then
-                  Zero_Cost_Exceptions_Set := True;
-                  Zero_Cost_Exceptions_Val := True;
-               end if;
 
                return;
 
@@ -485,6 +477,13 @@ package body Switch.C is
                System_Extend_Unit := Empty;
                Warning_Mode := Treat_As_Error;
 
+               --  Set Ada 2005 mode explicitly. We don't want to rely on the
+               --  implicit setting here, since for example, we want
+               --  Preelaborate_05 treated as Preelaborate
+
+               Ada_Version := Ada_05;
+               Ada_Version_Explicit := Ada_Version;
+
                --  Set default warnings for -gnatg (same set as -gnatwa)
 
                Check_Unreferenced           := True;
@@ -564,8 +563,8 @@ package body Switch.C is
 
             when 'L' =>
                Ptr := Ptr + 1;
-               Zero_Cost_Exceptions_Set := True;
-               Zero_Cost_Exceptions_Val := False;
+               Osint.Fail
+                 ("-gnatL is no longer supported: consider using --RTS=sjlj");
 
             --  Processing for m switch
 
@@ -1059,8 +1058,8 @@ package body Switch.C is
 
             when 'Z' =>
                Ptr := Ptr + 1;
-               Zero_Cost_Exceptions_Set := True;
-               Zero_Cost_Exceptions_Val := True;
+               Osint.Fail
+                 ("-gnatZ is no longer supported: consider using --RTS=zcx");
 
             --  Processing for 83 switch
 
