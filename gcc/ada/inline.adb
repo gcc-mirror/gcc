@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,6 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Ch7;  use Exp_Ch7;
-with Exp_Ch11; use Exp_Ch11;
 with Exp_Tss;  use Exp_Tss;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
@@ -986,29 +985,6 @@ package body Inline is
            and then not Is_Generic_Unit (Main_Unit_Entity)
          then
             Cleanup_Scopes;
-
-            --  Also generate subprogram descriptors that were delayed
-
-            for J in Pending_Descriptor.First .. Pending_Descriptor.Last loop
-               declare
-                  Ent : constant Entity_Id := Pending_Descriptor.Table (J);
-
-               begin
-                  if Is_Subprogram (Ent) then
-                     Generate_Subprogram_Descriptor_For_Subprogram
-                       (Get_Subprogram_Body (Ent), Ent);
-
-                  elsif Ekind (Ent) = E_Package then
-                     Generate_Subprogram_Descriptor_For_Package
-                       (Parent (Declaration_Node (Ent)), Ent);
-
-                  elsif Ekind (Ent) = E_Package_Body then
-                     Generate_Subprogram_Descriptor_For_Package
-                       (Declaration_Node (Ent), Ent);
-                  end if;
-               end;
-            end loop;
-
          elsif Is_Generic_Unit (Cunit_Entity (Main_Unit)) then
             End_Generic;
          end if;

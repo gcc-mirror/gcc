@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,6 @@ with Checks;
 with CStand;
 with Debug;    use Debug;
 with Elists;
-with Exp_Ch11;
 with Exp_Dbug;
 with Fmap;
 with Fname.UF;
@@ -80,7 +79,6 @@ begin
    Lib.Load.Initialize;
    Sem_Ch8.Initialize;
    Fname.UF.Initialize;
-   Exp_Ch11.Initialize;
    Checks.Initialize;
 
    --  Create package Standard
@@ -329,11 +327,6 @@ begin
             end if;
 
             Check_Elab_Calls;
-
-            --  Build unit exception table. We leave this up to the end to
-            --  make sure that all the necessary information is at hand.
-
-            Exp_Ch11.Generate_Unit_Exception_Table;
          end if;
 
          --  List library units if requested

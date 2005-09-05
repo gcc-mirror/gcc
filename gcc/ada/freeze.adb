@@ -30,7 +30,6 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Ch7;  use Exp_Ch7;
-with Exp_Ch11; use Exp_Ch11;
 with Exp_Pakd; use Exp_Pakd;
 with Exp_Util; use Exp_Util;
 with Exp_Tss;  use Exp_Tss;
@@ -3365,9 +3364,6 @@ package body Freeze is
             if Result = No_List then
                Result := Empty_List;
             end if;
-
-            Generate_Subprogram_Descriptor_For_Imported_Subprogram
-              (E, Result);
          end if;
       end if;
 

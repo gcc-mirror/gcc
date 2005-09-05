@@ -31,16 +31,18 @@
  ****************************************************************************/
 
 
+/* C counterparts of what System.Standard_Library defines.  */
+
 typedef unsigned Exception_Code;
-/* C counterpart of what System.Standard_Library defines.  */
 
 struct Exception_Data
 {
-  char  Handled_By_Others;
+  char Not_Handled_By_Others;
   char Lang;
   int Name_Length;
-  char *Full_Name, Htable_Ptr;
+  char *Full_Name, *Htable_Ptr;
   Exception_Code Import_Code;
+  void (*Raise_Hook)(void);
 };
 
 typedef struct Exception_Data *Exception_Id;

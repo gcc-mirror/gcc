@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,7 +63,7 @@ package Lib.Writ is
    --  If the following guidelines are respected, downward compatibility
    --  problems (old tools reading new ali files) should be minimized:
 
-   --    The basic key character format must be kept.
+   --    The basic key character format must be kept
 
    --    The V line must be the first line, this is checked by ali.adb
    --    even in Ignore_Errors mode, and is used to verify that the file
@@ -233,10 +233,6 @@ package Lib.Writ is
    --         UA  Unreserve_All_Interrupts pragma was processed in one or
    --             more units in this file
    --
-   --         UX  Generated code contains unit exception table pointer
-   --             (i.e. it uses zero-cost exceptions, and there is at
-   --             least one subprogram present).
-   --
    --         ZX  Units in this file use zero-cost exceptions and have
    --             generated exception tables. If ZX is not present, the
    --             longjmp/setjmp exception scheme is in use.
@@ -390,7 +386,7 @@ package Lib.Writ is
    --  -- U  Unit Header --
    --  --------------------
 
-   --  The lines for each compilation unit have the following form.
+   --  The lines for each compilation unit have the following form
 
    --    U unit-name source-name version <<attributes>>
    --

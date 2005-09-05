@@ -44,7 +44,6 @@ with Unchecked_Conversion;
 package body System.Machine_State_Operations is
 
    use System.Storage_Elements;
-   use System.Exceptions;
 
    --  The exc_unwind function in libexc operats on a Sigcontext
 
@@ -182,66 +181,6 @@ package body System.Machine_State_Operations is
         (Memory.Alloc (Sigcontext'Max_Size_In_Storage_Elements));
    end Allocate_Machine_State;
 
-   -------------------
-   -- Enter_Handler --
-   -------------------
-
-   procedure Enter_Handler (M : Machine_State; Handler : Handler_Loc) is
-      pragma Warnings (Off, M);
-      pragma Warnings (Off, Handler);
-
-      LOADI : constant String (1 .. 2) := 'l' & LSC;
-      --  This is "lw" in o32 mode, and "ld" in n32/n64 mode
-
-      LOADF : constant String (1 .. 4) := 'l' & LSC & "c1";
-      --  This is "lwc1" in o32 mode and "ldc1" in n32/n64 mode
-
-   begin
-      --  Restore integer registers from machine state. Note that we know
-      --  that $4 points to M, and $5 points to Handler, since this is
-      --  the standard calling sequence
-
-      Asm (LOADI & " $16,  16*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (LOADI & " $17,  17*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (LOADI & " $18,  18*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (LOADI & " $19,  19*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (LOADI & " $20,  20*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (LOADI & " $21,  21*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (LOADI & " $22,  22*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (LOADI & " $23,  23*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (LOADI & " $24,  24*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (LOADI & " $25,  25*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (LOADI & " $26,  26*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (LOADI & " $27,  27*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (LOADI & " $28,  28*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (LOADI & " $29,  29*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (LOADI & " $30,  30*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-      Asm (LOADI & " $31,  31*8+" & Roff & "+" & SC_Regs_Pos & "($4)");
-
-      --  Restore floating-point registers from machine state
-
-      Asm (LOADF & " $f16, 16*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (LOADF & " $f17, 17*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (LOADF & " $f18, 18*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (LOADF & " $f19, 19*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (LOADF & " $f20, 20*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (LOADF & " $f21, 21*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (LOADF & " $f22, 22*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (LOADF & " $f23, 23*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (LOADF & " $f24, 24*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (LOADF & " $f25, 25*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (LOADF & " $f26, 26*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (LOADF & " $f27, 27*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (LOADF & " $f28, 28*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (LOADF & " $f29, 29*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (LOADF & " $f30, 30*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-      Asm (LOADF & " $f31, 31*8+" & Roff & "+" & SC_Fpregs_Pos & "($4)");
-
-      --  Jump directly to the handler
-
-      Asm ("jr  $5");
-   end Enter_Handler;
-
    ----------------
    -- Fetch_Code --
    ----------------
@@ -284,12 +223,7 @@ package body System.Machine_State_Operations is
    -- Pop_Frame --
    ---------------
 
-   procedure Pop_Frame
-     (M    : Machine_State;
-      Info : Subprogram_Info_Type)
-   is
-      pragma Warnings (Off, Info);
-
+   procedure Pop_Frame (M : Machine_State) is
       Scp : constant Sigcontext_Ptr := To_Sigcontext_Ptr (M);
 
       procedure Exc_Unwind (Scp : Sigcontext_Ptr; Fde : Long_Integer := 0);
@@ -407,21 +341,7 @@ package body System.Machine_State_Operations is
       --  This pop operation will properly set the PC value in the machine
       --  state, so there is no need to save PC in the above code.
 
-      Pop_Frame (M, Set_Machine_State'Address);
+      Pop_Frame (M);
    end Set_Machine_State;
-
-   ------------------------------
-   -- Set_Signal_Machine_State --
-   ------------------------------
-
-   procedure Set_Signal_Machine_State
-     (M       : Machine_State;
-      Context : System.Address)
-   is
-      pragma Warnings (Off, M);
-      pragma Warnings (Off, Context);
-   begin
-      null;
-   end Set_Signal_Machine_State;
 
 end System.Machine_State_Operations;

@@ -203,27 +203,7 @@ begin
 
       if Targparm.ZCX_By_Default_On_Target then
          if Targparm.GCC_ZCX_Support_On_Target then
-            Exception_Mechanism := Back_End_ZCX_Exceptions;
-         else
-            Exception_Mechanism := Front_End_ZCX_Exceptions;
-         end if;
-      end if;
-
-      --  We take the command line exception mechanism into account
-
-      if Opt.Zero_Cost_Exceptions_Set then
-         if Opt.Zero_Cost_Exceptions_Val = False then
-            Exception_Mechanism := Front_End_Setjmp_Longjmp_Exceptions;
-
-         elsif Debug_Flag_XX then
-            Exception_Mechanism := Front_End_ZCX_Exceptions;
-
-         elsif Targparm.GCC_ZCX_Support_On_Target then
-            Exception_Mechanism := Back_End_ZCX_Exceptions;
-
-         elsif Targparm.Front_End_ZCX_Support_On_Target then
-            Exception_Mechanism := Front_End_ZCX_Exceptions;
-
+            Exception_Mechanism := Back_End_Exceptions;
          else
             Osint.Fail
               ("Zero Cost Exceptions not supported on this target");

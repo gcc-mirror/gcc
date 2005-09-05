@@ -71,7 +71,6 @@ begin
          Exclude_Min => Code_Address_For_AAA,
          Exclude_Max => Code_Address_For_ZZZ,
          Skip_Frames => 3);
-
    end if;
 
 end Call_Chain;

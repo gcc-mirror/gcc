@@ -220,11 +220,6 @@ begin
    Write_Switch_Char ("l");
    Write_Line ("Output full source listing with embedded error messages");
 
-   --  Line for -gnatL switch
-
-   Write_Switch_Char ("L");
-   Write_Line ("Use longjmp/setjmp for exception handling");
-
    --  Line for -gnatm switch
 
    Write_Switch_Char ("mnnn");
@@ -464,11 +459,6 @@ begin
 
    Write_Switch_Char ("z");
    Write_Line ("Distribution stub generation (r/c for receiver/caller stubs)");
-
-   --  Line for -gnatZ switch
-
-   Write_Switch_Char ("Z");
-   Write_Line ("Use zero cost exception handling");
 
    --  Line for -gnat83 switch
 
