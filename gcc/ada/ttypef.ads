@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -143,8 +143,8 @@ package Ttypef is
    IEEEL_Safe_First        : constant := -16#0.FFFF_FFFF_FFFF_F8#E+256;
    IEEEX_Safe_First        : constant := -16#0.FFFF_FFFF_FFFF_FFFF#E+4096;
    VAXFF_Safe_First        : constant := -16#0.7FFF_FF8#E+32;
-   VAXDF_Safe_First        : constant := -16#0.7FFF_FFFF_FFFF_FF8#E-38;
-   VAXGF_Safe_First        : constant := -16#0.7FFF_FFFF_FFFF_FC#E-256;
+   VAXDF_Safe_First        : constant := -16#0.7FFF_FFFF_FFFF_FC0#E+32;
+   VAXGF_Safe_First        : constant := -16#0.7FFF_FFFF_FFFF_FC#E+256;
    AAMPS_Safe_First        : constant := -16#0.7FFF_FF8#E+32;
    AAMPL_Safe_First        : constant := -16#0.7FFF_FFFF_FF8#E+32;
 
