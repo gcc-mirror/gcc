@@ -359,6 +359,21 @@ package body Ada.Containers.Ordered_Sets is
       return Position.Node.Element;
    end Element;
 
+   -------------------------
+   -- Equivalent_Elements --
+   -------------------------
+
+   function Equivalent_Elements (Left, Right : Element_Type) return Boolean is
+   begin
+      if Left < Right
+        or else Right < Left
+      then
+         return False;
+      else
+         return True;
+      end if;
+   end Equivalent_Elements;
+
    ---------------------
    -- Equivalent_Sets --
    ---------------------
@@ -490,34 +505,6 @@ package body Ada.Containers.Ordered_Sets is
            Is_Less_Key_Node    => Is_Less_Key_Node,
            Is_Greater_Key_Node => Is_Greater_Key_Node);
 
-      ---------
-      -- "<" --
-      ---------
-
-      function "<" (Left : Key_Type; Right : Cursor) return Boolean is
-      begin
-         return Left < Right.Node.Element;
-      end "<";
-
-      function "<" (Left : Cursor; Right : Key_Type) return Boolean is
-      begin
-         return Right > Left.Node.Element;
-      end "<";
-
-      ---------
-      -- ">" --
-      ---------
-
-      function ">" (Left : Key_Type; Right : Cursor) return Boolean is
-      begin
-         return Left > Right.Node.Element;
-      end ">";
-
-      function ">" (Left : Cursor; Right : Key_Type) return Boolean is
-      begin
-         return Right < Left.Node.Element;
-      end ">";
-
       -------------
       -- Ceiling --
       -------------
@@ -573,6 +560,21 @@ package body Ada.Containers.Ordered_Sets is
          return Node.Element;
       end Element;
 
+      ---------------------
+      -- Equivalent_Keys --
+      ---------------------
+
+      function Equivalent_Keys (Left, Right : Key_Type) return Boolean is
+      begin
+         if Left < Right
+           or else Right < Left
+         then
+            return False;
+         else
+            return True;
+         end if;
+      end Equivalent_Keys;
+
       -------------
       -- Exclude --
       -------------
@@ -626,7 +628,7 @@ package body Ada.Containers.Ordered_Sets is
          Right : Node_Access) return Boolean
       is
       begin
-         return Left > Right.Element;
+         return Key (Right.Element) < Left;
       end Is_Greater_Key_Node;
 
       ----------------------
@@ -638,7 +640,7 @@ package body Ada.Containers.Ordered_Sets is
          Right : Node_Access) return Boolean
       is
       begin
-         return Left < Right.Element;
+         return Left < Key (Right.Element);
       end Is_Less_Key_Node;
 
       ---------
@@ -691,7 +693,7 @@ package body Ada.Containers.Ordered_Sets is
 
          declare
             E : Element_Type renames Position.Node.Element;
-            K : Key_Type renames Key (E);
+            K : constant Key_Type := Key (E);
 
             B : Natural renames Tree.Busy;
             L : Natural renames Tree.Lock;
@@ -712,11 +714,7 @@ package body Ada.Containers.Ordered_Sets is
             L := L - 1;
             B := B - 1;
 
-            if K < E
-              or else K > E
-            then
-               null;
-            else
+            if Equivalent_Keys (K, Key (E)) then
                return;
             end if;
          end;
@@ -1319,12 +1317,10 @@ package body Ada.Containers.Ordered_Sets is
    end Replace_Element;
 
    procedure Replace_Element
-     (Container : Set;
+     (Container : in out Set;
       Position  : Cursor;
-      By        : Element_Type)
+      New_Item  : Element_Type)
    is
-      Tree : Tree_Type renames Container.Tree'Unrestricted_Access.all;
-
    begin
       if Position.Node = null then
          raise Constraint_Error;
@@ -1334,7 +1330,7 @@ package body Ada.Containers.Ordered_Sets is
          raise Program_Error;
       end if;
 
-      Replace_Element (Tree, Position.Node, By);
+      Replace_Element (Container.Tree, Position.Node, New_Item);
    end Replace_Element;
 
    ---------------------

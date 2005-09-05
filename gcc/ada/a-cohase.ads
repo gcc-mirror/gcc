@@ -48,7 +48,7 @@ generic
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
 package Ada.Containers.Hashed_Sets is
-pragma Preelaborate (Hashed_Sets);
+   pragma Preelaborate;
 
    type Set is tagged private;
 
@@ -62,6 +62,12 @@ pragma Preelaborate (Hashed_Sets);
 
    function Equivalent_Sets (Left, Right : Set) return Boolean;
 
+   function Capacity (Container : Set) return Count_Type;
+
+   procedure Reserve_Capacity
+     (Container : in out Set;
+      Capacity  : Count_Type);
+
    function Length (Container : Set) return Count_Type;
 
    function Is_Empty (Container : Set) return Boolean;
@@ -70,14 +76,14 @@ pragma Preelaborate (Hashed_Sets);
 
    function Element (Position : Cursor) return Element_Type;
 
+   procedure Replace_Element
+     (Container : in out Set;
+      Position  : Cursor;
+      New_Item  : Element_Type);
+
    procedure Query_Element
      (Position : Cursor;
       Process  : not null access procedure (Element : Element_Type));
-
-   procedure Replace_Element
-     (Container : Set;
-      Position  : Cursor;
-      By        : Element_Type);
 
    procedure Move (Target : in out Set; Source : in out Set);
 
@@ -93,39 +99,11 @@ pragma Preelaborate (Hashed_Sets);
 
    procedure Replace (Container : in out Set; New_Item : Element_Type);
 
+   procedure Exclude (Container : in out Set; Item     : Element_Type);
+
    procedure Delete  (Container : in out Set; Item     : Element_Type);
 
    procedure Delete (Container : in out Set; Position  : in out Cursor);
-
-   procedure Exclude (Container : in out Set; Item     : Element_Type);
-
-   function Contains (Container : Set; Item : Element_Type) return Boolean;
-
-   function Find
-     (Container : Set;
-      Item      : Element_Type) return Cursor;
-
-   function First (Container : Set) return Cursor;
-
-   function Next (Position : Cursor) return Cursor;
-
-   procedure Next (Position : in out Cursor);
-
-   function Has_Element (Position : Cursor) return Boolean;
-
-   function Equivalent_Elements (Left, Right : Cursor) return Boolean;
-
-   function Equivalent_Elements
-     (Left  : Cursor;
-      Right : Element_Type) return Boolean;
-
-   function Equivalent_Elements
-     (Left  : Element_Type;
-      Right : Cursor) return Boolean;
-
-   procedure Iterate
-     (Container : Set;
-      Process   : not null access procedure (Position : Cursor));
 
    procedure Union (Target : in out Set; Source : Set);
 
@@ -156,41 +134,61 @@ pragma Preelaborate (Hashed_Sets);
 
    function Is_Subset (Subset : Set; Of_Set : Set) return Boolean;
 
-   function Capacity (Container : Set) return Count_Type;
+   function First (Container : Set) return Cursor;
 
-   procedure Reserve_Capacity
-     (Container : in out Set;
-      Capacity  : Count_Type);
+   function Next (Position : Cursor) return Cursor;
+
+   procedure Next (Position : in out Cursor);
+
+   function Find
+     (Container : Set;
+      Item      : Element_Type) return Cursor;
+
+   function Contains (Container : Set; Item : Element_Type) return Boolean;
+
+   function Has_Element (Position : Cursor) return Boolean;
+
+   function Equivalent_Elements (Left, Right : Cursor) return Boolean;
+
+   function Equivalent_Elements
+     (Left  : Cursor;
+      Right : Element_Type) return Boolean;
+
+   function Equivalent_Elements
+     (Left  : Element_Type;
+      Right : Cursor) return Boolean;
+
+   procedure Iterate
+     (Container : Set;
+      Process   : not null access procedure (Position : Cursor));
 
    generic
-      type Key_Type (<>) is limited private;
+      type Key_Type (<>) is private;
 
       with function Key (Element : Element_Type) return Key_Type;
 
       with function Hash (Key : Key_Type) return Hash_Type;
 
-      with function Equivalent_Keys
-        (Key     : Key_Type;
-         Element : Element_Type) return Boolean;
+      with function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
 
    package Generic_Keys is
-
-      function Contains (Container : Set; Key : Key_Type) return Boolean;
-
-      function Find (Container : Set; Key : Key_Type) return Cursor;
 
       function Key (Position : Cursor) return Key_Type;
 
       function Element (Container : Set; Key : Key_Type) return Element_Type;
 
-      procedure Replace
+      procedure Replace          --  TODO: ask Randy why this wasn't removed
         (Container : in out Set;
          Key       : Key_Type;
          New_Item  : Element_Type);
 
+      procedure Exclude (Container : in out Set; Key : Key_Type);
+
       procedure Delete (Container : in out Set; Key : Key_Type);
 
-      procedure Exclude (Container : in out Set; Key : Key_Type);
+      function Find (Container : Set; Key : Key_Type) return Cursor;
+
+      function Contains (Container : Set; Key : Key_Type) return Boolean;
 
       procedure Update_Element_Preserving_Key
         (Container : in out Set;
@@ -198,18 +196,9 @@ pragma Preelaborate (Hashed_Sets);
          Process   : not null access
                        procedure (Element : in out Element_Type));
 
-      function Equivalent_Keys
-        (Left  : Cursor;
-         Right : Key_Type) return Boolean;
-
-      function Equivalent_Keys
-        (Left  : Key_Type;
-         Right : Cursor) return Boolean;
-
    end Generic_Keys;
 
 private
-
    type Node_Type;
    type Node_Access is access Node_Type;
 
