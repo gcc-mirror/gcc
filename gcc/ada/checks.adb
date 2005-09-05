@@ -218,6 +218,30 @@ package body Checks is
    --  routine. The Do_Static flag indicates that only a static check is
    --  to be done.
 
+   type Check_Type is (Access_Check, Division_Check);
+   function Check_Needed (Nod : Node_Id; Check : Check_Type) return Boolean;
+   --  This function is used to see if an access or division by zero check is
+   --  needed. The check is to be applied to a single variable appearing in the
+   --  source, and N is the node for the reference. If N is not of this form,
+   --  True is returned with no further processing. If N is of the right form,
+   --  then further processing determines if the given Check is needed.
+   --
+   --  The particular circuit is to see if we have the case of a check that is
+   --  not needed because it appears in the right operand of a short circuited
+   --  conditional where the left operand guards the check. For example:
+   --
+   --    if Var = 0 or else Q / Var > 12 then
+   --       ...
+   --    end if;
+   --
+   --  In this example, the division check is not required. At the same time
+   --  we can issue warnings for suspicious use of non-short-circuited forms,
+   --  such as:
+   --
+   --    if Var = 0 or Q / Var > 12 then
+   --       ...
+   --    end if;
+
    procedure Find_Check
      (Expr        : Node_Id;
       Check_Type  : Character;
@@ -253,10 +277,6 @@ package body Checks is
    --  In the access type case, guard the test with a test to ensure
    --  that the access value is non-null, since the checks do not
    --  not apply to null access values.
-
-   procedure Install_Null_Excluding_Check (N : Node_Id);
-   --  Determines whether an access node requires a runtime access check and
-   --  if so inserts the appropriate run-time check
 
    procedure Install_Static_Check (R_Cno : Node_Id; Loc : Source_Ptr);
    --  Called by Apply_{Length,Range}_Checks to rewrite the tree with the
@@ -380,12 +400,17 @@ package body Checks is
       elsif Access_Checks_Suppressed (Etype (P)) then
          return;
 
-         --  We do not need checks if we are not generating code (i.e. the
-         --  expander is not active). This is not just an optimization, there
-         --  are cases (e.g. with pragma Debug) where generating the checks
-         --  can cause real trouble).
+      --  We do not need checks if we are not generating code (i.e. the
+      --  expander is not active). This is not just an optimization, there
+      --  are cases (e.g. with pragma Debug) where generating the checks
+      --  can cause real trouble).
 
       elsif not Expander_Active then
+         return;
+
+      --  We do not need checks if not needed because of short circuiting
+
+      elsif not Check_Needed (P, Access_Check) then
          return;
       end if;
 
@@ -1360,7 +1385,8 @@ package body Checks is
 
    begin
       if Expander_Active
-        and not Backend_Divide_Checks_On_Target
+        and then not Backend_Divide_Checks_On_Target
+        and then Check_Needed (Right, Division_Check)
       then
          Determine_Range (Right, ROK, Rlo, Rhi);
 
@@ -1382,7 +1408,6 @@ package body Checks is
          --  Test for extremely annoying case of xxx'First divided by -1
 
          if Do_Overflow_Check (N) then
-
             if Nkind (N) = N_Op_Divide
               and then Is_Signed_Integer_Type (Typ)
             then
@@ -2420,6 +2445,121 @@ package body Checks is
       return Cond;
    end Build_Discriminant_Checks;
 
+   ------------------
+   -- Check_Needed --
+   ------------------
+
+   function Check_Needed (Nod : Node_Id; Check : Check_Type) return Boolean is
+      N : Node_Id;
+      P : Node_Id;
+      K : Node_Kind;
+      L : Node_Id;
+      R : Node_Id;
+
+   begin
+      --  Always check if not simple entity
+
+      if Nkind (Nod) not in N_Has_Entity
+        or else not Comes_From_Source (Nod)
+      then
+         return True;
+      end if;
+
+      --  Look up tree for short circuit
+
+      N := Nod;
+      loop
+         P := Parent (N);
+         K := Nkind (P);
+
+         if K not in N_Subexpr then
+            return True;
+
+         --  Or/Or Else case, left operand must be equality test
+
+         elsif K = N_Op_Or or else K = N_Or_Else then
+            exit when N = Right_Opnd (P)
+              and then Nkind (Left_Opnd (P)) = N_Op_Eq;
+
+         --  And/And then case, left operand must be inequality test. Note that
+         --  at this stage, the expander will have changed a/=b to not (a=b).
+
+         elsif K = N_Op_And or else K = N_And_Then then
+            exit when N = Right_Opnd (P)
+              and then Nkind (Left_Opnd (P)) = N_Op_Not
+              and then Nkind (Right_Opnd (Left_Opnd (P))) = N_Op_Eq;
+         end if;
+
+         N := P;
+      end loop;
+
+      --  If we fall through the loop, then we have a conditional with an
+      --  appropriate test as its left operand. So test further.
+
+      L := Left_Opnd (P);
+
+      if Nkind (L) = N_Op_Not then
+         L := Right_Opnd (L);
+      end if;
+
+      R := Right_Opnd (L);
+      L := Left_Opnd (L);
+
+      --  Left operand of test must match original variable
+
+      if Nkind (L) not in N_Has_Entity
+        or else Entity (L) /= Entity (Nod)
+      then
+         return True;
+      end if;
+
+      --  Right operand of test mus be key value (zero or null)
+
+      case Check is
+         when Access_Check =>
+            if Nkind (R) /= N_Null then
+               return True;
+            end if;
+
+         when Division_Check =>
+            if not Compile_Time_Known_Value (R)
+              or else Expr_Value (R) /= Uint_0
+            then
+               return True;
+            end if;
+      end case;
+
+      --  Here we have the optimizable case, warn if not short-circuited
+
+      if K = N_Op_And or else K = N_Op_Or then
+         case Check is
+            when Access_Check =>
+               Error_Msg_N
+                 ("Constraint_Error may be raised (access check)?",
+                  Parent (Nod));
+            when Division_Check =>
+               Error_Msg_N
+                 ("Constraint_Error may be raised (zero divide)?",
+                  Parent (Nod));
+         end case;
+
+         if K = N_Op_And then
+            Error_Msg_N ("use `AND THEN` instead of AND?", P);
+         else
+            Error_Msg_N ("use `OR ELSE` instead of OR?", P);
+         end if;
+
+         --  If not short-circuited, we need the ckeck
+
+         return True;
+
+      --  If short-circuited, we can omit the check
+
+      else
+         return False;
+      end if;
+   end Check_Needed;
+
    -----------------------------------
    -- Check_Valid_Lvalue_Subscripts --
    -----------------------------------
@@ -2467,222 +2607,120 @@ package body Checks is
       Related_Nod        : Node_Id;
       Has_Null_Exclusion : Boolean := False;
 
-      type Msg_Kind is (Components, Formals, Objects);
-      Msg_K : Msg_Kind := Objects;
-      --  Used by local subprograms to generate precise error messages
+   begin
+      pragma Assert (K = N_Parameter_Specification
+                       or else K = N_Object_Declaration
+                       or else K = N_Discriminant_Specification
+                       or else K = N_Component_Declaration);
 
-      procedure Check_Must_Be_Access
-        (Typ                : Entity_Id;
-         Has_Null_Exclusion : Boolean);
-      --  ??? local subprograms must have comment on spec
+      Typ := Etype (Defining_Identifier (N));
 
-      procedure Check_Already_Null_Excluding_Type
-        (Typ                : Entity_Id;
-         Has_Null_Exclusion : Boolean;
-         Related_Nod        : Node_Id);
-      --  ??? local subprograms must have comment on spec
+      pragma Assert (Is_Access_Type (Typ)
+        or else (K = N_Object_Declaration and then Is_Array_Type (Typ)));
 
-      procedure Check_Must_Be_Initialized
-        (N           : Node_Id;
-         Related_Nod : Node_Id);
-      --  ??? local subprograms must have comment on spec
+      case K is
+         when N_Parameter_Specification =>
+            Related_Nod        := Parameter_Type (N);
+            Has_Null_Exclusion := Null_Exclusion_Present (N);
 
-      procedure Check_Null_Not_Allowed (N : Node_Id);
-      --  ??? local subprograms must have comment on spec
+         when N_Object_Declaration =>
+            Related_Nod        := Object_Definition (N);
+            Has_Null_Exclusion := Null_Exclusion_Present (N);
 
-      --  ??? following bodies lack comments
+         when N_Discriminant_Specification =>
+            Related_Nod        := Discriminant_Type (N);
+            Has_Null_Exclusion := Null_Exclusion_Present (N);
 
-      --------------------------
-      -- Check_Must_Be_Access --
-      --------------------------
+         when N_Component_Declaration =>
+            if Present (Access_Definition (Component_Definition (N))) then
+               Related_Nod := Component_Definition (N);
+               Has_Null_Exclusion :=
+                 Null_Exclusion_Present
+                   (Access_Definition (Component_Definition (N)));
+            else
+               Related_Nod :=
+                 Subtype_Indication (Component_Definition (N));
+               Has_Null_Exclusion :=
+                 Null_Exclusion_Present (Component_Definition (N));
+            end if;
 
-      procedure Check_Must_Be_Access
-        (Typ                : Entity_Id;
-         Has_Null_Exclusion : Boolean)
-      is
-      begin
-         if Has_Null_Exclusion
-           and then not Is_Access_Type (Typ)
-         then
-            Error_Msg_N ("(Ada 2005) must be an access type", Related_Nod);
-         end if;
-      end Check_Must_Be_Access;
+         when others =>
+            raise Program_Error;
+      end case;
 
-      ---------------------------------------
-      -- Check_Already_Null_Excluding_Type --
-      ---------------------------------------
+      --  Enforce legality rule 3.10 (14/1): A null_exclusion is only allowed
+      --  of the access subtype does not exclude null.
 
-      procedure Check_Already_Null_Excluding_Type
-        (Typ                : Entity_Id;
-         Has_Null_Exclusion : Boolean;
-         Related_Nod        : Node_Id)
-      is
-      begin
-         if Has_Null_Exclusion
-           and then Can_Never_Be_Null (Typ)
-         then
-            Error_Msg_N
-              ("(Ada 2005) already a null-excluding type", Related_Nod);
-         end if;
-      end Check_Already_Null_Excluding_Type;
+      if Has_Null_Exclusion
+        and then Can_Never_Be_Null (Typ)
 
-      -------------------------------
-      -- Check_Must_Be_Initialized --
-      -------------------------------
+         --  No need to check itypes that have the null-excluding attribute
+         --  because they were checked at their point of creation
 
-      procedure Check_Must_Be_Initialized
-        (N           : Node_Id;
-         Related_Nod : Node_Id)
-      is
-         Expr        : constant Node_Id := Expression (N);
+        and then not Is_Itype (Typ)
+      then
+         Error_Msg_N
+           ("(Ada 2005) already a null-excluding type", Related_Nod);
+      end if;
 
-      begin
-         pragma Assert (Nkind (N) = N_Component_Declaration
-                          or else Nkind (N) = N_Object_Declaration);
+      --  Check that null-excluding objects are always initialized
 
-         if not Present (Expr) then
-            case Msg_K is
-               when Components =>
-                  Error_Msg_N
-                    ("(Ada 2005) null-excluding components must be " &
-                     "initialized", Related_Nod);
+      if K = N_Object_Declaration
+        and then not Present (Expression (N))
+      then
+         --  Add a an expression that assignates null. This node is needed
+         --  by Apply_Compile_Time_Constraint_Error, that will replace this
+         --  node by a Constraint_Error node.
 
-               when Formals =>
-                  Error_Msg_N
-                    ("(Ada 2005) null-excluding formals must be initialized",
-                     Related_Nod);
+         Set_Expression (N, Make_Null (Sloc (N)));
+         Set_Etype (Expression (N), Etype (Defining_Identifier (N)));
 
-               when Objects =>
-                  Error_Msg_N
-                    ("(Ada 2005) null-excluding objects must be initialized",
-                     Related_Nod);
-            end case;
-         end if;
-      end Check_Must_Be_Initialized;
+         Apply_Compile_Time_Constraint_Error
+           (N      => Expression (N),
+            Msg    => "(Ada 2005) null-excluding objects must be initialized?",
+            Reason => CE_Null_Not_Allowed);
+      end if;
 
-      ----------------------------
-      -- Check_Null_Not_Allowed --
-      ----------------------------
+      --  Check that the null value is not used as a single expression to
+      --  assignate a value to a null-excluding component, formal or object;
+      --  otherwise generate a warning message at the sloc of Related_Nod and
+      --  replace Expression (N) by an N_Contraint_Error node.
 
-      procedure Check_Null_Not_Allowed (N : Node_Id) is
+      declare
          Expr : constant Node_Id := Expression (N);
 
       begin
          if Present (Expr)
            and then Nkind (Expr) = N_Null
          then
-            case Msg_K is
-               when Components =>
+            case K is
+               when N_Discriminant_Specification  |
+                    N_Component_Declaration      =>
                   Apply_Compile_Time_Constraint_Error
                      (N      => Expr,
                       Msg    => "(Ada 2005) NULL not allowed in"
                                   & " null-excluding components?",
-                      Reason => CE_Null_Not_Allowed,
-                      Rep    => False);
+                      Reason => CE_Null_Not_Allowed);
 
-               when Formals =>
+               when N_Parameter_Specification =>
                   Apply_Compile_Time_Constraint_Error
                      (N      => Expr,
                       Msg    => "(Ada 2005) NULL not allowed in"
                                   & " null-excluding formals?",
-                      Reason => CE_Null_Not_Allowed,
-                      Rep    => False);
+                      Reason => CE_Null_Not_Allowed);
 
-               when Objects =>
+               when N_Object_Declaration =>
                   Apply_Compile_Time_Constraint_Error
                      (N      => Expr,
                       Msg    => "(Ada 2005) NULL not allowed in"
                                   & " null-excluding objects?",
-                      Reason => CE_Null_Not_Allowed,
-                      Rep    => False);
+                      Reason => CE_Null_Not_Allowed);
+
+               when others =>
+                  null;
             end case;
          end if;
-      end Check_Null_Not_Allowed;
-
-   --  Start of processing for Null_Exclusion_Static_Checks
-
-   begin
-      pragma Assert (K = N_Component_Declaration
-                       or else K = N_Parameter_Specification
-                       or else K = N_Object_Declaration
-                       or else K = N_Discriminant_Specification
-                       or else K = N_Allocator);
-
-      case K is
-         when N_Component_Declaration =>
-            Msg_K := Components;
-
-            if not Present (Access_Definition (Component_Definition (N))) then
-               Has_Null_Exclusion  := Null_Exclusion_Present
-                                        (Component_Definition (N));
-               Typ := Etype (Subtype_Indication (Component_Definition (N)));
-               Related_Nod := Subtype_Indication (Component_Definition (N));
-               Check_Must_Be_Access (Typ, Has_Null_Exclusion);
-               Check_Already_Null_Excluding_Type
-                 (Typ, Has_Null_Exclusion, Related_Nod);
-               Check_Must_Be_Initialized (N, Related_Nod);
-            end if;
-
-            Check_Null_Not_Allowed (N);
-
-         when N_Parameter_Specification =>
-            Msg_K := Formals;
-            Has_Null_Exclusion := Null_Exclusion_Present (N);
-            Typ := Entity (Parameter_Type (N));
-            Related_Nod := Parameter_Type (N);
-            Check_Must_Be_Access (Typ, Has_Null_Exclusion);
-            Check_Already_Null_Excluding_Type
-              (Typ, Has_Null_Exclusion, Related_Nod);
-            Check_Null_Not_Allowed (N);
-
-         when N_Object_Declaration =>
-            Msg_K := Objects;
-
-            if Nkind (Object_Definition (N)) /= N_Access_Definition then
-               Has_Null_Exclusion := Null_Exclusion_Present (N);
-               Typ := Entity (Object_Definition (N));
-               Related_Nod := Object_Definition (N);
-               Check_Must_Be_Access (Typ, Has_Null_Exclusion);
-               Check_Already_Null_Excluding_Type
-                 (Typ, Has_Null_Exclusion, Related_Nod);
-               Check_Must_Be_Initialized (N, Related_Nod);
-            end if;
-
-            Check_Null_Not_Allowed (N);
-
-         when N_Discriminant_Specification =>
-            Msg_K := Components;
-
-            if Nkind (Discriminant_Type (N)) /= N_Access_Definition then
-               Has_Null_Exclusion := Null_Exclusion_Present (N);
-               Typ := Etype (Defining_Identifier (N));
-               Related_Nod := Discriminant_Type (N);
-               Check_Must_Be_Access (Typ, Has_Null_Exclusion);
-               Check_Already_Null_Excluding_Type
-                 (Typ, Has_Null_Exclusion, Related_Nod);
-            end if;
-
-            Check_Null_Not_Allowed (N);
-
-         when N_Allocator =>
-            Msg_K := Objects;
-            Has_Null_Exclusion := Null_Exclusion_Present (N);
-            Typ := Etype (Expression (N));
-
-            if Nkind (Expression (N)) = N_Qualified_Expression then
-               Related_Nod := Subtype_Mark (Expression (N));
-            else
-               Related_Nod := Expression (N);
-            end if;
-
-            Check_Must_Be_Access (Typ, Has_Null_Exclusion);
-            Check_Already_Null_Excluding_Type
-              (Typ, Has_Null_Exclusion, Related_Nod);
-            Check_Null_Not_Allowed (N);
-
-         when others =>
-            raise Program_Error;
-      end case;
+      end;
    end Null_Exclusion_Static_Checks;
 
    ----------------------------------
