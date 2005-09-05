@@ -257,6 +257,7 @@ package body Scng is
       First_Non_Blank_Location  := Scan_Ptr;
 
       Initialize_Checksum;
+      Wide_Char_Byte_Count := 0;
 
       --  Do not call Scan, otherwise the License stuff does not work in Scn
 
@@ -340,7 +341,10 @@ package body Scng is
       -----------------------
 
       procedure Check_End_Of_Line is
-         Len : constant Int := Int (Scan_Ptr) - Int (Current_Line_Start);
+         Len : constant Int :=
+                 Int (Scan_Ptr) -
+                 Int (Current_Line_Start) -
+                 Wide_Char_Byte_Count;
 
       begin
          if Style_Check then
@@ -362,6 +366,10 @@ package body Scng is
          elsif Len > Opt.Max_Line_Length then
             Error_Long_Line;
          end if;
+
+         --  Reset wide character byte count for next line
+
+         Wide_Char_Byte_Count := 0;
       end Check_End_Of_Line;
 
       -----------------------
