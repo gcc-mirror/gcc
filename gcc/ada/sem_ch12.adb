@@ -33,7 +33,6 @@ with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Freeze;   use Freeze;
 with Hostparm;
-with Inline;   use Inline;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
 with Lib.Xref; use Lib.Xref;
@@ -2240,6 +2239,7 @@ package body Sem_Ch12 is
       Id          : Entity_Id;
       Formals     : List_Id;
       New_N       : Node_Id;
+      Result_Type : Entity_Id;
       Save_Parent : Node_Id;
 
    begin
@@ -2283,17 +2283,23 @@ package body Sem_Ch12 is
 
       if Nkind (Spec) = N_Function_Specification then
          Set_Ekind (Id, E_Generic_Function);
-         Find_Type (Subtype_Mark (Spec));
-         Set_Etype (Id, Entity (Subtype_Mark (Spec)));
+
+         if Nkind (Result_Definition (Spec)) = N_Access_Definition then
+            Result_Type := Access_Definition (Spec, Result_Definition (Spec));
+            Set_Etype (Id, Result_Type);
+         else
+            Find_Type (Result_Definition (Spec));
+            Set_Etype (Id, Entity (Result_Definition (Spec)));
+         end if;
+
       else
          Set_Ekind (Id, E_Generic_Procedure);
          Set_Etype (Id, Standard_Void_Type);
       end if;
 
-      --  For a library unit, we have reconstructed the entity for the
-      --  unit, and must reset it in the library tables. We also need
-      --  to make sure that Body_Required is set properly in the original
-      --  compilation unit node.
+      --  For a library unit, we have reconstructed the entity for the unit,
+      --  and must reset it in the library tables. We also make sure that
+      --  Body_Required is set properly in the original compilation unit node.
 
       if Nkind (Parent (N)) = N_Compilation_Unit then
          Set_Cunit_Entity (Current_Sem_Unit, Id);
@@ -2315,9 +2321,9 @@ package body Sem_Ch12 is
    -- Analyze_Package_Instantiation --
    -----------------------------------
 
-   --  Note: this procedure is also used for formal package declarations,
-   --  in which case the argument N is an N_Formal_Package_Declaration
-   --  node. This should really be noted in the spec! ???
+   --  Note: this procedure is also used for formal package declarations, in
+   --  which case the argument N is an N_Formal_Package_Declaration node.
+   --  This should really be noted in the spec! ???
 
    procedure Analyze_Package_Instantiation (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
@@ -2335,6 +2341,7 @@ package body Sem_Ch12 is
       Is_Actual_Pack : constant Boolean :=
                          Is_Internal (Defining_Entity (N));
 
+      Env_Installed    : Boolean := False;
       Parent_Installed : Boolean := False;
       Renaming_List    : List_Id;
       Unit_Renaming    : Node_Id;
@@ -2428,6 +2435,7 @@ package body Sem_Ch12 is
       Pre_Analyze_Actuals (N);
 
       Init_Env;
+      Env_Installed := True;
       Check_Generic_Child_Unit (Gen_Id, Parent_Installed);
       Gen_Unit := Entity (Gen_Id);
 
@@ -2900,6 +2908,7 @@ package body Sem_Ch12 is
          end if;
 
          Restore_Env;
+         Env_Installed := False;
       end if;
 
       Validate_Categorization_Dependency (N, Act_Decl_Id);
@@ -2932,6 +2941,10 @@ package body Sem_Ch12 is
       when Instantiation_Error =>
          if Parent_Installed then
             Remove_Parent;
+         end if;
+
+         if Env_Installed then
+            Restore_Env;
          end if;
    end Analyze_Package_Instantiation;
 
@@ -3188,6 +3201,7 @@ package body Sem_Ch12 is
       Act_Spec    : Node_Id;
       Act_Tree    : Node_Id;
 
+      Env_Installed    : Boolean := False;
       Gen_Unit         : Entity_Id;
       Gen_Decl         : Node_Id;
       Pack_Id          : Entity_Id;
@@ -3364,6 +3378,7 @@ package body Sem_Ch12 is
       Pre_Analyze_Actuals (N);
 
       Init_Env;
+      Env_Installed := True;
       Check_Generic_Child_Unit (Gen_Id, Parent_Installed);
       Gen_Unit := Entity (Gen_Id);
 
@@ -3598,6 +3613,7 @@ package body Sem_Ch12 is
          end if;
 
          Restore_Env;
+         Env_Installed := False;
          Generic_Renamings.Set_Last (0);
          Generic_Renamings_HTable.Reset;
       end if;
@@ -3606,6 +3622,10 @@ package body Sem_Ch12 is
       when Instantiation_Error =>
          if Parent_Installed then
             Remove_Parent;
+         end if;
+
+         if Env_Installed then
+            Restore_Env;
          end if;
    end Analyze_Subprogram_Instantiation;
 
@@ -4599,7 +4619,7 @@ package body Sem_Ch12 is
             elsif Nkind (Parent (N)) = N_Subtype_Declaration
               or else not In_Private_Part (Scope (Base_Type (T)))
             then
-               Append_Elmt (T, Exchanged_Views);
+               Prepend_Elmt (T, Exchanged_Views);
                Exchange_Declarations (Etype (Get_Associated_Node (N)));
             end if;
 
@@ -4640,7 +4660,7 @@ package body Sem_Ch12 is
            and then not Is_Generic_Type (BT)
            and then not In_Open_Scopes (BT)
          then
-            Append_Elmt (Full_View (BT), Exchanged_Views);
+            Prepend_Elmt (Full_View (BT), Exchanged_Views);
             Exchange_Declarations (BT);
          end if;
       end if;
@@ -6542,14 +6562,25 @@ package body Sem_Ch12 is
                   Formal_Node : Node_Id;
                   Formal_Ent  : Entity_Id;
 
-                  Gen_Decl : constant Node_Id :=
-                               Unit_Declaration_Node
-                                 (Entity (Name (Orig_Node)));
-
-                  Formals : constant List_Id :=
-                              Generic_Formal_Declarations (Gen_Decl);
+                  Gen_Decl : Node_Id;
+                  Formals  : List_Id;
 
                begin
+                  --  The actual may be a renamed generic package, in which
+                  --  case we want to retrieve the original generic in order
+                  --  to traverse its formal part.
+
+                  if Present (Renamed_Entity (Entity (Name (Orig_Node)))) then
+                     Gen_Decl :=
+                       Unit_Declaration_Node (
+                         Renamed_Entity (Entity (Name (Orig_Node))));
+                  else
+                     Gen_Decl :=
+                        Unit_Declaration_Node (Entity (Name (Orig_Node)));
+                  end if;
+
+                  Formals := Generic_Formal_Declarations (Gen_Decl);
+
                   if Present (Formals) then
                      Formal_Node := First_Non_Pragma (Formals);
                   else
@@ -7260,7 +7291,7 @@ package body Sem_Ch12 is
 
             Prepend (Subt_Decl, List);
 
-            Append_Elmt (Full_View (Ftyp), Exchanged_Views);
+            Prepend_Elmt (Full_View (Ftyp), Exchanged_Views);
             Exchange_Declarations (Ftyp);
          end if;
 
@@ -7834,7 +7865,8 @@ package body Sem_Ch12 is
               Make_Subprogram_Body (Loc,
                  Specification              =>
                    Make_Procedure_Specification (Loc,
-                     Defining_Unit_Name         => New_Copy (Anon_Id),
+                     Defining_Unit_Name         =>
+                       Make_Defining_Identifier (Loc, Chars (Anon_Id)),
                        Parameter_Specifications =>
                        New_Copy_List
                          (Parameter_Specifications (Parent (Anon_Id)))),
@@ -7860,11 +7892,12 @@ package body Sem_Ch12 is
               Make_Subprogram_Body (Loc,
                 Specification =>
                   Make_Function_Specification (Loc,
-                     Defining_Unit_Name         => New_Copy (Anon_Id),
+                     Defining_Unit_Name         =>
+                       Make_Defining_Identifier (Loc, Chars (Anon_Id)),
                        Parameter_Specifications =>
                        New_Copy_List
                          (Parameter_Specifications (Parent (Anon_Id))),
-                     Subtype_Mark =>
+                     Result_Definition =>
                        New_Occurrence_Of (Etype (Anon_Id), Loc)),
 
                   Declarations               => Empty_List,
@@ -10165,7 +10198,7 @@ package body Sem_Ch12 is
       Priv_Elmt := First_Elmt (Private_Dependents (BT));
 
       if Present (Full_View (BT)) then
-         Append_Elmt (Full_View (BT), Exchanged_Views);
+         Prepend_Elmt (Full_View (BT), Exchanged_Views);
          Exchange_Declarations (BT);
       end if;
 
@@ -10184,7 +10217,7 @@ package body Sem_Ch12 is
          if Present (Full_View (Priv_Sub))
            and then not Is_Private_Type (Etype (Full_View (Priv_Sub)))
          then
-            Append_Elmt (Full_View (Priv_Sub), Exchanged_Views);
+            Prepend_Elmt (Full_View (Priv_Sub), Exchanged_Views);
             Exchange_Declarations (Priv_Sub);
          end if;
 
