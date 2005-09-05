@@ -32,7 +32,6 @@ with Prj.Com;  use Prj.Com;
 with Tempdir;
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
-with GNAT.OS_Lib;               use GNAT.OS_Lib;
 
 package body Prj.Env is
 
@@ -2138,9 +2137,15 @@ package body Prj.Env is
                            end if;
 
                         --  For a non-library project, add the object
-                        --  directory, if it is not a virtual project.
+                        --  directory, if it is not a virtual project, and
+                        --  if there are Ada sources. If there are no Ada
+                        --  sources, adding the object directory could
+                        --  disrupt the order of the object dirs in the path.
 
-                        elsif not Data.Virtual then
+                        elsif not Data.Virtual
+                          and then In_Tree.Projects.Table
+                                     (Project).Ada_Sources_Present
+                        then
                            Add_To_Object_Path
                              (Data.Object_Directory, In_Tree);
                         end if;
