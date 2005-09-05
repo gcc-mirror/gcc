@@ -138,19 +138,20 @@ package body Ch6 is
 
    function P_Subprogram (Pf_Flags : Pf_Rec) return Node_Id is
       Specification_Node : Node_Id;
-      Name_Node   : Node_Id;
-      Fpart_List  : List_Id;
-      Fpart_Sloc  : Source_Ptr;
-      Return_Node : Node_Id;
-      Inst_Node   : Node_Id;
-      Body_Node   : Node_Id;
-      Decl_Node   : Node_Id;
-      Rename_Node : Node_Id;
-      Absdec_Node : Node_Id;
-      Stub_Node   : Node_Id;
-      Fproc_Sloc  : Source_Ptr;
-      Func        : Boolean;
-      Scan_State  : Saved_Scan_State;
+      Name_Node          : Node_Id;
+      Fpart_List         : List_Id;
+      Fpart_Sloc         : Source_Ptr;
+      Result_Not_Null    : Boolean := False;
+      Result_Node        : Node_Id;
+      Inst_Node          : Node_Id;
+      Body_Node          : Node_Id;
+      Decl_Node          : Node_Id;
+      Rename_Node        : Node_Id;
+      Absdec_Node        : Node_Id;
+      Stub_Node          : Node_Id;
+      Fproc_Sloc         : Source_Ptr;
+      Func               : Boolean;
+      Scan_State         : Saved_Scan_State;
 
       --  Flags for optional overriding indication. Two flags are needed,
       --  to distinguish positive and negative overriding indicators from
@@ -318,7 +319,7 @@ package body Ch6 is
       --  since later RETURN statements will be valid in either case.
 
       Check_Junk_Semicolon_Before_Return;
-      Return_Node := Error;
+      Result_Node := Error;
 
       if Token = Tok_Return then
          if not Func then
@@ -327,8 +328,24 @@ package body Ch6 is
          end if;
 
          Scan; -- past RETURN
-         Return_Node := P_Subtype_Mark;
-         No_Constraint;
+
+         Result_Not_Null := P_Null_Exclusion;     --  Ada 2005 (AI-231)
+
+         --  Ada 2005 (AI-318-02)
+
+         if Token = Tok_Access then
+            if Ada_Version < Ada_05 then
+               Error_Msg_SC
+                 ("anonymous access result type is an Ada 2005 extension");
+               Error_Msg_SC ("\unit must be compiled with -gnat05 switch");
+            end if;
+
+            Result_Node := P_Access_Definition (Result_Not_Null);
+
+         else
+            Result_Node := P_Subtype_Mark;
+            No_Constraint;
+         end if;
 
       else
          if Func then
@@ -340,7 +357,9 @@ package body Ch6 is
       if Func then
          Specification_Node :=
            New_Node (N_Function_Specification, Fproc_Sloc);
-         Set_Subtype_Mark (Specification_Node, Return_Node);
+
+         Set_Null_Exclusion_Present (Specification_Node, Result_Not_Null);
+         Set_Result_Definition (Specification_Node, Result_Node);
 
       else
          Specification_Node :=
@@ -618,6 +637,8 @@ package body Ch6 is
 
    function P_Subprogram_Specification return Node_Id is
       Specification_Node : Node_Id;
+      Result_Not_Null    : Boolean;
+      Result_Node        : Node_Id;
 
    begin
       if Token = Tok_Function then
@@ -629,8 +650,27 @@ package body Ch6 is
            (Specification_Node, P_Parameter_Profile);
          Check_Junk_Semicolon_Before_Return;
          TF_Return;
-         Set_Subtype_Mark (Specification_Node, P_Subtype_Mark);
-         No_Constraint;
+
+         Result_Not_Null := P_Null_Exclusion;     --  Ada 2005 (AI-231)
+
+         --  Ada 2005 (AI-318-02)
+
+         if Token = Tok_Access then
+            if Ada_Version < Ada_05 then
+               Error_Msg_SC
+                 ("anonymous access result type is an Ada 2005 extension");
+               Error_Msg_SC ("\unit must be compiled with -gnat05 switch");
+            end if;
+
+            Result_Node := P_Access_Definition (Result_Not_Null);
+
+         else
+            Result_Node := P_Subtype_Mark;
+            No_Constraint;
+         end if;
+
+         Set_Null_Exclusion_Present (Specification_Node, Result_Not_Null);
+         Set_Result_Definition (Specification_Node, Result_Node);
          return Specification_Node;
 
       elsif Token = Tok_Procedure then

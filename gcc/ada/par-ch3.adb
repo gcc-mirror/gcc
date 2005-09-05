@@ -644,6 +644,31 @@ package body Ch3 is
                      Is_Derived_Iface := True;
                   end if;
 
+                  --  Ada 2005 (AI-419): LIMITED NEW
+
+               elsif Token = Tok_New then
+                  if Ada_Version < Ada_05 then
+                     Error_Msg_SP
+                       ("LIMITED in derived type is an Ada 2005 extension");
+                     Error_Msg_SP
+                       ("\unit must be compiled with -gnat05 switch");
+                  end if;
+
+                  Typedef_Node := P_Derived_Type_Def_Or_Private_Ext_Decl;
+                  Set_Limited_Present (Typedef_Node);
+
+                  if Nkind (Typedef_Node) = N_Derived_Type_Definition
+                    and then Present (Record_Extension_Part (Typedef_Node))
+                  then
+                     End_Labl :=
+                       Make_Identifier (Token_Ptr,
+                                        Chars => Chars (Ident_Node));
+                     Set_Comes_From_Source (End_Labl, False);
+
+                     Set_End_Label
+                       (Record_Extension_Part (Typedef_Node), End_Labl);
+                  end if;
+
                --  LIMITED PRIVATE is the only remaining possibility here
 
                else
@@ -853,6 +878,7 @@ package body Ch3 is
    function P_Subtype_Declaration return Node_Id is
       Decl_Node        : Node_Id;
       Not_Null_Present : Boolean := False;
+
    begin
       Decl_Node := New_Node (N_Subtype_Declaration, Token_Ptr);
       Scan; -- past SUBTYPE
@@ -1732,12 +1758,12 @@ package body Ch3 is
    -------------------------------------------------------------------------
 
    --  DERIVED_TYPE_DEFINITION ::=
-   --    [abstract] new [NULL_EXCLUSION] parent_SUBTYPE_INDICATION
+   --    [abstract] [limited] new [NULL_EXCLUSION] parent_SUBTYPE_INDICATION
    --    [[AND interface_list] RECORD_EXTENSION_PART]
 
    --  PRIVATE_EXTENSION_DECLARATION ::=
    --     type DEFINING_IDENTIFIER [DISCRIMINANT_PART] is
-   --       [abstract] new ancestor_SUBTYPE_INDICATION
+   --       [abstract] [limited] new ancestor_SUBTYPE_INDICATION
    --       [AND interface_list] with PRIVATE;
 
    --  RECORD_EXTENSION_PART ::= with RECORD_DEFINITION
@@ -3579,6 +3605,8 @@ package body Ch3 is
       Prot_Flag             : Boolean;
       Not_Null_Present      : Boolean := False;
       Type_Def_Node         : Node_Id;
+      Result_Not_Null       : Boolean;
+      Result_Node           : Node_Id;
 
       procedure Check_Junk_Subprogram_Name;
       --  Used in access to subprogram definition cases to check for an
@@ -3649,8 +3677,32 @@ package body Ch3 is
          Set_Parameter_Specifications (Type_Def_Node, P_Parameter_Profile);
          Set_Protected_Present (Type_Def_Node, Prot_Flag);
          TF_Return;
-         Set_Subtype_Mark (Type_Def_Node, P_Subtype_Mark);
-         No_Constraint;
+
+         Result_Not_Null := P_Null_Exclusion;     --  Ada 2005 (AI-231)
+
+         --  Ada 2005 (AI-318-02)
+
+         if Token = Tok_Access then
+            if Ada_Version < Ada_05 then
+               Error_Msg_SC
+                 ("anonymous access result type is an Ada 2005 extension");
+               Error_Msg_SC ("\unit must be compiled with -gnat05 switch");
+            end if;
+
+            Result_Node := P_Access_Definition (Result_Not_Null);
+
+         else
+            Result_Node := P_Subtype_Mark;
+            No_Constraint;
+         end if;
+
+         --  Note: A null exclusion given on the result type needs to
+         --  be coded by a distinct flag, since Null_Exclusion_Present
+         --  on an access-to-function type pertains to a null exclusion
+         --  on the access type itself (as set above). ???
+         --  Set_Null_Exclusion_Present??? (Type_Def_Node, Result_Not_Null);
+
+         Set_Result_Definition (Type_Def_Node, Result_Node);
 
       else
          Type_Def_Node :=

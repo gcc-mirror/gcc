@@ -1668,6 +1668,7 @@ package body Sinfo is
       pragma Assert (False
         or else NT (N).Nkind = N_Derived_Type_Definition
         or else NT (N).Nkind = N_Formal_Private_Type_Definition
+        or else NT (N).Nkind = N_Private_Extension_Declaration
         or else NT (N).Nkind = N_Private_Type_Declaration
         or else NT (N).Nkind = N_Record_Definition
         or else NT (N).Nkind = N_With_Clause);
@@ -1915,6 +1916,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Component_Definition
         or else NT (N).Nkind = N_Derived_Type_Definition
         or else NT (N).Nkind = N_Discriminant_Specification
+        or else NT (N).Nkind = N_Function_Specification
         or else NT (N).Nkind = N_Object_Declaration
         or else NT (N).Nkind = N_Parameter_Specification
         or else NT (N).Nkind = N_Subtype_Declaration);
@@ -2243,6 +2245,15 @@ package body Sinfo is
       return Flag13 (N);
    end Redundant_Use;
 
+   function Result_Definition
+     (N : Node_Id) return Node_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Access_Function_Definition
+        or else NT (N).Nkind = N_Function_Specification);
+      return Node4 (N);
+   end Result_Definition;
+
    function Return_Type
       (N : Node_Id) return Node_Id is
    begin
@@ -2415,10 +2426,8 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Access_Definition
-        or else NT (N).Nkind = N_Access_Function_Definition
         or else NT (N).Nkind = N_Formal_Derived_Type_Definition
         or else NT (N).Nkind = N_Formal_Object_Declaration
-        or else NT (N).Nkind = N_Function_Specification
         or else NT (N).Nkind = N_Object_Renaming_Declaration
         or else NT (N).Nkind = N_Qualified_Expression
         or else NT (N).Nkind = N_Subtype_Indication
@@ -4220,6 +4229,7 @@ package body Sinfo is
       pragma Assert (False
         or else NT (N).Nkind = N_Derived_Type_Definition
         or else NT (N).Nkind = N_Formal_Private_Type_Definition
+        or else NT (N).Nkind = N_Private_Extension_Declaration
         or else NT (N).Nkind = N_Private_Type_Declaration
         or else NT (N).Nkind = N_Record_Definition
         or else NT (N).Nkind = N_With_Clause);
@@ -4467,6 +4477,7 @@ package body Sinfo is
         or else NT (N).Nkind = N_Component_Definition
         or else NT (N).Nkind = N_Derived_Type_Definition
         or else NT (N).Nkind = N_Discriminant_Specification
+        or else NT (N).Nkind = N_Function_Specification
         or else NT (N).Nkind = N_Object_Declaration
         or else NT (N).Nkind = N_Parameter_Specification
         or else NT (N).Nkind = N_Subtype_Declaration);
@@ -4795,6 +4806,15 @@ package body Sinfo is
       Set_Flag13 (N, Val);
    end Set_Redundant_Use;
 
+   procedure Set_Result_Definition
+     (N : Node_Id; Val : Node_Id) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Access_Function_Definition
+        or else NT (N).Nkind = N_Function_Specification);
+      Set_Node4_With_Parent (N, Val);
+   end Set_Result_Definition;
+
    procedure Set_Return_Type
       (N : Node_Id; Val : Node_Id) is
    begin
@@ -4967,10 +4987,8 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Access_Definition
-        or else NT (N).Nkind = N_Access_Function_Definition
         or else NT (N).Nkind = N_Formal_Derived_Type_Definition
         or else NT (N).Nkind = N_Formal_Object_Declaration
-        or else NT (N).Nkind = N_Function_Specification
         or else NT (N).Nkind = N_Object_Renaming_Declaration
         or else NT (N).Nkind = N_Qualified_Expression
         or else NT (N).Nkind = N_Subtype_Indication

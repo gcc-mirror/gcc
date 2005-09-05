@@ -3017,7 +3017,7 @@ package body Layout is
                          Make_Defining_Identifier (Loc, Chars => Vname),
                        Parameter_Type      =>
                          New_Occurrence_Of (Vtype_Primary_View, Loc))),
-                   Subtype_Mark =>
+                   Result_Definition =>
                      New_Occurrence_Of (Standard_Unsigned, Loc)),
 
              Declarations => Empty_List,
@@ -3039,7 +3039,8 @@ package body Layout is
                Make_Function_Specification (Loc,
                  Defining_Unit_Name => K,
                    Parameter_Specifications => Empty_List,
-                   Subtype_Mark => New_Occurrence_Of (Standard_Unsigned, Loc)),
+                   Result_Definition =>
+                     New_Occurrence_Of (Standard_Unsigned, Loc)),
 
              Declarations => Empty_List,
 
