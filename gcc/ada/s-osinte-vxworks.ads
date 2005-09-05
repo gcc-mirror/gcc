@@ -46,11 +46,11 @@ with System.VxWorks;
 package System.OS_Interface is
    pragma Preelaborate;
 
-   subtype int         is Interfaces.C.int;
-   subtype short       is Short_Integer;
-   type long           is new Long_Integer;
-   type unsigned_long  is mod 2 ** long'Size;
-   type size_t         is mod 2 ** Standard'Address_Size;
+   subtype int        is Interfaces.C.int;
+   subtype short      is Short_Integer;
+   type long          is new Long_Integer;
+   type unsigned_long is mod 2 ** long'Size;
+   type size_t        is mod 2 ** Standard'Address_Size;
 
    -----------
    -- Errno --
@@ -153,12 +153,11 @@ package System.OS_Interface is
    subtype Thread_Id is t_id;
 
    function kill (pid : t_id; sig : Signal) return int;
-   pragma Import (C, kill, "kill");
+   pragma Inline (kill);
 
-   --  VxWorks doesn't have getpid; taskIdSelf is the equivalent
-   --  routine.
    function getpid return t_id;
    pragma Import (C, getpid, "taskIdSelf");
+   --  VxWorks doesn't have getpid; taskIdSelf is the equivalent routine.
 
    ----------
    -- Time --
@@ -183,7 +182,7 @@ package System.OS_Interface is
    pragma Inline (To_Timespec);
 
    function To_Clock_Ticks (D : Duration) return int;
-   --  Convert a duration value (in seconds) into clock ticks.
+   --  Convert a duration value (in seconds) into clock ticks
 
    function clock_gettime
      (clock_id : clockid_t; tp : access timespec) return int;
@@ -230,6 +229,15 @@ package System.OS_Interface is
    function taskIsSuspended (tid : t_id) return int;
    pragma Import (C, taskIsSuspended, "taskIsSuspended");
 
+   function taskDelay (ticks : int) return int;
+   procedure taskDelay (ticks : int);
+   pragma Import (C, taskDelay, "taskDelay");
+
+   function sysClkRateGet return int;
+   pragma Import (C, sysClkRateGet, "sysClkRateGet");
+
+   --  VxWorks 5.x specific functions
+
    function taskVarAdd
      (tid : t_id; pVar : access System.Address) return int;
    pragma Import (C, taskVarAdd, "taskVarAdd");
@@ -249,19 +257,25 @@ package System.OS_Interface is
       pVar : access System.Address) return int;
    pragma Import (C, taskVarGet, "taskVarGet");
 
-   function taskDelay (ticks : int) return int;
-   procedure taskDelay (ticks : int);
-   pragma Import (C, taskDelay, "taskDelay");
+   --  VxWorks 6.x specific functions
 
-   function sysClkRateGet return int;
-   pragma Import (C, sysClkRateGet, "sysClkRateGet");
+   function tlsKeyCreate return int;
+   pragma Import (C, tlsKeyCreate, "tlsKeyCreate");
+
+   function tlsValueGet (key : int) return System.Address;
+   pragma Import (C, tlsValueGet, "tlsValueGet");
+
+   function tlsValueSet (key : int; value : System.Address) return STATUS;
+   pragma Import (C, tlsValueSet, "tlsValueSet");
 
    --  Option flags for taskSpawn
 
    VX_UNBREAKABLE    : constant := 16#0002#;
-   VX_FP_TASK        : constant := 16#0008#;
    VX_FP_PRIVATE_ENV : constant := 16#0080#;
    VX_NO_STACK_FILL  : constant := 16#0100#;
+
+   function VX_FP_TASK return int;
+   pragma Inline (VX_FP_TASK);
 
    function taskSpawn
      (name          : System.Address;  --  Pointer to task name
@@ -284,8 +298,10 @@ package System.OS_Interface is
    procedure taskDelete (tid : t_id);
    pragma Import (C, taskDelete, "taskDelete");
 
-   function kernelTimeSlice (ticks : int) return int;
-   pragma Import (C, kernelTimeSlice, "kernelTimeSlice");
+   function Set_Time_Slice (ticks : int) return int;
+   pragma Inline (Set_Time_Slice);
+   --  Calls kernelTimeSlice under VxWorks 5.x
+   --  Do nothing under VxWorks 6.x
 
    function taskPriorityGet (tid : t_id; pPriority : access int) return int;
    pragma Import (C, taskPriorityGet, "taskPriorityGet");
@@ -293,7 +309,7 @@ package System.OS_Interface is
    function taskPrioritySet (tid : t_id; newPriority : int) return int;
    pragma Import (C, taskPrioritySet, "taskPrioritySet");
 
-   --  Semaphore creation flags.
+   --  Semaphore creation flags
 
    SEM_Q_FIFO         : constant := 0;
    SEM_Q_PRIORITY     : constant := 1;
@@ -305,17 +321,16 @@ package System.OS_Interface is
    SEM_EMPTY : constant := 0;
    SEM_FULL  : constant := 1;
 
-   --  Semaphore take (semTake) time constants.
+   --  Semaphore take (semTake) time constants
 
    WAIT_FOREVER : constant := -1;
    NO_WAIT      : constant := 0;
 
-   --  Error codes (errno).  The lower level 16 bits are the
-   --  error code, with the upper 16 bits representing the
-   --  module number in which the error occurred.  By convention,
-   --  the module number is 0 for UNIX errors.  VxWorks reserves
-   --  module numbers 1-500, with the remaining module numbers
-   --  being available for user applications.
+   --  Error codes (errno). The lower level 16 bits are the error code, with
+   --  the upper 16 bits representing the module number in which the error
+   --  occurred. By convention, the module number is 0 for UNIX errors. VxWorks
+   --  reserves module numbers 1-500, with the remaining module numbers being
+   --  available for user applications.
 
    M_objLib                 : constant := 61 * 2**16;
    --  semTake() failure with ticks = NO_WAIT
@@ -326,39 +341,32 @@ package System.OS_Interface is
    type SEM_ID is new System.Address;
    --  typedef struct semaphore *SEM_ID;
 
-   --  We use two different kinds of VxWorks semaphores: mutex
-   --  and binary semaphores.  A null ID is returned when
-   --  a semaphore cannot be created.
+   --  We use two different kinds of VxWorks semaphores: mutex and binary
+   --  semaphores. A null ID is returned when a semaphore cannot be created.
 
    function semBCreate (options : int; initial_state : int) return SEM_ID;
+   pragma Import (C, semBCreate, "semBCreate");
    --  Create a binary semaphore. Return ID, or 0 if memory could not
    --  be allocated.
-   pragma Import (C, semBCreate, "semBCreate");
 
    function semMCreate (options : int) return SEM_ID;
    pragma Import (C, semMCreate, "semMCreate");
 
    function semDelete (Sem : SEM_ID) return int;
-   --  Delete a semaphore
    pragma Import (C, semDelete, "semDelete");
+   --  Delete a semaphore
 
    function semGive (Sem : SEM_ID) return int;
    pragma Import (C, semGive, "semGive");
 
    function semTake (Sem : SEM_ID; timeout : int) return int;
+   pragma Import (C, semTake, "semTake");
    --  Attempt to take binary semaphore.  Error is returned if operation
    --  times out
-   pragma Import (C, semTake, "semTake");
 
    function semFlush (SemID : SEM_ID) return STATUS;
-   --  Release all threads blocked on the semaphore
    pragma Import (C, semFlush, "semFlush");
-
-   function taskLock return int;
-   pragma Import (C, taskLock, "taskLock");
-
-   function taskUnlock return int;
-   pragma Import (C, taskUnlock, "taskUnlock");
+   --  Release all threads blocked on the semaphore
 
 private
    type sigset_t is new long;

@@ -38,6 +38,35 @@
 separate (System.Task_Primitives.Operations)
 package body Specific is
 
+   ATCB_Key : aliased System.Address := System.Null_Address;
+   --  Key used to find the Ada Task_Id associated with a thread
+
+   ATCB_Key_Addr : System.Address := ATCB_Key'Address;
+   pragma Export (Ada, ATCB_Key_Addr, "__gnat_ATCB_key_addr");
+   --  Exported to support the temporary AE653 task registration
+   --  implementation. This mechanism is used to minimize impact on other
+   --  targets.
+
+   ------------
+   -- Delete --
+   ------------
+
+   procedure Delete is
+      Result : STATUS;
+   begin
+      Result := taskVarDelete (taskIdSelf, ATCB_Key'Access);
+      pragma Assert (Result /= ERROR);
+   end Delete;
+
+   ----------------
+   -- Initialize --
+   ----------------
+
+   procedure Initialize is
+   begin
+      null;
+   end Initialize;
+
    -------------------
    -- Is_Valid_Task --
    -------------------

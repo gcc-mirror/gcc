@@ -49,6 +49,8 @@
 #if OLD_MINGW
 #include <sys/wait.h>
 #endif
+#elif defined (__vxworks) && defined (__RTP__)
+#include <wait.h>
 #else
 #include <sys/wait.h>
 #endif
