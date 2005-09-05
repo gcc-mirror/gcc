@@ -2146,6 +2146,11 @@
 	* gcc.dg/vect/vect-91.c: New test. Test that accesses with same
 	alignment were detected.
 
+2005-06-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR c++/10611
+	* g++.dg/conversion/simd2.C: New.
+
 2005-06-09  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* gcc.dg/Wcxx-compat-1.c: New.
