@@ -53,6 +53,11 @@ package body Lib.Load is
    -- Local Subprograms --
    -----------------------
 
+   function From_Limited_With_Chain (Lim : Boolean) return Boolean;
+   --  Check whether a possible circular dependence includes units that
+   --  have been loaded through limited_with clauses, in which case there
+   --  is no real circularity.
+
    function Spec_Is_Irrelevant
      (Spec_Unit : Unit_Number_Type;
       Body_Unit : Unit_Number_Type) return Boolean;
@@ -165,6 +170,30 @@ package body Lib.Load is
       return Unum;
    end Create_Dummy_Package_Unit;
 
+   -----------------------------
+   -- From_Limited_With_Chain --
+   -----------------------------
+
+   function From_Limited_With_Chain (Lim : Boolean) return Boolean is
+   begin
+      --  True if the current load operation is through a limited_with clause
+
+      if Lim then
+         return True;
+
+      --  Examine the Load_Stack to locate any previous Limited_with clause
+
+      elsif Load_Stack.Last - 1 > Load_Stack.First then
+         for U in Load_Stack.First .. Load_Stack.Last - 1 loop
+            if Load_Stack.Table (U).From_Limited_With then
+               return True;
+            end if;
+         end loop;
+      end if;
+
+      return False;
+   end From_Limited_With_Chain;
+
    ----------------
    -- Initialize --
    ----------------
@@ -193,7 +222,7 @@ package body Lib.Load is
 
    begin
       Load_Stack.Increment_Last;
-      Load_Stack.Table (Load_Stack.Last) := Main_Unit;
+      Load_Stack.Table (Load_Stack.Last) := (Main_Unit, False);
 
       --  Initialize unit table entry for Main_Unit. Note that we don't know
       --  the unit name yet, that gets filled in when the parser parses the
@@ -465,10 +494,11 @@ package body Lib.Load is
          end loop;
       end if;
 
-      --  If we are proceeding with load, then make load stack entry
+      --  If we are proceeding with load, then make load stack entry,
+      --  and indicate the kind of with_clause responsible for the load.
 
       Load_Stack.Increment_Last;
-      Load_Stack.Table (Load_Stack.Last) := Unum;
+      Load_Stack.Table (Load_Stack.Last) := (Unum, From_Limited_With);
 
       --  Case of entry already in table
 
@@ -489,7 +519,7 @@ package body Lib.Load is
                        or else Acts_As_Spec (Units.Table (Unum).Cunit))
            and then (Nkind (Error_Node) /= N_With_Clause
                        or else not Limited_Present (Error_Node))
-           and then not From_Limited_With
+           and then not From_Limited_With_Chain (From_Limited_With)
          then
             if Debug_Flag_L then
                Write_Str ("  circular dependency encountered");
@@ -733,8 +763,10 @@ package body Lib.Load is
 
       if Load_Stack.Last - 1 > Load_Stack.First then
          for U in Load_Stack.First .. Load_Stack.Last - 1 loop
-            Error_Msg_Unit_1 := Unit_Name (Load_Stack.Table (U));
-            Error_Msg_Unit_2 := Unit_Name (Load_Stack.Table (U + 1));
+            Error_Msg_Unit_1 :=
+              Unit_Name (Load_Stack.Table (U).Unit_Number);
+            Error_Msg_Unit_2 :=
+              Unit_Name (Load_Stack.Table (U + 1).Unit_Number);
             Error_Msg ("$ depends on $!", Load_Msg_Sloc);
          end loop;
       end if;

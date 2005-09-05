@@ -89,7 +89,7 @@ package Exp_Dbug is
    --    x
    --    y.z
 
-   --  The separating dots are translated into double underscores.
+   --  The separating dots are translated into double underscores
 
       -----------------------------
       -- Handling of Overloading --
@@ -384,6 +384,28 @@ package Exp_Dbug is
 
       --    lock_update1sE
       --    lock_udpate2sB
+
+      --  If the protected type implements at least one interface, the
+      --  following additional operations are created:
+
+      --    lock_get
+
+      --    lock_set
+
+      --  These operations are used to ensure overriding of interface level
+      --  subprograms and proper dispatching on interface class-wide objects.
+      --  The bodies of these operations contain calls to their respective
+      --  protected versions:
+
+      --    function lock_get return Integer is
+      --    begin
+      --       return lock_getP;
+      --    end lock_get;
+
+      --    procedure lock_set (X : Integer) is
+      --    begin
+      --       lock_setP (X);
+      --    end lock_set;
 
    ----------------------------------------------------
    -- Conversion between Entities and External Names --
@@ -686,9 +708,9 @@ package Exp_Dbug is
       --  follows. In this description, let P represent the current
       --  bit position in the record.
 
-      --    1. Initialize P to 0.
+      --    1. Initialize P to 0
 
-      --    2. For each field in the record,
+      --    2. For each field in the record:
 
       --       2a. If an alignment is given (see below), then round P
       --       up, if needed, to the next multiple of that alignment.
@@ -697,7 +719,7 @@ package Exp_Dbug is
       --       amount (that is, treat it as an offset from the end of the
       --       preceding record).
 
-      --       2c. Assign P as the actual position of the field.
+      --       2c. Assign P as the actual position of the field
 
       --       2d. Compute the length, L, of the represented field (see below)
       --       and compute P'=P+L. Unless the field represents a variant part
@@ -963,7 +985,7 @@ package Exp_Dbug is
    --  name of the parent unit, to disambiguate child units with the same
    --  simple name and (of necessity) different parents.
 
-   --  Note: subprogram renamings are not encoded at the present time.
+   --  Note: subprogram renamings are not encoded at the present time
 
    --  The type is an enumeration type with a single enumeration literal
    --  that is an identifier which describes the renamed variable.
