@@ -4924,7 +4924,7 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 	    }
 
 	  /* Check that the initializer for a static data member was a
-	     constant.  Althouh we check in the parser that the
+	     constant.  Although we check in the parser that the
 	     initializer is an integral constant expression, we do not
 	     simplify division-by-zero at the point at which it
 	     occurs.  Therefore, in:
