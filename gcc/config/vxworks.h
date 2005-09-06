@@ -39,7 +39,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
  %{!mrtp:-D_WRS_KERNEL=1						\
 	 %{!nostdinc:-isystem " VXWORKS_TARGET_DIR "/h}}"
 
-/* The references to __init and __fini will be satisified by
+/* The references to __init and __fini will be satisfied by
    libc_internal.a.  */
 #undef VXWORKS_LIB_SPEC
 #define	VXWORKS_LIB_SPEC						\

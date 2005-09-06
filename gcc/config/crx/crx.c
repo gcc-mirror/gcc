@@ -816,7 +816,7 @@ crx_address_cost (rtx addr)
   if (addrtype == CRX_ABSOLUTE)
     cost+=2;
   
-  /* Post-modifying addresses are more powerfull. */
+  /* Post-modifying addresses are more powerful.  */
   if (addrtype == CRX_POST_INC)
     cost-=2;
 

@@ -1,3 +1,11 @@
+2005-09-06  Kazu Hirata  <kazu@codesourcery.com>
+
+	* gimplify.c, ipa-prop.h, varasm.c, config/vxlib.c,
+	config/vxworks.h, config/crx/crx.c, config/ms1/ms1.c,
+	config/ms1/ms1.md, config/rs6000/rs6000.c: Fix comment typos.
+	Follow spelling conventions.
+	* doc/invoke.texi: Follow spelling conventions.
+
 2005-09-05  J"orn Rennecke <joern.rennecke@st.com>
 
 	* rtl.h (gen_frame_mem, gen_tmp_stack_mem): Declare.

@@ -2260,7 +2260,7 @@ rs6000_expand_vector_init (rtx target, rtx vals)
     {
       rtx copy = copy_rtx (vals);
 
-      /* Load constant part of vector, substititute neighboring value for
+      /* Load constant part of vector, substitute neighboring value for
 	 varying element.  */
       XVECEXP (copy, 0, one_var) = XVECEXP (vals, 0, (one_var + 1) % n_elts);
       rs6000_expand_vector_init (target, copy);
