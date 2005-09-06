@@ -1,3 +1,10 @@
+2005-09-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/expr/cast6.C: New test.
+
+	PR c++/9782
+	* g++.dg/init/new15.C: New test.
+
 2005-09-06  Keith Besaw  <kbesaw@us.ibm.com>
 
 	* gcc.dg/vect/Os-vect-95.c: New test.

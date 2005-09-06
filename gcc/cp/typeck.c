@@ -3768,8 +3768,7 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 
 	    /* Make sure the result is not an lvalue: a unary plus or minus
 	       expression is always a rvalue.  */
-	    if (real_lvalue_p (arg))
-	      arg = build1 (NON_LVALUE_EXPR, TREE_TYPE (arg), arg);
+	    arg = rvalue (arg);
 	  }
       }
       break;
@@ -4016,9 +4015,9 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	      tree type = build_pointer_type (TREE_TYPE (TREE_TYPE (arg)));
 	      arg = build1 (CONVERT_EXPR, type, arg);
 	    }
-	  else if (lvalue_p (arg))
+	  else
 	    /* Don't let this be an lvalue.  */
-	    return non_lvalue (arg);
+	    arg = rvalue (arg);
 	  return arg;
 	}
 
@@ -4666,9 +4665,8 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 
 	 If T is a reference type, the result is an lvalue; otherwise,
 	 the result is an rvalue.  */
-      if (TREE_CODE (type) != REFERENCE_TYPE
-	  && real_lvalue_p (result))
-	result = build1 (NON_LVALUE_EXPR, TREE_TYPE (result), result);
+      if (TREE_CODE (type) != REFERENCE_TYPE)
+	result = rvalue (result);
       return result;
     }
 
