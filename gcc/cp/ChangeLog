@@ -1,3 +1,7 @@
+2005-09-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* decl.c (check_elaborated_type_specifier): Remove redundant check.
+
 2005-09-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23667
