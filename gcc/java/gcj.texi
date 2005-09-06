@@ -2649,7 +2649,7 @@ Enables printing serialization debugging by the @code{java.io.ObjectInput} and
 string.  Only used when running a debug build of the library.
 
 @item gnu.classpath.vm.shortname
-This is a succint name of the virtual machine.  For @code{libgcj},
+This is a succinct name of the virtual machine.  For @code{libgcj},
 this will always be @samp{libgcj}.
 
 @item gnu.classpath.home.url

@@ -157,7 +157,7 @@ extern void parse_error_context (tree cl, const char *gmsgid, ...) ATTRIBUTE_GCC
    IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (TYPE))))
 
 /* Pedantic warning on obsolete modifiers. Note: when cl is NULL,
-   flags was set artificially, such as for a interface method */
+   flags was set artificially, such as for an interface method.  */
 #define OBSOLETE_MODIFIER_WARNING(cl, flags, __modifier, arg)                \
   {                                                                          \
     if (flag_redundant && (cl) && ((flags) & (__modifier)))		     \

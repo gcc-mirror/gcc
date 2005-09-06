@@ -1231,7 +1231,7 @@ lookup_name (tree name)
 }
 
 /* Similar to `lookup_name' but look only at current binding level and
-   the previous one if its the parameter level.  */
+   the previous one if it's the parameter level.  */
 
 static tree
 lookup_name_current_level (tree name)
@@ -2165,7 +2165,7 @@ java_mark_decl_local (tree decl)
 static void
 java_mark_cni_decl_local (tree decl)
 {
-  /* Setting DECL_LOCAL_CNI_METHOD_P changes the behaviour of the mangler.
+  /* Setting DECL_LOCAL_CNI_METHOD_P changes the behavior of the mangler.
      We expect that we should not yet have referenced this decl in a 
      context that requires it.  Check this invariant even if we don't have
      support for hidden aliases.  */
@@ -2179,7 +2179,7 @@ java_mark_cni_decl_local (tree decl)
   DECL_LOCAL_CNI_METHOD_P (decl) = 1;
 }
 
-/* Use the preceeding two functions and mark all members of the class.  */
+/* Use the preceding two functions and mark all members of the class.  */
 
 void
 java_mark_class_local (tree class)

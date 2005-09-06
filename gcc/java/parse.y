@@ -6074,8 +6074,8 @@ resolve_and_layout (tree something, tree cl)
   if (TREE_CODE (something) == EXPR_WITH_FILE_LOCATION)
     something = EXPR_WFL_NODE (something);
 
-  /* Otherwise, if something is not and IDENTIFIER_NODE, it can be a a
-     TYPE_DECL or a real TYPE */
+  /* Otherwise, if something is not and IDENTIFIER_NODE, it can be a
+     TYPE_DECL or a real TYPE.  */
   else if (TREE_CODE (something) != IDENTIFIER_NODE)
     something = (TREE_CODE (TYPE_NAME (something)) == TYPE_DECL ?
 	    DECL_NAME (TYPE_NAME (something)) : TYPE_NAME (something));

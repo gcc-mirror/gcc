@@ -683,7 +683,7 @@ load_class (tree class_or_name, int verbose)
 	    break;
 
 	  /* We failed loading name. Now consider that we might be looking
-	     for a inner class. */
+	     for an inner class.  */
 	  if ((separator = strrchr (IDENTIFIER_POINTER (name), '$'))
 	      || (separator = strrchr (IDENTIFIER_POINTER (name), '.')))
 	    {
