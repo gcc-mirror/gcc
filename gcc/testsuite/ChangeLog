@@ -1,5 +1,11 @@
 2005-09-05  James A. Morrison  <phython@gcc.gnu.org>
 
+	PR c/23161
+	PR c/23165
+	* gcc.dg/pr23165.c: New test.
+
+2005-09-05  James A. Morrison  <phython@gcc.gnu.org>
+
 	PR c++/23225
 	* g++.dg/parse/crash27.C: New test.
 

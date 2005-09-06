@@ -1,5 +1,12 @@
 2005-09-05  James A. Morrison  <phython@gcc.gnu.org>
 
+	PR c/23161
+	PR c/23165
+	* c-typeck.c (c_finish_if_stmt): Look into STATEMENT_LISTs to see
+	if the if is really empty.
+
+2005-09-05  James A. Morrison  <phython@gcc.gnu.org>
+
 	PR c++/23225
 	* tree.c (build_pointer_type_for_mode): Robustify.
 
