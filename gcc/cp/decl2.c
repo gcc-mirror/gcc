@@ -1790,7 +1790,7 @@ import_export_decl (tree decl)
 	      /* The generic C++ ABI says that class data is always
 		 COMDAT, even if there is a key function.  Some
 		 variants (e.g., the ARM EABI) says that class data
-		 only has COMDAT linkage if the the class data might
+		 only has COMDAT linkage if the class data might
 		 be emitted in more than one translation unit.  */
 	      if (!CLASSTYPE_KEY_METHOD (class_type)
 		  || targetm.cxx.class_data_always_comdat ())

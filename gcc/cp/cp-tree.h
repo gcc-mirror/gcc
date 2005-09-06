@@ -1177,12 +1177,12 @@ struct lang_type GTY(())
 /* Mark bits for repeated base checks.  */
 #define TYPE_MARKED_P(NODE) TREE_LANG_FLAG_6 (TYPE_CHECK (NODE))
 
-/* Non-zero if the class NODE has multiple paths to the same (virtual)
+/* Nonzero if the class NODE has multiple paths to the same (virtual)
    base object.  */
 #define CLASSTYPE_DIAMOND_SHAPED_P(NODE) \
   (LANG_TYPE_CLASS_CHECK(NODE)->diamond_shaped)
 
-/* Non-zero if the class NODE has multiple instances of the same base
+/* Nonzero if the class NODE has multiple instances of the same base
    type.  */
 #define CLASSTYPE_REPEATED_BASE_P(NODE) \
   (LANG_TYPE_CLASS_CHECK(NODE)->repeated_base)
@@ -2065,7 +2065,7 @@ extern void decl_shadowed_for_var_insert (tree, tree);
    template.  
 
    In general, DECL_TEMPLATE_INFO is non-NULL only if
-   DECL_USE_TEMPLATE is non-zero.  However, for friends, we sometimes
+   DECL_USE_TEMPLATE is nonzero.  However, for friends, we sometimes
    have DECL_TEMPLATE_INFO even when DECL_USE_TEMPLATE is zero.
    Consider:
 
@@ -2784,7 +2784,7 @@ extern void decl_shadowed_for_var_insert (tree, tree);
      2=explicit template specialization, e.g. int min<int> (int, int);
      3=explicit template instantiation, e.g. template int min<int> (int, int);
 
-   If DECL_USE_TEMPLATE is non-zero, then DECL_TEMPLATE_INFO will also
+   If DECL_USE_TEMPLATE is nonzero, then DECL_TEMPLATE_INFO will also
    be non-NULL.  */
 #define DECL_USE_TEMPLATE(NODE) (DECL_LANG_SPECIFIC (NODE)->decl_flags.use_template)
 

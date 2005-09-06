@@ -1567,7 +1567,7 @@ finish_stmt_expr_expr (tree expr, tree stmt_expr)
 	 expression.  */
       TREE_TYPE (stmt_expr) = type;
       /* We must take particular care if TYPE is a class type.  In
-	 paticular if EXPR creates a temporary of class type, then it
+	 particular if EXPR creates a temporary of class type, then it
 	 must be destroyed at the semicolon terminating the last
 	 statement -- but we must make a copy before that happens.
 
