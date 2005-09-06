@@ -60,7 +60,7 @@ enum cvalue_type
 };
 
 /* Represents the value of either jump function or cval.
-   value represnts a constant.
+   value represents a constant.
    formal_id is used only in jump function context and represents 
    pass-through parameter (the formal of caller is passed 
    as argument).  */

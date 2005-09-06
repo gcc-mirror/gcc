@@ -4460,7 +4460,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	     exception here, as all we are doing here is ensuring that
 	     we read the bytes that make up the type.  We use
 	     create_tmp_var_raw because create_tmp_var will abort when
-	     given a TREE_ADDRESSSABLE type.  */
+	     given a TREE_ADDRESSABLE type.  */
 	  tree tmp = create_tmp_var_raw (type, "vol");
 	  gimple_add_tmp_var (tmp);
 	  *expr_p = build (MODIFY_EXPR, type, tmp, *expr_p);

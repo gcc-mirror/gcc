@@ -10608,7 +10608,7 @@ Use simulator runtime
 @item -mno-crt0
 @opindex mno-crt0
 Do not link in the C run-time initialization object file
-@file{crti.o}.  Other run-time initialisation and termination files
+@file{crti.o}.  Other run-time initialization and termination files
 such as @file{startup.o} and @file{exit.o} are still included on the
 linker command line.
 

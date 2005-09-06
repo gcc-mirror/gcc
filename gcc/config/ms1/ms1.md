@@ -72,11 +72,11 @@
 ;; This pattern implements the decrement and branch non-zero instruction
 ;; which can be used by gcc loop optimizer under certain conditions.
 ;; For an example of it being used try compiling the gcc test case
-;; gcc.c-torture/execute/921213-1.c with optimisations enabled.
+;; gcc.c-torture/execute/921213-1.c with optimizations enabled.
 
 ;; XXX - FIXME - TARGET_MUL is used as a condition since it is set when the
 ;; target is the MS1-16-003, which is the only Morpho CPU which currently
-;; implements this instruction.  Stricly speaking we ought to define a
+;; implements this instruction.  Strictly speaking we ought to define a
 ;; new command line switch to enable/disable the DBNZ instruction or else
 ;; change this pattern so that it explicitly checks for an MS1-16-003
 ;; architecture.
@@ -515,7 +515,7 @@
 
 ;; Note - it is best to only have one movsi pattern and to handle
 ;; all the various contingencies by the use of alternatives.  This
-;; allows reload the greatest amount of flexability (since reload will
+;; allows reload the greatest amount of flexibility (since reload will
 ;; only choose amoungst alternatives for a selected insn, it will not
 ;; replace the insn with another one).
 (define_insn "*movsi_internal"

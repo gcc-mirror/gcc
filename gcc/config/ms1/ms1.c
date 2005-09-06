@@ -1211,7 +1211,7 @@ ms1_expand_epilogue (enum epilogue_type eh_mode)
 			   stack_pointer_rtx,
 			   cfun->machine->eh_stack_adjust));
 
-  /* Generate the approriate return.  */
+  /* Generate the appropriate return.  */
   if (eh_mode == EH_EPILOGUE)
     {
       emit_jump_insn (gen_eh_return_internal ());

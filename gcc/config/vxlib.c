@@ -252,7 +252,7 @@ tls_destructor (void)
 /* External interface */
 
 /* Store in KEYP a value which can be passed to __gthread_setspecific/
-   __gthread_getspecific to store and retrive a value which is
+   __gthread_getspecific to store and retrieve a value which is
    specific to each calling thread.  If DTOR is not NULL, it will be
    called when a thread terminates with a non-NULL specific value for
    this key, with the value as its sole argument.  */

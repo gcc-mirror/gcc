@@ -3847,7 +3847,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
   if (size == 0 || flag_syntax_only)
     return;
 
-  /* See if we're trying to intialize a pointer in a non-default mode
+  /* See if we're trying to initialize a pointer in a non-default mode
      to the address of some declaration somewhere.  If the target says
      the mode is valid for pointers, assume the target has a way of
      resolving it.  */
