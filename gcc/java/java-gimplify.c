@@ -285,6 +285,7 @@ java_gimplify_block (tree java_block)
       outer = BIND_EXPR_BLOCK (outer);
       BLOCK_SUBBLOCKS (outer) = chainon (BLOCK_SUBBLOCKS (outer), block);
     }
+  BLOCK_EXPR_BODY (java_block) = NULL_TREE;
 
   return build3 (BIND_EXPR, TREE_TYPE (java_block), decls, body, block);
 }
