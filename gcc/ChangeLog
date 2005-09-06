@@ -1,3 +1,9 @@
+2005-09-06  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* acinclude.m4: Renamed from aclocal.m4.  Delete AM_LANGINFO_CODESET,
+	AM_PROG_CC_C_O, and AM_AUX_DIR_EXPAND.
+	* aclocal.m4: Regenerate.
+
 2005-09-05  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c.h (TRAMPOLINE_ALIGNMENT): Correct misspelling
