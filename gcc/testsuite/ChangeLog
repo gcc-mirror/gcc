@@ -1,5 +1,10 @@
 2005-09-06  Keith Besaw  <kbesaw@us.ibm.com>
 
+	* gcc.dg/vect/Os-vect-95.c: New test.
+	* gcc.dg/vect/vect-95.c: Same.
+
+2005-09-06  Keith Besaw  <kbesaw@us.ibm.com>
+
 	* gcc.dg/vect/vect-29.c: Update xfail testing.
 	* gcc.dg/vect/vect-44.c: Same.
 	* gcc.dg/vect/vect-48.c: Same.
