@@ -1,5 +1,11 @@
 2005-09-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/22362
+	* config/i386/i386.c (ix86_function_regparm): Make sure automatic regparm
+	for internal functions doesn't use registers used by global registers
+	variables.  Use fewer register parameters if there are global register
+	variables.
+
 	PR rtl-optimization/23098
 	* cse.c (fold_rtx): Call delegitimize_address target hook.
 	* simplify-rtx.c (constant_pool_reference_p): New function.
