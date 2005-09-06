@@ -552,7 +552,7 @@ _Jv_JNI_GetSuperclass (JNIEnv *env, jclass clazz)
 static jboolean JNICALL
 _Jv_JNI_IsAssignableFrom (JNIEnv *, jclass clazz1, jclass clazz2)
 {
-  return unwrap (clazz1)->isAssignableFrom (unwrap (clazz2));
+  return unwrap (clazz2)->isAssignableFrom (unwrap (clazz1));
 }
 
 static jint JNICALL

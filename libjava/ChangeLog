@@ -1,3 +1,22 @@
+2005-09-06  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/23739:
+	* testsuite/libjava.jni/pr23739.c: New file.
+	* testsuite/libjava.jni/pr23739.java: New file.
+	* testsuite/libjava.jni/pr23739.out: New file.
+	* jni.cc (_Jv_JNI_IsAssignableFrom): Reversed arguments.
+	* java/lang/reflect/natMethod.cc (invoke): Updated.
+	* java/lang/natClass.cc (isAssignableFrom): Updated.
+	(isInstance): Likewise.
+	(_Jv_IsAssignableFrom): Reversed arguments.
+	(_Jv_IsInstanceOf): Updated.
+	(_Jv_CheckCast): Likewise.
+	(_Jv_CheckArrayStore): Likewise.
+	(_Jv_IsAssignableFromSlow): Reversed arguments.
+	(_Jv_InterfaceAssignableFrom): Likewise.
+	* link.cc (verify_type_assertions): Updated.
+	* prims.cc (_Jv_CheckAccess): Updated.
+
 2005-09-05  Ranjit Mathew  <rmathew@hotmail.com>
 
 	Testsuite changes for PR java/23431.

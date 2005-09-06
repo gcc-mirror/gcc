@@ -163,7 +163,7 @@ java::lang::reflect::Method::invoke (jobject obj, jobjectArray args)
   else
     {
       jclass objClass = JV_CLASS (obj);
-      if (! _Jv_IsAssignableFrom (declaringClass, objClass))
+      if (! _Jv_IsAssignableFrom (objClass, declaringClass))
         throw new java::lang::IllegalArgumentException;
     }
 
