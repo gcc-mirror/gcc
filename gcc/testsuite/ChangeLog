@@ -1,3 +1,8 @@
+2005-09-05  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR c++/23225
+	* g++.dg/parse/crash27.C: New test.
+
 2005-09-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23667

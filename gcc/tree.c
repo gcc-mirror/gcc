@@ -4239,6 +4239,9 @@ build_pointer_type_for_mode (tree to_type, enum machine_mode mode,
 {
   tree t;
 
+  if (to_type == error_mark_node)
+    return error_mark_node;
+
   /* In some cases, languages will have things that aren't a POINTER_TYPE
      (such as a RECORD_TYPE for fat pointers in Ada) as TYPE_POINTER_TO.
      In that case, return that type without regard to the rest of our
