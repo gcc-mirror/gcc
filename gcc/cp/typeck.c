@@ -4526,6 +4526,37 @@ convert_ptrmem (tree type, tree expr, bool allow_inverse_p,
 			     allow_inverse_p, c_cast_p);
 }
 
+/* If EXPR is an INTEGER_CST and ORIG is an arithmetic constant, return
+   a version of EXPR that has TREE_OVERFLOW and/or TREE_CONSTANT_OVERFLOW
+   set iff they are set in ORIG.  Otherwise, return EXPR unchanged.  */
+
+static tree
+ignore_overflows (tree expr, tree orig)
+{
+  if (TREE_CODE (expr) == INTEGER_CST
+      && CONSTANT_CLASS_P (orig)
+      && TREE_CODE (orig) != STRING_CST
+      && (TREE_OVERFLOW (expr) != TREE_OVERFLOW (orig)
+	  || TREE_CONSTANT_OVERFLOW (expr)
+	     != TREE_CONSTANT_OVERFLOW (orig)))
+    {
+      if (!TREE_OVERFLOW (orig) && !TREE_CONSTANT_OVERFLOW (orig))
+	/* Ensure constant sharing.  */
+	expr = build_int_cst_wide (TREE_TYPE (expr),
+				   TREE_INT_CST_LOW (expr),
+				   TREE_INT_CST_HIGH (expr));
+      else
+	{
+	  /* Avoid clobbering a shared constant.  */
+	  expr = copy_node (expr);
+	  TREE_OVERFLOW (expr) = TREE_OVERFLOW (orig);
+	  TREE_CONSTANT_OVERFLOW (expr)
+	    = TREE_CONSTANT_OVERFLOW (orig);
+	}
+    }
+  return expr;
+}
+
 /* Perform a static_cast from EXPR to TYPE.  When C_CAST_P is true,
    this static_cast is being attempted as one of the possible casts
    allowed by a C-style cast.  (In that case, accessibility of base
@@ -4629,13 +4660,8 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
       result = convert_from_reference (result);
 
       /* Ignore any integer overflow caused by the cast.  */
-      if (TREE_CODE (result) == INTEGER_CST
-	  && CONSTANT_CLASS_P (orig))
-	{
-	  TREE_OVERFLOW (result) = TREE_OVERFLOW (orig);
-	  TREE_CONSTANT_OVERFLOW (result)
-	    = TREE_CONSTANT_OVERFLOW (orig);
-	}
+      result = ignore_overflows (result, orig);
+
       /* [expr.static.cast]
 
 	 If T is a reference type, the result is an lvalue; otherwise,
@@ -4678,12 +4704,7 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
       expr = ocp_convert (type, expr, CONV_C_CAST, LOOKUP_NORMAL);
 
       /* Ignore any integer overflow caused by the cast.  */
-      if (TREE_CODE (expr) == INTEGER_CST
-	  && CONSTANT_CLASS_P (orig))
-	{
-	  TREE_OVERFLOW (expr) = TREE_OVERFLOW (orig);
-	  TREE_CONSTANT_OVERFLOW (expr) = TREE_CONSTANT_OVERFLOW (orig);
-	}
+      expr = ignore_overflows (expr, orig);
       return expr;
     }
 
