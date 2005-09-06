@@ -1,3 +1,8 @@
+2005-09-05  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.h (TRAMPOLINE_ALIGNMENT): Correct misspelling
+	of macro.
+
 2005-09-06  Kazu Hirata  <kazu@codesourcery.com>
 
 	* gimplify.c, ipa-prop.h, varasm.c, config/vxlib.c,

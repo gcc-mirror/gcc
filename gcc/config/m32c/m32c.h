@@ -517,7 +517,7 @@ typedef struct m32c_cumulative_args
 /* Trampolines for Nested Functions */
 
 #define TRAMPOLINE_SIZE m32c_trampoline_size ()
-#define TRAMPOLINE_ALIGMNENT m32c_trampoline_alignment ()
+#define TRAMPOLINE_ALIGNMENT m32c_trampoline_alignment ()
 #define INITIALIZE_TRAMPOLINE(a,fn,sc) m32c_initialize_trampoline (a, fn, sc)
 
 /* Addressing Modes */
