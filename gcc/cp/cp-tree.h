@@ -4322,7 +4322,7 @@ extern tree type_after_usual_arithmetic_conversions (tree, tree);
 extern tree composite_pointer_type		(tree, tree, tree, tree,
 						 const char*);
 extern tree merge_types				(tree, tree);
-extern tree check_return_expr			(tree);
+extern tree check_return_expr			(tree, bool *);
 #define cp_build_binary_op(code, arg1, arg2) \
   build_binary_op(code, arg1, arg2, 1)
 #define cxx_sizeof(T)  cxx_sizeof_or_alignof_type (T, SIZEOF_EXPR, true)

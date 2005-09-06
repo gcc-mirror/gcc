@@ -1,3 +1,13 @@
+2005-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/23075
+	* typeck.c (check_return_expr): Add no_warning argument.  Set
+	*no_warning to true if "return-statement with no value, in function
+	returning" warning has been issued.
+	* cp-tree.h (check_return_expr): Adjust prototype.
+	* semantics.c (finish_return_stmt): Set TREE_NO_WARNING if
+	check_return_expr set *no_warning to true.
+
 2005-09-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (rvalue): New function.

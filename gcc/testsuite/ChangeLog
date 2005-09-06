@@ -1,5 +1,9 @@
 2005-09-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/23075
+	* gcc.dg/pr23075.c: New test.
+	* g++.dg/warn/pr23075.C: New test.
+
 	PR target/22362
 	* gcc.target/i386/pr22362.c: New test.
 
