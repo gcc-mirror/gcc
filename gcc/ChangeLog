@@ -1,5 +1,11 @@
 2005-09-06  Saurabh Verma  <saurabh.verma@codito.com>
 
+	PR target/8973
+	* config/arc/arc.c (arc_output_function_epilogue): Update flags while
+	returning from an interrupt handler.
+
+2005-09-06  Saurabh Verma  <saurabh.verma@codito.com>
+
 	PR target/8972
 	* config/arc/arc.c (output_shift): Add check for loop count when
 	optimizing.
