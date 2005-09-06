@@ -1,5 +1,12 @@
 2005-09-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/23075
+	* c-typeck.c (c_finish_return): Set TREE_NO_WARNING on RETURN_EXPR
+	if "return with no value, in function returning non-void" warning
+	has been issued.
+  	* tree-cfg.c (execute_warn_function_return): Don't look at
+	RETURN_EXPRs with TREE_NO_WARNING set.
+
 	PR target/22362
 	* config/i386/i386.c (ix86_function_regparm): Make sure automatic regparm
 	for internal functions doesn't use registers used by global registers

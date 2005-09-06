@@ -6561,7 +6561,8 @@ c_finish_goto_ptr (tree expr)
 tree
 c_finish_return (tree retval)
 {
-  tree valtype = TREE_TYPE (TREE_TYPE (current_function_decl));
+  tree valtype = TREE_TYPE (TREE_TYPE (current_function_decl)), ret_stmt;
+  bool no_warning = false;
 
   if (TREE_THIS_VOLATILE (current_function_decl))
     warning ("function declared %<noreturn%> has a %<return%> statement");
@@ -6571,8 +6572,11 @@ c_finish_return (tree retval)
       current_function_returns_null = 1;
       if ((warn_return_type || flag_isoc99)
 	  && valtype != 0 && TREE_CODE (valtype) != VOID_TYPE)
-	pedwarn_c99 ("%<return%> with no value, in "
-		     "function returning non-void");
+	{
+	  pedwarn_c99 ("%<return%> with no value, in "
+		       "function returning non-void");
+	  no_warning = true;
+	}
     }
   else if (valtype == 0 || TREE_CODE (valtype) == VOID_TYPE)
     {
@@ -6648,7 +6652,9 @@ c_finish_return (tree retval)
       retval = build2 (MODIFY_EXPR, TREE_TYPE (res), res, t);
     }
 
-  return add_stmt (build_stmt (RETURN_EXPR, retval));
+  ret_stmt = build_stmt (RETURN_EXPR, retval);
+  TREE_NO_WARNING (ret_stmt) |= no_warning;
+  return add_stmt (ret_stmt);
 }
 
 struct c_switch {

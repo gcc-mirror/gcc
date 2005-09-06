@@ -6081,16 +6081,20 @@ maybe_warn_about_returning_address_of_local (tree retval)
 /* Check that returning RETVAL from the current function is valid.
    Return an expression explicitly showing all conversions required to
    change RETVAL into the function return type, and to assign it to
-   the DECL_RESULT for the function.  */
+   the DECL_RESULT for the function.  Set *NO_WARNING to true if
+   code reaches end of non-void function warning shouldn't be issued
+   on this RETURN_EXPR.  */
 
 tree
-check_return_expr (tree retval)
+check_return_expr (tree retval, bool *no_warning)
 {
   tree result;
   /* The type actually returned by the function, after any
      promotions.  */
   tree valtype;
   int fn_returns_value_p;
+
+  *no_warning = false;
 
   /* A `volatile' function is one that isn't supposed to return, ever.
      (This is a G++ extension, used to get better code for functions
@@ -6142,6 +6146,10 @@ check_return_expr (tree retval)
 	 end of a non-void function (which we don't, we gave a
 	 return!).  */
       current_function_returns_null = 0;
+      /* And signal caller that TREE_NO_WARNING should be set on the
+         RETURN_EXPR to avoid control reaches end of non-void function
+         warnings in tree-cfg.c.  */
+      *no_warning = true;
     }
   /* Check for a return statement with a value in a function that
      isn't supposed to return a value.  */

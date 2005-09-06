@@ -716,8 +716,9 @@ tree
 finish_return_stmt (tree expr)
 {
   tree r;
+  bool no_warning;
 
-  expr = check_return_expr (expr);
+  expr = check_return_expr (expr, &no_warning);
   if (!processing_template_decl)
     {
       if (DECL_DESTRUCTOR_P (current_function_decl)
@@ -733,6 +734,7 @@ finish_return_stmt (tree expr)
     }
 
   r = build_stmt (RETURN_EXPR, expr);
+  TREE_NO_WARNING (r) |= no_warning;
   r = maybe_cleanup_point_expr_void (r);
   r = add_stmt (r);
   finish_stmt ();
