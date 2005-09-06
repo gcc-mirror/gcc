@@ -1,3 +1,8 @@
+2005-09-06  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* gcse.c (try_replace_reg): Disallow REG_EQUAL notes for 
+	STRICT_LOW_PART SETs.
+
 2005-09-06  Alan Modra  <amodra@bigpond.net.au>
 
 	PR middle-end/21460
