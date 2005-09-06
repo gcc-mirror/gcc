@@ -1,3 +1,19 @@
+2005-09-06  Keith Besaw  <kbesaw@us.ibm.com>
+
+	* gcc.dg/vect/vect-29.c: Update xfail testing.
+	* gcc.dg/vect/vect-44.c: Same.
+	* gcc.dg/vect/vect-48.c: Same.
+	* gcc.dg/vect/vect-50.c: Same.
+	* gcc.dg/vect/vect-72.c: Same.
+	* gcc.dg/vect/vect-77.c: Same.
+	* gcc.dg/vect/vect-78.c: Same.
+	* gcc.dg/vect/vect-80.c: Same.
+	* gcc.dg/vect/vect-96.c: Same.
+	* gcc.dg/vect/vect-100.c: Same.
+	* gcc.dg/vect/vect-exp: Add default flags for Os-vect-*.
+	* gfortran.dg/vect/vect-2.f90: Update xfail testing.
+	* gfortran.dg/vect/vect-5.f90: Same.
+
 2005-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/debug/dwarf2/dwarf-char1.c: Accept more assembler comment

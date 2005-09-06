@@ -998,6 +998,10 @@ ftree-vectorize
 Common Report Var(flag_tree_vectorize)
 Enable loop vectorization on trees
 
+ftree-vect-loop-version
+Common Report Var(flag_tree_vect_loop_version) Init(1)
+Enable loop versioning when doing loop vectorization on trees
+
 ftree-vectorizer-verbose=
 Common RejectNegative Joined
 -ftree-vectorizer-verbose=<number>	Set the verbosity level of the vectorizer

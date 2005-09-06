@@ -1,3 +1,29 @@
+2005-09-06  Keith Besaw  <kbesaw@us.ibm.com>
+
+	* common.opt: Add option ftree-vect-loop-version.
+	* params.def: Add --param vect-max-version-checks.
+	* doc/invoke.texi: Document ftree-vect-loop-version and
+	--param vect-max-version-checks.
+	* tree-vectorizer.h (_loop_vec_info): Add ptr_mask and
+	may_misalign_stmts and defines for accessors.
+	* tree-vectorizer.c : (new_loop_vec_info): VEC_alloc for
+	LOOP_VINFO_MAY_MISALIGN_STMTS.
+	(destroy_loop_vec_info): VEC_free for
+	LOOP_VINFO_MAY_MISALIGN_STMTS.
+	* tree-vect-analyze.c (vect_compute_data_ref_alignment):
+	Update documentation.
+	(vect_update_misalignment_for_peel): New.
+	(vect_enhance_data_refs_alignment): Update to choose loop
+	peeling or loop versioning if appropriate for the (potentially)
+	unaligned data references in the loop.
+	(vect_analyze_data_refs_alignment): Remove call to
+	vect_enhance_data_refs_alignment so the checks can be done
+	earlier.
+	(vect_analyze_loop): Add call to vect_enhance_data_refs_alignment
+	and move up call to vect_analyze_data_refs_alignment.
+	* tree-vect-transform.c (vect_create_cond_for_align_checks): New.
+	(vect_transform_loop): Add call to loop_version.
+
 2005-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/23098

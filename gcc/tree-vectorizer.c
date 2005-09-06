@@ -137,6 +137,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "cfglayout.h"
 #include "expr.h"
 #include "optabs.h"
+#include "params.h"
 #include "toplev.h"
 #include "tree-chrec.h"
 #include "tree-data-ref.h"
@@ -1420,6 +1421,8 @@ new_loop_vec_info (struct loop *loop)
   VARRAY_GENERIC_PTR_INIT (LOOP_VINFO_DATAREFS (res), 20, "loop_datarefs");
   VARRAY_GENERIC_PTR_INIT (LOOP_VINFO_DDRS (res), 20, "loop_ddrs");
   LOOP_VINFO_UNALIGNED_DR (res) = NULL;
+  LOOP_VINFO_MAY_MISALIGN_STMTS (res)
+    = VEC_alloc (tree, heap, PARAM_VALUE (PARAM_VECT_MAX_VERSION_CHECKS));
 
   return res;
 }
@@ -1480,6 +1483,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo)
   free (LOOP_VINFO_BBS (loop_vinfo));
   varray_clear (LOOP_VINFO_DATAREFS (loop_vinfo));
   varray_clear (LOOP_VINFO_DDRS (loop_vinfo));
+  VEC_free (tree, heap, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo));
 
   free (loop_vinfo);
 }
@@ -2049,7 +2053,7 @@ vectorize_loops (struct loops *loops)
       if (!loop_vinfo || !LOOP_VINFO_VECTORIZABLE_P (loop_vinfo))
 	continue;
 
-      vect_transform_loop (loop_vinfo, loops); 
+      vect_transform_loop (loop_vinfo, loops);
       num_vectorized_loops++;
     }
 

@@ -398,6 +398,11 @@ DEFPARAM(PARAM_SCEV_MAX_EXPR_SIZE,
 	 "Bound on size of expressions used in the scalar evolutions analyzer",
 	 20, 0, 0)
 
+DEFPARAM(PARAM_VECT_MAX_VERSION_CHECKS,
+         "vect-max-version-checks",
+         "Bound on number of runtime checks inserted by the vectorizer's loop versioning",
+         6, 0, 0)
+
 /* The product of the next two is used to decide whether or not to
    use .GLOBAL_VAR.  See tree-dfa.c.  */
 DEFPARAM(PARAM_GLOBAL_VAR_THRESHOLD,

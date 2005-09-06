@@ -102,6 +102,11 @@ lappend DEFAULT_VECTCFLAGS "-ftrapv"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/trapv-vect*.\[cS\]]]  \
 	"" $DEFAULT_VECTCFLAGS
 
+# With -Os
+lappend DEFAULT_VECTCFLAGS "-Os"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/Os-vect-*.\[cS\]]]  \
+        "" $DEFAULT_VECTCFLAGS
+
 # Clean up.
 set dg-do-what-default ${save-dg-do-what-default}
 
