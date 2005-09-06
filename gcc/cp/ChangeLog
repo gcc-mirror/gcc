@@ -1,3 +1,17 @@
+2005-09-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (rvalue): New function.
+	* call.c (build_conditional_expr): Use it.
+	* init.c (build_new_1): Likewise.
+	* rtti.c (build_dynamic_cast_1): Likewise.
+	* tree.c (rvalue): New function.
+	* typeck.c (build_unary_op): Use it.
+	(build_static_cast_1): Likewise.
+
+	PR c++/9782
+	* init.c (build_new_1): Make sure the entire array type is
+	complete, not just its element types.
+
 2005-09-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* decl.c (check_elaborated_type_specifier): Remove redundant check.

@@ -1,3 +1,10 @@
+2005-09-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/expr/cast6.C: New test.
+
+	PR c++/9782
+	* g++.dg/init/new15.C: New test.
+
 2005-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/debug/dwarf2/dwarf-char1.c: Accept more assembler comment
