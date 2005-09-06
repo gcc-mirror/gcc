@@ -3486,7 +3486,7 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
   /* If this expression is an rvalue, but might be mistaken for an
      lvalue, we must add a NON_LVALUE_EXPR.  */
   if (!lvalue_p && real_lvalue_p (result))
-    result = build1 (NON_LVALUE_EXPR, TREE_TYPE (result), result);
+    result = rvalue (result);
 
   return result;
 }

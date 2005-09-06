@@ -1838,6 +1838,9 @@ build_new_1 (tree exp)
 	}
     }
 
+  if (!complete_type_or_else (type, exp))
+    return error_mark_node;
+
   /* If our base type is an array, then make sure we know how many elements
      it has.  */
   for (elt_type = type;
@@ -1845,9 +1848,6 @@ build_new_1 (tree exp)
        elt_type = TREE_TYPE (elt_type))
     nelts = cp_build_binary_op (MULT_EXPR, nelts,
 				array_type_nelts_top (elt_type));
-
-  if (!complete_type_or_else (elt_type, exp))
-    return error_mark_node;
 
   if (TREE_CODE (elt_type) == VOID_TYPE)
     {
@@ -2227,8 +2227,7 @@ build_new_1 (tree exp)
   rval = build_nop (pointer_type, rval);
 
   /* A new-expression is never an lvalue.  */
-  if (real_lvalue_p (rval))
-    rval = build1 (NON_LVALUE_EXPR, TREE_TYPE (rval), rval);
+  rval = rvalue (rval);
 
   return rval;
 }

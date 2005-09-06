@@ -555,7 +555,7 @@ build_dynamic_cast_1 (tree type, tree expr)
 	expr = build_base_path (PLUS_EXPR, convert_from_reference (expr),
 				binfo, 0);
 	if (TREE_CODE (exprtype) == POINTER_TYPE)
-	  expr = non_lvalue (expr);
+	  expr = rvalue (expr);
 	return expr;
       }
   }
