@@ -1,5 +1,8 @@
 2005-09-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/23056
+	* g++.dg/opt/pr23056.C: New test.
+
 	PR rtl-optimization/23098
 	* gcc.target/i386/pr23098.c: New test.
 
