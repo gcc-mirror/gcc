@@ -1,3 +1,12 @@
+2005-09-06  Olivier Hainque  <hainque@adacore.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/14997
+	* expr.c (expand_expr_real) <normal_inner_ref>: Force op0 to mem
+	when we would be extracting outside its bit span (bitpos+bitsize
+	larger than its mode), possible with some VIEW_CONVERT_EXPRs from
+	Ada unchecked conversions.
+
 2005-09-06  Steven Bosscher  <stevenb@suse.de>
 
 	* tree-ssa-pre.c (try_look_through_load): New function.
