@@ -1,10 +1,17 @@
+2005-09-06  Steven Bosscher  <stevenb@suse.de>
+
+	* tree-ssa-phiopt.c (conditional_replacement): Construct proper SSA
+	form manually.
+	(abs_replacement): Likewise.
+	(pass_phiopt): Remove TODO_update_ssa.
+
 2005-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/23075
 	* c-typeck.c (c_finish_return): Set TREE_NO_WARNING on RETURN_EXPR
 	if "return with no value, in function returning non-void" warning
 	has been issued.
-  	* tree-cfg.c (execute_warn_function_return): Don't look at
+	* tree-cfg.c (execute_warn_function_return): Don't look at
 	RETURN_EXPRs with TREE_NO_WARNING set.
 
 	PR target/22362
@@ -14,7 +21,7 @@
 	variables.
 
 2005-09-06  Olivier Hainque  <hainque@adacore.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/14997
 	* expr.c (expand_expr_real) <normal_inner_ref>: Force op0 to mem
@@ -138,7 +145,7 @@
 	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/23671
-	pa.c (emit_move_sequence): Use replace_equiv_address instead of
+	* pa.c (emit_move_sequence): Use replace_equiv_address instead of
 	gen_rtx_MEM.
 
 2005-09-02  Nicolas Pitre <nico@cam.org>

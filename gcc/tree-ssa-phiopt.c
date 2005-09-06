@@ -399,7 +399,14 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
   if (TREE_CODE (cond) != SSA_NAME
       && !lang_hooks.types_compatible_p (TREE_TYPE (cond), TREE_TYPE (result)))
     {
-      new_var = make_rename_temp (TREE_TYPE (cond), NULL);
+      tree tmp;
+
+      if (!COMPARISON_CLASS_P (cond))
+	return false;
+
+      tmp = create_tmp_var (TREE_TYPE (cond), NULL);
+      add_referenced_tmp_var (tmp);
+      new_var = make_ssa_name (tmp, NULL);
       old_result = cond;
       cond = new_var;
     }
@@ -422,14 +429,14 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
   if (old_result)
     {
       tree new1;
-      if (!COMPARISON_CLASS_P (old_result))
-	return false;
 
       new1 = build2 (TREE_CODE (old_result), TREE_TYPE (old_result),
 		     TREE_OPERAND (old_result, 0),
 		     TREE_OPERAND (old_result, 1));
 
       new1 = build2 (MODIFY_EXPR, TREE_TYPE (old_result), new_var, new1);
+      SSA_NAME_DEF_STMT (new_var) = new1;
+
       bsi_insert_after (&bsi, new1, BSI_NEW_STMT);
     }
 
@@ -465,9 +472,21 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
       tree cond1 = invert_truthvalue (cond);
 
       cond = cond1;
+
       /* If what we get back is a conditional expression, there is no
 	  way that it can be gimple.  */
       if (TREE_CODE (cond) == COND_EXPR)
+	{
+	  release_ssa_name (new_var1);
+	  return false;
+	}
+
+      /* If COND is not something we can expect to be reducible to a GIMPLE
+	 condition, return early.  */
+      if (is_gimple_cast (cond))
+	cond1 = TREE_OPERAND (cond, 0);
+      if (TREE_CODE (cond1) == TRUTH_NOT_EXPR
+	  && !is_gimple_val (TREE_OPERAND (cond1, 0)))
 	{
 	  release_ssa_name (new_var1);
 	  return false;
@@ -478,18 +497,23 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
       if (is_gimple_cast (cond)
 	  && !is_gimple_val (TREE_OPERAND (cond, 0)))
 	{
-	  tree temp = TREE_OPERAND (cond, 0);
-	  tree new_var_1 = make_rename_temp (TREE_TYPE (temp), NULL);
-	  new = build2 (MODIFY_EXPR, TREE_TYPE (new_var_1), new_var_1, temp);
-	  bsi_insert_after (&bsi, new, BSI_NEW_STMT);
-	  cond = fold_convert (TREE_TYPE (result), new_var_1);
-	}
+	  tree op0, tmp, cond_tmp;
 
-      if (TREE_CODE (cond) == TRUTH_NOT_EXPR
-	  &&  !is_gimple_val (TREE_OPERAND (cond, 0)))
-	{
-	  release_ssa_name (new_var1);
-	  return false;
+	  /* Only "real" casts are OK here, not everything that is
+	     acceptable to is_gimple_cast.  Make sure we don't do
+	     anything stupid here.  */
+	  gcc_assert (TREE_CODE (cond) == NOP_EXPR
+		      || TREE_CODE (cond) == CONVERT_EXPR);
+
+	  op0 = TREE_OPERAND (cond, 0);
+	  tmp = create_tmp_var (TREE_TYPE (op0), NULL);
+	  add_referenced_tmp_var (tmp);
+	  cond_tmp = make_ssa_name (tmp, NULL);
+	  new = build2 (MODIFY_EXPR, TREE_TYPE (cond_tmp), cond_tmp, op0);
+	  SSA_NAME_DEF_STMT (cond_tmp) = new;
+
+	  bsi_insert_after (&bsi, new, BSI_NEW_STMT);
+	  cond = fold_convert (TREE_TYPE (result), cond_tmp);
 	}
 
       new = build2 (MODIFY_EXPR, TREE_TYPE (new_var1), new_var1, cond);
@@ -928,13 +952,18 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
   result = duplicate_ssa_name (result, NULL);
 
   if (negate)
-    lhs = make_rename_temp (TREE_TYPE (result), NULL);
+    {
+      tree tmp = create_tmp_var (TREE_TYPE (result), NULL);
+      add_referenced_tmp_var (tmp);
+      lhs = make_ssa_name (tmp, NULL);
+    }
   else
     lhs = result;
 
   /* Build the modify expression with abs expression.  */
   new = build2 (MODIFY_EXPR, TREE_TYPE (lhs),
 		lhs, build1 (ABS_EXPR, TREE_TYPE (lhs), rhs));
+  SSA_NAME_DEF_STMT (lhs) = new;
 
   bsi = bsi_last (cond_bb);
   bsi_insert_before (&bsi, new, BSI_NEW_STMT);
@@ -946,11 +975,11 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
 	 in the block.  */
       new = build2 (MODIFY_EXPR, TREE_TYPE (result),
 		    result, build1 (NEGATE_EXPR, TREE_TYPE (lhs), lhs));
+      SSA_NAME_DEF_STMT (result) = new;
 
       bsi_insert_after (&bsi, new, BSI_NEW_STMT);
     }
 
-  SSA_NAME_DEF_STMT (result) = new;
   replace_phi_edge_with_variable (cond_bb, e1, phi, result);
 
   /* Note that we optimized this PHI.  */
@@ -983,7 +1012,6 @@ struct tree_opt_pass pass_phiopt =
     | TODO_dump_func
     | TODO_ggc_collect
     | TODO_verify_ssa
-    | TODO_update_ssa
     | TODO_verify_flow
     | TODO_verify_stmts,		/* todo_flags_finish */
   0					/* letter */
