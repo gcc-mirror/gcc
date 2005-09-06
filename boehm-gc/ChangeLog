@@ -1,3 +1,9 @@
+2005-09-06  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/23662:
+	* include/private/gcconfig.h (LINUX_STACKBOTTOM): Use instead of
+	HEURISTIC1 on ARM.
+
 2005-07-17  SUGIOKA Toshinobu  <sugioka@itonet.co.jp>
 
 	* include/private/gcconfig.h (sh-linux): Use LINUX_STACKBOTTOM.
