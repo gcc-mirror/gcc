@@ -1494,7 +1494,11 @@ output_shift (rtx *operands)
   if (GET_CODE (operands[2]) != CONST_INT)
     {
       if (optimize)
-	output_asm_insn ("mov lp_count,%2", operands);
+	{
+	  output_asm_insn ("sub.f 0,%2,0", operands);
+      	  output_asm_insn ("mov lp_count,%2", operands);
+	  output_asm_insn ("bz 2f", operands);
+	}
       else
 	output_asm_insn ("mov %4,%2", operands);
       goto shiftloop;
@@ -1568,6 +1572,8 @@ output_shift (rtx *operands)
 		fprintf (asm_out_file, "1:\t%s single insn loop\n",
 			 ASM_COMMENT_START);
 	      output_asm_insn (shift_one, operands);
+	      fprintf (asm_out_file, "2:\t%s end single insn loop\n",
+		       ASM_COMMENT_START);
 	    }
 	  else 
 	    {
