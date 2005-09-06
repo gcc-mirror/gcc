@@ -2999,8 +2999,8 @@ process_jvm_instruction (int PC, const unsigned char* byte_ops,
   const char *opname; /* Temporary ??? */
   int oldpc = PC; /* PC at instruction start. */
 
-  /* If the instruction is at the beginning of a exception handler,
-     replace the top of the stack with the thrown object reference */
+  /* If the instruction is at the beginning of an exception handler,
+     replace the top of the stack with the thrown object reference.  */
   if (instruction_bits [PC] & BCODE_EXCEPTION_TARGET)
     {
       /* Note that the verifier will not emit a type map at all for
@@ -3321,7 +3321,7 @@ peek_opcode_at_pc (JCF *jcf, int code_offset, int pc)
 
    This function is used by `give_name_to_locals' so that a local's
    DECL features a DECL_LOCAL_START_PC such that the first related
-   store operation will use DECL as a destination, not a unrelated
+   store operation will use DECL as a destination, not an unrelated
    temporary created for the occasion.
 
    This function uses a global (instruction_bits) `note_instructions' should

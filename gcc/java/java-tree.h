@@ -1660,12 +1660,12 @@ extern tree *type_map;
 #define INNER_CLASS_DECL_P(NODE) (TYPE_NAME (TREE_TYPE (NODE)) == NODE	\
 				  && DECL_CONTEXT (NODE))
 
-/* True if NODE is an top level class TYPE_DECL node: NODE isn't
+/* True if NODE is a top level class TYPE_DECL node: NODE isn't
    an inner class or NODE is a static class.  */
 #define TOPLEVEL_CLASS_DECL_P(NODE) (!INNER_CLASS_DECL_P (NODE) 	\
 				     || CLASS_STATIC (NODE))
 
-/* True if the class decl NODE was declared in a inner scope and is
+/* True if the class decl NODE was declared in an inner scope and is
    not a toplevel class */
 #define PURE_INNER_CLASS_DECL_P(NODE) \
   (INNER_CLASS_DECL_P (NODE) && !CLASS_STATIC (NODE))
@@ -1678,7 +1678,7 @@ extern tree *type_map;
 #define TOPLEVEL_CLASS_TYPE_P(NODE) (!INNER_CLASS_TYPE_P (NODE) 	\
 				     || CLASS_STATIC (TYPE_NAME (NODE)))
 
-/* True if the class type NODE was declared in a inner scope and is
+/* True if the class type NODE was declared in an inner scope and is
    not a toplevel class */
 #define PURE_INNER_CLASS_TYPE_P(NODE) \
   (INNER_CLASS_TYPE_P (NODE) && !CLASS_STATIC (TYPE_NAME (NODE)))

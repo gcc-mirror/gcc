@@ -37,7 +37,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 /* The basic idea is that we assign each local variable declaration
    and each blank final field an index, and then we pass around
    bitstrings, where the (2*i)'th bit is set if decl whose DECL_BIT_INDEX
-   is i is definitely assigned, and the the (2*i=1)'th bit is set if 
+   is i is definitely assigned, and the (2*i=1)'th bit is set if 
    decl whose DECL_BIT_INDEX is i is definitely unassigned */
 
 /* One segment of a bitstring. */

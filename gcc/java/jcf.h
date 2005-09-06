@@ -62,8 +62,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
    open() call.
 
    If you want to add another host, add your define to the list below
-   (i.e. defined(WIN32) || defined(YOUR_HOST)) and add an host-specific
-   .c file to Make-lang.in similar to win32-host.c  */
+   (i.e. defined(WIN32) || defined(YOUR_HOST)) and add a host-specific
+   .c file to Make-lang.in similar to win32-host.c.  */
 #if defined(WIN32)
 extern int
 jcf_open_exact_case (const char* filename, int oflag);
