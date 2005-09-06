@@ -1576,6 +1576,7 @@ static void
 sjlj_emit_function_enter (rtx dispatch_label)
 {
   rtx fn_begin, fc, mem, seq;
+  bool fn_begin_outside_block;
 
   fc = cfun->eh->sjlj_fc;
 
@@ -1631,23 +1632,20 @@ sjlj_emit_function_enter (rtx dispatch_label)
      do this in a block that is at loop level 0 and dominates all
      can_throw_internal instructions.  */
 
+  fn_begin_outside_block = true;
   for (fn_begin = get_insns (); ; fn_begin = NEXT_INSN (fn_begin))
-    if (NOTE_P (fn_begin)
-	&& (NOTE_LINE_NUMBER (fn_begin) == NOTE_INSN_FUNCTION_BEG
-	    || NOTE_LINE_NUMBER (fn_begin) == NOTE_INSN_BASIC_BLOCK))
-      break;
-  if (NOTE_LINE_NUMBER (fn_begin) == NOTE_INSN_FUNCTION_BEG)
+    if (NOTE_P (fn_begin))
+      {
+	if (NOTE_LINE_NUMBER (fn_begin) == NOTE_INSN_FUNCTION_BEG)
+	  break;
+	else if (NOTE_LINE_NUMBER (fn_begin) == NOTE_INSN_BASIC_BLOCK)
+	  fn_begin_outside_block = false;
+      }
+
+  if (fn_begin_outside_block)
     insert_insn_on_edge (seq, EDGE_SUCC (ENTRY_BLOCK_PTR, 0));
   else
-    {
-      rtx last = BB_END (EDGE_SUCC (ENTRY_BLOCK_PTR, 0)->dest);
-      for (; ; fn_begin = NEXT_INSN (fn_begin))
-	if ((NOTE_P (fn_begin)
-	     && NOTE_LINE_NUMBER (fn_begin) == NOTE_INSN_FUNCTION_BEG)
-	    || fn_begin == last)
-	  break;
-      emit_insn_after (seq, fn_begin);
-    }
+    emit_insn_after (seq, fn_begin);
 }
 
 /* Call back from expand_function_end to know where we should put

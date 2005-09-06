@@ -1,3 +1,9 @@
+2005-09-06  Alan Modra  <amodra@bigpond.net.au>
+
+	PR middle-end/21460
+	* except.c (sjlj_emit_function_enter): Find the function begin
+	note even when it's not in first basic block.
+
 2005-09-05  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR c/23161
