@@ -1,5 +1,8 @@
 2005-09-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/23098
+	* gcc.target/i386/pr23098.c: Add dg-require-effective-target ilp32.
+
 	* gcc.dg/debug/dwarf2/dwarf-char1.c: Further regex fixes.
 	* gcc.dg/debug/dwarf2/dwarf-char2.c: Likewise.
 	* gcc.dg/debug/dwarf2/dwarf-char3.c: Likewise.
