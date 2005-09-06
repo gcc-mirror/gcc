@@ -1,3 +1,9 @@
+2005-09-06  Steven Bosscher  <stevenb@suse.de>
+
+	* tree-ssa-pre.c (try_look_through_load): New function.
+	(compute_avail): Use it to try to look through loads for some
+	more useful expressions.
+
 2005-09-06  Saurabh Verma  <saurabh.verma@codito.com>
 
 	* simplify-rtx.c (simplify_binary_operation_1): Correct the 

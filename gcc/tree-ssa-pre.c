@@ -2136,6 +2136,75 @@ can_value_number_call (tree stmt)
   return false;
 }
 
+/* Given a statement STMT and its right hand side which is a load, try
+   to look for the expression stored in the location for the load, and
+   return true if a useful equivalence was recorded for LHS.  */
+
+static bool
+try_look_through_load (tree lhs, tree mem_ref, tree stmt, basic_block block)
+{
+  tree store_stmt = NULL;
+  tree rhs;
+  ssa_op_iter i;
+  tree vuse;
+
+  FOR_EACH_SSA_TREE_OPERAND (vuse, stmt, i, SSA_OP_VIRTUAL_USES)
+    {
+      tree def_stmt;
+
+      gcc_assert (TREE_CODE (vuse) == SSA_NAME);
+      def_stmt = SSA_NAME_DEF_STMT (vuse);
+
+      /* If there is no useful statement for this VUSE, we'll not find a
+	 useful expression to return either.  Likewise, if there is a
+	 statement but it is not a simple assignment or it has virtual
+	 uses, we can stop right here.  Note that this means we do
+	 not look through PHI nodes, which is intentional.  */
+      if (!def_stmt
+	  || TREE_CODE (def_stmt) != MODIFY_EXPR
+	  || !ZERO_SSA_OPERANDS (def_stmt, SSA_OP_VIRTUAL_USES))
+	return false;
+
+      /* If this is not the same statement as one we have looked at for
+	 another VUSE of STMT already, we have two statements producing
+	 something that reaches our STMT.  */
+      if (store_stmt && store_stmt != def_stmt)
+	return false;
+      else
+	{
+	  /* Is this a store to the exact same location as the one we are
+	     loading from in STMT?  */
+	  if (!operand_equal_p (TREE_OPERAND (def_stmt, 0), mem_ref, 0))
+	    return false;
+
+	  /* Otherwise remember this statement and see if all other VUSEs
+	     come from the same statement.  */
+	  store_stmt = def_stmt;
+	}
+    }
+
+  /* Alright then, we have visited all VUSEs of STMT and we've determined
+     that all of them come from the same statement STORE_STMT.  See if there
+     is a useful expression we can deduce from STORE_STMT.  */
+  rhs = TREE_OPERAND (store_stmt, 1);
+  if (TREE_CODE (rhs) == SSA_NAME
+      || is_gimple_min_invariant (rhs)
+      || TREE_CODE (rhs) == ADDR_EXPR
+      || TREE_INVARIANT (rhs))
+    {
+      /* Yay!  Compute a value number for the RHS of the statement and
+ 	 add its value to the AVAIL_OUT set for the block.  Add the LHS
+	 to TMP_GEN.  */
+      add_to_sets (lhs, rhs, store_stmt, TMP_GEN (block), AVAIL_OUT (block));
+      if (TREE_CODE (rhs) == SSA_NAME
+	  && !is_undefined_value (rhs))
+	value_insert_into_set (EXP_GEN (block), rhs);
+      return true;
+    }
+
+  return false;
+}
+
 /* Compute the AVAIL set for all basic blocks.
 
    This function performs value numbering of the statements in each basic
@@ -2225,6 +2294,12 @@ compute_avail (void)
 	    {
 	      tree lhs = TREE_OPERAND (stmt, 0);
 	      tree rhs = TREE_OPERAND (stmt, 1);
+
+	      /* Try to look through loads.  */
+	      if (TREE_CODE (lhs) == SSA_NAME
+		  && !ZERO_SSA_OPERANDS (stmt, SSA_OP_VIRTUAL_USES)
+		  && try_look_through_load (lhs, rhs, stmt, block))
+		continue;
 
 	      STRIP_USELESS_TYPE_CONVERSION (rhs);
 	      if (UNARY_CLASS_P (rhs)
