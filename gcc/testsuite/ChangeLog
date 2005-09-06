@@ -1,3 +1,12 @@
+2005-09-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	Backport:
+
+	2004-12-14  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/18738
+	* g++.dg/template/typename8.C: New test.
+	* g++.dg/parse/friend2.C: Tweak error message.
+
 2005-09-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	Backport:

@@ -1,3 +1,18 @@
+2005-09-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	Backport:
+
+	2004-12-14  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/18738
+	* decl.c (make_typename_type): Do not handle namespace-scoped
+	names here.
+	(tag_name): Handle typename_type.
+	(check_elaborated_type_specifier): Handle typenames.
+	* parser.c (cp_parser_diagnose_invalid_type_name): Do not call
+	make_typename_type for namespace-scoped names here.
+	(cp_parser_elaborated_type_specifier): Use
+	cp_parser_diagnose_invalid_type_name.
+
 2005-09-03  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	Backport:

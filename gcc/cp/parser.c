@@ -9245,7 +9245,8 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	}
 
       /* For a `typename', we needn't call xref_tag.  */
-      if (tag_type == typename_type)
+      if (tag_type == typename_type
+	  && TREE_CODE (parser->scope) != NAMESPACE_DECL)
 	return make_typename_type (parser->scope, identifier, 
 				   /*complain=*/1);
       /* Look up a qualified name in the usual way.  */
@@ -9289,7 +9290,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 
 	  if (TREE_CODE (decl) != TYPE_DECL)
 	    {
-	      error ("expected type-name");
+	      cp_parser_diagnose_invalid_type_name (parser);
 	      return error_mark_node;
 	    }
 
