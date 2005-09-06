@@ -1,5 +1,8 @@
 2005-09-06  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/22362
+	* gcc.target/i386/pr22362.c: New test.
+
 	PR rtl-optimization/23098
 	* gcc.target/i386/pr23098.c: Add dg-require-effective-target ilp32.
 
