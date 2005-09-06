@@ -7178,25 +7178,30 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 			  || modifier == EXPAND_STACK_PARM)
 			 ? modifier : EXPAND_NORMAL);
 
-	/* If this is a constant, put it into a register if it is a
-	   legitimate constant and OFFSET is 0 and memory if it isn't.  */
+	/* If this is a constant, put it into a register if it is a legitimate
+	   constant, OFFSET is 0, and we won't try to extract outside the
+	   register (in case we were passed a partially uninitialized object
+	   or a view_conversion to a larger size).  Force the constant to
+	   memory otherwise.  */
 	if (CONSTANT_P (op0))
 	  {
 	    enum machine_mode mode = TYPE_MODE (TREE_TYPE (tem));
 	    if (mode != BLKmode && LEGITIMATE_CONSTANT_P (op0)
-		&& offset == 0)
+		&& offset == 0
+		&& bitpos + bitsize <= GET_MODE_BITSIZE (mode))
 	      op0 = force_reg (mode, op0);
 	    else
 	      op0 = validize_mem (force_const_mem (mode, op0));
 	  }
 
- 	/* Otherwise, if this object not in memory and we either have an
- 	   offset or a BLKmode result, put it there.  This case can't occur in
- 	   C, but can in Ada if we have unchecked conversion of an expression
- 	   from a scalar type to an array or record type or for an
- 	   ARRAY_RANGE_REF whose type is BLKmode.  */
+	/* Otherwise, if this object not in memory and we either have an
+	   offset, a BLKmode result, or a reference outside the object, put it
+	   there.  Such cases can occur in Ada if we have unchecked conversion
+	   of an expression from a scalar type to an array or record type or
+	   for an ARRAY_RANGE_REF whose type is BLKmode.  */
 	else if (!MEM_P (op0)
 		 && (offset != 0
+		     || (bitpos + bitsize > GET_MODE_BITSIZE (GET_MODE (op0)))
 		     || (code == ARRAY_RANGE_REF && mode == BLKmode)))
 	  {
 	    tree nt = build_qualified_type (TREE_TYPE (tem),
