@@ -1,3 +1,10 @@
+2005-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/debug/dwarf2/dwarf-char1.c: Accept more assembler comment
+	start strings.
+	* gcc.dg/debug/dwarf2/dwarf-char2.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-char3.c: Likewise.
+
 2005-09-05  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR c/23161
