@@ -3511,6 +3511,9 @@ fold_rtx (rtx x, rtx insn)
 	      addr = addr_ent->const_rtx;
 	  }
 
+	/* Call target hook to avoid the effects of -fpic etc....  */
+	addr = targetm.delegitimize_address (addr);
+
 	/* If address is constant, split it into a base and integer offset.  */
 	if (GET_CODE (addr) == SYMBOL_REF || GET_CODE (addr) == LABEL_REF)
 	  base = addr;
