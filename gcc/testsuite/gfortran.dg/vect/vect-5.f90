@@ -35,9 +35,10 @@
         stop
         end
 
-! { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { xfail { vect_no_align || lp64 } } } }
+! { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { xfail { lp64 } } } }
 ! { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { xfail { vect_no_align || lp64 } } } }
 ! { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 2 "vect" { xfail { vect_no_align || lp64 } } } }
+! { dg-final { scan-tree-dump-times "Alignment of access forced using versioning." 3 "vect" {target vect_no_align } } }
 
 ! We also expect to vectorize one loop for lp64 targets that support 
 ! misaligned access:

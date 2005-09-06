@@ -37,7 +37,12 @@ int main (void)
   return main1 (8);
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail vect_no_align } } } */
+/* The store is unaligned, the load is aligned. For targets that support unaligned
+   loads, peel to align the store and generated unaligned access for the loads.
+   For targets that don't support unaligned loads, version for the store.  */
+
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 1 "vect" { xfail vect_no_align } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { xfail vect_no_align } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning." 1 "vect" { target vect_no_align } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

@@ -33,6 +33,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "cfgloop.h"
 #include "expr.h"
 #include "optabs.h"
+#include "params.h"
 #include "tree-chrec.h"
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
@@ -47,7 +48,7 @@ static bool vect_analyze_data_ref_accesses (loop_vec_info);
 static bool vect_analyze_data_ref_dependences (loop_vec_info);
 static bool vect_analyze_data_refs_alignment (loop_vec_info);
 static bool vect_compute_data_refs_alignment (loop_vec_info);
-static void vect_enhance_data_refs_alignment (loop_vec_info);
+static bool vect_enhance_data_refs_alignment (loop_vec_info);
 static bool vect_analyze_operations (loop_vec_info);
 static bool vect_determine_vectorization_factor (loop_vec_info);
 
@@ -61,6 +62,9 @@ static bool vect_analyze_data_ref_dependence
 static bool vect_compute_data_ref_alignment (struct data_reference *); 
 static bool vect_analyze_data_ref_access (struct data_reference *);
 static bool vect_can_advance_ivs_p (loop_vec_info);
+static void vect_update_misalignment_for_peel
+  (struct data_reference *, struct data_reference *, int npeel);
+ 
 
 /* Function vect_determine_vectorization_factor
 
@@ -370,7 +374,8 @@ vect_analyze_operations (loop_vec_info loop_vinfo)
     }
 
   if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-      || LOOP_VINFO_INT_NITERS (loop_vinfo) % vectorization_factor != 0)
+      || LOOP_VINFO_INT_NITERS (loop_vinfo) % vectorization_factor != 0
+      || LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "epilog loop required.");
@@ -791,11 +796,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 /* Function vect_compute_data_refs_alignment
 
    Compute the misalignment of data references in the loop.
-   This pass may take place at function granularity instead of at loop
-   granularity.
-
-   FOR NOW: No analysis is actually performed. Misalignment is calculated
-   only for trivial cases. TODO.  */
+   Return FALSE if a data reference is found that cannot be vectorized.  */
 
 static bool
 vect_compute_data_refs_alignment (loop_vec_info loop_vinfo)
@@ -814,6 +815,93 @@ vect_compute_data_refs_alignment (loop_vec_info loop_vinfo)
 }
 
 
+/* Function vect_update_misalignment_for_peel
+
+   DR - the data reference whose misalignment is to be adjusted.
+   DR_PEEL - the data reference whose misalignment is being made
+             zero in the vector loop by the peel.
+   NPEEL - the number of iterations in the peel loop if the misalignment
+           of DR_PEEL is known at compile time.  */
+
+static void
+vect_update_misalignment_for_peel (struct data_reference *dr,
+                                   struct data_reference *dr_peel, int npeel)
+{
+  unsigned int i;
+  int drsize;
+  VEC(dr_p,heap) *same_align_drs;
+  struct data_reference *current_dr;
+
+  if (known_alignment_for_access_p (dr)
+      && DR_MISALIGNMENT (dr) == DR_MISALIGNMENT (dr_peel))
+    {
+      DR_MISALIGNMENT (dr) = 0;
+      return;
+    }
+
+  /* It can be assumed that the data refs with the same alignment as dr_peel
+     are aligned in the vector loop.  */
+  same_align_drs
+    = STMT_VINFO_SAME_ALIGN_REFS (vinfo_for_stmt (DR_STMT (dr_peel)));
+  for (i = 0; VEC_iterate (dr_p, same_align_drs, i, current_dr); i++)
+    {
+      if (current_dr != dr)
+        continue;
+      gcc_assert (DR_MISALIGNMENT (dr) == DR_MISALIGNMENT (dr_peel));
+      DR_MISALIGNMENT (dr) = 0;
+      return;
+    }
+
+  if (known_alignment_for_access_p (dr)
+      && known_alignment_for_access_p (dr_peel))
+    {  
+      drsize = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr))));
+      DR_MISALIGNMENT (dr) += npeel * drsize;
+      DR_MISALIGNMENT (dr) %= UNITS_PER_SIMD_WORD;
+      return;
+    }
+
+  DR_MISALIGNMENT (dr) = -1;
+}
+
+
+/* Function vect_verify_datarefs_alignment
+
+   Return TRUE if all data references in the loop can be
+   handled with respect to alignment.  */
+
+static bool
+vect_verify_datarefs_alignment (loop_vec_info loop_vinfo)
+{
+  varray_type datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
+  enum dr_alignment_support supportable_dr_alignment;
+  unsigned int i;
+
+  for (i = 0; i < VARRAY_ACTIVE_SIZE (datarefs); i++)
+    {
+      struct data_reference *dr = VARRAY_GENERIC_PTR (datarefs, i);
+      supportable_dr_alignment = vect_supportable_dr_alignment (dr);
+      if (!supportable_dr_alignment)
+        {
+          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+            {
+              if (DR_IS_READ (dr))
+                fprintf (vect_dump, 
+                         "not vectorized: unsupported unaligned load.");
+              else
+                fprintf (vect_dump, 
+                         "not vectorized: unsupported unaligned store.");
+            }
+          return false;
+        }
+      if (supportable_dr_alignment != dr_aligned
+          && vect_print_dump_info (REPORT_ALIGNMENT))
+        fprintf (vect_dump, "Vectorizing an unaligned access.");
+    }
+  return true;
+}
+
+
 /* Function vect_enhance_data_refs_alignment
 
    This pass will use loop versioning and loop peeling in order to enhance
@@ -822,42 +910,30 @@ vect_compute_data_refs_alignment (loop_vec_info loop_vinfo)
    FOR NOW: we assume that whatever versioning/peeling takes place, only the
    original loop is to be vectorized; Any other loops that are created by
    the transformations performed in this pass - are not supposed to be
-   vectorized. This restriction will be relaxed.  */
+   vectorized. This restriction will be relaxed.
 
-static void
-vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
-{
-  varray_type loop_datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
-  varray_type datarefs;
-  VEC(dr_p,heap) *same_align_drs;
-  struct data_reference *dr0 = NULL;
-  struct data_reference *dr;
-  unsigned int i, j;
-  bool check_loads;
+   This pass will require a cost model to guide it whether to apply peeling
+   or versioning or a combination of the two. For example, the scheme that
+   intel uses when given a loop with several memory accesses, is as follows:
+   choose one memory access ('p') which alignment you want to force by doing
+   peeling. Then, either (1) generate a loop in which 'p' is aligned and all
+   other accesses are not necessarily aligned, or (2) use loop versioning to
+   generate one loop in which all accesses are aligned, and another loop in
+   which only 'p' is necessarily aligned.
 
-  /*
-     This pass will require a cost model to guide it whether to apply peeling 
-     or versioning or a combination of the two. For example, the scheme that
-     intel uses when given a loop with several memory accesses, is as follows:
-     choose one memory access ('p') which alignment you want to force by doing 
-     peeling. Then, either (1) generate a loop in which 'p' is aligned and all 
-     other accesses are not necessarily aligned, or (2) use loop versioning to 
-     generate one loop in which all accesses are aligned, and another loop in 
-     which only 'p' is necessarily aligned. 
+   ("Automatic Intra-Register Vectorization for the Intel Architecture",
+   Aart J.C. Bik, Milind Girkar, Paul M. Grey and Ximmin Tian, International
+   Journal of Parallel Programming, Vol. 30, No. 2, April 2002.)
 
-     ("Automatic Intra-Register Vectorization for the Intel Architecture",
-      Aart J.C. Bik, Milind Girkar, Paul M. Grey and Ximmin Tian, International
-      Journal of Parallel Programming, Vol. 30, No. 2, April 2002.)	
+   Devising a cost model is the most critical aspect of this work. It will
+   guide us on which access to peel for, whether to use loop versioning, how
+   many versions to create, etc. The cost model will probably consist of
+   generic considerations as well as target specific considerations (on
+   powerpc for example, misaligned stores are more painful than misaligned
+   loads).
 
-     Devising a cost model is the most critical aspect of this work. It will 
-     guide us on which access to peel for, whether to use loop versioning, how 
-     many versions to create, etc. The cost model will probably consist of 
-     generic considerations as well as target specific considerations (on 
-     powerpc for example, misaligned stores are more painful than misaligned 
-     loads). 
+   Here are the general steps involved in alignment enhancements:
 
-     Here is the general steps involved in alignment enhancements:
-    
      -- original loop, before alignment analysis:
 	for (i=0; i<N; i++){
 	  x = q[i];			# DR_MISALIGNMENT(q) = unknown
@@ -876,14 +952,14 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	  x = q[i];			# DR_MISALIGNMENT(q) = 3
 	  p[i] = y;			# DR_MISALIGNMENT(p) = 0
 	}
-     } 
+     }
      else {
 	for (i=0; i<N; i++){	# loop 1B
 	  x = q[i];			# DR_MISALIGNMENT(q) = 3
 	  p[i] = y;			# DR_MISALIGNMENT(p) = unaligned
 	}
      }
-   
+
      -- Possibility 2: we do loop peeling:
      for (i = 0; i < 3; i++){	# (scalar loop, not to be vectorized).
 	x = q[i];
@@ -900,11 +976,11 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	p[i] = y;
      }
      if (p is aligned) {
-	for (i = 3; i<N; i++){  # loop 3A
+	for (i = 3; i<N; i++){	# loop 3A
 	  x = q[i];			# DR_MISALIGNMENT(q) = 0
 	  p[i] = y;			# DR_MISALIGNMENT(p) = 0
 	}
-     } 
+     }
      else {
 	for (i = 3; i<N; i++){	# loop 3B
 	  x = q[i];			# DR_MISALIGNMENT(q) = 0
@@ -912,11 +988,45 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	}
      }
 
-     These loops are later passed to loop_transform to be vectorized. The 
-     vectorizer will use the alignment information to guide the transformation 
-     (whether to generate regular loads/stores, or with special handling for 
-     misalignment). 
-   */
+     These loops are later passed to loop_transform to be vectorized. The
+     vectorizer will use the alignment information to guide the transformation
+     (whether to generate regular loads/stores, or with special handling for
+     misalignment).  */
+
+static bool
+vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
+{
+  varray_type datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
+  enum dr_alignment_support supportable_dr_alignment;
+  struct data_reference *dr0 = NULL;
+  struct data_reference *dr;
+  unsigned int i;
+  bool do_peeling = false;
+  bool do_versioning = false;
+  bool stat;
+
+  /* While cost model enhancements are expected in the future, the high level
+     view of the code at this time is as follows:
+
+     A) If there is a misaligned write then see if peeling to align this write
+        can make all data references satisfy vect_supportable_dr_alignment.
+        If so, update data structures as needed and return true.  Note that
+        at this time vect_supportable_dr_alignment is known to return false
+        for a a misaligned write.
+
+     B) If peeling wasn't possible and there is a data reference with an
+        unknown misalignment that does not satisfy vect_supportable_dr_alignment
+        then see if loop versioning checks can be used to make all data
+        references satisfy vect_supportable_dr_alignment.  If so, update
+        data structures as needed and return true.
+
+     C) If neither peeling nor versioning were successful then return false if
+        any data reference does not satisfy vect_supportable_dr_alignment.
+
+     D) Return true (all data references satisfy vect_supportable_dr_alignment).
+
+     Note, Possibility 3 above (which is peeling and versioning together) is not
+     being done at this time.  */
 
   /* (1) Peeling to force alignment.  */
 
@@ -932,105 +1042,209 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
      misaligned store in the loop.
      Rationale: misaligned stores are not yet supported.
 
-     TODO: Use a better cost model.  */
+     TODO: Use a cost model.  */
 
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (loop_datarefs); i++)
+  for (i = 0; i < VARRAY_ACTIVE_SIZE (datarefs); i++)
     {
-      dr0 = VARRAY_GENERIC_PTR (loop_datarefs, i);
-      if (!DR_IS_READ (dr0) && !aligned_access_p (dr0))
-	{
-	  LOOP_VINFO_UNALIGNED_DR (loop_vinfo) = dr0;
-	  LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo) = DR_MISALIGNMENT (dr0);
-	  break;
-	}
+      dr = VARRAY_GENERIC_PTR (datarefs, i);
+      if (!DR_IS_READ (dr) && !aligned_access_p (dr))
+        {
+          dr0 = dr;
+          do_peeling = true;
+          break;
+        }
     }
 
-  /* (1.2) Update the alignment info according to the peeling factor.
-	   If the misalignment of the DR we peel for is M, then the
-	   peeling factor is VF - M, and the misalignment of each access DR_i
-	   in the loop is DR_MISALIGNMENT (DR_i) + VF - M.
-	   If the misalignment of the DR we peel for is unknown, then the 
-	   misalignment of each access DR_i in the loop is also unknown.
+  /* Often peeling for alignment will require peeling for loop-bound, which in 
+     turn requires that we know how to adjust the loop ivs after the loop.  */
+  if (!vect_can_advance_ivs_p (loop_vinfo))
+    do_peeling = false;
 
-           TODO: - consider accesses that are known to have the same
-                   alignment, even if that alignment is unknown.  */
-
-  if (LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo))
+  if (do_peeling)
     {
       int mis;
       int npeel = 0;
 
       if (known_alignment_for_access_p (dr0))
-	{
-	  /* Since it's known at compile time, compute the number of iterations
-	     in the peeled loop (the peeling factor) for use in updating
-	     DR_MISALIGNMENT values.  The peeling factor is the vectorization
-	     factor minus the misalignment as an element count.  */
-	  mis = DR_MISALIGNMENT (dr0);
-	  mis /= GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr0))));
-	  npeel = LOOP_VINFO_VECT_FACTOR (loop_vinfo) - mis;
-	}
-
-      datarefs = loop_datarefs;
-      check_loads = false;
-      for (j = 0; j < 2; j++)
-	{
-	  for (i = 0; i < VARRAY_ACTIVE_SIZE (datarefs); i++)
-	    {
-	      struct data_reference *dr = VARRAY_GENERIC_PTR (datarefs, i);
-
-	      if (dr == dr0 || (!check_loads && DR_IS_READ (dr)))
-		continue;
-	      if (known_alignment_for_access_p (dr)
-		  && DR_MISALIGNMENT (dr) == DR_MISALIGNMENT (dr0))
-		DR_MISALIGNMENT (dr) = 0;
-	      else if (known_alignment_for_access_p (dr)
-		       && known_alignment_for_access_p (dr0))
-		{
-		  int drsize = 
-			GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr))));
-
-		  DR_MISALIGNMENT (dr) += npeel * drsize;
-		  DR_MISALIGNMENT (dr) %= UNITS_PER_SIMD_WORD;
-		}
-	      else
-		DR_MISALIGNMENT (dr) = -1;
-	    }
-	  check_loads = true;
-	}
-
-      same_align_drs = 
-	STMT_VINFO_SAME_ALIGN_REFS (vinfo_for_stmt (DR_STMT (dr0)));
-      for (i = 0; VEC_iterate (dr_p, same_align_drs, i, dr); i++)
         {
-          DR_MISALIGNMENT (dr) = 0;
+          /* Since it's known at compile time, compute the number of iterations
+             in the peeled loop (the peeling factor) for use in updating
+             DR_MISALIGNMENT values.  The peeling factor is the vectorization
+             factor minus the misalignment as an element count.  */
+          mis = DR_MISALIGNMENT (dr0);
+          mis /= GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr0))));
+          npeel = LOOP_VINFO_VECT_FACTOR (loop_vinfo) - mis;
         }
 
-      DR_MISALIGNMENT (dr0) = 0;
+      /* Ensure that all data refs can be vectorized after the peel.  */
+      for (i = 0; i < VARRAY_ACTIVE_SIZE (datarefs); i++)
+        {
+          int save_misalignment;
+
+	  dr = VARRAY_GENERIC_PTR (datarefs, i);
+	  if (dr == dr0)
+	    continue;
+	  save_misalignment = DR_MISALIGNMENT (dr);
+	  vect_update_misalignment_for_peel (dr, dr0, npeel);
+	  supportable_dr_alignment = vect_supportable_dr_alignment (dr);
+	  DR_MISALIGNMENT (dr) = save_misalignment;
+	  
+	  if (!supportable_dr_alignment)
+	    {
+	      do_peeling = false;
+	      break;
+	    }
+	}
+
+      if (do_peeling)
+        {
+          /* (1.2) Update the DR_MISALIGNMENT of each data reference DR_i.
+             If the misalignment of DR_i is identical to that of dr0 then set
+             DR_MISALIGNMENT (DR_i) to zero.  If the misalignment of DR_i and
+             dr0 are known at compile time then increment DR_MISALIGNMENT (DR_i)
+             by the peeling factor times the element size of DR_i (MOD the
+             vectorization factor times the size).  Otherwise, the
+             misalignment of DR_i must be set to unknown.  */
+	  for (i = 0; i < VARRAY_ACTIVE_SIZE (datarefs); i++)
+	    {
+	      dr = VARRAY_GENERIC_PTR (datarefs, i);
+	      if (dr == dr0)
+	        continue;
+	      vect_update_misalignment_for_peel (dr, dr0, npeel);
+	    }
+
+          LOOP_VINFO_UNALIGNED_DR (loop_vinfo) = dr0;
+          LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo) = DR_MISALIGNMENT (dr0);
+          DR_MISALIGNMENT (dr0) = 0;
+	  if (vect_print_dump_info (REPORT_ALIGNMENT))
+            fprintf (vect_dump, "Alignment of access forced using peeling.");
+
+          if (vect_print_dump_info (REPORT_DETAILS))
+            fprintf (vect_dump, "Peeling for alignment will be applied.");
+
+	  stat = vect_verify_datarefs_alignment (loop_vinfo);
+	  gcc_assert (stat);
+          return stat;
+        }
     }
+
+
+  /* (2) Versioning to force alignment.  */
+
+  /* Try versioning if:
+     1) flag_tree_vect_loop_version is TRUE
+     2) optimize_size is FALSE
+     3) there is at least one unsupported misaligned data ref with an unknown
+        misalignment, and
+     4) all misaligned data refs with a known misalignment are supported, and
+     5) the number of runtime alignment checks is within reason.  */
+
+  do_versioning = flag_tree_vect_loop_version && (!optimize_size);
+
+  if (do_versioning)
+    {
+      for (i = 0; i < VARRAY_ACTIVE_SIZE (datarefs); i++)
+        {
+          dr = VARRAY_GENERIC_PTR (datarefs, i);
+
+          if (aligned_access_p (dr))
+            continue;
+
+          supportable_dr_alignment = vect_supportable_dr_alignment (dr);
+
+          if (!supportable_dr_alignment)
+            {
+              tree stmt;
+              int mask;
+              tree vectype;
+
+              if (known_alignment_for_access_p (dr)
+                  || VEC_length (tree,
+                                 LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
+                     >= (unsigned) PARAM_VALUE (PARAM_VECT_MAX_VERSION_CHECKS))
+                {
+                  do_versioning = false;
+                  break;
+                }
+
+              stmt = DR_STMT (dr);
+              vectype = STMT_VINFO_VECTYPE (vinfo_for_stmt (stmt));
+              gcc_assert (vectype);
+  
+              /* The rightmost bits of an aligned address must be zeros.
+                 Construct the mask needed for this test.  For example,
+                 GET_MODE_SIZE for the vector mode V4SI is 16 bytes so the
+                 mask must be 15 = 0xf. */
+              mask = GET_MODE_SIZE (TYPE_MODE (vectype)) - 1;
+
+              /* FORNOW: use the same mask to test all potentially unaligned
+                 references in the loop.  The vectorizer currently supports
+                 a single vector size, see the reference to
+                 GET_MODE_NUNITS (TYPE_MODE (vectype)) where the
+                 vectorization factor is computed.  */
+              gcc_assert (!LOOP_VINFO_PTR_MASK (loop_vinfo)
+                          || LOOP_VINFO_PTR_MASK (loop_vinfo) == mask);
+              LOOP_VINFO_PTR_MASK (loop_vinfo) = mask;
+              VEC_safe_push (tree, heap,
+                             LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo),
+                             DR_STMT (dr));
+            }
+        }
+      
+      /* Versioning requires at least one misaligned data reference.  */
+      if (VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo)) == 0)
+        do_versioning = false;
+      else if (!do_versioning)
+        VEC_truncate (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo), 0);
+    }
+
+  if (do_versioning)
+    {
+      VEC(tree,heap) *may_misalign_stmts
+        = LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo);
+      tree stmt;
+
+      /* It can now be assumed that the data references in the statements
+         in LOOP_VINFO_MAY_MISALIGN_STMTS will be aligned in the version
+         of the loop being vectorized.  */
+      for (i = 0; VEC_iterate (tree, may_misalign_stmts, i, stmt); i++)
+        {
+          stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+          dr = STMT_VINFO_DATA_REF (stmt_info);
+          DR_MISALIGNMENT (dr) = 0;
+	  if (vect_print_dump_info (REPORT_ALIGNMENT))
+            fprintf (vect_dump, "Alignment of access forced using versioning.");
+        }
+
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "Versioning for alignment will be applied.");
+
+      /* Peeling and versioning can't be done together at this time.  */
+      gcc_assert (! (do_peeling && do_versioning));
+
+      stat = vect_verify_datarefs_alignment (loop_vinfo);
+      gcc_assert (stat);
+      return stat;
+    }
+
+  /* This point is reached if neither peeling nor versioning is being done.  */
+  gcc_assert (! (do_peeling || do_versioning));
+
+  stat = vect_verify_datarefs_alignment (loop_vinfo);
+  return stat;
 }
 
 
 /* Function vect_analyze_data_refs_alignment
 
    Analyze the alignment of the data-references in the loop.
-   FOR NOW: Until support for misaligned accesses is in place, only if all
-   accesses are aligned can the loop be vectorized. This restriction will be 
-   relaxed.  */ 
+   Return FALSE if a data reference is found that cannot be vectorized.  */
 
 static bool
 vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo)
 {
-  varray_type datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
-  enum dr_alignment_support supportable_dr_alignment;
-  unsigned int i;
-
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_analyze_data_refs_alignment ===");
-
-
-  /* This pass may take place at function granularity instead of at loop
-     granularity.  */
 
   if (!vect_compute_data_refs_alignment (loop_vinfo))
     {
@@ -1040,40 +1254,6 @@ vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo)
       return false;
     }
 
-
-  /* This pass will decide on using loop versioning and/or loop peeling in 
-     order to enhance the alignment of data references in the loop.  */
-
-  vect_enhance_data_refs_alignment (loop_vinfo);
-
-
-  /* Finally, check that all the data references in the loop can be
-     handled with respect to their alignment.  */
-
-  for (i = 0; i < VARRAY_ACTIVE_SIZE (datarefs); i++)
-    {
-      struct data_reference *dr = VARRAY_GENERIC_PTR (datarefs, i);
-      supportable_dr_alignment = vect_supportable_dr_alignment (dr);
-      if (!supportable_dr_alignment)
-	{
-	  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
-	    {
-	      if (DR_IS_READ (dr))
-		fprintf (vect_dump,
-			 "not vectorized: unsupported unaligned load.");
-	      else
-		fprintf (vect_dump,
-			 "not vectorized: unsupported unaligned store.");
-	    }
-	  return false;
-	}
-      if (supportable_dr_alignment != dr_aligned 
-	  && (vect_print_dump_info (REPORT_ALIGNMENT)))
-	fprintf (vect_dump, "Vectorizing an unaligned access.");
-    }
-  if (LOOP_VINFO_UNALIGNED_DR (loop_vinfo)
-      && vect_print_dump_info (REPORT_ALIGNMENT))
-    fprintf (vect_dump, "Alignment of access forced using peeling.");
   return true;
 }
 
@@ -1081,7 +1261,7 @@ vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo)
 /* Function vect_analyze_data_ref_access.
 
    Analyze the access pattern of the data-reference DR. For now, a data access
-   has to consecutive to be considered vectorizable.  */
+   has to be consecutive to be considered vectorizable.  */
 
 static bool
 vect_analyze_data_ref_access (struct data_reference *dr)
@@ -1524,7 +1704,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 
 /* Function vect_can_advance_ivs_p
 
-   In case the number of iterations that LOOP iterates in unknown at compile 
+   In case the number of iterations that LOOP iterates is unknown at compile 
    time, an epilog loop will be generated, and the loop induction variables 
    (IVs) will be "advanced" to the value they are supposed to take just before 
    the epilog loop.  Here we check that the access function of the loop IVs
@@ -1827,6 +2007,18 @@ vect_analyze_loop (struct loop *loop)
       return NULL;
     }
 
+  /* Analyze the alignment of the data-refs in the loop.
+     Fail if a data reference is found that cannot be vectorized.  */
+
+  ok = vect_analyze_data_refs_alignment (loop_vinfo);
+  if (!ok)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+	fprintf (vect_dump, "bad data alignment.");
+      destroy_loop_vec_info (loop_vinfo);
+      return NULL;
+    }
+
   ok = vect_determine_vectorization_factor (loop_vinfo);
   if (!ok)
     {
@@ -1860,10 +2052,10 @@ vect_analyze_loop (struct loop *loop)
       return NULL;
     }
 
-  /* Analyze the alignment of the data-refs in the loop.
-     FORNOW: Only aligned accesses are handled.  */
+  /* This pass will decide on using loop versioning and/or loop peeling in
+     order to enhance the alignment of data references in the loop.  */
 
-  ok = vect_analyze_data_refs_alignment (loop_vinfo);
+  ok = vect_enhance_data_refs_alignment (loop_vinfo);
   if (!ok)
     {
       if (vect_print_dump_info (REPORT_DETAILS))

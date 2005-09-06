@@ -21,7 +21,7 @@ int main1 () {
   
   p = (struct extraction *) malloc (sizeof (struct extraction));
 
-  /* Not vectorizable: p may alias a and/or b, since they are globals.  */
+  /* Vectorizable: alias analysis determines that p can't point to a and/or b.  */
   for (i = 0; i < N; i++)
     {
       p->a[i] = a[i];
@@ -73,6 +73,6 @@ int main (void)
 }
 
 /* Requires versioning.  */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 0 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
 

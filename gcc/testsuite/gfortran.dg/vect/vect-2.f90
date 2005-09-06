@@ -8,7 +8,15 @@ A = LOG(X); B = LOG(Y); C = A + B
 PRINT*, C(500000)
 END
 
-! { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" { xfail vect_no_align } } }
+! First loop (A=LOG(X)) is vectorized using peeling to align the store.
+! Same for the second loop (B=LOG(Y)).
+! Third loop (C = A + B) is vectorized using versioning (for targets that don't
+! support unaligned loads) or using peeling to align the store (on targets that 
+! support unaligned loads).
+
+! { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" } }
 ! { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 3 "vect" { xfail vect_no_align } } }
+! { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { target vect_no_align } } }
 ! { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 2 "vect" { xfail vect_no_align } } }
+! { dg-final { scan-tree-dump-times "Alignment of access forced using versioning." 3 "vect" {target vect_no_align } } }
 ! { dg-final { cleanup-tree-dump "vect" } }

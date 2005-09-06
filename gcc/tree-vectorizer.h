@@ -117,28 +117,37 @@ typedef struct _loop_vec_info {
                  unaligned_dr.  */
   int peeling_for_alignment;
 
+  /* The mask used to check the alignment of pointers or arrays.  */
+  int ptr_mask;
+
   /* All data references in the loop.  */
   varray_type datarefs;
 
   /* All data dependences in the loop.  */
   varray_type ddrs;
 
+  /* Statements in the loop that have data references that are candidates for a
+     runtime (loop versioning) misalignment check.  */
+  VEC(tree,heap) *may_misalign_stmts;
+
   /* The loop location in the source.  */
   LOC loop_line_number;
 } *loop_vec_info;
 
-  /* Access Functions.  */
+/* Access Functions.  */
 #define LOOP_VINFO_LOOP(L)            (L)->loop
 #define LOOP_VINFO_BBS(L)             (L)->bbs
 #define LOOP_VINFO_EXIT_COND(L)       (L)->exit_cond
 #define LOOP_VINFO_NITERS(L)          (L)->num_iters
 #define LOOP_VINFO_VECTORIZABLE_P(L)  (L)->vectorizable
 #define LOOP_VINFO_VECT_FACTOR(L)     (L)->vectorization_factor
+#define LOOP_VINFO_PTR_MASK(L)        (L)->ptr_mask
 #define LOOP_VINFO_DATAREFS(L)        (L)->datarefs
 #define LOOP_VINFO_DDRS(L)            (L)->ddrs
 #define LOOP_VINFO_INT_NITERS(L)      (TREE_INT_CST_LOW ((L)->num_iters))
 #define LOOP_PEELING_FOR_ALIGNMENT(L) (L)->peeling_for_alignment
 #define LOOP_VINFO_UNALIGNED_DR(L)    (L)->unaligned_dr
+#define LOOP_VINFO_MAY_MISALIGN_STMTS(L) (L)->may_misalign_stmts
 #define LOOP_VINFO_LOC(L)             (L)->loop_line_number
 
 #define LOOP_VINFO_NITERS_KNOWN_P(L)                     \

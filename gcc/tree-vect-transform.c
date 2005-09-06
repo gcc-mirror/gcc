@@ -336,7 +336,7 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
   if (vect_print_dump_info (REPORT_DETAILS))
     {
       tree data_ref_base = base_name;
-      fprintf (vect_dump, "create array_ref of type: ");
+      fprintf (vect_dump, "create vector-pointer variable to type: ");
       print_generic_expr (vect_dump, vectype, TDF_SLIM);
       if (TREE_CODE (data_ref_base) == VAR_DECL)
         fprintf (vect_dump, "  vectorizing a one dimensional array ref: ");
@@ -2697,6 +2697,128 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, struct loops *loops)
 }
 
 
+/* Function vect_create_cond_for_align_checks.
+
+   Create a conditional expression that represents the alignment checks for
+   all of data references (array element references) whose alignment must be
+   checked at runtime.
+
+   Input:
+   LOOP_VINFO - two fields of the loop information are used.
+                LOOP_VINFO_PTR_MASK is the mask used to check the alignment.
+                LOOP_VINFO_MAY_MISALIGN_STMTS contains the refs to be checked.
+
+   Output:
+   COND_EXPR_STMT_LIST - statements needed to construct the conditional
+                         expression.
+   The returned value is the conditional expression to be used in the if
+   statement that controls which version of the loop gets executed at runtime.
+
+   The algorithm makes two assumptions:
+     1) The number of bytes "n" in a vector is a power of 2.
+     2) An address "a" is aligned if a%n is zero and that this
+        test can be done as a&(n-1) == 0.  For example, for 16
+        byte vectors the test is a&0xf == 0.  */
+
+static tree
+vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
+                                   tree *cond_expr_stmt_list)
+{
+  VEC(tree,heap) *may_misalign_stmts
+    = LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo);
+  tree ref_stmt;
+  int mask = LOOP_VINFO_PTR_MASK (loop_vinfo);
+  tree mask_cst;
+  unsigned int i;
+  tree psize;
+  tree int_ptrsize_type;
+  char tmp_name[20];
+  tree or_tmp_name = NULL_TREE;
+  tree and_tmp, and_tmp_name, and_stmt;
+  tree ptrsize_zero;
+
+  /* Check that mask is one less than a power of 2, i.e., mask is
+     all zeros followed by all ones.  */
+  gcc_assert ((mask != 0) && ((mask & (mask+1)) == 0));
+
+  /* CHECKME: what is the best integer or unsigned type to use to hold a
+     cast from a pointer value?  */
+  psize = TYPE_SIZE (ptr_type_node);
+  int_ptrsize_type
+    = lang_hooks.types.type_for_size (tree_low_cst (psize, 1), 0);
+
+  /* Create expression (mask & (dr_1 || ... || dr_n)) where dr_i is the address
+     of the first vector of the i'th data reference. */
+
+  for (i = 0; VEC_iterate (tree, may_misalign_stmts, i, ref_stmt); i++)
+    {
+      tree new_stmt_list = NULL_TREE;   
+      tree addr_base;
+      tree addr_tmp, addr_tmp_name, addr_stmt;
+      tree or_tmp, new_or_tmp_name, or_stmt;
+
+      /* create: addr_tmp = (int)(address_of_first_vector) */
+      addr_base = vect_create_addr_base_for_vector_ref (ref_stmt, 
+							&new_stmt_list, 
+							NULL_TREE);
+
+      if (new_stmt_list != NULL_TREE)
+        append_to_statement_list_force (new_stmt_list, cond_expr_stmt_list);
+
+      sprintf (tmp_name, "%s%d", "addr2int", i);
+      addr_tmp = create_tmp_var (int_ptrsize_type, tmp_name);
+      add_referenced_tmp_var (addr_tmp);
+      addr_tmp_name = make_ssa_name (addr_tmp, NULL_TREE);
+      addr_stmt = fold_convert (int_ptrsize_type, addr_base);
+      addr_stmt = build2 (MODIFY_EXPR, void_type_node,
+                          addr_tmp_name, addr_stmt);
+      SSA_NAME_DEF_STMT (addr_tmp_name) = addr_stmt;
+      append_to_statement_list_force (addr_stmt, cond_expr_stmt_list);
+
+      /* The addresses are OR together.  */
+
+      if (or_tmp_name != NULL_TREE)
+        {
+          /* create: or_tmp = or_tmp | addr_tmp */
+          sprintf (tmp_name, "%s%d", "orptrs", i);
+          or_tmp = create_tmp_var (int_ptrsize_type, tmp_name);
+          add_referenced_tmp_var (or_tmp);
+          new_or_tmp_name = make_ssa_name (or_tmp, NULL_TREE);
+          or_stmt = build2 (MODIFY_EXPR, void_type_node, new_or_tmp_name,
+                            build2 (BIT_IOR_EXPR, int_ptrsize_type,
+	                            or_tmp_name,
+                                    addr_tmp_name));
+          SSA_NAME_DEF_STMT (new_or_tmp_name) = or_stmt;
+          append_to_statement_list_force (or_stmt, cond_expr_stmt_list);
+          or_tmp_name = new_or_tmp_name;
+        }
+      else
+        or_tmp_name = addr_tmp_name;
+
+    } /* end for i */
+
+  mask_cst = build_int_cst (int_ptrsize_type, mask);
+
+  /* create: and_tmp = or_tmp & mask  */
+  and_tmp = create_tmp_var (int_ptrsize_type, "andmask" );
+  add_referenced_tmp_var (and_tmp);
+  and_tmp_name = make_ssa_name (and_tmp, NULL_TREE);
+
+  and_stmt = build2 (MODIFY_EXPR, void_type_node,
+                     and_tmp_name,
+                     build2 (BIT_AND_EXPR, int_ptrsize_type,
+                             or_tmp_name, mask_cst));
+  SSA_NAME_DEF_STMT (and_tmp_name) = and_stmt;
+  append_to_statement_list_force (and_stmt, cond_expr_stmt_list);
+
+  /* Make and_tmp the left operand of the conditional test against zero.
+     if and_tmp has a non-zero bit then some address is unaligned.  */
+  ptrsize_zero = build_int_cst (int_ptrsize_type, 0);
+  return build2 (EQ_EXPR, boolean_type_node,
+                 and_tmp_name, ptrsize_zero);
+}
+
+
 /* Function vect_transform_loop.
 
    The analysis phase has determined that the loop is vectorizable.
@@ -2719,6 +2841,30 @@ vect_transform_loop (loop_vec_info loop_vinfo,
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vec_transform_loop ===");
+
+  /* If the loop has data references that may or may not be aligned then
+     two versions of the loop need to be generated, one which is vectorized
+     and one which isn't.  A test is then generated to control which of the
+     loops is executed.  The test checks for the alignment of all of the
+     data references that may or may not be aligned. */
+
+  if (VEC_length (tree, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo)))
+    {
+      struct loop *nloop;
+      tree cond_expr;
+      tree cond_expr_stmt_list = NULL_TREE;
+      basic_block condition_bb;
+      block_stmt_iterator cond_exp_bsi;
+
+      cond_expr = vect_create_cond_for_align_checks (loop_vinfo,
+                                                     &cond_expr_stmt_list);
+      initialize_original_copy_tables ();
+      nloop = loop_version (loops, loop, cond_expr, &condition_bb, true);
+      free_original_copy_tables();
+      update_ssa (TODO_update_ssa);
+      cond_exp_bsi = bsi_last (condition_bb);
+      bsi_insert_before (&cond_exp_bsi, cond_expr_stmt_list, BSI_SAME_STMT);
+    }
 
   /* CHECKME: we wouldn't need this if we calles update_ssa once
      for all loops.  */
