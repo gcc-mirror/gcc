@@ -1,3 +1,9 @@
+2005-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/debug/dwarf2/dwarf-char1.c: Further regex fixes.
+	* gcc.dg/debug/dwarf2/dwarf-char2.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-char3.c: Likewise.
+
 2005-09-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/expr/cast6.C: New test.
