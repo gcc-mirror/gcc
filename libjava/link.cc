@@ -1620,7 +1620,7 @@ _Jv_Linker::verify_type_assertions (jclass klass)
 	  if (cl1 == NULL || cl2 == NULL)
 	    continue;
 
-          if (! _Jv_IsAssignableFromSlow (cl2, cl1))
+          if (! _Jv_IsAssignableFromSlow (cl1, cl2))
 	    {
 	      jstring s = JvNewStringUTF ("Incompatible types: In class ");
 	      s = s->concat (klass->getName());

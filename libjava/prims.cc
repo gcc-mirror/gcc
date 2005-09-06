@@ -1557,7 +1557,7 @@ _Jv_CheckAccess (jclass self_klass, jclass other_klass, jint flags)
   return ((self_klass == other_klass)
 	  || ((flags & Modifier::PUBLIC) != 0)
 	  || (((flags & Modifier::PROTECTED) != 0)
-	      && _Jv_IsAssignableFromSlow (other_klass, self_klass))
+	      && _Jv_IsAssignableFromSlow (self_klass, other_klass))
 	  || (((flags & Modifier::PRIVATE) == 0)
 	      && _Jv_ClassNameSamePackage (self_klass->name,
 					   other_klass->name)));

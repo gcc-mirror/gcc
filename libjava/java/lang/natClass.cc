@@ -623,7 +623,7 @@ java::lang::Class::isAssignableFrom (jclass klass)
   // Arguments may not have been initialized, given ".class" syntax.
   _Jv_InitClass (this);
   _Jv_InitClass (klass);
-  return _Jv_IsAssignableFrom (this, klass);
+  return _Jv_IsAssignableFrom (klass, this);
 }
 
 jboolean
@@ -632,7 +632,7 @@ java::lang::Class::isInstance (jobject obj)
   if (! obj)
     return false;
   _Jv_InitClass (this);
-  return _Jv_IsAssignableFrom (this, JV_CLASS (obj));
+  return _Jv_IsAssignableFrom (JV_CLASS (obj), this);
 }
 
 jobject
@@ -964,7 +964,7 @@ _Jv_LookupInterfaceMethodIdx (jclass klass, jclass iface, int method_idx)
 }
 
 jboolean
-_Jv_IsAssignableFrom (jclass target, jclass source)
+_Jv_IsAssignableFrom (jclass source, jclass target)
 {
   if (source == target)
     return true;
@@ -984,7 +984,7 @@ _Jv_IsAssignableFrom (jclass target, jclass source)
       // two interfaces for assignability.
       if (__builtin_expect 
           (source->idt == NULL || source->isInterface(), false))
-        return _Jv_InterfaceAssignableFrom (target, source);
+        return _Jv_InterfaceAssignableFrom (source, target);
 
       _Jv_IDispatchTable *cl_idt = source->idt;
       _Jv_IDispatchTable *if_idt = target->idt;
@@ -1033,19 +1033,19 @@ _Jv_IsAssignableFrom (jclass target, jclass source)
 // superinterface of SOURCE. This is used when SOURCE is also an interface,
 // or a class with no interface dispatch table.
 jboolean
-_Jv_InterfaceAssignableFrom (jclass iface, jclass source)
+_Jv_InterfaceAssignableFrom (jclass source, jclass iface)
 {
   for (int i = 0; i < source->interface_count; i++)
     {
       jclass interface = source->interfaces[i];
       if (iface == interface
-          || _Jv_InterfaceAssignableFrom (iface, interface))
+          || _Jv_InterfaceAssignableFrom (interface, iface))
         return true;      
     }
     
   if (!source->isInterface()
       && source->superclass 
-      && _Jv_InterfaceAssignableFrom (iface, source->superclass))
+      && _Jv_InterfaceAssignableFrom (source->superclass, iface))
     return true;
         
   return false;
@@ -1056,14 +1056,14 @@ _Jv_IsInstanceOf(jobject obj, jclass cl)
 {
   if (__builtin_expect (!obj, false))
     return false;
-  return (_Jv_IsAssignableFrom (cl, JV_CLASS (obj)));
+  return _Jv_IsAssignableFrom (JV_CLASS (obj), cl);
 }
 
 void *
 _Jv_CheckCast (jclass c, jobject obj)
 {
   if (__builtin_expect 
-       (obj != NULL && ! _Jv_IsAssignableFrom(c, JV_CLASS (obj)), false))
+      (obj != NULL && ! _Jv_IsAssignableFrom(JV_CLASS (obj), c), false))
     throw new java::lang::ClassCastException
       ((new java::lang::StringBuffer
 	(obj->getClass()->getName()))->append
@@ -1084,7 +1084,7 @@ _Jv_CheckArrayStore (jobject arr, jobject obj)
 	return;
       jclass obj_class = JV_CLASS (obj);
       if (__builtin_expect 
-          (! _Jv_IsAssignableFrom (elt_class, obj_class), false))
+          (! _Jv_IsAssignableFrom (obj_class, elt_class), false))
 	throw new java::lang::ArrayStoreException
 		((new java::lang::StringBuffer
 		 (JvNewStringUTF("Cannot store ")))->append
@@ -1095,7 +1095,7 @@ _Jv_CheckArrayStore (jobject arr, jobject obj)
 }
 
 jboolean
-_Jv_IsAssignableFromSlow (jclass target, jclass source)
+_Jv_IsAssignableFromSlow (jclass source, jclass target)
 {
   // First, strip arrays.
   while (target->isArray ())
@@ -1129,7 +1129,7 @@ _Jv_IsAssignableFromSlow (jclass target, jclass source)
            {
              // We use a recursive call because we also need to
              // check superinterfaces.
-             if (_Jv_IsAssignableFromSlow (target, source->getInterface (i)))
+             if (_Jv_IsAssignableFromSlow (source->getInterface (i), target))
                return true;
            }
        }
