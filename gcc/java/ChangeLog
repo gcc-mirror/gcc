@@ -1,3 +1,8 @@
+2005-09-06  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* java-gimplify.c (java_gimplify_block): NULL out the old BLOCK's
+	BLOCK_EXPR_BODY before returning the new BIND_EXPR.
+
 2005-09-06  Kazu Hirata  <kazu@codesourcery.com>
 
 	* check-init.c, decl.c, expr.c, gcj.texi, java-tree.h,
