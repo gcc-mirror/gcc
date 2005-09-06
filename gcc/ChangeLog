@@ -1,3 +1,9 @@
+2005-09-06  Saurabh Verma  <saurabh.verma@codito.com>
+
+	PR target/8972
+	* config/arc/arc.c (output_shift): Add check for loop count when
+	optimizing.
+
 2005-09-06  Steven Bosscher  <stevenb@suse.de>
 
 	* tree-ssa-phiopt.c (conditional_replacement): Construct proper SSA
