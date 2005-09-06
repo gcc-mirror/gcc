@@ -1,3 +1,8 @@
+2005-09-06  Saurabh Verma  <saurabh.verma@codito.com>
+
+	* simplify-rtx.c (simplify_binary_operation_1): Correct the 
+	condition for detecting cases like (a&a) and (a^a).
+
 2005-09-06  Keith Besaw  <kbesaw@us.ibm.com>
 
 	* common.opt: Add option ftree-vect-loop-version.
