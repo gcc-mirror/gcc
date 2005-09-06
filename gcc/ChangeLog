@@ -1,3 +1,9 @@
+2005-09-06  Alan Modra  <amodra@bigpond.net.au>
+
+	PR middle-end/21460
+	* except.c (sjlj_emit_function_enter): Find the function begin
+	note even when it's not in first basic block.
+
 2005-09-06  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* acinclude.m4: Renamed from aclocal.m4.  Delete AM_LANGINFO_CODESET,
