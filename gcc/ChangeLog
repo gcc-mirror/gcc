@@ -1,3 +1,8 @@
+2005-09-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* doc/install.texi (*-*-solaris2*): Clarify wording on the recommended
+	version of GNU binutils for 4.x and later.
+
 2005-09-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* ggc-page.c (ggc_push_context): Remove.
@@ -3925,7 +3930,7 @@
 	* tree-ssa-structalias.c (need_to_solve): Need to check for preds,
 	too.
 
-2005-07-16  Eric Botcazou <ebotcazou@libertysurf.fr>
+2005-07-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/install.texi (*-*-solaris2*): Document recommended version
 	of GNU binutils and mention GNU linker problem on Solaris 10.

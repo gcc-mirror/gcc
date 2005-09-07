@@ -3615,11 +3615,12 @@ from the CVS repository or applying the patch
 @uref{http://sources.redhat.com/ml/binutils-cvs/2004-09/msg00036.html} to the
 release.
 
-We recommend using GNU binutils 2.16 or later in conjunction with GCC 4.x.
-However, for Solaris 10 and above, an additional patch is required in order
-for the GNU linker to be able to cope with a new flavor of shared libraries.
-You can obtain a working version by checking out the binutils-2_16-branch
-from the CVS repository or applying the patch
+We recommend using GNU binutils 2.16 or later in conjunction with GCC 4.x,
+or the vendor tools (Sun @command{as}, Sun @command{ld}).  However, for
+Solaris 10 and above, an additional patch is required in order for the GNU
+linker to be able to cope with a new flavor of shared libraries.  You
+can obtain a working version by checking out the binutils-2_16-branch from
+the CVS repository or applying the patch
 @uref{http://sourceware.org/ml/binutils-cvs/2005-07/msg00122.html} to the
 release.
 
