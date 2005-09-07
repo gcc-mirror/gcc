@@ -1,3 +1,8 @@
+2005-09-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree-vrp.c (extract_range_from_expr): Move the check for non
+	nullness after the check for gimple invariant.
+
 2005-09-08  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.c (host_integerp, tree_low_cst): Correct function comment.
