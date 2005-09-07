@@ -1,3 +1,8 @@
+2005-09-07  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/20848
+	* gfortran.dg/parameter+save.f90:  New test case.
+
 2005-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/23075

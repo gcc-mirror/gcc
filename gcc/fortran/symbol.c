@@ -420,6 +420,7 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
       conf2 (target);
       conf2 (dummy);
       conf2 (in_common);
+      conf2 (save);
       break;
 
     default:
