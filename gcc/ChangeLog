@@ -1,3 +1,10 @@
+2005-09-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* ggc-page.c (ggc_push_context): Remove.
+	(ggc_pop_context): Likewise.
+	* ggc.h (ggc_push_context): Remove.
+	(ggc_pop_context): Likewise.
+
 2005-09-06  Saurabh Verma  <saurabh.verma@codito.com>
 
 	PR target/8973
