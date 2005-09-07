@@ -261,6 +261,9 @@ LIBGFOR_CHECK_ATTRIBUTE_ALIAS
 # Various other checks on target
 LIBGFOR_CHECK_UNLINK_OPEN_FILE
 
+# Check whether line terminator is LF or CRLF
+LIBGFOR_CHECK_CRLF
+
 AC_CACHE_SAVE
 
 if test ${multilib} = yes; then
