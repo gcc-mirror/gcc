@@ -1,3 +1,9 @@
+2005-09-06  Richard Sandiford  <richard@codesourcery.com>
+
+	PR fortran/19269
+	* simplify.c (gfc_simplify_transpose): Set the result's typespec from
+	the source, not the first element of the return value.
+
 2005-09-04  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/23661

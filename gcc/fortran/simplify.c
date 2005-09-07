@@ -2858,7 +2858,7 @@ inc:
   for (i = 0; i < rank; i++)
     mpz_init_set_ui (e->shape[i], shape[i]);
 
-  e->ts = head->expr->ts;
+  e->ts = source->ts;
   e->rank = rank;
 
   return e;
