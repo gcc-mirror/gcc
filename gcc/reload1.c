@@ -3788,24 +3788,6 @@ fixup_eh_region_note (rtx insn, rtx prev, rtx next)
 	REG_NOTES (i)
 	  = gen_rtx_EXPR_LIST (REG_EH_REGION, XEXP (note, 0), REG_NOTES (i));
       }
-
-  /* ??? Since we entered with one eh insn, we should exit with one eh insn;
-     otherwise we're unsure that we're not losing an exception.  Except that
-     the instruction stream incoming to reload doesn't pass the "if 
-     reg_eh_region is present, may_trap_p is true" smoke test.
-
-     Worse, even if it did, rtx_addr_can_trap_p returns false for some forms
-     of address that include constants regardless of the actual value of the
-     constant.  If we decide that "int a[3]; a[100000]" should be considered
-     non-trapping, we should get that story straight across more of the
-     compiler.  If we decide that it should trap, then we cannot decide
-     may_trap_p on the basis of rtx_addr_can_trap_p at all.  Which may not
-     be such a big thing -- it doesn't seem hard to get MEM_NOTRAP_P set
-     correctly in the first place.
-
-     Fixing all that is not in the cards for gcc 4.2, so for the nonce we
-     allow all eh insns to evaporate.  */
-  gcc_assert (trap_count <= 1);
 }
 
 /* Reload pseudo-registers into hard regs around each insn as needed.
@@ -8189,6 +8171,15 @@ fixup_abnormal_edges (void)
 	  else
 	    purge_dead_edges (bb);
 	}
+    }
+
+  /* We've possibly turned single trapping insn into multiple ones.  */
+  if (flag_non_call_exceptions)
+    {
+      sbitmap blocks;
+      blocks = sbitmap_alloc (last_basic_block);
+      sbitmap_ones (blocks);
+      find_many_sub_basic_blocks (blocks);
     }
 
   if (inserted)

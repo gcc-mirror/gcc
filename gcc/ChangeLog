@@ -1,3 +1,9 @@
+2005-09-07  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* reload1.c (fixup_eh_region_note): Remove assertion.
+	(fixup_abnormal_edges): Reverted removal of call to 
+	find_many_sub_basic_blocks made on 2005-08-31.
+
 2005-09-07  Richard Henderson  <rth@redhat.com>
 
         * function.c (ARG_POINTER_CFA_OFFSET): Move ...
