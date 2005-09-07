@@ -1,3 +1,9 @@
+2005-09-07  Thomas Kho  <tkho@ucla.edu>
+
+	PR libstdc++/23358
+	* include/bits/stl_construct.h (_Destroy(_ForwardIterator,
+	_ForwardIterator, allocator<_Tp>)): Removed unused template parameter.
+
 2005-09-02  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/tr1/6_containers/unordered/hashtable/23465.cc:
