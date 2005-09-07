@@ -1,3 +1,8 @@
+2005-09-07  Richard Guenther  <rguenther@suse.de>
+
+	* cp-gimplify.c (cp_gimplify_expr): Create empty CONSTRUCTOR
+	for EMPTY_CLASS_EXPR.
+
 2005-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/23075
