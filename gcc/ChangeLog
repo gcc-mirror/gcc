@@ -1,3 +1,7 @@
+2005-09-08  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree.c (host_integerp, tree_low_cst): Correct function comment.
+
 2005-09-08  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
 
 	PR target/23747
