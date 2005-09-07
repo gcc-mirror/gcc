@@ -1,3 +1,9 @@
+2005-09-08  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
+
+	PR target/23747
+	* config/m32r.md (movmemsi_internal): Canonicalize order of
+	operands in PLUS component of template.
+
 2005-09-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
