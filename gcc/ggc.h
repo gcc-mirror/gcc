@@ -155,14 +155,6 @@ extern struct alloc_zone *new_ggc_zone (const char *);
 /* Free a complete GGC zone, destroying everything in it.  */
 extern void destroy_ggc_zone (struct alloc_zone *);
 
-/* Start a new GGC context.  Memory allocated in previous contexts
-   will not be collected while the new context is active.  */
-extern void ggc_push_context (void);
-
-/* Finish a GC context.  Any uncollected memory in the new context
-   will be merged with the old context.  */
-extern void ggc_pop_context (void);
-
 struct ggc_pch_data;
 
 /* Return a new ggc_pch_data structure.  */

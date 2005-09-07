@@ -1540,18 +1540,6 @@ destroy_ggc_zone (struct alloc_zone *zone ATTRIBUTE_UNUSED)
 {
 }
 
-/* Increment the `GC context'.  Objects allocated in an outer context
-   are never freed, eliminating the need to register their roots.  */
-
-void
-ggc_push_context (void)
-{
-  ++G.context_depth;
-
-  /* Die on wrap.  */
-  gcc_assert (G.context_depth < HOST_BITS_PER_LONG);
-}
-
 /* Merge the SAVE_IN_USE_P and IN_USE_P arrays in P so that IN_USE_P
    reflects reality.  Recalculate NUM_FREE_OBJECTS as well.  */
 
@@ -1586,89 +1574,6 @@ ggc_recalculate_in_use_p (page_entry *p)
     }
 
   gcc_assert (p->num_free_objects < num_objects);
-}
-
-/* Decrement the `GC context'.  All objects allocated since the
-   previous ggc_push_context are migrated to the outer context.  */
-
-void
-ggc_pop_context (void)
-{
-  unsigned long omask;
-  unsigned int depth, i, e;
-#ifdef ENABLE_CHECKING
-  unsigned int order;
-#endif
-
-  depth = --G.context_depth;
-  omask = (unsigned long)1 << (depth + 1);
-
-  if (!((G.context_depth_allocations | G.context_depth_collections) & omask))
-    return;
-
-  G.context_depth_allocations |= (G.context_depth_allocations & omask) >> 1;
-  G.context_depth_allocations &= omask - 1;
-  G.context_depth_collections &= omask - 1;
-
-  /* The G.depth array is shortened so that the last index is the
-     context_depth of the top element of by_depth.  */
-  if (depth+1 < G.depth_in_use)
-    e = G.depth[depth+1];
-  else
-    e = G.by_depth_in_use;
-
-  /* We might not have any PTEs of depth depth.  */
-  if (depth < G.depth_in_use)
-    {
-
-      /* First we go through all the pages at depth depth to
-	 recalculate the in use bits.  */
-      for (i = G.depth[depth]; i < e; ++i)
-	{
-	  page_entry *p = G.by_depth[i];
-
-	  /* Check that all of the pages really are at the depth that
-	     we expect.  */
-	  gcc_assert (p->context_depth == depth);
-	  gcc_assert (p->index_by_depth == i);
-
-	  prefetch (&save_in_use_p_i (i+8));
-	  prefetch (&save_in_use_p_i (i+16));
-	  if (save_in_use_p_i (i))
-	    {
-	      p = G.by_depth[i];
-	      ggc_recalculate_in_use_p (p);
-	      free (save_in_use_p_i (i));
-	      save_in_use_p_i (i) = 0;
-	    }
-	}
-    }
-
-  /* Then, we reset all page_entries with a depth greater than depth
-     to be at depth.  */
-  for (i = e; i < G.by_depth_in_use; ++i)
-    {
-      page_entry *p = G.by_depth[i];
-
-      /* Check that all of the pages really are at the depth we
-	 expect.  */
-      gcc_assert (p->context_depth > depth);
-      gcc_assert (p->index_by_depth == i);
-      p->context_depth = depth;
-    }
-
-  adjust_depth ();
-
-#ifdef ENABLE_CHECKING
-  for (order = 2; order < NUM_ORDERS; order++)
-    {
-      page_entry *p;
-
-      for (p = G.pages[order]; p != NULL; p = p->next)
-	gcc_assert (p->context_depth < depth ||
-		    (p->context_depth == depth && !save_in_use_p (p)));
-    }
-#endif
 }
 
 /* Unmark all objects.  */
