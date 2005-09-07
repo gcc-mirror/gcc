@@ -1,3 +1,8 @@
+2005-09-07  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	PR fortran/20848
+	* symbol.c(check_conflict):  Add conflict for parameter/save,
+
 2005-09-06  Richard Sandiford  <richard@codesourcery.com>
 
 	PR fortran/19269
