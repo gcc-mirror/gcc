@@ -1422,13 +1422,24 @@ next_record_w (void)
       break;
 
     case FORMATTED_SEQUENTIAL:
+#ifdef HAVE_CRLF
+      length = 2;
+#else
       length = 1;
+#endif
       p = salloc_w (current_unit->s, &length);
 
       if (!is_internal_unit())
 	{
 	  if (p)
-	    *p = '\n'; /* No CR for internal writes.  */
+	    {  /* No new line for internal writes.  */
+#ifdef HAVE_CRLF
+	      p[0] = '\r';
+	      p[1] = '\n';
+#else
+	      *p = '\n';
+#endif
+	    }
 	  else
 	    goto io_error;
 	}
