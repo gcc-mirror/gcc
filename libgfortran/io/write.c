@@ -79,20 +79,40 @@ extract_int (const void *p, int len)
   switch (len)
     {
     case 1:
-      i = *((const GFC_INTEGER_1 *) p);
+      {
+	GFC_INTEGER_1 tmp;
+	memcpy ((void *) &tmp, p, len);
+	i = tmp;
+      }
       break;
     case 2:
-      i = *((const GFC_INTEGER_2 *) p);
+      {
+	GFC_INTEGER_2 tmp;
+	memcpy ((void *) &tmp, p, len);
+	i = tmp;
+      }
       break;
     case 4:
-      i = *((const GFC_INTEGER_4 *) p);
+      {
+	GFC_INTEGER_4 tmp;
+	memcpy ((void *) &tmp, p, len);
+	i = tmp;
+      }
       break;
     case 8:
-      i = *((const GFC_INTEGER_8 *) p);
+      {
+	GFC_INTEGER_8 tmp;
+	memcpy ((void *) &tmp, p, len);
+	i = tmp;
+      }
       break;
 #ifdef HAVE_GFC_INTEGER_16
     case 16:
-      i = *((const GFC_INTEGER_16 *) p);
+      {
+	GFC_INTEGER_16 tmp;
+	memcpy ((void *) &tmp, p, len);
+	i = tmp;
+      }
       break;
 #endif
     default:
@@ -113,20 +133,40 @@ extract_uint (const void *p, int len)
   switch (len)
     {
     case 1:
-      i = (GFC_UINTEGER_1) *((const GFC_INTEGER_1 *) p);
+      {
+	GFC_INTEGER_1 tmp;
+	memcpy ((void *) &tmp, p, len);
+	i = (GFC_UINTEGER_1) tmp;
+      }
       break;
     case 2:
-      i = (GFC_UINTEGER_2) *((const GFC_INTEGER_2 *) p);
+      {
+	GFC_INTEGER_2 tmp;
+	memcpy ((void *) &tmp, p, len);
+	i = (GFC_UINTEGER_2) tmp;
+      }
       break;
     case 4:
-      i = (GFC_UINTEGER_4) *((const GFC_INTEGER_4 *) p);
+      {
+	GFC_INTEGER_4 tmp;
+	memcpy ((void *) &tmp, p, len);
+	i = (GFC_UINTEGER_4) tmp;
+      }
       break;
     case 8:
-      i = (GFC_UINTEGER_8) *((const GFC_INTEGER_8 *) p);
+      {
+	GFC_INTEGER_8 tmp;
+	memcpy ((void *) &tmp, p, len);
+	i = (GFC_UINTEGER_8) tmp;
+      }
       break;
 #ifdef HAVE_GFC_INTEGER_16
     case 16:
-      i = (GFC_UINTEGER_16) *((const GFC_INTEGER_16 *) p);
+      {
+	GFC_INTEGER_16 tmp;
+	memcpy ((void *) &tmp, p, len);
+	i = (GFC_UINTEGER_16) tmp;
+      }
       break;
 #endif
     default:
@@ -143,19 +183,35 @@ extract_real (const void *p, int len)
   switch (len)
     {
     case 4:
-      i = *((const GFC_REAL_4 *) p);
+      {
+	GFC_REAL_4 tmp;
+	memcpy ((void *) &tmp, p, len);
+	i = tmp;
+      }
       break;
     case 8:
-      i = *((const GFC_REAL_8 *) p);
+      {
+	GFC_REAL_8 tmp;
+	memcpy ((void *) &tmp, p, len);
+	i = tmp;
+      }
       break;
 #ifdef HAVE_GFC_REAL_10
     case 10:
-      i = *((const GFC_REAL_10 *) p);
+      {
+	GFC_REAL_10 tmp;
+	memcpy ((void *) &tmp, p, len);
+	i = tmp;
+      }
       break;
 #endif
 #ifdef HAVE_GFC_REAL_16
     case 16:
-      i = *((const GFC_REAL_16 *) p);
+      {
+	GFC_REAL_16 tmp;
+	memcpy ((void *) &tmp, p, len);
+	i = tmp;
+      }
       break;
 #endif
     default:
