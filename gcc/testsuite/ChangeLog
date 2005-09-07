@@ -1,5 +1,10 @@
 2005-09-07  Thomas Koenig  <Thomas.Koenig@online.de>
 
+	* gfortran.dg/parameter+save.f90:  Rename to
+	* gfortran.dg/parameter_save.f90: .. this.
+
+2005-09-07  Thomas Koenig  <Thomas.Koenig@online.de>
+
 	PR fortran/20848
 	* gfortran.dg/parameter+save.f90:  New test case.
 
