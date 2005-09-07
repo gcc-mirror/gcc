@@ -1517,10 +1517,10 @@ extract_range_from_expr (value_range_t *vr, tree expr)
     extract_range_from_unary_expr (vr, expr);
   else if (TREE_CODE_CLASS (code) == tcc_comparison)
     extract_range_from_comparison (vr, expr);
-  else if (vrp_expr_computes_nonzero (expr))
-    set_value_range_to_nonnull (vr, TREE_TYPE (expr));
   else if (is_gimple_min_invariant (expr))
     set_value_range (vr, VR_RANGE, expr, expr, NULL);
+  else if (vrp_expr_computes_nonzero (expr))
+    set_value_range_to_nonnull (vr, TREE_TYPE (expr));
   else
     set_value_range_to_varying (vr);
 }
