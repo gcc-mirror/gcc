@@ -183,3 +183,50 @@ esac])])
 if test x"$have_unlink_open_file" = xyes; then
   AC_DEFINE(HAVE_UNLINK_OPEN_FILE, 1, [Define if target can unlink open files.])
 fi])
+
+dnl Check whether CRLF is the line terminator
+AC_DEFUN([LIBGFOR_CHECK_CRLF], [
+  AC_CACHE_CHECK([whether the target has CRLF as line terminator],
+                  have_crlf, [
+  AC_TRY_RUN([
+/* This test program should exit with status 0 if system uses a CRLF as
+   line terminator, and status 1 otherwise.  
+   Since it is used to check for mingw systems, and should return 0 in any
+   other case, in case of a failure we will not use CRLF.  */
+#include <sys/stat.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <stdio.h>
+
+int main ()
+{
+#ifndef O_BINARY
+  exit(1);
+#else
+  int fd, bytes;
+  char buff[5];
+
+  fd = open ("foo", O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
+  if (fd < 0)
+    exit(1);
+  if (write (fd, "\n", 1) < 0)
+    perror ("write");
+  
+  close (fd);
+  
+  if ((fd = open ("foo", O_RDONLY | O_BINARY, S_IRWXU)) < 0)
+    exit(1);
+  bytes = read (fd, buff, 5);
+  if (bytes == 2 && buff[0] == '\r' && buff[1] == '\n')
+    exit(0);
+  else
+    exit(1);
+#endif
+}], have_crlf=yes, have_crlf=no, [
+case "${target}" in
+  *mingw*) have_crlf=yes ;;
+  *) have_crlf=no;;
+esac])])
+if test x"$have_crlf" = xyes; then
+  AC_DEFINE(HAVE_CRLF, 1, [Define if CRLF is line terminator.])
+fi])

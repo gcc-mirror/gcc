@@ -45,6 +45,9 @@
 /* libm includes coshf */
 #undef HAVE_COSHF
 
+/* Define if CRLF is line terminator. */
+#undef HAVE_CRLF
+
 /* libm includes erf */
 #undef HAVE_ERF
 
