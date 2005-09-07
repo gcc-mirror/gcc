@@ -1,3 +1,8 @@
+2005-09-06  Richard Sandiford  <richard@codesourcery.com>
+
+	PR fortran/19269
+	* gfortran.fortran-torture/execute/pr19269-1.f90: New test.
+
 2005-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/23075
