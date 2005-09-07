@@ -485,8 +485,8 @@ cp_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p)
       break;
 
     case EMPTY_CLASS_EXPR:
-      /* We create an INTEGER_CST with RECORD_TYPE and value zero.  */
-      *expr_p = build_int_cst (TREE_TYPE (*expr_p), 0);
+      /* We create an empty CONSTRUCTOR with RECORD_TYPE.  */
+      *expr_p = build_constructor (TREE_TYPE (*expr_p), NULL);
       ret = GS_OK;
       break;
 
