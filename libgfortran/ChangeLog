@@ -1,3 +1,10 @@
+2005-09-07  Steve Ellcey  <sje@cup.hp.com>
+
+	PR libfortran/23419
+	* io/write.c (extract_int): Use memcpy to access buffer.
+	(extract_uint): Ditto.
+	(extract_real): Ditto.
+
 2005-09-05  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* io/list_read.c:  Adjust size of of value to 32 (to hold

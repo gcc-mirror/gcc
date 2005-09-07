@@ -80,16 +80,32 @@ extract_int (const void *p, int len)
   switch (len)
     {
     case 1:
-      i = *((const int8_t *) p);
+      {
+	int8_t tmp;
+	memcpy ((void *) &tmp, p, len);
+	i = tmp;
+      }
       break;
     case 2:
-      i = *((const int16_t *) p);
+      {
+	int16_t tmp;
+	memcpy ((void *) &tmp, p, len);
+	i = tmp;
+      }
       break;
     case 4:
-      i = *((const int32_t *) p);
+      {
+	int32_t tmp;
+	memcpy ((void *) &tmp, p, len);
+	i = tmp;
+      }
       break;
     case 8:
-      i = *((const int64_t *) p);
+      {
+	int64_t tmp;
+	memcpy ((void *) &tmp, p, len);
+	i = tmp;
+      }
       break;
     default:
       internal_error ("bad integer kind");
@@ -105,10 +121,18 @@ extract_real (const void *p, int len)
   switch (len)
     {
     case 4:
-      i = *((const float *) p);
+      {
+	float tmp;
+	memcpy ((void *) &tmp, p, len);
+	i = tmp;
+      }
       break;
     case 8:
-      i = *((const double *) p);
+      {
+	double tmp;
+	memcpy ((void *) &tmp, p, len);
+	i = tmp;
+      }
       break;
     default:
       internal_error ("bad real kind");
