@@ -1,3 +1,16 @@
+2005-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline
+	2005-06-08  Richard Henderson  <rth@redhat.com>
+	* config/ia64/ia64.h (NO_PROFILE_COUNTERS): New.
+	* config/ia64/ia64.c (ia64_output_function_profiler): Honor it.
+	Emit out3 load right after alloc.
+	2005-06-08  Richard Henderson  <rth@redhat.com>
+	* config/ia64/ia64.h (FUNCTION_PROFILER): Move implementation ...
+	* config/ia64/ia64.c (ia64_output_function_profiler): ... here; add
+	unwind markup.
+	* config/ia64/ia64-protos.h (ia64_output_function_profiler): Declare.
+
 2005-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/23075
