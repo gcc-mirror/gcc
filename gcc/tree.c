@@ -4244,7 +4244,7 @@ tree_int_cst_compare (tree t1, tree t2)
 
 /* Return 1 if T is an INTEGER_CST that can be manipulated efficiently on
    the host.  If POS is zero, the value can be represented in a single
-   HOST_WIDE_INT.  If POS is nonzero, the value must be positive and can
+   HOST_WIDE_INT.  If POS is nonzero, the value must be non-negative and can
    be represented in a single unsigned HOST_WIDE_INT.  */
 
 int
@@ -4262,7 +4262,7 @@ host_integerp (tree t, int pos)
 
 /* Return the HOST_WIDE_INT least significant bits of T if it is an
    INTEGER_CST and there is no overflow.  POS is nonzero if the result must
-   be positive.  We must be able to satisfy the above conditions.  */
+   be non-negative.  We must be able to satisfy the above conditions.  */
 
 HOST_WIDE_INT
 tree_low_cst (tree t, int pos)
