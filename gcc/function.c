@@ -1211,12 +1211,6 @@ static int cfa_offset;
 #endif
 #endif
 
-/* On most machines, the CFA coincides with the first incoming parm.  */
-
-#ifndef ARG_POINTER_CFA_OFFSET
-#define ARG_POINTER_CFA_OFFSET(FNDECL) FIRST_PARM_OFFSET (FNDECL)
-#endif
-
 
 /* Given a piece of RTX and a pointer to a HOST_WIDE_INT, if the RTX
    is a virtual register, return the equivalent hard register and set the

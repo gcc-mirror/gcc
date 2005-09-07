@@ -3036,7 +3036,6 @@ enum ptrmemfunc_vbit_where_t
 
 #define NULL_TREE (tree) NULL
 
-extern GTY(()) tree frame_base_decl;
 extern tree decl_assembler_name (tree);
 
 /* Compute the number of bytes occupied by 'node'.  This routine only
