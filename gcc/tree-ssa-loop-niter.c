@@ -273,7 +273,7 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
 	step = fold_unary_to_constant (NEGATE_EXPR, type, step1);
       else
 	step = step0;
-      delta = build2 (MINUS_EXPR, type, base1, base0);
+      delta = fold (build2 (MINUS_EXPR, type, base1, base0));
       delta = fold (build2 (FLOOR_MOD_EXPR, type, delta, step));
       may_xform = boolean_false_node;
 

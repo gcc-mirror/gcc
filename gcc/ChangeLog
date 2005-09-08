@@ -1,3 +1,10 @@
+2005-09-08  Richard Guenther  <rguenther@suse.de>
+	Zdenek Dvorak  <rakdver@gcc.gnu.org>
+
+	PR tree-optimization/22348
+	* tree-ssa-loop-niter.c (number_of_iterations_cond): Fold
+	MINUS_EXPR.
+
 2005-09-08  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
 
 	PR target/23747

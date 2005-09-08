@@ -1,3 +1,9 @@
+2005-09-08  Richard Guenther  <rguenther@suse.de>
+	Zdenek Dvorak  <rakdver@gcc.gnu.org>
+
+	PR tree-optimization/22348
+	* gcc.c-torture/execute/pr22348.c: New testcase.
+
 2005-09-07  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* gfortran.dg/parameter+save.f90:  Rename to
