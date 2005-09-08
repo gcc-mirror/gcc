@@ -1058,8 +1058,6 @@ gfc_conv_function_val (gfc_se * se, gfc_symbol * sym)
       tmp = gfc_get_symbol_decl (sym);
       gcc_assert (TREE_CODE (TREE_TYPE (tmp)) == POINTER_TYPE
 	      && TREE_CODE (TREE_TYPE (TREE_TYPE (tmp))) == FUNCTION_TYPE);
-
-      se->expr = tmp;
     }
   else
     {
@@ -1067,9 +1065,453 @@ gfc_conv_function_val (gfc_se * se, gfc_symbol * sym)
 	sym->backend_decl = gfc_get_extern_function_decl (sym);
 
       tmp = sym->backend_decl;
-      gcc_assert (TREE_CODE (tmp) == FUNCTION_DECL);
-      se->expr = gfc_build_addr_expr (NULL, tmp);
+      if (!POINTER_TYPE_P (TREE_TYPE (tmp)))
+	{
+	  gcc_assert (TREE_CODE (tmp) == FUNCTION_DECL);
+	  tmp = gfc_build_addr_expr (NULL, tmp);
+	}
     }
+  se->expr = tmp;
+}
+
+
+/* This group of functions allows a caller to evaluate an expression from
+   the callee's interface.  It establishes a mapping between the interface's
+   dummy arguments and the caller's actual arguments, then applies that
+   mapping to a given gfc_expr.
+
+   You can initialize a mapping structure like so:
+
+       gfc_interface_mapping mapping;
+       ...
+       gfc_init_interface_mapping (&mapping);
+
+   You should then evaluate each actual argument into a temporary
+   gfc_se structure, here called "se", and map the result to the
+   dummy argument's symbol, here called "sym":
+
+       gfc_add_interface_mapping (&mapping, sym, &se);
+
+   After adding all mappings, you should call:
+
+       gfc_finish_interface_mapping (&mapping, pre, post);
+
+   where "pre" and "post" are statement blocks for initialization
+   and finalization code respectively.  You can then evaluate an
+   interface expression "expr" as follows:
+
+       gfc_apply_interface_mapping (&mapping, se, expr);
+
+   Once you've evaluated all expressions, you should free
+   the mapping structure with:
+
+       gfc_free_interface_mapping (&mapping); */
+
+
+/* This structure represents a mapping from OLD to NEW, where OLD is a
+   dummy argument symbol and NEW is a symbol that represents the value
+   of an actual argument.  Mappings are linked together using NEXT
+   (in no particular order).  */
+typedef struct gfc_interface_sym_mapping
+{
+  struct gfc_interface_sym_mapping *next;
+  gfc_symbol *old;
+  gfc_symtree *new;
+}
+gfc_interface_sym_mapping;
+
+
+/* This structure is used by callers to evaluate an expression from
+   a callee's interface.  */
+typedef struct gfc_interface_mapping
+{
+  /* Maps the interface's dummy arguments to the values that the caller
+     is passing.  The whole list is owned by this gfc_interface_mapping.  */
+  gfc_interface_sym_mapping *syms;
+
+  /* A list of gfc_charlens that were needed when creating copies of
+     expressions.  The whole list is owned by this gfc_interface_mapping.  */
+  gfc_charlen *charlens;
+}
+gfc_interface_mapping;
+
+
+static void gfc_apply_interface_mapping_to_expr (gfc_interface_mapping *,
+						 gfc_expr *);
+
+/* Initialize MAPPING.  */
+
+static void
+gfc_init_interface_mapping (gfc_interface_mapping * mapping)
+{
+  mapping->syms = NULL;
+  mapping->charlens = NULL;
+}
+
+
+/* Free all memory held by MAPPING (but not MAPPING itself).  */
+
+static void
+gfc_free_interface_mapping (gfc_interface_mapping * mapping)
+{
+  gfc_interface_sym_mapping *sym;
+  gfc_interface_sym_mapping *nextsym;
+  gfc_charlen *cl;
+  gfc_charlen *nextcl;
+
+  for (sym = mapping->syms; sym; sym = nextsym)
+    {
+      nextsym = sym->next;
+      gfc_free_symbol (sym->new->n.sym);
+      gfc_free (sym->new);
+      gfc_free (sym);
+    }
+  for (cl = mapping->charlens; cl; cl = nextcl)
+    {
+      nextcl = cl->next;
+      gfc_free_expr (cl->length);
+      gfc_free (cl);
+    }
+}
+
+
+/* Return a copy of gfc_charlen CL.  Add the returned structure to
+   MAPPING so that it will be freed by gfc_free_interface_mapping.  */
+
+static gfc_charlen *
+gfc_get_interface_mapping_charlen (gfc_interface_mapping * mapping,
+				   gfc_charlen * cl)
+{
+  gfc_charlen *new;
+
+  new = gfc_get_charlen ();
+  new->next = mapping->charlens;
+  new->length = gfc_copy_expr (cl->length);
+
+  mapping->charlens = new;
+  return new;
+}
+
+
+/* A subroutine of gfc_add_interface_mapping.  Return a descriptorless
+   array variable that can be used as the actual argument for dummy
+   argument SYM.  Add any initialization code to BLOCK.  PACKED is as
+   for gfc_get_nodesc_array_type and DATA points to the first element
+   in the passed array.  */
+
+static tree
+gfc_get_interface_mapping_array (stmtblock_t * block, gfc_symbol * sym,
+				 int packed, tree data)
+{
+  tree type;
+  tree var;
+
+  type = gfc_typenode_for_spec (&sym->ts);
+  type = gfc_get_nodesc_array_type (type, sym->as, packed);
+
+  var = gfc_create_var (type, "parm");
+  gfc_add_modify_expr (block, var, fold_convert (type, data));
+
+  return var;
+}
+
+
+/* A subroutine of gfc_add_interface_mapping.  Set the stride, upper bounds
+   and offset of descriptorless array type TYPE given that it has the same
+   size as DESC.  Add any set-up code to BLOCK.  */
+
+static void
+gfc_set_interface_mapping_bounds (stmtblock_t * block, tree type, tree desc)
+{
+  int n;
+  tree dim;
+  tree offset;
+  tree tmp;
+
+  offset = gfc_index_zero_node;
+  for (n = 0; n < GFC_TYPE_ARRAY_RANK (type); n++)
+    {
+      GFC_TYPE_ARRAY_STRIDE (type, n) = gfc_conv_array_stride (desc, n);
+      if (GFC_TYPE_ARRAY_UBOUND (type, n) == NULL_TREE)
+	{
+	  dim = gfc_rank_cst[n];
+	  tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
+			     gfc_conv_descriptor_ubound (desc, dim),
+			     gfc_conv_descriptor_lbound (desc, dim));
+	  tmp = fold_build2 (PLUS_EXPR, gfc_array_index_type,
+			     GFC_TYPE_ARRAY_LBOUND (type, n),
+			     tmp);
+	  tmp = gfc_evaluate_now (tmp, block);
+	  GFC_TYPE_ARRAY_UBOUND (type, n) = tmp;
+	}
+      tmp = fold_build2 (MULT_EXPR, gfc_array_index_type,
+			 GFC_TYPE_ARRAY_LBOUND (type, n),
+			 GFC_TYPE_ARRAY_STRIDE (type, n));
+      offset = fold_build2 (MINUS_EXPR, gfc_array_index_type, offset, tmp);
+    }
+  offset = gfc_evaluate_now (offset, block);
+  GFC_TYPE_ARRAY_OFFSET (type) = offset;
+}
+
+
+/* Extend MAPPING so that it maps dummy argument SYM to the value stored
+   in SE.  The caller may still use se->expr and se->string_length after
+   calling this function.  */
+
+static void
+gfc_add_interface_mapping (gfc_interface_mapping * mapping,
+			   gfc_symbol * sym, gfc_se * se)
+{
+  gfc_interface_sym_mapping *sm;
+  tree desc;
+  tree tmp;
+  tree value;
+  gfc_symbol *new_sym;
+  gfc_symtree *root;
+  gfc_symtree *new_symtree;
+
+  /* Create a new symbol to represent the actual argument.  */
+  new_sym = gfc_new_symbol (sym->name, NULL);
+  new_sym->ts = sym->ts;
+  new_sym->attr.referenced = 1;
+  new_sym->attr.dimension = sym->attr.dimension;
+  new_sym->attr.pointer = sym->attr.pointer;
+  new_sym->attr.flavor = sym->attr.flavor;
+
+  /* Create a fake symtree for it.  */
+  root = NULL;
+  new_symtree = gfc_new_symtree (&root, sym->name);
+  new_symtree->n.sym = new_sym;
+  gcc_assert (new_symtree == root);
+
+  /* Create a dummy->actual mapping.  */
+  sm = gfc_getmem (sizeof (*sm));
+  sm->next = mapping->syms;
+  sm->old = sym;
+  sm->new = new_symtree;
+  mapping->syms = sm;
+
+  /* Stabilize the argument's value.  */
+  se->expr = gfc_evaluate_now (se->expr, &se->pre);
+
+  if (sym->ts.type == BT_CHARACTER)
+    {
+      /* Create a copy of the dummy argument's length.  */
+      new_sym->ts.cl = gfc_get_interface_mapping_charlen (mapping, sym->ts.cl);
+
+      /* If the length is specified as "*", record the length that
+	 the caller is passing.  We should use the callee's length
+	 in all other cases.  */
+      if (!new_sym->ts.cl->length)
+	{
+	  se->string_length = gfc_evaluate_now (se->string_length, &se->pre);
+	  new_sym->ts.cl->backend_decl = se->string_length;
+	}
+    }
+
+  /* Use the passed value as-is if the argument is a function.  */
+  if (sym->attr.flavor == FL_PROCEDURE)
+    value = se->expr;
+
+  /* If the argument is either a string or a pointer to a string,
+     convert it to a boundless character type.  */
+  else if (!sym->attr.dimension && sym->ts.type == BT_CHARACTER)
+    {
+      tmp = gfc_get_character_type_len (sym->ts.kind, NULL);
+      tmp = build_pointer_type (tmp);
+      if (sym->attr.pointer)
+	tmp = build_pointer_type (tmp);
+
+      value = fold_convert (tmp, se->expr);
+      if (sym->attr.pointer)
+	value = gfc_build_indirect_ref (value);
+    }
+
+  /* If the argument is a scalar or a pointer to an array, dereference it.  */
+  else if (!sym->attr.dimension || sym->attr.pointer)
+    value = gfc_build_indirect_ref (se->expr);
+
+  /* If the argument is an array descriptor, use it to determine
+     information about the actual argument's shape.  */
+  else if (POINTER_TYPE_P (TREE_TYPE (se->expr))
+	   && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_TYPE (se->expr))))
+    {
+      /* Get the actual argument's descriptor.  */
+      desc = gfc_build_indirect_ref (se->expr);
+
+      /* Create the replacement variable.  */
+      tmp = gfc_conv_descriptor_data_get (desc);
+      value = gfc_get_interface_mapping_array (&se->pre, sym, 0, tmp);
+
+      /* Use DESC to work out the upper bounds, strides and offset.  */
+      gfc_set_interface_mapping_bounds (&se->pre, TREE_TYPE (value), desc);
+    }
+  else
+    /* Otherwise we have a packed array.  */
+    value = gfc_get_interface_mapping_array (&se->pre, sym, 2, se->expr);
+
+  new_sym->backend_decl = value;
+}
+
+
+/* Called once all dummy argument mappings have been added to MAPPING,
+   but before the mapping is used to evaluate expressions.  Pre-evaluate
+   the length of each argument, adding any initialization code to PRE and
+   any finalization code to POST.  */
+
+static void
+gfc_finish_interface_mapping (gfc_interface_mapping * mapping,
+			      stmtblock_t * pre, stmtblock_t * post)
+{
+  gfc_interface_sym_mapping *sym;
+  gfc_expr *expr;
+  gfc_se se;
+
+  for (sym = mapping->syms; sym; sym = sym->next)
+    if (sym->new->n.sym->ts.type == BT_CHARACTER
+	&& !sym->new->n.sym->ts.cl->backend_decl)
+      {
+	expr = sym->new->n.sym->ts.cl->length;
+	gfc_apply_interface_mapping_to_expr (mapping, expr);
+	gfc_init_se (&se, NULL);
+	gfc_conv_expr (&se, expr);
+
+	se.expr = gfc_evaluate_now (se.expr, &se.pre);
+	gfc_add_block_to_block (pre, &se.pre);
+	gfc_add_block_to_block (post, &se.post);
+
+	sym->new->n.sym->ts.cl->backend_decl = se.expr;
+      }
+}
+
+
+/* Like gfc_apply_interface_mapping_to_expr, but applied to
+   constructor C.  */
+
+static void
+gfc_apply_interface_mapping_to_cons (gfc_interface_mapping * mapping,
+				     gfc_constructor * c)
+{
+  for (; c; c = c->next)
+    {
+      gfc_apply_interface_mapping_to_expr (mapping, c->expr);
+      if (c->iterator)
+	{
+	  gfc_apply_interface_mapping_to_expr (mapping, c->iterator->start);
+	  gfc_apply_interface_mapping_to_expr (mapping, c->iterator->end);
+	  gfc_apply_interface_mapping_to_expr (mapping, c->iterator->step);
+	}
+    }
+}
+
+
+/* Like gfc_apply_interface_mapping_to_expr, but applied to
+   reference REF.  */
+
+static void
+gfc_apply_interface_mapping_to_ref (gfc_interface_mapping * mapping,
+				    gfc_ref * ref)
+{
+  int n;
+
+  for (; ref; ref = ref->next)
+    switch (ref->type)
+      {
+      case REF_ARRAY:
+	for (n = 0; n < ref->u.ar.dimen; n++)
+	  {
+	    gfc_apply_interface_mapping_to_expr (mapping, ref->u.ar.start[n]);
+	    gfc_apply_interface_mapping_to_expr (mapping, ref->u.ar.end[n]);
+	    gfc_apply_interface_mapping_to_expr (mapping, ref->u.ar.stride[n]);
+	  }
+	gfc_apply_interface_mapping_to_expr (mapping, ref->u.ar.offset);
+	break;
+
+      case REF_COMPONENT:
+	break;
+
+      case REF_SUBSTRING:
+	gfc_apply_interface_mapping_to_expr (mapping, ref->u.ss.start);
+	gfc_apply_interface_mapping_to_expr (mapping, ref->u.ss.end);
+	break;
+      }
+}
+
+
+/* EXPR is a copy of an expression that appeared in the interface
+   associated with MAPPING.  Walk it recursively looking for references to
+   dummy arguments that MAPPING maps to actual arguments.  Replace each such
+   reference with a reference to the associated actual argument.  */
+
+static void
+gfc_apply_interface_mapping_to_expr (gfc_interface_mapping * mapping,
+				     gfc_expr * expr)
+{
+  gfc_interface_sym_mapping *sym;
+  gfc_actual_arglist *actual;
+
+  if (!expr)
+    return;
+
+  /* Copying an expression does not copy its length, so do that here.  */
+  if (expr->ts.type == BT_CHARACTER && expr->ts.cl)
+    {
+      expr->ts.cl = gfc_get_interface_mapping_charlen (mapping, expr->ts.cl);
+      gfc_apply_interface_mapping_to_expr (mapping, expr->ts.cl->length);
+    }
+
+  /* Apply the mapping to any references.  */
+  gfc_apply_interface_mapping_to_ref (mapping, expr->ref);
+
+  /* ...and to the expression's symbol, if it has one.  */
+  if (expr->symtree)
+    for (sym = mapping->syms; sym; sym = sym->next)
+      if (sym->old == expr->symtree->n.sym)
+	expr->symtree = sym->new;
+
+  /* ...and to subexpressions in expr->value.  */
+  switch (expr->expr_type)
+    {
+    case EXPR_VARIABLE:
+    case EXPR_CONSTANT:
+    case EXPR_NULL:
+    case EXPR_SUBSTRING:
+      break;
+
+    case EXPR_OP:
+      gfc_apply_interface_mapping_to_expr (mapping, expr->value.op.op1);
+      gfc_apply_interface_mapping_to_expr (mapping, expr->value.op.op2);
+      break;
+
+    case EXPR_FUNCTION:
+      for (sym = mapping->syms; sym; sym = sym->next)
+	if (sym->old == expr->value.function.esym)
+	  expr->value.function.esym = sym->new->n.sym;
+
+      for (actual = expr->value.function.actual; actual; actual = actual->next)
+	gfc_apply_interface_mapping_to_expr (mapping, actual->expr);
+      break;
+
+    case EXPR_ARRAY:
+    case EXPR_STRUCTURE:
+      gfc_apply_interface_mapping_to_cons (mapping, expr->value.constructor);
+      break;
+    }
+}
+
+
+/* Evaluate interface expression EXPR using MAPPING.  Store the result
+   in SE.  */
+
+static void
+gfc_apply_interface_mapping (gfc_interface_mapping * mapping,
+			     gfc_se * se, gfc_expr * expr)
+{
+  expr = gfc_copy_expr (expr);
+  gfc_apply_interface_mapping_to_expr (mapping, expr);
+  gfc_conv_expr (se, expr);
+  se->expr = gfc_evaluate_now (se->expr, &se->pre);
+  gfc_free_expr (expr);
 }
 
 
@@ -1081,7 +1523,9 @@ int
 gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 			gfc_actual_arglist * arg)
 {
+  gfc_interface_mapping mapping;
   tree arglist;
+  tree retargs;
   tree tmp;
   tree fntype;
   gfc_se parmse;
@@ -1094,20 +1538,15 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
   tree stringargs;
   gfc_formal_arglist *formal;
   int has_alternate_specifier = 0;
+  bool need_interface_mapping;
+  gfc_typespec ts;
+  gfc_charlen cl;
 
   arglist = NULL_TREE;
+  retargs = NULL_TREE;
   stringargs = NULL_TREE;
   var = NULL_TREE;
   len = NULL_TREE;
-
-  /* Obtain the string length now because it is needed often below.  */
-  if (sym->ts.type == BT_CHARACTER)
-    {
-      gcc_assert (sym->ts.cl && sym->ts.cl->length
-		  && sym->ts.cl->length->expr_type == EXPR_CONSTANT);
-      len = gfc_conv_mpz_to_tree
-	      (sym->ts.cl->length->value.integer, sym->ts.cl->length->ts.kind);
-    }
 
   if (se->ss != NULL)
     {
@@ -1123,9 +1562,6 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
               /* Access the previously obtained result.  */
               gfc_conv_tmp_array_ref (se);
               gfc_advance_se_ss_chain (se);
-
-	      /* Bundle in the string length.  */
-	      se->string_length = len;
               return 0;
             }
 	}
@@ -1134,91 +1570,9 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
   else
     info = NULL;
 
-  byref = gfc_return_by_reference (sym);
-  if (byref)
-    {
-      if (se->direct_byref) 
-	{
-	  arglist = gfc_chainon_list (arglist, se->expr);
-
-	  /* Add string length to argument list.  */
-	  if (sym->ts.type == BT_CHARACTER)
-	    {
-	      sym->ts.cl->backend_decl = len;
-	      arglist = gfc_chainon_list (arglist, 
-				convert (gfc_charlen_type_node, len));
-	    }
-	}
-      else if (sym->result->attr.dimension)
-	{
-	  gcc_assert (se->loop && se->ss);
-
-	  /* Set the type of the array.  */
-	  tmp = gfc_typenode_for_spec (&sym->ts);
-	  info->dimen = se->loop->dimen;
-
-	  /* Allocate a temporary to store the result.  */
-	  gfc_trans_allocate_temp_array (se->loop, info, tmp);
-
-	  /* Zero the first stride to indicate a temporary.  */
-	  tmp =
-	    gfc_conv_descriptor_stride (info->descriptor, gfc_rank_cst[0]);
-	  gfc_add_modify_expr (&se->pre, tmp,
-			       convert (TREE_TYPE (tmp), integer_zero_node));
-
-	  /* Pass the temporary as the first argument.  */
-	  tmp = info->descriptor;
-	  tmp = gfc_build_addr_expr (NULL, tmp);
-	  arglist = gfc_chainon_list (arglist, tmp);
-
-	  /* Add string length to argument list.  */
-	  if (sym->ts.type == BT_CHARACTER)
-	    {
-	      sym->ts.cl->backend_decl = len;
-	      arglist = gfc_chainon_list (arglist, 
-			      convert (gfc_charlen_type_node, len));
-	    }
-
-	}
-      else if (sym->ts.type == BT_CHARACTER)
-	{
-
-	  /* Pass the string length.  */
-	  sym->ts.cl->backend_decl = len;
-	  type = gfc_get_character_type (sym->ts.kind, sym->ts.cl);
-	  type = build_pointer_type (type);
-
-	  /* Return an address to a char[0:len-1]* temporary for character pointers.  */
-	  if (sym->attr.pointer || sym->attr.allocatable)
-	    {
-	      /* Build char[0:len-1] * pstr.  */
-	      tmp = fold_build2 (MINUS_EXPR, gfc_charlen_type_node, len,
-				 build_int_cst (gfc_charlen_type_node, 1));
-	      tmp = build_range_type (gfc_array_index_type, gfc_index_zero_node, tmp);
-	      tmp = build_array_type (gfc_character1_type_node, tmp);
-	      var = gfc_create_var (build_pointer_type (tmp), "pstr");
-
-	      /* Provide an address expression for the function arguments.  */
-	      var = gfc_build_addr_expr (NULL, var);
-	    }
-	  else
-	    {
-	      var = gfc_conv_string_tmp (se, type, len);
-	    }
-	  arglist = gfc_chainon_list (arglist, var);
-	  arglist = gfc_chainon_list (arglist, 
-				      convert (gfc_charlen_type_node, len));
-	}
-      else
-	{
-	  gcc_assert (gfc_option.flag_f2c && sym->ts.type == BT_COMPLEX);
-
-	  type = gfc_get_complex_type (sym->ts.kind);
-	  var = gfc_build_addr_expr (NULL, gfc_create_var (type, "cmplx"));
-	  arglist = gfc_chainon_list (arglist, var);
-	}
-    }
-
+  gfc_init_interface_mapping (&mapping);
+  need_interface_mapping = (sym->ts.type == BT_CHARACTER
+			    && sym->ts.cl->length->expr_type != EXPR_CONSTANT);
   formal = sym->formal;
   /* Evaluate the arguments.  */
   for (; arg != NULL; arg = arg->next, formal = formal ? formal->next : NULL)
@@ -1243,12 +1597,8 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	      gfc_init_se (&parmse, NULL);
 	      parmse.expr = null_pointer_node;
               if (arg->missing_arg_type == BT_CHARACTER)
-                {
-                  stringargs =
-		    gfc_chainon_list (stringargs,
-				      convert (gfc_charlen_type_node,
-					       integer_zero_node));
-                }
+		parmse.string_length = convert (gfc_charlen_type_node,
+						integer_zero_node);
 	    }
 	}
       else if (se->ss && se->ss->useflags)
@@ -1293,6 +1643,9 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	    } 
 	}
 
+      if (formal && need_interface_mapping)
+	gfc_add_interface_mapping (&mapping, formal->sym, &parmse);
+
       gfc_add_block_to_block (&se->pre, &parmse.pre);
       gfc_add_block_to_block (&se->post, &parmse.post);
 
@@ -1303,6 +1656,98 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 
       arglist = gfc_chainon_list (arglist, parmse.expr);
     }
+  gfc_finish_interface_mapping (&mapping, &se->pre, &se->post);
+
+  ts = sym->ts;
+  if (ts.type == BT_CHARACTER)
+    {
+      /* Calculate the length of the returned string.  */
+      gfc_init_se (&parmse, NULL);
+      if (need_interface_mapping)
+	gfc_apply_interface_mapping (&mapping, &parmse, sym->ts.cl->length);
+      else
+	gfc_conv_expr (&parmse, sym->ts.cl->length);
+      gfc_add_block_to_block (&se->pre, &parmse.pre);
+      gfc_add_block_to_block (&se->post, &parmse.post);
+
+      /* Set up a charlen structure for it.  */
+      cl.next = NULL;
+      cl.length = NULL;
+      cl.backend_decl = fold_convert (gfc_charlen_type_node, parmse.expr);
+      ts.cl = &cl;
+
+      len = cl.backend_decl;
+    }
+  gfc_free_interface_mapping (&mapping);
+
+  byref = gfc_return_by_reference (sym);
+  if (byref)
+    {
+      if (se->direct_byref)
+	retargs = gfc_chainon_list (retargs, se->expr);
+      else if (sym->result->attr.dimension)
+	{
+	  gcc_assert (se->loop && info);
+
+	  /* Set the type of the array.  */
+	  tmp = gfc_typenode_for_spec (&ts);
+	  info->dimen = se->loop->dimen;
+
+	  /* Allocate a temporary to store the result.  */
+	  gfc_trans_allocate_temp_array (se->loop, info, tmp);
+
+	  /* Zero the first stride to indicate a temporary.  */
+	  tmp = gfc_conv_descriptor_stride (info->descriptor, gfc_rank_cst[0]);
+	  gfc_add_modify_expr (&se->pre, tmp,
+			       convert (TREE_TYPE (tmp), integer_zero_node));
+
+	  /* Pass the temporary as the first argument.  */
+	  tmp = info->descriptor;
+	  tmp = gfc_build_addr_expr (NULL, tmp);
+	  retargs = gfc_chainon_list (retargs, tmp);
+	}
+      else if (ts.type == BT_CHARACTER)
+	{
+	  /* Pass the string length.  */
+	  type = gfc_get_character_type (ts.kind, ts.cl);
+	  type = build_pointer_type (type);
+
+	  /* Return an address to a char[0:len-1]* temporary for
+	     character pointers.  */
+	  if (sym->attr.pointer || sym->attr.allocatable)
+	    {
+	      /* Build char[0:len-1] * pstr.  */
+	      tmp = fold_build2 (MINUS_EXPR, gfc_charlen_type_node, len,
+				 build_int_cst (gfc_charlen_type_node, 1));
+	      tmp = build_range_type (gfc_array_index_type,
+				      gfc_index_zero_node, tmp);
+	      tmp = build_array_type (gfc_character1_type_node, tmp);
+	      var = gfc_create_var (build_pointer_type (tmp), "pstr");
+
+	      /* Provide an address expression for the function arguments.  */
+	      var = gfc_build_addr_expr (NULL, var);
+	    }
+	  else
+	    var = gfc_conv_string_tmp (se, type, len);
+
+	  retargs = gfc_chainon_list (retargs, var);
+	}
+      else
+	{
+	  gcc_assert (gfc_option.flag_f2c && ts.type == BT_COMPLEX);
+
+	  type = gfc_get_complex_type (ts.kind);
+	  var = gfc_build_addr_expr (NULL, gfc_create_var (type, "cmplx"));
+	  retargs = gfc_chainon_list (retargs, var);
+	}
+
+      /* Add the string length to the argument list.  */
+      if (ts.type == BT_CHARACTER)
+	retargs = gfc_chainon_list (retargs, len);
+    }
+
+  /* Add the return arguments.  */
+  arglist = chainon (retargs, arglist);
 
   /* Add the hidden string length parameters to the arguments.  */
   arglist = chainon (arglist, stringargs);

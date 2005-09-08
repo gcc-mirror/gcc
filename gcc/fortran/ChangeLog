@@ -1,5 +1,28 @@
 2005-09-08  Richard Sandiford  <richard@codesourcery.com>
 
+	PR fortran/15326
+	* trans-array.c (gfc_add_loop_ss_code): Set ss->string_length in
+	the GFC_SS_FUNCTION case too.
+	* trans-expr.c (gfc_conv_function_val): Allow symbols to be bound
+	to function pointers as well as function decls.
+	(gfc_interface_sym_mapping, gfc_interface_mapping): New structures.
+	(gfc_init_interface_mapping, gfc_free_interface_mapping)
+	(gfc_get_interface_mapping_charlen, gfc_get_interface_mapping_array)
+	(gfc_set_interface_mapping_bounds, gfc_add_interface_mapping)
+	(gfc_finish_interface_mapping, gfc_apply_interface_mapping_to_cons)
+	(gfc_apply_interface_mapping_to_ref)
+	(gfc_apply_interface_mapping_to_expr)
+	(gfc_apply_interface_mapping): New functions.
+	(gfc_conv_function_call): Evaluate the arguments before working
+	out where the result should go.  Make the null pointer case provide
+	the string length in parmse.string_length.  Cope with non-constant
+	string lengths, using the above functions to evaluate such lengths.
+	Use a temporary typespec; don't assign to sym->cl->backend_decl.
+	Don't assign to se->string_length when returning a cached array
+	descriptor.
+
+2005-09-08  Richard Sandiford  <richard@codesourcery.com>
+
 	PR fortran/19928
 	* trans-array.c (gfc_conv_array_ref): Call gfc_advance_se_ss_chain
 	after handling scalarized references.  Make "indexse" inherit from
