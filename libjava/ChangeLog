@@ -1,3 +1,14 @@
+2005-09-08  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	PR libgcj/23761
+	* include/java-props.h (_Jv_Module_Load_Path): Declare variable.
+	* java/lang/natRuntime.cc (init): Call lt_dlsetsearchpath after
+	lt_dlinit.
+	* gnu/classpath/natSystemProperties.cc (_Jv_Module_Load_Path):
+	Define variable.
+	(_Jv_SetDLLSearchPath): Do not call lt_dlsetsearchpath.  Set
+	_Jv_Module_Load_Path.
+
 2005-09-06  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/23739:
