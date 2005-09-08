@@ -1,3 +1,9 @@
+2005-09-08  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/23765
+	* match.c (gfc_match_common): Remove unnecessary / wrong special
+	cases for end-of-statement.
+
 2005-09-08  Janne Blomqvist  <jblomqvi@cc.hut.fi>
 
 	* gfortran.texi: Add section about implemented F2003 features.
