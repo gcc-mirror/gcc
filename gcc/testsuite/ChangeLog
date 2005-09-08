@@ -1,3 +1,10 @@
+2005-09-07  Jerry DeLisle  <jvdelisle@verizon.net>
+
+	PR libfortran/23760
+	* gfortran.dg/g77/1832.f: Remove long string in write statement
+	to allow the test to pass on correct list directed output with 
+	prepended space.
+
 2005-09-07  James E Wilson  <wilson@specifix.com>
 
 	* gcc.dg/intmax_t-1.c: Disable for xscale*-*-elf*.
