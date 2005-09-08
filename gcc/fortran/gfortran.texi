@@ -961,9 +961,40 @@ please contact a project maintainer.
 The GNU Fortran 95 Compiler aims to be a conforming implementation of
 ISO/IEC 1539:1997 (Fortran 95).
 
-In the future it may also support other variants and extensions to the Fortran
-language.  This includes ANSI Fortran 77, Fortran 90, Fortran 2000 (not yet
-finalized), and OpenMP.
+In the future it may also support other variants of and extensions to
+the Fortran language.  These include ANSI Fortran 77, ISO Fortran 90,
+ISO Fortran 2003 and OpenMP.
+
+@menu
+* Fortran 2003 status::
+@end menu
+
+@node Fortran 2003 status
+@section Fortran 2003 status
+
+Although @command{gfortran} focuses on implementing the Fortran 95
+standard for the time being, a few Fortran 2003 features are currently
+available.
+
+@itemize
+@item 
+Intrinsics @code{command_argument_count}, @code{get_command},
+@code{get_command_argument}, and @code{get_environment_variable}.
+
+@item 
+Array constructors using square brackets. That is, @code{[...]} rather
+than @code{(/.../)}.
+
+@item 
+@code{FLUSH} statement. Note that this is not a complete implementation
+of the Fortran 2003 @code{FLUSH} statement, as the @code{IOMSG=}
+specifier of the I/O statements is not yet implemented.
+@end itemize
+
+
+@c ---------------------------------------------------------------------
+@c Index
+@c ---------------------------------------------------------------------
 
 @node Index
 @unnumbered Index

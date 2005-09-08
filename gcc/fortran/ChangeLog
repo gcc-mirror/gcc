@@ -1,3 +1,7 @@
+2005-09-08  Janne Blomqvist  <jblomqvi@cc.hut.fi>
+
+	* gfortran.texi: Add section about implemented F2003 features.
+
 2005-09-08  Richard Sandiford  <richard@codesourcery.com>
 
 	PR fortran/15326
