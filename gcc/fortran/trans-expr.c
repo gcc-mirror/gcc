@@ -2041,6 +2041,8 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
   gfc_ss *lss;
   gfc_ss *rss;
   stmtblock_t block;
+  tree desc;
+  tree tmp;
 
   gfc_start_block (&block);
 
@@ -2068,13 +2070,30 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
     {
       /* Array pointer.  */
       gfc_conv_expr_descriptor (&lse, expr1, lss);
-      /* Implement Nullify.  */
-      if (expr2->expr_type == EXPR_NULL)
-	gfc_conv_descriptor_data_set (&block, lse.expr, null_pointer_node);
-      else
-        {
+      switch (expr2->expr_type)
+	{
+	case EXPR_NULL:
+	  /* Just set the data pointer to null.  */
+	  gfc_conv_descriptor_data_set (&block, lse.expr, null_pointer_node);
+	  break;
+
+	case EXPR_VARIABLE:
+	  /* Assign directly to the pointer's descriptor.  */
           lse.direct_byref = 1;
-          gfc_conv_expr_descriptor (&lse, expr2, rss);
+	  gfc_conv_expr_descriptor (&lse, expr2, rss);
+	  break;
+
+	default:
+	  /* Assign to a temporary descriptor and then copy that
+	     temporary to the pointer.  */
+	  desc = lse.expr;
+	  tmp = gfc_create_var (TREE_TYPE (desc), "ptrtemp");
+
+	  lse.expr = tmp;
+	  lse.direct_byref = 1;
+	  gfc_conv_expr_descriptor (&lse, expr2, rss);
+	  gfc_add_modify_expr (&lse.pre, desc, tmp);
+	  break;
         }
       gfc_add_block_to_block (&block, &lse.pre);
       gfc_add_block_to_block (&block, &lse.post);
