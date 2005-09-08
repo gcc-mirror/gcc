@@ -1,3 +1,9 @@
+2005-09-07  Richard Sandiford  <richard@codesourcery.com>
+
+	PR fortran/23373
+	* trans-expr.c (gfc_trans_pointer_assignment): Assign to a temporary
+	descriptor if the rhs is not a null pointer or variable.
+
 2005-09-07  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/20848

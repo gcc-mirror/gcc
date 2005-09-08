@@ -1,3 +1,9 @@
+2005-09-07  Richard Sandiford  <richard@codesourcery.com>
+
+	PR fortran/23373
+	* gfortran.fortran-torture/execute/pr23373-1.f90,
+	* gfortran.fortran-torture/execute/pr23373-1.f90: New tests.
+
 2005-09-07  Jerry DeLisle  <jvdelisle@verizon.net>
 
 	PR libfortran/23760
