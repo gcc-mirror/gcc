@@ -1,3 +1,13 @@
+2005-09-08  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (s390_sr_alias_set): Variable removed.
+	(override_options): Setting s390_sr_alias_set removed.
+	(save_fpr, save_gprs): Set alias set to vararg or frame.
+	(restore_fpr, restore_gprs, s390_emit_prologue): Replace 
+	s390_sr_alias_set with get_frame_alias_set ().
+	(s390_gimplify_va_arg): Replace s390_sr_alias_set with
+	get_varargs_alias_set ().
+
 2005-09-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR objc/20574
