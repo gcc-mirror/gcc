@@ -1,3 +1,9 @@
+2005-09-08  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/23691
+	* decl2.c (mark_used): Instantiate static data members initialized
+	by constants, even in a template.
+
 2005-09-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR obj-c++/16816
