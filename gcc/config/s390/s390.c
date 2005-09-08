@@ -186,9 +186,6 @@ struct processor_costs z9_109_cost =
 
 extern int reload_completed;
 
-/* The alias set for prologue/epilogue register save/restore.  */
-static int s390_sr_alias_set = 0;
-
 /* Save information from a "cmpxx" operation until the branch or scc is
    emitted.  */
 rtx s390_compare_op0, s390_compare_op1;
@@ -1296,9 +1293,6 @@ s390_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
 void
 override_options (void)
 {
-  /* Acquire a unique set number for our register saves and restores.  */
-  s390_sr_alias_set = new_alias_set ();
-
   /* Set up function hooks.  */
   init_machine_status = s390_init_machine_status;
 
@@ -6272,7 +6266,11 @@ save_fpr (rtx base, int offset, int regnum)
 {
   rtx addr;
   addr = gen_rtx_MEM (DFmode, plus_constant (base, offset));
-  set_mem_alias_set (addr, s390_sr_alias_set);
+
+  if (regnum >= 16 && regnum <= (16 + FP_ARG_NUM_REG))
+    set_mem_alias_set (addr, get_varargs_alias_set ());
+  else
+    set_mem_alias_set (addr, get_frame_alias_set ());
 
   return emit_move_insn (addr, gen_rtx_REG (DFmode, regnum));
 }
@@ -6285,7 +6283,7 @@ restore_fpr (rtx base, int offset, int regnum)
 {
   rtx addr;
   addr = gen_rtx_MEM (DFmode, plus_constant (base, offset));
-  set_mem_alias_set (addr, s390_sr_alias_set);
+  set_mem_alias_set (addr, get_frame_alias_set ());
 
   return emit_move_insn (gen_rtx_REG (DFmode, regnum), addr);
 }
@@ -6302,7 +6300,8 @@ save_gprs (rtx base, int offset, int first, int last)
 
   addr = plus_constant (base, offset);
   addr = gen_rtx_MEM (Pmode, addr);
-  set_mem_alias_set (addr, s390_sr_alias_set);
+
+  set_mem_alias_set (addr, get_frame_alias_set ());
 
   /* Special-case single register.  */
   if (first == last)
@@ -6321,6 +6320,14 @@ save_gprs (rtx base, int offset, int first, int last)
 			     gen_rtx_REG (Pmode, first),
 			     GEN_INT (last - first + 1));
 
+  if (first <= 6 && current_function_stdarg)
+    for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
+      {
+	rtx mem = XEXP (XVECEXP (PATTERN (insn), 0, i), 0);
+	
+	if (first + i <= 6)
+	  set_mem_alias_set (mem, get_varargs_alias_set ());
+      }
 
   /* We need to set the FRAME_RELATED flag on all SETs
      inside the store-multiple pattern.
@@ -6377,7 +6384,7 @@ restore_gprs (rtx base, int offset, int first, int last)
 
   addr = plus_constant (base, offset);
   addr = gen_rtx_MEM (Pmode, addr);
-  set_mem_alias_set (addr, s390_sr_alias_set);
+  set_mem_alias_set (addr, get_frame_alias_set ());
 
   /* Special-case single register.  */
   if (first == last)
@@ -6617,7 +6624,7 @@ s390_emit_prologue (void)
 				  cfun_frame_layout.backchain_offset));
 	  else
 	    addr = gen_rtx_MEM (Pmode, stack_pointer_rtx);  
-	  set_mem_alias_set (addr, s390_sr_alias_set);
+	  set_mem_alias_set (addr, get_frame_alias_set ());
 	  insn = emit_insn (gen_move_insn (addr, temp_reg));
 	}
 
@@ -6836,7 +6843,7 @@ s390_emit_epilogue (bool sibcall)
 				    + (i - cfun_frame_layout.first_save_gpr)
 				    * UNITS_PER_WORD);
 	      addr = gen_rtx_MEM (Pmode, addr);
-	      set_mem_alias_set (addr, s390_sr_alias_set);
+	      set_mem_alias_set (addr, get_frame_alias_set ());
 	      emit_move_insn (addr, gen_rtx_REG (Pmode, i));
 	    }
 	}
@@ -6861,7 +6868,7 @@ s390_emit_epilogue (bool sibcall)
 				       - cfun_frame_layout.first_save_gpr)
 				    * UNITS_PER_WORD);
 	      addr = gen_rtx_MEM (Pmode, addr);
-	      set_mem_alias_set (addr, s390_sr_alias_set);
+	      set_mem_alias_set (addr, get_frame_alias_set ());
 	      emit_move_insn (return_reg, addr);
 	    }
 	}
@@ -7399,7 +7406,7 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
   lab_false = create_artificial_label ();
   lab_over = create_artificial_label ();
   addr = create_tmp_var (ptr_type_node, "addr");
-  DECL_POINTER_ALIAS_SET (addr) = s390_sr_alias_set;
+  DECL_POINTER_ALIAS_SET (addr) = get_varargs_alias_set ();
 
   t = fold_convert (TREE_TYPE (reg), size_int (max_reg));
   t = build2 (GT_EXPR, boolean_type_node, reg, t);
