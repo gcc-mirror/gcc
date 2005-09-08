@@ -1,3 +1,15 @@
+2005-09-08  Richard Sandiford  <richard@codesourcery.com>
+
+	PR fortran/19928
+	* trans-array.c (gfc_conv_array_ref): Call gfc_advance_se_ss_chain
+	after handling scalarized references.  Make "indexse" inherit from
+	"se" when handling AR_ELEMENTs.
+	(gfc_walk_variable_expr): Add GFC_SS_SCALAR entries for each
+	substring or scalar reference that follows an array section.
+	* trans-expr.c (gfc_conv_variable): When called from within a
+	scalarization loop, start out with "ref" pointing to the scalarized
+	part of the reference.  Don't call gfc_advance_se_ss_chain here.
+
 2005-09-07  Richard Sandiford  <richard@codesourcery.com>
 
 	PR fortran/23373

@@ -1660,6 +1660,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar)
   if (ar->type != AR_ELEMENT)
     {
       gfc_conv_scalarized_array_ref (se, ar);
+      gfc_advance_se_ss_chain (se);
       return;
     }
 
@@ -1671,7 +1672,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar)
   for (n = 0; n < ar->dimen; n++)
     {
       /* Calculate the index for this dimension.  */
-      gfc_init_se (&indexse, NULL);
+      gfc_init_se (&indexse, se);
       gfc_conv_expr_type (&indexse, ar->start[n], gfc_array_index_type);
       gfc_add_block_to_block (&se->pre, &indexse.pre);
 
@@ -4082,8 +4083,27 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
   int n;
 
   for (ref = expr->ref; ref; ref = ref->next)
+    if (ref->type == REF_ARRAY && ref->u.ar.type != AR_ELEMENT)
+      break;
+
+  for (; ref; ref = ref->next)
     {
-      /* We're only interested in array sections.  */
+      if (ref->type == REF_SUBSTRING)
+	{
+	  newss = gfc_get_ss ();
+	  newss->type = GFC_SS_SCALAR;
+	  newss->expr = ref->u.ss.start;
+	  newss->next = ss;
+	  ss = newss;
+
+	  newss = gfc_get_ss ();
+	  newss->type = GFC_SS_SCALAR;
+	  newss->expr = ref->u.ss.end;
+	  newss->next = ss;
+	  ss = newss;
+	}
+
+      /* We're only interested in array sections from now on.  */
       if (ref->type != REF_ARRAY)
 	continue;
 
@@ -4091,8 +4111,14 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
       switch (ar->type)
 	{
 	case AR_ELEMENT:
-          /* TODO: Take elemental array references out of scalarization
-             loop.  */
+	  for (n = 0; n < ar->dimen; n++)
+	    {
+	      newss = gfc_get_ss ();
+	      newss->type = GFC_SS_SCALAR;
+	      newss->expr = ar->start[n];
+	      newss->next = ss;
+	      ss = newss;
+	    }
 	  break;
 
 	case AR_FULL:
@@ -4115,7 +4141,8 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 	      gcc_assert (ar->end[n] == NULL);
 	      gcc_assert (ar->stride[n] == NULL);
 	    }
-	  return newss;
+	  ss = newss;
+	  break;
 
 	case AR_SECTION:
 	  newss = gfc_get_ss ();
@@ -4182,7 +4209,7 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 	    }
 	  /* We should have at least one non-elemental dimension.  */
 	  gcc_assert (newss->data.info.dimen > 0);
-	  return head;
+	  ss = newss;
 	  break;
 
 	default:

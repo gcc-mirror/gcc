@@ -305,7 +305,9 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
       /* A scalarized term.  We already know the descriptor.  */
       se->expr = se->ss->data.info.descriptor;
       se->string_length = se->ss->string_length;
-      ref = se->ss->data.info.ref;
+      for (ref = se->ss->data.info.ref; ref; ref = ref->next)
+	if (ref->type == REF_ARRAY && ref->u.ar.type != AR_ELEMENT)
+	  break;
     }
   else
     {
@@ -444,8 +446,6 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
       else 
 	se->expr = gfc_build_addr_expr (NULL, se->expr);
     }
-  if (se->ss != NULL)
-    gfc_advance_se_ss_chain (se);
 }
 
 
