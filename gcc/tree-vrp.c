@@ -1341,7 +1341,7 @@ extract_range_from_unary_expr (value_range_t *vr, tree expr)
 	      && tree_int_cst_equal (new_min, vr0.min)
 	      && tree_int_cst_equal (new_max, vr0.max)
 	      && compare_values (new_min, new_max) <= 0
-	      && compare_values (new_min, new_max) >= -2)
+	      && compare_values (new_min, new_max) >= -1)
 	    {
 	      set_value_range (vr, VR_RANGE, new_min, new_max, vr->equiv);
 	      return;

@@ -1,3 +1,8 @@
+2005-09-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* tree-vrp.c (extract_range_from_unary_expr): Do not set the range for
+	the result of a conversion if the new min and max cannot be compared.
+
 2005-09-08  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.c (s390_sr_alias_set): Variable removed.
