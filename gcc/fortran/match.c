@@ -2244,9 +2244,6 @@ gfc_match_common (void)
 
   as = NULL;
 
-  if (gfc_match_eos () == MATCH_YES)
-    goto syntax;
-
   for (;;)
     {
       m = match_common_name (name);
@@ -2276,9 +2273,6 @@ gfc_match_common (void)
 	}
 
       /* Grab the list of symbols.  */
-      if (gfc_match_eos () == MATCH_YES)
-	goto done;
-  
       for (;;)
 	{
 	  m = gfc_match_symbol (&sym, 0);

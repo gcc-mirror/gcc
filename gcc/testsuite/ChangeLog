@@ -1,3 +1,8 @@
+2005-09-08  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/23765
+	* gfortran.dg/common_6.f90: New test.
+
 2005-09-08  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23691
@@ -861,6 +866,10 @@
 2005-06-14  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* gcc.dg/tree-ssa/pr21171.c: Fix.
+
+2005-06-12  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.dg/f2c_7.f90: New test.
 
 2005-06-08  Zdenek Dvorak  <dvorakz@suse.cz>
 
