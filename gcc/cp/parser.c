@@ -16500,27 +16500,45 @@ cp_parser_objc_selector_expression (cp_parser* parser)
   cp_parser_require (parser, CPP_OPEN_PAREN, "`('");
   token = cp_lexer_peek_token (parser->lexer);
 
-  while (cp_parser_objc_selector_p (token->type) || token->type == CPP_COLON)
+  while (cp_parser_objc_selector_p (token->type) || token->type == CPP_COLON
+         || token->type == CPP_SCOPE)
     {
       tree selector = NULL_TREE;
 
-      if (token->type != CPP_COLON)
+      if (token->type != CPP_COLON
+	  || token->type == CPP_SCOPE)
 	selector = cp_parser_objc_selector (parser);
 
-      /* Detect if we have a unary selector.  */
-      if (maybe_unary_selector_p
-	  && cp_lexer_next_token_is_not (parser->lexer, CPP_COLON))
+      if (cp_lexer_next_token_is_not (parser->lexer, CPP_COLON)
+          && cp_lexer_next_token_is_not (parser->lexer, CPP_SCOPE))
 	{
-	  sel_seq = selector;
-	  goto finish_selector;
+	  /* Detect if we have a unary selector.  */
+	  if (maybe_unary_selector_p)
+	    {
+	      sel_seq = selector;
+	      goto finish_selector;
+	    }
+	  else
+	    {
+	      cp_parser_error (parser, "expected %<:%>");
+	    }
 	}
-
       maybe_unary_selector_p = false;
-      cp_parser_require (parser, CPP_COLON, "`:'");
-
-      sel_seq
-	= chainon (sel_seq,
-		   build_tree_list (selector, NULL_TREE));
+      token = cp_lexer_consume_token (parser->lexer);
+      
+      if (token->type == CPP_SCOPE)
+        {
+	  sel_seq
+	    = chainon (sel_seq,
+		       build_tree_list (selector, NULL_TREE));
+	  sel_seq
+	    = chainon (sel_seq,
+		       build_tree_list (NULL_TREE, NULL_TREE));
+	}
+      else
+	sel_seq
+	  = chainon (sel_seq,
+		     build_tree_list (selector, NULL_TREE));
 
       token = cp_lexer_peek_token (parser->lexer);
     }

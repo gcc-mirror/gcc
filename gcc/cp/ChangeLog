@@ -1,3 +1,9 @@
+2005-09-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR obj-c++/16816
+	* parser.c (cp_parser_objc_selector_expression): Treat CPP_SCOPE as
+	two CPP_COLON.
+
 2005-09-07  Richard Guenther  <rguenther@suse.de>
 
 	* cp-gimplify.c (cp_gimplify_expr): Create empty CONSTRUCTOR
