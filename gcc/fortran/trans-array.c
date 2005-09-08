@@ -1233,6 +1233,7 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript)
 	  gfc_conv_expr (&se, ss->expr);
 	  gfc_add_block_to_block (&loop->pre, &se.pre);
 	  gfc_add_block_to_block (&loop->post, &se.post);
+	  ss->string_length = se.string_length;
 	  break;
 
 	case GFC_SS_CONSTRUCTOR:
