@@ -38,13 +38,15 @@ details.  */
 #include <java/lang/String.h>
 #include <jni.h>
 
+char *_Jv_Module_Load_Path = NULL;
+
 #ifdef USE_LTDL
 #include <ltdl.h>
 
 void
 _Jv_SetDLLSearchPath (const char *path)
 {
-  lt_dlsetsearchpath (path);
+  _Jv_Module_Load_Path = strdup (path);
 }
 
 #else

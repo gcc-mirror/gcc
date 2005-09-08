@@ -26,5 +26,8 @@ extern int _Jv_Properties_Count;
 // Properties taken from the user's environment.
 extern property_pair *_Jv_Environment_Properties;
 
+// Module load path.
+extern char *_Jv_Module_Load_Path;
+
 #endif
 

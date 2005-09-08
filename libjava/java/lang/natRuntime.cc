@@ -242,6 +242,8 @@ java::lang::Runtime::init (void)
 {
 #ifdef USE_LTDL
   lt_dlinit ();
+  // Set module load path.
+  lt_dlsetsearchpath (_Jv_Module_Load_Path);
   // Make sure self is opened.
   lt_dlopen (NULL);
 #endif
