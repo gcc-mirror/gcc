@@ -1,3 +1,8 @@
+2005-09-08  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/23691
+	* g++.dg/template/static16.C: New test.
+
 2005-09-08  Richard Guenther  <rguenther@suse.de>
 	Zdenek Dvorak  <rakdver@gcc.gnu.org>
 
