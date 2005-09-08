@@ -1,5 +1,12 @@
 2005-09-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR objc/20574
+	PR objc/19324
+	* c-parser.c (c_parser_objc_method_definition): If the next
+	token is not "{", error out and don't start the function.
+
+2005-09-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	* tree-vrp.c (extract_range_from_expr): Move the check for non
 	nullness after the check for gimple invariant.
 

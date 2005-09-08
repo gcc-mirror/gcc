@@ -1,3 +1,9 @@
+2005-09-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR objc/20574
+	PR objc/19324
+	* objc.dg/error-1.m: New test.
+
 2005-09-07  Richard Sandiford  <richard@codesourcery.com>
 
 	PR fortran/23373
