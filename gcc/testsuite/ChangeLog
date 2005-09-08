@@ -1,3 +1,7 @@
+2005-09-07  James E Wilson  <wilson@specifix.com>
+
+	* gcc.dg/intmax_t-1.c: Disable for xscale*-*-elf*.
+
 2005-09-07  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* gfortran.dg/parameter+save.f90:  Rename to
