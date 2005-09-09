@@ -1,3 +1,38 @@
+2005-09-09  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	gfortran.texi:  Document IOSTAT= specifier.
+
+2005-09-09  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	* gfortran.h:  Add iomsg to gfc_open, gfc_close, gfc_filepos,
+	gfc_inquire and gfc_dt.
+	* dump-parse-tree.c (gfc_show_code_node):  Add iomsg
+	for open, close, file positioning, inquire and namelist.
+	* io.c (io_tag):  Add tag_iomsg.
+	(resolve_tag): Add standards warning for iomsg.
+	(match_open_element):  Add iomsg.
+	(gfc_free_open):  Add iomsg.
+	(gfc_resolve_open):  Add iomsg.
+	(gfc_free_close):  Add iomsg.
+	(match_close_element):  Add iomsg.
+	(gfc_resolve_close):  Add iomsg.
+	(gfc_free_filepos):  Add iomsg.
+	(match_file_element):  Add iomsg.
+	(gfc_resolve_filepos):  Add iostat and iomsg.
+	(match-dt_element):  Add iomsg.
+	(gfc_free_dt):  Add iomsg.
+	(gfc_resolve_dt):  Add iomsg.
+	(gfc_free_inquire):  Add iomsg.
+	(match_inquire_element):  Add iomsg.
+	(gfc_resolve_inquire):  Add iomsg.
+	* trans_io.c:  Add ioparm_iomsg and ioparm_iomsg_len.
+	(gfc_build_io_library_fndecls):  Add iomsg as last field.
+	(gfc_trans_open):  Add iomsg.
+	(gfc_trans_close):  Add iomsg.
+	(build_fileos):  Call set_string for iomsg.
+	(gfc_trans_inquire):  Add iomsg.
+	(build_dt):  Add iomsg.
+
 2005-09-09  Richard Sandiford  <richard@codesourcery.com>
 
 	* match.h (gfc_match_equiv_variable): Declare.
