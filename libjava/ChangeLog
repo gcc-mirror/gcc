@@ -1,3 +1,9 @@
+2005-09-08  Andrew Haley  <aph@redhat.com>
+
+	PR java/22084
+	* include/i386-signal.h (HANDLE_DIVIDE_OVERFLOW): Bump IP by 1 if
+	R/M field in instruction is 100.
+
 2005-09-08  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	PR libgcj/23761
