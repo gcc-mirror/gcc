@@ -1,3 +1,28 @@
+2005-09-08  Richard Henderson  <rth@redhat.com>
+
+	PR debug/23190
+	* toplev.c (wrapup_global_declaration_1): Split out ...
+	(wrapup_global_declaration_2): ... from ...
+	(wrapup_global_declarations): ... here.  Return bool.
+	(check_global_declaration_1): Split out ...
+	(check_global_declarations): from here.
+	(emit_debug_global_declarations): New.
+	* toplev.h (wrapup_global_declaration_1, wrapup_global_declaration_2,
+	check_global_declaration_1, emit_debug_global_declarations): Declare.
+	* c-decl.c (c_write_global_declarations_1): Don't create a vector
+	of decls.  Call wrapup_global_declaration_1,
+	wrapup_global_declaration_2, check_global_declaration_1 directly.
+	(c_write_global_declarations_2): New.
+	(ext_block): New.
+	(c_write_global_declarations): Call c_write_global_declarations_2.
+	* langhooks.c (write_global_declarations): Call
+	emit_debug_global_declarations.
+
+	* cgraphunit.c (cgraph_varpool_remove_unreferenced_decls): Don't
+	remove decls that have DECL_RTL_SET_P.
+	* passes.c (rest_of_decl_compilation): Invoke
+	cgraph_varpool_finalize_decl for all but functions.
+
 2005-09-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* tree-vrp.c (extract_range_from_unary_expr): Do not set the range for

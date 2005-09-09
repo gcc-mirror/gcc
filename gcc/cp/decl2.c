@@ -3106,8 +3106,12 @@ cp_finish_file (void)
      etc., and emit debugging information.  */
   walk_namespaces (wrapup_globals_for_namespace, /*data=*/&reconsider);
   if (VEC_length (tree, pending_statics) != 0)
-    check_global_declarations (VEC_address (tree, pending_statics),
-			       VEC_length (tree, pending_statics));
+    {
+      check_global_declarations (VEC_address (tree, pending_statics),
+			         VEC_length (tree, pending_statics));
+      emit_debug_global_declarations (VEC_address (tree, pending_statics),
+				      VEC_length (tree, pending_statics));
+    }
 
   /* Generate hidden aliases for Java.  */
   build_java_method_aliases ();

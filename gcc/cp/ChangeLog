@@ -1,3 +1,10 @@
+2005-09-08  Richard Henderson  <rth@redhat.com>
+
+	PR debug/23190
+	* decl.c (wrapup_globals_for_namespace): Call
+	emit_debug_global_declarations.
+	* decl2.c (cp_finish_file): Likewise.
+
 2005-09-08  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23691
