@@ -1,5 +1,11 @@
 2005-09-09  Sebastian Pop  <pop@cri.ensmp.fr>
 
+	* tree-chrec.c (evolution_function_is_invariant_rec_p): Use 
+	CHREC_LEFT and CHREC_RIGHT for accessing chrec components instead
+	of wrongly accessing operands.
+
+2005-09-09  Sebastian Pop  <pop@cri.ensmp.fr>
+
 	* Makefile.in (tree-chrec.o): Depends on SCEV_H.
 	* tree-chrec.c: Include tree-scalar-evolution.h.
 	(chrec_convert): Instantiate the base and step before calling
