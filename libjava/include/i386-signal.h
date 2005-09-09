@@ -64,18 +64,25 @@ do									\
       if (_regs->eax == 0x80000000					\
 	  && ((_modrm >> 3) & 7) == 7) /* Signed divide */		\
 	{								\
+	  unsigned char _rm = _modrm & 7;				\
 	  _regs->edx = 0; /* the remainder is zero */			\
 	  switch (_modrm >> 6)						\
 	    {								\
-	    case 0:							\
-	      if ((_modrm & 7) == 5)					\
-		_eip += 4;						\
+	    case 0:  /* register indirect */				\
+	      if (_rm == 5)   /* 32-bit displacement */			\
+		_eip += 4;   						\
+	      if (_rm == 4)  /* A SIB byte follows the ModR/M byte */	\
+		_eip += 1;						\
 	      break;							\
-	    case 1:							\
+	    case 1:  /* register indirect + 8-bit displacement */	\
 	      _eip += 1;						\
+	      if (_rm == 4)  /* A SIB byte follows the ModR/M byte */	\
+		_eip += 1;						\
 	      break;							\
-	    case 2:							\
+	    case 2:  /* register indirect + 32-bit displacement */	\
 	      _eip += 4;						\
+	      if (_rm == 4)  /* A SIB byte follows the ModR/M byte */	\
+		_eip += 1;						\
 	      break;							\
 	    case 3:							\
 	      break;							\
