@@ -1,3 +1,11 @@
+2005-09-09  Richard Sandiford  <richard@codesourcery.com>
+
+	PR fortran/12840
+	* runtime/memory.c (internal_malloc_size): Return a null pointer
+	if the size is zero.
+	(internal_free): Do nothing if the pointer is null.
+	(internal_realloc_size, internal_realloc, internal_realloc64): New.
+
 2005-09-07  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/23262

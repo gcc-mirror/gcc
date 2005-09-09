@@ -73,6 +73,8 @@ tree gfc_static_ctors;
 
 tree gfor_fndecl_internal_malloc;
 tree gfor_fndecl_internal_malloc64;
+tree gfor_fndecl_internal_realloc;
+tree gfor_fndecl_internal_realloc64;
 tree gfor_fndecl_internal_free;
 tree gfor_fndecl_allocate;
 tree gfor_fndecl_allocate64;
@@ -1890,6 +1892,18 @@ gfc_build_builtin_function_decls (void)
 				     (PREFIX("internal_malloc64")),
 				     pvoid_type_node, 1, gfc_int8_type_node);
   DECL_IS_MALLOC (gfor_fndecl_internal_malloc64) = 1;
+
+  gfor_fndecl_internal_realloc =
+    gfc_build_library_function_decl (get_identifier
+				     (PREFIX("internal_realloc")),
+				     pvoid_type_node, 2, pvoid_type_node,
+				     gfc_int4_type_node);
+
+  gfor_fndecl_internal_realloc64 =
+    gfc_build_library_function_decl (get_identifier
+				     (PREFIX("internal_realloc64")),
+				     pvoid_type_node, 2, pvoid_type_node,
+				     gfc_int8_type_node);
 
   gfor_fndecl_internal_free =
     gfc_build_library_function_decl (get_identifier (PREFIX("internal_free")),

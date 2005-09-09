@@ -94,6 +94,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "dependency.h"
 
 static gfc_ss *gfc_walk_subexpr (gfc_ss *, gfc_expr *);
+static bool gfc_get_array_constructor_size (mpz_t *, gfc_constructor *);
 
 /* The contents of this structure aren't actually used, just the address.  */
 static gfc_ss gfc_ss_terminator_var;
@@ -435,11 +436,14 @@ gfc_trans_static_array_pointer (gfc_symbol * sym)
 /* Generate code to allocate an array temporary, or create a variable to
    hold the data.  If size is NULL zero the descriptor so that so that the
    callee will allocate the array.  Also generates code to free the array
-   afterwards.  */
+   afterwards.
+
+   DYNAMIC is true if the caller may want to extend the array later
+   using realloc.  This prevents us from putting the array on the stack.  */
 
 static void
 gfc_trans_allocate_array_storage (gfc_loopinfo * loop, gfc_ss_info * info,
-				  tree size, tree nelem)
+				  tree size, tree nelem, bool dynamic)
 {
   tree tmp;
   tree args;
@@ -448,7 +452,7 @@ gfc_trans_allocate_array_storage (gfc_loopinfo * loop, gfc_ss_info * info,
 
   desc = info->descriptor;
   info->offset = gfc_index_zero_node;
-  if (size == NULL_TREE)
+  if (size == NULL_TREE || integer_zerop (size))
     {
       /* A callee allocated array.  */
       gfc_conv_descriptor_data_set (&loop->pre, desc, null_pointer_node);
@@ -457,7 +461,7 @@ gfc_trans_allocate_array_storage (gfc_loopinfo * loop, gfc_ss_info * info,
   else
     {
       /* Allocate the temporary.  */
-      onstack = gfc_can_put_var_on_stack (size);
+      onstack = !dynamic && gfc_can_put_var_on_stack (size);
 
       if (onstack)
 	{
@@ -512,11 +516,13 @@ gfc_trans_allocate_array_storage (gfc_loopinfo * loop, gfc_ss_info * info,
    functions returning arrays.  Adjusts the loop variables to be zero-based,
    and calculates the loop bounds for callee allocated arrays.
    Also fills in the descriptor, data and offset fields of info if known.
-   Returns the size of the array, or NULL for a callee allocated array.  */
+   Returns the size of the array, or NULL for a callee allocated array.
+
+   DYNAMIC is as for gfc_trans_allocate_array_storage.  */
 
 tree
 gfc_trans_allocate_temp_array (gfc_loopinfo * loop, gfc_ss_info * info,
-			       tree eltype)
+			       tree eltype, bool dynamic)
 {
   tree type;
   tree desc;
@@ -611,12 +617,155 @@ gfc_trans_allocate_temp_array (gfc_loopinfo * loop, gfc_ss_info * info,
     size = fold_build2 (MULT_EXPR, gfc_array_index_type, size,
 			TYPE_SIZE_UNIT (gfc_get_element_type (type)));
 
-  gfc_trans_allocate_array_storage (loop, info, size, nelem);
+  gfc_trans_allocate_array_storage (loop, info, size, nelem, dynamic);
 
   if (info->dimen > loop->temp_dim)
     loop->temp_dim = info->dimen;
 
   return size;
+}
+
+
+/* Return the number of iterations in a loop that starts at START,
+   ends at END, and has step STEP.  */
+
+static tree
+gfc_get_iteration_count (tree start, tree end, tree step)
+{
+  tree tmp;
+  tree type;
+
+  type = TREE_TYPE (step);
+  tmp = fold_build2 (MINUS_EXPR, type, end, start);
+  tmp = fold_build2 (FLOOR_DIV_EXPR, type, tmp, step);
+  tmp = fold_build2 (PLUS_EXPR, type, tmp, build_int_cst (type, 1));
+  tmp = fold_build2 (MAX_EXPR, type, tmp, build_int_cst (type, 0));
+  return fold_convert (gfc_array_index_type, tmp);
+}
+
+
+/* Extend the data in array DESC by EXTRA elements.  */
+
+static void
+gfc_grow_array (stmtblock_t * pblock, tree desc, tree extra)
+{
+  tree args;
+  tree tmp;
+  tree size;
+  tree ubound;
+
+  if (integer_zerop (extra))
+    return;
+
+  ubound = gfc_conv_descriptor_ubound (desc, gfc_rank_cst[0]);
+
+  /* Add EXTRA to the upper bound.  */
+  tmp = build2 (PLUS_EXPR, gfc_array_index_type, ubound, extra);
+  gfc_add_modify_expr (pblock, ubound, tmp);
+
+  /* Get the value of the current data pointer.  */
+  tmp = gfc_conv_descriptor_data_get (desc);
+  args = gfc_chainon_list (NULL_TREE, tmp);
+
+  /* Calculate the new array size.  */
+  size = TYPE_SIZE_UNIT (gfc_get_element_type (TREE_TYPE (desc)));
+  tmp = build2 (PLUS_EXPR, gfc_array_index_type, ubound, gfc_index_one_node);
+  tmp = build2 (MULT_EXPR, gfc_array_index_type, tmp, size);
+  args = gfc_chainon_list (args, tmp);
+
+  /* Pick the appropriate realloc function.  */
+  if (gfc_index_integer_kind == 4)
+    tmp = gfor_fndecl_internal_realloc;
+  else if (gfc_index_integer_kind == 8)
+    tmp = gfor_fndecl_internal_realloc64;
+  else
+    gcc_unreachable ();
+
+  /* Set the new data pointer.  */
+  tmp = gfc_build_function_call (tmp, args);
+  gfc_conv_descriptor_data_set (pblock, desc, tmp);
+}
+
+
+/* Return true if the bounds of iterator I can only be determined
+   at run time.  */
+
+static inline bool
+gfc_iterator_has_dynamic_bounds (gfc_iterator * i)
+{
+  return (i->start->expr_type != EXPR_CONSTANT
+	  || i->end->expr_type != EXPR_CONSTANT
+	  || i->step->expr_type != EXPR_CONSTANT);
+}
+
+
+/* Split the size of constructor element EXPR into the sum of two terms,
+   one of which can be determined at compile time and one of which must
+   be calculated at run time.  Set *SIZE to the former and return true
+   if the latter might be nonzero.  */
+
+static bool
+gfc_get_array_constructor_element_size (mpz_t * size, gfc_expr * expr)
+{
+  if (expr->expr_type == EXPR_ARRAY)
+    return gfc_get_array_constructor_size (size, expr->value.constructor);
+  else if (expr->rank > 0)
+    {
+      /* Calculate everything at run time.  */
+      mpz_set_ui (*size, 0);
+      return true;
+    }
+  else
+    {
+      /* A single element.  */
+      mpz_set_ui (*size, 1);
+      return false;
+    }
+}
+
+
+/* Like gfc_get_array_constructor_element_size, but applied to the whole
+   of array constructor C.  */
+
+static bool
+gfc_get_array_constructor_size (mpz_t * size, gfc_constructor * c)
+{
+  gfc_iterator *i;
+  mpz_t val;
+  mpz_t len;
+  bool dynamic;
+
+  mpz_set_ui (*size, 0);
+  mpz_init (len);
+  mpz_init (val);
+
+  dynamic = false;
+  for (; c; c = c->next)
+    {
+      i = c->iterator;
+      if (i && gfc_iterator_has_dynamic_bounds (i))
+	dynamic = true;
+      else
+	{
+	  dynamic |= gfc_get_array_constructor_element_size (&len, c->expr);
+	  if (i)
+	    {
+	      /* Multiply the static part of the element size by the
+		 number of iterations.  */
+	      mpz_sub (val, i->end->value.integer, i->start->value.integer);
+	      mpz_fdiv_q (val, val, i->step->value.integer);
+	      mpz_add_ui (val, val, 1);
+	      if (mpz_sgn (val) > 0)
+		mpz_mul (len, len, val);
+	      else
+		mpz_set_ui (len, 0);
+	    }
+	  mpz_add (*size, *size, len);
+	}
+    }
+  mpz_clear (len);
+  mpz_clear (val);
+  return dynamic;
 }
 
 
@@ -638,7 +787,7 @@ gfc_put_offset_into_var (stmtblock_t * pblock, tree * poffset,
 /* Assign an element of an array constructor.  */
 
 static void
-gfc_trans_array_ctor_element (stmtblock_t * pblock, tree pointer,
+gfc_trans_array_ctor_element (stmtblock_t * pblock, tree desc,
 			      tree offset, gfc_se * se, gfc_expr * expr)
 {
   tree tmp;
@@ -647,7 +796,7 @@ gfc_trans_array_ctor_element (stmtblock_t * pblock, tree pointer,
   gfc_conv_expr (se, expr);
 
   /* Store the value.  */
-  tmp = gfc_build_indirect_ref (pointer);
+  tmp = gfc_build_indirect_ref (gfc_conv_descriptor_data_get (desc));
   tmp = gfc_build_array_ref (tmp, offset);
   if (expr->ts.type == BT_CHARACTER)
     {
@@ -684,19 +833,23 @@ gfc_trans_array_ctor_element (stmtblock_t * pblock, tree pointer,
 }
 
 
-/* Add the contents of an array to the constructor.  */
+/* Add the contents of an array to the constructor.  DYNAMIC is as for
+   gfc_trans_array_constructor_value.  */
 
 static void
 gfc_trans_array_constructor_subarray (stmtblock_t * pblock,
 				      tree type ATTRIBUTE_UNUSED,
-				      tree pointer, gfc_expr * expr,
-				      tree * poffset, tree * offsetvar)
+				      tree desc, gfc_expr * expr,
+				      tree * poffset, tree * offsetvar,
+				      bool dynamic)
 {
   gfc_se se;
   gfc_ss *ss;
   gfc_loopinfo loop;
   stmtblock_t body;
   tree tmp;
+  tree size;
+  int n;
 
   /* We need this to be a variable so we can increment it.  */
   gfc_put_offset_into_var (pblock, poffset, offsetvar);
@@ -715,6 +868,22 @@ gfc_trans_array_constructor_subarray (stmtblock_t * pblock,
   gfc_conv_ss_startstride (&loop);
   gfc_conv_loop_setup (&loop);
 
+  /* Make sure the constructed array has room for the new data.  */
+  if (dynamic)
+    {
+      /* Set SIZE to the total number of elements in the subarray.  */
+      size = gfc_index_one_node;
+      for (n = 0; n < loop.dimen; n++)
+	{
+	  tmp = gfc_get_iteration_count (loop.from[n], loop.to[n],
+					 gfc_index_one_node);
+	  size = fold_build2 (MULT_EXPR, gfc_array_index_type, size, tmp);
+	}
+
+      /* Grow the constructed array by SIZE elements.  */
+      gfc_grow_array (&loop.pre, desc, size);
+    }
+
   /* Make the loop body.  */
   gfc_mark_ss_chain_used (ss, 1);
   gfc_start_scalarized_body (&loop, &body);
@@ -724,7 +893,7 @@ gfc_trans_array_constructor_subarray (stmtblock_t * pblock,
   if (expr->ts.type == BT_CHARACTER)
     gfc_todo_error ("character arrays in constructors");
 
-  gfc_trans_array_ctor_element (&body, pointer, *poffset, &se, expr);
+  gfc_trans_array_ctor_element (&body, desc, *poffset, &se, expr);
   gcc_assert (se.ss == gfc_ss_terminator);
 
   /* Increment the offset.  */
@@ -741,17 +910,23 @@ gfc_trans_array_constructor_subarray (stmtblock_t * pblock,
 }
 
 
-/* Assign the values to the elements of an array constructor.  */
+/* Assign the values to the elements of an array constructor.  DYNAMIC
+   is true if descriptor DESC only contains enough data for the static
+   size calculated by gfc_get_array_constructor_size.  When true, memory
+   for the dynamic parts must be allocated using realloc.  */
 
 static void
 gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
-				   tree pointer, gfc_constructor * c,
-				   tree * poffset, tree * offsetvar)
+				   tree desc, gfc_constructor * c,
+				   tree * poffset, tree * offsetvar,
+				   bool dynamic)
 {
   tree tmp;
   stmtblock_t body;
   gfc_se se;
+  mpz_t size;
 
+  mpz_init (size);
   for (; c; c = c->next)
     {
       /* If this is an iterator or an array, the offset must be a variable.  */
@@ -763,14 +938,14 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
       if (c->expr->expr_type == EXPR_ARRAY)
 	{
 	  /* Array constructors can be nested.  */
-	  gfc_trans_array_constructor_value (&body, type, pointer,
+	  gfc_trans_array_constructor_value (&body, type, desc,
 					     c->expr->value.constructor,
-					     poffset, offsetvar);
+					     poffset, offsetvar, dynamic);
 	}
       else if (c->expr->rank > 0)
 	{
-	  gfc_trans_array_constructor_subarray (&body, type, pointer,
-						c->expr, poffset, offsetvar);
+	  gfc_trans_array_constructor_subarray (&body, type, desc, c->expr,
+						poffset, offsetvar, dynamic);
 	}
       else
 	{
@@ -790,8 +965,8 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	    {
 	      /* Scalar values.  */
 	      gfc_init_se (&se, NULL);
-	      gfc_trans_array_ctor_element (&body, pointer, *poffset, &se,
-					    c->expr);
+	      gfc_trans_array_ctor_element (&body, desc, *poffset,
+					    &se, c->expr);
 
 	      *poffset = fold_build2 (PLUS_EXPR, gfc_array_index_type,
 				      *poffset, gfc_index_one_node);
@@ -813,13 +988,12 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 		  gfc_init_se (&se, NULL);
 		  gfc_conv_constant (&se, p->expr);
 		  if (p->expr->ts.type == BT_CHARACTER
-		      && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE
-			  (TREE_TYPE (pointer)))))
+		      && POINTER_TYPE_P (type))
 		    {
 		      /* For constant character array constructors we build
 			 an array of pointers.  */
 		      se.expr = gfc_build_addr_expr (pchar_type_node,
-						      se.expr);
+						     se.expr);
 		    }
 		    
 		  list = tree_cons (NULL_TREE, se.expr, list);
@@ -846,7 +1020,8 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	      init = tmp;
 
 	      /* Use BUILTIN_MEMCPY to assign the values.  */
-	      tmp = gfc_build_indirect_ref (pointer);
+	      tmp = gfc_conv_descriptor_data_get (desc);
+	      tmp = gfc_build_indirect_ref (tmp);
 	      tmp = gfc_build_array_ref (tmp, *poffset);
 	      tmp = gfc_build_addr_expr (NULL, tmp);
 	      init = gfc_build_addr_expr (NULL, init);
@@ -887,6 +1062,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	  tree loopvar;
 	  tree exit_label;
 	  tree loopbody;
+	  tree tmp2;
 
 	  loopbody = gfc_finish_block (&body);
 
@@ -910,6 +1086,23 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	  gfc_conv_expr_val (&se, c->iterator->step);
 	  gfc_add_block_to_block (pblock, &se.pre);
 	  step = gfc_evaluate_now (se.expr, pblock);
+
+	  /* If this array expands dynamically, and the number of iterations
+	     is not constant, we won't have allocated space for the static
+	     part of C->EXPR's size.  Do that now.  */
+	  if (dynamic && gfc_iterator_has_dynamic_bounds (c->iterator))
+	    {
+	      /* Get the number of iterations.  */
+	      tmp = gfc_get_iteration_count (loopvar, end, step);
+
+	      /* Get the static part of C->EXPR's size.  */
+	      gfc_get_array_constructor_element_size (&size, c->expr);
+	      tmp2 = gfc_conv_mpz_to_tree (size, gfc_index_integer_kind);
+
+	      /* Grow the array by TMP * TMP2 elements.  */
+	      tmp = fold_build2 (MULT_EXPR, gfc_array_index_type, tmp, tmp2);
+	      gfc_grow_array (pblock, desc, tmp);
+	    }
 
 	  /* Generate the loop body.  */
 	  exit_label = gfc_build_label_decl (NULL_TREE);
@@ -947,73 +1140,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	  gfc_add_expr_to_block (pblock, tmp);
 	}
     }
-}
-
-
-/* Get the size of an expression.  Returns -1 if the size isn't constant.
-   Implied do loops with non-constant bounds are tricky because we must only
-   evaluate the bounds once.  */
-
-static void
-gfc_get_array_cons_size (mpz_t * size, gfc_constructor * c)
-{
-  gfc_iterator *i;
-  mpz_t val;
-  mpz_t len;
-
-  mpz_set_ui (*size, 0);
-  mpz_init (len);
-  mpz_init (val);
-
-  for (; c; c = c->next)
-    {
-      if (c->expr->expr_type == EXPR_ARRAY)
-	{
-          /* A nested array constructor.  */
-	  gfc_get_array_cons_size (&len, c->expr->value.constructor);
-	  if (mpz_sgn (len) < 0)
-	    {
-	      mpz_set (*size, len);
-	      mpz_clear (len);
-	      mpz_clear (val);
-	      return;
-	    }
-	}
-      else
-	{
-	  if (c->expr->rank > 0)
-	    {
-	      mpz_set_si (*size, -1);
-	      mpz_clear (len);
-	      mpz_clear (val);
-	      return;
-	    }
-	  mpz_set_ui (len, 1);
-	}
-
-      if (c->iterator)
-	{
-	  i = c->iterator;
-
-	  if (i->start->expr_type != EXPR_CONSTANT
-	      || i->end->expr_type != EXPR_CONSTANT
-	      || i->step->expr_type != EXPR_CONSTANT)
-	    {
-	      mpz_set_si (*size, -1);
-	      mpz_clear (len);
-	      mpz_clear (val);
-	      return;
-	    }
-
-	  mpz_add (val, i->end->value.integer, i->start->value.integer);
-	  mpz_tdiv_q (val, val, i->step->value.integer);
-	  mpz_add_ui (val, val, 1);
-	  mpz_mul (len, len, val);
-	}
-      mpz_add (*size, *size, len);
-    }
-  mpz_clear (len);
-  mpz_clear (val);
+  mpz_clear (size);
 }
 
 
@@ -1104,19 +1231,20 @@ get_array_ctor_strlen (gfc_constructor * c, tree * len)
 static void
 gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
 {
+  gfc_constructor *c;
   tree offset;
   tree offsetvar;
   tree desc;
-  tree size;
   tree type;
   bool const_string;
+  bool dynamic;
 
   ss->data.info.dimen = loop->dimen;
 
+  c = ss->expr->value.constructor;
   if (ss->expr->ts.type == BT_CHARACTER)
     {
-      const_string = get_array_ctor_strlen (ss->expr->value.constructor,
-					    &ss->string_length);
+      const_string = get_array_ctor_strlen (c, &ss->string_length);
       if (!ss->string_length)
 	gfc_todo_error ("complex character array constructors");
 
@@ -1130,16 +1258,39 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
       type = gfc_typenode_for_spec (&ss->expr->ts);
     }
 
-  size = gfc_trans_allocate_temp_array (loop, &ss->data.info, type);
+  /* See if the constructor determines the loop bounds.  */
+  dynamic = false;
+  if (loop->to[0] == NULL_TREE)
+    {
+      mpz_t size;
+
+      /* We should have a 1-dimensional, zero-based loop.  */
+      gcc_assert (loop->dimen == 1);
+      gcc_assert (integer_zerop (loop->from[0]));
+
+      /* Split the constructor size into a static part and a dynamic part.
+	 Allocate the static size up-front and record whether the dynamic
+	 size might be nonzero.  */
+      mpz_init (size);
+      dynamic = gfc_get_array_constructor_size (&size, c);
+      mpz_sub_ui (size, size, 1);
+      loop->to[0] = gfc_conv_mpz_to_tree (size, gfc_index_integer_kind);
+      mpz_clear (size);
+    }
+
+  gfc_trans_allocate_temp_array (loop, &ss->data.info, type, dynamic);
 
   desc = ss->data.info.descriptor;
   offset = gfc_index_zero_node;
   offsetvar = gfc_create_var_np (gfc_array_index_type, "offset");
   TREE_USED (offsetvar) = 0;
-  gfc_trans_array_constructor_value (&loop->pre, type,
-				     ss->data.info.data,
-				     ss->expr->value.constructor, &offset,
-				     &offsetvar);
+  gfc_trans_array_constructor_value (&loop->pre, type, desc, c,
+				     &offset, &offsetvar, dynamic);
+
+  /* If the array grows dynamically, the upper bound of the loop variable
+     is determined by the array's final upper bound.  */
+  if (dynamic)
+    loop->to[0] = gfc_conv_descriptor_ubound (desc, gfc_rank_cst[0]);
 
   if (TREE_USED (offsetvar))
     pushdecl (offsetvar);
@@ -2411,6 +2562,8 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
   tree tmp;
   tree len;
   gfc_ss *loopspec[GFC_MAX_DIMENSIONS];
+  bool dynamic[GFC_MAX_DIMENSIONS];
+  gfc_constructor *c;
   mpz_t *cshape;
   mpz_t i;
 
@@ -2418,6 +2571,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
   for (n = 0; n < loop->dimen; n++)
     {
       loopspec[n] = NULL;
+      dynamic[n] = false;
       /* We use one SS term, and use that to determine the bounds of the
          loop for this dimension.  We try to pick the simplest term.  */
       for (ss = loop->ss; ss != gfc_ss_terminator; ss = ss->loop_chain)
@@ -2435,17 +2589,15 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 		 Higher rank constructors will either have known shape,
 		 or still be wrapped in a call to reshape.  */
 	      gcc_assert (loop->dimen == 1);
-	      /* Try to figure out the size of the constructor.  */
-	      /* TODO: avoid this by making the frontend set the shape.  */
-	      gfc_get_array_cons_size (&i, ss->expr->value.constructor);
-	      /* A negative value means we failed.  */
-	      if (mpz_sgn (i) > 0)
-		{
-		  mpz_sub_ui (i, i, 1);
-		  loop->to[n] =
-		    gfc_conv_mpz_to_tree (i, gfc_index_integer_kind);
-		  loopspec[n] = ss;
-		}
+
+	      /* Always prefer to use the constructor bounds if the size
+		 can be determined at compile time.  Prefer not to otherwise,
+		 since the general case involves realloc, and it's better to
+		 avoid that overhead if possible.  */
+	      c = ss->expr->value.constructor;
+	      dynamic[n] = gfc_get_array_constructor_size (&i, c);
+	      if (!dynamic[n] || !loopspec[n])
+		loopspec[n] = ss;
 	      continue;
 	    }
 
@@ -2466,31 +2618,30 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 	    specinfo = NULL;
 	  info = &ss->data.info;
 
+	  if (!specinfo)
+	    loopspec[n] = ss;
 	  /* Criteria for choosing a loop specifier (most important first):
+	     doesn't need realloc
 	     stride of one
 	     known stride
 	     known lower bound
 	     known upper bound
 	   */
-	  if (!specinfo)
+	  else if (loopspec[n]->type == GFC_SS_CONSTRUCTOR && dynamic[n])
 	    loopspec[n] = ss;
-	  /* TODO: Is != constructor correct?  */
-	  else if (loopspec[n]->type != GFC_SS_CONSTRUCTOR)
-	    {
-	      if (integer_onep (info->stride[n])
-		  && !integer_onep (specinfo->stride[n]))
-		loopspec[n] = ss;
-	      else if (INTEGER_CST_P (info->stride[n])
-		       && !INTEGER_CST_P (specinfo->stride[n]))
-		loopspec[n] = ss;
-	      else if (INTEGER_CST_P (info->start[n])
-		       && !INTEGER_CST_P (specinfo->start[n]))
-		loopspec[n] = ss;
-	      /* We don't work out the upper bound.
-	         else if (INTEGER_CST_P (info->finish[n])
-	         && ! INTEGER_CST_P (specinfo->finish[n]))
-	         loopspec[n] = ss; */
-	    }
+	  else if (integer_onep (info->stride[n])
+		   && !integer_onep (specinfo->stride[n]))
+	    loopspec[n] = ss;
+	  else if (INTEGER_CST_P (info->stride[n])
+		   && !INTEGER_CST_P (specinfo->stride[n]))
+	    loopspec[n] = ss;
+	  else if (INTEGER_CST_P (info->start[n])
+		   && !INTEGER_CST_P (specinfo->start[n]))
+	    loopspec[n] = ss;
+	  /* We don't work out the upper bound.
+	     else if (INTEGER_CST_P (info->finish[n])
+	     && ! INTEGER_CST_P (specinfo->finish[n]))
+	     loopspec[n] = ss; */
 	}
 
       if (!loopspec[n])
@@ -2520,8 +2671,9 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 	  switch (loopspec[n]->type)
 	    {
 	    case GFC_SS_CONSTRUCTOR:
-	      gcc_assert (info->dimen == 1);
-      	      gcc_assert (loop->to[n]);
+	      /* The upper bound is calculated when we expand the
+		 constructor.  */
+	      gcc_assert (loop->to[n] == NULL_TREE);
 	      break;
 
 	    case GFC_SS_SECTION:
@@ -2575,7 +2727,8 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
       memset (&loop->temp_ss->data.info, 0, sizeof (gfc_ss_info));
       loop->temp_ss->type = GFC_SS_SECTION;
       loop->temp_ss->data.info.dimen = n;
-      gfc_trans_allocate_temp_array (loop, &loop->temp_ss->data.info, tmp);
+      gfc_trans_allocate_temp_array (loop, &loop->temp_ss->data.info,
+				     tmp, false);
     }
 
   for (n = 0; n < loop->temp_dim; n++)

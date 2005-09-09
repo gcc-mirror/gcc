@@ -141,6 +141,9 @@ internal_malloc_size (size_t size)
 {
   malloc_t *newmem;
 
+  if (size == 0)
+    return 0;
+
   newmem = malloc_with_header (size);
 
   if (!newmem)
@@ -195,7 +198,7 @@ internal_free (void *mem)
   malloc_t *m;
 
   if (!mem)
-    runtime_error ("Internal: Possible double free of temporary.");
+    return;
 
   m = DATA_HEADER (mem);
 
@@ -212,6 +215,67 @@ internal_free (void *mem)
   free (m);
 }
 iexport(internal_free);
+
+/* Reallocate internal memory MEM so it has SIZE bytes of data.
+   Allocate a new block if MEM is zero, and free the block if
+   SIZE is 0.  */
+
+static void *
+internal_realloc_size (void *mem, size_t size)
+{
+  malloc_t *m;
+
+  if (size == 0)
+    {
+      if (mem)
+	internal_free (mem);
+      return 0;
+    }
+
+  if (mem == 0)
+    return internal_malloc (size);
+
+  m = DATA_HEADER (mem);
+  if (m->magic != GFC_MALLOC_MAGIC)
+    runtime_error ("Internal: No magic memblock marker.  "
+		   "Possible memory corruption");
+
+  m = realloc (m, size + HEADER_SIZE);
+  if (!m)
+    os_error ("Out of memory.");
+
+  m->prev->next = m;
+  m->next->prev = m;
+  return DATA_POINTER (m);
+}
+
+extern void *internal_realloc (void *, GFC_INTEGER_4);
+export_proto(internal_realloc);
+
+void *
+internal_realloc (void *mem, GFC_INTEGER_4 size)
+{
+#ifdef GFC_CHECK_MEMORY
+  /* Under normal circumstances, this is _never_ going to happen!  */
+  if (size < 0)
+    runtime_error ("Attempt to allocate a negative amount of memory.");
+#endif
+  return internal_realloc_size (mem, (size_t) size);
+}
+
+extern void *internal_realloc64 (void *, GFC_INTEGER_8);
+export_proto(internal_realloc64);
+
+void *
+internal_realloc64 (void *mem, GFC_INTEGER_8 size)
+{
+#ifdef GFC_CHECK_MEMORY
+  /* Under normal circumstances, this is _never_ going to happen!  */
+  if (size < 0)
+    runtime_error ("Attempt to allocate a negative amount of memory.");
+#endif
+  return internal_realloc_size (mem, (size_t) size);
+}
 
 
 /* User-allocate, one call for each member of the alloc-list of an

@@ -27,7 +27,7 @@ tree gfc_array_deallocate (tree, tree);
 void gfc_array_allocate (gfc_se *, gfc_ref *, tree);
 
 /* Generate code to allocate a temporary array.  */
-tree gfc_trans_allocate_temp_array (gfc_loopinfo *, gfc_ss_info *, tree);
+tree gfc_trans_allocate_temp_array (gfc_loopinfo *, gfc_ss_info *, tree, bool);
 
 /* Generate function entry code for allocation of compiler allocated array
    variables.  */
