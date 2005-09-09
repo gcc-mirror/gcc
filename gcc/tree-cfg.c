@@ -1237,8 +1237,7 @@ replace_uses_by (tree name, tree val)
   FOR_EACH_IMM_USE_SAFE (use, imm_iter, name)
     {
       stmt = USE_STMT (use);
-
-      SET_USE (use, val);
+      replace_exp (use, val);
 
       if (TREE_CODE (stmt) == PHI_NODE)
 	{
