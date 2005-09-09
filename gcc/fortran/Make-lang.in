@@ -289,7 +289,7 @@ fortran/trans-decl.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-decl.h \
 fortran/trans-types.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-types.h \
   real.h toplev.h $(TARGET_H)
 fortran/trans-const.o: $(GFORTRAN_TRANS_DEPS)
-fortran/trans-expr.o: $(GFORTRAN_TRANS_DEPS)
+fortran/trans-expr.o: $(GFORTRAN_TRANS_DEPS) fortran/dependency.h
 fortran/trans-stmt.o: $(GFORTRAN_TRANS_DEPS)
 fortran/trans-io.o: $(GFORTRAN_TRANS_DEPS) gt-fortran-trans-io.h
 fortran/trans-array.o: $(GFORTRAN_TRANS_DEPS)
