@@ -1,3 +1,8 @@
+2005-09-09  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* parser.c (cp_parser_translation_unit): Simplify.  The while-block
+	was actually executed at most once.
+
 2005-09-09  Richard Henderson  <rth@redhat.com>
 
 	PR debug/20998

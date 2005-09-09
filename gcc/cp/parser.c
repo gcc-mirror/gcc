@@ -2656,39 +2656,34 @@ cp_parser_translation_unit (cp_parser* parser)
       declarator_obstack_base = obstack_next_free (&declarator_obstack);
     }
 
-  while (true)
+  cp_parser_declaration_seq_opt (parser);
+  
+  /* If there are no tokens left then all went well.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_EOF))
     {
-      cp_parser_declaration_seq_opt (parser);
-
-      /* If there are no tokens left then all went well.  */
-      if (cp_lexer_next_token_is (parser->lexer, CPP_EOF))
-	{
-	  /* Get rid of the token array; we don't need it any more.  */
-	  cp_lexer_destroy (parser->lexer);
-	  parser->lexer = NULL;
-
-	  /* This file might have been a context that's implicitly extern
-	     "C".  If so, pop the lang context.  (Only relevant for PCH.) */
-	  if (parser->implicit_extern_c)
-	    {
-	      pop_lang_context ();
-	      parser->implicit_extern_c = false;
-	    }
-
-	  /* Finish up.  */
-	  finish_translation_unit ();
-
-	  success = true;
-	  break;
-	}
-      else
-	{
-	  cp_parser_error (parser, "expected declaration");
-	  success = false;
-	  break;
-	}
+      /* Get rid of the token array; we don't need it any more.  */
+      cp_lexer_destroy (parser->lexer);
+      parser->lexer = NULL;
+      
+      /* This file might have been a context that's implicitly extern
+         "C".  If so, pop the lang context.  (Only relevant for PCH.) */
+      if (parser->implicit_extern_c)
+        {
+          pop_lang_context ();
+          parser->implicit_extern_c = false;
+        }
+      
+      /* Finish up.  */
+      finish_translation_unit ();
+      
+      success = true;
     }
-
+  else
+    {
+      cp_parser_error (parser, "expected declaration");
+      success = false;
+    }
+  
   /* Make sure the declarator obstack was fully cleaned up.  */
   gcc_assert (obstack_next_free (&declarator_obstack)
 	      == declarator_obstack_base);
