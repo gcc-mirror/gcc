@@ -8199,8 +8199,9 @@ fold (tree expr)
 
       /* If the second operand is simpler than the third, swap them
 	 since that produces better jump optimization results.  */
-      if (tree_swap_operands_p (TREE_OPERAND (t, 1),
-				TREE_OPERAND (t, 2), false))
+      if (truth_value_p (TREE_CODE (arg0))
+	  && tree_swap_operands_p (TREE_OPERAND (t, 1),
+				   TREE_OPERAND (t, 2), false))
 	{
 	  /* See if this can be inverted.  If it can't, possibly because
 	     it was a floating-point inequality comparison, don't do
