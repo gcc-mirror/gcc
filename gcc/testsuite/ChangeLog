@@ -1,3 +1,10 @@
+2005-09-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/22252
+	* g++.dg/ext/interface1.C: New test.
+	* g++.dg/ext/interface1.h: Likewise.
+	* g++.dg/ext/interface1a.cc: Likewise.
+
 2005-09-09  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* gfortran.dg/iomsg_1.f90:  New test case.

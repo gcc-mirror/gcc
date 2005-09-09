@@ -2976,18 +2976,22 @@ cp_finish_file (void)
 	  if (!DECL_SAVED_TREE (decl))
 	    continue;
 
-	  import_export_decl (decl);
-
 	  /* We lie to the back-end, pretending that some functions
 	     are not defined when they really are.  This keeps these
 	     functions from being put out unnecessarily.  But, we must
 	     stop lying when the functions are referenced, or if they
-	     are not comdat since they need to be put out now.  This
-	     is done in a separate for cycle, because if some deferred
-	     function is contained in another deferred function later
-	     in deferred_fns varray, rest_of_compilation would skip
-	     this function and we really cannot expand the same
-	     function twice.  */
+	     are not comdat since they need to be put out now.  If
+	     DECL_INTERFACE_KNOWN, then we have already set
+	     DECL_EXTERNAL appropriately, so there's no need to check
+	     again, and we do not want to clear DECL_EXTERNAL if a
+	     previous call to import_export_decl set it.
+	     
+	     This is done in a separate for cycle, because if some
+	     deferred function is contained in another deferred
+	     function later in deferred_fns varray,
+	     rest_of_compilation would skip this function and we
+	     really cannot expand the same function twice.  */
+	  import_export_decl (decl);
 	  if (DECL_NOT_REALLY_EXTERN (decl)
 	      && DECL_INITIAL (decl)
 	      && decl_needed_p (decl))
@@ -3047,13 +3051,12 @@ cp_finish_file (void)
 	  TREE_USED (decl) && DECL_DECLARED_INLINE_P (decl)
 	  /* But not defined.  */
 	  && DECL_REALLY_EXTERN (decl)
-	  /* If we decided to emit this function in another
-	     translation unit, the fact that the definition was
-	     missing here likely indicates only that the repository
-	     decided to place the function elsewhere.  With -Winline,
-	     we will still warn if we could not inline the
-	     function.  */
-	  && !flag_use_repository
+	  /* If the definition actually was available here, then the
+	     fact that the function was not defined merely represents
+	     that for some reason (use of a template repository,
+	     #pragma interface, etc.) we decided not to emit the
+	     definition here.  */
+	  && !DECL_INITIAL (decl)
 	  /* An explicit instantiation can be used to specify
 	     that the body is in another unit. It will have
 	     already verified there was a definition.  */

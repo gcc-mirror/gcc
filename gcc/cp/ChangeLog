@@ -1,3 +1,15 @@
+2005-09-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/22252
+	* decl.c (start_preparsed_function): Do not pay attention to
+	#pragma interface for implicitly-defined methods.
+	* decl2.c (cp_finish_file): Do not complain about uses of inline
+	functions that have bodies, even if we decided not to emit the
+	body in this translation unit.
+	* semantics.c (note_decl_for_pch): Do not mess with linkage.
+	(expand_or_defer_fn): Make inline, non-template functions COMDAT
+	at this point.
+
 2005-09-08  Richard Henderson  <rth@redhat.com>
 
 	PR debug/23190

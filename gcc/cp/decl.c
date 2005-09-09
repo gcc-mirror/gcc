@@ -10008,6 +10008,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   tree current_function_parms;
   struct c_fileinfo *finfo
     = get_fileinfo (lbasename (LOCATION_FILE (DECL_SOURCE_LOCATION (decl1))));
+  bool honor_interface;
 
   /* Sanity check.  */
   gcc_assert (TREE_CODE (TREE_VALUE (void_list_node)) == VOID_TYPE);
@@ -10222,6 +10223,15 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	}
     }
 
+  honor_interface = (!DECL_TEMPLATE_INSTANTIATION (decl1)
+		     /* Implicitly-defined methods (like the
+			destructor for a class in which no destructor
+			is explicitly declared) must not be defined
+			until their definition is needed.  So, we
+			ignore interface specifications for
+			compiler-generated functions.  */
+		     && !DECL_ARTIFICIAL (decl1));
+		     
   if (DECL_INTERFACE_KNOWN (decl1))
     {
       tree ctx = decl_function_context (decl1);
@@ -10238,8 +10248,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   /* If this function belongs to an interface, it is public.
      If it belongs to someone else's interface, it is also external.
      This only affects inlines and template instantiations.  */
-  else if (finfo->interface_unknown == 0
-	   && ! DECL_TEMPLATE_INSTANTIATION (decl1))
+  else if (!finfo->interface_unknown && honor_interface)
     {
       if (DECL_DECLARED_INLINE_P (decl1)
 	  || DECL_TEMPLATE_INSTANTIATION (decl1)
@@ -10256,7 +10265,6 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	}
       else
 	DECL_EXTERNAL (decl1) = 0;
-      DECL_NOT_REALLY_EXTERN (decl1) = 0;
       DECL_INTERFACE_KNOWN (decl1) = 1;
       /* If this function is in an interface implemented in this file,
 	 make sure that the backend knows to emit this function
@@ -10265,7 +10273,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	mark_needed (decl1);
     }
   else if (finfo->interface_unknown && finfo->interface_only
-	   && ! DECL_TEMPLATE_INSTANTIATION (decl1))
+	   && honor_interface)
     {
       /* If MULTIPLE_SYMBOL_SPACES is defined and we saw a #pragma
 	 interface, we will have both finfo->interface_unknown and
