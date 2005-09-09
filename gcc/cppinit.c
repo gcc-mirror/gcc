@@ -477,6 +477,8 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname)
   if (CPP_OPTION (pfile, preprocessed))
     {
       read_original_filename (pfile);
+      if (!pfile->map)
+	return NULL;
       fname = pfile->map->to_file;
     }
   return fname;
