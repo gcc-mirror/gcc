@@ -38,6 +38,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "tree-chrec.h"
 #include "tree-pass.h"
 #include "params.h"
+#include "tree-scalar-evolution.h"
 
 
 
@@ -1120,8 +1121,12 @@ chrec_convert (tree type, tree chrec, tree at_stmt)
 
   if (evolution_function_is_affine_p (chrec))
     {
-      tree step;
+      tree base, step;
       bool dummy;
+      struct loop *loop = current_loops->parray[CHREC_VARIABLE (chrec)];
+
+      base = instantiate_parameters (loop, CHREC_LEFT (chrec));
+      step = instantiate_parameters (loop, CHREC_RIGHT (chrec));
 
       /* Avoid conversion of (signed char) {(uchar)1, +, (uchar)1}_x
 	 when it is not possible to prove that the scev does not wrap.
@@ -1130,16 +1135,32 @@ chrec_convert (tree type, tree chrec, tree at_stmt)
 	 1, 2, ..., 127, -128, ...  The result should not be
 	 {(schar)1, +, (schar)1}_x, but instead, we should keep the
 	 conversion: (schar) {(uchar)1, +, (uchar)1}_x.  */
-      if (scev_probably_wraps_p (type, CHREC_LEFT (chrec), CHREC_RIGHT (chrec),
-				 at_stmt,
-				 current_loops->parray[CHREC_VARIABLE (chrec)],
+      if (scev_probably_wraps_p (type, base, step, at_stmt, loop,
 				 &dummy, &dummy))
-	return fold_convert (type, chrec);
+	goto failed_to_convert;
 
-      step = convert_step (current_loops->parray[CHREC_VARIABLE (chrec)], type,
-			   CHREC_LEFT (chrec), CHREC_RIGHT (chrec), at_stmt);
+      step = convert_step (loop, type, base, step, at_stmt);
       if (!step)
- 	return fold_convert (type, chrec);
+ 	{
+	failed_to_convert:;
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "(failed conversion:");
+	      fprintf (dump_file, "\n  type: ");
+	      print_generic_expr (dump_file, type, 0);
+	      fprintf (dump_file, "\n  base: ");
+	      print_generic_expr (dump_file, base, 0);
+	      fprintf (dump_file, "\n  step: ");
+	      print_generic_expr (dump_file, step, 0);
+	      fprintf (dump_file, "\n  estimated_nb_iterations: ");
+	      print_generic_expr (dump_file, loop->estimated_nb_iterations, 0);
+	      fprintf (dump_file, "\n)\n");
+	    }
+
+	  /* Directly convert to "don't know": no worth dealing with
+	     difficult cases.  */
+	  return chrec_dont_know;
+	}
 
       return build_polynomial_chrec (CHREC_VARIABLE (chrec),
  				     chrec_convert (type, CHREC_LEFT (chrec),

@@ -1944,7 +1944,7 @@ tree-browser.o : tree-browser.c tree-browser.def $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) tree-inline.h $(DIAGNOSTIC_H) $(HASHTAB_H) \
    $(TM_H) coretypes.h
 tree-chrec.o: tree-chrec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-   $(GGC_H) $(TREE_H) real.h tree-chrec.h tree-pass.h $(PARAMS_H) \
+   $(GGC_H) $(TREE_H) real.h $(SCEV_H) tree-pass.h $(PARAMS_H) \
    $(DIAGNOSTIC_H) $(VARRAY_H) $(CFGLOOP_H) $(TREE_FLOW_H)
 tree-scalar-evolution.o: tree-scalar-evolution.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) $(GGC_H) $(TREE_H) real.h $(RTL_H) \

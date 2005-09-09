@@ -1928,6 +1928,32 @@ set_instantiated_value (htab_t cache, tree version, tree val)
   info->chrec = val;
 }
 
+/* Return the closed_loop_phi node for VAR.  If there is none, return
+   NULL_TREE.  */
+
+static tree
+loop_closed_phi_def (tree var)
+{
+  struct loop *loop;
+  edge exit;
+  tree phi;
+
+  if (var == NULL_TREE
+      || TREE_CODE (var) != SSA_NAME)
+    return NULL_TREE;
+
+  loop = loop_containing_stmt (SSA_NAME_DEF_STMT (var));
+  exit = loop->single_exit;
+  if (!exit)
+    return NULL_TREE;
+
+  for (phi = phi_nodes (exit->dest); phi; phi = PHI_CHAIN (phi))
+    if (PHI_ARG_DEF_FROM_EDGE (phi, exit) == var)
+      return PHI_RESULT (phi);
+
+  return NULL_TREE;
+}
+
 /* Analyze all the parameters of the chrec that were left under a symbolic form,
    with respect to LOOP.  CHREC is the chrec to instantiate.  If
    ALLOW_SUPERLOOP_CHRECS is true, replacing loop invariants with
@@ -1993,9 +2019,26 @@ instantiate_parameters_1 (struct loop *loop, tree chrec,
 	 result again.  */
       bitmap_set_bit (already_instantiated, SSA_NAME_VERSION (chrec));
       res = analyze_scalar_evolution (def_loop, chrec);
-      if (res != chrec_dont_know)
+
+      /* Don't instantiate loop-closed-ssa phi nodes.  */
+      if (TREE_CODE (res) == SSA_NAME
+	  && (loop_containing_stmt (SSA_NAME_DEF_STMT (res)) == NULL
+	      || (loop_containing_stmt (SSA_NAME_DEF_STMT (res))->depth
+		  > def_loop->depth)))
+	{
+	  if (res == chrec)
+	    res = loop_closed_phi_def (chrec);
+	  else
+	    res = chrec;
+
+	  if (res == NULL_TREE)
+	    res = chrec_dont_know;
+	}
+
+      else if (res != chrec_dont_know)
 	res = instantiate_parameters_1 (loop, res, allow_superloop_chrecs,
 					cache);
+
       bitmap_clear_bit (already_instantiated, SSA_NAME_VERSION (chrec));
 
       /* Store the correct value to the cache.  */
@@ -2652,7 +2695,8 @@ scev_const_prop (void)
 	    continue;
 
 	  /* Replace the uses of the name.  */
-	  replace_uses_by (name, ev);
+	  if (name != ev)
+	    replace_uses_by (name, ev);
 
 	  if (!ssa_names_to_remove)
 	    ssa_names_to_remove = BITMAP_ALLOC (NULL);
@@ -2712,7 +2756,13 @@ scev_const_prop (void)
 
 	  def = analyze_scalar_evolution_in_loop (ex_loop, ex_loop, def);
 	  if (!tree_does_not_contain_chrecs (def)
-	      || chrec_contains_symbols_defined_in_loop (def, loop->num))
+	      || chrec_contains_symbols_defined_in_loop (def, loop->num)
+	      || def == PHI_RESULT (phi)
+	      || (TREE_CODE (def) == SSA_NAME
+		  && loop_containing_stmt (SSA_NAME_DEF_STMT (def))
+		  && loop_containing_stmt (phi)
+		  && loop_containing_stmt (SSA_NAME_DEF_STMT (def))
+		  == loop_containing_stmt (phi)))
 	    continue;
 
 	  /* If computing the expression is expensive, let it remain in
