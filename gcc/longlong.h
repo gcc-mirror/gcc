@@ -1,6 +1,6 @@
 /* longlong.h -- definitions for mixed size 32/64 bit arithmetic.
-   Copyright (C) 1991, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2004
-   Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2004,
+   2005  Free Software Foundation, Inc.
 
    This definition file is free software; you can redistribute it
    and/or modify it under the terms of the GNU General Public
@@ -29,8 +29,7 @@
    DItype, UDItype -- Signed and unsigned 64 bit types.
 
    On a 32 bit machine UWtype should typically be USItype;
-   on a 64 bit machine, UWtype should typically be UDItype.
-*/
+   on a 64 bit machine, UWtype should typically be UDItype.  */
 
 #define __BITS4 (W_TYPE_SIZE / 4)
 #define __ll_B ((UWtype) 1 << (W_TYPE_SIZE / 2))
@@ -42,6 +41,7 @@
 #define UWtype		USItype
 #define UHWtype		USItype
 #define UDWtype		UDItype
+extern const UQItype __clz_tab[256] ATTRIBUTE_HIDDEN;
 #endif
 
 /* Define auxiliary asm macros.
@@ -129,7 +129,6 @@ extern UDItype __udiv_qrnnd (UDItype *, UDItype, UDItype, UDItype);
 #define count_trailing_zeros(COUNT,X)	((COUNT) = __builtin_ctzl (X))
 #define COUNT_LEADING_ZEROS_0 64
 #else
-extern const UQItype __clz_tab[] ATTRIBUTE_HIDDEN;
 #define count_leading_zeros(COUNT,X) \
   do {									\
     UDItype __xr = (X), __t, __a;					\
@@ -1312,7 +1311,6 @@ UDItype __umulsidi3 (USItype, USItype);
 #endif
 
 #if !defined (count_leading_zeros)
-extern const UQItype __clz_tab[] ATTRIBUTE_HIDDEN;
 #define count_leading_zeros(count, x) \
   do {									\
     UWtype __xr = (x);							\
