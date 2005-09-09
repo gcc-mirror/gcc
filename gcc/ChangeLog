@@ -1,3 +1,20 @@
+2005-09-09  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* Makefile.in (tree-chrec.o): Depends on SCEV_H.
+	* tree-chrec.c: Include tree-scalar-evolution.h.
+	(chrec_convert): Instantiate the base and step before calling
+	scev_probably_wraps_p that would fail on parametric evolutions.
+	Collect all the fails into a single section failed_to_convert,
+	print a diagnostic, and return chrec_dont_know instead of calling
+	fold_convert.
+	* tree-scalar-evolution.c (loop_closed_phi_def): New.
+	(instantiate_parameters_1): Avoid instantiation of loop closed ssa
+	phi nodes.
+	(scev_const_prop): Don't replace the definition of a loop closed ssa
+	phi node by itself, or by another loop closed ssa phi node.
+	* tree-ssa-loop-niter.c (scev_probably_wraps_p, convert_step): Check
+	that base and step are defined.
+
 2005-09-09  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/23624

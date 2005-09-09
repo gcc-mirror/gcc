@@ -1857,7 +1857,9 @@ scev_probably_wraps_p (tree type, tree base, tree step,
 	}
     }
 
-  if (TREE_CODE (base) == REAL_CST
+  if (chrec_contains_undetermined (base)
+      || chrec_contains_undetermined (step)
+      || TREE_CODE (base) == REAL_CST
       || TREE_CODE (step) == REAL_CST)
     {
       *unknown_max = true;
@@ -1978,7 +1980,13 @@ tree
 convert_step (struct loop *loop, tree new_type, tree base, tree step,
 	      tree at_stmt)
 {
-  tree base_type = TREE_TYPE (base);
+  tree base_type;
+
+  if (chrec_contains_undetermined (base)
+      || chrec_contains_undetermined (step))
+    return NULL_TREE;
+
+  base_type = TREE_TYPE (base);
 
   /* When not using wrapping arithmetic, signed types don't wrap.  */
   if (!flag_wrapv && !TYPE_UNSIGNED (base_type))
