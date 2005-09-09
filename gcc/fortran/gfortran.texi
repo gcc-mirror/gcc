@@ -986,9 +986,10 @@ Array constructors using square brackets. That is, @code{[...]} rather
 than @code{(/.../)}.
 
 @item 
-@code{FLUSH} statement. Note that this is not a complete implementation
-of the Fortran 2003 @code{FLUSH} statement, as the @code{IOMSG=}
-specifier of the I/O statements is not yet implemented.
+@code{FLUSH} statement.
+
+@item
+@code{IOMSG=} specifier for I/O statements.
 @end itemize
 
 
