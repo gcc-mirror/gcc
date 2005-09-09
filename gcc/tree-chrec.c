@@ -935,9 +935,16 @@ evolution_function_is_invariant_rec_p (tree chrec, int loopnum)
 				   chrec))
     return true;
 
-  if (TREE_CODE (chrec) == POLYNOMIAL_CHREC
-      && CHREC_VARIABLE (chrec) == (unsigned) loopnum)
-    return false;
+  if (TREE_CODE (chrec) == POLYNOMIAL_CHREC)
+    {
+      if (CHREC_VARIABLE (chrec) == (unsigned) loopnum
+	  || !evolution_function_is_invariant_rec_p (CHREC_RIGHT (chrec),
+						     loopnum)
+	  || !evolution_function_is_invariant_rec_p (CHREC_LEFT (chrec),
+						     loopnum))
+	return false;
+      return true;
+    }
 
   switch (TREE_CODE_LENGTH (TREE_CODE (chrec)))
     {
