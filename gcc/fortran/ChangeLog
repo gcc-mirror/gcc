@@ -1,5 +1,32 @@
 2005-09-09  Richard Sandiford  <richard@codesourcery.com>
 
+	PR fortran/21104
+	* trans.h (gfc_interface_sym_mapping, gfc_interface_mapping): Moved
+	from trans-expr.c.
+	(gfc_init_interface_mapping, gfc_free_interface_mapping)
+	(gfc_add_interface_mapping, gfc_finish_interface_mapping)
+	(gfc_apply_interface_mapping): Declare.
+	* trans-array.h (gfc_set_loop_bounds_from_array_spec): Declare.
+	(gfc_trans_allocate_temp_array): Add pre and post block arguments.
+	* trans-array.c (gfc_set_loop_bounds_from_array_spec): New function.
+	(gfc_trans_allocate_array_storage): Replace loop argument with
+	separate pre and post blocks.
+	(gfc_trans_allocate_temp_array): Add pre and post block arguments.
+	Update call to gfc_trans_allocate_array_storage.
+	(gfc_trans_array_constructor, gfc_conv_loop_setup): Adjust for new
+	interface to gfc_trans_allocate_temp_array.
+	* trans-expr.c (gfc_interface_sym_mapping, gfc_interface_mapping):
+	Moved to trans.h.
+	(gfc_init_interface_mapping, gfc_free_interface_mapping)
+	(gfc_add_interface_mapping, gfc_finish_interface_mapping)
+	(gfc_apply_interface_mapping): Make extern.
+	(gfc_conv_function_call): Build an interface mapping for array
+	return values too.  Call gfc_set_loop_bounds_from_array_spec.
+	Adjust call to gfc_trans_allocate_temp_array so that code is
+	added to SE rather than LOOP.
+
+2005-09-09  Richard Sandiford  <richard@codesourcery.com>
+
 	PR fortran/12840
 	* trans.h (gfor_fndecl_internal_realloc): Declare.
 	(gfor_fndecl_internal_realloc64): Declare.
