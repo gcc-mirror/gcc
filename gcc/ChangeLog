@@ -1,3 +1,12 @@
+2005-09-08  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	Backport from mainline
+	2005-09-01  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	* c-decl.c (diagnose_mismatched_decls):  With -Wredundant-decls,
+	do not issue warning for a variable definition following
+	a declaration.
+
 2005-09-02  Richard Sandiford  <richard@codesourcery.com>
 
 	PR c/22061
