@@ -37,7 +37,7 @@
 
 namespace __gnu_internal
 {
-  __glibcxx_mutex_define_initialized(freelist_mutex);
+  static __glibcxx_mutex_define_initialized(freelist_mutex);
 
 #ifdef __GTHREADS
   __gthread_key_t freelist_key;
