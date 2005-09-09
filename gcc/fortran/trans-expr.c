@@ -1694,7 +1694,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	  info->dimen = se->loop->dimen;
 
 	  /* Allocate a temporary to store the result.  */
-	  gfc_trans_allocate_temp_array (se->loop, info, tmp);
+	  gfc_trans_allocate_temp_array (se->loop, info, tmp, false);
 
 	  /* Zero the first stride to indicate a temporary.  */
 	  tmp = gfc_conv_descriptor_stride (info->descriptor, gfc_rank_cst[0]);

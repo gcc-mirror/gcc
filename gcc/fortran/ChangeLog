@@ -1,3 +1,39 @@
+2005-09-09  Richard Sandiford  <richard@codesourcery.com>
+
+	PR fortran/12840
+	* trans.h (gfor_fndecl_internal_realloc): Declare.
+	(gfor_fndecl_internal_realloc64): Declare.
+	* trans-decl.c (gfor_fndecl_internal_realloc): New variable.
+	(gfor_fndecl_internal_realloc64): New variable.
+	(gfc_build_builtin_function_decls): Initialize them.
+	* trans-array.h (gfc_trans_allocate_temp_array): Add a fourth argument.
+	* trans-array.c (gfc_trans_allocate_array_storage): Add an argument
+	to say whether the array can grow later.  Don't allocate the array
+	on the stack if so.  Don't call malloc for zero-sized arrays.
+	(gfc_trans_allocate_temp_array): Add a similar argument here.
+	Pass it along to gfc_trans_allocate_array_storage.
+	(gfc_get_iteration_count, gfc_grow_array): New functions.
+	(gfc_iterator_has_dynamic_bounds): New function.
+	(gfc_get_array_constructor_element_size): New function.
+	(gfc_get_array_constructor_size): New function.
+	(gfc_trans_array_ctor_element): Replace pointer argument with
+	a descriptor tree.
+	(gfc_trans_array_constructor_subarray): Likewise.  Take an extra
+	argument to say whether the variable-sized part of the constructor
+	must be allocated using realloc.  Grow the array when this
+	argument is true.
+	(gfc_trans_array_constructor_value): Likewise.
+	(gfc_get_array_cons_size): Delete.
+	(gfc_trans_array_constructor): If the loop bound has not been set,
+	split the allocation into a static part and a dynamic part.  Set
+	loop->to to the bounds for static part before allocating the
+	temporary.  Adjust call to gfc_trans_array_constructor_value.
+	(gfc_conv_loop_setup): Allow any constructor to determine the
+	loop bounds.  Check whether the constructor has a dynamic size
+	and prefer to use something else if so.  Expect the loop bound
+	to be set later.  Adjust call to gfc_trans_allocate_temp_array.
+	* trans-expr.c (gfc_conv_function_call): Adjust another call here.
+
 2005-09-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/18878

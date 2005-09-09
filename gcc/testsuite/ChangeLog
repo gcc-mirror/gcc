@@ -1,3 +1,14 @@
+2005-09-09  Richard Sandiford  <richard@codesourcery.com>
+
+	PR fortran/12840
+	* gfortran.dg/array_constructor_6.f90
+	* gfortran.dg/array_constructor_7.f90
+	* gfortran.dg/array_constructor_8.f90
+	* gfortran.dg/array_constructor_9.f90
+	* gfortran.dg/array_constructor_10.f90
+	* gfortran.dg/array_constructor_11.f90
+	* gfortran.dg/array_constructor_12.f90: New tests.
+
 2005-09-08  Josh Conner  <jconner@apple.com>
 
 	PR c++/23180

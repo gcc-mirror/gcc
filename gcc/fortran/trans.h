@@ -443,6 +443,8 @@ tree builtin_function (const char *, tree, int, enum built_in_class,
 /* Runtime library function decls.  */
 extern GTY(()) tree gfor_fndecl_internal_malloc;
 extern GTY(()) tree gfor_fndecl_internal_malloc64;
+extern GTY(()) tree gfor_fndecl_internal_realloc;
+extern GTY(()) tree gfor_fndecl_internal_realloc64;
 extern GTY(()) tree gfor_fndecl_internal_free;
 extern GTY(()) tree gfor_fndecl_allocate;
 extern GTY(()) tree gfor_fndecl_allocate64;
