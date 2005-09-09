@@ -1,3 +1,12 @@
+2005-09-09  Benjamin Kosnik  <bkoz@redhat.com>
+            Jakub Jelinek  <jakub@redhat.com>
+
+	* src/debug.cc (iterator_base_mutex): Make static for internal
+	linkage.
+	* src/locale_init.cc (locale_mutex): Same.
+	* src/mt_allocator.cc (freelist_mutex): Same.
+	* src/pool_allocator.cc (palloc_init_mutex): Same.
+	
 2005-09-02  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/tr1/6_containers/unordered/hashtable/23465.cc:
