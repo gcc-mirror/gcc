@@ -89,6 +89,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "target.h"
 #include "langhooks.h"
 #include "obstack.h"
+#include "expr.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"
@@ -1319,9 +1320,7 @@ dbxout_function_decl (tree decl)
 static void
 dbxout_global_decl (tree decl)
 {
-  if (TREE_CODE (decl) == VAR_DECL
-      && ! DECL_EXTERNAL (decl)
-      && DECL_RTL_SET_P (decl))	/* Not necessary?  */
+  if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
     {
       int saved_tree_used = TREE_USED (decl);
       TREE_USED (decl) = 1;
@@ -2337,6 +2336,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
   tree type = TREE_TYPE (decl);
   tree context = NULL_TREE;
   int result = 0;
+  rtx decl_rtl;
 
   /* "Intercept" dbxout_symbol() calls like we do all debug_hooks.  */
   ++debug_nesting;
@@ -2421,7 +2421,8 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
       break;
 
     case FUNCTION_DECL:
-      if (DECL_RTL (decl) == 0)
+      decl_rtl = DECL_RTL_IF_SET (decl);
+      if (!decl_rtl)
 	DBXOUT_DECR_NESTING_AND_RETURN (0);
       if (DECL_EXTERNAL (decl))
 	break;
@@ -2432,8 +2433,8 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
       /* Don't mention an inline instance of a nested function.  */
       if (context && DECL_FROM_INLINE (decl))
 	break;
-      if (!MEM_P (DECL_RTL (decl))
-	  || GET_CODE (XEXP (DECL_RTL (decl), 0)) != SYMBOL_REF)
+      if (!MEM_P (decl_rtl)
+	  || GET_CODE (XEXP (decl_rtl, 0)) != SYMBOL_REF)
 	break;
 
       dbxout_begin_complex_stabs ();
@@ -2457,8 +2458,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 	  stabstr_I (DECL_NAME (context));
 	}
 
-      dbxout_finish_complex_stabs (decl, N_FUN, XEXP (DECL_RTL (decl), 0),
-				   0, 0);
+      dbxout_finish_complex_stabs (decl, N_FUN, XEXP (decl_rtl, 0), 0, 0);
       break;
 
     case TYPE_DECL:
@@ -2609,13 +2609,24 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 
     case RESULT_DECL:
       /* Named return value, treat like a VAR_DECL.  */
+      decl_rtl = DECL_RTL_IF_SET (decl);
+      goto do_var_decl;
+
     case VAR_DECL:
-      if (! DECL_RTL_SET_P (decl))
-	DBXOUT_DECR_NESTING_AND_RETURN (0);
       /* Don't mention a variable that is external.
 	 Let the file that defines it describe it.  */
       if (DECL_EXTERNAL (decl))
 	break;
+
+      if (DECL_HAS_VALUE_EXPR_P (decl))
+	decl_rtl = expand_expr (DECL_VALUE_EXPR (decl), NULL_RTX, VOIDmode,
+				EXPAND_INITIALIZER);
+      else
+	decl_rtl = DECL_RTL_IF_SET (decl);
+
+    do_var_decl:
+      if (!decl_rtl)
+	DBXOUT_DECR_NESTING_AND_RETURN (0);
 
       /* If the variable is really a constant
 	 and not written in memory, inform the debugger.
@@ -2649,13 +2660,13 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 	}
       /* else it is something we handle like a normal variable.  */
 
-      SET_DECL_RTL (decl, eliminate_regs (DECL_RTL (decl), 0, NULL_RTX));
+      decl_rtl = eliminate_regs (decl_rtl, 0, NULL_RTX);
 #ifdef LEAF_REG_REMAP
       if (current_function_uses_only_leaf_regs)
-	leaf_renumber_regs_insn (DECL_RTL (decl));
+	leaf_renumber_regs_insn (decl_rtl);
 #endif
 
-      result = dbxout_symbol_location (decl, type, 0, DECL_RTL (decl));
+      result = dbxout_symbol_location (decl, type, 0, decl_rtl);
       break;
 
     default:
