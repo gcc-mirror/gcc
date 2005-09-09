@@ -1,5 +1,9 @@
 2005-09-09  Richard Sandiford  <richard@codesourcery.com>
 
+	* match.h (gfc_match_equiv_variable): Declare.
+
+2005-09-09  Richard Sandiford  <richard@codesourcery.com>
+
 	PR fortran/19239
 	* Makefile.in (fortran/trans-expr.o): Depend on dependency.h.
 	* dependency.h (gfc_ref_needs_temporary_p): Declare.
