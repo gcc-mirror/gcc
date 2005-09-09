@@ -5939,8 +5939,8 @@ tsubst_template_arg (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 					 tf_error, /*in_decl=*/NULL_TREE,
 					 /*function_p=*/false);
 	      processing_template_decl = saved_processing_template_decl;
+	      r = fold (r);
 	    }
-	  r = fold (r);
 	}
     }
   return r;
