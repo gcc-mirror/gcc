@@ -155,20 +155,16 @@ main (int argc, char const** argv)
       // Ignore 32/64-bit JIT options
       else if (! strcmp (arg, "-d32") || ! strcmp (arg, "-d64"))
         continue;
-      else if (! strcmp (arg, "-enableassertions") || ! strcmp (arg, "-ea"))
+      else if (! strncmp (arg, "-enableassertions", sizeof ("-enableassertions") - 1)
+               || ! strncmp (arg, "-ea", sizeof ("-ea") - 1))
         {
-          if (i >= argc - 1)
-            goto no_arg;
           // FIXME: hook up assertion support
-          ++i;
           continue;
         }
-      else if (! strcmp (arg, "-disableassertions") || ! strcmp (arg, "-da"))
+      else if (! strncmp (arg, "-disableassertions", sizeof ("-disableassertions") - 1)
+               || ! strncmp (arg, "-da", sizeof ("-da") - 1))
         {
-          if (i >= argc - 1)
-            goto no_arg;
-          // FIXME
-          ++i;
+          // FIXME: hook up assertion support
           continue;
         }
       else if (! strcmp (arg, "-enablesystemassertions")

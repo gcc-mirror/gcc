@@ -1,3 +1,9 @@
+2005-09-08  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	PR libgcj/23549
+	* gij.cc (main): Don't expect arguments to -enableassertions, -ea,
+	-disableassertions and -da.
+
 2005-06-29  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/22211:
