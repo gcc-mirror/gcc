@@ -1,3 +1,18 @@
+2005-09-09  Nick Clifton  <nickc@redhat.com>
+
+	* Makefile.in (LIBGCC_DEPS): Add libgcc2.h.
+	* libgcc2.c (__clz_tab[], __popcount_tab[]): Set the fixed
+	dimension of these arrays.
+	* libgcc2.h (__clz_tab[], __popcount_tab[]): Add exports of
+	these arrays.
+	* longlong.h: Only provide a prototype for the __clz_tab[] array
+	if this header has not been included from libgcc2.h.
+	* config/stormy16/stormy16-lib2.c: Include libgcc2.h rather than
+	defining own types.
+	Provide prototypes for exported functions.
+	Use the __clz_tab[] and __popcount_tab[] arrays provided by
+	libgcc2.c.
+
 2005-09-08  Josh Conner  <jconner@apple.com>
 
 	PR c++/23180
