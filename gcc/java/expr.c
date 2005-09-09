@@ -350,6 +350,11 @@ pop_type_0 (tree type, char **messagep)
     return t;
   if (TREE_CODE (type) == POINTER_TYPE && TREE_CODE (t) == POINTER_TYPE)
     {
+      /* If the expected type we've been passed is object or ptr
+	 (i.e. void*), the caller needs to know the real type.  */
+      if (type == ptr_type_node || type == object_ptr_type_node)
+        return t;
+
       /* Since the verifier has already run, we know that any
 	 types we see will be compatible.  In BC mode, this fact
 	 may be checked at runtime, but if that is so then we can
