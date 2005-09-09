@@ -41,6 +41,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "trans-stmt.h"
 
 static tree gfc_trans_structure_assign (tree dest, gfc_expr * expr);
+static void gfc_apply_interface_mapping_to_expr (gfc_interface_mapping *,
+						 gfc_expr *);
 
 /* Copy the scalarization loop variables.  */
 
@@ -1075,73 +1077,9 @@ gfc_conv_function_val (gfc_se * se, gfc_symbol * sym)
 }
 
 
-/* This group of functions allows a caller to evaluate an expression from
-   the callee's interface.  It establishes a mapping between the interface's
-   dummy arguments and the caller's actual arguments, then applies that
-   mapping to a given gfc_expr.
-
-   You can initialize a mapping structure like so:
-
-       gfc_interface_mapping mapping;
-       ...
-       gfc_init_interface_mapping (&mapping);
-
-   You should then evaluate each actual argument into a temporary
-   gfc_se structure, here called "se", and map the result to the
-   dummy argument's symbol, here called "sym":
-
-       gfc_add_interface_mapping (&mapping, sym, &se);
-
-   After adding all mappings, you should call:
-
-       gfc_finish_interface_mapping (&mapping, pre, post);
-
-   where "pre" and "post" are statement blocks for initialization
-   and finalization code respectively.  You can then evaluate an
-   interface expression "expr" as follows:
-
-       gfc_apply_interface_mapping (&mapping, se, expr);
-
-   Once you've evaluated all expressions, you should free
-   the mapping structure with:
-
-       gfc_free_interface_mapping (&mapping); */
-
-
-/* This structure represents a mapping from OLD to NEW, where OLD is a
-   dummy argument symbol and NEW is a symbol that represents the value
-   of an actual argument.  Mappings are linked together using NEXT
-   (in no particular order).  */
-typedef struct gfc_interface_sym_mapping
-{
-  struct gfc_interface_sym_mapping *next;
-  gfc_symbol *old;
-  gfc_symtree *new;
-}
-gfc_interface_sym_mapping;
-
-
-/* This structure is used by callers to evaluate an expression from
-   a callee's interface.  */
-typedef struct gfc_interface_mapping
-{
-  /* Maps the interface's dummy arguments to the values that the caller
-     is passing.  The whole list is owned by this gfc_interface_mapping.  */
-  gfc_interface_sym_mapping *syms;
-
-  /* A list of gfc_charlens that were needed when creating copies of
-     expressions.  The whole list is owned by this gfc_interface_mapping.  */
-  gfc_charlen *charlens;
-}
-gfc_interface_mapping;
-
-
-static void gfc_apply_interface_mapping_to_expr (gfc_interface_mapping *,
-						 gfc_expr *);
-
 /* Initialize MAPPING.  */
 
-static void
+void
 gfc_init_interface_mapping (gfc_interface_mapping * mapping)
 {
   mapping->syms = NULL;
@@ -1151,7 +1089,7 @@ gfc_init_interface_mapping (gfc_interface_mapping * mapping)
 
 /* Free all memory held by MAPPING (but not MAPPING itself).  */
 
-static void
+void
 gfc_free_interface_mapping (gfc_interface_mapping * mapping)
 {
   gfc_interface_sym_mapping *sym;
@@ -1258,7 +1196,7 @@ gfc_set_interface_mapping_bounds (stmtblock_t * block, tree type, tree desc)
    in SE.  The caller may still use se->expr and se->string_length after
    calling this function.  */
 
-static void
+void
 gfc_add_interface_mapping (gfc_interface_mapping * mapping,
 			   gfc_symbol * sym, gfc_se * se)
 {
@@ -1359,7 +1297,7 @@ gfc_add_interface_mapping (gfc_interface_mapping * mapping,
    the length of each argument, adding any initialization code to PRE and
    any finalization code to POST.  */
 
-static void
+void
 gfc_finish_interface_mapping (gfc_interface_mapping * mapping,
 			      stmtblock_t * pre, stmtblock_t * post)
 {
@@ -1503,7 +1441,7 @@ gfc_apply_interface_mapping_to_expr (gfc_interface_mapping * mapping,
 /* Evaluate interface expression EXPR using MAPPING.  Store the result
    in SE.  */
 
-static void
+void
 gfc_apply_interface_mapping (gfc_interface_mapping * mapping,
 			     gfc_se * se, gfc_expr * expr)
 {
@@ -1571,8 +1509,9 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
     info = NULL;
 
   gfc_init_interface_mapping (&mapping);
-  need_interface_mapping = (sym->ts.type == BT_CHARACTER
-			    && sym->ts.cl->length->expr_type != EXPR_CONSTANT);
+  need_interface_mapping = ((sym->ts.type == BT_CHARACTER
+			     && sym->ts.cl->length->expr_type != EXPR_CONSTANT)
+			    || sym->attr.dimension);
   formal = sym->formal;
   /* Evaluate the arguments.  */
   for (; arg != NULL; arg = arg->next, formal = formal ? formal->next : NULL)
@@ -1678,7 +1617,6 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 
       len = cl.backend_decl;
     }
-  gfc_free_interface_mapping (&mapping);
 
   byref = gfc_return_by_reference (sym);
   if (byref)
@@ -1693,8 +1631,12 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	  tmp = gfc_typenode_for_spec (&ts);
 	  info->dimen = se->loop->dimen;
 
+	  /* Evaluate the bounds of the result, if known.  */
+	  gfc_set_loop_bounds_from_array_spec (&mapping, se, sym->result->as);
+
 	  /* Allocate a temporary to store the result.  */
-	  gfc_trans_allocate_temp_array (se->loop, info, tmp, false);
+	  gfc_trans_allocate_temp_array (&se->pre, &se->post,
+					 se->loop, info, tmp, false);
 
 	  /* Zero the first stride to indicate a temporary.  */
 	  tmp = gfc_conv_descriptor_stride (info->descriptor, gfc_rank_cst[0]);
@@ -1745,6 +1687,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
       if (ts.type == BT_CHARACTER)
 	retargs = gfc_chainon_list (retargs, len);
     }
+  gfc_free_interface_mapping (&mapping);
 
   /* Add the return arguments.  */
   arglist = chainon (retargs, arglist);
