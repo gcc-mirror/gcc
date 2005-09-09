@@ -1,3 +1,9 @@
+2005-09-08  Josh Conner  <jconner@apple.com>
+
+	PR c++/23180
+	* g++.dg/init/pr23180-1.C: New test.
+	* g++.dg/init/pr23180-2.C: New test.
+
 2005-09-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/18878
