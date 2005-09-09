@@ -39,6 +39,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "trans-array.h"
 /* Only for gfc_trans_assign and gfc_trans_pointer_assign.  */
 #include "trans-stmt.h"
+#include "dependency.h"
 
 static tree gfc_trans_structure_assign (tree dest, gfc_expr * expr);
 static void gfc_apply_interface_mapping_to_expr (gfc_interface_mapping *,
@@ -2573,6 +2574,10 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
 
   /* Elemental functions don't need a temporary anyway.  */
   if (expr2->symtree->n.sym->attr.elemental)
+    return NULL;
+
+  /* Fail if EXPR1 can't be expressed as a descriptor.  */
+  if (gfc_ref_needs_temporary_p (expr1->ref))
     return NULL;
 
   /* Check for a dependency.  */

@@ -1,5 +1,40 @@
 2005-09-09  Richard Sandiford  <richard@codesourcery.com>
 
+	PR fortran/19239
+	* Makefile.in (fortran/trans-expr.o): Depend on dependency.h.
+	* dependency.h (gfc_ref_needs_temporary_p): Declare.
+	* dependency.c (gfc_ref_needs_temporary_p): New function.
+	(gfc_check_fncall_dependency): Use it instead of inlined check.
+	By so doing, take advantage of the fact that character substrings
+	within an array reference also need a temporary.
+	* trans.h (GFC_SS_VECTOR): Adjust comment.
+	* trans-array.c (gfc_free_ss): Remove GFC_SS_VECTOR case.
+	(gfc_set_vector_loop_bounds): New function.
+	(gfc_add_loop_ss_code): Call it after evaluating the subscripts of
+	a GFC_SS_SECTION.  Deal with the GFC_SS_VECTOR case by evaluating
+	the vector expression and caching its descriptor for use within
+	the loop.
+	(gfc_conv_array_index_ref, gfc_conv_vector_array_index): Delete.
+	(gfc_conv_array_index_offset): Handle scalar, vector and range
+	dimensions as separate cases of a switch statement.  In the vector
+	case, use the loop variable to calculate a vector index and use the
+	referenced element as the dimension's index.  Perform bounds checking
+	on this final index.
+	(gfc_conv_section_upper_bound): Return null for vector indexes.
+	(gfc_conv_section_startstride): Give vector indexes a start value
+	of 0 and a stride of 1.
+	(gfc_conv_ss_startstride): Adjust for new GFC_SS_VECTOR representation.
+	(gfc_conv_expr_descriptor): Expand comments.  Generalize the
+	handling of the !want_pointer && !direct_byref case.  Use
+	gfc_ref_needs_temporary_p to decide whether the variable case
+	needs a temporary.
+	(gfc_walk_variable_expr): Handle DIMEN_VECTOR by creating a
+	GFC_SS_VECTOR index.
+	* trans-expr.c: Include dependency.h.
+	(gfc_trans_arrayfunc_assign): Fail if the target needs a temporary.
+
+2005-09-09  Richard Sandiford  <richard@codesourcery.com>
+
 	PR fortran/21104
 	* trans.h (gfc_interface_sym_mapping, gfc_interface_mapping): Moved
 	from trans-expr.c.

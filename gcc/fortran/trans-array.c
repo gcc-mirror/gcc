@@ -361,7 +361,6 @@ gfc_free_ss (gfc_ss * ss)
   switch (ss->type)
     {
     case GFC_SS_SECTION:
-    case GFC_SS_VECTOR:
       for (n = 0; n < GFC_MAX_DIMENSIONS; n++)
 	{
 	  if (ss->data.info.subscript[n])
@@ -1355,6 +1354,47 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
 }
 
 
+/* INFO describes a GFC_SS_SECTION in loop LOOP, and this function is
+   called after evaluating all of INFO's vector dimensions.  Go through
+   each such vector dimension and see if we can now fill in any missing
+   loop bounds.  */
+
+static void
+gfc_set_vector_loop_bounds (gfc_loopinfo * loop, gfc_ss_info * info)
+{
+  gfc_se se;
+  tree tmp;
+  tree desc;
+  tree zero;
+  int n;
+  int dim;
+
+  for (n = 0; n < loop->dimen; n++)
+    {
+      dim = info->dim[n];
+      if (info->ref->u.ar.dimen_type[dim] == DIMEN_VECTOR
+	  && loop->to[n] == NULL)
+	{
+	  /* Loop variable N indexes vector dimension DIM, and we don't
+	     yet know the upper bound of loop variable N.  Set it to the
+	     difference between the vector's upper and lower bounds.  */
+	  gcc_assert (loop->from[n] == gfc_index_zero_node);
+	  gcc_assert (info->subscript[dim]
+		      && info->subscript[dim]->type == GFC_SS_VECTOR);
+
+	  gfc_init_se (&se, NULL);
+	  desc = info->subscript[dim]->data.info.descriptor;
+	  zero = gfc_rank_cst[0];
+	  tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
+			     gfc_conv_descriptor_ubound (desc, zero),
+			     gfc_conv_descriptor_lbound (desc, zero));
+	  tmp = gfc_evaluate_now (tmp, &loop->pre);
+	  loop->to[n] = tmp;
+	}
+    }
+}
+
+
 /* Add the pre and post chains for all the scalar expressions in a SS chain
    to loop.  This is called after the loop parameters have been calculated,
    but before the actual scalarizing loops.  */
@@ -1410,14 +1450,21 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript)
 	  break;
 
 	case GFC_SS_SECTION:
-	case GFC_SS_VECTOR:
-	  /* Scalarized expression.  Evaluate any scalar subscripts.  */
+	  /* Add the expressions for scalar and vector subscripts.  */
 	  for (n = 0; n < GFC_MAX_DIMENSIONS; n++)
-	    {
-	      /* Add the expressions for scalar subscripts.  */
-	      if (ss->data.info.subscript[n])
-		gfc_add_loop_ss_code (loop, ss->data.info.subscript[n], true);
-	    }
+	    if (ss->data.info.subscript[n])
+	      gfc_add_loop_ss_code (loop, ss->data.info.subscript[n], true);
+
+	  gfc_set_vector_loop_bounds (loop, &ss->data.info);
+	  break;
+
+	case GFC_SS_VECTOR:
+	  /* Get the vector's descriptor and store it in SS.  */
+	  gfc_init_se (&se, NULL);
+	  gfc_conv_expr_descriptor (&se, ss->expr, gfc_walk_expr (ss->expr));
+	  gfc_add_block_to_block (&loop->pre, &se.pre);
+	  gfc_add_block_to_block (&loop->post, &se.post);
+	  ss->data.info.descriptor = se.expr;
 	  break;
 
 	case GFC_SS_INTRINSIC:
@@ -1620,41 +1667,6 @@ gfc_conv_array_ubound (tree descriptor, int dim)
 }
 
 
-/* Translate an array reference.  The descriptor should be in se->expr.
-   Do not use this function, it wil be removed soon.  */
-/*GCC ARRAYS*/
-
-static void
-gfc_conv_array_index_ref (gfc_se * se, tree pointer, tree * indices,
-                         tree offset, int dimen)
-{
-  tree array;
-  tree tmp;
-  tree index;
-  int n;
-
-  array = gfc_build_indirect_ref (pointer);
-
-  index = offset;
-  for (n = 0; n < dimen; n++)
-    {
-      /* index = index + stride[n]*indices[n] */
-      tmp = gfc_conv_array_stride (se->expr, n);
-      tmp = fold_build2 (MULT_EXPR, gfc_array_index_type, indices[n], tmp);
-
-      index = fold_build2 (PLUS_EXPR, gfc_array_index_type, index, tmp);
-    }
-
-  /* Result = data[index].  */
-  tmp = gfc_build_array_ref (array, index);
-
-  /* Check we've used the correct number of dimensions.  */
-  gcc_assert (TREE_CODE (TREE_TYPE (tmp)) != ARRAY_TYPE);
-
-  se->expr = tmp;
-}
-
-
 /* Generate code to perform an array index bound check.  */
 
 static tree
@@ -1682,61 +1694,6 @@ gfc_trans_array_bound_check (gfc_se * se, tree descriptor, tree index, int n)
 }
 
 
-/* A reference to an array vector subscript.  Uses recursion to handle nested
-   vector subscripts.  */
-
-static tree
-gfc_conv_vector_array_index (gfc_se * se, tree index, gfc_ss * ss)
-{
-  tree descsave;
-  tree indices[GFC_MAX_DIMENSIONS];
-  gfc_array_ref *ar;
-  gfc_ss_info *info;
-  int n;
-
-  gcc_assert (ss && ss->type == GFC_SS_VECTOR);
-
-  /* Save the descriptor.  */
-  descsave = se->expr;
-  info = &ss->data.info;
-  se->expr = info->descriptor;
-
-  ar = &info->ref->u.ar;
-  for (n = 0; n < ar->dimen; n++)
-    {
-      switch (ar->dimen_type[n])
-	{
-	case DIMEN_ELEMENT:
-	  gcc_assert (info->subscript[n] != gfc_ss_terminator
-		  && info->subscript[n]->type == GFC_SS_SCALAR);
-	  indices[n] = info->subscript[n]->data.scalar.expr;
-	  break;
-
-	case DIMEN_RANGE:
-	  indices[n] = index;
-	  break;
-
-	case DIMEN_VECTOR:
-	  index = gfc_conv_vector_array_index (se, index, info->subscript[n]);
-
-	  indices[n] =
-	    gfc_trans_array_bound_check (se, info->descriptor, index, n);
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-    }
-  /* Get the index from the vector.  */
-  gfc_conv_array_index_ref (se, info->data, indices, info->offset, ar->dimen);
-  index = se->expr;
-  /* Put the descriptor back.  */
-  se->expr = descsave;
-
-  return index;
-}
-
-
 /* Return the offset for an index.  Performs bound checking for elemental
    dimensions.  Single element references are processed separately.  */
 
@@ -1745,25 +1702,52 @@ gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
 			     gfc_array_ref * ar, tree stride)
 {
   tree index;
+  tree desc;
+  tree data;
 
   /* Get the index into the array for this dimension.  */
   if (ar)
     {
       gcc_assert (ar->type != AR_ELEMENT);
-      if (ar->dimen_type[dim] == DIMEN_ELEMENT)
+      switch (ar->dimen_type[dim])
 	{
+	case DIMEN_ELEMENT:
 	  gcc_assert (i == -1);
 	  /* Elemental dimension.  */
 	  gcc_assert (info->subscript[dim]
-		  && info->subscript[dim]->type == GFC_SS_SCALAR);
+		      && info->subscript[dim]->type == GFC_SS_SCALAR);
 	  /* We've already translated this value outside the loop.  */
 	  index = info->subscript[dim]->data.scalar.expr;
 
 	  index =
 	    gfc_trans_array_bound_check (se, info->descriptor, index, dim);
-	}
-      else
-	{
+	  break;
+
+	case DIMEN_VECTOR:
+	  gcc_assert (info && se->loop);
+	  gcc_assert (info->subscript[dim]
+		      && info->subscript[dim]->type == GFC_SS_VECTOR);
+	  desc = info->subscript[dim]->data.info.descriptor;
+
+	  /* Get a zero-based index into the vector.  */
+	  index = fold_build2 (MINUS_EXPR, gfc_array_index_type,
+			       se->loop->loopvar[i], se->loop->from[i]);
+
+	  /* Multiply the index by the stride.  */
+	  index = fold_build2 (MULT_EXPR, gfc_array_index_type,
+			       index, gfc_conv_array_stride (desc, 0));
+
+	  /* Read the vector to get an index into info->descriptor.  */
+	  data = gfc_build_indirect_ref (gfc_conv_array_data (desc));
+	  index = gfc_build_array_ref (data, index);
+	  index = gfc_evaluate_now (index, &se->pre);
+
+	  /* Do any bounds checking on the final info->descriptor index.  */
+	  index = gfc_trans_array_bound_check (se, info->descriptor,
+					       index, dim);
+	  break;
+
+	case DIMEN_RANGE:
 	  /* Scalarized dimension.  */
 	  gcc_assert (info && se->loop);
 
@@ -1773,18 +1757,10 @@ gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
 			       info->stride[i]);
 	  index = fold_build2 (PLUS_EXPR, gfc_array_index_type, index,
 			       info->delta[i]);
+	  break;
 
-	  if (ar->dimen_type[dim] == DIMEN_VECTOR)
-	    {
-              /* Handle vector subscripts.  */
-	      index = gfc_conv_vector_array_index (se, index,
-						   info->subscript[dim]);
-	      index =
-		gfc_trans_array_bound_check (se, info->descriptor, index,
-					     dim);
-	    }
-	  else
-	    gcc_assert (ar->dimen_type[dim] == DIMEN_RANGE);
+	default:
+	  gcc_unreachable ();
 	}
     }
   else
@@ -2195,27 +2171,25 @@ static tree
 gfc_conv_section_upper_bound (gfc_ss * ss, int n, stmtblock_t * pblock)
 {
   int dim;
-  gfc_ss *vecss;
   gfc_expr *end;
   tree desc;
   tree bound;
   gfc_se se;
+  gfc_ss_info *info;
 
   gcc_assert (ss->type == GFC_SS_SECTION);
 
-  /* For vector array subscripts we want the size of the vector.  */
-  dim = ss->data.info.dim[n];
-  vecss = ss;
-  while (vecss->data.info.ref->u.ar.dimen_type[dim] == DIMEN_VECTOR)
-    {
-      vecss = vecss->data.info.subscript[dim];
-      gcc_assert (vecss && vecss->type == GFC_SS_VECTOR);
-      dim = vecss->data.info.dim[0];
-    }
+  info = &ss->data.info;
+  dim = info->dim[n];
 
-  gcc_assert (vecss->data.info.ref->u.ar.dimen_type[dim] == DIMEN_RANGE);
-  end = vecss->data.info.ref->u.ar.end[dim];
-  desc = vecss->data.info.descriptor;
+  if (info->ref->u.ar.dimen_type[dim] == DIMEN_VECTOR)
+    /* We'll calculate the upper bound once we have access to the
+       vector's descriptor.  */
+    return NULL;
+
+  gcc_assert (info->ref->u.ar.dimen_type[dim] == DIMEN_RANGE);
+  desc = info->descriptor;
+  end = info->ref->u.ar.end[dim];
 
   if (end)
     {
@@ -2242,32 +2216,28 @@ gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int n)
 {
   gfc_expr *start;
   gfc_expr *stride;
-  gfc_ss *vecss;
   tree desc;
   gfc_se se;
   gfc_ss_info *info;
   int dim;
 
-  info = &ss->data.info;
+  gcc_assert (ss->type == GFC_SS_SECTION);
 
+  info = &ss->data.info;
   dim = info->dim[n];
 
-  /* For vector array subscripts we want the size of the vector.  */
-  vecss = ss;
-  while (vecss->data.info.ref->u.ar.dimen_type[dim] == DIMEN_VECTOR)
+  if (info->ref->u.ar.dimen_type[dim] == DIMEN_VECTOR)
     {
-      vecss = vecss->data.info.subscript[dim];
-      gcc_assert (vecss && vecss->type == GFC_SS_VECTOR);
-      /* Get the descriptors for the vector subscripts as well.  */
-      if (!vecss->data.info.descriptor)
-	gfc_conv_ss_descriptor (&loop->pre, vecss, !loop->array_parameter);
-      dim = vecss->data.info.dim[0];
+      /* We use a zero-based index to access the vector.  */
+      info->start[n] = gfc_index_zero_node;
+      info->stride[n] = gfc_index_one_node;
+      return;
     }
 
-  gcc_assert (vecss->data.info.ref->u.ar.dimen_type[dim] == DIMEN_RANGE);
-  start = vecss->data.info.ref->u.ar.start[dim];
-  stride = vecss->data.info.ref->u.ar.stride[dim];
-  desc = vecss->data.info.descriptor;
+  gcc_assert (info->ref->u.ar.dimen_type[dim] == DIMEN_RANGE);
+  desc = info->descriptor;
+  start = info->ref->u.ar.start[dim];
+  stride = info->ref->u.ar.stride[dim];
 
   /* Calculate the start of the range.  For vector subscripts this will
      be the range of the vector.  */
@@ -2309,7 +2279,6 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
   int n;
   tree tmp;
   gfc_ss *ss;
-  gfc_ss *vecss;
   tree desc;
 
   loop->dimen = 0;
@@ -2390,22 +2359,15 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	  /* TODO: range checking for mapped dimensions.  */
 	  info = &ss->data.info;
 
-	  /* This only checks scalarized dimensions, elemental dimensions are
-	     checked later.  */
+	  /* This code only checks ranges.  Elemental and vector
+	     dimensions are checked later.  */
 	  for (n = 0; n < loop->dimen; n++)
 	    {
 	      dim = info->dim[n];
-	      vecss = ss;
-	      while (vecss->data.info.ref->u.ar.dimen_type[dim]
-		     == DIMEN_VECTOR)
-		{
-		  vecss = vecss->data.info.subscript[dim];
-		  gcc_assert (vecss && vecss->type == GFC_SS_VECTOR);
-		  dim = vecss->data.info.dim[0];
-		}
-	      gcc_assert (vecss->data.info.ref->u.ar.dimen_type[dim]
-		      == DIMEN_RANGE);
-	      desc = vecss->data.info.descriptor;
+	      if (info->ref->u.ar.dimen_type[dim] != DIMEN_RANGE)
+		continue;
+
+	      desc = ss->data.info.descriptor;
 
 	      /* Check lower bound.  */
 	      bound = gfc_conv_array_lbound (desc, dim);
@@ -3662,11 +3624,28 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
 }
 
 
-/* Convert an array for passing as an actual parameter.  Expressions and
+/* Convert an array for passing as an actual argument.  Expressions and
    vector subscripts are evaluated and stored in a temporary, which is then
    passed.  For whole arrays the descriptor is passed.  For array sections
    a modified copy of the descriptor is passed, but using the original data.
-   Also used for array pointer assignments by setting se->direct_byref.  */
+
+   This function is also used for array pointer assignments, and there
+   are three cases:
+
+     - want_pointer && !se->direct_byref
+	 EXPR is an actual argument.  On exit, se->expr contains a
+	 pointer to the array descriptor.
+
+     - !want_pointer && !se->direct_byref
+	 EXPR is an actual argument to an intrinsic function or the
+	 left-hand side of a pointer assignment.  On exit, se->expr
+	 contains the descriptor for EXPR.
+
+     - !want_pointer && se->direct_byref
+	 EXPR is the right-hand side of a pointer assignment and
+	 se->expr is the descriptor for the previously-evaluated
+	 left-hand side.  The function creates an assignment from
+	 EXPR to se->expr.  */
 
 void
 gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
@@ -3682,7 +3661,6 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
   tree start;
   tree offset;
   int full;
-  gfc_ss *vss;
   gfc_ref *ref;
 
   gcc_assert (ss != gfc_ss_terminator);
@@ -3701,21 +3679,16 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	secss = secss->next;
 
       gcc_assert (secss != gfc_ss_terminator);
-
-      need_tmp = 0;
-      for (n = 0; n < secss->data.info.dimen; n++)
-	{
-	  vss = secss->data.info.subscript[secss->data.info.dim[n]];
-	  if (vss && vss->type == GFC_SS_VECTOR)
-	    need_tmp = 1;
-	}
-
       info = &secss->data.info;
 
       /* Get the descriptor for the array.  */
       gfc_conv_ss_descriptor (&se->pre, secss, 0);
       desc = info->descriptor;
-      if (GFC_ARRAY_TYPE_P (TREE_TYPE (desc)))
+
+      need_tmp = gfc_ref_needs_temporary_p (expr->ref);
+      if (need_tmp)
+	full = 0;
+      else if (GFC_ARRAY_TYPE_P (TREE_TYPE (desc)))
 	{
 	  /* Create a new descriptor if the array doesn't have one.  */
 	  full = 0;
@@ -3742,23 +3715,6 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 		  full = 0;
 		  break;
 		}
-	    }
-	}
-
-      /* Check for substring references.  */
-      ref = expr->ref;
-      if (!need_tmp && ref && expr->ts.type == BT_CHARACTER)
-	{
-	  while (ref->next)
-	    ref = ref->next;
-	  if (ref->type == REF_SUBSTRING)
-	    {
-	      /* In general character substrings need a copy.  Character
-		 array strides are expressed as multiples of the element
-		 size (consistent with other array types), not in
-		 characters.  */
-	      full = 0;
-	      need_tmp = 1;
 	    }
 	}
 
@@ -3841,7 +3797,8 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
   if (!need_tmp)
     loop.array_parameter = 1;
   else
-    gcc_assert (se->want_pointer && !se->direct_byref);
+    /* The right-hand side of a pointer assignment mustn't use a temporary.  */
+    gcc_assert (!se->direct_byref);
 
   /* Setup the scalarizing loops and bounds.  */
   gfc_conv_ss_startstride (&loop);
@@ -3922,16 +3879,10 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       gfc_add_modify_expr (&loop.pre, tmp, gfc_index_zero_node);
 
       gcc_assert (is_gimple_lvalue (desc));
-      se->expr = gfc_build_addr_expr (NULL, desc);
     }
   else if (expr->expr_type == EXPR_FUNCTION)
     {
       desc = info->descriptor;
-
-      if (se->want_pointer)
-	se->expr = gfc_build_addr_expr (NULL_TREE, desc);
-      else
-	se->expr = desc;
 
       if (expr->ts.type == BT_CHARACTER)
 	se->string_length = expr->symtree->n.sym->ts.cl->backend_decl;
@@ -4083,15 +4034,16 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	  tmp = gfc_conv_descriptor_offset (parm);
 	  gfc_add_modify_expr (&loop.pre, tmp, gfc_index_zero_node);
 	}
+      desc = parm;
+    }
 
-      if (!se->direct_byref)
-	{
-	  /* Get a pointer to the new descriptor.  */
-          if (se->want_pointer)
-	    se->expr = gfc_build_addr_expr (NULL, parm);
-          else
-            se->expr = parm;
-	}
+  if (!se->direct_byref)
+    {
+      /* Get a pointer to the new descriptor.  */
+      if (se->want_pointer)
+	se->expr = gfc_build_addr_expr (NULL, desc);
+      else
+	se->expr = desc;
     }
 
   gfc_add_block_to_block (&se->pre, &loop.pre);
@@ -4383,24 +4335,14 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 		  break;
 
 		case DIMEN_VECTOR:
-		  /* Get a SS for the vector.  This will not be added to the
-		     chain directly.  */
-		  indexss = gfc_walk_expr (ar->start[n]);
-		  if (indexss == gfc_ss_terminator)
-		    internal_error ("scalar vector subscript???");
-
-                  /* We currently only handle really simple vector
-                     subscripts.  */
-		  if (indexss->next != gfc_ss_terminator)
-		    gfc_todo_error ("vector subscript expressions");
-		  indexss->loop_chain = gfc_ss_terminator;
-
-		  /* Mark this as a vector subscript.  We don't add this
-                     directly into the chain, but as a subscript of the
-                     existing SS for this term.  */
+		  /* Create a GFC_SS_VECTOR index in which we can store
+		     the vector's descriptor.  */
+		  indexss = gfc_get_ss ();
 		  indexss->type = GFC_SS_VECTOR;
+		  indexss->expr = ar->start[n];
+		  indexss->next = gfc_ss_terminator;
+		  indexss->loop_chain = gfc_ss_terminator;
 		  newss->data.info.subscript[n] = indexss;
-                  /* Also remember this dimension.  */
 		  newss->data.info.dim[newss->data.info.dimen] = n;
 		  newss->data.info.dimen++;
 		  break;

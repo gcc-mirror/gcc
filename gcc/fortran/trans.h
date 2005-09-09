@@ -138,8 +138,8 @@ typedef enum
      uses this temporary inside the scalarization loop.  */
   GFC_SS_CONSTRUCTOR,
 
-  /* A vector subscript.  Only used as the SS chain for a subscript.
-     Similar int format to a GFC_SS_SECTION.  */
+  /* A vector subscript.  The vector's descriptor is cached in the
+     "descriptor" field of the associated gfc_ss_info.  */
   GFC_SS_VECTOR,
 
   /* A temporary array allocated by the scalarizer.  Its rank can be less
