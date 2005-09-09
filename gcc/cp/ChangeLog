@@ -1,3 +1,14 @@
+2005-09-09  Richard Henderson  <rth@redhat.com>
+
+	PR debug/20998
+	* cp-tree.def (ALIAS_DECL): Remove.
+	* cp-lang.c (cp_init_ts): Remove support for it.
+	* error.c (dump_decl): Likewise.
+	* name-lookup.c (pushdecl): Likewise.
+	* semantics.c (finish_id_expression): Likewise.
+	* decl2.c (build_anon_union_vars): Use a VAR_DECL with
+	DECL_VALUE_EXPR instead.
+
 2005-09-08  Richard Henderson  <rth@redhat.com>
 
 	PR debug/23190

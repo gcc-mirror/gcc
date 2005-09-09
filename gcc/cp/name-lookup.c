@@ -832,7 +832,6 @@ pushdecl (tree x)
   		&& t != NULL_TREE)
  	      && (TREE_CODE (x) == TYPE_DECL
  		  || TREE_CODE (x) == VAR_DECL
- 		  || TREE_CODE (x) == ALIAS_DECL
  		  || TREE_CODE (x) == NAMESPACE_DECL
  		  || TREE_CODE (x) == CONST_DECL
  		  || TREE_CODE (x) == TEMPLATE_DECL))
