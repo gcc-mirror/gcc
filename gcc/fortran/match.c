@@ -2226,10 +2226,11 @@ match_common_name (char *name)
 match
 gfc_match_common (void)
 {
-  gfc_symbol *sym, **head, *tail, *old_blank_common;
+  gfc_symbol *sym, **head, *tail, *other, *old_blank_common;
   char name[GFC_MAX_SYMBOL_LEN+1];
   gfc_common_head *t;
   gfc_array_spec *as;
+  gfc_equiv * e1, * e2;
   match m;
 
   old_blank_common = gfc_current_ns->blank_common.head;
@@ -2348,7 +2349,45 @@ gfc_match_common (void)
 
 	      sym->as = as;
 	      as = NULL;
+
 	    }
+
+	  sym->common_head = t;
+
+	  /* Check to see if the symbol is already in an equivalence group.
+	     If it is, set the other members as being in common.  */
+	  if (sym->attr.in_equivalence)
+	    {
+	      for (e1 = gfc_current_ns->equiv; e1; e1 = e1->next)
+	        {
+	          for (e2 = e1; e2; e2 = e2->eq)
+	            if (e2->expr->symtree->n.sym == sym)
+		      goto equiv_found;
+
+		  continue;
+
+	  equiv_found:
+
+		  for (e2 = e1; e2; e2 = e2->eq)
+		    {
+		      other = e2->expr->symtree->n.sym;
+		      if (other->common_head
+		            && other->common_head != sym->common_head)
+			{
+			  gfc_error ("Symbol '%s', in COMMON block '%s' at "
+				     "%C is being indirectly equivalenced to "
+				     "another COMMON block '%s'",
+				     sym->name,
+				     sym->common_head->name,
+				     other->common_head->name);
+			    goto cleanup;
+			}
+		      other->attr.in_common = 1;
+		      other->common_head = t;
+		    }
+		}
+	    }
+
 
 	  gfc_gobble_whitespace ();
 	  if (gfc_match_eos () == MATCH_YES)
@@ -2553,7 +2592,10 @@ gfc_match_equivalence (void)
 {
   gfc_equiv *eq, *set, *tail;
   gfc_ref *ref;
+  gfc_symbol *sym;
   match m;
+  gfc_common_head *common_head = NULL;
+  bool common_flag;
 
   tail = NULL;
 
@@ -2570,10 +2612,11 @@ gfc_match_equivalence (void)
 	goto syntax;
 
       set = eq;
+      common_flag = FALSE;
 
       for (;;)
 	{
-	  m = gfc_match_variable (&set->expr, 1);
+	  m = gfc_match_equiv_variable (&set->expr);
 	  if (m == MATCH_ERROR)
 	    goto cleanup;
 	  if (m == MATCH_NO)
@@ -2588,6 +2631,14 @@ gfc_match_equivalence (void)
 		goto cleanup;
 	      }
 
+	  if (set->expr->symtree->n.sym->attr.in_common)
+	    {
+	      common_flag = TRUE;
+	      common_head = set->expr->symtree->n.sym->common_head;
+	    }
+
+	  set->expr->symtree->n.sym->attr.in_equivalence = 1;
+
 	  if (gfc_match_char (')') == MATCH_YES)
 	    break;
 	  if (gfc_match_char (',') != MATCH_YES)
@@ -2596,6 +2647,26 @@ gfc_match_equivalence (void)
 	  set->eq = gfc_get_equiv ();
 	  set = set->eq;
 	}
+
+      /* If one of the members of an equivalence is in common, then
+	 mark them all as being in common.  Before doing this, check
+	 that members of the equivalence group are not in different
+	 common blocks. */
+      if (common_flag)
+	for (set = eq; set; set = set->eq)
+	  {
+	    sym = set->expr->symtree->n.sym;
+	    if (sym->common_head && sym->common_head != common_head)
+	      {
+		gfc_error ("Attempt to indirectly overlap COMMON "
+			   "blocks %s and %s by EQUIVALENCE at %C",
+			   sym->common_head->name,
+			   common_head->name);
+		goto cleanup;
+	      }
+	    sym->attr.in_common = 1;
+	    sym->common_head = common_head;
+	  }
 
       if (gfc_match_eos () == MATCH_YES)
 	break;

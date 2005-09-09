@@ -1,3 +1,27 @@
+2005-09-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/18878
+	* gfortran.dg/module_double_reuse.f90: New.
+
+2005-09-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/23270
+	PR fortran/22304
+	PR fortran/18870
+	PR fortran/17917
+	PR fortran/16511
+	* gfortran.dg/common_equivalence_1.f: New.
+	* gfortran.dg/common_equivalence_2.f: New.
+	* gfortran.dg/common_equivalence_3.f: New.
+	* gfortran.dg/contained_equivalence_1.f90: New.
+	* gfortran.dg/module_blank_common.f90: New. 
+	* gfortran.dg/module_commons_1.f90: New.
+	* gfortran.dg/module_equivalence_1.f90: New.
+	* gfortran.dg/nested_modules_1.f90: New.
+	* gfortran.dg/g77/19990905-0.f: Remove XFAIL, rearrange
+	equivalences and add comment to connect the test with
+	the PR.
+
 2005-09-08  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/23765

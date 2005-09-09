@@ -119,8 +119,6 @@ typedef struct segment_info
 static segment_info * current_segment;
 static gfc_namespace *gfc_common_ns = NULL;
 
-#define BLANK_COMMON_NAME "__BLNK__"
-
 /* Make a segment_info based on a symbol.  */
 
 static segment_info *
@@ -665,46 +663,45 @@ add_condition (segment_info *f, gfc_equiv *eq1, gfc_equiv *eq2)
 
 
 /* Given a segment element, search through the equivalence lists for unused
-   conditions that involve the symbol.  Add these rules to the segment.  Only
-   checks for rules involving the first symbol in the equivalence set.  */
- 
+   conditions that involve the symbol.  Add these rules to the segment.  */
+
 static bool
 find_equivalence (segment_info *n)
 {
-  gfc_equiv *e1, *e2, *eq, *other;
+  gfc_equiv *e1, *e2, *eq;
   bool found;
- 
+
   found = FALSE;
+
   for (e1 = n->sym->ns->equiv; e1; e1 = e1->next)
     {
-      other = NULL;
-      for (e2 = e1->eq; e2; e2 = e2->eq)
-	{
-	  if (e2->used)
-	    continue;
+      eq = NULL;
 
-	  if (e1->expr->symtree->n.sym == n->sym)
-	    {
-	      eq = e1;
-	      other = e2;
-	    }
-	  else if (e2->expr->symtree->n.sym == n->sym)
+      /* Search the equivalence list, including the root (first) element
+         for the symbol that owns the segment.  */
+      for (e2 = e1; e2; e2 = e2->eq)
+	{
+	  if (!e2->used && e2->expr->symtree->n.sym == n->sym)
 	    {
 	      eq = e2;
-	      other = e1;
+	      break;
 	    }
-	  else
-	    eq = NULL;
-	  
-	  if (eq)
+	}
+
+      /* Go to the next root element.  */
+      if (eq == NULL)
+	continue;
+
+      eq->used = 1;
+
+      /* Now traverse the equivalence list matching the offsets.  */
+      for (e2 = e1; e2; e2 = e2->eq)
+	{
+	  if (!e2->used && e2 != eq)
 	    {
-	      add_condition (n, eq, other);
-	      eq->used = 1;
+	      add_condition (n, eq, e2);
+	      e2->used = 1;
 	      found = TRUE;
-	      /* If this symbol is the first in the chain we may find other
-		 matches. Otherwise we can skip to the next equivalence.  */
-	      if (eq == e2)
-		break;
 	    }
 	}
     }
@@ -813,12 +810,14 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
   /* Add symbols to the segment.  */
   for (sym = var_list; sym; sym = sym->common_next)
     {
-      if (sym->equiv_built)
-	{
-	  /* Symbol has already been added via an equivalence.  */
-	  current_segment = common_segment;
-	  s = find_segment_info (sym);
+      current_segment = common_segment;
+      s = find_segment_info (sym);
 
+      /* Symbol has already been added via an equivalence.  Multiple
+	 use associations of the same common block result in equiv_built
+	 being set but no information about the symbol in the segment.  */
+      if (s && sym->equiv_built)
+	{
 	  /* Ensure the current location is properly aligned.  */
 	  align = TYPE_ALIGN_UNIT (s->field);
 	  current_offset = (current_offset + align - 1) &~ (align - 1);
@@ -893,6 +892,7 @@ finish_equivalences (gfc_namespace *ns)
 {
   gfc_equiv *z, *y;
   gfc_symbol *sym;
+  gfc_common_head * c;
   HOST_WIDE_INT offset;
   unsigned HOST_WIDE_INT align;
   bool dummy;
@@ -916,8 +916,23 @@ finish_equivalences (gfc_namespace *ns)
 
 	apply_segment_offset (current_segment, offset);
 
-	/* Create the decl.  */
-        create_common (NULL, current_segment, true);
+	/* Create the decl. If this is a module equivalence, it has a unique
+	   name, pointed to by z->module. This is written to a gfc_common_header
+	   to push create_common into using build_common_decl, so that the
+	   equivalence appears as an external symbol. Otherwise, a local
+	   declaration is built using build_equiv_decl.*/
+	if (z->module)
+	  {
+	    c = gfc_get_common_head ();
+	    /* We've lost the real location, so use the location of the
+	     enclosing procedure.  */
+	    c->where = ns->proc_name->declared_at;
+	    strcpy (c->name, z->module);
+	  }
+	else
+	  c = NULL;
+
+        create_common (c, current_segment, true);
         break;
       }
 }
