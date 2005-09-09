@@ -1,3 +1,8 @@
+2005-09-09  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/23624
+	* g++.dg/tree-ssa/pr23624.C: New testcase.
+
 2005-09-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/18878
