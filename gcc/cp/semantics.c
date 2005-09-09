@@ -2747,11 +2747,6 @@ finish_id_expression (tree id_expression,
 
 	  decl = convert_from_reference (decl);
 	}
-
-      /* Resolve references to variables of anonymous unions
-	 into COMPONENT_REFs.  */
-      if (TREE_CODE (decl) == ALIAS_DECL)
-	decl = unshare_expr (DECL_INITIAL (decl));
     }
 
   if (TREE_DEPRECATED (decl))

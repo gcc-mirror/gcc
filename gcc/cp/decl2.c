@@ -1057,7 +1057,7 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
 }
 
 /* Walks through the namespace- or function-scope anonymous union
-   OBJECT, with the indicated TYPE, building appropriate ALIAS_DECLs.
+   OBJECT, with the indicated TYPE, building appropriate VAR_DECLs.
    Returns one of the fields for use in the mangled name.  */
 
 static tree
@@ -1101,11 +1101,12 @@ build_anon_union_vars (tree type, tree object)
 
       if (DECL_NAME (field))
 	{
-	  decl = build_decl (ALIAS_DECL, DECL_NAME (field), TREE_TYPE (field));
-	  DECL_INITIAL (decl) = ref;
-	  TREE_PUBLIC (decl) = 0;
-	  TREE_STATIC (decl) = 0;
-	  DECL_EXTERNAL (decl) = 1;
+	  decl = build_decl (VAR_DECL, DECL_NAME (field), TREE_TYPE (field));
+	  TREE_PUBLIC (decl) = TREE_PUBLIC (object);
+	  TREE_STATIC (decl) = TREE_PUBLIC (object);
+	  DECL_EXTERNAL (decl) = DECL_EXTERNAL (object);
+	  SET_DECL_VALUE_EXPR (decl, ref);
+	  DECL_HAS_VALUE_EXPR_P (decl) = 1;
 	  decl = pushdecl (decl);
 	}
       else if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))

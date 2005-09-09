@@ -87,10 +87,6 @@ DEFTREECODE (THROW_EXPR, "throw_expr", tcc_expression, 1)
    these to avoid actually creating instances of the empty classes.  */
 DEFTREECODE (EMPTY_CLASS_EXPR, "empty_class_expr", tcc_expression, 0)
 
-/* A DECL which is really just a placeholder for an expression.  Used to
-   implement non-class scope anonymous unions.  */
-DEFTREECODE (ALIAS_DECL, "alias_decl", tcc_declaration, 0)
-
 /* A reference to a member function or member functions from a base
    class.  BASELINK_FUNCTIONS gives the FUNCTION_DECL,
    TEMPLATE_DECL, OVERLOAD, or TEMPLATE_ID_EXPR corresponding to the
