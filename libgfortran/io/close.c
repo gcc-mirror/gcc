@@ -64,7 +64,10 @@ st_close (void)
 		 "Bad STATUS parameter in CLOSE statement");
 
   if (ioparm.library_return != LIBRARY_OK)
+  {
+    library_end ();
     return;
+  }
 
   u = find_unit (ioparm.unit);
   if (u != NULL)
