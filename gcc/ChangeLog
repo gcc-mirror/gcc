@@ -44,6 +44,7 @@
 
 2005-09-08  Josh Conner  <jconner@apple.com>
 
+	PR c++/21135
 	PR c++/23180
 	* expr.c (expand_expr_addr_expr_1): Don't invoke
 	expand_simple_binop for EXPAND_INITIALIZER.
