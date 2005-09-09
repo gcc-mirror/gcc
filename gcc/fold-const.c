@@ -10006,7 +10006,8 @@ fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
 
       /* If the second operand is simpler than the third, swap them
 	 since that produces better jump optimization results.  */
-      if (tree_swap_operands_p (op1, op2, false))
+      if (truth_value_p (TREE_CODE (arg0))
+	  && tree_swap_operands_p (op1, op2, false))
 	{
 	  /* See if this can be inverted.  If it can't, possibly because
 	     it was a floating-point inequality comparison, don't do

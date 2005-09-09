@@ -1,3 +1,9 @@
+2005-09-09  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/23624
+	* fold-const.c (fold_ternary): Check truth_value_p before
+	calling invert_truthvalue.
+
 2005-09-09  Nick Clifton  <nickc@redhat.com>
 
 	* Makefile.in (LIBGCC_DEPS): Add libgcc2.h.
