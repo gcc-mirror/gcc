@@ -1,3 +1,11 @@
+2005-09-08  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	Backport from mainline:
+	2005-09-01  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+	* gcc.dg/Wredundant-decls-2.c: New test to check that
+	-Wredundant-decls does not issue warning for a variable 
+	definition following a declaration.
+
 2005-09-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	Backport:
