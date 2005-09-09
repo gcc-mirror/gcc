@@ -53,6 +53,7 @@ static const io_tag
 	tag_advance	= {"ADVANCE", " advance = %e", BT_CHARACTER},
 	tag_rec		= {"REC", " rec = %e", BT_INTEGER},
 	tag_format	= {"FORMAT", NULL, BT_CHARACTER},
+	tag_iomsg	= {"IOMSG", " iomsg = %e", BT_CHARACTER},
 	tag_iostat	= {"IOSTAT", " iostat = %v", BT_INTEGER},
 	tag_size	= {"SIZE", " size = %v", BT_INTEGER},
 	tag_exist	= {"EXIST", " exist = %v", BT_LOGICAL},
@@ -1035,6 +1036,12 @@ resolve_tag (const io_tag * tag, gfc_expr * e)
 	  gfc_error ("%s tag at %L must be scalar", tag->name, &e->where);
 	  return FAILURE;
 	}
+      if (tag == &tag_iomsg)
+	{
+	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: IOMSG tag at %L",
+			      &e->where) == FAILURE)
+	    return FAILURE;
+	}
     }
 
   return SUCCESS;
@@ -1049,6 +1056,9 @@ match_open_element (gfc_open * open)
   match m;
 
   m = match_etag (&tag_unit, &open->unit);
+  if (m != MATCH_NO)
+    return m;
+  m = match_out_tag (&tag_iomsg, &open->iomsg);
   if (m != MATCH_NO)
     return m;
   m = match_out_tag (&tag_iostat, &open->iostat);
@@ -1102,6 +1112,7 @@ gfc_free_open (gfc_open * open)
     return;
 
   gfc_free_expr (open->unit);
+  gfc_free_expr (open->iomsg);
   gfc_free_expr (open->iostat);
   gfc_free_expr (open->file);
   gfc_free_expr (open->status);
@@ -1125,6 +1136,7 @@ gfc_resolve_open (gfc_open * open)
 {
 
   RESOLVE_TAG (&tag_unit, open->unit);
+  RESOLVE_TAG (&tag_iomsg, open->iomsg);
   RESOLVE_TAG (&tag_iostat, open->iostat);
   RESOLVE_TAG (&tag_file, open->file);
   RESOLVE_TAG (&tag_status, open->status);
@@ -1217,6 +1229,7 @@ gfc_free_close (gfc_close * close)
     return;
 
   gfc_free_expr (close->unit);
+  gfc_free_expr (close->iomsg);
   gfc_free_expr (close->iostat);
   gfc_free_expr (close->status);
 
@@ -1235,6 +1248,9 @@ match_close_element (gfc_close * close)
   if (m != MATCH_NO)
     return m;
   m = match_etag (&tag_status, &close->status);
+  if (m != MATCH_NO)
+    return m;
+  m = match_out_tag (&tag_iomsg, &close->iomsg);
   if (m != MATCH_NO)
     return m;
   m = match_out_tag (&tag_iostat, &close->iostat);
@@ -1318,6 +1334,7 @@ gfc_resolve_close (gfc_close * close)
 {
 
   RESOLVE_TAG (&tag_unit, close->unit);
+  RESOLVE_TAG (&tag_iomsg, close->iomsg);
   RESOLVE_TAG (&tag_iostat, close->iostat);
   RESOLVE_TAG (&tag_status, close->status);
 
@@ -1335,6 +1352,7 @@ gfc_free_filepos (gfc_filepos * fp)
 {
 
   gfc_free_expr (fp->unit);
+  gfc_free_expr (fp->iomsg);
   gfc_free_expr (fp->iostat);
   gfc_free (fp);
 }
@@ -1348,6 +1366,9 @@ match_file_element (gfc_filepos * fp)
   match m;
 
   m = match_etag (&tag_unit, &fp->unit);
+  if (m != MATCH_NO)
+    return m;
+  m = match_out_tag (&tag_iomsg, &fp->iomsg);
   if (m != MATCH_NO)
     return m;
   m = match_out_tag (&tag_iostat, &fp->iostat);
@@ -1439,6 +1460,8 @@ gfc_resolve_filepos (gfc_filepos * fp)
 {
 
   RESOLVE_TAG (&tag_unit, fp->unit);
+  RESOLVE_TAG (&tag_iostat, fp->iostat);
+  RESOLVE_TAG (&tag_iomsg, fp->iomsg);
   if (gfc_reference_st_label (fp->err, ST_LABEL_TARGET) == FAILURE)
     return FAILURE;
 
@@ -1666,6 +1689,9 @@ match_dt_element (io_kind k, gfc_dt * dt)
   m = match_etag (&tag_rec, &dt->rec);
   if (m != MATCH_NO)
     return m;
+  m = match_out_tag (&tag_iomsg, &dt->iomsg);
+  if (m != MATCH_NO)
+    return m;
   m = match_out_tag (&tag_iostat, &dt->iostat);
   if (m != MATCH_NO)
     return m;
@@ -1715,6 +1741,7 @@ gfc_free_dt (gfc_dt * dt)
   gfc_free_expr (dt->format_expr);
   gfc_free_expr (dt->rec);
   gfc_free_expr (dt->advance);
+  gfc_free_expr (dt->iomsg);
   gfc_free_expr (dt->iostat);
   gfc_free_expr (dt->size);
 
@@ -1732,6 +1759,7 @@ gfc_resolve_dt (gfc_dt * dt)
   RESOLVE_TAG (&tag_format, dt->format_expr);
   RESOLVE_TAG (&tag_rec, dt->rec);
   RESOLVE_TAG (&tag_advance, dt->advance);
+  RESOLVE_TAG (&tag_iomsg, dt->iomsg);
   RESOLVE_TAG (&tag_iostat, dt->iostat);
   RESOLVE_TAG (&tag_size, dt->size);
 
@@ -2364,6 +2392,7 @@ gfc_free_inquire (gfc_inquire * inquire)
 
   gfc_free_expr (inquire->unit);
   gfc_free_expr (inquire->file);
+  gfc_free_expr (inquire->iomsg);
   gfc_free_expr (inquire->iostat);
   gfc_free_expr (inquire->exist);
   gfc_free_expr (inquire->opened);
@@ -2404,6 +2433,7 @@ match_inquire_element (gfc_inquire * inquire)
   m = match_etag (&tag_unit, &inquire->unit);
   RETM m = match_etag (&tag_file, &inquire->file);
   RETM m = match_ltag (&tag_err, &inquire->err);
+  RETM m = match_out_tag (&tag_iomsg, &inquire->iomsg);
   RETM m = match_out_tag (&tag_iostat, &inquire->iostat);
   RETM m = match_vtag (&tag_exist, &inquire->exist);
   RETM m = match_vtag (&tag_opened, &inquire->opened);
@@ -2555,6 +2585,7 @@ gfc_resolve_inquire (gfc_inquire * inquire)
 
   RESOLVE_TAG (&tag_unit, inquire->unit);
   RESOLVE_TAG (&tag_file, inquire->file);
+  RESOLVE_TAG (&tag_iomsg, inquire->iomsg);
   RESOLVE_TAG (&tag_iostat, inquire->iostat);
   RESOLVE_TAG (&tag_exist, inquire->exist);
   RESOLVE_TAG (&tag_opened, inquire->opened);

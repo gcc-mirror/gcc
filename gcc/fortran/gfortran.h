@@ -1270,7 +1270,7 @@ gfc_alloc;
 typedef struct
 {
   gfc_expr *unit, *file, *status, *access, *form, *recl,
-    *blank, *position, *action, *delim, *pad, *iostat;
+    *blank, *position, *action, *delim, *pad, *iostat, *iomsg;
   gfc_st_label *err;
 }
 gfc_open;
@@ -1278,7 +1278,7 @@ gfc_open;
 
 typedef struct
 {
-  gfc_expr *unit, *status, *iostat;
+  gfc_expr *unit, *status, *iostat, *iomsg;
   gfc_st_label *err;
 }
 gfc_close;
@@ -1286,7 +1286,7 @@ gfc_close;
 
 typedef struct
 {
-  gfc_expr *unit, *iostat;
+  gfc_expr *unit, *iostat, *iomsg;
   gfc_st_label *err;
 }
 gfc_filepos;
@@ -1297,7 +1297,7 @@ typedef struct
   gfc_expr *unit, *file, *iostat, *exist, *opened, *number, *named,
     *name, *access, *sequential, *direct, *form, *formatted,
     *unformatted, *recl, *nextrec, *blank, *position, *action, *read,
-    *write, *readwrite, *delim, *pad, *iolength;
+    *write, *readwrite, *delim, *pad, *iolength, *iomsg;
 
   gfc_st_label *err;
 
@@ -1307,7 +1307,7 @@ gfc_inquire;
 
 typedef struct
 {
-  gfc_expr *io_unit, *format_expr, *rec, *advance, *iostat, *size;
+  gfc_expr *io_unit, *format_expr, *rec, *advance, *iostat, *size, *iomsg;
 
   gfc_symbol *namelist;
   /* A format_label of `format_asterisk' indicates the "*" format */

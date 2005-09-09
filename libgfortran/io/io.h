@@ -263,6 +263,9 @@ typedef struct
   CHARACTER (namelist_name);
   GFC_INTEGER_4 namelist_read_mode;
 
+  /* iomsg */
+  CHARACTER (iomsg);
+
 #undef CHARACTER
 }
 st_parameter;
