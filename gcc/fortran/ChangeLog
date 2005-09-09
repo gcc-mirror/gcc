@@ -1,3 +1,56 @@
+2005-09-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/18878
+	* module.c (find_use_name_n): Based on original
+	find_use_name. Either counts number of use names for a
+	given real name or returns use name n.
+	(find_use_name, number_use_names): Interfaces to the
+	function find_use_name_n.
+	(read_module): Add the logic and calls to these functions,
+	so that mutiple reuses of the same real name are loaded.
+
+2005-09-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/22304
+	PR fortran/23270
+	PR fortran/18870
+	PR fortran/16511
+	PR fortran/17917
+	* gfortran.h: Move definition of BLANK_COMMON_NAME from trans-
+	common.c so that it is accessible to module.c. Add common_head
+	field to gfc_symbol structure. Add field for the equivalence
+	name AND new attr field, in_equivalence.
+	* match.c (gfc_match_common, gfc_match_equivalence): In loops
+	that flag common block equivalences, emit an error if the
+	common blocks are different, using sym->common_head as the
+	common block identifier. Ensure that symbols that are equivalence
+	associated with a common block are marked as being in_common.
+	* module.c (write_blank_common): New.
+	(write_common): Use unmangled common block name.
+	(load_equiv): New function ported from g95.
+	(read_module): Call load_equiv.
+	(write_equiv): New function ported from g95. Correct
+	string referencing for gfc functions. Give module
+	equivalences a unique name.
+	(write_module): Call write_equiv and write_blank_common.
+	* primary.c (match_variable) Old gfc_match_variable, made
+	static and third argument provided to indicate if parent
+	namespace to be visited or not.
+	(gfc_match_variable) New. Interface to match_variable.
+	(gfc_match_equiv_variable) New. Interface to match_variable.
+	* trans-common.c (finish_equivalences): Provide the call
+	to create_common with a gfc_common_header so that
+	module equivalences are made external, rather than local.
+	(find_equivalences): Ensure that all members in common block
+	equivalences are marked as used. This prevents the subsequent
+	call to this function from making local unions.
+	* trans-decl.c (gfc_generate_function_code): Move the call to
+	gfc_generate_contained_functions to after the call to
+	gfc_trans_common so the use-associated, contained common
+	blocks produce the correct references.
+	(gfc_create_module_variable): Return for equivalenced symbols
+	with existing backend declaration.
+
 2005-09-08  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/23765
