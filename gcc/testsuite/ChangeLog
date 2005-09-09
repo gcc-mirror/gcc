@@ -1,3 +1,8 @@
+2005-09-09  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	Remove unintentionally added file:
+	* gfortran.dg/f2c_6.f90: Remove.
+
 2005-09-08  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	Backport from mainline:
