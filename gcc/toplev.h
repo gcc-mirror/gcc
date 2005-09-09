@@ -98,8 +98,12 @@ extern void fnotice			(FILE *, const char *, ...)
      ATTRIBUTE_PRINTF_2;
 #endif
 
-extern int wrapup_global_declarations (tree *, int);
+extern void wrapup_global_declaration_1 (tree);
+extern bool wrapup_global_declaration_2 (tree);
+extern bool wrapup_global_declarations (tree *, int);
+extern void check_global_declaration_1 (tree);
 extern void check_global_declarations (tree *, int);
+extern void emit_debug_global_declarations (tree *, int);
 extern void write_global_declarations (void);
 
 /* A unique local time stamp, might be zero if none is available.  */

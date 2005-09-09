@@ -794,6 +794,7 @@ wrapup_globals_for_namespace (tree namespace, void* data)
   if (last_time)
     {
       check_global_declarations (vec, len);
+      emit_debug_global_declarations (vec, len);
       return 0;
     }
 

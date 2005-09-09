@@ -487,10 +487,10 @@ write_global_declarations (void)
     vec[len - i - 1] = decl;
 
   wrapup_global_declarations (vec, len);
-
   check_global_declarations (vec, len);
+  emit_debug_global_declarations (vec, len);
 
-    /* Clean up.  */
+  /* Clean up.  */
   free (vec);
 }
 

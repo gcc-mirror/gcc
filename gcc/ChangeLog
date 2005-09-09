@@ -1,3 +1,23 @@
+2005-09-08  Richard Henderson  <rth@redhat.com>
+
+	PR debug/23190
+	* toplev.c (wrapup_global_declaration_1): Split out ...
+	(wrapup_global_declaration_2): ... from ...
+	(wrapup_global_declarations): ... here.  Return bool.
+	(check_global_declaration_1): Split out ...
+	(check_global_declarations): from here.
+	(emit_debug_global_declarations): New.
+	* toplev.h (wrapup_global_declaration_1, wrapup_global_declaration_2,
+	check_global_declaration_1, emit_debug_global_declarations): Declare.
+	* c-decl.c (c_write_global_declarations_1): Don't create a vector
+	of decls.  Call wrapup_global_declaration_1,
+	wrapup_global_declaration_2, check_global_declaration_1 directly.
+	(c_write_global_declarations_2): New.
+	(ext_block): New.
+	(c_write_global_declarations): Call c_write_global_declarations_2.
+	* langhooks.c (write_global_declarations): Call
+	emit_debug_global_declarations.
+
 2005-09-08  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	Backport from mainline
@@ -8,7 +28,7 @@
 	a declaration.
 	
 2005-09-08  Richard Guenther  <rguenther@suse.de>
-	Zdenek Dvorak  <rakdver@gcc.gnu.org>
+	    Zdenek Dvorak  <rakdver@gcc.gnu.org>
 
 	PR tree-optimization/22348
 	* tree-ssa-loop-niter.c (number_of_iterations_cond): Fold
@@ -96,11 +116,11 @@
 
 2005-09-02  Richard Guenther  <rguenther@suse.de>
 
-        PR tree-optimization/15366
-        * common.opt: Add -finline-functions-called-once.
-        * doc/invoke.texi: Document new option.
-        * cgraphunit.c (cgraph_decide_inlining): Honour
-        flag_inline_functions_called_once.
+	PR tree-optimization/15366
+	* common.opt: Add -finline-functions-called-once.
+	* doc/invoke.texi: Document new option.
+	* cgraphunit.c (cgraph_decide_inlining): Honour
+	flag_inline_functions_called_once.
 
 2005-09-01  Jakub Jelinek  <jakub@redhat.com>
 
@@ -113,12 +133,12 @@
 	TYPE_MAIN_VARIANT (type), not type.
 
 	PR rtl-optimization/23478
-        * regs.h (reg_info): Add throw_calls_crossed.
-        (REG_N_THROWING_CALLS_CROSSED): Define.
-        * flow.c (allocate_reg_life_data): Initialize
-        REG_N_THROWING_CALLS_CROSSED.
-        (propagate_one_insn, attempt_auto_inc): Update
-        REG_N_THROWING_CALLS_CROSSED.
+	* regs.h (reg_info): Add throw_calls_crossed.
+	(REG_N_THROWING_CALLS_CROSSED): Define.
+	* flow.c (allocate_reg_life_data): Initialize
+	REG_N_THROWING_CALLS_CROSSED.
+	(propagate_one_insn, attempt_auto_inc): Update
+	REG_N_THROWING_CALLS_CROSSED.
 	* local-alloc.c (struct qty): Add n_throwing_calls_crossed field.
 	(alloc_qty): Initialize it.
 	(update_equiv_regs): Clear REG_N_THROWING_CALLS_CROSSED.

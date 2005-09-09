@@ -1,3 +1,10 @@
+2005-09-08  Richard Henderson  <rth@redhat.com>
+
+	PR debug/23190
+	* decl.c (wrapup_globals_for_namespace): Call
+	emit_debug_global_declarations.
+	* decl2.c (cp_finish_file): Likewise.
+
 2005-09-08  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23691
@@ -163,7 +170,7 @@
 
 	PR c++/21799
 	PR c++/8271
-        * pt.c (unify) <METHOD_TYPE>: Check this-pointer cv-qualifiers
+	* pt.c (unify) <METHOD_TYPE>: Check this-pointer cv-qualifiers
 	explicitly.
 
 2005-08-11  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
@@ -291,12 +298,12 @@
 
 	2005-06-10  Aldy Hernandez  <aldyh@redhat.com>
 
-        PR c++/10611
-        * cp/cvt.c (build_expr_type_conversion): Same.
-        * cp/typeck.c (build_binary_op): Handle vectors.
-        (common_type): Same.
-        (type_after_usual_arithmetic_conversions): Same.
-        * testsuite/g++.dg/conversion/simd2.C: New.
+	PR c++/10611
+	* cp/cvt.c (build_expr_type_conversion): Same.
+	* cp/typeck.c (build_binary_op): Handle vectors.
+	(common_type): Same.
+	(type_after_usual_arithmetic_conversions): Same.
+	* testsuite/g++.dg/conversion/simd2.C: New.
 
 2005-07-11  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
@@ -599,8 +606,8 @@
 
 2005-04-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
-        PR c++/18644
-        * call.c (build_new_op): Remove check for -Wsynth.
+	PR c++/18644
+	* call.c (build_new_op): Remove check for -Wsynth.
 	
 2005-03-29  Richard Henderson  <rth@redhat.com>
 

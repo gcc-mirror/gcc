@@ -709,107 +709,166 @@ output_file_directive (FILE *asm_file, const char *input_name)
 #endif
 }
 
+/* A subroutine of wrapup_global_declarations.  We've come to the end of
+   the compilation unit.  All deferred variables should be undeferred,
+   and all incomplete decls should be finalized.  */
+
+void
+wrapup_global_declaration_1 (tree decl)
+{
+  /* We're not deferring this any longer.  Assignment is conditional to
+     avoid needlessly dirtying PCH pages.  */
+  if (DECL_DEFER_OUTPUT (decl) != 0)
+    DECL_DEFER_OUTPUT (decl) = 0;
+
+  if (TREE_CODE (decl) == VAR_DECL && DECL_SIZE (decl) == 0)
+    lang_hooks.finish_incomplete_decl (decl);
+}
+
+/* A subroutine of wrapup_global_declarations.  Decide whether or not DECL
+   needs to be output.  Return true if it is output.  */
+
+bool
+wrapup_global_declaration_2 (tree decl)
+{
+  if (TREE_ASM_WRITTEN (decl) || DECL_EXTERNAL (decl))
+    return false;
+
+  /* Don't write out static consts, unless we still need them.
+
+     We also keep static consts if not optimizing (for debugging),
+     unless the user specified -fno-keep-static-consts.
+     ??? They might be better written into the debug information.
+     This is possible when using DWARF.
+
+     A language processor that wants static constants to be always
+     written out (even if it is not used) is responsible for
+     calling rest_of_decl_compilation itself.  E.g. the C front-end
+     calls rest_of_decl_compilation from finish_decl.
+     One motivation for this is that is conventional in some
+     environments to write things like:
+     static const char rcsid[] = "... version string ...";
+     intending to force the string to be in the executable.
+
+     A language processor that would prefer to have unneeded
+     static constants "optimized away" would just defer writing
+     them out until here.  E.g. C++ does this, because static
+     constants are often defined in header files.
+
+     ??? A tempting alternative (for both C and C++) would be
+     to force a constant to be written if and only if it is
+     defined in a main file, as opposed to an include file.  */
+
+  if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
+    {
+      struct cgraph_varpool_node *node;
+      bool needed = 1;
+      node = cgraph_varpool_node (decl);
+
+      if (flag_unit_at_a_time && node->finalized)
+	needed = 0;
+      else if (node->alias)
+	needed = 0;
+      else if ((flag_unit_at_a_time && !cgraph_global_info_ready)
+	       && (TREE_USED (decl)
+		   || TREE_USED (DECL_ASSEMBLER_NAME (decl))))
+	/* needed */;
+      else if (node->needed)
+	/* needed */;
+      else if (DECL_COMDAT (decl))
+	needed = 0;
+      else if (TREE_READONLY (decl) && !TREE_PUBLIC (decl)
+	       && (optimize || !flag_keep_static_consts
+		   || DECL_ARTIFICIAL (decl)))
+	needed = 0;
+
+      if (needed)
+	{
+	  rest_of_decl_compilation (decl, 1, 1);
+	  return true;
+	}
+    }
+
+  return false;
+}
+
 /* Do any final processing required for the declarations in VEC, of
    which there are LEN.  We write out inline functions and variables
    that have been deferred until this point, but which are required.
    Returns nonzero if anything was put out.  */
 
-int
+bool
 wrapup_global_declarations (tree *vec, int len)
 {
-  tree decl;
+  bool reconsider, output_something = false;
   int i;
-  int reconsider;
-  int output_something = 0;
 
   for (i = 0; i < len; i++)
-    {
-      decl = vec[i];
-
-      /* We're not deferring this any longer.  Assignment is
-	 conditional to avoid needlessly dirtying PCH pages.  */
-      if (DECL_DEFER_OUTPUT (decl) != 0)
-	DECL_DEFER_OUTPUT (decl) = 0;
-
-      if (TREE_CODE (decl) == VAR_DECL && DECL_SIZE (decl) == 0)
-	lang_hooks.finish_incomplete_decl (decl);
-    }
+    wrapup_global_declaration_1 (vec[i]);
 
   /* Now emit any global variables or functions that we have been
      putting off.  We need to loop in case one of the things emitted
      here references another one which comes earlier in the list.  */
   do
     {
-      reconsider = 0;
+      reconsider = false;
       for (i = 0; i < len; i++)
-	{
-	  decl = vec[i];
-
-	  if (TREE_ASM_WRITTEN (decl) || DECL_EXTERNAL (decl))
-	    continue;
-
-	  /* Don't write out static consts, unless we still need them.
-
-	     We also keep static consts if not optimizing (for debugging),
-	     unless the user specified -fno-keep-static-consts.
-	     ??? They might be better written into the debug information.
-	     This is possible when using DWARF.
-
-	     A language processor that wants static constants to be always
-	     written out (even if it is not used) is responsible for
-	     calling rest_of_decl_compilation itself.  E.g. the C front-end
-	     calls rest_of_decl_compilation from finish_decl.
-	     One motivation for this is that is conventional in some
-	     environments to write things like:
-	     static const char rcsid[] = "... version string ...";
-	     intending to force the string to be in the executable.
-
-	     A language processor that would prefer to have unneeded
-	     static constants "optimized away" would just defer writing
-	     them out until here.  E.g. C++ does this, because static
-	     constants are often defined in header files.
-
-	     ??? A tempting alternative (for both C and C++) would be
-	     to force a constant to be written if and only if it is
-	     defined in a main file, as opposed to an include file.  */
-
-	  if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
-	    {
-	      struct cgraph_varpool_node *node;
-	      bool needed = 1;
-	      node = cgraph_varpool_node (decl);
-
-	      if (flag_unit_at_a_time && node->finalized)
-		needed = 0;
-	      else if (node->alias)
-		needed = 0;
-	      else if ((flag_unit_at_a_time && !cgraph_global_info_ready)
-		       && (TREE_USED (decl)
-			   || TREE_USED (DECL_ASSEMBLER_NAME (decl))))
-		/* needed */;
-	      else if (node->needed)
-		/* needed */;
-	      else if (DECL_COMDAT (decl))
-		needed = 0;
-	      else if (TREE_READONLY (decl) && !TREE_PUBLIC (decl)
-		       && (optimize || !flag_keep_static_consts
-			   || DECL_ARTIFICIAL (decl)))
-		needed = 0;
-
-	      if (needed)
-		{
-		  reconsider = 1;
-		  rest_of_decl_compilation (decl, 1, 1);
-		}
-	    }
-	}
-
+	reconsider |= wrapup_global_declaration_2 (vec[i]);
       if (reconsider)
-	output_something = 1;
+	output_something = true;
     }
   while (reconsider);
 
   return output_something;
+}
+
+/* A subroutine of check_global_declarations.  Issue appropriate warnings
+   for the global declaration DECL.  */
+
+void
+check_global_declaration_1 (tree decl)
+{
+  /* Warn about any function declared static but not defined.  We don't
+     warn about variables, because many programs have static variables
+     that exist only to get some text into the object file.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_INITIAL (decl) == 0
+      && DECL_EXTERNAL (decl)
+      && ! DECL_ARTIFICIAL (decl)
+      && ! TREE_NO_WARNING (decl)
+      && ! TREE_PUBLIC (decl)
+      && (warn_unused_function
+          || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
+    {
+      if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
+	pedwarn ("%J%qF used but never defined", decl, decl);
+      else
+	warning ("%J%qF declared %<static%> but never defined", decl, decl);
+      /* This symbol is effectively an "extern" declaration now.  */
+      TREE_PUBLIC (decl) = 1;
+      assemble_external (decl);
+    }
+
+  /* Warn about static fns or vars defined but not used.  */
+  if (((warn_unused_function && TREE_CODE (decl) == FUNCTION_DECL)
+       /* We don't warn about "static const" variables because the
+	  "rcs_id" idiom uses that construction.  */
+       || (warn_unused_variable
+	   && TREE_CODE (decl) == VAR_DECL && ! TREE_READONLY (decl)))
+      && ! DECL_IN_SYSTEM_HEADER (decl)
+      && ! TREE_USED (decl)
+      /* The TREE_USED bit for file-scope decls is kept in the identifier,
+	 to handle multiple external decls in different scopes.  */
+      && ! TREE_USED (DECL_NAME (decl))
+      && ! DECL_EXTERNAL (decl)
+      && ! TREE_PUBLIC (decl)
+      /* A volatile variable might be used in some non-obvious way.  */
+      && ! TREE_THIS_VOLATILE (decl)
+      /* Global register variables must be declared to reserve them.  */
+      && ! (TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
+      /* Otherwise, ask the language.  */
+      && lang_hooks.decls.warn_unused_global (decl))
+    warning ("%J%qD defined but not used", decl, decl);
 }
 
 /* Issue appropriate warnings for the global declarations in VEC (of
@@ -818,67 +877,27 @@ wrapup_global_declarations (tree *vec, int len)
 void
 check_global_declarations (tree *vec, int len)
 {
-  tree decl;
   int i;
 
   for (i = 0; i < len; i++)
-    {
-      decl = vec[i];
+    check_global_declaration_1 (vec[i]);
+}
 
-      /* Warn about any function
-	 declared static but not defined.
-	 We don't warn about variables,
-	 because many programs have static variables
-	 that exist only to get some text into the object file.  */
-      if (TREE_CODE (decl) == FUNCTION_DECL
-	  && DECL_INITIAL (decl) == 0
-	  && DECL_EXTERNAL (decl)
-	  && ! DECL_ARTIFICIAL (decl)
-	  && ! TREE_NO_WARNING (decl)
-	  && ! TREE_PUBLIC (decl)
-	  && (warn_unused_function
-	      || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
-	{
-	  if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
-	    pedwarn ("%J%qF used but never defined", decl, decl);
-	  else
-	    warning ("%J%qF declared %<static%> but never defined",
-		     decl, decl);
-	  /* This symbol is effectively an "extern" declaration now.  */
-	  TREE_PUBLIC (decl) = 1;
-	  assemble_external (decl);
-	}
+/* Emit debugging information for all global declarations in VEC.  */
 
-      /* Warn about static fns or vars defined but not used.  */
-      if (((warn_unused_function && TREE_CODE (decl) == FUNCTION_DECL)
-	   /* We don't warn about "static const" variables because the
-	      "rcs_id" idiom uses that construction.  */
-	   || (warn_unused_variable
-	       && TREE_CODE (decl) == VAR_DECL && ! TREE_READONLY (decl)))
-	  && ! DECL_IN_SYSTEM_HEADER (decl)
-	  && ! TREE_USED (decl)
-	  /* The TREE_USED bit for file-scope decls is kept in the identifier,
-	     to handle multiple external decls in different scopes.  */
-	  && ! TREE_USED (DECL_NAME (decl))
-	  && ! DECL_EXTERNAL (decl)
-	  && ! TREE_PUBLIC (decl)
-	  /* A volatile variable might be used in some non-obvious way.  */
-	  && ! TREE_THIS_VOLATILE (decl)
-	  /* Global register variables must be declared to reserve them.  */
-	  && ! (TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
-	  /* Otherwise, ask the language.  */
-	  && lang_hooks.decls.warn_unused_global (decl))
-	warning ("%J%qD defined but not used", decl, decl);
+void
+emit_debug_global_declarations (tree *vec, int len)
+{
+  int i;
 
-      /* Avoid confusing the debug information machinery when there are
-	 errors.  */
-      if (errorcount == 0 && sorrycount == 0)
-	{
-	  timevar_push (TV_SYMOUT);
-	  (*debug_hooks->global_decl) (decl);
-	  timevar_pop (TV_SYMOUT);
-	}
-    }
+  /* Avoid confusing the debug information machinery when there are errors.  */
+  if (errorcount != 0 || sorrycount != 0)
+    return;
+
+  timevar_push (TV_SYMOUT);
+  for (i = 0; i < len; i++)
+    debug_hooks->global_decl (vec[i]);
+  timevar_pop (TV_SYMOUT);
 }
 
 /* Warn about a use of an identifier which was marked deprecated.  */
