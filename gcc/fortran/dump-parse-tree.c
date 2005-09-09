@@ -1084,6 +1084,11 @@ gfc_show_code_node (int level, gfc_code * c)
 	  gfc_status (" UNIT=");
 	  gfc_show_expr (open->unit);
 	}
+      if (open->iomsg)
+	{
+	  gfc_status (" IOMSG=");
+	  gfc_show_expr (open->iomsg);
+	}
       if (open->iostat)
 	{
 	  gfc_status (" IOSTAT=");
@@ -1153,6 +1158,11 @@ gfc_show_code_node (int level, gfc_code * c)
 	  gfc_status (" UNIT=");
 	  gfc_show_expr (close->unit);
 	}
+      if (close->iomsg)
+	{
+	  gfc_status (" IOMSG=");
+	  gfc_show_expr (close->iomsg);
+	}
       if (close->iostat)
 	{
 	  gfc_status (" IOSTAT=");
@@ -1190,6 +1200,11 @@ gfc_show_code_node (int level, gfc_code * c)
 	  gfc_status (" UNIT=");
 	  gfc_show_expr (fp->unit);
 	}
+      if (fp->iomsg)
+	{
+	  gfc_status (" IOMSG=");
+	  gfc_show_expr (fp->iomsg);
+	}
       if (fp->iostat)
 	{
 	  gfc_status (" IOSTAT=");
@@ -1214,6 +1229,11 @@ gfc_show_code_node (int level, gfc_code * c)
 	  gfc_show_expr (i->file);
 	}
 
+      if (i->iomsg)
+	{
+	  gfc_status (" IOMSG=");
+	  gfc_show_expr (i->iomsg);
+	}
       if (i->iostat)
 	{
 	  gfc_status (" IOSTAT=");
@@ -1360,6 +1380,12 @@ gfc_show_code_node (int level, gfc_code * c)
 	gfc_status (" FMT=%d", dt->format_label->value);
       if (dt->namelist)
 	gfc_status (" NML=%s", dt->namelist->name);
+
+      if (dt->iomsg)
+	{
+	  gfc_status (" IOMSG=");
+	  gfc_show_expr (dt->iomsg);
+	}
       if (dt->iostat)
 	{
 	  gfc_status (" IOSTAT=");

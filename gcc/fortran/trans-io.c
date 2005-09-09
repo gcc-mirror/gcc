@@ -98,6 +98,8 @@ static GTY(()) tree ioparm_readwrite_len;
 static GTY(()) tree ioparm_namelist_name;
 static GTY(()) tree ioparm_namelist_name_len;
 static GTY(()) tree ioparm_namelist_read_mode;
+static GTY(()) tree ioparm_iomsg;
+static GTY(()) tree ioparm_iomsg_len;
 
 /* The global I/O variables */
 
@@ -213,6 +215,7 @@ gfc_build_io_library_fndecls (void)
 
   ADD_STRING (namelist_name);
   ADD_FIELD (namelist_read_mode, gfc_int4_type_node);
+  ADD_STRING (iomsg);
 
   gfc_finish_type (ioparm_type);
 
@@ -642,6 +645,10 @@ gfc_trans_open (gfc_code * code)
   if (p->pad)
     set_string (&block, &post_block, ioparm_pad, ioparm_pad_len, p->pad);
 
+  if (p->iomsg)
+    set_string (&block, &post_block, ioparm_iomsg, ioparm_iomsg_len,
+		p->iomsg);
+
   if (p->iostat)
     set_parameter_ref (&block, ioparm_iostat, p->iostat);
 
@@ -681,6 +688,10 @@ gfc_trans_close (gfc_code * code)
     set_string (&block, &post_block, ioparm_status,
 		ioparm_status_len, p->status);
 
+  if (p->iomsg)
+    set_string (&block, &post_block, ioparm_iomsg, ioparm_iomsg_len,
+		p->iomsg);
+
   if (p->iostat)
     set_parameter_ref (&block, ioparm_iostat, p->iostat);
 
@@ -703,18 +714,23 @@ gfc_trans_close (gfc_code * code)
 static tree
 build_filepos (tree function, gfc_code * code)
 {
-  stmtblock_t block;
+  stmtblock_t block, post_block;
   gfc_filepos *p;
   tree tmp;
 
   p = code->ext.filepos;
 
   gfc_init_block (&block);
+  gfc_init_block (&post_block);
 
   set_error_locus (&block, &code->loc);
 
   if (p->unit)
     set_parameter_value (&block, ioparm_unit, p->unit);
+
+  if (p->iomsg)
+    set_string (&block, &post_block, ioparm_iomsg, ioparm_iomsg_len,
+		p->iomsg);
 
   if (p->iostat)
     set_parameter_ref (&block, ioparm_iostat, p->iostat);
@@ -724,6 +740,8 @@ build_filepos (tree function, gfc_code * code)
 
   tmp = gfc_build_function_call (function, NULL);
   gfc_add_expr_to_block (&block, tmp);
+
+  gfc_add_block_to_block (&block, &post_block);
 
   io_result (&block, p->err, NULL, NULL);
 
@@ -795,6 +813,10 @@ gfc_trans_inquire (gfc_code * code)
 
   if (p->file)
     set_string (&block, &post_block, ioparm_file, ioparm_file_len, p->file);
+
+  if (p->iomsg)
+    set_string (&block, &post_block, ioparm_iomsg, ioparm_iomsg_len,
+		p->iomsg);
 
   if (p->iostat)
     set_parameter_ref (&block, ioparm_iostat, p->iostat);
@@ -1178,6 +1200,10 @@ build_dt (tree * function, gfc_code * code)
         set_string (&block, &post_block, ioparm_format,
 		    ioparm_format_len, dt->format_label->format);
     }
+
+  if (dt->iomsg)
+    set_string (&block, &post_block, ioparm_iomsg, ioparm_iomsg_len,
+		dt->iomsg);
 
   if (dt->iostat)
     set_parameter_ref (&block, ioparm_iostat, dt->iostat);

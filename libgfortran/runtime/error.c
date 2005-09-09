@@ -441,10 +441,10 @@ translate_error (int code)
 
 
 /* generate_error()-- Come here when an error happens.  This
- * subroutine is called if it is possible to continue on after the
- * error.  If an IOSTAT variable exists, we set it.  If the IOSTAT or
- * ERR label is present, we return, otherwise we terminate the program
- * after print a message.  The error code is always required but the
+ * subroutine is called if it is possible to continue on after the error.
+ * If an IOSTAT or IOMSG variable exists, we set it.  If IOSTAT or
+ * ERR labels are present, we return, otherwise we terminate the program
+ * after printing a message.  The error code is always required but the
  * message parameter can be NULL, in which case a string describing
  * the most recent operating system error is used. */
 
@@ -454,6 +454,13 @@ generate_error (int family, const char *message)
   /* Set the error status.  */
   if (ioparm.iostat != NULL)
     *ioparm.iostat = family;
+
+  if (message == NULL)
+    message =
+      (family == ERROR_OS) ? get_oserror () : translate_error (family);
+
+  if (ioparm.iomsg)
+    cf_strcpy (ioparm.iomsg, ioparm.iomsg_len, message);
 
   /* Report status back to the compiler.  */
   switch (family)
@@ -482,10 +489,6 @@ generate_error (int family, const char *message)
     return;
 
   /* Terminate the program */
-
-  if (message == NULL)
-    message =
-      (family == ERROR_OS) ? get_oserror () : translate_error (family);
 
   runtime_error (message);
 }
