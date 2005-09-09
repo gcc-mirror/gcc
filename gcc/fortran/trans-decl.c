@@ -2148,6 +2148,10 @@ gfc_create_module_variable (gfc_symbol * sym)
   if (sym->attr.use_assoc || sym->attr.in_common)
     return;
 
+  /* Equivalenced variables arrive here after creation.  */
+  if (sym->backend_decl && sym->equiv_built)
+      return;
+
   if (sym->backend_decl)
     internal_error ("backend decl for module variable %s already exists",
 		    sym->name);
@@ -2324,8 +2328,6 @@ gfc_generate_function_code (gfc_namespace * ns)
 
   gfc_start_block (&block);
 
-  gfc_generate_contained_functions (ns);
-
   if (ns->entries && ns->proc_name->ts.type == BT_CHARACTER)
     {
       /* Copy length backend_decls to all entry point result
@@ -2341,6 +2343,8 @@ gfc_generate_function_code (gfc_namespace * ns)
 
   /* Translate COMMON blocks.  */
   gfc_trans_common (ns);
+
+  gfc_generate_contained_functions (ns);
 
   generate_local_vars (ns);
 

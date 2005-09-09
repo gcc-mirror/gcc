@@ -129,6 +129,7 @@ match gfc_match_target (void);
 match gfc_match_structure_constructor (gfc_symbol *, gfc_expr **);
 match gfc_match_rvalue (gfc_expr **);
 match gfc_match_variable (gfc_expr **, int);
+match gfc_match_equiv_variable (gfc_expr **);
 match gfc_match_actual_arglist (int, gfc_actual_arglist **);
 match gfc_match_literal_constant (gfc_expr **, int);
 

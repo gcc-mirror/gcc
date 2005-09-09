@@ -47,6 +47,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    ( ( <common name> <symbol> <saved flag>)
      ...
    )
+
+   ( equivalence list )
+
    ( <Symbol Number (in no particular order)>
      <True name of symbol>
      <Module name of symbol>
@@ -582,20 +585,34 @@ syntax:
 cleanup:
   free_rename ();
   return MATCH_ERROR;
-}
+ }
 
 
-/* Given a name, return the name under which to load this symbol.
-   Returns NULL if this symbol shouldn't be loaded.  */
+/* Given a name and a number, inst, return the inst name
+   under which to load this symbol. Returns NULL if this
+   symbol shouldn't be loaded. If inst is zero, returns
+   the number of instances of this name.  */
 
 static const char *
-find_use_name (const char *name)
+find_use_name_n (const char *name, int *inst)
 {
   gfc_use_rename *u;
+  int i;
 
+  i = 0;
   for (u = gfc_rename_list; u; u = u->next)
-    if (strcmp (u->use_name, name) == 0)
-      break;
+    {
+      if (strcmp (u->use_name, name) != 0)
+	continue;
+      if (++i == *inst)
+	break;
+    }
+
+  if (!*inst)
+    {
+      *inst = i;
+      return NULL;
+    }
 
   if (u == NULL)
     return only_flag ? NULL : name;
@@ -603,6 +620,28 @@ find_use_name (const char *name)
   u->found = 1;
 
   return (u->local_name[0] != '\0') ? u->local_name : name;
+}
+
+/* Given a name, return the name under which to load this symbol.
+   Returns NULL if this symbol shouldn't be loaded.  */
+
+static const char *
+find_use_name (const char *name)
+{
+  int i = 1;
+  return find_use_name_n (name, &i);
+}
+
+/* Given a real name, return the number of use names associated
+   with it.  */
+
+static int
+number_use_names (const char *name)
+{
+  int i = 0;
+  const char *c;
+  c = find_use_name_n (name, &i);
+  return i;
 }
 
 
@@ -2920,6 +2959,48 @@ load_commons(void)
   mio_rparen();
 }
 
+/* load_equiv()-- Load equivalences. */
+
+static void
+load_equiv(void)
+{
+  gfc_equiv *head, *tail, *end;
+
+  mio_lparen();
+
+  end = gfc_current_ns->equiv;
+  while(end != NULL && end->next != NULL)
+    end = end->next;
+
+  while(peek_atom() != ATOM_RPAREN) {
+    mio_lparen();
+    head = tail = NULL;
+
+    while(peek_atom() != ATOM_RPAREN)
+      {
+	if (head == NULL)
+	  head = tail = gfc_get_equiv();
+	else
+	  {
+	    tail->eq = gfc_get_equiv();
+	    tail = tail->eq;
+	  }
+
+	mio_pool_string(&tail->module);
+	mio_expr(&tail->expr);
+      }
+
+    if (end == NULL)
+      gfc_current_ns->equiv = head;
+    else
+      end->next = head;
+
+    end = head;
+    mio_rparen();
+  }
+
+  mio_rparen();
+}
 
 /* Recursive function to traverse the pointer_info tree and load a
    needed symbol.  We return nonzero if we load a symbol and stop the
@@ -3020,7 +3101,7 @@ read_module (void)
   const char *p;
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_intrinsic_op i;
-  int ambiguous, symbol;
+  int ambiguous, symbol, j, nuse;
   pointer_info *info;
   gfc_use_rename *u;
   gfc_symtree *st;
@@ -3031,6 +3112,9 @@ read_module (void)
 
   get_module_locus (&user_operators);
   skip_list ();
+  skip_list ();
+
+  /* Skip commons and equivalences for now.  */
   skip_list ();
   skip_list ();
 
@@ -3084,50 +3168,60 @@ read_module (void)
 
       info = get_integer (symbol);
 
-      /* Get the local name for this symbol.  */
-      p = find_use_name (name);
+      /* See how many use names there are.  If none, go through the start
+	 of the loop at least once.  */
+      nuse = number_use_names (name);
+      if (nuse == 0)
+	nuse = 1;
 
-      /* Skip symtree nodes not in an ONLY caluse.  */
-      if (p == NULL)
-	continue;
-
-      /* Check for ambiguous symbols.  */
-      st = gfc_find_symtree (gfc_current_ns->sym_root, p);
-
-      if (st != NULL)
+      for (j = 1; j <= nuse; j++)
 	{
-	  if (st->n.sym != info->u.rsym.sym)
-	    st->ambiguous = 1;
-          info->u.rsym.symtree = st;
-	}
-      else
-	{
-          /* Create a symtree node in the current namespace for this symbol.  */
-	  st = check_unique_name (p) ? get_unique_symtree (gfc_current_ns) :
-	    gfc_new_symtree (&gfc_current_ns->sym_root, p);
+	  /* Get the jth local name for this symbol.  */
+	  p = find_use_name_n (name, &j);
 
-	  st->ambiguous = ambiguous;
+	  /* Skip symtree nodes not in an ONLY clause.  */
+	  if (p == NULL)
+	    continue;
 
-	  sym = info->u.rsym.sym;
+	  /* Check for ambiguous symbols.  */
+	  st = gfc_find_symtree (gfc_current_ns->sym_root, p);
 
-          /* Create a symbol node if it doesn't already exist.  */
-	  if (sym == NULL)
+	  if (st != NULL)
 	    {
-	      sym = info->u.rsym.sym =
-		gfc_new_symbol (info->u.rsym.true_name, gfc_current_ns);
-
-	      sym->module = gfc_get_string (info->u.rsym.module);
+	      if (st->n.sym != info->u.rsym.sym)
+		st->ambiguous = 1;
+	      info->u.rsym.symtree = st;
 	    }
+	  else
+	    {
+	      /* Create a symtree node in the current namespace for this symbol.  */
+	      st = check_unique_name (p) ? get_unique_symtree (gfc_current_ns) :
+	      gfc_new_symtree (&gfc_current_ns->sym_root, p);
 
-	  st->n.sym = sym;
-	  st->n.sym->refs++;
+	      st->ambiguous = ambiguous;
 
-          /* Store the symtree pointing to this symbol.  */
-          info->u.rsym.symtree = st;
+	      sym = info->u.rsym.sym;
 
-	  if (info->u.rsym.state == UNUSED)
-	    info->u.rsym.state = NEEDED;
-	  info->u.rsym.referenced = 1;
+	      /* Create a symbol node if it doesn't already exist.  */
+	      if (sym == NULL)
+		{
+		  sym = info->u.rsym.sym =
+		      gfc_new_symbol (info->u.rsym.true_name
+				      , gfc_current_ns);
+
+		  sym->module = gfc_get_string (info->u.rsym.module);
+		}
+
+	      st->n.sym = sym;
+	      st->n.sym->refs++;
+
+	      /* Store the symtree pointing to this symbol.  */
+	      info->u.rsym.symtree = st;
+
+	      if (info->u.rsym.state == UNUSED)
+	        info->u.rsym.state = NEEDED;
+	      info->u.rsym.referenced = 1;
+	    }
 	}
     }
 
@@ -3170,6 +3264,7 @@ read_module (void)
   load_generic_interfaces ();
 
   load_commons ();
+  load_equiv();
 
   /* At this point, we read those symbols that are needed but haven't
      been loaded yet.  If one symbol requires another, the other gets
@@ -3241,6 +3336,7 @@ static void
 write_common (gfc_symtree *st)
 {
   gfc_common_head *p;
+  const char * name;
 
   if (st == NULL)
     return;
@@ -3249,7 +3345,11 @@ write_common (gfc_symtree *st)
   write_common(st->right);
 
   mio_lparen();
-  mio_pool_string(&st->name);
+
+  /* Write the unmangled name.  */
+  name = st->n.common->name;
+
+  mio_pool_string(&name);
 
   p = st->n.common;
   mio_symbol_ref(&p->head);
@@ -3258,6 +3358,51 @@ write_common (gfc_symtree *st)
   mio_rparen();
 }
 
+/* Write the blank common block to the module */
+
+static void
+write_blank_common (void)
+{
+  const char * name = BLANK_COMMON_NAME;
+
+  if (gfc_current_ns->blank_common.head == NULL)
+    return;
+
+  mio_lparen();
+
+  mio_pool_string(&name);
+
+  mio_symbol_ref(&gfc_current_ns->blank_common.head);
+  mio_integer(&gfc_current_ns->blank_common.saved);
+
+  mio_rparen();
+}
+
+/* Write equivalences to the module.  */
+
+static void
+write_equiv(void)
+{
+  gfc_equiv *eq, *e;
+  int num;
+
+  num = 0;
+  for(eq=gfc_current_ns->equiv; eq; eq=eq->next)
+    {
+      mio_lparen();
+
+      for(e=eq; e; e=e->eq)
+	{
+	  if (e->module == NULL)
+	    e->module = gfc_get_string("%s.eq.%d", module_name, num);
+	  mio_allocated_string(e->module);
+	  mio_expr(&e->expr);
+	}
+
+      num++;
+      mio_rparen();
+    }
+}
 
 /* Write a symbol to the module.  */
 
@@ -3444,10 +3589,16 @@ write_module (void)
   write_char ('\n');
 
   mio_lparen ();
+  write_blank_common ();
   write_common (gfc_current_ns->common_root);
   mio_rparen ();
   write_char ('\n');
   write_char ('\n');
+
+  mio_lparen();
+  write_equiv();
+  mio_rparen();
+  write_char('\n');  write_char('\n');
 
   /* Write symbol information.  First we traverse all symbols in the
      primary namespace, writing those that need to be written.

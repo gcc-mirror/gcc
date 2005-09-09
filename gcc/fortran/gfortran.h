@@ -77,6 +77,8 @@ char *alloca ();
 #define PREFIX(x) "_gfortran_" x
 #define PREFIX_LEN 10
 
+#define BLANK_COMMON_NAME "__BLNK__"
+
 /* Macro to initialize an mstring structure.  */
 #define minit(s, t) { s, NULL, t }
 
@@ -416,7 +418,7 @@ typedef struct
   unsigned data:1,		/* Symbol is named in a DATA statement.  */
     use_assoc:1;		/* Symbol has been use-associated.  */
 
-  unsigned in_namelist:1, in_common:1;
+  unsigned in_namelist:1, in_common:1, in_equivalence:1;
   unsigned function:1, subroutine:1, generic:1;
   unsigned implicit_type:1;	/* Type defined via implicit rules.  */
   unsigned untyped:1;           /* No implicit type could be found.  */
@@ -691,6 +693,11 @@ typedef struct gfc_symbol
   gfc_component *components;	/* Derived type components */
 
   struct gfc_symbol *common_next;	/* Links for COMMON syms */
+
+  /* This is in fact a gfc_common_head but it is only used for pointer
+     comparisons to check if symbols are in the same common block.  */
+  struct gfc_common_head* common_head;
+
   /* Make sure setup code for dummy arguments is generated in the correct
      order.  */
   int dummy_order;
@@ -719,12 +726,12 @@ gfc_symbol;
 
 /* This structure is used to keep track of symbols in common blocks.  */
 
-typedef struct
+typedef struct gfc_common_head
 {
   locus where;
   int use_assoc, saved;
   char name[GFC_MAX_SYMBOL_LEN + 1];
-  gfc_symbol *head;
+  struct gfc_symbol *head;
 } 
 gfc_common_head;
 
@@ -1179,6 +1186,7 @@ typedef struct gfc_equiv
 {
   struct gfc_equiv *next, *eq;
   gfc_expr *expr;
+  const char *module;
   int used;
 }
 gfc_equiv;
