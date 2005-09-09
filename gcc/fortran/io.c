@@ -1439,6 +1439,7 @@ gfc_resolve_filepos (gfc_filepos * fp)
 {
 
   RESOLVE_TAG (&tag_unit, fp->unit);
+  RESOLVE_TAG (&tag_iostat, fp->iostat);
   if (gfc_reference_st_label (fp->err, ST_LABEL_TARGET) == FAILURE)
     return FAILURE;
 
