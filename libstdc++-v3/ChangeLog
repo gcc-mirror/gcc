@@ -1,3 +1,8 @@
+2005-09-10  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* testsuite/26_numerics/cmath/c99_classification_macros_c.cc:
+	XFAIL on *-*-linux*, not *-*-linux-gnu.
+
 2005-09-09  Benjamin Kosnik  <bkoz@redhat.com>
             Jakub Jelinek  <jakub@redhat.com>
 
