@@ -1,3 +1,11 @@
+2005-09-10  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR fortran/22502
+	Backport:
+
+	2005-07-29  Steven Bosscher  <stevenb@suse.de>
+	* trans-types.h (gfc_array_range_type): Add missing GTY decl for this.
+
 2005-09-09  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* io.c (gfc_resolve_filepos):  Also resolve iostat.
