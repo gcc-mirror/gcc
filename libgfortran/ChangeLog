@@ -1,3 +1,7 @@
+2005-09-10  Janne Blomqvist  <jblomqvi@cc.hut.fi>
+
+	* io/unix.c: Remove mmap code.
+
 2005-09-09  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/23784
