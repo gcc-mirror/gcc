@@ -1,3 +1,9 @@
+2005-09-10  Richard Henderson  <rth@redhat.com>
+
+	PR debug/23806
+	* dbxout.c (dbxout_expand_expr): New.
+	(dbxout_symbol): Use it.
+
 2005-09-10  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* arm.c (arm_gen_rotated_half_load): Delete.

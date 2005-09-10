@@ -2324,6 +2324,63 @@ dbxout_class_name_qualifiers (tree decl)
     }
 }
 
+/* This is a specialized subset of expand_expr for use by dbxout_symbol in
+   evaluating DECL_VALUE_EXPR.  In particular, we stop if we find decls that
+   havn't been expanded, or if the expression is getting so complex we won't
+   be able to represent it in stabs anyway.  Returns NULL on failure.  */
+
+static rtx
+dbxout_expand_expr (tree expr)
+{
+  switch (TREE_CODE (expr))
+    {
+    case VAR_DECL:
+    case PARM_DECL:
+      if (DECL_HAS_VALUE_EXPR_P (expr))
+	return dbxout_expand_expr (DECL_VALUE_EXPR (expr));
+      /* FALLTHRU */
+
+    case CONST_DECL:
+    case RESULT_DECL:
+      return DECL_RTL_IF_SET (expr);
+
+    case INTEGER_CST:
+      return expand_expr (expr, NULL_RTX, VOIDmode, EXPAND_INITIALIZER);
+
+    case COMPONENT_REF:
+    case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+    case BIT_FIELD_REF:
+      {
+	enum machine_mode mode;
+	HOST_WIDE_INT bitsize, bitpos;
+	tree offset, tem;
+	int volatilep = 0, unsignedp = 0;
+	rtx x;
+
+	tem = get_inner_reference (expr, &bitsize, &bitpos, &offset,
+				   &mode, &unsignedp, &volatilep, true);
+
+	x = dbxout_expand_expr (tem);
+	if (x == NULL || !MEM_P (x))
+	  return NULL;
+	if (offset != NULL)
+	  {
+	    if (!host_integerp (offset, 0))
+	      return NULL;
+	    x = adjust_address_nv (x, mode, tree_low_cst (offset, 0));
+	  }
+	if (bitpos != 0)
+	  x = adjust_address_nv (x, mode, bitpos / BITS_PER_UNIT);
+
+	return x;
+      }
+
+    default:
+      return NULL;
+    }
+}
+
 /* Output a .stabs for the symbol defined by DECL,
    which must be a ..._DECL node in the normal namespace.
    It may be a CONST_DECL, a FUNCTION_DECL, a PARM_DECL or a VAR_DECL.
@@ -2608,23 +2665,13 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
       gcc_unreachable ();
 
     case RESULT_DECL:
-      /* Named return value, treat like a VAR_DECL.  */
-      decl_rtl = DECL_RTL_IF_SET (decl);
-      goto do_var_decl;
-
     case VAR_DECL:
       /* Don't mention a variable that is external.
 	 Let the file that defines it describe it.  */
       if (DECL_EXTERNAL (decl))
 	break;
 
-      if (DECL_HAS_VALUE_EXPR_P (decl))
-	decl_rtl = expand_expr (DECL_VALUE_EXPR (decl), NULL_RTX, VOIDmode,
-				EXPAND_INITIALIZER);
-      else
-	decl_rtl = DECL_RTL_IF_SET (decl);
-
-    do_var_decl:
+      decl_rtl = dbxout_expand_expr (decl);
       if (!decl_rtl)
 	DBXOUT_DECR_NESTING_AND_RETURN (0);
 
