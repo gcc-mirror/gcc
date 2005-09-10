@@ -6117,30 +6117,6 @@ arm_gen_movmemqi (rtx *operands)
    into the top 16 bits of the word.  We can assume that the address is
    known to be alignable and of the form reg, or plus (reg, const).  */
 
-rtx
-arm_gen_rotated_half_load (rtx memref)
-{
-  HOST_WIDE_INT offset = 0;
-  rtx base = XEXP (memref, 0);
-
-  if (GET_CODE (base) == PLUS)
-    {
-      offset = INTVAL (XEXP (base, 1));
-      base = XEXP (base, 0);
-    }
-
-  /* If we aren't allowed to generate unaligned addresses, then fail.  */
-  if ((BYTES_BIG_ENDIAN ? 1 : 0) ^ ((offset & 2) == 0))
-    return NULL;
-
-  base = gen_rtx_MEM (SImode, plus_constant (base, offset & ~2));
-
-  if ((BYTES_BIG_ENDIAN ? 1 : 0) ^ ((offset & 2) == 2))
-    return base;
-
-  return gen_rtx_ROTATE (SImode, base, GEN_INT (16));
-}
-
 /* Select a dominance comparison mode if possible for a test of the general
    form (OP (COND_OR (X) (Y)) (const_int 0)).  We support three forms.
    COND_OR == DOM_CC_X_AND_Y => (X && Y)
@@ -8128,8 +8104,9 @@ vfp_emit_fstmx (int base_reg, int count)
 
   XVECEXP (par, 0, 0)
     = gen_rtx_SET (VOIDmode,
-		   gen_rtx_MEM (BLKmode,
-				gen_rtx_PRE_DEC (BLKmode, stack_pointer_rtx)),
+		   gen_frame_mem (BLKmode,
+				  gen_rtx_PRE_DEC (BLKmode,
+						   stack_pointer_rtx)),
 		   gen_rtx_UNSPEC (BLKmode,
 				   gen_rtvec (1, reg),
 				   UNSPEC_PUSH_MULT));
@@ -8141,7 +8118,7 @@ vfp_emit_fstmx (int base_reg, int count)
   XVECEXP (dwarf, 0, 0) = tmp;
 
   tmp = gen_rtx_SET (VOIDmode,
-		     gen_rtx_MEM (DFmode, stack_pointer_rtx),
+		     gen_frame_mem (DFmode, stack_pointer_rtx),
 		     reg);
   RTX_FRAME_RELATED_P (tmp) = 1;
   XVECEXP (dwarf, 0, 1) = tmp;
@@ -8153,10 +8130,10 @@ vfp_emit_fstmx (int base_reg, int count)
       XVECEXP (par, 0, i) = gen_rtx_USE (VOIDmode, reg);
 
       tmp = gen_rtx_SET (VOIDmode,
-			 gen_rtx_MEM (DFmode,
-				      gen_rtx_PLUS (SImode,
-						    stack_pointer_rtx,
-						    GEN_INT (i * 8))),
+			 gen_frame_mem (DFmode,
+					gen_rtx_PLUS (SImode,
+						      stack_pointer_rtx,
+						      GEN_INT (i * 8))),
 			 reg);
       RTX_FRAME_RELATED_P (tmp) = 1;
       XVECEXP (dwarf, 0, i + 1) = tmp;
@@ -9851,9 +9828,9 @@ emit_multi_reg_push (unsigned long mask)
 
 	  XVECEXP (par, 0, 0)
 	    = gen_rtx_SET (VOIDmode,
-			   gen_rtx_MEM (BLKmode,
-					gen_rtx_PRE_DEC (BLKmode,
-							 stack_pointer_rtx)),
+			   gen_frame_mem (BLKmode,
+					  gen_rtx_PRE_DEC (BLKmode,
+							   stack_pointer_rtx)),
 			   gen_rtx_UNSPEC (BLKmode,
 					   gen_rtvec (1, reg),
 					   UNSPEC_PUSH_MULT));
@@ -9861,7 +9838,7 @@ emit_multi_reg_push (unsigned long mask)
 	  if (i != PC_REGNUM)
 	    {
 	      tmp = gen_rtx_SET (VOIDmode,
-				 gen_rtx_MEM (SImode, stack_pointer_rtx),
+				 gen_frame_mem (SImode, stack_pointer_rtx),
 				 reg);
 	      RTX_FRAME_RELATED_P (tmp) = 1;
 	      XVECEXP (dwarf, 0, dwarf_par_index) = tmp;
@@ -9882,11 +9859,12 @@ emit_multi_reg_push (unsigned long mask)
 
 	  if (i != PC_REGNUM)
 	    {
-	      tmp = gen_rtx_SET (VOIDmode,
-				 gen_rtx_MEM (SImode,
+	      tmp
+		= gen_rtx_SET (VOIDmode,
+			       gen_frame_mem (SImode,
 					      plus_constant (stack_pointer_rtx,
 							     4 * j)),
-				 reg);
+			       reg);
 	      RTX_FRAME_RELATED_P (tmp) = 1;
 	      XVECEXP (dwarf, 0, dwarf_par_index++) = tmp;
 	    }
@@ -9939,13 +9917,14 @@ emit_sfm (int base_reg, int count)
 
   XVECEXP (par, 0, 0)
     = gen_rtx_SET (VOIDmode,
-		   gen_rtx_MEM (BLKmode,
-				gen_rtx_PRE_DEC (BLKmode, stack_pointer_rtx)),
+		   gen_frame_mem (BLKmode,
+				  gen_rtx_PRE_DEC (BLKmode,
+						   stack_pointer_rtx)),
 		   gen_rtx_UNSPEC (BLKmode,
 				   gen_rtvec (1, reg),
 				   UNSPEC_PUSH_MULT));
   tmp = gen_rtx_SET (VOIDmode,
-		     gen_rtx_MEM (XFmode, stack_pointer_rtx), reg);
+		     gen_frame_mem (XFmode, stack_pointer_rtx), reg);
   RTX_FRAME_RELATED_P (tmp) = 1;
   XVECEXP (dwarf, 0, 1) = tmp;
 
@@ -9955,9 +9934,9 @@ emit_sfm (int base_reg, int count)
       XVECEXP (par, 0, i) = gen_rtx_USE (VOIDmode, reg);
 
       tmp = gen_rtx_SET (VOIDmode,
-			 gen_rtx_MEM (XFmode,
-				      plus_constant (stack_pointer_rtx,
-						     i * 12)),
+			 gen_frame_mem (XFmode,
+					plus_constant (stack_pointer_rtx,
+						       i * 12)),
 			 reg);
       RTX_FRAME_RELATED_P (tmp) = 1;
       XVECEXP (dwarf, 0, i + 1) = tmp;
@@ -10309,7 +10288,7 @@ arm_expand_prologue (void)
 	    {
 	      rtx dwarf;
 	      insn = gen_rtx_PRE_DEC (SImode, stack_pointer_rtx);
-	      insn = gen_rtx_MEM (SImode, insn);
+	      insn = gen_frame_mem (SImode, insn);
 	      insn = gen_rtx_SET (VOIDmode, insn, ip_rtx);
 	      insn = emit_insn (insn);
 
@@ -10398,7 +10377,7 @@ arm_expand_prologue (void)
       if (regs_ever_live[reg] && ! call_used_regs [reg])
 	{
 	  insn = gen_rtx_PRE_DEC (V2SImode, stack_pointer_rtx);
-	  insn = gen_rtx_MEM (V2SImode, insn);
+	  insn = gen_frame_mem (V2SImode, insn);
 	  insn = emit_insn (gen_rtx_SET (VOIDmode, insn,
 					 gen_rtx_REG (V2SImode, reg)));
 	  RTX_FRAME_RELATED_P (insn) = 1;
@@ -10417,7 +10396,7 @@ arm_expand_prologue (void)
 	    if (regs_ever_live[reg] && !call_used_regs[reg])
 	      {
 		insn = gen_rtx_PRE_DEC (XFmode, stack_pointer_rtx);
-		insn = gen_rtx_MEM (XFmode, insn);
+		insn = gen_frame_mem (XFmode, insn);
 		insn = emit_insn (gen_rtx_SET (VOIDmode, insn,
 					       gen_rtx_REG (XFmode, reg)));
 		RTX_FRAME_RELATED_P (insn) = 1;
@@ -10497,7 +10476,7 @@ arm_expand_prologue (void)
 	    {
 	      insn = gen_rtx_PLUS (SImode, hard_frame_pointer_rtx,
 				   GEN_INT (4));
-	      insn = gen_rtx_MEM (SImode, insn);
+	      insn = gen_frame_mem (SImode, insn);
 	    }
 
 	  emit_insn (gen_rtx_SET (SImode, ip_rtx, insn));
@@ -13716,9 +13695,8 @@ thumb_load_double_from_address (rtx *operands)
   switch (GET_CODE (addr))
     {
     case REG:
-      operands[2] = gen_rtx_MEM (SImode,
-				 plus_constant (XEXP (operands[1], 0), 4));
-
+      operands[2] = adjust_address (operands[1], SImode, 4);
+      
       if (REGNO (operands[0]) == REGNO (addr))
 	{
 	  output_asm_insn ("ldr\t%H0, %2", operands);
@@ -13733,9 +13711,8 @@ thumb_load_double_from_address (rtx *operands)
 
     case CONST:
       /* Compute <address> + 4 for the high order load.  */
-      operands[2] = gen_rtx_MEM (SImode,
-				 plus_constant (XEXP (operands[1], 0), 4));
-
+      operands[2] = adjust_address (operands[1], SImode, 4);
+      
       output_asm_insn ("ldr\t%0, %1", operands);
       output_asm_insn ("ldr\t%H0, %2", operands);
       break;
@@ -13776,8 +13753,8 @@ thumb_load_double_from_address (rtx *operands)
       else
 	{
 	  /* Compute <address> + 4 for the high order load.  */
-	  operands[2] = gen_rtx_MEM (SImode,
-				     plus_constant (XEXP (operands[1], 0), 4));
+	  operands[2] = adjust_address (operands[1], SImode, 4);
+	  
 
 	  /* If the computed address is held in the low order register
 	     then load the high order register first, otherwise always
@@ -13798,8 +13775,7 @@ thumb_load_double_from_address (rtx *operands)
     case LABEL_REF:
       /* With no registers to worry about we can just load the value
          directly.  */
-      operands[2] = gen_rtx_MEM (SImode,
-				 plus_constant (XEXP (operands[1], 0), 4));
+      operands[2] = adjust_address (operands[1], SImode, 4);
 
       output_asm_insn ("ldr\t%H0, %2", operands);
       output_asm_insn ("ldr\t%0, %1", operands);
@@ -14694,7 +14670,7 @@ arm_set_return_address (rtx source, rtx scratch)
 
 	  addr = plus_constant (addr, delta);
 	}
-      emit_move_insn (gen_rtx_MEM (Pmode, addr), source);
+      emit_move_insn (gen_frame_mem (Pmode, addr), source);
     }
 }
 
@@ -14744,7 +14720,7 @@ thumb_set_return_address (rtx source, rtx scratch)
       else
 	addr = plus_constant (addr, delta);
 
-      emit_move_insn (gen_rtx_MEM (Pmode, addr), source);
+      emit_move_insn (gen_frame_mem (Pmode, addr), source);
     }
   else
     emit_move_insn (gen_rtx_REG (Pmode, LR_REGNUM), source);

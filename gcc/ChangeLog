@@ -1,3 +1,16 @@
+2005-09-10  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* arm.c (arm_gen_rotated_half_load): Delete.
+	(vfp_emit_fstmx, arm_set_return_address): Use gen_frame_mem.
+	(emit_multi_reg_push, emit_sfm, arm_expand_prologue)
+	(thumb_set_return_address): Likewise.
+	(thumb_load_double_from_address): Use adjust_address.
+	* arm.md (splits calling arm_gen_rotated_half_load): Delete.
+	(extendhsisi2_mem, movhi_bytes): Use change_address.
+	(movhi): Use widen_memory_access.
+	(reload_out_df): Use replace_equiv_address.
+	* arm-protos.h (arm_gen_rotated_half_load): Delete prototype.
+
 2005-09-09  Richard Henderson  <rth@redhat.com>
 
 	PR debug/20998

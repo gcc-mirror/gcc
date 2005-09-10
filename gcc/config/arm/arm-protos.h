@@ -87,7 +87,6 @@ extern rtx arm_gen_load_multiple (int, int, rtx, int, int,
 extern rtx arm_gen_store_multiple (int, int, rtx, int, int,
 				   rtx, HOST_WIDE_INT *);
 extern int arm_gen_movmemqi (rtx *);
-extern rtx arm_gen_rotated_half_load (rtx);
 extern enum machine_mode arm_select_cc_mode (RTX_CODE, rtx, rtx);
 extern enum machine_mode arm_select_dominance_cc_mode (rtx, rtx,
 						       HOST_WIDE_INT);
