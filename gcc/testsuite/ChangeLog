@@ -1,3 +1,8 @@
+2005-09-09  Josh Conner  <jconner@apple.com>
+
+	* g++.dg/init/pr23180-1.C: Removed.
+	* g++.dg/init/pr23180-2.C: Removed.
+
 2005-09-09  David Daney <ddaney@avtrex.com>
 
 	* gcc.c-torture/execute/20010124-1.c:  Removed and split into two new 
