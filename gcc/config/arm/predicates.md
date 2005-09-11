@@ -110,26 +110,6 @@
         "offsettable_address_p (reload_completed | reload_in_progress,
 				mode, XEXP (op, 0))")))
 
-;; True if the operand is a memory reference which is, or can be made,
-;; word aligned by adjusting the offset.
-(define_predicate "alignable_memory_operand"
-  (match_code "mem")
-{
-  rtx reg;
-
-  op = XEXP (op, 0);
-
-  return ((GET_CODE (reg = op) == REG
-	   || (GET_CODE (op) == SUBREG
-	       && GET_CODE (reg = SUBREG_REG (op)) == REG)
-	   || (GET_CODE (op) == PLUS
-	       && GET_CODE (XEXP (op, 1)) == CONST_INT
-	       && (GET_CODE (reg = XEXP (op, 0)) == REG
-		   || (GET_CODE (XEXP (op, 0)) == SUBREG
-		       && GET_CODE (reg = SUBREG_REG (XEXP (op, 0))) == REG))))
-	  && REGNO_POINTER_ALIGN (REGNO (reg)) >= 32);
-})
-
 (define_predicate "arm_reload_memory_operand"
   (and (match_code "mem,reg,subreg")
        (match_test "(!CONSTANT_P (op)
