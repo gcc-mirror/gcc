@@ -1,3 +1,8 @@
+2005-09-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/19872
+	* gfortran.dg/overwrite_1.f: New test.
+
 2005-09-09  Josh Conner  <jconner@apple.com>
 
 	* g++.dg/init/pr23180-1.C: Removed.
