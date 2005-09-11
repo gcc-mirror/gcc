@@ -1179,6 +1179,13 @@ data_transfer_init (int read_flag)
 	}
     }
 
+  /* Overwriting an existing sequential file ?
+     it is always safe to truncate the file on the first write */
+  if (g.mode == WRITING
+      && current_unit->flags.access == ACCESS_SEQUENTIAL
+      && current_unit->last_record == 0 && !is_preconnected(current_unit->s))
+        struncate(current_unit->s);
+
   current_unit->mode = g.mode;
 
   /* Set the initial value of flags.  */
