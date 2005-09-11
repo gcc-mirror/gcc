@@ -164,6 +164,7 @@ namespace std
       _Rb_tree_iterator()
       : _M_node() { }
 
+      explicit
       _Rb_tree_iterator(_Link_type __x)
       : _M_node(__x) { }
 
@@ -235,6 +236,7 @@ namespace std
       _Rb_tree_const_iterator()
       : _M_node() { }
 
+      explicit
       _Rb_tree_const_iterator(_Link_type __x)
       : _M_node(__x) { }
 
@@ -579,22 +581,28 @@ namespace std
 
       iterator
       begin()
-      { return static_cast<_Link_type>(this->_M_impl._M_header._M_left); }
+      { 
+	return iterator(static_cast<_Link_type>
+			(this->_M_impl._M_header._M_left));
+      }
 
       const_iterator
       begin() const
-      {
-	return static_cast<_Const_Link_type>
-	  (this->_M_impl._M_header._M_left);
+      { 
+	return const_iterator(static_cast<_Const_Link_type>
+			      (this->_M_impl._M_header._M_left));
       }
 
       iterator
       end()
-      { return static_cast<_Link_type>(&this->_M_impl._M_header); }
+      { return iterator(static_cast<_Link_type>(&this->_M_impl._M_header)); }
 
       const_iterator
       end() const
-      { return static_cast<_Const_Link_type>(&this->_M_impl._M_header); }
+      { 
+	return const_iterator(static_cast<_Const_Link_type>
+			      (&this->_M_impl._M_header));
+      }
 
       reverse_iterator
       rbegin()
@@ -641,12 +649,12 @@ namespace std
       insert_equal(iterator __position, const value_type& __x);
 
       template<typename _InputIterator>
-      void
-      insert_unique(_InputIterator __first, _InputIterator __last);
+        void
+        insert_unique(_InputIterator __first, _InputIterator __last);
 
       template<typename _InputIterator>
-      void
-      insert_equal(_InputIterator __first, _InputIterator __last);
+        void
+        insert_equal(_InputIterator __first, _InputIterator __last);
 
       void
       erase(iterator __position);

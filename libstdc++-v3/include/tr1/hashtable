@@ -261,7 +261,8 @@ namespace Internal
       hashtable_iterator(hash_node<Value, cache>* p,
 			 hash_node<Value, cache>** b)
       : hashtable_iterator_base<Value, cache>(p, b) { }
-  
+
+      explicit
       hashtable_iterator(hash_node<Value, cache>** b)
       : hashtable_iterator_base<Value, cache>(*b, b) { }
   

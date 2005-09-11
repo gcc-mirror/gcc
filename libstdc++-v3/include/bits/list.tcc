@@ -86,7 +86,7 @@ namespace _GLIBCXX_STD
     {
       _Node* __tmp = _M_create_node(__x);
       __tmp->hook(__position._M_node);
-      return __tmp;
+      return iterator(__tmp);
     }
 
   template<typename _Tp, typename _Alloc>
@@ -94,7 +94,7 @@ namespace _GLIBCXX_STD
     list<_Tp, _Alloc>::
     erase(iterator __position)
     {
-      iterator __ret = __position._M_node->_M_next;
+      iterator __ret = iterator(__position._M_node->_M_next);
       _M_erase(__position);
       return __ret;
     }
