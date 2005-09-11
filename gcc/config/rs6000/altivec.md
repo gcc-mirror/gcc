@@ -1838,7 +1838,7 @@
   emit_insn (gen_rtx_SET (VOIDmode, temp, 
 			  gen_rtx_NEG (GET_MODE (addr), addr)));
   emit_insn (gen_altivec_lvsr (operands[0], 
-			       gen_rtx_MEM (GET_MODE (operands[1]), temp)));
+			       replace_equiv_address (operands[1], temp)));
   DONE;
 }")
 

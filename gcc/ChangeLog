@@ -1,3 +1,19 @@
+2005-09-11  David Edelsohn  <edelsohn@gnu.org>
+
+	PR rtl-optimization/23098
+	* config/rs6000/predicates.md (easy_fp_constant): SFmode constant
+	0.0f is easy.
+	* config/rs6000/rs6000.md (movdf splitter): Use
+	const_double_operand predicate for TARGET_POWERPC64.
+	* config/rs6000/rs6000.c (rs6000_legitimize_reload_address): Expand
+	SYMBOL_REF method to ABI_V4.
+
+	* config/rs6000/altivec.md (build_vector_mask_for_load): Use
+	replace_equiv_address.
+	* config/rs6000/rs6000.c (rs6000_emit_eh_reg_restore): Mark MEM as
+	rs6000_sr_alias_set and MEM_NOTRAP.
+	(rs6000_aix_emit_builtin_unwind_init): Use gen_frame_mem().
+
 2005-09-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.c (contains_placeholder_p) <tcc_expression>: Properly
