@@ -1,3 +1,37 @@
+2005-09-11  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/23781
+	* include/bits/stl_list.h (_List_iterator<>::
+	_List_iterator(_List_node_base*), _List_const_iterator<>::
+	_List_const_iterator(const _List_node_base*)): Make explicit.
+	(list<>::begin(), list<>::end(), list<>::pop_back()): Adjust
+	consistently.
+	* include/bits/list.tcc (list<>::insert, list<>::erase): Adjust
+	consistently.
+	* include/bits/stl_tree.h (_Rb_tree_iterator<>::
+	_Rb_tree_iterator(_Link_type), _Rb_tree_const_iterator<>::
+	_Rb_tree_const_iterator(_Link_type)): Make explicit.
+	(_Rb_tree<>::begin(), _Rb_tree<>::end()): Adjust consistently.
+	* include/ext/slist (_Slist_iterator<>::_Slist_iterator(_Node*)):
+	Make explicit.
+	(slist<>::erase(iterator), slist<>::erase(iterator, iterator)):
+	Adjust consistently.
+	* include/tr1/hashtable (hashtable_iterator<>::
+	hashtable_iterator(hash_node<>**)): Make explicit.
+	* testsuite/23_containers/list/23781.cc: New.
+	* testsuite/23_containers/map/23781.cc: Likewise.
+	* testsuite/23_containers/multimap/23781.cc: Likewise.
+	* testsuite/23_containers/multiset/23781.cc: Likewise.
+	* testsuite/23_containers/set/23781.cc: Likewise.
+	* testsuite/ext/slist/23781.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered/23781.cc: Likewise.
+	* testsuite/23_containers/map/operators/1_neg.cc: Adjust dg-error
+	line numbers.
+	* testsuite/23_containers/set/operators/1_neg.cc: Likewise.
+
+	* include/tr1/array (array<>::begin(), array<>::end()): Adjust
+	stylistically for consistency with the other containers.
+
 2005-09-10  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* testsuite/26_numerics/cmath/c99_classification_macros_c.cc:

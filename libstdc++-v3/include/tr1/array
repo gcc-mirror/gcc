@@ -75,21 +75,21 @@ namespace tr1
       swap(array&);
 
       // Iterators.
-      iterator 
+      iterator
       begin()
-      { return &_M_instance[0]; }
+      { return iterator(&_M_instance[0]); }
 
-      const_iterator 
+      const_iterator
       begin() const 
-      { return &_M_instance[0]; }
+      { return const_iterator(&_M_instance[0]); }
 
-      iterator 
+      iterator
       end() 
-      { return &_M_instance[_Nm]; }
+      { return iterator(&_M_instance[_Nm]); }
 
-      const_iterator 
+      const_iterator
       end() const
-      { return &_M_instance[_Nm]; }
+      { return const_iterator(&_M_instance[_Nm]); }
 
       reverse_iterator 
       rbegin()

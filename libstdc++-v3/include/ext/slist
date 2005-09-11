@@ -190,6 +190,7 @@ namespace __gnu_cxx
       typedef _Ref             reference;
       typedef _Slist_node<_Tp> _Node;
 
+      explicit
       _Slist_iterator(_Node* __x)
       : _Slist_iterator_base(__x) {}
 
@@ -601,20 +602,26 @@ namespace __gnu_cxx
 
       iterator
       erase_after(iterator __before_first, iterator __last)
-      { return iterator((_Node*) this->_M_erase_after(__before_first._M_node,
-						      __last._M_node)); }
+      { 
+	return iterator((_Node*) this->_M_erase_after(__before_first._M_node,
+						      __last._M_node));
+      }
 
       iterator
       erase(iterator __pos)
-      { return (_Node*) this->_M_erase_after(__slist_previous(&this->_M_head,
-							      __pos._M_node)); }
+      { 
+	return iterator((_Node*) this->_M_erase_after
+			(__slist_previous(&this->_M_head, __pos._M_node)));
+      }
 
       iterator
       erase(iterator __first, iterator __last)
-      { return (_Node*) this->_M_erase_after(__slist_previous(&this->_M_head,
-							      __first._M_node),
-					     __last._M_node); }
-
+      { 
+	return iterator((_Node*) this->_M_erase_after
+			(__slist_previous(&this->_M_head, __first._M_node),
+			 __last._M_node));
+      }
+      
       void
       resize(size_type new_size, const _Tp& __x);
 
