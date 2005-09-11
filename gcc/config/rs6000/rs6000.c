@@ -3245,16 +3245,21 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
       return x;
     }
 
-#if TARGET_MACHO
   if (GET_CODE (x) == SYMBOL_REF
-      && DEFAULT_ABI == ABI_DARWIN
       && !ALTIVEC_VECTOR_MODE (mode)
+#if TARGET_MACHO
+      && DEFAULT_ABI == ABI_DARWIN
       && (flag_pic || MACHO_DYNAMIC_NO_PIC_P)
+#else
+      && DEFAULT_ABI == ABI_V4
+      && !flag_pic
+#endif
       /* Don't do this for TFmode, since the result isn't offsettable.
 	 The same goes for DImode without 64-bit gprs.  */
       && mode != TFmode
       && (mode != DImode || TARGET_POWERPC64))
     {
+#if TARGET_MACHO
       if (flag_pic)
 	{
 	  rtx offset = gen_rtx_CONST (Pmode,
@@ -3265,6 +3270,7 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
 		  gen_rtx_HIGH (Pmode, offset)), offset);
 	}
       else
+#endif
 	x = gen_rtx_LO_SUM (GET_MODE (x),
 	      gen_rtx_HIGH (Pmode, x), x);
 
@@ -3274,7 +3280,6 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
       *win = 1;
       return x;
     }
-#endif
 
   /* Reload an offset address wrapped by an AND that represents the
      masking of the lower bits.  Strip the outer AND and let reload
@@ -13368,7 +13373,10 @@ rs6000_emit_eh_reg_restore (rtx source, rtx scratch)
 	  || current_function_calls_alloca
 	  || info->total_size > 32767)
 	{
-	  emit_move_insn (operands[1], gen_rtx_MEM (Pmode, frame_rtx));
+	  tmp = gen_rtx_MEM (Pmode, frame_rtx);
+	  MEM_NOTRAP_P (tmp) = 1;
+	  set_mem_alias_set (tmp, rs6000_sr_alias_set);
+	  emit_move_insn (operands[1], tmp);
 	  frame_rtx = operands[1];
 	}
       else if (info->push_p)
@@ -13376,6 +13384,8 @@ rs6000_emit_eh_reg_restore (rtx source, rtx scratch)
 
       tmp = plus_constant (frame_rtx, info->lr_save_offset + sp_offset);
       tmp = gen_rtx_MEM (Pmode, tmp);
+      MEM_NOTRAP_P (tmp) = 1;
+      set_mem_alias_set (tmp, rs6000_sr_alias_set);
       emit_move_insn (tmp, operands[0]);
     }
   else
@@ -13448,12 +13458,12 @@ rs6000_aix_emit_builtin_unwind_init (void)
   rtx tocompare = gen_reg_rtx (SImode);
   rtx no_toc_save_needed = gen_label_rtx ();
 
-  mem = gen_rtx_MEM (Pmode, hard_frame_pointer_rtx);
+  mem = gen_frame_mem (Pmode, hard_frame_pointer_rtx);
   emit_move_insn (stack_top, mem);
 
-  mem = gen_rtx_MEM (Pmode,
-		     gen_rtx_PLUS (Pmode, stack_top,
-				   GEN_INT (2 * GET_MODE_SIZE (Pmode))));
+  mem = gen_frame_mem (Pmode,
+		       gen_rtx_PLUS (Pmode, stack_top,
+				     GEN_INT (2 * GET_MODE_SIZE (Pmode))));
   emit_move_insn (opcode_addr, mem);
   emit_move_insn (opcode, gen_rtx_MEM (SImode, opcode_addr));
   emit_move_insn (tocompare, gen_int_mode (TARGET_32BIT ? 0x80410014
@@ -13463,9 +13473,9 @@ rs6000_aix_emit_builtin_unwind_init (void)
 			   SImode, NULL_RTX, NULL_RTX,
 			   no_toc_save_needed);
 
-  mem = gen_rtx_MEM (Pmode,
-		     gen_rtx_PLUS (Pmode, stack_top,
-				   GEN_INT (5 * GET_MODE_SIZE (Pmode))));
+  mem = gen_frame_mem (Pmode,
+		       gen_rtx_PLUS (Pmode, stack_top,
+				     GEN_INT (5 * GET_MODE_SIZE (Pmode))));
   emit_move_insn (mem, gen_rtx_REG (Pmode, 2));
   emit_label (no_toc_save_needed);
 }
