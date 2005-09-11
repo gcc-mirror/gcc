@@ -2058,6 +2058,9 @@ contains_placeholder_p (tree exp)
 		  || CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 1))
 		  || CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 2)));
 
+	case CALL_EXPR:
+	  return CONTAINS_PLACEHOLDER_P (TREE_OPERAND (exp, 1));
+
 	default:
 	  break;
 	}

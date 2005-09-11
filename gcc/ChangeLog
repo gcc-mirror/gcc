@@ -1,3 +1,8 @@
+2005-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree.c (contains_placeholder_p) <tcc_expression>: Properly
+	handle CALL_EXPR again.
+
 2005-09-11  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* arm/predicates.md (alignable_memory_operand): Delete.
