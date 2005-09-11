@@ -1,3 +1,12 @@
+2005-09-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/20179
+	* io/unix.c (is_preconnected): Add function to test if a stream
+	corresponds to a preconnected unit.
+	* io/io.h: Add prototype for is_preconnected.
+	* io/transfer.c (data_transfer_init): Do not truncate
+	preconnected units.
+
 2005-09-10  Janne Blomqvist  <jblomqvi@cc.hut.fi>
 
 	* io/unix.c: Remove mmap code.

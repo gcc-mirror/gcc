@@ -218,6 +218,17 @@ fix_fd (int fd)
   return fd;
 }
 
+int
+is_preconnected (stream * s)
+{
+  int fd;
+
+  fd = ((unix_stream *) s)->fd;
+  if (fd == STDIN_FILENO || fd == STDOUT_FILENO || fd == STDERR_FILENO)
+    return 1;
+  else
+    return 0;
+}
 
 /* write()-- Write a buffer to a descriptor, allowing for short writes */
 
