@@ -1183,7 +1183,7 @@ data_transfer_init (int read_flag)
      it is always safe to truncate the file on the first write */
   if (g.mode == WRITING
       && current_unit->flags.access == ACCESS_SEQUENTIAL
-      && current_unit->last_record == 0)
+      && current_unit->last_record == 0 && !is_preconnected(current_unit->s))
 	struncate(current_unit->s);
 
   current_unit->mode = g.mode;
