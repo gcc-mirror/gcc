@@ -16646,9 +16646,7 @@ get_next_active_insn (rtx insn, rtx tail)
 	  || (NONJUMP_INSN_P (insn)
 	      && GET_CODE (PATTERN (insn)) != USE
 	      && GET_CODE (PATTERN (insn)) != CLOBBER
-	      && !(GET_CODE (PATTERN (insn)) == SET
-		   && GET_CODE (XEXP (PATTERN (insn), 1)) == UNSPEC
-		   && XINT (XEXP (PATTERN (insn), 1), 1) == UNSPEC_TIE)))
+	      && INSN_CODE (insn) != CODE_FOR_stack_tie))
 	break;
     }
   return insn;
