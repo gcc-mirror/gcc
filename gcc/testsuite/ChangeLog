@@ -1,3 +1,8 @@
+2005-09-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/23789
+	* g++.dg/template/nontype14.C: New test.
+
 2005-09-12  Ian Lance Taylor  <ian@airs.com>
 
 	PR g++/7874

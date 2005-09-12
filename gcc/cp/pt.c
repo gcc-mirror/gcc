@@ -5919,32 +5919,7 @@ tsubst_template_arg (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   else
     {
       r = tsubst_expr (t, args, complain, in_decl);
-
-      if (!uses_template_parms (r))
-	{
-	  /* Sometimes, one of the args was an expression involving a
-	     template constant parameter, like N - 1.  Now that we've
-	     tsubst'd, we might have something like 2 - 1.  This will
-	     confuse lookup_template_class, so we do constant folding
-	     here.  We have to unset processing_template_decl, to fool
-	     tsubst_copy_and_build() into building an actual tree.  */
-
-	 /* If the TREE_TYPE of ARG is not NULL_TREE, ARG is already
-	    as simple as it's going to get, and trying to reprocess
-	    the trees will break.  Once tsubst_expr et al DTRT for
-	    non-dependent exprs, this code can go away, as the type
-	    will always be set.  */
-	  if (!TREE_TYPE (r))
-	    {
-	      int saved_processing_template_decl = processing_template_decl;
-	      processing_template_decl = 0;
-	      r = tsubst_copy_and_build (r, /*args=*/NULL_TREE,
-					 tf_error, /*in_decl=*/NULL_TREE,
-					 /*function_p=*/false);
-	      processing_template_decl = saved_processing_template_decl;
-	      r = fold (r);
-	    }
-	}
+      r = fold_non_dependent_expr (r);
     }
   return r;
 }
