@@ -607,6 +607,92 @@ namespace std
     }
 
   /**
+   *  @if maint
+   *  This is an uglified
+   *  search_n(_ForwardIterator, _ForwardIterator, _Integer, const _Tp&)
+   *  overloaded for forward iterators.
+   *  @endif
+  */
+  template<typename _ForwardIterator, typename _Integer, typename _Tp>
+    _ForwardIterator
+    __search_n(_ForwardIterator __first, _ForwardIterator __last,
+	       _Integer __count, const _Tp& __val,
+	       std::forward_iterator_tag)
+    {
+      __first = std::find(__first, __last, __val);
+      while (__first != __last)
+	{
+	  typename iterator_traits<_ForwardIterator>::difference_type
+	    __n = __count;
+	  _ForwardIterator __i = __first;
+	  ++__i;
+	  while (__i != __last && __n != 1 && *__i == __val)
+	    {
+	      ++__i;
+	      --__n;
+	    }
+	  if (__n == 1)
+	    return __first;
+	  if (__i == __last)
+	    return __last;
+	  __first = std::find(++__i, __last, __val);
+	}
+      return __last;
+    }
+
+  /**
+   *  @if maint
+   *  This is an uglified
+   *  search_n(_ForwardIterator, _ForwardIterator, _Integer, const _Tp&)
+   *  overloaded for random access iterators.
+   *  @endif
+  */
+  template<typename _RandomAccessIter, typename _Integer, typename _Tp>
+    _RandomAccessIter
+    __search_n(_RandomAccessIter __first, _RandomAccessIter __last,
+	       _Integer __count, const _Tp& __val, 
+	       std::random_access_iterator_tag)
+    {
+      
+      typedef typename std::iterator_traits<_RandomAccessIter>::difference_type
+	_DistanceType;
+
+      _DistanceType __tailSize = __last - __first;
+      const _DistanceType __pattSize = __count;
+
+      if (__tailSize < __pattSize)
+        return __last;
+
+      const _DistanceType __skipOffset = __pattSize - 1;
+      _RandomAccessIter __lookAhead = __first + __skipOffset;
+      __tailSize -= __pattSize;
+
+      while (1) // the main loop...
+	{
+	  // __lookAhead here is always pointing to the last element of next 
+	  // possible match.
+	  while (!(*__lookAhead == __val)) // the skip loop...
+	    {
+	      if (__tailSize < __pattSize)
+		return __last;  // Failure
+	      __lookAhead += __pattSize;
+	      __tailSize -= __pattSize;
+	    }
+	  _DistanceType __remainder = __skipOffset;
+	  for (_RandomAccessIter __backTrack = __lookAhead - 1; 
+	       *__backTrack == __val; --__backTrack)
+	    {
+	      if (--__remainder == 0)
+		return (__lookAhead - __skipOffset); // Success
+	    }
+	  if (__remainder > __tailSize)
+	    return __last; // Failure
+	  __lookAhead += __remainder;
+	  __tailSize -= __remainder;
+	}
+    }
+
+  /**
    *  @brief Search a sequence for a number of consecutive values.
    *  @param  first  A forward iterator.
    *  @param  last   A forward iterator.
@@ -632,26 +718,103 @@ namespace std
 
       if (__count <= 0)
 	return __first;
-      else
+      if (__count == 1)
+	return std::find(__first, __last, __val);
+      return std::__search_n(__first, __last, __count, __val,
+			     std::__iterator_category(__first));
+    }
+
+  /**
+   *  @if maint
+   *  This is an uglified
+   *  search_n(_ForwardIterator, _ForwardIterator, _Integer, const _Tp&,
+   *	       _BinaryPredicate)
+   *  overloaded for forward iterators.
+   *  @endif
+  */
+  template<typename _ForwardIterator, typename _Integer, typename _Tp,
+           typename _BinaryPredicate>
+    _ForwardIterator
+    __search_n(_ForwardIterator __first, _ForwardIterator __last,
+	       _Integer __count, const _Tp& __val,
+	       _BinaryPredicate __binary_pred, std::forward_iterator_tag)
+    {
+      while (__first != __last && !__binary_pred(*__first, __val))
+        ++__first;
+
+      while (__first != __last)
 	{
-	  __first = std::find(__first, __last, __val);
-	  while (__first != __last)
+	  typename iterator_traits<_ForwardIterator>::difference_type
+	    __n = __count;
+	  _ForwardIterator __i = __first;
+	  ++__i;
+	  while (__i != __last && __n != 1 && *__i == __val)
 	    {
-	      typename iterator_traits<_ForwardIterator>::difference_type
-		__n = __count;
-	      _ForwardIterator __i = __first;
 	      ++__i;
-	      while (__i != __last && __n != 1 && *__i == __val)
-		{
-		  ++__i;
-		  --__n;
-		}
-	      if (__n == 1)
-		return __first;
-	      else
-		__first = std::find(__i, __last, __val);
+	      --__n;
 	    }
-	  return __last;
+	  if (__n == 1)
+	    return __first;
+	  if (__i == __last)
+	    return __last;
+	  __first = ++__i;
+	  while (__first != __last && !__binary_pred(*__first, __val))
+	    ++__first;
+	}
+      return __last;
+    }
+
+  /**
+   *  @if maint
+   *  This is an uglified
+   *  search_n(_ForwardIterator, _ForwardIterator, _Integer, const _Tp&,
+   *	       _BinaryPredicate)
+   *  overloaded for random access iterators.
+   *  @endif
+  */
+  template<typename _RandomAccessIter, typename _Integer, typename _Tp,
+	   typename _BinaryPredicate>
+    _RandomAccessIter
+    __search_n(_RandomAccessIter __first, _RandomAccessIter __last,
+	       _Integer __count, const _Tp& __val,
+	       _BinaryPredicate __binary_pred, std::random_access_iterator_tag)
+    {
+      
+      typedef typename std::iterator_traits<_RandomAccessIter>::difference_type
+	_DistanceType;
+
+      _DistanceType __tailSize = __last - __first;
+      const _DistanceType __pattSize = __count;
+
+      if (__tailSize < __pattSize)
+        return __last;
+
+      const _DistanceType __skipOffset = __pattSize - 1;
+      _RandomAccessIter __lookAhead = __first + __skipOffset;
+      __tailSize -= __pattSize;
+
+      while (1) // the main loop...
+	{
+	  // __lookAhead here is always pointing to the last element of next 
+	  // possible match.
+	  while (!__binary_pred(*__lookAhead, __val)) // the skip loop...
+	    {
+	      if (__tailSize < __pattSize)
+		return __last;  // Failure
+	      __lookAhead += __pattSize;
+	      __tailSize -= __pattSize;
+	    }
+	  _DistanceType __remainder = __skipOffset;
+	  for (_RandomAccessIter __backTrack = __lookAhead - 1; 
+	       __binary_pred(*__backTrack, __val); --__backTrack)
+	    {
+	      if (--__remainder == 0)
+		return (__lookAhead - __skipOffset); // Success
+	    }
+	  if (__remainder > __tailSize)
+	    return __last; // Failure
+	  __lookAhead += __remainder;
+	  __tailSize -= __remainder;
 	}
     }
 
@@ -685,40 +848,14 @@ namespace std
 
       if (__count <= 0)
 	return __first;
-      else
+      if (__count == 1)
 	{
-	  while (__first != __last)
-	    {
-	      if (__binary_pred(*__first, __val))
-		break;
-	      ++__first;
-	    }
-	  while (__first != __last)
-	    {
-	      typename iterator_traits<_ForwardIterator>::difference_type
-		__n = __count;
-	      _ForwardIterator __i = __first;
-	      ++__i;
-	      while (__i != __last && __n != 1 && __binary_pred(*__i, __val))
-		{
-		  ++__i;
-		  --__n;
-		}
-	      if (__n == 1)
-		return __first;
-	      else
-		{
-		  while (__i != __last)
-		    {
-		      if (__binary_pred(*__i, __val))
-			break;
-		      ++__i;
-		    }
-		  __first = __i;
-		}
-	    }
-	  return __last;
+	  while (__first != __last && !__binary_pred(*__first, __val))
+	    ++__first;
+	  return __first;
 	}
+      return std::__search_n(__first, __last, __count, __val, __binary_pred,
+			     std::__iterator_category(__first));
     }
 
   /**
