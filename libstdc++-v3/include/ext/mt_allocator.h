@@ -43,7 +43,6 @@
 namespace __gnu_cxx
 {
   typedef void (*__destroy_handler)(void*);
-  typedef void (*__create_handler)(void);
 
   /// @brief  Base class for pool object.
   struct __pool_base
@@ -185,12 +184,6 @@ namespace __gnu_cxx
   template<bool _Thread>
     class __pool;
 
-  template<>
-    class __pool<true>;
-
-  template<>
-    class __pool<false>;
-
   /// Specialization for single thread.
   template<>
     class __pool<false> : public __pool_base
@@ -313,24 +306,15 @@ namespace __gnu_cxx
 	__gthread_mutex_t*              _M_mutex;
       };
       
+      // XXX GLIBCXX_ABI Deprecated
       void
-      _M_initialize(__destroy_handler __d);
+      _M_initialize(__destroy_handler);
 
       void
-      _M_initialize_once(__create_handler __c)
+      _M_initialize_once()
       {
-	// Although the test in __gthread_once() would suffice, we
-	// wrap test of the once condition in our own unlocked
-	// check. This saves one function call to pthread_once()
-	// (which itself only tests for the once value unlocked anyway
-	// and immediately returns if set)
 	if (__builtin_expect(_M_init == false, false))
-	  {
-	    if (__gthread_active_p())
-	      __gthread_once(&_M_once, __c);
-	    if (!_M_init)
-	      __c();
-	  }
+	  _M_initialize();
       }
 
       void
@@ -358,28 +342,21 @@ namespace __gnu_cxx
 	  }
       }
 
+      // XXX GLIBCXX_ABI Deprecated
       void 
-      _M_destroy_thread_key(void* __freelist_pos);
+      _M_destroy_thread_key(void*);
 
       size_t 
       _M_get_thread_id();
 
       explicit __pool() 
       : _M_bin(NULL), _M_bin_size(1), _M_thread_freelist(NULL) 
-      {
-	// On some platforms, __gthread_once_t is an aggregate.
-	__gthread_once_t __tmp = __GTHREAD_ONCE_INIT;
-	_M_once = __tmp;
-      }
+      { }
 
       explicit __pool(const __pool_base::_Tune& __tune) 
       : __pool_base(__tune), _M_bin(NULL), _M_bin_size(1), 
       _M_thread_freelist(NULL) 
-      {
-	// On some platforms, __gthread_once_t is an aggregate.
-	__gthread_once_t __tmp = __GTHREAD_ONCE_INIT;
-	_M_once = __tmp;
-      }
+      { }
 
     private:
       // An "array" of bin_records each of which represents a specific
@@ -390,39 +367,131 @@ namespace __gnu_cxx
       // Actual value calculated in _M_initialize().
       size_t 	       	     	_M_bin_size;
 
-      __gthread_once_t 		_M_once;
-      
       _Thread_record* 		_M_thread_freelist;
       void*			_M_thread_freelist_initial;
+
+      void
+      _M_initialize();
     };
 #endif
 
+  template<template <bool> class _PoolTp, bool _Thread>
+    struct __common_pool
+    {
+      typedef _PoolTp<_Thread> 		pool_type;
+      
+      static pool_type&
+      _S_get_pool()
+      { 
+	static pool_type _S_pool;
+	return _S_pool;
+      }
+    };
+
+  template<template <bool> class _PoolTp, bool _Thread>
+    struct __common_pool_base;
+
+  template<template <bool> class _PoolTp>
+    struct __common_pool_base<_PoolTp, false> 
+    : public __common_pool<_PoolTp, false>
+    {
+      using  __common_pool<_PoolTp, false>::_S_get_pool;
+
+      static void
+      _S_initialize_once()
+      {
+	static bool __init;
+	if (__builtin_expect(__init == false, false))
+	  {
+	    _S_get_pool()._M_initialize_once(); 
+	    __init = true;
+	  }
+      }
+    };
+
+#ifdef __GTHREADS
+  template<template <bool> class _PoolTp>
+    struct __common_pool_base<_PoolTp, true>
+    : public __common_pool<_PoolTp, true>
+    {
+      using  __common_pool<_PoolTp, true>::_S_get_pool;
+      
+      static void
+      _S_initialize() 
+      { _S_get_pool()._M_initialize_once(); }
+
+      static void
+      _S_initialize_once()
+      { 
+	static bool __init;
+	if (__builtin_expect(__init == false, false))
+	  {
+	    if (__gthread_active_p())
+	      {
+		// On some platforms, __gthread_once_t is an aggregate.
+		static __gthread_once_t __once = __GTHREAD_ONCE_INIT;
+		__gthread_once(&__once, _S_initialize);
+	      }
+	    else
+	      _S_get_pool()._M_initialize_once(); 
+	    __init = true;
+	  }
+      }
+    };
+#endif
 
   /// @brief  Policy for shared __pool objects.
   template<template <bool> class _PoolTp, bool _Thread>
-    struct __common_pool_policy;
-
-  /// Partial specialization for single thread.
-  template<template <bool> class _PoolTp>
-    struct __common_pool_policy<_PoolTp, false>
+    struct __common_pool_policy : public __common_pool_base<_PoolTp, _Thread>
     {
-      typedef _PoolTp<false> pool_type;
-      
       template<typename _Tp1, template <bool> class _PoolTp1 = _PoolTp, 
-	       bool _Thread1 = false>
+	       bool _Thread1 = _Thread>
         struct _M_rebind
         { typedef __common_pool_policy<_PoolTp1, _Thread1> other; };
 
+      using  __common_pool_base<_PoolTp, _Thread>::_S_get_pool;
+      using  __common_pool_base<_PoolTp, _Thread>::_S_initialize_once;
+  };
+ 
+
+  template<typename _Tp, template <bool> class _PoolTp, bool _Thread>
+    struct __per_type_pool
+    {
+      typedef _Tp 			value_type;
+      typedef _PoolTp<_Thread> 		pool_type;
+      
       static pool_type&
       _S_get_pool()
       { 
-	static pool_type _S_pool;
+	// Sane defaults for the _PoolTp.
+	typedef typename pool_type::_Block_record _Block_record;
+	const static size_t __a = (__alignof__(_Tp) >= sizeof(_Block_record)
+				   ? __alignof__(_Tp) : sizeof(_Block_record));
+
+	typedef typename __pool_base::_Tune _Tune;
+	static _Tune _S_tune(__a, sizeof(_Tp) * 64,
+			     sizeof(_Tp) * 2 >= __a ? sizeof(_Tp) * 2 : __a,
+			     sizeof(_Tp) * size_t(_Tune::_S_chunk_size),
+			     _Tune::_S_max_threads,
+			     _Tune::_S_freelist_headroom,
+			     getenv("GLIBCXX_FORCE_NEW") ? true : false);
+	static pool_type _S_pool(_S_tune);
 	return _S_pool;
       }
+    };
+
+  template<typename _Tp, template <bool> class _PoolTp, bool _Thread>
+    struct __per_type_pool_base;
+
+  template<typename _Tp, template <bool> class _PoolTp>
+    struct __per_type_pool_base<_Tp, _PoolTp, false> 
+    : public __per_type_pool<_Tp, _PoolTp, false> 
+    {
+      using  __per_type_pool<_Tp, _PoolTp, false>::_S_get_pool;
 
       static void
-      _S_initialize_once() 
-      { 
+      _S_initialize_once()
+      {
 	static bool __init;
 	if (__builtin_expect(__init == false, false))
 	  {
@@ -432,152 +501,51 @@ namespace __gnu_cxx
       }
     };
 
-#ifdef __GTHREADS
-  /// Partial specialization for thread enabled, via gthreads.h.
-  template<template <bool> class _PoolTp>
-    struct __common_pool_policy<_PoolTp, true>
+ #ifdef __GTHREADS
+ template<typename _Tp, template <bool> class _PoolTp>
+    struct __per_type_pool_base<_Tp, _PoolTp, true> 
+    : public __per_type_pool<_Tp, _PoolTp, true> 
     {
-      typedef _PoolTp<true> pool_type;
-      
-      template<typename _Tp1, template <bool> class _PoolTp1 = _PoolTp, 
-	       bool _Thread1 = true>
-        struct _M_rebind
-        { typedef __common_pool_policy<_PoolTp1, _Thread1> other; };
-
-      static pool_type&
-      _S_get_pool()
-      { 
-	static pool_type _S_pool;
-	return _S_pool;
-      }
+      using  __per_type_pool<_Tp, _PoolTp, true>::_S_get_pool;
 
       static void
-      _S_initialize_once() 
+      _S_initialize() 
+      { _S_get_pool()._M_initialize_once(); }
+
+      static void
+      _S_initialize_once()
       { 
 	static bool __init;
 	if (__builtin_expect(__init == false, false))
 	  {
-	    _S_get_pool()._M_initialize_once(_S_initialize); 
+	    if (__gthread_active_p())
+	      {
+		// On some platforms, __gthread_once_t is an aggregate.
+		static __gthread_once_t __once = __GTHREAD_ONCE_INIT;
+		__gthread_once(&__once, _S_initialize);
+	      }
+	    else
+	      _S_get_pool()._M_initialize_once(); 
 	    __init = true;
 	  }
       }
-
-    private:
-      static void
-      _S_destroy_thread_key(void* __freelist_pos)
-      { _S_get_pool()._M_destroy_thread_key(__freelist_pos); }
-      
-      static void
-      _S_initialize() 
-      { _S_get_pool()._M_initialize(_S_destroy_thread_key); }
-   };
+    };
 #endif
 
- 
   /// @brief  Policy for individual __pool objects.
   template<typename _Tp, template <bool> class _PoolTp, bool _Thread>
-    struct __per_type_pool_policy;
-
-  /// Partial specialization for single thread.
-  template<typename _Tp, template <bool> class _PoolTp>
-    struct __per_type_pool_policy<_Tp, _PoolTp, false>
+    struct __per_type_pool_policy 
+    : public __per_type_pool_base<_Tp, _PoolTp, _Thread>
     {
-      typedef _Tp value_type;
-      typedef _PoolTp<false> pool_type;
-
       template<typename _Tp1, template <bool> class _PoolTp1 = _PoolTp, 
-	       bool _Thread1 = false>
+	       bool _Thread1 = _Thread>
         struct _M_rebind
         { typedef __per_type_pool_policy<_Tp1, _PoolTp1, _Thread1> other; };
 
-      static pool_type&
-      _S_get_pool()
-      { 
-	// Sane defaults for the _PoolTp.
-	typedef typename pool_type::_Block_record _Block_record;
-	const static size_t __align = (__alignof__(_Tp) >= sizeof(_Block_record)
-				       ? __alignof__(_Tp)
-				       : sizeof(_Block_record));
+      using  __per_type_pool_base<_Tp, _PoolTp, _Thread>::_S_get_pool;
+      using  __per_type_pool_base<_Tp, _PoolTp, _Thread>::_S_initialize_once;
+  };
 
-	typedef typename __pool_base::_Tune _Tune;
-	static _Tune _S_tune(__align, sizeof(_Tp) * 64,
-			     sizeof(_Tp) * 2 >= __align ? sizeof(_Tp) * 2
-			                                : __align,
-			     sizeof(_Tp) * size_t(_Tune::_S_chunk_size),
-			     _Tune::_S_max_threads,
-			     _Tune::_S_freelist_headroom,
-			     getenv("GLIBCXX_FORCE_NEW") ? true : false);
-	static pool_type _S_pool(_S_tune);
-	return _S_pool;
-      }
-
-      static void
-      _S_initialize_once()
-      { 
-	static bool __init;
-	if (__builtin_expect(__init == false, false))
-	  {
-	    _S_get_pool()._M_initialize_once(); 
-	    __init = true;
-	  }
-      }
-    };
-
-#ifdef __GTHREADS
-  /// Partial specialization for thread enabled, via gthreads.h.
-  template<typename _Tp, template <bool> class _PoolTp>
-    struct __per_type_pool_policy<_Tp, _PoolTp, true>
-    {
-      typedef _Tp value_type;
-      typedef _PoolTp<true> pool_type;
-
-     template<typename _Tp1, template <bool> class _PoolTp1 = _PoolTp, 
-	       bool _Thread1 = true>
-        struct _M_rebind
-        { typedef __per_type_pool_policy<_Tp1, _PoolTp1, _Thread1> other; };
-
-      static pool_type&
-      _S_get_pool()
-      { 
-	// Sane defaults for the _PoolTp.
-	typedef typename pool_type::_Block_record _Block_record;
-	const static size_t __align = (__alignof__(_Tp) >= sizeof(_Block_record)
-				       ? __alignof__(_Tp)
-				       : sizeof(_Block_record));
-
-	typedef typename __pool_base::_Tune _Tune;
-	static _Tune _S_tune(__align, sizeof(_Tp) * 64,
-			     sizeof(_Tp) * 2 >= __align ? sizeof(_Tp) * 2
-                                                        : __align,
-			     sizeof(_Tp) * size_t(_Tune::_S_chunk_size),
-			     _Tune::_S_max_threads,
-			     _Tune::_S_freelist_headroom,
-			     getenv("GLIBCXX_FORCE_NEW") ? true : false);
-	static pool_type _S_pool(_S_tune);
-	return _S_pool;
-      }
-
-      static void
-      _S_initialize_once()
-      { 
-	static bool __init;
-	if (__builtin_expect(__init == false, false))
-	  {
-	    _S_get_pool()._M_initialize_once(_S_initialize); 
-	    __init = true;
-	  }
-      }
-
-    private:
-      static void
-      _S_destroy_thread_key(void* __freelist_pos)
-      { _S_get_pool()._M_destroy_thread_key(__freelist_pos); }
-      
-      static void
-      _S_initialize() 
-      { _S_get_pool()._M_initialize(_S_destroy_thread_key); }
-    };
-#endif
 
   /// @brief  Base class for _Tp dependent member functions.
   template<typename _Tp>

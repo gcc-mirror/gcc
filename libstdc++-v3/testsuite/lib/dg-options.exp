@@ -44,3 +44,12 @@ proc dg-require-cxa-atexit { args } {
     }
     return
 }
+
+proc dg-require-sharedlib { args } {
+    if { ![ check_v3_target_sharedlib ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
+}

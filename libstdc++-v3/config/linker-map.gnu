@@ -515,8 +515,8 @@ GLIBCXX_3.4.3 {
 } GLIBCXX_3.4.2;
 
 GLIBCXX_3.4.4 {
- 
-   _ZN9__gnu_cxx6__poolILb0EE13_M_initializeEv;
+
+    _ZN9__gnu_cxx6__poolILb0EE13_M_initializeEv;
     _ZN9__gnu_cxx6__poolILb1EE13_M_initializeEPFvPvE;
     _ZN9__gnu_cxx6__poolILb1EE21_M_destroy_thread_keyEPv;
     _ZN9__gnu_cxx6__poolILb1EE16_M_get_thread_idEv;
@@ -570,6 +570,8 @@ GLIBCXX_3.4.6 {
     _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE9showmanycEv;
 
     _ZNKSt15basic_stringbufIwSt11char_traitsIwESaIwEE3strEv;
+
+   _ZN9__gnu_cxx6__poolILb1EE13_M_initializeEv;
 
 } GLIBCXX_3.4.5;
 
