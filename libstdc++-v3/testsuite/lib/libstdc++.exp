@@ -14,7 +14,8 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA.
 
 
 # Define callbacks and load other libraries.  This file is loaded relatively
@@ -79,6 +80,7 @@ proc v3-copy-files {srcfiles} {
 # Called once, during runtest.exp setup.
 proc libstdc++_init { testfile } {
     global env
+    global v3-sharedlib 
     global srcdir blddir objdir tool_root_dir
     global cxx cxxflags
     global includes
@@ -126,6 +128,15 @@ proc libstdc++_init { testfile } {
         set gccdir [file dirname $gccdir]
     }
     v3track gccdir 3
+
+    # Look for shared library. (ie libstdc++.so.)
+    set v3-sharedlib 0
+    set sharedlibdir [lookfor_file $blddir src/.libs/libstdc++.so]
+    if {$sharedlibdir != ""} {
+        set v3-sharedlib 1
+	verbose -log "shared library support detected"
+    }
+    v3track v3-sharedlib 3
 
     # Compute what needs to be added to the existing LD_LIBRARY_PATH.
     if {$gccdir != ""} {
@@ -324,6 +335,7 @@ proc v3-build_support {} {
     global v3-threads
     global v3-test_objs
     global v3-symver
+    global v3-sharedlib
 
     # Figure out whether or not the library supports certain features.
     set v3-wchar_t 0
@@ -353,7 +365,7 @@ proc v3-build_support {} {
 
     # Build the support objects.
     set source_files \
-	[list testsuite_abi.cc testsuite_allocator.cc testsuite_character.cc testsuite_hooks.cc]
+	[list testsuite_abi.cc testsuite_allocator.cc testsuite_character.cc testsuite_hooks.cc ]
     foreach f $source_files {
 	set object_file [file rootname $f].o
 	# Compile with "-w" so that warnings issued by the compiler
@@ -365,6 +377,27 @@ proc v3-build_support {} {
 	}
 	append v3-test_objs "$object_file "
     }
+
+    # Build the shared support objects.
+    if { ${v3-sharedlib} == 1 } {
+	set source_files \
+	    [list testsuite_shared.cc]
+	foreach f $source_files {
+	    set object_file [file rootname $f].so
+	    # Compile with "-w" so that warnings issued by the compiler
+	    # do not prevent compilation.
+	    if { [v3_target_compile $srcdir/$f $object_file "executable" \
+	     [list "incdir=$srcdir" "additional_flags=-w -shared -fPIC -DPIC"]]
+		 != "" } {
+		error "could not compile $f"
+	    }
+	}
+    }
+}
+
+proc check_v3_target_sharedlib { } {
+    global v3-sharedlib
+    return ${v3-sharedlib}
 }
 
 proc check_v3_target_namedlocale { } {
@@ -491,27 +524,27 @@ proc check_v3_target_cxa_atexit { } {
 	puts $f "static unsigned int count;"
 	puts $f "struct X"
 	puts $f "{"
-	puts $f "X() { count = 1; }"
-	puts $f "~X()"
-	puts $f "{"
-	puts $f "  if (count != 3)"
-	puts $f "    exit(1);"
-	puts $f "  count = 4;"
-        puts $f "}"
+	puts $f "  X() { count = 1; }"
+	puts $f "  ~X()"
+	puts $f "  {"
+	puts $f "    if (count != 3)"
+	puts $f "      exit(1);"
+	puts $f "    count = 4;"
+        puts $f "  }"
         puts $f "};"
 	puts $f "void f()"
 	puts $f "{"
-	puts $f "static X x;"
+	puts $f "  static X x;"
         puts $f "}"
 	puts $f "struct Y"
 	puts $f "{"
-	puts $f "Y() { f(); count = 2; }"
-	puts $f "~Y()"
-	puts $f "{"
-	puts $f "if (count != 2)"
-	puts $f "  exit(1);"
-	puts $f "count = 3;"
-        puts $f "}"
+	puts $f "  Y() { f(); count = 2; }"
+	puts $f "  ~Y()"
+	puts $f "  {"
+	puts $f "    if (count != 2)"
+	puts $f "      exit(1);"
+	puts $f "    count = 3;"
+        puts $f "  }"
         puts $f "};"
 	puts $f "Y y;"
 	puts $f "int main()"
