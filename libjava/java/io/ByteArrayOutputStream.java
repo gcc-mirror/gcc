@@ -192,7 +192,7 @@ public class ByteArrayOutputStream extends OutputStream
    */
   public String toString (int hibyte)
   {
-    return new String (buf, 0, count, hibyte);
+    return new String (buf, hibyte, 0, count);
   }
 
   // Resize buffer to accommodate new bytes.

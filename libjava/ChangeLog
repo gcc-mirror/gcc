@@ -1,3 +1,8 @@
+2005-09-08  David Daney  <ddaney@avtrex.com>
+
+	* java/io/ByteArrayOutputStream.java (toString(int)):  Pass
+	correct parameters to String constructor.
+
 2005-09-08  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	PR libgcj/23549
