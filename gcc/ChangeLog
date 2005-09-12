@@ -1,3 +1,11 @@
+2005-09-12  J"orn Rennecke <joern.rennecke@st.com>
+
+	* sh.h (HARD_REGNO_MODE_OK): Allow V4SFmode in general purpose
+	registers for TARGET_SHMEDIA.
+	(enum reg_class, REG_CLASS_NAMES, REG_CLASS_CONTENTS): Rename
+	GENERAL_FP_REGS to GENERAL_DF_REGS.  Add GENERAL_FP_REGS as union
+	of GENERAL_REGS and FP_REGS.
+
 2005-09-12  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (legimitize_pic_address): Use gen_const_mem.	
