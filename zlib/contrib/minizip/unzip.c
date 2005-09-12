@@ -1,7 +1,7 @@
 /* unzip.c -- IO for uncompress .zip files using zlib
-   Version 1.00, September 10th, 2003
+   Version 1.01e, February 12th, 2005
 
-   Copyright (C) 1998-2003 Gilles Vollant
+   Copyright (C) 1998-2005 Gilles Vollant
 
    Read unzip.h for more info
 */
@@ -88,7 +88,7 @@ woven in by Terry Thorsen 1/2003.
 
 
 const char unz_copyright[] =
-   " unzip 1.00 Copyright 1998-2003 Gilles Vollant - http://www.winimage.com/zLibDll";
+   " unzip 1.01 Copyright 1998-2004 Gilles Vollant - http://www.winimage.com/zLibDll";
 
 /* unz_file_info_interntal contain internal info about a file in zipfile*/
 typedef struct unz_file_info_internal_s
@@ -798,7 +798,8 @@ extern int ZEXPORT unzGoToNextFile (file)
     s=(unz_s*)file;
     if (!s->current_file_ok)
         return UNZ_END_OF_LIST_OF_FILE;
-    if (s->num_file+1==s->gi.number_entry)
+    if (s->gi.number_entry != 0xffff)    /* 2^16 files overflow hack */
+      if (s->num_file+1==s->gi.number_entry)
         return UNZ_END_OF_LIST_OF_FILE;
 
     s->pos_in_central_dir += SIZECENTRALDIRITEM + s->cur_file_info.size_filename +
@@ -1136,7 +1137,10 @@ extern int ZEXPORT unzOpenCurrentFile3 (file, method, level, raw, password)
       if (err == Z_OK)
         pfile_in_zip_read_info->stream_initialised=1;
       else
+      {
+        TRYFREE(pfile_in_zip_read_info);
         return err;
+      }
         /* windowBits is passed < 0 to tell that there is no zlib header.
          * Note that in this case inflate *requires* an extra "dummy" byte
          * after the compressed stream in order to complete decompression and
@@ -1244,9 +1248,17 @@ extern int ZEXPORT unzReadCurrentFile  (file, buf, len)
 
     pfile_in_zip_read_info->stream.avail_out = (uInt)len;
 
-    if (len>pfile_in_zip_read_info->rest_read_uncompressed)
+    if ((len>pfile_in_zip_read_info->rest_read_uncompressed) &&
+        (!(pfile_in_zip_read_info->raw)))
         pfile_in_zip_read_info->stream.avail_out =
-          (uInt)pfile_in_zip_read_info->rest_read_uncompressed;
+            (uInt)pfile_in_zip_read_info->rest_read_uncompressed;
+
+    if ((len>pfile_in_zip_read_info->rest_read_compressed+
+           pfile_in_zip_read_info->stream.avail_in) &&
+         (pfile_in_zip_read_info->raw))
+        pfile_in_zip_read_info->stream.avail_out =
+            (uInt)pfile_in_zip_read_info->rest_read_compressed+
+            pfile_in_zip_read_info->stream.avail_in;
 
     while (pfile_in_zip_read_info->stream.avail_out>0)
     {
@@ -1338,6 +1350,9 @@ extern int ZEXPORT unzReadCurrentFile  (file, buf, len)
                 flush = Z_FINISH;
             */
             err=inflate(&pfile_in_zip_read_info->stream,flush);
+
+            if ((err>=0) && (pfile_in_zip_read_info->stream.msg!=NULL))
+              err = Z_DATA_ERROR;
 
             uTotalOutAfter = pfile_in_zip_read_info->stream.total_out;
             uOutThis = uTotalOutAfter-uTotalOutBefore;
@@ -1461,7 +1476,7 @@ extern int ZEXPORT unzGetLocalExtrafield (file,buf,len)
 
     if (ZREAD(pfile_in_zip_read_info->z_filefunc,
               pfile_in_zip_read_info->filestream,
-              buf,size_to_read)!=size_to_read)
+              buf,read_now)!=read_now)
         return UNZ_ERRNO;
 
     return (int)read_now;
@@ -1543,4 +1558,41 @@ extern int ZEXPORT unzGetGlobalComment (file, szComment, uSizeBuf)
     if ((szComment != NULL) && (uSizeBuf > s->gi.size_comment))
         *(szComment+s->gi.size_comment)='\0';
     return (int)uReadThis;
+}
+
+/* Additions by RX '2004 */
+extern uLong ZEXPORT unzGetOffset (file)
+    unzFile file;
+{
+    unz_s* s;
+
+    if (file==NULL)
+          return UNZ_PARAMERROR;
+    s=(unz_s*)file;
+    if (!s->current_file_ok)
+      return 0;
+    if (s->gi.number_entry != 0 && s->gi.number_entry != 0xffff)
+      if (s->num_file==s->gi.number_entry)
+         return 0;
+    return s->pos_in_central_dir;
+}
+
+extern int ZEXPORT unzSetOffset (file, pos)
+        unzFile file;
+        uLong pos;
+{
+    unz_s* s;
+    int err;
+
+    if (file==NULL)
+        return UNZ_PARAMERROR;
+    s=(unz_s*)file;
+
+    s->pos_in_central_dir = pos;
+    s->num_file = s->gi.number_entry;      /* hack */
+    err = unzlocal_GetCurrentFileInfoInternal(file,&s->cur_file_info,
+                                              &s->cur_file_info_internal,
+                                              NULL,0,NULL,0,NULL,0);
+    s->current_file_ok = (err == UNZ_OK);
+    return err;
 }

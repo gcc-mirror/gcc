@@ -1,3 +1,11 @@
+/*
+   miniunz.c
+   Version 1.01e, February 12th, 2005
+
+   Copyright (C) 1998-2005 Gilles Vollant
+*/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,7 +35,7 @@
   mini unzip, demo of unzip package
 
   usage :
-  Usage : miniunz [-exvlo] file.zip [file_to_extract]
+  Usage : miniunz [-exvlo] file.zip [file_to_extract] [-d extractdir]
 
   list the file in the zipfile, and print the content of FILE_ID.ZIP or README.TXT
     if it exists
@@ -140,17 +148,18 @@ int makedir (newdir)
 
 void do_banner()
 {
-    printf("MiniUnz 1.00, demo of zLib + Unz package written by Gilles Vollant\n");
+    printf("MiniUnz 1.01b, demo of zLib + Unz package written by Gilles Vollant\n");
     printf("more info at http://www.winimage.com/zLibDll/unzip.html\n\n");
 }
 
 void do_help()
 {
-    printf("Usage : miniunz [-e] [-x] [-v] [-l] [-o] [-p password] file.zip [file_to_extr.]\n\n" \
+    printf("Usage : miniunz [-e] [-x] [-v] [-l] [-o] [-p password] file.zip [file_to_extr.] [-d extractdir]\n\n" \
            "  -e  Extract without pathname (junk paths)\n" \
            "  -x  Extract with pathname\n" \
            "  -v  list files\n" \
            "  -l  list files\n" \
+           "  -d  directory to extract into\n" \
            "  -o  overwrite files without prompting\n" \
            "  -p  extract crypted file using password\n\n");
 }
@@ -304,8 +313,14 @@ int do_extract_currentfile(uf,popt_extract_without_path,popt_overwrite,password)
                 do
                 {
                     char answer[128];
-                    printf("The file %s exist. Overwrite ? [y]es, [n]o, [A]ll: ",write_filename);
-                    scanf("%1s",answer);
+                    int ret;
+
+                    printf("The file %s exists. Overwrite ? [y]es, [n]o, [A]ll: ",write_filename);
+                    ret = scanf("%1s",answer);
+                    if (ret != 1) 
+                    {
+                       exit(EXIT_FAILURE);
+                    }
                     rep = answer[0] ;
                     if ((rep>='a') && (rep<='z'))
                         rep -= 0x20;
@@ -459,6 +474,8 @@ int main(argc,argv)
     int opt_do_extract=1;
     int opt_do_extract_withoutpath=0;
     int opt_overwrite=0;
+    int opt_extractdir=0;
+    const char *dirname=NULL;
     unzFile uf=NULL;
 
     do_banner();
@@ -488,6 +505,12 @@ int main(argc,argv)
                         opt_do_extract = opt_do_extract_withoutpath = 1;
                     if ((c=='o') || (c=='O'))
                         opt_overwrite=1;
+                    if ((c=='d') || (c=='D'))
+                    {
+                        opt_extractdir=1;
+                        dirname=argv[i+1];
+                    }
+
                     if (((c=='p') || (c=='P')) && (i+1<argc))
                     {
                         password=argv[i+1];
@@ -499,7 +522,7 @@ int main(argc,argv)
             {
                 if (zipfilename == NULL)
                     zipfilename = argv[i];
-                else if (filename_to_extract==NULL)
+                else if ((filename_to_extract==NULL) && (!opt_extractdir))
                         filename_to_extract = argv[i] ;
             }
         }
@@ -544,6 +567,12 @@ int main(argc,argv)
         return do_list(uf);
     else if (opt_do_extract==1)
     {
+        if (opt_extractdir && chdir(dirname)) 
+        {
+          printf("Error changing into %s, aborting\n", dirname);
+          exit(-1);
+        }
+
         if (filename_to_extract == NULL)
             return do_extract(uf,opt_do_extract_withoutpath,opt_overwrite,password);
         else

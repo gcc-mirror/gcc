@@ -23,7 +23,7 @@ all: SCOPTIONS example minigzip
 check: test
 test: all
 	example
-	echo hello world | minigzip | minigzip -d 
+	echo hello world | minigzip | minigzip -d
 
 install: z.lib
 	copy clone zlib.h zconf.h INCLUDE:

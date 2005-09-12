@@ -1,3 +1,10 @@
+/*
+   minizip.c
+   Version 1.01e, February 12th, 2005
+
+   Copyright (C) 1998-2005 Gilles Vollant
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -53,8 +60,8 @@ uLong filetime(f, tmzip, dt)
 #else
 #ifdef unix
 uLong filetime(f, tmzip, dt)
-    char *f;                /* name of file to get info on */
-    tm_zip *tmzip;             /* return value: access, modific. and creation times */
+    char *f;               /* name of file to get info on */
+    tm_zip *tmzip;         /* return value: access, modific. and creation times */
     uLong *dt;             /* dostime */
 {
   int ret=0;
@@ -66,6 +73,8 @@ uLong filetime(f, tmzip, dt)
   {
     char name[MAXFILENAME+1];
     int len = strlen(f);
+    if (len > MAXFILENAME)
+      len = MAXFILENAME;
 
     strncpy(name, f,MAXFILENAME-1);
     /* strncpy doesnt append the trailing NULL, of the string is too long. */
@@ -120,7 +129,7 @@ int check_exist_file(filename)
 
 void do_banner()
 {
-    printf("MiniZip 1.00, demo of zLib + Zip package written by Gilles Vollant\n");
+    printf("MiniZip 1.01b, demo of zLib + Zip package written by Gilles Vollant\n");
     printf("more info at http://www.winimage.com/zLibDll/unzip.html\n\n");
 }
 
@@ -269,8 +278,13 @@ int main(argc,argv)
                 do
                 {
                     char answer[128];
-                    printf("The file %s exist. Overwrite ? [y]es, [n]o, [a]ppend : ",filename_try);
-                    scanf("%1s",answer);
+                    int ret;
+                    printf("The file %s exists. Overwrite ? [y]es, [n]o, [a]ppend : ",filename_try);
+                    ret = scanf("%1s",answer);
+                    if (ret != 1)
+                    {
+                       exit(EXIT_FAILURE);
+                    }
                     rep = answer[0] ;
                     if ((rep>='a') && (rep<='z'))
                         rep -= 0x20;
@@ -305,7 +319,12 @@ int main(argc,argv)
 
         for (i=zipfilenamearg+1;(i<argc) && (err==ZIP_OK);i++)
         {
-            if (((*(argv[i]))!='-') && ((*(argv[i]))!='/'))
+            if (!((((*(argv[i]))=='-') || ((*(argv[i]))=='/')) &&
+                  ((argv[i][1]=='o') || (argv[i][1]=='O') ||
+                   (argv[i][1]=='a') || (argv[i][1]=='A') ||
+                   (argv[i][1]=='p') || (argv[i][1]=='P') ||
+                   ((argv[i][1]>='0') || (argv[i][1]<='9'))) &&
+                  (strlen(argv[i]) == 2)))
             {
                 FILE * fin;
                 int size_read;
@@ -390,7 +409,11 @@ int main(argc,argv)
         errclose = zipClose(zf,NULL);
         if (errclose != ZIP_OK)
             printf("error in closing %s\n",filename_try);
-   }
+    }
+    else
+    {
+       do_help();
+    }
 
     free(buf);
     return 0;
