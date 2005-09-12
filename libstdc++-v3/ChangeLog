@@ -1,3 +1,9 @@
+2005-09-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/23417
+	* include/bits/stl_list.h (_List_impl): Use member initialization
+	list for -Weffc++.
+
 2005-09-10  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* testsuite/26_numerics/cmath/c99_classification_macros_c.cc:
