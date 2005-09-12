@@ -963,10 +963,17 @@ static_execute (void)
     EXECUTE_IF_SET_IN_BITMAP (module_statics_readonly, 0, index, bi)
       {
 	tree var = get_static_decl (index);
-	TREE_READONLY (var) = 1;
-	if (dump_file)
-	  fprintf (dump_file, "read-only var %s\n", 
-		   get_static_name (index)); 
+
+	/* Ignore variables in named sections - changing TREE_READONLY
+	   changes the section flags, potentially causing conflicts with
+	   other variables in the same named section.  */
+	if (DECL_SECTION_NAME (var) == NULL_TREE)
+	  {
+	    TREE_READONLY (var) = 1;
+	    if (dump_file)
+	      fprintf (dump_file, "read-only var %s\n", 
+		       get_static_name (index));
+	  }
 	if (DECL_INITIAL (var)
 	    && is_gimple_min_invariant (DECL_INITIAL (var)))
 	  {
