@@ -1,5 +1,9 @@
 2005-09-12  J"orn Rennecke <joern.rennecke@st.com>
 
+	PR middle-end/23290
+	* stor-layout.c (compute_record_mode): For records with a single
+	field, actually check the field's mode size against the type size.
+
 	* sh.h (HARD_REGNO_MODE_OK): Allow V4SFmode in general purpose
 	registers for TARGET_SHMEDIA.
 	(enum reg_class, REG_CLASS_NAMES, REG_CLASS_CONTENTS): Rename
