@@ -1,3 +1,7 @@
+2005-09-11  Richard Henderson  <rth@redhat.com>
+
+	* objcp-lang.c (objcxx_init_ts): Remove ALIAS_DECL.
+
 2005-07-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config-lang.in (gtfiles): Add cp-objcp-common.c.
