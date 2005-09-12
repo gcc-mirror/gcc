@@ -1,3 +1,57 @@
+;/* inffas32.asm is a hand tuned assembler version of inffast.c -- fast decoding
+; *
+; * inffas32.asm is derivated from inffas86.c, with translation of assembly code
+; *
+; * Copyright (C) 1995-2003 Mark Adler
+; * For conditions of distribution and use, see copyright notice in zlib.h
+; *
+; * Copyright (C) 2003 Chris Anderson <christop@charm.net>
+; * Please use the copyright conditions above.
+; *
+; * Mar-13-2003 -- Most of this is derived from inffast.S which is derived from
+; * the gcc -S output of zlib-1.2.0/inffast.c.  Zlib-1.2.0 is in beta release at
+; * the moment.  I have successfully compiled and tested this code with gcc2.96,
+; * gcc3.2, icc5.0, msvc6.0.  It is very close to the speed of inffast.S
+; * compiled with gcc -DNO_MMX, but inffast.S is still faster on the P3 with MMX
+; * enabled.  I will attempt to merge the MMX code into this version.  Newer
+; * versions of this and inffast.S can be found at
+; * http://www.eetbeetee.com/zlib/ and http://www.charm.net/~christop/zlib/
+; * 
+; * 2005 : modification by Gilles Vollant
+; */
+; For Visual C++ 4.x and higher and ML 6.x and higher
+;   ml.exe is in directory \MASM611C of Win95 DDK
+;   ml.exe is also distributed in http://www.masm32.com/masmdl.htm
+;    and in VC++2003 toolkit at http://msdn.microsoft.com/visualc/vctoolkit2003/
+;
+;
+;   compile with command line option
+;   ml  /coff /Zi /c /Flinffas32.lst inffas32.asm
+
+;   if you define NO_GZIP (see inflate.h), compile with
+;   ml  /coff /Zi /c /Flinffas32.lst /DNO_GUNZIP inffas32.asm
+
+
+; zlib122sup is 0 fort zlib 1.2.2.1 and lower
+; zlib122sup is 8 fort zlib 1.2.2.2 and more (with addition of dmax and head 
+;        in inflate_state in inflate.h)
+zlib1222sup      equ    8
+
+
+IFDEF GUNZIP
+  INFLATE_MODE_TYPE    equ 11
+  INFLATE_MODE_BAD     equ 26
+ELSE
+  IFNDEF NO_GUNZIP
+    INFLATE_MODE_TYPE    equ 11
+    INFLATE_MODE_BAD     equ 26
+  ELSE
+    INFLATE_MODE_TYPE    equ 3
+    INFLATE_MODE_BAD     equ 17
+  ENDIF
+ENDIF
+
+
 ; 75 "inffast.S"
 ;FILE "inffast.S"
 
@@ -84,17 +138,16 @@ dd	2147483647
 dd	4294967295
 
 
-
 mode_state	 equ	0	;/* state->mode	*/
-wsize_state	 equ	32	;/* state->wsize */
-write_state	 equ	(36+4)	;/* state->write */
-window_state	 equ	(40+4)	;/* state->window */
-hold_state	 equ	(44+4)	;/* state->hold	*/
-bits_state	 equ	(48+4)	;/* state->bits	*/
-lencode_state	 equ	(64+4)	;/* state->lencode */
-distcode_state	 equ	(68+4)	;/* state->distcode */
-lenbits_state	 equ	(72+4)	;/* state->lenbits */
-distbits_state	 equ	(76+4)	;/* state->distbits */
+wsize_state	 equ	(32+zlib1222sup)	;/* state->wsize */
+write_state	 equ	(36+4+zlib1222sup)	;/* state->write */
+window_state	 equ	(40+4+zlib1222sup)	;/* state->window */
+hold_state	 equ	(44+4+zlib1222sup)	;/* state->hold	*/
+bits_state	 equ	(48+4+zlib1222sup)	;/* state->bits	*/
+lencode_state	 equ	(64+4+zlib1222sup)	;/* state->lencode */
+distcode_state	 equ	(68+4+zlib1222sup)	;/* state->distcode */
+lenbits_state	 equ	(72+4+zlib1222sup)	;/* state->lenbits */
+distbits_state	 equ	(76+4+zlib1222sup)	;/* state->distbits */
 
 
 ;;SECTION .text
@@ -868,7 +921,7 @@ L_invalid_distance_code:
 
 
 	mov  ecx, invalid_distance_code_msg
-	mov  edx,26
+	mov  edx,INFLATE_MODE_BAD
 	jmp  L_update_stream_state
 
 L_test_for_end_of_block:
@@ -881,7 +934,7 @@ L_test_for_end_of_block:
 	jz  L_invalid_literal_length_code
 
 	mov  ecx,0
-	mov  edx,11
+	mov  edx,INFLATE_MODE_TYPE
 	jmp  L_update_stream_state
 
 L_invalid_literal_length_code:
@@ -891,7 +944,7 @@ L_invalid_literal_length_code:
 
 
 	mov  ecx, invalid_literal_length_code_msg
-	mov  edx,26
+	mov  edx,INFLATE_MODE_BAD
 	jmp  L_update_stream_state
 
 L_invalid_distance_too_far:
@@ -900,7 +953,7 @@ L_invalid_distance_too_far:
 
 	mov  esi, [esp+44]
 	mov  ecx, invalid_distance_too_far_msg
-	mov  edx,26
+	mov  edx,INFLATE_MODE_BAD
 	jmp  L_update_stream_state
 
 L_update_stream_state:
@@ -1025,9 +1078,6 @@ L_done:
 	pop  esi
 	pop  edi
 	ret
-
-
-
 
 _TEXT	ends
 end

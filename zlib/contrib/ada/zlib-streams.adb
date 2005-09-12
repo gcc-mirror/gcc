@@ -6,7 +6,7 @@
 --  Open source license information is in the zlib.ads file.  --
 ----------------------------------------------------------------
 
---  $Id: zlib-streams.adb,v 1.9 2003/08/12 13:15:31 vagul Exp $
+--  $Id: zlib-streams.adb,v 1.10 2004/05/31 10:53:40 vagul Exp $
 
 with Ada.Unchecked_Deallocation;
 
@@ -90,6 +90,7 @@ package body ZLib.Streams is
 
          Stream.Buffer     := new Buffer_Subtype;
          Stream.Rest_First := Stream.Buffer'Last + 1;
+         Stream.Rest_Last  := Stream.Buffer'Last;
       end if;
    end Create;
 
@@ -112,6 +113,15 @@ package body ZLib.Streams is
          exit when Last < Buffer'Last;
       end loop;
    end Flush;
+
+   -------------
+   -- Is_Open --
+   -------------
+
+   function Is_Open (Stream : Stream_Type) return Boolean is
+   begin
+      return Is_Open (Stream.Reader) or else Is_Open (Stream.Writer);
+   end Is_Open;
 
    ----------
    -- Read --

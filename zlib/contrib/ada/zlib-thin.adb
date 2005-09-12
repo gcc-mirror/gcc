@@ -6,12 +6,11 @@
 --  Open source license information is in the zlib.ads file.  --
 ----------------------------------------------------------------
 
---  $Id: zlib-thin.adb,v 1.6 2003/01/21 15:26:37 vagul Exp $
+--  $Id: zlib-thin.adb,v 1.8 2003/12/14 18:27:31 vagul Exp $
 
 package body ZLib.Thin is
 
-   ZLIB_VERSION : constant Chars_Ptr :=
-      Interfaces.C.Strings.New_String ("1.1.4");
+   ZLIB_VERSION  : constant Chars_Ptr := zlibVersion;
 
    Z_Stream_Size : constant Int := Z_Stream'Size / System.Storage_Unit;
 
@@ -38,14 +37,6 @@ package body ZLib.Thin is
    ------------------
 
    function Deflate_Init
-     (strm  : in Z_Streamp;
-      level : in Int := Z_DEFAULT_COMPRESSION)
-      return  Int is
-   begin
-      return deflateInit (strm, level, ZLIB_VERSION, Z_Stream_Size);
-   end Deflate_Init;
-
-   function Deflate_Init
      (strm       : Z_Streamp;
       level      : Int;
       method     : Int;
@@ -69,15 +60,14 @@ package body ZLib.Thin is
    -- Inflate_Init --
    ------------------
 
-   function Inflate_Init (strm : Z_Streamp) return Int is
-   begin
-      return inflateInit (strm, ZLIB_VERSION, Z_Stream_Size);
-   end Inflate_Init;
-
    function Inflate_Init (strm : Z_Streamp; windowBits : Int) return Int is
    begin
       return inflateInit2 (strm, windowBits, ZLIB_VERSION, Z_Stream_Size);
    end Inflate_Init;
+
+   ------------------------
+   -- Last_Error_Message --
+   ------------------------
 
    function Last_Error_Message (Strm : in Z_Stream) return String is
       use Interfaces.C.Strings;
@@ -89,43 +79,17 @@ package body ZLib.Thin is
       end if;
    end Last_Error_Message;
 
-   -------------
-   -- Need_In --
-   -------------
-
-   function Need_In (strm : Z_Stream) return Boolean is
-   begin
-      return strm.Avail_In = 0;
-   end Need_In;
-
-   --------------
-   -- Need_Out --
-   --------------
-
-   function Need_Out (strm : Z_Stream) return Boolean is
-   begin
-      return strm.Avail_Out = 0;
-   end Need_Out;
-
    ------------
    -- Set_In --
    ------------
 
    procedure Set_In
      (Strm   : in out Z_Stream;
-      Buffer : in Byte_Access;
-      Size   : in UInt) is
+      Buffer : in     Voidp;
+      Size   : in     UInt) is
    begin
       Strm.Next_In  := Buffer;
       Strm.Avail_In := Size;
-   end Set_In;
-
-   procedure Set_In
-     (Strm   : in out Z_Stream;
-      Buffer : in Voidp;
-      Size   : in UInt) is
-   begin
-      Set_In (Strm, Bytes.To_Pointer (Buffer), Size);
    end Set_In;
 
    ------------------
@@ -134,9 +98,9 @@ package body ZLib.Thin is
 
    procedure Set_Mem_Func
      (Strm   : in out Z_Stream;
-      Opaque : in Voidp;
-      Alloc  : in alloc_func;
-      Free   : in free_func) is
+      Opaque : in     Voidp;
+      Alloc  : in     alloc_func;
+      Free   : in     free_func) is
    begin
       Strm.opaque := Opaque;
       Strm.zalloc := Alloc;
@@ -149,19 +113,11 @@ package body ZLib.Thin is
 
    procedure Set_Out
      (Strm   : in out Z_Stream;
-      Buffer : in Byte_Access;
-      Size   : in UInt) is
+      Buffer : in     Voidp;
+      Size   : in     UInt) is
    begin
       Strm.Next_Out  := Buffer;
       Strm.Avail_Out := Size;
-   end Set_Out;
-
-   procedure Set_Out
-     (Strm   : in out Z_Stream;
-      Buffer : in Voidp;
-      Size   : in UInt) is
-   begin
-      Set_Out (Strm, Bytes.To_Pointer (Buffer), Size);
    end Set_Out;
 
    --------------

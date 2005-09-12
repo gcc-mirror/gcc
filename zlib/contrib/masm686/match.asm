@@ -12,6 +12,8 @@
 ; Based on match.S
 ; Written for zlib 1.1.2
 ; Copyright (C) 1998 Brian Raiter <breadbox@muppetlabs.com>
+;
+; Modified by Gilles Vollant (2005) for add gzhead and gzindex
 
 	.686P
 	.MODEL	FLAT
@@ -39,6 +41,9 @@ ds_pending_buf_size	dd ?
 ds_pending_out		dd ?
 ds_pending		dd ?
 ds_wrap			dd ?
+; gzhead and gzindex are added in zlib 1.2.2.2 (see deflate.h)
+ds_gzhead               dd ?
+ds_gzindex              dd ?
 ds_data_type		db ?
 ds_method		db ?
 			db ?	; padding

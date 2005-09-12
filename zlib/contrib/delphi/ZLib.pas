@@ -152,7 +152,7 @@ procedure DecompressToUserBuf(const InBuf: Pointer; InBytes: Integer;
   const OutBuf: Pointer; BufSize: Integer);
 
 const
-  zlib_version = '1.2.1';
+  zlib_version = '1.2.3';
 
 type
   EZlibError = class(Exception);
@@ -344,7 +344,7 @@ begin
     strm.avail_out := OutBytes;
     DCheck(inflateInit_(strm, zlib_version, sizeof(strm)));
     try
-      while DCheck(inflate(strm, Z_FINISH)) <> Z_STREAM_END do
+      while DCheck(inflate(strm, Z_NO_FLUSH)) <> Z_STREAM_END do
       begin
         P := OutBuf;
         Inc(OutBytes, BufInc);
@@ -510,7 +510,7 @@ begin
         Result := Count - FZRec.avail_out;
         Exit;
       end;
-          FZRec.next_in := FBuffer;
+      FZRec.next_in := FBuffer;
       FStrmPos := FStrm.Position;
       Progress(Self);
     end;

@@ -5,8 +5,8 @@ VS_VERSION_INFO		VERSIONINFO
 #else
 VS_VERSION_INFO		VERSIONINFO	MOVEABLE IMPURE LOADONCALL DISCARDABLE
 #endif
-  FILEVERSION		1,2,1,0
-  PRODUCTVERSION	1,2,1,0
+  FILEVERSION		1,2,2,0
+  PRODUCTVERSION	1,2,2,0
   FILEFLAGSMASK		VS_FFI_FILEFLAGSMASK
 #ifdef _DEBUG
   FILEFLAGS		1
@@ -23,12 +23,12 @@ BEGIN
     //language ID = U.S. English, char set = Windows, Multilingual
     BEGIN
       VALUE "FileDescription",	"zlib data compression library\0"
-      VALUE "FileVersion",	"1.2.1\0"
+      VALUE "FileVersion",	"1.2.3\0"
       VALUE "InternalName",	"zlib1.dll\0"
-      VALUE "LegalCopyright",	"(C) 1995-2003 Jean-loup Gailly & Mark Adler\0"
+      VALUE "LegalCopyright",	"(C) 1995-2004 Jean-loup Gailly & Mark Adler\0"
       VALUE "OriginalFilename",	"zlib1.dll\0"
       VALUE "ProductName",	"zlib\0"
-      VALUE "ProductVersion",	"1.2.1\0"
+      VALUE "ProductVersion",	"1.2.3\0"
       VALUE "Comments","DLL support by Alessandro Iacopetti & Gilles Vollant\0"
     END
   END

@@ -1,8 +1,8 @@
 /*
  * puff.c
- * Copyright (C) 2002, 2003 Mark Adler
+ * Copyright (C) 2002-2004 Mark Adler
  * For conditions of distribution and use, see copyright notice in puff.h
- * version 1.7, 3 Mar 2003
+ * version 1.8, 9 Jan 2004
  *
  * puff.c is a simple inflate written to be an unambiguous way to specify the
  * deflate format.  It is not written for speed but rather simplicity.  As a
@@ -60,6 +60,7 @@
  * 1.6   7 Aug 2002     - Minor format changes
  * 1.7   3 Mar 2003     - Added test code for distribution
  *                      - Added zlib-like license
+ * 1.8   9 Jan 2004     - Added some comments on no distance codes case
  */
 
 #include <setjmp.h>             /* for setjmp(), longjmp(), and jmp_buf */
@@ -576,6 +577,9 @@ local int fixed(struct state *s)
  *   is not the most efficient way to create an empty block (an empty fixed
  *   block is fewer bits), but it is allowed by the format.  So incomplete
  *   literal/length codes of one symbol should also be permitted.
+ *
+ * - If there are only literal codes and no lengths, then there are no distance
+ *   codes.  This is represented by one distance code with zero bits.
  *
  * - The list of up to 286 length/literal lengths and up to 30 distance lengths
  *   are themselves compressed using Huffman codes and run-length encoding.  In

@@ -1,5 +1,5 @@
 /* inftree9.c -- generate Huffman trees for efficient decoding
- * Copyright (C) 1995-2003 Mark Adler
+ * Copyright (C) 1995-2005 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -9,7 +9,7 @@
 #define MAXBITS 15
 
 const char inflate9_copyright[] =
-   " inflate9 1.2.1 Copyright 1995-2003 Mark Adler ";
+   " inflate9 1.2.3 Copyright 1995-2005 Mark Adler ";
 /*
   If you use the zlib library in a product, an acknowledgment is welcome
   in the documentation of your product. If for some reason you cannot
@@ -64,7 +64,7 @@ unsigned short FAR *work;
     static const unsigned short lext[31] = { /* Length codes 257..285 extra */
         128, 128, 128, 128, 128, 128, 128, 128, 129, 129, 129, 129,
         130, 130, 130, 130, 131, 131, 131, 131, 132, 132, 132, 132,
-        133, 133, 133, 133, 144, 76, 66};
+        133, 133, 133, 133, 144, 201, 196};
     static const unsigned short dbase[32] = { /* Distance codes 0..31 base */
         1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49,
         65, 97, 129, 193, 257, 385, 513, 769, 1025, 1537, 2049, 3073,
@@ -128,7 +128,7 @@ unsigned short FAR *work;
         left -= count[len];
         if (left < 0) return -1;        /* over-subscribed */
     }
-    if (left > 0 && (type == CODES || (codes - count[0] != 1)))
+    if (left > 0 && (type == CODES || max != 1))
         return -1;                      /* incomplete set */
 
     /* generate offsets into symbol table for each length for sorting */

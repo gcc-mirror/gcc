@@ -188,17 +188,8 @@
 /*
  * typedef enum inflate_mode consts, in inflate.h
  */
-#ifndef NO_GUNZIP
-#define GUNZIP
-#endif
-
-#ifdef GUNZIP
 #define INFLATE_MODE_TYPE 11  /* state->mode flags enum-ed in inflate.h */
 #define INFLATE_MODE_BAD  26
-#else
-#define INFLATE_MODE_TYPE 3
-#define INFLATE_MODE_BAD  17
-#endif
 
 
 #if ! defined( USE_MMX ) && ! defined( NO_MMX )
