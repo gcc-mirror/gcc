@@ -20,15 +20,15 @@ public:
     class Vix {
     public:
 	Vix();
-	friend int operator==(void *v, const Vix& x) // { dg-error "operator==" }
+	friend int operator==(void *v, const Vix& x)
 	    { return v == x.item; }
-	friend int operator==(const Vix& x, void *v) // { dg-error "operator==" }
+	friend int operator==(const Vix& x, void *v)
 	    { return v == x.item; }
 	friend int operator!=(void *v, const Vix& x)
 	    { return v != x.item; }
 	friend int operator!=(const Vix& x, void *v)
 	    { return v != x.item; }
-	friend int operator==(const Vix& x1, const Vix& x2) // { dg-error "operator==" }
+	friend int operator==(const Vix& x1, const Vix& x2)
 	    { return x1.owner == x2.owner && x1.item == x2.item; }
 	friend int operator!=(const Vix& x1, const Vix& x2)
 	    { return x1.owner != x2.owner || x1.item != x2.item; }

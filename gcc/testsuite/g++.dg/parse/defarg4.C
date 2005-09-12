@@ -6,9 +6,10 @@
 // PR c++ 9162. default args got left unprocessed
 
 struct S {
-  friend int foo (int = 100);
+  friend int foo (const S&, int = 100);
 };
-int i = foo ();
+S s;
+int i = foo (s);
 
 struct R
 {

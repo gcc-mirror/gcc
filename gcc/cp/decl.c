@@ -1009,13 +1009,15 @@ warn_extern_redeclared_static (tree newdecl, tree olddecl)
    error_mark_node is returned.  Otherwise, OLDDECL is returned.
 
    If NEWDECL is not a redeclaration of OLDDECL, NULL_TREE is
-   returned.  */
+   returned.
+
+   NEWDECL_IS_FRIEND is true if NEWDECL was declared as a friend.  */
 
 tree
-duplicate_decls (tree newdecl, tree olddecl)
+duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 {
   unsigned olddecl_uid = DECL_UID (olddecl);
-  int olddecl_friend = 0, types_match = 0;
+  int olddecl_friend = 0, types_match = 0, hidden_friend = 0;
   int new_defines_function = 0;
 
   if (newdecl == olddecl)
@@ -1069,9 +1071,11 @@ duplicate_decls (tree newdecl, tree olddecl)
   if (TREE_CODE (olddecl) == FUNCTION_DECL
       && DECL_ARTIFICIAL (olddecl))
     {
+      gcc_assert (!DECL_HIDDEN_FRIEND_P (olddecl));
       if (TREE_CODE (newdecl) != FUNCTION_DECL)
 	{
-	  /* Avoid warnings redeclaring anticipated built-ins.  */
+	  /* Avoid warnings redeclaring built-ins which have not been
+	     explicitly declared.  */
 	  if (DECL_ANTICIPATED (olddecl))
 	    return NULL_TREE;
 
@@ -1102,7 +1106,8 @@ duplicate_decls (tree newdecl, tree olddecl)
 	}
       else if (!types_match)
 	{
-	  /* Avoid warnings redeclaring anticipated built-ins.  */
+	  /* Avoid warnings redeclaring built-ins which have not been
+	     explicitly declared.  */
 	  if (DECL_ANTICIPATED (olddecl))
 	    {
 	      /* Deal with fileptr_type_node.  FILE type is not known
@@ -1131,7 +1136,8 @@ duplicate_decls (tree newdecl, tree olddecl)
 			  = TYPE_ARG_TYPES (TREE_TYPE (newdecl));
 			types_match = decls_match (newdecl, olddecl);
 			if (types_match)
-			  return duplicate_decls (newdecl, olddecl);
+			  return duplicate_decls (newdecl, olddecl,
+						  newdecl_is_friend);
 			TYPE_ARG_TYPES (TREE_TYPE (olddecl)) = oldargs;
 		      }
 		  }
@@ -1163,8 +1169,9 @@ duplicate_decls (tree newdecl, tree olddecl)
 	  /* Replace the old RTL to avoid problems with inlining.  */
 	  COPY_DECL_RTL (newdecl, olddecl);
 	}
-      /* Even if the types match, prefer the new declarations type
-	 for anticipated built-ins, for exception lists, etc...  */
+      /* Even if the types match, prefer the new declarations type for
+	 built-ins which have not been explicitly declared, for
+	 exception lists, etc...  */
       else if (DECL_ANTICIPATED (olddecl))
 	{
 	  tree type = TREE_TYPE (newdecl);
@@ -1460,7 +1467,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	  /* Don't warn about extern decl followed by definition.  */
 	  && !(DECL_EXTERNAL (olddecl) && ! DECL_EXTERNAL (newdecl))
 	  /* Don't warn about friends, let add_friend take care of it.  */
-	  && ! (DECL_FRIEND_P (newdecl) || DECL_FRIEND_P (olddecl)))
+	  && ! (newdecl_is_friend || DECL_FRIEND_P (olddecl)))
 	{
 	  warning (0, "redundant redeclaration of %qD in same scope", newdecl);
 	  warning (0, "previous declaration of %q+D", olddecl);
@@ -1685,6 +1692,9 @@ duplicate_decls (tree newdecl, tree olddecl)
       DECL_INITIALIZED_IN_CLASS_P (newdecl)
 	|= DECL_INITIALIZED_IN_CLASS_P (olddecl);
       olddecl_friend = DECL_FRIEND_P (olddecl);
+      hidden_friend = (DECL_ANTICIPATED (olddecl)
+		       && DECL_HIDDEN_FRIEND_P (olddecl)
+		       && newdecl_is_friend);
 
       /* Only functions have DECL_BEFRIENDING_CLASSES.  */
       if (TREE_CODE (newdecl) == FUNCTION_DECL
@@ -1898,6 +1908,11 @@ duplicate_decls (tree newdecl, tree olddecl)
   DECL_UID (olddecl) = olddecl_uid;
   if (olddecl_friend)
     DECL_FRIEND_P (olddecl) = 1;
+  if (hidden_friend)
+    {
+      DECL_ANTICIPATED (olddecl) = 1;
+      DECL_HIDDEN_FRIEND_P (olddecl) = 1;
+    }
 
   /* NEWDECL contains the merged attribute lists.
      Update OLDDECL to be the same.  */
@@ -3142,7 +3157,7 @@ cp_make_fname_decl (tree id, int type_dep)
       struct cp_binding_level *b = current_binding_level;
       while (b->level_chain->kind != sk_function_parms)
 	b = b->level_chain;
-      pushdecl_with_scope (decl, b);
+      pushdecl_with_scope (decl, b, /*is_friend=*/false);
       cp_finish_decl (decl, init, NULL_TREE, LOOKUP_ONLYCONVERTING);
     }
   else
@@ -3185,8 +3200,9 @@ builtin_function_1 (const char* name,
   if (libname)
     SET_DECL_ASSEMBLER_NAME (decl, get_identifier (libname));
 
-  /* Warn if a function in the namespace for users
-     is used without an occasion to consider it declared.  */
+  /* A function in the user's namespace should have an explicit
+     declaration before it is used.  Mark the built-in function as
+     anticipated but not actually declared.  */
   if (name[0] != '_' || name[1] != '_')
     DECL_ANTICIPATED (decl) = 1;
 
@@ -3720,7 +3736,7 @@ start_decl (const cp_declarator *declarator,
 	      if (DECL_INITIAL (decl) 
 		  && DECL_INITIALIZED_IN_CLASS_P (field))
 		error ("duplicate initialization of %qD", decl);
-	      if (duplicate_decls (decl, field))
+	      if (duplicate_decls (decl, field, /*newdecl_is_friend=*/false))
 		decl = field;
 	    }
 	}
@@ -3731,7 +3747,8 @@ start_decl (const cp_declarator *declarator,
 				       > template_class_depth (context))
 				      ? current_template_parms
 				      : NULL_TREE);
-	  if (field && duplicate_decls (decl, field))
+	  if (field && duplicate_decls (decl, field,
+					/*newdecl_is_friend=*/false))
 	    decl = field;
 	}
 
@@ -5871,7 +5888,7 @@ grokfndecl (tree ctype,
 	  /* Attempt to merge the declarations.  This can fail, in
 	     the case of some invalid specialization declarations.  */
 	  pushed_scope = push_scope (ctype);
-	  ok = duplicate_decls (decl, old_decl);
+	  ok = duplicate_decls (decl, old_decl, friendp);
 	  if (pushed_scope)
 	    pop_scope (pushed_scope);
 	  if (!ok)

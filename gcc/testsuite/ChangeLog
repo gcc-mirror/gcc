@@ -1,3 +1,18 @@
+2005-09-12  Ian Lance Taylor  <ian@airs.com>
+
+	PR g++/7874
+	* g++.dg/lookup/friend7.C: New test.
+	* g++.dg/lookup/friend8.C: New test.
+	* g++.dg/parse/defarg4.C: Add a parameter to the friend function,
+	so that it will be found via argument dependent lookup.
+	* g++.old-deja/g++.brendan/crash56.C: Don't expect errors for
+	friend functions which will no longer be found.
+	* g++.old-deja/g++.jason/friend.C: Add a parameter to the friend
+	function g, so that it will be found via argument dependent
+	lookup.
+	* g++.old-deja/g++.jason/scoping15.C: Use -ffriend-injection.
+	* g++.old-deja/g++.mike/net43.C: Likewise.
+
 2005-09-12  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23691

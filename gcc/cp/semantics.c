@@ -1822,7 +1822,7 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual, bool koenig_p)
 
       if (!result)
 	/* A call to a namespace-scope function.  */
-	result = build_new_function_call (fn, args);
+	result = build_new_function_call (fn, args, koenig_p);
     }
   else if (TREE_CODE (fn) == PSEUDO_DTOR_EXPR)
     {

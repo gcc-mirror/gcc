@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-options "-ffriend-injection" }
 
 class foo {
  public:
