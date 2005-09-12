@@ -1,3 +1,18 @@
+2005-09-12  Chris Jefferson  <chris@bubblescope.net>
+
+	* include/bits/stl_algo.h (search_n): Delegate to specializations.
+	(search_n(,,,,binary_predicate)): Likewise.
+	(__search_n(forward_iterator_tag)): Original search_n, tweak to
+	remove an unnecessary comparison.
+	(__search_n(,,,,binary_predicate,forward_iterator_tag)): Likewise.
+
+2005-09-12  Jim Xochellis  <jimxoch@yahoo.gr>
+
+	* include/bits/stl_algo.h (__search_n(std::random_access_iterator_tag)):
+	Add specialization.
+	(__search_n(,,,,binary_predicate,std::random_access_iterator_tag)):
+	Likewise.
+
 2005-09-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/23417
