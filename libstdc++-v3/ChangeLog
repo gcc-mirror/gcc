@@ -1,3 +1,13 @@
+2005-09-12  Benjamin Kosnik  <bkoz@redhat.com>
+	    David Edelsohn <dje@gcc.gnu.org>
+
+	PR libstdc++/22554
+	PR libstdc++/23734
+	* include/Makefile.am (assoc_headers): Break into five sub values.
+	(install-headers): Use them.
+	(stamp-assoc): Same.
+	* include/Makefile.in: Regenerate.
+	
 2005-09-12  Chris Jefferson  <chris@bubblescope.net>
 
 	* include/bits/stl_algo.h (search_n): Delegate to specializations.
@@ -8,8 +18,8 @@
 
 2005-09-12  Jim Xochellis  <jimxoch@yahoo.gr>
 
-	* include/bits/stl_algo.h (__search_n(std::random_access_iterator_tag)):
-	Add specialization.
+	* include/bits/stl_algo.h
+	(__search_n(std::random_access_iterator_tag)): Add specialization.
 	(__search_n(,,,,binary_predicate,std::random_access_iterator_tag)):
 	Likewise.
 
