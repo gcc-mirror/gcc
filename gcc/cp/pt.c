@@ -6628,6 +6628,13 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (r)
 	      = DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (t);
 	    type = check_var_type (DECL_NAME (r), type);
+
+	    if (DECL_VALUE_EXPR (t))
+	      {
+		tree ve = DECL_VALUE_EXPR (t);
+		ve = tsubst_expr (ve, args, complain, in_decl);
+		DECL_VALUE_EXPR (r) = ve;
+	      }
 	  }
 	else if (DECL_SELF_REFERENCE_P (t))
 	  SET_DECL_SELF_REFERENCE_P (r);

@@ -1125,11 +1125,17 @@ build_anon_union_vars (tree type, tree object)
 
       if (DECL_NAME (field))
 	{
+	  tree base;
+
 	  decl = build_decl (VAR_DECL, DECL_NAME (field), TREE_TYPE (field));
-	  TREE_PUBLIC (decl) = TREE_PUBLIC (object);
-	  TREE_STATIC (decl) = TREE_STATIC (object);
-	  DECL_EXTERNAL (decl) = DECL_EXTERNAL (object);
+
+	  base = get_base_address (object);
+	  TREE_PUBLIC (decl) = TREE_PUBLIC (base);
+	  TREE_STATIC (decl) = TREE_STATIC (base);
+	  DECL_EXTERNAL (decl) = DECL_EXTERNAL (base);
+
 	  DECL_VALUE_EXPR (decl) = ref;
+
 	  decl = pushdecl (decl);
 	}
       else if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))

@@ -1,3 +1,8 @@
+2005-09-11  Richard Henderson  <rth@redhat.com>
+
+	* decl2.c (build_anon_union_vars): Copy attributes from the base addr.
+	* pt.c (tsubst_decl): Substitute in DECL_VALUE_EXPR.
+
 2005-09-09  Richard Henderson  <rth@redhat.com>
 
 	PR debug/20998
