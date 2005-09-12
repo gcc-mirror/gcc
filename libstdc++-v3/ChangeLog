@@ -3,6 +3,7 @@
 	PR libstdc++/23417
 	* include/bits/stl_list.h (_List_impl): Use member initialization
 	list for -Weffc++.
+	* include/bits/stl_tree.h (_Rb_tree_impl): Same.
 
 2005-09-12  Paolo Carlini  <pcarlini@suse.de>
 
