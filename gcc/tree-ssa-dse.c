@@ -257,14 +257,9 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 	  && operand_equal_p (TREE_OPERAND (stmt, 0),
 			      TREE_OPERAND (use_stmt, 0), 0))
 	{
-	  tree def;
-	  ssa_op_iter iter;
-
 	  /* Make sure we propagate the ABNORMAL bit setting.  */
 	  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (USE_FROM_PTR (first_use_p)))
 	    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (usevar) = 1;
-	  /* Then we need to fix the operand of the consuming stmt.  */
-	  SET_USE (first_use_p, usevar);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
             {
@@ -272,15 +267,14 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
               print_generic_expr (dump_file, bsi_stmt (bsi), dump_flags);
               fprintf (dump_file, "'\n");
             }
-
+	  /* Then we need to fix the operand of the consuming stmt.  */
+	  FOR_EACH_SSA_MUST_AND_MAY_DEF_OPERAND (var1, var2, stmt, op_iter)
+	    {
+	      single_imm_use (DEF_FROM_PTR (var1), &use_p, &temp);
+	      SET_USE (use_p, USE_FROM_PTR (var2));
+	    }
 	  /* Remove the dead store.  */
 	  bsi_remove (&bsi);
-
-	  /* The virtual defs for the dead statement will need to be
-	     updated.  Since these names are going to disappear,
-	     FUD chains for uses downstream need to be updated.  */
-	  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_VIRTUAL_DEFS)
-	    mark_sym_for_renaming (SSA_NAME_VAR (def));
 
 	  /* And release any SSA_NAMEs set in this statement back to the
 	     SSA_NAME manager.  */
@@ -408,7 +402,6 @@ struct tree_opt_pass pass_dse = {
   0,				/* todo_flags_start */
   TODO_dump_func
     | TODO_ggc_collect
-    | TODO_update_ssa
     | TODO_verify_ssa,		/* todo_flags_finish */
   0				/* letter */
 };
