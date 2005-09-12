@@ -1209,8 +1209,10 @@ perform_qualification_conversions (tree type, tree expr)
 
   expr_type = TREE_TYPE (expr);
 
-  if (TYPE_PTR_P (type) && TYPE_PTR_P (expr_type)
-      && comp_ptr_ttypes (TREE_TYPE (type), TREE_TYPE (expr_type)))
+  if (same_type_p (type, expr_type))
+    return expr;
+  else if (TYPE_PTR_P (type) && TYPE_PTR_P (expr_type)
+	   && comp_ptr_ttypes (TREE_TYPE (type), TREE_TYPE (expr_type)))
     return build_nop (type, expr);
   else if (TYPE_PTR_TO_MEMBER_P (type)
 	   && TYPE_PTR_TO_MEMBER_P (expr_type)

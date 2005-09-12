@@ -1,3 +1,10 @@
+2005-09-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/23789
+	* cvt.c (perform_qualification_conversions): Don't create
+	unnecessary NOP_EXPRs.
+	* pt.c (tsubst_template_arg): Use fold_non_dependent_expr.
+
 2005-09-12  Ian Lance Taylor  <ian@airs.com>
 
 	PR g++/7874
