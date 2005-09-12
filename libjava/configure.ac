@@ -142,8 +142,12 @@ AC_SUBST(LIBGCJ_CXXFLAGS)
 AC_SUBST(LIBGCJ_JAVAFLAGS)
 AC_SUBST(LIBGCJ_LD_SYMBOLIC)
 
-AC_CONFIG_HEADERS([include/config.h gcj/libgcj-config.h])
+# Only use libltdl for non-newlib builds.
+if test "x${with_newlib}" = "x" || test "x${with_newlib}" = "xno"; then
+   AC_LTDL_SHLIBPATH
+fi
 
+AC_CONFIG_HEADERS([include/config.h gcj/libgcj-config.h])
 
 # See if the user has requested runtime debugging.
 LIBGCJDEBUG="disable"
