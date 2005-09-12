@@ -1,3 +1,9 @@
+2005-09-12  Josh Conner  <jconner@apple.com>
+
+	PR middle-end/23237
+	* ipa-reference.c (static_execute): Don't mark variables in
+	named sections TREE_READONLY.
+
 2005-09-12  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (get_next_active_insn): Simplify test for
