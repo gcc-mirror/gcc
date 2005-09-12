@@ -1,6 +1,6 @@
 // Iterators -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -64,6 +64,8 @@
 
 #ifndef _ITERATOR_H
 #define _ITERATOR_H 1
+
+#include <bits/cpp_type_traits.h>
 
 namespace std
 {
@@ -604,9 +606,12 @@ namespace __gnu_cxx
 
       // Allow iterator to const_iterator conversion
       template<typename _Iter>
-        inline __normal_iterator(const __normal_iterator<_Iter,
-				 _Container>& __i)
-	: _M_current(__i.base()) { }
+        __normal_iterator(const __normal_iterator<_Iter,
+			  typename std::__enable_if<_Container,
+			  (std::__are_same<_Iter,
+			   typename _Container::pointer>::__value)
+			  >::__type>& __i)
+        : _M_current(__i.base()) { }
 
       // Forward iterator requirements
       reference
