@@ -1152,7 +1152,7 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
       || GENERAL_REGISTER_P (REGNO)) \
    : (MODE) == V4SFmode \
    ? ((FP_REGISTER_P (REGNO) && ((REGNO) - FIRST_FP_REG) % 4 == 0) \
-      || (! TARGET_SHMEDIA && GENERAL_REGISTER_P (REGNO))) \
+      || GENERAL_REGISTER_P (REGNO)) \
    : (MODE) == V16SFmode \
    ? (TARGET_SHMEDIA \
       ? (FP_REGISTER_P (REGNO) && ((REGNO) - FIRST_FP_REG) % 16 == 0) \
@@ -1341,6 +1341,7 @@ enum reg_class
   DF_REGS,
   FPSCR_REGS,
   GENERAL_FP_REGS,
+  GENERAL_DF_REGS,
   TARGET_REGS,
   ALL_REGS,
   LIM_REG_CLASSES
@@ -1365,6 +1366,7 @@ enum reg_class
   "DF_REGS",		\
   "FPSCR_REGS",		\
   "GENERAL_FP_REGS",	\
+  "GENERAL_DF_REGS",	\
   "TARGET_REGS",	\
   "ALL_REGS",		\
 }
@@ -1402,7 +1404,9 @@ enum reg_class
 /* FPSCR_REGS:  */							\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00800000 },	\
 /* GENERAL_FP_REGS:  */							\
-  { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0x0102ff00 },	\
+  { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0x03020000 },	\
+/* GENERAL_DF_REGS:  */							\
+  { 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0x0302ff00 },	\
 /* TARGET_REGS:  */							\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x000000ff },	\
 /* ALL_REGS:  */							\
