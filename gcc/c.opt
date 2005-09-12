@@ -554,6 +554,10 @@ fimplicit-templates
 C++ ObjC++
 Emit implicit instantiations of templates
 
+ffriend-injection
+C++ Var(flag_friend_injection)
+Inject friend functions into enclosing namespace
+
 flabels-ok
 C++ ObjC++
 

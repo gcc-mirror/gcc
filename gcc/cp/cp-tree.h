@@ -1512,7 +1512,8 @@ struct lang_decl_flags GTY(())
   unsigned thunk_p : 1;
   unsigned this_thunk_p : 1;
   unsigned repo_available_p : 1;
-  unsigned dummy : 3;
+  unsigned hidden_friend_p : 1;
+  unsigned dummy : 2;
 
   union lang_decl_u {
     /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
@@ -1814,9 +1815,8 @@ struct lang_decl GTY(())
 #define DECL_INITIALIZED_IN_CLASS_P(DECL) \
  (DECL_LANG_SPECIFIC (DECL)->decl_flags.initialized_in_class)
 
-/* Nonzero for FUNCTION_DECL means that this decl is just a
-   friend declaration, and should not be added to the list of
-   member functions for this class.  */
+/* Nonzero for DECL means that this decl is just a friend declaration,
+   and should not be added to the list of members for this class.  */
 #define DECL_FRIEND_P(NODE) (DECL_LANG_SPECIFIC (NODE)->decl_flags.friend_attr)
 
 /* A TREE_LIST of the types which have befriended this FUNCTION_DECL.  */
@@ -2321,10 +2321,18 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 #define DECL_LOCAL_FUNCTION_P(NODE) \
   DECL_LANG_FLAG_0 (FUNCTION_DECL_CHECK (NODE))
 
-/* Nonzero if NODE is a FUNCTION_DECL for a built-in function, and we have
-   not yet seen a prototype for that function.  */
+/* Nonzero if NODE is a DECL which we know about but which has not
+   been explicitly declared, such as a built-in function or a friend
+   declared inside a class.  In the latter case DECL_HIDDEN_FRIEND_P
+   will be set.  */
 #define DECL_ANTICIPATED(NODE) \
   (DECL_LANG_SPECIFIC (DECL_COMMON_CHECK (NODE))->decl_flags.anticipated_p)
+
+/* Nonzero if NODE is a FUNCTION_DECL which was declared as a friend
+   within a class but has not been declared in the surrounding scope.
+   The function is invisible except via argument dependent lookup.  */
+#define DECL_HIDDEN_FRIEND_P(NODE) \
+  (DECL_LANG_SPECIFIC (DECL_COMMON_CHECK (NODE))->decl_flags.hidden_friend_p)
 
 /* Record whether a typedef for type `int' was actually `signed int'.  */
 #define C_TYPEDEF_EXPLICITLY_SIGNED(EXP) DECL_LANG_FLAG_1 (EXP)
@@ -3644,7 +3652,7 @@ extern bool null_ptr_cst_p			(tree);
 extern bool sufficient_parms_p			(tree);
 extern tree type_decays_to			(tree);
 extern tree build_user_type_conversion		(tree, tree, int);
-extern tree build_new_function_call		(tree, tree);
+extern tree build_new_function_call		(tree, tree, bool);
 extern tree build_operator_new_call		(tree, tree, tree *, tree *);
 extern tree build_new_method_call		(tree, tree, tree, tree, int);
 extern tree build_special_member_call		(tree, tree, tree, tree, int);
@@ -3743,6 +3751,7 @@ extern void adjust_clone_args			(tree);
 extern tree poplevel				(int, int, int);
 extern void insert_block			(tree);
 extern tree pushdecl				(tree);
+extern tree pushdecl_maybe_friend		(tree, bool);
 extern void cxx_init_decl_processing		(void);
 enum cp_tree_node_structure_enum cp_tree_node_structure
 						(union lang_tree_node *);
@@ -3756,8 +3765,9 @@ extern void pop_switch				(void);
 extern tree pushtag				(tree, tree, tag_scope);
 extern tree make_anon_name			(void);
 extern int decls_match				(tree, tree);
-extern tree duplicate_decls			(tree, tree);
+extern tree duplicate_decls			(tree, tree, bool);
 extern tree pushdecl_top_level			(tree);
+extern tree pushdecl_top_level_maybe_friend	(tree, bool);
 extern tree pushdecl_top_level_and_finish	(tree, tree);
 extern tree push_using_decl			(tree, tree);
 extern tree declare_local_label			(tree);
@@ -3983,7 +3993,7 @@ extern tree end_template_parm_list		(tree);
 extern void end_template_decl			(void);
 extern tree current_template_args		(void);
 extern tree push_template_decl			(tree);
-extern tree push_template_decl_real		(tree, int);
+extern tree push_template_decl_real		(tree, bool);
 extern void redeclare_class_template		(tree, tree);
 extern tree lookup_template_class		(tree, tree, tree, tree,
 						 int, tsubst_flags_t);

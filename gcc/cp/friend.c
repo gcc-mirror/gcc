@@ -480,7 +480,7 @@ do_friend (tree ctype, tree declarator, tree decl,
 	  else if (class_template_depth)
 	    /* We rely on tsubst_friend_function to check the
 	       validity of the declaration later.  */
-	    decl = push_template_decl_real (decl, /*is_friend=*/1);
+	    decl = push_template_decl_real (decl, /*is_friend=*/true);
 	  else
 	    decl = check_classfn (ctype, decl,
 				  template_member_p
@@ -527,13 +527,13 @@ do_friend (tree ctype, tree declarator, tree decl,
 	       general, such a declaration depends on template
 	       parameters.  Instead, we call pushdecl when the class
 	       is instantiated.  */
-	    decl = push_template_decl_real (decl, /*is_friend=*/1);
+	    decl = push_template_decl_real (decl, /*is_friend=*/true);
 	  else if (current_function_decl)
 	    /* This must be a local class, so pushdecl will be ok, and
 	       insert an unqualified friend into the local scope
 	       (rather than the containing namespace scope, which the
 	       next choice will do).  */
-	    decl = pushdecl (decl);
+	    decl = pushdecl_maybe_friend (decl, /*is_friend=*/true);
 	  else
 	    {
 	      /* We can't use pushdecl, as we might be in a template
@@ -543,7 +543,7 @@ do_friend (tree ctype, tree declarator, tree decl,
 	      tree ns = decl_namespace_context (decl);
 
 	      push_nested_namespace (ns);
-	      decl = pushdecl_namespace_level (decl);
+	      decl = pushdecl_namespace_level (decl, /*is_friend=*/true);
 	      pop_nested_namespace (ns);
 	    }
 

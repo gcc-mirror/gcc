@@ -1,3 +1,54 @@
+2005-09-12  Ian Lance Taylor  <ian@airs.com>
+
+	PR g++/7874
+	* cp-tree.h (struct lang_decl_flags): Add hidden_friend_p
+	bitfield.  Make dummy bitfield one bit smaller.
+	(DECL_HIDDEN_FRIEND_P): Define.
+	(pushdecl_maybe_friend): Declare.
+	(pushdecl_top_level_maybe_friend): Declare.
+	* decl.c (duplicate_decls): Add newdecl_is_friend parameter.
+	Change prototype and all callers.  Add assertion that a
+	DECL_ARTIFICIAL FUNCTION_DECL is not DECL_HIDDEN_FRIEND_P.  Set
+	DECL_ANTICIPATED and DECL_HIDDEN_FRIEND_P in duplicated decl if
+	appropriate.
+	* name-lookup.c (supplement_binding): Don't ignore a
+	DECL_HIDDEN_FRIEND_P.
+	(pushdecl_maybe_friend): Break out contents of pushdecl.  Add
+	is_friend parameter.  Set DECL_ANTICIPATED and
+	DECL_HIDDEN_FRIEND_P for a friend function.
+	(pushdecl): Just call pushdecl_maybe_friend.
+	(pushdecl_with_scope): Add is_friend parameter.  Change prototype
+	and all callers.
+	(pushdecl_namespace_level): Likewise.
+	(push_overloaded_decl): Likewise.  Check DECL_HIDDEN_FRIEND_P as
+	well as DECL_ANTICIPATED when checking for a builtin.
+	(do_nonmember_using_decl): Check DECL_HIDDEN_FRIEND_P as well as
+	DECL_ANTICIPATED when checking for a builtin.
+	(do_nonmember_using_decl): Likewise.
+	(pushdecl_top_level_1): Add is_friend parameter.  Change all
+	callers.
+	(pushdecl_top_level_maybe_friend): New function.
+	(remove_hidden_names): New function.
+	(struct arg_lookup): Add args field.
+	(friend_of_associated_class_p): New static function.
+	(arg_assoc_namespace): Ignore hidden functions which are not
+	friends of an associated class of some argument.
+	(lookup_arg_dependent): Remove hidden functions from list passed
+	in.  Initialize k.args.
+	* name-lookup.h (remove_hidden_names): Declare.
+	* friend.c (do_friend): Call pushdecl_maybe_friend instead of
+	pushdecl.
+	* call.c (add_function_candidate): Change DECL_ANTICIPATED test to
+	an assertion, with a check for DECL_HIDDEN_FRIEND_P.
+	(build_new_function_call): Add koenig_p parameter.  Change
+	prototype and callers.
+	* pt.c (register_specialization): Add is_friend parameter.  Change
+	all callers.
+	(push_template_decl_real): Change is_friend parameter to bool.
+	Change prototype and all callers.
+	(tsubst_friend_class): Call pushdecl_top_level_maybe_friend
+	instead of pushdecl_top_level.
+
 2005-09-11  Richard Henderson  <rth@redhat.com>
 
 	* decl2.c (build_anon_union_vars): Copy attributes from the base addr.

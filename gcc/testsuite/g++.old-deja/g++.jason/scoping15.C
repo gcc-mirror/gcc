@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-options "-ffriend-injection" }
 // Bug: g++ ignores the :: qualification and dies trying to treat an integer
 // variable as a list of functions.
 

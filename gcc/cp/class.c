@@ -5645,7 +5645,8 @@ resolve_address_of_overloaded_function (tree target_type,
 	       one, or vice versa.  */
 	    continue;
 
-	  /* Ignore anticipated decls of undeclared builtins.  */
+	  /* Ignore functions which haven't been explicitly
+	     declared.  */
 	  if (DECL_ANTICIPATED (fn))
 	    continue;
 

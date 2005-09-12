@@ -171,7 +171,7 @@ in the following sections.
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @gccoptlist{-fabi-version=@var{n}  -fno-access-control  -fcheck-new @gol
--fconserve-space  -fno-const-strings @gol
+-fconserve-space  -ffriend-injection  -fno-const-strings @gol
 -fno-elide-constructors @gol
 -fno-enforce-eh-specs @gol
 -ffor-scope  -fno-for-scope  -fno-gnu-keywords @gol
@@ -1424,6 +1424,20 @@ two definitions were merged.
 
 This option is no longer useful on most targets, now that support has
 been added for putting variables into BSS without making them common.
+
+@item -ffriend-injection
+@opindex ffriend-injection
+Inject friend functions into the enclosing namespace, so that they are
+visible outside the scope of the class in which they are declared.
+Friend functions were documented to work this way in the old Annotated
+C++ Reference Manual, and versions of G++ before 4.1 always worked
+that way.  However, in ISO C++ a friend function which is not declared
+in an enclosing scope can only be found using argument dependent
+lookup.  This option causes friends to be injected as they were in
+earlier releases.
+
+This option is for compatibility, and may be removed in a future
+release of G++.
 
 @item -fno-const-strings
 @opindex fno-const-strings

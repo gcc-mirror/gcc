@@ -10,10 +10,11 @@ struct A {
 
 struct B {
   static void f () { exit (0); }
-  friend void g () { f (); }
+  friend void g (B) { f (); }
 };
 
 int main ()
 {
-  g ();
+  B b;
+  g (b);
 }
