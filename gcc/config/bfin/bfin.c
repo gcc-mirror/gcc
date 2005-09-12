@@ -150,14 +150,14 @@ legitimize_pic_address (rtx orig, rtx reg, rtx picreg)
 	      emit_insn (gen_movsi_high_pic (reg, addr));
 	      emit_insn (gen_movsi_low_pic (reg, reg, addr));
 	      emit_insn (gen_addsi3 (reg, reg, picreg));
-	      new = gen_rtx_MEM (Pmode, reg);
+	      new = gen_const_mem (Pmode, reg);
 	    }
 	  else
 	    {
 	      rtx tmp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr),
 					UNSPEC_MOVE_PIC);
-	      new = gen_rtx_MEM (Pmode,
-				 gen_rtx_PLUS (Pmode, picreg, tmp));
+	      new = gen_const_mem (Pmode,
+				   gen_rtx_PLUS (Pmode, picreg, tmp));
 	    }
 	  emit_move_insn (reg, new);
 	}

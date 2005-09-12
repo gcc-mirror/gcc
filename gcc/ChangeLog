@@ -1,3 +1,7 @@
+2005-09-12  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (legimitize_pic_address): Use gen_const_mem.	
+
 2005-09-12  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (get_next_active_insn): Rewrite using
