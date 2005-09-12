@@ -303,8 +303,9 @@ namespace _GLIBCXX_STD
       : public _Node_alloc_type
       {
 	_List_node_base _M_node;
+
 	_List_impl(const _Node_alloc_type& __a)
-	: _Node_alloc_type(__a)
+	: _Node_alloc_type(__a), _M_node()
 	{ }
       };
 
