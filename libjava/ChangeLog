@@ -1,3 +1,13 @@
+2005-09-12  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	PR libgcj/23762
+	* shlibpath.m4: New file.
+	* configure.ac: If libltdl is being used call AC_LTDL_SHLIBPATH
+	macro.
+	* gnu/classpath/natSystemProperties.cc (insertSystemProperties)
+	[USE_LTDL]: If it was not defined with -D set java.library.path to
+	the value of LTDL_SHLIBPATH_VAR.
+
 2005-09-08  Andrew Haley  <aph@redhat.com>
 
 	* java/net/URLClassLoader.java (addURLImpl): Synchronize on the
