@@ -1,5 +1,9 @@
 2005-06-14  Tom Tromey  <tromey@redhat.com>
 
+	* Imported zlib 1.2.3; merged local changes.
+
+2005-06-14  Tom Tromey  <tromey@redhat.com>
+
 	PR libgcj/19877:
 	* configure, aclocal.m4, Makefile.in: Rebuilt.
 
