@@ -1,3 +1,11 @@
+2005-09-12  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree-ssa-dse.c (dse_optimize_stmt): Fix up all of V_MAY_DEF and 
+	V_MUST_DEF instead of just the first_use_p.
+	Don't mark the virtual variables for renaming on the statement which 
+	is being removed.
+	(pass_dse): Remove TODO_update_ssa.
+
 2005-09-12  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR middle-end/23290
