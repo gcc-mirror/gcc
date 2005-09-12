@@ -3,12 +3,12 @@
 # test works out-of-the-box, installs `somewhere' on demand
 
 # Toolflags:
-CCflags = -c -depend !Depend -IC: -g -throwback  -DRISCOS  -fah 
+CCflags = -c -depend !Depend -IC: -g -throwback  -DRISCOS  -fah
 C++flags = -c -depend !Depend -IC: -throwback
-Linkflags = -aif -c++ -o $@ 
+Linkflags = -aif -c++ -o $@
 ObjAsmflags = -throwback -NoCache -depend !Depend
-CMHGflags = 
-LibFileflags = -c -l -o $@ 
+CMHGflags =
+LibFileflags = -c -l -o $@
 Squeezeflags = -o $@
 
 # change the line below to where _you_ want the library installed.
@@ -17,10 +17,10 @@ libdest = lib:zlib
 # Final targets:
 @.lib:   @.o.adler32 @.o.compress @.o.crc32 @.o.deflate @.o.gzio \
         @.o.infblock @.o.infcodes @.o.inffast @.o.inflate @.o.inftrees @.o.infutil @.o.trees \
-        @.o.uncompr @.o.zutil 
+        @.o.uncompr @.o.zutil
         LibFile $(LibFileflags) @.o.adler32 @.o.compress @.o.crc32 @.o.deflate \
         @.o.gzio @.o.infblock @.o.infcodes @.o.inffast @.o.inflate @.o.inftrees @.o.infutil \
-        @.o.trees @.o.uncompr @.o.zutil 
+        @.o.trees @.o.uncompr @.o.zutil
 test:   @.minigzip @.example @.lib
 	@copy @.lib @.libc  A~C~DF~L~N~P~Q~RS~TV
 	@echo running tests: hang on.
@@ -41,9 +41,9 @@ test:   @.minigzip @.example @.lib
 	@/@.example @.fred @.fred
 	@echo that will have given lots of hello!'s.
 
-@.minigzip:   @.o.minigzip @.lib C:o.Stubs 
-        Link $(Linkflags) @.o.minigzip @.lib C:o.Stubs 
-@.example:   @.o.example @.lib C:o.Stubs 
+@.minigzip:   @.o.minigzip @.lib C:o.Stubs
+        Link $(Linkflags) @.o.minigzip @.lib C:o.Stubs
+@.example:   @.o.example @.lib C:o.Stubs
         Link $(Linkflags) @.o.example @.lib C:o.Stubs
 
 install: @.lib

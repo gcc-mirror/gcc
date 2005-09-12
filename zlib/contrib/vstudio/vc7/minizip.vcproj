@@ -19,6 +19,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="..\..\..;..\..\minizip"
 				PreprocessorDefinitions="WIN32;ZLIB_WINAPI;_DEBUG;_CONSOLE"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -63,6 +64,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				OmitFramePointers="TRUE"
+				AdditionalIncludeDirectories="..\..\..;..\..\minizip"
 				PreprocessorDefinitions="WIN32;ZLIB_WINAPI;NDEBUG;_CONSOLE"
 				StringPooling="TRUE"
 				RuntimeLibrary="4"
@@ -104,7 +106,7 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm">
 			<File
-				RelativePath="minizip.c">
+				RelativePath="..\..\minizip\minizip.c">
 			</File>
 		</Filter>
 		<Filter
@@ -116,7 +118,7 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 		</Filter>
 		<File
-			RelativePath="zlibwapi.lib">
+			RelativePath="ReleaseDll\zlibwapi.lib">
 		</File>
 	</Files>
 	<Globals>

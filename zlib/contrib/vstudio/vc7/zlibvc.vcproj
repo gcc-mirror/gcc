@@ -20,6 +20,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="..\..\..;..\..\masmx86"
 				PreprocessorDefinitions="WIN32,ZLIB_WINAPI,ASMV,ASMINF"
 				ExceptionHandling="FALSE"
 				RuntimeLibrary="1"
@@ -35,7 +36,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="gvmat32.obj inffas32.obj"
+				AdditionalDependencies="..\..\masmx86\gvmat32.obj ..\..\masmx86\inffas32.obj"
 				OutputFile=".\DebugDll\zlibwapi.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -72,10 +73,12 @@
 			IntermediateDirectory=".\zlibDllWithoutAsm"
 			ConfigurationType="2"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			WholeProgramOptimization="TRUE">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\..;..\..\masmx86"
 				PreprocessorDefinitions="WIN32,ZLIB_WINAPI"
 				StringPooling="TRUE"
 				ExceptionHandling="FALSE"
@@ -134,10 +137,12 @@
 			IntermediateDirectory=".\zlibDllWithoutCrtDll"
 			ConfigurationType="2"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			WholeProgramOptimization="TRUE">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\..;..\..\masmx86"
 				PreprocessorDefinitions="WIN32,ZLIB_WINAPI,ASMV,ASMINF"
 				StringPooling="TRUE"
 				ExceptionHandling="FALSE"
@@ -156,7 +161,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="gvmat32.obj inffas32.obj "
+				AdditionalDependencies="..\..\masmx86\gvmat32.obj ..\..\masmx86\inffas32.obj "
 				OutputFile=".\zlibDllWithoutCrtDll\zlibwapi.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -196,10 +201,12 @@
 			IntermediateDirectory=".\zlibvc__"
 			ConfigurationType="2"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			WholeProgramOptimization="TRUE">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\..;..\..\masmx86"
 				PreprocessorDefinitions="WIN32,ZLIB_WINAPI"
 				StringPooling="TRUE"
 				ExceptionHandling="FALSE"
@@ -256,10 +263,12 @@
 			IntermediateDirectory=".\ReleaseDll"
 			ConfigurationType="2"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="FALSE">
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			WholeProgramOptimization="TRUE">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\..;..\..\masmx86"
 				PreprocessorDefinitions="WIN32,ZLIB_WINAPI,ASMV,ASMINF"
 				StringPooling="TRUE"
 				ExceptionHandling="FALSE"
@@ -278,7 +287,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="gvmat32.obj inffas32.obj crtdll.lib"
+				AdditionalDependencies="..\..\masmx86\gvmat32.obj ..\..\masmx86\inffas32.obj crtdll.lib"
 				OutputFile=".\ReleaseDll\zlibwapi.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -318,19 +327,19 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;hpj;bat;for;f90">
 			<File
-				RelativePath=".\adler32.c">
+				RelativePath="..\..\..\adler32.c">
 			</File>
 			<File
-				RelativePath=".\compress.c">
+				RelativePath="..\..\..\compress.c">
 			</File>
 			<File
-				RelativePath=".\crc32.c">
+				RelativePath="..\..\..\crc32.c">
 			</File>
 			<File
-				RelativePath=".\deflate.c">
+				RelativePath="..\..\..\deflate.c">
 			</File>
 			<File
-				RelativePath=".\gvmat32c.c">
+				RelativePath="..\..\masmx86\gvmat32c.c">
 				<FileConfiguration
 					Name="ReleaseWithoutAsm|Win32"
 					ExcludedFromBuild="TRUE">
@@ -339,34 +348,34 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\gzio.c">
+				RelativePath="..\..\..\gzio.c">
 			</File>
 			<File
-				RelativePath=".\infback.c">
+				RelativePath="..\..\..\infback.c">
 			</File>
 			<File
-				RelativePath=".\inffast.c">
+				RelativePath="..\..\..\inffast.c">
 			</File>
 			<File
-				RelativePath=".\inflate.c">
+				RelativePath="..\..\..\inflate.c">
 			</File>
 			<File
-				RelativePath=".\inftrees.c">
+				RelativePath="..\..\..\inftrees.c">
 			</File>
 			<File
-				RelativePath=".\ioapi.c">
+				RelativePath="..\..\minizip\ioapi.c">
 			</File>
 			<File
-				RelativePath=".\iowin32.c">
+				RelativePath="..\..\minizip\iowin32.c">
 			</File>
 			<File
-				RelativePath=".\trees.c">
+				RelativePath="..\..\..\trees.c">
 			</File>
 			<File
-				RelativePath=".\uncompr.c">
+				RelativePath="..\..\..\uncompr.c">
 			</File>
 			<File
-				RelativePath=".\unzip.c">
+				RelativePath="..\..\minizip\unzip.c">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
@@ -376,7 +385,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\zip.c">
+				RelativePath="..\..\minizip\zip.c">
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
@@ -392,38 +401,38 @@
 				RelativePath=".\zlibvc.def">
 			</File>
 			<File
-				RelativePath=".\zutil.c">
+				RelativePath="..\..\..\zutil.c">
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;fi;fd">
 			<File
-				RelativePath=".\deflate.h">
+				RelativePath="..\..\..\deflate.h">
 			</File>
 			<File
-				RelativePath=".\infblock.h">
+				RelativePath="..\..\..\infblock.h">
 			</File>
 			<File
-				RelativePath=".\infcodes.h">
+				RelativePath="..\..\..\infcodes.h">
 			</File>
 			<File
-				RelativePath=".\inffast.h">
+				RelativePath="..\..\..\inffast.h">
 			</File>
 			<File
-				RelativePath=".\inftrees.h">
+				RelativePath="..\..\..\inftrees.h">
 			</File>
 			<File
-				RelativePath=".\infutil.h">
+				RelativePath="..\..\..\infutil.h">
 			</File>
 			<File
-				RelativePath=".\zconf.h">
+				RelativePath="..\..\..\zconf.h">
 			</File>
 			<File
-				RelativePath=".\zlib.h">
+				RelativePath="..\..\..\zlib.h">
 			</File>
 			<File
-				RelativePath=".\zutil.h">
+				RelativePath="..\..\..\zutil.h">
 			</File>
 		</Filter>
 		<Filter

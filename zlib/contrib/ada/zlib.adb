@@ -1,12 +1,12 @@
 ----------------------------------------------------------------
 --  ZLib for Ada thick binding.                               --
 --                                                            --
---  Copyright (C) 2002-2003 Dmitriy Anisimkov                 --
+--  Copyright (C) 2002-2004 Dmitriy Anisimkov                 --
 --                                                            --
 --  Open source license information is in the zlib.ads file.  --
 ----------------------------------------------------------------
 
---  $Id: zlib.adb,v 1.19 2003/07/13 16:02:19 vagul Exp $
+--  $Id: zlib.adb,v 1.31 2004/09/06 06:53:19 vagul Exp $
 
 with Ada.Exceptions;
 with Ada.Unchecked_Conversion;
@@ -34,7 +34,7 @@ package body ZLib is
        VERSION_ERROR);
 
    type Flate_Step_Function is access
-     function (Strm : Thin.Z_Streamp; flush : Thin.Int) return Thin.Int;
+     function (Strm : in Thin.Z_Streamp; Flush : in Thin.Int) return Thin.Int;
    pragma Convention (C, Flate_Step_Function);
 
    type Flate_End_Function is access
@@ -82,13 +82,13 @@ package body ZLib is
    Flush_Finish : constant array (Boolean) of Flush_Mode
      := (True => Finish, False => No_Flush);
 
-   procedure Raise_Error (Stream : Z_Stream);
+   procedure Raise_Error (Stream : in Z_Stream);
    pragma Inline (Raise_Error);
 
-   procedure Raise_Error (Message : String);
+   procedure Raise_Error (Message : in String);
    pragma Inline (Raise_Error);
 
-   procedure Check_Error (Stream : Z_Stream; Code : Thin.Int);
+   procedure Check_Error (Stream : in Z_Stream; Code : in Thin.Int);
 
    procedure Free is new Ada.Unchecked_Deallocation
       (Z_Stream, Z_Stream_Access);
@@ -118,7 +118,7 @@ package body ZLib is
    -- Check_Error --
    -----------------
 
-   procedure Check_Error (Stream : Z_Stream; Code : Thin.Int) is
+   procedure Check_Error (Stream : in Z_Stream; Code : in Thin.Int) is
       use type Thin.Int;
    begin
       if Code /= Thin.Z_OK then
@@ -138,10 +138,11 @@ package body ZLib is
    is
       Code : Thin.Int;
    begin
-      Code := Flate (Filter.Compression).Done
-          (To_Thin_Access (Filter.Strm));
+      if not Ignore_Error and then not Is_Open (Filter) then
+         raise Status_Error;
+      end if;
 
-      Filter.Opened := False;
+      Code := Flate (Filter.Compression).Done (To_Thin_Access (Filter.Strm));
 
       if Ignore_Error or else Code = Thin.Z_OK then
          Free (Filter.Strm);
@@ -154,7 +155,7 @@ package body ZLib is
             Ada.Exceptions.Raise_Exception
                (ZLib_Error'Identity,
                 Return_Code_Enum'Image (Return_Code (Code))
-                & ": " & Error_Message);
+                  & ": " & Error_Message);
          end;
       end if;
    end Close;
@@ -170,10 +171,9 @@ package body ZLib is
    is
       use Thin;
    begin
-      return Unsigned_32 (crc32
-        (ULong (CRC),
-         Bytes.To_Pointer (Data'Address),
-         Data'Length));
+      return Unsigned_32 (crc32 (ULong (CRC),
+                                 Data'Address,
+                                 Data'Length));
    end CRC32;
 
    procedure CRC32
@@ -192,13 +192,17 @@ package body ZLib is
       Level        : in     Compression_Level  := Default_Compression;
       Strategy     : in     Strategy_Type      := Default_Strategy;
       Method       : in     Compression_Method := Deflated;
-      Window_Bits  : in     Window_Bits_Type   := 15;
-      Memory_Level : in     Memory_Level_Type  := 8;
+      Window_Bits  : in     Window_Bits_Type   := Default_Window_Bits;
+      Memory_Level : in     Memory_Level_Type  := Default_Memory_Level;
       Header       : in     Header_Type        := Default)
    is
       use type Thin.Int;
       Win_Bits : Thin.Int := Thin.Int (Window_Bits);
    begin
+      if Is_Open (Filter) then
+         raise Status_Error;
+      end if;
+
       --  We allow ZLib to make header only in case of default header type.
       --  Otherwise we would either do header by ourselfs, or do not do
       --  header at all.
@@ -216,10 +220,9 @@ package body ZLib is
          Filter.Offset := Simple_GZip_Header'Last + 1;
       end if;
 
-      Filter.Strm := new Z_Stream;
+      Filter.Strm        := new Z_Stream;
       Filter.Compression := True;
       Filter.Stream_End  := False;
-      Filter.Opened      := True;
       Filter.Header      := Header;
 
       if Thin.Deflate_Init
@@ -255,18 +258,18 @@ package body ZLib is
    -----------------------
 
    procedure Generic_Translate
-     (Filter : in out ZLib.Filter_Type;
-      In_Buffer_Size  : Integer := Default_Buffer_Size;
-      Out_Buffer_Size : Integer := Default_Buffer_Size)
+     (Filter          : in out ZLib.Filter_Type;
+      In_Buffer_Size  : in     Integer := Default_Buffer_Size;
+      Out_Buffer_Size : in     Integer := Default_Buffer_Size)
    is
-      In_Buffer : Stream_Element_Array
-         (1 .. Stream_Element_Offset (In_Buffer_Size));
+      In_Buffer  : Stream_Element_Array
+                     (1 .. Stream_Element_Offset (In_Buffer_Size));
       Out_Buffer : Stream_Element_Array
-        (1 .. Stream_Element_Offset (Out_Buffer_Size));
-      Last : Stream_Element_Offset;
-      In_Last : Stream_Element_Offset;
-      In_First : Stream_Element_Offset;
-      Out_Last : Stream_Element_Offset;
+                     (1 .. Stream_Element_Offset (Out_Buffer_Size));
+      Last       : Stream_Element_Offset;
+      In_Last    : Stream_Element_Offset;
+      In_First   : Stream_Element_Offset;
+      Out_Last   : Stream_Element_Offset;
    begin
       Main : loop
          Data_In (In_Buffer, Last);
@@ -275,18 +278,21 @@ package body ZLib is
 
          loop
             Translate
-              (Filter,
-               In_Buffer (In_First .. Last),
-               In_Last,
-               Out_Buffer,
-               Out_Last,
-               Flush_Finish (Last < In_Buffer'First));
+              (Filter   => Filter,
+               In_Data  => In_Buffer (In_First .. Last),
+               In_Last  => In_Last,
+               Out_Data => Out_Buffer,
+               Out_Last => Out_Last,
+               Flush    => Flush_Finish (Last < In_Buffer'First));
 
-            Data_Out (Out_Buffer (Out_Buffer'First .. Out_Last));
+            if Out_Buffer'First <= Out_Last then
+               Data_Out (Out_Buffer (Out_Buffer'First .. Out_Last));
+            end if;
 
             exit Main when Stream_End (Filter);
 
             --  The end of in buffer.
+
             exit when In_Last = Last;
 
             In_First := In_Last + 1;
@@ -301,7 +307,7 @@ package body ZLib is
 
    procedure Inflate_Init
      (Filter      : in out Filter_Type;
-      Window_Bits : in     Window_Bits_Type := 15;
+      Window_Bits : in     Window_Bits_Type := Default_Window_Bits;
       Header      : in     Header_Type      := Default)
    is
       use type Thin.Int;
@@ -320,6 +326,10 @@ package body ZLib is
       end Check_Version;
 
    begin
+      if Is_Open (Filter) then
+         raise Status_Error;
+      end if;
+
       case Header is
          when None =>
             Check_Version;
@@ -344,10 +354,9 @@ package body ZLib is
          when Default => null;
       end case;
 
-      Filter.Strm := new Z_Stream;
+      Filter.Strm        := new Z_Stream;
       Filter.Compression := False;
       Filter.Stream_End  := False;
-      Filter.Opened      := True;
       Filter.Header      := Header;
 
       if Thin.Inflate_Init
@@ -357,16 +366,25 @@ package body ZLib is
       end if;
    end Inflate_Init;
 
+   -------------
+   -- Is_Open --
+   -------------
+
+   function Is_Open (Filter : in Filter_Type) return Boolean is
+   begin
+      return Filter.Strm /= null;
+   end Is_Open;
+
    -----------------
    -- Raise_Error --
    -----------------
 
-   procedure Raise_Error (Message : String) is
+   procedure Raise_Error (Message : in String) is
    begin
       Ada.Exceptions.Raise_Exception (ZLib_Error'Identity, Message);
    end Raise_Error;
 
-   procedure Raise_Error (Stream : Z_Stream) is
+   procedure Raise_Error (Stream : in Z_Stream) is
    begin
       Raise_Error (Last_Error_Message (Stream));
    end Raise_Error;
@@ -378,21 +396,29 @@ package body ZLib is
    procedure Read
      (Filter : in out Filter_Type;
       Item   :    out Ada.Streams.Stream_Element_Array;
-      Last   :    out Ada.Streams.Stream_Element_Offset)
+      Last   :    out Ada.Streams.Stream_Element_Offset;
+      Flush  : in     Flush_Mode := No_Flush)
    is
       In_Last    : Stream_Element_Offset;
       Item_First : Ada.Streams.Stream_Element_Offset := Item'First;
+      V_Flush    : Flush_Mode := Flush;
 
    begin
       pragma Assert (Rest_First in Buffer'First .. Buffer'Last + 1);
+      pragma Assert (Rest_Last in Buffer'First - 1 .. Buffer'Last);
 
       loop
-         if Rest_First > Buffer'Last then
+         if Rest_Last = Buffer'First - 1 then
+            V_Flush := Finish;
+
+         elsif Rest_First > Rest_Last then
             Read (Buffer, Rest_Last);
             Rest_First := Buffer'First;
-         end if;
 
-         pragma Assert (Rest_Last in Buffer'First - 1 .. Buffer'Last);
+            if Rest_Last < Buffer'First then
+               V_Flush := Finish;
+            end if;
+         end if;
 
          Translate
            (Filter   => Filter,
@@ -400,11 +426,13 @@ package body ZLib is
             In_Last  => In_Last,
             Out_Data => Item (Item_First .. Item'Last),
             Out_Last => Last,
-            Flush    => Flush_Finish (Rest_Last < Rest_First));
+            Flush    => V_Flush);
 
          Rest_First := In_Last + 1;
 
-         exit when Last = Item'Last or else Stream_End (Filter);
+         exit when Stream_End (Filter)
+           or else Last = Item'Last
+           or else (Last >= Item'First and then Allow_Read_Some);
 
          Item_First := Last + 1;
       end loop;
@@ -489,11 +517,11 @@ package body ZLib is
       Code : Thin.Int;
 
    begin
-      if Filter.Opened = False then
-         raise ZLib_Error;
+      if not Is_Open (Filter) then
+         raise Status_Error;
       end if;
 
-      if Out_Data'Length = 0 then
+      if Out_Data'Length = 0 and then In_Data'Length = 0 then
          raise Constraint_Error;
       end if;
 
@@ -514,7 +542,6 @@ package body ZLib is
          - Stream_Element_Offset (Avail_In (Filter.Strm.all));
       Out_Last := Out_Data'Last
          - Stream_Element_Offset (Avail_Out (Filter.Strm.all));
-
    end Translate_Auto;
 
    --------------------
@@ -529,7 +556,7 @@ package body ZLib is
       Out_Last  :    out Ada.Streams.Stream_Element_Offset;
       Flush     : in     Flush_Mode)
    is
-      Out_First  : Stream_Element_Offset;
+      Out_First : Stream_Element_Offset;
 
       procedure Add_Data (Data : in Stream_Element_Array);
       --  Add data to stream from the Filter.Offset till necessary,
@@ -596,7 +623,7 @@ package body ZLib is
          Add_Data (Simple_GZip_Header);
 
          Translate_Auto
-           (Filter => Filter,
+           (Filter   => Filter,
             In_Data  => In_Data,
             In_Last  => In_Last,
             Out_Data => Out_Data (Out_First .. Out_Data'Last),
@@ -604,7 +631,6 @@ package body ZLib is
             Flush    => Flush);
 
          CRC32 (Filter.CRC, In_Data (In_Data'First .. In_Last));
-
       end if;
 
       if Filter.Stream_End and then Out_Last <= Out_Data'Last then
@@ -642,10 +668,11 @@ package body ZLib is
    procedure Write
      (Filter : in out Filter_Type;
       Item   : in     Ada.Streams.Stream_Element_Array;
-      Flush  : in     Flush_Mode)
+      Flush  : in     Flush_Mode := No_Flush)
    is
-      Buffer : Stream_Element_Array (1 .. Buffer_Size);
-      In_Last, Out_Last : Stream_Element_Offset;
+      Buffer   : Stream_Element_Array (1 .. Buffer_Size);
+      In_Last  : Stream_Element_Offset;
+      Out_Last : Stream_Element_Offset;
       In_First : Stream_Element_Offset := Item'First;
    begin
       if Item'Length = 0 and Flush = No_Flush then
@@ -654,7 +681,7 @@ package body ZLib is
 
       loop
          Translate
-           (Filter => Filter,
+           (Filter   => Filter,
             In_Data  => Item (In_First .. Item'Last),
             In_Last  => In_Last,
             Out_Data => Buffer,

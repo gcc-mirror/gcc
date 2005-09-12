@@ -118,6 +118,6 @@
                                  &MODLIB/INFTREES    &MODLIB/TREES       +
                                  &MODLIB/UNCOMPR     &MODLIB/ZUTIL)      +
                           SRCFILE(&SRCLIB/&CTLFILE) SRCMBR(BNDSRC) +
-                          TEXT('ZLIB 1.2.1') TGTRLS(V4R4M0)
+                          TEXT('ZLIB 1.2.3') TGTRLS(V4R4M0)
 
              ENDPGM

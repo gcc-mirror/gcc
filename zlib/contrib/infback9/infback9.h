@@ -16,6 +16,10 @@
  * zlib.h must be included before this header file.
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 ZEXTERN int ZEXPORT inflateBack9 OF((z_stream FAR *strm,
                                     in_func in, void FAR *in_desc,
                                     out_func out, void FAR *out_desc));
@@ -27,3 +31,7 @@ ZEXTERN int ZEXPORT inflateBack9Init_ OF((z_stream FAR *strm,
 #define inflateBack9Init(strm, window) \
         inflateBack9Init_((strm), (window), \
         ZLIB_VERSION, sizeof(z_stream))
+
+#ifdef __cplusplus
+}
+#endif
