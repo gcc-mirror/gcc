@@ -1,3 +1,8 @@
+2005-09-12  Josh Conner  <jconner@apple.com>
+
+	PR middle-end/23237
+	* gcc.c-torture/compile/pr23237.c: New test. 
+
 2005-09-11  Richard Henderson  <rth@redhat.com>
 
 	* g++.dg/other/error8.C: Update expected diagnostic text.
