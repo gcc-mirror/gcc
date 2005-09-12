@@ -165,28 +165,23 @@ objcxx_init_ts (void)
   tree_contains_struct[NAMESPACE_DECL][TS_DECL_NON_COMMON] = 1;
   tree_contains_struct[USING_DECL][TS_DECL_NON_COMMON] = 1;
   tree_contains_struct[TEMPLATE_DECL][TS_DECL_NON_COMMON] = 1;
-  tree_contains_struct[ALIAS_DECL][TS_DECL_NON_COMMON] = 1;
 
   tree_contains_struct[NAMESPACE_DECL][TS_DECL_WITH_VIS] = 1;
   tree_contains_struct[USING_DECL][TS_DECL_WITH_VIS] = 1;
   tree_contains_struct[TEMPLATE_DECL][TS_DECL_WITH_VIS] = 1;
-  tree_contains_struct[ALIAS_DECL][TS_DECL_WITH_VIS] = 1;
 
   tree_contains_struct[NAMESPACE_DECL][TS_DECL_WRTL] = 1;
   tree_contains_struct[USING_DECL][TS_DECL_WRTL] = 1;
   tree_contains_struct[TEMPLATE_DECL][TS_DECL_WRTL] = 1;
-  tree_contains_struct[ALIAS_DECL][TS_DECL_WRTL] = 1;
   
   tree_contains_struct[NAMESPACE_DECL][TS_DECL_COMMON] = 1;
   tree_contains_struct[USING_DECL][TS_DECL_COMMON] = 1;
   tree_contains_struct[TEMPLATE_DECL][TS_DECL_COMMON] = 1;
-  tree_contains_struct[ALIAS_DECL][TS_DECL_COMMON] = 1;
  
   tree_contains_struct[NAMESPACE_DECL][TS_DECL_MINIMAL] = 1;
   tree_contains_struct[USING_DECL][TS_DECL_MINIMAL] = 1;
   tree_contains_struct[TEMPLATE_DECL][TS_DECL_MINIMAL] = 1;
-  tree_contains_struct[ALIAS_DECL][TS_DECL_MINIMAL] = 1;
-  
+
   init_shadowed_var_for_decl ();
 }
 
