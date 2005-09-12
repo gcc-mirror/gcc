@@ -16632,26 +16632,26 @@ rs6000_is_costly_dependence (rtx insn, rtx next, rtx link, int cost,
 static rtx
 get_next_active_insn (rtx insn, rtx tail)
 {
-  rtx next_insn;
-
-  if (!insn || insn == tail)
+  if (insn == NULL_RTX || insn == tail)
     return NULL_RTX;
 
-  next_insn = NEXT_INSN (insn);
-
-  while (next_insn
-  	 && next_insn != tail
-	 && (GET_CODE (next_insn) == NOTE
-	     || GET_CODE (PATTERN (next_insn)) == USE
-	     || GET_CODE (PATTERN (next_insn)) == CLOBBER))
+  while (1)
     {
-      next_insn = NEXT_INSN (next_insn);
+      insn = NEXT_INSN (insn);
+      if (insn == NULL_RTX || insn == tail)
+	return NULL_RTX;
+
+      if (CALL_P (insn)
+	  || JUMP_P (insn)
+	  || (NONJUMP_INSN_P (insn)
+	      && GET_CODE (PATTERN (insn)) != USE
+	      && GET_CODE (PATTERN (insn)) != CLOBBER
+	      && !(GET_CODE (PATTERN (insn)) == SET
+		   && GET_CODE (XEXP (PATTERN (insn), 1)) == UNSPEC
+		   && XINT (XEXP (PATTERN (insn), 1), 1) == UNSPEC_TIE)))
+	break;
     }
-
-  if (!next_insn || next_insn == tail)
-    return NULL_RTX;
-
-  return next_insn;
+  return insn;
 }
 
 /* Return whether the presence of INSN causes a dispatch group termination
