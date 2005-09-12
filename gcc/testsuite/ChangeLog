@@ -1,3 +1,8 @@
+2005-09-12  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/23789
+	* g++.dg/template/nontype14.C: New test.
+
 2005-09-11  Richard Henderson  <rth@redhat.com>
 
 	* g++.dg/other/error8.C: Update expected diagnostic text.
