@@ -5,8 +5,8 @@
 
 void foo(void)
 {
-  union { int alpha; int beta; }; // { dg-error "previous declaration of 'int alpha'" }
-  double alpha;  // { dg-error "redeclared" }
+  union { int alpha; int beta; }; // { dg-error "previous declaration" }
+  double alpha;  // { dg-error "conflicting declaration" }
 }
 
 // This checks both the templated version, and the position of the diagnostic
@@ -20,7 +20,3 @@ void tfoo(void)
   }; // { dg-bogus "" "misplaced position of the declaration" { xfail *-*-* } }
   double alpha; // { dg-error "" "" }
 }
-
-// The duplicated error messages are xfailed for now (tracked in the PR)
-// { dg-bogus "" "duplicate error messages" { target *-*-* } 8 }
-// { dg-bogus "" "duplicate error messages" { target *-*-* } 9 }

@@ -1,3 +1,7 @@
+2005-09-11  Richard Henderson  <rth@redhat.com>
+
+	* g++.dg/other/error8.C: Update expected diagnostic text.
+
 2005-09-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/19872
