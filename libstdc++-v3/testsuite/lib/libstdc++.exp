@@ -133,8 +133,10 @@ proc libstdc++_init { testfile } {
     set v3-sharedlib 0
     set sharedlibdir [lookfor_file $blddir src/.libs/libstdc++.so]
     if {$sharedlibdir != ""} {
-        set v3-sharedlib 1
-	verbose -log "shared library support detected"
+	if { [string match "*-*-linux*" $target_triplet] } {
+	    set v3-sharedlib 1
+	    verbose -log "shared library support detected"
+	} 
     }
     v3track v3-sharedlib 3
 
@@ -337,7 +339,6 @@ proc v3_target_compile { source dest type options } {
 # addition, set v3-wchar_t, v3-threads, v3-test_objs, and v3-symver
 # appropriately.
 proc v3-build_support {} {
-    global cxx
     global srcdir
     global v3-wchar_t
     global v3-threads

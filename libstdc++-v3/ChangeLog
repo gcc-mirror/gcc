@@ -1,8 +1,8 @@
 2005-09-12  Benjamin Kosnik  <bkoz@redhat.com>
 
-	* testsuite/lib/libstdc++.exp (v3-build_support): Use sharedlib for
-	type of target_compile.
-	 (v3_target_compile): Set flags for sharelib type.
+	* testsuite/ext/mt_allocator/22309_thread.cc: Remove dg-do run.
+	* testsuite/lib/libstdc++.exp ( proc libstdc++_init): Enable
+	shared only for linux.
 	
 2005-09-12  Benjamin Kosnik  <bkoz@redhat.com>
 	    David Edelsohn <dje@gcc.gnu.org>
