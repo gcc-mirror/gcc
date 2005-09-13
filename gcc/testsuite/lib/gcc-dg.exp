@@ -20,6 +20,7 @@ load_lib target-supports.exp
 load_lib target-supports-dg.exp
 load_lib scanasm.exp
 load_lib scantree.exp
+load_lib scanipa.exp
 load_lib prune.exp
 load_lib libgloss.exp
 load_lib target-libpath.exp
@@ -343,52 +344,35 @@ proc cleanup-repo-files { } {
 #
 # SUFFIX is the filename suffix pattern.
 proc cleanup-rtl-dump { suffix } {
-    # This assumes that we are two frames down from dg-test or some other proc
-    # that stores the filename of the testcase in a local variable "name".
-    # A cleaner solution would require a new DejaGnu release.
-    upvar 2 name testcase
-    remove-build-file "[file tail $testcase].??.$suffix"
-
-    # Clean up dump files for additional source files.
-    if [info exists additional_sources] {
-	foreach srcfile $additional_sources {
-	    remove-build-file "[file tail $srcfile].??.$suffix"
-	}
-    }
+  cleanup-dump "\[0-9\]\[0-9\].$suffix"
 }
 
 # Remove a specific tree dump file for the current test.
 #
-# SUFFIX is the file suffix pattern.
+# SUFFIX is the tree dump file suffix pattern.
 proc cleanup-tree-dump { suffix } {
-    # This assumes that we are two frames down from dg-test or some other proc
-    # that stores the filename of the testcase in a local variable "name".
-    # A cleaner solution would require a new DejaGnu release.
-    upvar 2 name testcase
-    remove-build-file "[file tail $testcase].t??.$suffix"
-
-    # Clean up dump files for additional source files.
-    if [info exists additional_sources] {
-	foreach srcfile $additional_sources {
-	    remove-build-file "[file tail $srcfile].t??.$suffix"
-	}
-    }
+  cleanup-dump "t\[0-9\]\[0-9\].$suffix"
 }
 
 # Remove a specific ipa dump file for the current test.
 #
-# SUFFIX is the file suffix pattern.
+# SUFFIX is the ipa dump file suffix pattern.
 proc cleanup-ipa-dump { suffix } {
-    # This assumes that we are two frames down from dg-test or some other proc
-    # that stores the filename of the testcase in a local variable "name".
-    # A cleaner solution would require a new DejaGnu release.
-    upvar 2 name testcase
-    remove-build-file "[file tail $testcase].i??.$suffix"
+  cleanup-dump "i\[0-9\]\[0-9\].$suffix"
+}
+
+# Remove all dump files with the provided suffix.
+proc cleanup-dump { suffix } {
+    # This assumes that we are three frames down from dg-test or some other
+    # proc that stores the filename of the testcase in a local variable
+    # "name".  A cleaner solution would require a new DejaGnu release.
+    upvar 3 name testcase
+    remove-build-file "[file tail $testcase].$suffix"
 
     # Clean up dump files for additional source files.
     if [info exists additional_sources] {
 	foreach srcfile $additional_sources {
-	    remove-build-file "[file tail $srcfile].i??.$suffix"
+	    remove-build-file "[file tail $srcfile].$suffix"
 	}
     }
 }
