@@ -1,3 +1,11 @@
+2005-09-12  David Edelsohn  <dje@gcc.gnu.org>
+
+	PR libstdc++/22554
+	PR libstdc++/23734
+	* include/Makefile.am (stamp-assoc): Install each subgroup
+	of headers separately.
+	* include/Makefile.in: Regenerate.
+	
 2005-09-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/ext/mt_allocator/22309_thread.cc: Remove dg-do run.
@@ -5,7 +13,7 @@
 	shared only for linux.
 	
 2005-09-12  Benjamin Kosnik  <bkoz@redhat.com>
-	    David Edelsohn <dje@gcc.gnu.org>
+	    David Edelsohn  <dje@gcc.gnu.org>
 
 	PR libstdc++/22554
 	PR libstdc++/23734
