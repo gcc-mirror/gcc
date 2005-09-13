@@ -1120,29 +1120,37 @@ stamp-ext: ${ext_headers}
 stamp-assoc:
 	@if [ ! -d "${assoc_builddir}" ]; then \
 	    mkdir -p ${assoc_subdirs} ;\
-	fi ;\
-	if [ ! -f stamp-assoc ]; then \
-	  (cd ${assoc_builddir} && for h in ${assoc_headers1}; do \
-	    build_name=`echo $$h | sed -e "s|${assoc_srcdir}|.|g"` ;\
-	    $(LN_S) $$h $${build_name} || true ;\
-	  done) ;\
-	  (cd ${assoc_builddir} && for h in ${assoc_headers2}; do \
-	    build_name=`echo $$h | sed -e "s|${assoc_srcdir}|.|g"` ;\
-	    $(LN_S) $$h $${build_name} || true ;\
-	  done) ;\
-	  (cd ${assoc_builddir} && for h in ${assoc_headers3}; do \
-	    build_name=`echo $$h | sed -e "s|${assoc_srcdir}|.|g"` ;\
-	    $(LN_S) $$h $${build_name} || true ;\
-	  done) ;\
-	  (cd ${assoc_builddir} && for h in ${assoc_headers4}; do \
-	    build_name=`echo $$h | sed -e "s|${assoc_srcdir}|.|g"` ;\
-	    $(LN_S) $$h $${build_name} || true ;\
-	  done) ;\
-	  (cd ${assoc_builddir} && for h in ${assoc_headers5}; do \
-	    build_name=`echo $$h | sed -e "s|${assoc_srcdir}|.|g"` ;\
-	    $(LN_S) $$h $${build_name} || true ;\
-	  done) ;\
-	fi ;\
+	fi 
+	@if [ ! -f stamp-assoc ]; then \
+	    cd ${assoc_builddir} && for h in ${assoc_headers1}; do \
+		build_name=`echo $$h | sed -e "s|${assoc_srcdir}|.|g"` ;\
+		$(LN_S) $$h $${build_name} || true ;\
+	      done ;\
+	fi
+	@if [ ! -f stamp-assoc ]; then \
+	    cd ${assoc_builddir} && for h in ${assoc_headers2}; do \
+		build_name=`echo $$h | sed -e "s|${assoc_srcdir}|.|g"` ;\
+		$(LN_S) $$h $${build_name} || true ;\
+	      done ;\
+	fi
+	@if [ ! -f stamp-assoc ]; then \
+	    cd ${assoc_builddir} && for h in ${assoc_headers3}; do \
+		build_name=`echo $$h | sed -e "s|${assoc_srcdir}|.|g"` ;\
+		$(LN_S) $$h $${build_name} || true ;\
+	      done ;\
+	fi
+	@if [ ! -f stamp-assoc ]; then \
+	    cd ${assoc_builddir} && for h in ${assoc_headers4}; do \
+		build_name=`echo $$h | sed -e "s|${assoc_srcdir}|.|g"` ;\
+		$(LN_S) $$h $${build_name} || true ;\
+	      done ;\
+	fi
+	@if [ ! -f stamp-assoc ]; then \
+	    cd ${assoc_builddir} && for h in ${assoc_headers5}; do \
+		build_name=`echo $$h | sed -e "s|${assoc_srcdir}|.|g"` ;\
+		$(LN_S) $$h $${build_name} || true ;\
+	      done ;\
+	fi
 	$(STAMP) stamp-assoc
 
 stamp-tr1: ${tr1_headers}
