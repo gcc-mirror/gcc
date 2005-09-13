@@ -1137,6 +1137,15 @@ if test -d ${srcdir}/gcc; then
   fi
   enable_languages=`echo "${enable_languages}" | sed -e 's/[[ 	,]][[ 	,]]*/,/g' -e 's/,$//'`
 
+  # 'fortran' is a compatibility name for 'f95'. We issue a warning and
+  # make the substitution.
+  case ,${enable_languages}, in
+    *,fortran,*)
+      echo configure.in: warning: the official name for 'fortran' on this branch is 'f95' 1>&2
+      enable_languages=`echo "${enable_languages}" | sed -e 's/fortran/f95/g'`
+      ;;
+  esac
+
   # First scan to see if an enabled language requires some other language.
   # We assume that a given config-lang.in will list all the language
   # front ends it requires, even if some are required indirectly.
