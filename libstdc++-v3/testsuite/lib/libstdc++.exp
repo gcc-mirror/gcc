@@ -315,9 +315,16 @@ proc v3_target_compile { source dest type options } {
     set cxx_final [concat $cxx_final $cxxlibglossflags]
     set cxx_final [concat $cxx_final $cxxflags]
     set cxx_final [concat $cxx_final $includes]
-    # Link the support objects into executables.
+
+    # Flag setting based on type argument.
     if { $type == "executable" } {
+	# Link the support objects into executables.
 	set cxx_final [concat $cxx_final ${v3-test_objs}]
+    } else {
+	if { $type == "sharedlib" } {
+	    # Don't link in anything.
+	    set type "executable"
+	}
     }
 
     lappend options "compiler=$cxx_final"
@@ -330,6 +337,7 @@ proc v3_target_compile { source dest type options } {
 # addition, set v3-wchar_t, v3-threads, v3-test_objs, and v3-symver
 # appropriately.
 proc v3-build_support {} {
+    global cxx
     global srcdir
     global v3-wchar_t
     global v3-threads
@@ -386,7 +394,7 @@ proc v3-build_support {} {
 	    set object_file [file rootname $f].so
 	    # Compile with "-w" so that warnings issued by the compiler
 	    # do not prevent compilation.
-	    if { [v3_target_compile $srcdir/$f $object_file "executable" \
+	    if { [v3_target_compile $srcdir/$f $object_file "sharedlib" \
 	     [list "incdir=$srcdir" "additional_flags=-w -shared -fPIC -DPIC"]]
 		 != "" } {
 		error "could not compile $f"
