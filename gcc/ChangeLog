@@ -1,3 +1,8 @@
+2005-09-13  Ian Lance Taylor  <ian@airs.com>
+
+	* loop-doloop.c (doloop_modify): Use GEN_INT to pass an rtx rather
+	than a HOST_WIDEST_INT to gen_doloop_begin.
+
 2005-09-13  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-dfa.c (dump_variable): Guard against NULL annotations.
