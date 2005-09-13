@@ -510,10 +510,19 @@ while (0)
     {									\
       const char *s;							\
       dbxout_begin_stabn (BRAC);					\
-      assemble_name (FILE, NAME);					\
-      putc ('-', FILE);							\
       s = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);		\
-      rs6000_output_function_entry (FILE, s);				\
+      /* dbxout_block passes this macro the function name as NAME,	\
+	 assuming that it is the function code start label.  In our	\
+	 case, the function name is the OPD entry.  dbxout_block is	\
+	 broken, hack around it here.  */				\
+      if (NAME == s)							\
+	putc ('0', FILE);						\
+      else								\
+	{								\
+	  assemble_name (FILE, NAME);					\
+	  putc ('-', FILE);						\
+	  rs6000_output_function_entry (FILE, s);			\
+	}								\
       putc ('\n', FILE);						\
     }									\
   while (0)

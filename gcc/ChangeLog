@@ -1,3 +1,8 @@
+2005-09-14  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/linux64.h (DBX_OUTPUT_BRAC): Treat function name
+	passed as NAME as if it were label at start of function code.
+
 2005-09-13  Alan Modra  <amodra@bigpond.net.au>
 
 	Fix 4.1 version applied in error.
