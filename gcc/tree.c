@@ -3116,9 +3116,9 @@ annotate_with_file_line (tree node, const char *file, int line)
      a node with the same information already attached to that node!
      Just return instead of wasting memory.  */
   if (EXPR_LOCUS (node)
+      && EXPR_LINENO (node) == line
       && (EXPR_FILENAME (node) == file
-	  || ! strcmp (EXPR_FILENAME (node), file))
-      && EXPR_LINENO (node) == line)
+	  || !strcmp (EXPR_FILENAME (node), file)))
     {
       last_annotated_node = node;
       return;
@@ -3129,9 +3129,9 @@ annotate_with_file_line (tree node, const char *file, int line)
      than half.  */
   if (last_annotated_node
       && EXPR_LOCUS (last_annotated_node)
+      && EXPR_LINENO (last_annotated_node) == line
       && (EXPR_FILENAME (last_annotated_node) == file
-	  || ! strcmp (EXPR_FILENAME (last_annotated_node), file))
-      && EXPR_LINENO (last_annotated_node) == line)
+	  || !strcmp (EXPR_FILENAME (last_annotated_node), file)))
     {
       SET_EXPR_LOCUS (node, EXPR_LOCUS (last_annotated_node));
       return;
