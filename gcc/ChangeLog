@@ -1,3 +1,8 @@
+2005-09-13  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.md (*movv4sf_i): Add general register cases to
+	the constraints.
+
 2005-09-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/rs6000/darwin.md (movdf_low_si): Mark the outgoing r constraint
