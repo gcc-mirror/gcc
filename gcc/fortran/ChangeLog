@@ -1,5 +1,13 @@
 2005-09-13  Richard Sandiford  <richard@codesourcery.com>
 
+	PR fortran/18899
+	* trans-intrinsic.c (gfc_conv_intrinsic_bound): Move initialization
+	of argse.  Remove now-redundant want_pointer assignment.
+	* trans-array.c (gfc_conv_expr_descriptor): When not assigning to
+	a pointer, keep the original bounds of a full array reference.
+
+2005-09-13  Richard Sandiford  <richard@codesourcery.com>
+
 	PR target/19269
 	* iresolve.c (gfc_resolve_cshift, gfc_resolve_eoshift)
 	(gfc_resolve_pack, gfc_resolve_reshape, gfc_resolve_spread)
