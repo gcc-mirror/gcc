@@ -1,3 +1,7 @@
+2005-09-13  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-dfa.c (dump_variable): Guard against NULL annotations.
+
 2005-09-13  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimize/23817

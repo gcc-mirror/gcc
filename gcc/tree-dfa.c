@@ -314,13 +314,13 @@ dump_variable (FILE *file, tree var)
   fprintf (file, ", ");
   print_generic_expr (file, TREE_TYPE (var), dump_flags);
 
-  if (ann->type_mem_tag)
+  if (ann && ann->type_mem_tag)
     {
       fprintf (file, ", type memory tag: ");
       print_generic_expr (file, ann->type_mem_tag, dump_flags);
     }
 
-  if (ann->is_alias_tag)
+  if (ann && ann->is_alias_tag)
     fprintf (file, ", is an alias tag");
 
   if (TREE_ADDRESSABLE (var))
@@ -341,7 +341,7 @@ dump_variable (FILE *file, tree var)
       print_generic_expr (file, default_def (var), dump_flags);
     }
 
-  if (ann->may_aliases)
+  if (may_aliases (var))
     {
       fprintf (file, ", may aliases: ");
       dump_may_aliases_for (file, var);
