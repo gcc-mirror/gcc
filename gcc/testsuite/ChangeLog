@@ -1,3 +1,12 @@
+2005-09-13  Josh Conner  <jconner@apple.com>
+
+	* lib/gcc-dg.exp: Load scanipa.exp.
+	(cleanup-dump): New procedure.
+	(cleanup-rtl-dump, cleanup-tree-dump, cleanup-ipa-dump): Use it.
+	* lib/scandump.exp: New file.
+	* lib/scantree.exp: Use it.
+	* lib/scanipa.exp: New file.
+
 2005-09-13  Erik Edelmann  <erik.edelmann@iki.fi>
 
 	PR fortran/17740

@@ -1,0 +1,217 @@
+#   Copyright (C) 2000, 2002, 2003, 2005 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  
+
+# Various utilities for scanning dump output, used by gcc-dg.exp and
+# g++-dg.exp.
+#
+# This is largely borrowed from scanasm.exp.
+
+# Utility for scanning compiler result, invoked via dg-final.
+# Call pass if pattern is present, otherwise fail.
+#
+# Argument 0 is the type of dump we are searching (rtl, tree, ipa)
+# Argument 1 is the regexp to match.
+# Argument 2 is the suffix for the dump file
+# Argument 3 handles expected failures and the like
+proc scan-dump { args } {
+
+    if { [llength $args] >= 4 } {
+        switch [dg-process-target [lindex $args 3]] {
+            "S" { }
+            "N" { return }
+            "F" { setup_xfail "*-*-*" }
+            "P" { }
+        }
+    }
+
+    # This assumes that we are three frames down from dg-test, and that
+    # it still stores the filename of the testcase in a local variable "name".
+    # A cleaner solution would require a new DejaGnu release.
+    upvar 3 name testcase
+
+    set src [file tail [lindex $testcase 0]]
+    set output_file "[glob $src.[lindex $args 2]]"
+
+    set fd [open $output_file r]
+    set text [read $fd]
+    close $fd
+
+    if [regexp -- [lindex $args 1] $text] {
+	pass "$testcase scan-[lindex $args 0]-dump [lindex $args 1]"
+    } else {
+	fail "$testcase scan-[lindex $args 0]-dump [lindex $args 1]"
+    }
+}
+
+# Call pass if pattern is present given number of times, otherwise fail.
+# Argument 0 is the type of dump we are searching (rtl, tree, ipa)
+# Argument 1 is the regexp to match.
+# Argument 2 is number of times the regexp must be found
+# Argument 3 is the suffix for the dump file
+# Argument 4 handles expected failures and the like
+proc scan-dump-times { args } {
+
+    if { [llength $args] >= 5 } {
+	switch [dg-process-target [lindex $args 4]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { setup_xfail "*-*-*" }
+	    "P" { }
+	}
+    }
+
+    # This assumes that we are three frames down from dg-test, and that
+    # it still stores the filename of the testcase in a local variable "name".
+    # A cleaner solution would require a new DejaGnu release.
+    upvar 3 name testcase
+
+    set src [file tail [lindex $testcase 0]]
+    set output_file "[glob $src.[lindex $args 3]]"
+
+    set fd [open $output_file r]
+    set text [read $fd]
+    close $fd
+
+    if { [llength [regexp -inline -all -- [lindex $args 1] $text]] == [lindex $args 2]} {
+        pass "$testcase scan-[lindex $args 0]-dump-times [lindex $args 1] [lindex $args 2]"
+    } else {
+        fail "$testcase scan-[lindex $args 0]-dump-times [lindex $args 1] [lindex $args 2]"
+    }
+}
+
+# Call pass if pattern is not present, otherwise fail.
+#
+# Argument 0 is the type of dump we are searching (rtl, tree, ipa)
+# Argument 1 is the regexp to match.
+# Argument 2 is the suffix for the dump file
+# Argument 3 handles expected failures and the like
+proc scan-dump-not { args } {
+
+    if { [llength $args] >= 4 } {
+	switch [dg-process-target [lindex $args 3]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { setup_xfail "*-*-*" }
+	    "P" { }
+	}
+    }
+
+    # This assumes that we are three frames down from dg-test, and that
+    # it still stores the filename of the testcase in a local variable "name".
+    # A cleaner solution would require a new DejaGnu release.
+    upvar 3 name testcase
+    set src [file tail [lindex $testcase 0]]
+    set output_file "[glob $src.[lindex $args 2]]"
+
+    set fd [open $output_file r]
+    set text [read $fd]
+    close $fd
+
+    if ![regexp -- [lindex $args 1] $text] {
+	pass "$testcase scan-[lindex $args 0]-dump-not [lindex $args 1]"
+    } else {
+	fail "$testcase scan-[lindex $args 0]-dump-not [lindex $args 1]"
+    }
+}
+
+# Utility for scanning demangled compiler result, invoked via dg-final.
+# Call pass if pattern is present, otherwise fail.
+#
+# Argument 0 is the type of dump we are searching (rtl, tree, ipa)
+# Argument 1 is the regexp to match.
+# Argument 2 is the suffix for the dump file
+# Argument 3 handles expected failures and the like
+proc scan-dump-dem { args } {
+    global cxxfilt
+    global base_dir
+
+    if { [llength $args] >= 4 } {
+	switch [dg-process-target [lindex $args 3]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { setup_xfail "*-*-*" }
+	    "P" { }
+	}
+    }
+
+    # Find c++filt like we find g++ in g++.exp.
+    if ![info exists cxxfilt]  {
+	set cxxfilt [findfile $base_dir/../../binutils/cxxfilt \
+		     $base_dir/../../binutils/cxxfilt \
+	             [findfile $base_dir/../c++filt $base_dir/../c++filt \
+		      [findfile $base_dir/c++filt $base_dir/c++filt \
+		       [transform c++filt]]]]
+	verbose -log "c++filt is $cxxfilt"
+    }
+
+    upvar 3 name testcase
+    set src [file tail [lindex $testcase 0]]
+    set output_file "[glob $src.[lindex $args 2]]"
+
+    set fd [open "| $cxxfilt < $output_file" r]
+    set text [read $fd]
+    close $fd
+
+    if [regexp -- [lindex $args 1] $text] {
+	pass "$testcase scan-[lindex $args 0]-dump-dem [lindex $args 1]"
+    } else {
+	fail "$testcase scan-[lindex $args 0]-dump-dem [lindex $args 1]"
+    }
+}
+
+# Call pass if demangled pattern is not present, otherwise fail.
+#
+# Argument 0 is the type of dump we are searching (rtl, tree, ipa)
+# Argument 1 is the regexp to match.
+# Argument 2 is the suffix for the dump file
+# Argument 3 handles expected failures and the like
+proc scan-dump-dem-not { args } {
+    global cxxfilt
+    global base_dir
+
+    if { [llength $args] >= 4 } {
+	switch [dg-process-target [lindex $args 3]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { setup_xfail "*-*-*" }
+	    "P" { }
+	}
+    }
+
+    # Find c++filt like we find g++ in g++.exp.
+    if ![info exists cxxfilt]  {
+	set cxxfilt [findfile $base_dir/../../binutils/cxxfilt \
+		     $base_dir/../../binutils/cxxfilt \
+		     [findfile $base_dir/../c++filt $base_dir/../c++filt \
+		      [findfile $base_dir/c++filt $base_dir/c++filt \
+		       [transform c++filt]]]]
+	verbose -log "c++filt is $cxxfilt"
+    }
+
+    upvar 3 name testcase
+    set src [file tail [lindex $testcase 0]]
+    set output_file "[glob $src.[lindex $args 2]]"
+
+    set fd [open "| $cxxfilt < $output_file" r]
+    set text [read $fd]
+    close $fd
+
+    if ![regexp -- [lindex $args 1] $text] {
+	pass "$testcase scan-[lindex $args 0]-dump-dem-not [lindex $args 1]"
+    } else {
+	fail "$testcase scan-[lindex $args 0]-dump-dem-not [lindex $args 1]"
+    }
+}
