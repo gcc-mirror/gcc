@@ -82,7 +82,7 @@ F95_LIBS = $(GMPLIBS) $(LIBS)
 
 #
 # Define the names for selecting gfortran in LANGUAGES.
-F95 f95: f951$(exeext)
+FORTRAN fortran: f951$(exeext)
 
 # Tell GNU make to ignore files by these names if they exist.
 .PHONY: F95 f95
@@ -118,31 +118,31 @@ gt-fortran-trans-intrinsic.h		      : s-gtype; @true
 #
 # Build hooks:
 
-f95.all.build: gfortran$(exeext)
-f95.all.cross: gfortran-cross$(exeext)
+fortran.all.build: gfortran$(exeext)
+fortran.all.cross: gfortran-cross$(exeext)
 
-f95.start.encap: gfortran$(exeext)
-f95.rest.encap:
+fortran.start.encap: gfortran$(exeext)
+fortran.rest.encap:
 
-f95.srcinfo: doc/gfortran.info
+fortran.srcinfo: doc/gfortran.info
 	-cp -p $^ $(srcdir)/fortran
 
-f95.tags: force
+fortran.tags: force
 	cd $(srcdir)/fortran; etags -o TAGS.sub *.c *.h; \
 	etags --include TAGS.sub --include ../TAGS.sub
 
-f95.info: doc/gfortran.info
+fortran.info: doc/gfortran.info
 dvi:: doc/gfortran.dvi
 html:: $(htmldir)/gfortran/index.html
 
 F95_MANFILES = doc/gfortran.1
 
-f95.man: $(F95_MANFILES)
+fortran.man: $(F95_MANFILES)
 
-f95.srcman: $(F95_MANFILES)
+fortran.srcman: $(F95_MANFILES)
 	-cp -p $^ $(srcdir)/doc
 
-f95.srcextra:
+fortran.srcextra:
 
 check-f95 : check-gfortran
 lang_checks += check-gfortran
@@ -182,11 +182,11 @@ gfortran.pod: $(GFORTRAN_TEXI)
 # f951 is installed elsewhere as part of $(COMPILERS).
 
 # Nothing to do here.
-f95.install-normal:
+fortran.install-normal:
 
 # Install the driver program as $(target)-gfortran
 # and also as either gfortran (if native) or $(tooldir)/bin/gfortran.
-f95.install-common: installdirs
+fortran.install-common: installdirs
 	-if [ -f f951$(exeext) ] ; then \
 	  if [ -f gfortran-cross$(exeext) ] ; then \
 	    rm -f $(DESTDIR)$(bindir)/$(GFORTRAN_CROSS_NAME)$(exeext); \
@@ -207,7 +207,7 @@ f95.install-common: installdirs
 
 install-info:: $(DESTDIR)$(infodir)/gfortran.info
 
-f95.install-man: $(DESTDIR)$(man1dir)/$(GFORTRAN_INSTALL_NAME)$(man1ext)
+fortran.install-man: $(DESTDIR)$(man1dir)/$(GFORTRAN_INSTALL_NAME)$(man1ext)
 
 $(DESTDIR)$(man1dir)/$(GFORTRAN_INSTALL_NAME)$(man1ext): doc/gfortran.1 \
 		installdirs
@@ -215,7 +215,7 @@ $(DESTDIR)$(man1dir)/$(GFORTRAN_INSTALL_NAME)$(man1ext): doc/gfortran.1 \
 	-$(INSTALL_DATA) $< $@
 	-chmod a-x $@
 
-f95.uninstall:
+fortran.uninstall:
 	if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
 	  echo " install-info --delete --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/gfortran.info"; \
 	  install-info --delete --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/gfortran.info || : ; \
@@ -230,16 +230,16 @@ f95.uninstall:
 # A lot of the ancillary files are deleted by the main makefile.
 # We just have to delete files specific to us.
 
-f95.mostlyclean:
+fortran.mostlyclean:
 	-rm -f f951$(exeext)
 	-rm -f fortran/*.o
 
-f95.clean:
-f95.distclean:
+fortran.clean:
+fortran.distclean:
 	-rm -f fortran/config.status fortran/Makefile
 
-f95.extraclean:
-f95.maintainer-clean:
+fortran.extraclean:
+fortran.maintainer-clean:
 	-rm -f doc/gfortran.info* fortran/gfortran.*aux
 	-rm -f $(docobjdir)/gfortran.1
 
@@ -247,17 +247,17 @@ f95.maintainer-clean:
 # Stage hooks:
 # The toplevel makefile has already created stage?/fortran at this point.
 
-f95.stage1: stage1-start
+fortran.stage1: stage1-start
 	-mv fortran/*$(objext) stage1/fortran
-f95.stage2: stage2-start
+fortran.stage2: stage2-start
 	-mv fortran/*$(objext) stage2/fortran
-f95.stage3: stage3-start
+fortran.stage3: stage3-start
 	-mv fortran/*$(objext) stage3/fortran
-f95.stage4: stage4-start
+fortran.stage4: stage4-start
 	-mv fortran/*$(objext) stage4/fortran
-f95.stageprofile: stageprofile-start
+fortran.stageprofile: stageprofile-start
 	-mv fortran/*$(objext) stageprofile/fortran
-f95.stagefeedback: stageprofile-start
+fortran.stagefeedback: stageprofile-start
 	-mv fortran/*$(objext) stagefeedback/fortran
 
 #

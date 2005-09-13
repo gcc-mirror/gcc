@@ -87,7 +87,7 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
 
   gfc_option.warn_nonstd_intrinsics = 0;
 
-  return CL_F95;
+  return CL_Fortran;
 }
 
 
