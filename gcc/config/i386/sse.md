@@ -589,6 +589,52 @@
   [(set_attr "type" "sse")
    (set_attr "mode" "SF")])
 
+;; These versions of the min/max patterns implement exactly the operations
+;;   min = (op1 < op2 ? op1 : op2)
+;;   max = (!(op1 < op2) ? op1 : op2)
+;; Their operands are not commutative, and thus they may be used in the
+;; presence of -0.0 and NaN.
+
+(define_insn "*ieee_sminv4sf3"
+  [(set (match_operand:V4SF 0 "register_operand" "=x")
+	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "0")
+		      (match_operand:V4SF 2 "nonimmediate_operand" "xm")]
+		     UNSPEC_IEEE_MIN))]
+  "TARGET_SSE"
+  "minps\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sseadd")
+   (set_attr "mode" "V4SF")])
+
+(define_insn "*ieee_smaxv4sf3"
+  [(set (match_operand:V4SF 0 "register_operand" "=x")
+	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "0")
+		      (match_operand:V4SF 2 "nonimmediate_operand" "xm")]
+		     UNSPEC_IEEE_MAX))]
+  "TARGET_SSE"
+  "maxps\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sseadd")
+   (set_attr "mode" "V4SF")])
+
+(define_insn "*ieee_sminv2df3"
+  [(set (match_operand:V2DF 0 "register_operand" "=x")
+	(unspec:V2DF [(match_operand:V2DF 1 "register_operand" "0")
+		      (match_operand:V2DF 2 "nonimmediate_operand" "xm")]
+		     UNSPEC_IEEE_MIN))]
+  "TARGET_SSE2"
+  "minpd\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sseadd")
+   (set_attr "mode" "V2DF")])
+
+(define_insn "*ieee_smaxv2df3"
+  [(set (match_operand:V2DF 0 "register_operand" "=x")
+	(unspec:V2DF [(match_operand:V2DF 1 "register_operand" "0")
+		      (match_operand:V2DF 2 "nonimmediate_operand" "xm")]
+		     UNSPEC_IEEE_MAX))]
+  "TARGET_SSE2"
+  "maxpd\t{%2, %0|%0, %2}"
+  [(set_attr "type" "sseadd")
+   (set_attr "mode" "V2DF")])
+
 (define_insn "sse3_addsubv4sf3"
   [(set (match_operand:V4SF 0 "register_operand" "=x")
 	(vec_merge:V4SF
