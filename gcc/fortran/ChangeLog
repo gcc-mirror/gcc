@@ -1,3 +1,9 @@
+2005-09-13  Erik Edelmann  <erik.edelmann@iki.fi>
+
+	PR fortran/17740
+	* trans-expr.c (gfc_trans_arrayfunc_assign): Check value
+	of attr.elemental for specific function instead of generic name.
+
 2005-09-13  Richard Sandiford  <richard@codesourcery.com>
 
 	PR fortran/18899
