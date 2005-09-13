@@ -1,5 +1,10 @@
 2005-09-12  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/23841
+	* g++.dg/parse/template17.C: New test.
+
+2005-09-12  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/23789
 	* g++.dg/template/nontype14.C: New test.
 
