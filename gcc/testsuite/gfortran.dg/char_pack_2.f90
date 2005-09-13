@@ -2,7 +2,7 @@
 ! { dg-do run }
 program main
   implicit none
-  integer, parameter :: n1 = 3, n2 = 4, nv = 10, slen = 9
+  integer, parameter :: n1 = 3, n2 = 4, nv = 16, slen = 9
   character (len = slen), dimension (n1, n2) :: a
   character (len = slen), dimension (nv) :: vector
   logical :: mask
@@ -15,7 +15,7 @@ program main
   end do
 
   do i = 1, nv
-    vector (i) = 'crespo' // '0123456789'(i:i)
+    vector (i) = 'crespo' // '0123456789abcdef'(i:i)
   end do
 
   mask = .true.
