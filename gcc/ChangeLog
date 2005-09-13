@@ -1,3 +1,9 @@
+2005-09-13  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/23816
+	* config/i386/sse.md (*ieee_sminv4sf3, *ieee_smaxv4sf3)
+	(*ieee_sminv2df3, *ieee_smaxv2df3): New insn patterns.
+
 2005-09-13  Ian Lance Taylor  <ian@airs.com>
 
 	* loop-doloop.c (doloop_modify): Use GEN_INT to pass an rtx rather
