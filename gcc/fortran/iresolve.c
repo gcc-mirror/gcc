@@ -403,7 +403,8 @@ gfc_resolve_cshift (gfc_expr * f, gfc_expr * array,
 	gfc_convert_type_warn (dim, &shift->ts, 2, 0);
     }
   f->value.function.name =
-    gfc_get_string (PREFIX("cshift%d_%d"), n, shift->ts.kind);
+    gfc_get_string (PREFIX("cshift%d_%d%s"), n, shift->ts.kind,
+		    array->ts.type == BT_CHARACTER ? "_char" : "");
 }
 
 
@@ -503,7 +504,8 @@ gfc_resolve_eoshift (gfc_expr * f, gfc_expr * array,
     }
 
   f->value.function.name =
-    gfc_get_string (PREFIX("eoshift%d_%d"), n, shift->ts.kind);
+    gfc_get_string (PREFIX("eoshift%d_%d%s"), n, shift->ts.kind,
+		    array->ts.type == BT_CHARACTER ? "_char" : "");
 }
 
 
@@ -1083,16 +1085,16 @@ gfc_resolve_not (gfc_expr * f, gfc_expr * i)
 
 
 void
-gfc_resolve_pack (gfc_expr * f,
-                  gfc_expr * array ATTRIBUTE_UNUSED,
-		  gfc_expr * mask,
+gfc_resolve_pack (gfc_expr * f, gfc_expr * array, gfc_expr * mask,
 		  gfc_expr * vector ATTRIBUTE_UNUSED)
 {
   f->ts = array->ts;
   f->rank = 1;
 
   if (mask->rank != 0)
-    f->value.function.name = PREFIX("pack");
+    f->value.function.name = (array->ts.type == BT_CHARACTER
+			      ? PREFIX("pack_char")
+			      : PREFIX("pack"));
   else
     {
       /* We convert mask to default logical only in the scalar case.
@@ -1107,7 +1109,9 @@ gfc_resolve_pack (gfc_expr * f,
 	  gfc_convert_type (mask, &ts, 2);
 	}
 
-      f->value.function.name = PREFIX("pack_s");
+      f->value.function.name = (array->ts.type == BT_CHARACTER
+				? PREFIX("pack_s_char")
+				: PREFIX("pack_s"));
     }
 }
 
@@ -1214,7 +1218,9 @@ gfc_resolve_reshape (gfc_expr * f, gfc_expr * source, gfc_expr * shape,
       break;
 
     default:
-      f->value.function.name = PREFIX("reshape");
+      f->value.function.name = (source->ts.type == BT_CHARACTER
+				? PREFIX("reshape_char")
+				: PREFIX("reshape"));
       break;
     }
 
@@ -1362,7 +1368,9 @@ gfc_resolve_spread (gfc_expr * f, gfc_expr * source,
 {
   f->ts = source->ts;
   f->rank = source->rank + 1;
-  f->value.function.name = PREFIX("spread");
+  f->value.function.name = (source->ts.type == BT_CHARACTER
+			    ? PREFIX("spread_char")
+			    : PREFIX("spread"));
 
   gfc_resolve_dim_arg (dim);
   gfc_resolve_index (ncopies, 1);
@@ -1542,7 +1550,10 @@ gfc_resolve_transpose (gfc_expr * f, gfc_expr * matrix)
       break;
 
     default:
-      f->value.function.name = PREFIX("transpose");
+      f->value.function.name = (matrix->ts.type == BT_CHARACTER
+				? PREFIX("transpose_char")
+				: PREFIX("transpose"));
+      break;
     }
 }
 
@@ -1601,12 +1612,12 @@ void
 gfc_resolve_unpack (gfc_expr * f, gfc_expr * vector, gfc_expr * mask,
 		    gfc_expr * field ATTRIBUTE_UNUSED)
 {
-  f->ts.type = vector->ts.type;
-  f->ts.kind = vector->ts.kind;
+  f->ts = vector->ts;
   f->rank = mask->rank;
 
   f->value.function.name =
-    gfc_get_string (PREFIX("unpack%d"), field->rank > 0 ? 1 : 0);
+    gfc_get_string (PREFIX("unpack%d%s"), field->rank > 0 ? 1 : 0,
+		    vector->ts.type == BT_CHARACTER ? "_char" : "");
 }
 
 

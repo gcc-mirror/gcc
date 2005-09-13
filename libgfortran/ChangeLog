@@ -1,3 +1,67 @@
+2005-09-13  Richard Sandiford  <richard@codesourcery.com>
+
+	PR target/19269
+	* intrinsics/cshift0.c (cshift0): Add an extra size argument.
+	(cshift0_1, cshift0_2, cshift0_4, cshift0_8): Replace explicit
+	implementations with...
+	(DEFINE_CSHIFT): ...this new macro.  Define character versions too.
+	* intrinsics/eoshift0.c (zeros): Delete.
+	(eoshift0): Add extra size and filler arguments.  Use memset if no
+	bound is provided.
+	(eoshift0_1, eoshift0_2, eoshift0_4, eoshift0_8): Replace explicit
+	implementations with...
+	(DEFINE_EOSHIFT): ...this new macro.  Define character versions too.
+	* intrinsics/eoshift2.c (zeros): Delete.
+	(eoshift2): Add extra size and filler arguments.  Use memset if no
+	bound is provided.
+	(eoshift2_1, eoshift2_2, eoshift2_4, eoshift2_8): Replace explicit
+	implementations with...
+	(DEFINE_EOSHIFT): ...this new macro.  Define character versions too.
+	* intrinsics/pack.c (pack_internal): New static function, reusing
+	the contents of pack and adding an extra size argument.  Change
+	"mptr" rather than "m" when calculating the array size.
+	(pack): Redefine as a forwarder to pack_internal.
+	(pack_s_internal): New static function, reusing the contents of
+	pack_s and adding an extra size argument.
+	(pack_s): Redefine as a forwarder to pack_s_internal.
+	(pack_char, pack_s_char): New functions.
+	* intrinsics/reshape.c (reshape_internal): New static function,
+	reusing the contents of reshape and adding an extra size argument.
+	(reshape): Redefine as a forwarder to reshape_internal.
+	(reshape_char): New function.
+	* intrinsics/spread.c (spread_internal): New static function,
+	reusing the contents of spread and adding an extra size argument.
+	(spread): Redefine as a forwarder to spread_internal.
+	(spread_char): New function.
+	* intrinsics/transpose.c (transpose_internal): New static function,
+	reusing the contents of transpose and adding an extra size argument.
+	(transpose): Redefine as a forwarder to transpose_internal.
+	(transpose_char): New function.
+	* intrinsics/unpack.c (unpack_internal): New static function, reusing
+	the contents of unpack1 and adding extra size and fsize arguments.
+	(unpack1): Redefine as a forwarder to unpack_internal.
+	(unpack0): Call unpack_internal instead of unpack1.
+	(unpack1_char, unpack0_char): New functions.
+	* m4/cshift1.m4 (cshift1): New static function, reusing the contents
+	of cshift1_<kind> and adding an extra size argument.
+	(cshift1_<kind>): Redefine as a forwarder to cshift1.
+	(cshift1_<kind>_char): New function.
+	* m4/eoshift1.m4 (zeros): Delete.
+	(eoshift1): New static function, reusing the contents of
+	eoshift1_<kind> and adding extra size and filler arguments.
+	Fix calculation of hstride.  Use memset if no bound is provided.
+	(eoshift1_<kind>): Redefine as a forwarder to eoshift1.
+	(eoshift1_<kind>_char): New function.
+	* m4/eoshift3.m4 (zeros): Delete.
+	(eoshift3): New static function, reusing the contents of
+	eoshift3_<kind> and adding extra size and filler arguments.
+	Use memset if no bound is provided.
+	(eoshift3_<kind>): Redefine as a forwarder to eoshift3.
+	(eoshift3_<kind>_char): New function.
+	* generated/cshift1_4.c, generated/cshift1_8.c,
+	* generated/eoshift1_4.c, generated/eoshift1_8.c,
+	* generated/eoshift3_4.c, generated/eoshift3_8.c: Regenerate.
+
 2005-09-11  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/20179

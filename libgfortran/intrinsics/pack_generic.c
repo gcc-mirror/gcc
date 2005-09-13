@@ -74,13 +74,10 @@ Boston, MA 02110-1301, USA.  */
 There are two variants of the PACK intrinsic: one, where MASK is
 array valued, and the other one where MASK is scalar.  */
 
-extern void pack (gfc_array_char *, const gfc_array_char *,
-		  const gfc_array_l4 *, const gfc_array_char *);
-export_proto(pack);
-
-void
-pack (gfc_array_char *ret, const gfc_array_char *array,
-      const gfc_array_l4 *mask, const gfc_array_char *vector)
+static void
+pack_internal (gfc_array_char *ret, const gfc_array_char *array,
+	       const gfc_array_l4 *mask, const gfc_array_char *vector,
+	       index_type size)
 {
   /* r.* indicates the return array.  */
   index_type rstride0;
@@ -98,10 +95,8 @@ pack (gfc_array_char *ret, const gfc_array_char *array,
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type n;
   index_type dim;
-  index_type size;
   index_type nelem;
 
-  size = GFC_DESCRIPTOR_SIZE (array);
   dim = GFC_DESCRIPTOR_RANK (array);
   for (n = 0; n < dim; n++)
     {
@@ -189,7 +184,7 @@ pack (gfc_array_char *ret, const gfc_array_char *array,
 		  else
 		    {
 		      count[n]++;
-		      mptr += mstride[n];
+		      m += mstride[n];
 		    }
 		}
 	    }
@@ -277,13 +272,36 @@ pack (gfc_array_char *ret, const gfc_array_char *array,
     }
 }
 
-extern void pack_s (gfc_array_char *ret, const gfc_array_char *array,
-		    const GFC_LOGICAL_4 *, const gfc_array_char *);
-export_proto(pack_s);
+extern void pack (gfc_array_char *, const gfc_array_char *,
+		  const gfc_array_l4 *, const gfc_array_char *);
+export_proto(pack);
 
 void
-pack_s (gfc_array_char *ret, const gfc_array_char *array,
-	const GFC_LOGICAL_4 *mask, const gfc_array_char *vector)
+pack (gfc_array_char *ret, const gfc_array_char *array,
+      const gfc_array_l4 *mask, const gfc_array_char *vector)
+{
+  pack_internal (ret, array, mask, vector, GFC_DESCRIPTOR_SIZE (array));
+}
+
+extern void pack_char (gfc_array_char *, GFC_INTEGER_4, const gfc_array_char *,
+		       const gfc_array_l4 *, const gfc_array_char *,
+		       GFC_INTEGER_4, GFC_INTEGER_4);
+export_proto(pack_char);
+
+void
+pack_char (gfc_array_char *ret,
+	   GFC_INTEGER_4 ret_length __attribute__((unused)),
+	   const gfc_array_char *array, const gfc_array_l4 *mask,
+	   const gfc_array_char *vector, GFC_INTEGER_4 array_length,
+	   GFC_INTEGER_4 vector_length __attribute__((unused)))
+{
+  pack_internal (ret, array, mask, vector, array_length);
+}
+
+static void
+pack_s_internal (gfc_array_char *ret, const gfc_array_char *array,
+		 const GFC_LOGICAL_4 *mask, const gfc_array_char *vector,
+		 index_type size)
 {
   /* r.* indicates the return array.  */
   index_type rstride0;
@@ -297,10 +315,8 @@ pack_s (gfc_array_char *ret, const gfc_array_char *array,
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type n;
   index_type dim;
-  index_type size;
   index_type nelem;
 
-  size = GFC_DESCRIPTOR_SIZE (array);
   dim = GFC_DESCRIPTOR_RANK (array);
   for (n = 0; n < dim; n++)
     {
@@ -425,4 +441,31 @@ pack_s (gfc_array_char *ret, const gfc_array_char *array,
             }
         }
     }
+}
+
+extern void pack_s (gfc_array_char *ret, const gfc_array_char *array,
+		    const GFC_LOGICAL_4 *, const gfc_array_char *);
+export_proto(pack_s);
+
+void
+pack_s (gfc_array_char *ret, const gfc_array_char *array,
+	const GFC_LOGICAL_4 *mask, const gfc_array_char *vector)
+{
+  pack_s_internal (ret, array, mask, vector, GFC_DESCRIPTOR_SIZE (array));
+}
+
+extern void pack_s_char (gfc_array_char *ret, GFC_INTEGER_4,
+			 const gfc_array_char *array, const GFC_LOGICAL_4 *,
+			 const gfc_array_char *, GFC_INTEGER_4,
+			 GFC_INTEGER_4);
+export_proto(pack_s_char);
+
+void
+pack_s_char (gfc_array_char *ret,
+	     GFC_INTEGER_4 ret_length __attribute__((unused)),
+	     const gfc_array_char *array, const GFC_LOGICAL_4 *mask,
+	     const gfc_array_char *vector, GFC_INTEGER_4 array_length,
+	     GFC_INTEGER_4 vector_length __attribute__((unused)))
+{
+  pack_s_internal (ret, array, mask, vector, array_length);
 }

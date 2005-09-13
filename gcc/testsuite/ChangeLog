@@ -1,3 +1,15 @@
+2005-09-13  Richard Sandiford  <richard@codesourcery.com>
+
+	PR target/19269
+	* gfortran.dg/char_associated_1.f90, gfortran.dg/char_cshift_1.f90,
+	* gfortran.dg/char_cshift_2.f90, gfortran.dg/char_eoshift_1.f90,
+	* gfortran.dg/char_eoshift_2.f90, gfortran.dg/char_eoshift_3.f90,
+	* gfortran.dg/char_eoshift_4.f90, gfortran.dg/char_pack_1.f90,
+	* gfortran.dg/char_pack_2.f90, gfortran.dg/char_reshape_1.f90,
+	* gfortran.dg/char_spread_1.f90, gfortran.dg/char_transpoe_1.f90,
+	* gfortran.dg/char_unpack_1.f90, gfortran.dg/char_unpack_2.f90: New
+	tests.
+
 2005-09-12  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23841

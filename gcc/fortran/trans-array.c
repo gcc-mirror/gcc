@@ -3883,9 +3883,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
   else if (expr->expr_type == EXPR_FUNCTION)
     {
       desc = info->descriptor;
-
-      if (expr->ts.type == BT_CHARACTER)
-	se->string_length = expr->symtree->n.sym->ts.cl->backend_decl;
+      se->string_length = ss->string_length;
     }
   else
     {

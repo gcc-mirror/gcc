@@ -1,3 +1,15 @@
+2005-09-13  Richard Sandiford  <richard@codesourcery.com>
+
+	PR target/19269
+	* iresolve.c (gfc_resolve_cshift, gfc_resolve_eoshift)
+	(gfc_resolve_pack, gfc_resolve_reshape, gfc_resolve_spread)
+	(gfc_resolve_transpose, gfc_resolve_unpack): Add "_char" to the name
+	for character-based operations.
+	(gfc_resolve_pack): Remove ATTRIBUTE_UNUSED from array argument.
+	(gfc_resolve_unpack): Copy the whole typespec from the vector.
+	* trans-array.c (gfc_conv_expr_descriptor): In the EXPR_FUNCTION
+	case, get the string length from the scalarization state.
+
 2005-09-14  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* Make-lang.in: Change targets prefixes from f95 to fortran.

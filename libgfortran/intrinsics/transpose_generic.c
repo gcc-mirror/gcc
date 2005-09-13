@@ -37,8 +37,9 @@ Boston, MA 02110-1301, USA.  */
 extern void transpose (gfc_array_char *, gfc_array_char *);
 export_proto(transpose);
 
-void
-transpose (gfc_array_char *ret, gfc_array_char *source)
+static void
+transpose_internal (gfc_array_char *ret, gfc_array_char *source,
+		    index_type size)
 {
   /* r.* indicates the return array.  */
   index_type rxstride, rystride;
@@ -49,12 +50,9 @@ transpose (gfc_array_char *ret, gfc_array_char *source)
 
   index_type xcount, ycount;
   index_type x, y;
-  index_type size;
 
   assert (GFC_DESCRIPTOR_RANK (source) == 2
           && GFC_DESCRIPTOR_RANK (ret) == 2);
-
-  size = GFC_DESCRIPTOR_SIZE (source);
 
   if (ret->data == NULL)
     {
@@ -99,4 +97,25 @@ transpose (gfc_array_char *ret, gfc_array_char *source)
       sptr += systride - (sxstride * xcount);
       rptr += rxstride - (rystride * xcount);
     }
+}
+
+extern void transpose (gfc_array_char *, gfc_array_char *);
+export_proto(transpose);
+
+void
+transpose (gfc_array_char *ret, gfc_array_char *source)
+{
+  transpose_internal (ret, source, GFC_DESCRIPTOR_SIZE (source));
+}
+
+extern void transpose_char (gfc_array_char *, GFC_INTEGER_4,
+			    gfc_array_char *, GFC_INTEGER_4);
+export_proto(transpose_char);
+
+void
+transpose_char (gfc_array_char *ret,
+		GFC_INTEGER_4 ret_length __attribute__((unused)),
+		gfc_array_char *source, GFC_INTEGER_4 source_length)
+{
+  transpose_internal (ret, source, source_length);
 }
