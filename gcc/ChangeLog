@@ -1,5 +1,10 @@
 2005-09-13  Alan Modra  <amodra@bigpond.net.au>
 
+	Fix 4.1 version applied in error.
+	* config/rs6000/rs6000.md (restore_stack_block): Don't use 
+	gen_frame_mem.
+	(save_stack_nonlocal, restore_stack_nonlocal): Likewise.
+
 	PR target/23774
 	* config/rs6000/rs6000.md (restore_stack_block): Write the backchain
 	word before changing the stack pointer.	 Use gen_frame_mem for MEMs.
