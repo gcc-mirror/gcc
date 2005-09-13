@@ -1,3 +1,11 @@
+2005-09-13  Bastian Blank <waldi@debian.org>
+
+	PR c++/16171
+	* g++.dg/abi/mangle26.C: New test. 
+	* g++.dg/abi/mangle27.C: New test. 
+	* g++.dg/abi/mangle28.C: New test. 
+	* g++.dg/abi/mangle29.C: New test. 
+
 2005-09-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23839
