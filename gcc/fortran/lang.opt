@@ -23,162 +23,162 @@
 ; Please try to keep this file in ASCII collating order.
 
 Language
-F95
+Fortran
 
 I
-F95 Joined
+Fortran Joined
 -I<directory>	Add a directory for INCLUDE and MODULE searching
 
 J
-F95 Joined
+Fortran Joined
 -J<directory>	Put MODULE files in 'directory'
 
 Wall
-F95 RejectNegative
+Fortran RejectNegative
 ; Documented in C
 
 Waliasing
-F95
+Fortran
 Warn about possible aliasing of dummy arguments
 
 Wconversion
-F95
+Fortran
 Warn about implicit conversion
 
 Wimplicit-interface
-F95
+Fortran
 Warn about calls with implicit interface
 
 Wline-truncation
-F95
+Fortran
 Warn about truncated source lines
 
 Wnonstd-intrinsics
-F95
+Fortran
 Warn about usage of non-standard intrinsics
 
 Wsurprising
-F95
+Fortran
 Warn about \"suspicious\" constructs
 
 Wunderflow
-F95
+Fortran
 Warn about underflow of numerical constant expressions
 
 Wunused-labels
-F95
+Fortran
 Warn when a label is unused
 
 fautomatic
-F95
+Fortran
 Do not treat local variables and COMMON blocks as if they were named in SAVE statements
 
 fbackslash
-F95
+Fortran
 Specify that backslash in string introduces an escape character
 
 fdefault-double-8
-F95
+Fortran
 Set the default double precision kind to an 8 byte wide type
 
 fdefault-integer-8
-F95
+Fortran
 Set the default integer kind to an 8 byte wide type
 
 fdefault-real-8
-F95
+Fortran
 Set the default real kind to an 8 byte wide type
 
 fd-lines-as-code
-F95 RejectNegative
+Fortran RejectNegative
 Ignore 'D' in column one in fixed form
 
 fd-lines-as-comments
-F95 RejectNegative
+Fortran RejectNegative
 Treat lines with 'D' in column one as comments
 
 fdollar-ok
-F95
+Fortran
 Allow dollar signs in entity names
 
 fdump-parse-tree
-F95
+Fortran
 Display the code tree after parsing
 
 ff2c
-F95
+Fortran
 Use f2c calling convention
 
 ffixed-form
-F95
+Fortran
 Assume that the source file is fixed form
 
 ffree-form
-F95
+Fortran
 Assume that the source file is free form
 
 funderscoring
-F95
+Fortran
 Append underscores to externally visible names
 
 fsecond-underscore
-F95
+Fortran
 Append a second underscore if the name already contains an underscore
 
 fimplicit-none
-F95
+Fortran
 Specify that no implicit typing is allowed, unless overridden by explicit IMPLICIT statements
 
 ffixed-line-length-none
-F95 RejectNegative
+Fortran RejectNegative
 Allow arbitrary character line width in fixed mode
 
 ffixed-line-length-
-F95 RejectNegative Joined UInteger
+Fortran RejectNegative Joined UInteger
 -ffixed-line-length-<n>		Use n as character line width in fixed mode
 
 fmax-identifier-length=
-F95 RejectNegative Joined UInteger
+Fortran RejectNegative Joined UInteger
 -fmax-identifier-length=<n>	Maximum identifier length
 
 fmax-stack-var-size=
-F95 RejectNegative Joined UInteger
+Fortran RejectNegative Joined UInteger
 -fmax-stack-var-size=<n>	Size in bytes of the largest array that will be put on the stack
 
 fmodule-private
-F95
+Fortran
 Set default accessibility of module entities to PRIVATE
 
 fno-backend
-F95 RejectNegative
+Fortran RejectNegative
 Don't generate code, just do syntax and semantics checking
 
 fpack-derived
-F95
+Fortran
 Try to layout derived types as compact as possible
 
 frepack-arrays
-F95
+Fortran
 Copy array sections into a contiguous block on procedure entry
 
 qkind=
-F95 RejectNegative Joined UInteger
+Fortran RejectNegative Joined UInteger
 -qkind=<n>	Set the kind for a real with the 'q' exponent to 'n'
 
 std=f95
-F95
+Fortran
 Conform to the ISO Fortran 95 standard
 
 std=f2003
-F95
+Fortran
 Conform to the ISO Fortran 2003 standard
 
 std=gnu
-F95
+Fortran
 Conform nothing in particular
 
 std=legacy
-F95
+Fortran
 Accept extensions to support legacy code
 
 ; This comment is to ensure we retain the blank line above.

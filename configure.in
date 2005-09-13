@@ -506,15 +506,15 @@ case "${target}" in
     unsupported_languages="$unsupported_languages java"
     case "${target}" in
       *-*-aout)
-	unsupported_languages="$unsupported_languages f95"
+	unsupported_languages="$unsupported_languages fortran"
 	noconfigdirs="$noconfigdirs target-libffi target-boehm-gc";;
       *-*-elf)
-	unsupported_languages="$unsupported_languages f95"
+	unsupported_languages="$unsupported_languages fortran"
 	noconfigdirs="$noconfigdirs target-boehm-gc";;
       *-*-linux*)
 	noconfigdirs="$noconfigdirs target-newlib target-libgloss";;
       *)
-	unsupported_languages="$unsupported_languages f95"
+	unsupported_languages="$unsupported_languages fortran"
 	noconfigdirs="$noconfigdirs ${libgcj} target-newlib target-libgloss";;
     esac
     ;;
@@ -665,7 +665,7 @@ case "${target}" in
     ;;
   mmix-*-*)
     noconfigdirs="$noconfigdirs target-libffi target-boehm-gc gdb libgloss"
-    unsupported_languages="$unsupported_languages f95 java"
+    unsupported_languages="$unsupported_languages fortran java"
     ;;
   mn10200-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
@@ -1142,6 +1142,15 @@ if test -d ${srcdir}/gcc; then
     fi
   fi
   enable_languages=`echo "${enable_languages}" | sed -e 's/[[ 	,]][[ 	,]]*/,/g' -e 's/,$//'`
+
+  # 'f95' is the old name for the 'fortran' language. We issue a warning
+  # and make the substitution.
+  case ,${enable_languages}, in
+    *,f95,*)
+      echo configure.in: warning: 'f95' as language name is deprecated, use 'fortran' instead 1>&2
+      enable_languages=`echo "${enable_languages}" | sed -e 's/f95/fortran/g'`
+      ;;
+  esac
 
   # First scan to see if an enabled language requires some other language.
   # We assume that a given config-lang.in will list all the language

@@ -1,3 +1,9 @@
+2005-09-14  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* configure.in: Recognize f95 in the --enable-languages option,
+	and substitute it for fortran, issuing a warning.
+	* configure: Regenerate.
+
 2005-08-30  Phil Edwards  <phil@codesourcery.com>
 
 	* configure.in (*-*-vxworks*):  Add target-libstdc++-v3 to noconfigdirs.
