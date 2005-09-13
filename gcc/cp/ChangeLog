@@ -1,3 +1,9 @@
+2005-09-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/23842
+	* pt.c (tsubst_default_argument): Do treat default argument
+	expressions as occurring in the context of the function called. 
+
 2005-09-12  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23841
