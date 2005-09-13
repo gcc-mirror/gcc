@@ -1,4 +1,10 @@
 2005-09-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (v3-build_support): Use sharedlib for
+	type of target_compile.
+	 (v3_target_compile): Set flags for sharelib type.
+	
+2005-09-12  Benjamin Kosnik  <bkoz@redhat.com>
 	    David Edelsohn <dje@gcc.gnu.org>
 
 	PR libstdc++/22554
