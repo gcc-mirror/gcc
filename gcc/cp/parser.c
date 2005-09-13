@@ -2728,7 +2728,10 @@ cp_parser_primary_expression (cp_parser *parser,
 		  /* The end of the cast-expression.  */
 		  && next_token->type != CPP_CLOSE_PAREN
 		  /* The end of an array bound.  */
-		  && next_token->type != CPP_CLOSE_SQUARE)
+		  && next_token->type != CPP_CLOSE_SQUARE
+		  /* The closing ">" in a template-argument-list.  */
+		  && (next_token->type != CPP_GREATER
+		      || parser->greater_than_is_operator_p))
 		cast_p = false;
 	    }
 

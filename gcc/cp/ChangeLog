@@ -1,5 +1,10 @@
 2005-09-12  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/23841
+	* parser.c (cp_parser_primary_expression): Recognize the closing
+	">" of a template-argument-list after a floating-point literal as
+	the end of a cast expression.
+
 	PR c++/23789
 	* cvt.c (perform_qualification_conversions): Don't create
 	unnecessary NOP_EXPRs.
