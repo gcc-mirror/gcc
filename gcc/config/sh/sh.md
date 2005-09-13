@@ -6213,8 +6213,8 @@ label:
 }")
 
 (define_insn_and_split "*movv4sf_i"
-  [(set (match_operand:V4SF 0 "nonimmediate_operand" "=f,f,m")
-	(match_operand:V4SF 1 "general_operand" "fZ,m,fZ"))]
+  [(set (match_operand:V4SF 0 "general_movdst_operand" "=f,rf,r,m,mf")
+	(match_operand:V4SF 1 "general_operand" "fm,rfm?,F?,f,rfZ?"))]
   "TARGET_SHMEDIA_FPU"
   "#"
   "&& reload_completed"
