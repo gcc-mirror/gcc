@@ -10,3 +10,4 @@ int b (int x) {
 
 /* { dg-final { scan-tree-dump "~x;" "optimized" } } */
 /* { dg-final { scan-tree-dump "-x;" "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

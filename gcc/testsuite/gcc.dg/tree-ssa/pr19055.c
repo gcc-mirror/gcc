@@ -20,3 +20,4 @@ int f4(int a,int b)
 /* { dg-final { scan-tree-dump-times "\\^" 0 "gimple"} } */
 /* { dg-final { scan-tree-dump-times "~" 4 "gimple"} } */
 /* { dg-final { scan-tree-dump-times "&" 4 "gimple"} } */
+/* { dg-final { cleanup-tree-dump "gimple" } } */

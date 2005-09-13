@@ -38,3 +38,4 @@ void test (void)
 /* { dg-final { scan-tree-dump "vi6.*fputc.*fp.*vi7" "fab"} } */
 /* { dg-final { scan-tree-dump "vi7.*fputc.*fp.*vi8" "fab"} } */
 /* { dg-final { scan-tree-dump "vi8.*__fprintf_chk.*fp.*1.*\"%d%d\".*vi9" "fab"} } */
+/* { dg-final { cleanup-tree-dump "fab" } } */

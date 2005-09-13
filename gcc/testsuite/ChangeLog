@@ -1,3 +1,24 @@
+2005-09-13  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/pr15784-4.c, gcc.dg/pr20130-1.c, gcc.dg/ucnid-6.c:
+	Clean up temp files.
+	* gcc.dg/tree-ssa/20030821-1.c, gcc.dg/tree-ssa/20040514-2.c,
+	gcc.dg/tree-ssa/builtin-fprintf-1.c,
+	gcc.dg/tree-ssa/builtin-fprintf-chk-1.c,
+	gcc.dg/tree-ssa/builtin-printf-1.c,
+	gcc.dg/tree-ssa/builtin-printf-chk-1.c,
+	gcc.dg/tree-ssa/builtin-vfprintf-1.c,
+	gcc.dg/tree-ssa/builtin-vfprintf-chk-1.c,
+	gcc.dg/tree-ssa/builtin-vprintf-1.c,
+	gcc.dg/tree-ssa/builtin-vprintf-chk-1.c, gcc.dg/tree-ssa/ltrans-8.c,
+	gcc.dg/tree-ssa/pr19055-2.c, gcc.dg/tree-ssa/pr19055.c,
+	gcc.dg/tree-ssa/pr21985.c: Clean up dump files.
+	* gcc.dg/vect/fast-math-vect-reduc-5.c, gcc.dg/vect/pr22506.c,
+	gcc.dg/vect/trapv-vect-reduc-4.c, gcc.dg/vect/vect-116.c,
+	gcc.dg/vect/vect-reduc-6.c, gcc.dg/vect/vect-reduc-7.c,
+	gcc.dg/vect/vect-reduc-8.c, gcc.dg/vect/vect-reduc-9.c,
+	gcc.dg/vect/vect-shift-1.c: Clean up .vect files.
+
 2005-09-13  Josh Conner  <jconner@apple.com>
 
 	* lib/gcc-dg.exp: Load scanipa.exp.
