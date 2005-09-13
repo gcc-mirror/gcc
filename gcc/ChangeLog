@@ -1,3 +1,8 @@
+2005-09-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/rs6000/darwin.md (movdf_low_si): Mark the outgoing r constraint
+	as early clobber.  Rewrite so the PIC register is not implicitly used.
+
 2005-09-13  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* tree.c (annotate_with_file_line): Compare line numbers before
