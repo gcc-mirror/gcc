@@ -34,13 +34,10 @@ Boston, MA 02110-1301, USA.  */
 #include <string.h>
 #include "libgfortran.h"
 
-extern void spread (gfc_array_char *, const gfc_array_char *,
-		    const index_type *, const index_type *);
-export_proto(spread);
-
-void
-spread (gfc_array_char *ret, const gfc_array_char *source,
-	const index_type *along, const index_type *pncopies)
+static void
+spread_internal (gfc_array_char *ret, const gfc_array_char *source,
+		 const index_type *along, const index_type *pncopies,
+		 index_type size)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS];
@@ -60,7 +57,6 @@ spread (gfc_array_char *ret, const gfc_array_char *source,
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type n;
   index_type dim;
-  index_type size;
   index_type ncopies;
 
   srank = GFC_DESCRIPTOR_RANK(source);
@@ -74,7 +70,6 @@ spread (gfc_array_char *ret, const gfc_array_char *source,
 
   ncopies = *pncopies;
 
-  size = GFC_DESCRIPTOR_SIZE (source);
   if (ret->data == NULL)
     {
       /* The front end has signalled that we need to populate the
@@ -179,4 +174,29 @@ spread (gfc_array_char *ret, const gfc_array_char *source,
             }
         }
     }
+}
+
+extern void spread (gfc_array_char *, const gfc_array_char *,
+		    const index_type *, const index_type *);
+export_proto(spread);
+
+void
+spread (gfc_array_char *ret, const gfc_array_char *source,
+	const index_type *along, const index_type *pncopies)
+{
+  spread_internal (ret, source, along, pncopies, GFC_DESCRIPTOR_SIZE (source));
+}
+
+extern void spread_char (gfc_array_char *, GFC_INTEGER_4,
+			 const gfc_array_char *, const index_type *,
+			 const index_type *, GFC_INTEGER_4);
+export_proto(spread_char);
+
+void
+spread_char (gfc_array_char *ret,
+	     GFC_INTEGER_4 ret_length __attribute__((unused)),
+	     const gfc_array_char *source, const index_type *along,
+	     const index_type *pncopies, GFC_INTEGER_4 source_length)
+{
+  spread_internal (ret, source, along, pncopies, source_length);
 }

@@ -35,18 +35,10 @@ Boston, MA 02110-1301, USA.  */
 #include "libgfortran.h"'
 include(iparm.m4)dnl
 
-static const char zeros[16] =
-  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-extern void eoshift3_`'atype_kind (gfc_array_char *, gfc_array_char *,
-				     atype *, const gfc_array_char *,
-				     atype_name *);
-export_proto(eoshift3_`'atype_kind);
-
-void
-eoshift3_`'atype_kind (gfc_array_char *ret, gfc_array_char *array,
-		       atype *h, const gfc_array_char *bound,
-		       atype_name *pwhich)
+static void
+eoshift3 (gfc_array_char *ret, const gfc_array_char *array, const atype *h,
+	  const gfc_array_char *bound, const atype_name *pwhich,
+	  index_type size, char filler)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS];
@@ -72,7 +64,6 @@ eoshift3_`'atype_kind (gfc_array_char *ret, gfc_array_char *array,
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type dim;
-  index_type size;
   index_type len;
   index_type n;
   int which;
@@ -90,7 +81,6 @@ eoshift3_`'atype_kind (gfc_array_char *ret, gfc_array_char *array,
   else
     which = 0;
 
-  size = GFC_DESCRIPTOR_SIZE (ret);
   if (ret->data == NULL)
     {
       int i;
@@ -113,7 +103,6 @@ eoshift3_`'atype_kind (gfc_array_char *ret, gfc_array_char *array,
 
   extent[0] = 1;
   count[0] = 0;
-  size = GFC_DESCRIPTOR_SIZE (array);
   n = 0;
   for (dim = 0; dim < GFC_DESCRIPTOR_RANK (array); dim++)
     {
@@ -162,7 +151,7 @@ eoshift3_`'atype_kind (gfc_array_char *ret, gfc_array_char *array,
   if (bound)
     bptr = bound->data;
   else
-    bptr = zeros;
+    bptr = NULL;
 
   while (rptr)
     {
@@ -196,11 +185,18 @@ eoshift3_`'atype_kind (gfc_array_char *ret, gfc_array_char *array,
         dest = rptr;
       n = delta;
 
-      while (n--)
-        {
-          memcpy (dest, bptr, size);
-          dest += roffset;
-        }
+      if (bptr)
+	while (n--)
+	  {
+	    memcpy (dest, bptr, size);
+	    dest += roffset;
+	  }
+      else
+	while (n--)
+	  {
+	    memset (dest, filler, size);
+	    dest += roffset;
+	  }
 
       /* Advance to the next section.  */
       rptr += rstride0;
@@ -237,4 +233,38 @@ eoshift3_`'atype_kind (gfc_array_char *ret, gfc_array_char *array,
             }
         }
     }
+}
+
+extern void eoshift3_`'atype_kind (gfc_array_char *, const gfc_array_char *,
+				   const atype *, const gfc_array_char *,
+				   const atype_name *);
+export_proto(eoshift3_`'atype_kind);
+
+void
+eoshift3_`'atype_kind (gfc_array_char *ret, const gfc_array_char *array,
+		       const atype *h, const gfc_array_char *bound,
+		       const atype_name *pwhich)
+{
+  eoshift3 (ret, array, h, bound, pwhich, GFC_DESCRIPTOR_SIZE (array), 0);
+}
+
+extern void eoshift3_`'atype_kind`'_char (gfc_array_char *, GFC_INTEGER_4,
+					  const gfc_array_char *,
+					  const atype *,
+					  const gfc_array_char *,
+					  const atype_name *, GFC_INTEGER_4,
+					  GFC_INTEGER_4);
+export_proto(eoshift3_`'atype_kind`'_char);
+
+void
+eoshift3_`'atype_kind`'_char (gfc_array_char *ret,
+			      GFC_INTEGER_4 ret_length __attribute__((unused)),
+			      const gfc_array_char *array, const atype *h,
+			      const gfc_array_char *bound,
+			      const atype_name *pwhich,
+			      GFC_INTEGER_4 array_length,
+			      GFC_INTEGER_4 bound_length
+				__attribute__((unused)))
+{
+  eoshift3 (ret, array, h, bound, pwhich, array_length, ' ');
 }

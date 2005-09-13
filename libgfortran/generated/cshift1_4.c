@@ -34,15 +34,9 @@ Boston, MA 02110-1301, USA.  */
 #include <string.h>
 #include "libgfortran.h"
 
-void cshift1_4 (gfc_array_char * ret,
-			   const gfc_array_char * array,
-			   const gfc_array_i4 * h, const GFC_INTEGER_4 * pwhich);
-export_proto(cshift1_4);
-
-void
-cshift1_4 (gfc_array_char * ret,
-		      const gfc_array_char * array,
-		      const gfc_array_i4 * h, const GFC_INTEGER_4 * pwhich)
+static void
+cshift1 (gfc_array_char * ret, const gfc_array_char * array,
+	 const gfc_array_i4 * h, const GFC_INTEGER_4 * pwhich, index_type size)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS];
@@ -64,7 +58,6 @@ cshift1_4 (gfc_array_char * ret,
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type dim;
-  index_type size;
   index_type len;
   index_type n;
   int which;
@@ -77,8 +70,6 @@ cshift1_4 (gfc_array_char * ret,
 
   if (which < 0 || (which + 1) > GFC_DESCRIPTOR_RANK (array))
     runtime_error ("Argument 'DIM' is out of range in call to 'CSHIFT'");
-
-  size = GFC_DESCRIPTOR_SIZE (ret);
 
   if (ret->data == NULL)
     {
@@ -101,7 +92,6 @@ cshift1_4 (gfc_array_char * ret,
 
   extent[0] = 1;
   count[0] = 0;
-  size = GFC_DESCRIPTOR_SIZE (array);
   n = 0;
 
   /* Initialized for avoiding compiler warnings.  */
@@ -200,4 +190,32 @@ cshift1_4 (gfc_array_char * ret,
             }
         }
     }
+}
+
+void cshift1_4 (gfc_array_char *, const gfc_array_char *,
+			   const gfc_array_i4 *, const GFC_INTEGER_4 *);
+export_proto(cshift1_4);
+
+void
+cshift1_4 (gfc_array_char * ret,
+		      const gfc_array_char * array,
+		      const gfc_array_i4 * h, const GFC_INTEGER_4 * pwhich)
+{
+  cshift1 (ret, array, h, pwhich, GFC_DESCRIPTOR_SIZE (array));
+}
+
+void cshift1_4_char (gfc_array_char * ret, GFC_INTEGER_4,
+				  const gfc_array_char * array,
+				  const gfc_array_i4 * h, const GFC_INTEGER_4 * pwhich,
+				  GFC_INTEGER_4);
+export_proto(cshift1_4_char);
+
+void
+cshift1_4_char (gfc_array_char * ret,
+			     GFC_INTEGER_4 ret_length __attribute__((unused)),
+			     const gfc_array_char * array,
+			     const gfc_array_i4 * h, const GFC_INTEGER_4 * pwhich,
+			     GFC_INTEGER_4 array_length)
+{
+  cshift1 (ret, array, h, pwhich, array_length);
 }

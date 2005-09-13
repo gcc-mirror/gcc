@@ -37,15 +37,12 @@ Boston, MA 02110-1301, USA.  */
 typedef GFC_ARRAY_DESCRIPTOR(1, index_type) shape_type;
 typedef GFC_ARRAY_DESCRIPTOR(GFC_MAX_DIMENSIONS, char) parray;
 
-extern void reshape (parray *, parray *, shape_type *, parray *, shape_type *);
-export_proto(reshape);
-
 /* The shape parameter is ignored. We can currently deduce the shape from the
    return array.  */
 
-void
-reshape (parray *ret, parray *source, shape_type *shape,
-	 parray *pad, shape_type *order)
+static void
+reshape_internal (parray *ret, parray *source, shape_type *shape,
+		  parray *pad, shape_type *order, index_type size)
 {
   /* r.* indicates the return array.  */
   index_type rcount[GFC_MAX_DIMENSIONS];
@@ -76,7 +73,6 @@ reshape (parray *ret, parray *source, shape_type *shape,
   const char *src;
   int n;
   int dim;
-  int size;
 
   if (source->dim[0].stride == 0)
     source->dim[0].stride = 1;
@@ -89,7 +85,6 @@ reshape (parray *ret, parray *source, shape_type *shape,
 
   if (ret->data == NULL)
     {
-      size = GFC_DESCRIPTOR_SIZE (ret);
       rdim = shape->dim[0].ubound - shape->dim[0].lbound + 1;
       rs = 1;
       for (n=0; n < rdim; n++)
@@ -106,7 +101,6 @@ reshape (parray *ret, parray *source, shape_type *shape,
     }
   else
     {
-      size = GFC_DESCRIPTOR_SIZE (ret);
       rdim = GFC_DESCRIPTOR_RANK (ret);
       if (ret->dim[0].stride == 0)
 	ret->dim[0].stride = 1;
@@ -259,4 +253,29 @@ reshape (parray *ret, parray *source, shape_type *shape,
             }
         }
     }
+}
+
+extern void reshape (parray *, parray *, shape_type *, parray *, shape_type *);
+export_proto(reshape);
+
+void
+reshape (parray *ret, parray *source, shape_type *shape, parray *pad,
+	 shape_type *order)
+{
+  reshape_internal (ret, source, shape, pad, order,
+		    GFC_DESCRIPTOR_SIZE (source));
+}
+
+extern void reshape_char (parray *, GFC_INTEGER_4, parray *, shape_type *,
+			  parray *, shape_type *, GFC_INTEGER_4,
+			  GFC_INTEGER_4);
+export_proto(reshape_char);
+
+void
+reshape_char (parray *ret, GFC_INTEGER_4 ret_length __attribute__((unused)),
+	      parray *source, shape_type *shape, parray *pad,
+	      shape_type *order, GFC_INTEGER_4 source_length,
+	      GFC_INTEGER_4 pad_length __attribute__((unused)))
+{
+  reshape_internal (ret, source, shape, pad, order, source_length);
 }

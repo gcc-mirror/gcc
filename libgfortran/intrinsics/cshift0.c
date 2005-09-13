@@ -78,7 +78,7 @@ DEF_COPY_LOOP(cdouble, _Complex double)
 
 static void
 cshift0 (gfc_array_char * ret, const gfc_array_char * array,
-	 ssize_t shift, int which)
+	 ssize_t shift, int which, index_type size)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS];
@@ -95,7 +95,6 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type dim;
-  index_type size;
   index_type len;
   index_type n;
   int whichloop;
@@ -107,7 +106,6 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
 
   extent[0] = 1;
   count[0] = 0;
-  size = GFC_DESCRIPTOR_SIZE (array);
   n = 0;
 
   /* The values assigned here must match the cases in the inner loop.  */
@@ -298,51 +296,37 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
     }
 }
 
+#define DEFINE_CSHIFT(N)						      \
+  extern void cshift0_##N (gfc_array_char *, const gfc_array_char *,	      \
+			   const GFC_INTEGER_##N *, const GFC_INTEGER_##N *); \
+  export_proto(cshift0_##N);						      \
+									      \
+  void									      \
+  cshift0_##N (gfc_array_char *ret, const gfc_array_char *array,	      \
+	       const GFC_INTEGER_##N *pshift, const GFC_INTEGER_##N *pdim)    \
+  {									      \
+    cshift0 (ret, array, *pshift, pdim ? *pdim : 1,			      \
+	     GFC_DESCRIPTOR_SIZE (array));				      \
+  }									      \
+									      \
+  extern void cshift0_##N##_char (gfc_array_char *, GFC_INTEGER_4,	      \
+				  const gfc_array_char *,		      \
+				  const GFC_INTEGER_##N *,		      \
+				  const GFC_INTEGER_##N *, GFC_INTEGER_4);    \
+  export_proto(cshift0_##N##_char);					      \
+									      \
+  void									      \
+  cshift0_##N##_char (gfc_array_char *ret,				      \
+		      GFC_INTEGER_4 ret_length __attribute__((unused)),	      \
+		      const gfc_array_char *array,			      \
+		      const GFC_INTEGER_##N *pshift,			      \
+		      const GFC_INTEGER_##N *pdim,			      \
+		      GFC_INTEGER_4 array_length)			      \
+  {									      \
+    cshift0 (ret, array, *pshift, pdim ? *pdim : 1, array_length);	      \
+  }
 
-extern void cshift0_1 (gfc_array_char *, const gfc_array_char *,
-		       const GFC_INTEGER_1 *, const GFC_INTEGER_1 *);
-export_proto(cshift0_1);
-
-void
-cshift0_1 (gfc_array_char *ret, const gfc_array_char *array,
-	   const GFC_INTEGER_1 *pshift, const GFC_INTEGER_1 *pdim)
-{
-  cshift0 (ret, array, *pshift, pdim ? *pdim : 1);
-}
-
-
-extern void cshift0_2 (gfc_array_char *, const gfc_array_char *,
-		       const GFC_INTEGER_2 *, const GFC_INTEGER_2 *);
-export_proto(cshift0_2);
-
-void
-cshift0_2 (gfc_array_char *ret, const gfc_array_char *array,
-	   const GFC_INTEGER_2 *pshift, const GFC_INTEGER_2 *pdim)
-{
-  cshift0 (ret, array, *pshift, pdim ? *pdim : 1);
-}
-
-
-extern void cshift0_4 (gfc_array_char *, const gfc_array_char *,
-		       const GFC_INTEGER_4 *, const GFC_INTEGER_4 *);
-export_proto(cshift0_4);
-
-void
-cshift0_4 (gfc_array_char *ret, const gfc_array_char *array,
-	   const GFC_INTEGER_4 *pshift, const GFC_INTEGER_4 *pdim)
-{
-  cshift0 (ret, array, *pshift, pdim ? *pdim : 1);
-}
-
-
-extern void cshift0_8 (gfc_array_char *, const gfc_array_char *,
-		       const GFC_INTEGER_8 *, const GFC_INTEGER_8 *);
-export_proto(cshift0_8);
-
-void
-cshift0_8 (gfc_array_char *ret, const gfc_array_char *array,
-	   const GFC_INTEGER_8 *pshift, const GFC_INTEGER_8 *pdim)
-{
-  cshift0 (ret, array, *pshift, pdim ? *pdim : 1);
-}
-
+DEFINE_CSHIFT (1);
+DEFINE_CSHIFT (2);
+DEFINE_CSHIFT (4);
+DEFINE_CSHIFT (8);
