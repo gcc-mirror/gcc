@@ -1,3 +1,8 @@
+2005-09-13  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* tree.c (annotate_with_file_line): Compare line numbers before
+	file names.
+
 2005-09-13  Uros Bizjak  <uros@kss-loka.si>
 
 	PR target/23816
