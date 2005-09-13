@@ -1,5 +1,10 @@
 2005-09-13  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/23839
+	* g++.dg/parse/register1.C: New test.
+
+2005-09-13  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/23842
 	* g++.dg/template/access16.C: New test.
 
