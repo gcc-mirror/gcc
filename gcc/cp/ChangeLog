@@ -1,3 +1,9 @@
+2005-09-13  Bastian Blank <waldi@debian.org>
+
+	PR c++/16171
+	* mangle.c (find_substitution): Do not use special substitutions
+	for identifiers not in std::.
+	
 2005-09-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23839
