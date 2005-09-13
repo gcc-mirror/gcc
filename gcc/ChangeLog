@@ -1,3 +1,8 @@
+2005-09-13  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimize/23817
+	* tree-cfg.c (tree_merge_blocks): Preserve loop closed ssa.
+
 2005-09-13  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/23774
