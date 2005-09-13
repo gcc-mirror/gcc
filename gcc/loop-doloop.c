@@ -396,7 +396,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
     unsigned level = get_loop_level (loop) + 1;
     init = gen_doloop_begin (counter_reg,
 			     desc->const_iter ? desc->niter_expr : const0_rtx,
-			     desc->niter_max,
+			     GEN_INT (desc->niter_max),
 			     GEN_INT (level));
     if (init)
       {
