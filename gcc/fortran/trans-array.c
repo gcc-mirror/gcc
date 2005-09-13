@@ -3290,7 +3290,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
       if (!INTEGER_CST_P (lbound))
         {
           gfc_init_se (&se, NULL);
-          gfc_conv_expr_type (&se, sym->as->upper[n],
+          gfc_conv_expr_type (&se, sym->as->lower[n],
                               gfc_array_index_type);
           gfc_add_block_to_block (&block, &se.pre);
           gfc_add_modify_expr (&block, lbound, se.expr);

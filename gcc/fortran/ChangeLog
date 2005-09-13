@@ -1,3 +1,9 @@
+2005-09-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/19358
+	* trans-array.c (gfc_trans_dummy_array_bias): correct the typo
+	which uses dim[i].upper for lbound, rather than dim[i].lower.
+
 2005-09-10  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR fortran/22502
