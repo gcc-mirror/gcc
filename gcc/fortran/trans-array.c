@@ -3981,9 +3981,13 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	  /* Set the new lower bound.  */
 	  from = loop.from[dim];
 	  to = loop.to[dim];
-          if (!integer_onep (from))
+
+	  /* If we have an array section or are assigning to a pointer,
+	     make sure that the lower bound is 1.  References to the full
+	     array should otherwise keep the original bounds.  */
+	  if ((info->ref->u.ar.type != AR_FULL || se->direct_byref)
+	      && !integer_onep (from))
 	    {
-	      /* Make sure the new section starts at 1.  */
 	      tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
 				 gfc_index_one_node, from);
 	      to = fold_build2 (PLUS_EXPR, gfc_array_index_type, to, tmp);

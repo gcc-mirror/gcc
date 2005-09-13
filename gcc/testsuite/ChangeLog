@@ -1,5 +1,10 @@
 2005-09-13  Richard Sandiford  <richard@codesourcery.com>
 
+	PR fortran/18899
+	* fortran.dg/shape_2.f90: New test.
+
+2005-09-13  Richard Sandiford  <richard@codesourcery.com>
+
 	PR target/19269
 	* gfortran.dg/char_associated_1.f90, gfortran.dg/char_cshift_1.f90,
 	* gfortran.dg/char_cshift_2.f90, gfortran.dg/char_eoshift_1.f90,
