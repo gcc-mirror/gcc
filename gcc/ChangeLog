@@ -1,3 +1,12 @@
+2005-09-13  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/23774
+	* config/rs6000/rs6000.md (restore_stack_block): Write the backchain
+	word before changing the stack pointer.	 Use gen_frame_mem for MEMs.
+	Use UNSPEC_TIE to prevent insn scheduling reordering the insns.
+	(restore_stack_nonlocal): Likewise.
+	(save_stack_nonlocal): Use template to emit insns, and gen_frame_mem.
+
 2005-09-12  Ian Lance Taylor  <ian@airs.com>
 
 	PR g++/7874
