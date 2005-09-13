@@ -49,3 +49,4 @@ int main (void)
 
 /* need -ffast-math to vectorizer these loops.  */
 /* { dg-final { scan-tree-dump-times "vectorized 0 loops" 1 "vect" } } */
+/* { dg-final { cleanup-tree-dump "vect" } } */

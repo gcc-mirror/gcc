@@ -36,3 +36,4 @@ test (va_list ap1, va_list ap2, va_list ap3, va_list ap4, va_list ap5,
 /* { dg-final { scan-tree-dump "vi4.*vfprintf.*\"%s\".*vi5" "fab"} } */
 /* { dg-final { scan-tree-dump "vi5.*vfprintf.*\"%c\".*vi6" "fab"} } */
 /* { dg-final { scan-tree-dump "vi6.*vfprintf.*\"%s\\\\n\".*vi7" "fab"} } */
+/* { dg-final { cleanup-tree-dump "fab" } } */

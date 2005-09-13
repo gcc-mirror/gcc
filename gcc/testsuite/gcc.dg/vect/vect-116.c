@@ -26,3 +26,5 @@ int main()
   foo();
   return 0;
 }
+
+/* { dg-final { cleanup-tree-dump "vect" } } */

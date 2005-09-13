@@ -24,3 +24,4 @@ int f4(int a,int b,int c,int d)
 /* { dg-final { scan-tree-dump-times "\\^" 0 "gimple"} } */
 /* { dg-final { scan-tree-dump-times "~" 4 "gimple"} } */
 /* { dg-final { scan-tree-dump-times "&" 12 "gimple"} } */
+/* { dg-final { cleanup-tree-dump "gimple" } } */
