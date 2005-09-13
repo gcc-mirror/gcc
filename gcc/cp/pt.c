@@ -6097,10 +6097,6 @@ tsubst_default_argument (tree fn, tree type, tree arg)
      we must be careful to do name lookup in the scope of S<T>,
      rather than in the current class.  */
   push_access_scope (fn);
-  /* The default argument expression should not be considered to be
-     within the scope of FN.  Since push_access_scope sets
-     current_function_decl, we must explicitly clear it here.  */
-  current_function_decl = NULL_TREE;
   /* The "this" pointer is not valid in a default argument.  */
   if (cfun)
     {
