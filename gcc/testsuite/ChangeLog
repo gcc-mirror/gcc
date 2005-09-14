@@ -1,3 +1,8 @@
+2005-09-14  Josh Conner  <jconner@apple.com>
+
+	PR middle-end/23584
+	* gcc.dg/pr23584.c: New test.
+
 2005-09-14  Jerry DeLisle  <jvdelisle@verizon.net>
 
 	PR fortran/21875 Internal Unit Array I/O, NIST
