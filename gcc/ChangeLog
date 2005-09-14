@@ -1,3 +1,8 @@
+2005-09-14  David Edelsohn  <edelsohn@gnu.org>
+
+	PR target/22068
+	* config/rs6000/rs6000.md (muldi3): Add mulli alternative.
+
 2005-09-14  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux64.h (DBX_OUTPUT_BRAC): Treat function name
