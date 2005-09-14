@@ -1,3 +1,9 @@
+2005-09-13 Josh Conner <jconner@apple.com>
+
+	PR c++/23180
+	* g++.dg/init/struct2.C: New test.
+	* g++.dg/init/struct3.C: New test.
+
 2005-09-13  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/pr15784-4.c, gcc.dg/pr20130-1.c, gcc.dg/ucnid-6.c:
