@@ -1,3 +1,8 @@
+2005-09-14  Uros Bizjak  <uros@kss-loka.si>
+
+	PR middle-end/22480
+	* gcc.dg/vect/pr22480.c: New test.
+
 2005-09-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/19358

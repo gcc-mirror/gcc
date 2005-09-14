@@ -35,6 +35,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "cfgloop.h"
 #include "expr.h"
 #include "optabs.h"
+#include "recog.h"
 #include "tree-data-ref.h"
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
@@ -1409,6 +1410,8 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   int op_type;
   tree op;
   optab optab;
+  int icode;
+  enum machine_mode optab_op2_mode;
   tree def, def_stmt;
   enum vect_def_type dt;
 
@@ -1464,7 +1467,8 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
       return false;
     }
   vec_mode = TYPE_MODE (vectype);
-  if (optab->handlers[(int) vec_mode].insn_code == CODE_FOR_nothing)
+  icode = (int) optab->handlers[(int) vec_mode].insn_code;
+  if (icode == CODE_FOR_nothing)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "op not supported by target.");
@@ -1484,6 +1488,25 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "not worthwhile without SIMD support.");
       return false;
+    }
+
+  if (code == LSHIFT_EXPR || code == RSHIFT_EXPR)
+    {
+      /* FORNOW: not yet supported.  */
+      if (!VECTOR_MODE_P (vec_mode))
+	return false;
+
+      /* Invariant argument is needed for a vector shift
+	 by a scalar shift operand.  */
+      optab_op2_mode = insn_data[icode].operand[2].mode;
+      if (! (VECTOR_MODE_P (optab_op2_mode)
+	     || dt == vect_constant_def
+	     || dt == vect_invariant_def))
+	{
+	  if (vect_print_dump_info (REPORT_DETAILS))
+	    fprintf (vect_dump, "operand mode requires invariant argument.");
+	  return false;
+	}
     }
 
   if (!vec_stmt) /* transformation not required.  */
@@ -1508,7 +1531,25 @@ vectorizable_operation (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
   if (op_type == binary_op)
     {
       op1 = TREE_OPERAND (operation, 1);
-      vec_oprnd1 = vect_get_vec_def_for_operand (op1, stmt, NULL); 
+
+      if (code == LSHIFT_EXPR || code == RSHIFT_EXPR)
+	{
+	  /* Vector shl and shr insn patterns can be defined with
+	     scalar operand 2 (shift operand).  In this case, use
+	     constant or loop invariant op1 directly, without
+	     extending it to vector mode first.  */
+
+	  optab_op2_mode = insn_data[icode].operand[2].mode;
+	  if (!VECTOR_MODE_P (optab_op2_mode))
+	    {
+	      if (vect_print_dump_info (REPORT_DETAILS))
+		fprintf (vect_dump, "operand 1 using scalar mode.");
+	      vec_oprnd1 = op1;
+	    }
+	}
+
+      if (!vec_oprnd1)
+	vec_oprnd1 = vect_get_vec_def_for_operand (op1, stmt, NULL); 
     }
 
   /* Arguments are ready. create the new vector stmt.  */
