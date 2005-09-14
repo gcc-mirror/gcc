@@ -1,3 +1,8 @@
+2005-09-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/19358
+	* gfortran.fortran-torture/assumed_dummy_1.f90: New test.
+
 2005-09-13 Josh Conner <jconner@apple.com>
 
 	PR c++/23180
