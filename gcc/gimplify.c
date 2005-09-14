@@ -2576,7 +2576,12 @@ gimplify_init_ctor_eval (tree object, VEC(constructor_elt,gc) *elts,
 	 so we don't have to figure out what's missing ourselves.  */
       gcc_assert (purpose);
 
-      if (zero_sized_field_decl (purpose))
+      /* Skip zero-sized fields, unless value has side-effects.  This can
+	 happen with calls to functions returning a zero-sized type, which
+	 we shouldn't discard.  As a number of downstream passes don't
+	 expect sets of zero-sized fields, we rely on the gimplification of
+	 the MODIFY_EXPR we make below to drop the assignment statement.  */
+      if (! TREE_SIDE_EFFECTS (value) && zero_sized_field_decl (purpose))
 	continue;
 
       /* If we have a RANGE_EXPR, we have to build a loop to assign the

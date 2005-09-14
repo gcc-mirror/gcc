@@ -1,3 +1,8 @@
+2005-09-14  Olivier Hainque  <hainque@adacore.com>
+
+	* gimplify.c (gimplify_init_ctor_eval): Don't discard a zero-sized
+	value if it has side-effects.
+
 2005-09-14  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/22068
