@@ -292,14 +292,14 @@ void *
 write_block (int length)
 {
   char *dest;
-
-  if (!is_internal_unit() && current_unit->bytes_left < length)
+  
+  if (current_unit->bytes_left < length)
     {
       generate_error (ERROR_EOR, NULL);
       return NULL;
     }
 
-  current_unit->bytes_left -= length;
+  current_unit->bytes_left -= (gfc_offset)length;
   dest = salloc_w (current_unit->s, &length);
 
   if (ioparm.size != NULL)
@@ -1021,15 +1021,6 @@ data_transfer_init (int read_flag)
   if (current_unit == NULL)
     return;
 
-  if (is_internal_unit())
-    {
-      current_unit->recl = file_length(current_unit->s);
-      if (g.mode==WRITING)
-        empty_internal_buffer (current_unit->s);
-      else
-        current_unit->bytes_left = current_unit->recl;	
-    }
-
   /* Check the action.  */
 
   if (read_flag && current_unit->flags.action == ACTION_WRITE)
@@ -1267,7 +1258,7 @@ data_transfer_init (int read_flag)
 static void
 next_record_r (void)
 {
-  int rlength, length;
+  int rlength, length, bytes_left;
   gfc_offset new;
   char *p;
 
@@ -1321,15 +1312,17 @@ next_record_r (void)
 	  break;
 	}
 
-      do
+      if (is_internal_unit())
+	{
+	  bytes_left = (int) current_unit->bytes_left;
+	  p = salloc_r (current_unit->s, &bytes_left);
+	  if (p != NULL)
+	    current_unit->bytes_left = current_unit->recl;
+	  break;
+	}
+      else do
 	{
 	  p = salloc_r (current_unit->s, &length);
-
-	  /* In case of internal file, there may not be any '\n'.  */
-	  if (is_internal_unit() && p == NULL)
-	    {
-	       break;
-	    }
 
 	  if (p == NULL)
 	    {
@@ -1359,7 +1352,7 @@ static void
 next_record_w (void)
 {
   gfc_offset c, m;
-  int length;
+  int length, bytes_left;
   char *p;
 
   /* Zero counters for X- and T-editing.  */
@@ -1422,15 +1415,36 @@ next_record_w (void)
       break;
 
     case FORMATTED_SEQUENTIAL:
-#ifdef HAVE_CRLF
-      length = 2;
-#else
-      length = 1;
-#endif
-      p = salloc_w (current_unit->s, &length);
 
-      if (!is_internal_unit())
+      if (current_unit->bytes_left == 0)
+	break;
+	
+      if (is_internal_unit())
 	{
+	  if (is_array_io())
+	    {
+	      bytes_left = (int) current_unit->bytes_left;
+	      p = salloc_w (current_unit->s, &bytes_left);
+	      if (p != NULL)
+		{
+		  memset(p, ' ', bytes_left);
+	          current_unit->bytes_left = current_unit->recl;
+		}
+	    }
+	  else
+	    {
+	      length = 1;
+	      p = salloc_w (current_unit->s, &length);
+	    }
+ 	}
+      else
+	{
+#ifdef HAVE_CRLF
+	  length = 2;
+#else
+	  length = 1;
+#endif
+	  p = salloc_w (current_unit->s, &length);
 	  if (p)
 	    {  /* No new line for internal writes.  */
 #ifdef HAVE_CRLF
@@ -1443,9 +1457,6 @@ next_record_w (void)
 	  else
 	    goto io_error;
 	}
-
-      if (sfree (current_unit->s) == FAILURE)
-	goto io_error;
 
       break;
 

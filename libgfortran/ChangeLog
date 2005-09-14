@@ -1,3 +1,27 @@
+2005-09-14  Jerry DeLisle  <jvdelisle@verizon.net
+
+	PR fortran/21875 Internal Unit Array I/O, NIST
+	* libgfortran.h: Add run time error code for array stride.
+	* runtime/error.c (translate_error): Add error message for
+	array stride.
+	* io/io.h: Add array descriptor pointer to IOPARM structure.
+	Add prtotypes for two new functions.
+	* io/transfer.c (data_transfer_init): Removed initialization and
+	moved to unit.c (get_unit)
+	* io/transfer.c (next_record_r): Include internal unit read
+	functionality.
+	* io/transfer.c (next_record_w): Include internal unit write
+	functionality, including padding of character array records.
+	* io/unit.c (get_array_unit_len): New function to return the number
+	of records in the character array 'file' from the array descriptor.
+	* io/unit.c (get_unit): Gathered initialization code from
+	init_data_transfer for internal units and added initialization of
+	character array unit.
+	* io/unit.c (is_array_io): New function to determine if internal unit
+	is an array.
+	* io/unix.c (mem_alloc_w_at): Add error checks for bad record length
+	and end of file.
+
 2005-09-13  Richard Sandiford  <richard@codesourcery.com>
 
 	PR target/19269

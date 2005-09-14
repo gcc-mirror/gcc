@@ -38,6 +38,7 @@ Boston, MA 02110-1301, USA.  */
 #include <stdio.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <assert.h>
 
 #ifdef HAVE_SYS_MMAN_H
 #include <sys/mman.h>
@@ -618,13 +619,21 @@ mem_alloc_w_at (unix_stream * s, int *len, gfc_offset where)
 {
   gfc_offset m;
 
+  assert (*len >= 0);  /* Negative values not allowed. */
+  
   if (where == -1)
     where = s->logical_offset;
 
   m = where + *len;
 
-  if (where < s->buffer_offset || m > s->buffer_offset + s->active)
+  if (where < s->buffer_offset)
     return NULL;
+
+  if (m > s->file_length)
+    {
+      generate_error (ERROR_END, NULL);
+      return NULL;
+    }
 
   s->logical_offset = m;
 
