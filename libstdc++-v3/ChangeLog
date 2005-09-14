@@ -1,3 +1,11 @@
+2005-09-13  Jonathan Wakely  <cow@compsoc.man.ac.uk>
+	    Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/21674
+	* testsuite/21_strings/basic_string/element_access/char/21674.cc: New.
+	* testsuite/21_strings/basic_string/element_access/wchar_t/21674.cc: 
+	New.
+
 2005-09-12  David Edelsohn  <dje@gcc.gnu.org>
 
 	PR libstdc++/22554
