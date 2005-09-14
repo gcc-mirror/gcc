@@ -81,6 +81,7 @@ static GTY(()) tree ioparm_name;
 static GTY(()) tree ioparm_name_len;
 static GTY(()) tree ioparm_internal_unit;
 static GTY(()) tree ioparm_internal_unit_len;
+static GTY(()) tree ioparm_internal_unit_desc;
 static GTY(()) tree ioparm_sequential;
 static GTY(()) tree ioparm_sequential_len;
 static GTY(()) tree ioparm_direct;
@@ -204,6 +205,7 @@ gfc_build_io_library_fndecls (void)
   ADD_STRING (advance);
   ADD_STRING (name);
   ADD_STRING (internal_unit);
+  ADD_FIELD (internal_unit_desc, pchar_type_node);
   ADD_STRING (sequential);
 
   ADD_STRING (direct);
@@ -436,6 +438,7 @@ gfc_convert_array_to_string (gfc_se * se, gfc_expr * e)
   se->string_length = fold_convert (gfc_charlen_type_node, size);
 }
 
+
 /* Generate code to store a string and its length into the
    ioparm structure.  */
 
@@ -489,6 +492,60 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
   gfc_add_block_to_block (postblock, &se.post);
 }
 
+
+/* Generate code to store the character (array) and the character length
+   for an internal unit.  */
+
+static void
+set_internal_unit (stmtblock_t * block, tree iunit, tree iunit_len,
+		   tree iunit_desc, gfc_expr * e)
+{
+  gfc_se se;
+  tree io;
+  tree len;
+  tree desc;
+  tree tmp;
+
+  gfc_init_se (&se, NULL);
+
+  io = build3 (COMPONENT_REF, TREE_TYPE (iunit), ioparm_var, iunit, NULL_TREE);
+  len = build3 (COMPONENT_REF, TREE_TYPE (iunit_len), ioparm_var, iunit_len,
+		NULL_TREE);
+  desc = build3 (COMPONENT_REF, TREE_TYPE (iunit_desc), ioparm_var, iunit_desc,
+		 NULL_TREE);
+
+  gcc_assert (e->ts.type == BT_CHARACTER);
+
+  /* Character scalars.  */
+  if (e->rank == 0)
+    {
+      gfc_conv_expr (&se, e);
+      gfc_conv_string_parameter (&se);
+      tmp = se.expr;
+      se.expr = fold_convert (pchar_type_node, integer_zero_node);
+    }
+
+  /* Character array.  */
+  else if (e->symtree && (e->symtree->n.sym->as->rank > 0))
+    {
+      se.ss = gfc_walk_expr (e);
+
+      /* Return the data pointer and rank from the descriptor.  */
+      gfc_conv_expr_descriptor (&se, e, se.ss);
+      tmp = gfc_conv_descriptor_data_get (se.expr);
+      se.expr = gfc_build_addr_expr (pchar_type_node, se.expr);
+    }
+  else
+    gcc_unreachable ();
+
+  /* The cast is needed for character substrings and the descriptor
+     data.  */
+  gfc_add_modify_expr (&se.pre, io, fold_convert (TREE_TYPE (io), tmp));
+  gfc_add_modify_expr (&se.pre, len, se.string_length);
+  gfc_add_modify_expr (&se.pre, desc, se.expr);
+
+  gfc_add_block_to_block (block, &se.pre);
+}
 
 /* Set a member of the ioparm structure to one.  */
 static void
@@ -1174,8 +1231,11 @@ build_dt (tree * function, gfc_code * code)
     {
       if (dt->io_unit->ts.type == BT_CHARACTER)
 	{
-	  set_string (&block, &post_block, ioparm_internal_unit,
-		      ioparm_internal_unit_len, dt->io_unit);
+	  set_internal_unit (&block,
+			     ioparm_internal_unit,
+			     ioparm_internal_unit_len,
+			     ioparm_internal_unit_desc,
+			     dt->io_unit);
 	}
       else
 	set_parameter_value (&block, ioparm_unit, dt->io_unit);
