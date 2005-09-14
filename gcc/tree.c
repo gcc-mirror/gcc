@@ -2180,7 +2180,7 @@ tree
 substitute_in_expr (tree exp, tree f, tree r)
 {
   enum tree_code code = TREE_CODE (exp);
-  tree op0, op1, op2;
+  tree op0, op1, op2, op3;
   tree new;
   tree inner;
 
@@ -2263,6 +2263,20 @@ substitute_in_expr (tree exp, tree f, tree r)
 	      return exp;
 
 	    new = fold_build3 (code, TREE_TYPE (exp), op0, op1, op2);
+	    break;
+
+	  case 4:
+	    op0 = SUBSTITUTE_IN_EXPR (TREE_OPERAND (exp, 0), f, r);
+	    op1 = SUBSTITUTE_IN_EXPR (TREE_OPERAND (exp, 1), f, r);
+	    op2 = SUBSTITUTE_IN_EXPR (TREE_OPERAND (exp, 2), f, r);
+	    op3 = SUBSTITUTE_IN_EXPR (TREE_OPERAND (exp, 3), f, r);
+
+	    if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1)
+		&& op2 == TREE_OPERAND (exp, 2)
+		&& op3 == TREE_OPERAND (exp, 3))
+	      return exp;
+
+	    new = fold (build4 (code, TREE_TYPE (exp), op0, op1, op2, op3));
 	    break;
 
 	  default:
