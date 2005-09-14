@@ -3355,6 +3355,7 @@ contains_128bit_aligned_vector_p (tree type)
 	  /* Just for use if some languages passes arrays by value.  */
 	  if (contains_128bit_aligned_vector_p (TREE_TYPE (type)))
 	    return true;
+	  break;
 	  
 	default:
 	  gcc_unreachable ();
