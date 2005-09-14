@@ -244,6 +244,32 @@ find_unit (int n)
   return p;
 }
 
+
+/* get_array_unit_len()-- return the number of records in the array. */
+
+gfc_offset
+get_array_unit_len (gfc_array_char *desc)
+{
+  gfc_offset record_count;
+  int i, rank, stride;
+  rank = GFC_DESCRIPTOR_RANK(desc);
+  record_count = stride = 1;
+  for (i=0;i<rank;++i)
+    {
+      /* Check that array is contiguous */
+      
+      if (desc->dim[i].stride != stride)
+	{
+	  generate_error (ERROR_ARRAY_STRIDE, NULL);
+	  return NULL;
+	}
+      stride *= desc->dim[i].ubound;
+      record_count *= desc->dim[i].ubound;
+    }
+  return record_count;
+}
+
+ 
 /* get_unit()-- Returns the unit structure associated with the integer
  * unit or the internal file. */
 
@@ -252,8 +278,18 @@ get_unit (int read_flag __attribute__ ((unused)))
 {
   if (ioparm.internal_unit != NULL)
     {
+      internal_unit.recl = ioparm.internal_unit_len;
+      if (is_array_io()) ioparm.internal_unit_len *=
+			   get_array_unit_len(ioparm.internal_unit_desc);
       internal_unit.s =
 	open_internal (ioparm.internal_unit, ioparm.internal_unit_len);
+      internal_unit.bytes_left = internal_unit.recl;
+      internal_unit.last_record=0;
+      internal_unit.maxrec=0;
+      internal_unit.current_record=0;
+
+      if (g.mode==WRITING && !is_array_io())
+        empty_internal_buffer (internal_unit.s);
 
       /* Set flags for the internal unit */
 
@@ -271,8 +307,7 @@ get_unit (int read_flag __attribute__ ((unused)))
 }
 
 
-/* is_internal_unit()-- Determine if the current unit is internal or
- * not */
+/* is_internal_unit()-- Determine if the current unit is internal or not */
 
 int
 is_internal_unit (void)
@@ -280,6 +315,14 @@ is_internal_unit (void)
   return current_unit == &internal_unit;
 }
 
+
+/* is_array_io ()-- Determine if the I/O is to/from an array */
+
+int
+is_array_io (void)
+{
+  return (ioparm.internal_unit_desc != NULL);
+}
 
 
 /*************************/
