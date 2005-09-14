@@ -35,7 +35,7 @@
 #include <bits/os_defines.h>
 
 // The current version of the C++ library in compressed ISO date format.
-#define __GLIBCXX__ 20050913
+#define __GLIBCXX__ 20050914
 
 // Allow use of "export template." This is currently not a feature
 // that g++ supports.
