@@ -1,5 +1,15 @@
 2005-09-14  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/21875 Internal Unit Array I/O, NIST
+	* fortran/trans-io.c (gfc_build_io_library_fndecls): Add field for
+	array descriptor to IOPARM structure.
+	* fortran/trans-io.c (set_internal_unit): New function to generate code
+	to store the character (array) and the character length for an internal
+	unit.
+	* fortran/trans-io (build_dt): Use the new function set_internal_unit.
+	
+2005-09-14  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/19358
 	* trans-array.c (gfc_trans_dummy_array_bias): correct the typo
 	which uses dim[i].upper for lbound, rather than dim[i].lower.
