@@ -1,3 +1,8 @@
+2005-09-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/i386/i386.c (contains_128bit_aligned_vector_p): Add break
+	in the ARRAY_TYPE case.
+
 2005-09-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.c (substitute_in_expr, case 4): New case, for ARRAY_REF.
