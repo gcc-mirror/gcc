@@ -1,3 +1,19 @@
+2005-09-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13140
+	* decl.c (check_class_member_definition_namespace): New function.
+	(grokfndecl): Use it.
+	(grokvardecl): Likewise.
+	(grokdecl): Improve documentation.
+	* pt.c (check_explicit_instantiation_namespace): New function.
+	(register_specialization): Call check_specialization_namespace
+	when replacing an implicitly instantiated function.
+	(check_explicit_specialization): Ensure that DECL_CONTEXT is set
+	correctly for namespace-scope specializations.
+	(do_decl_instantiation): Use
+	check_explicit_instantiation_namespace.
+	(do_type_instantiation): Likewise.
+
 2005-09-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/23725

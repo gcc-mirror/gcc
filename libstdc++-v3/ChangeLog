@@ -1,3 +1,8 @@
+2005-09-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/testsuite_character.h: Specialize character<>
+	templates in __gnu_cxx, not in __gnu_test.
+
 2005-09-13  Jonathan Wakely  <cow@compsoc.man.ac.uk>
 	    Benjamin Kosnik  <bkoz@redhat.com>
 
