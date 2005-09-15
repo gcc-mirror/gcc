@@ -568,7 +568,6 @@ delete_alias_info (struct alias_info *ai)
   delete_points_to_sets ();
 }
 
-
 /* Create name tags for all the pointers that have been dereferenced.
    We only create a name tag for a pointer P if P is found to point to
    a set of variables (so that we can alias them to *P) or if it is
@@ -582,7 +581,10 @@ static void
 create_name_tags (void)
 {
   size_t i;
+  VEC (tree, heap) *with_ptvars = NULL;
+  tree ptr;
 
+  /* Collect the list of pointers with a non-empty points to set.  */
   for (i = 1; i < num_ssa_names; i++)
     {
       tree ptr = ssa_name (i);
@@ -603,68 +605,71 @@ create_name_tags (void)
 	  continue;
 	}
 
-      if (pi->pt_vars && !bitmap_empty_p (pi->pt_vars))
-	{
-	  size_t j;
-	  tree old_name_tag = pi->name_mem_tag;
-
-	  /* If PTR points to a set of variables, check if we don't
-	     have another pointer Q with the same points-to set before
-	     creating a tag.  If so, use Q's tag instead of creating a
-	     new one.
-
-	     This is important for not creating unnecessary symbols
-	     and also for copy propagation.  If we ever need to
-	     propagate PTR into Q or vice-versa, we would run into
-	     problems if they both had different name tags because
-	     they would have different SSA version numbers (which
-	     would force us to take the name tags in and out of SSA).  */
-	  for (j = 1; j < i; j++)
-	    {
-	      tree q = ssa_name (j);
-	      struct ptr_info_def *qi;
-
-	      if (!q || !POINTER_TYPE_P (TREE_TYPE (q)))
-		continue;
-
-	      qi = SSA_NAME_PTR_INFO (q);
-
-	      if (qi
-		  && qi->pt_vars
-		  && qi->name_mem_tag
-		  && bitmap_equal_p (pi->pt_vars, qi->pt_vars))
-		{
-		  pi->name_mem_tag = qi->name_mem_tag;
-		  break;
-		}
-	    }
-
-	  /* If we didn't find a pointer with the same points-to set
-	     as PTR, create a new name tag if needed.  */
-	  if (pi->name_mem_tag == NULL_TREE)
-	    pi->name_mem_tag = get_nmt_for (ptr);
-
-	  /* If the new name tag computed for PTR is different than
-	     the old name tag that it used to have, then the old tag
-	     needs to be removed from the IL, so we mark it for
-	     renaming.  */
-	  if (old_name_tag && old_name_tag != pi->name_mem_tag)
-	    mark_sym_for_renaming (old_name_tag);
-	}
+      /* Set pt_anything on the pointers without pt_vars filled in so
+	 that they are assigned a type tag.  */
+      
+      if (pi->pt_vars && !bitmap_empty_p (pi->pt_vars))	
+	VEC_safe_push (tree, heap, with_ptvars, ptr);
       else
+	set_pt_anything (ptr);
+    }
+  
+  /* If we didn't find any pointers with pt_vars set, we're done.  */
+  if (!with_ptvars)
+    return;
+
+  /* Now go through the pointers with pt_vars, and find a name tag
+     with the same pt_vars as this pointer, or create one if one
+     doesn't exist.  */
+  for (i = 0; VEC_iterate (tree, with_ptvars, i, ptr); i++)
+    {
+      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
+      size_t j;
+      tree ptr2;
+      tree old_name_tag = pi->name_mem_tag;
+      
+      /* If PTR points to a set of variables, check if we don't
+	 have another pointer Q with the same points-to set before
+	 creating a tag.  If so, use Q's tag instead of creating a
+	 new one.
+	 
+	 This is important for not creating unnecessary symbols
+	 and also for copy propagation.  If we ever need to
+	 propagate PTR into Q or vice-versa, we would run into
+	 problems if they both had different name tags because
+	 they would have different SSA version numbers (which
+	 would force us to take the name tags in and out of SSA).  */
+      for (j = 0; j < i && VEC_iterate (tree, with_ptvars, j, ptr2); j++)
 	{
-	  /* If the pointer does not point to a known spot, we should
-	     use type tags.  */
-	  set_pt_anything (ptr);
-	  continue;
+	  struct ptr_info_def *qi = SSA_NAME_PTR_INFO (ptr2);
+	  
+	  if (bitmap_equal_p (pi->pt_vars, qi->pt_vars))
+	    {
+	      pi->name_mem_tag = qi->name_mem_tag;
+	      break;
+	    }
 	}
-
+      
+      /* If we didn't find a pointer with the same points-to set
+	 as PTR, create a new name tag if needed.  */
+      if (pi->name_mem_tag == NULL_TREE)
+	pi->name_mem_tag = get_nmt_for (ptr);
+      
+      /* If the new name tag computed for PTR is different than
+	 the old name tag that it used to have, then the old tag
+	 needs to be removed from the IL, so we mark it for
+	 renaming.  */
+      if (old_name_tag && old_name_tag != pi->name_mem_tag)
+	mark_sym_for_renaming (old_name_tag);
+      
       TREE_THIS_VOLATILE (pi->name_mem_tag)
-	  |= TREE_THIS_VOLATILE (TREE_TYPE (TREE_TYPE (ptr)));
-
+	|= TREE_THIS_VOLATILE (TREE_TYPE (TREE_TYPE (ptr)));
+      
       /* Mark the new name tag for renaming.  */
       mark_sym_for_renaming (pi->name_mem_tag);
     }
+
+  VEC_free (tree, heap, with_ptvars);
 }
 
 
