@@ -1,3 +1,13 @@
+2005-09-15  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-data-ref.c (analyze_array_indexes): Add estimate_only
+	parameter.
+	Update callers.
+	(estimate_iters_using_array): New function.
+	* tree-data-ref.h (estimate_iters_using_array): Prototype
+	* tree-ssa-loop-niter.c (infer_loop_bounds_from_undefined):
+	Use estimate_iters_using_array instead of analyze_array.
+	
 2005-09-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-nested.c (get_frame_type): Mark the "non-local frame structure"

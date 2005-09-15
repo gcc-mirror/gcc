@@ -265,6 +265,7 @@ extern void free_dependence_relations (varray_type);
 extern void free_data_refs (varray_type);
 extern void compute_subscript_distance (struct data_dependence_relation *);
 extern struct data_reference *analyze_array (tree, tree, bool);
+extern void estimate_iters_using_array (tree, tree);
 
 
 

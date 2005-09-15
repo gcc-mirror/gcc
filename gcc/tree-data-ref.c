@@ -799,13 +799,16 @@ estimate_niter_from_size_of_data (struct loop *loop,
 /* Given an ARRAY_REF node REF, records its access functions.
    Example: given A[i][3], record in ACCESS_FNS the opnd1 function,
    i.e. the constant "3", then recursively call the function on opnd0,
-   i.e. the ARRAY_REF "A[i]".  The function returns the base name:
-   "A".  */
+   i.e. the ARRAY_REF "A[i]".  
+   If ESTIMATE_ONLY is true, we just set the estimated number of loop
+   iterations, we don't store the access function.
+   The function returns the base name: "A".  */
 
 static tree
 analyze_array_indexes (struct loop *loop,
 		       VEC(tree,heap) **access_fns, 
-		       tree ref, tree stmt)
+		       tree ref, tree stmt,
+		       bool estimate_only)
 {
   tree opnd0, opnd1;
   tree access_fn;
@@ -822,18 +825,29 @@ analyze_array_indexes (struct loop *loop,
 
   if (chrec_contains_undetermined (loop->estimated_nb_iterations))
     estimate_niter_from_size_of_data (loop, opnd0, access_fn, stmt);
-  
-  VEC_safe_push (tree, heap, *access_fns, access_fn);
+
+  if (!estimate_only)
+    VEC_safe_push (tree, heap, *access_fns, access_fn);
   
   /* Recursively record other array access functions.  */
   if (TREE_CODE (opnd0) == ARRAY_REF)
-    return analyze_array_indexes (loop, access_fns, opnd0, stmt);
+    return analyze_array_indexes (loop, access_fns, opnd0, stmt, estimate_only);
   
   /* Return the base name of the data access.  */
   else
     return opnd0;
 }
 
+/* For an array reference REF contained in STMT, attempt to bound the
+   number of iterations in the loop containing STMT  */
+
+void 
+estimate_iters_using_array (tree stmt, tree ref)
+{
+  analyze_array_indexes (loop_containing_stmt (stmt), NULL, ref, stmt, 
+			 true);
+}
+  
 /* For a data reference REF contained in the statement STMT, initialize
    a DATA_REFERENCE structure, and return it.  IS_READ flag has to be
    set to true when REF is in the right hand side of an
@@ -859,7 +873,7 @@ analyze_array (tree stmt, tree ref, bool is_read)
   DR_REF (res) = ref;
   acc_fns = VEC_alloc (tree, heap, 3);
   DR_BASE_OBJECT (res) = analyze_array_indexes 
-    (loop_containing_stmt (stmt), &acc_fns, ref, stmt);
+    (loop_containing_stmt (stmt), &acc_fns, ref, stmt, false);
   DR_TYPE (res) = ARRAY_REF_TYPE;
   DR_SET_ACCESS_FNS (res, acc_fns);
   DR_IS_READ (res) = is_read;
