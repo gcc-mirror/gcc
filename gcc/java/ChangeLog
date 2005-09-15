@@ -1,3 +1,17 @@
+2005-09-14  Bryce McKinlay  <mckinlay@redhat.com>
+
+	PR java/23891
+	* parse.y (maybe_create_class_interface_decl): Set TYPE_PACKAGE for
+	the newly created type. Set import lists here, not in create_class.
+	(jdep_resolve_class): Set current_class.
+	(do_resolve_class): Use current_class's TYPE_PACKAGE to determine 
+	the current package context, not ctxp->package.
+	(cicp_cache): Removed.
+	(class_in_current_package): Simplify implementation using TYPE_PACKAGE.
+	* jcf-parse.c (give_name_to_class): Set TYPE_PACKAGE.
+	* java-tree.h (TYPE_PACKAGE): New macro.
+	(struct lang_type): New member 'package'.
+
 2005-09-09  Andrew Haley  <aph@redhat.com>
 
 	PR libgcj/23182 
