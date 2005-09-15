@@ -1,3 +1,19 @@
+2005-09-14  Christopher Faylor  <cgf@timesys.com>
+
+	* pex-win32.c: Include "windows.h".
+	(backslashify): New function.
+	(fix_argv): Use backslashify to convert path to windows format.
+	Allocate one more place in new argv for potential executable from '#!'
+	parsing.
+	(tack_on_executable): New function.  Conditional on USE_MINGW_MSYS
+	(openkey): Ditto.
+	(mingw_rootify): Ditto.
+	(msys_rootify): Ditto.
+	(spawn_script): New function.
+	(pex_win32_exec_child): Save translated argv in newargv.  Pass to
+	spawn_script if spawnv* fails.
+	(main): New function.  Conditional on MAIN.  Useful for testing.
+
 2005-08-17  Mark Kettenis  <kettenis@gnu.org>
 
 	* floatformat.c (floatformat_always_valid): Change type of last
