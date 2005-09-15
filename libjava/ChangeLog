@@ -1,3 +1,10 @@
+2005-09-15  Tom Tromey  <tromey@redhat.com>
+
+	For PR libgcj/23288:
+	* java/net/URLClassLoader.java (definePackage): Correctly order
+	arguments to definePackage.  Look up per-entry Attributes.
+	(getAttributeValue): New method.
+
 2005-09-12  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	PR libgcj/23762
