@@ -1,3 +1,8 @@
+2005-09-15  Kazu Hirata  <kazu@codesourcery.com>
+
+	* include/private/gc_locks.h (GC_test_and_set): Change the
+	constraint of the first operand to '0'.
+
 2005-09-06  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/23662:

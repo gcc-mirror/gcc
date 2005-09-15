@@ -209,7 +209,7 @@
           /* See linuxthreads/sysdeps/arm/pt-machine.h in glibc-2.1 */
           __asm__ __volatile__("swp %0, %1, [%2]"
       		  	     : "=r"(oldval)
-      			     : "r"(1), "r"(addr)
+      			     : "0"(1), "r"(addr)
 			     : "memory");
           return oldval;
         }
