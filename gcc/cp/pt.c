@@ -685,7 +685,7 @@ check_explicit_instantiation_namespace (tree spec)
   ns = decl_namespace_context (spec);
   if (!is_ancestor (current_namespace, ns))
     pedwarn ("explicit instantiation of %qD in namespace %qD "
-	     "(which does not enclose namespace %qD)"
+	     "(which does not enclose namespace %qD)",
 	     spec, current_namespace, ns);
 }
 
