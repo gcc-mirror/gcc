@@ -941,9 +941,24 @@ public class URLClassLoader extends SecureClassLoader
   }
 
   /**
+   * Look in both Attributes for a given value.  The first Attributes
+   * object, if not null, has precedence.
+   */
+  private String getAttributeValue(Attributes.Name name, Attributes first,
+				   Attributes second)
+  {
+    String result = null;
+    if (first != null)
+      result = first.getValue(name);
+    if (result == null)
+      result = second.getValue(name);
+    return result;
+  }
+
+  /**
    * Defines a Package based on the given name and the supplied manifest
-   * information. The manifest indicates the tile, version and
-   * vendor information of the specification and implementation and wheter the
+   * information. The manifest indicates the title, version and
+   * vendor information of the specification and implementation and whether the
    * package is sealed. If the Manifest indicates that the package is sealed
    * then the Package will be sealed with respect to the supplied URL.
    *
@@ -958,13 +973,36 @@ public class URLClassLoader extends SecureClassLoader
   protected Package definePackage(String name, Manifest manifest, URL url)
     throws IllegalArgumentException
   {
+    // Compute the name of the package as it may appear in the
+    // Manifest.
+    StringBuffer xform = new StringBuffer(name);
+    for (int i = xform.length () - 1; i >= 0; --i)
+      if (xform.charAt(i) == '.')
+	xform.setCharAt(i, '/');
+    xform.append('/');
+    String xformName = xform.toString();
+
+    Attributes entryAttr = manifest.getAttributes(xformName);
     Attributes attr = manifest.getMainAttributes();
-    String specTitle = attr.getValue(Attributes.Name.SPECIFICATION_TITLE);
-    String specVersion = attr.getValue(Attributes.Name.SPECIFICATION_VERSION);
-    String specVendor = attr.getValue(Attributes.Name.SPECIFICATION_VENDOR);
-    String implTitle = attr.getValue(Attributes.Name.IMPLEMENTATION_TITLE);
-    String implVersion = attr.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
-    String implVendor = attr.getValue(Attributes.Name.IMPLEMENTATION_VENDOR);
+
+    String specTitle
+      = getAttributeValue(Attributes.Name.SPECIFICATION_TITLE,
+			  entryAttr, attr);
+    String specVersion
+      = getAttributeValue(Attributes.Name.SPECIFICATION_VERSION,
+			  entryAttr, attr);
+    String specVendor
+      = getAttributeValue(Attributes.Name.SPECIFICATION_VENDOR,
+			  entryAttr, attr);
+    String implTitle
+      = getAttributeValue(Attributes.Name.IMPLEMENTATION_TITLE,
+			  entryAttr, attr);
+    String implVersion
+      = getAttributeValue(Attributes.Name.IMPLEMENTATION_VERSION,
+			  entryAttr, attr);
+    String implVendor
+      = getAttributeValue(Attributes.Name.IMPLEMENTATION_VENDOR,
+			  entryAttr, attr);
 
     // Look if the Manifest indicates that this package is sealed
     // XXX - most likely not completely correct!
@@ -976,8 +1014,10 @@ public class URLClassLoader extends SecureClassLoader
       // make sure that the URL is null so the package is not sealed
       url = null;
 
-    return definePackage(name, specTitle, specVersion, specVendor, implTitle,
-                         implVersion, implVendor, url);
+    return definePackage(name,
+			 specTitle, specVendor, specVersion,
+			 implTitle, implVendor, implVersion,
+			 url);
   }
 
   /**
