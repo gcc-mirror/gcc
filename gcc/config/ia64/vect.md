@@ -793,29 +793,95 @@
   "fpnegabs %0 = %1"
   [(set_attr "itanium_class" "fmisc")])
 
+;; In order to convince combine to merge plus and mult to a useful fpma,
+;; we need a couple of extra patterns.
 (define_expand "addv2sf3"
-  [(set (match_operand:V2SF 0 "fr_register_operand" "")
-	(plus:V2SF
-	  (mult:V2SF (match_operand:V2SF 1 "fr_register_operand" "")
-		     (match_dup 3))
-	  (match_operand:V2SF 2 "fr_register_operand" "")))]
+  [(parallel
+    [(set (match_operand:V2SF 0 "fr_register_operand" "")
+	  (plus:V2SF (match_operand:V2SF 1 "fr_register_operand" "")
+		     (match_operand:V2SF 2 "fr_register_operand" "")))
+     (use (match_dup 3))])]
   ""
 {
   rtvec v = gen_rtvec (2, CONST1_RTX (SFmode), CONST1_RTX (SFmode));
   operands[3] = force_reg (V2SFmode, gen_rtx_CONST_VECTOR (V2SFmode, v));
 })
 
+;; The split condition here could be combine_completed, if we had such.
+(define_insn_and_split "*addv2sf3_1"
+  [(set (match_operand:V2SF 0 "fr_register_operand" "=f")
+	(plus:V2SF (match_operand:V2SF 1 "fr_register_operand" "f")
+		   (match_operand:V2SF 2 "fr_register_operand" "f")))
+   (use (match_operand:V2SF 3 "fr_register_operand" "f"))]
+  ""
+  "#"
+  "reload_completed"
+  [(set (match_dup 0)
+	(plus:V2SF
+	  (mult:V2SF (match_dup 1) (match_dup 3))
+	  (match_dup 2)))]
+  "")
+
+(define_insn_and_split "*addv2sf3_2"
+  [(set (match_operand:V2SF 0 "fr_register_operand" "=f")
+	(plus:V2SF
+	  (mult:V2SF (match_operand:V2SF 1 "fr_register_operand" "f")
+		     (match_operand:V2SF 2 "fr_register_operand" "f"))
+	  (match_operand:V2SF 3 "fr_register_operand" "f")))
+    (use (match_operand:V2SF 4 "" "X"))]
+  ""
+  "#"
+  ""
+  [(set (match_dup 0)
+	(plus:V2SF
+	  (mult:V2SF (match_dup 1) (match_dup 2))
+	  (match_dup 3)))]
+  "")
+
+;; In order to convince combine to merge minus and mult to a useful fpms,
+;; we need a couple of extra patterns.
 (define_expand "subv2sf3"
-  [(set (match_operand:V2SF 0 "fr_register_operand" "")
-	(minus:V2SF
-	  (mult:V2SF (match_operand:V2SF 1 "fr_register_operand" "")
-		     (match_dup 3))
-	  (match_operand:V2SF 2 "fr_register_operand" "")))]
+  [(parallel
+    [(set (match_operand:V2SF 0 "fr_register_operand" "")
+	  (minus:V2SF (match_operand:V2SF 1 "fr_register_operand" "")
+		      (match_operand:V2SF 2 "fr_register_operand" "")))
+     (use (match_dup 3))])]
   ""
 {
   rtvec v = gen_rtvec (2, CONST1_RTX (SFmode), CONST1_RTX (SFmode));
   operands[3] = force_reg (V2SFmode, gen_rtx_CONST_VECTOR (V2SFmode, v));
 })
+
+;; The split condition here could be combine_completed, if we had such.
+(define_insn_and_split "*subv2sf3_1"
+  [(set (match_operand:V2SF 0 "fr_register_operand" "=f")
+	(minus:V2SF (match_operand:V2SF 1 "fr_register_operand" "f")
+		    (match_operand:V2SF 2 "fr_register_operand" "f")))
+   (use (match_operand:V2SF 3 "fr_register_operand" "f"))]
+  ""
+  "#"
+  "reload_completed"
+  [(set (match_dup 0)
+	(minus:V2SF
+	  (mult:V2SF (match_dup 1) (match_dup 3))
+	  (match_dup 2)))]
+  "")
+
+(define_insn_and_split "*subv2sf3_2"
+  [(set (match_operand:V2SF 0 "fr_register_operand" "=f")
+	(minus:V2SF
+	  (mult:V2SF (match_operand:V2SF 1 "fr_register_operand" "f")
+		     (match_operand:V2SF 2 "fr_register_operand" "f"))
+	  (match_operand:V2SF 3 "fr_register_operand" "f")))
+    (use (match_operand:V2SF 4 "" "X"))]
+  ""
+  "#"
+  ""
+  [(set (match_dup 0)
+	(minus:V2SF
+	  (mult:V2SF (match_dup 1) (match_dup 2))
+	  (match_dup 3)))]
+  "")
 
 (define_insn "mulv2sf3"
   [(set (match_operand:V2SF 0 "fr_register_operand" "=f")

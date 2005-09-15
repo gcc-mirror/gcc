@@ -1,3 +1,8 @@
+2005-09-14  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/vect.md (addv2sf3, subv2sf3): Rewrite as expand.
+	(addv2sf3_1, addv2sf3_2, subv2sf3_1, subv2sf3_2): New.
+
 2005-09-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/i386/i386.c (contains_128bit_aligned_vector_p): Add break
