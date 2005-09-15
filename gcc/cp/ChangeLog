@@ -1,3 +1,8 @@
+2005-09-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/23725
+	* error.c (dump_decl): <USING_DECL case> Use USING_DECL_SCOPE.
+
 2005-09-13  Bastian Blank <waldi@debian.org>
 
 	PR c++/16171

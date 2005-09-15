@@ -877,7 +877,7 @@ dump_decl (tree t, int flags)
 
     case USING_DECL:
       pp_cxx_identifier (cxx_pp, "using");
-      dump_type (DECL_INITIAL (t), flags);
+      dump_type (USING_DECL_SCOPE (t), flags);
       pp_cxx_colon_colon (cxx_pp);
       dump_decl (DECL_NAME (t), flags);
       break;
