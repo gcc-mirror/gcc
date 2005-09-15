@@ -1,3 +1,7 @@
+2005-09-15  Michael Matz  <matz@suse.de>
+
+	* tree-vrp.c (vrp_int_const_binop <MINUS_EXPR>): Handle 0 - -INF.
+
 2005-09-14  Daniel Berlin  <dberlin@dberlin.org>
 
 	PR tree-optimization/23835
