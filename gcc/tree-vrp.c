@@ -956,8 +956,10 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2)
 	  /* For subtraction, the operands must be of different
 	     signs to yield an overflow.  Its sign is therefore
 	     that of the first operand or the opposite of that
-	     of the second operand.  */
-	  || (code == MINUS_EXPR && sgn1 > 0)
+	     of the second operand.  A first operand of 0 counts
+	     as positive here, for the corner case 0 - (-INF),
+	     which overflows, but must yield +INF.  */
+	  || (code == MINUS_EXPR && sgn1 >= 0)
 	  /* For division, the only case is -INF / -1 = +INF.  */
 	  || code == TRUNC_DIV_EXPR
 	  || code == FLOOR_DIV_EXPR
