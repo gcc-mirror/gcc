@@ -1,3 +1,9 @@
+2005-09-15  Paolo Bonzini  <bonzini@gnu.org>
+
+	* optabs.c (expand_binop): Use swap_commutative_operands_with_target
+	to order operands.
+	(swap_commutative_operands_with_target): New.
+
 2005-09-15  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-data-ref.c (analyze_array_indexes): Add estimate_only
