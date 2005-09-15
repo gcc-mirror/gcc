@@ -1,3 +1,7 @@
+2005-09-15  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c-lib1.S (__m32c_eh_return): Fix typo.
+
 2005-09-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* optabs.c (expand_binop): Use swap_commutative_operands_with_target

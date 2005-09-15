@@ -112,7 +112,7 @@ __m32c_eh_return:
 
 	mov.w	a0,a1
 	exts.w	r0
-	sub.W	A(r0,r0r2),a1
+	sub.W	A(r0,r2r0),a1
 	sub.W	A(#3,#4),a1
 	/* a1 points to the new stack.  */
 
