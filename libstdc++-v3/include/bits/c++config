@@ -45,10 +45,8 @@ namespace __gnu_debug
 }
 
 #ifdef _GLIBCXX_DEBUG
-# if __GXX_WEAK__
-#  define _GLIBCXX_STD __gnu_norm
-#  define _GLIBCXX_EXTERN_TEMPLATE 0
-
+# define _GLIBCXX_STD __gnu_norm
+# define _GLIBCXX_EXTERN_TEMPLATE 0
 namespace __gnu_norm 
 { 
   using namespace std; 
@@ -57,8 +55,8 @@ namespace std
 {
   using namespace __gnu_debug_def __attribute__ ((strong));
 }
-# else
-#  warning debug mode disabled due to lack of weak symbol support
+# if __NO_INLINE__ && !__GXX_WEAK__
+#  warning debug mode without inlining may fail due to lack of weak symbols
 # endif
 #else
 # define _GLIBCXX_STD std

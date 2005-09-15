@@ -1,3 +1,17 @@
+2005-09-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/21674
+	PR libstdc++/22205
+	PR libstdc++/22222
+	* include/bits/c++config: Set _GLIBCXX_STD regardless of __GXX_WEAK__.
+	Add in check for __NO_INLINE__ for warning.
+	* testsuite/lib/dg-options.exp (dg-require-debug-mode): New.
+	* testsuite/lib/libstdc++.exp (check_v3_target_debug_mode): New.
+	* testsuite/21_strings/basic_string/element_access/char/21674.cc:
+	Use it.
+	* testsuite/21_strings/basic_string/element_access/wchar_t/21674.cc:
+	Use it.
+
 2005-09-15  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/23875

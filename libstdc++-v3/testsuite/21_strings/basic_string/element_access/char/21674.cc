@@ -1,3 +1,4 @@
+// { dg-require-debug-mode "" }
 // { dg-options "-O0 -D_GLIBCXX_DEBUG" }
 // { dg-do run { xfail *-*-* } }
 
