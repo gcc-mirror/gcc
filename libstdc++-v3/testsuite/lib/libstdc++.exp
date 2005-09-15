@@ -338,7 +338,7 @@ proc v3_target_compile { source dest type options } {
 # Build the support objects linked in with the libstdc++ tests.  In
 # addition, set v3-wchar_t, v3-threads, v3-test_objs, and v3-symver
 # appropriately.
-proc v3-build_support {} {
+proc v3-build_support { } {
     global srcdir
     global v3-wchar_t
     global v3-threads
@@ -579,4 +579,58 @@ proc check_v3_target_cxa_atexit { } {
 	}
     }
     return $et_cxa_atexit
+}
+
+proc check_v3_target_debug_mode { } {
+    global cxxflags
+    global et_debug_mode
+
+    global tool	
+
+    if { ![info exists et_debug_mode_target_name] } {
+	set et_debug_mode_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_debug_mode_target_name } {
+	verbose "check_v3_target_debug_mode: `$et_debug_mode_target_name'" 2
+	set et_debug_mode_target_name $current_target
+	if [info exists et_debug_mode] {
+	    verbose "check_v3_target_debug_mode: removing cached result" 2
+	    unset et_debug_mode
+	}
+    }
+
+    if [info exists et_debug_mode] {
+	verbose "check_v3_target_debug_mode: using cached result" 2
+    } else {
+	set et_debug_mode 0
+
+	# Set up, compile, and execute a C++ test program that depends
+	# on correct ordering of static object destructors. This is
+	# indicative of the presence and use of __cxa_atexit.
+	set src debug_mode[pid].cc
+	set exe debug_mode[pid].x
+
+	set f [open $src "w"]
+	puts $f "#include <string>"
+	puts $f "using namespace std;"	
+	puts $f "int main()"
+	puts $f "{ return 0; }"
+	close $f
+
+	set cxxflags_saved $cxxflags
+	set cxxflags "$cxxflags -Werror -O0 -D_GLIBCXX_DEBUG"
+	set lines [v3_target_compile $src $exe executable ""]
+	set cxxflags $cxxflags_saved
+	file delete $src
+
+	if [string match "" $lines] {
+	    # No error message, compilation succeeded.
+	    set et_debug_mode 1
+	}
+    }
+    verbose "check_v3_target_debug_mode: $et_debug_mode" 2
+    return $et_debug_mode
 }
