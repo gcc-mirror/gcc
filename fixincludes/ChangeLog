@@ -1,3 +1,11 @@
+2005-09-15  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c++/23139
+	* inclhack.def (huge_val_hex, huge_valf_hex, huge_vall_hex): New
+	fixes.
+	* fixincl.x: Regenerate.
+	* tests/base/bits/huge_val.h: New file.
+
 2005-08-18  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR libfortran/15266

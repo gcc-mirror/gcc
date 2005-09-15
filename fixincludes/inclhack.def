@@ -1574,6 +1574,54 @@ fix = {
 
 
 /*
+ *  Fix glibc definition of HUGE_VAL in terms of hex floating point constant
+ */
+fix = {
+    hackname  = huge_val_hex;
+    files     = bits/huge_val.h;
+    select    = "^#[ \t]*define[ \t]*HUGE_VAL[ \t].*0x1\\.0p.*";
+    bypass    = "__builtin_huge_val";
+
+    c_fix     = format;
+    c_fix_arg = "#define HUGE_VAL (__builtin_huge_val())\n";
+
+    test_text = "# define HUGE_VAL\t(__extension__ 0x1.0p2047)";
+};
+
+
+/*
+ *  Fix glibc definition of HUGE_VALF in terms of hex floating point constant
+ */
+fix = {
+    hackname  = huge_valf_hex;
+    files     = bits/huge_val.h;
+    select    = "^#[ \t]*define[ \t]*HUGE_VALF[ \t].*0x1\\.0p.*";
+    bypass    = "__builtin_huge_valf";
+
+    c_fix     = format;
+    c_fix_arg = "#define HUGE_VALF (__builtin_huge_valf())\n";
+
+    test_text = "#  define HUGE_VALF (__extension__ 0x1.0p255f)";
+};
+
+
+/*
+ *  Fix glibc definition of HUGE_VALL in terms of hex floating point constant
+ */
+fix = {
+    hackname  = huge_vall_hex;
+    files     = bits/huge_val.h;
+    select    = "^#[ \t]*define[ \t]*HUGE_VALL[ \t].*0x1\\.0p.*";
+    bypass    = "__builtin_huge_vall";
+
+    c_fix     = format;
+    c_fix_arg = "#define HUGE_VALL (__builtin_huge_vall())\n";
+
+    test_text = "#  define HUGE_VALL (__extension__ 0x1.0p32767L)";
+};
+
+
+/*
  *  Fix return type of abort and free
  */
 fix = {

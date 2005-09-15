@@ -1,3 +1,8 @@
+2005-09-15  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c++/23139
+	* g++.dg/warn/huge-val1.C: New test.
+
 2005-09-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/19358
