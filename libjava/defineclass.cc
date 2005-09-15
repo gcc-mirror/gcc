@@ -101,12 +101,16 @@ struct _Jv_ClassReader
 
   // the class to define (see java-interp.h)
   jclass	   def;
-  
+
   // the classes associated interpreter data.
   _Jv_InterpClass  *def_interp;
 
   // The name we found.
   _Jv_Utf8Const **found_name;
+
+  // True if this is a 1.5 class file.
+  bool             is_15;
+
 
   /* check that the given number of input bytes are available */
   inline void check (int num)
@@ -233,6 +237,8 @@ struct _Jv_ClassReader
     bytes  = (unsigned char*) (elements (data)+offset);
     len    = length;
     pos    = 0;
+    is_15  = false;
+
     def    = klass;
     found_name = name_result;
 
@@ -302,18 +308,31 @@ _Jv_DefineClass (jclass klass, jbyteArray data, jint offset, jint length,
 
 /** This section defines the parsing/scanning of the class data */
 
+// Major and minor version numbers for various releases.
+#define MAJOR_1_1 45
+#define MINOR_1_1  3
+#define MAJOR_1_2 46
+#define MINOR_1_2  0
+#define MAJOR_1_3 47
+#define MINOR_1_3  0
+#define MAJOR_1_4 48
+#define MINOR_1_4  0
+#define MAJOR_1_5 49
+#define MINOR_1_5  0
+
 void
 _Jv_ClassReader::parse ()
 {
   int magic = read4 ();
-
-  /* FIXME: Decide which range of version numbers to allow */
-
-  /* int minor_version = */ read2u ();
-  /* int major_verson  = */ read2u ();
-
   if (magic != (int) 0xCAFEBABE)
     throw_class_format_error ("bad magic number");
+
+  int minor_version = read2u ();
+  int major_version = read2u ();
+  if (major_version < MAJOR_1_1 || major_version > MAJOR_1_5
+      || (major_version == MAJOR_1_5 && minor_version > MINOR_1_5))
+    throw_class_format_error ("unrecognized class file version");
+  is_15 = (major_version == MAJOR_1_5);
 
   pool_count = read2u ();
 
@@ -1318,6 +1337,7 @@ void _Jv_ClassReader::handleCodeAttribute
   method->max_locals     = max_locals;
   method->code_length    = code_length;
   method->exc_count      = exc_table_length;
+  method->is_15          = is_15;
   method->defining_class = def;
   method->self           = &def->methods[method_index];
   method->prepared       = NULL;

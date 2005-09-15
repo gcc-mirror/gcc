@@ -1950,13 +1950,16 @@ private:
   {
     check_pool_index (index);
     _Jv_Constants *pool = &current_class->constants;
-    if (pool->tags[index] == JV_CONSTANT_ResolvedString
-	|| pool->tags[index] == JV_CONSTANT_String)
+    int tag = pool->tags[index];
+    if (tag == JV_CONSTANT_ResolvedString || tag == JV_CONSTANT_String)
       return type (&java::lang::String::class$, this);
-    else if (pool->tags[index] == JV_CONSTANT_Integer)
+    else if (tag == JV_CONSTANT_Integer)
       return type (int_type);
-    else if (pool->tags[index] == JV_CONSTANT_Float)
+    else if (tag == JV_CONSTANT_Float)
       return type (float_type);
+    else if (current_method->is_15
+	     && (tag == JV_CONSTANT_ResolvedClass || tag == JV_CONSTANT_Class))
+      return type (&java::lang::Class::class$, this);
     verify_fail ("String, int, or float constant expected", start_PC);
   }
 
