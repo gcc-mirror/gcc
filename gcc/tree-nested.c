@@ -220,6 +220,14 @@ get_frame_type (struct nesting_info *info)
 
       info->frame_type = type;
       info->frame_decl = create_tmp_var_for (info, type, "FRAME");
+
+      /* ??? Always make it addressable for now, since it is meant to
+	 be pointed to by the static chain pointer.  This pessimizes
+	 when it turns out that no static chains are needed because
+	 the nested functions referencing non-local variables are not
+	 reachable, but the true pessimization is to create the non-
+	 local frame structure in the first place.  */
+      TREE_ADDRESSABLE (info->frame_decl) = 1;
     }
   return type;
 }

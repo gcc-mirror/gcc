@@ -1,3 +1,8 @@
+2005-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-nested.c (get_frame_type): Mark the "non-local frame structure"
+	as addressable.
+
 2005-09-15  Michael Matz  <matz@suse.de>
 
 	* tree-vrp.c (vrp_int_const_binop <MINUS_EXPR>): Handle 0 - -INF.
