@@ -137,6 +137,7 @@ class _Jv_InterpMethod : public _Jv_MethodBase
   int              code_length;
 
   _Jv_ushort       exc_count;
+  bool             is_15;
 
   // Length of the line_table - when this is zero then line_table is NULL.
   int line_table_len;  
@@ -218,7 +219,8 @@ _Jv_GetFirstMethod (_Jv_InterpClass *klass)
   return klass->interpreted_methods;
 }
 
-struct _Jv_ResolvedMethod {
+struct _Jv_ResolvedMethod
+{
   jint            stack_item_count;	
   jint            vtable_index;	
   jclass          klass;

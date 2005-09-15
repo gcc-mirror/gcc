@@ -1,5 +1,22 @@
 2005-09-15  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/16032:
+	* interpret.cc (AVAL1U): Resolve pool entry when not direct
+	threaded.
+	(AVAL2U): Likewise.
+	(compile): Handle 'ldc class' specially.
+	(_Jv_InterpMethod::run): Added special 'ldc class' instruction.
+	* verify.cc (check_constant): Handle 'ldc class' for 1.5 classes.
+	* defineclass.cc (handleCodeAttribute): Set new field.
+	(MAJOR_1_1, MINOR_1_1, MAJOR_1_2, MINOR_1_2, MAJOR_1_3, MINOR_1_3,
+	MAJOR_1_4, MINOR_1_4, MAJOR_1_5, MINOR_1_5): New defines.
+	(parse): Check version numbers.
+	(_Jv_ClassReader::is_15): New field.
+	(_Jv_ClassReader): Initialize it.
+	* include/java-interp.h (_Jv_InterpMethod::is_15): New field.
+
+2005-09-15  Tom Tromey  <tromey@redhat.com>
+
 	For PR libgcj/23288:
 	* java/net/URLClassLoader.java (definePackage): Correctly order
 	arguments to definePackage.  Look up per-entry Attributes.

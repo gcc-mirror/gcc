@@ -507,7 +507,16 @@ _Jv_InterpMethod::compile (const void * const *insn_targets)
 	      {
 		int index = get1u (pc);
 		++pc;
-		SET_DATUM (pool_data[index].o);
+		// For an unresolved class we want to delay resolution
+		// until execution.
+		if (defining_class->constants.tags[index] == JV_CONSTANT_Class)
+		  {
+		    --next;
+		    SET_INSN (insn_targets[int (op_jsr_w) + 1]);
+		    SET_INT (index);
+		  }
+		else
+		  SET_DATUM (pool_data[index].o);
 	      }
 	      break;
 
@@ -537,7 +546,16 @@ _Jv_InterpMethod::compile (const void * const *insn_targets)
 	      {
 		int index = get2u (pc);
 		pc += 2;
-		SET_DATUM (pool_data[index].o);
+		// For an unresolved class we want to delay resolution
+		// until execution.
+		if (defining_class->constants.tags[index] == JV_CONSTANT_Class)
+		  {
+		    --next;
+		    SET_INSN (insn_targets[int (op_jsr_w) + 1]);
+		    SET_INT (index);
+		  }
+		else
+		  SET_DATUM (pool_data[index].o);
 	      }
 	      break;
 
@@ -1017,7 +1035,11 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
     INSN_LABEL(ifnonnull),
     INSN_LABEL(goto_w),
     INSN_LABEL(jsr_w),
+#ifdef DIRECT_THREADED
+    INSN_LABEL (ldc_class)
+#else
     0
+#endif
   };
 
   pc_t pc;
@@ -1058,8 +1080,16 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
 #define GET2S() (pc += 2, get2s (pc- 2))
 #define GET1U() get1u (pc++)
 #define GET2U() (pc += 2, get2u (pc - 2))
-#define AVAL1U() ({ int index = get1u (pc++); pool_data[index].o; })
-#define AVAL2U() ({ int index = get2u (pc); pc += 2; pool_data[index].o; })
+  // Note that these could be more efficient when not handling 'ldc
+  // class'.
+#define AVAL1U()						\
+  ({ int index = get1u (pc++);					\
+      resolve_pool_entry (meth->defining_class, index).o; })
+#define AVAL2U()						\
+  ({ int index = get2u (pc); pc += 2;				\
+      resolve_pool_entry (meth->defining_class, index).o; })
+  // Note that we don't need to resolve the pool entry here as class
+  // constants are never wide.
 #define AVAL2UP() ({ int index = get2u (pc); pc += 2; &pool_data[index]; })
 #define SKIP_GOTO pc += 2
 #define GOTO_VAL() pc - 1 + get2s (pc)
@@ -1319,6 +1349,19 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args, _Jv_InterpMethod *meth)
     insn_ldc_w:
       PUSHA ((jobject) AVAL2U ());
       NEXT_INSN;
+
+#ifdef DIRECT_THREADED
+      // For direct threaded we have a separate 'ldc class' operation.
+    insn_ldc_class:
+      {
+	// We could rewrite the instruction at this point.
+	int index = INTVAL ();
+	jobject k = (_Jv_Linker::resolve_pool_entry (meth->defining_class,
+						     index)).o;
+	PUSHA (k);
+      }
+      NEXT_INSN;
+#endif /* DIRECT_THREADED */
 
     insn_ldc2_w:
       {
