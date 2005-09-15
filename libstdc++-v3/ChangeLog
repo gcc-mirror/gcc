@@ -1,3 +1,15 @@
+2005-09-15  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/23875
+	* include/std/std_ostream.h (operator<<(short), operator<<(unsigned
+	short), operator<<(int), operator<<(unsigned int), operator<<(float)):
+	Don't call operator<<(long), operator<<(unsigned long), or
+	operator<<(double), do the work mandated by the resolution of DR117...
+	* include/bits/ostream.tcc (operator<<(short), operator<<(unsigned
+	short), operator<<(int), operator<<(unsigned int), operator<<(float)):
+	... here.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/pod/23875.cc: New.
+
 2005-09-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/testsuite_character.h: Specialize character<>
