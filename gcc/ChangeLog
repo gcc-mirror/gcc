@@ -1,3 +1,11 @@
+2005-09-16  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_overlap_p): Prototype added.
+	* config/s390/s390.c (s390_overlap_p): New function.
+	* config/s390/s390.md ("*mvc" peephole2, "*nc" peephole2, "*oc"
+	peephole2, "*xc" peephole2): Added overlap check to the peephole2
+	condition.
+
 2005-09-16  Richard Guenther  <rguenther@suse.de>
 
 	* ipa-pure-const.c (static_execute): Free auxiliar information.
