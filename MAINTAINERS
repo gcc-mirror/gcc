@@ -118,6 +118,7 @@ c++                     Mark Mitchell		mark@codesourcery.com
 c++			Nathan Sidwell		nathan@codesourcery.com
 java			Per Bothner		per@bothner.com
 java			Andrew Haley		aph@redhat.com
+java			Tom Tromey		tromey@redhat.com
 mercury			Fergus Henderson	fjh@cs.mu.oz.au
 objective-c		Stan Shebs		shebs@apple.com
 objective-c		Ovidiu Predescu		ovidiu@cup.hp.com
