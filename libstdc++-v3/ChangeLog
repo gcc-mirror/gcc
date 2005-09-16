@@ -1,3 +1,19 @@
+2005-09-16  Janis Johnson  <janis187@us.ibm.com>
+
+	PR libstdc++/23871
+
+	Backport:
+	2005-07-11  Paolo Carlini  <pcarlini@suse.de>
+	* include/std/std_ostream.h (operator<<(short), operator<<(int)):
+	Adjust logic, as per the letter of the resolution of DR117 [WP].
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/7.cc: New.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/7.cc: New.
+	
+	* include/bits/ostream.tcc (operator<<(long), operator<<(long long)):
+	Adjust logic.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/23871.cc:
+	New.
+
 2005-09-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/23417

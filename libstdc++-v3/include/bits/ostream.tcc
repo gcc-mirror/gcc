@@ -135,7 +135,7 @@ namespace std
 	      const ios_base::fmtflags __fmt = (this->flags()
 						& ios_base::basefield);
 	      const __num_put_type& __np = __check_facet(this->_M_num_put);
-	      if ((__fmt & ios_base::oct) || (__fmt & ios_base::hex))
+	      if ((__fmt == ios_base::oct) || (__fmt == ios_base::hex))
 		{
 		  const unsigned long __l = static_cast<unsigned long>(__n);
 		  __b = __np.put(*this, *this, __c, __l).failed();
@@ -193,7 +193,7 @@ namespace std
 	      const ios_base::fmtflags __fmt = (this->flags()
 						& ios_base::basefield);
 	      const __num_put_type& __np = __check_facet(this->_M_num_put);
-	      if ((__fmt & ios_base::oct) || (__fmt & ios_base::hex))
+	      if ((__fmt == ios_base::oct) || (__fmt == ios_base::hex))
 		{
 		  const unsigned long long __l = (static_cast<
 						  unsigned long long>(__n));
