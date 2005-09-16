@@ -610,9 +610,16 @@ public class URLClassLoader extends SecureClassLoader
     /** get resource with the name "name" in the file url */
     Resource getResource(String name)
     {
-      File file = new File(dir, name);
-      if (file.exists())
-        return new FileResource(this, name, file);
+      try 
+ 	{
+ 	  File file = new File(dir, name).getCanonicalFile();
+ 	  if (file.exists() && !file.isDirectory())
+ 	    return new FileResource(this, file.path(), file);
+ 	}
+      catch (IOException e)
+ 	{
+ 	  // Fall through...
+ 	}
       return null;
     }
   }
