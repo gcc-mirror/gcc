@@ -656,11 +656,9 @@ init_optimization_passes (void)
 #undef NEXT_PASS
 
   /* Register the passes with the tree dump code.  */
+  register_dump_files (all_ipa_passes, true, PROP_gimple_leh | PROP_cfg);
   register_dump_files (all_lowering_passes, false, PROP_gimple_any);
-  register_dump_files (all_passes, false, PROP_gimple_leh
-					  | PROP_cfg);
-  register_dump_files (all_ipa_passes, true, PROP_gimple_leh
-					     | PROP_cfg);
+  register_dump_files (all_passes, false, PROP_gimple_leh | PROP_cfg);
 }
 
 static unsigned int last_verified;

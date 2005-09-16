@@ -1,3 +1,10 @@
+2005-09-16  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR 23903
+
+	* passes.c (init_optimization_passes): Register dump files for
+	IPA passes first.
+
 2005-09-16  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_overlap_p): Prototype added.
