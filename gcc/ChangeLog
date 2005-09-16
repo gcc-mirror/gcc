@@ -1,3 +1,7 @@
+2005-09-16  Fariborz Jahanian <fjahanian@apple.com>
+
+	* config/darwin.c (indirect_data): Fix a typo.
+
 2005-09-14  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux64.h (DBX_OUTPUT_BRAC): Treat function name
