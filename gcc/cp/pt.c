@@ -5996,6 +5996,11 @@ tsubst_aggr_type (tree t,
 	  tree argvec;
 	  tree context;
 	  tree r;
+	  bool saved_skip_evaluation;
+
+	  /* In "sizeof(X<I>)" we need to evaluate "I".  */
+	  saved_skip_evaluation = skip_evaluation;
+	  skip_evaluation = false;
 
 	  /* First, determine the context for the type we are looking
 	     up.  */
@@ -6016,12 +6021,17 @@ tsubst_aggr_type (tree t,
 	  argvec = tsubst_template_args (TYPE_TI_ARGS (t), args,
 					 complain, in_decl);
 	  if (argvec == error_mark_node)
-	    return error_mark_node;
+	    r = error_mark_node;
+	  else
+	    {
+	      r = lookup_template_class (t, argvec, in_decl, context,
+					 entering_scope, complain);
+	      r = cp_build_qualified_type_real (r, TYPE_QUALS (t), complain);
+	    }
 
-  	  r = lookup_template_class (t, argvec, in_decl, context,
-				     entering_scope, complain);
+	  skip_evaluation = saved_skip_evaluation;
 
-	  return cp_build_qualified_type_real (r, TYPE_QUALS (t), complain);
+	  return r;
 	}
       else 
 	/* This is not a template type, so there's nothing to do.  */
