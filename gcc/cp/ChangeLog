@@ -1,5 +1,9 @@
 2005-09-16  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/23914
+	* parser.c (cp_parser_enclosed_template_argument_list): Make sure
+	skip_evaluation is false when processing template arguments.
+
 	PR c++/21514
 	* pt.c (check_instantiated_args): Treat uses of anonymous types as
 	causing type-deduction failure.
