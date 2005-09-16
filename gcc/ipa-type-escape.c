@@ -250,6 +250,7 @@ discover_unique_type (tree type)
       }
     i++;
   } 
+  free (brand);
 }
 
 /* Return true if TYPE is one of the type classes that we are willing

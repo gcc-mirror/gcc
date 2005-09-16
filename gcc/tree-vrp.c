@@ -2784,6 +2784,8 @@ remove_range_assertions (void)
 	else
 	  bsi_next (&si);
       }
+
+  sbitmap_free (blocks_visited);
 }
 
 
