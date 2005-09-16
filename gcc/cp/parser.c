@@ -15278,6 +15278,7 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
   tree saved_qualifying_scope;
   tree saved_object_scope;
   bool saved_greater_than_is_operator_p;
+  bool saved_skip_evaluation;
 
   /* [temp.names]
 
@@ -15292,6 +15293,10 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
   saved_scope = parser->scope;
   saved_qualifying_scope = parser->qualifying_scope;
   saved_object_scope = parser->object_scope;
+  /* We need to evaluate the template arguments, even though this
+     template-id may be nested within a "sizeof".  */
+  saved_skip_evaluation = skip_evaluation;
+  skip_evaluation = false;
   /* Parse the template-argument-list itself.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_GREATER))
     arguments = NULL_TREE;
@@ -15341,6 +15346,7 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
   parser->scope = saved_scope;
   parser->qualifying_scope = saved_qualifying_scope;
   parser->object_scope = saved_object_scope;
+  skip_evaluation = saved_skip_evaluation;
 
   return arguments;
 }
