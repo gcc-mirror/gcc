@@ -324,14 +324,14 @@ DEFTREECODE (TINST_LEVEL, "TINST_LEVEL", tcc_exceptional, 0)
 DEFTREECODE (OFFSETOF_EXPR, "offsetof_expr", tcc_expression, 1)
 
 /* Represents a 'sizeof' expression during template expansion.  */
-DEFTREECODE (SIZEOF_EXPR, "sizeof_expr", tcc_unary, 1)
+DEFTREECODE (SIZEOF_EXPR, "sizeof_expr", tcc_expression, 1)
 
 /* Represents the -> operator during template expansion.  */
 DEFTREECODE (ARROW_EXPR, "arrow_expr", tcc_expression, 1)
 
 /* Represents an '__alignof__' expression during template
    expansion.  */
-DEFTREECODE (ALIGNOF_EXPR, "alignof_expr", tcc_unary, 1)
+DEFTREECODE (ALIGNOF_EXPR, "alignof_expr", tcc_expression, 1)
 
 /* A STMT_EXPR represents a statement-expression during template
    expansion.  This is the GCC extension { ( ... ) }.  The
