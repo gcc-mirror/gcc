@@ -392,7 +392,7 @@ get_deps (mpz_t x1, mpz_t x2, mpz_t y)
 }
 
 
-/* Transforms a sections l and r such that 
+/* Perform the same linear transformation on sections l and r such that 
    (l_start:l_end:l_stride) -> (0:no_of_elements)
    (r_start:r_end:r_stride) -> (X1:X2)
    Where r_end is implicit as both sections must have the same number of
@@ -434,7 +434,7 @@ transform_sections (mpz_t X1, mpz_t X2, mpz_t no_of_elements,
     mpz_mul (X2, no_of_elements, r_stride->value.integer);
 
   if (l_stride != NULL)
-    mpz_cdiv_q (X2, X2, r_stride->value.integer);
+    mpz_cdiv_q (X2, X2, l_stride->value.integer);
   mpz_add (X2, X2, X1);
 
   return 0;

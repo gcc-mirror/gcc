@@ -1,3 +1,9 @@
+2005-09-16  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/23906
+	* dependency.c (transform_sections): Divide by correct value.
+	Elaborate comment.
+
 2005-09-14  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/21875 Internal Unit Array I/O, NIST

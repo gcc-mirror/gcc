@@ -1,3 +1,8 @@
+2005-09-16  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/23906
+	* gfortran.dg/dependency_1.f90: New test.
+
 2005-09-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23896
