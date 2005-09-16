@@ -1,3 +1,8 @@
+2005-09-16  Janis Johnson  <janis187@us.ibm.com>
+
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/23871.cc:
+	New.
+
 2005-09-15  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/21674
