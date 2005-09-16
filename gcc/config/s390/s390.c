@@ -1074,6 +1074,48 @@ s390_split_ok_p (rtx dst, rtx src, enum machine_mode mode, int first_subword)
   return true;
 }
 
+/* Return true if it can be proven that [MEM1, MEM1 + SIZE]
+   and [MEM2, MEM2 + SIZE] do overlap and false
+   otherwise.  */
+
+bool
+s390_overlap_p (rtx mem1, rtx mem2, HOST_WIDE_INT size)
+{
+  rtx addr1, addr2, addr_delta;
+  HOST_WIDE_INT delta;
+
+  if (GET_CODE (mem1) != MEM || GET_CODE (mem2) != MEM)
+    return true;
+
+  if (size == 0)
+    return false;
+
+  addr1 = XEXP (mem1, 0);
+  addr2 = XEXP (mem2, 0);
+
+  addr_delta = simplify_binary_operation (MINUS, Pmode, addr2, addr1);
+
+  /* This overlapping check is used by peepholes merging memory block operations.
+     Overlapping operations would otherwise be recognized by the S/390 hardware
+     and would fall back to a slower implementation. Allowing overlapping 
+     operations would lead to slow code but not to wrong code. Therefore we are
+     somewhat optimistict if we cannot prove that the memory blocks are 
+     overlapping.
+     That's why we return false here although this may accept operations on
+     overlapping memory areas.  */
+  if (!addr_delta || GET_CODE (addr_delta) != CONST_INT)
+    return false;
+
+  delta = INTVAL (addr_delta);
+
+  if (delta == 0
+      || (delta > 0 && delta < size)
+      || (delta < 0 && -delta < size))
+    return true;
+
+  return false;
+}
+
 /* Check whether the address of memory reference MEM2 equals exactly
    the address of memory reference MEM1 plus DELTA.  Return true if
    we can prove this to be the case, false otherwise.  */

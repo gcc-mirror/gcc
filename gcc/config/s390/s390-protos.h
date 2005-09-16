@@ -38,6 +38,7 @@ extern int s390_const_double_ok_for_constraint_p (rtx, int, const char *);
 extern int s390_single_part (rtx, enum machine_mode, enum machine_mode, int);
 extern unsigned HOST_WIDE_INT s390_extract_part (rtx, enum machine_mode, int);
 extern bool s390_split_ok_p (rtx, rtx, enum machine_mode, int);
+extern bool s390_overlap_p (rtx, rtx, HOST_WIDE_INT);
 extern bool s390_offset_p (rtx, rtx, rtx);
 extern int tls_symbolic_operand (rtx);
 
