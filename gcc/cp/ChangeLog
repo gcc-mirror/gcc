@@ -1,5 +1,9 @@
 2005-09-15  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/23896
+	* pt.c (tsubst_aggr_type): Make sure skip_evaluation is false when
+	processing template arguments.
+
 	* pt.c (check_explicit_instantiation_namespace): Fix typo.
 
 	PR c++/13140
