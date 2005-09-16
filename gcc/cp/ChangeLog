@@ -1,3 +1,9 @@
+2005-09-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/23357
+	* cp-tree.def (SIZEOF_EXPR, ALIGNOF_EXPR): Change code class to
+	tcc_expression.
+
 2005-09-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23896
