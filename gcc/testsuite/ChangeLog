@@ -1,3 +1,9 @@
+2005-09-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21514
+	* g++.dg/template/crash19.C: Remove dg-error marker.
+	* g++.dg/template/local4.C: New test.
+
 2005-09-16  Paul Brook  <paul@codesourcery.com>
 
 	PR fortran/23906
