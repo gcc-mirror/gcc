@@ -695,6 +695,9 @@ static_execute (void)
     /* Get rid of the aux information.  */
     if (node->aux)
       {
+	w_info = node->aux;
+	if (w_info->aux)
+	  free (w_info->aux);
 	free (node->aux);
 	node->aux = NULL;
       }

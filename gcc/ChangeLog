@@ -1,3 +1,9 @@
+2005-09-16  Richard Guenther  <rguenther@suse.de>
+
+	* ipa-pure-const.c (static_execute): Free auxiliar information.
+	* ipa-type-escape.c (discover_unique_type): Free temporary key.
+	* tree-vrp.c (remove_range_assertions): Free blocks_visited sbitmap.
+
 2005-09-15  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c-lib1.S (__m32c_eh_return): Fix typo.
