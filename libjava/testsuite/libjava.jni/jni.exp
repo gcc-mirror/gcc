@@ -248,7 +248,13 @@ proc gcj_jni_invocation_test_one {file} {
   if { [istarget "*-*-darwin*"] } {
       set cxxflags "-L../.libs -lgcc_s -lgcj -liconv"
   } else {
-      set cxxflags "-L../.libs -lgcj"
+      global LIBJAVA
+      if [info exists LIBJAVA] {
+	  set libjava $LIBJAVA;
+      } else {
+	  set libjava [libjava_find_lib libjava gcj]
+      }
+      set cxxflags "$libjava -lgcj"
   }
 
   if { [istarget "*-*-solaris*"] } {

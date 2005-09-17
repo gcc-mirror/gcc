@@ -1,3 +1,8 @@
+2005-09-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* testsuite/libjava.jni/jni.exp (gcj_jni_invocation_test_one):
+	Use libjava_find_lib to find the proper libgcj.
+
 2005-09-16  Anthony Green  <green@redhat.com>
 
 	PR libgcj/20198
