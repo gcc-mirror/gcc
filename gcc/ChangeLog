@@ -1,3 +1,12 @@
+2005-09-17  Richard Henderson  <rth@redhat.com>
+
+	* expr.c (emit_move_via_integer): Add force argument, pass it on
+	to emit_move_change_mode.  Update callers.
+	(emit_move_complex): Pass true to new force argument.
+	* function.c (expand_function_end): Move expand_eh_return call
+	earlier.  Merge sub-word complex values into a pseudo before
+	copying to the return hard register.
+
 2005-09-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* varasm.c (output_constant): Do not abort on VIEW_CONVERT_EXPRs
