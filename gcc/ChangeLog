@@ -1,3 +1,18 @@
+2005-09-17  Jan Hubicka  <jh@suse.cz>
+
+	* except.c (struct eh_status): Turn region_array into vec.
+	(expand_resx_expr, collect_eh_region_array, remove_unreachable_regions,
+	convert_from_eh_region_ranges, find_exception_handler_labels, 
+	current_function_has_exception_handlers, assign_filter_values, 
+	build_post_landing_pads, dw2_build_landing_pads,
+	sjlj_find_directly_reachable_regions, sjlj_mark_call_sites,
+	sjlj_emit_dispatch_table, remove_eh_handler, for_each_eh_region,
+	foreach_reachable_handler, can_throw_internal_1,
+	convert_to_eh_region_ranges, verify_eh_tree): Update uses of
+	region_array.
+	(duplicate_eh_region_1): Update region_array.
+	(duplicate_eh_regions): Resize region_array and avoid recomputing.
+
 2005-09-17  David Edelsohn  <edelsohn@gnu.org>
 
 	PR middle-end/22067
