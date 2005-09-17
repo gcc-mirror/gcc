@@ -707,6 +707,9 @@ struct tree_niter_desc
 			   the loop), then the information would be lost.  */
 };
 
+/* In tree-ssa-dce.c */
+void tree_ssa_dce (void);
+
 /* In tree-vectorizer.c */
 void vectorize_loops (struct loops *);
 

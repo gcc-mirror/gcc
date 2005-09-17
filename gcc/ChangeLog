@@ -1,3 +1,13 @@
+2005-09-17  Richard Henderson  <rth@redhat.com>
+
+	* tree-pass.h (pass_vect_dce): Declare.
+	* passes.c (init_optimization_passes): Add it.
+	* tree-flow.h (tree_ssa_dce): Declare.
+	* tree-ssa-dce.c (tree_ssa_dce): Export.
+	* tree-ssa-loop.c (tree_vectorize): Move current_loops check ...
+	(gate_tree_vectorize): ... here.
+	(pass_vect_dce): New.
+
 2005-09-17  Jan Hubicka  <jh@suse.cz>
 
 	* except.c (struct eh_status): Turn region_array into vec.
@@ -400,43 +410,43 @@
 
 2005-09-07  Richard Henderson  <rth@redhat.com>
 
-        * function.c (ARG_POINTER_CFA_OFFSET): Move ...
-        * defaults.h (ARG_POINTER_CFA_OFFSET): ... here.
+	* function.c (ARG_POINTER_CFA_OFFSET): Move ...
+	* defaults.h (ARG_POINTER_CFA_OFFSET): ... here.
 	(INCOMING_FRAME_SP_OFFSET): Move from dwarf2out.c.
-        * dwarf2out.c (struct cfa_loc): Change reg to unsigned int,
-        rearrange for better packing.
+	* dwarf2out.c (struct cfa_loc): Change reg to unsigned int,
+	rearrange for better packing.
 	(INCOMING_FRAME_SP_OFFSET): Move to defaults.h.
-        (lookup_cfa_1): Remove inline marker.
-        (cfa_equal_p): Split out of ...
-        (def_cfa_1): ... here.  Use INVALID_REGNUM.
-        (build_cfa_loc): Handle !cfa->indirect.
-        (frame_pointer_cfa_offset): New.
-        (dbx_reg_number): Assert register elimination performed; do
-        leaf register remapping.
-        (reg_loc_descriptor): Avoid calling dbx_reg_number when unused.
-        (eliminate_reg_to_offset): New.
-        (based_loc_descr): Remove can_use_fbreg argument.  Use fbreg only
-        for verifiably local stack frame addresses; re-base to CFA.
-        (mem_loc_descriptor): Remove can_use_fbreg argument.
-        (concat_loc_descriptor, loc_descriptor): Likewise.
-        (containing_function_has_frame_base): Remove.
-        (rtl_for_decl_location): Don't do register elimination or
-        leaf register remapping here.
-        (secname_for_decl): Split out from ..
-        (add_location_or_const_value_attribute): ... here.
-        (convert_cfa_to_loc_list): New.
-        (compute_frame_pointer_to_cfa_displacement): New.
-        (gen_subprogram_die): Use them.
-        * tree.h (frame_base_decl): Remove.
-        * var-tracking.c (frame_base_decl, frame_stack_adjust): Remove.
-        (prologue_stack_adjust): Remove.
-        (vt_stack_adjustments): Use INCOMING_FRAME_SP_OFFSET.
-        (adjust_stack_reference): Re-base memories to arg_pointer_rtx.
-        (set_frame_base_location): Remove.
-        (compute_bb_dataflow, emit_notes_in_bb): Don't call it.
-        (dump_attrs_list, dump_dataflow_set): Use string concatenation.
-        (vt_add_function_parameters): Don't eliminate_regs.
-        (vt_initialize): Don't create frame_base_decl.
+	(lookup_cfa_1): Remove inline marker.
+	(cfa_equal_p): Split out of ...
+	(def_cfa_1): ... here.  Use INVALID_REGNUM.
+	(build_cfa_loc): Handle !cfa->indirect.
+	(frame_pointer_cfa_offset): New.
+	(dbx_reg_number): Assert register elimination performed; do
+	leaf register remapping.
+	(reg_loc_descriptor): Avoid calling dbx_reg_number when unused.
+	(eliminate_reg_to_offset): New.
+	(based_loc_descr): Remove can_use_fbreg argument.  Use fbreg only
+	for verifiably local stack frame addresses; re-base to CFA.
+	(mem_loc_descriptor): Remove can_use_fbreg argument.
+	(concat_loc_descriptor, loc_descriptor): Likewise.
+	(containing_function_has_frame_base): Remove.
+	(rtl_for_decl_location): Don't do register elimination or
+	leaf register remapping here.
+	(secname_for_decl): Split out from ..
+	(add_location_or_const_value_attribute): ... here.
+	(convert_cfa_to_loc_list): New.
+	(compute_frame_pointer_to_cfa_displacement): New.
+	(gen_subprogram_die): Use them.
+	* tree.h (frame_base_decl): Remove.
+	* var-tracking.c (frame_base_decl, frame_stack_adjust): Remove.
+	(prologue_stack_adjust): Remove.
+	(vt_stack_adjustments): Use INCOMING_FRAME_SP_OFFSET.
+	(adjust_stack_reference): Re-base memories to arg_pointer_rtx.
+	(set_frame_base_location): Remove.
+	(compute_bb_dataflow, emit_notes_in_bb): Don't call it.
+	(dump_attrs_list, dump_dataflow_set): Use string concatenation.
+	(vt_add_function_parameters): Don't eliminate_regs.
+	(vt_initialize): Don't create frame_base_decl.
 
 2005-09-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
 

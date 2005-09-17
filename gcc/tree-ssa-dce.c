@@ -935,7 +935,7 @@ perform_tree_ssa_dce (bool aggressive)
 }
 
 /* Pass entry points.  */
-static void
+void
 tree_ssa_dce (void)
 {
   perform_tree_ssa_dce (/*aggressive=*/false);
