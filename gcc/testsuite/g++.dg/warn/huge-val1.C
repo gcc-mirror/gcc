@@ -18,6 +18,7 @@ extern void link_failure ();
 int
 main ()
 {
+#ifdef __GLIBC__
   if (HUGE_VAL != __builtin_huge_val ())
     link_failure ();
 #ifdef HUGE_VALF
@@ -27,5 +28,6 @@ main ()
 #ifdef HUGE_VALL
   if (HUGE_VALL != __builtin_huge_vall ())
     link_failure ();
+#endif
 #endif
 }
