@@ -255,15 +255,15 @@ gfc_extract_int (gfc_expr * expr, int *result)
 {
 
   if (expr->expr_type != EXPR_CONSTANT)
-    return "Constant expression required at %C";
+    return _("Constant expression required at %C");
 
   if (expr->ts.type != BT_INTEGER)
-    return "Integer expression required at %C";
+    return _("Integer expression required at %C");
 
   if ((mpz_cmp_si (expr->value.integer, INT_MAX) > 0)
       || (mpz_cmp_si (expr->value.integer, INT_MIN) < 0))
     {
-      return "Integer value too large in expression at %C";
+      return _("Integer value too large in expression at %C");
     }
 
   *result = (int) mpz_get_si (expr->value.integer);
@@ -1753,7 +1753,8 @@ gfc_specification_expr (gfc_expr * e)
 /* Given two expressions, make sure that the arrays are conformable.  */
 
 try
-gfc_check_conformance (const char *optype, gfc_expr * op1, gfc_expr * op2)
+gfc_check_conformance (const char *optype_msgid,
+		       gfc_expr * op1, gfc_expr * op2)
 {
   int op1_flag, op2_flag, d;
   mpz_t op1_size, op2_size;
@@ -1764,7 +1765,8 @@ gfc_check_conformance (const char *optype, gfc_expr * op1, gfc_expr * op2)
 
   if (op1->rank != op2->rank)
     {
-      gfc_error ("Incompatible ranks in %s at %L", optype, &op1->where);
+      gfc_error ("Incompatible ranks in %s at %L", _(optype_msgid),
+		 &op1->where);
       return FAILURE;
     }
 
@@ -1778,7 +1780,8 @@ gfc_check_conformance (const char *optype, gfc_expr * op1, gfc_expr * op2)
       if (op1_flag && op2_flag && mpz_cmp (op1_size, op2_size) != 0)
 	{
 	  gfc_error ("%s at %L has different shape on dimension %d (%d/%d)",
-		     optype, &op1->where, d + 1, (int) mpz_get_si (op1_size),
+		     _(optype_msgid), &op1->where, d + 1,
+		     (int) mpz_get_si (op1_size),
 		     (int) mpz_get_si (op2_size));
 
 	  t = FAILURE;
@@ -1920,7 +1923,7 @@ gfc_check_pointer_assign (gfc_expr * lvalue, gfc_expr * rvalue)
 
   if (lvalue->ts.kind != rvalue->ts.kind)
     {
-      gfc_error	("Different kind type parameters in pointer "
+      gfc_error ("Different kind type parameters in pointer "
 		 "assignment at %L", &lvalue->where);
       return FAILURE;
     }
@@ -1928,14 +1931,14 @@ gfc_check_pointer_assign (gfc_expr * lvalue, gfc_expr * rvalue)
   attr = gfc_expr_attr (rvalue);
   if (!attr.target && !attr.pointer)
     {
-      gfc_error	("Pointer assignment target is neither TARGET "
+      gfc_error ("Pointer assignment target is neither TARGET "
 		 "nor POINTER at %L", &rvalue->where);
       return FAILURE;
     }
 
   if (is_pure && gfc_impure_variable (rvalue->symtree->n.sym))
     {
-      gfc_error	("Bad target in pointer assignment in PURE "
+      gfc_error ("Bad target in pointer assignment in PURE "
 		 "procedure at %L", &rvalue->where);
     }
 

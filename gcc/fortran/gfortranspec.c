@@ -51,6 +51,7 @@ Boston, MA 02110-1301, USA.  */
 
 #include "coretypes.h"
 #include "tm.h"
+#include "intl.h"
 
 #ifndef MATH_LIBRARY
 #define MATH_LIBRARY "-lm"
@@ -345,15 +346,13 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 	  break;
 
 	case OPTION_version:
-	  printf ("\
-GNU Fortran 95 (GCC %s)\n\
-Copyright (C) 2005 Free Software Foundation, Inc.\n\
-\n\
-GNU Fortran comes with NO WARRANTY, to the extent permitted by law.\n\
+	  printf ("GNU Fortran 95 (GCC) %s\n", version_string);
+	  printf ("Copyright %s 2005 Free Software Foundation, Inc.\n\n",
+	          _("(C)"));
+	  printf (_("GNU Fortran comes with NO WARRANTY, to the extent permitted by law.\n\
 You may redistribute copies of GNU Fortran\n\
 under the terms of the GNU General Public License.\n\
-For more information about these matters, see the file named COPYING\n\
-", version_string);
+For more information about these matters, see the file named COPYING\n\n"));
 	  exit (0);
 	  break;
 
@@ -528,7 +527,7 @@ For more information about these matters, see the file named COPYING\n\
 
   if (verbose && g77_newargv != g77_xargv)
     {
-      fprintf (stderr, "Driving:");
+      fprintf (stderr, _("Driving:"));
       for (i = 0; i < g77_newargc; i++)
 	fprintf (stderr, " %s", g77_newargv[i]);
       fprintf (stderr, "\n");

@@ -37,11 +37,11 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    function can be called in all kinds of ways.  */
 
 static void
-must_be (gfc_expr * e, int n, const char *thing)
+must_be (gfc_expr * e, int n, const char *thing_msgid)
 {
   gfc_error ("'%s' argument of '%s' intrinsic at %L must be %s",
 	     gfc_current_intrinsic_arg[n], gfc_current_intrinsic, &e->where,
-	     thing);
+	     thing_msgid);
 }
 
 
@@ -206,7 +206,7 @@ same_type_check (gfc_expr * e, int n, gfc_expr * f, int m)
   if (gfc_compare_types (&e->ts, &f->ts))
     return SUCCESS;
 
-  sprintf (message, "the same type and kind as '%s'",
+  sprintf (message, _("the same type and kind as '%s'"),
 	   gfc_current_intrinsic_arg[n]);
 
   must_be (f, m, message);
@@ -225,7 +225,7 @@ rank_check (gfc_expr * e, int n, int rank)
   if (e->rank == rank)
     return SUCCESS;
 
-  sprintf (message, "of rank %d", rank);
+  sprintf (message, _("of rank %d"), rank);
 
   must_be (e, n, message);
 
@@ -262,7 +262,7 @@ kind_value_check (gfc_expr * e, int n, int k)
   if (e->ts.kind == k)
     return SUCCESS;
 
-  sprintf (message, "of kind %d", k);
+  sprintf (message, _("of kind %d"), k);
 
   must_be (e, n, message);
   return FAILURE;
@@ -507,7 +507,7 @@ gfc_check_associated (gfc_expr * pointer, gfc_expr * target)
         if (target->ref->u.ar.dimen_type[i] == DIMEN_VECTOR)
           {
             gfc_error ("Array section with a vector subscript at %L shall not "
-		       "be the target of an pointer",
+		       "be the target of a pointer",
                        &target->where);
             t = FAILURE;
             break;
@@ -1727,9 +1727,8 @@ gfc_check_reshape (gfc_expr * source, gfc_expr * shape,
 
   if (m > 0)
     {
-      gfc_error
-	("'shape' argument of 'reshape' intrinsic at %L has more than "
-	 stringize (GFC_MAX_DIMENSIONS) " elements", &shape->where);
+      gfc_error ("'shape' argument of 'reshape' intrinsic at %L has more "
+		 "than %d elements", &shape->where, GFC_MAX_DIMENSIONS);
       return FAILURE;
     }
 
@@ -1902,7 +1901,11 @@ gfc_check_spread (gfc_expr * source, gfc_expr * dim, gfc_expr * ncopies)
 {
   if (source->rank >= GFC_MAX_DIMENSIONS)
     {
-      must_be (source, 0, "less than rank " stringize (GFC_MAX_DIMENSIONS));
+      char message[100];
+
+      sprintf (message, _("less than rank %d"), GFC_MAX_DIMENSIONS);
+      must_be (source, 0, message);
+
       return FAILURE;
     }
 

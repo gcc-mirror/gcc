@@ -30,6 +30,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    time I looked, so by comparison this is perfectly reasonable.  */
 
 #include "system.h"
+#include "intl.h"
 #include "coretypes.h"
 #include "input.h"
 
@@ -1532,7 +1533,6 @@ void gfc_free (void *);
 int gfc_terminal_width(void);
 void gfc_clear_ts (gfc_typespec *);
 FILE *gfc_open_file (const char *);
-const char *gfc_article (const char *);
 const char *gfc_basic_typename (bt);
 const char *gfc_typename (gfc_typespec *);
 

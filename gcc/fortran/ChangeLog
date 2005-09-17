@@ -1,3 +1,48 @@
+2005-09-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/15586
+	* arith.c (gfc_arith_error): Add translation support for error
+	messages.
+	* array.c (gfc_match_array_ref): Likewise.
+	(gfc_match_array_spec): Likewise.
+	* check.c (must_be): Add msgid convention to third argument.
+	(same_type_check): Add translation support for error message.
+	(rank_check): Likewise.
+	(kind_value_check): Likewise.
+	(gfc_check_associated): Correct typo.
+	(gfc_check_reshape): Add translation support for error message.
+	(gfc_check_spread): Likewise.
+	* error.c (error_printf): Add nocmsgid convention to argument.
+	(gfc_warning, gfc_notify_std, gfc_warning_now, gfc_warning_check)
+	(gfc_error, gfc_error_now): Likewise.
+	(gfc_status): Add cmsgid convention to argument.
+	* expr.c (gfc_extract_int): Add translation support for error
+	messages.
+	(gfc_check_conformance): Add msgid convention to argument.
+	(gfc_check_pointer_assign): Correct tabbing.
+	* gfortran.h: Include intl.h header. Remove prototype for gfc_article.
+	* gfortranspec.c: Include intl.h header.
+	(lang_specific_driver): Add translation support for --version.
+	* io.c (check_format): Add translation support for error message.
+	(format_item_1): Likewise.
+	(data_desc): Likewise.
+	* matchexp.c: Likewise.
+	* misc.c (gfc_article): Remove function.
+	* module.c (bad_module): Use msgid convention. Add translation support
+	for error messages.
+	(require_atom): Add translation support for error messages.
+	* parse.c (gfc_ascii_statement): Likewise.
+	(gfc_state_name): Likewise.
+	* primary.c (match_boz_constant): Reorganise error messages for
+	translations.
+	* resolve.c (resolve_entries): Likewise.
+	(resolve_operator): Add translation support for error messages.
+	(gfc_resolve_expr): Use msgid convention. Reorganise error messages
+	for translations.
+	(resolve_symbol): Add translation support for error messages.
+	* symbol.c (gfc_add_procedure): Remove use of gfc_article function.
+	* trans-const.c (gfc_build_string_const): Use msgid convention.
+
 2005-09-16  Paul Brook  <paul@codesourcery.com>
 
 	PR fortran/23906

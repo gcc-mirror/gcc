@@ -105,36 +105,6 @@ gfc_open_file (const char *name)
 }
 
 
-/* Given a word, return the correct article.  */
-
-const char *
-gfc_article (const char *word)
-{
-  const char *p;
-
-  switch (*word)
-    {
-    case 'a':
-    case 'A':
-    case 'e':
-    case 'E':
-    case 'i':
-    case 'I':
-    case 'o':
-    case 'O':
-    case 'u':
-    case 'U':
-      p = "an";
-      break;
-
-    default:
-      p = "a";
-    }
-
-  return p;
-}
-
-
 /* Return a string for each type.  */
 
 const char *

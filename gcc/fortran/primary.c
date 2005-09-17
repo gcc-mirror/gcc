@@ -307,7 +307,6 @@ match_boz_constant (gfc_expr ** result)
   locus old_loc;
   char *buffer;
   gfc_expr *e;
-  const char *rname;
 
   old_loc = gfc_current_locus;
   gfc_gobble_whitespace ();
@@ -317,18 +316,15 @@ match_boz_constant (gfc_expr ** result)
     {
     case 'b':
       radix = 2;
-      rname = "binary";
       break;
     case 'o':
       radix = 8;
-      rname = "octal";
       break;
     case 'x':
       x_hex = 1;
       /* Fall through.  */
     case 'z':
       radix = 16;
-      rname = "hexadecimal";
       break;
     default:
       goto backup;
@@ -351,13 +347,33 @@ match_boz_constant (gfc_expr ** result)
   length = match_digits (0, radix, NULL);
   if (length == -1)
     {
-      gfc_error ("Empty set of digits in %s constants at %C", rname);
+      switch (radix)
+        {
+	case 2:
+          gfc_error ("Empty set of digits in binary constant at %C");
+	case 8:
+          gfc_error ("Empty set of digits in octal constant at %C");
+	case 16:
+          gfc_error ("Empty set of digits in hexadecimal constant at %C");
+        default:
+	  gcc_unreachable ();
+        }
       return MATCH_ERROR;
     }
 
   if (gfc_next_char () != delim)
     {
-      gfc_error ("Illegal character in %s constant at %C.", rname);
+      switch (radix)
+        {
+	case 2:
+	  gfc_error ("Illegal character in binary constant at %C");
+	case 8:
+	  gfc_error ("Illegal character in octal constant at %C");
+	case 16:
+	  gfc_error ("Illegal character in hexadecimal constant at %C");
+	default:
+	  gcc_unreachable ();
+	}
       return MATCH_ERROR;
     }
 

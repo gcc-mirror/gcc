@@ -827,27 +827,25 @@ static char *atom_string, atom_name[MAX_ATOM_SIZE];
 static void bad_module (const char *) ATTRIBUTE_NORETURN;
 
 static void
-bad_module (const char *message)
+bad_module (const char *msgid)
 {
-  const char *p;
+  fclose (module_fp);
 
   switch (iomode)
     {
     case IO_INPUT:
-      p = "Reading";
+      gfc_fatal_error ("Reading module %s at line %d column %d: %s",
+	  	       module_name, module_line, module_column, msgid);
       break;
     case IO_OUTPUT:
-      p = "Writing";
+      gfc_fatal_error ("Writing module %s at line %d column %d: %s",
+	  	       module_name, module_line, module_column, msgid);
       break;
     default:
-      p = "???";
+      gfc_fatal_error ("Module %s at line %d column %d: %s",
+	  	       module_name, module_line, module_column, msgid);
       break;
     }
-
-  fclose (module_fp);
-
-  gfc_fatal_error ("%s module %s at line %d column %d: %s", p,
-		   module_name, module_line, module_column, message);
 }
 
 
@@ -1154,19 +1152,19 @@ require_atom (atom_type type)
       switch (type)
 	{
 	case ATOM_NAME:
-	  p = "Expected name";
+	  p = _("Expected name");
 	  break;
 	case ATOM_LPAREN:
-	  p = "Expected left parenthesis";
+	  p = _("Expected left parenthesis");
 	  break;
 	case ATOM_RPAREN:
-	  p = "Expected right parenthesis";
+	  p = _("Expected right parenthesis");
 	  break;
 	case ATOM_INTEGER:
-	  p = "Expected integer";
+	  p = _("Expected integer");
 	  break;
 	case ATOM_STRING:
-	  p = "Expected string";
+	  p = _("Expected string");
 	  break;
 	default:
 	  gfc_internal_error ("require_atom(): bad atom type required");
