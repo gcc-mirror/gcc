@@ -1,3 +1,8 @@
+2005-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* varasm.c (output_constant): Do not abort on VIEW_CONVERT_EXPRs
+	between different sizes.
+
 2005-09-16  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR 23903
