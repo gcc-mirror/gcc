@@ -1,5 +1,19 @@
 2005-09-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	Backport:
+
+	2004-11-27  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/18368
+	* parser.c (cp_parser_check_for_definition_in_return_type): Take
+	the defined type as a parameter, and inform the user about the
+	possibility of a missing semicolon.
+	(cp_parser_explicit_instantiation): Adjust call to
+	cp_parser_check_for_definition_in_return_type.
+	(cp_parser_init_declarator): Likewise.
+	(cp_parser_member_declaration): Likewise.
+
+2005-09-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	PR c++/18803
 	Revert:
 

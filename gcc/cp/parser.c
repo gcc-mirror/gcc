@@ -1719,7 +1719,7 @@ static bool cp_parser_simulate_error
 static void cp_parser_check_type_definition
   (cp_parser *);
 static void cp_parser_check_for_definition_in_return_type
-  (tree, int);
+  (tree, tree);
 static void cp_parser_check_for_invalid_template_id
   (cp_parser *, tree);
 static bool cp_parser_non_integral_constant_expression
@@ -1851,14 +1851,13 @@ cp_parser_check_type_definition (cp_parser* parser)
     error ("%s", parser->type_definition_forbidden_message);
 }
 
-/* This function is called when a declaration is parsed.  If
-   DECLARATOR is a function declarator and DECLARES_CLASS_OR_ENUM
-   indicates that a type was defined in the decl-specifiers for DECL,
-   then an error is issued.  */
+/* This function is called when the DECLARATOR is processed.  The TYPE
+   was a type defined in the decl-specifiers.  If it is invalid to
+   define a type in the decl-specifiers for DECLARATOR, an error is
+   issued.  */
 
 static void
-cp_parser_check_for_definition_in_return_type (tree declarator, 
-					       int declares_class_or_enum)
+cp_parser_check_for_definition_in_return_type (tree declarator, tree type)
 {
   /* [dcl.fct] forbids type definitions in return types.
      Unfortunately, it's not easy to know whether or not we are
@@ -1868,9 +1867,12 @@ cp_parser_check_for_definition_in_return_type (tree declarator,
 	     || TREE_CODE (declarator) == ADDR_EXPR))
     declarator = TREE_OPERAND (declarator, 0);
   if (declarator
-      && TREE_CODE (declarator) == CALL_EXPR 
-      && declares_class_or_enum & 2)
-    error ("new types may not be defined in a return type");
+      && TREE_CODE (declarator) == CALL_EXPR)
+    {
+      error ("new types may not be defined in a return type");
+      inform ("(perhaps a semicolon is missing after the definition of `%T')",
+	      type);
+    }
 }
 
 /* A type-specifier (TYPE) has been parsed which cannot be followed by
@@ -8637,8 +8639,9 @@ cp_parser_explicit_instantiation (cp_parser* parser)
 				/*ctor_dtor_or_conv_p=*/NULL,
 				/*parenthesized_p=*/NULL,
 				/*member_p=*/false);
-      cp_parser_check_for_definition_in_return_type (declarator, 
-						     declares_class_or_enum);
+      if (declares_class_or_enum & 2)
+	cp_parser_check_for_definition_in_return_type
+	  (declarator, TREE_VALUE (decl_specifiers));
       if (declarator != error_mark_node)
 	{
 	  decl = grokdeclarator (declarator, decl_specifiers, 
@@ -10013,8 +10016,9 @@ cp_parser_init_declarator (cp_parser* parser,
   if (declarator == error_mark_node)
     return error_mark_node;
 
-  cp_parser_check_for_definition_in_return_type (declarator,
-						 declares_class_or_enum);
+  if (declares_class_or_enum & 2)
+    cp_parser_check_for_definition_in_return_type
+      (declarator, TREE_VALUE (decl_specifiers));
 
   /* Figure out what scope the entity declared by the DECLARATOR is
      located in.  `grokdeclarator' sometimes changes the scope, so
@@ -12716,8 +12720,9 @@ cp_parser_member_declaration (cp_parser* parser)
 		  return;
 		}
 
-	      cp_parser_check_for_definition_in_return_type 
-		(declarator, declares_class_or_enum);
+	      if (declares_class_or_enum & 2)
+		cp_parser_check_for_definition_in_return_type
+		  (declarator, TREE_VALUE (decl_specifiers));
 
 	      /* Look for an asm-specification.  */
 	      asm_specification = cp_parser_asm_specification_opt (parser);
