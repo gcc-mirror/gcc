@@ -3880,8 +3880,9 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
       HOST_WIDE_INT type_size = int_size_in_bytes (TREE_TYPE (exp));
       HOST_WIDE_INT op_size = int_size_in_bytes (TREE_TYPE (TREE_OPERAND (exp, 0)));
 
-      /* Make sure eliminating the conversion is really a no-op.  */
-      if (type_size != op_size)
+      /* Make sure eliminating the conversion is really a no-op, except with
+	 VIEW_CONVERT_EXPR to allow for wild Ada unchecked conversions.  */
+      if (type_size != op_size && TREE_CODE (exp) != VIEW_CONVERT_EXPR)
 	internal_error ("no-op convert from %wd to %wd bytes in initializer",
 			op_size, type_size);
 
