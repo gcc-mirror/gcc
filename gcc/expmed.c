@@ -3022,6 +3022,7 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
       && (unsignedp || !flag_trapv))
     {
       HOST_WIDE_INT coeff = 0;
+      rtx reg = gen_raw_REG (mode, LAST_VIRTUAL_REGISTER + 1);
 
       /* synth_mult does an `unsigned int' multiply.  As long as the mode is
 	 less than or equal in size to `unsigned int' this doesn't matter.
@@ -3040,7 +3041,7 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	    {
 	      /* Its safe to use -INTVAL (op1) even for INT_MIN, as the
 		 result is interpreted as an unsigned coefficient.  */
-	      max_cost = rtx_cost (gen_rtx_MULT (mode, op0, op1), SET)
+	      max_cost = rtx_cost (gen_rtx_MULT (mode, reg, op1), SET)
 			 - neg_cost[mode];
 	      if (max_cost > 0
 		  && choose_mult_variant (mode, -INTVAL (op1), &algorithm,
@@ -3083,7 +3084,7 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 				 build_int_cst (NULL_TREE, floor_log2 (coeff)),
 				 target, unsignedp);
 
-	  max_cost = rtx_cost (gen_rtx_MULT (mode, op0, op1), SET);
+	  max_cost = rtx_cost (gen_rtx_MULT (mode, reg, op1), SET);
 	  if (choose_mult_variant (mode, coeff, &algorithm, &variant,
 				   max_cost))
 	    return expand_mult_const (mode, op0, coeff, target,

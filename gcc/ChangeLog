@@ -1,3 +1,9 @@
+2005-09-17  David Edelsohn  <edelsohn@gnu.org>
+
+	PR middle-end/22067
+	* expmed.c (expand_mult): Substitute simple register for op0 when
+	computing max_cost.
+
 2005-09-17  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (emit_move_via_integer): Add force argument, pass it on
