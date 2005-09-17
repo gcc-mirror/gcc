@@ -1,3 +1,15 @@
+2005-09-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/18803
+	Revert:
+
+	2005-09-02  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+	PR c++/18445
+	* class.c (instantiate_type): Treat NON_DEPENDENT_EXPRs with
+	unknown_type as non matching.
+	* pt.c (build_non_dependent_expr): Do not build a
+	NON_DEPENDENT_EXPR for a VAR_DECL.
+
 2005-09-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	Backport:

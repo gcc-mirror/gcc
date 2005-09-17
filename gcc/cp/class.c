@@ -6030,15 +6030,6 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
   if (TREE_CODE (rhs) == BASELINK)
     rhs = BASELINK_FUNCTIONS (rhs);
 
-  /* If we are in a template, and have a NON_DEPENDENT_EXPR, we cannot
-     deduce any type information.  */
-  if (TREE_CODE (rhs) == NON_DEPENDENT_EXPR)
-    {
-      if (flags & tf_error)
-	error ("not enough type information");
-      return error_mark_node;
-    }
-
   /* We don't overwrite rhs if it is an overloaded function.
      Copying it would destroy the tree link.  */
   if (TREE_CODE (rhs) != OVERLOAD)
