@@ -401,11 +401,11 @@ format_lex (void)
 static try
 check_format (void)
 {
-  const char *posint_required	  = "Positive width required";
-  const char *period_required	  = "Period required";
-  const char *nonneg_required	  = "Nonnegative width required";
-  const char *unexpected_element  = "Unexpected element";
-  const char *unexpected_end	  = "Unexpected end of format string";
+  const char *posint_required	  = _("Positive width required");
+  const char *period_required	  = _("Period required");
+  const char *nonneg_required	  = _("Nonnegative width required");
+  const char *unexpected_element  = _("Unexpected element");
+  const char *unexpected_end	  = _("Unexpected end of format string");
 
   const char *error;
   format_token t, u;
@@ -422,7 +422,7 @@ check_format (void)
   t = format_lex ();
   if (t != FMT_LPAREN)
     {
-      error = "Missing leading left parenthesis";
+      error = _("Missing leading left parenthesis");
       goto syntax;
     }
 
@@ -460,7 +460,7 @@ format_item_1:
       t = format_lex ();
       if (t != FMT_P)
 	{
-	  error = "Expected P edit descriptor";
+	  error = _("Expected P edit descriptor");
 	  goto syntax;
 	}
 
@@ -468,7 +468,7 @@ format_item_1:
 
     case FMT_P:
       /* P requires a prior number.  */
-      error = "P descriptor requires leading scale factor";
+      error = _("P descriptor requires leading scale factor");
       goto syntax;
 
     case FMT_X:
@@ -498,7 +498,7 @@ format_item_1:
         return FAILURE;
       if (t != FMT_RPAREN || level > 0)
 	{
-	  error = "$ must be the last specifier";
+	  error = _("$ must be the last specifier");
 	  goto syntax;
 	}
 
@@ -543,7 +543,7 @@ data_desc:
 	  t = format_lex ();
 	  if (t == FMT_POSINT)
 	    {
-	      error = "Repeat count cannot follow P descriptor";
+	      error = _("Repeat count cannot follow P descriptor");
 	      goto syntax;
 	    }
 
@@ -606,7 +606,7 @@ data_desc:
 	  u = format_lex ();
 	  if (u != FMT_POSINT)
 	    {
-	      error = "Positive exponent width required";
+	      error = _("Positive exponent width required");
 	      goto syntax;
 	    }
 	}

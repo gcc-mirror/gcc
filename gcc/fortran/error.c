@@ -449,12 +449,12 @@ error_print (const char *type, const char *format0, va_list argp)
 /* Wrapper for error_print().  */
 
 static void
-error_printf (const char *format, ...)
+error_printf (const char *nocmsgid, ...)
 {
   va_list argp;
 
-  va_start (argp, format);
-  error_print ("", format, argp);
+  va_start (argp, nocmsgid);
+  error_print ("", _(nocmsgid), argp);
   va_end (argp);
 }
 
@@ -462,7 +462,7 @@ error_printf (const char *format, ...)
 /* Issue a warning.  */
 
 void
-gfc_warning (const char *format, ...)
+gfc_warning (const char *nocmsgid, ...)
 {
   va_list argp;
 
@@ -473,10 +473,10 @@ gfc_warning (const char *format, ...)
   warning_buffer.index = 0;
   cur_error_buffer = &warning_buffer;
 
-  va_start (argp, format);
+  va_start (argp, nocmsgid);
   if (buffer_flag == 0)
     warnings++;
-  error_print ("Warning:", format, argp);
+  error_print (_("Warning:"), _(nocmsgid), argp);
   va_end (argp);
 
   error_char ('\0');
@@ -489,7 +489,7 @@ gfc_warning (const char *format, ...)
    an error is generated.  */
 
 try
-gfc_notify_std (int std, const char *format, ...)
+gfc_notify_std (int std, const char *nocmsgid, ...)
 {
   va_list argp;
   bool warning;
@@ -514,11 +514,11 @@ gfc_notify_std (int std, const char *format, ...)
       else
 	errors++;
     }
-  va_start (argp, format);
+  va_start (argp, nocmsgid);
   if (warning)
-    error_print ("Warning:", format, argp);
+    error_print (_("Warning:"), _(nocmsgid), argp);
   else
-    error_print ("Error:", format, argp);
+    error_print (_("Error:"), _(nocmsgid), argp);
   va_end (argp);
 
   error_char ('\0');
@@ -529,7 +529,7 @@ gfc_notify_std (int std, const char *format, ...)
 /* Immediate warning (i.e. do not buffer the warning).  */
 
 void
-gfc_warning_now (const char *format, ...)
+gfc_warning_now (const char *nocmsgid, ...)
 {
   va_list argp;
   int i;
@@ -541,8 +541,8 @@ gfc_warning_now (const char *format, ...)
   buffer_flag = 0;
   warnings++;
 
-  va_start (argp, format);
-  error_print ("Warning:", format, argp);
+  va_start (argp, nocmsgid);
+  error_print (_("Warning:"), _(nocmsgid), argp);
   va_end (argp);
 
   error_char ('\0');
@@ -578,7 +578,7 @@ gfc_warning_check (void)
 /* Issue an error.  */
 
 void
-gfc_error (const char *format, ...)
+gfc_error (const char *nocmsgid, ...)
 {
   va_list argp;
 
@@ -589,10 +589,10 @@ gfc_error (const char *format, ...)
   error_buffer.index = 0;
   cur_error_buffer = &error_buffer;
 
-  va_start (argp, format);
+  va_start (argp, nocmsgid);
   if (buffer_flag == 0)
     errors++;
-  error_print ("Error:", format, argp);
+  error_print (_("Error:"), _(nocmsgid), argp);
   va_end (argp);
 
   error_char ('\0');
@@ -602,7 +602,7 @@ gfc_error (const char *format, ...)
 /* Immediate error.  */
 
 void
-gfc_error_now (const char *format, ...)
+gfc_error_now (const char *nocmsgid, ...)
 {
   va_list argp;
   int i;
@@ -615,8 +615,8 @@ gfc_error_now (const char *format, ...)
   buffer_flag = 0;
   errors++;
 
-  va_start (argp, format);
-  error_print ("Error:", format, argp);
+  va_start (argp, nocmsgid);
+  error_print (_("Error:"), _(nocmsgid), argp);
   va_end (argp);
 
   error_char ('\0');
@@ -627,14 +627,14 @@ gfc_error_now (const char *format, ...)
 /* Fatal error, never returns.  */
 
 void
-gfc_fatal_error (const char *format, ...)
+gfc_fatal_error (const char *nocmsgid, ...)
 {
   va_list argp;
 
   buffer_flag = 0;
 
-  va_start (argp, format);
-  error_print ("Fatal Error:", format, argp);
+  va_start (argp, nocmsgid);
+  error_print (_("Fatal Error:"), _(nocmsgid), argp);
   va_end (argp);
 
   exit (3);
@@ -735,13 +735,13 @@ gfc_free_error (gfc_error_buf * err)
 /* Debug wrapper for printf.  */
 
 void
-gfc_status (const char *format, ...)
+gfc_status (const char *cmsgid, ...)
 {
   va_list argp;
 
-  va_start (argp, format);
+  va_start (argp, cmsgid);
 
-  vprintf (format, argp);
+  vprintf (_(cmsgid), argp);
 
   va_end (argp);
 }

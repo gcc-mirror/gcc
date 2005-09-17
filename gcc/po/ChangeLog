@@ -1,3 +1,10 @@
+2005-09-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/15586
+	* exgettext: Add a new nocmsgid convention for arguments
+	that should be marked as no-c-format.
+	* gcc.pot: Regenerate.
+
 2005-09-13  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* zh_CN.po: Update.

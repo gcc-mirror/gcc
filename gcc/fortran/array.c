@@ -169,8 +169,8 @@ gfc_match_array_ref (gfc_array_ref * ar, gfc_array_spec * as, int init)
 	}
     }
 
-  gfc_error ("Array reference at %C cannot have more than "
-	     stringize (GFC_MAX_DIMENSIONS) " dimensions");
+  gfc_error ("Array reference at %C cannot have more than %d dimensions",
+	     GFC_MAX_DIMENSIONS);
 
 error:
   return MATCH_ERROR;
@@ -419,8 +419,8 @@ gfc_match_array_spec (gfc_array_spec ** asp)
 
       if (as->rank >= GFC_MAX_DIMENSIONS)
 	{
-	  gfc_error ("Array specification at %C has more than "
-		     stringize (GFC_MAX_DIMENSIONS) " dimensions");
+	  gfc_error ("Array specification at %C has more than %d dimensions",
+		     GFC_MAX_DIMENSIONS);
 	  goto cleanup;
 	}
 

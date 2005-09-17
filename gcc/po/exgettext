@@ -108,6 +108,8 @@ function keyword_option(line) {
     format=""
     if (args ~ /g$/)
     	format="gcc-internal-format"
+    else if (args ~ /noc$/)
+        format="no-c-format"
     else if (args ~ /c$/)
     	format="c-format"
 

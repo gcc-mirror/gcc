@@ -138,25 +138,25 @@ gfc_arith_error (arith code)
   switch (code)
     {
     case ARITH_OK:
-      p = "Arithmetic OK";
+      p = _("Arithmetic OK");
       break;
     case ARITH_OVERFLOW:
-      p = "Arithmetic overflow";
+      p = _("Arithmetic overflow");
       break;
     case ARITH_UNDERFLOW:
-      p = "Arithmetic underflow";
+      p = _("Arithmetic underflow");
       break;
     case ARITH_NAN:
-      p = "Arithmetic NaN";
+      p = _("Arithmetic NaN");
       break;
     case ARITH_DIV0:
-      p = "Division by zero";
+      p = _("Division by zero");
       break;
     case ARITH_INCOMMENSURATE:
-      p = "Array operands are incommensurate";
+      p = _("Array operands are incommensurate");
       break;
     case ARITH_ASYMMETRIC:
-      p = "Integer outside symmetric range implied by Standard Fortran";
+      p = _("Integer outside symmetric range implied by Standard Fortran");
       break;
     default:
       gfc_internal_error ("gfc_arith_error(): Bad error code");
