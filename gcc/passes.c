@@ -567,7 +567,6 @@ init_optimization_passes (void)
   NEXT_PASS (pass_iv_canon);
   NEXT_PASS (pass_if_conversion);
   NEXT_PASS (pass_vectorize);
-  NEXT_PASS (pass_vect_dce);
   /* NEXT_PASS (pass_may_alias) cannot be done again because the
      vectorizer creates alias relations that are not supported by
      pass_may_alias.  */
@@ -575,6 +574,10 @@ init_optimization_passes (void)
   NEXT_PASS (pass_complete_unroll);
   NEXT_PASS (pass_iv_optimize);
   NEXT_PASS (pass_tree_loop_done);
+  *p = NULL;
+
+  p = &pass_vectorize.sub;
+  NEXT_PASS (pass_dce);
   *p = NULL;
 
   p = &pass_loop2.sub;
