@@ -1,3 +1,7 @@
+2005-09-18  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* Make-lang.in: Make check-fortran alias for check-gfortran.
+
 2005-09-18  Andreas Jaeger  <aj@suse.de>
 
 	* module.c (read_module): Add missed line from last patch.
