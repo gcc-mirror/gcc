@@ -3099,7 +3099,7 @@ read_module (void)
   const char *p;
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_intrinsic_op i;
-  int ambiguous, symbol, j, nuse;
+  int ambiguous, j, nuse, series, symbol;
   pointer_info *info;
   gfc_use_rename *u;
   gfc_symtree *st;
@@ -3142,6 +3142,14 @@ read_module (void)
          being loaded again.  */
 
       sym = find_true_name (info->u.rsym.true_name, info->u.rsym.module);
+
+      /* If a module contains subroutines with assumed shape dummy
+       arguments, the symbols for indices need to be different from
+       from those in the module proper(ns = 1).  */
+      if (sym !=NULL && info->u.rsym.ns != 1)
+	sym = find_true_name (info->u.rsym.true_name,
+		gfc_get_string ("%s@%d",module_name, series++));
+
       if (sym == NULL)
 	continue;
 
@@ -3484,11 +3492,6 @@ write_symbol1 (pointer_info * p)
 
   if (p->type != P_SYMBOL || p->u.wsym.state != NEEDS_WRITE)
     return 0;
-
-  /* FIXME: This shouldn't be necessary, but it works around
-     deficiencies in the module loader or/and symbol handling.  */
-  if (p->u.wsym.sym->module == NULL && p->u.wsym.sym->attr.dummy)
-    p->u.wsym.sym->module = gfc_get_string (module_name);
 
   p->u.wsym.state = WRITTEN;
   write_symbol (p->integer, p->u.wsym.sym);

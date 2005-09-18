@@ -1,3 +1,8 @@
+2005-09-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/16861
+	* gfortran.dg/nested_modules_2.f90: New test.
+
 2005-09-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/18368
