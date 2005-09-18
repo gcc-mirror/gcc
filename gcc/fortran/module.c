@@ -3119,6 +3119,7 @@ read_module (void)
   mio_lparen ();
 
   /* Create the fixup nodes for all the symbols.  */
+  series = 0;
 
   while (peek_atom () != ATOM_RPAREN)
     {
