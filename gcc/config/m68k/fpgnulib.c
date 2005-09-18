@@ -121,7 +121,7 @@ __floatsidf (long a1)
   if (a1 < 0)
     {
       sign = SIGNBIT;
-      a1 = -a1;
+      a1 = (long)-(unsigned long)a1;
       if (a1 < 0)
 	{
 	  dl.l.upper = SIGNBIT | ((32 + EXCESSD) << 20L);

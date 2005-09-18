@@ -1,3 +1,7 @@
+2005-09-18  Paul Brook  <paul@codesourcery.com>
+
+	* config/m68k/fpgnuib.c (__floatsidf): Don't rely on signed overflow.
+
 2005-09-17  Richard Henderson  <rth@redhat.com>
 
 	* tree-pass.h, tree-flow.h, tree-ssa-dce.c: Revert last change.
