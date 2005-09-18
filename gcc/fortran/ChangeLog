@@ -1,3 +1,9 @@
+2005-09-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/16861
+	* module.c (read_module): Give symbols from module procedures
+	different true_name entries to those from the module proper.
+
 2005-09-17  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/15586
