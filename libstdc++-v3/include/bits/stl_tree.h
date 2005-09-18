@@ -424,7 +424,8 @@ namespace std
 
 	  _Rb_tree_impl(const _Node_allocator& __a = _Node_allocator(),
 			const _Key_compare& __comp = _Key_compare())
-	  : _Node_allocator(__a), _M_key_compare(__comp), _M_node_count(0)
+	  : _Node_allocator(__a), _M_key_compare(__comp), _M_header(),
+	    _M_node_count(0)
 	  { 
 	    this->_M_header._M_color = _S_red;
 	    this->_M_header._M_parent = 0;

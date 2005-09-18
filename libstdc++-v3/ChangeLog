@@ -1,3 +1,9 @@
+2005-09-18  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/23417 (cont)
+	* include/bits/stl_tree.h (_Rb_tree_impl<true>): Use member
+	initialization list for -Weffc++.
+
 2005-09-16  Janis Johnson  <janis187@us.ibm.com>
 
 	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/23871.cc:
@@ -216,24 +222,24 @@
 
 2005-09-01  Benjamin Kosnik  <bkoz@redhat.com>
 
-        * testsuite/lib/libstdc++.exp (check_v3_target_cxa_atexit): New.
-        * testsuite/lib/dg-options.exp (dg-require-cxa-atexit): New.
-        * testsuite/ext/mt_allocator/deallocate_local-6.cc: New.
-        * testsuite/ext/mt_allocator/deallocate_local-8.cc: New.
-        * testsuite/ext/mt_allocator/deallocate_local_thread-5.cc: New.
-        * testsuite/ext/mt_allocator/deallocate_local_thread-7.cc: New.
-        * docs/html/ext/mt_allocator.html: Add link to examples.
-        * testsuite/testsuite_allocator.h: Tweak.
-        * testsuite/ext/mt_allocator/deallocate_global-2.cc: Same.
-        * testsuite/ext/mt_allocator/deallocate_global-4.cc: Same.
-        * testsuite/ext/mt_allocator/deallocate_global_thread-1.cc: Same.
-        * testsuite/ext/mt_allocator/deallocate_global_thread-3.cc: Same.
-        * testsuite/ext/mt_allocator/deallocate_local-2.cc: Same.
-        * testsuite/ext/mt_allocator/deallocate_local-4.cc: Same.
-        * testsuite/ext/mt_allocator/deallocate_local_thread-1.cc: Same.
-        * testsuite/ext/mt_allocator/deallocate_local_thread-3.cc: Same.
-        * testsuite/ext/new_allocator/deallocate_global.cc: Same.
-        * testsuite/ext/new_allocator/deallocate_local.cc: Same.
+	* testsuite/lib/libstdc++.exp (check_v3_target_cxa_atexit): New.
+	* testsuite/lib/dg-options.exp (dg-require-cxa-atexit): New.
+	* testsuite/ext/mt_allocator/deallocate_local-6.cc: New.
+	* testsuite/ext/mt_allocator/deallocate_local-8.cc: New.
+	* testsuite/ext/mt_allocator/deallocate_local_thread-5.cc: New.
+	* testsuite/ext/mt_allocator/deallocate_local_thread-7.cc: New.
+	* docs/html/ext/mt_allocator.html: Add link to examples.
+	* testsuite/testsuite_allocator.h: Tweak.
+	* testsuite/ext/mt_allocator/deallocate_global-2.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_global-4.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_global_thread-1.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_global_thread-3.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_local-2.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_local-4.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_local_thread-1.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_local_thread-3.cc: Same.
+	* testsuite/ext/new_allocator/deallocate_global.cc: Same.
+	* testsuite/ext/new_allocator/deallocate_local.cc: Same.
 
 2005-08-31  Paolo Carlini  <pcarlini@suse.de>
 	    Kaspar Fischer <fischerk@inf.ethz.ch> 
