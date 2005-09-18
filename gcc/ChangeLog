@@ -1,5 +1,12 @@
 2005-09-17  Richard Henderson  <rth@redhat.com>
 
+	* tree-pass.h, tree-flow.h, tree-ssa-dce.c: Revert last change.
+	* tree-ssa-loop.c (pass_vect_dce): Remove.
+	* passes.c (init_optimization_passes): Add pass_dce as a sub-pass
+	of pass_vectorize.
+
+2005-09-17  Richard Henderson  <rth@redhat.com>
+
 	* tree-pass.h (pass_vect_dce): Declare.
 	* passes.c (init_optimization_passes): Add it.
 	* tree-flow.h (tree_ssa_dce): Declare.
