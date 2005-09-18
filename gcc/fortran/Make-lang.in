@@ -145,6 +145,7 @@ fortran.srcman: $(F95_MANFILES)
 fortran.srcextra:
 
 check-f95 : check-gfortran
+check-fortran : check-gfortran
 lang_checks += check-gfortran
 
 # GFORTRAN documentation.
