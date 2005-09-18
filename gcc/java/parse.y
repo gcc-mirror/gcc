@@ -13643,11 +13643,11 @@ patch_binop (tree node, tree wfl_op1, tree wfl_op2, int folding)
 
       /* Shift int only up to 0x1f and long up to 0x3f */
       if (prom_type == int_type_node)
-	op2 = fold (build2 (BIT_AND_EXPR, int_type_node, op2,
-			    build_int_cst (NULL_TREE, 0x1f)));
+	op2 = fold_build2 (BIT_AND_EXPR, int_type_node, op2,
+			   build_int_cst (NULL_TREE, 0x1f));
       else
-	op2 = fold (build2 (BIT_AND_EXPR, int_type_node, op2,
-			    build_int_cst (NULL_TREE, 0x3f)));
+	op2 = fold_build2 (BIT_AND_EXPR, int_type_node, op2,
+			   build_int_cst (NULL_TREE, 0x3f));
 
       /* The >>> operator is a >> operating on unsigned quantities */
       if (code == URSHIFT_EXPR && (folding || ! flag_emit_class_files))
@@ -15422,7 +15422,7 @@ patch_exit_expr (tree node)
   /* Now we know things are allright, invert the condition, fold and
      return */
   TREE_OPERAND (node, 0) =
-    fold (build1 (TRUTH_NOT_EXPR, boolean_type_node, expression));
+    fold_build1 (TRUTH_NOT_EXPR, boolean_type_node, expression);
 
   if (! integer_zerop (TREE_OPERAND (node, 0))
       && ctxp->current_loop != NULL_TREE

@@ -1,3 +1,17 @@
+2005-09-18  James A. Morrison  <phython@gcc.gnu.org>
+
+	* builtins.c (max_builtin, min_builtin, abs_builtin,
+	java_build_function_call_expr): Use fold_buildN.
+	* class.c (layout_class_method): Likewise.
+	* expr.c (java_truthvalue_conversion, build_java_jsr,
+	build_java_arrayaccess, expand_java_arrayload, expand_iinc,
+	build_java_binop, build_field_ref, expand_compare,
+	build_known_method_ref, build_invokevirtual,
+	process_jvm_instruction): Likewise.
+	* parse.y (patch_binop, patch_exit_expr): Likewise.
+	* typeck.c (convert_ieee_real_to_integer): Likewise.
+	(convert): Don't call fold after convert_ieee_real_to_integer.
+
 2005-09-14  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR java/23891
