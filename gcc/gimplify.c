@@ -2950,9 +2950,10 @@ fold_indirect_ref_rhs (tree t)
     {
       tree type_domain;
       tree min_val = size_zero_node;
+      tree osub = sub;
       sub = fold_indirect_ref_rhs (sub);
       if (! sub)
-	sub = build1 (INDIRECT_REF, TREE_TYPE (subtype), sub);
+	sub = build1 (INDIRECT_REF, TREE_TYPE (subtype), osub);
       type_domain = TYPE_DOMAIN (TREE_TYPE (sub));
       if (type_domain && TYPE_MIN_VALUE (type_domain))
         min_val = TYPE_MIN_VALUE (type_domain);
