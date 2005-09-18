@@ -2380,8 +2380,8 @@ layout_class_method (tree this_class, tree super_class,
 	  /* We generate vtable entries for final methods because they
 	     may one day be changed to non-final.  */
 	  set_method_index (method_decl, dtable_count);
-	  dtable_count = fold (build2 (PLUS_EXPR, integer_type_node,
-				       dtable_count, integer_one_node));
+	  dtable_count = fold_build2 (PLUS_EXPR, integer_type_node,
+				      dtable_count, integer_one_node);
 	}
     }
 
