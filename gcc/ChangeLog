@@ -1,3 +1,9 @@
+2005-09-18  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/23944
+	* gimplify.c (fold_indirect_ref_rhs): Fix thinko in
+	fallback.
+
 2005-09-18  Paul Brook  <paul@codesourcery.com>
 
 	* config/m68k/fpgnuib.c (__floatsidf): Don't rely on signed overflow.
