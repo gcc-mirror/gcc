@@ -2988,13 +2988,13 @@
 })
 
 (define_expand "vcondu<mode>"
-  [(set (match_operand:SSEMODE12 0 "register_operand" "")
-        (if_then_else:SSEMODE12
+  [(set (match_operand:SSEMODE124 0 "register_operand" "")
+        (if_then_else:SSEMODE124
           (match_operator 3 ""
-            [(match_operand:SSEMODE12 4 "nonimmediate_operand" "")
-             (match_operand:SSEMODE12 5 "nonimmediate_operand" "")])
-          (match_operand:SSEMODE12 1 "general_operand" "")
-          (match_operand:SSEMODE12 2 "general_operand" "")))]
+            [(match_operand:SSEMODE124 4 "nonimmediate_operand" "")
+             (match_operand:SSEMODE124 5 "nonimmediate_operand" "")])
+          (match_operand:SSEMODE124 1 "general_operand" "")
+          (match_operand:SSEMODE124 2 "general_operand" "")))]
   "TARGET_SSE2"
 {
   if (ix86_expand_int_vcond (operands))
