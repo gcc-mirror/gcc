@@ -1,3 +1,8 @@
+2005-09-19  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/sse.md (reduc_splus_v4sf): Rename from reduc_plus_v4sf.
+	(reduc_splus_v2df): New.
+
 2005-09-19  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/arm/aof.h (REGISTER_NAMES): Add missing backslash.
