@@ -1,3 +1,8 @@
+2005-09-19  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/arm/aof.h (REGISTER_NAMES): Add missing backslash.
+	(ADDITIONAL_REGISTER_NAMES): Add missing comma.  Remove final comma.
+
 2005-09-19  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/sse.md (vcondu<SSEMODE124>): Rename from
