@@ -700,7 +700,7 @@
   [(set_attr "type" "sseadd")
    (set_attr "mode" "V4SF")])
 
-(define_expand "reduc_plus_v4sf"
+(define_expand "reduc_splus_v4sf"
   [(match_operand:V4SF 0 "register_operand" "")
    (match_operand:V4SF 1 "register_operand" "")]
   "TARGET_SSE"
@@ -1689,6 +1689,15 @@
   "hsubpd\t{%2, %0|%0, %2}"
   [(set_attr "type" "sseadd")
    (set_attr "mode" "V2DF")])
+
+(define_expand "reduc_splus_v2df"
+  [(match_operand:V2DF 0 "register_operand" "")
+   (match_operand:V2DF 1 "register_operand" "")]
+  "TARGET_SSE3"
+{
+  emit_insn (gen_sse3_haddv2df3 (operands[0], operands[1], operands[1]));
+  DONE;
+})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
