@@ -1,3 +1,10 @@
+2005-09-19  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* tree-ssa-operands.c (swap_tree_operands): Export.
+	* tree.h (swap_tree_operands): Declare.
+	* tree-vectorizer.c (vect_is_simple_reduction): Remove ATTRIBUTE_UNUSED.
+	Call swap_tree_operands.
+	
 2005-09-19  Richard Henderson  <rth@redhat.com>
 
 	* tree-flow.h (merge_alias_info): Declare.

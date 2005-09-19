@@ -1165,7 +1165,7 @@ create_ssa_artficial_load_stmt (tree new_stmt, tree old_stmt)
     delink_imm_use (use_p);
 }
 
-static void
+void
 swap_tree_operands (tree stmt, tree *exp0, tree *exp1)
 {
   tree op0, op1;
