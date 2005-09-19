@@ -4,6 +4,9 @@
 	* real.c (exact_real_truncate): Return false if the format cannot
 	represent the number as a normal.
 
+	* config/alpha/alpha.c (alpha_rtx_costs) <FLOAT_EXTEND>: Cost 0
+	for a memory source.
+
 2005-09-19  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* tree-ssa-operands.c (swap_tree_operands): Export.
