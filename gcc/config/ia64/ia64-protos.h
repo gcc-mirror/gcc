@@ -50,6 +50,8 @@ extern bool ia64_expand_movxf_movrf (enum machine_mode, rtx[]);
 extern rtx ia64_expand_compare (enum rtx_code, enum machine_mode);
 extern void ia64_expand_vecint_cmov (rtx[]);
 extern bool ia64_expand_vecint_minmax (enum rtx_code, enum machine_mode, rtx[]);
+extern void ia64_expand_widen_sum (rtx[], bool);
+extern void ia64_expand_dot_prod_v8qi (rtx[], bool);
 extern void ia64_expand_call (rtx, rtx, rtx, int);
 extern void ia64_split_call (rtx, rtx, rtx, rtx, rtx, int, int);
 extern void ia64_reload_gp (void);
