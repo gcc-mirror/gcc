@@ -1,3 +1,9 @@
+2005-09-19  Richard Henderson  <rth@redhat.com>
+
+	PR 23941
+        * real.c (exact_real_truncate): Return false if the format cannot
+        represent the number as a normal.
+
 2005-09-16  Fariborz Jahanian <fjahanian@apple.com>
 
 	* config/darwin.c (indirect_data): Fix a typo.
