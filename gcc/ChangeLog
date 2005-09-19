@@ -1,5 +1,10 @@
 2005-09-19  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/sse.md (vcondu<SSEMODE124>): Rename from
+	vcondu<SSEMODE12>.
+
+2005-09-19  Richard Henderson  <rth@redhat.com>
+
 	* config/ia64/ia64.c (ia64_expand_widen_sum): New.
 	(ia64_expand_dot_prod_v8qi): New.
 	* config/ia64/ia64-protos.h: Update.
