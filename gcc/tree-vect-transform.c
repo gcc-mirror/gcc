@@ -51,7 +51,6 @@ static void vect_align_data_ref (tree);
 static tree vect_create_destination_var (tree, tree);
 static tree vect_create_data_ref_ptr 
   (tree, block_stmt_iterator *, tree, tree *, bool); 
-static tree vect_create_index_for_vector_ref (loop_vec_info);
 static tree vect_create_addr_base_for_vector_ref (tree, tree *, tree);
 static tree vect_get_new_vect_var (tree, enum vect_var_kind, const char *);
 static tree vect_get_vec_def_for_operand (tree, tree, tree *);
@@ -110,58 +109,6 @@ vect_get_new_vect_var (tree type, enum vect_var_kind var_kind, const char *name)
     new_vect_var = create_tmp_var (type, prefix);
 
   return new_vect_var;
-}
-
-
-/* Function vect_create_index_for_vector_ref.
-
-   Create (and return) an index variable, along with it's update chain in the
-   loop. This variable will be used to access a memory location in a vector
-   operation.
-
-   Input:
-   LOOP: The loop being vectorized.
-   BSI: The block_stmt_iterator where STMT is. Any new stmts created by this
-        function can be added here, or in the loop pre-header.
-
-   Output:
-   Return an index that will be used to index a vector array.  It is expected
-   that a pointer to the first vector will be used as the base address for the
-   indexed reference.
-
-   FORNOW: we are not trying to be efficient, just creating a new index each
-   time from scratch.  At this time all vector references could use the same
-   index.
-
-   TODO: create only one index to be used by all vector references.  Record
-   the index in the LOOP_VINFO the first time this procedure is called and
-   return it on subsequent calls.  The increment of this index must be placed
-   just before the conditional expression that ends the single block loop.  */
-
-static tree
-vect_create_index_for_vector_ref (loop_vec_info loop_vinfo)
-{
-  tree init, step;
-  block_stmt_iterator incr_bsi;
-  bool insert_after;
-  tree indx_before_incr, indx_after_incr;
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  tree incr;
-
-  /* It is assumed that the base pointer used for vectorized access contains
-     the address of the first vector.  Therefore the index used for vectorized
-     access must be initialized to zero and incremented by 1.  */
-
-  init = integer_zero_node;
-  step = integer_one_node;
-
-  standard_iv_increment_position (loop, &incr_bsi, &insert_after);
-  create_iv (init, step, NULL_TREE, loop, &incr_bsi, insert_after,
-	&indx_before_incr, &indx_after_incr);
-  incr = bsi_stmt (incr_bsi);
-  set_stmt_info ((tree_ann_t)stmt_ann (incr), new_stmt_vec_info (incr, loop_vinfo));
-
-  return indx_before_incr;
 }
 
 
@@ -292,24 +239,17 @@ vect_align_data_ref (tree stmt)
 
       Return the initial_address in INITIAL_ADDRESS.
 
-   2. Create a data-reference in the loop based on the new vector pointer vp,
-      and using a new index variable 'idx' as follows:
-
-      vp' = vp + update
-
-      where if ONLY_INIT is true:
-         update = zero
-      and otherwise
-         update = idx + vector_type_size
-
-      Return the pointer vp'.
-
+   2. If ONLY_INIT is true, return the initial pointer.  Otherwise, create
+      a data-reference in the loop based on the new vector pointer vp.  This
+      new data reference will by some means be updated each iteration of
+      the loop.  Return the pointer vp'.
 
    FORNOW: handle only aligned and consecutive accesses.  */
 
 static tree
-vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
-                          tree *initial_address, bool only_init)
+vect_create_data_ref_ptr (tree stmt,
+			  block_stmt_iterator *bsi ATTRIBUTE_UNUSED,
+			  tree offset, tree *initial_address, bool only_init)
 {
   tree base_name;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
@@ -322,14 +262,9 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
   tree new_temp;
   tree vec_stmt;
   tree new_stmt_list = NULL_TREE;
-  tree idx;
   edge pe = loop_preheader_edge (loop);
   basic_block new_bb;
   tree vect_ptr_init;
-  tree vectype_size;
-  tree ptr_update;
-  tree data_ref_ptr;
-  tree type, tmp, size;
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
 
   base_name =  build_fold_indirect_ref (unshare_expr (DR_BASE_ADDRESS (dr)));
@@ -387,11 +322,10 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
   /* Create: p = (vectype *) initial_base  */
   vec_stmt = fold_convert (vect_ptr_type, new_temp);
   vec_stmt = build2 (MODIFY_EXPR, void_type_node, vect_ptr, vec_stmt);
-  new_temp = make_ssa_name (vect_ptr, vec_stmt);
-  TREE_OPERAND (vec_stmt, 0) = new_temp;
+  vect_ptr_init = make_ssa_name (vect_ptr, vec_stmt);
+  TREE_OPERAND (vec_stmt, 0) = vect_ptr_init;
   new_bb = bsi_insert_on_edge_immediate (pe, vec_stmt);
   gcc_assert (!new_bb);
-  vect_ptr_init = TREE_OPERAND (vec_stmt, 0);
 
 
   /** (4) Handle the updating of the vector-pointer inside the loop: **/
@@ -403,40 +337,33 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
         duplicate_ssa_name_ptr_info (vect_ptr_init, DR_PTR_INFO (dr));
       return vect_ptr_init;
     }
+  else
+    {
+      block_stmt_iterator incr_bsi;
+      bool insert_after;
+      tree indx_before_incr, indx_after_incr;
+      tree incr;
 
-  idx = vect_create_index_for_vector_ref (loop_vinfo);
+      standard_iv_increment_position (loop, &incr_bsi, &insert_after);
+      create_iv (vect_ptr_init,
+		 fold_convert (vect_ptr_type, TYPE_SIZE_UNIT (vectype)),
+		 NULL_TREE, loop, &incr_bsi, insert_after,
+		 &indx_before_incr, &indx_after_incr);
+      incr = bsi_stmt (incr_bsi);
+      set_stmt_info ((tree_ann_t)stmt_ann (incr),
+		     new_stmt_vec_info (incr, loop_vinfo));
 
-  /* Create: update = idx * vectype_size  */
-  tmp = create_tmp_var (integer_type_node, "update");
-  add_referenced_tmp_var (tmp);
-  size = TYPE_SIZE (vect_ptr_type); 
-  type = lang_hooks.types.type_for_size (tree_low_cst (size, 1), 1);
-  ptr_update = create_tmp_var (type, "update");
-  add_referenced_tmp_var (ptr_update);
-  vectype_size = TYPE_SIZE_UNIT (vectype);
-  vec_stmt = build2 (MULT_EXPR, integer_type_node, idx, vectype_size);
-  vec_stmt = build2 (MODIFY_EXPR, void_type_node, tmp, vec_stmt);
-  new_temp = make_ssa_name (tmp, vec_stmt);
-  TREE_OPERAND (vec_stmt, 0) = new_temp;
-  bsi_insert_before (bsi, vec_stmt, BSI_SAME_STMT);
-  vec_stmt = fold_convert (type, new_temp);
-  vec_stmt = build2 (MODIFY_EXPR, void_type_node, ptr_update, vec_stmt);
-  new_temp = make_ssa_name (ptr_update, vec_stmt);
-  TREE_OPERAND (vec_stmt, 0) = new_temp;
-  bsi_insert_before (bsi, vec_stmt, BSI_SAME_STMT);
+      /* Copy the points-to information if it exists. */
+      if (DR_PTR_INFO (dr))
+	{
+	  duplicate_ssa_name_ptr_info (indx_before_incr, DR_PTR_INFO (dr));
+	  duplicate_ssa_name_ptr_info (indx_after_incr, DR_PTR_INFO (dr));
+	}
+      merge_alias_info (vect_ptr_init, indx_before_incr);
+      merge_alias_info (vect_ptr_init, indx_after_incr);
 
-  /* Create: data_ref_ptr = vect_ptr_init + update  */
-  vec_stmt = build2 (PLUS_EXPR, vect_ptr_type, vect_ptr_init, new_temp);
-  vec_stmt = build2 (MODIFY_EXPR, void_type_node, vect_ptr, vec_stmt);
-  new_temp = make_ssa_name (vect_ptr, vec_stmt);
-  TREE_OPERAND (vec_stmt, 0) = new_temp;
-  bsi_insert_before (bsi, vec_stmt, BSI_SAME_STMT);
-  data_ref_ptr = TREE_OPERAND (vec_stmt, 0);
-
-  /* Copy the points-to information if it exists. */
-  if (DR_PTR_INFO (dr))
-    duplicate_ssa_name_ptr_info (data_ref_ptr, DR_PTR_INFO (dr));
-  return data_ref_ptr;
+      return indx_before_incr;
+    }
 }
 
 
@@ -1822,9 +1749,7 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 
 
       /* <2> Create lsq = *(floor(p2')) in the loop  */ 
-      offset = build_int_cst (integer_type_node, 
-			      TYPE_VECTOR_SUBPARTS (vectype));
-      offset = int_const_binop (MINUS_EXPR, offset, integer_one_node, 1);
+      offset = size_int (TYPE_VECTOR_SUBPARTS (vectype) - 1);
       vec_dest = vect_create_destination_var (scalar_dest, vectype);
       dataref_ptr = vect_create_data_ref_ptr (stmt, bsi, offset, &dummy, false);
       data_ref = build1 (ALIGN_INDIRECT_REF, vectype, dataref_ptr);
@@ -2231,7 +2156,7 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree ni = LOOP_VINFO_NITERS (loop_vinfo);
   int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-  tree log_vf = build_int_cst (unsigned_type_node, exact_log2 (vf));
+  tree log_vf;
 
   pe = loop_preheader_edge (loop);
 
@@ -2239,6 +2164,7 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
      number of iterations loop executes.  */
 
   ni_name = vect_build_loop_niters (loop_vinfo);
+  log_vf = build_int_cst (TREE_TYPE (ni), exact_log2 (vf));
 
   /* Create: ratio = ni >> log2(vf) */
 
@@ -2572,7 +2498,6 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
   stmt_vec_info stmt_info = vinfo_for_stmt (dr_stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   int vectype_align = TYPE_ALIGN (vectype) / BITS_PER_UNIT;
-  tree vf_minus_1 = build_int_cst (unsigned_type_node, vf - 1);
   tree niters_type = TREE_TYPE (loop_niters);
 
   pe = loop_preheader_edge (loop); 
@@ -2597,8 +2522,9 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
       tree type = lang_hooks.types.type_for_size (tree_low_cst (size, 1), 1);
       tree vectype_size_minus_1 = build_int_cst (type, vectype_align - 1);
       tree elem_size_log =
-        build_int_cst (unsigned_type_node, exact_log2 (vectype_align/vf));
-      tree vf_tree = build_int_cst (unsigned_type_node, vf);
+        build_int_cst (type, exact_log2 (vectype_align/vf));
+      tree vf_minus_1 = build_int_cst (type, vf - 1);
+      tree vf_tree = build_int_cst (type, vf);
       tree byte_misalign;
       tree elem_misalign;
 
@@ -2611,11 +2537,11 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
   
       /* Create:  elem_misalign = byte_misalign / element_size  */
       elem_misalign =
-        build2 (RSHIFT_EXPR, unsigned_type_node, byte_misalign, elem_size_log);
+        build2 (RSHIFT_EXPR, type, byte_misalign, elem_size_log);
 
       /* Create:  (niters_type) (VF - elem_misalign)&(VF - 1)  */
-      iters = build2 (MINUS_EXPR, unsigned_type_node, vf_tree, elem_misalign);
-      iters = build2 (BIT_AND_EXPR, unsigned_type_node, iters, vf_minus_1);
+      iters = build2 (MINUS_EXPR, type, vf_tree, elem_misalign);
+      iters = build2 (BIT_AND_EXPR, type, iters, vf_minus_1);
       iters = fold_convert (niters_type, iters);
     }
 

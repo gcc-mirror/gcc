@@ -669,6 +669,7 @@ extern void debug_dominator_optimization_stats (void);
 int loop_depth_of_name (tree);
 
 /* In tree-ssa-copy.c  */
+extern void merge_alias_info (tree, tree);
 extern void propagate_value (use_operand_p, tree);
 extern void propagate_tree_value (tree *, tree);
 extern void replace_exp (use_operand_p, tree);
