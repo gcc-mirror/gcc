@@ -1473,9 +1473,15 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total)
     case UNSIGNED_FLOAT:
     case FIX:
     case UNSIGNED_FIX:
-    case FLOAT_EXTEND:
     case FLOAT_TRUNCATE:
       *total = cost_data->fp_add;
+      return false;
+
+    case FLOAT_EXTEND:
+      if (GET_CODE (XEXP (x, 0)) == MEM)
+	*total = 0;
+      else
+	*total = cost_data->fp_add;
       return false;
 
     default:
