@@ -2999,7 +2999,9 @@ find_best_addr (rtx insn, rtx *loc, enum machine_mode mode)
 	       p = p->next_same_value, count++)
 	    if (! p->flag
 		&& (REG_P (p->exp)
-		    || exp_equiv_p (p->exp, p->exp, 1, false)))
+		    || (GET_CODE (p->exp) != EXPR_LIST
+			&& exp_equiv_p (p->exp, p->exp, 1, false))))
+
 	      {
 		rtx new = simplify_gen_binary (GET_CODE (*loc), Pmode,
 					       p->exp, op1);
