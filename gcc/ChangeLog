@@ -1,3 +1,13 @@
+2005-09-19  Richard Henderson  <rth@redhat.com>
+
+	* tree-flow.h (merge_alias_info): Declare.
+	* tree-ssa-copy.c (merge_alias_info): Export.
+	* tree-vect-transform.c (vect_create_index_for_vector_ref): Remove.
+	(vect_create_data_ref_ptr): Use create_iv directly.
+	(vectorizable_load): Use correct types for integer constants.
+	(vect_generate_tmps_on_preheader): Likewise.
+	(vect_gen_niters_for_prolog_loop): Likewise.
+
 2005-09-19  Steven Bosscher  <stevenb@suse.de>
 
 	PR rtl-optimization/23943

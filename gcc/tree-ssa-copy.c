@@ -165,7 +165,7 @@ may_propagate_copy_into_asm (tree dest)
    propagating NEW into ORIG, consolidate aliasing information so that
    they both share the same memory tags.  */
 
-static void
+void
 merge_alias_info (tree orig, tree new)
 {
   tree new_sym = SSA_NAME_VAR (new);
