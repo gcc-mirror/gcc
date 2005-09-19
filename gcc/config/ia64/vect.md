@@ -212,6 +212,36 @@
   "pmpyshr2 %0 = %1, %2, 0"
   [(set_attr "itanium_class" "mmmul")])
 
+(define_insn "pmpy2_r"
+  [(set (match_operand:V2SI 0 "gr_register_operand" "=r")
+	(mult:V2SI
+	  (vec_select:V2SI
+	    (sign_extend:V4SI
+	      (match_operand:V4HI 1 "gr_register_operand" "r"))
+	    (parallel [(const_int 0) (const_int 2)]))
+	  (vec_select:V2SI
+	    (sign_extend:V4SI
+	      (match_operand:V4HI 2 "gr_register_operand" "r"))
+	    (parallel [(const_int 0) (const_int 2)]))))]
+  ""
+  "pmpy2.r %0 = %1, %2"
+  [(set_attr "itanium_class" "mmshf")])
+
+(define_insn "pmpy2_l"
+  [(set (match_operand:V2SI 0 "gr_register_operand" "=r")
+	(mult:V2SI
+	  (vec_select:V2SI
+	    (sign_extend:V4SI
+	      (match_operand:V4HI 1 "gr_register_operand" "r"))
+	    (parallel [(const_int 1) (const_int 3)]))
+	  (vec_select:V2SI
+	    (sign_extend:V4SI
+	      (match_operand:V4HI 2 "gr_register_operand" "r"))
+	    (parallel [(const_int 1) (const_int 3)]))))]
+  ""
+  "pmpy2.l %0 = %1, %2"
+  [(set_attr "itanium_class" "mmshf")])
+
 (define_expand "umax<mode>3"
   [(set (match_operand:VECINT 0 "gr_register_operand" "")
 	(umax:VECINT (match_operand:VECINT 1 "gr_register_operand" "")
@@ -329,6 +359,88 @@
 {
   operands[0] = gen_lowpart (DImode, operands[0]);
   operands[1] = gen_lowpart (DImode, operands[1]);
+})
+
+(define_expand "widen_usumv8qi3"
+  [(match_operand:V4HI 0 "gr_register_operand" "")
+   (match_operand:V8QI 1 "gr_register_operand" "")
+   (match_operand:V4HI 2 "gr_register_operand" "")]
+  ""
+{
+  ia64_expand_widen_sum (operands, true);
+  DONE;
+})
+
+(define_expand "widen_usumv4hi3"
+  [(match_operand:V2SI 0 "gr_register_operand" "")
+   (match_operand:V4HI 1 "gr_register_operand" "")
+   (match_operand:V2SI 2 "gr_register_operand" "")]
+  ""
+{
+  ia64_expand_widen_sum (operands, true);
+  DONE;
+})
+
+(define_expand "widen_ssumv8qi3"
+  [(match_operand:V4HI 0 "gr_register_operand" "")
+   (match_operand:V8QI 1 "gr_register_operand" "")
+   (match_operand:V4HI 2 "gr_register_operand" "")]
+  ""
+{
+  ia64_expand_widen_sum (operands, false);
+  DONE;
+})
+
+(define_expand "widen_ssumv4hi3"
+  [(match_operand:V2SI 0 "gr_register_operand" "")
+   (match_operand:V4HI 1 "gr_register_operand" "")
+   (match_operand:V2SI 2 "gr_register_operand" "")]
+  ""
+{
+  ia64_expand_widen_sum (operands, false);
+  DONE;
+})
+
+(define_expand "udot_prodv8qi"
+  [(match_operand:V2SI 0 "gr_register_operand" "")
+   (match_operand:V8QI 1 "gr_register_operand" "")
+   (match_operand:V8QI 2 "gr_register_operand" "")
+   (match_operand:V2SI 3 "gr_register_operand" "")]
+  ""
+{
+  ia64_expand_dot_prod_v8qi (operands, true);
+  DONE;
+})
+
+(define_expand "sdot_prodv8qi"
+  [(match_operand:V2SI 0 "gr_register_operand" "")
+   (match_operand:V8QI 1 "gr_register_operand" "")
+   (match_operand:V8QI 2 "gr_register_operand" "")
+   (match_operand:V2SI 3 "gr_register_operand" "")]
+  ""
+{
+  ia64_expand_dot_prod_v8qi (operands, false);
+  DONE;
+})
+
+(define_expand "sdot_prodv4hi"
+  [(match_operand:V2SI 0 "gr_register_operand" "")
+   (match_operand:V4HI 1 "gr_register_operand" "")
+   (match_operand:V4HI 2 "gr_register_operand" "")
+   (match_operand:V2SI 3 "gr_register_operand" "")]
+  ""
+{
+  rtx l, r, t;
+
+  r = gen_reg_rtx (V2SImode);
+  l = gen_reg_rtx (V2SImode);
+  t = gen_reg_rtx (V2SImode);
+
+  emit_insn (gen_pmpy2_r (r, operands[1], operands[2]));
+  emit_insn (gen_pmpy2_l (l, operands[1], operands[2]));
+  emit_insn (gen_addv2si3 (t, r, operands[3]));
+  emit_insn (gen_addv2si3 (operands[0], t, l));
+  DONE;
 })
 
 (define_expand "vcond<mode>"
@@ -717,15 +829,11 @@
 ;; padd.uus
 ;; pavg
 ;; pavgsub
-;; pmpy
 ;; pmpyshr, general form
 ;; psad
 ;; pshladd
 ;; pshradd
 ;; psub.uus
-;; vec_set<mode>
-;; vec_extract<mode>
-;; vec_init<mode>
 
 ;; Floating point vector operations
 
@@ -947,7 +1055,7 @@
   "fpmin %0 = %1, %2"
   [(set_attr "itanium_class" "fmisc")])
 
-(define_expand "reduc_plus_v2sf"
+(define_expand "reduc_splus_v2sf"
   [(match_operand:V2SF 0 "fr_register_operand" "")
    (match_operand:V2SF 1 "fr_register_operand" "")]
   ""

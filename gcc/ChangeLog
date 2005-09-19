@@ -1,5 +1,15 @@
 2005-09-19  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.c (ia64_expand_widen_sum): New.
+	(ia64_expand_dot_prod_v8qi): New.
+	* config/ia64/ia64-protos.h: Update.
+	* config/ia64/vect.md (pmpy2_r, pmpy2_l, widen_usumv8qi3,
+	widen_usumv4hi3, widen_ssumv8qi3, widen_ssumv4hi3, udot_prodv8qi,
+	sdot_prodv8qi, sdot_prodv4hi): New.
+	(reduc_splus_v2sf): Rename from reduc_plus_v2sf.
+
+2005-09-19  Richard Henderson  <rth@redhat.com>
+
 	PR 23941
 	* real.c (exact_real_truncate): Return false if the format cannot
 	represent the number as a normal.
