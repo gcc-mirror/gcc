@@ -1,3 +1,8 @@
+2005-09-19  Steven Bosscher  <stevenb@suse.de>
+
+	PR rtl-optimization/23943
+	* cse.c (find_best_addr): Never propagate an EXPR_LIST rtx.
+
 2005-09-18  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (flags_from_decl_or_type): Do not set ECF_LIBCALL_BLOCK.
