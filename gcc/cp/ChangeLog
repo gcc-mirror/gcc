@@ -1,3 +1,9 @@
+2005-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/23947
+	* rtti.c (get_pseudo_ti_init): Recompute ti pointer after
+	get_tinfo_ptr calls.
+
 2005-09-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23914
