@@ -1,3 +1,9 @@
+2005-09-20  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/23420
+	* io.c (resolve_tag): Don't allow non-CHARACTER constants as formats.
+	(match_io): Fix usage of gfc_find_symbol.
+
 2005-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/23663

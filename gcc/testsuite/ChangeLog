@@ -1,3 +1,8 @@
+2005-09-20  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/23420
+	* gfortran.dg/print_fmt_4.f: New.
+
 2005-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/23663
