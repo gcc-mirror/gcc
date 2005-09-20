@@ -6966,7 +6966,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    int icode;
 	    rtx reg, insn;
 
-	    gcc_assert (modifier == EXPAND_NORMAL);
+	    gcc_assert (modifier == EXPAND_NORMAL
+			|| modifier == EXPAND_STACK_PARM);
 
 	    /* The vectorizer should have already checked the mode.  */
 	    icode = movmisalign_optab->handlers[mode].insn_code;
