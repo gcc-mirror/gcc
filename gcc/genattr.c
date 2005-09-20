@@ -79,6 +79,7 @@ gen_attr (rtx attr)
       puts ("\
 extern void shorten_branches (rtx);\n\
 extern int insn_default_length (rtx);\n\
+extern int insn_min_length (rtx);\n\
 extern int insn_variable_length_p (rtx);\n\
 extern int insn_current_length (rtx);\n\n\
 #include \"insn-addr.h\"\n");

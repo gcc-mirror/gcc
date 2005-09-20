@@ -1,3 +1,16 @@
+2005-09-20  J"orn Rennecke <joern.rennecke@st.com>
+
+	PR rtl-optimization/23898
+	* output.h (get_attr_min_length): Declare.
+	* final.c (get_attr_length_1): New function, broken out of:
+	(get_attr_length).
+	(get_attr_min_length): New function.
+	* bb-reorder.c (copy_bb_p, get_uncond_jump_length): Use it.
+	(duplicate_computed_gotos): Likewise.
+	* genattr.c (insn_min_length): Generate declaration.
+	* genattrtab.c (min_fn, min_attr_value): New functions.
+	(make_length_attrs): Generate insn_min_length.
+
 2005-09-20  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/pa/pa.c (output_cbranch): Check for zero in operands[2].

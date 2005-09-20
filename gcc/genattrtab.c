@@ -285,6 +285,7 @@ static rtx identity_fn		(rtx);
 static rtx zero_fn		(rtx);
 static rtx one_fn		(rtx);
 static rtx max_fn		(rtx);
+static rtx min_fn		(rtx);
 static void write_length_unit_log (void);
 static rtx simplify_cond	(rtx, int, int);
 static void clear_struct_flag (rtx);
@@ -307,6 +308,7 @@ static void gen_insn		(rtx, int);
 static void gen_delay		(rtx, int);
 static void write_test_expr	(rtx, int);
 static int max_attr_value	(rtx, int*);
+static int min_attr_value	(rtx, int*);
 static int or_attr_value	(rtx, int*);
 static void walk_attr_value	(rtx);
 static void write_attr_get	(struct attr_desc *);
@@ -1583,11 +1585,14 @@ make_length_attrs (void)
   static const char *new_names[] =
     {
       "*insn_default_length",
+      "*insn_min_length",
       "*insn_variable_length_p",
       "*insn_current_length"
     };
-  static rtx (*const no_address_fn[]) (rtx) = {identity_fn, zero_fn, zero_fn};
-  static rtx (*const address_fn[]) (rtx) = {max_fn, one_fn, identity_fn};
+  static rtx (*const no_address_fn[]) (rtx)
+    = {identity_fn,identity_fn, zero_fn, zero_fn};
+  static rtx (*const address_fn[]) (rtx)
+    = {max_fn, min_fn, one_fn, identity_fn};
   size_t i;
   struct attr_desc *length_attr, *new_attr;
   struct attr_value *av, *new_av;
@@ -1652,6 +1657,13 @@ max_fn (rtx exp)
 {
   int unknown;
   return make_numeric_value (max_attr_value (exp, &unknown));
+}
+
+static rtx
+min_fn (rtx exp)
+{
+  int unknown;
+  return make_numeric_value (min_attr_value (exp, &unknown));
 }
 
 static void
@@ -3529,6 +3541,47 @@ max_attr_value (rtx exp, int *unknownp)
     }
 
   return current_max;
+}
+
+/* Given an attribute value, return the minimum CONST_STRING argument
+   encountered.  Set *UNKNOWNP and return 0 if the value is unknown.  */
+
+static int
+min_attr_value (rtx exp, int *unknownp)
+{
+  int current_min;
+  int i, n;
+
+  switch (GET_CODE (exp))
+    {
+    case CONST_STRING:
+      current_min = atoi (XSTR (exp, 0));
+      break;
+
+    case COND:
+      current_min = min_attr_value (XEXP (exp, 1), unknownp);
+      for (i = 0; i < XVECLEN (exp, 0); i += 2)
+	{
+	  n = min_attr_value (XVECEXP (exp, 0, i + 1), unknownp);
+	  if (n < current_min)
+	    current_min = n;
+	}
+      break;
+
+    case IF_THEN_ELSE:
+      current_min = min_attr_value (XEXP (exp, 1), unknownp);
+      n = min_attr_value (XEXP (exp, 2), unknownp);
+      if (n < current_min)
+	current_min = n;
+      break;
+
+    default:
+      *unknownp = 1;
+      current_min = INT_MAX;
+      break;
+    }
+
+  return current_min;
 }
 
 /* Given an attribute value, return the result of ORing together all

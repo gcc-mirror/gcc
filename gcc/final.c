@@ -383,10 +383,11 @@ init_insn_lengths (void)
 }
 
 /* Obtain the current length of an insn.  If branch shortening has been done,
-   get its actual length.  Otherwise, get its maximum length.  */
-
-int
-get_attr_length (rtx insn ATTRIBUTE_UNUSED)
+   get its actual length.  Otherwise, use FALLBACK_FN to calcualte the
+   length.  */
+static inline int
+get_attr_length_1 (rtx insn ATTRIBUTE_UNUSED,
+		   int (*fallback_fn) (rtx) ATTRIBUTE_UNUSED)
 {
 #ifdef HAVE_ATTR_length
   rtx body;
@@ -404,7 +405,7 @@ get_attr_length (rtx insn ATTRIBUTE_UNUSED)
 	return 0;
 
       case CALL_INSN:
-	length = insn_default_length (insn);
+	length = fallback_fn (insn);
 	break;
 
       case JUMP_INSN:
@@ -415,7 +416,7 @@ get_attr_length (rtx insn ATTRIBUTE_UNUSED)
 	       ADDR_VEC_ALIGN.  */
 	  }
 	else
-	  length = insn_default_length (insn);
+	  length = fallback_fn (insn);
 	break;
 
       case INSN:
@@ -424,12 +425,12 @@ get_attr_length (rtx insn ATTRIBUTE_UNUSED)
 	  return 0;
 
 	else if (GET_CODE (body) == ASM_INPUT || asm_noperands (body) >= 0)
-	  length = asm_insn_count (body) * insn_default_length (insn);
+	  length = asm_insn_count (body) * fallback_fn (insn);
 	else if (GET_CODE (body) == SEQUENCE)
 	  for (i = 0; i < XVECLEN (body, 0); i++)
 	    length += get_attr_length (XVECEXP (body, 0, i));
 	else
-	  length = insn_default_length (insn);
+	  length = fallback_fn (insn);
 	break;
 
       default:
@@ -443,6 +444,22 @@ get_attr_length (rtx insn ATTRIBUTE_UNUSED)
 #else /* not HAVE_ATTR_length */
   return 0;
 #endif /* not HAVE_ATTR_length */
+}
+
+/* Obtain the current length of an insn.  If branch shortening has been done,
+   get its actual length.  Otherwise, get its maximum length.  */
+int
+get_attr_length (rtx insn)
+{
+  return get_attr_length_1 (insn, insn_default_length);
+}
+
+/* Obtain the current length of an insn.  If branch shortening has been done,
+   get its actual length.  Otherwise, get its minimum length.  */
+int
+get_attr_min_length (rtx insn)
+{
+  return get_attr_length_1 (insn, insn_min_length);
 }
 
 /* Code to handle alignment inside shorten_branches.  */

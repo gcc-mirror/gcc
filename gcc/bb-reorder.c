@@ -1178,7 +1178,7 @@ copy_bb_p (basic_block bb, int code_may_grow)
   FOR_BB_INSNS (bb, insn)
     {
       if (INSN_P (insn))
-	size += get_attr_length (insn);
+	size += get_attr_min_length (insn);
     }
 
   if (size <= max_size)
@@ -1205,7 +1205,7 @@ get_uncond_jump_length (void)
   label = emit_label_before (gen_label_rtx (), get_insns ());
   jump = emit_jump_insn (gen_jump (label));
 
-  length = get_attr_length (jump);
+  length = get_attr_min_length (jump);
 
   delete_insn (jump);
   delete_insn (label);
@@ -2030,7 +2030,7 @@ duplicate_computed_gotos (void)
       FOR_BB_INSNS (bb, insn)
 	if (INSN_P (insn))
 	  {
-	    size += get_attr_length (insn);
+	    size += get_attr_min_length (insn);
 	    if (size > max_size)
 	       break;
 	  }
