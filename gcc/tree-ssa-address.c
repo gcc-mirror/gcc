@@ -525,10 +525,18 @@ create_mem_ref (block_stmt_iterator *bsi, tree type,
     
       /* Add the symbol to base, eventually forcing it to register.  */
       if (parts.base)
-	parts.base = force_gimple_operand_bsi (bsi,
-					       build2 (PLUS_EXPR, addr_type,
-						       parts.base, tmp),
-					       true, NULL_TREE);
+	{
+	  if (parts.index)
+	    parts.base = force_gimple_operand_bsi (bsi,
+						   build2 (PLUS_EXPR, addr_type,
+							   parts.base, tmp),
+						   true, NULL_TREE);
+	  else
+	    {
+	      parts.index = parts.base;
+	      parts.base = tmp;
+	    }
+	}
       else
 	parts.base = tmp;
       parts.symbol = NULL_TREE;

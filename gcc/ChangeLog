@@ -1,3 +1,8 @@
+2005-09-20  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* tree-ssa-address.c (create_mem_ref): Put the symbol reference into the
+	base register if possible.
+
 2005-09-20  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/18463
