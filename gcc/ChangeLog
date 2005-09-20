@@ -1,3 +1,7 @@
+2005-09-20  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/pa/pa.c (output_cbranch): Check for zero in operands[2].
+
 2005-09-20  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (expand_expr_real_1) <INDIRECT_REF>: Allow modifier

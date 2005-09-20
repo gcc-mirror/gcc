@@ -5922,6 +5922,8 @@ output_cbranch (rtx *operands, int nullify, int length, int negated, rtx insn)
      zero for cmpb, we must ensure that we use cmpb for the comparison.  */
   if (GET_MODE (operands[1]) == DImode && operands[2] == const0_rtx)
     operands[2] = gen_rtx_REG (DImode, 0);
+  if (GET_MODE (operands[2]) == DImode && operands[1] == const0_rtx)
+    operands[1] = gen_rtx_REG (DImode, 0);
 
   /* If this is a long branch with its delay slot unfilled, set `nullify'
      as it can nullify the delay slot and save a nop.  */
