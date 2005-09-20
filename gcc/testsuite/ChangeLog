@@ -1,3 +1,8 @@
+2005-09-20  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/23186
+	* g++.dg/other/pr22003.C: Require named sections.
+
 2005-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/23947
