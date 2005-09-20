@@ -1,3 +1,7 @@
+2005-09-16  Andreas Jaeger  <aj@suse.de>
+
+	* socket.c: Add string.h for memcpy.
+
 2005-09-05  Arnaud Charlet  <charlet@adacore.com>
 
 	* dec-io.ads, dec-io.adb: Removed, no longer used.
@@ -30,7 +34,7 @@
 	s-taprop-dummy.adb: Make this unit Preelaborate.
 
 	* s-osprim-vxworks.adb, s-osprim-vms.adb, s-osprim-vms.ads,
-	s-osprim-mingw.adb, s-intman-vxworks.ads, s-intman-vxworks.adb, 
+	s-osprim-mingw.adb, s-intman-vxworks.ads, s-intman-vxworks.adb,
 	s-intman-vms.adb, s-intman-mingw.adb, s-intman-vms.ads,
 	s-osprim-unix.adb, s-osprim-os2.adb, s-osprim-solaris.adb,
 	s-intman-solaris.adb, s-intman-irix-athread.adb,
@@ -72,7 +76,7 @@
 	Preelaborate.
 	Use raise xxx with "..."; Ada 2005 form.
 
-	* a-taside.ads, a-taside.adb: 
+	* a-taside.ads, a-taside.adb:
 	Remove some dependencies, to make it easier to make this unit truly
 	Preelaborate.
 	Rewrite some code to be conformant with Preelaborate rules.
@@ -96,7 +100,7 @@
 	Clean up/simplify code thanks to Full_Name being a System.Address.
 	Remove obsolete pragma Suppress (All_Checks), no longer needed.
 
-	* s-taskin.ads, s-taskin.adb: 
+	* s-taskin.ads, s-taskin.adb:
 	Move with clauses outside Warnings Off now that dependent units are
 	Preelaborate.
 	Make this unit Preelaborate.
@@ -162,7 +166,7 @@
 
 	* s-except.ads: Removed, no longer used.
 
-	* s-mastop.ads, s-mastop.adb: 
+	* s-mastop.ads, s-mastop.adb:
 	(Enter_Handler, Set_Signal_Machine_State): Removed, no longer used.
 	Remove reference to System.Exceptions.
 
@@ -371,7 +375,7 @@
 2005-09-01  Arnaud Charlet  <charlet@adacore.com>
 	    Jose Ruiz  <ruiz@adacore.com>
 
-	* s-taprop-vxworks.adb: 
+	* s-taprop-vxworks.adb:
 	Move with clauses outside Warnings Off now that dependent units are
 	Preelaborate.
 	(Initialize): Call Interrupt_Managemeent.Initialize to ensure proper
@@ -427,7 +431,7 @@
 	 SO_RCVTIMEO/SO_SNDTIMEO
 	 IOV_MAX
 
-	* gen-soccon.c: 
+	* gen-soccon.c:
 	Move all target-specific file inclusions and macro definitions to
 	gsocket.h, in order to ensure that any C code in socket.c will see a
 	set of constants that is consistent with the contents of g-soccon.ads.
@@ -460,73 +464,73 @@
 
 2005-09-01  Arnaud Charlet  <charlet@adacore.com>
 
-	* s-stoele.ads, s-stopoo.ads, s-stratt.ads, s-strops.ads, s-unstyp.ads, 
-	s-valboo.ads, s-valcha.ads, s-valdec.ads, s-valenu.ads, s-valint.ads, 
-	s-vallld.ads, s-vallli.ads, s-valllu.ads, s-valrea.ads, s-valuns.ads, 
-	s-valuti.ads, s-valwch.ads, s-veboop.ads, s-vector.ads, s-vercon.ads, 
-	s-wchcnv.ads, s-wchcon.ads, s-wchjis.ads, s-wchstw.ads, s-wchwts.ads, 
-	s-widboo.ads, s-widcha.ads, s-widenu.ads, s-widlli.ads, s-widllu.ads, 
-	s-widwch.ads, s-wwdcha.ads, s-wwdenu.ads, s-wwdwch.ads, system.ads, 
-	table.ads, types.ads, system-vms_64.ads, s-crtl-vms64.ads, 
-	s-addope.ads, system-darwin-ppc.ads, system-vxworks-x86.ads, 
-	s-vxwork-x86.ads, system-linux-ppc.ads, i-vxwork-x86.ads, 
-	a-numaux-darwin.ads, a-crbtgo.ads, a-crbtgk.ads, a-crbltr.ads, 
-	a-coprnu.ads, a-convec.ads, a-contai.ads, a-coinve.ads, a-cohata.ads, 
-	a-cohama.ads, a-cihama.ads, a-cidlli.ads, a-cdlili.ads, 
-	a-numaux-libc-x86.ads, a-numaux-vxworks.ads, system-linux-ia64.ads, 
-	system-freebsd-x86.ads, system-unixware.ads, system-lynxos-ppc.ads, 
+	* s-stoele.ads, s-stopoo.ads, s-stratt.ads, s-strops.ads, s-unstyp.ads,
+	s-valboo.ads, s-valcha.ads, s-valdec.ads, s-valenu.ads, s-valint.ads,
+	s-vallld.ads, s-vallli.ads, s-valllu.ads, s-valrea.ads, s-valuns.ads,
+	s-valuti.ads, s-valwch.ads, s-veboop.ads, s-vector.ads, s-vercon.ads,
+	s-wchcnv.ads, s-wchcon.ads, s-wchjis.ads, s-wchstw.ads, s-wchwts.ads,
+	s-widboo.ads, s-widcha.ads, s-widenu.ads, s-widlli.ads, s-widllu.ads,
+	s-widwch.ads, s-wwdcha.ads, s-wwdenu.ads, s-wwdwch.ads, system.ads,
+	table.ads, types.ads, system-vms_64.ads, s-crtl-vms64.ads,
+	s-addope.ads, system-darwin-ppc.ads, system-vxworks-x86.ads,
+	s-vxwork-x86.ads, system-linux-ppc.ads, i-vxwork-x86.ads,
+	a-numaux-darwin.ads, a-crbtgo.ads, a-crbtgk.ads, a-crbltr.ads,
+	a-coprnu.ads, a-convec.ads, a-contai.ads, a-coinve.ads, a-cohata.ads,
+	a-cohama.ads, a-cihama.ads, a-cidlli.ads, a-cdlili.ads,
+	a-numaux-libc-x86.ads, a-numaux-vxworks.ads, system-linux-ia64.ads,
+	system-freebsd-x86.ads, system-unixware.ads, system-lynxos-ppc.ads,
 	system-lynxos-x86.ads, system-linux-x86_64.ads, system-tru64.ads,
-	s-vxwork-alpha.ads, system-aix.ads, system-vxworks-sparcv9.ads, 
-	system-solaris-x86.ads, system-irix-o32.ads, system-irix-n32.ads, 
-	s-parame-hpux.ads, system-hpux.ads, system-vxworks-m68k.ads, 
-	s-vxwork-m68k.ads, system-linux-x86.ads, system-vxworks-mips.ads, 
-	s-vxwork-mips.ads, system-os2.ads, system-interix.ads, 
-	s-vxwork-ppc.ads, system-solaris-sparc.ads, s-vxwork-sparcv9.ads, 
-	system-solaris-sparcv9.ads, s-parame-vms.ads, system-vms.ads, 
-	s-osinte-mingw.ads, system-mingw.ads, s-parame-vms-restrict.ads, 
-	system-vms-zcx.ads, s-parame-ae653.ads, system-vxworks-ppc.ads, 
-	s-parame-vxworks.ads, system-vxworks-alpha.ads, interfac-vms.ads, 
-	a-numaux-x86.ads, a-astaco.ads, a-chahan.ads, a-charac.ads, 
-	a-chlat1.ads, a-chlat9.ads, a-colire.adb, a-colire.ads, a-comlin.ads, 
+	s-vxwork-alpha.ads, system-aix.ads, system-vxworks-sparcv9.ads,
+	system-solaris-x86.ads, system-irix-o32.ads, system-irix-n32.ads,
+	s-parame-hpux.ads, system-hpux.ads, system-vxworks-m68k.ads,
+	s-vxwork-m68k.ads, system-linux-x86.ads, system-vxworks-mips.ads,
+	s-vxwork-mips.ads, system-os2.ads, system-interix.ads,
+	s-vxwork-ppc.ads, system-solaris-sparc.ads, s-vxwork-sparcv9.ads,
+	system-solaris-sparcv9.ads, s-parame-vms.ads, system-vms.ads,
+	s-osinte-mingw.ads, system-mingw.ads, s-parame-vms-restrict.ads,
+	system-vms-zcx.ads, s-parame-ae653.ads, system-vxworks-ppc.ads,
+	s-parame-vxworks.ads, system-vxworks-alpha.ads, interfac-vms.ads,
+	a-numaux-x86.ads, a-astaco.ads, a-chahan.ads, a-charac.ads,
+	a-chlat1.ads, a-chlat9.ads, a-colire.adb, a-colire.ads, a-comlin.ads,
 	a-cwila1.ads, a-cwila9.ads, ada.ads, a-decima.ads, a-exextr.adb,
 	a-filico.ads, a-finali.ads, a-interr.ads, a-ioexce.ads, a-dynpri.ads,
-	a-ngcefu.ads, a-ngcefu.adb, a-ngcoty.adb, a-ngcoty.ads, a-ngelfu.ads, 
-	a-nudira.adb, a-nudira.ads, a-nuflra.adb, a-numaux.ads, a-numeri.ads, 
-	a-reatim.adb, a-stmaco.ads, a-storio.ads, a-strbou.ads, a-stream.ads, 
-	a-strfix.ads, a-string.ads, a-strmap.ads, a-strsea.ads, a-strsup.ads, 
-	a-strunb.ads, a-stunau.ads, a-stwibo.ads, a-stwifi.ads, a-stwima.ads, 
-	a-stwise.ads, a-stwisu.ads, a-stwiun.ads, a-swmwco.ads, a-textio.ads, 
-	csets.ads, debug.ads, dec.ads, g-curexc.ads, get_targ.ads, 
-	g-except.ads, system-linux-hppa.ads, a-chacon.ads, a-widcha.ads, 
-	a-zchara.ads, system-hpux-ia64.ads, a-ciorma.ads, a-coorma.ads, 
-	a-ciormu.ads, a-coormu.ads, a-rbtgso.ads, a-chzla1.ads, a-chzla9.ads, 
-	a-stzbou.ads, a-stzfix.ads, a-stzmap.ads, a-stzsea.ads, a-stzsup.ads, 
-	a-stzunb.ads, a-swunau.ads, a-szunau.ads, gnat.ads, g-regpat.ads, 
-	g-speche.ads, g-spitbo.ads, g-table.ads, g-tasloc.ads, g-trasym.ads, 
-	i-c.ads, i-cpoint.ads, i-cpp.ads, i-cstrin.ads, i-fortra.ads, 
-	interfac.ads, i-os2err.ads, i-os2lib.ads, i-os2syn.ads, i-os2thr.ads, 
-	i-vxwork.ads, output.ads, s-arit64.ads, s-atacco.ads, s-boarop.ads, 
-	s-casuti.ads, s-crtl.ads, s-exctab.ads, s-exnint.ads, s-exnllf.ads, 
-	s-exnlli.ads, s-expint.ads, s-explli.ads, s-expllu.ads, s-expmod.ads, 
-	s-expuns.ads, s-fatflt.ads, s-fatgen.ads, s-fatlfl.ads, s-fatllf.ads, 
-	s-fatsfl.ads, s-finimp.ads, s-finroo.ads, s-fore.ads, s-geveop.ads, 
-	s-htable.ads, s-imgbiu.ads, s-imgboo.ads, s-imgcha.ads, s-imgdec.ads, 
-	s-imgenu.ads, s-imgint.ads, s-imgllb.ads, s-imglld.ads, s-imglli.ads, 
-	s-imgllu.ads, s-imgllw.ads, s-imgrea.ads, s-imguns.ads, s-imgwch.ads, 
-	s-imgwiu.ads, s-io.ads, s-maccod.ads, s-mantis.ads, s-memcop.ads, 
-	s-pack03.ads, s-pack05.ads, s-pack06.ads, s-pack07.ads, s-pack09.ads, 
-	s-pack10.ads, s-pack11.ads, s-pack12.ads, s-pack13.ads, s-pack14.ads, 
-	s-pack15.ads, s-pack17.ads, s-pack18.ads, s-pack19.ads, s-pack20.ads, 
-	s-pack21.ads, s-pack22.ads, s-pack23.ads, s-pack24.ads, s-pack25.ads, 
-	s-pack26.ads, s-pack27.ads, s-pack28.ads, s-pack29.ads, s-pack30.ads, 
-	s-pack31.ads, s-pack33.ads, s-pack34.ads, s-pack35.ads, s-pack36.ads, 
-	s-pack37.ads, s-pack38.ads, s-pack39.ads, s-pack40.ads, s-pack41.ads, 
-	s-pack42.ads, s-pack43.ads, s-pack44.ads, s-pack45.ads, s-pack46.ads, 
-	s-pack47.ads, s-pack48.ads, s-pack49.ads, s-pack50.ads, s-pack51.ads, 
-	s-pack52.ads, s-pack53.ads, s-pack54.ads, s-pack55.ads, s-pack56.ads, 
-	s-pack57.ads, s-pack58.ads, s-pack59.ads, s-pack60.ads, s-pack61.ads, 
-	s-pack62.ads, s-pack63.ads, s-parame.ads, s-pooglo.ads, s-pooloc.ads, 
-	s-poosiz.ads, s-powtab.ads, s-purexc.ads, s-sopco3.ads, s-sopco4.ads, 
+	a-ngcefu.ads, a-ngcefu.adb, a-ngcoty.adb, a-ngcoty.ads, a-ngelfu.ads,
+	a-nudira.adb, a-nudira.ads, a-nuflra.adb, a-numaux.ads, a-numeri.ads,
+	a-reatim.adb, a-stmaco.ads, a-storio.ads, a-strbou.ads, a-stream.ads,
+	a-strfix.ads, a-string.ads, a-strmap.ads, a-strsea.ads, a-strsup.ads,
+	a-strunb.ads, a-stunau.ads, a-stwibo.ads, a-stwifi.ads, a-stwima.ads,
+	a-stwise.ads, a-stwisu.ads, a-stwiun.ads, a-swmwco.ads, a-textio.ads,
+	csets.ads, debug.ads, dec.ads, g-curexc.ads, get_targ.ads,
+	g-except.ads, system-linux-hppa.ads, a-chacon.ads, a-widcha.ads,
+	a-zchara.ads, system-hpux-ia64.ads, a-ciorma.ads, a-coorma.ads,
+	a-ciormu.ads, a-coormu.ads, a-rbtgso.ads, a-chzla1.ads, a-chzla9.ads,
+	a-stzbou.ads, a-stzfix.ads, a-stzmap.ads, a-stzsea.ads, a-stzsup.ads,
+	a-stzunb.ads, a-swunau.ads, a-szunau.ads, gnat.ads, g-regpat.ads,
+	g-speche.ads, g-spitbo.ads, g-table.ads, g-tasloc.ads, g-trasym.ads,
+	i-c.ads, i-cpoint.ads, i-cpp.ads, i-cstrin.ads, i-fortra.ads,
+	interfac.ads, i-os2err.ads, i-os2lib.ads, i-os2syn.ads, i-os2thr.ads,
+	i-vxwork.ads, output.ads, s-arit64.ads, s-atacco.ads, s-boarop.ads,
+	s-casuti.ads, s-crtl.ads, s-exctab.ads, s-exnint.ads, s-exnllf.ads,
+	s-exnlli.ads, s-expint.ads, s-explli.ads, s-expllu.ads, s-expmod.ads,
+	s-expuns.ads, s-fatflt.ads, s-fatgen.ads, s-fatlfl.ads, s-fatllf.ads,
+	s-fatsfl.ads, s-finimp.ads, s-finroo.ads, s-fore.ads, s-geveop.ads,
+	s-htable.ads, s-imgbiu.ads, s-imgboo.ads, s-imgcha.ads, s-imgdec.ads,
+	s-imgenu.ads, s-imgint.ads, s-imgllb.ads, s-imglld.ads, s-imglli.ads,
+	s-imgllu.ads, s-imgllw.ads, s-imgrea.ads, s-imguns.ads, s-imgwch.ads,
+	s-imgwiu.ads, s-io.ads, s-maccod.ads, s-mantis.ads, s-memcop.ads,
+	s-pack03.ads, s-pack05.ads, s-pack06.ads, s-pack07.ads, s-pack09.ads,
+	s-pack10.ads, s-pack11.ads, s-pack12.ads, s-pack13.ads, s-pack14.ads,
+	s-pack15.ads, s-pack17.ads, s-pack18.ads, s-pack19.ads, s-pack20.ads,
+	s-pack21.ads, s-pack22.ads, s-pack23.ads, s-pack24.ads, s-pack25.ads,
+	s-pack26.ads, s-pack27.ads, s-pack28.ads, s-pack29.ads, s-pack30.ads,
+	s-pack31.ads, s-pack33.ads, s-pack34.ads, s-pack35.ads, s-pack36.ads,
+	s-pack37.ads, s-pack38.ads, s-pack39.ads, s-pack40.ads, s-pack41.ads,
+	s-pack42.ads, s-pack43.ads, s-pack44.ads, s-pack45.ads, s-pack46.ads,
+	s-pack47.ads, s-pack48.ads, s-pack49.ads, s-pack50.ads, s-pack51.ads,
+	s-pack52.ads, s-pack53.ads, s-pack54.ads, s-pack55.ads, s-pack56.ads,
+	s-pack57.ads, s-pack58.ads, s-pack59.ads, s-pack60.ads, s-pack61.ads,
+	s-pack62.ads, s-pack63.ads, s-parame.ads, s-pooglo.ads, s-pooloc.ads,
+	s-poosiz.ads, s-powtab.ads, s-purexc.ads, s-sopco3.ads, s-sopco4.ads,
 	s-sopco5.ads: Minor reformatting: reindent pragma Pure/Preelaborate
 	and always use the no parameter form for consistency.
 
@@ -769,7 +773,7 @@
 	* scng.adb (Check_End_Of_Line): Count characters, rather than bytes
 	(makes a difference for wide characters)
 
-	* widechar.adb, widechar.ads: 
+	* widechar.adb, widechar.ads:
 	Add Wide_Char_Byte_Count feature to count chars vs bytes
 
 2005-09-01  Thomas Quinot  <quinot@adacore.com>
@@ -1087,9 +1091,9 @@
 
 2005-09-01  Matthew Heaney  <heaney@adacore.com>
 
-	* a-cihase.adb, a-coorse.ads, a-coorse.adb, a-cohama.adb, 
-	a-ciorse.ads, a-ciorse.adb, a-cihama.adb, a-cdlili.adb, 
-	a-cidlli.adb, a-chtgop.adb, a-cihase.adb, a-cihase.ads, 
+	* a-cihase.adb, a-coorse.ads, a-coorse.adb, a-cohama.adb,
+	a-ciorse.ads, a-ciorse.adb, a-cihama.adb, a-cdlili.adb,
+	a-cidlli.adb, a-chtgop.adb, a-cihase.adb, a-cihase.ads,
 	a-cohase.adb, a-cohase.adb, a-cohase.ads: Synchronized with latest
 	draft (Draft 13, August 2005) of Ada Amendment 1.
 
@@ -1133,7 +1137,7 @@
 
 	PR ada/23187
 	* adaint.c
-	(GNAT_MAXPATH_LEN): Use default value if MAXPATHLEN is undefined. 
+	(GNAT_MAXPATH_LEN): Use default value if MAXPATHLEN is undefined.
 
 2005-08-29  Arnaud Charlet  <charlet@adacore.com>
 	    Doug Rupp  <rupp@adacore.com>
@@ -1211,7 +1215,7 @@
 	VAR_OR_FUNCTION_DECL_P.
 
 2005-07-08  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	* utils.c (create_param_decl): DECL_ARG_TYPE_AS_WRITTEN is
 	removed.
 
@@ -1378,8 +1382,8 @@
 
 2005-07-04  Vincent Celier  <celier@adacore.com>
 
-	* mlib-tgt-tru64.adb, mlib-tgt-aix.adb, mlib-tgt-irix.adb, 
-	mlib-tgt-hpux.adb, mlib-tgt-linux.adb, mlib-tgt-solaris.adb, 
+	* mlib-tgt-tru64.adb, mlib-tgt-aix.adb, mlib-tgt-irix.adb,
+	mlib-tgt-hpux.adb, mlib-tgt-linux.adb, mlib-tgt-solaris.adb,
 	mlib-tgt-mingw.adb, mlib-tgt-darwin.adb (Build_Dynamic_Library):
 	Remove all auto-initialization code, as this is now done through the
 	constructor mechanism.
@@ -1456,7 +1460,7 @@
 	help of Find_Unique_Parameterless_Procedure.
 	Replace Name_Alias with Name_Target for pragma Linker_Alias.
 
-	* snames.h, snames.ads, snames.adb: 
+	* snames.h, snames.ads, snames.adb:
 	Add Name_Linker_Constructor and Name_Linker_Destructor.
 	Add Pragma_Linker_Constructor and Pragma_Linker_Destructor.
 	* snames.adb: Remove Name_Alias.
@@ -1703,35 +1707,35 @@
 	a-contai.ads, a-coprnu.ads, a-coprnu.adb: Fix header style (spaces in
 	package name).
 
-	* a-intnam-lynxos.ads, a-intnam-unixware.ads, a-intnam-tru64.ads, 
-	a-intnam-aix.ads, a-intnam-irix.ads, a-excpol-interix.adb, 
-	a-intnam-hpux.ads, a-intnam-linux.ads, a-intnam-dummy.ads, 
-	a-intnam-os2.ads, a-numaux-libc-x86.ads, a-intnam-interix.ads, 
+	* a-intnam-lynxos.ads, a-intnam-unixware.ads, a-intnam-tru64.ads,
+	a-intnam-aix.ads, a-intnam-irix.ads, a-excpol-interix.adb,
+	a-intnam-hpux.ads, a-intnam-linux.ads, a-intnam-dummy.ads,
+	a-intnam-os2.ads, a-numaux-libc-x86.ads, a-intnam-interix.ads,
 	a-intnam-solaris.ads, a-caldel-vms.adb, a-calend-vms.ads,
-	a-intnam-vms.ads, a-excpol-abort.adb, a-intnam-mingw.ads, 
-	a-intnam-vxworks.ads, a-numaux-vxworks.ads, s-osinte-unixware.adb, 
-	s-osinte-unixware.ads, s-osinte-lynxos-3.adb, s-osinte-lynxos-3.ads, 
-	s-osinte-hpux.ads, s-osinte-solaris-posix.ads, a-intnam-freebsd.ads, 
-	s-osinte-freebsd.adb, s-osinte-freebsd.ads, s-osinte-lynxos.adb, 
-	s-osinte-lynxos.ads, s-tpopsp-lynxos.adb, s-osinte-tru64.adb, 
-	s-osinte-tru64.ads, s-tpopsp-posix-foreign.adb, s-vxwork-alpha.ads, 
-	s-osinte-aix.adb, s-osinte-aix.ads, s-osinte-aix-fsu.ads, 
-	s-osinte-irix.adb, s-osinte-irix.ads, s-interr-sigaction.adb, 
-	s-osinte-irix-athread.ads, s-osinte-hpux-dce.adb, 
-	s-osinte-hpux-dce.ads, s-osinte-posix.adb, s-osinte-linux.ads, 
-	s-vxwork-m68k.ads, s-osinte-linux-fsu.ads, s-vxwork-mips.ads, 
-	s-osinte-dummy.ads, s-interr-dummy.adb, s-osinte-os2.adb, 
-	s-osinte-os2.ads, s-osprim-os2.adb, s-osinte-interix.ads, 
-	s-osprim-unix.adb, s-vxwork-ppc.ads, s-osinte-solaris.adb, 
-	s-osinte-solaris.ads, s-osprim-solaris.adb, s-tpopsp-solaris.adb, 
-	s-vxwork-sparcv9.ads, s-osinte-solaris-fsu.ads, s-interr-vms.adb, 
-	s-osinte-vms.adb, s-osinte-vms.ads, s-osprim-vms.adb, 
-	s-osprim-vms.ads, s-tpopde-vms.adb, s-tpopde-vms.ads, 
-	s-osprim-mingw.adb, s-vxwork-xscale.ads, s-interr-vxworks.adb, 
-	s-osinte-vxworks.adb, s-osinte-vxworks.ads, s-osprim-vxworks.adb, 
-	s-tfsetr-vxworks.adb, s-tpopsp-vxworks.adb, s-intman-posix.adb, 
-	s-osinte-fsu.adb, s-osprim-posix.adb, s-tfsetr-default.adb, 
-	s-tpopsp-posix.adb, s-traces-default.adb, s-trafor-default.adb, 
+	a-intnam-vms.ads, a-excpol-abort.adb, a-intnam-mingw.ads,
+	a-intnam-vxworks.ads, a-numaux-vxworks.ads, s-osinte-unixware.adb,
+	s-osinte-unixware.ads, s-osinte-lynxos-3.adb, s-osinte-lynxos-3.ads,
+	s-osinte-hpux.ads, s-osinte-solaris-posix.ads, a-intnam-freebsd.ads,
+	s-osinte-freebsd.adb, s-osinte-freebsd.ads, s-osinte-lynxos.adb,
+	s-osinte-lynxos.ads, s-tpopsp-lynxos.adb, s-osinte-tru64.adb,
+	s-osinte-tru64.ads, s-tpopsp-posix-foreign.adb, s-vxwork-alpha.ads,
+	s-osinte-aix.adb, s-osinte-aix.ads, s-osinte-aix-fsu.ads,
+	s-osinte-irix.adb, s-osinte-irix.ads, s-interr-sigaction.adb,
+	s-osinte-irix-athread.ads, s-osinte-hpux-dce.adb,
+	s-osinte-hpux-dce.ads, s-osinte-posix.adb, s-osinte-linux.ads,
+	s-vxwork-m68k.ads, s-osinte-linux-fsu.ads, s-vxwork-mips.ads,
+	s-osinte-dummy.ads, s-interr-dummy.adb, s-osinte-os2.adb,
+	s-osinte-os2.ads, s-osprim-os2.adb, s-osinte-interix.ads,
+	s-osprim-unix.adb, s-vxwork-ppc.ads, s-osinte-solaris.adb,
+	s-osinte-solaris.ads, s-osprim-solaris.adb, s-tpopsp-solaris.adb,
+	s-vxwork-sparcv9.ads, s-osinte-solaris-fsu.ads, s-interr-vms.adb,
+	s-osinte-vms.adb, s-osinte-vms.ads, s-osprim-vms.adb,
+	s-osprim-vms.ads, s-tpopde-vms.adb, s-tpopde-vms.ads,
+	s-osprim-mingw.adb, s-vxwork-xscale.ads, s-interr-vxworks.adb,
+	s-osinte-vxworks.adb, s-osinte-vxworks.ads, s-osprim-vxworks.adb,
+	s-tfsetr-vxworks.adb, s-tpopsp-vxworks.adb, s-intman-posix.adb,
+	s-osinte-fsu.adb, s-osprim-posix.adb, s-tfsetr-default.adb,
+	s-tpopsp-posix.adb, s-traces-default.adb, s-trafor-default.adb,
 	s-trafor-default.ads, s-tratas-default.adb, a-numaux-x86.adb,
 	a-numaux-x86.ads, a-astaco.adb, a-astaco.ads, a-caldel.adb,
 	a-caldel.ads, a-charac.ads, a-chlat1.ads, a-chlat9.ads, a-colien.adb,
@@ -1769,10 +1773,10 @@
 	gnat.ads, g-souinf.ads, g-speche.adb, g-speche.ads, g-table.adb,
 	g-table.ads, g-thread.adb, g-thread.ads, ioexcept.ads, i-vxwoio.adb,
 	i-vxwoio.ads, math_lib.adb, s-assert.adb, s-assert.ads, s-asthan.ads,
-	s-bitops.adb, s-bitops.ads, s-boarop.ads, s-carsi8.adb, s-carsi8.ads, 
-	s-carun8.adb, s-carun8.ads, s-casi16.adb, s-casi16.ads, s-casi32.adb, 
+	s-bitops.adb, s-bitops.ads, s-boarop.ads, s-carsi8.adb, s-carsi8.ads,
+	s-carun8.adb, s-carun8.ads, s-casi16.adb, s-casi16.ads, s-casi32.adb,
 	s-casi32.ads, s-casi64.adb, s-casi64.ads, s-casuti.adb, s-casuti.ads,
-	s-caun16.adb, s-caun16.ads, s-caun32.adb, s-caun32.ads, s-caun64.adb, 
+	s-caun16.adb, s-caun16.ads, s-caun32.adb, s-caun32.ads, s-caun64.adb,
 	s-caun64.ads, s-direio.adb, s-direio.ads, sequenio.ads, s-errrep.adb,
 	s-errrep.ads, s-exnint.adb, s-exnint.ads, s-exnllf.adb, s-exnllf.ads,
 	s-exnlli.adb, s-exnlli.ads, s-expint.adb, s-expint.ads, s-explli.adb,
@@ -1810,21 +1814,21 @@
 	s-pack62.adb, s-pack62.ads, s-pack63.adb, s-pack63.ads, s-scaval.adb,
 	s-scaval.ads, s-sequio.adb, s-sequio.ads, s-stache.adb, s-stache.ads,
 	s-stratt.adb, s-stratt.ads, s-strcom.adb, s-strcom.ads, s-strops.adb,
-	s-strops.ads, s-taasde.ads, s-tadeca.adb, s-tadeca.ads, s-tadert.adb, 
-	s-tadert.ads, s-taenca.adb, s-taenca.ads, s-taprob.adb, s-taprob.ads, 
-	s-tarest.adb, s-tarest.ads, s-tasdeb.adb, s-tasdeb.ads, s-tasini.adb, 
-	s-tasini.ads, s-taskin.adb, s-taskin.ads, s-tasque.adb, s-tasque.ads, 
-	s-tasren.ads, s-tasres.ads, s-tassta.adb, s-tassta.ads, s-tasuti.adb, 
-	s-tasuti.ads, s-tataat.adb, s-tataat.ads, s-tpinop.adb, s-tpinop.ads, 
-	s-tpoben.adb, s-tpoben.ads, s-tpobop.ads, s-tporft.adb, s-tposen.ads, 
+	s-strops.ads, s-taasde.ads, s-tadeca.adb, s-tadeca.ads, s-tadert.adb,
+	s-tadert.ads, s-taenca.adb, s-taenca.ads, s-taprob.adb, s-taprob.ads,
+	s-tarest.adb, s-tarest.ads, s-tasdeb.adb, s-tasdeb.ads, s-tasini.adb,
+	s-tasini.ads, s-taskin.adb, s-taskin.ads, s-tasque.adb, s-tasque.ads,
+	s-tasren.ads, s-tasres.ads, s-tassta.adb, s-tassta.ads, s-tasuti.adb,
+	s-tasuti.ads, s-tataat.adb, s-tataat.ads, s-tpinop.adb, s-tpinop.ads,
+	s-tpoben.adb, s-tpoben.ads, s-tpobop.ads, s-tporft.adb, s-tposen.ads,
 	s-traces.adb, s-traces.ads, s-tratas.adb, s-tratas.ads, s-valint.ads,
 	s-unstyp.ads, s-veboop.adb, s-veboop.ads, s-vector.ads, s-vercon.adb,
 	s-vercon.ads, s-wchcnv.adb, s-wchcnv.ads, s-wchjis.adb, s-wchjis.ads,
 	s-wchstw.adb, s-wchstw.ads, s-wchwts.adb, s-wchwts.ads, s-widboo.adb,
 	s-widboo.ads, s-widcha.adb, s-widcha.ads, s-widenu.adb, s-widenu.ads,
 	s-widlli.adb, s-widlli.ads, s-widllu.adb, s-widllu.ads, s-wwdcha.ads,
-	s-wwdenu.adb, s-wwdwch.ads, text_io.ads, s-stchop.ads, s-stchop.adb, 
-	s-stchop-vxworks.adb, a-intnam-darwin.ads, s-osinte-darwin.adb, 
+	s-wwdenu.adb, s-wwdwch.ads, text_io.ads, s-stchop.ads, s-stchop.adb,
+	s-stchop-vxworks.adb, a-intnam-darwin.ads, s-osinte-darwin.adb,
 	s-osinte-darwin.ads, s-vxwork-x86.ads, a-numaux-darwin.ads,
 	a-numaux-darwin.adb, a-chzla1.ads, a-chzla9.ads, a-lfztio.ads,
 	a-liztio.ads, a-llfzti.ads, a-llizti.ads, a-sfztio.ads, a-siztio.ads,
@@ -1967,7 +1971,7 @@
 	* sem.adb: Make sure predefined units are compiled with GNAT_Mode true
 	when needed for proper processing of categorization stuff
 
-	* sem_cat.adb: 
+	* sem_cat.adb:
 	For several cases, make errors in preealborate units warnings,
 	instead of errors, if GNAT_Mode is set. For AI-362.
 
@@ -1995,7 +1999,7 @@
 	* symbols.ads, symbols.adb:
 	(Processing): New package, containing procedure Process
 
-	* symbols-vms-alpha.adb: 
+	* symbols-vms-alpha.adb:
 	Replaced by symbols-vms.adb and symbols-processing-vms-alpha.adb
 
 	* symbols-vms.adb, symbols-processing-vms-alpha.adb,
@@ -2250,7 +2254,7 @@
 	within an initialization procedure, compute its actual subtype, because
 	the component may depend on the discriminants of the enclosing record.
 
-	* i-cpp.ads, i-cpp.adb: 
+	* i-cpp.ads, i-cpp.adb:
 	This package has been left available for compatibility with previous
 	versions of the frontend. As part of the new layout this is now a
 	dummy package that uses declarations available at a-tags.ads
@@ -2611,7 +2615,7 @@
 	* par-ch6.adb (P_Subprogram): Recognize overriding indicator, and set
 	flags accordingly on subrogram specifications or instances.
 
-	* sem_ch8.adb: 
+	* sem_ch8.adb:
 	(Analyze_Subprogram_Renaming): For a renaming_as_body, verify that the
 	overriding_indicator, if present, is consistent with status of spec.
 	Improve error message for null-excluding checks on controlling access
@@ -2626,7 +2630,7 @@
 	reference to a private child unit.
 
 	* exp_imgv.adb, s-imgwch.ads, s-imgwch.adb, s-valwch.adb,
-	s-valwch.ads, s-widwch.adb, s-widwch.ads, s-wwdcha.adb, s-wwdwch.adb: 
+	s-valwch.ads, s-widwch.adb, s-widwch.ads, s-wwdcha.adb, s-wwdwch.adb:
 	Rewrite to correspond to new wide character names in AI-395
 
         * par-ch12.adb (P_Formal_Subprogram_Declaration): Recognize null
@@ -3056,12 +3060,12 @@
 	* a-szuzha.ads, a-szuzha.adb: New files.
 
 	* a-rbtgso.adb, a-crbtgo.ads, a-crbtgo.adb, a-crbtgk.ads,
-	a-crbtgk.adb, a-crbltr.ads, a-coorse.ads, a-coorse.adb, a-convec.ads, 
-	a-convec.adb, a-coinve.ads, a-coinve.adb, a-cohata.ads, a-cohama.ads, 
-	a-cohama.adb, a-ciorse.ads, a-ciorse.adb, a-cihama.ads, a-cihama.adb, 
-	a-cidlli.ads, a-cidlli.adb, a-chtgop.ads, a-chtgop.adb, a-cdlili.ads, 
+	a-crbtgk.adb, a-crbltr.ads, a-coorse.ads, a-coorse.adb, a-convec.ads,
+	a-convec.adb, a-coinve.ads, a-coinve.adb, a-cohata.ads, a-cohama.ads,
+	a-cohama.adb, a-ciorse.ads, a-ciorse.adb, a-cihama.ads, a-cihama.adb,
+	a-cidlli.ads, a-cidlli.adb, a-chtgop.ads, a-chtgop.adb, a-cdlili.ads,
 	a-cdlili.adb, a-coormu.adb, a-ciormu.adb, a-cihase.adb, a-cohase.adb,
-	a-cohase.ads, a-ciorma.ads, a-coorma.ads, a-ciormu.ads, a-coormu.ads, 
+	a-cohase.ads, a-ciorma.ads, a-coorma.ads, a-ciormu.ads, a-coormu.ads,
 	a-swunha.adb, a-stunha.adb, a-ciorma.adb, a-coorma.adb, a-shcain.ads,
 	a-shcain.adb, a-chtgke.ads, a-chtgke.adb, a-stwiha.ads, a-stwiha.adb,
 	a-strhas.adb, a-stzhas.adb: synchronized to the latest version of the
@@ -3114,7 +3118,7 @@
 	(Implementation Defined Pragmas) <Machine_Attribute>: Make it clear
 	that only machine-dependent attributes are supported.
 
-	* gnat_ugn.texi: 
+	* gnat_ugn.texi:
 	Commented out menu lines and empty section for gnatclean examples
 	Document -gnatwy/Y
 	Fix some over long lines
@@ -3315,7 +3319,7 @@
 
 2005-03-29  Robert Dewar  <dewar@adacore.com>
 
-	* errutil.adb, errout.adb: 
+	* errutil.adb, errout.adb:
 	Minor comment updates on Line_Terminator references
 
 	* par-ch10.adb: Add ??? comment about line terminator
@@ -3337,14 +3341,14 @@
 	Check_Line_Terminator routine. Separating this out allows -gnatyf to
 	be properly recognized.
 
-	* stylesw.ads, stylesw.adb: 
+	* stylesw.ads, stylesw.adb:
 	Add handling for new -gnatyd switch (check dos line terminator)
 
 	* switch-c.adb: Recognize new -gnatyd switch (check dos line terminator)
 	Recognize -gnatwb/-gnatwB switches
 	Include Warn_On_Bad_Fixed_Value for -gnatg
 
-	* usage.adb: 
+	* usage.adb:
 	Add line for new -gnatyd switch (check dos line terminator)
 
 	* usage.adb: Add lines for -gnatwb/-gnatwB
@@ -5428,7 +5432,7 @@
 
 	* Makefile.in: Rename GNAT RTEMS specific files.
 	* 5rtpopsp.adb, 4rintnam.ads, 5rosinte.adb,
- 	5rosinte.ads, 5rparame.adb: Replaced by files below.
+	5rosinte.ads, 5rparame.adb: Replaced by files below.
 	* s-tpopsp-rtems.adb, a-intman-rtems.ads, s-osinte-rtems.adb,
 	s-osinte-rtems.ads, s-parame-rtems.adb: Replace files above.
 
