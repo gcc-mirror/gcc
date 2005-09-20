@@ -57,7 +57,7 @@ main3 ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 3 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 3 "vect" { xfail vect_no_int_add } } } */
 /* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
 /* { dg-final { scan-tree-dump-times "accesses have the same alignment." 3 "vect" } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 3 "vect" } } */

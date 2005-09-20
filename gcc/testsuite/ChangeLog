@@ -1,3 +1,8 @@
+2005-09-20  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/vect/vect-22.c: Require vect_float.
+	* gcc.dg/vect/vect-91.c: XFAIL if vect_no_int_add.
+
 2005-09-20  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* g++.dg/cpp/ucnid-1.C, g++.dg/cpp/normalize-1.C,
