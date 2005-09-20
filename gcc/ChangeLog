@@ -1,5 +1,9 @@
 2005-09-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/23929
+	* tree-ssa-loop-niter.c (expand_simple_operations): Return immediately
+	if expr is NULL.
+
 	PR tree-optimization/23818
 	* tree-stdarg.c (execute_optimize_stdarg): Call
 	calculate_dominance_info.
