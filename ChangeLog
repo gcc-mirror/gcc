@@ -1,3 +1,9 @@
+2005-09-19  David Edelsohn  <edelsohn@gnu.org>
+
+	* configure.in (powerpc-*-aix*): Add target-libssp to noconfigdirs.
+	(rs6000-*-aix*): Same.
+	* configure: Regenerate.
+
 2005-09-16  Tom Tromey  <tromey@redhat.com>
 
 	* MAINTAINERS: Add self as java maintainer.
