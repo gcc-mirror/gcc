@@ -1,3 +1,8 @@
+2005-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/23929
+	* gcc.c-torture/compile/pr23929.c: New test.
+
 2005-09-20  Steve Ellcey  <sje@cup.hp.com>
 
 	PR testsuite/23186

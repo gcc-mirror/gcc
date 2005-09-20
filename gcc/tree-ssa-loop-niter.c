@@ -634,11 +634,15 @@ expand_simple_operations (tree expr)
 {
   unsigned i, n;
   tree ret = NULL_TREE, e, ee, stmt;
-  enum tree_code code = TREE_CODE (expr);
+  enum tree_code code;
+
+  if (expr == NULL_TREE)
+    return expr;
 
   if (is_gimple_min_invariant (expr))
     return expr;
 
+  code = TREE_CODE (expr);
   if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (code)))
     {
       n = TREE_CODE_LENGTH (code);
