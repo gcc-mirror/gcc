@@ -43,7 +43,7 @@ using namespace std;
 
 namespace __gnu_internal
 {
-  __glibcxx_mutex_define_initialized(iterator_base_mutex);
+  static __glibcxx_mutex_define_initialized(iterator_base_mutex);
 } // namespace __gnu_internal
 
 namespace __gnu_debug

@@ -1,3 +1,51 @@
+2005-09-19  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/19265
+	PR libstdc++/22309
+	* include/ext/mt_allocator.h
+	(__gnu_cxx::__create_handler): Remove.
+	(__pool<true>::_M_destroy_thread_key): Compatibility only.
+	(__pool<true>::_M_initialize(__destroy): Same.
+	(__pool<true>::_M_initialize): New.
+	(__pool<true>::_M_initialize_once): Nothing fancy.
+	(__pool<true>::_M_once): Remove.
+	(__common_pool): New.
+	(__common_pool_base): New.	
+	(__per_type_pool): New.
+	(__per_type_pool_base): New.
+	* src/mt_allocator.cc: Same.
+	* config/linker-map.gnu (__pool<true>::_M_initialize()): Add.
+	
+2005-09-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/19265
+	PR libstdc++/22309
+	* src/mt_allocator.cc (__gnu_internal::freelist_mutex): Make static.
+	(__gnu_internal::__freelist): New type.
+	(__gnu_internal::freelist): New variable.
+	(__gnu_internal::_M_destroy_thread_key): New function.
+	(__gnu_cxx::__pool<true>::_M_destroy): Don't delete
+	_M_thread_freelist_initial.
+	(__gnu_cxx::__pool<true>::_M_initialize): Make argument nameless.
+	Don't use _M_thread_freelist and _M_thread_freelist_initial
+	__pool<true> fields, instead use __gnu_internal::freelist fields, call
+	gthread_key_create just once.  Use
+	__gnu_internal::_M_destroy_thread_key as key destructor.	
+	(__gnu_cxx::__pool<true>::_M_get_thread_id): Store size_t id
+	rather than _Thread_record* in the thread specific value.  Don't
+	use _M_thread_freelist __pool<true> field, instead use
+	__gnu_internal::freelist fields.
+	(__gnu_cxx::__pool<true>::_M_destroy_thread_key): Do nothing.
+
+2005-09-19  Benjamin Kosnik  <bkoz@redhat.com>
+            Jakub Jelinek  <jakub@redhat.com>
+
+	* src/debug.cc (iterator_base_mutex): Make static for internal
+	linkage.
+	* src/locale_init.cc (locale_mutex): Same.
+	* src/mt_allocator.cc (freelist_mutex): Same.
+	* src/pool_allocator.cc (palloc_init_mutex): Same.
+
 2005-09-16  Janis Johnson  <janis187@us.ibm.com>
 
 	PR libstdc++/23871

@@ -1,6 +1,6 @@
 // Allocator details.
 
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,7 +37,7 @@
 
 namespace __gnu_internal
 {
-  __glibcxx_mutex_define_initialized(palloc_init_mutex);
+  static __glibcxx_mutex_define_initialized(palloc_init_mutex);
 }
 
 namespace __gnu_cxx
