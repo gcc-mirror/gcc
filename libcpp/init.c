@@ -72,21 +72,26 @@ struct lang_flags
   char c99;
   char cplusplus;
   char extended_numbers;
+  char extended_identifiers;
   char std;
   char cplusplus_comments;
   char digraphs;
 };
 
 static const struct lang_flags lang_defaults[] =
-{ /*              c99 c++ xnum std  //   digr  */
-  /* GNUC89 */  { 0,  0,  1,   0,   1,   1     },
-  /* GNUC99 */  { 1,  0,  1,   0,   1,   1     },
-  /* STDC89 */  { 0,  0,  0,   1,   0,   0     },
-  /* STDC94 */  { 0,  0,  0,   1,   0,   1     },
-  /* STDC99 */  { 1,  0,  1,   1,   1,   1     },
-  /* GNUCXX */  { 0,  1,  1,   0,   1,   1     },
-  /* CXX98  */  { 0,  1,  1,   1,   1,   1     },
-  /* ASM    */  { 0,  0,  1,   0,   1,   0     }
+{ /*              c99 c++ xnum xid std  //   digr  */
+  /* GNUC89 */  { 0,  0,  1,   0,  0,   1,   1     },
+  /* GNUC99 */  { 1,  0,  1,   0,  0,   1,   1     },
+  /* STDC89 */  { 0,  0,  0,   0,  1,   0,   0     },
+  /* STDC94 */  { 0,  0,  0,   0,  1,   0,   1     },
+  /* STDC99 */  { 1,  0,  1,   0,  1,   1,   1     },
+  /* GNUCXX */  { 0,  1,  1,   0,  0,   1,   1     },
+  /* CXX98  */  { 0,  1,  1,   0,  1,   1,   1     },
+  /* ASM    */  { 0,  0,  1,   0,  0,   1,   0     }
+  /* xid should be 1 for GNUC99, STDC99, GNUCXX and CXX98 when no
+     longer experimental (when all uses of identifiers in the compiler
+     have been audited for correct handling of extended
+     identifiers).  */
 };
 
 /* Sets internal flags correctly for a given language.  */
@@ -97,13 +102,14 @@ cpp_set_lang (cpp_reader *pfile, enum c_lang lang)
 
   CPP_OPTION (pfile, lang) = lang;
 
-  CPP_OPTION (pfile, c99)		 = l->c99;
-  CPP_OPTION (pfile, cplusplus)		 = l->cplusplus;
-  CPP_OPTION (pfile, extended_numbers)	 = l->extended_numbers;
-  CPP_OPTION (pfile, std)		 = l->std;
-  CPP_OPTION (pfile, trigraphs)		 = l->std;
-  CPP_OPTION (pfile, cplusplus_comments) = l->cplusplus_comments;
-  CPP_OPTION (pfile, digraphs)		 = l->digraphs;
+  CPP_OPTION (pfile, c99)			 = l->c99;
+  CPP_OPTION (pfile, cplusplus)			 = l->cplusplus;
+  CPP_OPTION (pfile, extended_numbers)		 = l->extended_numbers;
+  CPP_OPTION (pfile, extended_identifiers)	 = l->extended_identifiers;
+  CPP_OPTION (pfile, std)			 = l->std;
+  CPP_OPTION (pfile, trigraphs)			 = l->std;
+  CPP_OPTION (pfile, cplusplus_comments)	 = l->cplusplus_comments;
+  CPP_OPTION (pfile, digraphs)			 = l->digraphs;
 }
 
 /* Initialize library global state.  */

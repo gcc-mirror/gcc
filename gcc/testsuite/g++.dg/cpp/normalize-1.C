@@ -1,5 +1,5 @@
 /* { dg-do preprocess } */
-/* { dg-options "-Wnormalized=id" } */
+/* { dg-options "-fextended-identifiers -Wnormalized=id" } */
 
 \u00AA
 \u00B7

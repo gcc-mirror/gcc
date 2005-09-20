@@ -647,6 +647,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       flag_enforce_eh_specs = value;
       break;
 
+    case OPT_fextended_identifiers:
+      cpp_opts->extended_identifiers = value;
+      break;
+
     case OPT_ffixed_form:
     case OPT_ffixed_line_length_:
       /* Fortran front end options ignored when preprocessing only.  */

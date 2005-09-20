@@ -1,3 +1,11 @@
+2005-09-20  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c.opt (fextended-identifiers): New.
+	* c-opts.c (c_common_handle_option): Handle
+	-fextended-identifiers.
+	* doc/cpp.texi: Update documentation of extended identifiers.
+	* doc/cppopts.texi (-fextended-identifiers): Document.
+
 2005-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/23929

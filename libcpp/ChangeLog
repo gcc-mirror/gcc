@@ -1,3 +1,11 @@
+2005-09-20  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (struct cpp_options): Add extended_identifiers.
+	* init.c (struct lang_flags, lang_defaults): Add
+	extended_identifiers.
+	(cpp_set_lang): Use it.
+	* lex.c (forms_identifier_p): Check extended_identifiers.
+
 2005-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/20348

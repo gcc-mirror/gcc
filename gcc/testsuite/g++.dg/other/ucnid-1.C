@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-options "-fextended-identifiers" } */
 /* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "*" } { "" } } */
 #include <cstdlib>
 

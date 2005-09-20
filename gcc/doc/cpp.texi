@@ -281,11 +281,11 @@ the character in the source character set that they represent, then
 converted to the execution character set, just like unescaped
 characters.
 
+Unless the experimental @option{-fextended-identifiers} option is used,
 GCC does not permit the use of characters outside the ASCII range, nor
-@samp{\u} and @samp{\U} escapes, in identifiers.  We hope this will
-change eventually, but there are problems with the standard semantics
-of such ``extended identifiers'' which must be resolved through the
-ISO C and C++ committees first.
+@samp{\u} and @samp{\U} escapes, in identifiers.  Even with that
+option, characters outside the ASCII range can only be specified with
+the @samp{\u} and @samp{\U} escapes, not used directly in identifiers.
 
 @node Initial processing
 @section Initial processing
@@ -510,8 +510,10 @@ In the 1999 C standard, identifiers may contain letters which are not
 part of the ``basic source character set'', at the implementation's
 discretion (such as accented Latin letters, Greek letters, or Chinese
 ideograms).  This may be done with an extended character set, or the
-@samp{\u} and @samp{\U} escape sequences.  GCC does not presently
-implement either feature in the preprocessor or the compiler.
+@samp{\u} and @samp{\U} escape sequences.  The implementation of this
+feature in GCC is experimental; such characters are only accepted in
+the @samp{\u} and @samp{\U} forms and only if
+@option{-fextended-identifiers} is used.
 
 As an extension, GCC treats @samp{$} as a letter.  This is for
 compatibility with some systems, such as VMS, where @samp{$} is commonly
@@ -3791,7 +3793,9 @@ character set may be controlled by the user, with the
 The C and C++ standards allow identifiers to be composed of @samp{_}
 and the alphanumeric characters.  C++ and C99 also allow universal
 character names, and C99 further permits implementation-defined
-characters.
+characters.  GCC currently only permits universal character names if
+@option{-fextended-identifiers} is used, because the implementation of
+universal character names in identifiers is experimental.
 
 GCC allows the @samp{$} character in identifiers as an extension for
 most targets.  This is true regardless of the @option{std=} switch,

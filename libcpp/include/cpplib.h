@@ -345,6 +345,9 @@ struct cpp_options
   /* Zero means dollar signs are punctuation.  */
   unsigned char dollars_in_ident;
 
+  /* Nonzero means UCNs are accepted in identifiers.  */
+  unsigned char extended_identifiers;
+
   /* True if we should warn about dollars in identifiers or numbers
      for this translation unit.  */
   unsigned char warn_dollars;

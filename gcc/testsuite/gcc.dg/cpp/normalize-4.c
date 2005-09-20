@@ -1,5 +1,5 @@
 /* { dg-do preprocess } */
-/* { dg-options "-std=c99 -Wnormalized=none" } */
+/* { dg-options "-std=c99 -fextended-identifiers -Wnormalized=none" } */
 
 \u00AA
 \u00B7

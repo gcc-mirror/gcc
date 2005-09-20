@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-std=c99" } */
+/* { dg-options "-std=c99 -fextended-identifiers" } */
 #include <stdlib.h>
 #include <string.h>
 

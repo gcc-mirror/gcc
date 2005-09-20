@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "*" } { "" } } */
-/* { dg-options "-std=c99" } */
+/* { dg-options "-std=c99 -fextended-identifiers" } */
 void abort (void);
 
 int \u00C0 = 1;

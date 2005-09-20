@@ -511,6 +511,12 @@ Accept @samp{$} in identifiers.
   @xref{Identifier characters}.
 @end ifset
 
+@item -fextended-identifiers
+@opindex fextended-identifiers
+Accept universal character names in identifiers.  This option is
+experimental; in a future version of GCC, it will be enabled by
+default for C99 and C++.
+
 @item -fpreprocessed
 @opindex fpreprocessed
 Indicate to the preprocessor that the input file has already been
