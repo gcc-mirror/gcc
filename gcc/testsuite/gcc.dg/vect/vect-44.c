@@ -19,6 +19,14 @@ void bar (float *pa, float *pb, float *pc)
   return;
 }
 
+/* Unaligned pointer accesses, with unknown alignment.
+   The loop bound is known and divisible by the vectorization factor.
+   No aliasing problems.
+   vect-50.c is similar to this one with one difference:
+        the loop bound is unknown.
+   vect-45.c is similar to this one with one difference:
+        can't prove that pointers don't alias.  */
+
 int
 main1 (float * __restrict__ pa, float * __restrict__ pb, float * __restrict__ pc)
 {

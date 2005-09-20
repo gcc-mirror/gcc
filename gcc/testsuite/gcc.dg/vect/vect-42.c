@@ -5,9 +5,7 @@
 
 #define N 256
 
-typedef float afloat __attribute__ ((__aligned__(16)));
-
-void bar (afloat *pa, afloat *pb, afloat *pc) 
+void bar (float *pa, float *pb, float *pc) 
 {
   int i;
 
@@ -21,14 +19,18 @@ void bar (afloat *pa, afloat *pb, afloat *pc)
   return;
 }
 
+/* Unaligned write access, aligned read accesses.
+   Since we are handling an unaligned store by peeling the loop,
+   the loads will become unaligned.
+   The loop bound is known and divisible by the vectorization factor.
+   No aliasing problems.  */
 
 int
-main1 (afloat * __restrict__ pa)
+main1 (float * __restrict__ pa)
 {
   int i;
   float pb[N] __attribute__ ((__aligned__(16))) = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57};
   float pc[N] __attribute__ ((__aligned__(16))) = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
-
 
   for (i = 0; i < N; i++)
     {
@@ -52,6 +54,7 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"} } */
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail vect_no_align } } } */
+/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 2 "vect" { xfail vect_no_align } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { xfail vect_no_align } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

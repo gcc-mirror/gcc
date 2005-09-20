@@ -5,26 +5,20 @@
 
 #define N 256
 
-typedef float afloat __attribute__ ((__aligned__(16)));
-
-void bar (float *pa, float *pb, float *pc) 
-{
-  int i;
-
-  /* check results:  */
-  for (i = 0; i < N; i++)
-    {
-      if (pa[i] != (pb[i] * pc[i]))
-	abort ();
-    }
-
-  return;
-}
-
+/* Unaligned pointer read accesses, aligned write access.
+   The loop bound is unknown.
+   No aliasing problems.
+   vect-60.c is similar to this one with one difference:
+        the alignment of the read accesses is known.
+   vect-48.c is similar to this one with one difference:
+        the loop bound is known.
+   vect-53.c is similar to this one with one difference:
+        aliasing is a problem.  */
 
 int
-main1 (int n, afloat * __restrict__ pa, float * __restrict__ pb, float * __restrict__ pc)
+main1 (int n, float *pb, float *pc)
 {
+  float pa[N] __attribute__ ((__aligned__(16)));
   int i;
 
   for (i = 0; i < n; i++)
@@ -32,7 +26,12 @@ main1 (int n, afloat * __restrict__ pa, float * __restrict__ pb, float * __restr
       pa[i] = pb[i] * pc[i];
     }
 
-  bar (pa,pb,pc);
+  /* check results:  */
+  for (i = 0; i < N; i++)
+    { 
+      if (pa[i] != (pb[i] * pc[i]))
+        abort ();
+    }
 
   return 0;
 }
@@ -46,8 +45,9 @@ int main (void)
 
   check_vect ();
 
-  main1 (N,a,&b[1],c);
-  main1 (N,a,&b[1],&c[1]);
+  main1 (N,&b[1],c);
+  main1 (N,&b[1],&c[1]);
+
   return 0;
 }
 

@@ -5,8 +5,6 @@
 
 #define N 256
 
-typedef float afloat __attribute__ ((__aligned__(16)));
-
 void bar (const float *pa, const float *pb, const float *pc) 
 {
   int i;
@@ -21,10 +19,18 @@ void bar (const float *pa, const float *pb, const float *pc)
   return;
 }
 
+/* Unaligned pointer read accesses, aligned pointer write access.
+   The loop bound is unknown.
+   Can't prove that the pointers don't alias.
+   vect-49.c is similar to this one with one difference:
+        the loop bound is known.
+   vect-52.c is similar to this one with one difference:
+        aliasing is not a problem.  */
 
 int
-main1 (int n, afloat *pa, float *pb, float *pc)
+main1 (int n, float *pb, float *pc)
 {
+  float pa[N] __attribute__ ((__aligned__(16)));
   int i;
 
   for (i = 0; i < n; i++)
@@ -46,8 +52,9 @@ int main (void)
 
   check_vect ();
 
-  main1 (N,a,&b[1],c);
-  main1 (N,a,&b[1],&c[1]);
+  main1 (N,&b[1],c);
+  main1 (N,&b[1],&c[1]);
+
   return 0;
 }
 
