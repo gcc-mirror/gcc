@@ -1955,20 +1955,27 @@ loop_closed_phi_def (tree var)
 }
 
 /* Analyze all the parameters of the chrec that were left under a symbolic form,
-   with respect to LOOP.  CHREC is the chrec to instantiate.  If
-   ALLOW_SUPERLOOP_CHRECS is true, replacing loop invariants with
-   outer loop chrecs is done.  CACHE is the cache of already instantiated
-   values.  */
+   with respect to LOOP.  CHREC is the chrec to instantiate.  CACHE is the cache
+   of already instantiated values.  FLAGS modify the way chrecs are
+   instantiated.  */
 
+/* Values for FLAGS.  */
+enum
+{
+  INSERT_SUPERLOOP_CHRECS = 1,  /* Loop invariants are replaced with chrecs
+				   in outer loops.  */
+  FOLD_CONVERSIONS = 2		/* The conversions that may wrap in
+				   signed/pointer type are folded, as long as the
+				   value of the chrec is preserved.  */
+};
+  
 static tree
-instantiate_parameters_1 (struct loop *loop, tree chrec,
-			  bool allow_superloop_chrecs,
-			  htab_t cache)
+instantiate_parameters_1 (struct loop *loop, tree chrec, int flags, htab_t cache)
 {
   tree res, op0, op1, op2;
   basic_block def_bb;
   struct loop *def_loop;
- 
+
   if (automatically_generated_chrec_p (chrec)
       || is_gimple_min_invariant (chrec))
     return chrec;
@@ -1981,7 +1988,7 @@ instantiate_parameters_1 (struct loop *loop, tree chrec,
       /* A parameter (or loop invariant and we do not want to include
 	 evolutions in outer loops), nothing to do.  */
       if (!def_bb
-	  || (!allow_superloop_chrecs
+	  || (!(flags & INSERT_SUPERLOOP_CHRECS)
 	      && !flow_bb_inside_loop_p (loop, def_bb)))
 	return chrec;
 
@@ -2036,8 +2043,7 @@ instantiate_parameters_1 (struct loop *loop, tree chrec,
 	}
 
       else if (res != chrec_dont_know)
-	res = instantiate_parameters_1 (loop, res, allow_superloop_chrecs,
-					cache);
+	res = instantiate_parameters_1 (loop, res, flags, cache);
 
       bitmap_clear_bit (already_instantiated, SSA_NAME_VERSION (chrec));
 
@@ -2047,12 +2053,12 @@ instantiate_parameters_1 (struct loop *loop, tree chrec,
 
     case POLYNOMIAL_CHREC:
       op0 = instantiate_parameters_1 (loop, CHREC_LEFT (chrec),
-				      allow_superloop_chrecs, cache);
+				      flags, cache);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
       op1 = instantiate_parameters_1 (loop, CHREC_RIGHT (chrec),
-				      allow_superloop_chrecs, cache);
+				      flags, cache);
       if (op1 == chrec_dont_know)
 	return chrec_dont_know;
 
@@ -2063,12 +2069,12 @@ instantiate_parameters_1 (struct loop *loop, tree chrec,
 
     case PLUS_EXPR:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
-				      allow_superloop_chrecs, cache);
+				      flags, cache);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
       op1 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 1),
-				      allow_superloop_chrecs, cache);
+				      flags, cache);
       if (op1 == chrec_dont_know)
 	return chrec_dont_know;
 
@@ -2079,12 +2085,12 @@ instantiate_parameters_1 (struct loop *loop, tree chrec,
 
     case MINUS_EXPR:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
-				      allow_superloop_chrecs, cache);
+				      flags, cache);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
       op1 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 1),
-				      allow_superloop_chrecs, cache);
+				      flags, cache);
       if (op1 == chrec_dont_know)
 	return chrec_dont_know;
 
@@ -2095,12 +2101,12 @@ instantiate_parameters_1 (struct loop *loop, tree chrec,
 
     case MULT_EXPR:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
-				      allow_superloop_chrecs, cache);
+				      flags, cache);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
       op1 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 1),
-				      allow_superloop_chrecs, cache);
+				      flags, cache);
       if (op1 == chrec_dont_know)
 	return chrec_dont_know;
 
@@ -2113,9 +2119,16 @@ instantiate_parameters_1 (struct loop *loop, tree chrec,
     case CONVERT_EXPR:
     case NON_LVALUE_EXPR:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
-				      allow_superloop_chrecs, cache);
+				      flags, cache);
       if (op0 == chrec_dont_know)
         return chrec_dont_know;
+
+      if (flags & FOLD_CONVERSIONS)
+	{
+	  tree tmp = chrec_convert_aggressive (TREE_TYPE (chrec), op0);
+	  if (tmp)
+	    return tmp;
+	}
 
       if (op0 == TREE_OPERAND (chrec, 0))
 	return chrec;
@@ -2136,17 +2149,17 @@ instantiate_parameters_1 (struct loop *loop, tree chrec,
     {
     case 3:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
-				      allow_superloop_chrecs, cache);
+				      flags, cache);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
       op1 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 1),
-				      allow_superloop_chrecs, cache);
+				      flags, cache);
       if (op1 == chrec_dont_know)
 	return chrec_dont_know;
 
       op2 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 2),
-				      allow_superloop_chrecs, cache);
+				      flags, cache);
       if (op2 == chrec_dont_know)
         return chrec_dont_know;
 
@@ -2160,12 +2173,12 @@ instantiate_parameters_1 (struct loop *loop, tree chrec,
 
     case 2:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
-				      allow_superloop_chrecs, cache);
+				      flags, cache);
       if (op0 == chrec_dont_know)
 	return chrec_dont_know;
 
       op1 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 1),
-				      allow_superloop_chrecs, cache);
+				      flags, cache);
       if (op1 == chrec_dont_know)
         return chrec_dont_know;
 
@@ -2176,7 +2189,7 @@ instantiate_parameters_1 (struct loop *loop, tree chrec,
 	    
     case 1:
       op0 = instantiate_parameters_1 (loop, TREE_OPERAND (chrec, 0),
-				      allow_superloop_chrecs, cache);
+				      flags, cache);
       if (op0 == chrec_dont_know)
         return chrec_dont_know;
       if (op0 == TREE_OPERAND (chrec, 0))
@@ -2214,7 +2227,7 @@ instantiate_parameters (struct loop *loop,
       fprintf (dump_file, ")\n");
     }
  
-  res = instantiate_parameters_1 (loop, chrec, true, cache);
+  res = instantiate_parameters_1 (loop, chrec, INSERT_SUPERLOOP_CHRECS, cache);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -2229,13 +2242,15 @@ instantiate_parameters (struct loop *loop,
 }
 
 /* Similar to instantiate_parameters, but does not introduce the
-   evolutions in outer loops for LOOP invariants in CHREC.  */
+   evolutions in outer loops for LOOP invariants in CHREC, and does not
+   care about causing overflows, as long as they do not affect value
+   of an expression.  */
 
 static tree
 resolve_mixers (struct loop *loop, tree chrec)
 {
   htab_t cache = htab_create (10, hash_scev_info, eq_scev_info, del_scev_info);
-  tree ret = instantiate_parameters_1 (loop, chrec, false, cache);
+  tree ret = instantiate_parameters_1 (loop, chrec, FOLD_CONVERSIONS, cache);
   htab_delete (cache);
   return ret;
 }

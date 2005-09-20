@@ -68,6 +68,7 @@ extern tree chrec_fold_plus (tree, tree, tree);
 extern tree chrec_fold_minus (tree, tree, tree);
 extern tree chrec_fold_multiply (tree, tree, tree);
 extern tree chrec_convert (tree, tree, tree);
+extern tree chrec_convert_aggressive (tree, tree);
 extern tree chrec_type (tree);
 
 /* Operations.  */
