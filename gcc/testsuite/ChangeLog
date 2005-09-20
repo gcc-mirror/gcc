@@ -1,3 +1,15 @@
+2005-09-20  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* g++.dg/cpp/ucnid-1.C, g++.dg/cpp/normalize-1.C,
+	g++.dg/other/ucnid-1.C, gcc.dg/cpp/normalize-1.c,
+	gcc.dg/cpp/normalize-2.c, gcc.dg/cpp/normalize-3.c,
+	gcc.dg/cpp/normalize-4.c, gcc.dg/cpp/ucnid-1.c,
+	gcc.dg/cpp/ucnid-2.c, gcc.dg/cpp/ucnid-3.c, gcc.dg/cpp/ucnid-4.c,
+	gcc.dg/cpp/ucnid-5.c, gcc.dg/cpp/ucnid-7.c,gcc.dg/ucnid-1.c,
+	gcc.dg/ucnid-2.c, gcc.dg/ucnid-3.c, gcc.dg/ucnid-4.c,
+	gcc.dg/ucnid-5.c, gcc.dg/ucnid-6.c: Add -fextended-identifiers.
+	* gcc.dg/cpp/ucnid-8.c: New test.
+
 2005-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/23929

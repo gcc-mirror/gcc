@@ -1,5 +1,5 @@
 /* { dg-do preprocess } */
-/* { dg-options "-pedantic" } */
+/* { dg-options "-pedantic -fextended-identifiers" } */
 
 \u00AA /* { dg-error "not valid in an identifier" } */
 \u00AB /* { dg-error "not valid in an identifier" } */

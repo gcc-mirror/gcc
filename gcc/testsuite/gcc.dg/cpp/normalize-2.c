@@ -1,5 +1,5 @@
 /* { dg-do preprocess } */
-/* { dg-options "-std=c99 -Wnormalized=nfkc" } */
+/* { dg-options "-std=c99 -fextended-identifiers -Wnormalized=nfkc" } */
 
 \u00AA  /* { dg-warning "not in NFKC" } */
 \u00B7

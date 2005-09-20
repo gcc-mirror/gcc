@@ -495,6 +495,10 @@ fexec-charset=
 C ObjC C++ ObjC++ Joined RejectNegative
 -fexec-charset=<cset>	Convert all strings and character constants to character set <cset>
 
+fextended-identifiers
+C ObjC C++ ObjC++
+Permit universal character names (\\u and \\U) in identifiers
+
 finput-charset=
 C ObjC C++ ObjC++ Joined RejectNegative
 -finput-charset=<cset>	Specify the default character set for source files
