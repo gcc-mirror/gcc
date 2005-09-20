@@ -734,6 +734,8 @@ execute_optimize_stdarg (void)
   if (va_list_simple_ptr)
     cfun->va_list_fpr_size = VA_LIST_MAX_FPR_SIZE;
 
+  calculate_dominance_info (CDI_DOMINATORS);
+
   FOR_EACH_BB (bb)
     {
       block_stmt_iterator i;

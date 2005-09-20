@@ -1,3 +1,9 @@
+2005-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/23818
+	* tree-stdarg.c (execute_optimize_stdarg): Call
+	calculate_dominance_info.
+
 2005-09-18  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-data-ref.c (get_number_of_iters_for_loop): New function.
