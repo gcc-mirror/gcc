@@ -979,6 +979,15 @@ resolve_tag (const io_tag * tag, gfc_expr * e)
 
   if (tag == &tag_format)
     {
+      if (e->expr_type == EXPR_CONSTANT
+	  && (e->ts.type != BT_CHARACTER
+	      || e->ts.kind != gfc_default_character_kind))
+	{
+	  gfc_error ("Constant expression in FORMAT tag at %L must be "
+		     "of type default CHARACTER", &e->where);
+	  return FAILURE;
+	}
+
       /* If e's rank is zero and e is not an element of an array, it should be
 	 of integer or character type.  The integer variable should be
 	 ASSIGNED.  */
@@ -2158,51 +2167,51 @@ match_io (io_kind k)
 
   comma_flag = 0;
   current_dt = dt = gfc_getmem (sizeof (gfc_dt));
-
   if (gfc_match_char ('(') == MATCH_NO)
     {
+      where = gfc_current_locus;
       if (k == M_WRITE)
 	goto syntax;
-      else if (k == M_PRINT 
-	       && (gfc_current_form == FORM_FIXED
-		   || gfc_peek_char () == ' '))
+      else if (k == M_PRINT)
 	{
 	  /* Treat the non-standard case of PRINT namelist.  */
-	  where = gfc_current_locus;
-	  if ((gfc_match_name (name) == MATCH_YES)
-	      && !gfc_find_symbol (name, NULL, 1, &sym)
-	      && sym->attr.flavor == FL_NAMELIST)
+	  if ((gfc_current_form == FORM_FIXED || gfc_peek_char () == ' ')
+	      && gfc_match_name (name) == MATCH_YES)
 	    {
-	      if (gfc_notify_std (GFC_STD_GNU, "PRINT namelist at "
-				  "%C is an extension") == FAILURE)
+	      gfc_find_symbol (name, NULL, 1, &sym);
+	      if (sym && sym->attr.flavor == FL_NAMELIST)
 		{
-		  m = MATCH_ERROR;
-		  goto cleanup;
-		}
-	      if (gfc_match_eos () == MATCH_NO)
-		{
-		  gfc_error ("Namelist followed by I/O list at %C");
-		  m = MATCH_ERROR;
-		  goto cleanup;
-		}
+		  if (gfc_notify_std (GFC_STD_GNU, "PRINT namelist at "
+				      "%C is an extension") == FAILURE)
+		    {
+		      m = MATCH_ERROR;
+		      goto cleanup;
+		    }
+		  if (gfc_match_eos () == MATCH_NO)
+		    {
+		      gfc_error ("Namelist followed by I/O list at %C");
+		      m = MATCH_ERROR;
+		      goto cleanup;
+		    }
 
-	      dt->io_unit = default_unit (k);
-	      dt->namelist = sym;
-	      goto get_io_list;
+		  dt->io_unit = default_unit (k);
+		  dt->namelist = sym;
+		  goto get_io_list;
+		}
+	      else
+		gfc_current_locus = where;
 	    }
-	  else
-	    gfc_current_locus = where;
 	}
 
       if (gfc_current_form == FORM_FREE)
-       {
-         c = gfc_peek_char();
-         if (c != ' ' && c != '*' && c != '\'' && c != '"')
-           {
-             m = MATCH_NO;
-             goto cleanup;
-           }
-       }
+	{
+	  c = gfc_peek_char();
+	  if (c != ' ' && c != '*' && c != '\'' && c != '"')
+	    {
+	      m = MATCH_NO;
+	      goto cleanup;
+	    }
+	}
 
       m = match_dt_format (dt);
       if (m == MATCH_ERROR)
@@ -2240,17 +2249,20 @@ match_io (io_kind k)
 
   where = gfc_current_locus;
 
-  if (gfc_match_name (name) == MATCH_YES
-      && !gfc_find_symbol (name, NULL, 1, &sym)
-      && sym->attr.flavor == FL_NAMELIST)
+  m = gfc_match_name (name);
+  if (m == MATCH_YES)
     {
-      dt->namelist = sym;
-      if (k == M_READ && check_namelist (sym))
+      gfc_find_symbol (name, NULL, 1, &sym);
+      if (sym && sym->attr.flavor == FL_NAMELIST)
 	{
-	  m = MATCH_ERROR;
-	  goto cleanup;
+	  dt->namelist = sym;
+	  if (k == M_READ && check_namelist (sym))
+	    {
+	      m = MATCH_ERROR;
+	      goto cleanup;
+	    }
+	  goto next;
 	}
-      goto next;
     }
 
   gfc_current_locus = where;
