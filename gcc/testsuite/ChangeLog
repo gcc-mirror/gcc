@@ -1,5 +1,8 @@
 2005-09-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/23947
+	* g++.dg/rtti/crash3.C: New test.
+
 	PR tree-optimization/23818
 	* gcc.dg/pr23818.c: New test.
 
