@@ -1,3 +1,21 @@
+2005-09-20  Dorit Nuzman  <dorit@il.ibm.com>
+        
+	* gcc.dg/vect/pr16105.c: Replace "aligned types" with regular types.
+	No longer vectorizable on vect_no_align targets.
+	* gcc.dg/vect/pr20122.c: Likewise.
+	* gcc.dg/vect/vect-74.c: Likewise.
+	* gcc.dg/vect/vect-75.c: Likewise.
+	* gcc.dg/vect/vect-76.c: Likewise.
+
+	* gcc.dg/vect/vect-37.c: Replace "aligned types" with regular types.
+	Will not be vectorizable on vect_no_align targets once aliasing issues
+	are resolved.
+	* gcc.dg/vect/vect-79.c: Likewise.
+
+	* gcc.dg/vect/vect-77.c: Replace "aligned types" with regular types.
+	* gcc.dg/vect/vect-78.c: Likewise.
+	* gcc.dg/vect/vect-97.c: Likewise.
+
 2005-09-19  Steven Bosscher  <stevenb@suse.de>
 
 	* gcc.dg/pr23943.c: New test.
