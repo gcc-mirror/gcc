@@ -2152,6 +2152,22 @@ analyze_ziv_subscript (tree chrec_a,
     fprintf (dump_file, ")\n");
 }
 
+/* Get the real or estimated number of iterations for LOOPNUM, whichever is
+   available. Return the number of iterations as a tree, or NULL_TREE if
+   we don't know.  */
+
+static tree
+get_number_of_iters_for_loop (int loopnum)
+{
+  tree numiter = number_of_iterations_in_loop (current_loops->parray[loopnum]);
+
+  if (TREE_CODE (numiter) != INTEGER_CST)
+    numiter = current_loops->parray[loopnum]->estimated_nb_iterations;
+  if (chrec_contains_undetermined (numiter))
+    return NULL_TREE;
+  return numiter;
+}
+    
 /* Analyze a SIV (Single Index Variable) subscript where CHREC_A is a
    constant, and CHREC_B is an affine function.  *OVERLAPS_A and
    *OVERLAPS_B are initialized to the functions that describe the
@@ -2200,6 +2216,9 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 		  
 		  if (tree_fold_divides_p (CHREC_RIGHT (chrec_b), difference))
 		    {
+		      tree numiter;
+		      int loopnum = CHREC_VARIABLE (chrec_b);
+
 		      *overlaps_a = integer_zero_node;
 		      *overlaps_b = fold_build2 (EXACT_DIV_EXPR, integer_type_node,
 						 fold_build1 (ABS_EXPR,
@@ -2207,6 +2226,21 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 							      difference),
 						 CHREC_RIGHT (chrec_b));
 		      *last_conflicts = integer_one_node;
+		      
+
+		      /* Perform weak-zero siv test to see if overlap is
+			 outside the loop bounds.  */
+		      numiter = get_number_of_iters_for_loop (loopnum);
+
+		      if (numiter != NULL_TREE
+			  && TREE_CODE (*overlaps_b) == INTEGER_CST
+			  && tree_int_cst_lt (numiter, *overlaps_b))
+			{
+			  *overlaps_a = chrec_known;
+			  *overlaps_b = chrec_known;
+			  *last_conflicts = integer_zero_node;
+			  return;
+			}		
 		      return;
 		    }
 		  
@@ -2254,11 +2288,28 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 		  */
 		  if (tree_fold_divides_p (CHREC_RIGHT (chrec_b), difference))
 		    {
+		      tree numiter;
+		      int loopnum = CHREC_VARIABLE (chrec_b);
+
 		      *overlaps_a = integer_zero_node;
 		      *overlaps_b = fold_build2 (EXACT_DIV_EXPR,
 				      		 integer_type_node, difference, 
 						 CHREC_RIGHT (chrec_b));
 		      *last_conflicts = integer_one_node;
+
+		      /* Perform weak-zero siv test to see if overlap is
+			 outside the loop bounds.  */
+		      numiter = get_number_of_iters_for_loop (loopnum);
+
+		      if (numiter != NULL_TREE
+			  && TREE_CODE (*overlaps_b) == INTEGER_CST
+			  && tree_int_cst_lt (numiter, *overlaps_b))
+			{
+			  *overlaps_a = chrec_known;
+			  *overlaps_b = chrec_known;
+			  *last_conflicts = integer_zero_node;
+			  return;
+			}	
 		      return;
 		    }
 		  
@@ -2382,29 +2433,12 @@ compute_overlap_steps_for_affine_1_2 (tree chrec_a, tree chrec_b,
   step_y = int_cst_value (CHREC_RIGHT (chrec_a));
   step_z = int_cst_value (CHREC_RIGHT (chrec_b));
 
-  numiter_x = number_of_iterations_in_loop 
-    (current_loops->parray[CHREC_VARIABLE (CHREC_LEFT (chrec_a))]);
-  numiter_y = number_of_iterations_in_loop 
-    (current_loops->parray[CHREC_VARIABLE (chrec_a)]);
-  numiter_z = number_of_iterations_in_loop 
-    (current_loops->parray[CHREC_VARIABLE (chrec_b)]);
-
-  if (TREE_CODE (numiter_x) != INTEGER_CST)
-    numiter_x = current_loops->parray[CHREC_VARIABLE (CHREC_LEFT (chrec_a))]
-      ->estimated_nb_iterations;
-  if (TREE_CODE (numiter_y) != INTEGER_CST)
-    numiter_y = current_loops->parray[CHREC_VARIABLE (chrec_a)]
-      ->estimated_nb_iterations;
-  if (TREE_CODE (numiter_z) != INTEGER_CST)
-    numiter_z = current_loops->parray[CHREC_VARIABLE (chrec_b)]
-      ->estimated_nb_iterations;
-
-  if (chrec_contains_undetermined (numiter_x)
-      || chrec_contains_undetermined (numiter_y)
-      || chrec_contains_undetermined (numiter_z)
-      || TREE_CODE (numiter_x) != INTEGER_CST
-      || TREE_CODE (numiter_y) != INTEGER_CST
-      || TREE_CODE (numiter_z) != INTEGER_CST)
+  numiter_x = get_number_of_iters_for_loop (CHREC_VARIABLE (CHREC_LEFT (chrec_a)));
+  numiter_y = get_number_of_iters_for_loop (CHREC_VARIABLE (chrec_a));
+  numiter_z = get_number_of_iters_for_loop (CHREC_VARIABLE (chrec_b));
+  
+  if (numiter_x == NULL_TREE || numiter_y == NULL_TREE 
+      || numiter_z == NULL_TREE)
     {
       *overlaps_a = chrec_dont_know;
       *overlaps_b = chrec_dont_know;
@@ -2497,7 +2531,17 @@ analyze_subscript_affine_affine (tree chrec_a,
   int init_a, init_b, gamma, gcd_alpha_beta;
   int tau1, tau2;
   lambda_matrix A, U, S;
+  tree difference = chrec_fold_minus (integer_type_node, chrec_a, chrec_b);
 
+  if (integer_zerop (difference))
+    {
+      /* The difference is equal to zero: the accessed index
+	 overlaps for each iteration in the loop.  */
+      *overlaps_a = integer_zero_node;
+      *overlaps_b = integer_zero_node;
+      *last_conflicts = chrec_dont_know;
+      return;
+    }
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "(analyze_subscript_affine_affine \n");
   
@@ -2541,21 +2585,9 @@ analyze_subscript_affine_affine (tree chrec_a,
 	  int niter, niter_a, niter_b;
 	  tree numiter_a, numiter_b;
 
-	  numiter_a = number_of_iterations_in_loop 
-	    (current_loops->parray[CHREC_VARIABLE (chrec_a)]);
-	  numiter_b = number_of_iterations_in_loop 
-	    (current_loops->parray[CHREC_VARIABLE (chrec_b)]);
-
-	  if (TREE_CODE (numiter_a) != INTEGER_CST)
-	    numiter_a = current_loops->parray[CHREC_VARIABLE (chrec_a)]
-	      ->estimated_nb_iterations;
-	  if (TREE_CODE (numiter_b) != INTEGER_CST)
-	    numiter_b = current_loops->parray[CHREC_VARIABLE (chrec_b)]
-	      ->estimated_nb_iterations;
-	  if (chrec_contains_undetermined (numiter_a)
-	      || chrec_contains_undetermined (numiter_b)
-	      || TREE_CODE (numiter_a) != INTEGER_CST
-	      || TREE_CODE (numiter_b) != INTEGER_CST)
+	  numiter_a = get_number_of_iters_for_loop (CHREC_VARIABLE (chrec_a));
+	  numiter_b = get_number_of_iters_for_loop (CHREC_VARIABLE (chrec_b));
+	  if (numiter_a == NULL_TREE || numiter_b == NULL_TREE)
 	    {
 	      *overlaps_a = chrec_dont_know;
 	      *overlaps_b = chrec_dont_know;
@@ -2645,21 +2677,10 @@ analyze_subscript_affine_affine (tree chrec_a,
 	  int niter, niter_a, niter_b;
 	  tree numiter_a, numiter_b;
 
-	  numiter_a = number_of_iterations_in_loop 
-	    (current_loops->parray[CHREC_VARIABLE (chrec_a)]);
-	  numiter_b = number_of_iterations_in_loop 
-	    (current_loops->parray[CHREC_VARIABLE (chrec_b)]);
+	  numiter_a = get_number_of_iters_for_loop (CHREC_VARIABLE (chrec_a));
+	  numiter_b = get_number_of_iters_for_loop (CHREC_VARIABLE (chrec_b));
 
-	  if (TREE_CODE (numiter_a) != INTEGER_CST)
-	    numiter_a = current_loops->parray[CHREC_VARIABLE (chrec_a)]
-	      ->estimated_nb_iterations;
-	  if (TREE_CODE (numiter_b) != INTEGER_CST)
-	    numiter_b = current_loops->parray[CHREC_VARIABLE (chrec_b)]
-	      ->estimated_nb_iterations;
-	  if (chrec_contains_undetermined (numiter_a)
-	      || chrec_contains_undetermined (numiter_b)
-	      || TREE_CODE (numiter_a) != INTEGER_CST
-	      || TREE_CODE (numiter_b) != INTEGER_CST)
+	  if (numiter_a == NULL_TREE || numiter_b == NULL_TREE)
 	    {
 	      *overlaps_a = chrec_dont_know;
 	      *overlaps_b = chrec_dont_know;
@@ -2715,15 +2736,27 @@ analyze_subscript_affine_affine (tree chrec_a,
 		      tau1 = (x0 - i0)/i1;
 		      last_conflict = tau2 - tau1;
 
-		      *overlaps_a = build_polynomial_chrec
-			(1,
-			 build_int_cst (NULL_TREE, x0),
-			 build_int_cst (NULL_TREE, i1));
-		      *overlaps_b = build_polynomial_chrec
-			(1,
-			 build_int_cst (NULL_TREE, y0),
-			 build_int_cst (NULL_TREE, j1));
-		      *last_conflicts = build_int_cst (NULL_TREE, last_conflict);
+		      /* If the overlap occurs outside of the bounds of the
+			 loop, there is no dependence.  */
+		      if (x0 > niter || y0  > niter)
+
+			{
+			  *overlaps_a = chrec_known;
+			  *overlaps_b = chrec_known;
+			  *last_conflicts = integer_zero_node;
+			}
+		      else
+			{
+			  *overlaps_a = build_polynomial_chrec
+			    (1,
+			     build_int_cst (NULL_TREE, x0),
+			     build_int_cst (NULL_TREE, i1));
+			  *overlaps_b = build_polynomial_chrec
+			    (1,
+			     build_int_cst (NULL_TREE, y0),
+			     build_int_cst (NULL_TREE, j1));
+			  *last_conflicts = build_int_cst (NULL_TREE, last_conflict);
+			}
 		    }
 		  else
 		    {
@@ -2870,8 +2903,8 @@ analyze_miv_subscript (tree chrec_a,
 	 in the same order.  */
       *overlaps_a = integer_zero_node;
       *overlaps_b = integer_zero_node;
-      *last_conflicts = number_of_iterations_in_loop 
-	(current_loops->parray[CHREC_VARIABLE (chrec_a)]);
+      *last_conflicts = get_number_of_iters_for_loop (CHREC_VARIABLE (chrec_a));
+      
     }
   
   else if (evolution_function_is_constant_p (difference)

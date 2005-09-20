@@ -1,3 +1,15 @@
+2005-09-18  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-data-ref.c (get_number_of_iters_for_loop): New function.
+	(analyze_siv_subscript_cst_affine): Add weak SIV test.
+	(compute_overlap_steps_for_affine_1_2): Use
+	get_number_of_iters_for_loop.
+	(analyze_subscript_affine_affine): Check whether difference is
+	zero first.
+	Use get_number_of_iters_for_loop.
+	Check whether overlap occurs outside of bounds.
+	(analyze_miv_subscript): Use get_number_of_iters_for_loop.
+
 2005-09-20  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* tree-ssa-address.c (create_mem_ref): Put the symbol reference into the
