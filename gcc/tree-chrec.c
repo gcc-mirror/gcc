@@ -1164,9 +1164,7 @@ chrec_convert (tree type, tree chrec, tree at_stmt)
 	      fprintf (dump_file, "\n)\n");
 	    }
 
-	  /* Directly convert to "don't know": no worth dealing with
-	     difficult cases.  */
-	  return chrec_dont_know;
+	  return fold_convert (type, chrec);
 	}
 
       return build_polynomial_chrec (CHREC_VARIABLE (chrec),
@@ -1199,6 +1197,35 @@ chrec_convert (tree type, tree chrec, tree at_stmt)
     res = chrec_dont_know;
 
   return res;
+}
+
+/* Convert CHREC to TYPE, without regard to signed overflows.  Returns the new
+   chrec if something else than what chrec_convert would do happens, NULL_TREE
+   otherwise.  */
+
+tree
+chrec_convert_aggressive (tree type, tree chrec)
+{
+  tree inner_type, left, right, lc, rc;
+
+  if (automatically_generated_chrec_p (chrec)
+      || TREE_CODE (chrec) != POLYNOMIAL_CHREC)
+    return NULL_TREE;
+
+  inner_type = TREE_TYPE (chrec);
+  if (TYPE_PRECISION (type) > TYPE_PRECISION (inner_type))
+    return NULL_TREE;
+
+  left = CHREC_LEFT (chrec);
+  right = CHREC_RIGHT (chrec);
+  lc = chrec_convert_aggressive (type, left);
+  if (!lc)
+    lc = chrec_convert (type, left, NULL_TREE);
+  rc = chrec_convert_aggressive (type, right);
+  if (!rc)
+    rc = chrec_convert (type, right, NULL_TREE);
+
+  return build_polynomial_chrec (CHREC_VARIABLE (chrec), lc, rc);
 }
 
 /* Returns the type of the chrec.  */

@@ -1,3 +1,15 @@
+2005-09-20  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/18463
+	* tree-chrec.c (chrec_convert): Return fold_converted chrec if
+	converting it directly is not possible.
+	(chrec_convert_aggressive): New function.
+	* tree-chrec.h (chrec_convert_aggressive): Declare.
+	* tree-scalar-evolution.c (instantiate_parameters_1, resolve_mixers):
+	Fold chrec conversions aggressively if asked to.
+	(instantiate_parameters): Modified because of changes in
+	instantiate_parameters_1.
+
 2005-09-19  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/sse.md (reduc_splus_v4sf): Rename from reduc_plus_v4sf.
