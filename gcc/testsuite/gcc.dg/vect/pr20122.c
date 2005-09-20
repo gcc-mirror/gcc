@@ -3,15 +3,12 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-typedef short ashort __attribute__ ((__aligned__(16)));
-ashort Kernshort[24];
-static void VecBug(ashort Kernel[8][24]) __attribute__((noinline));
-static void VecBug(ashort Kernel[8][24]);
-static void VecBug2(ashort Kernel[8][24]) __attribute__((noinline));
-static void VecBug2(ashort Kernel[8][24]);
+short Kernshort[24] __attribute__ ((__aligned__(16)));
+static void VecBug(short Kernel[8][24]) __attribute__((noinline));
+static void VecBug2(short Kernel[8][24]) __attribute__((noinline));
 
 /* Not vectorizable: Kernel may alias Kernshort - a global array.  */
-static void VecBug(ashort Kernel[8][24])
+static void VecBug(short Kernel[8][24])
 {
   int k,i;
     for (k = 0; k<8; k++)
@@ -20,10 +17,10 @@ static void VecBug(ashort Kernel[8][24])
 }
 
 /* Vectorizable: Kernshort2 is local.  */
-static void VecBug2(ashort Kernel[8][24])
+static void VecBug2(short Kernel[8][24])
 {
   int k,i;
-  ashort Kernshort2[24];
+  short Kernshort2[24] __attribute__ ((__aligned__(16)));
     for (k = 0; k<8; k++)
         for (i = 0; i<24; i++)
             Kernshort2[i] = Kernel[k][i];
@@ -38,7 +35,7 @@ int main (int argc, char **argv)
 {
     check_vect ();
 
-    ashort Kernel[8][24];
+    short Kernel[8][24] __attribute__ ((__aligned__(16)));
     int k,i;
 
     for (k = 0; k<8; k++)
@@ -52,5 +49,5 @@ int main (int argc, char **argv)
 }
 
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { xfail vect_no_align} } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
