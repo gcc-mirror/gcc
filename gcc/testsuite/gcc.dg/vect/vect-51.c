@@ -5,7 +5,6 @@
 
 #define N 256
 
-
 void bar (const float *pa, const float *pb, const float *pc) 
 {
   int i;
@@ -20,6 +19,13 @@ void bar (const float *pa, const float *pb, const float *pc)
   return;
 }
 
+/* Unaligned pointer accesses, with unknown alignment.
+   The loop bound is unknown.
+   Can't prove that the pointers don't alias.
+   vect-45.c is similar to this one with one difference:
+        the loop bound is known.
+   vect-50.c is similar to this one with one difference:
+        Aliasing is not a problem.  */
 
 int
 main1 (int n, float *pa, float *pb, float *pc)

@@ -5,9 +5,7 @@
 
 #define N 256
 
-typedef float afloat __attribute__ ((__aligned__(16)));
-
-void bar (const float *pa, const float *pb, const float *pc) 
+void bar (float *pa, float *pb, float *pc) 
 {
   int i;
 
@@ -21,10 +19,18 @@ void bar (const float *pa, const float *pb, const float *pc)
   return;
 }
 
+/* Unaligned pointer read accesses, aligned pointer write access.
+   The loop bound is known and divisible by the vectorization factor.
+   Can't prove that the pointers don't alias.
+   vect-53.c is similar to this one with one difference:
+        the loop bound is unknown.
+   vect-48.c is similar to this one with one difference:
+        aliasing is not a problem.  */
 
 int
-main1 (afloat *pa, float *pb, float *pc)
+main1 (float *pb, float *pc)
 {
+  float pa[N] __attribute__ ((__aligned__(16)));
   int i;
 
   for (i = 0; i < N; i++)
@@ -40,13 +46,14 @@ main1 (afloat *pa, float *pb, float *pc)
 int main (void)
 {
   int i;
-  float a[N];
-  float b[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57};
-  float c[N] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
+  float b[N+1] __attribute__ ((__aligned__(16))) = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57,60};
+  float c[N] __attribute__ ((__aligned__(16))) = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
 
   check_vect ();
 
-  main1 (a,b,c);
+  main1 (b,c);
+  main1 (&b[1],c);
+
   return 0;
 }
 

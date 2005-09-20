@@ -1,4 +1,38 @@
 2005-09-20  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* gcc.dg/vect/vect-40.c: Remove pointers to "aligned types".
+	Use pointers to local alignable arrays instead. Added comments.
+	* gcc.dg/vect/vect-46.c: Likewise.
+	* gcc.dg/vect/vect-48.c: Likewise.
+	* gcc.dg/vect/vect-49.c: Likewise.
+	* gcc.dg/vect/vect-52.c: Likewise.
+	* gcc.dg/vect/vect-53.c: Likewise.
+	* gcc.dg/vect/vect-54.c: Likewise.
+	* gcc.dg/vect/vect-56.c: Likewise.
+	* gcc.dg/vect/vect-57.c: Likewise.
+	* gcc.dg/vect/vect-58.c: Likewise.
+	* gcc.dg/vect/vect-60.c: Likewise.
+	* gcc.dg/vect/vect-61.c: Likewise.
+
+	* gcc.dg/vect/vect-42.c: Remove pointers to "aligned types".
+	The test is no longer vectorizable on vect_no_align targets.
+	* gcc.dg/vect/vect-43.c: Likewsie.
+
+	* gcc.dg/vect/vect-44.c: Added comments.
+	* gcc.dg/vect/vect-45.c: Added comments.
+	* gcc.dg/vect/vect-50.c: Added comments.
+	* gcc.dg/vect/vect-51.c: Added comments.
+
+	* gcc.dg/vect/vect-95.c: Use aligned arrays instead of arrays to
+	aligned type.
+	* gcc.dg/vect/Os-vect-95.c: Likewise. 
+
+	* gcc.dg/vect/vect-41.c: Test removed.
+	* gcc.dg/vect/vect-47.c: Test removed.
+	* gcc.dg/vect/vect-55.c: Test removed.
+	* gcc.dg/vect/vect-59.c: Test removed.
+
+2005-09-20  Dorit Nuzman  <dorit@il.ibm.com>
         
 	* gcc.dg/vect/pr16105.c: Replace "aligned types" with regular types.
 	No longer vectorizable on vect_no_align targets.
