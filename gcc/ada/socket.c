@@ -39,6 +39,8 @@
 #include "raise.h"
 /* Required for __gnat_malloc() */
 
+#include <string.h>
+
 extern void __gnat_disable_sigpipe (int fd);
 extern void __gnat_free_socket_set (fd_set *);
 extern void __gnat_last_socket_in_set (fd_set *, int *);
