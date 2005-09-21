@@ -29,15 +29,15 @@ int main ()
     }
 
   /* Vectorizable */
-  for (i = 0; i < 16; i++)
+  for (i = 0; i < N-20; i++)
     {
       A[i] = A[i+20];
     }
 
   /* check results:  */
-  for (i = 0; i < 16; i++)
+  for (i = 0; i < N-20; i++)
     {
-      if (A[i] != A[i+20])
+      if (A[i] != D[i+20])
 	abort ();
     }
 
@@ -73,5 +73,5 @@ int main ()
 
 
 /* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "accesses have the same alignment." 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "accesses have the same alignment." 2 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

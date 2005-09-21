@@ -49,7 +49,7 @@
 	* tree-stdarg.c (execute_optimize_stdarg): Call
 	calculate_dominance_info.
 
-2005-09-18  Daniel Berlin  <dberlin@dberlin.org>
+2005-09-20  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-data-ref.c (get_number_of_iters_for_loop): New function.
 	(analyze_siv_subscript_cst_affine): Add weak SIV test.
