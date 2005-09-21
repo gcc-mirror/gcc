@@ -1,3 +1,9 @@
+2005-09-21  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/22585
+	* config/i386/i386.c (ix86_prepare_fp_compare_args): Do not
+	force integer op1 into register for XFmode compares.
+
 2005-09-21  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR middle-end/23971
