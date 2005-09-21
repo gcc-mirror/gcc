@@ -2286,10 +2286,18 @@ expand_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
   return temp;
 }
 
-enum alg_code { alg_unknown, alg_zero, alg_m, alg_shift,
-		  alg_add_t_m2, alg_sub_t_m2,
-		  alg_add_factor, alg_sub_factor,
-		  alg_add_t2_m, alg_sub_t2_m };
+enum alg_code {
+  alg_unknown,
+  alg_zero,
+  alg_m, alg_shift,
+  alg_add_t_m2,
+  alg_sub_t_m2,
+  alg_add_factor,
+  alg_sub_factor,
+  alg_add_t2_m,
+  alg_sub_t2_m,
+  alg_impossible
+};
 
 /* This structure holds the "cost" of a multiply sequence.  The
    "cost" field holds the total rtx_cost of every operator in the
@@ -2363,6 +2371,11 @@ struct alg_hash_entry {
 
   /* The best multiplication algorithm for t.  */
   enum alg_code alg;
+
+  /* The cost of multiplication if ALG_CODE is not alg_impossible.
+     Otherwise, the cost within which multiplication by T is
+     impossible.  */
+  struct mult_cost cost;
 };
 
 /* The number of cache/hash entries.  */
@@ -2465,29 +2478,57 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
       && alg_hash[hash_index].mode == mode
       && alg_hash[hash_index].alg != alg_unknown)
     {
-      cache_hit = true;
       cache_alg = alg_hash[hash_index].alg;
-      switch (cache_alg)
+
+      if (cache_alg == alg_impossible)
 	{
-	case alg_shift:
-	  goto do_alg_shift;
+	  /* The cache tells us that it's impossible to synthesize
+	     multiplication by T within alg_hash[hash_index].cost.  */
+	  if (!CHEAPER_MULT_COST (&alg_hash[hash_index].cost, cost_limit))
+	    /* COST_LIMIT is at least as restrictive as the one
+	       recorded in the hash table, in which case we have no
+	       hope of synthesizing a multiplication.  Just
+	       return.  */
+	    return;
 
-	case alg_add_t_m2:
-	case alg_sub_t_m2:
-	  goto do_alg_addsub_t_m2;
+	  /* If we get here, COST_LIMIT is less restrictive than the
+	     one recorded in the hash table, so we may be able to
+	     synthesize a multiplication.  Proceed as if we didn't
+	     have the cache entry.  */
+	}
+      else
+	{
+	  if (CHEAPER_MULT_COST (cost_limit, &alg_hash[hash_index].cost))
+	    /* The cached algorithm shows that this multiplication
+	       requires more cost than COST_LIMIT.  Just return.  This
+	       way, we don't clobber this cache entry with
+	       alg_impossible but retain useful information.  */
+	    return;
 
-	case alg_add_factor:
-	case alg_sub_factor:
-	  goto do_alg_addsub_factor;
+	  cache_hit = true;
 
-	case alg_add_t2_m:
-	  goto do_alg_add_t2_m;
+	  switch (cache_alg)
+	    {
+	    case alg_shift:
+	      goto do_alg_shift;
 
-	case alg_sub_t2_m:
-	  goto do_alg_sub_t2_m;
+	    case alg_add_t_m2:
+	    case alg_sub_t_m2:
+	      goto do_alg_addsub_t_m2;
 
-	default:
-	  gcc_unreachable ();
+	    case alg_add_factor:
+	    case alg_sub_factor:
+	      goto do_alg_addsub_factor;
+
+	    case alg_add_t2_m:
+	      goto do_alg_add_t2_m;
+
+	    case alg_sub_t2_m:
+	      goto do_alg_sub_t2_m;
+
+	    default:
+	      gcc_unreachable ();
+	    }
 	}
     }
 
@@ -2740,7 +2781,18 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
  done:
   /* If best_cost has not decreased, we have not found any algorithm.  */
   if (!CHEAPER_MULT_COST (&best_cost, cost_limit))
-    return;
+    {
+      /* We failed to find an algorithm.  Record alg_impossible for
+	 this case (that is, <T, MODE, COST_LIMIT>) so that next time
+	 we are asked to find an algorithm for T within the same or
+	 lower COST_LIMIT, we can immediately return to the
+	 caller.  */
+      alg_hash[hash_index].t = t;
+      alg_hash[hash_index].mode = mode;
+      alg_hash[hash_index].alg = alg_impossible;
+      alg_hash[hash_index].cost = *cost_limit;
+      return;
+    }
 
   /* Cache the result.  */
   if (!cache_hit)
@@ -2748,6 +2800,8 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
       alg_hash[hash_index].t = t;
       alg_hash[hash_index].mode = mode;
       alg_hash[hash_index].alg = best_alg->op[best_alg->ops];
+      alg_hash[hash_index].cost.cost = best_cost.cost;
+      alg_hash[hash_index].cost.latency = best_cost.latency;
     }
 
   /* If we are getting a too long sequence for `struct algorithm'
