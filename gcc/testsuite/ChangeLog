@@ -1,3 +1,8 @@
+2005-09-21  Dorit Nuzman  <dorit@il.ibm.com>
+
+	* gcc.dg/vect/vect-dv-2.c: Change loop bound and restore original
+	functionality of the testcase.
+
 2005-09-20  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/vect/vect-22.c: Require vect_float.
@@ -19,6 +24,11 @@
 
 	PR tree-optimization/23929
 	* gcc.c-torture/compile/pr23929.c: New test.
+
+2005-09-20  Daniel Berlin  <dberlin@dberlin.org>
+
+	* gcc.dg/vect/vect-dv-2.c: Expect same alignment message only
+	for one loop.
 
 2005-09-20  Steve Ellcey  <sje@cup.hp.com>
 
