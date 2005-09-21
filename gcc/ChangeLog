@@ -1,5 +1,6 @@
 2005-09-21  Kazu Hirata  <kazu@codesourcery.com>
 
+	PR middle-end/23971
 	* expmed.c (alg_code): Add alg_impossible.
 	(alg_hash_entry): Add cost.
 	(synth_mult): Record alg_impossible in the hash table if
