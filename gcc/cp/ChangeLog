@@ -1,5 +1,11 @@
 2005-09-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/23965
+	* call.c (resolve_args): Return error_mark_node on arguments
+	whose TREE_TYPE is error_mark_node.
+
+2005-09-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	PR c++/17609
 	Backport:
 
