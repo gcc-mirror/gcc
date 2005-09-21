@@ -1,5 +1,10 @@
 2005-09-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	PR c++/23965
+	* g++.dg/template/error1.C: Reject "no matching function" message.
+
+2005-09-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	PR c++/17609
 	* g++.dg/lookup/error1.C: New test.
 
