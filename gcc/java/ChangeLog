@@ -1,3 +1,11 @@
+2005-09-21  Ranjit Mathew  <rmathew@gcc.gnu.org>
+
+	PR java/21418
+	* class.c (inherits_from_p): Try to lay out super class
+	if it is not already laid out.
+	(maybe_layout_super_class): Handle the case where SUPER_CLASS
+	is a NULL_TREE.
+
 2005-09-18  James A. Morrison  <phython@gcc.gnu.org>
 
 	* builtins.c (max_builtin, min_builtin, abs_builtin,
