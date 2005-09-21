@@ -1,3 +1,14 @@
+2005-09-20  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-structalias.c (get_constraint_for_component_ref): Add
+	argument.  Allow and set any offset if needs_anyoffset is passed
+	in.
+	(get_constraint_for): Add argument here too.
+	Pass it down.
+	(do_structure_copy): Pass NULL to get_constraint_for.
+	(handle_ptr_arith): Ditto.
+	(find_func_aliases): Ditto.
+
 2005-09-20  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR rtl-optimization/23898
