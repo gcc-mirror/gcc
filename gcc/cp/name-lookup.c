@@ -35,7 +35,6 @@ static cxx_scope *innermost_nonclass_level (void);
 static tree select_decl (cxx_binding *, int);
 static cxx_binding *binding_for_name (cxx_scope *, tree);
 static tree lookup_name_current_level (tree);
-static void push_local_binding (tree, tree, int);
 static tree push_overloaded_decl (tree, int);
 static bool lookup_using_namespace (tree, cxx_binding *, tree,
                                     tree, int);
@@ -1052,7 +1051,7 @@ maybe_push_decl (tree decl)
    doesn't really belong to this binding level, that it got here
    through a using-declaration.  */
 
-static void
+void
 push_local_binding (tree id, tree decl, int flags)
 {
   struct cp_binding_level *b;

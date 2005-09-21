@@ -11,4 +11,4 @@ int i;              // { dg-error "declared" }
 
 using namespace N;
 
-void foo() { i; }   // { dg-error "undeclared|ambiguous" }
+void foo() { i; }   // { dg-error "in this scope|ambiguous" }

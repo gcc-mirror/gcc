@@ -13,6 +13,6 @@ void g ()
 {
   B *bp;
   N::A *ap;
-  f (bp);			// { dg-error "undeclared" }
+  f (bp);			// { dg-error "not declared" }
   f (ap);
 }

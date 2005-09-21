@@ -1,3 +1,14 @@
+2005-09-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/17609
+	Backport:
+
+	2004-03-08  Mark Mitchell  <mark@codesourcery.com>
+	* lex.c (unqualified_name_lookup_error): Create a dummy VAR_DECL
+	in the innermost scope, rather than at namespace scope.
+	* name-lookup.c (push_local_binding): Give it external linkage.
+	* name-lookup.h (push_local_binding): Declare it.
+
 2005-09-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	Backport:

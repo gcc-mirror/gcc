@@ -7,6 +7,6 @@ void foo()
 {
   // Check that we do not complain about an unused
   // compiler-generated variable.
-  A& = a; // { dg-error "token|declarator|undeclared" }
+  A& = 1; // { dg-error "token|declarator" }
 }
 

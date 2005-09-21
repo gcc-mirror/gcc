@@ -1,3 +1,20 @@
+2005-09-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/17609
+	* g++.dg/lookup/error1.C: New test.
+	* g++.dg/lookup/ambig4.C: Tweak error messages.
+	* g++.dg/ext/stmtexpr4.C: Likewise.
+	* g++.dg/parse/error21.C: Tweak testcase.
+
+	Backport:
+	2004-03-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/lookup/koenig1.C: Tweak error messages.
+	* g++.dg/lookup/used-before-declaration.C: Likewise.
+	* g++.dg/other/do1.C: Likewise.
+	* g++.dg/overload/koenig1.C: Likewise.
+	* g++.dg/parse/crash13.C: Likewise.
+
 2005-09-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/18368

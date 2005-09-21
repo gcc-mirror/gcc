@@ -4,5 +4,5 @@
 
 void foo()
 {
-  ({x;}); // { dg-error "undeclared" }
+  ({x;}); // { dg-error "was not declared" }
 }
