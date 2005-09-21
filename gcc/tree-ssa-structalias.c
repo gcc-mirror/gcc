@@ -161,7 +161,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 static bool use_field_sensitive = true;
 static unsigned int create_variable_info_for (tree, const char *);
-static struct constraint_expr get_constraint_for (tree);
+static struct constraint_expr get_constraint_for (tree, bool *);
 static void build_constraint_graph (void);
 
 static bitmap_obstack ptabitmap_obstack;
@@ -2008,7 +2008,7 @@ offset_overlaps_with_access (const unsigned HOST_WIDE_INT fieldpos,
 /* Given a COMPONENT_REF T, return the constraint_expr for it.  */
 
 static struct constraint_expr
-get_constraint_for_component_ref (tree t)
+get_constraint_for_component_ref (tree t, bool *needs_anyoffset)
 {
   struct constraint_expr result;
   HOST_WIDE_INT bitsize;
@@ -2039,7 +2039,7 @@ get_constraint_for_component_ref (tree t)
  
   t = get_inner_reference (t, &bitsize, &bitpos, &offset, &mode,
 			   &unsignedp, &volatilep, false);
-  result = get_constraint_for (t);
+  result = get_constraint_for (t, needs_anyoffset);
 
   /* This can also happen due to weird offsetof type macros.  */
   if (TREE_CODE (t) != ADDR_EXPR && result.type == ADDRESSOF)
@@ -2051,6 +2051,11 @@ get_constraint_for_component_ref (tree t)
     {
       result.offset = bitpos;
     }	
+  else if (needs_anyoffset)
+    {
+      result.offset = 0;
+      *needs_anyoffset = true; 
+    }
   else
     {
       result.var = anything_id;
@@ -2131,7 +2136,7 @@ do_deref (struct constraint_expr cons)
 /* Given a tree T, return the constraint expression for it.  */
 
 static struct constraint_expr
-get_constraint_for (tree t)
+get_constraint_for (tree t, bool *need_anyoffset)
 {
   struct constraint_expr temp;
 
@@ -2168,7 +2173,7 @@ get_constraint_for (tree t)
 	  {
 	  case ADDR_EXPR:
 	    {
-	      temp = get_constraint_for (TREE_OPERAND (t, 0));
+	      temp = get_constraint_for (TREE_OPERAND (t, 0), need_anyoffset);
 	       if (temp.type == DEREF)
 		 temp.type = SCALAR;
 	       else
@@ -2215,13 +2220,13 @@ get_constraint_for (tree t)
 	  {
 	  case INDIRECT_REF:
 	    {
-	      temp = get_constraint_for (TREE_OPERAND (t, 0));
+	      temp = get_constraint_for (TREE_OPERAND (t, 0), need_anyoffset);
 	      temp = do_deref (temp);
 	      return temp;
 	    }
 	  case ARRAY_REF:
 	  case COMPONENT_REF:
-	    temp = get_constraint_for_component_ref (t);
+	    temp = get_constraint_for_component_ref (t, need_anyoffset);
 	    return temp;
 	  default:
 	    {
@@ -2246,7 +2251,7 @@ get_constraint_for (tree t)
 		 Anything else, we see through */
 	      if (!(POINTER_TYPE_P (TREE_TYPE (t))
 		    && ! POINTER_TYPE_P (TREE_TYPE (op))))
-		return get_constraint_for (op);
+		return get_constraint_for (op, need_anyoffset);
 
 	      /* FALLTHRU  */
 	    }
@@ -2264,7 +2269,7 @@ get_constraint_for (tree t)
 	switch (TREE_CODE (t))
 	  {
 	  case PHI_NODE:	   
-	    return get_constraint_for (PHI_RESULT (t));
+	    return get_constraint_for (PHI_RESULT (t), need_anyoffset);
 	  case SSA_NAME:
 	    return get_constraint_exp_from_ssa_var (t);
 	  default:
@@ -2413,8 +2418,8 @@ do_structure_copy (tree lhsop, tree rhsop)
   unsigned HOST_WIDE_INT lhssize;
   unsigned HOST_WIDE_INT rhssize;
 
-  lhs = get_constraint_for (lhsop);  
-  rhs = get_constraint_for (rhsop);
+  lhs = get_constraint_for (lhsop, NULL);  
+  rhs = get_constraint_for (rhsop, NULL);
   
   /* If we have special var = x, swap it around.  */
   if (lhs.var <= integer_id && !(get_varinfo (rhs.var)->is_special_var))
@@ -2750,7 +2755,7 @@ handle_ptr_arith (struct constraint_expr lhs, tree expr)
   op0 = TREE_OPERAND (expr, 0);
   op1 = TREE_OPERAND (expr, 1);
 
-  base = get_constraint_for (op0);
+  base = get_constraint_for (op0, NULL);
 
   offset.var = anyoffset_id;
   offset.type = ADDRESSOF;
@@ -2788,10 +2793,10 @@ find_func_aliases (tree t, struct alias_info *ai)
 	{
 	  int i;
 
-	  lhs = get_constraint_for (PHI_RESULT (t));
+	  lhs = get_constraint_for (PHI_RESULT (t), NULL);
 	  for (i = 0; i < PHI_NUM_ARGS (t); i++)
 	    {
-	      rhs = get_constraint_for (PHI_ARG_DEF (t, i));
+	      rhs = get_constraint_for (PHI_ARG_DEF (t, i), NULL);
 	      process_constraint (new_constraint (lhs, rhs));
 	    }
 	}
@@ -2816,7 +2821,7 @@ find_func_aliases (tree t, struct alias_info *ai)
 	      || ref_contains_indirect_ref (lhsop)
 	      || TREE_CODE (rhsop) == CALL_EXPR)
 	    {
-	      lhs = get_constraint_for (lhsop);
+	      lhs = get_constraint_for (lhsop, NULL);
 	      switch (TREE_CODE_CLASS (TREE_CODE (rhsop)))
 		{
 		  /* RHS that consist of unary operations,
@@ -2829,15 +2834,16 @@ find_func_aliases (tree t, struct alias_info *ai)
 		  case tcc_expression:
 		  case tcc_unary:
 		      {
-			rhs = get_constraint_for (rhsop);
+			bool need_anyoffset = false;
+			rhs = get_constraint_for (rhsop, &need_anyoffset);
 			process_constraint (new_constraint (lhs, rhs));
 
 			/* When taking the address of an aggregate
 			   type, from the LHS we can access any field
 			   of the RHS.  */
-			if (rhs.type == ADDRESSOF
+			if (need_anyoffset || (rhs.type == ADDRESSOF
 			    && !(get_varinfo (rhs.var)->is_special_var)
-			    && AGGREGATE_TYPE_P (TREE_TYPE (TREE_TYPE (rhsop))))
+			    && AGGREGATE_TYPE_P (TREE_TYPE (TREE_TYPE (rhsop)))))
 			  {
 			    rhs.var = anyoffset_id;
 			    rhs.type = ADDRESSOF;
@@ -2866,7 +2872,7 @@ find_func_aliases (tree t, struct alias_info *ai)
 		    for (i = 0; i < TREE_CODE_LENGTH (TREE_CODE (rhsop)); i++)
 		      {
 			tree op = TREE_OPERAND (rhsop, i);
-			rhs = get_constraint_for (op);
+			rhs = get_constraint_for (op, NULL);
 			process_constraint (new_constraint (lhs, rhs));
 		      }
 		}      
