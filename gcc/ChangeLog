@@ -1,3 +1,11 @@
+2005-09-21  Kazu Hirata  <kazu@codesourcery.com>
+
+	* expmed.c (alg_code): Add alg_impossible.
+	(alg_hash_entry): Add cost.
+	(synth_mult): Record alg_impossible in the hash table if
+	multiplication by a given integer is impossble within the
+	limit.  Speed up using alg_impossible.
+
 2005-09-20  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-ssa-structalias.c (get_constraint_for_component_ref): Add
