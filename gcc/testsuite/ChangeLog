@@ -1,3 +1,8 @@
+2005-09-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/17609
+	* g++.dg/lookup/error1.C: New test.
+
 2005-09-21  Dorit Nuzman  <dorit@il.ibm.com>
 
 	* gcc.dg/vect/vect-dv-2.c: Change loop bound and restore original
