@@ -1,3 +1,7 @@
+2005-09-21  Ranjit Mathew  <rmathew@gcc.gnu.org>
+
+	* testsuite/libjava.jacks/jacks.xfail: Updated for PR java/23891.
+
 2005-09-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* testsuite/libjava.jni/jni.exp (gcj_jni_invocation_test_one):

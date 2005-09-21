@@ -152,8 +152,8 @@
 15.11.2-syntax-1
 15.12.1-syntax-1
 15.12.1-type-14
-15.12.2.1-accessibility-method-2
-15.12.2.1-accessibility-method-4
+15.12.2.1-accessibility-method-3
+15.12.2.1-accessibility-method-5
 15.12.2.1-accessibility-method-6
 15.12.2.2-ambiguous-10
 15.12.2.2-ambiguous-12
@@ -273,6 +273,7 @@
 15.28-null-3
 15.28-primitive-15
 15.28-primitive-17
+15.28-primitive-3
 15.28-qualified-name-10
 15.28-qualified-name-5
 15.28-qualified-name-6
@@ -324,6 +325,7 @@
 15.9.1-qualified-concrete-12
 15.9.1-qualified-concrete-14
 15.9.1-qualified-concrete-16
+15.9.1-qualified-concrete-24
 15.9.1-qualified-concrete-4
 15.9.1-qualified-concrete-5
 15.9.1-unqualified-anonymous-12
