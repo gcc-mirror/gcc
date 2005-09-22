@@ -3,7 +3,7 @@
         PR target/24007
         * config/rs6000/rs6000.md (movsf_hardfloat): Ignore special
         registers when choosing register preferences.
-        (movdf_hardfloat): Same.
+        (movdf_hardfloat64): Same.
 
 2005-09-22  Andreas Krebbel  <krebbel1@de.ibm.com>
 
