@@ -1,6 +1,7 @@
-2005-09-20  Release Manager
+2005-09-21  Mark Mitchell  <mark@codesourcery.com>
 
-	* GCC 4.0.2 released.
+	PR c++/23993
+	* init.c (integral_constant_value): Use DECL_INTEGRAL_CONSTANT_VAR_P.
 
 2005-09-16  Mark Mitchell  <mark@codesourcery.com>
 

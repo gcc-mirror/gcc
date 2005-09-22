@@ -1,6 +1,7 @@
-2005-09-20  Release Manager
+2005-09-21  Mark Mitchell  <mark@codesourcery.com>
 
-	* GCC 4.0.2 released.
+	PR c++/23993
+	* g++.dg/template/array14.C: New test.
 
 2005-09-16  Joseph S. Myers  <joseph@codesourcery.com>
 
