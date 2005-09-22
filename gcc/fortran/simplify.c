@@ -372,6 +372,7 @@ gfc_simplify_adjustr (gfc_expr * e)
 gfc_expr *
 gfc_simplify_aimag (gfc_expr * e)
 {
+
   gfc_expr *result;
 
   if (e->expr_type != EXPR_CONSTANT)
@@ -2589,6 +2590,21 @@ gfc_simplify_real (gfc_expr * e, gfc_expr * k)
     }
 
   return range_check (result, "REAL");
+}
+
+
+gfc_expr *
+gfc_simplify_realpart (gfc_expr * e)
+{
+  gfc_expr *result;
+
+  if (e->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_constant_result (BT_REAL, e->ts.kind, &e->where);
+  mpfr_set (result->value.real, e->value.complex.r, GFC_RND_MODE);
+
+  return range_check (result, "REALPART");
 }
 
 gfc_expr *

@@ -1152,6 +1152,17 @@ gfc_resolve_real (gfc_expr * f, gfc_expr * a, gfc_expr * kind)
 
 
 void
+gfc_resolve_realpart (gfc_expr * f, gfc_expr * a)
+{
+  f->ts.type = BT_REAL;
+  f->ts.kind = a->ts.kind;
+  f->value.function.name =
+    gfc_get_string ("__real_%d_%c%d", f->ts.kind,
+		    gfc_type_letter (a->ts.type), a->ts.kind);
+}
+
+
+void
 gfc_resolve_rename (gfc_expr * f, gfc_expr * p1 ATTRIBUTE_UNUSED,
 	            gfc_expr * p2 ATTRIBUTE_UNUSED)
 {

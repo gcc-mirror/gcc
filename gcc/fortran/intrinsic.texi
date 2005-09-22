@@ -89,6 +89,7 @@ and editing.  All contributions and corrections are strongly encouraged.
 * @code{FNUM}:          FNUM,      File number function
 * @code{LOG}:           LOG,       Logarithm function
 * @code{LOG10}:         LOG10,     Base 10 logarithm function 
+* @code{REAL}:          REAL,      Convert to real type 
 * @code{SQRT}:          SQRT,      Square-root function
 * @code{SIN}:           SIN,       Sine function
 * @code{SINH}:          SINH,      Hyperbolic sine function
@@ -402,11 +403,16 @@ end program test_adjustr
 @section @code{AIMAG} --- Imaginary part of complex number  
 @findex @code{AIMAG} intrinsic
 @findex @code{DIMAG} intrinsic
+@findex @code{IMAG} intrinsic
+@findex @code{IMAGPART} intrinsic
 @cindex Imaginary part
 
 @table @asis
 @item @emph{Description}:
 @code{AIMAG(Z)} yields the imaginary part of complex argument @code{Z}.
+The @code{IMAG(Z)} and @code{IMAGPART(Z)} intrinsic functions are provided
+for compatibility with @command{g77}, and their use in new code is 
+strongly discouraged.
 
 @item @emph{Option}:
 f95, gnu
@@ -441,6 +447,8 @@ end program test_aimag
 @multitable @columnfractions .24 .24 .24 .24
 @item Name            @tab Argument            @tab Return type       @tab Option
 @item @code{DIMAG(Z)} @tab @code{COMPLEX(8) Z} @tab @code{REAL(8)}    @tab f95, gnu
+@item @code{IMAG(Z)}  @tab @code{COMPLEX(*) Z} @tab @code{REAL(*)}    @tab gnu
+@item @code{IMAGPART(Z)} @tab @code{COMPLEX(*) Z} @tab @code{REAL(*)} @tab gnu
 @end multitable
 @end table
 
@@ -2820,6 +2828,64 @@ end program test_log10
 @end multitable
 @end table
 
+
+@node REAL
+@section @code{REAL} --- Convert to real type 
+@findex @code{REAL} intrinsic
+@findex @code{REALPART} intrinsic
+@cindex true values
+
+@table @asis
+@item @emph{Description}:
+@code{REAL(X [, KIND])} converts its argument @var{X} to a real type.  The
+@code{REALPART(X)} function is provided for compatibility with @command{g77},
+and its use is strongly discouraged.
+
+@item @emph{Option}:
+f95, gnu
+
+@item @emph{Class}:
+transformational function
+
+@item @emph{Syntax}:
+@multitable @columnfractions .30 .80
+@item @code{X = REAL(X)}
+@item @code{X = REAL(X, KIND)}
+@item @code{X = REALPART(Z)}
+@end multitable
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .80
+@item @var{X} @tab shall be @code{INTEGER(*)}, @code{REAL(*)}, or  
+@code{COMPLEX(*)}.
+@item @var{KIND}  @tab (Optional) @var{KIND} shall be a scalar integer.
+@end multitable
+
+@item @emph{Return value}:
+These functions return the a @code{REAL(*)} variable or array under
+the following rules: 
+
+@table @asis
+@item (A)
+@code{REAL(X)} is converted to a default real type if @var{X} is an 
+integer or real variable.
+@item (B)
+@code{REAL(X)} is converted to a real type with the kind type parameter
+of @var{X} if @var{X} is a complex variable.
+@item (C)
+@code{REAL(X, KIND)} is converted to a real type with kind type
+parameter @var{KIND} if @var{X} is a complex, integer, or real
+variable.
+@end table
+
+@item @emph{Example}:
+@smallexample
+program test_real
+  complex :: x = (1.0, 2.0)
+  print *, real(x), real(x,8), realpart(x)
+  end program test_real
+@end smallexample
+@end table
 
 
 @node SIN
