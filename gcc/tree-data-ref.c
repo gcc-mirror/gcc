@@ -823,7 +823,8 @@ analyze_array_indexes (struct loop *loop,
   access_fn = instantiate_parameters 
     (loop, analyze_scalar_evolution (loop, opnd1));
 
-  if (chrec_contains_undetermined (loop->estimated_nb_iterations))
+  if (estimate_only 
+      && chrec_contains_undetermined (loop->estimated_nb_iterations))
     estimate_niter_from_size_of_data (loop, opnd0, access_fn, stmt);
 
   if (!estimate_only)

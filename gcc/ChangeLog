@@ -1,3 +1,14 @@
+2005-09-21  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-data-ref.c (analyze_array_indexes): Only estimate when
+	estimate_only  is true.
+	* tree-flow.h (ref_contains_indirect_ref): New prototype.
+	* tree-flow-inline.h (ref_contains_indirect_ref): Moved from
+	tree-ssa-structalias.c 
+	* tree-ssa-loop-niter.c (infer_loop_bounds_from_undefined): Use
+	ref_contains_indirect_ref.
+	* tree-ssa-structalias.c (ref_contains_indirect_ref): Moved.
+
 2005-09-21  DJ Delorie  <dj@redhat.com>
 
 	* config/mn10300/mn10300.c (TARGET_DEFAULT_TARGET_FLAGS): Add

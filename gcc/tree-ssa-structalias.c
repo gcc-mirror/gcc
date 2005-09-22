@@ -2008,12 +2008,12 @@ offset_overlaps_with_access (const unsigned HOST_WIDE_INT fieldpos,
 /* Given a COMPONENT_REF T, return the constraint_expr for it.  */
 
 static struct constraint_expr
-get_constraint_for_component_ref (tree t, bool *needs_anyoffset)
+get_constraint_for_component_ref (tree t, bool *need_anyoffset)
 {
   struct constraint_expr result;
-  HOST_WIDE_INT bitsize;
+  HOST_WIDE_INT bitsize = -1;
   HOST_WIDE_INT bitpos;
-  tree offset;
+  tree offset = NULL_TREE;
   enum machine_mode mode;
   int unsignedp;
   int volatilep;
@@ -2039,7 +2039,7 @@ get_constraint_for_component_ref (tree t, bool *needs_anyoffset)
  
   t = get_inner_reference (t, &bitsize, &bitpos, &offset, &mode,
 			   &unsignedp, &volatilep, false);
-  result = get_constraint_for (t, needs_anyoffset);
+  result = get_constraint_for (t, need_anyoffset);
 
   /* This can also happen due to weird offsetof type macros.  */
   if (TREE_CODE (t) != ADDR_EXPR && result.type == ADDRESSOF)
@@ -2051,10 +2051,10 @@ get_constraint_for_component_ref (tree t, bool *needs_anyoffset)
     {
       result.offset = bitpos;
     }	
-  else if (needs_anyoffset)
+  else if (need_anyoffset)
     {
       result.offset = 0;
-      *needs_anyoffset = true; 
+      *need_anyoffset = true; 
     }
   else
     {
@@ -2509,23 +2509,6 @@ do_structure_copy (tree lhsop, tree rhsop)
 	}
     }
 }
-
-
-/* Return true if REF, a COMPONENT_REF, has an INDIRECT_REF somewhere
-   in it.  */
-
-static inline bool
-ref_contains_indirect_ref (tree ref)
-{
-  while (handled_component_p (ref))
-    {
-      if (TREE_CODE (ref) == INDIRECT_REF)
-	return true;
-      ref = TREE_OPERAND (ref, 0);
-    }
-  return false;
-}
-
 
 /* Update related alias information kept in AI.  This is used when
    building name tags, alias sets and deciding grouping heuristics.
