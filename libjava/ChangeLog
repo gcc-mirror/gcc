@@ -1,3 +1,10 @@
+2005-09-21  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* gnu/gcj/runtime/BootClassLoader.java (BootClassLoader): Pass
+	`null' parent ClassLoader to parent constructor.
+	* gnu/gcj/runtime/HelperClassLoader.java (HelperClassLoader): New
+	constructor.
+
 2005-09-21  Ranjit Mathew  <rmathew@gcc.gnu.org>
 
 	* testsuite/libjava.jacks/jacks.xfail: Updated for PR java/23891.

@@ -25,6 +25,11 @@ class HelperClassLoader extends URLClassLoader
   {
     super(new URL[0]);
   }
+  
+  HelperClassLoader(ClassLoader parent)
+  {
+    super(new URL[0], parent);
+  }
 
   /**
    * This is a helper method that adds all the jar and zip files from
