@@ -1906,11 +1906,7 @@ find_final_overrider (tree derived, tree binfo, tree fn)
 
   /* If there was no winner, issue an error message.  */
   if (!ffod.candidates || TREE_CHAIN (ffod.candidates))
-    {
-      error ("no unique final overrider for %qD in %qT", fn,
-	     BINFO_TYPE (derived));
-      return error_mark_node;
-    }
+    return error_mark_node;
 
   return ffod.candidates;
 }
@@ -1970,7 +1966,10 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
   /* Find the final overrider.  */
   overrider = find_final_overrider (TYPE_BINFO (t), b, target_fn);
   if (overrider == error_mark_node)
-    return;
+    {
+      error ("no unique final overrider for %qD in %qT", target_fn, t);
+      return;
+    }
   overrider_target = overrider_fn = TREE_PURPOSE (overrider);
 
   /* Check for adjusting covariant return types.  */
