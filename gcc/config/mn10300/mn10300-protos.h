@@ -49,6 +49,7 @@ extern bool mn10300_wide_const_load_uses_clr (rtx operands[2]);
 #ifdef TREE_CODE
 extern struct rtx_def *function_arg (CUMULATIVE_ARGS *,
 				     enum machine_mode, tree, int);
+extern rtx mn10300_function_value (tree, tree, int);
 #endif /* TREE_CODE */
 
 extern void expand_prologue (void);

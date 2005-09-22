@@ -594,8 +594,9 @@ struct cum_arg {int nbytes; };
    otherwise, FUNC is 0.  */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC) \
-  gen_rtx_REG (TYPE_MODE (VALTYPE), POINTER_TYPE_P (VALTYPE) \
-	       ? FIRST_ADDRESS_REGNUM : FIRST_DATA_REGNUM)
+  mn10300_function_value (VALTYPE, FUNC, 0)
+#define FUNCTION_OUTGOING_VALUE(VALTYPE, FUNC) \
+  mn10300_function_value (VALTYPE, FUNC, 1)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */

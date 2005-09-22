@@ -1,3 +1,15 @@
+2005-09-21  DJ Delorie  <dj@redhat.com>
+
+	* config/mn10300/mn10300.c (TARGET_DEFAULT_TARGET_FLAGS): Add
+	MASK_PTR_A0D0.
+	(mn10300_return_in_memory): Support variable size types also.
+	(mn10300_pass_by_reference): Likewise.
+	(mn10300_function_value): New.
+	* config/mn10300/mn10300.h (FUNCTION_VALUE): Call the above.
+	(FUNCTION_OUTGOING_VALUE): Likewise.
+	* config/mn10300/mn10300.opt: Add -mreturn-pointer-on-d0.
+	* doc/invoke.texi: Document it.
+
 2005-09-21  Uros Bizjak  <uros@kss-loka.si>
 
 	PR target/22585

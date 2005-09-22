@@ -95,7 +95,7 @@ static int mn10300_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 
 #undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS MASK_MULT_BUG
+#define TARGET_DEFAULT_TARGET_FLAGS MASK_MULT_BUG | MASK_PTR_A0D0
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION mn10300_handle_option
 
@@ -1449,7 +1449,9 @@ static bool
 mn10300_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 {
   /* Return values > 8 bytes in length in memory.  */
-  return int_size_in_bytes (type) > 8 || TYPE_MODE (type) == BLKmode;
+  return (int_size_in_bytes (type) > 8
+	  || int_size_in_bytes (type) == 0
+	  || TYPE_MODE (type) == BLKmode);
 }
 
 /* Flush the argument registers to the stack for a stdarg function;
@@ -1505,7 +1507,7 @@ mn10300_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
   else
     size = GET_MODE_SIZE (mode);
 
-  return size > 8;
+  return (size > 8 || size == 0);
 }
 
 /* Return an RTX to represent where a value with mode MODE will be returned
@@ -1596,6 +1598,37 @@ mn10300_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     return 0;
 
   return nregs * UNITS_PER_WORD - cum->nbytes;
+}
+
+/* Return the location of the function's value.  This will be either
+   $d0 for integer functions, $a0 for pointers, or a PARALLEL of both
+   $d0 and $a0 if the -mreturn-pointer-on-do flag is set.  Note that
+   we only return the PARALLEL for outgoing values; we do not want
+   callers relying on this extra copy.  */
+
+rtx
+mn10300_function_value (tree valtype, tree func, int outgoing)
+{
+  rtx rv;
+  enum machine_mode mode = TYPE_MODE (valtype);
+
+  if (! POINTER_TYPE_P (valtype))
+    return gen_rtx_REG (mode, FIRST_DATA_REGNUM);
+  else if (! TARGET_PTR_A0D0 || ! outgoing
+	   || current_function_returns_struct)
+    return gen_rtx_REG (mode, FIRST_ADDRESS_REGNUM);
+
+  rv = gen_rtx_PARALLEL (mode, rtvec_alloc (2));
+  XVECEXP (rv, 0, 0)
+    = gen_rtx_EXPR_LIST (VOIDmode,
+			 gen_rtx_REG (mode, FIRST_ADDRESS_REGNUM),
+			 GEN_INT (0));
+  
+  XVECEXP (rv, 0, 1)
+    = gen_rtx_EXPR_LIST (VOIDmode,
+			 gen_rtx_REG (mode, FIRST_DATA_REGNUM),
+			 GEN_INT (0));
+  return rv;
 }
 
 /* Output a tst insn.  */
