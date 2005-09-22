@@ -1,3 +1,9 @@
+2005-09-21  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/22438
+	* tree-ssa-loop-ivopts.c (rewrite_use_nonlinear_expr): Handle all
+	preserved iv rhs rewriting specially.
+
 2005-09-21  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-data-ref.c (analyze_array_indexes): Only estimate when
