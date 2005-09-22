@@ -233,6 +233,7 @@ gfc_expr *gfc_simplify_precision (gfc_expr *);
 gfc_expr *gfc_simplify_radix (gfc_expr *);
 gfc_expr *gfc_simplify_range (gfc_expr *);
 gfc_expr *gfc_simplify_real (gfc_expr *, gfc_expr *);
+gfc_expr *gfc_simplify_realpart (gfc_expr *);
 gfc_expr *gfc_simplify_repeat (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_reshape (gfc_expr *, gfc_expr *, gfc_expr *,
 				gfc_expr *);
@@ -345,6 +346,7 @@ void gfc_resolve_not (gfc_expr *, gfc_expr *);
 void gfc_resolve_pack (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_product (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_real (gfc_expr *, gfc_expr *, gfc_expr *);
+void gfc_resolve_realpart (gfc_expr *, gfc_expr *);
 void gfc_resolve_rename (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_repeat (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_reshape (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,

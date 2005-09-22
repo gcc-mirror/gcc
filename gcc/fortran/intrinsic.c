@@ -949,9 +949,13 @@ add_functions (void)
 	     gfc_check_fn_c, gfc_simplify_aimag, gfc_resolve_aimag,
 	     z, BT_COMPLEX, dz, REQUIRED);
 
+  make_alias ("imag", GFC_STD_GNU);
+  make_alias ("imagpart", GFC_STD_GNU);
+
   add_sym_1 ("dimag", 1, 1, BT_REAL, dd, GFC_STD_GNU, 
 	     NULL, gfc_simplify_aimag, gfc_resolve_aimag, 
 	     z, BT_COMPLEX, dd, REQUIRED);
+
 
   make_generic ("aimag", GFC_ISYM_AIMAG, GFC_STD_F77);
 
@@ -1812,6 +1816,11 @@ add_functions (void)
   add_sym_2 ("real", 1, 0, BT_REAL, dr, GFC_STD_F77,
 	     gfc_check_real, gfc_simplify_real, gfc_resolve_real,
 	     a, BT_UNKNOWN, dr, REQUIRED, kind, BT_INTEGER, di, OPTIONAL);
+
+  /* This provides compatibility with g77.  */
+  add_sym_1 ("realpart", 1, 0, BT_REAL, dr, GFC_STD_GNU,
+	     gfc_check_fn_c, gfc_simplify_realpart, gfc_resolve_realpart,
+	     a, BT_UNKNOWN, dr, REQUIRED);
 
   add_sym_1 ("float", 1, 0, BT_REAL, dr, GFC_STD_F77,
 	     NULL, gfc_simplify_float, NULL,

@@ -1,3 +1,14 @@
+2005-09-22  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/23516
+	* intrinsic.c (add_function): Add IMAG, IMAGPART, and REALPART
+	intrinsics.
+	* intrinsic.h: Prototypes for gfc_simplify_realpart and
+	gfc_resolve_realpart.
+	* intrinsic.texi: Document intrinsic procedures.
+	* simplify.c (gfc_simplify_realpart): New function.
+	* irseolve.c (gfc_resolve_realpart): New function.
+
 2005-09-21  Erik Edelmann  <erik.edelmann@iki.fi>
 
 	PR fortran/19929
