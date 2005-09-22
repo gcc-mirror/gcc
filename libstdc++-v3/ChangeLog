@@ -1,3 +1,9 @@
+2005-09-21  Guillaume Melquiond  <guillaume.melquiond@ens-lyon.fr>
+
+	PR libstdc++/23956
+	* include/ext/mt_allocator.h: Remove excess
+	policy_type::_S_get_pool calls in constructors.
+	
 2005-09-18  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/23417 (cont)
