@@ -1,3 +1,8 @@
+2005-09-22  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/24005
+	* interface.c (check_interface1): Fix NULL dereference.
+
 2005-09-22  Erik Edelmann  <erik.edelmann@iki.fi>
 
 	PR fortran/23843
