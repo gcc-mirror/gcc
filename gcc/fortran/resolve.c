@@ -2518,6 +2518,29 @@ derived_pointer (gfc_symbol * sym)
 }
 
 
+/* Given a pointer to a symbol that is a derived type, see if it's
+   inaccessible, i.e. if it's defined in another module and the components are
+   PRIVATE.  The search is recursive if necessary.  Returns zero if no
+   inaccessible components are found, nonzero otherwise.  */
+
+static int
+derived_inaccessible (gfc_symbol *sym)
+{
+  gfc_component *c;
+
+  if (sym->attr.use_assoc && sym->component_access == ACCESS_PRIVATE)
+    return 1;
+
+  for (c = sym->components; c; c = c->next)
+    {
+        if (c->ts.type == BT_DERIVED && derived_inaccessible (c->ts.derived))
+          return 1;
+    }
+
+  return 0;
+}
+
+
 /* Resolve the argument of a deallocate expression.  The expression must be
    a pointer or a full array.  */
 
@@ -3184,7 +3207,8 @@ resolve_select (gfc_code * code)
 
 /* Resolve a transfer statement. This is making sure that:
    -- a derived type being transferred has only non-pointer components
-   -- a derived type being transferred doesn't have private components
+   -- a derived type being transferred doesn't have private components, unless 
+      it's being transferred from the module where the type was defined
    -- we're not trying to transfer a whole assumed size array.  */
 
 static void
@@ -3219,7 +3243,7 @@ resolve_transfer (gfc_code * code)
 	  return;
 	}
 
-      if (ts->derived->component_access == ACCESS_PRIVATE)
+      if (derived_inaccessible (ts->derived))
 	{
 	  gfc_error ("Data transfer element at %L cannot have "
 		     "PRIVATE components",&code->loc);
