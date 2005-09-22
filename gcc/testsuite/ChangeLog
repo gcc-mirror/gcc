@@ -1,3 +1,8 @@
+2005-09-22 Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/24005
+	gfortran.dg/interface_1.f90: New test.
+
 2005-09-22  Erik Edelmann  <erik.edelmann@iki.fi>
 	Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
