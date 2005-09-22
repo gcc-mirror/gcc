@@ -1,3 +1,8 @@
+2005-09-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/23993
+	* g++.dg/template/array14.C: New test.
+
 2005-09-21  Erik Edelmann  <erik.edelmann@iki.fi>
 
 	PR fortran/19929
