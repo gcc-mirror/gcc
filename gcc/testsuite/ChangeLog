@@ -1,3 +1,7 @@
+2005-09-22  J"orn Rennecke <joern.rennecke@st.com>
+
+	* gcc.dg/intmax_t-1.c: Remove sh*-*-elf from dg-error statement.
+
 2005-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/21983
