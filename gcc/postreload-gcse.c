@@ -1072,7 +1072,7 @@ eliminate_partially_redundant_load (basic_block bb, rtx insn,
 	  npred_ok++;
 	  ok_count += pred->count;
 	  occr = (struct unoccr *) obstack_alloc (&unoccr_obstack,
-						  sizeof (struct occr));
+						  sizeof (struct unoccr));
 	  occr->insn = avail_insn;
 	  occr->pred = pred;
 	  occr->next = avail_occrs;

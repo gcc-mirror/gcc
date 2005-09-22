@@ -1,6 +1,8 @@
-2005-09-20  Release Manager
+2005-09-21  Andreas Schwab  <schwab@suse.de>
 
-	* GCC 4.0.2 released.
+	PR rtl-optimization/23043
+	* postreload-gcse.c (eliminate_partially_redundant_load): Fix typo
+	when allocating a struct unoccr.
 
 2005-09-19  Richard Henderson  <rth@redhat.com>
 
