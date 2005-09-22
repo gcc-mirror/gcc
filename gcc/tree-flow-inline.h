@@ -1414,6 +1414,21 @@ unmodifiable_var_p (tree var)
   return TREE_READONLY (var) && (TREE_STATIC (var) || DECL_EXTERNAL (var));
 }
 
+/* Return true if REF, an ARRAY_REF, has an INDIRECT_REF somewhere in
+   it.  */
+
+static inline bool
+ref_contains_indirect_ref (tree ref)
+{
+  while (handled_component_p (ref))
+    {
+      if (TREE_CODE (ref) == INDIRECT_REF)
+	return true;
+      ref = TREE_OPERAND (ref, 0);
+    }
+  return false;
+}
+
 /* Return true if REF, a COMPONENT_REF, has an ARRAY_REF somewhere in it.  */
 
 static inline bool
