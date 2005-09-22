@@ -1,3 +1,9 @@
+2005-09-22  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/23516
+	* gfortran.dg/imag_1.f: New test.
+	* gfortran.dg/imag_2.f: Ditto.
+
 2005-09-22  J"orn Rennecke <joern.rennecke@st.com>
 
 	* gcc.dg/intmax_t-1.c: Remove sh*-*-elf from dg-error statement.
