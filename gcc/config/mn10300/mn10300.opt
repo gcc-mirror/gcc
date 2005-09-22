@@ -35,3 +35,7 @@ Work around hardware multiply bug
 mrelax
 Target RejectNegative
 Enable linker relaxations
+
+mreturn-pointer-on-d0
+Target Report Mask(PTR_A0D0)
+Return pointers in both a0 and d0
