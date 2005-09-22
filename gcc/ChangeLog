@@ -1,3 +1,9 @@
+2005-09-22  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* expmed.c (expand_shift): Don't use the target of the rotate as
+	target for the first expanded shift insn.
+	* testsuite/gcc.dg/20050922-1.c: Testcase added.
+
 2005-09-21  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/22438

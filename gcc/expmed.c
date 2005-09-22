@@ -2227,9 +2227,9 @@ expand_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
 	      shifted = force_reg (mode, shifted);
 
 	      temp = expand_shift (left ? LSHIFT_EXPR : RSHIFT_EXPR,
-				   mode, shifted, new_amount, subtarget, 1);
+				   mode, shifted, new_amount, 0, 1);
 	      temp1 = expand_shift (left ? RSHIFT_EXPR : LSHIFT_EXPR,
-				    mode, shifted, other_amount, 0, 1);
+				    mode, shifted, other_amount, subtarget, 1);
 	      return expand_binop (mode, ior_optab, temp, temp1, target,
 				   unsignedp, methods);
 	    }
