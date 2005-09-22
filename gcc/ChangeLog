@@ -1,3 +1,10 @@
+2005-09-22  David Edelsohn  <edelsohn@gnu.org>
+
+        PR target/24007
+        * config/rs6000/rs6000.md (movsf_hardfloat): Ignore special
+        registers when choosing register preferences.
+        (movdf_hardfloat): Same.
+
 2005-09-22  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* expmed.c (expand_shift): Don't use the target of the rotate as
