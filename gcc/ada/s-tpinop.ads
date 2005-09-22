@@ -36,6 +36,7 @@ with System.Interrupt_Management;
 with System.Tasking;
 
 package System.Task_Primitives.Interrupt_Operations is
+   pragma Preelaborate;
 
    package IM renames System.Interrupt_Management;
    package ST renames System.Tasking;

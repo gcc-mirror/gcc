@@ -1,3 +1,8 @@
+2005-09-16  Laurent GUERBY  <laurent@guerby.net>
+
+	PR ada/23788
+	* s-tpinop.ads: Make this unit Preelaborate.
+
 2005-09-16  Andreas Jaeger  <aj@suse.de>
 
 	* socket.c: Add string.h for memcpy.
