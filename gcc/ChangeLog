@@ -7,6 +7,9 @@
 	*  optabs.c (no_conflict_move_test): Don't set must_stay for a
 	clobber / clobber match between dest and p->first.
 
+	* optabs.c (emit_libcall_block): Use no_conflict_move_test.
+	(no_conflict_move_test): Update comments.
+
 2005-09-22  Ranjit Mathew  <rmathew@gcc.gnu.org>
 
 	* doc/install.texi: Update URL for Jacks.
