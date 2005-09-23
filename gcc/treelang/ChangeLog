@@ -1,3 +1,14 @@
+2005-09-23  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+
+	* parse.y : Changed pointer declaration from "type* var" to "type *var"
+	Removed trailing space.  Wrap long lines.
+
+2005-09-23  Rafael Ávila de Espíndola  <rafael.espindola@gmail.com>
+
+	* parse.y :  Fixed two compile warnings in "error" and "warning"
+	invocations.  Removed trailing periods in messages.  Decapitalized the
+	first word of each.
+
 2005-08-07  James A. Morrison  <phython@gcc.gnu.org>
 
 	* tree-convert.c (convert): Use fold_build1 instead of
