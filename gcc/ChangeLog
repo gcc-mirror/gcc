@@ -3,6 +3,10 @@
 	* final.c (insn_default_length, insn_min_length): In !HAVE_ATTR_length
 	case, define as macros.
 
+	PR rtl-optimization/23837
+	*  optabs.c (no_conflict_move_test): Don't set must_stay for a
+	clobber / clobber match between dest and p->first.
+
 2005-09-22  Ranjit Mathew  <rmathew@gcc.gnu.org>
 
 	* doc/install.texi: Update URL for Jacks.
