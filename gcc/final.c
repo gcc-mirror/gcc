@@ -443,6 +443,8 @@ get_attr_length_1 (rtx insn ATTRIBUTE_UNUSED,
   return length;
 #else /* not HAVE_ATTR_length */
   return 0;
+#define insn_default_length 0
+#define insn_min_length 0
 #endif /* not HAVE_ATTR_length */
 }
 

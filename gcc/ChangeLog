@@ -1,3 +1,8 @@
+2005-09-23  J"orn Rennecke <joern.rennecke@st.com>
+
+	* final.c (insn_default_length, insn_min_length): In !HAVE_ATTR_length
+	case, define as macros.
+
 2005-09-22  Ranjit Mathew  <rmathew@gcc.gnu.org>
 
 	* doc/install.texi: Update URL for Jacks.
