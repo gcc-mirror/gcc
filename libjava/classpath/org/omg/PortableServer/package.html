@@ -1,0 +1,231 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<!-- package.html - describes classes in org.omg.PortableServer package
+   Copyright (C) 2005 Free Software Foundation, Inc.
+
+This file is part of GNU Classpath.
+
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA.
+
+Linking this library statically or dynamically with other modules is
+making a combined work based on this library.  Thus, the terms and
+conditions of the GNU General Public License cover the whole
+combination.
+
+As a special exception, the copyright holders of this library give you
+permission to link this library with independent modules to produce an
+executable, regardless of the license terms of these independent
+modules, and to copy and distribute the resulting executable under
+terms of your choice, provided that you also meet, for each linked
+independent module, the terms and conditions of the license of that
+module.  An independent module is a module which is not derived from
+or based on this library.  If you modify this library, you may extend
+this exception to your version of the library, but you are not
+obligated to do so.  If you do not wish to do so, delete this
+exception statement from your version. -->
+
+<html>
+<head><title>GNU Classpath - The Portable Object Adapter package</title></head>
+<body>
+<p>
+The Portable Object Adapter (POA) provides more control on the request
+processing than it is possible when connecting objects directly to the
+ORB. The POA model defines a tree structure of POAs, the root POA being
+connected directly to the ORB. Any branch of this tree can be temporary or
+permanently inactivated using {@link org.omg.PortableServer.POAManager}.
+The same manager can control several branches in the POA tree. Also, 
+any branch in this tree can have different processing options (policies).
+</p><p>
+The newly created POA is in holding state, just queuing requests. To start
+processing requests, it must be turned into the active state by its
+{@link org.omg.PortableServer.POAManagerOperations#activate}.
+</p><p>
+The previously monolite object implementation is now divided into object 
+(that implements {@link org.omg.CORBA.Object})
+and servant (that implements either {@link org.omg.CORBA.portable.InvokeHandler} 
+or {@link org.omg.PortableServer.DynamicImplementation}).
+Frequently each object has its own servant, but it can also be a single servant
+per multiple objects and also default servant for POA
+(see {@link org.omg.PortableServer.POAOperations#set_servant}). Each object
+has its own Object Id, unique in the scope of the POA, where the object is
+connected. These Ids need not be different for objects belonging 
+to different POAs, even if these POAs are connected to the same ORB. 
+Under the USER_ID is assignment policy this Id can be a specified by user in
+{@link org.omg.PortableServer.POAOperations#activate_object_with_id}, 
+encapsulating some meaningful information about the object. The Id of the
+object being currently served can be identified with 
+{@link org.omg.PortableServer.Servant#_object_id}. This approach is used in cases
+when it is possible to encapsulate all object-related data into the 
+Object Id. Such system only needs one servant, one server socket and one 
+socket port per POA that can handle thounsands of objects.
+</p><p>
+Instead of being connected directly to the ORB, objects are now connected
+to one of the ORBs POAs. Since JDK 1.4 the application specific implementation
+base is derived from the {@link org.omg.PortableServer.Servant}, having a 
+different name pattern (<code>*POA.java</code> instead of the previous 
+<code>_*ImplBase.java</code>). This <code>*POA</code> suffix does <i>not</i> 
+mean that these servants implement or are derived from POA. They are different
+classes that can be connected to one of the POAs, by instance, using 
+{@link org.omg.PortableServer.POAOperations#servant_to_reference}.
+The implementation base also inherits an *Operations interface, containing
+definitions of the application specific methods. The application programmer
+writes a descendent of the implementation base, implementing these methods
+for the application - specific functionality. 
+</p><p>
+The POA objects support the method invocation by name, using
+{@link org.omg.CORBA.Request}. This alternative method works without the
+service-specific classes that may not be available at run time. 
+</p><p>
+The objects in POA can also be activated and inactivated independently. It
+is possible to set a listener ({@link org.omg.PortableServer.ServantActivator})
+that would register the object activations ("incarnations") and deactivations
+("etherializations"). The servant need not be specifyed when creating an
+object. Under the IMPLICIT_ACTIVATION 
+{@link org.omg.PortableServer.ImplicitActivationPolicy}
+the {@link org.omg.PortableServer.ServantActivator} can provide the servant 
+in response to the first (local or remote) call of any method on the 
+previously incative object.
+</p><p>
+The root POA is obtained by resolving the initial reference "RootPOA"
+for the orb. In the simpliest case the objects can be connected directly
+to that root POA without creating the POA tree. The policies, used by
+the root POA, are defined by OMG as following:
+<table border="1">
+<tr><th>Policy type</th><th>Accepted policy</th></tr>
+<tr><td>{@link org.omg.PortableServer.IdAssignmentPolicy} </td><td>SYSTEM_ID
+(Ids are created by POA)</td></tr>
+<tr><td>{@link org.omg.PortableServer.IdUniquenessPolicy}</td><td>UNIQUE_ID
+ (single object (and Id) per servant)
+</td></tr>
+<tr><td>{@link org.omg.PortableServer.ImplicitActivationPolicy} </td><td>
+IMPLICIT_ACTIVATION (if inactive, activate)</td></tr>
+<tr><td>{@link org.omg.PortableServer.LifespanPolicy} </td><td>TRANSIENT 
+(the POA objects cannot outlive POA)</td></tr>
+<tr><td>{@link org.omg.PortableServer.RequestProcessingPolicy} </td><td>
+USE_ACTIVE_OBJECT_MAP_ONLY (the servant is provided during activation)</td></tr>
+<tr><td>{@link org.omg.PortableServer.ServantRetentionPolicy} </td><td>
+RETAIN (retain servants for subsequent invocations)</td></tr>
+<tr><td>{@link org.omg.PortableServer.ThreadPolicy} </td><td>ORB_CTRL_MODEL
+(single thread per request and single server socket per object)</td></tr>
+</table>
+These values are also default for the child POAs The policies are
+<i>never</i> inherited from the parent POA.
+</p><p>
+This set of policies means that each object will have a separate serving
+thread, separate network socket port and usually a separate servant. It
+is appropriate when the expected number of objects is not too large.
+If the expected number of objects is larger than the supportable number
+of threads and socket ports, the SINGLE_THREAD_MODEL 
+{@link org.omg.PortableServer.ThreadPolicy} is
+used. Then all objects in POA with this policy are served in a single
+thread, using the same server socket, connected to a single port. If the
+request processing policy is additionally set to USE_DEFAULT_SERVANT,
+all objects of this POA share the same (default) servant.
+</p><p>
+The operations, supported by POA are defined
+separately in {@link org.omg.PortableServer.POAOperations}. 
+</p><p>
+<h3>The typical POA usage scenarios</h3>
+<h4>POA converts servant to the object reference</h4>
+In the simpliest case, the servant implementation is connected to POA by
+{@link org.omg.PortableServer.POAOperations#servant_to_reference}, the 
+returned object being a target of remote and local invocations. 
+It may be converted into the stringified reference, registered with
+the naming service, used locally or, when serving or invoking local or remote
+method, passed as a parameter or return value having the CORBA Object type.
+The object obtains Id from POA and is activated due default implicit 
+activation policy. This scenario is supported by the default policy set 
+and is used in the most of the "hello world" examples. 
+<h4>Servant provides to the object reference</h4>
+The servant can be connected to an ORB by
+{@link org.omg.PortableServer.Servant#_this_object(org.omg.CORBA.ORB)},
+obtaining the object reference. The overridable 
+{@link org.omg.PortableServer.Servant#_default_POA()}
+specifies POA to that the servant will be connected. The default method
+connects to the root poa. IDL compilers frequently generate the 
+<code>_this(ORB)</code> metod for servants for getting the object reference
+that is already narrowed to the exact object type.
+<h4>Explicit activation with POA assigned ids</h4>
+The objects are activated by calling the 
+{@link org.omg.PortableServer.POAOperations#activate_object} on the
+POA with the object in question. The POA allocates, assigns, and
+returns a unique identity value for the object. This scenario requires the 
+SYSTEM_ID {@link org.omg.PortableServer.IdAssignmentPolicy}.
+<h4>Explicit Activation with User-assigned Ids</h4>
+The POA supports an explicit activation operation,
+{@link org.omg.PortableServer.POAOperations#activate_object_with_id},
+that associates a servant with the user-defined Object Id.
+This scenario requires the USER_ID 
+{@link org.omg.PortableServer.IdAssignmentPolicy}. The servant manager
+may be or may not be used.
+<h4>References before activation</h4>
+It may be useful to create references for objects before activating them.
+Such reference can be created using 
+{@link org.omg.PortableServer.POAOperations#create_reference} or
+{@link org.omg.PortableServer.POAOperations#create_reference_with_id}, both
+methods also requiring to give the object repository id. Such object may
+be later activated either by 
+{@link org.omg.PortableServer.POAOperations#activate_object_with_id} or
+automatically, if the IMPLICIT_ACTIVATION policy applies.
+<h4>Multiple Ids per servant</h4>
+If the MULTIPLE_ID policy applies, the servant may be activated many times.
+Under this policy, 
+{@link org.omg.PortableServer.POAOperations#servant_to_reference}
+and {@link org.omg.PortableServer.POAOperations#servant_to_id}
+during each call create a new object and object reference for the
+used servant.
+<h4>One servant for all objects</h4>
+If the USE_DEFAULT_SERVANT policy applies, that default servant serves all
+objects, belonging this POA. This approach is used when there is
+very little data associated with each object, so little that the data can be
+encoded in the Object Id. Also, it may be needed when a very large 
+number of objects is expected. If the RETAIN applies, it is possible to
+activate an object explicitly setting the servant other than default.
+If NO_RETAIN applies, the default servant will serve all known an
+unknown objects for that POA. 
+<h4>Single Servant, Many Objects and Types</h4>
+Combining USER_ID, USE_DEFAULT_SERVANT and RETAIN, it is possible to
+create and serve objects "on the fly". The servant must determine the
+object type (for instance, from the value of the agreed attribute,
+shared by all supported types, or from the Object Id) and be able to 
+handle the method, named in request. If the names and parameter lists
+of the object methods are also created "on the fly", the requests 
+to such object can still be submitted using {@link org.omg.CORBA.Request}. 
+This method is used when the created object represents some 
+entity in the complex database.
+<h4>The ServantLocator finds a servant for each call</h4>
+The {@link org.omg.PortableServer.ServantLocator} is used by POAs that
+combinine NON_RETAIN and USE_SERVANT_MANAGER policies. It provides
+a new or reused servant every time the invocation is made. The servant
+locator must provide a servant in response of calling 
+{@link org.omg.PortableServer.ServantLocatorOperations#preinvoke}.
+This method has access the the Id of the object being served and
+the name of the method being called. It must return the appropriate
+instance of the servant or throw an exception, forwarding the request
+to another object (usually in another server). After the invocation,
+a {@link org.omg.PortableServer.ServantLocatorOperations#postinvoke}
+is called. It should be not assumed that the call of <code>preinvoke</code> 
+will be followed by the call of the <code>postinvoke</code>; in 
+multithreaded environment these calls are not serialized in this way. If 
+the <code>preinvoke</code> has to tell something this-call-specific to 
+the <code>postinvoke</code>, it must use the provided cookie holder.
+The <code>preinvoke/postinoke</code> are also called to provide a servant
+during each local invocation on the objects, belonging to the described POA.
+</p><p>
+All these scenarios must work with the current GNU Classpath release.
+
+@author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
+</body>
+</html>

@@ -1,0 +1,46 @@
+#include "include/layout.wml"
+
+<subject "GNU Classpath Bug Reports">
+
+<box>
+
+<boxtitle>GNU Classpath::Bugs</boxtitle>
+<boxitem>
+Unfortunately GNU Classpath is not bug free yet.
+<br>
+But you can help!
+<br>
+If you find a bug please report it here.
+</boxitem>
+
+<boxtitle>Query</boxtitle>
+<boxitem>
+Please first check the following lists:
+<ul>
+<li><a href="http://gcc.gnu.org/bugzilla/query.cgi?product=classpath">Query bugs</a></li>
+<li><a href="http://gcc.gnu.org/bugzilla/buglist.cgi?product=classpath&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=SUSPENDED&bug_status=WAITING&bug_status=REOPENED">All open bugs</a></li>
+<li><a href="http://gcc.gnu.org/bugzilla/duplicates.cgi?sortby=count&product=classpath">Most Frequently Reported Bugs</a></li>
+</ul>
+<p>
+</boxitem>
+
+<boxtitle>Report</boxtitle>
+<boxitem>
+If your bug wasn't in any of the above lists, please
+<ul>
+<li><a href="http://gcc.gnu.org/bugzilla/enter_bug.cgi?product=classpath">Report it</a></li>
+<ul>
+<p>
+</boxitem>
+
+<boxtitle>Overview</boxtitle>
+<boxitem>
+You can also look at some pretty
+<ul>
+<li><a href="http://gcc.gnu.org/bugzilla/reports.cgi?product=classpath&datasets=NEW%3A&datasets=ASSIGNED%3A&datasets=REOPENED%3A&datasets=UNCONFIRMED%3A&datasets=RESOLVED%3A&datasets=VERIFIED%3A&datasets=CLOSED%3A&datasets=FIXED%3A&datasets=INVALID%3A&datasets=WONTFIX%3A&datasets=DUPLICATE%3A&datasets=WORKSFORME%3A">Status Counts</a></li>
+<li><a href="http://gcc.gnu.org/bugzilla/report.cgi?bug_file_loc_type=allwordssubstr&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=SUSPENDED&bug_status=WAITING&bug_status=REOPENED&bug_status=RESOLVED&bug_status=VERIFIED&bug_status=CLOSED&cumulate=1&gccbuild_type=allwordssubstr&gcchost_type=allwordssubstr&gcctarget_type=allwordssubstr&keywords_type=allwords&known_to_fail_type=allwordssubstr&known_to_work_type=allwordssubstr&long_desc_type=substring&product=classpath&short_desc_type=allwordssubstr&x_axis_field=component&y_axis_field=bug_status&width=600&height=350&action=wrap&format=table">Component/Status Tables</a></li>
+</ul>
+<p>
+</boxitem>
+
+</box>
