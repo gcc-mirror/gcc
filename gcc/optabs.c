@@ -3021,7 +3021,8 @@ no_conflict_move_test (rtx dest, rtx set, void *p0)
     return;
   /* If this insn sets / clobbers a register that feeds one of the insns
      already in the list, this insn has to stay too.  */
-  else if (reg_mentioned_p (dest, PATTERN (p->first))
+  else if (reg_overlap_mentioned_p (dest, PATTERN (p->first))
+	   || (CALL_P (p->first) && (find_reg_fusage (p->first, USE, dest)))
 	   || reg_used_between_p (dest, p->first, p->insn)
 	   /* Likewise if this insn depends on a register set by a previous
 	      insn in the list.  */
