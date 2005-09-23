@@ -34,7 +34,7 @@
        (eq_attr "cpu" "rios2"))
   "iu1_rios2|iu2_rios2")
 
-(define_insn_reservation "rios2-store" 1
+(define_insn_reservation "rios2-store" 2
   (and (eq_attr "type" "store,store_ux,store_u,fpstore,fpstore_ux,fpstore_u")
        (eq_attr "cpu" "rios2"))
   "iu1_rios2|iu2_rios2")
