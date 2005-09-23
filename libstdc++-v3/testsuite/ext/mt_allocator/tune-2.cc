@@ -23,6 +23,12 @@
 #include <testsuite_hooks.h>
 #include <testsuite_character.h>
 
+#ifdef __GTHREADS
+#define __cxxthread true
+#else
+#define __cxxthread false
+#endif
+
 // Tune characteristics. 
 // __per_type_pool_policy
 void test02()
@@ -34,19 +40,15 @@ void test02()
   using __gnu_cxx::__pool;
   using __gnu_cxx::__per_type_pool_policy;
 
-#ifdef __GTHREADS
-  typedef __per_type_pool_policy<value_type, __pool, true> policy_type;
-#else
-  typedef __per_type_pool_policy<value_type, __pool, false> policy_type;
-#endif
+  typedef __per_type_pool_policy<value_type, __pool, __cxxthread> policy_type;
   typedef __gnu_cxx::__mt_alloc<value_type, policy_type> allocator_type;
   typedef __gnu_cxx::__pool_base::_Tune tune_type;
 
-  tune_type t_opt(16, 5120, 32, 5120, 20, 10, false);
-  tune_type t_single(16, 5120, 32, 5120, 1, 10, false);
-
   allocator_type a;
   tune_type t_default = a._M_get_options();
+  tune_type t_opt(32, 5120, 32, 5120, 20, 10, false);
+  tune_type t_small(16, 1024, 32, 2048, 1, 10, false);
+
   tune_type t1 = t_default; 
   a._M_set_options(t_opt);
   tune_type t2 = a._M_get_options();
@@ -54,10 +56,10 @@ void test02()
 
   allocator_type::pointer p1 = a.allocate(128);
   allocator_type::pointer p2 = a.allocate(5128);
-  a._M_set_options(t_single);
-  t1 = a._M_get_options();  
-  VERIFY( t1._M_max_threads != t_single._M_max_threads );
-  VERIFY( t1._M_max_threads == t_opt._M_max_threads );
+  a._M_set_options(t_small);
+  tune_type t3 = a._M_get_options();  
+  VERIFY( t3._M_chunk_size != t_small._M_chunk_size );
+  VERIFY( t3._M_chunk_size == t_opt._M_chunk_size );
 
   a.deallocate(p1, 128);
   a.deallocate(p2, 5128);

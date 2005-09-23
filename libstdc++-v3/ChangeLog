@@ -1,3 +1,10 @@
+2005-09-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/ext/mt_allocator/tune-1.cc: Clarify for single-thread.
+	* testsuite/ext/mt_allocator/tune-2.cc: Same.
+	* testsuite/ext/mt_allocator/tune-3.cc: Same.
+	* testsuite/ext/mt_allocator/tune-4.cc: Same.
+
 2005-09-21  Guillaume Melquiond  <guillaume.melquiond@ens-lyon.fr>
 
 	PR libstdc++/23956
