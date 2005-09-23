@@ -1400,7 +1400,8 @@ WRAPPER2(int, getsockopt, int s, int level, int optname, void *optval,
 WRAPPER2(int, accept, int s, struct  sockaddr *addr, socklen_t *addrlen)
 {
   TRACE ("%s\n", __PRETTY_FUNCTION__);
-  MF_VALIDATE_EXTENT (addr, (size_t)*addrlen, __MF_CHECK_WRITE, "accept addr");
+  if (addr != NULL)
+    MF_VALIDATE_EXTENT (addr, (size_t)*addrlen, __MF_CHECK_WRITE, "accept addr");
   return accept (s, addr, addrlen);
 }
 

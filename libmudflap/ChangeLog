@@ -1,5 +1,10 @@
 2005-09-23  Frank Ch. Eigler  <fche@elastic.org>
 
+	PR 23084.
+	* mf-hooks2.c (accept): Tolerate NULL sockaddr* parameter.
+
+2005-09-23  Frank Ch. Eigler  <fche@elastic.org>
+
 	* testsuite/libmudflap.c++/pass58-frag.cxx: New test for heisenbug 19319.
 
 2005-09-23  Tom Tromey  <tromey@redhat.com>
