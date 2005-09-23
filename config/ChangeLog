@@ -1,3 +1,8 @@
+2005-09-23  Tom Tromey  <tromey@redhat.com>
+
+	* enable.m4: New file.
+	* tls.m4: New file.
+
 2005-08-12  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config/acx.m4 (NCN_CHECK_TARGET_TOOL, NCN_STRICT_CHECK_TOOL,
