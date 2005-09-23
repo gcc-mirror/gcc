@@ -1,3 +1,8 @@
+2005-09-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/16861
+	* gfortran.dg/nested_modules_3.f90: New.
+
 2005-09-22 Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/24005
