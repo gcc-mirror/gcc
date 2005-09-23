@@ -49,7 +49,7 @@ import java.util.HashMap;
  * A class representing a transport layer. This class serves as a generic
  * interface for all transport types used in the JDWP back-end.
  *
- * @author Keith Seitz <keiths@redhat.com>
+ * @author Keith Seitz (keiths@redhat.com)
  */
 public interface ITransport
 {
@@ -69,6 +69,11 @@ public interface ITransport
    */
   public void initialize ()
     throws TransportException;
+
+  /**
+   * Shutdown the transport
+   */
+  public void shutdown ();
 
   /**
    * Get the input stream for the transport

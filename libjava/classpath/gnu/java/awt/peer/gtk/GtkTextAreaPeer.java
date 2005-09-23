@@ -43,6 +43,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Rectangle;
 import java.awt.TextArea;
+import java.awt.im.InputMethodRequests;
 import java.awt.peer.TextAreaPeer;
 import java.awt.peer.TextComponentPeer;
 
@@ -208,5 +209,11 @@ public class GtkTextAreaPeer extends GtkComponentPeer
   public void insertText (String str, int pos)
   {
     insert (str, pos);
+  }
+
+  public InputMethodRequests getInputMethodRequests()
+  {
+      // FIXME: implement
+    return null;
   }
 }

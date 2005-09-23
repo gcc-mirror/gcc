@@ -49,7 +49,8 @@ import java.nio.ByteBuffer;
  * 
  * @author Aaron Luchko <aluchko@redhat.com>
  */
-public class FieldCommandSet implements CommandSet
+public class FieldCommandSet
+  extends CommandSet
 {
   /**
    * There are no commands for this CommandSet at this time so we just throw a

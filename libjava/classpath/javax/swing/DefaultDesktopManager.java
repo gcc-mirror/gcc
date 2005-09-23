@@ -49,8 +49,8 @@ import java.io.Serializable;
 import javax.swing.JInternalFrame.JDesktopIcon;
 
 /**
- * DefaultDesktopManager is the default implementation of DesktopManager for
- * swing. It implements the basic beaviours for JInternalFrames in arbitrary
+ * The default implementation of DesktopManager for
+ * Swing. It implements the basic beaviours for JInternalFrames in arbitrary
  * parents. The methods provided by the class are not meant to be called by
  * the user, instead, the JInternalFrame methods will call these methods.
  */

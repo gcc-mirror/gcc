@@ -40,12 +40,15 @@ exception statement from your version. */
 package gnu.classpath.jdwp.id;
 
 import gnu.classpath.jdwp.JdwpConstants;
+import gnu.classpath.jdwp.exception.InvalidObjectException;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 
 /**
- * A class which represents a JDWP object id for an object
+ * This is a base class for all ObjectID-like entities in JDWP,
+ * inculding Objects, ClassObject, ClassLoader, Thread, ThreadGroup,
+ * etc.
  *
  * @author Keith Seitz  <keiths@redhat.com>
  */
@@ -56,6 +59,9 @@ public class ObjectId
    * The object class that this id represents
    */
   public static final Class typeClass = Object.class;
+
+  // Handle to disable garbage collection
+  private Object _handle;
 
   /**
    * Constructs a new <code>ObjectId</code>
@@ -85,6 +91,23 @@ public class ObjectId
   }
 
   /**
+   * Returns the object referred to by this ID
+   *
+   * @returns the object
+   * @throws InvalidObjectException if the object was garbage collected
+   *           or is invalid
+   */
+  public Object getObject ()
+    throws InvalidObjectException
+  {
+    Object obj = _reference.get ();
+    if (obj == null)
+      throw new InvalidObjectException (_id);
+
+    return obj;
+  }
+
+  /**
    * Writes the id to the stream
    *
    * @param outStream  the stream to which to write
@@ -95,5 +118,22 @@ public class ObjectId
   {
     // All we need to do is write out our id as an 8-byte integer
     outStream.writeLong (_id);
+  }
+
+  /**
+   * Disable garbage collection on object
+   */
+  public void disableCollection ()
+    throws InvalidObjectException
+  {
+    _handle = getObject ();
+  }
+
+  /**
+   * Enable garbage collection on object
+   */
+  public void enableCollection ()
+  {
+    _handle = null;
   }
 }

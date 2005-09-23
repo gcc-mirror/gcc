@@ -50,7 +50,8 @@ import java.nio.ByteBuffer;
  * 
  * @author Aaron Luchko <aluchko@redhat.com>
  */
-public class InterfaceTypeCommandSet implements CommandSet
+public class InterfaceTypeCommandSet
+  extends CommandSet
 {
   /**
    * There are no commands for this CommandSet at this time so we just throw a

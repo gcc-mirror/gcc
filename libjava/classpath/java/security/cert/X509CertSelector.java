@@ -1,5 +1,5 @@
 /* X509CertSelector.java -- selects X.509 certificates by criteria.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -915,7 +915,7 @@ public class X509CertSelector implements CertSelector, Cloneable
       }
     if (sigId != null)
       {
-        if (!sigId.equals(cert.getSigAlgOID()))
+        if (!sigId.toString().equals(cert.getSigAlgOID()))
           return false;
       }
     if (subjectKeyId != null)

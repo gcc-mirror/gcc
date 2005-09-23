@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package org.omg.PortableInterceptor;
 
+
 /**
  * A reply status flag, indicating, that the
  * {@link org.omg.CORBA.UserException}

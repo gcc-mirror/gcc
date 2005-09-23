@@ -132,7 +132,7 @@ public abstract class DocumentBuilder
 
   /**
    * Parse the specified input source and return a DOM Document.
-   * @param is the input source
+   * @param source the input source
    * @exception IllegalArgumentException if the input source is null
    */
   public abstract Document parse(InputSource source) 

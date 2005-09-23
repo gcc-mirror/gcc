@@ -609,7 +609,7 @@ public class BasicGraphicsUtils
      * LineMetrics, not a FontMetrics argument. But fixing this that
      * would change the public API.
      */
-    SwingUtilities.layoutCompoundLabel(
+   SwingUtilities.layoutCompoundLabel(
       b, // for the component orientation
       b.getToolkit().getFontMetrics(b.getFont()), // see comment above
       b.getText(),
@@ -630,10 +630,10 @@ public class BasicGraphicsUtils
      */
 
     contentRect = textRect.union(iconRect);
-
+    
     return new Dimension(insets.left
 			 + contentRect.width 
-			 + insets.right,
+			 + insets.right + b.getHorizontalAlignment(),
                          insets.top
 			 + contentRect.height 
 			 + insets.bottom);

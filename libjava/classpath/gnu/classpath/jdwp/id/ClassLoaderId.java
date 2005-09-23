@@ -40,6 +40,7 @@ exception statement from your version. */
 package gnu.classpath.jdwp.id;
 
 import gnu.classpath.jdwp.JdwpConstants;
+import gnu.classpath.jdwp.exception.InvalidClassLoaderException;
 
 /**
  * A class which represents a JDWP thread id
@@ -60,5 +61,22 @@ public class ClassLoaderId
   public ClassLoaderId ()
   {
     super (JdwpConstants.Tag.CLASS_LOADER);
+  }
+
+  /**
+   * Gets the ClassLoader represented by this ID
+   *
+   * @throws InvalidClassLoaderException if ClassLoader is garbage collected,
+   *           or otherwise invalid
+   */
+  public ClassLoader getClassLoader ()
+    throws InvalidClassLoaderException
+  {
+    ClassLoader cl = (ClassLoader) _reference.get ();
+
+    if (cl == null)
+      throw new InvalidClassLoaderException (getId ());
+
+    return cl;
   }
 }

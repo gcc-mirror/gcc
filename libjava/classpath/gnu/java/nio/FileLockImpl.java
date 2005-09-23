@@ -1,5 +1,5 @@
-/* FileLockImpl.java -- 
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+/* FileLockImpl.java -- FileLock associated with a FileChannelImpl.
+   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,20 +44,29 @@ import java.io.IOException;
 import java.nio.channels.FileLock;
 
 /**
+ * A FileLock associated with a FileChannelImpl.
+ *
  * @author Michael Koch
  * @since 1.4
  */
-public class FileLockImpl extends FileLock
+public final class FileLockImpl extends FileLock
 {
-  private FileChannelImpl ch;
-  
+  /**
+   * Whether or not this lock is valid, false when channel is closed or
+   * release has been explicitly called.
+   */
+  private boolean valid;
+
   public FileLockImpl (FileChannelImpl channel, long position,
                        long size, boolean shared)
   {
     super (channel, position, size, shared);
-    ch = channel;
+    valid = true;
   }
 
+  /**
+   * Releases this lock.
+   */
   protected void finalize()
   {
     try
@@ -70,13 +79,26 @@ public class FileLockImpl extends FileLock
       }
   }
   
-  public boolean isValid ()
+  /**
+   * Whether or not this lock is valid, false when channel is closed or
+   * release has been explicitly called.
+   */
+  public boolean isValid()
   {
-    return channel().isOpen();
+    if (valid)
+      valid = channel().isOpen();
+    return valid;
   }
 
-  public synchronized void release () throws IOException
+  /**
+   * Releases the lock if it is still valid. Marks this lock as invalid.
+   */
+  public void release() throws IOException
   {
-    ch.unlock(position(), size());
+    if (isValid())
+      {
+	valid = false;
+	((FileChannelImpl) channel()).unlock(position(), size());
+      }
   }
 }

@@ -68,9 +68,9 @@ public abstract class Charset implements Comparable
 {
   private CharsetEncoder cachedEncoder;
   private CharsetDecoder cachedDecoder;
- 
+  
   /**
-   * Charset providers.
+   * Extra Charset providers.
    */
   private static CharsetProvider[] providers;
   
@@ -204,13 +204,19 @@ public abstract class Charset implements Comparable
   private static Charset charsetForName(String charsetName)
   {
     checkName (charsetName);
-    Charset cs = null;
-    CharsetProvider[] providers = providers2();
-    for (int i = 0; i < providers.length; i++)
+    // Try the default provider first
+    // (so we don't need to load external providers unless really necessary)
+    // if it is an exotic charset try loading the external providers.
+    Charset cs = provider().charsetForName(charsetName);
+    if (cs == null)
       {
-        cs = providers[i].charsetForName(charsetName);
-        if (cs != null)
-	  break;
+	CharsetProvider[] providers = providers2();
+	for (int i = 0; i < providers.length; i++)
+	  {
+	    cs = providers[i].charsetForName(charsetName);
+	    if (cs != null)
+	      break;
+	  }
       }
     return cs;
   }
@@ -218,6 +224,11 @@ public abstract class Charset implements Comparable
   public static SortedMap availableCharsets()
   {
     TreeMap charsets = new TreeMap(String.CASE_INSENSITIVE_ORDER);
+    for (Iterator i = provider().charsets(); i.hasNext(); )
+      {
+	Charset cs = (Charset) i.next();
+	charsets.put(cs.name(), cs);
+      }
 
     CharsetProvider[] providers = providers2();
     for (int j = 0; j < providers.length; j++)
@@ -246,7 +257,7 @@ public abstract class Charset implements Comparable
   /**
    * We need to support multiple providers, reading them from
    * java.nio.charset.spi.CharsetProvider in the resource directory
-   * META-INF/services.
+   * META-INF/services. This returns the "extra" charset providers.
    */
   private static CharsetProvider[] providers2()
   {
@@ -257,7 +268,6 @@ public abstract class Charset implements Comparable
             Enumeration en = ClassLoader.getSystemResources
 	      ("META-INF/services/java.nio.charset.spi.CharsetProvider");
             LinkedHashSet set = new LinkedHashSet();
-            set.add(provider());
             while (en.hasMoreElements())
               {
                 BufferedReader rdr = new BufferedReader(new InputStreamReader

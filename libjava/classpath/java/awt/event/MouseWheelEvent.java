@@ -49,7 +49,7 @@ import javax.swing.Scrollable;
 /**
  * This event is generated for a mouse wheel rotation. The wheel (the middle
  * mouse button on most modern mice) can be rotated towards or away from the
- * user, and is ofteh used for scrolling.
+ * user, and is often used for scrolling.
  *
  * <p>Because of the special use for scrolling components, MouseWheelEvents
  * often affect a different component than the one located at the point of

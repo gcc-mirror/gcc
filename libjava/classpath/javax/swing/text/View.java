@@ -62,11 +62,6 @@ public abstract class View implements SwingConstants
   private View parent;
 
   /**
-   * The child views.
-   */
-  View[] children;
-
-  /**
    * Creates a new <code>View</code> instance.
    *
    * @param elem an <code>Element</code> value
@@ -74,7 +69,6 @@ public abstract class View implements SwingConstants
   public View(Element elem)
   {
     elt = elem;
-    children = new View[0];
   }
 
   public abstract void paint(Graphics g, Shape s);
@@ -92,7 +86,10 @@ public abstract class View implements SwingConstants
   public Container getContainer()
   {
     View parent = getParent();
-    return parent != null ? parent.getContainer() : null;
+    if (parent == null)
+      throw new AssertionError("The parent of a View must not be null.");
+
+    return parent.getContainer();
   }
   
   public Document getDocument()
@@ -178,12 +175,13 @@ public abstract class View implements SwingConstants
   public void append(View view)
   {
     View[] array = { view };
-    replace(getViewCount(), 1, array);
+    int offset = getViewCount();
+    replace(offset, 0, array);
   }
 
   public void removeAll()
   {
-    replace(0, getViewCount(), null); 
+    replace(0, getViewCount(), new View[0]); 
   }
 
   public void remove(int index)
@@ -250,8 +248,6 @@ public abstract class View implements SwingConstants
   {
     if (parent != null)
       parent.preferenceChanged(this, width, height);
-    else
-      ((JComponent) getContainer()).revalidate();
   }
 
   public int getBreakWeight(int axis, float pos, float len)
@@ -351,7 +347,7 @@ public abstract class View implements SwingConstants
     Element el = getElement();
     DocumentEvent.ElementChange ec = ev.getChange(el);
     if (ec != null)
-        updateChildren(ec, ev, vf);
+      updateChildren(ec, ev, vf);
     forwardUpdate(ec, ev, shape, vf);
     updateLayout(ec, ev, shape);
   }
@@ -382,16 +378,12 @@ public abstract class View implements SwingConstants
   {
     Element[] added = ec.getChildrenAdded();
     Element[] removed = ec.getChildrenRemoved();
-    View[] newChildren = new View[children.length + added.length
-                                  - removed.length];
     int index = ec.getIndex();
-    System.arraycopy(children, 0, newChildren, 0, index);
-    System.arraycopy(children, index, added, 0, added.length);
-    int index2 = index + removed.length;
-    int len2 = children.length - index2;
-    System.arraycopy(children, index2, newChildren, index + added.length,
-                     len2);
-    children = newChildren;
+
+    View[] newChildren = new View[added.length];
+    for (int i = 0; i < added.length; ++i)
+      newChildren[i] = vf.create(added[i]);
+    replace(index, removed.length, newChildren);
 
     return true;
   }
@@ -412,9 +404,10 @@ public abstract class View implements SwingConstants
   protected void forwardUpdate(DocumentEvent.ElementChange ec,
                                DocumentEvent ev, Shape shape, ViewFactory vf)
   {
-    for (int i = 0; i < children.length; i++)
+    int count = getViewCount();
+    for (int i = 0; i < count; i++)
       {
-        View child = children[i];
+        View child = getView(i);
         forwardUpdateToView(child, ev, shape, vf);
       }
   }
@@ -459,5 +452,104 @@ public abstract class View implements SwingConstants
     if (ec != null)
       preferenceChanged(this, true, true);
   }
-}
 
+  /**
+   * Maps a position in the document into the coordinate space of the View.
+   * The output rectangle usually reflects the font height but has a width
+   * of zero.
+   *
+   * @param pos the position of the character in the model
+   * @param a the area that is occupied by the view
+   * @param b either {@link Position.Bias#Forward} or
+   *        {@link Position.Bias#Backward} depending on the preferred
+   *        direction bias. If <code>null</code> this defaults to
+   *        <code>Position.Bias.Forward</code>
+   *
+   * @return a rectangle that gives the location of the document position
+   *         inside the view coordinate space
+   *
+   * @throws BadLocationException if <code>pos</code> is invalid
+   * @throws IllegalArgumentException if b is not one of the above listed
+   *         valid values
+   */
+  public abstract Shape modelToView(int pos, Shape a, Position.Bias b)
+    throws BadLocationException;
+
+  /**
+   * Maps a region in the document into the coordinate space of the View.
+   *
+   * @param p1 the beginning position inside the document
+   * @param b1 the direction bias for the beginning position
+   * @param p2 the end position inside the document
+   * @param b2 the direction bias for the end position
+   * @param a the area that is occupied by the view
+   *
+   * @return a rectangle that gives the span of the document region
+   *         inside the view coordinate space
+   *
+   * @throws BadLocationException if <code>p1</code> or <code>p2</code> are
+   *         invalid
+   * @throws IllegalArgumentException if b1 or b2 is not one of the above
+   *         listed valid values
+   */
+  public Shape modelToView(int p1, Position.Bias b1,
+			   int p2, Position.Bias b2, Shape a)
+    throws BadLocationException
+  {
+    if (b1 != Position.Bias.Forward && b1 != Position.Bias.Backward)
+      throw new IllegalArgumentException
+	("b1 must be either Position.Bias.Forward or Position.Bias.Backward");
+    if (b2 != Position.Bias.Forward && b2 != Position.Bias.Backward)
+      throw new IllegalArgumentException
+	("b2 must be either Position.Bias.Forward or Position.Bias.Backward");
+    Shape s1 = modelToView(p1, a, b1);
+    Shape s2 = modelToView(p2, a, b2);
+    return s1.getBounds().union(s2.getBounds());
+  }
+
+  /**
+   * Maps coordinates from the <code>View</code>'s space into a position
+   * in the document model.
+   *
+   * @param x the x coordinate in the view space
+   * @param y the y coordinate in the view space
+   * @param a the allocation of this <code>View</code>
+   * @param b the bias to use
+   *
+   * @return the position in the document that corresponds to the screen
+   *         coordinates <code>x, y</code>
+   */
+  public abstract int viewToModel(float x, float y, Shape a, Position.Bias[] b);
+
+
+  /**
+   * Dumps the complete View hierarchy. This method can be used for debugging
+   * purposes.
+   */
+  void dump()
+  {
+    // Climb up the hierarchy to the parent.
+    View parent = getParent();
+    if (parent != null)
+      parent.dump();
+    else
+      dump(0);
+  }
+
+  /**
+   * Dumps the view hierarchy below this View with the specified indentation
+   * level.
+   *
+   * @param indent the indentation level to be used for this view
+   */
+  void dump(int indent)
+  {
+    for (int i = 0; i < indent; ++i)
+      System.out.print('.');
+    System.out.println(this);
+
+    int count = getViewCount();
+    for (int i = 0; i < count; ++i)
+      getView(i).dump(indent + 1);
+  }
+}

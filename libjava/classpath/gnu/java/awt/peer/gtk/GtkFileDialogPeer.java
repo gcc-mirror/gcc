@@ -42,6 +42,7 @@ import java.awt.Dialog;
 import java.awt.FileDialog;
 import java.awt.Graphics;
 import java.awt.Window;
+import java.awt.event.ComponentEvent;
 import java.awt.peer.FileDialogPeer;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -54,7 +55,7 @@ public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
   private String currentDirectory = null;
   private FilenameFilter filter;
 
-  native void create (GtkContainerPeer parent);
+  native void create (GtkContainerPeer parent, int mode);
   native void connectSignals ();
   native void nativeSetFile (String file);
   public native String nativeGetDirectory();
@@ -63,7 +64,8 @@ public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
 
   public void create()
   {
-    create((GtkContainerPeer) awtComponent.getParent().getPeer());
+    create((GtkContainerPeer) awtComponent.getParent().getPeer(),
+           ((FileDialog) awtComponent).getMode());
 
     FileDialog fd = (FileDialog) awtComponent;
 
@@ -87,10 +89,10 @@ public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
       {
         int[] dims = new int[2];
         gtkWidgetGetPreferredDimensions (dims);
-        ((GtkFileDialogPeer) this).setBoundsCallback ((Window) awtComponent,
-                                                      awtComponent.getX (),
-                                                      awtComponent.getY (),
-                                                      dims[0], dims[1]);
+
+        if (dims[0] != awtComponent.getWidth()
+            || dims[1] != awtComponent.getHeight())
+          awtComponent.setSize(dims[0], dims[1]);
       }
     super.setComponentBounds ();
   }
@@ -155,6 +157,7 @@ public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
      GtkFileFilterInfo object and send it to this method, which will
      in turn call the filter's accept() method and give back the return
      value. */
+  // called back by native side: filename_filter_cb
   boolean filenameFilterCallback (String fullname) {
     String filename = fullname.substring(fullname.lastIndexOf(FS) + 1);
     String dirname = fullname.substring(0, fullname.lastIndexOf(FS));
@@ -167,20 +170,25 @@ public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
     // GtkFileDialog will repaint by itself
     return null;
   }
-  
+
+  // called back by native side: handle_response_cb
+  // only called from the GTK thread
   void gtkHideFileDialog () 
   {
+    // hide calls back the peer's setVisible method, so locking is a
+    // problem.
     ((Dialog) awtComponent).hide();
   }
   
+  // called back by native side: handle_response_cb
   void gtkDisposeFileDialog () 
   {
     ((Dialog) awtComponent).dispose();
   }
 
-  /* Callback to set the file and directory values when the user is finished
-   * with the dialog.
-   */
+  // Callback to set the file and directory values when the user is finished
+  // with the dialog.
+  // called back by native side: handle_response_cb
   void gtkSetFilename (String fileName)
   {
     FileDialog fd = (FileDialog) awtWidget;

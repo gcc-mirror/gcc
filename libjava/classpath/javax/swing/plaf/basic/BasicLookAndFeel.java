@@ -57,6 +57,7 @@ import javax.swing.plaf.BorderUIResource;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.DimensionUIResource;
 import javax.swing.plaf.FontUIResource;
+import javax.swing.plaf.IconUIResource;
 import javax.swing.plaf.InsetsUIResource;
 import javax.swing.text.JTextComponent;
 
@@ -276,7 +277,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "Button.shadow", new ColorUIResource(Color.GRAY),
       "Button.textIconGap", new Integer(4),
       "Button.textShiftOffset", new Integer(0),
-      "CheckBox.background", new ColorUIResource(light),
+      "CheckBox.background", new ColorUIResource(new Color(204, 204, 204)),
       "CheckBox.border", new BorderUIResource.CompoundBorderUIResource(null,
                                                                        null),
       "CheckBox.focusInputMap", new UIDefaults.LazyInputMap(new Object[] {
@@ -285,21 +286,43 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       }),
       "CheckBox.font", new FontUIResource("Dialog", Font.PLAIN, 12),
       "CheckBox.foreground", new ColorUIResource(darkShadow),
-      "CheckBox.icon", BasicIconFactory.getCheckBoxIcon(),
+      "CheckBox.icon",
+      new UIDefaults.LazyValue()
+      {
+        public Object createValue(UIDefaults def)
+        {
+          return BasicIconFactory.getCheckBoxIcon();
+        }
+      },
+      "CheckBox.checkIcon", 
+      new UIDefaults.LazyValue()
+      {
+        public Object createValue(UIDefaults def)
+        {
+          return BasicIconFactory.getMenuItemCheckIcon();
+        }
+      },
       "CheckBox.margin",new InsetsUIResource(2, 2, 2, 2),
       "CheckBox.textIconGap", new Integer(4),
       "CheckBox.textShiftOffset", new Integer(0),
       "CheckBoxMenuItem.acceleratorFont", new FontUIResource("Dialog",
                                                              Font.PLAIN, 12),
       "CheckBoxMenuItem.acceleratorForeground",
-      new ColorUIResource(darkShadow),
+      new ColorUIResource(new Color(16, 16, 16)),
       "CheckBoxMenuItem.acceleratorSelectionForeground",
       new ColorUIResource(Color.white),
       "CheckBoxMenuItem.arrowIcon", BasicIconFactory.getMenuItemArrowIcon(),
       "CheckBoxMenuItem.background", new ColorUIResource(light),
       "CheckBoxMenuItem.border", new BasicBorders.MarginBorder(),
       "CheckBoxMenuItem.borderPainted", Boolean.FALSE,
-      "CheckBoxMenuItem.checkIcon", BasicIconFactory.getCheckBoxMenuItemIcon(),
+      "CheckBoxMenuItem.checkIcon", 
+      new UIDefaults.LazyValue()
+      {
+        public Object createValue(UIDefaults def)
+        {
+          return BasicIconFactory.getCheckBoxMenuItemIcon();
+        }
+      },
       "CheckBoxMenuItem.font", new FontUIResource("Dialog", Font.PLAIN, 12),
       "CheckBoxMenuItem.foreground", new ColorUIResource(darkShadow),
       "CheckBoxMenuItem.margin", new InsetsUIResource(2, 2, 2, 2),
@@ -371,7 +394,6 @@ public abstract class BasicLookAndFeel extends LookAndFeel
         "ctrl F10", "maximize",
         "ctrl alt shift F6","selectPreviousFrame"
       }),
-      "Desktop.background", new ColorUIResource(0, 92, 92),
       "DesktopIcon.border", new BorderUIResource.CompoundBorderUIResource(null,
                                                                           null),
       "EditorPane.background", new ColorUIResource(Color.white),
@@ -480,15 +502,22 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "InternalFrame.borderLight", new ColorUIResource(Color.LIGHT_GRAY),
       "InternalFrame.borderShadow", new ColorUIResource(Color.GRAY),
       "InternalFrame.closeIcon", BasicIconFactory.createEmptyFrameIcon(),
-      // XXX Don't use gif
-//      "InternalFrame.icon", new IconUIResource(new ImageIcon("icons/JavaCup.gif")),
+      // FIXME: Set a nice icon for InternalFrames here.
+      "InternalFrame.icon",
+      new UIDefaults.LazyValue()
+      {
+        public Object createValue(UIDefaults def)
+        {
+          return new IconUIResource(BasicIconFactory.createEmptyFrameIcon());
+        }
+      },
       "InternalFrame.iconifyIcon", BasicIconFactory.createEmptyFrameIcon(),
       "InternalFrame.inactiveTitleBackground", new ColorUIResource(Color.gray),
       "InternalFrame.inactiveTitleForeground",
       new ColorUIResource(Color.lightGray),
       "InternalFrame.maximizeIcon", BasicIconFactory.createEmptyFrameIcon(),
       "InternalFrame.minimizeIcon", BasicIconFactory.createEmptyFrameIcon(),
-      "InternalFrame.titleFont", new FontUIResource("Dialog", Font.PLAIN, 12),
+      "InternalFrame.titleFont", new FontUIResource("Dialog", Font.BOLD, 12),
       "InternalFrame.windowBindings", new Object[] {
         "shift ESCAPE", "showSystemMenu",
         "ctrl SPACE",  "showSystemMenu",
@@ -524,6 +553,9 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "List.foreground", new ColorUIResource(darkShadow),
       "List.selectionBackground", new ColorUIResource(Color.black),
       "List.selectionForeground", new ColorUIResource(Color.white),
+      "List.focusCellHighlightBorder",
+      new BorderUIResource.
+      LineBorderUIResource(new ColorUIResource(Color.yellow)),
       "Menu.acceleratorFont", new FontUIResource("Dialog", Font.PLAIN, 12),
       "Menu.acceleratorForeground", new ColorUIResource(darkShadow),
       "Menu.acceleratorSelectionForeground", new ColorUIResource(Color.white),
@@ -613,7 +645,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
                                                            null, null),
       "PasswordField.caretBlinkRate", new Integer(500),
       "PasswordField.caretForeground", new ColorUIResource(Color.black),
-      "PasswordField.font", new FontUIResource("MonoSpaced", Font.PLAIN, 12),
+      "PasswordField.font", new FontUIResource("Dialog", Font.PLAIN, 12),
       "PasswordField.foreground", new ColorUIResource(Color.black),
       "PasswordField.inactiveBackground", new ColorUIResource(light),
       "PasswordField.inactiveForeground", new ColorUIResource(Color.gray),
@@ -649,7 +681,14 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "RadioButton.font", new FontUIResource("Dialog", Font.PLAIN, 12),
       "RadioButton.foreground", new ColorUIResource(darkShadow),
       "RadioButton.highlight", new ColorUIResource(highLight),
-      "RadioButton.icon", BasicIconFactory.getRadioButtonIcon(),
+      "RadioButton.icon",
+      new UIDefaults.LazyValue()
+      {
+        public Object createValue(UIDefaults def)
+        {
+          return BasicIconFactory.getRadioButtonIcon();
+        }
+      },
       "RadioButton.light", new ColorUIResource(highLight),
       "RadioButton.margin", new InsetsUIResource(2, 2, 2, 2),
       "RadioButton.shadow", new ColorUIResource(shadow),
@@ -748,7 +787,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "Slider.highlight", new ColorUIResource(highLight),
       "Slider.shadow", new ColorUIResource(shadow),
       "Slider.thumbHeight", new Integer(20),
-      "Slider.thumbWidth", new Integer(10),
+      "Slider.thumbWidth", new Integer(11),
       "Slider.tickHeight", new Integer(12),
       "Spinner.background", new ColorUIResource(light),
       "Spinner.foreground", new ColorUIResource(light),
@@ -838,13 +877,24 @@ public abstract class BasicLookAndFeel extends LookAndFeel
         "shift KP_DOWN", "selectNextRowExtendSelection",
         "shift KP_LEFT", "selectPreviousColumnExtendSelection",
         "ESCAPE",  "cancel",
-        "ctrl shift PAGE_UP", "scrollRightExtendSelection",
-        "shift KP_RIGHT", " selectNextColumnExtendSelection",
+        "ctrl shift PAGE_UP", "scrollLeftExtendSelection",
+        "shift KP_RIGHT", "selectNextColumnExtendSelection",
         "ctrl PAGE_UP",  "scrollLeftChangeSelection",
         "shift PAGE_UP", "scrollUpExtendSelection",
-        "ctrl shift PAGE_DOWN", "scrollLeftExtendSelection",
+        "ctrl shift PAGE_DOWN", "scrollRightExtendSelection",
         "ctrl PAGE_DOWN", "scrollRightChangeSelection",
-        "PAGE_UP",   "scrollUpChangeSelection"
+        "PAGE_UP",   "scrollUpChangeSelection",
+        "ctrl shift LEFT", "selectPreviousColumnExtendSelection",
+        "shift KP_UP", "selectPreviousRowExtendSelection",
+        "ctrl shift UP", "selectPreviousRowExtendSelection",
+        "ctrl shift RIGHT", "selectNextColumnExtendSelection",
+        "ctrl shift KP_RIGHT", "selectNextColumnExtendSelection",
+        "ctrl shift DOWN", "selectNextRowExtendSelection",
+        "ctrl BACK_SLASH", "clearSelection",
+        "ctrl shift KP_UP", "selectPreviousRowExtendSelection",
+        "ctrl shift KP_LEFT", "selectPreviousColumnExtendSelection",
+        "ctrl SLASH", "selectAll",
+        "ctrl shift KP_DOWN", "selectNextRowExtendSelection",
       }),
       "Table.background", new ColorUIResource(light),
       "Table.focusCellBackground", new ColorUIResource(light),
@@ -1000,7 +1050,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
         "shift END", "selectLastExtendSelection",
         "HOME",  "selectFirst",
         "ctrl END", "selectLastChangeLead",
-        "ctrl /", "selectAll",
+        "ctrl SLASH", "selectAll",
         "LEFT",  "selectParent",
         "shift HOME", "selectFirstExtendSelection",
         "UP",  "selectPrevious",
@@ -1027,7 +1077,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
         "shift KP_DOWN","selectNextExtendSelection",
         "ctrl SPACE", "toggleSelectionPreserveAnchor",
         "ctrl shift PAGE_UP", "scrollUpExtendSelection",
-        "ctrl \\", "clearSelection",
+        "ctrl BACK_SLASH", "clearSelection",
         "shift SPACE", "extendSelection",
         "ctrl PAGE_UP", "scrollUpChangeLead",
         "shift PAGE_UP","scrollUpExtendSelection",
@@ -1046,6 +1096,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "Tree.selectionBackground", new ColorUIResource(Color.black),
       "Tree.nonSelectionBackground", new ColorUIResource(new Color(239, 235, 231)),
       "Tree.selectionBorderColor", new ColorUIResource(Color.black),
+      "Tree.selectionBorder", new BorderUIResource.LineBorderUIResource(Color.black),
       "Tree.selectionForeground", new ColorUIResource(new Color(255, 255, 255)),
       "Tree.textBackground", new ColorUIResource(new Color(255, 255, 255)),
       "Tree.textForeground", new ColorUIResource(Color.black),

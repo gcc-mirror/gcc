@@ -49,6 +49,7 @@ public class GtkCheckboxPeer extends GtkComponentPeer
   public GtkCheckboxGroupPeer old_group;
   // The current state of the GTK checkbox.
   private boolean currentState;  
+  private boolean changing = false;
 
   public native void create (GtkCheckboxGroupPeer group);
   public native void nativeSetCheckboxGroup (GtkCheckboxGroupPeer group);
@@ -76,6 +77,15 @@ public class GtkCheckboxPeer extends GtkComponentPeer
 
   public void setState (boolean state)
   {
+    // prevent item_toggled_cb -> postItemEvent ->
+    // awtComponent.setState -> this.setState ->
+    // gtkToggleButtonSetActive self-deadlock on the GDK lock.
+    if (changing && Thread.currentThread() == GtkToolkit.mainThread)
+      {
+        changing = false;
+        return;
+      }
+
     if (currentState != state)
       gtkToggleButtonSetActive (state);
   }
@@ -100,6 +110,7 @@ public class GtkCheckboxPeer extends GtkComponentPeer
 
   // Override the superclass postItemEvent so that the peer doesn't
   // need information that we have.
+  // called back by native side: item_toggled_cb
   public void postItemEvent (Object item, int stateChange)
   {
     Checkbox currentCheckBox = ((Checkbox)awtComponent);
@@ -113,6 +124,7 @@ public class GtkCheckboxPeer extends GtkComponentPeer
     {
       super.postItemEvent (awtComponent, stateChange);
       currentState = !currentCheckBox.getState();
+      changing = true;
       currentCheckBox.setState(currentState);
     }
   }

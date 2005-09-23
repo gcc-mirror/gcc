@@ -237,7 +237,8 @@ public abstract class NumberFormat extends Format implements Cloneable
    * a <code>StringBuffer</code>.
    * 
    * @param number The <code>double</code> to format.
-   * @param sb The <code>StringBuffer</code> to append the formatted number to.
+   * @param sbuf The <code>StringBuffer</code> to append the formatted number 
+   *             to.
    * @param pos The desired <code>FieldPosition</code>.
    *
    * @return The <code>StringBuffer</code> with the appended number.
@@ -250,7 +251,8 @@ public abstract class NumberFormat extends Format implements Cloneable
    * a <code>StringBuffer</code>.
    * 
    * @param number The <code>long</code> to format.
-   * @param sb The <code>StringBuffer</code> to append the formatted number to.
+   * @param sbuf The <code>StringBuffer</code> to append the formatted number 
+   *             to.
    * @param pos The desired <code>FieldPosition</code>.
    *
    * @return The <code>StringBuffer</code> with the appended number.
@@ -371,7 +373,7 @@ public abstract class NumberFormat extends Format implements Cloneable
    * will be a concrete subclass of <code>NumberFormat</code>, but the 
    * actual class returned is dependent on the locale.
    *
-   * @param locale The desired locale.
+   * @param loc The desired locale.
    *
    * @return An instance of the default <code>NumberFormat</code> class.
    */
@@ -433,8 +435,6 @@ public abstract class NumberFormat extends Format implements Cloneable
    * This method returns a default instance for the specified locale. This
    * will be a concrete subclass of <code>NumberFormat</code>, but the 
    * actual class returned is dependent on the locale.
-   *
-   * @param locale The desired locale.
    *
    * @return An instance of the default <code>NumberFormat</code> class.
    */
@@ -502,7 +502,7 @@ public abstract class NumberFormat extends Format implements Cloneable
    * This method returns an instance of <code>NumberFormat</code> suitable
    * for formatting and parsing percentage values in the specified locale.
    *
-   * @param locale The desired locale.
+   * @param loc The desired locale.
    *
    * @return An instance of <code>NumberFormat</code> for handling percentages.
    */
@@ -571,8 +571,8 @@ public abstract class NumberFormat extends Format implements Cloneable
    * <code>Double</code>.    If no number can be parsed, no exception is
    * thrown.  Instead, the parse position remains at its initial index.
    *
-   * @param str The string to parse.
-   * @param pp The desired <code>ParsePosition</code>.
+   * @param sourceStr The string to parse.
+   * @param pos The desired <code>ParsePosition</code>.
    *
    * @return The parsed <code>Number</code>
    */
@@ -584,7 +584,7 @@ public abstract class NumberFormat extends Format implements Cloneable
    * <code>Double</code>.  If no number can be parsed, an exception will be
    * thrown.
    *
-   * @param str The string to parse.
+   * @param sourceStr The string to parse.
    *
    * @return The parsed <code>Number</code>
    *
@@ -610,8 +610,8 @@ public abstract class NumberFormat extends Format implements Cloneable
    * <code>Double</code>.    If no number can be parsed, no exception is
    * thrown.  Instead, the parse position remains at its initial index.
    *
-   * @param str The string to parse.
-   * @param pp The desired <code>ParsePosition</code>.
+   * @param sourceStr The string to parse.
+   * @param pos The desired <code>ParsePosition</code>.
   *
   * @return The parsed <code>Object</code>
   */
@@ -629,7 +629,7 @@ public abstract class NumberFormat extends Format implements Cloneable
    * might appear as "1,000,000".  (Both of these assume the US English
    * locale).
    *
-   * @param groupingUsed <code>true</code> to enable grouping,
+   * @param newValue <code>true</code> to enable grouping,
    *                     <code>false</code> to disable it. 
    */
   public void setGroupingUsed (boolean newValue)
@@ -643,11 +643,11 @@ public abstract class NumberFormat extends Format implements Cloneable
    * current minimum allowed digits, the minimum allowed digits value will
    * be lowered to be equal to the new maximum allowed digits value.
    *
-   * @param maximumFractionDigits The new maximum fraction digits value.
+   * @param digits The new maximum fraction digits value.
    */
-  public void setMaximumFractionDigits (int newValue)
+  public void setMaximumFractionDigits (int digits)
   {
-    maximumFractionDigits = newValue;
+    maximumFractionDigits = digits;
     if (getMinimumFractionDigits () > maximumFractionDigits)
       setMinimumFractionDigits (maximumFractionDigits);
   }
@@ -658,11 +658,11 @@ public abstract class NumberFormat extends Format implements Cloneable
    * current minimum allowed digits, the minimum allowed digits value will
    * be lowered to be equal to the new maximum allowed digits value.
    *
-   * @param maximumIntegerDigits The new maximum integer digits value.
+   * @param digits The new maximum integer digits value.
    */
-  public void setMaximumIntegerDigits (int newValue)
+  public void setMaximumIntegerDigits (int digits)
   {
-    maximumIntegerDigits = newValue;
+    maximumIntegerDigits = digits;
     if (getMinimumIntegerDigits () > maximumIntegerDigits)
       setMinimumIntegerDigits (maximumIntegerDigits);
   }
@@ -673,11 +673,11 @@ public abstract class NumberFormat extends Format implements Cloneable
    * current maximum allowed digits, the maximum allowed digits value will
    * be raised to be equal to the new minimum allowed digits value.
    *
-   * @param minimumFractionDigits The new minimum fraction digits value.
+   * @param digits The new minimum fraction digits value.
    */
-  public void setMinimumFractionDigits (int newValue)
+  public void setMinimumFractionDigits (int digits)
   {
-    minimumFractionDigits = newValue;
+    minimumFractionDigits = digits;
     if (getMaximumFractionDigits () < minimumFractionDigits)
       setMaximumFractionDigits (minimumFractionDigits);
   }
@@ -688,11 +688,11 @@ public abstract class NumberFormat extends Format implements Cloneable
    * current maximum allowed digits, the maximum allowed digits value will
    * be raised to be equal to the new minimum allowed digits value.
    *
-   * @param minimumIntegerDigits The new minimum integer digits value.
+   * @param digits The new minimum integer digits value.
    */
-  public void setMinimumIntegerDigits (int newValue)
+  public void setMinimumIntegerDigits (int digits)
   {
-    minimumIntegerDigits = newValue;
+    minimumIntegerDigits = digits;
     if (getMaximumIntegerDigits () < minimumIntegerDigits)
       setMaximumIntegerDigits (minimumIntegerDigits);
   }
@@ -701,7 +701,7 @@ public abstract class NumberFormat extends Format implements Cloneable
    * This method sets the parsing behavior of this object to parse only 
    * integers or not.
    *
-   * @param parseIntegerOnly <code>true</code> to parse only integers,
+   * @param value <code>true</code> to parse only integers,
    *                         <code>false</code> otherwise. 
    */
   public void setParseIntegerOnly (boolean value)

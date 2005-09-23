@@ -46,11 +46,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.EventListenerList;
 
 /**
- * The abstract superclass for table and tree cells. This provides some
+ * An abstract superclass for table and tree cell editors. This provides some
  * common shared functionality.
  *
- * @author	Andrew Selkirk
- * @version	1.0
+ * @author Andrew Selkirk
  */
 public abstract class AbstractCellEditor
   implements CellEditor, Serializable

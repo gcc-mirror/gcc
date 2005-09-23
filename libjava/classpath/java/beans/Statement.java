@@ -1,5 +1,5 @@
 /* java.beans.Statement
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,6 +42,9 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
+import java.util.HashMap;
+import java.util.WeakHashMap;
+
 /**
  * class Statement
  *
@@ -54,6 +57,11 @@ import java.lang.reflect.Method;
  */
 public class Statement
 {
+  /** Nested map for the relation between a class, its instances and their
+    * names.
+    */
+  private static HashMap classMaps = new HashMap();
+
   private Object target;
   private String methodName;
   private Object[] arguments;
@@ -64,8 +72,11 @@ public class Statement
   private transient Constructor ctor;
 
   /**
-   * Constructs a statement representing the invocation of
-   * object.methodName(arg[0], arg[1], ...);
+   * <p>Constructs a statement representing the invocation of
+   * object.methodName(arg[0], arg[1], ...);</p>
+   *
+   * <p>If the argument array is null it is replaced with an
+   * array of zero length.</p>
    *
    * @param target The object to invoke the method on.
    * @param methodName The object method to invoke.
@@ -75,7 +86,41 @@ public class Statement
   {
     this.target = target;
     this.methodName = methodName;
-    this.arguments = arguments;
+    this.arguments = (arguments != null) ? arguments : new Object[0];
+    storeTargetName(target);
+  }
+
+  /** Creates a name for the target instance or does nothing if the object's
+   * name is already known. This makes sure that there *is* a name for every
+   * target instance.
+   */
+  private static synchronized void storeTargetName(Object obj)
+  {
+    Class klass = obj.getClass();
+    WeakHashMap names = (WeakHashMap) classMaps.get(klass);
+
+    if ( names == null )
+    {
+      names = new WeakHashMap();
+
+      names.put(obj,
+        ( klass == String.class ? ("\"" + obj + "\"") :
+        (klass.getName() + names.size()) ));
+
+      classMaps.put(klass, names);
+
+      return;
+    }
+
+    String targetName = (String) names.get(obj);
+    if ( targetName == null )
+    {
+      names.put(obj,
+        ( klass == String.class ? ("\"" + obj + "\"") :
+        (klass.getName() + names.size()) ));
+    }
+
+    // Nothing to do. The given object was already stored.
   }
 
   /**
@@ -234,15 +279,7 @@ public class Statement
 	  {
 	    // Skip methods with wrong number of args.
 	    Class ptypes[] = ctors[i].getParameterTypes();
-	    System.out.println("ptypeslen = " + ptypes.length);
-	    System.out.println("ptypes = " + ptypes);
-	    System.out.println("ctor = " + ctors[i].getName());
-	    for (int j=0; j < ptypes.length; j++) {
-	      System.out.println("param = " + ptypes[i].getName());
-     
-	    }
-	      
-	    
+
 	    if (ptypes.length != args.length)
 	      continue;
 
@@ -313,14 +350,24 @@ public class Statement
   /** Return a string representation. */
   public String toString()
   {
-    String result = target.getClass().getName() + "." + methodName + "(";
+    StringBuffer result = new StringBuffer(); 
+
+    Class klass = target.getClass();
+
+    result.append( ((WeakHashMap) classMaps.get(klass)).get(target));
+    result.append(".");
+    result.append(methodName);
+    result.append("(");
+
     String sep = "";
     for (int i = 0; i < arguments.length; i++)
       {
-	result = result + sep + arguments[i].getClass().getName();
-	sep = ", ";
+        result.append(sep);
+        result.append(arguments[i].getClass().getName());
+        sep = ", ";
       }
-    result = result + ")";
-    return result;
+    result.append(")");
+
+    return result.toString();
   }
 }

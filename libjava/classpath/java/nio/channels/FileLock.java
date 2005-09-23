@@ -45,10 +45,10 @@ import java.io.IOException;
  */
 public abstract class FileLock
 {
-  FileChannel channel;
-  long position;
-  long size;
-  boolean shared;
+  private final FileChannel channel;
+  private final long position;
+  private final long size;
+  private final boolean shared;
 
   /**
    * Initializes the file lock.

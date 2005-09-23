@@ -42,11 +42,16 @@ import java.awt.Component;
 import java.awt.FocusTraversalPolicy;
 
 /**
+ * A {@link FocusTraversalPolicy} that provides the additional capability
+ * to determine a {@link JInternalFrame}'s initially focused component
+ * when it is selected.
+ *
  * @author Michael Koch
  * 
  * @since 1.4
  */
-public abstract class InternalFrameFocusTraversalPolicy extends FocusTraversalPolicy
+public abstract class InternalFrameFocusTraversalPolicy
+  extends FocusTraversalPolicy
 {
   public Component getInitialComponent(JInternalFrame frame)
   {

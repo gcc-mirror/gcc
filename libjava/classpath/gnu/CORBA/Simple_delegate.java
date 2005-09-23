@@ -195,13 +195,40 @@ public class Simple_delegate
   }
 
   /**
-   * Only returns true if the objects are equal ('==').
+   * Returns true if the objects are the same of have
+   * the same delegate set. All objects in this implementation
+   * have a separate delegate.
    */
   public boolean is_equivalent(org.omg.CORBA.Object target,
                                org.omg.CORBA.Object other
                               )
   {
-    return target == other;
+    if (target == other)
+      return true;
+    if ((target instanceof ObjectImpl) && other instanceof ObjectImpl)
+      {
+        try
+          {
+            org.omg.CORBA.portable.Delegate a =
+              ((ObjectImpl) target)._get_delegate();
+            org.omg.CORBA.portable.Delegate b =
+              ((ObjectImpl) other)._get_delegate();
+            if (a == b)
+              {
+                return true;
+              }
+            if (a != null && b != null)
+              {
+                return a.equals(b);
+              }
+          }
+        catch (Exception ex)
+          {
+            // Unable to get one of the delegates.
+            return false;
+          }
+      }
+    return false;
   }
 
   /**

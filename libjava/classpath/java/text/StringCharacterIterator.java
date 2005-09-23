@@ -76,7 +76,10 @@ public final class StringCharacterIterator implements CharacterIterator
    * text of the specified <code>String</code>.  The initial index
    * value will be set to the first character in the string.
    *
-   * @param text The <code>String</code> to iterate through.
+   * @param text The <code>String</code> to iterate through (<code>null</code> 
+   *             not permitted).
+   * 
+   * @throws NullPointerException if <code>text</code> is <code>null</code>.
    */
   public StringCharacterIterator (String text)
   {
@@ -113,7 +116,7 @@ public final class StringCharacterIterator implements CharacterIterator
    * @param end The ending position in the character range.
    * @param index The initial index position.
    *
-   * @param IllegalArgumentException If any of the range values are
+   * @throws IllegalArgumentException If any of the range values are
    * invalid.
    */
   public StringCharacterIterator (String text, int begin, int end, int index)

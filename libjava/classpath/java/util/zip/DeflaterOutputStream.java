@@ -1,5 +1,5 @@
 /* DeflaterOutputStream.java - Output filter for compressing.
-   Copyright (C) 1999, 2000, 2001, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -100,7 +100,7 @@ public class DeflaterOutputStream extends FilterOutputStream
    */
   public DeflaterOutputStream(OutputStream out)
   {
-    this(out, new Deflater(), 512);
+    this(out, new Deflater(), 4096);
   }
 
   /** 
@@ -111,7 +111,7 @@ public class DeflaterOutputStream extends FilterOutputStream
    */
   public DeflaterOutputStream(OutputStream out, Deflater defl)
   {
-    this(out, defl, 512);
+    this(out, defl, 4096);
   }
 
   /** 

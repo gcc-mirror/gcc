@@ -39,6 +39,7 @@ exception statement from your version. */
 package javax.imageio.stream;
 
 import java.io.DataInput;
+import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteOrder;
 

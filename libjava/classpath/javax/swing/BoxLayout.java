@@ -53,7 +53,8 @@ import java.util.Vector;
 import gnu.java.awt.AWTUtilities;
 
 /**
- * A layout for swing components.
+ * A layout that stacks the children of a container in a Box, either
+ * horizontally or vertically.
  *
  * @author Ronald Veldema (rveldema@cs.vu.nl)
  * @author Roman Kennke (roman@kennke.org)
@@ -150,7 +151,8 @@ public class BoxLayout implements LayoutManager2, Serializable
      * direction. This will be <code>insets.top</code> for vertical direction
      * and <code>insets.left</code> for horizontal direction.
      *
-     * @param the {@link Insets} object from which to return the lower bounds
+     * @param insets the {@link Insets} object from which to return the lower 
+     *               bounds
      *
      * @return the lower bounds of the {@link Insets} object according to this
      *     direction
@@ -226,7 +228,8 @@ public class BoxLayout implements LayoutManager2, Serializable
      * direction. This will be <code>insets.top</code> for vertical direction
      * and <code>insets.left</code> for horizontal direction.
      *
-     * @param the {@link Insets} object from which to return the lower bounds
+     * @param insets the {@link Insets} object from which to return the lower 
+     *        bounds
      *
      * @return the lower bounds of the {@link Insets} object according to this
      *     direction

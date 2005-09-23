@@ -44,17 +44,16 @@ import org.omg.CORBA.portable.IDLEntity;
 import java.io.Serializable;
 
 /**
-* This exception is raised by methods in
-* {@link org.omg.PortableInterceptor.ORBInitInfoOperations} on the attempt to
-* register or resolve an invalid name like empty string. The already
-* registered names (including the default names, defined by OMG) are also
-* invalid for registration.
-*
-* @author Audrius Meskauskas, Lithiania (AudriusA@Bioinformatics.org)
-*/
-public class InvalidName
-  extends UserException
-  implements IDLEntity, Serializable
+ * This exception is raised by methods in
+ * {@link org.omg.PortableInterceptor.ORBInitInfoOperations} on the attempt to
+ * register or resolve an invalid name like empty string. The already
+ * registered names (including the default names, defined by OMG) are also
+ * invalid for registration.
+ *
+ * @author Audrius Meskauskas, Lithiania (AudriusA@Bioinformatics.org)
+ */
+public class InvalidName extends UserException implements IDLEntity,
+  Serializable
 {
   /**
    * Use serialVersionUID (v1.4) for interoperability.
@@ -71,7 +70,7 @@ public class InvalidName
   /**
    * Create the InvalidName with explaining message.
    *
-   * @param why a string, explaining, why this exception has been thrown.
+   * @param why a string, explaining, why the name is invalid.
    */
   public InvalidName(String why)
   {

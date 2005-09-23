@@ -56,7 +56,7 @@ public class BasicToggleButtonUI extends BasicButtonUI
    */
   protected String getPropertyPrefix()
   {
-    return "ToggleButton";
+    return "ToggleButton.";
   }
 }
 

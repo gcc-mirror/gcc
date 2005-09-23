@@ -319,38 +319,39 @@ dnl CLASSPATH_WITH_GLIBJ - specify what to install
 dnl -----------------------------------------------------------
 AC_DEFUN([CLASSPATH_WITH_GLIBJ],
 [
+  AC_PATH_PROG(ZIP, zip)
   AC_ARG_WITH([glibj],
               [AS_HELP_STRING([--with-glibj],[define what to install (zip|flat|both|none|build) [default=zip]])],
               [
                 if test "x${withval}" = xyes || test "x${withval}" = xzip; then
-      		  AC_PATH_PROG(ZIP, zip)
 		  install_class_files=no
 		  build_class_files=yes
+		  use_zip=yes
 		elif test "x${withval}" = xboth; then
-		  AC_PATH_PROG(ZIP, zip)
 		  install_class_files=yes
 		  build_class_files=yes
+		  use_zip=yes
 		elif test "x${withval}" = xflat; then
-		  ZIP=
 		  install_class_files=yes
 		  build_class_files=yes
+		  use_zip=no
                 elif test "x${withval}" = xno || test "x${withval}" = xnone; then
-                  ZIP=
 		  install_class_files=no
 		  build_class_files=no
+		  use_zip=no
 		elif test "x${withval}" = xbuild; then
-                  ZIP=
 		  install_class_files=no
 		  build_class_files=yes
+		  use_zip=no
                 else
 		  AC_MSG_ERROR([unknown value given to --with-glibj])
                 fi
 	      ],
   	      [
-		AC_PATH_PROG(ZIP, zip)
 		install_class_files=no
+		use_zip=yes
 	      ])
-  AM_CONDITIONAL(INSTALL_GLIBJ_ZIP, test "x${ZIP}" != x)
+  AM_CONDITIONAL(INSTALL_GLIBJ_ZIP, test "x${use_zip}" = xyes)
   AM_CONDITIONAL(INSTALL_CLASS_FILES, test "x${install_class_files}" = xyes)
   AM_CONDITIONAL(BUILD_CLASS_FILES, test "x${build_class_files}" = xyes)
 
@@ -362,7 +363,7 @@ AC_DEFUN([CLASSPATH_WITH_GLIBJ],
 		  *) AC_MSG_ERROR(bad value ${enableval} for --enable-examples) ;;
 		esac],
 		[EXAMPLESDIR="examples"])
-  if test "x${ZIP}" = x && test "x${install_class_files}" = xno; then
+  if test "x${use_zip}" = xno && test "x${install_class_files}" = xno; then
     EXAMPLESDIR=""
   fi
   AC_SUBST(EXAMPLESDIR)

@@ -9,17 +9,59 @@
 <boxitem>
 <strong>Upcoming Events:</strong><br>
 <ul>
-none
+<li>[1-5 Aug 2005] <a href="http://conferences.oreillynet.com/os2005/">OSCON</a>, Portland, Oregon - USA
+<ul>
+<li><a href="http://conferences.oreillynet.com/cs/os2005/view/e_sess/6730">The State of Free JVMs</a>
+Tom Tromey</li>
+</ul>
 </ul>
 </boxitem>
 
 <boxitem>
 <strong>Past Events:</strong><br>
 <ul>
-<li>[26+27 Feb. 2004] FOSDEM'05 in Brussels, Belgium. [<createlink name="Escape The Java Trap!" url="events/escape_fosdem05.html">]
-<li>[14+15 Oct. 2003] Linux Kongress '03 in Saarbr&uuml;cken, Germany.
+
+<li>
+[29-31 May 2005] <a href="http://2005.guadec.org/">Guadec</a>, Stuttgart - Germany
+<ul>
+<li><a href="http://2005.guadec.org/schedule/gnometalks.html#eclipseyou">The Eclipse IDE and you</a>
+Ben Konrath and Andrew Overholt
+(<a href="http://overholt.ca/eclipse/GUADEC2005-EclipseIDE.pdf">slides</a>)</li>
+<li><a href="http://2005.guadec.org/schedule/gnometalks.html#javagnome">Eclipse, Java-GNOME, and GCJ</a>
+Andrew Cowie and Ben Konrath</li>
+</ul>
+<p>
+<li>
+[1-4 Jun. 2005] <a href="http://fisl.softwarelivre.org/6.0/">6th International Free Software Forum</a> (fisl), Porto Alegre/RS, Brazil
+<ul>
+<li><a href="http://fisl.softwarelivre.org/papers/pub/programacao/360">Encontro Javali: Escape the Java Trap: GNU Classpath and Kaffe</a>
+Dalibor Topic and Mark Wielaard
+(<a href="http://www.klomp.org/mark/classpath/GNUClasspathKaffe/">slides</a>)</li>
+</ul>
+<p>
+<li>
+[22-25 Jun 2005] <a href="http://www.linuxtag.org/">LinuxTag</a>, Karlsruhe - Germany
+<ul>
+<li><a href="http://www.linuxtag.org/vcc/details.pl?id=162">GNU Classpath</a>
+Robert Schuster (in German)
+(<a href="http://www.inf.fu-berlin.de/%7Erschuste/GNUClasspath-LinuxTag2005-English.pdf">slides</a>)</li>
+<li><a href="http://www.linuxtag.org/vcc/details.pl?id=166">GCJ and Classpath: A Free Implementation of the Java programming language</a>
+Andrew Haley (in English)
+(<a href="http://people.redhat.com/~aph/linuxtag.tar.gz">slides</a>)</li>
+</ul>
+<p>
+<li>[26+27 Feb. 2005] FOSDEM'05 in Brussels, Belgium. [<createlink name="Escape The Java Trap!" url="events/escape_fosdem05.html">]
+<p>
 <li>[21+22 Feb. 2004] FOSDEM'04 in Brussels, Belgium. [<createlink name="report" url="events/fosdem04.html">]
+<p>
 <li>[14+15 Oct. 2003] Linux Kongress '03 in Saarbr&uuml;cken, Germany.
+<ul>
+<li>Hacking on the VM Interface: GNU Classpath workshop, Mark Wielaard
+(<a href="http://www.klomp.org/mark/classpath/slides/gnu_classpath_workshop.html">slides</a>).
+<li>Agile2D: implementing Graphics2D over OpenGL, Jean-Daniel Fekete
+(<a href="http://www.klomp.org/mark/classpath/Agile2D.pdf">slides</a>).
+</ul>
+
 </ul>
 <br><br><br>
 </boxitem>

@@ -51,7 +51,7 @@ import org.omg.CORBA.portable.IDLEntity;
 public abstract class Any
   implements Serializable, IDLEntity
 {
-  /** 
+  /**
    * Using v 1.4 serialVersionUID for interoperability.
    */
   private static final long serialVersionUID = 1217179597823814463L;
@@ -312,12 +312,18 @@ public abstract class Any
   public abstract void insert_TypeCode(TypeCode typecode);
 
   /**
-   * Insert the CORBA <code>Value</code> into this <code>Any</code>
+   * Insert the CORBA <code>Value</code> into this <code>Any</code>.
+   *
+   * The type of the Any should be set (by {@link #type(TypeCode)})
+   * before inserting the value.
    */
   public abstract void insert_Value(Serializable x, TypeCode typecode);
 
   /**
-   * Insert the CORBA <code>Value</code> into this <code>Any</code>
+   * Insert the CORBA <code>Value</code> into this <code>Any</code>.
+   *
+   * The type of the Any should be set (by {@link #type(TypeCode)})
+   * before inserting the value.
    */
   public abstract void insert_Value(Serializable x);
 

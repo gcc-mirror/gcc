@@ -40,10 +40,10 @@ package gnu.CORBA.GIOP.v1_0;
 
 import gnu.CORBA.CDR.cdrInput;
 import gnu.CORBA.CDR.cdrOutput;
-
-import org.omg.CORBA.portable.IDLEntity;
 import gnu.CORBA.GIOP.ServiceContext;
 import gnu.CORBA.GIOP.cxCodeSet;
+
+import org.omg.CORBA.portable.IDLEntity;
 
 /**
  * The GIOP 1.0 request message.

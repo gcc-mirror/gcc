@@ -197,7 +197,7 @@ public class JTextField extends JTextComponent
         public void insertString(int offset, String str, AttributeSet a)
           throws BadLocationException
         {
-          if (str.indexOf('\n') == -1)
+          if (str != null && str.indexOf('\n') == -1)
             super.insertString(offset, str, a);
         }
       };

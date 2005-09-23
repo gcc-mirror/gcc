@@ -79,10 +79,12 @@ public abstract class RGBImageFilter extends ImageFilter
 
 	if( ( model instanceof IndexColorModel) && canFilterIndexColorModel  ) {
 		newmodel = filterIndexColorModel( (IndexColorModel) model );
-		consumer.setColorModel(newmodel);
+		if (consumer != null)
+		  consumer.setColorModel(newmodel);
 	    }
 	else {
-		consumer.setColorModel(ColorModel.getRGBdefault());
+	  if (consumer != null)
+	    consumer.setColorModel(ColorModel.getRGBdefault());
 	}
     }
     
@@ -178,6 +180,7 @@ public abstract class RGBImageFilter extends ImageFilter
     {
 	if(model == origmodel && (model instanceof IndexColorModel) && canFilterIndexColorModel)
 	{
+	  if (consumer != null)
 	    consumer.setPixels(x, y, w, h, newmodel, pixels, offset, scansize);
 	}
 	else
@@ -185,7 +188,8 @@ public abstract class RGBImageFilter extends ImageFilter
 	    int intPixels[] =
 		convertColorModelToDefault( x, y, w, h, model, pixels, offset, scansize );
 	    filterRGBPixels( x, y, w, h, intPixels, offset, scansize );
-	    consumer.setPixels(x, y, w, h, ColorModel.getRGBdefault(), intPixels, offset, scansize);
+	    if (consumer != null)
+	      consumer.setPixels(x, y, w, h, ColorModel.getRGBdefault(), intPixels, offset, scansize);
 	}
     }
 
@@ -209,6 +213,7 @@ public abstract class RGBImageFilter extends ImageFilter
     {
 	if(model == origmodel && (model instanceof IndexColorModel) && canFilterIndexColorModel)
 	{
+	  if (consumer != null)
 	    consumer.setPixels(x, y, w, h, newmodel, pixels, offset, scansize);
 	}
 	else
@@ -216,7 +221,8 @@ public abstract class RGBImageFilter extends ImageFilter
 	    //FIXME: Store the filtered pixels in a separate temporary buffer?
 	  convertColorModelToDefault( x, y, w, h, model, pixels, offset, scansize );
 	  filterRGBPixels( x, y, w, h, pixels, offset, scansize );
-	  consumer.setPixels(x, y, w, h, ColorModel.getRGBdefault(), pixels, offset, scansize);
+	  if (consumer != null)
+	    consumer.setPixels(x, y, w, h, ColorModel.getRGBdefault(), pixels, offset, scansize);
 	}
     }
 

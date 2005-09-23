@@ -77,4 +77,9 @@ public class GtkMenuBarPeer extends GtkMenuComponentPeer
   }
 
   public native void delMenu(int index);
+
+  public void addMenu (Menu m)
+  {
+    // FIXME: implement
+  }
 }

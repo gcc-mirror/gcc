@@ -167,7 +167,7 @@ public class DocumentParser
    * to get a default DTD; you must either refer to the implementation -
    * specific packages, write your own DTD or obtain the working instance
    * of parser in other way, for example, by calling
-   * {@link javax.swing.text.html.HTMLEditorKit#getParser() }.
+   * {@link javax.swing.text.html.HTMLEditorKit#getParser()}.
    * @param a_dtd a DTD to use.
    */
   public DocumentParser(DTD a_dtd)
@@ -180,18 +180,18 @@ public class DocumentParser
    * Parses the HTML document, calling methods of the provided
    * callback. This method must be multithread - safe.
    * @param reader The reader to read the HTML document from
-   * @param callback The callback that is notifyed about the presence
+   * @param aCallback The callback that is notifyed about the presence
    * of HTML elements in the document.
    * @param ignoreCharSet If thrue, any charset changes during parsing
    * are ignored.
    * @throws java.io.IOException
    */
-  public void parse(Reader reader, HTMLEditorKit.ParserCallback a_callback,
+  public void parse(Reader reader, HTMLEditorKit.ParserCallback aCallback,
                     boolean ignoreCharSet
                    )
              throws IOException
   {
-    callBack = a_callback;
+    callBack = aCallback;
     gnu.parse(reader);
 
     callBack.handleEndOfLineString(gnu.getEndOfLineSequence());
@@ -230,7 +230,7 @@ public class DocumentParser
    * The method is called when the HTML closing tag ((like &lt;/table&gt;)
    * is found or if the parser concludes that the one should be present
    * in the current position.
-   * @param The tag being handled
+   * @param tag The tag being handled
    */
   protected void handleEndTag(TagElement tag)
   {
@@ -245,7 +245,7 @@ public class DocumentParser
    * The method is called when the HTML opening tag ((like &lt;table&gt;)
    * is found or if the parser concludes that the one should be present
    * in the current position.
-   * @param The tag being handled
+   * @param tag The tag being handled
    */
   protected void handleStartTag(TagElement tag)
   {

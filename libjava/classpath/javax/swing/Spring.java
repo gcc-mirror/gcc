@@ -189,9 +189,9 @@ public abstract class Spring
     /**
      * Creates a new SimpleSpring object.
      *
-     * @param min the constant minimum value.
-     * @param pref the constant preferred value.
-     * @param max the constant maximum value.
+     * @param newMin the constant minimum value.
+     * @param newPref the constant preferred value.
+     * @param newMax the constant maximum value.
      */
     public SimpleSpring(int newMin, int newPref, int newMax)
     {

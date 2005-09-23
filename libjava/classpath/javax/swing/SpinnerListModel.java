@@ -42,6 +42,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.event.ChangeEvent;
+
 /**
  * An implementation of <code>SpinnerModel</code> which uses the values
  * contained within a list or an array.  The backing list or array is

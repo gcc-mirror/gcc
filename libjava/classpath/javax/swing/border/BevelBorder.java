@@ -172,7 +172,7 @@ public class BevelBorder
    * @throws NullPointerException if <code>highlight</code> or
    *         <code>shadow</code> is <code>null</code>.
    *
-   * @see java.awt.Color.brighter()
+   * @see java.awt.Color#brighter()
    */
   public BevelBorder(int bevelType, Color highlight, Color shadow)
   {
@@ -289,7 +289,7 @@ public class BevelBorder
    *
    * @return the same object that was passed for <code>insets</code>.
    *
-   * @see #getBorderInsets()
+   * @see #getBorderInsets(Component)
    */
   public Insets getBorderInsets(Component c, Insets insets)
   {

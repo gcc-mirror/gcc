@@ -348,12 +348,7 @@ Java_java_lang_VMDouble_parseDouble
 	  struct _Jv_reent reent;
 	  memset (&reent, 0, sizeof reent);
 
-#ifdef KISSME_LINUX_USER
-	  /* FIXME: The libc strtod may not be reliable. */
-	  val = strtod (p, &endptr);
-#else
 	  val = _strtod_r (&reent, p, &endptr);
-#endif
 
 #ifdef DEBUG
 	  fprintf (stderr, "java.lang.VMDouble.parseDouble val = %g\n", val);

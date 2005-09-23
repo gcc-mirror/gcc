@@ -1,4 +1,4 @@
-/* FunctionalORB.java --
+/* Functional_ORB.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -40,24 +40,28 @@ package gnu.CORBA;
 
 import gnu.CORBA.CDR.cdrBufInput;
 import gnu.CORBA.CDR.cdrBufOutput;
+import gnu.CORBA.GIOP.CloseMessage;
 import gnu.CORBA.GIOP.ErrorMessage;
 import gnu.CORBA.GIOP.MessageHeader;
 import gnu.CORBA.GIOP.ReplyHeader;
 import gnu.CORBA.GIOP.RequestHeader;
-import gnu.CORBA.GIOP.CloseMessage;
+import gnu.CORBA.NamingService.NameParser;
 import gnu.CORBA.NamingService.NamingServiceTransient;
+import gnu.CORBA.Poa.gnuForwardRequest;
 
-import org.omg.CORBA.BAD_INV_ORDER;
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.CompletionStatus;
+import org.omg.CORBA.DATA_CONVERSION;
 import org.omg.CORBA.MARSHAL;
 import org.omg.CORBA.NO_RESOURCES;
 import org.omg.CORBA.OBJECT_NOT_EXIST;
+import org.omg.CORBA.Object;
 import org.omg.CORBA.ORBPackage.InvalidName;
 import org.omg.CORBA.Request;
 import org.omg.CORBA.SystemException;
 import org.omg.CORBA.UNKNOWN;
+import org.omg.CORBA.WrongTransaction;
 import org.omg.CORBA.portable.Delegate;
 import org.omg.CORBA.portable.InvokeHandler;
 import org.omg.CORBA.portable.ObjectImpl;
@@ -78,6 +82,7 @@ import java.net.UnknownHostException;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
@@ -87,26 +92,25 @@ import java.util.TreeMap;
 
 /**
  * The ORB implementation, capable to handle remote invocations on the
- * registered object.
+ * registered object. This class implements all features, required till the jdk
+ * 1.3 inclusive, but does not support the POA that appears since 1.4. The POA
+ * is supported by {@link gnu.CORBA.Poa.ORB_1_4}.
  *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
-public class Functional_ORB
-  extends Restricted_ORB
+public class Functional_ORB extends Restricted_ORB
 {
   /**
-   * A server, responsible for listening on requests on some
-   * local port. The ORB may listen on multiple ports and process
-   * the requests in separate threads. Normally the server takes
-   * one port per object being served.
+   * A server, responsible for listening on requests on some local port. The ORB
+   * may listen on multiple ports and process the requests in separate threads.
+   * Normally the server takes one port per object being served.
    */
-  class portServer
-    extends Thread
+  class portServer extends Thread
   {
     /**
      * The number of the currently running parallel threads.
      */
-    private int running_threads;
+    int running_threads;
 
     /**
      * The port on that this portServer is listening for requests.
@@ -119,8 +123,7 @@ public class Functional_ORB
     ServerSocket service;
 
     /**
-     * True if the serving node must shutdown due
-     * call of the close_now().
+     * True if the serving node must shutdown due call of the close_now().
      */
     boolean terminated;
 
@@ -133,9 +136,8 @@ public class Functional_ORB
     }
 
     /**
-     * Enter the serving loop (get request/process it).
-     * All portServer normally terminate thy threads when
-     * the Functional_ORB.running is set to false.
+     * Enter the serving loop (get request/process it). All portServer normally
+     * terminate thy threads when the Functional_ORB.running is set to false.
      */
     public void run()
     {
@@ -155,7 +157,7 @@ public class Functional_ORB
         {
           try
             {
-              serve(this, service);
+              tick();
             }
           catch (SocketException ex)
             {
@@ -177,6 +179,16 @@ public class Functional_ORB
                 }
             }
         }
+    }
+
+    /**
+     * Perform a single serving step.
+     *
+     * @throws java.lang.Exception
+     */
+    void tick() throws Exception
+    {
+      serve(this, service);
     }
 
     /**
@@ -206,14 +218,41 @@ public class Functional_ORB
   }
 
   /**
-   * The default value where the first instance of this ORB will start
-   * looking for a free port.
+   * A server, responsible for listening on requests on some local port and
+   * serving multiple requests (probably to the different objects) on the same
+   * thread.
+   */
+  class sharedPortServer extends portServer
+  {
+    /**
+     * Create a new portServer, serving on specific port.
+     */
+    sharedPortServer(int _port)
+    {
+      super(_port);
+    }
+
+    /**
+     * Perform a single serving step.
+     *
+     * @throws java.lang.Exception
+     */
+    void tick() throws Exception
+    {
+      Socket request = service.accept();
+      serveStep(request, false);
+    }
+  }
+
+  /**
+   * The default value where the first instance of this ORB will start looking
+   * for a free port.
    */
   public static int DEFAULT_INITIAL_PORT = 1126;
 
   /**
-   * The property of port, on that this ORB is listening for requests from clients.
-   * This class supports one port per ORB only.
+   * The property of port, on that this ORB is listening for requests from
+   * clients. This class supports one port per ORB only.
    */
   public static final String LISTEN_ON = "gnu.classpath.CORBA.ListenOn";
 
@@ -223,12 +262,14 @@ public class Functional_ORB
   public static final String REFERENCE = "org.omg.CORBA.ORBInitRef";
 
   /**
-   * The property, defining the port on that the default name service is running.
+   * The property, defining the port on that the default name service is
+   * running.
    */
   public static final String NS_PORT = "org.omg.CORBA.ORBInitialPort";
 
   /**
-   * The property, defining the host on that the default name service is running.
+   * The property, defining the host on that the default name service is
+   * running.
    */
   public static final String NS_HOST = "org.omg.CORBA.ORBInitialHost";
 
@@ -238,24 +279,25 @@ public class Functional_ORB
   public static final String NAME_SERVICE = "NameService";
 
   /**
-   * The if the client has once opened a socket, it should start sending
-   * the message header in a given time. Otherwise the server will close the
-   * socket. This prevents server hang when the client opens the socket,
-   * but does not send any message, usually due crash on the client side.
+   * The if the client has once opened a socket, it should start sending the
+   * message header in a given time. Otherwise the server will close the socket.
+   * This prevents server hang when the client opens the socket, but does not
+   * send any message, usually due crash on the client side.
    */
   public static String START_READING_MESSAGE =
     "gnu.classpath.CORBA.TOUT_START_READING_MESSAGE";
 
   /**
-   * If the client has started to send the request message, the socket time
-   * out changes to the specified value.
+   * If the client has started to send the request message, the socket time out
+   * changes to the specified value.
    */
-  public static String WHILE_READING = "gnu.classpath.CORBA.TOUT_WHILE_READING";
+  public static String WHILE_READING =
+    "gnu.classpath.CORBA.TOUT_WHILE_READING";
 
   /**
-   * If the message body is received, the time out changes to the
-   * specifice value. This must be longer, as includes time, required to
-   * process the received task. We make it 40 minutes.
+   * If the message body is received, the time out changes to the specifice
+   * value. This must be longer, as includes time, required to process the
+   * received task. We make it 40 minutes.
    */
   public static String AFTER_RECEIVING =
     "gnu.classpath.CORBA.TOUT_AFTER_RECEIVING";
@@ -266,60 +308,59 @@ public class Functional_ORB
   public final String LOCAL_HOST;
 
   /**
-   * The if the client has once opened a socket, it should start sending
-   * the message header in a given time. Otherwise the server will close the
-   * socket. This prevents server hang when the client opens the socket,
-   * but does not send any message, usually due crash on the client side.
+   * The if the client has once opened a socket, it should start sending the
+   * message header in a given time. Otherwise the server will close the socket.
+   * This prevents server hang when the client opens the socket, but does not
+   * send any message, usually due crash on the client side.
    */
   private int TOUT_START_READING_MESSAGE = 20 * 1000;
 
   // (Here and below, we use * to make the meaning of the constant clearler).
 
   /**
-   * If the client has started to send the request message, the socket time
-   * out changes to the specified value.
+   * If the client has started to send the request message, the socket time out
+   * changes to the specified value.
    */
   private int TOUT_WHILE_READING = 2 * 60 * 1000;
 
   /**
-   * If the message body is received, the time out changes to the
-   * specifice value. This must be longer, as includes time, required to
-   * process the received task. We make it 40 minutes.
+   * If the message body is received, the time out changes to the specifice
+   * value. This must be longer, as includes time, required to process the
+   * received task. We make it 40 minutes.
    */
   private int TOUT_AFTER_RECEIVING = 40 * 60 * 1000;
 
   /**
-   * Some clients tend to submit multiple requests over the
-   * same socket. The server waits for the next request on
-   * the same socket for the duration, specified
-   * below. In additions, the request of this implementation also
-   * waits for the same duration before closing the socket.
-   * The default time is seven seconds.
+   * Some clients tend to submit multiple requests over the same socket. The
+   * server waits for the next request on the same socket for the duration,
+   * specified below. In additions, the request of this implementation also
+   * waits for the same duration before closing the socket. The default time is
+   * seven seconds.
    */
   public static int TANDEM_REQUESTS = 7000;
 
   /**
    * The map of the already conncted objects.
    */
-  protected final Connected_objects connected_objects = new Connected_objects();
+  protected final Connected_objects connected_objects =
+    new Connected_objects();
 
   /**
-   * The maximal CORBA version, supported by this ORB. The default value
-   * 0 means that the ORB will not check the request version while trying
-   * to respond.
+   * The maximal CORBA version, supported by this ORB. The default value 0 means
+   * that the ORB will not check the request version while trying to respond.
    */
   protected Version max_version;
 
   /**
-   * Setting this value to false causes the ORB to shutdown after the
-   * latest serving operation is complete.
+   * Setting this value to false causes the ORB to shutdown after the latest
+   * serving operation is complete.
    */
   protected boolean running;
 
   /**
    * The map of the initial references.
    */
-  private Map initial_references = new TreeMap();
+  protected Map initial_references = new TreeMap();
 
   /**
    * The currently active portServers.
@@ -332,12 +373,12 @@ public class Functional_ORB
   private String ns_host;
 
   /**
-   * Probably free port, under that the ORB will try listening for
-   * remote requests first. When the new object is connected, this
-   * port is used first, then it is incremented by 1, etc. If the given
-   * port is not available, up to 20 subsequent values are tried and then
-   * the parameterless server socket contructor is called. The constant is
-   * shared between multiple instances of this ORB.
+   * Probably free port, under that the ORB will try listening for remote
+   * requests first. When the new object is connected, this port is used first,
+   * then it is incremented by 1, etc. If the given port is not available, up to
+   * 20 subsequent values are tried and then the parameterless server socket
+   * contructor is called. The constant is shared between multiple instances of
+   * this ORB.
    */
   private static int Port = DEFAULT_INITIAL_PORT;
 
@@ -345,6 +386,11 @@ public class Functional_ORB
    * The port, on that the name service is expected to be running.
    */
   private int ns_port = 900;
+  
+  /**
+   * The name parser.
+   */
+  NameParser nameParser = new NameParser();
 
   /**
    * The instance, stored in this field, handles the asynchronous dynamic
@@ -358,10 +404,14 @@ public class Functional_ORB
   protected LinkedList freed_ports = new LinkedList();
 
   /**
-   * The maximal allowed number of the currently running parallel
-   * threads per object. For security reasons, this is made private and
-   * unchangeable. After exceeding this limit, the NO_RESOURCES
-   * is thrown back to the client.
+   * Maps a single-threaded POAs to they sharedPortServants.
+   */
+  protected Hashtable identities = new Hashtable();
+
+  /**
+   * The maximal allowed number of the currently running parallel threads per
+   * object. For security reasons, this is made private and unchangeable. After
+   * exceeding this limit, the NO_RESOURCES is thrown back to the client.
    */
   private int MAX_RUNNING_THREADS = 256;
 
@@ -385,20 +435,19 @@ public class Functional_ORB
   }
 
   /**
-  * If the max version is assigned, the orb replies with the error
-  * message if the request version is above the supported 1.2 version.
-  * This behavior is recommended by OMG, but not all implementations
-  * respond that error message by re-sending the request, encoded in the older
-  * version.
-  */
+   * If the max version is assigned, the orb replies with the error message if
+   * the request version is above the supported 1.2 version. This behavior is
+   * recommended by OMG, but not all implementations respond that error message
+   * by re-sending the request, encoded in the older version.
+   */
   public void setMaxVersion(Version max_supported)
   {
     max_version = max_supported;
   }
 
   /**
-   * Get the maximal supported GIOP version or null if the version is
-   * not checked.
+   * Get the maximal supported GIOP version or null if the version is not
+   * checked.
    */
   public Version getMaxVersion()
   {
@@ -406,17 +455,15 @@ public class Functional_ORB
   }
 
   /**
-   * Get the currently free port, starting from the initially set port
-   * and going up max 20 steps, then trying to bind into any free
-   * address.
+   * Get the currently free port, starting from the initially set port and going
+   * up max 20 steps, then trying to bind into any free address.
    *
    * @return the currently available free port.
    *
-   * @throws NO_RESOURCES if the server socked cannot be opened on the
-   * local host.
+   * @throws NO_RESOURCES if the server socked cannot be opened on the local
+   * host.
    */
-  public int getFreePort()
-                  throws BAD_OPERATION
+  public int getFreePort() throws BAD_OPERATION
   {
     ServerSocket s;
     int a_port;
@@ -473,12 +520,11 @@ public class Functional_ORB
   }
 
   /**
-   * Set the port, on that the server is listening for the client requests.
-   * If only one object is connected to the orb, the server will be
-   * try listening on this port first. It the port is busy, or if more
-   * objects are connected, the subsequent object will receive a larger
-   * port values, skipping unavailable ports, if required. The change
-   * applies globally.
+   * Set the port, on that the server is listening for the client requests. If
+   * only one object is connected to the orb, the server will be try listening
+   * on this port first. It the port is busy, or if more objects are connected,
+   * the subsequent object will receive a larger port values, skipping
+   * unavailable ports, if required. The change applies globally.
    *
    * @param a_Port a port, on that the server is listening for requests.
    */
@@ -488,14 +534,13 @@ public class Functional_ORB
   }
 
   /**
-   * Connect the given CORBA object to this ORB. After the object is
-   * connected, it starts receiving remote invocations via this ORB.
+   * Connect the given CORBA object to this ORB. After the object is connected,
+   * it starts receiving remote invocations via this ORB.
    *
-   * The ORB tries to connect the object to the port, that has been
-   * previously set by {@link setPort(int)}. On failure, it tries
-   * 20 subsequent larger values and then calls the parameterless
-   * server socked constructor to get any free local port.
-   * If this fails, the {@link NO_RESOURCES} is thrown.
+   * The ORB tries to connect the object to the port, that has been previously
+   * set by {@link setPort(int)}. On failure, it tries 20 subsequent larger
+   * values and then calls the parameterless server socked constructor to get
+   * any free local port. If this fails, the {@link NO_RESOURCES} is thrown.
    *
    * @param object the object, must implement the {@link InvokeHandler})
    * interface.
@@ -515,19 +560,18 @@ public class Functional_ORB
   }
 
   /**
-   * Connect the given CORBA object to this ORB, explicitly specifying
-   * the object key.
+   * Connect the given CORBA object to this ORB, explicitly specifying the
+   * object key.
    *
-   * The ORB tries to connect the object to the port, that has been
-   * previously set by {@link setPort(int)}. On failure, it tries
-   * 20 subsequent larger values and then calls the parameterless
-   * server socked constructor to get any free local port.
-   * If this fails, the {@link NO_RESOURCES} is thrown.
+   * The ORB tries to connect the object to the port, that has been previously
+   * set by {@link setPort(int)}. On failure, it tries 20 subsequent larger
+   * values and then calls the parameterless server socked constructor to get
+   * any free local port. If this fails, the {@link NO_RESOURCES} is thrown.
    *
    * @param object the object, must implement the {@link InvokeHandler})
    * interface.
-   * @param key the object key, usually used to identify the object from
-   * remote side.
+   * @param key the object key, usually used to identify the object from remote
+   * side.
    *
    * @throws BAD_PARAM if the object does not implement the
    * {@link InvokeHandler}).
@@ -536,7 +580,8 @@ public class Functional_ORB
   {
     int a_port = getFreePort();
 
-    Connected_objects.cObject ref = connected_objects.add(key, object, a_port);
+    Connected_objects.cObject ref =
+      connected_objects.add(key, object, a_port, null);
     IOR ior = createIOR(ref);
     prepareObject(object, ior);
     if (running)
@@ -544,11 +589,56 @@ public class Functional_ORB
   }
 
   /**
+   * Connect the given CORBA object to this ORB, explicitly specifying the
+   * object key and the identity of the thread (and port), where the object must
+   * be served. The identity is normally the POA.
+   *
+   * The new port server will be started only if there is no one already running
+   * for the same identity. Otherwise, the task of the existing port server will
+   * be widened, including duty to serve the given object. All objects,
+   * connected to a single identity by this method, will process they requests
+   * subsequently in the same thread. The method is used when the expected
+   * number of the objects is too large to have a single port and thread per
+   * object. This method is used by POAs, having a single thread policy.
+   *
+   * @param object the object, must implement the {@link InvokeHandler})
+   * interface.
+   * @param key the object key, usually used to identify the object from remote
+   * side.
+   * @param port the port, where the object must be connected.
+   *
+   * @throws BAD_PARAM if the object does not implement the
+   * {@link InvokeHandler}).
+   */
+  public void connect_1_thread(org.omg.CORBA.Object object, byte[] key,
+    java.lang.Object identity
+  )
+  {
+    sharedPortServer shared = (sharedPortServer) identities.get(identity);
+    if (shared == null)
+      {
+        int a_port = getFreePort();
+        shared = new sharedPortServer(a_port);
+        identities.put(identity, shared);
+        if (running)
+          {
+            portServers.add(shared);
+            shared.start();
+          }
+      }
+
+    Connected_objects.cObject ref =
+      connected_objects.add(key, object, shared.s_port, identity);
+    IOR ior = createIOR(ref);
+    prepareObject(object, ior);
+  }
+
+  /**
    * Start the service on the given port of this IOR.
    *
    * @param ior the ior (only Internet.port is used).
    */
-  private void startService(IOR ior)
+  public void startService(IOR ior)
   {
     portServer p = new portServer(ior.Internet.port);
     portServers.add(p);
@@ -560,23 +650,22 @@ public class Functional_ORB
    */
   public void destroy()
   {
-    super.destroy();
-
     portServer p;
     for (int i = 0; i < portServers.size(); i++)
       {
         p = (portServer) portServers.get(i);
         p.close_now();
       }
+    super.destroy();
   }
 
   /**
-   * Disconnect the given CORBA object from this ORB. The object will be
-   * no longer receiving the remote invocations. In response to the
-   * remote invocation on this object, the ORB will send the
-   * exception {@link OBJECT_NOT_EXIST}. The object, however, is not
-   * destroyed and can receive the local invocations.
-
+   * Disconnect the given CORBA object from this ORB. The object will be no
+   * longer receiving the remote invocations. In response to the remote
+   * invocation on this object, the ORB will send the exception
+   * {@link OBJECT_NOT_EXIST}. The object, however, is not destroyed and can
+   * receive the local invocations.
+   *
    * @param object the object to disconnect.
    */
   public void disconnect(org.omg.CORBA.Object object)
@@ -599,8 +688,6 @@ public class Functional_ORB
     // object implementation.
     if (rmKey == null)
       rmKey = connected_objects.getKey(object);
-
-    // Disconnect the object on any success.
     if (rmKey != null)
       {
         // Find and stop the corresponding portServer.
@@ -609,7 +696,7 @@ public class Functional_ORB
         for (int i = 0; i < portServers.size(); i++)
           {
             p = (portServer) portServers.get(i);
-            if (p.s_port == rmKey.port)
+            if (p.s_port == rmKey.port && !(p instanceof sharedPortServer))
               {
                 p.close_now();
                 freed_ports.addFirst(new Integer(rmKey.port));
@@ -621,12 +708,47 @@ public class Functional_ORB
   }
 
   /**
+   * Notifies ORB that the shared service indentity (usually POA) is destroyed.
+   * The matching shared port server is terminated and the identity table entry
+   * is deleted. If this identity is not known for this ORB, the method returns
+   * without action.
+   *
+   * @param identity the identity that has been destroyed.
+   */
+  public void identityDestroyed(java.lang.Object identity)
+  {
+    if (identity == null)
+      return;
+
+    sharedPortServer ise = (sharedPortServer) identities.get(identity);
+    if (ise != null)
+      {
+        synchronized (connected_objects)
+          {
+            ise.close_now();
+            identities.remove(identity);
+
+            Connected_objects.cObject obj;
+            Map.Entry m;
+            Iterator iter = connected_objects.entrySet().iterator();
+            while (iter.hasNext())
+              {
+                m = (Map.Entry) iter.next();
+                obj = (Connected_objects.cObject) m.getValue();
+                if (obj.identity == identity)
+                  iter.remove();
+              }
+          }
+      }
+  }
+
+  /**
    * Find the local object, connected to this ORB.
    *
    * @param ior the ior of the potentially local object.
    *
-   * @return the local object, represented by the given IOR,
-   * or null if this is not a local connected object.
+   * @return the local object, represented by the given IOR, or null if this is
+   * not a local connected object.
    */
   public org.omg.CORBA.Object find_local_object(IOR ior)
   {
@@ -655,26 +777,26 @@ public class Functional_ORB
 
     Iterator iter = initial_references.keySet().iterator();
     while (iter.hasNext())
-      refs [ p++ ] = (String) iter.next();
-
+      {
+        refs [ p++ ] = (String) iter.next();
+      }
     return refs;
   }
 
   /**
-   * Get the IOR reference string for the given object.
-   * The string embeds information about the object
-   * repository Id, its access key and the server internet
-   * address and port. With this information, the object
-   * can be found by another ORB, possibly located on remote
-   * computer.
+   * Get the IOR reference string for the given object. The string embeds
+   * information about the object repository Id, its access key and the server
+   * internet address and port. With this information, the object can be found
+   * by another ORB, possibly located on remote computer.
    *
    * @param the CORBA object
    * @return the object IOR representation.
    *
-   * @throws BAD_PARAM if the object has not been previously
-   * connected to this ORB.
-   * @throws BAD_OPERATION in the unlikely case if the local host
-   * address cannot be resolved.
+   * @throws BAD_PARAM if the object has not been previously connected to this
+   * ORB.
+   *
+   * @throws BAD_OPERATION in the unlikely case if the local host address cannot
+   * be resolved.
    *
    * @see string_to_object(String)
    */
@@ -693,8 +815,8 @@ public class Functional_ORB
 
     if (rec == null)
       throw new BAD_PARAM("The object " + forObject +
-                          " has not been previously connected to this ORB"
-                         );
+        " has not been previously connected to this ORB"
+      );
 
     IOR ior = createIOR(rec);
 
@@ -702,17 +824,28 @@ public class Functional_ORB
   }
 
   /**
-   * Find and return the easily accessible CORBA object, addressed
-   * by name.
+   * Get the local IOR for the given object, null if the object is not local.
+   */
+  public IOR getLocalIor(org.omg.CORBA.Object forObject)
+  {
+    Connected_objects.cObject rec = connected_objects.getKey(forObject);
+    if (rec == null)
+      return null;
+    else
+      return createIOR(rec);
+  }
+
+  /**
+   * Find and return the easily accessible CORBA object, addressed by name.
    *
    * @param name the object name.
    * @return the object
    *
-   * @throws org.omg.CORBA.ORBPackage.InvalidName if the given name
-   * is not associated with the known object.
+   * @throws org.omg.CORBA.ORBPackage.InvalidName if the given name is not
+   * associated with the known object.
    */
   public org.omg.CORBA.Object resolve_initial_references(String name)
-                                                  throws InvalidName
+    throws InvalidName
   {
     org.omg.CORBA.Object object = null;
     try
@@ -738,9 +871,8 @@ public class Functional_ORB
   }
 
   /**
-   * Start the ORBs main working cycle
-   * (receive invocation - invoke on the local object - send response -
-   *  wait for another invocation).
+   * Start the ORBs main working cycle (receive invocation - invoke on the local
+   * object - send response - wait for another invocation).
    *
    * The method only returns after calling {@link #shutdown(boolean)}.
    */
@@ -758,27 +890,37 @@ public class Functional_ORB
         m = (Map.Entry) iter.next();
         obj = (Connected_objects.cObject) m.getValue();
 
-        portServer subserver = new portServer(obj.port);
-        portServers.add(subserver);
+        portServer subserver;
 
-        // Reuse the current thread for the last portServer.
-        if (!iter.hasNext())
+        if (obj.identity == null)
           {
-            // Discard the iterator, eliminating lock checks.
-            iter = null;
-            subserver.run();
-            return;
+            subserver = new portServer(obj.port);
+            portServers.add(subserver);
           }
         else
-          subserver.start();
+          subserver = (portServer) identities.get(obj.identity);
+
+        if (!subserver.isAlive())
+          {
+            // Reuse the current thread for the last portServer.
+            if (!iter.hasNext())
+              {
+                // Discard the iterator, eliminating lock checks.
+                iter = null;
+                subserver.run();
+                return;
+              }
+            else
+              subserver.start();
+          }
       }
   }
 
   /**
    * Shutdown the ORB server.
    *
-   * @param wait_for_completion if true, the current thread is
-   * suspended until the shutdown process is complete.
+   * @param wait_for_completion if true, the current thread is suspended until
+   * the shutdown process is complete.
    */
   public void shutdown(boolean wait_for_completion)
   {
@@ -796,19 +938,26 @@ public class Functional_ORB
   }
 
   /**
-   * Find and return the CORBA object, addressed by the given
-   * IOR string representation. The object can (an usually is)
-   * located on a remote computer, possibly running a different
-   * (not necessary java) CORBA implementation.
-   *
+   * Find and return the CORBA object, addressed by the given IOR string
+   * representation. The object can (an usually is) located on a remote
+   * computer, possibly running a different (not necessary java) CORBA
+   * implementation.
+   * 
    * @param ior the object IOR representation string.
-   *
+   * 
    * @return the found CORBA object.
    * @see object_to_string(org.omg.CORBA.Object)
    */
   public org.omg.CORBA.Object string_to_object(String an_ior)
   {
-    IOR ior = IOR.parse(an_ior);
+    return nameParser.corbaloc(an_ior, this);
+  }
+  
+  /**
+   * Convert ior reference to CORBA object.
+   */
+  public org.omg.CORBA.Object ior_to_object(IOR ior)
+  {
     org.omg.CORBA.Object object = find_local_object(ior);
     if (object == null)
       {
@@ -816,9 +965,7 @@ public class Functional_ORB
         try
           {
             if (impl._get_delegate() == null)
-              {
-                impl._set_delegate(new IOR_Delegate(this, ior));
-              }
+              impl._set_delegate(new IOR_Delegate(this, ior));
           }
         catch (BAD_OPERATION ex)
           {
@@ -828,21 +975,19 @@ public class Functional_ORB
           }
 
         object = impl;
-        connected_objects.add(ior.key, impl, ior.Internet.port);
+        connected_objects.add(ior.key, impl, ior.Internet.port, null);
       }
     return object;
   }
 
   /**
-   * Get the default naming service for the case when there no
-   * NameService entries.
+   * Get the default naming service for the case when there no NameService
+   * entries.
    */
   protected org.omg.CORBA.Object getDefaultNameService()
   {
     if (initial_references.containsKey(NAME_SERVICE))
-      {
-        return (org.omg.CORBA.Object) initial_references.get(NAME_SERVICE);
-      }
+      return (org.omg.CORBA.Object) initial_references.get(NAME_SERVICE);
 
     IOR ior = new IOR();
     ior.Id = NamingContextExtHelper.id();
@@ -857,8 +1002,8 @@ public class Functional_ORB
   }
 
   /**
-   * Find and return the object, that must be previously connected
-   * to this ORB. Return null if no such object is available.
+   * Find and return the object, that must be previously connected to this ORB.
+   * Return null if no such object is available.
    *
    * @param key the object key.
    *
@@ -877,8 +1022,7 @@ public class Functional_ORB
    * @param app the current applet.
    *
    * @param props application specific properties, passed as the second
-   * parameter in {@link #init(Applet, Properties)}.
-   * Can be <code>null</code>.
+   * parameter in {@link #init(Applet, Properties)}. Can be <code>null</code>.
    */
   protected void set_parameters(Applet app, Properties props)
   {
@@ -891,27 +1035,23 @@ public class Functional_ORB
           {
             if (para [ i ] [ 0 ].equals(LISTEN_ON))
               Port = Integer.parseInt(para [ i ] [ 1 ]);
-
             if (para [ i ] [ 0 ].equals(REFERENCE))
               {
-                StringTokenizer st = new StringTokenizer(para [ i ] [ 1 ], "=");
+                StringTokenizer st =
+                  new StringTokenizer(para [ i ] [ 1 ], "=");
                 initial_references.put(st.nextToken(),
-                                       string_to_object(st.nextToken())
-                                      );
+                  string_to_object(st.nextToken())
+                );
               }
 
             if (para [ i ] [ 0 ].equals(NS_HOST))
               ns_host = para [ i ] [ 1 ];
-
             if (para [ i ] [ 0 ].equals(START_READING_MESSAGE))
               TOUT_START_READING_MESSAGE = Integer.parseInt(para [ i ] [ 1 ]);
-
             if (para [ i ] [ 0 ].equals(WHILE_READING))
               TOUT_WHILE_READING = Integer.parseInt(para [ i ] [ 1 ]);
-
             if (para [ i ] [ 0 ].equals(AFTER_RECEIVING))
               TOUT_AFTER_RECEIVING = Integer.parseInt(para [ i ] [ 1 ]);
-
             try
               {
                 if (para [ i ] [ 0 ].equals(NS_PORT))
@@ -921,9 +1061,9 @@ public class Functional_ORB
               {
                 BAD_PARAM bad =
                   new BAD_PARAM("Invalid " + NS_PORT +
-                                "property, unable to parse '" +
-                                props.getProperty(NS_PORT) + "'"
-                               );
+                    "property, unable to parse '" +
+                    props.getProperty(NS_PORT) + "'"
+                  );
                 bad.initCause(ex);
                 throw bad;
               }
@@ -935,52 +1075,54 @@ public class Functional_ORB
    * Set the ORB parameters. This method is normally called from
    * {@link #init(String[], Properties)}.
    *
-   * @param para the parameters, that were passed as the parameters
-   * to the  <code>main(String[] args)</code> method of the current standalone
+   * @param para the parameters, that were passed as the parameters to the
+   * <code>main(String[] args)</code> method of the current standalone
    * application.
    *
-   * @param props application specific properties that were passed
-   * as a second parameter in {@link init(String[], Properties)}).
-   * Can be <code>null</code>.
+   * @param props application specific properties that were passed as a second
+   * parameter in {@link init(String[], Properties)}). Can be <code>null</code>.
    */
   protected void set_parameters(String[] para, Properties props)
   {
     if (para.length > 1)
-      for (int i = 0; i < para.length - 1; i++)
-        {
-          if (para [ i ].endsWith("ListenOn"))
-            Port = Integer.parseInt(para [ i + 1 ]);
+      {
+        for (int i = 0; i < para.length - 1; i++)
+          {
+            if (para [ i ].endsWith("ListenOn"))
+              Port = Integer.parseInt(para [ i + 1 ]);
+            if (para [ i ].endsWith("ORBInitRef"))
+              {
+                StringTokenizer st = new StringTokenizer(para [ i + 1 ], "=");
+                initial_references.put(st.nextToken(),
+                  string_to_object(st.nextToken())
+                );
+              }
 
-          if (para [ i ].endsWith("ORBInitRef"))
-            {
-              StringTokenizer st = new StringTokenizer(para [ i + 1 ], "=");
-              initial_references.put(st.nextToken(),
-                                     string_to_object(st.nextToken())
-                                    );
-            }
-
-          if (para [ i ].endsWith("ORBInitialHost"))
-            ns_host = para [ i + 1 ];
-
-          try
-            {
-              if (para [ i ].endsWith("ORBInitialPort"))
-                ns_port = Integer.parseInt(para [ i + 1 ]);
-            }
-          catch (NumberFormatException ex)
-            {
-              throw new BAD_PARAM("Invalid " + para [ i ] +
-                                  "parameter, unable to parse '" +
-                                  props.getProperty(para [ i + 1 ]) + "'"
-                                 );
-            }
-        }
+            if (para [ i ].endsWith("ORBInitialHost"))
+              ns_host = para [ i + 1 ];
+            try
+              {
+                if (para [ i ].endsWith("ORBInitialPort"))
+                  ns_port = Integer.parseInt(para [ i + 1 ]);
+              }
+            catch (NumberFormatException ex)
+              {
+                throw new BAD_PARAM("Invalid " + para [ i ] +
+                  "parameter, unable to parse '" +
+                  props.getProperty(para [ i + 1 ]) + "'"
+                );
+              }
+          }
+      }
 
     useProperties(props);
   }
 
-  private IOR createIOR(Connected_objects.cObject ref)
-                 throws BAD_OPERATION
+  /**
+   * Create IOR for the given object references.
+   */
+  protected IOR createIOR(Connected_objects.cObject ref)
+    throws BAD_OPERATION
   {
     IOR ior = new IOR();
     ior.key = ref.key;
@@ -994,7 +1136,6 @@ public class Functional_ORB
       }
     if (ior.Id == null)
       ior.Id = ref.object.getClass().getName();
-
     try
       {
         ior.Internet.host = InetAddress.getLocalHost().getHostAddress();
@@ -1016,12 +1157,13 @@ public class Functional_ORB
    * {@link InvokeHandler}).
    */
   private void prepareObject(org.omg.CORBA.Object object, IOR ior)
-                      throws BAD_PARAM
+    throws BAD_PARAM
   {
-    if (!(object instanceof InvokeHandler))
-      throw new BAD_PARAM(object.getClass().getName() +
-                          " does not implement InvokeHandler. "
-                         );
+    /*
+     * if (!(object instanceof InvokeHandler)) throw new
+     * BAD_PARAM(object.getClass().getName() + " does not implement
+     * InvokeHandler. " );
+     */
 
     // If no delegate is set, set the default delegate.
     if (object instanceof ObjectImpl)
@@ -1030,9 +1172,7 @@ public class Functional_ORB
         try
           {
             if (impl._get_delegate() == null)
-              {
-                impl._set_delegate(new Simple_delegate(this, ior));
-              }
+              impl._set_delegate(new Simple_delegate(this, ior));
           }
         catch (BAD_OPERATION ex)
           {
@@ -1048,20 +1188,17 @@ public class Functional_ORB
    * @param net_out the stream to write response into
    * @param msh_request the request message header
    * @param rh_request the request header
-   * @param handler the invocation handler that has been used to
-   * invoke the operation
-   * @param sysEx the system exception, thrown during the invocation,
-   * null if none.
+   * @param handler the invocation handler that has been used to invoke the
+   * operation
+   * @param sysEx the system exception, thrown during the invocation, null if
+   * none.
    *
    * @throws IOException
    */
   private void respond_to_client(OutputStream net_out,
-                                 MessageHeader msh_request,
-                                 RequestHeader rh_request,
-                                 bufferedResponseHandler handler,
-                                 SystemException sysEx
-                                )
-                          throws IOException
+    MessageHeader msh_request, RequestHeader rh_request,
+    bufferedResponseHandler handler, SystemException sysEx
+  ) throws IOException
   {
     // Set the reply header properties.
     ReplyHeader reply = handler.reply_header;
@@ -1072,17 +1209,23 @@ public class Functional_ORB
       reply.reply_status = ReplyHeader.USER_EXCEPTION;
     else
       reply.reply_status = ReplyHeader.NO_EXCEPTION;
-
     reply.request_id = rh_request.request_id;
 
-    cdrBufOutput out = new cdrBufOutput(50 + handler.getBuffer().buffer.size());
+    cdrBufOutput out =
+      new cdrBufOutput(50 + handler.getBuffer().buffer.size());
     out.setOrb(this);
 
     out.setOffset(msh_request.getHeaderSize());
 
     reply.write(out);
 
-    // Write the reply data from the handler.
+    if (msh_request.version.since_inclusive(1, 2))
+      {
+        out.align(8);
+
+        // Write the reply data from the handler. The handler data already
+        // include the necessary heading zeroes for alignment.
+      }
     handler.getBuffer().buffer.writeTo(out);
 
     MessageHeader msh_reply = new MessageHeader();
@@ -1098,19 +1241,53 @@ public class Functional_ORB
   }
 
   /**
+   * Forward request to another target, as indicated by the passed exception.
+   */
+  private void forward_request(OutputStream net_out,
+    MessageHeader msh_request, RequestHeader rh_request, gnuForwardRequest info
+  ) throws IOException
+  {
+    MessageHeader msh_forward = new MessageHeader();
+    msh_forward.version = msh_request.version;
+
+    ReplyHeader rh_forward = msh_forward.create_reply_header();
+    msh_forward.message_type = MessageHeader.REPLY;
+    rh_forward.reply_status = info.forwarding_code;
+    rh_forward.request_id = rh_request.request_id;
+
+    // The forwarding code is either LOCATION_FORWARD or LOCATION_FORWARD_PERM.
+    cdrBufOutput out = new cdrBufOutput();
+    out.setOrb(this);
+    out.setOffset(msh_forward.getHeaderSize());
+
+    rh_forward.write(out);
+
+    if (msh_forward.version.since_inclusive(1, 2))
+      out.align(8);
+    out.write_Object(info.forward_reference);
+
+    msh_forward.message_size = out.buffer.size();
+
+    // Write the forwarding instruction.
+    msh_forward.write(net_out);
+    out.buffer.writeTo(net_out);
+    net_out.flush();
+  }
+
+  /**
    * Contains a single servicing task.
    *
-   * Normally, each task matches a single remote invocation.
-   * However under frequent tandem submissions the same
-   * task may span over several invocations.
+   * Normally, each task matches a single remote invocation. However under
+   * frequent tandem submissions the same task may span over several
+   * invocations.
    *
    * @param serverSocket the ORB server socket.
    *
    * @throws MARSHAL
    * @throws IOException
    */
-  private void serve(final portServer p, ServerSocket serverSocket)
-              throws MARSHAL, IOException
+  void serve(final portServer p, ServerSocket serverSocket)
+    throws MARSHAL, IOException
   {
     final Socket service;
     service = serverSocket.accept();
@@ -1148,15 +1325,15 @@ public class Functional_ORB
   /**
    * A single servicing step, when the client socket is alrady open.
    *
-   * Normally, each task matches a single remote invocation.
-   * However under frequent tandem submissions the same
-   * task may span over several invocations.
+   * Normally, each task matches a single remote invocation. However under
+   * frequent tandem submissions the same task may span over several
+   * invocations.
    *
    * @param service the opened client socket.
-   * @param no_resources if true, the "NO RESOURCES" exception
-   * is thrown to the client.
+   * @param no_resources if true, the "NO RESOURCES" exception is thrown to the
+   * client.
    */
-  private void serveStep(Socket service, boolean no_resources)
+  void serveStep(Socket service, boolean no_resources)
   {
     try
       {
@@ -1179,15 +1356,17 @@ public class Functional_ORB
               }
 
             if (max_version != null)
-              if (!msh_request.version.until_inclusive(max_version.major,
-                                                       max_version.minor
-                                                      )
-                 )
-                {
-                  OutputStream out = service.getOutputStream();
-                  new ErrorMessage(max_version).write(out);
-                  return;
-                }
+              {
+                if (!msh_request.version.until_inclusive(max_version.major,
+                    max_version.minor
+                  )
+                )
+                  {
+                    OutputStream out = service.getOutputStream();
+                    new ErrorMessage(max_version).write(out);
+                    return;
+                  }
+              }
 
             byte[] r = new byte[ msh_request.message_size ];
 
@@ -1221,9 +1400,12 @@ public class Functional_ORB
                 // in 1.2 and higher, align the current position at
                 // 8 octet boundary.
                 if (msh_request.version.since_inclusive(1, 2))
-                  cin.align(8);
+                  {
+                    cin.align(8);
 
-                // find the target object.
+                    // find the target object.
+                  }
+
                 InvokeHandler target =
                   (InvokeHandler) find_connected_object(rh_request.object_key);
 
@@ -1234,7 +1416,9 @@ public class Functional_ORB
 
                 // TODO log errors about not existing objects and methods.
                 bufferedResponseHandler handler =
-                  new bufferedResponseHandler(this, msh_request, rh_reply);
+                  new bufferedResponseHandler(this, msh_request, rh_reply,
+                    rh_request
+                  );
 
                 SystemException sysEx = null;
 
@@ -1246,6 +1430,18 @@ public class Functional_ORB
                       throw new OBJECT_NOT_EXIST();
                     target._invoke(rh_request.operation, cin, handler);
                   }
+                catch (gnuForwardRequest forwarded)
+                  {
+                    OutputStream sou = service.getOutputStream();
+                    forward_request(sou, msh_request, rh_request, forwarded);
+                    if (service != null && !service.isClosed())
+                      {
+                        // Wait for the subsequent invocations on the
+                        // same socket for the TANDEM_REQUEST duration.
+                        service.setSoTimeout(TANDEM_REQUESTS);
+                        continue Serving;
+                      }
+                  }
                 catch (SystemException ex)
                   {
                     sysEx = ex;
@@ -1256,8 +1452,11 @@ public class Functional_ORB
                   }
                 catch (Exception except)
                   {
+                    except.printStackTrace();
                     sysEx =
-                      new UNKNOWN("Unknown", 2, CompletionStatus.COMPLETED_MAYBE);
+                      new UNKNOWN("Unknown", 2,
+                        CompletionStatus.COMPLETED_MAYBE
+                      );
 
                     org.omg.CORBA.portable.OutputStream ech =
                       handler.createExceptionReply();
@@ -1270,28 +1469,26 @@ public class Functional_ORB
                   {
                     OutputStream sou = service.getOutputStream();
                     respond_to_client(sou, msh_request, rh_request, handler,
-                                      sysEx
-                                     );
+                      sysEx
+                    );
                   }
               }
             else if (msh_request.message_type == MessageHeader.CLOSE_CONNECTION ||
-                     msh_request.message_type == MessageHeader.MESSAGE_ERROR
-                    )
+              msh_request.message_type == MessageHeader.MESSAGE_ERROR
+            )
               {
                 CloseMessage.close(service.getOutputStream());
                 service.close();
                 return;
               }
-            else
-              ;
+            ;
 
             // TODO log error: "Not a request message."
             if (service != null && !service.isClosed())
-              {
-                // Wait for the subsequent invocations on the
-                // same socket for the TANDEM_REQUEST duration.
-                service.setSoTimeout(TANDEM_REQUESTS);
-              }
+
+              // Wait for the subsequent invocations on the
+              // same socket for the TANDEM_REQUEST duration.
+              service.setSoTimeout(TANDEM_REQUESTS);
             else
               return;
           }
@@ -1315,23 +1512,18 @@ public class Functional_ORB
       {
         if (props.containsKey(LISTEN_ON))
           Port = Integer.parseInt(props.getProperty(LISTEN_ON));
-
         if (props.containsKey(NS_HOST))
           ns_host = props.getProperty(NS_HOST);
-
         try
           {
             if (props.containsKey(NS_PORT))
               ns_port = Integer.parseInt(props.getProperty(NS_PORT));
-
             if (props.containsKey(START_READING_MESSAGE))
               TOUT_START_READING_MESSAGE =
                 Integer.parseInt(props.getProperty(START_READING_MESSAGE));
-
             if (props.containsKey(WHILE_READING))
               TOUT_WHILE_READING =
                 Integer.parseInt(props.getProperty(WHILE_READING));
-
             if (props.containsKey(AFTER_RECEIVING))
               TOUT_AFTER_RECEIVING =
                 Integer.parseInt(props.getProperty(AFTER_RECEIVING));
@@ -1339,9 +1531,9 @@ public class Functional_ORB
         catch (NumberFormatException ex)
           {
             throw new BAD_PARAM("Invalid " + NS_PORT +
-                                "property, unable to parse '" +
-                                props.getProperty(NS_PORT) + "'"
-                               );
+              "property, unable to parse '" + props.getProperty(NS_PORT) +
+              "'"
+            );
           }
 
         Enumeration en = props.elements();
@@ -1350,33 +1542,31 @@ public class Functional_ORB
             String item = (String) en.nextElement();
             if (item.equals(REFERENCE))
               initial_references.put(item,
-                                     string_to_object(props.getProperty(item))
-                                    );
+                string_to_object(props.getProperty(item))
+              );
           }
       }
   }
 
   /**
-   * Get the next instance with a response being received. If all currently
-   * sent responses not yet processed, this method pauses till at least one of
-   * them is complete. If there are no requests currently sent, the method
-   * pauses till some request is submitted and the response is received.
-   * This strategy is identical to the one accepted by Suns 1.4 ORB
-   * implementation.
+   * Get the next instance with a response being received. If all currently sent
+   * responses not yet processed, this method pauses till at least one of them
+   * is complete. If there are no requests currently sent, the method pauses
+   * till some request is submitted and the response is received. This strategy
+   * is identical to the one accepted by Suns 1.4 ORB implementation.
    *
-   * The returned response is removed from the list of the currently
-   * submitted responses and is never returned again.
+   * The returned response is removed from the list of the currently submitted
+   * responses and is never returned again.
    *
    * @return the previously sent request that now contains the received
    * response.
    *
    * @throws WrongTransaction If the method was called from the transaction
-   * scope different than the one, used to send the request. The exception
-   * can be raised only if the request is implicitly associated with some
-   * particular transaction.
+   * scope different than the one, used to send the request. The exception can
+   * be raised only if the request is implicitly associated with some particular
+   * transaction.
    */
-  public Request get_next_response()
-                            throws org.omg.CORBA.WrongTransaction
+  public Request get_next_response() throws org.omg.CORBA.WrongTransaction
   {
     return asynchron.get_next_response();
   }
@@ -1385,8 +1575,8 @@ public class Functional_ORB
    * Find if any of the requests that have been previously sent with
    * {@link #send_multiple_requests_deferred}, have a response yet.
    *
-   * @return true if there is at least one response to the previously
-   * sent request, false otherwise.
+   * @return true if there is at least one response to the previously sent
+   * request, false otherwise.
    */
   public boolean poll_next_response()
   {
@@ -1394,12 +1584,12 @@ public class Functional_ORB
   }
 
   /**
-   * Send multiple prepared requests expecting to get a reply. All requests
-   * are send in parallel, each in its own separate thread. When the
-   * reply arrives, it is stored in the agreed fields of the corresponing
-   * request data structure. If this method is called repeatedly,
-   * the new requests are added to the set of the currently sent requests,
-   * but the old set is not discarded.
+   * Send multiple prepared requests expecting to get a reply. All requests are
+   * send in parallel, each in its own separate thread. When the reply arrives,
+   * it is stored in the agreed fields of the corresponing request data
+   * structure. If this method is called repeatedly, the new requests are added
+   * to the set of the currently sent requests, but the old set is not
+   * discarded.
    *
    * @param requests the prepared array of requests.
    *
@@ -1414,8 +1604,8 @@ public class Functional_ORB
 
   /**
    * Send multiple prepared requests one way, do not caring about the answer.
-   * The messages, containing requests, will be marked, indicating that
-   * the sender is not expecting to get a reply.
+   * The messages, containing requests, will be marked, indicating that the
+   * sender is not expecting to get a reply.
    *
    * @param requests the prepared array of requests.
    *
@@ -1429,8 +1619,7 @@ public class Functional_ORB
   /**
    * Set the flag, forcing all server threads to terminate.
    */
-  protected void finalize()
-                   throws java.lang.Throwable
+  protected void finalize() throws java.lang.Throwable
   {
     running = false;
     super.finalize();

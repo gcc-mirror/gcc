@@ -46,9 +46,8 @@ import org.omg.CORBA.portable.OutputStream;
 import org.omg.CORBA.portable.Streamable;
 
 /**
- * The name-value pair holder. The {@link NameValuePair} has no standard
- * holder defined, but it is needed to store the {@link NameValuePair} into
- * {@link Any}.
+ * The name-value pair holder. The {@link NameValuePair} has no standard holder
+ * defined, but it is needed to store the {@link NameValuePair} into {@link Any}.
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */

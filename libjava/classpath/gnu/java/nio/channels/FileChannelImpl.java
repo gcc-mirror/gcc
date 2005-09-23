@@ -73,6 +73,10 @@ public final class FileChannelImpl extends FileChannel
   public static final int SYNC   = 16;
   public static final int DSYNC  = 32;
 
+  public static FileChannelImpl in;
+  public static FileChannelImpl out;
+  public static FileChannelImpl err;
+
   private static native void init();
 
   static
@@ -83,6 +87,10 @@ public final class FileChannelImpl extends FileChannel
       }
     
     init();
+
+    in  = new FileChannelImpl(0, READ);
+    out = new FileChannelImpl(1, WRITE);
+    err = new FileChannelImpl(2, WRITE);
   }
 
   /**
@@ -97,6 +105,8 @@ public final class FileChannelImpl extends FileChannel
 
   private int mode;
 
+  final String description;
+
   /* Open a file.  MODE is a combination of the above mode flags. */
   /* This is a static factory method, so that VM implementors can decide
    * substitute subclasses of FileChannelImpl. */
@@ -109,7 +119,8 @@ public final class FileChannelImpl extends FileChannel
   private FileChannelImpl(File file, int mode)
     throws FileNotFoundException
   {
-    final String path = file.getPath();
+    String path = file.getPath();
+    description = path;
     fd = open (path, mode);
     this.mode = mode;
 
@@ -126,20 +137,25 @@ public final class FileChannelImpl extends FileChannel
 	      /* ignore it */
 	  }
 
-	throw new FileNotFoundException(path + " is a directory");
+	throw new FileNotFoundException(description + " is a directory");
       }
   }
 
-  /* Used by init() (native code) */
+  /**
+   * Constructor for default channels in, out and err.
+   *
+   * Used by init() (native code).
+   *
+   * @param fd the file descriptor (0, 1, 2 for stdin, stdout, stderr).
+   *
+   * @param mode READ or WRITE
+   */
   FileChannelImpl (int fd, int mode)
   {
     this.fd = fd;
     this.mode = mode;
+    this.description = "descriptor(" + fd + ")";
   }
-
-  public static FileChannelImpl in;
-  public static FileChannelImpl out;
-  public static FileChannelImpl err;
 
   private native int open (String path, int mode) throws FileNotFoundException;
 
@@ -179,7 +195,7 @@ public final class FileChannelImpl extends FileChannel
     throws IOException
   {
     if (position < 0)
-      throw new IllegalArgumentException ();
+      throw new IllegalArgumentException ("position: " + position);
     long oldPosition = implPosition ();
     position (position);
     int result = read(dst);
@@ -230,7 +246,7 @@ public final class FileChannelImpl extends FileChannel
     throws IOException
   {
     if (position < 0)
-      throw new IllegalArgumentException ();
+      throw new IllegalArgumentException ("position: " + position);
 
     if (!isOpen ())
       throw new ClosedChannelException ();
@@ -288,10 +304,11 @@ public final class FileChannelImpl extends FileChannel
 	  throw new NonWritableChannelException();
       }
     else
-      throw new IllegalArgumentException ();
+      throw new IllegalArgumentException ("mode: " + mode);
     
     if (position < 0 || size < 0 || size > Integer.MAX_VALUE)
-      throw new IllegalArgumentException ();
+      throw new IllegalArgumentException ("position: " + position
+					  + ", size: " + size);
     return mapImpl(nmode, position, (int) size);
   }
 
@@ -336,7 +353,8 @@ public final class FileChannelImpl extends FileChannel
   {
     if (position < 0
         || count < 0)
-      throw new IllegalArgumentException ();
+      throw new IllegalArgumentException ("position: " + position
+					  + ", count: " + count);
 
     if (!isOpen ())
       throw new ClosedChannelException ();
@@ -399,7 +417,8 @@ public final class FileChannelImpl extends FileChannel
   {
     if (position < 0
         || count < 0)
-      throw new IllegalArgumentException ();
+      throw new IllegalArgumentException ("position: " + position
+					  + ", count: " + count);
 
     if (!isOpen ())
       throw new ClosedChannelException ();
@@ -424,24 +443,31 @@ public final class FileChannelImpl extends FileChannel
     return total;
   }
 
-  public FileLock tryLock (long position, long size, boolean shared)
+  // Shared sanity checks between lock and tryLock methods.
+  private void lockCheck(long position, long size, boolean shared)
     throws IOException
   {
     if (position < 0
         || size < 0)
-      throw new IllegalArgumentException ();
+      throw new IllegalArgumentException ("position: " + position
+					  + ", size: " + size);
 
     if (!isOpen ())
-      throw new ClosedChannelException ();
+      throw new ClosedChannelException();
 
-    if (shared && (mode & READ) == 0)
-      throw new NonReadableChannelException ();
+    if (shared && ((mode & READ) == 0))
+      throw new NonReadableChannelException();
 	
-    if (!shared && (mode & WRITE) == 0)
-      throw new NonWritableChannelException ();
-	
+    if (!shared && ((mode & WRITE) == 0))
+      throw new NonWritableChannelException();
+  }
+
+  public FileLock tryLock (long position, long size, boolean shared)
+    throws IOException
+  {
+    lockCheck(position, size, shared);
+
     boolean completed = false;
-    
     try
       {
 	begin();
@@ -468,15 +494,9 @@ public final class FileChannelImpl extends FileChannel
   public FileLock lock (long position, long size, boolean shared)
     throws IOException
   {
-    if (position < 0
-        || size < 0)
-      throw new IllegalArgumentException ();
-
-    if (!isOpen ())
-      throw new ClosedChannelException ();
+    lockCheck(position, size, shared);
 
     boolean completed = false;
-
     try
       {
 	boolean lockable = lock(position, size, shared, true);
@@ -504,7 +524,7 @@ public final class FileChannelImpl extends FileChannel
     throws IOException
   {
     if (newPosition < 0)
-      throw new IllegalArgumentException ();
+      throw new IllegalArgumentException ("newPostition: " + newPosition);
 
     if (!isOpen ())
       throw new ClosedChannelException ();
@@ -519,7 +539,7 @@ public final class FileChannelImpl extends FileChannel
     throws IOException
   {
     if (size < 0)
-      throw new IllegalArgumentException ();
+      throw new IllegalArgumentException ("size: " + size);
 
     if (!isOpen ())
       throw new ClosedChannelException ();
@@ -531,5 +551,13 @@ public final class FileChannelImpl extends FileChannel
       implTruncate (size);
 
     return this;
+  }
+
+  public String toString()
+  {
+    return (this.getClass()
+	    + "[fd=" + fd
+	    + ",mode=" + mode + ","
+	    + description + "]");
   }
 }

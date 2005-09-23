@@ -214,7 +214,7 @@ public class InternationalFormatter
 
   /**
    * Converts a value object into a String. This is done by invoking
-   * {@link Format#format} on the specified <code>Format</code> object.
+   * {@link Format#format(Object)} on the specified <code>Format</code> object.
    * If no format is set, then {@link DefaultFormatter#valueToString(Object)}
    * is called as a fallback.
    *

@@ -43,9 +43,11 @@ import java.awt.event.KeyEvent;
 import java.util.Stack;
 
 /**
- * DefaultFocusManager
- * @author	Andrew Selkirk
- * @version	1.0
+ * This class has been obsoleted by the new
+ * {@link java.awt.KeyboardFocusManager} and
+ * {@link java.awt.DefaultKeyboardFocusManager} API.
+ *
+ * @author Andrew Selkirk
  */
 public class DefaultFocusManager extends FocusManager {
 

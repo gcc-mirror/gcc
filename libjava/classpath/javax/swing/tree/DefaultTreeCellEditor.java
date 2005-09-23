@@ -1,5 +1,5 @@
 /* DefaultTreeCellEditor.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,17 +43,30 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.EventObject;
 
+import javax.swing.CellRendererPane;
+import javax.swing.DefaultCellEditor;
 import javax.swing.Icon;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.EventListenerList;
@@ -90,29 +103,62 @@ public class DefaultTreeCellEditor
     }
 
     /**
-     * getPreferredSize
-     * @return Dimension
+     * Returns the preferred size for the Container.
+     * 
+     * @return Dimension of EditorContainer
      */
     public Dimension getPreferredSize()
     {
-      return null; // TODO
+      Dimension containerSize = super.getPreferredSize();
+      containerSize.width += DefaultTreeCellEditor.this.offset;
+      return containerSize;
     }
 
     /**
-     * paint
-     * @param value0 TODO
+     * Overrides Container.paint to paint the node's icon and use the selection
+     * color for the background.
+     * 
+     * @param g -
+     *          the specified Graphics window
      */
-    public void paint(Graphics value0)
+    public void paint(Graphics g)
     {
-      // TODO
+      Rectangle tr = tree.getPathBounds(lastPath);
+      if (tr != null)
+        {
+          Insets i = ((DefaultTextField) editingComponent).getBorder()
+                                                  .getBorderInsets(this);
+          int textIconGap = 3;
+          tr.x -= i.left;
+          
+          // paints icon
+          if (editingIcon != null)
+            {
+              editingIcon.paintIcon(this, g, tr.x - editingIcon.
+                                              getIconWidth()/2, tr.y + i.top + i.bottom);
+              tr.x += editingIcon.getIconWidth()/2 + textIconGap;
+            }
+          
+          tr.width += offset;
+          
+          // paint background
+          g.translate(tr.x, tr.y);
+          editingComponent.setSize(new Dimension(tr.width, tr.height));
+          editingComponent.paint(g);
+          g.translate(-tr.x, -tr.y);
+        }
+      super.paint(g);
     }
 
     /**
-     * doLayout
+     * Lays out this Container. If editing, the editor will be placed at offset
+     * in the x direction and 0 for y.
      */
     public void doLayout()
     {
-      // TODO
+      if (DefaultTreeCellEditor.this.tree.isEditing())
+        setLocation(offset, 0);
+      super.doLayout();
     }
   }
 
@@ -137,12 +183,22 @@ public class DefaultTreeCellEditor
     }
 
     /**
-     * getFont
-     * @return Font
+     * Gets the font of this component.
+     * @return this component's font; if a font has not been set for 
+     * this component, the font of its parent is returned (if the parent
+     * is not null, otherwise null is returned). 
      */
     public Font getFont()
     {
-      return null; // TODO
+      Font font = super.getFont();
+      if (font == null)
+        {
+          Component parent = getParent();
+          if (parent != null)
+            return parent.getFont();
+          return null;
+        }
+      return font;
     }
 
     /**
@@ -156,108 +212,184 @@ public class DefaultTreeCellEditor
     }
 
     /**
-     * getPreferredSize
-     * @return Dimension
+     * Overrides JTextField.getPreferredSize to return the preferred size 
+     * based on current font, if set, or else use renderer's font.
+     * 
+     * @return the Dimension of this textfield.
      */
     public Dimension getPreferredSize()
     {
-      return null; // TODO
+      String s = getText();
+
+      Font f = getFont();
+
+      if (f != null)
+        {
+          FontMetrics fm = getToolkit().getFontMetrics(f);
+
+          return new Dimension(SwingUtilities.computeStringWidth(fm, s),
+                               fm.getHeight());
+        }
+      return renderer.getPreferredSize();
     }
   }
 
   private EventListenerList listenerList = new EventListenerList();
-
+  
   /**
-   * realEditor
+   * Editor handling the editing.
    */
   protected TreeCellEditor realEditor;
 
   /**
-   * renderer
+   * Renderer, used to get border and offsets from.
    */
   protected DefaultTreeCellRenderer renderer;
 
   /**
-   * editingContainer
+   * Editing container, will contain the editorComponent.
    */
   protected Container editingContainer;
 
   /**
-   * editingComponent
+   * Component used in editing, obtained from the editingContainer.
    */
   protected transient Component editingComponent;
 
   /**
-   * canEdit
+   * As of Java 2 platform v1.4 this field should no longer be used. 
+   * If you wish to provide similar behavior you should directly 
+   * override isCellEditable.
    */
   protected boolean canEdit;
 
   /**
-   * offset
+   * Used in editing. Indicates x position to place editingComponent.
    */
   protected transient int offset;
 
   /**
-   * tree
+   * JTree instance listening too.
    */
   protected transient JTree tree;
 
   /**
-   * lastPath
+   * Last path that was selected.
    */
   protected transient TreePath lastPath;
 
   /**
-   * timer
+   * Used before starting the editing session.
    */
-  protected transient javax.swing.Timer timer; // TODO
+  protected transient javax.swing.Timer timer;
 
   /**
-   * lastRow
+   * Row that was last passed into getTreeCellEditorComponent.
    */
   protected transient int lastRow;
 
   /**
-   * borderSelectionColor
+   * True if the border selection color should be drawn.
    */
   protected Color borderSelectionColor;
 
   /**
-   * editingIcon
+   * Icon to use when editing.
    */
   protected transient Icon editingIcon;
 
   /**
-   * font
+   * Font to paint with, null indicates font of renderer is to be used.
    */
   protected Font font;
-
+  
   /**
-   * Constructor DefaultTreeCellEditor
-   * @param value0 TODO
-   * @param value1 TODO
+   * Helper field used to save the last path seen while the timer was
+   * running.
    */
-  public DefaultTreeCellEditor(JTree value0, DefaultTreeCellRenderer value1)
+    private TreePath tPath;
+    
+  /**
+   * Constructs a DefaultTreeCellEditor object for a JTree using the 
+   * specified renderer and a default editor. (Use this constructor 
+   * for normal editing.)
+   * 
+   * @param tree - a JTree object
+   * @param renderer - a DefaultTreeCellRenderer object
+   */
+  public DefaultTreeCellEditor(JTree tree, DefaultTreeCellRenderer renderer)
   {
-    // TODO
+    this(tree, renderer, null);
   }
 
   /**
-   * Constructor DefaultTreeCellEditor
-   * @param value0 TODO
-   * @param value1 TODO
-   * @param value2 TODO
+   * Constructs a DefaultTreeCellEditor  object for a JTree using the specified 
+   * renderer and the specified editor. (Use this constructor 
+   * for specialized editing.)
+   * 
+   * @param tree - a JTree object
+   * @param renderer - a DefaultTreeCellRenderer object
+   * @param editor - a TreeCellEditor object
    */
-  public DefaultTreeCellEditor(JTree value0, DefaultTreeCellRenderer value1,
-                               TreeCellEditor value2)
+  public DefaultTreeCellEditor(JTree tree, DefaultTreeCellRenderer renderer,
+                               TreeCellEditor editor)
   {
-    // TODO
+    setTree(tree);
+    this.renderer = renderer;
+    
+    if (editor == null)
+      editor = createTreeCellEditor();
+    realEditor = editor;
+    
+    lastPath = tree.getLeadSelectionPath();
+    tree.addTreeSelectionListener(this);
+    editingContainer = createContainer();
+    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    setFont(defaults.getFont("Tree.font"));
+    setBorderSelectionColor(defaults.getColor("Tree.selectionBorderColor"));
+    editingIcon = renderer.getIcon();
+    timer = new javax.swing.Timer(1200, this);
   }
 
+  /**
+   * Configures the editing component whenever it is null.
+   * 
+   * @param tree- the tree to configure to component for.
+   * @param renderer- the renderer used to set up the nodes
+   * @param editor- the editor used 
+   */
+  private void configureEditingComponent(JTree tree,
+                                         DefaultTreeCellRenderer renderer,
+                                         TreeCellEditor editor)
+  {    
+    if (tree != null && lastPath != null)
+      {
+        Object val = lastPath.getLastPathComponent();
+        boolean isLeaf = tree.getModel().isLeaf(val);
+        boolean expanded = tree.isExpanded(lastPath);
+        determineOffset(tree, val, true, expanded, isLeaf, lastRow);
+
+        // set up icon
+        if (isLeaf)
+          renderer.setIcon(renderer.getLeafIcon());
+        else if (expanded)
+          renderer.setIcon(renderer.getOpenIcon());
+        else
+          renderer.setIcon(renderer.getClosedIcon());
+        editingIcon = renderer.getIcon();
+
+        editingComponent = getTreeCellEditorComponent(tree, val, true,
+                                                      expanded, isLeaf, lastRow);
+      }
+  }
+  
   /**
    * writeObject
-   * @param value0 TODO
-   * @exception IOException TODO
+   * 
+   * @param value0
+   *          TODO
+   * @exception IOException
+   *              TODO
    */
   private void writeObject(ObjectOutputStream value0) throws IOException
   {
@@ -277,102 +409,152 @@ public class DefaultTreeCellEditor
   }
 
   /**
-   * setBorderSelectionColor
-   * @param value0 TODO
+   * Sets the color to use for the border.
+   * @param newColor - the new border color
    */
-  public void setBorderSelectionColor(Color value0)
+  public void setBorderSelectionColor(Color newColor)
   {
-    // TODO
+    this.borderSelectionColor = newColor;
   }
 
   /**
-   * getBorderSelectionColor
+   * Returns the color the border is drawn.
    * @return Color
    */
   public Color getBorderSelectionColor()
   {
-    return null; // TODO
+    return borderSelectionColor;
   }
 
   /**
-   * setFont
-   * @param value0 TODO
+   * Sets the font to edit with. null indicates the renderers 
+   * font should be used. This will NOT override any font you have 
+   * set in the editor the receiver was instantied with. If null for 
+   * an editor was passed in, a default editor will be created that 
+   * will pick up this font.
+   * 
+   * @param font - the editing Font
    */
-  public void setFont(Font value0)
+  public void setFont(Font font)
   {
-    // TODO
+    if (font != null)
+      this.font = font;
+    else
+      this.font = renderer.getFont();
   }
 
   /**
-   * getFont
-   * @return Font
+   * Gets the font used for editing.
+   * 
+   * @return the editing font
    */
   public Font getFont()
   {
-    return null; // TODO
+    return font;
   }
 
   /**
-   * getTreeCellEditorComponent
-   * @param value0 TODO
-   * @param value1 TODO
-   * @param value2 TODO
-   * @param value3 TODO
-   * @param value4 TODO
-   * @param value5 TODO
-   * @return Component
+   * Configures the editor. Passed onto the realEditor.
+   * Sets an initial value for the editor. This will cause 
+   * the editor to stopEditing and lose any partially edited value 
+   * if the editor is editing when this method is called. 
+   * Returns the component that should be added to the client's Component 
+   * hierarchy. Once installed in the client's hierarchy this component will 
+   * then be able to draw and receive user input. 
+   * 
+   * @param tree - the JTree that is asking the editor to edit; this parameter can be null
+   * @param value - the value of the cell to be edited
+   * @param isSelected - true is the cell is to be rendered with selection highlighting
+   * @param expanded - true if the node is expanded
+   * @param leaf - true if the node is a leaf node
+   * @param row - the row index of the node being edited
+   * 
+   * @return the component for editing
    */
-  public Component getTreeCellEditorComponent(JTree value0, Object value1,
-                                              boolean value2, boolean value3,
-                                              boolean value4, int value5)
+  public Component getTreeCellEditorComponent(JTree tree, Object value,
+                                              boolean isSelected, boolean expanded,
+                                              boolean leaf, int row)
   {
-    return null; // TODO
+    if (realEditor == null)
+      createTreeCellEditor();
+
+    return realEditor.getTreeCellEditorComponent(tree, value, isSelected,
+                                                        expanded, leaf, row);
   }
 
   /**
-   * getCellEditorValue
-   * @return Object
+   * Returns the value currently being edited.
+   * 
+   * @return the value currently being edited
    */
   public Object getCellEditorValue()
   {
-    return null; // TODO
+    return editingComponent;
   }
-
+  
   /**
-   * isCellEditable
-   * @param value0 TODO
-   * @return boolean
+   * If the realEditor returns true to this message, prepareForEditing  
+   * is messaged and true is returned.
+   * 
+   * @param event - the event the editor should use to consider whether to begin editing or not
+   * @return true if editing can be started
    */
-  public boolean isCellEditable(EventObject value0)
-  {
-    return false; // TODO
+  public boolean isCellEditable(EventObject event)
+  { 
+    if (editingComponent == null)
+        configureEditingComponent(tree, renderer, realEditor);
+    
+    if (editingComponent != null && realEditor.isCellEditable(event))
+      {
+        prepareForEditing();
+        return true;
+      }
+    
+    // Cell may not be currently editable, but may need to start timer.
+    if (shouldStartEditingTimer(event))
+      startEditingTimer();
+    return false;
   }
 
   /**
-   * shouldSelectCell
-   * @param value0 TODO
-   * @return boolean
+   * Messages the realEditor for the return value.
+   * 
+   * @param event -
+   *          the event the editor should use to start editing
+   * @return true if the editor would like the editing cell to be selected;
+   *         otherwise returns false
    */
-  public boolean shouldSelectCell(EventObject value0)
+  public boolean shouldSelectCell(EventObject event)
   {
-    return false; // TODO
+    return true;
   }
 
   /**
-   * stopCellEditing
-   * @return boolean
+   * If the realEditor will allow editing to stop, the realEditor
+   * is removed and true is returned, otherwise false is returned.
+   * @return true if editing was stopped; false otherwise
    */
   public boolean stopCellEditing()
   {
-    return false; // TODO
+    if (editingComponent != null && realEditor.stopCellEditing())
+      {
+        timer.stop();
+        return true;
+      }
+    return false;
   }
 
   /**
-   * cancelCellEditing
+   * Messages cancelCellEditing to the realEditor and removes it
+   * from this instance.
    */
   public void cancelCellEditing()
   {
-    // TODO
+    if (editingComponent != null)
+      {
+        timer.stop();
+        realEditor.cancelCellEditing();
+      }
   }
 
   /**
@@ -382,7 +564,7 @@ public class DefaultTreeCellEditor
    */
   public void addCellEditorListener(CellEditorListener listener)
   {
-    listenerList.add(CellEditorListener.class, listener);
+    realEditor.addCellEditorListener(listener);
   }
 
   /**
@@ -392,7 +574,7 @@ public class DefaultTreeCellEditor
    */
   public void removeCellEditorListener(CellEditorListener listener)
   {
-    listenerList.remove(CellEditorListener.class, listener);
+    realEditor.removeCellEditorListener(listener);
   }
 
   /**
@@ -408,109 +590,157 @@ public class DefaultTreeCellEditor
   }
 
   /**
-   * valueChanged
-   * @param value0 TODO
+   * Resets lastPath.
+   * 
+   * @param e - the event that characterizes the change.
    */
-  public void valueChanged(TreeSelectionEvent value0)
+  public void valueChanged(TreeSelectionEvent e)
   {
-    // TODO
+    tPath = lastPath;
+    lastPath = e.getNewLeadSelectionPath();
+    lastRow = tree.getRowForPath(lastPath);
+    configureEditingComponent(tree, renderer, realEditor);
+  }
+  
+  /**
+   * Messaged when the timer fires, this will start the editing session.
+   * 
+   * @param @param e - the event that characterizes the action.
+   */
+  public void actionPerformed(ActionEvent e)
+  {
+    if (lastPath != null && tPath != null && tPath.equals(lastPath))
+      {
+        tree.startEditingAtPath(lastPath);
+        timer.stop();
+      }
   }
 
   /**
-   * actionPerformed
-   * @param value0 TODO
+   * Sets the tree currently editing for. This is needed to add a selection
+   * listener.
+   * 
+   * @param newTree -
+   *          the new tree to be edited
    */
-  public void actionPerformed(ActionEvent value0)
+  protected void setTree(JTree newTree)
   {
-    // TODO
+    tree = newTree;
   }
 
   /**
-   * setTree
-   * @param value0 TODO
+   * Returns true if event is a MouseEvent and the click count is 1.
+   * 
+   * @param event - the event being studied
+   * @return true if editing should start
    */
-  protected void setTree(JTree value0)
+  protected boolean shouldStartEditingTimer(EventObject event)
   {
-    // TODO
+    if ((event instanceof MouseEvent) && 
+        ((MouseEvent) event).getClickCount() == 1)
+      return true;
+    return false;
   }
 
   /**
-   * shouldStartEditingTimer
-   * @param value0 TODO
-   * @return boolean
-   */
-  protected boolean shouldStartEditingTimer(EventObject value0)
-  {
-    return false; // TODO
-  }
-
-  /**
-   * startEditingTimer
+   * Starts the editing timer.
    */
   protected void startEditingTimer()
   {
-    // TODO
+    if (timer == null)
+      timer = new javax.swing.Timer(1200, this);
+    if (!timer.isRunning())
+      timer.start();
   }
 
   /**
-   * canEditImmediately
-   * @param value0 TODO
-   * @return boolean
+   * Returns true if event is null, or it is a MouseEvent with 
+   * a click count > 2 and inHitRegion returns true.
+   * 
+   * @param event - the event being studied
+   * @return true if event is null, or it is a MouseEvent with 
+   * a click count > 2 and inHitRegion returns true 
    */
-  protected boolean canEditImmediately(EventObject value0)
+  protected boolean canEditImmediately(EventObject event)
   {
-    return false; // TODO
+    if (event == null || !(event instanceof MouseEvent) || (((MouseEvent) event).
+        getClickCount() > 2 && inHitRegion(((MouseEvent) event).getX(), 
+                                         ((MouseEvent) event).getY())))
+      return true;
+    return false;
   }
 
   /**
-   * inHitRegion
-   * @param value0 TODO
-   * @param value1 TODO
-   * @return boolean
+   * Returns true if the passed in location is a valid mouse location 
+   * to start editing from. This is implemented to return false if x is
+   * less than or equal to the width of the icon and icon 
+   * gap displayed by the renderer. In other words this returns true if 
+   * the user clicks over the text part displayed by the renderer, and 
+   * false otherwise.
+   * 
+   * @param x - the x-coordinate of the point
+   * @param y - the y-coordinate of the point
+   * 
+   * @return true if the passed in location is a valid mouse location
    */
-  protected boolean inHitRegion(int value0, int value1)
+  protected boolean inHitRegion(int x, int y)
   {
-    return false; // TODO
+    Rectangle bounds = tree.getPathBounds(lastPath);
+    
+    return bounds.contains(x, y);
   }
 
   /**
    * determineOffset
-   * @param value0 TODO
-   * @param value1 TODO
-   * @param value2 TODO
-   * @param value3 TODO
-   * @param value4 TODO
-   * @param value5 TODO
+   * @param tree -
+   * @param value - 
+   * @param isSelected - 
+   * @param expanded - 
+   * @param leaf - 
+   * @param row - 
    */
-  protected void determineOffset(JTree value0, Object value1, boolean value2,
-                                 boolean value3, boolean value4, int value5)
+  protected void determineOffset(JTree tree, Object value, boolean isSelected,
+                                 boolean expanded, boolean leaf, int row)
   {
-    // TODO
+    renderer.getTreeCellRendererComponent(tree, value, isSelected, expanded, 
+                                          leaf, row, true);
+    Icon c = renderer.getIcon();
+    if (c != null)
+        offset = renderer.getIconTextGap() + c.getIconWidth();
+    else
+      offset = 0;
   }
 
   /**
-   * prepareForEditing
+   * Invoked just before editing is to start. Will add the 
+   * editingComponent to the editingContainer.
    */
   protected void prepareForEditing()
   {
-    // TODO
+    editingContainer.add(editingComponent);
   }
 
   /**
-   * createContainer
-   * @return Container
+   * Creates the container to manage placement of editingComponent.
+   * 
+   * @return the container to manage the placement of the editingComponent.
    */
   protected Container createContainer()
   {
-    return null; // TODO
+    return new DefaultTreeCellEditor.EditorContainer();
   }
 
   /**
-   * createTreeCellEditor
-   * @return TreeCellEditor
+   * This is invoked if a TreeCellEditor is not supplied in the constructor. 
+   * It returns a TextField editor.
+   * 
+   * @return a new TextField editor
    */
   protected TreeCellEditor createTreeCellEditor()
   {
-    return null; // TODO
+    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    realEditor = new DefaultCellEditor(new DefaultTreeCellEditor.DefaultTextField(
+                                  defaults.getBorder("Tree.selectionBorder")));
+    return realEditor;
   }
 }

@@ -1,5 +1,5 @@
 /* X500Principal.java -- X.500 principal.
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -209,7 +209,7 @@ public final class X500Principal implements Principal, Serializable
               str.append ("OU");
             else if (oid.equals (DC) && rfc2253)
               str.append ("DC");
-            else if (oid.equals ("UID") && rfc2253)
+            else if (oid.equals (UID) && rfc2253)
               str.append ("UID");
             else
               str.append (oid.toString());
@@ -274,7 +274,7 @@ public final class X500Principal implements Principal, Serializable
         Set rdn = new HashSet();
         for (Iterator it2 = m.entrySet().iterator(); it2.hasNext(); )
           {
-            Map.Entry e = (Map.Entry) it.next();
+            Map.Entry e = (Map.Entry) it2.next();
             ArrayList atav = new ArrayList(2);
             atav.add(new DERValue(DER.OBJECT_IDENTIFIER, e.getKey()));
             atav.add(new DERValue(DER.UTF8_STRING, e.getValue()));
@@ -300,6 +300,8 @@ public final class X500Principal implements Principal, Serializable
         putComponent(key, value);
         if (sep == ',')
           newRelativeDistinguishedName();
+        if (sep == -1)
+          break;
       }
   }
 
@@ -312,7 +314,7 @@ public final class X500Principal implements Principal, Serializable
         if (ch == -1)
           {
             if (buf.length() > 0)
-              throw new EOFException();
+              throw new EOFException("partial name read: " + buf);
             return null;
           }
         if (ch > 127)
@@ -416,10 +418,12 @@ public final class X500Principal implements Principal, Serializable
               case ';':
                 throw new IOException("illegal character: " + (char) ch);
               case -1:
-                throw new EOFException();
+                sep = -1;
+                return buf.toString ();
               default:
                 buf.append((char) ch);
               }
+            ch = in.read ();
           }
       }
   }
@@ -484,6 +488,10 @@ public final class X500Principal implements Principal, Serializable
       putComponent(STREET, value);
     else if (name.equals("st"))
       putComponent(ST, value);
+    else if (name.equals ("o"))
+      putComponent (O, value);
+    else if (name.equals ("ou"))
+      putComponent (OU, value);
     else if (name.equals("dc"))
       putComponent(DC, value);
     else if (name.equals("uid"))

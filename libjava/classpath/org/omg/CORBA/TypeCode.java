@@ -38,10 +38,10 @@ exception statement from your version. */
 
 package org.omg.CORBA;
 
-import java.io.Serializable;
-
 import org.omg.CORBA.TypeCodePackage.BadKind;
 import org.omg.CORBA.portable.IDLEntity;
+
+import java.io.Serializable;
 
 /**
  * An information about a CORBA data type.
@@ -57,10 +57,12 @@ public abstract class TypeCode
   private static final long serialVersionUID = -6521025782489515676L;
 
   /**
-   * Returns the concrete base type for this TypeCode.
-   * @return a TypeCode, defining the concrete base type for this
-   * Typecode.
-   * @throws org.omg.CORBA.TypeCodePackage.BadKind
+   * For value types that support inheritance this method returns the
+   * of the ancestor type code.
+   *
+   * @return the ancestor TypeCode.
+   *
+   * @throws BadKind for all typecodes except the value type typecodes.
    */
   public abstract TypeCode concrete_base_type()
                                        throws BadKind;
@@ -69,7 +71,7 @@ public abstract class TypeCode
    * For sequences, arrays, aliases and value boxes, returns the IDL type for
    * the members of the object.
    * @return a TypeCode of the memebers of this type.
-   * @throws org.omg.CORBA.TypeCodePackage.BadKind for types other than
+   * @throws BadKind for types other than
    * sequences, arrays, aliases and value boxes.
    */
   public abstract TypeCode content_type()
@@ -79,7 +81,7 @@ public abstract class TypeCode
    * For unions, returs the index of the default member.
    * @return the index of the default member, -1 if there is
    * no default member.
-   * @throws org.omg.CORBA.TypeCodePackage.BadKind if this type is not
+   * @throws BadKind if this type is not
    * a union.
    */
   public abstract int default_index()
@@ -88,15 +90,15 @@ public abstract class TypeCode
   /**
    * Returs definition of member labels for untions
    * @return a TypeCode, describing all non-default member labels.
-   * @throws org.omg.CORBA.TypeCodePackage.BadKind if this type is not a
+   * @throws BadKind if this type is not a
    * union.
    */
   public abstract TypeCode discriminator_type()
                                        throws BadKind;
 
   /**
-   * Test two types for equality. The default implementation
-   * returs true of the types of the same kind.
+   * Test two types for equality.
+   *
    * @param other the other type to compere with
    * @return true if the types are interchangeable.
    */
@@ -112,7 +114,7 @@ public abstract class TypeCode
   /**
    * For the fixed type, returns the number of digits.
    * @return the number of digits for the fixed type
-   * @throws org.omg.CORBA.TypeCodePackage.BadKind if this is not a fixed
+   * @throws BadKind if this is not a fixed
    * type.
    */
   public abstract short fixed_digits()
@@ -123,7 +125,7 @@ public abstract class TypeCode
    * positive (the number of digits to the right of the decimal point) or
    * negative (adds zeros to the left of the decimal point).
    * @return the scale.
-   * @throws org.omg.CORBA.TypeCodePackage.BadKind if this is not a fixed
+   * @throws BadKind if this is not a fixed
    * type.
    */
   public abstract short fixed_scale()
@@ -140,7 +142,7 @@ public abstract class TypeCode
    * Returns the RepositoryId globally identifying the type, defined by
    * this TypeCode.
    * @return tje RepositoryId. In some cases, it may be an empty string.
-   * @throws org.omg.CORBA.TypeCodePackage.BadKind if the type is other than
+   * @throws BadKind if the type is other than
    * reference, structure, union, enumeration, alias, exception, valuetype,
    * boxed valuetype and also native and abstract interfaces.
    */
@@ -161,7 +163,7 @@ public abstract class TypeCode
    *
    * @return length or bound
    *
-   * @throws org.omg.CORBA.TypeCodePackage.BadKind for types other than
+   * @throws BadKind for types other than
    * string, sequence and array.
    */
   public abstract int length()
@@ -171,7 +173,7 @@ public abstract class TypeCode
    * Returns the number of type memebers.
    *
    * @return the number of memebers
-   * @throws org.omg.CORBA.TypeCodePackage.BadKind for types other than
+   * @throws BadKind for types other than
    * structure, union, enumeration or exception.
    */
   public abstract int member_count()
@@ -185,14 +187,14 @@ public abstract class TypeCode
    *
    * @return the label
    *
-   * @throws org.omg.CORBA.TypeCodePackage.BadKind if this is not a union
+   * @throws BadKind if this is not a union
    * type.
    * @throws org.omg.CORBA.TypeCodePackage.Bounds if the index is out of
    * valid bounds.
    */
   public abstract Any member_label(int index)
-    throws BadKind, 
-	   org.omg.CORBA.TypeCodePackage.Bounds;
+                            throws BadKind,
+                                   org.omg.CORBA.TypeCodePackage.Bounds;
 
   /**
    * Retrieves the simple name of the member identified by the given index.
@@ -201,14 +203,14 @@ public abstract class TypeCode
    *
    * @return the member name that in some cases can be an empty string.
    *
-   * @throws org.omg.CORBA.TypeCodePackage.BadKind for types other than
+   * @throws BadKind for types other than
    * structure, union or enumeration.
    * @throws org.omg.CORBA.TypeCodePackage.Bounds if the index is out of
    * valid bounds.
    */
   public abstract String member_name(int index)
-    throws BadKind, 
-	   org.omg.CORBA.TypeCodePackage.Bounds;
+                              throws BadKind,
+                                     org.omg.CORBA.TypeCodePackage.Bounds;
 
   /**
    * Retrieves the member type of the member identified by the given index.
@@ -217,14 +219,14 @@ public abstract class TypeCode
    *
    * @return the member type.
    *
-   * @throws org.omg.CORBA.TypeCodePackage.BadKind for types other than
+   * @throws BadKind for types other than
    * structure, union, enumeration or exception.
    * @throws org.omg.CORBA.TypeCodePackage.Bounds if the index is out of
    * valid bounds.
    */
   public abstract TypeCode member_type(int index)
-    throws BadKind,
-	   org.omg.CORBA.TypeCodePackage.Bounds;
+                                throws BadKind,
+                                       org.omg.CORBA.TypeCodePackage.Bounds;
 
   /**
    * Returns the visibility scope of the member at the given index.
@@ -234,22 +236,21 @@ public abstract class TypeCode
    *
    * @return either PRIVATE_MEMBER.value or PUBLIC_MEMBER.value
    *
-   * @throws org.omg.CORBA.TypeCodePackage.BadKind if this is not a non boxed
+   * @throws BadKind if this is not a non boxed
    * value type.
    *
    * @throws org.omg.CORBA.TypeCodePackage.Bounds if the index is out of
    * valid bounds.
    */
   public abstract short member_visibility(int index)
-    throws BadKind,
-	   org.omg.CORBA.TypeCodePackage.Bounds;
-
+                                   throws BadKind,
+                                          org.omg.CORBA.TypeCodePackage.Bounds;
 
   /**
    * Retrieves the simple name identifying this TypeCode object
    * within its enclosing scope.
    * @return the name, can be an empty string.
-   * @throws org.omg.CORBA.TypeCodePackage.BadKind for typer other than
+   * @throws BadKind for typer other than
    * reference, structure, union, enumeration, alias, exception,
    * valuetype, boxed valuetype, native, and abstract interface
    */
@@ -263,8 +264,7 @@ public abstract class TypeCode
    * VM_NONE.value, VM_ABSTRACT.value, VM_CUSTOM.value, or
    * VM_TRUNCATABLE.value,
    *
-   * @throws org.omg.CORBA.TypeCodePackage.BadKind for types other than
-   * value type.
+   * @throws BadKind for all types other than value type.
    */
   public abstract short type_modifier()
                                throws BadKind;

@@ -177,9 +177,11 @@ public final class CollationElementIterator
    * This method returns the primary order value for the given collation
    * value.
    *
-   * @param value The collation value returned from <code>next()</code> or <code>previous()</code>.
+   * @param order The collation value returned from <code>next()</code> or 
+   *              <code>previous()</code>.
    *
-   * @return The primary order value of the specified collation value.  This is the high 16 bits.
+   * @return The primary order value of the specified collation value.  This is
+   *         the high 16 bits.
    */
   public static int primaryOrder(int order)
   {
@@ -201,9 +203,11 @@ public final class CollationElementIterator
    * This method returns the secondary order value for the given collation
    * value.
    *
-   * @param value The collation value returned from <code>next()</code> or <code>previous()</code>.
+   * @param order The collation value returned from <code>next()</code> or 
+   *              <code>previous()</code>.
    *
-   * @return The secondary order value of the specified collation value.  This is the bits 8-15.
+   * @return The secondary order value of the specified collation value.  This 
+   *         is the bits 8-15.
    */
   public static short secondaryOrder(int order)
   {
@@ -215,9 +219,11 @@ public final class CollationElementIterator
    * This method returns the tertiary order value for the given collation
    * value.
    *
-   * @param value The collation value returned from <code>next()</code> or <code>previous()</code>.
+   * @param order The collation value returned from <code>next()</code> or 
+   *              <code>previous()</code>.
    *
-   * @return The tertiary order value of the specified collation value.  This is the low eight bits.
+   * @return The tertiary order value of the specified collation value.  This 
+   *         is the low eight bits.
    */
   public static short tertiaryOrder(int order)
   {
@@ -458,7 +464,7 @@ public final class CollationElementIterator
    *
    * @param value The collation order value
    *
-   * @param The maximum length of an expansion sequence.
+   * @return The maximum length of an expansion sequence.
    */
   public int getMaxExpansion(int value)
   {

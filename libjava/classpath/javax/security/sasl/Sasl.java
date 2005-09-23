@@ -448,7 +448,7 @@ public class Sasl
     HashSet names = new HashSet();
     Provider[] providers = Security.getProviders();
     Iterator it;
-    if (providers == null)
+    if (providers != null)
       {
         Provider p;
         String key;
@@ -640,7 +640,7 @@ public class Sasl
     HashSet names = new HashSet();
     Provider[] providers = Security.getProviders();
     Iterator it;
-    if (providers == null)
+    if (providers != null)
       {
         Provider p;
         String key;

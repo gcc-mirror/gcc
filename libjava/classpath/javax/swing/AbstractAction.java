@@ -50,8 +50,7 @@ import javax.swing.event.SwingPropertyChangeSupport;
 /**
  * A base class for implementing the {@link Action} interface.
  * 
- * @author	Andrew Selkirk
- * @version	1.0
+ * @author Andrew Selkirk
  */
 public abstract class AbstractAction
   implements Action, Cloneable, Serializable

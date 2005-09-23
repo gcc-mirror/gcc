@@ -47,7 +47,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.LayoutManager;
-import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -514,18 +513,6 @@ public class BasicInternalFrameTitlePane extends JComponent
   /** The button that maximizes the JInternalFrame. */
   protected JButton maxButton;
 
-  /** Active background color. */
-  protected Color activeBGColor;
-
-  /** Active foreground color. */
-  protected Color activeFGColor;
-
-  /** Inactive background color. */
-  protected Color inactiveBGColor;
-
-  /** Inactive foreground color. */
-  protected Color inactiveFGColor;
-
   /** The icon displayed in the restore button. */
   protected Icon minIcon = BasicIconFactory.createEmptyFrameIcon();
 
@@ -592,6 +579,7 @@ public class BasicInternalFrameTitlePane extends JComponent
     setOpaque(true);
 
     setBackground(Color.LIGHT_GRAY);
+    setOpaque(true);
 
     installTitlePane();
   }
@@ -679,10 +667,10 @@ public class BasicInternalFrameTitlePane extends JComponent
     UIDefaults defaults = UIManager.getLookAndFeelDefaults();
 
     setFont(defaults.getFont("InternalFrame.titleFont"));
-    activeFGColor = defaults.getColor("InternalFrame.activeTitleForeground");
-    activeBGColor = defaults.getColor("InternalFrame.activeTitleBackground");
-    inactiveFGColor = defaults.getColor("InternalFrame.inactiveTitleForeground");
-    inactiveBGColor = defaults.getColor("InternalFrame.inactiveTitleBackground");
+    selectedTextColor = defaults.getColor("InternalFrame.activeTitleForeground");
+    selectedTitleColor = defaults.getColor("InternalFrame.activeTitleBackground");
+    notSelectedTextColor = defaults.getColor("InternalFrame.inactiveTitleForeground");
+    notSelectedTitleColor = defaults.getColor("InternalFrame.inactiveTitleBackground");
   }
 
   /**
@@ -691,10 +679,10 @@ public class BasicInternalFrameTitlePane extends JComponent
   protected void uninstallDefaults()
   {
     setFont(null);
-    activeFGColor = null;
-    activeBGColor = null;
-    inactiveFGColor = null;
-    inactiveBGColor = null;
+    selectedTextColor = null;
+    selectedTitleColor = null;
+    notSelectedTextColor = null;
+    notSelectedTitleColor = null;
   }
 
   /**
@@ -714,12 +702,19 @@ public class BasicInternalFrameTitlePane extends JComponent
   }
 
   /**
-   * This method sets the icons in the buttons. This is a no-op method here, it
-   * can be overridden by subclasses to set icons for the minimize-, maximize-
-   * and close-buttons.
+   * Set icons for the minimize-, maximize- and close-buttons.
    */
   protected void setButtonIcons()
   {
+    Icon icon = UIManager.getIcon("InternalFrame.closeIcon");
+    if (icon != null)
+      closeButton.setIcon(icon);
+    icon = UIManager.getIcon("InternalFrame.iconifyIcon");
+    if (icon != null)
+      iconButton.setIcon(icon);
+    icon = UIManager.getIcon("InternalFrame.maximizeIcon");
+    if (icon != null)
+      maxButton.setIcon(icon);
   }
 
   /**
@@ -827,9 +822,9 @@ public class BasicInternalFrameTitlePane extends JComponent
       {
 	Color saved = g.getColor();
 	if (frame.isSelected())
-	  g.setColor(activeFGColor);
+	  g.setColor(selectedTextColor);
 	else
-	  g.setColor(inactiveFGColor);
+	  g.setColor(notSelectedTextColor);
 	title.setText(getTitle(frame.getTitle(), fm, title.getBounds().width));
 	SwingUtilities.paintComponent(g, title, null, title.getBounds());
 	g.setColor(saved);
@@ -848,9 +843,9 @@ public class BasicInternalFrameTitlePane extends JComponent
 
     Color bg = getBackground();
     if (frame.isSelected())
-      bg = activeBGColor;
+      bg = selectedTitleColor;
     else
-      bg = inactiveBGColor;
+      bg = notSelectedTitleColor;
     g.setColor(bg);
     g.fillRect(0, 0, dims.width, dims.height);
     g.setColor(saved);

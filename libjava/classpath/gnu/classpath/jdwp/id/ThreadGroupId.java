@@ -40,6 +40,7 @@ exception statement from your version. */
 package gnu.classpath.jdwp.id;
 
 import gnu.classpath.jdwp.JdwpConstants;
+import gnu.classpath.jdwp.exception.InvalidThreadGroupException;
 
 /**
  * A class which represents a JDWP thread group id
@@ -60,5 +61,22 @@ public class ThreadGroupId
   public ThreadGroupId ()
   {
     super (JdwpConstants.Tag.THREAD_GROUP);
+  }
+
+  /**
+   * Gets the thread group represented by this ID
+   *
+   * @throws InvalidThreadGroupException if the group is invalid
+   *           or garbage collected
+   */
+  public ThreadGroup getThreadGroup ()
+    throws InvalidThreadGroupException
+  {
+    ThreadGroup group = (ThreadGroup) _reference.get ();
+
+    if (group == null)
+      throw new InvalidThreadGroupException (getId ());
+
+    return group;
   }
 }

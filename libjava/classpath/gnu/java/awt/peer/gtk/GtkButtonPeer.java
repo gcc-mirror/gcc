@@ -42,10 +42,14 @@ import java.awt.AWTEvent;
 import java.awt.Button;
 import java.awt.Component;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.peer.ButtonPeer;
 
+// A composite widget.  GtkButtons have transparent backgrounds.  An
+// AWT Button is opaque.  To compensate, a GtkButtonPeer is a
+// GtkButton packed in a GtkEventBox.
 public class GtkButtonPeer extends GtkComponentPeer
     implements ButtonPeer
 {
@@ -60,6 +64,11 @@ public class GtkButtonPeer extends GtkComponentPeer
   native void gtkActivate ();
   native void gtkWidgetRequestFocus ();
   native void setNativeBounds (int x, int y, int width, int height);
+
+  // Because this is a composite widget, we need to retrieve the
+  // GtkButton's preferred dimensions, not the enclosing
+  // GtkEventBox's.
+  native void gtkWidgetGetPreferredDimensions (int[] dim);
 
   public GtkButtonPeer (Button b)
   {
@@ -76,32 +85,11 @@ public class GtkButtonPeer extends GtkComponentPeer
     gtkSetLabel(label);
   }
 
-  public void handleEvent (AWTEvent e)
+  void postActionEvent (int mods)
   {
-    if (e.getID () == MouseEvent.MOUSE_RELEASED && isEnabled ())
-      {
-	MouseEvent me = (MouseEvent) e;
-	Point p = me.getPoint();
-	p.translate(((Component) me.getSource()).getX(),
-	            ((Component) me.getSource()).getY());
-	if (!me.isConsumed ()
-	    && (me.getModifiersEx () & MouseEvent.BUTTON1_DOWN_MASK) != 0
-	    && awtComponent.getBounds().contains(p))
-          postActionEvent (((Button) awtComponent).getActionCommand (), 
-                           me.getModifiersEx ());
-      }
-
-    if (e.getID () == KeyEvent.KEY_PRESSED)
-      {
-	KeyEvent ke = (KeyEvent) e;
-	if (!ke.isConsumed () && ke.getKeyCode () == KeyEvent.VK_SPACE)
-          {
-            postActionEvent (((Button) awtComponent).getActionCommand (),
-                             ke.getModifiersEx ());
-            gtkActivate ();
-          }
-      }
-
-    super.handleEvent (e);
+    q().postEvent (new ActionEvent (awtWidget,
+				    ActionEvent.ACTION_PERFORMED,
+				    ((Button) awtComponent).getActionCommand (),
+				    mods));
   }
 }

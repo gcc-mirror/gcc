@@ -41,7 +41,9 @@ package gnu.CORBA.GIOP;
 import gnu.CORBA.CDR.cdrInput;
 import gnu.CORBA.CDR.cdrOutput;
 
-
+import org.omg.CORBA.BAD_INV_ORDER;
+import org.omg.CORBA.BAD_PARAM;
+import org.omg.CORBA.CompletionStatus;
 import org.omg.CORBA.portable.IDLEntity;
 
 /**
@@ -53,14 +55,38 @@ public class ServiceContext
   implements IDLEntity
 {
   /**
-   * The context data.
+   * Use serialVersionUID for interoperability.
+   */
+  private static final long serialVersionUID = 1;
+
+  /**
+   * The context id (for instance, 0x1 for code sets context). At the moment of
+   * writing, the OMG defines 16 standard values and provides rules to register
+   * the vendor specific context ids. The range 0-4095 is reserved for the
+   * future standard OMG contexts.
+   */
+  public int context_id;
+
+  /**
+   * The context_data.
    */
   public byte[] context_data;
 
   /**
-   * The context id.
+   * Crete unitialised instance.
    */
-  public int context_id;
+  public ServiceContext()
+  {
+  }
+
+  /**
+   * Create from omg context.
+   */
+  public ServiceContext(org.omg.IOP.ServiceContext from)
+  {
+    context_id = from.context_id;
+    context_data = from.context_data;
+  }
 
   /**
    * Read the context values from the stream.
@@ -73,13 +99,13 @@ public class ServiceContext
 
     switch (id)
       {
-        case cxCodeSet.ID :
+        case cxCodeSet.ID:
 
           cxCodeSet codeset = new cxCodeSet();
           codeset.readContext(istream);
           return codeset;
 
-        default :
+        default:
 
           ServiceContext ctx = new ServiceContext();
           ctx.context_id = id;
@@ -94,9 +120,9 @@ public class ServiceContext
   public static ServiceContext[] readSequence(cdrInput istream)
   {
     int size = istream.read_long();
-    ServiceContext[] value = new gnu.CORBA.GIOP.ServiceContext[ size ];
+    ServiceContext[] value = new gnu.CORBA.GIOP.ServiceContext[size];
     for (int i = 0; i < value.length; i++)
-      value [ i ] = read(istream);
+      value[i] = read(istream);
     return value;
   }
 
@@ -118,7 +144,99 @@ public class ServiceContext
   {
     ostream.write_long(value.length);
     for (int i = 0; i < value.length; i++)
-      value [ i ].write(ostream);
+      value[i].write(ostream);
+  }
+
+  /**
+   * Add context to the given array of contexts.
+   */
+  public static void add(org.omg.IOP.ServiceContext[] cx,
+    org.omg.IOP.ServiceContext service_context, boolean replace)
+  {
+    int exists = -1;
+
+    for (int i = 0; i < cx.length; i++)
+      if (cx[i].context_id == service_context.context_id)
+        exists = i;
+
+    if (exists < 0)
+      {
+        // Add context.
+        org.omg.IOP.ServiceContext[] n = new org.omg.IOP.ServiceContext[cx.length + 1];
+        for (int i = 0; i < cx.length; i++)
+          n[i] = cx[i];
+        n[cx.length] = service_context;
+      }
+    else
+      {
+        // Replace context.
+        if (!replace)
+          throw new BAD_INV_ORDER("Repetetive setting of the context "
+                                  + service_context.context_id, 15,
+            CompletionStatus.COMPLETED_NO);
+        else
+          cx[exists] = service_context;
+      }
+  }
+
+  /**
+   * Add context to the given array of contexts.
+   */
+  public static ServiceContext[] add(ServiceContext[] cx,
+    org.omg.IOP.ServiceContext service_context, boolean replace)
+  {
+    int exists = -1;
+
+    for (int i = 0; i < cx.length; i++)
+      if (cx[i].context_id == service_context.context_id)
+        exists = i;
+
+    if (exists < 0)
+      {
+        // Add context.
+        ServiceContext[] n = new ServiceContext[cx.length + 1];
+        for (int i = 0; i < cx.length; i++)
+          n[i] = cx[i];
+        n[cx.length] = new ServiceContext(service_context);
+        return n;
+      }
+    else
+      {
+        // Replace context.
+        if (!replace)
+          throw new BAD_INV_ORDER("Repetetive setting of the context "
+                                  + service_context.context_id, 15,
+            CompletionStatus.COMPLETED_NO);
+        else
+          cx[exists] = new ServiceContext(service_context);
+        return cx;
+      }
+  }
+
+
+  /**
+   * Find context with the given name in the context array.
+   */
+  public static org.omg.IOP.ServiceContext findContext(int ctx_name,
+    org.omg.IOP.ServiceContext[] cx)
+  {
+    for (int i = 0; i < cx.length; i++)
+      if (cx[i].context_id == ctx_name)
+        return cx[i];
+    throw new BAD_PARAM("No context with id " + ctx_name);
+  }
+
+  /**
+   * Find context with the given name in the context array,
+   * converting into org.omg.IOP.ServiceContext.
+   */
+  public static org.omg.IOP.ServiceContext findContext(int ctx_name,
+    ServiceContext[] cx)
+  {
+    for (int i = 0; i < cx.length; i++)
+      if (cx[i].context_id == ctx_name)
+        return new org.omg.IOP.ServiceContext(ctx_name, cx[i].context_data);
+    throw new BAD_PARAM("No context with id " + ctx_name);
   }
 
   /**
@@ -126,6 +244,6 @@ public class ServiceContext
    */
   public String toString()
   {
-    return "ctx "+context_id+", size "+context_data.length;
+    return "ctx " + context_id + ", size " + context_data.length;
   }
 }

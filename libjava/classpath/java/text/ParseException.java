@@ -65,7 +65,7 @@ public class ParseException extends Exception
    * This method initializes a new instance of <code>ParseException</code>
    * with a detailed error message and a error position.
    *
-   * @param msg the descriptive message describing the error
+   * @param s the descriptive message describing the error
    * @param offset the position where the error was encountered
    */
   public ParseException(String s, int offset)

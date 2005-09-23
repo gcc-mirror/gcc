@@ -124,14 +124,6 @@ import java.util.StringTokenizer;
 public abstract class ClassLoader
 {
   /**
-   * All classes loaded by this classloader. VM's may choose to implement
-   * this cache natively; but it is here available for use if necessary. It
-   * is not private in order to allow native code (and trusted subclasses)
-   * access to this field.
-   */
-  final HashMap loadedClasses = new HashMap();
-
-  /**
    * All packages defined by this classloader. It is not private in order to
    * allow native code (and trusted subclasses) access to this field.
    */
@@ -472,15 +464,11 @@ public abstract class ClassLoader
 						 ProtectionDomain domain)
     throws ClassFormatError
   {
+    checkInitialized();
     if (domain == null)
       domain = StaticData.defaultProtectionDomain;
-    if (! initialized)
-      throw new SecurityException("attempt to define class from uninitialized class loader");
     
-    Class retval = VMClassLoader.defineClass(this, name, data,
-					     offset, len, domain);
-    loadedClasses.put(retval.getName(), retval);
-    return retval;
+    return VMClassLoader.defineClass(this, name, data, offset, len, domain);
   }
 
   /**
@@ -493,6 +481,7 @@ public abstract class ClassLoader
    */
   protected final void resolveClass(Class c)
   {
+    checkInitialized();
     VMClassLoader.resolveClass(c);
   }
 
@@ -508,6 +497,7 @@ public abstract class ClassLoader
   protected final Class findSystemClass(String name)
     throws ClassNotFoundException
   {
+    checkInitialized();
     return Class.forName(name, false, StaticData.systemClassLoader);
   }
 
@@ -544,6 +534,7 @@ public abstract class ClassLoader
    */
   protected final void setSigners(Class c, Object[] signers)
   {
+    checkInitialized();
     c.setSigners(signers);
   }
 
@@ -556,9 +547,8 @@ public abstract class ClassLoader
    */
   protected final synchronized Class findLoadedClass(String name)
   {
-    // NOTE: If the VM is keeping its own cache, it may make sense to have
-    // this method be native.
-    return (Class) loadedClasses.get(name);
+    checkInitialized();
+    return VMClassLoader.findLoadedClass(this, name);
   }
 
   /**
@@ -1112,5 +1102,17 @@ public abstract class ClassLoader
 	    new Error("Requested system classloader " + loader + " failed.")
 		.initCause(e);
       }
+  }
+
+  /**
+   * Before doing anything "dangerous" please call this method to make sure
+   * this class loader instance was properly constructed (and not obtained
+   * by exploiting the finalizer attack)
+   * @see #initialized
+   */
+  private void checkInitialized()
+  {
+    if (! initialized)
+      throw new SecurityException("attempt to use uninitialized class loader");
   }
 }

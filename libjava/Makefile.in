@@ -194,13 +194,13 @@ am__DEPENDENCIES_2 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 	javax/swing/colorchooser.lo javax/swing/event.lo \
 	javax/swing/filechooser.lo javax/swing/plaf.lo \
 	javax/swing/plaf/basic.lo javax/swing/plaf/metal.lo \
-	javax/swing/table.lo javax/swing/text.lo \
-	javax/swing/text/html.lo javax/swing/text/html/parser.lo \
-	javax/swing/text/rtf.lo javax/swing/tree.lo \
-	javax/swing/undo.lo javax/transaction.lo \
+	javax/swing/plaf/multi.lo javax/swing/table.lo \
+	javax/swing/text.lo javax/swing/text/html.lo \
+	javax/swing/text/html/parser.lo javax/swing/text/rtf.lo \
+	javax/swing/tree.lo javax/swing/undo.lo javax/transaction.lo \
 	javax/transaction/xa.lo org/ietf/jgss.lo
-am__DEPENDENCIES_3 = gnu-java-beans.lo gnu-xml.lo javax-imageio.lo \
-	javax-xml.lo org-w3c.lo org-xml.lo
+am__DEPENDENCIES_3 = gnu-java-awt-peer-qt.lo gnu-java-beans.lo \
+	gnu-xml.lo javax-imageio.lo javax-xml.lo org-w3c.lo org-xml.lo
 am__DEPENDENCIES_4 = $(patsubst classpath/resource/%,%,$(addsuffix \
 	.lo,$(property_files)))
 am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
@@ -238,7 +238,6 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	java/lang/ref/natReference.cc java/lang/reflect/natArray.cc \
 	java/lang/reflect/natConstructor.cc \
 	java/lang/reflect/natField.cc java/lang/reflect/natMethod.cc \
-	java/lang/reflect/natProxy.cc \
 	java/net/natVMNetworkInterface.cc java/net/natInetAddress.cc \
 	java/nio/channels/natChannels.cc \
 	java/nio/natDirectByteBufferImpl.cc java/text/natCollator.cc \
@@ -279,7 +278,6 @@ am__objects_2 = gnu/classpath/natSystemProperties.lo \
 	java/lang/ref/natReference.lo java/lang/reflect/natArray.lo \
 	java/lang/reflect/natConstructor.lo \
 	java/lang/reflect/natField.lo java/lang/reflect/natMethod.lo \
-	java/lang/reflect/natProxy.lo \
 	java/net/natVMNetworkInterface.lo java/net/natInetAddress.lo \
 	java/nio/channels/natChannels.lo \
 	java/nio/natDirectByteBufferImpl.lo java/text/natCollator.lo \
@@ -303,7 +301,7 @@ am_libgcj_la_OBJECTS = prims.lo jni.lo exception.lo stacktrace.lo \
 	$(am__objects_9) $(am__objects_10) $(am__objects_11)
 libgcj_la_OBJECTS = $(am_libgcj_la_OBJECTS)
 libgcjawt_la_DEPENDENCIES = lib-gnu-java-awt-peer-gtk.la
-am_libgcjawt_la_OBJECTS = libgcjawt_la-jawt.lo
+am_libgcjawt_la_OBJECTS = classpath/native/jawt/libgcjawt_la-jawt.lo
 libgcjawt_la_OBJECTS = $(am_libgcjawt_la_OBJECTS)
 @GTK_AWT_TRUE@am_libgcjawt_la_rpath = -rpath $(toolexeclibdir)
 am_libgij_la_OBJECTS = gij.lo
@@ -740,7 +738,7 @@ lib_gnu_java_awt_peer_gtk_la_LDFLAGS = \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC) $(X_LIBS) -lXtst
 
 lib_gnu_java_awt_peer_gtk_la_LINK = $(LIBLINK)
-libgcjawt_la_SOURCES = jawt.c
+libgcjawt_la_SOURCES = classpath/native/jawt/jawt.c
 libgcjawt_la_CFLAGS = -I$(srcdir)/classpath/native/jni/classpath \
 	$(PEDANTIC_CFLAGS) $(X_CFLAGS)
 
@@ -814,9 +812,9 @@ gnu/awt/xlib/XToolkit.java
 gnu_awt_xlib_header_files = $(patsubst %.java,%.h,$(gnu_awt_xlib_source_files))
 gnu_classpath_source_files = \
 classpath/gnu/classpath/Configuration.java \
-classpath/gnu/classpath/RawData.java \
-classpath/gnu/classpath/RawData32.java \
-classpath/gnu/classpath/RawData64.java \
+classpath/gnu/classpath/Pointer.java \
+classpath/gnu/classpath/Pointer32.java \
+classpath/gnu/classpath/Pointer64.java \
 classpath/gnu/classpath/ServiceFactory.java \
 classpath/gnu/classpath/ServiceProviderLoadingAction.java \
 gnu/classpath/SystemProperties.java
@@ -971,6 +969,7 @@ classpath/gnu/java/awt/peer/gtk/GtkCheckboxMenuItemPeer.java \
 classpath/gnu/java/awt/peer/gtk/GtkCheckboxPeer.java \
 classpath/gnu/java/awt/peer/gtk/GtkChoicePeer.java \
 classpath/gnu/java/awt/peer/gtk/GtkClipboard.java \
+classpath/gnu/java/awt/peer/gtk/GtkClipboardNotifier.java \
 classpath/gnu/java/awt/peer/gtk/GtkComponentPeer.java \
 classpath/gnu/java/awt/peer/gtk/GtkContainerPeer.java \
 classpath/gnu/java/awt/peer/gtk/GtkDialogPeer.java \
@@ -991,11 +990,57 @@ classpath/gnu/java/awt/peer/gtk/GtkPanelPeer.java \
 classpath/gnu/java/awt/peer/gtk/GtkPopupMenuPeer.java \
 classpath/gnu/java/awt/peer/gtk/GtkScrollPanePeer.java \
 classpath/gnu/java/awt/peer/gtk/GtkScrollbarPeer.java \
+classpath/gnu/java/awt/peer/gtk/GtkSelection.java \
 classpath/gnu/java/awt/peer/gtk/GtkTextAreaPeer.java \
 classpath/gnu/java/awt/peer/gtk/GtkTextFieldPeer.java \
 classpath/gnu/java/awt/peer/gtk/GtkToolkit.java \
 classpath/gnu/java/awt/peer/gtk/GtkVolatileImage.java \
 classpath/gnu/java/awt/peer/gtk/GtkWindowPeer.java
+
+gnu_java_awt_peer_qt_source_files = \
+classpath/gnu/java/awt/peer/qt/MainQtThread.java \
+classpath/gnu/java/awt/peer/qt/NativeWrapper.java \
+classpath/gnu/java/awt/peer/qt/QMatrix.java \
+classpath/gnu/java/awt/peer/qt/QPainterPath.java \
+classpath/gnu/java/awt/peer/qt/QPen.java \
+classpath/gnu/java/awt/peer/qt/QtAudioClip.java \
+classpath/gnu/java/awt/peer/qt/QtButtonPeer.java \
+classpath/gnu/java/awt/peer/qt/QtCanvasPeer.java \
+classpath/gnu/java/awt/peer/qt/QtCheckboxPeer.java \
+classpath/gnu/java/awt/peer/qt/QtChoicePeer.java \
+classpath/gnu/java/awt/peer/qt/QtComponentGraphics.java \
+classpath/gnu/java/awt/peer/qt/QtComponentPeer.java \
+classpath/gnu/java/awt/peer/qt/QtContainerPeer.java \
+classpath/gnu/java/awt/peer/qt/QtDialogPeer.java \
+classpath/gnu/java/awt/peer/qt/QtEmbeddedWindowPeer.java \
+classpath/gnu/java/awt/peer/qt/QtFileDialogPeer.java \
+classpath/gnu/java/awt/peer/qt/QtFontMetrics.java \
+classpath/gnu/java/awt/peer/qt/QtFontPeer.java \
+classpath/gnu/java/awt/peer/qt/QtFramePeer.java \
+classpath/gnu/java/awt/peer/qt/QtGraphics.java \
+classpath/gnu/java/awt/peer/qt/QtGraphicsEnvironment.java \
+classpath/gnu/java/awt/peer/qt/QtImage.java \
+classpath/gnu/java/awt/peer/qt/QtImageConsumer.java \
+classpath/gnu/java/awt/peer/qt/QtImageDirectGraphics.java \
+classpath/gnu/java/awt/peer/qt/QtImageGraphics.java \
+classpath/gnu/java/awt/peer/qt/QtLabelPeer.java \
+classpath/gnu/java/awt/peer/qt/QtListPeer.java \
+classpath/gnu/java/awt/peer/qt/QtMenuBarPeer.java \
+classpath/gnu/java/awt/peer/qt/QtMenuComponentPeer.java \
+classpath/gnu/java/awt/peer/qt/QtMenuItemPeer.java \
+classpath/gnu/java/awt/peer/qt/QtMenuPeer.java \
+classpath/gnu/java/awt/peer/qt/QtPanelPeer.java \
+classpath/gnu/java/awt/peer/qt/QtPopupMenuPeer.java \
+classpath/gnu/java/awt/peer/qt/QtRepaintThread.java \
+classpath/gnu/java/awt/peer/qt/QtScreenDevice.java \
+classpath/gnu/java/awt/peer/qt/QtScreenDeviceConfiguration.java \
+classpath/gnu/java/awt/peer/qt/QtScrollPanePeer.java \
+classpath/gnu/java/awt/peer/qt/QtScrollbarPeer.java \
+classpath/gnu/java/awt/peer/qt/QtTextAreaPeer.java \
+classpath/gnu/java/awt/peer/qt/QtTextFieldPeer.java \
+classpath/gnu/java/awt/peer/qt/QtToolkit.java \
+classpath/gnu/java/awt/peer/qt/QtVolatileImage.java \
+classpath/gnu/java/awt/peer/qt/QtWindowPeer.java
 
 gnu_java_beans_source_files = \
 classpath/gnu/java/beans/BeanInfoEmbryo.java \
@@ -2017,6 +2062,8 @@ java_awt_datatransfer_source_files = \
 classpath/java/awt/datatransfer/Clipboard.java \
 classpath/java/awt/datatransfer/ClipboardOwner.java \
 classpath/java/awt/datatransfer/DataFlavor.java \
+classpath/java/awt/datatransfer/FlavorEvent.java \
+classpath/java/awt/datatransfer/FlavorListener.java \
 classpath/java/awt/datatransfer/FlavorMap.java \
 classpath/java/awt/datatransfer/FlavorTable.java \
 classpath/java/awt/datatransfer/MimeTypeParseException.java \
@@ -2522,6 +2569,7 @@ classpath/java/lang/reflect/Proxy.java \
 classpath/java/lang/reflect/ReflectPermission.java \
 classpath/java/lang/reflect/Type.java \
 classpath/java/lang/reflect/UndeclaredThrowableException.java \
+java/lang/reflect/VMProxy.java \
 classpath/java/lang/reflect/WildcardType.java
 
 java_lang_reflect_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(java_lang_reflect_source_files)))
@@ -3905,6 +3953,7 @@ classpath/javax/swing/plaf/metal/MetalComboBoxIcon.java \
 classpath/javax/swing/plaf/metal/MetalComboBoxUI.java \
 classpath/javax/swing/plaf/metal/MetalDesktopIconUI.java \
 classpath/javax/swing/plaf/metal/MetalIconFactory.java \
+classpath/javax/swing/plaf/metal/MetalInternalFrameTitlePane.java \
 classpath/javax/swing/plaf/metal/MetalInternalFrameUI.java \
 classpath/javax/swing/plaf/metal/MetalLabelUI.java \
 classpath/javax/swing/plaf/metal/MetalLookAndFeel.java \
@@ -3928,6 +3977,40 @@ classpath/javax/swing/plaf/metal/MetalTreeUI.java \
 classpath/javax/swing/plaf/metal/MetalUtils.java
 
 javax_swing_plaf_metal_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_plaf_metal_source_files)))
+javax_swing_plaf_multi_source_files = \
+classpath/javax/swing/plaf/multi/MultiButtonUI.java \
+classpath/javax/swing/plaf/multi/MultiColorChooserUI.java \
+classpath/javax/swing/plaf/multi/MultiComboBoxUI.java \
+classpath/javax/swing/plaf/multi/MultiDesktopIconUI.java \
+classpath/javax/swing/plaf/multi/MultiDesktopPaneUI.java \
+classpath/javax/swing/plaf/multi/MultiFileChooserUI.java \
+classpath/javax/swing/plaf/multi/MultiInternalFrameUI.java \
+classpath/javax/swing/plaf/multi/MultiLabelUI.java \
+classpath/javax/swing/plaf/multi/MultiListUI.java \
+classpath/javax/swing/plaf/multi/MultiLookAndFeel.java \
+classpath/javax/swing/plaf/multi/MultiMenuBarUI.java \
+classpath/javax/swing/plaf/multi/MultiMenuItemUI.java \
+classpath/javax/swing/plaf/multi/MultiOptionPaneUI.java \
+classpath/javax/swing/plaf/multi/MultiPanelUI.java \
+classpath/javax/swing/plaf/multi/MultiPopupMenuUI.java \
+classpath/javax/swing/plaf/multi/MultiProgressBarUI.java \
+classpath/javax/swing/plaf/multi/MultiRootPaneUI.java \
+classpath/javax/swing/plaf/multi/MultiScrollBarUI.java \
+classpath/javax/swing/plaf/multi/MultiScrollPaneUI.java \
+classpath/javax/swing/plaf/multi/MultiSeparatorUI.java \
+classpath/javax/swing/plaf/multi/MultiSliderUI.java \
+classpath/javax/swing/plaf/multi/MultiSpinnerUI.java \
+classpath/javax/swing/plaf/multi/MultiSplitPaneUI.java \
+classpath/javax/swing/plaf/multi/MultiTabbedPaneUI.java \
+classpath/javax/swing/plaf/multi/MultiTableHeaderUI.java \
+classpath/javax/swing/plaf/multi/MultiTableUI.java \
+classpath/javax/swing/plaf/multi/MultiTextUI.java \
+classpath/javax/swing/plaf/multi/MultiToolBarUI.java \
+classpath/javax/swing/plaf/multi/MultiToolTipUI.java \
+classpath/javax/swing/plaf/multi/MultiTreeUI.java \
+classpath/javax/swing/plaf/multi/MultiViewportUI.java
+
+javax_swing_plaf_multi_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_plaf_multi_source_files)))
 javax_swing_table_source_files = \
 classpath/javax/swing/table/AbstractTableModel.java \
 classpath/javax/swing/table/DefaultTableCellRenderer.java \
@@ -3943,11 +4026,14 @@ classpath/javax/swing/table/TableModel.java
 javax_swing_table_header_files = $(patsubst classpath/%,%,$(patsubst %.java,%.h,$(javax_swing_table_source_files)))
 javax_swing_text_source_files = \
 classpath/javax/swing/text/AbstractDocument.java \
+classpath/javax/swing/text/AbstractWriter.java \
 classpath/javax/swing/text/AttributeSet.java \
 classpath/javax/swing/text/BadLocationException.java \
+classpath/javax/swing/text/BoxView.java \
 classpath/javax/swing/text/Caret.java \
 classpath/javax/swing/text/ChangedCharSetException.java \
 classpath/javax/swing/text/ComponentView.java \
+classpath/javax/swing/text/CompositeView.java \
 classpath/javax/swing/text/DateFormatter.java \
 classpath/javax/swing/text/DefaultCaret.java \
 classpath/javax/swing/text/DefaultEditorKit.java \
@@ -3958,15 +4044,22 @@ classpath/javax/swing/text/Document.java \
 classpath/javax/swing/text/DocumentFilter.java \
 classpath/javax/swing/text/EditorKit.java \
 classpath/javax/swing/text/Element.java \
+classpath/javax/swing/text/ElementIterator.java \
 classpath/javax/swing/text/FieldView.java \
+classpath/javax/swing/text/FlowView.java \
 classpath/javax/swing/text/GapContent.java \
+classpath/javax/swing/text/GlyphView.java \
 classpath/javax/swing/text/Highlighter.java \
+classpath/javax/swing/text/IconView.java \
 classpath/javax/swing/text/InternationalFormatter.java \
 classpath/javax/swing/text/JTextComponent.java \
 classpath/javax/swing/text/Keymap.java \
+classpath/javax/swing/text/LabelView.java \
 classpath/javax/swing/text/LayeredHighlighter.java \
+classpath/javax/swing/text/LayoutQueue.java \
 classpath/javax/swing/text/MutableAttributeSet.java \
 classpath/javax/swing/text/NavigationFilter.java \
+classpath/javax/swing/text/ParagraphView.java \
 classpath/javax/swing/text/PasswordView.java \
 classpath/javax/swing/text/PlainDocument.java \
 classpath/javax/swing/text/PlainView.java \
@@ -4453,6 +4546,7 @@ all_packages_source_files = \
   javax/swing/plaf.list \
   javax/swing/plaf/basic.list \
   javax/swing/plaf/metal.list \
+  javax/swing/plaf/multi.list \
   javax/swing/table.list \
   javax/swing/text.list \
   javax/swing/text/html.list \
@@ -4592,6 +4686,7 @@ ordinary_header_files = \
   $(javax_swing_plaf_header_files) \
   $(javax_swing_plaf_basic_header_files) \
   $(javax_swing_plaf_metal_header_files) \
+  $(javax_swing_plaf_multi_header_files) \
   $(javax_swing_table_header_files) \
   $(javax_swing_text_header_files) \
   $(javax_swing_text_html_header_files) \
@@ -4604,6 +4699,7 @@ ordinary_header_files = \
   $(org_ietf_jgss_header_files)
 
 bc_objects = \
+  gnu-java-awt-peer-qt.lo \
   gnu-java-beans.lo \
   gnu-xml.lo \
   javax-imageio.lo \
@@ -4734,7 +4830,6 @@ java/lang/reflect/natArray.cc \
 java/lang/reflect/natConstructor.cc \
 java/lang/reflect/natField.cc \
 java/lang/reflect/natMethod.cc \
-java/lang/reflect/natProxy.cc \
 java/net/natVMNetworkInterface.cc \
 java/net/natInetAddress.cc \
 java/nio/channels/natChannels.cc \
@@ -5161,8 +5256,6 @@ java/lang/reflect/natField.lo: java/lang/reflect/$(am__dirstamp) \
 	java/lang/reflect/$(DEPDIR)/$(am__dirstamp)
 java/lang/reflect/natMethod.lo: java/lang/reflect/$(am__dirstamp) \
 	java/lang/reflect/$(DEPDIR)/$(am__dirstamp)
-java/lang/reflect/natProxy.lo: java/lang/reflect/$(am__dirstamp) \
-	java/lang/reflect/$(DEPDIR)/$(am__dirstamp)
 java/net/$(am__dirstamp):
 	@$(mkdir_p) java/net
 	@: > java/net/$(am__dirstamp)
@@ -5235,6 +5328,15 @@ sysdep/dwarf2-backtrace.lo: sysdep/$(am__dirstamp) \
 	sysdep/$(DEPDIR)/$(am__dirstamp)
 libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES) 
 	$(libgcj_la_LINK) -rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(libgcj_la_OBJECTS) $(libgcj_la_LIBADD) $(LIBS)
+classpath/native/jawt/$(am__dirstamp):
+	@$(mkdir_p) classpath/native/jawt
+	@: > classpath/native/jawt/$(am__dirstamp)
+classpath/native/jawt/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) classpath/native/jawt/$(DEPDIR)
+	@: > classpath/native/jawt/$(DEPDIR)/$(am__dirstamp)
+classpath/native/jawt/libgcjawt_la-jawt.lo:  \
+	classpath/native/jawt/$(am__dirstamp) \
+	classpath/native/jawt/$(DEPDIR)/$(am__dirstamp)
 libgcjawt.la: $(libgcjawt_la_OBJECTS) $(libgcjawt_la_DEPENDENCIES) 
 	$(libgcjawt_la_LINK) $(am_libgcjawt_la_rpath) $(libgcjawt_la_LDFLAGS) $(libgcjawt_la_OBJECTS) $(libgcjawt_la_LIBADD) $(LIBS)
 libgij.la: $(libgij_la_OBJECTS) $(libgij_la_DEPENDENCIES) 
@@ -5331,6 +5433,8 @@ uninstall-binSCRIPTS:
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f classpath/native/jawt/libgcjawt_la-jawt.$(OBJEXT)
+	-rm -f classpath/native/jawt/libgcjawt_la-jawt.lo
 	-rm -f gnu/classpath/natSystemProperties.$(OBJEXT)
 	-rm -f gnu/classpath/natSystemProperties.lo
 	-rm -f gnu/gcj/convert/JIS0208_to_Unicode.$(OBJEXT)
@@ -5477,8 +5581,6 @@ mostlyclean-compile:
 	-rm -f java/lang/reflect/natField.lo
 	-rm -f java/lang/reflect/natMethod.$(OBJEXT)
 	-rm -f java/lang/reflect/natMethod.lo
-	-rm -f java/lang/reflect/natProxy.$(OBJEXT)
-	-rm -f java/lang/reflect/natProxy.lo
 	-rm -f java/net/natInetAddress.$(OBJEXT)
 	-rm -f java/net/natInetAddress.lo
 	-rm -f java/net/natVMNetworkInterface.$(OBJEXT)
@@ -5512,7 +5614,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gij.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/interpret.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jni.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgcjawt_la-jawt.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/link.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/no-threads.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nogc.Plo@am__quote@
@@ -5523,6 +5624,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/verify.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32-threads.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@classpath/native/jawt/$(DEPDIR)/libgcjawt_la-jawt.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/classpath/$(DEPDIR)/natSystemProperties.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/$(DEPDIR)/natCore.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/convert/$(DEPDIR)/JIS0208_to_Unicode.Plo@am__quote@
@@ -5598,7 +5700,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/reflect/$(DEPDIR)/natConstructor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/reflect/$(DEPDIR)/natField.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/reflect/$(DEPDIR)/natMethod.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@java/lang/reflect/$(DEPDIR)/natProxy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/net/$(DEPDIR)/natInetAddress.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/net/$(DEPDIR)/natVMNetworkInterface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/nio/$(DEPDIR)/natDirectByteBufferImpl.Plo@am__quote@
@@ -5635,12 +5736,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
-libgcjawt_la-jawt.lo: jawt.c
-@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgcjawt_la_CFLAGS) $(CFLAGS) -MT libgcjawt_la-jawt.lo -MD -MP -MF "$(DEPDIR)/libgcjawt_la-jawt.Tpo" -c -o libgcjawt_la-jawt.lo `test -f 'jawt.c' || echo '$(srcdir)/'`jawt.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libgcjawt_la-jawt.Tpo" "$(DEPDIR)/libgcjawt_la-jawt.Plo"; else rm -f "$(DEPDIR)/libgcjawt_la-jawt.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='jawt.c' object='libgcjawt_la-jawt.lo' libtool=yes @AMDEPBACKSLASH@
+classpath/native/jawt/libgcjawt_la-jawt.lo: classpath/native/jawt/jawt.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgcjawt_la_CFLAGS) $(CFLAGS) -MT classpath/native/jawt/libgcjawt_la-jawt.lo -MD -MP -MF "classpath/native/jawt/$(DEPDIR)/libgcjawt_la-jawt.Tpo" -c -o classpath/native/jawt/libgcjawt_la-jawt.lo `test -f 'classpath/native/jawt/jawt.c' || echo '$(srcdir)/'`classpath/native/jawt/jawt.c; \
+@am__fastdepCC_TRUE@	then mv -f "classpath/native/jawt/$(DEPDIR)/libgcjawt_la-jawt.Tpo" "classpath/native/jawt/$(DEPDIR)/libgcjawt_la-jawt.Plo"; else rm -f "classpath/native/jawt/$(DEPDIR)/libgcjawt_la-jawt.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='classpath/native/jawt/jawt.c' object='classpath/native/jawt/libgcjawt_la-jawt.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgcjawt_la_CFLAGS) $(CFLAGS) -c -o libgcjawt_la-jawt.lo `test -f 'jawt.c' || echo '$(srcdir)/'`jawt.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgcjawt_la_CFLAGS) $(CFLAGS) -c -o classpath/native/jawt/libgcjawt_la-jawt.lo `test -f 'classpath/native/jawt/jawt.c' || echo '$(srcdir)/'`classpath/native/jawt/jawt.c
 
 .cc.o:
 @am__fastdepCXX_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`; \
@@ -5835,6 +5936,7 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
+	-rm -rf classpath/native/jawt/.libs classpath/native/jawt/_libs
 	-rm -rf gnu/classpath/.libs gnu/classpath/_libs
 	-rm -rf gnu/gcj/.libs gnu/gcj/_libs
 	-rm -rf gnu/gcj/convert/.libs gnu/gcj/convert/_libs
@@ -6223,6 +6325,8 @@ clean-generic:
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
+	-rm -f classpath/native/jawt/$(DEPDIR)/$(am__dirstamp)
+	-rm -f classpath/native/jawt/$(am__dirstamp)
 	-rm -f gnu/classpath/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/classpath/$(am__dirstamp)
 	-rm -f gnu/gcj/$(DEPDIR)/$(am__dirstamp)
@@ -6286,7 +6390,7 @@ clean-am: clean-binPROGRAMS clean-generic clean-libtool \
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR) sysdep/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) classpath/native/jawt/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR) sysdep/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-libtool distclean-local distclean-tags
@@ -6317,7 +6421,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR) sysdep/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) classpath/native/jawt/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/zip/$(DEPDIR) sysdep/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -6557,6 +6661,11 @@ gnu-java-awt-peer-gtk.lo: $(gnu_java_awt_peer_gtk_source_files)
 	@find classpath/lib/gnu/java/awt/peer/gtk -name '*.class' > gnu-java-awt-peer-gtk.list
 	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-java-awt-peer-gtk.lo @gnu-java-awt-peer-gtk.list
 	@rm -f gnu-java-awt-peer-gtk.list
+
+gnu-java-awt-peer-qt.lo: $(gnu_java_awt_peer_qt_source_files)
+	@find classpath/lib/gnu/java/awt/peer/qt -name '*.class' > gnu-java-awt-peer-qt.list
+	$(LTGCJCOMPILE) -fjni -findirect-dispatch -c -o gnu-java-awt-peer-qt.lo @gnu-java-awt-peer-qt.list
+	@rm -f gnu-java-awt-peer-qt.list
 
 gnu-java-beans.lo: $(gnu_java_beans_source_files)
 	@find classpath/lib/gnu/java/beans -name '*.class' > gnu-java-beans.list
@@ -7712,6 +7821,16 @@ javax/swing/plaf/metal.list: $(javax_swing_plaf_metal_source_files)
 	done > javax/swing/plaf/metal.list
 
 -include javax/swing/plaf/metal.deps
+
+javax/swing/plaf/multi.list: $(javax_swing_plaf_multi_source_files)
+	@$(mkinstalldirs) $(dir $@)
+	@for file in $(javax_swing_plaf_multi_source_files); do \
+	  if test -f $(srcdir)/$$file; then \
+	    echo $(srcdir)/$$file; \
+	  else echo $$file; fi; \
+	done > javax/swing/plaf/multi.list
+
+-include javax/swing/plaf/multi.deps
 
 javax/swing/table.list: $(javax_swing_table_source_files)
 	@$(mkinstalldirs) $(dir $@)

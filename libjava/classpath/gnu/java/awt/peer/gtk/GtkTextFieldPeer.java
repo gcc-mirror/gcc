@@ -45,6 +45,7 @@ import java.awt.FontMetrics;
 import java.awt.Rectangle;
 import java.awt.TextField;
 import java.awt.event.KeyEvent;
+import java.awt.im.InputMethodRequests;
 import java.awt.peer.TextFieldPeer;
 import java.awt.peer.TextComponentPeer;
 
@@ -192,5 +193,10 @@ public class GtkTextFieldPeer extends GtkComponentPeer
       }
 
     super.handleEvent (e);
+  }
+  public InputMethodRequests getInputMethodRequests()
+  {
+      // FIXME: implement
+    return null;
   }
 }

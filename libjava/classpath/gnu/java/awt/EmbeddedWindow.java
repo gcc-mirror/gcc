@@ -98,11 +98,13 @@ public class EmbeddedWindow extends Frame
       }
     catch (IllegalAccessException e)
       {
-	// This should never happen.
+        throw new RuntimeException
+          ("couldn't set java.awt.Component.peer field");
       }
     catch (NoSuchFieldException e)
       {
-	// This should never happen.
+        throw new RuntimeException
+          ("couldn't set java.awt.Component.peer field");
       }
 
     super.addNotify();

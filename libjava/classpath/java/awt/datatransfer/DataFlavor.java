@@ -49,6 +49,7 @@ import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.rmi.Remote;
 
 /**
  * This class represents a particular data format used for transferring
@@ -127,9 +128,8 @@ static
 
   javaFileListFlavor
       = new DataFlavor(java.util.List.class,
+		       "application/x-java-file-list; class=java.util.List",
 		       "Java File List");
-
-  // javaFileListFlavor.mimeType = "application/x-java-file-list";
 
   imageFlavor
       = new DataFlavor(java.awt.Image.class,
@@ -335,7 +335,8 @@ getRepresentationClassFromMime(String mimeString, ClassLoader classLoader)
 public
 DataFlavor(String mimeType, String humanPresentableName)
 {
-  this (getRepresentationClassFromMime (mimeType, null), humanPresentableName);
+  this (getRepresentationClassFromMime (mimeType, null),
+	mimeType, humanPresentableName);
 }
 
 /*************************************************************************/
@@ -426,17 +427,15 @@ getPrimaryType()
 public String
 getSubType()
 {
-  int idx = mimeType.indexOf("/");
-  if (idx == -1)
-    return("");
+  int start = mimeType.indexOf("/");
+  if (start == -1)
+    return "";
 
-  String subtype = mimeType.substring(idx + 1);
-
-  idx = subtype.indexOf(" ");
-  if (idx == -1)
-    return(subtype);
+  int end = mimeType.indexOf(";", start + 1);
+  if (end == -1)
+    return mimeType.substring(start + 1);
   else
-    return(subtype.substring(0, idx));
+    return mimeType.substring(start + 1, end);
 }
 
 /*************************************************************************/
@@ -480,6 +479,9 @@ getParameter(String paramName, String mimeString)
 public String
 getParameter(String paramName)
 {
+  if ("humanPresentableName".equals(paramName))
+    return getHumanPresentableName();
+
   return getParameter(paramName, mimeType);
 }
 
@@ -500,21 +502,28 @@ setHumanPresentableName(String humanPresentableName)
 
 /**
  * Tests the MIME type of this object for equality against the specified
- * MIME type.
+ * MIME type. Ignores parameters.
  *
  * @param mimeType The MIME type to test against.
  *
  * @return <code>true</code> if the MIME type is equal to this object's
- * MIME type, <code>false</code> otherwise.
+ * MIME type (ignoring parameters), <code>false</code> otherwise.
  *
  * @exception NullPointerException If mimeType is null.
  */
 public boolean
 isMimeTypeEqual(String mimeType)
 {
-  // FIXME: Need to handle default attributes and parameters
+  String mime = getMimeType();
+  int i = mime.indexOf(";");
+  if (i != -1)
+    mime = mime.substring(0, i);
 
-  return(this.mimeType.equals(mimeType));
+  i = mimeType.indexOf(";");
+  if (i != -1)
+    mimeType = mimeType.substring(0, i);
+
+  return mime.equals(mimeType);
 }
 
 /*************************************************************************/
@@ -599,8 +608,7 @@ isRepresentationClassSerializable()
 public boolean
 isRepresentationClassRemote()
 {
-  // FIXME: Implement
-  throw new RuntimeException("Not implemented");
+  return Remote.class.isAssignableFrom (representationClass);
 }
 
 /*************************************************************************/
@@ -852,12 +860,11 @@ readExternal(ObjectInput stream) throws IOException, ClassNotFoundException
 public String
 toString()
 {
-  return("DataFlavor[representationClass="
-         + representationClass.getName()
-         + ",mimeType="
-         + mimeType
-         + "humanPresentableName="
-         + humanPresentableName);
+  return(getClass().getName()
+	 + "[representationClass=" + getRepresentationClass().getName()
+         + ",mimeType=" + getMimeType()
+         + ",humanPresentableName=" + getHumanPresentableName()
+	 + "]");
 }
 
 /*************************************************************************/

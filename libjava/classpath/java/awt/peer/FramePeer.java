@@ -51,5 +51,25 @@ public interface FramePeer extends WindowPeer
   int getState();
   void setState(int state);
   void setMaximizedBounds(Rectangle r);
+  
+  /**
+   * Check if this frame peer supports being restacked.
+   * 
+   * @return true if this frame peer can be restacked,
+   * false otherwise
+   * @since 1.5
+   */
+  boolean isRestackSupported();
+  
+  /**
+   * Sets the bounds of this frame peer.
+   * 
+   * @param x the new x co-ordinate
+   * @param y the new y co-ordinate
+   * @param width the new width
+   * @param height the new height
+   * @since 1.5
+   */
+  void setBoundsPrivate(int x, int y, int width, int height);
 } // interface FramePeer
 

@@ -6,6 +6,7 @@ sourcepath = $(top_builddir):$(top_srcdir):$(top_srcdir)/vm/reference:$(top_srcd
 
 classpathbox = "<span class='logo'><a href='http://www.gnu.org/software/classpath' target='_top'>GNU Classpath</a> ($(VERSION))"
 
+if CREATE_API_DOCS
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)/api
 	@list='$(htmllist)'; for p in $$list; do \
@@ -26,6 +27,7 @@ uninstall-local:
 	    rm -f $(DESTDIR)$(pkgdatadir)/api/$$f; \
           fi; \
         done
+endif
 
 html: create_html
 

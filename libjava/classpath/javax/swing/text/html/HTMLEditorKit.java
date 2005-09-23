@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package javax.swing.text.html;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.io.Serializable;
 
@@ -75,7 +76,7 @@ public class HTMLEditorKit
     public abstract void parse(Reader reader, ParserCallback callback,
                                boolean ignoreCharSet
                               )
-                        throws java.io.IOException;
+                        throws IOException;
   }
 
   /**
@@ -123,8 +124,8 @@ public class HTMLEditorKit
      * The method is called when the HTML closing tag ((like &lt;/table&gt;)
      * is found or if the parser concludes that the one should be present
      * in the current position.
-     * @param The tag being handled
-     * @position the tag position in the text being parsed.
+     * @param tag The tag being handled
+     * @param position the tag position in the text being parsed.
      */
     public void handleEndTag(HTML.Tag tag, int position)
     {

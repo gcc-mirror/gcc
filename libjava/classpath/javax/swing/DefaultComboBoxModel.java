@@ -43,7 +43,8 @@ import java.util.Vector;
 
 
 /**
- * DefaultComboBoxModel is a data model for JComboBox. This model keeps track
+ * The default implementation of {@link MutableComboBoxModel}.
+ * This model keeps track
  * of elements contained in the JComboBox as well as the current combo box
  * selection. Whenever selection in the JComboBox changes, the ComboBoxModel
  * will fire ListDataEvents to ComboBox's ListDataListeners.
@@ -51,7 +52,6 @@ import java.util.Vector;
  * @author Andrew Selkirk
  * @author Olga Rodimina
  * @author Robert Schuster
- * @version 1.0
  */
 public class DefaultComboBoxModel extends AbstractListModel
   implements MutableComboBoxModel, Serializable

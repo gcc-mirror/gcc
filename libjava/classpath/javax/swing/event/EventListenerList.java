@@ -133,7 +133,7 @@ public class EventListenerList
    * @throws IllegalArgumentException if <code>listener</code> is not
    * an instance of <code>t</code> (or a subclass thereof).
    *
-   * @throws Exception if <code>t</code> is <code>null</code>.
+   * @throws NullPointerException if <code>t</code> is <code>null</code>.
    */
   public void add(Class t, EventListener listener)
   {
@@ -246,7 +246,7 @@ public class EventListenerList
    * @throws IllegalArgumentException if <code>listener</code> is not
    * an instance of <code>t</code> (or a subclass thereof).
    *
-   * @throws Exception if <code>t</code> is <code>null</code>.
+   * @throws NullPointerException if <code>t</code> is <code>null</code>.
    */
   public void remove(Class t, EventListener listener)
   {

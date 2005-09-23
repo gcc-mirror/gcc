@@ -353,9 +353,11 @@ private static final long serialVersionUID = -4206021311591459213L;
     this(null, attrs);
   }
 
-  /* This extra constructor is here to permit ClasspathToolkit and to build
-     a font with a "logical name" as well as attrs.  */
-  public Font (String name, Map attrs)
+  /* This extra constructor is here to permit ClasspathToolkit and to
+     build a font with a "logical name" as well as attrs.
+     ClasspathToolkit.getFont(String,Map) uses reflection to call this
+     package-private constructor. */
+  Font (String name, Map attrs)
   {
     // If attrs is null, setting it to an empty HashMap will give this
     // Font default attributes.

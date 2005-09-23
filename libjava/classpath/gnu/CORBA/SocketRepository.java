@@ -39,6 +39,7 @@ exception statement from your version. */
 package gnu.CORBA;
 
 import java.net.Socket;
+import java.net.SocketException;
 
 import java.util.HashMap;
 
@@ -70,16 +71,18 @@ public class SocketRepository
 
   /**
    * Get a socket.
-   *
+   * 
    * @param key a socket key.
-   *
-   * @return an opened socket for reuse, null if no such
-   * available or it is closed.
+   * 
+   * @return an opened socket for reuse, null if no such available or it is
+   * closed.
    */
   public static Socket get_socket(Object key)
   {
     Socket s = (Socket) sockets.get(key);
-    if (s != null && s.isClosed())
+    if (s == null)
+      return null;
+    else if (s.isClosed())
       {
         sockets.remove(key);
         return null;
@@ -87,6 +90,15 @@ public class SocketRepository
     else
       {
         sockets.remove(key);
+        try
+          {
+            // Set one minute time out that will be changed later.
+            s.setSoTimeout(60*1000);
+          }
+        catch (SocketException e)
+          {
+            s = null;
+          }
         return s;
       }
   }

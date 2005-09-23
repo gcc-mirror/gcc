@@ -527,5 +527,63 @@ public class XCanvasPeer implements CanvasPeer
       window.map();
     }
   }
-}
 
+  /**
+   * @since 1.5
+   */
+  public boolean isRestackSupported ()
+  {
+    return false;
+  }
+
+  /**
+   * @since 1.5
+   */
+  public void cancelPendingPaint (int x, int y, int width, int height)
+  {
+  }
+
+  /**
+   * @since 1.5
+   */
+  public void restack ()
+  {
+  }
+
+  /**
+   * @since 1.5
+   */
+  public Rectangle getBounds ()
+  {
+    return null;
+  }
+
+  /**
+   * @since 1.5
+   */
+  public void reparent (ContainerPeer parent)
+  {
+  }
+
+  /**
+   * @since 1.5
+   */
+  public void setBounds (int x, int y, int width, int height, int z)
+  {
+  }
+
+  /**
+   * @since 1.5
+   */
+  public boolean isReparentSupported ()
+  {
+    return false;
+  }
+
+  /**
+   * @since 1.5
+   */
+  public void layout ()
+  {
+  }
+}

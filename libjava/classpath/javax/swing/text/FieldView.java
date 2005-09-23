@@ -173,4 +173,9 @@ public class FieldView extends PlainView
     super.removeUpdate(ev, newAlloc, vf);
   }
 
+  public int viewToModel(float fx, float fy, Shape a, Position.Bias[] bias)
+  {
+    return super.viewToModel(fx, fy, a, bias);
+  }
+  
 }

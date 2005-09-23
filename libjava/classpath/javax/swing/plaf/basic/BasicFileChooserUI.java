@@ -1090,7 +1090,9 @@ public class BasicFileChooserUI extends FileChooserUI
   }
 
   // FIXME: Indent the entries in the combobox
-  private void boxEntries()
+  // Made this method package private to access it from within inner classes
+  // with better performance
+  void boxEntries()
   {
     ArrayList parentFiles = new ArrayList();
     File parent = filechooser.getCurrentDirectory();
@@ -1098,12 +1100,12 @@ public class BasicFileChooserUI extends FileChooserUI
       parent = filechooser.getFileSystemView().getDefaultDirectory();
     while (parent != null)
       {
-	String name = parent.getName();
-	if (name.equals(""))
-	  name = parent.getAbsolutePath();
+        String name = parent.getName();
+        if (name.equals(""))
+          name = parent.getAbsolutePath();
 
-	parentFiles.add(parentFiles.size(), name);
-	parent = parent.getParentFile();
+        parentFiles.add(parentFiles.size(), name);
+        parent = parent.getParentFile();
       }
 
     if (parentFiles.size() == 0)
@@ -1509,12 +1511,12 @@ public class BasicFileChooserUI extends FileChooserUI
 	    }
 	  else if (e.getPropertyName().equals(JFileChooser.DIRECTORY_CHANGED_PROPERTY))
 	    {
-	      //boxEntries();
 	      filelist.clearSelection();
 	      filelist.revalidate();
 	      filelist.repaint();
 	      setDirectorySelected(false);
 	      setDirectory(filechooser.getCurrentDirectory());
+	      boxEntries();
 	    }
 	  else if (e.getPropertyName().equals(JFileChooser.CHOOSABLE_FILE_FILTER_CHANGED_PROPERTY)
 	           || e.getPropertyName().equals(JFileChooser.FILE_FILTER_CHANGED_PROPERTY))

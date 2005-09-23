@@ -40,6 +40,7 @@ package javax.swing.plaf;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Shape;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
@@ -83,9 +84,7 @@ public abstract class TextUI
    * @throws BadLocationException if <code>pos</code> does not
    *         designate a valid position in the document model.
    *
-   * @see javax.swing.text.View#modelToView(int,
-   *      javax.swing.text.Position.Bias, int,
-   *      javax.swing.text.position.Bias, java.awt.Shape)
+   * @see javax.swing.text.ComponentView#modelToView(int, Shape, Position.Bias)
    */
   public abstract Rectangle modelToView(JTextComponent tc, int pos)
     throws BadLocationException;
@@ -113,9 +112,7 @@ public abstract class TextUI
    * @throws BadLocationException if <code>pos</code> does not
    *         designate a valid position in the document model.
    *
-   * @see javax.swing.text.View#modelToView(int,
-   *      javax.swing.text.Position.Bias, int,
-   *      javax.swing.text.position.Bias, java.awt.Shape)
+   * @see javax.swing.text.ComponentView#modelToView(int, Shape, Position.Bias)
    */
   public abstract Rectangle modelToView(JTextComponent tc, int pos,
                                         Position.Bias bias)
@@ -126,10 +123,10 @@ public abstract class TextUI
    * Finds the caret position which is closest to the specified visual
    * location.
    *
-   * @param tc the <code>JTextComponent</code> for which this
+   * @param t the <code>JTextComponent</code> for which this
    *        delegate object provides the user interface.
    *
-   * @param loc the position in view coordinates.
+   * @param pt the position in view coordinates.
    *
    * @return the caret position which is closest to <code>loc</code>.
    *
@@ -191,7 +188,7 @@ public abstract class TextUI
    *
    * @throws IllegalArgumentException if <code>direction</code>
    *         is not one of <code>Position.Bias.Forward</code>
-   *         or <code>Position.Biad.Backward</code>.
+   *         or <code>Position.Bias.Backward</code>.
    */
   public abstract int getNextVisualPositionFrom(JTextComponent tc,
                                                 int pos,

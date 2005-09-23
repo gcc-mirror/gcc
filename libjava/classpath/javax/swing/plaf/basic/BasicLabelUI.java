@@ -1,39 +1,39 @@
 /* BasicLabelUI.java
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+ Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
-This file is part of GNU Classpath.
+ This file is part of GNU Classpath.
 
-GNU Classpath is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+ GNU Classpath is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2, or (at your option)
+ any later version.
 
-GNU Classpath is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-General Public License for more details.
+ GNU Classpath is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with GNU Classpath; see the file COPYING.  If not, write to the
-Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-02110-1301 USA.
+ You should have received a copy of the GNU General Public License
+ along with GNU Classpath; see the file COPYING.  If not, write to the
+ Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ 02110-1301 USA.
 
-Linking this library statically or dynamically with other modules is
-making a combined work based on this library.  Thus, the terms and
-conditions of the GNU General Public License cover the whole
-combination.
+ Linking this library statically or dynamically with other modules is
+ making a combined work based on this library.  Thus, the terms and
+ conditions of the GNU General Public License cover the whole
+ combination.
 
-As a special exception, the copyright holders of this library give you
-permission to link this library with independent modules to produce an
-executable, regardless of the license terms of these independent
-modules, and to copy and distribute the resulting executable under
-terms of your choice, provided that you also meet, for each linked
-independent module, the terms and conditions of the license of that
-module.  An independent module is a module which is not derived from
-or based on this library.  If you modify this library, you may extend
-this exception to your version of the library, but you are not
-obligated to do so.  If you do not wish to do so, delete this
-exception statement from your version. */
+ As a special exception, the copyright holders of this library give you
+ permission to link this library with independent modules to produce an
+ executable, regardless of the license terms of these independent
+ modules, and to copy and distribute the resulting executable under
+ terms of your choice, provided that you also meet, for each linked
+ independent module, the terms and conditions of the license of that
+ module.  An independent module is a module which is not derived from
+ or based on this library.  If you modify this library, you may extend
+ this exception to your version of the library, but you are not
+ obligated to do so.  If you do not wish to do so, delete this
+ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
@@ -56,12 +56,13 @@ import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.LabelUI;
 
-
 /**
  * This is the Basic Look and Feel class for the JLabel.  One BasicLabelUI
  * object is used to paint all JLabels that utilize the Basic Look and Feel.
  */
-public class BasicLabelUI extends LabelUI implements PropertyChangeListener
+public class BasicLabelUI
+    extends LabelUI
+    implements PropertyChangeListener
 {
   /** The labelUI that is shared by all labels. */
   protected static BasicLabelUI labelUI;
@@ -99,20 +100,20 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
    *
    * @return The preferred size.
    */
-  public Dimension getPreferredSize(JComponent c) 
+  public Dimension getPreferredSize(JComponent c)
   {
-    JLabel lab = (JLabel)c;
+    JLabel lab = (JLabel) c;
     Rectangle vr = new Rectangle();
     Rectangle ir = new Rectangle();
     Rectangle tr = new Rectangle();
-    Insets insets = lab.getInsets();      
+    Insets insets = lab.getInsets();
     FontMetrics fm = lab.getToolkit().getFontMetrics(lab.getFont());
     layoutCL(lab, fm, lab.getText(), lab.getIcon(), vr, ir, tr);
     Rectangle cr = tr.union(ir);
-    return new Dimension(insets.left + cr.width + insets.right,
-                         insets.top + cr.height + insets.bottom);
-    
-  }  
+    return new Dimension(insets.left + cr.width + insets.right, insets.top
+        + cr.height + insets.bottom);
+
+  }
 
   /**
    * This method returns the minimum size of the {@link JComponent} given. If
@@ -144,7 +145,7 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
 
   /**
    * The method that paints the label according to its current state.
-   *
+   * 
    * @param g The {@link Graphics} object to paint with.
    * @param c The {@link JComponent} to paint.
    */
@@ -169,26 +170,28 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
       vr.width = 0;
     if (vr.height < 0)
       vr.height = 0;
-      
+
     Icon icon = (b.isEnabled()) ? b.getIcon() : b.getDisabledIcon();
 
     String text = layoutCL(b, fm, b.getText(), icon, vr, ir, tr);
-    
+
     if (icon != null)
-      icon.paintIcon(b, g, ir.x, ir.y);
-    if (text != null && ! text.equals(""))
-      {
-	if (b.isEnabled())
-	  paintEnabledText(b, g, text, tr.x, tr.y + fm.getAscent());
-	else
-	  paintDisabledText(b, g, text, tr.x, tr.y + fm.getAscent());
-      }
+      icon.paintIcon(b, g, ir.x, ir.y);        
+
+    if (text != null && !text.equals(""))
+    {
+      if (b.isEnabled())
+        paintEnabledText(b, g, text, tr.x, tr.y + fm.getAscent());
+      else
+        paintDisabledText(b, g, text, tr.x, tr.y + fm.getAscent());
+    }
+
     g.setFont(saved_font);
   }
 
   /**
    * This method is simply calls SwingUtilities's layoutCompoundLabel.
-   *
+   * 
    * @param label The label to lay out.
    * @param fontMetrics The FontMetrics for the font used.
    * @param text The text to paint.
@@ -196,20 +199,16 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
    * @param viewR The entire viewable rectangle.
    * @param iconR The icon bounds rectangle.
    * @param textR The text bounds rectangle.
-   *
+   * 
    * @return A possibly clipped version of the text.
    */
-  protected String layoutCL(JLabel label, FontMetrics fontMetrics,
-                            String text, Icon icon, Rectangle viewR,
-                            Rectangle iconR, Rectangle textR)
+  protected String layoutCL(JLabel label, FontMetrics fontMetrics, String text,
+      Icon icon, Rectangle viewR, Rectangle iconR, Rectangle textR)
   {
     return SwingUtilities.layoutCompoundLabel(label, fontMetrics, text, icon,
-                                              label.getVerticalAlignment(),
-                                              label.getHorizontalAlignment(),
-                                              label.getVerticalTextPosition(),
-                                              label.getHorizontalTextPosition(),
-                                              viewR, iconR, textR,
-                                              label.getIconTextGap());
+        label.getVerticalAlignment(), label.getHorizontalAlignment(), label
+            .getVerticalTextPosition(), label.getHorizontalTextPosition(),
+        viewR, iconR, textR, label.getIconTextGap());
   }
 
   /**
@@ -225,7 +224,7 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
    * @param textY The y coordinate of the start of the baseline.
    */
   protected void paintDisabledText(JLabel l, Graphics g, String s, int textX,
-                                   int textY)
+      int textY)
   {
     Color saved_color = g.getColor();
 
@@ -235,14 +234,14 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
 
     if (mnemIndex != -1)
       BasicGraphicsUtils.drawStringUnderlineCharAt(g, s, mnemIndex, textX,
-                                                   textY);
+          textY);
     else
       g.drawString(s, textX, textY);
 
     g.setColor(l.getBackground().darker());
     if (mnemIndex != -1)
       BasicGraphicsUtils.drawStringUnderlineCharAt(g, s, mnemIndex, textX + 1,
-                                                   textY + 1);
+          textY + 1);
     else
       g.drawString(s, textX + 1, textY + 1);
 
@@ -260,7 +259,7 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
    * @param textY The y coordinate of the start of the baseline.
    */
   protected void paintEnabledText(JLabel l, Graphics g, String s, int textX,
-                                  int textY)
+      int textY)
   {
     Color saved_color = g.getColor();
     g.setColor(l.getForeground());
@@ -269,7 +268,7 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
 
     if (mnemIndex != -1)
       BasicGraphicsUtils.drawStringUnderlineCharAt(g, s, mnemIndex, textX,
-                                                   textY);
+          textY);
     else
       g.drawString(s, textX, textY);
 
@@ -287,14 +286,14 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
   {
     super.installUI(c);
     if (c instanceof JLabel)
-      {
-	JLabel l = (JLabel) c;
+    {
+      JLabel l = (JLabel) c;
 
-	installComponents(l);
-	installDefaults(l);
-	installListeners(l);
-	installKeyboardActions(l);
-      }
+      installComponents(l);
+      installDefaults(l);
+      installListeners(l);
+      installKeyboardActions(l);
+    }
   }
 
   /**
@@ -308,14 +307,14 @@ public class BasicLabelUI extends LabelUI implements PropertyChangeListener
   {
     super.uninstallUI(c);
     if (c instanceof JLabel)
-      {
-	JLabel l = (JLabel) c;
+    {
+      JLabel l = (JLabel) c;
 
-	uninstallKeyboardActions(l);
-	uninstallListeners(l);
-	uninstallDefaults(l);
-	uninstallComponents(l);
-      }
+      uninstallKeyboardActions(l);
+      uninstallListeners(l);
+      uninstallDefaults(l);
+      uninstallComponents(l);
+    }
   }
 
   /**

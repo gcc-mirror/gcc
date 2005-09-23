@@ -40,7 +40,7 @@ package javax.swing.plaf;
 
 /**
  * This public interface is used to designate which objects were created by
- * <code>ComponentUI</code> delegates.  When uninstalling the user public interface
+ * {@link ComponentUI} delegates.  When uninstalling the user public interface
  * renderer with <code>ComponentUI.uninstallUI()</code> the renderer
  * property is set to <code>null</code>.
  * <br>
@@ -50,6 +50,6 @@ package javax.swing.plaf;
  * they are initialized or set to <code>null</code>.
  * 
  * @author Brian Jones
- * @see java.lang.ComponentUI 
+ * @see ComponentUI 
  */
 public interface UIResource { }

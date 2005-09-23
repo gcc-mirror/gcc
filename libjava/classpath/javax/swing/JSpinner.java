@@ -49,7 +49,6 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.SpinnerUI;
@@ -297,7 +296,7 @@ public class JSpinner extends JComponent
      *     create a <code>DateEditor</code> instance
      * @param dateFormatPattern the date format to use
      *
-     * @see SimpleDateFormat(String)
+     * @see SimpleDateFormat#SimpleDateFormat(String)
      */
     public DateEditor(JSpinner spinner, String dateFormatPattern)
     {

@@ -1,5 +1,5 @@
 /* JarURLConnection.java -- Class for manipulating remote jar files
-   Copyright (C) 1998, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002, 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -151,8 +151,9 @@ public abstract class JarURLConnection extends URLConnection
    */
   public JarEntry getJarEntry() throws IOException
   {
+    if (entryName == null)
+      return null;
     JarFile jarFile = getJarFile();
-
     return jarFile != null ? jarFile.getJarEntry(entryName) : null;
   }
 

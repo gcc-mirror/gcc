@@ -51,13 +51,29 @@ import javax.swing.text.DocumentFilter;
 import javax.swing.text.NavigationFilter;
 
 /**
+ * A text field that makes use of a formatter to display and edit a specific
+ * type of data. The value that is displayed can be an arbitrary object. The
+ * formatter is responsible for displaying the value in a textual form and
+ * it may allow editing of the value.
+ *
+ * Formatters are usually obtained using an instance of
+ * {@link AbstractFormatterFactory}. This factory is responsible for providing
+ * an instance of {@link AbstractFormatter} that is able to handle the
+ * formatting of the value of the JFormattedTextField.
+ *
  * @author Michael Koch
+ *
  * @since 1.4
  */
 public class JFormattedTextField extends JTextField
 {
   private static final long serialVersionUID = 5464657870110180632L;
 
+  /**
+   * An abstract base implementation for a formatter that can be used by
+   * a JTextField. A formatter can display a specific type of object and
+   * may provide a way to edit this value.
+   */
   public abstract static class AbstractFormatter implements Serializable
   {
     private static final long serialVersionUID = -5193212041738979680L;
@@ -124,7 +140,11 @@ public class JFormattedTextField extends JTextField
     public abstract String valueToString (Object value)
       throws ParseException;
   }
-  
+
+  /**
+   * Delivers instances of an {@link AbstractFormatter} for
+   * a specific value type for a JFormattedTextField. 
+   */
   public abstract static class AbstractFormatterFactory
   {
     public AbstractFormatterFactory ()

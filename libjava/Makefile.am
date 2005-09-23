@@ -263,7 +263,7 @@ lib_gnu_java_awt_peer_gtk_la_LDFLAGS = \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC) $(X_LIBS) -lXtst
 lib_gnu_java_awt_peer_gtk_la_LINK = $(LIBLINK)
 
-libgcjawt_la_SOURCES = jawt.c
+libgcjawt_la_SOURCES = classpath/native/jawt/jawt.c
 libgcjawt_la_CFLAGS = -I$(srcdir)/classpath/native/jni/classpath \
 	$(PEDANTIC_CFLAGS) $(X_CFLAGS)
 ## See jv_convert_LDADD.
@@ -809,7 +809,6 @@ java/lang/reflect/natArray.cc \
 java/lang/reflect/natConstructor.cc \
 java/lang/reflect/natField.cc \
 java/lang/reflect/natMethod.cc \
-java/lang/reflect/natProxy.cc \
 java/net/natVMNetworkInterface.cc \
 java/net/natInetAddress.cc \
 java/nio/channels/natChannels.cc \

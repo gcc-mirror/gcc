@@ -675,7 +675,7 @@ public class TitledBorder
    *
    * @return the same object that was passed for <code>insets</code>.
    *
-   * @see #getBorderInsets()
+   * @see #getBorderInsets(Component)
    */
   public Insets getBorderInsets(Component c, Insets insets)
   {
@@ -1117,7 +1117,7 @@ public class TitledBorder
     /**
      * Determines the insets of the nested component when it has a
      * TitledBorder as its border. Used by {@link
-     * TitledBorder#getBorderInsets()}.
+     * TitledBorder#getBorderInsets(Component, Insets)}.
      *
      * @param i an Insets object for storing the results into, or
      *        <code>null</code> to cause the creation of a
@@ -1140,7 +1140,7 @@ public class TitledBorder
 
     /**
      * Calculates the minimum size needed for displaying the border
-     * and its title. Used by {@link TitledBorder#getMiminumSize()}.
+     * and its title. Used by {@link TitledBorder#getMinimumSize(Component)}.
      */
     public Dimension getMinimumSize()
     {

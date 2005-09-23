@@ -42,6 +42,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.image.VolatileImage;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -72,7 +73,7 @@ public class RepaintManager
    * typically only one of these objects active at any time. When the
    * {@link RepaintManager} is told to queue a repaint, it checks to see if
    * a {@link RepaintWorker} is "live" in the system event queue, and if
-   * not it inserts one using {@link SwingUtilities.invokeLater}.</p>
+   * not it inserts one using {@link SwingUtilities#invokeLater}.</p>
    *
    * <p>When the {@link RepaintWorker} comes to the head of the system
    * event queue, its {@link RepaintWorker#run} method is executed by the
@@ -235,7 +236,7 @@ public class RepaintManager
    *
    * @param manager The new value of the shared instance
    *
-   * @see #currentManager
+   * @see #currentManager(JComponent)
    */
   public static void setCurrentManager(RepaintManager manager)
   {
@@ -501,7 +502,7 @@ public class RepaintManager
    *
    * @since 1.4
    *
-   * @see {@link VolatileImage}
+   * @see VolatileImage
    */
   public Image getVolatileOffscreenBuffer(Component comp, int proposedWidth,
                                           int proposedHeight)
@@ -542,7 +543,7 @@ public class RepaintManager
    *
    * @param buffer The new value of the property
    *
-   * @see #getDoubleBufferingEnabled
+   * @see #isDoubleBufferingEnabled
    */
   public void setDoubleBufferingEnabled(boolean buffer)
   {

@@ -423,11 +423,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_getSelectedIndexes
     {
       current_row = rows = gtk_tree_selection_get_selected_rows (selection, NULL);
 
-      gdk_threads_leave ();
-
       result_array = (*env)->NewIntArray (env, count);
-
-      gdk_threads_enter ();
 
       result_array_iter = (*env)->GetIntArrayElements (env, result_array, NULL);
 
@@ -513,25 +509,17 @@ item_highlighted_cb (GtkTreeSelection *selection __attribute__((unused)),
 
       if (!path_currently_selected)
         {
-          gdk_threads_leave ();
-
           (*cp_gtk_gdk_env())->CallVoidMethod (cp_gtk_gdk_env(), peer,
                                         postListItemEventID,
                                         row,
                                         (jint) AWT_ITEM_SELECTED);
-
-          gdk_threads_enter ();
         }
       else
         {
-          gdk_threads_leave ();
-
           (*cp_gtk_gdk_env())->CallVoidMethod (cp_gtk_gdk_env(), peer,
                                         postListItemEventID,
                                         row,
                                         (jint) AWT_ITEM_DESELECTED);
-
-          gdk_threads_enter ();
         }
     }
 

@@ -43,9 +43,14 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.Date;
+import java.util.EventObject;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -69,6 +74,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
+import javax.swing.text.Caret;
 
 public class JTable extends JComponent
   implements TableModelListener, Scrollable, TableColumnModelListener,
@@ -351,6 +357,7 @@ public class JTable extends JComponent
    */
   protected transient Component editorComp;
 
+
   /**
    * Whether or not the table should automatically compute a matching
    * {@link TableColumnModel} and assign it to the {@link #columnModel}
@@ -555,7 +562,27 @@ public class JTable extends JComponent
    */
   protected JTableHeader tableHeader;
 
-  
+  /**
+   * The row of the cell being edited.
+   */
+  int rowBeingEdited = -1;
+
+  /**
+   * The column of the cell being edited.
+   */
+  int columnBeingEdited = -1;
+
+  /**
+   * The action listener for the editor's Timer.
+   */
+  Timer editorTimer = new EditorUpdateTimer();
+
+  /**
+   * Stores the old value of a cell before it was edited, in case
+   * editing is cancelled
+   */
+  Object oldCellValue;
+
   /**
    * Creates a new <code>JTable</code> instance.
    */
@@ -618,9 +645,14 @@ public class JTable extends JComponent
   {
     setModel(dm == null ? createDefaultDataModel() : dm);
     setSelectionModel(sm == null ? createDefaultSelectionModel() : sm);
-
+    
     this.columnModel = cm;
     initializeLocalVars();
+    // The next two lines are for compliance with the JDK which starts
+    // the JLists associated with a JTable  with both lead selection 
+    // indices at 0, rather than -1 as in regular JLists
+    selectionModel.setLeadSelectionIndex(0);
+    columnModel.getSelectionModel().setLeadSelectionIndex(0);
     updateUI();
   }    
 
@@ -641,7 +673,7 @@ public class JTable extends JComponent
     this.defaultEditorsByColumnClass = new Hashtable();
     createDefaultEditors();
 
-    this.autoResizeMode = AUTO_RESIZE_ALL_COLUMNS;
+    this.autoResizeMode = AUTO_RESIZE_SUBSEQUENT_COLUMNS;
     this.rowHeight = 16;
     this.rowMargin = 1;
     this.rowSelectionAllowed = true;
@@ -666,6 +698,51 @@ public class JTable extends JComponent
   public JTable(Vector data, Vector columnNames)
   {
     this(new DefaultTableModel(data, columnNames));
+  }
+
+  /**
+   * The timer that updates the editor component.
+   */
+  private class EditorUpdateTimer
+    extends Timer
+    implements ActionListener
+  {
+    /**
+     * Creates a new EditorUpdateTimer object with a default delay of 0.5 seconds.
+     */
+    public EditorUpdateTimer()
+    {
+      super(500, null);
+      addActionListener(this);
+    }
+
+    /**
+     * Lets the caret blink and repaints the table.
+     */
+    public void actionPerformed(ActionEvent ev)
+    {
+      Caret c = ((JTextField)JTable.this.editorComp).getCaret();
+      if (c != null)
+        c.setVisible(!c.isVisible());
+      JTable.this.repaint();
+    }
+
+    /**
+     * Updates the blink delay according to the current caret.
+     */
+    public void update()
+    {
+      stop();
+      Caret c = ((JTextField)JTable.this.editorComp).getCaret();
+      if (c != null)
+	{
+	  setDelay(c.getBlinkRate());
+	  if (((JTextField)JTable.this.editorComp).isEditable())
+	    start();
+	  else
+	    c.setVisible(false);
+	}
+    }
   }
 
   public void addColumn(TableColumn column)
@@ -769,11 +846,40 @@ public class JTable extends JComponent
 
   public void editingCanceled (ChangeEvent event)
   {
+    if (rowBeingEdited > -1 && columnBeingEdited > -1)
+      {
+        if (getValueAt(rowBeingEdited, columnBeingEdited) instanceof JTextField)
+          {
+            remove ((Component)getValueAt(rowBeingEdited, columnBeingEdited));
+            setValueAt(oldCellValue, rowBeingEdited, columnBeingEdited);
+          }
+        rowBeingEdited = -1;
+        columnBeingEdited = -1;
+      }
+    editorTimer.stop();
+    editorComp = null;
+    cellEditor = null;
+    requestFocusInWindow(false);
     repaint();
   }
 
   public void editingStopped (ChangeEvent event)
   {
+    if (rowBeingEdited > -1 && columnBeingEdited > -1)
+      {
+        if (getValueAt(rowBeingEdited, columnBeingEdited) instanceof JTextField)
+          {
+            remove((Component)getValueAt(rowBeingEdited, columnBeingEdited));
+            setValueAt(((JTextField)editorComp).getText(), 
+                       rowBeingEdited, columnBeingEdited);
+          }
+        rowBeingEdited = -1;
+        columnBeingEdited = -1;
+      }
+    editorTimer.stop();
+    editorComp = null;
+    cellEditor = null;
+    requestFocusInWindow(false);
     repaint();
   }
 
@@ -804,20 +910,23 @@ public class JTable extends JComponent
    */
   public int columnAtPoint(Point point)
   {
-    int x0 = getLocation().x;
-    int ncols = getColumnCount();
-    Dimension gap = getIntercellSpacing();
-    TableColumnModel cols = getColumnModel();
-    int x = point.x;
-    
-    for (int i = 0; i < ncols; ++i)
+    if (point != null)
       {
-        int width = cols.getColumn(i).getWidth() + (gap == null ? 0 : gap.width);
-        if (0 <= x && x < width)
-          return i;
-        x -= width;  
+        int x0 = getLocation().x;
+        int ncols = getColumnCount();
+        Dimension gap = getIntercellSpacing();
+        TableColumnModel cols = getColumnModel();
+        int x = point.x;
+
+        for (int i = 0; i < ncols; ++i)
+          {
+            int width = cols.getColumn(i).getWidth()
+                        + (gap == null ? 0 : gap.width);
+            if (0 <= x && x < width)
+              return i;
+            x -= width;
+          }
       }
-    
     return -1;
   }
 
@@ -831,19 +940,21 @@ public class JTable extends JComponent
    */
   public int rowAtPoint(Point point)
   {
-    int y0 = getLocation().y;
-    int nrows = getRowCount();
-    Dimension gap = getIntercellSpacing();
-    int height = getRowHeight() + (gap == null ? 0 : gap.height);
-    int y = point.y;
-    
-    for (int i = 0; i < nrows; ++i)
+    if (point != null)
       {
-        if (0 <= y && y < height)
-          return i;
-        y -= height;
+        int y0 = getLocation().y;
+        int nrows = getRowCount();
+        Dimension gap = getIntercellSpacing();
+        int height = getRowHeight() + (gap == null ? 0 : gap.height);
+        int y = point.y;
+
+        for (int i = 0; i < nrows; ++i)
+          {
+            if (0 <= y && y < height)
+              return i;
+            y -= height;
+          }
       }
-      
     return -1;
   }
 
@@ -867,7 +978,7 @@ public class JTable extends JComponent
                                int column,
                                boolean includeSpacing)
   {
-    int height = getHeight();
+    int height = getRowHeight(row);
     int width = columnModel.getColumn(column).getWidth();
     int x_gap = columnModel.getColumnMargin();
     int y_gap = rowMargin;
@@ -975,7 +1086,7 @@ public class JTable extends JComponent
 
     if (editor == null)
       editor = getDefaultEditor(dataModel.getColumnClass(column));
-
+    
     return editor;
   }
 
@@ -1093,6 +1204,19 @@ public class JTable extends JComponent
   {
     return rowHeight;
   }
+
+  /**
+   * Get the height of the specified row.
+   *
+   * @param row the row whose height to return
+   */
+  public int getRowHeight(int row)
+  {
+    // FIXME: return the height of the specified row
+    // which may be different from the general rowHeight
+    return rowHeight;
+  }
+
 
   /**
    * Get the value of the {@link #rowMargin} property.
@@ -1457,14 +1581,27 @@ public class JTable extends JComponent
    */ 
   public void setRowHeight(int r)
   {
-    if (rowHeight < 1)
+    if (r < 1)
       throw new IllegalArgumentException();
     
     rowHeight = r;
     revalidate();
     repaint();
   }
-
+  
+  /**
+   * Sets the value of the rowHeight property for the specified
+   * row.
+   * 
+   * @param rh is the new rowHeight
+   * @param row is the row to change the rowHeight of
+   */
+  public void setRowHeight(int row, int rh)
+  {
+     setRowHeight(rh);
+     // FIXME: not implemented
+  }
+  
   /**
    * Set the value of the {@link #rowMargin} property.
    *
@@ -2065,8 +2202,17 @@ public class JTable extends JComponent
   
   public void selectAll()
   {
+    // rowLead and colLead store the current lead selection indices
+    int rowLead = selectionModel.getLeadSelectionIndex();
+    int colLead = getColumnModel().getSelectionModel().getLeadSelectionIndex();
+    // the following calls to setSelectionInterval change the lead selection
+    // indices
     setColumnSelectionInterval(0, getColumnCount() - 1);
     setRowSelectionInterval(0, getRowCount() - 1);
+    // the following addSelectionInterval calls restore the lead selection
+    // indices to their previous values
+    addColumnSelectionInterval(colLead,colLead);
+    addRowSelectionInterval(rowLead, rowLead);
   }
 
   public Object getValueAt(int row, int column)
@@ -2076,6 +2222,11 @@ public class JTable extends JComponent
 
   public void setValueAt(Object value, int row, int column)
   {
+    if (!isCellEditable(row, column))
+      return;
+
+    if (value instanceof Component)
+      add((Component)value);
     dataModel.setValueAt(value, row, convertColumnIndexToModel(column));
   }
 
@@ -2166,5 +2317,59 @@ public class JTable extends JComponent
         
         
       }
+  }
+
+  /**
+   * Programmatically starts editing the specified cell.
+   *
+   * @param row the row of the cell to edit.
+   * @param column the column of the cell to edit.
+   */
+  public boolean editCellAt (int row, int column)
+  {
+    oldCellValue = getValueAt(row, column);
+    setCellEditor(getCellEditor(row, column));
+    editorComp = prepareEditor(cellEditor, row, column);
+    cellEditor.addCellEditorListener(this);
+    rowBeingEdited = row;
+    columnBeingEdited = column;
+    setValueAt(editorComp, row, column);
+    ((JTextField)editorComp).requestFocusInWindow(false);
+    editorTimer.start();
+    return true;
+  }
+
+  /**
+   * Programmatically starts editing the specified cell.
+   *
+   * @param row the row of the cell to edit.
+   * @param column the column of the cell to edit.
+   */
+  public boolean editCellAt (int row, int column, EventObject e)
+  {
+    return editCellAt(row, column);
+  }
+
+  /**
+   * Discards the editor object.
+   */
+  public void removeEditor()
+  {
+    editingStopped(new ChangeEvent(this));
+  }
+
+  /**
+   * Prepares the editor by querying for the value and selection state of the
+   * cell at (row, column).
+   *
+   * @param editor the TableCellEditor to set up
+   * @param row the row of the cell to edit
+   * @param column the column of the cell to edit
+   * @return the Component being edited
+   */
+  public Component prepareEditor (TableCellEditor editor, int row, int column)
+  {
+    return editor.getTableCellEditorComponent
+      (this, getValueAt(row, column), isCellSelected(row, column), row, column);
   }
 }

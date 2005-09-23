@@ -164,10 +164,10 @@ public class Vector extends AbstractList
   }
 
   /**
-   * Copies the contents of a provided array into the Vector.  If the
-   * array is too large to fit in the Vector, an IndexOutOfBoundsException
-   * is thrown without modifying the array.  Old elements in the Vector are
-   * overwritten by the new elements.
+   * Copies the contents of the Vector into the provided array.  If the
+   * array is too small to fit all the elements in the Vector, an 
+   * {@link IndexOutOfBoundsException} is thrown without modifying the array.  
+   * Old elements in the array are overwritten by the new elements.
    *
    * @param a target array for the copy
    * @throws IndexOutOfBoundsException the array is not large enough

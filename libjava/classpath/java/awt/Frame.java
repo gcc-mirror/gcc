@@ -401,20 +401,6 @@ remove(MenuComponent menu)
   menuBar.remove(menu);
 }
 
-/**
-  * Notifies this frame that it should create its native peer.
-  */
-private static void fireDummyEvent()
-{
-  EventQueue.invokeLater(new Runnable()
-    {
-      public void run()
-      {
-	// Do nothing here.
-      }
-    });
-}
-
 public void
 addNotify()
 {
@@ -423,11 +409,6 @@ addNotify()
   if (peer == null)
     peer = getToolkit ().createFrame (this);
 
-  // We now know there's a Frame (us) with a live peer, so we can start the
-  // fundamental queue and dispatch thread, by inserting a dummy event.
-  if (parent != null && parent.isDisplayable())
-    fireDummyEvent();
-  
   super.addNotify();
 }
 
@@ -436,12 +417,6 @@ public void removeNotify()
   if (menuBar != null)
     menuBar.removeNotify();
   super.removeNotify();
-
-  // By now we've been disconnected from the peer, and the peer set to
-  // null.  This is formally the same as saying "we just became
-  // un-displayable", so we wake up the event queue with a dummy event to
-  // see if it's time to shut down.
-  fireDummyEvent();
 }
 
   /**

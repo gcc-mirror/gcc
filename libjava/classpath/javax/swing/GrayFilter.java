@@ -43,6 +43,12 @@ import java.awt.Toolkit;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.RGBImageFilter;
 
+/**
+ * Produces grayscale images out of colored images. This is used to provide
+ * default disabled icons for buttons.
+ *
+ * @author original author unknown
+ */
 public class GrayFilter extends RGBImageFilter
 {
   private boolean b;

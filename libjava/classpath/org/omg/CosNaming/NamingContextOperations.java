@@ -55,7 +55,7 @@ import org.omg.CosNaming.NamingContextPackage.NotFound;
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public interface NamingContextOperations
-  extends org.omg.CORBA.Object, IDLEntity
+  extends IDLEntity
 {
   /**
    * Gives the object a name, valid in this context.

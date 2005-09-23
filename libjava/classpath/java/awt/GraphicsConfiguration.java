@@ -126,6 +126,22 @@ public abstract class GraphicsConfiguration
   }
 
   /**
+   * Returns a buffered volatile image optimized to this device, and
+   * with the given transparency. Because the buffer is volatile, it
+   * can be optimized by native graphics accelerators.
+   *
+   * @param w the width of the buffer
+   * @param h the height of the buffer
+   * @param transparency the transparency value for the buffer
+   * @return the buffered image, or null if none is supported
+   * @throws AWTException if the capabilities cannot be met
+   * @since 1.5
+   */
+  public abstract VolatileImage createCompatibleVolatileImage(int width,
+                                                              int height,
+                                                              int transparency);
+
+  /**
    * Returns a buffered image optimized to this device, and with the specified
    * transparency, so that blitting can be supported in the buffered image.
    *

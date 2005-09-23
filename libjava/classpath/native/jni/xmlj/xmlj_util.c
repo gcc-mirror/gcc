@@ -39,6 +39,7 @@ exception statement from your version. */
 #include "xmlj_error.h"
 #include <libxml/tree.h>
 #include <unistd.h>
+#include <jcl.h>
 
 /* xmlChar->jstring cache */
 #ifdef XMLJ_STRING_CACHE
@@ -218,35 +219,13 @@ jmethodID xmljGetMethodID (JNIEnv *env,
 void *
 xmljAsPointer (JNIEnv *env, jobject ptr)
 {
-  jclass cls;
-  jfieldID field;
- 
-#if defined XMLJ_64BIT_POINTER
-  cls = (*env)->FindClass (env, "gnu/classpath/RawData64");
-  field = (*env)->GetFieldID (env, cls, "data", "J");
-  return (void *) (*env)->GetLongField (env, ptr, field);
-#else
-  cls = (*env)->FindClass (env, "gnu/classpath/RawData32");
-  field = (*env)->GetFieldID (env, cls, "data", "I");
-  return (void *) (*env)->GetIntField (env, ptr, field);
-#endif
+  return JCL_GetRawData(env, ptr);
 }
 
 jobject
 xmljAsField (JNIEnv *env, void * ptr)
 {
-  jclass cls;
-  jmethodID method;
-
-#if defined XMLJ_64BIT_POINTER
-  cls = (*env)->FindClass (env, "gnu/classpath/RawData64");
-  method = (*env)->GetMethodID (env, cls, "<init>", "(J)V");
-  return (*env)->NewObject (env, cls, method, (jlong) ptr);
-#else
-  cls = (*env)->FindClass (env, "gnu/classpath/RawData32");
-  method = (*env)->GetMethodID (env, cls, "<init>", "(I)V");
-  return (*env)->NewObject (env, cls, method, (jint) ptr);
-#endif
+  return JCL_NewRawDataObject(env, ptr);
 }
 
 JNIEnv *

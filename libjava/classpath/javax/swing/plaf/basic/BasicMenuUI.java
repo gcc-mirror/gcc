@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.MenuSelectionManager;
 import javax.swing.UIDefaults;
@@ -179,12 +180,23 @@ public class BasicMenuUI extends BasicMenuItemUI
    */
   public Dimension getMaximumSize(JComponent c)
   {
+    // If this menu is in a popup menu, treat it like a regular JMenuItem
+    if (!((JMenu)c).isTopLevelMenu())
+      {
+        JMenuItem menuItem = new JMenuItem(((JMenu)c).getText(), ((JMenu)c).getIcon());
+        return menuItem.getMaximumSize();
+      }
     return c.getPreferredSize();
   }
 
+  /**
+   * Returns the prefix for entries in the {@link UIDefaults} table.
+   *
+   * @return "Menu"
+   */
   protected String getPropertyPrefix()
   {
-    return null;
+    return "Menu";
   }
 
   /**
@@ -294,14 +306,17 @@ public class BasicMenuUI extends BasicMenuItemUI
 
     private boolean popupVisible()
     {
-      JMenuBar mb = (JMenuBar) ((JMenu)menuItem).getParent();
+      JMenuBar mb = (JMenuBar) ((JMenu) menuItem).getParent();
       // check if mb.isSelected because if no menus are selected
       // we don't have to look through the list for popup menus
       if (!mb.isSelected())
         return false;
-      for (int i=0;i<mb.getMenuCount();i++)
-        if (((JMenu)mb.getComponent(i)).isPopupMenuVisible())
+      for (int i = 0; i < mb.getMenuCount(); i++)
+      {
+         JMenu m = mb.getMenu(i);
+        if (m != null && m.isPopupMenuVisible())
           return true;
+      }
       return false;
     }
 

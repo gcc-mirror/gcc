@@ -134,11 +134,11 @@ public abstract class AbstractLayoutCache
 	/**
 	 * getNodeDimensions
 	 * 
-	 * @param value0 TODO
-	 * @param value1 TODO
-	 * @param value2 TODO
-	 * @param value3 TODO
-	 * @param value4 TODO
+	 * @param value TODO
+	 * @param row TODO
+	 * @param depth TODO
+	 * @param expanded TODO
+	 * @param bounds TODO
 	 * 
 	 * @return Rectangle
 	 */
@@ -154,7 +154,7 @@ public abstract class AbstractLayoutCache
 	/**
 	 * Sets the model that provides the tree data.
 	 * 
-	 * @param the model
+	 * @param model the model
 	 */
 	public void setModel(TreeModel model)
 	{
@@ -318,7 +318,7 @@ public abstract class AbstractLayoutCache
 	 * 
 	 * @return int
 	 */
-	public abstract int getVisibleChildCount(TreePath value0);
+	public abstract int getVisibleChildCount(TreePath path);
 
 	/**
 	 * setExpandedState

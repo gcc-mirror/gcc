@@ -6,7 +6,7 @@ dnl -----------------------------------------------------------
 dnl define([AC_CACHE_LOAD], )dnl
 dnl define([AC_CACHE_SAVE], )dnl
 
-AC_INIT([GNU Classpath],[0.17+cvs],[classpath@gnu.org],[classpath])
+AC_INIT([GNU Classpath],[0.18],[classpath@gnu.org],[classpath])
 AC_CONFIG_SRCDIR(java/lang/System.java)
 
 AC_CANONICAL_TARGET
@@ -21,7 +21,16 @@ dnl We will not track/change lib version until we reach version 1.0
 dnl at which time we'll have to be more anal about such things
 dnl -----------------------------------------------------------
 AC_SUBST(LIBVERSION, "0:0:0")
-CLASSPATH_MODULE="-module -version-info ${LIBVERSION} -no-undefined"
+case "$host_os" in
+     darwin*)
+	cp_module=""
+	;;
+	*)
+	cp_module="-module"
+	;;
+esac
+
+CLASSPATH_MODULE="${cp_module} -version-info ${LIBVERSION} -no-undefined"
 AC_SUBST(CLASSPATH_MODULE)
 
 AC_PREREQ(2.59)
@@ -129,6 +138,19 @@ fi
 AM_CONDITIONAL(GTK_CAIRO, test "x${GTK_CAIRO_ENABLED}" = xtrue)
 
 dnl -----------------------------------------------------------
+dnl Qt native peer (disabled by default)
+dnl -----------------------------------------------------------
+AC_ARG_ENABLE([qt-peer],
+              [AS_HELP_STRING(--enable-qt-peer,compile Qt4 native peers (disabled by --disable-jni) [default=no])],
+              [case "${enableval}" in
+                yes) COMPILE_QT_PEER=yes ;;
+                no) COMPILE_QT_PEER=no ;;
+                *) COMPILE_QT_PEER=yes ;;
+              esac],
+              [COMPILE_QT_PEER=no])
+AM_CONDITIONAL(CREATE_QT_PEER_LIBRARIES, test "x${COMPILE_QT_PEER}" = xyes)
+
+dnl -----------------------------------------------------------
 dnl Regenerate headers at build time (disabled by default)
 dnl -----------------------------------------------------------
 AC_ARG_ENABLE([regen-headers],
@@ -147,7 +169,7 @@ AC_PROG_INSTALL
 dnl -----------------------------------------------------------
 dnl Checks for programs.
 dnl -----------------------------------------------------------
-dnl AC_PROG_CXX
+AC_PROG_CXX
 dnl Initialize libtool
 AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
@@ -175,7 +197,8 @@ if test "x${COMPILE_JNI}" = xyes; then
 		    sys/time.h \
 		    sys/select.h \
 		    crt_externs.h \
-                    fcntl.h])
+                    fcntl.h \
+		    sys/mman.h])
 
   AC_EGREP_HEADER(uint32_t, stdint.h, AC_DEFINE(HAVE_INT32_DEFINED, 1, [Define to 1 if you have uint32_t]))
   AC_EGREP_HEADER(uint32_t, inttypes.h, AC_DEFINE(HAVE_INT32_DEFINED, 1, [Define to 1 if you have uint32_t]))
@@ -189,7 +212,8 @@ if test "x${COMPILE_JNI}" = xyes; then
 		  recvfrom send sendto setsockopt getsockopt time mktime \
 		  localtime_r \
 		  strerror_r \
-                  fcntl])
+                  fcntl \
+		  mmap munmap mincore msync madvise getpagesize sysconf])
 
   AC_HEADER_TIME
   AC_STRUCT_TM
@@ -269,6 +293,24 @@ if test "x${COMPILE_JNI}" = xyes; then
      PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.4 gthread-2.0 >= 2.2 gdk-pixbuf-2.0)
      AC_SUBST(GTK_CFLAGS)
      AC_SUBST(GTK_LIBS)
+  fi
+
+  dnl Check for AWT related Qt4
+  if test "x${COMPILE_QT_PEER}" = xyes; then
+    PKG_CHECK_MODULES(QT, QtGui >= 4.0.1)
+    dnl Check needed because in some cases the QtGui includedir
+    dnl doesn't contain the subsystem dir.
+    QT_INCLUDE_DIR=$($PKG_CONFIG --variable=includedir QtGui)
+    EXTRA_QT_INCLUDE_DIR="$QT_INCLUDE_DIR/Qt"
+    AC_CHECK_FILE([$QT_INCLUDE_DIR/QWidget],
+		  AC_MSG_NOTICE([No extra QT_INCLUDE_DIR needed]),
+		  AC_CHECK_FILE([$EXTRA_QT_INCLUDE_DIR/QWidget],
+		  	QT_CFLAGS="$QT_CFLAGS -I$EXTRA_QT_INCLUDE_DIR",
+			AC_MSG_WARN([QWidget not found])))
+    AC_MSG_NOTICE([Set QT_CFLAGS... $QT_CFLAGS])
+    AC_CHECK_PROG(MOC, [moc], [moc])
+    AC_SUBST(QT_CFLAGS)
+    AC_SUBST(QT_LIBS)
   fi
 
   if test "x${enable_gtk_cairo}" = xyes; then
@@ -380,7 +422,6 @@ AC_SUBST(REMOVE)
 dnl -----------------------------------------------------------
 dnl This is probably useless.
 dnl -----------------------------------------------------------
-AC_PATH_PROG(SH, sh)
 AC_PATH_PROG(MKDIR, mkdir)
 AC_PATH_PROG(CP, cp)
 AC_PATH_PROG(DATE, date)
@@ -437,6 +478,7 @@ gnu/classpath/Configuration.java
 include/Makefile
 native/Makefile
 native/fdlibm/Makefile
+native/jawt/Makefile
 native/jni/Makefile
 native/jni/classpath/Makefile
 native/jni/java-io/Makefile
@@ -445,6 +487,7 @@ native/jni/java-net/Makefile
 native/jni/java-nio/Makefile
 native/jni/java-util/Makefile
 native/jni/gtk-peer/Makefile
+native/jni/qt-peer/Makefile
 native/jni/xmlj/Makefile
 native/target/Makefile
 native/target/Linux/Makefile
@@ -454,6 +497,7 @@ scripts/Makefile
 scripts/classpath.spec
 lib/Makefile
 lib/gen-classlist.sh
-examples/Makefile])
+examples/Makefile
+examples/Makefile.jawt])
 AC_CONFIG_COMMANDS([gen-classlist],[chmod 755 lib/gen-classlist.sh])
 AC_OUTPUT

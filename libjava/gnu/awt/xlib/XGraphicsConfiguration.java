@@ -538,4 +538,13 @@ public class XGraphicsConfiguration extends GraphicsConfiguration
     }
     return cm.getDataElement (unnormalizedComponents, 0);
   }
+
+  /**
+   * @since 1.5
+   */
+  public VolatileImage createCompatibleVolatileImage (int width, int height,
+                                                      int transparency)
+  {
+    return null;
+  }
 }

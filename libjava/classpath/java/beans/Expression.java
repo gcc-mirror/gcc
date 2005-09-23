@@ -1,5 +1,5 @@
 /* java.beans.Expression
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -51,7 +51,7 @@ public class Expression extends Statement
 {
   // This is a placeholder to indicate that value hasn't been set
   // yet;
-  private static final Object unset = new Object();
+  private static final Object UNSET = new Object();
 
   // The value to return.  This is equal to unset until getValue is called.
   private Object value;
@@ -89,7 +89,7 @@ public class Expression extends Statement
   public Expression(Object target, String methodName, Object[] arguments)
   {
     super(target, methodName, arguments);
-    this.value = unset;
+    this.value = UNSET;
   }
 
   /**
@@ -105,7 +105,7 @@ public class Expression extends Statement
    */
   public Object getValue() throws Exception
   {
-    if (value == unset)
+    if (value == UNSET)
       value = doExecute();
     return value;
   }
@@ -126,7 +126,7 @@ public class Expression extends Statement
   public String toString()
   {
     String result = super.toString();
-    if (value != unset)
+    if (value != UNSET)
       return value.getClass().getName() + " " + result;
     return result;
   }

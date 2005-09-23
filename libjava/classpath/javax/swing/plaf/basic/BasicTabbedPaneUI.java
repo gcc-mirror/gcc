@@ -1680,18 +1680,6 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
   }
 
   /**
-   * This method returns the preferred size of the JTabbedPane.
-   *
-   * @param c The JComponent to find a size for.
-   *
-   * @return The preferred size.
-   */
-  public Dimension getPreferredSize(JComponent c)
-  {
-    return layoutManager.preferredLayoutSize(tabPane);
-  }
-
-  /**
    * This method returns the minimum size of the JTabbedPane.
    *
    * @param c The JComponent to find a size for.

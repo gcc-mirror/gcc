@@ -54,6 +54,31 @@ public interface ContainerPeer extends ComponentPeer
   void endLayout();
 
   boolean isPaintPending();
+  
+  /**
+   * Check if this container peer can be restacked.
+   * 
+   * @return true if this container peer supports being restacked, false otherwise
+   * @since 1.5
+   */
+  boolean isRestackSupported();
 
+  /**
+   * Cancel a pending paint event on a region of this container.
+   * 
+   * @param x the x co-ordinate of the region
+   * @param y the y co-ordinate of the region
+   * @param width the width of the region
+   * @param height the height of the region
+   * @since 1.5
+   */
+  void cancelPendingPaint(int x, int y, int width, int height);
+  
+  /**
+   * Restack the component peers in this container peer.
+   * 
+   * @since 1.5
+   */
+  void restack();
 } // interface ContainerPeer 
 

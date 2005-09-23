@@ -134,7 +134,7 @@ public class JToggleButton extends AbstractButton implements Accessible
      * Sets the pressed state of the button.  The selected state
      * of the button also changes follwing the button being pressed.
      *
-     * @param b true if the button is pressed down.
+     * @param p true if the button is pressed down.
      */
     public void setPressed(boolean p)  
     {
@@ -145,7 +145,20 @@ public class JToggleButton extends AbstractButton implements Accessible
       // if this call does not represent a CHANGE in state, then return
       if ((p && isPressed()) || (!p && !isPressed()))
         return;
-      
+
+      // The JDK first fires events in the following order:
+      // 1. ChangeEvent for selected
+      // 2. ChangeEvent for pressed
+      // 3. ActionEvent
+      // So do we.
+
+      // setPressed(false) == mouse release on us,
+      // if we were armed, we flip the selected state.
+      if (!p && isArmed())
+        {
+          setSelected(! isSelected());
+        }
+
       // make the change
       if (p)
         stateMask = stateMask | PRESSED;
@@ -154,16 +167,14 @@ public class JToggleButton extends AbstractButton implements Accessible
       
       // notify interested ChangeListeners
       fireStateChanged();
-      
-      // setPressed(false) == mouse release on us,
-      // if we were armed, we flip the selected state.
+
       if (!p && isArmed())
         {
           fireActionPerformed(new ActionEvent(this,
                                               ActionEvent.ACTION_PERFORMED,
                                               actionCommand));
-          setSelected(! isSelected());
         }
+
     }
   }
 

@@ -66,7 +66,7 @@ public abstract class _NamingContextExtImplBase
   extends _NamingContextImplBase
   implements NamingContextExt, InvokeHandler
 {
-  private static Hashtable _methods = new Hashtable();
+  static Hashtable _methods = new Hashtable();
 
   static
   {

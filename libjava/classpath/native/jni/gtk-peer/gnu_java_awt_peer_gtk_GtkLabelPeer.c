@@ -66,6 +66,44 @@ Java_gnu_java_awt_peer_gtk_GtkLabelPeer_create
   gdk_threads_leave ();
 }
 
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_GtkLabelPeer_gtkWidgetGetPreferredDimensions
+  (JNIEnv *env, jobject obj, jintArray jdims)
+{
+  void *ptr;
+  jint *dims;
+  GtkWidget *label;
+  GtkRequisition current_req;
+  GtkRequisition natural_req;
+
+  gdk_threads_enter ();
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  label = gtk_bin_get_child (GTK_BIN (ptr));
+
+  dims = (*env)->GetIntArrayElements (env, jdims, 0);  
+  dims[0] = dims[1] = 0;
+
+  /* Save the widget's current size request. */
+  gtk_widget_size_request (GTK_WIDGET (label), &current_req);
+
+  /* Get the widget's "natural" size request. */
+  gtk_widget_set_size_request (GTK_WIDGET (label), -1, -1);
+  gtk_widget_size_request (GTK_WIDGET (label), &natural_req);
+
+  /* Reset the widget's size request. */
+  gtk_widget_set_size_request (GTK_WIDGET (label),
+                               current_req.width, current_req.height);
+
+  dims[0] = natural_req.width;
+  dims[1] = natural_req.height;
+
+  (*env)->ReleaseIntArrayElements (env, jdims, dims, 0);
+
+  gdk_threads_leave ();
+}
+
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkLabelPeer_gtkWidgetModifyFont
   (JNIEnv *env, jobject obj, jstring name, jint style, jint size)

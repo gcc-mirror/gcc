@@ -574,7 +574,7 @@ public class JList extends JComponent implements Accessible, Scrollable
     ComponentOrientation or = getComponentOrientation();
     Rectangle r = getVisibleRect();
     if (or == ComponentOrientation.RIGHT_TO_LEFT)
-      r.translate((int) r.getWidth(), 0);
+      r.translate((int) r.getWidth() - 1, 0);
     return getUI().locationToIndex(this, r.getLocation());      
   }
 
@@ -596,8 +596,7 @@ public class JList extends JComponent implements Accessible, Scrollable
    * @return location of the cell located at the specified index in the list.
    */
    public Point indexToLocation(int index){
-   	//FIXME: Need to implement.
-	return null;
+     return getCellBounds(index, index).getLocation();
    }
 
   /**
@@ -605,17 +604,20 @@ public class JList extends JComponent implements Accessible, Scrollable
    * {@link #visibleRect} property, depending on the {@link
    * #componentOrientation} property.
    *
-   * @return The index of the first visible list cell, or <code>-1</code>
+   * @return The index of the last visible list cell, or <code>-1</code>
    * if none is visible.
    */
   public int getLastVisibleIndex()
   {
     ComponentOrientation or = getComponentOrientation();
     Rectangle r = getVisibleRect();
-    r.translate(0, (int) r.getHeight());
+    r.translate(0, (int) r.getHeight() - 1);
     if (or == ComponentOrientation.LEFT_TO_RIGHT)
-      r.translate((int) r.getWidth(), 0);
-    return getUI().locationToIndex(this, r.getLocation());      
+      r.translate((int) r.getWidth() - 1, 0);
+    if (getUI().locationToIndex(this, r.getLocation()) == -1
+        && indexToLocation(getModel().getSize() - 1).y < r.y)
+      return getModel().getSize() - 1;
+    return getUI().locationToIndex(this, r.getLocation());
   }
 
   /**
@@ -1030,20 +1032,41 @@ public class JList extends JComponent implements Accessible, Scrollable
    */
   public Dimension getPreferredScrollableViewportSize()
   {
+    //If the layout orientation is not VERTICAL, then this will 
+    //return the value from getPreferredSize. The current ListUI is 
+    //expected to override getPreferredSize to return an appropriate value.
+    if (getLayoutOrientation() != VERTICAL)
+      return getPreferredSize();
+    
+    if (fixedCellHeight != -1 && fixedCellWidth != -1)
+      return new Dimension(fixedCellWidth, getModel().getSize() * 
+                           fixedCellHeight);
 
-    Dimension retVal = getPreferredSize();
-    if (getLayoutOrientation() == VERTICAL)
+    int prefWidth, prefHeight;
+    if (fixedCellWidth != -1)
+      prefWidth = fixedCellWidth;
+    else
       {
-        if (fixedCellHeight != -1)
-          {
-            if (fixedCellWidth != -1)
-              {
-                int size = getModel().getSize();
-                retVal = new Dimension(fixedCellWidth, size * fixedCellHeight);
-              } // TODO: add else clause (preferredSize is ok for now)
-          } // TODO: add else clause (preferredSize is ok for now)
+        prefWidth = 0;
+        int size = getModel().getSize();
+        for (int i = 0; i < size; i++)
+          if (getCellBounds(i, i).width > prefWidth)
+            prefWidth = getCellBounds(i, i).width;
       }
-    return retVal;
+    
+    if (getModel().getSize() == 0 && fixedCellWidth == -1)
+      return new Dimension(256, 16 * getVisibleRowCount());
+    else if (getModel().getSize() == 0)
+      return new Dimension (fixedCellWidth, 16 * getVisibleRowCount());
+    
+    if (fixedCellHeight != -1)
+      prefHeight = fixedCellHeight;
+    else
+      {
+        prefHeight = getVisibleRowCount() * getCellBounds
+          (getFirstVisibleIndex(), getFirstVisibleIndex()).height;
+      }
+    return new Dimension (prefWidth, prefHeight);
   }
 
   /**

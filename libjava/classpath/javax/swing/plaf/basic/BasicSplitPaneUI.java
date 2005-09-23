@@ -870,7 +870,8 @@ public class BasicSplitPaneUI extends SplitPaneUI
   transient int lastDragLocation = -1;
 
   /** The distance the divider is moved when moved by keyboard actions. */
-  protected static int KEYBOARD_DIVIDER_MOVE_OFFSET;
+  // Sun defines this as 3
+  protected static int KEYBOARD_DIVIDER_MOVE_OFFSET = 3;
 
   /** The divider that divides this JSplitPane. */
   protected BasicSplitPaneDivider divider;
@@ -1337,9 +1338,11 @@ public class BasicSplitPaneUI extends SplitPaneUI
    */
   public int getMinimumDividerLocation(JSplitPane jc)
   {
-    int value = layoutManager.getInitialLocation(jc.getInsets());
-    if (layoutManager.components[0] != null)
-      value += layoutManager.minimumSizeOfComponent(0);
+    int value = layoutManager.getInitialLocation(jc.getInsets())
+                - layoutManager.getAvailableSize(jc.getSize(), jc.getInsets())
+                + splitPane.getDividerSize();
+    if (layoutManager.components[1] != null)
+      value += layoutManager.minimumSizeOfComponent(1);
     return value;
   }
 

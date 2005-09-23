@@ -51,6 +51,7 @@ import java.awt.Graphics;
 import java.awt.GraphicsConfiguration;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.PaintEvent;
 import java.awt.image.ColorModel;
@@ -184,4 +185,48 @@ public interface ComponentPeer
    * @since 1.2
    */
   void destroyBuffers();
+  
+  /**
+   * Get the bounds of this component peer.
+   * 
+   * @return component peer bounds
+   * @since 1.5
+   */
+  Rectangle getBounds();
+
+  /**
+   * Reparent this component under another container.
+   * 
+   * @param parent
+   * @since 1.5
+   */
+  void reparent(ContainerPeer parent);
+  
+  /**
+   * Set the bounds of this component peer.
+   * 
+   * @param x the new x co-ordinate
+   * @param y the new y co-ordinate
+   * @param width the new width
+   * @param height the new height
+   * @param z the new stacking level
+   * @since 1.5
+   */
+  void setBounds (int x, int y, int width, int height, int z);
+  
+  /**
+   * Check if this component supports being reparented.
+   * 
+   * @return true if this component can be reparented,
+   * false otherwise.
+   * @since 1.5
+   */
+  boolean isReparentSupported();
+
+  /**
+   * Layout this component peer.
+   *
+   * @since 1.5
+   */
+  void layout();
 }

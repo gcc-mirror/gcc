@@ -52,7 +52,6 @@ public class GtkContainerPeer extends GtkComponentPeer
   implements ContainerPeer
 {
   Container c;
-  boolean isValidating;
 
   public GtkContainerPeer(Container c)
   {
@@ -62,7 +61,6 @@ public class GtkContainerPeer extends GtkComponentPeer
 
   public void beginValidate ()
   {
-    isValidating = true;
   }
 
   public void endValidate ()
@@ -90,8 +88,6 @@ public class GtkContainerPeer extends GtkComponentPeer
         if (!(awtComponent instanceof Window))
           setParentAndBounds ();
       }
-
-    isValidating = false;
   }
 
   public Insets getInsets() 
@@ -152,5 +148,22 @@ public class GtkContainerPeer extends GtkComponentPeer
         if (!comp.isBackgroundSet() && comp.getPeer() != null)
           comp.getPeer().setBackground(c);
       }
+  }
+
+  public boolean isRestackSupported()
+  {
+      // FIXME: implement
+    return false;
+  }
+
+  public void cancelPendingPaint(int x, int y, int width, int height)
+  {
+    // FIXME: implement
+  }
+
+  public void restack()
+  {
+      //FIXME: implement
+    
   }
 }

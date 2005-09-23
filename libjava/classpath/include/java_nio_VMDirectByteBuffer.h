@@ -10,12 +10,12 @@ extern "C"
 {
 #endif
 
-JNIEXPORT void JNICALL Java_java_nio_VMDirectByteBuffer_init (JNIEnv *env, jclass);
 JNIEXPORT jobject JNICALL Java_java_nio_VMDirectByteBuffer_allocate (JNIEnv *env, jclass, jint);
 JNIEXPORT void JNICALL Java_java_nio_VMDirectByteBuffer_free (JNIEnv *env, jclass, jobject);
-JNIEXPORT jbyte JNICALL Java_java_nio_VMDirectByteBuffer_get__Lgnu_classpath_RawData_2I (JNIEnv *env, jclass, jobject, jint);
-JNIEXPORT void JNICALL Java_java_nio_VMDirectByteBuffer_get__Lgnu_classpath_RawData_2I_3BII (JNIEnv *env, jclass, jobject, jint, jbyteArray, jint, jint);
-JNIEXPORT void JNICALL Java_java_nio_VMDirectByteBuffer_put (JNIEnv *env, jclass, jobject, jint, jbyte);
+JNIEXPORT jbyte JNICALL Java_java_nio_VMDirectByteBuffer_get__Lgnu_classpath_Pointer_2I (JNIEnv *env, jclass, jobject, jint);
+JNIEXPORT void JNICALL Java_java_nio_VMDirectByteBuffer_get__Lgnu_classpath_Pointer_2I_3BII (JNIEnv *env, jclass, jobject, jint, jbyteArray, jint, jint);
+JNIEXPORT void JNICALL Java_java_nio_VMDirectByteBuffer_put__Lgnu_classpath_Pointer_2IB (JNIEnv *env, jclass, jobject, jint, jbyte);
+JNIEXPORT void JNICALL Java_java_nio_VMDirectByteBuffer_put__Lgnu_classpath_Pointer_2I_3BII (JNIEnv *env, jclass, jobject, jint, jbyteArray, jint, jint);
 JNIEXPORT jobject JNICALL Java_java_nio_VMDirectByteBuffer_adjustAddress (JNIEnv *env, jclass, jobject, jint);
 JNIEXPORT void JNICALL Java_java_nio_VMDirectByteBuffer_shiftDown (JNIEnv *env, jclass, jobject, jint, jint, jint);
 

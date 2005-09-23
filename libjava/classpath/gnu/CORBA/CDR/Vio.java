@@ -46,6 +46,7 @@ import org.omg.CORBA.DataOutputStream;
 import org.omg.CORBA.MARSHAL;
 import org.omg.CORBA.NO_IMPLEMENT;
 import org.omg.CORBA.StringSeqHelper;
+import org.omg.CORBA.portable.BoxedValueHelper;
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
 import org.omg.CORBA.portable.Streamable;
@@ -54,6 +55,8 @@ import org.omg.CORBA.portable.ValueFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+
+import java.lang.reflect.Method;
 
 /**
  * A specialised class for reading and writing the value types.
@@ -222,7 +225,7 @@ public abstract class Vio
           throw new MARSHAL("Unable to instantiate the value type");
         else
           {
-            read_instance(input, ox, value_tag);
+            read_instance(input, ox, value_tag, null);
             return (Serializable) ox;
           }
       }
@@ -285,7 +288,7 @@ public abstract class Vio
               }
           }
 
-        read_instance(input, ox, value_tag);
+        read_instance(input, ox, value_tag, null);
         return (Serializable) ox;
       }
     catch (Exception ex)
@@ -301,17 +304,22 @@ public abstract class Vio
    * an instance.
    *
    * @param input a stream to read from.
-   * @param value_instance an instance of the value.
+   *
+   * @param value_instance an pre-created instance of the value. If the
+   * helper is not null, this parameter is ignored an should be null.
+   *
+   * @param helper a helper to create an instance and read the object-
+   * specific part of the record. If the value_instance is used instead,
+   * this parameter should be null.
    *
    * @return the loaded value.
    *
    * @throws MARSHAL if the reading has failed due any reason.
    */
-  public static Serializable read(InputStream input, Serializable value_instance)
+  public static Object read(InputStream input, Object value_instance,
+    Object helper
+  )
   {
-    // Explicitly prevent the stream from closing as we may need
-    // to read the subsequent bytes as well. Stream may be auto-closed
-    // in its finalizer.
     try
       {
         int value_tag = input.read_long();
@@ -345,13 +353,31 @@ public abstract class Vio
               }
           }
 
-        read_instance(input, value_instance, value_tag);
-        return (Serializable) value_instance;
+        value_instance =
+          read_instance(input, value_instance, value_tag, helper);
+        return value_instance;
       }
     catch (Exception ex)
       {
         throw new MARSHAL(ex + ":" + ex.getMessage());
       }
+  }
+
+  /**
+   * Read using provided boxed value helper. This method expects
+   * the full value type header, followed by contents, that are
+   * delegated to the provided helper. It handles null.
+   *
+   * @param input the stream to read from.
+   * @param helper the helper that reads the type-specific part of
+   * the content.
+   *
+   * @return the value, created by the helper, or null if the
+   * header indicates that null was previously written.
+   */
+  public static Serializable read(InputStream input, Object helper)
+  {
+    return (Serializable) read(input, null, helper);
   }
 
   /**
@@ -361,12 +387,20 @@ public abstract class Vio
    * passed ox parameter.
    *
    * @param input an input stream to read from.
-   * @param value a value type object, must be either Streamable or
-   * CustomMarshal.
+   *
+   * @param value a pre-instantiated value type object, must be either
+   * Streamable or CustomMarshal. If the helper is used, this parameter
+   * is ignored and should be null.
+   *
+   * @param value_tag the tag that must be read previously.
+   * @param helper the helper for read object specific part; may be
+   * null to read in using other methods.
+   *
+   * @return the value that was read.
    */
-  public static void read_instance(InputStream input, Object value,
-                                   int value_tag
-                                  )
+  private static Object read_instance(InputStream input, Object value,
+    int value_tag, Object helper
+  )
   {
     try
       {
@@ -377,7 +411,7 @@ public abstract class Vio
 
             // Read all chunks.
             int chunk_size = input.read_long();
-            if (chunk_size <= 0)
+            if (chunk_size < 0)
               throw new MARSHAL("Invalid first chunk size " + chunk_size);
 
             byte[] r = new byte[ chunk_size ];
@@ -412,12 +446,29 @@ public abstract class Vio
                 // More than one chunk was present.
                 // Add the last chunk.
                 bout.write(r, 0, n);
-                input = new cdrBufInput(bout.toByteArray());
+                input = new noHeaderInput(bout.toByteArray());
               }
             else
               {
                 // Only one chunk was present.
-                input = new cdrBufInput(r);
+                input = new noHeaderInput(r);
+              }
+          }
+        else
+          {
+            if (input instanceof cdrBufInput)
+              {
+                // Highly probable case.
+                input =
+                  new noHeaderInput(((cdrBufInput) input).buffer.getBuffer());
+              }
+            else
+              {
+                cdrBufOutput bout = new cdrBufOutput();
+                int c;
+                while ((c = input.read()) >= 0)
+                  bout.write((byte) c);
+                input = new noHeaderInput(bout.buffer.toByteArray());
               }
           }
       }
@@ -447,12 +498,17 @@ public abstract class Vio
       {
         ((Streamable) value)._read(input);
       }
+    else if (helper instanceof BoxedValueHelper)
+      value = ((BoxedValueHelper) helper).read_value(input);
+    else if (helper instanceof ValueFactory)
+      value =
+        ((ValueFactory) helper).read_value((org.omg.CORBA_2_3.portable.InputStream) input);
     else
 
       // Stating the interfaces that the USER should use.
       throw new MARSHAL("The " + value.getClass().getName() +
-                        " must implement either StreamableValue or CustomValue."
-                       );
+        " must implement either StreamableValue or CustomValue."
+      );
 
     // The negative end of state marker is expected from OMG standard.
     // If the chunking is used, this marker is already extracted.
@@ -462,6 +518,8 @@ public abstract class Vio
         if (eor >= 0)
           throw new MARSHAL("End of state marker has an invalid value " + eor);
       }
+
+    return value;
   }
 
   /**
@@ -504,8 +562,8 @@ public abstract class Vio
    * @throws MARSHAL if the writing failed due any reason.
    */
   public static void write(OutputStream output, Serializable value,
-                           Class substitute
-                          )
+    Class substitute
+  )
   {
     // Write null if this is a null value.
     if (value == null)
@@ -527,7 +585,35 @@ public abstract class Vio
     if (value == null)
       output.write_long(vt_NULL);
     else
-      write_instance(output, value, id);
+      write_instance(output, value, id, null);
+  }
+
+  /**
+   * Write standard value type header, followed by contents, produced
+   * by the boxed value helper.
+   *
+   * @param output the stream to write to.
+   * @param value the value to write, can be null.
+   * @param helper the helper that writes the value content if it is
+   * not null.
+   */
+  public static void write(OutputStream output, Serializable value,
+    Object helper
+  )
+  {
+    if (value == null)
+      output.write_long(vt_NULL);
+    else
+      {
+        String id;
+
+        if (helper instanceof BoxedValueHelper)
+          id = ((BoxedValueHelper) helper).get_id();
+        else
+          id = "";
+
+        write_instance(output, value, id, helper);
+      }
   }
 
   /**
@@ -537,10 +623,12 @@ public abstract class Vio
    * @param output an output stream to write into.
    * @param value a value to write.
    * @param id a value repository id.
+   * @param helper a helper, writing object - specifica part. Can be null
+   * if the value should be written unsing other methods.
    */
   private static void write_instance(OutputStream output, Serializable value,
-                                     String id
-                                    )
+    String id, Object helper
+  )
   {
     // This implementation always writes a single repository id.
     // It never writes multiple repository ids and currently does not use
@@ -563,6 +651,11 @@ public abstract class Vio
     output.write_long(value_tag);
     output.write_string(id);
 
+    if (helper instanceof BoxedValueHelper)
+      {
+        ((BoxedValueHelper) helper).write_value(outObj, value);
+      }
+    else
     // User defince write method is present.
     if (value instanceof CustomMarshal)
       {
@@ -580,11 +673,36 @@ public abstract class Vio
         ((Streamable) value)._write(outObj);
       }
     else
+      {
+        // Try to find helper via class loader.
+        boolean ok = false;
+        try
+          {
+            Class helperClass = Class.forName(ObjectCreator.toHelperName(id));
 
-      // Stating the interfaces that the USER should use.
-      throw new MARSHAL("The " + value.getClass().getName() +
-                        " must implement either StreamableValue or CustomValue."
-                       );
+            // It will be the helper for the encapsulated boxed value, not the
+            // for the global boxed value type itself.
+            Method write =
+              helperClass.getMethod("write",
+                new Class[]
+                {
+                  org.omg.CORBA.portable.OutputStream.class, value.getClass()
+                }
+              );
+            write.invoke(null, new Object[] { outObj, value });
+            ok = true;
+          }
+        catch (Exception ex)
+          {
+            ok = false;
+          }
+
+        // Stating the interfaces that the USER should use.
+        if (!ok)
+          throw new MARSHAL("The " + value.getClass().getName() +
+            " must implement either StreamableValue" + " or CustomValue."
+          );
+      }
 
     if (USE_CHUNKING)
       {
@@ -611,8 +729,7 @@ public abstract class Vio
    *
    * @throws NO_IMPLEMENT, always.
    */
-  private static void incorrect_plug_in(Throwable ex)
-                                 throws NO_IMPLEMENT
+  static void incorrect_plug_in(Throwable ex) throws NO_IMPLEMENT
   {
     NO_IMPLEMENT no = new NO_IMPLEMENT("Incorrect CORBA plug-in");
     no.initCause(ex);
@@ -629,10 +746,11 @@ public abstract class Vio
   private static final void checkTag(int value_tag)
   {
     if ((value_tag < 0x7fffff00 || value_tag > 0x7fffffff) &&
-        value_tag != vt_NULL && value_tag != vt_INDIRECTION
-       )
+      value_tag != vt_NULL &&
+      value_tag != vt_INDIRECTION
+    )
       throw new MARSHAL("Invalid value record, unsupported header tag: " +
-                        value_tag
-                       );
+        value_tag
+      );
   }
 }

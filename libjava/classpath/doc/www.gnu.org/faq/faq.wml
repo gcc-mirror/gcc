@@ -304,6 +304,28 @@ be a bit picky about getting signatures from all contributors. Please do
 not see this as a personal offence.
 
 <p>Giving the copyright to the FSF also gives us a clear paper trail where changes come from, which confirms our clean-room status.
+</p>
+
+<p>
+The assignment contract commits the foundation to setting distribution terms
+that permit free redistribution.
+</p>
+
+<p>
+The assignment contract we normally use has a clause that permits you to
+use your code in proprietary programs, on 30 days' notice.
+(The 30 days' notice is there because, through a legal technicality,
+it would improve our position in a suit against a hoarder.)
+Although we believe that proprietary software is wrong, we include this
+clause because it would serve no purpose to ask you to promise not to do
+it. You're giving us a gift in the first place.
+</p>
+
+<p>
+You don't need to invoke this clause in order to distribute
+copies as free software under the GNU GPL, since everyone is
+allowed to do that.
+</p>
 
 <p>See also <a href="http://www.gnu.org/licenses/why-assign.html">http://www.gnu.org/licenses/why-assign.html</a>.
 </p>

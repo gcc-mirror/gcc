@@ -1,5 +1,5 @@
-/* JTextPane.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+/* JTextPane.java -- A powerful text widget supporting styled text
+   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,228 +43,373 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 
 import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
+import javax.swing.text.Element;
 import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.Style;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.StyledEditorKit;
 
 /**
- * JTextPane
- * @author	Andrew Selkirk
- * @version	1.0
+ * A powerful text component that supports styled content as well as
+ * embedding images and components. It is entirely based on a
+ * {@link StyledDocument} content model and a {@link StyledEditorKit}.
+ *
+ * @author Roman Kennke (roman@kennke.org)
+ * @author Andrew Selkirk
  */
-public class JTextPane extends JEditorPane {
+public class JTextPane
+  extends JEditorPane
+{
+  /**
+   * Creates a new <code>JTextPane</code> with a <code>null</code> document.
+   */
+  public JTextPane()
+  {
+    super();
+  }
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * Creates a new <code>JTextPane</code> and sets the specified
+   * <code>document</code>.
+   *
+   * @param document the content model to use
+   */
+  public JTextPane(StyledDocument document)
+  {
+    this();
+    setStyledDocument(document);
+  }
 
-	/**
-	 * uiClassID
-	 */
-	private static final String uiClassID = "TextPaneUI";
+  /**
+   * Returns the UI class ID. This is <code>TextPaneUI</code>.
+   *
+   * @return <code>TextPaneUI</code>
+   */
+  public String getUIClassID()
+  {
+    return "TextPaneUI";
+  }
 
+  /**
+   * Sets the content model for this <code>JTextPane</code>.
+   * <code>JTextPane</code> can only be used with {@link StyledDocument}s,
+   * if you try to set a different type of <code>Document</code>, an
+   * <code>IllegalArgumentException</code> is thrown.
+   *
+   * @param document the content model to set
+   *
+   * @throws IllegalArgumentException if <code>document</code> is not an
+   *         instance of <code>StyledDocument</code>
+   *
+   * @see {@link #setStyledDocument}
+   */
+  public void setDocument(Document document)
+  {
+    if (document != null && !(document instanceof StyledDocument))
+      throw new IllegalArgumentException
+        ("JTextPane can only handle StyledDocuments");
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
+    setStyledDocument((StyledDocument) document);
+  }
 
-	/**
-	 * Constructor JTextPane
-	 */
-	public JTextPane() {
-		// TODO
-	} // JTextPane()
+  /**
+   * Returns the {@link StyledDocument} that is the content model for
+   * this <code>JTextPane</code>. This is a typed wrapper for
+   * {@link #getDocument}.
+   *
+   * @return the content model of this <code>JTextPane</code>
+   */
+  public StyledDocument getStyledDocument()
+  {
+    return (StyledDocument) super.getDocument();
+  }
 
-	/**
-	 * Constructor JTextPane
-	 * @param document TODO
-	 */
-	public JTextPane(StyledDocument document) {
-		// TODO
-	} // JTextPane()
+  /**
+   * Sets the content model for this <code>JTextPane</code>.
+   *
+   * @param document the content model to set
+   */
+  public void setStyledDocument(StyledDocument document)
+  {
+    super.setDocument(document);
+  }
 
+  /**
+   * Replaces the currently selected text with the specified
+   * <code>content</code>. If there is no selected text, this results
+   * in a simple insertion at the current caret position. If there is
+   * no <code>content</code> specified, this results in the selection
+   * beeing deleted.
+   *
+   * @param content the text with which the selection is replaced
+   */
+  public void replaceSelection(String content)
+  {
+    Caret caret = getCaret();
+    StyledDocument doc = getStyledDocument();
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+    int dot = caret.getDot();
+    int mark = caret.getMark();
 
-	/**
-	 * getUIClassID
-	 * @returns String
-	 */
-	public String getUIClassID() {
-		return uiClassID;
-	} // getUIClassID()
+    // If content is empty delete selection.
+    if (content == null)
+      {
+	caret.setDot(dot);
+	return;
+      }
 
-	/**
-	 * setDocument
-	 * @param document TODO
-	 */
-	public void setDocument(Document document) {
-		super.setDocument(document); // TODO
-	} // setDocument()
+    try
+      {
+	int start = getSelectionStart();
+	int end = getSelectionEnd();
+	int contentLength = content.length();
 
-	/**
-	 * getStyledDocument
-	 * @returns StyledDocument
-	 */
-	public StyledDocument getStyledDocument() {
-		return null; // TODO
-	} // getStyledDocument()
+	// Remove selected text.
+	if (dot != mark)
+	  doc.remove(start, end - start);
 
-	/**
-	 * setStyledDocument
-	 * @param document TODO
-	 */
-	public void setStyledDocument(StyledDocument document) {
-		// TODO
-	} // setStyledDocument()
+	// Insert new text.
+	doc.insertString(start, content, null);
+	// Set attributes for inserted text
+	doc.setCharacterAttributes(start, contentLength, getInputAttributes(),
+				   true);
 
-	/**
-	 * replaceSelection
-	 * @param content TODO
-	 */
-	public void replaceSelection(String content) {
-		super.replaceSelection(content); // TODO
-	} // replaceSelection()
+	// Set dot to new position.
+	setCaretPosition(start + contentLength);
+      }
+    catch (BadLocationException e)
+      {
+	throw new AssertionError
+	  ("No BadLocationException should be thrown here");
+      }
+  }
 
-	/**
-	 * insertComponent
-	 * @param component TODO
-	 */
-	public void insertComponent(Component component) {
-		// TODO
-	} // insertComponent()
+  /**
+   * Inserts an AWT or Swing component into the text at the current caret
+   * position.
+   *
+   * @param component the component to be inserted
+   */
+  public void insertComponent(Component component)
+  {
+    // TODO: One space must be inserted here with attributes set to indicate
+    // that the component must be displayed here. Have to figure out the
+    // attributes.
+  }
 
-	/**
-	 * insertIcon
-	 * @param icon TODO
-	 */
-	public void insertIcon(Icon icon) {
-		// TODO
-	} // insertIcon()
+  /**
+   * Inserts an <code>Icon</code> into the text at the current caret position.
+   *
+   * @param icon the <code>Icon</code> to be inserted
+   */
+  public void insertIcon(Icon icon)
+  {
+    // TODO: One space must be inserted here with attributes set to indicate
+    // that the icon must be displayed here. Have to figure out the
+    // attributes.
+  }
 
-	/**
-	 * addStyle
-	 * @param nm TODO
-	 * @param parent TODO
-	 * @returns Style
-	 */
-	public Style addStyle(String nm, Style parent) {
-		return null; // TODO
-	} // addStyle()
+  /**
+   * Adds a style into the style hierarchy. Unspecified style attributes
+   * can be resolved in the <code>parent</code> style, if one is specified.
+   *
+   * While it is legal to add nameless styles (<code>nm == null</code),
+   * you must be aware that the client application is then responsible
+   * for managing the style hierarchy, since unnamed styles cannot be
+   * looked up by their name.
+   *
+   * @param nm the name of the style or <code>null</code> if the style should
+   *           be unnamed
+   * @param parent the parent in which unspecified style attributes are
+   *           resolved, or <code>null</code> if that is not necessary
+   *
+   * @return the newly created <code>Style</code>
+   */
+  public Style addStyle(String nm, Style parent)
+  {
+    return getStyledDocument().addStyle(nm, parent);
+  }
 
-	/**
-	 * removeStyle
-	 * @param nm TODO
-	 */
-	public void removeStyle(String nm) {
-		// TODO
-	} // removeStyle()
+  /**
+   * Removes a named <code>Style</code> from the style hierarchy.
+   *
+   * @param nm the name of the <code>Style</code> to be removed
+   */
+  public void removeStyle(String nm)
+  {
+    getStyledDocument().removeStyle(nm);
+  }
 
-	/**
-	 * getStyle
-	 * @param nm TODO
-	 * @returns Style
-	 */
-	public Style getStyle(String nm) {
-		return null; // TODO
-	} // getStyle()
+  /**
+   * Looks up and returns a named <code>Style</code>.
+   *
+   * @param nm the name of the <code>Style</code>
+   *
+   * @return the found <code>Style</code> of <code>null</code> if no such
+   *         <code>Style</code> exists
+   */
+  public Style getStyle(String nm)
+  {
+    return getStyledDocument().getStyle(nm);
+  }
 
-	/**
-	 * getLogicalStyle
-	 * @returns Style
-	 */
-	public Style getLogicalStyle() {
-		return null; // TODO
-	} // getLogicalStyle()
+  /**
+   * Returns the logical style of the paragraph at the current caret position.
+   *
+   * @return the logical style of the paragraph at the current caret position
+   */
+  public Style getLogicalStyle()
+  {
+    return getStyledDocument().getLogicalStyle(getCaretPosition());
+  }
 
-	/**
-	 * setLogicalStyle
-	 * @param style TODO
-	 */
-	public void setLogicalStyle(Style style) {
-		// TODO
-	} // setLogicalStyle()
+  /**
+   * Sets the logical style for the paragraph at the current caret position.
+   *
+   * @param style the style to set for the current paragraph
+   */
+  public void setLogicalStyle(Style style)
+  {
+    getStyledDocument().setLogicalStyle(getCaretPosition(), style);
+  }
 
-	/**
-	 * getCharacterAttributes
-	 * @returns AttributeSet
-	 */
-	public AttributeSet getCharacterAttributes() {
-		return null; // TODO
-	} // getCharacterAttributes()
+  /**
+   * Returns the text attributes for the character at the current caret
+   * position.
+   *
+   * @return the text attributes for the character at the current caret
+   *         position
+   */
+  public AttributeSet getCharacterAttributes()
+  {
+    StyledDocument doc = getStyledDocument();
+    Element el = doc.getCharacterElement(getCaretPosition());
+    return el.getAttributes();
+  }
 
-	/**
-	 * setCharacterAttributes
-	 * @param attribute TODO
-	 * @param replace TODO
-	 */
-	public void setCharacterAttributes(AttributeSet attribute,
-			boolean replace) {
-		// TODO
-	} // setCharacterAttributes()
+  /**
+   * Sets text attributes for the current selection. If there is no selection
+   * the text attributes are applied to newly inserted text
+   *
+   * @param attribute the text attributes to set
+   * @param replace if <code>true</code>, the attributes of the current
+   *     selection are overridden, otherwise they are merged
+   *
+   * @see {@link #getInputAttributes}
+   */
+  public void setCharacterAttributes(AttributeSet attribute,
+                                     boolean replace)
+  {
+    int dot = getCaret().getDot();
+    int start = getSelectionStart();
+    int end = getSelectionEnd();
+    if (start == dot && end == dot)
+      // There is no selection, update insertAttributes instead
+      {
+	MutableAttributeSet inputAttributes =
+	  getStyledEditorKit().getInputAttributes();
+	inputAttributes.addAttributes(attribute);
+      }
+    else
+      getStyledDocument().setCharacterAttributes(start, end - start, attribute,
+						 replace);
+  }
 
-	/**
-	 * getParagraphAttributes
-	 * @returns AttributeSet
-	 */
-	public AttributeSet getParagraphAttributes() {
-		return null; // TODO
-	} // getParagraphAttributes()
+  /**
+   * Returns the text attributes of the paragraph at the current caret
+   * position.
+   *
+   * @return the attributes of the paragraph at the current caret position
+   */
+  public AttributeSet getParagraphAttributes()
+  {
+    StyledDocument doc = getStyledDocument();
+    Element el = doc.getParagraphElement(getCaretPosition());
+    return el.getAttributes();
+  }
 
-	/**
-	 * setParagraphAttributes
-	 * @param attribute TODO
-	 * @param replace TODO
-	 */
-	public void setParagraphAttributes(AttributeSet attribute,
-			boolean replace) {
-		// TODO
-	} // setParagraphAttributes()
+  /**
+   * Sets text attributes for the paragraph at the current selection.
+   * If there is no selection the text attributes are applied to
+   * the paragraph at the current caret position.
+   *
+   * @param attribute the text attributes to set
+   * @param replace if <code>true</code>, the attributes of the current
+   *     selection are overridden, otherwise they are merged
+   */
+  public void setParagraphAttributes(AttributeSet attribute,
+                                     boolean replace)
+  {
+    // TODO
+  }
 
-	/**
-	 * getInputAttributes
-	 * @returns MutableAttributeSet
-	 */
-	public MutableAttributeSet getInputAttributes() {
-		return null; // TODO
-	} // getInputAttributes()
+  /**
+   * Returns the attributes that are applied to newly inserted text.
+   * This is a {@link MutableAttributeSet}, so you can easily modify these
+   * attributes.
+   *
+   * @return the attributes that are applied to newly inserted text
+   */
+  public MutableAttributeSet getInputAttributes()
+  {
+    return getStyledEditorKit().getInputAttributes();
+  }
 
-	/**
-	 * getStyledEditorKit
-	 * @returns StyledEditorKit
-	 */
-	protected final StyledEditorKit getStyledEditorKit() {
-		return null; // TODO
-	} // getStyledEditorKit()
+  /**
+   * Returns the {@link StyledEditorKit} that is currently used by this
+   * <code>JTextPane</code>.
+   *
+   * @return the current <code>StyledEditorKit</code> of this
+   *         <code>JTextPane</code>
+   */
+  protected final StyledEditorKit getStyledEditorKit()
+  {
+    return (StyledEditorKit) getEditorKit();
+  }
 
-	/**
-	 * createDefaultEditorKit
-	 * @returns EditorKit
-	 */
-	protected EditorKit createDefaultEditorKit() {
-		return super.createDefaultEditorKit(); // TODO
-	} // createDefaultEditorKit()
+  /**
+   * Creates the default {@link EditorKit} that is used in
+   * <code>JTextPane</code>s. This is an instance of {@link StyledEditorKit}.
+   *
+   * @return the default {@link EditorKit} that is used in
+   *         <code>JTextPane</code>s
+   */
+  protected EditorKit createDefaultEditorKit()
+  {
+    return new StyledEditorKit();
+  }
 
-	/**
-	 * setEditorKit
-	 * @param editor TODO
-	 */
-	public final void setEditorKit(EditorKit editor) {
-		super.setEditorKit(editor); // TODO
-	} // setEditorKit()
+  /**
+   * Sets the {@link EditorKit} to use for this <code>JTextPane</code>.
+   * <code>JTextPane</code>s can only handle {@link StyledEditorKit}s,
+   * if client programs try to set a different type of <code>EditorKit</code>
+   * then an IllegalArgumentException is thrown
+   *
+   * @param editor the <code>EditorKit</code> to set
+   *
+   * @throws IllegalArgumentException if <code>editor</code> is no
+   *         <code>StyledEditorKit</code>
+   */
+  public final void setEditorKit(EditorKit editor)
+  {
+    if (!(editor instanceof StyledEditorKit))
+      throw new IllegalArgumentException
+        ("JTextPanes can only handle StyledEditorKits");
+    super.setEditorKit(editor);
+  }
 
-	/**
-	 * paramString
-	 * @returns String
-	 */
-	protected String paramString() {
-		return super.paramString(); // TODO
-	} // paramString()
-
-
-} // JTextPane
+  /**
+   * Returns a param string that can be used for debugging.
+   *
+   * @return a param string that can be used for debugging.
+   */
+  protected String paramString()
+  {
+    return super.paramString(); // TODO
+  }
+}

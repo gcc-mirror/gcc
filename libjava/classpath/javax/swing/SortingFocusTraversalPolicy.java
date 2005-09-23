@@ -89,7 +89,7 @@ public class SortingFocusTraversalPolicy
    * Creates a new <code>SortingFocusTraversalPolicy</code> with the given
    * comparator set.
    *
-   * @param the comparator to set
+   * @param comparator the comparator to set
    */
   public SortingFocusTraversalPolicy(Comparator comparator)
   {
@@ -306,12 +306,12 @@ public class SortingFocusTraversalPolicy
   }
 
   /**
-   * Return the current value of the {@link implicitDownCycleTraversal}
+   * Return the current value of the {@link #implicitDownCycleTraversal}
    * property.
    *
    * @return the current value of the property
    * 
-   * @see setImplicitDownCycleTraversal
+   * @see #setImplicitDownCycleTraversal
    */
   public boolean getImplicitDownCycleTraversal()
   {
@@ -319,12 +319,12 @@ public class SortingFocusTraversalPolicy
   }
 
   /**
-   * Set the current value of the {@link implicitDownCycleTraversal}
+   * Set the current value of the {@link #implicitDownCycleTraversal}
    * property.
    *
    * @param down the new value of the property
    * 
-   * @see getImplicitDownCycleTraversal
+   * @see #getImplicitDownCycleTraversal
    */
   public void setImplicitDownCycleTraversal(boolean down)
   {

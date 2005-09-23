@@ -41,7 +41,6 @@ package gnu.CORBA.GIOP;
 import gnu.CORBA.CDR.cdrInput;
 import gnu.CORBA.CDR.cdrOutput;
 
-
 import org.omg.CORBA.portable.IDLEntity;
 
 /**
@@ -50,13 +49,13 @@ import org.omg.CORBA.portable.IDLEntity;
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public abstract class RequestHeader
+  extends contextSupportingHeader
   implements IDLEntity
 {
   /**
-   * The currently free request id. This field is incremented
-   * each time the new request header is constructed. To facilitate
-   * error detection, the first free id is equal to 0x01234567
-   * (19088743).
+   * The currently free request id. This field is incremented each time the new
+   * request header is constructed. To facilitate error detection, the first
+   * free id is equal to 0x01234567 (19088743).
    */
   private static int freeId = 0x01234567;
 
@@ -71,23 +70,17 @@ public abstract class RequestHeader
   public byte[] object_key;
 
   /**
-   * A value identifying the requesting principal.
-   * Initialised into a single zero byte.
+   * A value identifying the requesting principal. Initialised into a single
+   * zero byte.
    *
    * @deprecated by CORBA 2.2.
    */
   public byte[] requesting_principal;
 
   /**
-   * Contains the ORB service data being passed. Initialised as the
-   * zero size array by default.
-   */
-  public ServiceContext[] service_context = new ServiceContext[ 0 ];
-
-  /**
-   * This is used to associate the reply message with the
-   * previous request message. Initialised each time by the
-   * different value, increasing form 1 to Integer.MAX_VALUE.
+   * This is used to associate the reply message with the previous request
+   * message. Initialised each time by the different value, increasing form 1 to
+   * Integer.MAX_VALUE.
    */
   public int request_id = getNextId();
 
@@ -97,10 +90,9 @@ public abstract class RequestHeader
   protected boolean response_expected = true;
 
   /**
-   * Get next free request id. The value of the free request
-   * id starts from 0x02345678, it is incremented each time this
-   * function is called and is reset to 1 after reaching
-   * Integer.MAX_VALUE.
+   * Get next free request id. The value of the free request id starts from
+   * 0x02345678, it is incremented each time this function is called and is
+   * reset to 1 after reaching Integer.MAX_VALUE.
    *
    * @return the next free request id.
    */
@@ -126,15 +118,15 @@ public abstract class RequestHeader
   public abstract boolean isResponseExpected();
 
   /**
-   * Converts an byte array into hexadecimal string values.
-   * Used in various toString() methods.
+   * Converts an byte array into hexadecimal string values. Used in various
+   * toString() methods.
    */
   public String bytes(byte[] array)
   {
     StringBuffer b = new StringBuffer();
     for (int i = 0; i < array.length; i++)
       {
-        b.append(Integer.toHexString(array [ i ] & 0xFF));
+        b.append(Integer.toHexString(array[i] & 0xFF));
         b.append(" ");
       }
     return b.toString();
@@ -158,4 +150,5 @@ public abstract class RequestHeader
    * @param out a stream to write into.
    */
   public abstract void write(cdrOutput out);
+
 }

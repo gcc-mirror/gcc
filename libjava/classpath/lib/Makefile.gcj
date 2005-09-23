@@ -17,6 +17,11 @@ all_deps_files := $(all_list_files:.list=.deps)
 
 all: $(all_stamp_files)
 
+# Ensure this is rebuilt whenever the list of classes changes.
+# The list will always exist when this Makefile is used.
+Makefile.deps: classes
+	$(SHELL) $(top_srcdir)/lib/split-for-gcj.sh
+
 -include Makefile.deps $(all_deps_files)
 
 ## Like GCJ but include some common flags.
@@ -28,5 +33,5 @@ GCJF = $(GCJ) -Wno-deprecated --encoding=UTF-8 \
 # make the target be the stamp file.  This ensures that if a needed
 # source is changed, this rule is re-run for the appropriate package.
 %.stamp: %.list
-	$(GCJF) -MD -MF ${@:.stamp=.deps} -MT $@ @$<
+	$(GCJF) -MD -MF ${@:.stamp=.deps} -MT $@ -MP @$<
 	echo timestamp > $@

@@ -10,11 +10,8 @@ extern "C"
 {
 #endif
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkClipboard_initNativeState (JNIEnv *env, jobject);
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkClipboard_requestStringConversion (JNIEnv *env, jclass);
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkClipboard_selectionGet (JNIEnv *env, jclass);
-#undef gnu_java_awt_peer_gtk_GtkClipboard_SELECTION_RECEIVED_TIMEOUT
-#define gnu_java_awt_peer_gtk_GtkClipboard_SELECTION_RECEIVED_TIMEOUT 5000L
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkClipboard_advertiseContent (JNIEnv *env, jobject, jobjectArray, jboolean, jboolean, jboolean);
+JNIEXPORT jboolean JNICALL Java_gnu_java_awt_peer_gtk_GtkClipboard_initNativeState (JNIEnv *env, jclass, jstring, jstring, jstring);
 
 #ifdef __cplusplus
 }

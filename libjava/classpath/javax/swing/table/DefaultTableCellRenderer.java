@@ -47,6 +47,7 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.JTextField;
 
 /**
  * Class to display every cells.
@@ -123,7 +124,11 @@ public class DefaultTableCellRenderer extends JLabel
                                                  int row, int column)
   {
     if (value != null)
-      super.setText(value.toString());
+      {
+        if (value instanceof JTextField)
+          return new JTextField(((JTextField)value).getText());
+        super.setText(value.toString());
+      }
 
     setOpaque(true);
 

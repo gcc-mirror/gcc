@@ -156,11 +156,7 @@ public final class Class implements Serializable
    */
   public static Class forName(String name) throws ClassNotFoundException
   {
-    Class result = VMClass.forName (name);
-    if (result == null)
-      result = Class.forName(name, true,
-	VMStackWalker.getCallingClassLoader());
-    return result;
+    return VMClass.forName(name, true, VMStackWalker.getCallingClassLoader());
   }
 
   /**
@@ -205,24 +201,8 @@ public final class Class implements Serializable
             if (cl != null)
               sm.checkPermission(new RuntimePermission("getClassLoader"));
           }
-	if (name.startsWith("["))
-	  return VMClass.loadArrayClass(name, null);
-	Class c = VMClassLoader.loadClass(name, true);
-	if (c != null)
-	  {
-	    if (initialize)
-	      VMClass.initialize(c);
-	    return c;
-	  }
-        throw new ClassNotFoundException(name);
       }
-    if (name.startsWith("["))
-      return VMClass.loadArrayClass(name, classloader);
-    Class c = classloader.loadClass(name);
-    classloader.resolveClass(c);
-    if (initialize)
-      VMClass.initialize(c);
-    return c;
+    return VMClass.forName(name, initialize, classloader);
   }
   
   /**

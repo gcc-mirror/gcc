@@ -95,17 +95,31 @@ final class ArithmeticExpr
       case DIVIDE:
         if (rn == 0.0d || rn == -0.0d)
           {
-            return new Double(ln < 0.0d ?
-                              Double.NEGATIVE_INFINITY :
-                              Double.POSITIVE_INFINITY);
+            if (ln == 0.0d || ln == -0.0d)
+              {
+                return new Double(Double.NaN);
+              }
+            else
+              {
+                return new Double(ln < 0.0d ?
+                                  Double.NEGATIVE_INFINITY :
+                                  Double.POSITIVE_INFINITY);
+              }
           }
         return new Double(ln / rn);
       case MODULO:
-        if (rn == 0.0d || rn == -0.0d)
+        if (rn == 0.0d || rn == 0.0d)
           {
-            return new Double(ln < 0.0d ?
-                              Double.NEGATIVE_INFINITY :
-                              Double.POSITIVE_INFINITY);
+            if (ln == 0.0d || ln == -0.0d)
+              {
+                return new Double(Double.NaN);
+              }
+            else
+              {
+                return new Double(ln < 0.0d ?
+                                  Double.NEGATIVE_INFINITY :
+                                  Double.POSITIVE_INFINITY);
+              }
           }
         return new Double(ln % rn);
       default:

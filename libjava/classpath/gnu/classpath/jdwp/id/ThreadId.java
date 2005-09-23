@@ -40,6 +40,7 @@ exception statement from your version. */
 package gnu.classpath.jdwp.id;
 
 import gnu.classpath.jdwp.JdwpConstants;
+import gnu.classpath.jdwp.exception.InvalidThreadException;
 
 /**
  * A class which represents a JDWP thread id
@@ -60,5 +61,25 @@ public class ThreadId
   public ThreadId ()
   {
     super (JdwpConstants.Tag.THREAD);
+  }
+
+  /**
+   * Gets the Thread represented by this ID
+   *
+   * @throws InvalidThreadException if thread is garbage collected,
+   *           exited, or otherwise invalid
+   */
+  public Thread getThread ()
+    throws InvalidThreadException
+  {
+    Thread thread = (Thread) _reference.get ();
+
+    /* Spec says if thread is null, not valid, or exited,
+       throw invalid thread */
+    // FIXME: not valid? exited? Is this check valid?
+    if (thread == null || !thread.isAlive ())
+      throw new InvalidThreadException (getId ());
+
+    return thread;
   }
 }

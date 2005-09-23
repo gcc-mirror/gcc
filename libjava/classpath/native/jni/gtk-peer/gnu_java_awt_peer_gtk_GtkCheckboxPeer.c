@@ -227,14 +227,10 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_gtkButtonSetLabel
 static void
 item_toggled_cb (GtkToggleButton *item, jobject peer)
 {
-  gdk_threads_leave ();
-
   (*cp_gtk_gdk_env())->CallVoidMethod (cp_gtk_gdk_env(), peer,
                                 postItemEventID,
                                 peer,
                                 item->active ?
                                 (jint) AWT_ITEM_SELECTED :
                                 (jint) AWT_ITEM_DESELECTED);
-
-  gdk_threads_enter ();
 }

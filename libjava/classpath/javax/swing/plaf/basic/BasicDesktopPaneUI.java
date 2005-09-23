@@ -363,7 +363,7 @@ public class BasicDesktopPaneUI extends DesktopPaneUI
   {
     UIDefaults defaults = UIManager.getLookAndFeelDefaults();
 
-    desktop.setBackground(defaults.getColor("Desktop.background"));
+    desktop.setBackground(defaults.getColor("desktop"));
   }
 
   /**

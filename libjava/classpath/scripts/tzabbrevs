@@ -21,7 +21,7 @@ Link EST5EDT EST
 # XXX: Remove EST5EDT after java.lang.System is merged with libgcj?
 # Remove EST5EDT
 Link America/Anguilla PRT
-Link America/Buenos_Aires AGT
+Link America/Argentina/Buenos_Aires AGT
 Link America/St_Johns CNT
 Link CET ECT
 Link Africa/Cairo ART

@@ -96,8 +96,9 @@ public class JdwpConnection
    *
    * @param transport  the transport to use for communications
    */
-  public JdwpConnection (ITransport transport)
+  public JdwpConnection (ThreadGroup group, ITransport transport)
   {
+    super (group, "JDWP connection thread");
     _transport = transport;
     _commandQueue = new ArrayList ();
     _shutdown = false;
@@ -177,7 +178,7 @@ public class JdwpConnection
 	       2. Transport was shutdown
 	       In either case, we make sure that all of the
 	       back-end gets shutdown. */
-	    Jdwp.getInstance().shutdown ();
+	    Jdwp.getDefault().shutdown ();
 	  }
 	catch (Throwable t)
 	  {

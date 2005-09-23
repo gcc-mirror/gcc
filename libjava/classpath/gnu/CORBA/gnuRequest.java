@@ -40,32 +40,47 @@ package gnu.CORBA;
 
 import gnu.CORBA.CDR.cdrBufInput;
 import gnu.CORBA.CDR.cdrBufOutput;
-import gnu.CORBA.GIOP.CloseMessage;
 import gnu.CORBA.GIOP.MessageHeader;
 import gnu.CORBA.GIOP.ReplyHeader;
 import gnu.CORBA.GIOP.RequestHeader;
 import gnu.CORBA.GIOP.cxCodeSet;
+import gnu.CORBA.Interceptor.gnuClientRequestInfo;
+import gnu.CORBA.Poa.ORB_1_4;
 
 import org.omg.CORBA.ARG_IN;
 import org.omg.CORBA.ARG_INOUT;
 import org.omg.CORBA.ARG_OUT;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_INV_ORDER;
+import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.Bounds;
+import org.omg.CORBA.CompletionStatus;
 import org.omg.CORBA.Context;
 import org.omg.CORBA.ContextList;
 import org.omg.CORBA.Environment;
 import org.omg.CORBA.ExceptionList;
+import org.omg.CORBA.INV_POLICY;
 import org.omg.CORBA.MARSHAL;
+import org.omg.CORBA.NO_IMPLEMENT;
 import org.omg.CORBA.NO_RESOURCES;
 import org.omg.CORBA.NVList;
 import org.omg.CORBA.NamedValue;
 import org.omg.CORBA.ORB;
+import org.omg.CORBA.Policy;
 import org.omg.CORBA.Request;
 import org.omg.CORBA.SystemException;
 import org.omg.CORBA.TypeCode;
 import org.omg.CORBA.UnknownUserException;
-import org.omg.CORBA.UserException;
+import org.omg.CORBA.portable.ObjectImpl;
+import org.omg.IOP.ServiceContext;
+import org.omg.IOP.TAG_CODE_SETS;
+import org.omg.IOP.TAG_INTERNET_IOP;
+import org.omg.IOP.TaggedComponent;
+import org.omg.IOP.TaggedProfile;
+import org.omg.PortableInterceptor.ClientRequestInfo;
+import org.omg.PortableInterceptor.ClientRequestInterceptorOperations;
+import org.omg.PortableInterceptor.ForwardRequest;
+import org.omg.PortableInterceptor.InvalidSlot;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,14 +89,14 @@ import java.io.OutputStream;
 import java.net.BindException;
 import java.net.Socket;
 
+import java.util.ArrayList;
+
 /**
  * The implementation of the CORBA request.
  *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
-public class gnuRequest
-  extends Request
-  implements Cloneable
+public class gnuRequest extends Request implements Cloneable
 {
   /**
    * The maximal supported GIOP version.
@@ -89,23 +104,32 @@ public class gnuRequest
   public static Version MAX_SUPPORTED = new Version(1, 2);
 
   /**
-   * The initial pause that the Request makes when
-   * the required port is not available.
+   * The initial pause that the Request makes when the required port is not
+   * available.
    */
   public static int PAUSE_INITIAL = 50;
 
   /**
-   * The number of repretetive attempts to get a required
-   * port, if it is not immediately available.
+   * The number of repretetive attempts to get a required port, if it is not
+   * immediately available.
    */
   public static int PAUSE_STEPS = 12;
 
   /**
-   * The maximal pausing interval between two repetetive attempts.
-   * The interval doubles after each unsuccessful attempt, but
-   * will not exceed this value.
+   * The maximal pausing interval between two repetetive attempts. The interval
+   * doubles after each unsuccessful attempt, but will not exceed this value.
    */
   public static int PAUSE_MAX = 1000;
+
+  /**
+   * The interceptor, listening the major request submission points.
+   */
+  ClientRequestInterceptorOperations m_interceptor;
+
+  /**
+   * The request info, used by interceptor.
+   */
+  ClientRequestInfo m_info = new gnuClientRequestInfo(this);
 
   /**
    * The empty byte array.
@@ -124,14 +148,13 @@ public class gnuRequest
   protected ContextList m_context_list;
 
   /**
-   * The request environment for holding the exception
-   * the has possibly been thrown by the method being invoked.
+   * The request environment for holding the exception the has possibly been
+   * thrown by the method being invoked.
    */
   protected Environment m_environment = new gnuEnvironment();
 
   /**
-   * The list of all exceptions that can be thrown by the
-   * method being invoked.
+   * The list of all exceptions that can be thrown by the method being invoked.
    */
   protected ExceptionList m_exceptions = new gnuExceptionList();
 
@@ -139,6 +162,16 @@ public class gnuRequest
    * The result, returned by the invoked method (function).
    */
   protected NamedValue m_result = new gnuNamedValue();
+
+  /**
+   * The exception id, received from the server, null if none.
+   */
+  protected String m_exception_id;
+
+  /**
+   * The thrown system exception.
+   */
+  protected SystemException m_sys_ex;
 
   /**
    * The invocation target.
@@ -151,20 +184,32 @@ public class gnuRequest
   protected String m_operation;
 
   /**
-   * The flag, indicating that the request has been sent
-   * and the result is already received.
+   * This field temporary remembers the value of the forwarded ior reference. If
+   * it is not null, the request was forwarded and the effective target is not
+   * the same as the default target.
+   */
+  public IOR m_forward_ior;
+
+  /**
+   * Is set when object, and not IOR is directly available.
+   */
+  public org.omg.CORBA.Object m_forwarding_target;
+
+  /**
+   * The flag, indicating that the request has been sent and the result is
+   * already received.
    */
   protected boolean complete;
 
   /**
-   * The flag, indicating that the response to this request must be
-   * ignored (used with {@link #send_oneway()}).
+   * The flag, indicating that the response to this request must be ignored
+   * (used with {@link #send_oneway()}).
    */
   protected boolean oneWay;
 
   /**
-   * The flag, indicating that the request has been sent
-   * and no result is yet received.
+   * The flag, indicating that the request has been sent and no result is yet
+   * received.
    */
   protected boolean running;
 
@@ -174,10 +219,25 @@ public class gnuRequest
   protected gnuNVList m_args = new gnuNVList();
 
   /**
-   * The request arguments in the case when they are directly written into
-   * the parameter buffer.
+   * The request arguments in the case when they are directly written into the
+   * parameter buffer.
    */
   protected streamRequest m_parameter_buffer;
+
+  /**
+   * The array of slots.
+   */
+  protected Any[] m_slots;
+
+  /**
+   * The request header currently in use.
+   */
+  protected RequestHeader m_rqh;
+
+  /**
+   * The reply header currently in use.
+   */
+  protected ReplyHeader m_rph;
 
   /**
    * The IOR of the target.
@@ -192,17 +252,16 @@ public class gnuRequest
   /**
    * The encoding, used to send the message.
    *
-   * The default encoding is inherited from the set IOR
-   * (that string reference can be encoded in either Big or
-   * Little endian). If the IOR encoding is not known
-   * (for example, by obtaining the reference from the naming
-   * service), the Big Endian is used.
+   * The default encoding is inherited from the set IOR (that string reference
+   * can be encoded in either Big or Little endian). If the IOR encoding is not
+   * known (for example, by obtaining the reference from the naming service),
+   * the Big Endian is used.
    */
   private boolean Big_endian = true;
 
   /**
-   * Set the IOR data, sufficient to find the invocation target.
-   * This also sets default endian encoding for invocations.
+   * Set the IOR data, sufficient to find the invocation target. This also sets
+   * default endian encoding for invocations.
    *
    * @see IOR.parse(String)
    */
@@ -211,6 +270,11 @@ public class gnuRequest
     ior = an_ior;
     setBigEndian(ior.Big_Endian);
   }
+
+  /**
+   * Used when redirecting request to another target.
+   */
+  gnuRequest redirected;
 
   /**
    * Get the IOR data, sufficient to find the invocation target.
@@ -228,18 +292,26 @@ public class gnuRequest
   public void setORB(ORB an_orb)
   {
     orb = an_orb;
+
+    // Take the interceptor from the ORB.
+    if (orb instanceof Restricted_ORB)
+      m_interceptor = ((Restricted_ORB) orb).iClient;
+
+    if (m_interceptor != null && orb instanceof ORB_1_4)
+      {
+        m_slots = ((ORB_1_4) orb).ic_current.clone_slots();
+      }
   }
 
   /**
-   * Set the encoding that will be used to send the message.
-   * The default encoding is inherited from the set IOR
-   * (that string reference can be encoded in either Big or
-   * Little endian). If the IOR encoding is not known
-   * (for example, by obtaining the reference from the naming
-   * service), the Big Endian is used.
+   * Set the encoding that will be used to send the message. The default
+   * encoding is inherited from the set IOR (that string reference can be
+   * encoded in either Big or Little endian). If the IOR encoding is not known
+   * (for example, by obtaining the reference from the naming service), the Big
+   * Endian is used.
    *
-   * @param use_big_endian true to use the Big Endian, false
-   * to use the Little Endian encoding.
+   * @param use_big_endian true to use the Big Endian, false to use the Little
+   * Endian encoding.
    */
   public void setBigEndian(boolean use_big_endian)
   {
@@ -257,17 +329,32 @@ public class gnuRequest
   }
 
   /**
-   * Get the parameter stream, where the invocation arguments should
-   * be written if they are written into the stream directly.
+   * Get the parameter stream, where the invocation arguments should be written
+   * if they are written into the stream directly.
    */
   public streamRequest getParameterStream()
   {
     m_parameter_buffer = new streamRequest();
     m_parameter_buffer.request = this;
     m_parameter_buffer.setVersion(ior.Internet.version);
-    m_parameter_buffer.setCodeSet(cxCodeSet.negotiate(ior.CodeSets));
+    m_parameter_buffer.setCodeSet(cxCodeSet.negotiate(ior.Internet.CodeSets));
     m_parameter_buffer.setOrb(orb);
     m_parameter_buffer.setBigEndian(Big_endian);
+
+    // For the old iiop versions, it is important to set the size
+    // correctly.
+    if (ior.Internet.version.until_inclusive(1, 1))
+      {
+        cdrBufOutput measure = new cdrBufOutput();
+        measure.setOffset(12);
+        if (m_rqh == null)
+          m_rqh = new gnu.CORBA.GIOP.v1_0.RequestHeader();
+        m_rqh.operation = m_operation;
+        m_rqh.object_key = ior.key;
+        m_rqh.write(measure);
+        m_parameter_buffer.setOffset(12 + measure.buffer.size());
+      }
+
     return m_parameter_buffer;
   }
 
@@ -380,33 +467,29 @@ public class gnuRequest
   }
 
   /** {@inheritDoc} */
-  public void get_response()
-                    throws org.omg.CORBA.WrongTransaction
+  public void get_response() throws org.omg.CORBA.WrongTransaction
   {
     /**
-     * The response is ready after it is received.
-     * FIXME implement context checks and any other functionality,
-     * if required.
+     * The response is ready after it is received. FIXME implement context
+     * checks and any other functionality, if required.
      */
   }
 
   /**
-   * Submit the request, suspending the current thread until the
-   * answer is received.
+   * Submit the request, suspending the current thread until the answer is
+   * received.
    *
-   * This implementation requires to set the IOR property
-   * ({@link #setIOR(IOR)} before calling this method.
+   * This implementation requires to set the IOR property ({@link #setIOR(IOR)}
+   * before calling this method.
    *
-   * @throws BAD_INV_ORDER, minor code 0, if the IOR has not been
-   * previously set.
+   * @throws BAD_INV_ORDER, minor code 0, if the IOR has not been previously
+   * set.
    *
-   * @throws SystemException if this exception has been thrown on
-   * remote side. The exact exception type and the minor code are
-   * the same as they have been for the exception, thrown on remoted
-   * side.
+   * @throws SystemException if this exception has been thrown on remote side.
+   * The exact exception type and the minor code are the same as they have been
+   * for the exception, thrown on remoted side.
    */
-  public synchronized void invoke()
-                           throws BAD_INV_ORDER
+  public synchronized void invoke() throws BAD_INV_ORDER
   {
     waitWhileBusy();
     complete = false;
@@ -417,7 +500,32 @@ public class gnuRequest
 
     try
       {
-        p_invoke();
+        Forwardings:
+        while (true)
+          {
+            try
+              {
+                p_invoke();
+                break Forwardings;
+              }
+            catch (ForwardRequest e)
+              {
+                try
+                  {
+                    ObjectImpl impl = (ObjectImpl) e.forward;
+                    Simple_delegate delegate =
+                      (Simple_delegate) impl._get_delegate();
+                    ior = delegate.getIor();
+                  }
+                catch (Exception ex)
+                  {
+                    BAD_PARAM bad =
+                      new BAD_PARAM("Unsupported forwarding target");
+                    bad.initCause(ex);
+                    throw bad;
+                  }
+              }
+          }
       }
     finally
       {
@@ -452,7 +560,8 @@ public class gnuRequest
     return m_result;
   }
 
-  /** {@inheritDoc}
+  /**
+   * {@inheritDoc}
    *
    */
   public Any return_value()
@@ -474,9 +583,8 @@ public class gnuRequest
   }
 
   /**
-   * Send a request and forget about it, not waiting for a response.
-   * This can be done also for methods that normally are expected
-   * to return some values.
+   * Send a request and forget about it, not waiting for a response. This can be
+   * done also for methods that normally are expected to return some values.
    *
    * TODO It is generally recommended to reuse the threads. Reuse?
    */
@@ -495,9 +603,8 @@ public class gnuRequest
   }
 
   /**
-   * Set the argument list.
-   * This field is initialised as empty non null instance by default,
-   * so the method is only used in cases when the direct replacement
+   * Set the argument list. This field is initialised as empty non null instance
+   * by default, so the method is only used in cases when the direct replacement
    * is desired.
    *
    * @param a_args the argument list.
@@ -525,8 +632,8 @@ public class gnuRequest
   }
 
   /**
-   * Set the context list that is later returned by the
-   * method {@link #contexts()}.
+   * Set the context list that is later returned by the method
+   * {@link #contexts()}.
    *
    * @param a_context_list a new context list.
    */
@@ -536,10 +643,9 @@ public class gnuRequest
   }
 
   /**
-   * Set the exception container.
-   * This field is initialised as empty non null instance by default,
-   * so the method is only used in cases when the direct replacement
-   * is desired.
+   * Set the exception container. This field is initialised as empty non null
+   * instance by default, so the method is only used in cases when the direct
+   * replacement is desired.
    *
    * @param a_environment the new exception container.
    */
@@ -549,10 +655,9 @@ public class gnuRequest
   }
 
   /**
-   * Set the list of exceptions.
-   * This field is initialised as empty non null instance by default,
-   * so the method is only used in cases when the direct replacement
-   * is desired.
+   * Set the list of exceptions. This field is initialised as empty non null
+   * instance by default, so the method is only used in cases when the direct
+   * replacement is desired.
    *
    * @param a_exceptions a list of exceptions.
    */
@@ -572,10 +677,9 @@ public class gnuRequest
   }
 
   /**
-   * Set the named value, returned as result.
-   * This field is initialised as empty non null instance by default,
-   * so the method is only used in cases when the direct replacement
-   * is desired.
+   * Set the named value, returned as result. This field is initialised as empty
+   * non null instance by default, so the method is only used in cases when the
+   * direct replacement is desired.
    *
    * @param a_result the result keeper.
    */
@@ -585,8 +689,8 @@ public class gnuRequest
   }
 
   /**
-   * Set the type of the named value, returned as a result.
-   * Instantiates a new instance of the result value.
+   * Set the type of the named value, returned as a result. Instantiates a new
+   * instance of the result value.
    */
   public void set_return_type(TypeCode returns)
   {
@@ -608,17 +712,16 @@ public class gnuRequest
   }
 
   /**
-   * Do the actual invocation.
-   * This implementation requires to set the IOR property
-   * ({@link #setIOR(IOR)} before calling this method.
+   * Do the actual invocation. This implementation requires to set the IOR
+   * property ({@link #setIOR(IOR)} before calling this method.
    *
-   * @throws BAD_INV_ORDER, minor code 0, if the IOR has not been
-   * previously set or if the direct argument addition is mixed with
-   * the direct argument writing into the output stream.
+   * @throws BAD_INV_ORDER, minor code 0, if the IOR has not been previously set
+   * or if the direct argument addition is mixed with the direct argument
+   * writing into the output stream.
    *
    * @return the server response in binary form.
    */
-  public synchronized binaryReply submit()
+  public synchronized binaryReply submit() throws ForwardRequest
   {
     gnu.CORBA.GIOP.MessageHeader header = new gnu.CORBA.GIOP.MessageHeader();
 
@@ -629,32 +732,36 @@ public class gnuRequest
     header.version = useVersion(ior.Internet.version);
 
     RequestHeader rh = header.create_request_header();
-
-    rh.object_key = ior.key;
     rh.operation = m_operation;
+    rh.object_key = ior.key;
+
+    // Update interceptor.
+    m_rqh = rh;
+
+    if (m_interceptor != null)
+      m_interceptor.send_request(m_info);
 
     // Prepare the submission.
     cdrBufOutput request_part = new cdrBufOutput();
 
     request_part.setOffset(header.getHeaderSize());
     request_part.setVersion(header.version);
-    request_part.setCodeSet(cxCodeSet.negotiate(ior.CodeSets));
+    request_part.setCodeSet(cxCodeSet.negotiate(ior.Internet.CodeSets));
     request_part.setOrb(orb);
     request_part.setBigEndian(header.isBigEndian());
 
     // This also sets the stream encoding to the encoding, specified
     // in the header.
     rh.write(request_part);
-
+    
     if (m_args != null && m_args.count() > 0)
       {
         write_parameters(header, request_part);
 
         if (m_parameter_buffer != null)
           throw new BAD_INV_ORDER("Please either add parameters or " +
-                                  "write them into stream, but not both " +
-                                  "at once."
-                                 );
+            "write them into stream, but not both " + "at once."
+          );
       }
 
     if (m_parameter_buffer != null)
@@ -710,8 +817,8 @@ public class gnuRequest
 
         if (socket == null)
           throw new NO_RESOURCES(ior.Internet.host + ":" + ior.Internet.port +
-                                 " in use"
-                                );
+            " in use"
+          );
         socket.setKeepAlive(true);
 
         OutputStream socketOutput = socket.getOutputStream();
@@ -745,8 +852,9 @@ public class gnuRequest
       {
         MARSHAL m =
           new MARSHAL("Unable to open a socket at " + ior.Internet.host + ":" +
-                      ior.Internet.port
-                     );
+            ior.Internet.port, 10000 + ior.Internet.port,
+            CompletionStatus.COMPLETED_NO
+          );
         m.initCause(io_ex);
         throw m;
       }
@@ -776,9 +884,9 @@ public class gnuRequest
   }
 
   /**
-   * Get the used version. Normally, it is better to respond using the
-   * same version as it is specified in IOR, but not above the maximal
-   * supported version.
+   * Get the used version. Normally, it is better to respond using the same
+   * version as it is specified in IOR, but not above the maximal supported
+   * version.
    */
   public Version useVersion(Version desired)
   {
@@ -790,12 +898,11 @@ public class gnuRequest
 
   /**
    * Wait while the response to request, submitted using
-   * {@link #send_deferred()} or {@link #invoke()} (from other thread)
-   * is returned.
+   * {@link #send_deferred()} or {@link #invoke()} (from other thread) is
+   * returned.
    *
-   * FIXME It is possible to rewrite this using
-   * Object.wait() and Object.notify(), but be sure to prepare the test
-   * as well.
+   * FIXME It is possible to rewrite this using Object.wait() and
+   * Object.notify(), but be sure to prepare the test as well.
    */
   public synchronized void waitWhileBusy()
   {
@@ -819,26 +926,25 @@ public class gnuRequest
   }
 
   /**
-   * Do actual invocation. This method recursively calls itself if
-   * the redirection is detected.
+   * Do actual invocation. This method recursively calls itself if the
+   * redirection is detected.
    */
-  private void p_invoke()
-                 throws SystemException
+  private void p_invoke() throws SystemException, ForwardRequest
   {
     binaryReply response = submit();
 
-    ReplyHeader rh = response.header.create_reply_header();
+    if (m_rph == null)
+      m_rph = response.header.create_reply_header();
+
     cdrBufInput input = response.getStream();
     input.setOrb(orb);
 
-    rh.read(input);
+    m_rph.read(input);
 
     // The stream must be aligned sinve v1.2, but only once.
     boolean align = response.header.version.since_inclusive(1, 2);
 
-    boolean moved_permanently = false;
-
-    switch (rh.reply_status)
+    switch (m_rph.reply_status)
       {
         case ReplyHeader.NO_EXCEPTION :
 
@@ -881,6 +987,9 @@ public class gnuRequest
                   }
               }
 
+          if (m_interceptor != null)
+            m_interceptor.receive_reply(m_info);
+
           break;
 
         case ReplyHeader.SYSTEM_EXCEPTION :
@@ -889,12 +998,15 @@ public class gnuRequest
               input.align(8);
               align = false;
             }
+          readExceptionId(input);
 
-          SystemException exception = ObjectCreator.readSystemException(input);
+          m_sys_ex = ObjectCreator.readSystemException(input);
+          m_environment.exception(m_sys_ex);
 
-          m_environment.exception(exception);
+          if (m_interceptor != null)
+            m_interceptor.receive_exception(m_info);
 
-          throw exception;
+          throw m_sys_ex;
 
         case ReplyHeader.USER_EXCEPTION :
           if (align)
@@ -902,14 +1014,19 @@ public class gnuRequest
               input.align(8);
               align = false;
             }
+          readExceptionId(input);
 
           // Prepare an Any that will hold the exception.
           gnuAny exc = new gnuAny();
+          exc.setOrb(orb);
 
           exc.insert_Streamable(new streamReadyHolder(input));
 
           UnknownUserException unuex = new UnknownUserException(exc);
           m_environment.exception(unuex);
+
+          if (m_interceptor != null)
+            m_interceptor.receive_exception(m_info);
 
           break;
 
@@ -925,18 +1042,37 @@ public class gnuRequest
             }
           catch (IOException ex)
             {
-              throw new MARSHAL(ex + " while reading the forwarding info");
+              new MARSHAL("Cant read forwarding info", 5103,
+                CompletionStatus.COMPLETED_NO
+              );
             }
 
           setIor(forwarded);
+
+          m_forward_ior = forwarded;
+
+          if (m_interceptor != null)
+            m_interceptor.receive_other(m_info);
 
           // Repeat with the forwarded information.
           p_invoke();
           return;
 
         default :
-          throw new MARSHAL("Unknow reply status: " + rh.reply_status);
+          throw new MARSHAL("Unknow reply status", 8100 + m_rph.reply_status,
+            CompletionStatus.COMPLETED_NO
+          );
       }
+  }
+
+  /**
+   * Read exception id without changing the stream pointer position.
+   */
+  void readExceptionId(cdrBufInput input)
+  {
+    input.mark(2048);
+    m_exception_id = input.read_string();
+    input.reset();
   }
 
   /**
@@ -947,10 +1083,9 @@ public class gnuRequest
    *
    * @throws MARSHAL if the attempt to write the parameters has failde.
    */
-  private void write_parameter_buffer(MessageHeader header,
-                                      cdrBufOutput request_part
-                                     )
-                               throws MARSHAL
+  protected void write_parameter_buffer(MessageHeader header,
+    cdrBufOutput request_part
+  ) throws MARSHAL
   {
     try
       {
@@ -974,8 +1109,9 @@ public class gnuRequest
    *
    * @throws MARSHAL if the attempt to write the parameters has failde.
    */
-  private void write_parameters(MessageHeader header, cdrBufOutput request_part)
-                         throws MARSHAL
+  protected void write_parameters(MessageHeader header,
+    cdrBufOutput request_part
+  ) throws MARSHAL
   {
     // Align after 1.2, but only once.
     boolean align = header.version.since_inclusive(1, 2);
@@ -988,7 +1124,7 @@ public class gnuRequest
           {
             para = m_args.item(i);
 
-            //This bit is set both for ARG_IN and ARG_INOUT
+            // This bit is set both for ARG_IN and ARG_INOUT
             if ((para.flags() & ARG_IN.value) != 0)
               {
                 if (align)
@@ -1002,7 +1138,277 @@ public class gnuRequest
       }
     catch (Bounds ex)
       {
-        throw new MARSHAL("Unable to write method arguments to CDR output.");
+        InternalError ierr = new InternalError();
+        ierr.initCause(ex);
+        throw ierr;
       }
+  }
+
+  /* **************Implementation of the request info operations. ***** */
+
+  /**
+   * Add context to request.
+   */
+  public void add_request_service_context(ServiceContext service_context,
+    boolean replace
+  )
+  {
+    m_rqh.addContext(service_context, replace);
+  }
+
+  /**
+   * Get the Internet profile as an effective profile.
+   */
+  public TaggedProfile effective_profile()
+  {
+    cdrBufOutput buf = new cdrBufOutput(512);
+    buf.setOrb(orb);
+    ior.Internet.write(buf);
+
+    TaggedProfile p = new TaggedProfile();
+    p.tag = TAG_INTERNET_IOP.value;
+    p.profile_data = buf.buffer.toByteArray();
+    return p;
+  }
+
+  /**
+   * Return either target or forwarded targed.
+   */
+  public org.omg.CORBA.Object effective_target()
+  {
+    return new IOR_contructed_object(orb, ior);
+  }
+
+  /**
+   * Get effective component with the give id from the Internet profile.
+   */
+  public TaggedComponent get_effective_component(int id)
+    throws BAD_PARAM
+  {
+    if (id == TAG_CODE_SETS.value)
+      {
+        // Codesets are encoded separately.
+        cdrBufOutput buf = new cdrBufOutput(512);
+        buf.setOrb(orb);
+        ior.Internet.CodeSets.write(buf);
+
+        TaggedComponent t = new TaggedComponent();
+        t.tag = TAG_CODE_SETS.value;
+        t.component_data = buf.buffer.toByteArray();
+        return t;
+      }
+    else
+      {
+        for (int i = 0; i < ior.Internet.components.size(); i++)
+          {
+            TaggedComponent c =
+              (TaggedComponent) ior.Internet.components.get(i);
+            if (c.tag == id)
+              return c;
+          }
+      }
+    throw new BAD_PARAM("No component " + id + " in the Internet profile", 28,
+      CompletionStatus.COMPLETED_MAYBE
+    );
+  }
+
+  /**
+   * Get all components with the given id from the internet profile.
+   */
+  public TaggedComponent[] get_effective_components(int id)
+    throws BAD_PARAM
+  {
+    if (id == TAG_CODE_SETS.value)
+      return new TaggedComponent[] { get_effective_component(TAG_CODE_SETS.value) };
+    else
+      {
+        ArrayList components = new ArrayList(ior.Internet.components.size());
+        for (int i = 0; i < ior.Internet.components.size(); i++)
+          {
+            TaggedComponent c =
+              (TaggedComponent) ior.Internet.components.get(i);
+            if (c.tag == id)
+              components.add(c);
+          }
+        if (components.size() == 0)
+          throw new BAD_PARAM("No component " + id +
+            " in the Internet profile", 28, CompletionStatus.COMPLETED_MAYBE
+          );
+        else
+          {
+            TaggedComponent[] t = new TaggedComponent[ components.size() ];
+            for (int i = 0; i < t.length; i++)
+              t [ i ] = (TaggedComponent) components.get(i);
+            return t;
+          }
+      }
+  }
+
+  /**
+   * This should be not implemented up till jdk 1.5 inclusive.
+   */
+  public Policy get_request_policy(int type) throws INV_POLICY
+  {
+    throw new NO_IMPLEMENT();
+  }
+
+  /** @inheritDoc */
+  public String received_exception_id()
+  {
+    return m_exception_id;
+  }
+
+  /** @inheritDoc */
+  public Any received_exception()
+  {
+    if (m_exception_id == null)
+      return null;
+
+    if (m_sys_ex != null)
+      {
+        Any a = orb.create_any();
+        ObjectCreator.insertSysException(a, m_sys_ex);
+        return a;
+      }
+
+    Exception mex = m_environment.exception();
+
+    UnknownUserException ex = (UnknownUserException) mex;
+    if (ex == null)
+      return null;
+    else
+      return ex.except;
+  }
+
+  /**
+   * Return the forwarded reference, null if none.
+   */
+  public org.omg.CORBA.Object forward_reference()
+  {
+    if (m_forwarding_target != null)
+      return m_forwarding_target;
+
+    if (m_forward_ior != null)
+      return new IOR_contructed_object(orb, m_forward_ior);
+    else
+      return null;
+  }
+
+  /**
+   * Get the slot from the slot array inside this request.
+   */
+  public Any get_slot(int id) throws InvalidSlot
+  {
+    try
+      {
+        return m_slots [ id ];
+      }
+    catch (Exception e)
+      {
+        throw new InvalidSlot("slot id " + id + ":" + e);
+      }
+  }
+
+  /**
+   * Get the reply status.
+   */
+  public short reply_status()
+  {
+    if (m_rph == null)
+      throw new BAD_INV_ORDER("Request not yet sent", 14,
+        CompletionStatus.COMPLETED_NO
+      );
+    return (short) m_rph.reply_status;
+  }
+
+  /**
+   * Get the request id.
+   */
+  public int request_id()
+  {
+    return m_rqh.request_id;
+  }
+
+  /**
+   * Return true if the response is expected.
+   */
+  public boolean response_expected()
+  {
+    return !oneWay;
+  }
+
+  /**
+   * Determines how far the request shall progress before control is returned to
+   * the client. However up till JDK 1.5 inclusive this method always returns
+   * SYNC_WITH_TRANSPORT.
+   *
+   * @return {@link org.omg.Messaging.SYNC_WITH_TRANSPORT.value (1), always.
+   *
+   * @specnote as defined in the Suns 1.5 JDK API.
+   */
+  public short sync_scope()
+  {
+    return org.omg.Messaging.SYNC_WITH_TRANSPORT.value;
+  }
+
+  /** @inheritDoc */
+  public ServiceContext get_request_service_context(int ctx_name)
+    throws BAD_PARAM
+  {
+    return gnu.CORBA.GIOP.ServiceContext.findContext(ctx_name,
+      m_rqh.service_context
+    );
+  }
+
+  /** @inheritDoc */
+  public ServiceContext get_reply_service_context(int ctx_name)
+    throws BAD_PARAM
+  {
+    if (m_rph == null)
+      throw new BAD_INV_ORDER("Reply context not yet available");
+    return gnu.CORBA.GIOP.ServiceContext.findContext(ctx_name,
+      m_rph.service_context
+    );
+  }
+
+  /** @inheritDoc */
+  public String[] operation_context()
+  {
+    return ice_contexts();
+  }
+
+  /**
+   * Get contexts as required by interceptor.
+   */
+  public String[] ice_contexts()
+  {
+    if (m_context_list == null)
+      return new String[ 0 ];
+    else
+      {
+        try
+          {
+            String[] cn = new String[ m_context_list.count() ];
+            for (int i = 0; i < cn.length; i++)
+              cn [ i ] = m_context_list.item(i);
+            return cn;
+          }
+        catch (Bounds e)
+          {
+            throw new Unexpected(e);
+          }
+      }
+  }
+
+  /**
+   * Check if the call is done via DII.
+   */
+  public void checkDii()
+  {
+    if (m_parameter_buffer != null)
+      throw new NO_RESOURCES("The invocation method provides " +
+        "no access to this resource. DII call required.", 1,
+        CompletionStatus.COMPLETED_MAYBE
+      );
   }
 }

@@ -36,6 +36,7 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 #include <stdlib.h>
+#include <assert.h>
 #include <jni.h>
 #include "native_state.h"
 
@@ -165,6 +166,18 @@ add_node (struct state_node **head, jint obj_id, void *state)
   *head = new_node;
 }
 
+#ifndef NDEBUG
+static void
+cp_gtk_check_compat (JNIEnv * env, jobject obj, struct state_table *table)
+{
+  jclass objclazz;
+
+  objclazz = (*env)->GetObjectClass(env, obj);
+  assert ((*env)->IsAssignableFrom(env, objclazz, table->clazz));
+  (*env)->DeleteLocalRef(env, objclazz);
+}
+#endif
+
 void
 cp_gtk_set_state_oid (JNIEnv * env, jobject lock, struct state_table *table,
 	       jint obj_id, void *state)
@@ -214,6 +227,11 @@ int
 cp_gtk_set_state (JNIEnv * env, jobject obj, struct state_table *table, void *state)
 {
   jint obj_id;
+
+#ifndef NDEBUG
+  cp_gtk_check_compat(env, obj, table);
+#endif
+
   obj_id = (*env)->GetIntField (env, obj, table->hash);
 
   if ((*env)->ExceptionOccurred (env) != NULL)
@@ -227,6 +245,11 @@ void *
 cp_gtk_get_state (JNIEnv * env, jobject obj, struct state_table *table)
 {
   jint obj_id;
+
+#ifndef NDEBUG
+  cp_gtk_check_compat(env, obj, table);
+#endif
+
   obj_id = (*env)->GetIntField (env, obj, table->hash);
 
   if ((*env)->ExceptionOccurred (env) != NULL)
@@ -239,6 +262,11 @@ void *
 cp_gtk_remove_state_slot (JNIEnv * env, jobject obj, struct state_table *table)
 {
   jint obj_id;
+
+#ifndef NDEBUG
+  cp_gtk_check_compat(env, obj, table);
+#endif
+
   obj_id = (*env)->GetIntField (env, obj, table->hash);
 
   if ((*env)->ExceptionOccurred (env) != NULL)

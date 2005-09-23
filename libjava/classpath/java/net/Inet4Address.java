@@ -142,7 +142,7 @@ public final class Inet4Address extends InetAddress
    */
   public boolean isMCNodeLocal()
   {
-    return isMCNodeLocal();
+    return super.isMCNodeLocal();
   }
 
   /**
@@ -172,7 +172,7 @@ public final class Inet4Address extends InetAddress
    */
   public boolean isMCOrgLocal()
   {
-    return isMCOrgLocal();
+    return super.isMCOrgLocal();
   }
 
   /**

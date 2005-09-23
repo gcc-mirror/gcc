@@ -163,6 +163,7 @@ List(int rows, boolean multipleMode)
 {
   this.rows = rows;
   this.multipleMode = multipleMode;
+  selected = new int[0];
 
   if (GraphicsEnvironment.isHeadless())
     throw new HeadlessException ();

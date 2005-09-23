@@ -282,4 +282,11 @@ final class VMClassLoader
   {
     return ClassLoader.defaultGetSystemClassLoader();
   }
+
+  /**
+   * Find the class if this class loader previously defined this class
+   * or if this class loader has been recorded as the initiating class loader
+   * for this class.
+   */
+  static native Class findLoadedClass(ClassLoader cl, String name);
 }

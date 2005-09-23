@@ -1180,7 +1180,8 @@ public abstract class cdrInput
           }
 
         // Discard the null terminator and, if needed, the endian marker.
-        return new String(s, p, n - nt - p);
+        String r = new String(s, p, n - nt - p);
+        return r;
       }
     catch (EOFException ex)
       {

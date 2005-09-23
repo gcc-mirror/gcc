@@ -214,7 +214,7 @@ public class RMIClassLoader
     //try context class loader first
     try 
       {
-        return loader.loadClass (name);
+        return Class.forName(name, false, loader);
       }
     catch (ClassNotFoundException e)
       {
@@ -237,7 +237,7 @@ public class RMIClassLoader
                                           ") at codebase (" + codebases + ")");
       }
       
-    return loader.loadClass (name);
+    return Class.forName(name, false, loader);
   }
 
   /**

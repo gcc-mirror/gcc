@@ -40,14 +40,16 @@ package javax.swing.text.html.parser;
 
 /**
  * <p>This class defines the SGML basic types, used for describing HTML 4.01
- * at {@link http://www.w3.org/TR/html4/types.html }. Not all constants,
+ * at <a href="http://www.w3.org/TR/html4/types.html"
+ * >http://www.w3.org/TR/html4/types.html</a>. Not all constants,
  * defined here, are actually used in HTML 4.01 SGML specification. Some others
  * are defined just as part of the required implementation.
  * </p>
  * <p>
  * If you need more information about SGML DTD documents,
  * the author suggests to read SGML tutorial on
- * {@link http://www.w3.org/TR/WD-html40-970708/intro/sgmltut.html}.
+ * <a href="http://www.w3.org/TR/WD-html40-970708/intro/sgmltut.html"
+ * >http://www.w3.org/TR/WD-html40-970708/intro/sgmltut.html</a>.
  * We also recommend Goldfarb C.F (1991) <i>The SGML Handbook</i>,
  * Oxford University Press, 688 p, ISBN: 0198537379.
  * </p>

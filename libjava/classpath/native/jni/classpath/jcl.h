@@ -42,6 +42,14 @@ exception statement from your version. */
 #include <jni.h>
 #include <config.h>
 
+#if SIZEOF_VOID_P == 4
+typedef jint jpointer;
+#elif SIZEOF_VOID_P == 8
+typedef jlong jpointer;
+#else
+#error "Unknown pointer size"
+#endif
+
 JNIEXPORT jclass JNICALL JCL_FindClass (JNIEnv * env, const char *className);
 JNIEXPORT void JNICALL JCL_ThrowException (JNIEnv * env,
 					   const char *className,
@@ -55,6 +63,9 @@ JNIEXPORT void JNICALL JCL_free_cstring (JNIEnv * env, jstring s,
 					 const char *cstr);
 JNIEXPORT jint JNICALL JCL_MonitorEnter (JNIEnv * env, jobject o);
 JNIEXPORT jint JNICALL JCL_MonitorExit (JNIEnv * env, jobject o);
+
+JNIEXPORT jobject JNICALL JCL_NewRawDataObject (JNIEnv * env, void *data);
+JNIEXPORT void * JNICALL JCL_GetRawData (JNIEnv * env, jobject rawdata);
 
 #define JCL_RETHROW_EXCEPTION(env) if((*(env))->ExceptionOccurred((env)) != NULL) return NULL;
 

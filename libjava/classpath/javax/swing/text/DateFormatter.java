@@ -54,7 +54,7 @@ public class DateFormatter extends InternationalFormatter
 
   /**
    * Creates a new instance using the default {@link DateFormat} object
-   * returned by {@link DateFormat#getDateInstance}.
+   * returned by {@link DateFormat#getDateInstance()}.
    */
   public DateFormatter()
   {

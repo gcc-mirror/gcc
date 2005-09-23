@@ -117,7 +117,7 @@ public abstract class OutputStream
    */
   public void write_value(Serializable value, BoxedValueHelper helper)
   {
-    helper.write_value(this, value);
+    Vio.write(this, value, helper);
   }
 
   /**

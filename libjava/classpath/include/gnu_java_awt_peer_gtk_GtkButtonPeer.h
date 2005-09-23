@@ -19,6 +19,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkButtonPeer_gtkWidgetSetBack
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkButtonPeer_gtkActivate (JNIEnv *env, jobject);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkButtonPeer_gtkWidgetRequestFocus (JNIEnv *env, jobject);
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkButtonPeer_setNativeBounds (JNIEnv *env, jobject, jint, jint, jint, jint);
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkButtonPeer_gtkWidgetGetPreferredDimensions (JNIEnv *env, jobject, jintArray);
 
 #ifdef __cplusplus
 }

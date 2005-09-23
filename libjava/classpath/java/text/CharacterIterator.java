@@ -1,5 +1,5 @@
 /* CharacterIterator.java -- Iterate over a character range
-   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -64,8 +64,8 @@ public interface CharacterIterator extends Cloneable
 
   /**
    * This method increments the current index and then returns the character
-   * at the new index value.  If the index is already at <code>getEndIndex() - 1</code>,
-   * it will not be incremented.
+   * at the new index value.  If the index is already at 
+   * <code>getEndIndex() - 1</code>, it will not be incremented.
    *
    * @return The character at the position of the incremented index value,
    * or <code>DONE</code> if the index has reached getEndIndex() - 1
@@ -78,7 +78,8 @@ public interface CharacterIterator extends Cloneable
    * index, it will not be decremented.
    *
    * @return The character at the position of the decremented index value,
-   * or <code>DONE</code> if index was already equal to the beginning index value.
+   *         or {@link #DONE} if index was already equal to the beginning index
+   *         value.
    */
   char previous();
 
@@ -86,7 +87,8 @@ public interface CharacterIterator extends Cloneable
    * This method sets the index value to the beginning of the range and returns
    * the character there.
    *
-   * @return The character at the beginning of the range, or <code>DONE</code> if the range is empty.
+   * @return The character at the beginning of the range, or {@link #DONE} if 
+   *         the range is empty.
    */
   char first();
 
@@ -95,7 +97,8 @@ public interface CharacterIterator extends Cloneable
    * returns the character there.  If the range is empty, then the index value
    * will be set equal to the beginning index.
    *
-   * @return The character at the end of the range, or <code>DONE</code> if the range is empty.
+   * @return The character at the end of the range, or {@link #DONE} if the 
+   *         range is empty.
    */
   char last();  
 
@@ -112,7 +115,8 @@ public interface CharacterIterator extends Cloneable
    *
    * @param index The new index value.
    *
-   * @return The character at the new index value or <code>DONE</code> if the index value is equal to <code>getEndIndex</code>.
+   * @return The character at the new index value or {@link #DONE} if the index
+   *         value is equal to {@link #getEndIndex()}.
    */
   char setIndex (int index) throws IllegalArgumentException;
 

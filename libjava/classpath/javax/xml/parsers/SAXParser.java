@@ -254,7 +254,7 @@ public abstract class SAXParser
   /**
    * Parse the specified input source, reporting SAX2 events to the
    * given handler.
-   * @param f an XML file
+   * @param is an XML file
    * @param dh the SAX2 handler
    * @exception IllegalArgumentException if the input source is null
    */

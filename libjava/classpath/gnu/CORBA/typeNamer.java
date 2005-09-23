@@ -83,7 +83,7 @@ public class typeNamer
       new primitiveTypeCode(TCKind.tk_any),
       new primitiveTypeCode(TCKind.tk_TypeCode),
       new primitiveTypeCode(TCKind.tk_Principal),
-      new primitiveTypeCode(TCKind.tk_objref),
+      new recordTypeCode(TCKind.tk_objref),
       new primitiveTypeCode(TCKind.tk_struct),
       new primitiveTypeCode(TCKind.tk_union),
       new primitiveTypeCode(TCKind.tk_enum),
@@ -103,6 +103,15 @@ public class typeNamer
       new primitiveTypeCode(TCKind.tk_native),
       new primitiveTypeCode(TCKind.tk_abstract_interface)
     };
+
+  static
+  {
+    // The Id of the "abstract object" is defined as empty string.
+    recordTypeCode object =
+      (recordTypeCode) primitveCodes [ TCKind._tk_objref ];
+    object.setId("");
+    object.setName("Object");
+  }
 
   /**
    * Get the primitive type code.

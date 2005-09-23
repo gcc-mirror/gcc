@@ -76,7 +76,7 @@ public class MenuKeyEvent extends KeyEvent {
 	 * @param when Time
 	 * @param modifiers Modifier keys
 	 * @param keyCode Key code
-	 * @param keyhar Key char
+	 * @param keyChar Key char
 	 * @param path Path
 	 * @param manager MenuSelectionManager
 	 */

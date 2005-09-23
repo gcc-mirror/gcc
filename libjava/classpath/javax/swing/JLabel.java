@@ -41,17 +41,257 @@ package javax.swing;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Image;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleExtendedComponent;
+import javax.accessibility.AccessibleText;
 import javax.swing.plaf.LabelUI;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.SimpleAttributeSet;
 
 /**
  * A swing widget that displays a text message and/or an icon.
  */
 public class JLabel extends JComponent implements Accessible, SwingConstants
 {
+
+  /**
+   * Accessibility support for JLabel.
+   */
+  protected class AccessibleJLabel
+    extends JComponent.AccessibleJComponent
+    implements AccessibleText, AccessibleExtendedComponent
+  {
+    /**
+     * Returns the selected text. This is an empty string since JLabels
+     * are not selectable.
+     *
+     * @return the selected text
+     */
+    public String getSelectedText()
+    {
+      // We return "" here since JLabel's text is not selectable.
+      return "";
+    }
+
+    /**
+     * Returns the start index of the selected text.
+     *
+     * @return the start index of the selected text
+     */
+    public int getSelectionStart()
+    {
+      // TODO: Figure out what should be returned here, because JLabels don't
+      // allow selection. I guess -1 for now.
+      return -1;
+    }
+
+    /**
+     * Returns the end index of the selected text.
+     *
+     * @return the end index of the selected text
+     */
+    public int getSelectionEnd()
+    {
+      // TODO: Figure out what should be returned here, because JLabels don't
+      // allow selection. I guess -1 for now.
+      return -1;
+    }
+
+    /**
+     * Returns an {@link AttributeSet} that reflects the text attributes of
+     * the specified character. We return an empty
+     * <code>AttributeSet</code> here, because JLabels don't support text
+     * attributes (at least not yet).
+     *
+     * @param index the index of the character
+     *
+     * @return an {@link AttributeSet} that reflects the text attributes of
+     *         the specified character
+     */
+    public AttributeSet getCharacterAttribute(int index)
+    {
+      return new SimpleAttributeSet();
+    }
+
+    /**
+     * Returns the character, word or sentence at the specified index. The
+     * <code>part</code> parameter determines what is returned, the character,
+     * word or sentence after the index.
+     *
+     * @param part one of {@link AccessibleText#CHARACTER},
+     *             {@link AccessibleText#WORD} or
+     *             {@link AccessibleText#SENTENCE}, specifying what is returned
+     * @param index the index
+     *
+     * @return the character, word or sentence after <code>index</code>
+     */
+    public String getAtIndex(int part, int index)
+    {
+      String result = "";
+      int startIndex = -1;
+      int endIndex = -1;
+      switch(part)
+        {
+        case AccessibleText.CHARACTER:
+          result = String.valueOf(text.charAt(index));
+          break;
+        case AccessibleText.WORD:
+          startIndex = text.lastIndexOf(' ', index);
+          endIndex = text.indexOf(' ', startIndex + 1);
+          if (endIndex == -1)
+            endIndex = startIndex + 1;
+          result = text.substring(startIndex + 1, endIndex);
+          break;
+        case AccessibleText.SENTENCE:
+        default:
+          startIndex = text.lastIndexOf('.', index);
+          endIndex = text.indexOf('.', startIndex + 1);
+          if (endIndex == -1)
+            endIndex = startIndex + 1;
+          result = text.substring(startIndex + 1, endIndex);
+          break;
+        }
+      return result;
+    }
+
+    /**
+     * Returns the character, word or sentence after the specified index. The
+     * <code>part</code> parameter determines what is returned, the character,
+     * word or sentence after the index.
+     *
+     * @param part one of {@link AccessibleText#CHARACTER},
+     *             {@link AccessibleText#WORD} or
+     *             {@link AccessibleText#SENTENCE}, specifying what is returned
+     * @param index the index
+     *
+     * @return the character, word or sentence after <code>index</code>
+     */
+    public String getAfterIndex(int part, int index)
+    {
+      String result = "";
+      int startIndex = -1;
+      int endIndex = -1;
+      switch(part)
+        {
+        case AccessibleText.CHARACTER:
+          result = String.valueOf(text.charAt(index + 1));
+          break;
+        case AccessibleText.WORD:
+          startIndex = text.indexOf(' ', index);
+          endIndex = text.indexOf(' ', startIndex + 1);
+          if (endIndex == -1)
+            endIndex = startIndex + 1;
+          result = text.substring(startIndex + 1, endIndex);
+          break;
+        case AccessibleText.SENTENCE:
+        default:
+          startIndex = text.indexOf('.', index);
+          endIndex = text.indexOf('.', startIndex + 1);
+          if (endIndex == -1)
+            endIndex = startIndex + 1;
+          result = text.substring(startIndex + 1, endIndex);
+          break;
+        }
+      return result;
+    }
+
+    /**
+     * Returns the character, word or sentence before the specified index. The
+     * <code>part</code> parameter determines what is returned, the character,
+     * word or sentence before the index.
+     *
+     * @param part one of {@link AccessibleText#CHARACTER},
+     *             {@link AccessibleText#WORD} or
+     *             {@link AccessibleText#SENTENCE}, specifying what is returned
+     * @param index the index
+     *
+     * @return the character, word or sentence before <code>index</code>
+     */
+    public String getBeforeIndex(int part, int index)
+    {
+      String result = "";
+      int startIndex = -1;
+      int endIndex = -1;
+      switch(part)
+        {
+        case AccessibleText.CHARACTER:
+          result = String.valueOf(text.charAt(index - 1));
+          break;
+        case AccessibleText.WORD:
+          endIndex = text.lastIndexOf(' ', index);
+          if (endIndex == -1)
+            endIndex = 0;
+          startIndex = text.lastIndexOf(' ', endIndex - 1);
+          result = text.substring(startIndex + 1, endIndex);
+          break;
+        case AccessibleText.SENTENCE:
+        default:
+          endIndex = text.lastIndexOf('.', index);
+          if (endIndex == -1)
+            endIndex = 0;
+          startIndex = text.lastIndexOf('.', endIndex - 1);
+          result = text.substring(startIndex + 1, endIndex);
+          break;
+        }
+      return result;
+    }
+
+    /**
+     * Returns the caret position. This method returns -1 because JLabel don't
+     * have a caret.
+     *
+     * @return the caret position
+     */
+    public int getCaretPosition()
+    {
+      return -1;
+    }
+
+    /**
+     * Returns the number of characters that are displayed by the JLabel.
+     *
+     * @return the number of characters that are displayed by the JLabel
+     */
+    public int getCharCount()
+    {
+      return text.length();
+    }
+
+    /**
+     * Returns the bounding box of the character at the specified index.
+     *
+     * @param index the index of the character that we return the
+     *        bounds for
+     *
+     * @return the bounding box of the character at the specified index
+     */
+    public Rectangle getCharacterBounds(int index)
+    {
+      // FIXME: Implement this correctly.
+      return new Rectangle();
+    }
+
+    /**
+     * Returns the index of the character that is located at the specified
+     * point.
+     *
+     * @param point the location that we lookup the character for
+     *
+     * @return the index of the character that is located at the specified
+     *         point
+     */
+    public int getIndexAtPoint(Point point)
+    {
+      // FIXME: Implement this correctly.
+      return 0;
+    }
+  }
+
   /** DOCUMENT ME! */
   private static final long serialVersionUID = 5496508283662221534L;
 
@@ -62,7 +302,7 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
   protected Component labelFor;
 
   /** The label's text. */
-  private transient String text;
+  transient String text;
 
   /** Where the label will be positioned horizontally. */
   private transient int horizontalAlignment = LEADING;
@@ -90,6 +330,9 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
 
   /** The gap between the icon and the text. */
   private transient int iconTextGap = 4;
+
+  /** The accessible context for this JLabel. */
+  private AccessibleJLabel accessibleContext;
 
   /**
    * Creates a new vertically centered, horizontally on the leading edge
@@ -638,10 +881,12 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
   /**
    * DOCUMENT ME!
    *
-   * @return
+   * @return The accessible context.
    */
   public AccessibleContext getAccessibleContext()
   {
-    return null;
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleJLabel();
+    return accessibleContext;
   }
 }

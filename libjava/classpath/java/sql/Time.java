@@ -1,5 +1,5 @@
 /* Time.java -- Wrapper around java.util.Date
-   Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -139,8 +139,6 @@ public class Time extends java.util.Date
    *
    * @param str The string to parse.
    * @return The resulting <code>java.sql.Time</code> value.
-   *
-   * @deprecated
    */
   public static Time valueOf (String str)
   {
@@ -193,8 +191,6 @@ public class Time extends java.util.Date
    * This method returns this date in JDBC format.
    *
    * @return This date as a string.
-   *
-   * @deprecated
    */
   public String toString ()
   {

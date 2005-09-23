@@ -75,8 +75,8 @@ public class MetalTreeUI
     MetalTreeUI instance;
     if (o == null)
       {
-	instance = new MetalTreeUI();
-	instances.put(component, instance);
+        instance = new MetalTreeUI();
+        instances.put(component, instance);
       }
     else
       instance = (MetalTreeUI) o;

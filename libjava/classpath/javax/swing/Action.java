@@ -41,7 +41,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 
 /**
- * An action provides a convenient central point of control for some task
+ * Provides a convenient central point of control for some task
  * that can be triggered by more than one control in a Swing user interface
  * (for example, a menu item and a toolbar button).
  * 

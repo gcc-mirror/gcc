@@ -41,6 +41,9 @@ package gnu.java.awt.peer.gtk;
 import java.awt.Label;
 import java.awt.peer.LabelPeer;
 
+// A composite widget.  GtkLabels have transparent backgrounds.  An
+// AWT Label is opaque.  To compensate, a GtkLabelPeer is a GtkLabel
+// packed in a GtkEventBox.
 public class GtkLabelPeer extends GtkComponentPeer
     implements LabelPeer
 {
@@ -50,6 +53,10 @@ public class GtkLabelPeer extends GtkComponentPeer
 
   public native void setText(String text);
   native void setNativeBounds (int x, int y, int width, int height);
+
+  // Because this is a composite widget, we need to retrieve the
+  // GtkLabel's preferred dimensions, not the enclosing GtkEventBox's.
+  native void gtkWidgetGetPreferredDimensions (int[] dim);
 
   void create ()
   {

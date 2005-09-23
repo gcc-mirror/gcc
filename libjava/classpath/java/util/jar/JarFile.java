@@ -1,5 +1,5 @@
 /* JarFile.java - Representation of a jar file
-   Copyright (C) 2000, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -351,7 +351,7 @@ public class JarFile extends ZipFile
 
       synchronized(jarfile)
 	{
-	  if (!jarfile.signaturesRead)
+	  if (jarfile.verify && !jarfile.signaturesRead)
 	    try
 	      {
 		jarfile.readSignatures();
@@ -408,7 +408,7 @@ public class JarFile extends ZipFile
 	    jarEntry.attr = manifest.getAttributes(name);
           }
 
-	if (!signaturesRead)
+	if (verify && !signaturesRead)
 	  try
 	    {
 	      readSignatures();

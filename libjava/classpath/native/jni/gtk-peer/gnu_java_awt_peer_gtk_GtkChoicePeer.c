@@ -187,18 +187,26 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_nativeRemoveAll
 }
 
 JNIEXPORT void JNICALL 
-Java_gnu_java_awt_peer_gtk_GtkChoicePeer_select 
+Java_gnu_java_awt_peer_gtk_GtkChoicePeer_selectNative
+  (JNIEnv *env, jobject obj, jint index)
+{
+  gdk_threads_enter ();
+
+  Java_gnu_java_awt_peer_gtk_GtkChoicePeer_selectNativeUnlocked
+    (env, obj, index);
+
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_GtkChoicePeer_selectNativeUnlocked
   (JNIEnv *env, jobject obj, jint index)
 {
   void *ptr;
 
-  gdk_threads_enter ();
-
   ptr = NSA_GET_PTR (env, obj);
 
   gtk_combo_box_set_active (GTK_COMBO_BOX (ptr), index);
-
-  gdk_threads_leave ();
 }
 
 JNIEXPORT jint JNICALL 
@@ -219,7 +227,8 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_nativeGetSelected
   return index;
 }
 
-static void selection_changed_cb (GtkComboBox *combobox, jobject peer)
+static void
+selection_changed_cb (GtkComboBox *combobox, jobject peer)
 {
   jstring label;
   GtkTreeModel *model;
@@ -236,13 +245,9 @@ static void selection_changed_cb (GtkComboBox *combobox, jobject peer)
       gtk_tree_model_get (model, &iter, 0, &selected, -1);
       label = (*cp_gtk_gdk_env())->NewStringUTF (cp_gtk_gdk_env(), selected);
 
-      gdk_threads_leave ();
-
       (*cp_gtk_gdk_env())->CallVoidMethod (cp_gtk_gdk_env(), peer,
                                     postChoiceItemEventID,
                                     label,
                                     (jint) AWT_ITEM_SELECTED);
-
-      gdk_threads_enter ();
     }
 }

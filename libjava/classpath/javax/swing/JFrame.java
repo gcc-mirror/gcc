@@ -53,9 +53,15 @@ import java.awt.event.WindowEvent;
 import javax.accessibility.AccessibleContext;
 
 /**
- * Unlike JComponent derivatives, JFrame inherits from
- * java.awt.Frame. But also lets a look-and-feel component to its work.
+ * A window that supports window decorations (titlebar and borders).
+ * This is an extension of {@link java.awt.Frame} that provides support
+ * for the Swing architecture. Most importantly it contains a {@link JRootPane}
+ * as it's only top-level child, that manages the content pane, the menu and
+ * a glass pane.
  *
+ * Also, unlike <code>java.awt.Frame</code>s, JFrames support the
+ * Swing Pluggable Look &amp; Feel architecture.
+ * 
  * @author Ronald Veldema (rveldema@cs.vu.nl)
  */
 public class JFrame extends Frame
@@ -98,7 +104,7 @@ public class JFrame extends Frame
    * @param gc the <code>GraphicsConfiguration</code> that is used for
    *     the new <code>JFrame</code>
    *
-   * @see Frame(GraphicsConfiguration)
+   * @see Frame#Frame(GraphicsConfiguration)
    */
   public JFrame(GraphicsConfiguration gc)
   {
@@ -114,7 +120,7 @@ public class JFrame extends Frame
    * @param gc the <code>GraphicsConfiguration</code> that is used for
    *     the new <code>JFrame</code>
    *
-   * @see Frame(String, GraphicsConfiguration)
+   * @see Frame#Frame(String, GraphicsConfiguration)
    */
   public JFrame(String title, GraphicsConfiguration gc)
   {

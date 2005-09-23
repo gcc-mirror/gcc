@@ -58,13 +58,6 @@ Java_gnu_java_awt_peer_gtk_GtkGenericPeer_dispose
   NSA_DEL_PTR (env, obj);
 
   gdk_threads_leave ();
-
-  /* 
-   * Wake up the main thread, to make sure it re-checks the window
-   * destruction condition. 
-   */
-
-  g_main_context_wakeup (NULL);
 }
 
 JNIEXPORT void JNICALL

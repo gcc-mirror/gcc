@@ -1,5 +1,5 @@
 /* OID.java -- numeric representation of an object identifier
-   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,7 +48,7 @@ import java.util.StringTokenizer;
 /**
  * This immutable class represents an object identifier, or OID.
  *
- * <p>OIDs are represented as a series of hierarcical tokens, each of
+ * <p>OIDs are represented as a series of hierarchical tokens, each of
  * which is usually represented as a single, unsigned integer. The
  * hierarchy works so that later tokens are considered within the group
  * of earlier tokens. Thus, the OID for the Serpent block cipher,

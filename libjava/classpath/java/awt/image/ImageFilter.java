@@ -125,6 +125,7 @@ public class ImageFilter implements ImageConsumer, Cloneable
      */
     public void setDimensions(int width, int height)
     {
+      if (consumer != null)
 	consumer.setDimensions(width, height);
     }
 
@@ -137,7 +138,8 @@ public class ImageFilter implements ImageConsumer, Cloneable
     public void setProperties(Hashtable props)
     {
 	props.put("filters", "ImageFilter");
-	consumer.setProperties(props);
+	if (consumer != null)
+	  consumer.setProperties(props);
     }
 
     /**
@@ -149,6 +151,7 @@ public class ImageFilter implements ImageConsumer, Cloneable
      * @see ColorModel */
     public void setColorModel(ColorModel model)
     {
+      if (consumer != null)
 	consumer.setColorModel(model);
     }
 
@@ -164,6 +167,7 @@ public class ImageFilter implements ImageConsumer, Cloneable
      */
     public void setHints(int flags)
     {
+      if (consumer != null)
 	consumer.setHints(flags);
     }
 
@@ -184,6 +188,7 @@ public class ImageFilter implements ImageConsumer, Cloneable
     public void setPixels(int x, int y, int w, int h, 
 	   ColorModel model, byte[] pixels, int offset, int scansize)
     {
+      if (consumer != null)
 	consumer.setPixels(x, y, w, h, model, pixels, offset, scansize);
     }
 
@@ -204,6 +209,7 @@ public class ImageFilter implements ImageConsumer, Cloneable
     public void setPixels(int x, int y, int w, int h, 
            ColorModel model, int[] pixels, int offset, int scansize)
     {
+      if (consumer != null)
 	consumer.setPixels(x, y, w, h, model, pixels, offset, scansize);
     }
 
@@ -215,6 +221,7 @@ public class ImageFilter implements ImageConsumer, Cloneable
      */
     public void imageComplete(int status)
     {
+      if (consumer != null)
 	consumer.imageComplete(status);
     }
 }

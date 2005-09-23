@@ -40,41 +40,81 @@ exception statement from your version. -->
 <head><title>GNU Classpath - org.omg.CORBA</title></head>
 
 <body>
-This package provides the support of <a href="www.omg.org">OMG</a> 
-<a href="www.CORBA.org">CORBA</a>; see <a href="#overview">overview</a> 
-of the implemented functionality. CORBA is an open, vendor independent 
-system that applications use to work together over networks.  Thie purpose 
-of this package is to provide CORBA APIs to java programming language, 
-including the fully functional Object Request Broker ({@link org.omg.CORBA.ORB}). 
-
+This package provides the support of <a href="http://www.CORBA.org">CORBA</a>;
+see <a href="#overview">overview</a> of the implemented functionality. 
+<p>
+CORBA a system that applications use to work over networks. CORBA messages 
+are binary, not text oriented. They practically cary no "data wrapping" 
+information like XML &lt;opening&gt; &lt;/closing&gt; tags. Hence CORBA 
+objects easier exchange large amounts of binary data. CORBA can work
+in such data-intensive application areas as telecommunications or radio
+broadcasting. Java programs connect to CORBA objects without care
+about what platform they run on, where they exist in the network, or what 
+language they were written in. The remote CORBA objects appear to the 
+programmer as the ordinary Java objects and can be passed as
+parameters in both remote or local method invocations. 
+</p><p>
+The CORBA processing unit is divided into {@link org.omg.CORBA.Object}
+that is exposed to the client and the servant 
+({@link org.omg.PortableServer.Servant} where the method, invoked on 
+object, is finally delegated. It can be multiple objects per servant or
+multiple servants per object. The servant for particular object or
+even particular call can be dynamically chosen at run time using
+{@link org.omg.PortableServer.ServantManager}.
+</p><p>
+All stages of both local and remote invocations on CORBA objects can be
+monitored and modified using {@link org.omg.PortableInterceptor.Interceptor}.
+The interceptors can add an extra data to the CORBA message (these data
+can be later accessed by other interceptor on remote side).
+</p>
 <a name="overview">
 <h4>Overview of the currently implemented CORBA functionality</h4>
-<p>The CORBA implementation in the Classpath project is now a working prototype.
- This prototype is interoperable with Sun's implementation v 1.4, transferring 
- object references, primitive types, narrow and wide strings, arrays, structures 
- and trees between these two platforms. The thrown exceptions are also transferred 
- and handled. The support for stringified object references (IORs) is implemented.
- The redirection commands works, LOCATION_FORWARD_PERM changing the target address
- until the application is restarted and LOCATION_FORWARD redirecting for the
- current session only. Both Little and Big Endian encoded messages
- are accepted. The encoding of the sent messages is the same as used in the 
- stringified IOR reference of that object or Big Endian, if no such data
- available.
- </p>
-  <p>
- The current release supports the Value types that appeared since v 1.3 and are
- something between CORBA structures (no methods, data local) and CORBA objects
- (both methods and data remote). Value type has local data, can have
- local methods and is transferred by value, not by IOR reference. 
- </p>
- <p>
- You can use both request-oriented (based on {@link org.omg.CORBA.Request}) 
- and stream-oriented (based on {@link org.omg.CORBA.portable.ObjectImpl}) 
- invocation models. The current release includes the working examples, demonstrating
- the client-server communication using both methods. These examples also show, 
- how to use the Classpath naming service. The IDL compiler is not yet written, 
- but as a side effect of the required compatibility, the implementation seems 
- accepting the output of the Sun's 1.3 idlj.</p>
+The CORBA implementation in the Classpath project is now a working
+prototype. 
+<ul>
+<li>This prototype is interoperable with Sun's implementation v 1.4, 
+transferring object references, primitive types, narrow and wide strings,
+arrays, structures  and trees between these two platforms.
+</li>
+<li>The prototype provides interoperable support for the Abstract interface
+ and Value types. Those appear in 1.3, being a feature of CORBA 2.3.
+</li>
+<li>The remote exceptions are also transferred and handled as expected.
+</li>
+<li>The support for parsing stringified object references (IORs), both 
+Big and Little Endian encoded, is implemented.
+</li>
+<li>The redirection commands works, LOCATION_FORWARD_PERM changing the 
+target address until the application is restarted and LOCATION_FORWARD 
+redirecting for the current session only.
+</li>
+<li>Both Little and Big Endian encoded messages are accepted. The encoding
+of the sent messages is the same as used in the stringified IOR reference
+of that object or Big Endian, if no such data available.
+</li>
+<li>You can use both request-oriented (based on {@link org.omg.CORBA.Request}
+and stream-oriented (based on {@link org.omg.CORBA.portable.ObjectImpl}
+invocation models. The current release includes the working examples,
+demonstrating the client-server communication using both methods.
+</li>
+<li>These examples also show,  how to use the Classpath naming service.
+</li>
+<li>The IDL compiler is not yet written (and not even started), but as a
+ side effect of the required compatibility, the implementation seems 
+accepting the output of the Sun's idlj.
+</li>
+<li>The Portable Object Adapter is already released. For details on POA,
+see the {@link org.omg.PortableServer} package.</li>
+<li>We provide the implementation of the {@link org.omg.DynamicAny}
+package. ORB returns the working DynAnyFactory that produces working
+DynAny's as defined in OMG specification.</li>
+<li>The Portable Interceptor is also complete. See 
+{@link org.omg.PortableInterceptor} package for details how to register 
+and use CORBA interceptors.
+<li>All GNU Classpath classes in omg.org namespace are newly written using
+ the OMG .pdf document (Version 3.0.3, formal/04-03-12).
+</li>
+</ul>
  
  @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
 </body>

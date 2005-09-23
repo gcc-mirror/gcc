@@ -54,7 +54,17 @@ import javax.swing.plaf.FileChooserUI;
 
 
 /**
- * DOCUMENT ME!
+ * A component that provides the user a dialog box to browse through a
+ * filesystem and choose one or more files or directories.
+ *
+ * A JFileChooser can be configured to filter the displayed file list
+ * by adding a {@link FileFilter} instance using
+ * {@link #addChoosableFileFilter(FileFilter)}. Additional components can
+ * be embedded in the file chooser using {@link #setAccessory(JComponent)}.
+ * The JFileChooser properties also provide mechanisms to customize the
+ * behaviour of the file chooser.
+ *
+ * @author Kim Ho (kho@luxsci.net)
  */
 public class JFileChooser extends JComponent implements Accessible
 {
@@ -415,7 +425,8 @@ public class JFileChooser extends JComponent implements Accessible
    */
   public void changeToParentDirectory()
   {
-    setCurrentDirectory(fsv.getParentDirectory(currentDir));
+    if (fsv.getParentDirectory(currentDir) != null)
+      setCurrentDirectory(fsv.getParentDirectory(currentDir));
   }
 
   /**

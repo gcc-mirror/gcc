@@ -43,16 +43,24 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseEvent;
 import java.io.Serializable;
 import java.util.EventObject;
 
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.event.CellEditorListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.tree.TreeCellEditor;
 
 /**
- * DefaultCellEditor
- * @author	Andrew Selkirk
- * @version	1.0
+ * The default implementation of {@link TableCellEditor} and
+ * {@link TreeCellEditor}. It provides editor components for
+ * some standard object types.
+ * 
+ * @author Andrew Selkirk
+ *
+ * @status mostly unimplemented
  */
 public class DefaultCellEditor
   extends AbstractCellEditor
@@ -61,7 +69,9 @@ public class DefaultCellEditor
   private static final long serialVersionUID = 3564035141373880027L;
 
   /**
-   * EditorDelegate
+   * Delegates a couple of method calls (such as {@link #isCellEditable)
+   * to the component it contains and listens for events that indicate
+   * that editing has stopped.
    */
   protected class EditorDelegate
     implements ActionListener, ItemListener, Serializable
@@ -75,8 +85,6 @@ public class DefaultCellEditor
 
     /**
      * Constructor EditorDelegate
-     *
-     * @param value0 TODO
      */
     protected EditorDelegate()
     {
@@ -87,8 +95,10 @@ public class DefaultCellEditor
      *
      * @param event TODO
      */
-    public void setValue(Object event)
+    public void setValue(Object value)
     {
+      // TODO: should be setting the value in the editorComp
+      this.value = value;
     }
 
    /**
@@ -98,7 +108,8 @@ public class DefaultCellEditor
      */
     public Object getCellEditorValue()
     {
-      return null; // TODO
+      // TODO: should be getting the updated value from the editorComp
+      return value;
     } // getCellEditorValue()
 
     /**
@@ -110,7 +121,10 @@ public class DefaultCellEditor
      */
     public boolean isCellEditable(EventObject event)
     {
-      return false; // TODO
+      if (event == null || !(event instanceof MouseEvent) ||
+          (((MouseEvent) event).getClickCount() >= getClickCountToStart()))
+        return true;
+      return false;
     } // isCellEditable()
 
     /**
@@ -122,7 +136,8 @@ public class DefaultCellEditor
      */
     public boolean shouldSelectCell(EventObject event)
     {
-      return false; // TODO
+      // return true to indicate that the editing cell may be selected
+      return true;
     } // shouldSelectCell()
 
     /**
@@ -132,7 +147,8 @@ public class DefaultCellEditor
      */
     public boolean stopCellEditing()
     {
-      return false; // TODO
+      fireEditingStopped();
+      return true;
     } // stopCellEditing()
 
     /**
@@ -140,7 +156,7 @@ public class DefaultCellEditor
      */
     public void cancelCellEditing()
     {
-      // TODO
+      fireEditingCanceled();
     } // cancelCellEditing()
 
     /**
@@ -152,7 +168,8 @@ public class DefaultCellEditor
      */
     public boolean startCellEditing(EventObject event)
     {
-      return false; // TODO
+      // return true to indicate that editing has begun
+      return true;
     } // startCellEditing()
 
     /**
@@ -162,7 +179,7 @@ public class DefaultCellEditor
      */
     public void actionPerformed(ActionEvent event)
     {
-      // TODO
+      stopCellEditing();
     } // actionPerformed()
 
     /**
@@ -172,9 +189,23 @@ public class DefaultCellEditor
      */
     public void itemStateChanged(ItemEvent event)
     {
-      // TODO
+      stopCellEditing();
     } // itemStateChanged()
 
+    void fireEditingStopped()
+    {
+      CellEditorListener[] listeners = getCellEditorListeners();
+      for (int index = 0; index < listeners.length; index++)
+        listeners[index].editingStopped(changeEvent);
+      
+    }
+    
+    void fireEditingCanceled()
+    {
+      CellEditorListener[] listeners = getCellEditorListeners();
+      for (int index = 0; index < listeners.length; index++)
+        listeners[index].editingCanceled(changeEvent);
+    }
   } // EditorDelegate
 
 	/**
@@ -199,7 +230,8 @@ public class DefaultCellEditor
    */
   public DefaultCellEditor(JTextField textfield)
   {
-    // TODO
+    editorComponent = textfield;
+    clickCountToStart = 3;
   } // DefaultCellEditor()
 
   /**
@@ -209,7 +241,8 @@ public class DefaultCellEditor
    */
   public DefaultCellEditor(JCheckBox checkbox)
   {
-    // TODO
+    editorComponent = checkbox;
+    clickCountToStart = 1;
   } // DefaultCellEditor()
 
   /**
@@ -219,7 +252,8 @@ public class DefaultCellEditor
    */
   public DefaultCellEditor(JComboBox combobox)
   {
-    // TODO
+    editorComponent = combobox;
+    clickCountToStart = 1;
   } // DefaultCellEditor()
 
   /**
@@ -229,7 +263,7 @@ public class DefaultCellEditor
    */
   public Component getComponent()
   {
-    return null; // TODO
+    return editorComponent; 
   } // getComponent()
 
   /**
@@ -239,7 +273,7 @@ public class DefaultCellEditor
    */
   public int getClickCountToStart()
   {
-    return 0; // TODO
+    return clickCountToStart;
   } // getClickCountToStart()
 
   /**
@@ -249,7 +283,7 @@ public class DefaultCellEditor
    */
   public void setClickCountToStart(int count)
   {
-    // TODO
+    clickCountToStart = count;
   } // setClickCountToStart()
 
   /**
@@ -259,7 +293,7 @@ public class DefaultCellEditor
    */
   public Object getCellEditorValue()
   {
-    return null; // TODO
+    return delegate.getCellEditorValue();
   } // getCellEditorValue()
 
   /**
@@ -271,7 +305,7 @@ public class DefaultCellEditor
    */
   public boolean isCellEditable(EventObject event)
   {
-    return false; // TODO
+    return delegate.isCellEditable(event);
   } // isCellEditable()
 
   /**
@@ -283,7 +317,7 @@ public class DefaultCellEditor
    */
   public boolean shouldSelectCell(EventObject event)
   {
-    return false; // TODO
+    return delegate.shouldSelectCell(event);
   } // shouldSelectCell()
 
   /**
@@ -293,7 +327,7 @@ public class DefaultCellEditor
    */
   public boolean stopCellEditing()
   {
-    return false; // TODO
+    return delegate.stopCellEditing();
   } // stopCellEditing()
 
   /**
@@ -301,27 +335,53 @@ public class DefaultCellEditor
    */
   public void cancelCellEditing()
   {
-    // TODO
+    delegate.cancelCellEditing();
   } // cancelCellEditing()
 
   /**
-   * getTreeCellEditorComponent
+   * Sets an initial value for the editor. 
+   * This will cause the editor to stopEditing and lose any partially 
+   * edited value if the editor is editing when this method is called.
+   * Returns the component that should be added to the client's Component 
+   * hierarchy. Once installed in the client's hierarchy this component will 
+   * then be able to draw and receive user input. 
    * 
-   * @param tree TODO
-   * @param value TODO
-   * @param isSelected TODO
-   * @param expanded TODO
-   * @param leaf TODO
-   * @param row TODO
+   * @param tree - the JTree that is asking the editor to edit; this 
+   * parameter can be null
+   * @param value - the value of the cell to be edited
+   * @param isSelected - true is the cell is to be renderer with selection
+   * highlighting
+   * @param expanded - true if the node is expanded
+   * @param leaf - true if the node is a leaf node
+   * @param row - the row index of the node being edited
    *
-   * @returns Component
+   * @returns Component the component for editing
    */
   public Component getTreeCellEditorComponent(JTree tree, Object value,
                                               boolean isSelected,
                                               boolean expanded, boolean leaf,
                                               int row)
   {
-    return null; // TODO
+    if (editorComponent instanceof JTextField)
+      {
+        ((JTextField)editorComponent).setText(value.toString());
+        delegate = new EditorDelegate();
+        ((JTextField)editorComponent).addActionListener(delegate);
+      }
+    else if (editorComponent instanceof JCheckBox)
+      {
+        ((JCheckBox)editorComponent).setText(value.toString());
+        delegate = new EditorDelegate();
+        ((JCheckBox)editorComponent).addActionListener(delegate);
+      }
+    else if (editorComponent instanceof JComboBox)
+      {
+        ((JComboBox)editorComponent).setSelectedItem(value.toString());
+        delegate = new EditorDelegate();
+        ((JComboBox)editorComponent).addActionListener(delegate);
+      }
+
+    return editorComponent;
   } // getTreeCellEditorComponent()
 
   /**
@@ -335,10 +395,30 @@ public class DefaultCellEditor
    *
    * @returns Component
    */
-  public Component getTableCellEditorComponent(JTable tree, Object value,
+  public Component getTableCellEditorComponent(JTable table, Object value,
                                                boolean isSelected, int row,
                                                int column)
   {
-    return null; // TODO
+    // NOTE: as specified by Sun, we don't call new() everytime, we return 
+    // editorComponent on each call to getTableCellEditorComponent or
+    // getTreeCellEditorComponent.  However, currently JTextFields have a
+    // problem with getting rid of old text, so without calling new() there
+    // are some strange results.  If you edit more than one cell in the table
+    // text from previously edited cells may unexpectedly show up in the 
+    // cell you are currently editing.  This will be fixed automatically
+    // when JTextField is fixed.
+    if (editorComponent instanceof JTextField)
+      {
+        ((JTextField)editorComponent).setText(value.toString());
+        delegate = new EditorDelegate();
+        ((JTextField)editorComponent).addActionListener(delegate);
+      }
+    else
+      {
+        // TODO
+      }
+    return editorComponent;
   } // getTableCellEditorComponent()
+
+
 }

@@ -1,5 +1,5 @@
 /* DatagramSocket.java -- A class to model UDP sockets
-   Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004
+   Copyright (C) 1998, 1999, 2000, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -37,6 +37,8 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package java.net;
+
+import gnu.classpath.SystemProperties;
 
 import gnu.java.net.PlainDatagramSocketImpl;
 import gnu.java.nio.DatagramChannelImpl;
@@ -172,7 +174,7 @@ public class DatagramSocket
    */
   public DatagramSocket(SocketAddress address) throws SocketException
   {
-    String propVal = System.getProperty("impl.prefix");
+    String propVal = SystemProperties.getProperty("impl.prefix");
     if (propVal == null || propVal.equals(""))
       impl = new PlainDatagramSocketImpl();
     else

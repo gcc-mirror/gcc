@@ -66,8 +66,6 @@ public class JSplitPane extends JComponent implements Accessible
   
     /**
      * Creates a new AccessibleJSplitPane object.
-     *
-     * @param value0 DOCUMENT ME!
      */
     protected AccessibleJSplitPane()
     {

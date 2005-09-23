@@ -40,6 +40,8 @@ package javax.swing.plaf.basic;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.PanelUI;
 
@@ -62,6 +64,8 @@ public class BasicPanelUI extends PanelUI
 
   public void installDefaults(JPanel p)
   {
+    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    p.setBackground(defaults.getColor("Panel.background"));
     p.setOpaque(true);
   }
 }

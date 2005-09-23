@@ -209,8 +209,12 @@ label   = Name:\\u0020</pre>
               {
                 if (pos == line.length())
                   {
-                    // The line continues on the next line.
+                    // The line continues on the next line.  If there
+                    // is no next line, just treat it as a key with an
+                    // empty value.
                     line = reader.readLine();
+		    if (line == null)
+		      line = "";
                     pos = 0;
                     while (pos < line.length()
                            && Character.isWhitespace(c = line.charAt(pos)))
@@ -410,7 +414,17 @@ label   = Name:\\u0020</pre>
    */
   public String getProperty(String key)
   {
-    return getProperty(key, null);
+    Properties prop = this;
+    // Eliminate tail recursion.
+    do
+      {
+        String value = (String) prop.get(key);
+        if (value != null)
+          return value;
+        prop = prop.defaults;
+      }
+    while (prop != null);
+    return null;
   }
 
   /**
@@ -429,17 +443,10 @@ label   = Name:\\u0020</pre>
    */
   public String getProperty(String key, String defaultValue)
   {
-    Properties prop = this;
-    // Eliminate tail recursion.
-    do
-      {
-        String value = (String) prop.get(key);
-        if (value != null)
-          return value;
-        prop = prop.defaults;
-      }
-    while (prop != null);
-    return defaultValue;
+    String prop = getProperty(key);
+    if (prop == null)
+      prop = defaultValue;
+    return prop;
   }
 
   /**

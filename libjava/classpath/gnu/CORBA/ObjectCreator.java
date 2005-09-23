@@ -1,4 +1,4 @@
-/* ExceptionCreator.java --
+/* ObjectCreator.java --
    Copyright (C) 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -38,10 +38,15 @@ exception statement from your version. */
 
 package gnu.CORBA;
 
+import gnu.CORBA.CDR.cdrBufOutput;
+
+import org.omg.CORBA.Any;
 import org.omg.CORBA.CompletionStatus;
 import org.omg.CORBA.CompletionStatusHelper;
 import org.omg.CORBA.MARSHAL;
+import org.omg.CORBA.StructMember;
 import org.omg.CORBA.SystemException;
+import org.omg.CORBA.TCKind;
 import org.omg.CORBA.UNKNOWN;
 import org.omg.CORBA.UserException;
 import org.omg.CORBA.portable.InputStream;
@@ -51,9 +56,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 /**
- * Creates java objects from the agreed IDL names for the simple
- * case when the CORBA object is directly mapped into the locally
- * defined java class.
+ * Creates java objects from the agreed IDL names for the simple case when the
+ * CORBA object is directly mapped into the locally defined java class.
  *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
@@ -70,20 +74,17 @@ public class ObjectCreator
   public static final String JAVA_PREFIX = "org.omg.";
 
   /**
-   * The prefix for classes that are placed instide the
-   * gnu.CORBA namespace.
+   * The prefix for classes that are placed instide the gnu.CORBA namespace.
    */
   public static final String CLASSPATH_PREFIX = "gnu.CORBA.";
 
   /**
-   * Try to instantiate an object with the given IDL name.
-   * The object must be mapped to the local java class.
-   * The omg.org domain must be mapped into the object in either
-   * org/omg or gnu/CORBA namespace.
+   * Try to instantiate an object with the given IDL name. The object must be
+   * mapped to the local java class. The omg.org domain must be mapped into the
+   * object in either org/omg or gnu/CORBA namespace.
    *
    * @param IDL name
-   * @return instantiated object instance or null if no such
-   * available.
+   * @return instantiated object instance or null if no such available.
    */
   public static java.lang.Object createObject(String idl, String suffix)
   {
@@ -109,16 +110,15 @@ public class ObjectCreator
   /**
    * Create the system exception with the given idl name.
    *
-   * @param idl the exception IDL name, must match the syntax
-   * "IDL:<class/name>:1.0".
+   * @param idl the exception IDL name, must match the syntax "IDL:<class/name>:1.0".
    * @param minor the exception minor code.
    * @param completed the exception completion status.
    *
    * @return the created exception.
    */
   public static SystemException createSystemException(String idl, int minor,
-                                                      CompletionStatus completed
-                                                     )
+    CompletionStatus completed
+  )
   {
     try
       {
@@ -127,20 +127,18 @@ public class ObjectCreator
 
         Constructor constructor =
           exClass.getConstructor(new Class[]
-                                 {
-                                   String.class, int.class,
-                                   CompletionStatus.class
-                                 }
-                                );
+            {
+              String.class, int.class, CompletionStatus.class
+            }
+          );
 
         Object exception =
           constructor.newInstance(new Object[]
-                                  {
-                                    " Remote exception " + idl + ", minor " +
-                                    minor + ", " + completed + ".",
-                                    new Integer(minor), completed
-                                  }
-                                 );
+            {
+              " Remote exception " + idl + ", minor " + minor + ", " +
+              completed + ".", new Integer(minor), completed
+            }
+          );
 
         return (SystemException) exception;
       }
@@ -153,9 +151,10 @@ public class ObjectCreator
 
   /**
    * Read the system exception from the given stream.
+   *
    * @param input the CDR stream to read from.
-   * @return the exception that has been stored in the stream
-   * (IDL name, minor code and completion status).
+   * @return the exception that has been stored in the stream (IDL name, minor
+   * code and completion status).
    */
   public static SystemException readSystemException(InputStream input)
   {
@@ -170,8 +169,8 @@ public class ObjectCreator
   }
 
   /**
-   * Reads the user exception, having the given Id, from the
-   * input stream. The id is expected to be in the form like
+   * Reads the user exception, having the given Id, from the input stream. The
+   * id is expected to be in the form like
    * 'IDL:test/org/omg/CORBA/ORB/communication/ourUserException:1.0'
    *
    * @param idl the exception idl name.
@@ -189,11 +188,8 @@ public class ObjectCreator
 
         Method read =
           helperClass.getMethod("read",
-                                new Class[]
-                                {
-                                  org.omg.CORBA.portable.InputStream.class
-                                }
-                               );
+            new Class[] { org.omg.CORBA.portable.InputStream.class }
+          );
 
         return (UserException) read.invoke(null, new Object[] { input });
       }
@@ -236,8 +232,8 @@ public class ObjectCreator
    * @param ex an exception to write.
    */
   public static void writeSystemException(OutputStream output,
-                                          SystemException ex
-                                         )
+    SystemException ex
+  )
   {
     String exIDL = toIDL(ex.getClass().getName());
     output.write_string(exIDL);
@@ -266,14 +262,14 @@ public class ObjectCreator
   }
 
   /**
-   * Converts the given IDL name to class name and tries to load the
-   * matching class. The OMG prefix (omg.org) is replaced by
-   * the java prefix org.omg. No other prefixes are added.
+   * Converts the given IDL name to class name and tries to load the matching
+   * class. The OMG prefix (omg.org) is replaced by the java prefix org.omg. No
+   * other prefixes are added.
    *
    * @param IDL the idl name.
    *
-   * TODO Cache the returned classes, avoiding these string manipulations
-   * each time the conversion is required.
+   * TODO Cache the returned classes, avoiding these string manipulations each
+   * time the conversion is required.
    *
    * @return the matching class or null if no such is available.
    */
@@ -301,10 +297,10 @@ public class ObjectCreator
   }
 
   /**
-   * Converts the given IDL name to class name, tries to load the
-   * matching class and create an object instance with parameterless
-   * constructor. The OMG prefix (omg.org) is replaced by
-   * the java prefix org.omg. No other prefixes are added.
+   * Converts the given IDL name to class name, tries to load the matching class
+   * and create an object instance with parameterless constructor. The OMG
+   * prefix (omg.org) is replaced by the java prefix org.omg. No other prefixes
+   * are added.
    *
    * @param IDL the idl name.
    *
@@ -341,8 +337,111 @@ public class ObjectCreator
       cn = OMG_PREFIX + cn.substring(JAVA_PREFIX.length()).replace('.', '/');
     else if (cn.startsWith(CLASSPATH_PREFIX))
       cn =
-        OMG_PREFIX + cn.substring(CLASSPATH_PREFIX.length()).replace('.', '/');
+        OMG_PREFIX +
+        cn.substring(CLASSPATH_PREFIX.length()).replace('.', '/');
 
     return "IDL:" + cn + ":1.0";
+  }
+
+  /**
+   * Insert the passed parameter into the given Any, assuming that the helper
+   * class is available. The helper class must have the "Helper" suffix and be
+   * in the same package as the class of the object being inserted.
+   *
+   * @param into the target to insert.
+   *
+   * @param object the object to insert. It can be any object as far as the
+   * corresponding helper is provided.
+   *
+   * @return true on success, false otherwise.
+   */
+  public static boolean insertWithHelper(Any into, Object object)
+  {
+    try
+      {
+        String helperClassName = object.getClass().getName() + "Helper";
+        Class helperClass = Class.forName(helperClassName);
+
+        Method insert =
+          helperClass.getMethod("insert",
+            new Class[] { Any.class, object.getClass() }
+          );
+
+        insert.invoke(null, new Object[] { into, object });
+
+        return true;
+      }
+    catch (Exception exc)
+      {
+        // Failed due some reason.
+        return false;
+      }
+  }
+
+  /**
+   * Insert the system exception into the given Any.
+   */
+  public static boolean insertSysException(Any into, SystemException exception)
+  {
+    try
+      {
+        cdrBufOutput output = new cdrBufOutput();
+
+        String m_exception_id = toIDL(exception.getClass().getName());
+        output.write_string(m_exception_id);
+        output.write_ulong(exception.minor);
+        CompletionStatusHelper.write(output, exception.completed);
+
+        String name = getDefaultName(m_exception_id);
+
+        universalHolder h = new universalHolder(output);
+
+        into.insert_Streamable(h);
+
+        recordTypeCode r = new recordTypeCode(TCKind.tk_except);
+        r.setId(m_exception_id);
+        r.setName(name);
+        into.type(r);
+
+        return true;
+      }
+    catch (Exception ex)
+      {
+        ex.printStackTrace();
+        return false;
+      }
+  }
+
+  /**
+   * Get the type name from the IDL string.
+   */
+  public static String getDefaultName(String idl)
+  {
+    int f1 = idl.lastIndexOf("/");
+    int p1 = (f1 < 0) ? 0 : f1;
+    int p2 = idl.indexOf(":", p1);
+    if (p2 < 0)
+      p2 = idl.length();
+
+    String name = idl.substring(f1 + 1, p2);
+    return name;
+  }
+
+  /**
+   * Insert this exception into the given Any. On failure, insert the UNKNOWN
+   * exception.
+   */
+  public static void insertException(Any into, Throwable exception)
+  {
+    boolean ok = false;
+    if (exception instanceof SystemException)
+      ok = insertSysException(into, (SystemException) exception);
+    else if (exception instanceof UserException)
+      ok = insertWithHelper(into, exception);
+
+    if (!ok)
+      ok = insertSysException(into, new UNKNOWN());
+    if (!ok)
+      throw new InternalError("Exception wrapping broken");
   }
 }

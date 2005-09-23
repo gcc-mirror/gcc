@@ -571,8 +571,6 @@ public class JScrollPane
    * Creates a new <code>JScrollPane</code> without a view. The scrollbar
    * policy is set to {@link #VERTICAL_SCROLLBAR_AS_NEEDED} and
    * {@link #HORIZONTAL_SCROLLBAR_AS_NEEDED}.
-   *
-   * @param view the component that is embedded inside the JScrollPane
    */
   public JScrollPane() 
   {
@@ -600,12 +598,12 @@ public class JScrollPane
    * @param vsbPolicy the vertical scrollbar policy to set
    * @param hsbPolicy the vertical scrollbar policy to set
    *
-   * @see {@link ScrollPaneConstants#HORIZONTAL_SCROLLBAR_ALWAYS}
-   * @see {@link ScrollPaneConstants#HORIZONTAL_SCROLLBAR_AS_NEEDED}
-   * @see {@link ScrollPaneConstants#HORIZONTAL_SCROLLBAR_NEVER}
-   * @see {@link ScrollPaneConstants#VERTICAL_SCROLLBAR_ALWAYS}
-   * @see {@link ScrollPaneConstants#VERTICAL_SCROLLBAR_AS_NEEDED}
-   * @see {@link ScrollPaneConstants#VERTICAL_SCROLLBAR_NEVER}
+   * @see ScrollPaneConstants#HORIZONTAL_SCROLLBAR_ALWAYS
+   * @see ScrollPaneConstants#HORIZONTAL_SCROLLBAR_AS_NEEDED
+   * @see ScrollPaneConstants#HORIZONTAL_SCROLLBAR_NEVER
+   * @see ScrollPaneConstants#VERTICAL_SCROLLBAR_ALWAYS
+   * @see ScrollPaneConstants#VERTICAL_SCROLLBAR_AS_NEEDED
+   * @see ScrollPaneConstants#VERTICAL_SCROLLBAR_NEVER
    */
   public JScrollPane(int vsbPolicy, int hsbPolicy) 
   {
@@ -620,12 +618,12 @@ public class JScrollPane
    * @param vsbPolicy the vertical scrollbar policy to set
    * @param hsbPolicy the vertical scrollbar policy to set
    *
-   * @see {@link ScrollPaneConstants#HORIZONTAL_SCROLLBAR_ALWAYS}
-   * @see {@link ScrollPaneConstants#HORIZONTAL_SCROLLBAR_AS_NEEDED}
-   * @see {@link ScrollPaneConstants#HORIZONTAL_SCROLLBAR_NEVER}
-   * @see {@link ScrollPaneConstants#VERTICAL_SCROLLBAR_ALWAYS}
-   * @see {@link ScrollPaneConstants#VERTICAL_SCROLLBAR_AS_NEEDED}
-   * @see {@link ScrollPaneConstants#VERTICAL_SCROLLBAR_NEVER}
+   * @see ScrollPaneConstants#HORIZONTAL_SCROLLBAR_ALWAYS
+   * @see ScrollPaneConstants#HORIZONTAL_SCROLLBAR_AS_NEEDED
+   * @see ScrollPaneConstants#HORIZONTAL_SCROLLBAR_NEVER
+   * @see ScrollPaneConstants#VERTICAL_SCROLLBAR_ALWAYS
+   * @see ScrollPaneConstants#VERTICAL_SCROLLBAR_AS_NEEDED
+   * @see ScrollPaneConstants#VERTICAL_SCROLLBAR_NEVER
    */
   public JScrollPane(Component view, int vsbPolicy, int hsbPolicy) 
   {

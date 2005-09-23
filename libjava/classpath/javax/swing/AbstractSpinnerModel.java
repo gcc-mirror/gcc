@@ -45,9 +45,10 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 
 /**
- * AbstractSpinnerModel
- * @author	Ka-Hing Cheung
- * @version	1.0
+ * Provides standard implementations for some of the methods in
+ * {@link SpinnerModel}.
+ *
+ * @author Ka-Hing Cheung
  */
 public abstract class AbstractSpinnerModel implements SpinnerModel
 {

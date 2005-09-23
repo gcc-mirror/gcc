@@ -91,7 +91,10 @@ public class BasicComboBoxEditor extends Object implements ComboBoxEditor,
    */
   public void setItem(Object item)
   {
-    editor.setText(item.toString());
+     if (item == null)
+        editor.setText("");
+     else
+        editor.setText(item.toString());
   }
 
   /**

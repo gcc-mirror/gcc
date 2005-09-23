@@ -56,7 +56,7 @@ import javax.swing.border.Border;
 public class BasicArrowButton extends JButton implements SwingConstants
 {
   /** The default size of the Arrow buttons. */
-  private static int defaultSize = 10;
+  private static int defaultSize = 12;
 
   /** The Polygon that points up. */
   private static Polygon upIcon = new Polygon(new int[] { 0, 5, 9 },
