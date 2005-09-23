@@ -58,7 +58,7 @@
        (eq_attr "cpu" "ppc604,ppc604e,ppc620,ppc630"))
   "lsu_6xx")
 
-(define_insn_reservation "ppc604-store" 1
+(define_insn_reservation "ppc604-store" 3
   (and (eq_attr "type" "store,fpstore,store_ux,store_u,fpstore_ux,fpstore_u")
        (eq_attr "cpu" "ppc604,ppc604e,ppc620,ppc630"))
   "lsu_6xx")

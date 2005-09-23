@@ -31,7 +31,7 @@
        (eq_attr "cpu" "rios1,ppc601"))
   "iu_rios1")
 
-(define_insn_reservation "rios1-store" 1
+(define_insn_reservation "rios1-store" 2
   (and (eq_attr "type" "store,store_ux,store_u")
        (eq_attr "cpu" "rios1,ppc601"))
   "iu_rios1")
@@ -46,7 +46,7 @@
        (eq_attr "cpu" "ppc601"))
   "iu_rios1")
 
-(define_insn_reservation "rios1-fpstore" 1
+(define_insn_reservation "rios1-fpstore" 3
   (and (eq_attr "type" "fpstore,fpstore_ux,fpstore_u")
        (eq_attr "cpu" "rios1,ppc601"))
   "iu_rios1+fpu_rios1")

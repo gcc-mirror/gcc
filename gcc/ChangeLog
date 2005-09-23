@@ -1,4 +1,31 @@
 2005-09-23  David Edelsohn  <edelsohn@gnu.org>
+	    Pete Steinmetz <steinmtz@us.ibm.com>
+
+	* config/rs6000/rs6000.md (neg-minus-mult): Set type to dmul.
+	(rldic.): Set type to "compare".
+	(rldicr.): Same.
+	(movsf_hardfloat): Set type to mtjmpr for MTCTR/MTLR.  Set type to
+	mfjmpr for MFCTR/MFLR.
+	(movdf_hardfloat64): Same.
+	(movdf_softfloat64): Same.  Correct order of store and move types.
+	(movti_string): Set type to store_ux/load_ux.
+	(load_multiple): Set type to load_ux.
+	(store_multiple): Set type to store_ux.
+	(movmemsi): Set type to store_ux.
+	(output_cbranch direct_return): Set type to jmpreg.
+	(stmw): Set type to store_ux.
+	(lmw): Set type to load_ux.
+	* config/rs6000/40x.md (ppc403-store): Increase latency to 2.
+	* config/rs6000/440.md (ppc440-store): Increase latency to 6.
+	* config/rs6000/603.md (ppc603-store): Occupy LSU for 2 cycles.
+	* config/rs6000/6xx.md (ppc604-store): Increase latency to 3.
+	* config/rs6000/mpc.md (mpccore-store): Increase latency to 2.
+	* config/rs6000/rios1.md (rios1-store): Increase latency to 2.
+	(rios1-fpstore): Increase latency to 3.
+	* config/rs6000/rios2.md (rios2-store): Increase latency to 2.
+	* config/rs6000/rs64.md (rs64a-store): Increase latency to 2.
+
+2005-09-23  David Edelsohn  <edelsohn@gnu.org>
 	    Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/rs6000/sync.md (sync_<fetchop_name>si_internal): Change

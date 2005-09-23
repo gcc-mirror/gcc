@@ -32,7 +32,7 @@
        (eq_attr "cpu" "mpccore"))
   "lsu_mpc")
 
-(define_insn_reservation "mpccore-store" 1
+(define_insn_reservation "mpccore-store" 2
   (and (eq_attr "type" "store,store_ux,store_u,fpstore,fpstore_ux,fpstore_u")
        (eq_attr "cpu" "mpccore"))
   "lsu_mpc")
