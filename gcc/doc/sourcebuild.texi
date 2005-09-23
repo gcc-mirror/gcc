@@ -1288,7 +1288,7 @@ failures for a test run against the list of expected failures in
 Update this file when adding new failing tests to Mauve, or when fixing
 bugs in libgcj that had caused Mauve test failures.
 
-The @uref{http://sources.redhat.com/mauve/,,
+The @uref{http://sources.redhat.com/mauve/jacks.html,,
 Jacks} project provides a testsuite for Java compilers that can be used
 to test changes that affect the GCJ front end.  This testsuite is run as
 part of Java testing by placing the Jacks tree within the libjava
