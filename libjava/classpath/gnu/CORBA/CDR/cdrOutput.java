@@ -41,6 +41,7 @@ package gnu.CORBA.CDR;
 import gnu.CORBA.BigDecimalHelper;
 import gnu.CORBA.GIOP.CharSets_OSF;
 import gnu.CORBA.GIOP.cxCodeSet;
+import gnu.CORBA.Poa.gnuServantObject;
 import gnu.CORBA.IOR;
 import gnu.CORBA.Simple_delegate;
 import gnu.CORBA.TypeCodeHelper;
@@ -99,7 +100,7 @@ public abstract class cdrOutput
   /**
    * The GIOP version.
    */
-  protected Version giop = new Version(1, 0);
+  protected Version giop = new Version(1, 2);
 
   /**
    * The code set information.
@@ -325,6 +326,15 @@ public abstract class cdrOutput
     if (x == null)
       {
         IOR.write_null(this);
+        return;
+      }
+    else if (x instanceof gnuServantObject)
+      {
+        // The ORB may be different if several ORBs coexist
+        // in the same machine.
+        gnuServantObject g = (gnuServantObject) x;
+        IOR ior = g.orb.getLocalIor(x);
+        ior._write_no_endian(this);
         return;
       }
     else if (x instanceof ObjectImpl)

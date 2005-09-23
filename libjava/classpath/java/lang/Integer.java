@@ -718,12 +718,12 @@ public final class Integer extends Number implements Comparable
     int len = str.length();
     boolean isNeg = false;
     if (len == 0)
-      throw new NumberFormatException();
+      throw new NumberFormatException("string length is null");
     int ch = str.charAt(index);
     if (ch == '-')
       {
         if (len == 1)
-          throw new NumberFormatException();
+          throw new NumberFormatException("pure '-'");
         isNeg = true;
         ch = str.charAt(++index);
       }
@@ -748,7 +748,7 @@ public final class Integer extends Number implements Comparable
           }
       }
     if (index == len)
-      throw new NumberFormatException();
+      throw new NumberFormatException("non terminated number: " + str);
 
     int max = MAX_VALUE / radix;
     // We can't directly write `max = (MAX_VALUE + 1) / radix'.
@@ -760,12 +760,12 @@ public final class Integer extends Number implements Comparable
     while (index < len)
       {
 	if (val < 0 || val > max)
-	  throw new NumberFormatException();
+	  throw new NumberFormatException("number overflow (pos=" + index + ") : " + str);
 
         ch = Character.digit(str.charAt(index++), radix);
         val = val * radix + ch;
         if (ch < 0 || (val < 0 && (! isNeg || val != MIN_VALUE)))
-          throw new NumberFormatException();
+          throw new NumberFormatException("invalid character at position " + index + " in " + str);
       }
     return isNeg ? -val : val;
   }

@@ -1,5 +1,5 @@
 /* DefaultListSelectionModel.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,10 +47,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
- * <p>This class provides a default implementation of {@link
- * ListSelectioModel}, which is used by {@link javax.swing.JList} and
+ * The default implementation of {@link ListSelectionModel},
+ * which is used by {@link javax.swing.JList} and
  * similar classes to manage the selection status of a number of data
- * elements. </p>
+ * elements.
  *
  * <p>The class is organized <em>abstractly</em> as a set of intervals of
  * integers. Each interval indicates an inclusive range of indices in a
@@ -104,7 +104,7 @@ public class DefaultListSelectionModel implements Cloneable,
    * controls the range of indices provided in any {@link
    * ListSelectionEvent} fired by the selectionModel. Let
    * <code>[A,L]</code> be the range of indices between {@link
-   * anchorSelectionIndex} and {@link leadSelectionIndex} inclusive, and
+   * #anchorSelectionIndex} and {@link #leadSelectionIndex} inclusive, and
    * let <code>[i0,i1]</code> be the range of indices changed in a given
    * call which generates a {@link ListSelectionEvent}. Then when this
    * property is <code>true</code>, the {@link ListSelectionEvent} contains
@@ -232,7 +232,7 @@ public class DefaultListSelectionModel implements Cloneable,
    * which changed selection status between the beginning and end of the
    * method.</p>
    * 
-   * @param anchorIndex The new property value
+   * @param leadIndex The new property value
    *
    * @see #getAnchorSelectionIndex
    */
@@ -292,9 +292,9 @@ public class DefaultListSelectionModel implements Cloneable,
   /**
    * Sets the value of the {@link #leadAnchorNotificationEnabled} property.
    * 
-   * @param flag The new property value
+   * @param l The new property value
    *
-   * @see #getLeadAnchorNotificationEnabled
+   * @see #isLeadAnchorNotificationEnabled
    */
   public void setLeadAnchorNotificationEnabled(boolean l)
   {
@@ -588,7 +588,7 @@ public class DefaultListSelectionModel implements Cloneable,
    * indicate that a series of adjustment has just ended.
    *
    * The values of {@link #getMinSelectionIndex} and
-   * {@link getMaxSelectionIndex} are used in the {@link ListSelectionEvent}
+   * {@link #getMaxSelectionIndex} are used in the {@link ListSelectionEvent}
    * that gets fired.
    *
    * @param isAdjusting <code>true</code> if this is the final change
@@ -636,8 +636,8 @@ public class DefaultListSelectionModel implements Cloneable,
    *
    * @param listener The listener to add
    *
-   * @see removeListSelectionListener
-   * @see getListSelectionListeners
+   * @see #removeListSelectionListener
+   * @see #getListSelectionListeners
    */
   public void addListSelectionListener(ListSelectionListener listener)
   {
@@ -649,8 +649,8 @@ public class DefaultListSelectionModel implements Cloneable,
    *
    * @param listener The listener to remove
    *
-   * @see addListSelectionListener
-   * @see getListSelectionListeners
+   * @see #addListSelectionListener
+   * @see #getListSelectionListeners
    */
   public void removeListSelectionListener(ListSelectionListener listener)
   {
@@ -664,7 +664,7 @@ public class DefaultListSelectionModel implements Cloneable,
    *
    * @return The array
    *
-   * @see getListSelectionListener
+   * @see #getListSelectionListeners
    * @since 1.3
    */
   public EventListener[] getListeners(Class listenerType)
@@ -677,9 +677,9 @@ public class DefaultListSelectionModel implements Cloneable,
    *
    * @return the array
    *
-   * @see addListSelectionListener
-   * @see removeListSelectionListener
-   * @see getListeners
+   * @see #addListSelectionListener
+   * @see #removeListSelectionListener
+   * @see #getListeners
    * @since 1.4
    */
   public ListSelectionListener[] getListSelectionListeners()

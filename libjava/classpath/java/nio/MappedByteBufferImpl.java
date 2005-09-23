@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package java.nio;
 
-import gnu.classpath.RawData;
+import gnu.classpath.Pointer;
 
 import java.io.IOException;
 
@@ -48,12 +48,12 @@ final class MappedByteBufferImpl extends MappedByteBuffer
 
   /** Posix uses this for the pointer returned by mmap;
    * Win32 uses it for the pointer returned by MapViewOfFile. */
-  public RawData implPtr;
+  public Pointer implPtr;
   /** Posix uses this for the actual length passed to mmap;
    * Win32 uses it for the pointer returned by CreateFileMapping. */
   public long implLen;
   
-  public MappedByteBufferImpl(RawData address, int size, boolean readOnly)
+  public MappedByteBufferImpl(Pointer address, int size, boolean readOnly)
     throws IOException
   {
     super(size, size, 0, -1);

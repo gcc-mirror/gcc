@@ -98,7 +98,7 @@ public abstract class FileChooserUI
    * @param chooser the <code>JFileChooser</code> whose
    *        button text is requested.
    *
-   * @see javax.swing.JFileChoose#getApproveButtonText
+   * @see javax.swing.JFileChooser#getApproveButtonText
    */
   public abstract String getApproveButtonText(JFileChooser chooser);
 
@@ -111,7 +111,7 @@ public abstract class FileChooserUI
    * @param chooser the <code>JFileChooser</code> whose
    *        dialog title is requested.
    *
-   * @see javax.swing.JFileChoose#getDialogtitle
+   * @see javax.swing.JFileChooser#getDialogTitle
    */
   public abstract String getDialogTitle(JFileChooser chooser);
 

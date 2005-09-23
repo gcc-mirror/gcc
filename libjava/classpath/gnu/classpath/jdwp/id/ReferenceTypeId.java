@@ -39,6 +39,8 @@ exception statement from your version. */
 
 package gnu.classpath.jdwp.id;
 
+import gnu.classpath.jdwp.exception.InvalidClassException;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -65,6 +67,22 @@ public class ReferenceTypeId
   public int size ()
   {
     return 8;
+  }
+
+  /**
+   * Gets the class associated with this ID
+   *
+   * @returns the class
+   * @throws InvalidClassException if the class is not valid
+   */
+  public Class getType ()
+    throws InvalidClassException
+  {
+    Class clazz = (Class) _reference.get ();
+    if (clazz == null)
+      throw new InvalidClassException (_id);
+
+    return clazz;
   }
 
   /**

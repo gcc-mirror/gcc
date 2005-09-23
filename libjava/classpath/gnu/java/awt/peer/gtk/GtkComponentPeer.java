@@ -70,6 +70,9 @@ import java.awt.image.ImageObserver;
 import java.awt.image.ImageProducer;
 import java.awt.image.VolatileImage;
 import java.awt.peer.ComponentPeer;
+import java.awt.peer.ContainerPeer;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class GtkComponentPeer extends GtkGenericPeer
   implements ComponentPeer
@@ -83,6 +86,8 @@ public class GtkComponentPeer extends GtkGenericPeer
 
   boolean isInRepaint;
 
+  static final Timer repaintTimer = new Timer (true);
+
   /* this isEnabled differs from Component.isEnabled, in that it
      knows if a parent is disabled.  In that case Component.isEnabled 
      may return true, but our isEnabled will always return false */
@@ -95,6 +100,7 @@ public class GtkComponentPeer extends GtkGenericPeer
   native void gtkWidgetGetPreferredDimensions (int[] dim);
   native void gtkWidgetGetLocationOnScreen (int[] point);
   native void gtkWidgetSetCursor (int type);
+  native void gtkWidgetSetCursorUnlocked (int type);
   native void gtkWidgetSetBackground (int red, int green, int blue);
   native void gtkWidgetSetForeground (int red, int green, int blue);
   native void gtkWidgetSetSensitive (boolean sensitive);
@@ -372,8 +378,26 @@ public class GtkComponentPeer extends GtkGenericPeer
     if (x == 0 && y == 0 && width == 0 && height == 0)
       return;
 
-    q().postEvent (new PaintEvent (awtComponent, PaintEvent.UPDATE,
-                                 new Rectangle (x, y, width, height)));
+    repaintTimer.schedule(new RepaintTimerTask(x, y, width, height), tm);
+  }
+
+  private class RepaintTimerTask extends TimerTask
+  {
+    private int x, y, width, height;
+
+    RepaintTimerTask(int x, int y, int width, int height)
+    {
+      this.x = x;
+      this.y = y;
+      this.width = width;
+      this.height = height;
+    }
+
+    public void run()
+    {
+      q().postEvent (new PaintEvent (awtComponent, PaintEvent.UPDATE,
+                                     new Rectangle (x, y, width, height)));
+    }
   }
 
   public void requestFocus ()
@@ -396,7 +420,11 @@ public class GtkComponentPeer extends GtkGenericPeer
 
   public void setBounds (int x, int y, int width, int height)
   {
+    int new_x = x;
+    int new_y = y;
+
     Component parent = awtComponent.getParent ();
+    Component next_parent;
 
     // Heavyweight components that are children of one or more
     // lightweight containers have to be handled specially.  Because
@@ -414,30 +442,44 @@ public class GtkComponentPeer extends GtkGenericPeer
       {
 	lightweightChild = true;
 
+        next_parent = parent.getParent ();
+
 	i = ((Container) parent).getInsets ();
 
-	x += parent.getX () + i.left;
-	y += parent.getY () + i.top;
+        if (next_parent instanceof Window)
+          {
+            new_x += i.left;
+            new_y += i.top;
+          }
+        else
+          {
+            new_x += parent.getX () + i.left;
+            new_y += parent.getY () + i.top;
+          }
 
-	parent = parent.getParent ();
+	parent = next_parent;
       }
 
     // We only need to convert from Java to GTK coordinates if we're
     // placing a heavyweight component in a Window.
     if (parent instanceof Window && !lightweightChild)
       {
-	Insets insets = ((Window) parent).getInsets ();
         GtkWindowPeer peer = (GtkWindowPeer) parent.getPeer ();
+        // important: we want the window peer's insets here, not the
+        // window's, since user sub-classes of Window can override
+        // getInset and we only want to correct for the frame borders,
+        // not for any user-defined inset values
+        Insets insets = peer.getInsets ();
+
         int menuBarHeight = 0;
         if (peer instanceof GtkFramePeer)
           menuBarHeight = ((GtkFramePeer) peer).getMenuBarHeight ();
 
-        // Convert from Java coordinates to GTK coordinates.
-        setNativeBounds (x - insets.left, y - insets.top + menuBarHeight,
-                         width, height);
+        new_x = x - insets.left;
+        new_y = y - insets.top + menuBarHeight;
       }
-    else
-      setNativeBounds (x, y, width, height);
+
+    setNativeBounds (new_x, new_y, width, height);
   }
 
   void setCursor ()
@@ -447,7 +489,10 @@ public class GtkComponentPeer extends GtkGenericPeer
 
   public void setCursor (Cursor cursor) 
   {
-    gtkWidgetSetCursor (cursor.getType ());
+    if (Thread.currentThread() == GtkToolkit.mainThread)
+      gtkWidgetSetCursorUnlocked (cursor.getType ());
+    else
+      gtkWidgetSetCursor (cursor.getType ());
   }
 
   public void setEnabled (boolean b)
@@ -480,16 +525,26 @@ public class GtkComponentPeer extends GtkGenericPeer
     return new Color (rgb[0], rgb[1], rgb[2]);
   }
 
+  public native void setVisibleNative (boolean b);
+  public native void setVisibleNativeUnlocked (boolean b);
+
   public void setVisible (boolean b)
   {
-    if (b)
-      show ();
+    if (Thread.currentThread() == GtkToolkit.mainThread)
+      setVisibleNativeUnlocked (b);
     else
-      hide ();
+      setVisibleNative (b);
   }
 
-  public native void hide ();
-  public native void show ();
+  public void hide ()
+  {
+    setVisible (false);
+  }
+
+  public void show ()
+  {
+    setVisible (true);
+  }
 
   protected void postMouseEvent(int id, long when, int mods, int x, int y, 
 				int clickCount, boolean popupTrigger) 
@@ -586,7 +641,8 @@ public class GtkComponentPeer extends GtkGenericPeer
 
   public void updateCursorImmediately ()
   {
-    
+    if (awtComponent.getCursor() != null)
+      setCursor(awtComponent.getCursor());
   }
 
   public boolean handlesWheelScrolling ()
@@ -647,5 +703,37 @@ public class GtkComponentPeer extends GtkGenericPeer
   public void destroyBuffers ()
   {
     backBuffer.flush();
+  }
+  
+  public String toString ()
+  {
+    return "peer of " + awtComponent.toString();
+  }
+  public Rectangle getBounds()
+  {
+      // FIXME: implement
+    return null;
+  }
+  public void reparent(ContainerPeer parent)
+  {
+    // FIXME: implement
+  
+  }
+  public void setBounds(int x, int y, int width, int height, int z)
+  {
+    // FIXME: implement
+      setBounds (x, y, width, height);
+   
+  }
+  public boolean isReparentSupported()
+  {
+    // FIXME: implement
+
+    return false;
+  }
+  public void layout()
+  {
+    // FIXME: implement
+ 
   }
 }

@@ -47,22 +47,29 @@ import gnu.CORBA.GIOP.cxCodeSet;
 
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.CompletionStatus;
+import org.omg.CORBA.MARSHAL;
 import org.omg.CORBA.ULongSeqHelper;
+import org.omg.IOP.TAG_INTERNET_IOP;
+import org.omg.IOP.TAG_MULTIPLE_COMPONENTS;
+import org.omg.IOP.TaggedComponent;
+import org.omg.IOP.TaggedComponentHelper;
+import org.omg.IOP.TaggedProfile;
+import org.omg.IOP.TaggedProfileHelper;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
- * The implementaton of the Interoperable Object Reference (IOR).
- * IOR can be compared with the Internet address for a web page,
- * it provides means to locate the CORBA service on the web.
- * IOR contains the host address, port number, the object identifier
- * (key) inside the server, the communication protocol version,
- * supported charsets and so on.
+ * The implementaton of the Interoperable Object Reference (IOR). IOR can be
+ * compared with the Internet address for a web page, it provides means to
+ * locate the CORBA service on the web. IOR contains the host address, port
+ * number, the object identifier (key) inside the server, the communication
+ * protocol version, supported charsets and so on.
  *
- * Ths class provides method for encoding and
- * decoding the IOR information from/to the stringified references,
- * usually returned by {@link org.omg.CORBA.ORB#String object_to_string()}.
+ * Ths class provides method for encoding and decoding the IOR information
+ * from/to the stringified references, usually returned by
+ * {@link org.omg.CORBA.ORB#String object_to_string()}.
  *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  *
@@ -72,10 +79,22 @@ import java.io.IOException;
 public class IOR
 {
   /**
-   * The code sets profile.
+   * The code sets tagged component, normally part of the Internet profile. This
+   * compone consists of the two componenets itself.
    */
   public static class CodeSets_profile
   {
+    public CodeSets_profile()
+    {
+      int[] supported = CharSets_OSF.getSupportedCharSets();
+
+      narrow.native_set = CharSets_OSF.NATIVE_CHARACTER;
+      narrow.conversion = supported;
+
+      wide.native_set = CharSets_OSF.NATIVE_WIDE_CHARACTER;
+      wide.conversion = supported;
+    }
+
     /**
      * The code set component.
      */
@@ -112,7 +131,7 @@ public class IOR
             b.append(" conversion ");
             for (int i = 0; i < conversion.length; i++)
               {
-                b.append(name(conversion [ i ]));
+                b.append(name(conversion[i]));
                 b.append(' ');
               }
           }
@@ -131,8 +150,8 @@ public class IOR
 
       private String name(int set)
       {
-        return "0x" + Integer.toHexString(set) + " (" +
-               CharSets_OSF.getName(set) + ") ";
+        return "0x" + Integer.toHexString(set) + " ("
+               + CharSets_OSF.getName(set) + ") ";
       }
     }
 
@@ -201,7 +220,7 @@ public class IOR
   /**
    * The internet profile.
    */
-  public static class Internet_profile
+  public class Internet_profile
   {
     /**
      * The agreed tag for the Internet profile.
@@ -224,6 +243,18 @@ public class IOR
     public int port;
 
     /**
+     * The code sets component in the internet profile of this IOR. This is not
+     * a separate profile.
+     */
+    public CodeSets_profile CodeSets = new CodeSets_profile();
+
+    /**
+     * Reserved for all components of this profile, this array holds the
+     * components other than code set components.
+     */
+    ArrayList components = new ArrayList();
+
+    /**
      * Return the human readable representation.
      */
     public String toString()
@@ -235,20 +266,61 @@ public class IOR
       b.append(" (v");
       b.append(version);
       b.append(")");
+      if (components.size() > 0)
+        b.append(" " + components.size() + " extra components.");
       return b.toString();
+    }
+
+    /**
+     * Write the internet profile (except the heading tag.
+     */
+    public void write(cdrOutput out)
+    {
+      try
+        {
+          // Need to write the Internet profile into the separate
+          // stream as we must know the size in advance.
+          cdrOutput b = out.createEncapsulation();
+
+          version.write(b);
+          b.write_string(host);
+
+          b.write_ushort((short) (port & 0xFFFF));
+
+          // Write the object key.
+          b.write_long(key.length);
+          b.write(key);
+
+          // Number of the tagged components.
+          b.write_long(1 + components.size());
+
+          b.write_long(CodeSets_profile.TAG_CODE_SETS);
+          CodeSets.write(b);
+
+          TaggedComponent t;
+
+          for (int i = 0; i < components.size(); i++)
+            {
+              t = (TaggedComponent) components.get(i);
+              TaggedComponentHelper.write(b, t);
+            }
+
+          b.close();
+        }
+      catch (Exception e)
+        {
+          MARSHAL m = new MARSHAL("Unable to write Internet profile.");
+          m.initCause(e);
+          throw m;
+        }
     }
   }
 
   /**
-   * The standard minor code, indicating that the string to object
-   * converstio has failed due non specific reasons.
+   * The standard minor code, indicating that the string to object converstio
+   * has failed due non specific reasons.
    */
   public static final int FAILED = 10;
-
-  /**
-   * The code sets profile of this IOR.
-   */
-  public CodeSets_profile CodeSets = new CodeSets_profile();
 
   /**
    * The internet profile of this IOR.
@@ -261,45 +333,35 @@ public class IOR
   public String Id;
 
   /**
-   * The additional tagged components, encapsulated in
-   * the byte arrays. They are only supported by the
-   * later versions, than currently implemented.
-   */
-  public byte[][] extra;
-
-  /**
    * The object key.
    */
   public byte[] key;
 
   /**
-   * True if the profile was encoded using the Big Endian or
-   * the encoding is not known.
+   * All tagged profiles of this IOR, except the separately defined Internet
+   * profile.
+   */
+  ArrayList profiles = new ArrayList();
+
+  /**
+   * True if the profile was encoded using the Big Endian or the encoding is not
+   * known.
    *
    * false if it was encoded using the Little Endian.
    */
   public boolean Big_Endian = true;
 
   /**
-   * Create an empty instance, initialising the code sets to default
-   * values.
+   * Create an empty instance, initialising the code sets to default values.
    */
   public IOR()
   {
-    int[] supported = CharSets_OSF.getSupportedCharSets();
-
-    CodeSets.narrow.native_set = CharSets_OSF.NATIVE_CHARACTER;
-    CodeSets.narrow.conversion = supported;
-
-    CodeSets.wide.native_set = CharSets_OSF.NATIVE_WIDE_CHARACTER;
-    CodeSets.wide.conversion = supported;
   }
 
   /**
    * Parse the provided stringifed reference.
    *
-   * @param stringified_reference, in the form of
-   * IOR:nnnnnn.....
+   * @param stringified_reference, in the form of IOR:nnnnnn.....
    *
    * @return the parsed IOR
    *
@@ -308,14 +370,13 @@ public class IOR
    * TODO corballoc and other alternative formats.
    */
   public static IOR parse(String stringified_reference)
-                   throws BAD_PARAM
+    throws BAD_PARAM
   {
     try
       {
         if (!stringified_reference.startsWith("IOR:"))
           throw new BAD_PARAM("The string refernce must start with IOR:",
-                              FAILED, CompletionStatus.COMPLETED_NO
-                             );
+                              FAILED, CompletionStatus.COMPLETED_NO);
 
         IOR r = new IOR();
 
@@ -340,8 +401,7 @@ public class IOR
       {
         ex.printStackTrace();
         throw new BAD_PARAM(ex + " while parsing " + stringified_reference,
-                            FAILED, CompletionStatus.COMPLETED_NO
-                           );
+                            FAILED, CompletionStatus.COMPLETED_NO);
       }
   }
 
@@ -352,7 +412,7 @@ public class IOR
    * @throws IOException if the stream throws it.
    */
   public void _read(cdrInput c)
-             throws IOException, BAD_PARAM
+    throws IOException, BAD_PARAM
   {
     int endian;
 
@@ -366,23 +426,21 @@ public class IOR
   }
 
   /**
-   * Read the IOR from the provided input stream, not reading
-   * the endian data at the beginning of the stream. The IOR is
-   * thansferred in this form in
+   * Read the IOR from the provided input stream, not reading the endian data at
+   * the beginning of the stream. The IOR is thansferred in this form in
    * {@link write_Object(org.omg.CORBA.Object)}.
    *
    * If the stream contains a null value, the Id and Internet fields become
-   * equal to null. Otherwise Id contains some string (possibly
-   * empty).
+   * equal to null. Otherwise Id contains some string (possibly empty).
    *
-   * Id is checked for null in cdrInput that then returns
-   * null instead of object.
+   * Id is checked for null in cdrInput that then returns null instead of
+   * object.
    *
    * @param c a stream to read from.
    * @throws IOException if the stream throws it.
    */
   public void _read_no_endian(cdrInput c)
-                       throws IOException, BAD_PARAM
+    throws IOException, BAD_PARAM
   {
     Id = c.read_string();
 
@@ -407,9 +465,7 @@ public class IOR
             Internet.host = profile.read_string();
             Internet.port = profile.gnu_read_ushort();
 
-            int lk = profile.read_long();
-            key = new byte[ lk ];
-            profile.read(key);
+            key = profile.read_sequence();
 
             // Read tagged components.
             int n_components = 0;
@@ -425,7 +481,16 @@ public class IOR
 
                     if (ctag == CodeSets_profile.TAG_CODE_SETS)
                       {
-                        CodeSets.read(profile);
+                        Internet.CodeSets.read(profile);
+                      }
+                    else
+                      {
+                        // Construct a generic component for codesets
+                        // profile.
+                        TaggedComponent pc = new TaggedComponent();
+                        pc.tag = ctag;
+                        pc.component_data = profile.read_sequence();
+                        Internet.components.add(pc);
                       }
                   }
               }
@@ -434,12 +499,21 @@ public class IOR
                 ex.printStackTrace();
               }
           }
+        else
+          {
+            // Construct a generic profile.
+            TaggedProfile p = new TaggedProfile();
+            p.tag = tag;
+            p.profile_data = profile.buffer.getBuffer();
+
+            profiles.add(p);
+          }
       }
   }
 
   /**
-   * Write this IOR record to the provided CDR stream.
-   * This procedure writes the zero (Big Endian) marker first.
+   * Write this IOR record to the provided CDR stream. This procedure writes the
+   * zero (Big Endian) marker first.
    */
   public void _write(cdrOutput out)
   {
@@ -451,8 +525,8 @@ public class IOR
   /**
    * Write a null value to the CDR output stream.
    *
-   * The null value is written as defined in OMG specification
-   * (zero length string, followed by an empty set of profiles).
+   * The null value is written as defined in OMG specification (zero length
+   * string, followed by an empty set of profiles).
    */
   public static void write_null(cdrOutput out)
   {
@@ -464,47 +538,27 @@ public class IOR
   }
 
   /**
-   * Write this IOR record to the provided CDR stream. The procedure
-   * writed data in Big Endian, but does NOT add any endian marker
-   * to the beginning.
+   * Write this IOR record to the provided CDR stream. The procedure writed data
+   * in Big Endian, but does NOT add any endian marker to the beginning.
    */
   public void _write_no_endian(cdrOutput out)
   {
-    try
+    // Write repository id.
+    out.write_string(Id);
+
+    out.write_long(1 + profiles.size());
+
+    // Write the Internet profile.
+    out.write_long(Internet_profile.TAG_INTERNET_IOP);
+    Internet.write(out);
+
+    // Write other profiles.
+    TaggedProfile tp;
+
+    for (int i = 0; i < profiles.size(); i++)
       {
-        // Write repository id.
-        out.write_string(Id);
-
-        // Always one profile.
-        out.write_long(1);
-
-        // It is the Internet profile.
-        out.write_long(Internet_profile.TAG_INTERNET_IOP);
-
-        // Need to write the Internet profile into the separate
-        // stream as we must know the size in advance.
-        cdrOutput b = out.createEncapsulation();
-
-        Internet.version.write(b);
-        b.write_string(Internet.host);
-
-        b.write_ushort((short) (Internet.port & 0xFFFF));
-
-        // Write the object key.
-        b.write_long(key.length);
-        b.write(key);
-
-        // One tagged component.
-        b.write_long(1);
-
-        b.write_long(CodeSets_profile.TAG_CODE_SETS);
-        CodeSets.write(b);
-
-        b.close();
-      }
-    catch (IOException ex)
-      {
-        Unexpected.error(ex);
+        tp = (TaggedProfile) profiles.get(i);
+        TaggedProfileHelper.write(out, tp);
       }
   }
 
@@ -525,11 +579,11 @@ public class IOR
 
     for (int i = 0; i < key.length; i++)
       {
-        b.append(Integer.toHexString(key [ i ] & 0xFF));
+        b.append(Integer.toHexString(key[i] & 0xFF));
       }
 
     b.append(" ");
-    b.append(CodeSets);
+    b.append(Internet.CodeSets);
 
     return b.toString();
   }
@@ -552,12 +606,113 @@ public class IOR
 
     for (int i = 0; i < binary.length; i++)
       {
-        s = Integer.toHexString(binary [ i ] & 0xFF);
+        s = Integer.toHexString(binary[i] & 0xFF);
         if (s.length() == 1)
           b.append('0');
         b.append(s);
       }
 
     return b.toString();
+  }
+
+  /**
+   * Adds a service-specific component to the IOR profile. The specified
+   * component will be included in all profiles, present in the IOR.
+   *
+   * @param tagged_component a tagged component being added.
+   */
+  public void add_ior_component(TaggedComponent tagged_component)
+  {
+    // Add to the Internet profile.
+    Internet.components.add(tagged_component);
+
+    // Add to others.
+    for (int i = 0; i < profiles.size(); i++)
+      {
+        TaggedProfile profile = (TaggedProfile) profiles.get(i);
+        addComponentTo(profile, tagged_component);
+      }
+  }
+
+  /**
+   * Adds a service-specific component to the IOR profile.
+   *
+   * @param tagged_component a tagged component being added.
+   *
+   * @param profile_id the IOR profile to that the component must be added. The
+   * 0 value ({@link org.omg.IOP.TAG_INTERNET_IOP#value}) adds to the Internet
+   * profile where host and port are stored by default.
+   */
+  public void add_ior_component_to_profile(TaggedComponent tagged_component,
+                                           int profile_id)
+  {
+    if (profile_id == TAG_INTERNET_IOP.value)
+      // Add to the Internet profile
+      Internet.components.add(tagged_component);
+    else
+      {
+        // Add to others.
+        for (int i = 0; i < profiles.size(); i++)
+          {
+            TaggedProfile profile = (TaggedProfile) profiles.get(i);
+            if (profile.tag == profile_id)
+              addComponentTo(profile, tagged_component);
+          }
+      }
+  }
+
+  /**
+   * Add given component to the given profile that is NOT an Internet profile.
+   *
+   * @param profile the profile, where the component should be added.
+   * @param component the component to add.
+   */
+  private static void addComponentTo(TaggedProfile profile,
+                                     TaggedComponent component)
+  {
+    if (profile.tag == TAG_MULTIPLE_COMPONENTS.value)
+      {
+        TaggedComponent[] present;
+        if (profile.profile_data.length > 0)
+          {
+            cdrBufInput in = new cdrBufInput(profile.profile_data);
+
+            present = new TaggedComponent[in.read_long()];
+
+            for (int i = 0; i < present.length; i++)
+              {
+                present[i] = TaggedComponentHelper.read(in);
+              }
+          }
+        else
+          present = new TaggedComponent[0];
+
+        cdrBufOutput out = new cdrBufOutput(profile.profile_data.length
+                                            + component.component_data.length
+                                            + 8);
+
+        // Write new amount of components.
+        out.write_long(present.length + 1);
+
+        // Write other components.
+        for (int i = 0; i < present.length; i++)
+          TaggedComponentHelper.write(out, present[i]);
+
+        // Write the passed component.
+        TaggedComponentHelper.write(out, component);
+
+        try
+          {
+            out.close();
+          }
+        catch (IOException e)
+          {
+            throw new Unexpected(e);
+          }
+        profile.profile_data = out.buffer.toByteArray();
+      }
+    else
+      // The future supported tagged profiles should be added here.
+      throw new BAD_PARAM("Unsupported profile type " + profile.tag);
   }
 }

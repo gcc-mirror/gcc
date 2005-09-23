@@ -69,8 +69,6 @@ public class JScrollBar extends JComponent implements Adjustable, Accessible
     
     /**
      * Creates a new AccessibleJSlider object.
-     *
-     * @param value0 DOCUMENT ME!
      */
     protected AccessibleJScrollBar()
     {

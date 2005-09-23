@@ -59,8 +59,6 @@ public class JSeparator extends JComponent implements SwingConstants,
   
     /**
      * Constructor AccessibleJSeparator
-     *
-     * @param component TODO
      */
     protected AccessibleJSeparator()
     {

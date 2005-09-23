@@ -1,5 +1,5 @@
 /* ZipInputStream.java --
-   Copyright (C) 2001, 2002, 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,6 +41,7 @@ package java.util.zip;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 
 /**
  * This is a FilterInputStream that reads the files in an zip archive
@@ -171,7 +172,15 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
 
     byte[] buffer = new byte[nameLen];
     readFully(buffer);
-    String name = new String(buffer);
+    String name;
+    try
+      {
+	name = new String(buffer, "UTF-8");
+      }
+    catch (UnsupportedEncodingException uee)
+      {
+	throw new AssertionError(uee);
+      }
     
     entry = createZipEntry(name);
     entryAtEOF = false;

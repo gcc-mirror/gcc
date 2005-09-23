@@ -46,7 +46,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 
 /**
- * DefaultSingleSelectionModel
+ * The default implementation of {@link SingleSelectionModel}, used in
+ * {@link JTabbedPane}, {@link JMenuBar} and {@link JPopupMenu}.
  *
  * @author Andrew Selkirk
  */

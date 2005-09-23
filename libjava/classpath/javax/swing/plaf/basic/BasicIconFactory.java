@@ -1,5 +1,5 @@
 /* BasicIconFactory.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,13 +44,11 @@ import java.awt.Graphics;
 import java.awt.Polygon;
 import java.io.Serializable;
 
-import javax.swing.AbstractButton;
 import javax.swing.Icon;
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
+import javax.swing.JCheckBoxMenuItem;
 
 /**
- * STUBBED
+ * Creates icons for the {@link BasicLookAndFeel}.
  */
 public class BasicIconFactory implements Serializable
 {
@@ -70,13 +68,174 @@ public class BasicIconFactory implements Serializable
     }
   }
 
-
-  public BasicIconFactory()
+  /**
+   * The icon used for CheckBoxes in the BasicLookAndFeel. This is an empty
+   * icon with a size of 13x13 pixels.
+   */
+  static class CheckBoxIcon
+    implements Icon
   {
+    /**
+     * Returns the height of the icon. The BasicLookAndFeel CheckBox icon
+     * has a height of 13 pixels.
+     *
+     * @return the height of the icon
+     */
+    public int getIconHeight()
+    {
+      return 13;
+    }
+
+    /**
+     * Returns the width of the icon. The BasicLookAndFeel CheckBox icon
+     * has a width of 13 pixels.
+     *
+     * @return the height of the icon
+     */
+    public int getIconWidth()
+    {
+      return 13;
+    }
+
+    /**
+     * Paints the icon. The BasicLookAndFeel CheckBox icon is empty and does
+     * not need to be painted.
+     *
+     * @param c the component to be painted
+     * @param g the Graphics context to be painted with
+     * @param x the x position of the icon
+     * @param y the y position of the icon
+     */
+    public void paintIcon(Component c, Graphics g, int x, int y)
+    {
+      // The icon is empty and needs no painting.
+    }
   }
+
+  /**
+   * The icon used for {@link JCheckBoxMenuItem}s in the 
+   * {@link BasicLookAndFeel}. This icon has a size of 9x9 pixels.
+   */
+  static class CheckBoxMenuItemIcon
+    implements Icon
+  {
+    /**
+     * Returns the height of the icon in pixels.
+     *
+     * @return the height of the icon
+     */
+    public int getIconHeight()
+    {
+      return 9;
+    }
+
+    /**
+     * Returns the width of the icon in pixels.
+     *
+     * @return the height of the icon
+     */
+    public int getIconWidth()
+    {
+      return 9;
+    }
+
+    /**
+     * Paints the icon.
+     *
+     * @param c the component to be painted
+     * @param g the Graphics context to be painted with
+     * @param x the x position of the icon
+     * @param y the y position of the icon
+     */
+    public void paintIcon(Component c, Graphics g, int x, int y)
+    {
+      JCheckBoxMenuItem item = (JCheckBoxMenuItem) c;
+      if (item.isSelected()) 
+        {
+          // paint the check...
+          g.setColor(Color.black);
+          g.drawLine(x + 1, y + 3, x + 1, y + 4);
+          g.drawLine(x + 2, y + 4, x + 2, y + 5);
+          for (int i = 0; i < 5; i++)
+            g.drawLine(x + 3 + i, y + 5 - i, x + 3 + i, y + 6 - i);    
+        }
+    }
+  }
+
+  /**
+   * The icon used for RadioButtons in the BasicLookAndFeel. This is an empty
+   * icon with a size of 13x13 pixels.
+   */
+  static class RadioButtonIcon
+    implements Icon
+  {
+    /**
+     * Returns the height of the icon. The BasicLookAndFeel RadioButton icon
+     * has a height of 13 pixels.
+     *
+     * @return the height of the icon
+     */
+    public int getIconHeight()
+    {
+      return 13;
+    }
+
+    /**
+     * Returns the width of the icon. The BasicLookAndFeel RadioButton icon
+     * has a width of 13 pixels.
+     *
+     * @return the height of the icon
+     */
+    public int getIconWidth()
+    {
+      return 13;
+    }
+
+    /**
+     * Paints the icon. The BasicLookAndFeel RadioButton icon is empty and does
+     * not need to be painted.
+     *
+     * @param c the component to be painted
+     * @param g the Graphics context to be painted with
+     * @param x the x position of the icon
+     * @param y the y position of the icon
+     */
+    public void paintIcon(Component c, Graphics g, int x, int y)
+    {
+      // The icon is empty and needs no painting.
+    }
+  }
+  /** The cached CheckBoxIcon instance. */
+  private static CheckBoxIcon checkBoxIcon;
+  
+  /** The cached RadioButtonIcon instance. */
+  private static RadioButtonIcon radioButtonIcon;
+
   public static Icon getMenuItemCheckIcon()
   {
-    return new DummyIcon();
+    return new Icon()
+    {
+      public int getIconHeight()
+      {
+        return 13;
+      }
+
+      public int getIconWidth()
+      {
+        return 13;
+      }
+
+      public void paintIcon(Component c, Graphics g, int x, int y)
+      {
+        Color saved = g.getColor();
+        g.setColor(Color.BLACK);
+        g.drawLine(3 + x, 5 + y, 3 + x, 9 + y);
+        g.drawLine(4 + x, 5 + y, 4 + x, 9 + y);
+        g.drawLine(5 + x, 7 + y, 9 + x, 3 + y);
+        g.drawLine(5 + x, 8 + y, 9 + x, 4 + y);
+        g.setColor(saved);
+      }
+    };
   }
   public static Icon getMenuItemArrowIcon()
   {
@@ -114,123 +273,50 @@ public class BasicIconFactory implements Serializable
       };
   }
 
+  /**
+   * Returns an icon for CheckBoxes in the BasicLookAndFeel. CheckBox icons
+   * in the Basic L&amp;F are empty and have a size of 13x13 pixels.
+   * This method returns a shared single instance of this icon.
+   *
+   * @return an icon for CheckBoxes in the BasicLookAndFeel
+   */
   public static Icon getCheckBoxIcon()
   {
-    return new Icon()
-      {        
-        public int getIconHeight() 
-        { 
-          return 10; 
-        }
-        public int getIconWidth() 
-        { 
-          return 10; 
-        }
-        public void paintIcon(Component c, Graphics g, int x, int y)
-        {
-          if (c instanceof AbstractButton)
-            {
-              UIDefaults defaults;
-              defaults = UIManager.getLookAndFeelDefaults();
-              Color hi = defaults.getColor("CheckBox.highlight");
-              Color low = defaults.getColor("CheckBox.darkShadow");
-              Color sel = defaults.getColor("CheckBox.foreground");
-              Color dim = defaults.getColor("CheckBox.shadow");
-              Polygon check = new Polygon(new int[] {x+3, x+3, x+8},
-                                          new int[] {y+5, y+9, y+3}, 3);
-              AbstractButton b = (AbstractButton) c;
-              Color saved = g.getColor();
-              if (b.isEnabled())
-                {
-                  g.setColor(low);
-                  g.drawRect(x, y, 10, 10);
-                  g.setColor(hi);
-                  g.drawRect(x+1, y+1, 10, 10);
-                  if (b.isSelected())
-                    {
-                      g.setColor(sel);
-                      if (b.isSelected())
-                        {
-                          g.drawLine(x+3, y+5, x+3, y+8);
-                          g.drawLine(x+4, y+5, x+4, y+8);
-                          g.drawLine(x+3, y+8, x+8, y+3);
-                          g.drawLine(x+4, y+8, x+8, y+3);
-                        }
-                    }
-                }
-              else
-                {                  
-                  g.setColor(hi);
-                  g.drawRect(x, y, 10, 10);
-                  if (b.isSelected())
-                    {
-                      g.drawLine(x+3, y+5, x+3, y+9);
-                      g.drawLine(x+3, y+9, x+8, y+3);
-                    }
-                }
-              g.setColor(saved);
-            }
-        }
-      };
+    if (checkBoxIcon == null)
+      checkBoxIcon = new CheckBoxIcon();
+    return checkBoxIcon;
   }
 
+  /**
+   * Returns an icon for RadioButtons in the BasicLookAndFeel. RadioButton
+   * icons in the Basic L&amp;F are empty and have a size of 13x13 pixels.
+   * This method returns a shared single instance of this icon.
+   *
+   * @return an icon for RadioButtons in the BasicLookAndFeel
+   */
   public static Icon getRadioButtonIcon()
   {
-    return new Icon()
-      {        
-        public int getIconHeight() 
-        { 
-          return 12; 
-        }
-        public int getIconWidth() 
-        { 
-          return 12; 
-        }
-        public void paintIcon(Component c, Graphics g, int x, int y)
-        {
-          UIDefaults defaults;      
-          defaults = UIManager.getLookAndFeelDefaults();
-          Color hi = defaults.getColor("RadioButton.highlight");
-          Color low = defaults.getColor("RadioButton.darkShadow");
-          Color sel = defaults.getColor("RadioButton.foreground");
-          Color dim = defaults.getColor("RadioButton.shadow");
-
-          if (c instanceof AbstractButton)
-            {
-              AbstractButton b = (AbstractButton) c;
-              Color saved = g.getColor();
-              if (b.isEnabled())
-                {
-                  g.setColor(low);
-                  g.drawOval(x, y, 12, 12);
-                  g.setColor(hi);
-                  g.drawOval(x+1, y+1, 12, 12);
-                  if (b.isSelected())
-                    {
-                      g.setColor(sel);
-                      g.fillOval(x+4, y+4, 6, 6);
-                    }
-                }
-              else
-                {                  
-                  g.setColor(hi);
-                  g.drawOval(x, y, 12, 12);
-                  if (b.isSelected())
-                    g.fillOval(x+4, y+4, 6, 6);
-                }
-              g.setColor(saved);
-            }
-        }
-      };
+    if (radioButtonIcon == null)
+      radioButtonIcon = new RadioButtonIcon();
+    return radioButtonIcon;
   }
+
+  /**
+   * Creates and returns an icon used when rendering {@link JCheckBoxMenuItem}
+   * components.
+   * 
+   * @return An icon.
+   */
   public static Icon getCheckBoxMenuItemIcon()
   {
-    return getCheckBoxIcon();
+    return new CheckBoxMenuItemIcon();
   }
+  
   public static Icon getRadioButtonMenuItemIcon()
   {
     return getRadioButtonIcon();
   }
+  
   public static Icon createEmptyFrameIcon()
   {
     return new DummyIcon();

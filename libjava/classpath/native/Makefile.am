@@ -4,6 +4,10 @@ if CREATE_JNI_LIBRARIES
   JNIDIR = jni
 endif
 
-SUBDIRS = fdlibm $(JNIDIR) target
-DIST_SUBDIRS = fdlibm jni target
+if CREATE_GTK_PEER_LIBRARIES
+  JAWTDIR = jawt
+endif
+
+SUBDIRS = fdlibm $(JNIDIR) $(JAWTDIR) target
+DIST_SUBDIRS = fdlibm jni jawt target
 

@@ -38,7 +38,8 @@ exception statement from your version. */
 
 package org.omg.PortableInterceptor;
 
- /**
+
+/**
  * A reply status, indicating the necessity of the transport retry.
  * This may happen, for example, if the GIOP message status flag
  * is equal to NEEDS_ADDRESSING_MODE.

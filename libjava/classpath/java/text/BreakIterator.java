@@ -114,9 +114,9 @@ public abstract class BreakIterator implements Cloneable
    * This methdod returns the offset of the text element boundary following
    * the specified offset.
    *
-   * @param offset The text index from which to find the next text boundary.
+   * @param pos The text index from which to find the next text boundary.
    *
-   * @param The next text boundary following the specified index.
+   * @return The next text boundary following the specified index.
    */
   public abstract int following (int pos);
 
@@ -186,9 +186,9 @@ public abstract class BreakIterator implements Cloneable
    *
    * @return A <code>BreakIterator</code> instance for the default locale.
    */
-  public static BreakIterator getCharacterInstance (Locale loc)
+  public static BreakIterator getCharacterInstance (Locale locale)
   {
-    BreakIterator r = getInstance ("CharacterIterator", loc);
+    BreakIterator r = getInstance ("CharacterIterator", locale);
     if (r == null)
       r = new gnu.java.text.CharacterBreakIterator ();
     return r;
@@ -214,9 +214,9 @@ public abstract class BreakIterator implements Cloneable
    *
    * @return A <code>BreakIterator</code> instance for the default locale.
    */
-  public static BreakIterator getLineInstance (Locale loc)
+  public static BreakIterator getLineInstance (Locale locale)
   {
-    BreakIterator r = getInstance ("LineIterator", loc);
+    BreakIterator r = getInstance ("LineIterator", locale);
     if (r == null)
       r = new gnu.java.text.LineBreakIterator ();
     return r;
@@ -242,9 +242,9 @@ public abstract class BreakIterator implements Cloneable
    *
    * @return A <code>BreakIterator</code> instance for the default locale.
    */
-  public static BreakIterator getSentenceInstance (Locale loc)
+  public static BreakIterator getSentenceInstance (Locale locale)
   {
-    BreakIterator r = getInstance ("SentenceIterator", loc);
+    BreakIterator r = getInstance ("SentenceIterator", locale);
     if (r == null)
       r = new gnu.java.text.SentenceBreakIterator ();
     return r;
@@ -254,7 +254,7 @@ public abstract class BreakIterator implements Cloneable
    * This method returns the text this object is iterating over as a
    * <code>CharacterIterator</code>.
    *
-   * @param The text being iterated over.
+   * @return The text being iterated over.
    */
   public abstract CharacterIterator getText ();
 
@@ -278,9 +278,9 @@ public abstract class BreakIterator implements Cloneable
    *
    * @return A <code>BreakIterator</code> instance for the default locale.
    */
-  public static BreakIterator getWordInstance (Locale loc)
+  public static BreakIterator getWordInstance (Locale locale)
   {
-    BreakIterator r = getInstance ("WordIterator", loc);
+    BreakIterator r = getInstance ("WordIterator", locale);
     if (r == null)
       r = new gnu.java.text.WordBreakIterator ();
     return r;
@@ -290,7 +290,7 @@ public abstract class BreakIterator implements Cloneable
    * This method tests whether or not the specified position is a text
    * element boundary.
    *
-   * @param offset The text position to test.
+   * @param pos The text position to test.
    *
    * @return <code>true</code> if the position is a boundary,
    * <code>false</code> otherwise. 
@@ -332,8 +332,7 @@ public abstract class BreakIterator implements Cloneable
    * This methdod returns the offset of the text element boundary preceding
    * the specified offset.
    *
-   * @param offset The text index from which to find the preceding
-   *               text boundary. 
+   * @param pos The text index from which to find the preceding text boundary. 
    *
    * @returns The next text boundary preceding the specified index.
    */
@@ -357,7 +356,7 @@ public abstract class BreakIterator implements Cloneable
   /**
    * This method sets the text string to iterate over.
    *
-   * @param str The <code>String</code> to iterate over.
+   * @param newText The <code>String</code> to iterate over.
    */
   public void setText (String newText)
   {
@@ -368,7 +367,7 @@ public abstract class BreakIterator implements Cloneable
    * This method sets the text to iterate over from the specified
    * <code>CharacterIterator</code>.
    * 
-   * @param ci The desired <code>CharacterIterator</code>.
+   * @param newText The desired <code>CharacterIterator</code>.
    */
   public abstract void setText (CharacterIterator newText);
 }

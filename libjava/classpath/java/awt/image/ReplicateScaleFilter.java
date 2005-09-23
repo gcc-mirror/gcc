@@ -124,7 +124,8 @@ public class ReplicateScaleFilter extends ImageFilter
 	    destHeight = (int) (height * ((double) destWidth / srcWidth));
 	}
 
-	consumer.setDimensions(destWidth, destHeight);
+	if (consumer != null)
+	  consumer.setDimensions(destWidth, destHeight);
     }
 
     /**
@@ -136,7 +137,8 @@ public class ReplicateScaleFilter extends ImageFilter
     public void setProperties(Hashtable props)
     {
 	props.put("filters", "ReplicateScaleFilter");
-	consumer.setProperties(props);
+	if (consumer != null)
+	  consumer.setProperties(props);
     }
 
     /**
@@ -165,9 +167,10 @@ public class ReplicateScaleFilter extends ImageFilter
                                            model, pixels, offset, scansize,
 	                                   rx, ry, destScansize);
 
-	consumer.setPixels((int) Math.floor(x/rx), (int) Math.floor(y/ry),
-                           (int) Math.ceil(w/rx), (int) Math.ceil(h/ry),
-                           model, destPixels, 0, destScansize);
+	if (consumer != null)
+	  consumer.setPixels((int) Math.floor(x/rx), (int) Math.floor(y/ry),
+			     (int) Math.ceil(w/rx), (int) Math.ceil(h/ry),
+			     model, destPixels, 0, destScansize);
     }
 
     /**
@@ -196,9 +199,10 @@ public class ReplicateScaleFilter extends ImageFilter
                                            model, pixels, offset, scansize,
 	                                   rx, ry, destScansize);
 
-	consumer.setPixels((int) Math.floor(x/rx), (int) Math.floor(y/ry),
-                           (int) Math.ceil(w/rx), (int) Math.ceil(h/ry),
-                           model, destPixels, 0, destScansize);
+	if (consumer != null)
+	  consumer.setPixels((int) Math.floor(x/rx), (int) Math.floor(y/ry),
+			     (int) Math.ceil(w/rx), (int) Math.ceil(h/ry),
+			     model, destPixels, 0, destScansize);
     }
 
     private byte[] replicatePixels(int srcx, int srcy, int srcw, int srch,

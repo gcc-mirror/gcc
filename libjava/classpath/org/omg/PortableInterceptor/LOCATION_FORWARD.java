@@ -38,7 +38,8 @@ exception statement from your version. */
 
 package org.omg.PortableInterceptor;
 
- /**
+
+/**
  * A reply status flag, indicating, that the object has
  * moved (temporary or permanently) to another location.
  *

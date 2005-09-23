@@ -55,9 +55,11 @@ class ImageHandler extends ContentHandler
   
   public Object getContent(URLConnection urlc) throws IOException
   {
-    ClasspathToolkit tk = (ClasspathToolkit) Toolkit.getDefaultToolkit();
-    java.awt.image.ImageProducer ip = tk.createImageProducer(urlc.getURL());
-    return ip;
+    // FIXME: implement using ImageIO
+    // ClasspathToolkit tk = (ClasspathToolkit) Toolkit.getDefaultToolkit();
+    // java.awt.image.ImageProducer ip = tk.createImageProducer(urlc.getURL());
+    // return ip;
+    return null;
   }
 }
 

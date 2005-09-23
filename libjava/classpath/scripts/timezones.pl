@@ -43,7 +43,7 @@ sub parseOffset($) {
 }
 
 # parse the time of form +/-hh:mm:ss[swguz]  (:ss is optional) and return it
-# in milliseconds since midnight in local standard time
+# in milliseconds since midnight in local wall time
     my $timezonename;
 sub parseTime($$$) {
     my ($rawoffset, $stdoffset, $time) = @_;
@@ -55,11 +55,11 @@ sub parseTime($$$) {
     if ($1 eq "-") {
       $millis = -$millis;
     }
+    # Normally millis is in wall time, adjust for utc and standard time.
     if ($6 =~ /[guz]/) {
-	$millis += $rawoffset;
-    } elsif ($6 =~ /w/) {
-	print STDERR "$timezonename not in standard time\n" if $stdoffset;
-	$millis -= $stdoffset;
+	$millis += $rawoffset + $stdoffset;
+    } elsif ($6 =~ /s/) {
+	$millis += $stdoffset;
     }
     return $millis;
 }
@@ -155,7 +155,7 @@ sub parseRule($$$) {
 	$time += 24*3600*1000;
 	$dayoffset--;
     }
-    while ($time >= 24*3600*1000) {
+    while ($time > 24*3600*1000) {
 	$time -= 24*3600*1000;
 	$dayoffset++;
     }
@@ -331,7 +331,7 @@ for (@timezones) {
     $rawoffset = makePretty($rawoffset);
     if ($rule eq "-") {
 	print <<EOF
-    tz = new SimpleTimeZone($rawoffset, \"$name\");
+	tz = new SimpleTimeZone($rawoffset, \"$name\");
 EOF
     } else {
 	my ($endmonth, $endday, $endtime) = @{$rule->[0]};
@@ -341,24 +341,24 @@ EOF
 	my $savings = $rule->[2];
 	if ($savings == 3600 * 1000) {
 	    print <<EOF
-    tz = new SimpleTimeZone
-      ($rawoffset, \"$name\",
-       $startmonth, $startday, $starttime,
-       $endmonth, $endday, $endtime);
+	tz = new SimpleTimeZone
+	  ($rawoffset, \"$name\",
+	   $startmonth, $startday, $starttime,
+	   $endmonth, $endday, $endtime);
 EOF
 	} else {
 	    $savings = makePretty($savings);
 	    print <<EOF
-    tz = new SimpleTimeZone
-      ($rawoffset, \"$name\",
-       $startmonth, $startday, $starttime,
-       $endmonth, $endday, $endtime, $savings);
+	tz = new SimpleTimeZone
+	  ($rawoffset, \"$name\",
+	  $startmonth, $startday, $starttime,
+	  $endmonth, $endday, $endtime, $savings);
 EOF
         }
     }
     for (@aliases) {
     print <<EOF
-    timezones.put(\"$_\", tz);
+	timezones0.put(\"$_\", tz);
 EOF
     }
 }

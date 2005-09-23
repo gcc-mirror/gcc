@@ -85,11 +85,15 @@ Java_gnu_java_awt_peer_gtk_GtkFramePeer_setMenuBarPeer
   gdk_threads_enter ();
 
   ptr = NSA_GET_PTR (env, obj);
-  mptr = NSA_GET_PTR (env, menubar);
 
-  fixed = gtk_container_get_children (GTK_CONTAINER (ptr))->data;
-  gtk_fixed_put (GTK_FIXED (fixed), mptr, 0, 0);
-  gtk_widget_show (mptr);
+  if (menubar)
+    {
+      mptr = NSA_GET_PTR (env, menubar);
+
+      fixed = gtk_container_get_children (GTK_CONTAINER (ptr))->data;
+      gtk_fixed_put (GTK_FIXED (fixed), mptr, 0, 0);
+      gtk_widget_show (mptr);
+    }
 
   gdk_threads_leave ();
 }
@@ -114,24 +118,35 @@ Java_gnu_java_awt_peer_gtk_GtkFramePeer_getMenuBarHeight
 
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkFramePeer_setMenuBarWidth
+  (JNIEnv *env, jobject obj, jobject menubar, jint width)
+{
+  gdk_threads_enter ();
+
+  Java_gnu_java_awt_peer_gtk_GtkFramePeer_setMenuBarWidthUnlocked
+    (env, obj, menubar, width);
+
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkFramePeer_setMenuBarWidthUnlocked
   (JNIEnv *env, jobject obj __attribute__((unused)), jobject menubar, jint width)
 {
   GtkWidget *ptr;
   GtkRequisition natural_req;
 
-  gdk_threads_enter ();
+  if (menubar)
+    {
+      ptr = NSA_GET_PTR (env, menubar);
 
-  ptr = NSA_GET_PTR (env, menubar);
+      /* Get the menubar's natural size request. */
+      gtk_widget_set_size_request (GTK_WIDGET (ptr), -1, -1);
+      gtk_widget_size_request (GTK_WIDGET (ptr), &natural_req);
 
-  /* Get the menubar's natural size request. */
-  gtk_widget_set_size_request (GTK_WIDGET (ptr), -1, -1);
-  gtk_widget_size_request (GTK_WIDGET (ptr), &natural_req);
-
-  /* Set the menubar's size request to width by natural_req.height. */
-  gtk_widget_set_size_request (GTK_WIDGET (ptr),
-                               width, natural_req.height);
-
-  gdk_threads_leave ();
+      /* Set the menubar's size request to width by natural_req.height. */
+      gtk_widget_set_size_request (GTK_WIDGET (ptr),
+                                   width, natural_req.height);
+    }
 }
 
 JNIEXPORT void JNICALL

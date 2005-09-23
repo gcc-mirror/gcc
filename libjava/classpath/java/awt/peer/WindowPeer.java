@@ -42,5 +42,19 @@ public interface WindowPeer extends ContainerPeer
 {
   void toBack();
   void toFront();
+  
+  /**
+   * FIXME: unknown.
+   * @since 1.5
+   */
+  void updateAlwaysOnTop();
+  
+  /**
+   * Request that this window peer be given the window focus.
+   * 
+   * @return true if the window received focus, false otherwise
+   * @since 1.5
+   */
+  boolean requestWindowFocus();
 } // interface WindowPeer 
 

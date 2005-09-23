@@ -1,5 +1,5 @@
 /* BadLocationException.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,17 +37,28 @@ exception statement from your version. */
 
 package javax.swing.text;
 
+/**
+ * Indicates that an invalid location within a <code>Document</code> has been
+ * accessed.
+ *
+ * @author original author unknown
+ * @author Roman Kennke (roman@kennke.org)
+ */
 public class BadLocationException extends Exception
 {
+  /** The serial version UID for BadLocationException. */
   private static final long serialVersionUID = -7712259886815656766L;
-  
+
+  /**
+   * The invalid location.
+   */
   int offset;
 
   /**
    * Constructs a <code>BadLocationException</code>
    *
-   * @param str A string indicating what was wrong with the arguments
-   * @param offset Offset within the document that was requested &gt;= 0
+   * @param str a string indicating what was wrong with the arguments
+   * @param offset offset within the document that was requested &gt;= 0
    */
   public BadLocationException(String str, int offset)
   {
@@ -56,7 +67,9 @@ public class BadLocationException extends Exception
   }
 
   /**
-   * Returns the offset into the document that was not legal
+   * Returns the offset into the document that was not legal.
+   *
+   * @return the offset into the document that was not legal
    */
   public int offsetRequested()
   {

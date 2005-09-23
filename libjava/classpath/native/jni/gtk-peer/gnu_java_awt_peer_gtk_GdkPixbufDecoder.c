@@ -97,14 +97,10 @@ area_prepared_cb (GdkPixbufLoader *loader,
   e.jni_env = &env;
   (*vm)->GetEnv (vm, e.void_env, JNI_VERSION_1_1);
 
-  gdk_threads_leave ();
-
   (*env)->CallVoidMethod (env,
 			  *decoder,
 			  areaPreparedID,
 			  width, height);
-  
-  gdk_threads_enter ();
 }
 
 static void
@@ -143,11 +139,7 @@ area_updated_cb (GdkPixbufLoader *loader,
   e.jni_env = &env;
   (*vm)->GetEnv (vm, e.void_env, JNI_VERSION_1_1);
 
-  gdk_threads_leave ();
-
   jpixels = (*env)->NewIntArray (env, n_pixels);
-
-  gdk_threads_enter ();
 
   java_pixels = (*env)->GetIntArrayElements (env, jpixels, NULL);
 
@@ -165,8 +157,6 @@ area_updated_cb (GdkPixbufLoader *loader,
 
   g_object_unref (pixbuf);
 
-  gdk_threads_leave ();
-
   (*env)->ReleaseIntArrayElements (env, jpixels, java_pixels, 0);
 
   (*env)->CallVoidMethod (env, 
@@ -178,8 +168,6 @@ area_updated_cb (GdkPixbufLoader *loader,
 			  stride_pixels);
 
   (*env)->DeleteLocalRef(env, jpixels);
-
-  gdk_threads_enter ();
 }
 
 static void
@@ -190,12 +178,8 @@ closed_cb (GdkPixbufLoader *loader __attribute__((unused)), jobject *decoder)
   e.jni_env = &env;
   (*vm)->GetEnv (vm, e.void_env, JNI_VERSION_1_1);
 
-  gdk_threads_leave ();
-
   (*env)->DeleteGlobalRef (env, *decoder); 
   g_free (decoder);
-
-  gdk_threads_enter ();
 }
 
 

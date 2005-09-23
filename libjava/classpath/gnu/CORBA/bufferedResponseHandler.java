@@ -41,6 +41,7 @@ package gnu.CORBA;
 import gnu.CORBA.CDR.cdrBufOutput;
 import gnu.CORBA.GIOP.MessageHeader;
 import gnu.CORBA.GIOP.ReplyHeader;
+import gnu.CORBA.GIOP.RequestHeader;
 import gnu.CORBA.GIOP.cxCodeSet;
 
 import org.omg.CORBA.ORB;
@@ -48,31 +49,33 @@ import org.omg.CORBA.portable.OutputStream;
 import org.omg.CORBA.portable.ResponseHandler;
 
 /**
- * Provides the CDR output streams for writing the response to the given
- * buffer.
+ * Provides the CDR output streams for writing the response to the given buffer.
  *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
-class bufferedResponseHandler
+public class bufferedResponseHandler
   implements ResponseHandler
 {
   /**
-   * The message header.
-   * This field is used to compute the size and alignments.
+   * The message header. This field is used to compute the size and alignments.
    * It is, however, never directly written to the buffer stream.
    */
-  final MessageHeader message_header;
+  public final MessageHeader message_header;
 
   /**
    * The associated orb.
    */
-  final ORB orb;
+  public final ORB orb;
 
   /**
-   * The reply header. This field is used to compute the size and alignments.
-   * It is, however, never directly written to the buffer stream.
+   * The reply header.
    */
-  final ReplyHeader reply_header;
+  public final ReplyHeader reply_header;
+
+  /**
+   * The request header.
+   */
+  public final RequestHeader request_header;
 
   /**
    * True if the stream was obtained by invoking {@link #createExceptionReply()},
@@ -86,28 +89,27 @@ class bufferedResponseHandler
   private cdrBufOutput buffer;
 
   /**
-   * Create a new buffered response handler that uses the given message
-   * headers. The headers are used to compute sizes and check the versions.
-   * They are not written into a stream inside this class.
+   * Create a new buffered response handler that uses the given message headers.
+   * The headers are used to compute sizes and check the versions. They are not
+   * written into a stream inside this class.
    *
    * @param m_header a message header.
    * @param r_header a reply header.
    */
   bufferedResponseHandler(ORB an_orb, MessageHeader m_header,
-                          ReplyHeader r_header
-                         )
+                          ReplyHeader r_header, RequestHeader rq_header)
   {
     message_header = m_header;
     reply_header = r_header;
+    request_header = rq_header;
     orb = an_orb;
     prepareStream();
   }
 
   /**
-   * Get an output stream for providing details about the exception.
-   * Before returning the stream, the handler automatically writes
-   * the message header and the reply about exception header,
-   * but not the message header.
+   * Get an output stream for providing details about the exception. Before
+   * returning the stream, the handler automatically writes the message header
+   * and the reply about exception header, but not the message header.
    *
    * @return the stream to write exception details into.
    */
@@ -121,8 +123,8 @@ class bufferedResponseHandler
   /**
    * Get an output stream for writing a regular reply (not an exception).
    *
-   * Before returning the stream, the handler automatically writes
-   * the regular reply header, but not the message header.
+   * Before returning the stream, the handler automatically writes the regular
+   * reply header, but not the message header.
    *
    * @return the output stream for writing a regular reply.
    */
@@ -135,27 +137,26 @@ class bufferedResponseHandler
   }
 
   /**
-   * Get the buffer, normally containing the written reply.
-   * The reply includes the reply header (or the exception header)
-   * but does not include the message header.
+   * Get the buffer, normally containing the written reply. The reply includes
+   * the reply header (or the exception header) but does not include the message
+   * header.
    *
-   * The stream buffer can also be empty if no data have been written
-   * into streams, returned by {@link #createReply()} or
+   * The stream buffer can also be empty if no data have been written into
+   * streams, returned by {@link #createReply()} or
    * {@link #createExceptionReply()}.
    *
    * @return the CDR output stream, containing the written output.
    */
-  cdrBufOutput getBuffer()
+  public cdrBufOutput getBuffer()
   {
     return buffer;
   }
 
   /**
-   * True if the stream was obtained by invoking
-   * {@link #createExceptionReply()}, false otherwise
-   * (usually no-exception reply).
+   * True if the stream was obtained by invoking {@link #createExceptionReply()},
+   * false otherwise (usually no-exception reply).
    */
-  boolean isExceptionReply()
+  public boolean isExceptionReply()
   {
     return exceptionReply;
   }
@@ -167,21 +168,22 @@ class bufferedResponseHandler
   {
     buffer = new cdrBufOutput();
     buffer.setOrb(orb);
-    buffer.setOffset(message_header.getHeaderSize());
-
-    // Get the position after the reply header would be written.
-    reply_header.write(buffer);
-
-    int new_offset = message_header.getHeaderSize() + buffer.buffer.size();
-
-    buffer.buffer.reset();
-    buffer.setOffset(new_offset);
-
-    if (message_header.version.since_inclusive(1, 2))
-      buffer.align(8);
-
     buffer.setVersion(message_header.version);
-
     buffer.setCodeSet(cxCodeSet.find(reply_header.service_context));
+
+    // Since 1.2, the data section is always aligned on the 8 byte boundary.
+    // In older versions, it is necessary to set the offset correctly.
+    if (message_header.version.until_inclusive(1, 1))
+      {
+        buffer.setOffset(message_header.getHeaderSize());
+
+        // Get the position after the reply header would be written.
+        reply_header.write(buffer);
+
+        int new_offset = message_header.getHeaderSize() + buffer.buffer.size();
+
+        buffer.buffer.reset();
+        buffer.setOffset(new_offset);
+      }
   }
 }

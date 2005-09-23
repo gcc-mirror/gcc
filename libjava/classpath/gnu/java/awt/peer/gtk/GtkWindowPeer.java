@@ -41,6 +41,7 @@ package gnu.java.awt.peer.gtk;
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Window;
+import java.awt.event.ComponentEvent;
 import java.awt.event.WindowEvent;
 import java.awt.peer.WindowPeer;
 
@@ -104,6 +105,9 @@ public class GtkWindowPeer extends GtkContainerPeer
   {
   }
 
+  public native void setVisibleNative (boolean b);
+  public native void setVisibleNativeUnlocked (boolean b);
+
   native void connectSignals ();
 
   public GtkWindowPeer (Window window)
@@ -115,12 +119,25 @@ public class GtkWindowPeer extends GtkContainerPeer
   public native void toFront();
 
   native void nativeSetBounds (int x, int y, int width, int height);
+  native void nativeSetBoundsUnlocked (int x, int y, int width, int height);
 
   public void setBounds (int x, int y, int width, int height)
   {
+    // prevent window_configure_cb -> awtComponent.setSize ->
+    // peer.setBounds -> nativeSetBounds self-deadlock on GDK lock.
+    if (Thread.currentThread() == GtkToolkit.mainThread)
+      return;
+
     nativeSetBounds (x, y,
 		     width - insets.left - insets.right,
 		     height - insets.top - insets.bottom);
+  }
+
+  public void setBoundsUnlocked (int x, int y, int width, int height)
+  {
+    nativeSetBoundsUnlocked (x, y,
+                             width - insets.left - insets.right,
+                             height - insets.top - insets.bottom);
   }
 
   public void setTitle (String title)
@@ -140,10 +157,6 @@ public class GtkWindowPeer extends GtkContainerPeer
     gtkWindowSetResizable (resizable);
   }
 
-  native void setBoundsCallback (Window window,
-				 int x, int y,
-				 int width, int height);
-
   protected void postInsetsChangedEvent (int top, int left,
 					 int bottom, int right)
   {
@@ -153,36 +166,36 @@ public class GtkWindowPeer extends GtkContainerPeer
     insets.right = right;
   }
 
+  // called back by native side: window_configure_cb
+  // only called from GTK thread
   protected void postConfigureEvent (int x, int y, int width, int height)
   {
-    int frame_x = x - insets.left;
-    int frame_y = y - insets.top;
     int frame_width = width + insets.left + insets.right;
     int frame_height = height + insets.top + insets.bottom;
 
-    if (frame_x != awtComponent.getX()
-	|| frame_y != awtComponent.getY()
-	|| frame_width != awtComponent.getWidth()
+    if (frame_width != awtComponent.getWidth()
 	|| frame_height != awtComponent.getHeight())
-      {
-        setBoundsCallback ((Window) awtComponent,
-                           frame_x, frame_y, frame_width, frame_height);
+      awtComponent.setSize(frame_width, frame_height);
 
-        awtComponent.validate();
+    int frame_x = x - insets.left;
+    int frame_y = y - insets.top;
+
+    if (frame_x != awtComponent.getX()
+	|| frame_y != awtComponent.getY())
+      {
+        // awtComponent.setLocation(frame_x, frame_y);
       }
   }
 
-  native void nativeSetVisible (boolean b);
-  public void setVisible (boolean b)
+  public void show ()
   {
     // Prevent the window manager from automatically placing this
     // window when it is shown.
-    if (b)
-      setBounds (awtComponent.getX(),
-		 awtComponent.getY(),
-		 awtComponent.getWidth(),
-		 awtComponent.getHeight());
-    nativeSetVisible (b);
+    setBounds (awtComponent.getX(),
+	       awtComponent.getY(),
+	       awtComponent.getWidth(),
+	       awtComponent.getHeight());
+    setVisible (true);
   }
 
   void postWindowEvent (int id, Window opposite, int newState)
@@ -208,5 +221,15 @@ public class GtkWindowPeer extends GtkContainerPeer
       }
     else
       q().postEvent (new WindowEvent ((Window) awtComponent, id, opposite));
+  }
+  public void updateAlwaysOnTop()
+  {
+    // TODO Auto-generated method stub
+    
+  }
+  public boolean requestWindowFocus()
+  {
+    // TODO Auto-generated method stub
+    return false;
   }
 }

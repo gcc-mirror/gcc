@@ -1,5 +1,5 @@
 /* PKIXCertPathValidatorImpl.java -- PKIX certificate path validator.
-   Copyright (C) 2004  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -331,7 +331,7 @@ public class PKIXCertPathValidatorImpl extends CertPathValidatorSpi
           continue;
         try
           {
-            if (anchorCert == null)
+            if (anchorCert != null)
               anchorCert.checkValidity(now);
             p[p.length-1].verify(anchorKey);
             if (anchorCert != null && anchorCert.getBasicConstraints() >= 0

@@ -405,8 +405,18 @@ public abstract class DateFormat extends Format implements Cloneable
    * <ul>
    * <li>Is not <code>null</code>.</li>
    * <li>Is an instance of <code>DateFormat</code>.</li>
-   * <li>Has the same numberFormat field value as this object.</li>
+   * <li>Has equal numberFormat field as this object.</li>
+   * <li>Has equal (Calendar) TimeZone rules as this object.</li>
+   * <li>Has equal (Calendar) isLenient results.</li> 
+   * <li>Has equal Calendar first day of week and minimal days in week
+   * values.</li>
    * </ul>
+   * Note that not all properties of the Calendar are relevant for a
+   * DateFormat. For formatting only the fact whether or not the
+   * TimeZone has the same rules and whether the calendar is lenient
+   * and has the same week rules is compared for this implementation
+   * of equals. Other properties of the Calendar (such as the time)
+   * are not taken into account.
    *
    * @param obj The object to test for equality against.
    * 
@@ -419,8 +429,24 @@ public abstract class DateFormat extends Format implements Cloneable
       return false;
 
     DateFormat d = (DateFormat) obj;
+    TimeZone tz = getTimeZone();
+    TimeZone tzd = d.getTimeZone();
+    if (tz.hasSameRules(tzd))
+      if (isLenient() == d.isLenient())
+	{
+	  Calendar c = getCalendar();
+	  Calendar cd = d.getCalendar();
+	  if ((c == null && cd == null)
+	      ||
+	      (c.getFirstDayOfWeek() == cd.getFirstDayOfWeek()
+	       &&
+	       c.getMinimalDaysInFirstWeek()
+	       == cd.getMinimalDaysInFirstWeek()))
+	    return ((numberFormat == null && d.numberFormat == null)
+		    || numberFormat.equals(d.numberFormat));
+	}
 
-    return numberFormat.equals(d.numberFormat);
+    return false;
   }
 
   /**
@@ -442,9 +468,9 @@ public abstract class DateFormat extends Format implements Cloneable
    * thrown.
    *
    * @param obj The <code>Object</code> to format.
-   * @param toAppendTo The <code>StringBuffer</code> to append the resultant
+   * @param buf The <code>StringBuffer</code> to append the resultant
    * <code>String</code> to.
-   * @param fieldPosition Is updated to the start and end index of the
+   * @param pos Is updated to the start and end index of the
    * specified field.
    *
    * @return The <code>StringBuffer</code> supplied on input, with the
@@ -479,9 +505,9 @@ public abstract class DateFormat extends Format implements Cloneable
    * to the specified <code>StringBuffer</code>.
    *
    * @param date The <code>Date</code> value to format.
-   * @param toAppendTo The <code>StringBuffer</code> to append the resultant
+   * @param buf The <code>StringBuffer</code> to append the resultant
    * <code>String</code> to.
-   * @param fieldPosition Is updated to the start and end index of the
+   * @param pos Is updated to the start and end index of the
    * specified field.
    *
    * @return The <code>StringBuffer</code> supplied on input, with the
@@ -643,7 +669,7 @@ public abstract class DateFormat extends Format implements Cloneable
    * localed will be used in place of the default.
    *
    * @param style The type of formatting to perform. 
-   * @param aLocale The desired locale.
+   * @param loc The desired locale.
    * 
    * @return A new <code>DateFormat</code> instance.
    */
@@ -744,7 +770,7 @@ public abstract class DateFormat extends Format implements Cloneable
    * localed will be used in place of the default.
    *
    * @param style The type of formatting to perform. 
-   * @param aLocale The desired locale.
+   * @param loc The desired locale.
    * 
    * @return A new <code>DateFormat</code> instance.
    */
@@ -818,7 +844,7 @@ public abstract class DateFormat extends Format implements Cloneable
    * starting parse position on method entry and the ending parse
    * position on method exit.
    *
-   * @param text The string to parse.
+   * @param source The string to parse.
    * @param pos The starting parse position in entry, the ending parse
    * position on exit.
    *
@@ -848,7 +874,7 @@ public abstract class DateFormat extends Format implements Cloneable
    * This method specified the <code>Calendar</code> that should be used 
    * by this object to parse/format datetimes.
    *
-   * @param The new <code>Calendar</code> for this object.
+   * @param calendar The new <code>Calendar</code> for this object.
    *
    * @see java.util.Calendar
    */
@@ -873,7 +899,7 @@ public abstract class DateFormat extends Format implements Cloneable
    * This method specifies the <code>NumberFormat</code> object that should
    * be used by this object to parse/format times.
    *
-   * @param The <code>NumberFormat</code> in use by this object.
+   * @param numberFormat The <code>NumberFormat</code> in use by this object.
    */
   public void setNumberFormat (NumberFormat numberFormat)
   {
@@ -883,7 +909,7 @@ public abstract class DateFormat extends Format implements Cloneable
   /**
    * This method sets the time zone that should be used by this object.
    *
-   * @param The new time zone.
+   * @param timeZone The new time zone.
    */
   public void setTimeZone (TimeZone timeZone)
   {

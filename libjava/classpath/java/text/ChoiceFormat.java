@@ -86,7 +86,7 @@ public class ChoiceFormat extends NumberFormat
    * object based on the specified pattern. This pattern is of the form 
    * "term#string|term#string...".  For example "1#Sunday|2#Monday|#Tuesday".
    *
-   * @param pattern The pattern of terminators and format strings.
+   * @param newPattern The pattern of terminators and format strings.
    *
    * @exception IllegalArgumentException If the pattern is not valid
    */
@@ -170,7 +170,7 @@ public class ChoiceFormat extends NumberFormat
    * This is the same pattern type used by the <code>applyPattern</code>
    * method.
    *
-   * @param pattern The pattern of terminators and format strings.
+   * @param newPattern The pattern of terminators and format strings.
    *
    * @exception IllegalArgumentException If the pattern is not valid
    */
@@ -229,10 +229,11 @@ public class ChoiceFormat extends NumberFormat
    * <code>StringBuffer</code> based on the supplied <code>long</code>
    * argument.
    *
-   * @param number The number used for determine (based on the range
+   * @param num The number used for determine (based on the range
    *               terminators) which format string to append. 
-   * @param sb The <code>StringBuffer</code> to append the format string to.
-   * @param status Unused.
+   * @param appendBuf The <code>StringBuffer</code> to append the format string 
+   *                  to.
+   * @param pos Unused.
    *
    * @return The <code>StringBuffer</code> with the format string appended.
    */
@@ -247,10 +248,10 @@ public class ChoiceFormat extends NumberFormat
    * <code>StringBuffer</code> based on the supplied <code>double</code>
    * argument.
    *
-   * @param number The number used for determine (based on the range
+   * @param num The number used for determine (based on the range
    *               terminators) which format string to append. 
-   * @param sb The <code>StringBuffer</code> to append the format string to.
-   * @param status Unused.
+   * @param appendBuf The <code>StringBuffer</code> to append the format string to.
+   * @param pos Unused.
    *
    * @return The <code>StringBuffer</code> with the format string appended.
    */
@@ -333,7 +334,7 @@ public class ChoiceFormat extends NumberFormat
    * double less than the specified double will be returned.
    *
    * @param d The specified double
-   * @param positive <code>true</code> to return the next highest
+   * @param next <code>true</code> to return the next highest
    *                 double, <code>false</code> otherwise. 
    *
    * @return The next highest or lowest double value.

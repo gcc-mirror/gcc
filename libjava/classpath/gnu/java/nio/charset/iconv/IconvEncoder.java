@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package gnu.java.nio.charset.iconv;
 
-import gnu.classpath.RawData;
+import gnu.classpath.Pointer;
 
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -49,7 +49,7 @@ import java.nio.charset.CoderResult;
 
 final class IconvEncoder extends CharsetEncoder
 {
-  private RawData data;
+  private Pointer data;
   private int inremaining;
   private int outremaining;
 

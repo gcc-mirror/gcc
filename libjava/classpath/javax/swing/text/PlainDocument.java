@@ -135,22 +135,6 @@ public class PlainDocument extends AbstractDocument
                                           start, end - len);
         rootElement.replace(i1, i2 - i1, new Element[]{ newEl });
       }
-    else
-      {
-        // otherwise only adjust indices of the element
-        LeafElement el1 = (LeafElement) rootElement.getElement(i1);
-        el1.end -= len;
-      }
-
-    // reindex remaining elements
-    for (int i = rootElement.getElementIndex(p0) + 1;
-         i < rootElement.getElementCount(); i++)
-      {
-        LeafElement el = (LeafElement) rootElement.getElement(i);
-        el.start -= len;
-        el.end -= len;
-      }
-      
   }
 
   public Element getDefaultRootElement()

@@ -74,8 +74,17 @@ public class GtkChoicePeer extends GtkComponentPeer
 
   native void connectSignals ();
 
-  public native void select (int position);
- 
+  native void selectNative (int position);
+  native void selectNativeUnlocked (int position);
+
+  public void select (int position)
+  {
+    if (Thread.currentThread() == GtkToolkit.mainThread)
+      selectNativeUnlocked (position);
+    else
+      selectNative (position);
+  }
+
   public void add (String item, int index)
   {
     int before = nativeGetSelected();

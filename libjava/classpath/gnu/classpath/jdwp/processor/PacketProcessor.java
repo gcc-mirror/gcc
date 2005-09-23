@@ -52,6 +52,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.security.PrivilegedAction;
 
 /**
  * This class is responsible for processing packets from the
@@ -62,7 +63,7 @@ import java.nio.ByteBuffer;
  * @author Keith Seitz (keiths@redhat.com)
  */
 public class PacketProcessor
-  extends Thread
+  implements PrivilegedAction
 {
   // The connection to the debugger
   private JdwpConnection _connection;
@@ -134,7 +135,7 @@ public class PacketProcessor
    * Main run routine for this thread. Will loop getting packets
    * from the connection and processing them.
    */
-  public void run ()
+  public Object run ()
   {
     try
       {
@@ -149,6 +150,7 @@ public class PacketProcessor
       }
     // Time to shutdown, tell Jdwp to shutdown
     Jdwp.getDefault().shutdown();
+    return null;
   }
   
   /**
@@ -157,7 +159,6 @@ public class PacketProcessor
   public void shutdown ()
   {
     _shutdown = true;
-    interrupt ();
   }
   
   // Helper function which actually does all the work of waiting

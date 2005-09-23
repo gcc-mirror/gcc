@@ -152,7 +152,7 @@ public class SpringLayout implements LayoutManager2
     /**
      * Returns the constraint for the edge with the <code>edgeName</code>.
      * This is expected to be one of
-     * {@link #EAST}, {@link #WEST}, {@link NORTH} or {@link SOUTH}.
+     * {@link #EAST}, {@link #WEST}, {@link #NORTH} or {@link #SOUTH}.
      *
      * @param edgeName the name of the edge.
      * @return the constraint for the specified edge.
@@ -246,7 +246,7 @@ public class SpringLayout implements LayoutManager2
      * the mathematics still hold true.
      *
      * @param edgeName the name of the edge, one of {@link #EAST},
-     *     {@link #WEST}, {@link NORTH} or {@link SOUTH}.
+     *     {@link #WEST}, {@link #NORTH} or {@link #SOUTH}.
      * @param s the constraint to be set.
      */
     public void setConstraint(String edgeName, Spring s)
@@ -361,8 +361,8 @@ public class SpringLayout implements LayoutManager2
    * Method. This method does nothing, since SpringLayout does not manage
    * String-indexed components.
    *
-   * @param component the component to be added.
-   * @param constraint the constraint to be set.
+   * @param name  the name.
+   * @param c the component to be added.
    */
   public void addLayoutComponent(String name, Component c)
   {
@@ -374,7 +374,7 @@ public class SpringLayout implements LayoutManager2
    *
    * @param c the component from which to get the constraint.
    * @param edgeName the name of the edge, one of {@link #EAST},
-   *     {@link #WEST}, {@link NORTH} or {@link SOUTH}.
+   *     {@link #WEST}, {@link #NORTH} or {@link #SOUTH}.
    * @return the constraint of the edge <code>edgeName</code> of the
    * component c.
    */

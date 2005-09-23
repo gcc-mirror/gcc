@@ -1,4 +1,4 @@
-GNU Classpath README - Last updated: Jul 9, 2004
+GNU Classpath README - Last updated: August 31, 2005
 
 GNU Classpath, Essential Libraries for Java is a project to create a
 free software implementation of the core class libraries for the java
@@ -55,7 +55,8 @@ some of which synchronizes with the Classpath CVS head every couple of weeks:
 	* IKVM.NET	(http://www.ikvm.net/)
 	* JC		(http://jcvm.sourceforge.net/)
 	* JNode		(http://jnode.sourceforge.net/)
-	* SableVM       (http://www.sablevm.org)
+	* MysaifuVM	(http://www2s.biglobe.ne.jp/~dat/java/project/jvm/)
+	* SableVM	(http://www.sablevm.org)
 
 See for a more complete list of GNU Classpath based projects the
 GNU Classpath website: http://www.gnu.org/software/classpath/stories.html

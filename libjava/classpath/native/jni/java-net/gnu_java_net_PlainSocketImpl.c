@@ -50,6 +50,7 @@ exception statement from your version. */
 
 #include "target_native.h"
 #ifndef WITHOUT_NETWORK
+#include "target_native_file.h"  /* Get FIONREAD on Solaris.  */
 #include "target_native_network.h"
 #endif /* WITHOUT_NETWORK */
 

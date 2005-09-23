@@ -53,11 +53,11 @@ public class InvalidThreadGroupException
   public InvalidThreadGroupException (long id)
   {
     super (JdwpConstants.Error.INVALID_THREAD_GROUP,
-	   "invalid thread id (" + id + ")");
+	   "invalid thread group id (" + id + ")");
   }
 
   public InvalidThreadGroupException (Throwable t)
   {
-    super (JdwpConstants.Error.INVALID_THREAD, t);
+    super (JdwpConstants.Error.INVALID_THREAD_GROUP, t);
   }
 }

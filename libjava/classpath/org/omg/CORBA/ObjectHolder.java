@@ -39,6 +39,7 @@ exception statement from your version. */
 package org.omg.CORBA;
 
 import gnu.CORBA.primitiveTypeCode;
+import gnu.CORBA.recordTypeCode;
 
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
@@ -59,10 +60,16 @@ public final class ObjectHolder
   implements Streamable
 {
   /**
-   * The default type code for this holder.
+   * The default type code for this holder if the object type code with
+   * the zero length string as id.
    */
-  private static final TypeCode t_object =
-    new primitiveTypeCode(TCKind.tk_objref);
+  private static final recordTypeCode t_object;
+
+  static
+  {
+    t_object = new recordTypeCode(TCKind.tk_objref);
+    t_object.setId("");
+  }
 
   /**
    * The <code>org.omg.CORBA.Object</code> (CORBA <code>Object</code>) value,
@@ -109,7 +116,7 @@ public final class ObjectHolder
    */
   public TypeCode _type()
   {
-    return t_object;
+    return ObjectHelper.type();
   }
 
   /**

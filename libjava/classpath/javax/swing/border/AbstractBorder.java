@@ -118,7 +118,7 @@ public abstract class AbstractBorder
    *
    * @return the same object that was passed for <code>insets</code>.
    *
-   * @see #getBorderInsets()
+   * @see #getBorderInsets(Component)
    */
   public Insets getBorderInsets (Component c, Insets insets) 
   {

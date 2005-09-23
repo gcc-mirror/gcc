@@ -1,5 +1,5 @@
 /* ClasspathToolkit.java -- Abstract superclass for Classpath toolkits.
-   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,11 +42,12 @@ import gnu.java.awt.EmbeddedWindow;
 import gnu.java.awt.peer.ClasspathFontPeer;
 import gnu.java.awt.peer.EmbeddedWindowPeer;
 import gnu.java.awt.peer.ClasspathTextLayoutPeer;
+import gnu.java.security.action.SetAccessibleAction;
 
 import java.awt.AWTException;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.DisplayMode;
-import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.GraphicsDevice;
@@ -59,11 +60,14 @@ import java.awt.image.ImageProducer;
 import java.awt.peer.RobotPeer;
 import java.io.File;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.AttributedString;
 import java.util.HashMap;
 import java.util.Map;
+import java.security.AccessController;
 
 import javax.imageio.spi.IIORegistry;
 
@@ -92,14 +96,6 @@ public abstract class ClasspathToolkit
   extends Toolkit
 {
   /**
-   * A map from URLs to previously loaded images, used by {@link
-   * #getImage(java.net.URL)}. For images that were loaded via a path
-   * to an image file, the map contains a key with a file URL.
-   */
-  private HashMap imageCache;
-
-
-  /**
    * Returns a shared instance of the local, platform-specific
    * graphics environment.
    *
@@ -108,59 +104,6 @@ public abstract class ClasspathToolkit
    * GraphicsEnvironment.getLocalGraphcisEnvironment()}.
    */
   public abstract GraphicsEnvironment getLocalGraphicsEnvironment();
-
-
-  /**
-   * Determines the current size of the default, primary screen.
-   *
-   * @throws HeadlessException if the local graphics environment is
-   * headless, which means that no screen is attached and no user
-   * interaction is allowed.
-   */
-  public Dimension getScreenSize()
-  {
-    DisplayMode mode;
-
-    // getDefaultScreenDevice throws HeadlessException if the
-    // local graphics environment is headless.
-    mode = GraphicsEnvironment.getLocalGraphicsEnvironment()
-      .getDefaultScreenDevice().getDisplayMode();
-
-    return new Dimension(mode.getWidth(), mode.getHeight());
-  }
-
-
-  /**
-   * Determines the current color model of the default, primary
-   * screen.
-   *
-   * @see GraphicsEnvironment#getDefaultScreenDevice()
-   * @see java.awt.GraphicsDevice#getDefaultConfiguration()
-   * @see java.awt.GraphicsConfiguration#getColorModel()
-   *
-   * @throws HeadlessException if the local graphics environment is
-   * headless, which means that no screen is attached and no user
-   * interaction is allowed.
-   */
-  public ColorModel getColorModel()
-  {
-    // getDefaultScreenDevice throws HeadlessException if the
-    // local graphics environment is headless.
-    return GraphicsEnvironment.getLocalGraphicsEnvironment()
-      .getDefaultScreenDevice().getDefaultConfiguration()
-      .getColorModel();
-  }
-
-  /**
-   * Retrieves the metrics for rendering a font on the screen.
-   *
-   * @param font the font whose metrics are requested.
-   */
-  public FontMetrics getFontMetrics(Font font)
-  {
-    return ((ClasspathFontPeer) font.getPeer ()).getFontMetrics (font);
-  }
-
 
   /**
    * Acquires an appropriate {@link ClasspathFontPeer}, for use in
@@ -185,15 +128,42 @@ public abstract class ClasspathToolkit
    * Creates a {@link Font}, in a platform-specific manner.
    * 
    * The default implementation simply constructs a {@link Font}, but some
-   * toolkits may wish to override this, to return {@link Font} subclasses which
-   * implement {@link java.awt.font.OpenType} or
+   * toolkits may wish to override this, to return {@link Font} subclasses 
+   * which implement {@link java.awt.font.OpenType} or
    * {@link java.awt.font.MultipleMaster}.
    */
   public Font getFont (String name, Map attrs) 
   {
-    return new Font (name, attrs);
-  }
+    Font f = null;
 
+    // Circumvent the package-privateness of the
+    // java.awt.Font.Font(String,Map) constructor.
+    try
+      {
+        Constructor fontConstructor = Font.class.getDeclaredConstructor
+          (new Class[] { String.class, Map.class });
+        AccessController.doPrivileged
+          (new SetAccessibleAction(fontConstructor));
+        f = (Font) fontConstructor.newInstance(new Object[] { name, attrs });
+      }
+    catch (IllegalAccessException e)
+      {
+        throw new AssertionError(e);
+      }
+    catch (NoSuchMethodException e)
+      {
+        throw new AssertionError(e);
+      }
+    catch (InstantiationException e)
+      {
+        throw new AssertionError(e);
+      }
+    catch (InvocationTargetException e)
+      {
+        throw new AssertionError(e);
+      }
+    return f;
+  }
 
   /**
    * Creates a font, reading the glyph definitions from a stream.
@@ -223,137 +193,6 @@ public abstract class ClasspathToolkit
    */
   public abstract Font createFont(int format, InputStream stream);
 
-
-  /**
-   * Returns an image from the specified file, which must be in a
-   * recognized format. The set of recognized image formats may vary
-   * from toolkit to toolkit.
-   *
-   * <p>This method maintains a cache for images. If an image has been
-   * loaded from the same path before, the cached copy will be
-   * returned. The implementation may hold cached copies for an
-   * indefinite time, which can consume substantial resources with
-   * large images. Users are therefore advised to use {@link
-   * #createImage(java.lang.String)} instead.
-   *
-   * <p>The default implementation creates a file URL for the
-   * specified path and invokes {@link #getImage(URL)}.
-   *
-   * @param path A path to the image file.
-   *
-   * @return IllegalArgumentException if <code>path</code> does not
-   * designate a valid path.
-   */
-  public Image getImage(String path)
-  {
-    try
-    {
-      return getImage(new File(path).toURL());
-    }
-    catch (MalformedURLException muex)
-    {
-      throw (IllegalArgumentException) new IllegalArgumentException(path)
-        .initCause(muex);
-    }
-  }
-
-
-  /**
-   * Loads an image from the specified URL. The image data must be in
-   * a recognized format. The set of recognized image formats may vary
-   * from toolkit to toolkit.
-   *
-   * <p>This method maintains a cache for images. If an image has been
-   * loaded from the same URL before, the cached copy will be
-   * returned. The implementation may hold cached copies for an
-   * indefinite time, which can consume substantial resources with
-   * large images. Users are therefore advised to use {@link
-   * #createImage(java.net.URL)} instead.
-   *
-   * @param url the URL from where the image is read.
-   */
-  public Image getImage(URL url)
-  {
-    Image result;
-
-    synchronized (this)
-    {
-      // Many applications never call getImage. Therefore, we lazily
-      // create the image cache when it is actually needed.
-      if (imageCache == null)
-        imageCache = new HashMap();
-      else
-      {
-        result = (Image) imageCache.get(url);
-        if (result != null)
-          return result;
-      }
-
-      // The createImage(URL) method, which is specified by
-      // java.awt.Toolkit, is not implemented by this abstract class
-      // because it is platform-dependent. Once Classpath has support
-      // for the javax.imageio package, it might be worth considering
-      // that toolkits provide native stream readers. Then, the class
-      // ClasspathToolkit could provide a general implementation that
-      // delegates the image format parsing to javax.imageio.
-      result = createImage(url);
-
-      // It is not clear whether it would be a good idea to use weak
-      // references here. The advantage would be reduced memory
-      // consumption, since loaded images would not be kept
-      // forever. But on VMs that frequently perform garbage
-      // collection (which includes VMs with a parallel or incremental
-      // collector), the image might frequently need to be re-loaded,
-      // possibly over a slow network connection.
-      imageCache.put(url, result);
-
-      return result;
-    }
-  }
-
-
-  /**
-   * Returns an image from the specified file, which must be in a
-   * recognized format.  The set of recognized image formats may vary
-   * from toolkit to toolkit.
-   *
-   * <p>A new image is created every time this method gets called,
-   * even if the same path has been passed before.
-   *
-   * <p>The default implementation creates a file URL for the
-   * specified path and invokes {@link #createImage(URL)}.
-   *
-   * @param path A path to the file to be read in.
-   */
-  public Image createImage(String path)
-  {
-    try
-    {
-      // The abstract method createImage(URL) is defined by
-      // java.awt.Toolkit, but intentionally not implemented by
-      // ClasspathToolkit because it is platform specific.
-      return createImage(new File(path).toURL());
-    }
-    catch (MalformedURLException muex)
-    {
-      throw (IllegalArgumentException) new IllegalArgumentException(path)
-        .initCause(muex);
-    }
-  }
-  
-  /**
-   * Creates an ImageProducer from the specified URL. The image is assumed
-   * to be in a recognised format. If the toolkit does not implement the
-   * image format or the image format is not recognised, null is returned.
-   * This default implementation is overriden by the Toolkit implementations.
-   *
-   * @param url URL to read image data from.
-   */
-  public ImageProducer createImageProducer(URL url)
-  {
-    return null;
-  }
-
   public abstract RobotPeer createRobot (GraphicsDevice screen)
     throws AWTException;
 
@@ -365,15 +204,10 @@ public abstract class ClasspathToolkit
    */
   public abstract EmbeddedWindowPeer createEmbeddedWindow (EmbeddedWindow w);
 
-  /** 
+  /**
    * Used to register ImageIO SPIs provided by the toolkit.
    */
-
-  public void registerImageIOSpis(IIORegistry reg)
-  {
-  }
-
-  public abstract boolean nativeQueueEmpty();
-  public abstract void wakeNativeQueue();  
-  public abstract void iterateNativeQueue(EventQueue locked, boolean block);
+   public void registerImageIOSpis(IIORegistry reg)
+   {
+   }
 }

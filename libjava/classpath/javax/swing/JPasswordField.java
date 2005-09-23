@@ -50,6 +50,7 @@ import javax.swing.text.Document;
  * class JPasswordField
  * 
  * @author Andrew Selkirk
+ * @author Lillian Angel
  * @version 1.0
  */
 public class JPasswordField extends JTextField
@@ -178,14 +179,15 @@ public class JPasswordField extends JTextField
   }
 
   /**
-   * echoCharIsSet
+   * Returns true if this JPasswordField has a character set for echoing. 
+   * A character is considered to be set if the echo character is not 0.
    * 
    * @return <code>true</code> if the echo char is set,
    * <code>false</code> otherwise.
    */
   public boolean echoCharIsSet()
   {
-    return echoChar == 0;
+    return echoChar != 0;
   }
 
   /**
@@ -207,7 +209,8 @@ public class JPasswordField extends JTextField
   }
 
   /**
-   * getText
+   * Returns the text contained in this TextComponent. If the 
+   * underlying document is null, will give a NullPointerException.
    * 
    * @return String
    * 
@@ -215,11 +218,21 @@ public class JPasswordField extends JTextField
    */
   public String getText()
   {
-    return null; // TODO
+    try
+      {
+        return getDocument().getText(0, getDocument().getLength());
+      }
+    catch (BadLocationException ble)
+      {
+        // This should never happen.
+        throw new AssertionError(ble);
+      }
   }
 
   /**
-   * getText
+   * Fetches a portion of the text represented by the component. 
+   * Returns an empty string if length is 0. If the 
+   * underlying document is null, will give a NullPointerException.
    * 
    * @param offset TODO
    * @param length TODO
@@ -232,27 +245,40 @@ public class JPasswordField extends JTextField
    */
   public String getText(int offset, int length) throws BadLocationException
   {
-    return null; // TODO
+    return getDocument().getText(offset, length);
   }
 
   /**
-   * getPassword
+   * Returns the text contained in this TextComponent. If the underlying 
+   * document is null, will give a NullPointerException. 
+   * For stronger security, it is recommended that the returned character 
+   * array be cleared after use by setting each character to zero.
    * 
    * @return char[]
    */
   public char[] getPassword()
   {
-    return new char[0]; // TODO
+    return getText().toCharArray();
   }
 
   /**
-   * paramString
+   * Returns a string representation of this JPasswordField. This method is 
+   * intended to be used only for debugging purposes, 
+   * and the content and format of the returned string may vary between 
+   * implementations. The returned string may be empty but may not be null.
    * 
    * @return String
    */
   protected String paramString()
   {
-    return null; // TODO
+    try
+      {
+        return getText();
+      }
+    catch (NullPointerException npe)
+      {
+        return "";
+      }
   }
 
   /**

@@ -45,6 +45,7 @@ import java.awt.image.DirectColorModel;
 import java.awt.image.ImageConsumer;
 import java.awt.image.ImageObserver;
 import java.awt.image.ImageProducer;
+import java.awt.image.MemoryImageSource;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -70,7 +71,10 @@ public class GtkImageConsumer implements ImageConsumer
 
   public synchronized void imageComplete (int status)
   {
-    source.removeConsumer(this);
+    // we need to reuse the pixel cache for memory image sources since
+    // a memory image's backing array can be updated "live".
+    if (!(source instanceof MemoryImageSource))
+      source.removeConsumer(this);
     target.setImage(width, height, pixelCache, properties);
   }
 

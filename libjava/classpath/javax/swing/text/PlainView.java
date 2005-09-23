@@ -237,5 +237,23 @@ public class PlainView extends View
 
     return span;
   }
+
+  /**
+   * Maps coordinates from the <code>View</code>'s space into a position
+   * in the document model.
+   *
+   * @param x the x coordinate in the view space
+   * @param y the y coordinate in the view space
+   * @param a the allocation of this <code>View</code>
+   * @param b the bias to use
+   *
+   * @return the position in the document that corresponds to the screen
+   *         coordinates <code>x, y</code>
+   */
+  public int viewToModel(float x, float y, Shape a, Position.Bias[] b)
+  {
+    // FIXME: not implemented
+    return 0;
+  }
 }
 

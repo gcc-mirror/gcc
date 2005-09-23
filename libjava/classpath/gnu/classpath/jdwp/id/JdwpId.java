@@ -41,6 +41,7 @@ package gnu.classpath.jdwp.id;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 
 /**
  * A baseclass for all object types reported to the debugger
@@ -62,6 +63,11 @@ public abstract class JdwpId
   private byte _tag;
 
   /**
+   * The object/class represented by this Id
+   */
+  protected SoftReference _reference;
+
+  /**
    * Constructs an empty <code>JdwpId</code>
    */
   public JdwpId (byte tag)
@@ -72,7 +78,7 @@ public abstract class JdwpId
   /**
    * Sets the id for this object reference
    */
-  void setId (long id)
+  public void setId (long id)
   {
     _id = id;
   }
@@ -86,15 +92,33 @@ public abstract class JdwpId
   }
 
   /**
+   * Gets the object/class reference for this ID
+   *
+   * @returns a refernce to the object or class
+   */
+  public SoftReference getReference ()
+  {
+    return _reference;
+  }
+
+  /**
+   * Sets the object/class reference for this ID
+   *
+   * @param ref a refernce to the object or class
+   */
+  public void setReference (SoftReference ref)
+  {
+    _reference = ref;
+  }
+
+  /**
    * Compares two object ids for equality. Two object ids
    * are equal if they point to the same type and contain to
-   * the same id number. (NOTE: This is a much stricter check
-   * than is necessary: all <code>JdwpId</code>s have unique
-   * ids.)
+   * the same id number. 
    */
   public boolean equals (JdwpId id)
   {
-    return ((id.getClass () == getClass ()) && (id.getId () == getId ()));
+    return (id.getId () == getId ());
   }
 
   /**

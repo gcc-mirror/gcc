@@ -54,6 +54,9 @@
 /* Define to 1 if you have the `gethostname' function. */
 #undef HAVE_GETHOSTNAME
 
+/* Define to 1 if you have the `getpagesize' function. */
+#undef HAVE_GETPAGESIZE
+
 /* Define to 1 if you have the `getpeername' function. */
 #undef HAVE_GETPEERNAME
 
@@ -87,14 +90,29 @@
 /* Define to 1 if you have the `lseek' function. */
 #undef HAVE_LSEEK
 
+/* Define to 1 if you have the `madvise' function. */
+#undef HAVE_MADVISE
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
 /* Define to 1 if you have the `memset' function. */
 #undef HAVE_MEMSET
 
+/* Define to 1 if you have the `mincore' function. */
+#undef HAVE_MINCORE
+
 /* Define to 1 if you have the `mktime' function. */
 #undef HAVE_MKTIME
+
+/* Define to 1 if you have the `mmap' function. */
+#undef HAVE_MMAP
+
+/* Define to 1 if you have the `msync' function. */
+#undef HAVE_MSYNC
+
+/* Define to 1 if you have the `munmap' function. */
+#undef HAVE_MUNMAP
 
 /* Define to 1 if you have the `open' function. */
 #undef HAVE_OPEN
@@ -144,6 +162,9 @@
 /* Define to 1 if `tm_zone' is member of `struct tm'. */
 #undef HAVE_STRUCT_TM_TM_ZONE
 
+/* Define to 1 if you have the `sysconf' function. */
+#undef HAVE_SYSCONF
+
 /* Define to 1 if you have the <sys/config.h> header file. */
 #undef HAVE_SYS_CONFIG_H
 
@@ -152,6 +173,9 @@
 
 /* Define to 1 if you have the <sys/ioctl.h> header file. */
 #undef HAVE_SYS_IOCTL_H
+
+/* Define to 1 if you have the <sys/mman.h> header file. */
+#undef HAVE_SYS_MMAN_H
 
 /* Define to 1 if you have the <sys/select.h> header file. */
 #undef HAVE_SYS_SELECT_H

@@ -39,7 +39,6 @@ exception statement from your version. */
 package java.util.zip;
 
 import java.util.Calendar;
-import java.util.Date;
 
 /**
  * This class represents a member of a zip archive.  ZipFile and
@@ -173,7 +172,7 @@ public class ZipEntry implements ZipConstants, Cloneable
     Calendar cal = getCalendar();
     synchronized (cal)
       {
-	cal.setTime(new Date(time));
+	cal.setTimeInMillis(time);
 	dostime = (cal.get(Calendar.YEAR) - 1980 & 0x7f) << 25
 	  | (cal.get(Calendar.MONTH) + 1) << 21
 	  | (cal.get(Calendar.DAY_OF_MONTH)) << 16
@@ -190,11 +189,11 @@ public class ZipEntry implements ZipConstants, Cloneable
    */
   public long getTime()
   {
+    // The extra bytes might contain the time (posix/unix extension)
+    parseExtra();
+
     if ((known & KNOWN_TIME) == 0)
       return -1;
-
-    // The extra bytes might contain the time (posix/unix extension)
-    parseExtra ();
 
     int sec = 2 * (dostime & 0x1f);
     int min = (dostime >> 5) & 0x3f;
@@ -209,7 +208,7 @@ public class ZipEntry implements ZipConstants, Cloneable
 	synchronized (cal)
 	  {
 	    cal.set(year, mon, day, hrs, min, sec);
-	    return cal.getTime().getTime();
+	    return cal.getTimeInMillis();
 	  }
       }
     catch (RuntimeException ex)
@@ -367,10 +366,10 @@ public class ZipEntry implements ZipConstants, Cloneable
     catch (ArrayIndexOutOfBoundsException ex)
       {
 	/* be lenient */
-	return;
       }
 
     known |= KNOWN_EXTRA;
+    return;
   }
 
   /**

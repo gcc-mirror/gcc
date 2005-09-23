@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.CORBA;
 
+import gnu.CORBA.CDR.Vio;
 import gnu.CORBA.CDR.cdrBufInput;
 import gnu.CORBA.CDR.cdrBufOutput;
 
@@ -63,6 +64,7 @@ import org.omg.CORBA.TypeCode;
 import org.omg.CORBA.TypeCodeHolder;
 import org.omg.CORBA.TypeCodePackage.BadKind;
 import org.omg.CORBA.ValueBaseHolder;
+import org.omg.CORBA.portable.BoxedValueHelper;
 import org.omg.CORBA.portable.Streamable;
 
 import java.io.IOException;
@@ -499,20 +501,33 @@ public class gnuAny
   }
 
   /** {@inheritDoc} */
-  public void insert_Value(Serializable x, TypeCode typecode)
+  public void insert_Value(Serializable x, TypeCode c_typecode)
   {
-    type(typecode);
-    insert_Value(x);
+    if (typecode != null && typecode.kind() == TCKind.tk_value_box)
+      {
+        has = new gnuValueHolder(x, typecode);
+      }
+    else
+      {
+        type(typecode);
+        insert_Value(x);
+      }
   }
 
   /** {@inheritDoc} */
   public void insert_Value(Serializable x)
   {
-    resetTypes();
-    if (has instanceof ValueBaseHolder)
-      ((ValueBaseHolder) has).value = x;
+    if (typecode != null && typecode.kind() == TCKind.tk_value_box)
+      {
+        has = new gnuValueHolder(x, typecode);
+      }
     else
-      has = new ValueBaseHolder(x);
+      {
+        if (has instanceof ValueBaseHolder)
+          ((ValueBaseHolder) has).value = x;
+        else
+          has = new ValueBaseHolder(x);
+      }
   }
 
   /**
@@ -748,15 +763,38 @@ public class gnuAny
               }
           }
         type(a_type);
-        has._read(input);
+
+        if (!(has instanceof universalHolder) &&
+            (kind == TCKind._tk_value_box))
+          {
+            // The streamable only contains operations for
+            // reading the value, not the value header.
+            Field vField = has.getClass().getField("value");
+
+            BoxedValueHelper helper;
+
+            try
+              {
+                Class helperClass =
+                  Class.forName(ObjectCreator.toHelperName(a_type.id()));
+                helper = (BoxedValueHelper) helperClass.newInstance();
+              }
+            catch (Exception ex)
+              {
+                helper = null;
+              }
+
+            Object content = Vio.read(input, helper);
+            vField.set(has, content);
+          }
+        else
+          has._read(input);
       }
-    catch (BadKind ex)
+    catch (Exception ex)
       {
-        throw new MARSHAL("Bad kind: " + ex.getMessage());
-      }
-    catch (IOException ex)
-      {
-        throw new MARSHAL("IO exception: " + ex.getMessage());
+        MARSHAL m = new MARSHAL();
+        m.initCause(ex);
+        throw m;
       }
   }
 
@@ -790,6 +828,12 @@ public class gnuAny
   {
     if (has != null)
       has._write(output);
+    else
+    // These kinds support null.
+    if (xKind == TCKind._tk_null || xKind == TCKind._tk_objref ||
+        xKind == TCKind._tk_value || xKind == TCKind._tk_value_box
+       )
+      output.write_long(0);
   }
 
   /**
@@ -806,16 +850,26 @@ public class gnuAny
     if (xKind >= 0)
       {
         if (xKind != kind)
-          throw new BAD_OPERATION("Extracting " + typeNamer.nameIt(kind) +
-                                  " when stored " + typeNamer.nameIt(xKind)
-                                 );
+          if (!(
+                xKind == TCKind._tk_alias &&
+                has._type().kind().value() == kind
+              )
+             )
+            throw new BAD_OPERATION("Extracting " + typeNamer.nameIt(kind) +
+                                    " when stored " + typeNamer.nameIt(xKind)
+                                   );
       }
     else
       {
         if (type().kind().value() != kind)
-          throw new BAD_OPERATION("Extracting " + typeNamer.nameIt(kind) +
-                                  " stored " + typeNamer.nameIt(type())
-                                 );
+          if (!(
+                type().kind().value() == TCKind._tk_alias &&
+                has._type().kind().value() == kind
+              )
+             )
+            throw new BAD_OPERATION("Extracting " + typeNamer.nameIt(kind) +
+                                    " stored " + typeNamer.nameIt(type())
+                                   );
       }
   }
 

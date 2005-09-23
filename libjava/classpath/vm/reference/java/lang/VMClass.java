@@ -245,18 +245,22 @@ final class VMClass
   static native ClassLoader getClassLoader(Class klass);
 
   /**
-   * VM implementors are free to make this method a noop if 
-   * the default implementation is acceptable.
+   * Load the requested class and record the specified loader as the
+   * initiating class loader.
    *
    * @param name the name of the class to find
+   * @param initialize should the class initializer be run?
+   * @param loader the class loader to use (or null for the bootstrap loader)
    * @return the Class object representing the class or null for noop
    * @throws ClassNotFoundException if the class was not found by the
-   *         classloader
+   *         class loader
    * @throws LinkageError if linking the class fails
    * @throws ExceptionInInitializerError if the class loads, but an exception
    *         occurs during initialization
    */
-  static native Class forName(String name) throws ClassNotFoundException;
+  static native Class forName(String name, boolean initialize,
+                              ClassLoader loader)
+    throws ClassNotFoundException;
 
   /**
    * Return whether this class is an array type.
@@ -266,26 +270,6 @@ final class VMClass
    * operation
    */
   static native boolean isArray(Class klass);
-
-  /**
-   * This method should trigger class initialization (if the
-   * class hasn't already been initialized)
-   * 
-   * @param klass the Class object that's calling us
-   * @throws ExceptionInInitializerError if an exception
-   *         occurs during initialization
-   */
-  static native void initialize(Class klass);
-
-  /**
-   * Load an array class.
-   *
-   * @return the Class object representing the class
-   * @throws ClassNotFoundException if the class was not found by the
-   *         classloader
-   */
-  static native Class loadArrayClass(String name, ClassLoader classloader)
-	throws ClassNotFoundException;
 
   /**
    * Throw a checked exception without declaring it.

@@ -77,6 +77,8 @@ public class Observable
    */
   public synchronized void addObserver(Observer observer)
   {
+    if (observer == null)
+      throw new NullPointerException("can't add null observer");
     observers.add(observer);
   }
 

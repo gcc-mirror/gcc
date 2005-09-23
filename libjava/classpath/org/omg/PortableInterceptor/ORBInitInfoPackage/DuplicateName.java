@@ -42,30 +42,28 @@ import org.omg.CORBA.UserException;
 import org.omg.CORBA.portable.IDLEntity;
 
 import java.io.Serializable;
-import gnu.CORBA.*;
 
 /**
-* This exception is raised on an attempt to register a second
-* {@link org.omg.PortableInterceptor#Interceptor} with the same name.
-* For each {@link org.omg.PortableInterceptor#Interceptor} type, only
-* one {@link org.omg.PortableInterceptor#Interceptor} of a given name can
-* be registered with the {@link org.omg.CORBA.ORB}.
-*
-* @see org.omg.PortableInterceptor.ORBInitInfoOperations
-*
-* @author Audrius Meskauskas, Lithiania (AudriusA@Bioinformatics.org)
-*/
-public class DuplicateName
-  extends UserException
-  implements IDLEntity, Serializable
+ * This exception is raised on an attempt to register a second
+ * {@link org.omg.PortableInterceptor#Interceptor} with the same name.
+ * For each {@link org.omg.PortableInterceptor#Interceptor} type, only
+ * one {@link org.omg.PortableInterceptor#Interceptor} of a given name can
+ * be registered with the {@link org.omg.CORBA.ORB}.
+ *
+ * @see org.omg.PortableInterceptor.ORBInitInfoOperations
+ *
+ * @author Audrius Meskauskas, Lithiania (AudriusA@Bioinformatics.org)
+ */
+public class DuplicateName extends UserException implements IDLEntity,
+  Serializable
 {
- /**
-  * Use serialVersionUID (v1.4) for interoperability.
-  */
- private static final long serialVersionUID = 7748239257677851130L;
+  /**
+   * Use serialVersionUID (v1.4) for interoperability.
+   */
+  private static final long serialVersionUID = 7748239257677851130L;
 
   /**
-   * The name field.
+   * The name that appears to be duplicate.
    */
   public String name;
 

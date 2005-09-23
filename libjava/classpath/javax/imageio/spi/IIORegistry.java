@@ -63,6 +63,7 @@ public final class IIORegistry extends ServiceRegistry
   
   public static synchronized IIORegistry getDefaultInstance()
   {
+    // XXX: This leaks memory if a ThreadGroup isn't available anymore.
     ThreadGroup group = Thread.currentThread().getThreadGroup();
     IIORegistry registry = (IIORegistry) instances.get(group);
     

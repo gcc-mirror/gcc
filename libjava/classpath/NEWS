@@ -1,3 +1,86 @@
+New in release 0.18 (Sep 6, 2005)
+
+* GNU JAWT implementation, the AWT Native Interface, which allows direct
+  access to native screen resources from within a Canvas's paint method.
+  GNU Classpath Examples comes with a Demo, see examples/README.
+* awt.datatransfer updated to 1.5 with supports for FlavorEvents.
+  The gtk+ awt peers now allow copy/paste of text, images, uris/files
+  and serialized objects with other applications and tracking
+  clipboard change events with gtk+ 2.6 (for gtk+ 2.4 only text and
+  serialized objects are supported). A GNU Classpath Examples
+  datatransfer Demo was added to show the new functionality.
+* org.omg.PortableInterceptor and related functionality in other packages
+  is now implemented:
+    - The sever and client interceptors work as required since 1.4.
+    - The IOR interceptor works as needed for 1.5. 
+* The org.omg.DynamicAny package is completed and passes the prepared tests.
+* The Portable Object Adapter should now support the output of the
+  recent IDL to java compilers. These compilers now generate servants and 
+  not CORBA objects as before, making the output depended on the existing 
+  POA implementation. Completing POA means that such code can already be 
+  tried to run on Classpath. Our POA is tested for the following usager
+  scenarios:
+    - POA converts servant to the CORBA object.
+    - Servant provides to the CORBA object.
+    - POA activates new CORBA object with the given Object Id (byte array) 
+      that is later accessible for the servant.
+    - During the first call, the ServantActivator provides servant for this 
+      and all subsequent calls on the current object.
+    - During each call, the ServantLocator provides servant for this call
+      only.
+    - ServantLocator or ServantActivator forwards call to another server.
+    - POA has a single servant, responsible for all objects.
+    - POA has a default servant, but some objects are explicitly connected 
+      to they specific servants.
+  The POA is verified using tests from the former cost.omg.org.      
+* The javax.swing.plaf.multi.* package is now implemented.
+* Editing and several key actions for JTree and JTable were implemented.
+* Lots of icons and look and feel improvements for Free Swing basic and
+  metal themes were added.  Try running the GNU Classpath Swing Demo in
+  examples (gnu.classpath.examples.swing.Demo) with:
+  -Dswing.defaultlaf=javax.swing.plaf.basic.BasicLookAndFeel
+  -Dswing.defaultlaf=javax.swing.plaf.metal.MetalLookAndFeel
+* Start of styled text capabilites for java.swing.text.
+* NIO FileChannel.map implementation, fast bulk put implementation for
+  DirectByteBuffer (speeds up this method 10x).
+* Split gtk+ awt peers event handling in two threads and improve gdk lock
+  handling (solves several AWT lock ups).
+* Speed up awt Image loading.
+* Updated TimeZone data against Olson tzdata2005l.
+* Make zip and jar UTF-8 "clean".
+* "native" code  builds and compiles (warning free) on Darwin and Solaris.
+
+Runtime interface changes:
+
+* All native resource "pointers" in the VM interface classes are now exposed
+  as gnu.classpath.Pointer objects. This might impact runtimes that
+  optimize and support java.nio.DirectByteBuffers. Creating these classes
+  and accessing the contents as void * pointers for the native reference JNI
+  implementation is done through the JCL_NewRawDataObject and JCL_GetRawData
+  functions.
+* Simplified the Class/VMClass interface.
+* Removed loadedClasses map from ClassLoader. It's now the VMs responsibility
+  to manage the list of defined and loaded classes for each class loader.
+* Moved native methods from java.lang.reflect.Proxy to VMProxy.
+* Added hook to VMClassLoader to allow VM to do class caching.
+
+New Untested/Disabled Features:
+
+  The following new features are included, but not ready for production
+  yet. They are explicitly disabled and not supported. But if you want
+  to help with the development of these new features we are interested
+  in feedback. You will have to explicitly enable them to try them out
+  (and they will most likely contain bugs). If you are interested in any
+  of these then please join the mailing-list and follow development in
+  CVS.
+
+* QT4 AWT peers, enable by giving configure --enable-qt-peer.
+* JDWP framework, enable by deleting the jdwp references from
+  lib/standard.omit and vm/reference/standard.omit. No default
+  implementation is provided. Work is being done on gcj/gij integration.
+* StAX java.xml.stream, enable by deleting the gnu.xml.stream and
+  java.xml.stream references in lib/standard.omit.
+
 New in release 0.17 (Jul 15, 2005)
 
 * gnu.xml fix for nodes created outside a namespace context.

@@ -39,6 +39,7 @@ exception statement from your version. */
 package gnu.CORBA.NamingService;
 
 import gnu.CORBA.Functional_ORB;
+import gnu.CORBA.IOR;
 
 import org.omg.CosNaming.NamingContextExt;
 
@@ -47,15 +48,14 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 
 /**
- * The server for the gnu classpath naming service. This is an executable
- * class that must be started to launch the GNU Classpath CORBA
- * transient naming service.
- *
+ * The server for the gnu classpath naming service. This is an executable class
+ * that must be started to launch the GNU Classpath CORBA transient naming
+ * service.
+ * 
  * GNU Classpath currently works with this naming service and is also
- * interoperable with the Sun Microsystems naming services from
- * releases 1.3 and 1.4, both transient <i>tnameserv</i> and persistent
- * <i>orbd</i>.
- *
+ * interoperable with the Sun Microsystems naming services from releases 1.3 and
+ * 1.4, both transient <i>tnameserv</i> and persistent <i>orbd</i>.
+ * 
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
 public class NamingServiceTransient
@@ -67,9 +67,9 @@ public class NamingServiceTransient
   public static final int PORT = 900;
 
   /**
-   * Get the object key for the naming service. The default
-   * key is the string "NameService" in ASCII.
-   *
+   * Get the object key for the naming service. The default key is the string
+   * "NameService" in ASCII.
+   * 
    * @return the byte array.
    */
   public static byte[] getDefaultKey()
@@ -85,15 +85,14 @@ public class NamingServiceTransient
   }
 
   /**
-   * Start the naming service on the current host at the given port.
-   * The parameter  -org.omg.CORBA.ORBInitialPort NNN or
-   *  -ORBInitialPort NNN, if present, specifies the port, on that
-   * the service must be started. If this key is not specified,
-   * the service starts at the port 900.
-   *
-   * The parameter -ior FILE_NAME, if present, forces to store the ior string
-   * of this naming service to the specified file.
-   *
+   * Start the naming service on the current host at the given port. The
+   * parameter -org.omg.CORBA.ORBInitialPort NNN or -ORBInitialPort NNN, if
+   * present, specifies the port, on that the service must be started. If this
+   * key is not specified, the service starts at the port 900.
+   * 
+   * The parameter -ior FILE_NAME, if present, forces to store the ior string of
+   * this naming service to the specified file.
+   * 
    * @param args the parameter string.
    */
   public static void main(String[] args)
@@ -108,21 +107,24 @@ public class NamingServiceTransient
         if (args.length > 1)
           for (int i = 0; i < args.length - 1; i++)
             {
-              if (args [ i ].endsWith("ORBInitialPort"))
-                port = Integer.parseInt(args [ i + 1 ]);
+              if (args[i].endsWith("ORBInitialPort"))
+                port = Integer.parseInt(args[i + 1]);
 
-              if (args [ i ].equals("-ior"))
-                iorf = args [ i + 1 ];
+              if (args[i].equals("-ior"))
+                iorf = args[i + 1];
             }
 
         Functional_ORB.setPort(port);
 
         // Create the servant and register it with the ORB
         NamingContextExt namer = new Ext(new TransientContext());
-        orb.connect(namer, getDefaultKey());
+
+        // Case with the key "NameService".
+        orb.connect(namer, "NameService".getBytes());
 
         // Storing the IOR reference.
         String ior = orb.object_to_string(namer);
+        IOR iorr = IOR.parse(ior);
         if (iorf != null)
           {
             FileOutputStream f = new FileOutputStream(iorf);
@@ -131,22 +133,23 @@ public class NamingServiceTransient
             p.close();
           }
 
-        System.out.println("GNU Classpath, transient naming service. " +
-                           "Copyright (C) 2005 Free Software Foundation\n" +
-                           "This tool comes with ABSOLUTELY NO WARRANTY. " +
-                           "This is free software, and you are\nwelcome to " +
-                           "redistribute it under conditions, defined in " +
-                           "GNU Classpath license.\n\n" + ior
-                          );
+        System.out.println("GNU Classpath transient naming service "
+          + "started at " + iorr.Internet.host + ":" + iorr.Internet.port
+          + " key 'NameService'.\n\n"
+          + "Copyright (C) 2005 Free Software Foundation\n"
+          + "This tool comes with ABSOLUTELY NO WARRANTY. "
+          + "This is free software, and you are\nwelcome to "
+          + "redistribute it under conditions, defined in "
+          + "GNU Classpath license.\n\n" + ior);
 
         new Thread()
+        {
+          public void run()
           {
-            public void run()
-            {
-              // Wait for invocations from clients.
-              orb.run();
-            }
-          }.start();
+            // Wait for invocations from clients.
+            orb.run();
+          }
+        }.start();
       }
     catch (Exception e)
       {
@@ -154,7 +157,8 @@ public class NamingServiceTransient
         e.printStackTrace(System.out);
       }
 
-    // Restore the default value for allocating ports for the subsequent objects.
+    // Restore the default value for allocating ports for the subsequent
+    // objects.
     Functional_ORB.setPort(Functional_ORB.DEFAULT_INITIAL_PORT);
   }
 }

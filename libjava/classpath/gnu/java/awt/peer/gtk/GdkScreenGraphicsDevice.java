@@ -42,15 +42,11 @@ import java.awt.Dimension;
 import java.awt.DisplayMode;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
+import java.awt.Toolkit;
 
 public class GdkScreenGraphicsDevice extends GraphicsDevice
 {
   GdkGraphicsEnvironment env;
-
-  public GtkToolkit getToolkit()
-  {
-    return env.getToolkit();
-  }
 
   public GdkScreenGraphicsDevice (GdkGraphicsEnvironment e)
   {    
@@ -94,7 +90,7 @@ public class GdkScreenGraphicsDevice extends GraphicsDevice
   public DisplayMode getDisplayMode()
   {
     // determine display mode
-    Dimension dim = getToolkit().getScreenSize();
+    Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
     DisplayMode mode = new DisplayMode(dim.width, dim.height, 0,
 				       DisplayMode.REFRESH_RATE_UNKNOWN);
     return mode;

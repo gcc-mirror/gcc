@@ -475,7 +475,7 @@ select(int selectionStart, int selectionEnd)
   if (selectionEnd > text.length())
     selectionEnd = text.length();
 
-  if (selectionStart > getSelectionEnd())
+  if (selectionStart > selectionEnd)
     selectionStart = selectionEnd;
 
   this.selectionStart = selectionStart;

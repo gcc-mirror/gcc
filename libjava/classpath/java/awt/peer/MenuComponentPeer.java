@@ -38,8 +38,18 @@ exception statement from your version. */
 
 package java.awt.peer;
 
+import java.awt.Font;
+
 public interface MenuComponentPeer
 {
   void dispose();
+  
+  /**
+   * Set the font on this menu component peer.
+   * 
+   * @param font the new font
+   * @since 1.5
+   */
+  void setFont (Font font);
 } // interface MenuComponentPeer
 

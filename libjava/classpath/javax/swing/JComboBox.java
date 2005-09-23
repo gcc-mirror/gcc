@@ -61,10 +61,10 @@ import javax.swing.event.PopupMenuListener;
 import javax.swing.plaf.ComboBoxUI;
 
 /**
- * JComboBox. JComboBox is a container, that keeps track of elements added to
- * it by the user. JComboBox allows user to select any item in its list and
- * displays the selected item to the user. JComboBox also can show/hide popup
- * menu containing its list of item whenever the mouse is pressed over it.
+ * A component that allows a user to select any item in its list and
+ * displays the selected item to the user. JComboBox also can show/hide a
+ * popup menu containing its list of item whenever the mouse is pressed
+ * over it.
  *
  * @author Andrew Selkirk
  * @author Olga Rodimina
@@ -1138,7 +1138,7 @@ public class JComboBox extends JComponent implements ItemSelectable,
   }
 
   /**
-   * AccessibleJComboBox
+   * Accessibility support for <code>JComboBox</code>.
    */
   protected class AccessibleJComboBox extends AccessibleJComponent
     implements AccessibleAction, AccessibleSelection

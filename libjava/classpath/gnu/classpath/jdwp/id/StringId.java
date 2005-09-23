@@ -40,6 +40,7 @@ exception statement from your version. */
 package gnu.classpath.jdwp.id;
 
 import gnu.classpath.jdwp.JdwpConstants;
+import gnu.classpath.jdwp.exception.InvalidStringException;
 
 /**
  * A class which represents a JDWP string id
@@ -60,5 +61,22 @@ public class StringId
   public StringId ()
   {
     super (JdwpConstants.Tag.STRING);
+  }
+
+  /**
+   * Gets the String represented by this ID
+   *
+   * @throws InvalidStringException if String is garbage collected,
+   *           or otherwise invalid
+   */
+  public String getString ()
+    throws InvalidStringException
+  {
+    String string = (String) _reference.get ();
+
+    if (string == null)
+      throw new InvalidStringException (getId ());
+
+    return string;
   }
 }

@@ -37,6 +37,10 @@ exception statement from your version. */
 
 package gnu.java.security;
 
+import gnu.classpath.SystemProperties;
+import gnu.classpath.debug.Component;
+import gnu.classpath.debug.SystemLogger;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -66,6 +70,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 
 /**
  * An implementation of a {@link java.security.Policy} object whose
@@ -143,24 +148,16 @@ public final class PolicyFile extends Policy
   // Constants and fields.
   // -------------------------------------------------------------------------
 
-  private static final boolean DEBUG = true;
-  // Package-private to avoid a trampoline.
-  static void debug(String msg)
-  {
-    System.err.print(">> PolicyFile: ");
-    System.err.println(msg);
-  }
+  private static final Logger logger = SystemLogger.SYSTEM;
 
-  private static void debug(Throwable t)
-  {
-    System.err.println(">> PolicyFile");
-    t.printStackTrace(System.err);
-  }
-
-  private static final String DEFAULT_POLICY = System.getProperty("java.home")
-    + System.getProperty("file.separator") + "lib"
-    + System.getProperty("file.separator") + "security"
-    + System.getProperty("file.separator") + "java.policy";
+  private static final String DEFAULT_POLICY =
+    SystemProperties.getProperty("java.home")
+    + SystemProperties.getProperty("file.separator") + "lib"
+    + SystemProperties.getProperty("file.separator") + "security"
+    + SystemProperties.getProperty("file.separator") + "java.policy";
+  private static final String DEFAULT_USER_POLICY =
+    SystemProperties.getProperty ("user.home") +
+    SystemProperties.getProperty ("file.separator") + ".java.policy";
 
   private final Map cs2pc;
 
@@ -185,7 +182,8 @@ public final class PolicyFile extends Policy
         CodeSource cs = (CodeSource) e.getKey();
         if (cs.implies(codeSource))
           {
-            if (DEBUG) debug(cs+" -> "+codeSource);
+            logger.log (Component.POLICY, "{0} -> {1}", new Object[]
+              { cs, codeSource });
             PermissionCollection pc = (PermissionCollection) e.getValue();
             for (Enumeration ee = pc.elements(); ee.hasMoreElements(); )
               {
@@ -193,50 +191,69 @@ public final class PolicyFile extends Policy
               }
           }
         else
-          if (DEBUG) debug(cs+" !-> "+codeSource);
+          logger.log (Component.POLICY, "{0} !-> {1}", new Object[]
+            { cs, codeSource });
       }
-    if (DEBUG) debug ("returning permissions " + perms + " for " + codeSource);
+    logger.log (Component.POLICY, "returning permissions {0} for {1}",
+                new Object[] { perms, codeSource });
     return perms;
   }
 
   public void refresh()
   {
     cs2pc.clear();
-    List policyFiles = new LinkedList();
+    final List policyFiles = new LinkedList();
     try
       {
-        policyFiles.add(new File(DEFAULT_POLICY).toURL());
-        if (DEBUG) debug ("defualt policy is " + DEFAULT_POLICY);
-        policyFiles.addAll((List) AccessController.doPrivileged(
+        policyFiles.add (new File (DEFAULT_POLICY).toURL());
+        policyFiles.add (new File (DEFAULT_USER_POLICY).toURL ());
+
+        AccessController.doPrivileged(
           new PrivilegedExceptionAction()
           {
             public Object run() throws Exception
             {
-              LinkedList l = new LinkedList();
+              String allow = Security.getProperty ("policy.allowSystemProperty");
+              if (allow == null || Boolean.getBoolean (allow))
+                {
+                  String s = SystemProperties.getProperty ("java.security.policy");
+                  logger.log (Component.POLICY, "java.security.policy={0}", s);
+                  if (s != null)
+                    {
+                      boolean only = s.startsWith ("=");
+                      if (only)
+                        s = s.substring (1);
+                      policyFiles.clear ();
+                      policyFiles.add (new URL (s));
+                      if (only)
+                        return null;
+                    }
+                }
               for (int i = 1; ; i++)
                 {
-                  String s = Security.getProperty("policy.file."+i);
-                  if (DEBUG) debug("policy.file."+i+"="+s);
+                  String pname = "policy.url." + i;
+                  String s = Security.getProperty (pname);
+                  logger.log (Component.POLICY, "{0}={1}", new Object []
+                    { pname, s });
                   if (s == null)
                     break;
-                  l.add(new URL(s));
+                  policyFiles.add (new URL (s));
                 }
-              String s = System.getProperty("java.security.policy");
-              if (DEBUG) debug("java.security.policy="+s);
-              if (s != null)
-                l.add(new URL(s));
-              return l;
+              return null;
             }
-          }));
+          });
       }
     catch (PrivilegedActionException pae)
       {
-        if (DEBUG) debug(pae);
+        logger.log (Component.POLICY, "reading policy properties", pae);
       }
     catch (MalformedURLException mue)
       {
-        if (DEBUG) debug(mue);
+        logger.log (Component.POLICY, "setting default policies", mue);
       }
+
+    logger.log (Component.POLICY, "building policy from URLs {0}",
+                policyFiles);
     for (Iterator it = policyFiles.iterator(); it.hasNext(); )
       {
         try
@@ -246,7 +263,7 @@ public final class PolicyFile extends Policy
           }
         catch (IOException ioe)
           {
-            if (DEBUG) debug(ioe);
+            logger.log (Component.POLICY, "reading policy", ioe);
           }
       }
   }
@@ -273,7 +290,7 @@ public final class PolicyFile extends Policy
    */
   private void parse(final URL url) throws IOException
   {
-    if (DEBUG) debug ("reading policy file from " + url);
+    logger.log (Component.POLICY, "reading policy file from {0}", url);
     final StreamTokenizer in = new StreamTokenizer(new InputStreamReader(url.openStream()));
     in.resetSyntax();
     in.slashSlashComments(true);

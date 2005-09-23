@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package org.omg.PortableInterceptor;
 
+
 /**
  * A reply status flag, indicating, that the remote method
  * has been called and returned without exception.

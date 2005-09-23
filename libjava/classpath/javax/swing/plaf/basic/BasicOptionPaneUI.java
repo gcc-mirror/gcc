@@ -910,7 +910,9 @@ public class BasicOptionPaneUI extends OptionPaneUI
    */
   protected Container createSeparator()
   {
-    return (Container) Box.createVerticalStrut(17);
+    // FIXME: Figure out what this method is supposed to return and where
+    // this should be added to the OptionPane.
+    return null;
   }
 
   /**
@@ -1115,6 +1117,10 @@ public class BasicOptionPaneUI extends OptionPaneUI
 	optionPane.add(msg);
       }
 
+    // FIXME: Figure out if the separator should be inserted here or what
+    // this thing is supposed to do. Note: The JDK does NOT insert another
+    // component at this place. The JOptionPane only has two panels in it
+    // and there actually are applications that depend on this beeing so.
     Container sep = createSeparator();
     if (sep != null)
       optionPane.add(sep);

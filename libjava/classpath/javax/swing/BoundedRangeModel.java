@@ -1,5 +1,5 @@
 /* BoundedRangeModel.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,10 +38,17 @@ exception statement from your version. */
 
 package javax.swing;
 
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * The data model that is used in components that display a range of values,
+ * The data model that represents a <i>range</i> that is constrained to fit 
+ * within specified <i>bounds</i>.  The range is defined as <code>value</code> 
+ * to <code>value + extent</code>, where both <code>value</code> and 
+ * <code>extent</code> are integers, and <code>extent >= 0</code>.   The bounds
+ * are defined by integers <code>minimum</code> and <code>maximum</code>.  
+ * <p>
+ * This type of model is used in components that display a range of values,
  * like {@link JProgressBar} and {@link JSlider}.
  *
  * @author Andrew Selkirk
@@ -49,16 +56,18 @@ import javax.swing.event.ChangeListener;
 public interface BoundedRangeModel
 {
   /**
-   * getValue
+   * Returns the current value for the model.
    * 
-   * @return int
+   * @return The current value for the model.
    *
    * @see #setValue(int)
    */
   int getValue();
 
   /**
-   * setValue
+   * Sets the value for the model and sends a {@link ChangeEvent} to
+   * all registered listeners.  The new value must satisfy the constraint
+   * <code>min <= value <= value + extent <= max</code>.
    * 
    * @param value the value
    *
@@ -67,16 +76,20 @@ public interface BoundedRangeModel
   void setValue(int value);
 
   /**
-   * getMinimum
+   * Returns the lower bound for the model.  The start of the model's range 
+   * (see {@link #getValue()}) cannot be less than this lower bound.
    * 
-   * @return int
+   * @return The lower bound for the model.
    *
    * @see #setMinimum(int)
+   * @see #getMaximum()
    */
   int getMinimum();
 
   /**
-   * setMinimum
+   * Sets the lower bound for the model and sends a {@link ChangeEvent} to all
+   * registered listeners.  The new minimum must be less than or equal to the
+   * start value of the model's range (as returned by {@link #getValue()}).
    * 
    * @param minimum the minimum value
    *
@@ -85,16 +98,22 @@ public interface BoundedRangeModel
   void setMinimum(int minimum);
 
   /**
-   * getMaximum
+   * Returns the upper bound for the model.  This sets an upper limit for the
+   * end value of the model's range ({@link #getValue()} + 
+   * {@link #getExtent()}).
    * 
-   * @return int
+   * @return The upper bound for the model.
    *
    * @see #setMaximum(int)
+   * @see #getMinimum()
    */
   int getMaximum();
 
   /**
-   * setMaximum
+   * Sets the upper bound for the model and sends a {@link ChangeEvent} to all
+   * registered listeners.  The new maximum must be greater than or equal to the
+   * end value of the model's range (as returned by {@link #getValue()} + 
+   * {@link #getExtent()}).
    * 
    * @param maximum the maximum value
    *
@@ -108,12 +127,12 @@ public interface BoundedRangeModel
    * @return <code>true</code> if value is adjusting,
    * otherwise <code>false</code>
    *
-   * @see setValueIsAdjusting(boolean)
+   * @see #setValueIsAdjusting(boolean)
    */
   boolean getValueIsAdjusting();
 
   /**
-   * setValueIsAdjusting
+   * Sets the <code>valueIsAdjusting</code> property.
    * 
    * @param adjusting <code>true</code> if adjusting,
    * <code>false</code> otherwise
@@ -132,7 +151,8 @@ public interface BoundedRangeModel
   int getExtent();
 
   /**
-   * setExtent
+   * Sets the extent, which is the length of the model's range, and sends a
+   * {@link ChangeEvent} to all registered listeners.
    * 
    * @param extent the extent
    *
@@ -141,12 +161,14 @@ public interface BoundedRangeModel
   void setExtent(int extent);
 
   /**
-   * setRangeProperties
+   * Sets all the properties for the model in a single call.
+   * 
    * @param value the value
    * @param extent the extent
    * @param minnimum the minimum value
    * @param maximum the maximum value
-   * @param adjusting TODO
+   * @param adjusting a flag that indicates the model is being adjusted 
+   *                  continuously.
    */
   void setRangeProperties(int value, int extent, int minimum, int maximum,
 			  boolean adjusting);
@@ -156,7 +178,7 @@ public interface BoundedRangeModel
    * 
    * @param listener the listener to add
    * 
-   * @see #removeChangeListener(javax.swing.event.ChangeListener)
+   * @see #removeChangeListener(ChangeListener)
    */
   void addChangeListener(ChangeListener listener);
 
@@ -165,7 +187,7 @@ public interface BoundedRangeModel
    * 
    * @param listener the listener to remove
    *
-   * @see #addChangeListener(javax.swing.event.ChangeListener)
+   * @see #addChangeListener(ChangeListener)
    */
   void removeChangeListener(ChangeListener listener);
 }

@@ -131,6 +131,9 @@ public class PixelGrabber implements ImageConsumer
   public PixelGrabber(ImageProducer ip, int x, int y, int w, int h,
 		      int pix[], int off, int scansize)
   {
+    if (ip == null)
+      throw new NullPointerException("The ImageProducer must not be null.");
+
     this.ip = ip;
     this.x = x;
     this.y = y;
@@ -179,6 +182,10 @@ public class PixelGrabber implements ImageConsumer
 		      boolean forceRGB)
   {
     this.ip = img.getSource();
+
+    if (this.ip == null)
+      throw new NullPointerException("The ImageProducer must not be null.");
+
     this.x = x;
     this.y = y;
     width = w;
@@ -209,7 +216,15 @@ public class PixelGrabber implements ImageConsumer
 	  {
 	    public void run ()
 	    {
-	      ip.startProduction (PixelGrabber.this);
+              try
+                {
+                  ip.startProduction (PixelGrabber.this);
+                }
+              catch (Exception ex)
+                {
+                  ex.printStackTrace();
+                  imageComplete(ImageConsumer.IMAGEABORTED);
+                }
 	    }
 	  };
 	grabberThread.start ();
@@ -601,7 +616,8 @@ public class PixelGrabber implements ImageConsumer
     consumerStatus = status;
     setObserverStatus ();
     grabbing = false;
-    ip.removeConsumer (this);
+    if (ip != null)
+      ip.removeConsumer (this);
 
     notifyAll ();
   }

@@ -105,7 +105,7 @@
 
 <menutitle>Savannah</menutitle>
 <menuitem><createlink name="Project Home" url="http://savannah.gnu.org/projects/classpath/"></menuitem>
-<menuitem><createlink name="Bug Reports" url="http://savannah.gnu.org/bugs/?group=classpath"></menuitem>
+<menuitem><createlink name="Bug Reports" url="bugs.html"></menuitem>
 <!--
 <menuitem><createlink name="Support" url="http://savannah.gnu.org/support/?group=classpath"></menuitem>
 <menuitem><createlink name="Patches" url="http://savannah.gnu.org/patch/?group=classpath"></menuitem>

@@ -42,6 +42,7 @@ import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.ImageCapabilities;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 
 import java.awt.geom.AffineTransform;
 
@@ -56,16 +57,11 @@ public class GdkGraphicsConfiguration
   ColorModel cm;
   Rectangle bounds;
 
-  public GtkToolkit getToolkit()
-  {
-    return gdkScreenGraphicsDevice.getToolkit();
-  }
-
   public GdkGraphicsConfiguration(GdkScreenGraphicsDevice dev)
   {
     this.gdkScreenGraphicsDevice = dev;
     cm = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB).getColorModel();
-    bounds = getToolkit().getBounds();
+    bounds = ((GtkToolkit) Toolkit.getDefaultToolkit()).getBounds();
   }
 
   public GraphicsDevice getDevice()
@@ -133,6 +129,12 @@ public class GdkGraphicsConfiguration
   public ImageCapabilities getImageCapabilities()
   {
     return new ImageCapabilities(false);
+  }
+
+  public VolatileImage createCompatibleVolatileImage(int width, int height, int transparency)
+  {
+      // FIXME: implement
+    return null;
   }
 
 }

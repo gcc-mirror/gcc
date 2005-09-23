@@ -96,7 +96,6 @@ public abstract class JTextComponent extends JComponent
 
     /**
      * Constructor AccessibleJTextComponent
-     * @param component TODO
      */
     public AccessibleJTextComponent()
     {
@@ -712,8 +711,8 @@ public abstract class JTextComponent extends JComponent
    * @return A Keymap associated with the provided name, or
    * <code>null</code> if no such Keymap exists
    *
-   * @see #addKeymap()
-   * @see #removeKeymap()
+   * @see #addKeymap
+   * @see #removeKeymap
    * @see #keymaps
    */
   public static Keymap getKeymap(String n)
@@ -728,7 +727,7 @@ public abstract class JTextComponent extends JComponent
    *
    * @return The keymap removed from the global table
    *
-   * @see #addKeymap()
+   * @see #addKeymap
    * @see #getKeymap()
    * @see #keymaps
    */  
@@ -751,7 +750,7 @@ public abstract class JTextComponent extends JComponent
    *
    * @return The newly created Keymap
    *
-   * @see #removeKeymap()
+   * @see #removeKeymap
    * @see #getKeymap()
    * @see #keymaps
    */
@@ -769,7 +768,7 @@ public abstract class JTextComponent extends JComponent
    *
    * @return The component's current Keymap
    *
-   * @see #setKeymap()
+   * @see #setKeymap
    * @see #keymap
    */
   public Keymap getKeymap() 
@@ -901,8 +900,8 @@ public abstract class JTextComponent extends JComponent
    * @param actions The set of actions to resolve binding names against
    *
    * @see Action#NAME
-   * @see Action#getValue()
-   * @see KeyBinding#ActionName
+   * @see Action#getValue
+   * @see KeyBinding#actionName
    */
   public static void loadKeymap(Keymap map, 
                                 JTextComponent.KeyBinding[] bindings, 
@@ -921,12 +920,12 @@ public abstract class JTextComponent extends JComponent
    * editor can run.  Equivalent to calling
    * <code>getUI().getEditorKit().getActions()</code>. This set of Actions
    * is a reasonable value to provide as a parameter to {@link
-   * #loadKeymap()}, when resolving a set of {@link #KeyBinding} objects
+   * #loadKeymap}, when resolving a set of {@link KeyBinding} objects
    * against this component.
    *
    * @return The set of available Actions on this component's {@link EditorKit}
    *
-   * @see TextUI#getEditorKit()
+   * @see TextUI#getEditorKit
    * @see EditorKit#getActions()
    */
   public Action[] getActions()
@@ -1122,7 +1121,7 @@ public abstract class JTextComponent extends JComponent
   /**
    * This method sets the label's UI delegate.
    *
-   * @param ui The label's UI delegate.
+   * @param newUI The label's UI delegate.
    */
   public void setUI(TextUI newUI)
   {
@@ -1360,7 +1359,7 @@ public abstract class JTextComponent extends JComponent
   /**
    * Selects the text from the given postion to the selection end position.
    *
-   * @param end the start positon of the selected text.
+   * @param start the start positon of the selected text.
    */
   public void setSelectionStart(int start)
   {
@@ -1391,7 +1390,7 @@ public abstract class JTextComponent extends JComponent
    * Selects a part of the content of the text component.
    *
    * @param start the start position of the selected text
-   * @param ent the end position of the selected text
+   * @param end the end position of the selected text
    */
   public void select(int start, int end)
   {
@@ -1635,7 +1634,7 @@ public abstract class JTextComponent extends JComponent
    *
    * @throws IOException if the reader throws it.
    *
-   * @see getDocument()
+   * @see #getDocument()
    * @see Document#getProperty(Object)
    */
   public void read(Reader input, Object streamDescription)

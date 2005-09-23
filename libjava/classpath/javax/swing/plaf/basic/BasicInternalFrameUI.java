@@ -74,7 +74,6 @@ import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.MouseInputListener;
-import javax.swing.plaf.BorderUIResource;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.InternalFrameUI;
 import javax.swing.plaf.UIResource;
@@ -1150,7 +1149,6 @@ public class BasicInternalFrameUI extends InternalFrameUI
 	installKeyboardActions();
 
 	frame.setOpaque(true);
-	titlePane.setOpaque(true);
 	frame.invalidate();
       }
   }
@@ -1179,28 +1177,10 @@ public class BasicInternalFrameUI extends InternalFrameUI
    */
   protected void installDefaults()
     {
-      // This is the border of InternalFrames in the BasicLookAndFeel.
-      // Note that there exist entries for various border colors in
-      // BasicLookAndFeel's defaults, but obviously they differ
-      // from the colors that are actually used by the JDK.
       UIDefaults defaults = UIManager.getLookAndFeelDefaults();
-      Color borderColor = defaults.getColor("InternalFrame.borderColor");
-      Border inner = BorderFactory.createLineBorder(borderColor, 1);
-      Color borderDarkShadow = defaults.getColor
-	  ("InternalFrame.borderDarkShadow");
-      Color borderHighlight = defaults.getColor
-	  ("InternalFrame.borderHighlight");
-      Color borderShadow = defaults.getColor("InternalFrame.borderShadow");
-      Color borderLight = defaults.getColor("InternalFrame.borderLight");
-      Border outer = BorderFactory.createBevelBorder(BevelBorder.RAISED,
-						     borderShadow,
-						     borderHighlight,
-						     borderDarkShadow,
-						     borderShadow);
-      Border border = new BorderUIResource.CompoundBorderUIResource(outer,
-								    inner);
+      Border border = defaults.getBorder("InternalFrame.border");
       frame.setBorder(border);
-
+      frame.setFrameIcon(defaults.getIcon("InternalFrame.icon"));
       // InternalFrames are invisible by default.
       frame.setVisible(false);
   }

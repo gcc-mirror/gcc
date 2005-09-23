@@ -1,9 +1,12 @@
-#! @SH@
+#! @SHELL@
 # @configure_input@
 
 # Make sure sorting is done the same on all configurations
 LC_ALL=C; export LC_ALL
 LANG=C; export LANG
+
+# We use this to decide whether we need to invoke the split script.
+GCJ="@GCJ@"
 
 echo "Adding java source files from srcdir '@top_srcdir@'."
 @FIND@ @top_srcdir@/java @top_srcdir@/javax @top_srcdir@/gnu \

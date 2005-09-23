@@ -339,7 +339,6 @@ public class JTree
 	{
 		setModel(model);
 		setSelectionModel(EmptySelectionModel.sharedInstance());
-		selectionModel.addTreeSelectionListener(selectionRedirector);
 		setCellRenderer(new DefaultTreeCellRenderer());
 		updateUI();
 	}
@@ -564,13 +563,13 @@ public class JTree
 	}
 
 	/**
-	 * Returns the preferred viewport size..
+	 * Returns the preferred viewport size.
 	 * 
 	 * @return the preferred size
 	 */
 	public Dimension getPreferredScrollableViewportSize()
 	{
-		return null;
+	  return new Dimension (getPreferredSize().width, getVisibleRowCount()*getRowHeight());
 	}
 
 	public int getScrollableUnitIncrement(Rectangle visibleRect,
@@ -585,15 +584,19 @@ public class JTree
 		return 1;
 	}
 
-	public boolean getScrollableTracksViewportWidth()
-	{
-		return false;
-	}
-
-	public boolean getScrollableTracksViewportHeight()
-	{
-		return false;
-	}
+  public boolean getScrollableTracksViewportWidth()
+  {
+    if (getParent() instanceof JViewport)
+      return ((JViewport) getParent()).getHeight() > getPreferredSize().height;
+    return false;
+  }
+  
+  public boolean getScrollableTracksViewportHeight()
+  {
+    if (getParent() instanceof JViewport)
+      return ((JViewport) getParent()).getWidth() > getPreferredSize().width;
+    return false;
+  }
 
 	/**
 	 * Adds a <code>TreeExpansionListener</code> object to the tree.
@@ -660,7 +663,7 @@ public class JTree
 	 */
 	public void addTreeSelectionListener(TreeSelectionListener listener)
 	{
-		listenerList.add(TreeSelectionListener.class, listener);
+      listenerList.add(TreeSelectionListener.class, listener);
 	}
 
 	/**
@@ -692,7 +695,7 @@ public class JTree
 	protected void fireValueChanged(TreeSelectionEvent event)
 	{
 		TreeSelectionListener[] listeners = getTreeSelectionListeners();
-
+ 
 		for (int index = 0; index < listeners.length; ++index)
 			listeners[index].valueChanged(event);
 	}
@@ -775,16 +778,17 @@ public class JTree
 	{
 		if (treeModel == model)
 			return;
-
-		TreeModel oldValue = treeModel;
-		treeModel = model;
-
-		firePropertyChange(TREE_MODEL_PROPERTY, oldValue, model);
-
+    
 		// add treeModelListener to the new model
 		if (treeModelListener == null)
 			treeModelListener = createTreeModelListener();
-		model.addTreeModelListener(treeModelListener);
+		if (model != null) // as setModel(null) is allowed
+			model.addTreeModelListener(treeModelListener);
+    
+    TreeModel oldValue = treeModel;
+    treeModel = model;
+
+    firePropertyChange(TREE_MODEL_PROPERTY, oldValue, model);
 	}
 
 	/**
@@ -1276,9 +1280,17 @@ public class JTree
 	}
 
 	public void collapsePath(TreePath path)
-	{
-		setExpandedState(path, false);
-	}
+    {
+      try
+        {
+          fireTreeWillCollapse(path);
+        }
+      catch (ExpandVetoException ev)
+        {
+        }
+      setExpandedState(path, false);
+      fireTreeCollapsed(path);
+    }
 
 	public void collapseRow(int row)
 	{
@@ -1292,13 +1304,22 @@ public class JTree
 	}
 
 	public void expandPath(TreePath path)
-	{
-		// Don't expand if last path component is a leaf node.
-		if ((path == null) || (treeModel.isLeaf(path.getLastPathComponent())))
-			return;
-		
-		setExpandedState(path, true);
-	}
+    {
+      // Don't expand if last path component is a leaf node.
+      if ((path == null) || (treeModel.isLeaf(path.getLastPathComponent())))
+        return;
+  
+      try
+        {
+          fireTreeWillExpand(path);
+        }
+      catch (ExpandVetoException ev)
+        {
+        }
+  
+      setExpandedState(path, true);
+      fireTreeExpanded(path);
+    }
 
 	public void expandRow(int row)
 	{
@@ -1502,28 +1523,11 @@ public class JTree
 		return null;
 	}
 
-	private void checkExpandParents(TreePath path) throws ExpandVetoException
-	{
-
-		TreePath parent = path.getParentPath();
-
-		if (parent != null)
-			checkExpandParents(parent);
-
-		fireTreeWillExpand(path);
-	}
-
 	private void doExpandParents(TreePath path, boolean state)
 	{
-		TreePath parent = path.getParentPath();
-		
-		if (isExpanded(parent))
-		{
-			nodeStates.put(path, state ? EXPANDED : COLLAPSED);
-			return;
-		}
-
-		if (parent != null)
+		TreePath parent = path.getParentPath();		
+        
+		if (!isExpanded(parent) && parent != null)
 			doExpandParents(parent, false);
 
 		nodeStates.put(path, state ? EXPANDED : COLLAPSED);
@@ -1533,19 +1537,7 @@ public class JTree
 	{
 		if (path == null)
 			return;
-
 		TreePath parent = path.getParentPath();
-
-		try
-		{
-			if (parent != null)
-				checkExpandParents(parent);
-		} 
-		catch (ExpandVetoException e)
-		{
-			// Expansion vetoed.
-			return;
-		}
 
 		doExpandParents(path, state);
 	}
@@ -1729,8 +1721,8 @@ public class JTree
 	 * 
 	 * @param prefix the prefix to search for in the cell values
 	 * @param startingRow the index of the row where to start searching from
-	 * @param bias the search direction, either {@link Position.Bias.Forward} or
-	 *        {@link Position.Bias.Backward}
+	 * @param bias the search direction, either {@link Position.Bias#Forward} or
+	 *        {@link Position.Bias#Backward}
 	 * 
 	 * @return the path to the found element or -1 if no such element has been
 	 *         found
@@ -1802,7 +1794,7 @@ public class JTree
 	 * it will be removed too.
 	 * 
 	 * @param path the path from which selected descendants are to be removed
-	 * @param includePath if <code>true</code> then <code>path</code> itself
+	 * @param includeSelected if <code>true</code> then <code>path</code> itself
 	 *        will also be remove if it's selected
 	 * 
 	 * @return <code>true</code> if something has been removed,

@@ -659,7 +659,6 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
 	height = Math.max(incrButton.getPreferredSize().height,
 	                  decrButton.getPreferredSize().height);
 	height = Math.max(getMinimumThumbSize().height, height);
-	height = Math.max(20, height);
 	height = Math.min(getMaximumThumbSize().height, height);
       }
     else
@@ -672,7 +671,6 @@ public class BasicScrollBarUI extends ScrollBarUI implements LayoutManager,
 	width = Math.max(incrButton.getPreferredSize().width,
 	                 decrButton.getPreferredSize().width);
 	width = Math.max(getMinimumThumbSize().width, width);
-	width = Math.max(20, width);
 	width = Math.min(getMaximumThumbSize().width, width);
       }
 

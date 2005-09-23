@@ -63,7 +63,7 @@ import javax.swing.plaf.ActionMapUIResource;
 import javax.swing.plaf.InputMapUIResource;
 
 /**
- * This class contains a number of static utility functions which are
+ * A number of static utility functions which are
  * useful when drawing swing components, dispatching events, or calculating
  * regions which need painting.
  *
@@ -449,7 +449,7 @@ public class SwingUtilities
    * @return A component containing <code>(x,y)</code>, or
    * <code>null</code>
    *
-   * @see java.awt.Container#findComponentAt
+   * @see java.awt.Container#findComponentAt(int, int)
    */
   public static Component getDeepestComponentAt(Component parent, int x, int y)
   {
@@ -473,7 +473,7 @@ public class SwingUtilities
    * @param p The point to convert
    * @param c The component which the point is expressed in terms of
    *
-   * @see convertPointFromScreen
+   * @see #convertPointFromScreen
    */
   public static void convertPointToScreen(Point p, Component c)
   {
@@ -568,7 +568,7 @@ public class SwingUtilities
    *
    * @see #convertPointToScreen
    * @see #convertPointFromScreen
-   * @see #convertPoint
+   * @see #convertPoint(Component, int, int, Component)
    * @see #getRoot
    */
   public static Rectangle convertRectangle(Component source,
@@ -596,7 +596,7 @@ public class SwingUtilities
    * component's coordinate space, and with the destination component as
    * its source
    *
-   * @see #convertPoint
+   * @see #convertPoint(Component, int, int, Component)
    */
   public static MouseEvent convertMouseEvent(Component source,
                                              MouseEvent sourceEvent,
@@ -938,7 +938,7 @@ public class SwingUtilities
   }
 
   /** 
-   * Calls {@link java.awt.EventQueue.invokeLater} with the
+   * Calls {@link java.awt.EventQueue#invokeLater} with the
    * specified {@link Runnable}. 
    */
   public static void invokeLater(Runnable doRun)
@@ -947,7 +947,7 @@ public class SwingUtilities
   }
 
   /** 
-   * Calls {@link java.awt.EventQueue.invokeAndWait} with the
+   * Calls {@link java.awt.EventQueue#invokeAndWait} with the
    * specified {@link Runnable}. 
    */
   public static void invokeAndWait(Runnable doRun)
@@ -958,7 +958,10 @@ public class SwingUtilities
   }
 
   /** 
-   * Calls {@link java.awt.EventQueue.isEventDispatchThread}.
+   * Calls {@link java.awt.EventQueue#isDispatchThread()}.
+   * 
+   * @return <code>true</code> if the current thread is the current AWT event 
+   * dispatch thread.
    */
   public static boolean isEventDispatchThread()
   {
@@ -1262,11 +1265,11 @@ public class SwingUtilities
    * Calculates the intersection of two rectangles.
    *
    * @param x upper-left x coodinate of first rectangle
-   * @param x upper-left y coodinate of first rectangle
+   * @param y upper-left y coodinate of first rectangle
    * @param w width of first rectangle
    * @param h height of first rectangle
    * @param rect a Rectangle object of the second rectangle
-   * @throws a NullPointerException if rect is null.
+   * @throws NullPointerException if rect is null.
    *
    * @return a rectangle corresponding to the intersection of the
    * two rectangles. A zero rectangle is returned if the rectangles
@@ -1308,11 +1311,11 @@ public class SwingUtilities
    * Calculates the union of two rectangles.
    *
    * @param x upper-left x coodinate of first rectangle
-   * @param x upper-left y coodinate of first rectangle
+   * @param y upper-left y coodinate of first rectangle
    * @param w width of first rectangle
    * @param h height of first rectangle
    * @param rect a Rectangle object of the second rectangle
-   * @throws a NullPointerException if rect is null.
+   * @throws NullPointerException if rect is null.
    *
    * @return a rectangle corresponding to the union of the
    * two rectangles. A rectangle encompassing both is returned if the
@@ -1361,9 +1364,9 @@ public class SwingUtilities
    *     maps should be returned, may be
    *     {@link JComponent#WHEN_IN_FOCUSED_WINDOW},
    *     {@link JComponent#WHEN_FOCUSED} or
-   *     {@link JComponent#WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+   *     {@link JComponent#WHEN_ANCESTOR_OF_FOCUSED_COMPONENT}
    *
-   * @return
+   * @return The input map.
    */
   public static InputMap getUIInputMap(JComponent component, int cond)
   {

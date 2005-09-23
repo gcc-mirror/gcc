@@ -39,6 +39,7 @@ exception statement from your version. */
 package javax.swing;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -47,20 +48,42 @@ import java.util.TreeMap;
 import javax.accessibility.Accessible;
 
 /**
- * <p>The "Layered Pane" is a container which divides its children into 6 (or
- * more) disjoint sets. the pre-defined sets are:</p>
+ * A container that adds depth to the usual <code>Container</code> semantics.
+ * Each child component of a <code>Layered Pane</code> is placed within one
+ * of several layers. <code>JLayeredPane</code> defines a set of standard
+ * layers. The pre-defined sets are (in the order from button to top):
  *
- *  <ul>
- *    <li>"Frame Content"</li>
- *    <li>"Default"</li>
- *    <li>"Palette"</li>
- *    <li>"Modal"</li>
- *    <li>"Popup"</li>
- *    <li>"Drag"</li>
- *  </ul>
+ *  <dl>
+ *    <dt>{@link #DEFAULT_LAYER}</dt>
+ *    <dd>The layer where most of the normal components are placed. This
+ *      is the bottommost layer.</dd>
+ *
+ *    <dt>{@link #PALETTE_LAYER}</dt>
+ *    <dd>Palette windows are placed in this layer.</dd>
+ *
+ *    <dt>{@link #MODAL_LAYER}</dt>
+ *    <dd>The layer where internal modal dialog windows are placed.</dd>
+ *
+ *    <dt>{@link #POPUP_LAYER}</dt>
+ *    <dd>The layer for popup menus</dd>
+ *
+ *    <dt>{@link #DRAG_LAYER}</dt>
+ *    <dd>Components that are beeing dragged are temporarily placed in
+ *       this layer.</dd>
+ *  </dl>
  *
  * <p>A child is in exactly one of these layers at any time, though there may
  * be other layers if someone creates them.</p>
+ *
+ * <p>You can add a component to a specific layer using the
+ * {@link Container#add(Component, Object)} method. I.e.
+ * <code>layeredPane.add(comp, JLayeredPane.MODAL_LAYER)</code> will add the
+ * component <code>comp</code> to the modal layer of <code>layeredPane</code>.
+ * </p>
+ *
+ * <p>To change the layer of a component that is already a child of
+ * a <code>JLayeredPane</code>, use the {@link #setLayer(Component, int)} 
+ * method.</p>
  *
  * <p>The purpose of this class is to translate this view of "layers" into a
  * contiguous array of components: the one held in our ancestor,
@@ -283,7 +306,7 @@ public class JLayeredPane extends JComponent implements Accessible
    * @param c the component to move to the front of its layer.
    * @throws IllegalArgumentException if the component is not a child of
    * this container.
-   * @see #moveToBack()
+   * @see #moveToBack
    */
   public void moveToFront(Component c)
   {
@@ -302,7 +325,7 @@ public class JLayeredPane extends JComponent implements Accessible
    * @param c the component to move to the back of its layer.
    * @throws IllegalArgumentException if the component is not a child of
    * this container.
-   * @see #moveToFront()
+   * @see #moveToFront
    */
   public void moveToBack(Component c)
   {
@@ -317,7 +340,7 @@ public class JLayeredPane extends JComponent implements Accessible
    * @param c the component to get the position of.
    * @throws IllegalArgumentException if the component is not a child of
    * this container.
-   * @see #setPosition()
+   * @see #setPosition
    */
   public int getPosition(Component c)
   {
@@ -344,7 +367,7 @@ public class JLayeredPane extends JComponent implements Accessible
    * @param position the position to assign the component to.
    * @throws IllegalArgumentException if the component is not a child of
    * this container.
-   * @see #getPosition()
+   * @see #getPosition
    */
   public void setPosition(Component c, int position)
   {

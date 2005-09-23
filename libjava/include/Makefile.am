@@ -11,5 +11,5 @@ target_noncanonical = @target_noncanonical@
 tool_include_dir = $(libdir)/gcc/$(target_noncanonical)/$(gcc_version)/include
 ## The 'jni.h' here is fairly hacky, but it is simpler than trying to
 ## tell Classpath about our peculiar install directory.
-tool_include__HEADERS = jni_md.h jawt.h jawt_md.h jvmpi.h \
-	../classpath/include/jni.h
+tool_include__HEADERS = jni_md.h ../classpath/include/jawt.h \
+	../classpath/include/jawt_md.h jvmpi.h ../classpath/include/jni.h

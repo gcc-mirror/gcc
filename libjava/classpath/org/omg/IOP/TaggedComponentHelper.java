@@ -40,6 +40,7 @@ package org.omg.IOP;
 
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
+import org.omg.CORBA.MARSHAL;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.StructMember;
 import org.omg.CORBA.TCKind;
@@ -47,11 +48,13 @@ import org.omg.CORBA.TypeCode;
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
 
+import java.io.IOException;
+
 /**
-* A helper operations for the {@link TaggedComponent}.
-*
-* @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
-*/
+ * A helper operations for the {@link TaggedComponent}.
+ *
+ * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
+ */
 public abstract class TaggedComponentHelper
 {
   /**
@@ -60,49 +63,46 @@ public abstract class TaggedComponentHelper
   private static TypeCode typeCode;
 
   /**
-   * Create the TaggedComponent typecode (structure,
-   * named "TaggedComponent").
-   * The typecode states that the structure contains the
-   * following fields: tag, component_data.
+   * Create the TaggedComponent typecode (structure, named "TaggedComponent").
+   * The typecode states that the structure contains the following fields: tag,
+   * component_data.
    */
   public static TypeCode type()
   {
     if (typeCode == null)
       {
         ORB orb = ORB.init();
-        StructMember[] members = new StructMember[ 2 ];
+        StructMember[] members = new StructMember[2];
 
         TypeCode field;
 
-        field =
-          orb.create_alias_tc("IDL:omg.org/IOP/ComponentId:1.0", "ComponentId",
-                              orb.get_primitive_tc(TCKind.tk_ulong)
-                             );
-        members [ 0 ] = new StructMember("tag", field, null);
+        field = orb.create_alias_tc("IDL:omg.org/IOP/ComponentId:1.0",
+                                    "ComponentId",
+                                    orb.get_primitive_tc(TCKind.tk_ulong));
+        members[0] = new StructMember("tag", field, null);
 
-        field =
-          orb.create_sequence_tc(0, orb.get_primitive_tc(TCKind.tk_octet));
-        members [ 1 ] = new StructMember("component_data", field, null);
+        field = orb.create_sequence_tc(0, orb.get_primitive_tc(TCKind.tk_octet));
+        members[1] = new StructMember("component_data", field, null);
         typeCode = orb.create_struct_tc(id(), "TaggedComponent", members);
       }
     return typeCode;
   }
 
   /**
-  * Insert the TaggedComponent into the given Any.
-  * This method uses the TaggedComponentHolder.
-  *
-  * @param any the Any to insert into.
-  * @param that the TaggedComponent to insert.
-  */
+   * Insert the TaggedComponent into the given Any. This method uses the
+   * TaggedComponentHolder.
+   *
+   * @param any the Any to insert into.
+   * @param that the TaggedComponent to insert.
+   */
   public static void insert(Any any, TaggedComponent that)
   {
     any.insert_Streamable(new TaggedComponentHolder(that));
   }
 
   /**
-   * Extract the TaggedComponent from given Any.
-   * This method uses the TaggedComponentHolder.
+   * Extract the TaggedComponent from given Any. This method uses the
+   * TaggedComponentHolder.
    *
    * @throws BAD_OPERATION if the passed Any does not contain TaggedComponent.
    */
@@ -132,9 +132,8 @@ public abstract class TaggedComponentHelper
 
   /**
    * Read the structure from the CDR intput stream. Expects the integer
-   * identifier of the tag, then the size of the tag data
-   * and then the specified number of bytes, representing the data
-   * of the tag.
+   * identifier of the tag, then the size of the tag data and then the specified
+   * number of bytes, representing the data of the tag.
    *
    * @param input a org.omg.CORBA.portable stream to read from.
    */
@@ -142,17 +141,24 @@ public abstract class TaggedComponentHelper
   {
     TaggedComponent value = new TaggedComponent();
     value.tag = input.read_long();
-    value.component_data = new byte[ input.read_long() ];
-    for (int i0 = 0; i0 < value.component_data.length; i0++)
-      value.component_data [ i0 ] = input.read_octet();
+    value.component_data = new byte[input.read_long()];
+    try
+      {
+        input.read(value.component_data);
+      }
+    catch (IOException e)
+      {
+        MARSHAL m = new MARSHAL();
+        m.initCause(e);
+        throw m;
+      }
     return value;
   }
 
   /**
-   * Write the structure to the CDR output stream.
-   * Writes the integer identifier of the tag, then the size of the tag data
-   * and then the specified number of bytes, representing the data
-   * of the tag.
+   * Write the structure to the CDR output stream. Writes the integer identifier
+   * of the tag, then the size of the tag data and then the specified number of
+   * bytes, representing the data of the tag.
    *
    * @param output a org.omg.CORBA.portable stream stream to write into.
    * @param value a value to write.
@@ -161,7 +167,16 @@ public abstract class TaggedComponentHelper
   {
     output.write_long(value.tag);
     output.write_long(value.component_data.length);
-    for (int i0 = 0; i0 < value.component_data.length; i0++)
-      output.write_octet(value.component_data [ i0 ]);
+
+    try
+      {
+        output.write(value.component_data);
+      }
+    catch (IOException e)
+      {
+        MARSHAL m = new MARSHAL();
+        m.initCause(e);
+        throw m;
+      }
   }
 }

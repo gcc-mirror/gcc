@@ -58,6 +58,9 @@ import org.omg.CORBA.TypeCodePackage.BadKind;
 import org.omg.CORBA.UnionMember;
 import org.omg.CORBA.portable.OutputStream;
 import org.omg.CORBA.portable.ValueFactory;
+import org.omg.PortableInterceptor.ClientRequestInterceptorOperations;
+import org.omg.PortableInterceptor.IORInterceptorOperations;
+import org.omg.PortableInterceptor.ServerRequestInterceptorOperations;
 
 import java.applet.Applet;
 
@@ -66,22 +69,20 @@ import java.util.Properties;
 
 /**
  * This class implements so-called Singleton ORB, a highly restricted version
- * that cannot communicate over network. This ORB is provided
- * for the potentially malicious applets with heavy security restrictions.
- * It, however, supports some basic features that might be needed even
- * when the network access is not granted.
+ * that cannot communicate over network. This ORB is provided for the
+ * potentially malicious applets with heavy security restrictions. It, however,
+ * supports some basic features that might be needed even when the network
+ * access is not granted.
  *
- * This ORB can only create typecodes,
- * {@link Any}, {@link ContextList}, {@link NVList} and
- * {@link org.omg.CORBA.portable.OutputStream} that writes to an
- * internal buffer.
+ * This ORB can only create typecodes, {@link Any}, {@link ContextList},
+ * {@link NVList} and {@link org.omg.CORBA.portable.OutputStream} that writes to
+ * an internal buffer.
  *
  * All other methods throw the {@link NO_IMPLEMENT} exception.
  *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
-public class Restricted_ORB
-  extends org.omg.CORBA_2_3.ORB
+public class Restricted_ORB extends org.omg.CORBA_2_3.ORB
 {
   /**
    * The singleton instance of this ORB.
@@ -89,13 +90,41 @@ public class Restricted_ORB
   public static final ORB Singleton = new Restricted_ORB();
 
   /**
+   * The cumulated listener for all IOR interceptors. Interceptors are used by
+   * {@link gnu.CORBA.Poa.ORB_1_4}.
+   */
+  public IORInterceptorOperations iIor;
+
+  /**
+   * The cumulated listener for all server request interceptors. Interceptors
+   * are used by {@link gnu.CORBA.Poa.ORB_1_4}.
+   */
+  public ServerRequestInterceptorOperations iServer;
+
+  /**
+   * The cumulated listener for all client request interceptros. Interceptors
+   * are used by {@link gnu.CORBA.Poa.ORB_1_4}.
+   */
+  public ClientRequestInterceptorOperations iClient;
+
+  /**
+   * The required size of the interceptor slot array.
+   */
+  public int icSlotSize = 0;
+
+  /**
    * The value factories.
    */
   protected Hashtable factories = new Hashtable();
 
   /**
-   * Create a new instance of the RestrictedORB. This is used
-   * in derived classes only.
+   * The policy factories.
+   */
+  protected Hashtable policyFactories = new Hashtable();
+
+  /**
+       * Create a new instance of the RestrictedORB. This is used in derived classes
+   * only.
    */
   protected Restricted_ORB()
   {
@@ -159,8 +188,8 @@ public class Restricted_ORB
 
   /** {@inheritDoc} */
   public TypeCode create_exception_tc(String id, String name,
-                                      StructMember[] members
-                                     )
+    StructMember[] members
+  )
   {
     recordTypeCode r = new recordTypeCode(TCKind.tk_except);
     r.setId(id);
@@ -224,8 +253,8 @@ public class Restricted_ORB
 
   /** {@inheritDoc} */
   public TypeCode create_struct_tc(String id, String name,
-                                   StructMember[] members
-                                  )
+    StructMember[] members
+  )
   {
     recordTypeCode r = new recordTypeCode(TCKind.tk_struct);
     r.setId(id);
@@ -240,13 +269,15 @@ public class Restricted_ORB
   }
 
   /** {@inheritDoc} */
-  public TypeCode create_union_tc(String id, String name, TypeCode type,
-                                  UnionMember[] members
-                                 )
+  public TypeCode create_union_tc(String id, String name,
+    TypeCode discriminator_type, UnionMember[] members
+  )
   {
     recordTypeCode r = new recordTypeCode(TCKind.tk_union);
     r.setId(id);
     r.setName(name);
+    r.setDiscriminator_type(discriminator_type);
+    r.setDefaultIndex(0);
 
     for (int i = 0; i < members.length; i++)
       {
@@ -274,8 +305,8 @@ public class Restricted_ORB
     catch (BadKind ex)
       {
         throw new BAD_PARAM("This is not a primitive type code: " +
-                            tcKind.value()
-                           );
+          tcKind.value()
+        );
       }
   }
 
@@ -304,13 +335,13 @@ public class Restricted_ORB
   /**
    * This method is not allowed for a RestrictedORB.
    *
-   * @throws InvalidName never in this class, but it is thrown
-   * in the derived classes.
+   * @throws InvalidName never in this class, but it is thrown in the derived
+   * classes.
    *
    * @throws NO_IMPLEMENT, always.
    */
   public org.omg.CORBA.Object resolve_initial_references(String name)
-                                                  throws InvalidName
+    throws InvalidName
   {
     no();
     throw new InternalError();
@@ -366,8 +397,8 @@ public class Restricted_ORB
   }
 
   /**
-   * Throws an exception, stating that the given method is not supported
-   * by the Restricted ORB.
+   * Throws an exception, stating that the given method is not supported by the
+   * Restricted ORB.
    */
   private final void no()
   {
@@ -381,8 +412,7 @@ public class Restricted_ORB
    *
    * @throws NO_IMPLEMENT, always.
    */
-  public Request get_next_response()
-                            throws org.omg.CORBA.WrongTransaction
+  public Request get_next_response() throws org.omg.CORBA.WrongTransaction
   {
     no();
     throw new InternalError();
@@ -423,8 +453,8 @@ public class Restricted_ORB
    * Register the value factory under the given repository id.
    */
   public ValueFactory register_value_factory(String repository_id,
-                                             ValueFactory factory
-                                            )
+    ValueFactory factory
+  )
   {
     factories.put(repository_id, factory);
     return factory;
@@ -440,9 +470,9 @@ public class Restricted_ORB
 
   /**
    * Look for the value factory for the value, having the given repository id.
-   * The implementation checks for the registered value factories first.
-   * If none found, it tries to load and instantiate the class, mathing the
-   * given naming convention. If this faild, null is returned.
+       * The implementation checks for the registered value factories first. If none
+       * found, it tries to load and instantiate the class, mathing the given naming
+   * convention. If this faild, null is returned.
    *
    * @param repository_id a repository id.
    *
@@ -452,12 +482,43 @@ public class Restricted_ORB
   {
     ValueFactory f = (ValueFactory) factories.get(repository_id);
     if (f != null)
-      return f;
+      {
+        return f;
+      }
 
-    f = (ValueFactory) ObjectCreator.createObject(repository_id, "DefaultFactory");
+    f = (ValueFactory) ObjectCreator.createObject(repository_id,
+        "DefaultFactory"
+      );
     if (f != null)
-      factories.put(repository_id, f);
-
+      {
+        factories.put(repository_id, f);
+      }
     return f;
+  }
+
+  /**
+   * Destroy the interceptors, if they are present.
+   */
+  public void destroy()
+  {
+    if (iIor != null)
+      {
+        iIor.destroy();
+        iIor = null;
+      }
+
+    if (iServer != null)
+      {
+        iServer.destroy();
+        iServer = null;
+      }
+
+    if (iClient != null)
+      {
+        iClient.destroy();
+        iClient = null;
+      }
+
+    super.destroy();
   }
 }

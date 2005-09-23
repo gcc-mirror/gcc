@@ -91,7 +91,7 @@ public abstract class DatatypeFactory
 
   /**
    * Returns a new duration.
-   * @param durationInMilliseconds the duration in milliseconds
+   * @param durationInMilliSeconds the duration in milliseconds
    */
   public abstract Duration newDuration(long durationInMilliSeconds);
 
@@ -231,10 +231,6 @@ public abstract class DatatypeFactory
    * @param isPositive whether the duration is positive
    * @param years the number of years
    * @param months the number of months
-   * @param days the number of days
-   * @param hours the number of hours
-   * @param minutes th number of minutes
-   * @param seconds the number of seconds
    */
   public Duration newDurationYearMonth(boolean isPositive,
                                        BigInteger years,
@@ -254,10 +250,6 @@ public abstract class DatatypeFactory
    * @param isPositive whether the duration is positive
    * @param years the number of years
    * @param months the number of months
-   * @param days the number of days
-   * @param hours the number of hours
-   * @param minutes th number of minutes
-   * @param seconds the number of seconds
    */
   public Duration newDurationYearMonth(boolean isPositive,
                                        int years,

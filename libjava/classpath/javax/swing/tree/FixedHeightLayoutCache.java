@@ -125,7 +125,7 @@ public class FixedHeightLayoutCache
 	/**
 	 * getPathForRow
 	 * 
-	 * @param value0 TODO
+	 * @param row TODO
 	 * @returns TreePath
 	 */
 	public TreePath getPathForRow(int row)

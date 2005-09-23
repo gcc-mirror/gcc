@@ -145,14 +145,11 @@ public class ExceptionCreator
   {
     try
       {
-        String holder = toHelperName(idl);
-
-        System.out.println("Helper " + holder);
-
-        Class holderClass = Class.forName(holder);
+        String helper = toHelperName(idl);
+        Class helperClass = Class.forName(helper);
 
         Method read =
-          holderClass.getMethod("read",
+          helperClass.getMethod("read",
                                 new Class[]
                                 {
                                   org.omg.CORBA.portable.InputStream.class

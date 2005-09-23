@@ -295,7 +295,7 @@ public class BasicMenuItemUI extends MenuItemUI
    * Returns preferred size for the given menu item.
    *
    * @param c menu item for which to get preferred size
-   * @param checkIcon chech icon displayed in the given menu item
+   * @param checkIcon check icon displayed in the given menu item
    * @param arrowIcon arrow icon displayed in the given menu item
    * @param defaultTextIconGap space between icon and text in the given menuItem
    *
@@ -355,12 +355,18 @@ public class BasicMenuItemUI extends MenuItemUI
    */
   public Dimension getPreferredSize(JComponent c)
   {
-    return getPreferredMenuItemSize(c, checkIcon, arrowIcon, defaultTextIconGap);
+    return getPreferredMenuItemSize(c, checkIcon, arrowIcon, 
+        defaultTextIconGap);
   }
 
+  /**
+   * Returns the prefix for entries in the {@link UIDefaults} table.
+   *
+   * @return "MenuItem"
+   */
   protected String getPropertyPrefix()
   {
-    return null;
+    return "MenuItem";
   }
 
   /**
@@ -507,7 +513,8 @@ public class BasicMenuItemUI extends MenuItemUI
     br.height += insets.top + insets.bottom;
 
     // Menu item is considered to be highlighted when it is selected.
-    if (m.isSelected() || m.getModel().isArmed() && 
+    // But we don't want to paint the background of JCheckBoxMenuItems
+    if ((m.isSelected() && checkIcon == null) || m.getModel().isArmed() && 
         (m.getParent() instanceof MenuElement)) 
       {
 	if (m.isContentAreaFilled())
@@ -531,8 +538,7 @@ public class BasicMenuItemUI extends MenuItemUI
 	SwingUtilities.layoutCompoundLabel(m, fm, null, checkIcon, vertAlign,
 	                                   horAlign, vertTextPos, horTextPos,
 	                                   vr, cr, tr, defaultTextIconGap);
-	checkIcon.paintIcon(m, g, cr.x, cr.y);
-
+        checkIcon.paintIcon(m, g, cr.x, cr.y);
 	// We need to calculate position of the menu text and position of
 	// user menu icon if there exists one relative to the check icon.
 	// So we need to adjust view rectangle s.t. its starting point is at
@@ -561,7 +567,6 @@ public class BasicMenuItemUI extends MenuItemUI
                                        defaultTextIconGap);
     if (i != null)
       i.paintIcon(c, g, ir.x, ir.y);
-
     paintText(g, m, tr, m.getText());
 
     // paint accelerator    
@@ -605,7 +610,8 @@ public class BasicMenuItemUI extends MenuItemUI
 	if (menuItem.isEnabled())
           {
             // Menu item is considered to be highlighted when it is selected.
-            if (menuItem.isSelected() || menuItem.getModel().isArmed() && 
+            // But not if it's a JCheckBoxMenuItem
+            if ((menuItem.isSelected() && checkIcon == null) || menuItem.getModel().isArmed() && 
                 (menuItem.getParent() instanceof MenuElement)) 
               g.setColor(selectionForeground);
             else

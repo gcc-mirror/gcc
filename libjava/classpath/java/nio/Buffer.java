@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package java.nio;
 
-import gnu.classpath.RawData;
+import gnu.classpath.Pointer;
 
 /**
  * @since 1.4
@@ -49,7 +49,7 @@ public abstract class Buffer
   int limit = 0;
   int pos = 0;
   int mark = -1;
-  RawData address;
+  Pointer address;
 
   /**
    * Creates a new Buffer.

@@ -48,7 +48,7 @@ public interface Source
   /**
    * Sets the XML system ID for this source.
    * This can be used to resolve external entities in the source.
-   * @param systemID the system ID URI
+   * @param systemId the system ID URI
    */
   public void setSystemId(String systemId);
 

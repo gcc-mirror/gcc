@@ -52,6 +52,7 @@ import java.awt.GraphicsConfiguration;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.PaintEvent;
 import java.awt.image.ColorModel;
@@ -295,4 +296,44 @@ public class GLightweightPeer
   public void flip(BufferCapabilities.FlipContents contents) { }
 
   public void destroyBuffers() { }
+
+  public boolean isRestackSupported()
+  {
+    return false;
+  }
+
+  public void cancelPendingPaint(int x, int y, int width, int height)
+  {
+    
+  }
+
+  public void restack()
+  {
+    
+  }
+
+  public Rectangle getBounds()
+  {
+    return null;
+  }
+
+  public void reparent(ContainerPeer parent)
+  {
+    
+  }
+
+  public void setBounds(int x, int y, int z, int width, int height)
+  {
+    
+  }
+
+  public boolean isReparentSupported()
+  {
+    return false;
+  }
+
+  public void layout()
+  {
+    
+  }
 }

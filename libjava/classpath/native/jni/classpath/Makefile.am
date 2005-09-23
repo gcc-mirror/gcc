@@ -1,3 +1,6 @@
+# Header needed for jawt implementations such as the one found in ../gtk-peer.
+EXTRA_DIST = classpath_jawt.h
+
 noinst_LTLIBRARIES = libclasspath.la
 
 libclasspath_la_SOURCES = jcl.c jcl.h \

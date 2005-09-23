@@ -1,3 +1,43 @@
+2005-09-23  Tom Tromey  <tromey@redhat.com>
+
+	Imported Classpath 0.18.
+	* sources.am, Makefile.in: Updated.
+	* Makefile.am (nat_source_files): Removed natProxy.cc.
+	* java/lang/reflect/natProxy.cc: Removed.
+	* gnu/classpath/jdwp/VMFrame.java,
+	gnu/classpath/jdwp/VMIdManager.java,
+	gnu/classpath/jdwp/VMVirtualMachine.java,
+	java/lang/reflect/VMProxy.java: New files.
+
+2005-09-23  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* scripts/makemake.tcl (verbose): Add gnu/java/awt/peer/qt to BC
+	list.
+
+2005-09-23  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/net/DefaultContentHandlerFactory.java (getContent):
+	Remove ClasspathToolkit references.
+
+2005-09-23  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/awt/xlib/XCanvasPeer.java: Add new peer methods.
+	* gnu/awt/xlib/XFramePeer.java: Likewise.
+	* gnu/awt/xlib/XGraphicsConfiguration.java: Likewise.
+
+2005-09-23  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* Makefile.am (libgcjawt_la_SOURCES): Remove jawt.c.  Add
+	classpath/native/jawt/jawt.c.
+	* Makefile.in: Regenerate.
+	* jawt.c: Remove file.
+	* include/Makefile.am (tool_include__HEADERS): Remove jawt.h and
+	jawt_md.h.  Add ../classpath/include/jawt.h and
+	../classpath/include/jawt_md.h.
+	* include/Makefile.in: Regenerate.
+	* include/jawt.h: Regenerate.
+	* include/jawt_md.h: Regenerate.
+
 2005-09-21  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* gnu/gcj/runtime/BootClassLoader.java (BootClassLoader): Pass

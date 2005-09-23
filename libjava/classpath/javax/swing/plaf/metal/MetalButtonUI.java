@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package javax.swing.plaf.metal;
 
+import java.awt.Color;
+
 import javax.swing.AbstractButton;
 import javax.swing.JComponent;
 import javax.swing.JToolBar;
@@ -56,11 +58,17 @@ public class MetalButtonUI
   extends BasicButtonUI
 {
 
-  // FIXME: probably substitute with a Map in the future in the case
-  // that this UI becomes stateful
-
   /** The cached MetalButtonUI instance. */
   private static MetalButtonUI instance = null;
+
+  /** The color for the focus border. */
+  protected Color focusColor;
+
+  /** The color that indicates a selected button. */
+  protected Color selectColor;
+
+  /** The color for disabled button labels. */
+  protected Color disabledTextColor;
 
   /**
    * Creates a new instance of MetalButtonUI.
@@ -68,6 +76,42 @@ public class MetalButtonUI
   public MetalButtonUI()
   {
     super();
+    focusColor = getFocusColor();
+    selectColor = getSelectColor();
+    disabledTextColor = getDisabledTextColor();
+  }
+
+  /**
+   * Returns the color for the focus border.
+   *
+   * @return the color for the focus border
+   */
+  protected Color getFocusColor()
+  {
+    UIDefaults def = UIManager.getLookAndFeelDefaults();
+    return def.getColor(getPropertyPrefix() + ".focus");
+  }
+
+  /**
+   * Returns the color that indicates a selected button.
+   *
+   * @return the color that indicates a selected button
+   */
+  protected Color getSelectColor()
+  {
+    UIDefaults def = UIManager.getLookAndFeelDefaults();
+    return def.getColor(getPropertyPrefix() + ".select");
+  }
+
+  /**
+   * Returns the color for the text label of disabled buttons.
+   *
+   * @return the color for the text label of disabled buttons
+   */
+  protected Color getDisabledTextColor()
+  {
+    UIDefaults def = UIManager.getLookAndFeelDefaults();
+    return def.getColor(getPropertyPrefix() + ".disabledText");
   }
 
   /**

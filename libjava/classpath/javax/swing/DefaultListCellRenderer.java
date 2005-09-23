@@ -46,17 +46,23 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
 /**
- * DefaultListCellRenderer. This class is responsible for rendering  list
- * cells.
+ * The default implementation {@link ListCellRenderer}. It provides a standard
+ * renderer for data objects of all types via {@link Object#toString()}.
  *
  * @author Andrew Selkirk
- * @version 1.0
  */
 public class DefaultListCellRenderer extends JLabel
   implements ListCellRenderer, Serializable
 {
   private static final long serialVersionUID = 7708947179685189462L;
 
+  /**
+   * Subclasses <code>DefaultListCellRenderers</code> and implements
+   * {@link javax.swing.plaf.UIResource}. This is used by
+   * {@link javax.swing.plaf.ListUI} subclasses to provide a default for
+   * the <code>List.cellRenderer</code> property. If you want to override
+   * this property, use <code>DefaultListCellRenderer</code> or a subclass.
+   */
   public static class UIResource extends DefaultListCellRenderer
     implements javax.swing.plaf.UIResource
   {

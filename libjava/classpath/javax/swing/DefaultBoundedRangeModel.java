@@ -47,7 +47,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
 
 /**
- * A default implementation of <code>BoundedRangeModel</code>.
+ * The default implementation of <code>BoundedRangeModel</code>.
  *
  * @author Andrew Selkirk (aselkirk@sympatico.ca)
  * @author Sascha Brawer (brawer@dandelis.ch)
@@ -413,7 +413,7 @@ public class DefaultBoundedRangeModel
   /**
    * Retrieves the current listeners of the specified class.
    *
-   * @param c the class of listeners; usually {@link
+   * @param listenerType the class of listeners; usually {@link
    *     ChangeListener}<code>.class</code>.
    *
    * @return an array with the currently subscribed listeners, or

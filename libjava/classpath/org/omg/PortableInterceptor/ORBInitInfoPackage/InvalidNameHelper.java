@@ -50,10 +50,10 @@ import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
 
 /**
-* The helper operations for the exception {@link InvalidName}.
-*
-* @author Audrius Meskauskas, Lithiania (AudriusA@Bioinformatics.org)
-*/
+ * The helper operations for the exception {@link InvalidName}.
+ *
+ * @author Audrius Meskauskas, Lithiania (AudriusA@Bioinformatics.org)
+ */
 public abstract class InvalidNameHelper
 {
   /**

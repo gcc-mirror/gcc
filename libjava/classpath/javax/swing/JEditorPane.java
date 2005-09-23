@@ -39,7 +39,6 @@ exception statement from your version. */
 package javax.swing;
 
 import java.awt.Dimension;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -52,7 +51,29 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 
-
+/**
+ * A powerful text editor component that can handle different types of
+ * content.
+ *
+ * The JEditorPane text component is driven by an instance of
+ * {@link EditorKit}. The editor kit is responsible for providing
+ * a default {@link Document} implementation, a mechanism for loading
+ * and saving documents of its supported content type and providing
+ * a set of {@link Action}s for manipulating the content.
+ *
+ * By default the following content types are supported:
+ * <ul>
+ * <li><code>text/plain</code>: Plain text, handled by
+ *   {@link javax.swing.text.DefaultEditorKit}.</li>
+ * <li><code>text/html</code>: HTML 4.0 styled text, handled by
+ *   {@link javax.swing.text.html.HTMLEditorKit}.</li>
+ * <li><code>text/rtf</code>: RTF text, handled by
+ *   {@link javax.swing.text.rtf.RTFEditorKit}.</li>
+ * </ul>
+ *
+ * @author original author unknown
+ * @author Roman Kennke (roman@kennke.org)
+ */
 public class JEditorPane extends JTextComponent
 {
   private static final long serialVersionUID = 3140472492599046285L;

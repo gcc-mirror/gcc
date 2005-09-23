@@ -77,13 +77,13 @@ public class BasicRadioButtonMenuItemUI extends BasicMenuItemUI
   }
 
   /**
-   * DOCUMENT ME!
+   * Returns the prefix for entries in the {@link UIDefaults} table.
    *
-   * @return $returnType$ DOCUMENT ME!
+   * @return "RadioButtonMenuItem"
    */
   protected String getPropertyPrefix()
   {
-    return null;
+    return "RadioButtonMenuItem";
   }
 
   /**

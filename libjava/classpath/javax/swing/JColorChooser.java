@@ -58,13 +58,15 @@ import javax.swing.plaf.ColorChooserUI;
 
 
 /**
- * The JColorChooser is a Swing widget that offers users different ways to
+ * A Swing widget that offers users different ways to
  * select a color. By default, three different panels are presented to the
  * user that are capable of changing the selected color. There are three ways
  * to utilize JColorChooser. The first is to build a JColorChooser and add it
  * to the content pane. The second is to use the createDialog method to
  * create a JDialog that holds a JColorChooser. The third is to show a
  * JColorChooser in a JDialog directly using the showDialog method.
+ *
+ * @author original author unknown
  */
 public class JColorChooser extends JComponent implements Accessible
 {
@@ -72,7 +74,7 @@ public class JColorChooser extends JComponent implements Accessible
   private static final long serialVersionUID = 9168066781620640889L;
 
   /**
-   * AccessibleJColorChooser
+   * Accessibility support for <code>JColorChooser</code>.
    */
   protected class AccessibleJColorChooser
     extends JComponent.AccessibleJComponent

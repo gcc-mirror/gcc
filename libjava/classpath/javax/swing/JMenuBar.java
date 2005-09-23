@@ -326,7 +326,7 @@ public class JMenuBar extends JComponent implements Accessible, MenuElement
    * Process key events forwarded from MenuSelectionManager. This method
    * doesn't do anything. It is here to conform to the MenuElement interface.
    *
-   * @param event event forwarded from MenuSelectionManager
+   * @param e event forwarded from MenuSelectionManager
    * @param path path to the menu element from which event was generated
    * @param manager MenuSelectionManager for the current menu hierarchy
    *

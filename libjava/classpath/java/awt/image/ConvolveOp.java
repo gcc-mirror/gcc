@@ -1,5 +1,5 @@
 /* ConvolveOp.java --
-   Copyright (C) 2004 Free Software Foundation -- ConvolveOp
+   Copyright (C) 2004, 2005 Free Software Foundation -- ConvolveOp
 
 This file is part of GNU Classpath.
 
@@ -177,11 +177,13 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
   }
   
   /**
+   * Returns (a clone of) the convolution kernel.
+   *
    * @return The convolution kernel.
    */
   public Kernel getKernel()
   {
-    return kernel;
+    return (Kernel) kernel.clone();
   }
 
   /* (non-Javadoc)
@@ -189,8 +191,6 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
    * java.awt.image.WritableRaster)
    */
   public WritableRaster filter(Raster src, WritableRaster dest) {
-    if (src.numBands != dest.numBands)
-      throw new ImagingOpException(null);
     if (src == dest)
       throw new IllegalArgumentException();
     if (src.getWidth() < kernel.getWidth() ||
@@ -199,6 +199,8 @@ public class ConvolveOp implements BufferedImageOp, RasterOp
     
     if (dest == null)
       dest = createCompatibleDestRaster(src);
+    else if (src.numBands != dest.numBands)
+      throw new ImagingOpException(null);
 
     // Deal with bottom edge
     if (edge == EDGE_ZERO_FILL)

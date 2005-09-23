@@ -46,11 +46,10 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
 /**
- * AbstractListModel
+ * Provides standard implementations of some methods in {@link ListModel}.
  *
  * @author Ronald Veldema
  * @author Andrew Selkirk
- * @version 1.0
  */
 public abstract class AbstractListModel implements ListModel, Serializable
 {
@@ -88,7 +87,7 @@ public abstract class AbstractListModel implements ListModel, Serializable
 
   /**
    * Call {@link ListDataListener#contentsChanged} on each element of the
-   * {@link listenerList} which is a {@link ListDataListener}. The event
+   * {@link #listenerList} which is a {@link ListDataListener}. The event
    * fired has type {@ListDataEvent.CONTENTS_CHANGED} and represents a
    * change to the data elements in the range [startIndex, endIndex]
    * inclusive.
@@ -110,7 +109,7 @@ public abstract class AbstractListModel implements ListModel, Serializable
 
   /**
    * Call {@link ListDataListener#intervalAdded} on each element of the
-   * {@link listenerList} which is a {@link ListDataListener}. The event
+   * {@link #listenerList} which is a {@link ListDataListener}. The event
    * fired has type {@ListDataEvent.INTERVAL_ADDED} and represents an
    * addition of the data elements in the range [startIndex, endIndex]
    * inclusive.
@@ -132,7 +131,7 @@ public abstract class AbstractListModel implements ListModel, Serializable
 
   /**
    * Call {@link ListDataListener#intervalRemoved} on each element of the
-   * {@link listenerList} which is a {@link ListDataListener}. The event
+   * {@link #listenerList} which is a {@link ListDataListener}. The event
    * fired has type {@ListDataEvent.INTERVAL_REMOVED} and represents a
    * removal of the data elements in the range [startIndex, endIndex]
    * inclusive.
@@ -155,7 +154,7 @@ public abstract class AbstractListModel implements ListModel, Serializable
 
   /**
    * Return the subset of {@link EventListener} objects found in this
-   * object's {@link listenerList} which are elements of the specified
+   * object's {@link #listenerList} which are elements of the specified
    * type.
    *
    * @param listenerType The type of listeners to select
@@ -170,7 +169,7 @@ public abstract class AbstractListModel implements ListModel, Serializable
   /**
    * A synonym for <code>getListeners(ListDataListener.class)</code>.
    *
-   * @return The set of ListDataListeners found in the {@link listenerList}
+   * @return The set of ListDataListeners found in the {@link #listenerList}
    */
   public ListDataListener[] getListDataListeners()
   {

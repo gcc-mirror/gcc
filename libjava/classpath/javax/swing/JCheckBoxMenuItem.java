@@ -46,11 +46,14 @@ import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 
 /**
- * This class represents JCheckBoxMenuItem. Its behaviour is very similar
- * to JCheckBoxButton. Just like the JCheckBoxButton, user can check and
- * uncheck this menu item by clicking on it. Also setSelected()/setState()
- * can be use used for the same purpose. JCheckBoxMenuItem uses
- * ToggleButtonModel to keep track of its selection.
+ * A menu item that displays a checkbox. Its behaviour is very similar
+ * to {@link JCheckBox}. Just like the <code>JCheckBox</code>, user can check
+ * and uncheck this menu item by clicking on it. Also {@link #setSelected()}
+ * and {@link #setState()} can be use used for the same purpose.
+ * <code>JCheckBoxMenuItem</code> uses
+ * <code>ToggleButtonModel</code> to keep track of its selection.
+ *
+ * @author original author unknown
  */
 public class JCheckBoxMenuItem extends JMenuItem implements SwingConstants,
                                                             Accessible
@@ -146,6 +149,7 @@ public class JCheckBoxMenuItem extends JMenuItem implements SwingConstants,
     super(text, icon);
     setModel(new JToggleButton.ToggleButtonModel());
     this.state = state;
+    this.setVisible(true);
   }
 
   private void writeObject(ObjectOutputStream stream) throws IOException
@@ -232,6 +236,9 @@ public class JCheckBoxMenuItem extends JMenuItem implements SwingConstants,
     return accessibleContext;
   }
 
+  /**
+   * Accessibility support for <code>JCheckBoxMenuItem</code>.
+   */
   protected class AccessibleJCheckBoxMenuItem extends AccessibleJMenuItem
   {
     private static final long serialVersionUID = 1079958073579370777L;

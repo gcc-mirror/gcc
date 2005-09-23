@@ -225,7 +225,7 @@ public final class Element
 
   /**
    * Get all attributes of this document as an attribute list.
-   * @return
+   * @return The attribute list.
    */
   public AttributeList getAttributes()
   {

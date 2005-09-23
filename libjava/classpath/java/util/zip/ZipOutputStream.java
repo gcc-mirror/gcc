@@ -1,5 +1,5 @@
 /* ZipOutputStream.java --
-   Copyright (C) 2001, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,6 +40,7 @@ package java.util.zip;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -102,7 +103,14 @@ public class ZipOutputStream extends DeflaterOutputStream implements ZipConstant
   public void setComment(String comment)
   {
     byte[] commentBytes;
-    commentBytes = comment.getBytes();
+    try
+      {
+	commentBytes = comment.getBytes("UTF-8");
+      }
+    catch (UnsupportedEncodingException uee)
+      {
+	throw new AssertionError(uee);
+      }
     if (commentBytes.length > 0xffff)
       throw new IllegalArgumentException("Comment too long.");
     zipComment = commentBytes;
@@ -226,7 +234,15 @@ public class ZipOutputStream extends DeflaterOutputStream implements ZipConstant
 	writeLeInt(0);
 	writeLeInt(0);
       }
-    byte[] name = entry.getName().getBytes();
+    byte[] name;
+    try
+      {
+	name = entry.getName().getBytes("UTF-8");
+      }
+    catch (UnsupportedEncodingException uee)
+      {
+	throw new AssertionError(uee);
+      }
     if (name.length > 0xffff)
       throw new ZipException("Name too long.");
     byte[] extra = entry.getExtra();
@@ -357,15 +373,30 @@ public class ZipOutputStream extends DeflaterOutputStream implements ZipConstant
 	writeLeInt((int)entry.getCompressedSize());
 	writeLeInt((int)entry.getSize());
 
-	byte[] name = entry.getName().getBytes();
+	byte[] name;
+	try
+	  {
+	    name = entry.getName().getBytes("UTF-8");
+	  }
+	catch (UnsupportedEncodingException uee)
+	  {
+	    throw new AssertionError(uee);
+	  }
 	if (name.length > 0xffff)
 	  throw new ZipException("Name too long.");
 	byte[] extra = entry.getExtra();
 	if (extra == null)
 	  extra = new byte[0];
-	String strComment = entry.getComment();
-	byte[] comment = strComment != null
-	  ? strComment.getBytes() : new byte[0];
+	String str = entry.getComment();
+	byte[] comment;
+	try
+	  {
+	    comment = str != null ? str.getBytes("UTF-8") : new byte[0];
+	  }
+	catch (UnsupportedEncodingException uee)
+	  {
+	    throw new AssertionError(uee);
+	  }
 	if (comment.length > 0xffff)
 	  throw new ZipException("Comment too long.");
 

@@ -588,10 +588,10 @@ public class URLClassLoader extends SecureClassLoader
    * in the order given to the URLClassLoader which uses these URLs to
    * load classes and resources (after using the default parent ClassLoader).
    *
-   * @exception SecurityException if the SecurityManager disallows the
-   * creation of a ClassLoader.
    * @param urls Locations that should be searched by this ClassLoader when
    * resolving Classes or Resources.
+   * @exception SecurityException if the SecurityManager disallows the
+   * creation of a ClassLoader.
    * @see SecureClassLoader
    */
   public URLClassLoader(URL[] urls) throws SecurityException
@@ -610,13 +610,13 @@ public class URLClassLoader extends SecureClassLoader
    * can throw a SecurityException. Then the supplied URLs are added
    * in the order given to the URLClassLoader which uses these URLs to
    * load classes and resources (after using the supplied parent ClassLoader).
-   * @exception SecurityException if the SecurityManager disallows the
-   * creation of a ClassLoader.
-   * @exception SecurityException
    * @param urls Locations that should be searched by this ClassLoader when
    * resolving Classes or Resources.
    * @param parent The parent class loader used before trying this class
    * loader.
+   * @exception SecurityException if the SecurityManager disallows the
+   * creation of a ClassLoader.
+   * @exception SecurityException
    * @see SecureClassLoader
    */
   public URLClassLoader(URL[] urls, ClassLoader parent)
@@ -658,14 +658,14 @@ public class URLClassLoader extends SecureClassLoader
    * load classes and resources (after using the supplied parent ClassLoader).
    * It will use the supplied <CODE>URLStreamHandlerFactory</CODE> to get the
    * protocol handlers of the supplied URLs.
-   * @exception SecurityException if the SecurityManager disallows the
-   * creation of a ClassLoader.
-   * @exception SecurityException
    * @param urls Locations that should be searched by this ClassLoader when
    * resolving Classes or Resources.
    * @param parent The parent class loader used before trying this class
    * loader.
    * @param factory Used to get the protocol handler for the URLs.
+   * @exception SecurityException if the SecurityManager disallows the
+   * creation of a ClassLoader.
+   * @exception SecurityException
    * @see SecureClassLoader
    */
   public URLClassLoader(URL[] urls, ClassLoader parent,
@@ -764,12 +764,12 @@ public class URLClassLoader extends SecureClassLoader
    * package is sealed. If the Manifest indicates that the package is sealed
    * then the Package will be sealed with respect to the supplied URL.
    *
-   * @exception IllegalArgumentException If this package name already exists
-   * in this class loader
    * @param name The name of the package
    * @param manifest The manifest describing the specification,
    * implementation and sealing details of the package
    * @param url the code source url to seal the package
+   * @exception IllegalArgumentException If this package name already exists
+   * in this class loader
    * @return the defined Package
    */
   protected Package definePackage(String name, Manifest manifest, URL url)
@@ -900,7 +900,11 @@ public class URLClassLoader extends SecureClassLoader
         else
           result = defineClass(className, classData, 0, classData.length, source);
 
-        super.setSigners(result, resource.getCertificates());
+        // Avoid NullPointerExceptions.
+        Certificate[] resourceCertificates = resource.getCertificates();
+        if(resourceCertificates != null)
+          super.setSigners(result, resourceCertificates);
+        
         return result;
       }
     catch (IOException ioe)
@@ -1016,11 +1020,11 @@ public class URLClassLoader extends SecureClassLoader
   /**
    * Finds all the resources with a particular name from all the locations.
    *
-   * @exception IOException when an error occurs accessing one of the
-   * locations
    * @param resourceName the name of the resource to lookup
    * @return a (possible empty) enumeration of URLs where the resource can be
    * found
+   * @exception IOException when an error occurs accessing one of the
+   * locations
    */
   public Enumeration findResources(String resourceName)
     throws IOException
@@ -1055,7 +1059,7 @@ public class URLClassLoader extends SecureClassLoader
    *
    * @param source The codesource that needs the permissions to be accessed
    * @return the collection of permissions needed to access the code resource
-   * @see java.security.SecureClassLoader#getPermissions()
+   * @see java.security.SecureClassLoader#getPermissions(CodeSource)
    */
   protected PermissionCollection getPermissions(CodeSource source)
   {

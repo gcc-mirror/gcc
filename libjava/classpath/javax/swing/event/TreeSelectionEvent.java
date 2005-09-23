@@ -100,8 +100,8 @@ public class TreeSelectionEvent extends EventObject {
   /**
    * Constructor TreeSelectionEvent
    * @param source TODO
-   * @param paths TODO
-   * @param areNew TODO
+   * @param path TODO
+   * @param isNew TODO
    * @param oldLeadSelectionPath TODO
    * @param newLeadSelectionPath TODO
    */

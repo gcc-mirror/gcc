@@ -55,7 +55,7 @@ import java.io.Serializable;
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
-public class ServiceContext
+public final class ServiceContext
   implements IDLEntity, Serializable
 {
   /**

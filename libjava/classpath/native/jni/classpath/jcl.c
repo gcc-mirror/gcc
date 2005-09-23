@@ -178,3 +178,94 @@ JCL_FindClass (JNIEnv * env, const char *className)
     }
   return retval;
 }
+
+
+/*
+ * Build a Pointer object. The function caches the class type 
+ */
+
+static jclass rawDataClass;
+static jfieldID rawData_fid;
+static jmethodID rawData_mid;
+
+JNIEXPORT jobject JNICALL
+JCL_NewRawDataObject (JNIEnv * env, void *data)
+{
+  if (rawDataClass == NULL)
+    {
+#ifdef POINTERS_ARE_64BIT
+      rawDataClass = (*env)->FindClass (env, "gnu/classpath/Pointer64");
+      if (rawDataClass == NULL)
+	{
+	  JCL_ThrowException (env, "java/lang/InternalError",
+			      "unable to find internal class");
+	  return NULL;
+	}
+
+      rawData_mid = (*env)->GetMethodID (env, rawDataClass, "<init>", "(J)V");
+      if (rawData_mid == NULL)
+	{
+	  JCL_ThrowException (env, "java/lang/InternalError",
+			      "unable to find internal constructor");
+	  return NULL;
+	}
+
+      rawData_fid = (*env)->GetFieldID (env, rawDataClass, "data", "J");
+      if (rawData_fid == NULL)
+	{
+	  JCL_ThrowException (env, "java/lang/InternalError",
+			      "unable to find internal field");
+	  return NULL;
+	}
+#else
+      rawDataClass = (*env)->FindClass (env, "gnu/classpath/Pointer32");
+      if (rawDataClass == NULL)
+	{
+	  JCL_ThrowException (env, "java/lang/InternalError",
+			      "unable to find internal class");
+	  return NULL;
+	}
+
+      rawData_mid = (*env)->GetMethodID (env, rawDataClass, "<init>", "(I)V");
+      if (rawData_mid == NULL)
+	{
+	  JCL_ThrowException (env, "java/lang/InternalError",
+			      "unable to find internal constructor");
+	  return NULL;
+	}
+
+      rawData_fid = (*env)->GetFieldID (env, rawDataClass, "data", "I");
+      if (rawData_fid == NULL)
+	{
+	  JCL_ThrowException (env, "java/lang/InternalError",
+			      "unable to find internal field");
+	  return NULL;
+	}
+
+#endif
+      (*env)->DeleteLocalRef(env, rawDataClass);
+      rawDataClass = (*env)->NewGlobalRef (env, rawDataClass);
+      if (rawDataClass == NULL)
+	{
+	  JCL_ThrowException (env, "java/lang/InternalError",
+			      "unable to create an internal global ref");
+	  return NULL;
+	}
+    }
+
+#ifdef POINTERS_ARE_64BIT
+  return (*env)->NewObject (env, rawDataClass, rawData_mid, (jlong) data);
+#else
+  return (*env)->NewObject (env, rawDataClass, rawData_mid, (jint) data);
+#endif
+}
+
+JNIEXPORT void * JNICALL
+JCL_GetRawData (JNIEnv * env, jobject rawdata)
+{
+#ifdef POINTERS_ARE_64BIT
+  return (void *) (*env)->GetLongField (env, rawdata, rawData_fid);
+#else
+  return (void *) (*env)->GetIntField (env, rawdata, rawData_fid);
+#endif  
+}

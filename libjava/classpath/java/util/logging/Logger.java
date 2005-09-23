@@ -577,7 +577,8 @@ public class Logger
 
   public void log(Level level, String message)
   {
-    log(level, message, (Object[]) null);
+    if (isLoggable(level))
+      log(level, message, (Object[]) null);
   }
 
 
@@ -585,12 +586,15 @@ public class Logger
 			       String message,
 			       Object param)
   {
-    StackTraceElement caller = getCallerStackFrame();
-    logp(level,
-	 caller != null ? caller.getClassName() : "<unknown>",
-	 caller != null ? caller.getMethodName() : "<unknown>",
-	 message,
-	 param);
+    if (isLoggable(level))
+      {
+        StackTraceElement caller = getCallerStackFrame();
+        logp(level,
+             caller != null ? caller.getClassName() : "<unknown>",
+             caller != null ? caller.getMethodName() : "<unknown>",
+             message,
+             param);
+      }
   }
 
 
@@ -598,12 +602,15 @@ public class Logger
 			       String message,
 			       Object[] params)
   {
-    StackTraceElement caller = getCallerStackFrame();
-    logp(level,
-	 caller != null ? caller.getClassName() : "<unknown>",
-	 caller != null ? caller.getMethodName() : "<unknown>",
-	 message,
-	 params);
+    if (isLoggable(level))
+      {
+        StackTraceElement caller = getCallerStackFrame();
+        logp(level,
+             caller != null ? caller.getClassName() : "<unknown>",
+             caller != null ? caller.getMethodName() : "<unknown>",
+             message,
+             params);
+      }
   }
 
 
@@ -611,12 +618,15 @@ public class Logger
 			       String message,
 			       Throwable thrown)
   {
-    StackTraceElement caller = getCallerStackFrame();    
-    logp(level,
-	 caller != null ? caller.getClassName() : "<unknown>",
-	 caller != null ? caller.getMethodName() : "<unknown>",
-	 message,
-	 thrown);
+    if (isLoggable(level))
+      {
+        StackTraceElement caller = getCallerStackFrame();    
+        logp(level,
+             caller != null ? caller.getClassName() : "<unknown>",
+             caller != null ? caller.getMethodName() : "<unknown>",
+             message,
+             thrown);
+      }
   }
 
 

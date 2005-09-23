@@ -61,6 +61,16 @@ final class VMNetworkInterface
 	System.loadLibrary("javanet");
     }
 
+  /**
+   * Returns a Vector of InetAddresses. The returned value will be
+   * 'condensed', meaning that all elements with the same interface
+   * name will be collapesed into one InetAddress for that name
+   * containing all addresses before the returning the result to the
+   * user. This means the native method can be implemented in a naive
+   * way mapping each address/interface to a name even if that means
+   * that the Vector contains multiple InetAddresses with the same
+   * interface name.
+   */
   public static native Vector getInterfaces()
     throws SocketException;
 }

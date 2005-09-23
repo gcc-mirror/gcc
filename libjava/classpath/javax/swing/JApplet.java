@@ -49,6 +49,11 @@ import java.awt.event.KeyEvent;
 
 import javax.accessibility.AccessibleContext;
 
+/**
+ * A top-level container that is usually used in web browsers.
+ *
+ * @author original author unknown
+ */
 public class JApplet extends Applet
   implements RootPaneContainer
 {

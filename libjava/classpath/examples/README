@@ -7,7 +7,8 @@ class Demo which contains a main() method to run that particular example.
 The examples can be compiled and run with gcj as follows:
 
   gcj -o swingdemo --main=gnu.classpath.examples.swing.Demo \
-      gnu/classpath/examples/swing/Demo.java
+      gnu/classpath/examples/swing/Demo.java \
+      gnu/classpath/examples/swing/GNULookAndFeel.java
   ./swingdemo
 
 Or with a traditional byte code interpreter like:
@@ -21,6 +22,29 @@ run as follows:
 
   kaffe -classpath examples.zip gnu.classpath.examples.awt.Demo
   kaffe -classpath examples.zip gnu.classpath.examples.swing.Demo
+
+The jawt Demo needs some extra support library that currently needs to be
+build by hand.  The following assumes GNU Classpath was installed in
+/usr/local/classpath, if you installed it somewhere else then adjust the
+-I and -L paths accordingly. The included Makefile.jawt is setup this way.
+
+You can invoke it with:
+
+	make -f Makefile.jawt
+
+Or you can compile by hand as follows:
+
+  gcj -C gnu/classpath/examples/jawt/DemoJAWT.java
+  gcjh -jni gnu.classpath.examples.jawt.DemoJAWT -o DemoJAWT.h
+  gcc -g -O0 -Wall -I. -I/usr/X11R6/include -L. -L/usr/X11R6/lib \
+    -I/usr/local/classpath/include -L/usr/local/classpath/lib/classpath \
+    -lX11 -ljawtgnu -shared -o libDemoJAWT.so \
+    gnu/classpath/examples/jawt/DemoJAWT.c
+
+You can then run the example as follows:
+
+  export LD_LIBRARY_PATH=.:/usr/local/classpath/lib/classpath
+  jamvm gnu.classpath.examples.jawt.DemoJAWT
 
 All example code is distributed under the GNU General Public License (GPL).
 

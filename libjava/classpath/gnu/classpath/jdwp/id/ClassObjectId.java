@@ -40,6 +40,7 @@ exception statement from your version. */
 package gnu.classpath.jdwp.id;
 
 import gnu.classpath.jdwp.JdwpConstants;
+import gnu.classpath.jdwp.exception.InvalidClassException;
 
 /**
  * A class which represents a JDWP class object id
@@ -60,5 +61,22 @@ public class ClassObjectId
   public ClassObjectId ()
   {
     super (JdwpConstants.Tag.CLASS_OBJECT);
+  }
+
+  /**
+   * Gets the Class object represented by this ID
+   *
+   * @throws InvalidClassException if Class is garbage collected,
+   *           or otherwise invalid
+   */
+  public Class getClassObject ()
+    throws InvalidClassException
+  {
+    Class cl = (Class) _reference.get ();
+
+    if (cl == null)
+      throw new InvalidClassException (getId ());
+
+    return cl;
   }
 }

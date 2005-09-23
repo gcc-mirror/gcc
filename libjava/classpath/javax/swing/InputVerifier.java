@@ -39,9 +39,12 @@ package javax.swing;
 
 
 /**
- * InputVerifier
+ * Verifies the user input on a component before the focus is shifted.
+ * It is sometimes necessary that input components have a valid state before
+ * they loose focus. Such components can have a <code>InputVerifier</code>
+ * subclass registered, that permits or vetos a focus change request.
+ *
  * @author Andrew Selkirk
- * @version 1.0
  */
 public abstract class InputVerifier
 {

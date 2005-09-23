@@ -173,23 +173,14 @@ static void
 createRawData (JNIEnv * env, jobject obj, void *ptr)
 {
   jclass cls;
-  jmethodID method;
   jobject data;
   jfieldID data_fid;
 
   cls = (*env)->GetObjectClass (env, obj);
-  data_fid = (*env)->GetFieldID (env, cls, "data", "Lgnu/classpath/RawData;");
+  data_fid = (*env)->GetFieldID (env, cls, "data", "Lgnu/classpath/Pointer;");
   assert (data_fid != 0);
 
-#ifdef POINTERS_ARE_64BIT
-  cls = (*env)->FindClass (env, "gnu/classpath/RawData64");
-  method = (*env)->GetMethodID (env, cls, "<init>", "(J)V");
-  data = (*env)->NewObject (env, cls, method, (jlong) ptr);
-#else
-  cls = (*env)->FindClass (env, "gnu/classpath/RawData32");
-  method = (*env)->GetMethodID (env, cls, "<init>", "(I)V");
-  data = (*env)->NewObject (env, cls, method, (jint) ptr);
-#endif
+  data = JCL_NewRawDataObject(env, ptr);
 
   (*env)->SetObjectField (env, obj, data_fid, data);
 }
@@ -198,22 +189,13 @@ static void *
 getData (JNIEnv * env, jobject obj)
 {
   jclass cls;
-  jfieldID field;
   jfieldID data_fid;
   jobject data;
 
   cls = (*env)->GetObjectClass (env, obj);
-  data_fid = (*env)->GetFieldID (env, cls, "data", "Lgnu/classpath/RawData;");
+  data_fid = (*env)->GetFieldID (env, cls, "data", "Lgnu/classpath/Pointer;");
   assert (data_fid != 0);
   data = (*env)->GetObjectField (env, obj, data_fid);
 
-#if SIZEOF_VOID_P == 8
-  cls = (*env)->FindClass (env, "gnu/classpath/RawData64");
-  field = (*env)->GetFieldID (env, cls, "data", "J");
-  return (void *) (*env)->GetLongField (env, data, field);
-#else
-  cls = (*env)->FindClass (env, "gnu/classpath/RawData32");
-  field = (*env)->GetFieldID (env, cls, "data", "I");
-  return (void *) (*env)->GetIntField (env, data, field);
-#endif
+  return JCL_GetRawData(env, data);
 }

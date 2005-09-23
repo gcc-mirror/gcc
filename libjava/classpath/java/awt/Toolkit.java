@@ -790,6 +790,9 @@ public abstract class Toolkit
   {
     // Presumably the only reason this isn't abstract is for backwards
     // compatibility? FIXME?
+    if (GraphicsEnvironment.isHeadless())
+      throw new HeadlessException("No custom cursor in an headless graphics "
+                                  + "environment.");
     return null;
   }
 
@@ -801,6 +804,9 @@ public abstract class Toolkit
    */
   public Dimension getBestCursorSize(int preferredWidth, int preferredHeight)
   {
+    if (GraphicsEnvironment.isHeadless())
+      throw new HeadlessException("No best cursor size in an headless "
+                                  + "graphics environment.");
     return new Dimension (0,0);
   }
 

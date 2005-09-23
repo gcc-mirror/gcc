@@ -50,8 +50,13 @@ import gnu.classpath.jdwp.JdwpConstants;
 public class JdwpInternalErrorException
   extends JdwpException
 {
-  public JdwpInternalErrorException (Throwable cause)
+  public JdwpInternalErrorException(Throwable cause)
   {
-    super (JdwpConstants.Error.INTERNAL, cause);
+    super(JdwpConstants.Error.INTERNAL, cause);
+  }
+
+  public JdwpInternalErrorException(String msg)
+  {
+    super(JdwpConstants.Error.INTERNAL, msg);
   }
 }

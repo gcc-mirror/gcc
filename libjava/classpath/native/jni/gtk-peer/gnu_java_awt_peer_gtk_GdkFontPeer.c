@@ -150,12 +150,8 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_getGlyphVector
 
   if (i == NULL)       
     {
-      gdk_threads_leave ();
-
       java_extents = (*env)->NewDoubleArray (env, 0);
       java_codes = (*env)->NewIntArray (env, 0);
-
-      gdk_threads_enter ();
     }
   else
     { 
@@ -177,12 +173,8 @@ Java_gnu_java_awt_peer_gtk_GdkFontPeer_getGlyphVector
 	  int x = 0;
 	  double scale = ((double) PANGO_SCALE);
 
-          gdk_threads_leave ();
-
 	  java_extents = (*env)->NewDoubleArray (env, glyphs->num_glyphs * NUM_GLYPH_METRICS);
 	  java_codes = (*env)->NewIntArray (env, glyphs->num_glyphs);
-
-          gdk_threads_enter ();
 
 	  native_extents = (*env)->GetDoubleArrayElements (env, java_extents, NULL);
 	  native_codes = (*env)->GetIntArrayElements (env, java_codes, NULL);

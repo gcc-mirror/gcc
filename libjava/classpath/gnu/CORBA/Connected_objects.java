@@ -60,11 +60,14 @@ public class Connected_objects
     /**
      * Create an initialised instance.
      */
-    cObject(org.omg.CORBA.Object _object, int _port, byte[] _key)
+    cObject(org.omg.CORBA.Object _object, int _port, byte[] _key,
+            java.lang.Object an_identity
+           )
     {
       object = _object;
       port = _port;
       key = _key;
+      identity = an_identity;
     }
 
     /**
@@ -81,6 +84,12 @@ public class Connected_objects
      * The object key.
      */
     public final byte[] key;
+
+    /**
+     * The shared serving identity (usually POA) or null if no such
+     * applicable.
+     */
+    public final java.lang.Object identity;
 
     public boolean equals(java.lang.Object other)
     {
@@ -118,17 +127,23 @@ public class Connected_objects
    */
   public cObject getKey(org.omg.CORBA.Object stored_object)
   {
-    Map.Entry item;
-    Iterator iter = objects.entrySet().iterator();
-    cObject ref;
-
-    while (iter.hasNext())
+    synchronized (objects)
       {
-        item = (Map.Entry) iter.next();
-        ref = (cObject) item.getValue();
-        if (stored_object.equals(ref.object))
-          return ref;
+        Map.Entry item;
+        Iterator iter = objects.entrySet().iterator();
+        cObject ref;
+
+        while (iter.hasNext())
+          {
+            item = (Map.Entry) iter.next();
+            ref = (cObject) item.getValue();
+            if (stored_object.equals(ref.object) ||
+                stored_object._is_equivalent(ref.object)
+               )
+              return ref;
+          }
       }
+
     return null;
   }
 
@@ -144,7 +159,7 @@ public class Connected_objects
    */
   public cObject add(org.omg.CORBA.Object object, int port)
   {
-    return add(generateObjectKey(object), object, port);
+    return add(generateObjectKey(object), object, port, null);
   }
 
   /**
@@ -155,10 +170,15 @@ public class Connected_objects
    * @param port the port, on that the ORB will be listening on the
    * remote invocations.
    */
-  public cObject add(byte[] key, org.omg.CORBA.Object object, int port)
+  public cObject add(byte[] key, org.omg.CORBA.Object object, int port,
+                     java.lang.Object identity
+                    )
   {
-    cObject rec = new cObject(object, port, key);
-    objects.put(key, rec);
+    cObject rec = new cObject(object, port, key, identity);
+    synchronized (objects)
+      {
+        objects.put(key, rec);
+      }
     return rec;
   }
 
@@ -171,12 +191,14 @@ public class Connected_objects
    */
   public cObject get(byte[] key)
   {
-    return (cObject) objects.get(key);
+    synchronized (objects)
+      {
+        return (cObject) objects.get(key);
+      }
   }
 
   /**
    * Get the map entry set.
-   * @return
    */
   public Set entrySet()
   {
@@ -190,9 +212,12 @@ public class Connected_objects
    */
   public void remove(org.omg.CORBA.Object object)
   {
-    cObject ref = getKey(object);
-    if (ref != null)
-      objects.remove(ref.key);
+    synchronized (objects)
+      {
+        cObject ref = getKey(object);
+        if (ref != null)
+          objects.remove(ref.key);
+      }
   }
 
   /**

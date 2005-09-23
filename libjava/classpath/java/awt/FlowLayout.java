@@ -205,12 +205,12 @@ public class FlowLayout implements LayoutManager, Serializable
 	    else if (align == TRAILING)
 	      myalign = left_to_right ? RIGHT : LEFT;
 
-	    if (myalign == LEFT)
-	      x = ins.left + hgap;
+	    if (myalign == RIGHT)
+	      x = ins.left + (d.width - new_w) + hgap;
 	    else if (myalign == CENTER)
 	      x = ins.left + (d.width - new_w) / 2 + hgap;
-	    else
-	      x = ins.left + (d.width - new_w) + hgap;
+	    else // LEFT and all other values of align.
+	      x = ins.left + hgap;
 
 	    for (int k = i; k < j; ++k)
 	      {
@@ -269,9 +269,9 @@ public class FlowLayout implements LayoutManager, Serializable
    */
   public void setAlignment (int align)
   {
-    if (align != LEFT && align != RIGHT && align != CENTER
-	&& align != LEADING && align != TRAILING)
-      throw new IllegalArgumentException ("invalid alignment: " + align);
+    // The JDK accepts invalid values and treats them as
+    // LEFT during layout, so do we. The invalid value is even stored,
+    // getAlignment() returns the same invalid value.
     this.align = align;
   }
 

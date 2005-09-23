@@ -470,15 +470,6 @@ public class BasicSliderUI extends SliderUI
     }
   }
 
-  /** The preferred height of the thumb. */
-  private transient int thumbHeight;
-
-  /** The preferred width of the thumb. */
-  private transient int thumbWidth;
-
-  /** The preferred height of the tick rectangle. */
-  private transient int tickHeight;
-
   /** Listener for changes from the model. */
   protected ChangeListener changeListener;
 
@@ -698,11 +689,6 @@ public class BasicSliderUI extends SliderUI
     focusColor = defaults.getColor("Slider.focus");
     slider.setBorder(defaults.getBorder("Slider.border"));
     slider.setOpaque(true);
-
-    thumbHeight = defaults.getInt("Slider.thumbHeight");
-    thumbWidth = defaults.getInt("Slider.thumbWidth");
-    tickHeight = defaults.getInt("Slider.tickHeight");
-
     focusInsets = defaults.getInsets("Slider.focusInsets");
   }
 
@@ -899,11 +885,11 @@ public class BasicSliderUI extends SliderUI
     width += insets.left + insets.right + focusInsets.left + focusInsets.right;
 
     // Height is determined by the thumb, the ticks and the labels.
-    int height = thumbHeight;
+    int height = getThumbSize().height;
 
     if (slider.getPaintTicks() && slider.getMajorTickSpacing() > 0
         || slider.getMinorTickSpacing() > 0)
-      height += tickHeight;
+      height += getTickLength();
 
     if (slider.getPaintLabels())
       height += getHeightOfTallestLabel();
@@ -934,11 +920,11 @@ public class BasicSliderUI extends SliderUI
     height += insets.top + insets.bottom + focusInsets.top
     + focusInsets.bottom;
 
-    int width = thumbHeight;
+    int width = getThumbSize().width;
 
     if (slider.getPaintTicks() && slider.getMajorTickSpacing() > 0
         || slider.getMinorTickSpacing() > 0)
-      width += tickHeight;
+      width += getTickLength();
 
     if (slider.getPaintLabels())
       width += getWidthOfWidestLabel();
@@ -956,7 +942,21 @@ public class BasicSliderUI extends SliderUI
    */
   public Dimension getMinimumHorizontalSize()
   {
-    return getPreferredHorizontalSize();
+    Insets insets = slider.getInsets();
+    // Height is determined by the thumb, the ticks and the labels.
+    int height = getThumbSize().height; 
+
+    if (slider.getPaintTicks() && slider.getMajorTickSpacing() > 0
+        || slider.getMinorTickSpacing() > 0)
+      height += getTickLength();
+
+    if (slider.getPaintLabels())
+      height += getHeightOfTallestLabel();
+
+    height += insets.top + insets.bottom + focusInsets.top
+        + focusInsets.bottom;
+
+    return new Dimension(36, height);
   }
 
   /**
@@ -967,7 +967,19 @@ public class BasicSliderUI extends SliderUI
    */
   public Dimension getMinimumVerticalSize()
   {
-    return getPreferredVerticalSize();
+    Insets insets = slider.getInsets();
+    int width = getThumbSize().width;
+
+    if (slider.getPaintTicks() && slider.getMajorTickSpacing() > 0
+        || slider.getMinorTickSpacing() > 0)
+      width += getTickLength();
+
+    if (slider.getPaintLabels())
+      width += getWidthOfWidestLabel();
+
+    width += insets.left + insets.right + focusInsets.left + focusInsets.right;
+
+    return new Dimension(width, 36);
   }
 
   /**
@@ -999,15 +1011,14 @@ public class BasicSliderUI extends SliderUI
   public Dimension getMinimumSize(JComponent c)
   {
     if (slider.getOrientation() == JSlider.HORIZONTAL)
-      return getPreferredHorizontalSize();
+      return getMinimumHorizontalSize();
     else
-      return getPreferredVerticalSize();
+      return getMinimumVerticalSize();
   }
 
   /**
    * This method returns the maximum size for this {@link JSlider} for this
-   * look and feel. If it returns null, then it is up to the Layout Manager
-   * to give the {@link JComponent} a size.
+   * look and feel.
    *
    * @param c The {@link JComponent} to find a maximum size for.
    *
@@ -1015,10 +1026,40 @@ public class BasicSliderUI extends SliderUI
    */
   public Dimension getMaximumSize(JComponent c)
   {
+    Insets insets = slider.getInsets();
     if (slider.getOrientation() == JSlider.HORIZONTAL)
-      return getPreferredHorizontalSize();
+      {
+        // Height is determined by the thumb, the ticks and the labels.
+        int height = getThumbSize().height; 
+
+        if (slider.getPaintTicks() && slider.getMajorTickSpacing() > 0
+            || slider.getMinorTickSpacing() > 0)
+          height += getTickLength();
+
+        if (slider.getPaintLabels())
+          height += getHeightOfTallestLabel();
+
+        height += insets.top + insets.bottom + focusInsets.top
+            + focusInsets.bottom;
+
+        return new Dimension(32767, height);
+      }
     else
-      return getPreferredVerticalSize();
+      {
+        int width = getThumbSize().width;
+
+        if (slider.getPaintTicks() && slider.getMajorTickSpacing() > 0
+            || slider.getMinorTickSpacing() > 0)
+          width += getTickLength();
+
+        if (slider.getPaintLabels())
+          width += getWidthOfWidestLabel();
+
+        width += insets.left + insets.right + focusInsets.left 
+            + focusInsets.right;
+
+        return new Dimension(width, 32767);
+      }
   }
 
   /**
@@ -1045,7 +1086,6 @@ public class BasicSliderUI extends SliderUI
   {
     insetCache = slider.getInsets();
     focusRect = SwingUtilities.calculateInnerArea(slider, focusRect);
-
     if (focusRect.width < 0)
       focusRect.width = 0;
     if (focusRect.height < 0)
@@ -1058,30 +1098,13 @@ public class BasicSliderUI extends SliderUI
    */
   protected void calculateThumbSize()
   {
+    Dimension d = getThumbSize();
+    thumbRect.width = d.width;
+    thumbRect.height = d.height;
     if (slider.getOrientation() == JSlider.HORIZONTAL)
-      {
-	if (thumbWidth > contentRect.width)
-	  thumbRect.width = contentRect.width / 4;
-	else
-	  thumbRect.width = thumbWidth;
-	if (thumbHeight > contentRect.height)
-	  thumbRect.height = contentRect.height;
-	else
-	  thumbRect.height = thumbHeight;
-      }
+      thumbRect.y = trackRect.y;
     else
-      {
-	// The thumb gets flipped when inverted, so thumbWidth 
-	// actually is the height and vice versa.
-	if (thumbWidth > contentRect.height)
-	  thumbRect.height = contentRect.height / 4;
-	else
-	  thumbRect.height = thumbWidth;
-	if (thumbHeight > contentRect.width)
-	  thumbRect.width = contentRect.width;
-	else
-	  thumbRect.width = thumbHeight;
-      }
+      thumbRect.x = trackRect.x;
   }
 
   /**
@@ -1092,9 +1115,10 @@ public class BasicSliderUI extends SliderUI
   {
     contentRect.x = focusRect.x + focusInsets.left;
     contentRect.y = focusRect.y + focusInsets.top;
+    
     contentRect.width = focusRect.width - focusInsets.left - focusInsets.right;
-    contentRect.height = focusRect.height - focusInsets.top
-                         - focusInsets.bottom;
+    contentRect.height = focusRect.height - focusInsets.top 
+        - focusInsets.bottom;
 
     if (contentRect.width < 0)
       contentRect.width = 0;
@@ -1113,11 +1137,11 @@ public class BasicSliderUI extends SliderUI
     if (slider.getOrientation() == JSlider.HORIZONTAL)
       {
 	thumbRect.x = xPositionForValue(value) - thumbRect.width / 2;
-	thumbRect.y = contentRect.y;
+	thumbRect.y = trackRect.y;
       }
     else
       {
-	thumbRect.x = contentRect.x;
+	thumbRect.x = trackRect.x;
 	thumbRect.y = yPositionForValue(value) - thumbRect.height / 2;
       }
   }
@@ -1129,9 +1153,9 @@ public class BasicSliderUI extends SliderUI
   protected void calculateTrackBuffer()
   {
     if (slider.getOrientation() == JSlider.HORIZONTAL)
-      trackBuffer = thumbRect.width;
+      trackBuffer = thumbRect.width / 2;
     else
-      trackBuffer = thumbRect.height;
+      trackBuffer = thumbRect.height / 2;
   }
 
   /**
@@ -1141,9 +1165,11 @@ public class BasicSliderUI extends SliderUI
    */
   protected Dimension getThumbSize()
   {
-    // This is really just the bounds box for the thumb.
-    // The thumb will actually be pointed (like a rectangle + triangle at bottom)
-    return thumbRect.getSize();
+    // TODO: shouldn't create new objects every time
+    if (slider.getOrientation() == JSlider.HORIZONTAL)
+      return new Dimension(11, 20);
+    else
+      return new Dimension(20, 11);
   }
 
   /**
@@ -1155,13 +1181,21 @@ public class BasicSliderUI extends SliderUI
     if (slider.getOrientation() == JSlider.HORIZONTAL)
       {
 	trackRect.x = contentRect.x + trackBuffer;
-	trackRect.y = contentRect.y;
+        int h = getThumbSize().height;
+        if (slider.getPaintTicks() && (slider.getMajorTickSpacing() > 0 
+            || slider.getMinorTickSpacing() > 0))
+          h += getTickLength();
+	trackRect.y = contentRect.y + (contentRect.height - h) / 2 - 1;
 	trackRect.width = contentRect.width - 2 * trackBuffer;
 	trackRect.height = thumbRect.height;
       }
     else
       {
-	trackRect.x = contentRect.x;
+        int w = getThumbSize().width;
+        if (slider.getPaintTicks() && (slider.getMajorTickSpacing() > 0
+            || slider.getMinorTickSpacing() > 0))
+          w += getTickLength();  
+	trackRect.x = contentRect.x + (contentRect.width - w) / 2 - 1;
 	trackRect.y = contentRect.y + trackBuffer;
 	trackRect.width = thumbRect.width;
 	trackRect.height = contentRect.height - 2 * trackBuffer;
@@ -1180,7 +1214,7 @@ public class BasicSliderUI extends SliderUI
    */
   protected int getTickLength()
   {
-    return tickHeight;
+    return 8;
   }
 
   /**
@@ -1536,9 +1570,6 @@ public class BasicSliderUI extends SliderUI
     Point c = new Point(a);
     Point d = new Point(a);
 
-    Polygon high;
-    Polygon shadow;
-
     if (slider.getOrientation() == JSlider.HORIZONTAL)
       {
 	width = trackRect.width;
@@ -1591,74 +1622,78 @@ public class BasicSliderUI extends SliderUI
       {
 	if (slider.getOrientation() == JSlider.HORIZONTAL)
 	  {
-	    double loc = tickRect.x;
+	    double loc = tickRect.x + 0.5;
 	    double increment = (max == min) ? 0
-	                                    : majorSpace * (double) tickRect.width / (max
-	                                    - min);
-	    if (drawInverted())
+	        : majorSpace * (double) (tickRect.width - 1) / (max - min);
+            if (drawInverted())
 	      {
 		loc += tickRect.width;
 		increment *= -1;
 	      }
+            g.translate(0, tickRect.y);
 	    for (int i = min; i <= max; i += majorSpace)
 	      {
 		paintMajorTickForHorizSlider(g, tickRect, (int) loc);
 		loc += increment;
 	      }
+            g.translate(0, -tickRect.y);
 	  }
 	else
 	  {
-	    double loc = tickRect.height + tickRect.y;
+	    double loc = tickRect.height + tickRect.y + 0.5;
 	    double increment = (max == min) ? 0
-	                                    : -majorSpace * (double) tickRect.height / (max
-	                                    - min);
+	        : -majorSpace * (double) (tickRect.height - 1) / (max - min);
 	    if (drawInverted())
 	      {
-		loc = tickRect.y;
+		loc = tickRect.y + 0.5;
 		increment *= -1;
 	      }
+            g.translate(tickRect.x, 0);
 	    for (int i = min; i <= max; i += majorSpace)
 	      {
 		paintMajorTickForVertSlider(g, tickRect, (int) loc);
 		loc += increment;
 	      }
+            g.translate(-tickRect.x, 0);
 	  }
       }
     if (minorSpace > 0)
       {
 	if (slider.getOrientation() == JSlider.HORIZONTAL)
 	  {
-	    double loc = tickRect.x;
+	    double loc = tickRect.x + 0.5;
 	    double increment = (max == min) ? 0
-	                                    : minorSpace * (double) tickRect.width / (max
-	                                    - min);
+	        : minorSpace * (double) (tickRect.width - 1) / (max - min);
 	    if (drawInverted())
 	      {
 		loc += tickRect.width;
 		increment *= -1;
 	      }
+            g.translate(0, tickRect.y);
 	    for (int i = min; i <= max; i += minorSpace)
 	      {
 		paintMinorTickForHorizSlider(g, tickRect, (int) loc);
 		loc += increment;
 	      }
+            g.translate(0, -tickRect.y);
 	  }
 	else
 	  {
-	    double loc = tickRect.height + tickRect.y;
+	    double loc = tickRect.height + tickRect.y + 0.5;
 	    double increment = (max == min) ? 0
-	                                    : -minorSpace * (double) tickRect.height / (max
-	                                    - min);
+	        : -minorSpace * (double) (tickRect.height - 1) / (max - min);
 	    if (drawInverted())
 	      {
-		loc = tickRect.y;
+		loc = tickRect.y + 0.5;
 		increment *= -1;
 	      }
+            g.translate(tickRect.x, 0);
 	    for (int i = min; i <= max; i += minorSpace)
 	      {
 		paintMinorTickForVertSlider(g, tickRect, (int) loc);
 		loc += increment;
 	      }
+            g.translate(-tickRect.x, 0);
 	  }
       }
   }
@@ -1680,7 +1715,7 @@ public class BasicSliderUI extends SliderUI
   protected void paintMinorTickForHorizSlider(Graphics g,
                                               Rectangle tickBounds, int x)
   {
-    int y = tickRect.y + tickRect.height / 4;
+    int y = tickRect.height / 4;
     Color saved = g.getColor();
     g.setColor(Color.BLACK);
 
@@ -1699,7 +1734,7 @@ public class BasicSliderUI extends SliderUI
   protected void paintMajorTickForHorizSlider(Graphics g,
                                               Rectangle tickBounds, int x)
   {
-    int y = tickRect.y + tickRect.height / 4;
+    int y = tickRect.height / 4;
     Color saved = g.getColor();
     g.setColor(Color.BLACK);
 
@@ -1718,7 +1753,7 @@ public class BasicSliderUI extends SliderUI
   protected void paintMinorTickForVertSlider(Graphics g, Rectangle tickBounds,
                                              int y)
   {
-    int x = tickRect.x + tickRect.width / 4;
+    int x = tickRect.width / 4;
     Color saved = g.getColor();
     g.setColor(Color.BLACK);
 
@@ -1737,7 +1772,7 @@ public class BasicSliderUI extends SliderUI
   protected void paintMajorTickForVertSlider(Graphics g, Rectangle tickBounds,
                                              int y)
   {
-    int x = tickRect.x + tickRect.width / 4;
+    int x = tickRect.width / 4;
     Color saved = g.getColor();
     g.setColor(Color.BLACK);
 
@@ -1924,8 +1959,6 @@ public class BasicSliderUI extends SliderUI
   {
     Color saved_color = g.getColor();
 
-    Polygon thumb = new Polygon();
-
     Point a = new Point(thumbRect.x, thumbRect.y);
     Point b = new Point(a);
     Point c = new Point(a);
@@ -1933,7 +1966,8 @@ public class BasicSliderUI extends SliderUI
     Point e = new Point(a);
 
     Polygon bright;
-    Polygon dark;
+    Polygon light;  // light shadow
+    Polygon dark;   // dark shadow
     Polygon all;
 
     // This will be in X-dimension if the slider is inverted and y if it isn't.	  	  
@@ -1943,36 +1977,42 @@ public class BasicSliderUI extends SliderUI
       {
 	turnPoint = thumbRect.height * 3 / 4;
 
-	b.translate(thumbRect.width, 0);
-	c.translate(thumbRect.width, turnPoint);
-	d.translate(thumbRect.width / 2, thumbRect.height);
+	b.translate(thumbRect.width - 1, 0);
+	c.translate(thumbRect.width - 1, turnPoint);
+	d.translate(thumbRect.width / 2 - 1, thumbRect.height - 1);
 	e.translate(0, turnPoint);
 
-	bright = new Polygon(new int[] { b.x, a.x, e.x, d.x },
+	bright = new Polygon(new int[] { b.x - 1, a.x, e.x, d.x },
 	                     new int[] { b.y, a.y, e.y, d.y }, 4);
 
-	dark = new Polygon(new int[] { b.x, c.x, d.x },
-	                   new int[] { b.y, c.y, d.y }, 3);
-	all = new Polygon(new int[] { a.x + 1, b.x, c.x, d.x, e.x + 1 },
-	                  new int[] { a.y + 1, b.y + 1, c.y, d.y + 1, e.y }, 5);
+	dark = new Polygon(new int[] { b.x, c.x, d.x + 1 },
+	                   new int[] { b.y, c.y - 1, d.y }, 3);
+    
+    light = new Polygon(new int[] { b.x - 1, c.x - 1, d.x + 1 },
+                        new int[] { b.y + 1, c.y - 1, d.y - 1 }, 3);
+    
+	all = new Polygon(new int[] { a.x + 1, b.x - 2, c.x - 2, d.x, e.x + 1 },
+	                  new int[] { a.y + 1, b.y + 1, c.y - 1, d.y - 1, e.y }, 5);
       }
     else
       {
-	turnPoint = thumbRect.width * 3 / 4;
+	turnPoint = thumbRect.width * 3 / 4 - 1;
 
 	b.translate(turnPoint, 0);
-	c.translate(thumbRect.width, thumbRect.height / 2);
-	d.translate(turnPoint, thumbRect.height);
-	e.translate(0, thumbRect.height);
+	c.translate(thumbRect.width - 1, thumbRect.height / 2);
+	d.translate(turnPoint, thumbRect.height - 1);
+	e.translate(0, thumbRect.height - 1);
 
-	bright = new Polygon(new int[] { c.x, b.x, a.x, e.x },
-	                     new int[] { c.y, b.y, a.y, e.y }, 4);
+	bright = new Polygon(new int[] { c.x - 1, b.x, a.x, e.x },
+	                     new int[] { c.y - 1, b.y, a.y, e.y - 1 }, 4);
 
-	dark = new Polygon(new int[] { c.x, d.x, e.x + 1 },
+	dark = new Polygon(new int[] { c.x, d.x, e.x },
 	                   new int[] { c.y, d.y, e.y }, 3);
 
-	all = new Polygon(new int[] { a.x + 1, b.x, c.x - 1, d.x, e.x + 1 },
-	                  new int[] { a.y + 1, b.y + 1, c.y, d.y, e.y }, 5);
+    light = new Polygon(new int[] { c.x - 1, d.x, e.x + 1},
+                       new int[] { c.y, d.y - 1, e.y - 1}, 3);
+	all = new Polygon(new int[] { a.x + 1, b.x, c.x - 2, c.x - 2, d.x, e.x + 1 },
+	                  new int[] { a.y + 1, b.y + 1, c.y - 1, c.y, d.y - 2, e.y - 2 }, 6);
       }
 
     g.setColor(Color.WHITE);
@@ -1982,6 +2022,10 @@ public class BasicSliderUI extends SliderUI
     g.drawPolyline(dark.xpoints, dark.ypoints, dark.npoints);
 
     g.setColor(Color.GRAY);
+    g.drawPolyline(light.xpoints, light.ypoints, light.npoints);
+    
+    g.setColor(Color.LIGHT_GRAY);
+    g.drawPolyline(all.xpoints, all.ypoints, all.npoints);
     g.fillPolygon(all);
 
     g.setColor(saved_color);
@@ -2065,8 +2109,7 @@ public class BasicSliderUI extends SliderUI
   {
     int min = slider.getMinimum();
     int max = slider.getMaximum();
-    int extent = slider.getExtent();
-    int len = trackRect.width;
+    int len = trackRect.width - 1;
 
     int xPos = (max == min) ? 0 : (value - min) * len / (max - min);
 
@@ -2074,7 +2117,7 @@ public class BasicSliderUI extends SliderUI
       xPos += trackRect.x;
     else
       {
-	xPos = trackRect.width - xPos;
+	xPos = len - xPos;
 	xPos += trackRect.x;
       }
     return xPos;
@@ -2091,14 +2134,13 @@ public class BasicSliderUI extends SliderUI
   {
     int min = slider.getMinimum();
     int max = slider.getMaximum();
-    int extent = slider.getExtent();
-    int len = trackRect.height;
+    int len = trackRect.height - 1;
 
     int yPos = (max == min) ? 0 : (value - min) * len / (max - min);
 
     if (! drawInverted())
       {
-	yPos = trackRect.height - yPos;
+	yPos = len - yPos;
 	yPos += trackRect.y;
       }
     else
@@ -2123,8 +2165,9 @@ public class BasicSliderUI extends SliderUI
 
     int value;
 
-    // If the length is 0, you shouldn't be able to even see where the slider is.
-    // This really shouldn't ever happen, but just in case, we'll return the middle.
+    // If the length is 0, you shouldn't be able to even see where the slider 
+    // is.  This really shouldn't ever happen, but just in case, we'll return 
+    // the middle.
     if (len == 0)
       return ((max - min) / 2);
 
@@ -2158,8 +2201,9 @@ public class BasicSliderUI extends SliderUI
 
     int value;
 
-    // If the length is 0, you shouldn't be able to even see where the slider is.
-    // This really shouldn't ever happen, but just in case, we'll return the middle.
+    // If the length is 0, you shouldn't be able to even see where the slider 
+    // is.  This really shouldn't ever happen, but just in case, we'll return 
+    // the middle.
     if (len == 0)
       return ((max - min) / 2);
 

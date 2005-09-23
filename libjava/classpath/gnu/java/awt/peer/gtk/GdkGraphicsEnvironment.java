@@ -43,22 +43,14 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.HeadlessException;
+import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.util.Locale;
 
 public class GdkGraphicsEnvironment extends GraphicsEnvironment
 {
-  GtkToolkit gtkToolkit;
-
-  public GtkToolkit getToolkit()
+  public GdkGraphicsEnvironment ()
   {
-    return gtkToolkit;
-  }
-
-  public GdkGraphicsEnvironment (GtkToolkit tk)
-  {
-    super();
-    gtkToolkit = tk;
   }
 
   public GraphicsDevice[] getScreenDevices ()

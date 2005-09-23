@@ -22,6 +22,9 @@ endif
 # All our example java source files
 EXAMPLE_JAVA_FILES = $(srcdir)/gnu/classpath/examples/*/*.java
 
+# The example C source files
+EXAMPLE_C_FILES = $(srcdir)/gnu/classpath/examples/*/*.c
+
 # The zip files with classes we want to produce.
 EXAMPLE_ZIP = examples.zip
 
@@ -30,6 +33,9 @@ BUILT_SOURCES = $(EXAMPLE_ZIP)
 
 # the png icons we use in some of the examples.
 EXAMPLE_ICONS = $(srcdir)/gnu/classpath/examples/icons/*.png
+
+# All the files we find "interesting"
+ALL_EXAMPLE_FILES = $(EXAMPLE_JAVA_FILES) $(EXAMPLE_C_FILES) $(EXAMPLE_ICONS)
 
 # Some architecture independent data to be installed.
 example_DATA = $(EXAMPLE_ZIP) README
@@ -41,7 +47,7 @@ exampledir = $(pkgdatadir)/examples
 # (Be careful to strip off the srcdir part of the path when installing.)
 install-data-local:
 	srcdir_cnt=`echo $(srcdir) | wc -c`; \
-	for file in $(EXAMPLE_JAVA_FILES) $(EXAMPLE_ICONS); do \
+	for file in $(ALL_EXAMPLE_FILES); do \
 	  f=`echo $$file | cut -c$$srcdir_cnt-`; \
 	  fdir=`dirname $$f`; \
 	  if test ! -d $(DESTDIR)/$(pkgdatadir)/examples/$$fdir; then \
@@ -51,20 +57,24 @@ install-data-local:
 	  echo "$(INSTALL_DATA) $$file $(DESTDIR)/$(pkgdatadir)/examples/$$f"; \
 	  $(INSTALL_DATA) $$file $(DESTDIR)/$(pkgdatadir)/examples/$$f; \
 	done
+	echo "$(INSTALL_DATA) Makefile.jawt $(DESTDIR)/$(pkgdatadir)/examples/"
+	$(INSTALL_DATA) Makefile.jawt $(DESTDIR)/$(pkgdatadir)/examples/
 
 uninstall-local:
 	srcdir_cnt=`echo $(srcdir) | wc -c`; \
-	for file in $(EXAMPLE_JAVA_FILES) $(EXAMPLE_ICONS); do \
+	for file in $(ALL_EXAMPLE_FILES); do \
 	  f=`echo $$file | cut -c$$srcdir_cnt-`; \
 	  echo "rm -f $(DESTDIR)/$(pkgdatadir)/examples/$$f"; \
 	  rm -f $(DESTDIR)/$(pkgdatadir)/examples/$$f; \
 	done
+	echo "rm -f $(DESTDIR)/$(pkgdatadir)/examples/Makefile.jawt"
+	rm -f $(DESTDIR)/$(pkgdatadir)/examples/Makefile.jawt
 
 # Make sure everything is included in the distribution.
-EXTRA_DIST = README
+EXTRA_DIST = README Makefile.jawt.in
 dist-hook:
 	srcdir_cnt=`echo $(srcdir) | wc -c`; \
-	for file in $(EXAMPLE_JAVA_FILES) $(EXAMPLE_ICONS); do \
+	for file in $(ALL_EXAMPLE_FILES); do \
 	  f=`echo $$file | cut -c$$srcdir_cnt-`; \
 	  fdir=`dirname $$f`; \
 	  if test ! -d $(distdir)/$$fdir; then \
@@ -87,4 +97,4 @@ $(EXAMPLE_ZIP): $(EXAMPLE_JAVA_FILES)
 
 # Zip file be gone! (and make sure the classes are gone too)
 clean-local:
-	rm -f $(EXAMPLE_ZIP) classes
+	rm -rf $(EXAMPLE_ZIP) classes

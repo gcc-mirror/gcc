@@ -57,7 +57,7 @@ import javax.net.SocketFactory;
  * configury string that looks like "name=dt_socket,
  * address=localhost:1234,server=y".
  *
- * @author Keith Seitz <keiths@redhat.com>
+ * @author Keith Seitz (keiths@redhat.com)
  */
 class SocketTransport
   implements ITransport
@@ -142,6 +142,22 @@ class SocketTransport
       {
 	// This will grab UnknownHostException, too.
 	throw new TransportException (ioe);
+      }
+  }
+
+  /**
+   * Shutdown the socket. This could cause SocketExceptions
+   * for anyone blocked on socket i/o
+   */
+  public void shutdown ()
+  {
+    try
+      {
+	_socket.close ();
+      }
+    catch (Throwable t)
+      {
+	// We don't really care about errors at this point
       }
   }
 

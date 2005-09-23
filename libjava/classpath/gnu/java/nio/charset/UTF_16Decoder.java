@@ -1,5 +1,5 @@
 /* UTF_16Decoder.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -105,8 +105,9 @@ final class UTF_16Decoder extends CharsetDecoder
               }
 
 	    // FIXME: Change so you only do a single comparison here.
-            char c = byteOrder == BIG_ENDIAN ? (char) ((b1 << 8) | b2)
-                                             : (char) ((b2 << 8) | b1);
+            char c = (byteOrder == BIG_ENDIAN
+		      ? (char) (((b1 & 0xFF) << 8) | (b2 & 0xFF))
+		      : (char) (((b2 & 0xFF) << 8) | (b1 & 0xFF)));
 
             if (0xD800 <= c && c <= 0xDFFF)
               {
@@ -119,8 +120,9 @@ final class UTF_16Decoder extends CharsetDecoder
                   return CoderResult.UNDERFLOW;
                 byte b3 = in.get ();
                 byte b4 = in.get ();
-                char d = byteOrder == BIG_ENDIAN ? (char) ((b3 << 8) | b4)
-                                                 : (char) ((b4 << 8) | b3);
+                char d = (byteOrder == BIG_ENDIAN
+			  ? (char) (((b3 & 0xFF) << 8) | (b4 & 0xFF))
+			  : (char) (((b4 & 0xFF) << 8) | (b3 & 0xFF)));
                 // make sure d is a low surrogate
                 if (d < 0xDC00 || d > 0xDFFF)
                   return CoderResult.malformedForLength (2);

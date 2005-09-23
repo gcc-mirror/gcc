@@ -12,16 +12,9 @@ FILE=java/lang/Object.java
 
 DIE=0
 
-case `uname -s` in
-Darwin)
-	LIBTOOLIZE=glibtoolize
-	;;
-*)
-	LIBTOOLIZE=libtoolize
-	;;
-esac
+LIBTOOLIZE=libtoolize
 
-have_libtool=true
+have_libtool=false
 if ${LIBTOOLIZE} --version < /dev/null > /dev/null 2>&1 ; then
 	libtool_version=`${LIBTOOLIZE} --version | sed 's/^[^0-9]*\([0-9.][0-9.]*\).*/\1/'`
 	case $libtool_version in
@@ -35,6 +28,9 @@ if $have_libtool ; then : ; else
 	echo "You must have libtool 1.5 installed to compile $PROJECT."
 	echo "Install the appropriate package for your distribution,"
 	echo "or get the source tarball at http://ftp.gnu.org/gnu/libtool/"
+	echo "For Darwin you need the latest stable (1.5.18) to support"
+	echo "Frameworks linking. Also, you have to point ACLOCAL_FLAGS"
+	echo "to this libtool/share/aclocal."
 	DIE=1
 fi
 

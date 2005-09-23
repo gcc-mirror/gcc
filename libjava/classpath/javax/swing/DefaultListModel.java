@@ -41,7 +41,7 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 /**
- * This is a default subclass of the {@link AbstractListModel}, used by
+ * The default implementation of {@link AbstractListModel}, used by
  * {@link javax.swing.JList} and similar objects as the model of a list of
  * values. The implementation is based on an underlying {@link
  * java.util.Vector}.

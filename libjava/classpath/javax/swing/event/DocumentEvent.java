@@ -1,5 +1,5 @@
 /* DocumentEvent.java --
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,47 +45,38 @@ import javax.swing.text.Element;
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
-public interface DocumentEvent {
+public interface DocumentEvent
+{
+  /**
+   * ElementChange public interface
+   */
+  public static interface ElementChange
+  {
+    /**
+     * getIndex
+     * @returns int
+     */
+    int getIndex();
 
-	//-------------------------------------------------------------
-	// Classes ----------------------------------------------------
-	//-------------------------------------------------------------
+    /**
+     * getElement
+     * @returns Element
+     */
+    Element getElement();
 
-	/**
-	 * ElementChange public interface
-	 */
-	public interface ElementChange {
+    /**
+     * getChildrenRemoved
+     * @returns Element[]
+     */
+    Element[] getChildrenRemoved();
 
-		//-------------------------------------------------------------
-		// Methods ----------------------------------------------------
-		//-------------------------------------------------------------
-
-		/**
-		 * getIndex
-		 * @returns int
-		 */
-		int getIndex();
-
-		/**
-		 * getElement
-		 * @returns Element
-		 */
-		Element getElement();
-
-		/**
-		 * getChildrenRemoved
-		 * @returns Element[]
-		 */
-		Element[] getChildrenRemoved();
-
-		/**
-		 * getChildrenAdded
-		 * @returns Element[]
-		 */
-		Element[] getChildrenAdded();
-
-
-	} // ElementChange
+    /**
+     * getChildrenAdded
+     * @returns Element[]
+     */
+    Element[] getChildrenAdded();
+    
+  }
 
   /**
    * EventType
@@ -131,36 +122,35 @@ public interface DocumentEvent {
     }
   }
 
-	/**
-	 * getType
-	 * @returns EventType
-	 */
-	EventType getType();
+  /**
+   * getType
+   * @returns EventType
+   */
+  EventType getType();
 
-	/**
-	 * getOffset
-	 * @returns int
-	 */
-	int getOffset();
+  /**
+   * getOffset
+   * @returns int
+   */
+  int getOffset();
 
-	/**
-	 * getLength
-	 * @returns int
-	 */
-	int getLength();
+  /**
+   * getLength
+   * @returns int
+   */
+  int getLength();
 
-	/**
-	 * getDocument
-	 * @returns Document
-	 */
-	Document getDocument();
+  /**
+   * getDocument
+   * @returns Document
+   */
+  Document getDocument();
 
-	/**
-	 * getChange
-	 * @param element TODO
-	 * @returns ElementChange
-	 */
-	ElementChange getChange(Element element);
+  /**
+   * getChange
+   * @param element TODO
+   * @returns ElementChange
+   */
+  ElementChange getChange(Element element);
 
-
-} // DocumentEvent
+}

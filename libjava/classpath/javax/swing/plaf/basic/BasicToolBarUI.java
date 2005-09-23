@@ -542,19 +542,6 @@ public class BasicToolBarUI extends ToolBarUI implements SwingConstants
   }
 
   /**
-   * This method returns the preferred size of the given JComponent for this
-   * UI.
-   *
-   * @param c The JComponent to find a preferred size for.
-   *
-   * @return The preferred size for this UI.
-   */
-  public Dimension getPreferredSize(JComponent c)
-  {
-    return toolBar.getLayout().preferredLayoutSize(c);
-  }
-
-  /**
    * This method installs the needed components for the JToolBar.
    */
   protected void installComponents()

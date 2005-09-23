@@ -38,8 +38,12 @@ exception statement from your version. */
 
 package org.omg.IOP;
 
+import gnu.CORBA.CDR.cdrBufInput;
+import gnu.CORBA.CDR.cdrBufOutput;
+
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_OPERATION;
+import org.omg.CORBA.MARSHAL;
 import org.omg.CORBA.ORB;
 import org.omg.CORBA.StructMember;
 import org.omg.CORBA.TCKind;
@@ -47,11 +51,13 @@ import org.omg.CORBA.TypeCode;
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.OutputStream;
 
+import java.io.IOException;
+
 /**
-* A helper operations for the structure {@link TaggedProfile}.
-*
-* @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
-*/
+ * A helper operations for the structure {@link TaggedProfile}.
+ *
+ * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
+ */
 public abstract class TaggedProfileHelper
 {
   /**
@@ -60,49 +66,46 @@ public abstract class TaggedProfileHelper
   private static TypeCode typeCode;
 
   /**
-   * Create the TaggedProfile typecode (structure,
-   * named "TaggedProfile").
-   * The typecode states that the structure contains the
-   * following fields: tag, profile_data.
+   * Create the TaggedProfile typecode (structure, named "TaggedProfile"). The
+   * typecode states that the structure contains the following fields: tag,
+   * profile_data.
    */
   public static TypeCode type()
   {
     if (typeCode == null)
       {
         ORB orb = ORB.init();
-        StructMember[] members = new StructMember[ 2 ];
+        StructMember[] members = new StructMember[2];
 
         TypeCode field;
 
-        field =
-          orb.create_alias_tc("IDL:omg.org/IOP/ProfileId:1.0", "ProfileId",
-                              orb.get_primitive_tc(TCKind.tk_ulong)
-                             );
-        members [ 0 ] = new StructMember("tag", field, null);
+        field = orb.create_alias_tc("IDL:omg.org/IOP/ProfileId:1.0",
+                                    "ProfileId",
+                                    orb.get_primitive_tc(TCKind.tk_ulong));
+        members[0] = new StructMember("tag", field, null);
 
-        field =
-          orb.create_sequence_tc(0, orb.get_primitive_tc(TCKind.tk_octet));
-        members [ 1 ] = new StructMember("profile_data", field, null);
+        field = orb.create_sequence_tc(0, orb.get_primitive_tc(TCKind.tk_octet));
+        members[1] = new StructMember("profile_data", field, null);
         typeCode = orb.create_struct_tc(id(), "TaggedProfile", members);
       }
     return typeCode;
   }
 
   /**
-  * Insert the TaggedProfile into the given Any.
-  * This method uses the TaggedProfileHolder.
-  *
-  * @param any the Any to insert into.
-  * @param that the TaggedProfile to insert.
-  */
+   * Insert the TaggedProfile into the given Any. This method uses the
+   * TaggedProfileHolder.
+   *
+   * @param any the Any to insert into.
+   * @param that the TaggedProfile to insert.
+   */
   public static void insert(Any any, TaggedProfile that)
   {
     any.insert_Streamable(new TaggedProfileHolder(that));
   }
 
   /**
-   * Extract the TaggedProfile from given Any.
-   * This method uses the TaggedProfileHolder.
+   * Extract the TaggedProfile from given Any. This method uses the
+   * TaggedProfileHolder.
    *
    * @throws BAD_OPERATION if the passed Any does not contain TaggedProfile.
    */
@@ -139,9 +142,18 @@ public abstract class TaggedProfileHelper
   {
     TaggedProfile value = new TaggedProfile();
     value.tag = input.read_long();
-    value.profile_data = new byte[ input.read_long() ];
-    for (int i0 = 0; i0 < value.profile_data.length; i0++)
-      value.profile_data [ i0 ] = input.read_octet();
+
+    if (input instanceof cdrBufInput)
+      {
+        // Highly probable.
+        value.profile_data = ((cdrBufInput) input).read_sequence();
+      }
+    else
+      {
+        value.profile_data = new byte[input.read_long()];
+        for (int i0 = 0; i0 < value.profile_data.length; i0++)
+          value.profile_data[i0] = input.read_octet();
+      }
     return value;
   }
 
@@ -154,8 +166,27 @@ public abstract class TaggedProfileHelper
   public static void write(OutputStream output, TaggedProfile value)
   {
     output.write_long(value.tag);
-    output.write_long(value.profile_data.length);
-    for (int i0 = 0; i0 < value.profile_data.length; i0++)
-      output.write_octet(value.profile_data [ i0 ]);
+
+    if (output instanceof cdrBufOutput)
+      {
+        // Highly probable.
+        output.write_long(value.profile_data.length);
+        try
+          {
+            output.write(value.profile_data);
+          }
+        catch (IOException e)
+          {
+            MARSHAL m = new MARSHAL();
+            m.initCause(e);
+            throw m;
+          }
+      }
+    else
+      {
+        output.write_long(value.profile_data.length);
+        for (int i0 = 0; i0 < value.profile_data.length; i0++)
+          output.write_octet(value.profile_data[i0]);
+      }
   }
 }

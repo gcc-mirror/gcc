@@ -49,6 +49,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -208,12 +209,12 @@ public class BasicListUI extends ListUI
       if ((evt.getKeyCode() == KeyEvent.VK_DOWN)
           || (evt.getKeyCode() == KeyEvent.VK_KP_DOWN))
         {
-          if (!evt.isShiftDown())
+          if (evt.getModifiers() == 0)
             {
               BasicListUI.this.list.clearSelection();
               BasicListUI.this.list.setSelectedIndex(Math.min(lead+1,max));
             }
-          else 
+          else if (evt.getModifiers() == InputEvent.SHIFT_MASK)
             {
               BasicListUI.this.list.getSelectionModel().
                 setLeadSelectionIndex(Math.min(lead+1,max));
@@ -222,12 +223,12 @@ public class BasicListUI extends ListUI
       else if ((evt.getKeyCode() == KeyEvent.VK_UP)
                || (evt.getKeyCode() == KeyEvent.VK_KP_UP))
         {
-          if (!evt.isShiftDown())
+          if (evt.getModifiers() == 0)
             {
               BasicListUI.this.list.clearSelection();
               BasicListUI.this.list.setSelectedIndex(Math.max(lead-1,0));
             }
-          else
+          else if (evt.getModifiers() == InputEvent.SHIFT_MASK)
             {
               BasicListUI.this.list.getSelectionModel().
                 setLeadSelectionIndex(Math.max(lead-1,0));
@@ -235,20 +236,53 @@ public class BasicListUI extends ListUI
         }
       else if (evt.getKeyCode() == KeyEvent.VK_PAGE_UP)
         {
-          // FIXME: implement, need JList.ensureIndexIsVisible to work
+          int target;
+          if (lead == BasicListUI.this.list.getFirstVisibleIndex())
+            {
+              target = Math.max 
+                (0, lead - (BasicListUI.this.list.getLastVisibleIndex() - 
+                             BasicListUI.this.list.getFirstVisibleIndex() + 1));
+            }
+          else
+            {
+              target = BasicListUI.this.list.getFirstVisibleIndex();
+            }
+          if (evt.getModifiers() == 0)
+            BasicListUI.this.list.setSelectedIndex(target);
+          else if (evt.getModifiers() == InputEvent.SHIFT_MASK)
+            BasicListUI.this.list.getSelectionModel().
+              setLeadSelectionIndex(target);
         }
       else if (evt.getKeyCode() == KeyEvent.VK_PAGE_DOWN)
         {
-          // FIXME: implement, need JList.ensureIndexIsVisible to work
+          int target;
+          if (lead == BasicListUI.this.list.getLastVisibleIndex())
+            {
+              target = Math.min
+                (max, lead + (BasicListUI.this.list.getLastVisibleIndex() -
+                              BasicListUI.this.list.getFirstVisibleIndex() + 1));
+            }
+          else
+            {
+              target = BasicListUI.this.list.getLastVisibleIndex();
+            }
+          if (evt.getModifiers() == 0)
+            BasicListUI.this.list.setSelectedIndex(target);
+          else if (evt.getModifiers() == InputEvent.SHIFT_MASK)
+            BasicListUI.this.list.getSelectionModel().
+              setLeadSelectionIndex(target);
         }
       else if (evt.getKeyCode() == KeyEvent.VK_BACK_SLASH
-               && evt.isControlDown())
+               && (evt.getModifiers() == InputEvent.CTRL_MASK))
         {
             BasicListUI.this.list.clearSelection();
         }
       else if ((evt.getKeyCode() == KeyEvent.VK_HOME)
                || evt.getKeyCode() == KeyEvent.VK_END)
         {
+          if (evt.getModifiers() != 0 && 
+              evt.getModifiers() != InputEvent.SHIFT_MASK)
+            return;
           // index is either 0 for HOME, or last cell for END
           int index = (evt.getKeyCode() == KeyEvent.VK_HOME) ? 0 : max;
           
@@ -264,16 +298,23 @@ public class BasicListUI extends ListUI
               setLeadSelectionIndex(index);
         }
       else if ((evt.getKeyCode() == KeyEvent.VK_A || evt.getKeyCode()
-                == KeyEvent.VK_SLASH) && evt.isControlDown())
+                == KeyEvent.VK_SLASH) && (evt.getModifiers() == 
+                                          InputEvent.CTRL_MASK))
         {
           BasicListUI.this.list.setSelectionInterval(0, max);
+          // this next line is to restore the lead selection index to the old
+          // position, because select-all should not change the lead index
+          BasicListUI.this.list.addSelectionInterval(lead, lead);
         }
-      else if (evt.getKeyCode() == KeyEvent.VK_SPACE && evt.isControlDown())
+      else if (evt.getKeyCode() == KeyEvent.VK_SPACE && 
+               (evt.getModifiers() == InputEvent.CTRL_MASK))
         {
           BasicListUI.this.list.getSelectionModel().
             setLeadSelectionIndex(Math.min(lead+1,max));
         }
-      
+
+      BasicListUI.this.list.ensureIndexIsVisible
+        (BasicListUI.this.list.getLeadSelectionIndex());
     }
   }
   
@@ -295,17 +336,7 @@ public class BasicListUI extends ListUI
       int index = BasicListUI.this.locationToIndex(list, click);
       if (index == -1)
         return;
-      if (event.isControlDown())
-        {
-          if (BasicListUI.this.list.getSelectionMode() == 
-              ListSelectionModel.SINGLE_SELECTION)
-            BasicListUI.this.list.setSelectedIndex(index);
-          else if (BasicListUI.this.list.isSelectedIndex(index))
-            BasicListUI.this.list.removeSelectionInterval(index,index);
-          else
-            BasicListUI.this.list.addSelectionInterval(index,index);
-        }
-      else if (event.isShiftDown())
+      if (event.isShiftDown())
         {
           if (BasicListUI.this.list.getSelectionMode() == 
               ListSelectionModel.SINGLE_SELECTION)
@@ -329,8 +360,21 @@ public class BasicListUI extends ListUI
             BasicListUI.this.list.getSelectionModel().
               setLeadSelectionIndex(index);
         }
+      else if (event.isControlDown())
+        {
+          if (BasicListUI.this.list.getSelectionMode() == 
+              ListSelectionModel.SINGLE_SELECTION)
+            BasicListUI.this.list.setSelectedIndex(index);
+          else if (BasicListUI.this.list.isSelectedIndex(index))
+            BasicListUI.this.list.removeSelectionInterval(index,index);
+          else
+            BasicListUI.this.list.addSelectionInterval(index,index);
+        }
       else
         BasicListUI.this.list.setSelectedIndex(index);
+      
+      BasicListUI.this.list.ensureIndexIsVisible
+        (BasicListUI.this.list.getLeadSelectionIndex());
     }
 
     /**
@@ -843,11 +887,11 @@ public class BasicListUI extends ListUI
                  ListCellRenderer rend, ListModel data,
                  ListSelectionModel sel, int lead)
   {
-    boolean is_sel = list.isSelectedIndex(row);
-    boolean has_focus = false;
+    boolean isSel = list.isSelectedIndex(row);
+    boolean hasFocus = (list.getLeadSelectionIndex() == row) && BasicListUI.this.list.hasFocus();
     Component comp = rend.getListCellRendererComponent(list,
                                                        data.getElementAt(row),
-                                                       0, is_sel, has_focus);
+                                                       0, isSel, hasFocus);
     //comp.setBounds(new Rectangle(0, 0, bounds.width, bounds.height));
     //comp.paint(g);
     rendererPane.paintComponent(g, comp, list, bounds);

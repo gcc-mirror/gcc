@@ -109,16 +109,12 @@ public class fixedTypeCode
     return number.unscaledValue().abs().toString().length();
   }
 
-  public boolean equals(Object other)
+  /**
+   * Compare with other type code for equality.
+   */
+  public boolean equal(TypeCode other)
   {
-    if (other == this)
-      {
-        return true;
-      }
-    if (!(other instanceof TypeCode))
-      {
-        return false;
-      }
+    if (other == this) return true;
     try
       {
         TypeCode that = (TypeCode) other;

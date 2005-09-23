@@ -41,7 +41,16 @@ package javax.swing;
 import javax.accessibility.AccessibleContext;
 
 /**
- * An instance of JCheckbox can be added to a panel, frame etc
+ * A small box that displays a check or not, depending on it's
+ * <code>selected</code> state. This works very similar to
+ * {@link JToggleButton} and {@link JRadioButton}, but in UI design it
+ * has different semantics. <code>JCheckBox</code>es are usually
+ * used in multiple-choice scenarios, where a user can select 0..n
+ * of n different options. (This is in contrast to the general RadioButton
+ * semantics where the user can select exactly one of n options).
+ *
+ * Note however that this semantics is in no way enforced by the
+ * <code>JCheckBox</code>.
  *
  * @author Ronald Veldema (rveldema@cs.vu.nl)
  */

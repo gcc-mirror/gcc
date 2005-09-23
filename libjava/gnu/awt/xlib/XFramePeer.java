@@ -190,4 +190,26 @@ public class XFramePeer extends XCanvasPeer implements FramePeer
   public void beginLayout () { }
   public void endLayout () { }
   public boolean isPaintPending () { return false; }
+
+  /**
+   * @since 1.5
+   */
+  public void setBoundsPrivate (int x, int y, int width, int height)
+  {
+  }
+
+  /**
+   * @since 1.5
+   */
+  public void updateAlwaysOnTop()
+  {
+  }
+
+  /**
+   * @since 1.5
+   */
+  public boolean requestWindowFocus ()
+  {
+    return false;
+  }
 }

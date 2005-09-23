@@ -1,4 +1,4 @@
-Installing GNU Classpath - Last updated: January 6, 2005
+Installing GNU Classpath - Last updated: August 31, 2005
 
 First, this is a development release only! Unless you are interested in
 active development and debugging, or just like running random alpha code,
@@ -28,11 +28,12 @@ Suggested Software
 
 	For building the Java bytecode (.class files), one of these
 	compilers are required.  You can select which compiler using
-	--with-jikes, --with-gcj or --with-kjc as argument to
+	--with-jikes, --with-gcj, --with-ecj or --with-kjc as argument to
 	configure; the present default is gcj.
 
         - GCJ 3.3+ (part of the GNU GCC package).
         - IBM jikes 1.19+.  
+        - Eclipse Compiler for Java 3.1+
         - The kjc compiler is supported with configure but we have
           been unable to successfully compile with it.
 
@@ -48,7 +49,18 @@ Suggested Software
 	For building the Cairo GdkGraphics2D backend you need at least
 	Cairo 0.5.0.
 
-	For building the xmlj JAXP implementation (dsabled by default, use
+	For building the Qt AWT peer JNI native libraries you have to
+	specify --enable-qt-peer and need the following library:
+
+        - Qt 4.0.1
+
+	Please note that at the moment most operating systems do not
+    ship Qt4 by default. We recommend using GNU Classpath' Qt4
+    support only for its developers and bug reporters. See
+    http://developer.classpath.org/mediation/ClasspathShowcase
+    for details on how to get it to work.
+
+	For building the xmlj JAXP implementation (disabled by default, use
 	configure --enable-xmlj) you need the following installed:
 	- The XML C library for Gnome (libxml2)
 	  http://www.xmlsoft.org/
@@ -74,6 +86,11 @@ gives a complete list.
   --enable-jni            compile JNI source default=yes
   --enable-gtk-peer       compile GTK native peers default=yes
   --enable-gtk-cairo      compile cairo based Graphics2D default=no
+  --enable-qt-peer        compile Qt4 native peers default=no
+  --enable-default-toolkit
+                          fully qualified class name of default AWT toolkit
+                          default=no
+  --enable-xmlj           compile native libxml/xslt library default=no
   --enable-load-library   enable to use JNI native methods default=yes
   --with-jikes            to compile the class library using jikes
                           the default is to use gcj
@@ -83,7 +100,7 @@ gives a complete list.
                           any compiler warning into a compilation failure
                           default=no
   --enable-xmlj           compile native libxml/xslt library default=no
-  --with-gjdoc		  generate documentation using gjdoc default=no
+  --with-gjdoc		      generate documentation using gjdoc default=no
   --with-jay              Regenerate the parsers with jay must be given the
                           path to the jay executable
 

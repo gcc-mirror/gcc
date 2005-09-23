@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
+import gnu.classpath.Configuration;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -52,7 +54,17 @@ import java.text.AttributedCharacterIterator;
 
 public class GdkGraphics extends Graphics
 {
-  private final int native_state = GtkGenericPeer.getUniqueInteger();
+  static 
+  {
+    if (Configuration.INIT_LOAD_LIBRARY)
+      {
+        System.loadLibrary("gtkpeer");
+      }
+    initStaticState ();
+  }
+  
+  static native void initStaticState();
+  private final int native_state = GtkGenericPeer.getUniqueInteger ();
 
   Color color, xorColor;
   GtkComponentPeer component;
@@ -66,6 +78,7 @@ public class GdkGraphics extends Graphics
   static final int GDK_COPY = 0, GDK_XOR = 2;
 
   native void initState (GtkComponentPeer component);
+  native void initStateUnlocked (GtkComponentPeer component);
   native void initState (int width, int height);
   native void initFromImage (GtkImage image);
   native void copyState (GdkGraphics g);
@@ -114,6 +127,15 @@ public class GdkGraphics extends Graphics
   void initComponentGraphics ()
   {
     initState (component);
+    color = component.awtComponent.getForeground ();
+    Dimension d = component.awtComponent.getSize ();
+    clip = new Rectangle (0, 0, d.width, d.height);
+  }
+
+  // called back by native side: realize_cb
+  void initComponentGraphicsUnlocked ()
+  {
+    initStateUnlocked (component);
     color = component.awtComponent.getForeground ();
     Dimension d = component.awtComponent.getSize ();
     clip = new Rectangle (0, 0, d.width, d.height);
@@ -327,7 +349,13 @@ public class GdkGraphics extends Graphics
 
   public void setClip (Shape clip)
   {
-    if (clip != null)
+    if (clip == null)
+      {
+	// Reset clipping.
+	Dimension d = component.awtComponent.getSize();
+	setClip(new Rectangle (0, 0, d.width, d.height));
+      }
+    else
       setClip(clip.getBounds());
   }
 

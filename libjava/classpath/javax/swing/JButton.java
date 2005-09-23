@@ -39,20 +39,44 @@ package javax.swing;
 
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
 import javax.swing.plaf.ButtonUI;
 
 
 /**
- * An instance of JButton can be added to a panel, frame etc
+ * A general purpose push button. <code>JButton</code>s can display a label,
+ * an {@link Icon} or both.
  *
  * @author Ronald Veldema (rveldema@cs.vu.nl)
  */
 public class JButton extends AbstractButton
   implements Accessible
 {
+
+  /**
+   * Accessibility support for JButtons.
+   */
+  protected class AccessibleJButton
+    extends AbstractButton.AccessibleAbstractButton
+  {
+    /**
+     * Returns the accessible role that this component represents.
+     * This is {@link AccessibleRole#PUSH_BUTTON} for <code>JButton</code>s.
+     *
+     * @return the accessible role that this component represents
+     */
+    public AccessibleRole getAccessibleRole()
+    {
+      return AccessibleRole.PUSH_BUTTON;
+    }
+  }
+
   private static final long serialVersionUID = -1907255238954382202L;
   boolean def;
   boolean is_def;
+
+  /** The AccessibleContext for this JButton. */
+  AccessibleJButton accessibleContext;
 
   public JButton()
   {
@@ -96,8 +120,9 @@ public class JButton extends AbstractButton
 
   public AccessibleContext getAccessibleContext()
   {
-    // Gets the AccessibleContext associated with this JButton. 
-    return null;
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleJButton();
+    return accessibleContext;
   }
 
   public String getUIClassID()

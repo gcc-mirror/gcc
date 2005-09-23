@@ -38,12 +38,12 @@ exception statement from your version. */
 
 package gnu.CORBA;
 
-import org.omg.CORBA.*;
 import org.omg.CORBA.LocalObject;
-import org.omg.IOP.*;
+import org.omg.CORBA.ORB;
 import org.omg.IOP.Codec;
 import org.omg.IOP.CodecFactory;
 import org.omg.IOP.CodecFactoryPackage.UnknownEncoding;
+import org.omg.IOP.ENCODING_CDR_ENCAPS;
 import org.omg.IOP.Encoding;
 
 /**
@@ -52,9 +52,7 @@ import org.omg.IOP.Encoding;
  *
  * @author Audrius Meskauskas, Lithuania (AudriusA@Bioinformatics.org)
  */
-public class gnuCodecFactory
-  extends LocalObject
-  implements CodecFactory
+public class gnuCodecFactory extends LocalObject implements CodecFactory
 {
   /**
    * The associated ORB.
@@ -78,18 +76,15 @@ public class gnuCodecFactory
    *
    * @throws UnknownEncoding if the encoding is not a ENCODING_CDR_ENCAPS.
    */
-  public Codec create_codec(Encoding for_encoding)
-                     throws UnknownEncoding
+  public Codec create_codec(Encoding for_encoding) throws UnknownEncoding
   {
     if (for_encoding.format != ENCODING_CDR_ENCAPS.value)
       throw new UnknownEncoding("Only ENCODING_CDR_ENCAPS is " +
-                                "supported by this factory."
-                               );
+        "supported by this factory."
+      );
 
     return new cdrEncapsCodec(orb,
-                              new Version(for_encoding.major_version,
-                                          for_encoding.minor_version
-                                         )
-                             );
+      new Version(for_encoding.major_version, for_encoding.minor_version)
+    );
   }
 }

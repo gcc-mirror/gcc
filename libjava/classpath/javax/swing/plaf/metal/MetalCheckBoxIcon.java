@@ -80,10 +80,10 @@ public class MetalCheckBoxIcon
   protected void drawCheck(Component c, Graphics g, int x, int y)
   {
     g.setColor(Color.BLACK);
-    g.drawLine(3, 5, 3, 9);
-    g.drawLine(4, 5, 4, 9);
-    g.drawLine(5, 7, 9, 3);
-    g.drawLine(5, 8, 9, 4);
+    g.drawLine(3 + x, 5 + y, 3 + x, 9 + y);
+    g.drawLine(4 + x, 5 + y, 4 + x, 9 + y);
+    g.drawLine(5 + x, 7 + y, 9 + x, 3 + y);
+    g.drawLine(5 + x, 8 + y, 9 + x, 4 + y);
   }
 
   /**
@@ -124,7 +124,7 @@ public class MetalCheckBoxIcon
    * @param c the Component to draw on (gets casted to JCheckBox)
    * @param g the Graphics context to draw with
    * @param x the X position
-   * @param x the Y position
+   * @param y the Y position
    */
   public void paintIcon(Component c, Graphics g, int x, int y)
   {

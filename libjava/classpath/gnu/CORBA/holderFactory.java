@@ -68,74 +68,76 @@ import org.omg.CORBA.UShortSeqHolder;
 import org.omg.CORBA.WCharSeqHolder;
 import org.omg.CORBA.WStringSeqHolder;
 import org.omg.CORBA.portable.Streamable;
+import org.omg.CORBA.ObjectHolder;
 
 /**
- * Creates the suitable holder for storing the value of the given
- * type.
+ * Creates the suitable holder for storing the value of the given final_type.
  *
  * @author Audrius Meskauskas (AudriusA@Bioinformatics.org)
  */
 public class holderFactory
 {
   /**
-   * The array, sufficiently large to use any {@link TCKind}._tk* constant
-   * as an index.
+   * The array, sufficiently large to use any {@link TCKind}._tk* constant as
+   * an index.
    */
   private static final Class[] holders;
+
   private static final Class[] seqHolders;
 
   static
-  {
-    holders = new Class[ 32 ];
-    holders [ TCKind._tk_Principal ] = PrincipalHolder.class;
-    holders [ TCKind._tk_TypeCode ] = TypeCodeHolder.class;
-    holders [ TCKind._tk_any ] = AnyHolder.class;
-    holders [ TCKind._tk_boolean ] = BooleanHolder.class;
-    holders [ TCKind._tk_char ] = CharHolder.class;
-    holders [ TCKind._tk_double ] = DoubleHolder.class;
-    holders [ TCKind._tk_float ] = FloatHolder.class;
-    holders [ TCKind._tk_fixed ] = FixedHolder.class;
-    holders [ TCKind._tk_long ] = IntHolder.class;
-    holders [ TCKind._tk_longdouble ] = DoubleHolder.class;
-    holders [ TCKind._tk_longlong ] = LongHolder.class;
-    holders [ TCKind._tk_octet ] = OctetHolder.class;
-    holders [ TCKind._tk_short ] = ShortHolder.class;
-    holders [ TCKind._tk_string ] = StringHolder.class;
-    holders [ TCKind._tk_ulong ] = IntHolder.class;
-    holders [ TCKind._tk_ulonglong ] = LongHolder.class;
-    holders [ TCKind._tk_ushort ] = ShortHolder.class;
-    holders [ TCKind._tk_wchar ] = WCharHolder.class;
-    holders [ TCKind._tk_wstring ] = WStringHolder.class;
+    {
+      holders = new Class[32];
+      holders[TCKind._tk_Principal] = PrincipalHolder.class;
+      holders[TCKind._tk_TypeCode] = TypeCodeHolder.class;
+      holders[TCKind._tk_any] = AnyHolder.class;
+      holders[TCKind._tk_boolean] = BooleanHolder.class;
+      holders[TCKind._tk_char] = CharHolder.class;
+      holders[TCKind._tk_double] = DoubleHolder.class;
+      holders[TCKind._tk_float] = FloatHolder.class;
+      holders[TCKind._tk_fixed] = FixedHolder.class;
+      holders[TCKind._tk_long] = IntHolder.class;
+      holders[TCKind._tk_longdouble] = DoubleHolder.class;
+      holders[TCKind._tk_longlong] = LongHolder.class;
+      holders[TCKind._tk_octet] = OctetHolder.class;
+      holders[TCKind._tk_short] = ShortHolder.class;
+      holders[TCKind._tk_string] = StringHolder.class;
+      holders[TCKind._tk_ulong] = IntHolder.class;
+      holders[TCKind._tk_ulonglong] = LongHolder.class;
+      holders[TCKind._tk_ushort] = ShortHolder.class;
+      holders[TCKind._tk_wchar] = WCharHolder.class;
+      holders[TCKind._tk_wstring] = WStringHolder.class;
+      holders[TCKind._tk_objref] = ObjectHolder.class;
 
-    seqHolders = new Class[ 32 ];
+      seqHolders = new Class[32];
 
-    seqHolders [ TCKind._tk_ulonglong ] = ULongLongSeqHolder.class;
-    seqHolders [ TCKind._tk_short ] = ShortSeqHolder.class;
-    seqHolders [ TCKind._tk_octet ] = OctetSeqHolder.class;
-    seqHolders [ TCKind._tk_any ] = AnySeqHolder.class;
-    seqHolders [ TCKind._tk_long ] = LongSeqHolder.class;
-    seqHolders [ TCKind._tk_longlong ] = LongLongSeqHolder.class;
-    seqHolders [ TCKind._tk_float ] = FloatSeqHolder.class;
-    seqHolders [ TCKind._tk_double ] = DoubleSeqHolder.class;
-    seqHolders [ TCKind._tk_char ] = CharSeqHolder.class;
-    seqHolders [ TCKind._tk_boolean ] = BooleanSeqHolder.class;
-    seqHolders [ TCKind._tk_wchar ] = WCharSeqHolder.class;
-    seqHolders [ TCKind._tk_ushort ] = UShortSeqHolder.class;
-    seqHolders [ TCKind._tk_ulong ] = ULongSeqHolder.class;
-    seqHolders [ TCKind._tk_string ] = StringSeqHolder.class;
-    seqHolders [ TCKind._tk_wstring ] = WStringSeqHolder.class;
-  }
+      seqHolders[TCKind._tk_ulonglong] = ULongLongSeqHolder.class;
+      seqHolders[TCKind._tk_short] = ShortSeqHolder.class;
+      seqHolders[TCKind._tk_octet] = OctetSeqHolder.class;
+      seqHolders[TCKind._tk_any] = AnySeqHolder.class;
+      seqHolders[TCKind._tk_long] = LongSeqHolder.class;
+      seqHolders[TCKind._tk_longlong] = LongLongSeqHolder.class;
+      seqHolders[TCKind._tk_float] = FloatSeqHolder.class;
+      seqHolders[TCKind._tk_double] = DoubleSeqHolder.class;
+      seqHolders[TCKind._tk_char] = CharSeqHolder.class;
+      seqHolders[TCKind._tk_boolean] = BooleanSeqHolder.class;
+      seqHolders[TCKind._tk_wchar] = WCharSeqHolder.class;
+      seqHolders[TCKind._tk_ushort] = UShortSeqHolder.class;
+      seqHolders[TCKind._tk_ulong] = ULongSeqHolder.class;
+      seqHolders[TCKind._tk_string] = StringSeqHolder.class;
+      seqHolders[TCKind._tk_wstring] = WStringSeqHolder.class;
+    }
 
   /**
-   * Create a holder for storing the value of the given built-in type.
-   * This function returns the defined holders for the built-in primitive
-   * types and they sequences.
+   * Create a holder for storing the value of the given built-in final_type. This
+   * function returns the defined holders for the built-in primitive types and
+   * they sequences.
    *
    * @param t the typecode
    *
-   * @return an instance of the corresponding built-in holder of null
-   * if no such is defined for this type. The holder is created with a
-   * parameterless constructor.
+   * @return an instance of the corresponding built-in holder of null if no such
+   * is defined for this final_type. The holder is created with a parameterless
+   * constructor.
    */
   public static Streamable createHolder(TypeCode t)
   {
@@ -145,24 +147,23 @@ public class holderFactory
         int componentKind;
 
         Streamable holder = null;
-        Streamable component;
 
-        if (kind < holders.length && holders [ kind ] != null)
-          holder = (Streamable) holders [ kind ].newInstance();
+        if (kind < holders.length && holders[kind] != null)
+          holder = (Streamable) holders[kind].newInstance();
 
         if (holder != null)
           return holder;
 
         switch (kind)
           {
-            case TCKind._tk_sequence :
-              componentKind = t.content_type().kind().value();
-              if (componentKind < seqHolders.length)
-                return (Streamable) seqHolders [ componentKind ].newInstance();
-              break;
+          case TCKind._tk_sequence:
+            componentKind = t.content_type().kind().value();
+            if (componentKind < seqHolders.length)
+              return (Streamable) seqHolders[componentKind].newInstance();
+            break;
 
-            default :
-              break;
+          default:
+            break;
           }
       }
     catch (Exception ex)

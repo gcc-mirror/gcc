@@ -100,4 +100,9 @@ public class GtkMenuPeer extends GtkMenuItemPeer
   }
 
   public native void delItem(int index);
+
+  public void addSeparator()
+  {
+    // FIXME: implement
+  }
 }

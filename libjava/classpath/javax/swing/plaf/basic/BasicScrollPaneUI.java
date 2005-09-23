@@ -102,14 +102,6 @@ public class BasicScrollPaneUI extends ScrollPaneUI
     return sl.minimumLayoutSize(c);
   }
 
-  public Dimension getPreferredSize(JComponent c) 
-  {
-    JScrollPane p = (JScrollPane ) c;
-    ScrollPaneLayout sl = (ScrollPaneLayout) p.getLayout();
-    return sl.preferredLayoutSize(c);
-  }
-
-
   public void paint(Graphics g, JComponent c)
   {      
     // do nothing; the normal painting-of-children algorithm, along with

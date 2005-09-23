@@ -192,16 +192,12 @@ public class GridBagLayout
 
 	if (clone.gridwidth == 0)
 	    clone.gridwidth = GridBagConstraints.REMAINDER;
-	else if (clone.gridwidth < 0
-	    && clone.gridwidth != GridBagConstraints.REMAINDER
-	    && clone.gridwidth != GridBagConstraints.RELATIVE)
+	else if (clone.gridwidth < 0)
 	    clone.gridwidth = 1;
     
 	if (clone.gridheight == 0)
 	    clone.gridheight = GridBagConstraints.REMAINDER;
-	else if (clone.gridheight < 0
-	    && clone.gridheight != GridBagConstraints.REMAINDER
-	    && clone.gridheight != GridBagConstraints.RELATIVE)
+	else if (clone.gridheight < 0)
 	    clone.gridheight = 1;
     
 	comptable.put (component, clone);
@@ -913,7 +909,7 @@ public class GridBagLayout
           sizes[start] = Math.max(sizes[start], size);
           weights[start] = Math.max(weights[start], weight);
         }
-      else
+      else if (span > 1)
         {
           int numOccupied = span;
           int lastOccupied = -1;

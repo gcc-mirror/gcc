@@ -666,6 +666,16 @@ Systems    : all
 #ifndef TARGET_NATIVE_NETWORK_SOCKET_SET_OPTION_SO_TIMEOUT
   #include <sys/types.h>
   #include <sys/socket.h>
+#if TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# if HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
+#endif
   #define TARGET_NATIVE_NETWORK_SOCKET_SET_OPTION_SO_TIMEOUT(socketDescriptor,flag,result) \
     do { \
       struct timeval __value; \

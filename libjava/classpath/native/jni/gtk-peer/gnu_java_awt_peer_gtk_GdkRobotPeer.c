@@ -311,11 +311,7 @@ Java_gnu_java_awt_peer_gtk_GdkRobotPeer_nativeGetRGBPixels
   n_pixels = height * stride_pixels;
   gdk_pixels = gdk_pixbuf_get_pixels (pixbuf);
 
-  gdk_threads_leave ();
-
   jpixels = (*env)->NewIntArray (env, n_pixels);
-
-  gdk_threads_enter ();
 
   java_pixels = (*env)->GetIntArrayElements (env, jpixels, NULL);
 

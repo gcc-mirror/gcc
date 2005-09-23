@@ -110,6 +110,12 @@ public final class Component extends Level
    */
   public static final Component X509 = new Component ("X.509", 6);
 
+  /**
+   * Trace access control policies, including the parsing of
+   * java.policy files.
+   */
+  public static final Component POLICY = new Component ("POLICY", 7);
+
   private final int startIndex;
   private final int endIndex;
 

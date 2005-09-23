@@ -143,7 +143,7 @@ public class ParserDelegator
    * Parses the HTML document, calling methods of the provided
    * callback. This method must be multithread - safe.
    * @param reader The reader to read the HTML document from
-   * @param callback The callback that is notifyed about the presence
+   * @param a_callback The callback that is notifyed about the presence
    * of HTML elements in the document.
    * @param ignoreCharSet If thrue, any charset changes during parsing
    * are ignored.
@@ -191,7 +191,7 @@ public class ParserDelegator
    * all subsequent calls to the parse(...) . If you need to specify
    * your DTD locally, simply {@link javax.swing.text.html.parser.Parser}
    * instead.
-   * @param dtd The DTD that will be used to parse documents by this class.
+   * @param a_dtd The DTD that will be used to parse documents by this class.
    * @param name The name of this DTD.
    * @return No standard is specified on which instance of DTD must be
    * returned by this method, and it is recommended to leave the returned

@@ -50,6 +50,11 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.MatteBorder;
 import javax.swing.border.TitledBorder;
 
+/**
+ * A factory for commonly used borders.
+ *
+ * @author original author unknown
+ */
 public class BorderFactory
 {
   private BorderFactory()
@@ -257,7 +262,7 @@ public class BorderFactory
    * justification (left) and using the default font and text color determined
    * by the current look and feel.
    *
-   * @param order The Border object to add the title to
+   * @param border The Border object to add the title to
    * @param title A String containing the text of the title
    *
    * @return The TitledBorder object

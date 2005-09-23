@@ -15,8 +15,8 @@ General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GNU Classpath; see the file COPYING.  If not, write to the
-Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-02111-1307 USA.
+Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA.
 
 Linking this library statically or dynamically with other modules is
 making a combined work based on this library.  Thus, the terms and
@@ -40,6 +40,7 @@ exception statement from your version. */
 package gnu.classpath.jdwp.processor;
 
 import gnu.classpath.jdwp.exception.JdwpException;
+import gnu.classpath.jdwp.VMIdManager;
 
 import java.io.DataOutputStream;
 import java.nio.ByteBuffer;
@@ -50,8 +51,13 @@ import java.nio.ByteBuffer;
  *
  * @author Aaron Luchko <aluchko@redhat.com>
  */
-public interface CommandSet
+public abstract class CommandSet
 {
+  /**
+   * The VM's ID manager
+   */
+  protected final VMIdManager idMan = VMIdManager.getDefault ();
+
   /**
    * Runs the given command with the data in distr and writes the data for the
    * reply packet to ostr.
@@ -62,7 +68,7 @@ public interface CommandSet
    * @return true if the JDWP layer should shut down in response to this packet
    * @throws JdwpException command wasn't carried out successfully
    */
-  public boolean runCommand(ByteBuffer bb, DataOutputStream os,
-                            byte command) 
+  public abstract boolean runCommand(ByteBuffer bb, DataOutputStream os,
+				     byte command) 
     throws JdwpException;
 }

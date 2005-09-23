@@ -38,133 +38,357 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.awt.Image;
+import java.awt.datatransfer.*;
+
+import java.io.*;
+
+import java.util.List;
+import java.util.Iterator;
 
 public class GtkClipboard extends Clipboard
 {
-  /* the number of milliseconds that we'll wait around for the
-     owner of the GDK_SELECTION_PRIMARY selection to convert 
-     the requested data */
-  static final int SELECTION_RECEIVED_TIMEOUT = 5000;
 
-  /* We currently only support transferring of text between applications */
-  static String selection;
-  static Object selectionLock = new Object ();
+  // Given to the native side so it can signal special targets that
+  // can be converted to one of the special predefined DataFlavors.
+  static final String stringMimeType;
+  static final String imageMimeType;
+  static final String filesMimeType;
 
-  static boolean hasSelection = false;
+  // Indicates whether the results of the clipboard selection can be
+  // cached by GtkSelection. True if
+  // gdk_display_supports_selection_notification.
+  static final boolean canCache;
 
-  protected GtkClipboard()
+  static
+  {
+    stringMimeType = DataFlavor.stringFlavor.getMimeType();
+    imageMimeType = DataFlavor.imageFlavor.getMimeType();
+    filesMimeType = DataFlavor.javaFileListFlavor.getMimeType();
+
+    canCache = initNativeState(stringMimeType, imageMimeType, filesMimeType);
+  }
+
+  /**
+   * The one and only gtk+ clipboard instance.
+   */
+  private static GtkClipboard instance = new GtkClipboard();
+
+  /**
+   * Creates the clipboard and sets the initial contents to the
+   * current gtk+ selection.
+   */
+  private GtkClipboard()
   {
     super("System Clipboard");
-    initNativeState();
+    setContents(new GtkSelection(), null);
   }
 
-  public Transferable getContents(Object requestor)
+  /**
+   * Returns the one and only GtkClipboard instance.
+   */
+
+  static GtkClipboard getInstance()
   {
-    synchronized (this)
-      {
-	if (hasSelection)
-	  return contents;
-      }
-
-    /* Java doesn't own the selection, so we need to ask X11 */
-    // XXX: Does this hold with Swing too ?
-    synchronized (selectionLock)
-      {
-	requestStringConversion();
-	
-	try 
-	  {
-	    selectionLock.wait(SELECTION_RECEIVED_TIMEOUT);
-	  } 
-	catch (InterruptedException e)
-	  {
-	    return null;
-	  }
-	
-	return selection == null ? null : new StringSelection(selection);
-      }
+    return instance;
   }
 
-  void stringSelectionReceived(String newSelection)
+  /**
+   * Sets the GtkSelection facade as new contents of the clipboard.
+   * Called from gtk+ when another application grabs the clipboard and
+   * we loose ownership.
+   */
+  private static void setSystemContents()
   {
-    synchronized (selectionLock)
-      {
-	selection = newSelection;
-	selectionLock.notify();
-      }
+    GtkClipboardNotifier.announce();
   }
 
-  /* convert Java clipboard data into a String suitable for sending
-     to another application */
-  synchronized String stringSelectionHandler() throws IOException
-  {
-    String selection = null;
-
-    try
-      {
-	if (contents.isDataFlavorSupported(DataFlavor.stringFlavor))
-	  selection = (String)contents.getTransferData(DataFlavor.stringFlavor);
-	else if (contents.isDataFlavorSupported(DataFlavor.plainTextFlavor))
-	  {
-	    StringBuffer sbuf = new StringBuffer();
-	    InputStreamReader reader;
-	    char readBuf[] = new char[512];
-	    int numChars;
-	  
-	    reader = new InputStreamReader 
-	      ((InputStream) 
-	       contents.getTransferData(DataFlavor.plainTextFlavor), "UNICODE");
-	  
-	    while (true)
-	      {
-		numChars = reader.read(readBuf);
-		if (numChars == -1)
-		  break;
-		sbuf.append(readBuf, 0, numChars);
-	      }
-	  
-	    selection = new String(sbuf);
-	  }
-      }
-    catch (Exception e)
-      {
-      }
-    
-    return selection;
-  }
-
+  /**
+   * Sets the new contents and advertises the available flavors to the
+   * gtk+ clipboard.
+   */
   public synchronized void setContents(Transferable contents,
 				       ClipboardOwner owner)
   {
-    selectionGet();
+    super.setContents(contents, owner);
 
-    this.contents = contents;
-    this.owner = owner;
-
-    hasSelection = true;
-  }
-
-  synchronized void selectionClear()
-  {
-    hasSelection = false;
-
-    if (owner != null)
+    if (contents == null)
       {
-	owner.lostOwnership(this, contents);
-	owner = null;
-	contents = null;
+	advertiseContent(null, false, false, false);
+	return;
       }
+
+    // We don't need to do anything for a GtkSelection facade.
+    if (contents instanceof GtkSelection)
+      return;
+
+    boolean text = false;
+    boolean images = false;
+    boolean files = false;
+
+    if (contents instanceof StringSelection
+	|| contents.isDataFlavorSupported(DataFlavor.stringFlavor)
+	|| contents.isDataFlavorSupported(DataFlavor.plainTextFlavor)
+	|| contents.isDataFlavorSupported(DataFlavor
+					  .getTextPlainUnicodeFlavor()))
+      text = true;
+
+    DataFlavor[] flavors = contents.getTransferDataFlavors();
+    String[] mimeTargets = new String[flavors.length];
+    for (int i = 0; i < flavors.length; i++)
+      {
+	DataFlavor flavor = flavors[i];
+	String mimeType = flavor.getMimeType();
+	mimeTargets[i] = mimeType;
+
+	if (! text)
+	  if ("text".equals(flavor.getPrimaryType())
+	      || flavor.isRepresentationClassReader())
+	    text = true;
+
+	// XXX - We only support automatic image conversion for
+	// GtkImages at the moment. So explicitly check that we have
+	// one.
+	if (! images && flavors[i].equals(DataFlavor.imageFlavor))
+	  {
+	    try
+	      {
+		Object o = contents.getTransferData(DataFlavor.imageFlavor);
+		if (o instanceof GtkImage)
+		  images = true;
+	      }
+	    catch (UnsupportedFlavorException ufe)
+	      {
+	      }
+	    catch (IOException ioe)
+	      {
+	      }
+	    catch (ClassCastException cce)
+	      {
+	      }
+	  }
+
+	if (flavors[i].equals(DataFlavor.javaFileListFlavor))
+	  files = true;
+      }
+
+    advertiseContent(mimeTargets, text, images, files);
   }
 
-  native void initNativeState();
-  static native void requestStringConversion();
-  static native void selectionGet();
+  /**
+   * Advertises new contents to the gtk+ clipboard given a string
+   * array of (mime-type) targets. When the boolean flags text, images
+   * and/or files are set then gtk+ is asked to also advertise the
+   * availability of any text, image or uri/file content types it
+   * supports. If targets is null (and all flags false) then the
+   * selection has explicitly been erased.
+   */
+  private native void advertiseContent(String[] targets,
+				       boolean text,
+				       boolean images,
+				       boolean files);
+  
+  /**
+   * Called by the gtk+ clipboard when an application has requested
+   * text.  Return a string representing the current clipboard
+   * contents or null when no text can be provided.
+   */
+  private String provideText()
+  {
+    Transferable contents = this.contents;
+    if (contents == null || contents instanceof GtkSelection)
+      return null;
+
+    // Handle StringSelection special since that is just pure text.
+    if (contents instanceof StringSelection)
+      {
+        try
+          {
+            return (String) contents.getTransferData(DataFlavor.stringFlavor);
+	  }
+        catch (UnsupportedFlavorException ufe)
+          {
+          }
+        catch (IOException ioe)
+          {
+          }
+        catch (ClassCastException cce)
+          {
+          }
+      }
+
+    // Try to get a plain text reader for the current contents and
+    // turn the result into a string.
+    try
+      {
+	DataFlavor plainText = DataFlavor.getTextPlainUnicodeFlavor();
+	Reader r = plainText.getReaderForText(contents);
+	if (r != null)
+	  {
+	    StringBuffer sb = new StringBuffer();
+	    char[] cs = new char[1024];
+	    int l = r.read(cs);
+	    while (l != -1)
+	      {
+		sb.append(cs, 0, l);
+		l = r.read(cs);
+	      }
+	    return sb.toString();
+	  }
+      }
+    catch (IllegalArgumentException iae)
+      {
+      }
+    catch (UnsupportedEncodingException iee)
+      {
+      }
+    catch (UnsupportedFlavorException ufe)
+      {
+      }
+    catch (IOException ioe)
+      {
+      }
+
+    return null;
+  }
+
+  /**
+   * Called by the gtk+ clipboard when an application has requested an
+   * image.  Returns a GtkImage representing the current clipboard
+   * contents or null when no image can be provided.
+   */
+  private GtkImage provideImage()
+  {
+    Transferable contents = this.contents;
+    if (contents == null || contents instanceof GtkSelection)
+      return null;
+
+    try
+      {
+	return (GtkImage) contents.getTransferData(DataFlavor.imageFlavor);
+      }
+    catch (UnsupportedFlavorException ufe)
+      {
+      }
+    catch (IOException ioe)
+      {
+      }
+    catch (ClassCastException cce)
+      {
+      }
+
+    return null;
+  }
+
+  /**
+   * Called by the gtk+ clipboard when an application has requested a
+   * uri-list.  Return a string array containing the URIs representing
+   * the current clipboard contents or null when no URIs can be
+   * provided.
+   */
+  private String[] provideURIs()
+  {
+    Transferable contents = this.contents;
+    if (contents == null || contents instanceof GtkSelection)
+      return null;
+
+    try
+      {
+	List list = (List) contents.getTransferData
+	  (DataFlavor.javaFileListFlavor);
+	String[] uris = new String[list.size()];
+	int u = 0;
+	Iterator it = list.iterator();
+	while (it.hasNext())
+	  uris[u++] = ((File) it.next()).toURI().toString();
+	return uris;
+      }
+    catch (UnsupportedFlavorException ufe)
+      {
+      }
+    catch (IOException ioe)
+      {
+      }
+    catch (ClassCastException cce)
+      {
+      }
+
+    return null;
+  }
+
+  /**
+   * Called by gtk+ clipboard when an application requests the given
+   * target mime-type. Returns a byte array containing the requested
+   * data, or null when the contents cannot be provided in the
+   * requested target mime-type. Only called after any explicit text,
+   * image or file/uri requests have been handled earlier and failed.
+   */
+  private byte[] provideContent(String target)
+  {
+    // Sanity check. The callback could be triggered just after we
+    // changed the clipboard.
+    Transferable contents = this.contents;
+    if (contents == null || contents instanceof GtkSelection)
+      return null;
+
+    // XXX - We are being called from a gtk+ callback. Which means we
+    // should return as soon as possible and not call arbitrary code
+    // that could deadlock or go bonkers. But we don't really know
+    // what DataTransfer contents object we are dealing with. Same for
+    // the other provideXXX() methods.
+    try
+      {
+	DataFlavor flavor = new DataFlavor(target);
+	Object o = contents.getTransferData(flavor);
+
+	if (o instanceof byte[])
+	  return (byte[]) o;
+
+	if (o instanceof InputStream)
+	  {
+	    InputStream is = (InputStream) o;
+	    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	    byte[] bs = new byte[1024];
+	    int l = is.read(bs);
+	    while (l != -1)
+	      {
+		baos.write(bs, 0, l);
+		l = is.read(bs);
+	      }
+	    return baos.toByteArray();
+	  }
+
+	if (o instanceof Serializable)
+	  {
+	    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	    ObjectOutputStream oos = new ObjectOutputStream(baos);
+	    oos.writeObject(o);
+	    oos.close();
+	    return baos.toByteArray();
+	  }
+      }
+    catch (ClassNotFoundException cnfe)
+      {
+      }
+    catch (UnsupportedFlavorException ufe)
+      {
+      }
+    catch (IOException ioe)
+      {
+      }
+    catch (ClassCastException cce)
+      {
+      }
+
+    return null;
+  }
+
+  /**
+   * Initializes the gtk+ clipboard and caches any native side
+   * structures needed. Returns whether or not the contents of the
+   * Clipboard can be cached (gdk_display_supports_selection_notification).
+   */
+  private static native boolean initNativeState(String stringTarget,
+						String imageTarget,
+						String filesTarget);
 }

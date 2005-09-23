@@ -42,8 +42,10 @@ import java.util.HashMap;
 
 import javax.swing.JComponent;
 import javax.swing.JInternalFrame;
+import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.basic.BasicInternalFrameUI;
+
 
 public class MetalInternalFrameUI
   extends BasicInternalFrameUI
@@ -85,4 +87,13 @@ public class MetalInternalFrameUI
 
     return instance;
   }
+  
+  protected JComponent createNorthPane(JInternalFrame w)
+  {
+    titlePane = new MetalInternalFrameTitlePane(w);
+    titlePane.setBorder(new EmptyBorder(2, 2, 2, 2));
+    return titlePane;  
+  }
+  
+
 }

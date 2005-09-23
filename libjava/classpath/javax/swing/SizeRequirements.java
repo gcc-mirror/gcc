@@ -295,7 +295,6 @@ public class SizeRequirements implements Serializable
    * @param allocated the amount of allocated space
    * @param total the total size requirements of the components
    * @param children the size requirement of each component
-   * @param offsets will hold the offset values for each component
    * @param spans will hold the span values for each component
    * @param forward whether the components should be placed in the forward
    *     direction (left-right or top-bottom) or reverse direction
