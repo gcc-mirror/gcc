@@ -132,7 +132,7 @@
 	  [(FETCHOP:SI (match_dup 0)
 	     (match_operand:SI 1 "<fetchop_pred>" "<fetchopsi_constr>"))]
 	  UNSPEC_ATOMIC))
-   (clobber (match_scratch:SI 2 "=&r"))
+   (clobber (match_scratch:SI 2 "=&b"))
    (clobber (match_scratch:CC 3 "=&x"))]
   "TARGET_POWERPC"
   "#"
@@ -150,7 +150,7 @@
 	  [(FETCHOP:DI (match_dup 0)
 	     (match_operand:DI 1 "<fetchop_pred>" "<fetchopdi_constr>"))]
 	  UNSPEC_ATOMIC))
-   (clobber (match_scratch:DI 2 "=&r"))
+   (clobber (match_scratch:DI 2 "=&b"))
    (clobber (match_scratch:CC 3 "=&x"))]
   "TARGET_POWERPC"
   "#"
@@ -234,7 +234,7 @@
 	  [(FETCHOP:SI (match_dup 1)
 	     (match_operand:SI 2 "<fetchop_pred>" "<fetchopsi_constr>"))]
 	  UNSPEC_ATOMIC))
-   (clobber (match_scratch:SI 3 "=&r"))
+   (clobber (match_scratch:SI 3 "=&b"))
    (clobber (match_scratch:CC 4 "=&x"))]
   "TARGET_POWERPC"
   "#"
@@ -254,7 +254,7 @@
 	  [(FETCHOP:DI (match_dup 1)
 	     (match_operand:DI 2 "<fetchop_pred>" "<fetchopdi_constr>"))]
 	  UNSPEC_ATOMIC))
-   (clobber (match_scratch:DI 3 "=&r"))
+   (clobber (match_scratch:DI 3 "=&b"))
    (clobber (match_scratch:CC 4 "=&x"))]
   "TARGET_POWERPC"
   "#"
@@ -344,7 +344,7 @@
 	(unspec:SI
 	  [(FETCHOP:SI (match_dup 1) (match_dup 2))]
 	  UNSPEC_ATOMIC))
-   (clobber (match_scratch:SI 3 "=&r"))
+   (clobber (match_scratch:SI 3 "=&b"))
    (clobber (match_scratch:CC 4 "=&x"))]
   "TARGET_POWERPC"
   "#"
@@ -365,7 +365,7 @@
 	(unspec:DI
 	  [(FETCHOP:DI (match_dup 1) (match_dup 2))]
 	  UNSPEC_ATOMIC))
-   (clobber (match_scratch:DI 3 "=&r"))
+   (clobber (match_scratch:DI 3 "=&b"))
    (clobber (match_scratch:CC 4 "=&x"))]
   "TARGET_POWERPC"
   "#"

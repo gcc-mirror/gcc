@@ -1,3 +1,15 @@
+2005-09-23  David Edelsohn  <edelsohn@gnu.org>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/rs6000/sync.md (sync_<fetchop_name>si_internal): Change
+	operand2 constraint to "b".
+	(sync_<fetchop_name>di_internal): Same.
+	(sync_old_<fetchop_name>si_internal): Change operand3 constraint
+	to "b".
+	(sync_old_<fetchop_name>di_internal): Same.
+	(sync_new_<fetchop_name>si_internal): Same.
+	(sync_new_<fetchop_name>di_internal): Same.
+
 2005-09-23  J"orn Rennecke <joern.rennecke@st.com>
 
 	PR middle-end/23991
