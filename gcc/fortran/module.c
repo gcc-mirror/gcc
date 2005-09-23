@@ -1873,6 +1873,12 @@ mio_component_ref (gfc_component ** cp, gfc_symbol * sym)
     {
       mio_internal_string (name);
 
+      /* It can happen that a component reference can be read before the
+	 associated derived type symbol has been loaded. Return now and
+	 wait for a later iteration of load_needed.  */
+      if (sym == NULL)
+	return;
+
       if (sym->components != NULL && p->u.pointer == NULL)
 	{
 	  /* Symbol already loaded, so search by name.  */
@@ -2085,10 +2091,18 @@ mio_symtree_ref (gfc_symtree ** stp)
 {
   pointer_info *p;
   fixup_t *f;
+  gfc_symtree * ns_st = NULL;
 
   if (iomode == IO_OUTPUT)
     {
-      mio_symbol_ref (&(*stp)->n.sym);
+      /* If this is a symtree for a symbol that came from a contained module
+	 namespace, it has a unique name and we should look in the current
+	 namespace to see if the required, non-contained symbol is available
+	 yet. If so, the latter should be written.  */
+      if ((*stp)->n.sym && check_unique_name((*stp)->name))
+	ns_st = gfc_find_symtree (gfc_current_ns->sym_root, (*stp)->n.sym->name);
+
+      mio_symbol_ref (ns_st ? &ns_st->n.sym : &(*stp)->n.sym);
     }
   else
     {
@@ -3099,7 +3113,7 @@ read_module (void)
   const char *p;
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_intrinsic_op i;
-  int ambiguous, j, nuse, series, symbol;
+  int ambiguous, j, nuse, symbol;
   pointer_info *info;
   gfc_use_rename *u;
   gfc_symtree *st;
@@ -3119,7 +3133,6 @@ read_module (void)
   mio_lparen ();
 
   /* Create the fixup nodes for all the symbols.  */
-  series = 0;
 
   while (peek_atom () != ATOM_RPAREN)
     {
@@ -3144,14 +3157,16 @@ read_module (void)
 
       sym = find_true_name (info->u.rsym.true_name, info->u.rsym.module);
 
-      /* If a module contains subroutines with assumed shape dummy
-       arguments, the symbols for indices need to be different from
-       from those in the module proper(ns = 1).  */
-      if (sym !=NULL && info->u.rsym.ns != 1)
-	sym = find_true_name (info->u.rsym.true_name,
-		gfc_get_string ("%s@%d",module_name, series++));
+        /* See if the symbol has already been loaded by a previous module.
+	 If so, we reference the existing symbol and prevent it from
+	 being loaded again.  This should not happen if the symbol being
+	 read is an index for an assumed shape dummy array (ns != 1).  */
 
-      if (sym == NULL)
+      sym = find_true_name (info->u.rsym.true_name, info->u.rsym.module);
+
+      if (sym == NULL
+	   || (sym->attr.flavor == FL_VARIABLE
+	       && info->u.rsym.ns !=1))
 	continue;
 
       info->u.rsym.state = USED;
@@ -3213,8 +3228,8 @@ read_module (void)
 	      if (sym == NULL)
 		{
 		  sym = info->u.rsym.sym =
-		      gfc_new_symbol (info->u.rsym.true_name
-				      , gfc_current_ns);
+		      gfc_new_symbol (info->u.rsym.true_name,
+				      gfc_current_ns);
 
 		  sym->module = gfc_get_string (info->u.rsym.module);
 		}
