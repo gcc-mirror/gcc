@@ -1,3 +1,10 @@
+2005-09-23  Tom Tromey  <tromey@redhat.com>
+
+	* aclocal.m4, configure: Rebuilt.
+	* configure.ac: Use GCC_CHECK_TLS.
+	* acinclude.m4 (LIBMUDFLAP_CHECK_TLS, LIBMUDFLAP_ENABLE): Moved
+	to ../config.
+
 2005-08-22  Jim Wilson  <wilson@specifix.com>
 
 	* mf-hooks2.c (MF_REGISTER_fopen): Define to __MF_TYPE_STATIC when
