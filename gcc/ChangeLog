@@ -1,5 +1,6 @@
 2005-09-23  J"orn Rennecke <joern.rennecke@st.com>
 
+	PR middle-end/23991
 	* final.c (insn_default_length, insn_min_length): In !HAVE_ATTR_length
 	case, define as macros.
 
