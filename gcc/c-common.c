@@ -4520,21 +4520,24 @@ handle_mode_attribute (tree *node, tree name, tree args,
 	      return NULL_TREE;
 	    }
 
-	  if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
-	    type = build_variant_type_copy (type);
-
-	  /* We cannot use layout_type here, because that will attempt
-	     to re-layout all variants, corrupting our original.  */
-	  TYPE_PRECISION (type) = TYPE_PRECISION (typefm);
-	  TYPE_MIN_VALUE (type) = TYPE_MIN_VALUE (typefm);
-	  TYPE_MAX_VALUE (type) = TYPE_MAX_VALUE (typefm);
-	  TYPE_SIZE (type) = TYPE_SIZE (typefm);
-	  TYPE_SIZE_UNIT (type) = TYPE_SIZE_UNIT (typefm);
-	  TYPE_MODE (type) = TYPE_MODE (typefm);
-	  if (!TYPE_USER_ALIGN (type))
-	    TYPE_ALIGN (type) = TYPE_ALIGN (typefm);
-
-	  typefm = type;
+	  if (flags & ATTR_FLAG_TYPE_IN_PLACE)
+	    {
+	      TYPE_PRECISION (type) = TYPE_PRECISION (typefm);
+	      typefm = type;
+	    }
+	  else
+	    {
+	      /* We cannot build a type variant, as there's code that assumes
+		 that TYPE_MAIN_VARIANT has the same mode.  This includes the
+		 debug generators.  Instead, create a subrange type.  This
+		 results in all of the enumeral values being emitted only once
+		 in the original, and the subtype gets them by reference.  */
+	      if (TYPE_UNSIGNED (type))
+		typefm = make_unsigned_type (TYPE_PRECISION (typefm));
+	      else
+		typefm = make_signed_type (TYPE_PRECISION (typefm));
+	      TREE_TYPE (typefm) = type;
+	    }
 	}
       else if (VECTOR_MODE_P (mode)
 	       ? TREE_CODE (type) != TREE_CODE (TREE_TYPE (typefm))
@@ -6119,6 +6122,7 @@ static tree
 sync_resolve_return (tree params, tree result)
 {
   tree ptype = TREE_TYPE (TREE_TYPE (TREE_VALUE (params)));
+  ptype = TYPE_MAIN_VARIANT (ptype);
   return convert (ptype, result);
 }
 
