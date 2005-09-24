@@ -663,8 +663,18 @@ verify_cgraph_node (struct cgraph_node *node)
 	       cgraph_node_name (e->caller), cgraph_node_name (e->callee));
 	error_found = true;
       }
+  if (node->count < 0)
+    {
+      error ("Execution count is negative");
+      error_found = true;
+    }
   for (e = node->callers; e; e = e->next_caller)
     {
+      if (e->count < 0)
+	{
+	  error ("caller edge count is negative");
+	  error_found = true;
+	}
       if (!e->inline_failed)
 	{
 	  if (node->global.inlined_to

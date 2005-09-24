@@ -242,7 +242,7 @@ struct cgraph_rtl_info *cgraph_rtl_info (tree);
 const char * cgraph_node_name (struct cgraph_node *);
 struct cgraph_edge * cgraph_clone_edge (struct cgraph_edge *,
 				        struct cgraph_node *,
-				        tree, int, int, bool);
+				        tree, gcov_type, int, bool);
 struct cgraph_node * cgraph_clone_node (struct cgraph_node *, gcov_type,
 					int, bool);
 
@@ -276,8 +276,6 @@ bool cgraph_inline_p (struct cgraph_edge *, const char **reason);
 bool cgraph_preserve_function_body_p (tree);
 void verify_cgraph (void);
 void verify_cgraph_node (struct cgraph_node *);
-void cgraph_mark_inline_edge (struct cgraph_edge *e);
-void cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate);
 void cgraph_build_static_cdtor (char which, tree body, int priority);
 void cgraph_reset_static_var_maps (void);
 void init_cgraph (void);
@@ -290,7 +288,7 @@ int cgraph_postorder (struct cgraph_node **);
 
 /* In ipa-inline.c  */
 bool cgraph_decide_inlining_incrementally (struct cgraph_node *, bool);
-void cgraph_clone_inlined_nodes (struct cgraph_edge *, bool);
-void cgraph_mark_inline_edge (struct cgraph_edge *);
+void cgraph_clone_inlined_nodes (struct cgraph_edge *, bool, bool);
+void cgraph_mark_inline_edge (struct cgraph_edge *, bool);
 bool cgraph_default_inline_p (struct cgraph_node *, const char **);
 #endif  /* GCC_CGRAPH_H  */

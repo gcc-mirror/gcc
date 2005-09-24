@@ -375,7 +375,7 @@ tree_rest_of_compilation (tree fndecl)
 	  saved_node = cgraph_clone_node (node, node->count, 1, false);
 	  for (e = saved_node->callees; e; e = e->next_callee)
 	    if (!e->inline_failed)
-	      cgraph_clone_inlined_nodes (e, true);
+	      cgraph_clone_inlined_nodes (e, true, false);
 	}
       cfun->saved_static_chain_decl = cfun->static_chain_decl;
       save_body (fndecl, &cfun->saved_args, &cfun->saved_static_chain_decl);
