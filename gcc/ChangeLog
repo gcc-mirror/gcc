@@ -1,3 +1,10 @@
+2005-09-24  Richard Henderson  <rth@redhat.com>
+
+	* c-common.c (handle_mode_attribute): When not modifying in place,
+	create subtypes for enumerations.
+	(sync_resolve_return): Use TYPE_MAIN_VARIANT.
+	* gimplify.c (create_tmp_from_val): Likewise.
+
 2005-09-24  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/i386/i386.md (*tls_global_dynamic_64,
