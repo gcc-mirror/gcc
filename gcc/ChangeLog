@@ -1,3 +1,9 @@
+2005-09-24  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/i386/i386.md (*tls_global_dynamic_64,
+	*tls_local_dynamic_base_64): Add missing mode to call.
+	(tls_global_dynamic_64, tls_local_dynamic_base_64): Likewise.
+
 2005-09-24  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_clone_edge): Make the scale gcov_type.
