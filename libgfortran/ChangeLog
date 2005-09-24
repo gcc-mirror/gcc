@@ -1,5 +1,10 @@
 2005-09-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
+	PR libfortran/23802
+	* intrinsics/sleep.c: Add correct sleep macro for MinGW.
+
+2005-09-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
 	PR libfortran/23380
 	* intrinsics/cpu_time.c (__cpu_time_1): Provide a MS Windows
 	version.
