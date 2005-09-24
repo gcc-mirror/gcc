@@ -1,3 +1,9 @@
+2005-09-24  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/23380
+	* intrinsics/cpu_time.c (__cpu_time_1): Provide a MS Windows
+	version.
+
 2005-09-14  Jerry DeLisle  <jvdelisle@verizon.net
 
 	PR fortran/21875 Internal Unit Array I/O, NIST
