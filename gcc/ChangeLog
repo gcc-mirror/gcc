@@ -1,3 +1,20 @@
+2005-09-24  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_clone_edge): Make the scale gcov_type.
+	(cgraph_clone_node): Likewise.
+	* cgraph.h (cgraph_clone_edge): Update prototype.
+	(cgraph_mark_inline_edge, cgraph_clone_inlined_nodes): Remove
+	duplicated prototypes; add updating argument.
+	* cgraphunit.c (verify_cgraph_node): Verify that counts are non-negative.
+	* ipa-inline.c (cgraph_clone_inlined_nodes): Allow clonning without
+	updating profile.
+	(cgraph_mark_inline_edge): Likewise.
+	(cgraph_mark_inline): Update use of cgraph_mark_inline_edge.
+	(cgraph_flatten_node): Likewise.
+	(cgraph_decide_recursive_inlining): Likewise.
+	(cgraph_decide_inlining_of_small_function): Likewise.
+	* tree-optimize.c (tree_rest_of_compilation): Likewise.
+
 2005-09-23  David Edelsohn  <edelsohn@gnu.org>
 	    Pete Steinmetz <steinmtz@us.ibm.com>
 

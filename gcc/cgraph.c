@@ -884,7 +884,7 @@ cgraph_function_possibly_inlined_p (tree decl)
 /* Create clone of E in the node N represented by CALL_EXPR the callgraph.  */
 struct cgraph_edge *
 cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
-		   tree call_stmt, int count_scale, int loop_nest,
+		   tree call_stmt, gcov_type count_scale, int loop_nest,
 		   bool update_original)
 {
   struct cgraph_edge *new;
@@ -911,7 +911,7 @@ cgraph_clone_node (struct cgraph_node *n, gcov_type count, int loop_nest,
 {
   struct cgraph_node *new = cgraph_create_node ();
   struct cgraph_edge *e;
-  int count_scale;
+  gcov_type count_scale;
 
   new->decl = n->decl;
   new->origin = n->origin;
