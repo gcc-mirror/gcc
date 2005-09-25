@@ -3,26 +3,68 @@
 /* Does gettimeofday take a single argument */
 #undef GETTIMEOFDAY_ONE_ARGUMENT
 
+/* libm includes acos */
+#undef HAVE_ACOS
+
 /* libm includes acosf */
 #undef HAVE_ACOSF
+
+/* libm includes acosh */
+#undef HAVE_ACOSH
 
 /* libm includes acoshf */
 #undef HAVE_ACOSHF
 
+/* libm includes acoshl */
+#undef HAVE_ACOSHL
+
+/* libm includes acosl */
+#undef HAVE_ACOSL
+
+/* libm includes asin */
+#undef HAVE_ASIN
+
 /* libm includes asinf */
 #undef HAVE_ASINF
+
+/* libm includes asinh */
+#undef HAVE_ASINH
 
 /* libm includes asinhf */
 #undef HAVE_ASINHF
 
+/* libm includes asinhl */
+#undef HAVE_ASINHL
+
+/* libm includes asinl */
+#undef HAVE_ASINL
+
+/* libm includes atan */
+#undef HAVE_ATAN
+
+/* libm includes atan2 */
+#undef HAVE_ATAN2
+
 /* libm includes atan2f */
 #undef HAVE_ATAN2F
+
+/* libm includes atan2l */
+#undef HAVE_ATAN2L
 
 /* libm includes atanf */
 #undef HAVE_ATANF
 
+/* libm includes atanh */
+#undef HAVE_ATANH
+
 /* libm includes atanhf */
 #undef HAVE_ATANHF
+
+/* libm includes atanhl */
+#undef HAVE_ATANHL
+
+/* libm includes atanl */
+#undef HAVE_ATANL
 
 /* Define to 1 if the target supports __attribute__((alias(...))). */
 #undef HAVE_ATTRIBUTE_ALIAS
@@ -33,8 +75,59 @@
 /* Define to 1 if the target supports __attribute__((visibility(...))). */
 #undef HAVE_ATTRIBUTE_VISIBILITY
 
+/* libm includes cabs */
+#undef HAVE_CABS
+
+/* libm includes cabsf */
+#undef HAVE_CABSF
+
+/* libm includes cabsl */
+#undef HAVE_CABSL
+
+/* libm includes carg */
+#undef HAVE_CARG
+
+/* libm includes cargf */
+#undef HAVE_CARGF
+
+/* libm includes cargl */
+#undef HAVE_CARGL
+
+/* libm includes ccos */
+#undef HAVE_CCOS
+
+/* libm includes ccosf */
+#undef HAVE_CCOSF
+
+/* libm includes ccosh */
+#undef HAVE_CCOSH
+
+/* libm includes ccoshf */
+#undef HAVE_CCOSHF
+
+/* libm includes ccoshl */
+#undef HAVE_CCOSHL
+
+/* libm includes ccosl */
+#undef HAVE_CCOSL
+
+/* libm includes ceil */
+#undef HAVE_CEIL
+
 /* libm includes ceilf */
 #undef HAVE_CEILF
+
+/* libm includes ceill */
+#undef HAVE_CEILL
+
+/* libm includes cexp */
+#undef HAVE_CEXP
+
+/* libm includes cexpf */
+#undef HAVE_CEXPF
+
+/* libm includes cexpl */
+#undef HAVE_CEXPL
 
 /* Define to 1 if you have the `chdir' function. */
 #undef HAVE_CHDIR
@@ -42,20 +135,110 @@
 /* Define to 1 if you have the `chsize' function. */
 #undef HAVE_CHSIZE
 
+/* libm includes clog */
+#undef HAVE_CLOG
+
+/* libm includes clog10 */
+#undef HAVE_CLOG10
+
+/* libm includes clog10f */
+#undef HAVE_CLOG10F
+
+/* libm includes clog10l */
+#undef HAVE_CLOG10L
+
+/* libm includes clogf */
+#undef HAVE_CLOGF
+
+/* libm includes clogl */
+#undef HAVE_CLOGL
+
 /* complex.h exists */
 #undef HAVE_COMPLEX_H
+
+/* libm includes copysign */
+#undef HAVE_COPYSIGN
 
 /* libm includes copysignf */
 #undef HAVE_COPYSIGNF
 
+/* libm includes copysignl */
+#undef HAVE_COPYSIGNL
+
+/* libm includes cos */
+#undef HAVE_COS
+
 /* libm includes cosf */
 #undef HAVE_COSF
+
+/* libm includes cosh */
+#undef HAVE_COSH
 
 /* libm includes coshf */
 #undef HAVE_COSHF
 
+/* libm includes coshl */
+#undef HAVE_COSHL
+
+/* libm includes cosl */
+#undef HAVE_COSL
+
+/* libm includes cpow */
+#undef HAVE_CPOW
+
+/* libm includes cpowf */
+#undef HAVE_CPOWF
+
+/* libm includes cpowl */
+#undef HAVE_CPOWL
+
 /* Define if CRLF is line terminator. */
 #undef HAVE_CRLF
+
+/* libm includes csin */
+#undef HAVE_CSIN
+
+/* libm includes csinf */
+#undef HAVE_CSINF
+
+/* libm includes csinh */
+#undef HAVE_CSINH
+
+/* libm includes csinhf */
+#undef HAVE_CSINHF
+
+/* libm includes csinhl */
+#undef HAVE_CSINHL
+
+/* libm includes csinl */
+#undef HAVE_CSINL
+
+/* libm includes csqrt */
+#undef HAVE_CSQRT
+
+/* libm includes csqrtf */
+#undef HAVE_CSQRTF
+
+/* libm includes csqrtl */
+#undef HAVE_CSQRTL
+
+/* libm includes ctan */
+#undef HAVE_CTAN
+
+/* libm includes ctanf */
+#undef HAVE_CTANF
+
+/* libm includes ctanh */
+#undef HAVE_CTANH
+
+/* libm includes ctanhf */
+#undef HAVE_CTANHF
+
+/* libm includes ctanhl */
+#undef HAVE_CTANHL
+
+/* libm includes ctanl */
+#undef HAVE_CTANL
 
 /* libm includes erf */
 #undef HAVE_ERF
@@ -66,23 +249,53 @@
 /* libm includes erfcf */
 #undef HAVE_ERFCF
 
+/* libm includes erfcl */
+#undef HAVE_ERFCL
+
 /* libm includes erff */
 #undef HAVE_ERFF
+
+/* libm includes erfl */
+#undef HAVE_ERFL
+
+/* libm includes exp */
+#undef HAVE_EXP
 
 /* libm includes expf */
 #undef HAVE_EXPF
 
+/* libm includes expl */
+#undef HAVE_EXPL
+
+/* libm includes fabs */
+#undef HAVE_FABS
+
 /* libm includes fabsf */
 #undef HAVE_FABSF
+
+/* libm includes fabsl */
+#undef HAVE_FABSL
 
 /* libm includes finite */
 #undef HAVE_FINITE
 
+/* libm includes floor */
+#undef HAVE_FLOOR
+
 /* libm includes floorf */
 #undef HAVE_FLOORF
 
+/* libm includes floorl */
+#undef HAVE_FLOORL
+
+/* libm includes frexp */
+#undef HAVE_FREXP
+
 /* libm includes frexpf */
 #undef HAVE_FREXPF
+
+/* libm includes frexpl */
+#undef HAVE_FREXPL
 
 /* Define to 1 if you have the `ftruncate' function. */
 #undef HAVE_FTRUNCATE
@@ -111,8 +324,14 @@
 /* libc includes getuid */
 #undef HAVE_GETUID
 
+/* libm includes hypot */
+#undef HAVE_HYPOT
+
 /* libm includes hypotf */
 #undef HAVE_HYPOTF
+
+/* libm includes hypotl */
+#undef HAVE_HYPOTL
 
 /* Define to 1 if you have the <ieeefp.h> header file. */
 #undef HAVE_IEEEFP_H
@@ -126,11 +345,17 @@
 /* libm includes j0f */
 #undef HAVE_J0F
 
+/* libm includes j0l */
+#undef HAVE_J0L
+
 /* libm includes j1 */
 #undef HAVE_J1
 
 /* libm includes j1f */
 #undef HAVE_J1F
+
+/* libm includes j1l */
+#undef HAVE_J1L
 
 /* libm includes jn */
 #undef HAVE_JN
@@ -138,11 +363,20 @@
 /* libm includes jnf */
 #undef HAVE_JNF
 
+/* libm includes jnl */
+#undef HAVE_JNL
+
 /* Define to 1 if you have the `kill' function. */
 #undef HAVE_KILL
 
 /* Define to 1 if you have the `link' function. */
 #undef HAVE_LINK
+
+/* libm includes log */
+#undef HAVE_LOG
+
+/* libm includes log10 */
+#undef HAVE_LOG10
 
 /* libm includes log10f */
 #undef HAVE_LOG10F
@@ -152,6 +386,9 @@
 
 /* libm includes logf */
 #undef HAVE_LOGF
+
+/* libm includes logl */
+#undef HAVE_LOGL
 
 /* Define to 1 if you have the <math.h> header file. */
 #undef HAVE_MATH_H
@@ -171,11 +408,20 @@
 /* libm includes nextafterf */
 #undef HAVE_NEXTAFTERF
 
+/* libm includes nextafterl */
+#undef HAVE_NEXTAFTERL
+
 /* Define to 1 if you have the `perror' function. */
 #undef HAVE_PERROR
 
+/* libm includes pow */
+#undef HAVE_POW
+
 /* libm includes powf */
 #undef HAVE_POWF
+
+/* libm includes powl */
+#undef HAVE_POWL
 
 /* libm includes round */
 #undef HAVE_ROUND
@@ -183,20 +429,38 @@
 /* libm includes roundf */
 #undef HAVE_ROUNDF
 
+/* libm includes roundl */
+#undef HAVE_ROUNDL
+
 /* libm includes scalbn */
 #undef HAVE_SCALBN
 
 /* libm includes scalbnf */
 #undef HAVE_SCALBNF
 
+/* libm includes scalbnl */
+#undef HAVE_SCALBNL
+
 /* Define to 1 if you have the <signal.h> header file. */
 #undef HAVE_SIGNAL_H
+
+/* libm includes sin */
+#undef HAVE_SIN
 
 /* libm includes sinf */
 #undef HAVE_SINF
 
+/* libm includes sinh */
+#undef HAVE_SINH
+
 /* libm includes sinhf */
 #undef HAVE_SINHF
+
+/* libm includes sinhl */
+#undef HAVE_SINHL
+
+/* libm includes sinl */
+#undef HAVE_SINL
 
 /* Define to 1 if you have the `sleep' function. */
 #undef HAVE_SLEEP
@@ -204,8 +468,14 @@
 /* Define to 1 if you have the `snprintf' function. */
 #undef HAVE_SNPRINTF
 
+/* libm includes sqrt */
+#undef HAVE_SQRT
+
 /* libm includes sqrtf */
 #undef HAVE_SQRTF
+
+/* libm includes sqrtl */
+#undef HAVE_SQRTL
 
 /* Define to 1 if you have the <stddef.h> header file. */
 #undef HAVE_STDDEF_H
@@ -267,11 +537,23 @@
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 
+/* libm includes tan */
+#undef HAVE_TAN
+
 /* libm includes tanf */
 #undef HAVE_TANF
 
+/* libm includes tanh */
+#undef HAVE_TANH
+
 /* libm includes tanhf */
 #undef HAVE_TANHF
+
+/* libm includes tanhl */
+#undef HAVE_TANHL
+
+/* libm includes tanl */
+#undef HAVE_TANL
 
 /* Define to 1 if you have the `time' function. */
 #undef HAVE_TIME
@@ -291,6 +573,9 @@
 /* libm includes truncf */
 #undef HAVE_TRUNCF
 
+/* libm includes truncl */
+#undef HAVE_TRUNCL
+
 /* Define to 1 if you have the `ttyname' function. */
 #undef HAVE_TTYNAME
 
@@ -306,17 +591,26 @@
 /* libm includes y0f */
 #undef HAVE_Y0F
 
+/* libm includes y0l */
+#undef HAVE_Y0L
+
 /* libm includes y1 */
 #undef HAVE_Y1
 
 /* libm includes y1f */
 #undef HAVE_Y1F
 
+/* libm includes y1l */
+#undef HAVE_Y1L
+
 /* libm includes yn */
 #undef HAVE_YN
 
 /* libm includes ynf */
 #undef HAVE_YNF
+
+/* libm includes ynl */
+#undef HAVE_YNL
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT

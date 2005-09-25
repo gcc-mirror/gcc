@@ -302,28 +302,6 @@ gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_pow_c) \
     selected_int_kind.inc selected_real_kind.inc kinds.h
 
-# We only use these if libm doesn't contain complex math functions.
-
-gfor_math_trig_c= \
-generated/trig_c4.c \
-generated/trig_c8.c
-gfor_math_exp_c= \
-generated/exp_c4.c \
-generated/exp_c8.c
-gfor_math_hyp_c= \
-generated/hyp_c4.c \
-generated/hyp_c8.c
-
-gfor_math_trig_obj= \
-trig_c4.lo \
-trig_c8.lo
-gfor_math_exp_obj= \
-exp_c4.lo \
-exp_c8.lo
-gfor_math_hyp_obj= \
-hyp_c4.lo \
-hyp_c8.lo
-
 # Machine generated specifics
 gfor_built_specific_src= \
 generated/_abs_c4.f90 \
@@ -390,11 +368,6 @@ generated/_mod_i4.f90 \
 generated/_mod_i8.f90 \
 generated/_mod_r4.f90 \
 generated/_mod_r8.f90
-#specific intrinsics requiring manal code
-#gfor_specific_c= \
-intrinsics/_aimag.c \
-intrinsics/_cabs.c \
-foo
 
 gfor_specific_src= \
 $(gfor_built_specific_src) \
@@ -402,19 +375,10 @@ $(gfor_built_specific2_src) \
 intrinsics/dprod_r8.f90 \
 intrinsics/f2c_specifics.F90
 
-gfor_cmath_src= $(gfor_math_trig_c) $(gfor_math_exp_c) $(gfor_math_hyp_c)
-gfor_cmath_obj= $(gfor_math_trig_obj) $(gfor_math_exp_obj) \
-    $(gfor_math_hyp_obj)
-
-BUILT_SOURCES=$(gfor_built_src) $(gfor_cmath_src) $(gfor_built_specific_src) \
+BUILT_SOURCES=$(gfor_built_src) $(gfor_built_specific_src) \
     $(gfor_built_specific2_src)
 libgfortran_la_SOURCES = $(gfor_src) $(gfor_built_src) $(gfor_io_src) \
     $(gfor_helper_src) $(gfor_io_headers) $(gfor_specific_src)
-
-EXTRA_libgfortran_la_SOURCES = $(gfor_cmath_src)
-
-libgfortran_la_LIBADD = @MATH_OBJ@
-libgfortran_la_DEPENDENCIES = @MATH_OBJ@
 
 I_M4_DEPS=m4/iparm.m4
 I_M4_DEPS0=$(I_M4_DEPS) m4/iforeach.m4
@@ -519,15 +483,6 @@ $(i_set_exponent_c): m4/set_exponent.m4 m4/mtype.m4
 
 $(i_pow_c): m4/pow.m4 $(I_M4_DEPS)
 	m4 -Dfile=$@ -I$(srcdir)/m4 pow.m4 > $(srcdir)/$@
-
-$(gfor_math_trig_c): m4/ctrig.m4 m4/mtype.m4
-	m4 -Dfile=$@ -I$(srcdir)/m4 ctrig.m4 > $(srcdir)/$@
-
-$(gfor_math_exp_c): m4/cexp.m4 m4/mtype.m4
-	m4 -Dfile=$@ -I$(srcdir)/m4 cexp.m4 > $(srcdir)/$@
-
-$(gfor_math_hyp_c): m4/chyp.m4 m4/mtype.m4
-	m4 -Dfile=$@ -I$(srcdir)/m4 chyp.m4 > $(srcdir)/$@
 
 $(gfor_built_specific_src): m4/specific.m4 m4/head.m4
 	m4 -Dfile=$@ -I$(srcdir)/m4 specific.m4 > $(srcdir)/$@
