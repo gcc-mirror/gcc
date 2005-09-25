@@ -2158,7 +2158,8 @@ ix86_function_regparm (tree type, tree decl)
 	      /* We can't use regparm(3) for nested functions as these use
 		 static chain pointer in third argument.  */
 	      if (local_regparm == 3
-		  && DECL_CONTEXT (decl) && !DECL_NO_STATIC_CHAIN (decl))
+		  && decl_function_context (decl)
+		  && !DECL_NO_STATIC_CHAIN (decl))
 		local_regparm = 2;
 	      /* Each global register variable increases register preassure,
 		 so the more global reg vars there are, the smaller regparm
