@@ -200,57 +200,57 @@ compare_type_brand (splay_tree_key sk1, splay_tree_key sk2)
 static tree
 discover_unique_type (tree type)
 {
-  struct type_brand_s * brand = xmalloc(sizeof(struct type_brand_s));
+  struct type_brand_s * brand = xmalloc (sizeof (struct type_brand_s));
   int i = 0;
   splay_tree_node result;
-  
+
+  brand->name = get_name_of_type (type);
+
   while (1)
-  {
-    brand->name = get_name_of_type (type);
-    brand->seq = i;
-    result = splay_tree_lookup (all_canon_types, (splay_tree_key) brand);
-    if (result)
-      {
-	/* Create an alias since this is just the same as
-	   other_type.  */
-	tree other_type = (tree) result->value;
-	if (lang_hooks.types_compatible_p (type, other_type) == 1)
-	  {
-	    free (brand);
-	    /* Insert this new type as an alias for other_type.  */
-	    splay_tree_insert (type_to_canon_type, 
-			       (splay_tree_key) type,
-			       (splay_tree_value) other_type);
-	    return other_type;
-	  }
-	/* Not compatible, look for next instance with same name.  */
-      }
-    else 
-      {
-	/* No more instances, create new one since this is the first
-	   time we saw this type.  */
-	brand->seq = i++;
-	/* Insert the new brand.  */
-	splay_tree_insert (all_canon_types, 
-			   (splay_tree_key) brand,
-			   (splay_tree_value) type);	  
-	
-	/* Insert this new type as an alias for itself.  */
-	splay_tree_insert (type_to_canon_type, 
-			   (splay_tree_key) type,
-			   (splay_tree_value) type);
+    {
+      brand->seq = i++;
+      result = splay_tree_lookup (all_canon_types, (splay_tree_key) brand);
 
-	/* Insert the uid for reverse lookup; */
-	splay_tree_insert (uid_to_canon_type, 
-			   (splay_tree_key) TYPE_UID (type),
-			   (splay_tree_value) type);	  
+      if (result)
+	{
+	  /* Create an alias since this is just the same as
+	     other_type.  */
+	  tree other_type = (tree) result->value;
+	  if (lang_hooks.types_compatible_p (type, other_type) == 1)
+	    {
+	      free (brand);
+	      /* Insert this new type as an alias for other_type.  */
+	      splay_tree_insert (type_to_canon_type,
+				 (splay_tree_key) type,
+				 (splay_tree_value) other_type);
+	      return other_type;
+	    }
+	  /* Not compatible, look for next instance with same name.  */
+	}
+      else
+	{
+	  /* No more instances, create new one since this is the first
+	     time we saw this type.  */
+	  brand->seq = i++;
+	  /* Insert the new brand.  */
+	  splay_tree_insert (all_canon_types,
+			     (splay_tree_key) brand,
+			     (splay_tree_value) type);
 
-	bitmap_set_bit (global_types_seen, TYPE_UID (type));
-	return type;
-      }
-    i++;
-  } 
-  free (brand);
+	  /* Insert this new type as an alias for itself.  */
+	  splay_tree_insert (type_to_canon_type,
+			     (splay_tree_key) type,
+			     (splay_tree_value) type);
+
+	  /* Insert the uid for reverse lookup; */
+	  splay_tree_insert (uid_to_canon_type,
+			     (splay_tree_key) TYPE_UID (type),
+			     (splay_tree_value) type);
+
+	  bitmap_set_bit (global_types_seen, TYPE_UID (type));
+	  return type;
+	}
+    }
 }
 
 /* Return true if TYPE is one of the type classes that we are willing
