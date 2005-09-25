@@ -38,6 +38,11 @@ Boston, MA 02110-1301, USA.  */
 
 #include "libgfortran.h"
 
+#ifdef __MINGW32__
+#define HAVE_GETPID
+#include <process.h>
+#endif
+
 #ifdef HAVE_GETGID
 extern GFC_INTEGER_4 PREFIX(getgid) (void);
 export_proto_np(PREFIX(getgid));
