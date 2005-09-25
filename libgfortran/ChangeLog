@@ -1,4 +1,24 @@
 2005-09-25  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* c99_protos.h: Add prototypes for C99 complex functions.
+	* libgfortran.h: Include complex.h before c99_protos.h.
+	* intrinsics/c99_functions.c: Define HAVE_ macros for the
+	fallback functions we provide.
+	(cabsf, cabs, cabsl, cargf, carg, cargl, cexpf, cexp, cexpl,
+	clogf, clog, clogl, clog10f, clog10, clog10l, cpowf, cpow, cpowl,
+	cqsrtf, csqrt, csqrtl, csinhf, csinh, csinhl, ccoshf, ccosh,
+	ccoshl, ctanhf, ctanh, ctanhl, csinf, csin, csinl, ccosf, ccos,
+	ccosl, ctanf, ctan, ctanl): New fallback functions.
+	* Makefile.am (gfor_math_trig_c, gfor_math_trig_obj,
+	gfor_specific_c, gfor_cmath_src, gfor_cmath_obj): Remove.
+	* Makefile.in: Regenerate.
+	* configure.ac: Remove checks for csin. Add checks for all C99
+	complex functions.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* aclocal.m4: Regenerate.
+
+2005-09-25  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 	    Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR libfortran/23803

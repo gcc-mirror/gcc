@@ -38,14 +38,14 @@ Boston, MA 02110-1301, USA.  */
 #define M_PI 3.14159265358979323846264338327
 #endif
 
-#include "config.h"
-#include "c99_protos.h"
-
 #if HAVE_COMPLEX_H
 # include <complex.h>
 #else
 #define complex __complex__
 #endif
+
+#include "config.h"
+#include "c99_protos.h"
 
 #if HAVE_IEEEFP_H
 #include <ieeefp.h>
