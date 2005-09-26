@@ -223,6 +223,10 @@ gfc_post_options (const char **pfilename)
   if (gfc_option.flag_second_underscore == -1)
     gfc_option.flag_second_underscore = gfc_option.flag_f2c;
 
+  /* Implement -fno-automatic as -fmax-stack-var-size=0.  */
+  if (!gfc_option.flag_automatic)
+    gfc_option.flag_max_stack_var_size = 0;
+
   return false;
 }
 
