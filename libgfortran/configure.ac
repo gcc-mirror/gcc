@@ -325,6 +325,9 @@ AC_CHECK_LIB([m],[ynf],[AC_DEFINE([HAVE_YNF],[1],[libm includes ynf])])
 AC_CHECK_LIB([m],[yn],[AC_DEFINE([HAVE_YN],[1],[libm includes yn])])
 AC_CHECK_LIB([m],[ynl],[AC_DEFINE([HAVE_YNL],[1],[libm includes ynl])])
 
+# On AIX, clog is present in libm as __clog
+AC_CHECK_LIB([m],[__clog],[AC_DEFINE([HAVE_CLOG],[1],[libm includes clog])])
+
 # Fallback in case isfinite is not available.
 AC_CHECK_LIB([m],[finite],[AC_DEFINE([HAVE_FINITE],[1],[libm includes finite])])
 
