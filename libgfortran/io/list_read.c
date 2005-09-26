@@ -1285,8 +1285,8 @@ check_type (bt type, int len)
    reading, usually in the value[] array.  If a repeat count is
    greater than one, we copy the data item multiple times.  */
 
-void
-list_formatted_read (bt type, void *p, int len)
+static void
+list_formatted_read_scalar (bt type, void *p, int len)
 {
   char c;
   int m;
@@ -1405,6 +1405,30 @@ list_formatted_read (bt type, void *p, int len)
   if (--repeat_count <= 0)
     free_saved ();
 }
+
+
+void
+list_formatted_read  (bt type, void *p, int len, size_t nelems)
+{
+  size_t elem;
+  int size;
+  char *tmp;
+
+  tmp = (char *) p;
+
+  if (type == BT_COMPLEX)
+    size = 2 * len;
+  else
+    size = len;
+
+  /* Big loop over all the elements.  */
+  for (elem = 0; elem < nelems; elem++)
+    {
+      g.item_count++;
+      list_formatted_read_scalar (type, tmp + size*elem, len);
+    }
+}
+
 
 void
 init_at_eol(void)

@@ -1,3 +1,10 @@
+2005-09-24  Janne Blomqvist  <jblomqvi@cc.hut.fi>
+
+	* trans-io.c (gfc_build_io_library_fndecls): Add entry
+	iocall_x_array for transfer_array. (transfer_array_desc): New
+	function. (gfc_trans_transfer): Add code to call
+	transfer_array_desc.
+
 2005-09-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/23677
