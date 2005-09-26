@@ -1,3 +1,8 @@
+2005-09-26  J"orn Rennecke <joern.rennecke@st.com>
+
+	* rtlanal.c (reg_used_between_p): Don't check for CLOBBERs in
+	CALL_INSN_FUNCTION_USAGE.
+
 2005-09-26  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/15855

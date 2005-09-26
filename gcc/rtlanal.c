@@ -666,9 +666,7 @@ reg_used_between_p (rtx reg, rtx from_insn, rtx to_insn)
   for (insn = NEXT_INSN (from_insn); insn != to_insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn)
 	&& (reg_overlap_mentioned_p (reg, PATTERN (insn))
-	   || (CALL_P (insn)
-	      && (find_reg_fusage (insn, USE, reg)
-		  || find_reg_fusage (insn, CLOBBER, reg)))))
+	   || (CALL_P (insn) && find_reg_fusage (insn, USE, reg))))
       return 1;
   return 0;
 }
