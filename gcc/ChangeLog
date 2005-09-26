@@ -1,3 +1,18 @@
+2005-09-26  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	PR tree-optimization/23942
+	* Makefile.in (SCEV_H): Depends on PARAMS_H.
+	* tree-scalar-evolution.c: Include params.h.
+	(t_bool): New enum.
+	(follow_ssa_edge, follow_ssa_edge_in_rhs,
+	follow_ssa_edge_in_condition_phi_branch,
+	follow_ssa_edge_in_condition_phi, follow_ssa_edge_inner_loop_phi): 
+	Change return type to t_bool.  Use a parameter to limit the size of
+	trees that are walked before stopping 
+	(analyze_evolution_in_loop): Initialize the limit to 0.
+	(follow_ssa_edge): Give up by returning t_dont_know if the limit 
+	exceeds PARAM_SCEV_MAX_EXPR_SIZE.
+
 2005-09-26  Uros Bizjak  <uros@kss-loka.si>
 
 	PR middle-end/23831
