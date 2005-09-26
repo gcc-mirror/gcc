@@ -1,3 +1,10 @@
+2005-09-26  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/24055
+	* config/i386/i386.md ("*fistdi2_1"): New pattern.
+	("*fist<mode>2_1"): Use only HImode and SImode register operands.
+	("fist<mode>2_with_temp"): Use only register operands.
+
 2005-09-26  J"orn Rennecke <joern.rennecke@st.com>
 
 	* rtlanal.c (reg_used_between_p): Don't check for CLOBBERs in
