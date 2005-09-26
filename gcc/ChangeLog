@@ -1,3 +1,7 @@
+2005-09-26    Fariborz Jahanian <fjahanian@apple.com>
+
+        * combine.c (make_extraction): Check for valid use of subreg.
+
 2005-09-26  Uros Bizjak  <uros@kss-loka.si>
 
 	PR target/24055
