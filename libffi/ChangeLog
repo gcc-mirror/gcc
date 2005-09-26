@@ -1,3 +1,12 @@
+2005-09-26  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libffi.call/float1.c (value_type): New typedef.
+	(CANARY): New define.
+	(main): Check for result buffer overflow.
+	* src/powerpc/linux64.S: Handle linux64 long double returns.
+	* src/powerpc/ffi.c (FLAG_RETURNS_128BITS): New constant.
+	(ffi_prep_cif_machdep): Handle linux64 long double returns.
+
 2005-08-25  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/23404
