@@ -1,3 +1,8 @@
+2005-09-26  David Edelsohn  <dje@watson.ibm.com>
+
+	* configure.ac: Add check for __clog.
+	* configure: Regenerate.
+
 2005-09-25  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* c99_protos.h: Add prototypes for C99 complex functions.
