@@ -5,6 +5,7 @@
 	(stdio.h): Include.
 	(buildargv): Use ISSPACE instead of ISBLANK.
 	(expandargv): New function.
+	* Makefile.in: Regenerated.
 
 2005-09-14  Christopher Faylor  <cgf@timesys.com>
 
