@@ -1,5 +1,8 @@
 2005-09-26  Uros Bizjak  <uros@kss-loka.si>
 
+	PR middle-end/23831
+	* gcc.dg/vect/pr23831.c: New test.
+
 	PR target/24055
 	* gcc.target/i386/pr24055.c: New test.
 
