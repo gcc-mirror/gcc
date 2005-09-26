@@ -613,7 +613,7 @@ internal_proto(read_decimal);
 
 /* list_read.c */
 
-extern void list_formatted_read (bt, void *, int);
+extern void list_formatted_read (bt, void *, int, size_t);
 internal_proto(list_formatted_read);
 
 extern void finish_list_read (void);
@@ -666,7 +666,7 @@ internal_proto(write_x);
 extern void write_z (fnode *, const char *, int);
 internal_proto(write_z);
 
-extern void list_formatted_write (bt, void *, int);
+extern void list_formatted_write (bt, void *, int, size_t);
 internal_proto(list_formatted_write);
 
 /* error.c */

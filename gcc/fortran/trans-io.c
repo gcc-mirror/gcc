@@ -120,6 +120,7 @@ static GTY(()) tree iocall_x_logical;
 static GTY(()) tree iocall_x_character;
 static GTY(()) tree iocall_x_real;
 static GTY(()) tree iocall_x_complex;
+static GTY(()) tree iocall_x_array;
 static GTY(()) tree iocall_open;
 static GTY(()) tree iocall_close;
 static GTY(()) tree iocall_inquire;
@@ -266,6 +267,12 @@ gfc_build_io_library_fndecls (void)
 				     (PREFIX("transfer_complex")),
 				     void_type_node, 2, pvoid_type_node,
 				     gfc_int4_type_node);
+
+  iocall_x_array =
+    gfc_build_library_function_decl (get_identifier
+				     (PREFIX("transfer_array")),
+				     void_type_node, 2, pvoid_type_node,
+				     gfc_charlen_type_node);
 
   /* Library entry points */
 
@@ -1584,6 +1591,27 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr)
 }
 
 
+/* Generate a call to pass an array descriptor to the IO library. The
+   array should be of one of the intrinsic types.  */
+
+static void
+transfer_array_desc (gfc_se * se, gfc_typespec * ts, tree addr_expr)
+{
+  tree args, tmp, charlen_arg;
+
+  if (ts->type == BT_CHARACTER)
+    charlen_arg = se->string_length;
+  else
+    charlen_arg = build_int_cstu (NULL_TREE, 0);
+
+  args = gfc_chainon_list (NULL_TREE, addr_expr);
+  args = gfc_chainon_list (args, charlen_arg);
+  tmp = gfc_build_function_call (iocall_x_array, args);
+  gfc_add_expr_to_block (&se->pre, tmp);
+  gfc_add_block_to_block (&se->pre, &se->post);
+}
+
+
 /* gfc_trans_transfer()-- Translate a TRANSFER code node */
 
 tree
@@ -1597,6 +1625,7 @@ gfc_trans_transfer (gfc_code * code)
   tree tmp;
 
   gfc_start_block (&block);
+  gfc_init_block (&body);
 
   expr = code->expr;
   ss = gfc_walk_expr (expr);
@@ -1604,8 +1633,11 @@ gfc_trans_transfer (gfc_code * code)
   gfc_init_se (&se, NULL);
 
   if (ss == gfc_ss_terminator)
-    gfc_init_block (&body);
-  else
+    {
+      gfc_conv_expr_reference (&se, expr);
+      transfer_expr (&se, &expr->ts, se.expr);
+    }
+  else if (expr->ts.type == BT_DERIVED)
     {
       /* Initialize the scalarizer.  */
       gfc_init_loopinfo (&loop);
@@ -1621,11 +1653,17 @@ gfc_trans_transfer (gfc_code * code)
 
       gfc_copy_loopinfo_to_se (&se, &loop);
       se.ss = ss;
+
+      gfc_conv_expr_reference (&se, expr);
+      transfer_expr (&se, &expr->ts, se.expr);
     }
-
-  gfc_conv_expr_reference (&se, expr);
-
-  transfer_expr (&se, &expr->ts, se.expr);
+  else
+    {
+      /* Pass the array descriptor to the library.  */
+      gfc_conv_expr_descriptor (&se, expr, ss);
+      tmp = gfc_build_addr_expr (NULL, se.expr);
+      transfer_array_desc (&se, &expr->ts, tmp);
+    }
 
   gfc_add_block_to_block (&body, &se.pre);
   gfc_add_block_to_block (&body, &se.post);
