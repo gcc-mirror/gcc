@@ -479,7 +479,11 @@ tree_ssa_dominator_optimize (void)
       if (cfg_altered)
         free_dominance_info (CDI_DOMINATORS);
 
-      cfg_altered = cleanup_tree_cfg ();
+      /* Only iterate if we threaded jumps AND the CFG cleanup did
+	 something interesting.  Other cases generate far fewer
+	 optimization opportunities and thus are not worth another
+	 full DOM iteration.  */
+      cfg_altered &= cleanup_tree_cfg ();
 
       if (rediscover_loops_after_threading)
 	{
