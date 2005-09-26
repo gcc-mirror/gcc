@@ -1,3 +1,8 @@
+2005-09-25  Kazu Hirata  <kazu@codesourcery.com>
+
+	* fold-const.c (fold_binary): Use op0 and op1 instead of arg0
+	and arg1 if we are passing them to fold_build2.
+
 2005-09-25  Dan Nicolaescu  <dann@ics.uci.edu>
 
 	PR 23828
