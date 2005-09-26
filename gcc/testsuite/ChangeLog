@@ -1,3 +1,8 @@
+2005-09-25  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR tree-optimization/23960
+	* gcc.c-torture/compile/pr23960.c: New.
+
 2005-09-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/16861
