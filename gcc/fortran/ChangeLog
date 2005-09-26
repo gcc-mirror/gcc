@@ -1,3 +1,13 @@
+2005-09-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/23677
+	* symbol.c (gfc_is_var_automatic): Return true if character length
+	is non-constant rather than constant.
+	* resolve.c (gfc_resolve): Don't handle !gfc_option.flag_automatic
+	here.
+	* options.c (gfc_post_options): Set gfc_option.flag_max_stack_var_size
+	to 0 for -fno-automatic.
+
 2005-09-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/16861
