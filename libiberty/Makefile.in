@@ -441,7 +441,8 @@ $(CONFIGURED_OFILES): stamp-picdir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/alloca.c $(OUTPUT_OPTION)
 
-./argv.o: $(srcdir)/argv.c config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
+./argv.o: $(srcdir)/argv.c config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
+	$(INCDIR)/safe-ctype.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/argv.c -o pic/$@; \
 	else true; fi
@@ -601,7 +602,7 @@ $(CONFIGURED_OFILES): stamp-picdir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/getcwd.c $(OUTPUT_OPTION)
 
-./getopt.o: $(srcdir)/getopt.c config.h $(INCDIR)/getopt.h
+./getopt.o: $(srcdir)/getopt.c config.h $(INCDIR)/ansidecl.h $(INCDIR)/getopt.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/getopt.c -o pic/$@; \
 	else true; fi
@@ -996,8 +997,8 @@ $(CONFIGURED_OFILES): stamp-picdir
 	else true; fi
 	$(COMPILE.c) $(srcdir)/strtoul.c $(OUTPUT_OPTION)
 
-./strverscmp.o: $(srcdir)/strverscmp.c $(INCDIR)/safe-ctype.h \
-	$(INCDIR)/libiberty.h
+./strverscmp.o: $(srcdir)/strverscmp.c $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
+	$(INCDIR)/safe-ctype.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/strverscmp.c -o pic/$@; \
 	else true; fi
