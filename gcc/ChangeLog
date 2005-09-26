@@ -1,3 +1,8 @@
+2005-09-26  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Be more selective
+	about when to iterate.
+
 2005-09-23  Fariborz Jahanian <fjahanian@apple.com>
 
 	PR target/23847
