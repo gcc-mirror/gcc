@@ -3743,8 +3743,10 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 	       know why.  */
 	    if (elem_bitsize <= HOST_BITS_PER_WIDE_INT)
 	      elems[elem] = gen_int_mode (lo, outer_submode);
-	    else
+	    else if (elem_bitsize <= 2 * HOST_BITS_PER_WIDE_INT)
 	      elems[elem] = immed_double_const (lo, hi, outer_submode);
+	    else
+	      return NULL_RTX;
 	  }
 	  break;
       
