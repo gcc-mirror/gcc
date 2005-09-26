@@ -1,3 +1,11 @@
+2005-09-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* argv.c (safe-ctype.h): Include it.
+	(ISBLANK): Remove.
+	(stdio.h): Include.
+	(buildargv): Use ISSPACE instead of ISBLANK.
+	(expandargv): New function.
+
 2005-09-14  Christopher Faylor  <cgf@timesys.com>
 
 	* pex-win32.c: Include "windows.h".

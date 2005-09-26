@@ -1,3 +1,7 @@
+2005-09-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* libiberty.h (expandargv): New function.
+
 2005-08-17  Mark Kettenis  <kettenis@gnu.org>
 
 	* floatformat.h (struct floatformat): Change type of large
