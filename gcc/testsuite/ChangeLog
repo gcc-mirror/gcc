@@ -1,5 +1,16 @@
 2005-09-26  Uros Bizjak  <uros@kss-loka.si>
 
+	* gcc.target/i386/builtin-apply-mmx.c: New test.
+
+	PR target/22576
+	* gcc.target/i386/pr22576.c: New test.
+
+	PR target/22585
+	* gcc.target/i386/pr22585.c: New test.
+
+	PR target/23268
+	* gcc.target/i386/pr23268.c: New test.
+
 	PR middle-end/23831
 	* gcc.dg/vect/pr23831.c: New test.
 
