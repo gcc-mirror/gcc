@@ -170,6 +170,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "obstack.h"
 #include "timevar.h"
 #include "tree-pass.h"
+#include "hashtab.h"
 
 /* Propagate flow information through back edges and thus enable PRE's
    moving loop invariant calculations out of loops.
@@ -470,6 +471,9 @@ static rtx *implicit_sets;
 
 /* Head of the list of load/store memory refs.  */
 static struct ls_expr * pre_ldst_mems = NULL;
+
+/* Hashtable for the load/store memory refs.  */
+static htab_t pre_ldst_table = NULL;
 
 /* Bitmap containing one bit for each register in the program.
    Used when performing GCSE to track which registers have been set since
@@ -5015,6 +5019,21 @@ one_code_hoisting_pass (void)
     load towards the exit, and we end up with no loads or stores of 'i'
     in the loop.  */
 
+static hashval_t
+pre_ldst_expr_hash (const void *p)
+{
+  int do_not_record_p = 0;
+  const struct ls_expr *x = p;
+  return hash_rtx (x->pattern, GET_MODE (x->pattern), &do_not_record_p, NULL, false);
+}
+
+static int
+pre_ldst_expr_eq (const void *p1, const void *p2)
+{
+  const struct ls_expr *ptr1 = p1, *ptr2 = p2;
+  return expr_equiv_p (ptr1->pattern, ptr2->pattern);
+}
+
 /* This will search the ldst list for a matching expression. If it
    doesn't find one, we create one and initialize it.  */
 
@@ -5024,13 +5043,16 @@ ldst_entry (rtx x)
   int do_not_record_p = 0;
   struct ls_expr * ptr;
   unsigned int hash;
+  void **slot;
+  struct ls_expr e;
 
   hash = hash_rtx (x, GET_MODE (x), &do_not_record_p,
 		   NULL,  /*have_reg_qty=*/false);
 
-  for (ptr = pre_ldst_mems; ptr != NULL; ptr = ptr->next)
-    if (ptr->hash_index == hash && expr_equiv_p (ptr->pattern, x))
-      return ptr;
+  e.pattern = x;
+  slot = htab_find_slot_with_hash (pre_ldst_table, &e, hash, INSERT);
+  if (*slot)
+    return (struct ls_expr *)*slot;
 
   ptr = xmalloc (sizeof (struct ls_expr));
 
@@ -5045,6 +5067,7 @@ ldst_entry (rtx x)
   ptr->index        = 0;
   ptr->hash_index   = hash;
   pre_ldst_mems     = ptr;
+  *slot = ptr;
 
   return ptr;
 }
@@ -5065,6 +5088,9 @@ free_ldst_entry (struct ls_expr * ptr)
 static void
 free_ldst_mems (void)
 {
+  htab_delete (pre_ldst_table);
+  pre_ldst_table = NULL;
+
   while (pre_ldst_mems)
     {
       struct ls_expr * tmp = pre_ldst_mems;
@@ -5117,13 +5143,13 @@ print_ldst_list (FILE * file)
 static struct ls_expr *
 find_rtx_in_ldst (rtx x)
 {
-  struct ls_expr * ptr;
-
-  for (ptr = pre_ldst_mems; ptr != NULL; ptr = ptr->next)
-    if (expr_equiv_p (ptr->pattern, x) && ! ptr->invalid)
-      return ptr;
-
-  return NULL;
+  struct ls_expr e;
+  void **slot;
+  e.pattern = x;
+  slot = htab_find_slot (pre_ldst_table, &e, NO_INSERT);
+  if (!slot || ((struct ls_expr *)*slot)->invalid)
+    return NULL;
+  return *slot;
 }
 
 /* Assign each element of the list of mems a monotonically increasing value.  */
@@ -5244,6 +5270,8 @@ compute_ld_motion_mems (void)
   rtx insn;
 
   pre_ldst_mems = NULL;
+  pre_ldst_table = htab_create (13, pre_ldst_expr_hash,
+				pre_ldst_expr_eq, NULL);
 
   FOR_EACH_BB (bb)
     {
@@ -5334,6 +5362,7 @@ trim_ld_motion_mems (void)
       else
 	{
 	  *last = ptr->next;
+	  htab_remove_elt_with_hash (pre_ldst_table, ptr, ptr->hash_index);
 	  free_ldst_entry (ptr);
 	  ptr = * last;
 	}
@@ -5693,6 +5722,8 @@ compute_store_table (void)
 						       max_gcse_regno);
   sbitmap_vector_zero (reg_set_in_block, last_basic_block);
   pre_ldst_mems = 0;
+  pre_ldst_table = htab_create (13, pre_ldst_expr_hash,
+				pre_ldst_expr_eq, NULL);
   last_set_in = xcalloc (max_gcse_regno, sizeof (int));
   already_set = xmalloc (sizeof (int) * max_gcse_regno);
 
@@ -5780,6 +5811,7 @@ compute_store_table (void)
       if (!AVAIL_STORE_LIST (ptr))
 	{
 	  *prev_next_ptr_ptr = ptr->next;
+	  htab_remove_elt_with_hash (pre_ldst_table, ptr, ptr->hash_index);
 	  free_ldst_entry (ptr);
 	}
       else
@@ -6399,6 +6431,8 @@ store_motion (void)
   num_stores = compute_store_table ();
   if (num_stores == 0)
     {
+      htab_delete (pre_ldst_table);
+      pre_ldst_table = NULL;
       sbitmap_vector_free (reg_set_in_block);
       end_alias_analysis ();
       return;

@@ -1,3 +1,18 @@
+2005-09-26  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/15855
+	* gcse.c: Include hashtab.h, define ldst entry hashtable.
+	(pre_ldst_expr_hash, pre_ldst_expr_eq): New functions.
+	(ldst_entry): Use the hashtable instead of list-walking.
+	(find_rtx_in_ldst): Likewise.
+	(free_ldst_entry): Free the hashtable.
+	(compute_ld_motion_mems): Create the hashtable.
+	(trim_ld_motion_mems): Remove entry from hashtable if
+	removing it from list.
+	(compute_store_table): Likewise^2.
+	(store_motion): Free hashtable in case we did not see
+	any stores.
+
 2005-09-25  Kazu Hirata  <kazu@codesourcery.com>
 
 	* fold-const.c (fold_binary): Use op0 and op1 instead of arg0
