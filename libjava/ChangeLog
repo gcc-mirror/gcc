@@ -1,5 +1,19 @@
 2005-09-27  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/23367:
+	* include/jvm.h (_Jv_FreeMethodCache): Declare.
+	* java/lang/natClass.cc (MCACHE_SIZE): Conditional on HAVE_TLS.
+	(struct _Jv_mcache): Likewise.
+	(method_cache): Likewise.
+	(_Jv_FindMethodInCache): Do nothing unless TLS is available.
+	(_Jv_AddMethodToCache): Likewise.
+	(_Jv_FreeMethodCache): New function.
+	* java/lang/natThread.cc (finish_): Call _Jv_FreeMethodCache.
+	* aclocal.m4, configure, include/config.h.in: Rebuilt.
+	* configure.ac: Invoke GCC_CHECK_TLS.
+
+2005-09-27  Tom Tromey  <tromey@redhat.com>
+
 	* configure, Makefile.in: Rebuilt.
 	* sources.am: Rebuilt.
 	* scripts/makemake.tcl (emit_bc_rule): Special-case qt.

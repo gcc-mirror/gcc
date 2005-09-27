@@ -1439,6 +1439,8 @@ else
   multilib_arg=
 fi
 
+# See if we support thread-local storage.
+GCC_CHECK_TLS
 
 
 here=`${PWDCMD-pwd}`

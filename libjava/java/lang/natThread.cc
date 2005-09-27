@@ -214,7 +214,10 @@ java::lang::Thread::finish_ ()
 #endif
 
   group = NULL;
-  
+
+  // If a method cache was created, free it.
+  _Jv_FreeMethodCache();
+
   // Signal any threads that are waiting to join() us.
   _Jv_MutexLock (&nt->join_mutex);
 
