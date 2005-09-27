@@ -1,3 +1,8 @@
+2005-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/18518
+	* gfortran.fortran-torture/execute/save_2.f90: New decl.
+
 2005-09-27  Devang Patel  <dpatel@apple.com>
 
 	PR tree-optimization/23625
