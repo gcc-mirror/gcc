@@ -1,3 +1,9 @@
+2005-09-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/22147
+	* g++.dg/template/friend37.C: New test.
+	* g++.dg/parse/crash28.C: Adjust error markers.
+	
 2005-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/18518
