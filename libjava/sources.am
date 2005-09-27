@@ -5637,7 +5637,6 @@ ordinary_header_files = \
   $(org_ietf_jgss_header_files)
 
 bc_objects = \
-  gnu-java-awt-peer-qt.lo \
   gnu-java-beans.lo \
   gnu-xml.lo \
   javax-imageio.lo \

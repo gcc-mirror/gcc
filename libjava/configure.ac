@@ -168,6 +168,7 @@ AC_ARG_ENABLE(java-awt,
 peerlibs="`echo ${enable_java_awt} | tr ',' ' '`"
 use_xlib_awt=""
 use_gtk_awt=""
+use_qt_awt=""
 # The default toolkit to use is the first one specified.
 TOOLKIT=
 AC_SUBST(TOOLKIT)
@@ -187,7 +188,7 @@ for peer in $peerlibs ; do
       ;;
     gtk)
       if test "$no_x" = yes; then
-	 echo "*** xlib peers requested but no X library available" 1>&2
+	 echo "*** gtk peers requested but no X library available" 1>&2
 	 exit 1
       else
 	 use_gtk_awt=yes
@@ -196,9 +197,22 @@ for peer in $peerlibs ; do
 	 fi
       fi
       ;;
+    qt)
+      if test "$no_x" = yes; then
+         # Perhaps we should admit the possibility of embedded Qt.
+	 echo "*** Qt peers requested but no X library available" 1>&2
+	 exit 1
+      else
+	 use_qt_awt=yes
+	 if test -z "$TOOLKIT"; then
+	    TOOLKIT=gnu.java.awt.peer.qt.QtToolkit
+	 fi
+      fi
+      ;;
     no)
       use_xlib_awt=
       use_gtk_awt=
+      use_qt_awt=
       break
       ;;
     *)
@@ -209,6 +223,7 @@ done
 
 AM_CONDITIONAL(XLIB_AWT, test "$use_xlib_awt" = yes)
 AM_CONDITIONAL(GTK_AWT, test "$use_gtk_awt" = yes)
+AM_CONDITIONAL(QT_AWT, test "$use_gtk_awt" = yes)
 
 # Create standard.omit based on decisions we just made.
 cp $srcdir/standard.omit.in standard.omit
@@ -218,6 +233,9 @@ if test "$use_xlib_awt" != yes; then
 fi
 if test "$use_gtk_awt" != yes; then
    echo gnu/java/awt/peer/gtk >> standard.omit
+fi
+if test "$use_qt_awt" != yes; then
+   echo gnu/java/awt/peer/qt >> standard.omit
 fi
 
 if test -z "${with_multisubdir}"; then
@@ -314,6 +332,9 @@ ac_configure_args="$ac_configure_args --disable-examples"
 ac_configure_args="$ac_configure_args --with-glibj=build"
 if test "$use_gtk_awt" != yes; then
   ac_configure_args="$ac_configure_args --disable-gtk-peer"
+fi
+if test "$use_qt_awt" != yes; then
+  ac_configure_args="$ac_configure_args --disable-qt-peer"
 fi
 dnl --with-gcj=$GCJ
 dnl --with-javah=$GCJH

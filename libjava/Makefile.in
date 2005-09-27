@@ -199,8 +199,8 @@ am__DEPENDENCIES_2 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 	javax/swing/text/html/parser.lo javax/swing/text/rtf.lo \
 	javax/swing/tree.lo javax/swing/undo.lo javax/transaction.lo \
 	javax/transaction/xa.lo org/ietf/jgss.lo
-am__DEPENDENCIES_3 = gnu-java-awt-peer-qt.lo gnu-java-beans.lo \
-	gnu-xml.lo javax-imageio.lo javax-xml.lo org-w3c.lo org-xml.lo
+am__DEPENDENCIES_3 = gnu-java-beans.lo gnu-xml.lo javax-imageio.lo \
+	javax-xml.lo org-w3c.lo org-xml.lo
 am__DEPENDENCIES_4 = $(patsubst classpath/resource/%,%,$(addsuffix \
 	.lo,$(property_files)))
 am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
@@ -494,6 +494,8 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PLATFORM_INNER_NAT_HDRS = @PLATFORM_INNER_NAT_HDRS@
+QT_AWT_FALSE = @QT_AWT_FALSE@
+QT_AWT_TRUE = @QT_AWT_TRUE@
 RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -4699,7 +4701,6 @@ ordinary_header_files = \
   $(org_ietf_jgss_header_files)
 
 bc_objects = \
-  gnu-java-awt-peer-qt.lo \
   gnu-java-beans.lo \
   gnu-xml.lo \
   javax-imageio.lo \
