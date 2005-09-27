@@ -365,9 +365,10 @@ expandargv (argcp, argvp)
 	{
 	  *argvp = dupargv (*argvp);
 	  if (!*argvp)
-	    /* We do not know exactly many bytes dupargv tried to
-	       allocate, so make a guess.  */
-	    xmalloc_failed (*argcp * 32);
+	    {
+	      fputs ("\nout of memory\n", stderr);
+	      xexit (1);
+	    }
 	}
       /* Count the number of arguments.  */
       file_argc = 0;

@@ -1,3 +1,7 @@
+2005-09-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* argv.c (expandargv): Do not use xmalloc_failed.
+
 2005-09-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* argv.c (safe-ctype.h): Include it.
