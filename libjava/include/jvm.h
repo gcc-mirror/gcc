@@ -359,6 +359,10 @@ void _Jv_SetInitialHeapSize (const char *arg);
    _Jv_GCSetMaximumHeapSize.  */
 void _Jv_SetMaximumHeapSize (const char *arg);
 
+/* Free the method cache, if one was allocated.  This is only called
+   during thread deregistration.  */
+void _Jv_FreeMethodCache ();
+
 extern "C" void JvRunMain (jclass klass, int argc, const char **argv);
 void _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv, 
 		  bool is_jar);

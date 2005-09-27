@@ -879,8 +879,10 @@ _Jv_LookupDeclaredMethod (jclass klass, _Jv_Utf8Const *name,
   return NULL;
 }
 
+#ifdef HAVE_TLS
+
 // NOTE: MCACHE_SIZE should be a power of 2 minus one.
-#define MCACHE_SIZE 1023
+#define MCACHE_SIZE 31
 
 struct _Jv_mcache
 {
@@ -888,37 +890,60 @@ struct _Jv_mcache
   _Jv_Method *method;
 };
 
-static _Jv_mcache method_cache[MCACHE_SIZE + 1];
+static __thread _Jv_mcache *method_cache;
+#endif // HAVE_TLS
 
 static void *
 _Jv_FindMethodInCache (jclass klass,
                        _Jv_Utf8Const *name,
                        _Jv_Utf8Const *signature)
 {
-  int index = name->hash16 () & MCACHE_SIZE;
-  _Jv_mcache *mc = method_cache + index;
-  _Jv_Method *m = mc->method;
+#ifdef HAVE_TLS
+  _Jv_mcache *cache = method_cache;
+  if (cache)
+    {
+      int index = name->hash16 () & MCACHE_SIZE;
+      _Jv_mcache *mc = &cache[index];
+      _Jv_Method *m = mc->method;
 
-  if (mc->klass == klass
-      && m != NULL             // thread safe check
-      && _Jv_equalUtf8Consts (m->name, name)
-      && _Jv_equalUtf8Consts (m->signature, signature))
-    return mc->method->ncode;
+      if (mc->klass == klass
+	  && _Jv_equalUtf8Consts (m->name, name)
+	  && _Jv_equalUtf8Consts (m->signature, signature))
+	return mc->method->ncode;
+    }
+#endif // HAVE_TLS
   return NULL;
 }
 
 static void
-_Jv_AddMethodToCache (jclass klass,
-                       _Jv_Method *method)
+_Jv_AddMethodToCache (jclass klass, _Jv_Method *method)
 {
-  _Jv_MonitorEnter (&java::lang::Class::class$); 
+#ifdef HAVE_TLS
+  if (method_cache == NULL)
+    method_cache = (_Jv_mcache *) _Jv_MallocUnchecked((MCACHE_SIZE + 1)
+						      * sizeof (_Jv_mcache));
+  // If the allocation failed, just keep going.
+  if (method_cache != NULL)
+    {
+      int index = method->name->hash16 () & MCACHE_SIZE;
+      method_cache[index].method = method;
+      method_cache[index].klass = klass;
+    }
+#endif // HAVE_TLS
+}
 
-  int index = method->name->hash16 () & MCACHE_SIZE;
-
-  method_cache[index].method = method;
-  method_cache[index].klass = klass;
-
-  _Jv_MonitorExit (&java::lang::Class::class$);
+// Free this thread's method cache.  We explicitly manage this memory
+// as the GC does not yet know how to scan TLS on all platforms.
+void
+_Jv_FreeMethodCache ()
+{
+#ifdef HAVE_TLS
+  if (method_cache != NULL)
+    {
+      _Jv_Free(method_cache);
+      method_cache = NULL;
+    }
+#endif // HAVE_TLS
 }
 
 void *
