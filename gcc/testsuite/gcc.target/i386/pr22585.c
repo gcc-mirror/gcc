@@ -2,6 +2,7 @@
 /* Testcase reduced by Volker Reichelt */
 /* { dg-do compile } */
 /* { dg-options "-march=i386 -O -ffast-math" } */
+/* { dg-require-effective-target ilp32 } */
 
 int
 foo (long double d, int i)
