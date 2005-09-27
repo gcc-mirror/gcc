@@ -432,8 +432,11 @@ namespace __gnu_cxx
 		static __gthread_once_t __once = __GTHREAD_ONCE_INIT;
 		__gthread_once(&__once, _S_initialize);
 	      }
-	    else
-	      _S_get_pool()._M_initialize_once(); 
+
+	    // Double check initialization. May be necessary on some
+	    // systems for proper construction when not compiling with
+	    // thread flags.
+	    _S_get_pool()._M_initialize_once(); 
 	    __init = true;
 	  }
       }
@@ -524,8 +527,11 @@ namespace __gnu_cxx
 		static __gthread_once_t __once = __GTHREAD_ONCE_INIT;
 		__gthread_once(&__once, _S_initialize);
 	      }
-	    else
-	      _S_get_pool()._M_initialize_once(); 
+
+	    // Double check initialization. May be necessary on some
+	    // systems for proper construction when not compiling with
+	    // thread flags.
+	    _S_get_pool()._M_initialize_once(); 
 	    __init = true;
 	  }
       }
