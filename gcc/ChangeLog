@@ -1,3 +1,7 @@
+2005-09-27  Nick Clifton  <nickc@redhat.com>
+
+	* libgcc2.c (__popcount_tab): Remove redundant prototype.
+
 2005-09-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/13764
