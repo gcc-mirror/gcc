@@ -1,3 +1,10 @@
+2005-09-27  Daniel Berlin  <dberlin@dberlin.org>
+	    Devang Patel  <dpatel@apple.com>
+
+	PR tree-optimization/23625
+	* tree-flow-inline.h (bsi_after_labels): Remove, first statement is
+	LABEL_EXPR, assertion check.
+	
 2005-09-27  J"orn Rennecke <joern.rennecke@st.com>
 
 	* optabs.c (no_conflict_move_test): Check if a result of a

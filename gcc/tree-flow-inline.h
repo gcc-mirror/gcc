@@ -727,7 +727,7 @@ bsi_start (basic_block bb)
   return bsi;
 }
 
-/* Return a block statement iterator that points to the last label in
+/* Return a block statement iterator that points to the first non-label
    block BB.  */
 
 static inline block_stmt_iterator
@@ -749,13 +749,6 @@ bsi_after_labels (basic_block bb)
   bsi.tsi = tsi_start (bb->stmt_list);
   if (tsi_end_p (bsi.tsi))
     return bsi;
-
-  /* Ensure that there are some labels.  The rationale is that we want
-     to insert after the bsi that is returned, and these insertions should
-     be placed at the start of the basic block.  This would not work if the
-     first statement was not label; rather fail here than enable the user
-     proceed in wrong way.  */
-  gcc_assert (TREE_CODE (tsi_stmt (bsi.tsi)) == LABEL_EXPR);
 
   next = bsi.tsi;
   tsi_next (&next);
