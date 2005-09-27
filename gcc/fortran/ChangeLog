@@ -1,3 +1,11 @@
+2005-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/18518
+	* trans-common.c (build_equiv_decl): Add IS_SAVED argument.
+	If it is true, set TREE_STATIC on the decl.
+	(create_common): If any symbol in equivalence has SAVE attribute,
+	pass true as last argument to build_equiv_decl.
+
 2005-09-24  Janne Blomqvist  <jblomqvi@cc.hut.fi>
 
 	* trans-io.c (gfc_build_io_library_fndecls): Add entry
