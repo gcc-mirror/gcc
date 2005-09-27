@@ -1437,10 +1437,12 @@ infer_loop_bounds_from_undefined (struct loop *loop)
 
 		/* For each array access, analyze its access function
 		   and record a bound on the loop iteration domain.  */
-		if (TREE_CODE (op1) == ARRAY_REF)
+		if (TREE_CODE (op1) == ARRAY_REF 
+		    && !ref_contains_indirect_ref (op1))
 		  estimate_iters_using_array (stmt, op1);
 
-		if (TREE_CODE (op0) == ARRAY_REF)
+		if (TREE_CODE (op0) == ARRAY_REF 
+		    && !ref_contains_indirect_ref (op0))
 		  estimate_iters_using_array (stmt, op0);
 
 		/* For each signed type variable in LOOP, analyze its
@@ -1491,7 +1493,8 @@ infer_loop_bounds_from_undefined (struct loop *loop)
 
 		for (args = TREE_OPERAND (stmt, 1); args;
 		     args = TREE_CHAIN (args))
-		  if (TREE_CODE (TREE_VALUE (args)) == ARRAY_REF)
+		  if (TREE_CODE (TREE_VALUE (args)) == ARRAY_REF
+		      && !ref_contains_indirect_ref (TREE_VALUE (args)))
 		    estimate_iters_using_array (stmt, TREE_VALUE (args));
 
 		break;
