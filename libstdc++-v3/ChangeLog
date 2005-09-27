@@ -1,3 +1,11 @@
+2005-09-25  Benjamin Kosnik  <bkoz@redhat.com>
+	    Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* include/ext/mt_allocator.h
+	(__per_type_pool<...true>::_S_initialize_once): Always call
+	_M_initialize_once.
+	(__common_pool<...true>::_S_initialize_once): Same.
+
 2005-09-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/ext/mt_allocator/tune-1.cc: Clarify for single-thread.
