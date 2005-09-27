@@ -1460,10 +1460,13 @@ call the copy constructor in all cases.
 
 @item -fno-enforce-eh-specs
 @opindex fno-enforce-eh-specs
-Don't check for violation of exception specifications at runtime.  This
-option violates the C++ standard, but may be useful for reducing code
-size in production builds, much like defining @samp{NDEBUG}.  The compiler
-will still optimize based on the exception specifications.
+Don't generate code to check for violation of exception specifications
+at runtime.  This option violates the C++ standard, but may be useful
+for reducing code size in production builds, much like defining
+@samp{NDEBUG}.  This does not give user code permission to throw
+exceptions in violation of the exception specifications; the compiler
+will still optimize based on the specifications, so throwing an
+unexpected exception will result in undefined behavior.
 
 @item -ffor-scope
 @itemx -fno-for-scope
