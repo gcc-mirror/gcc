@@ -1,3 +1,22 @@
+2005-09-27  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/23552
+	* acinclude.m4 (LIBGFOR_CHECK_FOR_BROKEN_ISFINITE): New.
+	(LIBGFOR_CHECK_FOR_BROKEN_ISNAN): New.
+	(LIBGFOR_CHECK_FOR_BROKEN_FPCLASSIFY): New.
+	* configure.ac (LIBGFOR_CHECK_FOR_BROKEN_ISFINITE): Add use.
+	(LIBGFOR_CHECK_FOR_BROKEN_ISNAN): Add use.
+	(LIBGFOR_CHECK_FOR_BROKEN_FPCLASSIFY): Add use.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* libgfortan.h (isfinite): undef if broken, set if needed.
+	(isnan): undef if broken, set if needed.
+        (fpclassify): undef if broken, set if needed.
+	* io/write.c: Remove TODO comment about working isfinite.
+	* intrinsics/c99_functions.c (round): Use isfinite instead
+	of fpclassify.
+	* intrinsics/c99_functions.c (roundf): Ditto.
+
 2005-09-24  Janne Blomqvist <jblomqvi@cc.hut.fi>
 
 	* io.h: Changed prototypes of list_formatted_{read|write}.

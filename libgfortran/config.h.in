@@ -75,6 +75,15 @@
 /* Define to 1 if the target supports __attribute__((visibility(...))). */
 #undef HAVE_ATTRIBUTE_VISIBILITY
 
+/* Define if fpclassify is broken. */
+#undef HAVE_BROKEN_FPCLASSIFY
+
+/* Define if isfinite is broken. */
+#undef HAVE_BROKEN_ISFINITE
+
+/* Define if isnan is broken. */
+#undef HAVE_BROKEN_ISNAN
+
 /* libm includes cabs */
 #undef HAVE_CABS
 
