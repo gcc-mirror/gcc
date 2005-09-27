@@ -3026,10 +3026,16 @@ no_conflict_move_test (rtx dest, rtx set, void *p0)
 	   || (CALL_P (p->first) && (find_reg_fusage (p->first, USE, dest)))
 	   || reg_used_between_p (dest, p->first, p->insn)
 	   /* Likewise if this insn depends on a register set by a previous
-	      insn in the list.  */
+	      insn in the list, or if it sets a result (presumably a hard
+	      register) that is set or clobbered by a previous insn.
+	      N.B. the modified_*_p (SET_DEST...) tests applied to a MEM
+	      SET_DEST perform the former check on the address, and the latter
+	      check on the MEM.  */
 	   || (GET_CODE (set) == SET
 	       && (modified_in_p (SET_SRC (set), p->first)
-		   || modified_between_p (SET_SRC (set), p->first, p->insn))))
+		   || modified_in_p (SET_DEST (set), p->first)
+		   || modified_between_p (SET_SRC (set), p->first, p->insn)
+		   || modified_between_p (SET_DEST (set), p->first, p->insn))))
     p->must_stay = true;
 }
 
