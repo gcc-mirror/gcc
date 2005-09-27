@@ -1,3 +1,9 @@
+2005-09-27  J"orn Rennecke <joern.rennecke@st.com>
+
+	* optabs.c (no_conflict_move_test): Check if a result of a
+	to-be-moved insn would be clobbered by an originally
+	preceding insn.
+
 2005-09-27  Jeff Law  <law@redhat.com>
 
 	* passes.c (init_optimization_passes): Replace copy propagation
