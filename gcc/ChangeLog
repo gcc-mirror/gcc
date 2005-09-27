@@ -1,5 +1,8 @@
 2005-09-26  Jason Merrill  <jason@redhat.com>
 
+	PR c++/13764
+	* c-common.c (finish_fname_decls): Use append_to_statement_list_force.
+
 	* doc/invoke.texi: Clarify documentation of -fno-enforce-eh-specs.
 
 2005-09-26  James E Wilson  <wilson@specifix.com>

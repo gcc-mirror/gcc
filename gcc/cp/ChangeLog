@@ -1,3 +1,13 @@
+2005-09-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/13764
+	* cp-tree.h (FUNCTION_NEEDS_BODY_BLOCK): New macro.
+	* name-lookup.c (pushdecl_maybe_friend): Check it.
+	* decl.c (begin_function_body): Do nothing if it's false.
+	(finish_function_body): Ditto.
+	(outer_curly_brace_block): New fn.
+	(finish_function): Use it.
+
 2005-09-26  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/15855
