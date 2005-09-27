@@ -1,3 +1,12 @@
+2005-09-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/22147
+	* name-lookup.c (maybe_process_template_type_declaration): Don't
+	treat forward declarations of classes as templates just because
+	we're processing_template_decl.
+	* pt.c (tsubst_decl): Clear DECL_TEMPLATE_INFO for friend
+	functions. 
+
 2005-09-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/13764

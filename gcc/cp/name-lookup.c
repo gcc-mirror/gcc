@@ -4689,6 +4689,11 @@ maybe_process_template_type_declaration (tree type, int is_friend,
 
        is a forward-declaration of `A'.  */
     ;
+  else if (b->kind == sk_namespace
+	   && current_binding_level->kind != sk_namespace)
+    /* If this new type is being injected into a containing scope,
+       then it's not a template type.  */
+    ;
   else
     {
       gcc_assert (IS_AGGR_TYPE (type) || TREE_CODE (type) == ENUMERAL_TYPE);

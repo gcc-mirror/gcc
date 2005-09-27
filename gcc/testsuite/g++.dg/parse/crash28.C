@@ -6,9 +6,9 @@
 //        Volker Reichelt <reichelt@gcc.gnu.org>
 
 template <class _Tp> class insert_iterator<slist<_Tp> > {}; // { dg-error "not a template|not declared in this scope|expected unqualified-id|extra" }
-template <class _Value> class insert_iterator<int > { // { dg-error "template parameters not used|_Value" }
+template <class _Value> class insert_iterator<int > { // { dg-error "template" }
   hash_set<_Value>; // { dg-error "no type|expected" }
 };
 
 template<int> struct A<X<> > {}; // { dg-error "not a template|not declared in this scope|expected unqualified-id|extra" }
-struct A {}; // { dg-error "template argument required" }
+struct A {};
