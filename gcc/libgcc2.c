@@ -725,11 +725,6 @@ __ctzDI2 (UDWtype x)
 }
 #endif
 
-#if (defined (L_popcountsi2) || defined (L_popcountdi2)	\
-     || defined (L_popcount_tab))
-extern const UQItype __popcount_tab[] ATTRIBUTE_HIDDEN;
-#endif
-
 #ifdef L_popcount_tab
 const UQItype __popcount_tab[256] =
 {
