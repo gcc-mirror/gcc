@@ -11,6 +11,7 @@
  
 /* { dg-do run { xfail "*-*-*" } } */
 /* { dg-options "-O2 -mmmx" } */
+/* { dg-require-effective-target ilp32 } */
 
 #include "../../gcc.dg/i386-cpuid.h"
 

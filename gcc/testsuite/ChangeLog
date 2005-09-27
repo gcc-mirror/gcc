@@ -1,3 +1,8 @@
+2005-09-27  Uros Bizjak  <uros@kss-loka.si>
+
+	* gcc.target/i386/pr22585.c: Run on 32-bit x86 only.
+	* gcc.target/i386/builtin-apply-mmx.c: Run on 32-bit x86 only.
+
 2005-09-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/23677
