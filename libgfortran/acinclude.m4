@@ -230,3 +230,122 @@ esac])])
 if test x"$have_crlf" = xyes; then
   AC_DEFINE(HAVE_CRLF, 1, [Define if CRLF is line terminator.])
 fi])
+
+dnl Check whether isfinite is broken.
+dnl The most common problem is that it does not work on long doubles.
+AC_DEFUN([LIBGFOR_CHECK_FOR_BROKEN_ISFINITE], [
+  AC_CACHE_CHECK([whether isfinite is broken],
+                  have_broken_isfinite, [
+  libgfor_check_for_broken_isfinite_save_LIBS=$LIBS
+  LIBS="$LIBS -lm"
+  AC_TRY_RUN([
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+#include <float.h>
+int main ()
+{
+#ifdef isfinite
+#ifdef LDBL_MAX
+  if (!isfinite(LDBL_MAX)) return 1;
+#endif
+#ifdef DBL_MAX
+  if (!isfinite(DBL_MAX)) return 1;
+#endif
+#endif
+return 0;
+}], have_broken_isfinite=no, have_broken_isfinite=yes, [
+case "${target}" in
+  hppa*-*-hpux*) have_broken_isfinite=yes ;;
+  *) have_broken_isfinite=no ;;
+esac])]
+  LIBS=$libgfor_check_for_broken_isfinite_save_LIBS)
+if test x"$have_broken_isfinite" = xyes; then
+  AC_DEFINE(HAVE_BROKEN_ISFINITE, 1, [Define if isfinite is broken.])
+fi])
+
+dnl Check whether isnan is broken.
+dnl The most common problem is that it does not work on long doubles.
+AC_DEFUN([LIBGFOR_CHECK_FOR_BROKEN_ISNAN], [
+  AC_CACHE_CHECK([whether isnan is broken],
+                  have_broken_isnan, [
+  libgfor_check_for_broken_isnan_save_LIBS=$LIBS
+  LIBS="$LIBS -lm"
+  AC_TRY_RUN([
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+#include <float.h>
+int main ()
+{
+#ifdef isnan
+#ifdef LDBL_MAX
+  {
+    long double x;
+    x = __builtin_nanl ("");
+    if (!isnan(x)) return 1;
+    if (isnan(LDBL_MAX)) return 1;
+#ifdef NAN
+    x = (long double) NAN;
+    if (!isnan(x)) return 1;
+#endif
+  }
+#endif
+#ifdef DBL_MAX
+  {
+    double y;
+    y = __builtin_nan ("");
+    if (!isnan(y)) return 1;
+    if (isnan(DBL_MAX)) return 1;
+#ifdef NAN
+    y = (double) NAN;
+    if (!isnan(y)) return 1;
+#endif
+  }
+#endif
+#endif
+return 0;
+}], have_broken_isnan=no, have_broken_isnan=yes, [
+case "${target}" in
+  hppa*-*-hpux*) have_broken_isnan=yes ;;
+  *) have_broken_isnan=no ;;
+esac])]
+  LIBS=$libgfor_check_for_broken_isnan_save_LIBS)
+if test x"$have_broken_isnan" = xyes; then
+  AC_DEFINE(HAVE_BROKEN_ISNAN, 1, [Define if isnan is broken.])
+fi])
+
+dnl Check whether fpclassify is broken.
+dnl The most common problem is that it does not work on long doubles.
+AC_DEFUN([LIBGFOR_CHECK_FOR_BROKEN_FPCLASSIFY], [
+  AC_CACHE_CHECK([whether fpclassify is broken],
+                  have_broken_fpclassify, [
+  libgfor_check_for_broken_fpclassify_save_LIBS=$LIBS
+  LIBS="$LIBS -lm"
+  AC_TRY_RUN([
+#ifdef HAVE_MATH_H
+#include <math.h>
+#endif
+#include <float.h>
+int main ()
+{
+#ifdef fpclassify
+#ifdef LDBL_MAX
+        if (fpclassify(LDBL_MAX) == FP_NAN
+            || fpclassify(LDBL_MAX) == FP_INFINITE) return 1;
+#endif
+#ifdef DBL_MAX
+        if (fpclassify(DBL_MAX) == FP_NAN
+            || fpclassify(DBL_MAX) == FP_INFINITE) return 1;
+#endif
+#endif
+return 0;
+}], have_broken_fpclassify=no, have_broken_fpclassify=yes, [
+case "${target}" in
+  hppa*-*-hpux*) have_broken_fpclassify=yes ;;
+  *) have_broken_fpclassify=no ;;
+esac])]
+  LIBS=$libgfor_check_for_broken_fpclassify_save_LIBS)
+if test x"$have_broken_fpclassify" = xyes; then
+  AC_DEFINE(HAVE_BROKEN_FPCLASSIFY, 1, [Define if fpclassify is broken.])
+fi])

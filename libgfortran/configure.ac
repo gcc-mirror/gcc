@@ -328,6 +328,15 @@ AC_CHECK_LIB([m],[ynl],[AC_DEFINE([HAVE_YNL],[1],[libm includes ynl])])
 # On AIX, clog is present in libm as __clog
 AC_CHECK_LIB([m],[__clog],[AC_DEFINE([HAVE_CLOG],[1],[libm includes clog])])
 
+# Check for a isfinite macro that works on long doubles.
+LIBGFOR_CHECK_FOR_BROKEN_ISFINITE
+
+# Check for a isnan macro that works on long doubles.
+LIBGFOR_CHECK_FOR_BROKEN_ISNAN
+
+# Check for a fpclassify macro that works on long doubles.
+LIBGFOR_CHECK_FOR_BROKEN_FPCLASSIFY
+
 # Fallback in case isfinite is not available.
 AC_CHECK_LIB([m],[finite],[AC_DEFINE([HAVE_FINITE],[1],[libm includes finite])])
 

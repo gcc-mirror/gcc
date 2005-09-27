@@ -177,13 +177,33 @@ typedef off_t gfc_offset;
 
    When isfinite is not available, try to use one of the
    alternatives, or bail out.  */
-#if (!defined(isfinite) || defined(__CYGWIN__))
+
+#if defined(HAVE_BROKEN_ISFINITE) || defined(__CYGWIN__)
 #undef isfinite
-#if defined(fpclassify)
-#define isfinite(x) (fpclassify(x) != FP_NAN && fpclassify(x) != FP_INFINITE)
-#else
-#define isfinite(x) ((x) - (x) == 0)
 #endif
+
+#if defined(HAVE_BROKEN_ISNAN)
+#undef isnan
+#endif
+
+#if defined(HAVE_BROKEN_FPCLASSIFY)
+#undef fpclassify
+#endif
+
+#if !defined(isfinite)
+#if !defined(fpclassify)
+#define isfinite(x) ((x) - (x) == 0)
+#else
+#define isfinite(x) (fpclassify(x) != FP_NAN && fpclassify(x) != FP_INFINITE)
+#endif /* !defined(fpclassify) */
+#endif /* !defined(isfinite)  */
+
+#if !defined(isnan)
+#if !defined(fpclassify)
+#define isnan(x) ((x) != (x))
+#else
+#define isnan(x) (fpclassify(x) == FP_NAN)
+#endif /* !defined(fpclassify) */
 #endif /* !defined(isfinite)  */
 
 /* TODO: find the C99 version of these an move into above ifdef.  */

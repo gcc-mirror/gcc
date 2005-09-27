@@ -344,12 +344,8 @@ double
 round(double x)
 {
    double t;
-#if defined(fpclassify)
-   int i;
-   i = fpclassify(x);
-   if (i == FP_INFINITE || i == FP_NAN)
+   if (!isfinite (x))
      return (x);
-#endif
 
    if (x >= 0.0) 
     {
@@ -377,13 +373,8 @@ float
 roundf(float x)
 {
    float t;
-#if defined(fpclassify)
-   int i;
-
-   i = fpclassify(x);
-   if (i == FP_INFINITE || i == FP_NAN)
+   if (!isfinite (x))
      return (x);
-#endif
 
    if (x >= 0.0) 
     {

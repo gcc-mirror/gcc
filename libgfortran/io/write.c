@@ -821,9 +821,6 @@ write_float (fnode *f, const char *source, int len)
 
   if (f->format != FMT_B && f->format != FMT_O && f->format != FMT_Z)
     {
-      /* TODO: there are some systems where isfinite is not able to work
-               with long double variables. We should detect this case and
-	       provide our own version for isfinite.  */
       res = isfinite (n); 
       if (res == 0)
 	{
