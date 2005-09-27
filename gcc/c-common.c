@@ -695,7 +695,7 @@ finish_fname_decls (void)
       if (TREE_CODE (*bodyp) == BIND_EXPR)
 	bodyp = &BIND_EXPR_BODY (*bodyp);
 
-      append_to_statement_list (*bodyp, &stmts);
+      append_to_statement_list_force (*bodyp, &stmts);
       *bodyp = stmts;
     }
 

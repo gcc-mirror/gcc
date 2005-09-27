@@ -935,8 +935,9 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 		     them there.  */
 		  struct cp_binding_level *b = current_binding_level->level_chain;
 
-		  /* Skip the ctor/dtor cleanup level.  */
-		  b = b->level_chain;
+		  if (FUNCTION_NEEDS_BODY_BLOCK (current_function_decl))
+		    /* Skip the ctor/dtor cleanup level.  */
+		    b = b->level_chain;
 
 		  /* ARM $8.3 */
 		  if (b->kind == sk_function_parms)
