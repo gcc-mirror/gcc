@@ -166,6 +166,7 @@ __extendsfdf2 (float a1)
   register union float_long fl1;
   register union double_long dl;
   register long exp;
+  register long mant;
 
   fl1.f = a1;
 
@@ -176,10 +177,23 @@ __extendsfdf2 (float a1)
     }
 
   dl.l.upper = SIGN (fl1.l);
-  exp = EXP (fl1.l) - EXCESS + EXCESSD;
+  exp = EXP(fl1.l);
+  mant = MANT (fl1.l) & ~HIDDEN;
+  if (exp == 0)
+    {
+      /* Denormal.  */
+      exp = 1;
+      while (!(mant & HIDDEN))
+	{
+	  mant <<= 1;
+	  exp--;
+	}
+      mant &= ~HIDDEN;
+    }
+  exp = exp - EXCESS + EXCESSD;
   dl.l.upper |= exp << 20;
-  dl.l.upper |= (MANT (fl1.l) & ~HIDDEN) >> 3;
-  dl.l.lower = MANT (fl1.l) << 29;
+  dl.l.upper |= mant >> 3;
+  dl.l.lower = mant << 29;
 	
   return dl.d;
 }
@@ -203,6 +217,16 @@ __truncdfsf2 (double a1)
   /* shift double mantissa 6 bits so we can round */
   mant = MANTD (dl1) >> 6;
 
+  /* Check for underflow and denormals.  */
+  if (exp <= 0)
+    {
+      if (exp < -24)
+	mant = 0;
+      else
+	mant >>= 1 - exp;
+      exp = 0;
+    }
+  
   /* now round and shift down */
   mant += 1;
   mant >>= 1;

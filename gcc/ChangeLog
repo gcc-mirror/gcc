@@ -1,3 +1,8 @@
+2005-09-28  Paul Brook  <paul@codesourcery.com>
+
+	* config/m68k/fpgnulib.c (__extendsfdf2, __truncdfsf2): Handle
+	denormals.
+
 2005-09-28  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/23853
