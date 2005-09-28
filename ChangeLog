@@ -1,3 +1,19 @@
+2005-09-28  Geoffrey Keating  <geoffk@apple.com>
+
+	* Makefile.tpl (BASE_TARGET_EXPORTS): Add LIPO, STRIP.
+	(LIPO_FOR_TARGET): New.
+	(CONFIGURED_LIPO_FOR_TARGET): New.
+	(USUAL_LIPO_FOR_TARGET): New.
+	(STRIP_FOR_TARGET): New.
+	(CONFIGURED_STRIP_FOR_TARGET): New.
+	(USUAL_STRIP_FOR_TARGET): New.
+	* Makefile.def (flags_to_pass): Add LIPO_FOR_TARGET and
+	STRIP_FOR_TARGET.
+	* configure.in: Set LIPO_FOR_TARGET, STRIP_FOR_TARGET,
+	CONFIGURED_LIPO_FOR_TARGET, CONFIGURED_STRIP_FOR_TARGET.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	
 2005-09-19  David Edelsohn  <edelsohn@gnu.org>
 
 	* configure.in (powerpc-*-aix*): Add target-libssp to noconfigdirs.

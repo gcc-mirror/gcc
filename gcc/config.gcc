@@ -356,9 +356,9 @@ esac
 # Common parts for widely ported systems.
 case ${target} in
 *-*-darwin*)
-  tm_file="${tm_file} darwin.h"
+  tm_file="${tm_file} darwin.h ${cpu_type}/darwin.h"
   tm_p_file="${tm_p_file} darwin-protos.h"
-  tmake_file="t-darwin t-slibgcc-darwin"
+  tmake_file="t-darwin ${cpu_type}/t-darwin t-slibgcc-darwin"
   target_gtfiles="\$(srcdir)/config/darwin.c"
   extra_options="${extra_options} darwin.opt"
   c_target_objs="darwin-c.o"
@@ -949,7 +949,7 @@ hppa[12]*-*-hpux11*)
 	use_collect2=yes
 	;;
 i[34567]86-*-darwin*)
-	tm_file="${tm_file} i386/darwin.h"
+	# All the configuration is presently done generically.
 	;;
 i[34567]86-*-elf*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/i386elf.h"
@@ -1611,8 +1611,6 @@ powerpc-*-beos*)
 	use_fixproto=yes
 	;;
 powerpc-*-darwin*)
-	tm_file="${tm_file} rs6000/darwin.h"
-	tmake_file="${tmake_file} rs6000/t-darwin"
 	extra_options="${extra_options} rs6000/darwin.opt"
 	case ${target} in
 	  *-darwin1[0-9]* | *-darwin[8-9]*)
