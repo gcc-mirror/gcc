@@ -1,3 +1,9 @@
+2005-09-28  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/23853
+	* tree-vect-analyze.c (vect_compute_data_ref_alignment): Use
+	host_integerp to verify misalignment value.
+
 2005-09-28  Richard Henderson  <rth@redhat.com>
 
 	* builtins.c (get_builtin_sync_mode): New.
