@@ -1,3 +1,10 @@
+2005-09-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16782
+	* g++.dg/parse/qualified4.C: New test.
+	* g++.old-deja/g++.law/static-mem5.C: Use -w -fpermissive.
+	* g++.old-deja/g++.mike/p8154.C: Likewise. 
+
 2005-09-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22147

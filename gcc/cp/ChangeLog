@@ -1,3 +1,9 @@
+2005-09-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16782
+	* decl.c (grokdeclarator): Always pedwarn about overqualified
+	member names.
+
 2005-09-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22147
