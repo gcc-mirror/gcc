@@ -1,3 +1,7 @@
+2005-09-27  Richard Henderson  <rth@redhat.com>
+
+	* pretty-print.c (pp_base_format): Fix typo for %>.
+
 2005-09-27  Daniel Berlin  <dberlin@dberlin.org>
 	    Devang Patel  <dpatel@apple.com>
 

@@ -261,7 +261,7 @@ pp_base_format (pretty_printer *pp, text_info *text)
 	case '>':
 	case '\'':
 	  obstack_grow (&buffer->chunk_obstack,
-			open_quote, strlen (close_quote));
+			close_quote, strlen (close_quote));
 	  p++;
 	  continue;
 
