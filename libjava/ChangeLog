@@ -1,3 +1,10 @@
+2005-09-28  Geoffrey Keating  <geoffk@apple.com>
+
+	* sysdep/powerpc/locks.h: Use 64-bit versions of primitives when
+	__LP64__ is defined rather than __powerpc64__.
+	(compare_and_swap): 'ret' is an obj_addr_t not just an int.
+	(compare_and_swap_release): Likewise.
+
 2005-09-28  David Daney  <ddaney@avtrex.com>
 
 	* HACKING: Update instructions for classpath import.
