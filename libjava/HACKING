@@ -22,6 +22,7 @@ To import a new release:
   You have to make sure to use the gcc libtool.m4 and gcc lt* scripts
   cd .../classpath
   cp ../../lt* .
+  cp ../../config.sub ../../config.guess .
   aclocal -I m4 -I ../..
   autoconf
   autoheader
