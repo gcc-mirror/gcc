@@ -1,5 +1,7 @@
 2005-09-28  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/opt/pr19650.C: Use -w -fpermissive.
+
 	PR c++/16782
 	* g++.dg/parse/qualified4.C: New test.
 	* g++.old-deja/g++.law/static-mem5.C: Use -w -fpermissive.
