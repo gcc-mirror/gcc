@@ -11,7 +11,7 @@ details.  */
 #ifndef __SYSDEP_LOCKS_H__
 #define __SYSDEP_LOCKS_H__
 
-#ifdef __powerpc64__
+#ifdef __LP64__
 #define _LARX "ldarx "
 #define _STCX "stdcx. "
 #else
@@ -30,7 +30,7 @@ inline static bool
 compare_and_swap (volatile obj_addr_t *addr, obj_addr_t old,
 		  obj_addr_t new_val) 
 {
-  int ret;
+  obj_addr_t ret;
 
   __asm__ __volatile__ (
 	   "0:    " _LARX "%0,0,%1 \n"
@@ -62,7 +62,7 @@ inline static bool
 compare_and_swap_release (volatile obj_addr_t *addr, obj_addr_t old,
 			  obj_addr_t new_val)
 {
-  int ret;
+  obj_addr_t ret;
 
   __asm__ __volatile__ ("sync" : : : "memory");
 
