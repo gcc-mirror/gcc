@@ -2248,7 +2248,7 @@ ___cmpdi2:
 	.type	___ucmpdi2,@function
 ___ucmpdi2:
 	cmp	r9, r7  # Check if each high word are same.
-	be	.L_ucmpdi_check_psw
+	bne	.L_ucmpdi_check_psw
 	cmp     r8, r6  # Compare the word.
 .L_ucmpdi_check_psw:
 	setf	nl, r10 # 
