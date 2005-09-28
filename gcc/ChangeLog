@@ -1,5 +1,12 @@
 2005-09-28  Nick Clifton  <nickc@redhat.com>
 
+	* config/v850/v850.h (GO_IF_LEGITIMATE_ADDRESS): Tidy up
+	formatting.  Add check to PLUS case to ensure that the offset is
+	within an acceptable range.
+
+	* config/v850/v850.md (casesi): Disable the generation of the
+	switch pattern as it is not being handled properly at the moment.
+
 	* config/v850/lib1funcs.asm (___ucmpdi2): Correct jump instruction
 	for when the high words are identical.
 
