@@ -195,8 +195,10 @@ BASE_TARGET_EXPORTS = \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
+	LIPO="$(LIPO_FOR_TARGET)"; export LIPO; \
 	NM="$(NM_FOR_TARGET)"; export NM; \
 	RANLIB="$(RANLIB_FOR_TARGET)"; export RANLIB; \
+	STRIP="$(STRIP_FOR_TARGET)"; export STRIP; \
 	WINDRES="$(WINDRES_FOR_TARGET)"; export WINDRES; \
 	$(RPATH_ENVVAR)=`echo "$(HOST_LIB_PATH)$(TARGET_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR);
 
@@ -481,6 +483,19 @@ USUAL_LD_FOR_TARGET = ` \
 
 LDFLAGS_FOR_TARGET = 
 
+LIPO_FOR_TARGET=@LIPO_FOR_TARGET@
+CONFIGURED_LIPO_FOR_TARGET=@CONFIGURED_LIPO_FOR_TARGET@
+USUAL_LIPO_FOR_TARGET = ` \
+  if [ '$(host)' = '$(target)' ] ; then \
+    if [ x'$(LIPO)' != x ]; then \
+       echo $(LIPO); \
+    else \
+       echo lipo; \
+    fi; \
+  else \
+    echo $(CONFIGURED_LIPO_FOR_TARGET) ; \
+  fi`
+
 NM_FOR_TARGET=@NM_FOR_TARGET@
 CONFIGURED_NM_FOR_TARGET=@CONFIGURED_NM_FOR_TARGET@
 USUAL_NM_FOR_TARGET = ` \
@@ -510,6 +525,23 @@ USUAL_RANLIB_FOR_TARGET = ` \
       fi; \
     else \
       echo $(CONFIGURED_RANLIB_FOR_TARGET) ; \
+    fi; \
+  fi`
+
+STRIP_FOR_TARGET=@STRIP_FOR_TARGET@
+CONFIGURED_STRIP_FOR_TARGET=@CONFIGURED_STRIP_FOR_TARGET@
+USUAL_STRIP_FOR_TARGET = ` \
+  if [ -f $$r/$(HOST_SUBDIR)/binutils/strip ] ; then \
+    echo $$r/$(HOST_SUBDIR)/binutils/strip ; \
+  else \
+    if [ '$(host)' = '$(target)' ] ; then \
+      if [ x'$(STRIP)' != x ]; then \
+         echo $(STRIP); \
+      else \
+         echo strip; \
+      fi; \
+    else \
+      echo $(CONFIGURED_STRIP_FOR_TARGET) ; \
     fi; \
   fi`
 

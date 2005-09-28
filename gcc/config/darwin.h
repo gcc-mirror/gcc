@@ -302,12 +302,17 @@ Boston, MA 02110-1301, USA.  */
 
 #define LIB_SPEC "%{!static:-lSystem}"
 
-/* -dynamiclib implies -shared-libgcc just like -shared would on linux.  */
-#define REAL_LIBGCC_SPEC \
-   "%{static|static-libgcc:-lgcc -lgcc_eh}\
-    %{!static:%{!static-libgcc:\
-      %{!Zdynamiclib:%{!shared-libgcc:-lgcc -lgcc_eh}\
-      %{shared-libgcc:-lgcc_s -lgcc}} %{Zdynamiclib:-lgcc_s -lgcc}}}"
+/* -dynamiclib implies -shared-libgcc just like -shared would on linux.  
+   Support -mmacosx-version-min by supplying different (stub) libgcc_s.dylib
+   libraries to link against.  */
+#undef REAL_LIBGCC_SPEC
+#define REAL_LIBGCC_SPEC						\
+   "%{static|static-libgcc:-lgcc -lgcc_eh;				\
+      :%{shared-libgcc|Zdynamiclib					\
+         :%:version-compare(!> 10.5 mmacosx-version-min= -lgcc_s.10.4)	\
+          %:version-compare(>= 10.5 mmacosx-version-min= -lgcc_s.10.5)	\
+          -lgcc;							\
+         :-lgcc -lgcc_eh}}"
 
 /* We specify crt0.o as -lcrt0.o so that ld will search the library path.  */
 /* We don't want anything to do with crt2.o in the 64-bit case;

@@ -1,3 +1,34 @@
+2005-09-28  Geoffrey Keating  <geoffk@apple.com>
+
+	* Makefile.in: Export LIPO_FOR_TARGET, STRIP_FOR_TARGET.
+	(stage1-start): Delete old libgcc and libunwind before moving
+	anything into the stage directory.
+	(stage2-start): Likewise.
+	(stage3-start): Likewise.
+	(stage4-start): Likewise.
+	(stageprofile-start): Likewise.
+	(stagefeedback-start): Likewise.
+	* config.gcc (*-*-darwin*): Automatically use CPU-specific darwin.h
+	header in tm_file and CPU-specific t-darwin in tmake_file.
+	(i[34567]86-*-darwin*): Don't change tm_file.
+	(powerpc-*-darwin*): Don't change tm_file or tmake_file.
+	* config/darwin.h (REAL_LIBGCC_SPEC): Rewrite to use proper libgcc
+	shared library stub for target OS version.
+	* config/t-slibgcc-darwin (SHLIB_SOLINK): Delete.
+	(SHLIB_LINK): Don't make SHLIB_SOLINK.
+	(SHLIB_INSTALL): Don't install SHLIB_SOLINK.
+	(libgcc_s.%.dylib): New.
+	(LIBGCC): Define.
+	(install-darwin-libgcc-stubs): New.
+	(INSTALL_LIBGCC): New append.
+	* config/i386/darwin-libgcc.10.4.ver: New.
+	* config/i386/darwin-libgcc.10.5.ver: New.
+	* config/i386/t-darwin: New.
+	* config/rs6000/darwin-libgcc.10.4.ver: New.
+	* config/rs6000/darwin-libgcc.10.5.ver: New.
+	* config/rs6000/darwin.h (REAL_LIBGCC_SPEC): Delete.
+	* config/rs6000/t-darwin (SHLIB_VERPFX): Define.
+
 2005-09-28  Paul Brook  <paul@codesourcery.com>
 
 	* config/m68k/fpgnulib.c (__extendsfdf2, __truncdfsf2): Handle

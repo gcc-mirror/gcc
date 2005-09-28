@@ -392,14 +392,6 @@ do {									\
     } \
   while (0)
 
-/* Just like config/darwin.h's REAL_LIBGCC_SPEC, but use -lgcc_s_ppc64 for
-   -m64.  */
-#undef REAL_LIBGCC_SPEC
-#define REAL_LIBGCC_SPEC						\
-   "%{static|static-libgcc:-lgcc -lgcc_eh;				\
-      :%{shared-libgcc|Zdynamiclib:%{m64:-lgcc_s_ppc64;:-lgcc_s} -lgcc;	\
-         :-lgcc -lgcc_eh}}"
-
 #ifdef IN_LIBGCC2
 #include <stdbool.h>
 #endif
