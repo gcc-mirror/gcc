@@ -1,3 +1,7 @@
+2005-09-28  David Daney  <ddaney@avtrex.com>
+
+	* HACKING: Update instructions for classpath import.
+
 2005-09-27  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/23367:
