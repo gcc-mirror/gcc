@@ -7562,17 +7562,8 @@ grokdeclarator (const cp_declarator *declarator,
 	}
 
       if (ctype == current_class_type)
-	{
-	  /* class A {
-	       void A::f ();
-	     };
-
-	     Is this ill-formed?  */
-
-	  if (pedantic)
-	    pedwarn ("extra qualification %<%T::%> on member %qs ignored",
-			ctype, name);
-	}
+	pedwarn ("extra qualification %<%T::%> on member %qs ignored",
+		 ctype, name);
       else if (TREE_CODE (type) == FUNCTION_TYPE)
 	{
 	  tree sname = declarator->u.id.unqualified_name;

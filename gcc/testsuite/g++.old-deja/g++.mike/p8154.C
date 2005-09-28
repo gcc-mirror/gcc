@@ -1,5 +1,5 @@
 // { dg-do assemble  }
-// { dg-options "" }
+// { dg-options "-w -fpermissive" }
 // prms-id: 8154
 
 class QvFieldData;

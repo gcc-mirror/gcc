@@ -1,5 +1,5 @@
 // { dg-do assemble  }
-// { dg-options "-w" }
+// { dg-options "-w -fpermissive" }
 // GROUPS passed static-mem
 // static-mem file
 // From: bunch@tazboy.jpl.nasa.gov (Walt Bunch)
