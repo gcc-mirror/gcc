@@ -1,3 +1,8 @@
+2005-09-28  Nick Clifton  <nickc@redhat.com>
+
+	* config/v850/lib1funcs.asm (___ucmpdi2): Correct jump instruction
+	for when the high words are identical.
+
 2005-09-27  Richard Henderson  <rth@redhat.com>
 
 	* pretty-print.c (pp_base_format): Fix typo for %>.
