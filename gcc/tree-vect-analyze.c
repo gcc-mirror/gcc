@@ -773,15 +773,15 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   /* Modulo alignment.  */
   misalign = size_binop (TRUNC_MOD_EXPR, misalign, alignment);
 
-  if (tree_int_cst_sgn (misalign) < 0)
+  if (!host_integerp (misalign, 1))
     {
-      /* Negative misalignment value.  */
+      /* Negative or overflowed misalignment value.  */
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "unexpected misalign value");
       return false;
     }
 
-  DR_MISALIGNMENT (dr) = tree_low_cst (misalign, 1);
+  DR_MISALIGNMENT (dr) = TREE_INT_CST_LOW (misalign);
 
   if (vect_print_dump_info (REPORT_DETAILS))
     {
