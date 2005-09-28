@@ -1,3 +1,12 @@
+2005-09-28  Richard Henderson  <rth@redhat.com>
+
+	* builtins.c (get_builtin_sync_mode): New.
+	(expand_builtin_sync_operation): Pass in mode argument.
+	(expand_builtin_compare_and_swap): Likewise.
+	(expand_builtin_lock_test_and_set): Likewise.
+	(expand_builtin_lock_release): Likewise.
+	(expand_builtin): Update to match.
+
 2005-09-28  Nick Clifton  <nickc@redhat.com>
 
 	* config/v850/v850.h (GO_IF_LEGITIMATE_ADDRESS): Tidy up
