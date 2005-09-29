@@ -1,3 +1,9 @@
+2005-09-28  Mark Mitchell  <mark@codesourcery.com>
+
+	* version.c (version_string): Restore date stamp and prerelease
+	marker.  Increment version.
+	* doc/include/gcc-common.texi: Increment version.
+
 2005-09-27  Release Manager
 
 	* GCC 4.0.2 released.
