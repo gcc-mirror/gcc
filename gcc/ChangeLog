@@ -1,3 +1,8 @@
+2005-09-29  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	PR middle-end/24053
+	* stor-layout.c (set_sizetype): Set TYPE_MAIN_VARIANT of bitsizetype.
+
 2005-09-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* optabs.c (expand_binop): Initialize first_pass_p.
