@@ -1,3 +1,9 @@
+2005-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/24109
+	* c-decl.c (c_write_global_declarations_1): If any
+	wrapup_global_declaration_2 call returned true, restart the loop.
+
 2005-09-29  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/24102

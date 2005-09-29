@@ -7527,6 +7527,7 @@ static void
 c_write_global_declarations_1 (tree globals)
 {
   tree decl;
+  bool reconsider;
 
   /* Process the decls in the order they were written.  */
   for (decl = globals; decl; decl = TREE_CHAIN (decl))
@@ -7545,9 +7546,18 @@ c_write_global_declarations_1 (tree globals)
 	}
 
       wrapup_global_declaration_1 (decl);
-      wrapup_global_declaration_2 (decl);
-      check_global_declaration_1 (decl);
     }
+
+  do
+    {
+      reconsider = false;
+      for (decl = globals; decl; decl = TREE_CHAIN (decl))
+	reconsider |= wrapup_global_declaration_2 (decl);
+    }
+  while (reconsider);
+
+  for (decl = globals; decl; decl = TREE_CHAIN (decl))
+    check_global_declaration_1 (decl);
 }
 
 /* A subroutine of c_write_global_declarations Emit debug information for each
