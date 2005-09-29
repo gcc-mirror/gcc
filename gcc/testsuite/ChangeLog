@@ -1,7 +1,11 @@
+2005-09-29  Steven Bosscher  <stevenb@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-ccp-11.c: Fix the test case and un-xfail.
+
 2005-09-29  Paolo Bonzini  <bonzini@gnu.org>
 
-        PR c/21419
-        * gcc.dg/pr21419.c: New test.
+	PR c/21419
+	* gcc.dg/pr21419.c: New test.
 
 2005-09-29  Steven Bosscher  <stevenb@suse.de>
 
