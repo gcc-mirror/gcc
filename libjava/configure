@@ -4654,7 +4654,7 @@ fi
 
 
 
-if test "$use_gtk_awt" = yes; then
+if test "$use_qt_awt" = yes; then
   QT_AWT_TRUE=
   QT_AWT_FALSE='#'
 else

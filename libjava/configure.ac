@@ -223,7 +223,7 @@ done
 
 AM_CONDITIONAL(XLIB_AWT, test "$use_xlib_awt" = yes)
 AM_CONDITIONAL(GTK_AWT, test "$use_gtk_awt" = yes)
-AM_CONDITIONAL(QT_AWT, test "$use_gtk_awt" = yes)
+AM_CONDITIONAL(QT_AWT, test "$use_qt_awt" = yes)
 
 # Create standard.omit based on decisions we just made.
 cp $srcdir/standard.omit.in standard.omit

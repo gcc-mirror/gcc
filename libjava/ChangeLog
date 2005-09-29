@@ -1,3 +1,8 @@
+2005-09-29  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* configure.ac: Fix typo.
+	* configure: Regenerate.
+
 2005-09-28  Geoffrey Keating  <geoffk@apple.com>
 
 	* sysdep/powerpc/locks.h: Use 64-bit versions of primitives when
