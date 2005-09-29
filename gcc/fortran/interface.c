@@ -926,8 +926,7 @@ check_interface1 (gfc_interface * p, gfc_interface * q,
 	if (p->sym == q->sym)
 	  continue;		/* Duplicates OK here */
 
-	if (strcmp (p->sym->name, q->sym->name) == 0
-	    && strcmp (p->sym->module, q->sym->module) == 0)
+	if (p->sym->name == q->sym->name && p->sym->module == q->sym->module)
 	  continue;
 
 	if (compare_interfaces (p->sym, q->sym, generic_flag))
