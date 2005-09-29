@@ -1,3 +1,9 @@
+2005-09-29  Daniel Berlin  <dberlin@dberlin.org>
+	
+	Fix PR tree-optimization/24117
+	* tree-ssa-structalias.c (find_func_aliases): Strip nops
+	before considering whether to use anyoffset.
+
 2005-09-29  Paolo Bonzini  <bonzini@gnu.org>
 
 	Revert this patch:
