@@ -1,3 +1,9 @@
+2005-09-29  Steven Bosscher  <stevenb@suse.de>
+
+	PR tree-optimization/23911
+	* tree-ssa-ccp.c (fold_const_aggregate_ref): Handle REALPART_EXPR
+	and IMAGPART_EXPR too.
+
 2005-09-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR 17886

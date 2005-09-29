@@ -1045,6 +1045,15 @@ fold_const_aggregate_ref (tree t)
 	  return cval;
       break;
 
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+      {
+	tree c = fold_const_aggregate_ref (TREE_OPERAND (t, 0));
+	if (c && TREE_CODE (c) == COMPLEX_CST)
+	  return fold_build1 (TREE_CODE (t), TREE_TYPE (t), c);
+	break;
+      }
+    
     default:
       break;
     }
