@@ -1,11 +1,12 @@
 2005-09-29  Chris Jefferson <chris@bubblescope.net>
 
 	PR libstdc++/23978
-	* include/tr1/functional (ref, cref): Make inline.
 	* include/tr1/tuple_iterate.h (tuple): Add operator=(std::pair).
-	(tie): Correct formatting.
-	(make_tuple): Make inline.
 	* testsuite/tr1/6_containers/tuple/creation_functions/23978.cc: New.
+	
+	* include/tr1/functional (ref, cref): Make inline.
+	* include/tr1/tuple_iterate.h (tie): Correct formatting.
+	(make_tuple): Make inline.
 
 2005-09-25  Benjamin Kosnik  <bkoz@redhat.com>
 	    Eric Botcazou  <ebotcazou@libertysurf.fr>
