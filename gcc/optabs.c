@@ -1027,7 +1027,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 		  || binoptab->code == ROTATERT);
   rtx entry_last = get_last_insn ();
   rtx last;
-  bool first_pass_p;
+  bool first_pass_p = true;
 
   class = GET_MODE_CLASS (mode);
 
