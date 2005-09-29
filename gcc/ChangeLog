@@ -1,3 +1,9 @@
+2005-09-29  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c/21419
+	* gimplify.c (gimplify_asm_expr): Raise an error if an output is
+	read-only.
+
 2005-09-29  Steven Bosscher  <stevenb@suse.de>
 
 	PR tree-optimization/23911
