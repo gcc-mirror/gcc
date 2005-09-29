@@ -2332,7 +2332,7 @@ gfc_is_var_automatic (gfc_symbol * sym)
   /* Check for non-constant length character vairables.  */
   if (sym->ts.type == BT_CHARACTER
       && sym->ts.cl
-      && gfc_is_constant_expr (sym->ts.cl->length))
+      && !gfc_is_constant_expr (sym->ts.cl->length))
     return true;
   return false;
 }

@@ -5052,7 +5052,7 @@ gfc_resolve (gfc_namespace * ns)
 
   gfc_traverse_ns (ns, resolve_values);
 
-  if (!gfc_option.flag_automatic || ns->save_all)
+  if (ns->save_all)
     gfc_save_all (ns);
 
   iter_stack = NULL;
