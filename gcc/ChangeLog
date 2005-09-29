@@ -1,3 +1,9 @@
+2005-09-29  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/24102
+	* config/rs6000/rs6000.md (floatdisf2_internal2): Correct range
+	check for numbers that need no bit twiddle.
+
 2005-09-28  Geoffrey Keating  <geoffk@apple.com>
 
 	* Makefile.in: Export LIPO_FOR_TARGET, STRIP_FOR_TARGET.
