@@ -1966,8 +1966,10 @@ set_sizetype (tree type)
   TYPE_PRECISION (t) = precision;
   TYPE_UID (t) = TYPE_UID (bitsizetype);
   TYPE_IS_SIZETYPE (t) = 1;
+
   /* Replace our original stub bitsizetype.  */
   memcpy (bitsizetype, t, tree_size (bitsizetype));
+  TYPE_MAIN_VARIANT (bitsizetype) = bitsizetype;
   
   if (TYPE_UNSIGNED (type))
     {
