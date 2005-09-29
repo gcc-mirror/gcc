@@ -35,13 +35,13 @@ Boston, MA 02111-1307, USA.  */
 #include "io.h"
 
 
-static st_option access_opt[] = {
+static const st_option access_opt[] = {
   {"sequential", ACCESS_SEQUENTIAL},
   {"direct", ACCESS_DIRECT},
   {NULL}
 };
 
-static st_option action_opt[] =
+static const st_option action_opt[] =
 {
   { "read", ACTION_READ},
   { "write", ACTION_WRITE},
@@ -49,14 +49,14 @@ static st_option action_opt[] =
   { NULL}
 };
 
-static st_option blank_opt[] =
+static const st_option blank_opt[] =
 {
   { "null", BLANK_NULL},
   { "zero", BLANK_ZERO},
   { NULL}
 };
 
-static st_option delim_opt[] =
+static const st_option delim_opt[] =
 {
   { "none", DELIM_NONE},
   { "apostrophe", DELIM_APOSTROPHE},
@@ -64,14 +64,14 @@ static st_option delim_opt[] =
   { NULL}
 };
 
-static st_option form_opt[] =
+static const st_option form_opt[] =
 {
   { "formatted", FORM_FORMATTED},
   { "unformatted", FORM_UNFORMATTED},
   { NULL}
 };
 
-static st_option position_opt[] =
+static const st_option position_opt[] =
 {
   { "asis", POSITION_ASIS},
   { "rewind", POSITION_REWIND},
@@ -79,7 +79,7 @@ static st_option position_opt[] =
   { NULL}
 };
 
-static st_option status_opt[] =
+static const st_option status_opt[] =
 {
   { "unknown", STATUS_UNKNOWN},
   { "old", STATUS_OLD},
@@ -89,7 +89,7 @@ static st_option status_opt[] =
   { NULL}
 };
 
-static st_option pad_opt[] =
+static const st_option pad_opt[] =
 {
   { "yes", PAD_YES},
   { "no", PAD_NO},

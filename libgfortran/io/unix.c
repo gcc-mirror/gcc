@@ -1388,7 +1388,7 @@ file_exists (void)
 
 
 
-static const char *yes = "YES", *no = "NO", *unknown = "UNKNOWN";
+static const char yes[] = "YES", no[] = "NO", unknown[] = "UNKNOWN";
 
 /* inquire_sequential()-- Given a fortran string, determine if the
  * file is suitable for sequential access.  Returns a C-style

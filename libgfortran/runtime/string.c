@@ -104,7 +104,7 @@ cf_strcpy (char *dest, int dest_len, const char *src)
    if no default is provided.  */
 
 int
-find_option (const char *s1, int s1_len, st_option * opts,
+find_option (const char *s1, int s1_len, const st_option * opts,
 	     const char *error_message)
 {
   for (; opts->name; opts++)

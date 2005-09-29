@@ -94,7 +94,7 @@ static char *line_buffer = NULL;
 
 static unit_advance advance_status;
 
-static st_option advance_opt[] = {
+static const st_option advance_opt[] = {
   {"yes", ADVANCE_YES},
   {"no", ADVANCE_NO},
   {NULL}

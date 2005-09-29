@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #include "io.h"
 
 
-static char undefined[] = "UNDEFINED";
+static const char undefined[] = "UNDEFINED";
 
 
 /* inquire_via_unit()-- Inquiry via unit number.  The unit might not exist. */
