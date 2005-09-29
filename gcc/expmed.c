@@ -2237,19 +2237,6 @@ expand_shift (enum tree_code code, enum machine_mode mode, rtx shifted,
 	  temp = expand_binop (mode,
 			       left ? rotl_optab : rotr_optab,
 			       shifted, op1, target, unsignedp, methods);
-
-	  /* If we don't have the rotate, but we are rotating by a constant
-	     that is in range, try a rotate in the opposite direction.  */
-
-	  if (temp == 0 && GET_CODE (op1) == CONST_INT
-	      && INTVAL (op1) > 0
-	      && (unsigned int) INTVAL (op1) < GET_MODE_BITSIZE (mode))
-	    temp = expand_binop (mode,
-				 left ? rotr_optab : rotl_optab,
-				 shifted,
-				 GEN_INT (GET_MODE_BITSIZE (mode)
-					  - INTVAL (op1)),
-				 target, unsignedp, methods);
 	}
       else if (unsignedp)
 	temp = expand_binop (mode,

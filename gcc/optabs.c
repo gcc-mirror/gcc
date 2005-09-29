@@ -1049,6 +1049,7 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 		  || binoptab->code == ROTATERT);
   rtx entry_last = get_last_insn ();
   rtx last;
+  bool first_pass_p;
 
   class = GET_MODE_CLASS (mode);
 
@@ -1097,6 +1098,8 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	  op0 = temp;
 	}
     }
+
+ retry:
 
   /* If we can do it with a three-operand insn, do so.  */
 
@@ -1181,6 +1184,22 @@ expand_binop (enum machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	}
       else
 	delete_insns_since (last);
+    }
+
+  /* If we were trying to rotate by a constant value, and that didn't
+     work, try rotating the other direction before falling back to
+     shifts and bitwise-or.  */
+  if (first_pass_p
+      && (binoptab == rotl_optab || binoptab == rotr_optab)
+      && class == MODE_INT
+      && GET_CODE (op1) == CONST_INT
+      && INTVAL (op1) > 0
+      && (unsigned int) INTVAL (op1) < GET_MODE_BITSIZE (mode))
+    {
+      first_pass_p = false;
+      op1 = GEN_INT (GET_MODE_BITSIZE (mode) - INTVAL (op1));
+      binoptab = binoptab == rotl_optab ? rotr_optab : rotl_optab;
+      goto retry;
     }
 
   /* If this is a multiply, see if we can do a widening operation that

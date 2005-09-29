@@ -1,3 +1,14 @@
+2005-09-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR 17886
+	* expmed.c (expand_shift): Move logic to reverse rotation
+	direction when 	rotating by constants ...
+	* optabs.c (expand_binop): ... here.
+	* config/i386/i386.md (rotrdi3): Handle 32-bit mode.
+	(ix86_rotrdi3): New pattern.
+	(rotldi3): Handle 32-bit mode.
+	(ix86_rotldi3): New pattern.
+
 2005-09-29  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/24102
