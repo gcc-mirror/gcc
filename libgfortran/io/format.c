@@ -61,7 +61,7 @@ static fnode colon_node = { FMT_COLON, 0, NULL, NULL, {{ 0, 0, 0 }}, 0,
 
 /* Error messages */
 
-static char posint_required[] = "Positive width required in format",
+static const char posint_required[] = "Positive width required in format",
   period_required[] = "Period required in format",
   nonneg_required[] = "Nonnegative width required in format",
   unexpected_element[] = "Unexpected element in format",

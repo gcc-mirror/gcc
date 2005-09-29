@@ -1,3 +1,21 @@
+2005-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* runtime/string.c (find_option): Change 3rd argument to
+	const st_option *.
+	* libgfortran.h (find_option): Likewise.
+	* runtime/environ.c (rounding, precision, signal_choices): Constify.
+	(init_choice, show_choice): Change 2nd argument to const choice *.
+	* io/open.c (access_opt, action_opt, blank_opt, delim_opt, form_opt,
+	position_opt, status_opt, pad_opt): Constify.
+	* io/transfer.c (advance_opt): Likewise.
+	* io/inquire.c (undefined): Likewise.
+	* io/close.c (status_opt): Likewise.
+	* io/format.c (posint_required, period_required, nonneg_required,
+	unexpected_element, unexpected_end, bad_string, bad_hollerith,
+	reversion_error): Likewise.
+	* io/unix.c (yes, no, unknown): Change from const char *
+	into const char [].
+
 2005-09-27  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/23552

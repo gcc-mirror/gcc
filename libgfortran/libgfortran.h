@@ -478,7 +478,7 @@ internal_proto(show_variables);
 
 /* string.c */
 
-extern int find_option (const char *, int, st_option *, const char *);
+extern int find_option (const char *, int, const st_option *, const char *);
 internal_proto(find_option);
 
 extern int fstrlen (const char *, int);
