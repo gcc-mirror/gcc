@@ -1,5 +1,8 @@
 2005-09-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/21983
+	* g++.dg/warn/pr21983.C: New test.
+
 	PR fortran/23663
 	* gfortran.fortran-torture/execute/entry_11.f90: New test.
 
