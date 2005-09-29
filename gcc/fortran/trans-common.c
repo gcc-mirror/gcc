@@ -268,7 +268,7 @@ build_field (segment_info *h, tree union_type, record_layout_info rli)
 /* Get storage for local equivalence.  */
 
 static tree
-build_equiv_decl (tree union_type, bool is_init)
+build_equiv_decl (tree union_type, bool is_init, bool is_saved)
 {
   tree decl;
   char name[15];
@@ -286,7 +286,8 @@ build_equiv_decl (tree union_type, bool is_init)
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
 
-  if (!gfc_can_put_var_on_stack (DECL_SIZE_UNIT (decl)))
+  if (!gfc_can_put_var_on_stack (DECL_SIZE_UNIT (decl))
+      || is_saved)
     TREE_STATIC (decl) = 1;
 
   TREE_ADDRESSABLE (decl) = 1;
@@ -385,6 +386,7 @@ create_common (gfc_common_head *com, segment_info * head, bool saw_equiv)
   record_layout_info rli;
   tree decl;
   bool is_init = false;
+  bool is_saved = false;
 
   /* Declare the variables inside the common block.
      If the current common block contains any equivalence object, then
@@ -410,13 +412,17 @@ create_common (gfc_common_head *com, segment_info * head, bool saw_equiv)
       /* Has initial value.  */
       if (s->sym->value)
         is_init = true;
+
+      /* Has SAVE attribute.  */
+      if (s->sym->attr.save)
+        is_saved = true;
     }
   finish_record_layout (rli, true);
 
   if (com)
     decl = build_common_decl (com, union_type, is_init);
   else
-    decl = build_equiv_decl (union_type, is_init);
+    decl = build_equiv_decl (union_type, is_init, is_saved);
 
   if (is_init)
     {

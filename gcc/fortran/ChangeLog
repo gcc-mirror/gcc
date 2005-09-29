@@ -1,5 +1,11 @@
 2005-09-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/18518
+	* trans-common.c (build_equiv_decl): Add IS_SAVED argument.
+	If it is true, set TREE_STATIC on the decl.
+	(create_common): If any symbol in equivalence has SAVE attribute,
+	pass true as last argument to build_equiv_decl.
+
 	PR fortran/23677
 	* symbol.c (gfc_is_var_automatic): Return true if character length
 	is non-constant rather than constant.
