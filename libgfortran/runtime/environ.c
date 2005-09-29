@@ -356,7 +356,7 @@ choice;
 enum
 { FP_ROUND_NEAREST, FP_ROUND_UP, FP_ROUND_DOWN, FP_ROUND_ZERO };
 
-static choice rounding[] = {
+static const choice rounding[] = {
   {"NEAREST", FP_ROUND_NEAREST},
   {"UP", FP_ROUND_UP},
   {"DOWN", FP_ROUND_DOWN},
@@ -364,7 +364,7 @@ static choice rounding[] = {
   {NULL, 0}
 };
 
-static choice precision[] =
+static const choice precision[] =
 {
   { "24", 1},
   { "53", 2},
@@ -372,7 +372,7 @@ static choice precision[] =
   { NULL, 0}
 };
 
-static choice signal_choices[] =
+static const choice signal_choices[] =
 {
   { "IGNORE", 1},
   { "ABORT", 0},
@@ -381,7 +381,7 @@ static choice signal_choices[] =
 
 
 static void
-init_choice (variable * v, choice * c)
+init_choice (variable * v, const choice * c)
 {
   char *p;
 
@@ -408,7 +408,7 @@ init_choice (variable * v, choice * c)
 
 
 static void
-show_choice (variable * v, choice * c)
+show_choice (variable * v, const choice * c)
 {
   st_printf ("%s  ", var_source (v));
 
