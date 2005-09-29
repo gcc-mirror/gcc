@@ -6,6 +6,9 @@
 
 2005-09-28  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/t-darwin8: Uncomment contents, allow -m64
+	multilib to be built.
+
 	* Makefile.in: Export LIPO_FOR_TARGET, STRIP_FOR_TARGET.
 	(stage1-start): Delete old libgcc and libunwind before moving
 	anything into the stage directory.
