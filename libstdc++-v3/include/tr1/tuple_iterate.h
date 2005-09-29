@@ -53,11 +53,18 @@ template<_GLIBCXX_TEMPLATE_PARAMS>
     { }
 
 #if _GLIBCXX_NUM_ARGS == 2
-template<class _U1, class _U2>
-        tuple(const std::pair<_U1, _U2>& __u):
-           _M_arg1(__u.first), _M_arg2(__u.second)
-        { }
+    template<typename _U1, typename _U2>
+      tuple(const std::pair<_U1, _U2>& __u) :
+      _M_arg1(__u.first), _M_arg2(__u.second)
+      { }
 
+    template<typename _U1, typename _U2>
+      tuple&
+      operator=(const std::pair<_U1, _U2>& __u)
+      { 
+	_M_arg1 = __u.first;
+	_M_arg2 = __u.second;
+      }
 #endif
 
 #if _GLIBCXX_NUM_ARGS > 0
@@ -137,14 +144,14 @@ tuple<>
 inline make_tuple()
 { return tuple<>(); }
 
-inline tuple<>
-tie()
+tuple<>
+inline tie()
 { return tuple<>(); }
 #else
 
 template<_GLIBCXX_TEMPLATE_PARAMS>
   typename __stripped_tuple_type<_GLIBCXX_TEMPLATE_ARGS>::__type
-  make_tuple(_GLIBCXX_PARAMS)
+  inline make_tuple(_GLIBCXX_PARAMS)
   { 
     return typename __stripped_tuple_type<_GLIBCXX_TEMPLATE_ARGS>::
       __type(_GLIBCXX_ARGS);
@@ -152,7 +159,7 @@ template<_GLIBCXX_TEMPLATE_PARAMS>
 
 template<_GLIBCXX_TEMPLATE_PARAMS>
   tuple<_GLIBCXX_REF_TEMPLATE_ARGS>
-  tie(_GLIBCXX_REF_PARAMS)
+  inline tie(_GLIBCXX_REF_PARAMS)
   { return make_tuple(_GLIBCXX_REF_WRAP_PARAMS); }
 #endif
 
