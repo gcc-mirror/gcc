@@ -372,22 +372,24 @@ namespace tr1
 
   // Denotes a reference should be taken to a variable.
   template<typename _Tp>
-    reference_wrapper<_Tp>
+    inline reference_wrapper<_Tp>
     ref(_Tp& __t)
     { return reference_wrapper<_Tp>(__t); }
 
   // Denotes a const reference should be taken to a variable.
   template<typename _Tp>
-    reference_wrapper<const _Tp>
+    inline reference_wrapper<const _Tp>
     cref(const _Tp& __t)
     { return reference_wrapper<const _Tp>(__t); }
 
   template<typename _Tp>
-    reference_wrapper<_Tp> ref(reference_wrapper<_Tp> __t)
+    inline reference_wrapper<_Tp>
+    ref(reference_wrapper<_Tp> __t)
     { return ref(__t.get()); }
 
   template<typename _Tp>
-    reference_wrapper<const _Tp> cref(reference_wrapper<_Tp> __t)
+    inline reference_wrapper<const _Tp>
+    cref(reference_wrapper<_Tp> __t)
     { return cref(__t.get()); }
 
    template<typename _Tp, bool>
