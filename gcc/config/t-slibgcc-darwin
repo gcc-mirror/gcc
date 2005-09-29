@@ -3,7 +3,6 @@ SHLIB_SOVERSION = 1
 SHLIB_VERSTRING = -compatibility_version $(SHLIB_SOVERSION) -current_version $(SHLIB_SOVERSION).0
 SHLIB_EXT = .dylib
 SHLIB_SUFFIX = `if test @multilib_dir@ != . ; then echo _@multilib_dir@ ; fi`
-SHLIB_SOLINK = @shlib_base_name@$(SHLIB_SUFFIX)$(SHLIB_EXT)
 SHLIB_SONAME = @shlib_base_name@$(SHLIB_SUFFIX).$(SHLIB_SOVERSION)$(SHLIB_EXT)
 SHLIB_MAP = @shlib_map_file@
 SHLIB_OBJS = @shlib_objs@
@@ -11,34 +10,62 @@ SHLIB_DIR = @multilib_dir@
 
 # Darwin only searches in /usr/lib for shared libraries, not in subdirectories,
 # so the libgcc variants have different names not different locations.
-
+# Note that this version is used for the loader, not the linker; the linker
+# uses the stub versions named by $(LIBGCC).
 SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -dynamiclib -nodefaultlibs \
 	-Wl,-install_name,$(slibdir)/$(SHLIB_SONAME) \
 	-Wl,-flat_namespace -o $(SHLIB_SONAME).tmp \
 	-Wl,-exported_symbols_list,$(SHLIB_MAP) \
 	$(SHLIB_VERSTRING) \
 	@multilib_flags@ $(SHLIB_OBJS) -lc && \
-	rm -f $(SHLIB_SOLINK) $(SHLIB_DIR)/$(SHLIB_SOLINK) && \
 	if [ -f $(SHLIB_SONAME) ]; then \
 	  mv -f $(SHLIB_SONAME) $(SHLIB_SONAME).backup; \
 	else true; fi && \
-	mv $(SHLIB_SONAME).tmp $(SHLIB_SONAME) && \
-	$(LN_S) $(SHLIB_SONAME) $(SHLIB_SOLINK) && \
-	if [ $(SHLIB_DIR) != . ] ; then \
-	  $(LN_S) `pwd`/$(SHLIB_SONAME) $(SHLIB_DIR)/$(SHLIB_SOLINK) ; \
-	else true; fi
+	mv $(SHLIB_SONAME).tmp $(SHLIB_SONAME)
+
 # $(slibdir) double quoted to protect it from expansion while building
 # libgcc.mk.  We want this delayed until actual install time.
 SHLIB_INSTALL = \
 	$$(mkinstalldirs) $$(DESTDIR)$$(slibdir); \
 	$(INSTALL_DATA) $(SHLIB_SONAME) \
-	  $$(DESTDIR)$$(slibdir)/$(SHLIB_SONAME); \
-	rm -f $$(DESTDIR)$$(slibdir)/$(SHLIB_SOLINK); \
-	$(LN_S) $(SHLIB_SONAME) \
-	  $$(DESTDIR)$$(slibdir)/$(SHLIB_SOLINK)
+	  $$(DESTDIR)$$(slibdir)/$(SHLIB_SONAME)
+
 SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk
 SHLIB_MKMAP_OPTS = -v leading_underscore=1
 SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver
 
 # Must use a different directive for hidden visibility in assembly sources.
 ASM_HIDDEN_OP = .private_extern
+
+# In order to support -mmacosx-version-min, you need to have multiple
+# different libgcc_s libraries that actually get linked against, one for
+# each system version supported.  They are 'stub' libraries that
+# contain no code, just a list of exported symbols.
+# The actual use of the libraries is controlled by REAL_LIBGCC_SPEC.
+# 
+# This assumes only one level of multilibs.  It also assumes each multilib
+# corresponds to a different architecture.
+libgcc_s.%.dylib : $(SHLIB_VERPFX).%.ver libgcc.a
+	for mlib in '' $(MULTILIB_DIRNAMES:%=_%) ; do \
+	  $(STRIP_FOR_TARGET) -o $(@)_T$${mlib} \
+	    -s $(SHLIB_VERPFX).$(*).ver -c -u \
+	    libgcc_s$${mlib}.$(SHLIB_SOVERSION)$(SHLIB_EXT) || exit 1 ; \
+	done
+	$(LIPO_FOR_TARGET) -output $@ -create $(@)_T*
+	# When builting multilibbed target libraries, all the required
+	# libraries are expected to exist in the multilib directory.
+	for mlib in $(MULTILIB_DIRNAMES) ; do \
+	  ln -s ../$@ $${mlib}/$@ || exit 1 ; \
+	done
+	rm $(@)_T*
+
+# From the point-of-view of the Makefiles, libgcc is built by the 'strip'
+# and 'lipo' commands above.
+LIBGCC=libgcc_s.10.4.dylib libgcc_s.10.5.dylib
+
+install-darwin-libgcc-stubs : $(LIBGCC) installdirs
+	for d in $(LIBGCC) ; do \
+	  $(INSTALL_DATA) $$d $(DESTDIR)$(slibdir)/$$d || exit 1 ; \
+	done
+
+INSTALL_LIBGCC += install-darwin-libgcc-stubs
