@@ -39,6 +39,29 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 
+/* Windows32 version */
+#if defined __MINGW32__ && !defined  HAVE_GETLOGIN
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <lmcons.h>  /* for UNLEN */ 
+
+static char *
+w32_getlogin (void)
+{
+  static char name [UNLEN + 1];
+  DWORD namelen = sizeof (name);
+
+  GetUserName (name, &namelen);
+  return (name[0] == 0 ?  NULL : name);
+}
+
+#undef getlogin
+#define getlogin w32_getlogin
+#define HAVE_GETLOGIN 1
+
+#endif
+
+
 /* GETLOG (LOGIN), g77 intrinsic for retrieving the login name for the
    process.
    CHARACTER(len=*), INTENT(OUT) :: LOGIN  */

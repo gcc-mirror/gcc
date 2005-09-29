@@ -38,7 +38,47 @@ Boston, MA 02111-1307, USA.  */
 #include <unistd.h> 
 #endif
 
-#include "../io/io.h"
+
+/* Windows32 version */
+#if defined __MINGW32__ && !defined  HAVE_GETHOSTNAME
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <errno.h>
+
+static int
+w32_gethostname (char *name, size_t len)
+{
+  /* We could try the WinSock API gethostname, but that will
+     fail if WSAStartup function has has not been called.  We don't
+    really need a name that will be understood by socket API, so avoid
+    unnecessary dependence on WinSock libraries by using
+    GetComputerName instead.  */
+
+  /* On Win9x GetComputerName fails if the input size is less
+     than MAX_COMPUTERNAME_LENGTH + 1.  */
+  char buffer[MAX_COMPUTERNAME_LENGTH + 1];
+  DWORD size =  sizeof (buffer);
+
+  if (!GetComputerName (buffer, &size))
+    return -1;
+
+  if ((size = strlen (buffer) + 1)  > len)
+    {
+      errno = EINVAL;
+      /* Truncate as per POSIX spec.  We do not NUL-terminate. */
+      size = len;
+    }
+  memcpy (name, buffer, (size_t) size);
+
+  return 0;
+}
+
+#undef gethostname
+#define gethostname w32_gethostname
+#define  HAVE_GETHOSTNAME 1
+
+#endif
+
 
 /* SUBROUTINE HOSTNM(NAME, STATUS)
    CHARACTER(len=*), INTENT(OUT) :: NAME

@@ -39,6 +39,13 @@ Boston, MA 02111-1307, USA.  */
 #include <unistd.h>
 #endif
 
+#ifdef __MINGW32__
+# include <windows.h>
+# undef sleep
+# define sleep(x) Sleep(1000*(x))
+# define HAVE_SLEEP
+#endif
+
 /* SUBROUTINE SLEEP(SECONDS)
    INTEGER, INTENT(IN) :: SECONDS
    
