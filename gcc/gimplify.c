@@ -3338,6 +3338,12 @@ gimplify_asm_expr (tree *expr_p, tree *pre_p, tree *post_p)
       parse_output_constraint (&constraint, i, 0, 0,
 			       &allows_mem, &allows_reg, &is_inout);
 
+      if (TYPE_READONLY (TREE_TYPE (TREE_VALUE (link))))
+	{
+	  error ("invalid lvalue in asm output %d", i);
+	  ret = GS_ERROR;
+	}
+
       if (!allows_reg && allows_mem)
 	lang_hooks.mark_addressable (TREE_VALUE (link));
 
