@@ -1,3 +1,8 @@
+2005-09-30  Janne Blomqvist <jblomqvi@cc.hut.fi>
+
+	PR 24112
+	* io/open.c (edit_modes): Check for correct flag.
+
 2005-09-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* runtime/string.c (find_option): Change 3rd argument to
