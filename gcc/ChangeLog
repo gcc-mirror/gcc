@@ -12,6 +12,9 @@
 
 2005-09-30  Geoffrey Keating  <geoffk@apple.com>
 
+	* Makefile.in (LIPO_FOR_TARGET): Define.
+	(STRIP_FOR_TARGET): Define.
+
 	* config/t-slibgcc-darwin (libgcc_s_%.dylib): Remove old symlinks
 	before creating new ones.  Do symlinks before creating the actual
 	targets.
