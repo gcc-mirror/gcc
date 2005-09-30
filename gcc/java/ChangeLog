@@ -1,3 +1,10 @@
+2005-09-30  Andrew Haley  <aph@redhat.com>
+
+	PR libgcj/23182
+	* expr.c (pop_type_0): If the expected type is object or ptr
+	(i.e. void*), return the type of the object we just popped from
+	the stack.
+
 2005-09-29  Tom Tromey  <tromey@redhat.com>
 
 	PR java/24120:
