@@ -344,6 +344,7 @@ AR_FOR_TARGET := $(shell \
 AR_FLAGS_FOR_TARGET =
 AR_CREATE_FOR_TARGET = $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) rc
 AR_EXTRACT_FOR_TARGET = $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) x
+LIPO_FOR_TARGET = lipo
 ORIGINAL_AS_FOR_TARGET = @ORIGINAL_AS_FOR_TARGET@
 RANLIB_FOR_TARGET := $(shell \
   if [ -f $(objdir)/../binutils/ranlib ] ; then \
@@ -358,6 +359,16 @@ RANLIB_FOR_TARGET := $(shell \
 ORIGINAL_LD_FOR_TARGET = @ORIGINAL_LD_FOR_TARGET@
 ORIGINAL_NM_FOR_TARGET = @ORIGINAL_NM_FOR_TARGET@
 NM_FOR_TARGET = ./nm
+STRIP_FOR_TARGET := $(shell \
+  if [ -f $(objdir)/../binutils/strip ] ; then \
+    echo $(objdir)/../binutils/strip ; \
+  else \
+    if [ "$(host)" = "$(target)" ] ; then \
+      echo strip; \
+    else \
+       t='$(program_transform_name)'; echo strip | sed -e $$t ; \
+    fi; \
+  fi)
 
 # --------
 # UNSORTED
