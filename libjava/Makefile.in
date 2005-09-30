@@ -17,7 +17,7 @@
 
 
 
-SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) $(lib_gnu_java_awt_peer_gtk_la_SOURCES) $(libgcj_la_SOURCES) $(libgcjawt_la_SOURCES) $(libgij_la_SOURCES) $(gcj_dbtool_SOURCES) $(gen_from_JIS_SOURCES) $(gij_SOURCES) $(grmic_SOURCES) $(grmiregistry_SOURCES) $(jv_convert_SOURCES)
+SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) $(lib_gnu_java_awt_peer_gtk_la_SOURCES) $(lib_gnu_java_awt_peer_qt_la_SOURCES) $(libgcj_la_SOURCES) $(libgcjawt_la_SOURCES) $(libgij_la_SOURCES) $(gcj_dbtool_SOURCES) $(gen_from_JIS_SOURCES) $(gij_SOURCES) $(grmic_SOURCES) $(grmiregistry_SOURCES) $(jv_convert_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -45,19 +45,20 @@ target_triplet = @target@
 @TESTSUBDIR_TRUE@am__append_1 = testsuite
 @XLIB_AWT_TRUE@am__append_2 = lib-gnu-awt-xlib.la
 @GTK_AWT_TRUE@am__append_3 = lib-gnu-java-awt-peer-gtk.la libgcjawt.la
+@QT_AWT_TRUE@am__append_4 = lib-gnu-java-awt-peer-qt.la
 @NATIVE_TRUE@bin_PROGRAMS = jv-convert$(EXEEXT) gij$(EXEEXT) \
 @NATIVE_TRUE@	grmic$(EXEEXT) grmiregistry$(EXEEXT) \
 @NATIVE_TRUE@	gcj-dbtool$(EXEEXT)
-@USING_GCC_TRUE@am__append_4 = $(WARNINGS)
-@USING_BOEHMGC_TRUE@am__append_5 = boehm.cc
-@USING_NOGC_TRUE@am__append_6 = nogc.cc
-@SUPPLY_BACKTRACE_TRUE@am__append_7 = sysdep/dwarf2-backtrace.cc
-@USING_POSIX_PLATFORM_TRUE@am__append_8 = posix.cc
-@USING_WIN32_PLATFORM_TRUE@am__append_9 = win32.cc
-@USING_DARWIN_CRT_TRUE@am__append_10 = darwin.cc
-@USING_POSIX_THREADS_TRUE@am__append_11 = posix-threads.cc
-@USING_WIN32_THREADS_TRUE@am__append_12 = win32-threads.cc
-@USING_NO_THREADS_TRUE@am__append_13 = no-threads.cc
+@USING_GCC_TRUE@am__append_5 = $(WARNINGS)
+@USING_BOEHMGC_TRUE@am__append_6 = boehm.cc
+@USING_NOGC_TRUE@am__append_7 = nogc.cc
+@SUPPLY_BACKTRACE_TRUE@am__append_8 = sysdep/dwarf2-backtrace.cc
+@USING_POSIX_PLATFORM_TRUE@am__append_9 = posix.cc
+@USING_WIN32_PLATFORM_TRUE@am__append_10 = win32.cc
+@USING_DARWIN_CRT_TRUE@am__append_11 = darwin.cc
+@USING_POSIX_THREADS_TRUE@am__append_12 = posix-threads.cc
+@USING_WIN32_THREADS_TRUE@am__append_13 = win32-threads.cc
+@USING_NO_THREADS_TRUE@am__append_14 = no-threads.cc
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	$(srcdir)/../config.guess $(srcdir)/../config.sub \
 	$(srcdir)/../depcomp $(srcdir)/../install-sh \
@@ -69,7 +70,7 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	NEWS THANKS
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@noinst_PROGRAMS =  \
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@	gen-from-JIS$(EXEEXT)
-@XLIB_AWT_TRUE@am__append_14 = $(xlib_nat_headers)
+@XLIB_AWT_TRUE@am__append_15 = $(xlib_nat_headers)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
@@ -143,6 +144,11 @@ lib_gnu_java_awt_peer_gtk_la_OBJECTS =  \
 	$(am_lib_gnu_java_awt_peer_gtk_la_OBJECTS)
 @GTK_AWT_TRUE@am_lib_gnu_java_awt_peer_gtk_la_rpath = -rpath \
 @GTK_AWT_TRUE@	$(toolexeclibdir)
+am_lib_gnu_java_awt_peer_qt_la_OBJECTS =
+lib_gnu_java_awt_peer_qt_la_OBJECTS =  \
+	$(am_lib_gnu_java_awt_peer_qt_la_OBJECTS)
+@QT_AWT_TRUE@am_lib_gnu_java_awt_peer_qt_la_rpath = -rpath \
+@QT_AWT_TRUE@	$(toolexeclibdir)
 am__DEPENDENCIES_2 = gnu/awt.lo gnu/awt/j2d.lo gnu/classpath.lo \
 	gnu/classpath/debug.lo gnu/gcj.lo gnu/gcj/convert.lo \
 	gnu/gcj/io.lo gnu/gcj/runtime.lo gnu/gcj/util.lo \
@@ -352,12 +358,14 @@ LTGCJCOMPILE = $(LIBTOOL) --mode=compile $(GCJ) $(AM_GCJFLAGS) \
 	$(GCJFLAGS)
 GCJLD = $(GCJ)
 SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) \
-	$(lib_gnu_java_awt_peer_gtk_la_SOURCES) $(libgcj_la_SOURCES) \
+	$(lib_gnu_java_awt_peer_gtk_la_SOURCES) \
+	$(lib_gnu_java_awt_peer_qt_la_SOURCES) $(libgcj_la_SOURCES) \
 	$(libgcjawt_la_SOURCES) $(libgij_la_SOURCES) \
 	$(gcj_dbtool_SOURCES) $(gen_from_JIS_SOURCES) $(gij_SOURCES) \
 	$(grmic_SOURCES) $(grmiregistry_SOURCES) $(jv_convert_SOURCES)
 DIST_SOURCES = $(lib_gnu_awt_xlib_la_SOURCES) \
 	$(lib_gnu_java_awt_peer_gtk_la_SOURCES) \
+	$(lib_gnu_java_awt_peer_qt_la_SOURCES) \
 	$(am__libgcj_la_SOURCES_DIST) $(libgcjawt_la_SOURCES) \
 	$(libgij_la_SOURCES) $(gcj_dbtool_SOURCES) \
 	$(am__gen_from_JIS_SOURCES_DIST) $(gij_SOURCES) \
@@ -627,7 +635,7 @@ SUBDIRS = $(DIRLTDL) gcj include classpath $(am__append_1)
 # $(2): output file
 write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) $(foreach object,$(1),$(shell echo $(object) >> $(2)))
 toolexeclib_LTLIBRARIES = libgcj.la libgij.la $(am__append_2) \
-	$(am__append_3)
+	$(am__append_3) $(am__append_4)
 toolexecmainlib_DATA = libgcj.spec
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libgcj.pc
@@ -679,7 +687,7 @@ AM_GCJFLAGS = \
 	--encoding=UTF-8 \
 	-Wno-deprecated -fbootstrap-classes
 
-AM_CFLAGS = @LIBGCJ_CFLAGS@ $(am__append_4)
+AM_CFLAGS = @LIBGCJ_CFLAGS@ $(am__append_5)
 PEDANTIC_CFLAGS = -ansi -pedantic -Wall -Wno-long-long
 JCFLAGS = -g
 JC1FLAGS = @LIBGCJ_JAVAFLAGS@ $(GCJFLAGS)
@@ -702,10 +710,10 @@ libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
 
 libgcj_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc link.cc \
 	defineclass.cc interpret.cc verify.cc java/lang/Class.java \
-	java/lang/Object.java $(nat_source_files) $(am__append_5) \
-	$(am__append_6) $(am__append_7) $(am__append_8) \
-	$(am__append_9) $(am__append_10) $(am__append_11) \
-	$(am__append_12) $(am__append_13)
+	java/lang/Object.java $(nat_source_files) $(am__append_6) \
+	$(am__append_7) $(am__append_8) $(am__append_9) \
+	$(am__append_10) $(am__append_11) $(am__append_12) \
+	$(am__append_13) $(am__append_14)
 nat_files = $(nat_source_files:.cc=.lo)
 xlib_nat_files = $(xlib_nat_source_files:.cc=.lo)
 
@@ -751,6 +759,19 @@ libgcjawt_la_LDFLAGS = \
 	$(LIBGCJ_LD_SYMBOLIC)
 
 libgcjawt_la_LINK = $(LIBLINK)
+lib_gnu_java_awt_peer_qt_la_SOURCES = 
+lib_gnu_java_awt_peer_qt_la_LIBADD = \
+	gnu-java-awt-peer-qt.lo \
+	classpath/native/jni/qt-peer/libqtpeer.la
+
+lib_gnu_java_awt_peer_qt_la_DEPENDENCIES = gnu-java-awt-peer-qt.lo \
+	classpath/native/jni/qt-peer/libqtpeer.la \
+	libgcj-$(gcc_version).jar libgcj.la libgcj.spec
+
+lib_gnu_java_awt_peer_qt_la_LDFLAGS = \
+        -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC) $(X_LIBS) -lXtst
+
+lib_gnu_java_awt_peer_qt_la_LINK = $(LIBLINK)
 lib_gnu_awt_xlib_la_SOURCES = $(xlib_nat_source_files)
 lib_gnu_awt_xlib_la_LIBADD = gnu/awt/xlib.lo gnu/gcj/xlib.lo
 lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
@@ -4866,7 +4887,7 @@ gnu/gcj/xlib/natXImage.cc \
 gnu/gcj/xlib/natXUnmapEvent.cc
 
 sourcesdir = $(jardir)
-headers_to_make = $(nat_headers) $(am__append_14)
+headers_to_make = $(nat_headers) $(am__append_15)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
@@ -5058,6 +5079,8 @@ gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXUnmapEvent.lo:  \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
 lib-gnu-java-awt-peer-gtk.la: $(lib_gnu_java_awt_peer_gtk_la_OBJECTS) $(lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES) 
 	$(lib_gnu_java_awt_peer_gtk_la_LINK) $(am_lib_gnu_java_awt_peer_gtk_la_rpath) $(lib_gnu_java_awt_peer_gtk_la_LDFLAGS) $(lib_gnu_java_awt_peer_gtk_la_OBJECTS) $(lib_gnu_java_awt_peer_gtk_la_LIBADD) $(LIBS)
+lib-gnu-java-awt-peer-qt.la: $(lib_gnu_java_awt_peer_qt_la_OBJECTS) $(lib_gnu_java_awt_peer_qt_la_DEPENDENCIES) 
+	$(lib_gnu_java_awt_peer_qt_la_LINK) $(am_lib_gnu_java_awt_peer_qt_la_rpath) $(lib_gnu_java_awt_peer_qt_la_LDFLAGS) $(lib_gnu_java_awt_peer_qt_la_OBJECTS) $(lib_gnu_java_awt_peer_qt_la_LIBADD) $(LIBS)
 java/lang/$(am__dirstamp):
 	@$(mkdir_p) java/lang
 	@: > java/lang/$(am__dirstamp)

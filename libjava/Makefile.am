@@ -41,6 +41,10 @@ if GTK_AWT
 toolexeclib_LTLIBRARIES += lib-gnu-java-awt-peer-gtk.la libgcjawt.la
 endif
 
+if QT_AWT
+toolexeclib_LTLIBRARIES += lib-gnu-java-awt-peer-qt.la
+endif
+
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libgcj.pc
 
@@ -272,6 +276,18 @@ libgcjawt_la_LDFLAGS = \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version` \
 	$(LIBGCJ_LD_SYMBOLIC)
 libgcjawt_la_LINK = $(LIBLINK)
+
+lib_gnu_java_awt_peer_qt_la_SOURCES =
+lib_gnu_java_awt_peer_qt_la_LIBADD = \
+	gnu-java-awt-peer-qt.lo \
+	classpath/native/jni/qt-peer/libqtpeer.la
+lib_gnu_java_awt_peer_qt_la_DEPENDENCIES = gnu-java-awt-peer-qt.lo \
+	classpath/native/jni/qt-peer/libqtpeer.la \
+	libgcj-$(gcc_version).jar libgcj.la libgcj.spec
+## The mysterious backslash in the grep pattern is consumed by make.
+lib_gnu_java_awt_peer_qt_la_LDFLAGS = \
+        -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC) $(X_LIBS) -lXtst
+lib_gnu_java_awt_peer_qt_la_LINK = $(LIBLINK)
 
 lib_gnu_awt_xlib_la_SOURCES = $(xlib_nat_source_files)
 lib_gnu_awt_xlib_la_LIBADD = gnu/awt/xlib.lo gnu/gcj/xlib.lo

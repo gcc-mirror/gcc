@@ -169,13 +169,17 @@ AC_PROG_INSTALL
 dnl -----------------------------------------------------------
 dnl Checks for programs.
 dnl -----------------------------------------------------------
-AC_PROG_CXX
+
+dnl GCC LOCAL
+GCC_NO_EXECUTABLES
+
 dnl Initialize libtool
 AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
 dnl AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_CPP
+AC_PROG_CXX
 
 if test "x${COMPILE_JNI}" = xyes; then
   AC_HEADER_STDC

@@ -1,3 +1,11 @@
+2005-09-30  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/24051:
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ACLOCAL_AMFLAGS): Added -I ../../config
+	* configure: Rebuilt.
+	* configure.ac: Use GCC_NO_EXECUTABLES
+
 2005-09-23  Tom Tromey  <tromey@redhat.com>
 
 	* native/jawt/.cvsignore: Likewise.
