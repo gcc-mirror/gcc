@@ -120,7 +120,7 @@ edit_modes (gfc_unit * u, unit_flags * flags)
   /* Complain about attempts to change the unchangeable.  */
 
   if (flags->status != STATUS_UNSPECIFIED &&
-      u->flags.status != flags->position)
+      u->flags.status != flags->status)
     generate_error (ERROR_BAD_OPTION,
 		    "Cannot change STATUS parameter in OPEN statement");
 

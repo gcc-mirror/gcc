@@ -1,3 +1,8 @@
+2005-09-30  Janne Blomqvist <jblomqvi@cc.hut.fi>
+
+	PR 24112
+	* gfortran.dg/open_status_1.f90: New.
+
 2005-09-30  Uros Bizjak  <uros@kss-loka.si>
 
 	* gcc.dg/vect/fast-math-vect-reduc-7.c: Clean up temp files.
