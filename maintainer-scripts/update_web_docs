@@ -110,26 +110,27 @@ fi
 # Generate gcc-vers.texi.
 (
    echo "@set version-GCC $(cat gcc/gcc/BASE-VER)"
-   if "$(cat gcc/gcc/DEV-PHASE)" = "experimental"; then
+   if [ "$(cat gcc/gcc/DEV-PHASE)" = "experimental" ]; then
       echo "@set DEVELOPMENT"
    else
       echo "@clear DEVELOPMENT"
    fi
 ) > $includedir/gcc-vers.texi
 
-# Now convert the relevant files from texi to HTML and PostScript.
+# Now convert the relevant files from texi to HTML, PDF and PostScript.
 for file in $MANUALS; do
   filename=`find . -name ${file}.texi`
   if [ "${filename}" ]; then
     makeinfo --html -I ${includedir} -I `dirname ${filename}` ${filename}
     tar cf ${file}-html.tar ${file}/*.html
     texi2dvi -I ${includedir} ${filename} </dev/null && dvips -o ${file}.ps ${file}.dvi
+    texi2pdf -I ${includedir} ${filename} </dev/null
     mkdir -p $DOCSDIR/$file
   fi
 done
 
 # Then build a gzipped copy of each of the resulting .html, .ps and .tar files
-for file in */*.html *.ps *.tar; do
+for file in */*.html *.ps *.pdf *.tar; do
   cat $file | gzip --best > $file.gz
 done
 
@@ -144,7 +145,7 @@ if test $today = 15; then
 fi
 
 # And copy the resulting files to the web server
-for file in */*.html *.ps *.tar; do
+for file in */*.html *.ps *.pdf *.tar; do
   cat $DOCSDIR/$file | 
     sed -e '/^<meta name=generator/d' \
         -e '/^%DVIPSSource:/d' > file1
