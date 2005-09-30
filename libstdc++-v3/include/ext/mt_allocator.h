@@ -626,15 +626,12 @@ namespace __gnu_cxx
 	  typedef __mt_alloc<_Tp1, pol_type> other;
 	};
 
-      __mt_alloc() throw() 
-      { __policy_type::_S_get_pool(); }
+      __mt_alloc() throw() { }
 
-      __mt_alloc(const __mt_alloc&) throw() 
-      { __policy_type::_S_get_pool(); }
+      __mt_alloc(const __mt_alloc&) throw() { }
 
       template<typename _Tp1, typename _Poolp1>
-        __mt_alloc(const __mt_alloc<_Tp1, _Poolp1>& obj) throw()  
-        { __policy_type::_S_get_pool(); }
+        __mt_alloc(const __mt_alloc<_Tp1, _Poolp1>& obj) throw() { }
 
       ~__mt_alloc() throw() { }
 
