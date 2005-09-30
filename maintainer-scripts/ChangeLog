@@ -1,3 +1,7 @@
+2005-09-30  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* update_web_docs_old: Remove.
+
 2005-08-14  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* gcc_release: Update with FSF address.
