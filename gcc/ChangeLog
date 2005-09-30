@@ -1,3 +1,10 @@
+2005-09-30  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* arm.md (movqi): On thumb when optimizing, handle loading from 
+	memory by describing this as taking a subreg of a zero-extended load
+	into an SImode register.
+	(movhi): Likewise.
+
 2005-09-30  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* reload1.c (merge_assigned_reloads): Do not change any
