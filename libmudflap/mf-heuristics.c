@@ -42,8 +42,8 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #endif
 
 
-extern char _end;
-extern char ENTRY_POINT;
+extern char _end[];
+extern char ENTRY_POINT[];
 
 
 /* Run some quick validation of the given region.

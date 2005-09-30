@@ -1,3 +1,8 @@
+2005-09-30  James E. Wilson  <wilson@specifix.com>
+
+	* mf-heuristics.c (_end, ENTRY_POINT): Make them arrays with unknown
+	bounds.
+
 2005-09-29  James E. Wilson  <wilson@specifix.com>
 
 	* mf-hooks1.c (__mf_0fn_mmap, mmap, __mf_0fn_munmap, munmap): Protect
