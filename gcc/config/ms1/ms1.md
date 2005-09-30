@@ -243,7 +243,7 @@
 	DONE;
     }
 
-   /* If the load is a psuedo register in a stack slot, some simplification
+   /* If the load is a pseudo register in a stack slot, some simplification
       can be made because the loads are aligned */
   if ( (! TARGET_BYTE_ACCESS) 
         && (reload_in_progress && GET_CODE (operands[1]) == SUBREG
@@ -417,7 +417,7 @@
 	DONE;
     }
 
-   /* If the load is a psuedo register in a stack slot, some simplification
+   /* If the load is a pseudo register in a stack slot, some simplification
       can be made because the loads are aligned */
   if ( (reload_in_progress && GET_CODE (operands[1]) == SUBREG
 	  && GET_CODE (SUBREG_REG (operands[1])) == REG

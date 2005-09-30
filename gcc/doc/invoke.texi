@@ -5912,7 +5912,7 @@ Bound on size of expressions used in the scalar evolutions analyzer.
 Large expressions slow the analyzer.
 
 @item vect-max-version-checks
-The maxinum number of runtime checks that can be performed when doing
+The maximum number of runtime checks that can be performed when doing
 loop versioning in the vectorizer.  See option ftree-vect-loop-version
 for more information.
 

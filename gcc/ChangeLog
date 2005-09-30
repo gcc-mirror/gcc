@@ -1,3 +1,10 @@
+2005-09-30  Kazu Hirata  <kazu@codesourcery.com>
+
+	* tree-vect-transform.c, config/ms1/ms1.md,
+	config/s390/s390.c, config/v850/v850.md: Fix comment typos.
+	Follow spelling conventions.
+	* doc/invoke.texi, doc/md.texi: Fix typos.
+
 2005-09-30  Andrew Macleod  <amacleod@redat.com>
 
 	PR tree-optimization/21430
