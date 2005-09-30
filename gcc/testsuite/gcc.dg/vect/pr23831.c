@@ -8,3 +8,5 @@ void foo (void)
   for (j = 0; j < 16; j++)
     bm[j] = bm[j] * 8;
 }
+
+/* { dg-final { cleanup-tree-dump "vect" } } */

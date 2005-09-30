@@ -28,3 +28,5 @@ test_3 (void)
  for (j = 0; j < 16;j++)
    bm[j] <<= am[j];
 }
+
+/* { dg-final { cleanup-tree-dump "vect" } } */

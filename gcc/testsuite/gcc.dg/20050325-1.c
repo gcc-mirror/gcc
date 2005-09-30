@@ -17,3 +17,5 @@ f ()
 {
   g (42, ff);
 }
+
+/* { dg-final { cleanup-coverage-files } } */
