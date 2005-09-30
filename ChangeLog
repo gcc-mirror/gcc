@@ -1,3 +1,8 @@
+2005-09-30  Catherine Moore  <clm@cm00re.com>
+
+	* configure.in (bfin-*-*): New.
+	* configure: Regenerated.
+
 2005-09-28  Geoffrey Keating  <geoffk@apple.com>
 
 	* Makefile.tpl (BASE_TARGET_EXPORTS): Add LIPO, STRIP.

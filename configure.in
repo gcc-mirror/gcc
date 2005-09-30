@@ -496,6 +496,12 @@ case "${target}" in
   avr-*-*)
     noconfigdirs="$noconfigdirs target-libiberty target-libstdc++-v3 ${libgcj}"
     ;;
+  bfin-*-*)
+    noconfigdirs="$noconfigdirs target-libgloss gdb"
+    if [ x${is_cross_compiler} != xno ] ; then
+      target_configdirs="${target_configdirs} target-bsp target-cygmon"
+    fi
+    ;;
   c4x-*-* | tic4x-*-*)
     noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj}"
     ;;
