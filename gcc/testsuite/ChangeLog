@@ -1,3 +1,8 @@
+2005-09-30  Uros Bizjak  <uros@kss-loka.si>
+
+	PR tree-optimization/24059
+	* gcc.dg/vect/pr24059.c : New test.
+
 2005-09-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/24109
@@ -363,6 +368,13 @@
 
 	PR fortran/17740
 	* gfortran.dg/generic_4.f90: New test.
+
+2005-09-13  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/23816
+	* gcc.target/i386/pr23816-1.c: New test.
+	* gcc.target/i386/pr23816-2.c: New test.
+
 
 2005-09-13  Bastian Blank <waldi@debian.org>
 
