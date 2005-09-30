@@ -114,15 +114,28 @@ then
   mkdir pth
 fi
 
-pthread_create_version='""'
-AC_CHECK_HEADER(pthread.h,[
-AC_DEFINE_UNQUOTED(HAVE_PTHREAD_H, 1, [define if you have <pthread.h>])
-ac_have_pthread_h=yes
-],[
-ac_have_pthread_h=
-])
-AM_CONDITIONAL(LIBMUDFLAPTH, [test "x$ac_have_pthread_h" != "x"])
-if test "x$ac_have_pthread_h" != "x"
+AC_CHECK_HEADERS(pthread.h)
+
+AC_MSG_CHECKING([for thread model used by GCC])
+target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
+AC_MSG_RESULT([$target_thread_file])
+
+# We only support posix threads, or no threads at all.
+posix_threads=
+case ${target_thread_file} in
+  posix)
+    posix_threads=yes
+    ;;
+  single)
+    ;;
+  *)
+    echo "${target_thread_file} is an unsupported thread package" 1>&2
+    exit 1
+    ;;
+esac
+
+AM_CONDITIONAL(LIBMUDFLAPTH, [test "x$posix_threads" != "x"])
+if test "x$posix_threads" != "x"
 then
         build_libmudflapth=1
 else
@@ -162,7 +175,8 @@ esac
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
 
-if test "x$enable_shared" = "xyes" && test "x$ac_have_pthread_h" != "x"; then
+pthread_create_version='""'
+if test "x$enable_shared" = "xyes" && test "x$posix_threads" != "x"; then
   # NB: don't check for -lpthread here, because then it would be
   # added to LIBS.  For the thread-unaware libmudflap.la, we don't
   # want it there.

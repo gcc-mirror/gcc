@@ -1,5 +1,13 @@
 2005-09-30  James E. Wilson  <wilson@specifix.com>
 
+	* configure.ac (pthread.h): Use AC_CHECK_HEADERS instead of
+	AC_CHECK_HEADER.
+	(target_thread_file): New.  Set from sed'ed gcc output.
+	(posix_threads): New.  Set from target_thread_file.  Use instead of
+	ac_have_pthread_h.
+	(pthread_create_version): Move initialization before code using it.
+	* configure: Regenerate.
+
 	* mf-heuristics.c (_end, ENTRY_POINT): Make them arrays with unknown
 	bounds.
 
