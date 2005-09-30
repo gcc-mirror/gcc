@@ -913,46 +913,20 @@ _Jv_LookupDeclaredMethod (jclass klass, _Jv_Utf8Const *name,
   return NULL;
 }
 
-// NOTE: MCACHE_SIZE should be a power of 2 minus one.
-#define MCACHE_SIZE 1023
-
-struct _Jv_mcache
-{
-  jclass klass;
-  _Jv_Method *method;
-};
-
-static _Jv_mcache method_cache[MCACHE_SIZE + 1];
-
 static void *
-_Jv_FindMethodInCache (jclass klass,
-                       _Jv_Utf8Const *name,
-                       _Jv_Utf8Const *signature)
+_Jv_FindMethodInCache (jclass,
+                       _Jv_Utf8Const *,
+                       _Jv_Utf8Const *)
 {
-  int index = name->hash16 () & MCACHE_SIZE;
-  _Jv_mcache *mc = method_cache + index;
-  _Jv_Method *m = mc->method;
-
-  if (mc->klass == klass
-      && m != NULL             // thread safe check
-      && _Jv_equalUtf8Consts (m->name, name)
-      && _Jv_equalUtf8Consts (m->signature, signature))
-    return mc->method->ncode;
+  // Disabled due to bugginess.  See PR 23367 for details.
   return NULL;
 }
 
 static void
-_Jv_AddMethodToCache (jclass klass,
-                       _Jv_Method *method)
+_Jv_AddMethodToCache (jclass,
+		      _Jv_Method *)
 {
-  _Jv_MonitorEnter (&java::lang::Class::class$); 
-
-  int index = method->name->hash16 () & MCACHE_SIZE;
-
-  method_cache[index].method = method;
-  method_cache[index].klass = klass;
-
-  _Jv_MonitorExit (&java::lang::Class::class$);
+  // Disabled due to bugginess.  See PR 23367 for details.
 }
 
 void *

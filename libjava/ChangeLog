@@ -1,3 +1,12 @@
+2005-09-30  Tom Tromey  <tromey@redhat.com>
+
+	Workaround for PR libgcj/23367:
+	* java/lang/natClass.cc (_Jv_FindMethodInCache): Disable.
+	(_Jv_AddMethodToCache): Likewise.
+	(method_cache): Remove.
+	(MCACHE_SIZE): Likewise.
+	(struct _Jv_mcache): Likewise.
+
 2005-09-30  Andrew Haley  <aph@redhat.com>
 
 	* java/net/URLClassLoader.java: (addURLImpl): Synchronize on the
