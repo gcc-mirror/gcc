@@ -1781,7 +1781,7 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 	     the value of the parameter and no global variables are touched
 	     which makes the builtin a "const" function.  Requiring the
 	     builtin to have the "const" attribute makes it unnecessary
-	     to call mark_call_clobbered_vars_to_rename.  */
+	     to call mark_call_clobbered.  */
 	  gcc_assert (TREE_READONLY (builtin_decl));
 	}
       else

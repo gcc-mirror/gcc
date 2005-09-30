@@ -3086,14 +3086,14 @@ modes.
 
 @cindex @code{reduc_splus_@var{m}} instruction pattern
 @item @samp{reduc_splus_@var{m}}
-Compute the sum of the signed elements of a vector. The vector is opernad 1, 
-and the scalar result is stored in the least significant bits of opernad 0 
+Compute the sum of the signed elements of a vector. The vector is operand 1, 
+and the scalar result is stored in the least significant bits of operand 0 
 (also a vector). The output and input vector should have the same modes.
 
 @cindex @code{reduc_uplus_@var{m}} instruction pattern
 @item @samp{reduc_uplus_@var{m}}
-Compute the sum of the unsigned elements of a vector. The vector is opernad 1, 
-and the scalar result is stored in the least significant bits of opernad 0 
+Compute the sum of the unsigned elements of a vector. The vector is operand 1, 
+and the scalar result is stored in the least significant bits of operand 0 
 (also a vector). The output and input vector should have the same modes.
 
 @cindex @code{vec_shl_@var{m}} instruction pattern

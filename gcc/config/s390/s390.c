@@ -1099,7 +1099,7 @@ s390_overlap_p (rtx mem1, rtx mem2, HOST_WIDE_INT size)
      Overlapping operations would otherwise be recognized by the S/390 hardware
      and would fall back to a slower implementation. Allowing overlapping 
      operations would lead to slow code but not to wrong code. Therefore we are
-     somewhat optimistict if we cannot prove that the memory blocks are 
+     somewhat optimistic if we cannot prove that the memory blocks are 
      overlapping.
      That's why we return false here although this may accept operations on
      overlapping memory areas.  */
