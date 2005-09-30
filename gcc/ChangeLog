@@ -1,3 +1,8 @@
+2005-09-30  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* reload1.c (merge_assigned_reloads): Do not change any
+	RELOAD_FOR_OUTPUT_ADDRESS reloads.
+
 2005-09-30  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/t-slibgcc-darwin (libgcc_s_%.dylib): Remove old symlinks
