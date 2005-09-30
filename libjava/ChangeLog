@@ -1,3 +1,17 @@
+2005-09-30  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/24051:
+	* Makefile.in: Rebuilt.
+	* Makefile.am (toolexeclib_LTLIBRARIES): Add Qt library if
+	requested.
+	(lib_gnu_java_awt_peer_qt_la_SOURCES): New variable.
+	(lib_gnu_java_awt_peer_qt_la_LIBADD): Likewise.
+	(lib_gnu_java_awt_peer_qt_la_DEPENDENCIES): Likewise.
+	(lib_gnu_java_awt_peer_qt_la_LDFLAGS): Likewise.
+	(lib_gnu_java_awt_peer_qt_la_LINK): Likewise.
+	* configure: Rebuilt.
+	* configure.ac: Pass --enable-qt-peers when qt is requested.
+
 2005-09-29  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* configure.ac: Fix typo.

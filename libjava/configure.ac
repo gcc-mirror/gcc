@@ -335,6 +335,9 @@ if test "$use_gtk_awt" != yes; then
 fi
 if test "$use_qt_awt" != yes; then
   ac_configure_args="$ac_configure_args --disable-qt-peer"
+else
+  # We need this as qt is disabled by default in classpath.
+  ac_configure_args="$ac_configure_args --enable-qt-peer"
 fi
 dnl --with-gcj=$GCJ
 dnl --with-javah=$GCJH
