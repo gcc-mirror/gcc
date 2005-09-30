@@ -1,5 +1,10 @@
 2005-09-30  Joseph S. Myers  <joseph@codesourcery.com>
 
+	PR other/23693
+	* update_web_docs: Add PDF support.  Correct check of DEV-PHASE.
+
+2005-09-30  Joseph S. Myers  <joseph@codesourcery.com>
+
 	* update_web_docs_old: Remove.
 
 2005-08-14  Kelley Cook  <kcook@gcc.gnu.org>
