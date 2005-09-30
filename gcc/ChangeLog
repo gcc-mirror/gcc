@@ -1,3 +1,12 @@
+2005-09-30  Andrew Macleod  <amacleod@redat.com>
+
+	PR tree-optimization/21430
+	* tree-ssa-operands.c (set_virtual_use_link): New. Link new virtual
+	use operands, and set stmt pointer if need be.
+	(FINALIZE_CORRECT_USE: New. Macro to call appropriate use fixup routine.
+	tree-ssa-opfinalize.h (FINALIZE_FUNC): Call FINALIZE_CORRECT_USE if
+	present.
+
 2005-09-29  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	PR middle-end/24053
