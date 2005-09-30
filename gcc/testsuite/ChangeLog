@@ -1,5 +1,18 @@
 2005-09-30  Uros Bizjak  <uros@kss-loka.si>
 
+	* gcc.dg/vect/fast-math-vect-reduc-7.c: Clean up temp files.
+	* gcc.dg/vect/pr22480.c: Clean up temp files.
+	* gcc.dg/vect/pr23831.c: Clean up temp files.
+	* gcc.dg/vect/pr23816-1.c: Require effective-target vect_condition.
+	Clean up temp files.
+	* gcc.dg/vect/pr23816-2.c: Require effective-target vect_condition.
+	Clean up temp files.
+
+	* gcc.dg/20050309-1.c: Clean up temp files.
+	* gcc.dg/20050325-1.c: Clean up temp files.
+
+2005-09-30  Uros Bizjak  <uros@kss-loka.si>
+
 	PR tree-optimization/24059
 	* gcc.dg/vect/pr24059.c : New test.
 
