@@ -302,6 +302,10 @@ WRAPPER(void, free, void *buf)
 }
 
 
+/* We can only wrap mmap if the target supports it.  Likewise for munmap.
+   We assume we have both if we have mmap.  */
+#ifdef HAVE_MMAP
+
 #if PIC
 /* A special bootstrap variant. */
 void *
@@ -392,6 +396,7 @@ WRAPPER(int , munmap, void *start, size_t length)
     }
   return result;
 }
+#endif /* HAVE_MMAP */
 
 
 /* This wrapper is a little different, as it's called indirectly from

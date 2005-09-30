@@ -1,3 +1,8 @@
+2005-09-29  James E. Wilson  <wilson@specifix.com>
+
+	* mf-hooks1.c (__mf_0fn_mmap, mmap, __mf_0fn_munmap, munmap): Protect
+	with HAVE_MMAP ifdef.
+
 2005-09-23  Frank Ch. Eigler  <fche@elastic.org>
 
 	PR 23084.
