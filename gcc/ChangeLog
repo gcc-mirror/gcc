@@ -1,3 +1,8 @@
+2005-09-30  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/t-slibgcc-darwin (libgcc_s_%.dylib): Use --print-multi-lib
+	to work out which multilibs are actually being built.
+
 2005-09-30  Kazu Hirata  <kazu@codesourcery.com>
 
 	* tree-vect-transform.c, config/ms1/ms1.md,

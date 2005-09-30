@@ -43,10 +43,11 @@ ASM_HIDDEN_OP = .private_extern
 # contain no code, just a list of exported symbols.
 # The actual use of the libraries is controlled by REAL_LIBGCC_SPEC.
 # 
-# This assumes only one level of multilibs.  It also assumes each multilib
-# corresponds to a different architecture.
+# This assumes each multilib corresponds to a different architecture.
 libgcc_s.%.dylib : $(SHLIB_VERPFX).%.ver libgcc.a
-	for mlib in '' $(MULTILIB_DIRNAMES:%=_%) ; do \
+	MLIBS=`$(GCC_FOR_TARGET) --print-multi-lib \
+		| sed -e 's/;.*$$//' -e '/^\.$$/d' -e 's/^/_/'` ; \
+	for mlib in '' $$MLIBS ; do \
 	  $(STRIP_FOR_TARGET) -o $(@)_T$${mlib} \
 	    -s $(SHLIB_VERPFX).$(*).ver -c -u \
 	    libgcc_s$${mlib}.$(SHLIB_SOVERSION)$(SHLIB_EXT) || exit 1 ; \
@@ -54,7 +55,9 @@ libgcc_s.%.dylib : $(SHLIB_VERPFX).%.ver libgcc.a
 	$(LIPO_FOR_TARGET) -output $@ -create $(@)_T*
 	# When builting multilibbed target libraries, all the required
 	# libraries are expected to exist in the multilib directory.
-	for mlib in $(MULTILIB_DIRNAMES) ; do \
+	MLIBS=`$(GCC_FOR_TARGET) --print-multi-lib \
+		| sed -e 's/;.*$$//' -e '/^\.$$/d'` ; \
+	for mlib in $$MLIBS ; do \
 	  ln -s ../$@ $${mlib}/$@ || exit 1 ; \
 	done
 	rm $(@)_T*
