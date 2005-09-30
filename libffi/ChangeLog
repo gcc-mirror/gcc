@@ -1,3 +1,13 @@
+2005-09-30  Tom Tromey  <tromey@redhat.com>
+
+	PR libffi/24148
+	* testsuite/libffi.call/float1.c (value_type): New typedef.
+	(CANARY): New define.
+	(main): Check for result buffer overflow.
+	* src/powerpc/linux64.S: Handle linux64 long double returns.
+	* src/powerpc/ffi.c (FLAG_RETURNS_128BITS): New constant.
+	(ffi_prep_cif_machdep): Handle linux64 long double returns.
+
 2005-09-20  Release Manager
 
 	* GCC 4.0.2 released.
