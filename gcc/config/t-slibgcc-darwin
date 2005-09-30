@@ -45,6 +45,14 @@ ASM_HIDDEN_OP = .private_extern
 # 
 # This assumes each multilib corresponds to a different architecture.
 libgcc_s.%.dylib : $(SHLIB_VERPFX).%.ver libgcc.a
+	# When builting multilibbed target libraries, all the required
+	# libraries are expected to exist in the multilib directory.
+	MLIBS=`$(GCC_FOR_TARGET) --print-multi-lib \
+		| sed -e 's/;.*$$//' -e '/^\.$$/d'` ; \
+	for mlib in $$MLIBS ; do \
+	  rm -f $${mlib}/$@ || exit 1 ; \
+	  $(LN_S) ../$@ $${mlib}/$@ || exit 1 ; \
+	done
 	MLIBS=`$(GCC_FOR_TARGET) --print-multi-lib \
 		| sed -e 's/;.*$$//' -e '/^\.$$/d' -e 's/^/_/'` ; \
 	for mlib in '' $$MLIBS ; do \
@@ -53,13 +61,6 @@ libgcc_s.%.dylib : $(SHLIB_VERPFX).%.ver libgcc.a
 	    libgcc_s$${mlib}.$(SHLIB_SOVERSION)$(SHLIB_EXT) || exit 1 ; \
 	done
 	$(LIPO_FOR_TARGET) -output $@ -create $(@)_T*
-	# When builting multilibbed target libraries, all the required
-	# libraries are expected to exist in the multilib directory.
-	MLIBS=`$(GCC_FOR_TARGET) --print-multi-lib \
-		| sed -e 's/;.*$$//' -e '/^\.$$/d'` ; \
-	for mlib in $$MLIBS ; do \
-	  ln -s ../$@ $${mlib}/$@ || exit 1 ; \
-	done
 	rm $(@)_T*
 
 # From the point-of-view of the Makefiles, libgcc is built by the 'strip'
