@@ -855,7 +855,7 @@ public class URLClassLoader extends SecureClassLoader
 
   private void addURLImpl(URL newUrl)
   {
-    synchronized (urlloaders)
+    synchronized (this)
       {
         if (newUrl == null)
           return; // Silently ignore...
@@ -1086,7 +1086,7 @@ public class URLClassLoader extends SecureClassLoader
    */
   public String toString()
   {
-    synchronized (urlloaders)
+    synchronized (this)
       {
 	if (thisString == null)
 	  {
