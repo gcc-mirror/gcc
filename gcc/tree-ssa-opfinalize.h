@@ -86,8 +86,8 @@ FINALIZE_FUNC (tree stmt)
 	  /* if variables are the same, reuse this node.  */
 	  last->next = old_ops;
 	  last = old_ops;
-#ifdef FINALIZE_USE_PTR
-	  correct_use_link (FINALIZE_USE_PTR (last), stmt);
+#ifdef FINALIZE_CORRECT_USE
+	  FINALIZE_CORRECT_USE (FINALIZE_USE_PTR (last), stmt);
 #endif
 	  old_ops = old_ops->next;
 	  new_i = opbuild_next (&FINALIZE_OPBUILD, new_i);
@@ -173,3 +173,4 @@ FINALIZE_FUNC (tree stmt)
 #undef FINALIZE_OPBUILD_ELEM
 #undef FINALIZE_OPBUILD_BASE
 #undef FINALIZE_BASE_ZERO
+#undef FINALIZE_CORRECT_USE

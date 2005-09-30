@@ -511,6 +511,24 @@ correct_use_link (use_operand_p ptr, tree stmt)
 }
 
 
+/* This routine makes sure that PTR is in an immediate use list, and makes
+   sure the stmt pointer is set to the current stmt.  Virtual uses do not need
+   the overhead of correct_use_link since they cannot be directly manipulated
+   like a real use can be.  (They don't exist in the TREE_OPERAND nodes.)  */
+static inline void
+set_virtual_use_link (use_operand_p ptr, tree stmt)
+{
+  /*  Fold_stmt () may have changed the stmt pointers.  */
+  if (ptr->stmt != stmt)
+    ptr->stmt = stmt;
+
+  /* If this use isn't in a list, add it to the correct list.  */
+  if (!ptr->prev)
+    link_imm_use (ptr, *(ptr->use));
+}
+
+
+
 #define FINALIZE_OPBUILD		build_defs
 #define FINALIZE_OPBUILD_BASE(I)	opbuild_elem_real (&build_defs, (I))
 #define FINALIZE_OPBUILD_ELEM(I)	opbuild_elem_real (&build_defs, (I))
@@ -553,6 +571,7 @@ finalize_ssa_defs (tree stmt)
 #define FINALIZE_ELEM(PTR)	((PTR)->use_ptr.use)
 #define FINALIZE_OPS		USE_OPS
 #define FINALIZE_USE_PTR(PTR)	USE_OP_PTR (PTR)
+#define FINALIZE_CORRECT_USE	correct_use_link
 #define FINALIZE_BASE(VAR)	VAR
 #define FINALIZE_BASE_TYPE	tree *
 #define FINALIZE_BASE_ZERO	NULL
@@ -596,6 +615,7 @@ finalize_ssa_uses (tree stmt)
 #define FINALIZE_ELEM(PTR)	MAYDEF_RESULT (PTR)
 #define FINALIZE_OPS		MAYDEF_OPS
 #define FINALIZE_USE_PTR(PTR)	MAYDEF_OP_PTR (PTR)
+#define FINALIZE_CORRECT_USE	set_virtual_use_link
 #define FINALIZE_BASE_ZERO	0
 #define FINALIZE_BASE(VAR)	((TREE_CODE (VAR) == SSA_NAME)		\
 				? DECL_UID (SSA_NAME_VAR (VAR)) : DECL_UID ((VAR)))
@@ -647,6 +667,7 @@ cleanup_v_may_defs (void)
 #define FINALIZE_ELEM(PTR)	VUSE_OP (PTR)
 #define FINALIZE_OPS		VUSE_OPS
 #define FINALIZE_USE_PTR(PTR)	VUSE_OP_PTR (PTR)
+#define FINALIZE_CORRECT_USE	set_virtual_use_link
 #define FINALIZE_BASE_ZERO	0
 #define FINALIZE_BASE(VAR)	((TREE_CODE (VAR) == SSA_NAME)		\
 				? DECL_UID (SSA_NAME_VAR (VAR)) : DECL_UID ((VAR)))
@@ -740,6 +761,7 @@ finalize_ssa_vuses (tree stmt)
 #define FINALIZE_ELEM(PTR)	MUSTDEF_RESULT (PTR)
 #define FINALIZE_OPS		MUSTDEF_OPS
 #define FINALIZE_USE_PTR(PTR)	MUSTDEF_KILL_PTR (PTR)
+#define FINALIZE_CORRECT_USE	set_virtual_use_link
 #define FINALIZE_BASE_ZERO	0
 #define FINALIZE_BASE(VAR)	((TREE_CODE (VAR) == SSA_NAME)		\
 				? DECL_UID (SSA_NAME_VAR (VAR)) : DECL_UID ((VAR)))
