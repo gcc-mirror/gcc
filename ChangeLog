@@ -1,3 +1,8 @@
+2005-09-30  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* configure: Regenerate with the correct
+	autoconf version.
+
 2005-09-30  Catherine Moore  <clm@cm00re.com>
 
 	* configure.in (bfin-*-*): New.
