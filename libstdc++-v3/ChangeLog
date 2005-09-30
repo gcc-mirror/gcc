@@ -1,5 +1,12 @@
 2005-09-30  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/24064
+	* include/tr1/hashtable (hash_code_base<>::store_code): Add.
+	(hashtable<>::insert(const value_type&)): Use it.
+	* testsuite/tr1/6_containers/unordered/hashtable/24064.cc: New.
+
+2005-09-30  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/23953
 	* include/bits/locale_facets.tcc (__numpunct_cache<>::_M_cache,
 	__moneypunct_cache<>::_M_cache): Check that grouping()[0] > 0.

@@ -627,6 +627,10 @@ namespace Internal
       { return m_eq (k, m_extract(n->m_v)); }
 
       void
+      store_code(hash_node<Value, false>*, hash_code_t) const
+      { }
+
+      void
       copy_code(hash_node<Value, false>*, const hash_node<Value, false>*) const
       { }
       
@@ -699,6 +703,10 @@ namespace Internal
       { return m_eq (k, m_extract(n->m_v)); }
 
       void
+      store_code(hash_node<Value, false>*, hash_code_t) const
+      { }
+
+      void
       copy_code(hash_node<Value, false>*, const hash_node<Value, false>*) const
       { }
 
@@ -755,6 +763,10 @@ namespace Internal
       bool
       compare(const Key& k, hash_code_t c, hash_node<Value, true>* n) const
       { return c == n->hash_code && m_eq(k, m_extract(n->m_v)); }
+
+      void
+      store_code(hash_node<Value, true>* n, hash_code_t c) const
+      { n->hash_code = c; }
 
       void
       copy_code(hash_node<Value, true>* to,
@@ -1508,6 +1520,7 @@ namespace tr1
 	    }
 
 	  new_node->m_next = m_buckets[n];
+	  this->store_code(new_node, code);
 	  m_buckets[n] = new_node;
 	  ++m_element_count;
 	  return std::make_pair(iterator(new_node, m_buckets + n), true);
@@ -1549,6 +1562,7 @@ namespace tr1
 	  new_node->m_next = m_buckets[n];
 	  m_buckets[n] = new_node;
 	}
+      this->store_code(new_node, code);
 
       ++m_element_count;
       return iterator(new_node, m_buckets + n);
