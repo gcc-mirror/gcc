@@ -160,12 +160,19 @@ EOF
   EXPORTDATE=""
   if [ -n "${TAG}" ]; then
     inform "Tagging sources as ${TAG}"
-    # The -F option to CVS is intentionally not used below.  If you
-    # need to retry a release, you will have to manually remove any
-    # existing tag.
+    EXPORTTAG="-r${TAG}"
+    # Try to check out a file using ${TAG}.  If the command succeeds,
+    # then the sources have already been tagged.  We don't want to 
+    # overwrite an existing tag, so we don't want to use the "-F"
+    # option to "cvs rtag" below.  So, if the tag already exists,
+    # issue an error message; the release manager can manually remove
+    # the tag if appropriate.
+    if ${CVS} export -d "`basename ${SOURCE_DIRECTORY}`" \
+      "${EXPORTTAG}" gcc/ChangeLog; then
+      error "Tag ${TAG} already exists"
+    fi
     ${CVS} rtag -r ${CVSBRANCH} ${TAG} gcc || \
       error "Could not tag sources"
-    EXPORTTAG="-r${TAG}"
   else
     if [ ${CVSBRANCH} != "HEAD" ]; then
       EXPORTTAG="-r${CVSBRANCH}"
