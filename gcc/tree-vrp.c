@@ -564,7 +564,23 @@ compare_values (tree val1, tree val2)
 
 /* Return 1 if VAL is inside value range VR (VR->MIN <= VAL <= VR->MAX),
           0 if VAL is not inside VR,
-	 -2 if we cannot tell either way.  */
+	 -2 if we cannot tell either way.
+
+   FIXME, the current semantics of this functions are a bit quirky
+	  when taken in the context of VRP.  In here we do not care
+	  about VR's type.  If VR is the anti-range ~[3, 5] the call
+	  value_inside_range (4, VR) will return 1.
+
+	  This is counter-intuitive in a strict sense, but the callers
+	  currently expect this.  They are calling the function
+	  merely to determine whether VR->MIN <= VAL <= VR->MAX.  The
+	  callers are applying the VR_RANGE/VR_ANTI_RANGE semantics
+	  themselves.
+
+	  This also applies to value_ranges_intersect_p and
+	  range_includes_zero_p.  The semantics of VR_RANGE and
+	  VR_ANTI_RANGE should be encoded here, but that also means
+	  adapting the users of these functions to the new semantics.  */
 
 static inline int
 value_inside_range (tree val, value_range_t *vr)
@@ -596,7 +612,11 @@ value_ranges_intersect_p (value_range_t *vr0, value_range_t *vr1)
 }
 
 
-/* Return true if VR includes the value zero, false otherwise.  */
+/* Return true if VR includes the value zero, false otherwise.  FIXME,
+   currently this will return false for an anti-range like ~[-4, 3].
+   This will be wrong when the semantics of value_inside_range are
+   modified (currently the users of this function expect these
+   semantics).  */
 
 static inline bool
 range_includes_zero_p (value_range_t *vr)
