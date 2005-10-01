@@ -1,3 +1,15 @@
+2005-10-01  Ranjit Mathew  <rmathew@gcc.gnu.org>
+
+	PR java/21418
+	* class.c (inherits_from_p): Try to lay out super class
+	if it is not already laid out.
+	(maybe_layout_super_class): Handle the case where SUPER_CLASS
+	is a NULL_TREE.
+
+2005-10-01  Per Bothner  <per@bothner.com>
+
+	* class.c (inherits_from_p): Do load_class if needed.
+
 2005-10-01  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR java/23891

@@ -545,7 +545,11 @@ inherits_from_p (tree type1, tree type2)
     {
       if (type1 == type2)
 	return 1;
-      type1 = CLASSTYPE_SUPER (type1);
+
+      if (! CLASS_LOADED_P (type1))
+	load_class (type1, 1);
+
+      type1 = maybe_layout_super_class (CLASSTYPE_SUPER (type1), type1);
     }
   return 0;
 }
@@ -2045,7 +2049,9 @@ push_super_field (tree this_class, tree super_class)
 static tree
 maybe_layout_super_class (tree super_class, tree this_class)
 {
-  if (TREE_CODE (super_class) == RECORD_TYPE)
+  if (!super_class)
+    return NULL_TREE;
+  else if (TREE_CODE (super_class) == RECORD_TYPE)
     {
       if (!CLASS_LOADED_P (super_class) && CLASS_FROM_SOURCE_P (super_class))
 	safe_layout_class (super_class);
@@ -2060,12 +2066,12 @@ maybe_layout_super_class (tree super_class, tree this_class)
 	super_class = TREE_TYPE (super_class);
       else
 	{
-	  /* Set the correct context for class resolution.  */
-	  current_class = this_class;
-
 	  /* do_resolve_class expects an EXPR_WITH_FILE_LOCATION, so
 	     we give it one.  */
 	  tree this_wrap = NULL_TREE;
+
+	  /* Set the correct context for class resolution.  */
+	  current_class = this_class;
 
 	  if (this_class)
 	    {
