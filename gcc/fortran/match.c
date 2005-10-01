@@ -2622,6 +2622,13 @@ gfc_match_equivalence (void)
 	  if (m == MATCH_NO)
 	    goto syntax;
 
+	  if (gfc_match_char ('%') == MATCH_YES)
+	    {
+	      gfc_error ("Derived type component %C is not a "
+			 "permitted EQUIVALENCE member");
+	      goto cleanup;
+	    }
+
 	  for (ref = set->expr->ref; ref; ref = ref->next)
 	    if (ref->type == REF_ARRAY && ref->u.ar.type == AR_SECTION)
 	      {
@@ -2631,13 +2638,17 @@ gfc_match_equivalence (void)
 		goto cleanup;
 	      }
 
-	  if (set->expr->symtree->n.sym->attr.in_common)
+	  sym = set->expr->symtree->n.sym;
+
+	  if (gfc_add_in_equivalence (&sym->attr, sym->name, NULL)
+		== FAILURE)
+	    goto cleanup;
+
+	  if (sym->attr.in_common)
 	    {
 	      common_flag = TRUE;
-	      common_head = set->expr->symtree->n.sym->common_head;
+	      common_head = sym->common_head;
 	    }
-
-	  set->expr->symtree->n.sym->attr.in_equivalence = 1;
 
 	  if (gfc_match_char (')') == MATCH_YES)
 	    break;
