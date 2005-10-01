@@ -1,3 +1,16 @@
+2005-10-01  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	PR target/23985
+	Back-port 2004-08-19  Richard Henderson  <rth@redhat.com>
+	* config/arm/arm.c (arm_gen_load_multiple): Use
+	adjust_automodify_address.  Take base memory and offset instead
+	of unchanging/struct/scalar bits.
+	(arm_gen_store_multiple): Likewise.
+	(arm_gen_movstrqi): Use adjust_automodify_address.
+	* config/arm/arm-protos.h: Update decls.
+	* config/arm/arm.md (load_multiple): Update arm_gen_load_multiple call.
+	(store_multiple): Similarly.
+
 2005-09-29  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/24102
