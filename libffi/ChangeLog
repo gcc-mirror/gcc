@@ -1,3 +1,8 @@
+2005-09-30  Geoffrey Keating  <geoffk@apple.com>
+
+	* testsuite/lib/libffi-dg.exp (libffi_target_compile): For
+	darwin, use -shared-libgcc not -lgcc_s, and explain why.
+
 2005-09-26  Tom Tromey  <tromey@redhat.com>
 
 	* testsuite/libffi.call/float1.c (value_type): New typedef.
