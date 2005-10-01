@@ -621,7 +621,7 @@ read_f (fnode * f, char *dest, int length)
 	case '9':
 	case ' ':
 	  ndigits++;
-	  *p++;
+	  p++;
 	  w--;
 	  break;
 

@@ -28,6 +28,7 @@ the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
 #include "config.h"
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -580,15 +581,14 @@ init_variables (void)
 int
 check_buffered (int n)
 {
-  char name[40];
+  char name[22 + sizeof (n) * 3];
   variable v;
   int rv;
 
   if (options.all_unbuffered)
     return 0;
 
-  strcpy (name, "GFORTRAN_UNBUFFERED_");
-  strcat (name, gfc_itoa (n));
+  sprintf (name, "GFORTRAN_UNBUFFERED_%d", n);
 
   v.name = name;
   v.value = 2;
