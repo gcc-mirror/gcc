@@ -1111,6 +1111,7 @@ struct lang_decl GTY(())
 
 #define TYPE_TO_RUNTIME_MAP(T)   (TYPE_LANG_SPECIFIC (T)->type_to_runtime_map)
 #define TYPE_ASSERTIONS(T)   	 (TYPE_LANG_SPECIFIC (T)->type_assertions)
+#define TYPE_PACKAGE(T)     	 (TYPE_LANG_SPECIFIC (T)->package)
 
 struct lang_type GTY(())
 {
@@ -1158,6 +1159,9 @@ struct lang_type GTY(())
   htab_t GTY ((param_is (struct type_assertion))) type_assertions;
 				/* Table of type assertions to be evaluated 
   				   by the runtime when this class is loaded. */
+
+  tree package;			/* IDENTIFIER_NODE for package this class is
+  				   a member of.  */
 
   unsigned pic:1;		/* Private Inner Class. */
   unsigned poic:1;		/* Protected Inner Class. */

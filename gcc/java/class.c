@@ -2060,6 +2060,9 @@ maybe_layout_super_class (tree super_class, tree this_class)
 	super_class = TREE_TYPE (super_class);
       else
 	{
+	  /* Set the correct context for class resolution.  */
+	  current_class = this_class;
+
 	  /* do_resolve_class expects an EXPR_WITH_FILE_LOCATION, so
 	     we give it one.  */
 	  tree this_wrap = NULL_TREE;

@@ -1,5 +1,10 @@
 2005-10-01  Bryce McKinlay  <mckinlay@redhat.com>
 
+	* testsuite/libjava.jacks/jacks.xfail: Update to reflect
+	PR java/23891 fix.
+
+2005-10-01  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* gnu/gcj/runtime/BootClassLoader.java (BootClassLoader): Pass
 	`null' parent ClassLoader to parent constructor.
 	* gnu/gcj/runtime/HelperClassLoader.java (HelperClassLoader): New

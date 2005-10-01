@@ -444,6 +444,7 @@ give_name_to_class (JCF *jcf, int i)
     abort ();
   else
     {
+      tree package_name = NULL_TREE, tmp;
       tree this_class;
       int j = JPOOL_USHORT1 (jcf, i);
       /* verify_constant_pool confirmed that j is a CONSTANT_Utf8. */
@@ -469,6 +470,9 @@ give_name_to_class (JCF *jcf, int i)
 
       jcf->cpool.data[i].t = this_class;
       JPOOL_TAG (jcf, i) = CONSTANT_ResolvedClass;
+      split_qualified_name (&package_name, &tmp, 
+      			    DECL_NAME (TYPE_NAME (this_class)));
+      TYPE_PACKAGE (this_class) = package_name;
       return this_class;
     }
 }

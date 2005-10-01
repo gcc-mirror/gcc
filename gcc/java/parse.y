@@ -3919,6 +3919,14 @@ maybe_create_class_interface_decl (tree decl, tree raw_name,
   /* Install a new dependency list element */
   create_jdep_list (ctxp);
 
+  /* We keep the compilation unit imports in the class so that
+     they can be used later to resolve type dependencies that
+     aren't necessary to solve now. */
+  TYPE_IMPORT_LIST (TREE_TYPE (decl)) = ctxp->import_list;
+  TYPE_IMPORT_DEMAND_LIST (TREE_TYPE (decl)) = ctxp->import_demand_list;
+
+  TYPE_PACKAGE (TREE_TYPE (decl)) = ctxp->package;
+
   SOURCE_FRONTEND_DEBUG (("Defining class/interface %s",
 			  IDENTIFIER_POINTER (qualified_name)));
   return decl;
@@ -4192,12 +4200,6 @@ create_class (int flags, tree id, tree super, tree interfaces)
      virtual function tables.  In gcj, every class has a common base
      virtual function table in java.lang.object.  */
   TYPE_VFIELD (TREE_TYPE (decl)) = TYPE_VFIELD (object_type_node);
-
-  /* We keep the compilation unit imports in the class so that
-     they can be used later to resolve type dependencies that
-     aren't necessary to solve now. */
-  TYPE_IMPORT_LIST (TREE_TYPE (decl)) = ctxp->import_list;
-  TYPE_IMPORT_DEMAND_LIST (TREE_TYPE (decl)) = ctxp->import_demand_list;
 
   /* Add the private this$<n> field, Replicate final locals still in
      scope as private final fields mangled like val$<local_name>.
@@ -5672,6 +5674,9 @@ static tree
 jdep_resolve_class (jdep *dep)
 {
   tree decl;
+  
+  /* Set the correct context for class resolution.  */
+  current_class = TREE_TYPE (JDEP_ENCLOSING (dep));
 
   if (JDEP_RESOLVED_P (dep))
     decl = JDEP_RESOLVED_DECL (dep);
@@ -5979,8 +5984,10 @@ do_resolve_class (tree enclosing, tree import_type, tree class_type, tree decl,
   /* 3- Search according to the current package definition */
   if (!QUALIFIED_P (TYPE_NAME (class_type)))
     {
-      if ((new_class_decl = qualify_and_find (class_type, ctxp->package,
-					     TYPE_NAME (class_type))))
+     /* printf ("cc= %s\n", current_class ? IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME
+      (current_class))) : "null"); */
+      if ((new_class_decl = qualify_and_find (class_type, 
+      		TYPE_PACKAGE (current_class), TYPE_NAME (class_type))))
 	return new_class_decl;
     }
 
@@ -10370,37 +10377,11 @@ check_deprecation (tree wfl, tree decl)
 
 /* Returns 1 if class was declared in the current package, 0 otherwise */
 
-static GTY(()) tree cicp_cache;
 static int
 class_in_current_package (tree class)
 {
-  int qualified_flag;
-  tree left;
-
-  if (cicp_cache == class)
+  if (TYPE_PACKAGE (current_class) == TYPE_PACKAGE (class))
     return 1;
-
-  qualified_flag = QUALIFIED_P (DECL_NAME (TYPE_NAME (class)));
-
-  /* If the current package is empty and the name of CLASS is
-     qualified, class isn't in the current package.  If there is a
-     current package and the name of the CLASS is not qualified, class
-     isn't in the current package */
-  if ((!ctxp->package && qualified_flag) || (ctxp->package && !qualified_flag))
-    return 0;
-
-  /* If there is not package and the name of CLASS isn't qualified,
-     they belong to the same unnamed package */
-  if (!ctxp->package && !qualified_flag)
-    return 1;
-
-  /* Compare the left part of the name of CLASS with the package name */
-  split_qualified_name (&left, NULL, DECL_NAME (TYPE_NAME (class)));
-  if (ctxp->package == left)
-    {
-      cicp_cache = class;
-      return 1;
-    }
   return 0;
 }
 
