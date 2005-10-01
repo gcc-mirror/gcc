@@ -1,3 +1,8 @@
+2005-10-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc_release (build_sources): If trying to apply a tag that
+	already exists, issue an error message and exit.
+
 2005-09-30  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR other/23693
