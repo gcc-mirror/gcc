@@ -1,3 +1,10 @@
+2005-10-01  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* gnu/gcj/runtime/BootClassLoader.java (BootClassLoader): Pass
+	`null' parent ClassLoader to parent constructor.
+	* gnu/gcj/runtime/HelperClassLoader.java (HelperClassLoader): New
+	constructor.
+
 2005-09-30  Tom Tromey  <tromey@redhat.com>
 
 	Workaround for PR libgcj/23367:
