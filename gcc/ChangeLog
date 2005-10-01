@@ -1,5 +1,10 @@
 2005-10-01  Diego Novillo  <dnovillo@redhat.com>
 
+	* tree-vrp.c (value_inside_range, range_includes_zero_p): Add
+	FIXME note regarding quirky semantics.
+
+2005-10-01  Diego Novillo  <dnovillo@redhat.com>
+
 	PR 24141
 	* tree-vrp.c (vrp_meet): Clear VR0->EQUIV when building a
 	non-null range as a last resort.
