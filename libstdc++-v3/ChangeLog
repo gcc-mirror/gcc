@@ -1,8 +1,13 @@
+2005-10-01  Kenny Simpson  <theonetruekenny@yahoo.com>
+
+	* include/tr1/tuple_iterate.h (tuple::operator=(const std::pair<>&)):
+	Add missing return.
+
 2005-09-30  Guillaume Melquiond  <guillaume.melquiond@ens-lyon.fr>
 
-        PR libstdc++/23956
-        * include/ext/mt_allocator.h: Remove excess
-        policy_type::_S_get_pool calls in constructors.
+	PR libstdc++/23956
+	* include/ext/mt_allocator.h: Remove excess
+	policy_type::_S_get_pool calls in constructors.
 
 2005-09-29  Chris Jefferson  <chris@bubblescope.net>
 
