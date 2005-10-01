@@ -1,3 +1,9 @@
+2005-10-01  James A. Morrison  <phython@gcc.gnu.org>
+	    Diego Novillo  <dnovillo@redhat.com>
+
+	PR 23604
+	* gcc.c-torture/execute/pr23604.c: New test.
+
 2005-10-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/16404
