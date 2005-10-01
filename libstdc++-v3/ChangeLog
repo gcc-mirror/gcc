@@ -1,3 +1,8 @@
+2005-10-01  Kenny Simpson  <theonetruekenny@yahoo.com>
+
+	* include/tr1/tuple_iterate.h (tuple::operator=(const std::pair<>&)):
+	Add missing return.
+
 2005-09-30  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/24064
