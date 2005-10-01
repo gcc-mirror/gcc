@@ -774,17 +774,32 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	 LIMIT's range was ~[0, 0], the assertion 'VAR != LIMIT' does
 	 not imply that VAR's range is [0, 0].  So, in the case of
 	 anti-ranges, we just assert the inequality using LIMIT and
-	 not its anti-range.  */
-      if (limit_vr == NULL
-	  || limit_vr->type == VR_ANTI_RANGE)
-	{
-	  min = limit;
-	  max = limit;
-	}
-      else
+	 not its anti-range.
+
+	 If LIMIT_VR is a range, we can only use it to build a new
+	 anti-range if LIMIT_VR is a single-valued range.  For
+	 instance, if LIMIT_VR is [0, 1], the predicate
+	 VAR != [0, 1] does not mean that VAR's range is ~[0, 1].
+	 Rather, it means that for value 0 VAR should be ~[0, 0]
+	 and for value 1, VAR should be ~[1, 1].  We cannot
+	 represent these ranges.
+
+	 The only situation in which we can build a valid
+	 anti-range is when LIMIT_VR is a single-valued range
+	 (i.e., LIMIT_VR->MIN == LIMIT_VR->MAX).  In that case, 
+	 build the anti-range ~[LIMIT_VR->MIN, LIMIT_VR->MAX].  */
+      if (limit_vr
+	  && limit_vr->type == VR_RANGE
+	  && compare_values (limit_vr->min, limit_vr->max) == 0)
 	{
 	  min = limit_vr->min;
 	  max = limit_vr->max;
+	}
+      else
+	{
+	  /* In any other case, we cannot use LIMIT's range to build a
+	     valid anti-range.  */
+	  min = max = limit;
 	}
 
       /* If MIN and MAX cover the whole range for their type, then
