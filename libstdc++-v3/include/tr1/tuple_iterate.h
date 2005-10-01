@@ -64,6 +64,7 @@ template<_GLIBCXX_TEMPLATE_PARAMS>
       { 
 	_M_arg1 = __u.first;
 	_M_arg2 = __u.second;
+	return *this;
       }
 #endif
 
