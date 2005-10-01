@@ -25,6 +25,13 @@ Software Foundation, 51 Franklin Street, Fifth Floor,Boston, MA
 #include "gfortran.h"
 #include "arith.h"  /* For gfc_compare_expr().  */
 
+/* Types used in equivalence statements.  */
+
+typedef enum seq_type
+{
+  SEQ_NONDEFAULT, SEQ_NUMERIC, SEQ_CHARACTER, SEQ_MIXED
+}
+seq_type;
 
 /* Stack to push the current if we descend into a block during
    resolution.  See resolve_branch() and resolve_code().  */
@@ -4124,6 +4131,8 @@ resolve_symbol (gfc_symbol * sym)
   gfc_symtree * symtree;
   gfc_symtree * this_symtree;
   gfc_namespace * ns;
+  gfc_component * c;
+  gfc_formal_arglist * arg;
 
   if (sym->attr.flavor == FL_UNKNOWN)
     {
@@ -4272,6 +4281,48 @@ resolve_symbol (gfc_symbol * sym)
               return;
             }
         }
+    }
+
+  /* Ensure that derived type components of a public derived type
+     are not of a private type.  */
+  if (sym->attr.flavor == FL_DERIVED
+	&& gfc_check_access(sym->attr.access, sym->ns->default_access))
+    {
+      for (c = sym->components; c; c = c->next)
+	{
+	  if (c->ts.type == BT_DERIVED
+		&& !c->ts.derived->attr.use_assoc
+		&& !gfc_check_access(c->ts.derived->attr.access,
+				     c->ts.derived->ns->default_access))
+	    {
+	      gfc_error ("The component '%s' is a PRIVATE type and cannot be "
+			 "a component of '%s', which is PUBLIC at %L",
+			 c->name, sym->name, &sym->declared_at);
+	      return;
+	    }
+	}
+    }
+
+  /* Ensure that derived type formal arguments of a public procedure
+     are not of a private type.  */
+  if (sym->attr.flavor == FL_PROCEDURE
+	&& gfc_check_access(sym->attr.access, sym->ns->default_access))
+    {
+      for (arg = sym->formal; arg; arg = arg->next)
+	{
+	  if (arg->sym
+		&& arg->sym->ts.type == BT_DERIVED
+		&& !gfc_check_access(arg->sym->ts.derived->attr.access,
+				     arg->sym->ts.derived->ns->default_access))
+	    {
+	      gfc_error_now ("'%s' is a PRIVATE type and cannot be "
+			     "a dummy argument of '%s', which is PUBLIC at %L",
+			     arg->sym->name, sym->name, &sym->declared_at);
+	      /* Stop this message from recurring.  */
+	      arg->sym->ts.derived->attr.access = ACCESS_PUBLIC;
+	      return;
+	    }
+	}
     }
 
   /* Constraints on deferred shape variable.  */
@@ -4802,6 +4853,65 @@ warn_unused_label (gfc_namespace * ns)
 }
 
 
+/* Returns the sequence type of a symbol or sequence.  */
+
+static seq_type
+sequence_type (gfc_typespec ts)
+{
+  seq_type result;
+  gfc_component *c;
+
+  switch (ts.type)
+  {
+    case BT_DERIVED:
+
+      if (ts.derived->components == NULL)
+	return SEQ_NONDEFAULT;
+
+      result = sequence_type (ts.derived->components->ts);
+      for (c = ts.derived->components->next; c; c = c->next)
+	if (sequence_type (c->ts) != result)
+	  return SEQ_MIXED;
+
+      return result;
+
+    case BT_CHARACTER:
+      if (ts.kind != gfc_default_character_kind)
+	  return SEQ_NONDEFAULT;
+
+      return SEQ_CHARACTER;
+
+    case BT_INTEGER:
+      if (ts.kind != gfc_default_integer_kind)
+	  return SEQ_NONDEFAULT;
+
+      return SEQ_NUMERIC;
+
+    case BT_REAL:
+      if (!(ts.kind == gfc_default_real_kind
+	     || ts.kind == gfc_default_double_kind))
+	  return SEQ_NONDEFAULT;
+
+      return SEQ_NUMERIC;
+
+    case BT_COMPLEX:
+      if (ts.kind != gfc_default_complex_kind)
+	  return SEQ_NONDEFAULT;
+
+      return SEQ_NUMERIC;
+
+    case BT_LOGICAL:
+      if (ts.kind != gfc_default_logical_kind)
+	  return SEQ_NONDEFAULT;
+
+      return SEQ_NUMERIC;
+
+    default:
+      return SEQ_NONDEFAULT;
+  }
+}
+
+
 /* Resolve derived type EQUIVALENCE object.  */
 
 static try
@@ -4831,7 +4941,14 @@ resolve_equivalence_derived (gfc_symbol *derived, gfc_symbol *sym, gfc_expr *e)
          in the structure.  */
       if (c->pointer)
         {
-          gfc_error ("Derived type variable '%s' at %L has pointer componet(s) "
+          gfc_error ("Derived type variable '%s' at %L with pointer component(s) "
+                     "cannot be an EQUIVALENCE object", sym->name, &e->where);
+          return FAILURE;
+        }
+
+      if (c->initializer)
+        {
+          gfc_error ("Derived type variable '%s' at %L with default initializer "
                      "cannot be an EQUIVALENCE object", sym->name, &e->where);
           return FAILURE;
         }
@@ -4841,22 +4958,38 @@ resolve_equivalence_derived (gfc_symbol *derived, gfc_symbol *sym, gfc_expr *e)
 
 
 /* Resolve equivalence object. 
-   An EQUIVALENCE object shall not be a dummy argument, a pointer, an
-   allocatable array, an object of nonsequence derived type, an object of
+   An EQUIVALENCE object shall not be a dummy argument, a pointer, a target,
+   an allocatable array, an object of nonsequence derived type, an object of
    sequence derived type containing a pointer at any level of component
    selection, an automatic object, a function name, an entry name, a result
    name, a named constant, a structure component, or a subobject of any of
-   the preceding objects.  A substring shall not have length zero.  */
+   the preceding objects.  A substring shall not have length zero.  A
+   derived type shall not have components with default initialization nor
+   shall two objects of an equivalence group be initialized.
+   The simple constraints are done in symbol.c(check_conflict) and the rest
+   are implemented here.  */
 
 static void
 resolve_equivalence (gfc_equiv *eq)
 {
   gfc_symbol *sym;
   gfc_symbol *derived;
+  gfc_symbol *first_sym;
   gfc_expr *e;
   gfc_ref *r;
+  locus *last_where = NULL;
+  seq_type eq_type, last_eq_type;
+  gfc_typespec *last_ts;
+  int object;
+  const char *value_name;
+  const char *msg;
 
-  for (; eq; eq = eq->eq)
+  value_name = NULL;
+  last_ts = &eq->expr->symtree->n.sym->ts;
+
+  first_sym = eq->expr->symtree->n.sym;
+
+  for (object = 1; eq; eq = eq->eq, object++)
     {
       e = eq->expr;
 
@@ -4926,38 +5059,31 @@ resolve_equivalence (gfc_equiv *eq)
         continue;
 
       sym = e->symtree->n.sym;
-     
-      /* Shall not be a dummy argument.  */
-      if (sym->attr.dummy)
-        {
-          gfc_error ("Dummy argument '%s' at %L cannot be an EQUIVALENCE "
-                     "object", sym->name, &e->where);
-          continue;
-        }
 
-      /* Shall not be an allocatable array.  */
-      if (sym->attr.allocatable)
-        {
-          gfc_error ("Allocatable array '%s' at %L cannot be an EQUIVALENCE "
-                     "object", sym->name, &e->where);
-          continue;
-        }
+      /* An equivalence statement cannot have more than one initialized
+	 object.  */
+      if (sym->value)
+	{
+	  if (value_name != NULL)
+	    {
+	      gfc_error ("Initialized objects '%s' and '%s'  cannot both "
+			 "be in the EQUIVALENCE statement at %L",
+			 value_name, sym->name, &e->where);
+	      continue;
+	    }
+	  else
+	    value_name = sym->name;
+	}
 
-      /* Shall not be a pointer.  */
-      if (sym->attr.pointer)
+      /* Shall not equivalence common block variables in a PURE procedure.  */
+      if (sym->ns->proc_name 
+	    && sym->ns->proc_name->attr.pure
+	    && sym->attr.in_common)
         {
-          gfc_error ("Pointer '%s' at %L cannot be an EQUIVALENCE object",
-                     sym->name, &e->where);
-          continue;
-        }
-      
-      /* Shall not be a function name, ...  */
-      if (sym->attr.function || sym->attr.result || sym->attr.entry
-          || sym->attr.subroutine)
-        {
-          gfc_error ("Entity '%s' at %L cannot be an EQUIVALENCE object",
-                     sym->name, &e->where);
-          continue;
+          gfc_error ("Common block member '%s' at %L cannot be an EQUIVALENCE "
+		     "object in the pure procedure '%s'",
+		     sym->name, &e->where, sym->ns->proc_name->name);
+          break;
         }
 
       /* Shall not be a named constant.  */      
@@ -4971,6 +5097,69 @@ resolve_equivalence (gfc_equiv *eq)
       derived = e->ts.derived;
       if (derived && resolve_equivalence_derived (derived, sym, e) == FAILURE)
         continue;
+
+      /* Check that the types correspond correctly:
+	 Note 5.28:
+	 A numeric sequence structure may be equivalenced to another sequence
+	 structure, an object of default integer type, default real type, double
+	 precision real type, default logical type such that components of the
+	 structure ultimately only become associated to objects of the same
+	 kind. A character sequence structure may be equivalenced to an object
+	 of default character kind or another character sequence structure.
+	 Other objects may be equivalenced only to objects of the same type and
+	 kind parameters.  */
+
+      /* Identical types are unconditionally OK.  */
+      if (object == 1 || gfc_compare_types (last_ts, &sym->ts))
+	goto identical_types;
+
+      last_eq_type = sequence_type (*last_ts);
+      eq_type = sequence_type (sym->ts);
+
+      /* Since the pair of objects is not of the same type, mixed or
+	 non-default sequences can be rejected.  */
+
+      msg = "Sequence %s with mixed components in EQUIVALENCE "
+	    "statement at %L with different type objects";
+      if ((object ==2
+	       && last_eq_type == SEQ_MIXED
+	       && gfc_notify_std (GFC_STD_GNU, msg, first_sym->name,
+				  last_where) == FAILURE)
+	   ||  (eq_type == SEQ_MIXED
+	       && gfc_notify_std (GFC_STD_GNU, msg,sym->name,
+				  &e->where) == FAILURE))
+	continue;
+
+      msg = "Non-default type object or sequence %s in EQUIVALENCE "
+	    "statement at %L with objects of different type";
+      if ((object ==2
+	       && last_eq_type == SEQ_NONDEFAULT
+	       && gfc_notify_std (GFC_STD_GNU, msg, first_sym->name,
+				  last_where) == FAILURE)
+	   ||  (eq_type == SEQ_NONDEFAULT
+	       && gfc_notify_std (GFC_STD_GNU, msg, sym->name,
+				  &e->where) == FAILURE))
+	continue;
+
+      msg ="Non-CHARACTER object '%s' in default CHARACTER "
+	   "EQUIVALENCE statement at %L";
+      if (last_eq_type == SEQ_CHARACTER
+	    && eq_type != SEQ_CHARACTER
+	    && gfc_notify_std (GFC_STD_GNU, msg, sym->name,
+				  &e->where) == FAILURE)
+		continue;
+
+      msg ="Non-NUMERIC object '%s' in default NUMERIC "
+	   "EQUIVALENCE statement at %L";
+      if (last_eq_type == SEQ_NUMERIC
+	    && eq_type != SEQ_NUMERIC
+	    && gfc_notify_std (GFC_STD_GNU, msg, sym->name,
+				  &e->where) == FAILURE)
+		continue;
+
+  identical_types:
+      last_ts =&sym->ts;
+      last_where = &e->where;
 
       if (!e->ref)
         continue;

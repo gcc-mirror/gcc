@@ -1639,6 +1639,7 @@ try gfc_add_dummy (symbol_attribute *, const char *, locus *);
 try gfc_add_generic (symbol_attribute *, const char *, locus *);
 try gfc_add_common (symbol_attribute *, locus *);
 try gfc_add_in_common (symbol_attribute *, const char *, locus *);
+try gfc_add_in_equivalence (symbol_attribute *, const char *, locus *);
 try gfc_add_data (symbol_attribute *, const char *, locus *);
 try gfc_add_in_namelist (symbol_attribute *, const char *, locus *);
 try gfc_add_sequence (symbol_attribute *, const char *, locus *);
