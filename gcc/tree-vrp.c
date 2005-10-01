@@ -3439,7 +3439,14 @@ no_meet:
       && !range_includes_zero_p (vr0)
       && !symbolic_range_p (vr1)
       && !range_includes_zero_p (vr1))
-    set_value_range_to_nonnull (vr0, TREE_TYPE (vr0->min));
+    {
+      set_value_range_to_nonnull (vr0, TREE_TYPE (vr0->min));
+
+      /* Since this meet operation did not result from the meeting of
+	 two equivalent names, VR0 cannot have any equivalences.  */
+      if (vr0->equiv)
+	bitmap_clear (vr0->equiv);
+    }
   else
     set_value_range_to_varying (vr0);
 }
