@@ -1,5 +1,15 @@
 2005-10-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* runtime/memory.c (malloc_t): Remove.
+	(GFC_MALLOC_MAGIC, HEADER_SIZE, DATA_POINTER, DATA_HEADER): Remove.
+	(mem_root, runtime_cleanup, malloc_with_header): Remove.
+	(internal_malloc_size): Use just get_mem if size != 0, return NULL
+	otherwise.
+	(internal_free): Just free if non-NULL.
+	(internal_realloc_size): Remove debugging stuff.
+	(allocate_size): Use malloc directly, remove debugging stuff.
+	(deallocate): Use free directly, fix error message wording.
+
 	* libgfortran.h (GFC_ITOA_BUF_SIZE, GFC_XTOA_BUF_SIZE,
 	GFC_OTOA_BUF_SIZE, GFC_BTOA_BUF_SIZE): Define.
 	(gfc_itoa, xtoa): Add 2 extra arguments.
