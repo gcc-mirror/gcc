@@ -1,3 +1,24 @@
+2005-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgfortran.h (GFC_ITOA_BUF_SIZE, GFC_XTOA_BUF_SIZE,
+	GFC_OTOA_BUF_SIZE, GFC_BTOA_BUF_SIZE): Define.
+	(gfc_itoa, xtoa): Add 2 extra arguments.
+	* runtime/environ.c: Include stdio.h.
+	(check_buffered): Use sprintf.
+	* runtime/error.c: Include assert.h.
+	(gfc_itoa, xtoa): Add 2 extra arguments, avoid using static
+	buffers.
+	(st_printf, st_sprintf): Adjust callers.
+	* io/write.c (otoa, btoa): Add 2 extra arguments, avoid using
+	static buffers.
+	(write_int, write_decimal): Add 2 extra arguments to conv
+	function pointer, adjust caller.
+	(write_integer): Adjust gfc_itoa caller.
+
+	* io/unit.c (get_array_unit_len): Return 0 rather than NULL.
+
+	* io/read.c (read_f): Remove spurious pointer dereference.
+
 2005-09-30  Janne Blomqvist <jblomqvi@cc.hut.fi>
 
 	PR 24112

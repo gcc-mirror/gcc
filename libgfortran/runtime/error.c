@@ -29,6 +29,7 @@ Boston, MA 02110-1301, USA.  */
 
 
 #include "config.h"
+#include <assert.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -63,25 +64,19 @@ iexport_data(filename);
 unsigned line = 0;
 iexport_data(line);
 
-/* buffer for integer/ascii conversions.  */
-static char buffer[sizeof (GFC_UINTEGER_LARGEST) * 8 + 1];
+/* gfc_itoa()-- Integer to decimal conversion. */
 
-
-/* Returns a pointer to a static buffer. */
-
-char *
-gfc_itoa (GFC_INTEGER_LARGEST n)
+const char *
+gfc_itoa (GFC_INTEGER_LARGEST n, char *buffer, size_t len)
 {
   int negative;
   char *p;
   GFC_UINTEGER_LARGEST t;
 
+  assert (len >= GFC_ITOA_BUF_SIZE);
+
   if (n == 0)
-    {
-      buffer[0] = '0';
-      buffer[1] = '\0';
-      return buffer;
-    }
+    return "0";
 
   negative = 0;
   t = n;
@@ -91,39 +86,36 @@ gfc_itoa (GFC_INTEGER_LARGEST n)
       t = -n; /*must use unsigned to protect from overflow*/
     }
 
-  p = buffer + sizeof (buffer) - 1;
-  *p-- = '\0';
+  p = buffer + GFC_ITOA_BUF_SIZE - 1;
+  *p = '\0';
 
   while (t != 0)
     {
-      *p-- = '0' + (t % 10);
+      *--p = '0' + (t % 10);
       t /= 10;
     }
 
   if (negative)
-    *p-- = '-';
-  return ++p;
+    *--p = '-';
+  return p;
 }
 
 
-/* xtoa()-- Integer to hexadecimal conversion.  Returns a pointer to a
- * static buffer. */
+/* xtoa()-- Integer to hexadecimal conversion.  */
 
-char *
-xtoa (GFC_UINTEGER_LARGEST n)
+const char *
+xtoa (GFC_UINTEGER_LARGEST n, char *buffer, size_t len)
 {
   int digit;
   char *p;
 
-  if (n == 0)
-    {
-      buffer[0] = '0';
-      buffer[1] = '\0';
-      return buffer;
-    }
+  assert (len >= GFC_XTOA_BUF_SIZE);
 
-  p = buffer + sizeof (buffer) - 1;
-  *p-- = '\0';
+  if (n == 0)
+    return "0";
+
+  p = buffer + GFC_XTOA_BUF_SIZE - 1;
+  *p = '\0';
 
   while (n != 0)
     {
@@ -131,11 +123,11 @@ xtoa (GFC_UINTEGER_LARGEST n)
       if (digit > 9)
 	digit += 'A' - '0' - 10;
 
-      *p-- = '0' + digit;
+      *--p = '0' + digit;
       n >>= 4;
     }
 
-  return ++p;
+  return p;
 }
 
 
@@ -149,8 +141,10 @@ st_printf (const char *format, ...)
 {
   int count, total;
   va_list arg;
-  char *p, *q;
+  char *p;
+  const char *q;
   stream *s;
+  char itoa_buf[GFC_ITOA_BUF_SIZE];
 
   total = 0;
   s = init_error_stream ();
@@ -187,7 +181,7 @@ st_printf (const char *format, ...)
 	  break;
 
 	case 'd':
-	  q = gfc_itoa (va_arg (arg, int));
+	  q = gfc_itoa (va_arg (arg, int), itoa_buf, sizeof (itoa_buf));
 	  count = strlen (q);
 
 	  p = salloc_w (s, &count);
@@ -196,7 +190,7 @@ st_printf (const char *format, ...)
 	  break;
 
 	case 'x':
-	  q = xtoa (va_arg (arg, unsigned));
+	  q = xtoa (va_arg (arg, unsigned), itoa_buf, sizeof (itoa_buf));
 	  count = strlen (q);
 
 	  p = salloc_w (s, &count);
@@ -240,8 +234,10 @@ void
 st_sprintf (char *buffer, const char *format, ...)
 {
   va_list arg;
-  char c, *p;
+  char c;
+  const char *p;
   int count;
+  char itoa_buf[GFC_ITOA_BUF_SIZE];
 
   va_start (arg, format);
 
@@ -264,7 +260,7 @@ st_sprintf (char *buffer, const char *format, ...)
 	  break;
 
 	case 'd':
-	  p = gfc_itoa (va_arg (arg, int));
+	  p = gfc_itoa (va_arg (arg, int), itoa_buf, sizeof (itoa_buf));
 	  count = strlen (p);
 
 	  memcpy (buffer, p, count);

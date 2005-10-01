@@ -29,6 +29,7 @@ the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
 #include "config.h"
+#include <assert.h>
 #include <string.h>
 #include <ctype.h>
 #include <float.h>
@@ -910,11 +911,13 @@ write_float (fnode *f, const char *source, int len)
 
 static void
 write_int (fnode *f, const char *source, int len,
-           char *(*conv) (GFC_UINTEGER_LARGEST))
+           const char *(*conv) (GFC_UINTEGER_LARGEST, char *, size_t))
 {
   GFC_UINTEGER_LARGEST n = 0;
   int w, m, digits, nzero, nblank;
-  char *p, *q;
+  char *p;
+  const char *q;
+  char itoa_buf[GFC_BTOA_BUF_SIZE];
 
   w = f->u.integer.w;
   m = f->u.integer.m;
@@ -936,7 +939,7 @@ write_int (fnode *f, const char *source, int len,
       goto done;
     }
 
-  q = conv (n);
+  q = conv (n, itoa_buf, sizeof (itoa_buf));
   digits = strlen (q);
 
   /* Select a width if none was specified.  The idea here is to always
@@ -988,12 +991,14 @@ write_int (fnode *f, const char *source, int len,
 
 static void
 write_decimal (fnode *f, const char *source, int len,
-               char *(*conv) (GFC_INTEGER_LARGEST))
+               const char *(*conv) (GFC_INTEGER_LARGEST, char *, size_t))
 {
   GFC_INTEGER_LARGEST n = 0;
   int w, m, digits, nsign, nzero, nblank;
-  char *p, *q;
+  char *p;
+  const char *q;
   sign_t sign;
+  char itoa_buf[GFC_BTOA_BUF_SIZE];
 
   w = f->u.integer.w;
   m = f->u.integer.m;
@@ -1020,7 +1025,7 @@ write_decimal (fnode *f, const char *source, int len,
     n = -n;
 
   nsign = sign == SIGN_NONE ? 0 : 1;
-  q = conv (n);
+  q = conv (n, itoa_buf, sizeof (itoa_buf));
 
   digits = strlen (q);
 
@@ -1075,56 +1080,51 @@ write_decimal (fnode *f, const char *source, int len,
 
 /* Convert unsigned octal to ascii.  */
 
-static char *
-otoa (GFC_UINTEGER_LARGEST n)
+static const char *
+otoa (GFC_UINTEGER_LARGEST n, char *buffer, size_t len)
 {
   char *p;
 
-  if (n == 0)
-    {
-      scratch[0] = '0';
-      scratch[1] = '\0';
-      return scratch;
-    }
+  assert (len >= GFC_OTOA_BUF_SIZE);
 
-  p = scratch + SCRATCH_SIZE - 1;
-  *p-- = '\0';
+  if (n == 0)
+    return "0";
+
+  p = buffer + GFC_OTOA_BUF_SIZE - 1;
+  *p = '\0';
 
   while (n != 0)
     {
-      *p = '0' + (n & 7);
-      p--;
+      *--p = '0' + (n & 7);
       n >>= 3;
     }
 
-  return ++p;
+  return p;
 }
 
 
 /* Convert unsigned binary to ascii.  */
 
-static char *
-btoa (GFC_UINTEGER_LARGEST n)
+static const char *
+btoa (GFC_UINTEGER_LARGEST n, char *buffer, size_t len)
 {
   char *p;
 
-  if (n == 0)
-    {
-      scratch[0] = '0';
-      scratch[1] = '\0';
-      return scratch;
-    }
+  assert (len >= GFC_BTOA_BUF_SIZE);
 
-  p = scratch + SCRATCH_SIZE - 1;
-  *p-- = '\0';
+  if (n == 0)
+    return "0";
+
+  p = buffer + GFC_BTOA_BUF_SIZE - 1;
+  *p = '\0';
 
   while (n != 0)
     {
-      *p-- = '0' + (n & 1);
+      *--p = '0' + (n & 1);
       n >>= 1;
     }
 
-  return ++p;
+  return p;
 }
 
 
@@ -1245,8 +1245,9 @@ write_integer (const char *source, int length)
   const char *q;
   int digits;
   int width;
+  char itoa_buf[GFC_ITOA_BUF_SIZE];
 
-  q = gfc_itoa (extract_int (source, length));
+  q = gfc_itoa (extract_int (source, length), itoa_buf, sizeof (itoa_buf));
 
   switch (length)
     {

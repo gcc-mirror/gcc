@@ -261,7 +261,7 @@ get_array_unit_len (gfc_array_char *desc)
       if (desc->dim[i].stride != stride)
 	{
 	  generate_error (ERROR_ARRAY_STRIDE, NULL);
-	  return NULL;
+	  return 0;
 	}
       stride *= desc->dim[i].ubound;
       record_count *= desc->dim[i].ubound;
