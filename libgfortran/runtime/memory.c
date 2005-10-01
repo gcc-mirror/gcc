@@ -1,5 +1,5 @@
 /* Memory mamagement routines.
-   Copyright 2002 Free Software Foundation, Inc.
+   Copyright 2002, 2005 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -42,52 +42,6 @@ Boston, MA 02110-1301, USA.  */
    This causes small overhead, but again, it also helps debugging.  */
 #define GFC_CHECK_MEMORY
 
-/* We use a double linked list of these structures to keep track of
-   the memory we allocate internally.  We could also use this for user
-   allocated memory (ALLOCATE/DEALLOCATE).  This should be stored in a
-   seperate list.  */
-typedef struct malloc_t
-{
-  int magic;
-  int marker;
-  struct malloc_t *prev, *next;
-
-  /* The start of the block.  */
-  void *data;
-}
-malloc_t;
-
-/* We try to make sure we don't get memory corruption by checking for
-   a magic number.  */
-#define GFC_MALLOC_MAGIC 0x4d353941	/* "G95M" */
-
-#define HEADER_SIZE offsetof (malloc_t, data)
-#define DATA_POINTER(pheader) (&((pheader)->data))
-#define DATA_HEADER(pdata) ((malloc_t *)((char *) (pdata) - HEADER_SIZE))
-
-/* The root of the circular double linked list for compiler generated
-   malloc calls.  */
-static malloc_t mem_root = {
-	.next = &mem_root,
-	.prev = &mem_root
-};
-
-#if 0
-/* ??? Disabled because, well, it wasn't being called before transforming
-   it to a destructor, and turning it on causes testsuite failures.  */
-/* Doesn't actually do any cleaning up, just throws an error if something
-   has got out of sync somewhere.  */
-
-static void __attribute__((destructor))
-runtime_cleanup (void)
-{
-  /* Make sure all memory we've allocated is freed on exit.  */
-  if (mem_root.next != &mem_root)
-    runtime_error ("Unfreed memory on program termination");
-}
-#endif
-
-
 void *
 get_mem (size_t n)
 {
@@ -112,50 +66,15 @@ free_mem (void *p)
 }
 
 
-/* Allocates a block of memory with a size of N bytes.  N does not
-   include the size of the header.  */
-
-static malloc_t *
-malloc_with_header (size_t n)
-{
-  malloc_t *newmem;
-
-  n = n + HEADER_SIZE;
-
-  newmem = (malloc_t *) get_mem (n);
-
-  if (newmem)
-    {
-      newmem->magic = GFC_MALLOC_MAGIC;
-      newmem->marker = 0;
-    }
-
-  return newmem;
-}
-
-
 /* Allocate memory for internal (compiler generated) use.  */
 
 void *
 internal_malloc_size (size_t size)
 {
-  malloc_t *newmem;
-
   if (size == 0)
-    return 0;
+    return NULL;
 
-  newmem = malloc_with_header (size);
-
-  if (!newmem)
-    os_error ("Out of memory.");
-
-  /* Add to end of list.  */
-  newmem->next = &mem_root;
-  newmem->prev = mem_root.prev;
-  mem_root.prev->next = newmem;
-  mem_root.prev = newmem;
-
-  return DATA_POINTER (newmem);
+  return get_mem (size);
 }
 
 extern void *internal_malloc (GFC_INTEGER_4);
@@ -190,29 +109,12 @@ internal_malloc64 (GFC_INTEGER_8 size)
 
 /* Free internally allocated memory.  Pointer is NULLified.  Also used to
    free user allocated memory.  */
-/* TODO: keep a list of previously allocated blocks and reuse them.  */
 
 void
 internal_free (void *mem)
 {
-  malloc_t *m;
-
-  if (!mem)
-    return;
-
-  m = DATA_HEADER (mem);
-
-  if (m->magic != GFC_MALLOC_MAGIC)
-    runtime_error ("Internal: No magic memblock marker.  "
-		   "Possible memory corruption");
-
-  /* Move markers up the chain, so they don't get lost.  */
-  m->prev->marker += m->marker;
-  /* Remove from list.  */
-  m->prev->next = m->next;
-  m->next->prev = m->prev;
-
-  free (m);
+  if (mem != NULL)
+    free (mem);
 }
 iexport(internal_free);
 
@@ -223,30 +125,21 @@ iexport(internal_free);
 static void *
 internal_realloc_size (void *mem, size_t size)
 {
-  malloc_t *m;
-
   if (size == 0)
     {
       if (mem)
-	internal_free (mem);
-      return 0;
+	free (mem);
+      return NULL;
     }
 
   if (mem == 0)
-    return internal_malloc (size);
+    return get_mem (size);
 
-  m = DATA_HEADER (mem);
-  if (m->magic != GFC_MALLOC_MAGIC)
-    runtime_error ("Internal: No magic memblock marker.  "
-		   "Possible memory corruption");
-
-  m = realloc (m, size + HEADER_SIZE);
-  if (!m)
+  mem = realloc (mem, size);
+  if (!mem)
     os_error ("Out of memory.");
 
-  m->prev->next = m;
-  m->next->prev = m;
-  return DATA_POINTER (m);
+  return mem;
 }
 
 extern void *internal_realloc (void *, GFC_INTEGER_4);
@@ -284,12 +177,12 @@ internal_realloc64 (void *mem, GFC_INTEGER_8 size)
 static void
 allocate_size (void **mem, size_t size, GFC_INTEGER_4 * stat)
 {
-  malloc_t *newmem;
+  void *newmem;
 
   if (!mem)
     runtime_error ("Internal: NULL mem pointer in ALLOCATE.");
 
-  newmem = malloc_with_header (size);
+  newmem = malloc (size);
   if (!newmem)
     {
       if (stat)
@@ -301,11 +194,7 @@ allocate_size (void **mem, size_t size, GFC_INTEGER_4 * stat)
 	runtime_error ("ALLOCATE: Out of memory.");
     }
 
-  /* We don't keep a list of these at the moment, so just link to itself. */
-  newmem->next = newmem;
-  newmem->prev = newmem;
-
-  (*mem) = DATA_POINTER (newmem);
+  (*mem) = newmem;
 
   if (stat)
     *stat = 0;
@@ -354,7 +243,7 @@ void
 deallocate (void **mem, GFC_INTEGER_4 * stat)
 {
   if (!mem)
-    runtime_error ("Internal: NULL mem pointer in ALLOCATE.");
+    runtime_error ("Internal: NULL mem pointer in DEALLOCATE.");
 
   if (!*mem)
     {
@@ -371,8 +260,7 @@ deallocate (void **mem, GFC_INTEGER_4 * stat)
 	}
     }
 
-  /* Just use the internal routine.  */
-  internal_free (*mem);
+  free (*mem);
   *mem = NULL;
 
   if (stat)
