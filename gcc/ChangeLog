@@ -1,3 +1,7 @@
+2005-10-02  Matthias Klose  <doko@debian.org>
+
+	* doc/invoke.texi: Fix typo and speling error.
+
 2005-10-01  Richard Henderson  <rth@redhat.com>
 
 	* tree-stdarg.c (execute_optimize_stdarg): Process PHI nodes too.
