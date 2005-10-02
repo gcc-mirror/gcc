@@ -9099,11 +9099,20 @@ cp_parser_template_argument (cp_parser* parser)
 	      argument = TREE_OPERAND (argument, 0);
 	    }
 
-	  if (qualifying_class)
+	  /* If ADDRESS_P, then we use finish_qualified_id_expr so
+	     that we get a pointer-to-member, if appropriate.
+	     However, if ADDRESS_P is false, we don't want to turn
+	     "T::f" into "(*this).T::f".  */
+	  if (qualifying_class && address_p)
 	    argument = finish_qualified_id_expr (qualifying_class,
 						 argument,
 						 /*done=*/true,
-						 address_p);
+						 /*address_p=*/true);
+	  else if (TREE_CODE (argument) == BASELINK)
+	    /* We don't need the information about what class was used
+	       to name the overloaded functions.  */  
+	    argument = BASELINK_FUNCTIONS (argument);
+
 	  if (TREE_CODE (argument) == VAR_DECL)
 	    {
 	      /* A variable without external linkage might still be a
