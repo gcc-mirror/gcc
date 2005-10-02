@@ -131,11 +131,13 @@ proc gcj_jni_test_one {file} {
       lappend cxxflaglist "-L$cxxldlibflags"
     }
 
-    # Darwin does not yet have a libgcc_s.dylib library.
-    # So we add it here. If the libgcc_s is installed, the libstdc++
-    # would pick it up.
+    # If you're building the compiler with --prefix set to a place
+    # where it's not yet installed, then the linker won't be able to
+    # find the libgcc used by libffi.dylib.  We could pass the
+    # -dylib_file option, but that's complicated, and it's much easier
+    # to just make the linker find libgcc using -L options.
     if { [istarget "*-*-darwin*"] } {
-	lappend cxxflaglist "-lgcc_s -lstdc++"
+	lappend cxxflaglist "-shared-libgcc -lstdc++"
     } else {
 	lappend cxxflaglist "-lstdc++"
     }
@@ -243,10 +245,13 @@ proc gcj_jni_invocation_test_one {file} {
 
   set cfile [file rootname $file].c
   # Darwin needs -liconv linked, otherwise we get some unresolved.
-  # Also, like in the cxxtest we need to add -lgcc_s since Darwin
-  # has no libgcc_s.dylib installed yet.
+  # If you're building the compiler with --prefix set to a place
+  # where it's not yet installed, then the linker won't be able to
+  # find the libgcc used by libffi.dylib.  We could pass the
+  # -dylib_file option, but that's complicated, and it's much easier
+  # to just make the linker find libgcc using -L options.
   if { [istarget "*-*-darwin*"] } {
-      set cxxflags "-L../.libs -lgcc_s -lgcj -liconv"
+      set cxxflags "-L../.libs -shared-libgcc -lgcj -liconv"
   } else {
       global LIBJAVA
       if [info exists LIBJAVA] {
