@@ -1,3 +1,26 @@
+2005-10-02  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/18851
+	* c-typeck.c (tagged_tu_seen): Rename to ...
+	(tagged_tu_seen_cache): this and add val field.
+	(comptypes): Move functional to comptypes_internal
+	and free tagged_tu_seen.
+	(comptypes_internal): New function and call comptypes_internal
+	instead of comptypes. Speed up by sibcalling
+	tagged_types_tu_compatible_p.
+	(alloc_tagged_tu_seen): New function
+	(free_all_tagged_tu_seen_up_to): New function.
+	(tagged_types_tu_compatible_p): Return the val of the seen two
+	types.
+	Add that the two types are the same to tagged_tu_seen_base
+	if they are and call comptypes_internal instead of comptypes.
+	<case UNION_TYPE>: Speed up common type where the fields are
+	in the same order.
+	(function_types_compatible_p): Call comptypes_internal instead of
+	comptypes.
+	(type_lists_compatible_p): Likewise.
+	(all functions): s/tagged_tu_seen/tagged_tu_seen_cache/.
+
 2005-10-02  Matthias Klose  <doko@debian.org>
 
 	* doc/invoke.texi: Fix typo and speling error.
