@@ -1,5 +1,8 @@
 2005-10-02  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/22621
+	* g++.dg/template/overload5.C : New test.
+
 	PR c++/23840
 	* g++.dg/expr/stdarg1.C: New test.
 
