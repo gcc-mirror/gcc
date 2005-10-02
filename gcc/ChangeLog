@@ -1,3 +1,7 @@
+2005-10-01  Richard Henderson  <rth@redhat.com>
+
+	* tree-stdarg.c (execute_optimize_stdarg): Process PHI nodes too.
+
 2005-10-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/arm/unknown-elf.h (LINK_GCC_C_SEQUENCE_SPEC): Define
