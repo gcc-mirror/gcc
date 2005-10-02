@@ -1,3 +1,9 @@
+2005-10-02  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 24142
+	* tree-vrp.c (vrp_meet): Fix call to range_includes_zero_p in
+	case of anti-ranges.
+
 2005-10-02  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/18851
