@@ -1,3 +1,10 @@
+2005-10-02  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/24054
+	* include/tr1/hashtable (erase(const key_type&)): Return the
+	number of elements erased.
+	* testsuite/tr1/6_containers/unordered/hashtable/24054.cc: New.
+
 2005-10-01  Kenny Simpson  <theonetruekenny@yahoo.com>
 
 	* include/tr1/tuple_iterate.h (tuple::operator=(const std::pair<>&)):
