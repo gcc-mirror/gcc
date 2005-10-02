@@ -1,3 +1,9 @@
+2005-10-02  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* testsuite/lib/jni.exp (gcj_jni_test_one): For
+	darwin, use -shared-libgcc not -lgcc_s, and explain why.
+	(gcj_jni_invocation_test_one): Likewise.
+
 2005-09-30  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/24051:
