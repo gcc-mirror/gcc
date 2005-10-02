@@ -1628,6 +1628,7 @@ namespace tr1
     {
       typename hashtable::hash_code_t code = this->m_hash_code (k);
       size_type n = this->bucket_index(k, code, m_bucket_count);
+      size_type result = 0;
       
       node** slot = m_buckets + n;
       while (*slot && ! this->compare (k, code, *slot))
@@ -1639,7 +1640,10 @@ namespace tr1
 	  *slot = n->m_next;
 	  m_deallocate_node (n);
 	  --m_element_count;
+	  ++result;
 	}
+
+      return result;
     }
 
   // ??? This could be optimized by taking advantage of the bucket
