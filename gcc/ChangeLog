@@ -1,3 +1,7 @@
+2005-10-02  Matthias Klose  <doko@debian.org>
+
+        * doc/invoke.texi: Fix typo and speling error.
+
 2005-09-30  Paolo Bonzini  <bonzini@gnu.org>
 	
 	PR c/21419
