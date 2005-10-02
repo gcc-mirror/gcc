@@ -89,3 +89,9 @@
 #define SUBTARGET_CPU_DEFAULT 		TARGET_CPU_arm7tdmi
 #endif
 
+/* The libgcc udivmod functions may throw exceptions.  If newlib is
+   configured to support long longs in I/O, then printf will depend on
+   udivmoddi4, which will depend on the exception unwind routines,
+   which will depend on abort, which is defined in libc.  */ 
+#undef LINK_GCC_C_SEQUENCE_SPEC
+#define LINK_GCC_C_SEQUENCE_SPEC "--start-group %G %L --end-group"
