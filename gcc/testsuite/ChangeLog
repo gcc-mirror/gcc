@@ -1,3 +1,8 @@
+2005-10-02  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 24142
+	* gcc.c-torture/execute/pr24142.c: New test.
+
 2005-10-01  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 24141

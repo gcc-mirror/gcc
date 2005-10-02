@@ -3454,11 +3454,15 @@ vrp_meet (value_range_t *vr0, value_range_t *vr1)
 no_meet:
   /* The two range VR0 and VR1 do not meet.  Before giving up and
      setting the result to VARYING, see if we can at least derive a
-     useful anti-range.  */
+     useful anti-range.  FIXME, all this nonsense about distinguishing
+     anti-ranges from ranges is necessary because of the odd
+     semantics of range_includes_zero_p and friends.  */
   if (!symbolic_range_p (vr0)
-      && !range_includes_zero_p (vr0)
+      && ((vr0->type == VR_RANGE && !range_includes_zero_p (vr0))
+	  || (vr0->type == VR_ANTI_RANGE && range_includes_zero_p (vr0)))
       && !symbolic_range_p (vr1)
-      && !range_includes_zero_p (vr1))
+      && ((vr1->type == VR_RANGE && !range_includes_zero_p (vr1))
+	  || (vr1->type == VR_ANTI_RANGE && range_includes_zero_p (vr1))))
     {
       set_value_range_to_nonnull (vr0, TREE_TYPE (vr0->min));
 
