@@ -156,8 +156,12 @@ lvalue_p_1 (tree ref,
     case TARGET_EXPR:
       return treat_class_rvalues_as_lvalues ? clk_class : clk_none;
 
-    case CALL_EXPR:
     case VA_ARG_EXPR:
+      return (treat_class_rvalues_as_lvalues
+	      && CLASS_TYPE_P (TREE_TYPE (ref))
+	      ? clk_class : clk_none);
+
+    case CALL_EXPR:
       /* Any class-valued call would be wrapped in a TARGET_EXPR.  */
       return clk_none;
 
