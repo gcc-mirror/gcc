@@ -1,5 +1,16 @@
 2005-10-03  Tom Tromey  <tromey@redhat.com>
 
+	* native/jawt/Makefile.in: Rebuilt.
+	* native/jawt/Makefile.am (noinst_LTLIBRARIES): Renamed.
+	* native/jni/xmlj/Makefile.in: Rebuilt.
+	* native/jni/xmlj/Makefile.am (noinst_LTLIBRARIES): Renamed.
+	* native/jni/qt-peer/Makefile.in: Rebuilt.
+	* native/jni/qt-peer/Makefile.am (noinst_LTLIBRARIES): Renamed.
+	* native/jni/gtk-peer/Makefile.in: Rebuilt.
+	* native/jni/gtk-peer/Makefile.am (noinst_LTLIBRARIES): Renamed.
+
+2005-10-03  Tom Tromey  <tromey@redhat.com>
+
 	PR libgcj/24057:
 	* include/Makefile.in: Rebuilt.
 	* include/Makefile.am: Don't install headers.
