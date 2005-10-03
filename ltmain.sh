@@ -829,6 +829,7 @@ EOF
     linker_flags=
     dllsearchpath=
     lib_search_path=`pwd`
+    inst_prefix_dir=
 
     avoid_version=no
     dlfiles=
@@ -958,6 +959,11 @@ EOF
 	  ;;
 	expsyms_regex)
 	  export_symbols_regex="$arg"
+	  prev=
+	  continue
+	  ;;
+	inst_prefix)
+	  inst_prefix_dir="$arg"
 	  prev=
 	  continue
 	  ;;
@@ -1184,6 +1190,11 @@ EOF
 	else
 	  prev=expsyms_regex
 	fi
+	continue
+	;;
+
+      -inst-prefix-dir)
+	prev=inst_prefix
 	continue
 	;;
 
@@ -2171,6 +2182,14 @@ EOF
 		add="$dir/$linklib"
 	      elif test "$hardcode_minus_L" = yes; then
 		add_dir="-L$dir"
+		# Try looking first in the location we're being installed to.
+		if test -n "$inst_prefix_dir"; then
+		  case "$libdir" in
+		    [\\/]*)
+		      add_dir="$add_dir -L$inst_prefix_dir$libdir"
+		      ;;
+		  esac
+		fi
 		add="-l$name"
 	      elif test "$hardcode_shlibpath_var" = yes; then
 		add_shlibpath="$dir"
@@ -2229,6 +2248,14 @@ EOF
 	    else
 	      # We cannot seem to hardcode it, guess we'll fake it.
 	      add_dir="-L$libdir"
+	      # Try looking first in the location we're being installed to.
+	      if test -n "$inst_prefix_dir"; then
+		case "$libdir" in
+		  [\\/]*)
+		    add_dir="$add_dir -L$inst_prefix_dir$libdir"
+		    ;;
+		esac
+	      fi
 	      add="-l$name"
 	    fi
 
@@ -4460,7 +4487,7 @@ fi\
       for tag in $taglist; do
         tagopts="$tagopts --tag $tag"
       done
-      relink_command="(cd `pwd`; $SHELL $0$tagopts --mode=relink $libtool_args)"
+      relink_command="(cd `pwd`; $SHELL $0$tagopts --mode=relink $libtool_args @inst_prefix_dir@)"
       relink_command=`$echo "X$relink_command" | $Xsed -e "$sed_quote_subst"`
 
       # Only create the output if not a dry run.
@@ -4761,6 +4788,27 @@ relink_command=\"$relink_command\""
 	dir="$dir$objdir"
 
 	if test -n "$relink_command"; then
+	  # Determine the prefix the user has applied to our future dir.
+	  inst_prefix_dir=`$echo "$destdir" | sed "s%$libdir\$%%"`
+
+	  # Don't allow the user to place us outside of our expected
+	  # location b/c this prevents finding dependent libraries that
+	  # are installed to the same prefix.
+	  # At present, this check doesn't affect windows .dll's that
+	  # are installed into $libdir/../bin (currently, that works fine)
+	  # but it's something to keep an eye on.
+	  if test "$inst_prefix_dir" = "$destdir"; then
+	    $echo "$modename: error: cannot install \`$file' to a directory not ending in $libdir" 1>&2
+	    exit $EXIT_FAILURE
+	  fi
+
+	  if test -n "$inst_prefix_dir"; then
+	    # Stick the inst_prefix_dir data into the link command.
+	    relink_command=`$echo "$relink_command" | sed "s%@inst_prefix_dir@%-inst-prefix-dir $inst_prefix_dir%"`
+	  else
+	    relink_command=`$echo "$relink_command" | sed "s%@inst_prefix_dir@%%"`
+	  fi
+
 	  $echo "$modename: warning: relinking \`$file'" 1>&2
 	  $show "$relink_command"
 	  if $run eval "$relink_command"; then :
