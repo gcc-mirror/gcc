@@ -1,4 +1,5 @@
-include_HEADERS = jni.h jni_md.h jawt.h jawt_md.h
+## GCJ LOCAL: headers are installed specially.
+##include_HEADERS = jni.h jni_md.h jawt.h jawt_md.h
 
 DISTCLEANFILES = jni_md.h
 
