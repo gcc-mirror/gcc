@@ -1,3 +1,9 @@
+2005-10-03  Richard Henderson  <rth@redhat.com>
+
+        PR 24135
+        * tree-nested.c (convert_nl_goto_reference): Lookup a translation
+        before creating a new one.
+
 2005-10-02  Matthias Klose  <doko@debian.org>
 
         * doc/invoke.texi: Fix typo and speling error.
