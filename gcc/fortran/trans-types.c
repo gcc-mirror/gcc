@@ -150,6 +150,12 @@ gfc_init_kinds (void)
       if (!targetm.scalar_mode_supported_p (mode))
 	continue;
 
+      /* Only let float/double go through since the library does not
+         support other floating point types.  */
+      if (mode != TYPE_MODE (float_type_node)
+	  && mode != TYPE_MODE (double_type_node))
+	continue;
+
       /* Let the kind equal the precision divided by 8, rounding up.  Again,
 	 this insulates the programmer from the underlying byte size.
 
