@@ -1,3 +1,9 @@
+2005-10-03  Ranjit Mathew  <rmathew@gcc.gnu.org>
+
+	PR java/24127
+	* parse.y (method_header): Make the result of the rule a NULL_TREE
+	when a parsing error occurs.
+
 2005-09-29  Tom Tromey  <tromey@redhat.com>
 
 	PR java/24120:
