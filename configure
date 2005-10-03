@@ -1156,7 +1156,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs sim target-rda"
     ;;
   *-*-darwin*)
-    noconfigdirs="$noconfigdirs bfd binutils ld gas opcodes gdb gprof"
+    noconfigdirs="$noconfigdirs ld gas gdb gprof"
     noconfigdirs="$noconfigdirs sim target-rda"
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
