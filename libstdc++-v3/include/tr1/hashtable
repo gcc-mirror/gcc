@@ -171,7 +171,7 @@ namespace Internal
       node_iterator(hash_node<Value, cache>* p = 0)
       : node_iterator_base<Value, cache>(p) { }
 
-      node_iterator(const node_iterator<Value, true, cache>& x)
+      node_iterator(const node_iterator<Value, false, cache>& x)
       : node_iterator_base<Value, cache>(x.m_cur) { }
 
       reference
@@ -266,7 +266,7 @@ namespace Internal
       hashtable_iterator(hash_node<Value, cache>** b)
       : hashtable_iterator_base<Value, cache>(*b, b) { }
   
-      hashtable_iterator(const hashtable_iterator<Value, true, cache>& x)
+      hashtable_iterator(const hashtable_iterator<Value, false, cache>& x)
       : hashtable_iterator_base<Value, cache>(x.m_cur_node, x.m_cur_bucket) { }
 
       reference
@@ -890,13 +890,13 @@ namespace tr1
       typedef Internal::node_iterator<value_type, !mutable_iterators,
 				      cache_hash_code>
         local_iterator;
-      typedef Internal::node_iterator<value_type, false, cache_hash_code>
+      typedef Internal::node_iterator<value_type, true, cache_hash_code>
         const_local_iterator;
 
       typedef Internal::hashtable_iterator<value_type, !mutable_iterators,
 					   cache_hash_code>
         iterator;
-      typedef Internal::hashtable_iterator<value_type, false, cache_hash_code>
+      typedef Internal::hashtable_iterator<value_type, true, cache_hash_code>
         const_iterator;
 
     private:
