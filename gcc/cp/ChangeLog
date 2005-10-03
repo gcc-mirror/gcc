@@ -1,3 +1,14 @@
+2005-10-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/22621
+	* parser.c (cp_parser_template_argument): Don't turn "T::f" into
+	"(*this).T::f".
+	* pt.c (convert_nontype_argument): Remove ??? comment.
+
+	PR c++/23840
+	* tree.c (lvalue_p_1): A VA_ARG_EXPR with class type is an lvalue,
+	when class rvalues are lvalues.
+
 2005-09-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/21983

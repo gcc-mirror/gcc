@@ -9022,7 +9022,7 @@ cp_parser_template_argument (cp_parser* parser)
 	     that we get a pointer-to-member, if appropriate.
 	     However, if ADDRESS_P is false, we don't want to turn
 	     "T::f" into "(*this).T::f".  */
-	  if (qualifying_class && !address_p)
+	  if (qualifying_class && address_p)
 	    argument = finish_qualified_id_expr (qualifying_class,
 						 argument,
 						 /*done=*/true,
