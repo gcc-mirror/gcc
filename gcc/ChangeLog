@@ -1,3 +1,25 @@
+2005-10-03  Ian Lance Taylor  <ian@airs.com>
+
+	* gimplify.c (find_single_pointer_decl_1): New static function.
+	(find_single_pointer_decl): New static function.
+	(internal_get_tmp_var): For a formal variable, set restrict base
+	information if appropriate.
+	* alias.c (find_base_decl): If a VAR_DECL has a restrict base,
+	return it.
+	* tree.h (DECL_BASED_ON_RESTRICT_P): Define.
+	(DECL_GET_RESTRICT_BASE): Define.
+	(SET_DECL_RESTRICT_BASE): Define.
+	(decl_restrict_base_lookup): Declare.
+	(decl_restrict_base_insert): Declare.
+	(struct tree_decl_with_vis): Add based_on_restrict_p field.
+	* tree.c (restrict_base_for_decl): New static variable.
+	(init_ttree): Initialize restrict_base_for_decl.
+	(copy_node_stat): Copy restrict base information.
+	(decl_restrict_base_lookup): New function.
+	(decl_restrict_base_insert): New function.
+	(print_restrict_base_statistics): New static function.
+	(dump_tree_statistics): Call print_restrict_base_statistics.
+
 2005-10-02  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 24142
