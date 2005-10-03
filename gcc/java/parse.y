@@ -1034,26 +1034,31 @@ method_header:
 |	type error
 		{
 		  yyerror ("Invalid method declaration, method name required");
+		  $$ = NULL_TREE;
 		  RECOVER;
 		}
 |	modifiers type error
 		{
 		  yyerror ("Identifier expected");
+		  $$ = NULL_TREE;
 		  RECOVER;
 		}
 |	VOID_TK error
 		{
 		  yyerror ("Identifier expected");
+		  $$ = NULL_TREE;
 		  RECOVER;
 		}
 |	modifiers VOID_TK error
 		{
 		  yyerror ("Identifier expected");
+		  $$ = NULL_TREE;
 		  RECOVER;
 		}
 |	modifiers error
 		{
 		  yyerror ("Invalid method declaration, return type required");
+		  $$ = NULL_TREE;
 		  RECOVER;
 		}
 ;
