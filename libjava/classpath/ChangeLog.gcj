@@ -1,3 +1,9 @@
+2005-10-03  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/24057:
+	* include/Makefile.in: Rebuilt.
+	* include/Makefile.am: Don't install headers.
+
 2005-09-30  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/24051:
