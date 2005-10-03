@@ -33,6 +33,8 @@ Boston, MA 02110-1301, USA.  */
 #include "libgfortran.h"'
 include(iparm.m4)dnl
 
+`#if defined (HAVE_'rtype_name`)'
+
 extern void transpose_`'rtype_code (rtype * ret, rtype * source);
 export_proto(transpose_`'rtype_code);
 
@@ -97,3 +99,5 @@ transpose_`'rtype_code (rtype * ret, rtype * source)
         rptr += rxstride - (rystride * xcount);
     }
 }
+
+#endif

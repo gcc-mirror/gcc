@@ -1,3 +1,29 @@
+2005-10-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/19308
+	PR libfortran/22437
+	* Makefile.am: Add generated files for large real and integers
+	kinds. Add a rule to create the kinds.inc c99_protos.inc files.
+	Use kinds.inc to preprocess Fortran generated files.
+	* libgfortran.h: Add macro definitions for GFC_INTEGER_16_HUGE,
+	GFC_REAL_10_HUGE and GFC_REAL_16_HUGE. Add types gfc_array_i16,
+	gfc_array_r10, gfc_array_r16, gfc_array_c10, gfc_array_c16,
+	gfc_array_l16.
+	* mk-kinds-h.sh: Define macros HAVE_GFC_LOGICAL_* and
+	HAVE_GFC_COMPLEX_* when these types are available.
+	* intrinsics/ishftc.c (ishftc16): New function for GFC_INTEGER_16.
+	* m4/all.m4, m4/any.m4, m4/count.m4, m4/cshift1.m4, m4/dotprod.m4,
+	m4/dotprodc.m4, m4/dotprodl.m4, m4/eoshift1.m4, m4/eoshift3.m4,
+	m4/exponent.m4, m4/fraction.m4, m4/in_pack.m4, m4/in_unpack.m4,
+	m4/matmul.m4, m4/matmull.m4, m4/maxloc0.m4, m4/maxloc1.m4,
+	m4/maxval.m4, m4/minloc0.m4, m4/minloc1.m4, m4/minval.m4, m4/mtype.m4,
+	m4/nearest.m4, m4/pow.m4, m4/product.m4, m4/reshape.m4,
+	m4/set_exponent.m4, m4/shape.m4, m4/specific.m4, m4/specific2.m4,
+	m4/sum.m4, m4/transpose.m4: Protect generated functions with
+	appropriate "#if defined (HAVE_GFC_type_kind)" preprocessor directives.
+	* Makefile.in: Regenerate.
+	* all files in generated/: Regenerate.
+
 2005-10-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* runtime/memory.c (malloc_t): Remove.
@@ -65,7 +91,7 @@
 	* config.h.in: Regenerate.
 	* libgfortan.h (isfinite): undef if broken, set if needed.
 	(isnan): undef if broken, set if needed.
-        (fpclassify): undef if broken, set if needed.
+	(fpclassify): undef if broken, set if needed.
 	* io/write.c: Remove TODO comment about working isfinite.
 	* intrinsics/c99_functions.c (round): Use isfinite instead
 	of fpclassify.

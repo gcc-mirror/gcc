@@ -33,6 +33,8 @@ Boston, MA 02110-1301, USA.  */
 #include <assert.h>
 #include "libgfortran.h"
 
+#if defined (HAVE_GFC_INTEGER_8)
+
 /* Allocates a block of memory with internal_malloc if the array needs
    repacking.  */
 
@@ -121,3 +123,4 @@ internal_pack_8 (gfc_array_i8 * source)
   return destptr;
 }
 
+#endif

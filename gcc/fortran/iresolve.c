@@ -1217,7 +1217,8 @@ gfc_resolve_reshape (gfc_expr * f, gfc_expr * source, gfc_expr * shape,
     {
     case 4:
     case 8:
-    /* case 16: */
+    case 10:
+    case 16:
       if (source->ts.type == BT_COMPLEX)
 	f->value.function.name =
 	  gfc_get_string (PREFIX("reshape_%c%d"),
@@ -1538,6 +1539,8 @@ gfc_resolve_transpose (gfc_expr * f, gfc_expr * matrix)
     {
     case 4:
     case 8:
+    case 10:
+    case 16:
       switch (matrix->ts.type)
         {
         case BT_COMPLEX:

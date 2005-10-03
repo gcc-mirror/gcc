@@ -94,13 +94,18 @@ tree gfor_fndecl_associated;
 /* Math functions.  Many other math functions are handled in
    trans-intrinsic.c.  */
 
-gfc_powdecl_list gfor_fndecl_math_powi[3][2];
+gfc_powdecl_list gfor_fndecl_math_powi[4][3];
 tree gfor_fndecl_math_cpowf;
 tree gfor_fndecl_math_cpow;
+tree gfor_fndecl_math_cpowl10;
+tree gfor_fndecl_math_cpowl16;
 tree gfor_fndecl_math_ishftc4;
 tree gfor_fndecl_math_ishftc8;
+tree gfor_fndecl_math_ishftc16;
 tree gfor_fndecl_math_exponent4;
 tree gfor_fndecl_math_exponent8;
+tree gfor_fndecl_math_exponent10;
+tree gfor_fndecl_math_exponent16;
 
 
 /* String functions.  */
@@ -1691,11 +1696,16 @@ gfc_build_intrinsic_function_decls (void)
 {
   tree gfc_int4_type_node = gfc_get_int_type (4);
   tree gfc_int8_type_node = gfc_get_int_type (8);
+  tree gfc_int16_type_node = gfc_get_int_type (16);
   tree gfc_logical4_type_node = gfc_get_logical_type (4);
   tree gfc_real4_type_node = gfc_get_real_type (4);
   tree gfc_real8_type_node = gfc_get_real_type (8);
+  tree gfc_real10_type_node = gfc_get_real_type (10);
+  tree gfc_real16_type_node = gfc_get_real_type (16);
   tree gfc_complex4_type_node = gfc_get_complex_type (4);
   tree gfc_complex8_type_node = gfc_get_complex_type (8);
+  tree gfc_complex10_type_node = gfc_get_complex_type (10);
+  tree gfc_complex16_type_node = gfc_get_complex_type (16);
 
   /* String functions.  */
   gfor_fndecl_copy_string =
@@ -1793,37 +1803,56 @@ gfc_build_intrinsic_function_decls (void)
 
   /* Power functions.  */
   {
-    tree type;
-    tree itype;
-    int kind;
-    int ikind;
-    static int kinds[2] = {4, 8};
-    char name[PREFIX_LEN + 10]; /* _gfortran_pow_?n_?n */
+    tree ctype, rtype, itype, jtype;
+    int rkind, ikind, jkind;
+#define NIKINDS 3
+#define NRKINDS 4
+    static int ikinds[NIKINDS] = {4, 8, 16};
+    static int rkinds[NRKINDS] = {4, 8, 10, 16};
+    char name[PREFIX_LEN + 12]; /* _gfortran_pow_?n_?n */
 
-    for (ikind=0; ikind < 2; ikind++)
+    for (ikind=0; ikind < NIKINDS; ikind++)
       {
-	itype = gfc_get_int_type (kinds[ikind]);
-	for (kind = 0; kind < 2; kind ++)
+	itype = gfc_get_int_type (ikinds[ikind]);
+
+	for (jkind=0; jkind < NIKINDS; jkind++)
 	  {
-	    type = gfc_get_int_type (kinds[kind]);
-	    sprintf(name, PREFIX("pow_i%d_i%d"), kinds[kind], kinds[ikind]);
-	    gfor_fndecl_math_powi[kind][ikind].integer =
-	      gfc_build_library_function_decl (get_identifier (name),
-		  type, 2, type, itype);
+	    jtype = gfc_get_int_type (ikinds[jkind]);
+	    if (itype && jtype)
+	      {
+		sprintf(name, PREFIX("pow_i%d_i%d"), ikinds[ikind],
+			ikinds[jkind]);
+		gfor_fndecl_math_powi[jkind][ikind].integer =
+		  gfc_build_library_function_decl (get_identifier (name),
+		    jtype, 2, jtype, itype);
+	      }
+	  }
 
-	    type = gfc_get_real_type (kinds[kind]);
-	    sprintf(name, PREFIX("pow_r%d_i%d"), kinds[kind], kinds[ikind]);
-	    gfor_fndecl_math_powi[kind][ikind].real =
-	      gfc_build_library_function_decl (get_identifier (name),
-		  type, 2, type, itype);
+	for (rkind = 0; rkind < NRKINDS; rkind ++)
+	  {
+	    rtype = gfc_get_real_type (rkinds[rkind]);
+	    if (rtype && itype)
+	      {
+		sprintf(name, PREFIX("pow_r%d_i%d"), rkinds[rkind],
+			ikinds[ikind]);
+		gfor_fndecl_math_powi[rkind][ikind].real =
+		  gfc_build_library_function_decl (get_identifier (name),
+		    rtype, 2, rtype, itype);
+	      }
 
-	    type = gfc_get_complex_type (kinds[kind]);
-	    sprintf(name, PREFIX("pow_c%d_i%d"), kinds[kind], kinds[ikind]);
-	    gfor_fndecl_math_powi[kind][ikind].cmplx =
-	      gfc_build_library_function_decl (get_identifier (name),
-		  type, 2, type, itype);
+	    ctype = gfc_get_complex_type (rkinds[rkind]);
+	    if (ctype && itype)
+	      {
+		sprintf(name, PREFIX("pow_c%d_i%d"), rkinds[rkind],
+			ikinds[ikind]);
+		gfor_fndecl_math_powi[rkind][ikind].cmplx =
+		  gfc_build_library_function_decl (get_identifier (name),
+		    ctype, 2,ctype, itype);
+	      }
 	  }
       }
+#undef NIKINDS
+#undef NRKINDS
   }
 
   gfor_fndecl_math_cpowf =
@@ -1834,6 +1863,17 @@ gfc_build_intrinsic_function_decls (void)
     gfc_build_library_function_decl (get_identifier ("cpow"),
 				     gfc_complex8_type_node,
 				     1, gfc_complex8_type_node);
+  if (gfc_complex10_type_node)
+    gfor_fndecl_math_cpowl10 =
+      gfc_build_library_function_decl (get_identifier ("cpowl"),
+				       gfc_complex10_type_node, 1,
+				       gfc_complex10_type_node);
+  if (gfc_complex16_type_node)
+    gfor_fndecl_math_cpowl16 =
+      gfc_build_library_function_decl (get_identifier ("cpowl"),
+				       gfc_complex16_type_node, 1,
+				       gfc_complex16_type_node);
+
   gfor_fndecl_math_ishftc4 =
     gfc_build_library_function_decl (get_identifier (PREFIX("ishftc4")),
 				     gfc_int4_type_node,
@@ -1843,7 +1883,15 @@ gfc_build_intrinsic_function_decls (void)
     gfc_build_library_function_decl (get_identifier (PREFIX("ishftc8")),
 				     gfc_int8_type_node,
 				     3, gfc_int8_type_node,
-				     gfc_int8_type_node, gfc_int8_type_node);
+				     gfc_int4_type_node, gfc_int4_type_node);
+  if (gfc_int16_type_node)
+    gfor_fndecl_math_ishftc16 =
+      gfc_build_library_function_decl (get_identifier (PREFIX("ishftc16")),
+				       gfc_int16_type_node, 3,
+				       gfc_int16_type_node,
+				       gfc_int4_type_node,
+				       gfc_int4_type_node);
+
   gfor_fndecl_math_exponent4 =
     gfc_build_library_function_decl (get_identifier (PREFIX("exponent_r4")),
 				     gfc_int4_type_node,
@@ -1852,6 +1900,16 @@ gfc_build_intrinsic_function_decls (void)
     gfc_build_library_function_decl (get_identifier (PREFIX("exponent_r8")),
 				     gfc_int4_type_node,
 				     1, gfc_real8_type_node);
+  if (gfc_real10_type_node)
+    gfor_fndecl_math_exponent10 =
+      gfc_build_library_function_decl (get_identifier (PREFIX("exponent_r10")),
+				       gfc_int4_type_node, 1,
+				       gfc_real10_type_node);
+  if (gfc_real16_type_node)
+    gfor_fndecl_math_exponent16 =
+      gfc_build_library_function_decl (get_identifier (PREFIX("exponent_r16")),
+				       gfc_int4_type_node, 1,
+				       gfc_real16_type_node);
 
   /* Other functions.  */
   gfor_fndecl_size0 =

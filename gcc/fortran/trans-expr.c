@@ -691,6 +691,10 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
 	  ikind = 1;
 	  break;
 
+	case 16:
+	  ikind = 2;
+	  break;
+
 	default:
 	  gcc_unreachable ();
 	}
@@ -712,6 +716,14 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
 	  kind = 1;
 	  break;
 
+	case 10:
+	  kind = 2;
+	  break;
+
+	case 16:
+	  kind = 3;
+	  break;
+
 	default:
 	  gcc_unreachable ();
 	}
@@ -719,6 +731,8 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
       switch (expr->value.op.op1->ts.type)
 	{
 	case BT_INTEGER:
+	  if (kind == 3) /* Case 16 was not handled properly above.  */
+	    kind = 2;
 	  fndecl = gfor_fndecl_math_powi[kind][ikind].integer;
 	  break;
 
@@ -744,6 +758,10 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
 	case 8:
 	  fndecl = built_in_decls[BUILT_IN_POW];
 	  break;
+	case 10:
+	case 16:
+	  fndecl = built_in_decls[BUILT_IN_POWL];
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -757,6 +775,12 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
 	  break;
 	case 8:
 	  fndecl = gfor_fndecl_math_cpow;
+	  break;
+	case 10:
+	  fndecl = gfor_fndecl_math_cpowl10;
+	  break;
+	case 16:
+	  fndecl = gfor_fndecl_math_cpowl16;
 	  break;
 	default:
 	  gcc_unreachable ();

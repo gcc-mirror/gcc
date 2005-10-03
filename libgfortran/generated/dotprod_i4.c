@@ -33,6 +33,8 @@ Boston, MA 02110-1301, USA.  */
 #include <assert.h>
 #include "libgfortran.h"
 
+#if defined (HAVE_GFC_INTEGER_4)
+
 typedef GFC_ARRAY_DESCRIPTOR(GFC_MAX_DIMENSIONS, char) char_array;
 
 extern GFC_INTEGER_4 dot_product_i4 (gfc_array_i4 * a, gfc_array_i4 * b);
@@ -73,3 +75,5 @@ dot_product_i4 (gfc_array_i4 * a, gfc_array_i4 * b)
 
   return res;
 }
+
+#endif

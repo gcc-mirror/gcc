@@ -33,6 +33,8 @@ Boston, MA 02110-1301, USA.  */
 #include <assert.h>
 #include "libgfortran.h"
 
+#if defined (HAVE_GFC_INTEGER_8)
+
 extern void shape_8 (gfc_array_i8 * ret, const gfc_array_i8 * array);
 export_proto(shape_8);
 
@@ -52,3 +54,5 @@ shape_8 (gfc_array_i8 * ret, const gfc_array_i8 * array)
         array->dim[n].ubound + 1 - array->dim[n].lbound;
     }
 }
+
+#endif

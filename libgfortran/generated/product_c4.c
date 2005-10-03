@@ -34,6 +34,9 @@ Boston, MA 02110-1301, USA.  */
 #include "libgfortran.h"
 
 
+#if defined (HAVE_GFC_COMPLEX_4) && defined (HAVE_GFC_COMPLEX_4)
+
+
 extern void product_c4 (gfc_array_c4 *, gfc_array_c4 *, index_type *);
 export_proto(product_c4);
 
@@ -328,3 +331,4 @@ mproduct_c4 (gfc_array_c4 * retarray, gfc_array_c4 * array,
     }
 }
 
+#endif

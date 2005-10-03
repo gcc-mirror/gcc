@@ -34,6 +34,8 @@ Boston, MA 02110-1301, USA.  */
 #include <string.h>
 #include "libgfortran.h"
 
+#if defined (HAVE_GFC_INTEGER_4)
+
 void
 internal_unpack_4 (gfc_array_i4 * d, const GFC_INTEGER_4 * src)
 {
@@ -109,3 +111,4 @@ internal_unpack_4 (gfc_array_i4 * d, const GFC_INTEGER_4 * src)
     }
 }
 
+#endif

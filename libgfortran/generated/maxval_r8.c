@@ -35,6 +35,9 @@ Boston, MA 02110-1301, USA.  */
 #include "libgfortran.h"
 
 
+#if defined (HAVE_GFC_REAL_8) && defined (HAVE_GFC_REAL_8)
+
+
 extern void maxval_r8 (gfc_array_r8 *, gfc_array_r8 *, index_type *);
 export_proto(maxval_r8);
 
@@ -330,3 +333,4 @@ mmaxval_r8 (gfc_array_r8 * retarray, gfc_array_r8 * array,
     }
 }
 
+#endif

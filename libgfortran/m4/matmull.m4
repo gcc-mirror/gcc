@@ -34,6 +34,8 @@ Boston, MA 02110-1301, USA.  */
 #include "libgfortran.h"'
 include(iparm.m4)dnl
 
+`#if defined (HAVE_'rtype_name`)'
+
 /* Dimensions: retarray(x,y) a(x, count) b(count,y).
    Either a or b can be rank 1.  In this case x or y is 1.  */
 
@@ -192,3 +194,5 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
       dest += rystride - (rxstride * xcount);
     }
 }
+
+#endif

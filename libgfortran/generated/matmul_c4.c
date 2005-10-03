@@ -34,6 +34,8 @@ Boston, MA 02110-1301, USA.  */
 #include <assert.h>
 #include "libgfortran.h"
 
+#if defined (HAVE_GFC_COMPLEX_4)
+
 /* This is a C version of the following fortran pseudo-code. The key
    point is the loop order -- we access all arrays column-first, which
    improves the performance enough to boost galgel spec score by 50%.
@@ -215,3 +217,5 @@ matmul_c4 (gfc_array_c4 * retarray, gfc_array_c4 * a, gfc_array_c4 * b)
 	    dest[x*rxstride + y*rystride] += abase[x*axstride + n*aystride] * bbase[n*bxstride + y*bystride];
     }
 }
+
+#endif

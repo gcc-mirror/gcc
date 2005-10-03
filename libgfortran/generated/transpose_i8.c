@@ -32,6 +32,8 @@ Boston, MA 02110-1301, USA.  */
 #include <assert.h>
 #include "libgfortran.h"
 
+#if defined (HAVE_GFC_INTEGER_8)
+
 extern void transpose_i8 (gfc_array_i8 * ret, gfc_array_i8 * source);
 export_proto(transpose_i8);
 
@@ -96,3 +98,5 @@ transpose_i8 (gfc_array_i8 * ret, gfc_array_i8 * source)
         rptr += rxstride - (rystride * xcount);
     }
 }
+
+#endif

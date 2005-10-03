@@ -36,6 +36,8 @@ Boston, MA 02110-1301, USA.  */
    Powers" of Donald E. Knuth, "Seminumerical Algorithms", Vol. 2, "The Art
    of Computer Programming", 3rd Edition, 1998.  */
 
+#if defined (HAVE_GFC_COMPLEX_4) && defined (HAVE_GFC_INTEGER_4)
+
 GFC_COMPLEX_4 pow_c4_i4 (GFC_COMPLEX_4 a, GFC_INTEGER_4 b);
 export_proto(pow_c4_i4);
 
@@ -70,3 +72,5 @@ pow_c4_i4 (GFC_COMPLEX_4 a, GFC_INTEGER_4 b)
     }
   return pow;
 }
+
+#endif

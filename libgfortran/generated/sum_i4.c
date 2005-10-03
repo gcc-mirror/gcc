@@ -34,6 +34,9 @@ Boston, MA 02110-1301, USA.  */
 #include "libgfortran.h"
 
 
+#if defined (HAVE_GFC_INTEGER_4) && defined (HAVE_GFC_INTEGER_4)
+
+
 extern void sum_i4 (gfc_array_i4 *, gfc_array_i4 *, index_type *);
 export_proto(sum_i4);
 
@@ -327,3 +330,5 @@ msum_i4 (gfc_array_i4 * retarray, gfc_array_i4 * array,
         }
     }
 }
+
+#endif

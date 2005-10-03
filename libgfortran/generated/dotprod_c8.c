@@ -34,6 +34,8 @@ Boston, MA 02110-1301, USA.  */
 #include <assert.h>
 #include "libgfortran.h"
 
+#if defined (HAVE_GFC_COMPLEX_8)
+
 typedef GFC_ARRAY_DESCRIPTOR(GFC_MAX_DIMENSIONS, char) char_array;
 
 extern GFC_COMPLEX_8 dot_product_c8 (gfc_array_c8 * a, gfc_array_c8 * b);
@@ -76,3 +78,5 @@ dot_product_c8 (gfc_array_c8 * a, gfc_array_c8 * b)
 
   return res;
 }
+
+#endif

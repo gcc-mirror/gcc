@@ -52,14 +52,18 @@ typedef struct gfc_intrinsic_map_t	GTY(())
 
   /* Enum value from the "language-independent", aka C-centric, part
      of gcc, or END_BUILTINS of no such value set.  */
-  /* ??? There are now complex variants in builtins.def, though we
-     don't currently do anything with them.  */
-  enum built_in_function code4;
-  enum built_in_function code8;
+  enum built_in_function code_r4;
+  enum built_in_function code_r8;
+  enum built_in_function code_r10;
+  enum built_in_function code_r16;
+  enum built_in_function code_c4;
+  enum built_in_function code_c8;
+  enum built_in_function code_c10;
+  enum built_in_function code_c16;
 
   /* True if the naming pattern is to prepend "c" for complex and
      append "f" for kind=4.  False if the naming pattern is to
-     prepend "_gfortran_" and append "[rc][48]".  */
+     prepend "_gfortran_" and append "[rc](4|8|10|16)".  */
   bool libm_name;
 
   /* True if a complex version of the function exists.  */
@@ -74,32 +78,42 @@ typedef struct gfc_intrinsic_map_t	GTY(())
   /* Cache decls created for the various operand types.  */
   tree real4_decl;
   tree real8_decl;
+  tree real10_decl;
+  tree real16_decl;
   tree complex4_decl;
   tree complex8_decl;
+  tree complex10_decl;
+  tree complex16_decl;
 }
 gfc_intrinsic_map_t;
 
 /* ??? The NARGS==1 hack here is based on the fact that (c99 at least)
    defines complex variants of all of the entries in mathbuiltins.def
    except for atan2.  */
-#define BUILT_IN_FUNCTION(ID, NAME, HAVE_COMPLEX) \
-  { GFC_ISYM_ ## ID, BUILT_IN_ ## ID ## F, BUILT_IN_ ## ID, true, \
-    HAVE_COMPLEX, true, NAME, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE},
+#define DEFINE_MATH_BUILTIN(ID, NAME, ARGTYPE) \
+  { GFC_ISYM_ ## ID, BUILT_IN_ ## ID ## F, BUILT_IN_ ## ID, \
+    BUILT_IN_ ## ID ## L, BUILT_IN_ ## ID ## L, 0, 0, 0, 0, true, \
+    false, true, NAME, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, \
+    NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE},
 
-#define DEFINE_MATH_BUILTIN(id, name, argtype) \
-  BUILT_IN_FUNCTION (id, name, false)
-
-/* TODO: Use builtin function for complex intrinsics.  */
-#define DEFINE_MATH_BUILTIN_C(id, name, argtype) \
-  BUILT_IN_FUNCTION (id, name, true)
+#define DEFINE_MATH_BUILTIN_C(ID, NAME, ARGTYPE) \
+  { GFC_ISYM_ ## ID, BUILT_IN_ ## ID ## F, BUILT_IN_ ## ID, \
+    BUILT_IN_ ## ID ## L, BUILT_IN_ ## ID ## L, BUILT_IN_C ## ID ## F, \
+    BUILT_IN_C ## ID, BUILT_IN_C ## ID ## L, BUILT_IN_C ## ID ## L, true, \
+    true, true, NAME, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, \
+    NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE},
 
 #define LIBM_FUNCTION(ID, NAME, HAVE_COMPLEX) \
-  { GFC_ISYM_ ## ID, END_BUILTINS, END_BUILTINS, true, HAVE_COMPLEX, true, \
-    NAME, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE }
+  { GFC_ISYM_ ## ID, END_BUILTINS, END_BUILTINS, END_BUILTINS, END_BUILTINS, \
+    END_BUILTINS, END_BUILTINS, END_BUILTINS, END_BUILTINS, \
+    true, HAVE_COMPLEX, true, NAME, NULL_TREE, NULL_TREE, NULL_TREE, \
+    NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE }
 
 #define LIBF_FUNCTION(ID, NAME, HAVE_COMPLEX) \
-  { GFC_ISYM_ ## ID, END_BUILTINS, END_BUILTINS, false, HAVE_COMPLEX, true, \
-    NAME, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE }
+  { GFC_ISYM_ ## ID, END_BUILTINS, END_BUILTINS, END_BUILTINS, END_BUILTINS, \
+    END_BUILTINS, END_BUILTINS, END_BUILTINS, END_BUILTINS, \
+    false, HAVE_COMPLEX, true, NAME, NULL_TREE, NULL_TREE, NULL_TREE, \
+    NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE }
 
 static GTY(()) gfc_intrinsic_map_t gfc_intrinsic_map[] =
 {
@@ -122,7 +136,6 @@ static GTY(()) gfc_intrinsic_map_t gfc_intrinsic_map[] =
 };
 #undef DEFINE_MATH_BUILTIN
 #undef DEFINE_MATH_BUILTIN_C
-#undef BUILT_IN_FUNCTION
 #undef LIBM_FUNCTION
 #undef LIBF_FUNCTION
 
@@ -336,6 +349,11 @@ gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, enum tree_code op)
 	case 8:
 	  n = BUILT_IN_ROUND;
 	  break;
+
+	case 10:
+	case 16:
+	  n = BUILT_IN_ROUNDL;
+	  break;
 	}
       break;
 
@@ -348,6 +366,11 @@ gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
 	case 8:
 	  n = BUILT_IN_TRUNC;
+	  break;
+
+	case 10:
+	case 16:
+	  n = BUILT_IN_TRUNCL;
 	  break;
 	}
       break;
@@ -469,10 +492,22 @@ gfc_build_intrinsic_lib_fndecls (void)
   /* Add GCC builtin functions.  */
   for (m = gfc_intrinsic_map; m->id != GFC_ISYM_NONE; m++)
     {
-      if (m->code4 != END_BUILTINS)
-        m->real4_decl = built_in_decls[m->code4];
-      if (m->code8 != END_BUILTINS)
-	m->real8_decl = built_in_decls[m->code8];
+      if (m->code_r4 != END_BUILTINS)
+	m->real4_decl = built_in_decls[m->code_r4];
+      if (m->code_r8 != END_BUILTINS)
+	m->real8_decl = built_in_decls[m->code_r8];
+      if (m->code_r10 != END_BUILTINS)
+	m->real10_decl = built_in_decls[m->code_r10];
+      if (m->code_r16 != END_BUILTINS)
+	m->real16_decl = built_in_decls[m->code_r16];
+      if (m->code_c4 != END_BUILTINS)
+	m->complex4_decl = built_in_decls[m->code_c4];
+      if (m->code_c8 != END_BUILTINS)
+	m->complex8_decl = built_in_decls[m->code_c8];
+      if (m->code_c10 != END_BUILTINS)
+	m->complex10_decl = built_in_decls[m->code_c10];
+      if (m->code_c16 != END_BUILTINS)
+	m->complex16_decl = built_in_decls[m->code_c16];
     }
 }
 
@@ -501,6 +536,12 @@ gfc_get_intrinsic_lib_fndecl (gfc_intrinsic_map_t * m, gfc_expr * expr)
 	case 8:
 	  pdecl = &m->real8_decl;
 	  break;
+	case 10:
+	  pdecl = &m->real10_decl;
+	  break;
+	case 16:
+	  pdecl = &m->real16_decl;
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -517,6 +558,12 @@ gfc_get_intrinsic_lib_fndecl (gfc_intrinsic_map_t * m, gfc_expr * expr)
 	case 8:
 	  pdecl = &m->complex8_decl;
 	  break;
+	case 10:
+	  pdecl = &m->complex10_decl;
+	  break;
+	case 16:
+	  pdecl = &m->complex16_decl;
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -529,7 +576,8 @@ gfc_get_intrinsic_lib_fndecl (gfc_intrinsic_map_t * m, gfc_expr * expr)
 
   if (m->libm_name)
     {
-      gcc_assert (ts->kind == 4 || ts->kind == 8);
+      gcc_assert (ts->kind == 4 || ts->kind == 8 || ts->kind == 10
+                 || ts->kind == 16);
       snprintf (name, sizeof (name), "%s%s%s",
 		ts->type == BT_COMPLEX ? "c" : "",
 		m->name,
@@ -614,6 +662,12 @@ gfc_conv_intrinsic_exponent (gfc_se * se, gfc_expr * expr)
       break;
     case 8:
       fndecl = gfor_fndecl_math_exponent8;
+      break;
+    case 10:
+      fndecl = gfor_fndecl_math_exponent10;
+      break;
+    case 16:
+      fndecl = gfor_fndecl_math_exponent16;
       break;
     default:
       gcc_unreachable ();
@@ -733,6 +787,10 @@ gfc_conv_intrinsic_abs (gfc_se * se, gfc_expr * expr)
 	  break;
 	case 8:
 	  n = BUILT_IN_CABS;
+	  break;
+	case 10:
+	case 16:
+	  n = BUILT_IN_CABSL;
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -895,6 +953,10 @@ gfc_conv_intrinsic_sign (gfc_se * se, gfc_expr * expr)
 	  break;
 	case 8:
 	  tmp = built_in_decls[BUILT_IN_COPYSIGN];
+	  break;
+	case 10:
+	case 16:
+	  tmp = built_in_decls[BUILT_IN_COPYSIGNL];
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -1860,6 +1922,9 @@ gfc_conv_intrinsic_ishftc (gfc_se * se, gfc_expr * expr)
 	  break;
 	case 8:
 	  tmp = gfor_fndecl_math_ishftc8;
+	  break;
+	case 16:
+	  tmp = gfor_fndecl_math_ishftc16;
 	  break;
 	default:
 	  gcc_unreachable ();

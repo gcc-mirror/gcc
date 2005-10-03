@@ -33,6 +33,8 @@ Boston, MA 02110-1301, USA.  */
 #include <assert.h>
 #include "libgfortran.h"
 
+#if defined (HAVE_GFC_INTEGER_4)
+
 typedef GFC_ARRAY_DESCRIPTOR(1, index_type) shape_type;
 
 /* The shape parameter is ignored. We can currently deduce the shape from the
@@ -256,3 +258,5 @@ reshape_4 (gfc_array_i4 * ret, gfc_array_i4 * source, shape_type * shape,
         }
     }
 }
+
+#endif

@@ -38,6 +38,8 @@ Boston, MA 02110-1301, USA.  */
 include(iparm.m4)dnl
 include(iforeach.m4)dnl
 
+`#if defined (HAVE_'atype_name`) && defined (HAVE_'rtype_name`)'
+
 FOREACH_FUNCTION(
 `  atype_name maxval;
 
@@ -61,3 +63,5 @@ MASKED_FOREACH_FUNCTION(
       for (n = 0; n < rank; n++)
         dest[n * dstride] = count[n] + 1;
     }')
+
+#endif

@@ -37,6 +37,8 @@ include(iparm.m4)dnl
    Powers" of Donald E. Knuth, "Seminumerical Algorithms", Vol. 2, "The Art
    of Computer Programming", 3rd Edition, 1998.  */
 
+`#if defined (HAVE_'rtype_name`) && defined (HAVE_'atype_name`)'
+
 rtype_name `pow_'rtype_code`_'atype_code (rtype_name a, atype_name b);
 export_proto(pow_`'rtype_code`_'atype_code);
 
@@ -78,3 +80,5 @@ ifelse(rtype_letter,i,`dnl
     }
   return pow;
 }
+
+#endif

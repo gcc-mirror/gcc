@@ -27,9 +27,13 @@ You should have received a copy of the GNU General Public
 License along with libgfortran; see the file COPYING.  If not,
 write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
+
+#include "config.h"
 #include <math.h>
 #include "libgfortran.h"
 
+
+#if defined (HAVE_GFC_REAL_8) && defined (HAVE_FREXP)
 
 extern GFC_INTEGER_4 exponent_r8 (GFC_REAL_8 s);
 export_proto(exponent_r8);
@@ -41,3 +45,5 @@ exponent_r8 (GFC_REAL_8 s)
   frexp (s, &ret);
   return ret;
 }
+
+#endif

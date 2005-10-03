@@ -27,9 +27,13 @@ You should have received a copy of the GNU General Public
 License along with libgfortran; see the file COPYING.  If not,
 write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
+
+#include "config.h"
 #include <math.h>
 #include "libgfortran.h"
 
+
+#if defined (HAVE_GFC_REAL_4) && defined (HAVE_FREXPF)
 
 extern GFC_REAL_4 fraction_r4 (GFC_REAL_4 s);
 export_proto(fraction_r4);
@@ -40,3 +44,5 @@ fraction_r4 (GFC_REAL_4 s)
   int dummy_exp;
   return frexpf (s, &dummy_exp);
 }
+
+#endif

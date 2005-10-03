@@ -33,6 +33,8 @@ Boston, MA 02110-1301, USA.  */
 #include <assert.h>
 #include "libgfortran.h"
 
+#if defined (HAVE_GFC_LOGICAL_8)
+
 extern GFC_LOGICAL_8 dot_product_l8 (gfc_array_l4 *, gfc_array_l4 *);
 export_proto(dot_product_l8);
 
@@ -83,3 +85,5 @@ dot_product_l8 (gfc_array_l4 * a, gfc_array_l4 * b)
 
   return 0;
 }
+
+#endif
