@@ -888,14 +888,22 @@ proc check_effective_target_arm32 { } {
 # Return 1 if the target supports hardware vector shift operation.
 
 proc check_effective_target_vect_shift { } {
-    if { [istarget powerpc*-*-*] } {
-	set answer 1
+    global et_vect_shift_saved
+
+    if [info exists et_vect_shift_saved] {
+	verbose "check_effective_target_vect_shift: using cached result" 2
     } else {
-	set answer 0
+	set et_vect_shift_saved 0
+	if { [istarget powerpc*-*-*]
+	     || [istarget ia64-*-*]
+	     || [istarget i?86-*-*]
+	     || [istarget x86_64-*-*] } {
+	   set et_vect_shift_saved 1
+	}
     }
 
-    verbose "check_effective_target_vect_shift: returning $answer" 2
-    return $answer
+    verbose "check_effective_target_vect_shift: returning $et_vect_shift_saved" 2
+    return $et_vect_shift_saved
 }
 
 # Return 1 if the target supports hardware vectors of long, 0 otherwise.
@@ -1047,7 +1055,7 @@ proc check_effective_target_vect_no_align { } {
 proc check_effective_target_vect_condition { } {
     global et_vect_cond_saved
 
-    if [info exists et_vect_int_cond] {
+    if [info exists et_vect_cond_saved] {
 	verbose "check_effective_target_vect_cond: using cached result" 2
     } else {
 	set et_vect_cond_saved 0

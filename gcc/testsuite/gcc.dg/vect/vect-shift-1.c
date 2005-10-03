@@ -3,9 +3,6 @@
 #include <stdarg.h>
 #include <signal.h>
 
-#define N 16
-#define MAX 42
-
 extern void abort(void); 
 
 int main ()
@@ -23,7 +20,5 @@ int main ()
   return 0;
 }
 
-
-
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail i?86-*-* x86_64-*-* } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
