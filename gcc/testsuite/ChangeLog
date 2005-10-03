@@ -1,3 +1,8 @@
+2005-10-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17775
+	* g++.dg/template/repo4.C: New test.
+
 2005-10-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/19308
