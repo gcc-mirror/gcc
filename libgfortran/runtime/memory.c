@@ -182,7 +182,7 @@ allocate_size (void **mem, size_t size, GFC_INTEGER_4 * stat)
   if (!mem)
     runtime_error ("Internal: NULL mem pointer in ALLOCATE.");
 
-  newmem = malloc (size);
+  newmem = malloc (size ? size : 1);
   if (!newmem)
     {
       if (stat)
