@@ -1,3 +1,13 @@
+2005-10-03  Uros Bizjak  <uros@kss-loka.si>
+
+	* lib/target-supports.exp (check_effective_target_vect_shift):
+	Implement with result caching. Add i?86, x86_64 and ia64 targets.
+	(check_effective_target_vect_condition): Fix copy-n-pasto.
+
+	* gcc.dg/vect/pr22480.c : Enable for effective-target vect_shift.
+	* gcc.dg/vect/vect-shift-1.c: Remove XFAIL for i?86 and x86_64
+	targets.
+
 2005-10-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22621

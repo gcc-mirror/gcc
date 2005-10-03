@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target vect_int } */
+/* { dg-require-effective-target vect_shift } */
 
 void
 test_1 (void)
