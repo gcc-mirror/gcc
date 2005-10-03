@@ -395,9 +395,14 @@ find_base_decl (tree t)
   if (t == 0 || t == error_mark_node || ! POINTER_TYPE_P (TREE_TYPE (t)))
     return 0;
 
-  /* If this is a declaration, return it.  */
+  /* If this is a declaration, return it.  If T is based on a restrict
+     qualified decl, return that decl.  */
   if (DECL_P (t))
-    return t;
+    {
+      if (TREE_CODE (t) == VAR_DECL && DECL_BASED_ON_RESTRICT_P (t))
+	t = DECL_GET_RESTRICT_BASE (t);
+      return t;
+    }
 
   /* Handle general expressions.  It would be nice to deal with
      COMPONENT_REFs here.  If we could tell that `a' and `b' were the

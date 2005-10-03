@@ -2425,6 +2425,20 @@ struct tree_parm_decl GTY(())
    an address constant.  */
 #define DECL_NON_ADDR_CONST_P(NODE) (DECL_WITH_VIS_CHECK (NODE)->decl_with_vis.non_addr_const_p)
 
+/* DECL_BASED_ON_RESTRICT_P records whether a VAR_DECL is a temporary
+   based on a variable with a restrict qualified type.  If it is,
+   DECL_RESTRICT_BASE returns the restrict qualified variable on which
+   it is based.  */
+
+#define DECL_BASED_ON_RESTRICT_P(NODE) \
+  (VAR_DECL_CHECK (NODE)->decl_with_vis.based_on_restrict_p)
+#define DECL_GET_RESTRICT_BASE(NODE) \
+  (decl_restrict_base_lookup (VAR_DECL_CHECK (NODE)))
+#define SET_DECL_RESTRICT_BASE(NODE, VAL) \
+  (decl_restrict_base_insert (VAR_DECL_CHECK (NODE), (VAL)))
+
+extern tree decl_restrict_base_lookup (tree);
+extern void decl_restrict_base_insert (tree, tree);
 
 /* Used in a DECL to indicate that, even if it TREE_PUBLIC, it need
    not be put out unless it is needed in this translation unit.
@@ -2500,7 +2514,8 @@ struct tree_decl_with_vis GTY(())
  unsigned common_flag:1; 
  unsigned in_text_section : 1;
  unsigned gimple_formal_temp : 1;
- unsigned non_addr_const_p : 1; 
+ unsigned non_addr_const_p : 1;
+ unsigned based_on_restrict_p : 1;
  /* Used by C++.  Might become a generic decl flag.  */
  unsigned shadowed_for_var_p : 1;
  
@@ -2517,7 +2532,7 @@ struct tree_decl_with_vis GTY(())
 
  /* Belongs to VAR_DECL exclusively.  */
  ENUM_BITFIELD(tls_model) tls_model : 3;
- /* 13 unused bits. */
+ /* 11 unused bits. */
 };
 
 /* In a VAR_DECL that's static,
