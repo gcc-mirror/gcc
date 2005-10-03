@@ -6,7 +6,7 @@
 	* pt.c (convert_nontype_argument): Remove ??? comment.
 
 	PR c++/23840
-	* tree.c (lvalue_p1): A VA_ARG_EXPR with class type is an lvalue,
+	* tree.c (lvalue_p_1): A VA_ARG_EXPR with class type is an lvalue,
 	when class rvalues are lvalues.
 
 2005-09-28  Mark Mitchell  <mark@codesourcery.com>
