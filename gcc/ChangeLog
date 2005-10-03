@@ -1,3 +1,8 @@
+2005-10-03  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_register_move_cost): Add case for moving
+	from T_REGS to FP register class.
+
 2005-10-03  Richard Henderson  <rth@redhat.com>
 
 	PR 24135
