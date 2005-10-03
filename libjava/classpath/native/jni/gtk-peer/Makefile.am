@@ -1,4 +1,5 @@
-pkglib_LTLIBRARIES = libgtkpeer.la
+## GCJ LOCAL: don't install this library
+noinst_LTLIBRARIES = libgtkpeer.la
 
 # Gtk/Cairo JNI sources.
 if GTK_CAIRO
