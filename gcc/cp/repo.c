@@ -36,6 +36,7 @@ Boston, MA 02110-1301, USA.  */
 #include "obstack.h"
 #include "toplev.h"
 #include "diagnostic.h"
+#include "flags.h"
 
 static char *extract_string (char **);
 static const char *get_base_filename (const char *);
@@ -239,7 +240,16 @@ finish_repo (void)
   fprintf (repo_file, "D %s\n", dir);
   args = getenv ("COLLECT_GCC_OPTIONS");
   if (args)
-    fprintf (repo_file, "A %s\n", args);
+    {
+      fprintf (repo_file, "A %s", args);
+      /* If -frandom-seed is not among the ARGS, then add the value
+	 that we chose.  That will ensure that the names of types from
+	 anonymous namespaces will get the same mangling when this
+	 file is recompiled.  */
+      if (!strstr (args, "'-frandom-seed="))
+	fprintf (repo_file, " '-frandom-seed=%s'", flag_random_seed);
+      fprintf (repo_file, "\n");
+    }
 
   for (t = pending_repo; t; t = TREE_CHAIN (t))
     {

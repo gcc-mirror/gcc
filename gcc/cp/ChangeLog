@@ -1,3 +1,9 @@
+2005-10-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17775
+	* repo.c: Include flags.h.
+	(finish_repo): Add -frandom-seed to the arguments.
+
 2005-10-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22621
