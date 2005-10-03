@@ -9491,6 +9491,9 @@ sh_register_move_cost (enum machine_mode mode,
       && REGCLASS_HAS_FP_REG (dstclass))
     return 4;
 
+  if (REGCLASS_HAS_FP_REG (dstclass) && srcclass == T_REGS)
+    return ((TARGET_HARD_SH4 && !optimize_size) ? 10 : 7);
+
   if ((REGCLASS_HAS_FP_REG (dstclass) && srcclass == MAC_REGS)
       || (dstclass == MAC_REGS && REGCLASS_HAS_FP_REG (srcclass)))
     return 9;
