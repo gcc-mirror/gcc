@@ -152,6 +152,14 @@ gfc_init_kinds (void)
       if (!targetm.scalar_mode_supported_p (mode))
 	continue;
 
+      /* Only let float/double/long double go through because the fortran
+	 library assumes these are the only floating point types.  */
+
+      if (mode != TYPE_MODE (float_type_node)
+	  && (mode != TYPE_MODE (double_type_node))
+          && (mode != TYPE_MODE (long_double_type_node)))
+	continue;
+
       /* Let the kind equal the precision divided by 8, rounding up.  Again,
 	 this insulates the programmer from the underlying byte size.
 

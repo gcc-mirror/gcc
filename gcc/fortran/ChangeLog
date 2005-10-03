@@ -1,3 +1,8 @@
+2005-10-03  Steve Ellcey  <sje@cup.hp.com>
+
+	* fortran/trans-types.c (gfc_init_kinds): Only pass float, double,
+	and long double floating point types through to Fortran compiler.
+
 2005-10-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR fortran/20120
