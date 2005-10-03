@@ -1,3 +1,8 @@
+2005-10-03  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/t-aix43 (LDFLAGS): New.
+	* config/rs6000/t-aix52 (LDFLAGS): New.
+
 2005-10-03  Ian Lance Taylor  <ian@airs.com>
 
 	* gimplify.c (find_single_pointer_decl_1): New static function.

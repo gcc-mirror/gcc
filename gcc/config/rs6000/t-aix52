@@ -59,3 +59,4 @@ AR_FLAGS_FOR_TARGET = -X32_64
 # compiler with -mminimal-toc does not cause any harm.
 T_ADAFLAGS = -mminimal-toc
 BOOT_LDFLAGS = -Wl,-bbigtoc
+LDFLAGS = `case $(CC) in *gcc*) echo -Wl,-bbigtoc ;; esac;`
