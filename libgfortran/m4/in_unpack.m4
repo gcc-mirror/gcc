@@ -35,6 +35,8 @@ Boston, MA 02110-1301, USA.  */
 #include "libgfortran.h"'
 include(iparm.m4)dnl
 
+`#if defined (HAVE_'rtype_name`)'
+
 dnl Only the kind (ie size) is used to name the function for integers,
 dnl reals and logicals.  For complex, it's c4 and c8.
 void
@@ -112,3 +114,4 @@ void
     }
 }
 
+#endif

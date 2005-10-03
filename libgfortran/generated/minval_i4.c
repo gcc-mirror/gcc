@@ -35,6 +35,9 @@ Boston, MA 02110-1301, USA.  */
 #include "libgfortran.h"
 
 
+#if defined (HAVE_GFC_INTEGER_4) && defined (HAVE_GFC_INTEGER_4)
+
+
 extern void minval_i4 (gfc_array_i4 *, gfc_array_i4 *, index_type *);
 export_proto(minval_i4);
 
@@ -330,3 +333,4 @@ mminval_i4 (gfc_array_i4 * retarray, gfc_array_i4 * array,
     }
 }
 
+#endif

@@ -34,6 +34,8 @@ Boston, MA 02110-1301, USA.  */
 #include "libgfortran.h"'
 include(iparm.m4)dnl
 
+`#if defined (HAVE_'rtype_name`)'
+
 typedef GFC_ARRAY_DESCRIPTOR(1, index_type) shape_type;
 
 /* The shape parameter is ignored. We can currently deduce the shape from the
@@ -258,3 +260,5 @@ reshape_`'rtype_ccode (rtype * ret, rtype * source, shape_type * shape,
         }
     }
 }
+
+#endif

@@ -1,3 +1,40 @@
+2005-10-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR fortran/20120
+	* f95-lang.c (DO_DEFINE_MATH_BUILTIN): Add support for long
+	double builtin function.
+	(gfc_init_builtin_functions): Add mfunc_longdouble,
+	mfunc_clongdouble and func_clongdouble_longdouble trees. Build
+	them for round, trunc, cabs, copysign and pow functions.
+	* iresolve.c (gfc_resolve_reshape, gfc_resolve_transpose): Add
+	case for kind 10 and 16.
+	* trans-decl.c: Add trees for cpowl10, cpowl16, ishftc16,
+	exponent10 and exponent16.
+	(gfc_build_intrinsic_function_decls): Build nodes for int16,
+	real10, real16, complex10 and complex16 types. Build all possible
+	combinations for function _gfortran_pow_?n_?n. Build function
+	calls cpowl10, cpowl16, ishftc16, exponent10 and exponent16.
+	* trans-expr.c (gfc_conv_power_op): Add case for integer(16),
+	real(10) and real(16).
+	* trans-intrinsic.c: Add suppport for long double builtin
+	functions in BUILT_IN_FUNCTION, LIBM_FUNCTION and LIBF_FUNCTION
+	macros.
+	(gfc_conv_intrinsic_aint): Add case for integer(16), real(10) and
+	real(16) kinds.
+	(gfc_build_intrinsic_lib_fndecls): Add support for real10_decl
+	and real16_decl in library functions.
+	(gfc_get_intrinsic_lib_fndecl): Add cases for real and complex
+	kinds 10 and 16.
+	(gfc_conv_intrinsic_exponent): Add cases for real(10) and real(16)
+	kinds.
+	(gfc_conv_intrinsic_sign): Likewise.
+	(gfc_conv_intrinsic_ishftc): Add case for integer(16) kind.
+	* trans-types.c (gfc_get_int_type, gfc_get_real_type,
+	gfc_get_complex_type, gfc_get_logical_type): Doesn't error out in
+	the case of kinds not available.
+	* trans.h: Declare trees for cpowl10, cpowl16, ishftc16,
+	exponent10 and exponent16.
+
 2005-10-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/16404

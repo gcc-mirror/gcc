@@ -34,6 +34,9 @@ Boston, MA 02110-1301, USA.  */
 #include "libgfortran.h"
 
 
+#if defined (HAVE_GFC_INTEGER_8) && defined (HAVE_GFC_INTEGER_8)
+
+
 extern void product_i8 (gfc_array_i8 *, gfc_array_i8 *, index_type *);
 export_proto(product_i8);
 
@@ -328,3 +331,4 @@ mproduct_i8 (gfc_array_i8 * retarray, gfc_array_i8 * array,
     }
 }
 
+#endif

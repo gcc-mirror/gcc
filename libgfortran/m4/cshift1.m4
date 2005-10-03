@@ -35,6 +35,8 @@ Boston, MA 02110-1301, USA.  */
 #include "libgfortran.h"'
 include(iparm.m4)dnl
 
+`#if defined (HAVE_'atype_name`)'
+
 static void
 cshift1 (gfc_array_char * ret, const gfc_array_char * array,
 	 const atype * h, const atype_name * pwhich, index_type size)
@@ -220,3 +222,5 @@ cshift1_`'atype_kind`'_char (gfc_array_char * ret,
 {
   cshift1 (ret, array, h, pwhich, array_length);
 }
+
+#endif

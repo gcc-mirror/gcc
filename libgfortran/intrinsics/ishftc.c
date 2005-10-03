@@ -69,3 +69,25 @@ ishftc8 (GFC_INTEGER_8 i, GFC_INTEGER_4 shift, GFC_INTEGER_4 size)
   bits = i & ~mask;
   return (i & mask) | (bits >> (size - shift)) | ((i << shift) & ~mask);
 }
+
+#ifdef HAVE_GFC_INTEGER_16
+extern GFC_INTEGER_16 ishftc16 (GFC_INTEGER_16, GFC_INTEGER_4, GFC_INTEGER_4);
+export_proto(ishftc16);
+
+GFC_INTEGER_16
+ishftc16 (GFC_INTEGER_16 i, GFC_INTEGER_4 shift, GFC_INTEGER_4 size)
+{
+  GFC_INTEGER_16 mask;
+  GFC_UINTEGER_16 bits;
+
+  if (shift < 0)
+    shift = shift + size;
+
+  if (shift == 0 || shift == size)
+    return i;
+
+  mask = (~(GFC_INTEGER_16)0) << size;
+  bits = i & ~mask;
+  return (i & mask) | (bits >> (size - shift)) | ((i << shift) & ~mask);
+}
+#endif

@@ -33,6 +33,8 @@ Boston, MA 02110-1301, USA.  */
 #include <assert.h>
 #include "libgfortran.h"
 
+#if defined (HAVE_GFC_LOGICAL_8)
+
 /* Dimensions: retarray(x,y) a(x, count) b(count,y).
    Either a or b can be rank 1.  In this case x or y is 1.  */
 
@@ -190,3 +192,5 @@ matmul_l8 (gfc_array_l8 * retarray, gfc_array_l4 * a, gfc_array_l4 * b)
       dest += rystride - (rxstride * xcount);
     }
 }
+
+#endif

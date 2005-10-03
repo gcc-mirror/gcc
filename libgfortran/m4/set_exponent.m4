@@ -27,10 +27,14 @@ You should have received a copy of the GNU General Public
 License along with libgfortran; see the file COPYING.  If not,
 write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
+
+#include "config.h"
 #include <math.h>
 #include "libgfortran.h"'
 
 include(`mtype.m4')dnl
+
+`#if defined (HAVE_'real_type`) && defined (HAVE_SCALBN'Q`) && defined (HAVE_FREXP'Q`)'
 
 extern real_type set_exponent_r`'kind (real_type s, GFC_INTEGER_4 i);
 export_proto(set_exponent_r`'kind);
@@ -41,3 +45,5 @@ set_exponent_r`'kind (real_type s, GFC_INTEGER_4 i)
   int dummy_exp;
   return scalbn`'q (frexp`'q (s, &dummy_exp), i);
 }
+
+#endif

@@ -35,6 +35,8 @@ Boston, MA 02110-1301, USA.  */
 #include "libgfortran.h"'
 include(iparm.m4)dnl
 
+`#if defined (HAVE_'rtype_name`)'
+
 /* This is a C version of the following fortran pseudo-code. The key
    point is the loop order -- we access all arrays column-first, which
    improves the performance enough to boost galgel spec score by 50%.
@@ -217,3 +219,5 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
 	    dest[x*rxstride + y*rystride] += abase[x*axstride + n*aystride] * bbase[n*bxstride + y*bystride];
     }
 }
+
+#endif

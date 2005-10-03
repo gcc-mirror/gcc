@@ -34,6 +34,8 @@ Boston, MA 02110-1301, USA.  */
 #include "libgfortran.h"'
 include(iparm.m4)dnl
 
+`#if defined (HAVE_'rtype_name`)'
+
 /* Allocates a block of memory with internal_malloc if the array needs
    repacking.  */
 
@@ -124,3 +126,4 @@ rtype_name *
   return destptr;
 }
 
+#endif

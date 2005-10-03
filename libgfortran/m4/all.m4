@@ -35,6 +35,9 @@ Boston, MA 02110-1301, USA.  */
 
 include(iparm.m4)dnl
 include(ifunction.m4)dnl
+
+`#if defined (HAVE_'atype_name`) && defined (HAVE_'rtype_name`)'
+
 ARRAY_FUNCTION(1,
 `  /* Return true only if all the elements are set.  */
   result = 1;',
@@ -44,3 +47,4 @@ ARRAY_FUNCTION(1,
       break;
     }')
 
+#endif

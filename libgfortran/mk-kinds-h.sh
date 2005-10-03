@@ -24,6 +24,7 @@ for k in $possible_integer_kinds; do
     echo "typedef ${prefix}int${s}_t GFC_INTEGER_${k};"
     echo "typedef ${prefix}uint${s}_t GFC_UINTEGER_${k};"
     echo "typedef GFC_INTEGER_${k} GFC_LOGICAL_${k};"
+    echo "#define HAVE_GFC_LOGICAL_${k}"
     echo "#define HAVE_GFC_INTEGER_${k}"
   fi
   rm -f tmp$$.*
@@ -50,6 +51,7 @@ for k in $possible_real_kinds; do
     echo "typedef ${ctype} GFC_REAL_${k};"
     echo "typedef complex ${ctype} GFC_COMPLEX_${k};"
     echo "#define HAVE_GFC_REAL_${k}"
+    echo "#define HAVE_GFC_COMPLEX_${k}"
   fi
   rm -f tmp$$.*
 done

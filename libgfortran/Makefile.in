@@ -68,54 +68,89 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 libgfortran_la_LIBADD =
 am__objects_1 = compile_options.lo environ.lo error.lo main.lo \
 	memory.lo pause.lo stop.lo string.lo select.lo
-am__objects_2 = all_l4.lo all_l8.lo
-am__objects_3 = any_l4.lo any_l8.lo
-am__objects_4 = count_4_l4.lo count_8_l4.lo count_4_l8.lo \
-	count_8_l8.lo
-am__objects_5 = maxloc0_4_i4.lo maxloc0_8_i4.lo maxloc0_4_i8.lo \
-	maxloc0_8_i8.lo maxloc0_4_r4.lo maxloc0_8_r4.lo \
-	maxloc0_4_r8.lo maxloc0_8_r8.lo
-am__objects_6 = maxloc1_4_i4.lo maxloc1_8_i4.lo maxloc1_4_i8.lo \
-	maxloc1_8_i8.lo maxloc1_4_r4.lo maxloc1_8_r4.lo \
-	maxloc1_4_r8.lo maxloc1_8_r8.lo
-am__objects_7 = maxval_i4.lo maxval_i8.lo maxval_r4.lo maxval_r8.lo
-am__objects_8 = minloc0_4_i4.lo minloc0_8_i4.lo minloc0_4_i8.lo \
-	minloc0_8_i8.lo minloc0_4_r4.lo minloc0_8_r4.lo \
-	minloc0_4_r8.lo minloc0_8_r8.lo
-am__objects_9 = minloc1_4_i4.lo minloc1_8_i4.lo minloc1_4_i8.lo \
-	minloc1_8_i8.lo minloc1_4_r4.lo minloc1_8_r4.lo \
-	minloc1_4_r8.lo minloc1_8_r8.lo
-am__objects_10 = minval_i4.lo minval_i8.lo minval_r4.lo minval_r8.lo
-am__objects_11 = product_i4.lo product_i8.lo product_r4.lo \
-	product_r8.lo product_c4.lo product_c8.lo
-am__objects_12 = sum_i4.lo sum_i8.lo sum_r4.lo sum_r8.lo sum_c4.lo \
-	sum_c8.lo
-am__objects_13 = dotprod_i4.lo dotprod_i8.lo dotprod_r4.lo \
-	dotprod_r8.lo
-am__objects_14 = dotprod_l4.lo dotprod_l8.lo
-am__objects_15 = dotprod_c4.lo dotprod_c8.lo
-am__objects_16 = matmul_i4.lo matmul_i8.lo matmul_r4.lo matmul_r8.lo \
-	matmul_c4.lo matmul_c8.lo
-am__objects_17 = matmul_l4.lo matmul_l8.lo
-am__objects_18 = transpose_i4.lo transpose_i8.lo transpose_c4.lo \
-	transpose_c8.lo
-am__objects_19 = shape_i4.lo shape_i8.lo
-am__objects_20 = eoshift1_4.lo eoshift1_8.lo
-am__objects_21 = eoshift3_4.lo eoshift3_8.lo
-am__objects_22 = cshift1_4.lo cshift1_8.lo
-am__objects_23 = reshape_i4.lo reshape_i8.lo reshape_c4.lo \
-	reshape_c8.lo
-am__objects_24 = in_pack_i4.lo in_pack_i8.lo in_pack_c4.lo \
-	in_pack_c8.lo
-am__objects_25 = in_unpack_i4.lo in_unpack_i8.lo in_unpack_c4.lo \
-	in_unpack_c8.lo
-am__objects_26 = exponent_r4.lo exponent_r8.lo
-am__objects_27 = fraction_r4.lo fraction_r8.lo
-am__objects_28 = nearest_r4.lo nearest_r8.lo
-am__objects_29 = set_exponent_r4.lo set_exponent_r8.lo
-am__objects_30 = pow_i4_i4.lo pow_i8_i4.lo pow_r4_i4.lo pow_r8_i4.lo \
-	pow_c4_i4.lo pow_c8_i4.lo pow_i4_i8.lo pow_i8_i8.lo \
-	pow_r4_i8.lo pow_r8_i8.lo pow_c4_i8.lo pow_c8_i8.lo
+am__objects_2 = all_l4.lo all_l8.lo all_l16.lo
+am__objects_3 = any_l4.lo any_l8.lo any_l16.lo
+am__objects_4 = count_4_l4.lo count_8_l4.lo count_16_l4.lo \
+	count_4_l8.lo count_8_l8.lo count_16_l8.lo count_4_l16.lo \
+	count_8_l16.lo count_16_l16.lo
+am__objects_5 = maxloc0_4_i4.lo maxloc0_8_i4.lo maxloc0_16_i4.lo \
+	maxloc0_4_i8.lo maxloc0_8_i8.lo maxloc0_16_i8.lo \
+	maxloc0_4_i16.lo maxloc0_8_i16.lo maxloc0_16_i16.lo \
+	maxloc0_4_r4.lo maxloc0_8_r4.lo maxloc0_16_r4.lo \
+	maxloc0_4_r8.lo maxloc0_8_r8.lo maxloc0_16_r8.lo \
+	maxloc0_4_r10.lo maxloc0_8_r10.lo maxloc0_16_r10.lo \
+	maxloc0_4_r16.lo maxloc0_8_r16.lo maxloc0_16_r16.lo
+am__objects_6 = maxloc1_4_i4.lo maxloc1_8_i4.lo maxloc1_16_i4.lo \
+	maxloc1_4_i8.lo maxloc1_8_i8.lo maxloc1_16_i8.lo \
+	maxloc1_4_i16.lo maxloc1_8_i16.lo maxloc1_16_i16.lo \
+	maxloc1_4_r4.lo maxloc1_8_r4.lo maxloc1_16_r4.lo \
+	maxloc1_4_r8.lo maxloc1_8_r8.lo maxloc1_16_r8.lo \
+	maxloc1_4_r10.lo maxloc1_8_r10.lo maxloc1_16_r10.lo \
+	maxloc1_4_r16.lo maxloc1_8_r16.lo maxloc1_16_r16.lo
+am__objects_7 = maxval_i4.lo maxval_i8.lo maxval_i16.lo maxval_r4.lo \
+	maxval_r8.lo maxval_r10.lo maxval_r16.lo
+am__objects_8 = minloc0_4_i4.lo minloc0_8_i4.lo minloc0_16_i4.lo \
+	minloc0_4_i8.lo minloc0_8_i8.lo minloc0_16_i8.lo \
+	minloc0_4_i16.lo minloc0_8_i16.lo minloc0_16_i16.lo \
+	minloc0_4_r4.lo minloc0_8_r4.lo minloc0_16_r4.lo \
+	minloc0_4_r8.lo minloc0_8_r8.lo minloc0_16_r8.lo \
+	minloc0_4_r10.lo minloc0_8_r10.lo minloc0_16_r10.lo \
+	minloc0_4_r16.lo minloc0_8_r16.lo minloc0_16_r16.lo
+am__objects_9 = minloc1_4_i4.lo minloc1_8_i4.lo minloc1_16_i4.lo \
+	minloc1_4_i8.lo minloc1_8_i8.lo minloc1_16_i8.lo \
+	minloc1_4_i16.lo minloc1_8_i16.lo minloc1_16_i16.lo \
+	minloc1_4_r4.lo minloc1_8_r4.lo minloc1_16_r4.lo \
+	minloc1_4_r8.lo minloc1_8_r8.lo minloc1_16_r8.lo \
+	minloc1_4_r10.lo minloc1_8_r10.lo minloc1_16_r10.lo \
+	minloc1_4_r16.lo minloc1_8_r16.lo minloc1_16_r16.lo
+am__objects_10 = minval_i4.lo minval_i8.lo minval_i16.lo minval_r4.lo \
+	minval_r8.lo minval_r10.lo minval_r16.lo
+am__objects_11 = product_i4.lo product_i8.lo product_i16.lo \
+	product_r4.lo product_r8.lo product_r10.lo product_r16.lo \
+	product_c4.lo product_c8.lo product_c10.lo product_c16.lo
+am__objects_12 = sum_i4.lo sum_i8.lo sum_i16.lo sum_r4.lo sum_r8.lo \
+	sum_r10.lo sum_r16.lo sum_c4.lo sum_c8.lo sum_c10.lo \
+	sum_c16.lo
+am__objects_13 = dotprod_i4.lo dotprod_i8.lo dotprod_i16.lo \
+	dotprod_r4.lo dotprod_r8.lo dotprod_r10.lo dotprod_r16.lo
+am__objects_14 = dotprod_l4.lo dotprod_l8.lo dotprod_l16.lo
+am__objects_15 = dotprod_c4.lo dotprod_c8.lo dotprod_c10.lo \
+	dotprod_c16.lo
+am__objects_16 = matmul_i4.lo matmul_i8.lo matmul_i16.lo matmul_r4.lo \
+	matmul_r8.lo matmul_r10.lo matmul_r16.lo matmul_c4.lo \
+	matmul_c8.lo matmul_c10.lo matmul_c16.lo
+am__objects_17 = matmul_l4.lo matmul_l8.lo matmul_l16.lo
+am__objects_18 = transpose_i4.lo transpose_i8.lo transpose_i16.lo \
+	transpose_c4.lo transpose_c8.lo transpose_c10.lo \
+	transpose_c16.lo
+am__objects_19 = shape_i4.lo shape_i8.lo shape_i16.lo
+am__objects_20 = eoshift1_4.lo eoshift1_8.lo eoshift1_16.lo
+am__objects_21 = eoshift3_4.lo eoshift3_8.lo eoshift3_16.lo
+am__objects_22 = cshift1_4.lo cshift1_8.lo cshift1_16.lo
+am__objects_23 = reshape_i4.lo reshape_i8.lo reshape_i16.lo \
+	reshape_c4.lo reshape_c8.lo reshape_c10.lo reshape_c16.lo
+am__objects_24 = in_pack_i4.lo in_pack_i8.lo in_pack_i16.lo \
+	in_pack_c4.lo in_pack_c8.lo in_pack_c10.lo in_pack_c16.lo
+am__objects_25 = in_unpack_i4.lo in_unpack_i8.lo in_unpack_i16.lo \
+	in_unpack_c4.lo in_unpack_c8.lo in_unpack_c10.lo \
+	in_unpack_c16.lo
+am__objects_26 = exponent_r4.lo exponent_r8.lo exponent_r10.lo \
+	exponent_r16.lo
+am__objects_27 = fraction_r4.lo fraction_r8.lo fraction_r10.lo \
+	fraction_r16.lo
+am__objects_28 = nearest_r4.lo nearest_r8.lo nearest_r10.lo \
+	nearest_r16.lo
+am__objects_29 = set_exponent_r4.lo set_exponent_r8.lo \
+	set_exponent_r10.lo set_exponent_r16.lo
+am__objects_30 = pow_i4_i4.lo pow_i8_i4.lo pow_i16_i4.lo pow_r4_i4.lo \
+	pow_r8_i4.lo pow_r10_i4.lo pow_r16_i4.lo pow_c4_i4.lo \
+	pow_c8_i4.lo pow_c10_i4.lo pow_c16_i4.lo pow_i4_i8.lo \
+	pow_i8_i8.lo pow_i16_i8.lo pow_r4_i8.lo pow_r8_i8.lo \
+	pow_r10_i8.lo pow_r16_i8.lo pow_c4_i8.lo pow_c8_i8.lo \
+	pow_c10_i8.lo pow_c16_i8.lo pow_i4_i16.lo pow_i8_i16.lo \
+	pow_i16_i16.lo pow_r4_i16.lo pow_r8_i16.lo pow_r10_i16.lo \
+	pow_r16_i16.lo pow_c4_i16.lo pow_c8_i16.lo pow_c10_i16.lo \
+	pow_c16_i16.lo
 am__objects_31 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
 	$(am__objects_5) $(am__objects_6) $(am__objects_7) \
 	$(am__objects_8) $(am__objects_9) $(am__objects_10) \
@@ -142,19 +177,31 @@ am__objects_33 = associated.lo abort.lo args.lo bessel.lo \
 	tty.lo umask.lo unlink.lo unpack_generic.lo in_pack_generic.lo \
 	in_unpack_generic.lo normalize.lo
 am__objects_34 =
-am__objects_35 = _abs_c4.lo _abs_c8.lo _abs_i4.lo _abs_i8.lo \
-	_abs_r4.lo _abs_r8.lo _exp_r4.lo _exp_r8.lo _exp_c4.lo \
-	_exp_c8.lo _log_r4.lo _log_r8.lo _log_c4.lo _log_c8.lo \
-	_log10_r4.lo _log10_r8.lo _sqrt_r4.lo _sqrt_r8.lo _sqrt_c4.lo \
-	_sqrt_c8.lo _asin_r4.lo _asin_r8.lo _acos_r4.lo _acos_r8.lo \
-	_atan_r4.lo _atan_r8.lo _sin_r4.lo _sin_r8.lo _sin_c4.lo \
-	_sin_c8.lo _cos_r4.lo _cos_r8.lo _cos_c4.lo _cos_c8.lo \
-	_tan_r4.lo _tan_r8.lo _sinh_r4.lo _sinh_r8.lo _cosh_r4.lo \
-	_cosh_r8.lo _tanh_r4.lo _tanh_r8.lo _conjg_c4.lo _conjg_c8.lo \
-	_aint_r4.lo _aint_r8.lo _anint_r4.lo _anint_r8.lo
-am__objects_36 = _sign_i4.lo _sign_i8.lo _sign_r4.lo _sign_r8.lo \
-	_dim_i4.lo _dim_i8.lo _dim_r4.lo _dim_r8.lo _atan2_r4.lo \
-	_atan2_r8.lo _mod_i4.lo _mod_i8.lo _mod_r4.lo _mod_r8.lo
+am__objects_35 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
+	_abs_i4.lo _abs_i8.lo _abs_i16.lo _abs_r4.lo _abs_r8.lo \
+	_abs_r10.lo _abs_r16.lo _exp_r4.lo _exp_r8.lo _exp_r10.lo \
+	_exp_r16.lo _exp_c4.lo _exp_c8.lo _exp_c10.lo _exp_c16.lo \
+	_log_r4.lo _log_r8.lo _log_r10.lo _log_r16.lo _log_c4.lo \
+	_log_c8.lo _log_c10.lo _log_c16.lo _log10_r4.lo _log10_r8.lo \
+	_log10_r10.lo _log10_r16.lo _sqrt_r4.lo _sqrt_r8.lo \
+	_sqrt_r10.lo _sqrt_r16.lo _sqrt_c4.lo _sqrt_c8.lo _sqrt_c10.lo \
+	_sqrt_c16.lo _asin_r4.lo _asin_r8.lo _asin_r10.lo _asin_r16.lo \
+	_acos_r4.lo _acos_r8.lo _acos_r10.lo _acos_r16.lo _atan_r4.lo \
+	_atan_r8.lo _atan_r10.lo _atan_r16.lo _sin_r4.lo _sin_r8.lo \
+	_sin_r10.lo _sin_r16.lo _sin_c4.lo _sin_c8.lo _sin_c10.lo \
+	_sin_c16.lo _cos_r4.lo _cos_r8.lo _cos_r10.lo _cos_r16.lo \
+	_cos_c4.lo _cos_c8.lo _cos_c10.lo _cos_c16.lo _tan_r4.lo \
+	_tan_r8.lo _tan_r10.lo _tan_r16.lo _sinh_r4.lo _sinh_r8.lo \
+	_sinh_r10.lo _sinh_r16.lo _cosh_r4.lo _cosh_r8.lo _cosh_r10.lo \
+	_cosh_r16.lo _tanh_r4.lo _tanh_r8.lo _tanh_r10.lo _tanh_r16.lo \
+	_conjg_c4.lo _conjg_c8.lo _conjg_c10.lo _conjg_c16.lo \
+	_aint_r4.lo _aint_r8.lo _aint_r10.lo _aint_r16.lo _anint_r4.lo \
+	_anint_r8.lo _anint_r10.lo _anint_r16.lo
+am__objects_36 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
+	_sign_r8.lo _sign_r10.lo _sign_r16.lo _dim_i4.lo _dim_i8.lo \
+	_dim_i16.lo _dim_r4.lo _dim_r8.lo _dim_r10.lo _dim_r16.lo \
+	_atan2_r4.lo _atan2_r8.lo _atan2_r10.lo _atan2_r16.lo \
+	_mod_i4.lo _mod_i8.lo _mod_i16.lo _mod_r4.lo _mod_r8.lo
 am__objects_37 = $(am__objects_35) $(am__objects_36) dprod_r8.lo \
 	f2c_specifics.lo
 am_libgfortran_la_OBJECTS = $(am__objects_1) $(am__objects_31) \
@@ -399,181 +446,313 @@ libgfortran.h
 
 i_all_c = \
 generated/all_l4.c \
-generated/all_l8.c
+generated/all_l8.c \
+generated/all_l16.c
 
 i_any_c = \
 generated/any_l4.c \
-generated/any_l8.c
+generated/any_l8.c \
+generated/any_l16.c
 
 i_count_c = \
 generated/count_4_l4.c \
 generated/count_8_l4.c \
+generated/count_16_l4.c \
 generated/count_4_l8.c \
-generated/count_8_l8.c
+generated/count_8_l8.c \
+generated/count_16_l8.c \
+generated/count_4_l16.c \
+generated/count_8_l16.c \
+generated/count_16_l16.c
 
 i_maxloc0_c = \
 generated/maxloc0_4_i4.c \
 generated/maxloc0_8_i4.c \
+generated/maxloc0_16_i4.c \
 generated/maxloc0_4_i8.c \
 generated/maxloc0_8_i8.c \
+generated/maxloc0_16_i8.c \
+generated/maxloc0_4_i16.c \
+generated/maxloc0_8_i16.c \
+generated/maxloc0_16_i16.c \
 generated/maxloc0_4_r4.c \
 generated/maxloc0_8_r4.c \
+generated/maxloc0_16_r4.c \
 generated/maxloc0_4_r8.c \
-generated/maxloc0_8_r8.c
+generated/maxloc0_8_r8.c \
+generated/maxloc0_16_r8.c \
+generated/maxloc0_4_r10.c \
+generated/maxloc0_8_r10.c \
+generated/maxloc0_16_r10.c \
+generated/maxloc0_4_r16.c \
+generated/maxloc0_8_r16.c \
+generated/maxloc0_16_r16.c
 
 i_maxloc1_c = \
 generated/maxloc1_4_i4.c \
 generated/maxloc1_8_i4.c \
+generated/maxloc1_16_i4.c \
 generated/maxloc1_4_i8.c \
 generated/maxloc1_8_i8.c \
+generated/maxloc1_16_i8.c \
+generated/maxloc1_4_i16.c \
+generated/maxloc1_8_i16.c \
+generated/maxloc1_16_i16.c \
 generated/maxloc1_4_r4.c \
 generated/maxloc1_8_r4.c \
+generated/maxloc1_16_r4.c \
 generated/maxloc1_4_r8.c \
-generated/maxloc1_8_r8.c
+generated/maxloc1_8_r8.c \
+generated/maxloc1_16_r8.c \
+generated/maxloc1_4_r10.c \
+generated/maxloc1_8_r10.c \
+generated/maxloc1_16_r10.c \
+generated/maxloc1_4_r16.c \
+generated/maxloc1_8_r16.c \
+generated/maxloc1_16_r16.c
 
 i_maxval_c = \
 generated/maxval_i4.c \
 generated/maxval_i8.c \
+generated/maxval_i16.c \
 generated/maxval_r4.c \
-generated/maxval_r8.c
+generated/maxval_r8.c \
+generated/maxval_r10.c \
+generated/maxval_r16.c
 
 i_minloc0_c = \
 generated/minloc0_4_i4.c \
 generated/minloc0_8_i4.c \
+generated/minloc0_16_i4.c \
 generated/minloc0_4_i8.c \
 generated/minloc0_8_i8.c \
+generated/minloc0_16_i8.c \
+generated/minloc0_4_i16.c \
+generated/minloc0_8_i16.c \
+generated/minloc0_16_i16.c \
 generated/minloc0_4_r4.c \
 generated/minloc0_8_r4.c \
+generated/minloc0_16_r4.c \
 generated/minloc0_4_r8.c \
-generated/minloc0_8_r8.c
+generated/minloc0_8_r8.c \
+generated/minloc0_16_r8.c \
+generated/minloc0_4_r10.c \
+generated/minloc0_8_r10.c \
+generated/minloc0_16_r10.c \
+generated/minloc0_4_r16.c \
+generated/minloc0_8_r16.c \
+generated/minloc0_16_r16.c
 
 i_minloc1_c = \
 generated/minloc1_4_i4.c \
 generated/minloc1_8_i4.c \
+generated/minloc1_16_i4.c \
 generated/minloc1_4_i8.c \
 generated/minloc1_8_i8.c \
+generated/minloc1_16_i8.c \
+generated/minloc1_4_i16.c \
+generated/minloc1_8_i16.c \
+generated/minloc1_16_i16.c \
 generated/minloc1_4_r4.c \
 generated/minloc1_8_r4.c \
+generated/minloc1_16_r4.c \
 generated/minloc1_4_r8.c \
-generated/minloc1_8_r8.c
+generated/minloc1_8_r8.c \
+generated/minloc1_16_r8.c \
+generated/minloc1_4_r10.c \
+generated/minloc1_8_r10.c \
+generated/minloc1_16_r10.c \
+generated/minloc1_4_r16.c \
+generated/minloc1_8_r16.c \
+generated/minloc1_16_r16.c
 
 i_minval_c = \
 generated/minval_i4.c \
 generated/minval_i8.c \
+generated/minval_i16.c \
 generated/minval_r4.c \
-generated/minval_r8.c
+generated/minval_r8.c \
+generated/minval_r10.c \
+generated/minval_r16.c
 
 i_sum_c = \
 generated/sum_i4.c \
 generated/sum_i8.c \
+generated/sum_i16.c \
 generated/sum_r4.c \
 generated/sum_r8.c \
+generated/sum_r10.c \
+generated/sum_r16.c \
 generated/sum_c4.c \
-generated/sum_c8.c
+generated/sum_c8.c \
+generated/sum_c10.c \
+generated/sum_c16.c
 
 i_product_c = \
 generated/product_i4.c \
 generated/product_i8.c \
+generated/product_i16.c \
 generated/product_r4.c \
 generated/product_r8.c \
+generated/product_r10.c \
+generated/product_r16.c \
 generated/product_c4.c \
-generated/product_c8.c
+generated/product_c8.c \
+generated/product_c10.c \
+generated/product_c16.c
 
 i_dotprod_c = \
 generated/dotprod_i4.c \
 generated/dotprod_i8.c \
+generated/dotprod_i16.c \
 generated/dotprod_r4.c \
-generated/dotprod_r8.c
+generated/dotprod_r8.c \
+generated/dotprod_r10.c \
+generated/dotprod_r16.c
 
 i_dotprodl_c = \
 generated/dotprod_l4.c \
-generated/dotprod_l8.c
+generated/dotprod_l8.c \
+generated/dotprod_l16.c
 
 i_dotprodc_c = \
 generated/dotprod_c4.c \
-generated/dotprod_c8.c
+generated/dotprod_c8.c \
+generated/dotprod_c10.c \
+generated/dotprod_c16.c
 
 i_matmul_c = \
 generated/matmul_i4.c \
 generated/matmul_i8.c \
+generated/matmul_i16.c \
 generated/matmul_r4.c \
 generated/matmul_r8.c \
+generated/matmul_r10.c \
+generated/matmul_r16.c \
 generated/matmul_c4.c \
-generated/matmul_c8.c
+generated/matmul_c8.c \
+generated/matmul_c10.c \
+generated/matmul_c16.c
 
 i_matmull_c = \
 generated/matmul_l4.c \
-generated/matmul_l8.c
+generated/matmul_l8.c \
+generated/matmul_l16.c
 
 i_transpose_c = \
 generated/transpose_i4.c \
 generated/transpose_i8.c \
+generated/transpose_i16.c \
 generated/transpose_c4.c \
-generated/transpose_c8.c
+generated/transpose_c8.c \
+generated/transpose_c10.c \
+generated/transpose_c16.c
 
 i_shape_c = \
 generated/shape_i4.c \
-generated/shape_i8.c
+generated/shape_i8.c \
+generated/shape_i16.c
 
 i_reshape_c = \
 generated/reshape_i4.c \
 generated/reshape_i8.c \
+generated/reshape_i16.c \
 generated/reshape_c4.c \
-generated/reshape_c8.c
+generated/reshape_c8.c \
+generated/reshape_c10.c \
+generated/reshape_c16.c
 
 i_eoshift1_c = \
 generated/eoshift1_4.c \
-generated/eoshift1_8.c
+generated/eoshift1_8.c \
+generated/eoshift1_16.c
 
 i_eoshift3_c = \
 generated/eoshift3_4.c \
-generated/eoshift3_8.c
+generated/eoshift3_8.c \
+generated/eoshift3_16.c
 
 i_cshift1_c = \
 generated/cshift1_4.c \
-generated/cshift1_8.c
+generated/cshift1_8.c \
+generated/cshift1_16.c
 
 in_pack_c = \
 generated/in_pack_i4.c \
 generated/in_pack_i8.c \
+generated/in_pack_i16.c \
 generated/in_pack_c4.c \
-generated/in_pack_c8.c
+generated/in_pack_c8.c \
+generated/in_pack_c10.c \
+generated/in_pack_c16.c
 
 in_unpack_c = \
 generated/in_unpack_i4.c \
 generated/in_unpack_i8.c \
+generated/in_unpack_i16.c \
 generated/in_unpack_c4.c \
-generated/in_unpack_c8.c
+generated/in_unpack_c8.c \
+generated/in_unpack_c10.c \
+generated/in_unpack_c16.c
 
 i_exponent_c = \
 generated/exponent_r4.c \
-generated/exponent_r8.c
+generated/exponent_r8.c \
+generated/exponent_r10.c \
+generated/exponent_r16.c
 
 i_fraction_c = \
 generated/fraction_r4.c \
-generated/fraction_r8.c
+generated/fraction_r8.c \
+generated/fraction_r10.c \
+generated/fraction_r16.c
 
 i_nearest_c = \
 generated/nearest_r4.c \
-generated/nearest_r8.c
+generated/nearest_r8.c \
+generated/nearest_r10.c \
+generated/nearest_r16.c
 
 i_set_exponent_c = \
 generated/set_exponent_r4.c \
-generated/set_exponent_r8.c
+generated/set_exponent_r8.c \
+generated/set_exponent_r10.c \
+generated/set_exponent_r16.c
 
 i_pow_c = \
 generated/pow_i4_i4.c \
 generated/pow_i8_i4.c \
+generated/pow_i16_i4.c \
 generated/pow_r4_i4.c \
 generated/pow_r8_i4.c \
+generated/pow_r10_i4.c \
+generated/pow_r16_i4.c \
 generated/pow_c4_i4.c \
 generated/pow_c8_i4.c \
+generated/pow_c10_i4.c \
+generated/pow_c16_i4.c \
 generated/pow_i4_i8.c \
 generated/pow_i8_i8.c \
+generated/pow_i16_i8.c \
 generated/pow_r4_i8.c \
 generated/pow_r8_i8.c \
+generated/pow_r10_i8.c \
+generated/pow_r16_i8.c \
 generated/pow_c4_i8.c \
-generated/pow_c8_i8.c
+generated/pow_c8_i8.c \
+generated/pow_c10_i8.c \
+generated/pow_c16_i8.c \
+generated/pow_i4_i16.c \
+generated/pow_i8_i16.c \
+generated/pow_i16_i16.c \
+generated/pow_r4_i16.c \
+generated/pow_r8_i16.c \
+generated/pow_r10_i16.c \
+generated/pow_r16_i16.c \
+generated/pow_c4_i16.c \
+generated/pow_c8_i16.c \
+generated/pow_c10_i16.c \
+generated/pow_c16_i16.c
 
 m4_files = m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
     m4/any.m4 m4/count.m4 m4/maxloc0.m4 m4/maxloc1.m4 m4/maxval.m4 \
@@ -591,76 +770,137 @@ gfor_built_src = $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_eoshift3_c) $(i_cshift1_c) $(i_reshape_c) $(in_pack_c) $(in_unpack_c) \
     $(i_exponent_c) $(i_fraction_c) $(i_nearest_c) $(i_set_exponent_c) \
     $(i_pow_c) \
-    selected_int_kind.inc selected_real_kind.inc kinds.h
+    selected_int_kind.inc selected_real_kind.inc kinds.h \
+    kinds.inc c99_protos.inc
 
 
 # Machine generated specifics
 gfor_built_specific_src = \
-generated/_abs_c4.f90 \
-generated/_abs_c8.f90 \
-generated/_abs_i4.f90 \
-generated/_abs_i8.f90 \
-generated/_abs_r4.f90 \
-generated/_abs_r8.f90 \
-generated/_exp_r4.f90 \
-generated/_exp_r8.f90 \
-generated/_exp_c4.f90 \
-generated/_exp_c8.f90 \
-generated/_log_r4.f90 \
-generated/_log_r8.f90 \
-generated/_log_c4.f90 \
-generated/_log_c8.f90 \
-generated/_log10_r4.f90 \
-generated/_log10_r8.f90 \
-generated/_sqrt_r4.f90 \
-generated/_sqrt_r8.f90 \
-generated/_sqrt_c4.f90 \
-generated/_sqrt_c8.f90 \
-generated/_asin_r4.f90 \
-generated/_asin_r8.f90 \
-generated/_acos_r4.f90 \
-generated/_acos_r8.f90 \
-generated/_atan_r4.f90 \
-generated/_atan_r8.f90 \
-generated/_sin_r4.f90 \
-generated/_sin_r8.f90 \
-generated/_sin_c4.f90 \
-generated/_sin_c8.f90 \
-generated/_cos_r4.f90 \
-generated/_cos_r8.f90 \
-generated/_cos_c4.f90 \
-generated/_cos_c8.f90 \
-generated/_tan_r4.f90 \
-generated/_tan_r8.f90 \
-generated/_sinh_r4.f90 \
-generated/_sinh_r8.f90 \
-generated/_cosh_r4.f90 \
-generated/_cosh_r8.f90 \
-generated/_tanh_r4.f90 \
-generated/_tanh_r8.f90 \
-generated/_conjg_c4.f90 \
-generated/_conjg_c8.f90 \
-generated/_aint_r4.f90 \
-generated/_aint_r8.f90 \
-generated/_anint_r4.f90 \
-generated/_anint_r8.f90
+generated/_abs_c4.F90 \
+generated/_abs_c8.F90 \
+generated/_abs_c10.F90 \
+generated/_abs_c16.F90 \
+generated/_abs_i4.F90 \
+generated/_abs_i8.F90 \
+generated/_abs_i16.F90 \
+generated/_abs_r4.F90 \
+generated/_abs_r8.F90 \
+generated/_abs_r10.F90 \
+generated/_abs_r16.F90 \
+generated/_exp_r4.F90 \
+generated/_exp_r8.F90 \
+generated/_exp_r10.F90 \
+generated/_exp_r16.F90 \
+generated/_exp_c4.F90 \
+generated/_exp_c8.F90 \
+generated/_exp_c10.F90 \
+generated/_exp_c16.F90 \
+generated/_log_r4.F90 \
+generated/_log_r8.F90 \
+generated/_log_r10.F90 \
+generated/_log_r16.F90 \
+generated/_log_c4.F90 \
+generated/_log_c8.F90 \
+generated/_log_c10.F90 \
+generated/_log_c16.F90 \
+generated/_log10_r4.F90 \
+generated/_log10_r8.F90 \
+generated/_log10_r10.F90 \
+generated/_log10_r16.F90 \
+generated/_sqrt_r4.F90 \
+generated/_sqrt_r8.F90 \
+generated/_sqrt_r10.F90 \
+generated/_sqrt_r16.F90 \
+generated/_sqrt_c4.F90 \
+generated/_sqrt_c8.F90 \
+generated/_sqrt_c10.F90 \
+generated/_sqrt_c16.F90 \
+generated/_asin_r4.F90 \
+generated/_asin_r8.F90 \
+generated/_asin_r10.F90 \
+generated/_asin_r16.F90 \
+generated/_acos_r4.F90 \
+generated/_acos_r8.F90 \
+generated/_acos_r10.F90 \
+generated/_acos_r16.F90 \
+generated/_atan_r4.F90 \
+generated/_atan_r8.F90 \
+generated/_atan_r10.F90 \
+generated/_atan_r16.F90 \
+generated/_sin_r4.F90 \
+generated/_sin_r8.F90 \
+generated/_sin_r10.F90 \
+generated/_sin_r16.F90 \
+generated/_sin_c4.F90 \
+generated/_sin_c8.F90 \
+generated/_sin_c10.F90 \
+generated/_sin_c16.F90 \
+generated/_cos_r4.F90 \
+generated/_cos_r8.F90 \
+generated/_cos_r10.F90 \
+generated/_cos_r16.F90 \
+generated/_cos_c4.F90 \
+generated/_cos_c8.F90 \
+generated/_cos_c10.F90 \
+generated/_cos_c16.F90 \
+generated/_tan_r4.F90 \
+generated/_tan_r8.F90 \
+generated/_tan_r10.F90 \
+generated/_tan_r16.F90 \
+generated/_sinh_r4.F90 \
+generated/_sinh_r8.F90 \
+generated/_sinh_r10.F90 \
+generated/_sinh_r16.F90 \
+generated/_cosh_r4.F90 \
+generated/_cosh_r8.F90 \
+generated/_cosh_r10.F90 \
+generated/_cosh_r16.F90 \
+generated/_tanh_r4.F90 \
+generated/_tanh_r8.F90 \
+generated/_tanh_r10.F90 \
+generated/_tanh_r16.F90 \
+generated/_conjg_c4.F90 \
+generated/_conjg_c8.F90 \
+generated/_conjg_c10.F90 \
+generated/_conjg_c16.F90 \
+generated/_aint_r4.F90 \
+generated/_aint_r8.F90 \
+generated/_aint_r10.F90 \
+generated/_aint_r16.F90 \
+generated/_anint_r4.F90 \
+generated/_anint_r8.F90 \
+generated/_anint_r10.F90 \
+generated/_anint_r16.F90
 
 gfor_built_specific2_src = \
-generated/_sign_i4.f90 \
-generated/_sign_i8.f90 \
-generated/_sign_r4.f90 \
-generated/_sign_r8.f90 \
-generated/_dim_i4.f90 \
-generated/_dim_i8.f90 \
-generated/_dim_r4.f90 \
-generated/_dim_r8.f90 \
-generated/_atan2_r4.f90 \
-generated/_atan2_r8.f90 \
-generated/_mod_i4.f90 \
-generated/_mod_i8.f90 \
-generated/_mod_r4.f90 \
-generated/_mod_r8.f90
+generated/_sign_i4.F90 \
+generated/_sign_i8.F90 \
+generated/_sign_i16.F90 \
+generated/_sign_r4.F90 \
+generated/_sign_r8.F90 \
+generated/_sign_r10.F90 \
+generated/_sign_r16.F90 \
+generated/_dim_i4.F90 \
+generated/_dim_i8.F90 \
+generated/_dim_i16.F90 \
+generated/_dim_r4.F90 \
+generated/_dim_r8.F90 \
+generated/_dim_r10.F90 \
+generated/_dim_r16.F90 \
+generated/_atan2_r4.F90 \
+generated/_atan2_r8.F90 \
+generated/_atan2_r10.F90 \
+generated/_atan2_r16.F90 \
+generated/_mod_i4.F90 \
+generated/_mod_i8.F90 \
+generated/_mod_i16.F90 \
+generated/_mod_r4.F90 \
+generated/_mod_r8.F90
 
+# There are commented out due to a bug in the way the front-end
+# handles MOD
+#generated/_mod_r10.F90
+#generated/_mod_r16.F90
 gfor_specific_src = \
 $(gfor_built_specific_src) \
 $(gfor_built_specific2_src) \
@@ -779,6 +1019,360 @@ distclean-compile:
 .F90.lo:
 	$(LTPPFCCOMPILE) -c -o $@ $<
 
+_abs_c4.lo: generated/_abs_c4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _abs_c4.lo `test -f 'generated/_abs_c4.F90' || echo '$(srcdir)/'`generated/_abs_c4.F90
+
+_abs_c8.lo: generated/_abs_c8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _abs_c8.lo `test -f 'generated/_abs_c8.F90' || echo '$(srcdir)/'`generated/_abs_c8.F90
+
+_abs_c10.lo: generated/_abs_c10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _abs_c10.lo `test -f 'generated/_abs_c10.F90' || echo '$(srcdir)/'`generated/_abs_c10.F90
+
+_abs_c16.lo: generated/_abs_c16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _abs_c16.lo `test -f 'generated/_abs_c16.F90' || echo '$(srcdir)/'`generated/_abs_c16.F90
+
+_abs_i4.lo: generated/_abs_i4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _abs_i4.lo `test -f 'generated/_abs_i4.F90' || echo '$(srcdir)/'`generated/_abs_i4.F90
+
+_abs_i8.lo: generated/_abs_i8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _abs_i8.lo `test -f 'generated/_abs_i8.F90' || echo '$(srcdir)/'`generated/_abs_i8.F90
+
+_abs_i16.lo: generated/_abs_i16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _abs_i16.lo `test -f 'generated/_abs_i16.F90' || echo '$(srcdir)/'`generated/_abs_i16.F90
+
+_abs_r4.lo: generated/_abs_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _abs_r4.lo `test -f 'generated/_abs_r4.F90' || echo '$(srcdir)/'`generated/_abs_r4.F90
+
+_abs_r8.lo: generated/_abs_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _abs_r8.lo `test -f 'generated/_abs_r8.F90' || echo '$(srcdir)/'`generated/_abs_r8.F90
+
+_abs_r10.lo: generated/_abs_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _abs_r10.lo `test -f 'generated/_abs_r10.F90' || echo '$(srcdir)/'`generated/_abs_r10.F90
+
+_abs_r16.lo: generated/_abs_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _abs_r16.lo `test -f 'generated/_abs_r16.F90' || echo '$(srcdir)/'`generated/_abs_r16.F90
+
+_exp_r4.lo: generated/_exp_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _exp_r4.lo `test -f 'generated/_exp_r4.F90' || echo '$(srcdir)/'`generated/_exp_r4.F90
+
+_exp_r8.lo: generated/_exp_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _exp_r8.lo `test -f 'generated/_exp_r8.F90' || echo '$(srcdir)/'`generated/_exp_r8.F90
+
+_exp_r10.lo: generated/_exp_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _exp_r10.lo `test -f 'generated/_exp_r10.F90' || echo '$(srcdir)/'`generated/_exp_r10.F90
+
+_exp_r16.lo: generated/_exp_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _exp_r16.lo `test -f 'generated/_exp_r16.F90' || echo '$(srcdir)/'`generated/_exp_r16.F90
+
+_exp_c4.lo: generated/_exp_c4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _exp_c4.lo `test -f 'generated/_exp_c4.F90' || echo '$(srcdir)/'`generated/_exp_c4.F90
+
+_exp_c8.lo: generated/_exp_c8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _exp_c8.lo `test -f 'generated/_exp_c8.F90' || echo '$(srcdir)/'`generated/_exp_c8.F90
+
+_exp_c10.lo: generated/_exp_c10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _exp_c10.lo `test -f 'generated/_exp_c10.F90' || echo '$(srcdir)/'`generated/_exp_c10.F90
+
+_exp_c16.lo: generated/_exp_c16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _exp_c16.lo `test -f 'generated/_exp_c16.F90' || echo '$(srcdir)/'`generated/_exp_c16.F90
+
+_log_r4.lo: generated/_log_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _log_r4.lo `test -f 'generated/_log_r4.F90' || echo '$(srcdir)/'`generated/_log_r4.F90
+
+_log_r8.lo: generated/_log_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _log_r8.lo `test -f 'generated/_log_r8.F90' || echo '$(srcdir)/'`generated/_log_r8.F90
+
+_log_r10.lo: generated/_log_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _log_r10.lo `test -f 'generated/_log_r10.F90' || echo '$(srcdir)/'`generated/_log_r10.F90
+
+_log_r16.lo: generated/_log_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _log_r16.lo `test -f 'generated/_log_r16.F90' || echo '$(srcdir)/'`generated/_log_r16.F90
+
+_log_c4.lo: generated/_log_c4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _log_c4.lo `test -f 'generated/_log_c4.F90' || echo '$(srcdir)/'`generated/_log_c4.F90
+
+_log_c8.lo: generated/_log_c8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _log_c8.lo `test -f 'generated/_log_c8.F90' || echo '$(srcdir)/'`generated/_log_c8.F90
+
+_log_c10.lo: generated/_log_c10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _log_c10.lo `test -f 'generated/_log_c10.F90' || echo '$(srcdir)/'`generated/_log_c10.F90
+
+_log_c16.lo: generated/_log_c16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _log_c16.lo `test -f 'generated/_log_c16.F90' || echo '$(srcdir)/'`generated/_log_c16.F90
+
+_log10_r4.lo: generated/_log10_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _log10_r4.lo `test -f 'generated/_log10_r4.F90' || echo '$(srcdir)/'`generated/_log10_r4.F90
+
+_log10_r8.lo: generated/_log10_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _log10_r8.lo `test -f 'generated/_log10_r8.F90' || echo '$(srcdir)/'`generated/_log10_r8.F90
+
+_log10_r10.lo: generated/_log10_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _log10_r10.lo `test -f 'generated/_log10_r10.F90' || echo '$(srcdir)/'`generated/_log10_r10.F90
+
+_log10_r16.lo: generated/_log10_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _log10_r16.lo `test -f 'generated/_log10_r16.F90' || echo '$(srcdir)/'`generated/_log10_r16.F90
+
+_sqrt_r4.lo: generated/_sqrt_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sqrt_r4.lo `test -f 'generated/_sqrt_r4.F90' || echo '$(srcdir)/'`generated/_sqrt_r4.F90
+
+_sqrt_r8.lo: generated/_sqrt_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sqrt_r8.lo `test -f 'generated/_sqrt_r8.F90' || echo '$(srcdir)/'`generated/_sqrt_r8.F90
+
+_sqrt_r10.lo: generated/_sqrt_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sqrt_r10.lo `test -f 'generated/_sqrt_r10.F90' || echo '$(srcdir)/'`generated/_sqrt_r10.F90
+
+_sqrt_r16.lo: generated/_sqrt_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sqrt_r16.lo `test -f 'generated/_sqrt_r16.F90' || echo '$(srcdir)/'`generated/_sqrt_r16.F90
+
+_sqrt_c4.lo: generated/_sqrt_c4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sqrt_c4.lo `test -f 'generated/_sqrt_c4.F90' || echo '$(srcdir)/'`generated/_sqrt_c4.F90
+
+_sqrt_c8.lo: generated/_sqrt_c8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sqrt_c8.lo `test -f 'generated/_sqrt_c8.F90' || echo '$(srcdir)/'`generated/_sqrt_c8.F90
+
+_sqrt_c10.lo: generated/_sqrt_c10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sqrt_c10.lo `test -f 'generated/_sqrt_c10.F90' || echo '$(srcdir)/'`generated/_sqrt_c10.F90
+
+_sqrt_c16.lo: generated/_sqrt_c16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sqrt_c16.lo `test -f 'generated/_sqrt_c16.F90' || echo '$(srcdir)/'`generated/_sqrt_c16.F90
+
+_asin_r4.lo: generated/_asin_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _asin_r4.lo `test -f 'generated/_asin_r4.F90' || echo '$(srcdir)/'`generated/_asin_r4.F90
+
+_asin_r8.lo: generated/_asin_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _asin_r8.lo `test -f 'generated/_asin_r8.F90' || echo '$(srcdir)/'`generated/_asin_r8.F90
+
+_asin_r10.lo: generated/_asin_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _asin_r10.lo `test -f 'generated/_asin_r10.F90' || echo '$(srcdir)/'`generated/_asin_r10.F90
+
+_asin_r16.lo: generated/_asin_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _asin_r16.lo `test -f 'generated/_asin_r16.F90' || echo '$(srcdir)/'`generated/_asin_r16.F90
+
+_acos_r4.lo: generated/_acos_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _acos_r4.lo `test -f 'generated/_acos_r4.F90' || echo '$(srcdir)/'`generated/_acos_r4.F90
+
+_acos_r8.lo: generated/_acos_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _acos_r8.lo `test -f 'generated/_acos_r8.F90' || echo '$(srcdir)/'`generated/_acos_r8.F90
+
+_acos_r10.lo: generated/_acos_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _acos_r10.lo `test -f 'generated/_acos_r10.F90' || echo '$(srcdir)/'`generated/_acos_r10.F90
+
+_acos_r16.lo: generated/_acos_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _acos_r16.lo `test -f 'generated/_acos_r16.F90' || echo '$(srcdir)/'`generated/_acos_r16.F90
+
+_atan_r4.lo: generated/_atan_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _atan_r4.lo `test -f 'generated/_atan_r4.F90' || echo '$(srcdir)/'`generated/_atan_r4.F90
+
+_atan_r8.lo: generated/_atan_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _atan_r8.lo `test -f 'generated/_atan_r8.F90' || echo '$(srcdir)/'`generated/_atan_r8.F90
+
+_atan_r10.lo: generated/_atan_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _atan_r10.lo `test -f 'generated/_atan_r10.F90' || echo '$(srcdir)/'`generated/_atan_r10.F90
+
+_atan_r16.lo: generated/_atan_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _atan_r16.lo `test -f 'generated/_atan_r16.F90' || echo '$(srcdir)/'`generated/_atan_r16.F90
+
+_sin_r4.lo: generated/_sin_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sin_r4.lo `test -f 'generated/_sin_r4.F90' || echo '$(srcdir)/'`generated/_sin_r4.F90
+
+_sin_r8.lo: generated/_sin_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sin_r8.lo `test -f 'generated/_sin_r8.F90' || echo '$(srcdir)/'`generated/_sin_r8.F90
+
+_sin_r10.lo: generated/_sin_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sin_r10.lo `test -f 'generated/_sin_r10.F90' || echo '$(srcdir)/'`generated/_sin_r10.F90
+
+_sin_r16.lo: generated/_sin_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sin_r16.lo `test -f 'generated/_sin_r16.F90' || echo '$(srcdir)/'`generated/_sin_r16.F90
+
+_sin_c4.lo: generated/_sin_c4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sin_c4.lo `test -f 'generated/_sin_c4.F90' || echo '$(srcdir)/'`generated/_sin_c4.F90
+
+_sin_c8.lo: generated/_sin_c8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sin_c8.lo `test -f 'generated/_sin_c8.F90' || echo '$(srcdir)/'`generated/_sin_c8.F90
+
+_sin_c10.lo: generated/_sin_c10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sin_c10.lo `test -f 'generated/_sin_c10.F90' || echo '$(srcdir)/'`generated/_sin_c10.F90
+
+_sin_c16.lo: generated/_sin_c16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sin_c16.lo `test -f 'generated/_sin_c16.F90' || echo '$(srcdir)/'`generated/_sin_c16.F90
+
+_cos_r4.lo: generated/_cos_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _cos_r4.lo `test -f 'generated/_cos_r4.F90' || echo '$(srcdir)/'`generated/_cos_r4.F90
+
+_cos_r8.lo: generated/_cos_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _cos_r8.lo `test -f 'generated/_cos_r8.F90' || echo '$(srcdir)/'`generated/_cos_r8.F90
+
+_cos_r10.lo: generated/_cos_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _cos_r10.lo `test -f 'generated/_cos_r10.F90' || echo '$(srcdir)/'`generated/_cos_r10.F90
+
+_cos_r16.lo: generated/_cos_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _cos_r16.lo `test -f 'generated/_cos_r16.F90' || echo '$(srcdir)/'`generated/_cos_r16.F90
+
+_cos_c4.lo: generated/_cos_c4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _cos_c4.lo `test -f 'generated/_cos_c4.F90' || echo '$(srcdir)/'`generated/_cos_c4.F90
+
+_cos_c8.lo: generated/_cos_c8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _cos_c8.lo `test -f 'generated/_cos_c8.F90' || echo '$(srcdir)/'`generated/_cos_c8.F90
+
+_cos_c10.lo: generated/_cos_c10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _cos_c10.lo `test -f 'generated/_cos_c10.F90' || echo '$(srcdir)/'`generated/_cos_c10.F90
+
+_cos_c16.lo: generated/_cos_c16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _cos_c16.lo `test -f 'generated/_cos_c16.F90' || echo '$(srcdir)/'`generated/_cos_c16.F90
+
+_tan_r4.lo: generated/_tan_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _tan_r4.lo `test -f 'generated/_tan_r4.F90' || echo '$(srcdir)/'`generated/_tan_r4.F90
+
+_tan_r8.lo: generated/_tan_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _tan_r8.lo `test -f 'generated/_tan_r8.F90' || echo '$(srcdir)/'`generated/_tan_r8.F90
+
+_tan_r10.lo: generated/_tan_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _tan_r10.lo `test -f 'generated/_tan_r10.F90' || echo '$(srcdir)/'`generated/_tan_r10.F90
+
+_tan_r16.lo: generated/_tan_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _tan_r16.lo `test -f 'generated/_tan_r16.F90' || echo '$(srcdir)/'`generated/_tan_r16.F90
+
+_sinh_r4.lo: generated/_sinh_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sinh_r4.lo `test -f 'generated/_sinh_r4.F90' || echo '$(srcdir)/'`generated/_sinh_r4.F90
+
+_sinh_r8.lo: generated/_sinh_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sinh_r8.lo `test -f 'generated/_sinh_r8.F90' || echo '$(srcdir)/'`generated/_sinh_r8.F90
+
+_sinh_r10.lo: generated/_sinh_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sinh_r10.lo `test -f 'generated/_sinh_r10.F90' || echo '$(srcdir)/'`generated/_sinh_r10.F90
+
+_sinh_r16.lo: generated/_sinh_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sinh_r16.lo `test -f 'generated/_sinh_r16.F90' || echo '$(srcdir)/'`generated/_sinh_r16.F90
+
+_cosh_r4.lo: generated/_cosh_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _cosh_r4.lo `test -f 'generated/_cosh_r4.F90' || echo '$(srcdir)/'`generated/_cosh_r4.F90
+
+_cosh_r8.lo: generated/_cosh_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _cosh_r8.lo `test -f 'generated/_cosh_r8.F90' || echo '$(srcdir)/'`generated/_cosh_r8.F90
+
+_cosh_r10.lo: generated/_cosh_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _cosh_r10.lo `test -f 'generated/_cosh_r10.F90' || echo '$(srcdir)/'`generated/_cosh_r10.F90
+
+_cosh_r16.lo: generated/_cosh_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _cosh_r16.lo `test -f 'generated/_cosh_r16.F90' || echo '$(srcdir)/'`generated/_cosh_r16.F90
+
+_tanh_r4.lo: generated/_tanh_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _tanh_r4.lo `test -f 'generated/_tanh_r4.F90' || echo '$(srcdir)/'`generated/_tanh_r4.F90
+
+_tanh_r8.lo: generated/_tanh_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _tanh_r8.lo `test -f 'generated/_tanh_r8.F90' || echo '$(srcdir)/'`generated/_tanh_r8.F90
+
+_tanh_r10.lo: generated/_tanh_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _tanh_r10.lo `test -f 'generated/_tanh_r10.F90' || echo '$(srcdir)/'`generated/_tanh_r10.F90
+
+_tanh_r16.lo: generated/_tanh_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _tanh_r16.lo `test -f 'generated/_tanh_r16.F90' || echo '$(srcdir)/'`generated/_tanh_r16.F90
+
+_conjg_c4.lo: generated/_conjg_c4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _conjg_c4.lo `test -f 'generated/_conjg_c4.F90' || echo '$(srcdir)/'`generated/_conjg_c4.F90
+
+_conjg_c8.lo: generated/_conjg_c8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _conjg_c8.lo `test -f 'generated/_conjg_c8.F90' || echo '$(srcdir)/'`generated/_conjg_c8.F90
+
+_conjg_c10.lo: generated/_conjg_c10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _conjg_c10.lo `test -f 'generated/_conjg_c10.F90' || echo '$(srcdir)/'`generated/_conjg_c10.F90
+
+_conjg_c16.lo: generated/_conjg_c16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _conjg_c16.lo `test -f 'generated/_conjg_c16.F90' || echo '$(srcdir)/'`generated/_conjg_c16.F90
+
+_aint_r4.lo: generated/_aint_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _aint_r4.lo `test -f 'generated/_aint_r4.F90' || echo '$(srcdir)/'`generated/_aint_r4.F90
+
+_aint_r8.lo: generated/_aint_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _aint_r8.lo `test -f 'generated/_aint_r8.F90' || echo '$(srcdir)/'`generated/_aint_r8.F90
+
+_aint_r10.lo: generated/_aint_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _aint_r10.lo `test -f 'generated/_aint_r10.F90' || echo '$(srcdir)/'`generated/_aint_r10.F90
+
+_aint_r16.lo: generated/_aint_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _aint_r16.lo `test -f 'generated/_aint_r16.F90' || echo '$(srcdir)/'`generated/_aint_r16.F90
+
+_anint_r4.lo: generated/_anint_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _anint_r4.lo `test -f 'generated/_anint_r4.F90' || echo '$(srcdir)/'`generated/_anint_r4.F90
+
+_anint_r8.lo: generated/_anint_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _anint_r8.lo `test -f 'generated/_anint_r8.F90' || echo '$(srcdir)/'`generated/_anint_r8.F90
+
+_anint_r10.lo: generated/_anint_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _anint_r10.lo `test -f 'generated/_anint_r10.F90' || echo '$(srcdir)/'`generated/_anint_r10.F90
+
+_anint_r16.lo: generated/_anint_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _anint_r16.lo `test -f 'generated/_anint_r16.F90' || echo '$(srcdir)/'`generated/_anint_r16.F90
+
+_sign_i4.lo: generated/_sign_i4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sign_i4.lo `test -f 'generated/_sign_i4.F90' || echo '$(srcdir)/'`generated/_sign_i4.F90
+
+_sign_i8.lo: generated/_sign_i8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sign_i8.lo `test -f 'generated/_sign_i8.F90' || echo '$(srcdir)/'`generated/_sign_i8.F90
+
+_sign_i16.lo: generated/_sign_i16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sign_i16.lo `test -f 'generated/_sign_i16.F90' || echo '$(srcdir)/'`generated/_sign_i16.F90
+
+_sign_r4.lo: generated/_sign_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sign_r4.lo `test -f 'generated/_sign_r4.F90' || echo '$(srcdir)/'`generated/_sign_r4.F90
+
+_sign_r8.lo: generated/_sign_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sign_r8.lo `test -f 'generated/_sign_r8.F90' || echo '$(srcdir)/'`generated/_sign_r8.F90
+
+_sign_r10.lo: generated/_sign_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sign_r10.lo `test -f 'generated/_sign_r10.F90' || echo '$(srcdir)/'`generated/_sign_r10.F90
+
+_sign_r16.lo: generated/_sign_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sign_r16.lo `test -f 'generated/_sign_r16.F90' || echo '$(srcdir)/'`generated/_sign_r16.F90
+
+_dim_i4.lo: generated/_dim_i4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _dim_i4.lo `test -f 'generated/_dim_i4.F90' || echo '$(srcdir)/'`generated/_dim_i4.F90
+
+_dim_i8.lo: generated/_dim_i8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _dim_i8.lo `test -f 'generated/_dim_i8.F90' || echo '$(srcdir)/'`generated/_dim_i8.F90
+
+_dim_i16.lo: generated/_dim_i16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _dim_i16.lo `test -f 'generated/_dim_i16.F90' || echo '$(srcdir)/'`generated/_dim_i16.F90
+
+_dim_r4.lo: generated/_dim_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _dim_r4.lo `test -f 'generated/_dim_r4.F90' || echo '$(srcdir)/'`generated/_dim_r4.F90
+
+_dim_r8.lo: generated/_dim_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _dim_r8.lo `test -f 'generated/_dim_r8.F90' || echo '$(srcdir)/'`generated/_dim_r8.F90
+
+_dim_r10.lo: generated/_dim_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _dim_r10.lo `test -f 'generated/_dim_r10.F90' || echo '$(srcdir)/'`generated/_dim_r10.F90
+
+_dim_r16.lo: generated/_dim_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _dim_r16.lo `test -f 'generated/_dim_r16.F90' || echo '$(srcdir)/'`generated/_dim_r16.F90
+
+_atan2_r4.lo: generated/_atan2_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _atan2_r4.lo `test -f 'generated/_atan2_r4.F90' || echo '$(srcdir)/'`generated/_atan2_r4.F90
+
+_atan2_r8.lo: generated/_atan2_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _atan2_r8.lo `test -f 'generated/_atan2_r8.F90' || echo '$(srcdir)/'`generated/_atan2_r8.F90
+
+_atan2_r10.lo: generated/_atan2_r10.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _atan2_r10.lo `test -f 'generated/_atan2_r10.F90' || echo '$(srcdir)/'`generated/_atan2_r10.F90
+
+_atan2_r16.lo: generated/_atan2_r16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _atan2_r16.lo `test -f 'generated/_atan2_r16.F90' || echo '$(srcdir)/'`generated/_atan2_r16.F90
+
+_mod_i4.lo: generated/_mod_i4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _mod_i4.lo `test -f 'generated/_mod_i4.F90' || echo '$(srcdir)/'`generated/_mod_i4.F90
+
+_mod_i8.lo: generated/_mod_i8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _mod_i8.lo `test -f 'generated/_mod_i8.F90' || echo '$(srcdir)/'`generated/_mod_i8.F90
+
+_mod_i16.lo: generated/_mod_i16.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _mod_i16.lo `test -f 'generated/_mod_i16.F90' || echo '$(srcdir)/'`generated/_mod_i16.F90
+
+_mod_r4.lo: generated/_mod_r4.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _mod_r4.lo `test -f 'generated/_mod_r4.F90' || echo '$(srcdir)/'`generated/_mod_r4.F90
+
+_mod_r8.lo: generated/_mod_r8.F90
+	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o _mod_r8.lo `test -f 'generated/_mod_r8.F90' || echo '$(srcdir)/'`generated/_mod_r8.F90
+
 f2c_specifics.lo: intrinsics/f2c_specifics.F90
 	$(LIBTOOL) --mode=compile $(FC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) -c -o f2c_specifics.lo `test -f 'intrinsics/f2c_specifics.F90' || echo '$(srcdir)/'`intrinsics/f2c_specifics.F90
 
@@ -824,11 +1418,17 @@ all_l4.lo: generated/all_l4.c
 all_l8.lo: generated/all_l8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o all_l8.lo `test -f 'generated/all_l8.c' || echo '$(srcdir)/'`generated/all_l8.c
 
+all_l16.lo: generated/all_l16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o all_l16.lo `test -f 'generated/all_l16.c' || echo '$(srcdir)/'`generated/all_l16.c
+
 any_l4.lo: generated/any_l4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o any_l4.lo `test -f 'generated/any_l4.c' || echo '$(srcdir)/'`generated/any_l4.c
 
 any_l8.lo: generated/any_l8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o any_l8.lo `test -f 'generated/any_l8.c' || echo '$(srcdir)/'`generated/any_l8.c
+
+any_l16.lo: generated/any_l16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o any_l16.lo `test -f 'generated/any_l16.c' || echo '$(srcdir)/'`generated/any_l16.c
 
 count_4_l4.lo: generated/count_4_l4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_4_l4.lo `test -f 'generated/count_4_l4.c' || echo '$(srcdir)/'`generated/count_4_l4.c
@@ -836,11 +1436,26 @@ count_4_l4.lo: generated/count_4_l4.c
 count_8_l4.lo: generated/count_8_l4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_8_l4.lo `test -f 'generated/count_8_l4.c' || echo '$(srcdir)/'`generated/count_8_l4.c
 
+count_16_l4.lo: generated/count_16_l4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_16_l4.lo `test -f 'generated/count_16_l4.c' || echo '$(srcdir)/'`generated/count_16_l4.c
+
 count_4_l8.lo: generated/count_4_l8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_4_l8.lo `test -f 'generated/count_4_l8.c' || echo '$(srcdir)/'`generated/count_4_l8.c
 
 count_8_l8.lo: generated/count_8_l8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_8_l8.lo `test -f 'generated/count_8_l8.c' || echo '$(srcdir)/'`generated/count_8_l8.c
+
+count_16_l8.lo: generated/count_16_l8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_16_l8.lo `test -f 'generated/count_16_l8.c' || echo '$(srcdir)/'`generated/count_16_l8.c
+
+count_4_l16.lo: generated/count_4_l16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_4_l16.lo `test -f 'generated/count_4_l16.c' || echo '$(srcdir)/'`generated/count_4_l16.c
+
+count_8_l16.lo: generated/count_8_l16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_8_l16.lo `test -f 'generated/count_8_l16.c' || echo '$(srcdir)/'`generated/count_8_l16.c
+
+count_16_l16.lo: generated/count_16_l16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o count_16_l16.lo `test -f 'generated/count_16_l16.c' || echo '$(srcdir)/'`generated/count_16_l16.c
 
 maxloc0_4_i4.lo: generated/maxloc0_4_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_4_i4.lo `test -f 'generated/maxloc0_4_i4.c' || echo '$(srcdir)/'`generated/maxloc0_4_i4.c
@@ -848,11 +1463,26 @@ maxloc0_4_i4.lo: generated/maxloc0_4_i4.c
 maxloc0_8_i4.lo: generated/maxloc0_8_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_8_i4.lo `test -f 'generated/maxloc0_8_i4.c' || echo '$(srcdir)/'`generated/maxloc0_8_i4.c
 
+maxloc0_16_i4.lo: generated/maxloc0_16_i4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_16_i4.lo `test -f 'generated/maxloc0_16_i4.c' || echo '$(srcdir)/'`generated/maxloc0_16_i4.c
+
 maxloc0_4_i8.lo: generated/maxloc0_4_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_4_i8.lo `test -f 'generated/maxloc0_4_i8.c' || echo '$(srcdir)/'`generated/maxloc0_4_i8.c
 
 maxloc0_8_i8.lo: generated/maxloc0_8_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_8_i8.lo `test -f 'generated/maxloc0_8_i8.c' || echo '$(srcdir)/'`generated/maxloc0_8_i8.c
+
+maxloc0_16_i8.lo: generated/maxloc0_16_i8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_16_i8.lo `test -f 'generated/maxloc0_16_i8.c' || echo '$(srcdir)/'`generated/maxloc0_16_i8.c
+
+maxloc0_4_i16.lo: generated/maxloc0_4_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_4_i16.lo `test -f 'generated/maxloc0_4_i16.c' || echo '$(srcdir)/'`generated/maxloc0_4_i16.c
+
+maxloc0_8_i16.lo: generated/maxloc0_8_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_8_i16.lo `test -f 'generated/maxloc0_8_i16.c' || echo '$(srcdir)/'`generated/maxloc0_8_i16.c
+
+maxloc0_16_i16.lo: generated/maxloc0_16_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_16_i16.lo `test -f 'generated/maxloc0_16_i16.c' || echo '$(srcdir)/'`generated/maxloc0_16_i16.c
 
 maxloc0_4_r4.lo: generated/maxloc0_4_r4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_4_r4.lo `test -f 'generated/maxloc0_4_r4.c' || echo '$(srcdir)/'`generated/maxloc0_4_r4.c
@@ -860,11 +1490,35 @@ maxloc0_4_r4.lo: generated/maxloc0_4_r4.c
 maxloc0_8_r4.lo: generated/maxloc0_8_r4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_8_r4.lo `test -f 'generated/maxloc0_8_r4.c' || echo '$(srcdir)/'`generated/maxloc0_8_r4.c
 
+maxloc0_16_r4.lo: generated/maxloc0_16_r4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_16_r4.lo `test -f 'generated/maxloc0_16_r4.c' || echo '$(srcdir)/'`generated/maxloc0_16_r4.c
+
 maxloc0_4_r8.lo: generated/maxloc0_4_r8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_4_r8.lo `test -f 'generated/maxloc0_4_r8.c' || echo '$(srcdir)/'`generated/maxloc0_4_r8.c
 
 maxloc0_8_r8.lo: generated/maxloc0_8_r8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_8_r8.lo `test -f 'generated/maxloc0_8_r8.c' || echo '$(srcdir)/'`generated/maxloc0_8_r8.c
+
+maxloc0_16_r8.lo: generated/maxloc0_16_r8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_16_r8.lo `test -f 'generated/maxloc0_16_r8.c' || echo '$(srcdir)/'`generated/maxloc0_16_r8.c
+
+maxloc0_4_r10.lo: generated/maxloc0_4_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_4_r10.lo `test -f 'generated/maxloc0_4_r10.c' || echo '$(srcdir)/'`generated/maxloc0_4_r10.c
+
+maxloc0_8_r10.lo: generated/maxloc0_8_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_8_r10.lo `test -f 'generated/maxloc0_8_r10.c' || echo '$(srcdir)/'`generated/maxloc0_8_r10.c
+
+maxloc0_16_r10.lo: generated/maxloc0_16_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_16_r10.lo `test -f 'generated/maxloc0_16_r10.c' || echo '$(srcdir)/'`generated/maxloc0_16_r10.c
+
+maxloc0_4_r16.lo: generated/maxloc0_4_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_4_r16.lo `test -f 'generated/maxloc0_4_r16.c' || echo '$(srcdir)/'`generated/maxloc0_4_r16.c
+
+maxloc0_8_r16.lo: generated/maxloc0_8_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_8_r16.lo `test -f 'generated/maxloc0_8_r16.c' || echo '$(srcdir)/'`generated/maxloc0_8_r16.c
+
+maxloc0_16_r16.lo: generated/maxloc0_16_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc0_16_r16.lo `test -f 'generated/maxloc0_16_r16.c' || echo '$(srcdir)/'`generated/maxloc0_16_r16.c
 
 maxloc1_4_i4.lo: generated/maxloc1_4_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_4_i4.lo `test -f 'generated/maxloc1_4_i4.c' || echo '$(srcdir)/'`generated/maxloc1_4_i4.c
@@ -872,11 +1526,26 @@ maxloc1_4_i4.lo: generated/maxloc1_4_i4.c
 maxloc1_8_i4.lo: generated/maxloc1_8_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_8_i4.lo `test -f 'generated/maxloc1_8_i4.c' || echo '$(srcdir)/'`generated/maxloc1_8_i4.c
 
+maxloc1_16_i4.lo: generated/maxloc1_16_i4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_16_i4.lo `test -f 'generated/maxloc1_16_i4.c' || echo '$(srcdir)/'`generated/maxloc1_16_i4.c
+
 maxloc1_4_i8.lo: generated/maxloc1_4_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_4_i8.lo `test -f 'generated/maxloc1_4_i8.c' || echo '$(srcdir)/'`generated/maxloc1_4_i8.c
 
 maxloc1_8_i8.lo: generated/maxloc1_8_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_8_i8.lo `test -f 'generated/maxloc1_8_i8.c' || echo '$(srcdir)/'`generated/maxloc1_8_i8.c
+
+maxloc1_16_i8.lo: generated/maxloc1_16_i8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_16_i8.lo `test -f 'generated/maxloc1_16_i8.c' || echo '$(srcdir)/'`generated/maxloc1_16_i8.c
+
+maxloc1_4_i16.lo: generated/maxloc1_4_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_4_i16.lo `test -f 'generated/maxloc1_4_i16.c' || echo '$(srcdir)/'`generated/maxloc1_4_i16.c
+
+maxloc1_8_i16.lo: generated/maxloc1_8_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_8_i16.lo `test -f 'generated/maxloc1_8_i16.c' || echo '$(srcdir)/'`generated/maxloc1_8_i16.c
+
+maxloc1_16_i16.lo: generated/maxloc1_16_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_16_i16.lo `test -f 'generated/maxloc1_16_i16.c' || echo '$(srcdir)/'`generated/maxloc1_16_i16.c
 
 maxloc1_4_r4.lo: generated/maxloc1_4_r4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_4_r4.lo `test -f 'generated/maxloc1_4_r4.c' || echo '$(srcdir)/'`generated/maxloc1_4_r4.c
@@ -884,11 +1553,35 @@ maxloc1_4_r4.lo: generated/maxloc1_4_r4.c
 maxloc1_8_r4.lo: generated/maxloc1_8_r4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_8_r4.lo `test -f 'generated/maxloc1_8_r4.c' || echo '$(srcdir)/'`generated/maxloc1_8_r4.c
 
+maxloc1_16_r4.lo: generated/maxloc1_16_r4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_16_r4.lo `test -f 'generated/maxloc1_16_r4.c' || echo '$(srcdir)/'`generated/maxloc1_16_r4.c
+
 maxloc1_4_r8.lo: generated/maxloc1_4_r8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_4_r8.lo `test -f 'generated/maxloc1_4_r8.c' || echo '$(srcdir)/'`generated/maxloc1_4_r8.c
 
 maxloc1_8_r8.lo: generated/maxloc1_8_r8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_8_r8.lo `test -f 'generated/maxloc1_8_r8.c' || echo '$(srcdir)/'`generated/maxloc1_8_r8.c
+
+maxloc1_16_r8.lo: generated/maxloc1_16_r8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_16_r8.lo `test -f 'generated/maxloc1_16_r8.c' || echo '$(srcdir)/'`generated/maxloc1_16_r8.c
+
+maxloc1_4_r10.lo: generated/maxloc1_4_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_4_r10.lo `test -f 'generated/maxloc1_4_r10.c' || echo '$(srcdir)/'`generated/maxloc1_4_r10.c
+
+maxloc1_8_r10.lo: generated/maxloc1_8_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_8_r10.lo `test -f 'generated/maxloc1_8_r10.c' || echo '$(srcdir)/'`generated/maxloc1_8_r10.c
+
+maxloc1_16_r10.lo: generated/maxloc1_16_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_16_r10.lo `test -f 'generated/maxloc1_16_r10.c' || echo '$(srcdir)/'`generated/maxloc1_16_r10.c
+
+maxloc1_4_r16.lo: generated/maxloc1_4_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_4_r16.lo `test -f 'generated/maxloc1_4_r16.c' || echo '$(srcdir)/'`generated/maxloc1_4_r16.c
+
+maxloc1_8_r16.lo: generated/maxloc1_8_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_8_r16.lo `test -f 'generated/maxloc1_8_r16.c' || echo '$(srcdir)/'`generated/maxloc1_8_r16.c
+
+maxloc1_16_r16.lo: generated/maxloc1_16_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxloc1_16_r16.lo `test -f 'generated/maxloc1_16_r16.c' || echo '$(srcdir)/'`generated/maxloc1_16_r16.c
 
 maxval_i4.lo: generated/maxval_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxval_i4.lo `test -f 'generated/maxval_i4.c' || echo '$(srcdir)/'`generated/maxval_i4.c
@@ -896,11 +1589,20 @@ maxval_i4.lo: generated/maxval_i4.c
 maxval_i8.lo: generated/maxval_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxval_i8.lo `test -f 'generated/maxval_i8.c' || echo '$(srcdir)/'`generated/maxval_i8.c
 
+maxval_i16.lo: generated/maxval_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxval_i16.lo `test -f 'generated/maxval_i16.c' || echo '$(srcdir)/'`generated/maxval_i16.c
+
 maxval_r4.lo: generated/maxval_r4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxval_r4.lo `test -f 'generated/maxval_r4.c' || echo '$(srcdir)/'`generated/maxval_r4.c
 
 maxval_r8.lo: generated/maxval_r8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxval_r8.lo `test -f 'generated/maxval_r8.c' || echo '$(srcdir)/'`generated/maxval_r8.c
+
+maxval_r10.lo: generated/maxval_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxval_r10.lo `test -f 'generated/maxval_r10.c' || echo '$(srcdir)/'`generated/maxval_r10.c
+
+maxval_r16.lo: generated/maxval_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o maxval_r16.lo `test -f 'generated/maxval_r16.c' || echo '$(srcdir)/'`generated/maxval_r16.c
 
 minloc0_4_i4.lo: generated/minloc0_4_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_4_i4.lo `test -f 'generated/minloc0_4_i4.c' || echo '$(srcdir)/'`generated/minloc0_4_i4.c
@@ -908,11 +1610,26 @@ minloc0_4_i4.lo: generated/minloc0_4_i4.c
 minloc0_8_i4.lo: generated/minloc0_8_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_8_i4.lo `test -f 'generated/minloc0_8_i4.c' || echo '$(srcdir)/'`generated/minloc0_8_i4.c
 
+minloc0_16_i4.lo: generated/minloc0_16_i4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_16_i4.lo `test -f 'generated/minloc0_16_i4.c' || echo '$(srcdir)/'`generated/minloc0_16_i4.c
+
 minloc0_4_i8.lo: generated/minloc0_4_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_4_i8.lo `test -f 'generated/minloc0_4_i8.c' || echo '$(srcdir)/'`generated/minloc0_4_i8.c
 
 minloc0_8_i8.lo: generated/minloc0_8_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_8_i8.lo `test -f 'generated/minloc0_8_i8.c' || echo '$(srcdir)/'`generated/minloc0_8_i8.c
+
+minloc0_16_i8.lo: generated/minloc0_16_i8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_16_i8.lo `test -f 'generated/minloc0_16_i8.c' || echo '$(srcdir)/'`generated/minloc0_16_i8.c
+
+minloc0_4_i16.lo: generated/minloc0_4_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_4_i16.lo `test -f 'generated/minloc0_4_i16.c' || echo '$(srcdir)/'`generated/minloc0_4_i16.c
+
+minloc0_8_i16.lo: generated/minloc0_8_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_8_i16.lo `test -f 'generated/minloc0_8_i16.c' || echo '$(srcdir)/'`generated/minloc0_8_i16.c
+
+minloc0_16_i16.lo: generated/minloc0_16_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_16_i16.lo `test -f 'generated/minloc0_16_i16.c' || echo '$(srcdir)/'`generated/minloc0_16_i16.c
 
 minloc0_4_r4.lo: generated/minloc0_4_r4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_4_r4.lo `test -f 'generated/minloc0_4_r4.c' || echo '$(srcdir)/'`generated/minloc0_4_r4.c
@@ -920,11 +1637,35 @@ minloc0_4_r4.lo: generated/minloc0_4_r4.c
 minloc0_8_r4.lo: generated/minloc0_8_r4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_8_r4.lo `test -f 'generated/minloc0_8_r4.c' || echo '$(srcdir)/'`generated/minloc0_8_r4.c
 
+minloc0_16_r4.lo: generated/minloc0_16_r4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_16_r4.lo `test -f 'generated/minloc0_16_r4.c' || echo '$(srcdir)/'`generated/minloc0_16_r4.c
+
 minloc0_4_r8.lo: generated/minloc0_4_r8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_4_r8.lo `test -f 'generated/minloc0_4_r8.c' || echo '$(srcdir)/'`generated/minloc0_4_r8.c
 
 minloc0_8_r8.lo: generated/minloc0_8_r8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_8_r8.lo `test -f 'generated/minloc0_8_r8.c' || echo '$(srcdir)/'`generated/minloc0_8_r8.c
+
+minloc0_16_r8.lo: generated/minloc0_16_r8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_16_r8.lo `test -f 'generated/minloc0_16_r8.c' || echo '$(srcdir)/'`generated/minloc0_16_r8.c
+
+minloc0_4_r10.lo: generated/minloc0_4_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_4_r10.lo `test -f 'generated/minloc0_4_r10.c' || echo '$(srcdir)/'`generated/minloc0_4_r10.c
+
+minloc0_8_r10.lo: generated/minloc0_8_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_8_r10.lo `test -f 'generated/minloc0_8_r10.c' || echo '$(srcdir)/'`generated/minloc0_8_r10.c
+
+minloc0_16_r10.lo: generated/minloc0_16_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_16_r10.lo `test -f 'generated/minloc0_16_r10.c' || echo '$(srcdir)/'`generated/minloc0_16_r10.c
+
+minloc0_4_r16.lo: generated/minloc0_4_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_4_r16.lo `test -f 'generated/minloc0_4_r16.c' || echo '$(srcdir)/'`generated/minloc0_4_r16.c
+
+minloc0_8_r16.lo: generated/minloc0_8_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_8_r16.lo `test -f 'generated/minloc0_8_r16.c' || echo '$(srcdir)/'`generated/minloc0_8_r16.c
+
+minloc0_16_r16.lo: generated/minloc0_16_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc0_16_r16.lo `test -f 'generated/minloc0_16_r16.c' || echo '$(srcdir)/'`generated/minloc0_16_r16.c
 
 minloc1_4_i4.lo: generated/minloc1_4_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_4_i4.lo `test -f 'generated/minloc1_4_i4.c' || echo '$(srcdir)/'`generated/minloc1_4_i4.c
@@ -932,11 +1673,26 @@ minloc1_4_i4.lo: generated/minloc1_4_i4.c
 minloc1_8_i4.lo: generated/minloc1_8_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_8_i4.lo `test -f 'generated/minloc1_8_i4.c' || echo '$(srcdir)/'`generated/minloc1_8_i4.c
 
+minloc1_16_i4.lo: generated/minloc1_16_i4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_16_i4.lo `test -f 'generated/minloc1_16_i4.c' || echo '$(srcdir)/'`generated/minloc1_16_i4.c
+
 minloc1_4_i8.lo: generated/minloc1_4_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_4_i8.lo `test -f 'generated/minloc1_4_i8.c' || echo '$(srcdir)/'`generated/minloc1_4_i8.c
 
 minloc1_8_i8.lo: generated/minloc1_8_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_8_i8.lo `test -f 'generated/minloc1_8_i8.c' || echo '$(srcdir)/'`generated/minloc1_8_i8.c
+
+minloc1_16_i8.lo: generated/minloc1_16_i8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_16_i8.lo `test -f 'generated/minloc1_16_i8.c' || echo '$(srcdir)/'`generated/minloc1_16_i8.c
+
+minloc1_4_i16.lo: generated/minloc1_4_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_4_i16.lo `test -f 'generated/minloc1_4_i16.c' || echo '$(srcdir)/'`generated/minloc1_4_i16.c
+
+minloc1_8_i16.lo: generated/minloc1_8_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_8_i16.lo `test -f 'generated/minloc1_8_i16.c' || echo '$(srcdir)/'`generated/minloc1_8_i16.c
+
+minloc1_16_i16.lo: generated/minloc1_16_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_16_i16.lo `test -f 'generated/minloc1_16_i16.c' || echo '$(srcdir)/'`generated/minloc1_16_i16.c
 
 minloc1_4_r4.lo: generated/minloc1_4_r4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_4_r4.lo `test -f 'generated/minloc1_4_r4.c' || echo '$(srcdir)/'`generated/minloc1_4_r4.c
@@ -944,11 +1700,35 @@ minloc1_4_r4.lo: generated/minloc1_4_r4.c
 minloc1_8_r4.lo: generated/minloc1_8_r4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_8_r4.lo `test -f 'generated/minloc1_8_r4.c' || echo '$(srcdir)/'`generated/minloc1_8_r4.c
 
+minloc1_16_r4.lo: generated/minloc1_16_r4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_16_r4.lo `test -f 'generated/minloc1_16_r4.c' || echo '$(srcdir)/'`generated/minloc1_16_r4.c
+
 minloc1_4_r8.lo: generated/minloc1_4_r8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_4_r8.lo `test -f 'generated/minloc1_4_r8.c' || echo '$(srcdir)/'`generated/minloc1_4_r8.c
 
 minloc1_8_r8.lo: generated/minloc1_8_r8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_8_r8.lo `test -f 'generated/minloc1_8_r8.c' || echo '$(srcdir)/'`generated/minloc1_8_r8.c
+
+minloc1_16_r8.lo: generated/minloc1_16_r8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_16_r8.lo `test -f 'generated/minloc1_16_r8.c' || echo '$(srcdir)/'`generated/minloc1_16_r8.c
+
+minloc1_4_r10.lo: generated/minloc1_4_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_4_r10.lo `test -f 'generated/minloc1_4_r10.c' || echo '$(srcdir)/'`generated/minloc1_4_r10.c
+
+minloc1_8_r10.lo: generated/minloc1_8_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_8_r10.lo `test -f 'generated/minloc1_8_r10.c' || echo '$(srcdir)/'`generated/minloc1_8_r10.c
+
+minloc1_16_r10.lo: generated/minloc1_16_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_16_r10.lo `test -f 'generated/minloc1_16_r10.c' || echo '$(srcdir)/'`generated/minloc1_16_r10.c
+
+minloc1_4_r16.lo: generated/minloc1_4_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_4_r16.lo `test -f 'generated/minloc1_4_r16.c' || echo '$(srcdir)/'`generated/minloc1_4_r16.c
+
+minloc1_8_r16.lo: generated/minloc1_8_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_8_r16.lo `test -f 'generated/minloc1_8_r16.c' || echo '$(srcdir)/'`generated/minloc1_8_r16.c
+
+minloc1_16_r16.lo: generated/minloc1_16_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minloc1_16_r16.lo `test -f 'generated/minloc1_16_r16.c' || echo '$(srcdir)/'`generated/minloc1_16_r16.c
 
 minval_i4.lo: generated/minval_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minval_i4.lo `test -f 'generated/minval_i4.c' || echo '$(srcdir)/'`generated/minval_i4.c
@@ -956,11 +1736,20 @@ minval_i4.lo: generated/minval_i4.c
 minval_i8.lo: generated/minval_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minval_i8.lo `test -f 'generated/minval_i8.c' || echo '$(srcdir)/'`generated/minval_i8.c
 
+minval_i16.lo: generated/minval_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minval_i16.lo `test -f 'generated/minval_i16.c' || echo '$(srcdir)/'`generated/minval_i16.c
+
 minval_r4.lo: generated/minval_r4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minval_r4.lo `test -f 'generated/minval_r4.c' || echo '$(srcdir)/'`generated/minval_r4.c
 
 minval_r8.lo: generated/minval_r8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minval_r8.lo `test -f 'generated/minval_r8.c' || echo '$(srcdir)/'`generated/minval_r8.c
+
+minval_r10.lo: generated/minval_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minval_r10.lo `test -f 'generated/minval_r10.c' || echo '$(srcdir)/'`generated/minval_r10.c
+
+minval_r16.lo: generated/minval_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o minval_r16.lo `test -f 'generated/minval_r16.c' || echo '$(srcdir)/'`generated/minval_r16.c
 
 product_i4.lo: generated/product_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o product_i4.lo `test -f 'generated/product_i4.c' || echo '$(srcdir)/'`generated/product_i4.c
@@ -968,11 +1757,20 @@ product_i4.lo: generated/product_i4.c
 product_i8.lo: generated/product_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o product_i8.lo `test -f 'generated/product_i8.c' || echo '$(srcdir)/'`generated/product_i8.c
 
+product_i16.lo: generated/product_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o product_i16.lo `test -f 'generated/product_i16.c' || echo '$(srcdir)/'`generated/product_i16.c
+
 product_r4.lo: generated/product_r4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o product_r4.lo `test -f 'generated/product_r4.c' || echo '$(srcdir)/'`generated/product_r4.c
 
 product_r8.lo: generated/product_r8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o product_r8.lo `test -f 'generated/product_r8.c' || echo '$(srcdir)/'`generated/product_r8.c
+
+product_r10.lo: generated/product_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o product_r10.lo `test -f 'generated/product_r10.c' || echo '$(srcdir)/'`generated/product_r10.c
+
+product_r16.lo: generated/product_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o product_r16.lo `test -f 'generated/product_r16.c' || echo '$(srcdir)/'`generated/product_r16.c
 
 product_c4.lo: generated/product_c4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o product_c4.lo `test -f 'generated/product_c4.c' || echo '$(srcdir)/'`generated/product_c4.c
@@ -980,11 +1778,20 @@ product_c4.lo: generated/product_c4.c
 product_c8.lo: generated/product_c8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o product_c8.lo `test -f 'generated/product_c8.c' || echo '$(srcdir)/'`generated/product_c8.c
 
+product_c10.lo: generated/product_c10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o product_c10.lo `test -f 'generated/product_c10.c' || echo '$(srcdir)/'`generated/product_c10.c
+
+product_c16.lo: generated/product_c16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o product_c16.lo `test -f 'generated/product_c16.c' || echo '$(srcdir)/'`generated/product_c16.c
+
 sum_i4.lo: generated/sum_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sum_i4.lo `test -f 'generated/sum_i4.c' || echo '$(srcdir)/'`generated/sum_i4.c
 
 sum_i8.lo: generated/sum_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sum_i8.lo `test -f 'generated/sum_i8.c' || echo '$(srcdir)/'`generated/sum_i8.c
+
+sum_i16.lo: generated/sum_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sum_i16.lo `test -f 'generated/sum_i16.c' || echo '$(srcdir)/'`generated/sum_i16.c
 
 sum_r4.lo: generated/sum_r4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sum_r4.lo `test -f 'generated/sum_r4.c' || echo '$(srcdir)/'`generated/sum_r4.c
@@ -992,11 +1799,23 @@ sum_r4.lo: generated/sum_r4.c
 sum_r8.lo: generated/sum_r8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sum_r8.lo `test -f 'generated/sum_r8.c' || echo '$(srcdir)/'`generated/sum_r8.c
 
+sum_r10.lo: generated/sum_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sum_r10.lo `test -f 'generated/sum_r10.c' || echo '$(srcdir)/'`generated/sum_r10.c
+
+sum_r16.lo: generated/sum_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sum_r16.lo `test -f 'generated/sum_r16.c' || echo '$(srcdir)/'`generated/sum_r16.c
+
 sum_c4.lo: generated/sum_c4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sum_c4.lo `test -f 'generated/sum_c4.c' || echo '$(srcdir)/'`generated/sum_c4.c
 
 sum_c8.lo: generated/sum_c8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sum_c8.lo `test -f 'generated/sum_c8.c' || echo '$(srcdir)/'`generated/sum_c8.c
+
+sum_c10.lo: generated/sum_c10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sum_c10.lo `test -f 'generated/sum_c10.c' || echo '$(srcdir)/'`generated/sum_c10.c
+
+sum_c16.lo: generated/sum_c16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sum_c16.lo `test -f 'generated/sum_c16.c' || echo '$(srcdir)/'`generated/sum_c16.c
 
 dotprod_i4.lo: generated/dotprod_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dotprod_i4.lo `test -f 'generated/dotprod_i4.c' || echo '$(srcdir)/'`generated/dotprod_i4.c
@@ -1004,11 +1823,20 @@ dotprod_i4.lo: generated/dotprod_i4.c
 dotprod_i8.lo: generated/dotprod_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dotprod_i8.lo `test -f 'generated/dotprod_i8.c' || echo '$(srcdir)/'`generated/dotprod_i8.c
 
+dotprod_i16.lo: generated/dotprod_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dotprod_i16.lo `test -f 'generated/dotprod_i16.c' || echo '$(srcdir)/'`generated/dotprod_i16.c
+
 dotprod_r4.lo: generated/dotprod_r4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dotprod_r4.lo `test -f 'generated/dotprod_r4.c' || echo '$(srcdir)/'`generated/dotprod_r4.c
 
 dotprod_r8.lo: generated/dotprod_r8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dotprod_r8.lo `test -f 'generated/dotprod_r8.c' || echo '$(srcdir)/'`generated/dotprod_r8.c
+
+dotprod_r10.lo: generated/dotprod_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dotprod_r10.lo `test -f 'generated/dotprod_r10.c' || echo '$(srcdir)/'`generated/dotprod_r10.c
+
+dotprod_r16.lo: generated/dotprod_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dotprod_r16.lo `test -f 'generated/dotprod_r16.c' || echo '$(srcdir)/'`generated/dotprod_r16.c
 
 dotprod_l4.lo: generated/dotprod_l4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dotprod_l4.lo `test -f 'generated/dotprod_l4.c' || echo '$(srcdir)/'`generated/dotprod_l4.c
@@ -1016,11 +1844,20 @@ dotprod_l4.lo: generated/dotprod_l4.c
 dotprod_l8.lo: generated/dotprod_l8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dotprod_l8.lo `test -f 'generated/dotprod_l8.c' || echo '$(srcdir)/'`generated/dotprod_l8.c
 
+dotprod_l16.lo: generated/dotprod_l16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dotprod_l16.lo `test -f 'generated/dotprod_l16.c' || echo '$(srcdir)/'`generated/dotprod_l16.c
+
 dotprod_c4.lo: generated/dotprod_c4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dotprod_c4.lo `test -f 'generated/dotprod_c4.c' || echo '$(srcdir)/'`generated/dotprod_c4.c
 
 dotprod_c8.lo: generated/dotprod_c8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dotprod_c8.lo `test -f 'generated/dotprod_c8.c' || echo '$(srcdir)/'`generated/dotprod_c8.c
+
+dotprod_c10.lo: generated/dotprod_c10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dotprod_c10.lo `test -f 'generated/dotprod_c10.c' || echo '$(srcdir)/'`generated/dotprod_c10.c
+
+dotprod_c16.lo: generated/dotprod_c16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o dotprod_c16.lo `test -f 'generated/dotprod_c16.c' || echo '$(srcdir)/'`generated/dotprod_c16.c
 
 matmul_i4.lo: generated/matmul_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_i4.lo `test -f 'generated/matmul_i4.c' || echo '$(srcdir)/'`generated/matmul_i4.c
@@ -1028,11 +1865,20 @@ matmul_i4.lo: generated/matmul_i4.c
 matmul_i8.lo: generated/matmul_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_i8.lo `test -f 'generated/matmul_i8.c' || echo '$(srcdir)/'`generated/matmul_i8.c
 
+matmul_i16.lo: generated/matmul_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_i16.lo `test -f 'generated/matmul_i16.c' || echo '$(srcdir)/'`generated/matmul_i16.c
+
 matmul_r4.lo: generated/matmul_r4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_r4.lo `test -f 'generated/matmul_r4.c' || echo '$(srcdir)/'`generated/matmul_r4.c
 
 matmul_r8.lo: generated/matmul_r8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_r8.lo `test -f 'generated/matmul_r8.c' || echo '$(srcdir)/'`generated/matmul_r8.c
+
+matmul_r10.lo: generated/matmul_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_r10.lo `test -f 'generated/matmul_r10.c' || echo '$(srcdir)/'`generated/matmul_r10.c
+
+matmul_r16.lo: generated/matmul_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_r16.lo `test -f 'generated/matmul_r16.c' || echo '$(srcdir)/'`generated/matmul_r16.c
 
 matmul_c4.lo: generated/matmul_c4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_c4.lo `test -f 'generated/matmul_c4.c' || echo '$(srcdir)/'`generated/matmul_c4.c
@@ -1040,11 +1886,20 @@ matmul_c4.lo: generated/matmul_c4.c
 matmul_c8.lo: generated/matmul_c8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_c8.lo `test -f 'generated/matmul_c8.c' || echo '$(srcdir)/'`generated/matmul_c8.c
 
+matmul_c10.lo: generated/matmul_c10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_c10.lo `test -f 'generated/matmul_c10.c' || echo '$(srcdir)/'`generated/matmul_c10.c
+
+matmul_c16.lo: generated/matmul_c16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_c16.lo `test -f 'generated/matmul_c16.c' || echo '$(srcdir)/'`generated/matmul_c16.c
+
 matmul_l4.lo: generated/matmul_l4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_l4.lo `test -f 'generated/matmul_l4.c' || echo '$(srcdir)/'`generated/matmul_l4.c
 
 matmul_l8.lo: generated/matmul_l8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_l8.lo `test -f 'generated/matmul_l8.c' || echo '$(srcdir)/'`generated/matmul_l8.c
+
+matmul_l16.lo: generated/matmul_l16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o matmul_l16.lo `test -f 'generated/matmul_l16.c' || echo '$(srcdir)/'`generated/matmul_l16.c
 
 transpose_i4.lo: generated/transpose_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o transpose_i4.lo `test -f 'generated/transpose_i4.c' || echo '$(srcdir)/'`generated/transpose_i4.c
@@ -1052,11 +1907,20 @@ transpose_i4.lo: generated/transpose_i4.c
 transpose_i8.lo: generated/transpose_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o transpose_i8.lo `test -f 'generated/transpose_i8.c' || echo '$(srcdir)/'`generated/transpose_i8.c
 
+transpose_i16.lo: generated/transpose_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o transpose_i16.lo `test -f 'generated/transpose_i16.c' || echo '$(srcdir)/'`generated/transpose_i16.c
+
 transpose_c4.lo: generated/transpose_c4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o transpose_c4.lo `test -f 'generated/transpose_c4.c' || echo '$(srcdir)/'`generated/transpose_c4.c
 
 transpose_c8.lo: generated/transpose_c8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o transpose_c8.lo `test -f 'generated/transpose_c8.c' || echo '$(srcdir)/'`generated/transpose_c8.c
+
+transpose_c10.lo: generated/transpose_c10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o transpose_c10.lo `test -f 'generated/transpose_c10.c' || echo '$(srcdir)/'`generated/transpose_c10.c
+
+transpose_c16.lo: generated/transpose_c16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o transpose_c16.lo `test -f 'generated/transpose_c16.c' || echo '$(srcdir)/'`generated/transpose_c16.c
 
 shape_i4.lo: generated/shape_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o shape_i4.lo `test -f 'generated/shape_i4.c' || echo '$(srcdir)/'`generated/shape_i4.c
@@ -1064,11 +1928,17 @@ shape_i4.lo: generated/shape_i4.c
 shape_i8.lo: generated/shape_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o shape_i8.lo `test -f 'generated/shape_i8.c' || echo '$(srcdir)/'`generated/shape_i8.c
 
+shape_i16.lo: generated/shape_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o shape_i16.lo `test -f 'generated/shape_i16.c' || echo '$(srcdir)/'`generated/shape_i16.c
+
 eoshift1_4.lo: generated/eoshift1_4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o eoshift1_4.lo `test -f 'generated/eoshift1_4.c' || echo '$(srcdir)/'`generated/eoshift1_4.c
 
 eoshift1_8.lo: generated/eoshift1_8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o eoshift1_8.lo `test -f 'generated/eoshift1_8.c' || echo '$(srcdir)/'`generated/eoshift1_8.c
+
+eoshift1_16.lo: generated/eoshift1_16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o eoshift1_16.lo `test -f 'generated/eoshift1_16.c' || echo '$(srcdir)/'`generated/eoshift1_16.c
 
 eoshift3_4.lo: generated/eoshift3_4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o eoshift3_4.lo `test -f 'generated/eoshift3_4.c' || echo '$(srcdir)/'`generated/eoshift3_4.c
@@ -1076,11 +1946,17 @@ eoshift3_4.lo: generated/eoshift3_4.c
 eoshift3_8.lo: generated/eoshift3_8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o eoshift3_8.lo `test -f 'generated/eoshift3_8.c' || echo '$(srcdir)/'`generated/eoshift3_8.c
 
+eoshift3_16.lo: generated/eoshift3_16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o eoshift3_16.lo `test -f 'generated/eoshift3_16.c' || echo '$(srcdir)/'`generated/eoshift3_16.c
+
 cshift1_4.lo: generated/cshift1_4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_4.lo `test -f 'generated/cshift1_4.c' || echo '$(srcdir)/'`generated/cshift1_4.c
 
 cshift1_8.lo: generated/cshift1_8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_8.lo `test -f 'generated/cshift1_8.c' || echo '$(srcdir)/'`generated/cshift1_8.c
+
+cshift1_16.lo: generated/cshift1_16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cshift1_16.lo `test -f 'generated/cshift1_16.c' || echo '$(srcdir)/'`generated/cshift1_16.c
 
 reshape_i4.lo: generated/reshape_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_i4.lo `test -f 'generated/reshape_i4.c' || echo '$(srcdir)/'`generated/reshape_i4.c
@@ -1088,11 +1964,20 @@ reshape_i4.lo: generated/reshape_i4.c
 reshape_i8.lo: generated/reshape_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_i8.lo `test -f 'generated/reshape_i8.c' || echo '$(srcdir)/'`generated/reshape_i8.c
 
+reshape_i16.lo: generated/reshape_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_i16.lo `test -f 'generated/reshape_i16.c' || echo '$(srcdir)/'`generated/reshape_i16.c
+
 reshape_c4.lo: generated/reshape_c4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_c4.lo `test -f 'generated/reshape_c4.c' || echo '$(srcdir)/'`generated/reshape_c4.c
 
 reshape_c8.lo: generated/reshape_c8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_c8.lo `test -f 'generated/reshape_c8.c' || echo '$(srcdir)/'`generated/reshape_c8.c
+
+reshape_c10.lo: generated/reshape_c10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_c10.lo `test -f 'generated/reshape_c10.c' || echo '$(srcdir)/'`generated/reshape_c10.c
+
+reshape_c16.lo: generated/reshape_c16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o reshape_c16.lo `test -f 'generated/reshape_c16.c' || echo '$(srcdir)/'`generated/reshape_c16.c
 
 in_pack_i4.lo: generated/in_pack_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_pack_i4.lo `test -f 'generated/in_pack_i4.c' || echo '$(srcdir)/'`generated/in_pack_i4.c
@@ -1100,11 +1985,20 @@ in_pack_i4.lo: generated/in_pack_i4.c
 in_pack_i8.lo: generated/in_pack_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_pack_i8.lo `test -f 'generated/in_pack_i8.c' || echo '$(srcdir)/'`generated/in_pack_i8.c
 
+in_pack_i16.lo: generated/in_pack_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_pack_i16.lo `test -f 'generated/in_pack_i16.c' || echo '$(srcdir)/'`generated/in_pack_i16.c
+
 in_pack_c4.lo: generated/in_pack_c4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_pack_c4.lo `test -f 'generated/in_pack_c4.c' || echo '$(srcdir)/'`generated/in_pack_c4.c
 
 in_pack_c8.lo: generated/in_pack_c8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_pack_c8.lo `test -f 'generated/in_pack_c8.c' || echo '$(srcdir)/'`generated/in_pack_c8.c
+
+in_pack_c10.lo: generated/in_pack_c10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_pack_c10.lo `test -f 'generated/in_pack_c10.c' || echo '$(srcdir)/'`generated/in_pack_c10.c
+
+in_pack_c16.lo: generated/in_pack_c16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_pack_c16.lo `test -f 'generated/in_pack_c16.c' || echo '$(srcdir)/'`generated/in_pack_c16.c
 
 in_unpack_i4.lo: generated/in_unpack_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_i4.lo `test -f 'generated/in_unpack_i4.c' || echo '$(srcdir)/'`generated/in_unpack_i4.c
@@ -1112,11 +2006,20 @@ in_unpack_i4.lo: generated/in_unpack_i4.c
 in_unpack_i8.lo: generated/in_unpack_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_i8.lo `test -f 'generated/in_unpack_i8.c' || echo '$(srcdir)/'`generated/in_unpack_i8.c
 
+in_unpack_i16.lo: generated/in_unpack_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_i16.lo `test -f 'generated/in_unpack_i16.c' || echo '$(srcdir)/'`generated/in_unpack_i16.c
+
 in_unpack_c4.lo: generated/in_unpack_c4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_c4.lo `test -f 'generated/in_unpack_c4.c' || echo '$(srcdir)/'`generated/in_unpack_c4.c
 
 in_unpack_c8.lo: generated/in_unpack_c8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_c8.lo `test -f 'generated/in_unpack_c8.c' || echo '$(srcdir)/'`generated/in_unpack_c8.c
+
+in_unpack_c10.lo: generated/in_unpack_c10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_c10.lo `test -f 'generated/in_unpack_c10.c' || echo '$(srcdir)/'`generated/in_unpack_c10.c
+
+in_unpack_c16.lo: generated/in_unpack_c16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o in_unpack_c16.lo `test -f 'generated/in_unpack_c16.c' || echo '$(srcdir)/'`generated/in_unpack_c16.c
 
 exponent_r4.lo: generated/exponent_r4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o exponent_r4.lo `test -f 'generated/exponent_r4.c' || echo '$(srcdir)/'`generated/exponent_r4.c
@@ -1124,11 +2027,23 @@ exponent_r4.lo: generated/exponent_r4.c
 exponent_r8.lo: generated/exponent_r8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o exponent_r8.lo `test -f 'generated/exponent_r8.c' || echo '$(srcdir)/'`generated/exponent_r8.c
 
+exponent_r10.lo: generated/exponent_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o exponent_r10.lo `test -f 'generated/exponent_r10.c' || echo '$(srcdir)/'`generated/exponent_r10.c
+
+exponent_r16.lo: generated/exponent_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o exponent_r16.lo `test -f 'generated/exponent_r16.c' || echo '$(srcdir)/'`generated/exponent_r16.c
+
 fraction_r4.lo: generated/fraction_r4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fraction_r4.lo `test -f 'generated/fraction_r4.c' || echo '$(srcdir)/'`generated/fraction_r4.c
 
 fraction_r8.lo: generated/fraction_r8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fraction_r8.lo `test -f 'generated/fraction_r8.c' || echo '$(srcdir)/'`generated/fraction_r8.c
+
+fraction_r10.lo: generated/fraction_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fraction_r10.lo `test -f 'generated/fraction_r10.c' || echo '$(srcdir)/'`generated/fraction_r10.c
+
+fraction_r16.lo: generated/fraction_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fraction_r16.lo `test -f 'generated/fraction_r16.c' || echo '$(srcdir)/'`generated/fraction_r16.c
 
 nearest_r4.lo: generated/nearest_r4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nearest_r4.lo `test -f 'generated/nearest_r4.c' || echo '$(srcdir)/'`generated/nearest_r4.c
@@ -1136,11 +2051,23 @@ nearest_r4.lo: generated/nearest_r4.c
 nearest_r8.lo: generated/nearest_r8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nearest_r8.lo `test -f 'generated/nearest_r8.c' || echo '$(srcdir)/'`generated/nearest_r8.c
 
+nearest_r10.lo: generated/nearest_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nearest_r10.lo `test -f 'generated/nearest_r10.c' || echo '$(srcdir)/'`generated/nearest_r10.c
+
+nearest_r16.lo: generated/nearest_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o nearest_r16.lo `test -f 'generated/nearest_r16.c' || echo '$(srcdir)/'`generated/nearest_r16.c
+
 set_exponent_r4.lo: generated/set_exponent_r4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o set_exponent_r4.lo `test -f 'generated/set_exponent_r4.c' || echo '$(srcdir)/'`generated/set_exponent_r4.c
 
 set_exponent_r8.lo: generated/set_exponent_r8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o set_exponent_r8.lo `test -f 'generated/set_exponent_r8.c' || echo '$(srcdir)/'`generated/set_exponent_r8.c
+
+set_exponent_r10.lo: generated/set_exponent_r10.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o set_exponent_r10.lo `test -f 'generated/set_exponent_r10.c' || echo '$(srcdir)/'`generated/set_exponent_r10.c
+
+set_exponent_r16.lo: generated/set_exponent_r16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o set_exponent_r16.lo `test -f 'generated/set_exponent_r16.c' || echo '$(srcdir)/'`generated/set_exponent_r16.c
 
 pow_i4_i4.lo: generated/pow_i4_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_i4_i4.lo `test -f 'generated/pow_i4_i4.c' || echo '$(srcdir)/'`generated/pow_i4_i4.c
@@ -1148,11 +2075,20 @@ pow_i4_i4.lo: generated/pow_i4_i4.c
 pow_i8_i4.lo: generated/pow_i8_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_i8_i4.lo `test -f 'generated/pow_i8_i4.c' || echo '$(srcdir)/'`generated/pow_i8_i4.c
 
+pow_i16_i4.lo: generated/pow_i16_i4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_i16_i4.lo `test -f 'generated/pow_i16_i4.c' || echo '$(srcdir)/'`generated/pow_i16_i4.c
+
 pow_r4_i4.lo: generated/pow_r4_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_r4_i4.lo `test -f 'generated/pow_r4_i4.c' || echo '$(srcdir)/'`generated/pow_r4_i4.c
 
 pow_r8_i4.lo: generated/pow_r8_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_r8_i4.lo `test -f 'generated/pow_r8_i4.c' || echo '$(srcdir)/'`generated/pow_r8_i4.c
+
+pow_r10_i4.lo: generated/pow_r10_i4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_r10_i4.lo `test -f 'generated/pow_r10_i4.c' || echo '$(srcdir)/'`generated/pow_r10_i4.c
+
+pow_r16_i4.lo: generated/pow_r16_i4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_r16_i4.lo `test -f 'generated/pow_r16_i4.c' || echo '$(srcdir)/'`generated/pow_r16_i4.c
 
 pow_c4_i4.lo: generated/pow_c4_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_c4_i4.lo `test -f 'generated/pow_c4_i4.c' || echo '$(srcdir)/'`generated/pow_c4_i4.c
@@ -1160,11 +2096,20 @@ pow_c4_i4.lo: generated/pow_c4_i4.c
 pow_c8_i4.lo: generated/pow_c8_i4.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_c8_i4.lo `test -f 'generated/pow_c8_i4.c' || echo '$(srcdir)/'`generated/pow_c8_i4.c
 
+pow_c10_i4.lo: generated/pow_c10_i4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_c10_i4.lo `test -f 'generated/pow_c10_i4.c' || echo '$(srcdir)/'`generated/pow_c10_i4.c
+
+pow_c16_i4.lo: generated/pow_c16_i4.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_c16_i4.lo `test -f 'generated/pow_c16_i4.c' || echo '$(srcdir)/'`generated/pow_c16_i4.c
+
 pow_i4_i8.lo: generated/pow_i4_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_i4_i8.lo `test -f 'generated/pow_i4_i8.c' || echo '$(srcdir)/'`generated/pow_i4_i8.c
 
 pow_i8_i8.lo: generated/pow_i8_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_i8_i8.lo `test -f 'generated/pow_i8_i8.c' || echo '$(srcdir)/'`generated/pow_i8_i8.c
+
+pow_i16_i8.lo: generated/pow_i16_i8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_i16_i8.lo `test -f 'generated/pow_i16_i8.c' || echo '$(srcdir)/'`generated/pow_i16_i8.c
 
 pow_r4_i8.lo: generated/pow_r4_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_r4_i8.lo `test -f 'generated/pow_r4_i8.c' || echo '$(srcdir)/'`generated/pow_r4_i8.c
@@ -1172,11 +2117,56 @@ pow_r4_i8.lo: generated/pow_r4_i8.c
 pow_r8_i8.lo: generated/pow_r8_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_r8_i8.lo `test -f 'generated/pow_r8_i8.c' || echo '$(srcdir)/'`generated/pow_r8_i8.c
 
+pow_r10_i8.lo: generated/pow_r10_i8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_r10_i8.lo `test -f 'generated/pow_r10_i8.c' || echo '$(srcdir)/'`generated/pow_r10_i8.c
+
+pow_r16_i8.lo: generated/pow_r16_i8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_r16_i8.lo `test -f 'generated/pow_r16_i8.c' || echo '$(srcdir)/'`generated/pow_r16_i8.c
+
 pow_c4_i8.lo: generated/pow_c4_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_c4_i8.lo `test -f 'generated/pow_c4_i8.c' || echo '$(srcdir)/'`generated/pow_c4_i8.c
 
 pow_c8_i8.lo: generated/pow_c8_i8.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_c8_i8.lo `test -f 'generated/pow_c8_i8.c' || echo '$(srcdir)/'`generated/pow_c8_i8.c
+
+pow_c10_i8.lo: generated/pow_c10_i8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_c10_i8.lo `test -f 'generated/pow_c10_i8.c' || echo '$(srcdir)/'`generated/pow_c10_i8.c
+
+pow_c16_i8.lo: generated/pow_c16_i8.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_c16_i8.lo `test -f 'generated/pow_c16_i8.c' || echo '$(srcdir)/'`generated/pow_c16_i8.c
+
+pow_i4_i16.lo: generated/pow_i4_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_i4_i16.lo `test -f 'generated/pow_i4_i16.c' || echo '$(srcdir)/'`generated/pow_i4_i16.c
+
+pow_i8_i16.lo: generated/pow_i8_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_i8_i16.lo `test -f 'generated/pow_i8_i16.c' || echo '$(srcdir)/'`generated/pow_i8_i16.c
+
+pow_i16_i16.lo: generated/pow_i16_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_i16_i16.lo `test -f 'generated/pow_i16_i16.c' || echo '$(srcdir)/'`generated/pow_i16_i16.c
+
+pow_r4_i16.lo: generated/pow_r4_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_r4_i16.lo `test -f 'generated/pow_r4_i16.c' || echo '$(srcdir)/'`generated/pow_r4_i16.c
+
+pow_r8_i16.lo: generated/pow_r8_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_r8_i16.lo `test -f 'generated/pow_r8_i16.c' || echo '$(srcdir)/'`generated/pow_r8_i16.c
+
+pow_r10_i16.lo: generated/pow_r10_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_r10_i16.lo `test -f 'generated/pow_r10_i16.c' || echo '$(srcdir)/'`generated/pow_r10_i16.c
+
+pow_r16_i16.lo: generated/pow_r16_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_r16_i16.lo `test -f 'generated/pow_r16_i16.c' || echo '$(srcdir)/'`generated/pow_r16_i16.c
+
+pow_c4_i16.lo: generated/pow_c4_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_c4_i16.lo `test -f 'generated/pow_c4_i16.c' || echo '$(srcdir)/'`generated/pow_c4_i16.c
+
+pow_c8_i16.lo: generated/pow_c8_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_c8_i16.lo `test -f 'generated/pow_c8_i16.c' || echo '$(srcdir)/'`generated/pow_c8_i16.c
+
+pow_c10_i16.lo: generated/pow_c10_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_c10_i16.lo `test -f 'generated/pow_c10_i16.c' || echo '$(srcdir)/'`generated/pow_c10_i16.c
+
+pow_c16_i16.lo: generated/pow_c16_i16.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pow_c16_i16.lo `test -f 'generated/pow_c16_i16.c' || echo '$(srcdir)/'`generated/pow_c16_i16.c
 
 close.lo: io/close.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o close.lo `test -f 'io/close.c' || echo '$(srcdir)/'`io/close.c
@@ -1384,192 +2374,6 @@ selected_int_kind.lo: intrinsics/selected_int_kind.f90
 
 selected_real_kind.lo: intrinsics/selected_real_kind.f90
 	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o selected_real_kind.lo `test -f 'intrinsics/selected_real_kind.f90' || echo '$(srcdir)/'`intrinsics/selected_real_kind.f90
-
-_abs_c4.lo: generated/_abs_c4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _abs_c4.lo `test -f 'generated/_abs_c4.f90' || echo '$(srcdir)/'`generated/_abs_c4.f90
-
-_abs_c8.lo: generated/_abs_c8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _abs_c8.lo `test -f 'generated/_abs_c8.f90' || echo '$(srcdir)/'`generated/_abs_c8.f90
-
-_abs_i4.lo: generated/_abs_i4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _abs_i4.lo `test -f 'generated/_abs_i4.f90' || echo '$(srcdir)/'`generated/_abs_i4.f90
-
-_abs_i8.lo: generated/_abs_i8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _abs_i8.lo `test -f 'generated/_abs_i8.f90' || echo '$(srcdir)/'`generated/_abs_i8.f90
-
-_abs_r4.lo: generated/_abs_r4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _abs_r4.lo `test -f 'generated/_abs_r4.f90' || echo '$(srcdir)/'`generated/_abs_r4.f90
-
-_abs_r8.lo: generated/_abs_r8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _abs_r8.lo `test -f 'generated/_abs_r8.f90' || echo '$(srcdir)/'`generated/_abs_r8.f90
-
-_exp_r4.lo: generated/_exp_r4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _exp_r4.lo `test -f 'generated/_exp_r4.f90' || echo '$(srcdir)/'`generated/_exp_r4.f90
-
-_exp_r8.lo: generated/_exp_r8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _exp_r8.lo `test -f 'generated/_exp_r8.f90' || echo '$(srcdir)/'`generated/_exp_r8.f90
-
-_exp_c4.lo: generated/_exp_c4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _exp_c4.lo `test -f 'generated/_exp_c4.f90' || echo '$(srcdir)/'`generated/_exp_c4.f90
-
-_exp_c8.lo: generated/_exp_c8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _exp_c8.lo `test -f 'generated/_exp_c8.f90' || echo '$(srcdir)/'`generated/_exp_c8.f90
-
-_log_r4.lo: generated/_log_r4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _log_r4.lo `test -f 'generated/_log_r4.f90' || echo '$(srcdir)/'`generated/_log_r4.f90
-
-_log_r8.lo: generated/_log_r8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _log_r8.lo `test -f 'generated/_log_r8.f90' || echo '$(srcdir)/'`generated/_log_r8.f90
-
-_log_c4.lo: generated/_log_c4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _log_c4.lo `test -f 'generated/_log_c4.f90' || echo '$(srcdir)/'`generated/_log_c4.f90
-
-_log_c8.lo: generated/_log_c8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _log_c8.lo `test -f 'generated/_log_c8.f90' || echo '$(srcdir)/'`generated/_log_c8.f90
-
-_log10_r4.lo: generated/_log10_r4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _log10_r4.lo `test -f 'generated/_log10_r4.f90' || echo '$(srcdir)/'`generated/_log10_r4.f90
-
-_log10_r8.lo: generated/_log10_r8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _log10_r8.lo `test -f 'generated/_log10_r8.f90' || echo '$(srcdir)/'`generated/_log10_r8.f90
-
-_sqrt_r4.lo: generated/_sqrt_r4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sqrt_r4.lo `test -f 'generated/_sqrt_r4.f90' || echo '$(srcdir)/'`generated/_sqrt_r4.f90
-
-_sqrt_r8.lo: generated/_sqrt_r8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sqrt_r8.lo `test -f 'generated/_sqrt_r8.f90' || echo '$(srcdir)/'`generated/_sqrt_r8.f90
-
-_sqrt_c4.lo: generated/_sqrt_c4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sqrt_c4.lo `test -f 'generated/_sqrt_c4.f90' || echo '$(srcdir)/'`generated/_sqrt_c4.f90
-
-_sqrt_c8.lo: generated/_sqrt_c8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sqrt_c8.lo `test -f 'generated/_sqrt_c8.f90' || echo '$(srcdir)/'`generated/_sqrt_c8.f90
-
-_asin_r4.lo: generated/_asin_r4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _asin_r4.lo `test -f 'generated/_asin_r4.f90' || echo '$(srcdir)/'`generated/_asin_r4.f90
-
-_asin_r8.lo: generated/_asin_r8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _asin_r8.lo `test -f 'generated/_asin_r8.f90' || echo '$(srcdir)/'`generated/_asin_r8.f90
-
-_acos_r4.lo: generated/_acos_r4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _acos_r4.lo `test -f 'generated/_acos_r4.f90' || echo '$(srcdir)/'`generated/_acos_r4.f90
-
-_acos_r8.lo: generated/_acos_r8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _acos_r8.lo `test -f 'generated/_acos_r8.f90' || echo '$(srcdir)/'`generated/_acos_r8.f90
-
-_atan_r4.lo: generated/_atan_r4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _atan_r4.lo `test -f 'generated/_atan_r4.f90' || echo '$(srcdir)/'`generated/_atan_r4.f90
-
-_atan_r8.lo: generated/_atan_r8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _atan_r8.lo `test -f 'generated/_atan_r8.f90' || echo '$(srcdir)/'`generated/_atan_r8.f90
-
-_sin_r4.lo: generated/_sin_r4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sin_r4.lo `test -f 'generated/_sin_r4.f90' || echo '$(srcdir)/'`generated/_sin_r4.f90
-
-_sin_r8.lo: generated/_sin_r8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sin_r8.lo `test -f 'generated/_sin_r8.f90' || echo '$(srcdir)/'`generated/_sin_r8.f90
-
-_sin_c4.lo: generated/_sin_c4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sin_c4.lo `test -f 'generated/_sin_c4.f90' || echo '$(srcdir)/'`generated/_sin_c4.f90
-
-_sin_c8.lo: generated/_sin_c8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sin_c8.lo `test -f 'generated/_sin_c8.f90' || echo '$(srcdir)/'`generated/_sin_c8.f90
-
-_cos_r4.lo: generated/_cos_r4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _cos_r4.lo `test -f 'generated/_cos_r4.f90' || echo '$(srcdir)/'`generated/_cos_r4.f90
-
-_cos_r8.lo: generated/_cos_r8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _cos_r8.lo `test -f 'generated/_cos_r8.f90' || echo '$(srcdir)/'`generated/_cos_r8.f90
-
-_cos_c4.lo: generated/_cos_c4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _cos_c4.lo `test -f 'generated/_cos_c4.f90' || echo '$(srcdir)/'`generated/_cos_c4.f90
-
-_cos_c8.lo: generated/_cos_c8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _cos_c8.lo `test -f 'generated/_cos_c8.f90' || echo '$(srcdir)/'`generated/_cos_c8.f90
-
-_tan_r4.lo: generated/_tan_r4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _tan_r4.lo `test -f 'generated/_tan_r4.f90' || echo '$(srcdir)/'`generated/_tan_r4.f90
-
-_tan_r8.lo: generated/_tan_r8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _tan_r8.lo `test -f 'generated/_tan_r8.f90' || echo '$(srcdir)/'`generated/_tan_r8.f90
-
-_sinh_r4.lo: generated/_sinh_r4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sinh_r4.lo `test -f 'generated/_sinh_r4.f90' || echo '$(srcdir)/'`generated/_sinh_r4.f90
-
-_sinh_r8.lo: generated/_sinh_r8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sinh_r8.lo `test -f 'generated/_sinh_r8.f90' || echo '$(srcdir)/'`generated/_sinh_r8.f90
-
-_cosh_r4.lo: generated/_cosh_r4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _cosh_r4.lo `test -f 'generated/_cosh_r4.f90' || echo '$(srcdir)/'`generated/_cosh_r4.f90
-
-_cosh_r8.lo: generated/_cosh_r8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _cosh_r8.lo `test -f 'generated/_cosh_r8.f90' || echo '$(srcdir)/'`generated/_cosh_r8.f90
-
-_tanh_r4.lo: generated/_tanh_r4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _tanh_r4.lo `test -f 'generated/_tanh_r4.f90' || echo '$(srcdir)/'`generated/_tanh_r4.f90
-
-_tanh_r8.lo: generated/_tanh_r8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _tanh_r8.lo `test -f 'generated/_tanh_r8.f90' || echo '$(srcdir)/'`generated/_tanh_r8.f90
-
-_conjg_c4.lo: generated/_conjg_c4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _conjg_c4.lo `test -f 'generated/_conjg_c4.f90' || echo '$(srcdir)/'`generated/_conjg_c4.f90
-
-_conjg_c8.lo: generated/_conjg_c8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _conjg_c8.lo `test -f 'generated/_conjg_c8.f90' || echo '$(srcdir)/'`generated/_conjg_c8.f90
-
-_aint_r4.lo: generated/_aint_r4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _aint_r4.lo `test -f 'generated/_aint_r4.f90' || echo '$(srcdir)/'`generated/_aint_r4.f90
-
-_aint_r8.lo: generated/_aint_r8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _aint_r8.lo `test -f 'generated/_aint_r8.f90' || echo '$(srcdir)/'`generated/_aint_r8.f90
-
-_anint_r4.lo: generated/_anint_r4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _anint_r4.lo `test -f 'generated/_anint_r4.f90' || echo '$(srcdir)/'`generated/_anint_r4.f90
-
-_anint_r8.lo: generated/_anint_r8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _anint_r8.lo `test -f 'generated/_anint_r8.f90' || echo '$(srcdir)/'`generated/_anint_r8.f90
-
-_sign_i4.lo: generated/_sign_i4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sign_i4.lo `test -f 'generated/_sign_i4.f90' || echo '$(srcdir)/'`generated/_sign_i4.f90
-
-_sign_i8.lo: generated/_sign_i8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sign_i8.lo `test -f 'generated/_sign_i8.f90' || echo '$(srcdir)/'`generated/_sign_i8.f90
-
-_sign_r4.lo: generated/_sign_r4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sign_r4.lo `test -f 'generated/_sign_r4.f90' || echo '$(srcdir)/'`generated/_sign_r4.f90
-
-_sign_r8.lo: generated/_sign_r8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _sign_r8.lo `test -f 'generated/_sign_r8.f90' || echo '$(srcdir)/'`generated/_sign_r8.f90
-
-_dim_i4.lo: generated/_dim_i4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _dim_i4.lo `test -f 'generated/_dim_i4.f90' || echo '$(srcdir)/'`generated/_dim_i4.f90
-
-_dim_i8.lo: generated/_dim_i8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _dim_i8.lo `test -f 'generated/_dim_i8.f90' || echo '$(srcdir)/'`generated/_dim_i8.f90
-
-_dim_r4.lo: generated/_dim_r4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _dim_r4.lo `test -f 'generated/_dim_r4.f90' || echo '$(srcdir)/'`generated/_dim_r4.f90
-
-_dim_r8.lo: generated/_dim_r8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _dim_r8.lo `test -f 'generated/_dim_r8.f90' || echo '$(srcdir)/'`generated/_dim_r8.f90
-
-_atan2_r4.lo: generated/_atan2_r4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _atan2_r4.lo `test -f 'generated/_atan2_r4.f90' || echo '$(srcdir)/'`generated/_atan2_r4.f90
-
-_atan2_r8.lo: generated/_atan2_r8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _atan2_r8.lo `test -f 'generated/_atan2_r8.f90' || echo '$(srcdir)/'`generated/_atan2_r8.f90
-
-_mod_i4.lo: generated/_mod_i4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _mod_i4.lo `test -f 'generated/_mod_i4.f90' || echo '$(srcdir)/'`generated/_mod_i4.f90
-
-_mod_i8.lo: generated/_mod_i8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _mod_i8.lo `test -f 'generated/_mod_i8.f90' || echo '$(srcdir)/'`generated/_mod_i8.f90
-
-_mod_r4.lo: generated/_mod_r4.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _mod_r4.lo `test -f 'generated/_mod_r4.f90' || echo '$(srcdir)/'`generated/_mod_r4.f90
-
-_mod_r8.lo: generated/_mod_r8.f90
-	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o _mod_r8.lo `test -f 'generated/_mod_r8.f90' || echo '$(srcdir)/'`generated/_mod_r8.f90
 
 dprod_r8.lo: intrinsics/dprod_r8.f90
 	$(LIBTOOL) --mode=compile $(FC) $(AM_FCFLAGS) $(FCFLAGS) -c -o dprod_r8.lo `test -f 'intrinsics/dprod_r8.f90' || echo '$(srcdir)/'`intrinsics/dprod_r8.f90
@@ -1882,6 +2686,12 @@ uninstall-am: uninstall-info-am uninstall-toolexeclibLTLIBRARIES
 
 kinds.h: $(srcdir)/mk-kinds-h.sh
 	$(SHELL) $(srcdir)/mk-kinds-h.sh '$(FCCOMPILE)' > $@
+
+kinds.inc: kinds.h
+	grep '^#' < kinds.h > $@
+
+c99_protos.inc: $(srcdir)/c99_protos.h
+	grep '^#' < $(srcdir)/c99_protos.h > $@
 
 selected_int_kind.inc: $(srcdir)/mk-sik-inc.sh
 	$(SHELL) $(srcdir)/mk-sik-inc.sh '$(FCCOMPILE)' > $@

@@ -34,6 +34,8 @@ Boston, MA 02110-1301, USA.  */
 #include <string.h>
 #include "libgfortran.h"
 
+#if defined (HAVE_GFC_INTEGER_8)
+
 static void
 eoshift3 (gfc_array_char *ret, const gfc_array_char *array, const gfc_array_i8 *h,
 	  const gfc_array_char *bound, const GFC_INTEGER_8 *pwhich,
@@ -267,3 +269,5 @@ eoshift3_8_char (gfc_array_char *ret,
 {
   eoshift3 (ret, array, h, bound, pwhich, array_length, ' ');
 }
+
+#endif

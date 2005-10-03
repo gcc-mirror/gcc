@@ -34,6 +34,8 @@ Boston, MA 02110-1301, USA.  */
 #include "libgfortran.h"'
 include(iparm.m4)dnl
 
+`#if defined (HAVE_'rtype_name`)'
+
 extern rtype_name dot_product_`'rtype_code (gfc_array_l4 *, gfc_array_l4 *);
 export_proto(dot_product_`'rtype_code);
 
@@ -84,3 +86,5 @@ dot_product_`'rtype_code (gfc_array_l4 * a, gfc_array_l4 * b)
 
   return 0;
 }
+
+#endif

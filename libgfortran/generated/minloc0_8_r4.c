@@ -36,6 +36,8 @@ Boston, MA 02110-1301, USA.  */
 #include "libgfortran.h"
 
 
+#if defined (HAVE_GFC_REAL_4) && defined (HAVE_GFC_INTEGER_8)
+
 
 extern void minloc0_8_r4 (gfc_array_i8 * retarray, gfc_array_r4 *array);
 export_proto(minloc0_8_r4);
@@ -286,3 +288,5 @@ mminloc0_8_r4 (gfc_array_i8 * retarray, gfc_array_r4 *array,
     }
   }
 }
+
+#endif
