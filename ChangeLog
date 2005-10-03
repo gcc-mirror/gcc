@@ -1,3 +1,11 @@
+2005-10-03  Andreas Schwab  <schwab@suse.de>
+
+	Backport from libtool CVS:
+	2002-11-03  Ossama Othman  <ossama@doc.ece.uci.edu>
+
+	* ltmain.sh: add support for installing into temporary
+	staging area (e.g. 'make install DESTDIR=...')
+
 2005-10-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure.in (*-*-darwin*): Build bfd, binutils and opcodes.
