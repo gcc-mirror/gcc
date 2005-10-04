@@ -1,3 +1,9 @@
+2005-10-05  Steven Bosscher  <stevenb@suse.de>
+
+	* gcc.dg/pr23049.c: New test.
+
+	* gcc.dg/ucnid-4.c: Fix test.
+
 2005-10-03  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 23445

@@ -728,6 +728,10 @@ void f()
                 | RELOP
                         op0 -> val
                         op1 -> val
+		| COND_EXPR
+			op0 -> condition
+			op1 -> val
+			op2 -> val
 @end smallexample
 
 @node Annotations

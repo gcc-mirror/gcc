@@ -666,7 +666,7 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
      statements.  This does not prevent threading through E->dest.  */
   for (bsi = bsi_start (e->dest); ! bsi_end_p (bsi); bsi_next (&bsi))
     {
-      tree cached_lhs;
+      tree cached_lhs = NULL;
 
       stmt = bsi_stmt (bsi);
 
@@ -705,7 +705,7 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
       else
 	{
 	  /* Copy the operands.  */
-	  tree *copy;
+	  tree *copy, pre_fold_expr;
 	  ssa_op_iter iter;
 	  use_operand_p use_p;
 	  unsigned int num, i = 0;
@@ -729,12 +729,31 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 
 	  /* Try to fold/lookup the new expression.  Inserting the
 	     expression into the hash table is unlikely to help
-	     simplify anything later, so just query the hashtable.  */
-	  cached_lhs = fold (TREE_OPERAND (stmt, 1));
-	  if (TREE_CODE (cached_lhs) != SSA_NAME
-	      && !is_gimple_min_invariant (cached_lhs))
-	    cached_lhs = lookup_avail_expr (stmt, false);
+	     Sadly, we have to handle conditional assignments specially
+	     here, because fold expects all the operands of an expression
+	     to be folded before the expression itself is folded, but we
+	     can't just substitute the folded condition here.  */
+	  if (TREE_CODE (TREE_OPERAND (stmt, 1)) == COND_EXPR)
+	    {
+	      tree cond = COND_EXPR_COND (TREE_OPERAND (stmt, 1));
+	      cond = fold (cond);
+	      if (cond == boolean_true_node)
+		pre_fold_expr = COND_EXPR_THEN (TREE_OPERAND (stmt, 1));
+	      else if (cond == boolean_false_node)
+		pre_fold_expr = COND_EXPR_ELSE (TREE_OPERAND (stmt, 1));
+	      else
+		pre_fold_expr = TREE_OPERAND (stmt, 1);
+	    }
+	  else
+	    pre_fold_expr = TREE_OPERAND (stmt, 1);
 
+	  if (pre_fold_expr)
+	    {
+	      cached_lhs = fold (pre_fold_expr);
+	      if (TREE_CODE (cached_lhs) != SSA_NAME
+		  && !is_gimple_min_invariant (cached_lhs))
+	        cached_lhs = lookup_avail_expr (stmt, false);
+	    }
 
 	  /* Restore the statement's original uses/defs.  */
 	  i = 0;

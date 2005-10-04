@@ -1,3 +1,12 @@
+2005-10-05  Steven Bosscher  <stevenb@suse.de>
+
+	PR tree-optimization/23049
+	* tree-ssa-dom.c (thread_across_edge): Make sure that the condition
+	of a COND_EXPR is folded before calling fold on the whole rhs of a
+	conditional assignment.
+	* doc/tree-ssa.texi: Update the GIMPLE grammar for a valid rhs to
+	document that a COND_EXPR may appear there.
+
 2005-10-03  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 23445
