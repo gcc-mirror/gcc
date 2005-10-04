@@ -3107,7 +3107,7 @@ build_block (tree vars, tree subblocks, tree supercontext, tree chain)
 
 #if 1 /* ! defined(USE_MAPPED_LOCATION) */
 /* ??? gengtype doesn't handle conditionals */
-static GTY(()) tree last_annotated_node;
+static GTY(()) location_t *last_annotated_node;
 #endif
 
 #ifdef USE_MAPPED_LOCATION
@@ -3143,7 +3143,7 @@ annotate_with_file_line (tree node, const char *file, int line)
       && (EXPR_FILENAME (node) == file
 	  || !strcmp (EXPR_FILENAME (node), file)))
     {
-      last_annotated_node = node;
+      last_annotated_node = EXPR_LOCUS (node);
       return;
     }
 
@@ -3151,19 +3151,18 @@ annotate_with_file_line (tree node, const char *file, int line)
      entry cache can reduce the number of allocations by more
      than half.  */
   if (last_annotated_node
-      && EXPR_LOCUS (last_annotated_node)
-      && EXPR_LINENO (last_annotated_node) == line
-      && (EXPR_FILENAME (last_annotated_node) == file
-	  || !strcmp (EXPR_FILENAME (last_annotated_node), file)))
+      && last_annotated_node->line == line == line
+      && (last_annotated_node->file == file
+	  || !strcmp (last_annotated_node->file, file)))
     {
-      SET_EXPR_LOCUS (node, EXPR_LOCUS (last_annotated_node));
+      SET_EXPR_LOCUS (node, last_annotated_node);
       return;
     }
 
   SET_EXPR_LOCUS (node, ggc_alloc (sizeof (location_t)));
   EXPR_LINENO (node) = line;
   EXPR_FILENAME (node) = file;
-  last_annotated_node = node;
+  last_annotated_node = EXPR_LOCUS (node);
 }
 
 void
