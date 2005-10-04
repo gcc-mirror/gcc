@@ -1,3 +1,7 @@
+2005-10-04  Devang Patel  <dpatel@apple.com>
+
+	* gcc.dg/i386-sse-vect-types.c: New.
+	
 2005-10-04  Ian Lance Taylor  <ian@airs.com>
 
 	PR preprocessor/13726
