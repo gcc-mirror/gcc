@@ -1,3 +1,9 @@
+2005-10-04  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree.c (last_annotated_node): Change type to location_t*.
+	(annotate_with_file_line): Reflect the change of
+	last_annotated_node type.
+
 2005-10-04  Richard Guenther  <rguenther@suse.de>
 
 	PR c/23576
