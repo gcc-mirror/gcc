@@ -1,3 +1,9 @@
+2005-10-04  Richard Guenther  <rguenther@suse.de>
+
+	PR c/23576
+	* c-decl.c (grokdeclarator): Don't write to fields
+	of error_mark_node.
+
 2005-10-04  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/23125
