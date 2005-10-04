@@ -54,7 +54,7 @@ static void cb_line_change (cpp_reader *, const cpp_token *, int);
 static void cb_define (cpp_reader *, source_location, cpp_hashnode *);
 static void cb_undef (cpp_reader *, source_location, cpp_hashnode *);
 static void cb_include (cpp_reader *, source_location, const unsigned char *,
-			const char *, int);
+			const char *, int, const cpp_token **);
 static void cb_ident (cpp_reader *, source_location, const cpp_string *);
 static void cb_def_pragma (cpp_reader *, source_location);
 static void cb_read_pch (cpp_reader *pfile, const char *name,
@@ -336,13 +336,27 @@ cb_undef (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
 
 static void
 cb_include (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
-	    const unsigned char *dir, const char *header, int angle_brackets)
+	    const unsigned char *dir, const char *header, int angle_brackets,
+	    const cpp_token **comments)
 {
   maybe_print_line (line);
   if (angle_brackets)
-    fprintf (print.outf, "#%s <%s>\n", dir, header);
+    fprintf (print.outf, "#%s <%s>", dir, header);
   else
-    fprintf (print.outf, "#%s \"%s\"\n", dir, header);
+    fprintf (print.outf, "#%s \"%s\"", dir, header);
+
+  if (comments != NULL)
+    {
+      while (*comments != NULL)
+	{
+	  if ((*comments)->flags & PREV_WHITE)
+	    putc (' ', print.outf);
+	  cpp_output_token (*comments, print.outf);
+	  ++comments;
+	}
+    }
+
+  putc ('\n', print.outf);
   print.src_line++;
 }
 

@@ -95,7 +95,7 @@ static void end_directive (cpp_reader *, int);
 static void directive_diagnostics (cpp_reader *, const directive *, int);
 static void run_directive (cpp_reader *, int, const char *, size_t);
 static char *glue_header_name (cpp_reader *);
-static const char *parse_include (cpp_reader *, int *);
+static const char *parse_include (cpp_reader *, int *, const cpp_token ***);
 static void push_conditional (cpp_reader *, int, int, const cpp_hashnode *);
 static unsigned int read_flag (cpp_reader *, unsigned int);
 static int strtoul_for_line (const uchar *, unsigned int, unsigned long *);
@@ -218,6 +218,46 @@ check_eol (cpp_reader *pfile)
   if (! SEEN_EOL () && _cpp_lex_token (pfile)->type != CPP_EOF)
     cpp_error (pfile, CPP_DL_PEDWARN, "extra tokens at end of #%s directive",
 	       pfile->directive->name);
+}
+
+/* Ensure there are no stray tokens other than comments at the end of
+   a directive, and gather the comments.  */
+static const cpp_token **
+check_eol_return_comments (cpp_reader *pfile)
+{
+  size_t c;
+  size_t capacity = 8;
+  const cpp_token **buf;
+
+  buf = XNEWVEC (const cpp_token *, capacity);
+  c = 0;
+  if (! SEEN_EOL ())
+    {
+      while (1)
+	{
+	  const cpp_token *tok;
+
+	  tok = _cpp_lex_token (pfile);
+	  if (tok->type == CPP_EOF)
+	    break;
+	  if (tok->type != CPP_COMMENT)
+	    cpp_error (pfile, CPP_DL_PEDWARN,
+		       "extra tokens at end of #%s directive",
+		       pfile->directive->name);
+	  else
+	    {
+	      if (c + 1 >= capacity)
+		{
+		  capacity *= 2;
+		  buf = XRESIZEVEC (const cpp_token *, buf, capacity);
+		}
+	      buf[c] = tok;
+	      ++c;
+	    }
+	}
+    }
+  buf[c] = NULL;
+  return buf;
 }
 
 /* Called when entering a directive, _Pragma or command-line directive.  */
@@ -624,7 +664,8 @@ glue_header_name (cpp_reader *pfile)
    #pragma dependency.  The string is malloced and the caller should
    free it.  Returns NULL on error.  */
 static const char *
-parse_include (cpp_reader *pfile, int *pangle_brackets)
+parse_include (cpp_reader *pfile, int *pangle_brackets,
+	       const cpp_token ***buf)
 {
   char *fname;
   const cpp_token *header;
@@ -657,7 +698,15 @@ parse_include (cpp_reader *pfile, int *pangle_brackets)
       return NULL;
     }
 
-  check_eol (pfile);
+  if (buf == NULL || CPP_OPTION (pfile, discard_comments))
+    check_eol (pfile);
+  else
+    {
+      /* If we are not discarding comments, then gather them while
+	 doing the eol check.  */
+      *buf = check_eol_return_comments (pfile);
+    }
+
   return fname;
 }
 
@@ -667,16 +716,27 @@ do_include_common (cpp_reader *pfile, enum include_type type)
 {
   const char *fname;
   int angle_brackets;
+  const cpp_token **buf = NULL;
 
-  fname = parse_include (pfile, &angle_brackets);
+  /* Re-enable saving of comments if requested, so that the include
+     callback can dump comments which follow #include.  */
+  pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
+
+  fname = parse_include (pfile, &angle_brackets, &buf);
   if (!fname)
-    return;
+    {
+      if (buf)
+	XDELETEVEC (buf);
+      return;
+    }
 
   if (!*fname)
   {
     cpp_error (pfile, CPP_DL_ERROR, "empty filename in #%s",
                pfile->directive->name);
-    free ((void *) fname);
+    XDELETEVEC (fname);
+    if (buf)
+      XDELETEVEC (buf);
     return;
   }
 
@@ -690,12 +750,15 @@ do_include_common (cpp_reader *pfile, enum include_type type)
 
       if (pfile->cb.include)
 	pfile->cb.include (pfile, pfile->directive_line,
-			   pfile->directive->name, fname, angle_brackets);
+			   pfile->directive->name, fname, angle_brackets,
+			   buf);
 
       _cpp_stack_include (pfile, fname, angle_brackets, type);
     }
 
-  free ((void *) fname);
+  XDELETEVEC (fname);
+  if (buf)
+    XDELETEVEC (buf);
 }
 
 static void
@@ -1322,7 +1385,7 @@ do_pragma_dependency (cpp_reader *pfile)
   const char *fname;
   int angle_brackets, ordering;
 
-  fname = parse_include (pfile, &angle_brackets);
+  fname = parse_include (pfile, &angle_brackets, NULL);
   if (!fname)
     return;
 

@@ -1,3 +1,9 @@
+2005-10-04  Ian Lance Taylor  <ian@airs.com>
+
+	PR preprocessor/13726
+	* gcc.dg/cpp/cmdlne-dI-C.c: New test.
+	* gcc.dg/cpp/cmdlne-dI-C.h: New file.
+
 2005-10-04  Richard Guenther  <rguenther@suse.de>
 
 	PR c/23576
