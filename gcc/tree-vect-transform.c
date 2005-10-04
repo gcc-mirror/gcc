@@ -994,7 +994,7 @@ vect_create_epilog_for_reduction (tree vect_def, tree stmt, tree reduction_op,
 	fprintf (vect_dump, "extract scalar result");
 
       /* The result is in the low order bits.  */
-      if (BITS_BIG_ENDIAN)
+      if (BYTES_BIG_ENDIAN)
 	bitpos = size_binop (MULT_EXPR,
 		       bitsize_int (TYPE_VECTOR_SUBPARTS (vectype) - 1),
 		       TYPE_SIZE (scalar_type));
