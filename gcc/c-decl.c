@@ -1302,10 +1302,10 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 		  return false;
 		}
 	      /* If both decls have not extern inline, reject the new decl.  */
-	      if (!DECL_DECLARED_INLINE_P (olddecl)
-		  && !DECL_EXTERNAL (olddecl)
-		  && !DECL_DECLARED_INLINE_P (newdecl)
-		  && !DECL_EXTERNAL (newdecl))
+	      if (!(DECL_DECLARED_INLINE_P (olddecl)
+		    && DECL_EXTERNAL (olddecl))
+		  && !(DECL_DECLARED_INLINE_P (newdecl)
+		       && DECL_EXTERNAL (newdecl)))
 		{
 		  error ("%Jredefinition of %qD", newdecl, newdecl);
 		  locate_old_decl (olddecl, error);

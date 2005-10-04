@@ -1,3 +1,13 @@
+2005-10-04  Eric Christopher  <echristo@apple.com>
+	
+	PR c/22052
+	PR c/21975
+	* gcc.dg/inline1.c: New test.
+	* gcc.dg/inline2.c: Ditto.
+	* gcc.dg/inline3.c: Ditto.
+	* gcc.dg/inline4.c: Ditto.
+	* gcc.dg/inline5.c: Ditto.
+
 2005-10-04  Richard Guenther  <rguenther@suse.de>
 
 	PR c/23576

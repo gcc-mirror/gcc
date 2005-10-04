@@ -1,3 +1,10 @@
+2005-10-04  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/22052
+	PR c/21975
+	* c-decl.c (diagnose_mismatched_decls): Fix check for both
+	decls being "extern inline".
+
 2005-10-04  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR ada/19382
