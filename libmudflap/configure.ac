@@ -241,7 +241,7 @@ AC_SUBST(SECTION_FLAGS)
 AC_CACHE_CHECK([for the name of the symbol used for the entry point],
   [mudflap_cv_entry_point], [
 for name in _start __start unknown; do
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([extern char $name;], [$name = 0;])],
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([extern char $name@<:@@:>@;], [$name@<:@0@:>@ = 0;])],
 		 [break])
 done
 mudflap_cv_entry_point="$name"])
