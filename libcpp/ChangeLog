@@ -1,3 +1,13 @@
+2005-10-04  Ian Lance Taylor  <ian@airs.com>
+
+	PR preprocessor/13726
+	* directives.c (check_eol_return_comments): New static function.
+	(parse_include): Add buf parameter.  Change all callers.
+	(do_include_common): If not discard comments, turn on
+	save_comments.  Pass collected comments to include callback.
+	* include/cpplib.h (struct cpp_callbacks): Add new parameter to
+	include callback: cpp_token list.
+
 2005-09-20  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* include/cpplib.h (struct cpp_options): Add extended_identifiers.
