@@ -1,3 +1,8 @@
+2005-10-04  Devang Patel  <dpatel@apple.com>
+
+	* c-common.c (vector_types_convertible_p): Check TYPE_PRECISION for
+	real types.
+	
 2005-10-04  Steve Ellcey  <sje@cup.hp.com>
 
 	* tree-vect-transform.c (vect_create_epilog_for_reduction):
