@@ -923,10 +923,16 @@ make_decl_rtl (tree decl)
     }
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-
-  if (TREE_CODE (decl) != FUNCTION_DECL && DECL_REGISTER (decl))
+  
+  if (name[0] != '*' && TREE_CODE (decl) != FUNCTION_DECL
+      && DECL_REGISTER (decl))
     {
-      reg_number = decode_reg_name (name);
+      error ("register name not specified for %q+D", decl);	
+    }
+  else if (TREE_CODE (decl) != FUNCTION_DECL && DECL_REGISTER (decl))
+    {
+      const char *asmspec = name+1;
+      reg_number = decode_reg_name (asmspec);
       /* First detect errors in declaring global registers.  */
       if (reg_number == -1)
 	error ("register name not specified for %q+D", decl);

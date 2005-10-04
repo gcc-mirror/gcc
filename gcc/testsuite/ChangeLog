@@ -1,4 +1,9 @@
-2005-10-05  Steven Bosscher  <stevenb@suse.de>
+2005-10-04  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/23125
+	* gcc.dg/register-var-3.c: New test.
+
+2005-10-04  Steven Bosscher  <stevenb@suse.de>
 
 	* gcc.dg/pr23049.c: New test.
 

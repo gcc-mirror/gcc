@@ -4661,7 +4661,7 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
 	 placed in a particular register.  */
       if (TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
 	{
-	  change_decl_assembler_name (decl, get_identifier (asmspec));
+	  set_user_assembler_name (decl, asmspec);
 	  DECL_HARD_REGISTER (decl) = 1;
 	}
       else
