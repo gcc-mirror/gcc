@@ -411,11 +411,29 @@ proc check_named_sections_available { } {
 }
 
 # Return 1 if the target supports Fortran real kinds larger than real(8),
-# 0 otherwise.  Cache the result.
+# 0 otherwise.
+#
+# When the target name changes, replace the cached result.
 
 proc check_effective_target_fortran_large_real { } {
     global et_fortran_large_real_saved
+    global et_fortran_large_real_target_name
     global tool
+
+    if { ![info exists et_fortran_large_real_target_name] } {
+	set et_fortran_large_real_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_fortran_large_real_target_name } {
+	verbose "check_effective_target_fortran_large_real: `$et_fortran_large_real_target_name' `$current_target'" 2
+	set et_fortran_large_real_target_name $current_target
+	if [info exists et_fortran_large_real_saved] {
+	    verbose "check_effective_target_fortran_large_real: removing cached result" 2
+	    unset et_fortran_large_real_saved
+	}
+    }
 
     if [info exists et_fortran_large_real_saved] {
 	verbose "check_effective_target_fortran_large_real returning saved $et_fortran_large_real_saved" 2
@@ -449,11 +467,29 @@ proc check_effective_target_fortran_large_real { } {
 }
 
 # Return 1 if the target supports Fortran integer kinds larger than
-# integer(8), 0 otherwise.  Cache the result.
+# integer(8), 0 otherwise.
+#
+# When the target name changes, replace the cached result.
 
 proc check_effective_target_fortran_large_int { } {
     global et_fortran_large_int_saved
+    global et_fortran_large_int_target_name
     global tool
+
+    if { ![info exists et_fortran_large_int_target_name] } {
+	set et_fortran_large_int_target_name ""
+    }
+
+    # If the target has changed since we set the cached value, clear it.
+    set current_target [current_target_name]
+    if { $current_target != $et_fortran_large_int_target_name } {
+	verbose "check_effective_target_fortran_large_int: `$et_fortran_large_int_target_name' `$current_target'" 2
+	set et_fortran_large_int_target_name $current_target
+	if [info exists et_fortran_large_int_saved] {
+	    verbose "check_effective_target_fortran_large_int: removing cached result" 2
+	    unset et_fortran_large_int_saved
+	}
+    }
 
     if [info exists et_fortran_large_int_saved] {
 	verbose "check_effective_target_fortran_large_int returning saved $et_fortran_large_int_saved" 2

@@ -1,3 +1,9 @@
+2005-10-04  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_fortran_large_real,
+	check_effective_target_fortran_large_int): Replace cached result
+	when target changes.
+
 2005-10-04  Devang Patel  <dpatel@apple.com>
 
 	* gcc.dg/i386-sse-vect-types.c: New.
