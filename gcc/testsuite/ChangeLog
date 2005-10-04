@@ -1,3 +1,7 @@
+2005-10-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.dg/overload/unknown1.C: New.
+
 2005-10-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17775
