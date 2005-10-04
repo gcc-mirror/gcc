@@ -7419,7 +7419,9 @@ fold_builtin_memcmp (tree arglist)
   if (host_integerp (len, 1) && tree_low_cst (len, 1) == 1)
     {
       tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
-      tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
+      tree cst_uchar_ptr_node
+	= build_pointer_type_for_mode (cst_uchar_node, ptr_mode, true);
+
       tree ind1 = fold_convert (integer_type_node,
 				build1 (INDIRECT_REF, cst_uchar_node,
 					fold_convert (cst_uchar_ptr_node,
@@ -7471,7 +7473,9 @@ fold_builtin_strcmp (tree arglist)
   if (p2 && *p2 == '\0')
     {
       tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
-      tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
+      tree cst_uchar_ptr_node
+	= build_pointer_type_for_mode (cst_uchar_node, ptr_mode, true);
+
       return fold_convert (integer_type_node,
 			   build1 (INDIRECT_REF, cst_uchar_node,
 				   fold_convert (cst_uchar_ptr_node,
@@ -7482,7 +7486,9 @@ fold_builtin_strcmp (tree arglist)
   if (p1 && *p1 == '\0')
     {
       tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
-      tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
+      tree cst_uchar_ptr_node
+	= build_pointer_type_for_mode (cst_uchar_node, ptr_mode, true);
+
       tree temp = fold_convert (integer_type_node,
 				build1 (INDIRECT_REF, cst_uchar_node,
 					fold_convert (cst_uchar_ptr_node,
@@ -7540,7 +7546,9 @@ fold_builtin_strncmp (tree arglist)
       && tree_int_cst_sgn (len) == 1)
     {
       tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
-      tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
+      tree cst_uchar_ptr_node
+	= build_pointer_type_for_mode (cst_uchar_node, ptr_mode, true);
+
       return fold_convert (integer_type_node,
 			   build1 (INDIRECT_REF, cst_uchar_node,
 				   fold_convert (cst_uchar_ptr_node,
@@ -7554,7 +7562,9 @@ fold_builtin_strncmp (tree arglist)
       && tree_int_cst_sgn (len) == 1)
     {
       tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
-      tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
+      tree cst_uchar_ptr_node
+	= build_pointer_type_for_mode (cst_uchar_node, ptr_mode, true);
+
       tree temp = fold_convert (integer_type_node,
 				build1 (INDIRECT_REF, cst_uchar_node,
 					fold_convert (cst_uchar_ptr_node,
@@ -7567,7 +7577,9 @@ fold_builtin_strncmp (tree arglist)
   if (host_integerp (len, 1) && tree_low_cst (len, 1) == 1)
     {
       tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
-      tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
+      tree cst_uchar_ptr_node
+	= build_pointer_type_for_mode (cst_uchar_node, ptr_mode, true);
+
       tree ind1 = fold_convert (integer_type_node,
 				build1 (INDIRECT_REF, cst_uchar_node,
 					fold_convert (cst_uchar_ptr_node,
