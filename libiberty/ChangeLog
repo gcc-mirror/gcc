@@ -1,3 +1,7 @@
+2005-10-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* at-file.texi: New file.
+
 2005-09-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* argv.c (expandargv): Do not use xmalloc_failed.
