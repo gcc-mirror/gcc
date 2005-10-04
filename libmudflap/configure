@@ -6926,11 +6926,11 @@ _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-extern char $name;
+extern char $name[];
 int
 main ()
 {
-$name = 0;
+$name[0] = 0;
   ;
   return 0;
 }

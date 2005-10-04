@@ -1,3 +1,10 @@
+2005-10-04  James E Wilson  <wilson@specifix.com>
+
+	* configure.ac (mudflap_cv_entry_point): Use quadrigraphs to declare
+	$name as array of characters with unknown bound.  Also store into the
+	array.
+	* configure: Regenerate.
+
 2005-09-30  James E. Wilson  <wilson@specifix.com>
 
 	* configure.ac (pthread.h): Use AC_CHECK_HEADERS instead of
