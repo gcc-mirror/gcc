@@ -1,3 +1,11 @@
+2005-10-04  Uros Bizjak  <uros@kss-loka.si>
+
+	* config/i386/i386.h (TARGET_FISTTP): Enable also for
+	TARGET_SSE3 and only for TARGET_80387.
+	* config/i386/i386.md (fix_trunc<mode>_fisttp_i387_1,
+	(fix_trunc<mode>_i387_fisttp, fix_trunc<mode>_i387_fisttp_with_temp):
+	Do not depend on TARGET_80387.
+
 2005-10-04  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* tree.c (last_annotated_node): Change type to location_t*.

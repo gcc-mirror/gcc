@@ -173,7 +173,8 @@ extern int x86_prefetch_sse;
 /* For sane SSE instruction set generation we need fcomi instruction.  It is
    safe to enable all CMOVE instructions.  */
 #define TARGET_CMOVE ((x86_cmove & (1 << ix86_arch)) || TARGET_SSE)
-#define TARGET_FISTTP (x86_fisttp & (1 << ix86_arch))
+#define TARGET_FISTTP (((x86_fisttp & (1 << ix86_arch)) || TARGET_SSE3) \
+			&& TARGET_80387)
 #define TARGET_DEEP_BRANCH_PREDICTION (x86_deep_branch & TUNEMASK)
 #define TARGET_BRANCH_PREDICTION_HINTS (x86_branch_hints & TUNEMASK)
 #define TARGET_DOUBLE_WITH_ADD (x86_double_with_add & TUNEMASK)
