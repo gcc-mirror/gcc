@@ -3426,8 +3426,6 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	      && !TREE_STATIC (decl))
 	    warning (0, "ignoring asm-specifier for non-static local "
 		     "variable %q+D", decl);
-	  else if (C_DECL_REGISTER (decl))
-	    change_decl_assembler_name (decl, get_identifier (asmspec));
 	  else
 	    set_user_assembler_name (decl, asmspec);
 	}
