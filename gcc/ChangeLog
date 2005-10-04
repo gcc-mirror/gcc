@@ -1,5 +1,14 @@
 2005-10-04  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	PR middle-end/23125
+	* c-decl.c (finish_decl): Use set_user_assembler_name even for
+	register variables.
+	* varasm.c (make_decl_rtl): If a register variable does not
+	have a set user assmbler name, error out.
+	Decode the asmspec is now name+1 bypassing '*'.
+
+2005-10-04  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR c/22052
 	PR c/21975
 	* c-decl.c (diagnose_mismatched_decls): Fix check for both

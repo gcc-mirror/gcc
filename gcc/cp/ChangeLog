@@ -1,3 +1,9 @@
+2005-10-04  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/23125
+	* decl.c (make_rtl_for_nonlocal_decl): Use set_user_assembler_name
+	instead of change_decl_assembler_name.
+
 2005-10-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17775
