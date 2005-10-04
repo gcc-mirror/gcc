@@ -1,3 +1,7 @@
+2005-10-04  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree.c (annotate_with_file_line): Fix typo.
+
 2005-10-04  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR ada/19382
