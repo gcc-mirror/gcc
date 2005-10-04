@@ -1,3 +1,7 @@
+2005-10-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	* error.c (dump_type) <UNKNOWN_TYPE>: Print reworded message.
+
 2005-10-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17775
