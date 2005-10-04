@@ -1,3 +1,31 @@
+2005-10-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/hashtable
+	(node_iterator::node_iterator(const node_iterator<,true,>&)): Fix to
+	take a "false" (i.e., is_const == false) node_iterator.
+	(hashtable_iterator::hashtable_iterator(const hashtable_iterator<,
+	true,>&)): Likewise for hashtable_iterator.
+	(hashtable::const_local_iterator): Fix typedef (is_const == true).
+	(hashtable::const_iterator): Likewise.
+	* testsuite/tr1/6_containers/unordered/types/map_iterator.cc: New.
+	* testsuite/tr1/6_containers/unordered/types/multimap_iterator.cc: New.
+	* testsuite/tr1/6_containers/unordered/types/set_iterator.cc: New.
+	* testsuite/tr1/6_containers/unordered/types/multiset_iterator.cc: New.
+ 
+2005-10-04  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/24054
+	* include/tr1/hashtable (erase(const key_type&)): Return the
+	number of elements erased.
+	* testsuite/tr1/6_containers/unordered/hashtable/24054.cc: New.
+
+2005-10-04  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/24064
+	* include/tr1/hashtable (hash_code_base<>::store_code): Add.
+	(hashtable<>::insert(const value_type&)): Use it.
+	* testsuite/tr1/6_containers/unordered/hashtable/24064.cc: New.
+
 2005-10-01  Kenny Simpson  <theonetruekenny@yahoo.com>
 
 	* include/tr1/tuple_iterate.h (tuple::operator=(const std::pair<>&)):
