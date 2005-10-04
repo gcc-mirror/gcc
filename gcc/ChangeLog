@@ -1,3 +1,11 @@
+2005-10-04  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	PR ada/19382
+	* builtins.c (fold_builtin_memcmp): When constructing the pointer
+	type used to access data in the inlined length == 1 case, use
+	build_pointer_type_for_mode with CAN_ALIAS_ALL set to true.
+	(fold_builtin_strcmp, fold_builtin_strncmp): Likewise.
+
 2005-10-04  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/i386/i386.h (TARGET_FISTTP): Enable also for
