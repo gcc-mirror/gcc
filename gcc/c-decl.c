@@ -4248,16 +4248,19 @@ grokdeclarator (const struct c_declarator *declarator,
 	    else
 	      type = build_array_type (type, itype);
 
-	    if (size_varies)
-	      C_TYPE_VARIABLE_SIZE (type) = 1;
-
-	    /* The GCC extension for zero-length arrays differs from
-	       ISO flexible array members in that sizeof yields
-	       zero.  */
-	    if (size && integer_zerop (size))
+	    if (type != error_mark_node)
 	      {
-		TYPE_SIZE (type) = bitsize_zero_node;
-		TYPE_SIZE_UNIT (type) = size_zero_node;
+		if (size_varies)
+		C_TYPE_VARIABLE_SIZE (type) = 1;
+
+		/* The GCC extension for zero-length arrays differs from
+		   ISO flexible array members in that sizeof yields
+		   zero.  */
+		if (size && integer_zerop (size))
+		  {
+		    TYPE_SIZE (type) = bitsize_zero_node;
+		    TYPE_SIZE_UNIT (type) = size_zero_node;
+		  }
 	      }
 
 	    if (decl_context != PARM
