@@ -3151,7 +3151,7 @@ annotate_with_file_line (tree node, const char *file, int line)
      entry cache can reduce the number of allocations by more
      than half.  */
   if (last_annotated_node
-      && last_annotated_node->line == line == line
+      && last_annotated_node->line == line
       && (last_annotated_node->file == file
 	  || !strcmp (last_annotated_node->file, file)))
     {
