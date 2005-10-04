@@ -1,3 +1,8 @@
+2005-10-03  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 23445
+	* gcc.c-torture/compile/pr23445.c: New test.
+
 2005-10-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	* g++.dg/overload/unknown1.C: New.

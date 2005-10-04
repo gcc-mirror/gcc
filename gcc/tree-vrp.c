@@ -880,29 +880,93 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
   else
     gcc_unreachable ();
 
-  /* If VAR already had a known range and the two ranges have a
-     non-empty intersection, we can refine the resulting range.
-     Since the assert expression creates an equivalency and at the
-     same time it asserts a predicate, we can take the intersection of
-     the two ranges to get better precision.  */
+  /* If VAR already had a known range, it may happen that the new
+     range we have computed and VAR's range are not compatible.  For
+     instance,
+
+	if (p_5 == NULL)
+	  p_6 = ASSERT_EXPR <p_5, p_5 == NULL>;
+	  x_7 = p_6->fld;
+	  p_8 = ASSERT_EXPR <p_6, p_6 != NULL>;
+
+     While the above comes from a faulty program, it will cause an ICE
+     later because p_8 and p_6 will have incompatible ranges and at
+     the same time will be considered equivalent.  A similar situation
+     would arise from
+
+     	if (i_5 > 10)
+	  i_6 = ASSERT_EXPR <i_5, i_5 > 10>;
+	  if (i_5 < 5)
+	    i_7 = ASSERT_EXPR <i_6, i_6 < 5>;
+
+     Again i_6 and i_7 will have incompatible ranges.  It would be
+     pointless to try and do anything with i_7's range because
+     anything dominated by 'if (i_5 < 5)' will be optimized away.
+     Note, due to the wa in which simulation proceeds, the statement
+     i_7 = ASSERT_EXPR <...> we would never be visited because the
+     conditiona 'if (i_5 < 5)' always evaluates to false.  However,
+     this extra check does not hurt and may protect against future
+     changes to VRP that may get into a situation similar to the
+     NULL pointer dereference example.
+
+     Note that these compatibility tests are only needed when dealing
+     with ranges or a mix of range and anti-range.  If VAR_VR and VR_P
+     are both anti-ranges, they will always be compatible, because two
+     anti-ranges will always have a non-empty intersection.  */
+
   var_vr = get_value_range (var);
-  if (var_vr->type == VR_RANGE
-      && vr_p->type == VR_RANGE
-      && value_ranges_intersect_p (var_vr, vr_p))
+
+  /* We may need to make adjustments when VR_P and VAR_VR are numeric
+     ranges or anti-ranges.  */
+  if (vr_p->type == VR_VARYING
+      || vr_p->type == VR_UNDEFINED
+      || var_vr->type == VR_VARYING
+      || var_vr->type == VR_UNDEFINED
+      || symbolic_range_p (vr_p)
+      || symbolic_range_p (var_vr))
+    return;
+
+  if (var_vr->type == VR_RANGE && vr_p->type == VR_RANGE)
     {
-      /* Use the larger of the two minimums.  */
-      if (compare_values (vr_p->min, var_vr->min) == -1)
-	min = var_vr->min;
-      else
-	min = vr_p->min;
+      /* If the two ranges have a non-empty intersection, we can
+	 refine the resulting range.  Since the assert expression
+	 creates an equivalency and at the same time it asserts a
+	 predicate, we can take the intersection of the two ranges to
+	 get better precision.  */
+      if (value_ranges_intersect_p (var_vr, vr_p))
+	{
+	  /* Use the larger of the two minimums.  */
+	  if (compare_values (vr_p->min, var_vr->min) == -1)
+	    min = var_vr->min;
+	  else
+	    min = vr_p->min;
 
-      /* Use the smaller of the two maximums.  */
-      if (compare_values (vr_p->max, var_vr->max) == 1)
-	max = var_vr->max;
-      else
-	max = vr_p->max;
+	  /* Use the smaller of the two maximums.  */
+	  if (compare_values (vr_p->max, var_vr->max) == 1)
+	    max = var_vr->max;
+	  else
+	    max = vr_p->max;
 
-      set_value_range (vr_p, vr_p->type, min, max, vr_p->equiv);
+	  set_value_range (vr_p, vr_p->type, min, max, vr_p->equiv);
+	}
+      else
+	{
+	  /* The two ranges do not intersect, set the new range to
+	     VARYING, because we will not be able to do anything
+	     meaningful with it.  */
+	  set_value_range_to_varying (vr_p);
+	}
+    }
+  else if ((var_vr->type == VR_RANGE && vr_p->type == VR_ANTI_RANGE)
+           || (var_vr->type == VR_ANTI_RANGE && vr_p->type == VR_RANGE))
+    {
+      /* A range and an anti-range will cancel each other only if
+	 their ends are the same.  For instance, in the example above,
+	 p_8's range ~[0, 0] and p_6's range [0, 0] are incompatible,
+	 so VR_P should be set to VR_VARYING.  */
+      if (compare_values (var_vr->min, vr_p->min) == 0
+	  && compare_values (var_vr->max, vr_p->max) == 0)
+	set_value_range_to_varying (vr_p);
     }
 }
 

@@ -1,3 +1,11 @@
+2005-10-03  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 23445
+	* tree-vrp.c (extract_range_from_assert): If the new numeric
+	range created out of the assertion contradicts the existing
+	numeric range of the ASSERT_EXPR variable, make the new range
+	varying.
+
 2005-10-03  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (sh_register_move_cost): Add case for moving
