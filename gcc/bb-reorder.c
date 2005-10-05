@@ -1173,7 +1173,7 @@ copy_bb_p (basic_block bb, int code_may_grow)
     return false;
 
   if (code_may_grow && maybe_hot_bb_p (bb))
-    max_size *= 8;
+    max_size *= PARAM_VALUE (PARAM_MAX_GROW_COPY_BB_INSNS);
 
   FOR_BB_INSNS (bb, insn)
     {

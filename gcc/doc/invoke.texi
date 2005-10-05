@@ -5738,6 +5738,11 @@ of two blocks before crossjumping will be performed on them.  This
 value is ignored in the case where all instructions in the block being
 crossjumped from are matched.  The default value is 5.
 
+@item max-grow-copy-bb-insns
+The maximum code size expansion factor when copying basic blocks
+instead of jumping.  The expansion is relative to a jump instruction.
+The default value is 8.
+
 @item max-goto-duplication-insns
 The maximum number of instructions to duplicate to a block that jumps
 to a computed goto.  To avoid @math{O(N^2)} behavior in a number of
