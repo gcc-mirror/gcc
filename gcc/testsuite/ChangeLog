@@ -1,3 +1,8 @@
+2005-10-05  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/17609
+	* g++.dg/lookup/error1.C: New test.
+
 2005-10-05  Paolo Bonzini  <bonzini@gnu.org>
 
         PR tree-optimization/21419
