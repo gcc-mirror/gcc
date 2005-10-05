@@ -95,18 +95,27 @@ case "${host}" in
 	;;
   i686-*|i586-*|i486-*|i386-*)
 	sysdeps_dir=i386
-	libgcj_flags="${libgcj_flags} -ffloat-store"
+	# With -fomit-frame-pointer -maccumulate-outgoing-args (implied),
+	# the .text section of libgcj.so is 30k larger, and the .eh_frame
+	# section is 1.4M smaller.
+	libgcj_flags="${libgcj_flags} -ffloat-store -fomit-frame-pointer"
 	libgcj_interpreter=yes
 	libgcj_cxxflags=
 	libgcj_cflags=
 	DIVIDESPEC=-fno-use-divide-subroutine
-	BACKTRACESPEC=-fomit-frame-pointer
 	enable_hash_synchronization_default=yes
 	slow_pthread_self=yes
 	;;
   x86_64-*)
 	sysdeps_dir=x86-64
-	libgcj_flags="${libgcj_flags} -ffloat-store"
+	# For 64-bit we always use SSE registers for arithmetic,
+	# which doesn't have the extra precision problems of the fpu.
+	# But be careful about 32-bit multilibs.
+	case " $CC " in
+	*" -m32 "*)
+		libgcj_flags="${libgcj_flags} -ffloat-store" ;;
+	esac
+	libgcj_flags="${libgcj_flags} -fomit-frame-pointer"
 	libgcj_cxxflags=
 	libgcj_cflags=
 	DIVIDESPEC=-f%{m32:no-}use-divide-subroutine

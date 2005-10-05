@@ -1,3 +1,9 @@
+2005-10-05  Richard Henderson  <rth@redhat.com>
+
+	PR target/23602
+	* g++.dg/eh/omit-frame-pointer.C: Remove i?86 specific options.
+	* g++.dg/eh/omit-frame-pointer2.C: Likewise.
+
 2005-10-05  Dale Johannesen  <dalej@apple.com>
 
 	* gcc.c-torture/execute/float-floor.c:  New.

@@ -1778,6 +1778,18 @@ process_options (void)
     }
   if (!flag_stack_protect)
     warn_stack_protect = 0;
+
+  /* ??? Unwind info is not correct around the CFG unless either a frame
+     pointer is present or A_O_A is set.  Fixing this requires rewriting
+     unwind info generation to be aware of the CFG and propagating states
+     around edges.  */
+  if (flag_unwind_tables && !ACCUMULATE_OUTGOING_ARGS
+      && flag_omit_frame_pointer)
+    {
+      warning (0, "unwind tables currently requires a frame pointer "
+	       "for correctness");
+      flag_omit_frame_pointer = 0;
+    }
 }
 
 /* Initialize the compiler back end.  */
