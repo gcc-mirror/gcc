@@ -3,6 +3,9 @@
 	PR c++/17609
 	* g++.dg/lookup/error1.C: New test.
 
+	PR c++/18368
+	* g++.dg/other/semicolon.C: New test.
+
 2005-10-05  Paolo Bonzini  <bonzini@gnu.org>
 
         PR tree-optimization/21419
