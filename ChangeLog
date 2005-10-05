@@ -1,3 +1,24 @@
+2005-10-05  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/22340
+
+	* configure.in (default_target): Remove.
+	* Makefile.tpl (all): Do not use prerequisites as subroutines
+	(all) [gcc-bootstrap]: Bootstrap gcc first if it was not done yet.
+	(do-[+make_target+], check, install, [+bootstrap_target+]): Do not
+	use prerequisites as subroutines.
+	(check-host, check-target): New.
+	(bootstrap configure & all targets): Do not use stage*-start
+	if the directory layout is already ok.
+	(non-bootstrap configure & all targets): Prepend a $(unstage).
+	(stage[+id+]-bubble): Do that here.  Do not use NOTPARALLEL.
+	(NOTPARALLEL): Remove.
+	(unstage, stage variables): New variables.
+	(unstage, stage targets): Simply expand to those variables.
+
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
 2005-10-04  James E Wilson  <wilson@specifix.com>
 
 	* Makefile.def (lang_env_dependencies): Add libmudflap.

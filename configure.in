@@ -1780,18 +1780,14 @@ esac
 case "$enable_bootstrap" in
   yes)
     bootstrap_lean='#'
-    default_target=bootstrap
     bootstrap_suffix=bootstrap ;;
   lean)
     bootstrap_lean=''
-    default_target=bootstrap
     bootstrap_suffix=bootstrap ;;
   no)
-    default_target=all
     bootstrap_suffix=no-bootstrap ;;
 esac
 AC_SUBST(bootstrap_lean)
-AC_SUBST(default_target)
 
 for module in ${build_configdirs} ; do
   if test -z "${no_recursion}" \
