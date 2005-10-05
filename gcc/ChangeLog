@@ -1,3 +1,31 @@
+2005-10-05  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/18587
+	* tree-ssa-operands.c (struct opbuild_list_d, OPBUILD_LAST): Delete.
+	(build_defs, build_uses, build_v_may_defs, build_v_must_defs,
+	build_vuses): Change to VEC type.
+	(opbuild_initialize_virtual, opbuild_initialize_real, opbuild_free,
+	opbuild_num_elems, opbuild_append_real, opbuild_append_virtual,
+	opbuild_first, opbuild_next, opbuild_elem_real, opbuild_elem_virtual,
+	opbuild_elem_uid, opbuild_clear, opbuild_remove_elem): Delete.
+	(get_name_decl): New.  Return DECL_UID of base variable. 
+	(operand_build_cmp): New.  qsort comparison routine.
+	(operand_build_sort_virtual): New.  Sort virtual build vector.
+	(init_ssa_operands, fini_ssa_operands): Use VEC routines.
+	(FINALIZE_OPBUILD_BASE, FINALIZE_OPBUILD_ELEM): Use VEC_Index.
+	(FINALIZE_BASE): Use get_name_decl.
+	(finalize_ssa_defs, finalize_ssa_uses, cleanup_v_may_defs,
+	finalize_ssa_v_may_defs, finalize_ssa_vuses, finalize_ssa_v_must_defs,
+	(start_ssa_stmt_operands, append_def, append_use, append_vuse, 
+	append_v_may_def, append_v_must_def): Replace opbuild_* routines with 
+	direct VEC_* manipulations.
+	(build_ssa_operands): Call operand_build_sort_virtual.
+	(copy_virtual_operand, create_ssa_artficial_load_stmt,
+	add_call_clobber_ops, add_call_read_ops): Replace opbuild_* routines 
+	with direct VEC_* manipulations.
+	* tree-ssa-opfinalize.h (FINALIZE_FUNC): Replace opbuild_* routines
+	with direct VEC manipulations.
+
 2005-10-05  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/21419

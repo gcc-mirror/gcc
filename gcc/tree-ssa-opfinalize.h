@@ -63,7 +63,7 @@ FINALIZE_ALLOC (void)
 static inline void
 FINALIZE_FUNC (tree stmt)
 {
-  int new_i;
+  unsigned new_i;
   FINALIZE_TYPE *old_ops, *ptr, *last;
   FINALIZE_BASE_TYPE old_base;
   FINALIZE_TYPE new_list;
@@ -77,8 +77,8 @@ FINALIZE_FUNC (tree stmt)
   else
     old_base = FINALIZE_BASE_ZERO;
 
-  new_i = opbuild_first (&FINALIZE_OPBUILD);
-  while (old_ops && new_i != OPBUILD_LAST)
+  new_i = 0;
+  while (old_ops && new_i < VEC_length (tree, FINALIZE_OPBUILD))
     {
       FINALIZE_BASE_TYPE new_base = FINALIZE_OPBUILD_BASE (new_i);
       if (old_base == new_base)
@@ -90,7 +90,7 @@ FINALIZE_FUNC (tree stmt)
 	  FINALIZE_CORRECT_USE (FINALIZE_USE_PTR (last), stmt);
 #endif
 	  old_ops = old_ops->next;
-	  new_i = opbuild_next (&FINALIZE_OPBUILD, new_i);
+	  new_i++;
 	}
       else
         if (old_base < new_base)
@@ -112,16 +112,14 @@ FINALIZE_FUNC (tree stmt)
 	    FINALIZE_INITIALIZE (ptr, FINALIZE_OPBUILD_ELEM (new_i), stmt);
 	    last->next = ptr;
 	    last = ptr;
-	    new_i = opbuild_next (&FINALIZE_OPBUILD, new_i);
+	    new_i++;
 	  }
       if (old_ops)
         old_base = FINALIZE_BASE (FINALIZE_ELEM (old_ops));
     }
 
   /* If there is anything remaining in the opbuild list, simply emit them.  */
-  for ( ; 
-	new_i != OPBUILD_LAST; 
-	new_i = opbuild_next (&FINALIZE_OPBUILD, new_i))
+  for ( ; new_i < VEC_length (tree, FINALIZE_OPBUILD); new_i++)
     {
       ptr = FINALIZE_ALLOC ();
       FINALIZE_INITIALIZE (ptr, FINALIZE_OPBUILD_ELEM (new_i), stmt);
@@ -154,7 +152,7 @@ FINALIZE_FUNC (tree stmt)
     for (ptr = FINALIZE_OPS (stmt); ptr; ptr = ptr->next)
       x++;
 
-    gcc_assert (x == opbuild_num_elems (&FINALIZE_OPBUILD));
+    gcc_assert (x == VEC_length (tree, FINALIZE_OPBUILD));
   }
 #endif
 }
