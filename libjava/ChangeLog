@@ -1,3 +1,28 @@
+2005-10-05  Ranjit Mathew  <rmathew@hotmail.com>
+
+	More testsuite adjustments for PR java/19870.
+	* testsuite/libjava.lang/PR19870_2.java: New testcase.
+	* testsuite/libjava.lang/PR19870_2.out: Expected output for the
+	new testcase.
+	* testsuite/libjava.jacks/jacks.xfail: Remove
+	8.5.2-non-static-member-usage-2 and add
+	15.12.3-explicit-constructor-9.
+
+2005-10-05  Tom Tromey  <tromey@redhat.com>
+
+	PR java/21844:
+	* testsuite/libjava.lang/pr21844.java: New file.
+	* testsuite/libjava.lang/pr21844.out: New file.
+
+2005-10-05  Ranjit Mathew  <rmathew@hotmail.com>
+
+	Testsuite adjustments for PR java/19870.
+	* testsuite/libjava.lang/PR19870.java: New testcase.
+	* testsuite/libjava.lang/PR19870.out: Expected output for the
+	testcase.
+	* testsuite/libjava.jacks/jacks.xfail: Add
+	8.5.2-accessible-static-member-usage-3 and 15.8.4-static-2
+
 2005-10-01  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* testsuite/libjava.jacks/jacks.xfail: Update to reflect

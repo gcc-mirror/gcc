@@ -71,7 +71,7 @@ struct JCF;
       IS_CRAFTED_STRING_BUFFER_P (in CALL_EXPR)
       IS_INIT_CHECKED (in SAVE_EXPR)
    6: CAN_COMPLETE_NORMALLY (in statement nodes)
-      OUTER_FIELD_ACCESS_IDENTIFIER_P (in IDENTIFIER_NODE)
+      NESTED_FIELD_ACCESS_IDENTIFIER_P (in IDENTIFIER_NODE)
 
    Usage of TYPE_LANG_FLAG_?:
    0: CLASS_ACCESS0_GENERATED_P (in RECORD_TYPE)
@@ -905,16 +905,16 @@ union lang_tree_node
 #define DECL_LOCAL_START_PC(NODE)  (DECL_LANG_SPECIFIC (NODE)->u.v.start_pc)
 /* The end (bytecode) pc for the valid range of this local variable. */
 #define DECL_LOCAL_END_PC(NODE)    (DECL_LANG_SPECIFIC (NODE)->u.v.end_pc)
-/* For a VAR_DECLor PARM_DECL, used to chain decls with the same
+/* For a VAR_DECL or PARM_DECL, used to chain decls with the same
    slot_number in decl_map. */
 #define DECL_LOCAL_SLOT_CHAIN(NODE) (DECL_LANG_SPECIFIC(NODE)->u.v.slot_chain)
 /* For a FIELD_DECL, holds the name of the access method. Used to
-   read/write the content of the field from an inner class.  */
-#define FIELD_INNER_ACCESS(DECL) \
+   read/write the content of the field across nested class boundaries.  */
+#define FIELD_NESTED_ACCESS(DECL) \
   (DECL_LANG_SPECIFIC (VAR_OR_FIELD_CHECK (DECL))->u.v.am)
-/* Safely tests whether FIELD_INNER_ACCESS exists or not. */
-#define FIELD_INNER_ACCESS_P(DECL) \
-  DECL_LANG_SPECIFIC (DECL) && FIELD_INNER_ACCESS (DECL)
+/* Safely tests whether FIELD_NESTED_ACCESS exists or not.  */
+#define FIELD_NESTED_ACCESS_P(DECL) \
+  DECL_LANG_SPECIFIC (DECL) && FIELD_NESTED_ACCESS (DECL)
 /* True if a final field was initialized upon its declaration
    or in an initializer.  Set after definite assignment.  */
 #define DECL_FIELD_FINAL_IUD(NODE)  (DECL_LANG_SPECIFIC (NODE)->u.v.final_iud)
@@ -1694,9 +1694,9 @@ extern tree *type_map;
 /* True if NODE (a statement) can complete normally. */
 #define CAN_COMPLETE_NORMALLY(NODE) TREE_LANG_FLAG_6 (NODE)
 
-/* True if NODE (an IDENTIFIER) bears the name of a outer field from
-   inner class access function.  */
-#define OUTER_FIELD_ACCESS_IDENTIFIER_P(NODE) \
+/* True if NODE (an IDENTIFIER) bears the name of an outer field from
+   inner class (or vice versa) access function.  */
+#define NESTED_FIELD_ACCESS_IDENTIFIER_P(NODE) \
   TREE_LANG_FLAG_6 (IDENTIFIER_NODE_CHECK (NODE))
 
 /* True if NODE belongs to an inner class TYPE_DECL node.

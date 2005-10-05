@@ -1,3 +1,73 @@
+2005-10-05  Ranjit Mathew  <rmathew@hotmail.com>
+
+	PR java/20338
+	* decl.c (finish_method): Emit _Jv_InitClass for private static 
+	methods inside inner classes as well.
+
+2005-10-05  Ranjit Mathew  <rmathew@hotmail.com>
+
+	PR java/19870
+	* parse.y (nested_field_access_p): Rename to nested_member_access_p
+	and expand to handle method accesses across nested classes.
+	(build_outer_method_access_method): Rename to
+	build_nested_method_access_method.  Minor adjustments to comments.
+	(resolve_expression_name): Use the newly-renamed
+	nested_member_access_p method.
+	(resolve_qualified_expression_name): Likewise.
+	(patch_method_invocation): Also consider static methods for access
+	method generation.  Minor adjustments to comments.
+	(maybe_use_access_method): Use the more general
+	nested_memeber_access_p to determine access across nested class
+	boundaries.  Allow THIS_ARG to be NULL (for static methods).
+
+2005-10-05  Tom Tromey  <tromey@redhat.com>
+
+        PR java/21844:
+        * parse.y (nested_field_access_p): Handle case where outer field
+        is inherited by enclosing class.
+
+2005-10-05  Ranjit Mathew  <rmathew@hotmail.com>
+
+	PR java/19870.
+	* java-tree.h (OUTER_FIELD_ACCESS_IDENTIFIER_P): Rename to
+	NESTED_FIELD_ACCESS_IDENTIFIER_P.
+	(FIELD_INNER_ACCESS): Rename to FIELD_NESTED_ACCESS.
+	(FIELD_INNER_ACCESS_P): Rename to FIELD_NESTED_ACCESS_P.
+	* jcf-write.c (generate_classfile): Use
+	NESTED_FIELD_ACCESS_IDENTIFIER_P instead of
+	OUTER_FIELD_ACCESS_IDENTIFIER_P.
+	* parse.y (build_outer_field_access): Rename to
+	build_nested_field_access. Support static fields and outer-to-inner
+	class accesses.
+	(outer_field_access_p): Rename to nested_field_access_p. Support
+	static fields and generalise to outer-to-inner class and sibling
+	inner class accesses.
+	(outer_field_expanded_access_p): Rename to
+	nested_field_expanded_access_p and support static fields.
+	(outer_field_access_fix): Rename to nested_field_access_fix and
+	support static fields.
+	(build_outer_field_access_expr): Rename to
+	build_nested_field_access_expr and support static fields.
+	(build_outer_field_access_methods): Rename to
+	build_nested_field_access_methods and support static fields. For
+	static fields, generate accessors without class instance parameters.
+	(build_outer_field_access_method): Rename to
+	build_nested_field_access_method and support static fields.
+	(build_outer_method_access_method): Use
+	NESTED_FIELD_ACCESS_IDENTIFIER_P instead of
+	OUTER_FIELD_ACCESS_IDENTIFIER_P.
+	(resolve_expression_name): Consider static field accesses across
+	nested classes.
+	(resolve_qualified_expression_name): Likewise.
+	(java_complete_lhs): Use nested_field_access_fix instead of
+	outer_field_access_fix.
+	(patch_unary_op): Rename outer_field_flag to nested_field_flag.
+	Use nested_field_expanded_access_p instead of
+	outer_field_expanded_access_p. Use nested_field_access_fix instead
+	of outer_field_access_fix.
+	(check_thrown_exceptions): Use NESTED_FIELD_ACCESS_IDENTIFIER_P
+	instead of OUTER_FIELD_ACCESS_IDENTIFIER_P.
+
 2005-10-01  Ranjit Mathew  <rmathew@gcc.gnu.org>
 
 	PR java/21418

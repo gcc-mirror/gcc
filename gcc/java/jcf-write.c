@@ -3088,7 +3088,7 @@ generate_classfile (tree clas, struct jcf_partial *state)
       /* Make room for the Synthetic attribute (of zero length.)  */
       if (DECL_FINIT_P (part)
 	  || DECL_INSTINIT_P (part)
-	  || OUTER_FIELD_ACCESS_IDENTIFIER_P (DECL_NAME (part))
+	  || NESTED_FIELD_ACCESS_IDENTIFIER_P (DECL_NAME (part))
 	  || TYPE_DOT_CLASS (clas) == part)
 	{
 	  i++;

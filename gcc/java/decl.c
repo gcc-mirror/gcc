@@ -2082,7 +2082,9 @@ finish_method (tree fndecl)
 
   /* Prepend class initialization for static methods reachable from
      other classes.  */
-  if (METHOD_STATIC (fndecl) && ! METHOD_PRIVATE (fndecl)
+  if (METHOD_STATIC (fndecl)
+      && (! METHOD_PRIVATE (fndecl)
+          || INNER_CLASS_P (DECL_CONTEXT (fndecl)))
       && ! DECL_CLINIT_P (fndecl)
       && ! CLASS_INTERFACE (TYPE_NAME (DECL_CONTEXT (fndecl))))
     {
