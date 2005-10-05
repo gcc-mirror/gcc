@@ -1,3 +1,9 @@
+2005-10-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/23513
+	* g++.dg/template/spec22.C: Robustify test.
+	* g++.dg/template/spec26.C: New.
+
 2005-10-05  Uros Bizjak  <uros@kss-loka.si>
 
 	* gcc.dg/vect/vect-shift-1.c: Include tree-vect.h header. Check

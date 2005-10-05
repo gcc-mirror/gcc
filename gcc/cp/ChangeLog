@@ -1,3 +1,10 @@
+2005-10-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/23513
+	* call.c (joust): Adjust length count to more_specialized_fn.
+	* pt.c (more_specialized_fn): Cope with non-static member vs
+	non-member.
+
 2005-10-04  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/23125
