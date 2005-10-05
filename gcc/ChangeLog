@@ -1,3 +1,12 @@
+2005-10-05  Billy Biggs  <billy.biggs@gmail.com>
+	    Paolo Bonzini  <bonzini@gnu.org>
+
+	PR target/23809
+
+	* doc/extend.texi (x86 Built-ins): Document that -msse and friends
+	enable the instructions and not just the built-ins.
+	* doc/invoke.texi (x86 Options): Likewise.
+
 2005-10-04  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/i386/t-darwin (SHLIB_VERPFX): Fix typo.
