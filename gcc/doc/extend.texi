@@ -6466,6 +6466,14 @@ into the data cache.  The instruction will be issued in slot I1@.
 These built-in functions are available for the i386 and x86-64 family
 of computers, depending on the command-line switches used.
 
+Note that, if you specify command-line switches such as @option{-msse},
+the compiler could use the extended instruction sets even if the built-ins
+are not used explicitly in the program.  For this reason, applications
+which perform runtime CPU detection must compile separate files for each
+supported architecture, using the appropriate flags.  In particular,
+the file containing the CPU detection code should be compiled without
+these options.
+
 The following machine modes are available for use with MMX built-in functions
 (@pxref{Vector Extensions}): @code{V2SI} for a vector of two 32-bit integers,
 @code{V4HI} for a vector of four 16-bit integers, and @code{V8QI} for a
