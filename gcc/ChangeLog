@@ -1,3 +1,8 @@
+2005-10-05  Dale Johannesen  <dalej@apple.com>
+
+	* convert.c (convert_to_real):  Don't convert
+	(float)floor(double d) to floorf((float)d).
+
 2005-10-05  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/arm/arm.md (insv): Use gen_int_mode in more places.
