@@ -1138,18 +1138,17 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 {
   tree r;
   tree t;
+  int ninputs = list_length (input_operands);
+  int noutputs = list_length (output_operands);
 
   if (!processing_template_decl)
     {
-      int ninputs, noutputs;
       const char *constraint;
       const char **oconstraints;
       bool allows_mem, allows_reg, is_inout;
       tree operand;
       int i;
 
-      ninputs = list_length (input_operands);
-      noutputs = list_length (output_operands);
       oconstraints = (const char **) alloca (noutputs * sizeof (char *));
 
       string = resolve_asm_operand_names (string, output_operands,
@@ -1169,6 +1168,19 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 
 	  if (!lvalue_or_else (operand, lv_asm))
 	    operand = error_mark_node;
+
+          if (operand != error_mark_node
+	      && (TREE_READONLY (operand)
+		  || CP_TYPE_CONST_P (TREE_TYPE (operand))
+	          /* Functions are not modifiable, even though they are
+	             lvalues.  */
+	          || TREE_CODE (TREE_TYPE (operand)) == FUNCTION_TYPE
+	          || TREE_CODE (TREE_TYPE (operand)) == METHOD_TYPE
+	          /* If it's an aggregate and any field is const, then it is
+	             effectively const.  */
+	          || (CLASS_TYPE_P (TREE_TYPE (operand))
+	              && C_TYPE_FIELDS_READONLY (TREE_TYPE (operand)))))
+	    readonly_error (operand, "assignment (via 'asm' output)", 0);
 
 	  constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
 	  oconstraints[i] = constraint;
@@ -1227,7 +1239,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
   r = build_stmt (ASM_EXPR, string,
 		  output_operands, input_operands,
 		  clobbers);
-  ASM_VOLATILE_P (r) = volatile_p;
+  ASM_VOLATILE_P (r) = volatile_p || noutputs == 0;
   r = maybe_cleanup_point_expr_void (r);
   return add_stmt (r);
 }

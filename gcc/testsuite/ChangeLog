@@ -1,3 +1,15 @@
+2005-10-05  Paolo Bonzini  <bonzini@gnu.org>
+
+        PR tree-optimization/21419
+        PR tree-optimization/24146
+        PR tree-optimization/24151
+
+        * g++.dg/ext/asm7.C: New.
+        * g++.dg/ext/asm8.C: New.
+        * gcc.dg/asm-1.c: Compile on all targets.
+        * gcc.dg/asm-pr24146.c: New.
+        * gcc.dg/pr21419.c: Adjust error messages.
+
 2005-10-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/23513

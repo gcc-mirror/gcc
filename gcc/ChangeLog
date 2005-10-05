@@ -1,3 +1,13 @@
+2005-10-05  Paolo Bonzini  <bonzini@gnu.org>
+
+        PR tree-optimization/21419
+        PR tree-optimization/24146
+        PR tree-optimization/24151
+
+        * c-typeck.c (readonly_error): Handle USE being lv_asm.
+        (build_asm_expr): Call it if outputs are read-only.
+        * gimplify.c (gimplify_asm_expr): Remove former fix to PR 21419.
+
 2005-10-04  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/23125

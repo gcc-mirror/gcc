@@ -2801,13 +2801,14 @@ lvalue_p (tree ref)
 static void
 readonly_error (tree arg, enum lvalue_use use)
 {
-  gcc_assert (use == lv_assign || use == lv_increment || use == lv_decrement);
+  gcc_assert (use == lv_assign || use == lv_increment || use == lv_decrement
+	      || use == lv_asm);
   /* Using this macro rather than (for example) arrays of messages
      ensures that all the format strings are checked at compile
      time.  */
-#define READONLY_MSG(A, I, D) (use == lv_assign				\
-			       ? (A)					\
-			       : (use == lv_increment ? (I) : (D)))
+#define READONLY_MSG(A, I, D, AS) (use == lv_assign ? (A)		\
+			           : (use == lv_increment ? (I)		\
+				   : (use == lv_decrement ? (D) : (AS))))
   if (TREE_CODE (arg) == COMPONENT_REF)
     {
       if (TYPE_READONLY (TREE_TYPE (TREE_OPERAND (arg, 0))))
@@ -2815,18 +2816,21 @@ readonly_error (tree arg, enum lvalue_use use)
       else
 	error (READONLY_MSG (G_("assignment of read-only member %qs"),
 			     G_("increment of read-only member %qs"),
-			     G_("decrement of read-only member %qs")),
+			     G_("decrement of read-only member %qs"),
+			     G_("read-only member %qD used as %<asm%> output")),
 	       IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (arg, 1))));
     }
   else if (TREE_CODE (arg) == VAR_DECL)
     error (READONLY_MSG (G_("assignment of read-only variable %qs"),
 			 G_("increment of read-only variable %qs"),
-			 G_("decrement of read-only variable %qs")),
+			 G_("decrement of read-only variable %qs"),
+			 G_("read-only variable %qs used as %<asm%> output")),
 	   IDENTIFIER_POINTER (DECL_NAME (arg)));
   else
     error (READONLY_MSG (G_("assignment of read-only location"),
 			 G_("increment of read-only location"),
-			 G_("decrement of read-only location")));
+			 G_("decrement of read-only location"),
+			 G_("read-only location used as %<asm%> output")));
 }
 
 /* Mark EXP saying that we need to be able to take the
@@ -6435,6 +6439,14 @@ build_asm_expr (tree string, tree outputs, tree inputs, tree clobbers,
       if (!lvalue_or_else (output, lv_asm))
 	output = error_mark_node;
 
+      if (output != error_mark_node
+	  && (TREE_READONLY (output)
+	      || TYPE_READONLY (TREE_TYPE (output))
+	      || ((TREE_CODE (TREE_TYPE (output)) == RECORD_TYPE
+		   || TREE_CODE (TREE_TYPE (output)) == UNION_TYPE)
+		  && C_TYPE_FIELDS_READONLY (TREE_TYPE (output)))))
+	readonly_error (output, lv_asm);
+
       constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (tail)));
       oconstraints[i] = constraint;
 
@@ -6486,12 +6498,10 @@ build_asm_expr (tree string, tree outputs, tree inputs, tree clobbers,
 
   args = build_stmt (ASM_EXPR, string, outputs, inputs, clobbers);
 
-  /* Simple asm statements are treated as volatile.  */
-  if (simple)
-    {
-      ASM_VOLATILE_P (args) = 1;
-      ASM_INPUT_P (args) = 1;
-    }
+  /* asm statements without outputs, including simple ones, are treated
+     as volatile.  */
+  ASM_INPUT_P (args) = simple;
+  ASM_VOLATILE_P (args) = (noutputs == 0);
 
   return args;
 }

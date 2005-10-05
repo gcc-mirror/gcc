@@ -1,3 +1,12 @@
+2005-10-05  Paolo Bonzini  <bonzini@gnu.org>
+
+        PR tree-optimization/21419
+        PR tree-optimization/24146
+        PR tree-optimization/24151
+
+        * semantics.c (finish_asm_stmt): Call readonly_error if outputs are
+        read-only.  Set ASM_VOLATILE_P for asms without outputs.
+
 2005-10-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/23513
