@@ -1,5 +1,7 @@
 2005-10-04  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/i386/t-darwin (SHLIB_VERPFX): Fix typo.
+
 	* doc/invoke.texi (Option Summary): Correct spelling
 	of -mmacosx-version-min.
 
