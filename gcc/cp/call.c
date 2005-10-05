@@ -6105,17 +6105,11 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn)
       winner = more_specialized_fn
         (TI_TEMPLATE (cand1->template_decl),
          TI_TEMPLATE (cand2->template_decl),
-         /* Tell the deduction code how many real function arguments
-	    we saw, not counting the implicit 'this' argument.  But,
-	    add_function_candidate() suppresses the "this" argument
-	    for constructors.
-
-	    [temp.func.order]: The presence of unused ellipsis and default
+	 /* [temp.func.order]: The presence of unused ellipsis and default
 	    arguments has no effect on the partial ordering of function
-	    templates.  */
-	 cand1->num_convs
-	 - (DECL_NONSTATIC_MEMBER_FUNCTION_P (cand1->fn)
-	    - DECL_CONSTRUCTOR_P (cand1->fn)));
+	    templates.   add_function_candidate() will not have
+	    counted the "this" argument for constructors.  */
+	 cand1->num_convs + DECL_CONSTRUCTOR_P (cand1->fn));
       if (winner)
         return winner;
     }
