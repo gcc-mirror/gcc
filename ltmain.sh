@@ -4799,7 +4799,7 @@ relink_command=\"$relink_command\""
 	  # but it's something to keep an eye on.
 	  if test "$inst_prefix_dir" = "$destdir"; then
 	    $echo "$modename: error: cannot install \`$file' to a directory not ending in $libdir" 1>&2
-	    exit $EXIT_FAILURE
+	    exit 1
 	  fi
 
 	  if test -n "$inst_prefix_dir"; then
