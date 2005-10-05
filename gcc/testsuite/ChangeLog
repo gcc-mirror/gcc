@@ -1,3 +1,8 @@
+2005-10-04  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/builtins-config.h: Only PowerPC Mac OS shipped without
+	C99 functions.
+
 2005-10-04  Janis Johnson  <janis187@us.ibm.com>
 
 	* lib/target-supports.exp (check_effective_target_fortran_large_real,
