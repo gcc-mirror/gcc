@@ -1,3 +1,8 @@
+2005-10-05  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.tpl (all) [gcc-no-bootstrap]: Make prebootstrap packages
+	before other host packages.
+
 2005-10-05  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* MAINTAINERS: Add self as sh libraries/configury maintainer.
