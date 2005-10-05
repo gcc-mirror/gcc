@@ -791,7 +791,7 @@
   [(set_attr "itanium_class" "mmshf")])
 
 (define_expand "vec_initv2si"
-  [(match_operand:V2SF 0 "gr_register_operand" "")
+  [(match_operand:V2SI 0 "gr_register_operand" "")
    (match_operand 1 "" "")]
   ""
 {
@@ -801,7 +801,10 @@
 
   if (GET_CODE (op1) == CONST_INT && GET_CODE (op2) == CONST_INT)
     {
-      x = gen_rtx_CONST_VECTOR (V2SImode, XVEC (operands[1], 0));
+      rtvec v = rtvec_alloc (2);
+      RTVEC_ELT (v, 0) = TARGET_BIG_ENDIAN ? op2 : op1;
+      RTVEC_ELT (v, 1) = TARGET_BIG_ENDIAN ? op1 : op2;;
+      x = gen_rtx_CONST_VECTOR (V2SImode, v);
       emit_move_insn (operands[0], x);
       DONE;
     }
@@ -811,7 +814,10 @@
   if (!gr_reg_or_0_operand (op2, SImode))
     op2 = force_reg (SImode, op2);
 
-  x = gen_rtx_VEC_CONCAT (V2SImode, op1, op2);
+  if (TARGET_BIG_ENDIAN)
+    x = gen_rtx_VEC_CONCAT (V2SImode, op2, op1);
+  else
+    x = gen_rtx_VEC_CONCAT (V2SImode, op1, op2);
   emit_insn (gen_rtx_SET (VOIDmode, operands[0], x));
   DONE;
 })
@@ -1149,7 +1155,10 @@
   if (!fr_reg_or_fp01_operand (op2, SFmode))
     op2 = force_reg (SFmode, op2);
 
-  emit_insn (gen_fpack (operands[0], op1, op2));
+  if (TARGET_BIG_ENDIAN)
+    emit_insn (gen_fpack (operands[0], op2, op1));
+  else
+    emit_insn (gen_fpack (operands[0], op1, op2));
   DONE;
 })
 
@@ -1275,7 +1284,10 @@
 {
   operands[0] = gen_rtx_REG (DImode, REGNO (operands[0]));
   operands[1] = gen_rtx_REG (DImode, REGNO (operands[1]));
-  emit_insn (gen_lshrdi3 (operands[0], operands[1], GEN_INT (32)));
+  if (TARGET_BIG_ENDIAN)
+    emit_move_insn (operands[0], operands[1]);
+  else
+    emit_insn (gen_lshrdi3 (operands[0], operands[1], GEN_INT (32)));
   DONE;
 })
 

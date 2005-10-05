@@ -1,3 +1,10 @@
+2005-10-05  Steve Ellcey  <sje@cup.hp.com>
+
+	* vect.md (vec_initv2si): Fix typo of V2SF to V2SI.
+	Handle big endian vs. small endian.
+	(vec_initv2sf): Handle big endian vs. small endian.
+	(*vec_extractv2sf_1): Ditto.
+
 2005-10-05  Dale Johannesen  <dalej@apple.com>
 
 	* convert.c (convert_to_real):  Don't convert
