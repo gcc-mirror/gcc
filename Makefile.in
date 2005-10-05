@@ -35060,6 +35060,8 @@ configure-target-libffi: maybe-all-target-newlib maybe-all-target-libgloss
 configure-target-libjava: maybe-all-target-newlib maybe-all-target-libgloss
 configure-target-libjava: maybe-all-target-libstdc++-v3
 
+configure-target-libmudflap: maybe-all-target-newlib maybe-all-target-libgloss
+
 configure-target-libobjc: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-libssp: maybe-all-target-newlib maybe-all-target-libgloss
