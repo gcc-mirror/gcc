@@ -1,3 +1,10 @@
+2005-10-05  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/20606
+	PR middle-end/24069
+	* reload.c (subst_reloads): When adding a REG_LABEL to a
+	jump instruction, also update JUMP_LABEL.
+
 2005-10-05  David Edelsohn  <edelsohn@gnu.org>
 
 	* params.def (PARAM_MAX_GROW_COPY_BB_INSNS): New.
