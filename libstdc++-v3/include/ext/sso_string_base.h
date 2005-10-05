@@ -38,44 +38,10 @@
 
 namespace __gnu_cxx
 {
-  // N.B. According to 3.9/10 and 9/4, POD types can have user-defined 
-  // constructors: in that case, cannot be member of an union (9.5/1).
-  // See, f.i., class gnu_char_type in the testsuite.
-  template<typename _CharT, typename _Traits, typename _Alloc,
-	   bool = std::__is_scalar<_CharT>::__value>
-    struct __sso_string_local
-    {
-      typedef typename __vstring_utility<_CharT, _Traits, _Alloc>::
-        _CharT_alloc_type::size_type                        size_type;
-
-      enum { _S_local_capacity = 15 };
-      
-      union
-      {
-	_CharT               _M_local_data[_S_local_capacity + 1];
-	size_type            _M_allocated_capacity;
-      };
-    };
-
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    struct __sso_string_local<_CharT, _Traits, _Alloc, false>
-    {
-      typedef typename __vstring_utility<_CharT, _Traits, _Alloc>::
-        _CharT_alloc_type::size_type                        size_type;
-
-      enum { _S_local_capacity = 15 };
-
-      _CharT                 _M_local_data[_S_local_capacity + 1];
-      size_type              _M_allocated_capacity;
-    };
-
   template<typename _CharT, typename _Traits, typename _Alloc>
     class __sso_string_base
-    : protected __vstring_utility<_CharT, _Traits, _Alloc>,
-      private __sso_string_local<_CharT, _Traits, _Alloc>
+    : protected __vstring_utility<_CharT, _Traits, _Alloc>
     {
-      typedef __sso_string_local<_CharT, _Traits, _Alloc>   _Local;
-
     public:
       typedef _Traits					    traits_type;
       typedef typename _Traits::char_type		    value_type;
@@ -100,25 +66,7 @@ namespace __gnu_cxx
 
     private:
       static const _CharT	_S_terminal;
-
-      using _Local::_S_local_capacity;
-      using _Local::_M_local_data;
-      using _Local::_M_allocated_capacity;
-
-      // Create & Destroy
-      _CharT*
-      _M_create(size_type&, size_type);
       
-      void
-      _M_dispose() throw()
-      {
-	if (!_M_is_local())
-	  _M_destroy(_M_allocated_capacity + 1);
-      }
-
-      void
-      _M_destroy(size_type) throw();
-
       // Use empty-base optimization: http://www.cantrip.org/emptyopt.html
       struct _Alloc_hider : _Alloc
       {
@@ -131,6 +79,14 @@ namespace __gnu_cxx
       // Data Members (private):
       _Alloc_hider	        _M_dataplus;
       size_type                 _M_string_length;
+
+      enum { _S_local_capacity = 15 };
+      
+      union
+      {
+	_CharT                  _M_local_data[_S_local_capacity + 1];
+	size_type               _M_allocated_capacity;
+      };
 
       _CharT*
       _M_data(_CharT* __p)
@@ -147,6 +103,20 @@ namespace __gnu_cxx
       bool
       _M_is_local() const
       { return _M_data() == _M_local_data; }
+
+      // Create & Destroy
+      _CharT*
+      _M_create(size_type&, size_type);
+      
+      void
+      _M_dispose() throw()
+      {
+	if (!_M_is_local())
+	  _M_destroy(_M_allocated_capacity + 1);
+      }
+
+      void
+      _M_destroy(size_type) throw();
 
       // _M_construct_aux is used to implement the 21.3.1 para 15 which
       // requires special behaviour if _InIter is an integral type

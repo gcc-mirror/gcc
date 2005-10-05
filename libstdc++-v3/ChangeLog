@@ -1,5 +1,12 @@
 2005-10-05  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/ext/sso_string_base.h (struct __sso_string_local):
+	Remove, actually POD types cannot have user defined constructors
+	(being aggregates) and therefore can always be members of unions.
+	(class __sso_string_base): Adjust consistently.
+
+2005-10-05  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/24198
 	* testsuite/27_io/basic_filebuf/3.cc: Use __gnu_test::pod_ushort
 	instead.
