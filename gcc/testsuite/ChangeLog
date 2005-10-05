@@ -1,3 +1,8 @@
+2005-10-05  Richard Guenther  <rguenther@suse.de>
+
+	PR fortran/24176
+	* gfortran.fortran-torture/compile/empty.f90: New testcase.
+
 2005-10-04  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/23125

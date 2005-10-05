@@ -1,3 +1,8 @@
+2005-10-05  Richard Guenther  <rguenther@suse.de>
+
+	PR fortran/24176
+	* parse.c (gfc_parse_file): Exit early for empty files.
+
 2005-10-03  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* trans-types.c (gfc_init_kinds): Only allow real kinds
