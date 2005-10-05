@@ -709,6 +709,11 @@ all:
 	fi
 @endif gcc-bootstrap
 	@$(unstage)
+@if gcc-no-bootstrap
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(MAKE) $(RECURSE_FLAGS_TO_PASS) all-prebootstrap
+@endif gcc-no-bootstrap
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	if [ -f stage_last ]; then \
