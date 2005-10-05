@@ -349,6 +349,12 @@ DEFPARAM(PARAM_MIN_CROSSJUMP_INSNS,
      "The minimum number of matching instructions to consider for crossjumping",
      5, 0, 0)
 
+/* The maximum number expansion factor when copying basic blocks.  */
+DEFPARAM(PARAM_MAX_GROW_COPY_BB_INSNS,
+     "max-grow-copy-bb-insns",
+     "The maximum expansion factor when copying basic blocks",
+     8, 0, 0)
+
 /* The maximum number of insns to duplicate when unfactoring computed gotos.  */
 DEFPARAM(PARAM_MAX_GOTO_DUPLICATION_INSNS,
      "max-goto-duplication-insns",

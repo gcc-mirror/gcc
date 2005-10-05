@@ -1,3 +1,9 @@
+2005-10-05  David Edelsohn  <edelsohn@gnu.org>
+
+	* params.def (PARAM_MAX_GROW_COPY_BB_INSNS): New.
+	* bb-reorder.c (copy_bb_p): Use it.
+	* doc/invoke.texi (param table): Add max-grow-copy-bb-insn.
+
 2005-10-05  Richard Henderson  <rth@redhat.com>
 
 	PR target/23602
