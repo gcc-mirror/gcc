@@ -1,1 +1,1 @@
-SHLIB_VERPFX = $(srcdir)/config/rs6000/darwin-libgcc
+SHLIB_VERPFX = $(srcdir)/config/i386/darwin-libgcc
