@@ -460,7 +460,7 @@ Objective-C and Objective-C++ Dialects}.
 -single_module  -static  -sub_library  -sub_umbrella @gol
 -twolevel_namespace  -umbrella  -undefined @gol
 -unexported_symbols_list  -weak_reference_mismatches @gol
--whatsloaded -F -gused -gfull -mmacosx-min-version=@var{version} @gol
+-whatsloaded -F -gused -gfull -mmacosx-version-min=@var{version} @gol
 -mone-byte-bool}
 
 @emph{DEC Alpha Options}
