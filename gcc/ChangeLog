@@ -1,3 +1,7 @@
+2005-10-05  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/arm/arm.md (insv): Use gen_int_mode in more places.
+
 2005-10-05  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/18587
