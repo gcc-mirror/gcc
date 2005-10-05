@@ -2560,6 +2560,10 @@ gfc_parse_file (void)
 
   seen_program = 0;
 
+  /* Exit early for empty files.  */
+  if (gfc_at_eof ())
+    goto done;
+
 loop:
   gfc_init_2 ();
   st = next_statement ();
