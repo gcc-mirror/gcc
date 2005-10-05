@@ -76,6 +76,7 @@ s390 port		Hartmut Penner		hpenner@de.ibm.com
 s390 port		Ulrich Weigand		uweigand@de.ibm.com
 sh port			Joern Rennecke		joern.rennecke@st.com
 sh port			Alexandre Oliva		aoliva@redhat.com
+sh libraries/configury	Kaz Kojima		kkojima@gcc.gnu.org
 sparc port		Richard Henderson	rth@redhat.com
 sparc port		David S. Miller		davem@redhat.com
 sparc port		Jakub Jelinek		jakub@redhat.com
