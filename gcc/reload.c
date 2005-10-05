@@ -6022,9 +6022,12 @@ subst_reloads (rtx insn)
 	     register refers to.  */
 	  if (GET_CODE (*r->where) == LABEL_REF
 	      && JUMP_P (insn))
-	    REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL,
-						  XEXP (*r->where, 0),
-						  REG_NOTES (insn));
+	    {
+	      REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL,
+						    XEXP (*r->where, 0),
+						    REG_NOTES (insn));
+	      JUMP_LABEL (insn) = XEXP (*r->where, 0);
+	   }
 
 	  /* Encapsulate RELOADREG so its machine mode matches what
 	     used to be there.  Note that gen_lowpart_common will
