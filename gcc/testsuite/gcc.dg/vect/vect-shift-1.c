@@ -1,22 +1,26 @@
 /* { dg-require-effective-target vect_shift } */
 
 #include <stdarg.h>
-#include <signal.h>
+#include "tree-vect.h"
 
-extern void abort(void); 
+#define N 4
 
 int main ()
-{  
-  unsigned int A[4] =  {0x08000000,0x08000001,0xff0000ff,0xf0000001};
-  unsigned int Answer[4] = {0x01000000,0x01000000,0x01fe0001f,0x1e000000};
-  unsigned int B[4];
-  int i, j;
-  
-  for (i=0; i<4; i++)
-    B[i] = A[i] >> 3;
-  for (i=0; i<4; i++)
-    if (B[i] != Answer[i])
+{
+  unsigned int A[N] = { 0x08000000, 0x08000001, 0x0ff0000ff, 0xf0000001 };
+  unsigned int B[N] = { 0x01000000, 0x01000000, 0x01fe0001f, 0x1e000000 };
+  int i;
+
+  check_vect ();
+
+  for (i = 0; i < N; i++)
+    A[i] = A[i] >> 3;
+
+  /* check results:  */
+  for (i = 0; i < N; i++)
+    if (A[i] != B[i])
       abort ();
+
   return 0;
 }
 
