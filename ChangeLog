@@ -1,3 +1,8 @@
+2005-10-04  James E Wilson  <wilson@specifix.com>
+
+	* Makefile.def (lang_env_dependencies): Add libmudflap.
+	* Makefile.in: Regenerate.
+
 2005-10-03  Andreas Schwab  <schwab@suse.de>
 
 	Backport from libtool CVS:

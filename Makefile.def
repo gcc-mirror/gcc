@@ -418,6 +418,7 @@ lang_env_dependencies = { module=libada; };
 lang_env_dependencies = { module=libgfortran; };
 lang_env_dependencies = { module=libffi; };
 lang_env_dependencies = { module=libjava; cxx=true; };
+lang_env_dependencies = { module=libmudflap; };
 lang_env_dependencies = { module=libobjc; };
 lang_env_dependencies = { module=libssp; };
 lang_env_dependencies = { module=libstdc++-v3; };
