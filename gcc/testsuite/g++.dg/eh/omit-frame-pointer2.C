@@ -1,6 +1,5 @@
 // Reduced from PR c++/5246, PR c++/2447
 // { dg-options "-O -fomit-frame-pointer" }
-// { dg-options "-O -fomit-frame-pointer -mno-accumulate-outgoing-args" { target i?86-*-* } }
 // { dg-do run }
 
 void step (int)

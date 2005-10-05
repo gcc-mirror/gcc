@@ -1,3 +1,11 @@
+2005-10-05  Richard Henderson  <rth@redhat.com>
+
+	PR target/23602
+	* toplev.c (process_options): Warn about unsupported combinations
+	of unwind tables and omit-frame-pointer.
+	* config/i386/i386.c (override_options): Similarly.  Enable
+	accumulate-outgoing-args if not explicitly disabled.
+
 2005-10-05  Steve Ellcey  <sje@cup.hp.com>
 
 	* vect.md (vec_initv2si): Fix typo of V2SF to V2SI.

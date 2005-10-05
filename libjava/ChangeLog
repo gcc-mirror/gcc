@@ -1,3 +1,10 @@
+2005-10-05  Richard Henderson  <rth@redhat.com>
+
+	PR target/23602
+	* configure.host (i?86-*): Set -fomit-frame-pointer in libgcj_flags,
+	but not BACKTRACESPEC.
+	(x86_64-*): Similarly.  Don't set -ffloat-store in 64-bit mode.
+
 2005-10-02  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* testsuite/lib/jni.exp (gcj_jni_test_one): For
