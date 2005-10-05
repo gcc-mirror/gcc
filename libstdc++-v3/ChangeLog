@@ -1,3 +1,12 @@
+2005-10-05  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/11729 (DR 280, [Ready])
+	* include/bits/stl_iterator.h: Add reverse_iterator global
+	functions with two template parameters (operator==, !=, <,
+	>, <=, >=, -).
+	* testsuite/24_iterators/reverse_iterator/11729.cc: New.
+	* docs/html/ext/howto.html: Add an entry for issue 280.
+
 2005-10-03  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/hashtable
