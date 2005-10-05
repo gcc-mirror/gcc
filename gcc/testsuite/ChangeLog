@@ -1,3 +1,8 @@
+2005-10-05  Uros Bizjak  <uros@kss-loka.si>
+
+	* gcc.dg/vect/vect-shift-1.c: Include tree-vect.h header. Check
+	if target supports vector instructions.
+
 2005-10-04  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/builtins-config.h: Only PowerPC Mac OS shipped without
