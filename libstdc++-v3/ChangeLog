@@ -1,5 +1,25 @@
 2005-10-05  Paolo Carlini  <pcarlini@suse.de>
 
+	PR libstdc++/24198
+	* testsuite/27_io/basic_filebuf/3.cc: Use __gnu_test::pod_ushort
+	instead.
+	* testsuite/27_io/basic_filebuf/seekoff/10132-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/10132-3.cc: Likewise.
+	* testsuite/27_io/basic_fstream/3.cc: Likewise; run the test.
+	* testsuite/27_io/basic_ifstream/3.cc: Likewise; run the test.
+	* testsuite/27_io/basic_ios/3.cc: Likewise.
+	* testsuite/27_io/basic_iostream/3.cc: Likewise; run the test.
+	* testsuite/27_io/basic_istream/3.cc: Likewise; run the test.
+	* testsuite/27_io/basic_istringstream/3.cc: Likewise; run the test.
+	* testsuite/27_io/basic_ofstream/3.cc: Likewise; run the test.
+	* testsuite/27_io/basic_ostream/3.cc: Likewise; run the test.
+	* testsuite/27_io/basic_ostringstream/3.cc: Likewise; run the test.
+	* testsuite/27_io/basic_streambuf/3.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/3.cc: Likewise.
+	* testsuite/27_io/basic_stringstream/3.cc: Likewise; run the test.
+
+2005-10-05  Paolo Carlini  <pcarlini@suse.de>
+
 	PR libstdc++/11729 (DR 280, [Ready])
 	* include/bits/stl_iterator.h: Add reverse_iterator global
 	functions with two template parameters (operator==, !=, <,
