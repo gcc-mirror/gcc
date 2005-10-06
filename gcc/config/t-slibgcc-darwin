@@ -32,7 +32,7 @@ SHLIB_INSTALL = \
 
 SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk
 SHLIB_MKMAP_OPTS = -v leading_underscore=1
-SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver
+SHLIB_MAPFILES += $(srcdir)/libgcc-std.ver
 
 # Must use a different directive for hidden visibility in assembly sources.
 ASM_HIDDEN_OP = .private_extern
