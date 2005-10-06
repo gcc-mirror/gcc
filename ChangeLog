@@ -1,3 +1,13 @@
+2005-10-06  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* Makefile.def (flags_to_pass): Add OBJDUMP_FOR_TARGET.
+	* Makefile.tpl (BASE_TARGET_EXPORTS): Add OBJDUMP.
+	(OBJDUMP_FOR_TARGET, CONFIGURED_OBJDUMP_FOR_TARGET)
+	(USUAL_OBJDUMP_FOR_TARGET): New.
+	(EXTRA_TARGET_FLAGS): Add OBJDUMP.
+	* configure.in: Check for $OBJDUMP_FOR_TARGET.
+	* configure, Makefile: Regenerated.
+
 2005-10-05  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.tpl (all) [gcc-no-bootstrap]: Make prebootstrap packages

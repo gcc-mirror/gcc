@@ -228,6 +228,7 @@ flags_to_pass = { flag= LDFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= LIBCFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= LIBCXXFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= NM_FOR_TARGET ; };
+flags_to_pass = { flag= OBJDUMP_FOR_TARGET ; };
 flags_to_pass = { flag= RANLIB_FOR_TARGET ; };
 flags_to_pass = { flag= STRIP_FOR_TARGET ; };
 flags_to_pass = { flag= WINDRES_FOR_TARGET ; };

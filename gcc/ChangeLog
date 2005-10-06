@@ -1,3 +1,12 @@
+2005-10-06  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* acinclude.m4 (gcc_AC_CHECK_TOOL): Handle environment variables
+	here.  Use AC_PATH_PROG for environment variables instead of
+	test -x.
+	* configure.ac: Update calls to gcc_AC_CHECK_TOOL.  Use it for
+	objdump also.
+	* configure: Regenerated.
+
 2005-10-06  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	PR target/23783
