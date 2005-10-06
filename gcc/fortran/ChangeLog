@@ -1,3 +1,10 @@
+2005-10-07  Erik Edelmann  <erik.edelmann@iki.fi>
+
+        PR 18568
+	* resolve.c (find_array_spec): Search through the list of
+	components in the symbol of the type instead of the symbol of the
+	variable.
+
 2005-10-05  Richard Guenther  <rguenther@suse.de>
 
 	PR fortran/24176

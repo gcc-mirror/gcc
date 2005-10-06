@@ -1881,7 +1881,6 @@ find_array_spec (gfc_expr * e)
   gfc_ref *ref;
 
   as = e->symtree->n.sym->as;
-  c = e->symtree->n.sym->components;
 
   for (ref = e->ref; ref; ref = ref->next)
     switch (ref->type)
@@ -1895,7 +1894,7 @@ find_array_spec (gfc_expr * e)
 	break;
 
       case REF_COMPONENT:
-	for (; c; c = c->next)
+	for (c = e->symtree->n.sym->ts.derived->components; c; c = c->next)
 	  if (c == ref->u.c.component)
 	    break;
 
@@ -1909,7 +1908,6 @@ find_array_spec (gfc_expr * e)
 	    as = c->as;
 	  }
 
-	c = c->ts.derived->components;
 	break;
 
       case REF_SUBSTRING:

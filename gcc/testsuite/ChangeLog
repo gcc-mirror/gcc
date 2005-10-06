@@ -1,3 +1,8 @@
+2005-10-07  Erik Edelmann  <erik.edelmann@iki.fi>
+
+	PR 18568
+	* gfortran.dg/der_pointer_3.f90: New test.
+
 2005-10-05  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/23965
