@@ -7455,8 +7455,10 @@
        invoked it.  */
     callee  = XEXP (operands[0], 0);
     
-    if (GET_CODE (callee) != REG
-       && arm_is_longcall_p (operands[0], INTVAL (operands[2]), 0))
+    if ((GET_CODE (callee) == SYMBOL_REF
+	 && arm_is_longcall_p (operands[0], INTVAL (operands[2]), 0))
+	|| (GET_CODE (callee) != SYMBOL_REF
+	    && GET_CODE (callee) != REG))
       XEXP (operands[0], 0) = force_reg (Pmode, callee);
   }"
 )
@@ -7545,8 +7547,10 @@
       operands[3] = const0_rtx;
       
     /* See the comment in define_expand \"call\".  */
-    if (GET_CODE (callee) != REG
-	&& arm_is_longcall_p (operands[1], INTVAL (operands[3]), 0))
+    if ((GET_CODE (callee) == SYMBOL_REF
+	 && arm_is_longcall_p (operands[1], INTVAL (operands[3]), 0))
+	|| (GET_CODE (callee) != SYMBOL_REF
+	    && GET_CODE (callee) != REG))
       XEXP (operands[1], 0) = force_reg (Pmode, callee);
   }"
 )
