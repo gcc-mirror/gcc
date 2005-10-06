@@ -556,6 +556,7 @@ extern tree gimplify_build3 (block_stmt_iterator *, enum tree_code,
 			     tree, tree, tree, tree);
 extern void init_empty_tree_cfg (void);
 extern void fold_cond_expr_cond (void);
+extern void mark_array_ref_addressable (void);
 extern void replace_uses_by (tree, tree);
 extern void start_recording_case_labels (void);
 extern void end_recording_case_labels (void);
