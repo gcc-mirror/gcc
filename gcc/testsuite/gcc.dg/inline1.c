@@ -5,4 +5,3 @@
    of an identifier with internal linkage in the same translation unit).  */
 static inline int foo(void) { return 1; } /* { dg-error "previous definition of" } */
 static inline int foo(void) { return 0; } /* { dg-error "redefinition of" } */
-+
