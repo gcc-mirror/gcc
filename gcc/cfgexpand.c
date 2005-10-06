@@ -1578,6 +1578,10 @@ tree_expand_cfg (void)
     (*debug_hooks->outlining_inline_function) (current_function_decl);
 
   TREE_ASM_WRITTEN (current_function_decl) = 1;
+
+  /* After expanding, the return labels are no longer needed. */
+  return_label = NULL;
+  naked_return_label = NULL;
 }
 
 struct tree_opt_pass pass_expand =
