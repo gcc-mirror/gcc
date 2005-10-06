@@ -1,3 +1,10 @@
+2005-10-06  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/22216
+	PR middle-end/23651
+	* cfgexpand.c (tree_expand_cfg): After expanding the functions, clear
+	out return_label and naked_return_label.
+
 2005-10-06  Daniel Berlin  <dberlin@dberlin.org>
 	
 	* tree-ssa-structalias.c (check_for_overlaps): Fix bug in last
