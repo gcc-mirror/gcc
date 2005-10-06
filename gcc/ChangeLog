@@ -1,3 +1,7 @@
+2005-10-06  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* varasm.c (make_decl_rtl): Correct error message.
+
 2005-10-05  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/20606

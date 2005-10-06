@@ -908,7 +908,7 @@ make_decl_rtl (tree decl)
   if (name[0] != '*' && TREE_CODE (decl) != FUNCTION_DECL
       && DECL_REGISTER (decl))
     {
-      error ("register name not specified for %q+D", decl);	
+      error ("%Jregister name not specified for %qD", decl, decl);	
     }
   else if (TREE_CODE (decl) != FUNCTION_DECL && DECL_REGISTER (decl))
     {
