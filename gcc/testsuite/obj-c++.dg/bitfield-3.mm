@@ -6,10 +6,8 @@
 
 typedef struct objc_object { struct objc_class *class_pointer; } *id;
 
-extern "C" {
-  extern void abort(void);
-  extern int strcmp(const char *, const char *);
-}
+#include <stdlib.h>
+#include <string.h>
 
 #define CHECK_IF(expr) if(!(expr)) abort();
 

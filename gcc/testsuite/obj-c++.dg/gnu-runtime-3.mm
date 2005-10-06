@@ -5,13 +5,13 @@
 /* { dg-options "-fgnu-runtime" } */
 
 #include <objc/Object.h>
+#include <stdlib.h>
 
 @interface FooBar: Object
 - (void)boo;
 @end
 
 int called = 0;
-extern "C" void abort ();
 
 @implementation FooBar
 - (void)boo

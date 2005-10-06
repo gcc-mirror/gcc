@@ -31,10 +31,9 @@
 #define CLASS_GETINSTANCEMETHOD class_get_instance_method
 #endif
 
-extern "C" {
-  extern int sscanf(const char *str, const char *format, ...);
-  extern void abort(void);
-}
+#include <stdio.h>
+#include <stdlib.h>
+
 #define CHECK_IF(expr) if(!(expr)) abort()
 
 @interface Foo: Object

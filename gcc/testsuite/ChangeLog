@@ -1,3 +1,19 @@
+2005-10-07  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR testsuite/23611, PR testsuite/23615
+	* obj-c++.dg/bitfield-3.mm: Include standard headers instead of
+	writing prototypes of library functions by hand.
+	* obj-c++.dg/bitfield-4.mm: Likewise.
+	* obj-c++.dg/const-str-4.mm: Likewise.
+	* obj-c++.dg/encode-4.mm: Likewise.
+	* obj-c++.dg/encode-5.mm: Likewise.
+	* obj-c++.dg/encode-6.mm: Likewise.
+	* obj-c++.dg/gnu-runtime-3.mm: Likewise.
+	* obj-c++.dg/method-10.mm: Likewise.
+	* obj-c++.dg/method-17.mm: Likewise.
+	* obj-c++.dg/method-19.mm: Likewise.
+	* obj-c++.dg/try-catch-2.mm: Likewise.
+
 2005-10-06  Richard Henderson  <rth@redhat.com>
 
 	PR 24236

@@ -5,7 +5,8 @@
 /* { dg-do run } */
 
 #include <objc/Object.h>
-extern "C" void abort(void);
+#include <stdlib.h>
+
 #define CHECK_IF(expr) if(!(expr)) abort()
 
 static double d = 4.5920234e2;
