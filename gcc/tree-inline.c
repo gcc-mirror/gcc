@@ -897,10 +897,21 @@ declare_return_variable (inline_data *id, tree return_slot_addr,
       /* If the callee cannot possibly modify MODIFY_DEST, then we can
 	 reuse it as the result of the call directly.  Don't do this if
 	 it would promote MODIFY_DEST to addressable.  */
-      else if (!TREE_STATIC (modify_dest)
-	       && !TREE_ADDRESSABLE (modify_dest)
-	       && !TREE_ADDRESSABLE (result))
-	use_it = true;
+      else if (TREE_ADDRESSABLE (result))
+	use_it = false;
+      else
+	{
+	  tree base_m = get_base_address (modify_dest);
+
+	  /* If the base isn't a decl, then it's a pointer, and we don't
+	     know where that's going to go.  */
+	  if (!DECL_P (base_m))
+	    use_it = false;
+	  else if (is_global_var (base_m))
+	    use_it = false;
+	  else if (!TREE_ADDRESSABLE (base_m))
+	    use_it = true;
+	}
 
       if (use_it)
 	{
