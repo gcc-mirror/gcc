@@ -1,3 +1,8 @@
+2005-10-06  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (eq<mode>): Add !TARGET_POWER.
+	(eq<mode>_compare): Same.
+
 2005-10-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/24238
