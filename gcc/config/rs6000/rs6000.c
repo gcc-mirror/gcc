@@ -748,6 +748,7 @@ static rtx rs6000_emit_vector_compare (enum rtx_code, rtx, rtx,
 static int get_vsel_insn (enum machine_mode);
 static void rs6000_emit_vector_select (rtx, rtx, rtx, rtx);
 static tree rs6000_stack_protect_fail (void);
+static bool rs6000_cannot_force_const_mem (rtx x);
 
 const int INSN_NOT_AVAILABLE = -1;
 static enum machine_mode rs6000_eh_return_filter_mode (void);
@@ -876,7 +877,7 @@ static const char alt_reg_names[][8] =
 #define TARGET_HAVE_TLS HAVE_AS_TLS
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
-#define TARGET_CANNOT_FORCE_CONST_MEM rs6000_tls_referenced_p
+#define TARGET_CANNOT_FORCE_CONST_MEM rs6000_cannot_force_const_mem
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE rs6000_output_function_prologue
@@ -3105,6 +3106,17 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
     }
 
   return dest;
+}
+
+/* Primarily this is required for TLS symbols, but given that our move
+   patterns *ought* to be able to handle any symbol at any time, we
+   should never be spilling symbolic operands to the constant pool, ever.  */
+
+static bool
+rs6000_cannot_force_const_mem (rtx x)
+{
+  enum rtx_code code = GET_CODE (x);
+  return code == SYMBOL_REF || code == LABEL_REF || code == CONST;
 }
 
 /* Return 1 if X contains a thread-local symbol.  */
