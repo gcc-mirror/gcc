@@ -1,3 +1,7 @@
+2005-10-06  Dale Johannesen  <dalej@apple.com>
+
+	* gcc.c-torture/execute/20030125-1.c:  Correct.
+
 2005-10-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/24238
