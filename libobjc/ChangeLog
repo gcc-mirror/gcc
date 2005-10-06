@@ -1,3 +1,9 @@
+2005-10-07  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR libobjc/23612
+	* objc/objc-api.h (struct objc_ivar): Move definition to
+	global scope.
+
 2005-09-04  Andrew Pinski  <pinskia@physics.uc.edu>
             Rasmus Hahn  <rassahah@neofonie.de>
 

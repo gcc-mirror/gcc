@@ -213,14 +213,7 @@ typedef struct objc_module {
 ** The compiler generates one of these structures for a class that has
 ** instance variables defined in its specification. 
 */
-typedef struct objc_ivar* Ivar_t;
-typedef struct objc_ivar_list {
-  int   ivar_count;                             /* Number of structures (Ivar) 
-                                                  contained in the list.  One
-                                                  structure per instance 
-                                                  variable defined in the
-                                                  class. */
-  struct objc_ivar {
+typedef struct objc_ivar {
     const char* ivar_name;                      /* Name of the instance
                                                   variable as entered in the
                                                   class definition. */
@@ -230,8 +223,15 @@ typedef struct objc_ivar_list {
     int        ivar_offset;                    /* Byte offset from the base 
                                                   address of the instance 
                                                   structure to the variable. */
+} *Ivar_t;
 
-  } ivar_list[1];                               /* Variable length 
+typedef struct objc_ivar_list {
+  int   ivar_count;                             /* Number of structures (Ivar) 
+                                                  contained in the list.  One
+                                                  structure per instance 
+                                                  variable defined in the
+                                                  class. */
+  struct objc_ivar ivar_list[1];               /* Variable length 
                                                   structure. */
 } IvarList, *IvarList_t;
 
