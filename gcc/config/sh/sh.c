@@ -7854,6 +7854,44 @@ get_fpscr_rtx (void)
   return fpscr_rtx;
 }
 
+static GTY(()) tree fpscr_values;
+
+static void
+emit_fpu_switch (rtx scratch, int index)
+{
+  rtx dst, src;
+
+  if (fpscr_values == NULL)
+    {
+      tree t;
+
+      t = build_index_type (integer_one_node);
+      t = build_array_type (integer_type_node, t);
+      t = build_decl (VAR_DECL, get_identifier ("__fpscr_values"), t);
+      DECL_ARTIFICIAL (t) = 1;
+      DECL_IGNORED_P (t) = 1;
+      DECL_EXTERNAL (t) = 1;
+      TREE_STATIC (t) = 1;
+      TREE_USED (t) = 1;
+
+      fpscr_values = t;
+    }
+
+  src = DECL_RTL (fpscr_values);
+  if (no_new_pseudos)
+    {
+      emit_move_insn (scratch, XEXP (src, 0));
+      if (index != 0)
+	emit_insn (gen_addsi3 (scratch, scratch, GEN_INT (index * 4)));
+      src = adjust_automodify_address (src, PSImode, scratch, index * 4);
+    }
+  else
+    src = adjust_address (src, PSImode, index * 4);
+
+  dst = get_fpscr_rtx ();
+  emit_move_insn (dst, src);
+}
+
 void
 emit_sf_insn (rtx pat)
 {
@@ -8006,12 +8044,10 @@ void
 fpscr_set_from_mem (int mode, HARD_REG_SET regs_live)
 {
   enum attr_fp_mode fp_mode = mode;
+  enum attr_fp_mode norm_mode = ACTUAL_NORMAL_MODE (FP_MODE);
   rtx addr_reg = get_free_reg (regs_live);
 
-  if (fp_mode == (enum attr_fp_mode) ACTUAL_NORMAL_MODE (FP_MODE))
-    emit_insn (gen_fpu_switch1 (addr_reg));
-  else
-    emit_insn (gen_fpu_switch0 (addr_reg));
+  emit_fpu_switch (addr_reg, fp_mode == norm_mode);
 }
 
 /* Is the given character a logical line separator for the assembler?  */
