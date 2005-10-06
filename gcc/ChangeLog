@@ -1,3 +1,8 @@
+2005-10-06  Daniel Berlin  <dberlin@dberlin.org>
+	
+	* tree-ssa-structalias.c (check_for_overlaps): Fix bug in last
+        change.
+
 2005-10-06  Richard Henderson  <rth@redhat.com>
 
 	PR tree-opt/22237
