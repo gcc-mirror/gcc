@@ -2671,10 +2671,6 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
       if (DECL_EXTERNAL (decl))
 	break;
 
-      decl_rtl = dbxout_expand_expr (decl);
-      if (!decl_rtl)
-	DBXOUT_DECR_NESTING_AND_RETURN (0);
-
       /* If the variable is really a constant
 	 and not written in memory, inform the debugger.
 
@@ -2684,7 +2680,8 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 	  && host_integerp (DECL_INITIAL (decl), 0)
 	  && ! TREE_ASM_WRITTEN (decl)
 	  && (DECL_CONTEXT (decl) == NULL_TREE
-	      || TREE_CODE (DECL_CONTEXT (decl)) == BLOCK)
+	      || TREE_CODE (DECL_CONTEXT (decl)) == BLOCK
+	      || TREE_CODE (DECL_CONTEXT (decl)) == NAMESPACE_DECL)
 	  && TREE_PUBLIC (decl) == 0)
 	{
 	  /* The sun4 assembler does not grok this.  */
@@ -2695,8 +2692,8 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 	      HOST_WIDE_INT ival = TREE_INT_CST_LOW (DECL_INITIAL (decl));
 
 	      dbxout_begin_complex_stabs ();
-	      stabstr_I (DECL_NAME (decl));
-	      stabstr_S (":c=i");
+	      dbxout_symbol_name (decl, NULL, 'c');
+	      stabstr_S ("=i");
 	      stabstr_D (ival);
 	      dbxout_finish_complex_stabs (0, N_LSYM, 0, 0, 0);
 	      DBXOUT_DECR_NESTING;
@@ -2706,6 +2703,10 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 	    break;
 	}
       /* else it is something we handle like a normal variable.  */
+
+      decl_rtl = dbxout_expand_expr (decl);
+      if (!decl_rtl)
+	DBXOUT_DECR_NESTING_AND_RETURN (0);
 
       decl_rtl = eliminate_regs (decl_rtl, 0, NULL_RTX);
 #ifdef LEAF_REG_REMAP
