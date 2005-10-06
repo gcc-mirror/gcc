@@ -561,6 +561,15 @@ AC_REQUIRE([gcc_AC_BUILD_EXEEXT])
 dnl shut up useless "checking for..." messages
 dnl we can still read them in config.log
 exec AS_MESSAGE_FD([])>/dev/null
+
+# First try the environment variables.  Handle full paths or basenames.
+if test "x[$]$1" = x && test -n "[$]$4"; then
+	AC_PATH_PROG($1, [$]$4)
+fi
+if test "x[$]$1" = x && test -n "[$]$5" && test x$host = x$target; then
+	AC_PATH_PROG($1, [$]$5)
+fi
+
 if test "x[$]$1" = x; then
 	# The AC_PATH_PROGS macro doesn't work properly when its 4th argument
 	# is empty.

@@ -199,6 +199,7 @@ BASE_TARGET_EXPORTS = \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
 	LIPO="$(LIPO_FOR_TARGET)"; export LIPO; \
 	NM="$(NM_FOR_TARGET)"; export NM; \
+	OBJDUMP="$(OBJDUMP_FOR_TARGET)"; export OBJDUMP; \
 	RANLIB="$(RANLIB_FOR_TARGET)"; export RANLIB; \
 	STRIP="$(STRIP_FOR_TARGET)"; export STRIP; \
 	WINDRES="$(WINDRES_FOR_TARGET)"; export WINDRES; \
@@ -513,6 +514,23 @@ USUAL_NM_FOR_TARGET = ` \
     fi; \
   fi`
 
+OBJDUMP_FOR_TARGET=@OBJDUMP_FOR_TARGET@
+CONFIGURED_OBJDUMP_FOR_TARGET=@CONFIGURED_OBJDUMP_FOR_TARGET@
+USUAL_OBJDUMP_FOR_TARGET = ` \
+  if [ -f $$r/$(HOST_SUBDIR)/binutils/objdump ] ; then \
+    echo $$r/$(HOST_SUBDIR)/binutils/objdump ; \
+  else \
+    if [ '$(host)' = '$(target)' ] ; then \
+      if [ x'$(OBJDUMP)' != x ]; then \
+         echo $(OBJDUMP); \
+      else \
+         echo objdump; \
+      fi; \
+    else \
+      echo $(CONFIGURED_OBJDUMP_FOR_TARGET) ; \
+    fi; \
+  fi`
+
 RANLIB_FOR_TARGET=@RANLIB_FOR_TARGET@
 CONFIGURED_RANLIB_FOR_TARGET=@CONFIGURED_RANLIB_FOR_TARGET@
 USUAL_RANLIB_FOR_TARGET = ` \
@@ -660,6 +678,7 @@ EXTRA_TARGET_FLAGS = \
 	'LIBCFLAGS=$$(LIBCFLAGS_FOR_TARGET)' \
 	'LIBCXXFLAGS=$$(LIBCXXFLAGS_FOR_TARGET)' \
 	'NM=$$(NM_FOR_TARGET)' \
+	'OBJDUMP=$$(OBJDUMP_FOR_TARGET)' \
 	'RANLIB=$$(RANLIB_FOR_TARGET)' \
 	'WINDRES=$$(WINDRES_FOR_TARGET)'
 

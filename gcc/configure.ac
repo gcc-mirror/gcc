@@ -1797,13 +1797,9 @@ m4_pattern_allow([AS_FOR_TARGET])dnl
 elif test -x as$build_exeext; then
 	# Build using assembler in the current directory.
 	gcc_cv_as=./as$build_exeext
-elif test -x "$AS_FOR_TARGET"; then
-        gcc_cv_as="$AS_FOR_TARGET"
-elif test -x "$AS" && test x$host = x$target; then
-	gcc_cv_as="$AS"
 fi
 
-gcc_AC_CHECK_TOOL(gcc_cv_as, as, ORIGINAL_AS_FOR_TARGET)
+gcc_AC_CHECK_TOOL(gcc_cv_as, as, ORIGINAL_AS_FOR_TARGET, AS_FOR_TARGET, AS)
 AC_MSG_CHECKING(what assembler to use)
 case $in_tree_gas in
   yes)
@@ -1859,13 +1855,9 @@ changequote([,])dnl
 elif test -x collect-ld$build_exeext; then
 	# Build using linker in the current directory.
 	gcc_cv_ld=./collect-ld$build_exeext
-elif test -x "$LD_FOR_TARGET"; then
-        gcc_cv_ld="$LD_FOR_TARGET"
-elif test -x "$LD" && test x$host = x$target; then
-	gcc_cv_ld="$LD"
 fi
 
-gcc_AC_CHECK_TOOL(gcc_cv_ld, ld, ORIGINAL_LD_FOR_TARGET)
+gcc_AC_CHECK_TOOL(gcc_cv_ld, ld, ORIGINAL_LD_FOR_TARGET, LD_FOR_TARGET, LD)
 AC_MSG_CHECKING(what linker to use)
 case $in_tree_ld in
   yes)
@@ -1889,7 +1881,7 @@ elif test -x nm$build_exeext; then
 	gcc_cv_nm=./nm$build_exeext
 fi
 
-gcc_AC_CHECK_TOOL(gcc_cv_nm, nm, ORIGINAL_NM_FOR_TARGET)
+gcc_AC_CHECK_TOOL(gcc_cv_nm, nm, ORIGINAL_NM_FOR_TARGET, NM_FOR_TARGET, NM)
 AC_MSG_CHECKING(what nm to use)
 case $in_tree_nm in
   yes) AC_MSG_RESULT("newly built nm") ;;
@@ -1897,23 +1889,20 @@ case $in_tree_nm in
 esac
 
 # Figure out what objdump we will be using.
-AC_MSG_CHECKING(what objdump to use)
 in_tree_objdump=no
-if test -x objdump$build_exeext; then
-	gcc_cv_objdump=./objdump$build_exeext
-elif test -f $gcc_cv_binutils_srcdir/configure.in \
+gcc_cv_objdump=
+if test -f $gcc_cv_binutils_srcdir/configure.in \
      && test -f ../binutils/Makefile; then
 	# Single tree build which includes binutils.
 	in_tree_objdump=yes
 	gcc_cv_objdump=../binutils/objdump$build_exeext
-elif test "x$program_prefix" != xNONE; then
-	gcc_cv_objdump=${program_prefix}objdump$build_exeext
-elif test x$build != x$host && test x$build != x$target; then
-	gcc_cv_objdump=${target_noncanonical}-objdump$build_exeext
-else
-	gcc_cv_objdump=`echo objdump | \
-		sed "${program_transform_name}"`$build_exeext
+elif test -x objdump$build_exeext; then
+	gcc_cv_objdump=./objdump$build_exeext
 fi
+
+gcc_AC_CHECK_TOOL(gcc_cv_objdump, objdump, ORIGINAL_OBJDUMP_FOR_TARGET,
+		  OBJDUMP_FOR_TARGET, OBJDUMP)
+AC_MSG_CHECKING(what objdump to use)
 case $in_tree_objdump in
   yes) AC_MSG_RESULT("newly built objdump") ;;
   no)  AC_MSG_RESULT($gcc_cv_objdump) ;;
