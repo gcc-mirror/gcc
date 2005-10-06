@@ -1,3 +1,8 @@
+2005-10-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/24238
+	* g++.dg/tree-ssa/pr24238.C: New testcase.
+
 2005-10-07  Erik Edelmann  <erik.edelmann@iki.fi>
 
 	PR 18568
