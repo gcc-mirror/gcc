@@ -3029,8 +3029,8 @@ specify field index and operand 0 place to store value into.
 Initialize the vector to given values.  Operand 0 is the vector to initialize
 and operand 1 is parallel containing values for individual fields.
 
-@cindex @code{push@var{m}} instruction pattern
-@item @samp{push@var{m}}
+@cindex @code{push@var{m}1} instruction pattern
+@item @samp{push@var{m}1}
 Output a push instruction.  Operand 0 is value to push.  Used only when
 @code{PUSH_ROUNDING} is defined.  For historical reason, this pattern may be
 missing and in such case an @code{mov} expander is used instead, with a
@@ -3072,28 +3072,28 @@ it is unspecified which of the two operands is returned as the result.
 @cindex @code{reduc_smax_@var{m}} instruction pattern
 @item @samp{reduc_smin_@var{m}}, @samp{reduc_smax_@var{m}}
 Find the signed minimum/maximum of the elements of a vector. The vector is
-operand 1, and the scalar result is stored in the least significant bits of 
-operand 0 (also a vector). The output and input vector should have the same 
+operand 1, and the scalar result is stored in the least significant bits of
+operand 0 (also a vector). The output and input vector should have the same
 modes.
 
 @cindex @code{reduc_umin_@var{m}} instruction pattern
 @cindex @code{reduc_umax_@var{m}} instruction pattern
 @item @samp{reduc_umin_@var{m}}, @samp{reduc_umax_@var{m}}
 Find the unsigned minimum/maximum of the elements of a vector. The vector is
-operand 1, and the scalar result is stored in the least significant bits of 
-operand 0 (also a vector). The output and input vector should have the same 
+operand 1, and the scalar result is stored in the least significant bits of
+operand 0 (also a vector). The output and input vector should have the same
 modes.
 
 @cindex @code{reduc_splus_@var{m}} instruction pattern
 @item @samp{reduc_splus_@var{m}}
-Compute the sum of the signed elements of a vector. The vector is operand 1, 
-and the scalar result is stored in the least significant bits of operand 0 
+Compute the sum of the signed elements of a vector. The vector is operand 1,
+and the scalar result is stored in the least significant bits of operand 0
 (also a vector). The output and input vector should have the same modes.
 
 @cindex @code{reduc_uplus_@var{m}} instruction pattern
 @item @samp{reduc_uplus_@var{m}}
-Compute the sum of the unsigned elements of a vector. The vector is operand 1, 
-and the scalar result is stored in the least significant bits of operand 0 
+Compute the sum of the unsigned elements of a vector. The vector is operand 1,
+and the scalar result is stored in the least significant bits of operand 0
 (also a vector). The output and input vector should have the same modes.
 
 @cindex @code{vec_shl_@var{m}} instruction pattern
@@ -3101,7 +3101,7 @@ and the scalar result is stored in the least significant bits of operand 0
 @item @samp{vec_shl_@var{m}}, @samp{vec_shr_@var{m}}
 Whole vector left/right shift in bits.
 Operand 1 is a vector to be shifted.
-Operand 2 is an integer shift amount in bits. 
+Operand 2 is an integer shift amount in bits.
 Operand 0 is where the resulting shifted vector is stored.
 The output and input vectors should have the same modes.
 
@@ -4277,7 +4277,7 @@ will be emitted, followed by a store of the value to the memory operand.
 This pattern, if defined, moves a @code{Pmode} value from the memory
 in operand 1 to the memory in operand 0 without leaving the value in
 a register afterward.  This is to avoid leaking the value some place
-that an attacker might use to rewrite the stack guard slot after 
+that an attacker might use to rewrite the stack guard slot after
 having clobbered it.
 
 If this pattern is not defined, then a plain move pattern is generated.
@@ -4493,7 +4493,7 @@ Registers used to store the condition code value should have a mode that
 is in class @code{MODE_CC}.  Normally, it will be @code{CCmode}.  If
 additional modes are required (as for the add example mentioned above in
 the SPARC), define them in @file{@var{machine}-modes.def}
-(@pxref{Condition Code}).  Also define @code{SELECT_CC_MODE} to choose 
+(@pxref{Condition Code}).  Also define @code{SELECT_CC_MODE} to choose
 a mode given an operand of a compare.
 
 If it is known during RTL generation that a different mode will be

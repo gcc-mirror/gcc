@@ -1,3 +1,7 @@
+2005-10-05  Eric Christopher  <echristo@apple.com>
+
+	* doc/md.texi (Standard Names): Fix name of pushm1 pattern.
+
 2005-10-05  Richard Henderson  <rth@redhat.com>
 
 	PR 23714
@@ -53,7 +57,7 @@
 	opbuild_num_elems, opbuild_append_real, opbuild_append_virtual,
 	opbuild_first, opbuild_next, opbuild_elem_real, opbuild_elem_virtual,
 	opbuild_elem_uid, opbuild_clear, opbuild_remove_elem): Delete.
-	(get_name_decl): New.  Return DECL_UID of base variable. 
+	(get_name_decl): New.  Return DECL_UID of base variable.
 	(operand_build_cmp): New.  qsort comparison routine.
 	(operand_build_sort_virtual): New.  Sort virtual build vector.
 	(init_ssa_operands, fini_ssa_operands): Use VEC routines.
@@ -61,12 +65,12 @@
 	(FINALIZE_BASE): Use get_name_decl.
 	(finalize_ssa_defs, finalize_ssa_uses, cleanup_v_may_defs,
 	finalize_ssa_v_may_defs, finalize_ssa_vuses, finalize_ssa_v_must_defs,
-	(start_ssa_stmt_operands, append_def, append_use, append_vuse, 
-	append_v_may_def, append_v_must_def): Replace opbuild_* routines with 
+	(start_ssa_stmt_operands, append_def, append_use, append_vuse,
+	append_v_may_def, append_v_must_def): Replace opbuild_* routines with
 	direct VEC_* manipulations.
 	(build_ssa_operands): Call operand_build_sort_virtual.
 	(copy_virtual_operand, create_ssa_artficial_load_stmt,
-	add_call_clobber_ops, add_call_read_ops): Replace opbuild_* routines 
+	add_call_clobber_ops, add_call_read_ops): Replace opbuild_* routines
 	with direct VEC_* manipulations.
 	* tree-ssa-opfinalize.h (FINALIZE_FUNC): Replace opbuild_* routines
 	with direct VEC manipulations.
@@ -101,7 +105,7 @@
 
 	* c-common.c (vector_types_convertible_p): Check TYPE_PRECISION for
 	real types.
-	
+
 2005-10-04  Steve Ellcey  <sje@cup.hp.com>
 
 	* tree-vect-transform.c (vect_create_epilog_for_reduction):
@@ -281,7 +285,7 @@
 
 2005-09-30  Richard Earnshaw  <richard.earnshaw@arm.com>
 
-	* arm.md (movqi): On thumb when optimizing, handle loading from 
+	* arm.md (movqi): On thumb when optimizing, handle loading from
 	memory by describing this as taking a subreg of a zero-extended load
 	into an SImode register.
 	(movhi): Likewise.
@@ -335,7 +339,7 @@
 	wrapup_global_declaration_2 call returned true, restart the loop.
 
 2005-09-29  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	Fix PR tree-optimization/24117
 	* tree-ssa-structalias.c (find_func_aliases): Strip nops
 	before considering whether to use anyoffset.
@@ -455,7 +459,7 @@
 	PR tree-optimization/23625
 	* tree-flow-inline.h (bsi_after_labels): Remove, first statement is
 	LABEL_EXPR, assertion check.
-	
+
 2005-09-27  J"orn Rennecke <joern.rennecke@st.com>
 
 	* optabs.c (no_conflict_move_test): Check if a result of a
@@ -513,11 +517,11 @@
 	(t_bool): New enum.
 	(follow_ssa_edge, follow_ssa_edge_in_rhs,
 	follow_ssa_edge_in_condition_phi_branch,
-	follow_ssa_edge_in_condition_phi, follow_ssa_edge_inner_loop_phi): 
+	follow_ssa_edge_in_condition_phi, follow_ssa_edge_inner_loop_phi):
 	Change return type to t_bool.  Use a parameter to limit the size of
-	trees that are walked before stopping 
+	trees that are walked before stopping
 	(analyze_evolution_in_loop): Initialize the limit to 0.
-	(follow_ssa_edge): Give up by returning t_dont_know if the limit 
+	(follow_ssa_edge): Give up by returning t_dont_know if the limit
 	exceeds PARAM_SCEV_MAX_EXPR_SIZE.
 
 2005-09-26  Uros Bizjak  <uros@kss-loka.si>
@@ -695,7 +699,7 @@
 	estimate_only  is true.
 	* tree-flow.h (ref_contains_indirect_ref): New prototype.
 	* tree-flow-inline.h (ref_contains_indirect_ref): Moved from
-	tree-ssa-structalias.c 
+	tree-ssa-structalias.c
 	* tree-ssa-loop-niter.c (infer_loop_bounds_from_undefined): Use
 	ref_contains_indirect_ref.
 	* tree-ssa-structalias.c (ref_contains_indirect_ref): Moved.
@@ -848,7 +852,7 @@
 	* tree.h (swap_tree_operands): Declare.
 	* tree-vectorizer.c (vect_is_simple_reduction): Remove ATTRIBUTE_UNUSED.
 	Call swap_tree_operands.
-	
+
 2005-09-19  Richard Henderson  <rth@redhat.com>
 
 	* tree-flow.h (merge_alias_info): Declare.
@@ -904,8 +908,8 @@
 
 	* except.c (struct eh_status): Turn region_array into vec.
 	(expand_resx_expr, collect_eh_region_array, remove_unreachable_regions,
-	convert_from_eh_region_ranges, find_exception_handler_labels, 
-	current_function_has_exception_handlers, assign_filter_values, 
+	convert_from_eh_region_ranges, find_exception_handler_labels,
+	current_function_has_exception_handlers, assign_filter_values,
 	build_post_landing_pads, dw2_build_landing_pads,
 	sjlj_find_directly_reachable_regions, sjlj_mark_call_sites,
 	sjlj_emit_dispatch_table, remove_eh_handler, for_each_eh_region,
@@ -975,7 +979,7 @@
 	* tree-data-ref.h (estimate_iters_using_array): Prototype
 	* tree-ssa-loop-niter.c (infer_loop_bounds_from_undefined):
 	Use estimate_iters_using_array instead of analyze_array.
-	
+
 2005-09-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-nested.c (get_frame_type): Mark the "non-local frame structure"
@@ -1094,9 +1098,9 @@
 
 2005-09-12  Andrew Pinski  <pinskia@physics.uc.edu>
 
-	* tree-ssa-dse.c (dse_optimize_stmt): Fix up all of V_MAY_DEF and 
+	* tree-ssa-dse.c (dse_optimize_stmt): Fix up all of V_MAY_DEF and
 	V_MUST_DEF instead of just the first_use_p.
-	Don't mark the virtual variables for renaming on the statement which 
+	Don't mark the virtual variables for renaming on the statement which
 	is being removed.
 	(pass_dse): Remove TODO_update_ssa.
 
@@ -1183,7 +1187,7 @@
 
 2005-09-09  Sebastian Pop  <pop@cri.ensmp.fr>
 
-	* tree-chrec.c (evolution_function_is_invariant_rec_p): Use 
+	* tree-chrec.c (evolution_function_is_invariant_rec_p): Use
 	CHREC_LEFT and CHREC_RIGHT for accessing chrec components instead
 	of wrongly accessing operands.
 
@@ -1267,7 +1271,7 @@
 	* config/s390/s390.c (s390_sr_alias_set): Variable removed.
 	(override_options): Setting s390_sr_alias_set removed.
 	(save_fpr, save_gprs): Set alias set to vararg or frame.
-	(restore_fpr, restore_gprs, s390_emit_prologue): Replace 
+	(restore_fpr, restore_gprs, s390_emit_prologue): Replace
 	s390_sr_alias_set with get_frame_alias_set ().
 	(s390_gimplify_va_arg): Replace s390_sr_alias_set with
 	get_varargs_alias_set ().
@@ -1297,7 +1301,7 @@
 2005-09-07  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* reload1.c (fixup_eh_region_note): Remove assertion.
-	(fixup_abnormal_edges): Reverted removal of call to 
+	(fixup_abnormal_edges): Reverted removal of call to
 	find_many_sub_basic_blocks made on 2005-08-31.
 
 2005-09-07  Richard Henderson  <rth@redhat.com>
@@ -1403,7 +1407,7 @@
 
 2005-09-06  Saurabh Verma  <saurabh.verma@codito.com>
 
-	* simplify-rtx.c (simplify_binary_operation_1): Correct the 
+	* simplify-rtx.c (simplify_binary_operation_1): Correct the
 	condition for detecting cases like (a&a) and (a^a).
 
 2005-09-06  Keith Besaw  <kbesaw@us.ibm.com>
@@ -1444,7 +1448,7 @@
 
 2005-09-06  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	* gcse.c (try_replace_reg): Disallow REG_EQUAL notes for 
+	* gcse.c (try_replace_reg): Disallow REG_EQUAL notes for
 	STRICT_LOW_PART SETs.
 
 2005-09-06  Alan Modra  <amodra@bigpond.net.au>
@@ -1740,8 +1744,8 @@
 
 2005-08-31  Fariborz Jahanian <fjahanian@apple.com>
 
-	* expr.c (expand_expr_real_1): Compare size of address 
-	mode to target's address mode size in deciding expansion of 
+	* expr.c (expand_expr_real_1): Compare size of address
+	mode to target's address mode size in deciding expansion of
 	the constant address.
 
 2005-08-31  Richard Guenther  <rguenther@suse.de>
@@ -2124,7 +2128,7 @@
 2005-08-23  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	PR tree-optimization/23511
-	* tree-ssa-loop-niter.c (infer_loop_bounds_from_undefined): Don't 
+	* tree-ssa-loop-niter.c (infer_loop_bounds_from_undefined): Don't
 	handle cases where TYPE_MIN_VALUE or TYPE_MAX_VALUE are NULL_TREE.
 
 2005-08-23  Jakub Jelinek  <jakub@redhat.com>
@@ -2242,7 +2246,7 @@
 	to use scalar_initial_def here. Create an epilog adjustment only if
 	scalar_initial_def is not NULL.
 
-	(vectorizable_reduction): Remove assert. 
+	(vectorizable_reduction): Remove assert.
 
 2005-08-20  H.J. Lu  <hongjiu.lu@intel.com>
 
