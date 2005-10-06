@@ -1,3 +1,10 @@
+2005-10-06  Richard Henderson  <rth@redhat.com>
+
+	PR 24049
+	* passes.c (init_optimization_passes): Move pass_lower_vector_ssa
+	under pass_vectorize.  Clear TODO_ggc_collect from the dce pass
+	under pass_vectorize.
+
 2005-10-05  Devang Patel  <dpatel@apple.com>
 
 	PR Debug/23205
