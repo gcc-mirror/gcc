@@ -13373,7 +13373,7 @@ lookup_filename (const char *file_name)
      prune_unused_types_walk_attribs.  */
 
   if (DWARF2_ASM_LINE_DEBUG_INFO && ! flag_eliminate_unused_debug_types)
-    maybe_emit_file (i);
+    return maybe_emit_file (i);
 
   return i;
 }
@@ -13591,13 +13591,15 @@ dwarf2out_start_source_file (unsigned int lineno, const char *filename)
 
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
+      int fileno;
+
       named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG);
       dw2_asm_output_data (1, DW_MACINFO_start_file, "Start new file");
       dw2_asm_output_data_uleb128 (lineno, "Included from line number %d",
 				   lineno);
-      maybe_emit_file (lookup_filename (filename));
-      dw2_asm_output_data_uleb128 (lookup_filename (filename),
-				   "Filename we just started");
+
+      fileno = maybe_emit_file (lookup_filename (filename));
+      dw2_asm_output_data_uleb128 (fileno, "Filename we just started");
     }
 }
 

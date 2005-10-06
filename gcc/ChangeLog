@@ -1,3 +1,9 @@
+2005-10-06  Richard Henderson  <rth@redhat.com>
+
+	PR debug/24070
+	* dwarf2out.c (lookup_filename): Return the result of maybe_emit_file.
+	(dwarf2out_start_source_file): Print it.
+
 2005-10-06  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/t-slibgcc-darwin (SHLIB_MAPFILES): Use '+='.
