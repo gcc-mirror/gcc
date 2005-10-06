@@ -1,3 +1,9 @@
+2005-10-05  Devang Patel  <dpatel@apple.com>
+
+	PR Debug/23205
+	* dbxout.c (dbxout_symbol): Check DECL_RTL_SET_P, after
+	handling constants. Check NAMESPACE_DECL context for constants.
+	
 2005-10-05  Eric Christopher  <echristo@apple.com>
 
 	* doc/md.texi (Standard Names): Fix name of pushm1 pattern.

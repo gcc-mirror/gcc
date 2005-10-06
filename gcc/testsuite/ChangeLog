@@ -1,3 +1,8 @@
+2005-10-05  Devang Patel  <dpatel@apple.com>
+
+	PR Debug/23205
+	* g++.dg/other/PR23205.C: New.
+	
 2005-10-05  Richard Henderson  <rth@redhat.com>
 
 	PR target/23602
