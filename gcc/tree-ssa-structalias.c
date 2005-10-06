@@ -3029,7 +3029,7 @@ check_for_overlaps (VEC (fieldoff_s,heap) *fieldstack)
 {
   fieldoff_s *fo = NULL;
   unsigned int i;
-  unsigned int lastoffset = ~0;
+  HOST_WIDE_INT lastoffset = -1;
 
   for (i = 0; VEC_iterate (fieldoff_s, fieldstack, i, fo); i++)
     {
