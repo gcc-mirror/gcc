@@ -1,3 +1,7 @@
+2005-10-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* call.c (resolve_args): Remove redundant test.
+
 2005-10-05  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/21419
