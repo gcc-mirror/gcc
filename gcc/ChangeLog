@@ -33,7 +33,7 @@
 2005-10-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/24238
-	* tree-ssa-alias.c (find_used_portions): Handle PARAM_DECL.
+	* tree-ssa-alias.c (find_used_portions): Handle RESULT_DECL.
 
 2005-10-06  Daniel Jacobowitz  <dan@codesourcery.com>
 
