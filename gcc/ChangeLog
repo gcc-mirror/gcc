@@ -1,3 +1,9 @@
+2005-10-06  Daniel Berlin  <dberlin@dberlin.org>
+	
+	Fix PR tree-optimization/22488
+	* tree-ssa-structalias.c (check_for_overlaps): New function.
+	(create_variable_info_for): Use it.
+
 2005-10-06  Richard Henderson  <rth@redhat.com>
 
 	PR debug/24070
