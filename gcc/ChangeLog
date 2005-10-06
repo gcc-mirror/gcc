@@ -1,3 +1,8 @@
+2005-10-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/24238
+	* tree-ssa-alias.c (find_used_portions): Handle PARAM_DECL.
+
 2005-10-06  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* acinclude.m4 (gcc_AC_CHECK_TOOL): Handle environment variables

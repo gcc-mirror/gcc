@@ -2765,6 +2765,7 @@ find_used_portions (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
       break;
     case VAR_DECL:
     case PARM_DECL:
+    case RESULT_DECL:
       {
 	tree var = *tp;
 	if (DECL_SIZE (var)
