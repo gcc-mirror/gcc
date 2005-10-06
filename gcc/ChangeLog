@@ -1,5 +1,9 @@
 2005-10-06  Richard Henderson  <rth@redhat.com>
 
+	* config/rs6000/rs6000.c: Revert last change.
+
+2005-10-06  Richard Henderson  <rth@redhat.com>
+
 	* config/rs6000/rs6000.c (rs6000_cannot_force_const_mem): New.
 	(TARGET_CANNOT_FORCE_CONST_MEM): Use it.
 
