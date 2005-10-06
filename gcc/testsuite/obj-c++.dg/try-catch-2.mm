@@ -7,13 +7,13 @@
 
 #include <objc/Object.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 /* The following is not required in actual user code; we include it
    here to check that the compiler generates an internal definition of
    _setjmp that is consistent with what <setjmp.h> provides.  */
 #include <setjmp.h>
 
-extern "C" void abort(void);
 #define CHECK_IF(expr) if(!(expr)) abort()
 
 @interface Frob: Object

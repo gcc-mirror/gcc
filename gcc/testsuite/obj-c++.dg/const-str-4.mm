@@ -3,7 +3,7 @@
 /* { dg-options "-fnext-runtime -fconstant-string-class=MyString -lobjc" } */ 
 /* { dg-do run { target *-*-darwin* } } */
 
-extern "C" void abort(void);
+#include <stdlib.h>
 
 @interface MyString
 {

@@ -4,8 +4,8 @@
 /* { dg-do run } */
 
 #include <objc/Object.h>
+#include <stdlib.h>
 
-extern "C" void abort(void);
 #define CHECK_IF(expr) if(!(expr)) abort()
 
 @interface Int1: Object

@@ -6,10 +6,9 @@
 
 #include <objc/Object.h>
 
-extern "C" {
-  extern void abort(void);
-  extern int strcmp(const char *str1, const char *str2);
-}
+#include <stdlib.h>
+#include <string.h>
+
 #define CHECK_IF(expr) if(!(expr)) abort()
 
 enum Enum { one, two, three, four };

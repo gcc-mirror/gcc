@@ -12,10 +12,9 @@
 #define OBJC_GETCLASS objc_get_class
 #endif
 
-extern "C" {
-  extern void abort(void);
-  extern int strcmp(const char *s1, const char *s2);
-}
+#include <stdlib.h>
+#include <string.h>
+
 #define CHECK_IF(expr) if(!(expr)) abort()
 
 @class Int1, Int2;

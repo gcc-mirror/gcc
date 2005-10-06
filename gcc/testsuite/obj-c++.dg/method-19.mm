@@ -14,10 +14,9 @@
 #define OBJC_GETCLASS objc_get_class
 #endif
 
-extern "C" {
-  extern void abort(void);
-  extern int strcmp(const char *, const char *);
-}
+#include <stdlib.h>
+#include <string.h>
+
 #define CHECK_IF(expr) if(!(expr)) abort()
 
 @protocol Proto

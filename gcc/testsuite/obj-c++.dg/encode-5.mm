@@ -13,10 +13,9 @@
 #include <objc/objc-api.h>
 #endif
 
-extern "C" {
-  extern int sscanf(const char *str, const char *format, ...);
-  extern void abort(void);
-}
+#include <stdio.h>
+#include <stdlib.h>
+
 #define CHECK_IF(expr) if(!(expr)) abort()
 
 enum Enum {
