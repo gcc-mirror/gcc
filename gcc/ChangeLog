@@ -1,3 +1,10 @@
+2005-10-06  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	PR target/23783
+	* arm.md (call): If the address isn't a SYMBOL_REF or a register,
+	then force it into a register.
+	(call_value): Likewise.
+
 2005-10-06  Richard Henderson  <rth@redhat.com>
 
 	PR 24049
