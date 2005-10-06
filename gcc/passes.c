@@ -588,14 +588,19 @@ init_optimization_passes (void)
   /* NEXT_PASS (pass_may_alias) cannot be done again because the
      vectorizer creates alias relations that are not supported by
      pass_may_alias.  */
-  NEXT_PASS (pass_lower_vector_ssa);
   NEXT_PASS (pass_complete_unroll);
   NEXT_PASS (pass_iv_optimize);
   NEXT_PASS (pass_tree_loop_done);
   *p = NULL;
 
   p = &pass_vectorize.sub;
+  NEXT_PASS (pass_lower_vector_ssa);
+  /* ??? The loop optimizers are not GC safe.  See PR 21805.
+     Turn off GC while registering this pass.  */
+  pass_dce.todo_flags_finish &= ~TODO_ggc_collect;
   NEXT_PASS (pass_dce);
+  pass_dce.todo_flags_finish |= TODO_ggc_collect;
+  gcc_assert (p != &pass_dce.next);
   *p = NULL;
 
   p = &pass_loop2.sub;
