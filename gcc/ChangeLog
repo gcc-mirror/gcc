@@ -1,3 +1,14 @@
+2005-10-06  Richard Henderson  <rth@redhat.com>
+
+	PR 23706
+	* mode-switching.c (optimize_mode_switching): Clear transp bit
+	for block with incomming abnormal edges.
+
+	* config/sh/sh.c (fpscr_values, emit_fpu_switch): New.
+	(fpscr_set_from_mem): Use them.
+	* config/sh/sh.md (fpu_switch0, fpu_switch1): Remove.
+	(fpscr postinc splitters): Rewrite as peephole2+split.
+
 2005-10-06  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (eq<mode>): Add !TARGET_POWER.

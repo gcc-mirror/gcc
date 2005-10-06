@@ -9760,34 +9760,6 @@ mov.l\\t1f,r0\\n\\
 
 ;; ??? All patterns should have a type attribute.
 
-(define_expand "fpu_switch0"
-  [(set (match_operand:SI 0 "" "") (match_dup 2))
-   (set (match_dup 1) (mem:PSI (match_dup 0)))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
-  "
-{
-  operands[1] = get_fpscr_rtx ();
-  operands[2] = gen_rtx_SYMBOL_REF (SImode, \"__fpscr_values\");
-  if (flag_pic)
-    operands[2] = legitimize_pic_address (operands[2], SImode,
-					  no_new_pseudos ? operands[0] : 0);
-}")
-
-(define_expand "fpu_switch1"
-  [(set (match_operand:SI 0 "" "") (match_dup 2))
-   (set (match_dup 3) (plus:SI (match_dup 0) (const_int 4)))
-   (set (match_dup 1) (mem:PSI (match_dup 3)))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
-  "
-{
-  operands[1] = get_fpscr_rtx ();
-  operands[2] = gen_rtx_SYMBOL_REF (SImode, \"__fpscr_values\");
-  if (flag_pic)
-    operands[2] = legitimize_pic_address (operands[2], SImode,
-					  no_new_pseudos ? operands[0] : 0);
-  operands[3] = no_new_pseudos ? operands[0] : gen_reg_rtx (SImode);
-}")
-
 (define_expand "movpsi"
   [(set (match_operand:PSI 0 "register_operand" "")
 	(match_operand:PSI 1 "general_movsrc_operand" ""))]
@@ -9822,35 +9794,43 @@ mov.l\\t1f,r0\\n\\
   [(set_attr "length" "0,2,2,4,2,2,2,2,2")
    (set_attr "type" "nil,mem_fpscr,load,mem_fpscr,gp_fpscr,move,store,mac_gp,store")])
 
+(define_peephole2
+  [(set (reg:PSI FPSCR_REG)
+	(mem:PSI (match_operand:SI 0 "register_operand" "")))]
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && peep2_reg_dead_p (1, operands[0])"
+  [(const_int 0)]
+{
+  rtx fpscr, mem, new_insn;
+
+  fpscr = SET_DEST (PATTERN (curr_insn));
+  mem = SET_SRC (PATTERN (curr_insn));
+  mem = replace_equiv_address (mem, gen_rtx_POST_INC (Pmode, operands[0]));
+
+  new_insn = emit_insn (gen_fpu_switch (fpscr, mem));
+  REG_NOTES (new_insn) = gen_rtx_EXPR_LIST (REG_INC, operands[0], NULL_RTX);
+  DONE;
+})
+
 (define_split
   [(set (reg:PSI FPSCR_REG)
 	(mem:PSI (match_operand:SI 0 "register_operand" "")))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) && find_regno_note (insn, REG_DEAD, true_regnum (operands[0]))"
-  [(set (match_dup 0) (match_dup 0))]
-  "
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)
+   && (flag_peephole2 ? flow2_completed : reload_completed)"
+  [(const_int 0)]
 {
-  rtx mem, insn;
+  rtx fpscr, mem, new_insn;
 
+  fpscr = SET_DEST (PATTERN (curr_insn));
   mem = SET_SRC (PATTERN (curr_insn));
-  mem = change_address (mem, PSImode, gen_rtx_POST_INC (Pmode, operands[0]));
-  insn = emit_insn (gen_fpu_switch (get_fpscr_rtx (), mem));
-  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC, operands[0], NULL_RTX);
-}")
+  mem = replace_equiv_address (mem, gen_rtx_POST_INC (Pmode, operands[0]));
 
-(define_split
-  [(set (reg:PSI FPSCR_REG)
-	(mem:PSI (match_operand:SI 0 "register_operand" "")))]
-  "(TARGET_SH4 || TARGET_SH2A_DOUBLE)"
-  [(set (match_dup 0) (plus:SI (match_dup 0) (const_int -4)))]
-  "
-{
-  rtx mem, insn;
+  new_insn = emit_insn (gen_fpu_switch (fpscr, mem));
+  REG_NOTES (new_insn) = gen_rtx_EXPR_LIST (REG_INC, operands[0], NULL_RTX);
 
-  mem = SET_SRC (PATTERN (curr_insn));
-  mem = change_address (mem, PSImode, gen_rtx_POST_INC (Pmode, operands[0]));
-  insn = emit_insn (gen_fpu_switch (get_fpscr_rtx (), mem));
-  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC, operands[0], NULL_RTX);
-}")
+  if (!find_regno_note (curr_insn, REG_DEAD, true_regnum (operands[0])))
+    emit_insn (gen_addsi3 (operands[0], operands[0], GEN_INT (-4)));
+  DONE;
+})
 
 ;; ??? This uses the fp unit, but has no type indicating that.
 ;; If we did that, this would either give a bogus latency or introduce
