@@ -1,3 +1,9 @@
+2005-10-06  Richard Henderson  <rth@redhat.com>
+
+        PR debug/24070
+        * dwarf2out.c (dwarf2out_start_source_file): Print the result
+	of maybe_emit_file.
+
 2005-10-06  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* varasm.c (make_decl_rtl): Correct error message.
