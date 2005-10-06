@@ -2544,7 +2544,7 @@ resolve_args (tree args)
     {
       tree arg = TREE_VALUE (t);
       
-      if (arg == error_mark_node || error_operand_p (arg))
+      if (error_operand_p (arg))
 	return error_mark_node;
       else if (VOID_TYPE_P (TREE_TYPE (arg)))
 	{
