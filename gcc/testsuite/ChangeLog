@@ -1,3 +1,8 @@
+2005-10-06  Richard Henderson  <rth@redhat.com>
+
+	PR 24236
+	* gcc.dg/i386-sse-10.c: Add -fno-omit-frame-pointer.
+
 2005-10-06  Dale Johannesen  <dalej@apple.com>
 
 	* gcc.c-torture/execute/20030125-1.c:  Correct.
