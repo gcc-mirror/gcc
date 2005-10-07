@@ -1,3 +1,7 @@
+2005-10-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* at-file.texi: Fix typo.
+
 2005-10-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* at-file.texi: New file.
