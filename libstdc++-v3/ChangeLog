@@ -1,3 +1,7 @@
+2005-10-07  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/doxygen/user.cfg.in: Update to Doyxygen 1.4.4.
+
 2005-10-05  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/sso_string_base.h (struct __sso_string_local):
