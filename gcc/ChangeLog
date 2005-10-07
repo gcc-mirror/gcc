@@ -1,3 +1,15 @@
+2005-10-07  Steve Ellcey  <sje@cup.hp.com>
+
+	* config.host (hppa*-*-hpux*): Change out_host_hook_obj and
+	host_xmake_file.
+	(hppa*-*-linux*): Ditto.
+	(ia64-*-hpux*): Add out_host_hook_obj and host_xmake_file.
+	* config/host-hpux.c: New.
+	* config/x-hpux: New.
+	* config/pa/x-hpux: Remove.
+	* config/pa/x-linux: Remove.
+	* config/pa/pa-host.c: Remove.
+
 2005-10-07  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (dom_opt_finalize_block): Fix conditions to
