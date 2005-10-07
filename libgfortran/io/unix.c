@@ -40,9 +40,6 @@ Boston, MA 02110-1301, USA.  */
 #include <fcntl.h>
 #include <assert.h>
 
-#ifdef HAVE_SYS_MMAN_H
-#include <sys/mman.h>
-#endif
 #include <string.h>
 #include <errno.h>
 
@@ -51,10 +48,6 @@ Boston, MA 02110-1301, USA.  */
 
 #ifndef PATH_MAX
 #define PATH_MAX 1024
-#endif
-
-#ifndef MAP_FAILED
-#define MAP_FAILED ((void *) -1)
 #endif
 
 #ifndef PROT_READ
@@ -231,58 +224,104 @@ is_preconnected (stream * s)
     return 0;
 }
 
-/* write()-- Write a buffer to a descriptor, allowing for short writes */
 
-static int
-writen (int fd, char *buffer, int len)
+/* Reset a stream after reading/writing. Assumes that the buffers have
+   been flushed.  */
+
+inline static void
+reset_stream (unix_stream * s, size_t bytes_rw)
 {
-  int n, n0;
-
-  n0 = len;
-
-  while (len > 0)
-    {
-      n = write (fd, buffer, len);
-      if (n < 0)
-	return n;
-
-      buffer += n;
-      len -= n;
-    }
-
-  return n0;
+  s->physical_offset += bytes_rw;
+  s->logical_offset = s->physical_offset;
+  if (s->file_length != -1 && s->physical_offset > s->file_length)
+    s->file_length = s->physical_offset;
 }
 
 
-#if 0
-/* readn()-- Read bytes into a buffer, allowing for short reads.  If
- * fewer than len bytes are returned, it is because we've hit the end
- * of file. */
+/* Read bytes into a buffer, allowing for short reads.  If the nbytes
+ * argument is less on return than on entry, it is because we've hit
+ * the end of file. */
 
 static int
-readn (int fd, char *buffer, int len)
+do_read (unix_stream * s, void * buf, size_t * nbytes)
 {
-  int nread, n;
+  ssize_t trans;
+  size_t bytes_left;
+  char *buf_st;
+  int status;
 
-  nread = 0;
+  status = 0;
+  bytes_left = *nbytes;
+  buf_st = (char *) buf;
 
-  while (len > 0)
+  /* We must read in a loop since some systems don't restart system
+     calls in case of a signal.  */
+  while (bytes_left > 0)
     {
-      n = read (fd, buffer, len);
-      if (n < 0)
-	return n;
-
-      if (n == 0)
-	return nread;
-
-      buffer += n;
-      nread += n;
-      len -= n;
+      /* Requests between SSIZE_MAX and SIZE_MAX are undefined by SUSv3,
+	 so we must read in chunks smaller than SSIZE_MAX.  */
+      trans = (bytes_left < SSIZE_MAX) ? bytes_left : SSIZE_MAX;
+      trans = read (s->fd, buf_st, trans);
+      if (trans < 0)
+	{
+	  if (errno == EINTR)
+	    continue;
+	  else
+	    {
+	      status = errno;
+	      break;
+	    }
+	}
+      else if (trans == 0) /* We hit EOF.  */
+	break;
+      buf_st += trans;
+      bytes_left -= trans;
     }
 
-  return nread;
+  *nbytes -= bytes_left;
+  return status;
 }
-#endif
+
+
+/* Write a buffer to a stream, allowing for short writes.  */
+
+static int
+do_write (unix_stream * s, const void * buf, size_t * nbytes)
+{
+  ssize_t trans;
+  size_t bytes_left;
+  char *buf_st;
+  int status;
+
+  status = 0;
+  bytes_left = *nbytes;
+  buf_st = (char *) buf;
+
+  /* We must write in a loop since some systems don't restart system
+     calls in case of a signal.  */
+  while (bytes_left > 0)
+    {
+      /* Requests between SSIZE_MAX and SIZE_MAX are undefined by SUSv3,
+	 so we must write in chunks smaller than SSIZE_MAX.  */
+      trans = (bytes_left < SSIZE_MAX) ? bytes_left : SSIZE_MAX;
+      trans = write (s->fd, buf_st, trans);
+      if (trans < 0)
+	{
+	  if (errno == EINTR)
+	    continue;
+	  else
+	    {
+	      status = errno;
+	      break;
+	    }
+	}
+      buf_st += trans;
+      bytes_left -= trans;
+    }
+
+  *nbytes -= bytes_left;
+  return status;
+}
 
 
 /* get_oserror()-- Get the most recent operating system error.  For
@@ -308,11 +347,14 @@ sys_exit (int code)
     File descriptor stream functions
 *********************************************************************/
 
+
 /* fd_flush()-- Write bytes that need to be written */
 
 static try
 fd_flush (unix_stream * s)
 {
+  size_t writelen;
+
   if (s->ndirty == 0)
     return SUCCESS;;
 
@@ -320,16 +362,20 @@ fd_flush (unix_stream * s)
       lseek (s->fd, s->dirty_offset, SEEK_SET) < 0)
     return FAILURE;
 
-  if (writen (s->fd, s->buffer + (s->dirty_offset - s->buffer_offset),
-	      s->ndirty) < 0)
+  writelen = s->ndirty;
+  if (do_write (s, s->buffer + (s->dirty_offset - s->buffer_offset),
+		&writelen) != 0)
     return FAILURE;
 
-  s->physical_offset = s->dirty_offset + s->ndirty;
+  s->physical_offset = s->dirty_offset + writelen;
 
   /* don't increment file_length if the file is non-seekable */
   if (s->file_length != -1 && s->physical_offset > s->file_length)
-    s->file_length = s->physical_offset;
-  s->ndirty = 0;
+      s->file_length = s->physical_offset; 
+
+  s->ndirty -= writelen;
+  if (s->ndirty != 0)
+    return FAILURE;
 
   return SUCCESS;
 }
@@ -394,7 +440,7 @@ static char *
 fd_alloc_r_at (unix_stream * s, int *len, gfc_offset where)
 {
   gfc_offset m;
-  int n;
+  size_t n;
 
   if (where == -1)
     where = s->logical_offset;
@@ -416,8 +462,8 @@ fd_alloc_r_at (unix_stream * s, int *len, gfc_offset where)
   if (s->physical_offset != m && lseek (s->fd, m, SEEK_SET) < 0)
     return NULL;
 
-  n = read (s->fd, s->buffer + s->active, s->len - s->active);
-  if (n < 0)
+  n = s->len - s->active;
+  if (do_read (s, s->buffer + s->active, &n) != 0)
     return NULL;
 
   s->physical_offset = where + n;
@@ -502,9 +548,15 @@ fd_sfree (unix_stream * s)
 }
 
 
-static int
+static try
 fd_seek (unix_stream * s, gfc_offset offset)
 {
+  if (s->physical_offset == offset) /* Are we lucky and avoid syscall?  */
+    {
+      s->logical_offset = offset;
+      return SUCCESS;
+    }
+
   s->physical_offset = s->logical_offset = offset;
 
   return (lseek (s->fd, offset, SEEK_SET) < 0) ? FAILURE : SUCCESS;
@@ -543,6 +595,104 @@ fd_truncate (unix_stream * s)
 }
 
 
+
+
+/* Stream read function. Avoids using a buffer for big reads. The
+   interface is like POSIX read(), but the nbytes argument is a
+   pointer; on return it contains the number of bytes written. The
+   function return value is the status indicator (0 for success).  */
+
+static int
+fd_read (unix_stream * s, void * buf, size_t * nbytes)
+{
+  void *p;
+  int tmp, status;
+
+  if (*nbytes < BUFFER_SIZE && !s->unbuffered)
+    {
+      tmp = *nbytes;
+      p = fd_alloc_r_at (s, &tmp, -1);
+      if (p)
+	{
+	  *nbytes = tmp;
+	  memcpy (buf, p, *nbytes);
+	  return 0;
+	}
+      else
+	{
+	  *nbytes = 0;
+	  return errno;
+	}
+    }
+
+  /* If the request is bigger than BUFFER_SIZE we flush the buffers
+     and read directly.  */
+  if (fd_flush (s) == FAILURE)
+    {
+      *nbytes = 0;
+      return errno;
+    }
+
+  if (is_seekable ((stream *) s) && fd_seek (s, s->logical_offset) == FAILURE)
+    {
+      *nbytes = 0;
+      return errno;
+    }
+
+  status = do_read (s, buf, nbytes);
+  reset_stream (s, *nbytes);
+  return status;
+}
+
+
+/* Stream write function. Avoids using a buffer for big writes. The
+   interface is like POSIX write(), but the nbytes argument is a
+   pointer; on return it contains the number of bytes written. The
+   function return value is the status indicator (0 for success).  */
+
+static int
+fd_write (unix_stream * s, const void * buf, size_t * nbytes)
+{
+  void *p;
+  int tmp, status;
+
+  if (*nbytes < BUFFER_SIZE && !s->unbuffered)
+    {
+      tmp = *nbytes;
+      p = fd_alloc_w_at (s, &tmp, -1);
+      if (p)
+	{
+	  *nbytes = tmp;
+	  memcpy (p, buf, *nbytes);
+	  return 0;
+	}
+      else
+	{
+	  *nbytes = 0;
+	  return errno;
+	}
+    }
+
+  /* If the request is bigger than BUFFER_SIZE we flush the buffers
+     and write directly.  */
+  if (fd_flush (s) == FAILURE)
+    {
+      *nbytes = 0;
+      return errno;
+    }
+
+  if (is_seekable ((stream *) s) && fd_seek (s, s->logical_offset) == FAILURE)
+    {
+      *nbytes = 0;
+      return errno;
+    }
+
+  status =  do_write (s, buf, nbytes);
+  reset_stream (s, *nbytes);
+  return status;
+}
+
+
 static try
 fd_close (unix_stream * s)
 {
@@ -576,9 +726,12 @@ fd_open (unix_stream * s)
   s->st.close = (void *) fd_close;
   s->st.seek = (void *) fd_seek;
   s->st.truncate = (void *) fd_truncate;
+  s->st.read = (void *) fd_read;
+  s->st.write = (void *) fd_write;
 
   s->buffer = NULL;
 }
+
 
 
 
@@ -635,6 +788,60 @@ mem_alloc_w_at (unix_stream * s, int *len, gfc_offset where)
   s->logical_offset = m;
 
   return s->buffer + (where - s->buffer_offset);
+}
+
+
+/* Stream read function for internal units. This is not actually used
+   at the moment, as all internal IO is formatted and the formatted IO
+   routines use mem_alloc_r_at.  */
+
+static int
+mem_read (unix_stream * s, void * buf, size_t * nbytes)
+{
+  void *p;
+  int tmp;
+
+  tmp = *nbytes;
+  p = mem_alloc_r_at (s, &tmp, -1);
+  if (p)
+    {
+      *nbytes = tmp;
+      memcpy (buf, p, *nbytes);
+      return 0;
+    }
+  else
+    {
+      *nbytes = 0;
+      return errno;
+    }
+}
+
+
+/* Stream write function for internal units. This is not actually used
+   at the moment, as all internal IO is formatted and the formatted IO
+   routines use mem_alloc_w_at.  */
+
+static int
+mem_write (unix_stream * s, const void * buf, size_t * nbytes)
+{
+  void *p;
+  int tmp;
+
+  errno = 0;
+
+  tmp = *nbytes;
+  p = mem_alloc_w_at (s, &tmp, -1);
+  if (p)
+    {
+      *nbytes = tmp;
+      memcpy (p, buf, *nbytes);
+      return 0;
+    }
+  else
+    {
+      *nbytes = 0;
+      return errno;
+    }
 }
 
 
@@ -712,6 +919,8 @@ open_internal (char *base, int length)
   s->st.close = (void *) mem_close;
   s->st.seek = (void *) mem_seek;
   s->st.truncate = (void *) mem_truncate;
+  s->st.read = (void *) mem_read;
+  s->st.write = (void *) mem_write;
 
   return (stream *) s;
 }
@@ -1350,9 +1559,8 @@ file_position (stream * s)
 int
 is_seekable (stream * s)
 {
-  /* by convention, if file_length == -1, the file is not seekable
-     note that a mmapped file is always seekable, an fd_ file may
-     or may not be. */
+  /* By convention, if file_length == -1, the file is not
+     seekable.  */
   return ((unix_stream *) s)->file_length!=-1;
 }
 
