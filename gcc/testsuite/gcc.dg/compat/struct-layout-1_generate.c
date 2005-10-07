@@ -1743,6 +1743,14 @@ generate_fields (enum FEATURE features, struct entry *e, struct entry *parent,
 		  || (e[n].type >= &aligned_bitfld_types[0]
 		      && e[n].type < &aligned_bitfld_types[n_aligned_bitfld_types])))
 	    e[n].attrib = NULL;
+
+	  /* If this is an array type, do not put aligned attributes on
+	     elements.  Aligning elements to a value greater than their
+	     size will result in a compiler error.  */
+
+	  if ((e[n].etype == ETYPE_ARRAY)
+	      && (strncmp (e[n].attrib, "atal", 4) == 0))
+            e[n].attrib = NULL;
 	}
     }
 }
