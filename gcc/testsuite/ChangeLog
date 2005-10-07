@@ -1,3 +1,8 @@
+2005-10-07  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/compat/struct-layout-1_generate.c (generate_fields):
+	Do not put aligned attributes on array elements.
+
 2005-10-07  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR testsuite/23611, PR testsuite/23615
