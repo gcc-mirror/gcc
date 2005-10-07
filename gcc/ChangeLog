@@ -1,3 +1,9 @@
+2005-10-07  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (eqsi_power): New.
+	(neg_eq0si): Add TARGET_POWER to final condition.
+	(neg_eqsi): Same.
+
 2005-10-06  Richard Henderson  <rth@redhat.com>
 
 	* config/rs6000/rs6000.c: Revert last change.
