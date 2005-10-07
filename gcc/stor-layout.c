@@ -1817,6 +1817,12 @@ layout_type (tree type)
 		TYPE_MODE (type) = BLKmode;
 	      }
 	  }
+	if (TYPE_SIZE_UNIT (element)
+	    && TREE_CODE (TYPE_SIZE_UNIT (element)) == INTEGER_CST
+	    && !integer_zerop (TYPE_SIZE_UNIT (element))
+	    && compare_tree_int (TYPE_SIZE_UNIT (element),
+			  	 TYPE_ALIGN_UNIT (element)) < 0)
+	  error ("alignment of array elements is greater than element size");
 	break;
       }
 
