@@ -1,3 +1,12 @@
+2005-10-07  Jerry DeLisle  <jvdelisle@verizon.net>
+
+        * io/transfer.c (write_block): Add test for end-of-file condition,
+        removed from mem_alloc_w_at. (next_record_w): Clean up checks for
+        NULL pointer returns from s_alloc_w.
+        * io/unix.c (mem_alloc_w_at): Remove call to generate_error end-of-file.
+        * io/write.c (write_float): Add checks for NULL pointer returns from
+        write_block calls. (write_integer): Same.
+        
 2005-10-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* runtime/memory.c (allocate_size): Malloc 1 byte if size == 0.
