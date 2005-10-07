@@ -1,3 +1,8 @@
+2005-10-07  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (dom_opt_finalize_block): Fix conditions to
+	determine whether or not to try and thread outgoing edges.
+
 2005-10-07  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (eqsi_power): New.

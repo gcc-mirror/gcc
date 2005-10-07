@@ -1020,14 +1020,14 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 {
   tree last;
 
-  /* If we are at a leaf node in the dominator tree, see if we can thread
-     the edge from BB through its successor.
-
-     Do this before we remove entries from our equivalence tables.  */
+  /* If we have an outgoing edge to a block with multiple incoming and
+     outgoing edges, then we may be able to thread the edge.  ie, we
+     may be able to statically determine which of the outgoing edges
+     will be traversed when the incoming edge from BB is traversed.  */
   if (single_succ_p (bb)
       && (single_succ_edge (bb)->flags & EDGE_ABNORMAL) == 0
-      && (get_immediate_dominator (CDI_DOMINATORS, single_succ (bb)) != bb
-	  || phi_nodes (single_succ (bb))))
+      && !single_pred_p (single_succ (bb))
+      && !single_succ_p (single_succ (bb)))
 	
     {
       thread_across_edge (walk_data, single_succ_edge (bb));
@@ -1044,10 +1044,9 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 
       extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
 
-      /* If the THEN arm is the end of a dominator tree or has PHI nodes,
-	 then try to thread through its edge.  */
-      if (get_immediate_dominator (CDI_DOMINATORS, true_edge->dest) != bb
-	  || phi_nodes (true_edge->dest))
+      /* Only try to thread the edge if it reaches a target block with
+	 more than one predecessor and more than one successor.  */
+      if (!single_pred_p (true_edge->dest) && !single_succ_p (true_edge->dest))
 	{
 	  struct edge_info *edge_info;
 	  unsigned int i;
@@ -1094,8 +1093,7 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 	}
 
       /* Similarly for the ELSE arm.  */
-      if (get_immediate_dominator (CDI_DOMINATORS, false_edge->dest) != bb
-	  || phi_nodes (false_edge->dest))
+      if (!single_pred_p (false_edge->dest) && !single_succ_p (false_edge->dest))
 	{
 	  struct edge_info *edge_info;
 	  unsigned int i;
