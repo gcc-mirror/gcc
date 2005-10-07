@@ -1,3 +1,17 @@
+2005-10-07  Paolo Carlini  <pcarlini@suse.de>
+
+	Fix libstdc++/24196 for ext/vstring/rc by returning to the behavior
+	of basic_string pre-2003-06-13; remove fully-dynamic-string stuff.
+	* include/ext/rc_string_base.h (_M_refcopy): Move inside the
+	_Rep class and remove code in macro.
+	(__rc_string_base()): Construct with _S_empty_rep()._M_refcopy().
+	(_M_dispose, _M_leak_hard): Remove code in macro.
+	(_S_construct): Return _S_empty_rep()._M_refcopy() for empty string.
+	(_M_grab): Adjust.
+
+	* include/ext/rc_string_base.h (_Rep::_M_refdata()): Minor tweak,
+	mark throw().
+
 2005-10-07  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/doxygen/user.cfg.in: Update to Doyxygen 1.4.4.
