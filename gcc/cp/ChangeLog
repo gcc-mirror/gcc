@@ -1,3 +1,21 @@
+2005-10-07  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2005-09-26  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/15855
+	* decl2.c (do_static_destruction): Remove.
+	(finish_static_initialization_or_destruction): Likewise.
+	(DECL_EFFECTIVE_INIT_PRIORITY): New macro.
+	(NEEDS_GUARD_P): Likewise.
+	(do_static_initialization): Rename to
+	do_static_initialization_or_destruction.  Process all
+	initializers/destructors and handle common conditionalizing.
+	(start_static_initialization_or_destruction): Rename to
+	one_static_initialization_or_destruction.  Handle only
+	decl-specific conditionalizing.
+	(cp_finish_file): Call do_static_initialization_or_destruction.
+
 2005-10-05  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/23965
