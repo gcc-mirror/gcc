@@ -56,6 +56,8 @@ typedef struct stream
   try (*close) (struct stream *);
   try (*seek) (struct stream *, gfc_offset);
   try (*truncate) (struct stream *);
+  int (*read) (struct stream *, void *, size_t *);
+  int (*write) (struct stream *, const void *, size_t *);
 }
 stream;
 
@@ -73,6 +75,8 @@ stream;
 
 #define sseek(s, pos) ((s)->seek)(s, pos)
 #define struncate(s) ((s)->truncate)(s)
+#define sread(s, buf, nbytes) ((s)->read)(s, buf, nbytes)
+#define swrite(s, buf, nbytes) ((s)->write)(s, buf, nbytes)
 
 /* Representation of a namelist object in libgfortran
 

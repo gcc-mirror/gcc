@@ -286,6 +286,60 @@ read_block (int *length)
 }
 
 
+/* Reads a block directly into application data space.  */
+
+static void
+read_block_direct (void * buf, size_t * nbytes)
+{
+  int *length;
+  void *data;
+  size_t nread;
+
+  if (current_unit->flags.form == FORM_FORMATTED &&
+      current_unit->flags.access == ACCESS_SEQUENTIAL)
+    {
+      length = (int*) nbytes;
+      data = read_sf (length);	/* Special case.  */
+      memcpy (buf, data, (size_t) *length);
+      return;
+    }
+
+  if (current_unit->bytes_left < *nbytes)
+    {
+      if (current_unit->flags.pad == PAD_NO)
+	{
+	  generate_error (ERROR_EOR, NULL); /* Not enough data left.  */
+	  return;
+	}
+
+      *nbytes = current_unit->bytes_left;
+    }
+
+  current_unit->bytes_left -= *nbytes;
+
+  nread = *nbytes;
+  if (sread (current_unit->s, buf, &nread) != 0)
+    {
+      generate_error (ERROR_OS, NULL);
+      return;
+    }
+
+  if (ioparm.size != NULL)
+    *ioparm.size += (GFC_INTEGER_4) nread;
+
+  if (nread != *nbytes)
+    {				/* Short read, e.g. if we hit EOF.  */
+      if (current_unit->flags.pad == PAD_YES)
+	{
+	  memset (((char *) buf) + nread, ' ', *nbytes - nread);
+	  *nbytes = nread;
+	}
+      else
+	generate_error (ERROR_EOR, NULL);
+    }
+}
+
+
 /* Function for writing a block of bytes to the current file at the
    current position, advancing the file pointer. We are given a length
    and return a pointer to a buffer that the caller must (completely)
@@ -318,39 +372,49 @@ write_block (int length)
 }
 
 
+/* Writes a block directly without necessarily allocating space in a
+   buffer.  */
+
+static void
+write_block_direct (void * buf, size_t * nbytes)
+{
+  if (current_unit->bytes_left < *nbytes)
+    generate_error (ERROR_EOR, NULL);
+
+  current_unit->bytes_left -= (gfc_offset) *nbytes;
+
+  if (swrite (current_unit->s, buf, nbytes) != 0)
+    generate_error (ERROR_OS, NULL);
+
+  if (ioparm.size != NULL)
+    *ioparm.size += (GFC_INTEGER_4) *nbytes;
+}
+
+
 /* Master function for unformatted reads.  */
 
 static void
 unformatted_read (bt type, void *dest, int length, size_t nelems)
 {
-  void *source;
-  int w;
+  size_t len;
 
-  length *= nelems;
+  len = length * nelems;
 
   /* Transfer functions get passed the kind of the entity, so we have
      to fix this for COMPLEX data which are twice the size of their
      kind.  */
   if (type == BT_COMPLEX)
-    length *= 2;
+    len *= 2;
 
-  w = length;
-  source = read_block (&w);
-
-  if (source != NULL)
-    {
-      memcpy (dest, source, w);
-      if (length != w)
-	memset (((char *) dest) + w, ' ', length - w);
-    }
+  read_block_direct (dest, &len);
 }
+
 
 /* Master function for unformatted writes.  */
 
 static void
 unformatted_write (bt type, void *source, int length, size_t nelems)
 {
-  void *dest;
   size_t len;
 
   len = length * nelems;
@@ -359,9 +423,7 @@ unformatted_write (bt type, void *source, int length, size_t nelems)
   if (type == BT_COMPLEX)
     len *= 2;
 
-  dest = write_block (len);
-  if (dest != NULL)
-    memcpy (dest, source, len);
+  write_block_direct (source, &len);
 }
 
 

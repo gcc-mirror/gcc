@@ -1,3 +1,31 @@
+2005-10-07  Janne Blomqvist <jblomqvi@cc.hut.fi>
+
+	PR fortran/16339
+	PR fortran/23363
+	* io/io.h: Add read and write members to stream, define access
+	macros.
+	* io/transfer.c (read_block_direct): New function.
+	(write_block_direct): New function.
+	(unformatted_read): Change to use read_block_direct.
+	(unformatted_write): Change to use write_block_direct.
+	* io/unix.c: Remove mmap includes and defines.
+	(writen): Remove.
+	(readn): Remove.
+	(reset_stream): New function.
+	(do_read): New function.
+	(do_write): New function.
+	(fd_flush): Change to use do_write() instead of writen().
+	(fd_alloc_r_at): Change to use do_read().
+	(fd_seek): Change return type to try, as the prototype. Add check
+	to avoid syscall overhead if possible.
+	(fd_read): New function.
+	(fd_write): New function.
+	(fd_open): Set pointers for new functions.
+	(mem_read): New function.
+	(mem_write): New function.
+	(open_internal): Set pointers for new functions.
+	(is_seekable): Clean up comment.
+
 2005-10-07  Jerry DeLisle  <jvdelisle@verizon.net>
 
         * io/transfer.c (write_block): Add test for end-of-file condition,
