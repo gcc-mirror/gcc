@@ -1,5 +1,5 @@
-/* PA host-specific hook definitions.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+/* HP-UX host-specific hook definitions.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -30,19 +30,19 @@
 #define MAP_FAILED (void *)-1L
 #endif
 
-static void *pa_gt_pch_get_address (size_t, int);
-static int pa_gt_pch_use_address (void *, size_t, int, size_t);
+static void *hpux_gt_pch_get_address (size_t, int);
+static int hpux_gt_pch_use_address (void *, size_t, int, size_t);
 
 #undef HOST_HOOKS_GT_PCH_GET_ADDRESS
-#define HOST_HOOKS_GT_PCH_GET_ADDRESS pa_gt_pch_get_address
+#define HOST_HOOKS_GT_PCH_GET_ADDRESS hpux_gt_pch_get_address
 #undef HOST_HOOKS_GT_PCH_USE_ADDRESS
-#define HOST_HOOKS_GT_PCH_USE_ADDRESS pa_gt_pch_use_address
+#define HOST_HOOKS_GT_PCH_USE_ADDRESS hpux_gt_pch_use_address
 
 /* For various ports, try to guess a fixed spot in the vm space
    that's probably free.  */
-#if defined(__hppa__) && defined(__LP64__)
+#if (defined(__hppa__) || defined(__ia64__)) && defined(__LP64__)
 # define TRY_EMPTY_VM_SPACE	0x8000000000000000
-#elif defined(__hppa__)
+#elif defined(__hppa__) || defined(__ia64__)
 # define TRY_EMPTY_VM_SPACE	0x60000000
 #else
 # define TRY_EMPTY_VM_SPACE	0
@@ -53,7 +53,7 @@ static int pa_gt_pch_use_address (void *, size_t, int, size_t);
    file unmapped.  */
 
 static void *
-pa_gt_pch_get_address (size_t size, int fd)
+hpux_gt_pch_get_address (size_t size, int fd)
 {
   void *addr;
 
@@ -85,7 +85,7 @@ pa_gt_pch_get_address (size_t size, int fd)
    little else we can do given the current PCH implementation.  */
 
 static int
-pa_gt_pch_use_address (void *base, size_t size, int fd, size_t offset)
+hpux_gt_pch_use_address (void *base, size_t size, int fd, size_t offset)
 {
   void *addr;
 

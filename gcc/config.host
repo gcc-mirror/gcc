@@ -122,12 +122,12 @@ case ${host} in
   hppa1.0-*-hpux10* | hppa1.1-*-hpux10* | hppa2*-*-hpux10* | \
   hppa1.0-*-hpux11* | hppa1.1-*-hpux11* | hppa2*-*-hpux11* | \
   hppa*64*-*-hpux11*)
-    out_host_hook_obj=pa-host.o
-    host_xmake_file=pa/x-hpux
+    out_host_hook_obj=host-hpux.o
+    host_xmake_file="pa/x-ada x-hpux"
     ;;
   hppa*-*-linux*)
-    out_host_hook_obj=pa-host.o
-    host_xmake_file=pa/x-linux
+    out_host_hook_obj=host-hpux.o
+    host_xmake_file=x-hpux
     ;;
   i370-*-opened* | i370-*-mvs* ) # IBM 360/370/390 Architecture
     host_xm_defines='FATAL_EXIT_CODE=12'
@@ -194,5 +194,7 @@ case ${host} in
     ;;
   ia64-*-hpux*)
     use_long_long_for_widest_fast_int=yes
+    out_host_hook_obj=host-hpux.o
+    host_xmake_file=x-hpux
     ;;
 esac

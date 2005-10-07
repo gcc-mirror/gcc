@@ -1,9 +1,0 @@
-# The ada virtual array implementation requires that indexing be disabled on
-# hosts such as hpux that use a segmented memory architecture.  Both the c
-# and ada files need to be compiled with this option for correct operation.
-X_ADA_CFLAGS=-mdisable-indexing
-
-pa-host.o : $(srcdir)/config/pa/pa-host.c $(CONFIG_H) $(SYSTEM_H) \
-  coretypes.h hosthooks.h hosthooks-def.h $(HOOKS_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$(srcdir)/config/pa/pa-host.c
