@@ -1136,7 +1136,7 @@
   [(set (match_operand:V2SF 0 "register_operand"     "=x,x,*y,*y")
 	(vec_concat:V2SF
 	  (match_operand:SF 1 "nonimmediate_operand" " 0,m, 0, m")
-	  (match_operand:SF 2 "vector_move_operand"  " x,C,*y, C")))]
+	  (match_operand:SF 2 "reg_or_0_operand"     " x,C,*y, C")))]
   "TARGET_SSE"
   "@
    unpcklps\t{%2, %0|%0, %2}
@@ -2937,7 +2937,7 @@
 	(vec_merge:V4SI
 	  (vec_duplicate:V4SI
 	    (match_operand:SI 2 "nonimmediate_operand" "mr,m,x"))
-	  (match_operand:V4SI 1 "vector_move_operand"  " C,C,0")
+	  (match_operand:V4SI 1 "reg_or_0_operand"     " C,C,0")
 	  (const_int 1)))]
   "TARGET_SSE"
   "@

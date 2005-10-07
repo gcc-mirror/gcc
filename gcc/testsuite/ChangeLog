@@ -1,3 +1,14 @@
+2005-10-06  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/22576
+	* gcc.target/i386/pr22576.c: New test.
+
+	PR target/22585
+	* gcc.target/i386/pr22585.c: New test.
+
+	PR target/23570
+	* gcc.target/i386/pr23570.c: New test.
+
 2005-10-05  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc.dg/inline1.c: Remove extraneous +.

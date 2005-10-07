@@ -1,3 +1,16 @@
+2005-10-06 Uros Bizjak <uros@kss-loka.si>
+
+	PR target/23570
+	* config/i386/sse.md (*sse_concatv2sf): Change operand 2 constraint
+	to "reg_or_0_operand".
+	(sse2_loadld): Change operand 1 constraint to "reg_or_0_operand".
+
+2005-10-05  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/22585
+	* config/i386/i386.c (ix86_prepare_fp_compare_args): Do not
+	force integer op1 into register for XFmode compares.
+
 2005-10-06  Richard Henderson  <rth@redhat.com>
 
         PR debug/24070
