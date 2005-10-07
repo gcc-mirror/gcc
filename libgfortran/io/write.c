@@ -832,6 +832,8 @@ write_float (fnode *f, const char *source, int len)
 	     
 	  if (nb == 0) nb = 4;
 	  p = write_block (nb);
+          if (p == NULL)
+            return;
 	  if (nb < 3)
 	    {
 	      memset (p, '*',nb);
@@ -903,6 +905,8 @@ write_float (fnode *f, const char *source, int len)
       if (nb > 0)
         {
           p = write_block (nb);
+          if (p == NULL)
+            return;
           memset (p, ' ', nb);
         }
     }
@@ -1277,6 +1281,8 @@ write_integer (const char *source, int length)
   if(width < digits )
     width = digits ;
   p = write_block (width) ;
+  if (p == NULL)
+    return;
   if (no_leading_blank)
     {
       memcpy (p, q, digits);
@@ -1284,8 +1290,8 @@ write_integer (const char *source, int length)
     }
   else
     {
-  memset(p ,' ', width - digits) ;
-  memcpy (p + width - digits, q, digits);
+      memset(p ,' ', width - digits) ;
+      memcpy (p + width - digits, q, digits);
     }
 }
 

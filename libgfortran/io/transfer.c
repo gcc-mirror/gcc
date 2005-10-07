@@ -304,6 +304,12 @@ write_block (int length)
 
   current_unit->bytes_left -= (gfc_offset)length;
   dest = salloc_w (current_unit->s, &length);
+  
+  if (dest == NULL)
+    {
+      generate_error (ERROR_END, NULL);
+      return NULL;
+    }
 
   if (ioparm.size != NULL)
     *ioparm.size += length;
@@ -1559,16 +1565,20 @@ next_record_w (void)
 	    {
 	      bytes_left = (int) current_unit->bytes_left;
 	      p = salloc_w (current_unit->s, &bytes_left);
-	      if (p != NULL)
+	      if (p == NULL)
 		{
-		  memset(p, ' ', bytes_left);
-	          current_unit->bytes_left = current_unit->recl;
+		  generate_error (ERROR_END, NULL);
+		  return;
 		}
+              memset(p, ' ', bytes_left);
+              current_unit->bytes_left = current_unit->recl;
 	    }
 	  else
 	    {
 	      length = 1;
 	      p = salloc_w (current_unit->s, &length);
+	      if (p==NULL)
+	        goto io_error;
 	    }
  	}
       else

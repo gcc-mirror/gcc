@@ -630,10 +630,7 @@ mem_alloc_w_at (unix_stream * s, int *len, gfc_offset where)
     return NULL;
 
   if (m > s->file_length)
-    {
-      generate_error (ERROR_END, NULL);
-      return NULL;
-    }
+    return NULL;
 
   s->logical_offset = m;
 
