@@ -1,3 +1,11 @@
+2005-10-07  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/24227
+	* fold-const.c (fold_binary): Fix operand types during folding
+	of X op (A, Y).  Evaluation order of the side-effects of
+	X and A are frontend-defined, so ensure we honour that even for
+	tcc_comparison class operands; eased by removing duplicate code.
+
 2005-10-07  Steve Ellcey  <sje@cup.hp.com>
 
 	* stor-layout.c (layout_type): Do not allow alignment of array

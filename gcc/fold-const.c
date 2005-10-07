@@ -7113,26 +7113,18 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
       return fold_convert (type, tem);
     }
 
-  if (TREE_CODE_CLASS (code) == tcc_comparison
-	   && TREE_CODE (arg0) == COMPOUND_EXPR)
-    return build2 (COMPOUND_EXPR, type, TREE_OPERAND (arg0, 0),
-		   fold_build2 (code, type, TREE_OPERAND (arg0, 1), arg1));
-  else if (TREE_CODE_CLASS (code) == tcc_comparison
-	   && TREE_CODE (arg1) == COMPOUND_EXPR)
-    return build2 (COMPOUND_EXPR, type, TREE_OPERAND (arg1, 0),
-		   fold_build2 (code, type, arg0, TREE_OPERAND (arg1, 1)));
-  else if (TREE_CODE_CLASS (code) == tcc_binary
-	   || TREE_CODE_CLASS (code) == tcc_comparison)
+  if (TREE_CODE_CLASS (code) == tcc_binary
+      || TREE_CODE_CLASS (code) == tcc_comparison)
     {
       if (TREE_CODE (arg0) == COMPOUND_EXPR)
 	return build2 (COMPOUND_EXPR, type, TREE_OPERAND (arg0, 0),
-		       fold_build2 (code, type, TREE_OPERAND (arg0, 1),
-				    arg1));
+		       fold_build2 (code, type,
+				    TREE_OPERAND (arg0, 1), op1));
       if (TREE_CODE (arg1) == COMPOUND_EXPR
 	  && reorder_operands_p (arg0, TREE_OPERAND (arg1, 0)))
 	return build2 (COMPOUND_EXPR, type, TREE_OPERAND (arg1, 0),
 		       fold_build2 (code, type,
-				    arg0, TREE_OPERAND (arg1, 1)));
+				    op0, TREE_OPERAND (arg1, 1)));
 
       if (TREE_CODE (arg0) == COND_EXPR || COMPARISON_CLASS_P (arg0))
 	{

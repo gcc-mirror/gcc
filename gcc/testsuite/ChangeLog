@@ -1,3 +1,8 @@
+2005-10-07  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/24227
+	* gcc.c-torture/compile/pr24227.c: New testcase.
+
 2005-10-07  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc.dg/compat/struct-layout-1_generate.c (generate_fields):
