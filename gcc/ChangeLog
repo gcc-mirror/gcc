@@ -1,5 +1,9 @@
 2005-10-07  James E. Wilson  <wilson@specifix.com>
 
+	PR target/23644
+	* doc/invoke.texi (IA-64 Options, item -mtune): Renamed from
+	-mtune-arch.
+
 	PR target/24193
 	* config/ia64/ia64.md (movbi, movti_internal, gr_spill_internal,
 	fr_spill): Use destination_operand for operand 0.

@@ -9514,8 +9514,8 @@ specified separated by a comma.
 Specify bit size of immediate TLS offsets.  Valid values are 14, 22, and
 64.
 
-@item -mtune-arch=@var{cpu-type}
-@opindex mtune-arch
+@item -mtune=@var{cpu-type}
+@opindex mtune
 Tune the instruction scheduling for a particular CPU, Valid values are
 itanium, itanium1, merced, itanium2, and mckinley.
 
