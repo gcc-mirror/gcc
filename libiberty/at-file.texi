@@ -11,6 +11,5 @@ Options in @var{file} are separated by whitespace.  A whitespace
 character may be included in an option by surrounding the entire
 option in either single or double quotes.  Any character (including a
 backslash) may be included by prefixing the character to be included
-character with a backslash.  The @var{file} may itself contain
-additional @@@var{file} options; any such options will be processed
-recursively.
+with a backslash.  The @var{file} may itself contain additional
+@@@var{file} options; any such options will be processed recursively.
