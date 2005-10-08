@@ -1,3 +1,11 @@
+2005-10-08  Kazu Hirata  <kazu@codesourcery.com>
+
+	PR middle-end/23150
+	* calls.c (mem_overlaps_already_clobbered_arg_p): New.
+	(load_register_parameters): Call it.
+	(check_sibcall_argument_overlap_1): Likewise.
+	(store_one_arg): Likewise.
+
 2005-10-07  James E. Wilson  <wilson@specifix.com>
 
 	* config/ia64/vect.md (ashl<mode>3, ashr<mode>3, lshr<mode>3): Use

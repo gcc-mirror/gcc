@@ -1437,6 +1437,42 @@ rtx_for_function_call (tree fndecl, tree addr)
   return funexp;
 }
 
+/* Return true if and only if SIZE storage units (usually bytes)
+   starting from address ADDR overlap with already clobbered argument
+   area.  This function is used to determine if we should give up a
+   sibcall.  */
+
+static bool
+mem_overlaps_already_clobbered_arg_p (rtx addr, unsigned HOST_WIDE_INT size)
+{
+  HOST_WIDE_INT i;
+
+  if (addr == current_function_internal_arg_pointer)
+    i = 0;
+  else if (GET_CODE (addr) == PLUS
+	   && (XEXP (addr, 0)
+	       == current_function_internal_arg_pointer)
+	   && GET_CODE (XEXP (addr, 1)) == CONST_INT)
+    i = INTVAL (XEXP (addr, 1));
+  else
+    return false;
+
+#ifdef ARGS_GROW_DOWNWARD
+  i = -i - size;
+#endif
+  if (size > 0)
+    {
+      unsigned HOST_WIDE_INT k;
+
+      for (k = 0; k < size; k++)
+	if (i + k < stored_args_map->n_bits
+	    && TEST_BIT (stored_args_map, i + k))
+	  return true;
+    }
+
+  return false;
+}
+
 /* Do the register loads required for any wholly-register parms or any
    parms which are passed both on the stack and in a register.  Their
    expressions were already evaluated.
@@ -1533,6 +1569,12 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	  else if (partial == 0 || args[i].pass_on_stack)
 	    {
 	      rtx mem = validize_mem (args[i].value);
+
+	      /* Check for overlap with already clobbered argument area.  */
+	      if (is_sibcall
+		  && mem_overlaps_already_clobbered_arg_p (XEXP (args[i].value, 0),
+							   size))
+		*sibcall_failure = 1;
 
 	      /* Handle a BLKmode that needs shifting.  */
 	      if (nregs == 1 && size < UNITS_PER_WORD
@@ -1647,7 +1689,6 @@ check_sibcall_argument_overlap_1 (rtx x)
 {
   RTX_CODE code;
   int i, j;
-  unsigned int k;
   const char *fmt;
 
   if (x == NULL_RTX)
@@ -1656,28 +1697,8 @@ check_sibcall_argument_overlap_1 (rtx x)
   code = GET_CODE (x);
 
   if (code == MEM)
-    {
-      if (XEXP (x, 0) == current_function_internal_arg_pointer)
-	i = 0;
-      else if (GET_CODE (XEXP (x, 0)) == PLUS
-	       && XEXP (XEXP (x, 0), 0) ==
-		  current_function_internal_arg_pointer
-	       && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
-	i = INTVAL (XEXP (XEXP (x, 0), 1));
-      else
-	return 0;
-
-#ifdef ARGS_GROW_DOWNWARD
-      i = -i - GET_MODE_SIZE (GET_MODE (x));
-#endif
-
-      for (k = 0; k < GET_MODE_SIZE (GET_MODE (x)); k++)
-	if (i + k < stored_args_map->n_bits
-	    && TEST_BIT (stored_args_map, i + k))
-	  return 1;
-
-      return 0;
-    }
+    return mem_overlaps_already_clobbered_arg_p (XEXP (x, 0),
+						 GET_MODE_SIZE (GET_MODE (x)));
 
   /* Scan all subexpressions.  */
   fmt = GET_RTX_FORMAT (code);
@@ -4080,41 +4101,11 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
     }
 
   /* Check for overlap with already clobbered argument area.  */
-  if ((flags & ECF_SIBCALL) && MEM_P (arg->value))
-    {
-      int i = -1;
-      unsigned HOST_WIDE_INT k;
-      rtx x = arg->value;
-
-      if (XEXP (x, 0) == current_function_internal_arg_pointer)
-	i = 0;
-      else if (GET_CODE (XEXP (x, 0)) == PLUS
-	       && XEXP (XEXP (x, 0), 0) ==
-		  current_function_internal_arg_pointer
-	       && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
-	i = INTVAL (XEXP (XEXP (x, 0), 1));
-      else
-	i = -1;
-
-      if (i >= 0)
-	{
-#ifdef ARGS_GROW_DOWNWARD
-	  i = -i - arg->locate.size.constant;
-#endif
-	  if (arg->locate.size.constant > 0)
-	    {
-	      unsigned HOST_WIDE_INT sc = arg->locate.size.constant;
-
-	      for (k = 0; k < sc; k++)
-		if (i + k < stored_args_map->n_bits
-		    && TEST_BIT (stored_args_map, i + k))
-		  {
-		    sibcall_failure = 1;
-		    break;
-		  }
-	    }
-	}
-    }
+  if ((flags & ECF_SIBCALL)
+      && MEM_P (arg->value)
+      && mem_overlaps_already_clobbered_arg_p (XEXP (arg->value, 0),
+					       arg->locate.size.constant))
+    sibcall_failure = 1;
 
   /* Don't allow anything left on stack from computation
      of argument to alloca.  */
