@@ -1,5 +1,8 @@
 2005-10-07  James E. Wilson  <wilson@specifix.com>
 
+	* config/ia64/vect.md (ashl<mode>3, ashr<mode>3, lshr<mode>3): Use
+	DImode not VECINT24 for operand 2.
+
 	PR target/23644
 	* doc/invoke.texi (IA-64 Options, item -mtune): Renamed from
 	-mtune-arch.

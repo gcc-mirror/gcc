@@ -318,7 +318,7 @@
   [(set (match_operand:VECINT24 0 "gr_register_operand" "=r")
 	(ashift:VECINT24
 	  (match_operand:VECINT24 1 "gr_register_operand" "r")
-	  (match_operand:VECINT24 2 "gr_reg_or_5bit_operand" "rn")))]
+	  (match_operand:DI 2 "gr_reg_or_5bit_operand" "rn")))]
   ""
   "pshl<vecsize> %0 = %1, %2"
   [(set_attr "itanium_class" "mmshf")])
@@ -327,7 +327,7 @@
   [(set (match_operand:VECINT24 0 "gr_register_operand" "=r")
 	(ashiftrt:VECINT24
 	  (match_operand:VECINT24 1 "gr_register_operand" "r")
-	  (match_operand:VECINT24 2 "gr_reg_or_5bit_operand" "rn")))]
+	  (match_operand:DI 2 "gr_reg_or_5bit_operand" "rn")))]
   ""
   "pshr<vecsize> %0 = %1, %2"
   [(set_attr "itanium_class" "mmshf")])
@@ -336,7 +336,7 @@
   [(set (match_operand:VECINT24 0 "gr_register_operand" "=r")
 	(lshiftrt:VECINT24
 	  (match_operand:VECINT24 1 "gr_register_operand" "r")
-	  (match_operand:VECINT24 2 "gr_reg_or_5bit_operand" "rn")))]
+	  (match_operand:DI 2 "gr_reg_or_5bit_operand" "rn")))]
   ""
   "pshr<vecsize>.u %0 = %1, %2"
   [(set_attr "itanium_class" "mmshf")])
