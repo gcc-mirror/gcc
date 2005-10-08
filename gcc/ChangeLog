@@ -1,3 +1,12 @@
+2005-10-08  Janis Johnson  <janis187@us.ibm.com>
+
+        Partial backport from mainline
+	2004-05-04 Paolo Bonzini  <bonzini@gnu.org>
+		   Richard Henderson  <rth@redhat.com>
+	* c-common.c (vector_types_convertible_p): New function.
+	* c-common.h: Declare it.
+	* c-typeck.c (digest_init): Use it.
+
 2005-10-07  James E Wilson  <wilson@specifix.com>
 
 	PR target/23644

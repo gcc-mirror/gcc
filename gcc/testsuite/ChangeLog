@@ -1,3 +1,7 @@
+2005-10-08  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/altivec-pr18583.c: New test.
+
 2005-09-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/23965
