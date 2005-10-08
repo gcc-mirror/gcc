@@ -136,9 +136,7 @@ DEFPARAM (PARAM_MIN_INLINE_RECURSIVE_PROBABILITY,
    optimization to avoid register pressure.  */
 DEFPARAM (PARAM_MAX_VARIABLE_EXPANSIONS,
 	  "max-variable-expansions-in-unroller",
-	  "If -fvariable-expansion-in-unroller is used, the maximum number of \
-           times that an individual variable will be expanded \
-           during loop unrolling",
+	  "If -fvariable-expansion-in-unroller is used, the maximum number of times that an individual variable will be expanded during loop unrolling",
           1, 0, 0)
      
 /* The maximum number of instructions to consider when looking for an
@@ -296,8 +294,7 @@ DEFPARAM(PARAM_SMS_MAX_II_FACTOR,
 	 100, 0, 0)
 DEFPARAM(PARAM_SMS_DFA_HISTORY,
 	 "sms-dfa-history",
-	 "The number of cycles the swing modulo scheduler considers when \
-	  checking conflicts using DFA",
+	 "The number of cycles the swing modulo scheduler considers when checking conflicts using DFA",
 	 0, 0, 0)
 DEFPARAM(PARAM_SMS_LOOP_AVERAGE_COUNT_THRESHOLD,
 	 "sms-loop-average-count-threshold",
