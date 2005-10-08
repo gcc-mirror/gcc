@@ -1,3 +1,9 @@
+2005-10-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/24136
+	* config/rs6000/darwin.md (movdf_low_si): Remove early clobber.
+	Rewrite for no need for the early clobber.
+
 2005-10-08  Kazu Hirata  <kazu@codesourcery.com>
 
 	Merge from csl-arm-branch:
