@@ -1,3 +1,9 @@
+2005-10-07  James E Wilson  <wilson@specifix.com>
+
+	PR target/23644
+	* doc/invoke.texi (IA-64 Options, item -mtune): Renamed from
+	-mtune-arch.
+
 2005-10-06 Uros Bizjak <uros@kss-loka.si>
 
 	PR target/23570
