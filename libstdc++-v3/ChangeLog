@@ -1,3 +1,9 @@
+2005-10-08  Kazu Hirata  <kazu@codesourcery.com>
+
+	Merge from csl-arm-branch:
+	2004-12-15  Daniel Jacobowitz  <dan@codesourcery.com>
+	* libstdc++-v3/config/linker-map.gnu: Add ARM EABI symbols.
+
 2005-10-07  Paolo Carlini  <pcarlini@suse.de>
 
 	Fix libstdc++/24196 for ext/vstring/rc by returning to the behavior

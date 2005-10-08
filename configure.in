@@ -475,6 +475,10 @@ case "${target}" in
   arm-*-elf* | strongarm-*-elf* | xscale-*-elf* | arm*-*-eabi* )
     noconfigdirs="$noconfigdirs target-libffi target-qthreads"
     ;;
+  arm*-*-linux-gnueabi)
+    noconfigdirs="$noconfigdirs target-libffi target-qthreads"
+    noconfigdirs="$noconfigdirs target-libjava target-libobjc"
+    ;;
   arm*-*-symbianelf*)
     noconfigdirs="$noconfigdirs ${libgcj} target-libiberty"
     ;;

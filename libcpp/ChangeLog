@@ -1,3 +1,8 @@
+2005-10-08  Kazu Hirata  <kazu@codesourcery.com>
+
+	* configure.ac: Require 64-bit int for arm*-*-*eabi*.
+	* configure: Regenerate.
+
 2005-10-04  Ian Lance Taylor  <ian@airs.com>
 
 	PR preprocessor/13726

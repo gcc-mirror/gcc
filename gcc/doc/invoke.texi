@@ -7160,7 +7160,7 @@ architectures:
 @item -mabi=@var{name}
 @opindex mabi
 Generate code for the specified ABI@.  Permissible values are: @samp{apcs-gnu},
-@samp{atpcs}, @samp{aapcs} and @samp{iwmmxt}.
+@samp{atpcs}, @samp{aapcs}, @samp{aapcs-linux} and @samp{iwmmxt}.
 
 @item -mapcs-frame
 @opindex mapcs-frame

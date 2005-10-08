@@ -279,7 +279,8 @@ enum arm_abi_type
   ARM_ABI_APCS,
   ARM_ABI_ATPCS,
   ARM_ABI_AAPCS,
-  ARM_ABI_IWMMXT
+  ARM_ABI_IWMMXT,
+  ARM_ABI_AAPCS_LINUX
 };
 
 extern enum arm_abi_type arm_abi;
@@ -499,6 +500,10 @@ extern int arm_structure_size_boundary;
 
 #ifndef SIZE_TYPE
 #define SIZE_TYPE (TARGET_AAPCS_BASED ? "unsigned int" : "long unsigned int")
+#endif
+
+#ifndef PTRDIFF_TYPE
+#define PTRDIFF_TYPE (TARGET_AAPCS_BASED ? "int" : "long int")
 #endif
 
 /* AAPCS requires that structure alignment is affected by bitfields.  */

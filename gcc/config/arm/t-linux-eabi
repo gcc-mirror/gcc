@@ -1,0 +1,7 @@
+# These functions are included in shared libraries.
+TARGET_LIBGCC2_CFLAGS = -fPIC
+
+# We do not build a Thumb multilib for Linux because the definition of
+# CLEAR_INSN_CACHE in linux-gas.h does not work in Thumb mode.
+MULTILIB_OPTIONS	=
+MULTILIB_DIRNAMES	=
