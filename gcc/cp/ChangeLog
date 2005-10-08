@@ -1,3 +1,9 @@
+2005-10-08  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR c++/22172
+	* parser.c (cp_parser_postfix_expression) <RID_TYPENAME>: Treat nontype
+	scopes as nondependent.
+
 2005-10-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* call.c (resolve_args): Remove redundant test.
