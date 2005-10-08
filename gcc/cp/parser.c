@@ -3986,8 +3986,9 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p)
 	  return error_mark_node;
 	/* If we look up a template-id in a non-dependent qualifying
 	   scope, there's no need to create a dependent type.  */
-	else if (TREE_CODE (id) == TYPE_DECL
-	    && !dependent_type_p (parser->scope))
+	if (TREE_CODE (id) == TYPE_DECL
+	    && (!TYPE_P (scope)
+	        || !dependent_type_p (parser->scope)))
 	  type = TREE_TYPE (id);
 	/* Create a TYPENAME_TYPE to represent the type to which the
 	   functional cast is being performed.  */

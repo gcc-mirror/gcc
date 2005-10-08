@@ -1,3 +1,8 @@
+2005-10-08  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR c++/22172
+	* g++.dg/parse/crash30.C: New test.
+
 2005-10-07  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/24227
