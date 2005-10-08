@@ -1,5 +1,13 @@
 2005-10-08  Janis Johnson  <janis187@us.ibm.com>
 
+	PR debug/24267
+	Partial backport from mainline
+	2004-05-04 Paolo Bonzini  <bonzini@gnu.org>
+		   Richard Henderson  <rth@redhat.com>
+	* tree.c (make_or_reuse_type): New.
+	(build_common_tree_nodes): Use it.
+
+	PR target/18583
         Partial backport from mainline
 	2004-05-04 Paolo Bonzini  <bonzini@gnu.org>
 		   Richard Henderson  <rth@redhat.com>

@@ -1,5 +1,9 @@
 2005-10-08  Janis Johnson  <janis187@us.ibm.com>
 
+	PR debug/24267
+	* gcc.dg/debug/dwarf2/dwarf-altivec1.c: New test.
+
+	PR target/18583
 	* gcc.dg/altivec-pr18583.c: New test.
 
 2005-09-21  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
