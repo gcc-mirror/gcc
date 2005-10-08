@@ -81,17 +81,21 @@
 #define ENDFILE_SPEC \
   "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
 
-#undef  LINK_SPEC
-#define LINK_SPEC "%{h*} %{version:-v} \
+#define LINUX_TARGET_INTERPRETER "/lib/ld-linux.so.2"
+
+#define LINUX_TARGET_LINK_SPEC  "%{h*} %{version:-v} \
    %{b} \
    %{static:-Bstatic} \
    %{shared:-shared} \
    %{symbolic:-Bsymbolic} \
    %{rdynamic:-export-dynamic} \
-   %{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.2} \
+   %{!dynamic-linker:-dynamic-linker " LINUX_TARGET_INTERPRETER "} \
    -X \
    %{mbig-endian:-EB}" \
    SUBTARGET_EXTRA_LINK_SPEC
+
+#undef  LINK_SPEC
+#define LINK_SPEC LINUX_TARGET_LINK_SPEC
 
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\

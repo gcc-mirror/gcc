@@ -1,3 +1,46 @@
+2005-10-08  Kazu Hirata  <kazu@codesourcery.com>
+
+	Merge from csl-arm-branch:
+	2005-09-07  Paul Brook  <paul@codesourcery.com>
+	* config/arm/linux-eabi.h (SUBTARGET_EXTRA_LINK_SPEC): Prepend a
+	space to string.
+
+	2005-04-30  Paul Brook  <paul@codesourcery.com>
+	* config/arm/bpabi.h (TARGET_DEFAULT): Define.
+	* config/arm/linux-eabi.h (SUBTARGET_CPU_DEFAULT): Define.
+
+	2005-03-07  Daniel Jacobowitz  <dan@codesourcery.com>
+	* config/arm/arm.c (arm_all_abis): Add aapcs-linux.
+	(arm_override_options): Use TARGET_AAPCS_BASED.
+	* config/arm/arm.h (enum arm_abi_type): Add ARM_ABI_AAPCS_LINUX.
+	(PTRDIFF_TYPE): Use int for AAPCS.
+	(DEFAULT_SHORT_ENUMS): Use false for aapcs-linux.
+	* config/arm/linux-eabi.h (ARM_DEFAULT_ABI, WCHAR_TYPE): Define.
+	(DEFAULT_SHORT_ENUMS): Delete.
+	* doc/invoke.texi (ARM Options): Document -mabi=aapcs-linux.
+
+	2004-12-15  Daniel Jacobowitz  <dan@codesourcery.com>
+	* config/arm/arm.h (DEFAULT_SHORT_ENUMS): Wrap in #ifndef.
+	* config/arm/linux-eabi.h (DEFAULT_SHORT_ENUMS): Define to 0.
+	* config/arm/t-linux-eabi (TARGET_LIBGCC2_CFLAGS): Set to -fPIC.
+
+	2004-12-03  Mark Mitchell  <mark@codesourcery.com>
+	* config/arm/linux-eabi.h (LIBGCC_SPEC): Do not define.
+
+	2004-11-22  Mark Mitchell  <mark@codesourcery.com>
+	* config.gcc (arm*-*-linux-gnueabi): Use __cxa_atexit.
+ 
+	2004-11-19  Mark Mitchell  <mark@codesourcery.com>
+	* config.gcc (arm*-*-linux-gnueabi): Add it.
+	* config/arm/bpabi.h (FPUTYPE_DEFAULT): Undefine it before
+	redefining it.
+	(TARGET_OS_CPP_BUILTINS): Likeiwse.
+	* config/arm/linux-eabi.h: New file.
+	* config/arm/linux-elf.h (LINUX_TARGET_INTERPRETER): New macro.
+	(LINUX_TARET_LINK_SPEC): Likewise.
+	(LINK_SPEC): Use it.
+	* config/arm/t-linux-eabi: New file.
+
 2005-10-08  Steven Bosscher  <stevenb@suse.de>
 
 	PR other/22202
