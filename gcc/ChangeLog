@@ -1,3 +1,10 @@
+2005-10-08  Steven Bosscher  <stevenb@suse.de>
+
+	PR other/22202
+	* params.def (PARAM_MAX_VARIABLE_EXPANSIONS): Remove superfluous
+	spaces.
+	(PARAM_SMS_DFA_HISTORY): Likewise.
+
 2005-10-08  Kazu Hirata  <kazu@codesourcery.com>
 
 	PR middle-end/23150
