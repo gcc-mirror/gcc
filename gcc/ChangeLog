@@ -1,3 +1,7 @@
+2005-10-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/gmon-sol2.c (internal_mcount): Mark as used.
+
 2005-10-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/24136
