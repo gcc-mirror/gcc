@@ -2007,11 +2007,13 @@ convert_step (struct loop *loop, tree new_type, tree base, tree step,
 
 /* Frees the information on upper bounds on numbers of iterations of LOOP.  */
 
-static void
+void
 free_numbers_of_iterations_estimates_loop (struct loop *loop)
 {
   struct nb_iter_bound *bound, *next;
-  
+
+  loop->nb_iterations = NULL;
+  loop->estimated_nb_iterations = NULL;
   for (bound = loop->bounds; bound; bound = next)
     {
       next = bound->next;

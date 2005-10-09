@@ -2020,6 +2020,12 @@ remove_bb (basic_block bb)
 	{
 	  loop->latch = NULL;
 	  loop->header = NULL;
+
+	  /* Also clean up the information associated with the loop.  Updating
+	     it would waste time. More importantly, it may refer to ssa
+	     names that were defined in other removed basic block -- these
+	     ssa names are now removed and invalid.  */
+	  free_numbers_of_iterations_estimates_loop (loop);
 	}
     }
 
