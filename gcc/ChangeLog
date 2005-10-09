@@ -1,3 +1,11 @@
+2005-10-09  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/24226
+	* tree-cfg.c (remove_bb): Clean up unreachable loops.
+	* tree-flow.h (free_numbers_of_iterations_estimates_loop): Declare.
+	* tree-ssa-loop-niter.c (free_numbers_of_iterations_estimates_loop):
+	Export.
+
 2005-10-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/gmon-sol2.c (internal_mcount): Mark as used.
