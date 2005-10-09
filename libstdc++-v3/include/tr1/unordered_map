@@ -59,7 +59,7 @@ namespace tr1
 			Hash, Internal::mod_range_hashing,
 			Internal::default_ranged_hash,
 			Internal::prime_rehash_policy,
-			cache_hash_code, true, true>
+			cache_hash_code, false, true>
     {
       typedef hashtable <Key, std::pair<const Key, T>,
 			 Alloc,
@@ -67,7 +67,7 @@ namespace tr1
 			 Hash, Internal::mod_range_hashing,
 			 Internal::default_ranged_hash,
 			 Internal::prime_rehash_policy,
-			 cache_hash_code, true, true>
+			 cache_hash_code, false, true>
         Base;
 
     public:
@@ -110,7 +110,7 @@ namespace tr1
 			Hash, Internal::mod_range_hashing,
 			Internal::default_ranged_hash,
 			Internal::prime_rehash_policy,
-			cache_hash_code, true, false>
+			cache_hash_code, false, false>
     {
       typedef hashtable <Key, std::pair<const Key, T>,
 			 Alloc,
@@ -118,7 +118,7 @@ namespace tr1
 			 Hash, Internal::mod_range_hashing,
 			 Internal::default_ranged_hash,
 			 Internal::prime_rehash_policy,
-			 cache_hash_code, true, false>
+			 cache_hash_code, false, false>
         Base;
 
     public:
