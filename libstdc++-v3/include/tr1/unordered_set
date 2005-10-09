@@ -57,14 +57,14 @@ namespace tr1
 		       Hash, Internal::mod_range_hashing,
 		       Internal::default_ranged_hash,
 		       Internal::prime_rehash_policy,
-		       cache_hash_code, false, true>
+		       cache_hash_code, true, true>
     {
       typedef hashtable<Value, Value, Alloc,
 			Internal::identity<Value>, Pred,
 			Hash, Internal::mod_range_hashing,
 			Internal::default_ranged_hash,
 			Internal::prime_rehash_policy,
-			cache_hash_code, false, true>
+			cache_hash_code, true, true>
         Base;
 
     public:
@@ -106,14 +106,14 @@ namespace tr1
 			Hash, Internal::mod_range_hashing,
 			Internal::default_ranged_hash,
 			Internal::prime_rehash_policy,
-			cache_hash_code, false, false>
+			cache_hash_code, true, false>
     {
       typedef hashtable<Value, Value, Alloc,
 			Internal::identity<Value>, Pred,
 			Hash, Internal::mod_range_hashing,
 			Internal::default_ranged_hash,
 			Internal::prime_rehash_policy,
-			cache_hash_code, false, false>
+			cache_hash_code, true, false>
         Base;
 
     public:

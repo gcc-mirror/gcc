@@ -1,3 +1,32 @@
+2005-10-09  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/24061 (issue 6.19)
+	* include/tr1/hashtable (struct node_const_iterator, struct
+	hashtable_const_iterator): New, add const variants to enable separate
+	overloadings for iterator and const_iterator in unordered_set and
+	unordered_multiset (as required by issue 6.19).
+	(class hashtable): Change the mutable_iterators template parameter
+	to constant_iterators and adjust throughout the logic.
+	(hashtable::insert(iterator, const value_type&), erase(iterator)
+	erase(iterator, iterator)): New, as per issue 6.19.
+	(hashtable::m_erase(node*, node**)): New, called by erase(iterator)
+	and erase(const_iterator).
+	(hashtable::Insert_Conv_Type): New, used by insert(iterator,
+	const value_type&) and insert(const_iterator, const value_type&)
+	to delegate the work to insert(const value_type&).
+	* include/tr1/unordered_map (class unordered_map, unordered_multimap):
+	Adjust typedefs.
+	* include/tr1/unordered_set (class unordered_set, unordered_multiset):
+	Likewise.
+	* testsuite/tr1/6_containers/unordered/erase/24061-map.cc: New.
+	* testsuite/tr1/6_containers/unordered/erase/24061-multimap.cc: New.
+	* testsuite/tr1/6_containers/unordered/erase/24061-multiset.cc: New.
+	* testsuite/tr1/6_containers/unordered/erase/24061-set.cc: New.
+	* testsuite/tr1/6_containers/unordered/insert/24061-map.cc: New.
+	* testsuite/tr1/6_containers/unordered/insert/24061-multimap.cc: New.
+	* testsuite/tr1/6_containers/unordered/insert/24061-multiset.cc: New.
+	* testsuite/tr1/6_containers/unordered/insert/24061-set.cc: New.
+
 2005-10-08  Kazu Hirata  <kazu@codesourcery.com>
 
 	Merge from csl-arm-branch:
