@@ -1,3 +1,9 @@
+2005-10-10  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libjava.lang/ExtraClassLoader.out: New file.
+	* testsuite/libjava.lang/TestProxy.java (MyInvocationHandler):
+	Now static.
+
 2005-10-05  Richard Henderson  <rth@redhat.com>
 
 	PR target/23602
