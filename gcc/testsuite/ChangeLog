@@ -5,6 +5,7 @@
 	* gcc.dg/ucnid-4.c: Likewise.
 	* gcc.dg/tree-ssa/gen-vect-25.c (main): Return a value.
 	* g++.dg/other/ucnid-1.C: Likewise.
+	* gcc.dg/sparc-frame-1.c: New test.
 
 2005-10-10  Mark Mitchell  <mark@codesourcery.com>
 

@@ -1,3 +1,8 @@
+2005-10-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/24284
+	* config/sparc/sparc.c (sparc_expand_prologue): Remove bogus PATTERN.
+
 2005-10-10  Maciej W. Rozycki  <macro@linux-mips.org>
 
 	* gcc.c (do_spec_1): Accept numeric characters in file name
