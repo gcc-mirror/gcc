@@ -8904,9 +8904,18 @@ cp_parser_template_argument_list (cp_parser* parser)
   tree *arg_ary = fixed_args;
   tree vec;
   bool saved_in_template_argument_list_p;
+  bool saved_ice_p;
+  bool saved_non_ice_p;
 
   saved_in_template_argument_list_p = parser->in_template_argument_list_p;
   parser->in_template_argument_list_p = true;
+  /* Even if the template-id appears in an integral
+     constant-expression, the contents of the argument list do 
+     not.  */ 
+  saved_ice_p = parser->integral_constant_expression_p;
+  parser->integral_constant_expression_p = false;
+  saved_non_ice_p = parser->non_integral_constant_expression_p;
+  parser->non_integral_constant_expression_p = false;
   do
     {
       tree argument;
@@ -8940,6 +8949,8 @@ cp_parser_template_argument_list (cp_parser* parser)
 
   if (arg_ary != fixed_args)
     free (arg_ary);
+  parser->non_integral_constant_expression_p = saved_non_ice_p;
+  parser->integral_constant_expression_p = saved_ice_p;
   parser->in_template_argument_list_p = saved_in_template_argument_list_p;
   return vec;
 }
