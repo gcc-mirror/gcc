@@ -11558,12 +11558,15 @@ instantiate_decl (tree d, int defer_ok,
 	  && !DECL_INITIAL (d) 
 	  && DECL_INITIAL (code_pattern))
 	{
+	  tree ns = decl_namespace_context (d);
+	  push_nested_namespace (ns);
 	  push_nested_class (DECL_CONTEXT (d));
 	  DECL_INITIAL (d)
 	    = tsubst_expr (DECL_INITIAL (code_pattern), 
 			   args,
 			   tf_error | tf_warning, NULL_TREE);
 	  pop_nested_class ();
+	  pop_nested_namespace (ns);
 	}
 
       /* We restore the source position here because it's used by
