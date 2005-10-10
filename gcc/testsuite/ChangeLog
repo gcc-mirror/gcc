@@ -1,3 +1,10 @@
+2005-10-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/ucnid-2.c: XFAIL on Solaris.
+	* gcc.dg/ucnid-3.c: Likewise.
+	* gcc.dg/ucnid-4.c: Likewise.
+	* g++.dg/other/ucnid-1.C: Likewise.
+
 2005-10-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24139
