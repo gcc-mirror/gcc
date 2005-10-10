@@ -48,7 +48,7 @@ int main_1 (int n, int *p)
 
 int main (int n)
 {
-  main_1 (n + 2, &n);
+  return main_1 (n + 2, &n);
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" } } */
