@@ -1,3 +1,8 @@
+2005-10-10  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.c: Remove extraneous whitespace.  Remove comment
+	describing the deleted arm_gen_rotated_half_load function.
+
 2005-10-09  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (emit_fpu_switch): Set TREE_PUBLIC for
