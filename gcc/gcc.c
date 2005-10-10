@@ -380,7 +380,7 @@ or with constant text in a single argument.
 	chosen in a way that is hard to predict even when previously
 	chosen file names are known.  For example, `%g.s ... %g.o ... %g.s'
 	might turn into `ccUVUUAU.s ccXYAXZ12.o ccUVUUAU.s'.  SUFFIX matches
-	the regexp "[.A-Za-z]*%O"; "%O" is treated exactly as if it
+	the regexp "[.0-9A-Za-z]*%O"; "%O" is treated exactly as if it
 	had been pre-processed.  Previously, %g was simply substituted
 	with a file name chosen once per compilation, without regard
 	to any appended suffix (which was therefore treated just like
@@ -4705,7 +4705,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		arg_going = 1;
 
 		/* consume suffix */
-		while (*p == '.' || ISALPHA ((unsigned char) *p))
+		while (*p == '.' || ISALNUM ((unsigned char) *p))
 		  p++;
 		if (p[0] == '%' && p[1] == 'O')
 		  p += 2;
@@ -4717,7 +4717,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	    if (use_pipes)
 	      {
 		/* consume suffix */
-		while (*p == '.' || ISALPHA ((unsigned char) *p))
+		while (*p == '.' || ISALNUM ((unsigned char) *p))
 		  p++;
 		if (p[0] == '%' && p[1] == 'O')
 		  p += 2;
@@ -4735,14 +4735,14 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		const char *suffix = p;
 		char *saved_suffix = NULL;
 
-		while (*p == '.' || ISALPHA ((unsigned char) *p))
+		while (*p == '.' || ISALNUM ((unsigned char) *p))
 		  p++;
 		suffix_length = p - suffix;
 		if (p[0] == '%' && p[1] == 'O')
 		  {
 		    p += 2;
 		    /* We don't support extra suffix characters after %O.  */
-		    if (*p == '.' || ISALPHA ((unsigned char) *p))
+		    if (*p == '.' || ISALNUM ((unsigned char) *p))
 		      fatal ("spec '%s' has invalid '%%0%c'", spec, *p);
 		    if (suffix_length == 0)
 		      suffix = TARGET_OBJECT_SUFFIX;

@@ -1,3 +1,8 @@
+2005-10-10  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* gcc.c (do_spec_1): Accept numeric characters in file name
+	suffixes.
+
 2005-10-10  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.c: Remove extraneous whitespace.  Remove comment
