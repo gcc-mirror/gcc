@@ -437,9 +437,7 @@ dump_aggr_type (tree t, int flags)
       typdef = !DECL_ARTIFICIAL (name);
       tmplate = !typdef && TREE_CODE (t) != ENUMERAL_TYPE
                 && TYPE_LANG_SPECIFIC (t) && CLASSTYPE_TEMPLATE_INFO (t)
-                && (CLASSTYPE_TEMPLATE_SPECIALIZATION (t)
-                    || TREE_CODE (CLASSTYPE_TI_TEMPLATE (t)) != TEMPLATE_DECL
-                    || DECL_TEMPLATE_SPECIALIZATION (CLASSTYPE_TI_TEMPLATE (t))
+                && (TREE_CODE (CLASSTYPE_TI_TEMPLATE (t)) != TEMPLATE_DECL
                     || PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t)));
       dump_scope (CP_DECL_CONTEXT (name), flags | TFF_SCOPE);
       if (tmplate)
@@ -1182,9 +1180,7 @@ dump_function_name (tree t, int flags)
 
   if (DECL_TEMPLATE_INFO (t)
       && !DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (t)
-      && (DECL_TEMPLATE_SPECIALIZATION (t)
-	  || TREE_CODE (DECL_TI_TEMPLATE (t)) != TEMPLATE_DECL
-	  || DECL_TEMPLATE_SPECIALIZATION (DECL_TI_TEMPLATE (t))
+      && (TREE_CODE (DECL_TI_TEMPLATE (t)) != TEMPLATE_DECL
 	  || PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (t))))
     dump_template_parms (DECL_TEMPLATE_INFO (t), !DECL_USE_TEMPLATE (t), flags);
 }

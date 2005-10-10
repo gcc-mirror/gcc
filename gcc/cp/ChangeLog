@@ -1,3 +1,12 @@
+2005-10-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24139
+	* decl.c (grokdeclarator): Do not require template parameter lists
+	for explicitly specialized class.
+	* error.c (dump_aggr_type): Do not dump template arguments for
+	non-primary specializations.
+	(dump_function_name): Likewise.
+
 2005-10-07  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline

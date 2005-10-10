@@ -7372,9 +7372,13 @@ grokdeclarator (const cp_declarator *declarator,
 
 	     is correct; there shouldn't be a `template <>' for the
 	     definition of `S<int>::f'.  */
-	  if (CLASSTYPE_TEMPLATE_INFO (t)
-	      && (CLASSTYPE_TEMPLATE_INSTANTIATION (t)
-		  || uses_template_parms (CLASSTYPE_TI_ARGS (t)))
+	  if (CLASSTYPE_TEMPLATE_SPECIALIZATION (t)
+	      && !any_dependent_template_arguments_p (CLASSTYPE_TI_ARGS (t)))
+	    /* T is an explicit (not partial) specialization.  All
+	       containing classes must therefore also be explicitly
+	       specialized.  */
+	    break;
+	  if ((CLASSTYPE_USE_TEMPLATE (t) || CLASSTYPE_IS_TEMPLATE (t))
 	      && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t)))
 	    template_count += 1;
 
