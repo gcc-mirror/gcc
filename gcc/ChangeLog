@@ -1,3 +1,8 @@
+2005-10-09  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (emit_fpu_switch): Set TREE_PUBLIC for
+	__fpscr_values.
+
 2005-10-09  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config.gcc (arm*-*-linux*): Remove redundant extra_parts and
