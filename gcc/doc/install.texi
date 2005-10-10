@@ -2728,8 +2728,8 @@ longer a multiple of 2 bytes.
 @heading @anchor{hppa-hp-hpux}hppa*-hp-hpux*
 Support for HP-UX version 9 and older was discontinued in GCC 3.4.
 
-We @emph{highly} recommend using gas/binutils on all hppa platforms;
-you may encounter a variety of problems when using the HP assembler.
+We require using gas/binutils on all hppa platforms;
+you may encounter a variety of problems if you try to use the HP assembler.
 
 Specifically, @option{-g} does not work on HP-UX (since that system
 uses a peculiar debugging format which GCC does not know about), unless
@@ -2738,8 +2738,7 @@ you use GAS and GDB@.  It may be helpful to configure GCC with the
 @option{--with-as=@dots{}} options to ensure that GCC can find GAS@.
 
 If you wish to use the pa-risc 2.0 architecture support with a 32-bit
-runtime, you must use either the HP assembler, or gas/binutils 2.11
-or newer.
+runtime, you must use gas/binutils 2.11 or newer.
 
 There are two default scheduling models for instructions.  These are
 PROCESSOR_7100LC and PROCESSOR_8000.  They are selected from the pa-risc
