@@ -1,3 +1,16 @@
+2005-10-09  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config.gcc (arm*-*-linux*): Remove redundant extra_parts and
+	gnu_ld assignments.
+	* config/arm/t-linux-eabi (LIB1ASMFUNCS)
+	(EXTRA_MULTILIB_PARTS): Define.
+	* config/arm/linux-elf.h (NO_IMPLICIT_EXTERN_C, CPLUSPLUS_CPP_SPEC)
+	(STARTFILE_SPEC, ENDFILE_SPEC, CC1_SPEC)
+	(LINK_GCC_C_SEQUENCE_SPEC, USE_LD_AS_NEEDED): Move to...
+	* config/arm/uclinux-elf.h (NO_IMPLICIT_EXTERN_C, CPLUSPLUS_CPP_SPEC)
+	(STARTFILE_SPEC, ENDFILE_SPEC, CC1_SPEC)
+	(LINK_GCC_C_SEQUENCE_SPEC, USE_LD_AS_NEEDED): ... here.
+
 2005-10-09  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/24226

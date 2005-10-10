@@ -673,8 +673,6 @@ arm*-*-netbsd*)
 arm*-*-linux*)			# ARM GNU/Linux with ELF
 	tm_file="dbxelf.h elfos.h linux.h arm/elf.h arm/linux-gas.h arm/linux-elf.h" 
 	tmake_file="${tmake_file} t-linux arm/t-arm"
-	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-	gnu_ld=yes
 	case ${target} in
 	arm*-*-linux-gnueabi)
 	    tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h"
