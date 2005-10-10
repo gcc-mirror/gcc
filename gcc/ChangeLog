@@ -1,3 +1,11 @@
+2005-10-10  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/12098
+	* configure.ac: Move gas check from mips specific case to common case.
+	Do check for GNU as for mips*-*-* and *-*-hpux* targets.
+	* configure: Regenerate
+	* doc/install.texi: Update.
+
 2005-10-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/24284

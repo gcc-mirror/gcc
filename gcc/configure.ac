@@ -2772,7 +2772,14 @@ LCF0:
        then target_cpu_default=MASK_EXPLICIT_RELOCS
        else target_cpu_default="($target_cpu_default)|MASK_EXPLICIT_RELOCS"
        fi])
+    ;;
+esac
 
+# Mips and HP-UX need the GNU assembler.
+# Linux on IA64 might be able to use the Intel assembler.
+
+case "$target" in
+  mips*-*-* | *-*-hpux* )
     if test x$gas_flag = xyes \
        || test x"$host" != x"$build" \
        || test ! -x "$gcc_cv_as" \
@@ -2784,6 +2791,7 @@ LCF0:
     fi
     ;;
 esac
+
 # ??? Not all targets support dwarf2 debug_line, even within a version
 # of gas.  Moreover, we need to emit a valid instruction to trigger any
 # info to the output file.  So, as supported targets are added to gas 2.11,
