@@ -1,3 +1,11 @@
+2005-10-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24139
+	* g++.dg/template/spec27.C: New test. 
+
+	PR c++/24275
+	* g++.dg/template/static19.C: New test.
+
 2005-10-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/20050922-1.c: Skip on Solaris 2.5.1 to 9.
