@@ -1,3 +1,10 @@
+2005-10-08  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24275
+	* pt.c (instantiate_decl): Instantiate the initializer of
+	a static data member in the namespace containing the class
+	containing the static data member.
+
 2005-10-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24139
