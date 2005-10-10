@@ -4601,7 +4601,7 @@ sparc_expand_prologue (void)
 	  insn = emit_insn (gen_stack_pointer_inc (reg));
 	  REG_NOTES (insn) =
 	    gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-			       PATTERN (gen_stack_pointer_inc (GEN_INT (-actual_fsize))),
+			       gen_stack_pointer_inc (GEN_INT (-actual_fsize)),
 			       REG_NOTES (insn));
 	}
 
