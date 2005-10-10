@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-fextended-identifiers" } */
-/* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "*" } { "" } } */
+/* { dg-xfail-if "" { powerpc-ibm-aix* *-*-solaris2.* } { "*" } { "" } } */
 #include <cstdlib>
 
 int \u00C0(void) { return 1; }

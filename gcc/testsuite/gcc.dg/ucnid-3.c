@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "*" } { "" } } */
+/* { dg-xfail-if "" { powerpc-ibm-aix* *-*-solaris2.* } { "*" } { "" } } */
 /* { dg-options "-std=c99 -fextended-identifiers" } */
 void abort (void);
 
