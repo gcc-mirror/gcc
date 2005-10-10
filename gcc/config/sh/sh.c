@@ -7872,6 +7872,7 @@ emit_fpu_switch (rtx scratch, int index)
       DECL_IGNORED_P (t) = 1;
       DECL_EXTERNAL (t) = 1;
       TREE_STATIC (t) = 1;
+      TREE_PUBLIC (t) = 1;
       TREE_USED (t) = 1;
 
       fpscr_values = t;
