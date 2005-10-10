@@ -6154,8 +6154,8 @@ uninstall-info: uninstall-info-recursive
 # recompiles to native code.
 Makefile.deps: $(srcdir)/Makefile.in
 	@: $(call write_entries_to_file,$(all_java_source_files),files.tmplist)
-	echo 's,^\(.*\)/\([^/]*\)\.java$$,\1.list: &\' > tmpsed
-	echo '\1/\2.class: \1.stamp,' >> tmpsed
+	echo 's,^\(.*\)/\([^/]*\)\.java$$,@1.list: &\' | sed 's/@/\\/g' > tmpsed
+	echo '@1/@2.class: @1.stamp,' | sed 's/@/\\/g' >> tmpsed
 	sed -ftmpsed files.tmplist > Makefile.deps
 	rm files.tmplist tmpsed
 
