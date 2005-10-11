@@ -910,7 +910,10 @@ convert_to_void (tree expr, const char *implicit)
 
   if (expr != error_mark_node && !VOID_TYPE_P (TREE_TYPE (expr)))
     {
-      if (implicit && warn_unused_value && !TREE_NO_WARNING (expr))
+      if (implicit
+	  && warn_unused_value
+	  && !TREE_NO_WARNING (expr)
+	  && !processing_template_decl)
 	{
 	  /* The middle end does not warn about expressions that have
 	     been explicitly cast to void, so we must do so here.  */
