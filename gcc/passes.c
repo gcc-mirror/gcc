@@ -595,12 +595,7 @@ init_optimization_passes (void)
 
   p = &pass_vectorize.sub;
   NEXT_PASS (pass_lower_vector_ssa);
-  /* ??? The loop optimizers are not GC safe.  See PR 21805.
-     Turn off GC while registering this pass.  */
-  pass_dce.todo_flags_finish &= ~TODO_ggc_collect;
-  NEXT_PASS (pass_dce);
-  pass_dce.todo_flags_finish |= TODO_ggc_collect;
-  gcc_assert (p != &pass_dce.next);
+  NEXT_PASS (pass_dce_loop);
   *p = NULL;
 
   p = &pass_loop2.sub;
