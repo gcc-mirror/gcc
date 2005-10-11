@@ -1,3 +1,9 @@
+2005-10-11  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/24281
+	* gcc.dg/compat/struct-layout-1_generator.c (generate_fields):
+	Check for null pointer.
+
 2005-10-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21369

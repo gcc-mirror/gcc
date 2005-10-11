@@ -1749,6 +1749,7 @@ generate_fields (enum FEATURE features, struct entry *e, struct entry *parent,
 	     size will result in a compiler error.  */
 
 	  if ((e[n].etype == ETYPE_ARRAY)
+	      && e[n].attrib != NULL
 	      && (strncmp (e[n].attrib, "atal", 4) == 0))
             e[n].attrib = NULL;
 	}
