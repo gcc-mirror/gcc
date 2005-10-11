@@ -1179,6 +1179,10 @@ check_for_out_of_scope_variable (tree decl)
     return decl;
 
   DECL_ERROR_REPORTED (decl) = 1;
+
+  if (TREE_TYPE (decl) == error_mark_node)
+    return decl;
+
   if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (decl)))
     {
       error ("name lookup of `%D' changed for new ISO `for' scoping",

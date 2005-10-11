@@ -1,3 +1,21 @@
+2005-10-11  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	Backport:
+	2004-09-23  Andrew Pinski  <pinskia@physics.uc.edu>
+	PR c++/17618
+	* cvt.c (cp_convert_to_pointer): Return early when the type is
+	an error_mark_node.
+
+	2004-05-22  Roger Sayle  <roger@eyesopen.com>
+	* name-lookup.c (check_for_out_of_scope_variable): Avoid ICE by
+	returning when TREE_TYPE is error_mark_node.
+	* typeck.c (require_complete_type): Return error_mark_node if
+	value's type is an error_mark_node.
+
+	2004-11-02  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/18177
+	* typeck.c (build_const_cast): Use error_operand_p.
+
 2005-10-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* call.c (resolve_args): Remove redundant test.
