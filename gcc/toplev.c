@@ -859,7 +859,7 @@ check_global_declaration_1 (tree decl)
       && ! TREE_USED (decl)
       /* The TREE_USED bit for file-scope decls is kept in the identifier,
 	 to handle multiple external decls in different scopes.  */
-      && ! TREE_USED (DECL_NAME (decl))
+      && ! (DECL_NAME (decl) && TREE_USED (DECL_NAME (decl)))
       && ! DECL_EXTERNAL (decl)
       && ! TREE_PUBLIC (decl)
       /* A volatile variable might be used in some non-obvious way.  */

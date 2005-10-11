@@ -1,3 +1,8 @@
+2005-10-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24302
+	* g++.dg/warn/Wunused-12.C: New test.
+
 2005-10-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/sparc-frame-1.c: New test.
