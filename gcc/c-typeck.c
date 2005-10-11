@@ -3799,13 +3799,11 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
   else if (codel == UNION_TYPE && TYPE_TRANSPARENT_UNION (type)
 	   && (errtype == ic_argpass || errtype == ic_argpass_nonproto))
     {
-      tree memb_types;
-      tree marginal_memb_type = 0;
+      tree memb, marginal_memb = NULL_TREE;
 
-      for (memb_types = TYPE_FIELDS (type); memb_types;
-	   memb_types = TREE_CHAIN (memb_types))
+      for (memb = TYPE_FIELDS (type); memb ; memb = TREE_CHAIN (memb))
 	{
-	  tree memb_type = TREE_TYPE (memb_types);
+	  tree memb_type = TREE_TYPE (memb);
 
 	  if (comptypes (TYPE_MAIN_VARIANT (memb_type),
 			 TYPE_MAIN_VARIANT (rhstype)))
@@ -3837,8 +3835,8 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 		    break;
 
 		  /* Keep looking for a better type, but remember this one.  */
-		  if (!marginal_memb_type)
-		    marginal_memb_type = memb_type;
+		  if (!marginal_memb)
+		    marginal_memb = memb;
 		}
 	    }
 
@@ -3852,13 +3850,13 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 	    }
 	}
 
-      if (memb_types || marginal_memb_type)
+      if (memb || marginal_memb)
 	{
-	  if (!memb_types)
+	  if (!memb)
 	    {
 	      /* We have only a marginally acceptable member type;
 		 it needs a warning.  */
-	      tree ttl = TREE_TYPE (marginal_memb_type);
+	      tree ttl = TREE_TYPE (TREE_TYPE (marginal_memb));
 	      tree ttr = TREE_TYPE (rhstype);
 
 	      /* Const and volatile mean something different for function
@@ -3893,12 +3891,14 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 					"from pointer target type"),
 				     G_("return discards qualifiers from "
 					"pointer target type"));
+
+	      memb = marginal_memb;
 	    }
 
 	  if (pedantic && (!fundecl || !DECL_IN_SYSTEM_HEADER (fundecl)))
 	    pedwarn ("ISO C prohibits argument conversion to union type");
 
-	  return build1 (NOP_EXPR, type, rhs);
+	  return build_constructor_single (type, memb, rhs);
 	}
     }
 

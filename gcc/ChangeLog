@@ -1,5 +1,11 @@
 2005-10-11  Richard Henderson  <rth@redhat.com>
 
+	PR c/24255
+	* c-typeck.c (convert_for_assignment): Use build_constructor_single
+	to initialize a transparent union instead of a nop_expr.
+
+2005-10-11  Richard Henderson  <rth@redhat.com>
+
 	* Makefile.in (tree-ssa-dce.o): Depend on SCEV_H.
 	* tree-ssa-dce.c: Include tree-scalar-evolution.h.
 	(tree_ssa_dce_loop): Call scev_reset.
