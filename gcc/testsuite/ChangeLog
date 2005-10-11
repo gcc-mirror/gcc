@@ -1,3 +1,8 @@
+2005-10-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21369
+	* g++.dg/init/member1.C: Tweak error markers.
+
 2005-10-11  Janis Johnson  <janis187@us.ibm.com>
 
 	PR testsuite/24281
