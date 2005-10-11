@@ -1,3 +1,10 @@
+2005-10-11  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR middle-end/24263 
+	* convert.c (convert_to_real): Revert 2005-10-05 patch.
+	Only apply the optimization for rounding builtins if the inner
+	cast is also an extension.
+
 2005-10-11  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/23946
