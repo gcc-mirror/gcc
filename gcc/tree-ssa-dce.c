@@ -65,6 +65,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "timevar.h"
 #include "flags.h"
 #include "cfgloop.h"
+#include "tree-scalar-evolution.h"
 
 static struct stmt_stats
 {
@@ -947,6 +948,7 @@ tree_ssa_dce_loop (void)
 {
   perform_tree_ssa_dce (/*aggressive=*/false);
   free_numbers_of_iterations_estimates (current_loops);
+  scev_reset ();
 }
 
 static void
@@ -1023,4 +1025,3 @@ struct tree_opt_pass pass_cd_dce =
     | TODO_verify_flow,			/* todo_flags_finish */
   0					/* letter */
 };
-

@@ -1,5 +1,9 @@
 2005-10-11  Richard Henderson  <rth@redhat.com>
 
+	* Makefile.in (tree-ssa-dce.o): Depend on SCEV_H.
+	* tree-ssa-dce.c: Include tree-scalar-evolution.h.
+	(tree_ssa_dce_loop): Call scev_reset.
+
 	PR tree-opt/24300
 	* Makefile.in (tree-ssa-dce.o): Depend on CFGLOOP_H.
 	* tree-ssa-dce.c: Include cfgloop.h.
