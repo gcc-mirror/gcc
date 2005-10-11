@@ -10066,6 +10066,8 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	     declaration context.  */
 
 	  tag_scope ts;
+	  bool template_p;
+
 	  if (is_friend)
 	    /* Friends have special name lookup rules.  */
 	    ts = ts_within_enclosing_non_class;
@@ -10082,8 +10084,11 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	    warning (OPT_Wattributes,
 		     "type attributes are honored only at type definition");
 
-	  type = xref_tag (tag_type, identifier, ts,
-			   parser->num_template_parameter_lists);
+	  template_p = 
+	    (parser->num_template_parameter_lists
+	     && (cp_parser_next_token_starts_class_definition_p (parser)
+		 || cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON)));
+	  type = xref_tag (tag_type, identifier, ts, template_p);
 	}
     }
   if (tag_type != enum_type)
