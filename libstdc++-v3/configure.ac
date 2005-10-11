@@ -13,7 +13,7 @@ AC_CONFIG_HEADER(config.h)
 ### am handles this now?  ORIGINAL_LD_FOR_MULTILIBS=$LD
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:6:0
+libtool_VERSION=6:7:0
 AC_SUBST(libtool_VERSION)
 
 # Find the rest of the source tree framework.
