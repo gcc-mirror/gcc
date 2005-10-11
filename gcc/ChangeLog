@@ -1,3 +1,8 @@
+2005-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (movsi_1, movdi_1_rex64): Use mmxadd type
+	for setting MMX register to 0 rather than mmx.
+
 2005-10-10  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/12098
