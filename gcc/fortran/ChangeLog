@@ -1,3 +1,9 @@
+2005-10-11  Steven G. Kargl <kargls@comcast.net>
+
+	PR fortran/20786
+	*iresolve.c (gfc_resolve_aint, gfc_resolve_anint ): Type conversion 
+	of the argument.
+
 2005-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* f95-lang.c (gfc_init_decl_processing): Initialize

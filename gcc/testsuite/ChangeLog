@@ -1,5 +1,10 @@
 2005-10-11  Steven G. Kargl  <kargls@comcast.net>
 
+	PR fortran/20786
+	gfortran.dg/aint_anint_1.f90: New test.
+
+2005-10-11  Steven G. Kargl  <kargls@comcast.net>
+
 	PR libgfortran/24313
 	gfortran.dg/csqrt.f: New test.
 
