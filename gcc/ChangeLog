@@ -1,3 +1,9 @@
+2005-10-11  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/23946
+	* tree-ssa-ccp.c (execute_fold_all_builtins): Call
+	mark_new_vars_to_rename instead of update_stmt.
+
 2005-10-11  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/crti.s (__init, __fini): Renamed from _init, _fini.
