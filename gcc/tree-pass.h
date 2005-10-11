@@ -243,6 +243,7 @@ extern struct tree_opt_pass pass_build_ssa;
 extern struct tree_opt_pass pass_del_ssa;
 extern struct tree_opt_pass pass_dominator;
 extern struct tree_opt_pass pass_dce;
+extern struct tree_opt_pass pass_dce_loop;
 extern struct tree_opt_pass pass_cd_dce;
 extern struct tree_opt_pass pass_merge_phi;
 extern struct tree_opt_pass pass_may_alias;
