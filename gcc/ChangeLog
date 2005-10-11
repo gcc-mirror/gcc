@@ -1,3 +1,7 @@
+2005-10-11  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/crti.s (__init, __fini): Renamed from _init, _fini.
+
 2005-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.md (movsi_1, movdi_1_rex64): Use mmxadd type

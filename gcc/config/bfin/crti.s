@@ -35,13 +35,13 @@ Boston, MA 02110-1301, USA.  */
 	.ident  "GNU C crti.o"
 
 	.section .init
-	.globl  _init
-	.type   _init,@function
-_init:
+	.globl  __init
+	.type   __init,@function
+__init:
 	LINK 0;
 
 	.section .fini
-	.globl  _fini
-	.type   _fini,@function
-_fini:
+	.globl  __fini
+	.type   __fini,@function
+__fini:
 	LINK 0; 
