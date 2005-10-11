@@ -1,3 +1,8 @@
+2005-10-11  Steven G. Kargl  <kargls@comcast.net>
+
+	PR libgfortran/24313
+	gfortran.dg/csqrt.f: New test.
+
 2005-10-11  Ian Lance Taylor  <ian@airs.com>
 
 	PR c++/8057

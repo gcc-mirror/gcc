@@ -1,3 +1,10 @@
+2005-10-11  Steven G. Kargl  <kargls@comcast.net>
+
+	PR libgfortran/24313
+	*  c99_functions.c (csqrtf, csqrt): Fix choice of branch cut.  Note
+	csqrt{f} were imported from glibc, and this bug is still present 
+	there. glibc PR is 1146.
+
 2005-10-07  Janne Blomqvist <jblomqvi@cc.hut.fi>
 
 	PR fortran/16339
