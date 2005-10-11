@@ -11521,13 +11521,19 @@ instantiate_decl (tree d, int defer_ok, int undefined_ok)
 	  && !DECL_INITIAL (d) 
 	  && DECL_INITIAL (code_pattern))
 	{
-	  tree ns = decl_namespace_context (d);
+	  tree ns;
+	  tree init;
+
+	  ns = decl_namespace_context (d);
 	  push_nested_namespace (ns);
 	  push_nested_class (DECL_CONTEXT (d));
-	  DECL_INITIAL (d)
-	    = tsubst_expr (DECL_INITIAL (code_pattern), 
-			   args,
-			   tf_error | tf_warning, NULL_TREE);
+	  init = tsubst_expr (DECL_INITIAL (code_pattern), 
+			      args,
+			      tf_error | tf_warning, NULL_TREE);
+	  DECL_INITIAL (d) = NULL_TREE;
+	  finish_static_data_member_decl (d, init, 
+					  /*asmspec_tree=*/NULL_TREE,
+					  LOOKUP_ONLYCONVERTING);
 	  pop_nested_class ();
 	  pop_nested_namespace (ns);
 	}
