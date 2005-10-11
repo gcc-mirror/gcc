@@ -1,5 +1,14 @@
 2005-10-11  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/21089
+	* call.c (convert_like_real): Use decl_constant_value, not
+	integral_constant_value.
+	* init.c (constant_value_1): New function.
+	(integral_constant_value): Use it.
+	(decl_constant_value): Likewise.
+	* typeck.c (decay_conversion): Use decl_constant_value, not
+	integral_constant_value.
+
 	PR c++/21369
 	* parser.c (cp_parser_elaborated_type_specifier): Don't treat
 	class types as templates if the type is not appearing as part of a
