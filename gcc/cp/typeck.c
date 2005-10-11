@@ -1368,7 +1368,7 @@ decay_conversion (tree exp)
       return error_mark_node;
     }
 
-  exp = integral_constant_value (exp);
+  exp = decl_constant_value (exp);
   
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
      Leave such NOP_EXPRs, since RHS is being used in non-lvalue context.  */

@@ -1,5 +1,10 @@
 2005-10-11  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/21089
+	* g++.dg/init/float1.C: New test.
+
+2005-10-11  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/24277
 	* g++.dg/init/member1.C: Tweak error markers.
 
