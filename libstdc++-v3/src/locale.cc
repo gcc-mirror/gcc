@@ -33,6 +33,13 @@
 #include <cwctype>     // For towupper, etc.
 #include <locale>
 #include <bits/atomicity.h>
+#include <bits/concurrence.h>
+
+namespace __gnu_internal
+{
+  // Mutex object for cache access
+  static __glibcxx_mutex_define_initialized(locale_cache_mutex);
+}
 
 namespace std 
 {
@@ -363,6 +370,23 @@ namespace std
 		_M_caches[__i] = 0;
 	      }
 	  }
+      }
+  }
+
+  void
+  locale::_Impl::
+  _M_install_cache(const facet* __cache, size_t __index)
+  {
+    __gnu_cxx::lock sentry(__gnu_internal::locale_cache_mutex);
+    if (_M_caches[__index] != 0)
+      {
+	// Some other thread got in first.
+	delete __cache;
+      }
+    else
+      {
+	__cache->_M_add_reference();
+	_M_caches[__index] = __cache;
       }
   }
 

@@ -1,3 +1,17 @@
+2005-10-10  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.ac (libtool_VERSION): To 6:7:0.
+	* configure: Regenerate.
+	* testsuite/testsuite_abi.cc (check_version): Add GLIBCXX_3.4.7.
+	* config/linker-map.gnu: Export locale::_Impl::_M_install_cache.
+
+2005-10-10  Ian Lance Taylor  <ian@airs.com>
+
+	PR libstdc++/13583
+	* include/bits/locale_classes.h (locale::_Impl::_M_install_cache):
+	Move out of line.
+	* src/locale.cc: Define here, add mutex.
+
 2005-10-09  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/24061 (issue 6.19)
