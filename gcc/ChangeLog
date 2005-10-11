@@ -1,3 +1,8 @@
+2005-10-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24302
+	* toplev.c (check_global_declaration_1): Robustify.
+
 2005-10-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/24284
