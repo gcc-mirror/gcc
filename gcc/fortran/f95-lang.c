@@ -568,6 +568,7 @@ gfc_init_decl_processing (void)
   build_common_tree_nodes (false, false);
   set_sizetype (long_unsigned_type_node);
   build_common_tree_nodes_2 (0);
+  void_list_node = build_tree_list (NULL_TREE, void_type_node);
 
   /* Set up F95 type nodes.  */
   gfc_init_kinds ();
