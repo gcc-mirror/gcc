@@ -1,3 +1,9 @@
+2005-10-11  Ian Lance Taylor  <ian@airs.com>
+
+	PR c++/8057
+	* cvt.c (convert_to_void): Don't warn about unused values when
+	processing a template declaration.
+
 2005-10-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21089
