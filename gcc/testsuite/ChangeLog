@@ -1,3 +1,8 @@
+2005-10-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/19964
+	* g++.dg/parse/crash31.C: New.
+
 2005-10-12  Razya Ladelsky <razya@il.ibm.com>
 
         * g++.dg/ipa/ipa-1.c: New test.
