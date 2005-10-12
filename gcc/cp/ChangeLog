@@ -1,5 +1,13 @@
 2005-10-12  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/21592
+	* pt.c (build_non_dependent_expr): Don't wrap a COMPONENT_REF
+	with already looked up member functions.  Assert we're not
+	returning a NON_DEPENDENT_EXPR with unknown type.
+	* typeck.c (finish_class_member_access_expr):  We can get
+	non-template-id-expr baselinks.  If the lookup finds a baselink,
+	remember it even inside templates.
+
 	PR c++/23797
 	* parser.c (cp_parser_functional_cast): Cope when TYPE is not a
 	TYPE_DECL.  Use dependent_type_p to check type.

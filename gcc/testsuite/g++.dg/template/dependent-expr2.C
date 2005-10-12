@@ -18,6 +18,6 @@ struct B
 {
   bool bar(A& a)
   {
-    return a.foo == 0; // { dg-error "insufficient context" "" }
+    return a.foo == 0; // { dg-error "" "" }
   }
 };
