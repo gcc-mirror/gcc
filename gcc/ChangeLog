@@ -1,3 +1,7 @@
+2005-10-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/t-linux (LIMITS_H_TEST): Define.
+
 2005-10-12  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/23324
