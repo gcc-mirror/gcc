@@ -1,7 +1,16 @@
-2005-10-11  Steven G. Kargl <kargls@comcast.net>
+2005-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-common.c (build_field): Fix comment typo.
+	(create_common): Set backend_decl of COMMON or EQUIVALENCEd
+	variables to a VAR_DECL with the COMPONENT_REF in
+	DECL_HAS_VALUE_EXPR rather than COMPONENT_REF directly.
+	* f95-lang.c (gfc_expand_function): Emit debug info for
+	EQUIVALENCEd variables if the equiv union is going to be output.
+
+2005-10-11  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/20786
-	*iresolve.c (gfc_resolve_aint, gfc_resolve_anint ): Type conversion 
+	* iresolve.c (gfc_resolve_aint, gfc_resolve_anint): Type conversion
 	of the argument.
 
 2005-10-11  Jakub Jelinek  <jakub@redhat.com>
@@ -707,7 +716,7 @@
 	* scanner.c (preprocessor_line): Don't write beyond the end of flag
 	buffer.
 
-2005-08-07   Janne Blomqvist <jblomqvi@cc.hut.fi>
+2005-08-07   Janne Blomqvist  <jblomqvi@cc.hut.fi>
 
 	PR fortran/22390 
 	* dump-parse-tree.c (gfc_show_code_node): Add case for FLUSH.
@@ -998,7 +1007,7 @@
 
 	* all files: Update FSF address in copyright headers.
 
-2005-06-24  Jerry DeLisle <jvdelisle@verizon.net>
+2005-06-24  Jerry DeLisle  <jvdelisle@verizon.net>
 
 	PR fortran/21915
 	* gfortran.h: Add symbols for new intrinsic functions.
@@ -1055,7 +1064,7 @@
 	in a warning message.
 
 2005-06-18  Erik Edelman  <eedelman@acclab.helsinki.fi>
-	    Steven G. Kargl <kargls@comast.net>
+	    Steven G. Kargl  <kargls@comast.net>
 
 	PR fortran/19926
 	* primary.c (gfc_match_rvalue):  expr_type can be EXPR_CONSTANT
@@ -1127,7 +1136,7 @@
 	* trans-decl.c (gfc_build_builtin_function_decls): update declaration
 	* trans-stmt.c (gfc_trans_deallocate): Implement STAT= feature.
 
-2005-06-07  Jerry DeLisle <jvdelisle@verizon.net>
+2005-06-07  Jerry DeLisle  <jvdelisle@verizon.net>
 
 	* intrinsic.texi: Add documentation for	dcmplx, digits,
 	dim, idim, ddim, dot_product, dprod, dreal, and dtime.
@@ -1160,7 +1169,7 @@
 	* array.c (gfc_match_array_constructor): Disallow empty array
 	constructor.
 
-2005-06-03  Jerry DeLisle <jvdelisle@verizon.net>
+2005-06-03  Jerry DeLisle  <jvdelisle@verizon.net>
 
 	* fortran/intrinsic.texi: Add documentation for
 	command_argument_count, conjg, dconjg, count,
@@ -1312,7 +1321,7 @@
 	gfc_type_letter (BT_COMPLEX) for complex to
 	to resolved function name.
 
-2005-05-18 Erik Edelmann <erik.edelmann@iki.fi>
+2005-05-18  Erik Edelmann  <erik.edelmann@iki.fi>
 
 	* array.c (gfc_match_array_constructor): Support [ ... ]
 	style array constructors.
@@ -1367,8 +1376,8 @@
 	(gfc_trans_where_2): Initialize mask indexes before calling
 	gfc_trans_nested_forall_loop.
 
-2005-05-15  Feng Wang <fengwang@nudt.edu.cn>
-	Jerry DeLisle <jvdelisle@verizon.net>
+2005-05-15  Feng Wang  <fengwang@nudt.edu.cn>
+	Jerry DeLisle  <jvdelisle@verizon.net>
 
 	PR fortran/17432
 	* trans-stmt.c (gfc_trans_label_assign): fix pointer type, to 
@@ -1563,7 +1572,7 @@
 	* resolve.c (resolve_variable): If e->symtree is not set, this
 	ought to be a FAILURE, and not a segfault.
 
-2005-04-17  Paul Thomas <pault@gcc.gnu.org>
+2005-04-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/17472
 	PR fortran/18209
@@ -2986,7 +2995,7 @@
 
 	* gfortran.texi: Fix a typo.
 
-2004-09-15  Aaron W. LaFramboise <aaronavay62@aaronwl.com>
+2004-09-15  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	* parse.c (eof_buf): Rename eof to eof_buf.
 	(unexpected_eof): Same.
@@ -4379,7 +4388,7 @@
 	unused variables if they're use associated.
 
 2004-06-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
-	Andrew Vaught <andyv@firstinter.net>
+	Andrew Vaught  <andyv@firstinter.net>
 
 	PR fortran/14928
 	* gfortran.h (gfc_check_f): Add new field f3ml.
@@ -4746,7 +4755,7 @@
 
 	* arith.c: Fix comment typos.
 
-2004-05-15  Tobias Schlueter <tobias.schlueter@physik.uni-muenchen.de>
+2004-05-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/13742
 	* decl.c (add_init_expr_to_sym): Verify that COMMON variable is
@@ -4849,7 +4858,7 @@
 
 	* decl.c (variable_decl): Always apply default initializer.
 
-2004-05-08  Tobias Schlüter <tobias.schlueter@physik.uni-muenchen.de>
+2004-05-08  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/15206
 	* trans-intrinsic.c (gfc_conv_intrinsic_rrspacing): Fixed to
@@ -4933,20 +4942,20 @@
 	* primary.c (match_digits, match_integer_constant): Add comment
 	explaining signflag.
 
-2004-05-01  Tobias Schlüter <tobias.schlueter@physik.uni-muenchen.de>
+2004-05-01  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/13940
 	* primary.c: Include system.h and flags.h, needed for pedantic.
 	(match_boz_constant): Allow "x" for hexadecimal constants, warn if
 	pedantic is set.
 
-2004-05-01  Tobias Schlüter <tobias.schlueter@physik.uni-muenchen.de>
+2004-05-01  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/13940
 	* match.c (match_data_constant): Handle case where
 	gfc_find_symbol	sets sym to NULL
 
-2004-04-28  Tobias Schlüter <tobias.schlueter@physik.uni-muenchen.de>
+2004-04-28  Tobias Schlüter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* Make-lang.in (f95-lang.o, trans-intrinsic.o): Add missing
 	dependency on mathbuiltins.def
@@ -5257,7 +5266,7 @@
 
 	* resolve.c (resolve_branch): Get error message right way round.
 
-2004-01-10  Canqun Yang <canqun@nudt.edu.cn>
+2004-01-10  Canqun Yang  <canqun@nudt.edu.cn>
 
 	* trans-array (gfc_conv_loop_setup): Adjust comment to track
 	reality.
@@ -5346,7 +5355,7 @@
 	(GFC_DECL_ASSIGN_ADDR(node)): New macro to access this.
 	(GFC_DECL_ASSIGN(node)): New macro to access flag.
 
-2003-12-31  Huang Chun <chunhuang73@hotmail.com>
+2003-12-31  Huang Chun  <chunhuang73@hotmail.com>
 
 	PR fortran/13434
 	* trans-intrinsic.c (gfc_conv_intrinsic_minmaxval): Fixed bug in
@@ -5363,7 +5372,7 @@
 	* trans-expr.c (gfc_conv_expr_op): Fold the result expression.
 	* trans.c (gfc_add_modify_expr, gfc_add_expr_to_block): Likewise.
 
-2003-12-12  Huang Chun <chunhuang73@hotmail.com>
+2003-12-12  Huang Chun  <chunhuang73@hotmail.com>
 
 	* primary.c (match_substring): Fix substring bug for start point
 	or end point is NULL.
@@ -5408,7 +5417,7 @@
 
 	* io.c (gfc_match_format): Check for missing format label.
 
-2003-11-30 Huang Chun <chunhuang73@hotmail.com>
+2003-11-30 Huang Chun  <chunhuang73@hotmail.com>
 
 	PR fortran/13155
 	* trans-decl.c (gfc_sym_mangled_function_id): Don't mangle symbols
@@ -5444,7 +5453,7 @@
 
 	* trans.c (gfc_create_var_np): Use create_tmp_var_raw.
 
-2003-11-28 Huang Chun <chunhuang73@hotmail.com>
+2003-11-28 Huang Chun  <chunhuang73@hotmail.com>
 
 	* trans.h (has_alternate_specifier): New global variable.
 	* match.c (gfc_match_call): Handle actual arguments associated with
@@ -7865,7 +7874,7 @@
 	NON_LVALUE_EXPR.
 	* trans-stmt.c (g95_trans_arithmetic_if): Implement this.
 
-2002-09-18  Steven Bosscher <s.bosscher@student.tudelft.nl>
+2002-09-18  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
 	* Make-lang.in (F95_ADDITIONAL_OBJS): Add tree-ssa-dce.o
 
@@ -7943,7 +7952,7 @@
 	* trans-intrinsic.c: Implement PRODUCT, COUNT. MINLOC and MAXLOC
 	intrinsics.
 
-2002-09-02  Steven Bosscher <s.bosscher@student.tudelft.nl>
+2002-09-02  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
 	* trans-array.c, trans-types.c:	Add rank information to descriptor.
 
@@ -7960,7 +7969,7 @@
 	* trans-types.c (g95_init_types): Always name integer and char types.
 	(g95_get_array_type_bounds): TYPE_NAME may be a TYPE_DECL.
 
-2002-09-02  Steven Bosscher <s.bosscher@student.tudelft.nl>
+2002-09-02  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
 	* Make-lang.in: Add options.c to F95_PARSER_OBJS
 
