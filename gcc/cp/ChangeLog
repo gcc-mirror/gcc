@@ -1,3 +1,9 @@
+2005-10-12  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c++/24052
+	* error.c (dump_expr): Pass LABEL_DECL to dump_decl.  Print
+	an ADDR_EXPR of a LABEL_DECL as &&.
+
 2005-10-11  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	Backport:
