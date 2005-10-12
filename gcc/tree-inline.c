@@ -257,25 +257,9 @@ remap_decl (tree decl, inline_data *id)
 }
 
 static tree
-remap_type (tree type, inline_data *id)
+remap_type_1 (tree type, inline_data *id)
 {
-  splay_tree_node node;
   tree new, t;
-
-  if (type == NULL)
-    return type;
-
-  /* See if we have remapped this type.  */
-  node = splay_tree_lookup (id->decl_map, (splay_tree_key) type);
-  if (node)
-    return (tree) node->value;
-
-  /* The type only needs remapping if it's variably modified.  */
-  if (! variably_modified_type_p (type, id->callee))
-    {
-      insert_decl_map (id, type, type);
-      return type;
-    }
 
   /* We do need a copy.  build and register it now.  If this is a pointer or
      reference type, remap the designated type and make a new pointer or
@@ -353,7 +337,18 @@ remap_type (tree type, inline_data *id)
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
-      walk_tree (&TYPE_FIELDS (new), copy_body_r, id, NULL);
+      {
+	tree f, nf = NULL;
+
+	for (f = TYPE_FIELDS (new); f ; f = TREE_CHAIN (f))
+	  {
+	    t = remap_decl (f, id);
+	    DECL_CONTEXT (t) = new;
+	    TREE_CHAIN (t) = nf;
+	    nf = t;
+	  }
+	TYPE_FIELDS (new) = nreverse (nf);
+      }
       break;
 
     case OFFSET_TYPE:
@@ -366,6 +361,29 @@ remap_type (tree type, inline_data *id)
   walk_tree (&TYPE_SIZE_UNIT (new), copy_body_r, id, NULL);
 
   return new;
+}
+
+static tree
+remap_type (tree type, inline_data *id)
+{
+  splay_tree_node node;
+
+  if (type == NULL)
+    return type;
+
+  /* See if we have remapped this type.  */
+  node = splay_tree_lookup (id->decl_map, (splay_tree_key) type);
+  if (node)
+    return (tree) node->value;
+
+  /* The type only needs remapping if it's variably modified.  */
+  if (! variably_modified_type_p (type, id->callee))
+    {
+      insert_decl_map (id, type, type);
+      return type;
+    }
+
+  return remap_type_1 (type, id);
 }
 
 static tree
@@ -2958,4 +2976,24 @@ static inline bool
 inlining_p (inline_data * id)
 {
   return (!id->saving_p && !id->cloning_p && !id->versioning_p);
+}
+
+/* Duplicate a type, fields and all.  */
+
+tree
+build_duplicate_type (tree type)
+{
+  inline_data id;
+
+  memset (&id, 0, sizeof (id));
+  id.callee = current_function_decl;
+  id.caller = current_function_decl;
+  id.callee_cfun = cfun;
+  id.decl_map = splay_tree_new (splay_tree_compare_pointers, NULL, NULL);
+
+  type = remap_type_1 (type, &id);
+
+  splay_tree_delete (id.decl_map);
+
+  return type;
 }

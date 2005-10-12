@@ -3019,14 +3019,6 @@ The @var{tls_model} argument should be one of @code{global-dynamic},
 
 Not all targets support this attribute.
 
-@item transparent_union
-This attribute, attached to a function parameter which is a union, means
-that the corresponding argument may have the type of any union member,
-but the argument is passed as if its type were that of the first union
-member.  For more details see @xref{Type Attributes}.  You can also use
-this attribute on a @code{typedef} for a union data type; then it
-applies to all function parameters with that type.
-
 @item unused
 This attribute, attached to a variable, means that the variable is meant
 to be possibly unused.  GCC will not produce a warning for this
