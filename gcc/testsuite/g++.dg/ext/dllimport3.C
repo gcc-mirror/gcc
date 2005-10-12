@@ -4,22 +4,21 @@
 // redefinition without attribute.
  
 struct Foo
- {
-     int a;
- };
+{
+  int a;
+};
 
  __attribute__((dllimport)) struct Foo f;
 
- void Bar(void)
- {
-     void* dummy = &f;
- }
+void Bar(void)
+{
+  void* dummy  = (void*) &f;
+}
 
- struct Foo f;	// { dg-warning "defined" }
+struct Foo f;	// { dg-warning "referenced with dll linkage" }
 
-// Dllimport sets DECL_NON_ADDR_CONST_P to 1, so following
+// Dllimport'd symbols do not have a constant address, so following
 // assignment would require static_initialization_and_destruction
 // if attribute is retained. 
 
- void* dummy = &f;
- 
+void* dummy = &f;

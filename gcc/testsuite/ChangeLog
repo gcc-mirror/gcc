@@ -1,3 +1,16 @@
+2005-10-12  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* gcc.dg/dll-2.c: Add tests for warnings.
+	* gcc.dg/dll-3.c: Likewise.
+	* gcc.dg/dll-4.c: Likewise.
+
+	* g++.dg/ext/dllimport1.C: Adjust tests for warnings.
+	* g++.dg/ext/dllimport2.C: Likewise.
+	* g++.dg/ext/dllimport3.C: Likewise.
+	* g++.dg/ext/dllimport7.C: Likewise.
+	* g++.dg/ext/dllimport8.C: Likewise.
+	* g++.dg/ext/dllimport9.C: Likewise.
+
 2005-10-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24092

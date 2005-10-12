@@ -1,3 +1,62 @@
+2005-10-12  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR middle-end/21275
+	PR middle-end/21766
+	* target.h (struct gcc_target): Add valid_dllimport_attribute_p
+	target hook.
+	(struct cxx): Add adjust_class_at_definition target hook.
+	* target-def.h: (TARGET_VALID_DLLIMPORT_ATTRIBUTE_P): New define,
+	defaulting to hook_bool_tree_true. Add to TARGET_INITIALIZER
+	(TARGET_CXX_ADJUST_CLASS_AT_DEFINITION): New define, defaulting to 
+	hook_void_tree. Add to TARGET_CXX.
+	* tree.h (struct decl_with_vis): Rename non_addr_const_p field to
+	dllimport_flag.
+	(DECL_NON_ADDR_CONSTANT_P): Replace with DECL_DLLIMPORT_P macro.
+	* tree.c (merge_dllimport_decl_attributes): Check DECL_DLLIMPORT_P
+	instead of attribute. Check for dllexport override.  Warn if
+	inconsistent dll linkage. Don't lose old dllimport if decl has
+	had address referenced.   Tweak lookup of dllimport atribute.  
+	(handle_dll_attribute): Check targetm.valid_dllimport_attribute_p
+	for target specific rules.  Don't add dllimport attribute if
+	DECL_DECLARED_INLINE_P.  Set DECL_DLLIMPORT_P when adding
+	dllimport attribute. 
+	(staticp): Replace DECL_NON_ADDR_CONSTANT_P with DECL_DLLIMPORT_P.
+	* varasm.c (initializer_constant_valid_p): Replace
+	DECL_NON_ADDR_CONSTANT_P with DECL_DLLIMPORT_P
+
+	PR target/21801
+	PR target/23589
+	* config.gcc (i[34567]86-*-cygwin*): Add winnt-cxx.o to 
+	'cxx_target_objs', winnt-stubs,o to 'extra_objs'.
+	(i[34567]86-*-mingw32*): Likewise.
+
+	* doc/tm.texi (TARGET_CXX_ADJUST_CLASS_AT_DEFINITION): Document.
+	(TARGET_VALID_DLLIMPORT_ATTRIBUTE_P): Document.
+			
+	* config/i386/winnt.c (i386_pe_dllimport_p): Factor out
+	C++-specific code. Change return value to bool. 
+	(i386_pe_dllimport_p): Likewise.
+	(associated_type): Simplify and make language-independent
+	(i386_pe_encode_section_info): Replace override of ambiguous
+	dllimport symbol refs with a gcc_assert.
+	(i386_pe_valid_dllimport_attribute_p): Define.
+	* config/i386/winnt-cxx.c: New file. Define C++ versions of
+	i386_pe_type_dllimport_p, i386_pe_type_dllexport_p,
+	i386_pe_adjust_class_at_definition.
+	* config/i386/winnt-stubs.c: New file. Define stub versions of
+	lang-specific functions.
+	* config/i386/i386-protos.h: Declare winnt-[cxx|stubs].c functions
+	i386_pe_type_dllimport_p, i386_pe_type_dllexport_p, 
+	i386_pe_adjust_class_at_definition.
+	(i386_pe_valid_dllimport_attribute_p): Declare. 
+	* config/i386/cygming.h (TARGET_VALID_DLLIMPORT_ATTRIBUTE_P): Define.
+	(TARGET_CXX_ADJUST_CLASS_AT_DEFINITION): Define.
+	* config/i386/t-cygming: Add rules for winnt-cxx.o, winnt-stubs.o.
+
+	PR target/19704
+	* config/i386/i386.c (ix86_function_ok_for_sibcall): Replace test for
+	dllimport attribute with test of DECL_DLLIMPORT_P.
+
 2005-10-12  Adrian Straetling <straetling@de.ibm.com>
 
 	* combine.c (make_extraction): Correct offset computation.

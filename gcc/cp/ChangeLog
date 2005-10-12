@@ -1,3 +1,11 @@
+2005-10-12  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR target/21801
+	PR target/23589
+	* class.c (finish_struct_1): Call
+	targetm.cxx.adjust_class_at_definition.
+
+
 2005-10-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/21592

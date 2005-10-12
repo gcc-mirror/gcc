@@ -5,10 +5,10 @@
 /* { dg-do compile { target i?86-pc-mingw* } } */
 
 __declspec (dllimport) int foo1 ();
-__declspec (dllexport) int foo1 ();
+__declspec (dllexport) int foo1 ();	/* { dg-warning "previous dllimport ignored" } */
 
 __declspec (dllexport) int foo2 ();
-__declspec (dllimport) int foo2 ();
+__declspec (dllimport) int foo2 ();	/* { dg-warning "dllimport ignored" } */
 
 __declspec (dllexport) int foo1 () { return foo2 (); }
 __declspec (dllexport) int foo2 () { return foo1 (); }

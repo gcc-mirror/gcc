@@ -3,10 +3,10 @@
 /* { dg-do compile { target i?86-pc-mingw* } } */
 
 __declspec (dllimport) int foo1;
-int foo1;
+int foo1;	/* { dg-warning "redeclared without dllimport" } */
 
 __declspec (dllimport) int foo2;
-int foo2 = 5;
+int foo2 = 5;	/* { dg-warning "redeclared without dllimport" } */
 
 int f () { return foo1 + foo2; }
 
