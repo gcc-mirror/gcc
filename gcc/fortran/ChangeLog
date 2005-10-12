@@ -1,5 +1,13 @@
 2005-10-12  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/20847
+	PR fortran/20856
+	* symbol.c (check_conflict): Prevent common variables and
+	function results from having the SAVE attribute,as required
+	by the standard.
+
+2005-10-12  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/24207
 	* resolve.c (resolve_symbol): Exclude use and host associated
 	symbols from the test for private objects in a public namelist.
