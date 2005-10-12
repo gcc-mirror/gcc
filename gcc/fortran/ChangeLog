@@ -1,3 +1,10 @@
+2005-10-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/18082
+	* decl.c (variable_decl): Make a new copy of the character
+	length for each variable, when the expression is not a
+	constant.
+
 2005-10-12  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* gfortran.h: Add bitmasks for different FPE traps. Add fpe
