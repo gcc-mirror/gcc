@@ -1295,6 +1295,7 @@ dump_expr (tree t, int flags)
     case FUNCTION_DECL:
     case TEMPLATE_DECL:
     case NAMESPACE_DECL:
+    case LABEL_DECL:
     case OVERLOAD:
     case IDENTIFIER_NODE:
       dump_decl (t, (flags & ~TFF_DECL_SPECIFIERS) | TFF_NO_FUNCTION_ARGUMENTS);
@@ -1537,6 +1538,8 @@ dump_expr (tree t, int flags)
 	  || (TREE_TYPE (t)
 	      && TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE))
 	dump_expr (TREE_OPERAND (t, 0), flags | TFF_EXPR_IN_PARENS);
+      else if (TREE_CODE (TREE_OPERAND (t, 0)) == LABEL_DECL)
+	dump_unary_op ("&&", t, flags);
       else
 	dump_unary_op ("&", t, flags);
       break;
