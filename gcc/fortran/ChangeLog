@@ -1,3 +1,19 @@
+2005-10-12  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* gfortran.h: Add bitmasks for different FPE traps. Add fpe
+	member to options_t.
+	* invoke.texi: Document the new -ffpe-trap option.
+	* lang.opt: Add -ffpe-trap option.
+	* options.c (gfc_init_options): Initialize the FPE option.
+	(gfc_handle_fpe_trap_option): New function to parse the argument
+	of the -ffpe-trap option.
+	(gfc_handle_option): Add case for -ffpe-trap.
+	* trans-decl.c: Declare a tree for the set_fpe library function.
+	(gfc_build_builtin_function_decls): Build this tree.
+	(gfc_generate_function_code): Generate a call to set_fpe at
+	the beginning of the main program.
+	* trans.h: New tree for the set_fpe library function.
+
 2005-10-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/20847
@@ -34,7 +50,7 @@
 
 2005-10-07  Erik Edelmann  <erik.edelmann@iki.fi>
 
-        PR 18568
+	PR 18568
 	* resolve.c (find_array_spec): Search through the list of
 	components in the symbol of the type instead of the symbol of the
 	variable.

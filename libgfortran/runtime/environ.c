@@ -533,30 +533,6 @@ static variable variable_table[] = {
    show_precision,
    "Precision of intermediate results.  Values are 24, 53 and 64.", 0},
 
-  {"GFORTRAN_FPU_INVALID", 1, &options.fpu_invalid, init_boolean,
-   show_boolean,
-   "Raise a floating point exception on invalid FP operation.", 0},
-
-  {"GFORTRAN_FPU_DENORMAL", 1, &options.fpu_denormal, init_boolean,
-   show_boolean,
-   "Raise a floating point exception when denormal numbers are encountered.",
-   0},
-
-  {"GFORTRAN_FPU_ZERO", 0, &options.fpu_zerodiv, init_boolean, show_boolean,
-   "Raise a floating point exception when dividing by zero.", 0},
-
-  {"GFORTRAN_FPU_OVERFLOW", 0, &options.fpu_overflow, init_boolean,
-   show_boolean,
-   "Raise a floating point exception on overflow.", 0},
-
-  {"GFORTRAN_FPU_UNDERFLOW", 0, &options.fpu_underflow, init_boolean,
-   show_boolean,
-   "Raise a floating point exception on underflow.", 0},
-
-  {"GFORTRAN_FPU_PRECISION", 0, &options.fpu_precision_loss, init_boolean,
-   show_boolean,
-   "Raise a floating point exception on precision loss.", 0},
-
   {NULL, 0, NULL, NULL, NULL, NULL, 0}
 };
 

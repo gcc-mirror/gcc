@@ -337,8 +337,7 @@ typedef struct
   int mem_check;
   int use_stderr, all_unbuffered, default_recl;
 
-  int fpu_round, fpu_precision, fpu_invalid, fpu_denormal, fpu_zerodiv,
-    fpu_overflow, fpu_underflow, fpu_precision_loss;
+  int fpu_round, fpu_precision, fpe;
 
   int sighup, sigint;
 }
@@ -410,6 +409,14 @@ error_codes;
 #define GFC_STD_F95_OBS         (1<<1)    /* Obsoleted in F95.  */
 #define GFC_STD_F77             (1<<0)    /* Up to and including F77.  */
 
+/* Bitmasks for the various FPE that can be enabled.
+   Keep them in sync with their counterparts in gcc/fortran/gfortran.h.  */
+#define GFC_FPE_INVALID    (1<<0)
+#define GFC_FPE_DENORMAL   (1<<1)
+#define GFC_FPE_ZERO       (1<<2)
+#define GFC_FPE_OVERFLOW   (1<<3)
+#define GFC_FPE_UNDERFLOW  (1<<4)
+#define GFC_FPE_PRECISION  (1<<5)
 
 /* The filename and line number don't go inside the globals structure.
    They are set by the rest of the program and must be linked to.  */
@@ -484,6 +491,11 @@ internal_proto(translate_error);
 
 extern void generate_error (int, const char *);
 internal_proto(generate_error);
+
+/* fpu.c */
+
+extern void set_fpu (void);
+internal_proto(set_fpu);
 
 /* memory.c */
 

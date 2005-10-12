@@ -285,6 +285,12 @@
 /* libm includes fabsl */
 #undef HAVE_FABSL
 
+/* libm includes feenableexcept */
+#undef HAVE_FEENABLEEXCEPT
+
+/* Define to 1 if you have the <fenv.h> header file. */
+#undef HAVE_FENV_H
+
 /* libm includes finite */
 #undef HAVE_FINITE
 

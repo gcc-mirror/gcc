@@ -1,0 +1,32 @@
+# configure.host
+#
+# This shell script handles all host based configuration for libgfortran.
+# It sets various shell variables based on the the host triplet.
+# You can modify this shell script without rerunning autoconf/aclocal/etc.
+# This file is "sourced", not executed.
+#
+#
+# It uses the following shell variables as set by config.guess:
+#   host                The configuration host (full CPU-vendor-OS triplet)
+#   host_cpu            The configuration host CPU
+#   host_os             The configuration host OS
+#
+#
+# It sets the following shell variables:
+#
+#   fpu_host            FPU-specific code file, defaults to fpu-generic.
+
+
+# DEFAULTS
+fpu_host=fpu-generic
+
+# HOST-SPECIFIC OVERRIDES
+case "${host_cpu}" in
+  i?86 | x86_64)
+    fpu_host='fpu-387' ;;
+esac
+
+# CONFIGURATION-SPECIFIC OVERRIDES
+if test "x${have_feenableexcept}" = "xyes"; then
+  fpu_host='fpu-glibc'
+fi

@@ -66,7 +66,7 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 toolexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 libgfortran_la_LIBADD =
-am__objects_1 = compile_options.lo environ.lo error.lo main.lo \
+am__objects_1 = compile_options.lo environ.lo error.lo fpu.lo main.lo \
 	memory.lo pause.lo stop.lo string.lo select.lo
 am__objects_2 = all_l4.lo all_l8.lo all_l16.lo
 am__objects_3 = any_l4.lo any_l8.lo any_l16.lo
@@ -276,6 +276,7 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FC = @FC@
 FCFLAGS = @FCFLAGS@
+FPU_HOST_HEADER = @FPU_HOST_HEADER@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -357,7 +358,6 @@ libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 libgfortranbegin_la_SOURCES = fmain.c
 libgfortranbegin_la_LDFLAGS = -static
 AM_CPPFLAGS = -iquote$(srcdir)/io
-libgfortranincludedir = $(includedir)/gforio
 gfor_io_src = \
 io/close.c \
 io/file_pos.c \
@@ -435,6 +435,7 @@ gfor_src = \
 runtime/compile_options.c \
 runtime/environ.c \
 runtime/error.c \
+runtime/fpu.c \
 runtime/main.c \
 runtime/memory.c \
 runtime/pause.c \
@@ -771,7 +772,7 @@ gfor_built_src = $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_exponent_c) $(i_fraction_c) $(i_nearest_c) $(i_set_exponent_c) \
     $(i_pow_c) \
     selected_int_kind.inc selected_real_kind.inc kinds.h \
-    kinds.inc c99_protos.inc
+    kinds.inc c99_protos.inc fpu-target.h
 
 
 # Machine generated specifics
@@ -1393,6 +1394,9 @@ environ.lo: runtime/environ.c
 
 error.lo: runtime/error.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o error.lo `test -f 'runtime/error.c' || echo '$(srcdir)/'`runtime/error.c
+
+fpu.lo: runtime/fpu.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fpu.lo `test -f 'runtime/fpu.c' || echo '$(srcdir)/'`runtime/fpu.c
 
 main.lo: runtime/main.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o main.lo `test -f 'runtime/main.c' || echo '$(srcdir)/'`runtime/main.c
@@ -2698,6 +2702,9 @@ selected_int_kind.inc: $(srcdir)/mk-sik-inc.sh
 
 selected_real_kind.inc: $(srcdir)/mk-srk-inc.sh
 	$(SHELL) $(srcdir)/mk-srk-inc.sh '$(FCCOMPILE)' > $@
+
+fpu-target.h: $(srcdir)/$(FPU_HOST_HEADER)
+	cp $(srcdir)/$(FPU_HOST_HEADER) $@
 
 @MAINTAINER_MODE_TRUE@$(i_all_c): m4/all.m4 $(I_M4_DEPS1)
 @MAINTAINER_MODE_TRUE@	m4 -Dfile=$@ -I$(srcdir)/m4 all.m4 > $(srcdir)/$@
