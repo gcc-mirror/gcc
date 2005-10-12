@@ -2013,9 +2013,8 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
   /* If the parm is to be passed as a transparent union, use the type of
      the first field for the tests below.  We have already verified that
      the modes are the same.  */
-  if (DECL_TRANSPARENT_UNION (parm)
-      || (TREE_CODE (passed_type) == UNION_TYPE
-	  && TYPE_TRANSPARENT_UNION (passed_type)))
+  if (TREE_CODE (passed_type) == UNION_TYPE
+      && TYPE_TRANSPARENT_UNION (passed_type))
     passed_type = TREE_TYPE (TYPE_FIELDS (passed_type));
 
   /* See if this arg was passed by invisible reference.  */

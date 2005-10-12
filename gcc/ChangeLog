@@ -1,3 +1,17 @@
+2005-10-12  Richard Henderson  <rth@redhat.com>
+
+	PR c/24255
+	* tree.h (DECL_TRANSPARENT_UNION): Remove.
+	* function.c (assign_parm_find_data_types): Don't support it.
+	* print-tree.c (print_node): Likewise.
+	* c-common.c (handle_transparent_union_attribute): Likewise.
+	Use build_duplicate_type.
+	* tree-inline.c (remap_type_1): Split out of remap_type;
+	properly remap aggregate fields.
+	(build_duplicate_type): New.
+	* doc/extend.texi (Variable Attributes): Remove documentation
+	for transparent_union.
+
 2005-10-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/24284
