@@ -50,7 +50,6 @@
 	Only apply the optimization for rounding builtins if the inner
 	cast is also an extension.
 
->>>>>>> 2.10143
 2005-10-11  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/23946
