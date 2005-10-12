@@ -3138,6 +3138,9 @@ walk_subobject_offsets (tree type,
   if (max_offset && INT_CST_LT (max_offset, offset))
     return 0;
 
+  if (type == error_mark_node)
+    return 0;
+
   if (!TYPE_P (type)) 
     {
       if (abi_version_at_least (2))

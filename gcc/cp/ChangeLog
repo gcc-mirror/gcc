@@ -1,3 +1,8 @@
+2005-10-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* PR c++/19964
+	* class.c (walk_subobject_offsets): Don't walk error_mark_node.
+
 2005-10-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21089
