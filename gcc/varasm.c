@@ -3889,7 +3889,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
       /* Make sure eliminating the conversion is really a no-op, except with
 	 VIEW_CONVERT_EXPRs to allow for wild Ada unchecked conversions and
 	 union types to allow for Ada unchecked unions.  */
-      if (type_size < op_size
+      if (type_size > op_size
 	  && TREE_CODE (exp) != VIEW_CONVERT_EXPR
 	  && TREE_CODE (TREE_TYPE (exp)) != UNION_TYPE)
 	internal_error ("no-op convert from %wd to %wd bytes in initializer",
