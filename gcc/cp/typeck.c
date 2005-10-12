@@ -1904,11 +1904,8 @@ finish_class_member_access_expr (tree object, tree name)
     }
 
   if (BASELINK_P (name))
-    {
-      /* A member function that has already been looked up.  */
-      gcc_assert (TREE_CODE (BASELINK_FUNCTIONS (name)) == TEMPLATE_ID_EXPR);
-      member = name;
-    }
+    /* A member function that has already been looked up.  */
+    member = name;
   else
     {
       bool is_template_id = false;
@@ -2002,7 +1999,9 @@ finish_class_member_access_expr (tree object, tree name)
 					 /*preserve_reference=*/false);
   if (processing_template_decl && expr != error_mark_node)
     return build_min_non_dep (COMPONENT_REF, expr,
-			      orig_object, orig_name, NULL_TREE);
+			      orig_object,
+			      BASELINK_P (member) ? member : orig_name,
+			      NULL_TREE);
   return expr;
 }
 

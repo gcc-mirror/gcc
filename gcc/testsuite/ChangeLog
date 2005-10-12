@@ -1,5 +1,10 @@
 2005-10-12  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/21592
+	* g++.dg/template/dependent-expr1.C: Add new expected error.
+	* g++.dg/template/dependent-expr2.C: Adjust error text.
+	* g++.dg/template/overload6.C: New.
+
 	PR c++/23797
 	* g++.dg/other/typename8.C: New.
 

@@ -12641,7 +12641,9 @@ build_non_dependent_expr (tree expr)
   /* Preserve OVERLOADs; the functions must be available to resolve
      types.  */
   inner_expr = (TREE_CODE (expr) == ADDR_EXPR ?
-		TREE_OPERAND (expr, 0) : expr);
+		TREE_OPERAND (expr, 0) :
+		TREE_CODE (expr) == COMPONENT_REF ?
+		TREE_OPERAND (expr, 1) : expr);
   if (is_overloaded_fn (inner_expr)
       || TREE_CODE (inner_expr) == OFFSET_REF)
     return expr;
@@ -12680,6 +12682,9 @@ build_non_dependent_expr (tree expr)
 		   TREE_OPERAND (expr, 0),
 		   build_non_dependent_expr (TREE_OPERAND (expr, 1)));
 
+  /* If the type is unknown, it can't really be non-dependent */
+  gcc_assert (TREE_TYPE (expr) != unknown_type_node);
+  
   /* Otherwise, build a NON_DEPENDENT_EXPR.
 
      REFERENCE_TYPEs are not stripped for expressions in templates
