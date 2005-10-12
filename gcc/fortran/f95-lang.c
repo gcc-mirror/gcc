@@ -187,6 +187,36 @@ tree *ridpointers = NULL;
 static void
 gfc_expand_function (tree fndecl)
 {
+  tree t;
+
+  if (DECL_INITIAL (fndecl)
+      && BLOCK_SUBBLOCKS (DECL_INITIAL (fndecl)))
+    {
+      /* Local static equivalenced variables are never seen by
+	 check_global_declarations, so we need to output debug
+	 info by hand.  */
+
+      t = BLOCK_SUBBLOCKS (DECL_INITIAL (fndecl));
+      for (t = BLOCK_VARS (t); t; t = TREE_CHAIN (t))
+	if (TREE_CODE (t) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (t)
+	    && TREE_STATIC (t))
+	  {
+	    tree expr = DECL_VALUE_EXPR (t);
+
+	    if (TREE_CODE (expr) == COMPONENT_REF
+		&& TREE_CODE (TREE_OPERAND (expr, 0)) == VAR_DECL
+		&& TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0)))
+		   == UNION_TYPE
+		&& cgraph_varpool_node (TREE_OPERAND (expr, 0))->needed
+		&& errorcount == 0 && sorrycount == 0)
+	      {
+		timevar_push (TV_SYMOUT);
+		(*debug_hooks->global_decl) (t);
+		timevar_pop (TV_SYMOUT);
+	      }
+	  }
+    }
+
   tree_rest_of_compilation (fndecl);
 }
 
