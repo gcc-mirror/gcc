@@ -18,8 +18,12 @@ class  __declspec(dllimport) Bar
     static const Baz null_baz;
 };
 
-const int Bar::three = 3;	//  { dg-error "definition of static data" }
-const Baz Bar::null_baz;	//  { dg-error "definition of static data" }
+const int Bar::three = 3;       //  { dg-warning "redeclared without dllimport" }
+//  { dg-error "definition of static data" "C++ specific error" { target i?86-*-cygwin* i?86-*-mingw* } 21 }
+				
+const Baz Bar::null_baz;	//  { dg-warning "redeclared without dllimport" }
+//  { dg-error "definition of static data" "C++ specific error" { target i?86-*-cygwin* i?86-*-mingw* }  24 }
+
 
 
 int foo()

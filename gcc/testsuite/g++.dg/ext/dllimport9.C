@@ -6,11 +6,11 @@ inline __attribute__((dllimport)) void bar() { }	// { dg-warning "inline" }
 
 struct __attribute__ ((dllimport)) Blah	
 {
-  void in_blah () { }				// { dg-warning "inline" }
+  void in_blah () { }  // Don't warn if member declared inline in class definition.
   void out_blah ();
 };
 
-inline void Blah::out_blah(){ }			// { dg-warning "inline" }
+inline void Blah::out_blah(){ }	// Don't warn for inline override of external declaration
 
 void use_inlines()
 {

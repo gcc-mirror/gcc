@@ -410,6 +410,9 @@ extern int i386_pe_dllimport_name_p (const char *);
 #undef NO_PROFILE_COUNTERS
 #define NO_PROFILE_COUNTERS 1
 
+#define TARGET_VALID_DLLIMPORT_ATTRIBUTE_P i386_pe_valid_dllimport_attribute_p
+#define TARGET_CXX_ADJUST_CLASS_AT_DEFINITION i386_pe_adjust_class_at_definition
+
 #undef TREE
 
 #ifndef BUFSIZ

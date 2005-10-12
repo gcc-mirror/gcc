@@ -244,6 +244,13 @@ extern void i386_pe_encode_section_info (tree, rtx, int);
 extern const char *i386_pe_strip_name_encoding (const char *);
 extern const char *i386_pe_strip_name_encoding_full (const char *);
 extern void i386_pe_output_labelref (FILE *, const char *);
+extern bool i386_pe_valid_dllimport_attribute_p (tree);
+
+/* In winnt-cxx.c and winnt-stubs.c  */
+extern void i386_pe_adjust_class_at_definition (tree);
+extern bool i386_pe_type_dllimport_p (tree);
+extern bool i386_pe_type_dllexport_p (tree);
+
 extern rtx maybe_get_pool_constant (rtx);
 
 extern char internal_label_prefix[16];

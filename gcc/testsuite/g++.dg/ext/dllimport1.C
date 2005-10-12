@@ -5,13 +5,13 @@
 class __attribute__((dllimport)) Foo
 {
  public:
-  virtual void dummy_foo_func(void)	// { dg-warning "inline function" }
+  virtual void dummy_foo_func(void)
     {}
-  void Foo::dummy_foo_fun2();
+  void dummy_foo_fun2();
   virtual ~Foo();  //  avoid warning  
 };
 
-void Foo::dummy_foo_fun2()	//  { dg-warning "defined" }
+void Foo::dummy_foo_fun2()	//  { dg-warning "redeclared without dllimport" }
 {
 }
 
