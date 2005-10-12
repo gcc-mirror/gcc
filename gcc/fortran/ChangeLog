@@ -1,3 +1,9 @@
+2005-10-11  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/20786
+	*iresolve.c (gfc_resolve_aint, gfc_resolve_anint ): Type conversion 
+	of the argument.
+
 2005-10-07  Erik Edelmann  <erik.edelmann@iki.fi>
 
         PR 18568

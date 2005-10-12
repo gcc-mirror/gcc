@@ -96,9 +96,17 @@ gfc_resolve_aimag (gfc_expr * f, gfc_expr * x)
 void
 gfc_resolve_aint (gfc_expr * f, gfc_expr * a, gfc_expr * kind)
 {
+  gfc_typespec ts;
+  
   f->ts.type = a->ts.type;
   f->ts.kind = (kind == NULL) ? a->ts.kind : mpz_get_si (kind->value.integer);
 
+  if (a->ts.kind != f->ts.kind)
+    {
+      ts.type = f->ts.type;
+      ts.kind = f->ts.kind;
+      gfc_convert_type (a, &ts, 2);
+    }
   /* The resolved name is only used for specific intrinsics where
      the return kind is the same as the arg kind.  */
   f->value.function.name =
@@ -134,8 +142,17 @@ gfc_resolve_all (gfc_expr * f, gfc_expr * mask, gfc_expr * dim)
 void
 gfc_resolve_anint (gfc_expr * f, gfc_expr * a, gfc_expr * kind)
 {
+  gfc_typespec ts;
+  
   f->ts.type = a->ts.type;
   f->ts.kind = (kind == NULL) ? a->ts.kind : mpz_get_si (kind->value.integer);
+
+  if (a->ts.kind != f->ts.kind)
+    {
+      ts.type = f->ts.type;
+      ts.kind = f->ts.kind;
+      gfc_convert_type (a, &ts, 2);
+    }
 
   /* The resolved name is only used for specific intrinsics where
      the return kind is the same as the arg kind.  */

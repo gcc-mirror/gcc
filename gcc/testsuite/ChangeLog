@@ -1,3 +1,8 @@
+2005-10-06  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/20786
+	gfortran.dg/aint_anint_1.f90: New test.
+
 2005-10-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21089
