@@ -1,3 +1,8 @@
+2005-10-12  Richard Henderson  <rth@redhat.com>
+
+	PR rtl-opt/23324
+	* cfgexpand.c (add_alias_set_conflicts): Use objects_must_conflict_p.
+
 2005-10-12  Richard Guenther  <rguenther@suse.de>
 
 	* Makefile.in (CGRAPH_H): Depend on $(TREE_H).
