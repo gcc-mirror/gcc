@@ -1,5 +1,8 @@
 2005-10-12  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/23797
+	* g++.dg/other/typename8.C: New.
+
 	PR c++/21117
 	* g++.dg/other/return1.C: New.
 

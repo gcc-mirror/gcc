@@ -1,5 +1,13 @@
 2005-10-12  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/23797
+	* parser.c (cp_parser_functional_cast): Cope when TYPE is not a
+	TYPE_DECL.  Use dependent_type_p to check type.
+	* pt.c (uses_template_parms_p): Use dependent_type_p for a
+	TYPE_DECL.
+	(type_dependent_expression_p): Assert we've not been given a
+	TYPE_DECL.
+
 	PR c++/21117
 	* decl.c (check_function_type): Correctly overwrite incomplete
 	return type with void type.
