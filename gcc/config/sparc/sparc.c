@@ -3826,10 +3826,11 @@ gen_save_register_window (rtx increment)
 static rtx
 gen_stack_pointer_inc (rtx increment)
 {
-  if (TARGET_ARCH64)
-    return gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx, increment);
-  else
-    return gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, increment);
+  return gen_rtx_SET (VOIDmode,
+		      stack_pointer_rtx,
+		      gen_rtx_PLUS (Pmode,
+				    stack_pointer_rtx,
+				    increment));
 }
 
 /* Generate a decrement for the stack pointer.  */
@@ -3837,10 +3838,11 @@ gen_stack_pointer_inc (rtx increment)
 static rtx
 gen_stack_pointer_dec (rtx decrement)
 {
-  if (TARGET_ARCH64)
-    return gen_subdi3 (stack_pointer_rtx, stack_pointer_rtx, decrement);
-  else
-    return gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx, decrement);
+  return gen_rtx_SET (VOIDmode,
+		      stack_pointer_rtx,
+		      gen_rtx_MINUS (Pmode,
+				     stack_pointer_rtx,
+				     decrement));
 }
 
 /* Expand the function prologue.  The prologue is responsible for reserving
