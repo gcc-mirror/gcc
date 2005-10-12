@@ -2913,9 +2913,14 @@ build_object_call (tree obj, tree args)
       return error_mark_node;
     }
 
-  fns = lookup_fnfields (TYPE_BINFO (type), ansi_opname (CALL_EXPR), 1);
-  if (fns == error_mark_node)
-    return error_mark_node;
+  if (TYPE_BINFO (type))
+    {
+      fns = lookup_fnfields (TYPE_BINFO (type), ansi_opname (CALL_EXPR), 1);
+      if (fns == error_mark_node)
+	return error_mark_node;
+    }
+  else
+    fns = NULL_TREE;
 
   args = resolve_args (args);
 
