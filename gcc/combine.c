@@ -6512,11 +6512,12 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	offset -= GET_MODE_SIZE (is_mode) - GET_MODE_SIZE (inner_mode);
 
       /* If this is a constant position, we can move to the desired byte.
-	 Be careful not to go beyond the original object. */
+	 Be careful not to go beyond the original object and maintain the
+	 natural alignment of the memory.  */ 
       if (pos_rtx == 0)
 	{
 	  enum machine_mode bfmode = smallest_mode_for_size (len, MODE_INT);
-	  offset += pos / GET_MODE_BITSIZE (bfmode);
+	  offset += (pos / GET_MODE_BITSIZE (bfmode)) * GET_MODE_SIZE (bfmode);
 	  pos %= GET_MODE_BITSIZE (bfmode);
 	}
 

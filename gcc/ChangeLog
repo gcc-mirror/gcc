@@ -1,3 +1,7 @@
+2005-10-12  Adrian Straetling <straetling@de.ibm.com>
+
+	* combine.c (make_extraction): Correct offset computation.
+
 2005-10-12  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/t-linux (LIMITS_H_TEST): Define.
