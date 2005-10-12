@@ -4310,6 +4310,7 @@ resolve_symbol (gfc_symbol * sym)
 	{
 	  if (arg->sym
 		&& arg->sym->ts.type == BT_DERIVED
+		&& !arg->sym->ts.derived->attr.use_assoc
 		&& !gfc_check_access(arg->sym->ts.derived->attr.access,
 				     arg->sym->ts.derived->ns->default_access))
 	    {
@@ -4412,7 +4413,11 @@ resolve_symbol (gfc_symbol * sym)
 	{
 	  for (nl = sym->namelist; nl; nl = nl->next)
 	    {
-	      if (!gfc_check_access(nl->sym->attr.access,
+	      if (!nl->sym->attr.use_assoc
+		    &&
+		  !(sym->ns->parent == nl->sym->ns)
+		    &&
+		  !gfc_check_access(nl->sym->attr.access,
 				    nl->sym->ns->default_access))
 		gfc_error ("PRIVATE symbol '%s' cannot be member of "
 			   "PUBLIC namelist at %L", nl->sym->name,
