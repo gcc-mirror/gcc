@@ -1,3 +1,7 @@
+2005-10-12  Richard Guenther  <rguenther@suse.de>
+
+	* Makefile.in (CGRAPH_H): Depend on $(TREE_H).
+
 2005-10-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/19964
