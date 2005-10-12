@@ -1,3 +1,9 @@
+2005-10-12  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/23799
+	* varasm.c (output_constant): Correct typo from previous
+	patch by DJ.
+
 2005-10-11  Ian Lance Taylor  <ian@airs.com>
 
 	PR rtl-optimization/13931
