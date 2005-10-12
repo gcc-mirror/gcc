@@ -1,3 +1,28 @@
+2005-10-12  Paul Thomas  <pault@gcc.gnu.org>
+	
+	PR fortran/16404
+	PR fortran/20835
+	PR fortran/20890
+	PR fortran/20899
+	PR fortran/20900
+	PR fortran/20901
+	PR fortran/20902
+	PR fortran/24207
+	gfortran.dg/equiv_constraint_1.f90: New test.
+	gfortran.dg/equiv_constraint_2.f90: New test.
+	gfortran.dg/equiv_constraint_3.f90: New test.
+	gfortran.dg/equiv_constraint_4.f90: New test.
+	gfortran.dg/equiv_constraint_5.f90: New test.
+	gfortran.dg/equiv_constraint_6.f90: New test.
+	gfortran.dg/equiv_constraint_7.f90: New test.
+	gfortran.dg/equiv_constraint_8.f90: New test.
+	gfortran.dg/private_type_1.f90: New test.
+	gfortran.dg/private_type_2.f90: New test.
+	gfortran.dg/private_type_3.f90: New test.
+	gfortran.dg/g77/980628-2.f, 980628-3.f, 980628-9.f,
+	980628-10.f: Assert std=gnu to permit mixing of
+	types in equivalence statements.
+
 2005-10-06  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/20786

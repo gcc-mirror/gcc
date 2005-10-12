@@ -1,3 +1,38 @@
+2005-10-12  Paul Thomas  <pault@gcc.gnu.org>
+	
+	PR fortran/16404
+	PR fortran/20835
+	PR fortran/20890
+	PR fortran/20899
+	PR fortran/20900
+	PR fortran/20901
+	PR fortran/20902
+	PR fortran/24207
+	* gfortran.h: Prototype for gfc_add_in_equivalence.
+	* match.c (gfc_match_equivalence): Make a structure component
+	an explicit,rather than a syntax, error in an equivalence
+	group.  Call gfc_add_in_equivalence to add the constraints
+	imposed in check_conflict.
+	* resolve.c (resolve_symbol): Add constraints: No public
+	structures with private-type components and no public
+	procedures with private-type dummy arguments. Exclude use and
+	host associated symbols from the test for private objects in
+	a public namelist.
+	(resolve_equivalence_derived): Add constraint that prevents
+	a structure equivalence member from having a default
+	initializer.
+	(sequence_type): New static function to determine whether an
+	object is default numeric, default character, non-default
+	or mixed sequence. Add corresponding enum typespec.
+	(resolve_equivalence): Add constraints to equivalence groups
+	or their members: No more than one initialized member and
+	that different types are not equivalenced for std=f95.  All
+	the simple constraints have been moved to check_conflict.
+	* symbol.c (check_conflict): Simple equivalence constraints
+	added, including those removed from resolve_symbol.
+	(gfc_add_in_equivalence): New function to interface calls
+	match_equivalence to check_conflict.
+	
 2005-10-11  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/20786
