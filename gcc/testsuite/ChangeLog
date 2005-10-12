@@ -1,3 +1,11 @@
+2005-10-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/20847
+	gfortran.dg/save_common.f90: New test.
+
+	PR fortran/20856
+	gfortran.dg/save_result.f90: New test.
+
 2005-10-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/21592
