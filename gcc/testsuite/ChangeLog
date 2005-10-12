@@ -1,5 +1,10 @@
 2005-10-12  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/18082
+	gfortran.dg/automatic_char_len_1.f90: New test.
+
+2005-10-12  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/20847
 	gfortran.dg/save_common.f90: New test.
 
