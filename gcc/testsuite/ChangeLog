@@ -1,3 +1,8 @@
+2005-10-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24092
+	* gfortran.dg/derived_pointer_recursion.f90: New test.
+
 2005-10-12  Adrian Straetling <straetling@de.ibm.com>
 
 	* gcc.c-torture/execute/20051012-1.c: New test.
@@ -5,15 +10,15 @@
 2005-10-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/18082
-	gfortran.dg/automatic_char_len_1.f90: New test.
+	* gfortran.dg/automatic_char_len_1.f90: New test.
 
 2005-10-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/20847
-	gfortran.dg/save_common.f90: New test.
+	* gfortran.dg/save_common.f90: New test.
 
 	PR fortran/20856
-	gfortran.dg/save_result.f90: New test.
+	* gfortran.dg/save_result.f90: New test.
 
 2005-10-12  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -50,7 +55,7 @@
 2005-10-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24207
-	gfortran.dg/private_type_3.f90: New test.
+	* gfortran.dg/private_type_3.f90: New test.
 
 2005-10-11  Steven G. Kargl  <kargls@comcast.net>
 
