@@ -1,3 +1,10 @@
+2005-10-11  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR libstdc++/23926
+	* acinclude.m4 (GLIBCXX_ENABLE_SYMVERS): Fix typo in check
+	for GNU LD.
+	* configure: Regenerate.
+
 2005-10-10  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.ac (libtool_VERSION): To 6:7:0.
