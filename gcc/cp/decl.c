@@ -10012,25 +10012,20 @@ check_function_type (tree decl, tree current_function_parms)
     return;
   if (!COMPLETE_OR_VOID_TYPE_P (return_type))
     {
-      error ("return type %q#T is incomplete", TREE_TYPE (fntype));
+      tree args = TYPE_ARG_TYPES (fntype);
+	  
+      error ("return type %q#T is incomplete", return_type);
 
-      /* Make it return void instead, but don't change the
-	 type of the DECL_RESULT, in case we have a named return value.  */
+      /* Make it return void instead.  */
       if (TREE_CODE (fntype) == METHOD_TYPE)
-	{
-	  tree ctype = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (fntype)));
-	  TREE_TYPE (decl)
-	    = build_method_type_directly (ctype,
-					  void_type_node,
-					  FUNCTION_ARG_CHAIN (decl));
-	}
+	fntype = build_method_type_directly (TREE_TYPE (TREE_VALUE (args)),
+					     void_type_node,
+					     TREE_CHAIN (args));
       else
-	TREE_TYPE (decl)
-	  = build_function_type (void_type_node,
-				 TYPE_ARG_TYPES (TREE_TYPE (decl)));
+	fntype = build_function_type (void_type_node, args);
       TREE_TYPE (decl)
 	= build_exception_variant (fntype,
-				   TYPE_RAISES_EXCEPTIONS (fntype));
+				   TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl)));
     }
   else
     abstract_virtuals_error (decl, TREE_TYPE (fntype));

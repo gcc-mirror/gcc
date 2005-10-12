@@ -1,3 +1,8 @@
+2005-10-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21117
+	* g++.dg/other/return1.C: New.
+
 2005-10-12  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c++/24052

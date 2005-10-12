@@ -1,3 +1,11 @@
+2005-10-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/21117
+	* decl.c (check_function_type): Correctly overwrite incomplete
+	return type with void type.
+	* typeck.c (check_return_expr): If the function's return type is
+	void, don't try and convert a return expr.
+
 2005-10-12  David Edelsohn  <edelsohn@gnu.org>
 
 	PR c++/23730
