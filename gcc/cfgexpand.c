@@ -285,14 +285,14 @@ add_alias_set_conflicts (void)
 
   for (i = 0; i < n; ++i)
     {
-      bool aggr_i = AGGREGATE_TYPE_P (TREE_TYPE (stack_vars[i].decl));
-      HOST_WIDE_INT set_i = get_alias_set (stack_vars[i].decl);
+      tree type_i = TREE_TYPE (stack_vars[i].decl);
+      bool aggr_i = AGGREGATE_TYPE_P (type_i);
 
       for (j = 0; j < i; ++j)
 	{
-	  bool aggr_j = AGGREGATE_TYPE_P (TREE_TYPE (stack_vars[j].decl));
-	  HOST_WIDE_INT set_j = get_alias_set (stack_vars[j].decl);
-	  if (aggr_i != aggr_j || !alias_sets_conflict_p (set_i, set_j))
+	  tree type_j = TREE_TYPE (stack_vars[j].decl);
+	  bool aggr_j = AGGREGATE_TYPE_P (type_j);
+	  if (aggr_i != aggr_j || !objects_must_conflict_p (type_i, type_j))
 	    add_stack_var_conflict (i, j);
 	}
     }
