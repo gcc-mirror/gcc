@@ -440,7 +440,7 @@ static char *
 fd_alloc_r_at (unix_stream * s, int *len, gfc_offset where)
 {
   gfc_offset m;
-  size_t n;
+  int n;
 
   if (where == -1)
     where = s->logical_offset;
@@ -462,8 +462,8 @@ fd_alloc_r_at (unix_stream * s, int *len, gfc_offset where)
   if (s->physical_offset != m && lseek (s->fd, m, SEEK_SET) < 0)
     return NULL;
 
-  n = s->len - s->active;
-  if (do_read (s, s->buffer + s->active, &n) != 0)
+  n = read (s->fd, s->buffer + s->active, s->len - s->active);
+  if (n < 0)
     return NULL;
 
   s->physical_offset = where + n;
