@@ -1,3 +1,14 @@
+2005-10-11  David Edelsohn  <edelsohn@gnu.org>
+
+	Backport from mainline:
+	* config/rs6000/rs6000.md (call_indirect_nonlocal_aix32): Prefer
+	CTR to LR.
+	(call_indirect_nonlocal_aix64): Same.
+	(call_value_indirect_nonlocal_aix32): Same.
+	(call_value_indirect_nonlocal_aix64): Same.
+	(call_indirect_nonlocal_sysv): Same.
+	(call_value_indirect_nonlocal_sysv): Same.
+
 2005-10-11  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/crti.s (__init, __fini): Renamed from _init, _fini.
