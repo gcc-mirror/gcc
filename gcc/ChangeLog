@@ -1,3 +1,10 @@
+2005-10-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/19964
+	* stor-layout.c (place_field): Set DECL_FIELD_OFFSET and
+	DECL_FIELD_BIT_OFFSET of FIELD_DECLs, even if they have an invalid
+	type.
+
 2005-10-12  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/23799
@@ -39,6 +46,7 @@
 	Only apply the optimization for rounding builtins if the inner
 	cast is also an extension.
 
+>>>>>>> 2.10143
 2005-10-11  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/23946
