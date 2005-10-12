@@ -4944,6 +4944,8 @@ uses_template_parms (tree t)
   else if (TREE_CODE (t) == TREE_LIST)
     dependent_p = (uses_template_parms (TREE_VALUE (t))
 		   || uses_template_parms (TREE_CHAIN (t)));
+  else if (TREE_CODE (t) == TYPE_DECL)
+    dependent_p = dependent_type_p (TREE_TYPE (t));
   else if (DECL_P (t) 
 	   || EXPR_P (t) 
 	   || TREE_CODE (t) == TEMPLATE_PARM_INDEX
@@ -12394,7 +12396,9 @@ type_dependent_expression_p (tree expression)
 	}
       return false;
     }
-  
+
+  gcc_assert (TREE_CODE (expression) != TYPE_DECL);
+
   return (dependent_type_p (TREE_TYPE (expression)));
 }
 
@@ -12589,7 +12593,9 @@ build_non_dependent_expr (tree expr)
   /* Preserve OVERLOADs; the functions must be available to resolve
      types.  */
   inner_expr = (TREE_CODE (expr) == ADDR_EXPR ? 
-		TREE_OPERAND (expr, 0) : expr);
+		TREE_OPERAND (expr, 0) :
+		TREE_CODE (expr) == COMPONENT_REF ?
+		TREE_OPERAND (expr, 1) : expr);
   if (is_overloaded_fn (inner_expr)
       || TREE_CODE (inner_expr) == OFFSET_REF)
     return expr;
@@ -12628,6 +12634,9 @@ build_non_dependent_expr (tree expr)
 		   TREE_OPERAND (expr, 0),
 		   build_non_dependent_expr (TREE_OPERAND (expr, 1)));
       
+  /* If the type is unknown, it can't really be non-dependent */
+  gcc_assert (TREE_TYPE (expr) != unknown_type_node);
+  
   /* Otherwise, build a NON_DEPENDENT_EXPR.  
 
      REFERENCE_TYPEs are not stripped for expressions in templates
