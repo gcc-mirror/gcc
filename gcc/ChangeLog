@@ -1,3 +1,9 @@
+2005-10-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/24284
+	* config/sparc/sparc.c (gen_stack_pointer_inc): Build by hand.
+	(gen_stack_pointer_dec): Likewise.
+
 2005-10-12  Richard Henderson  <rth@redhat.com>
 
 	PR rtl-opt/23324
