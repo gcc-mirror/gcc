@@ -1,3 +1,9 @@
+2005-10-12  David Edelsohn  <edelsohn@gnu.org>
+
+	PR c++/23730
+	* call.c (build_object_call): If BINFO is NULL, bypass
+	lookup_fnfields and set fns to NULL_TREE.
+
 2005-10-12  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c++/24052
