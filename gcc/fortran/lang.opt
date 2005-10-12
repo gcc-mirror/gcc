@@ -165,6 +165,10 @@ qkind=
 Fortran RejectNegative Joined UInteger
 -qkind=<n>	Set the kind for a real with the 'q' exponent to 'n'
 
+ffpe-trap=
+Fortran RejectNegative JoinedOrMissing
+-ffpe-trap=[..]	Stop on following floating point exceptions
+
 std=f95
 Fortran
 Conform to the ISO Fortran 95 standard

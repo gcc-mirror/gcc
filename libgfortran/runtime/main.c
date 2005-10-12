@@ -96,6 +96,7 @@ init (void)
   init_variables ();
 
   init_units ();
+  set_fpu ();
   init_compile_options ();
 
 #ifdef DEBUG

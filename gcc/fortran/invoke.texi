@@ -133,7 +133,7 @@ by type.  Explanations are in the following sections.
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
 @gccoptlist{
--fdump-parse-tree}
+-fdump-parse-tree -ffpe-trap=@var{list}}
 
 @item Directory Options
 @xref{Directory Options,,Options for Directory Search}.
@@ -462,6 +462,22 @@ either your program or @command{gfortran}
 @item -fdump-parse-tree
 Output the internal parse tree before starting code generation.  Only
 really useful for debugging gfortran itself.
+@end table
+
+@table @gcctabopt
+@cindex -ffpe-trap=@var{list} option
+@cindex option, -ffpe-trap=@var{list}
+@item -ffpe-trap=@var{list}
+Specify a list of IEEE exceptions when a Floating Point Exception
+(FPE) should be raised.  On most systems, this will result in a SIGFPE
+signal being sent and the program being interrupted, producing a core
+file useful for debugging.  @var{list} is a (possibly empty) comma-separated
+list of the following IEEE exceptions: @samp{invalid} (invalid floating
+point operation, such as @code{sqrt(-1.0)}), @samp{zero} (division by
+zero), @samp{overflow} (overflow in a floating point operation),
+@samp{underflow} (underflow in a floating point operation),
+@samp{precision} (loss of precision during operation) and @samp{denormal}
+(operation produced a denormal denormal value).
 @end table
 
 @xref{Debugging Options,,Options for Debugging Your Program or GCC,

@@ -76,6 +76,8 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
 
   gfc_option.q_kind = gfc_default_double_kind;
 
+  gfc_option.fpe = 0;
+
   flag_argument_noalias = 2;
   flag_errno_math = 0;
 
@@ -278,6 +280,41 @@ gfc_handle_module_path_options (const char *arg)
   strcat (gfc_option.module_dir, "/");
 }
 
+static void
+gfc_handle_fpe_trap_option (const char *arg)
+{
+  int result, pos = 0, n;
+  static const char * const exception[] = { "invalid", "denormal", "zero",
+                                            "overflow", "underflow",
+					    "precision", NULL };
+  static const int opt_exception[] = { GFC_FPE_INVALID, GFC_FPE_DENORMAL,
+				       GFC_FPE_ZERO, GFC_FPE_OVERFLOW,
+				       GFC_FPE_UNDERFLOW, GFC_FPE_PRECISION,
+				       0 };
+ 
+  while (*arg)
+    {
+      while (*arg == ',')
+	arg++;
+      while (arg[pos] && arg[pos] != ',')
+	pos++;
+      result = 0;
+      for (n = 0; exception[n] != NULL; n++)
+	{
+	  if (exception[n] && strncmp (exception[n], arg, pos) == 0)
+	    {
+	      gfc_option.fpe |= opt_exception[n];
+	      arg += pos;
+	      pos = 0;
+	      result = 1;
+	      break;
+	    }
+	}
+      if (! result)
+	gfc_fatal_error ("Argument to -ffpe-trap is not valid: %s", arg);
+    }
+}
+
 /* Handle command-line options.  Returns 0 if unrecognized, 1 if
    recognized and handled.  */
 int
@@ -440,6 +477,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       gfc_handle_module_path_options (arg);
       break;
     
+    case OPT_ffpe_trap_:
+      gfc_handle_fpe_trap_option (arg);
+      break;
+
     case OPT_std_f95:
       gfc_option.allow_std = GFC_STD_F95_OBS | GFC_STD_F95 | GFC_STD_F77;
       gfc_option.warn_std = GFC_STD_F95_OBS;

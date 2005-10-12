@@ -1,3 +1,25 @@
+2005-10-12  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* Makefile.am: Add fpu.c to the build process, and
+	target-dependent code as fpu-target.h.
+	* Makefile.in: Regenerate.
+	* configure.ac: Add call to configure.host to set
+	FPU_HOST_HEADER.
+	* configure: Regenerate.
+	* configure.host: New script to determine which host-dependent
+	code should go in.
+	* libgfortran.h: Add fpe option, remove previous fpu_ options.
+	Add bitmasks for different FPE traps. Add prototype for set_fpu.
+	* runtime/environ.c: Remove environment variables to control
+	fpu behaviour.
+	* runtime/fpu.c (set_fpe): New function for the front-end.
+	* runtime/main.c (init): Set FPU state.
+	* config: New directory to store host-dependent code.
+	* config/fpu-387.h: New file with code handling the i387 FPU.
+	* config/fpu-glibc.h: New file with code for glibc systems.
+	* config/fpu-generic.h: Fallback for the most generic host. Issue
+	warnings.
+
 2005-10-12  Janne Blomqvist <jblomqvi@cc.hut.fi>
 
 	* io/unix.c: Remove parts of patch of 2005/10/07 that cause

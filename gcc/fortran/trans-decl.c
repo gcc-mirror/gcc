@@ -85,6 +85,7 @@ tree gfor_fndecl_stop_numeric;
 tree gfor_fndecl_stop_string;
 tree gfor_fndecl_select_string;
 tree gfor_fndecl_runtime_error;
+tree gfor_fndecl_set_fpe;
 tree gfor_fndecl_set_std;
 tree gfor_fndecl_in_pack;
 tree gfor_fndecl_in_unpack;
@@ -1934,6 +1935,7 @@ gfc_build_intrinsic_function_decls (void)
 void
 gfc_build_builtin_function_decls (void)
 {
+  tree gfc_c_int_type_node = gfc_get_int_type (gfc_c_int_kind);
   tree gfc_int4_type_node = gfc_get_int_type (4);
   tree gfc_int8_type_node = gfc_get_int_type (8);
   tree gfc_logical4_type_node = gfc_get_logical_type (4);
@@ -2017,6 +2019,10 @@ gfc_build_builtin_function_decls (void)
 				     gfc_int4_type_node);
   /* The runtime_error function does not return.  */
   TREE_THIS_VOLATILE (gfor_fndecl_runtime_error) = 1;
+
+  gfor_fndecl_set_fpe =
+    gfc_build_library_function_decl (get_identifier (PREFIX("set_fpe")),
+				    void_type_node, 1, gfc_c_int_type_node);
 
   gfor_fndecl_set_std =
     gfc_build_library_function_decl (get_identifier (PREFIX("set_std")),
@@ -2452,6 +2458,21 @@ gfc_generate_function_code (gfc_namespace * ns)
 				  build_int_cst (gfc_int4_type_node,
 						 gfc_option.allow_std));
       tmp = gfc_build_function_call (gfor_fndecl_set_std, arglist);
+      gfc_add_expr_to_block (&body, tmp);
+    }
+
+  /* If this is the main program and a -ffpe-trap option was provided,
+     add a call to set_fpe so that the library will raise a FPE when
+     needed.  */
+  if (sym->attr.is_main_program && gfc_option.fpe != 0)
+    {
+      tree arglist, gfc_c_int_type_node;
+
+      gfc_c_int_type_node = gfc_get_int_type (gfc_c_int_kind);
+      arglist = gfc_chainon_list (NULL_TREE,
+				  build_int_cst (gfc_c_int_type_node,
+						 gfc_option.fpe));
+      tmp = gfc_build_function_call (gfor_fndecl_set_fpe, arglist);
       gfc_add_expr_to_block (&body, tmp);
     }
 

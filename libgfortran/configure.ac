@@ -158,7 +158,7 @@ AC_TYPE_OFF_T
 AC_STDC_HEADERS
 AC_HAVE_HEADERS(stdlib.h stdio.h string.h stddef.h math.h unistd.h signal.h)
 AC_CHECK_HEADERS(time.h sys/params.h sys/time.h sys/times.h sys/resource.h)
-AC_CHECK_HEADERS(sys/mman.h sys/types.h sys/stat.h ieeefp.h)
+AC_CHECK_HEADERS(sys/mman.h sys/types.h sys/stat.h ieeefp.h fenv.h)
 AC_CHECK_HEADER([complex.h],[AC_DEFINE([HAVE_COMPLEX_H], [1], [complex.h exists])])
 
 AC_CHECK_MEMBERS([struct stat.st_blksize])
@@ -339,6 +339,17 @@ LIBGFOR_CHECK_FOR_BROKEN_FPCLASSIFY
 
 # Fallback in case isfinite is not available.
 AC_CHECK_LIB([m],[finite],[AC_DEFINE([HAVE_FINITE],[1],[libm includes finite])])
+
+# Check for GNU libc feenableexcept
+AC_CHECK_LIB([m],[feenableexcept],[have_feenableexcept=yes AC_DEFINE([HAVE_FEENABLEEXCEPT],[1],[libm includes feenableexcept])])
+
+# Runs configure.host to set up necessary host-dependent shell variables.
+# We then display a message about it, and propagate them through the
+# build chain.
+. ${srcdir}/configure.host
+AC_MSG_NOTICE([FPU dependent file will be ${fpu_host}.h])
+FPU_HOST_HEADER=config/${fpu_host}.h
+AC_SUBST(FPU_HOST_HEADER)
 
 # The standard autoconf HAVE_STRUCT_TIMEZONE doesn't actually check
 # for struct timezone, as you might think.  We also need to check how
