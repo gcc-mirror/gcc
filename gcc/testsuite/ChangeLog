@@ -1,3 +1,12 @@
+2005-10-12  Razya Ladelsky <razya@il.ibm.com>
+
+        * g++.dg/ipa/ipa-1.c: New test.
+        * g++.dg/ipa/ipa-2.c: New test.
+        * g++.dg/ipa/ipa-3.c: New test.
+        * g++.dg/ipa/ipa-4.c: New test.
+        * g++.dg/ipa/ipa-5.c: New test.
+        * g++.dg/ipa/ipa.exp: New file.
+
 2005-10-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24207
