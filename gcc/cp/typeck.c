@@ -6326,6 +6326,11 @@ check_return_expr (tree retval, bool *no_warning)
       /* The type the function is declared to return.  */
       tree functype = TREE_TYPE (TREE_TYPE (current_function_decl));
 
+      /* The functype's return type will have been set to void, if it
+	 was an incomplete type.  Just treat this as 'return;' */
+      if (VOID_TYPE_P (functype))
+	return error_mark_node;
+      
       /* First convert the value to the function's return type, then
 	 to the type of return value's location to handle the
 	 case that functype is smaller than the valtype.  */
