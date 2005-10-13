@@ -1,3 +1,9 @@
+2005-10-12  Sebastian Pop  <pop@cri.ensmp.fr>
+
+	PR tree-optimization/24262
+	* tree-data-ref.c (analyze_offset_expr): Check that init is invariant
+	in loop all the time.
+
 2005-10-12  Richard Henderson  <rth@redhat.com>
 
 	PR c/24255
