@@ -10986,7 +10986,7 @@ start_method (cp_decl_specifier_seq *declspecs,
 	  && TREE_CODE( DECL_CONTEXT (fndecl)) != NAMESPACE_DECL)
 	error ("%qD is already defined in class %qT", fndecl,
 	       DECL_CONTEXT (fndecl));
-      return void_type_node;
+      return error_mark_node;
     }
 
   check_template_shadow (fndecl);
