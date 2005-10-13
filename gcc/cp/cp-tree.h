@@ -69,6 +69,7 @@ struct diagnostic_context;
       FN_TRY_BLOCK_P (in TRY_BLOCK)
       IDENTIFIER_CTOR_OR_DTOR_P (in IDENTIFIER_NODE)
       BIND_EXPR_BODY_BLOCK (in BIND_EXPR)
+      DECL_NON_TRIVIALLY_INITIALIZED_P (in VAR_DECL)
    4: TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
 	  or FIELD_DECL).
       IDENTIFIER_TYPENAME_P (in IDENTIFIER_NODE)
@@ -1784,10 +1785,16 @@ struct lang_decl GTY(())
    should be allocated.  */
 #define DECL_IN_AGGR_P(NODE) (DECL_LANG_FLAG_3 (NODE))
 
-/* Nonzero for a VAR_DECL means that the variable's initialization has
-   been processed.  */
+/* Nonzero for a VAR_DECL means that the variable's initialization (if
+   any) has been processed.  (In general, DECL_INITIALIZED_P is
+   !DECL_EXTERN, but static data members may be initialized even if
+   not defined.)  */
 #define DECL_INITIALIZED_P(NODE) \
    (TREE_LANG_FLAG_1 (VAR_DECL_CHECK (NODE)))
+
+/* Nonzero for a VAR_DECL iff an explicit initializer was provided.  */
+#define DECL_NONTRIVIALLY_INITIALIZED_P(NODE)	\
+   (TREE_LANG_FLAG_3 (VAR_DECL_CHECK (NODE)))
 
 /* Nonzero for a VAR_DECL that was initialized with a
    constant-expression.  */

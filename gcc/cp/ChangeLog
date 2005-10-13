@@ -1,5 +1,11 @@
 2005-10-13  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/20721
+	* cp-tree.h (DECL_NONTRIVIALLY_INITIALIZED_P): New macro.
+	* decl.c (duplicate_decls): Merge it into new declarations.
+	(decl_jump_unsafe): Use it, rather than DECL_INITIAL.
+	(cp_finish_decl): Set it, when appropriate.
+
 	PR c++/22180
 	* call.c (build_new_method_call): Correct pretty-printing of
 	destructor names.
