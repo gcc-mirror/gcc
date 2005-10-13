@@ -1,3 +1,8 @@
+2005-10-12  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* lang.c (flag_new_verifier): Set on by default.
+	(java_post_options): Don't need to set flag_new_verifier.
+
 2005-10-12  Tom Tromey  <tromey@redhat.com>
 
 	PR java/21540, PR java/13788:

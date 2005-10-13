@@ -1,3 +1,8 @@
+2005-10-12  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* testsuite/libjava.lang/pr13107_2.xfail: Remove xfail.
+	* testsuite/libjava.lang/pr13107_3.xfail: Likewise.
+
 2005-10-12  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* testsuite/libjava.jacks/jacks.xfail: Remove 15.21-assoc-7,

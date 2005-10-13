@@ -140,7 +140,7 @@ int flag_deprecated = 1;
 int flag_verify_invocations = 0; 
 
 /* True if the new bytecode verifier should be used.  */
-int flag_new_verifier = 0;
+int flag_new_verifier = 1;
 
 /* When nonzero, print extra version information.  */
 static int v_flag = 0;
@@ -611,12 +611,6 @@ java_post_options (const char **pfilename)
      must always verify everything.  */
   if (! flag_indirect_dispatch)
     flag_verify_invocations = true;
-  else
-    {
-      /* If we are using indirect dispatch, then we want the new
-	 verifier as well.  */
-      flag_new_verifier = 1;
-    }
 
   /* Open input file.  */
 
