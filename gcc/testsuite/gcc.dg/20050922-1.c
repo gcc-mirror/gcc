@@ -3,7 +3,6 @@
 
 /* { dg-do run } */
 /* { dg-options "-O1 -std=c99" } */
-/* { dg-skip-if "" { *-*-solaris2.5.1 *-*-solaris2.[5-9] } "*" "" } */
 
 #include <stdint.h>
 

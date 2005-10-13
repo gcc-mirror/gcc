@@ -1,3 +1,9 @@
+2005-10-13  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* expmed.c (expand_shift): Don't use the target of the rotate as
+	target for the first expanded shift insn.
+	* testsuite/gcc.dg/20050922-1.c: Testcase added.
+
 2005-10-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/24284
