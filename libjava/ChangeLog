@@ -1,3 +1,15 @@
+2005-10-12  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/libjava.jacks/jacks.xfail: Remove 15.21-assoc-7,
+	15.21-assoc-8, 15.21-equal-3, 15.28-string-11.
+
+2005-10-12  Tom Tromey  <tromey@redhat.com>
+
+	PR java/21540, PR java/13788:
+	* testsuite/libjava.compile/pr21540.java: New file.
+	* testsuite/libjava.compile/pr13788.java: New file.
+	* testsuite/libjava.jacks/jacks.xfail: Updated.
+
 2005-10-10  Matthias Klose  <doko@debian.org>
 
 	* Makefile.am (Makefile.deps): Don't use non-standardized escape
