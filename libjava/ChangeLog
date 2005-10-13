@@ -1,3 +1,9 @@
+2005-10-12  Andrew Haley  <aph@redhat.com>
+
+	PR java/24251
+	* link.cc (ensure_method_table_complete): Install Miranda methods
+	for interfaces too.
+
 2005-10-10  Tom Tromey  <tromey@redhat.com>
 
 	* testsuite/libjava.lang/ExtraClassLoader.out: New file.
