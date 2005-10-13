@@ -1545,6 +1545,8 @@ duplicate_decls (tree newdecl, tree olddecl)
 	{
 	  DECL_THIS_EXTERN (newdecl) |= DECL_THIS_EXTERN (olddecl);
 	  DECL_INITIALIZED_P (newdecl) |= DECL_INITIALIZED_P (olddecl);
+	  DECL_NONTRIVIALLY_INITIALIZED_P (newdecl) 
+	    |= DECL_NONTRIVIALLY_INITIALIZED_P (olddecl);
 	  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (newdecl)
 	    |= DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (olddecl);
 	}
@@ -2110,16 +2112,15 @@ decl_jump_unsafe (tree decl)
   if (TREE_CODE (decl) != VAR_DECL || TREE_STATIC (decl))
     return 0;
 
-  if (DECL_INITIAL (decl) == NULL_TREE
-      && pod_type_p (TREE_TYPE (decl)))
+  if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl))
+      || DECL_NONTRIVIALLY_INITIALIZED_P (decl))
+    return 2;
+
+  if (pod_type_p (TREE_TYPE (decl)))
     return 0;
 
-  /* This is really only important if we're crossing an initialization.
-     The POD stuff is just pedantry; why should it matter if the class
+  /* The POD stuff is just pedantry; why should it matter if the class
      contains a field of pointer to member type?  */
-  if (DECL_INITIAL (decl)
-      || (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl))))
-    return 2;
   return 1;
 }
 
@@ -4827,6 +4828,8 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 	     is *not* defined.  */
 	  && (!DECL_EXTERNAL (decl) || init))
 	{
+	  if (init)
+	    DECL_NONTRIVIALLY_INITIALIZED_P (decl) = 1;
 	  init = check_initializer (decl, init, flags, &cleanup);
 	  /* Thread-local storage cannot be dynamically initialized.  */
 	  if (DECL_THREAD_LOCAL (decl) && init)
