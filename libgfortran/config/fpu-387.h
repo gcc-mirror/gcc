@@ -90,7 +90,7 @@ void set_fpu (void)
   if (has_sse())
     {
       /* SSE */
-      asm volatile ("stmxcsr %0" : : "m" (cw_sse));
+      asm volatile ("stmxcsr %0" : : "=m" (cw_sse));
       cw_sse &= 0xFFFF0000;
       if (options.fpe & GFC_FPE_INVALID) cw_sse |= 1 << 7;
       if (options.fpe & GFC_FPE_DENORMAL) cw_sse |= 1 << 8;

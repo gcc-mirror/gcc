@@ -1,3 +1,7 @@
+2005-20-13  Uros Bizjak  <uros@kss-loka.si>
+
+	* config/fpu-387.h (set_fpu): Add "=m" for stmxcsr.
+
 2005-10-12  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* Makefile.am: Add fpu.c to the build process, and
