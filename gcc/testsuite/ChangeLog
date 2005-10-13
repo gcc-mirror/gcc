@@ -1,3 +1,7 @@
+2005-10-13  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/intmax_t-1.c: Remove mmix-*-* from dg-error statement.
+
 2005-10-12  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* gcc.dg/dll-2.c: Add tests for warnings.
