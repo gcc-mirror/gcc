@@ -1,3 +1,8 @@
+2005-10-12  Joe Buck  <Joe.Buck@synopsys.com>
+
+	* docs/html/27_io/howto.html: Use reference to ifstream when
+	including iosfwd.
+
 2005-10-11  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR libstdc++/23926
