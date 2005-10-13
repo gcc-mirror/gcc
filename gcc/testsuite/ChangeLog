@@ -1,5 +1,9 @@
 2005-10-13  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	* gcc.dg/debug/dwarf2/dwarf-char1.c,
+	gcc.dg/debug/dwarf2/dwarf-char2.c,
+	gcc.dg/debug/dwarf2/dwarf-char3.c: Skip for mmix-*-*
+
 	* gcc.dg/intmax_t-1.c: Remove mmix-*-* from dg-error statement.
 
 2005-10-12  Danny Smith  <dannysmith@users.sourceforge.net>
