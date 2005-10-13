@@ -1,3 +1,8 @@
+2005-10-13  Thomas Koenig  <Thomas.Koenig@online.de>
+
+	* io/unix.c(fd_alloc_r_at):  Use read() instead of do_read()
+	only in case of special files (e.g. terminals).
+
 2005-20-13  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/fpu-387.h (set_fpu): Add "=m" for stmxcsr.
@@ -26,8 +31,8 @@
 
 2005-10-12  Janne Blomqvist <jblomqvi@cc.hut.fi>
 
-	* io/unix.c: Remove parts of patch of 2005/10/07 that cause
-	input from the terminal to hang.
+	* io/unix.c(fd_alloc_r_at): Remove parts of patch of 2005/10/07 that
+	cause input from the terminal to hang.
 
 2005-10-11  Steven G. Kargl  <kargls@comcast.net>
 
