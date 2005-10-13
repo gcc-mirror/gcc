@@ -1124,7 +1124,7 @@ analyze_offset_expr (tree expr,
 	return false;
 
       init = initial_condition_in_loop_num (access_fn, loop->num);
-      if (init == expr && !expr_invariant_in_loop_p (loop, init))
+      if (!expr_invariant_in_loop_p (loop, init))
 	/* Not enough information: may be not loop invariant.  
 	   E.g., for a[b[i]], we get a[D], where D=b[i]. EXPR is D, its 
 	   initial_condition is D, but it depends on i - loop's induction
