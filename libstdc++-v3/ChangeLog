@@ -1,3 +1,10 @@
+2005-10-13  Richard Earnshaw  <richard.earnsahw@arm.com>
+
+	PR libstdc++/23926
+	* acinclude.m4 (port_specific_symbol_files): More symbol versioning
+	fixes.
+	* configure: Regenerate.
+
 2005-10-13  Hans-Peter Nilsson  <hp@axis.com>
 
 	* testsuite/lib/libstdc++.exp (libstdc++_init): Require
