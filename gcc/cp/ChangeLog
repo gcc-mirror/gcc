@@ -1,3 +1,31 @@
+2005-10-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/22180
+	* call.c (build_new_method_call): Correct pretty-printing of
+	destructor names.
+	* pt.c (tsubst_qualified_id): Recognize invalid uses of "~T" as an
+	identifier. 
+
+	PR c++/23694
+	* decl.c (start_method): Return error_mark_node for errors.
+
+	PR c++/23307
+	* pt.c (push_template_decl_real): Complain about attempts to
+	declare template variables.
+
+	PR c++/22352
+	* pt.c (tsubst_template_parms): Set processing_template_decl while
+	processing the parameters.
+	(tsubst_decl): Set processing_template_decl when substituting into
+	a TEMPLATE_DECL.
+
+	PR c++/22405
+	* pt.c (most_specialized_instantiation): Robustify.
+
+	PR c++/22464
+	* semantics.c (finish_id_expression): Issue errors about uses of
+	local variables in containing functions even in templates.
+
 2005-10-12  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR target/21801
