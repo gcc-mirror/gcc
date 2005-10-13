@@ -2964,9 +2964,8 @@ push_template_decl_real (tree decl, int is_friend)
 	      return decl;
 	    }
 	}
-      else if ((DECL_IMPLICIT_TYPEDEF_P (decl)
-		&& CLASS_TYPE_P (TREE_TYPE (decl)))
-	       || (TREE_CODE (decl) == VAR_DECL && ctx && CLASS_TYPE_P (ctx)))
+      else if (DECL_IMPLICIT_TYPEDEF_P (decl)
+	       && CLASS_TYPE_P (TREE_TYPE (decl)))
 	/* OK */;
       else
 	{
@@ -5936,6 +5935,12 @@ tsubst_template_parms (tree parms, tree args, tsubst_flags_t complain)
   tree r = NULL_TREE;
   tree* new_parms;
 
+  /* When substituting into a template, we must set
+     PROCESSING_TEMPLATE_DECL as the template parameters may be
+     dependent if they are based on one-another, and the dependency
+     predicates are short-circuit outside of templates.  */
+  ++processing_template_decl;
+
   for (new_parms = &r;
        TMPL_PARMS_DEPTH (parms) > TMPL_ARGS_DEPTH (args);
        new_parms = &(TREE_CHAIN (*new_parms)),
@@ -5964,6 +5969,8 @@ tsubst_template_parms (tree parms, tree args, tsubst_flags_t complain)
 			     - TMPL_ARGS_DEPTH (args)),
 		   new_vec, NULL_TREE);
     }
+
+  --processing_template_decl;
 
   return r;
 }
@@ -6172,8 +6179,14 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	tmpl_args = DECL_CLASS_TEMPLATE_P (t) 
 	  ? CLASSTYPE_TI_ARGS (TREE_TYPE (t))
 	  : DECL_TI_ARGS (DECL_TEMPLATE_RESULT (t));
+	/* Because this is a template, the arguments will still be
+	   dependent, even after substitution.  If
+	   PROCESSING_TEMPLATE_DECL is not set, the dependency
+	   predicates will short-circuit.  */
+	++processing_template_decl;
 	full_args = tsubst_template_args (tmpl_args, args,
 					  complain, in_decl);
+	--processing_template_decl;
 
 	/* tsubst_template_args doesn't copy the vector if
 	   nothing changed.  But, *something* should have
@@ -6197,15 +6210,14 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	gcc_assert (DECL_LANG_SPECIFIC (r) != 0);
 	TREE_CHAIN (r) = NULL_TREE;
 
-	DECL_CONTEXT (r) 
-	  = tsubst_aggr_type (DECL_CONTEXT (t), args, 
-			      complain, in_decl, 
-			      /*entering_scope=*/1); 
 	DECL_TEMPLATE_INFO (r) = build_tree_list (t, args);
 
 	if (TREE_CODE (decl) == TYPE_DECL)
 	  {
-	    tree new_type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	    tree new_type;
+	    ++processing_template_decl;
+	    new_type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	    --processing_template_decl; 
 	    if (new_type == error_mark_node)
 	      return error_mark_node;
 
@@ -6213,10 +6225,14 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    CLASSTYPE_TI_TEMPLATE (new_type) = r;
 	    DECL_TEMPLATE_RESULT (r) = TYPE_MAIN_DECL (new_type);
 	    DECL_TI_ARGS (r) = CLASSTYPE_TI_ARGS (new_type);
+ 	    DECL_CONTEXT (r) = TYPE_CONTEXT (new_type);
 	  }
 	else
 	  {
-	    tree new_decl = tsubst (decl, args, complain, in_decl);
+	    tree new_decl;
+	    ++processing_template_decl;
+	    new_decl = tsubst (decl, args, complain, in_decl);
+	    --processing_template_decl;
 	    if (new_decl == error_mark_node)
 	      return error_mark_node;
 
@@ -6224,6 +6240,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    DECL_TI_TEMPLATE (new_decl) = r;
 	    TREE_TYPE (r) = TREE_TYPE (new_decl);
 	    DECL_TI_ARGS (r) = DECL_TI_ARGS (new_decl);
+	    DECL_CONTEXT (r) = DECL_CONTEXT (new_decl); 
 	  }
 
 	SET_DECL_IMPLICIT_INSTANTIATION (r);
@@ -7576,7 +7593,12 @@ tsubst_qualified_id (tree qualified_id, tree args,
   
   if (!BASELINK_P (name) && !DECL_P (expr))
     {
-      expr = lookup_qualified_name (scope, expr, /*is_type_p=*/0, false);
+      if (TREE_CODE (expr) == BIT_NOT_EXPR)
+	/* If this were actually a destructor call, it would have been
+	   parsed as such by the parser.  */
+	expr = error_mark_node;
+      else
+	expr = lookup_qualified_name (scope, expr, /*is_type_p=*/0, false);
       if (TREE_CODE (TREE_CODE (expr) == TEMPLATE_DECL
 		     ? DECL_TEMPLATE_RESULT (expr) : expr) == TYPE_DECL)
 	{
@@ -10755,13 +10777,15 @@ most_specialized_instantiation (tree instantiations)
 			     NULL_TREE, 0, DEDUCE_EXACT, -1))
 	fate++;
       
-      if (fate != 1)
+      if (fate == -1)
+	champ = fn;
+      else if (!fate)
 	{
-	  if (!fate)
-	    /* Equally specialized, move to next function.  If there
-	       is no next function, nothing's most specialized.  */
-	    fn = TREE_CHAIN (fn);
-	  champ = fn;
+	  /* Equally specialized, move to next function.  If there
+	     is no next function, nothing's most specialized.  */
+	  fn = TREE_CHAIN (fn);
+	  if (!fn)
+	    break;
 	}
     }
   
