@@ -133,7 +133,7 @@ proc libstdc++_init { testfile } {
     set v3-sharedlib 0
     set sharedlibdir [lookfor_file $blddir src/.libs/libstdc++.so]
     if {$sharedlibdir != ""} {
-	if { [string match "*-*-linux*" $target_triplet] } {
+	if { [string match "*-*-linux*" $target_triplet] && [isnative] } {
 	    set v3-sharedlib 1
 	    verbose -log "shared library support detected"
 	} 
