@@ -1,9 +1,16 @@
+2005-10-14  Uros Bizjak  <uros@kss-loka.si>
+
+	* config/fpu-387.h (set_fpu): Remove extra ":" in stmxcsr.
+	Change cw and cw_sse variables to unsigned.
+	(SSE): New definition.
+	(has_sse): Use it.
+
 2005-10-13  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	* io/unix.c(fd_alloc_r_at):  Use read() instead of do_read()
 	only in case of special files (e.g. terminals).
 
-2005-20-13  Uros Bizjak  <uros@kss-loka.si>
+2005-10-13  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/fpu-387.h (set_fpu): Add "=m" for stmxcsr.
 
