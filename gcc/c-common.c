@@ -3588,25 +3588,32 @@ c_add_case_label (splay_tree cases, tree cond, tree orig_type,
     {
       low_value = check_case_value (low_value);
       low_value = convert_and_check (type, low_value);
+      if (low_value == error_mark_node)
+	goto error_out;
+      /* Do not propagate any overflow information past this point.
+	 It is safe to just clear the flags, as any constants with
+	 them set will not be shared.  */
+      TREE_CONSTANT_OVERFLOW (low_value) = TREE_OVERFLOW (low_value) = 0;
     }
   if (high_value)
     {
       high_value = check_case_value (high_value);
       high_value = convert_and_check (type, high_value);
+      if (high_value == error_mark_node)
+	goto error_out;
+      TREE_CONSTANT_OVERFLOW (high_value) = TREE_OVERFLOW (high_value) = 0;
     }
 
-  /* If an error has occurred, bail out now.  */
-  if (low_value == error_mark_node || high_value == error_mark_node)
-    goto error_out;
-
-  /* If the LOW_VALUE and HIGH_VALUE are the same, then this isn't
-     really a case range, even though it was written that way.  Remove
-     the HIGH_VALUE to simplify later processing.  */
-  if (tree_int_cst_equal (low_value, high_value))
-    high_value = NULL_TREE;
-  if (low_value && high_value
-      && !tree_int_cst_lt (low_value, high_value))
-    warning (0, "empty range specified");
+  if (low_value && high_value)
+    {
+      /* If the LOW_VALUE and HIGH_VALUE are the same, then this isn't
+         really a case range, even though it was written that way.
+         Remove the HIGH_VALUE to simplify later processing.  */
+      if (tree_int_cst_equal (low_value, high_value))
+	high_value = NULL_TREE;
+      else if (!tree_int_cst_lt (low_value, high_value))
+	warning (0, "empty range specified");
+    }
 
   /* See if the case is in range of the type of the original testing
      expression.  If both low_value and high_value are out of range,
