@@ -1,3 +1,8 @@
+2005-10-13  David Edelsohn  <edelsohn@gnu.org>
+
+	PR c++/23730
+	* g++.dg/parse/crash32.C: New test.
+
 2005-10-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20721
