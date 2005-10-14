@@ -1,3 +1,10 @@
+2005-10-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/21304
+	* tree-dfa.c (add_referenced_var): Only look at decls which
+	have TREE_CONSTANT or TREE_READONLY set instead of if
+	!TREE_PUBLIC or !TREE_CONSTANT.
+
 2005-10-13  James E Wilson  <wilson@specifix.com>
 
 	* doc/invoke.texi: For -x, add f95-cpp-input.
