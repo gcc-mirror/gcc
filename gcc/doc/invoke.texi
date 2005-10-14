@@ -923,7 +923,7 @@ objective-c++ objective-c++-header objective-c++-cpp-output
 assembler  assembler-with-cpp
 ada
 f77  f77-cpp-input  ratfor
-f95
+f95  f95-cpp-input
 java
 treelang
 @end smallexample
