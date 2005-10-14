@@ -4216,21 +4216,6 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	  else
 	    warning (0, "converting to %qT from %qT", t, TREE_TYPE (expr));
 	}
-      /* And warn about assigning a negative value to an unsigned
-	 variable.  */
-      else if (TYPE_UNSIGNED (t) && TREE_CODE (t) != BOOLEAN_TYPE)
-	{
-	  if (TREE_CODE (expr) == INTEGER_CST && TREE_NEGATED_INT (expr))
-	    {
-	      if (fn)
-		warning (0, "passing negative value %qE for argument %P to %qD",
-			 expr, argnum, fn);
-	      else
-		warning (0, "converting negative value %qE to %qT", expr, t);
-	    }
-
-	  overflow_warning (expr);
-	}
     }
 
   switch (convs->kind)
@@ -4430,8 +4415,13 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
     default:
       break;
     }
-  return ocp_convert (totype, expr, CONV_IMPLICIT,
-		      LOOKUP_NORMAL|LOOKUP_NO_CONVERSION);
+
+  if (issue_conversion_warnings)
+    expr = convert_and_check (totype, expr);
+  else
+    expr = convert (totype, expr);
+
+  return expr;
 }
 
 /* Build a call to __builtin_trap.  */
