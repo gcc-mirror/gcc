@@ -1,3 +1,9 @@
+2005-10-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/17796
+	* optimize.c (update_cloned_parm): Add FIRST parameter. Use it.
+	(maybe_clone_body): Track the first clone.
+
 2005-10-13  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/23984
