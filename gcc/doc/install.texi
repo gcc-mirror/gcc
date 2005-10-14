@@ -1054,7 +1054,7 @@ their runtime libraries should be built.  For a list of valid values for
 grep language= */config-lang.in
 @end smallexample
 Currently, you can use any of the following:
-@code{all}, @code{ada}, @code{c}, @code{c++}, @code{f95}, @code{java},
+@code{all}, @code{ada}, @code{c}, @code{c++}, @code{fortran}, @code{java},
 @code{objc}, @code{obj-c++}, @code{treelang}.
 Building the Ada compiler has special requirements, see below.
 If you do not pass this flag, or specify the option @code{all}, then all

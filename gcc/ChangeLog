@@ -1,3 +1,7 @@
+2005-10-13  James E Wilson  <wilson@specifix.com>
+
+	* doc/install.texi: For --enable-languages doc, change f95 to fortran.
+
 2005-10-12  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	PR tree-optimization/24262
