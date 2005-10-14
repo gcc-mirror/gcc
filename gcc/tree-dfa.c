@@ -651,9 +651,9 @@ add_referenced_var (tree var, struct walk_state *walk_state)
 	     optimizers.  */
           && !DECL_EXTERNAL (var)
 	  /* It's not necessary to walk the initial value of non-constant
-	     public variables because it cannot be propagated by the
+	     variables because it cannot be propagated by the
 	     optimizers.  */
-	  && (!TREE_PUBLIC (var) || !TREE_CONSTANT (var)))
+	  && (TREE_CONSTANT (var) || TREE_READONLY (var)))
       	walk_tree (&DECL_INITIAL (var), find_vars_r, walk_state, 0);
     }
 }
