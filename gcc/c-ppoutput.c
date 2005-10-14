@@ -256,7 +256,8 @@ print_line (source_location src_loc, const char *special_flags)
       p = cpp_quote_string (to_file_quoted,
 			    (unsigned char *) map->to_file, to_file_len);
       *p = '\0';
-      fprintf (print.outf, "# %u \"%s\"%s", print.src_line,
+      fprintf (print.outf, "# %u \"%s\"%s",
+	       print.src_line == 0 ? 1 : print.src_line,
 	       to_file_quoted, special_flags);
 
       if (map->sysp == 2)
