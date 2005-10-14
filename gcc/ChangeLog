@@ -1,3 +1,8 @@
+2005-10-14  Per Bothner  <per@bothner.com>
+
+	PR preprocessor/21250
+	* c-ppoutput.c (print_line): Print internal line 0 as 1.
+
 2005-10-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/22551
