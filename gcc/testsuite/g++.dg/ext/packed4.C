@@ -1,4 +1,5 @@
 // { dg-do run }
+// { dg-options "-w" }
 
 // Copyright (C) 2003 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 15 Jul 2003 <nathan@codesourcery.com>

@@ -1,5 +1,6 @@
 /* { dg-do run } */
-/* { dg-options "-O3" { target powerpc*-*-* } } */
+/* { dg-options "-w" } */
+/* { dg-options "-O3 -w" { target powerpc*-*-* } } */
 #include <stdio.h>
 #include <stdlib.h>
 

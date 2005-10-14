@@ -1,3 +1,15 @@
+2005-10-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19565
+	* call.c (convert_like_real): Rely on convert_and_check to issue
+	warnings about overflow and conversion to unsigned.
+	* decl.c (finish_enum): Use the location of the enumerators, not
+	the closing brace of the enumeration, when reporting warnings
+	about conversions.
+	(build_enumerator): Use error_mark_node for erroneous values.
+	* typeck2.c (digest_init): Remove reference to "signature pointer"
+	from comment.
+
 2005-10-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/17796
