@@ -1,3 +1,9 @@
+2005-10-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/22551
+	* c-common.c (c_add_case_label): Clear LOW_VALUE and HIGH_VALUE's
+	overflow flags.  Refactor some conditionals.
+
 2005-10-13  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* expmed.c (expand_shift): Don't use the target of the rotate as
