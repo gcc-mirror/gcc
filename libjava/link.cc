@@ -1542,11 +1542,12 @@ _Jv_Linker::add_miranda_methods (jclass base, jclass iface_class)
 void
 _Jv_Linker::ensure_method_table_complete (jclass klass)
 {
-  if (klass->vtable != NULL || klass->isInterface())
+  if (klass->vtable != NULL)
     return;
 
   // We need our superclass to have its own Miranda methods installed.
-  wait_for_state (klass->getSuperclass (), JV_STATE_LOADED);
+  if (! klass->isInterface())
+    wait_for_state (klass->getSuperclass (), JV_STATE_LOADED);
 
   // A class might have so-called "Miranda methods".  This is a method
   // that is declared in an interface and not re-declared in an

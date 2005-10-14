@@ -1,3 +1,9 @@
+2005-10-12  Andrew Haley  <aph@redhat.com>
+
+        PR java/24251
+        * link.cc (ensure_method_table_complete): Install Miranda methods
+        for interfaces too.
+
 2005-10-12  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* testsuite/libjava.lang/pr13107_2.xfail: Remove xfail.
