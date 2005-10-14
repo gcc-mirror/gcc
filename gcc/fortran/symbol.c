@@ -308,6 +308,9 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
   conf (in_common, dummy);
   conf (in_common, allocatable);
   conf (in_common, result);
+  conf (in_common, save);
+  conf (result, save);
+
   conf (dummy, result);
 
   conf (in_equivalence, use_assoc);

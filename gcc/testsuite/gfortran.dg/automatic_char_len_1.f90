@@ -7,5 +7,3 @@ character*(i) :: c1, c2
 c1 = ""
 c2 = ""
 end subroutine snafu
-
-

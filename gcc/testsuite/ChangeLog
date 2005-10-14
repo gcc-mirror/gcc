@@ -1,3 +1,17 @@
+2005-10-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/18082
+	* gfortran.dg/automatic_char_len_1.f90: New test.
+
+	PR fortran/20847
+	* gfortran.dg/save_common.f90: New test.
+
+	PR fortran/20856
+	* gfortran.dg/save_result.f90: New test.
+
+	PR fortran/24092
+	* gfortran.dg/derived_pointer_recursion.f90: New test.
+
 2005-10-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20721

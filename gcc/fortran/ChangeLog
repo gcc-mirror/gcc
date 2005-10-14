@@ -1,3 +1,23 @@
+2005-10-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/20847
+	PR fortran/20856
+	* symbol.c (check_conflict): Prevent common variables and
+	function results from having the SAVE attribute,as required
+	by the standard.
+
+	PR fortran/24092
+	* trans-types.c (gfc_get_derived_type): Insert code to obtain backend
+	declaration for derived types, building if necessary.  Return the
+	derived type if the fields have been built by this process.  Otherwise,
+	continue as before but using the already obtained backend_decls for the
+	derived type components.  Change the gcc_assert to act on the field.
+
+	PR fortran/18082
+	* decl.c (variable_decl): Make a new copy of the character
+	length for each variable, when the expression is not a
+	constant.
+
 2005-10-12  Paul Thomas  <pault@gcc.gnu.org>
 	
 	PR fortran/16404
