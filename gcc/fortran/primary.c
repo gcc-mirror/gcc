@@ -351,10 +351,13 @@ match_boz_constant (gfc_expr ** result)
         {
 	case 2:
           gfc_error ("Empty set of digits in binary constant at %C");
+	  break;
 	case 8:
           gfc_error ("Empty set of digits in octal constant at %C");
+	  break;
 	case 16:
           gfc_error ("Empty set of digits in hexadecimal constant at %C");
+	  break;
         default:
 	  gcc_unreachable ();
         }
@@ -367,10 +370,13 @@ match_boz_constant (gfc_expr ** result)
         {
 	case 2:
 	  gfc_error ("Illegal character in binary constant at %C");
+	  break;
 	case 8:
 	  gfc_error ("Illegal character in octal constant at %C");
+	  break;
 	case 16:
 	  gfc_error ("Illegal character in hexadecimal constant at %C");
+	  break;
 	default:
 	  gcc_unreachable ();
 	}

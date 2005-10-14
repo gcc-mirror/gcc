@@ -1,3 +1,7 @@
+2005-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* primary.c (match_boz_constant): Add missing break after gfc_error.
+
 2005-10-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24092
