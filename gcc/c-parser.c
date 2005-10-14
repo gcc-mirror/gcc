@@ -3776,8 +3776,9 @@ static void
 c_parser_for_statement (c_parser *parser)
 {
   tree block, cond, incr, save_break, save_cont, body;
-  location_t loc = UNKNOWN_LOCATION;
+  location_t loc;
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_FOR));
+  loc = c_parser_peek_token (parser)->location;
   c_parser_consume_token (parser);
   block = c_begin_compound_stmt (flag_isoc99);
   if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
