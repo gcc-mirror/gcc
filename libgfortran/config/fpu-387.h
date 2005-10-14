@@ -28,6 +28,7 @@ License along with libgfortran; see the file COPYING.  If not,
 write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
+#define SSE	(1 << 25)
 
 static int
 has_sse (void)
@@ -58,7 +59,7 @@ has_sse (void)
 		: "=a" (eax), "=r" (ebx), "=c" (ecx), "=d" (edx)
 		: "0" (1));
 
-  if (edx & (1 << 25))
+  if (edx & SSE)
     return 1;
 
   return 0;
@@ -67,8 +68,8 @@ has_sse (void)
 
 void set_fpu (void)
 {
-  short cw;
-  int cw_sse;
+  unsigned short cw;
+  unsigned int cw_sse;
 
   /* i387 -- see linux <fpu_control.h> header file for details.  */
 #define _FPU_MASK_IM  0x01
@@ -90,7 +91,7 @@ void set_fpu (void)
   if (has_sse())
     {
       /* SSE */
-      asm volatile ("stmxcsr %0" : : "=m" (cw_sse));
+      asm volatile ("stmxcsr %0" : "=m" (cw_sse));
       cw_sse &= 0xFFFF0000;
       if (options.fpe & GFC_FPE_INVALID) cw_sse |= 1 << 7;
       if (options.fpe & GFC_FPE_DENORMAL) cw_sse |= 1 << 8;
