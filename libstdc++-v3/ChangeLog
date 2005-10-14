@@ -1,3 +1,8 @@
+2005-10-14  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/hashtable (hashtable::m_erase): Rename to erase_node.
+	(hashtable::erase(iterator), erase(const_iterator)): Adjust.
+
 2005-10-13  Richard Earnshaw  <richard.earnsahw@arm.com>
 
 	PR libstdc++/23926

@@ -329,7 +329,8 @@ namespace Internal
       { 
 	hashtable_iterator tmp(*this);
 	this->incr();
-	return tmp; }
+	return tmp;
+      }
     };
 
   template<typename Value, bool constant_iterators, bool cache>
@@ -374,7 +375,8 @@ namespace Internal
       { 
 	hashtable_const_iterator tmp(*this);
 	this->incr();
-	return tmp; }
+	return tmp;
+      }
     };
 } // namespace Internal
 
@@ -1169,6 +1171,9 @@ namespace tr1
       iterator
       insert(const value_type&, std::tr1::false_type);
 
+      void
+      erase_node(node*, node**);
+
     public:				// Insert and erase
       Insert_Return_Type
       insert(const value_type& v) 
@@ -1191,25 +1196,21 @@ namespace tr1
 
       iterator
       erase(iterator);
-  
+
       const_iterator
       erase(const_iterator);
- 
+
       size_type
       erase(const key_type&);
 
       iterator
       erase(iterator, iterator);
-	
+
       const_iterator
       erase(const_iterator, const_iterator);
 
       void
       clear();
-      
-    private:
-      // For erase(iterator) and erase(const_iterator).
-      void m_erase(node*, node**);
 
     public:
       // Set number of buckets to be apropriate for container of n element.
@@ -1673,6 +1674,33 @@ namespace tr1
       return iterator(new_node, m_buckets + n);
     }
 
+  // For erase(iterator) and erase(const_iterator).
+  template<typename K, typename V, 
+	   typename A, typename Ex, typename Eq,
+	   typename H1, typename H2, typename H, typename RP,
+	   bool c, bool ci, bool u>
+    void
+    hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
+    erase_node(node* p, node** b)
+    {
+      node* cur = *b;
+      if (cur == p)
+	*b = cur->m_next;
+      else
+	{
+	  node* next = cur->m_next;
+	  while (next != p)
+	    {
+	      cur = next;
+	      next = cur->m_next;
+	    }
+	  cur->m_next = next->m_next;
+	}
+
+      m_deallocate_node (p);
+      --m_element_count;
+    }
+
   template<typename K, typename V, 
 	   typename A, typename Ex, typename Eq,
 	   typename H1, typename H2, typename H, typename RP,
@@ -1702,7 +1730,7 @@ namespace tr1
     {
       iterator result = i;
       ++result;
-      m_erase(i.m_cur_node, i.m_cur_bucket);
+      erase_node(i.m_cur_node, i.m_cur_bucket);
       return result;
     }
   
@@ -1716,7 +1744,7 @@ namespace tr1
     {
       const_iterator result = i;
       ++result;
-      m_erase(i.m_cur_node, i.m_cur_bucket);
+      erase_node(i.m_cur_node, i.m_cur_bucket);
       return result;
     }
 
@@ -1824,32 +1852,6 @@ namespace tr1
 	  m_element_count = 0;
 	  __throw_exception_again;
 	}
-    }
-
-  template<typename K, typename V, 
-	   typename A, typename Ex, typename Eq,
-	   typename H1, typename H2, typename H, typename RP,
-	   bool c, bool ci, bool u>
-    void
-    hashtable<K, V, A, Ex, Eq, H1, H2, H, RP, c, ci, u>::
-    m_erase(node* p, node** b)
-    {
-      node* cur = *b;
-      if (cur == p)
-	*b = cur->m_next;
-      else
-	{
-	  node* next = cur->m_next;
-	  while (next != p)
-	    {
-	      cur = next;
-	      next = cur->m_next;
-	    }
-	  cur->m_next = next->m_next;
-	}
-
-      m_deallocate_node (p);
-      --m_element_count;
     }
 }
 }				// Namespace std::tr1
