@@ -45,7 +45,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Prototypes.  */
 
-static void update_cloned_parm (tree, tree);
+static void update_cloned_parm (tree, tree, bool);
 
 /* CLONED_PARM is a copy of CLONE, generated for a cloned constructor
    or destructor.  Update it to ensure that the source-position for
@@ -53,7 +53,7 @@ static void update_cloned_parm (tree, tree);
    debugging generation code will be able to find the original PARM.  */
 
 static void
-update_cloned_parm (tree parm, tree cloned_parm)
+update_cloned_parm (tree parm, tree cloned_parm, bool first)
 {
   DECL_ABSTRACT_ORIGIN (cloned_parm) = parm;
 
@@ -63,7 +63,7 @@ update_cloned_parm (tree parm, tree cloned_parm)
   /* The definition might have different constness.  */
   TREE_READONLY (cloned_parm) = TREE_READONLY (parm);
   
-  TREE_USED (cloned_parm) = TREE_USED (parm);
+  TREE_USED (cloned_parm) = !first || TREE_USED (parm);
   
   /* The name may have changed from the declaration.  */
   DECL_NAME (cloned_parm) = DECL_NAME (parm);
@@ -78,6 +78,7 @@ bool
 maybe_clone_body (tree fn)
 {
   tree clone;
+  bool first = true;
 
   /* We only clone constructors and destructors.  */
   if (!DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn)
@@ -117,7 +118,7 @@ maybe_clone_body (tree fn)
       parm = DECL_ARGUMENTS (fn);
       clone_parm = DECL_ARGUMENTS (clone);
       /* Update the `this' parameter, which is always first.  */
-      update_cloned_parm (parm, clone_parm);
+      update_cloned_parm (parm, clone_parm, first);
       parm = TREE_CHAIN (parm);
       clone_parm = TREE_CHAIN (clone_parm);
       if (DECL_HAS_IN_CHARGE_PARM_P (fn))
@@ -129,7 +130,7 @@ maybe_clone_body (tree fn)
       for (; parm;
 	   parm = TREE_CHAIN (parm), clone_parm = TREE_CHAIN (clone_parm))
 	/* Update this parameter.  */
-	update_cloned_parm (parm, clone_parm);
+	update_cloned_parm (parm, clone_parm, first);
 
       /* Start processing the function.  */
       start_preparsed_function (clone, NULL_TREE, SF_PRE_PARSED);
@@ -205,6 +206,7 @@ maybe_clone_body (tree fn)
       finish_function (0);
       BLOCK_ABSTRACT_ORIGIN (DECL_INITIAL (clone)) = DECL_INITIAL (fn);
       expand_or_defer_fn (clone);
+      first = false;
     }
   pop_from_top_level ();
 
