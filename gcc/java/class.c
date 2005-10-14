@@ -319,6 +319,9 @@ make_class (void)
 {
   tree type;
   type = make_node (RECORD_TYPE);
+  /* Unfortunately we must create the binfo here, so that class
+     loading works.  */
+  TYPE_BINFO (type) = make_tree_binfo (0);
   MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC (type);
 
   return type;
@@ -468,7 +471,8 @@ set_super_info (int access_flags, tree this_class,
   if (super_class)
     total_supers++;
 
-  TYPE_BINFO (this_class) = make_tree_binfo (total_supers);
+  if (total_supers)
+    TYPE_BINFO (this_class) = make_tree_binfo (total_supers);
   TYPE_VFIELD (this_class) = TYPE_VFIELD (object_type_node);
   if (super_class)
     {

@@ -1,3 +1,10 @@
+2005-10-12  Nathan Sidwell  <nathan@codesourcery.com>
+	    Wil Mahan <wmahan@gmail.com>
+
+	PR java/23620
+	* class.c (make_class): Create empty binfo here.
+	(set_super_info): Only create binfo if we have superclasses.
+
 2005-10-03  Ranjit Mathew  <rmathew@gcc.gnu.org>
 
 	PR java/24127
