@@ -7,6 +7,10 @@
 	scope is ts_global.  Don't push tag into template parameter
 	scope.
 
+	PR c++/23984
+	* class.c (build_base_path): The vtable is always the first thing
+	in the vtt.
+
 2005-10-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20721
