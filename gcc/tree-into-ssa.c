@@ -619,8 +619,7 @@ add_new_name_mapping (tree new, tree old)
       WALK_DATA->GLOBAL_DATA->KILLS.
 
    2- If S uses a variable VAR and there is no preceding kill of VAR,
-      then it is marked in marked in the LIVEIN_BLOCKS bitmap
-      associated with VAR.
+      then it is marked in the LIVEIN_BLOCKS bitmap associated with VAR.
 
    This information is used to determine which variables are live
    across block boundaries to reduce the number of PHI nodes

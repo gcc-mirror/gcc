@@ -1,3 +1,8 @@
+2005-10-15  Ranjit Mathew  <rmathew@gcc.gnu.org>
+
+	* tree-into-ssa.c (mark_def_sites): Correct minor typo in
+	function comment.
+
 2005-10-14  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c/23439
