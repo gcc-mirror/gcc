@@ -3497,8 +3497,11 @@ vrp_meet (value_range_t *vr0, value_range_t *vr1)
 	  && !symbolic_range_p (vr1)
 	  && !value_ranges_intersect_p (vr0, vr1))
 	{
+	  /* Copy most of VR1 into VR0.  Don't copy VR1's equivalence
+	     set.  We need to compute the intersection of the two
+	     equivalence sets.  */
 	  if (vr1->type == VR_ANTI_RANGE)
-	    copy_value_range (vr0, vr1);
+	    set_value_range (vr0, vr1->type, vr1->min, vr1->max, vr0->equiv);
 
 	  /* The resulting set of equivalences is the intersection of
 	     the two sets.  */
@@ -3609,7 +3612,7 @@ vrp_visit_phi_node (tree phi)
   /* To prevent infinite iterations in the algorithm, derive ranges
      when the new value is slightly bigger or smaller than the
      previous one.  */
-  if (lhs_vr->type == VR_RANGE)
+  if (lhs_vr->type == VR_RANGE && vr_result.type == VR_RANGE)
     {
       if (!POINTER_TYPE_P (TREE_TYPE (lhs)))
 	{

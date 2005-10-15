@@ -1,3 +1,13 @@
+2005-10-15  Diego Novillo  <dnovillo@redhat.com>
+
+	PR 23141
+	PR 23142
+	* tree-vrp.c (vrp_meet): Fix the intersection of equivalence
+	sets VR0->EQUIV and VR1->EQUIV when meeting a range and an
+	anti-range.
+	(vrp_visit_phi_node): Only prevent infinite iterations when
+	the previous result and the new result are both VR_RANGEs.
+
 2005-10-15  Ranjit Mathew  <rmathew@gcc.gnu.org>
 
 	* tree-into-ssa.c (mark_def_sites): Correct minor typo in
