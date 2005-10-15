@@ -1,3 +1,7 @@
+2005-10-15  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/functional: Add missing #pragma GCC system_header.
+
 2005-10-14  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/hashtable (hashtable::m_erase): Rename to erase_node.
