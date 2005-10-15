@@ -34,6 +34,8 @@
 #ifndef _TR1_FUNCTIONAL
 #define _TR1_FUNCTIONAL 1
 
+#pragma GCC system_header
+
 #include "../functional"
 #include <typeinfo>
 #include <tr1/type_traits>
