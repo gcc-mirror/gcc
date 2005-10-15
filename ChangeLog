@@ -1,3 +1,7 @@
+2005-10-15  Jie Zhang  <jie.zhang@analog.com>
+
+	* MAINTAINERS (Write After Approval): Add self.
+
 2005-10-08  Kazu Hirata  <kazu@codesourcery.com>
 
 	* configure.in (arm-*-linux-gnueabi): Add to noconfigdirs
