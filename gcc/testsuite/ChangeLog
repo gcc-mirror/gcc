@@ -1,3 +1,8 @@
+2005-10-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21347
+	* g++.dg/warn/Wctor-dtor.C: New test.
+
 2005-10-14  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c/23439
