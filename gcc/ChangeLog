@@ -1,3 +1,11 @@
+2005-10-15  James E Wilson  <wilson@specifix.com>
+
+	PR target/24232
+	* sched-deps.c (add_dependence_list): New arg UNCOND.  Fix all callers.
+	(add_dependence_list_and_free): Likewise.
+	(sched_analyze_2, case MEM): Delete sched_insns_conditions_mutex_p
+	call.
+
 2005-10-15  Diego Novillo  <dnovillo@redhat.com>
 
 	PR 23141
