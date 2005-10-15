@@ -1537,7 +1537,10 @@ maybe_warn_about_overly_private_class (tree t)
       return;
     }
 
-  if (TYPE_HAS_CONSTRUCTOR (t))
+  if (TYPE_HAS_CONSTRUCTOR (t)
+      /* Implicitly generated constructors are always public.  */
+      && (!CLASSTYPE_LAZY_DEFAULT_CTOR (t)
+	  || !CLASSTYPE_LAZY_COPY_CTOR (t)))
     {
       int nonprivate_ctor = 0;
 
