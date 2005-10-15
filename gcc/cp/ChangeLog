@@ -1,3 +1,9 @@
+2005-10-15  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21347
+	* class.c (maybe_warn_about_overly_private_class): Lazy
+	constructors are public.
+
 2005-10-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/17796
