@@ -2415,9 +2415,10 @@ pop_switch (void)
     switch_location = EXPR_LOCATION (cs->switch_stmt);
   else
     switch_location = input_location;
-  c_do_switch_warnings (cs->cases, switch_location,
-			SWITCH_STMT_TYPE (cs->switch_stmt),
-			SWITCH_STMT_COND (cs->switch_stmt));
+  if (!processing_template_decl)
+    c_do_switch_warnings (cs->cases, switch_location,
+			  SWITCH_STMT_TYPE (cs->switch_stmt),
+			  SWITCH_STMT_COND (cs->switch_stmt));
 
   splay_tree_delete (cs->cases);
   switch_stack = switch_stack->next;
