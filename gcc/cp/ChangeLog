@@ -1,3 +1,12 @@
+2005-10-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24389
+	* decl2.c (mark_used): Use uses_template_parms instead of
+	dependent_type_p.
+	* init.c (constant_value_1): Handle uninstantiated templates
+	specially.
+	* pt.c (instantiate_decl): Add sanity check.
+
 2005-10-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/23959

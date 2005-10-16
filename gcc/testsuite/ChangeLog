@@ -1,3 +1,9 @@
+2005-10-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24389
+	* g++.dg/template/static21.C: New test.
+	* g++.dg/template/static21-a.cc: Likewise.
+
 2005-10-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/23959

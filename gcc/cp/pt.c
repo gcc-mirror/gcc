@@ -11451,6 +11451,10 @@ instantiate_decl (tree d, int defer_ok, int undefined_ok)
   td = template_for_substitution (d);
   code_pattern = DECL_TEMPLATE_RESULT (td);
 
+  /* We should never be trying to instantiate a member of a class
+     template or partial specialization.  */ 
+  gcc_assert (d != code_pattern);
+ 
   if ((DECL_NAMESPACE_SCOPE_P (d) && !DECL_INITIALIZED_IN_CLASS_P (d))
       || DECL_TEMPLATE_SPECIALIZATION (td))
     /* In the case of a friend template whose definition is provided
