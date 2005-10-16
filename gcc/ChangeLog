@@ -1,5 +1,13 @@
 2005-10-16  Hans-Peter Nilsson  <hp@axis.com>
 
+	PR target/23424
+	* config/cris/cris.md ("*mov_side<mode>", "*mov_sidesisf")
+	("*mov_side<mode>_mem", "*mov_sidesisf_mem", "*clear_side<mode>")
+	("*ext_sideqihi", "*ext_side<mode>si", "*op_side<mode>")
+	("*op_swap_side<mode>", "*extopqihi_side", "*extop<mode>si_side")
+	("*extopqihi_swap_side", "*extop<mode>si_swap_side"): Have separate,
+	swapped, alternatives for the R constraint.
+
 	PR middle-end/24341
 	* builtins.c (get_builtin_sync_mode): Make unlimited
 	mode_for_size request.
