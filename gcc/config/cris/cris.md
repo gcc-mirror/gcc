@@ -503,36 +503,14 @@
 ;; Note that "i" is allowed to be a register.
 
 (define_insn "*mov_side<mode>"
-  [(set (match_operand:BW 0 "register_operand" "=r,r,r")
+  [(set (match_operand:BW 0 "register_operand" "=r,r,r,r,r")
 	(mem:BW
-	 (plus:SI (match_operand:SI 1 "cris_bdap_operand" "%r,r,r")
-		  (match_operand:SI 2 "cris_bdap_operand" "r>Rn,r,>Rn"))))
-   (set (match_operand:SI 3 "register_operand" "=*1,r,r")
+	 (plus:SI (match_operand:SI 1 "cris_bdap_operand" "%r,r,r,R,R")
+		  (match_operand:SI 2 "cris_bdap_operand" "r>Rn,r,>Rn,r,r"))))
+   (set (match_operand:SI 3 "register_operand" "=*1,r,r,*2,r")
 	(plus:SI (match_dup 1)
 		 (match_dup 2)))]
   "cris_side_effect_mode_ok (PLUS, operands, 3, 1, 2, -1, 0)"
-{
-  if (which_alternative == 0
-      && (GET_CODE (operands[2]) != CONST_INT
-	  || INTVAL (operands[2]) > 127
-	  || INTVAL (operands[2]) < -128
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
-	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')))
-    return "#";
-  return "move<m> [%3=%1%S2],%0";
-})
-
-(define_insn "*mov_sidesisf"
-  [(set (match_operand 0 "register_operand" "=r,r,r,x,x,x")
-	(mem
-	 (plus:SI
-	  (match_operand:SI 1 "cris_bdap_operand" "%r,r,r,r,r,r")
-	  (match_operand:SI 2 "cris_bdap_operand" "r>Rn,r,>Rn,r>Rn,r,>Rn"))))
-   (set (match_operand:SI 3 "register_operand" "=*1,r,r,*1,r,r")
-	(plus:SI (match_dup 1)
-		 (match_dup 2)))]
-  "GET_MODE_SIZE (GET_MODE (operands[0])) == UNITS_PER_WORD
-   && cris_side_effect_mode_ok (PLUS, operands, 3, 1, 2, -1, 0)"
 {
   if ((which_alternative == 0 || which_alternative == 3)
       && (GET_CODE (operands[2]) != CONST_INT
@@ -541,8 +519,39 @@
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')))
     return "#";
+  if (which_alternative == 4)
+    return "move<m> [%3=%2%S1],%0";
+  return "move<m> [%3=%1%S2],%0";
+})
+
+(define_insn "*mov_sidesisf"
+  [(set (match_operand 0 "register_operand" "=r,r,r,x,x,x,r,r,x,x")
+	(mem
+	 (plus:SI
+	  (match_operand:SI 1 "cris_bdap_operand" "%r,r,r,r,r,r,R,R,R,R")
+	  (match_operand:SI 2 "cris_bdap_operand" "r>Rn,r,>Rn,r>Rn,r,>Rn,r,r,r,r"))))
+   (set (match_operand:SI 3 "register_operand" "=*1,r,r,*1,r,r,*2,r,*2,r")
+	(plus:SI (match_dup 1)
+		 (match_dup 2)))]
+  "GET_MODE_SIZE (GET_MODE (operands[0])) == UNITS_PER_WORD
+   && cris_side_effect_mode_ok (PLUS, operands, 3, 1, 2, -1, 0)"
+{
+  if ((which_alternative == 0
+       || which_alternative == 3
+       || which_alternative == 6
+       || which_alternative == 8)
+      && (GET_CODE (operands[2]) != CONST_INT
+	  || INTVAL (operands[2]) > 127
+	  || INTVAL (operands[2]) < -128
+	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
+	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')))
+    return "#";
   if (which_alternative < 3)
     return "move.%s0 [%3=%1%S2],%0";
+  if (which_alternative == 7)
+    return "move.%s0 [%3=%2%S1],%0";
+  if (which_alternative == 9)
+    return "move [%3=%2%S1],%0";
   return "move [%3=%1%S2],%0";
 })
 
@@ -641,23 +650,25 @@
 
 (define_insn "*mov_side<mode>_mem"
   [(set (mem:BW
-	 (plus:SI (match_operand:SI 0 "cris_bdap_operand" "%r,r,r,r")
-		  (match_operand:SI 1 "cris_bdap_operand" "r>Rn,r>Rn,r,>Rn")))
-	(match_operand:BW 2 "register_operand" "r,r,r,r"))
-   (set (match_operand:SI 3 "register_operand" "=*0,!2,r,r")
+	 (plus:SI (match_operand:SI 0 "cris_bdap_operand" "%r,r,r,r,R,R,R")
+		  (match_operand:SI 1 "cris_bdap_operand" "r>Rn,r>Rn,r,>Rn,r,r,r")))
+	(match_operand:BW 2 "register_operand" "r,r,r,r,r,r,r"))
+   (set (match_operand:SI 3 "register_operand" "=*0,!*2,r,r,*1,!*2,r")
 	(plus:SI (match_dup 0)
 		 (match_dup 1)))]
   "cris_side_effect_mode_ok (PLUS, operands, 3, 0, 1, -1, 2)"
 {
-  if (which_alternative == 0
+  if ((which_alternative == 0 || which_alternative == 4)
       && (GET_CODE (operands[1]) != CONST_INT
 	  || INTVAL (operands[1]) > 127
 	  || INTVAL (operands[1]) < -128
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'N')
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'J')))
     return "#";
-  if (which_alternative == 1)
+  if (which_alternative == 1 || which_alternative == 5)
     return "#";
+  if (which_alternative == 6)
+    return "move.%s2 %2,[%3=%1%S0]";
   return "move<m> %2,[%3=%0%S1]";
 })
 
@@ -667,11 +678,11 @@
   [(set (mem
 	 (plus:SI
 	  (match_operand:SI
-	   0 "cris_bdap_operand" "%r,r,r,r,r,r,r,r")
+	   0 "cris_bdap_operand" "%r,r,r,r,r,r,r,r,R,R,R,R,R,R")
 	  (match_operand:SI
-	   1 "cris_bdap_operand" "r>Rn,r>Rn,r,>Rn,r>Rn,r>Rn,r,>Rn")))
-	(match_operand 2 "register_operand" "r,r,r,r,x,x,x,x"))
-   (set (match_operand:SI 3 "register_operand" "=*0,!2,r,r,*0,!2,r,r")
+	   1 "cris_bdap_operand" "r>Rn,r>Rn,r,>Rn,r>Rn,r>Rn,r,>Rn,r,r,r,r,r,r")))
+	(match_operand 2 "register_operand" "r,r,r,r,x,x,x,x,r,r,r,x,x,x"))
+   (set (match_operand:SI 3 "register_operand" "=*0,!2,r,r,*0,!2,r,r,*1,!*2,r,*1,!*2,r")
 	(plus:SI (match_dup 0)
 		 (match_dup 1)))]
   "GET_MODE_SIZE (GET_MODE (operands[2])) == UNITS_PER_WORD
@@ -684,10 +695,19 @@
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'N')
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'J')))
     return "#";
-  if (which_alternative == 1 || which_alternative == 5)
+  if (which_alternative == 1
+      || which_alternative == 5
+      || which_alternative == 8
+      || which_alternative == 9
+      || which_alternative == 11
+      || which_alternative == 12)
     return "#";
   if (which_alternative < 4)
     return "move.%s2 %2,[%3=%0%S1]";
+  if (which_alternative == 10)
+    return "move.%s2 %2,[%3=%1%S0]";
+  if (which_alternative == 13)
+    return "move %2,[%3=%1%S0]";
   return "move %2,[%3=%0%S1]";
 })
 
@@ -735,21 +755,23 @@
 
 (define_insn "*clear_side<mode>"
   [(set (mem:BWD
-	 (plus:SI (match_operand:SI 0 "cris_bdap_operand" "%r,r,r")
-		  (match_operand:SI 1 "cris_bdap_operand" "r>Rn,r,>Rn")))
+	 (plus:SI (match_operand:SI 0 "cris_bdap_operand" "%r,r,r,R,R")
+		  (match_operand:SI 1 "cris_bdap_operand" "r>Rn,r,>Rn,r,r")))
 	(const_int 0))
-   (set (match_operand:SI 2 "register_operand" "=*0,r,r")
+   (set (match_operand:SI 2 "register_operand" "=*0,r,r,*1,r")
 	(plus:SI (match_dup 0)
 		 (match_dup 1)))]
   "cris_side_effect_mode_ok (PLUS, operands, 2, 0, 1, -1, -1)"
 {
-  if (which_alternative == 0
+  if ((which_alternative == 0 || which_alternative == 3)
       && (GET_CODE (operands[1]) != CONST_INT
 	  || INTVAL (operands[1]) > 127
 	  || INTVAL (operands[1]) < -128
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'N')
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'J')))
     return "#";
+  if (which_alternative == 4)
+    return "clear<m> [%2=%1%S0]";
   return "clear<m> [%2=%0%S1]";
 })
 
@@ -1011,46 +1033,50 @@
 ;; QImode to HImode
 
 (define_insn "*ext_sideqihi"
-  [(set (match_operand:HI 0 "register_operand" "=r,r,r")
+  [(set (match_operand:HI 0 "register_operand" "=r,r,r,r,r")
 	(match_operator:HI
 	 4 "cris_extend_operator"
 	 [(mem:QI (plus:SI
-		   (match_operand:SI 1 "cris_bdap_operand" "%r,r,r")
-		   (match_operand:SI 2 "cris_bdap_operand" "r>Rn,r,>Rn")))]))
-   (set (match_operand:SI 3 "register_operand" "=*1,r,r")
+		   (match_operand:SI 1 "cris_bdap_operand" "%r,r,r,R,R")
+		   (match_operand:SI 2 "cris_bdap_operand" "r>Rn,r,>Rn,r,r")))]))
+   (set (match_operand:SI 3 "register_operand" "=*1,r,r,*2,r")
 	(plus:SI (match_dup 1)
 		 (match_dup 2)))]
   "cris_side_effect_mode_ok (PLUS, operands, 3, 1, 2, -1, 0)"
 {
-  if (which_alternative == 0
+  if ((which_alternative == 0 || which_alternative == 3)
       && (GET_CODE (operands[2]) != CONST_INT
 	  || INTVAL (operands[2]) > 127
 	  || INTVAL (operands[2]) < -128
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')))
     return "#";
+  if (which_alternative == 4)
+    return "mov%e4.%m4 [%3=%2%S1],%0";
   return "mov%e4.%m4 [%3=%1%S2],%0";
 })
 
 (define_insn "*ext_side<mode>si"
-  [(set (match_operand:SI 0 "register_operand" "=r,r,r")
+  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r,r")
 	(match_operator:SI
 	 4 "cris_extend_operator"
 	 [(mem:BW (plus:SI
-		   (match_operand:SI 1 "cris_bdap_operand" "%r,r,r")
-		   (match_operand:SI 2 "cris_bdap_operand" "r>Rn,r,>Rn")))]))
-   (set (match_operand:SI 3 "register_operand" "=*1,r,r")
+		   (match_operand:SI 1 "cris_bdap_operand" "%r,r,r,R,R")
+		   (match_operand:SI 2 "cris_bdap_operand" "r>Rn,r,>Rn,r,r")))]))
+   (set (match_operand:SI 3 "register_operand" "=*1,r,r,*2,r")
 	(plus:SI (match_dup 1)
 		 (match_dup 2)))]
   "cris_side_effect_mode_ok (PLUS, operands, 3, 1, 2, -1, 0)"
 {
-  if (which_alternative == 0
+  if ((which_alternative == 0 || which_alternative == 3)
       && (GET_CODE (operands[2]) != CONST_INT
 	  || INTVAL (operands[2]) > 127
 	  || INTVAL (operands[2]) < -128
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'N')
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'J')))
     return "#";
+  if (which_alternative == 4)
+    return "mov%e4<m> [%3=%2%S1],%0";
   return "mov%e4<m> [%3=%1%S2],%0";
 })
 
@@ -1307,25 +1333,27 @@
 ;; [rx=ry+i] ([%4=%2+%3])
 
 (define_insn "*op_side<mode>"
-  [(set (match_operand:BWD 0 "register_operand" "=r,r,r")
+  [(set (match_operand:BWD 0 "register_operand" "=r,r,r,r,r")
 	(match_operator:BWD
 	 5 "cris_orthogonal_operator"
-	 [(match_operand:BWD 1 "register_operand" "0,0,0")
+	 [(match_operand:BWD 1 "register_operand" "0,0,0,0,0")
 	  (mem:BWD (plus:SI
-		   (match_operand:SI 2 "cris_bdap_operand" "%r,r,r")
-		   (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn")))]))
-   (set (match_operand:SI 4 "register_operand" "=*2,r,r")
+		   (match_operand:SI 2 "cris_bdap_operand" "%r,r,r,R,R")
+		   (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn,r,r")))]))
+   (set (match_operand:SI 4 "register_operand" "=*2,r,r,*3,r")
 	(plus:SI (match_dup 2)
 		 (match_dup 3)))]
   "cris_side_effect_mode_ok (PLUS, operands, 4, 2, 3, -1, 0)"
 {
-  if (which_alternative == 0
+  if ((which_alternative == 0 || which_alternative == 3)
       && (GET_CODE (operands[3]) != CONST_INT
 	  || INTVAL (operands[3]) > 127
 	  || INTVAL (operands[3]) < -128
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'N')
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'J')))
     return "#";
+  if (which_alternative == 4)
+    return "%x5.%s0 [%4=%3%S2],%0";
   return "%x5<m> [%4=%2%S3],%0";
 })
 
@@ -1363,25 +1391,27 @@
 ;; QImode
 
 (define_insn "*op_swap_side<mode>"
-  [(set (match_operand:BWD 0 "register_operand" "=r,r,r")
+  [(set (match_operand:BWD 0 "register_operand" "=r,r,r,r,r")
 	(match_operator:BWD
 	 5 "cris_commutative_orth_op"
 	 [(mem:BWD
-	   (plus:SI (match_operand:SI 2 "cris_bdap_operand" "%r,r,r")
-		    (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn")))
-	  (match_operand:BWD 1 "register_operand" "0,0,0")]))
-   (set (match_operand:SI 4 "register_operand" "=*2,r,r")
+	   (plus:SI (match_operand:SI 2 "cris_bdap_operand" "%r,r,r,R,R")
+		    (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn,r,r")))
+	  (match_operand:BWD 1 "register_operand" "0,0,0,0,0")]))
+   (set (match_operand:SI 4 "register_operand" "=*2,r,r,*3,r")
 	(plus:SI (match_dup 2)
 		 (match_dup 3)))]
   "cris_side_effect_mode_ok (PLUS, operands, 4, 2, 3, -1, 0)"
 {
-  if (which_alternative == 0
+  if ((which_alternative == 0 || which_alternative == 3)
       && (GET_CODE (operands[3]) != CONST_INT
 	  || INTVAL (operands[3]) > 127
 	  || INTVAL (operands[3]) < -128
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'N')
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'J')))
     return "#";
+  if (which_alternative == 4)
+    return "%x5<m> [%4=%3%S2],%0";
   return "%x5<m> [%4=%2%S3],%0";
 })
 
@@ -1631,55 +1661,59 @@
 ;; QImode to HImode
 
 (define_insn "*extopqihi_side"
-  [(set (match_operand:HI 0 "register_operand" "=r,r,r")
+  [(set (match_operand:HI 0 "register_operand" "=r,r,r,r,r")
 	(match_operator:HI
 	 5 "cris_additive_operand_extend_operator"
-	 [(match_operand:HI 1 "register_operand" "0,0,0")
+	 [(match_operand:HI 1 "register_operand" "0,0,0,0,0")
 	  (match_operator:HI
 	   6 "cris_extend_operator"
 	   [(mem:QI
-	     (plus:SI (match_operand:SI 2 "cris_bdap_operand" "%r,r,r")
-		      (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn")
+	     (plus:SI (match_operand:SI 2 "cris_bdap_operand" "%r,r,r,R,R")
+		      (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn,r,r")
 		      ))])]))
-   (set (match_operand:SI 4 "register_operand" "=*2,r,r")
+   (set (match_operand:SI 4 "register_operand" "=*2,r,r,*3,r")
 	(plus:SI (match_dup 2)
 		 (match_dup 3)))]
   "cris_side_effect_mode_ok (PLUS, operands, 4, 2, 3, -1, 0)"
 {
-  if (which_alternative == 0
+  if ((which_alternative == 0 || which_alternative == 3)
       && (GET_CODE (operands[3]) != CONST_INT
 	  || INTVAL (operands[3]) > 127
 	  || INTVAL (operands[3]) < -128
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'N')
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'J')))
     return "#";
+  if (which_alternative == 4)
+    return "%x5%e6.%m6 [%4=%3%S2],%0";
   return "%x5%e6.%m6 [%4=%2%S3],%0";
 })
 
 (define_insn "*extop<mode>si_side"
-  [(set (match_operand:SI 0 "register_operand" "=r,r,r")
+  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r,r")
 	(match_operator:SI
 	 5 "cris_operand_extend_operator"
-	 [(match_operand:SI 1 "register_operand" "0,0,0")
+	 [(match_operand:SI 1 "register_operand" "0,0,0,0,0")
 	  (match_operator:SI
 	   6 "cris_extend_operator"
 	   [(mem:BW
-	     (plus:SI (match_operand:SI 2 "cris_bdap_operand" "%r,r,r")
-		      (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn")
+	     (plus:SI (match_operand:SI 2 "cris_bdap_operand" "%r,r,r,R,R")
+		      (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn,r,r")
 		      ))])]))
-   (set (match_operand:SI 4 "register_operand" "=*2,r,r")
+   (set (match_operand:SI 4 "register_operand" "=*2,r,r,*3,r")
 	(plus:SI (match_dup 2)
 		 (match_dup 3)))]
   "(GET_CODE (operands[5]) != UMIN || GET_CODE (operands[6]) == ZERO_EXTEND)
    && cris_side_effect_mode_ok (PLUS, operands, 4, 2, 3, -1, 0)"
 {
-  if (which_alternative == 0
+  if ((which_alternative == 0 || which_alternative == 3)
       && (GET_CODE (operands[3]) != CONST_INT
 	  || INTVAL (operands[3]) > 127
 	  || INTVAL (operands[3]) < -128
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'N')
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'J')))
     return "#";
+  if (which_alternative == 4)
+    return "%x5%e6<m> [%4=%3%S2],%0";
   return "%x5%e6<m> [%4=%2%S3],%0";
 })
 
@@ -1738,52 +1772,56 @@
 ;; QImode to HImode
 
 (define_insn "*extopqihi_swap_side"
-  [(set (match_operand:HI 0 "register_operand" "=r,r,r")
+  [(set (match_operand:HI 0 "register_operand" "=r,r,r,r,r")
 	(plus:HI
 	 (match_operator:HI
 	  5 "cris_extend_operator"
 	  [(mem:QI (plus:SI
-		    (match_operand:SI 2 "cris_bdap_operand" "%r,r,r")
-		    (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn")))])
-	 (match_operand:HI 1 "register_operand" "0,0,0")))
-   (set (match_operand:SI 4 "register_operand" "=*2,r,r")
+		    (match_operand:SI 2 "cris_bdap_operand" "%r,r,r,R,R")
+		    (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn,r,r")))])
+	 (match_operand:HI 1 "register_operand" "0,0,0,0,0")))
+   (set (match_operand:SI 4 "register_operand" "=*2,r,r,*3,r")
 	(plus:SI (match_dup 2)
 		 (match_dup 3)))]
   "cris_side_effect_mode_ok (PLUS, operands, 4, 2, 3, -1, 0)"
 {
-  if (which_alternative == 0
+  if ((which_alternative == 0 || which_alternative == 3)
       && (GET_CODE (operands[3]) != CONST_INT
 	  || INTVAL (operands[3]) > 127
 	  || INTVAL (operands[3]) < -128
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'N')
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'J')))
     return "#";
+  if (which_alternative == 4)
+    return "add%e5.b [%4=%3%S2],%0";
   return "add%e5.b [%4=%2%S3],%0";
 })
 
 (define_insn "*extop<mode>si_swap_side"
-  [(set (match_operand:SI 0 "register_operand" "=r,r,r")
+  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r,r")
 	(match_operator:SI
 	 6 "cris_plus_or_bound_operator"
 	 [(match_operator:SI
 	   5 "cris_extend_operator"
 	   [(mem:BW (plus:SI
-		     (match_operand:SI 2 "cris_bdap_operand" "%r,r,r")
-		     (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn")))])
-	  (match_operand:SI 1 "register_operand" "0,0,0")]))
-   (set (match_operand:SI 4 "register_operand" "=*2,r,r")
+		     (match_operand:SI 2 "cris_bdap_operand" "%r,r,r,R,R")
+		     (match_operand:SI 3 "cris_bdap_operand" "r>Rn,r,>Rn,r,r")))])
+	  (match_operand:SI 1 "register_operand" "0,0,0,0,0")]))
+   (set (match_operand:SI 4 "register_operand" "=*2,r,r,*3,r")
 	(plus:SI (match_dup 2)
 		 (match_dup 3)))]
   "(GET_CODE (operands[6]) != UMIN || GET_CODE (operands[5]) == ZERO_EXTEND)
    && cris_side_effect_mode_ok (PLUS, operands, 4, 2, 3, -1, 0)"
 {
-  if (which_alternative == 0
+  if ((which_alternative == 0 || which_alternative == 3)
       && (GET_CODE (operands[3]) != CONST_INT
 	  || INTVAL (operands[3]) > 127
 	  || INTVAL (operands[3]) < -128
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'N')
 	  || CONST_OK_FOR_LETTER_P (INTVAL (operands[3]), 'J')))
     return "#";
+  if (which_alternative == 4)
+    return \"%x6%e5.%m5 [%4=%3%S2],%0\";
   return "%x6%e5<m> [%4=%2%S3],%0";
 })
 
