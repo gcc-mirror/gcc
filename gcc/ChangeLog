@@ -1,5 +1,6 @@
 2005-10-16  Hans-Peter Nilsson  <hp@axis.com>
 
+	PR middle-end/24341
 	* builtins.c (get_builtin_sync_mode): Make unlimited
 	mode_for_size request.
 
