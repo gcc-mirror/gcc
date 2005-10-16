@@ -1,5 +1,12 @@
 2005-10-15  Richard Henderson  <rth@redhat.com>
 
+	* gimplify.c (gimplify_var_or_parm_decl): Split out from ...
+	(gimplify_expr): ... here.
+	(gimplify_compound_lval): Use it in initial scan loop.  Allow
+	fb_lvalue in base expression.
+
+2005-10-15  Richard Henderson  <rth@redhat.com>
+
 	PR 23714
 	* builtins.c (expand_builtin_trap): Export.
 	* expr.h (expand_builtin_trap): Declare.
@@ -418,7 +425,7 @@
 2005-10-06  Daniel Berlin  <dberlin@dberlin.org>
 	
 	* tree-ssa-structalias.c (check_for_overlaps): Fix bug in last
-        change.
+	change.
 
 2005-10-06  Richard Henderson  <rth@redhat.com>
 
@@ -1000,8 +1007,8 @@
 2005-09-23  Fariborz Jahanian <fjahanian@apple.com>
 
 	PR target/23847
-        * config/rs6000/rs6000.c (rs6000_function_value): Parallel pattern
-        for __complex__ double in -mcpu=G5 mode.
+	* config/rs6000/rs6000.c (rs6000_function_value): Parallel pattern
+	for __complex__ double in -mcpu=G5 mode.
 
 2005-09-26  Sebastian Pop  <pop@cri.ensmp.fr>
 
@@ -1026,7 +1033,7 @@
 
 2005-09-26    Fariborz Jahanian <fjahanian@apple.com>
 
-        * combine.c (make_extraction): Check for valid use of subreg.
+	* combine.c (make_extraction): Check for valid use of subreg.
 
 2005-09-26  Uros Bizjak  <uros@kss-loka.si>
 
@@ -1170,10 +1177,10 @@
 
 2005-09-22  David Edelsohn  <edelsohn@gnu.org>
 
-        PR target/24007
-        * config/rs6000/rs6000.md (movsf_hardfloat): Ignore special
-        registers when choosing register preferences.
-        (movdf_hardfloat64): Same.
+	PR target/24007
+	* config/rs6000/rs6000.md (movsf_hardfloat): Ignore special
+	registers when choosing register preferences.
+	(movdf_hardfloat64): Same.
 
 2005-09-22  Andreas Krebbel  <krebbel1@de.ibm.com>
 
