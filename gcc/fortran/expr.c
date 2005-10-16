@@ -1355,7 +1355,7 @@ check_inquiry (gfc_expr * e)
   /* FIXME: This should be moved into the intrinsic definitions,
      to eliminate this ugly hack.  */
   static const char * const inquiry_function[] = {
-    "digits", "epsilon", "huge", "kind", "maxexponent", "minexponent",
+    "digits", "epsilon", "huge", "kind", "len", "maxexponent", "minexponent",
     "precision", "radix", "range", "tiny", "bit_size", "size", "shape",
     "lbound", "ubound", NULL
   };
@@ -1376,10 +1376,9 @@ check_inquiry (gfc_expr * e)
   if (e == NULL || e->expr_type != EXPR_VARIABLE)
     return FAILURE;
 
-  /* At this point we have a numeric inquiry function with a variable
-     argument.  The type of the variable might be undefined, but we
-     need it now, because the arguments of these functions are allowed
-     to be undefined.  */
+  /* At this point we have an inquiry function with a variable argument.  The
+     type of the variable might be undefined, but we need it now, because the
+     arguments of these functions are allowed to be undefined.  */
 
   if (e->ts.type == BT_UNKNOWN)
     {
