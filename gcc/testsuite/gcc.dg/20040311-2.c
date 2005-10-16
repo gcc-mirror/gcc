@@ -1,5 +1,5 @@
 /* PR target/14533 */
-/* { dg-do compile } */
+/* { dg-do compile { target fpic } } */
 /* { dg-options "-O2 -fpic" } */
 
 void bar (char *, int);

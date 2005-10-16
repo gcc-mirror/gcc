@@ -1,6 +1,6 @@
 /* This testcase ICEd on x86-64 because LABEL_REF + small const was not
    considered as local_symbolic_operand.  */
-/* { dg-do compile } */
+/* { dg-do compile { target fpic } } */
 /* { dg-options "-O2 -fpic" } */
 
 typedef __builtin_va_list va_list;
