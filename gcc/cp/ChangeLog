@@ -1,8 +1,8 @@
 2005-10-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22173
-	* decl.c (check_template_keyword): Fix thinko.
-	
+	* typeck.c (check_template_keyword): Fix thinko.
+		
 2005-10-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/23959

@@ -1873,8 +1873,9 @@ check_template_keyword (tree decl)
       else
 	{
 	  tree fns;
-	  if (BASELINK_P (decl))
-	    fns = BASELINK_FUNCTIONS (decl);
+	  fns = decl;
+	  if (BASELINK_P (fns))
+	    fns = BASELINK_FUNCTIONS (fns);
 	  while (fns)
 	    {
 	      tree fn = OVL_CURRENT (fns);
