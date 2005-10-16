@@ -5399,7 +5399,9 @@ expand_builtin_fork_or_exec (tree fn, tree arglist, rtx target, int ignore)
 static inline enum machine_mode
 get_builtin_sync_mode (int fcode_diff)
 {
-  return mode_for_size (BITS_PER_UNIT << fcode_diff, MODE_INT, 1);
+  /* The size is not negotiable, so ask not to get BLKmode in return
+     if the target indicates that a smaller size would be better.  */
+  return mode_for_size (BITS_PER_UNIT << fcode_diff, MODE_INT, 0);
 }
 
 /* Expand the __sync_xxx_and_fetch and __sync_fetch_and_xxx intrinsics.

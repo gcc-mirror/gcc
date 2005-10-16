@@ -1,3 +1,8 @@
+2005-10-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	* builtins.c (get_builtin_sync_mode): Make unlimited
+	mode_for_size request.
+
 2005-10-15  Richard Henderson  <rth@redhat.com>
 
 	* gimplify.c (gimplify_var_or_parm_decl): Split out from ...
