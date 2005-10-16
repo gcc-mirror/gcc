@@ -1,6 +1,6 @@
 2005-10-16  Mark Mitchell  <mark@codesourcery.com>
 
-	PR c++/22137
+	PR c++/22173
 	* g++.dg/parse/template18.C: New test.
 	* g++.dg/template/nontype15.C: Likewise.
 

@@ -1,6 +1,6 @@
 2005-10-16  Mark Mitchell  <mark@codesourcery.com>
 
-	PR c++/22137
+	PR c++/22173
 	* cp-tree.h (QUALIFIED_NAME_IS_TEMPLATE): New macro.
 	(check_template_keyword): New function.
 	(finish_id_expression): Change prototoype.
