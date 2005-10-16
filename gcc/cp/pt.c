@@ -9007,7 +9007,7 @@ check_instantiated_args (tree tmpl, tree args, tsubst_flags_t complain)
 
 	  if (nt)
 	    {
-	      /* DR 488 makes use of a type with no linkage causes
+	      /* DR 488 makes use of a type with no linkage cause
 		 type deduction to fail.  */ 
 	      if (complain & tf_error)
 		{
