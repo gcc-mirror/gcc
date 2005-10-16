@@ -1344,7 +1344,8 @@ build_offset_ref (tree type, tree name, bool address_p)
     return name;
 
   if (dependent_type_p (type) || type_dependent_expression_p (name))
-    return build_min_nt (SCOPE_REF, type, name);
+    return build_qualified_name (NULL_TREE, type, name, 
+				 /*template_p=*/false);
 
   if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
     {

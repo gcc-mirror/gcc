@@ -805,6 +805,23 @@ debug_binfo (tree elem)
     }
 }
 
+/* Build a representation for the qualified name SCOPE::NAME.  TYPE is
+   the type of the result expression, if known, or NULL_TREE if the
+   resulting expression is type-dependent.  If TEMPLATE_P is true,
+   NAME is known to be a template because the user explicitly used the
+   "template" keyword after the "::".   
+
+   All SCOPE_REFs should be built by use of this function.  */
+
+tree
+build_qualified_name (tree type, tree scope, tree name, bool template_p)
+{
+  tree t;
+  t = build2 (SCOPE_REF, type, scope, name);
+  QUALIFIED_NAME_IS_TEMPLATE (t) = template_p;
+  return t;
+}
+
 int
 is_overloaded_fn (tree x)
 {
