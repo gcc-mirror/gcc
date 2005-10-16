@@ -341,6 +341,7 @@ extern rtx default_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 extern void expand_builtin_setjmp_setup (rtx, rtx);
 extern void expand_builtin_setjmp_receiver (rtx);
 extern rtx expand_builtin_saveregs (void);
+extern void expand_builtin_trap (void);
 
 /* Functions from expr.c:  */
 

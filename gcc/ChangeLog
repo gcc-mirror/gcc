@@ -1,3 +1,16 @@
+2005-10-15  Richard Henderson  <rth@redhat.com>
+
+	PR 23714
+	* builtins.c (expand_builtin_trap): Export.
+	* expr.h (expand_builtin_trap): Declare.
+	* expr.c (expand_assignment): Emit a trap for integral offsets 
+	from registers that weren't reduced to bitpos.
+
+	* tree-cfg.c (mark_array_ref_addressable_1): Remove.
+	(mark_array_ref_addressable): Remove.
+	* tree-flow.h (mark_array_ref_addressable): Remove.
+	* tree-optimize.c (execute_cleanup_cfg_post_optimizing): Don't call it.
+
 2005-10-15  James E Wilson  <wilson@specifix.com>
 
 	PR target/24232
