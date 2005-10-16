@@ -2374,7 +2374,8 @@ pop_switch (void)
   struct cp_switch *cs = switch_stack;
 
   /* Emit warnings as needed.  */
-  c_do_switch_warnings (cs->cases, cs->switch_stmt);
+  if (!processing_template_decl)
+    c_do_switch_warnings (cs->cases, cs->switch_stmt);
 
   splay_tree_delete (cs->cases);
   switch_stack = switch_stack->next;

@@ -1,3 +1,9 @@
+2005-10-16  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/23959
+	* decl.c (pop_switch): Only call c_do_switch_warnings
+	when not processing templates.
+
 2005-10-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21347

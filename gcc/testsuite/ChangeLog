@@ -1,3 +1,9 @@
+2005-10-16  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/23959
+	* g++.dg/warn/Wswitch-default-1.C: New test.
+	* g++.dg/warn/Wswitch-default-2.C: New test.
+
 2005-10-16  Erik Edelmann  <erik.edelmann@iki.fi>
 
 	PR fortran/22273
