@@ -3924,10 +3924,18 @@ expand_assignment (tree to, tree from)
 
       if (offset != 0)
 	{
-	  rtx offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, EXPAND_SUM);
+	  rtx offset_rtx;
 
-	  gcc_assert (MEM_P (to_rtx));
+	  if (!MEM_P (to_rtx))
+	    {
+	      /* We can get constant negative offsets into arrays with broken
+		 user code.  Translate this to a trap instead of ICEing.  */
+	      gcc_assert (TREE_CODE (offset) == INTEGER_CST);
+	      expand_builtin_trap ();
+	      to_rtx = gen_rtx_MEM (BLKmode, const0_rtx);
+	    }
 
+	  offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, EXPAND_SUM);
 #ifdef POINTERS_EXTEND_UNSIGNED
 	  if (GET_MODE (offset_rtx) != Pmode)
 	    offset_rtx = convert_to_mode (Pmode, offset_rtx, 0);

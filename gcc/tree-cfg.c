@@ -421,39 +421,6 @@ fold_cond_expr_cond (void)
     }
 }
 
-/* Mark the array of any remaining ARRAY_REFs as addressable.  */
-
-static tree
-mark_array_ref_addressable_1 (tree *tp, int *walk_subtrees,
-			      void *data ATTRIBUTE_UNUSED)
-{
-  tree t = *tp;
-
-  if (DECL_P (t) || TYPE_P (t))
-    *walk_subtrees = 0;
-  else if (TREE_CODE (t) == ARRAY_REF)
-    {
-      tree base = get_base_address (TREE_OPERAND (t, 0));
-      if (base && DECL_P (base))
-	TREE_ADDRESSABLE (base) = 1;
-    }
-
-  return NULL_TREE;
-}
-
-void
-mark_array_ref_addressable (void)
-{
-  basic_block bb;
-  block_stmt_iterator i;
-
-  FOR_EACH_BB (bb)
-    {
-      for (i = bsi_start (bb); !bsi_end_p(i); bsi_next(&i))
-	walk_tree (bsi_stmt_ptr (i), mark_array_ref_addressable_1, NULL, NULL);
-    }
-}
-
 /* Join all the blocks in the flowgraph.  */
 
 static void

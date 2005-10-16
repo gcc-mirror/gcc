@@ -4751,7 +4751,7 @@ expand_builtin_expect_jump (tree exp, rtx if_false_label, rtx if_true_label)
   return ret;
 }
 
-static void
+void
 expand_builtin_trap (void)
 {
 #ifdef HAVE_trap

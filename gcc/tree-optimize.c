@@ -133,7 +133,6 @@ static void
 execute_cleanup_cfg_post_optimizing (void)
 {
   fold_cond_expr_cond ();
-  mark_array_ref_addressable ();
   cleanup_tree_cfg ();
   cleanup_dead_labels ();
   group_case_labels ();
