@@ -1,3 +1,8 @@
+2005-10-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/22173
+	* decl.c (check_template_keyword): Fix thinko.
+	
 2005-10-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/23959
@@ -48,7 +53,7 @@
 	* typeck.c (check_template_keyword): New function.
 	(finish_class_member_access_expr): Add template_p argument.  Check
 	for invalid uses of the template keyword.
-	
+
 2005-10-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21347
