@@ -1,9 +1,8 @@
 /* PR target/6303
    This testcase ICEd because s390 did not define
    ASM_SIMPLIFY_DWARF_ADDR hook.  */
-/* { dg-do compile } */
+/* { dg-do compile { target fpic } } */
 /* { dg-options "-O2 -fpic -g" } */
-/* { dg-warning "not supported" "PIC unsupported" { target cris-*-elf* mmix-*-* } 0 } */
 
 static inline char *
 bar (unsigned long x, char *y)

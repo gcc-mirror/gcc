@@ -1,7 +1,6 @@
-// { dg-do assemble  }
+// { dg-do assemble { target fpic } }
 // { dg-options "-O0 -fpic" }
 // Origin: Jakub Jelinek <jakub@redhat.com>
-// { dg-skip-if "No -fpic" { cris-*-elf* cris-*-aout* mmix-*-* } { "*" } { "" } }
 
 struct bar {
   bar() {}

@@ -1,6 +1,5 @@
-/* { dg-do run } */
+/* { dg-do run { target fpic } } */
 /* { dg-options "-O2 -fpic" } */
-/* { dg-warning "not supported" "PIC unsupported" { target cris-*-elf* cris-*-aout* mmix-*-* } 0 } */
 /* { dg-bogus "\[Uu\]nresolved symbol .(_GLOBAL_OFFSET_TABLE_|\[_.A-Za-z\]\[_.0-9A-Za-z\]*@(PLT|GOT|GOTOFF))" "PIC unsupported" { xfail *-*-netware* } 0 } */
 
 extern void abort (void);

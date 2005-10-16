@@ -1,3 +1,16 @@
+2005-10-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	* g++.dg/debug/debug3.C, g++.dg/ext/visibility/noPLT.C,
+	g++.dg/opt/vt1.C, g++.old-deja/g++.other/local-alloc1.C,
+	gcc.dg/20001009-1.c, gcc.dg/20010912-1.c, gcc.dg/20020122-4.c,
+	gcc.dg/20020415-1.c, gcc.dg/20020430-1.c, gcc.dg/20021018-1.c,
+	gcc.dg/20021023-1.c, gcc.dg/20021029-1.c, gcc.dg/20021116-1.c,
+	gcc.dg/20030120-1.c, gcc.dg/20030213-1.c, gcc.dg/20030225-1.c,
+	gcc.dg/20030702-1.c, gcc.dg/20030708-1.c, gcc.dg/20040311-2.c,
+	gcc.dg/inline-2.c: Guard test with { target fpic }.  Remove
+	previous target-specific skips and warning-message matches where
+	applicable.
+
 2005-10-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21347
