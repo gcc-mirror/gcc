@@ -1,3 +1,8 @@
+2005-10-16  Erik Edelmann  <erik.edelmann@iki.fi>
+
+	PR 22273
+	* expr.c (check_inquiry): Add "len" to inquiry_function.
+
 2005-10-14  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/20847
