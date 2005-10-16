@@ -7544,7 +7544,8 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (e1 == error_mark_node || e2 == error_mark_node)
 	  return error_mark_node;
 
-	return build_nt (TREE_CODE (t), e1, e2);
+	return build_qualified_name (/*type=*/NULL_TREE,
+				     e1, e2, QUALIFIED_NAME_IS_TEMPLATE (t));
       }
 
     case TYPEOF_TYPE:
@@ -7675,7 +7676,9 @@ tsubst_qualified_id (tree qualified_id, tree args,
     expr = name;
 
   if (dependent_type_p (scope))
-    return build_nt (SCOPE_REF, scope, expr);
+    return build_qualified_name (/*type=*/NULL_TREE, 
+				 scope, expr, 
+				 QUALIFIED_NAME_IS_TEMPLATE (qualified_id));
 
   if (!BASELINK_P (name) && !DECL_P (expr))
     {
@@ -7725,7 +7728,10 @@ tsubst_qualified_id (tree qualified_id, tree args,
     {
       expr = (adjust_result_of_qualified_name_lookup
 	      (expr, scope, current_class_type));
-      expr = finish_qualified_id_expr (scope, expr, done, address_p);
+      expr = (finish_qualified_id_expr 
+	      (scope, expr, done, address_p,
+	       QUALIFIED_NAME_IS_TEMPLATE (qualified_id),
+	       /*template_arg_p=*/false));
     }
 
   if (TREE_CODE (expr) != SCOPE_REF)
@@ -7912,7 +7918,9 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    name = tsubst_copy (TREE_OPERAND (name, 0), args,
 				complain, in_decl);
 	    name = build1 (BIT_NOT_EXPR, NULL_TREE, name);
-	    name = build_nt (SCOPE_REF, base, name);
+	    name = build_qualified_name (/*type=*/NULL_TREE,
+					 base, name, 
+					 /*template_p=*/false);
 	  }
 	else if (TREE_CODE (name) == BASELINK)
 	  name = tsubst_baselink (name,
@@ -7954,7 +7962,6 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case LT_EXPR:
     case GT_EXPR:
     case COMPOUND_EXPR:
-    case SCOPE_REF:
     case DOTSTAR_EXPR:
     case MEMBER_REF:
     case PREDECREMENT_EXPR:
@@ -7964,6 +7971,14 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       return build_nt
 	(code, tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl),
 	 tsubst_copy (TREE_OPERAND (t, 1), args, complain, in_decl));
+
+    case SCOPE_REF:
+      return build_qualified_name (/*type=*/NULL_TREE,
+				   tsubst_copy (TREE_OPERAND (t, 0),
+						args, complain, in_decl),
+				   tsubst_copy (TREE_OPERAND (t, 1),
+						args, complain, in_decl),
+				   QUALIFIED_NAME_IS_TEMPLATE (t));
 
     case ARRAY_REF:
       return build_nt
@@ -8438,7 +8453,6 @@ tsubst_copy_and_build (tree t,
       {
 	tree decl;
 	cp_id_kind idk;
-	tree qualifying_class;
 	bool non_integral_constant_expression_p;
 	const char *error_msg;
 
@@ -8458,10 +8472,13 @@ tsubst_copy_and_build (tree t,
 
 	decl = finish_id_expression (t, decl, NULL_TREE,
 				     &idk,
-				     &qualifying_class,
 				     /*integral_constant_expression_p=*/false,
 				     /*allow_non_integral_constant_expression_p=*/false,
 				     &non_integral_constant_expression_p,
+				     /*template_p=*/false,
+				     /*done=*/true,
+				     /*address_p=*/false,
+				     /*template_arg_p=*/false,
 				     &error_msg);
 	if (error_msg)
 	  error (error_msg);
@@ -8872,7 +8889,8 @@ tsubst_copy_and_build (tree t,
 	else if (TREE_CODE (member) == FIELD_DECL)
 	  return finish_non_static_data_member (member, object, NULL_TREE);
 
-	return finish_class_member_access_expr (object, member);
+	return finish_class_member_access_expr (object, member,
+						/*template_p=*/false);
       }
 
     case THROW_EXPR:

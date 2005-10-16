@@ -1,3 +1,48 @@
+2005-10-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/22137
+	* cp-tree.h (QUALIFIED_NAME_IS_TEMPLATE): New macro.
+	(check_template_keyword): New function.
+	(finish_id_expression): Change prototoype.
+	(finish_qualified_id_expr): Change prototype.
+	(build_qualified_name): New function.
+	(finish_class_member_access_expr): Change prototype.
+	* init.c (build_offset_ref): Use build_qualified_name.
+	* mangle.c (write_expression): Likewise.
+	* parser.c (cp_parser_primary_expression): Remove qualifying_class
+	parameter.  Add address_p and template_arg_p.  Use
+	build_qualified_name.
+	(cp_parser_id_expression): Default *template_p to
+	template_keyword_p.  Check for invalid uses of the template
+	keyword.  
+	(cp_parser_postfix_expression): Eliminate special handling for
+	qualified names.  Adjust call to cp_parser_primary_expression.
+	(cp_parser_postfix_dot_deref_expression): Adjust call to
+	cp_parser_id_expression and finish_class_member_access_expr.
+	(cp_parser_template_argument_list): Add comment.
+	(cp_parser_template_argument): Adjust use of
+	cp_parser_primary_expression.  Remove call to
+	finish_qualified_id_expr.
+	(cp_parser_lookup_name): Use build_qualified_name. 
+	* pt.c (tsubst): Use build_qualified_name.
+	(tsubst_qualified_id): Likewise.  Adjust call to
+	finish_qualified_id_expr.
+	(tsubst_copy): Use build_qualified_name.
+	(tsubst_copy_and_build): Adjusts call to finish_id_expression and
+	finish_class_member_access_expr. 
+	* semantics.c (finish_non_static_data_member): Use
+	build_qualified_name.
+	(finish_qualified_id_expr): Add template_p and template_arg_p
+	parameters. 
+	(finish_id_expression): Remove qualifiying_class parameter.  Add
+	template_p, done, address_p, and template_arg_p.  Use
+	build_qualified_name.  Adjust calls to
+	finish_class_member_acess_expr.  
+	* tree.c (build_qualified_name): New function.
+	* typeck.c (check_template_keyword): New function.
+	(finish_class_member_access_expr): Add template_p argument.  Check
+	for invalid uses of the template keyword.
+	
 2005-10-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21347

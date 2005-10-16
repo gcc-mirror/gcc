@@ -2008,9 +2008,10 @@ write_expression (tree expr)
   if (code == PTRMEM_CST)
     {
       expr = build_nt (ADDR_EXPR,
-		       build_nt (SCOPE_REF,
-				 PTRMEM_CST_CLASS (expr),
-				 PTRMEM_CST_MEMBER (expr)));
+		       build_qualified_name (/*type=*/NULL_TREE,
+					     PTRMEM_CST_CLASS (expr),
+					     PTRMEM_CST_MEMBER (expr),
+					     /*template_p=*/false));
       code = TREE_CODE (expr);
     }
 
@@ -2186,7 +2187,7 @@ write_expression (tree expr)
 	  for (i = 0; i < TREE_CODE_LENGTH (code); ++i)
 	    {
 	      tree operand = TREE_OPERAND (expr, i);
-	      /* As a GNU expression, the middle operand of a
+	      /* As a GNU extension, the middle operand of a
 		 conditional may be omitted.  Since expression
 		 manglings are supposed to represent the input token
 		 stream, there's no good way to mangle such an
