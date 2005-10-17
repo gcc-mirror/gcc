@@ -1,3 +1,9 @@
+2005-10-17  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/23424
+	* md.texi (Modifiers) <%>: Clarify that % doesn't work
+	after register allocation.
+
 2005-10-17  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c.c (m32c_pushm_popm): Don't mark epilogue insns
