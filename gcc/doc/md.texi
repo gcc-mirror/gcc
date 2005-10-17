@@ -1552,7 +1552,10 @@ instruction is defined:
 GCC can only handle one commutative pair in an asm; if you use more,
 the compiler may fail.  Note that you need not use the modifier if
 the two alternatives are strictly identical; this would only waste
-time in the reload pass.
+time in the reload pass.  The modifier is not operational after
+register allocation, so the result of @code{define_peephole2}
+and @code{define_split}s performed after reload cannot rely on
+@samp{%} to make the intended insn match.
 
 @cindex @samp{#} in constraint
 @item #
