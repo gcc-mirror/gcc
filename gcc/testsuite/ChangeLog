@@ -1,3 +1,8 @@
+2005-10-17  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/24315
+	* gcc.target/i386/pr24315.c: New test.
+
 2005-10-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24389
