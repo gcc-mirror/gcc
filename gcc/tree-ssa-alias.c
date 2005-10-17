@@ -799,7 +799,6 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 	     
 	  if (may_alias_p (p_map->var, p_map->set, var, v_map->set, false))
 	    {
-	      subvar_t svars;
 	      size_t num_tag_refs, num_var_refs;
 
 	      num_tag_refs = NUM_REFERENCES (tag_ann);
@@ -807,28 +806,15 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 
 	      /* Add VAR to TAG's may-aliases set.  */
 
-	      /* If this is an aggregate, we may have subvariables for it
-		 that need to be pointed to.  */
-	      if (var_can_have_subvars (var)
-		  && (svars = get_subvars_for_var (var)))
-		{
-		  subvar_t sv;
+	      /* We should never have a var with subvars here, because
+	         they shouldn't get into the set of addressable vars */
+	      gcc_assert (!var_can_have_subvars (var)
+			  || get_subvars_for_var (var) == NULL);
 
-		  for (sv = svars; sv; sv = sv->next)
-		    {
-		      add_may_alias (tag, sv->var);
-		      /* Update the bitmap used to represent TAG's alias set
-			 in case we need to group aliases.  */
-		      bitmap_set_bit (p_map->may_aliases, DECL_UID (sv->var));
-		    }
-		}
-	      else
-		{
-		  add_may_alias (tag, var);
-		  /* Update the bitmap used to represent TAG's alias set
-		     in case we need to group aliases.  */
-		  bitmap_set_bit (p_map->may_aliases, DECL_UID (var));
-		}
+	      add_may_alias (tag, var);
+	      /* Update the bitmap used to represent TAG's alias set
+		 in case we need to group aliases.  */
+	      bitmap_set_bit (p_map->may_aliases, DECL_UID (var));
 
 	      /* Update the total number of virtual operands due to
 		 aliasing.  Since we are adding one more alias to TAG's
@@ -1280,7 +1266,9 @@ setup_pointers_and_addressables (struct alias_info *ai)
 
       /* Global variables and addressable locals may be aliased.  Create an
          entry in ADDRESSABLE_VARS for VAR.  */
-      if (may_be_aliased (var))
+      if (may_be_aliased (var)	  
+	  && (!var_can_have_subvars (var) 
+	      || get_subvars_for_var (var) == NULL))
 	{
 	  create_alias_map_for (var, ai);
 	  mark_sym_for_renaming (var);
