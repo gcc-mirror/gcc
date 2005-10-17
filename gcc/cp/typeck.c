@@ -2006,10 +2006,18 @@ finish_class_member_access_expr (tree object, tree name)
   expr = build_class_member_access_expr (object, member, access_path,
 					 /*preserve_reference=*/false);
   if (processing_template_decl && expr != error_mark_node)
-    return build_min_non_dep (COMPONENT_REF, expr,
-			      orig_object,
-			      BASELINK_P (member) ? member : orig_name,
-			      NULL_TREE);
+    {
+      if (BASELINK_P (member))
+	{
+	  if (TREE_CODE (orig_name) == SCOPE_REF)
+	    BASELINK_QUALIFIED_P (member) = 1;
+	  orig_name = member;
+	}
+      return build_min_non_dep (COMPONENT_REF, expr,
+				orig_object, orig_name,
+				NULL_TREE);
+    }
+  
   return expr;
 }
 
