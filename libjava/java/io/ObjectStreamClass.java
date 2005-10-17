@@ -16,8 +16,8 @@ General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GNU Classpath; see the file COPYING.  If not, write to the
-Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-02111-1307 USA.
+Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301 USA.
 
 Linking this library statically or dynamically with other modules is
 making a combined work based on this library.  Thus, the terms and
@@ -486,19 +486,67 @@ outer:
     return null;
   }
 
+  private static boolean inSamePackage(Class c1, Class c2)
+  {
+    String name1 = c1.getName();
+    String name2 = c2.getName();
+
+    int id1 = name1.lastIndexOf('.');
+    int id2 = name2.lastIndexOf('.');
+
+    // Handle the default package
+    if (id1 == -1 || id2 == -1)
+      return id1 == id2;
+
+    String package1 = name1.substring(0, id1);
+    String package2 = name2.substring(0, id2);
+
+    return package1.equals(package2);
+  }
+
+  final static Class[] noArgs = new Class[0];
+
+  private static Method findAccessibleMethod(String name, Class from)
+  {
+    for (Class c = from; c != null; c = c.getSuperclass())
+      {
+	try
+	  {
+	    Method res = c.getDeclaredMethod(name, noArgs);
+	    int mods = res.getModifiers();
+	    
+	    if (c == from  
+		|| Modifier.isProtected(mods)
+		|| Modifier.isPublic(mods)
+		|| (! Modifier.isPrivate(mods) && inSamePackage(c, from)))
+	      {
+		AccessController.doPrivileged(new SetAccessibleAction(res));
+		return res;
+	      }
+	  }
+	catch (NoSuchMethodException e)
+	  {
+	  }
+      }
+
+    return null;
+  }
+
   private void cacheMethods()
   {
     Method[] methods = forClass().getDeclaredMethods();
+
     readObjectMethod = findMethod(methods, "readObject",
 				  new Class[] { ObjectInputStream.class },
 				  Void.TYPE, true);
     writeObjectMethod = findMethod(methods, "writeObject",
                                    new Class[] { ObjectOutputStream.class },
                                    Void.TYPE, true);
-    readResolveMethod = findMethod(methods, "readResolve",
-				   new Class[0], Object.class, false);
-    writeReplaceMethod = findMethod(methods, "writeReplace",
-                                    new Class[0], Object.class, false);
+
+    // readResolve and writeReplace can be in parent classes, as long as they
+    // are accessible from this class.
+    readResolveMethod = findAccessibleMethod("readResolve", forClass());
+    writeReplaceMethod = findAccessibleMethod("writeReplace", forClass());
   }
 
   private ObjectStreamClass(Class cl)
