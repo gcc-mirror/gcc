@@ -1,3 +1,11 @@
+2005-10-16  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/22444
+	* tree-ssa-alias.c (compute_flow_insensitive_aliasing):
+	Assert that we don't hit something with subvars.
+	(setup_pointers_and_addressables): Don't add things with subvars,
+	because we'll already process the subvars for aliasing purposes.
+
 2005-10-16  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/23424
