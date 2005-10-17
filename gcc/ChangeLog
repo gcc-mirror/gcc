@@ -1,3 +1,9 @@
+2005-10-17  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/22551
+	* c-common.c (c_add_case_label): Revert my 2005-10-14 clearing of
+	overflow flags.
+
 2005-10-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR driver/22544

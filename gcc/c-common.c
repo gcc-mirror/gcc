@@ -3531,10 +3531,6 @@ c_add_case_label (splay_tree cases, tree cond, tree orig_type,
       low_value = convert_and_check (type, low_value);
       if (low_value == error_mark_node)
 	goto error_out;
-      /* Do not propagate any overflow information past this point.
-	 It is safe to just clear the flags, as any constants with
-	 them set will not be shared.  */
-      TREE_CONSTANT_OVERFLOW (low_value) = TREE_OVERFLOW (low_value) = 0;
     }
   if (high_value)
     {
@@ -3542,7 +3538,6 @@ c_add_case_label (splay_tree cases, tree cond, tree orig_type,
       high_value = convert_and_check (type, high_value);
       if (high_value == error_mark_node)
 	goto error_out;
-      TREE_CONSTANT_OVERFLOW (high_value) = TREE_OVERFLOW (high_value) = 0;
     }
 
   if (low_value && high_value)
