@@ -1259,7 +1259,7 @@ objc_build_component_ref (tree datum, tree component)
      front-end, but 'finish_class_member_access_expr' seems to be
      a worthy substitute.  */
 #ifdef OBJCPLUS
-  return finish_class_member_access_expr (datum, component);
+  return finish_class_member_access_expr (datum, component, false);
 #else
   return build_component_ref (datum, component);
 #endif
