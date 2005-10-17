@@ -1,3 +1,14 @@
+2005-10-16  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR driver/22544
+	* gcc.c (have_c): New static variable.
+	(have_o): Likewise.
+	(process_command): Remove declation of have_c.
+	Set have_o to 1 when handling -o.
+	(main): Add a fatel error if there are multiple
+	files specified and -o and -c/-S is passed witout
+	-combine or multiple languages.
+
 2005-10-14  Per Bothner  <per@bothner.com>
 
 	PR preprocessor/21250

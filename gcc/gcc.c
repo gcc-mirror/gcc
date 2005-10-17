@@ -1841,6 +1841,12 @@ static int argbuf_index;
 
 static int have_o_argbuf_index = 0;
 
+/* Were the options -c or -S passed.  */
+static int have_c = 0;
+
+/* Was the option -o passed.  */
+static int have_o = 0;
+
 /* This is the list of suffixes and codes (%g/%u/%U/%j) and the associated
    temp file.  If the HOST_BIT_BUCKET is used for %j, no entry is made for
    it here.  */
@@ -3132,7 +3138,6 @@ process_command (int argc, const char **argv)
   char *temp1;
   const char *spec_lang = 0;
   int last_language_n_infiles;
-  int have_c = 0;
   int lang_n_infiles = 0;
 #ifdef MODIFY_TARGET_NAME
   int is_modify_target_name;
@@ -3679,6 +3684,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	      goto normal_switch;
 
 	    case 'o':
+	      have_o = 1;
 #if defined(HAVE_TARGET_EXECUTABLE_SUFFIX)
 	      if (! have_c)
 		{
@@ -6396,7 +6402,7 @@ main (int argc, const char **argv)
   if (combine_flag)
     combine_inputs = true;
   else
-    combine_inputs = false;
+    combine_inputs = false;  
 
   for (i = 0; (int) i < n_infiles; i++)
     {
@@ -6482,6 +6488,9 @@ main (int argc, const char **argv)
 	}
       combine_inputs = save_combine_inputs;
     }
+    
+  if (!combine_inputs && have_c && have_o && n_infiles > 1)
+   fatal ("cannot specify -o with -c or -S with multiple files");
 
   for (i = 0; (int) i < n_infiles; i++)
     {
