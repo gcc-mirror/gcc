@@ -1,3 +1,8 @@
+2005-10-17  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* objc-act.c (objc_build_component_ref): Adjust call to 
+	finish_class_member_access_expr due to a changed prototype.
+
 2005-08-31  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR objc/23306
