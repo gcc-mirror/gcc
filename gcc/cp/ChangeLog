@@ -1,3 +1,9 @@
+2005-10-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/23440
+	* parser.c (cp_parser_statement): If the parser reached CPP_EOF,
+	only complain about missing statement.
+
 2005-10-17  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/24386

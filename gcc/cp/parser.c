@@ -6017,6 +6017,11 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr)
       cp_lexer_handle_pragma (parser->lexer);
       return;
     }
+  else if (token->type == CPP_EOF)
+    {
+      cp_parser_error (parser, "expected statement");
+      return;
+    }
 
   /* Everything else must be a declaration-statement or an
      expression-statement.  Try for the declaration-statement
