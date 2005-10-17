@@ -1,3 +1,10 @@
+2005-10-17  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.h (OPTIMIZATION_OPTIONS): Set flag_schedule_insns
+	to 2 if it's already non-zero.
+	(OVERRIDE_OPTIONS): Clear flag_schedule_insns if flag_exceptions
+	is set and warn about it if flag_schedule_insns is 1.
+
 2005-10-17  Paul Woegerer  <paul.woegerer@nsc.com>
 
 	* config/crx/crx.md: Compare-and-branch instructions need to
