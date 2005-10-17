@@ -1,3 +1,8 @@
+2005-10-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (function_arg_slotno): In 64-bit mode, align
+	the slot on an even boundary for any type with 16-byte alignment.
+
 2005-10-17  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/23424

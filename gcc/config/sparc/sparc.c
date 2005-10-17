@@ -4443,7 +4443,7 @@ function_arg_slotno (const struct sparc_args *cum, enum machine_mode mode,
 
   /* For SPARC64, objects requiring 16-byte alignment get it.  */
   if (TARGET_ARCH64
-      && GET_MODE_ALIGNMENT (mode) >= 2 * BITS_PER_WORD
+      && (type ? TYPE_ALIGN (type) : GET_MODE_ALIGNMENT (mode)) >= 128
       && (slotno & 1) != 0)
     slotno++, *ppadding = 1;
 
@@ -4502,13 +4502,6 @@ function_arg_slotno (const struct sparc_args *cum, enum machine_mode mode,
 	return -1;
 
       gcc_assert (mode == BLKmode);
-
-      /* For SPARC64, objects requiring 16-byte alignment get it.  */
-      if (TARGET_ARCH64
-	  && type
-	  && TYPE_ALIGN (type) >= 2 * BITS_PER_WORD
-	  && (slotno & 1) != 0)
-	slotno++, *ppadding = 1;
 
       if (TARGET_ARCH32 || !type || (TREE_CODE (type) == UNION_TYPE))
 	{
