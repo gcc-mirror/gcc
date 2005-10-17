@@ -1,3 +1,9 @@
+2005-10-17  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	PR libstdc++/24244
+	* include/tr1/boost_shared_ptr.h (_Sp_counted_base::_Sp_counted_base()):
+	When __GTHREAD_MUTEX_INIT is defined, initialize the mutex.
+
 2005-10-15  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/functional: Add missing #pragma GCC system_header.
