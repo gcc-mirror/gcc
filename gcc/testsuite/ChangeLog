@@ -1,5 +1,8 @@
 2005-10-17  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/22551
+	* g++.dg/other/switch2.C: Remove expected warnings.
+
 	PR c++/21353
 	* g++.dg/template/defarg6.C: New.
 
