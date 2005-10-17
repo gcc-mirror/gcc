@@ -1,3 +1,8 @@
+2005-10-17  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.c (m32c_pushm_popm): Don't mark epilogue insns
+	as frame related.
+
 2005-10-17  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/22551

@@ -1322,17 +1322,14 @@ m32c_pushm_popm (Push_Pop_Type ppt)
     }
   if (ppt == PP_popm && byte_count)
     {
-      rtx insn;
-
       if (cfun->machine->is_interrupt)
 	for (i = MEM7_REGNO; i >= MEM0_REGNO; i--)
 	  if (cfun->machine->intr_pushmem[i - MEM0_REGNO])
 	    {
 	      if (TARGET_A16)
-		insn = emit_insn (gen_pophi_16 (gen_rtx_REG (HImode, i)));
+		emit_insn (gen_pophi_16 (gen_rtx_REG (HImode, i)));
 	      else
-		insn = emit_insn (gen_pophi_24 (gen_rtx_REG (HImode, i)));
-	      F (insn);
+		emit_insn (gen_pophi_24 (gen_rtx_REG (HImode, i)));
 	    }
       if (reg_mask)
 	emit_insn (gen_popm (GEN_INT (reg_mask)));
