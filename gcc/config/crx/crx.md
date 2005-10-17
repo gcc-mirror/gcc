@@ -529,7 +529,8 @@
 			[(match_operand:CRXIM 1 "register_operand" "r")
 			 (match_operand:CRXIM 2 "reg_or_cst4_operand" "rL")])
 		      (label_ref (match_operand 3 "" ""))
-		      (pc)))]
+		      (pc)))
+   (clobber (reg:CC CC_REGNUM))]
   ""
   "cmpb%d0<tIsa>\t%2, %1, %l3"
   [(set_attr "length" "6")]
