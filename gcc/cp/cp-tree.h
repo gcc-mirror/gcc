@@ -52,6 +52,7 @@ struct diagnostic_context;
       TYPENAME_IS_ENUM_P (in TYPENAME_TYPE)
       REFERENCE_REF_P (in INDIRECT_EXPR)
       QUALIFIED_NAME_IS_TEMPLATE (in SCOPE_REF)
+      BASELINK_QUALIFIED_P (in BASELINK)
    1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -341,6 +342,9 @@ struct tree_overload GTY(())
    requested.  */
 #define BASELINK_OPTYPE(NODE) \
   (TREE_CHAIN (BASELINK_CHECK (NODE)))
+/* Non-zero if this baselink was from a qualified lookup.  */
+#define BASELINK_QUALIFIED_P(NODE) \
+  TREE_LANG_FLAG_0 (BASELINK_CHECK (NODE))
 
 struct tree_baselink GTY(())
 {
