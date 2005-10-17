@@ -1673,12 +1673,16 @@ check_restricted (gfc_expr * e)
 	  break;
 	}
 
+      /* gfc_is_formal_arg broadcasts that a formal argument list is being processed
+	 in resolve.c(resolve_formal_arglist).  This is done so that host associated
+	 dummy array indices are accepted (PR23446).  */
       if (sym->attr.in_common
 	  || sym->attr.use_assoc
 	  || sym->attr.dummy
 	  || sym->ns != gfc_current_ns
 	  || (sym->ns->proc_name != NULL
-	      && sym->ns->proc_name->attr.flavor == FL_MODULE))
+	      && sym->ns->proc_name->attr.flavor == FL_MODULE)
+	  || gfc_is_formal_arg ())
 	{
 	  t = SUCCESS;
 	  break;
