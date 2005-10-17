@@ -1294,7 +1294,7 @@ case "${target}" in
     ;;
   bfin-*-*)
     noconfigdirs="$noconfigdirs target-libgloss gdb"
-    if  x${is_cross_compiler} != xno  ; then
+    if test x${is_cross_compiler} != xno ; then
       target_configdirs="${target_configdirs} target-bsp target-cygmon"
     fi
     ;;

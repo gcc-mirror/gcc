@@ -1,3 +1,8 @@
+2005-10-17  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* configure.in (bfin-*-*): Use test, not brackets, in if statement.
+	* configure: Regenerate.
+
 2005-10-15  Jie Zhang  <jie.zhang@analog.com>
 
 	* MAINTAINERS (Write After Approval): Add self.
