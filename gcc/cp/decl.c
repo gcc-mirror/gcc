@@ -8453,13 +8453,6 @@ check_default_argument (tree decl, tree arg)
        deal with it after the class is complete.  */
     return arg;
 
-  if (processing_template_decl || uses_template_parms (arg))
-    /* We don't do anything checking until instantiation-time.  Note
-       that there may be uninstantiated arguments even for an
-       instantiated function, since default arguments are not
-       instantiated until they are needed.  */
-    return arg;
-
   if (TYPE_P (decl))
     {
       decl_type = decl;
@@ -8601,10 +8594,10 @@ grokparms (cp_parameter_declarator *first_parm, tree *parms)
 		       decl, ptr ? "pointer" : "reference", t);
 	    }
 
-	  if (!any_error && init)
-	    init = check_default_argument (decl, init);
-	  else
+	  if (any_error)
 	    init = NULL_TREE;
+	  else if (init && !processing_template_decl)
+	    init = check_default_argument (decl, init);
 	}
 
       TREE_CHAIN (decl) = decls;
