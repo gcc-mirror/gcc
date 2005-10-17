@@ -101,7 +101,14 @@ public:
 
   _Sp_counted_base()
   : _M_use_count(1), _M_weak_count(1)
-  { }
+  {
+    // For the case of __GTHREAD_MUTEX_INIT we haven't initialised
+    // the mutex yet, so do it now.
+#if defined(__GTHREADS) && defined(__GTHREAD_MUTEX_INIT)
+    __gthread_mutex_t __tmp = __GTHREAD_MUTEX_INIT;
+    _M_mutex = __tmp;
+#endif
+  }
 
   virtual
   ~_Sp_counted_base() // nothrow
