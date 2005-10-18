@@ -1,3 +1,8 @@
+2005-10-18  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/23293
+	* g++.dg/template/error19.C: New test.
+
 2005-10-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/21383
