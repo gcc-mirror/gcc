@@ -4594,9 +4594,10 @@ arg_assoc (struct arg_lookup *k, tree n)
 	return true;
 
       /* Now the arguments.  */
-      for (ix = TREE_VEC_LENGTH (args); ix--;)
-	if (arg_assoc_template_arg (k, TREE_VEC_ELT (args, ix)) == 1)
-	  return true;
+      if (args)
+	for (ix = TREE_VEC_LENGTH (args); ix--;)
+	  if (arg_assoc_template_arg (k, TREE_VEC_ELT (args, ix)) == 1)
+	    return true;
     }
   else if (TREE_CODE (n) == OVERLOAD)
     {

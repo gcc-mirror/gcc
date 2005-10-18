@@ -1,5 +1,8 @@
 2005-10-18  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/21383
+	* g++.dg/overload/koenig2.C: New.
+
 	PR c++/23118
 	* g++.dg/overload/error2.C: New.
 
