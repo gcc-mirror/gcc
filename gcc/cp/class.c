@@ -879,9 +879,10 @@ modify_vtable_entry (tree t,
 
 
 /* Add method METHOD to class TYPE.  If USING_DECL is non-null, it is
-   the USING_DECL naming METHOD.  */
+   the USING_DECL naming METHOD.  Returns true if the method could be
+   added to the method vec.  */
 
-void
+bool
 add_method (tree type, tree method, tree using_decl)
 {
   unsigned slot;
@@ -894,7 +895,7 @@ add_method (tree type, tree method, tree using_decl)
   tree current_fns;
 
   if (method == error_mark_node)
-    return;
+    return false;
 
   complete_p = COMPLETE_TYPE_P (type);
   conv_p = DECL_CONV_FN_P (method);
@@ -1027,7 +1028,7 @@ add_method (tree type, tree method, tree using_decl)
 		{
 		  if (DECL_CONTEXT (fn) == type)
 		    /* Defer to the local function.  */
-		    return;
+		    return false;
 		  if (DECL_CONTEXT (fn) == DECL_CONTEXT (method))
 		    error ("repeated using declaration %q+D", using_decl);
 		  else
@@ -1044,7 +1045,7 @@ add_method (tree type, tree method, tree using_decl)
 		 declarations because that will confuse things if the
 		 methods have inline definitions.  In particular, we
 		 will crash while processing the definitions.  */
-	      return;
+	      return false;
 	    }
 	}
     }
@@ -1069,6 +1070,7 @@ add_method (tree type, tree method, tree using_decl)
   else
     /* Replace the current slot.  */
     VEC_replace (tree, method_vec, slot, overload);
+  return true;
 }
 
 /* Subroutines of finish_struct.  */
@@ -1980,7 +1982,9 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
   if (POINTER_TYPE_P (over_return)
       && TREE_CODE (over_return) == TREE_CODE (base_return)
       && CLASS_TYPE_P (TREE_TYPE (over_return))
-      && CLASS_TYPE_P (TREE_TYPE (base_return)))
+      && CLASS_TYPE_P (TREE_TYPE (base_return))
+      /* If the overrider is invalid, don't even try.  */
+      && !DECL_INVALID_OVERRIDER_P (overrider_target))
     {
       /* If FN is a covariant thunk, we must figure out the adjustment
 	 to the final base FN was converting to. As OVERRIDER_TARGET might
