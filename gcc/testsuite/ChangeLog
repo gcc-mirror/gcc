@@ -1,3 +1,8 @@
+2005-10-18  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR target/23589
+	* g++.dg/ext/dllimport11.C: New.
+
 2005-10-18  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/22293
