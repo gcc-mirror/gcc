@@ -1,3 +1,10 @@
+2005-10-17  Alexey Starovoytov  <alexey.starovoytov@sun.com>
+            Ian Lance Taylor <ian@airs.com>
+
+	PR middle-end/23522
+	* fold-const.c (fold_widened_comparison): Do not allow range based
+	constant folding when right operand cannot be unwidened.
+
 2005-10-17  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/22551
