@@ -5262,66 +5262,49 @@ build_new_method_call (tree instance, tree fns, tree args,
       || args == error_mark_node)
     return error_mark_node;
 
-  orig_instance = instance;
-  orig_fns = fns;
-  orig_args = args;
-
-  if (processing_template_decl)
-    {
-      instance = build_non_dependent_expr (instance);
-      if (!BASELINK_P (fns)
-	  && TREE_CODE (fns) != PSEUDO_DTOR_EXPR
-	  && TREE_TYPE (fns) != unknown_type_node)
-	fns = build_non_dependent_expr (fns);
-      args = build_non_dependent_args (orig_args);
-    }
-
-  /* Process the argument list.  */
-  user_args = args;
-  args = resolve_args (args);
-  if (args == error_mark_node)
-    return error_mark_node;
-
-  basetype = TYPE_MAIN_VARIANT (TREE_TYPE (instance));
-  instance_ptr = build_this (instance);
-
   if (!BASELINK_P (fns))
     {
       error ("call to non-function %qD", fns);
       return error_mark_node;
     }
 
+  orig_instance = instance;
+  orig_fns = fns;
+  orig_args = args;
+
+  /* Dismantle the baselink to collect all the information we need.  */  
   if (!conversion_path)
     conversion_path = BASELINK_BINFO (fns);
   access_binfo = BASELINK_ACCESS_BINFO (fns);
   optype = BASELINK_OPTYPE (fns);
   fns = BASELINK_FUNCTIONS (fns);
-
   if (TREE_CODE (fns) == TEMPLATE_ID_EXPR)
     {
       explicit_targs = TREE_OPERAND (fns, 1);
       fns = TREE_OPERAND (fns, 0);
       template_only = 1;
     }
-
   gcc_assert (TREE_CODE (fns) == FUNCTION_DECL
 	      || TREE_CODE (fns) == TEMPLATE_DECL
 	      || TREE_CODE (fns) == OVERLOAD);
-
-  /* XXX this should be handled before we get here.  */
-  if (! IS_AGGR_TYPE (basetype))
-    {
-      if ((flags & LOOKUP_COMPLAIN) && basetype != error_mark_node)
-	error ("request for member %qD in %qE, which is of non-aggregate "
-	       "type %qT",
-	       fns, instance, basetype);
-
-      return error_mark_node;
-    }
-
   fn = get_first_fn (fns);
   name = DECL_NAME (fn);
 
+  basetype = TYPE_MAIN_VARIANT (TREE_TYPE (instance));
+  gcc_assert (CLASS_TYPE_P (basetype));
+
+  if (processing_template_decl)
+    {
+      instance = build_non_dependent_expr (instance);
+      args = build_non_dependent_args (orig_args);
+    }
+
+  /* The USER_ARGS are the arguments we will display to users if an
+     error occurs.  The USER_ARGS should not include any
+     compiler-generated arguments.  The "this" pointer hasn't been
+     added yet.  However, we must remove the VTT pointer if this is a
+     call to a base-class constructor or destructor.  */
+  user_args = args;
   if (IDENTIFIER_CTOR_OR_DTOR_P (name))
     {
       /* Callers should explicitly indicate whether they want to construct
@@ -5329,7 +5312,18 @@ build_new_method_call (tree instance, tree fns, tree args,
       gcc_assert (name != ctor_identifier);
       /* Similarly for destructors.  */
       gcc_assert (name != dtor_identifier);
+      /* Remove the VTT pointer, if present.  */
+      if ((name == base_ctor_identifier || name == base_dtor_identifier)
+	  && CLASSTYPE_VBASECLASSES (basetype))
+	user_args = TREE_CHAIN (user_args);
     }
+
+  /* Process the argument list.  */
+  args = resolve_args (args);
+  if (args == error_mark_node)
+    return error_mark_node;
+
+  instance_ptr = build_this (instance);
 
   /* It's OK to call destructors on cv-qualified objects.  Therefore,
      convert the INSTANCE_PTR to the unqualified type, if necessary.  */

@@ -1,3 +1,9 @@
+2005-10-17  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21908
+	* call.c (build_new_method_call): Do not show VTT parameters to
+	the user.
+
 2005-10-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/23440
