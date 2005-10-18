@@ -1,3 +1,8 @@
+2005-10-18  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/22293
+	* g++.dg/other/friend3.C: New test.
+
 2005-10-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23293
