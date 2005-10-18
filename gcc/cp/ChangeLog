@@ -1,5 +1,9 @@
 2005-10-18  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/21383
+	* name-lookup.c (arg_assoc): Template args can be null in a
+	template-id-expr.
+
 	PR c++/22604
 	* class.c (update_vtable_entry_for_fn): Don't process invalid
 	covariant overriders.
