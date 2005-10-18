@@ -2232,13 +2232,14 @@ finish_member_declaration (tree decl)
     {
       /* We also need to add this function to the
 	 CLASSTYPE_METHOD_VEC.  */
-      add_method (current_class_type, decl, NULL_TREE);
+      if (add_method (current_class_type, decl, NULL_TREE))
+	{
+	  TREE_CHAIN (decl) = TYPE_METHODS (current_class_type);
+	  TYPE_METHODS (current_class_type) = decl;
 
-      TREE_CHAIN (decl) = TYPE_METHODS (current_class_type);
-      TYPE_METHODS (current_class_type) = decl;
-
-      maybe_add_class_template_decl_list (current_class_type, decl,
-					  /*friend_p=*/0);
+	  maybe_add_class_template_decl_list (current_class_type, decl,
+					      /*friend_p=*/0);
+	}
     }
   /* Enter the DECL into the scope of the class.  */
   else if ((TREE_CODE (decl) == USING_DECL && !DECL_DEPENDENT_P (decl))
