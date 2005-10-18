@@ -1,3 +1,9 @@
+2005-10-17  James E Wilson  <wilson@specifix.com>
+
+	PR rtl-optimization/17356
+	* cfgrtl.c (purge_dead_edges): Check for EDGE_ABNORMAL_CALL before
+	checking for EDGE_EH.
+
 2005-10-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (function_arg_slotno): In 64-bit mode, align

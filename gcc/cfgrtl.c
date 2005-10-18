@@ -2300,19 +2300,23 @@ purge_dead_edges (basic_block bb)
   /* Cleanup abnormal edges caused by exceptions or non-local gotos.  */
   for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
     {
-      if (e->flags & EDGE_EH)
+      /* We must check for the most restrictive condition first.  Since
+	 an abnormal call edge is always an EH edge, but an EH edge is not
+	 always an abnormal call edge, we must check for an abnormal call
+	 edge first.  */
+      if (e->flags & EDGE_ABNORMAL_CALL)
 	{
-	  if (can_throw_internal (BB_END (bb)))
+	  if (CALL_P (BB_END (bb))
+	      && (! (note = find_reg_note (insn, REG_EH_REGION, NULL))
+		  || INTVAL (XEXP (note, 0)) >= 0))
 	    {
 	      ei_next (&ei);
 	      continue;
 	    }
 	}
-      else if (e->flags & EDGE_ABNORMAL_CALL)
+      else if (e->flags & EDGE_EH)
 	{
-	  if (CALL_P (BB_END (bb))
-	      && (! (note = find_reg_note (insn, REG_EH_REGION, NULL))
-		  || INTVAL (XEXP (note, 0)) >= 0))
+	  if (can_throw_internal (BB_END (bb)))
 	    {
 	      ei_next (&ei);
 	      continue;
