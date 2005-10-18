@@ -6460,6 +6460,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		&& !uses_template_parms (argvec))
 	      tsubst_default_arguments (r);
 	  }
+	else
+	  DECL_TEMPLATE_INFO (r) = NULL_TREE;
 
 	/* Copy the list of befriending classes.  */
 	for (friends = &DECL_BEFRIENDING_CLASSES (r);
