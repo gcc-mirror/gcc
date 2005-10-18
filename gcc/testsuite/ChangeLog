@@ -1,3 +1,23 @@
+2005-10-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/23446
+	* gfortran.dg/host_dummy_index_1.f90: New test.
+
+	PR fortran/21459
+	gfortran.dg/automatic_char_len_2.f90: New test.
+
+	PR fortran/20866
+	gfortran.dg/recursive_statement_functions.f90: New test.
+
+	PR fortran/20853
+	gfortran.dg/assumed_size_dt_dummy.f90: New test.
+
+	PR fortran/20849
+	gfortran.dg/external_initializer.f90: New test.
+
+	PR fortran/20837
+	non_module_public.f90: New test.
+	
 2005-10-17  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/23440

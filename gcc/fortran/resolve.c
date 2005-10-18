@@ -50,6 +50,16 @@ static code_stack *cs_base = NULL;
 
 static int forall_flag;
 
+/* Nonzero if we are processing a formal arglist. The corresponding function
+   resets the flag each time that it is read.  */
+static int formal_arg_flag = 0;
+
+int
+gfc_is_formal_arg (void)
+{
+  return formal_arg_flag;
+}
+
 /* Resolve types of formal argument lists.  These have to be done early so that
    the formal argument lists of module procedures can be copied to the
    containing module before the individual procedures are resolved
@@ -77,6 +87,8 @@ resolve_formal_arglist (gfc_symbol * proc)
       || sym->attr.pointer || sym->attr.allocatable
       || (sym->as && sym->as->rank > 0))
     proc->attr.always_explicit = 1;
+
+  formal_arg_flag = 1;
 
   for (f = proc->formal; f; f = f->next)
     {
@@ -224,6 +236,7 @@ resolve_formal_arglist (gfc_symbol * proc)
             }
         }
     }
+  formal_arg_flag = 0;
 }
 
 
@@ -4247,6 +4260,26 @@ resolve_symbol (gfc_symbol * sym)
 	}
     }
 
+  /* An assumed-size array with INTENT(OUT) shall not be of a type for which
+     default initialization is defined (5.1.2.4.4).  */
+  if (sym->ts.type == BT_DERIVED
+	&& sym->attr.dummy
+	&& sym->attr.intent == INTENT_OUT
+	&& sym->as->type == AS_ASSUMED_SIZE)
+    {
+      for (c = sym->ts.derived->components; c; c = c->next)
+	{
+	  if (c->initializer)
+	    {
+	      gfc_error ("The INTENT(OUT) dummy argument '%s' at %L is "
+			 "ASSUMED SIZE and so cannot have a default initializer",
+			 sym->name, &sym->declared_at);
+	      return;
+	    }
+	}
+    }
+
+
   /* Ensure that derived type formal arguments of a public procedure
      are not of a private type.  */
   if (sym->attr.flavor == FL_PROCEDURE
@@ -4372,6 +4405,15 @@ resolve_symbol (gfc_symbol * sym)
       break;
 
     default:
+
+      /* An external symbol falls through to here if it is not referenced.  */
+      if (sym->attr.external && sym->value)
+	{
+	  gfc_error ("External object at %L may not have an initializer",
+		     &sym->declared_at);
+	  return;
+	}
+
       break;
     }
 

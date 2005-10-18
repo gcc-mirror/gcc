@@ -1,3 +1,36 @@
+2005-10-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/23446
+	* gfortran.h: Primitive for gfc_is_formal_arg.
+	* resolve.c(gfc_is_formal_arg): New function to signal across
+	several function calls that formal argument lists are being
+	processed.
+	(resolve_formal_arglist): Set/reset the flag for gfc_is_formal_arg.
+	*expr.c(check_restricted): Add check, via gfc_is_formal_arg, if
+	symbol is part of an formal argument declaration.
+
+	PR fortran/21459
+	* decl.c (add_init_expr_to_sym): Make a new character
+	length for each variable, when the expression is NULL
+	and link to cl_list.
+
+	PR fortran/20866
+	* match.c (recursive_stmt_fcn): New function that tests if
+	a statement function resurses through itself or other other
+	statement functions.
+	(gfc_match_st_function): Call recursive_stmt_fcn to check
+	if this is recursive and to raise error if so.
+
+	PR fortran/20849
+	PR fortran/20853
+	* resolve.c (resolve_symbol): Errors for assumed size arrays
+	with default initializer and for external objects with an
+	initializer.
+
+	PR fortran/20837
+	* decl.c (match_attr_spec): Prevent PUBLIC from being used
+	outside a module.
+
 2005-10-16  Erik Edelmann  <erik.edelmann@iki.fi>
 
 	PR 22273

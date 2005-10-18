@@ -2703,6 +2703,88 @@ cleanup:
   return MATCH_ERROR;
 }
 
+/* Check that a statement function is not recursive. This is done by looking
+   for the statement function symbol(sym) by looking recursively through its
+   expression(e).  If a reference to sym is found, true is returned.  */
+static bool
+recursive_stmt_fcn (gfc_expr *e, gfc_symbol *sym)
+{
+  gfc_actual_arglist *arg;
+  gfc_ref *ref;
+  int i;
+
+  if (e == NULL)
+    return false;
+
+  switch (e->expr_type)
+    {
+    case EXPR_FUNCTION:
+      for (arg = e->value.function.actual; arg; arg = arg->next)
+	{
+	  if (sym->name == arg->name
+		|| recursive_stmt_fcn (arg->expr, sym))
+	    return true;
+	}
+
+      /* Check the name before testing for nested recursion!  */
+      if (sym->name == e->symtree->n.sym->name)
+	return true;
+
+      /* Catch recursion via other statement functions.  */
+      if (e->symtree->n.sym->attr.proc == PROC_ST_FUNCTION
+	    && e->symtree->n.sym->value
+	    && recursive_stmt_fcn (e->symtree->n.sym->value, sym))
+	return true;
+
+      break;
+
+    case EXPR_VARIABLE:
+      if (sym->name == e->symtree->n.sym->name)
+	return true;
+      break;
+
+    case EXPR_OP:
+      if (recursive_stmt_fcn (e->value.op.op1, sym)
+	    || recursive_stmt_fcn (e->value.op.op2, sym))
+	return true;
+      break;
+
+    default:
+      break;
+    }
+
+  /* Component references do not need to be checked.  */
+  if (e->ref)
+    {
+      for (ref = e->ref; ref; ref = ref->next)
+	{
+	  switch (ref->type)
+	    {
+	    case REF_ARRAY:
+	      for (i = 0; i < ref->u.ar.dimen; i++)
+		{
+		  if (recursive_stmt_fcn (ref->u.ar.start[i], sym)
+			|| recursive_stmt_fcn (ref->u.ar.end[i], sym)
+			|| recursive_stmt_fcn (ref->u.ar.stride[i], sym))
+		    return true;
+		}
+	      break;
+
+	    case REF_SUBSTRING:
+	      if (recursive_stmt_fcn (ref->u.ss.start, sym)
+		    || recursive_stmt_fcn (ref->u.ss.end, sym))
+		return true;
+
+	      break;
+
+	    default:
+	      break;
+	    }
+	}
+    }
+  return false;
+}
+
 
 /* Match a statement function declaration.  It is so easy to match
    non-statement function statements with a MATCH_ERROR as opposed to
@@ -2736,6 +2818,13 @@ gfc_match_st_function (void)
   gfc_free_error (&old_error);
   if (m == MATCH_ERROR)
     return m;
+
+  if (recursive_stmt_fcn (expr, sym))
+    {
+      gfc_error ("Statement function at %L is recursive",
+		 &expr->where);
+      return MATCH_ERROR;
+    }
 
   sym->value = expr;
 
