@@ -5311,6 +5311,10 @@ build_new_method_call (tree instance, tree fns, tree args,
       gcc_assert (name != ctor_identifier);
       /* Similarly for destructors.  */
       gcc_assert (name != dtor_identifier);
+      /* Remove the VTT pointer, if present.  */
+      if ((name == base_ctor_identifier || name == base_dtor_identifier)
+	  && CLASSTYPE_VBASECLASSES (basetype))
+	user_args = TREE_CHAIN (user_args);
     }
 
   /* It's OK to call destructors on cv-qualified objects.  Therefore,
