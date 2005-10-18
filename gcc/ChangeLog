@@ -1,3 +1,8 @@
+2005-10-18  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/winnt-cxx.c (i386_pe_adjust_class_at_definition):
+	Check that elements of TYPE_METHODS are FUNCTION_DECLs.
+
 2005-10-17  Alexey Starovoytov  <alexey.starovoytov@sun.com>
             Ian Lance Taylor <ian@airs.com>
 

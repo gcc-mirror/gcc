@@ -152,7 +152,8 @@ i386_pe_adjust_class_at_definition (tree t)
     
   /* Check FUNCTION_DECL's.  */
   for (member = TYPE_METHODS (t); member;  member = TREE_CHAIN (member))
-    maybe_add_dllimport (member);
+    if (TREE_CODE (member) == FUNCTION_DECL)
+      maybe_add_dllimport (member);
  
   /* Check vtables  */
   for (member = CLASSTYPE_VTABLES (t); member;  member = TREE_CHAIN (member))
