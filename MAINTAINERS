@@ -20,7 +20,7 @@ Maintainers
 
 			Blanket Write Privs.
 
-Richard Earnshaw				rearnsha@arm.com
+Richard Earnshaw				richard.earnshaw@arm.com
 Richard Henderson                               rth@redhat.com
 Geoffrey Keating				geoffk@geoffk.org
 Richard Kenner					kenner@nyu.edu
@@ -37,7 +37,7 @@ Jim Wilson					wilson@specifixinc.com
 
 alpha port		Richard Henderson	rth@redhat.com
 arm port		Nick Clifton		nickc@redhat.com
-arm port		Richard Earnshaw	rearnsha@arm.com
+arm port		Richard Earnshaw	richard.earnshaw@arm.com
 arm port		Paul Brook		paul@codesourcery.com
 avr port		Denis Chertykov		denisc@overta.ru
 avr port		Marek Michalkiewicz	marekm@amelek.gda.pl
