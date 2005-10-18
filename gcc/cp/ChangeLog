@@ -1,3 +1,15 @@
+2005-10-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/22604
+	* class.c (update_vtable_entry_for_fn): Don't process invalid
+	covariant overriders.
+
+	PR c++/23118
+	* cp-tree.h (add_method): Add return value.
+	* class.c (add_method): Return success indicator.
+	* semantics.c (finish_member_declaration): Don't add an invalid
+	method to the method list.
+
 2005-10-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21908
