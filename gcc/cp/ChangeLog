@@ -1,3 +1,9 @@
+2005-10-18  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/22293
+	* decl.c (grokdeclarator): Reject unqualified destructors in
+	friend declarations.
+
 2005-10-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/23293
