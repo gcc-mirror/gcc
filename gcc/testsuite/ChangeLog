@@ -1,3 +1,7 @@
+2005-10-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/profile-generate-2.c: New test.
+
 2005-10-18  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR target/23589
