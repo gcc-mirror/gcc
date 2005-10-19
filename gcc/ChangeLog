@@ -1,5 +1,10 @@
 2005-10-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
+	* config/s390/s390.md: Comment describing output modifiers updated.
+	* config/s390/s390.c (print_operand): Likewise.
+
+2005-10-19  Andreas Krebbel  <krebbel1@de.ibm.com>
+
 	* config/s390/s390.c (override_options): Added check for -mstack-size
 	64k limitation.
 	* doc/invoke.texi: Mention that limit in the documenation.
