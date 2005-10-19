@@ -4067,10 +4067,13 @@ print_operand_address (FILE *file, rtx addr)
     'Y': print shift count operand.
 
     'b': print integer X as if it's an unsigned byte.
-    'x': print integer X as if it's an unsigned word.
-    'h': print integer X as if it's a signed word.
+    'x': print integer X as if it's an unsigned halfword.
+    'h': print integer X as if it's a signed halfword.
     'i': print the first nonzero HImode part of X.
-    'j': print the first HImode part unequal to 0xffff of X.  */
+    'j': print the first HImode part unequal to -1 of X.
+    'k': print the first nonzero SImode part of X.
+    'm': print the first SImode part unequal to -1 of X.
+    'o': print integer X as if it's an unsigned 32bit word.  */
 
 void
 print_operand (FILE *file, rtx x, int code)
