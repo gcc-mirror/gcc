@@ -11659,9 +11659,10 @@ back end emits additional instructions in the function prologue which trigger a 
 if the stack size is @var{stack-guard} bytes above the @var{stack-size}
 (remember that the stack on s390 grows downward).  These options are intended to
 be used to help debugging stack overflow problems.  The additionally emitted code
-cause only little overhead and hence can also be used in production like systems
+causes only little overhead and hence can also be used in production like systems
 without greater performance degradation.  The given values have to be exact
-powers of 2 and @var{stack-size} has to be greater than @var{stack-guard}.
+powers of 2 and @var{stack-size} has to be greater than @var{stack-guard} without
+exceeding 64k.
 In order to be efficient the extra code makes the assumption that the stack starts
 at an address aligned to the value given by @var{stack-size}.
 @end table
