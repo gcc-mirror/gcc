@@ -4319,6 +4319,7 @@ resolve_symbol (gfc_symbol * sym)
   if (sym->ts.type == BT_DERIVED
 	&& sym->attr.dummy
 	&& sym->attr.intent == INTENT_OUT
+	&& sym->as
 	&& sym->as->type == AS_ASSUMED_SIZE)
     {
       for (c = sym->ts.derived->components; c; c = c->next)
