@@ -1,3 +1,10 @@
+2005-10-18  Daniel Berlin <dberlin@dberlin.org>
+
+	Fix PR tree-optimization/24231
+
+	* tree-ssa-pre.c (try_look_through_load): Skip abnormal phi names
+	(compute_avail): Ditto.
+
 2006-10-18  Richard Henderson  <rth@redhat.com>
 
 	PR target/24428
