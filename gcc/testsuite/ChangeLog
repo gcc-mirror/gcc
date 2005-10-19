@@ -1,3 +1,7 @@
+2005-10-19  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* gcc.dg/20050824-1.c (f): Clobber %r13 and %r14 only on s390x.
+
 2005-10-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/21908
