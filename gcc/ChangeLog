@@ -1,3 +1,10 @@
+2005-10-19  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR #19672
+	* dojump.c (do_jump): Handle TRUTH_AND_EXPR and TRUTH_OR_EXPR
+	like TRUTH_ANDIF_EXPR and TRUTH_ORIF_EXPR, if the branch cost
+	is low enough.
+
 2005-10-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/gmon-sol2.c (internal_mcount): Mark as used.
