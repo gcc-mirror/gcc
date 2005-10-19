@@ -3406,7 +3406,8 @@ fixup_mova (rtx mova)
 	  gcc_assert (worker
 		      && GET_CODE (worker) != CODE_LABEL
 		      && GET_CODE (worker) != JUMP_INSN);
-	} while (recog_memoized (worker) != CODE_FOR_casesi_worker_1);
+	} while (GET_CODE (worker) == NOTE
+		 || recog_memoized (worker) != CODE_FOR_casesi_worker_1);
       wpat = PATTERN (worker);
       wpat0 = XVECEXP (wpat, 0, 0);
       wpat1 = XVECEXP (wpat, 0, 1);
