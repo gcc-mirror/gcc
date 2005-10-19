@@ -1,3 +1,11 @@
+2005-10-19  Steven Bosscher  <stevenb@suse.de>
+
+	PR c/23228
+	* c-decl.c (pop_scope): Don't warn about an unused variable
+	if it is marked with TREE_NO_WARNING.
+	(duplicate_decls): Set TREE_NO_WARNING if olddecl and newdecl
+	somenow mismatch and olddecl is to be replaced.
+
 2005-10-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR middle-end/23199
