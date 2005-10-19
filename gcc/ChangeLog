@@ -1,3 +1,7 @@
+2005-10-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (fixup_mova): Skip notes.
+
 2005-10-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_hard_regno_rename_ok): Add prototype.
