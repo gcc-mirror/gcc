@@ -1,3 +1,8 @@
+2005-10-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/21908
+	* g++.dg/parse/error28.C: New test.
+
 2005-10-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/profile-generate-2.c: New test.
