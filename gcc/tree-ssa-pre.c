@@ -2187,11 +2187,13 @@ try_look_through_load (tree lhs, tree mem_ref, tree stmt, basic_block block)
      that all of them come from the same statement STORE_STMT.  See if there
      is a useful expression we can deduce from STORE_STMT.  */
   rhs = TREE_OPERAND (store_stmt, 1);
-  if (TREE_CODE (rhs) == SSA_NAME
+  if ((TREE_CODE (rhs) == SSA_NAME
+       && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs))
       || is_gimple_min_invariant (rhs)
       || TREE_CODE (rhs) == ADDR_EXPR
       || TREE_INVARIANT (rhs))
     {
+      
       /* Yay!  Compute a value number for the RHS of the statement and
  	 add its value to the AVAIL_OUT set for the block.  Add the LHS
 	 to TMP_GEN.  */
@@ -2322,7 +2324,8 @@ compute_avail (void)
 		      continue;
 		    }
 		}
-	      else if (TREE_CODE (rhs) == SSA_NAME
+	      else if ((TREE_CODE (rhs) == SSA_NAME
+			&& !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs))
 		       || is_gimple_min_invariant (rhs)
 		       || TREE_CODE (rhs) == ADDR_EXPR
 		       || TREE_INVARIANT (rhs)
