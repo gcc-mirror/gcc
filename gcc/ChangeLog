@@ -1,4 +1,9 @@
-2006-10-18  Richard Henderson  <rth@redhat.com>
+2005-10-18  Paolo Bonzini  <bonzini@gnu.org>
+
+        PR #19672
+        * dojump.c (do_jump): Handle TRUTH_AND_EXPR and TRUTH_OR_EXPR here.
+
+2005-10-18  Richard Henderson  <rth@redhat.com>
 
         PR target/24428
         * config/i386/i386.c (legitimate_constant_p): Check
