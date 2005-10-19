@@ -1456,15 +1456,8 @@ safe_insert_insn_on_edge (rtx insn, edge e)
   regset killed;
   rtx save_regs = NULL_RTX;
   unsigned regno;
-  int noccmode;
   enum machine_mode mode;
   reg_set_iterator rsi;
-
-#ifdef AVOID_CCMODE_COPIES
-  noccmode = true;
-#else
-  noccmode = false;
-#endif
 
   killed = ALLOC_REG_SET (&reg_obstack);
 
@@ -1491,7 +1484,8 @@ safe_insert_insn_on_edge (rtx insn, edge e)
       if (mode == VOIDmode)
 	return false;
 
-      if (noccmode && mode == CCmode)
+      /* Avoid copying in CCmode if we can't.  */
+      if (!can_copy_p (mode))
 	return false;
 	
       save_regs = alloc_EXPR_LIST (0,
