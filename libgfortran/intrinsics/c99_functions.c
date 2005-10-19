@@ -37,7 +37,7 @@ Boston, MA 02110-1301, USA.  */
 
 
 #ifndef HAVE_ACOSF
-#define HAVE_ACOSF
+#define HAVE_ACOSF 1
 float
 acosf(float x)
 {
@@ -46,7 +46,7 @@ acosf(float x)
 #endif
 
 #ifndef HAVE_ASINF
-#define HAVE_ASINF
+#define HAVE_ASINF 1
 float
 asinf(float x)
 {
@@ -55,7 +55,7 @@ asinf(float x)
 #endif
 
 #ifndef HAVE_ATAN2F
-#define HAVE_ATAN2F
+#define HAVE_ATAN2F 1
 float
 atan2f(float y, float x)
 {
@@ -64,7 +64,7 @@ atan2f(float y, float x)
 #endif
 
 #ifndef HAVE_ATANF
-#define HAVE_ATANF
+#define HAVE_ATANF 1
 float
 atanf(float x)
 {
@@ -73,7 +73,7 @@ atanf(float x)
 #endif
 
 #ifndef HAVE_CEILF
-#define HAVE_CEILF
+#define HAVE_CEILF 1
 float
 ceilf(float x)
 {
@@ -82,7 +82,7 @@ ceilf(float x)
 #endif
 
 #ifndef HAVE_COPYSIGNF
-#define HAVE_COPYSIGNF
+#define HAVE_COPYSIGNF 1
 float
 copysignf(float x, float y)
 {
@@ -91,7 +91,7 @@ copysignf(float x, float y)
 #endif
 
 #ifndef HAVE_COSF
-#define HAVE_COSF
+#define HAVE_COSF 1
 float
 cosf(float x)
 {
@@ -100,7 +100,7 @@ cosf(float x)
 #endif
 
 #ifndef HAVE_COSHF
-#define HAVE_COSHF
+#define HAVE_COSHF 1
 float
 coshf(float x)
 {
@@ -109,7 +109,7 @@ coshf(float x)
 #endif
 
 #ifndef HAVE_EXPF
-#define HAVE_EXPF
+#define HAVE_EXPF 1
 float
 expf(float x)
 {
@@ -118,7 +118,7 @@ expf(float x)
 #endif
 
 #ifndef HAVE_FABSF
-#define HAVE_FABSF
+#define HAVE_FABSF 1
 float
 fabsf(float x)
 {
@@ -127,7 +127,7 @@ fabsf(float x)
 #endif
 
 #ifndef HAVE_FLOORF
-#define HAVE_FLOORF
+#define HAVE_FLOORF 1
 float
 floorf(float x)
 {
@@ -136,7 +136,7 @@ floorf(float x)
 #endif
 
 #ifndef HAVE_FREXPF
-#define HAVE_FREXPF
+#define HAVE_FREXPF 1
 float
 frexpf(float x, int *exp)
 {
@@ -145,7 +145,7 @@ frexpf(float x, int *exp)
 #endif
 
 #ifndef HAVE_HYPOTF
-#define HAVE_HYPOTF
+#define HAVE_HYPOTF 1
 float
 hypotf(float x, float y)
 {
@@ -154,7 +154,7 @@ hypotf(float x, float y)
 #endif
 
 #ifndef HAVE_LOGF
-#define HAVE_LOGF
+#define HAVE_LOGF 1
 float
 logf(float x)
 {
@@ -163,7 +163,7 @@ logf(float x)
 #endif
 
 #ifndef HAVE_LOG10F
-#define HAVE_LOG10F
+#define HAVE_LOG10F 1
 float
 log10f(float x)
 {
@@ -172,7 +172,7 @@ log10f(float x)
 #endif
 
 #ifndef HAVE_SCALBN
-#define HAVE_SCALBN
+#define HAVE_SCALBN 1
 double
 scalbn(double x, int y)
 {
@@ -181,7 +181,7 @@ scalbn(double x, int y)
 #endif
 
 #ifndef HAVE_SCALBNF
-#define HAVE_SCALBNF
+#define HAVE_SCALBNF 1
 float
 scalbnf(float x, int y)
 {
@@ -190,7 +190,7 @@ scalbnf(float x, int y)
 #endif
 
 #ifndef HAVE_SINF
-#define HAVE_SINF
+#define HAVE_SINF 1
 float
 sinf(float x)
 {
@@ -199,7 +199,7 @@ sinf(float x)
 #endif
 
 #ifndef HAVE_SINHF
-#define HAVE_SINHF
+#define HAVE_SINHF 1
 float
 sinhf(float x)
 {
@@ -208,7 +208,7 @@ sinhf(float x)
 #endif
 
 #ifndef HAVE_SQRTF
-#define HAVE_SQRTF
+#define HAVE_SQRTF 1
 float
 sqrtf(float x)
 {
@@ -217,7 +217,7 @@ sqrtf(float x)
 #endif
 
 #ifndef HAVE_TANF
-#define HAVE_TANF
+#define HAVE_TANF 1
 float
 tanf(float x)
 {
@@ -226,7 +226,7 @@ tanf(float x)
 #endif
 
 #ifndef HAVE_TANHF
-#define HAVE_TANHF
+#define HAVE_TANHF 1
 float
 tanhf(float x)
 {
@@ -235,7 +235,7 @@ tanhf(float x)
 #endif
 
 #ifndef HAVE_TRUNC
-#define HAVE_TRUNC
+#define HAVE_TRUNC 1
 double
 trunc(double x)
 {
@@ -250,7 +250,7 @@ trunc(double x)
 #endif
 
 #ifndef HAVE_TRUNCF
-#define HAVE_TRUNCF
+#define HAVE_TRUNCF 1
 float
 truncf(float x)
 {
@@ -259,7 +259,7 @@ truncf(float x)
 #endif
 
 #ifndef HAVE_NEXTAFTERF
-#define HAVE_NEXTAFTERF
+#define HAVE_NEXTAFTERF 1
 /* This is a portable implementation of nextafterf that is intended to be
    independent of the floating point format or its in memory representation.
    This implementation works correctly with denormalized values.  */
@@ -323,7 +323,7 @@ nextafterf(float x, float y)
 
 
 #ifndef HAVE_POWF
-#define HAVE_POWF
+#define HAVE_POWF 1
 float
 powf(float x, float y)
 {
@@ -336,7 +336,7 @@ powf(float x, float y)
 /* Algorithm by Steven G. Kargl.  */
 
 #ifndef HAVE_ROUND
-#define HAVE_ROUND
+#define HAVE_ROUND 1
 /* Round to nearest integral value.  If the argument is halfway between two
    integral values then round away from zero.  */
 
@@ -365,7 +365,7 @@ round(double x)
 #endif
 
 #ifndef HAVE_ROUNDF
-#define HAVE_ROUNDF
+#define HAVE_ROUNDF 1
 /* Round to nearest integral value.  If the argument is halfway between two
    integral values then round away from zero.  */
 
@@ -394,7 +394,7 @@ roundf(float x)
 #endif
 
 #ifndef HAVE_LOG10L
-#define HAVE_LOG10L
+#define HAVE_LOG10L 1
 /* log10 function for long double variables. The version provided here
    reduces the argument until it fits into a double, then use log10.  */
 long double
@@ -434,7 +434,7 @@ log10l(long double x)
 
 
 #if !defined(HAVE_CABSF)
-#define HAVE_CABSF
+#define HAVE_CABSF 1
 float
 cabsf (float complex z)
 {
@@ -443,7 +443,7 @@ cabsf (float complex z)
 #endif
 
 #if !defined(HAVE_CABS)
-#define HAVE_CABS
+#define HAVE_CABS 1
 double
 cabs (double complex z)
 {
@@ -452,7 +452,7 @@ cabs (double complex z)
 #endif
 
 #if !defined(HAVE_CABSL) && defined(HAVE_HYPOTL)
-#define HAVE_CABSL
+#define HAVE_CABSL 1
 long double
 cabsl (long double complex z)
 {
@@ -462,7 +462,7 @@ cabsl (long double complex z)
 
 
 #if !defined(HAVE_CARGF)
-#define HAVE_CARGF
+#define HAVE_CARGF 1
 float
 cargf (float complex z)
 {
@@ -471,7 +471,7 @@ cargf (float complex z)
 #endif
 
 #if !defined(HAVE_CARG)
-#define HAVE_CARG
+#define HAVE_CARG 1
 double
 carg (double complex z)
 {
@@ -480,7 +480,7 @@ carg (double complex z)
 #endif
 
 #if !defined(HAVE_CARGL) && defined(HAVE_ATAN2L)
-#define HAVE_CARGL
+#define HAVE_CARGL 1
 long double
 cargl (long double complex z)
 {
@@ -491,7 +491,7 @@ cargl (long double complex z)
 
 /* exp(z) = exp(a)*(cos(b) + i sin(b))  */
 #if !defined(HAVE_CEXPF)
-#define HAVE_CEXPF
+#define HAVE_CEXPF 1
 float complex
 cexpf (float complex z)
 {
@@ -506,7 +506,7 @@ cexpf (float complex z)
 #endif
 
 #if !defined(HAVE_CEXP)
-#define HAVE_CEXP
+#define HAVE_CEXP 1
 double complex
 cexp (double complex z)
 {
@@ -521,7 +521,7 @@ cexp (double complex z)
 #endif
 
 #if !defined(HAVE_CEXPL) && defined(HAVE_COSL) && defined(HAVE_SINL) && defined(EXPL)
-#define HAVE_CEXPL
+#define HAVE_CEXPL 1
 long double complex
 cexpl (long double complex z)
 {
@@ -538,7 +538,7 @@ cexpl (long double complex z)
 
 /* log(z) = log (cabs(z)) + i*carg(z)  */
 #if !defined(HAVE_CLOGF)
-#define HAVE_CLOGF
+#define HAVE_CLOGF 1
 float complex
 clogf (float complex z)
 {
@@ -550,7 +550,7 @@ clogf (float complex z)
 #endif
 
 #if !defined(HAVE_CLOG)
-#define HAVE_CLOG
+#define HAVE_CLOG 1
 double complex
 clog (double complex z)
 {
@@ -562,7 +562,7 @@ clog (double complex z)
 #endif
 
 #if !defined(HAVE_CLOGL) && defined(HAVE_LOGL) && defined(HAVE_CABSL) && defined(HAVE_CARGL)
-#define HAVE_CLOGL
+#define HAVE_CLOGL 1
 long double complex
 clogl (long double complex z)
 {
@@ -576,7 +576,7 @@ clogl (long double complex z)
 
 /* log10(z) = log10 (cabs(z)) + i*carg(z)  */
 #if !defined(HAVE_CLOG10F)
-#define HAVE_CLOG10F
+#define HAVE_CLOG10F 1
 float complex
 clog10f (float complex z)
 {
@@ -588,7 +588,7 @@ clog10f (float complex z)
 #endif
 
 #if !defined(HAVE_CLOG10)
-#define HAVE_CLOG10
+#define HAVE_CLOG10 1
 double complex
 clog10 (double complex z)
 {
@@ -600,7 +600,7 @@ clog10 (double complex z)
 #endif
 
 #if !defined(HAVE_CLOG10L) && defined(HAVE_LOG10L) && defined(HAVE_CABSL) && defined(HAVE_CARGL)
-#define HAVE_CLOG10L
+#define HAVE_CLOG10L 1
 long double complex
 clog10l (long double complex z)
 {
@@ -614,7 +614,7 @@ clog10l (long double complex z)
 
 /* pow(base, power) = cexp (power * clog (base))  */
 #if !defined(HAVE_CPOWF)
-#define HAVE_CPOWF
+#define HAVE_CPOWF 1
 float complex
 cpowf (float complex base, float complex power)
 {
@@ -623,7 +623,7 @@ cpowf (float complex base, float complex power)
 #endif
 
 #if !defined(HAVE_CPOW)
-#define HAVE_CPOW
+#define HAVE_CPOW 1
 double complex
 cpow (double complex base, double complex power)
 {
@@ -632,7 +632,7 @@ cpow (double complex base, double complex power)
 #endif
 
 #if !defined(HAVE_CPOWL) && defined(HAVE_CEXPL) && defined(HAVE_CLOGL)
-#define HAVE_CPOWL
+#define HAVE_CPOWL 1
 long double complex
 cpowl (long double complex base, long double complex power)
 {
@@ -643,7 +643,7 @@ cpowl (long double complex base, long double complex power)
 
 /* sqrt(z).  Algorithm pulled from glibc.  */
 #if !defined(HAVE_CSQRTF)
-#define HAVE_CSQRTF
+#define HAVE_CSQRTF 1
 float complex
 csqrtf (float complex z)
 {
@@ -696,7 +696,7 @@ csqrtf (float complex z)
 #endif
 
 #if !defined(HAVE_CSQRT)
-#define HAVE_CSQRT
+#define HAVE_CSQRT 1
 double complex
 csqrt (double complex z)
 {
@@ -749,7 +749,7 @@ csqrt (double complex z)
 #endif
 
 #if !defined(HAVE_CSQRTL) && defined(HAVE_COPYSIGNL) && defined(HAVE_SQRTL) && defined(HAVE_FABSL) && defined(HAVE_HYPOTL)
-#define HAVE_CSQRTL
+#define HAVE_CSQRTL 1
 long double complex
 csqrtl (long double complex z)
 {
@@ -804,7 +804,7 @@ csqrtl (long double complex z)
 
 /* sinh(a + i b) = sinh(a) cos(b) + i cosh(a) sin(b)  */
 #if !defined(HAVE_CSINHF)
-#define HAVE_CSINHF
+#define HAVE_CSINHF 1
 float complex
 csinhf (float complex a)
 {
@@ -819,7 +819,7 @@ csinhf (float complex a)
 #endif
 
 #if !defined(HAVE_CSINH)
-#define HAVE_CSINH
+#define HAVE_CSINH 1
 double complex
 csinh (double complex a)
 {
@@ -834,7 +834,7 @@ csinh (double complex a)
 #endif
 
 #if !defined(HAVE_CSINHL) && defined(HAVE_COSL) && defined(HAVE_COSHL) && defined(HAVE_SINL) && defined(HAVE_SINHL)
-#define HAVE_CSINHL
+#define HAVE_CSINHL 1
 long double complex
 csinhl (long double complex a)
 {
@@ -851,7 +851,7 @@ csinhl (long double complex a)
 
 /* cosh(a + i b) = cosh(a) cos(b) - i sinh(a) sin(b)  */
 #if !defined(HAVE_CCOSHF)
-#define HAVE_CCOSHF
+#define HAVE_CCOSHF 1
 float complex
 ccoshf (float complex a)
 {
@@ -866,7 +866,7 @@ ccoshf (float complex a)
 #endif
 
 #if !defined(HAVE_CCOSH)
-#define HAVE_CCOSH
+#define HAVE_CCOSH 1
 double complex
 ccosh (double complex a)
 {
@@ -881,7 +881,7 @@ ccosh (double complex a)
 #endif
 
 #if !defined(HAVE_CCOSHL) && defined(HAVE_COSL) && defined(HAVE_COSHL) && defined(HAVE_SINL) && defined(HAVE_SINHL)
-#define HAVE_CCOSHL
+#define HAVE_CCOSHL 1
 long double complex
 ccoshl (long double complex a)
 {
@@ -898,7 +898,7 @@ ccoshl (long double complex a)
 
 /* tanh(a + i b) = (tanh(a) + i tan(b)) / (1 - i tanh(a) tan(b))  */
 #if !defined(HAVE_CTANHF)
-#define HAVE_CTANHF
+#define HAVE_CTANHF 1
 float complex
 ctanhf (float complex a)
 {
@@ -915,7 +915,7 @@ ctanhf (float complex a)
 #endif
 
 #if !defined(HAVE_CTANH)
-#define HAVE_CTANH
+#define HAVE_CTANH 1
 double complex
 ctanh (double complex a)
 {
@@ -932,7 +932,7 @@ ctanh (double complex a)
 #endif
 
 #if !defined(HAVE_CTANHL) && defined(HAVE_TANL) && defined(HAVE_TANHL)
-#define HAVE_CTANHL
+#define HAVE_CTANHL 1
 long double complex
 ctanhl (long double complex a)
 {
@@ -951,7 +951,7 @@ ctanhl (long double complex a)
 
 /* sin(a + i b) = sin(a) cosh(b) + i cos(a) sinh(b)  */
 #if !defined(HAVE_CSINF)
-#define HAVE_CSINF
+#define HAVE_CSINF 1
 float complex
 csinf (float complex a)
 {
@@ -966,7 +966,7 @@ csinf (float complex a)
 #endif
 
 #if !defined(HAVE_CSIN)
-#define HAVE_CSIN
+#define HAVE_CSIN 1
 double complex
 csin (double complex a)
 {
@@ -981,7 +981,7 @@ csin (double complex a)
 #endif
 
 #if !defined(HAVE_CSINL) && defined(HAVE_COSL) && defined(HAVE_COSHL) && defined(HAVE_SINL) && defined(HAVE_SINHL)
-#define HAVE_CSINL
+#define HAVE_CSINL 1
 long double complex
 csinl (long double complex a)
 {
@@ -998,7 +998,7 @@ csinl (long double complex a)
 
 /* cos(a + i b) = cos(a) cosh(b) - i sin(a) sinh(b)  */
 #if !defined(HAVE_CCOSF)
-#define HAVE_CCOSF
+#define HAVE_CCOSF 1
 float complex
 ccosf (float complex a)
 {
@@ -1013,7 +1013,7 @@ ccosf (float complex a)
 #endif
 
 #if !defined(HAVE_CCOS)
-#define HAVE_CCOS
+#define HAVE_CCOS 1
 double complex
 ccos (double complex a)
 {
@@ -1028,7 +1028,7 @@ ccos (double complex a)
 #endif
 
 #if !defined(HAVE_CCOSL) && defined(HAVE_COSL) && defined(HAVE_COSHL) && defined(HAVE_SINL) && defined(HAVE_SINHL)
-#define HAVE_CCOSL
+#define HAVE_CCOSL 1
 long double complex
 ccosl (long double complex a)
 {
@@ -1045,7 +1045,7 @@ ccosl (long double complex a)
 
 /* tan(a + i b) = (tan(a) + i tanh(b)) / (1 - i tan(a) tanh(b))  */
 #if !defined(HAVE_CTANF)
-#define HAVE_CTANF
+#define HAVE_CTANF 1
 float complex
 ctanf (float complex a)
 {
@@ -1062,7 +1062,7 @@ ctanf (float complex a)
 #endif
 
 #if !defined(HAVE_CTAN)
-#define HAVE_CTAN
+#define HAVE_CTAN 1
 double complex
 ctan (double complex a)
 {
@@ -1079,7 +1079,7 @@ ctan (double complex a)
 #endif
 
 #if !defined(HAVE_CTANL) && defined(HAVE_TANL) && defined(HAVE_TANHL)
-#define HAVE_CTANL
+#define HAVE_CTANL 1
 long double complex
 ctanl (long double complex a)
 {

@@ -1,4 +1,14 @@
-2005-10-18  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+2005-10-19  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* c99_protos.h: Define preprocessor HAVE_ macros with value 1
+	instead of empty value.
+	* intrinsics/c99_functions.c: Likewise.
+	* intrinsics/getXid.c: Define HAVE_GETPID with value 1 instead of
+	empty value.
+	* intrinsics/sleep.c: Define HAVE_SLEEP with value 1 instead of
+	empty value.
+
+2005-10-19  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/24432
 	* c99_protos.h: Define HAVE_ macros for all provided functions.

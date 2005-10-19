@@ -43,7 +43,7 @@ Boston, MA 02110-1301, USA.  */
 # include <windows.h>
 # undef sleep
 # define sleep(x) Sleep(1000*(x))
-# define HAVE_SLEEP
+# define HAVE_SLEEP 1
 #endif
 
 /* SUBROUTINE SLEEP(SECONDS)

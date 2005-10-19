@@ -39,7 +39,7 @@ Boston, MA 02110-1301, USA.  */
 #include "libgfortran.h"
 
 #ifdef __MINGW32__
-#define HAVE_GETPID
+#define HAVE_GETPID 1
 #include <process.h>
 #endif
 
