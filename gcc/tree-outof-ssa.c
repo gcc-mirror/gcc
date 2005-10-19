@@ -1831,69 +1831,6 @@ dump_replaceable_exprs (FILE *f, tree *expr)
 }
 
 
-/* Helper function for discover_nonconstant_array_refs. 
-   Look for ARRAY_REF nodes with non-constant indexes and mark them
-   addressable.  */
-
-static tree
-discover_nonconstant_array_refs_r (tree * tp, int *walk_subtrees,
-				   void *data ATTRIBUTE_UNUSED)
-{
-  tree t = *tp;
-
-  if (IS_TYPE_OR_DECL_P (t))
-    *walk_subtrees = 0;
-  else if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
-    {
-      while (((TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
-	      && is_gimple_min_invariant (TREE_OPERAND (t, 1))
-	      && (!TREE_OPERAND (t, 2)
-		  || is_gimple_min_invariant (TREE_OPERAND (t, 2))))
-	     || (TREE_CODE (t) == COMPONENT_REF
-		 && (!TREE_OPERAND (t,2)
-		     || is_gimple_min_invariant (TREE_OPERAND (t, 2))))
-	     || TREE_CODE (t) == BIT_FIELD_REF
-	     || TREE_CODE (t) == REALPART_EXPR
-	     || TREE_CODE (t) == IMAGPART_EXPR
-	     || TREE_CODE (t) == VIEW_CONVERT_EXPR
-	     || TREE_CODE (t) == NOP_EXPR
-	     || TREE_CODE (t) == CONVERT_EXPR)
-	t = TREE_OPERAND (t, 0);
-
-      if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
-	{
-	  t = get_base_address (t);
-	  if (t && DECL_P (t))
-	    TREE_ADDRESSABLE (t) = 1;
-	}
-
-      *walk_subtrees = 0;
-    }
-
-  return NULL_TREE;
-}
-
-
-/* RTL expansion is not able to compile array references with variable
-   offsets for arrays stored in single register.  Discover such
-   expressions and mark variables as addressable to avoid this
-   scenario.  */
-
-static void
-discover_nonconstant_array_refs (void)
-{
-  basic_block bb;
-  block_stmt_iterator bsi;
-
-  FOR_EACH_BB (bb)
-    {
-      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
-	walk_tree (bsi_stmt_ptr (bsi), discover_nonconstant_array_refs_r,
-		   NULL , NULL);
-    }
-}
-
-
 /* This function will rewrite the current program using the variable mapping
    found in MAP.  If the replacement vector VALUES is provided, any 
    occurrences of partitions with non-null entries in the vector will be 
@@ -2594,9 +2531,6 @@ rewrite_out_of_ssa (void)
 
   /* Flush out flow graph and SSA data.  */
   delete_var_map (map);
-
-  /* Mark arrays indexed with non-constant indices with TREE_ADDRESSABLE.  */
-  discover_nonconstant_array_refs ();
 }
 
 

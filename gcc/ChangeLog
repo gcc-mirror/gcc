@@ -1,3 +1,11 @@
+2005-10-19  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* cfgexpand.c (discover_nonconstant_array_refs_r,
+	discover_nonconstant_array_refs): Move here from tree-outof-ssa.c
+	(tree_expand_cfg): Call discover_nonconstant_array_refs.
+	* tree-outof-ssa.c (rewrite_out_of_ssa): Remove call to
+	discover_nonconstant_array_refs.
+
 2005-10-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR middle-end/23199
