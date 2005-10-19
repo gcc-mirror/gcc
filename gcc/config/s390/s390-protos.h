@@ -30,6 +30,7 @@ extern void s390_emit_epilogue (bool);
 extern void s390_function_profiler (FILE *, int);
 extern void s390_conditional_register_usage (void);
 extern void s390_set_has_landing_pad_p (bool);
+extern bool s390_hard_regno_rename_ok (unsigned int, unsigned int);
 
 #ifdef RTX_CODE
 extern int s390_extra_constraint_str (rtx, int, const char *);

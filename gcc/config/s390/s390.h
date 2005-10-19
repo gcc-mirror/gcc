@@ -318,7 +318,7 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
 
 /* Preferred register allocation order.  */
 #define REG_ALLOC_ORDER                                         \
-{  1, 2, 3, 4, 5, 0, 13, 12, 11, 10, 9, 8, 7, 6, 14,            \
+{  1, 2, 3, 4, 5, 0, 12, 11, 10, 9, 8, 7, 6, 14, 13,            \
    16, 17, 18, 19, 20, 21, 22, 23,                              \
    24, 25, 26, 27, 28, 29, 30, 31,                              \
    15, 32, 33, 34, 35, 36, 37 }
@@ -364,6 +364,9 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
      (((MODE) == SImode || ((enum machine_mode) (MODE) == Pmode))   \
       && (HARD_REGNO_NREGS(REGNO, MODE) == 1 || !((REGNO) & 1))) :  \
    0)
+
+#define HARD_REGNO_RENAME_OK(FROM, TO) \
+  s390_hard_regno_rename_ok (FROM, TO)
 
 #define MODES_TIEABLE_P(MODE1, MODE2)		\
    (((MODE1) == SFmode || (MODE1) == DFmode)	\
@@ -605,15 +608,14 @@ extern int current_function_outgoing_args_size;
 
 #define FRAME_POINTER_REQUIRED 0
 
-#define INITIAL_FRAME_POINTER_OFFSET(DEPTH) (DEPTH) = 0
-
-#define ELIMINABLE_REGS				             \
-{{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},	             \
- { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},         \
- { ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},	             \
- { ARG_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},           \
- { RETURN_ADDRESS_POINTER_REGNUM, STACK_POINTER_REGNUM},     \
- { RETURN_ADDRESS_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}
+#define ELIMINABLE_REGS						\
+{{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM },		\
+ { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM },		\
+ { ARG_POINTER_REGNUM, STACK_POINTER_REGNUM },			\
+ { ARG_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM },		\
+ { RETURN_ADDRESS_POINTER_REGNUM, STACK_POINTER_REGNUM },	\
+ { RETURN_ADDRESS_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM },	\
+ { BASE_REGNUM, BASE_REGNUM }}
 
 #define CAN_ELIMINATE(FROM, TO) \
   s390_can_eliminate ((FROM), (TO))
