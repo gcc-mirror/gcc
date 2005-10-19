@@ -1,3 +1,9 @@
+2005-10-19  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (override_options): Added check for -mstack-size
+	64k limitation.
+	* doc/invoke.texi: Mention that limit in the documenation.
+
 2005-10-18  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR #19672

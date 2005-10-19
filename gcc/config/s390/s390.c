@@ -1385,6 +1385,8 @@ override_options (void)
 	error ("-mstack-size implies use of -mstack-guard");
       else if (s390_stack_guard >= s390_stack_size)
 	error ("stack size must be greater than the stack guard value");
+      else if (s390_stack_size > 1 << 16)
+	error ("stack size must not be greater than 64k");
     }
   else if (s390_stack_guard)
     error ("-mstack-guard implies use of -mstack-size"); 
