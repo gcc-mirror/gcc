@@ -1,3 +1,9 @@
+2005-10-19  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/22551
+	* typeck2.c (digest_init): Clear overflow flags on the folded
+	initializer.
+
 2005-10-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/22147

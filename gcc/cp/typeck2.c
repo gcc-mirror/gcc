@@ -754,8 +754,14 @@ digest_init (tree type, tree init, tree* tail)
 	  init = TREE_VALUE (init);
 	}
 
-      return convert_for_initialization (0, type, init, LOOKUP_NORMAL,
+      init = convert_for_initialization (0, type, init, LOOKUP_NORMAL,
 					 "initialization", NULL_TREE, 0);
+      if (CONSTANT_CLASS_P (init))
+	/* Do not let overflow propagate here and confuse any folded
+	   uses of the initializer.  */
+	TREE_CONSTANT_OVERFLOW (init) = TREE_OVERFLOW (init) = 0;
+      
+      return init;
     }
 
   /* Come here only for records and arrays (and unions with constructors).  */
