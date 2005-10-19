@@ -803,6 +803,7 @@ pop_scope (void)
 	case VAR_DECL:
 	  /* Warnings for unused variables.  */
 	  if (!TREE_USED (p)
+	      && !TREE_NO_WARNING (p)
 	      && !DECL_IN_SYSTEM_HEADER (p)
 	      && DECL_NAME (p)
 	      && !DECL_ARTIFICIAL (p)
@@ -1876,7 +1877,11 @@ duplicate_decls (tree newdecl, tree olddecl)
   tree newtype = NULL, oldtype = NULL;
 
   if (!diagnose_mismatched_decls (newdecl, olddecl, &newtype, &oldtype))
-    return false;
+    {
+      /* Avoid `unused variable' and other warnings warnings for OLDDECL.  */
+      TREE_NO_WARNING (olddecl) = 1;
+      return false;
+    }
 
   merge_decls (newdecl, olddecl, newtype, oldtype);
   return true;
