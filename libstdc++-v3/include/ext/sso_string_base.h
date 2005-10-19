@@ -51,6 +51,7 @@ namespace __gnu_cxx
         _CharT_alloc_type                                   _CharT_alloc_type;
       typedef typename _CharT_alloc_type::size_type	    size_type;
       
+    private:
       // The maximum number of individual char_type elements of an
       // individual string is determined by _S_max_size. This is the
       // value that will be returned by max_size().  (Whereas npos
@@ -60,13 +61,11 @@ namespace __gnu_cxx
       // look like this:
       // npos = m * sizeof(_CharT) + sizeof(_CharT)
       // Solving for m:
-      // m = npos / sizeof(CharT) - 1
+      // m = npos / sizeof(_CharT) - 1
       // In addition, this implementation quarters this amount.
-      static const size_type	_S_max_size;
+      enum { _S_max_size = (((static_cast<size_type>(-1)
+			      / sizeof(_CharT)) - 1) / 4) };
 
-    private:
-      static const _CharT	_S_terminal;
-      
       // Use empty-base optimization: http://www.cantrip.org/emptyopt.html
       struct _Alloc_hider : _Alloc
       {
@@ -159,6 +158,10 @@ namespace __gnu_cxx
       _M_construct(size_type __req, _CharT __c);
 
     public:
+      size_type
+      _M_max_size() const
+      { return size_type(_S_max_size); }
+
       _CharT*
       _M_data() const
       { return _M_dataplus._M_p; }
@@ -194,7 +197,7 @@ namespace __gnu_cxx
 	_M_length(__n);
 	// grrr. (per 21.3.4)
 	// You cannot leave those LWG people alone for a second.
-	traits_type::assign(_M_data()[__n], _S_terminal);
+	traits_type::assign(_M_data()[__n], _CharT());
       }
 
       void
@@ -297,22 +300,13 @@ namespace __gnu_cxx
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    const typename __sso_string_base<_CharT, _Traits, _Alloc>::size_type
-    __sso_string_base<_CharT, _Traits, _Alloc>::
-    _S_max_size = ((static_cast<size_type>(-1) / sizeof(_CharT)) - 1) / 4;
-
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    const _CharT
-    __sso_string_base<_CharT, _Traits, _Alloc>::_S_terminal = _CharT();
-
-  template<typename _CharT, typename _Traits, typename _Alloc>
     _CharT*
     __sso_string_base<_CharT, _Traits, _Alloc>::
     _M_create(size_type& __capacity, size_type __old_capacity)
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 83.  String::npos vs. string::max_size()
-      if (__capacity > _S_max_size)
+      if (__capacity > size_type(_S_max_size))
 	std::__throw_length_error(__N("__sso_string_base::_M_create"));
 
       // The below implements an exponential growth policy, necessary to

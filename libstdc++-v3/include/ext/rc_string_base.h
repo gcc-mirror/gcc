@@ -96,22 +96,7 @@ namespace __gnu_cxx
         _CharT_alloc_type                                   _CharT_alloc_type;
       typedef typename _CharT_alloc_type::size_type	    size_type;
 
-      // The maximum number of individual char_type elements of an
-      // individual string is determined by _S_max_size. This is the
-      // value that will be returned by max_size().  (Whereas npos
-      // is the maximum number of bytes the allocator can allocate.)
-      // If one was to divvy up the theoretical largest size string,
-      // with a terminating character and m _CharT elements, it'd
-      // look like this:
-      // npos = sizeof(_Rep) + (m * sizeof(_CharT)) + sizeof(_CharT)
-      // Solving for m:
-      // m = ((npos - sizeof(_Rep))/sizeof(CharT)) - 1
-      // In addition, this implementation quarters this amount.
-      static const size_type	_S_max_size;
-
     private:
-      static const _CharT	_S_terminal;
-
       // _Rep: string representation
       //   Invariants:
       //   1. String really contains _M_length + 1 characters: due to 21.3.4
@@ -151,7 +136,7 @@ namespace __gnu_cxx
 	  _M_length = __n;
 	  // grrr. (per 21.3.4)
 	  // You cannot leave those LWG people alone for a second.
-	  traits_type::assign(_M_refdata()[__n], _S_terminal);
+	  traits_type::assign(_M_refdata()[__n], _CharT());
 	}
 
 	// Create & Destroy
@@ -169,6 +154,20 @@ namespace __gnu_cxx
       {
 	_CharT                  _M_terminal;
       };
+
+      // The maximum number of individual char_type elements of an
+      // individual string is determined by _S_max_size. This is the
+      // value that will be returned by max_size().  (Whereas npos
+      // is the maximum number of bytes the allocator can allocate.)
+      // If one was to divvy up the theoretical largest size string,
+      // with a terminating character and m _CharT elements, it'd
+      // look like this:
+      // npos = sizeof(_Rep) + (m * sizeof(_CharT)) + sizeof(_CharT)
+      // Solving for m:
+      // m = ((npos - sizeof(_Rep)) / sizeof(_CharT)) - 1
+      // In addition, this implementation quarters this amount.
+      enum { _S_max_size = (((static_cast<size_type>(-1) - sizeof(_Rep))
+			     / sizeof(_CharT)) - 1) / 4 };
 
       // Use empty-base optimization: http://www.cantrip.org/emptyopt.html
       struct _Alloc_hider : _Alloc
@@ -257,6 +256,10 @@ namespace __gnu_cxx
       _S_construct(size_type __req, _CharT __c, const _Alloc& __a);
 
     public:
+      size_type
+      _M_max_size() const
+      { return size_type(_S_max_size); }
+
       _CharT*
       _M_data() const
       { return _M_dataplus._M_p; }
@@ -335,16 +338,6 @@ namespace __gnu_cxx
     };
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    const typename __rc_string_base<_CharT, _Traits, _Alloc>::size_type
-    __rc_string_base<_CharT, _Traits, _Alloc>::
-    _S_max_size = (((static_cast<size_type>(-1) - sizeof(_Rep))
-		    / sizeof(_CharT)) - 1) / 4;
-
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    const _CharT
-    __rc_string_base<_CharT, _Traits, _Alloc>::_S_terminal = _CharT();
-
-    template<typename _CharT, typename _Traits, typename _Alloc>
     typename __rc_string_base<_CharT, _Traits, _Alloc>::_Rep*
     __rc_string_base<_CharT, _Traits, _Alloc>::_Rep::
     _S_create(size_type __capacity, size_type __old_capacity,
@@ -352,7 +345,7 @@ namespace __gnu_cxx
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 83.  String::npos vs. string::max_size()
-      if (__capacity > _S_max_size)
+      if (__capacity > size_type(_S_max_size))
 	std::__throw_length_error(__N("__rc_string_base::_Rep::_S_create"));
 
       // The standard places no restriction on allocating more memory
@@ -404,8 +397,8 @@ namespace __gnu_cxx
 	  const size_type __extra = __pagesize - __adj_size % __pagesize;
 	  __capacity += __extra / sizeof(_CharT);
 	  // Never allocate a string bigger than _S_max_size.
-	  if (__capacity > _S_max_size)
-	    __capacity = _S_max_size;
+	  if (__capacity > size_type(_S_max_size))
+	    __capacity = size_type(_S_max_size);
 	  __size = ((__capacity + 1) * sizeof(_CharT) + sizeof(_Rep)
 		    + sizeof(size_type) - 1);
 	}
