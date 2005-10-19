@@ -108,7 +108,7 @@
 	 library.  Don't count TLS SYMBOL_REFs here, since they should fit
 	 only if inside of UNSPEC handled below.  */
       /* TLS symbols are not constant.  */
-      if (tls_symbolic_operand (op, Pmode))
+      if (SYMBOL_REF_TLS_MODEL (op))
 	return false;
       return (ix86_cmodel == CM_SMALL || ix86_cmodel == CM_KERNEL
 	      || (ix86_cmodel == CM_MEDIUM && !SYMBOL_REF_FAR_ADDR_P (op)));
@@ -147,6 +147,9 @@
 	  switch (GET_CODE (op1))
 	    {
 	    case SYMBOL_REF:
+	      /* TLS symbols are not constant.  */
+	      if (SYMBOL_REF_TLS_MODEL (op1))
+		return 0;
 	      /* For CM_SMALL assume that latest object is 16MB before
 		 end of 31bits boundary.  We may also accept pretty
 		 large negative constants knowing that all objects are
@@ -225,7 +228,7 @@
     case SYMBOL_REF:
       /* For certain code models, the symbolic references are known to fit.  */
       /* TLS symbols are not constant.  */
-      if (tls_symbolic_operand (op, Pmode))
+      if (SYMBOL_REF_TLS_MODEL (op))
 	return false;
       return (ix86_cmodel == CM_SMALL
 	      || (ix86_cmodel == CM_MEDIUM
@@ -248,6 +251,9 @@
 	  switch (GET_CODE (op1))
 	    {
 	    case SYMBOL_REF:
+	      /* TLS symbols are not constant.  */
+	      if (SYMBOL_REF_TLS_MODEL (op1))
+		return 0;
 	      /* For small code model we may accept pretty large positive
 		 offsets, since one bit is available for free.  Negative
 		 offsets are limited by the size of NULL pointer area
@@ -455,22 +461,6 @@
 (define_predicate "tls_symbolic_operand"
   (and (match_code "symbol_ref")
        (match_test "SYMBOL_REF_TLS_MODEL (op) != 0")))
-
-(define_predicate "global_dynamic_symbolic_operand"
-  (and (match_code "symbol_ref")
-       (match_test "SYMBOL_REF_TLS_MODEL (op) == TLS_MODEL_GLOBAL_DYNAMIC")))
-
-(define_predicate "local_dynamic_symbolic_operand"
-  (and (match_code "symbol_ref")
-       (match_test "SYMBOL_REF_TLS_MODEL (op) == TLS_MODEL_LOCAL_DYNAMIC")))
-
-(define_predicate "initial_exec_symbolic_operand"
-  (and (match_code "symbol_ref")
-       (match_test "SYMBOL_REF_TLS_MODEL (op) == TLS_MODEL_INITIAL_EXEC")))
-
-(define_predicate "local_exec_symbolic_operand"
-  (and (match_code "symbol_ref")
-       (match_test "SYMBOL_REF_TLS_MODEL (op) == TLS_MODEL_LOCAL_EXEC")))
 
 ;; Test for a pc-relative call operand
 (define_predicate "constant_call_address_operand"

@@ -1,3 +1,21 @@
+2006-10-18  Richard Henderson  <rth@redhat.com>
+
+	PR target/24428
+	* config/i386/i386.c (legitimate_constant_p): Check
+	SYMBOL_REF_TLS_MODEL directly.  Don't fallthru to SYMBOL_REF
+	if LABEL_REF.
+	(legitimate_pic_operand_p): Test SYMBOL_REF_TLS_MODEL directly.
+	(legitimate_pic_address_disp_p): Reorg CONST checking to make
+	sure SYMBOL_REF_TLS_MODEL is tested.  Test SYMBOL_REF_TLS_MODEL
+	directly.
+	(print_operand_address): Likewise.
+	* config/i386/predicates.md (x86_64_immediate_operand): Test
+	SYMBOL_REF_TLS_MODEL properly inside CONST.
+	(x86_64_zext_immediate_operand): Likewise.
+	(global_dynamic_symbolic_operand, local_dynamic_symbolic_operand,
+	initial_exec_symbolic_operand, local_exec_symbolic_operand): Remove.
+	* config/i386/i386-protos.h: Remove predicates.md entries.
+
 2005-10-18  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/winnt-cxx.c (i386_pe_adjust_class_at_definition):
