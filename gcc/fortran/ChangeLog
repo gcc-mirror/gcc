@@ -1,3 +1,10 @@
+2005-10-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24440
+	* resolve.c (resolve_symbol): Correct error in check for
+	assumed size array with default initializer by testing
+	for arrayspec before dereferencing it.
+
 2005-10-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/23446
