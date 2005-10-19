@@ -5423,21 +5423,27 @@ legitimate_constant_p (rtx x)
 	    return TARGET_64BIT;
 	  case UNSPEC_TPOFF:
 	  case UNSPEC_NTPOFF:
-	    return local_exec_symbolic_operand (XVECEXP (x, 0, 0), Pmode);
+	    x = XVECEXP (x, 0, 0);
+	    return (GET_CODE (x) == SYMBOL_REF
+		    && SYMBOL_REF_TLS_MODEL (x) == TLS_MODEL_LOCAL_EXEC);
 	  case UNSPEC_DTPOFF:
-	    return local_dynamic_symbolic_operand (XVECEXP (x, 0, 0), Pmode);
+	    x = XVECEXP (x, 0, 0);
+	    return (GET_CODE (x) == SYMBOL_REF
+		    && SYMBOL_REF_TLS_MODEL (x) == TLS_MODEL_LOCAL_DYNAMIC);
 	  default:
 	    return false;
 	  }
 
       /* We must have drilled down to a symbol.  */
-      if (!symbolic_operand (x, Pmode))
+      if (GET_CODE (x) == LABEL_REF)
+	return true;
+      if (GET_CODE (x) != SYMBOL_REF)
 	return false;
       /* FALLTHRU */
 
     case SYMBOL_REF:
       /* TLS symbols are never valid.  */
-      if (tls_symbolic_operand (x, Pmode))
+      if (SYMBOL_REF_TLS_MODEL (x))
 	return false;
       break;
 
@@ -5491,7 +5497,9 @@ legitimate_pic_operand_p (rtx x)
 	  case UNSPEC_GOTOFF:
 	    return TARGET_64BIT;
 	  case UNSPEC_TPOFF:
-	    return local_exec_symbolic_operand (XVECEXP (inner, 0, 0), Pmode);
+	    x = XVECEXP (inner, 0, 0);
+	    return (GET_CODE (x) == SYMBOL_REF
+		    && SYMBOL_REF_TLS_MODEL (x) == TLS_MODEL_LOCAL_EXEC);
 	  default:
 	    return false;
 	  }
@@ -5518,32 +5526,38 @@ legitimate_pic_address_disp_p (rtx disp)
      when they are not dynamic symbols.  */
   if (TARGET_64BIT)
     {
-      /* TLS references should always be enclosed in UNSPEC.  */
-      if (tls_symbolic_operand (disp, GET_MODE (disp)))
-	return 0;
-      if (GET_CODE (disp) == SYMBOL_REF
-	  && !SYMBOL_REF_FAR_ADDR_P (disp)
-	  && SYMBOL_REF_LOCAL_P (disp))
-	return 1;
-      if (GET_CODE (disp) == LABEL_REF)
-	return 1;
-      if (GET_CODE (disp) == CONST
-	  && GET_CODE (XEXP (disp, 0)) == PLUS)
-	{
-	  rtx op0 = XEXP (XEXP (disp, 0), 0);
-	  rtx op1 = XEXP (XEXP (disp, 0), 1);
+      rtx op0 = disp, op1;
 
+      switch (GET_CODE (disp))
+	{
+	case LABEL_REF:
+	  return true;
+
+	case CONST:
+	  if (GET_CODE (XEXP (disp, 0)) != PLUS)
+	    break;
+	  op0 = XEXP (XEXP (disp, 0), 0);
+	  op1 = XEXP (XEXP (disp, 0), 1);
+	  if (GET_CODE (op1) != CONST_INT
+	      || INTVAL (op1) >= 16*1024*1024
+	      || INTVAL (op1) < -16*1024*1024)
+	    break;
+	  if (GET_CODE (op0) == LABEL_REF)
+	    return true;
+	  if (GET_CODE (op0) != SYMBOL_REF)
+	    break;
+	  /* FALLTHRU */
+
+	case SYMBOL_REF:
 	  /* TLS references should always be enclosed in UNSPEC.  */
-	  if (tls_symbolic_operand (op0, GET_MODE (op0)))
-	    return 0;
-	  if (((GET_CODE (op0) == SYMBOL_REF
-		&& !SYMBOL_REF_FAR_ADDR_P (op0)
-		&& SYMBOL_REF_LOCAL_P (op0))
-	       || GET_CODE (op0) == LABEL_REF)
-	      && GET_CODE (op1) == CONST_INT
-	      && INTVAL (op1) < 16*1024*1024
-	      && INTVAL (op1) >= -16*1024*1024)
-	    return 1;
+	  if (SYMBOL_REF_TLS_MODEL (op0))
+	    return false;
+	  if (!SYMBOL_REF_FAR_ADDR_P (op0) && SYMBOL_REF_LOCAL_P (op0))
+	    return true;
+	  break;
+
+	default:
+	  break;
 	}
     }
   if (GET_CODE (disp) != CONST)
@@ -5600,11 +5614,17 @@ legitimate_pic_address_disp_p (rtx disp)
     case UNSPEC_INDNTPOFF:
       if (saw_plus)
 	return false;
-      return initial_exec_symbolic_operand (XVECEXP (disp, 0, 0), Pmode);
+      disp = XVECEXP (disp, 0, 0);
+      return (GET_CODE (disp) == SYMBOL_REF
+	      && SYMBOL_REF_TLS_MODEL (disp) == TLS_MODEL_INITIAL_EXEC);
     case UNSPEC_NTPOFF:
-      return local_exec_symbolic_operand (XVECEXP (disp, 0, 0), Pmode);
+      disp = XVECEXP (disp, 0, 0);
+      return (GET_CODE (disp) == SYMBOL_REF
+	      && SYMBOL_REF_TLS_MODEL (disp) == TLS_MODEL_LOCAL_EXEC);
     case UNSPEC_DTPOFF:
-      return local_dynamic_symbolic_operand (XVECEXP (disp, 0, 0), Pmode);
+      disp = XVECEXP (disp, 0, 0);
+      return (GET_CODE (disp) == SYMBOL_REF
+	      && SYMBOL_REF_TLS_MODEL (disp) == TLS_MODEL_LOCAL_DYNAMIC);
     }
 
   return 0;
@@ -6856,7 +6876,7 @@ get_some_local_dynamic_name_1 (rtx *px, void *data ATTRIBUTE_UNUSED)
   rtx x = *px;
 
   if (GET_CODE (x) == SYMBOL_REF
-      && local_dynamic_symbolic_operand (x, Pmode))
+      && SYMBOL_REF_TLS_MODEL (x) == TLS_MODEL_LOCAL_DYNAMIC)
     {
       cfun->machine->some_ld_name = XSTR (x, 0);
       return 1;
@@ -7329,16 +7349,17 @@ print_operand_address (FILE *file, rtx addr)
 	output_addr_const (file, disp);
 
       /* Use one byte shorter RIP relative addressing for 64bit mode.  */
-      if (TARGET_64BIT
-	  && ((GET_CODE (disp) == SYMBOL_REF
-	       && ! tls_symbolic_operand (disp, GET_MODE (disp)))
-	      || GET_CODE (disp) == LABEL_REF
-	      || (GET_CODE (disp) == CONST
-		  && GET_CODE (XEXP (disp, 0)) == PLUS
-		  && (GET_CODE (XEXP (XEXP (disp, 0), 0)) == SYMBOL_REF
-		      || GET_CODE (XEXP (XEXP (disp, 0), 0)) == LABEL_REF)
-		  && GET_CODE (XEXP (XEXP (disp, 0), 1)) == CONST_INT)))
-	fputs ("(%rip)", file);
+      if (TARGET_64BIT)
+	{
+	  if (GET_CODE (disp) == CONST
+	      && GET_CODE (XEXP (disp, 0)) == PLUS
+	      && GET_CODE (XEXP (XEXP (disp, 0), 1)) == CONST_INT)
+	    disp = XEXP (XEXP (disp, 0), 0);
+	  if (GET_CODE (disp) == LABEL_REF
+	      || (GET_CODE (disp) == SYMBOL_REF
+		  && SYMBOL_REF_TLS_MODEL (disp) == 0))
+	    fputs ("(%rip)", file);
+	}
     }
   else
     {
