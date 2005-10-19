@@ -1,3 +1,8 @@
+2005-10-18  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/24432
+	* c99_protos.h: Define HAVE_ macros for all provided functions.
+
 2005-10-14  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/fpu-387.h (set_fpu): Remove extra ":" in stmxcsr.

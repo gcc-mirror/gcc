@@ -31,126 +31,157 @@ Boston, MA 02110-1301, USA.  */
 
 /* float variants of libm functions */
 #ifndef HAVE_ACOSF
+#define HAVE_ACOSF
 extern float acosf(float);
 #endif
 
 #ifndef HAVE_ACOSHF
+#define HAVE_ACOSHF
 extern float acoshf(float);
 #endif
 
 #ifndef HAVE_ASINF
+#define HAVE_ASINF
 extern float asinf(float);
 #endif
 
 #ifndef HAVE_ASINHF
+#define HAVE_ASINHF
 extern float asinhf(float);
 #endif
 
 #ifndef HAVE_ATAN2F
+#define HAVE_ATAN2F
 extern float atan2f(float, float);
 #endif
 
 #ifndef HAVE_ATANF
+#define HAVE_ATANF
 extern float atanf(float);
 #endif
 
 #ifndef HAVE_ATANHF
+#define HAVE_ATANHF
 extern float atanhf(float);
 #endif
 
 #ifndef HAVE_CEILF
+#define HAVE_CEILF
 extern float ceilf(float);
 #endif
 
 #ifndef HAVE_COPYSIGNF
+#define HAVE_COPYSIGNF
 extern float copysignf(float, float);
 #endif
 
 #ifndef HAVE_COSF
+#define HAVE_COSF
 extern float cosf(float);
 #endif
 
 #ifndef HAVE_COSHF
+#define HAVE_COSHF
 extern float coshf(float);
 #endif
 
 #ifndef HAVE_EXPF
+#define HAVE_EXPF
 extern float expf(float);
 #endif
 
 #ifndef HAVE_FABSF
+#define HAVE_FABSF
 extern float fabsf(float);
 #endif
 
 #ifndef HAVE_FLOORF
+#define HAVE_FLOORF
 extern float floorf(float);
 #endif
 
 #ifndef HAVE_FREXPF
+#define HAVE_FREXPF
 extern float frexpf(float, int *);
 #endif
 
 #ifndef HAVE_HYPOTF
+#define HAVE_HYPOTF
 extern float hypotf(float, float);
 #endif
 
 #ifndef HAVE_LOGF
+#define HAVE_LOGF
 extern float logf(float);
 #endif
 
 #ifndef HAVE_LOG10F
+#define HAVE_LOG10F
 extern float log10f(float);
 #endif
 
 #ifndef HAVE_SCALBN
+#define HAVE_SCALBN
 extern double scalbn(double, int);
 #endif
 
 #ifndef HAVE_SCALBNF
+#define HAVE_SCALBNF
 extern float scalbnf(float, int);
 #endif
 
 #ifndef HAVE_SINF
+#define HAVE_SINF
 extern float sinf(float);
 #endif
 
 #ifndef HAVE_SINHF
+#define HAVE_SINHF
 extern float sinhf(float);
 #endif
 
 #ifndef HAVE_SQRTF
+#define HAVE_SQRTF
 extern float sqrtf(float);
 #endif
 
 #ifndef HAVE_TANF
+#define HAVE_TANF
 extern float tanf(float);
 #endif
 
 #ifndef HAVE_TANHF
+#define HAVE_TANHF
 extern float tanhf(float);
 #endif
 
 #ifndef HAVE_TRUNC
+#define HAVE_TRUNC
 extern double trunc(double);
 #endif
 
 #ifndef HAVE_TRUNCF
+#define HAVE_TRUNCF
 extern float truncf(float);
 #endif
 
 #ifndef HAVE_NEXTAFTERF
+#define HAVE_NEXTAFTERF
 extern float nextafterf(float, float);
 #endif
 
 #ifndef HAVE_POWF
+#define HAVE_POWF
 extern float powf(float, float);
 #endif
 
 #ifndef HAVE_ROUND
+#define HAVE_ROUND
 extern double round(double);
 #endif
 
 #ifndef HAVE_ROUNDF
+#define HAVE_ROUNDF
 extern float roundf(float);
 #endif
 
