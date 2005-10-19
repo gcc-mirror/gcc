@@ -1,3 +1,16 @@
+2005-10-19  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_hard_regno_rename_ok): Add prototype.
+	* config/s390/s390.c (s390_hard_regno_rename_ok): New function.
+	(s390_can_eliminate): Handle BASE_REGNUM elimination.
+	(s390_initial_elimination_offset): Likewise.
+	(s390_conditional_register_usage): BASE_REGNUM is no longer a fixed
+	register on TARGET_ZARCH targets.
+	* config/s390/s390.h (HARD_REGNO_RENAME_OK): Define
+	(INITIAL_FRAME_POINTER_OFFSET): Remove.
+	(REG_ALLOC_ORDER): Move BASE_REGNUM lower.
+	(ELIMINABLE_REGS): Add BASE_REGNUM elimination rule.
+
 2005-10-19  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md: Comment describing output modifiers updated.

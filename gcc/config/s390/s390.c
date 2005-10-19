@@ -6243,11 +6243,46 @@ s390_update_frame_layout (void)
     regs_ever_live[REGNO (cfun->machine->base_reg)] = 1;
 }
 
+/* Return nonzero if register OLD_REG can be renamed to register NEW_REG.  */
+
+bool
+s390_hard_regno_rename_ok (unsigned int old_reg, unsigned int new_reg)
+{
+   /* Once we've decided upon a register to use as base register, it must
+      no longer be used for any other purpose.  */
+  if (cfun->machine->base_reg)
+    if (REGNO (cfun->machine->base_reg) == old_reg
+	|| REGNO (cfun->machine->base_reg) == new_reg)
+      return false;
+
+  return true;
+}
+
 /* Return true if register FROM can be eliminated via register TO.  */
 
 bool
 s390_can_eliminate (int from, int to)
 {
+  /* On zSeries machines, we have not marked the base register as fixed.
+     Instead, we have an elimination rule BASE_REGNUM -> BASE_REGNUM.
+     If a function requires the base register, we say here that this
+     elimination cannot be performed.  This will cause reload to free
+     up the base register (as if it were fixed).  On the other hand,
+     if the current function does *not* require the base register, we
+     say here the elimination succeeds, which in turn allows reload
+     to allocate the base register for any other purpose.  */
+  if (from == BASE_REGNUM && to == BASE_REGNUM)
+    {
+      if (TARGET_CPU_ZARCH)
+	{
+	  s390_init_frame_layout ();
+	  return cfun->machine->base_reg == NULL_RTX;
+	}
+
+      return false;
+    }
+
+  /* Everything else must point into the stack frame.  */
   gcc_assert (to == STACK_POINTER_REGNUM
 	      || to == HARD_FRAME_POINTER_REGNUM);
 
@@ -6296,6 +6331,10 @@ s390_initial_elimination_offset (int from, int to)
       gcc_assert (index >= 0);
       offset = cfun_frame_layout.frame_size + cfun_frame_layout.gprs_offset;
       offset += index * UNITS_PER_WORD;
+      break;
+
+    case BASE_REGNUM:
+      offset = 0;
       break;
 
     default:
@@ -8263,6 +8302,8 @@ s390_conditional_register_usage (void)
     }
   if (TARGET_CPU_ZARCH)
     {
+      fixed_regs[BASE_REGNUM] = 0;
+      call_used_regs[BASE_REGNUM] = 0;
       fixed_regs[RETURN_REGNUM] = 0;
       call_used_regs[RETURN_REGNUM] = 0;
     }
