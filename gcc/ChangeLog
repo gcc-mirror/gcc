@@ -1,3 +1,9 @@
+2005-10-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR middle-end/23199
+	* cfgrtl.c (safe_insert_insn_on_edge): Use can_copy_p to detect
+	whether registers live on the edge can be saved/restored.
+
 2005-10-18  Paolo Bonzini  <bonzini@gnu.org>
 
         PR #19672
