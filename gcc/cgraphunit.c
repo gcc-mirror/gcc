@@ -322,6 +322,8 @@ cgraph_varpool_remove_unreferenced_decls (void)
 
       node = next;
     }
+  /* Make sure we mark alias targets as used targets.  */
+  finish_aliases_1 ();
   cgraph_varpool_analyze_pending_decls ();
 }
 

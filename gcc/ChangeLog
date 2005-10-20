@@ -1,3 +1,11 @@
+2005-10-20  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR middle-end/24295
+	* cgraphunit.c (cgraph_varpool_remove_unreferenced_decls): Mark
+	alias targets.
+	* varasm.c (find_decl_and_mark_needed): After cgraph global info
+	is ready, stop marking functions, but still mark variables.
+
 2005-10-20  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/24439
