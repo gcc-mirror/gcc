@@ -1,3 +1,7 @@
+2005-10-21  Alan Modra  <amodra@bigpond.net.au>
+
+	* g++.dg/warn/Wconversion1.C: Use -fsigned-char.
+
 2005-10-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR middle-end/24295
