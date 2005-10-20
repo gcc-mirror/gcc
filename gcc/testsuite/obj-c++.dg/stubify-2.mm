@@ -28,4 +28,4 @@ extern int bogonic (int, int, int) ;
 
 /* Any symbol_ref of an un-stubified objc_msgSend is an error; look
    for "objc_msgSend" in quotes, without the $stub suffix.  */
-/* { dg-final { scan-file-not stubify-2.mm.03.jump "symbol_ref.*\"objc_msgSend\"" } } */
+/* { dg-final { scan-file-not stubify-2.mm.08.jump "symbol_ref.*\"objc_msgSend\"" } } */
