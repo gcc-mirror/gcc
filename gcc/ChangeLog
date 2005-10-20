@@ -1,3 +1,7 @@
+2005-10-20  Steven Bosscher  <stevenb@suse.de>
+
+	* tree-cfg.c (tree_find_edge_insert_loc): Handle naked RETURN_EXPR.
+
 2005-10-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR middle-end/24295

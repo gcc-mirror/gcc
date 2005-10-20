@@ -2937,7 +2937,7 @@ tree_find_edge_insert_loc (edge e, block_stmt_iterator *bsi,
       if (TREE_CODE (tmp) == RETURN_EXPR)
         {
 	  tree op = TREE_OPERAND (tmp, 0);
-	  if (!is_gimple_val (op))
+	  if (op && !is_gimple_val (op))
 	    {
 	      gcc_assert (TREE_CODE (op) == MODIFY_EXPR);
 	      bsi_insert_before (bsi, op, BSI_NEW_STMT);
