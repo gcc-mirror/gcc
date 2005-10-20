@@ -1,5 +1,9 @@
 2005-10-19  Paolo Bonzini  <bonzini@gnu.org>
 
+	* dojump.c (do_jump): Revert the last patch as it breaks Ada.
+
+2005-10-19  Paolo Bonzini  <bonzini@gnu.org>
+
 	PR #19672
 	* dojump.c (do_jump): Handle TRUTH_AND_EXPR and TRUTH_OR_EXPR
 	like TRUTH_ANDIF_EXPR and TRUTH_ORIF_EXPR, if the branch cost

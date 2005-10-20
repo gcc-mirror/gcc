@@ -332,12 +332,6 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
       do_jump (TREE_OPERAND (exp, 0), if_true_label, if_false_label);
       break;
 
-    case TRUTH_AND_EXPR:
-      if (BRANCH_COST >= 4)
-        goto normal;
-
-      /* Else fall through to TRUTH_ANDIF_EXPR.  */
-
     case TRUTH_ANDIF_EXPR:
       if (if_false_label == 0)
         if_false_label = drop_through_label = gen_label_rtx ();
@@ -346,12 +340,6 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
       do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label);
       end_cleanup_deferral ();
       break;
-
-    case TRUTH_OR_EXPR:
-      if (BRANCH_COST >= 4)
-        goto normal;
-
-      /* Else fall through to TRUTH_ORIF_EXPR.  */
 
     case TRUTH_ORIF_EXPR:
       if (if_true_label == 0)
