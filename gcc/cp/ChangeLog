@@ -1,3 +1,9 @@
+2005-10-20  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/22618
+	* search.c (accessible_p): Check access in the outermost set of
+	template parameters.
+
 2005-10-20  Richard Guenther  <rguenther@suse.de>
 
 	* decl.c (grokdeclarator): Fix ambiguous pedwarn message.
