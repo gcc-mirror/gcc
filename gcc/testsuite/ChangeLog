@@ -1,3 +1,8 @@
+2005-10-20  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/22618
+	* g++.dg/parse/access8.C: New test.
+
 2005-10-20  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/24439
