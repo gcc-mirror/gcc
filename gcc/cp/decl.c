@@ -7570,7 +7570,7 @@ grokdeclarator (const cp_declarator *declarator,
 	}
 
       if (ctype == current_class_type)
-	pedwarn ("extra qualification %<%T::%> on member %qs ignored",
+	pedwarn ("extra qualification %<%T::%> on member %qs",
 		 ctype, name);
       else if (TREE_CODE (type) == FUNCTION_TYPE)
 	{

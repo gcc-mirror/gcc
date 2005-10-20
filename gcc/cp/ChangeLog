@@ -1,3 +1,7 @@
+2005-10-20  Richard Guenther  <rguenther@suse.de>
+
+	* decl.c (grokdeclarator): Fix ambiguous pedwarn message.
+
 2005-10-18  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/22293
