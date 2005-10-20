@@ -248,55 +248,63 @@ namespace __gnu_cxx
     __sso_string_base<_CharT, _Traits, _Alloc>::
     _M_swap(__sso_string_base& __rcs)
     {
-      const bool __local = _M_is_local();
-      const bool __rcs_local = __rcs._M_is_local();
-      
-      if (__local && __rcs_local)
-	{
-	  _CharT __tmp_data[_S_local_capacity + 1];
-	  const size_type __tmp_length = __rcs._M_length();
-	  _S_copy(__tmp_data, __rcs._M_data(), __rcs._M_length() + 1);
-	  __rcs._M_length(_M_length());
-	  _S_copy(__rcs._M_data(), _M_data(), _M_length() + 1);
-	  _M_length(__tmp_length);
-	  _S_copy(_M_data(), __tmp_data, __tmp_length + 1);
-	}
-      else if (__local && !__rcs_local)
-	{
-	  const size_type __tmp_capacity = __rcs._M_allocated_capacity;
-	  const size_type __tmp_length = __rcs._M_length();
-	  _CharT* __tmp_ptr = __rcs._M_data();
-	  __rcs._M_data(__rcs._M_local_data);
-	  _S_copy(__rcs._M_data(), _M_data(), _M_length() + 1);
-	  __rcs._M_length(_M_length());
-	  _M_data(__tmp_ptr);
-	  _M_length(__tmp_length);
-	  _M_capacity(__tmp_capacity);
-	}
-      else if (!__local && __rcs_local)
-	{
-	  const size_type __tmp_capacity = _M_allocated_capacity;
-	  const size_type __tmp_length = _M_length();
-	  _CharT* __tmp_ptr = _M_data();
-	  _M_data(_M_local_data);
-	  _S_copy(_M_data(), __rcs._M_data(), __rcs._M_length() + 1);
-	  _M_length(__rcs._M_length());
-	  __rcs._M_data(__tmp_ptr);
-	  __rcs._M_length(__tmp_length);
-	  __rcs._M_capacity(__tmp_capacity);
-	}
+      if (_M_is_local())
+	if (__rcs._M_is_local())
+	  {
+	    if (_M_length() && __rcs._M_length())
+	      {
+		_CharT __tmp_data[_S_local_capacity + 1];
+		traits_type::copy(__tmp_data, __rcs._M_local_data,
+				  __rcs._M_length() + 1);
+		traits_type::copy(__rcs._M_local_data, _M_local_data,
+				  _M_length() + 1);
+		traits_type::copy(_M_local_data, __tmp_data,
+				  __rcs._M_length() + 1);
+	      }
+	    else if (__rcs._M_length())
+	      {
+		traits_type::copy(_M_local_data, __rcs._M_local_data,
+				  __rcs._M_length() + 1);
+		traits_type::assign(__rcs._M_local_data[0], _CharT());
+	      }
+	    else if (_M_length())
+	      {
+		traits_type::copy(__rcs._M_local_data, _M_local_data,
+				  _M_length() + 1);
+		traits_type::assign(_M_local_data[0], _CharT());
+	      }
+	  }
+	else
+	  {
+	    const size_type __tmp_capacity = __rcs._M_allocated_capacity;
+	    _S_copy(__rcs._M_local_data, _M_local_data, _M_length() + 1);
+	    _M_data(__rcs._M_data());
+	    __rcs._M_data(__rcs._M_local_data);
+	    _M_capacity(__tmp_capacity);
+	  }
       else
 	{
 	  const size_type __tmp_capacity = _M_allocated_capacity;
-	  const size_type __tmp_length = _M_length();
-	  _CharT* __tmp_ptr = _M_data();
-	  _M_data(__rcs._M_data());
-	  _M_length(__rcs._M_length());
-	  _M_capacity(__rcs._M_allocated_capacity);
-	  __rcs._M_data(__tmp_ptr);
-	  __rcs._M_length(__tmp_length);
+	  if (__rcs._M_is_local())
+	    {
+	      _S_copy(_M_local_data, __rcs._M_local_data,
+		      __rcs._M_length() + 1);
+	      __rcs._M_data(_M_data());
+	      _M_data(_M_local_data);
+	    }
+	  else
+	    {
+	      _CharT* __tmp_ptr = _M_data();
+	      _M_data(__rcs._M_data());
+	      __rcs._M_data(__tmp_ptr);
+	      _M_capacity(__rcs._M_allocated_capacity);
+	    }
 	  __rcs._M_capacity(__tmp_capacity);
 	}
+
+      const size_type __tmp_length = _M_length();
+      _M_length(__rcs._M_length());
+      __rcs._M_length(__tmp_length);
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>

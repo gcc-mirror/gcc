@@ -1,5 +1,9 @@
 2005-10-19  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/ext/sso_string_base.h (_M_swap): Rewrite.
+
+2005-10-19  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/ext/rc_string_base.h (_S_terminal): Remove.
 	(_M_set_length): Adjust.
 	(_S_max_size): Change to anonymous enum.
