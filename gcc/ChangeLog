@@ -1,3 +1,21 @@
+2005-10-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR rtl-optimization/23585
+	* rtlanal.c (rtx_addr_can_trap_p_1): New predicate extracted from...
+	(rtx_addr_can_trap_p): ... here.  Invoke rtx_addr_can_trap_p_1.
+	(may_trap_p_1): New predicate extracted from...
+	(may_trap_p): ... here.  Invoke may_trap_p_1.
+	(may_trap_or_fault_p): New predicate.
+	* rtl.h (may_trap_or_fault_p): Declare it.
+	* reorg.c (steal_delay_list_from_target): Use may_trap_or_fault_p
+	instead of may_trap_p.
+	(steal_delay_list_from_fallthrough): Likewise.
+	(fill_simple_delay_slots): Likewise.
+	(fill_slots_from_thread): Likewise.
+	* function.c (pad_to_arg_alignment): Rework comment about
+	SPARC_STACK_BOUNDARY_HACK.
+	* config/sparc/sparc.h: Likewise.
+
 2005-10-19  Adrian Straetling  <straetling@de.ibm.com>
 
 	* config/s390/s390.c (s390_expand_insv): New.
