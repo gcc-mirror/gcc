@@ -124,8 +124,8 @@ void S4::s1 ()
 // These are tricks to allow us to get raw function pointers for
 // member functions.
 extern "C" {
-void _ZN2S32s3Ev ();
-void _ZN2S42s1Ev ();
+  void S3_s3 () __attribute__((__alias__ ("_ZN2S32s3Ev")));
+  void S4_s1 () __attribute__((__alias__ ("_ZN2S42s1Ev")));
 }
 
 // IA-64 uses function descriptors not function pointers in its vtables.
@@ -169,10 +169,10 @@ int main ()
   INC_VDATA (vtbl, 1);
   // Skip the RTTI entry.
   INC_VDATA (vtbl, 1);
-  if (! CMP_VPTR (vtbl, &_ZN2S32s3Ev))
+  if (! CMP_VPTR (vtbl, &S3_s3))
     return 5;
   INC_VPTR (vtbl);
-  if (! CMP_VPTR (vtbl, &_ZN2S42s1Ev))
+  if (! CMP_VPTR (vtbl, &S4_s1))
     return 6;
   INC_VPTR (vtbl);
   // The S1 vbase offset.

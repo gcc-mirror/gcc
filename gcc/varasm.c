@@ -4560,27 +4560,28 @@ find_decl_and_mark_needed (tree decl, tree target)
   struct cgraph_node *fnode = NULL;
   struct cgraph_varpool_node *vnode = NULL;
 
-  /* C++ thunk emitting code produces aliases late in the game.
-     Avoid confusing cgraph code in that case.  */
-  if (!cgraph_global_info_ready)
+  if (TREE_CODE (decl) == FUNCTION_DECL)
     {
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-	{
-	  fnode = cgraph_node_for_asm (target);
-	  if (fnode == NULL)
-	    vnode = cgraph_varpool_node_for_asm (target);
-	}
-      else
-	{
-	  vnode = cgraph_varpool_node_for_asm (target);
-	  if (vnode == NULL)
-	    fnode = cgraph_node_for_asm (target);
-	}
+      fnode = cgraph_node_for_asm (target);
+      if (fnode == NULL)
+	vnode = cgraph_varpool_node_for_asm (target);
+    }
+  else
+    {
+      vnode = cgraph_varpool_node_for_asm (target);
+      if (vnode == NULL)
+	fnode = cgraph_node_for_asm (target);
     }
 
   if (fnode)
     {
-      cgraph_mark_needed_node (fnode);
+      /* We can't mark function nodes as used after cgraph global info
+	 is finished.  This wouldn't generally be necessary, but C++
+	 virtual table thunks are introduced late in the game and
+	 might seem like they need marking, although in fact they
+	 don't.  */
+      if (! cgraph_global_info_ready)
+	cgraph_mark_needed_node (fnode);
       return fnode->decl;
     }
   else if (vnode)
