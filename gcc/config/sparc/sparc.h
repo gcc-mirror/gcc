@@ -624,11 +624,9 @@ if (TARGET_ARCH64				\
 
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
 /* FIXME, this is wrong when TARGET_ARCH64 and TARGET_STACK_BIAS, because
-   then sp+2047 is 128-bit aligned so sp is really only byte-aligned.  */
+   then %sp+2047 is 128-bit aligned so %sp is really only byte-aligned.  */
 #define STACK_BOUNDARY (TARGET_ARCH64 ? 128 : 64)
-/* Temporary hack until the FIXME above is fixed.  This macro is used
-   only in pad_to_arg_alignment in function.c; see the comment there
-   for details about what it does.  */
+/* Temporary hack until the FIXME above is fixed.  */
 #define SPARC_STACK_BOUNDARY_HACK (TARGET_ARCH64 && TARGET_STACK_BIAS)
 
 /* ALIGN FRAMES on double word boundaries */

@@ -1,3 +1,7 @@
+2005-10-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* g++.dg/opt/delay-slot-1.C: New test.
+
 2005-10-20  Erik Edelmann  <erik.edelmann@iki.fi>
 
 	PR fortran/21625
