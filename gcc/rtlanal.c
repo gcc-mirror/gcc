@@ -223,10 +223,13 @@ rtx_varies_p (rtx x, int for_alias)
   return 0;
 }
 
-/* Return 0 if the use of X as an address in a MEM can cause a trap.  */
+/* Return nonzero if the use of X as an address in a MEM can cause a trap.
+   MODE is the mode of the MEM (not that of X) and UNALIGNED_MEMS controls
+   whether nonzero is returned for unaligned memory accesses on strict
+   alignment machines.  */
 
-int
-rtx_addr_can_trap_p (rtx x)
+static int
+rtx_addr_can_trap_p_1 (rtx x, enum machine_mode mode, bool unaligned_mems)
 {
   enum rtx_code code = GET_CODE (x);
 
@@ -252,27 +255,52 @@ rtx_addr_can_trap_p (rtx x)
       return 1;
 
     case CONST:
-      return rtx_addr_can_trap_p (XEXP (x, 0));
+      return rtx_addr_can_trap_p_1 (XEXP (x, 0), mode, unaligned_mems);
 
     case PLUS:
-      /* An address is assumed not to trap if it is an address that can't
-	 trap plus a constant integer or it is the pic register plus a
-	 constant.  */
-      return ! ((! rtx_addr_can_trap_p (XEXP (x, 0))
-		 && GET_CODE (XEXP (x, 1)) == CONST_INT)
-		|| (XEXP (x, 0) == pic_offset_table_rtx
-		    && CONSTANT_P (XEXP (x, 1))));
+      /* An address is assumed not to trap if:
+	 - it is an address that can't trap plus a constant integer,
+	   with the proper remainder modulo the mode size if we are
+	   considering unaligned memory references.  */
+      if (!rtx_addr_can_trap_p_1 (XEXP (x, 0), mode, unaligned_mems)
+	  && GET_CODE (XEXP (x, 1)) == CONST_INT)
+	{
+	  HOST_WIDE_INT offset;
+
+	  if (!STRICT_ALIGNMENT || !unaligned_mems)
+	    return 0;
+
+	  offset = INTVAL (XEXP (x, 1));
+
+#ifdef SPARC_STACK_BOUNDARY_HACK
+	  /* ??? The SPARC port may claim a STACK_BOUNDARY higher than
+	     the real alignment of %sp.  However, when it does this, the
+	     alignment of %sp+STACK_POINTER_OFFSET is STACK_BOUNDARY.  */
+	  if (SPARC_STACK_BOUNDARY_HACK
+	      && (XEXP (x, 0) == stack_pointer_rtx
+		  || XEXP (x, 0) == hard_frame_pointer_rtx))
+	    offset -= STACK_POINTER_OFFSET;
+#endif
+
+	  return offset % GET_MODE_SIZE (mode) != 0;
+	}
+
+      /* - or it is the pic register plus a constant.  */
+      if (XEXP (x, 0) == pic_offset_table_rtx && CONSTANT_P (XEXP (x, 1)))
+	return 0;
+
+      return 1;
 
     case LO_SUM:
     case PRE_MODIFY:
-      return rtx_addr_can_trap_p (XEXP (x, 1));
+      return rtx_addr_can_trap_p_1 (XEXP (x, 1), mode, unaligned_mems);
 
     case PRE_DEC:
     case PRE_INC:
     case POST_DEC:
     case POST_INC:
     case POST_MODIFY:
-      return rtx_addr_can_trap_p (XEXP (x, 0));
+      return rtx_addr_can_trap_p_1 (XEXP (x, 0), mode, unaligned_mems);
 
     default:
       break;
@@ -280,6 +308,14 @@ rtx_addr_can_trap_p (rtx x)
 
   /* If it isn't one of the case above, it can cause a trap.  */
   return 1;
+}
+
+/* Return nonzero if the use of X as an address in a MEM can cause a trap.  */
+
+int
+rtx_addr_can_trap_p (rtx x)
+{
+  return rtx_addr_can_trap_p_1 (x, VOIDmode, false);
 }
 
 /* Return true if X is an address that is known to not be zero.  */
@@ -2067,10 +2103,12 @@ side_effects_p (rtx x)
   return 0;
 }
 
-/* Return nonzero if evaluating rtx X might cause a trap.  */
+/* Return nonzero if evaluating rtx X might cause a trap.  UNALIGNED_MEMS
+   controls whether nonzero is returned for unaligned memory accesses on
+   strict alignment machines.  */
 
-int
-may_trap_p (rtx x)
+static int
+may_trap_p_1 (rtx x, bool unaligned_mems)
 {
   int i;
   enum rtx_code code;
@@ -2104,9 +2142,11 @@ may_trap_p (rtx x)
 
       /* Memory ref can trap unless it's a static var or a stack slot.  */
     case MEM:
-      if (MEM_NOTRAP_P (x))
+      if (MEM_NOTRAP_P (x)
+	  && (!STRICT_ALIGNMENT || !unaligned_mems))
 	return 0;
-      return rtx_addr_can_trap_p (XEXP (x, 0));
+      return
+	rtx_addr_can_trap_p_1 (XEXP (x, 0), GET_MODE (x), unaligned_mems);
 
       /* Division by a non-constant might trap.  */
     case DIV:
@@ -2183,18 +2223,72 @@ may_trap_p (rtx x)
     {
       if (fmt[i] == 'e')
 	{
-	  if (may_trap_p (XEXP (x, i)))
+	  if (may_trap_p_1 (XEXP (x, i), unaligned_mems))
 	    return 1;
 	}
       else if (fmt[i] == 'E')
 	{
 	  int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
-	    if (may_trap_p (XVECEXP (x, i, j)))
+	    if (may_trap_p_1 (XVECEXP (x, i, j), unaligned_mems))
 	      return 1;
 	}
     }
   return 0;
+}
+
+/* Return nonzero if evaluating rtx X might cause a trap.  */
+
+int
+may_trap_p (rtx x)
+{
+  return may_trap_p_1 (x, false);
+}
+
+/* Same as above, but additionally return non-zero if evaluating rtx X might
+   cause a fault.  We define a fault for the purpose of this function as a
+   erroneous execution condition that cannot be encountered during the normal
+   execution of a valid program; the typical example is an unaligned memory
+   access on a strict alignment machine.  The compiler guarantees that it
+   doesn't generate code that will fault from a valid program, but this
+   guarantee doesn't mean anything for individual instructions.  Consider
+   the following example:
+
+      struct S { int d; union { char *cp; int *ip; }; };
+
+      int foo(struct S *s)
+      {
+	if (s->d == 1)
+	  return *s->ip;
+	else
+	  return *s->cp;
+      }
+
+   on a strict alignment machine.  In a valid program, foo will never be
+   invoked on a structure for which d is equal to 1 and the underlying
+   unique field of the union not aligned on a 4-byte boundary, but the
+   expression *s->ip might cause a fault if considered individually.
+
+   At the RTL level, potentially problematic expressions will almost always
+   verify may_trap_p; for example, the above dereference can be emitted as
+   (mem:SI (reg:P)) and this expression is may_trap_p for a generic register.
+   However, suppose that foo is inlined in a caller that causes s->cp to
+   point to a local character variable and guarantees that s->d is not set
+   to 1; foo may have been effectively translated into pseudo-RTL as:
+
+      if ((reg:SI) == 1)
+	(set (reg:SI) (mem:SI (%fp - 7)))
+      else
+	(set (reg:QI) (mem:QI (%fp - 7)))
+
+   Now (mem:SI (%fp - 7)) is considered as not may_trap_p since it is a
+   memory reference to a stack slot, but it will certainly cause a fault
+   on a strict alignment machine.  */
+
+int
+may_trap_or_fault_p (rtx x)
+{
+  return may_trap_p_1 (x, true);
 }
 
 /* Return nonzero if X contains a comparison that is not either EQ or NE,

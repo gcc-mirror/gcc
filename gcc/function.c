@@ -3518,10 +3518,9 @@ pad_to_arg_alignment (struct args_size *offset_ptr, int boundary,
   HOST_WIDE_INT sp_offset = STACK_POINTER_OFFSET;
 
 #ifdef SPARC_STACK_BOUNDARY_HACK
-  /* The sparc port has a bug.  It sometimes claims a STACK_BOUNDARY
-     higher than the real alignment of %sp.  However, when it does this,
-     the alignment of %sp+STACK_POINTER_OFFSET will be STACK_BOUNDARY.
-     This is a temporary hack while the sparc port is fixed.  */
+  /* ??? The SPARC port may claim a STACK_BOUNDARY higher than
+     the real alignment of %sp.  However, when it does this, the
+     alignment of %sp+STACK_POINTER_OFFSET is STACK_BOUNDARY.  */
   if (SPARC_STACK_BOUNDARY_HACK)
     sp_offset = 0;
 #endif
