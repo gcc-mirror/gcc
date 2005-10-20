@@ -60,7 +60,7 @@ host_modules= { module= fixincludes;
 host_modules= { module= flex; no_check_cross= true; };
 host_modules= { module= gas; bootstrap=true; };
 host_modules= { module= gcc; bootstrap=true; 
-		target="`if [ -f gcc/stage_last ]; then echo quickstrap ; else echo all; fi`";
+		target="`if [ -f stage_last ]; then echo quickstrap ; else echo all; fi`";
 		extra_make_flags="$(EXTRA_GCC_FLAGS)"; };
 host_modules= { module= gawk; };
 host_modules= { module= gettext; };

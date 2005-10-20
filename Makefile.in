@@ -9518,7 +9518,7 @@ configure-gcc:
 .PHONY: all-gcc maybe-all-gcc
 maybe-all-gcc:
 @if gcc
-TARGET-gcc=`if [ -f gcc/stage_last ]; then echo quickstrap ; else echo all; fi`
+TARGET-gcc=`if [ -f stage_last ]; then echo quickstrap ; else echo all; fi`
 maybe-all-gcc: all-gcc
 all-gcc: configure-gcc
 	@test -f stage_last && exit 0; \
