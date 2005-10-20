@@ -1,3 +1,9 @@
+2005-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/18939
+	* Makefile.def (gcc) <target>: Fix thinko.
+	* Makefile.in: Regenerate.
+
 2005-10-17  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* configure.in (bfin-*-*): Use test, not brackets, in if statement.
