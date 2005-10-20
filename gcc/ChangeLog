@@ -1,3 +1,9 @@
+2005-10-20  Richard Guenther  <rguenther@suse.de>
+
+	PR c++/24439
+	* fold-const.c (invert_truthvalue): Handle COND_EXPR with
+	void type operands.
+
 2005-10-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/23585
