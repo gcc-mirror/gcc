@@ -1,3 +1,8 @@
+2005-10-20  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/22508
+	* init.c (build_new_1): Remove misleading comment.
+
 2005-10-12  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c++/24052

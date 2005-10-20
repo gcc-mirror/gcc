@@ -2075,9 +2075,6 @@ build_new_1 (tree exp)
 	  fns = lookup_fnfields (true_type, fnname, /*protect=*/2);
 	  if (!fns)
 	    {
-	      /* See PR 15967. This should never happen (and it is
-		 fixed correctly in mainline), but on the release branch
-		 we prefer this less-intrusive approacch.  */
 	      error ("no suitable or ambiguous `%D' found in class `%T'",
 		     fnname, true_type);
 	      return error_mark_node;
