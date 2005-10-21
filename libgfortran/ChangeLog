@@ -1,3 +1,8 @@
+2005-10-21  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/24383
+	* io/unix.c: Add fallback definition for SSIZE_MAX.
+
 2005-10-19  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* c99_protos.h: Define preprocessor HAVE_ macros with value 1
