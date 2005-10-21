@@ -1,3 +1,8 @@
+2005-10-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24440
+	* gfortran.dg/assumed_size_dt_dummy.f90: Add test for scalar case.
+
 2005-10-20  Geoffrey Keating  <geoffk@apple.com>
 
 	* obj-c++.dg/except-1.mm: New.
