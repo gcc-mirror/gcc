@@ -352,6 +352,10 @@ sub postprocess
     # keep references of the form @ref{...}, print them bold
     s/\@(?:ref)\{([^\}]*)\}/B<$1>/g;
 
+    # Change double single quotes to double quotes.
+    s/''/"/g;
+    s/``/"/g;
+
     # Cross references are thrown away, as are @noindent and @refill.
     # (@noindent is impossible in .pod, and @refill is unnecessary.)
     # @* is also impossible in .pod; we discard it and any newline that

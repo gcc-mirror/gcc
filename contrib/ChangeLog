@@ -1,3 +1,8 @@
+2005-10-21  Bob Wilson  <bob.wilson@acm.org>
+
+	* texi2pod.pl: Convert two single quotes or two backquotes to
+	double quotes.
+
 2005-08-23  Ben Elliston  <bje@au.ibm.com>
 
 	* gcc_update: Update dependencies for libjava/aclocal.m4.
