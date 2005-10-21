@@ -1,3 +1,9 @@
+2005-10-21  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/24465
+	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Always
+	use r2 for 64-bit tls .got access.
+
 2005-10-21  Paolo Bonzini  <bonzini@gnu.org>
 
 	* dojump.c (do_jump): Handle side-effecting TRUTH_AND_EXPR and
