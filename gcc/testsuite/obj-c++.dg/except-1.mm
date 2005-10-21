@@ -1,5 +1,4 @@
-/* { dg-do run { target "*-*-darwin*" } } */
-/* { dg-options "-framework Foundation" } */
+/* { dg-do run } */
 
 /* This tests that exceptions work.  It used to fail because
    objc_msgSend was marked with DECL_NOTHROW. 
@@ -7,12 +6,30 @@
    that file includes objc/objc-runtime.h which explicitly prototypes
    objc_msgSend without 'nothrow'.  */
 
-#include <Foundation/Foundation.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifndef __NEXT_RUNTIME__
+extern "C" {
+  extern id class_create_instance(Class _class);
+}
+#else
+extern "C" {
+  extern id (*_zoneAlloc)(Class, unsigned int, void *);
+  extern void *malloc_default_zone(void);
+}
+#endif
+
+@interface RObject {
+  Class isa;  
+}
++ initialize;
++ alloc;
+- init;
+@end
+
 // ObjectiveC class header
-@interface ObjCclass : NSObject {
+@interface ObjCclass : RObject {
 }
 -(void)method1;
 -(void)method2;
@@ -63,3 +80,24 @@ void CPPclass::function1()
 	/* Shouldn't be here because we threw.  */
 	abort ();
 }
+
+@implementation RObject
++ initialize
+{
+  return self;
+}
+
+- init
+{
+  return self;
+}
+
++ alloc
+{
+#ifndef __NEXT_RUNTIME__
+  return class_create_instance(self);
+#else
+  return (*_zoneAlloc)((Class)self, 0, malloc_default_zone());
+#endif
+}
+@end
