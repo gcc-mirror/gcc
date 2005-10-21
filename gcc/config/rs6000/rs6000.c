@@ -2989,7 +2989,7 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
       rtx r3, got, tga, tmp1, tmp2, eqv;
 
       if (TARGET_64BIT)
-	got = gen_rtx_REG (Pmode, TOC_REGISTER);
+	got = gen_rtx_REG (Pmode, 2);
       else
 	{
 	  if (flag_pic == 1)
