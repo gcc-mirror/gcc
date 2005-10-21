@@ -1,6 +1,6 @@
 // std::time_get, std::time_put implementation, GNU version -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,25 +37,33 @@
   template<typename _CharT>
     __timepunct<_CharT>::__timepunct(size_t __refs) 
     : facet(__refs), _M_data(NULL), _M_c_locale_timepunct(NULL), 
-    _M_name_timepunct(_S_get_c_name())
+      _M_name_timepunct(_S_get_c_name())
     { _M_initialize_timepunct(); }
 
   template<typename _CharT>
     __timepunct<_CharT>::__timepunct(__cache_type* __cache, size_t __refs) 
     : facet(__refs), _M_data(__cache), _M_c_locale_timepunct(NULL), 
-    _M_name_timepunct(_S_get_c_name())
+      _M_name_timepunct(_S_get_c_name())
     { _M_initialize_timepunct(); }
 
   template<typename _CharT>
     __timepunct<_CharT>::__timepunct(__c_locale __cloc, const char* __s,
 				     size_t __refs) 
     : facet(__refs), _M_data(NULL), _M_c_locale_timepunct(NULL), 
-    _M_name_timepunct(__s)
+      _M_name_timepunct(NULL)
     { 
-      char* __tmp = new char[std::strlen(__s) + 1];
-      std::strcpy(__tmp, __s);
+      const size_t __len = std::strlen(__s) + 1;
+      char* __tmp = new char[__len];
+      std::memcpy(__tmp, __s, __len);
       _M_name_timepunct = __tmp;
-      _M_initialize_timepunct(__cloc); 
+
+      try
+	{ _M_initialize_timepunct(__cloc); }
+      catch(...)
+	{
+	  delete [] _M_name_timepunct;
+	  __throw_exception_again;
+	}
     }
 
   template<typename _CharT>
