@@ -1,3 +1,8 @@
+2005-10-21  Paolo Bonzini  <bonzini@gnu.org>
+
+	* dojump.c (do_jump): Handle side-effecting TRUTH_AND_EXPR and
+	TRUTH_OR_EXPR.
+
 2005-10-20  Steven Bosscher  <stevenb@suse.de>
 
 	PR tree-optimization/24225

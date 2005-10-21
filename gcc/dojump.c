@@ -511,8 +511,10 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
       break;
 
     case TRUTH_AND_EXPR:
-      /* High branch cost, expand as the bitwise AND of the conditions.  */
-      if (BRANCH_COST >= 4)
+      /* High branch cost, expand as the bitwise AND of the conditions.
+	 Do the same if the RHS has side effects, because we're effectively
+	 turning a TRUTH_AND_EXPR into a TRUTH_ANDIF_EXPR.  */
+      if (BRANCH_COST >= 4 || TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 1)))
 	goto normal;
 
       if (if_false_label == NULL_RTX)
@@ -529,8 +531,10 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
       break;
 
     case TRUTH_OR_EXPR:
-      /* High branch cost, expand as the bitwise OR of the conditions.  */
-      if (BRANCH_COST >= 4)
+      /* High branch cost, expand as the bitwise OR of the conditions.
+	 Do the same if the RHS has side effects, because we're effectively
+	 turning a TRUTH_OR_EXPR into a TRUTH_ORIF_EXPR.  */
+      if (BRANCH_COST >= 4 || TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 1)))
 	goto normal;
 
       if (if_true_label == NULL_RTX)
