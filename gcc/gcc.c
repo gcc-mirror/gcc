@@ -6489,7 +6489,7 @@ main (int argc, const char **argv)
       combine_inputs = save_combine_inputs;
     }
     
-  if (!combine_inputs && have_c && have_o && n_infiles > 1)
+  if (!combine_inputs && have_c && have_o && lang_n_infiles > 1)
    fatal ("cannot specify -o with -c or -S with multiple files");
 
   for (i = 0; (int) i < n_infiles; i++)
