@@ -1235,6 +1235,21 @@ compare_actual_formal (gfc_actual_arglist ** ap,
 	  return 0;
 	}
 
+      if (f->sym->as
+	  && f->sym->as->type == AS_ASSUMED_SHAPE
+	  && a->expr->expr_type == EXPR_VARIABLE
+	  && a->expr->symtree->n.sym->as
+	  && a->expr->symtree->n.sym->as->type == AS_ASSUMED_SIZE
+	  && (a->expr->ref == NULL
+	      || (a->expr->ref->type == REF_ARRAY
+		  && a->expr->ref->u.ar.type == AR_FULL)))
+	{
+	  if (where)
+	    gfc_error ("Actual argument for '%s' cannot be an assumed-size"
+		       " array at %L", f->sym->name, where);
+	  return 0;
+	}
+
       if (a->expr->expr_type != EXPR_NULL
 	  && compare_pointer (f->sym, a->expr) == 0)
 	{
