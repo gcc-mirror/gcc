@@ -1,3 +1,7 @@
+2005-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20051021-1.c: New test.
+
 2005-10-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/24260
