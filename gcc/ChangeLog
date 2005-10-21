@@ -1,3 +1,8 @@
+2005-10-21  Devang Patel  <dpatel@apple.com>
+
+	PR/24220
+	* c-common.c (vector_types_convertible_p): Check vector element type.
+	
 2005-10-21  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (prepare_move_operands): Handle the address
