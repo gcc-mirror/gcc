@@ -4985,7 +4985,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 
       if (size && TREE_CODE (size) != INTEGER_CST && definition)
 	create_var_decl (concat_id_with_name (name, "XVZ"), NULL_TREE,
-			 sizetype, TYPE_SIZE (record), false, false, false,
+			 bitsizetype, TYPE_SIZE (record), false, false, false,
 			 false, NULL, gnat_entity);
     }
 

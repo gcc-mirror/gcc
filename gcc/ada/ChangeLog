@@ -1,3 +1,9 @@
+2005-09-21  Olivier Hainque  <hainque@adacore.com>
+
+	PR ada/22418
+	* decl.c (maybe_pad_type): Use proper bitsizetype for XVZ objects,
+	as we create them to store a size in bits.
+
 2005-10-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/21937
@@ -12,7 +18,7 @@
 	of manually building the RETURN_EXPR tree.
 	(call_to_gnu): Pass MODIFY_EXPR through build_binary_op.
 	(gnat_to_gnu) <N_Return_Statement>: Pass MODIFY_EXPR through
-	build_binary_op for the "target pointer" case.  Use build_return_expr
+	build_binary_op for the "target pointer" case.  Use build_return_expr
 	instead of manually building the RETURN_EXPR tree.
 
 2005-09-16  Laurent GUERBY  <laurent@guerby.net>
