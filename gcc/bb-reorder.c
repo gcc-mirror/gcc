@@ -1739,7 +1739,8 @@ fix_crossing_unconditional_branches (void)
 	      for (cur_insn = indirect_jump_sequence; cur_insn;
 		   cur_insn = NEXT_INSN (cur_insn))
 		{
-		  BLOCK_FOR_INSN (cur_insn) = cur_bb;
+		  if (!BARRIER_P (cur_insn))
+		    BLOCK_FOR_INSN (cur_insn) = cur_bb;
 		  if (JUMP_P (cur_insn))
 		    jump_insn = cur_insn;
 		}
