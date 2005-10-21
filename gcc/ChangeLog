@@ -1,3 +1,7 @@
+2005-10-21  Janis Johnson  <janis187@us.ibm.com>
+
+	* var-tracking.c (vt_initialize): Initialize post.
+
 2005-10-21  Devang Patel  <dpatel@apple.com>
 
 	PR/24220

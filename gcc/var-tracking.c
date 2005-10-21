@@ -2516,7 +2516,7 @@ vt_initialize (void)
   FOR_EACH_BB (bb)
     {
       rtx insn;
-      HOST_WIDE_INT pre, post;
+      HOST_WIDE_INT pre, post = 0;
 
       /* Count the number of micro operations.  */
       VTI (bb)->n_mos = 0;
