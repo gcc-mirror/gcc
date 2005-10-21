@@ -1373,8 +1373,50 @@ build_cond_expr (tree result_type, tree condition_operand,
 
   return result;
 }
-
 
+/* Similar, but for RETURN_EXPR.  If RESULT_DECL is non-zero, build
+   a RETURN_EXPR around the assignment of RET_VAL to RESULT_DECL.
+   If RESULT_DECL is zero, build a bare RETURN_EXPR.  */
+
+tree
+build_return_expr (tree result_decl, tree ret_val)
+{
+  tree result_expr;
+
+  if (result_decl)
+    {
+      /* The gimplifier explicitly enforces the following invariant:
+
+           RETURN_EXPR
+               |
+           MODIFY_EXPR
+           /        \
+          /          \
+      RESULT_DECL    ...
+
+      As a consequence, type-homogeneity dictates that we use the type
+      of the RESULT_DECL as the operation type.  */
+
+      tree operation_type = TREE_TYPE (result_decl);
+
+      /* Convert the right operand to the operation type.  Note that
+         it's the same transformation as in the MODIFY_EXPR case of
+         build_binary_op with the additional guarantee that the type
+         cannot involve a placeholder, since otherwise the function
+         would use the "target pointer" return mechanism.  */
+       
+      if (operation_type != TREE_TYPE (ret_val))
+	ret_val = convert (operation_type, ret_val);
+
+      result_expr
+	= build2 (MODIFY_EXPR, operation_type, result_decl, ret_val);
+    }
+  else
+    result_expr = NULL_TREE;
+
+  return build1 (RETURN_EXPR, void_type_node, result_expr);
+}
+
 /* Build a CALL_EXPR to call FUNDECL with one argument, ARG.  Return
    the CALL_EXPR.  */
 
