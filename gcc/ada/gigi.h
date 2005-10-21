@@ -678,6 +678,9 @@ extern tree build_unary_op (enum tree_code op_code, tree result_type,
 extern tree build_cond_expr (tree result_type, tree condition_operand,
                              tree true_operand, tree false_operand);
 
+/* Similar, but for RETURN_EXPR.  */
+extern tree build_return_expr (tree result_decl, tree ret_val);
+
 /* Build a CALL_EXPR to call FUNDECL with one argument, ARG.  Return
    the CALL_EXPR.  */
 extern tree build_call_1_expr (tree fundecl, tree arg);
