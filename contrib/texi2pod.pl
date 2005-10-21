@@ -227,11 +227,12 @@ while(<$inf>) {
     /^\@include\s+(.+)$/ and do {
 	push @instack, $inf;
 	$inf = gensym();
+	$file = postprocess($1);
 
 	# Try cwd and $ibase.
-	open($inf, "<" . $1) 
-	    or open($inf, "<" . $ibase . "/" . $1)
-		or die "cannot open $1 or $ibase/$1: $!\n";
+	open($inf, "<" . $file) 
+	    or open($inf, "<" . $ibase . "/" . $file)
+		or die "cannot open $file or $ibase/$file: $!\n";
 	next;
     };
 
