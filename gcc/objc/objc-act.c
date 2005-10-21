@@ -1597,6 +1597,10 @@ synth_module_prologue (void)
 		       (xref_tag (RECORD_TYPE,
 				  get_identifier (UTAG_IVAR_LIST)));
 
+  /* TREE_NOTHROW is cleared for the message-sending functions,
+     because the function that gets called can throw in Obj-C++, or
+     could itself call something that can throw even in Obj-C.  */
+
   if (flag_next_runtime)
     {
       /* NB: In order to call one of the ..._stret (struct-returning)
@@ -1626,12 +1630,21 @@ synth_module_prologue (void)
 						 type, 0, NOT_BUILT_IN,
 						 NULL, NULL_TREE);
 
+      /* These can throw, because the function that gets called can throw
+	 in Obj-C++, or could itself call something that can throw even
+	 in Obj-C.  */
+      TREE_NOTHROW (umsg_decl) = 0;
+      TREE_NOTHROW (umsg_nonnil_decl) = 0;
+      TREE_NOTHROW (umsg_stret_decl) = 0;
+      TREE_NOTHROW (umsg_nonnil_stret_decl) = 0;
+
       /* id objc_msgSend_Fast (id, SEL, ...)
 	   __attribute__ ((hard_coded_address (OFFS_MSGSEND_FAST))); */
 #ifdef OFFS_MSGSEND_FAST
       umsg_fast_decl = builtin_function (TAG_MSGSEND_FAST,
 					 type, 0, NOT_BUILT_IN,
 					 NULL, NULL_TREE);
+      TREE_NOTHROW (umsg_fast_decl) = 0;
       DECL_ATTRIBUTES (umsg_fast_decl) 
 	= tree_cons (get_identifier ("hard_coded_address"), 
 		     build_int_cst (NULL_TREE, OFFS_MSGSEND_FAST),
@@ -1654,6 +1667,8 @@ synth_module_prologue (void)
       umsg_super_stret_decl = builtin_function (TAG_MSGSENDSUPER_STRET,
 						type, 0, NOT_BUILT_IN, 0,
 						NULL_TREE);
+      TREE_NOTHROW (umsg_super_decl) = 0;
+      TREE_NOTHROW (umsg_super_stret_decl) = 0;
     }
   else
     {
@@ -1676,6 +1691,7 @@ synth_module_prologue (void)
       umsg_decl = builtin_function (TAG_MSGSEND,
 				    type, 0, NOT_BUILT_IN,
 				    NULL, NULL_TREE);
+      TREE_NOTHROW (umsg_decl) = 0;
 
       /* IMP objc_msg_lookup_super (struct objc_super *, SEL); */
       type
@@ -1686,6 +1702,7 @@ synth_module_prologue (void)
       umsg_super_decl = builtin_function (TAG_MSGSENDSUPER,
 					  type, 0, NOT_BUILT_IN,
 					  NULL, NULL_TREE);
+      TREE_NOTHROW (umsg_super_decl) = 0;
 
       /* The following GNU runtime entry point is called to initialize
 	 each module:

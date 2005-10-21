@@ -1,5 +1,7 @@
 2005-10-20  Geoffrey Keating  <geoffk@apple.com>
 
+	* obj-c++.dg/except-1.mm: New.
+
 	* obj-c++.dg/stubify-2.mm: Update the name of the RTL dump file.
 
 2005-10-21  Alan Modra  <amodra@bigpond.net.au>
