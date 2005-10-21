@@ -1,3 +1,8 @@
+2005-10-20  Geoffrey Keating  <geoffk@apple.com>
+
+	* objc-act.c (synth_module_prologue): Clear TREE_NOTHROW
+	on objc_msgSend and like builtin functions.
+
 2005-10-17  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* objc-act.c (objc_build_component_ref): Adjust call to 
