@@ -1,3 +1,8 @@
+2005-10-21  James E Wilson  <wilson@specifix.com>
+
+	PR preprocessor/15220
+	* gcc.misc-tests/mg-2.c, gcc.misc-tests/mg-2.exp: New.
+
 2005-10-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20051021-1.c: New test.
