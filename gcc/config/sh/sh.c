@@ -1238,11 +1238,21 @@ prepare_move_operands (rtx operands[], enum machine_mode mode)
 
   if (mode == Pmode || mode == ptr_mode)
     {
-      rtx op0, op1;
+      rtx op0, op1, opc;
       enum tls_model tls_kind;
 
       op0 = operands[0];
       op1 = operands[1];
+      if (GET_CODE (op1) == CONST
+	  && GET_CODE (XEXP (op1, 0)) == PLUS
+	  && tls_symbolic_operand (XEXP (XEXP (op1, 0), 0), Pmode))
+	{
+	  opc = XEXP (XEXP (op1, 0), 1);
+	  op1 = XEXP (XEXP (op1, 0), 0);
+	}
+      else
+	opc = NULL_RTX;
+
       if ((tls_kind = tls_symbolic_operand (op1, Pmode)))
 	{
 	  rtx tga_op1, tga_ret, tmp, tmp2;
@@ -1308,6 +1318,8 @@ prepare_move_operands (rtx operands[], enum machine_mode mode)
 	    default:
 	      gcc_unreachable ();
 	    }
+	  if (opc)
+	    emit_insn (gen_addsi3 (op1, op1, force_reg (SImode, opc)));
 	  operands[1] = op1;
 	}
     }
