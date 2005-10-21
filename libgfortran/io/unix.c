@@ -46,6 +46,10 @@ Boston, MA 02110-1301, USA.  */
 #include "libgfortran.h"
 #include "io.h"
 
+#ifndef SSIZE_MAX
+#define SSIZE_MAX SHRT_MAX
+#endif
+
 #ifndef PATH_MAX
 #define PATH_MAX 1024
 #endif
