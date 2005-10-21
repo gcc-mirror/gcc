@@ -1,3 +1,9 @@
+2005-10-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24260
+	* parser.c (cp_parser_init_declarator): Pass attributes to
+	grokfield. 
+
 2005-10-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/22618

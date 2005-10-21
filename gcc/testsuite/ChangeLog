@@ -1,3 +1,8 @@
+2005-10-21  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/24260
+	* g++.dg/ext/tmplattr1.C: New test.
+
 2005-10-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24440
