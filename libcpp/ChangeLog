@@ -1,3 +1,13 @@
+2005-10-21  James E Wilson  <wilson@specifix.com>
+
+	PR preprocessor/15220
+	* files.c (_cpp_find_file): New parameter angle_brackets.  Fix all
+	callers.  Pass to open_file_failed.
+	(open_file_failed): New parameter angle_brackets.  Fix all callers.
+	Use in print_dep assignment.
+	* init.c (cpp_read_main_file): Pass additional arg to _cpp_find_file.
+	* internal.h (_cpp_find_file): Add new parm to declaration.
+	
 2005-09-20  Release Manager
 
 	* GCC 4.0.2 released.

@@ -460,7 +460,7 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname)
     }
 
   pfile->main_file
-    = _cpp_find_file (pfile, fname, &pfile->no_search_path, false);
+    = _cpp_find_file (pfile, fname, &pfile->no_search_path, false, 0);
   if (_cpp_find_failed (pfile->main_file))
     return NULL;
 

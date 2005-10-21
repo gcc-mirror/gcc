@@ -503,8 +503,8 @@ extern void _cpp_destroy_hashtable (cpp_reader *);
 
 /* In files.c */
 typedef struct _cpp_file _cpp_file;
-extern _cpp_file *_cpp_find_file (cpp_reader *, const char *fname,
-				  cpp_dir *start_dir, bool fake);
+extern _cpp_file *_cpp_find_file (cpp_reader *, const char *, cpp_dir *,
+				  bool, int);
 extern bool _cpp_find_failed (_cpp_file *);
 extern void _cpp_mark_file_once_only (cpp_reader *, struct _cpp_file *);
 extern void _cpp_fake_include (cpp_reader *, const char *);
