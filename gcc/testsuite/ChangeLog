@@ -1,3 +1,7 @@
+2005-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/assumed_dummy_2.f90: New test.
+
 2005-10-21  James E Wilson  <wilson@specifix.com>
 
 	PR preprocessor/15220

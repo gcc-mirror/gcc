@@ -1,3 +1,8 @@
+2005-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* interface.c (compare_actual_formal): Issue error when attempting
+	to pass an assumed-size array as assumed-shape array argument.
+
 2005-10-20  Erik Edelmann  <erik.edelmann@iki.fi>
 
 	PR fortran/21625
