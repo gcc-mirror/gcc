@@ -1,5 +1,7 @@
 2005-10-22  Hans-Peter Nilsson  <hp@axis.com>
 
+	* g++.old-deja/g++.jason/thunk2.C: Guard test with { target fpic }.
+
 	* gcc.dg/tree-ssa/20040204-1.c: Adjust XFAIL for CRIS and MMIX.
 	* gcc.dg/tree-ssa/loop-1.c: Adjust "call foo"-scanning for CRIS.
 
