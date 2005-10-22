@@ -1,3 +1,7 @@
+2005-10-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/weak/typeof-2.c: Adjust for CRIS keeping baz3 in a register.
+
 2005-10-22  Erik Edelmann  <eedelman@gcc.gnu.org>
 
 	PR fortran/24426
