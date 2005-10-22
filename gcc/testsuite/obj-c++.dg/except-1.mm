@@ -9,27 +9,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifndef __NEXT_RUNTIME__
-extern "C" {
-  extern id class_create_instance(Class _class);
-}
-#else
-extern "C" {
-  extern id (*_zoneAlloc)(Class, unsigned int, void *);
-  extern void *malloc_default_zone(void);
-}
-#endif
 
-@interface RObject {
+@interface Object {
   Class isa;  
 }
-+ initialize;
 + alloc;
 - init;
 @end
 
 // ObjectiveC class header
-@interface ObjCclass : RObject {
+@interface ObjCclass : Object {
 }
 -(void)method1;
 -(void)method2;
@@ -80,24 +69,3 @@ void CPPclass::function1()
 	/* Shouldn't be here because we threw.  */
 	abort ();
 }
-
-@implementation RObject
-+ initialize
-{
-  return self;
-}
-
-- init
-{
-  return self;
-}
-
-+ alloc
-{
-#ifndef __NEXT_RUNTIME__
-  return class_create_instance(self);
-#else
-  return (*_zoneAlloc)((Class)self, 0, malloc_default_zone());
-#endif
-}
-@end
