@@ -1,3 +1,9 @@
+2005-10-22  Erik Edelmann  <eedelman@gcc.gnu.org>
+
+	PR fortran/24426
+	* decl.c (variable_decl): Don't assign default initializers to
+	pointers.
+
 2005-10-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/24440
